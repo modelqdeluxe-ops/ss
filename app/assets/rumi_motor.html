@@ -35,7 +35,10 @@ async function generar(id,pregunta){
   let out='';
   const st=await w.createChatCompletion({messages:RumiRAG.mensajes(guia,pregunta),max_tokens:180,temperature:0.3,top_p:0.9,stream:true});
   for await(const c of st){const d=c.choices&&c.choices[0]&&c.choices[0].delta&&c.choices[0].delta.content;if(d){out+=d;decir({id,parcial:out});}}
-  decir({id,fin:true,texto:out.trim(),guia:guia.map(e=>e.t)});
+  out=out.trim();
+  // Si la respuesta es el texto de un tema de la Guía, lo encabeza con el nombre del tema.
+  const tema=guia.find(e=>{const x=RumiRAG.limpiar(e.x);return x.length>30&&out.slice(0,30)===x.slice(0,30);});
+  decir({id,fin:true,texto:out,tema:tema?tema.t:null,guia:guia.map(e=>e.t)});
 }
 
 addEventListener('message',e=>{

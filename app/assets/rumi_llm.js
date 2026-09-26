@@ -54,7 +54,7 @@ L.generar=function(pregunta,alToken){
     marco.contentWindow.postMessage({rumiApp:1,tipo:'generar',id,pregunta},'*');}).then(m=>{
     let out=m.texto||'';
     if(DOSIS_RE.test(out)&&!/veterinari/i.test(out))out+=' Confirma cualquier dosis con tu veterinario.';
-    return {texto:out,guia:m.guia||[]};
+    return {texto:out,tema:m.tema||null,guia:m.guia||[]};
   });
 };
 
@@ -63,14 +63,14 @@ L.decir=function(txt,r){
   L.ocupado=true;
   const entrada={html:'',nou:true,llm:true,q:txt,sug:(r&&r.sug)||sugs()};
   let ultimo=0,pend=null;
-  const pintar=(t,fin)=>{entrada.html=esc(t)+(fin?'':'<span class="llm-cursor"></span>');
+  const pintar=(t,fin)=>{entrada.html=(entrada.tema?'<b>'+esc(entrada.tema)+'</b><br>':'')+esc(t)+(fin?'':'<span class="llm-cursor"></span>');
     const now=Date.now();if(!fin&&now-ultimo<120){clearTimeout(pend);pend=setTimeout(()=>pintar(entrada.t||t),130);return;}
     ultimo=now;pintarLog();};
   RUMI.log.push(entrada);
   L.cola=L.cola.then(async()=>{
     try{
       const res=await L.generar(txt,t=>{entrada.t=t;pintar(t);});
-      entrada.t=res.texto||'No te entendí bien. ¿Me lo dices de otra forma?';
+      entrada.t=res.texto||'No te entendí bien. ¿Me lo dices de otra forma?';entrada.tema=res.tema;
     }catch(e){entrada.t='Algo falló al pensar la respuesta. Prueba decirlo de otra forma.';}
     clearTimeout(pend);entrada.fin=true;pintar(entrada.t,true);pintarSug(entrada.sug);L.ocupado=false;
     const hd=$('.rumi-hd .rm');if(hd){hd.classList.remove('talk');void hd.offsetWidth;hd.classList.add('talk');}
