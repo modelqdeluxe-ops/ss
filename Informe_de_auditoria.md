@@ -25,7 +25,7 @@ Los archivos originales siguen en el repositorio sin cambios.
 | 9 | 17 | IRVA 8.62→17.33 con B/C igual; VAN 15.37 M vs. VPN medio 23.99 M | Explicación en la diapositiva y en la tesis: el IRVA se divide entre la inversión aportada (L 1,784,058 vs. L 892,029), por eso se duplica. La B/C es 1.239 vs. 1.241, porque el valor presente del servicio de la deuda casi iguala al préstamo. La brecha del VPN se concilia en una diapositiva nueva (ver hallazgo A) | pptx 26 y 31; tesis |
 | 10 | 18 | Mostrar efecto sobre el VAN con tornado o escenarios | Gráfico de tornado (11 variables) y escenarios pesimista/base/optimista. Pesimista: VAN L 2,020,142 y TIR 21.2 %. La clasificación de variables se rehízo con el tornado | pptx 27 y 28; tesis Tablas 38–39 y Figuras 32–33; Excel |
 | 11 | 20 | Explicar VPN medio vs. VAN; VaR 95 % exacto | Se decodificaron las 10,000 iteraciones que @RISK guardó dentro del Excel (media, desviación, mínimo y máximo idénticos a la Tabla 36). **VaR 95 % = L 6,373,570** y **VaR 99 % = L 7,924,618**. Los valores anteriores ("5,856,000 aprox." y "8,200,000 aprox.") eran incorrectos. El VPN es positivo en el 100 % de las iteraciones (antes decía "> 95 %") | pptx 30 y 31; tesis; Excel |
-| 12 | 21 | Conclusión sobre evaluación económica y social; diapositiva de limitaciones | Conclusión con lo medible: 6 empleos directos, L 112.7 M en compras a productores y L 21.0 M en ISR e ICS en 10 años. Se declara lo no cuantificado. Diapositiva y capítulo nuevos de Limitaciones (8 puntos) | pptx 32 y 33; tesis |
+| 12 | 21 | Conclusión sobre evaluación económica y social; diapositiva de limitaciones | Conclusión con lo medible: 6 empleos directos, L 112.7 M en compras a productores y L 21.0 M en ISR e ICS en 10 años. Se declara lo no cuantificado. Diapositiva de Limitaciones (6 puntos) y capítulo nuevo en la tesis (7 puntos) | pptx 32 y 33; tesis |
 | 13 | 22 | Añadir Bibliografía y Anexos (encuesta, estados financieros completos) | Diapositivas de Bibliografía, Anexo A (instrumento de encuesta), Anexo B (flujos sin y con financiamiento) y Anexo C (estado de resultados y balance) | pptx 35–40 |
 | — | 3 | Comentario nativo "PRUEBA" | Eliminado | pptx |
 
@@ -51,17 +51,25 @@ Los archivos originales siguen en el repositorio sin cambios.
 
 **B. Déficit de caja en el arranque.** Con financiamiento, los años 1 y 2 tienen flujos negativos. Los socios deben aportar L 1,217,819 además de los L 892,029 iniciales, con una exposición máxima de L 2,109,848. Aparece en el balance y en las limitaciones.
 
-**C. La capacidad inicial no alcanza desde el año 4.** Se requieren 1,068 L/día frente a 1,000 L/día, y la inversión de la ampliación no está en el flujo. Quedó declarado en la tesis, en las limitaciones y en las recomendaciones.
+**C. Capacidad desde el año 4 (corregido en la segunda revisión).** Desde el año 4 se requieren 1,068 L/día, más que los 1,000 L/día iniciales. La primera versión decía que esa ampliación no estaba presupuestada, y era un error. La partida "Tanques de almacenamiento" (L 360,000, Tabla 11 y modelo financiero) incluye el tanque de 5,000 L que confirmaron los autores. Con esa capacidad, en el año 10 se usa el 70 %.
+- Se eliminó la afirmación en la pptx (tamaño, limitaciones y conclusiones), en la tesis (tamaño, limitaciones, conclusión técnica y recomendación) y en la nota de la sección 12 del Excel.
+- La tesis no mencionaba de forma explícita el tanque de 5,000 L en la lista de equipos. Ahora aparece en la sección de tamaño y en la conclusión técnica.
 
 **D. Bibliografía incompleta en la sección económica del PESTEL.** Se citan fuentes (USDA 2026, CEPAL 2023, COHEP 2025, Datosmacro, Trading Economics, BCH 2024/2025) sin entrada en la bibliografía. No las agregué porque no pude verificar sus datos exactos. Solo añadí las fuentes nuevas que verifiqué.
 
-## 4. Cómo abrir los archivos
+## 4. Segunda revisión: diapositivas más ligeras
+
+- Se redujo el texto de 24 diapositivas, sin cambiar el diseño ni el orden: resumen, sector, macro, planteamiento, diseño, ¿por qué "Pura"?, PESTEL, localización, tamaño, materias primas, layout, administrativo, ambiental, plan de inversión, préstamo, equilibrio, indicadores, sensibilidad, tornado, riesgos, conciliación, conclusiones, limitaciones y recomendaciones.
+- Todas las cifras se mantienen. El detalle que se quitó de las diapositivas pasó a las **notas del orador** de 17 diapositivas, para tenerlo a mano en la defensa.
+- Limitaciones se conserva porque la pidió el asesor (comentario de la diapositiva 21). Queda en 6 puntos breves; "Parámetros de riesgo" y "Modelo probabilístico" se unieron en "Modelo de riesgos".
+
+## 5. Cómo abrir los archivos
 
 - **Tesis:** al abrirla, Word pregunta si desea actualizar los campos. Respondan **Sí**: la tabla de contenido y los índices de tablas, figuras y anexos ahora son campos automáticos y se recalculan con la paginación real. Si no aparece la pregunta: Ctrl+A y luego F9.
 - **Bibliografía:** está dentro del control de Citavi. Si la regeneran desde Citavi, las 9 entradas nuevas se borrarán; conviene cargarlas en Citavi.
 - **Excel:** las hojas nuevas son "Análisis Complementario" (escenarios, tornado, punto de equilibrio, estados financieros, VaR, conciliación y costos), "Modelo Casos" (réplica con fórmulas, 26 casos) e "Iteraciones @RISK" (10,000 iteraciones con media, desviación y percentiles). Se verificaron recalculando las 10,731 fórmulas en LibreOffice: 0 diferencias frente al cálculo independiente.
 
-## 5. Fuentes nuevas verificadas
+## 6. Fuentes nuevas verificadas
 
 - INE (2025a). Estadísticas de género en Honduras, julio 2025: https://ine.gob.hn/wp-content/uploads/2025/12/Estadisticas-de-brechas-en-Honduras-julio-2025.pdf
 - INE (2025b). EPHPM 2025: https://ine.gob.hn/2025/12/12/encuesta-permanente-de-hogares-de-propositos-multiples-ephpm-2025/
