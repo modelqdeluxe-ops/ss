@@ -49,6 +49,10 @@ L.usar=function(r,txt){
   if(r&&(r.run||r.btns&&r.btns.length))return false;
   const f=typeof firmaRespuesta==='function'?firmaRespuesta(r):'otra';
   const h=texto(r&&r.html);
+  // Solo temas de ganado de carne: si la Guía no tiene nada parecido, el modelo no contesta
+  // y queda la respuesta de las reglas ("no te entendí" o "eso se sale de lo mío").
+  const top=IX?RumiRAG.puntuar(IX,txt)[0]:null;
+  if(IX&&(!top||top.s<8)&&!L.esDosis(txt))return false;
   if(f==='debil'||/^Eso se sale de lo mío/.test(h))return true;
   // Las reglas contestaron un tema de su saber, pero la Guía encuentra otro tema mucho más
   // cercano a la pregunta (p. ej. "orina color café" → ranilla, no neumonía).
