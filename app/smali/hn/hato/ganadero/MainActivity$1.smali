@@ -112,7 +112,9 @@
     .line 73
     new-instance v7, Landroid/webkit/WebResourceResponse;
 
-    const-string v1, "application/octet-stream"
+    invoke-static {p2}, Lhn/hato/ganadero/MainActivity$1;->mime(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v1
 
     const-string v4, "OK"
 
@@ -194,4 +196,35 @@
     const/4 p1, 0x1
 
     return p1
+.end method
+
+.method static mime(Ljava/lang/String;)Ljava/lang/String;
+    .locals 1
+
+    const-string v0, ".js"
+    invoke-virtual {p0, v0}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :cond_wasm
+    const-string v0, "text/javascript"
+    return-object v0
+
+    :cond_wasm
+    const-string v0, ".wasm"
+    invoke-virtual {p0, v0}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :cond_json
+    const-string v0, "application/wasm"
+    return-object v0
+
+    :cond_json
+    const-string v0, ".json"
+    invoke-virtual {p0, v0}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :cond_bin
+    const-string v0, "application/json"
+    return-object v0
+
+    :cond_bin
+    const-string v0, "application/octet-stream"
+    return-object v0
 .end method

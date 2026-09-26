@@ -378,3 +378,22 @@
 
     return-void
 .end method
+
+.method public ramMB()J
+    .locals 5
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    new-instance v0, Landroid/app/ActivityManager$MemoryInfo;
+    invoke-direct {v0}, Landroid/app/ActivityManager$MemoryInfo;-><init>()V
+    iget-object v1, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+    const-string v2, "activity"
+    invoke-virtual {v1, v2}, Lhn/hato/ganadero/MainActivity;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;
+    move-result-object v1
+    check-cast v1, Landroid/app/ActivityManager;
+    invoke-virtual {v1, v0}, Landroid/app/ActivityManager;->getMemoryInfo(Landroid/app/ActivityManager$MemoryInfo;)V
+    iget-wide v1, v0, Landroid/app/ActivityManager$MemoryInfo;->totalMem:J
+    const-wide/32 v3, 0x100000
+    div-long/2addr v1, v3
+    return-wide v1
+.end method

@@ -2709,7 +2709,7 @@ function preguntar(txt){
   RUMI.log.push({u:txt});RUMI.last=nrm(txt);pintarLog();
   const m=$('#rumiMsgs');if(m)m.insertAdjacentHTML('beforeend','<div class="rrow">'+rumiSVG('av think')+'<div class="rmsg b typing" aria-label="Rumi está escribiendo"><i></i><i></i><i></i></div></div>');
   const b=$('#rumiBody');if(b)b.scrollTop=b.scrollHeight;
-  setTimeout(()=>{let r;try{r=responder(txt);}catch(e){r={html:'Algo falló al entender eso. Prueba decirlo de otra forma.'};}botSay(r);},380);
+  setTimeout(()=>{let r;try{r=responder(txt);}catch(e){r={html:'Algo falló al entender eso. Prueba decirlo de otra forma.'};}if(window.RumiLLM&&RumiLLM.usar(r,txt)){RumiLLM.decir(txt,r);return;}botSay(r);},380);
 }
 function ejecutar(a){
   if(!a)return;
@@ -4028,7 +4028,7 @@ responder=function(txt){
   if(/cuant[ao]s? (palabras|formas|frases|vocabulario|parametros)|tu vocabulario|que tanto (sabes|entiendes)|cuanto sabes/.test(t)){
     const extra=EJEMPLOS.reduce((s,[a,l])=>s+1+l.length,0)+VSET.size;
     const tot=VOC_CONTEO.variantes+VOC_CONTEO.pronombres+VOC_CONTEO.numeros+extra;
-    return {html:`Reconozco unas <b>${nf(tot)}</b> formas del español:`+pasosHtml([`<b>${nf(VOC_CONTEO.variantes)}</b> palabras del diccionario, con las variantes de Honduras y del resto de países hispanos.`,`<b>${nf(VOC_CONTEO.pronombres)}</b> verbos con pronombres pegados, como "pésalos", "anótamelo" o "véndeselos".`,`<b>${nf(VOC_CONTEO.numeros)}</b> números escritos con palabras, del cero al un millón.`,`<b>${nf(extra)}</b> frases, ejemplos y palabras propias del engorde.`])+(typeof RED!=='undefined'&&RED?`Además tengo una <b>red neuronal de 27.9 millones de parámetros</b>, entrenada con <b>1.8 millones de frases</b>, que me ayuda a entender lo que nunca he oído.`:`Mi red neuronal está en la app de Android; aquí trabajo con reglas y el diccionario.`)+(typeof NEURO!=='undefined'&&NEURO?`Además tengo un <b>modelo neuronal</b> con <b>${nf(NEURO.params)} parámetros entrenados</b>: ${nf(NEURO.N)} palabras del español convertidas en vectores de significado, más una red que reconoce qué quieres hacer aunque lo digas con palabras que nunca me enseñaron.`:'')+(DICC?'':'<small class="sm">El diccionario todavía está cargando.</small>'),sug:sugs(),nou:true};
+    return {html:`Reconozco unas <b>${nf(tot)}</b> formas del español:`+pasosHtml([`<b>${nf(VOC_CONTEO.variantes)}</b> palabras del diccionario, con las variantes de Honduras y del resto de países hispanos.`,`<b>${nf(VOC_CONTEO.pronombres)}</b> verbos con pronombres pegados, como "pésalos", "anótamelo" o "véndeselos".`,`<b>${nf(VOC_CONTEO.numeros)}</b> números escritos con palabras, del cero al un millón.`,`<b>${nf(extra)}</b> frases, ejemplos y palabras propias del engorde.`])+(typeof RED!=='undefined'&&RED?`Además tengo una <b>red neuronal de 27.9 millones de parámetros</b>, entrenada con <b>1.8 millones de frases</b>, que me ayuda a entender lo que nunca he oído.`:`Mi red neuronal está en la app de Android; aquí trabajo con reglas y el diccionario.`)+(window.RumiLLM&&RumiLLM.listo()?` Y un <b>modelo de lenguaje de 494 millones de parámetros</b> que corre en tu teléfono, sin internet, para entender y explicar lo que mis reglas no cubren.`:'')+(typeof NEURO!=='undefined'&&NEURO?`Además tengo un <b>modelo neuronal</b> con <b>${nf(NEURO.params)} parámetros entrenados</b>: ${nf(NEURO.N)} palabras del español convertidas en vectores de significado, más una red que reconoce qué quieres hacer aunque lo digas con palabras que nunca me enseñaron.`:'')+(DICC?'':'<small class="sm">El diccionario todavía está cargando.</small>'),sug:sugs(),nou:true};
   }
   return _responderDic(txt);
 };
@@ -4174,6 +4174,8 @@ responder=function(txt){
   return r;
 };
 setTimeout(()=>{if(window.Android||window.RED_FORZAR)cargarRed();},900);
+/* Rumi avanzado: modelo de lenguaje dentro del teléfono (ver rumi_llm.js) */
+setTimeout(()=>{if(!window.Android&&!window.RUMI_LLM_FORZAR)return;const s=document.createElement('script');s.src='https://rumentis.local/rumi_llm.js';document.head.appendChild(s);},4000);
 
 /* ============ arranque ============ */
 (function init(){
