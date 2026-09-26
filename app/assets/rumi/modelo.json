@@ -1,0 +1,15 @@
+{
+ "version": "20260926-q8_0",
+ "base": "Qwen2.5-0.5B-Instruct (Apache 2.0), ajustado para Rumi",
+ "parametros": 494032768,
+ "cuantizacion": "q8_0",
+ "archivos": [
+  "rumi-00.gguf",
+  "rumi-01.gguf",
+  "rumi-02.gguf",
+  "rumi-03.gguf",
+  "rumi-04.gguf",
+  "rumi-05.gguf"
+ ],
+ "bytes": 531067808
+}

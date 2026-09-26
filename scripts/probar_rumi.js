@@ -1,10 +1,11 @@
 // Prueba Rumi avanzado en Chromium, simulando el WebView de la app:
-// la página se abre desde file:// y https://rumentis.local/ se sirve desde app/assets,
-// igual que MainActivity$1.shouldInterceptRequest.
+// la página se abre desde file:// y https://rumentis.local/ apunta a un servidor local
+// que sirve app/assets, igual que MainActivity$1.shouldInterceptRequest.
 //
 // Uso: NODE_PATH=$(npm root -g) node scripts/probar_rumi.js [preguntas.json]
 const {chromium}=require('playwright');
-const fs=require('fs'),path=require('path');
+const fs=require('fs'),path=require('path'),os=require('os'),https=require('https');
+const {execSync}=require('child_process');
 const ASSETS=path.join(__dirname,'..','app','assets');
 const mime=p=>p.endsWith('.js')?'text/javascript':p.endsWith('.wasm')?'application/wasm':p.endsWith('.json')?'application/json':'application/octet-stream';
 
@@ -20,14 +21,18 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
 ];
 
 (async()=>{
-  const b=await chromium.launch({args:['--enable-features=WebAssemblyExperimentalJSPI']});
-  const ctx=await b.newContext();
-  await ctx.route('https://rumentis.local/**',async r=>{
-    const p=decodeURIComponent(new URL(r.request().url()).pathname.slice(1));
-    const f=path.join(ASSETS,p);
-    if(!fs.existsSync(f))return r.fulfill({status:404,body:''});
-    await r.fulfill({status:200,body:fs.readFileSync(f),headers:{'Content-Type':mime(p),'Access-Control-Allow-Origin':'*'}});
-  });
+  // servidor HTTPS local que hace de rumentis.local (certificado temporal)
+  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'rumi-'));
+  execSync(`openssl req -x509 -newkey rsa:2048 -nodes -keyout ${tmp}/k.pem -out ${tmp}/c.pem -days 1 -subj /CN=rumentis.local 2>/dev/null`);
+  const srv=https.createServer({key:fs.readFileSync(tmp+'/k.pem'),cert:fs.readFileSync(tmp+'/c.pem')},(req,res)=>{
+    const p=decodeURIComponent(new URL(req.url,'https://x').pathname.slice(1)),f=path.join(ASSETS,p);
+    if(!f.startsWith(ASSETS)||!fs.existsSync(f)){res.writeHead(404);return res.end();}
+    res.writeHead(200,{'Content-Type':mime(p),'Access-Control-Allow-Origin':'*','Content-Length':fs.statSync(f).size});
+    fs.createReadStream(f).pipe(res);
+  }).listen(0);
+  const puerto=srv.address().port;
+  const b=await chromium.launch({args:[`--host-resolver-rules=MAP rumentis.local 127.0.0.1:${puerto}`,'--ignore-certificate-errors','--no-proxy-server']});
+  const ctx=await b.newContext({ignoreHTTPSErrors:true});
   const page=await ctx.newPage();
   page.on('console',m=>{if(m.type()==='error')console.log('[consola]',m.text().slice(0,300));});
   page.on('pageerror',e=>console.log('[error]',e.message));
@@ -37,7 +42,7 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
   await page.waitForFunction(()=>window.RumiLLM&&['listo','error','sin_ram'].includes(RumiLLM.estado),null,{timeout:600000,polling:500});
   const est=await page.evaluate(()=>({estado:RumiLLM.estado,error:RumiLLM.error,modelo:RumiLLM.modelo}));
   console.log('Modelo:',JSON.stringify(est),`cargado en ${((Date.now()-t0)/1000).toFixed(1)} s`);
-  if(est.estado!=='listo'){await b.close();process.exit(1);}
+  if(est.estado!=='listo'){await b.close();srv.close();process.exit(1);}
 
   // 1) directo al modelo
   for(const q of PREGUNTAS){
@@ -54,5 +59,5 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
     console.log(`\nChat P: ${q}\n${u.llm?'Modelo':'Reglas'}: ${u.txt}`);
   }
   await page.screenshot({path:path.join(__dirname,'..','dist','rumi_chat.png')});
-  await b.close();
+  await b.close();srv.close();
 })();

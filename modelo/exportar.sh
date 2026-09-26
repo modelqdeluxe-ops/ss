@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Convierte el modelo ajustado (formato Hugging Face) a GGUF, lo cuantiza y lo parte
-# en trozos para la app: app/assets/rumi/rumi-*.gguf + app/assets/rumi/modelo.json
+# en trozos para la app: app/assets/rumi/rumi-NN.gguf + app/assets/rumi/modelo.json
 #
 # Uso: modelo/exportar.sh ~/work/rumi-hf [q8_0|q6_k|q4_k_m]
 set -euo pipefail
@@ -17,12 +17,13 @@ python3 "$LLAMA/convert_hf_to_gguf.py" "$HF" --outtype f16 --outfile "$TMP/rumi-
 OUT="$RAIZ/app/assets/rumi"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-"$LLAMA/build/bin/llama-gguf-split" --split --split-max-size 90M "$TMP/rumi.gguf" "$OUT/rumi"
+# Trozos de 90 MB (GitHub no acepta archivos de más de 100 MB); la app los une con new Blob(partes).
+split -b 90M -d -a 2 --additional-suffix=.gguf "$TMP/rumi.gguf" "$OUT/rumi-"
 
 python3 - "$OUT" "$QUANT" <<'EOF'
 import json, os, sys, time
 out, quant = sys.argv[1], sys.argv[2]
-archivos = sorted(f for f in os.listdir(out) if f.endswith('.gguf'))
+archivos = sorted(f for f in os.listdir(out) if f.startswith("rumi-") and f.endswith(".gguf"))
 json.dump({
     'version': time.strftime('%Y%m%d') + '-' + quant,
     'base': 'Qwen2.5-0.5B-Instruct (Apache 2.0), ajustado para Rumi',

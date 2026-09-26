@@ -31,9 +31,10 @@ L.iniciar=async function(){
     // Para WebView sin JSPI o memoria de 64 bits: versión compatible, también local.
     w.setCompat({worker:BASE+'wllama/compat/wllama.js',wasm:await url('wllama/compat/wllama.wasm','application/wasm')});
     const partes=[];for(const f of man.archivos)partes.push(await blobDe('rumi/'+f));
+    const gguf=[new Blob(partes)];   // los trozos son bytes seguidos de un solo GGUF
     const cfg={n_ctx:1024,n_batch:256,n_threads:1};
-    try{await w.loadModel(partes,cfg);}
-    catch(e){await w.exit().catch(()=>{});await w.loadModel(partes,{...cfg,n_gpu_layers:0});}
+    try{await w.loadModel(gguf,cfg);}
+    catch(e){await w.exit().catch(()=>{});await w.loadModel(gguf,{...cfg,n_gpu_layers:0});}
     L.w=w;L.modelo=man;L.estado='listo';
   }catch(e){L.estado='error';L.error=String(e&&e.message||e);console.error('Rumi avanzado:',e);}
 };
