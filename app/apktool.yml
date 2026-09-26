@@ -1,0 +1,18 @@
+version: 2.12.1
+apkFileName: Rumentis.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 21
+  targetSdkVersion: 34
+packageInfo:
+  forcedPackageId: 127
+versionInfo:
+  versionCode: 15
+  versionName: 3.1.0
+doNotCompress:
+- arsc
+- png
+- gguf
+- wasm
