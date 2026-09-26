@@ -225,171 +225,213 @@
 },
 {
 "q": "cuanto tiempo tarda un novillo en engordar",
-"a": "Depende del peso de entrada y la meta. Con una buena ración de corral suben de 1.2 a 1.6 kg por día, así que un novillo de 300 kg llega a 450 kg en unos 100 a 125 días. Pregúntame por tu lote y te doy la fecha."
+"a": "Depende del peso de entrada y la meta. Con una buena ración de corral suben de 1.2 a 1.6 kg por día, así que un novillo de 300 kg llega a 450 kg en unos 100 a 125 días. Pregúntame por tu lote y te doy la fecha.",
+"t": "Duración del engorde"
 },
 {
 "q": "es mejor engordar en invierno o en verano",
-"a": "En corral se puede todo el año; en verano el reto es el forraje y el calor, y en invierno el barro. Lo que más importa es comprar bien y que el costo por kilo ganado quede por debajo del precio de venta."
+"a": "En corral se puede todo el año; en verano el reto es el forraje y el calor, y en invierno el barro. Lo que más importa es comprar bien y que el costo por kilo ganado quede por debajo del precio de venta.",
+"t": "Engordar en invierno o verano"
 },
 {
 "q": "cuantos novillos necesito para que valga la pena",
-"a": "No hay un número fijo: depende de tus costos fijos, mano de obra y espacio. Con pocos animales, los gastos generales pesan más por cabeza. Pregúntame \"a cuánto puedo comprar novillos de 300 kg\" para ver si te dan los números."
+"a": "No hay un número fijo: depende de tus costos fijos, mano de obra y espacio. Con pocos animales, los gastos generales pesan más por cabeza. Pregúntame \"a cuánto puedo comprar novillos de 300 kg\" para ver si te dan los números.",
+"t": "Tamaño del engorde"
 },
 {
 "q": "como empiezo un engorde",
-"a": "Empieza con un lote que puedas manejar: corral con sombra, agua y comedero, una ración formulada y un plan sanitario de ingreso con tu veterinario. En la app crea el lote y anota alimento y pesajes. Pregúntame \"¿por dónde empiezo?\"."
+"a": "Empieza con un lote que puedas manejar: corral con sombra, agua y comedero, una ración formulada y un plan sanitario de ingreso con tu veterinario. En la app crea el lote y anota alimento y pesajes. Pregúntame \"¿por dónde empiezo?\".",
+"t": "Empezar un engorde"
 },
 {
 "q": "por que se me mueren los terneros",
-"a": "Las causas más comunes son diarreas, problemas respiratorios, ombligo infectado y poca leche o calostro. Esto requiere revisar al animal: llama a tu veterinario y anota cada baja en la app para ver si hay un patrón."
+"a": "Las causas más comunes son diarreas, problemas respiratorios, ombligo infectado y poca leche o calostro. Esto requiere revisar al animal: llama a tu veterinario y anota cada baja en la app para ver si hay un patrón.",
+"t": "Muerte de terneros"
 },
 {
 "q": "que hago si un novillo se quebro una pata",
-"a": "Sepáralo, no lo fuerces a caminar y llama a tu veterinario. Si no tiene arreglo, él te dirá cómo sacrificarlo sin sufrimiento. Anota la baja en la app."
+"a": "Sepáralo, no lo fuerces a caminar y llama a tu veterinario. Si no tiene arreglo, él te dirá cómo sacrificarlo sin sufrimiento. Anota la baja en la app.",
+"t": "Pata quebrada"
 },
 {
 "q": "un animal tiene un ojo blanco y le llora",
-"a": "Puede ser queratoconjuntivitis, el \"ojo blanco\", que se contagia con moscas y polvo. Sepáralo del sol y del polvo, controla las moscas y consulta a tu veterinario para el tratamiento."
+"a": "Puede ser queratoconjuntivitis, el \"ojo blanco\", que se contagia con moscas y polvo. Sepáralo del sol y del polvo, controla las moscas y consulta a tu veterinario para el tratamiento.",
+"t": "Ojo blanco"
 },
 {
 "q": "un novillo tiene verrugas",
-"a": "Las verrugas las causa un virus y casi siempre se caen solas en unos meses. Evita compartir agujas y equipos entre animales. Si son muchas o sangran, consulta a tu veterinario."
+"a": "Las verrugas las causa un virus y casi siempre se caen solas en unos meses. Evita compartir agujas y equipos entre animales. Si son muchas o sangran, consulta a tu veterinario.",
+"t": "Verrugas"
 },
 {
 "q": "un toro tiene la piel con peladuras",
-"a": "Puede ser hongo (tiña), sarna o piojos. Aísla al animal, revisa a los demás y consulta al veterinario para el producto correcto. La tiña también se pega a las personas: usa guantes."
+"a": "Puede ser hongo (tiña), sarna o piojos. Aísla al animal, revisa a los demás y consulta al veterinario para el producto correcto. La tiña también se pega a las personas: usa guantes.",
+"t": "Problemas de piel"
 },
 {
 "q": "que es la brucelosis",
-"a": "Es una enfermedad que causa abortos en hembras y se contagia a las personas por leche cruda y contacto con fetos. En engorde de machos es menos común, pero si manejas hembras, hazles las pruebas que pida SENASA."
+"a": "Es una enfermedad que causa abortos en hembras y se contagia a las personas por leche cruda y contacto con fetos. En engorde de machos es menos común, pero si manejas hembras, hazles las pruebas que pida SENASA.",
+"t": "Brucelosis"
 },
 {
 "q": "que es la tuberculosis bovina",
-"a": "Es una enfermedad de los pulmones que avanza lento y se contagia a personas. Los animales adelgazan y tosen. Si sospechas, avisa a tu veterinario y a SENASA para las pruebas."
+"a": "Es una enfermedad de los pulmones que avanza lento y se contagia a personas. Los animales adelgazan y tosen. Si sospechas, avisa a tu veterinario y a SENASA para las pruebas.",
+"t": "Tuberculosis bovina"
 },
 {
 "q": "que es la fiebre aftosa",
-"a": "Es una enfermedad muy contagiosa que da ampollas en boca y patas. En Centroamérica no está presente, y por eso cualquier sospecha se reporta de inmediato a SENASA."
+"a": "Es una enfermedad muy contagiosa que da ampollas en boca y patas. En Centroamérica no está presente, y por eso cualquier sospecha se reporta de inmediato a SENASA.",
+"t": "Fiebre aftosa"
 },
 {
 "q": "como se si un novillo tiene fiebre",
-"a": "Tómale la temperatura en el recto con un termómetro: lo normal está entre 38 y 39.5 grados. Por encima de 39.5 tiene fiebre. Si además no come o está decaído, llama al veterinario."
+"a": "Tómale la temperatura en el recto con un termómetro: lo normal está entre 38 y 39.5 grados. Por encima de 39.5 tiene fiebre. Si además no come o está decaído, llama al veterinario.",
+"t": "Fiebre"
 },
 {
 "q": "que es el estiércol normal",
-"a": "El estiércol normal forma una torta que se asienta. Muy suelto puede ser exceso de grano o enfermedad; muy duro y seco puede ser falta de agua o mucha fibra seca. Úsalo como señal de cómo va la ración."
+"a": "El estiércol normal forma una torta que se asienta. Muy suelto puede ser exceso de grano o enfermedad; muy duro y seco puede ser falta de agua o mucha fibra seca. Úsalo como señal de cómo va la ración.",
+"t": "Estiércol como señal"
 },
 {
 "q": "cuanto debe comer un novillo de 400 kilos",
-"a": "Un novillo come más o menos de 2.3 a 2.8 % de su peso en materia seca al día, unos 9 a 11 kg para uno de 400 kg. Pregúntame \"¿cuánto comen?\" y te lo calculo con tus lotes."
+"a": "Un novillo come más o menos de 2.3 a 2.8 % de su peso en materia seca al día, unos 9 a 11 kg para uno de 400 kg. Pregúntame \"¿cuánto comen?\" y te lo calculo con tus lotes.",
+"t": "Cuánto comen"
 },
 {
 "q": "le puedo dar pan viejo al ganado",
-"a": "El pan viejo da energía, pero es como grano muy molido: en exceso causa acidosis. Úsalo en poca cantidad, dentro de la ración, sin moho ni plástico, y adapta poco a poco."
+"a": "El pan viejo da energía, pero es como grano muy molido: en exceso causa acidosis. Úsalo en poca cantidad, dentro de la ración, sin moho ni plástico, y adapta poco a poco.",
+"t": "Pan viejo"
 },
 {
 "q": "le puedo dar cascara de platano",
-"a": "Sí, en poca cantidad y fresca, como complemento. Tiene poca proteína y mucha agua, así que no reemplaza a la ración. Evita que se pudra en el comedero."
+"a": "Sí, en poca cantidad y fresca, como complemento. Tiene poca proteína y mucha agua, así que no reemplaza a la ración. Evita que se pudra en el comedero.",
+"t": "Cáscara de plátano o banano"
 },
 {
 "q": "sirve la yuca para engordar",
-"a": "La yuca da buena energía, pero cruda y fresca puede tener un compuesto tóxico. Úsala seca o picada y oreada, en cantidad moderada, y equilibra la proteína con otra fuente."
+"a": "La yuca da buena energía, pero cruda y fresca puede tener un compuesto tóxico. Úsala seca o picada y oreada, en cantidad moderada, y equilibra la proteína con otra fuente.",
+"t": "Yuca"
 },
 {
 "q": "que es la materia seca",
-"a": "Es lo que queda del alimento si le quitas el agua. Se usa para comparar alimentos, porque un kilo de ensilaje trae mucha agua y un kilo de maíz casi nada. El formulador de la app trabaja en materia seca."
+"a": "Es lo que queda del alimento si le quitas el agua. Se usa para comparar alimentos, porque un kilo de ensilaje trae mucha agua y un kilo de maíz casi nada. El formulador de la app trabaja en materia seca.",
+"t": "Materia seca"
 },
 {
 "q": "que es la proteina cruda",
-"a": "Es la cantidad de proteína que trae un alimento. Los novillos en engorde necesitan más o menos de 12 a 14 % en la ración. El formulador la calcula por ti."
+"a": "Es la cantidad de proteína que trae un alimento. Los novillos en engorde necesitan más o menos de 12 a 14 % en la ración. El formulador la calcula por ti.",
+"t": "Proteína cruda"
 },
 {
 "q": "como mezclo bien la racion",
-"a": "Mezcla primero los ingredientes pequeños, como núcleo y urea, con una parte del grano, y luego agrégalo al resto. Así cada animal come parejo y no se pasa de nada."
+"a": "Mezcla primero los ingredientes pequeños, como núcleo y urea, con una parte del grano, y luego agrégalo al resto. Así cada animal come parejo y no se pasa de nada.",
+"t": "Mezclar la ración"
 },
 {
 "q": "como hago para que no se peleen en el comedero",
-"a": "Da suficiente espacio, unos 30 cm por animal, sirve a la misma hora y reparte el alimento a lo largo de todo el comedero. Separa a los muy dominantes o a los muy chiquitos."
+"a": "Da suficiente espacio, unos 30 cm por animal, sirve a la misma hora y reparte el alimento a lo largo de todo el comedero. Separa a los muy dominantes o a los muy chiquitos.",
+"t": "Peleas en el comedero"
 },
 {
 "q": "mezclo animales de diferente tamaño",
-"a": "Mejor no: los grandes no dejan comer a los chicos y el lote se vuelve disparejo. Agrupa por peso parecido, así también es más fácil planear la venta."
+"a": "Mejor no: los grandes no dejan comer a los chicos y el lote se vuelve disparejo. Agrupa por peso parecido, así también es más fácil planear la venta.",
+"t": "Agrupar por tamaño"
 },
 {
 "q": "que hago con los novillos que se quedan atras",
-"a": "Sepáralos en un grupo propio, revísalos por enfermedad o parásitos y dales espacio para comer. Si pesas con arete, la app te dice cuáles se están atrasando."
+"a": "Sepáralos en un grupo propio, revísalos por enfermedad o parásitos y dales espacio para comer. Si pesas con arete, la app te dice cuáles se están atrasando.",
+"t": "Animales rezagados"
 },
 {
 "q": "un novillo monta a los otros todo el tiempo",
-"a": "A veces pasa con toretes o en animales estresados, y puede lastimar al que montan. Separa al que monta o al que es montado, revisa el espacio y el manejo."
+"a": "A veces pasa con toretes o en animales estresados, y puede lastimar al que montan. Separa al que monta o al que es montado, revisa el espacio y el manejo.",
+"t": "Animales que montan"
 },
 {
 "q": "es normal que tosan un poco con el polvo",
-"a": "Un poco de tos con polvo puede pasar, pero si hay moco, fiebre, orejas caídas o no comen, puede ser neumonía. Moja el corral para bajar el polvo y vigílalos mañana y tarde."
+"a": "Un poco de tos con polvo puede pasar, pero si hay moco, fiebre, orejas caídas o no comen, puede ser neumonía. Moja el corral para bajar el polvo y vigílalos mañana y tarde.",
+"t": "Polvo en el corral"
 },
 {
 "q": "cuanto debe pesar un novillo para venderlo",
-"a": "Depende de lo que pague mejor tu comprador; muchos engordes venden cerca de 450 a 500 kg. Pon tu peso meta en Más y la app calcula cuándo llega cada lote."
+"a": "Depende de lo que pague mejor tu comprador; muchos engordes venden cerca de 450 a 500 kg. Pon tu peso meta en Más y la app calcula cuándo llega cada lote.",
+"t": "Peso de venta"
 },
 {
 "q": "que hago con el estiercol del corral",
-"a": "Sácalo seguido para evitar moscas y barro. Puedes compostarlo y usarlo como abono en los potreros o el pasto de corte. No lo acumules cerca de ríos o pozos."
+"a": "Sácalo seguido para evitar moscas y barro. Puedes compostarlo y usarlo como abono en los potreros o el pasto de corte. No lo acumules cerca de ríos o pozos.",
+"t": "Manejo del estiércol"
 },
 {
 "q": "cuantos trabajadores necesito",
-"a": "Depende del tamaño y de si mezclas a mano o con máquina. Anota la planilla como gasto en la app: así ves cuánto te cuesta por cabeza al día."
+"a": "Depende del tamaño y de si mezclas a mano o con máquina. Anota la planilla como gasto en la app: así ves cuánto te cuesta por cabeza al día.",
+"t": "Mano de obra"
 },
 {
 "q": "como me financio para comprar ganado",
-"a": "Eso depende de tu banco o cooperativa. Lo que sí te ayudo es a saber si el negocio da: pregúntame \"a cuánto puedo comprar novillos de 300 kg\" y \"precio mínimo para no perder\", y descarga tus datos para Excel desde Más."
+"a": "Eso depende de tu banco o cooperativa. Lo que sí te ayudo es a saber si el negocio da: pregúntame \"a cuánto puedo comprar novillos de 300 kg\" y \"precio mínimo para no perder\", y descarga tus datos para Excel desde Más.",
+"t": "Financiamiento"
 },
 {
 "q": "la luna influye en el ganado",
-"a": "No hay pruebas de que la luna cambie la ganancia de peso. Lo que sí influye es la ración, el agua, el calor y la sanidad. Mejor enfócate en esos."
+"a": "No hay pruebas de que la luna cambie la ganancia de peso. Lo que sí influye es la ración, el agua, el calor y la sanidad. Mejor enfócate en esos.",
+"t": "La luna"
 },
 {
 "q": "sirve darle sal con ceniza",
-"a": "La ceniza no aporta lo que les falta y puede traer basura. Usa sal mineral o núcleo mineral, que cubren calcio, fósforo y microminerales."
+"a": "La ceniza no aporta lo que les falta y puede traer basura. Usa sal mineral o núcleo mineral, que cubren calcio, fósforo y microminerales.",
+"t": "Sal con ceniza"
 },
 {
 "q": "que le hago al agua del bebedero que se pone verde",
-"a": "El verde son algas por el sol y la suciedad. Vacía y cepilla el bebedero cada semana y, si puedes, dale sombra. El agua limpia hace que tomen más y coman más."
+"a": "El verde son algas por el sol y la suciedad. Vacía y cepilla el bebedero cada semana y, si puedes, dale sombra. El agua limpia hace que tomen más y coman más.",
+"t": "Agua verde en el bebedero"
 },
 {
 "q": "los animales se comen la tierra",
-"a": "Comer tierra puede ser señal de falta de minerales o de fibra. Revisa que la ración lleve núcleo mineral y suficiente forraje."
+"a": "Comer tierra puede ser señal de falta de minerales o de fibra. Revisa que la ración lleve núcleo mineral y suficiente forraje.",
+"t": "Comen tierra"
 },
 {
 "q": "los novillos se lamen y comen pelo",
-"a": "Puede ser falta de fibra o de minerales, o aburrimiento en corral. Revisa el forraje y el núcleo mineral de la ración."
+"a": "Puede ser falta de fibra o de minerales, o aburrimiento en corral. Revisa el forraje y el núcleo mineral de la ración.",
+"t": "Comen pelo"
 },
 {
 "q": "que hago si llueve y se moja el alimento",
-"a": "Saca lo mojado del comedero antes de servir, porque se fermenta y da moho. Si puedes, pon techo al comedero y sirve en cantidades que se coman en el día."
+"a": "Saca lo mojado del comedero antes de servir, porque se fermenta y da moho. Si puedes, pon techo al comedero y sirve en cantidades que se coman en el día.",
+"t": "Alimento mojado"
 },
 {
 "q": "por que se ponen agresivos los toretes",
-"a": "Los enteros son más bravos, sobre todo si se juntan grupos nuevos. Manéjalos con calma, sin palos, con suficiente espacio y agrupados desde el inicio."
+"a": "Los enteros son más bravos, sobre todo si se juntan grupos nuevos. Manéjalos con calma, sin palos, con suficiente espacio y agrupados desde el inicio.",
+"t": "Animales bravos"
 },
 {
 "q": "le doy agua con azucar al animal que llega cansado",
-"a": "Lo mejor al llegar es agua limpia a libre acceso y heno de buena calidad. Si viene muy débil, tu veterinario puede darle electrolitos o suero."
+"a": "Lo mejor al llegar es agua limpia a libre acceso y heno de buena calidad. Si viene muy débil, tu veterinario puede darle electrolitos o suero.",
+"t": "Animal que llega débil"
 },
 {
 "q": "cuanto gana un novillo en potrero",
-"a": "A pasto la ganancia es menor y cambia mucho con la época: en lluvias con buen pasto pueden ganar más de medio kilo al día, y en verano sin suplemento a veces nada. En corral con buena ración ganan de 1.2 a 1.6 kg."
+"a": "A pasto la ganancia es menor y cambia mucho con la época: en lluvias con buen pasto pueden ganar más de medio kilo al día, y en verano sin suplemento a veces nada. En corral con buena ración ganan de 1.2 a 1.6 kg.",
+"t": "Ganancia en potrero"
 },
 {
 "q": "que es un semiestabulado",
-"a": "Es cuando los animales pastorean parte del día y en el corral reciben suplemento o ración. Gana más que el pastoreo solo y cuesta menos que el corral completo."
+"a": "Es cuando los animales pastorean parte del día y en el corral reciben suplemento o ración. Gana más que el pastoreo solo y cuesta menos que el corral completo.",
+"t": "Semiestabulado"
 },
 {
 "q": "conviene comprar hembras para engorde",
-"a": "Las novillas engordan más lento y engrasan antes que los machos, y a veces se pagan menos. Pueden convenir si las compras baratas; haz la cuenta con \"a cuánto puedo comprar\"."
+"a": "Las novillas engordan más lento y engrasan antes que los machos, y a veces se pagan menos. Pueden convenir si las compras baratas; haz la cuenta con \"a cuánto puedo comprar\".",
+"t": "Hembras para engorde"
 },
 {
 "q": "que es el destete precoz",
-"a": "Es separar al ternero de la madre antes de lo normal. Eso es de cría, no de engorde: en la app nos enfocamos en novillos que ya entraron a engordar."
+"a": "Es separar al ternero de la madre antes de lo normal. Eso es de cría, no de engorde: en la app nos enfocamos en novillos que ya entraron a engordar.",
+"t": "Destete"
 },
 {
 "q": "como mejoro la conversion",

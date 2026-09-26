@@ -30,6 +30,9 @@ L.iniciar=function(){
   if(L.estado!=='apagado')return;
   if(!window.RUMI_LLM_FORZAR&&ramMB()<RAM_MIN_MB){L.estado='sin_ram';return;}
   L.estado='cargando';
+  const s=document.createElement('script');s.src=BASE+'rumi_rag.js';
+  s.onload=()=>fetch(BASE+'rumi_saber.json').then(r=>r.json()).then(g=>{IX=RumiRAG.indexar(g);}).catch(()=>{});
+  document.head.appendChild(s);
   marco=document.createElement('iframe');
   marco.src=BASE+'rumi_motor.html';marco.title='Rumi';marco.setAttribute('aria-hidden','true');marco.tabIndex=-1;
   marco.style.cssText='position:fixed;width:1px;height:1px;border:0;opacity:0;pointer-events:none;left:-9px;top:-9px';
@@ -40,13 +43,29 @@ L.listo=()=>L.estado==='listo';
 
 const texto=h=>String(h||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 // Cuándo contesta el modelo en vez de las reglas.
+let IX=null;   // la Guía también en esta página, para decidir rápido
 L.usar=function(r,txt){
   if(!L.listo()||L.ocupado)return false;
   if(r&&(r.run||r.btns&&r.btns.length))return false;
   const f=typeof firmaRespuesta==='function'?firmaRespuesta(r):'otra';
   const h=texto(r&&r.html);
-  return f==='debil'||/^Eso se sale de lo mío/.test(h);
+  if(f==='debil'||/^Eso se sale de lo mío/.test(h))return true;
+  // Las reglas contestaron un tema de su saber, pero la Guía encuentra otro tema mucho más
+  // cercano a la pregunta (p. ej. "orina color café" → ranilla, no neumonía).
+  const m=/^<b>([^<]+)<\/b><br>/.exec((r&&r.html)||'');
+  if(m&&IX){const p=RumiRAG.puntuar(IX,txt);const top=p[0],suyo=p.find(x=>x.e.t===m[1]);
+    if(top&&top.e.t!==m[1]&&top.s>=12&&(!suyo||suyo.s<top.s*0.6))return true;}
+  return false;
 };
+
+// Dosis de medicinas: nunca las contesta el modelo. Las que la app sabe calcular las
+// contestan las reglas; para las demás, esta respuesta fija.
+const PIDE_DOSIS=/(\bdosis\b|cuant[oa]s? (ml|cc|mililitros|centimetros|mg)\b|\b(inyect|aplic)\w* .{0,25}(cuant|que cantidad)|(cuant[oa]s?|que cantidad) .{0,25}\b(inyect|aplic)\w*)/;
+const MEDICINA=/(penicilin|antibiotic|\w+cilina|\w+micina|\w+floxacin|dexameta|meloxicam|flunixin|vitamina|complejo b|calcio|suero|medicina|medicamento|remedio|desparasitante)/;
+const CUANTO_PONGO=/(cuant[oa]s?|que cantidad) .{0,30}\b(le |les )?(pongo|doy|echo)\b/;
+const SABE_DOSIS=/(ivermectina|doramectina|albendazol|levamisol|oxitetra|terramicina|\boxi\b|closantel)/;
+const RESP_DOSIS='No tengo la dosis de ese producto y no la voy a inventar. Sigue la etiqueta y lo que te indique tu veterinario, y anótalo en Sanidad con sus días de retiro. Las dosis que sí calculo son de ivermectina, doramectina, albendazol, levamisol, oxitetraciclina y closantel: escríbeme, por ejemplo, <b>"dosis de ivermectina para 350 kilos"</b>.';
+L.esDosis=txt=>{const t=texto(txt).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');return (PIDE_DOSIS.test(t)||CUANTO_PONGO.test(t)&&MEDICINA.test(t))&&!SABE_DOSIS.test(t);};
 
 const DOSIS_RE=/\b\d+([.,]\d+)?\s?(ml|cc|mg|mililitros?|miligramos?)\b/i;
 L.generar=function(pregunta,alToken){
@@ -60,6 +79,7 @@ L.generar=function(pregunta,alToken){
 
 // Responde en el chat de Rumi con el modelo, escribiendo la respuesta mientras se genera.
 L.decir=function(txt,r){
+  if(L.esDosis(txt)){botSay({html:RESP_DOSIS,sug:(r&&r.sug)||sugs(),nou:true});return;}
   L.ocupado=true;
   const entrada={html:'',nou:true,llm:true,q:txt,sug:(r&&r.sug)||sugs()};
   let ultimo=0,pend=null;

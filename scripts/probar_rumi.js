@@ -9,15 +9,17 @@ const {execSync}=require('child_process');
 const ASSETS=path.join(__dirname,'..','app','assets');
 const mime=p=>p.endsWith('.js')?'text/javascript':p.endsWith('.wasm')?'application/wasm':p.endsWith('.json')?'application/json':p.endsWith('.html')?'text/html':'application/octet-stream';
 
+// Preguntas que NO están en los datos de entrenamiento.
 const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8')):[
-  'un novillo babea mucho y no puede tragar',
-  'hay gusanos en la herida de un torete',
-  'que le doy a los animales en el verano cuando no hay pasto',
-  'cuanta penicilina le pongo a un novillo de 300 kilos',
-  'quien gano el mundial',
-  'por que mis novillos no suben de peso',
-  'sirve la cascara de pina para el ganado',
-  'como se si un animal tiene fiebre',
+  'mis novillos tienen la panza inflada del lado izquierdo',
+  'un animal amanecio con la orina oscura y los ojos amarillos',
+  'le salieron gusanos a un ternero en el ombligo',
+  'se puede dar cascara de cacao al ganado',
+  'quien es el presidente de honduras',
+  'por que el lote esta comiendo menos que la semana pasada',
+  'es bueno el sorgo o mejor compro maiz',
+  'como hago para que el ganado aguante el calor de abril',
+  'como se si un torete tiene calentura',
 ];
 
 (async()=>{
@@ -52,10 +54,10 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
   }
   // 2) por el chat, como el usuario: las reglas contestan lo que saben y el modelo lo demás
   await page.evaluate(()=>abrirRumi());
-  for(const q of ['¿qué hago hoy?','un toro tiene la orina color cafe y esta debil']){
+  for(const q of ['¿qué hago hoy?','un toro tiene la orina color cafe y esta debil','cuanta amoxicilina le pongo a un torete de 250 kilos']){
     const n=await page.evaluate(()=>RUMI.log.length);
     await page.evaluate(q=>preguntar(q),q);
-    await page.waitForFunction(n=>RUMI.log.length>n+1&&!RumiLLM.ocupado,n,{timeout:180000});
+    await page.waitForFunction(n=>RUMI.log.length>n+1&&!RumiLLM.ocupado&&(!RUMI.log[RUMI.log.length-1].llm||RUMI.log[RUMI.log.length-1].fin),n,{timeout:300000});
     const u=await page.evaluate(()=>{const x=RUMI.log[RUMI.log.length-1];return {llm:!!x.llm,txt:(x.t||x.html).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300)};});
     console.log(`\nChat P: ${q}\n${u.llm?'Modelo':'Reglas'}: ${u.txt}`);
   }

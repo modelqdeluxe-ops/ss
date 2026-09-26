@@ -14,11 +14,11 @@ function agregar(q,a,t){
     if(!g.includes(oro)){g=g.length?[g[0],oro]:[oro];if(azar()<0.5)g.reverse();}}
   ejemplos.push({t:t||'',messages:[...R.mensajes(g,q),{role:'assistant',content:a}]});
 }
-for(const f of ['preguntas_a.json','preguntas_b.json']){
+for(const f of ['preguntas_a.json','preguntas_b.json','preguntas_c.json']){
   const P=JSON.parse(fs.readFileSync(path.join(D,f),'utf8'));
   for(const [t,qs] of Object.entries(P)){const e=porT.get(t);if(!e)throw new Error('Tema sin guía: '+t);for(const q of qs)agregar(q,R.limpiar(e.x),t);}
 }
-for(const o of JSON.parse(fs.readFileSync(path.join(D,'libres.json'),'utf8')))agregar(o.q,o.a,o.t);
+for(const f of ['libres.json','libres_b.json'])for(const o of JSON.parse(fs.readFileSync(path.join(D,f),'utf8')))agregar(o.q,o.a,o.t);
 
 // Separa 1 de cada 12 para evaluar (no se entrena con ellos).
 const train=[],ev=[];ejemplos.forEach((e,i)=>(i%12===5?ev:train).push(e));
