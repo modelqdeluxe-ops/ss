@@ -1,0 +1,48 @@
+# Compila Rumentis y publica el APK y el AAB como Release de GitHub.
+# El APK con el modelo pesa ~550 MB: no cabe en el repo, pero sí en un Release (hasta 2 GB).
+#
+# Firma: agrega en Settings > Secrets and variables > Actions los secretos
+#   KEYSTORE_B64 (el .keystore en base64), KEYSTORE_PASS, KEY_ALIAS (hato) y KEY_PASS.
+# Sin ellos, el APK sale firmado con llave de prueba y el AAB sin firmar.
+name: Compilar Rumentis
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['app/**', 'scripts/**', '.github/workflows/compilar.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Compilar APK y AAB
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+        run: |
+          scripts/build.sh
+          scripts/build_aab.sh
+          VN=$(grep -E '^\s*versionName:' app/apktool.yml | awk '{print $2}')
+          echo "VN=$VN" >> "$GITHUB_ENV"
+          mv dist/Rumentis.apk "dist/Rumentis-$VN.apk"
+          mv dist/Rumentis.aab "dist/Rumentis-$VN.aab"
+      - name: Publicar Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v$VN-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" dist/Rumentis-$VN.apk dist/Rumentis-$VN.aab \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Rumentis $VN (compilación $GITHUB_RUN_NUMBER)" \
+            --notes "APK para instalar en el teléfono y AAB para Google Play. Rama: $GITHUB_REF_NAME."

@@ -2,7 +2,7 @@
 # Compila app/ (proyecto apktool) en dist/Rumentis.apk, alineado y firmado.
 #
 # Firma:
-#   - Si existen KEYSTORE, KEYSTORE_PASS, KEY_ALIAS y KEY_PASS en el entorno, firma con esa llave.
+#   - Si existen KEYSTORE (o KEYSTORE_B64), KEYSTORE_PASS, KEY_ALIAS y KEY_PASS, firma con esa llave.
 #   - Si no, firma con la llave de depuración de uber-apk-signer (sirve para probar,
 #     pero Android no deja actualizar encima de una app firmada con otra llave).
 set -euo pipefail
@@ -22,6 +22,9 @@ trap 'rm -rf "$TMP"' EXIT
 
 java -jar "$TOOLS/apktool.jar" b "$RAIZ/app" -o "$TMP/sin-firmar.apk"
 
+if [ -n "${KEYSTORE_B64:-}" ] && [ -z "${KEYSTORE:-}" ]; then
+  KEYSTORE="$TMP/llave.keystore"; echo "$KEYSTORE_B64" | base64 -d > "$KEYSTORE"
+fi
 FIRMA=()
 if [ -n "${KEYSTORE:-}" ]; then
   FIRMA=(--ks "$KEYSTORE" --ksPass "$KEYSTORE_PASS" --ksAlias "$KEY_ALIAS" --ksKeyPass "$KEY_PASS")
