@@ -4,7 +4,7 @@ Archivos entregados:
 
 | Archivo | Qué es |
 |---|---|
-| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 20 diapositivas principales (20 minutos) y 23 de respaldo, sin recuadros amarillos |
+| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 31 diapositivas principales (los 8 objetivos completos) y 11 de respaldo, sin recuadros amarillos |
 | `Tesis Jaime Fredy Horacio Avance 19 corregida.docx` | Tesis con las secciones nuevas; tablas, figuras e índices renumerados |
 | `Estudio Financiero @risk Jaime Horacio Fredy (1) corregido.xlsm` | Modelo original intacto más 3 hojas nuevas con gráficos |
 
@@ -94,17 +94,21 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
 - En los anexos B, el flujo acumulado puede diferir en 1 o 2 lempiras de la suma de las cifras mostradas. Se calcula con valores exactos, igual que en la tesis (por ejemplo, L 50,291,726 y L 49,999,080), y así se indica al pie de cada diapositiva.
 - Los porcentajes de la tabla de riesgos suman 100.01 % por redondeo, igual que en la Tabla 41.
 
-## 6. Cuarta revisión: presentación de 20 minutos
+## 6. Cuarta revisión: estructura para 20 minutos
 
-- **Principal (diapositivas 1 a 20, cerca de 1 minuto cada una):**
-  - Portada, índice, resumen ejecutivo, sector lácteo, planteamiento, objetivos y diseño metodológico.
-  - Porter, mercado, localización, y tamaño y equipos.
-  - Estudios legal, organizacional y ambiental: una diapositiva nueva que resume los tres.
-  - Inversión, indicadores, tornado y escenarios, y efecto del riesgo.
-  - Conclusiones, limitaciones, recomendaciones y Gracias.
-- **Respaldo (diapositivas 21 a 43):** después de "Gracias" va una diapositiva índice con el número de cada anexo; el resto es todo lo demás, incluidos la bibliografía y los anexos A, B y C. No se borró nada de lo que pidió el asesor.
-- Las notas del orador de las diapositivas principales indican a qué diapositiva de respaldo saltar. En PowerPoint, durante la presentación, se escribe el número y se pulsa Enter.
-- Tras reordenar se volvieron a verificar las sumas y la validación.
+- **Principal (diapositivas 1 a 31):** introducción y los 8 estudios que son los objetivos de la tesis, todos completos y en el orden de la presentación original:
+  - Sectorial (macro, PESTEL, Porter).
+  - Mercado.
+  - Técnico (localización, proceso, tamaño y equipos, materia prima, layout).
+  - Legal.
+  - Administrativo (organigrama, plantilla).
+  - Ambiental.
+  - Financiero (inversión, préstamo y estado de resultados, equilibrio, indicadores, tornado y escenarios).
+  - Riesgos (11 eventos, efecto sobre el valor).
+
+  Después, conclusiones, limitaciones, recomendaciones y Gracias.
+- **Respaldo (diapositivas 32 a 42):** solo lo que no corresponde a un objetivo o repite algo que ya está en la principal. Es decir: justificación, metodología ONUDI, sensibilidad por variable, conciliación VAN vs. VPN medio, bibliografía y anexos A, B y C.
+- Las notas del orador indican a qué diapositiva de respaldo saltar (número + Enter en PowerPoint).
 
 ## 7. Cómo abrir los archivos
 
