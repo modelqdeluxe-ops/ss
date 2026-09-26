@@ -63,13 +63,44 @@ Los archivos originales siguen en el repositorio sin cambios.
 - Todas las cifras se mantienen. El detalle que se quitó de las diapositivas pasó a las **notas del orador** de 17 diapositivas, para tenerlo a mano en la defensa.
 - Limitaciones se conserva porque la pidió el asesor (comentario de la diapositiva 21). Queda en 6 puntos breves; "Parámetros de riesgo" y "Modelo probabilístico" se unieron en "Modelo de riesgos".
 
-## 5. Cómo abrir los archivos
+## 5. Tercera revisión: auditoría de congruencia de la presentación
+
+Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. Se revisó cada cifra, cada referencia a tablas y figuras, y cada suma de las tablas.
+
+**Qué se verificó y está correcto**
+- Todas las cifras de la presentación aparecen en la tesis o se derivan de ella: indicadores, escenarios, rangos de sensibilidad, riesgos, flujos, estado de resultados, balance, personal y materia prima.
+- Las referencias a tablas y figuras apuntan a la numeración final de la tesis.
+- En las tablas de los anexos y del estado de resultados, cada subtotal cuadra fila por fila.
+
+**Qué se corrigió**
+| Diap. | Problema | Corrección |
+|---|---|---|
+| 12 | Porter decía que Sula, Leyde y Dos Pinos "dominan", pero la tarjeta de nuevos competidores habla de "un actor dominante" | Sula domina con UHT (83 % de preferencia en la encuesta), seguida de Leyde y Dos Pinos |
+| 13 | Viñetas encimadas y subtítulo cortado por la tabla | Textos breves, sin cambiar el contenido |
+| 14 | Distancias de 80 km y 160 km que no aparecen en la tesis | Texto de la tesis: a 500 m de la primera entrada a Comayagua, entre Tegucigalpa y San Pedro Sula |
+| 19 | Requisitos legales que no están en la tesis (Certificado de Libre Venta, certificación de ganaderos, auditorías en campo) | Requisitos del capítulo legal de la tesis: registro de establecimiento, inspección con plan BPM/POES, análisis y etiqueta, RTCA 67.04.66:12 y 67.04.50:17, licencia ambiental y autorización de efluentes |
+| 23 | "Costos fijos" (L 28,000) se confundía con los costos fijos totales de la diapositiva 24 (que incluyen personal); "ISR 25 % + 5 %" sin aclarar | "Costos fijos operativos" e "ISR + aport. solidaria" |
+| 24 | La fila "Total" de la amortización no cuadraba con la suma de las cifras redondeadas (407,138 frente a 407,137) | Se quitó el total y se agregó la columna de cuota (L 259,833), como en la Tabla 24 |
+| 27 | Inflación mínima 3.82 % y combustible L 0.8 frente a 3.825 % y L 0.80 en las Tablas 36 y 37 | Mismo formato que la tesis. También se corrigió en la Tabla 38 de la tesis |
+| 28 y 32 | TIR con un decimal (21.2 %, 55.9 %) frente a dos decimales en el resto (55.95 %) y en la Tabla 39 | Dos decimales en toda la presentación (21.21 %) |
+| 29 | Las columnas de severidad y frecuencia no seguían un criterio único: por ejemplo, tipo de cambio (probabilidad 0.35) aparecía como "Media" y leche (0.25–0.35) como "Alta" | Criterio único con los parámetros de la Tabla 40, que coincide con la descripción de cada riesgo en la tesis. El criterio está en las notas del orador |
+| 29 y 31 | 15.1 % frente a 15.06 % en la diapositiva 30 y en la Tabla 43 | 15.06 % en todas |
+| 37 y 38 | "Inversión en activos fijos" por L 1,471,000, cuando los activos fijos son L 1,395,000 (diap. 23) | "Inversión en activos fijos y diferidos" |
+| 24 y 39 | Margen neto con guion ("-35.2 %") en lugar de signo menos | "−35.2 %" |
+| Notas 24 y 25 | Referencias con la numeración anterior (Tabla 26 y 25) | Tablas 27 y 26 |
+| Todas | Formato mixto ("55.95%" y "55.95 %"; "@Risk" y "@RISK"; "4°C" y "4 °C") | Formato uniforme |
+
+**Qué queda y por qué no se tocó**
+- En los anexos B, el flujo acumulado puede diferir en 1 o 2 lempiras de la suma de las cifras mostradas. Se calcula con valores exactos, igual que en la tesis (por ejemplo, L 50,291,726 y L 49,999,080), y así se indica al pie de cada diapositiva.
+- Los porcentajes de la tabla de riesgos suman 100.01 % por redondeo, igual que en la Tabla 41.
+
+## 6. Cómo abrir los archivos
 
 - **Tesis:** al abrirla, Word pregunta si desea actualizar los campos. Respondan **Sí**: la tabla de contenido y los índices de tablas, figuras y anexos ahora son campos automáticos y se recalculan con la paginación real. Si no aparece la pregunta: Ctrl+A y luego F9.
 - **Bibliografía:** está dentro del control de Citavi. Si la regeneran desde Citavi, las 9 entradas nuevas se borrarán; conviene cargarlas en Citavi.
 - **Excel:** las hojas nuevas son "Análisis Complementario" (escenarios, tornado, punto de equilibrio, estados financieros, VaR, conciliación y costos), "Modelo Casos" (réplica con fórmulas, 26 casos) e "Iteraciones @RISK" (10,000 iteraciones con media, desviación y percentiles). Se verificaron recalculando las 10,731 fórmulas en LibreOffice: 0 diferencias frente al cálculo independiente.
 
-## 6. Fuentes nuevas verificadas
+## 7. Fuentes nuevas verificadas
 
 - INE (2025a). Estadísticas de género en Honduras, julio 2025: https://ine.gob.hn/wp-content/uploads/2025/12/Estadisticas-de-brechas-en-Honduras-julio-2025.pdf
 - INE (2025b). EPHPM 2025: https://ine.gob.hn/2025/12/12/encuesta-permanente-de-hogares-de-propositos-multiples-ephpm-2025/
