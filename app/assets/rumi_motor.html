@@ -23,7 +23,8 @@ async function cargar(){
   w.setCompat({worker:BASE+'wllama/compat/wllama.js',wasm:await url('wllama/compat/wllama.wasm','application/wasm')});
   const partes=[];for(const f of man.archivos)partes.push(await blobDe('rumi/'+f));
   const gguf=[new Blob(partes)];   // los trozos son bytes seguidos de un solo GGUF
-  const cfg={n_ctx:1024,n_batch:256,n_threads:1};
+  // Varios núcleos si el WebView deja usar SharedArrayBuffer; si no, wllama usa uno solo.
+  const cfg={n_ctx:1024,n_batch:256,n_threads:Math.max(1,Math.min(4,(navigator.hardwareConcurrency||2)-2))};
   try{await w.loadModel(gguf,cfg);}
   catch(e){await w.exit().catch(()=>{});await w.loadModel(gguf,{...cfg,n_gpu_layers:0});}
   modelo=man;

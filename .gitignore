@@ -1,2 +1,4 @@
 build/
 *.idsig
+# APK/AAB pasan de 100 MB (límite de GitHub): se entregan aparte
+dist/
