@@ -4,7 +4,7 @@ Archivos entregados:
 
 | Archivo | Qué es |
 |---|---|
-| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 31 diapositivas principales (los 8 objetivos completos) y 11 de respaldo, sin recuadros amarillos |
+| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 35 diapositivas de presentación y 7 de bibliografía y anexos al final, sin recuadros amarillos |
 | `Tesis Jaime Fredy Horacio Avance 19 corregida.docx` | Tesis con las secciones nuevas; tablas, figuras e índices renumerados |
 | `Estudio Financiero @risk Jaime Horacio Fredy (1) corregido.xlsm` | Modelo original intacto más 3 hojas nuevas con gráficos |
 
@@ -94,21 +94,11 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
 - En los anexos B, el flujo acumulado puede diferir en 1 o 2 lempiras de la suma de las cifras mostradas. Se calcula con valores exactos, igual que en la tesis (por ejemplo, L 50,291,726 y L 49,999,080), y así se indica al pie de cada diapositiva.
 - Los porcentajes de la tabla de riesgos suman 100.01 % por redondeo, igual que en la Tabla 41.
 
-## 6. Cuarta revisión: estructura para 20 minutos
+## 6. Cuarta revisión: orden final
 
-- **Principal (diapositivas 1 a 31):** introducción y los 8 estudios que son los objetivos de la tesis, todos completos y en el orden de la presentación original:
-  - Sectorial (macro, PESTEL, Porter).
-  - Mercado.
-  - Técnico (localización, proceso, tamaño y equipos, materia prima, layout).
-  - Legal.
-  - Administrativo (organigrama, plantilla).
-  - Ambiental.
-  - Financiero (inversión, préstamo y estado de resultados, equilibrio, indicadores, tornado y escenarios).
-  - Riesgos (11 eventos, efecto sobre el valor).
-
-  Después, conclusiones, limitaciones, recomendaciones y Gracias.
-- **Respaldo (diapositivas 32 a 42):** solo lo que no corresponde a un objetivo o repite algo que ya está en la principal. Es decir: justificación, metodología ONUDI, sensibilidad por variable, conciliación VAN vs. VPN medio, bibliografía y anexos A, B y C.
-- Las notas del orador indican a qué diapositiva de respaldo saltar (número + Enter en PowerPoint).
+- **Diapositivas 1 a 35:** todo el contenido en el orden aprobado, desde la portada hasta "Gracias", incluidos los 8 estudios que son los objetivos de la tesis.
+- **Diapositivas 36 a 42:** una diapositiva índice con el número de cada una, la bibliografía y los anexos A, B y C. No se presentan; quedan para consulta del jurado.
+- Las notas del orador de mercado (13), inversión (23) y préstamo (24) indican a qué anexo saltar (número + Enter en PowerPoint).
 
 ## 7. Cómo abrir los archivos
 
