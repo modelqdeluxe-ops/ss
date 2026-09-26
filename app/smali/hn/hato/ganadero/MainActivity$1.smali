@@ -225,6 +225,14 @@
     return-object v0
 
     :cond_bin
+    const-string v0, ".html"
+    invoke-virtual {p0, v0}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :cond_otro
+    const-string v0, "text/html"
+    return-object v0
+
+    :cond_otro
     const-string v0, "application/octet-stream"
     return-object v0
 .end method

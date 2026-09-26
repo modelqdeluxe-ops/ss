@@ -1,0 +1,47 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Rumi motor</title>
+<!-- Motor del modelo de Rumi. Corre en un iframe invisible con origen https://rumentis.local,
+     porque desde file:// el navegador no deja arrancar el worker de wllama.
+     Habla con la app por postMessage (ver rumi_llm.js). -->
+<script src="rumi_rag.js"></script>
+<script type="module">
+const BASE='https://rumentis.local/';
+let w=null,ix=null,modelo=null;
+const decir=m=>parent.postMessage({rumiMotor:1,...m},'*');
+const blobDe=async(ruta,tipo)=>{const r=await fetch(BASE+ruta);if(!r.ok)throw new Error('No encontré '+ruta);const b=await r.blob();return tipo?new Blob([b],{type:tipo}):b;};
+const url=async(r,t)=>URL.createObjectURL(await blobDe(r,t));
+
+async function cargar(){
+  const man=await (await fetch(BASE+'rumi/modelo.json')).json();
+  ix=RumiRAG.indexar(await (await fetch(BASE+'rumi_saber.json')).json());
+  const {Wllama}=await import(BASE+'wllama/index.js');
+  const wasm=await url('wllama/wllama.wasm','application/wasm');
+  const nada=()=>{};
+  w=new Wllama({default:wasm,'wllama.wasm':wasm},{suppressNativeLog:true,allowOffline:true,logger:{debug:nada,log:nada,info:nada,warn:nada,error:console.error}});
+  // Para WebView sin JSPI o memoria de 64 bits: versión compatible, también local.
+  w.setCompat({worker:BASE+'wllama/compat/wllama.js',wasm:await url('wllama/compat/wllama.wasm','application/wasm')});
+  const partes=[];for(const f of man.archivos)partes.push(await blobDe('rumi/'+f));
+  const gguf=[new Blob(partes)];   // los trozos son bytes seguidos de un solo GGUF
+  const cfg={n_ctx:1024,n_batch:256,n_threads:1};
+  try{await w.loadModel(gguf,cfg);}
+  catch(e){await w.exit().catch(()=>{});await w.loadModel(gguf,{...cfg,n_gpu_layers:0});}
+  modelo=man;
+}
+
+async function generar(id,pregunta){
+  const guia=RumiRAG.buscar(ix,pregunta,2);
+  let out='';
+  const st=await w.createChatCompletion({messages:RumiRAG.mensajes(guia,pregunta),max_tokens:180,temperature:0.3,top_p:0.9,stream:true});
+  for await(const c of st){const d=c.choices&&c.choices[0]&&c.choices[0].delta&&c.choices[0].delta.content;if(d){out+=d;decir({id,parcial:out});}}
+  decir({id,fin:true,texto:out.trim(),guia:guia.map(e=>e.t)});
+}
+
+addEventListener('message',e=>{
+  const m=e.data||{};
+  if(m.rumiApp!==1)return;
+  if(m.tipo==='generar')generar(m.id,m.pregunta).catch(err=>decir({id:m.id,fin:true,error:String(err&&err.message||err)}));
+});
+
+cargar().then(()=>decir({listo:true,modelo})).catch(e=>decir({error:String(e&&e.message||e)}));
+</script>

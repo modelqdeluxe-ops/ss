@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),os=require('os'),https=require('https');
 const {execSync}=require('child_process');
 const ASSETS=path.join(__dirname,'..','app','assets');
-const mime=p=>p.endsWith('.js')?'text/javascript':p.endsWith('.wasm')?'application/wasm':p.endsWith('.json')?'application/json':'application/octet-stream';
+const mime=p=>p.endsWith('.js')?'text/javascript':p.endsWith('.wasm')?'application/wasm':p.endsWith('.json')?'application/json':p.endsWith('.html')?'text/html':'application/octet-stream';
 
 const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8')):[
   'un novillo babea mucho y no puede tragar',

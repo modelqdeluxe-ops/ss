@@ -9,34 +9,31 @@
 const BASE='https://rumentis.local/';
 const RAM_MIN_MB=4600;           // teléfonos de 5 GB o más (Android reporta un poco menos de lo anunciado)
 const REPORTE_CORREO='';         // correo que recibe los reportes de respuestas
-const L={estado:'apagado',error:null,w:null,ix:null,ocupado:false,cola:Promise.resolve()};
+const L={estado:'apagado',error:null,ocupado:false,cola:Promise.resolve()};
 window.RumiLLM=L;
 
 function ramMB(){try{return window.Android&&Android.ramMB?Number(Android.ramMB()):0;}catch(e){return 0;}}
-function cargarScript(src){return new Promise((ok,mal)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=mal;document.head.appendChild(s);});}
-async function blobDe(ruta,tipo){const r=await fetch(BASE+ruta);if(!r.ok)throw new Error('No encontré '+ruta);const b=await r.blob();return tipo?new Blob([b],{type:tipo}):b;}
 
-L.iniciar=async function(){
+// El motor corre en un iframe con origen https://rumentis.local (ver rumi_motor.html):
+// desde file:// el navegador no deja arrancar el worker de wllama.
+let marco=null,sig=0;const pend=new Map();
+addEventListener('message',e=>{
+  const m=e.data||{};if(m.rumiMotor!==1||!marco||e.source!==marco.contentWindow)return;
+  if(m.listo){L.modelo=m.modelo;L.estado='listo';return;}
+  if(m.id==null){if(m.error){L.estado='error';L.error=m.error;console.error('Rumi avanzado:',m.error);}return;}
+  const p=pend.get(m.id);if(!p)return;
+  if(m.parcial!=null&&p.alToken)p.alToken(m.parcial);
+  if(m.fin){pend.delete(m.id);m.error?p.mal(new Error(m.error)):p.ok(m);}
+});
+
+L.iniciar=function(){
   if(L.estado!=='apagado')return;
   if(!window.RUMI_LLM_FORZAR&&ramMB()<RAM_MIN_MB){L.estado='sin_ram';return;}
   L.estado='cargando';
-  try{
-    const man=await (await fetch(BASE+'rumi/modelo.json')).json();
-    await cargarScript(BASE+'rumi_rag.js');
-    L.ix=RumiRAG.indexar(await (await fetch(BASE+'rumi_saber.json')).json());
-    const {Wllama}=await import(BASE+'wllama/index.js');
-    const url=async(r,t)=>URL.createObjectURL(await blobDe(r,t));
-    const wasm=await url('wllama/wllama.wasm','application/wasm');
-    const w=new Wllama({default:wasm,'wllama.wasm':wasm},{suppressNativeLog:true,allowOffline:true,logger:{debug(){},log(){},info(){},warn(){},error:console.error}});
-    // Para WebView sin JSPI o memoria de 64 bits: versión compatible, también local.
-    w.setCompat({worker:BASE+'wllama/compat/wllama.js',wasm:await url('wllama/compat/wllama.wasm','application/wasm')});
-    const partes=[];for(const f of man.archivos)partes.push(await blobDe('rumi/'+f));
-    const gguf=[new Blob(partes)];   // los trozos son bytes seguidos de un solo GGUF
-    const cfg={n_ctx:1024,n_batch:256,n_threads:1};
-    try{await w.loadModel(gguf,cfg);}
-    catch(e){await w.exit().catch(()=>{});await w.loadModel(gguf,{...cfg,n_gpu_layers:0});}
-    L.w=w;L.modelo=man;L.estado='listo';
-  }catch(e){L.estado='error';L.error=String(e&&e.message||e);console.error('Rumi avanzado:',e);}
+  marco=document.createElement('iframe');
+  marco.src=BASE+'rumi_motor.html';marco.title='Rumi';marco.setAttribute('aria-hidden','true');marco.tabIndex=-1;
+  marco.style.cssText='position:fixed;width:1px;height:1px;border:0;opacity:0;pointer-events:none;left:-9px;top:-9px';
+  document.body.appendChild(marco);
 };
 
 L.listo=()=>L.estado==='listo';
@@ -52,15 +49,13 @@ L.usar=function(r,txt){
 };
 
 const DOSIS_RE=/\b\d+([.,]\d+)?\s?(ml|cc|mg|mililitros?|miligramos?)\b/i;
-L.generar=async function(pregunta,alToken){
-  const guia=RumiRAG.buscar(L.ix,pregunta,2);
-  const msgs=RumiRAG.mensajes(guia,pregunta);
-  let out='';
-  const st=await L.w.createChatCompletion({messages:msgs,max_tokens:180,temperature:0.3,top_p:0.9,stream:true});
-  for await(const c of st){const d=c.choices&&c.choices[0]&&c.choices[0].delta&&c.choices[0].delta.content;if(d){out+=d;alToken&&alToken(out);}}
-  out=out.trim();
-  if(DOSIS_RE.test(out)&&!/veterinari/i.test(out))out+=' Confirma cualquier dosis con tu veterinario.';
-  return {texto:out,guia:guia.map(e=>e.t)};
+L.generar=function(pregunta,alToken){
+  return new Promise((ok,mal)=>{const id=++sig;pend.set(id,{ok,mal,alToken});
+    marco.contentWindow.postMessage({rumiApp:1,tipo:'generar',id,pregunta},'*');}).then(m=>{
+    let out=m.texto||'';
+    if(DOSIS_RE.test(out)&&!/veterinari/i.test(out))out+=' Confirma cualquier dosis con tu veterinario.';
+    return {texto:out,guia:m.guia||[]};
+  });
 };
 
 // Responde en el chat de Rumi con el modelo, escribiendo la respuesta mientras se genera.
