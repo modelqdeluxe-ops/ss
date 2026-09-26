@@ -2709,7 +2709,7 @@ function preguntar(txt){
   RUMI.log.push({u:txt});RUMI.last=nrm(txt);pintarLog();
   const m=$('#rumiMsgs');if(m)m.insertAdjacentHTML('beforeend','<div class="rrow">'+rumiSVG('av think')+'<div class="rmsg b typing" aria-label="Rumi está escribiendo"><i></i><i></i><i></i></div></div>');
   const b=$('#rumiBody');if(b)b.scrollTop=b.scrollHeight;
-  setTimeout(()=>{let r;try{r=responder(txt);}catch(e){r={html:'Algo falló al entender eso. Prueba decirlo de otra forma.'};}if(window.RumiLLM&&RumiLLM.usar(r,txt)){RumiLLM.decir(txt,r);return;}botSay(r);},380);
+  setTimeout(()=>{if(window.RumiLLM&&RumiLLM.esDosis&&RumiLLM.esDosis(txt)){RumiLLM.decir(txt,null);return;}let r;try{r=responder(txt);}catch(e){r={html:'Algo falló al entender eso. Prueba decirlo de otra forma.'};}if(window.RumiLLM&&RumiLLM.usar(r,txt)){RumiLLM.decir(txt,r);return;}botSay(r);},380);
 }
 function ejecutar(a){
   if(!a)return;
