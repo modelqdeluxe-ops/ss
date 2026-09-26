@@ -4,7 +4,7 @@ Archivos entregados:
 
 | Archivo | Qué es |
 |---|---|
-| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 41 diapositivas (antes 23), sin recuadros amarillos |
+| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 20 diapositivas principales (20 minutos) y 23 de respaldo, sin recuadros amarillos |
 | `Tesis Jaime Fredy Horacio Avance 19 corregida.docx` | Tesis con las secciones nuevas; tablas, figuras e índices renumerados |
 | `Estudio Financiero @risk Jaime Horacio Fredy (1) corregido.xlsm` | Modelo original intacto más 3 hojas nuevas con gráficos |
 
@@ -94,13 +94,25 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
 - En los anexos B, el flujo acumulado puede diferir en 1 o 2 lempiras de la suma de las cifras mostradas. Se calcula con valores exactos, igual que en la tesis (por ejemplo, L 50,291,726 y L 49,999,080), y así se indica al pie de cada diapositiva.
 - Los porcentajes de la tabla de riesgos suman 100.01 % por redondeo, igual que en la Tabla 41.
 
-## 6. Cómo abrir los archivos
+## 6. Cuarta revisión: presentación de 20 minutos
+
+- **Principal (diapositivas 1 a 20, cerca de 1 minuto cada una):**
+  - Portada, índice, resumen ejecutivo, sector lácteo, planteamiento, objetivos y diseño metodológico.
+  - Porter, mercado, localización, y tamaño y equipos.
+  - Estudios legal, organizacional y ambiental: una diapositiva nueva que resume los tres.
+  - Inversión, indicadores, tornado y escenarios, y efecto del riesgo.
+  - Conclusiones, limitaciones, recomendaciones y Gracias.
+- **Respaldo (diapositivas 21 a 43):** después de "Gracias" va una diapositiva índice con el número de cada anexo; el resto es todo lo demás, incluidos la bibliografía y los anexos A, B y C. No se borró nada de lo que pidió el asesor.
+- Las notas del orador de las diapositivas principales indican a qué diapositiva de respaldo saltar. En PowerPoint, durante la presentación, se escribe el número y se pulsa Enter.
+- Tras reordenar se volvieron a verificar las sumas y la validación.
+
+## 7. Cómo abrir los archivos
 
 - **Tesis:** al abrirla, Word pregunta si desea actualizar los campos. Respondan **Sí**: la tabla de contenido y los índices de tablas, figuras y anexos ahora son campos automáticos y se recalculan con la paginación real. Si no aparece la pregunta: Ctrl+A y luego F9.
 - **Bibliografía:** está dentro del control de Citavi. Si la regeneran desde Citavi, las 9 entradas nuevas se borrarán; conviene cargarlas en Citavi.
 - **Excel:** las hojas nuevas son "Análisis Complementario" (escenarios, tornado, punto de equilibrio, estados financieros, VaR, conciliación y costos), "Modelo Casos" (réplica con fórmulas, 26 casos) e "Iteraciones @RISK" (10,000 iteraciones con media, desviación y percentiles). Se verificaron recalculando las 10,731 fórmulas en LibreOffice: 0 diferencias frente al cálculo independiente.
 
-## 7. Fuentes nuevas verificadas
+## 8. Fuentes nuevas verificadas
 
 - INE (2025a). Estadísticas de género en Honduras, julio 2025: https://ine.gob.hn/wp-content/uploads/2025/12/Estadisticas-de-brechas-en-Honduras-julio-2025.pdf
 - INE (2025b). EPHPM 2025: https://ine.gob.hn/2025/12/12/encuesta-permanente-de-hogares-de-propositos-multiples-ephpm-2025/
