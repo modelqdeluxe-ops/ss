@@ -31,7 +31,7 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
     fs.createReadStream(f).pipe(res);
   }).listen(0);
   const puerto=srv.address().port;
-  const b=await chromium.launch({args:[`--host-resolver-rules=MAP rumentis.local 127.0.0.1:${puerto}`,'--ignore-certificate-errors','--no-proxy-server']});
+  const b=await chromium.launch({env:{...process.env,HTTPS_PROXY:'',HTTP_PROXY:'',https_proxy:'',http_proxy:'',ALL_PROXY:''},args:[`--host-resolver-rules=MAP rumentis.local 127.0.0.1:${puerto}`,'--ignore-certificate-errors','--no-proxy-server']});
   const ctx=await b.newContext({ignoreHTTPSErrors:true});
   const page=await ctx.newPage();
   page.on('console',m=>{if(m.type()==='error')console.log('[consola]',m.text().slice(0,300));});
@@ -39,6 +39,7 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
   await page.addInitScript(()=>{window.Android={ramMB:()=>6000,barras(){},escuchar(){},guardar(){}};});
   await page.goto('file://'+path.join(ASSETS,'index.html'));
   const t0=Date.now();
+  await page.waitForFunction(()=>window.RumiLLM,null,{timeout:60000});
   await page.waitForFunction(()=>window.RumiLLM&&['listo','error','sin_ram'].includes(RumiLLM.estado),null,{timeout:600000,polling:500});
   const est=await page.evaluate(()=>({estado:RumiLLM.estado,error:RumiLLM.error,modelo:RumiLLM.modelo}));
   console.log('Modelo:',JSON.stringify(est),`cargado en ${((Date.now()-t0)/1000).toFixed(1)} s`);
