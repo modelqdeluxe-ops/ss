@@ -397,3 +397,57 @@
     div-long/2addr v1, v3
     return-wide v1
 .end method
+
+.method public fotoGuardar(Ljava/lang/String;Ljava/lang/String;)Z
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1, p2}, Lhn/hato/ganadero/Fotos;->guardar(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z
+
+    move-result v0
+
+    return v0
+.end method
+
+.method public fotoLeer(Ljava/lang/String;)Ljava/lang/String;
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1}, Lhn/hato/ganadero/Fotos;->leer(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+.method public fotoBorrar(Ljava/lang/String;)V
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1}, Lhn/hato/ganadero/Fotos;->borrar(Landroid/content/Context;Ljava/lang/String;)V
+
+    return-void
+.end method
+
+.method public fotoLista()Ljava/lang/String;
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0}, Lhn/hato/ganadero/Fotos;->lista(Landroid/content/Context;)Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method

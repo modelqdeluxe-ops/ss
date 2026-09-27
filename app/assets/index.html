@@ -561,6 +561,10 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .cam-disp{width:76px;height:76px;border-radius:50%;border:4px solid #fff;background:transparent;padding:5px}
 .cam-disp i{display:block;width:100%;height:100%;border-radius:50%;background:#fff}
 .cam-disp:active i{transform:scale(.9)}
+.cam-disp:disabled{opacity:.35}
+.cam-msg{position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);text-align:center;font-size:16px;line-height:1.5;color:#fff;margin:0}
+.cam.sin video,.cam.sin .cam-guia{display:none}
+.cam.sin .cam-gal{background:#F0BF33;color:#1A2B3A}
 .cam.flash::after{content:'';position:fixed;inset:0;background:#fff;animation:camf .25s ease-out forwards;pointer-events:none}
 @keyframes camf{from{opacity:.9}to{opacity:0}}
 .xbtn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink2);display:flex;align-items:center;justify-content:center}.xbtn svg{width:18px;height:18px}
@@ -2421,7 +2425,7 @@ Object.assign(ACTS,{
   addFila:el=>{const f=el.closest('form');const w=$('[data-rows]',f);const rs=$$('.acard',w);const last=rs[rs.length-1];const lt=last&&$('.ar-t',last).value;const n=lt&&/^\d+$/.test(lt)?String(+lt+1):'';
     w.insertAdjacentHTML('beforeend',aUnidad(filaAnimal(n,'',{raza:last?$('.ar-r',last).value:''})));$('.ar-p',w.lastElementChild).focus();},
   delFila:el=>{const r=el.closest('.arow');const f=r.closest('form');if($$('.arow',$('[data-rows]',f)).length>1){Fotos.borrar(r.dataset.id);r.remove();}else $$('input',r).forEach(i=>i.value='');if(PREV[f.dataset.form])PREV[f.dataset.form](f);},
-  fotoFila:async el=>{const r=el.closest('.acard');const ar=$('.ar-t',r).value.trim();const b=await Fotos.tomar(ar?'Arete '+ar:'Foto del animal');if(!b)return;await Fotos.guardar(r.dataset.id,b);toast('Foto guardada');},
+  fotoFila:async el=>{const r=el.closest('.acard');const ar=$('.ar-t',r).value.trim();const b=await Fotos.tomar(ar?'Arete '+ar:'Foto del animal');if(!b)return;try{await Fotos.guardar(r.dataset.id,b);toast('Foto guardada');}catch(e){toast('No se pudo guardar la foto. Revisa el espacio del teléfono.');}},
   pegarPesos:el=>{const f=el.closest('form');const txt=f.elements.pegar.value;const pares=[];
     for(const lin of txt.split(/\n|;/))for(const ch of lin.split(',')){const nums=(ch.match(/\d+(?:\.\d+)?/g)||[]).map(Number);if(nums.length===2)pares.push([String(nums[0]),nums[1]]);else nums.forEach(v=>pares.push([null,v]));}
     if(!pares.length){toast('No encontré pesos en el texto.');return;}
@@ -2484,8 +2488,8 @@ SAVE.animal=f=>{const l=S.lotes[f.dataset.lote];if(!l)return;const ar=fv(f,'aret
   if(l.modoPrecio==='animal'){const kgT=an.reduce((s,a)=>s+ +a.p0,0);if(kgT)d.precioCompraKg=Math.round(compraAnimales(d)/kgT*10000)/10000;}
   put('lotes',f.dataset.lote,d);closeSheet();toast('Animal actualizado');};
 Object.assign(ACTS,{
-  fotoAnimal:async el=>{const b=await Fotos.tomar('Foto del animal');if(!b)return;await Fotos.guardar(el.dataset.id,b);toast('Foto guardada');},
-  fotoQuitar:async el=>{await Fotos.borrar(el.dataset.id);$$(`img[data-foto="${CSS.escape(el.dataset.id)}"]`).forEach(i=>{i.dataset.puesta='';});Fotos.pintar(document);toast('Foto quitada');},
+  fotoAnimal:async el=>{const b=await Fotos.tomar('Foto del animal');if(!b)return;try{await Fotos.guardar(el.dataset.id,b);toast('Foto guardada');}catch(e){toast('No se pudo guardar la foto.');}},
+  fotoQuitar:async el=>{await Fotos.borrar(el.dataset.id);toast('Foto quitada');},
   fotoVer:async el=>{const u=await Fotos.url(el.dataset.id);if(!u){const b=await Fotos.tomar(el.dataset.t);if(b){await Fotos.guardar(el.dataset.id,b);toast('Foto guardada');}return;}const w=document.createElement('dialog');w.className='cam ver';w.innerHTML=`<div class="cam-top"><b>${esc(el.dataset.t||'')}</b><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div><div class="cam-v"><img src="${u}" alt=""></div>`;document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}w.onclick=()=>w.remove();w.addEventListener('close',()=>w.remove());}
 });
 ACTS.delAnimal=el=>{const l=S.lotes[el.dataset.lote];confirmar('Quitar animal','Se quita este animal del lote. Sus pesajes quedan en el historial del lote.','Quitar',()=>{const an=l.animales.filter(z=>z.id!==el.dataset.id);Fotos.borrar(el.dataset.id);put('lotes',el.dataset.lote,{...l,animales:an,cabezas:an.length,pesoIngreso:an.length?Math.round(promedio(an.map(a=>a.p0))*10)/10:l.pesoIngreso});location.hash='#lote/'+encodeURIComponent(el.dataset.lote);toast('Animal quitado');});};
