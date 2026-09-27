@@ -268,6 +268,16 @@ function pintarPanel(){
   }
   p.dataset.area=(M.pila[0]||{}).area||'';
   p.scrollTop=0;
+  bajar();
+}
+/* siempre mostrar el mensaje más reciente de Rumi: si es corto, al fondo; si es largo, desde su inicio */
+function bajar(){
+  const go=()=>{const b=$('#rumiBody'),m=$('#rumiMsgs');if(!b||!m)return;const rows=m.querySelectorAll('.rrow');const last=rows[rows.length-1];
+    if(!last){b.scrollTop=b.scrollHeight;return;}
+    const top=last.getBoundingClientRect().top-b.getBoundingClientRect().top+b.scrollTop-10;
+    const alto=last.offsetHeight>b.clientHeight*0.75;
+    b.scrollTo({top:alto?top:b.scrollHeight,behavior:'smooth'});};
+  requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,260);
 }
 const barBtns=()=>`<button type="button" class="rm-menu" data-act="rmMenu">${ic('menu',2)}<span>Menú</span></button>${M.pila.length>1||M.calc?`<button type="button" class="rm-atras" data-act="rmAtras" aria-label="Atrás">${ic('back',2.4)}</button>`:''}`;
 

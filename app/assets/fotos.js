@@ -42,9 +42,9 @@ new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nod
 
 /* reduce una imagen a 720 px de lado mayor, JPEG */
 function aJpeg(fuente,w,h){
-  const k=Math.min(1,720/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
+  const k=Math.min(1,1024/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
   c.getContext('2d').drawImage(fuente,0,0,c.width,c.height);
-  return new Promise(ok=>c.toBlob(b=>ok(b),'image/jpeg',0.78));
+  return new Promise(ok=>c.toBlob(b=>ok(b),'image/jpeg',0.8));
 }
 function deArchivo(){
   return new Promise(ok=>{
@@ -56,16 +56,34 @@ function deArchivo(){
     i.click();
   });
 }
-/* cámara dentro de la app; si no se puede abrir, ofrece la galería con un toque */
+/* elige la cámara trasera principal (lente 1x), no la gran angular ni la de acercamiento.
+   En Android las etiquetas son como "camera2 0, facing back": la principal suele ser el número más bajo. */
+const CAM_KEY='rumentis-cam';
+async function traseras(){
+  let ds=[];try{ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');}catch(e){}
+  const back=ds.filter(d=>/back|rear|trasera|environment|posterior/i.test(d.label));
+  const lista=(back.length?back:ds.filter(d=>!/front|frontal|user/i.test(d.label)));
+  const n=d=>{const m=String(d.label).match(/(\d+)/);return m?+m[1]:99;};
+  return lista.sort((a,b)=>n(a)-n(b));
+}
+async function abrirCam(devId){
+  const base={width:{ideal:1920},height:{ideal:1440}};
+  const v=devId?{...base,deviceId:{exact:devId}}:{...base,facingMode:{ideal:'environment'}};
+  return navigator.mediaDevices.getUserMedia({video:v,audio:false});
+}
+async function zoom1(stream){
+  try{const t=stream.getVideoTracks()[0];const c=t.getCapabilities?t.getCapabilities():{};
+    if(c.zoom){const z=Math.min(Math.max(1,c.zoom.min||1),c.zoom.max||1);await t.applyConstraints({advanced:[{zoom:z}]});}}catch(e){}
+}
 function tomar(titulo){
   return new Promise(async ok=>{
     const w=document.createElement('dialog');w.className='cam';w.setAttribute('aria-label','Tomar foto');
     w.innerHTML=`<div class="cam-top"><b>${esc(titulo||'Foto del animal')}</b><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
       <div class="cam-v"><video playsinline autoplay muted></video><i class="cam-guia"></i><p class="cam-msg">Abriendo la cámara…</p></div>
-      <div class="cam-bar"><button type="button" class="cam-gal">Galería</button><button type="button" class="cam-disp" aria-label="Tomar foto" disabled><i></i></button><span></span></div>`;
+      <div class="cam-bar"><button type="button" class="cam-gal">Galería</button><button type="button" class="cam-disp" aria-label="Tomar foto" disabled><i></i></button><button type="button" class="cam-lente" hidden>Cambiar lente</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
-    const v=w.querySelector('video'),msg=w.querySelector('.cam-msg'),disp=w.querySelector('.cam-disp');
-    let stream=null,hecho=false;
+    const v=w.querySelector('video'),msg=w.querySelector('.cam-msg'),disp=w.querySelector('.cam-disp'),lente=w.querySelector('.cam-lente');
+    let stream=null,hecho=false,lista=[],idx=0;
     const parar=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;};
     const fin=b=>{if(hecho)return;hecho=true;parar();try{w.close();}catch(e){}w.remove();ok(b);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
@@ -76,12 +94,23 @@ function tomar(titulo){
       if(!v.videoWidth){toast('La cámara aún no está lista.');return;}
       w.classList.add('flash');const b=await aJpeg(v,v.videoWidth,v.videoHeight);fin(b);
     };
+    const mostrar=async s=>{stream=s;v.srcObject=s;await zoom1(s);try{await v.play();}catch(e){}msg.hidden=true;disp.disabled=false;
+      const lab=(s.getVideoTracks()[0]||{}).label||'';lente.hidden=lista.length<2;lente.textContent=lista.length>1?`Lente ${idx+1} de ${lista.length}`:'';};
+    lente.onclick=async()=>{if(lista.length<2)return;idx=(idx+1)%lista.length;parar();disp.disabled=true;
+      try{await mostrar(await abrirCam(lista[idx].deviceId));try{localStorage.setItem(CAM_KEY,lista[idx].deviceId);}catch(e){}}catch(e){toast('No pude abrir ese lente.');}};
     try{
       if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))throw new Error('sin cámara');
-      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},audio:false});
-      if(hecho){parar();return;}
-      v.srcObject=stream;try{await v.play();}catch(e){}
-      msg.hidden=true;disp.disabled=false;
+      // 1) permiso con cualquier cámara trasera; 2) con las etiquetas ya visibles, abrir la principal
+      let s=await abrirCam(null);
+      if(hecho){s.getTracks().forEach(t=>t.stop());return;}
+      lista=await traseras();
+      let guard=null;try{guard=localStorage.getItem(CAM_KEY);}catch(e){}
+      idx=Math.max(0,lista.findIndex(d=>d.deviceId===guard));
+      const actual=(s.getVideoTracks()[0].getSettings()||{}).deviceId;
+      if(lista[idx]&&lista[idx].deviceId&&lista[idx].deviceId!==actual){s.getTracks().forEach(t=>t.stop());s=await abrirCam(lista[idx].deviceId);}
+      else if(actual){const k=lista.findIndex(d=>d.deviceId===actual);if(k>=0)idx=k;}
+      if(hecho){s.getTracks().forEach(t=>t.stop());return;}
+      await mostrar(s);
     }catch(e){
       msg.textContent='No pude abrir la cámara. Revisa que Rumentis tenga permiso de cámara en los ajustes del teléfono, o elige una foto de tu galería.';
       w.classList.add('sin');

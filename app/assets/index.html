@@ -336,12 +336,19 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .rumi-hd{display:flex;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 60%,var(--arete-e) 100%);align-items:center;justify-content:center;overflow:hidden}
 .rumi-hd .rm{width:42px!important;height:42px!important;margin-top:5px}
 .rm.av{width:34px;height:34px;border-radius:50%;background:var(--card2);padding:2px}
+.gque{margin:4px 0 8px;font-size:13.5px;line-height:1.45;color:var(--ink2)}.gque b{color:var(--ink)}
+.glee{margin-top:10px;background:var(--bg);border-radius:14px;padding:10px 12px}
+.glee>b{font-size:13.5px}
+.glee ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.glee li{position:relative;padding-left:18px;font-size:14px;line-height:1.45}
+.glee li::before{content:'';position:absolute;left:2px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--anil5)}
+.glee li.ok::before{background:var(--verde)}.glee li.w::before{background:var(--rojo)}
 /* Rumi por menús */
 .tbw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tbw .tb td,.tbw .tb th{white-space:nowrap}
 .rrow{min-width:0}.rmsg{min-width:0;overflow-wrap:anywhere}
 .rrow .rmsg.b{flex:1;min-width:0}
-.rumi-panel{display:flex;flex-direction:column;align-items:stretch;gap:10px;max-height:min(56vh,480px);overflow-y:auto;overscroll-behavior:contain;padding-top:10px;background:var(--bg);box-shadow:0 -8px 24px -18px rgba(0,0,0,.35)}
+.rumi-panel{display:flex;flex-direction:column;align-items:stretch;gap:10px;max-height:min(46vh,420px);overflow-y:auto;overscroll-behavior:contain;padding-top:10px;background:var(--bg);box-shadow:0 -8px 24px -18px rgba(0,0,0,.35)}
 .rumi-panel>*{flex:none}
 .rm-bar{display:flex;align-items:center;gap:8px;min-height:40px;position:sticky;top:-10px;z-index:1;background:var(--bg);padding:4px 0}
 .rm-bar b{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;line-height:1.2;flex:1;min-width:0;overflow-wrap:anywhere}
@@ -603,6 +610,7 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .cam-disp i{display:block;width:100%;height:100%;border-radius:50%;background:#fff}
 .cam-disp:active i{transform:scale(.9)}
 .cam-disp:disabled{opacity:.35}
+.cam-lente{justify-self:end;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:13px}
 .cam-msg{position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);text-align:center;font-size:16px;line-height:1.5;color:#fff;margin:0}
 .cam.sin video,.cam.sin .cam-guia{display:none}
 .cam.sin .cam-gal{background:#F0BF33;color:#1A2B3A}
@@ -1247,7 +1255,8 @@ PAGES.graficos=()=>{
   const sel=UI.gLote,per=UI.gPer,H=C.H,desde=per==='todo'?'0000':addDias(H,-(+per));
   const chipsL=[['todos','Todos los lotes']].concat(C.act.map(x=>[x.id,x.l.nombre]),C.cer.map(x=>[x.id,x.l.nombre+' (vendido)'])).map(([v,t])=>`<button type="button" class="chip" data-act="ui" data-k="gLote" data-v="${esc(v)}" aria-pressed="${sel===v}">${esc(t)}</button>`).join('');
   const chipsP=[['30','30 días'],['90','90 días'],['todo','Todo']].map(([v,t])=>`<button type="button" class="chip" data-act="ui" data-k="gPer" data-v="${v}" aria-pressed="${per===v}">${t}</button>`).join('');
-  const card=(t,val,sub,body,nota='')=>`<section class="gcard"><h3>${t}</h3>${val?`<div class="gv"><b>${val}</b><span class="sm">${sub}</span></div>`:''}${body}${nota?`<p class="hint">${nota}</p>`:''}</section>`;
+  const EXP=explicaGraficos(C,sel);
+  const card=(t,val,sub,body,nota='')=>{const e=EXP[t];return `<section class="gcard"><h3>${t}</h3>${val?`<div class="gv"><b>${val}</b><span class="sm">${sub}</span></div>`:''}${e&&e.que?`<p class="gque"><b>Qué estás viendo:</b> ${e.que}</p>`:''}${body}${nota&&!(e&&e.que)?`<p class="hint">${nota}</p>`:''}${e&&e.lee&&e.lee.length?`<div class="glee"><b>Lo que dicen tus números</b><ul>${e.lee.map(([k,t])=>`<li class="${k}">${t}</li>`).join('')}</ul></div>`:''}</section>`;};
   const inP=f=>f>=desde;
   const col=i=>SC[i%SC.length];
   let out='';
@@ -1293,12 +1302,75 @@ PAGES.graficos=()=>{
   return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><h1>Gráficos</h1><p class="sub">Cómo van tus lotes en cada número.</p></div></header>
   <main class="bd" style="gap:18px"><div style="display:flex;flex-direction:column;gap:10px"><div class="chips">${chipsL}</div><div class="chips">${chipsP}</div></div>${out}</main>`;
 };
+
+/* ---------- explicación de cada gráfico: qué muestra y qué dicen los números ---------- */
+function explicaGraficos(C,sel){
+  const E={},n=x=>`<b>${esc(x.l.nombre)}</b>`,pv=+S.config.precioVentaKg||0;
+  const top=(A,f,asc)=>A.slice().sort((a,b)=>asc?f(a)-f(b):f(b)-f(a));
+  if(sel==='todos'){
+    const A=C.act.length?C.act:C.cer.slice(0,4);if(!A.length)return E;
+    // peso
+    const pes=top(A,x=>x.pesoHoy)[0],lento=top(A.filter(x=>x.activo),x=>x.gdpUse,true)[0];
+    const prox=top(A.filter(x=>x.activo&&!x.listo),x=>x.diasMeta||1e9,true)[0];
+    E['Peso promedio']={que:'cada línea es un lote. Abajo están las fechas y a la izquierda el peso promedio por cabeza. Mientras más empinada la línea, más rápido suben de peso. La parte punteada es el peso estimado desde el último pesaje hasta hoy.',
+      lee:[['i',`${n(pes)} es el más pesado: ${nf(pes.pesoHoy)} kg por cabeza.`]].concat(prox?[['ok',`${n(prox)} es el próximo en llegar a su meta de ${nf(prox.meta)} kg, cerca del ${ffc(prox.fechaMeta)}.`]]:[]).concat(A.filter(x=>x.listo).map(x=>['ok',`${n(x)} ya llegó a su meta: puedes venderlo${x.retiroHasta?` después del ${ffc(x.retiroHasta)} (retiro)`:''}.`])).concat(lento&&A.length>1?[['w',`${n(lento)} es el que sube más lento (${nf(lento.gdpUse,2)} kg por día).`]]:[])};
+    // ganancia
+    const bajos=A.filter(x=>x.activo&&x.gdpUse<1.2),mejor=top(A,x=>x.gdpUse)[0];
+    E['Ganancia diaria']={que:'cada barra es un lote y muestra cuántos kilos sube cada animal por día, medido entre sus dos últimos pesajes. Barra más larga es mejor. En corral, lo normal es de 1.2 a 1.6 kg por día.',
+      lee:[['ok',`El que más gana es ${n(mejor)}: ${nf(mejor.gdpUse,2)} kg por día.`]].concat(bajos.length?[['w',`${bajos.map(n).join(', ')} ${bajos.length>1?'están':'está'} por debajo de 1.2 kg por día: revisa ración, agua, salud y lectura de comederos.`]]:[['ok','Todos tus lotes en engorde ganan 1.2 kg por día o más.']]).concat(A.filter(x=>x.estimado).map(x=>['i',`${n(x)} aún no tiene pesajes: su valor es la ganancia esperada de tu configuración, no la real.`]))};
+    // consumo
+    const baja=A.filter(x=>x.bajaCons);
+    E['Consumo por cabeza']={que:'kilos de alimento que come cada animal al día, por fecha. Una línea por lote. Si la línea baja de golpe, algo pasa: calor, agua, alimento o enfermedad.',
+      lee:A.filter(x=>x.consumo&&x.pesoHoy).map(x=>['i',`${n(x)} come ${nf(x.consumo,1)} kg por cabeza al día, ${nf(x.consumo/x.pesoHoy*100,1)} % de su peso.`]).concat(baja.map(x=>['w',`${n(x)} comió menos ayer de lo normal. Revisa bebederos, comederos y animales enfermos.`]))};
+    // alimento por día
+    const hoyF=C.H,d7=[...Array(7).keys()].map(i=>addDias(hoyF,-1-i)),d14=[...Array(7).keys()].map(i=>addDias(hoyF,-8-i));
+    const kgP=ds=>A.reduce((s,x)=>s+ds.reduce((a,f)=>a+(x.kgDia[f]||0),0),0)/7;const a1=kgP(d7),a0=kgP(d14);
+    E['Alimento entregado por día']={que:'cada columna es un día y muestra los kilos de alimento que anotaste, por lote. Días sin columna son días sin entregas anotadas.',
+      lee:a1?[['i',`La última semana entregaste en promedio ${nf(a1)} kg por día.`]].concat(a0?[[Math.abs(a1/a0-1)<0.05?'ok':'i',`Eso es ${a1>=a0?'un':'un'} ${nf(Math.abs(a1/a0-1)*100,0)} % ${a1>=a0?'más':'menos'} que la semana anterior${a1>=a0?' (normal si los animales crecen)':''}.`]]:[]):[['w','No hay entregas anotadas la última semana: anótalas para que la conversión y los costos sean reales.']]};
+    // conversión
+    const cv=A.filter(x=>x.conv);
+    E['Conversión alimenticia']={que:'cuántos kilos de alimento necesita cada lote para ganar un kilo de peso. Barra más corta es mejor. En finalización lo normal es de 6 a 8 kg por kilo ganado.',
+      lee:cv.length?[['ok',`El que mejor convierte es ${n(top(cv,x=>x.conv,true)[0])}: ${nf(top(cv,x=>x.conv,true)[0].conv,1)} a 1.`]].concat(cv.filter(x=>x.conv>8).map(x=>['w',`${n(x)} convierte ${nf(x.conv,1)} a 1: alto. Revisa desperdicio en comederos, ración y salud.`])):[['i','Aún no hay suficientes pesajes y entregas para calcularla.']]};
+    // costo kilo
+    const ck=A.filter(x=>x.costoKgGan);
+    E['Costo por kilo ganado']={que:'cuánto te cuesta producir cada kilo que ganan (alimento, sanidad y gastos, sin contar la compra). Compáralo con tu precio de venta.',
+      lee:ck.map(x=>[x.costoKgGan<pv?'ok':'w',x.costoKgGan<pv?`${n(x)} produce el kilo a ${pk(x.costoKgGan)}, menos que el precio de venta (${pk(pv)}): cada kilo ganado deja ${pk(pv-x.costoKgGan)}.`:`${n(x)} produce el kilo a ${pk(x.costoKgGan)}, más que el precio de venta (${pk(pv)}): cada kilo ganado pierde ${pk(x.costoKgGan-pv)}.`])};
+    // inversión
+    const tot=A.reduce((s,x)=>s+x.costoTot,0),comp=A.reduce((s,x)=>s+x.compra,0),ali=A.reduce((s,x)=>s+x.costoAlim,0);
+    E['Inversión por lote']={que:'cuánto dinero llevas metido en cada lote, separado en compra de animales, alimento, sanidad y otros gastos.',
+      lee:tot?[['i',`En total llevas ${money(tot)}: ${nf(comp/tot*100,0)} % en compra y ${nf(ali/tot*100,0)} % en alimento.`]]:[]};
+    // margen
+    const all=C.act.concat(C.cer);const neg=all.filter(x=>(x.activo?x.proy.margen:x.margenReal)<0);
+    E['Margen por cabeza']={que:'lo que deja cada animal. En lotes en engorde es una estimación si venden al llegar a la meta con tu precio de venta actual; en los vendidos es el resultado real. Verde gana, rojo pierde.',
+      lee:[['i',`Con tu precio de venta de ${pk(pv)}, el margen estimado de los lotes en engorde es ${money(C.act.reduce((s,x)=>s+x.proy.margen,0))}.`]].concat(neg.map(x=>['w',`${n(x)} ${x.activo?'perdería':'perdió'} dinero. ${x.activo?'Revisa el costo por kilo y el precio mínimo para no perder en Rumi.':''}`]))};
+    E['Cabezas en engorde']={que:'cuántos animales tenías en engorde cada día: sube cuando entra un lote y baja con ventas y muertes.',lee:[['i',`Hoy tienes ${nf(C.cabT)} cabezas en ${pl(C.act.length,'lote','lotes')}.`]]};
+    const cab0=A.reduce((s,x)=>s+x.cab0,0),baj=A.reduce((s,x)=>s+x.bajas,0),mo=cab0?baj/cab0*100:0;
+    E['Mortalidad']={que:'qué porcentaje de los animales que entraron a cada lote ha muerto. En corral, lo aceptable es menos de 1 a 2 %.',lee:[[mo<=2?'ok':'w',`Tu mortalidad es ${nf(mo,1)} % (${pl(baj,'muerte','muertes')} de ${nf(cab0)} animales). ${mo<=2?'Está dentro de lo normal.':'Está alta: revisa compra, recepción y sanidad con tu veterinario.'}`]]};
+    E['Lectura de comederos']={que:'cómo estaba el comedero antes de cada entrega. Muchos vacíos: los animales se quedan con hambre, sube un poco la ración. Muchos con sobra: baja la ración.'};
+  }else{
+    const x=C.L[sel];if(!x)return E;
+    const pct=x.meta>x.p0?Math.min(100,(x.pesoHoy-x.p0)/(x.meta-x.p0)*100):100;
+    E['Peso promedio']={que:'la línea sólida es el peso promedio por cabeza en cada pesaje; la punteada es la proyección hasta la meta con la ganancia actual. La línea verde horizontal es el peso meta.',
+      lee:[['i',`Entró con ${nf(x.p0)} kg y ${x.activo?'hoy pesa unos':'salió con'} ${nf(x.pesoHoy)} kg: ${x.activo?`lleva ${nf(pct,0)} % del camino a la meta`:`ganó ${nf(x.pesoHoy-x.p0)} kg`}.`]].concat(x.activo?[x.listo?['ok','Ya llegó a la meta: puedes venderlo.']:['i',`Le faltan ${nf(x.falta)} kg; al ritmo actual llega cerca del ${ffc(x.fechaMeta)} (${pl(x.diasMeta,'día','días')}).`]]:[]).concat(x.estimado?[['w','Aún no tiene pesajes: el peso de hoy es estimado con la ganancia esperada. Pésalo para tener datos reales.']]:[])};
+    const pp=[];for(let i=1;i<x.serie.length;i++){const a=x.serie[i-1],b=x.serie[i],d=dias(a.f,b.f);if(d>0)pp.push((b.v-a.v)/d);}
+    const tend=pp.length>1?pp[pp.length-1]-pp[pp.length-2]:0;
+    E['Ganancia diaria']={que:'cada barra es un período entre dos pesajes y muestra cuántos kilos subió cada animal por día en ese período.',
+      lee:pp.length?[[pp[pp.length-1]>=1.2?'ok':'w',`En el último período subió ${nf(pp[pp.length-1],2)} kg por día${pp[pp.length-1]>=1.2?', buena ganancia':', por debajo de 1.2: revisa ración y salud'}.`]].concat(pp.length>1?[[tend>=-0.1?'ok':'w',tend>=0?`Subió ${nf(tend,2)} kg por día respecto al período anterior.`:`Bajó ${nf(-tend,2)} kg por día respecto al período anterior${tend<-0.1?': puede ser calor, enfermedad o que ya está cerca de su peso final':''}.`]]:[]):[['i','Necesita al menos dos pesajes para mostrar la ganancia real.']]};
+    E['Consumo por cabeza']={que:'kilos de alimento que come cada animal al día. Si baja de golpe, algo pasa: calor, agua, alimento o enfermedad.',lee:x.consumo?[['i',`Come ${nf(x.consumo,1)} kg por cabeza al día, ${nf(x.consumo/x.pesoHoy*100,1)} % de su peso.`]].concat(x.bajaCons?[['w','Ayer comió menos de lo normal: revisa agua, comederos y animales enfermos.']]:[]):[]};
+    E['Alimento entregado por día']={que:'kilos de alimento que anotaste cada día para este lote.'};
+    E['Conversión alimenticia']={que:'cuántos kilos de alimento necesitó para ganar un kilo en cada período entre pesajes. Barra más corta es mejor; lo normal es de 6 a 8.',lee:x.conv?[[x.conv<=8?'ok':'w',`En todo el engorde convierte ${nf(x.conv,1)} a 1${x.conv<=8?': bien.':': alto, revisa desperdicio y ración.'}`]]:[]};
+    E['Costo por kilo ganado']={que:'la barra muestra todo lo invertido en el lote a la fecha, separado en compra, alimento, sanidad y otros.',lee:x.costoKgGan?[[x.costoKgGan<pv?'ok':'w',`Cada kilo que gana cuesta ${pk(x.costoKgGan)} y lo vendes a ${pk(pv)}.`],['i',`Llevas invertido ${money(x.costoTot)}: ${nf(x.compra/Math.max(1,x.costoTot)*100,0)} % es la compra.`]]:[]};
+    E['Cabezas en el lote']={que:'cuántos animales había en el lote cada día: baja con muertes y ventas.',lee:[['i',`Entraron ${nf(x.cab0)}${x.bajas?`, murieron ${x.bajas}`:''}${x.vend?`, se vendieron ${x.vend}`:''}.`]]};
+    E['Lectura de comederos']={que:'cómo estaba el comedero antes de cada entrega. Muchos vacíos: sube un poco la ración. Muchos con sobra: bájala.'};
+  }
+  return E;
+}
 function lectCard(A,days){
   const cols=['var(--s6)','var(--s3)','var(--s4)','var(--s2)'];
   const d=days.slice(-30);
   const cnt=LECT.map((n,k)=>({name:n,color:cols[k],vals:d.map(f=>A.reduce((s,x)=>s+x.g.alimento.filter(a=>a.f===f&&a.lect!==''&&a.lect!=null&&+a.lect===k).length,0))}));
   const tot=cnt.reduce((s,c)=>s+c.vals.reduce((a,b)=>a+b,0),0);
-  return `<section class="gcard"><h3>Lectura de comederos</h3>${tot?colChart({days:d,series:cnt}):`<p class="empty">Anota cómo está el comedero en cada entrega para ver esta gráfica.</p>`}<p class="hint">Vacío seguido pide subir la ración. Sobra seguido pide bajarla.</p></section>`;
+  return `<section class="gcard"><h3>Lectura de comederos</h3><p class="gque"><b>Qué estás viendo:</b> cómo estaba el comedero antes de cada entrega. Muchos vacíos: sube un poco la ración. Muchos con sobra: bájala.</p>${tot?colChart({days:d,series:cnt}):`<p class="empty">Anota cómo está el comedero en cada entrega para ver esta gráfica.</p>`}<p class="hint">Vacío seguido pide subir la ración. Sobra seguido pide bajarla.</p></section>`;
 }
 
 /* ---------- Más ---------- */
