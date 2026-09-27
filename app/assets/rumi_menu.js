@@ -209,7 +209,7 @@ const AREAS=[
    q('Hazme el recorrido','hazme el recorrido'),q('¿Por dónde empiezo?','por donde empiezo'),
    q('¿Dónde está el respaldo?','donde esta el respaldo'),q('¿Cómo paso mis datos a Excel?','como exporto a excel'),
    q('¿Cómo cambio el precio de venta?','como cambio el precio de venta'),q('Me equivoqué en un registro','me equivoque en un registro'),
-   {l:'Cambiar colores y tema',go:'#mas',sel:'#m-apar'},
+   {l:'Cambiar colores y tema',go:'#mas/apariencia'},{l:'Configuración de la finca',go:'#mas/config'},
    opFichas('app')]}
 ];
 const areaDe=id=>AREAS.find(a=>a.id===id);

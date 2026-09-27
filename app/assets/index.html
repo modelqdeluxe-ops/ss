@@ -326,6 +326,16 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .rbtn{width:50px;height:50px;flex:none;border-radius:25px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center}
 .rbtn.pri{background:var(--pri);border-color:var(--pri);color:var(--pritx)}
 .rbtn svg{width:22px;height:22px}
+/* Rumi: botón redondo sin caja */
+#rumiFab{width:66px;height:66px;padding:0!important;border-radius:50%;border:3px solid var(--card);background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 55%,var(--arete-e) 100%);box-shadow:0 10px 24px -8px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.06);justify-content:center;gap:0}
+#rumiFab span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#rumiFab .rm{width:60px!important;height:60px!important;margin:4px 0 0 0!important}
+.rm .earL{transform-box:fill-box;transform-origin:right top}.rm .earR{transform-box:fill-box;transform-origin:left top}
+.rumi-av{border-radius:50%!important;background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 60%,var(--arete-e) 100%)!important}
+.rumi-av .rm{width:88%;height:88%;margin-top:8%}
+.rumi-hd{display:flex;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 60%,var(--arete-e) 100%);align-items:center;justify-content:center;overflow:hidden}
+.rumi-hd .rm{width:42px!important;height:42px!important;margin-top:5px}
+.rm.av{width:34px;height:34px;border-radius:50%;background:var(--card2);padding:2px}
 /* Rumi por menús */
 .tbw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tbw .tb td,.tbw .tb th{white-space:nowrap}
@@ -525,8 +535,19 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .arow.head{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:-4px}
 .arow+.arow{margin-top:8px}
 .arow.raro .ar-p{border-color:var(--rojo);box-shadow:0 0 0 3px var(--rojo-bg)}
-:root[data-paleta]:not([data-paleta="noche"]) .hd{position:relative;isolation:isolate}
-:root[data-paleta]:not([data-paleta="noche"]) .hd::before{content:'';position:absolute;left:0;right:0;bottom:0;height:130px;background:var(--head);mix-blend-mode:color;pointer-events:none;z-index:-1}
+.mas-row{min-height:66px}
+.mas-ic{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--anil-bg);color:var(--anil5);flex:none}
+.mas-ic svg{width:22px;height:22px}
+.mas-ic.t-v{background:var(--verde-bg);color:var(--verde)}.mas-ic.t-y{background:rgba(240,191,51,.2);color:var(--arete-e)}.mas-ic.t-t{background:var(--tierra-bg);color:var(--tierra)}.mas-ic.t-r{background:var(--rojo-bg);color:var(--rojo)}
+.mas-ic .rumi-mini{width:30px;height:30px}
+.cfg-f{display:flex;flex-direction:column;gap:0}
+.cfg-c{display:flex;flex-direction:column;gap:16px}
+.cfg-save{position:sticky;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;padding:8px 0}
+.nota-cfg{display:flex;gap:10px;align-items:flex-start;background:var(--verde-bg);border-radius:14px;padding:12px}
+.nota-cfg svg{width:20px;height:20px;flex:none;color:var(--verde);margin-top:2px}
+.nota-cfg p{margin:0;font-size:14px;line-height:1.45}
+.acerca{display:flex;flex-direction:column;gap:8px}.acerca p{margin:0;line-height:1.5}
+.creditos{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink2);display:flex;flex-direction:column;gap:4px}
 .mas-ir{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .mas-ir button{display:flex;align-items:center;gap:8px;min-height:46px;padding:0 12px;border-radius:14px;border:1px solid var(--hline);background:var(--hcard);color:var(--htx);font-weight:700;font-size:14px;text-align:left}
 .mas-ir button svg{width:18px;height:18px;flex:none;color:var(--arete)}
@@ -645,6 +666,18 @@ body:has(#pasoSnack.on) #rumiFab{opacity:0;pointer-events:none;transform:transla
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;font-size:14.5px;z-index:100;max-width:calc(100% - 40px);transition:opacity .2s,transform .2s;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.rp{display:none}}
+/* fondos con fotos reales (CC0 y dominio público, ver Acerca de) */
+.vineta{display:none!important}
+body[data-pg='hoy'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/pastoreo.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/pastoreo.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
+body[data-pg='lotes'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/llano.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/llano.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
+body[data-pg='registrar'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/descanso.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/descanso.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
+body[data-pg='graficos'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/montana.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/montana.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
+body[data-pg='mas'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/rio.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/rio.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
+body[data-pg='lote'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/pastoreo.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/pastoreo.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
+body[data-pg='animal'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/descanso.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/descanso.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
+body[data-pg='formular'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/llano.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/llano.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
+body[data-pg='bodega'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/descanso.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/descanso.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
+body[data-pg='agenda'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/montana.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/montana.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
 </style>
 </head>
 <body>
@@ -1023,6 +1056,8 @@ function stackBars(rows,parts){
 
 /* ============ marca ============ */
 const LOGO_HD=`<svg viewBox="-0.0 -84.2 444.7 85.5" aria-hidden="true"><path d="M2.3 -61.4C2.9 -74.1 13.4 -84.1 26.2 -84.1H29.3C42.1 -84.1 52.6 -74.1 53.2 -61.4L55.5 -11.5C55.8 -5.2 50.8 0.0 44.5 0.0H11.0C4.7 0.0 -0.2 -5.2 0.0 -11.5ZM34.4 -72.3C34.4 -76.0 31.4 -79.0 27.7 -79.0C24.1 -79.0 21.1 -76.0 21.1 -72.3C21.1 -68.6 24.1 -65.6 27.7 -65.6C31.4 -65.6 34.4 -68.6 34.4 -72.3Z" fill="#F0BF33"/><path d="M16.2 -11.9V-43.1H27.1Q29.0 -43.1 30.7 -42.7Q32.4 -42.4 33.8 -41.6Q35.2 -40.9 36.2 -39.8Q37.2 -38.7 37.8 -37.2Q38.4 -35.7 38.4 -33.9Q38.4 -32.4 37.9 -31.0Q37.5 -29.7 36.5 -28.7Q35.6 -27.6 34.1 -26.9Q32.6 -26.2 30.5 -25.9V-25.5Q33.2 -25.4 34.7 -24.4Q36.2 -23.4 36.9 -21.9Q37.7 -20.3 38.0 -18.3L39.3 -11.9H31.6L30.7 -17.6Q30.5 -19.2 30.0 -20.4Q29.5 -21.5 28.6 -22.1Q27.7 -22.7 26.0 -22.7H23.3V-11.9ZM23.3 -28.0H26.3Q28.6 -28.0 29.8 -29.1Q31.0 -30.3 31.0 -32.7Q31.0 -35.1 29.9 -36.2Q28.9 -37.3 26.6 -37.3H23.3Z" fill="#22384D"/><path d="M178.5 0.0V-29.3L178.5 -52.7H191.5L191.3 -32.2H192.1Q192.6 -40.2 194.3 -45.0Q196.1 -49.7 199.2 -51.9Q202.2 -54.0 206.4 -54.0Q210.9 -54.0 213.6 -51.7Q216.3 -49.4 217.6 -44.6Q218.8 -39.8 218.6 -32.2H219.4Q219.9 -40.2 221.8 -44.9Q223.7 -49.7 226.8 -51.8Q230.0 -54.0 234.3 -54.0Q238.0 -54.0 240.7 -52.5Q243.4 -51.1 245.1 -48.3Q246.9 -45.4 247.8 -41.1Q248.7 -36.9 248.7 -31.1V0.0H233.4V-28.6Q233.4 -32.5 232.9 -35.1Q232.5 -37.7 231.4 -39.0Q230.3 -40.2 228.5 -40.2Q226.2 -40.2 224.5 -37.9Q222.8 -35.6 221.9 -31.3Q221.0 -27.0 221.0 -20.9V0.0H206.1V-28.9Q206.1 -32.8 205.6 -35.3Q205.1 -37.8 204.0 -39.0Q202.9 -40.2 201.2 -40.2Q198.8 -40.2 197.2 -38.1Q195.5 -35.9 194.6 -31.6Q193.7 -27.2 193.7 -20.7V0.0ZM76.7 0.0V-66.0H99.9Q103.9 -66.0 107.5 -65.2Q111.1 -64.4 114.0 -62.9Q117.0 -61.3 119.2 -59.0Q121.3 -56.7 122.5 -53.6Q123.7 -50.4 123.7 -46.5Q123.7 -43.3 122.8 -40.5Q121.8 -37.7 119.8 -35.4Q117.8 -33.2 114.6 -31.7Q111.4 -30.2 107.0 -29.6V-28.8Q112.9 -28.5 116.0 -26.4Q119.2 -24.4 120.7 -21.0Q122.2 -17.7 123.0 -13.5L125.8 0.0H109.4L107.5 -12.1Q107.0 -15.5 106.0 -17.9Q105.0 -20.3 103.0 -21.6Q101.1 -22.9 97.5 -22.9H91.9V0.0ZM276.3 1.3Q269.7 1.3 265.2 -0.7Q260.7 -2.7 258.0 -6.3Q255.3 -9.9 254.1 -14.8Q252.9 -19.6 252.9 -25.2Q252.9 -30.9 254.1 -36.0Q255.3 -41.2 258.0 -45.3Q260.6 -49.3 264.9 -51.7Q269.3 -54.0 275.6 -54.0Q281.6 -54.0 285.9 -51.8Q290.2 -49.6 292.7 -45.6Q295.2 -41.6 296.0 -36.2Q296.8 -30.9 295.8 -24.4L267.8 -23.8Q268.1 -17.1 269.9 -13.9Q272.0 -10.0 276.4 -10.0Q278.4 -10.0 279.7 -10.8Q281.0 -11.5 281.8 -12.9Q282.5 -14.3 282.7 -16.1Q283.0 -17.9 282.8 -20.1L296.8 -19.1Q297.2 -15.6 296.5 -12.0Q295.7 -8.4 293.4 -5.4Q291.2 -2.4 287.0 -0.5Q282.8 1.3 276.3 1.3ZM301.3 0.0V-30.3L301.3 -52.7H314.3L314.1 -32.1H314.9Q315.3 -39.8 317.1 -44.6Q318.9 -49.4 322.1 -51.7Q325.4 -54.0 330.2 -54.0Q337.8 -54.0 341.5 -48.5Q345.2 -43.1 345.2 -31.8V0.0H330.0V-29.1Q330.0 -34.9 328.7 -37.6Q327.4 -40.3 324.4 -40.3Q321.8 -40.3 320.0 -38.1Q318.2 -35.9 317.4 -31.5Q316.5 -27.1 316.5 -20.6V0.0ZM143.9 1.3Q136.4 1.3 132.8 -4.3Q129.2 -10.0 129.2 -22.0V-52.7H144.5V-23.4Q144.5 -17.4 145.7 -14.9Q147.0 -12.4 149.8 -12.4Q151.7 -12.4 153.1 -13.5Q154.6 -14.7 155.6 -17.0Q156.6 -19.2 157.1 -22.7Q157.6 -26.1 157.6 -30.8V-52.7H172.8V-24.3L172.8 0.0H159.8L159.9 -20.1H159.2Q158.8 -12.3 156.9 -7.6Q155.0 -2.9 151.7 -0.8Q148.5 1.3 143.9 1.3ZM423.7 1.3Q418.2 1.3 413.9 -0.0Q409.7 -1.3 406.9 -3.9Q404.1 -6.5 402.9 -10.3Q401.8 -14.1 402.5 -19.1L415.8 -20.3Q415.7 -17.0 416.6 -14.5Q417.4 -12.0 419.2 -10.6Q421.1 -9.3 424.0 -9.3Q426.6 -9.3 428.3 -10.4Q430.1 -11.5 430.1 -14.0Q430.1 -16.0 429.0 -17.3Q428.0 -18.6 425.8 -19.7Q423.6 -20.7 420.1 -21.8Q416.3 -23.0 413.0 -24.3Q409.8 -25.6 407.3 -27.3Q404.9 -29.1 403.6 -31.7Q402.2 -34.2 402.2 -37.9Q402.2 -43.0 404.8 -46.6Q407.3 -50.1 411.9 -52.1Q416.6 -54.0 422.9 -54.0Q428.7 -54.0 433.5 -52.1Q438.3 -50.2 440.9 -45.9Q443.5 -41.7 442.7 -34.7L429.7 -33.3Q430.0 -36.3 429.2 -38.5Q428.4 -40.7 426.6 -41.9Q424.9 -43.1 422.4 -43.1Q419.6 -43.1 418.1 -41.8Q416.6 -40.6 416.6 -38.6Q416.6 -36.9 417.7 -35.7Q418.8 -34.5 421.0 -33.6Q423.2 -32.7 426.4 -31.7Q429.5 -30.8 432.7 -29.5Q435.9 -28.2 438.6 -26.3Q441.3 -24.3 443.0 -21.4Q444.7 -18.5 444.7 -14.2Q444.7 -9.7 442.3 -6.1Q440.0 -2.6 435.4 -0.6Q430.7 1.3 423.7 1.3ZM369.8 1.0Q361.3 1.0 357.0 -3.5Q352.6 -8.2 352.6 -17.7V-40.8H347.9V-50.7H348.7Q353.5 -51.1 355.5 -53.7Q357.4 -56.2 357.9 -61.4L358.2 -63.9H367.5V-52.7H377.6V-40.5H367.5V-19.8Q367.5 -16.1 369.1 -14.3Q370.6 -12.6 373.0 -12.6Q374.2 -12.6 375.4 -13.0Q376.6 -13.4 377.6 -14.0V-0.1Q375.3 0.5 373.4 0.7Q371.4 1.0 369.8 1.0ZM382.2 0.0V-52.7H397.4V0.0ZM91.9 -34.1H98.2Q103.1 -34.1 105.6 -36.4Q108.2 -38.8 108.2 -43.9Q108.2 -49.0 105.9 -51.4Q103.6 -53.7 98.8 -53.7H91.9ZM268.0 -31.7 282.2 -32.1Q282.2 -33.9 281.9 -35.4Q281.4 -38.7 279.9 -40.4Q278.3 -42.0 275.6 -42.0Q272.6 -42.0 270.9 -40.1Q269.2 -38.2 268.5 -34.7Q268.2 -33.3 268.0 -31.7Z" fill="currentColor"/><path d="M381.8 -70.9C382.0 -74.8 385.3 -77.9 389.2 -77.9H390.4C394.3 -77.9 397.6 -74.8 397.8 -70.9L398.4 -60.1C398.5 -58.6 397.3 -57.2 395.7 -57.2H383.9C382.3 -57.2 381.0 -58.6 381.1 -60.1ZM392.2 -72.4C392.2 -73.8 391.1 -74.9 389.8 -74.9C388.4 -74.9 387.3 -73.8 387.3 -72.4C387.3 -71.1 388.4 -70.0 389.8 -70.0C391.1 -70.0 392.2 -71.1 392.2 -72.4Z" fill="#F0BF33"/></svg>`;
+const VERSION_APP='3.6';
+const CREDITOS_FOTOS=['Brahman en Costa Rica y en el río Tárcoles: Bernard Gagnon, Wikimedia Commons (CC0).','Brahman cerca de Lipa, Filipinas: Fiszi37, Wikimedia Commons (CC0).','Brahman pastando en Brazos County, Texas: Beverly Moseley, USDA NRCS (dominio público).','Brahman en el llano: Wikimedia Commons (dominio público).'];window.CREDITOS_FOTOS=CREDITOS_FOTOS;
 const FIRMA=`<svg class=" rsym"viewBox="14.7 13.0 70.7 107.0" aria-hidden="true"><path d="M17.6 41.9C18.4 25.7 31.7 13.0 47.9 13.0H52.0C68.2 13.0 81.5 25.7 82.3 41.9L85.3 105.3C85.6 113.3 79.3 120.0 71.3 120.0H28.6C20.6 120.0 14.3 113.3 14.6 105.3ZM58.5 28.0C58.5 23.3 54.6 19.5 50.0 19.5C45.3 19.5 41.5 23.3 41.5 28.0C41.5 32.6 45.3 36.5 50.0 36.5C54.6 36.5 58.5 32.6 58.5 28.0Z" fill="#F0BF33"/><path d="M35.2 104.8V65.1H49.2Q51.6 65.1 53.7 65.6Q55.9 66.1 57.6 67.0Q59.4 67.9 60.7 69.3Q62.0 70.7 62.7 72.6Q63.4 74.5 63.4 76.8Q63.4 78.7 62.9 80.4Q62.3 82.1 61.1 83.5Q59.9 84.8 58.0 85.7Q56.1 86.6 53.4 86.9V87.4Q56.9 87.6 58.8 88.9Q60.7 90.1 61.6 92.1Q62.5 94.1 63.0 96.6L64.7 104.8H54.8L53.7 97.5Q53.4 95.4 52.8 94.0Q52.2 92.5 51.0 91.8Q49.8 91.0 47.7 91.0H44.3V104.8ZM44.3 84.3H48.1Q51.1 84.3 52.6 82.9Q54.1 81.4 54.1 78.4Q54.1 75.3 52.7 73.9Q51.4 72.5 48.5 72.5H44.3Z" fill="#22384D"/></svg><svg class=" rwm"viewBox="3.3 -78.0 368.0 79.3" aria-hidden="true"><path d="M105.1 0.0V-29.3L105.1 -52.7H118.1L117.9 -32.2H118.7Q119.2 -40.2 120.9 -45.0Q122.7 -49.7 125.8 -51.9Q128.8 -54.0 133.0 -54.0Q137.5 -54.0 140.2 -51.7Q143.0 -49.4 144.2 -44.6Q145.4 -39.8 145.2 -32.2H146.0Q146.5 -40.2 148.4 -44.9Q150.3 -49.7 153.5 -51.8Q156.6 -54.0 160.9 -54.0Q164.6 -54.0 167.3 -52.5Q170.0 -51.1 171.7 -48.3Q173.5 -45.4 174.4 -41.1Q175.3 -36.9 175.3 -31.1V0.0H160.0V-28.6Q160.0 -32.5 159.5 -35.1Q159.1 -37.7 158.0 -39.0Q156.9 -40.2 155.1 -40.2Q152.8 -40.2 151.1 -37.9Q149.4 -35.6 148.5 -31.3Q147.6 -27.0 147.6 -20.9V0.0H132.7V-28.9Q132.7 -32.8 132.2 -35.3Q131.7 -37.8 130.6 -39.0Q129.5 -40.2 127.8 -40.2Q125.5 -40.2 123.8 -38.1Q122.1 -35.9 121.2 -31.6Q120.3 -27.2 120.3 -20.7V0.0ZM3.3 0.0V-66.0H26.5Q30.5 -66.0 34.1 -65.2Q37.7 -64.4 40.6 -62.9Q43.6 -61.3 45.8 -59.0Q47.9 -56.7 49.1 -53.6Q50.3 -50.4 50.3 -46.5Q50.3 -43.3 49.4 -40.5Q48.4 -37.7 46.4 -35.4Q44.4 -33.2 41.2 -31.7Q38.0 -30.2 33.6 -29.6V-28.8Q39.5 -28.5 42.6 -26.4Q45.8 -24.4 47.3 -21.0Q48.8 -17.7 49.6 -13.5L52.4 0.0H36.0L34.1 -12.1Q33.6 -15.5 32.6 -17.9Q31.6 -20.3 29.6 -21.6Q27.7 -22.9 24.1 -22.9H18.5V0.0ZM202.9 1.3Q196.3 1.3 191.8 -0.7Q187.3 -2.7 184.6 -6.3Q181.9 -9.9 180.7 -14.8Q179.5 -19.6 179.5 -25.2Q179.5 -30.9 180.7 -36.0Q181.9 -41.2 184.6 -45.3Q187.2 -49.3 191.5 -51.7Q195.9 -54.0 202.2 -54.0Q208.3 -54.0 212.5 -51.8Q216.8 -49.6 219.3 -45.6Q221.9 -41.6 222.6 -36.2Q223.4 -30.9 222.4 -24.4L194.4 -23.8Q194.7 -17.1 196.5 -13.9Q198.6 -10.0 203.0 -10.0Q205.0 -10.0 206.3 -10.8Q207.6 -11.5 208.4 -12.9Q209.1 -14.3 209.3 -16.1Q209.6 -17.9 209.5 -20.1L223.4 -19.1Q223.8 -15.6 223.1 -12.0Q222.3 -8.4 220.1 -5.4Q217.8 -2.4 213.6 -0.5Q209.4 1.3 202.9 1.3ZM227.9 0.0V-30.3L227.9 -52.7H240.9L240.7 -32.1H241.5Q241.9 -39.8 243.7 -44.6Q245.5 -49.4 248.7 -51.7Q252.0 -54.0 256.8 -54.0Q264.4 -54.0 268.1 -48.5Q271.8 -43.1 271.8 -31.8V0.0H256.6V-29.1Q256.6 -34.9 255.3 -37.6Q254.0 -40.3 251.0 -40.3Q248.4 -40.3 246.6 -38.1Q244.8 -35.9 244.0 -31.5Q243.1 -27.1 243.1 -20.6V0.0ZM70.5 1.3Q63.0 1.3 59.4 -4.3Q55.8 -10.0 55.8 -22.0V-52.7H71.1V-23.4Q71.1 -17.4 72.3 -14.9Q73.6 -12.4 76.4 -12.4Q78.3 -12.4 79.7 -13.5Q81.2 -14.7 82.2 -17.0Q83.2 -19.2 83.7 -22.7Q84.2 -26.1 84.2 -30.8V-52.7H99.4V-24.3L99.4 0.0H86.4L86.5 -20.1H85.8Q85.4 -12.3 83.5 -7.6Q81.6 -2.9 78.3 -0.8Q75.1 1.3 70.5 1.3ZM350.3 1.3Q344.8 1.3 340.5 -0.0Q336.3 -1.3 333.5 -3.9Q330.7 -6.5 329.5 -10.3Q328.4 -14.1 329.1 -19.1L342.4 -20.3Q342.3 -17.0 343.2 -14.5Q344.0 -12.0 345.9 -10.6Q347.7 -9.3 350.6 -9.3Q353.2 -9.3 355.0 -10.4Q356.7 -11.5 356.7 -14.0Q356.7 -16.0 355.6 -17.3Q354.6 -18.6 352.4 -19.7Q350.2 -20.7 346.7 -21.8Q342.9 -23.0 339.6 -24.3Q336.4 -25.6 333.9 -27.3Q331.5 -29.1 330.2 -31.7Q328.8 -34.2 328.8 -37.9Q328.8 -43.0 331.4 -46.6Q333.9 -50.1 338.5 -52.1Q343.2 -54.0 349.5 -54.0Q355.3 -54.0 360.1 -52.1Q364.9 -50.2 367.5 -45.9Q370.1 -41.7 369.3 -34.7L356.3 -33.3Q356.6 -36.3 355.8 -38.5Q355.0 -40.7 353.2 -41.9Q351.5 -43.1 349.0 -43.1Q346.2 -43.1 344.7 -41.8Q343.2 -40.6 343.2 -38.6Q343.2 -36.9 344.3 -35.7Q345.4 -34.5 347.6 -33.6Q349.8 -32.7 353.0 -31.7Q356.1 -30.8 359.3 -29.5Q362.5 -28.2 365.2 -26.3Q367.9 -24.3 369.6 -21.4Q371.3 -18.5 371.3 -14.2Q371.3 -9.7 369.0 -6.1Q366.6 -2.6 362.0 -0.6Q357.3 1.3 350.3 1.3ZM296.4 1.0Q287.9 1.0 283.6 -3.5Q279.2 -8.2 279.2 -17.7V-40.8H274.5V-50.7H275.3Q280.1 -51.1 282.1 -53.7Q284.0 -56.2 284.5 -61.4L284.8 -63.9H294.1V-52.7H304.2V-40.5H294.1V-19.8Q294.1 -16.1 295.7 -14.3Q297.2 -12.6 299.6 -12.6Q300.8 -12.6 302.0 -13.0Q303.2 -13.4 304.2 -14.0V-0.1Q301.9 0.5 300.0 0.7Q298.0 1.0 296.4 1.0ZM308.8 0.0V-52.7H324.0V0.0ZM18.5 -34.1H24.8Q29.7 -34.1 32.2 -36.4Q34.8 -38.8 34.8 -43.9Q34.8 -49.0 32.5 -51.4Q30.2 -53.7 25.4 -53.7H18.5ZM194.6 -31.7 208.8 -32.1Q208.8 -33.9 208.5 -35.4Q208.0 -38.7 206.5 -40.4Q204.9 -42.0 202.2 -42.0Q199.2 -42.0 197.5 -40.1Q195.8 -38.2 195.1 -34.7Q194.8 -33.3 194.6 -31.7Z" fill="currentColor"/><path d="M308.4 -70.9C308.6 -74.8 311.9 -77.9 315.8 -77.9H317.0C320.9 -77.9 324.2 -74.8 324.4 -70.9L325.0 -60.1C325.1 -58.6 323.9 -57.2 322.3 -57.2H310.5C308.9 -57.2 307.6 -58.6 307.7 -60.1ZM318.8 -72.4C318.8 -73.8 317.7 -74.9 316.4 -74.9C315.0 -74.9 313.9 -73.8 313.9 -72.4C313.9 -71.1 315.0 -70.0 316.4 -70.0C317.7 -70.0 318.8 -71.1 318.8 -72.4Z" fill="currentColor"/></svg>`;
 
 /* ============ render ============ */
@@ -1267,46 +1302,103 @@ function lectCard(A,days){
 }
 
 /* ---------- Más ---------- */
-PAGES.mas=()=>{
-  const cfg=S.config;let tema='auto',pal='noche';try{tema=localStorage.getItem('rumentis-tema')||'auto';pal=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
+/* ---------- Más: menú de opciones; cada opción abre su pantalla ---------- */
+const MI={
+ config:'<circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+ racion:'<path d="M5 10h14l-2 10H7L5 10zM8 10l2-6M16 10l-2-6"/>',
+ gasto:'<circle cx="12" cy="12" r="9"/><path d="M12 6.5v11M15 9h-4.2a1.8 1.8 0 0 0 0 3.6h2.4a1.8 1.8 0 0 1 0 3.6H9"/>',
+ bodega:'<path d="M3 10l9-6 9 6v10H3z"/><path d="M8 20v-6h8v6M8 17h8"/>',
+ datos:'<path d="M12 3v12M7 10l5 5 5-5M4 19h16"/>',
+ paleta:'<path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4.1-4-7.4-9-7.4z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="8" r="1"/>',
+ ayuda:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',
+ ruta:'<path d="M4 19c4 0 4-6 8-6s4-6 8-6"/><circle cx="4" cy="19" r="1.6"/><circle cx="20" cy="7" r="1.6"/>',
+ formula:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+ aviso:'<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/>',
+ agenda:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'
+};
+const mico=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MI[k]||''}</svg>`;
+const masFila=(ic,b,sp,attrs,tono='')=>`<${attrs.startsWith('href')?'a':'button type="button"'} class="row mas-row" ${attrs}><span class="mas-ic ${tono}">${ic}</span><div class="tx"><b>${b}</b><span>${sp}</span></div>${ico('chev')}</${attrs.startsWith('href')?'a':'button'}>`;
+const masHd=(t,sub)=>`<header class="hd">${hdBack('#mas','Más','<span class="sync"></span>')}<div class="ttl" style="margin-top:-6px"><h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div></header>`;
+const MAS_SUB={
+ config:()=>{
+  const cfg=S.config;
+  const f=(k,l,v,extra='',hint='',unit='')=>`<div class="q"><label for="c_${k}">${l}</label>${unit?`<div class="unit">`:''}<input class="in" id="c_${k}" name="${k}" value="${esc(v)}" ${extra}>${unit?`<em>${unit}</em></div>`:''}${hint?`<small>${hint}</small>`:''}</div>`;
+  return masHd('Configuración','Tus preferencias. La app las usa para calcular márgenes, fechas y avisos.')+`<main class="bd"><form class="cfg-f" data-form="cfg">
+   <section class="sec">${secH('Tu finca')}<div class="card pad cfg-c">${f('finca','Nombre de la finca',cfg.finca,'required')}${f('ubicacion','Ubicación',cfg.ubicacion,'placeholder="Aldea, municipio"')}</div></section>
+   <section class="sec">${secH('Precio y moneda')}<div class="card pad cfg-c">
+    <div class="two">${f('precioVentaKg','Precio de venta',r2u(PKd(+cfg.precioVentaKg||0)),'inputmode="decimal"','Lo que te pagan hoy. Actualízalo cuando cambie el mercado.','por kg')}${f('moneda','Moneda',cfg.moneda,'maxlength="4"')}</div></div></section>
+   <section class="sec">${secH('Metas del engorde')}<div class="card pad cfg-c">
+    ${f('metaKg','Peso meta de venta',Math.round(W(+cfg.metaKg||480)),'inputmode="numeric"','Peso por cabeza al que planeas vender. Cada lote puede tener su propia meta.','kg')}
+    ${f('gdpEsperada','Ganancia diaria esperada',r2u(W(+cfg.gdpEsperada||1.3)),'inputmode="decimal"','','kg/día')}
+    <div class="nota-cfg">${ico('check',2.2)}<p><b>No es la ganancia real.</b> Solo se usa para estimar lotes que todavía no tienen pesajes. En cuanto pesas un lote, la app calcula su ganancia real entre pesajes y usa esa en proyecciones, fechas de salida, márgenes y gráficos.</p></div>
+    ${f('desbaste','Desbaste al vender',cfg.desbaste??4,'inputmode="decimal"','Lo que pierden al pesarse en ayunas; el comprador lo descuenta. El NRC usa 4 %.','%')}</div></section>
+   <section class="sec">${secH('Alimentación y avisos')}<div class="card pad cfg-c">
+    ${f('horas','Horarios de entrega de alimento',cfg.horas,'','Sepáralos con comas. Por ejemplo: 6:00, 11:00, 15:00. La pantalla Hoy te recuerda cada entrega.')}
+    ${f('diasSinPesar','Avisarme si un lote no se pesa en',cfg.diasSinPesar,'inputmode="numeric"','','días')}</div></section>
+   <section class="sec">${secH('Unidad de peso')}<div class="card pad cfg-c"><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div><small class="hint" style="margin:0">Pesos, ganancias y precios se muestran y se escriben en ${U()==='lb'?'libras':'kilos'}. Tus datos no cambian.</small></div></section>
+   <div class="cfg-save"><button class="btn pri full">Guardar configuración</button></div></form></main>`;
+ },
+ raciones:()=>{
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
   const rac=R.length?R.map(([k,r])=>`<button type="button" class="row" data-act="f" data-f="racion" data-id="${esc(k)}"><div class="tx"><b>${esc(r.nombre)}</b><span>${pk(r.costoKg)} el kilo${(r.ings||[]).length?', '+r.ings.map(i=>esc(i.n)).join(', '):''}</span></div>${ico('chev')}</button>`).join(''):`<p class="empty">Aún no tienes raciones.</p>`;
-  const C=calc();const gg=[...C.generales].reverse().slice(0,6);
-  const gas=gg.length?gg.map(i=>`<div class="row"><div class="tx"><b>${esc(i.cat)}: ${money(i.monto)}</b><span>${ffc(i.f)}${i.desc?', '+esc(i.desc):''}</span></div><button type="button" class="del" data-act="delItems" data-ids="${i.id}" aria-label="Borrar gasto">${ico('papelera')}</button></div>`).join(''):`<p class="empty">Sin gastos generales.</p>`;
-  const f=(k,l,v,extra='',hint='')=>`<div class="q"><label for="c_${k}">${l}</label><input class="in" id="c_${k}" name="${k}" value="${esc(v)}" ${extra}>${hint?`<small>${hint}</small>`:''}</div>`;
-  const IR=[['m-finca','Tu finca','lote'],['m-rac','Raciones','racion'],['m-gas','Gastos','gasto'],['m-datos','Datos','graficos'],['m-apar','Colores','hoy'],['m-ayuda','Ayuda','mas']];
-  const fila=(ic,b,sp,attrs)=>`<${attrs.startsWith('href')?'a':'button type="button"'} class="row" ${attrs}><span class="ic mas-ic">${ic}</span><div class="tx"><b>${b}</b><span>${sp}</span></div>${ico('chev')}</${attrs.startsWith('href')?'a':'button'}>`;
-  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(cfg.finca||'Mi engorde')}${cfg.ubicacion?' · '+esc(cfg.ubicacion):''}</span><h1>Más</h1><p class="sub">Tu finca, tus datos y cómo se ve la app.</p></div>
-   <div class="mas-ir">${IR.map(([id,t,ic])=>`<button type="button" data-act="irA" data-id="${id}">${ico(ic)}<span>${t}</span></button>`).join('')}</div></header>
+  return masHd('Raciones y dietas','Tus mezclas y su costo por kilo. Las eliges cada vez que anotas alimento.')+`<main class="bd">
+   <section class="sec"><div class="card rows">${masFila(mico('formula'),'Formular una dieta','Rumi calcula la mezcla más barata con tus precios','href="#formular"','t-v')}${masFila(ico('nuevo'),'Nueva ración','Nombre, costo por kilo e ingredientes','data-act="f" data-f="racion"','t-a')}</div></section>
+   <section class="sec">${secH('Tus raciones',R.length)}<div class="card rows">${rac}</div></section></main>`;
+ },
+ gastos:()=>{
+  const C=calc();const gg=[...C.generales].reverse();
+  const tot=gg.filter(i=>i.f.slice(0,7)===C.H.slice(0,7)).reduce((s,i)=>s+(+i.monto||0),0);
+  const gas=gg.length?gg.slice(0,60).map(i=>`<div class="row"><div class="tx"><b>${esc(i.cat)}: ${money(i.monto)}</b><span>${ffc(i.f)}${i.desc?', '+esc(i.desc):''}</span></div><button type="button" class="del" data-act="delItems" data-ids="${i.id}" aria-label="Borrar gasto">${ico('papelera')}</button></div>`).join(''):`<p class="empty">Sin gastos generales.</p>`;
+  return masHd('Gastos generales','Sueldos, energía y otros gastos que no son de un lote. Se reparten en el costo de todos tus lotes.')+`<main class="bd">
+   <section class="sec"><div class="card pad" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><span class="sm">Este mes</span><div class="hf" style="font-size:24px">${money(tot)}</div></div><button type="button" class="btn pri" data-act="f" data-f="gasto">${ico('nuevo')}Anotar gasto</button></div></section>
+   <section class="sec">${secH('Últimos gastos',gg.length)}<div class="card rows">${gas}</div></section></main>`;
+ },
+ datos:()=>masHd('Tus datos','Respaldo para no perder nada y descargas para Excel.')+`<main class="bd">
+   <section class="sec">${secH('Respaldo')}<div class="card pad mas-datos"><p class="hint" style="margin:0">${MODE==='db'?'Tus datos se guardan en la nube.':window.Android?'Todo se guarda en este teléfono. Descarga un respaldo cada semana y guárdalo en Drive o mándatelo por WhatsApp. Las fotos de los animales se quedan en el teléfono.':'Tus datos se guardan en este dispositivo. Descarga respaldos con frecuencia.'}</p>
+    <div class="acts"><button type="button" class="btn pri" data-act="respaldo">${mico('datos')}Descargar respaldo</button><button type="button" class="btn" data-act="importar">Restaurar respaldo</button></div></div></section>
+   <section class="sec">${secH('Descargar para Excel')}<div class="card rows">${[['expLotes','Lotes','Compra, pesos, márgenes y estado'],['expAlim','Alimento','Cada entrega con kilos y costo'],['expPes','Pesajes','Pesos por lote y por animal'],['expSan','Sanidad','Vacunas, tratamientos y retiros'],['expMov','Ventas y muertes','Salidas de animales'],['expGas','Gastos','Gastos de lotes y generales']].map(([a,t,s])=>masFila(mico('datos'),t,s,`data-act="${a}"`,'t-a')).join('')}</div></section></main>`,
+ apariencia:()=>{
+  let tema='auto',pal='noche';try{tema=localStorage.getItem('rumentis-tema')||'auto';pal=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
+  return masHd('Apariencia','Modo claro u oscuro y los colores de la app.')+`<main class="bd">
+   <section class="sec">${secH('Tema')}<div class="seg" role="group" aria-label="Tema">${[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(([v,t])=>`<button type="button" data-act="tema" data-v="${v}" aria-pressed="${tema===v}">${t}</button>`).join('')}</div><p class="hint">Automático sigue el modo de tu teléfono.</p></section>
+   <section class="sec">${secH('Paleta de colores')}<div class="paletas" id="apariencia">${PALETAS.map(([v,t,a,b,c])=>`<button type="button" class="pal" data-act="paleta" data-v="${v}" aria-pressed="${pal===v}"><i style="background:linear-gradient(135deg,${a} 0 55%,${b} 55% 72%,${c} 72%)"></i><span>${t}</span></button>`).join('')}</div></section></main>`;
+ },
+ ayuda:()=>masHd('Ayuda','Aprende a usar Rumentis y cómo calcula cada número.')+`<main class="bd"><section class="sec"><div class="card rows">
+   ${masFila(`<span class="rumi-mini">${rumiSVG()}</span>`,'Menú de Rumi','Tus números, lotes, síntomas, calculadoras y la guía de engorde','data-act="rumi"')}
+   ${masFila(mico('ruta'),'Recorrido por la app','Seis pasos cortos','data-act="tour"','t-a')}
+   ${masFila(mico('formula'),'Cómo calcula Rumentis','Fórmulas, fuentes y supuestos de cada número','href="#metodologia"','t-v')}
+   ${masFila(mico('info'),'Acerca de Rumentis','Versión, privacidad y créditos','href="#mas/acerca"','t-a')}</div></section></main>`,
+ acerca:()=>masHd('Acerca de Rumentis','')+`<main class="bd"><section class="sec"><div class="card pad acerca">${FIRMA}<p><b>Versión ${VERSION_APP}</b></p>
+   <p>Tus datos y fotos se guardan en tu teléfono. No se envían a ningún lado salvo que tú compartas el respaldo o el Excel.</p>
+   <p>Rumi funciona sin internet. Sus consejos orientan; para medicinas y decisiones grandes consulta a tu veterinario.</p>
+   ${window.CREDITOS_FOTOS&&CREDITOS_FOTOS.length?`<p class="rh" style="margin-top:12px"><b>Fotos</b></p><ul class="creditos">${CREDITOS_FOTOS.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>`:''}</div></section></main>`,
+ avanzado:()=>masHd('Opciones avanzadas','Para probar la app o empezar de cero.')+`<main class="bd"><section class="sec"><div class="card rows">
+   ${masFila(mico('info'),'Probar con datos de ejemplo','Reemplaza tus datos por un engorde de ejemplo','data-act="demo"','t-a')}
+   ${masFila(mico('aviso'),'Borrar todo','Elimina lotes, registros y ajustes de este teléfono','data-act="borrarTodo"','t-r')}</div><p class="hint">Descarga un respaldo antes de usar estas opciones.</p></section></main>`
+};
+PAGES.mas=(sub)=>{
+  if(sub&&MAS_SUB[sub])return MAS_SUB[sub]();
+  const cfg=S.config,C=calc();
+  let tema='auto',pal='noche';try{tema=localStorage.getItem('rumentis-tema')||'auto';pal=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
+  const nR=Object.keys(S.raciones).length,gMes=C.generales.filter(i=>i.f.slice(0,7)===C.H.slice(0,7)).reduce((s,i)=>s+(+i.monto||0),0);
+  const pn=(PALETAS.find(p=>p[0]===pal)||PALETAS[0])[1];
+  const bod=window.Bodega?Bodega.resumen():null;
+  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(cfg.finca||'Mi engorde')}${cfg.ubicacion?' · '+esc(cfg.ubicacion):''}</span><h1>Más</h1><p class="sub">Configuración, datos y ayuda.</p></div></header>
   <main class="bd">
-   <section class="sec" id="m-finca">${secH('Tu finca')}<form class="card pad" data-form="cfg" style="display:flex;flex-direction:column;gap:16px">
-    ${f('finca','Nombre',cfg.finca,'required')}${f('ubicacion','Ubicación',cfg.ubicacion,'placeholder="Aldea, municipio"')}
-    <div class="two">${f('precioVentaKg','Precio de venta por kilo',r2u(PKd(+cfg.precioVentaKg||0)),'inputmode="decimal"')}${f('moneda','Moneda',cfg.moneda,'maxlength="4"')}</div>
-    <div class="two">${f('metaKg','Peso meta de venta',Math.round(W(+cfg.metaKg||480)),'inputmode="numeric"','kg por cabeza')}${f('gdpEsperada','Ganancia esperada',r2u(W(+cfg.gdpEsperada||1.3)),'inputmode="decimal"','kg al día, para lotes sin pesar')}${f('desbaste','Desbaste al vender',cfg.desbaste??4,'inputmode="decimal"','% que pierden al pesarse en ayunas (el NRC usa 4 %)')}</div>
-    ${f('horas','Horarios de entrega de alimento',cfg.horas,'','Sepáralos con comas. Por ejemplo: 6:00, 11:00, 15:00')}
-    ${f('diasSinPesar','Avisar si un lote no se pesa en',cfg.diasSinPesar,'inputmode="numeric"','días')}
-    
-    <div class="q"><span class="lb">Unidad de peso</span><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div><small>Pesos, ganancias y precios se muestran en ${U()==='lb'?'libras':'kilos'}. Tus datos no cambian.</small></div>
-    <button class="btn pri">Guardar</button></form></section>
-   <section class="sec" id="m-rac">${secH('Raciones y dietas',R.length,lnkB('f','Nueva ración','data-f="racion"'))}<div class="card rows">${fila(ico('racion'),'Formular dieta','Rumi calcula la mezcla más barata','href="#formular"')}${rac}</div></section>
-   <section class="sec" id="m-gas">${secH('Gastos generales')}<div class="card rows">${gas}</div><p class="hint">Sueldos, energía y otros gastos que no son de un lote. Se anotan en Registrar, Gasto; aquí los revisas o borras.</p></section>
-   <section class="sec" id="m-datos">${secH('Tus datos')}<div class="card pad mas-datos">
-     <p class="hint" style="margin:0">${MODE==='db'?'Tus datos se guardan en la nube.':window.Android?'Todo se guarda en este teléfono, también las fotos de tus animales. Descarga un respaldo cada semana y guárdalo en Drive o mándatelo por WhatsApp.':'Tus datos se guardan en este dispositivo. Descarga respaldos con frecuencia.'}</p>
-     <div class="acts"><button type="button" class="btn pri" data-act="respaldo">Descargar respaldo</button><button type="button" class="btn" data-act="importar">Restaurar</button></div>
-     <span class="lb">Descargar para Excel</span>
-     <div class="chips wrap">${[['expLotes','Lotes'],['expAlim','Alimento'],['expPes','Pesajes'],['expSan','Sanidad'],['expMov','Ventas y muertes'],['expGas','Gastos']].map(([a,t])=>`<button type="button" class="chip" data-act="${a}">${t}</button>`).join('')}</div></div></section>
-   <section class="sec" id="m-apar">${secH('Apariencia')}<div class="card pad" style="display:flex;flex-direction:column;gap:14px">
-     <div class="seg" role="group" aria-label="Tema">${[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(([v,t])=>`<button type="button" data-act="tema" data-v="${v}" aria-pressed="${tema===v}">${t}</button>`).join('')}</div>
-     <span class="lb">Paleta de colores</span>
-     <div class="paletas" id="apariencia">${PALETAS.map(([v,t,a,b,c])=>`<button type="button" class="pal" data-act="paleta" data-v="${v}" aria-pressed="${pal===v}"><i style="background:linear-gradient(135deg,${a} 0 55%,${b} 55% 72%,${c} 72%)"></i><span>${t}</span></button>`).join('')}</div></div></section>
-   <section class="sec" id="m-ayuda">${secH('Ayuda')}<div class="card rows">
-    ${fila(`<span class="rumi-mini">${rumiSVG()}</span>`,'Menú de Rumi','Números, salud, calculadoras y la guía de engorde','data-act="rumi"')}
-    ${fila(ico('hoy'),'Recorrido por la app','Seis pasos cortos','data-act="tour"')}
-    ${fila(ico('graficos'),'Cómo calcula Rumentis','Fórmulas, fuentes y supuestos de cada número','href="#metodologia"')}</div></section>
-   <details class="sec mas-av"><summary>Opciones avanzadas</summary>
-    <p class="hint">Para probar la app sin tus datos, o empezar de cero. Descarga un respaldo antes.</p>
-    <div class="acts"><button type="button" class="btn" data-act="demo">Probar con datos de ejemplo</button><button type="button" class="btn danger" data-act="borrarTodo">Borrar todo</button></div></details>
-   <div class="firma">${FIRMA}<span>versión 3.5</span></div>
+   <section class="sec">${secH('Tu finca')}<div class="card rows">
+    ${masFila(mico('config'),'Configuración',`Precio ${pk(+cfg.precioVentaKg||0)}, meta ${nf(W(+cfg.metaKg||480))} ${UW()}, ${U()==='lb'?'libras':'kilos'}`,'href="#mas/config"','t-a')}
+    ${masFila(mico('racion'),'Raciones y dietas',nR?pl(nR,'ración','raciones'):'Crea tu primera ración','href="#mas/raciones"','t-v')}
+    ${masFila(mico('bodega'),'Bodega de alimento',bod?bod.txt:'Inventario y días que te alcanza','href="#bodega"','t-y')}
+    ${masFila(mico('gasto'),'Gastos generales',gMes?`${money(gMes)} este mes`:'Sueldos, energía y otros','href="#mas/gastos"','t-t')}
+    ${masFila(mico('agenda'),'Agenda','Tareas de hoy y próximos días','href="#agenda"','t-a')}</div></section>
+   <section class="sec">${secH('Datos y personalización')}<div class="card rows">
+    ${masFila(mico('datos'),'Tus datos','Respaldo y descargas para Excel','href="#mas/datos"','t-a')}
+    ${masFila(mico('paleta'),'Apariencia',`${tema==='auto'?'Automático':tema==='dark'?'Oscuro':'Claro'}, paleta ${pn}`,'href="#mas/apariencia"','t-v')}</div></section>
+   <section class="sec">${secH('Ayuda')}<div class="card rows">
+    ${masFila(mico('ayuda'),'Ayuda','Rumi, recorrido y cómo calcula la app','href="#mas/ayuda"','t-a')}
+    ${masFila(mico('aviso'),'Opciones avanzadas','Datos de ejemplo y borrar todo','href="#mas/avanzado"','t-r')}</div></section>
+   <div class="firma">${FIRMA}<span>versión ${VERSION_APP}</span></div>
   </main>`;
 };
 
@@ -1853,7 +1945,19 @@ function guardarFormula(F,nombre){
 
 /* ============ Rumi: imagen ============ */
 function rumiSVG(cls=''){
-  return `<svg class="rm ${cls}" viewBox="0 0 120 120" aria-hidden="true"><g class="rm-b"><g class="earL"><path d="M30 52C21 51 12 47 8 40C17 37 27 39 34 45Z" fill="#A86B40"/><path d="M28 49.5C22 49 16 46.5 13 42.5C19 41.5 25 43 29.5 46.5Z" fill="#F4B9A5"/></g><g class="earR"><path d="M90 52C99 51 108 47 112 40C103 37 93 39 86 45Z" fill="#A86B40"/><path d="M92 49.5C98 49 104 46.5 107 42.5C101 41.5 95 43 90.5 46.5Z" fill="#F4B9A5"/><path d="M101 46.5c3.2 0 5.6 2.4 5.6 5.4v9.1c0 1.7-1.3 3-3 3h-5.2c-1.7 0-3-1.3-3-3v-9.1c0-3 2.4-5.4 5.6-5.4z" fill="#F0BF33"/><path d="M95.4 60.4h11.2v.6c0 1.7-1.3 3-3 3h-5.2c-1.7 0-3-1.3-3-3z" fill="#D9A722"/><circle cx="101" cy="50.6" r="1.5" fill="#FBEFC4"/></g><path d="M41 27c-3.5-2-5.2-6.2-4.2-10.5 3.7 1.3 6.8 3.8 8.6 7.2z" fill="#E6D5B3"/><path d="M79 27c3.5-2 5.2-6.2 4.2-10.5-3.7 1.3-6.8 3.8-8.6 7.2z" fill="#E6D5B3"/><path d="M60 22c21 0 35 14 35 34 0 22-15 38-35 38S25 78 25 56c0-20 14-34 35-34z" fill="#C8864F"/><path d="M50 25.5c3-4.5 6.2-6.5 10-6.5s7 2 10 6.5c-2.4-1.1-4.6-1.4-6.6-1 .7 1.2.9 2.6.5 4-1.2-1.8-3.2-2.8-5.5-2.8-1.6 0-3.2.4-4.5 1.2.3-1 .8-1.8 1.6-2.4-1.9-.3-3.8 0-5.5 1z" fill="#9C6440"/><ellipse cx="38.5" cy="68" rx="6.5" ry="4.5" fill="#F29C8C" opacity=".45"/><ellipse cx="81.5" cy="68" rx="6.5" ry="4.5" fill="#F29C8C" opacity=".45"/><g class="eyes"><ellipse cx="45" cy="55" rx="7" ry="8.4" fill="#2B211C"/><ellipse cx="75" cy="55" rx="7" ry="8.4" fill="#2B211C"/><circle cx="47.6" cy="51.6" r="2.9" fill="#fff"/><circle cx="77.6" cy="51.6" r="2.9" fill="#fff"/><circle cx="42.6" cy="58.6" r="1.3" fill="#fff" opacity=".9"/><circle cx="72.6" cy="58.6" r="1.3" fill="#fff" opacity=".9"/></g><ellipse cx="60" cy="78" rx="24" ry="15.5" fill="#F6DCC0"/><ellipse cx="51.5" cy="75" rx="2.6" ry="3.2" fill="#B87556"/><ellipse cx="68.5" cy="75" rx="2.6" ry="3.2" fill="#B87556"/><path class="mouth" d="M52.5 83.5Q60 89.5 67.5 83.5" fill="none" stroke="#6B4329" stroke-width="2.6" stroke-linecap="round"/></g></svg>`;
+  return `<svg class="rm ${cls}" viewBox="0 0 120 120" aria-hidden="true"><g class="rm-b">`+
+  `<g class="earL"><path d="M37 45C25 44 13 55 9 71c-1.5 6 4 9 8.5 5.5C25 70 32 61 41 54z" fill="#D6CCBE"/><path d="M35 50c-8 1.5-15.5 10-18.5 19.5 1.6 1.6 3.4 1.6 5 0C27 62 32 57 38 54z" fill="#EAB9A9"/></g>`+
+  `<g class="earR"><path d="M83 45c12-1 24 10 28 26 1.5 6-4 9-8.5 5.5C95 70 88 61 79 54z" fill="#D6CCBE"/><path d="M85 50c8 1.5 15.5 10 18.5 19.5-1.6 1.6-3.4 1.6-5 0C93 62 88 57 82 54z" fill="#EAB9A9"/><path d="M101 62.5c3.3 0 5.8 2.5 5.8 5.6v8.6c0 1.8-1.4 3.2-3.2 3.2h-5.2c-1.8 0-3.2-1.4-3.2-3.2v-8.6c0-3.1 2.5-5.6 5.8-5.6z" fill="#F0BF33"/><path d="M95.2 76.2h11.6v.5c0 1.8-1.4 3.2-3.2 3.2h-5.2c-1.8 0-3.2-1.4-3.2-3.2z" fill="#D9A722"/><circle cx="101" cy="66.4" r="1.5" fill="#FBEFC4"/></g>`+
+  `<path d="M44 28c-2.6-2.6-3.3-6.5-1.9-10 3.3 1.3 5.8 3.8 7 7z" fill="#CBBE9F"/><path d="M76 28c2.6-2.6 3.3-6.5 1.9-10-3.3 1.3-5.8 3.8-7 7z" fill="#CBBE9F"/>`+
+  `<path d="M60 21c19 0 31 13.5 31 32 0 23-12.5 42-31 42S29 76 29 53c0-18.5 12-32 31-32z" fill="#F2EEE7"/>`+
+  `<path d="M29.8 58c1.5 18 12.5 35 30.2 37 17.7-2 28.7-19 30.2-37-4 13-14 22-30.2 22S33.8 71 29.8 58z" fill="#E3DBCE"/>`+
+  `<path d="M52 25c2.5-3.6 5.2-5.3 8-5.3s5.5 1.7 8 5.3c-2-.8-3.9-1-5.6-.6.6 1 .8 2.2.4 3.4-1-1.5-2.8-2.3-4.7-2.3-1.4 0-2.8.4-3.9 1 .3-.9.7-1.6 1.4-2.1-1.3-.2-2.4 0-3.6.6z" fill="#BFB3A3"/>`+
+  `<ellipse cx="38.5" cy="66" rx="6" ry="4" fill="#F2A696" opacity=".5"/><ellipse cx="81.5" cy="66" rx="6" ry="4" fill="#F2A696" opacity=".5"/>`+
+  `<g class="eyes"><ellipse cx="46" cy="52" rx="8.2" ry="9.4" fill="#6E625A" opacity=".35"/><ellipse cx="74" cy="52" rx="8.2" ry="9.4" fill="#6E625A" opacity=".35"/><ellipse cx="46" cy="52.5" rx="6.6" ry="7.9" fill="#231C19"/><ellipse cx="74" cy="52.5" rx="6.6" ry="7.9" fill="#231C19"/><circle cx="48.6" cy="49.2" r="2.8" fill="#fff"/><circle cx="76.6" cy="49.2" r="2.8" fill="#fff"/><circle cx="43.8" cy="56" r="1.2" fill="#fff" opacity=".85"/><circle cx="71.8" cy="56" r="1.2" fill="#fff" opacity=".85"/></g>`+
+  `<path d="M60 66c10.5 0 17 4.2 17 11.5 0 8.8-7.4 15.5-17 15.5s-17-6.7-17-15.5C43 70.2 49.5 66 60 66z" fill="#4B423E"/>`+
+  `<path d="M60 67.5c8 0 13.5 2.6 14.8 7-3.6-2.2-8.8-3.3-14.8-3.3s-11.2 1.1-14.8 3.3c1.3-4.4 6.8-7 14.8-7z" fill="#5E5450"/>`+
+  `<ellipse cx="53" cy="77" rx="2.7" ry="3.4" fill="#211A18"/><ellipse cx="67" cy="77" rx="2.7" ry="3.4" fill="#211A18"/>`+
+  `<path class="mouth" d="M53.5 85Q60 89.5 66.5 85" fill="none" stroke="#C9BDB2" stroke-width="2.4" stroke-linecap="round"/></g></svg>`;
 }
 
 /* ============ Rumi: saber de manejo ============ */
@@ -2727,10 +2831,10 @@ const ACCIONES={
 };
 const LUGARES=[
   {re:/grafic/,go:'#graficos',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',how:['Toca <b>Gráficos</b> abajo.','Arriba eliges un lote o todos, y el período.','Baja para ver peso, ganancia, consumo, conversión, costos, margen y más.']},
-  {re:/respaldo|copia de seguridad|backup|recuperar|restaurar/,go:'#mas',sel:'[data-act="respaldo"]',t:'Respaldo',how:['Toca <b>Más</b> abajo a la derecha.','En <b>Tus datos</b> toca <b>Descargar respaldo</b>.','Guarda el archivo en Drive o mándatelo por WhatsApp.']},
-  {re:/excel|exportar|descargar (los )?datos|hoja de calculo|csv/,go:'#mas',sel:'[data-act="expLotes"]',t:'Descargar para Excel',how:['Toca <b>Más</b>.','En <b>Tus datos</b>, en Descargar para Excel, elige qué quieres: lotes, alimento, pesajes y más.']},
-  {re:/precio|horario|ajuste|configur|nombre de la finca|moneda|peso meta general/,go:'#mas',sel:'form[data-form="cfg"]',t:'Ajustes',how:['Toca <b>Más</b>.','En <b>Tu finca</b> cambia el precio de venta, el peso meta, los horarios de entrega, la unidad de peso y más.','Toca <b>Guardar</b>.']},
-  {re:/tema|modo oscuro|oscuro|claro|colores/,go:'#mas',sel:'[data-act="tema"]',t:'Apariencia',how:['Toca <b>Más</b>.','En <b>Apariencia</b> elige Claro, Oscuro o Automático, y la paleta de colores que más te guste.']},
+  {re:/respaldo|copia de seguridad|backup|recuperar|restaurar/,go:'#mas/datos',sel:'[data-act="respaldo"]',t:'Respaldo',how:['Toca <b>Más</b> abajo a la derecha.','Entra a <b>Tus datos</b> y toca <b>Descargar respaldo</b>.','Guarda el archivo en Drive o mándatelo por WhatsApp.']},
+  {re:/excel|exportar|descargar (los )?datos|hoja de calculo|csv/,go:'#mas/datos',sel:'[data-act="expLotes"]',t:'Descargar para Excel',how:['Toca <b>Más</b>.','En <b>Tus datos</b>, en Descargar para Excel, elige qué quieres: lotes, alimento, pesajes y más.']},
+  {re:/precio|horario|ajuste|configur|nombre de la finca|moneda|peso meta general/,go:'#mas/config',sel:'form[data-form="cfg"]',t:'Ajustes',how:['Toca <b>Más</b>.','Entra a <b>Configuración</b> y cambia el precio de venta, el peso meta, los horarios de entrega, la unidad de peso y más.','Toca <b>Guardar</b>.']},
+  {re:/tema|modo oscuro|oscuro|claro|colores/,go:'#mas/apariencia',sel:'[data-act="tema"]',t:'Apariencia',how:['Toca <b>Más</b>.','En <b>Apariencia</b> elige Claro, Oscuro o Automático, y la paleta de colores que más te guste.']},
   {re:/borrar|eliminar|me equivoque|corregir|deshacer/,go:'#registrar',sel:'.del',t:'Corregir un registro',how:['Toca <b>Registrar</b>. Abajo, en <b>Lo último que anotaste</b>, toca la papelera del registro equivocado.','También puedes entrar al lote y borrarlo desde su <b>Historial</b>.','Luego vuelve a anotarlo bien.']},
   {re:/editar (el )?lote|cambiar (el )?lote|modificar (el )?lote/,go:'#lotes',sel:'.lote',t:'Editar un lote',how:['Toca <b>Lotes</b> y entra al lote.','Baja hasta <b>Datos del lote</b> y toca <b>Editar</b>.']},
   {re:/\blotes\b|ver (mis )?lotes/,go:'#lotes',sel:'nav.bottom [data-nav="lotes"]',t:'Lotes',how:['Toca <b>Lotes</b> abajo para ver tus lotes en engorde y los vendidos.']},
