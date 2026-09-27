@@ -1,0 +1,105 @@
+[
+{"t":"Del músculo a la carne","a":"carne","r":"Después del sacrificio el músculo sigue trabajando sin oxígeno: gasta su reserva de azúcar (glucógeno), produce ácido láctico y se pone rígido. Ese proceso decide el color, la terneza y la duración de la carne.","s":[
+ {"h":"Las primeras 24 horas","p":["El glucógeno del músculo se convierte en ácido láctico.","El pH baja de cerca de 7 a cerca de 5,5.","El músculo se pone rígido (rigor mortis) y luego se va ablandando."]},
+ {"h":"Por qué importa el pH final","p":["pH 5,4 a 5,7: carne roja brillante, que dura y se vende bien.","pH arriba de 6: carne oscura, firme y seca, que se daña más rápido.","El pH final depende del glucógeno que tenía el animal al morir."]},
+ {"h":"En tu engorde","p":["Un animal bien comido y tranquilo llega con glucógeno suficiente.","Estrés, peleas, ayuno largo y viajes duros antes del matadero gastan el glucógeno y dan carne oscura."]}],
+ "rel":["Carne oscura (corte oscuro)","Terneza de la carne","Preparar la venta","Estrés por transporte"]},
+{"t":"Carne oscura (corte oscuro)","a":"carne","r":"La carne oscura, firme y seca aparece cuando el animal llega al sacrificio sin reservas de glucógeno por estrés. Se castiga en el precio porque se ve mal y dura menos.","s":[
+ {"h":"Causas","p":["Estrés largo antes del sacrificio: viajes largos, calor, ayuno, mezcla de lotes.","Toros enteros que pelean y se montan.","Animales nerviosos y maltratados.","Cambios bruscos de clima."]},
+ {"h":"Cómo se ve","p":["Color rojo oscuro o casi morado que no aclara con el aire.","Superficie seca y pegajosa.","Se echa a perder más rápido porque su pH es alto."]},
+ {"h":"Cómo evitarla","p":["No mezclar lotes desconocidos en el embarque ni en los corrales del matadero.","Viajar en horas frescas y sin demoras.","Manejo tranquilo, sin chuzos eléctricos ni gritos.","Agua disponible antes de embarcar."]},
+ {"h":"En tu engorde","p":["Si tu comprador reporta cortes oscuros, revisa el embarque y los toros enteros.","Un buen embarque protege el precio de meses de trabajo."]}],
+ "rel":["Del músculo a la carne","Planificar el embarque","Toretes que se montan","Manejo tranquilo del ganado"]},
+{"t":"Terneza de la carne","a":"carne","r":"La terneza depende de las enzimas que ablandan el músculo después del sacrificio, del colágeno del tejido que une las fibras, de la grasa y de cómo se enfrió y maduró la carne.","s":[
+ {"h":"Las enzimas","p":["Las calpaínas ablandan la carne en los días después del sacrificio.","La calpastatina las frena.","El cebú tiene más calpastatina: su carne suele ser algo más dura."]},
+ {"h":"El colágeno","p":["Con la edad, el colágeno se vuelve más resistente.","Animales jóvenes dan carne más tierna.","Cortes de las patas y el cuello tienen más colágeno que el lomo."]},
+ {"h":"Qué la mejora","p":["Sacrificar animales jóvenes y bien terminados.","Madurar la carne en frío de 7 a 21 días.","Estimulación eléctrica de la canal en el matadero.","Genética: hay pruebas de ADN para terneza."]},
+ {"h":"En tu engorde","p":["Engordes cortos con animales jóvenes dan carne más tierna.","Buen manejo previo al sacrificio evita carne dura y oscura."]}],
+ "rel":["Maduración de la carne","Adaptación del cebú al trópico","Marmoleo y calidad","Genética de la calidad de carne"]},
+{"t":"Maduración de la carne","a":"carne","r":"Madurar la carne es guardarla en frío, entre 0 y 4 °C, por varios días para que sus enzimas la ablanden y mejoren su sabor.","s":[
+ {"h":"Tipos","p":["Maduración en húmedo: al vacío, en bolsa; la más común.","Maduración en seco: la pieza al aire en cámaras controladas; pierde peso pero gana sabor.","El ablandamiento mayor ocurre en los primeros 14 días."]},
+ {"h":"Cuidados","p":["Frío constante: sin cortes de luz ni cámaras abiertas.","Higiene total para que no crezcan bacterias.","Carne con pH alto (oscura) no madura bien y se daña."]},
+ {"h":"En tu engorde","p":["Si vendes carne propia o a restaurantes, la maduración te permite cobrar más.","Es valor agregado que depende de la calidad del animal que tú produces."]}],
+ "rel":["Terneza de la carne","Cadena de frío","Vender en pie o en canal"]},
+{"t":"Marmoleo y calidad","a":"carne","r":"El marmoleo son las vetas de grasa dentro del músculo. En muchos mercados es la base de la clasificación de calidad porque da jugosidad y sabor.","s":[
+ {"h":"Cómo se califica","p":["Se mira en el corte entre la costilla 12 y 13.","En EE.UU. las clases son Prime, Choice y Select según el marmoleo y la edad.","Japón y Australia tienen escalas propias."]},
+ {"h":"En Centroamérica","p":["La mayoría del ganado se vende sin pago por marmoleo.","Algunas plantas y cadenas de restaurantes pagan más por novillos con cruces europeos bien terminados."]},
+ {"h":"En tu engorde","p":["Pregunta a tu comprador cómo clasifica y paga.","No gastes en marmoleo si no te lo pagan; enfócate en peso, rendimiento y acabado."]}],
+ "rel":["Formación del marmoleo","Calidad de canal","Grado de acabado"]},
+{"t":"Color de la carne","a":"carne","r":"El color de la carne viene de la mioglobina, una proteína del músculo. Cambia con el oxígeno: rojo brillante con aire, morado sin aire y café cuando se oxida.","s":[
+ {"h":"Los tres colores","p":["Morado: carne recién cortada o empacada al vacío. Es normal.","Rojo cereza: al contacto con el aire unos 30 minutos. Es el que el cliente busca.","Café: carne vieja u oxidada; el cliente la rechaza."]},
+ {"h":"Qué lo afecta","p":["Edad: animales viejos tienen carne más oscura.","pH alto por estrés: carne oscura.","Vitamina E en la dieta: el color rojo dura más en vitrina."]},
+ {"h":"Color de la grasa","p":["Blanca en animales terminados con grano.","Amarilla en animales de pastoreo, por el caroteno del pasto, o en animales viejos.","Algunos compradores castigan la grasa amarilla."]},
+ {"h":"En tu engorde","p":["Terminar con grano unas semanas aclara la grasa.","Buen manejo al embarque evita carne oscura."]}],
+ "rel":["Carne oscura (corte oscuro)","Grasa de la carne y omega 3","Del músculo a la carne"]},
+{"t":"Rendimiento: qué lo sube y qué lo baja","a":"carne","r":"El rendimiento en canal es el peso de la canal dividido por el peso vivo. En novillos del trópico suele ir de 50 a 58 %. Unos puntos de diferencia valen mucho dinero.","s":[
+ {"h":"Lo que lo sube","p":["Más grasa y músculo: animales bien terminados.","Menos contenido digestivo: ayuno correcto antes del sacrificio.","Machos, buena musculatura y cruces de carne.","Raciones con grano en lugar de puro forraje."]},
+ {"h":"Lo que lo baja","p":["Panza llena de pasto: un animal de potrero rinde menos.","Cuero grueso, cuernos, barro pegado.","Animales flacos o de lechería."]},
+ {"h":"Ejemplo","p":["Novillo de 450 kg al 52 %: canal de 234 kg.","El mismo al 56 %: canal de 252 kg.","Son 18 kg de canal más, sin cambiar el peso vivo."]},
+ {"h":"En tu engorde","p":["Si vendes en canal, un buen acabado y un ayuno correcto pagan mucho.","Anota el rendimiento de cada venta en la app para comparar lotes."]}],
+ "rel":["Rendimiento en canal","Vender en pie o en canal","Desbaste","Grado de acabado"]},
+{"t":"Cortes de la canal","a":"carne","r":"La canal se divide en cuartos delanteros y traseros, y luego en cortes. El trasero tiene los cortes más caros; por eso los animales con buen trasero valen más.","s":[
+ {"h":"Cuarto trasero","p":["Lomo fino o lomito: el corte más tierno.","Lomo ancho y lomo estrecho (bife, T-bone).","Pierna: posta, punta de anca, bola, cuete.","Representa cerca del 45 a 48 % de la canal y la mayor parte de su valor."]},
+ {"h":"Cuarto delantero","p":["Paleta, pecho, cuello y costilla.","Cortes para guisar, moler y asar lento.","Tienen más colágeno y cuestan menos."]},
+ {"h":"En tu engorde","p":["Un buen engorde llena el trasero y el lomo.","Evita inyectar en la pierna: las lesiones dañan los cortes más caros."]}],
+ "rel":["Lesiones por inyecciones","Calidad de canal","Rendimiento: qué lo sube y qué lo baja"]},
+{"t":"Lesiones por inyecciones","a":"carne","r":"Una inyección mal puesta deja un bulto, cicatriz o absceso dentro del músculo que el matadero tiene que recortar. Si fue en la pierna, se pierde carne de los cortes más caros.","s":[
+ {"h":"Dónde inyectar","p":["En la tabla del cuello, delante del hombro.","Subcutánea (bajo la piel) siempre que el producto lo permita.","Nunca en la pierna ni en el anca."]},
+ {"h":"Buenas prácticas","p":["Máximo 10 ml por punto de inyección en el músculo.","Separar cada inyección unos 10 cm.","Agujas limpias, afiladas y del tamaño correcto; cambiar la aguja cada 10 a 15 animales o si se dobla."]},
+ {"h":"En tu engorde","p":["Pide al vaquero que siempre use el cuello.","Anota en la app cada tratamiento con fecha para respetar el retiro."]}],
+ "rel":["Aplicación de inyecciones","Cortes de la canal","Retiros y residuos"]},
+{"t":"Golpes y moretones","a":"carne","r":"Los moretones en la canal se recortan y se tiran. Casi todos vienen del manejo en los últimos días: embarque, transporte y corrales del matadero.","s":[
+ {"h":"Causas","p":["Palos, chuzos y golpes en la manga.","Camiones sobrecargados o con salientes.","Cuernos de otros animales.","Pisos resbalosos y caídas."]},
+ {"h":"Cuánto se pierde","p":["Cada moretón puede costar de medio kilo a varios kilos de carne.","Además baja la clasificación de la canal."]},
+ {"h":"En tu engorde","p":["Embarcadero con buena rampa y piso antideslizante.","Carga de animales según el tamaño del camión.","Banderas o sacos en lugar de palos para arrear."]}],
+ "rel":["Embarcadero","Transporte de ganado","Manejo tranquilo del ganado","Planificar el embarque"]},
+{"t":"Valor nutritivo de la carne","a":"carne","r":"La carne de res es una de las mejores fuentes de proteína completa, hierro, zinc y vitamina B12 para las personas.","s":[
+ {"h":"Qué aporta","p":["Unos 20 a 22 g de proteína por cada 100 g de carne magra cruda.","Hierro hemo, que se absorbe mucho mejor que el de las plantas.","Zinc, vitamina B12, niacina y selenio."]},
+ {"h":"Grasa","p":["Los cortes magros tienen menos de 5 % de grasa.","La grasa de res tiene grasa saturada y también monoinsaturada, como la del aguacate."]},
+ {"h":"Para tu familia y tus clientes","p":["Es especialmente valiosa para niños, embarazadas y adultos mayores.","Comer carne con verduras en porciones razonables es parte de una dieta sana."]}],
+ "rel":["Grasa de la carne y omega 3","Calidad de canal"]},
+{"t":"Grasa de la carne y omega 3","a":"carne","r":"La grasa de la carne cambia según lo que come el animal. Los animales de pastoreo tienen algo más de omega 3 y de CLA; los de grano tienen más marmoleo y grasa blanca.","s":[
+ {"h":"Pasto","p":["Más omega 3, CLA y vitamina E.","Grasa más amarilla por el caroteno.","Menos marmoleo y sabor más intenso."]},
+ {"h":"Grano","p":["Más marmoleo y jugosidad.","Grasa blanca.","Menos omega 3."]},
+ {"h":"Lo importante","p":["Las dos son nutritivas; las diferencias en omega 3 son pequeñas en la dieta humana.","Algunos mercados pagan más por carne de pastoreo certificada."]}],
+ "rel":["Grasa en el rumen","Color de la carne","Marmoleo y calidad"]},
+{"t":"Cadena de frío","a":"carne","r":"La carne se conserva si se mantiene fría, entre 0 y 4 °C, desde el matadero hasta la mesa. Cada vez que se calienta, las bacterias crecen y la vida útil se acorta.","s":[
+ {"h":"Las reglas","p":["Enfriar la canal rápido: menos de 7 °C en el centro en las primeras 24 horas.","Transportar en camiones refrigerados.","Vender en vitrinas frías y congelar lo que no se vende pronto."]},
+ {"h":"Vida útil aproximada","p":["Carne fresca en vitrina: 3 a 5 días.","Al vacío y en frío: 4 a 8 semanas.","Congelada a -18 °C: meses."]},
+ {"h":"En tu engorde","p":["Si vendes carne directo, invierte en frío antes que en cualquier otra cosa.","Una canal con pH normal dura mucho más que una oscura."]}],
+ "rel":["Maduración de la carne","Carne oscura (corte oscuro)","Rastro y sacrificio autorizado"]},
+{"t":"Inocuidad de la carne","a":"carne","r":"Carne inocua es carne que no enferma a quien la come: sin bacterias peligrosas, sin residuos de medicinas y sin contaminantes. La inocuidad empieza en la finca.","s":[
+ {"h":"Peligros","p":["Bacterias como Salmonella y E. coli de las heces.","Residuos de antibióticos, desparasitantes y hormonas.","Sustancias prohibidas como el clenbuterol.","Metales pesados y plaguicidas."]},
+ {"h":"Qué haces tú","p":["Respetar los retiros de cada medicina.","No usar productos prohibidos.","Animales limpios y sin barro al embarque.","Registros de tratamientos: la app los guarda."]},
+ {"h":"Por qué te conviene","p":["Un hallazgo de residuos puede cerrar la venta o el mercado entero.","Los compradores serios exigen registros."]}],
+ "rel":["Retiros y residuos","Productos prohibidos en la alimentación","Registros y trazabilidad","Buenas prácticas ganaderas"]},
+{"t":"Sacrificio y bienestar","a":"carne","r":"Un sacrificio bien hecho es rápido, sin dolor y sin estrés. Además de ser lo correcto, da mejor carne.","s":[
+ {"h":"Buenas prácticas","p":["Descanso y agua en los corrales del matadero.","Arreo sin golpes ni chuzos.","Aturdimiento efectivo al primer intento antes del sangrado."]},
+ {"h":"Efecto en la carne","p":["Menos carne oscura y menos moretones.","Mejor sangrado y mejor conservación."]},
+ {"h":"En tu engorde","p":["Vende a mataderos autorizados que cumplan las normas.","Tu reputación y tu precio dependen también de dónde terminan tus animales."]}],
+ "rel":["Rastro y sacrificio autorizado","Bienestar en la ley y en el mercado","Carne oscura (corte oscuro)"]},
+{"t":"Clasificación de canales","a":"carne","r":"Los mataderos clasifican las canales para pagar distinto según su calidad. Los criterios más usados son edad, sexo, conformación, grasa y peso.","s":[
+ {"h":"Criterios comunes","p":["Edad por dientes: novillo joven paga más que animal viejo.","Sexo: machos castrados, enteros o hembras.","Conformación: qué tan llenos están la pierna y el lomo.","Grasa de cobertura: ni muy poca ni demasiada.","Peso de la canal."]},
+ {"h":"En tu engorde","p":["Pregunta a tu matadero su tabla de clasificación.","Compara lo que te pagaron con lo que proyectó la app.","Ajusta la edad de compra y el acabado según lo que te pagan."]}],
+ "rel":["Calidad de canal","Edad por los dientes","Grado de acabado","Vender en pie o en canal"]},
+{"t":"Pérdidas por enfriamiento","a":"carne","r":"La canal pierde agua mientras se enfría en la cámara. Esa merma, de 1 a 3 %, hace que la canal fría pese menos que la caliente.","s":[
+ {"h":"Por qué ocurre","p":["La superficie de la canal se seca con el aire frío.","Canales con poca grasa de cobertura pierden más."]},
+ {"h":"En la venta","p":["Revisa si te pagan por canal caliente o fría.","La diferencia puede ser de 3 a 7 kg por animal."]},
+ {"h":"En tu engorde","p":["Buena cobertura de grasa protege la canal y reduce la merma.","Anota en la app el tipo de canal con que te pagan."]}],
+ "rel":["Rendimiento en canal","Vender en pie o en canal","Grado de acabado"]},
+{"t":"Cuero y subproductos","a":"carne","r":"Además de la carne, el animal da cuero, vísceras, sebo y harina de huesos. Su valor ayuda a pagar el matadero y a veces se descuenta o se suma al precio.","s":[
+ {"h":"El cuero","p":["Se daña por garrapatas, tórsalo, fierros grandes y alambre de púas.","Un cuero limpio vale más para la curtiembre."]},
+ {"h":"Otros subproductos","p":["Hígado, corazón, lengua y mondongo para consumo.","Sebo, sangre y huesos para industria y alimento animal."]},
+ {"h":"En tu engorde","p":["Controlar garrapatas y tórsalo cuida también el cuero.","Pon el fierro en el lugar indicado y del tamaño necesario."]}],
+ "rel":["Garrapatas","Tórsalo o nuche","Registro de fierro y finca"]},
+{"t":"Carne de toro, novillo y vaca","a":"carne","r":"El sexo y la edad cambian la carne. El novillo castrado joven da la carne más pareja; el toro, más magra; la vaca de descarte, más grasa y más dura.","s":[
+ {"h":"Novillo castrado","p":["Buen equilibrio entre músculo y grasa.","Marmolea más que el toro.","Carne más tierna y color parejo."]},
+ {"h":"Toro entero","p":["Más carne magra y mejor conversión en el engorde.","Carne más oscura y firme; más riesgo de corte oscuro.","Algunos mercados lo pagan menos."]},
+ {"h":"Vaca de descarte","p":["Carne más oscura y dura por la edad.","Grasa amarilla si vino de pastoreo.","Engordarla unas semanas mejora su precio."]}],
+ "rel":["Enteros o castrados","Hembras en engorde","Terneza de la carne"]},
+{"t":"pH de la carne","a":"carne","r":"El pH de la carne a las 24 horas del sacrificio es el mejor indicador de su calidad: dice si se va a ver roja, si va a durar y si será tierna.","s":[
+ {"h":"Valores","p":["5,4 a 5,7: normal, buena calidad.","5,8 a 6,0: intermedio, algo oscura.","Más de 6,0: corte oscuro, se castiga."]},
+ {"h":"Cómo se mide","p":["Con un medidor de pH de punta en el lomo, en la cámara fría.","Muchas plantas lo miden para clasificar."]},
+ {"h":"En tu engorde","p":["Pregunta al matadero si mide pH y pide tus resultados.","Si salen altos, revisa el manejo de los últimos días."]}],
+ "rel":["Del músculo a la carne","Carne oscura (corte oscuro)"]}
+]

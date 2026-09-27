@@ -1,0 +1,19 @@
+[
+{"t":"Receta y uso de medicamentos veterinarios","a":"normas","r":"Los medicamentos veterinarios deben tener registro oficial y usarse según su etiqueta o la receta del veterinario. Los antibióticos cada vez más exigen receta.","s":[
+ {"h":"Reglas","p":["Compra solo productos registrados en tu país.","Sigue dosis, vía de aplicación y retiro de la etiqueta.","Usar un producto fuera de la etiqueta solo con receta del veterinario, que fija un retiro más largo."]},
+ {"h":"Registros","p":["Anota producto, lote del producto, dosis, animales, fecha y retiro.","Guarda las facturas y recetas."]},
+ {"h":"En tu engorde","p":["La app guarda cada tratamiento con su retiro y te avisa antes de vender."]}],
+ "rel":["Retiros y residuos","Uso responsable de antibióticos","Sanidad y retiros en la app"]},
+{"t":"Buen uso de plaguicidas","a":"normas","r":"Garrapaticidas, insecticidas y herbicidas son venenos. Usarlos bien protege a las personas, al ganado, al agua y a tus ventas.","s":[
+ {"h":"Reglas","p":["Solo productos registrados y para el uso indicado.","Equipo de protección al mezclar y aplicar.","No lavar equipos ni tirar sobrantes en ríos o quebradas.","Triple lavado y entrega de envases vacíos en los centros de acopio."]},
+ {"h":"Retiros","p":["Los baños al ganado tienen días de retiro para carne.","Los herbicidas en potreros tienen días antes de volver a pastorear."]}],
+ "rel":["Intoxicación por plaguicidas","Ambiente y manejo de desechos","Retiros y residuos"]},
+{"t":"Protección de fuentes de agua","a":"normas","r":"Muchas leyes protegen las nacientes y las orillas de ríos y quebradas con franjas de bosque. Además de ser obligatorio, cuida el agua que toma tu ganado.","s":[
+ {"h":"Buenas prácticas","p":["Cercar nacientes y orillas para que el ganado no entre.","Llevar el agua a bebederos con bomba, gravedad o ariete.","Mantener árboles en las orillas."]},
+ {"h":"Beneficios","p":["Agua más limpia: menos diarreas y parásitos.","Menos erosión y lodo.","Cumples la ley y puedes acceder a programas ambientales."]}],
+ "rel":["Agua: fuentes, tanques y calidad","Ambiente y manejo de desechos","Ganadería regenerativa"]},
+{"t":"Normas de bienestar en el transporte","a":"normas","r":"Muchos países establecen reglas para el transporte de ganado: tiempo máximo de viaje, espacio por animal y condiciones del vehículo.","s":[
+ {"h":"Puntos comunes","p":["Animales aptos para viajar: no enfermos, cojos graves ni hembras a punto de parir.","Piso antideslizante y sin salientes.","Carga según el peso de los animales.","Descansos con agua en viajes largos."]},
+ {"h":"En tu engorde","p":["Pide al transportista que cumpla estas reglas: tu ganado llega mejor y sin golpes."]}],
+ "rel":["Transporte: requisitos","Transporte de ganado","Golpes y moretones"]}
+]

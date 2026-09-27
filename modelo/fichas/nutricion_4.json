@@ -1,0 +1,85 @@
+[
+{"t":"Ionóforos","a":"nutricion","r":"Los ionóforos, como la monensina y el lasalocid, son aditivos que cambian los microbios de la panza: suben el ácido propiónico, bajan el metano y el riesgo de acidosis y controlan la coccidiosis.","s":[
+ {"h":"Qué logran","p":["Mejoran la conversión alimenticia entre 5 y 8 % en corral.","En pastoreo pueden subir la ganancia unos 50 a 100 gramos al día.","Reducen timpanismo, acidosis y coccidiosis."]},
+ {"h":"Cómo usarlos","p":["Siempre mezclados de forma pareja en la ración o en el suplemento, a la dosis de la etiqueta.","Empezar con dosis baja y subir en unos días.","No se usan como antibióticos en personas, por eso muchos países los permiten."]},
+ {"h":"Peligros","p":["Son muy tóxicos para caballos, burros, perros y aves de otras especies: nunca dejes que coman ración con ionóforo.","Una sobredosis por mala mezcla puede matar bovinos."]},
+ {"h":"En tu engorde","p":["Pregunta a tu proveedor si el concentrado ya trae ionóforo para no duplicarlo.","Guarda el producto lejos de los caballos."]}],
+ "rel":["Aditivos en la ración","Ácidos grasos volátiles","Coccidiosis","Acidosis ruminal"]},
+{"t":"Proteína sobrepasante","a":"nutricion","r":"La proteína sobrepasante es la parte de la proteína de la comida que no se degrada en la panza y llega directo al intestino. Es útil en animales jóvenes que crecen rápido.","s":[
+ {"h":"Fuentes","p":["Harina de soya tostada o tratada.","Granos de destilería (DDGS) y gluten de maíz.","Harina de semilla de algodón y de palmiste tienen una parte sobrepasante.","La harina de pescado era común, pero su uso en rumiantes tiene restricciones en muchos países."]},
+ {"h":"Cuándo conviene","p":["Novillos livianos de 150 a 280 kg con alta ganancia.","Raciones con mucha urea, donde falta proteína verdadera.","Animales recién llegados que comen poco."]},
+ {"h":"En tu engorde","p":["Primero cubre la proteína degradable, que es la más barata.","Si tu lote es liviano y la ganancia no sube, pregunta si falta proteína sobrepasante."]}],
+ "rel":["Proteína metabolizable","Harina de soya y otras proteínas","Granos de destilería (DDGS)"]},
+{"t":"Almidón y procesamiento de granos","a":"nutricion","r":"El almidón de los granos es la principal fuente de energía de las raciones de engorde. Cómo se procesa el grano cambia cuánto almidón se aprovecha.","s":[
+ {"h":"Formas de procesar","p":["Grano entero: se digiere menos; parte sale en las heces, sobre todo en animales grandes.","Quebrado o molido grueso: buena digestión y menos polvo.","Molido fino: se digiere rápido, pero sube el riesgo de acidosis.","Hojuelas al vapor: la mejor digestión, pero necesitan equipo industrial."]},
+ {"h":"Velocidad de fermentación","p":["Trigo y cebada: muy rápidos, más riesgo.","Maíz: intermedio.","Sorgo: lento; necesita molienda para aprovecharse."]},
+ {"h":"En tu engorde","p":["Maíz quebrado en 3 o 4 pedazos es lo más práctico para fincas.","Si ves mucho grano entero en las heces, muele un poco más.","Molido fino como harina, solo con adaptación y buena fibra."]}],
+ "rel":["Maíz y otros granos","Sorgo en la ración","Acidosis ruminal","Digestión en el intestino"]},
+{"t":"Sorgo en la ración","a":"nutricion","r":"El sorgo es un grano muy usado en zonas secas porque resiste la sequía. Tiene casi tanta energía como el maíz, pero se digiere peor si no se muele bien.","s":[
+ {"h":"Características","p":["Aporta cerca del 90 a 95 % de la energía del maíz cuando está bien procesado.","El grano es duro y pequeño: entero se escapa sin digerir.","Algunas variedades tienen taninos que bajan la digestión de la proteína."]},
+ {"h":"Cómo usarlo","p":["Siempre molido o quebrado.","Puede reemplazar todo o parte del maíz según el precio.","Prefiere variedades de grano blanco o bajas en taninos."]},
+ {"h":"Sorgo forrajero","p":["La planta joven y el rebrote después de sequía pueden tener cianuro.","Espera a que la planta tenga más de 60 cm o hazla ensilaje para bajar el riesgo."]}],
+ "rel":["Almidón y procesamiento de granos","Maíz y otros granos","Intoxicación por nitratos y cianuro"]},
+{"t":"Fibra efectiva","a":"nutricion","r":"No toda la fibra hace rumiar. La fibra efectiva es la que tiene el largo y la dureza suficientes para estimular la rumia y la saliva, y así proteger la panza.","s":[
+ {"h":"Cuánta hace falta","p":["Raciones de engorde intensivo: por lo menos 8 a 10 % de forraje en la materia seca, con partículas de 2 a 5 cm.","Raciones de inicio: 30 a 50 % de forraje.","Menos fibra efectiva = más riesgo de acidosis y abscesos."]},
+ {"h":"Fuentes","p":["Heno o pasto picado grueso.","Rastrojo de maíz o sorgo picado.","Cascarilla de algodón (aporta fibra efectiva a pesar de ser pequeña).","Los subproductos finos como la cascarilla de soya tienen fibra pero poco efecto de rumia."]},
+ {"h":"En tu engorde","p":["Cuenta animales rumiando dos horas después de comer: más de la mitad deben hacerlo.","Heces muy líquidas y con burbujas indican poca fibra efectiva."]}],
+ "rel":["Rumia y saliva","Fibra y forraje en la ración","Acidosis ruminal","Cascarilla de soya"]},
+{"t":"Grasa protegida","a":"nutricion","r":"La grasa protegida está tratada para que los microbios de la panza no la ataquen. Así aporta mucha energía sin dañar la digestión de la fibra.","s":[
+ {"h":"Tipos","p":["Jabones de calcio de aceite de palma.","Grasas hidrogenadas.","Semilla de algodón entera: su cáscara protege parte del aceite."]},
+ {"h":"Cuándo se usa","p":["Para subir la energía de la ración sin más grano.","En épocas de calor: la grasa produce menos calor al digerirse que el almidón o la fibra.","Es cara; se usa más en lechería que en engorde."]},
+ {"h":"En tu engorde","p":["Si el precio lo permite, 2 a 3 % de grasa extra en la ración de finalización puede ayudar con calor.","No pases de 6 a 7 % de grasa total en la ración."]}],
+ "rel":["Grasa en el rumen","Grasas y aceites en la ración","Alimentación con calor"]},
+{"t":"Levaduras y probióticos","a":"nutricion","r":"Las levaduras vivas y los probióticos son microbios buenos que se agregan a la ración para estabilizar la panza y el intestino.","s":[
+ {"h":"Qué hacen","p":["Las levaduras consumen oxígeno en la panza y favorecen a las bacterias que digieren fibra.","Pueden estabilizar el pH y el consumo en animales recién llegados.","Algunos probióticos compiten con bacterias dañinas en el intestino."]},
+ {"h":"Resultados","p":["Los resultados son variables: mejores en animales estresados y en adaptación.","Rara vez sustituyen a un buen manejo."]},
+ {"h":"En tu engorde","p":["Pueden ser útiles en la ración de recepción.","Calcula si el costo se paga con menos enfermos o mejor consumo."]}],
+ "rel":["Aditivos en la ración","Ración de inicio","Recepción de ganado"]},
+{"t":"Aceites esenciales y extractos de plantas","a":"nutricion","r":"Son compuestos de plantas como orégano, ajo, canela o taninos que se estudian para mejorar la fermentación, bajar el metano y reducir el uso de antibióticos.","s":[
+ {"h":"Qué se sabe","p":["Algunos bajan la degradación de proteína o el metano.","Los taninos de leguminosas protegen la proteína y ayudan contra parásitos.","Los resultados varían mucho entre productos y dosis."]},
+ {"h":"En tu engorde","p":["Pide pruebas de resultados en ganado de carne antes de pagar un aditivo caro.","Las leguminosas y árboles forrajeros te dan taninos naturales a bajo costo."]}],
+ "rel":["Aditivos en la ración","Leguminosas y árboles forrajeros","Aditivos que bajan el metano"]},
+{"t":"Tampones y bicarbonato","a":"nutricion","r":"Los tampones, como el bicarbonato de sodio, ayudan a neutralizar el ácido de la panza. Se usan en raciones altas en grano o en épocas de calor.","s":[
+ {"h":"Cómo se usan","p":["Bicarbonato de sodio: 0,5 a 1 % de la materia seca de la ración.","Óxido de magnesio: complementa al bicarbonato.","No reemplazan a la fibra efectiva ni a una buena adaptación."]},
+ {"h":"Cuándo ayudan","p":["En la transición al concentrado.","Con calor, cuando los animales rumian menos.","Cuando se ven heces sueltas en todo el lote."]}],
+ "rel":["Acidosis ruminal","Fibra efectiva","Adaptación al concentrado"]},
+{"t":"Micotoxinas en el alimento","a":"nutricion","r":"Las micotoxinas son venenos que producen algunos hongos en granos, ensilajes y subproductos mal guardados. Bajan el consumo, dañan el hígado y las defensas, y algunas pasan a la leche.","s":[
+ {"h":"Las más comunes","p":["Aflatoxinas: en maíz, maní y semilla de algodón con humedad y calor.","Fumonisinas y zearalenona: en maíz.","Deoxinivalenol (vomitoxina): en granos pequeños."]},
+ {"h":"Señales","p":["Baja de consumo sin razón clara.","Diarrea, pelo opaco y más enfermedades.","Grano con moho visible, olor a encierro o polvo verde o negro."]},
+ {"h":"Qué hacer","p":["Compra grano seco (menos de 14 % de humedad) y guárdalo seco y ventilado.","No uses grano ni ensilaje mohoso.","Existen secuestrantes de micotoxinas; ayudan pero no arreglan un grano muy contaminado.","Envía una muestra al laboratorio si sospechas."]}],
+ "rel":["Almacenamiento del alimento","Control de plagas en la bodega","El hígado del bovino","Ensilaje: calidad y problemas"]},
+{"t":"Vitaminas A, D y E en época seca","a":"nutricion","r":"Cuando el pasto se seca, se pierde el caroteno que da la vitamina A y la vitamina E. Después de 2 a 4 meses de seca, muchos animales tienen deficiencia.","s":[
+ {"h":"Señales","p":["Ojos llorosos, ceguera al atardecer.","Pelo áspero y más enfermedades respiratorias.","Menos ganancia."]},
+ {"h":"Cómo darlas","p":["En la sal mineral con vitaminas.","Premezcla vitamínica en la ración.","Inyección de A, D y E al ingreso o cada 2 a 3 meses en la seca."]},
+ {"h":"En tu engorde","p":["El grano y el heno guardado tienen poca vitamina A y E.","En corral siempre agrega vitaminas a la ración."]}],
+ "rel":["Vitaminas en el bovino","Época seca","Microminerales y vitaminas"]},
+{"t":"Selenio y vitamina E","a":"nutricion","r":"El selenio y la vitamina E trabajan juntos para proteger las células. En zonas con suelos pobres en selenio, su falta baja las defensas y daña los músculos.","s":[
+ {"h":"Señales de falta","p":["Más enfermedades y peor respuesta a vacunas.","Músculos débiles, animales tiesos o que se cansan fácil.","En terneros, enfermedad del músculo blanco."]},
+ {"h":"Cómo darlos","p":["En la sal mineral o en la ración según la dosis del fabricante.","Inyectados al ingreso, con receta."]},
+ {"h":"Cuidado","p":["El margen entre lo necesario y lo tóxico es pequeño.","Nunca sumes varias fuentes sin calcular el total."]}],
+ "rel":["Estrés oxidativo","Microminerales y vitaminas","Vitaminas A, D y E en época seca"]},
+{"t":"Azufre en la ración","a":"nutricion","r":"El azufre es necesario para que los microbios hagan proteína, pero en exceso causa polioencefalomalacia y bloquea al cobre.","s":[
+ {"h":"Cuánto","p":["Necesario: cerca de 0,15 a 0,2 % de la materia seca.","Riesgo: arriba de 0,3 a 0,4 % sumando ración y agua.","Con urea se agrega azufre en relación de 10 a 15 partes de nitrógeno por 1 de azufre."]},
+ {"h":"Fuentes de exceso","p":["DDGS y otros subproductos de etanol.","Melaza de algunos ingenios.","Agua de pozo con sulfatos."]},
+ {"h":"En tu engorde","p":["Si usas mucho DDGS o melaza, pide análisis de azufre.","Analiza el agua de pozos nuevos."]}],
+ "rel":["Polioencefalomalacia","Urea en la ración","Granos de destilería (DDGS)","Agua: fuentes, tanques y calidad"]},
+{"t":"Cobalto y vitamina B12","a":"nutricion","r":"Los microbios de la panza usan el cobalto para fabricar vitamina B12, que el animal necesita para aprovechar la energía del ácido propiónico.","s":[
+ {"h":"Señales de falta","p":["Pérdida de apetito y de peso sin otra causa.","Pelo áspero y anemia.","Común en suelos arenosos o volcánicos pobres."]},
+ {"h":"Cómo darlo","p":["Sal mineral con cobalto.","La inyección de B12 da un efecto rápido pero corto."]}],
+ "rel":["Minerales en el cuerpo","Microminerales y vitaminas","Glucosa en el rumiante"]},
+{"t":"Sodio y potasio con calor","a":"nutricion","r":"Con calor el animal pierde potasio y sodio por el sudor y la orina. Reponerlos ayuda a mantener el consumo y la hidratación.","s":[
+ {"h":"Qué pasa","p":["El sudor del bovino es rico en potasio.","Con calor sube la necesidad de potasio a 1,2 a 1,5 % de la ración.","El sodio de la sal mantiene la sed y el consumo de agua."]},
+ {"h":"Qué hacer","p":["Sal disponible siempre.","Raciones con mucho grano tienen poco potasio: el forraje y la melaza lo aportan.","Electrolitos en el agua al recibir ganado muy estresado o en olas de calor."]}],
+ "rel":["Alimentación con calor","Estrés por calor","Deshidratación y sueros"]},
+{"t":"Energía de los forrajes tropicales","a":"nutricion","r":"Los pastos tropicales tienen menos energía que los granos y que los pastos templados. Saber cuánto aportan evita esperar ganancias imposibles.","s":[
+ {"h":"Valores aproximados","p":["Pasto tierno bien manejado: 55 a 62 % de nutrientes digestibles totales.","Pasto de corte a buena edad: 52 a 58 %.","Pasto viejo o rastrojo: 42 a 50 %.","Maíz grano: cerca de 85 a 90 %."]},
+ {"h":"Qué ganancia permiten","p":["Solo con pasto viejo: el animal apenas se mantiene.","Solo con pasto tierno: 0,4 a 0,7 kg al día.","Con 0,5 a 1 % del peso en concentrado: 0,7 a 1 kg al día."]},
+ {"h":"En tu engorde","p":["Si tu meta es más de 1 kg al día, necesitas concentrado o forrajes muy buenos.","Las calculadoras de Rumi te dicen cuánto suplemento hace falta."]}],
+ "rel":["Pastos tropicales y templados","Suplementación en pastoreo","Nutrientes digestibles totales"]},
+{"t":"Ración según la etapa","a":"nutricion","r":"El engorde se divide en etapas y cada una necesita una ración distinta: recepción, crecimiento y finalización. Cambiar la ración con la etapa ahorra dinero y evita problemas.","s":[
+ {"h":"Recepción (2 a 3 semanas)","p":["Mucho forraje de buena calidad y algo de concentrado.","Proteína de 13 a 14 % para animales livianos y estresados.","Vitaminas y minerales para las defensas."]},
+ {"h":"Crecimiento","p":["Más energía poco a poco.","Proteína de 12 a 13 %.","El animal forma músculo: es la etapa de mejor conversión."]},
+ {"h":"Finalización","p":["Máxima energía que la panza tolere, con fibra efectiva mínima.","Proteína de 11 a 12 %.","El animal hace grasa: la conversión empeora."]},
+ {"h":"En tu engorde","p":["Guarda una ración por etapa en la app y cambia de una a otra en 5 a 7 días.","Rumi te recuerda la adaptación al concentrado."]}],
+ "rel":["Ración de inicio","Ración de desarrollo","Ración de finalización","Adaptación al concentrado"]}
+]

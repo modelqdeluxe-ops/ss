@@ -1,0 +1,32 @@
+[
+{"t":"Tristeza parasitaria","a":"sanidad","r":"Se llama tristeza parasitaria al conjunto de anaplasmosis y babesiosis, dos enfermedades de la sangre que transmiten las garrapatas y los insectos. Matan animales adultos que llegan de zonas sin garrapatas.","s":[
+ {"h":"Señales","p":["Fiebre alta, decaimiento y dejar de comer.","Mucosas pálidas o amarillas.","Orina oscura en la babesiosis.","Animal agresivo o que se cae en casos graves."]},
+ {"h":"Quiénes están en riesgo","p":["Animales traídos de zonas altas o frías sin contacto previo.","Animales de razas europeas.","Lotes estresados con muchas garrapatas."]},
+ {"h":"Qué hacer","p":["Llamar al veterinario: el tratamiento es distinto para cada una.","No arrear ni estresar al animal enfermo.","Control de garrapatas y moscas."]}],
+ "rel":["Anaplasmosis","Babesiosis o ranilla roja","Garrapatas"]},
+{"t":"Protocolo de tratamiento","a":"sanidad","r":"Un protocolo es un plan escrito, hecho con el veterinario, que dice qué hacer con cada enfermedad común: qué producto, qué dosis, cuántos días y cuándo cambiar si no mejora.","s":[
+ {"h":"Qué incluye","p":["Cómo reconocer la enfermedad.","Primer tratamiento y dosis por peso.","Qué hacer si no mejora en 2 a 3 días.","Retiro para la venta."]},
+ {"h":"Beneficios","p":["Todos en la finca tratan igual.","Menos uso innecesario de antibióticos.","Registros claros para compradores."]},
+ {"h":"En tu engorde","p":["Pide a tu veterinario un protocolo para neumonía, diarrea, cojera y anaplasma.","Anota cada tratamiento en la app."]}],
+ "rel":["Uso responsable de antibióticos","Corral de enfermos","Receta y uso de medicamentos veterinarios"]},
+{"t":"Eutanasia humanitaria","a":"sanidad","r":"Cuando un animal sufre sin posibilidad de recuperarse, la decisión correcta es terminar su vida sin dolor. Debe hacerla un veterinario o una persona entrenada.","s":[
+ {"h":"Cuándo considerarla","p":["Fracturas graves de patas.","Animal caído que no se levanta después de tratamiento.","Enfermedad sin cura con mucho dolor."]},
+ {"h":"Cómo hacerlo bien","p":["Con métodos aprobados y personal preparado.","Nunca dejar al animal sufrir por días.","Disponer del cadáver según las normas."]}],
+ "rel":["Animal caído que no se levanta","Muerte de un animal","Bienestar animal"]},
+{"t":"Calendario sanitario del engorde","a":"sanidad","r":"Un calendario ordena vacunas, desparasitaciones y revisiones desde la llegada hasta la venta, y evita olvidos y retiros encima de la venta.","s":[
+ {"h":"Al ingreso","p":["Vacuna clostridial y respiratoria según riesgo.","Desparasitación según análisis.","Vitaminas A, D y E.","Control de garrapatas y moscas."]},
+ {"h":"Semana 3 a 4","p":["Refuerzo de vacunas.","Revisión de animales atrasados."]},
+ {"h":"Durante el engorde","p":["Control de garrapatas según carga.","Revisión diaria y pesajes periódicos."]},
+ {"h":"Antes de vender","p":["Revisa que ningún tratamiento esté en retiro.","La app te avisa de los lotes en retiro."]}],
+ "rel":["Plan sanitario de ingreso","Vacunación","Agenda de tareas","Retiros y residuos"]},
+{"t":"Enfermedades por época del año","a":"sanidad","r":"Cada época trae sus problemas. Prepararse antes baja las pérdidas.","s":[
+ {"h":"Época seca","p":["Deficiencia de vitamina A y de proteína.","Polvo y neumonías.","Intoxicaciones por plantas que quedan verdes."]},
+ {"h":"Inicio de lluvias","p":["Aumentan garrapatas, moscas y tórsalo.","Timpanismo con pastos tiernos.","Clostridiales con cambios de pasto."]},
+ {"h":"Lluvias fuertes","p":["Cojeras, problemas de piel, parásitos y fasciola.","Leptospirosis por agua estancada."]},
+ {"h":"Canícula y olas de calor","p":["Estrés por calor y golpe de calor.","Baja de consumo."]}],
+ "rel":["Época seca","Época de lluvias","Estrés por calor","Calendario sanitario del engorde"]},
+{"t":"Bioseguridad para visitas y vehículos","a":"sanidad","r":"Las enfermedades entran a la finca en botas, llantas, camiones y animales ajenos. Unas reglas simples cierran la puerta.","s":[
+ {"h":"Reglas","p":["Camiones de ganado se quedan fuera de los corrales cuando sea posible.","Pediluvio o lavado de botas a la entrada.","Visitantes que vienen de otras fincas o mataderos no entran a los corrales sin ropa limpia."]},
+ {"h":"Animales","p":["Cuarentena de 2 a 3 semanas para todo animal nuevo.","Perros y aves de otras fincas lejos de la comida."]}],
+ "rel":["Cuarentena y bioseguridad","Pediluvio o paso de patas","Animales de subasta"]}
+]

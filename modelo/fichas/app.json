@@ -705,5 +705,174 @@
    "Gráficos en la app",
    "Indicadores clave del engorde"
   ]
+ },
+ {
+  "t": "Buscar en el menú de Rumi",
+  "a": "app",
+  "r": "En el menú de Rumi hay un buscador: escribe una palabra como garrapata, ración o el nombre de un lote y te muestra los temas, cálculos y síntomas que coinciden.",
+  "s": [
+   {
+    "h": "Cómo se usa",
+    "p": [
+     "Abre a Rumi con el botón de la vaca.",
+     "Toca la barra que dice Buscar tema, cálculo, síntoma o lote.",
+     "Escribe una o dos palabras; no importan los acentos.",
+     "Toca el resultado que quieres."
+    ]
+   },
+   {
+    "h": "Qué encuentra",
+    "p": [
+     "Temas de la guía, con su área.",
+     "Calculadoras.",
+     "Síntomas de ¿Qué tiene mi animal?",
+     "Tus lotes por nombre."
+    ]
+   },
+   {
+    "h": "Consejo",
+    "p": [
+     "Palabras cortas encuentran más: calor, tos, precio, ensilaje.",
+     "La X de la barra borra la búsqueda."
+    ]
+   }
+  ],
+  "rel": [
+   "Usar el menú de Rumi"
+  ]
+ },
+ {
+  "t": "Ocultar las opciones de Rumi",
+  "a": "app",
+  "r": "Cuando Rumi da una respuesta larga, las opciones se esconden solas para que leas todo. Puedes ocultarlas o mostrarlas cuando quieras.",
+  "s": [
+   {
+    "h": "Cómo se usa",
+    "p": [
+     "Toca la flecha junto a ¿En qué te ayudo? para ocultar las opciones.",
+     "Toca Ver opciones para que vuelvan a aparecer."
+    ]
+   },
+   {
+    "h": "Consejo",
+    "p": [
+     "Con las opciones ocultas ves la respuesta completa sin mover la pantalla."
+    ]
+   }
+  ],
+  "rel": [
+   "Usar el menú de Rumi",
+   "Buscar en el menú de Rumi"
+  ]
+ },
+ {
+  "t": "Escuchar a Rumi",
+  "a": "app",
+  "r": "Rumi puede leerte en voz alta sus respuestas y los pasos del recorrido. Usa la voz del teléfono.",
+  "s": [
+   {
+    "h": "Cómo se usa",
+    "p": [
+     "Toca el botón de la bocina en el globo de Rumi para escuchar ese mensaje.",
+     "Tócalo otra vez para callarlo.",
+     "En el recorrido de la app, toca Escuchar y cada paso se lee solo."
+    ]
+   },
+   {
+    "h": "Si no suena",
+    "p": [
+     "Sube el volumen del teléfono.",
+     "Revisa en los ajustes del teléfono que la voz de texto a voz tenga el idioma español instalado."
+    ]
+   }
+  ],
+  "rel": [
+   "Usar el menú de Rumi",
+   "Recorrido de la app"
+  ]
+ },
+ {
+  "t": "El clima en la app",
+  "a": "app",
+  "r": "Debajo de la fecha, en Hoy, ves el clima de tu zona. Los colores y adornos de la app cambian con la hora y con el clima: sol, nubes, lluvia o estrellas.",
+  "s": [
+   {
+    "h": "De dónde sale",
+    "p": [
+     "Del servicio Open-Meteo por internet, con la ubicación aproximada del teléfono.",
+     "Si no das permiso de ubicación, usa el lugar que pusiste en Más, Configuración, Ubicación.",
+     "Se actualiza cada 30 minutos cuando hay internet."
+    ]
+   },
+   {
+    "h": "Qué puedes hacer",
+    "p": [
+     "Toca el clima para que Rumi te explique el riesgo de calor para el ganado.",
+     "Sin internet, la app sigue funcionando y muestra la época del año."
+    ]
+   },
+   {
+    "h": "Privacidad",
+    "p": [
+     "Solo se envía la ubicación aproximada para pedir el clima.",
+     "Tus datos del engorde no salen del teléfono."
+    ]
+   }
+  ],
+  "rel": [
+   "Tu finca y ajustes",
+   "Datos sin internet"
+  ]
+ },
+ {
+  "t": "Recorrido de la app",
+  "a": "app",
+  "r": "El recorrido te muestra paso a paso para qué sirve cada parte de la app. Aparece la primera vez y lo puedes repetir cuando quieras.",
+  "s": [
+   {
+    "h": "Cómo verlo otra vez",
+    "p": [
+     "Ve a Más, Ayuda y toca Recorrido por la app.",
+     "O abre a Rumi, Usar la app."
+    ]
+   },
+   {
+    "h": "Durante el recorrido",
+    "p": [
+     "Toca Siguiente para avanzar y Salir para terminar.",
+     "Toca Escuchar para que Rumi te lea cada paso."
+    ]
+   }
+  ],
+  "rel": [
+   "Escuchar a Rumi",
+   "Usar el menú de Rumi"
+  ]
+ },
+ {
+  "t": "Bienvenida y colores del día",
+  "a": "app",
+  "r": "Cada vez que abres la app ves la bienvenida con fotos de ganado y un saludo según la hora. Los colores de la app cambian suave con la mañana, el mediodía, la tarde y la noche.",
+  "s": [
+   {
+    "h": "Qué muestra",
+    "p": [
+     "Tu saludo y el nombre de tu finca.",
+     "El clima o la época del año.",
+     "Toca la pantalla para entrar más rápido."
+    ]
+   },
+   {
+    "h": "Colores y fotos",
+    "p": [
+     "Las fotos del encabezado cambian solas cada pocos segundos.",
+     "Si llueve en tu zona, verás lluvia en el encabezado."
+    ]
+   }
+  ],
+  "rel": [
+   "El clima en la app",
+   "Apariencia y colores"
+  ]
  }
 ]

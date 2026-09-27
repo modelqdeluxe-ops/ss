@@ -1,0 +1,18 @@
+[
+{"t":"Sombra de malla","a":"instalaciones","r":"Cuando no hay árboles, la malla sombra (sarán) es la forma más rápida y barata de dar sombra en el corral.","s":[
+ {"h":"Cómo hacerla","p":["Malla de 70 a 80 % de sombra.","2 a 4 m² por animal.","Altura de 3,5 a 4 m para que corra el aire y no la alcancen.","Orientación norte a sur para que la sombra se mueva y el piso seque."]},
+ {"h":"Cuidados","p":["Postes firmes y cables tensos: el viento la rompe.","Revisar después de tormentas."]}],
+ "rel":["Sombra","Sombra y radiación solar","Estrés por calor"]},
+{"t":"Aspersores y enfriamiento","a":"instalaciones","r":"Mojar a los animales o el techo en olas de calor ayuda a bajar su temperatura. Hay que hacerlo bien para no crear lodo ni humedad excesiva.","s":[
+ {"h":"Cómo","p":["Aspersores de gota grande que mojen la piel, no niebla fina que sube la humedad.","Ciclos cortos: mojar 1 a 2 minutos cada 10 a 15 minutos.","Con viento o ventilador para que el agua se evapore."]},
+ {"h":"Cuidados","p":["Buen drenaje para evitar lodo.","No mojar solo a unos animales: todos se amontonan."]}],
+ "rel":["Estrés por calor","Galera o engorde techado","Pisos y drenaje"]},
+{"t":"Bombas solares de agua","a":"instalaciones","r":"Las bombas con paneles solares sacan agua de pozos o ríos sin gasolina ni electricidad de la red. Son cada vez más baratas y comunes en fincas.","s":[
+ {"h":"Ventajas","p":["Sin costo de combustible.","Bombean más justo cuando hace más calor y el ganado toma más agua.","Poco mantenimiento."]},
+ {"h":"Qué considerar","p":["Tanque de reserva para la noche y los días nublados: al menos 2 días de consumo.","Calcula el agua que necesitas: unos 50 a 70 litros por novillo al día con calor.","Protege los paneles contra robo."]}],
+ "rel":["Agua: fuentes, tanques y calidad","Bebederos","Cosecha de agua de lluvia"]},
+{"t":"Silo de trinchera o de montón","a":"instalaciones","r":"El silo de trinchera o de montón guarda ensilaje en grandes cantidades a bajo costo. Lo importante es compactar bien y tapar sin dejar entrar aire.","s":[
+ {"h":"Construcción","p":["Terreno firme, con pendiente para que escurra el agua.","Paredes de tierra, madera o concreto en la trinchera.","Plástico grueso para tapar y peso encima (llantas, sacos de tierra)."]},
+ {"h":"Uso","p":["Frente de corte que avance por lo menos 15 a 30 cm al día para que no se dañe.","Cortar parejo, sin aflojar el resto."]}],
+ "rel":["Ensilaje: cómo hacerlo","Ensilaje: calidad y problemas","Microsilos en bolsa o barril"]}
+]

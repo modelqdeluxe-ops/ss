@@ -1,0 +1,41 @@
+[
+{"t":"Mezclar lotes","a":"manejo","r":"Juntar animales de distintos orígenes provoca peleas por la jerarquía durante varios días, más estrés y más enfermedades. Hay formas de hacerlo con menos daño.","s":[
+ {"h":"Qué pasa","p":["Los animales pelean hasta ordenar quién manda.","Los más débiles comen menos.","Se comparten microbios de distintas fincas."]},
+ {"h":"Cómo hacerlo mejor","p":["Mezclar solo al inicio, no a mitad del engorde.","Juntar animales de peso y tamaño parecidos.","Dar espacio suficiente y varios puntos de comida y agua.","Mezclar al atardecer, con comida servida."]},
+ {"h":"Evitar","p":["Meter animales nuevos en un lote de toros enteros.","Mezclar lotes justo antes de embarcar al matadero."]}],
+ "rel":["Formar lotes","Comportamiento natural del ganado","Carne oscura (corte oscuro)"]},
+{"t":"Primeros 30 días del lote","a":"manejo","r":"El primer mes es cuando más animales enferman y mueren. Un plan claro para esos días hace la diferencia en todo el engorde.","s":[
+ {"h":"Día 0 a 3","p":["Agua limpia y forraje de calidad al llegar.","Descanso antes de trabajar en la manga, si es posible.","Revisión visual de cada animal: nariz, ojos, respiración, patas."]},
+ {"h":"Semana 1 a 2","p":["Plan sanitario: vacunas, desparasitación, vitaminas.","Empezar el concentrado de a poco.","Revisar dos veces al día y separar a los decaídos."]},
+ {"h":"Semana 3 a 4","p":["Refuerzo de vacunas.","Primer pesaje de control.","Ajustar la ración según el consumo."]},
+ {"h":"En tu engorde","p":["La app crea tareas en la agenda para estos días cuando registras un lote nuevo."]}],
+ "rel":["Recepción de ganado","Checklist de los primeros días","Plan sanitario de ingreso","Agenda de tareas"]},
+{"t":"Registrar y aprender de las muertes","a":"manejo","r":"Cada muerte es una pérdida, pero también una lección. Registrar la causa, la fecha y el lote permite encontrar patrones y evitar que se repita.","s":[
+ {"h":"Qué anotar","p":["Fecha, lote y arete.","Días desde la llegada.","Señales previas y tratamientos.","Resultado de la necropsia si se hizo."]},
+ {"h":"Qué buscar","p":["Muertes concentradas en los primeros 30 días: problema de recepción.","Muertes al final del engorde: acidosis, timpanismo o calor.","Varias muertes del mismo origen: revisa al proveedor."]},
+ {"h":"En tu engorde","p":["La app calcula tu mortalidad por lote y su costo."]}],
+ "rel":["Mortalidad","Muerte de un animal","Mortalidad y su costo","Registrar una muerte"]},
+{"t":"Animales de subasta","a":"manejo","r":"El ganado de subasta suele venir de varios orígenes, con más estrés y más contacto con enfermedades. Necesita un manejo de ingreso más cuidadoso.","s":[
+ {"h":"Riesgos","p":["Mezcla de microbios de muchas fincas.","Horas sin agua ni comida.","Historia sanitaria desconocida."]},
+ {"h":"Cómo recibirlos","p":["Cuarentena separada de tus otros lotes.","Plan sanitario completo al ingreso.","Vigilancia estricta de enfermedades respiratorias las primeras 3 semanas."]},
+ {"h":"En tu engorde","p":["Paga un poco menos por ellos para cubrir el mayor riesgo.","Compara en la app la mortalidad y la ganancia de lotes de subasta contra lotes de finca."]}],
+ "rel":["Comprar en subasta o feria","Cuarentena y bioseguridad","Metafilaxis al ingreso"]},
+{"t":"Engorde con toros enteros","a":"manejo","r":"Engordar toros enteros aprovecha su mayor crecimiento y conversión, pero exige más cuidado en el manejo y la venta.","s":[
+ {"h":"Ventajas","p":["Ganan de 5 a 15 % más rápido.","Convierten mejor y hacen más músculo.","Ahorras la castración y su riesgo."]},
+ {"h":"Desventajas","p":["Montas, peleas y golpes.","Más riesgo de carne oscura.","Algunos compradores pagan menos o prefieren castrados."]},
+ {"h":"Cómo manejarlos","p":["Lotes cerrados: no agregues animales nuevos.","Lejos de hembras.","Sacrificio antes de que sean muy maduros (menos de 24 meses).","Embarque sin mezclar con otros lotes."]}],
+ "rel":["Enteros o castrados","Toretes que se montan","Carne oscura (corte oscuro)"]},
+{"t":"Manejo en lluvias intensas","a":"manejo","r":"Las lluvias fuertes llenan los corrales de lodo, aumentan cojeras, enfermedades de piel y parásitos, y bajan la ganancia.","s":[
+ {"h":"Preparación","p":["Drenajes limpios antes de que empiecen las lluvias.","Montículos o zonas altas y secas para echarse.","Techo o protección para el alimento."]},
+ {"h":"Durante","p":["Retira el lodo de comederos y bebederos.","Menos animales por corral.","Revisa patas y piel cada semana."]},
+ {"h":"Después","p":["Desparasitación según análisis.","Control de moscas y garrapatas que aumentan."]}],
+ "rel":["Época de lluvias","Pisos y drenaje","Cojeras y problemas de pezuña"]},
+{"t":"Seguridad al trabajar con ganado","a":"manejo","r":"Patadas, cornadas, aplastamientos y caídas son accidentes comunes. Con buenas instalaciones y costumbres se evitan casi todos.","s":[
+ {"h":"Reglas básicas","p":["Nunca te pongas entre un animal y la pared sin salida.","Siempre ten una ruta de escape en la manga y el corral.","Trabaja con otra persona, no solo.","Cuidado con las vacas con cría y los toros."]},
+ {"h":"Equipo","p":["Botas con punta dura y ropa que no se enganche.","Guantes al aplicar medicinas.","Agujas desechadas en recipiente rígido."]}],
+ "rel":["Personal y seguridad en el trabajo","Manga, brete y embudo","Seguridad del trabajador"]},
+{"t":"Plan de contingencia","a":"manejo","r":"Tener un plan para sequía, inundación, brote de enfermedad o caída de precios evita decisiones de pánico.","s":[
+ {"h":"Qué incluir","p":["Reserva de forraje y agua.","Contacto de veterinario, comprador alterno y transporte.","Reserva de dinero o crédito aprobado.","Lista de animales que se venden primero si hace falta."]},
+ {"h":"En tu engorde","p":["Revisa el plan antes de cada época seca y de lluvias.","Mira el pronóstico y el clima en Rumi."]}],
+ "rel":["Riesgos del engorde","El Niño, La Niña y el Corredor Seco","Planificación del engorde"]}
+]

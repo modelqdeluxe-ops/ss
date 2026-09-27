@@ -17,7 +17,9 @@ const saber=[];
 for(const o of arreglo('SABER'))saber.push({t:o.t,x:limpiar(o.x),re:src(o.re)});
 for(const o of arreglo('CONCEPTOS'))saber.push({t:(s=>s[0].toUpperCase()+s.slice(1))(o.t.replace(/^(La|El|Los|Las|Un|Una) /,'')),x:limpiar(o.x),re:src(o.re)});
 for(const o of arreglo('LUGARES'))saber.push({t:'Dónde está '+o.t,x:limpiar(o.how.join(' ')),re:src(o.re)});
-for(const o of arreglo('TOUR'))saber.push({t:'Pantalla '+o.t,x:limpiar(o.x)});
+// del recorrido solo las pantallas del menú de abajo y Rumi (los pasos de bienvenida no son temas)
+const PANT={hoy:'Hoy',lotes:'Lotes',registrar:'Registrar',graficos:'Gráficos',mas:'Más'};
+for(const o of arreglo('TOUR')){const m=/data-nav="(\w+)"/.exec(o.sel||'');const t=m?PANT[m[1]]:/rumiFab/.test(o.sel||'')?'Rumi':null;if(t)saber.push({t:'Pantalla '+t,x:limpiar(o.x)});}
 for(const o of JSON.parse(fs.readFileSync(path.join(__dirname,'saber_extra.json'),'utf8')))saber.push(o);
 const DIR=path.join(__dirname,'saber');
 for(const f of fs.readdirSync(DIR).filter(f=>f.endsWith('.json')).sort())

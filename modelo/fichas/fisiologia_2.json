@@ -1,0 +1,99 @@
+[
+{"t":"Peso metabólico","a":"fisiologia","r":"Los animales grandes gastan menos energía por kilo que los pequeños. Por eso los requerimientos no se calculan con el peso normal sino con el peso metabólico: el peso elevado a la potencia 0,75.","s":[
+ {"h":"Cómo se calcula","p":["Peso metabólico = peso vivo elevado a 0,75.","Ejemplo: 400 kg da unos 89 kg de peso metabólico; 200 kg da unos 53.","El animal de 400 kg pesa el doble, pero su mantenimiento solo es 1,7 veces mayor."]},
+ {"h":"Para qué sirve","p":["Calcular la energía de mantenimiento.","Comparar animales de distinto tamaño.","Entender por qué los animales grandes convierten diferente."]},
+ {"h":"En tu engorde","p":["Las calculadoras de Rumi usan el peso metabólico para estimar lo que necesita tu lote.","No tienes que sacar la cuenta: solo pon el peso."]}],
+ "rel":["Energía de mantenimiento","Energía metabolizable y neta","Consumo y peso del animal"]},
+{"t":"Energía metabolizable y neta","a":"fisiologia","r":"No toda la energía de la comida llega a ser carne. Se pierde en las heces, en la orina, en el metano y como calor. Lo que queda para mantener y ganar peso es la energía neta.","s":[
+ {"h":"La escalera de la energía","p":["Energía bruta: toda la que tiene la comida si se quema.","Energía digestible: la bruta menos la que sale en las heces.","Energía metabolizable: la digestible menos la que sale en la orina y el metano.","Energía neta: la metabolizable menos el calor que produce digerir y usar la comida."]},
+ {"h":"Dos tipos de energía neta","p":["Energía neta de mantenimiento (ENm): la que cubre el gasto para vivir.","Energía neta de ganancia (ENg): la que se convierte en peso.","La misma comida vale menos para ganar que para mantener, porque formar tejido gasta más."]},
+ {"h":"Valores típicos por kilo de materia seca","p":["Maíz molido: ENm cerca de 2,0 y ENg cerca de 1,4 megacalorías.","Pasto tropical bueno: ENm cerca de 1,2 y ENg cerca de 0,6.","Pasto viejo: ENm cerca de 0,9 y ENg casi nada."]},
+ {"h":"En tu engorde","p":["Las tablas modernas de requerimientos usan este sistema.","El formulador de dietas de la app te ayuda a balancear la energía sin hacer estas cuentas a mano."]}],
+ "rel":["Energía en la ración","Energía neta y proteína degradable","Requerimientos: tablas modernas","Formular una ración"]},
+{"t":"Proteína metabolizable","a":"fisiologia","r":"La proteína metabolizable es la que de verdad llega al intestino y el animal absorbe: la proteína de los microbios más la proteína de la comida que escapó de la panza.","s":[
+ {"h":"De dónde viene","p":["Proteína microbiana: la hacen los microbios con proteína degradable o urea y energía.","Proteína sobrepasante: la parte de la comida que no se degrada en la panza.","Las dos se digieren en el cuajar y el intestino."]},
+ {"h":"Por qué no basta la proteína cruda","p":["La proteína cruda de la etiqueta no dice cuánto llega al intestino.","Dos raciones con 13 % de proteína pueden dar resultados distintos.","Los animales jóvenes y de rápido crecimiento necesitan más proteína sobrepasante."]},
+ {"h":"En tu engorde","p":["Primero asegura proteína degradable para los microbios; es la más barata.","Luego, en animales livianos que crecen rápido, agrega fuentes sobrepasantes como harina de soya tostada, DDGS o harinas de semillas."]}],
+ "rel":["Proteína en la ración","Proteína microbiana","Proteína sobrepasante","Energía neta y proteína degradable"]},
+{"t":"Requerimientos: tablas modernas","a":"fisiologia","r":"Los nutricionistas usan tablas científicas para saber cuánta energía, proteína y minerales necesita cada animal. Las más usadas son las de la Academia Nacional de Ciencias de EE.UU. (edición de 2016) y, para cebú y trópico, las brasileñas BR-CORTE.","s":[
+ {"h":"Qué dicen","p":["Cuánta energía neta necesita un animal según su peso, sexo, raza y ganancia.","Cuánta proteína metabolizable y cuántos minerales y vitaminas.","Cuánto va a comer según su peso y la calidad de la comida."]},
+ {"h":"Por qué importa la raza","p":["El cebú tiene un mantenimiento algo menor que las razas europeas.","Las tablas brasileñas se hicieron con Nelore y cruces, más parecidos al ganado de Centroamérica.","Las tablas de EE.UU. se hicieron sobre todo con razas europeas."]},
+ {"h":"Ejemplo práctico","p":["Un novillo de 350 kg que gana 1 kg al día come unos 8 a 9 kg de materia seca.","Necesita cerca de 11 a 12 % de proteína cruda en la ración.","Y una ración con unas 1,1 a 1,2 megacalorías de ENg por kilo de materia seca."]},
+ {"h":"En tu engorde","p":["Las calculadoras de Rumi usan valores de estas tablas ajustados al trópico.","Pesar a tiempo te dice si tu lote gana lo que la ración promete."]}],
+ "rel":["Energía metabolizable y neta","Proteína metabolizable","Formular una ración","Materia seca y consumo"]},
+{"t":"Aminoácidos limitantes","a":"fisiologia","r":"La proteína está hecha de aminoácidos. Si falta uno, el animal no puede formar músculo aunque le sobren los demás. En bovinos de engorde los que más suelen faltar son la metionina y la lisina.","s":[
+ {"h":"Cómo funciona","p":["El cuerpo arma proteína como un collar: si falta una cuenta, el collar queda incompleto.","El aminoácido que falta primero se llama limitante.","La proteína microbiana tiene un buen balance de aminoácidos."]},
+ {"h":"Cuándo importa","p":["En animales jóvenes que crecen muy rápido.","En raciones con mucho maíz y DDGS, que tienen poca lisina.","En la mayoría de engordes tropicales, primero hay que cubrir la proteína total."]},
+ {"h":"En tu engorde","p":["La harina de soya tiene buena lisina.","Existen aminoácidos protegidos para rumiantes, pero son caros y rara vez se justifican en engorde."]}],
+ "rel":["Proteína metabolizable","Harina de soya y otras proteínas","Granos de destilería (DDGS)"]},
+{"t":"Hambre y saciedad","a":"fisiologia","r":"El animal decide cuánto comer por señales de la panza, de la sangre y del cerebro: qué tan llena está la panza, cuánta energía tiene y cómo se siente.","s":[
+ {"h":"Señales que frenan","p":["Panza llena: con forraje, el animal para cuando no le cabe más.","Ácido propiónico en el hígado: con grano, avisa que ya hay energía suficiente.","Leptina de la grasa: los animales gordos comen menos por kilo.","Calor, dolor y enfermedad."]},
+ {"h":"Señales que animan","p":["Comida fresca en el comedero: el animal come más cuando se le sirve.","Sabor dulce de la melaza.","Estar en grupo: comen más cuando ven comer a otros."]},
+ {"h":"En tu engorde","p":["Servir 2 o 3 veces al día estimula el consumo.","Empuja la comida hacia el animal varias veces al día.","Si baja el consumo de todo el lote, busca calor, comida dañada, agua o enfermedad."]}],
+ "rel":["Consumo bajo","Horarios de alimentación","Lectura de comederos","Tasa de pasaje y llenado"]},
+{"t":"Balance de energía y condición corporal","a":"fisiologia","r":"Si el animal come más energía de la que gasta, guarda el sobrante como músculo y grasa; si come menos, gasta sus reservas. La condición corporal refleja ese balance.","s":[
+ {"h":"Balance positivo","p":["Come más de lo que gasta: sube de peso.","Primero hace músculo; si sobra mucho, hace grasa.","Es la meta del engorde."]},
+ {"h":"Balance negativo","p":["Come menos de lo que gasta: baja de peso.","Gasta grasa y luego músculo.","Ocurre con sequía, enfermedad, calor fuerte o estrés."]},
+ {"h":"En tu engorde","p":["Pesa seguido: el peso es el mejor espejo del balance.","La app te marca en rojo los lotes que bajan o no suben."]}],
+ "rel":["Condición corporal","Energía de mantenimiento","Ganancia diaria de peso"]},
+{"t":"Condición corporal","a":"fisiologia","r":"La condición corporal es una nota que se le pone a cada animal según su gordura, mirando y tocando costillas, columna, cadera y base de la cola.","s":[
+ {"h":"Escala de 1 a 9","p":["1 a 3: flaco, se ven costillas, columna y huesos de la cadera.","4 a 5: moderado, se ven apenas las últimas costillas.","6 a 7: bien cubierto, costillas no se ven y se sienten con presión.","8 a 9: muy gordo, grasa en la base de la cola y en el pecho."]},
+ {"h":"Dónde mirar","p":["Costillas: cuántas se ven.","Columna y punta de la cadera.","Base de la cola y pecho (grasa del pecho = animal terminado)."]},
+ {"h":"En tu engorde","p":["Al comprar: animales de condición 4 a 5 aprovechan el crecimiento compensatorio.","Al vender: la mayoría de compradores quiere 6 a 7.","Pasar de 7 es gastar comida en grasa que no te pagan."]}],
+ "rel":["Grado de acabado","Balance de energía y condición corporal","Comprar ganado para engorde","Crecimiento compensatorio"]},
+{"t":"Tamaño adulto y frame","a":"fisiologia","r":"El frame o estructura es qué tan alto y largo es un animal para su edad. Anuncia el tamaño que tendrá de adulto y a qué peso estará terminado.","s":[
+ {"h":"Qué significa","p":["Frame alto: animal grande, crece más y se termina a más peso.","Frame bajo: animal chico, engrasa antes y se termina a menos peso.","Se mide por la altura a la cadera según la edad."]},
+ {"h":"Por qué importa","p":["A igual peso, el animal de frame bajo está más gordo.","Si engordas un frame alto hasta un peso bajo, lo vendes flaco.","Si engordas un frame bajo hasta un peso alto, gastas en grasa."]},
+ {"h":"En tu engorde","p":["Forma lotes parejos en frame.","Ajusta la meta de peso del lote al frame de los animales.","En la app puedes poner una meta distinta a cada lote."]}],
+ "rel":["Crecimiento de los tejidos","Formar lotes","Peso meta","Uniformidad del lote"]},
+{"t":"Consumo residual (eficiencia individual)","a":"fisiologia","r":"El consumo residual compara lo que come un animal con lo que debería comer según su peso y su ganancia. Los animales eficientes comen menos para ganar lo mismo.","s":[
+ {"h":"Cómo se entiende","p":["Consumo residual negativo: come menos de lo esperado; es eficiente.","Positivo: come más de lo esperado; es ineficiente.","Entre animales del mismo lote puede haber 10 a 20 % de diferencia."]},
+ {"h":"Por qué ocurre","p":["Diferencias en el mantenimiento, en la actividad, en el temperamento y en los microbios de la panza.","Se hereda en parte: los toros eficientes dan hijos eficientes."]},
+ {"h":"En tu engorde","p":["Medirlo necesita comederos que pesen lo que come cada animal; es para centros de investigación y genética.","Tú puedes ver algo parecido: animales del mismo lote que ganan mucho menos que el promedio con la misma comida."]}],
+ "rel":["Conversión alimenticia","Eficiencia alimenticia","Heredabilidad"]},
+{"t":"Enfriamiento nocturno","a":"fisiologia","r":"Después de un día de calor, el animal necesita que la noche refresque para botar el calor que guardó. Si la noche es caliente, arranca el día siguiente ya acalorado y el estrés se acumula.","s":[
+ {"h":"Por qué es clave","p":["El cuerpo guarda calor en el día y lo bota de noche.","Se necesitan varias horas con temperaturas más frescas.","Las olas de calor con noches calientes son las más peligrosas."]},
+ {"h":"Qué hacer","p":["Dar la mayor parte de la comida al atardecer: el calor de la digestión llega de noche.","No manejar ni embarcar en las horas de más calor.","Mojar pisos o animales en olas de calor fuertes, con buen drenaje."]},
+ {"h":"En tu engorde","p":["Mira el clima de tu zona en Rumi: si la noche no baja de 24 °C y hay mucha humedad, toma precauciones."]}],
+ "rel":["Estrés por calor","Zona de confort térmico","Alimentación con calor","Olas de calor más frecuentes"]},
+{"t":"Estrés por transporte","a":"fisiologia","r":"El viaje es de lo más duro para un bovino: miedo, ayuno, sed, golpes, calor y mezcla con desconocidos. Todo eso sube el cortisol, baja las defensas y le hace perder peso.","s":[
+ {"h":"Qué le pasa al cuerpo","p":["Pierde entre 3 y 10 % de su peso: primero contenido de la panza, luego agua de los tejidos.","Los microbios de la panza cambian por el ayuno.","Las defensas bajan de 1 a 3 semanas."]},
+ {"h":"Cómo recuperarlo","p":["Agua limpia al llegar y forraje de buena calidad.","Dejar descansar antes de trabajar en la manga, si es posible.","Recuperar el peso del viaje puede tardar 1 a 3 semanas."]},
+ {"h":"En tu engorde","p":["Por eso la ganancia del primer mes se ve baja.","El peso de entrada ideal es el tomado después de 1 a 3 días de descanso.","Viajes de noche o en horas frescas reducen el daño."]}],
+ "rel":["Transporte de ganado","Recepción de ganado","Desbaste","Estrés y defensas"]},
+{"t":"Dolor en el bovino","a":"fisiologia","r":"El bovino siente dolor igual que otros animales, pero lo esconde porque es animal de presa. El dolor baja el consumo y la ganancia.","s":[
+ {"h":"Señales de dolor","p":["Cabeza baja, orejas caídas y ojos apagados.","Se aparta del grupo, rechina los dientes, patea el vientre.","Cojera, postura encorvada o se echa y levanta mucho."]},
+ {"h":"Dolor de manejo","p":["Castración y descorne duelen, más en animales grandes.","Hacerlo joven y con anestesia local y antiinflamatorio reduce el dolor y la pérdida de peso.","Los mercados piden cada vez más estas prácticas."]},
+ {"h":"En tu engorde","p":["Pide al veterinario un plan con antiinflamatorio para castraciones y cirugías.","Los animales que se recuperan rápido del dolor vuelven a comer antes."]}],
+ "rel":["Castración","Despunte y descorne","Bienestar animal","Cojeras y problemas de pezuña"]},
+{"t":"Parásitos y nutrición","a":"fisiologia","r":"Los parásitos no solo roban comida: dañan el intestino, provocan pérdida de proteína y quitan el apetito. Un animal con parásitos puede comer lo mismo y ganar mucho menos.","s":[
+ {"h":"Cómo roban","p":["Los gusanos del cuajar dañan la pared y el animal digiere peor.","Algunos chupan sangre y causan anemia.","El cuerpo gasta proteína en reparar el daño y en defenderse."]},
+ {"h":"Efecto en el engorde","p":["Pérdidas de ganancia de 10 a 30 % en infestaciones moderadas sin señales claras.","Pelo opaco, barriga grande y diarrea en casos fuertes."]},
+ {"h":"En tu engorde","p":["Desparasita al ingreso según análisis de heces y consejo del veterinario.","Buena nutrición ayuda al animal a tolerar mejor los parásitos.","Evita la resistencia: no desparasites de más ni con dosis bajas."]}],
+ "rel":["Parásitos internos","Desparasitación y resistencia","Resistencia de parásitos a desparasitantes"]},
+{"t":"Pubertad y conducta sexual","a":"fisiologia","r":"Los machos enteros llegan a la pubertad entre los 12 y 18 meses, y el cebú algo más tarde. Desde entonces se montan, pelean y gastan energía, pero también forman más músculo.","s":[
+ {"h":"En machos enteros","p":["Crecen de 5 a 15 % más rápido y convierten mejor que los castrados.","Hacen menos grasa y menos marmoleo.","Se montan y pelean, con riesgo de golpes y de carne oscura."]},
+ {"h":"En hembras","p":["Entran en celo cada 21 días y se montan entre ellas, perdiendo peso.","Hembras preñadas al comprarlas pueden abortar o parir en el corral."]},
+ {"h":"En tu engorde","p":["No mezcles hembras con machos enteros.","Forma lotes de enteros parejos y no les agregues animales nuevos.","Revisa preñez al comprar hembras para engorde."]}],
+ "rel":["Enteros o castrados","Toretes que se montan","Hembras en engorde"]},
+{"t":"Laminitis","a":"fisiologia","r":"La laminitis es la inflamación de las láminas que unen el casco con el hueso de la pata. En el engorde casi siempre viene de acidosis por exceso de grano.","s":[
+ {"h":"Cómo se produce","p":["La acidosis libera toxinas e histamina a la sangre.","Esas sustancias dañan los vasos sanguíneos del casco.","El casco se ablanda, duele y crece deforme."]},
+ {"h":"Señales","p":["Animal que camina como sobre huevos, con el lomo arqueado.","Pasa mucho tiempo echado.","Meses después: cascos largos, con anillos y deformes."]},
+ {"h":"En tu engorde","p":["Adaptación lenta al grano y fibra suficiente.","Evitar cambios bruscos o días sin comida seguidos de comida en exceso."]}],
+ "rel":["Acidosis ruminal","Pezuñas y patas","Cojeras y problemas de pezuña"]},
+{"t":"Composición del cuerpo","a":"fisiologia","r":"Un novillo está hecho de agua, proteína, grasa y minerales. A medida que engorda, la proporción de grasa sube y la de agua baja.","s":[
+ {"h":"Un novillo típico","p":["Joven y flaco: unos 60 a 65 % de agua, 18 a 20 % de proteína, 10 a 15 % de grasa.","Terminado: unos 50 a 55 % de agua, 16 a 17 % de proteína, 25 a 30 % de grasa.","Minerales: 4 a 5 %, casi todo en los huesos."]},
+ {"h":"Lo que se ve y lo que no","p":["Parte del peso es contenido digestivo: de 10 a 20 % del peso vivo.","Por eso el peso cambia tanto antes y después de comer y beber."]},
+ {"h":"En tu engorde","p":["Pesar siempre a la misma hora y con el mismo manejo hace los datos comparables.","El rendimiento en canal sube cuando el animal tiene más grasa y menos contenido digestivo."]}],
+ "rel":["Peso lleno y peso vacío","Rendimiento en canal","Crecimiento de los tejidos"]},
+{"t":"Microbios y antibióticos","a":"fisiologia","r":"Los antibióticos no solo matan a las bacterias que enferman: también afectan a los microbios buenos de la panza y del intestino, y su mal uso crea bacterias resistentes.","s":[
+ {"h":"Efectos en la panza","p":["Algunos antibióticos dados por boca cambian la fermentación.","Los ionóforos se usan justamente para cambiar los microbios de forma útil.","Dosis altas y largas pueden causar diarrea y bajo consumo."]},
+ {"h":"Resistencia","p":["Cada uso le da ventaja a las bacterias resistentes.","Esas bacterias pueden pasar a las personas por la carne, el agua o el contacto.","Por eso muchos países limitan los antibióticos como promotores de crecimiento."]},
+ {"h":"En tu engorde","p":["Usa antibióticos solo con diagnóstico y receta.","Termina el tratamiento completo y respeta los retiros.","Previene con buen manejo, vacunas y bioseguridad."]}],
+ "rel":["Uso responsable de antibióticos","Resistencia a los antimicrobianos","Ionóforos"]},
+{"t":"Olfato, gusto y preferencias","a":"fisiologia","r":"El bovino elige lo que come por el olor, el sabor y la textura. Rechaza lo mohoso, lo amargo y lo que huele a heces, y prefiere lo dulce y lo fresco.","s":[
+ {"h":"Lo que le gusta","p":["Sabor dulce: melaza, caña, cítricos.","Comida fresca y recién servida.","Sal en cantidad justa."]},
+ {"h":"Lo que rechaza","p":["Comida mohosa, fermentada de más o caliente.","Pasto cerca de sus propias heces.","Sabores amargos de algunas plantas y medicinas."]},
+ {"h":"En tu engorde","p":["Limpia comederos: la comida vieja al fondo baja el consumo.","Introduce ingredientes nuevos de a poco, mezclados con los conocidos.","La melaza ayuda a que acepten raciones nuevas o medicadas."]}],
+ "rel":["Lectura de comederos","Melaza","Almacenamiento del alimento"]}
+]

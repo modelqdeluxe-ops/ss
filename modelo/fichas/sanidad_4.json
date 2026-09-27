@@ -1,0 +1,67 @@
+[
+{"t":"Fotosensibilización","a":"sanidad","r":"La fotosensibilización es una quemadura de la piel por el sol, provocada por sustancias de algunas plantas o por daño del hígado. Afecta la piel blanca o sin pelo.","s":[
+ {"h":"Causas","p":["Pastos del género Brachiaria (Urochloa), sobre todo decumbens, en ciertas condiciones: tienen saponinas que dañan el hígado.","Algunas plantas tóxicas y hongos del pasto.","Daño del hígado por otras causas."]},
+ {"h":"Señales","p":["Piel roja, hinchada y con costras en orejas, nariz, lomo y partes blancas.","El animal busca sombra, se rasca y deja de comer.","A veces ojos llorosos y ictericia (mucosas amarillas)."]},
+ {"h":"Qué hacer","p":["Saca a los animales del potrero sospechoso y ponlos a la sombra.","Llama al veterinario: el tratamiento depende de si el hígado está dañado.","Los animales jóvenes y recién llegados a esos pastos son los más afectados."]}],
+ "rel":["Intoxicación por plantas y hongos","Problemas de piel","El hígado del bovino"]},
+{"t":"Estomatitis vesicular","a":"sanidad","r":"La estomatitis vesicular es una enfermedad viral que causa ampollas en la boca, las patas y las ubres. Se parece mucho a la fiebre aftosa, por eso siempre se debe reportar.","s":[
+ {"h":"Señales","p":["Babeo abundante y dejar de comer.","Ampollas y úlceras en lengua, encías y entre las pezuñas.","Cojera."]},
+ {"h":"Qué hacer","p":["Reporta de inmediato al servicio veterinario oficial: solo el laboratorio la distingue de la aftosa.","Separa a los animales enfermos y dales comida suave y agua.","Usa guantes: también puede afectar a las personas."]},
+ {"h":"Prevención","p":["Control de insectos, que la transmiten.","Cuarentena de animales nuevos."]}],
+ "rel":["Fiebre aftosa y enfermedades exóticas","Enfermedades de reporte obligatorio","Cuarentena y bioseguridad"]},
+{"t":"Lengua azul","a":"sanidad","r":"La lengua azul es una enfermedad viral transmitida por mosquitos pequeños (jejenes). En el trópico americano el virus circula, pero en bovinos casi siempre pasa sin síntomas.","s":[
+ {"h":"En bovinos","p":["La mayoría no se enferma pero lleva el virus.","Los ovinos sí sufren la enfermedad grave.","Importa para exportar animales vivos o semen."]},
+ {"h":"Qué hacer","p":["Controla criaderos de jejenes: charcos, estiércol húmedo.","Si tienes ovejas cerca, pregunta al veterinario por la vacunación."]}],
+ "rel":["Enfermedades de reporte obligatorio","Moscas del cuerno y del establo"]},
+{"t":"Rinotraqueítis infecciosa bovina (IBR)","a":"sanidad","r":"La IBR es causada por un herpesvirus. En el engorde provoca enfermedad respiratoria con fiebre alta y abre la puerta a neumonías bacterianas.","s":[
+ {"h":"Señales","p":["Fiebre alta, nariz roja e inflamada, secreción nasal.","Tos, ojos llorosos y baja de consumo.","Puede causar abortos en hembras."]},
+ {"h":"Prevención","p":["Vacuna respiratoria que incluya IBR, con refuerzo según la etiqueta.","Vacunar antes o al llegar al engorde, con el animal tranquilo."]},
+ {"h":"Dato","p":["El virus queda escondido en el animal de por vida y puede reactivarse con estrés."]}],
+ "rel":["Enfermedades virales respiratorias y DVB","Neumonía o complejo respiratorio","Vacunación"]},
+{"t":"Animales persistentemente infectados (DVB)","a":"sanidad","r":"Algunos terneros se infectaron con el virus de la diarrea viral bovina antes de nacer y lo llevan toda la vida. Riegan el virus sin parar y enferman a los demás del lote.","s":[
+ {"h":"Cómo se forma","p":["La madre se infecta en los primeros meses de preñez.","El ternero nace con el virus y su cuerpo no lo reconoce como enemigo.","Suele crecer poco y enfermar seguido."]},
+ {"h":"Efecto en el engorde","p":["Un animal así en un lote aumenta las enfermedades respiratorias de sus compañeros.","Baja las defensas de todo el grupo."]},
+ {"h":"Qué hacer","p":["Existen pruebas de laboratorio con muestra de oreja para detectarlos.","Si un animal es siempre el más atrasado y enfermizo, pregunta al veterinario por la prueba.","Vacuna contra DVB al ingreso."]}],
+ "rel":["Enfermedades virales respiratorias y DVB","Animales atrasados","Sistema inmune del bovino"]},
+{"t":"Sarna","a":"sanidad","r":"La sarna la causan ácaros que viven en la piel. Provoca comezón intensa, caída de pelo y costras. Es más común en animales flacos, hacinados y en época seca.","s":[
+ {"h":"Señales","p":["Rascado contra postes y cercas.","Zonas sin pelo, con costras y piel gruesa en cuello, cola y lomo.","Baja de peso en casos fuertes."]},
+ {"h":"Qué hacer","p":["El veterinario confirma con un raspado de piel.","Tratamiento con productos para ácaros en todo el lote, no solo en los que se rascan.","Limpia postes y comederos donde se rascan."]}],
+ "rel":["Problemas de piel","Desparasitación y resistencia"]},
+{"t":"Tiña o hongos de la piel","a":"sanidad","r":"La tiña es una infección por hongos que forma manchas redondas, grises y sin pelo, sobre todo en la cara y el cuello. Se contagia a otros animales y a las personas.","s":[
+ {"h":"Señales","p":["Círculos de 2 a 5 cm sin pelo y con costra gris.","Más común en animales jóvenes, en corrales húmedos y con poco sol."]},
+ {"h":"Qué hacer","p":["Suele curarse sola en semanas o meses.","Productos antimicóticos en la piel aceleran la cura.","Usa guantes y lávate las manos: se pega a las personas."]}],
+ "rel":["Problemas de piel","Enfermedades que se pegan a personas"]},
+{"t":"Dermatofilosis","a":"sanidad","r":"La dermatofilosis es una infección de la piel por una bacteria que aprovecha la humedad y las picaduras de garrapatas. Forma costras gruesas como pincel.","s":[
+ {"h":"Señales","p":["Costras duras con pelos pegados en lomo, cuello y patas.","Al quitarlas queda la piel húmeda y roja.","Empeora en época de lluvias."]},
+ {"h":"Qué hacer","p":["Separar y mantener al animal seco.","Tratamiento antibiótico indicado por el veterinario en casos extendidos.","Control de garrapatas."]}],
+ "rel":["Problemas de piel","Garrapatas","Época de lluvias"]},
+{"t":"Parásitos pulmonares","a":"sanidad","r":"Algunos gusanos viven en los bronquios y causan tos y neumonía. Son más comunes en animales jóvenes en potreros húmedos.","s":[
+ {"h":"Señales","p":["Tos seca, sobre todo al mover a los animales.","Respiración rápida y baja de peso.","Varios animales jóvenes del mismo potrero afectados."]},
+ {"h":"Qué hacer","p":["El veterinario lo confirma con análisis de heces especial.","La mayoría de desparasitantes de amplio espectro los controlan."]}],
+ "rel":["Parásitos internos","Neumonía o complejo respiratorio"]},
+{"t":"Intoxicación por plomo","a":"sanidad","r":"El plomo de baterías viejas, pintura y aceite quemado es una de las intoxicaciones más comunes en bovinos, porque son curiosos y lamen todo.","s":[
+ {"h":"Señales","p":["Ceguera, animal que se estrella con objetos.","Temblores, rechinar de dientes, espuma en la boca.","Convulsiones y muerte rápida."]},
+ {"h":"Qué hacer","p":["Llama al veterinario de inmediato.","Busca y retira la fuente: baterías, latas de pintura, aceite de motor."]},
+ {"h":"Prevención","p":["Nunca dejes baterías ni chatarra en potreros ni corrales.","Revisa los lugares donde se quemó basura."]}],
+ "rel":["Intoxicación por plantas y hongos","Mantenimiento de instalaciones"]},
+{"t":"Intoxicación por plaguicidas","a":"sanidad","r":"Garrapaticidas, insecticidas y herbicidas mal usados pueden intoxicar al ganado. Los organofosforados son los más peligrosos.","s":[
+ {"h":"Señales","p":["Babeo, lagrimeo, diarrea y orinar mucho.","Temblores musculares, pupilas pequeñas y dificultad para respirar."]},
+ {"h":"Qué hacer","p":["Llama al veterinario: existe antídoto para organofosforados.","Lava con agua y jabón si fue un baño.","Guarda la etiqueta del producto."]},
+ {"h":"Prevención","p":["Mide bien la dosis y no mezcles productos.","No bañes animales con calor fuerte ni estresados.","No pastorees potreros recién fumigados antes del tiempo indicado."]}],
+ "rel":["Buen uso de plaguicidas","Garrapatas","Intoxicación por plantas y hongos"]},
+{"t":"Intoxicación por sal y falta de agua","a":"sanidad","r":"Cuando los animales pasan muchas horas sin agua y luego toman de golpe, o comen mucha sal sin agua, pueden sufrir daño cerebral.","s":[
+ {"h":"Señales","p":["Animales ciegos, que caminan en círculos o presionan la cabeza contra la pared.","Convulsiones después de volver a tomar agua."]},
+ {"h":"Qué hacer","p":["Da agua poco a poco a animales que pasaron mucho tiempo sin tomar.","Llama al veterinario."]},
+ {"h":"Prevención","p":["Agua siempre disponible, sobre todo con raciones saladas.","Revisa bombas, flotadores y tuberías cada día."]}],
+ "rel":["Agua de bebida","Bebederos","Deshidratación y sueros"]},
+{"t":"Muerte súbita: posibles causas","a":"sanidad","r":"Encontrar un animal muerto sin haberlo visto enfermo asusta. Las causas más comunes son pocas y el veterinario puede identificarlas con una necropsia.","s":[
+ {"h":"Causas más frecuentes","p":["Enfermedades clostridiales (pierna negra, enterotoxemia).","Timpanismo o acidosis aguda.","Ántrax (carbón bacteridiano): no abras el cadáver.","Intoxicaciones: plantas, nitratos, urea, plomo.","Rayos, golpe de calor, mordedura de serpiente."]},
+ {"h":"Qué hacer","p":["Si sale sangre oscura por nariz, boca o ano y el cuerpo no se pone rígido, sospecha ántrax: no lo abras y llama al veterinario oficial.","En otros casos, pide una necropsia el mismo día.","Revisa a los demás animales y la comida del día."]},
+ {"h":"En tu engorde","p":["Registra cada muerte en la app con la causa.","Varias muertes seguidas: detén cambios de ración y llama al veterinario."]}],
+ "rel":["Muerte de un animal","Enfermedades clostridiales","Ántrax o carbón bacteridiano","Timpanismo o panza inflada"]},
+{"t":"Metafilaxis al ingreso","a":"sanidad","r":"La metafilaxis es tratar con antibiótico a todo un lote de alto riesgo al llegar, antes de que se enfermen. Reduce la neumonía, pero debe usarse con criterio para no crear resistencia.","s":[
+ {"h":"Cuándo se justifica","p":["Animales livianos, recién destetados, de subasta y de varios orígenes.","Viajes largos y animales muy estresados.","Historia de muchos enfermos en lotes parecidos."]},
+ {"h":"Cuándo no","p":["Animales pesados, de un solo origen, preacondicionados y vacunados.","Como costumbre en todos los lotes."]},
+ {"h":"En tu engorde","p":["Decide con tu veterinario según el riesgo de cada compra.","Registra el tratamiento y su retiro en la app."]}],
+ "rel":["Uso responsable de antibióticos","Recepción de ganado","Neumonía o complejo respiratorio","Destete y preacondicionamiento"]}
+]

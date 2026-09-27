@@ -1,0 +1,59 @@
+[
+{"t":"Cómo pastorea el bovino","a":"fisiologia","r":"El bovino enrolla el pasto con la lengua y lo arranca. Pastorea de 7 a 10 horas al día, sobre todo al amanecer y al atardecer, y escoge las hojas más tiernas.","s":[
+ {"h":"Cómo come","p":["Da entre 30.000 y 40.000 bocados al día.","No corta al ras: necesita pasto de por lo menos 10 a 15 cm para llenar la boca.","Si el pasto está muy bajo, el bocado es pequeño y el animal no alcanza a llenarse."]},
+ {"h":"Cuándo come","p":["Picos al amanecer y en la tarde.","Con calor, pastorea de noche y descansa de día a la sombra.","Rumia sobre todo de noche."]},
+ {"h":"Selección","p":["Escoge hojas antes que tallos, y verde antes que seco.","Evita el pasto junto a sus propias heces.","Por eso deja parches sin comer en potreros grandes."]},
+ {"h":"En tu engorde","p":["Pasto a la altura correcta = bocados grandes = más consumo.","Potreros pequeños con rotación hacen que coman más parejo."]}],
+ "rel":["Pastoreo rotacional","Carga animal y aforo","Ritmo del día del bovino"]},
+{"t":"Ritmo del día del bovino","a":"fisiologia","r":"El bovino sigue un ritmo diario: come, descansa, rumia y vuelve a comer. Respetar ese ritmo con horarios fijos mejora el consumo y la ganancia.","s":[
+ {"h":"Un día típico","p":["Come fuerte al amanecer y al atardecer.","Descansa y rumia en las horas de calor.","De noche alterna rumia, descanso y algo de comida."]},
+ {"h":"Por qué importan los horarios","p":["Los microbios de la panza se acostumbran a recibir comida a la misma hora.","Cambiar el horario de un día para otro baja el consumo.","Atrasos largos hacen que coman con ansiedad y se acidifiquen."]},
+ {"h":"En tu engorde","p":["Sirve la comida a la misma hora todos los días, con diferencia de menos de 30 minutos.","Pon tus horarios de entrega en Más, Configuración: la app te recuerda cada entrega."]}],
+ "rel":["Horarios de alimentación","Hambre y saciedad","Microbios del rumen"]},
+{"t":"Escala de jadeo","a":"fisiologia","r":"Contar respiraciones y observar el jadeo es la forma más simple de medir el estrés por calor en el corral.","s":[
+ {"h":"Puntajes","p":["0: respiración normal, menos de 40 por minuto.","1: respiración rápida, boca cerrada, 40 a 70.","2: jadeo con algo de baba, boca cerrada, 70 a 120.","3: boca abierta, mucha baba, 120 a 160.","4: lengua afuera, cabeza estirada, más de 160: emergencia."]},
+ {"h":"Cómo contar","p":["Mira el costado del animal 15 segundos y multiplica por 4.","Cuenta en 5 a 10 animales del lote a las horas de más calor."]},
+ {"h":"Qué hacer","p":["Puntaje 2 en varios animales: agua extra y sombra, no manejarlos.","Puntaje 3 o 4: mojar, refrescar y llamar al veterinario si alguno cae."]}],
+ "rel":["Estrés por calor","Zona de confort térmico","Golpe de calor"]},
+{"t":"Por qué el animal enfermo deja de comer","a":"fisiologia","r":"Cuando el cuerpo pelea una infección, libera sustancias que dan fiebre, sueño y quitan el hambre. Es una defensa, pero en el engorde cuesta días de ganancia.","s":[
+ {"h":"Qué pasa por dentro","p":["Las defensas liberan citoquinas que actúan en el cerebro.","Bajan el apetito, suben la temperatura y el animal se aísla.","El cuerpo usa proteína del músculo para fabricar defensas."]},
+ {"h":"Por qué importa","p":["Un animal que no come en 2 o 3 días pierde peso y sus microbios de la panza.","La baja de consumo aparece antes que la tos o la fiebre alta."]},
+ {"h":"En tu engorde","p":["Observa quién no se acerca al comedero cuando sirves: es la primera señal.","Separa y revisa temperatura a los que no comen."]}],
+ "rel":["Revisión diaria de los animales","Fiebre: qué es y qué hacer","Sistema inmune del bovino"]},
+{"t":"Movimientos de la panza","a":"fisiologia","r":"La panza se contrae de 1 a 3 veces por minuto para mezclar la comida. Escucharla con el oído o un estetoscopio en el costado izquierdo dice si funciona bien.","s":[
+ {"h":"Cómo escuchar","p":["Pon el oído o el estetoscopio en el hueco del ijar izquierdo.","Escucha 2 minutos: debes oír ruidos como de tormenta lejana, de 2 a 6 veces."]},
+ {"h":"Qué significa","p":["Sin ruidos: la panza está parada; puede ser acidosis, fiebre, dolor o bloqueo.","Ijar izquierdo muy abultado y tenso: timpanismo.","Movimientos lentos: animal enfermo o con comida de mala calidad."]},
+ {"h":"En tu engorde","p":["Revisa la panza de todo animal que no come.","Un veterinario puede indicar tratamiento para reactivarla."]}],
+ "rel":["Los cuatro estómagos del bovino","Timpanismo o panza inflada","Signos vitales y cómo tomarlos"]},
+{"t":"Mucosas: qué dicen sus colores","a":"fisiologia","r":"El color de las encías, del ojo y de la vulva muestra cómo está la sangre del animal. Revisarlas toma segundos y da mucha información.","s":[
+ {"h":"Colores","p":["Rosado: normal.","Pálido o blanco: anemia (anaplasma, babesia, parásitos, hemorragia).","Amarillo: ictericia, problema de hígado o destrucción de glóbulos rojos.","Morado o azulado: falta de oxígeno, grave.","Muy rojo: fiebre, golpe de calor o intoxicación."]},
+ {"h":"Cómo revisarlas","p":["Baja un poco el párpado inferior y mira el blanco del ojo y su borde.","Revisa las encías si puedes abrir la boca con seguridad.","Compara con un animal sano del lote."]}],
+ "rel":["Sangre y circulación","Anaplasmosis","Signos vitales y cómo tomarlos"]},
+{"t":"Ganglios linfáticos","a":"fisiologia","r":"Los ganglios son filtros de las defensas. Cuando hay infección cerca, se hinchan. Algunos se pueden tocar bajo la piel.","s":[
+ {"h":"Dónde tocarlos","p":["Delante del hombro (preescapulares).","En el ijar, delante del muslo (prefemorales).","Bajo la mandíbula."]},
+ {"h":"Qué significa si están grandes","p":["Infección en la zona que drenan: heridas, abscesos, garrapatas.","Si están grandes en todo el cuerpo: enfermedad general, como tripanosomiasis o leucosis."]},
+ {"h":"En tu engorde","p":["Revísalos en animales que no ganan peso o que tienen fiebre.","Un veterinario puede tomar muestra si sospecha una enfermedad seria."]}],
+ "rel":["Sistema inmune del bovino","Hinchazones: qué pueden ser","Tripanosomiasis"]},
+{"t":"Nitrógeno, estiércol y ambiente","a":"fisiologia","r":"El bovino solo guarda en su cuerpo una parte pequeña del nitrógeno que come; el resto sale en la orina y las heces. Ese nitrógeno puede fertilizar tus pastos o contaminar el agua.","s":[
+ {"h":"Datos","p":["Un novillo en engorde retiene cerca del 10 a 20 % del nitrógeno que come.","La mayor parte del exceso sale como urea en la orina y se vuelve amoníaco.","El amoníaco da mal olor y se pierde al aire."]},
+ {"h":"Qué hacer","p":["No dar más proteína de la necesaria.","Recoger y compostar el estiércol del corral.","Usar el estiércol como abono en los pastos de corte."]}],
+ "rel":["Reciclaje de urea","Manejo del estiércol","Ambiente y manejo de desechos"]},
+{"t":"Crecimiento del hueso","a":"fisiologia","r":"El hueso crece a lo largo por unos cartílagos en sus puntas. Cuando esos cartílagos se cierran, el animal deja de crecer en altura; eso ocurre de los 2 a los 4 años según el hueso y la raza.","s":[
+ {"h":"Qué necesita","p":["Calcio, fósforo, vitamina D y proteína.","Energía suficiente en la juventud."]},
+ {"h":"Por qué importa en el engorde","p":["Un animal que pasó hambre de joven queda con menos estructura.","Animales con buen esqueleto pueden cargar más músculo.","Los huesos son parte del peso que no se vende como carne."]}],
+ "rel":["Crecimiento de los tejidos","Tamaño adulto y frame","Relación calcio y fósforo"]},
+{"t":"Sombra y radiación solar","a":"fisiologia","r":"El sol directo calienta al animal tanto como el aire. Una buena sombra puede bajar la carga de calor que recibe hasta un 30 % o más.","s":[
+ {"h":"Qué hace la sombra","p":["Quita la radiación directa del sol.","Baja la temperatura de la piel y la respiración.","Los árboles además refrescan por la humedad de sus hojas."]},
+ {"h":"Cuánta hace falta","p":["Unos 2 a 4 m² de sombra por animal en corral.","Altura de 3 a 4 m para que corra el aire.","Orientada para que la sombra se mueva y seque el piso."]},
+ {"h":"En tu engorde","p":["La sombra es de las inversiones que más se pagan en el trópico.","Los animales negros o de razas europeas la necesitan más."]}],
+ "rel":["Sombra","Estrés por calor","Sistemas silvopastoriles"]},
+{"t":"Consumo y peso del animal","a":"fisiologia","r":"Un novillo come de 2 a 3 % de su peso en materia seca. Los livianos comen más por kilo de peso que los pesados.","s":[
+ {"h":"Valores de referencia","p":["200 kg: cerca de 2,6 a 3 % (5 a 6 kg de materia seca).","350 kg: cerca de 2,3 a 2,6 % (8 a 9 kg).","450 kg: cerca de 2 a 2,3 % (9 a 10 kg)."]},
+ {"h":"Qué lo cambia","p":["Calidad de la comida: pasto viejo baja el consumo.","Calor: puede bajar 10 a 30 %.","Grasa del animal: los muy gordos comen menos."]},
+ {"h":"En tu engorde","p":["La app estima el consumo esperado con el peso de tus lotes.","Si comen mucho menos de lo esperado, busca la causa."]}],
+ "rel":["Consumo como porcentaje del peso","Materia seca y consumo","Hambre y saciedad"]},
+{"t":"Crecimiento de machos y hembras","a":"fisiologia","r":"A igual edad y comida, los machos enteros crecen más rápido, luego los castrados y al final las hembras. Las hembras engrasan antes y se terminan a menor peso.","s":[
+ {"h":"Diferencias típicas","p":["Toros enteros: la mayor ganancia y la mejor conversión.","Novillos castrados: ganancia intermedia, más marmoleo.","Hembras: ganancia menor y terminan a 50 a 80 kg menos que los novillos."]},
+ {"h":"En tu engorde","p":["No mezcles sexos en el mismo lote.","Ajusta la meta de peso según el sexo: la app permite una meta por lote."]}],
+ "rel":["Enteros o castrados","Hembras en engorde","Peso meta"]}
+]

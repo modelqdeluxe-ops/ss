@@ -1,0 +1,94 @@
+[
+{"t":"Heredabilidad","a":"genetica","r":"La heredabilidad dice qué parte de una característica pasa de padres a hijos. Va de 0 a 1: más alta, más rápido se mejora con selección.","s":[
+ {"h":"Valores típicos","p":["Ganancia diaria de peso: 0,3 a 0,4 (media).","Conversión alimenticia: cerca de 0,3.","Rendimiento y área del ojo de lomo: 0,3 a 0,5.","Marmoleo: 0,4 a 0,5 (alta).","Temperamento: 0,3 a 0,4.","Fertilidad: 0,05 a 0,15 (baja; depende más del manejo)."]},
+ {"h":"Qué significa","p":["Heredabilidad alta: escoger buenos padres da hijos parecidos.","Heredabilidad baja: el ambiente y el manejo pesan más que la genética.","Nada es 100 % genético: la comida y el manejo siempre cuentan."]},
+ {"h":"En tu engorde","p":["Comprar terneros de buenos toros de carne da animales que ganan más.","Si compras siempre al mismo criador y te va bien, cuida esa relación."]}],
+ "rel":["Diferencias esperadas de progenie","Selección genómica","Vigor híbrido o heterosis"]},
+{"t":"Vigor híbrido o heterosis","a":"genetica","r":"Cuando se cruzan dos razas distintas, los hijos suelen rendir más que el promedio de sus padres. Ese extra es el vigor híbrido, y es mayor mientras más diferentes sean las razas.","s":[
+ {"h":"Cuánto da","p":["En cruces de cebú por europeo el vigor híbrido es muy alto.","Puede subir de 5 a 15 % el crecimiento y más en fertilidad y sobrevivencia.","El máximo lo tiene el primer cruce (F1)."]},
+ {"h":"Por qué se pierde","p":["Si cruzas F1 con F1, parte del vigor se pierde.","Los cruces rotativos o las razas compuestas mantienen una parte."]},
+ {"h":"En tu engorde","p":["Novillos F1 Brahman por Angus, Simmental o Charolais son muy buscados para engorde.","Unen resistencia al calor con crecimiento y carne."]}],
+ "rel":["Razas compuestas","Cruzamientos para carne en el trópico","Adaptación del cebú al trópico"]},
+{"t":"Cruzamientos para carne en el trópico","a":"genetica","r":"Cruzar cebú con razas europeas de carne combina rusticidad y crecimiento. La proporción ideal depende del clima y del manejo de la finca.","s":[
+ {"h":"Proporciones","p":["50 % cebú y 50 % europeo (F1): el mejor equilibrio y el mayor vigor híbrido.","Más de 50 % europeo: más carne y marmoleo, pero sufre más el calor y las garrapatas.","Más de 50 % cebú: más rústico, algo menos de crecimiento."]},
+ {"h":"Razas europeas usadas","p":["Angus: marmoleo y precocidad.","Charolais y Simmental: tamaño y músculo.","Senepol y Romosinuano: razas europeas adaptadas al calor."]},
+ {"h":"En tu engorde","p":["En corral con sombra y buena comida, los cruces con 50 a 75 % europeo rinden muy bien.","En potrero caliente y sin sombra, conviene más sangre cebú."]}],
+ "rel":["Vigor híbrido o heterosis","Razas para engorde en el trópico","Razas compuestas","Razas criollas y adaptadas"]},
+{"t":"Razas compuestas","a":"genetica","r":"Las razas compuestas se formaron cruzando dos o más razas y fijando el resultado. Mantienen parte del vigor híbrido y son más fáciles de manejar que los cruces rotativos.","s":[
+ {"h":"Ejemplos","p":["Brangus: cerca de 3/8 Brahman y 5/8 Angus.","Braford: Brahman con Hereford.","Santa Gertrudis: cerca de 3/8 Brahman y 5/8 Shorthorn.","Simbrah: Simmental con Brahman.","Beefmaster: Brahman, Hereford y Shorthorn.","Charbray: Charolais con Brahman."]},
+ {"h":"Ventajas","p":["Animales parejos y adaptados al calor moderado.","Buen crecimiento y buena carne."]},
+ {"h":"En tu engorde","p":["Terneros de razas compuestas suelen engordar bien en corral y semiestabulado.","Revisa que vengan de criadores con buen registro."]}],
+ "rel":["Vigor híbrido o heterosis","Cruzamientos para carne en el trópico","Razas para engorde en el trópico"]},
+{"t":"Razas criollas y adaptadas","a":"genetica","r":"Las razas criollas descienden del ganado que trajeron los españoles hace cinco siglos. Se adaptaron al trópico y guardan genes valiosos de resistencia.","s":[
+ {"h":"Ejemplos","p":["Romosinuano, Blanco Orejinegro, Costeño con Cuernos, Sanmartinero (Colombia).","Reyna (Nicaragua).","Criollo Limonero (Venezuela).","Senepol (islas del Caribe), cruce de N'Dama y Red Poll."]},
+ {"h":"Virtudes","p":["Toleran calor sin ser cebú: muchas tienen el gen del pelo liso.","Buena fertilidad y temperamento tranquilo.","Carne más tierna que el cebú."]},
+ {"h":"En tu engorde","p":["Cruzadas con cebú dan vigor híbrido sin perder adaptación.","Son una alternativa a las razas europeas en zonas muy calientes."]}],
+ "rel":["Gen del pelo liso (slick)","Cruzamientos para carne en el trópico","Razas para engorde en el trópico"]},
+{"t":"Gen del pelo liso (slick)","a":"genetica","r":"El gen del pelo liso, en el receptor de la prolactina, da un pelo muy corto y brillante que ayuda a botar calor. Vino de razas criollas del Caribe y de Senepol.","s":[
+ {"h":"Qué hace","p":["Pelo muy corto y fino todo el año.","Los animales con el gen mantienen menos temperatura y comen más con calor.","Es dominante: con una copia ya se nota."]},
+ {"h":"Cómo se usa","p":["Cruzando con Senepol o criollos que lo tienen.","Con prueba de ADN se sabe qué animales lo portan.","También se introdujo por edición genética; en 2022 las autoridades de EE.UU. lo consideraron de bajo riesgo."]},
+ {"h":"En tu engorde","p":["Novillos con el gen aguantan mejor el corral caliente.","Pregunta al criador si sus toros lo portan."]}],
+ "rel":["Razas criollas y adaptadas","Piel y pelo","Edición genética en ganado"]},
+{"t":"Diferencias esperadas de progenie","a":"genetica","r":"La DEP (o EPD en inglés) predice cuánto mejor o peor serán los hijos de un toro comparados con el promedio de la raza. Es la herramienta principal para escoger toros.","s":[
+ {"h":"Cómo se lee","p":["DEP de peso al destete +10 kg: sus hijos pesarán en promedio 5 kg más (la mitad viene del toro).","Se compara entre toros de la misma raza y del mismo año de evaluación.","Cada DEP trae una precisión: más alta, más confiable."]},
+ {"h":"DEP útiles para carne","p":["Peso al destete y al año: crecimiento.","Área de ojo de lomo y rendimiento: músculo.","Marmoleo y grasa: calidad de canal.","Docilidad: temperamento."]},
+ {"h":"En tu engorde","p":["Aunque no crías, puedes preferir terneros de criadores que usan toros con buenas DEP.","Esos terneros suelen ganar más y más parejo."]}],
+ "rel":["Heredabilidad","Selección genómica","Comprar ganado para engorde"]},
+{"t":"Selección genómica","a":"genetica","r":"Con una muestra de pelo o sangre se lee el ADN de un animal y se predice su valor genético desde que nace, sin esperar a ver a sus hijos.","s":[
+ {"h":"Qué aporta","p":["Más precisión en toros jóvenes.","Detecta genes de defectos, de color, de cuernos y de calidad de carne.","Confirma la paternidad."]},
+ {"h":"Situación actual","p":["Ya se usa en las principales razas de carne, incluyendo Brahman y Nelore.","El costo de las pruebas ha bajado mucho en los últimos años."]},
+ {"h":"En tu engorde","p":["Es sobre todo para criadores.","Te beneficia al comprar terneros de hatos que la usan: más parejos y predecibles."]}],
+ "rel":["Diferencias esperadas de progenie","Heredabilidad","Edición genética en ganado"]},
+{"t":"Edición genética en ganado","a":"genetica","r":"La edición genética cambia una letra del ADN de forma precisa, sin meter genes de otras especies. Se usa para copiar genes útiles que ya existen en otras razas, como el pelo liso o la ausencia de cuernos.","s":[
+ {"h":"Ejemplos","p":["Pelo liso para tolerar calor.","Animales sin cuernos, para evitar el descorne.","Resistencia a algunas enfermedades en investigación."]},
+ {"h":"Reglas","p":["Cada país tiene reglas distintas; algunos lo tratan como mejoramiento normal y otros como transgénico.","Su uso comercial todavía es pequeño."]},
+ {"h":"En tu engorde","p":["No es algo que usarás pronto, pero puede cambiar las razas en los próximos años.","Lo que llega a tu finca son cruces y toros con esos genes."]}],
+ "rel":["Gen del pelo liso (slick)","Selección genómica"]},
+{"t":"Doble musculatura","a":"genetica","r":"Algunas razas como la Azul Belga y la Piamontesa tienen una falla en el gen de la miostatina, que normalmente frena el crecimiento del músculo. Sus animales tienen músculos enormes.","s":[
+ {"h":"Ventajas","p":["Mucho más músculo y rendimiento en canal.","Carne muy magra y tierna."]},
+ {"h":"Desventajas","p":["Partos difíciles en razas puras.","Menos grasa, lo que puede hacer la carne menos jugosa.","Más sensibles al estrés y al calor."]},
+ {"h":"En tu engorde","p":["Cruces con estas razas pueden dar novillos muy musculosos.","En el trópico se usan poco por su baja tolerancia al calor."]}],
+ "rel":["Músculo: cómo crece","Rendimiento: qué lo sube y qué lo baja"]},
+{"t":"Genética de la calidad de carne","a":"genetica","r":"La terneza y el marmoleo se heredan. Hay pruebas de ADN que buscan variantes de los genes de la calpaína y la calpastatina para escoger animales de carne más tierna.","s":[
+ {"h":"Genes conocidos","p":["Calpaína 1 (CAPN1) y calpastatina (CAST): terneza.","Variantes favorables son más comunes en razas europeas que en cebú.","Marmoleo: muchos genes pequeños; se mejora con DEP y genómica."]},
+ {"h":"En tu engorde","p":["Si vendes carne de calidad, pide animales probados o cruces con Angus.","Para el mercado común, la edad y el manejo pesan más que estos genes."]}],
+ "rel":["Terneza de la carne","Marmoleo y calidad","Selección genómica"]},
+{"t":"Genética y resistencia a garrapatas","a":"genetica","r":"La resistencia a garrapatas se hereda de forma moderada. El cebú y algunos criollos cargan muchas menos garrapatas que las razas europeas.","s":[
+ {"h":"Datos","p":["Heredabilidad cerca de 0,2 a 0,4.","Un Brahman puede cargar una fracción de las garrapatas de un Holstein en el mismo potrero.","Los cruces F1 tienen resistencia intermedia."]},
+ {"h":"Por qué importa hoy","p":["Las garrapatas se han vuelto resistentes a muchos garrapaticidas.","Usar animales más resistentes reduce baños y costos."]},
+ {"h":"En tu engorde","p":["En potreros con muchas garrapatas, prefiere animales con más sangre cebú.","Combina genética, rotación de potreros y baños estratégicos."]}],
+ "rel":["Garrapatas","Resistencia de garrapatas a acaricidas","Adaptación del cebú al trópico"]},
+{"t":"Genotipo y ambiente","a":"genetica","r":"Un animal no rinde igual en todos lados. La raza que mejor gana en un corral templado puede ser la peor en un potrero caliente. Eso se llama interacción genotipo por ambiente.","s":[
+ {"h":"Ejemplos","p":["Angus puro gana mucho en clima fresco, pero sufre en calor húmedo.","Brahman gana menos en corral fresco, pero sobrevive y gana en calor y garrapatas.","Los cruces se comportan en medio."]},
+ {"h":"En tu engorde","p":["Escoge la genética según tu clima, tus instalaciones y tu comida.","Anota la raza en la app y compara los lotes: tus datos te dirán qué rinde mejor en tu finca."]}],
+ "rel":["Cruzamientos para carne en el trópico","Comparar lotes en la app","Razas para engorde en el trópico"]},
+{"t":"Consanguinidad","a":"genetica","r":"La consanguinidad es el cruce entre parientes. Aumenta la probabilidad de defectos y baja la fertilidad y el crecimiento.","s":[
+ {"h":"Señales en un hato","p":["Terneros más chicos y débiles.","Defectos de nacimiento.","Menos fertilidad."]},
+ {"h":"Cómo evitarla","p":["Cambiar el toro cada 2 a 3 años o usar inseminación.","Llevar registro de padres y madres."]},
+ {"h":"En tu engorde","p":["Si compras siempre a un criador pequeño y ves animales atrasados, pregunta por su toro.","Prefiere lotes de hatos con buen manejo genético."]}],
+ "rel":["Heredabilidad","Animales atrasados"]},
+{"t":"Defectos genéticos","a":"genetica","r":"Algunos defectos se deben a genes recesivos: solo aparecen si el ternero recibe una copia del padre y otra de la madre. Las asociaciones de razas los controlan con pruebas de ADN.","s":[
+ {"h":"Cómo funcionan","p":["Un portador se ve normal.","Si se cruzan dos portadores, un cuarto de los hijos tiene el defecto.","Las pruebas de ADN detectan portadores."]},
+ {"h":"En tu engorde","p":["Revisa defectos al comprar: patas, mandíbula, hernias y ojos.","Si varios animales de un mismo origen salen con el mismo problema, avisa al criador."]}],
+ "rel":["Defectos que hay que revisar al comprar","Consanguinidad","Selección genómica"]},
+{"t":"Cuernos y genética sin cuernos","a":"genetica","r":"La ausencia de cuernos (animales mochos) es dominante. Usar toros mochos evita el descorne, reduce golpes y moretones y mejora el bienestar.","s":[
+ {"h":"Cómo se hereda","p":["Un toro mocho con dos copias del gen da todos sus hijos mochos.","Con una sola copia, da cerca de la mitad mochos.","La prueba de ADN dice cuántas copias tiene."]},
+ {"h":"En tu engorde","p":["Novillos mochos causan menos moretones en el corral y el camión.","Muchos compradores prefieren animales sin cuernos o despuntados."]}],
+ "rel":["Despunte y descorne","Golpes y moretones","Heredabilidad"]},
+{"t":"Mejorar el lote que compras","a":"genetica","r":"Aunque no críes, puedes mejorar la genética de lo que engordas escogiendo bien a quién le compras y guardando datos de cada origen.","s":[
+ {"h":"Qué hacer","p":["Anota en cada lote de la app de dónde vino y la raza.","Compara ganancia, conversión y rendimiento por origen.","Repite con los criadores que te dan mejores animales y págales un poco más si hace falta."]},
+ {"h":"Qué buscar al comprar","p":["Animales parejos en tamaño y raza.","Buen frame, lomo largo y pierna llena.","Temperamento tranquilo y pelo brillante."]},
+ {"h":"En tu engorde","p":["Tus propios datos valen oro: después de 3 o 4 lotes sabrás qué origen te deja más dinero."]}],
+ "rel":["Comprar ganado para engorde","Comparar lotes en la app","Formar lotes"]},
+{"t":"Razas cebú en detalle","a":"genetica","r":"El cebú (Bos indicus) incluye varias razas, cada una con sus fortalezas. En Centroamérica domina el Brahman y sus cruces.","s":[
+ {"h":"Brahman","p":["Formado en EE.UU. con varias razas cebú.","Rojo o gris, gran tamaño y adaptación.","Base de muchas razas compuestas."]},
+ {"h":"Nelore","p":["Blanco, de Brasil y de origen indio (Ongole).","Muy rústico y resistente, carne magra.","El ganado de carne más numeroso de Brasil."]},
+ {"h":"Gyr y Guzerat","p":["Gyr: más lechero, orejas largas y cabeza abultada.","Guzerat: doble propósito, grande y de cuernos en forma de lira.","Indubrasil: mezcla brasileña de razas cebú."]},
+ {"h":"En tu engorde","p":["Novillos Brahman y cruces son los más comunes y rinden bien en potrero.","Los de sangre lechera (Gyr) tienen menos musculatura para carne."]}],
+ "rel":["Adaptación del cebú al trópico","Razas para engorde en el trópico","Novillos de lechería"]},
+{"t":"Razas europeas de carne","a":"genetica","r":"Las razas europeas (Bos taurus) crecen rápido y dan buena carne, pero sufren el calor y las garrapatas del trópico. Se usan sobre todo en cruces.","s":[
+ {"h":"Británicas","p":["Angus: negro o rojo, precoz y con mucho marmoleo.","Hereford: cara blanca, rústico y dócil.","Shorthorn: parte de varias razas compuestas."]},
+ {"h":"Continentales","p":["Charolais: blanco, grande, mucha carne.","Simmental: grande, buen crecimiento y doble propósito.","Limousin: mucho músculo y rendimiento."]},
+ {"h":"En tu engorde","p":["Cruces F1 con estas razas crecen más rápido en corral.","Necesitan sombra, agua abundante y buena comida para mostrar su potencial."]}],
+ "rel":["Cruzamientos para carne en el trópico","Vigor híbrido o heterosis","Zona de confort térmico"]}
+]

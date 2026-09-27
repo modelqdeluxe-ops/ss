@@ -1,0 +1,38 @@
+[
+{"t":"Engorde con pasto de corte y melaza con urea","a":"manejo","r":"Es un engorde muy común en fincas pequeñas: pasto de corte picado a voluntad, melaza con urea y algo de concentrado. Bien hecho, logra 0,7 a 1 kg al día.","s":[
+ {"h":"La base","p":["Pasto de corte tierno picado, 30 a 40 kg por animal al día (según peso).","Melaza con 2 a 3 % de urea, 1 a 2 kg por animal.","Sal mineral a libre acceso."]},
+ {"h":"Para ganar más","p":["Agregar 1 a 3 kg de concentrado o maíz quebrado.","Una fuente de proteína verdadera como harina de soya, palmiste o semilla de algodón."]},
+ {"h":"Cuidados","p":["Adaptar a la urea en 10 a 15 días; nunca dar urea a animales hambrientos.","Mezclar muy bien la urea en la melaza.","Cortar el pasto a la edad correcta."]}],
+ "rel":["Suplemento de melaza y urea","Pastos de corte Pennisetum","Engorde semiestabulado","Intoxicación por urea"]},
+{"t":"Engorde corto intensivo","a":"manejo","r":"El engorde corto de 90 a 120 días compra animales pesados (320 a 380 kg) y los termina en corral con ración de alta energía. Da muchas vueltas al año con menos riesgo por lote.","s":[
+ {"h":"Cómo funciona","p":["Adaptación al concentrado en 2 a 3 semanas.","Ración de finalización con 70 a 85 % de concentrado.","Ganancias de 1,2 a 1,6 kg al día."]},
+ {"h":"Claves","p":["Comprar a buen precio: el margen de compra y venta pesa mucho.","Ración con costo controlado.","Vender apenas lleguen al acabado: los días extras cuestan caro."]},
+ {"h":"En tu engorde","p":["Calcula con Rumi el precio máximo de compra y los días a la meta antes de comprar."]}],
+ "rel":["Engorde en corral","Ración de finalización","Precio máximo de compra","Vueltas al año"]},
+{"t":"Cuánto concentrado dar en potrero","a":"manejo","r":"Suplementar en potrero con concentrado sube la ganancia. La cantidad depende de la calidad del pasto y de la meta de ganancia.","s":[
+ {"h":"Referencias","p":["0,3 a 0,5 % del peso: suplemento proteico o energético ligero; sube 150 a 300 g al día.","0,5 a 1 % del peso: engorde a potrero con buena ganancia (0,8 a 1 kg al día).","Más de 1 % del peso: el animal deja de comer pasto y se parece a un engorde de corral."]},
+ {"h":"Qué dar","p":["Pasto pobre o seco: priorizar proteína.","Pasto bueno de lluvias: priorizar energía (maíz, melaza)."]},
+ {"h":"Cuidados","p":["Comederos con espacio para que todos coman a la vez.","Mismo horario todos los días."]}],
+ "rel":["Suplementación en pastoreo","Engorde en pastoreo","Energía de los forrajes tropicales"]},
+{"t":"Vender el lote por partes","a":"manejo","r":"Los animales de un lote no llegan a la vez a la meta. Vender primero a los más pesados y terminados y dejar a los demás unas semanas más mejora el precio y el uso del corral.","s":[
+ {"h":"Cómo hacerlo","p":["Pesa a todo el lote y ordénalos por peso.","Vende los que ya llegaron a la meta y al acabado.","Los demás siguen hasta la siguiente pesada."]},
+ {"h":"Ventajas","p":["No regalas kilos de los pesados ni vendes flacos a los livianos.","Liberas espacio para otro lote."]},
+ {"h":"En tu engorde","p":["En la app, en cada lote, puedes ordenar los animales por peso.","Registra la venta parcial y el lote sigue con los que quedan."]}],
+ "rel":["Cuándo vender","Registrar una venta","Uniformidad del lote"]},
+{"t":"Horarios de trabajo según el clima","a":"manejo","r":"Trabajar al ganado en las horas frescas reduce el estrés, las pérdidas de peso y los accidentes.","s":[
+ {"h":"Reglas","p":["Manga, vacunas, pesajes y embarques: antes de las 9 de la mañana o después de las 4 de la tarde.","Nunca trabajes al ganado con ITH en peligro o emergencia.","Si hay que hacerlo, trabaja lotes pequeños y rápido."]},
+ {"h":"En tu engorde","p":["Revisa en Rumi el clima de hoy antes de planear trabajos en la manga."]}],
+ "rel":["Estrés por calor","Trabajo en la manga","Índice de temperatura y humedad (ITH)"]},
+{"t":"Clasificar por peso al ingreso","a":"manejo","r":"Separar a los animales por peso al llegar forma lotes más parejos que comen mejor y salen juntos.","s":[
+ {"h":"Cómo","p":["Pesa a todos al ingreso.","Forma grupos de no más de 30 a 40 kg de diferencia.","Los muy livianos o atrasados van a un corral aparte con más atención."]},
+ {"h":"Beneficios","p":["Menos peleas y competencia en el comedero.","Ración ajustada a cada grupo.","Ventas más ordenadas."]}],
+ "rel":["Formar lotes","Uniformidad del lote","Pesaje"]},
+{"t":"Fotos de los animales","a":"manejo","r":"Tomar una foto de cada animal al llegar ayuda a identificarlo, comparar su cambio y resolver dudas si se pierde un arete.","s":[
+ {"h":"Consejos","p":["Foto de costado, con el animal parado y buena luz.","Que se vea el arete y las marcas o manchas.","Repetir la foto a mitad y al final del engorde para ver el cambio."]},
+ {"h":"En la app","p":["Al registrar cada animal puedes tomar su foto con la cámara principal.","Las fotos se guardan en tu teléfono y no gastan internet."]}],
+ "rel":["Animales y fotos","Identificación de animales"]},
+{"t":"Compras según la temporada","a":"manejo","r":"El precio del ganado y la comida cambian con las épocas. Comprar en el momento correcto mejora el margen.","s":[
+ {"h":"Patrones comunes en Centroamérica","p":["En la seca muchos venden por falta de pasto: el ternero puede bajar de precio.","Al inicio de las lluvias todos quieren comprar: el precio sube.","El novillo gordo suele pagar mejor cuando hay menos oferta, a menudo al final de la seca."]},
+ {"h":"En tu engorde","p":["Si tienes comida guardada, comprar en la seca y vender en la escasez puede dar buen margen.","Revisa tus propios registros de precios año con año."]}],
+ "rel":["Estacionalidad de precios","Época seca","Plan forrajero para el verano"]}
+]

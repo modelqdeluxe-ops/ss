@@ -1,0 +1,50 @@
+[
+{"t":"Pastos Brachiaria (Urochloa)","a":"forrajes","r":"Las brachiarias son los pastos más sembrados en el trópico americano: aguantan suelos pobres, sequía y pisoteo. Hoy se clasifican como Urochloa.","s":[
+ {"h":"Variedades comunes","p":["Brizantha (Marandú, Toledo, Piatá): buena producción y resistencia al salivazo en algunas.","Decumbens: rústica, pero puede causar fotosensibilización.","Humidícola: aguanta suelos húmedos, pero tiene poca proteína.","Híbridos (Mulato II, Cayman, Cobra y otros): más calidad y producción."]},
+ {"h":"Manejo","p":["Pastorear a 25 a 35 cm de altura y dejar un remanente de 15 a 20 cm.","Descansos de 25 a 35 días en lluvias.","Fertilizar con nitrógeno en la época de lluvias multiplica la producción."]},
+ {"h":"Cuidados","p":["El salivazo (mión) ataca a varias brachiarias.","Animales jóvenes que no conocen la decumbens pueden fotosensibilizarse."]}],
+ "rel":["Pastos para potrero en el trópico","Fotosensibilización","Pastoreo rotacional"]},
+{"t":"Pastos Panicum (Guinea, Mombasa, Tanzania)","a":"forrajes","r":"Los Panicum son pastos de alta producción y buena calidad, pero exigentes en fertilidad del suelo. Son ideales para pastoreo intensivo con rotación.","s":[
+ {"h":"Variedades","p":["Mombasa: alto, de mucha producción.","Tanzania: algo más bajo, buena calidad.","Guinea común: rústica y extendida en la región.","Massai: más tolerante a suelos pobres."]},
+ {"h":"Manejo","p":["Entrar a pastorear a 70 a 90 cm (Mombasa) y salir a 30 a 40 cm.","No dejar que espiguen: pierden calidad rápido.","Necesitan fertilización y buen drenaje."]}],
+ "rel":["Pastos para potrero en el trópico","Pastoreo rotacional","Fertilizar pastos"]},
+{"t":"Pastos de corte Pennisetum","a":"forrajes","r":"El king grass, el Cuba OM-22, el CT-115, el Maralfalfa y el Taiwán son pastos de corte que producen mucho forraje por hectárea para dar picado en el comedero.","s":[
+ {"h":"Producción","p":["Pueden dar decenas de toneladas de forraje verde por hectárea al año con buena fertilización y agua.","El mejor punto de corte suele ser entre 50 y 70 días en lluvias."]},
+ {"h":"Calidad","p":["Cortado tierno: 8 a 12 % de proteína.","Viejo y alto: menos de 6 % y mucha fibra dura.","Picar a 2 a 5 cm para que el animal no deje los tallos."]},
+ {"h":"En tu engorde","p":["Son la base de muchos engordes semiestabulados.","Complementa con concentrado o melaza con urea para lograr buena ganancia."]}],
+ "rel":["Pastos de corte","Calidad del forraje y edad de corte","Engorde semiestabulado"]},
+{"t":"Leucaena","a":"forrajes","r":"La leucaena es un arbusto leguminoso con hojas muy ricas en proteína. En sistemas silvopastoriles sube mucho la ganancia de peso en potrero.","s":[
+ {"h":"Valor","p":["Hojas con 20 a 28 % de proteína.","Fija nitrógeno del aire y mejora el suelo.","Aguanta la sequía y rebrota bien."]},
+ {"h":"Cuidado: mimosina","p":["Tiene una sustancia llamada mimosina que en exceso causa caída de pelo y problemas de tiroides.","Se recomienda que no pase de 30 % de la dieta.","En muchas regiones los animales ya tienen bacterias que la degradan."]},
+ {"h":"Manejo","p":["En surcos dentro del potrero, con pasto entre surcos.","Ramonear sin dejar que crezca como árbol alto."]}],
+ "rel":["Leguminosas y árboles forrajeros","Sistemas silvopastoriles","Bancos de proteína"]},
+{"t":"Cratylia, moringa y botón de oro","a":"forrajes","r":"Además de la leucaena, hay arbustos forrajeros que dan proteína en la época seca: cratylia, moringa, botón de oro (Tithonia), madero negro (Gliricidia) y morera.","s":[
+ {"h":"Cratylia","p":["Leguminosa muy resistente a la sequía y a suelos ácidos.","Buena para bancos de proteína de corte."]},
+ {"h":"Madero negro","p":["Común en cercas vivas.","Las hojas se ofrecen oreadas; al principio el ganado las rechaza por el olor."]},
+ {"h":"Moringa y botón de oro","p":["Hojas con mucha proteína.","Necesitan buen manejo de corte para rebrotar."]},
+ {"h":"En tu engorde","p":["Mezclar hojas de estos arbustos con pasto sube la proteína y baja el costo del concentrado.","Empieza con poca cantidad para que los animales se acostumbren."]}],
+ "rel":["Leguminosas y árboles forrajeros","Bancos de proteína","Cercas"]},
+{"t":"Maíz y sorgo para ensilaje","a":"forrajes","r":"El maíz y el sorgo son los mejores cultivos para ensilar: tienen azúcar suficiente para fermentar bien y dan un alimento con buena energía para la época seca.","s":[
+ {"h":"Punto de corte","p":["Maíz: cuando el grano está en estado lechoso a pastoso (línea de leche a la mitad), con 30 a 35 % de materia seca.","Sorgo: cuando el grano está pastoso."]},
+ {"h":"Valor","p":["Ensilaje de maíz bueno: 7 a 9 % de proteína y buena energía.","Complementar con una fuente de proteína."]},
+ {"h":"En tu engorde","p":["Un buen silo te asegura comida barata cuando el pasto se acaba.","Calcula cuánto necesitas con la calculadora de ensilaje de Rumi."]}],
+ "rel":["Ensilaje: cómo hacerlo","Ensilaje: calidad y problemas","Plan forrajero para el verano"]},
+{"t":"Forraje verde hidropónico","a":"forrajes","r":"El forraje verde hidropónico es grano germinado en bandejas durante 8 a 12 días. Se ofrece como solución para la sequía, pero conviene sacar bien las cuentas.","s":[
+ {"h":"Lo que hay que saber","p":["Al germinar, el grano pierde parte de su materia seca y energía.","Da forraje fresco y apetitoso, pero con mucha agua.","El costo por kilo de materia seca suele ser más alto que el del grano mismo."]},
+ {"h":"Cuándo puede servir","p":["Para pocos animales y cuando no hay otro forraje verde.","Como complemento, no como base de la ración."]},
+ {"h":"En tu engorde","p":["Compara el costo por kilo de materia seca con el ensilaje, el heno o el grano.","Casi siempre sale más barato ensilar o guardar heno."]}],
+ "rel":["Plan forrajero para el verano","Costo de la ración","Materia seca y consumo"]},
+{"t":"Pasto estrella y otros rastreros","a":"forrajes","r":"El pasto estrella, el pangola y otros pastos rastreros cubren bien el suelo y aguantan el pisoteo. Tienen buena calidad si se manejan con rotación.","s":[
+ {"h":"Características","p":["Crecen por estolones que cubren el suelo.","Buena calidad cuando están tiernos.","El estrella puede acumular nitratos o cianuro con mucha fertilización y rebrote tras sequía."]},
+ {"h":"Manejo","p":["Pastoreo a 20 a 30 cm de altura.","Descansos de 21 a 30 días en lluvias."]}],
+ "rel":["Pastos para potrero en el trópico","Intoxicación por nitratos y cianuro"]},
+{"t":"Salivazo o mión de los pastos","a":"forrajes","r":"El salivazo es un insecto que chupa la savia de los pastos y los seca. Sus ninfas se esconden en una espuma blanca en la base de la planta.","s":[
+ {"h":"Señales","p":["Espuma blanca en la base de los pastos.","Hojas amarillas que luego se secan como quemadas.","Más en época de lluvias y en brachiarias susceptibles."]},
+ {"h":"Control","p":["Sembrar variedades resistentes.","Pastorear para bajar el pasto y exponer las ninfas al sol.","Hongos que atacan al insecto (control biológico).","Insecticidas solo con recomendación técnica y respetando el tiempo antes de pastorear."]}],
+ "rel":["Pastos Brachiaria (Urochloa)","Control de malezas","Buen uso de plaguicidas"]},
+{"t":"Conservar forraje de lluvias para la seca","a":"forrajes","r":"En la época de lluvias sobra pasto y en la seca falta. Guardar el excedente como ensilaje o heno es la forma más segura de mantener la ganancia todo el año.","s":[
+ {"h":"Cuánto guardar","p":["Calcula los días de seca y el número de animales.","Un novillo de 350 kg come unos 8 a 9 kg de materia seca al día.","Guarda al menos un 20 % extra por pérdidas."]},
+ {"h":"Opciones","p":["Ensilaje de pasto de corte, maíz o sorgo.","Heno de pastos finos.","Pasto en pie diferido: cerrar potreros al final de las lluvias."]},
+ {"h":"En tu engorde","p":["Planifica tus compras de ganado según el forraje que tendrás en la seca.","Registra tu forraje guardado en la bodega de la app."]}],
+ "rel":["Plan forrajero para el verano","Ensilaje: cómo hacerlo","Heno: cómo hacerlo y guardarlo","Microsilos en bolsa o barril"]}
+]

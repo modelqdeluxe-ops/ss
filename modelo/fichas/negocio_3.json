@@ -1,0 +1,41 @@
+[
+{"t":"Valor de la ganancia","a":"negocio","r":"El valor de la ganancia es lo que te pagan por cada kilo que el animal sube en tu finca. Se calcula restando lo que costó el animal al entrar de lo que vale al salir, y dividiendo entre los kilos ganados. Compararlo con el costo por kilo ganado dice si el engorde deja dinero.","s":[
+ {"h":"Cómo se calcula","p":["Valor de venta del animal menos costo de compra.","Dividido entre los kilos que ganó en el engorde.","Ejemplo: compraste en 18.000, vendiste en 31.500 y ganó 180 kg: el valor de la ganancia es 75 por kilo."]},
+ {"h":"Por qué no es igual al precio","p":["El animal liviano suele comprarse más caro por kilo que el pesado.","Esa diferencia hace que el kilo ganado valga menos que el precio de venta por kilo.","Si el precio de compra por kilo sube mucho, el valor de la ganancia baja."]},
+ {"h":"La regla de oro","p":["Si el costo por kilo ganado es menor que el valor de la ganancia, ganas dinero.","Si es mayor, pierdes aunque el animal engorde bien."]},
+ {"h":"En tu engorde","p":["La app te muestra el costo por kilo ganado de cada lote.","Antes de comprar, usa el precio máximo de compra para que los números cierren."]}],
+ "rel":["Costo por kilo ganado","Precio máximo de compra","Margen de compra y venta","Diferencia de precio por peso"]},
+{"t":"Diferencia de precio por peso","a":"negocio","r":"En casi todos los mercados el kilo del ternero liviano vale más que el kilo del novillo pesado. Esa diferencia define cuánto te conviene comprar liviano o pesado.","s":[
+ {"h":"Por qué ocurre","p":["El animal liviano todavía tiene toda su ganancia eficiente por delante.","Hay más demanda de terneros para engordar.","El animal pesado ya tiene menos margen para el siguiente dueño."]},
+ {"h":"Cómo usarla","p":["Si la diferencia es pequeña, conviene comprar liviano y engordar más tiempo.","Si es muy grande, a veces conviene comprar más pesado y hacer engordes cortos.","Compara siempre con tu costo por kilo ganado."]},
+ {"h":"En tu engorde","p":["Anota precio y peso de cada compra en la app para ver cómo cambia la diferencia en tu zona.","Rumi calcula el margen con tus números."]}],
+ "rel":["Valor de la ganancia","Comprar más liviano o más pesado","Margen de compra y venta"]},
+{"t":"Comprar más liviano o más pesado","a":"negocio","r":"Comprar animales livianos o pesados cambia el tiempo de engorde, el riesgo, la conversión y el capital que necesitas.","s":[
+ {"h":"Livianos (150 a 250 kg)","p":["Más baratos por animal, pero más caros por kilo.","Convierten mejor y tienen más crecimiento compensatorio.","Más riesgo de enfermedad y más tiempo en la finca."]},
+ {"h":"Pesados (300 a 380 kg)","p":["Más capital por animal, pero engorde corto.","Menos riesgo sanitario y más vueltas al año.","Peor conversión porque ya engrasan."]},
+ {"h":"Cómo decidir","p":["Compara el margen esperado por animal y por mes.","Considera tu comida disponible, tu capital y tu experiencia.","Prueba con un lote y compara en la app."]}],
+ "rel":["Diferencia de precio por peso","Vueltas al año","Capital de trabajo","Crecimiento compensatorio"]},
+{"t":"Análisis de sensibilidad","a":"negocio","r":"Un análisis de sensibilidad responde: ¿qué pasa con mi ganancia si el precio de venta baja 10 %, o si la comida sube, o si los animales ganan menos? Te prepara para los golpes del mercado.","s":[
+ {"h":"Qué variables mover","p":["Precio de venta.","Precio de compra.","Costo de la ración.","Ganancia diaria y mortalidad."]},
+ {"h":"Cómo hacerlo","p":["Calcula tu margen normal.","Cambia una variable a la vez y mira cuánto baja el margen.","La variable que más mueve el resultado es la que más debes vigilar."]},
+ {"h":"En tu engorde","p":["Casi siempre el precio de venta y de compra pesan más que la comida.","Por eso negociar bien la compra es tan importante como engordar bien.","Rumi puede proyectar tu lote con distintos precios."]}],
+ "rel":["Riesgos del engorde","Punto de equilibrio","Presupuesto de un lote","Proyecciones en la app"]},
+{"t":"Flujo de caja del engorde","a":"negocio","r":"El flujo de caja muestra cuándo sale y cuándo entra el dinero. En el engorde se paga mucho al principio (compra) y cada semana (comida), pero se cobra al final.","s":[
+ {"h":"Por qué importa","p":["Puedes tener un lote rentable y quedarte sin dinero para comprar comida.","Vender apurado por falta de efectivo casi siempre sale caro."]},
+ {"h":"Cómo manejarlo","p":["Calcula el costo de comida por semana y por todo el engorde antes de comprar.","Escalona los lotes para que las ventas lleguen en distintos meses.","Ten una reserva para emergencias."]},
+ {"h":"En tu engorde","p":["La app te muestra el costo acumulado de cada lote y el estimado hasta la venta."]}],
+ "rel":["Capital de trabajo","Financiamiento y crédito","Presupuesto de un lote"]},
+{"t":"Compras en grupo y cooperativas","a":"negocio","r":"Juntarse con otros ganaderos para comprar alimento, medicinas y ganado, o para vender juntos, baja costos y da más fuerza para negociar.","s":[
+ {"h":"Beneficios","p":["Mejores precios por volumen en concentrado, sal y medicinas.","Camiones completos para transportar ganado.","Venta de lotes grandes y parejos a mejor precio."]},
+ {"h":"Cuidados","p":["Acuerdos claros y por escrito.","Registros transparentes de quién aportó qué.","Reglas de sanidad comunes para no mezclar enfermedades."]}],
+ "rel":["Canales de venta","Negociar con el comprador","Escala del engorde"]},
+{"t":"Costos que no se ven","a":"negocio","r":"Muchos ganaderos solo cuentan la compra y el concentrado, y olvidan costos que se comen el margen: mermas, muertes, intereses, depreciación, tu propio trabajo.","s":[
+ {"h":"Los más olvidados","p":["Desbaste o merma en compra y venta.","Animales muertos y atrasados.","Intereses del dinero o lo que dejaste de ganar con él.","Desgaste de instalaciones y equipo.","Tu tiempo y el de tu familia."]},
+ {"h":"En tu engorde","p":["Registra gastos generales en la app para que entren al costo.","La app descuenta muertes y calcula el costo real por kilo."]}],
+ "rel":["Estructura de costos","Depreciación e inversiones","Costo de oportunidad","Mortalidad y su costo"]},
+{"t":"Decidir con datos","a":"negocio","r":"La diferencia entre un engorde que gana y uno que pierde muchas veces no es la comida ni la raza, sino decidir a tiempo con números reales.","s":[
+ {"h":"Preguntas que tus datos responden","p":["¿Cuánto gana cada lote por día comparado con la meta?","¿Cuánto me cuesta el kilo ganado?","¿Qué animales se están quedando atrás?","¿Cuándo conviene vender?"]},
+ {"h":"Hábitos","p":["Pesar cada 3 a 4 semanas.","Anotar la comida real, no la planeada.","Revisar los números cada semana con Rumi."]},
+ {"h":"En tu engorde","p":["Después de 3 o 4 lotes tendrás tu propia historia: úsala para comprar y vender mejor."]}],
+ "rel":["Indicadores clave del engorde","Cuándo vender","Registros económicos","Datos y apps en el engorde"]}
+]

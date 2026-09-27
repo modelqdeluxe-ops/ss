@@ -16,12 +16,20 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
     guardan como JPEG en la memoria interna (`Android.fotoGuardar/fotoLeer`, clase `Fotos` en smali);
     en un navegador, en IndexedDB. No salen del teléfono ni van en el respaldo.
   - `app/assets/extras.js` — Agenda de tareas, Bodega de alimento e informe de lote para compartir.
-  - `app/assets/fondos/` — fotos de fondo (Wikimedia Commons, CC0 y dominio público; créditos en Más,
-    Ayuda, Acerca de).
-  - `app/smali/` — el código Android (WebView, guardar archivos, permiso de cámara, fotos, compartir).
+  - `app/assets/ambiente.js` — colores según la hora y la época del año, clima de la zona (Open-Meteo,
+    sin clave; ubicación aproximada del teléfono o la de Configuración), efectos de sol, nubes, lluvia y
+    estrellas, fotos de novillos en bucle en cada encabezado y la bienvenida animada (la primera vez,
+    Rumi saluda y abre el recorrido).
+  - `app/assets/fondos/` — `g01`–`g25.webp`, fotos de ganado (Wikimedia Commons, CC0 y dominio público;
+    créditos en Más, Ayuda, Acerca de) y el fondo de curvas `topo-*.svg`.
+  - `app/assets/ic3d/` — íconos 3D y la figura de Rumi (Fluent Emoji de Microsoft, licencia MIT).
+  - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
+    compartir y lectura en voz alta con el lector de texto del teléfono).
   - `app/apktool.yml` — versión (`versionCode`, `versionName`) y SDK.
 - `modelo/` — el conocimiento de Rumi.
-  - `fichas/*.json` — temas a fondo: `{t, a, r (resumen), s: [{h, p: [puntos]}], rel: [temas]}`.
+  - `fichas/*.json` — temas a fondo: `{t, a, r (resumen), s: [{h, p: [puntos]}], rel: [temas]}`. Áreas:
+    sanidad, nutricion, manejo, forrajes, instalaciones, negocio, normas, conceptos, fisiologia, genetica,
+    carne, actualidad y app.
   - `saber_extra.json`, `saber/*.json` — datos rápidos (se suman a los que ya trae la app).
   - `areas.json` — área de cada tema; `correcciones_menu.json` — textos ajustados al Rumi por menús.
   - `construir_saber.js` → arma `app/assets/rumi_guia.js` (y `modelo/rumi_saber.json` para revisarla).
@@ -32,7 +40,8 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 
 ## Rumi
 
-Rumi funciona solo con selecciones. Al abrirlo saluda y muestra sus áreas; al elegir una, muestra
+Rumi funciona con selecciones y un buscador (temas, cálculos, síntomas y lotes). Puede leer en voz alta
+sus mensajes y el recorrido. Las opciones se ocultan solas cuando la respuesta es larga. Al abrirlo saluda y muestra sus áreas; al elegir una, muestra
 las preguntas y acciones de esa área. El botón **Menú** vuelve a las áreas y la flecha regresa un
 nivel. Las calculadoras piden solo los números que necesitan (peso, temperatura, cabezas…).
 

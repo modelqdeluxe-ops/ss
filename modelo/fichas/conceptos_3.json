@@ -1,0 +1,33 @@
+[
+{"t":"Materia seca y materia verde","a":"conceptos","r":"La materia seca es lo que queda de la comida si se le quita toda el agua. Los requerimientos y las raciones se calculan en materia seca porque el agua no alimenta.","s":[
+ {"h":"Ejemplos","p":["Pasto verde: 15 a 25 % de materia seca (75 a 85 % es agua).","Ensilaje: 25 a 35 %.","Heno y granos: 85 a 90 %."]},
+ {"h":"Cómo convertir","p":["Kilos de materia seca = kilos de comida × % de materia seca ÷ 100.","Ejemplo: 30 kg de pasto al 20 % son 6 kg de materia seca."]},
+ {"h":"En tu engorde","p":["Por eso un animal necesita tanto pasto verde: la mayor parte es agua.","La app calcula en materia seca cuando formulas una ración."]}],
+ "rel":["Materia seca y consumo","Formular una ración","Consumo como porcentaje del peso"]},
+{"t":"Proteína cruda","a":"conceptos","r":"La proteína cruda es el nitrógeno de la comida multiplicado por 6,25. Incluye proteína verdadera y nitrógeno no proteico como la urea.","s":[
+ {"h":"Valores comunes","p":["Maíz: 8 a 9 %.","Harina de soya: 44 a 48 %.","Pasto tierno: 8 a 14 %; pasto viejo: 3 a 6 %.","Urea: equivale a unos 280 % de proteína cruda."]},
+ {"h":"Limitaciones","p":["No dice cuánto se degrada en la panza.","No dice la calidad de los aminoácidos."]}],
+ "rel":["Proteína en la ración","Proteína metabolizable","Urea en la ración"]},
+{"t":"Ganancia compensatoria","a":"conceptos","r":"Es la ganancia extra que hace un animal que pasó hambre cuando vuelve a comer bien. Se aprovecha comprando animales flacos pero sanos.","s":[
+ {"h":"En números","p":["En los primeros 2 a 3 meses pueden ganar 10 a 30 % más que animales que siempre comieron bien.","No siempre recuperan todo el atraso."]},
+ {"h":"Cuándo no funciona","p":["Si el animal pasó hambre muy joven o por mucho tiempo.","Si el animal flaco está enfermo o tiene parásitos."]}],
+ "rel":["Crecimiento compensatorio","Condición corporal","Comprar ganado para engorde"]},
+{"t":"Índice de temperatura y humedad (ITH)","a":"conceptos","r":"El ITH junta temperatura y humedad en un solo número que indica el estrés por calor del ganado. Rumi lo calcula con el clima de tu zona.","s":[
+ {"h":"Fórmula","p":["ITH = (1,8 × T + 32) − (0,55 − 0,0055 × HR) × (1,8 × T − 26), con T en °C y HR la humedad en %.","No tienes que calcularlo: la app lo hace."]},
+ {"h":"Niveles para ganado de carne","p":["74 o menos: normal.","75 a 78: alerta.","79 a 83: peligro.","84 o más: emergencia."]},
+ {"h":"Ojo","p":["El cebú aguanta más que las razas europeas.","El sol directo, el viento y las noches calientes cambian el riesgo real."]}],
+ "rel":["Índice de calor","Estrés por calor","Zona de confort térmico"]},
+{"t":"Precocidad","a":"conceptos","r":"Un animal precoz llega joven al peso y la gordura de venta. La precocidad depende de la raza, el tamaño adulto y la alimentación.","s":[
+ {"h":"Qué la favorece","p":["Razas británicas y sus cruces.","Frame moderado.","Buena alimentación desde el destete."]},
+ {"h":"Por qué importa","p":["Carne más tierna de animales jóvenes.","Menos días de mantenimiento.","Mejor clasificación por dientes."]}],
+ "rel":["Tamaño adulto y frame","Grado de acabado","Edad por los dientes"]},
+{"t":"Carga animal por hectárea","a":"conceptos","r":"La carga animal es cuántos animales (o unidades animales) tiene cada hectárea de potrero. Una carga mayor a la que el pasto soporta degrada el potrero y baja la ganancia.","s":[
+ {"h":"Referencias en el trópico","p":["Potrero natural sin manejo: 0,5 a 1 unidad animal por hectárea.","Pasto mejorado con rotación: 2 a 3.","Pasto mejorado, fertilizado y con riego: 4 o más."]},
+ {"h":"En tu engorde","p":["Ajusta la carga en la seca: menos animales o más suplemento.","Rumi calcula la carga con tus potreros y tus animales."]}],
+ "rel":["Carga animal y aforo","Unidad animal","Pastoreo rotacional"]},
+{"t":"Eficiencia biológica y económica","a":"conceptos","r":"Un engorde puede ser muy eficiente en convertir comida en carne y aun así perder dinero, o al revés. Hay que mirar las dos eficiencias.","s":[
+ {"h":"Biológica","p":["Conversión alimenticia, ganancia diaria, mortalidad."]},
+ {"h":"Económica","p":["Costo por kilo ganado, margen por animal, retorno de la inversión."]},
+ {"h":"En tu engorde","p":["El mejor lote es el que deja más margen por día y por animal, no siempre el que más gana de peso."]}],
+ "rel":["Eficiencia alimenticia","Retorno de la inversión","Indicadores clave del engorde"]}
+]

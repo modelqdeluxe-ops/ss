@@ -31,7 +31,7 @@ const i3=k=>`<img class="i3" src="ic3d/${I3D[k]||k}.webp" alt="" draggable="fals
 const lista=p=>`<ul class="rl">${p.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
 
 /* ---------- guía: fichas con partes ---------- */
-const SUB={sanidad:'Sanidad',nutricion:'Nutrición',manejo:'Manejo del ganado',forrajes:'Pastos y forrajes',instalaciones:'Corrales e instalaciones',negocio:'Negocio y precios',normas:'Normas y buenas prácticas',conceptos:'Palabras y cálculos del engorde',app:'Cómo usar la app'};
+const SUB={sanidad:'Sanidad',nutricion:'Nutrición',manejo:'Manejo del ganado',forrajes:'Pastos y forrajes',instalaciones:'Corrales e instalaciones',negocio:'Negocio y precios',normas:'Normas y buenas prácticas',conceptos:'Palabras y cálculos del engorde',fisiologia:'Ciencia y fisiología del bovino',genetica:'Genética y razas',carne:'Ciencia de la carne',actualidad:'Actualidad y tendencias 2026',app:'Cómo usar la app'};
 const fichasDe=a=>FICHAS.map((f,i)=>({f,i})).filter(o=>o.f.a===a);
 const cortosDe=a=>GUIA.map((g,i)=>({g,i})).filter(o=>o.g.a===a);
 const nPuntos=f=>f.s.reduce((n,x)=>n+x.p.length,0);
@@ -237,7 +237,7 @@ const AREAS=[
    CALCS().find(c=>c.l==='Comparar pie y canal'),CALCS().find(c=>c.l==='Desbaste al vender'),CALCS().find(c=>c.l==='Interés de un crédito'),
    f('Anotar una venta','venta'),f('Anotar un gasto','gasto'),
    opFichas('negocio'),opFichas('normas'),opFichas('conceptos')]},
- {id:'guia',ic:'guia',t:'Guía de engorde',s:`${FICHAS.length} temas a fondo`,intro:`Mi guía tiene <b>${FICHAS.length} temas completos</b> con ${nf(FICHAS.reduce((n,f)=>n+nPuntos(f),0))} puntos explicados, más ${GUIA.length} datos rápidos. Cada tema se abre por partes: qué es, señales, qué hacer, prevención, números y errores comunes.`,ops:()=>['sanidad','nutricion','manejo','forrajes','instalaciones','negocio','normas','conceptos','app'].map(opFichas)},
+ {id:'guia',ic:'guia',t:'Guía de engorde',s:`${FICHAS.length} temas a fondo`,intro:`Mi guía tiene <b>${FICHAS.length} temas completos</b> con ${nf(FICHAS.reduce((n,f)=>n+nPuntos(f),0))} puntos explicados, más ${GUIA.length} datos rápidos. Cada tema se abre por partes: qué es, señales, qué hacer, prevención, números y errores comunes.`,ops:()=>['actualidad','sanidad','nutricion','manejo','forrajes','instalaciones','negocio','fisiologia','genetica','carne','normas','conceptos','app'].map(opFichas)},
  {id:'app',ic:'app',t:'Usar la app',s:'Recorrido, respaldo y ajustes',intro:'Te enseño a usar Rumentis. ¿Qué necesitas?',ops:()=>[
    q('Hazme el recorrido','hazme el recorrido'),q('¿Por dónde empiezo?','por donde empiezo'),
    q('¿Dónde está el respaldo?','donde esta el respaldo'),q('¿Cómo paso mis datos a Excel?','como exporto a excel'),
