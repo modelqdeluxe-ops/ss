@@ -1,0 +1,177 @@
+[
+{
+"t": "Rampa de embarque",
+"kw": "rampa embarcadero embarque desembarque cargar descargar camion medidas de rampa",
+"x": "La rampa debe quedar a la altura del piso del camión, sin huecos, con piso antideslizante y protecciones a los lados. Como guía se usan unos 80 cm de ancho, paredes de 1.60 m y escalones de 10 cm de alto por 30 a 45 cm de ancho. Unas llantas al final ayudan a pegar el camión sin golpearlo. (Guía de OIRSA)"
+},
+{
+"t": "Medidas de la manga",
+"kw": "medidas de la manga ancho de la manga largo de la manga como construir manga",
+"x": "Una manga de trabajo suele tener más de 8 m de largo, 1.50 m de alto, unos 45 cm de ancho abajo y 85 cm arriba, con paredes cerradas para que el animal no vea afuera. Un andén a unos 55 a 60 cm del suelo permite trabajar a lo largo. El corral de encierre antes de la manga funciona bien redondo, de 3 a 3.5 m de radio. (Guía de OIRSA)"
+},
+{
+"t": "Zona de fuga y punto de balance",
+"kw": "zona de fuga punto de balance como arrear hacia donde se mueve el animal espacio del animal",
+"x": "La zona de fuga es la distancia a la que el animal deja que te acerques antes de moverse. Para que avance, entra al borde de esa zona detrás del punto de balance, que está a la altura de la paleta; para que pare, sal de ella. No te pongas detrás de la cola, que es su punto ciego. El ganado manejado con calma tiene una zona de fuga más chica y es más fácil de trabajar."
+},
+{
+"t": "Cómo ve el ganado",
+"kw": "vision del ganado como ve la vaca se asustan sombras luz",
+"x": "El ganado ve casi a su alrededor, pero enfoca mal de cerca y se asusta con movimientos bruscos y con contrastes de luz y sombra. Prefiere caminar hacia lo iluminado. Por eso conviene manejar despacio, sin gritos, y quitar objetos que se mueven o brillan en la manga."
+},
+{
+"t": "Arreo sin chuzo",
+"kw": "banderas sonajas arrear sin chuzo herramientas para arrear",
+"x": "Mejor arrear en grupos, a paso lento, con banderas, sonajas o paletas. El chuzo eléctrico casi no se debería usar; si hace falta con un animal adulto que no avanza, solo en los cuartos traseros, menos de un segundo y cuando tenga espacio para avanzar. Nunca golpes, patadas ni jalar de la cola."
+},
+{
+"t": "Separar al transportar",
+"kw": "transportar juntos mezclar en el camion separar en el camion",
+"x": "En el camión separa animales de tamaños muy distintos, con cuernos y sin cuernos, y los que se pelean. Así hay menos golpes y moretones."
+},
+{
+"t": "Condiciones del camión",
+"kw": "camion ganadero jaula transporte condiciones del camion piso del camion",
+"x": "El camión debe estar limpio, sin clavos ni astillas, con piso antideslizante, ventilación y altura suficiente. Nunca completamente cerrado: el humo del motor puede asfixiarlos. Viaja en horas frescas y sin paradas largas."
+},
+{
+"t": "Animales que no deben viajar",
+"kw": "transportar animal enfermo cojo herido puede viajar",
+"x": "No transportes animales enfermos, cojos o heridos, salvo lesiones leves o con indicación del veterinario. Un animal débil puede caerse y morir en el camión. Castrados o descornados deben viajar con la herida ya cicatrizada."
+},
+{
+"t": "Papeles del viaje",
+"kw": "documentos de transporte que papeles lleva el camion guia origen destino",
+"x": "En cada viaje lleva los documentos que muestren de dónde vienen los animales y de quién son, el lugar y la fecha de salida, el destino y los papeles sanitarios que pida SENASA."
+},
+{
+"t": "Harinas de origen animal",
+"kw": "harina de carne harina de hueso harina de sangre harina de pescado proteina animal vaca loca",
+"x": "No des a rumiantes harinas de carne, de hueso, de sangre ni otras proteínas de origen animal: están prohibidas por el riesgo de enfermedades como la \"vaca loca\" y cierran mercados. La urea y la melaza sí se permiten."
+},
+{
+"t": "Micotoxinas y aflatoxinas",
+"kw": "micotoxinas aflatoxinas hongos en el maiz grano con hongos moho toxico",
+"x": "Los hongos del grano y el forraje producen toxinas como la aflatoxina, que enferma, baja las defensas y la ganancia y deja residuos. Guarda el alimento seco y ventilado, y bota lo que tenga moho: no se \"arregla\" mezclándolo."
+},
+{
+"t": "Alimento sobrante del comedero",
+"kw": "comida vieja sobrante del dia anterior limpiar comedero restos",
+"x": "Retira cada día el alimento que sobró del día anterior, sobre todo si está mojado o fermentado. Revisa que la ración esté fresca y sin basura, piedras ni hongos antes de servir."
+},
+{
+"t": "Bodega ordenada",
+"kw": "estibar sacos tarimas primero en entrar primero en salir peps ordenar bodega",
+"x": "Estiba los sacos sobre tarimas y separados de la pared, en una bodega techada, seca y con malla en las ventanas. Usa primero lo que entró primero y guarda los químicos y venenos en otro lugar, nunca junto al alimento."
+},
+{
+"t": "Bebederos a la sombra",
+"kw": "bebedero al sol agua caliente techar bebedero color del bebedero",
+"x": "Pon los bebederos bajo techo y, si puedes, de colores claros: el agua fresca se toma más. Los mejores son largos, poco profundos y con flotador, porque se lavan fácil y el agua se renueva."
+},
+{
+"t": "Análisis y cloración del agua",
+"kw": "analisis de agua clorar agua pozo contaminado bacterias en el agua",
+"x": "Analiza el agua de pozo o quebrada al menos una vez al año. Si tiene bacterias, se puede clorar en la cantidad que indique la autoridad. Cerca los pozos y no dejes que el ganado entre a la fuente de agua."
+},
+{
+"t": "Recepción sanitaria completa",
+"kw": "manejo sanitario de recepcion electrolitos examen fisico al llegar",
+"x": "Al recibirlos, revísalos uno por uno, hidrátalos (agua limpia y, si vienen muy cansados, electrolitos), y aplica vitaminas, minerales, desparasitante y las vacunas que indique tu veterinario. Luego obsérvalos varias semanas."
+},
+{
+"t": "Iluminación del corral",
+"kw": "luz en el corral iluminacion revisar de noche",
+"x": "Una luz en los corrales permite revisar a los animales de noche, detectar enfermos o problemas con el agua y evitar robos."
+},
+{
+"t": "Enfermería lejos del viento",
+"kw": "ubicacion de la enfermeria donde pongo el corral de enfermos viento",
+"x": "Pon el corral de enfermería apartado y en contra de la dirección del viento que sopla hacia los demás corrales, para que no lleve enfermedades al resto."
+},
+{
+"t": "Fosa para animales muertos",
+"kw": "fosa entierro enterrar cadaver profundidad cal distancia del pozo",
+"x": "Entierra los animales muertos en un sitio marcado, a más de 30 m de los corrales y a más de 250 m de pozos o fuentes de agua, en una fosa profunda (se recomiendan unos 4 m), cubiertos con cal y luego con tierra. Nunca vendas un animal muerto. (Guía de OIRSA)"
+},
+{
+"t": "Compostaje de estiércol",
+"kw": "compost compostar estiercol abono montones biogas",
+"x": "Amontona el estiércol lejos de corrales y fuentes de agua: en montón se calienta y mueren muchos microbios. Después sirve como abono para pastos. También puede usarse para biogás."
+},
+{
+"t": "Desechos veterinarios",
+"kw": "agujas usadas frascos vacios basura veterinaria donde tiro las agujas",
+"x": "Las agujas usadas, frascos de medicina y envases de químicos no van a la basura común. Guárdalos en recipientes separados y marcados, y entrégalos a quien los recoja o entiérralos en un lugar apartado y señalado."
+},
+{
+"t": "Tamaño de aguja",
+"kw": "calibre de aguja largo de la aguja que aguja uso para vacunar",
+"x": "Para animales de más de 300 kg se usan agujas calibre 16 a 18; más gruesas si el producto es espeso. Para intramuscular, de 1 a 1.5 pulgadas; para subcutánea, más cortas, de media a tres cuartos de pulgada. Cámbiala seguido. (Guía de OIRSA)"
+},
+{
+"t": "Todo dentro, todo fuera",
+"kw": "todo dentro todo fuera vaciar corral limpiar entre lotes descanso del corral",
+"x": "Lo ideal es que un corral reciba un lote completo y se vacíe completo al vender. Entre lotes, saca el estiércol, deja secar al sol y repara. Así cortas el paso de enfermedades de un lote al siguiente."
+},
+{
+"t": "Tiempo de acostumbramiento",
+"kw": "cuanto dura la adaptacion dias de acostumbramiento subir el grano",
+"x": "La adaptación al grano lleva de 15 a 21 días. Una forma práctica es subir el grano por escalones cada 4 o 5 días (por ejemplo 30, 40, 50, 60 % y luego la ración final), siempre que el comedero quede limpio y no haya diarrea."
+},
+{
+"t": "Cuántas veces servir al día",
+"kw": "servir varias veces al dia repartir la comida en dos o tres",
+"x": "Dividir la ración en 2 o 3 entregas al día hace el consumo más parejo, reduce el desperdicio y baja el riesgo de acidosis frente a llenar el comedero una sola vez."
+},
+{
+"t": "Tamaño de los lotes en corral",
+"kw": "cuantos animales por lote tamano del lote lotes grandes lotes parejos",
+"x": "Arma lotes parejos en peso y edad. Lotes muy grandes, de más de 200 animales, traen más peleas y consumo disparejo. En corrales chicos, lo importante es respetar el espacio de comedero y de corral por animal."
+},
+{
+"t": "Pendiente del corral",
+"kw": "pendiente del corral inclinacion drenaje del corral charcos",
+"x": "El piso del corral necesita caída para que escurra el agua: entre 2 y 4 % en tierra, alejándose del comedero. En cemento, de 4 a 6 % y con rayado para que no resbalen. Con menos pendiente se encharca; con mucha, se erosiona."
+},
+{
+"t": "Espacio de corral según el clima",
+"kw": "metros por animal clima lluvioso corral grande espacio en invierno",
+"x": "Donde llueve mucho conviene dar más espacio por animal para que el corral se seque: de 12 hasta 20 m² o más. En zonas secas y con buen drenaje se puede usar menos. Siempre con sombra para todos."
+},
+{
+"t": "Conversión según el animal",
+"kw": "conversion por edad terneros convierten mejor novillos convierten peor",
+"x": "Los animales jóvenes y livianos convierten mejor: necesitan menos alimento por kilo ganado. Al avanzar el engorde y engrasarse, la conversión empeora. En novillos de corral es común ver de 6 a 8 kg de alimento por kilo ganado."
+},
+{
+"t": "Engorde con ensilaje",
+"kw": "engordar con silo racion de ensilaje cuanto ganan con silo",
+"x": "Una ración basada casi solo en ensilaje de planta entera da ganancias moderadas, alrededor de 0.7 a 0.9 kg por día. Para ganar más, el ensilaje se combina con grano y una fuente de proteína."
+},
+{
+"t": "Registros por tres años",
+"kw": "cuanto tiempo guardo los registros historial exportacion auditoria",
+"x": "Guarda los registros de alimento, sanidad y movimientos al menos tres años: los piden para auditorías y mercados de exportación. La app los guarda y puedes descargarlos a Excel o respaldo."
+},
+{
+"t": "Engorde intensivo con caña y subproductos",
+"kw": "engorde intensivo con cana subproductos agroindustriales experiencia guatemala zamorano",
+"x": "En un estudio de Zamorano en una finca de Guatemala, más de 2,000 animales engordados en corral con caña picada, harina de soya, subproducto de maíz, harina de coquito, urea y melaza ganaron entre 1.45 y 2.06 kg por día. Se empezó ofreciendo alrededor de 1.5 % del peso en materia seca y se subió hasta cerca de 2.8 %. La compra de animales y el alimento fueron el 97 % de los costos variables."
+},
+{
+"t": "Vacas de descarte para engorde",
+"kw": "vacas de descarte engordar vacas viejas vaca de desecho",
+"x": "Las vacas de descarte bien alimentadas pueden ganar peso rápido en engordes cortos, de unas 6 semanas, y a veces dejan buena utilidad porque se compran baratas. En el estudio de Zamorano en Guatemala ganaron entre 1.45 y 1.89 kg por día. Revisa que estén sanas y sin retiros de medicamentos."
+},
+{
+"t": "Temporada para comprar y vender",
+"kw": "cuando comprar novillos cuando vender epoca de precios estacionalidad temporada",
+"x": "El engorde en corral tiene temporada: en el verano mucha gente vende ganado flaco porque falta pasto y el precio de compra baja, y el ganado gordo escasea y se paga mejor unos meses después. Planea tus compras con tiempo y ten el efectivo listo para ganado y alimento."
+},
+{
+"t": "Techo sobre los comederos",
+"kw": "techo sobre comedero saran sobre comedero comida al sol",
+"x": "Un techo o malla sarán sobre los comederos protege el alimento del sol y la lluvia, y lo mantiene fresco y apetitoso. Sirve la mayor parte en las horas frescas, cuando más comen."
+}
+]

@@ -7,41 +7,51 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `app/` — la app descompilada con apktool. Aquí se trabaja.
   - `app/assets/index.html` — toda la interfaz y la lógica de Rumi (HTML + JS).
   - `app/assets/rumi_red.bin` — red de intenciones de Rumi (fastText, 27.9M de parámetros).
-  - `app/assets/rumi/` — **Rumi avanzado**: modelo de lenguaje de 494M de parámetros
-    (Qwen2.5-0.5B-Instruct ajustado para Rumi), en GGUF partido en trozos de 90 MB.
-  - `app/assets/rumi_llm.js` — carga el modelo con wllama y lo conecta al chat de Rumi.
-  - `app/assets/rumi_rag.js`, `app/assets/rumi_saber.json` — la Guía que el modelo consulta.
+  - `app/assets/rumi/` — **modelo de comprensión de Rumi**: multilingual-e5-base (278M parámetros,
+    licencia MIT) ajustado con miles de preguntas de engorde, en GGUF partido en trozos de 90 MB,
+    más `referencias.bin` (vectores de temas y preguntas de ejemplo) y `modelo.json`.
+  - `app/assets/rumi_entiende.js` — decide qué contestar: tema de la Guía, "¿te refieres a…?",
+    "no es de mi tema" o la respuesta de las reglas. Nunca genera texto.
+  - `app/assets/rumi_motor.html` — corre el modelo con wllama en un iframe `https://rumentis.local`.
+  - `app/assets/rumi_rag.js`, `app/assets/rumi_saber.json` — la Guía y la búsqueda por palabras de respaldo.
   - `app/assets/wllama/` — llama.cpp en WebAssembly (y versión compatible para WebView viejos).
-  - `app/assets/licencias.txt` — licencias de Qwen (Apache 2.0), wllama y llama.cpp (MIT).
+  - `app/assets/licencias.txt` — licencias del modelo e5, wllama y llama.cpp (MIT).
   - `app/smali/` — el código Android (WebView, dictado por voz, guardar archivos, RAM del teléfono).
   - `app/apktool.yml` — versión (`versionCode`, `versionName`) y SDK.
-- `modelo/` — cómo se entrena Rumi avanzado.
-  - `saber_extra.json` — temas nuevos de la Guía (se suman a los que ya trae la app).
-  - `datos/` — preguntas y respuestas de entrenamiento.
+- `modelo/` — el conocimiento y el entrenamiento de Rumi.
+  - `saber_extra.json`, `saber/*.json` — temas de la Guía (se suman a los que ya trae la app).
+  - `datos/preguntas_*.json` — preguntas de ejemplo por tema; `fuera.json` — preguntas de otros temas;
+    `prueba_dificil.json` — examen aparte para medir.
   - `construir_saber.js` → arma `app/assets/rumi_saber.json`.
-  - `armar_datos.js` → arma `datos/train.jsonl` y `datos/eval.jsonl` con la misma búsqueda que usa la app.
-  - `entrenar.py` → ajuste LoRA en CPU. `exportar.sh` → GGUF cuantizado en `app/assets/rumi/`.
+  - `embeddings/entrenar.py` → ajusta el modelo; `calibrar.py` → mide y elige umbrales;
+    `exportar.py` → GGUF y referencias en `app/assets/rumi/`.
+  - `ilustraciones/` → toros y paisajes de cada pantalla (`escenas.py` los escribe en index.html).
 - `scripts/build.sh` — APK con todo adentro, para probar: `dist/Rumentis.apk`.
 - `scripts/build_aab.sh` — AAB para Google Play: `dist/Rumentis.aab`.
-- `scripts/probar_rumi.js` — prueba Rumi avanzado en Chromium como si fuera el WebView.
+- `scripts/probar_rumi.js` — prueba Rumi en Chromium como si fuera el WebView.
 
-## Cómo funciona Rumi avanzado
+## Cómo contesta Rumi
 
-1. Las reglas de Rumi contestan primero (cálculos, dosis, formularios, datos de los lotes).
-2. Si no entienden la pregunta o está fuera de su alcance, contesta el modelo, que corre en el
-   teléfono sin internet. Antes busca en la Guía los temas relacionados y se los pasa como contexto.
-3. Solo se activa en teléfonos con unos 5 GB de RAM o más (`RAM_MIN_MB` en `rumi_llm.js`).
-4. Cada respuesta del modelo dice que es generada por IA y se puede reportar
-   (política de contenido generado por IA de Google Play). Pon el correo que recibe los reportes
-   en `REPORTE_CORREO` dentro de `rumi_llm.js`.
+1. Las reglas contestan primero: cálculos, dosis que la app sabe calcular, formularios y tus lotes.
+2. Si no entienden la pregunta o es de otro tema, el modelo de comprensión la compara con los
+   temas de la Guía y con miles de preguntas de ejemplo:
+   - tema claro → contesta con el texto revisado de ese tema;
+   - dudoso → "¿Te refieres a…?" con opciones;
+   - de otro tema → "Eso no es de mi tema" y sugiere preguntas de la app.
+3. Dosis de medicinas que la app no calcula → respuesta fija (etiqueta y veterinario).
+4. Sin RAM suficiente (menos de ~3 GB) usa la búsqueda por palabras con las mismas reglas.
+
+Para que Rumi sepa más: agrega temas en `modelo/saber/` y preguntas en `modelo/datos/`, y vuelve a
+exportar (`construir_saber.js` y `embeddings/exportar.py`); reentrenar solo mejora la comprensión.
 
 ## Entrenar de nuevo
 
 ```sh
-pip install torch transformers peft safetensors gguf
-node modelo/construir_saber.js && node modelo/armar_datos.js
-python3 modelo/entrenar.py --base <carpeta de Qwen2.5-0.5B-Instruct> --salida ~/work/rumi-hf
-LLAMA_CPP=<llama.cpp compilado> modelo/exportar.sh ~/work/rumi-hf q8_0
+pip install sentence-transformers datasets
+node modelo/construir_saber.js
+python3 modelo/embeddings/entrenar.py <multilingual-e5-base> ~/work/e5-rumi
+python3 modelo/embeddings/calibrar.py ~/work/e5-rumi
+LLAMA_CPP=<llama.cpp> python3 modelo/embeddings/exportar.py ~/work/e5-rumi
 ```
 
 ## Compilar
@@ -58,6 +68,6 @@ primera vez. Para firmar con la llave de la app define `KEYSTORE` (o `KEYSTORE_B
 ### Google Play: nivel de dispositivo
 
 El modelo va en el asset pack `rumi_modelo`, en la carpeta `rumi#tier_1`. Para que Play lo
-entregue solo a teléfonos con 5 GB de RAM o más, crea en Play Console una configuración de
-niveles de dispositivo (Device tier config) con el nivel 1 = RAM ≥ 5 GB. Los demás teléfonos
-reciben el nivel 0, sin modelo, y Rumi funciona con sus reglas como siempre.
+entregue solo a teléfonos con suficiente RAM, crea en Play Console una configuración de niveles
+de dispositivo (Device tier config) con el nivel 1 = RAM ≥ 3 GB. Los demás reciben el nivel 0 y
+Rumi usa la búsqueda por palabras.

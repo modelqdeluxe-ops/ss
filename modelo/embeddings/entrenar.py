@@ -10,14 +10,8 @@ import torch
 from datasets import Dataset
 from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, SentenceTransformerTrainingArguments, losses
 from sentence_transformers.training_args import BatchSamplers
-from datos import guia, texto_tema, preguntas, dividir
+from datos import guia, texto_tema, preguntas, dividir, CLASES_EXTRA
 
-CLASES_EXTRA = {
-    'FUERA': 'Temas que no son de ganado de engorde ni de la app Rumentis: política, deportes, noticias, cocina, '
-             'tecnología, salud de personas, dinero y trámites, estudios, entretenimiento, lechería, cerdos, aves y otros animales.',
-    'APP': 'Órdenes y preguntas sobre mis propios datos en la app Rumentis: qué hago hoy, anota alimento, pesé el lote, '
-           'vendí, cuántas cabezas tengo, cuánto voy a ganar, mi conversión, mis gastos, mi mejor lote, modo oscuro.',
-}
 
 base, salida = sys.argv[1], sys.argv[2]
 todo = '--todo' in sys.argv

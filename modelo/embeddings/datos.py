@@ -10,6 +10,15 @@ RAIZ = Path(__file__).resolve().parents[2]
 D = RAIZ / 'modelo' / 'datos'
 
 
+# Clases que no son temas de la Guía, con un texto que las describe.
+CLASES_EXTRA = {
+    'FUERA': 'Temas que no son de ganado de engorde ni de la app Rumentis: política, deportes, noticias, cocina, '
+             'tecnología, salud de personas, dinero y trámites, estudios, entretenimiento, lechería, cerdos, aves y otros animales.',
+    'APP': 'Órdenes y preguntas sobre mis propios datos en la app Rumentis: qué hago hoy, anota alimento, pesé el lote, '
+           'vendí, cuántas cabezas tengo, cuánto voy a ganar, mi conversión, mis gastos, mi mejor lote, modo oscuro.',
+}
+
+
 def guia():
     return json.load(open(RAIZ / 'app/assets/rumi_saber.json', encoding='utf8'))
 
