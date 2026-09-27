@@ -4,7 +4,7 @@ Archivos entregados:
 
 | Archivo | Qué es |
 |---|---|
-| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 35 diapositivas de presentación y 7 de bibliografía y anexos al final, sin recuadros amarillos |
+| `Defensa_Tesis_Jaime_Fredy_Horacio_corregida.pptx` | Presentación corregida: 35 diapositivas de presentación y 6 de bibliografía y anexos al final, sin recuadros amarillos |
 | `Tesis Jaime Fredy Horacio Avance 19 corregida.docx` | Tesis con las secciones nuevas; tablas, figuras e índices renumerados |
 | `Estudio Financiero @risk Jaime Horacio Fredy (1) corregido.xlsm` | Modelo original intacto más 3 hojas nuevas con gráficos |
 
@@ -97,7 +97,7 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
 ## 6. Cuarta revisión: orden final
 
 - **Diapositivas 1 a 35:** todo el contenido en el orden aprobado, desde la portada hasta "Gracias", incluidos los 8 estudios que son los objetivos de la tesis.
-- **Diapositivas 36 a 42:** una diapositiva índice con el número de cada una, la bibliografía y los anexos A, B y C. No se presentan; quedan para consulta del jurado.
+- **Diapositivas 36 a 41:** bibliografía y anexos A, B y C, directamente después de "Gracias". No se presentan; quedan para consulta del jurado.
 - Las notas del orador de mercado (13), inversión (23) y préstamo (24) indican a qué anexo saltar (número + Enter en PowerPoint).
 
 ## 7. Auditoría final de la presentación
@@ -116,13 +116,26 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
   - En el resumen se aclara "60 clientes (año 1) a 690 (año 10)".
 - Validación del archivo: aprobada. Se revisaron visualmente todas las diapositivas modificadas.
 
-## 8. Cómo abrir los archivos
+## 8. Última revisión
+
+- Se eliminó la limitación "Entrevistas no documentadas" de la presentación y de la tesis. La encuesta se aplicó mediante un formulario en línea (Forms), como se indica en el Anexo A.
+- Se eliminó la diapositiva separadora antes de la bibliografía y los anexos.
+- Se explicaron en lenguaje claro las fórmulas y siglas:
+  - Fórmula del tamaño de la muestra (qué es N, z, p, q y e).
+  - Leche cruda por día (merma del 3 %).
+  - Ke y WACC.
+  - Punto de equilibrio y margen de seguridad.
+  - Sensibilidad: qué es ΔVAN, qué es el rango y el criterio de cada nivel.
+  - Riesgos: valor esperado, severidad y frecuencia, coeficiente de variación, VaR y relación riesgo-VPN.
+  - Término de la conciliación VAN vs. VPN medio.
+
+## 9. Cómo abrir los archivos
 
 - **Tesis:** al abrirla, Word pregunta si desea actualizar los campos. Respondan **Sí**: la tabla de contenido y los índices de tablas, figuras y anexos ahora son campos automáticos y se recalculan con la paginación real. Si no aparece la pregunta: Ctrl+A y luego F9.
 - **Bibliografía:** está dentro del control de Citavi. Si la regeneran desde Citavi, las 9 entradas nuevas se borrarán; conviene cargarlas en Citavi.
 - **Excel:** las hojas nuevas son "Análisis Complementario" (escenarios, tornado, punto de equilibrio, estados financieros, VaR, conciliación y costos), "Modelo Casos" (réplica con fórmulas, 26 casos) e "Iteraciones @RISK" (10,000 iteraciones con media, desviación y percentiles). Se verificaron recalculando las 10,731 fórmulas en LibreOffice: 0 diferencias frente al cálculo independiente.
 
-## 9. Fuentes nuevas verificadas
+## 10. Fuentes nuevas verificadas
 
 - INE (2025a). Estadísticas de género en Honduras, julio 2025: https://ine.gob.hn/wp-content/uploads/2025/12/Estadisticas-de-brechas-en-Honduras-julio-2025.pdf
 - INE (2025b). EPHPM 2025: https://ine.gob.hn/2025/12/12/encuesta-permanente-de-hogares-de-propositos-multiples-ephpm-2025/
