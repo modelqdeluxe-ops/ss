@@ -54,8 +54,18 @@ def decidir(res, U):
     return ('NADA', None)
 
 
+_cache = {}
+
+
+def ranking_c(conj):
+    k = tuple(q for q, _ in conj)
+    if k not in _cache:
+        _cache[k] = ranking(list(k))
+    return _cache[k]
+
+
 def evaluar(conj, U, mostrar=False):
-    res = ranking([q for q, _ in conj])
+    res = ranking_c(conj)
     n = len(conj)
     k = {'ok': 0, 'mal': 0, 'duda_ok': 0, 'duda_mal': 0, 'nada': 0}
     for (q, c), r in zip(conj, res):
@@ -75,17 +85,27 @@ def evaluar(conj, U, mostrar=False):
     return {kk: f'{v} ({v / n:.0%})' for kk, v in k.items()}
 
 
+def top1(conj):
+    res = ranking_c(conj)
+    ok = sum(r[0][0] == c for (q, c), r in zip(conj, res))
+    sb = [r[0][1] for (q, c), r in zip(conj, res) if r[0][0] == c]
+    sm = [r[0][1] for (q, c), r in zip(conj, res) if r[0][0] != c]
+    return f'{ok}/{len(conj)} = {ok/len(conj):.1%} | parecido acierto {np.median(sb):.3f} error {np.median(sm) if sm else 0:.3f}'
+
+
 if __name__ == '__main__':
+    print('acierto directo (no vistas):', top1(ev))
+    print('acierto directo (difíciles):', top1(ev_dif))
     mejor = None
-    for tema in [0.80, 0.82, 0.84, 0.86, 0.88, 0.90]:
-        for margen in [0.0, 0.01, 0.02]:
-            U = {'tema': tema, 'duda': tema - 0.06, 'fuera': tema - 0.02, 'margen': margen}
-            res = ranking([q for q, _ in ev + ev_dif]) if False else None
-            r1 = evaluar(ev + ev_dif, U)
-            mal = int(r1['mal'].split()[0]); ok = int(r1['ok'].split()[0])
-            puntaje = ok - 4 * mal   # un error pesa 4 veces más que un acierto
-            if mejor is None or puntaje > mejor[0]:
-                mejor = (puntaje, U, r1)
+    for tema in np.arange(0.40, 0.96, 0.02):
+        for dd in [0.04, 0.08, 0.12]:
+            for margen in [0.0, 0.01, 0.02, 0.04]:
+                U = {'tema': round(float(tema), 2), 'duda': round(float(tema - dd), 2), 'fuera': round(float(tema - 0.02), 2), 'margen': margen}
+                r1 = evaluar(ev + ev_dif, U)
+                g = lambda k: int(r1[k].split()[0])
+                puntaje = g('ok') - 4 * g('mal') + 0.5 * g('duda_ok') - 1 * g('duda_mal') - 0.3 * g('nada')
+                if mejor is None or puntaje > mejor[0]:
+                    mejor = (puntaje, U, r1)
     print('umbrales elegidos:', mejor[1])
     print('evaluación (no vistas):', evaluar(ev, mejor[1]))
     print('preguntas difíciles:   ', evaluar(ev_dif, mejor[1], mostrar=True))
