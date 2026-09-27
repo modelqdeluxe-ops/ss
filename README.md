@@ -7,16 +7,19 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `app/` — la app descompilada con apktool. Aquí se trabaja.
   - `app/assets/index.html` — toda la interfaz y la lógica (HTML + JS): lotes, registros, gráficos,
     cálculos de Rumi, pantalla Más y paletas de color.
-  - `app/assets/rumi_menu.js` — Rumi por menús: saludo, áreas (Mi engorde, Anotar, Alimentación,
-    Salud, Calculadoras, Dinero y ventas, Guía de engorde, Usar la app) y sus opciones. No hay texto
-    libre ni voz: cada opción llama a una respuesta fija de la app, un formulario o un tema de la guía.
-  - `app/assets/rumi_guia.js` — la Guía de engorde (483 temas por área).
-  - `app/assets/fotos.js` — fotos de los animales: cámara dentro de la app (getUserMedia) y guardado
-    local en IndexedDB por id de animal. Las fotos no salen del teléfono ni van en el respaldo.
-  - `app/smali/` — el código Android (WebView, guardar archivos, permiso de cámara para las fotos).
+  - `app/assets/rumi_menu.js` — Rumi por menús: áreas (Mi engorde, Mis lotes, Anotar, Alimentación,
+    Salud, ¿Qué tiene mi animal?, Calculadoras, Dinero y ventas, Guía de engorde, Usar la app), cada lote
+    y sus animales, síntomas, más de 25 calculadoras y los temas de la guía por partes. Sin texto ni voz.
+  - `app/assets/rumi_guia.js` — la Guía: `RUMI_FICHAS` (temas a fondo con partes y puntos) y
+    `RUMI_GUIA` (datos rápidos).
+  - `app/assets/fotos.js` — fotos de los animales: cámara dentro de la app (getUserMedia). En Android se
+    guardan como JPEG en la memoria interna (`Android.fotoGuardar/fotoLeer`, clase `Fotos` en smali);
+    en un navegador, en IndexedDB. No salen del teléfono ni van en el respaldo.
+  - `app/smali/` — el código Android (WebView, guardar archivos, permiso de cámara, fotos).
   - `app/apktool.yml` — versión (`versionCode`, `versionName`) y SDK.
 - `modelo/` — el conocimiento de Rumi.
-  - `saber_extra.json`, `saber/*.json` — temas de la Guía (se suman a los que ya trae la app).
+  - `fichas/*.json` — temas a fondo: `{t, a, r (resumen), s: [{h, p: [puntos]}], rel: [temas]}`.
+  - `saber_extra.json`, `saber/*.json` — datos rápidos (se suman a los que ya trae la app).
   - `areas.json` — área de cada tema; `correcciones_menu.json` — textos ajustados al Rumi por menús.
   - `construir_saber.js` → arma `app/assets/rumi_guia.js` (y `modelo/rumi_saber.json` para revisarla).
   - `ilustraciones/` → toros y paisajes de cada pantalla (`escenas.py` los escribe en index.html).
@@ -30,8 +33,8 @@ Rumi funciona solo con selecciones. Al abrirlo saluda y muestra sus áreas; al e
 las preguntas y acciones de esa área. El botón **Menú** vuelve a las áreas y la flecha regresa un
 nivel. Las calculadoras piden solo los números que necesitan (peso, temperatura, cabezas…).
 
-Para que Rumi sepa más: agrega temas en `modelo/saber/` (con su área en el campo `a`, o en
-`areas.json`) y corre `node modelo/construir_saber.js`.
+Para que Rumi sepa más: agrega temas en `modelo/fichas/` (o datos rápidos en `modelo/saber/`) y corre
+`node modelo/construir_saber.js`; el script valida títulos repetidos y temas relacionados.
 
 ## Nuevo lote
 

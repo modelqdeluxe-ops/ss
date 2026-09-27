@@ -1,0 +1,18 @@
+[
+{"t":"Corral de recepción","a":"instalaciones","r":"Un corral especial para los recién llegados facilita observarlos, tratarlos y evitar que contagien al resto.","s":[
+ {"h":"Cómo debe ser","p":["Separado de los corrales de engorde, cerca de la manga.","Sombra, agua con buen caudal y comedero con heno.","Piso seco y sin lodo.","Buena vista para observar a los animales."]},
+ {"h":"Uso","p":["Los animales pasan aquí las primeras 2 a 3 semanas.","Aquí se hace la adaptación al concentrado.","Límpialo y desinfecta entre lotes."]}
+],"rel":["Recepción de ganado","Cuarentena y bioseguridad","Corral de enfermos"]},
+
+{"t":"Pediluvio o paso de patas","a":"instalaciones","r":"Una pila poco profunda en la entrada de la manga donde los animales pasan las patas por una solución desinfectante.","s":[
+ {"h":"Para qué","p":["Prevenir y controlar infecciones de pezuña cuando hay muchos casos."]},
+ {"h":"Medidas","p":["Largo de 3 metros para que cada pata entre al menos dos veces.","Profundidad de solución de 10 a 15 cm."]},
+ {"h":"Manejo","p":["Solución indicada por el veterinario y cambiada según la suciedad.","Antes, un paso con agua limpia para quitar lodo."]}
+],"rel":["Cojeras y problemas de pezuña","Manga, brete y embudo"]},
+
+{"t":"Cosecha de agua de lluvia","a":"instalaciones","r":"Los techos de galeras y bodegas pueden llenar tanques y reservorios con agua para el verano.","s":[
+ {"h":"Cuánta se puede juntar","p":["Cada milímetro de lluvia sobre un metro cuadrado de techo da un litro.","Un techo de 200 m² con 1,200 mm de lluvia al año puede dar unos 200,000 litros (menos pérdidas)."]},
+ {"h":"Cómo","p":["Canales y bajantes limpios.","Primer lavado de techo que se desecha.","Tanques tapados o reservorios con cerca."]},
+ {"h":"Uso","p":["Bebederos en verano.","Limpieza de corrales."]}
+],"rel":["Agua: fuentes, tanques y calidad","Época seca"]}
+]

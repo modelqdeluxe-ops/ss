@@ -1,0 +1,37 @@
+[
+{"t":"Fibra detergente neutro y ácido","a":"conceptos","r":"FDN y FDA son análisis de laboratorio que miden la fibra del forraje. Dicen cuánto va a comer el animal y cuánto va a digerir.","s":[
+ {"h":"FDN","p":["Mide toda la fibra de la pared de la planta.","Más FDN: el animal se llena antes y come menos.","Pastos jóvenes: 55 a 65 %; pastos viejos: más de 70 %."]},
+ {"h":"FDA","p":["La parte más dura de la fibra.","Más FDA: menos digestible."]},
+ {"h":"Uso","p":["Comparar forrajes y decidir la edad de corte.","Formular con precisión el forraje de la ración."]}
+],"rel":["Calidad del forraje y edad de corte","Análisis de ingredientes","Fibra y forraje en la ración"]},
+
+{"t":"Relación calcio y fósforo","a":"conceptos","r":"El calcio y el fósforo deben estar en la proporción correcta en la ración. Si no, aparecen problemas de huesos y de cálculos urinarios.","s":[
+ {"h":"Cuánto","p":["Relación de 1.5 a 2 partes de calcio por 1 de fósforo."]},
+ {"h":"Problema común","p":["Las raciones con mucho grano y afrecho tienen mucho fósforo y poco calcio.","Se corrige con carbonato de calcio."]},
+ {"h":"Consecuencias de un mal balance","p":["Cálculos urinarios en machos.","Menor crecimiento de hueso."]}
+],"rel":["Minerales principales","Cálculos urinarios"]},
+
+{"t":"Acidez de la panza (pH ruminal)","a":"conceptos","r":"El pH mide qué tan ácida está la panza. Cuando baja demasiado, aparece la acidosis.","s":[
+ {"h":"Valores","p":["Normal con pasto: 6.2 a 6.8.","Engorde con grano: 5.8 a 6.2 es aceptable.","Menos de 5.6 por varias horas al día: acidosis subaguda.","Menos de 5.0: acidosis aguda."]},
+ {"h":"Qué lo baja","p":["Mucho grano fermentable de golpe.","Poca fibra efectiva y poca rumia.","Comidas grandes después de ayuno."]},
+ {"h":"Qué lo sube","p":["Rumia y saliva.","Fibra larga.","Amortiguadores como el bicarbonato."]}
+],"rel":["Acidosis ruminal","Fibra y forraje en la ración","Aditivos en la ración"]},
+
+{"t":"Peso lleno y peso vacío","a":"conceptos","r":"El mismo animal puede pesar distinto según cuánta agua y comida tenga en la panza. Es la base del desbaste.","s":[
+ {"h":"Peso lleno","p":["Con la panza llena de agua y alimento.","Puede ser 5 a 8 % más que el peso vacío."]},
+ {"h":"Peso en ayunas","p":["Después de 12 a 16 horas sin comida y agua.","Es el más parecido al peso real del animal."]},
+ {"h":"Uso práctico","p":["Pesa siempre en las mismas condiciones para comparar.","En la venta, acuerda cuál se usa y el desbaste."]}
+],"rel":["Desbaste","Pesaje"]},
+
+{"t":"Mortalidad","a":"conceptos","r":"El porcentaje de animales que mueren de los que entraron. Es un indicador clave de sanidad y manejo.","s":[
+ {"h":"Cómo se calcula","p":["Mortalidad = animales muertos ÷ animales que entraron × 100."]},
+ {"h":"Referencias","p":["Buen engorde en corral: menos de 1 a 2 %.","Más de 3 %: revisar compra, recepción y sanidad."]},
+ {"h":"En la app","p":["Se calcula por lote y en total con las bajas que anotas."]}
+],"rel":["Mortalidad y su costo","Muerte de un animal"]},
+
+{"t":"Días en engorde","a":"conceptos","r":"El tiempo desde que el lote entra hasta que se vende. Define cuántos lotes caben en un año y el costo fijo de cada animal.","s":[
+ {"h":"Cómo se calcula","p":["Fecha de venta − fecha de entrada."]},
+ {"h":"Referencias","p":["Engorde de corral: 90 a 150 días según el peso de entrada.","Semiestabulado: 150 a 250 días.","Pastoreo: un año o más."]},
+ {"h":"Cómo acortarlo sin perder","p":["Mejor ganancia diaria con buena ración y sanidad.","Comprar más pesado si el precio lo permite.","Vender al llegar a la meta."]}
+],"rel":["Vueltas al año","Días a la meta"]}
+]

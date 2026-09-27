@@ -1,0 +1,29 @@
+[
+{"t":"Cuándo no conviene engordar","a":"negocio","r":"A veces la mejor decisión es no comprar. Engordar con números en contra solo trabaja para perder.","s":[
+ {"h":"Señales","p":["El precio máximo de compra que te da Rumi es menor que lo que piden por el ganado.","El costo por kilo ganado es mayor que el precio de venta por kilo.","No tienes asegurado el alimento o el agua para todo el ciclo.","No tienes capital para terminar el engorde."]},
+ {"h":"Alternativas","p":["Esperar mejores precios de compra.","Engordar menos animales pero bien.","Ofrecer tus corrales en servicio de engorde.","Engordar en pastoreo con menos costo."]}
+],"rel":["Precio máximo de compra","Costo por kilo ganado","Engorde a medias o por servicio"]},
+
+{"t":"Contratos con compradores","a":"negocio","r":"Acordar precio y condiciones antes de terminar el engorde reduce el riesgo de que el mercado baje.","s":[
+ {"h":"Qué puede incluir","p":["Precio fijo o fórmula de precio.","Rango de peso y acabado.","Fecha aproximada de entrega.","Forma de pesaje y desbaste.","Castigos y premios.","Forma y plazo de pago."]},
+ {"h":"Ventajas","p":["Sabes cuánto recibirás.","Planeas la compra con más seguridad."]},
+ {"h":"Cuidados","p":["Por escrito y firmado.","Conoce la seriedad del comprador.","Cumple lo acordado: la confianza vale mucho."]}
+],"rel":["Negociar con el comprador","Riesgos del engorde","Canales de venta"]},
+
+{"t":"Seguro ganadero","a":"negocio","r":"Un seguro puede cubrir muertes por enfermedad, accidentes o robo. Hay que leer bien qué cubre.","s":[
+ {"h":"Qué suele cubrir","p":["Muerte por enfermedad o accidente.","A veces robo o desastres naturales."]},
+ {"h":"Qué piden","p":["Identificación de los animales.","Registros sanitarios.","Aviso rápido cuando muere un animal, a veces con necropsia."]},
+ {"h":"Cómo decidir","p":["Compara la prima con tu mortalidad histórica en la app.","Pregunta a tu banco o cooperativa por seguros ligados al crédito."]}
+],"rel":["Riesgos del engorde","Mortalidad y su costo"]},
+
+{"t":"Precio mínimo por libra","a":"negocio","r":"Muchos negocian en libras. Saber tu precio mínimo por libra evita aceptar ofertas que te hacen perder.","s":[
+ {"h":"Cómo calcularlo","p":["Precio mínimo por kilo = costo total del lote ÷ kilos vendidos.","Precio mínimo por libra = precio mínimo por kilo ÷ 2.2."]},
+ {"h":"Ejemplo","p":["Mínimo de 50 por kilo equivale a 22.7 por libra."]},
+ {"h":"En la app","p":["Si trabajas en libras, Rumi te lo da directo por libra en Dinero y ventas, Precio mínimo para no perder."]}
+],"rel":["Punto de equilibrio","Unidades de peso y medida"]},
+
+{"t":"Costo de oportunidad","a":"negocio","r":"El dinero y los corrales que usas en el engorde podrían estar ganando en otra cosa. Considerarlo ayuda a decidir.","s":[
+ {"h":"Qué es","p":["Lo que dejas de ganar por usar tus recursos en el engorde.","Por ejemplo, el interés que daría el dinero en el banco o el alquiler de los potreros."]},
+ {"h":"Cómo usarlo","p":["Compara el retorno del engorde con otras opciones.","Si el engorde rinde menos que dejar el dinero seguro, revisa tu modelo."]}
+],"rel":["Retorno de la inversión","Capital de trabajo"]}
+]

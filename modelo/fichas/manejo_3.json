@@ -1,0 +1,49 @@
+[
+{"t":"Destete y preacondicionamiento","a":"manejo","r":"Los terneros destetados y preparados antes de venderlos llegan al engorde más sanos y ganan desde el primer día.","s":[
+ {"h":"Qué es preacondicionar","p":["Destetar 30 a 45 días antes de la venta.","Vacunar y dar refuerzos en la finca de origen.","Acostumbrar al comedero y al bebedero.","Castrar y descornar temprano si se hace."]},
+ {"h":"Ventajas para el engordador","p":["Menos neumonías y muertes en la recepción.","Arrancan a comer rápido.","Vale la pena pagar un poco más por animales preacondicionados."]},
+ {"h":"Preguntas al vendedor","p":["¿Cuándo se destetaron?","¿Qué vacunas y refuerzos tienen?","¿Comen concentrado?"]}
+],"rel":["Comprar ganado para engorde","Recepción de ganado","Neumonía o complejo respiratorio"]},
+
+{"t":"Checklist de los primeros días","a":"manejo","r":"Una lista corta para no olvidar nada importante cuando entra un lote nuevo.","s":[
+ {"h":"Antes de que lleguen","p":["Corral de recepción limpio, con sombra, agua y heno.","Vacunas, desparasitantes y equipo listos.","Aretes y la app lista para crear el lote.","Ración de inicio preparada."]},
+ {"h":"Al llegar","p":["Contar, revisar guía y animales.","Agua, heno y descanso.","Apartar enfermos y lesionados."]},
+ {"h":"Día 1 o 2","p":["Pesar, aretear, foto.","Plan sanitario de ingreso.","Crear el lote en la app con raza, color y precio."]},
+ {"h":"Semanas 1 a 3","p":["Revisar dos veces al día.","Adaptar al concentrado.","Anotar tratamientos y alimento.","Refuerzos de vacuna a los 21 a 30 días."]}
+],"rel":["Recepción de ganado","Plan sanitario de ingreso","Crear un lote en la app"]},
+
+{"t":"Contar el ganado","a":"manejo","r":"Contar seguido detecta robos, animales escapados o muertos que no se vieron.","s":[
+ {"h":"Cómo contar","p":["Haz pasar a los animales por una puerta o la manga y cuéntalos uno por uno.","Cuenta en grupos de cinco para no perderte.","Dos personas cuentan por separado y comparan."]},
+ {"h":"Cuándo","p":["Al entrar y salir de la finca.","En cada pesaje.","Cada semana en potreros grandes."]},
+ {"h":"Si falta uno","p":["Revisa cercas, quebradas y potreros vecinos.","Compara con la lista de aretes de la app.","Si no aparece, denuncia."]}
+],"rel":["Seguridad y robo de ganado","Identificación de animales"]},
+
+{"t":"Animales bravos","a":"manejo","r":"Algunos animales son nerviosos o agresivos. Son peligrosos, se estresan más y ganan menos.","s":[
+ {"h":"Por qué","p":["Genética y temperamento.","Malas experiencias con personas.","Aislamiento del grupo."]},
+ {"h":"Cómo manejarlos","p":["Nunca solos: siempre dos personas.","Muévelos con su grupo.","Manga en buen estado y sin distracciones.","Sin gritos ni golpes: empeoran el comportamiento."]},
+ {"h":"Decisión","p":["Si un animal pone en riesgo a las personas, véndelo.","Al comprar, evita animales que brincan o atacan en la manga."]}
+],"rel":["Manejo tranquilo del ganado","Personal y seguridad en el trabajo"]},
+
+{"t":"Iluminación y horarios del corral","a":"manejo","r":"Luz suave en la noche y horarios estables ayudan a que los animales coman tranquilos y a vigilar.","s":[
+ {"h":"Luz","p":["Una luz tenue en los corrales permite que coman de noche con calor y ayuda a vigilar.","Evita luces que encandilen en la manga: el ganado no avanza hacia la luz fuerte de frente."]},
+ {"h":"Horarios","p":["Mismos horarios de comida y manejo todos los días.","Trabajo de manga temprano.","Evita ruidos fuertes de noche."]}
+],"rel":["Horarios de alimentación","Estrés por calor","Seguridad y robo de ganado"]},
+
+{"t":"Planificar el embarque","a":"manejo","r":"El día de la venta se prepara con días de anticipación para evitar pérdidas y malos ratos.","s":[
+ {"h":"Una semana antes","p":["Revisa en la app retiros y pesos.","Confirma comprador, precio, fecha y transporte.","Solicita la guía de movilización."]},
+ {"h":"El día anterior","p":["Ajusta la ración: no cambies de golpe.","Ayuno acordado con el comprador.","Prepara la manga y el embarcadero."]},
+ {"h":"El día","p":["Embarque temprano y tranquilo.","Pesaje donde se acordó.","Anota la venta en la app."]}
+],"rel":["Preparar la venta","Transporte de ganado","Registrar una venta"]},
+
+{"t":"Engordar en verano o en invierno","a":"manejo","r":"La época cambia el costo del alimento, el precio del ganado y la salud del lote.","s":[
+ {"h":"Verano (época seca)","p":["Ganado flaco más barato.","Forraje escaso y caro.","Más calor y polvo: cuidado con el ojo rosado y la neumonía."]},
+ {"h":"Invierno (lluvias)","p":["Pasto abundante, ganado más caro.","Lodo, moscas y problemas de patas.","Buen momento para hacer ensilaje."]},
+ {"h":"Cómo decidir","p":["Haz el presupuesto con los precios de la época.","Compara con tus lotes anteriores en la app.","Escalona para no depender de una sola época."]}
+],"rel":["Época seca","Época de lluvias","Estacionalidad de precios"]},
+
+{"t":"Consejos para empezar un engorde","a":"manejo","r":"Empezar pequeño, con números claros y buen manejo, es la forma más segura de crecer.","s":[
+ {"h":"Antes de comprar","p":["Corral con sombra, agua y comedero listo.","Ración y alimento asegurados.","Plan sanitario con un veterinario.","Presupuesto del lote y precio máximo de compra."]},
+ {"h":"Primer lote","p":["Un lote que puedas manejar bien (por ejemplo 10 a 30 animales).","Animales parejos y de un solo origen.","Anota todo en la app desde el día uno."]},
+ {"h":"Después del primer lote","p":["Revisa ganancia, conversión, costo por kilo y margen.","Corrige lo que salió mal antes de crecer.","Aumenta poco a poco."]}
+],"rel":["Comprar ganado para engorde","Presupuesto de un lote","Engorde en corral"]}
+]

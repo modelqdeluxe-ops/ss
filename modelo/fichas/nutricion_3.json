@@ -1,0 +1,77 @@
+[
+{"t":"Pulpa de cítricos","a":"nutricion","r":"Subproducto de la industria de jugos. Da energía parecida a un grano pero con fibra digestible, lo que baja el riesgo de acidosis.","s":[
+ {"h":"Valor","p":["Energía alta (TND cerca de 75 a 80 % en la seca).","Proteína baja (6 a 7 %).","Rica en calcio y pobre en fósforo."]},
+ {"h":"Uso","p":["Puede reemplazar parte del grano: hasta 25 a 30 % de la ración.","Buena en adaptación y en raciones de calor."]},
+ {"h":"Cuidados","p":["Fresca se daña en pocos días: úsala rápido o ensílala.","Seca o peletizada se guarda mejor.","Ajusta el fósforo de la ración."]}
+],"rel":["Subproductos para la ración","Energía en la ración","Minerales principales"]},
+
+{"t":"Harina de coquito o palmiste","a":"nutricion","r":"Subproducto de la palma africana, muy disponible en zonas de palma. Aporta proteína media, fibra y grasa.","s":[
+ {"h":"Valor","p":["Proteína de 14 a 18 %.","Fibra alta y grasa de 6 a 10 % según el proceso.","Energía media."]},
+ {"h":"Uso","p":["Buena para desarrollo y como parte de la finalización.","Hasta 20 a 30 % de la ración.","Poco apetecible sola: mézclala con melaza o grano."]},
+ {"h":"Cuidados","p":["La grasa se enrancia: compra fresca y guárdala seca.","Revisa que no traiga cáscara dura en exceso."]}
+],"rel":["Harina de soya y otras proteínas","Subproductos para la ración"]},
+
+{"t":"Cascarilla de soya","a":"nutricion","r":"La cáscara del frijol de soya. Fibra muy digestible que da energía sin el riesgo del almidón.","s":[
+ {"h":"Valor","p":["Energía cercana a 75 % de TND.","Proteína de 10 a 12 %.","Fibra alta pero muy digestible."]},
+ {"h":"Uso","p":["Reemplaza parte del grano o del forraje.","Útil en raciones de inicio y con calor."]},
+ {"h":"Cuidados","p":["No es fibra efectiva: no reemplaza todo el forraje largo.","Es liviana: ocupa mucho volumen en la bodega."]}
+],"rel":["Subproductos para la ración","Fibra y forraje en la ración"]},
+
+{"t":"Granos de destilería (DDGS)","a":"nutricion","r":"Lo que queda del maíz después de hacer etanol. Rico en proteína, energía y grasa.","s":[
+ {"h":"Valor","p":["Proteína de 26 a 32 %.","Energía alta por la grasa y la fibra digestible.","Alto en fósforo y a veces en azufre."]},
+ {"h":"Uso","p":["Hasta 20 a 30 % de la ración en engorde, según el azufre.","Reemplaza parte de la harina de soya y del grano."]},
+ {"h":"Cuidados","p":["El azufre alto causa polioencefalomalacia: pide el análisis.","Ajusta el calcio por el fósforo alto.","Revisa micotoxinas."]}
+],"rel":["Polioencefalomalacia","Harina de soya y otras proteínas","Análisis de ingredientes"]},
+
+{"t":"Rechazo de banano y plátano","a":"nutricion","r":"Fruta de rechazo que abunda en zonas bananeras. Da energía barata, pero con mucha agua.","s":[
+ {"h":"Valor","p":["Verde: almidón; maduro: azúcares.","Solo 18 a 25 % de materia seca: la mayor parte es agua.","Muy baja en proteína y minerales."]},
+ {"h":"Uso","p":["Picado, mezclado con fuente de proteína, fibra y minerales.","Puede ser una parte importante de la energía si el costo por materia seca conviene."]},
+ {"h":"Cuidados","p":["El verde tiene látex que puede estreñir: mézclalo bien.","Se fermenta rápido: dalo el mismo día.","Calcula el precio por materia seca, con flete incluido."]}
+],"rel":["Subproductos para la ración","Materia seca y consumo"]},
+
+{"t":"Yuca y harina de yuca","a":"nutricion","r":"La raíz de yuca es energía barata; la hoja, proteína. Hay que manejar el cianuro de algunas variedades.","s":[
+ {"h":"Raíz","p":["Rica en almidón, pobre en proteína.","Seca y molida (harina) o picada y secada al sol.","Reemplaza parte del grano."]},
+ {"h":"Hoja","p":["Proteína de 20 a 25 % en la seca.","Hay que secarla o ensilarla para bajar el cianuro."]},
+ {"h":"Cuidados","p":["La yuca brava fresca puede intoxicar.","El secado al sol y el ensilaje bajan mucho el riesgo.","Introdúcela poco a poco."]}
+],"rel":["Intoxicación por nitratos y cianuro","Energía en la ración"]},
+
+{"t":"Grasas y aceites en la ración","a":"nutricion","r":"La grasa tiene más del doble de energía que el grano. En poca cantidad ayuda; en exceso daña la panza.","s":[
+ {"h":"Uso","p":["Sube la energía sin más almidón.","Baja el polvo de la ración.","Útil con calor: produce menos calor al digerirse."]},
+ {"h":"Límites","p":["La ración total no debe pasar de 5 a 6 % de grasa.","Más grasa baja la digestión de la fibra y el consumo."]},
+ {"h":"Fuentes","p":["Aceites crudos, sebos, grasas protegidas.","Harinas con grasa: coquito, DDGS, semolina de arroz."]}
+],"rel":["Energía en la ración","Alimentación con calor"]},
+
+{"t":"Concentrado comercial o mezcla propia","a":"nutricion","r":"Comprar concentrado listo es cómodo; mezclar en la finca puede ser más barato. La decisión depende de tus números y tu capacidad.","s":[
+ {"h":"Concentrado comercial","p":["Calidad constante y garantía del fabricante.","Sin necesidad de equipo ni personal para mezclar.","Más caro por kilo."]},
+ {"h":"Mezcla propia","p":["Puedes usar ingredientes locales y subproductos baratos.","Necesitas báscula, mezcladora, bodega y control.","Riesgo de errores si no se pesa y mezcla bien."]},
+ {"h":"Cómo decidir","p":["Compara el costo por kilo de ganancia, no el precio del saco.","Para pocos animales, el comercial o un núcleo con grano suele ser más práctico.","Con muchos animales, la mezcla propia suele pagar el equipo."]},
+ {"h":"Leer la etiqueta","p":["Proteína cruda mínima.","Grasa y fibra.","Minerales y aditivos incluidos.","Fecha de fabricación: úsalo antes de 30 a 60 días."]}
+],"rel":["Formular una ración","Costo de la ración","Mezcladora y equipo"]},
+
+{"t":"Cómo leer las heces","a":"nutricion","r":"El estiércol es un reporte diario de cómo está la panza. Aprender a leerlo avisa de problemas antes de que bajen las ganancias.","s":[
+ {"h":"Normal","p":["Forma de torta que se asienta, con leve hundimiento en el centro.","Color café verdoso a café oscuro según la ración."]},
+ {"h":"Muy sueltas","p":["Exceso de grano, acidosis, proteína alta o pasto muy tierno.","Con burbujas y olor agrio: acidosis."]},
+ {"h":"Muy duras y en bolas","p":["Falta de agua o de proteína, forraje muy seco."]},
+ {"h":"Con granos enteros","p":["Grano mal procesado o acidosis.","Revisa la molienda o el rolado."]},
+ {"h":"Con fibras largas","p":["Mala digestión de la fibra, falta de proteína o paso muy rápido."]},
+ {"h":"Con sangre o moco","p":["Coccidiosis, infección o daño del intestino: consulta al veterinario."]}
+],"rel":["Acidosis ruminal","Diarrea en el engorde","Maíz y otros granos"]},
+
+{"t":"Suplemento de melaza y urea","a":"nutricion","r":"Una mezcla líquida o en bloque para potreros secos. Da energía y nitrógeno para que los animales aprovechen el pasto seco.","s":[
+ {"h":"Cómo funciona","p":["La urea da nitrógeno a los microbios.","La melaza da la energía para usarlo.","Así digieren mejor el pasto seco y comen más."]},
+ {"h":"Uso","p":["En comederos con flotador o bloques, a libre acceso con consumo controlado.","Formulación correcta: la urea no debe pasar el límite recomendado.","Adaptación gradual."]},
+ {"h":"Seguridad","p":["Protege de la lluvia: la urea se concentra en el agua de encima.","No lo des a animales flacos, en ayuno o enfermos.","Siempre con minerales."]}
+],"rel":["Urea en la ración","Melaza","Sal mineral y bloques"]},
+
+{"t":"Uniformidad del lote","a":"nutricion","r":"Un lote parejo come y gana parejo. Cuando hay mucha diferencia, algunos animales se atrasan y el lote no sale junto.","s":[
+ {"h":"Cómo medirla","p":["Compara el peso más bajo y el más alto del lote.","Mira cuántos animales están a más de 10 % del promedio.","La app muestra el rango de ganancia del lote."]},
+ {"h":"Causas de desuniformidad","p":["Compra de animales muy distintos.","Poco espacio de comedero: los dominantes comen más.","Enfermedades en algunos animales."]},
+ {"h":"Cómo mejorarla","p":["Forma lotes por peso al comprar.","Espacio de comedero suficiente.","Saca a los atrasados a otro corral.","Vende por partes si no salen juntos."]}
+],"rel":["Formar lotes","Animales atrasados","Espacio por animal"]},
+
+{"t":"Energía neta y proteína degradable","a":"nutricion","r":"Son formas más precisas de medir lo que realmente aprovecha el animal. Las usan los nutricionistas para formular.","s":[
+ {"h":"Energía neta","p":["Energía neta de mantenimiento: la que usa para vivir.","Energía neta de ganancia: la que queda para crecer y engordar.","Las tablas modernas (NRC) formulan con estos valores."]},
+ {"h":"Proteína degradable y no degradable","p":["La degradable alimenta a los microbios de la panza.","La no degradable pasa al intestino.","Una ración necesita de las dos según el peso y la ganancia."]},
+ {"h":"Para ti","p":["La app ya usa estos conceptos al formular.","Si trabajas con nutricionista, te hablará en estos términos."]}
+],"rel":["Energía en la ración","Proteína en la ración","Formular una ración"]}
+]

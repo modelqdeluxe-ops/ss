@@ -1,0 +1,152 @@
+[
+{"t":"Cómo se gana dinero en el engorde","a":"negocio","r":"El engorde gana en dos lugares: en los kilos que produces a menor costo del que te pagan, y en la diferencia de precio entre comprar y vender.","s":[
+ {"h":"Las tres palancas","p":["Comprar bien: buen animal a buen precio por kilo.","Producir barato: buena conversión, pocas muertes, ración al mínimo costo.","Vender bien: al peso y acabado correctos, al mejor comprador y en buen momento."]},
+ {"h":"Margen de producción","p":["Cada kilo que el animal gana vale el precio de venta.","Si producir ese kilo te cuesta menos, ganas en cada kilo.","Ejemplo: vendes a 60 el kilo y te cuesta 45 producirlo: ganas 15 por kilo ganado."]},
+ {"h":"Margen de precio","p":["Muchas veces el kilo del animal flaco se compra más caro que el del gordo.","Esa diferencia negativa se paga con los kilos producidos.","Por eso importa tanto comprar bien."]},
+ {"h":"Fórmula simple","p":["Margen = (peso de venta × precio de venta) − (peso de compra × precio de compra) − costos de alimento, sanidad, mano de obra y otros."]}
+],"rel":["Costo por kilo ganado","Precio máximo de compra","Margen de compra y venta"]},
+
+{"t":"Estructura de costos","a":"negocio","r":"Conocer cuánto pesa cada costo dice dónde está la mayor oportunidad de ahorro.","s":[
+ {"h":"Costos típicos del engorde en corral","p":["Compra del animal: 60 a 75 % del costo total.","Alimento: 20 a 30 %.","Sanidad: 1 a 3 %.","Mano de obra: 2 a 5 %.","Flete, comisiones, energía, mantenimiento y otros: el resto."]},
+ {"h":"Costos variables y fijos","p":["Variables: cambian con el número de animales (compra, alimento, medicinas).","Fijos: se pagan igual haya muchos o pocos (sueldos fijos, instalaciones, vigilancia).","Con más animales, el costo fijo por cabeza baja."]},
+ {"h":"Costos escondidos","p":["Muertes: se pierde la compra y todo lo que comió.","Desperdicio de alimento.","Días de más en el corral.","Intereses del capital invertido."]},
+ {"h":"En la app","p":["Anota todos los gastos, también los generales, para que el costo sea real.","Los gráficos muestran en qué se va el dinero."]}
+],"rel":["Costo por kilo ganado","Escala del engorde","Mortalidad y su costo"]},
+
+{"t":"Costo por kilo ganado","a":"negocio","r":"Es cuánto te cuesta producir cada kilo que gana el animal. Compararlo con el precio de venta dice si el engorde deja plata.","s":[
+ {"h":"Cómo se calcula","p":["Costo por kilo ganado = (alimento + sanidad + mano de obra + otros gastos del período) ÷ kilos ganados.","No incluye la compra del animal.","Solo alimento: costo del kilo de mezcla × conversión."]},
+ {"h":"Ejemplo","p":["Mezcla a 8 por kilo y conversión de 7 a 1: 56 de alimento por kilo ganado.","Más 6 de otros costos: 62 por kilo ganado.","Si vendes a 60 el kilo, cada kilo producido pierde 2."]},
+ {"h":"Cómo bajarlo","p":["Mejorar la conversión (ración, sanidad, desperdicio).","Bajar el costo de la mezcla.","Reducir muertes.","Vender antes de que los kilos se vuelvan caros."]},
+ {"h":"En la app","p":["Se calcula por lote con el alimento y gastos que anotas.","Aparece en Hoy, en cada lote y en Gráficos."]}
+],"rel":["Conversión alimenticia","Costo de la ración","Punto de equilibrio"]},
+
+{"t":"Punto de equilibrio","a":"negocio","r":"Es el precio de venta con el que no ganas ni pierdes. Saberlo antes de vender te da poder para negociar.","s":[
+ {"h":"Cómo se calcula","p":["Precio de equilibrio = costo total del lote ÷ kilos vendidos.","El costo total incluye compra, flete, alimento, sanidad, mano de obra, muertes y gastos.","Considera el desbaste: te pagan menos kilos de los que pesas en la finca."]},
+ {"h":"Ejemplo","p":["Costo total 500,000 y vendes 10,000 kg: equilibrio de 50 por kilo.","Si te ofrecen 48, pierdes 20,000.","Si te ofrecen 55, ganas 50,000."]},
+ {"h":"Usos","p":["Saber tu precio mínimo antes de negociar.","Decidir si vale la pena esperar o vender ya.","Comparar compradores."]},
+ {"h":"En la app","p":["Menú de Rumi, Dinero y ventas, Precio mínimo para no perder: lo calcula por lote vendiendo en la meta."]}
+],"rel":["Precio máximo de compra","Cuándo vender","Negociar con el comprador"]},
+
+{"t":"Precio máximo de compra","a":"negocio","r":"Antes de comprar, calcula cuánto puedes pagar como máximo sin perder. Es la herramienta más importante para comprar bien.","s":[
+ {"h":"Qué necesitas","p":["Peso de compra y peso de venta esperado.","Precio de venta esperado por kilo.","Tu costo por kilo ganado.","Otros costos por cabeza: flete, sanidad, comisiones, muertes esperadas.","El margen que quieres ganar por cabeza."]},
+ {"h":"Fórmula","p":["Valor de venta = peso de venta × precio de venta (con desbaste).","Costo de engordar = (peso de venta − peso de compra) × costo por kilo ganado + otros costos.","Máximo a pagar por animal = valor de venta − costo de engordar − margen deseado.","Máximo por kilo = máximo por animal ÷ peso de compra."]},
+ {"h":"Ejemplo","p":["Compra 300 kg, venta 460 kg a 60: vale 27,600.","Ganar 160 kg a 45 = 7,200, más 800 de otros: 8,000.","Quieres ganar 1,500: máximo 27,600 − 8,000 − 1,500 = 18,100 por animal, unos 60 por kilo."]},
+ {"h":"En la app","p":["Menú de Rumi, Dinero y ventas, Precio máximo de compra: pon el peso y usa tus costos reales."]}
+],"rel":["Comprar ganado para engorde","Punto de equilibrio","Costo por kilo ganado"]},
+
+{"t":"Margen de compra y venta","a":"negocio","r":"La diferencia entre el precio por kilo de compra y el de venta puede ayudarte o quitarte mucho margen.","s":[
+ {"h":"Cómo funciona","p":["Los animales flacos y livianos suelen costar más por kilo que los gordos.","Pagas más por cada kilo que compras de lo que te pagan por cada kilo que vendes.","Esa diferencia multiplicada por el peso de compra es una pérdida que deben pagar los kilos producidos."]},
+ {"h":"Ejemplo","p":["Compras 300 kg a 64 y vendes 460 kg a 60.","Pierdes 4 por kilo en los 300 kg comprados: 1,200 por animal.","Los 160 kg ganados deben dejar más de 1,200 para que el negocio sirva."]},
+ {"h":"Cómo manejarlo","p":["Compra en épocas donde el ganado flaco está barato (inicio del verano en muchas zonas).","Compra animales un poco más pesados si el diferencial es muy alto.","Negocia por kilo, nunca por cabeza al ojo."]}
+],"rel":["Cómo se gana dinero en el engorde","Estacionalidad de precios","Precio máximo de compra"]},
+
+{"t":"Presupuesto de un lote","a":"negocio","r":"Antes de comprar un lote, haz el presupuesto completo. Te dice si vale la pena y cuánto dinero necesitas.","s":[
+ {"h":"Ingresos esperados","p":["Cabezas que esperas vender (restando muertes esperadas).","Peso de venta con desbaste.","Precio de venta esperado."]},
+ {"h":"Costos","p":["Compra, flete y comisiones.","Alimento: kilos por día × días × costo por kilo.","Sanidad de ingreso y tratamientos.","Mano de obra y gastos generales proporcionales.","Intereses si usas crédito."]},
+ {"h":"Resultado","p":["Margen total y por cabeza.","Precio de equilibrio de venta.","Capital máximo que necesitas y cuándo."]},
+ {"h":"Escenarios","p":["Calcula también con precio de venta 5 a 10 % más bajo.","Y con ganancia diaria menor a la esperada.","Si en el escenario malo pierdes mucho, piensa dos veces."]}
+],"rel":["Capital de trabajo","Riesgos del engorde","Planificación del engorde"]},
+
+{"t":"Capital de trabajo","a":"negocio","r":"El engorde necesita dinero para comprar y alimentar meses antes de cobrar. Quedarse sin efectivo a mitad del engorde es muy caro.","s":[
+ {"h":"Cuánto necesitas","p":["La compra completa del lote al inicio.","El alimento y gastos de todos los días hasta la venta.","Un colchón de 10 a 15 % para imprevistos."]},
+ {"h":"Flujo de caja","p":["Anota cuándo sale y cuándo entra el dinero.","Las ventas escalonadas de lotes ayudan a tener ingresos más seguidos.","Negocia plazos con proveedores de alimento."]},
+ {"h":"Errores comunes","p":["Comprar todo el ganado sin tener asegurado el alimento.","Vender apurado por falta de efectivo, con animales que aún no están listos.","Mezclar el dinero del engorde con los gastos de la casa."]}
+],"rel":["Financiamiento y crédito","Presupuesto de un lote","Planificación del engorde"]},
+
+{"t":"Financiamiento y crédito","a":"negocio","r":"Un crédito puede hacer crecer el engorde si el margen paga los intereses con holgura.","s":[
+ {"h":"Antes de pedir","p":["Haz el presupuesto del lote con los intereses incluidos.","Compara la tasa con tu margen esperado.","Revisa el plazo: debe coincidir con la venta, no antes."]},
+ {"h":"Costo del dinero","p":["Interés = monto × tasa anual × días ÷ 365.","Ejemplo: 500,000 al 18 % anual por 120 días = unos 29,600.","Ese costo se suma al costo por cabeza."]},
+ {"h":"Fuentes","p":["Bancos y cooperativas con líneas ganaderas.","Proveedores de alimento con crédito.","Esquemas de engorde a medias o por servicio."]},
+ {"h":"Con la app","p":["Descarga tus datos a Excel para mostrar tu historial al banco."]}
+],"rel":["Capital de trabajo","Riesgos del engorde","Engorde a medias o por servicio"]},
+
+{"t":"Riesgos del engorde","a":"negocio","r":"El engorde tiene riesgos de precio, de producción y sanitarios. Conocerlos permite reducirlos.","s":[
+ {"h":"Riesgo de precio","p":["Baja del precio de venta durante el engorde.","Subida del precio del alimento.","Reducción: compras escalonadas, contratos con compradores, compra anticipada de grano."]},
+ {"h":"Riesgo de producción","p":["Ganancia menor a la esperada.","Sequía que encarece el forraje.","Reducción: buena ración, plan forrajero, registros para detectar problemas temprano."]},
+ {"h":"Riesgo sanitario","p":["Brotes de neumonía, muertes.","Reducción: compra cuidadosa, recepción, vacunas, cuarentena."]},
+ {"h":"Otros riesgos","p":["Robo, accidentes, cambios en la ley.","No apostar todo a un solo lote ni a un solo comprador."]}
+],"rel":["Presupuesto de un lote","Estacionalidad de precios","Mortalidad y su costo"]},
+
+{"t":"Canales de venta","a":"negocio","r":"A quién le vendes cambia el precio, la forma de pago y los requisitos.","s":[
+ {"h":"Intermediario o comprador en finca","p":["Cómodo: recoge en la finca.","Suele pagar menos y a veces al ojo.","Negocia siempre con báscula."]},
+ {"h":"Subasta","p":["Precio por competencia en el día.","Costos de comisión y transporte.","Riesgo de precios bajos si hay mucho ganado ese día."]},
+ {"h":"Planta o matadero","p":["Pago en canal o en pie con reglas claras.","Exigen trazabilidad, sin residuos y animales en rango de peso y acabado.","Pueden pagar premios por calidad."]},
+ {"h":"Carnicerías y venta directa","p":["Mejor precio si tienes clientes fijos.","Necesitas cumplir con el sacrificio en rastro autorizado y las normas de sanidad."]}
+],"rel":["Vender en pie o en canal","Negociar con el comprador","Calidad de canal"]},
+
+{"t":"Vender en pie o en canal","a":"negocio","r":"En pie te pagan por el animal vivo; en canal, por la carne con hueso después del sacrificio. Comparar bien evita perder dinero.","s":[
+ {"h":"En pie","p":["Pago por kilo vivo, normalmente con descuento por desbaste.","Sabes el resultado el mismo día.","El riesgo de rendimiento lo asume el comprador."]},
+ {"h":"En canal","p":["Pago por kilo de canal caliente o fría.","La canal pesa 54 a 58 % del peso vivo en novillos de engorde bien acabados.","Te conviene si tus animales rinden bien (buen músculo y acabado)."]},
+ {"h":"Cómo comparar","p":["Precio en canal × rendimiento = precio equivalente en pie.","Ejemplo: 110 por kilo de canal × 0.56 = 61.6 por kilo vivo.","Compara con la oferta en pie después del desbaste."]},
+ {"h":"Calculadora","p":["Menú de Rumi, Calculadoras, Comparar pie y canal."]}
+],"rel":["Rendimiento en canal","Calidad de canal","Desbaste"]},
+
+{"t":"Negociar con el comprador","a":"negocio","r":"Llegar a la negociación con tus números claros cambia el resultado.","s":[
+ {"h":"Antes","p":["Conoce tu precio de equilibrio.","Conoce el peso real del lote (pesado en báscula).","Averigua precios de otros compradores y de la subasta."]},
+ {"h":"Qué acordar","p":["Precio por kilo y dónde se pesa.","Porcentaje de desbaste o horas de ayuno.","Castigos por golpes, peso fuera de rango o animales enfermos.","Fecha y forma de pago.","Quién paga el flete."]},
+ {"h":"Reglas","p":["Pon todo por escrito, aunque sea en un mensaje.","No vendas al ojo.","Ten más de un comprador para comparar."]}
+],"rel":["Punto de equilibrio","Preparar la venta","Canales de venta"]},
+
+{"t":"Calidad de canal","a":"negocio","r":"La calidad de la canal define el precio en plantas que clasifican. Se construye durante todo el engorde.","s":[
+ {"h":"Qué miran","p":["Peso de la canal.","Conformación: cantidad y forma del músculo.","Cobertura de grasa.","Edad por dentición.","Color de la carne y la grasa.","Golpes, abscesos y lesiones."]},
+ {"h":"Cómo mejorarla","p":["Buena genética y animales jóvenes.","Ración de finalización con acabado correcto.","Inyecciones en el cuello, nunca en la pierna.","Manejo tranquilo en finca, transporte y embarque.","Ayuno y transporte adecuados antes del sacrificio."]},
+ {"h":"Pide retroalimentación","p":["Solicita al matadero los datos de canal y decomisos de tu lote.","Anótalos en la app junto a la venta para aprender."]}
+],"rel":["Rendimiento en canal","Grado de acabado","Aplicación de inyecciones"]},
+
+{"t":"Estacionalidad de precios","a":"negocio","r":"Los precios del ganado y del alimento suben y bajan en ciertas épocas. Aprovecharlo mejora el margen.","s":[
+ {"h":"Patrones comunes","p":["En el verano muchos ganaderos venden animales flacos: suelen bajar de precio.","El grano suele estar más barato en cosecha.","La demanda de carne sube en ciertas fiestas y fin de año."]},
+ {"h":"Cómo aprovecharla","p":["Compra animales cuando están baratos si tienes alimento asegurado.","Planifica vender cuando los precios suelen subir.","Compra grano en cosecha si tienes buena bodega."]},
+ {"h":"Registra tus precios","p":["Anota los precios de compra y venta en la app.","Con los años verás el patrón de tu zona."]}
+],"rel":["Margen de compra y venta","Planificación del engorde","Riesgos del engorde"]},
+
+{"t":"Registros económicos","a":"negocio","r":"Llevar las cuentas de cada lote te dice qué funciona y qué no. Sin cuentas, se decide a ciegas.","s":[
+ {"h":"Por lote","p":["Compra: cabezas, kilos, precio, flete.","Alimento: kilos y costo.","Sanidad y gastos del lote.","Venta: cabezas, kilos, precio.","Margen total y por cabeza."]},
+ {"h":"Generales","p":["Sueldos, energía, mantenimiento, intereses.","Se reparten entre los lotes según los días y las cabezas."]},
+ {"h":"Análisis","p":["Compara lotes: ganancia, conversión, costo por kilo, margen.","Compara proveedores, razas, raciones y épocas.","Busca el lote que más ganó y copia lo que hiciste."]},
+ {"h":"En la app","p":["Todo lo que anotas genera estos números solo.","Descarga a Excel para análisis más detallados."]}
+],"rel":["Registros y trazabilidad","Indicadores clave del engorde","Cómo usa tus datos la app"]},
+
+{"t":"Mortalidad y su costo","a":"negocio","r":"Cada animal muerto se lleva lo que costó más todo lo que comió. La mortalidad es de los costos más caros y más evitables.","s":[
+ {"h":"Cuánto cuesta","p":["Precio de compra + flete + alimento consumido + tratamientos.","Un animal que muere a mitad del engorde puede costar más que su precio de compra."]},
+ {"h":"Referencias","p":["Engorde de corral bien manejado: menos de 1 a 2 %.","Más de 3 % indica un problema serio de compra, recepción o sanidad."]},
+ {"h":"Cómo bajarla","p":["Compra cuidadosa.","Recepción y plan sanitario de ingreso.","Revisión diaria y tratamiento temprano.","Adaptación al concentrado.","Necropsias para aprender de cada muerte."]},
+ {"h":"En la app","p":["Anota cada muerte con su causa.","La app calcula la mortalidad por lote y el costo en el margen."]}
+],"rel":["Muerte de un animal","Plan sanitario de ingreso","Estructura de costos"]},
+
+{"t":"Escala del engorde","a":"negocio","r":"Con más animales, los costos fijos se reparten mejor. Pero crecer sin control multiplica los errores.","s":[
+ {"h":"Ventajas de crecer","p":["Menos costo fijo por cabeza.","Mejor poder de compra de alimento y ganado.","Más interés de compradores grandes."]},
+ {"h":"Riesgos","p":["Más capital en riesgo.","Necesita más personal capacitado y mejor organización.","Problemas sanitarios afectan a más animales."]},
+ {"h":"Cómo crecer","p":["Primero domina los números con lotes pequeños.","Crece por etapas, llenando la capacidad de lo que ya tienes.","Invierte en lo que más rinde: báscula, agua, sombra, comederos."]}
+],"rel":["Estructura de costos","Presupuesto de instalaciones","Capital de trabajo"]},
+
+{"t":"Mano de obra y productividad","a":"negocio","r":"El trabajo es un costo importante, pero un buen trabajador ahorra mucho más de lo que cuesta.","s":[
+ {"h":"Referencias","p":["Un trabajador bien organizado puede atender varios cientos de animales en corral con equipo adecuado.","Sin equipo de mezcla y distribución, se necesita más gente."]},
+ {"h":"Cómo mejorar la productividad","p":["Rutinas claras y escritas.","Equipo adecuado: mezcladora, carretas, báscula en la manga.","Instalaciones pensadas para el trabajo."]},
+ {"h":"Costo por animal","p":["Suma sueldos y prestaciones del mes y divide entre los animales atendidos.","Anota la planilla en la app como gasto general."]}
+],"rel":["Personal y seguridad en el trabajo","Rutina diaria del engorde","Estructura de costos"]},
+
+{"t":"Depreciación e inversiones","a":"negocio","r":"Las instalaciones y el equipo se desgastan. Incluir su costo anual muestra el verdadero resultado del engorde.","s":[
+ {"h":"Depreciación","p":["Costo anual = (valor de compra − valor final) ÷ años de vida útil.","Ejemplo: una mezcladora de 150,000 que dura 10 años cuesta 15,000 al año."]},
+ {"h":"Vidas útiles de referencia","p":["Corrales de cemento y tubo: 15 a 25 años.","Madera tratada: 8 a 12 años.","Equipo mecánico: 8 a 12 años.","Báscula: 10 a 15 años."]},
+ {"h":"Decidir una inversión","p":["¿Cuánto ahorra o produce por año?","¿En cuántos años se paga?","¿Hay algo más barato que dé el mismo resultado?"]}
+],"rel":["Presupuesto de instalaciones","Escala del engorde"]},
+
+{"t":"Indicadores clave del engorde","a":"negocio","r":"Unos pocos números bien medidos dicen si tu engorde va bien. Revísalos en cada lote.","s":[
+ {"h":"Producción","p":["Ganancia diaria de peso: meta de 1.2 a 1.6 kg en corral.","Conversión: 6 a 8 kg de alimento por kg ganado.","Consumo: 2.2 a 2.8 % del peso vivo en materia seca.","Días en engorde."]},
+ {"h":"Sanidad","p":["Mortalidad: menos de 1 a 2 %.","Enfermos en recepción: menos de 10 %.","Animales atrasados por lote."]},
+ {"h":"Economía","p":["Costo por kilo ganado frente al precio de venta.","Margen por cabeza y por día.","Precio de equilibrio frente al precio de mercado."]},
+ {"h":"En la app","p":["Hoy y cada lote muestran ganancia, conversión y costo.","Gráficos compara lotes y períodos."]}
+],"rel":["Ganancia diaria de peso","Conversión alimenticia","Costo por kilo ganado"]},
+
+{"t":"Engorde a medias o por servicio","a":"negocio","r":"Hay acuerdos en los que uno pone el ganado y otro la finca y el trabajo. Bien hechos, reparten riesgo y beneficio.","s":[
+ {"h":"Tipos","p":["A medias: se reparte la ganancia de peso o la utilidad en porcentajes acordados.","Por servicio (pupilaje o maquila): el dueño paga una cuota por animal por día o por kilo ganado."]},
+ {"h":"Qué acordar por escrito","p":["Quién pone qué: animales, alimento, sanidad, mano de obra.","Cómo se pesa al entrar y salir.","Qué pasa con las muertes.","Cómo y cuándo se paga.","Duración del acuerdo."]},
+ {"h":"Con la app","p":["Crea un lote por cada acuerdo y anota todo para rendir cuentas claras."]}
+],"rel":["Financiamiento y crédito","Registros económicos"]},
+
+{"t":"Cómo usa tus datos la app","a":"negocio","r":"La app convierte tus registros en decisiones: cuándo vender, cuánto pagar, qué lote va mejor.","s":[
+ {"h":"Lo que calcula","p":["Ganancia diaria por lote y por animal.","Conversión y costo por kilo ganado.","Fecha estimada de llegada a la meta.","Margen estimado y precio de equilibrio.","Alimento necesario para el mes."]},
+ {"h":"Lo que necesita de ti","p":["Anotar el alimento cada día.","Pesar cada 3 a 4 semanas.","Registrar sanidad, muertes, gastos y ventas.","Poner precios reales."]},
+ {"h":"Decisiones","p":["Vender un lote que ya no gana lo suficiente.","Sacar animales atrasados.","Comprar a un precio que deje ganancia.","Cambiar una ración que convierte mal."]}
+],"rel":["Registros económicos","Indicadores clave del engorde","Cuándo vender"]}
+]

@@ -1,0 +1,107 @@
+[
+{"t":"Ganancia diaria de peso","a":"conceptos","r":"Cuántos kilos sube cada animal por día en promedio. Es el primer número para saber si el engorde va bien.","s":[
+ {"h":"Cómo se calcula","p":["Ganancia diaria = (peso final − peso inicial) ÷ días entre los dos pesajes.","Para el lote: usa el promedio de los animales vivos."]},
+ {"h":"Ejemplo","p":["Entró con 300 kg y a los 28 días pesa 340 kg: 40 ÷ 28 = 1.43 kg por día."]},
+ {"h":"Valores de referencia","p":["Corral con buena ración: 1.2 a 1.8 kg por día.","Semiestabulado: 0.8 a 1.2 kg.","Pastoreo con suplemento: 0.6 a 1 kg.","Pastoreo solo: 0.3 a 0.7 kg."]},
+ {"h":"Cuidados al medir","p":["Pesa a la misma hora y en las mismas condiciones.","Las ganancias de las primeras semanas después del viaje incluyen agua recuperada.","Periodos menores de 14 días dan números poco confiables."]},
+ {"h":"En la app","p":["Se calcula sola con tus pesajes, por lote y por animal."]}
+],"rel":["Pesaje","Días a la meta","Indicadores clave del engorde"]},
+
+{"t":"Rendimiento en canal","a":"conceptos","r":"Qué parte del peso vivo queda como canal (carne con hueso) después del sacrificio.","s":[
+ {"h":"Cómo se calcula","p":["Rendimiento = peso de la canal ÷ peso vivo × 100."]},
+ {"h":"Ejemplo","p":["Novillo de 480 kg da una canal de 269 kg: 269 ÷ 480 = 56 %."]},
+ {"h":"Valores de referencia","p":["Novillos de engorde bien acabados: 54 a 58 %.","Animales flacos o de leche: 48 a 52 %.","Animales con mucho músculo y buen acabado: hasta 60 % o más."]},
+ {"h":"Qué lo afecta","p":["Llenado de la panza al pesar (por eso el desbaste).","Acabado de grasa.","Raza y musculatura.","Sexo: enteros suelen rendir más."]},
+ {"h":"En Rumi","p":["Calculadoras, Rendimiento en canal: te da el peso esperado de la canal."]}
+],"rel":["Vender en pie o en canal","Desbaste","Calidad de canal"]},
+
+{"t":"Desbaste","a":"conceptos","r":"El peso que pierde un animal al vaciar la panza y la vejiga, por ayuno o transporte. Se descuenta al vender.","s":[
+ {"h":"Qué es","p":["Un animal lleno pesa más por el agua y la comida en la panza.","El comprador descuenta ese peso para pagar el peso real."]},
+ {"h":"Valores de referencia","p":["3 a 5 % en ayunos cortos o pesaje en finca.","El NRC usa 4 % como referencia.","Viajes largos pueden causar pérdidas mayores."]},
+ {"h":"Ejemplo","p":["Pesa 500 kg en la finca con 4 % de desbaste: te pagan 480 kg."]},
+ {"h":"En la app","p":["Pones el desbaste en Más, Tu finca, y se usa al calcular ventas y márgenes."]}
+],"rel":["Preparar la venta","Rendimiento en canal","Negociar con el comprador"]},
+
+{"t":"Unidad animal","a":"conceptos","r":"Medida que iguala animales de distintos pesos para calcular cuánto forraje o espacio necesitan.","s":[
+ {"h":"Qué es","p":["Una unidad animal equivale a 450 kg de peso vivo."]},
+ {"h":"Cómo se calcula","p":["Unidades animal = peso vivo total ÷ 450."]},
+ {"h":"Ejemplo","p":["40 novillos de 300 kg = 12,000 kg = 26.7 unidades animal."]},
+ {"h":"Usos","p":["Carga de potreros: unidades animal por hectárea o manzana.","Presupuestos de forraje y agua."]}
+],"rel":["Carga animal y aforo","Pastoreo rotacional"]},
+
+{"t":"Índice de calor","a":"conceptos","r":"Número que combina temperatura y humedad para decir cuánto calor siente el animal.","s":[
+ {"h":"Qué es","p":["También llamado índice de temperatura y humedad (ITH).","A igual temperatura, con más humedad el animal se enfría peor."]},
+ {"h":"Rangos","p":["Menos de 72: sin estrés.","72 a 78: alerta.","79 a 83: peligro.","84 o más: emergencia."]},
+ {"h":"Qué hacer según el rango","p":["Alerta: revisa agua y sombra, sirve más tarde.","Peligro: no trabajes el ganado, más agua, moja el piso.","Emergencia: moja a los animales, no los muevas, vigila a los gordos y oscuros."]},
+ {"h":"En Rumi","p":["Calculadoras, Índice de calor: pones temperatura y humedad."]}
+],"rel":["Estrés por calor","Golpe de calor","Sombra"]},
+
+{"t":"Días a la meta","a":"conceptos","r":"Cuántos días le faltan a un lote para llegar a su peso de venta con la ganancia que lleva.","s":[
+ {"h":"Cómo se calcula","p":["Días = (peso meta − peso actual) ÷ ganancia diaria."]},
+ {"h":"Ejemplo","p":["Pesa 400 kg, meta 480 kg, gana 1.4 kg: 80 ÷ 1.4 = 57 días."]},
+ {"h":"Usos","p":["Planificar la venta y el siguiente lote.","Calcular el alimento que falta.","Proyectar el margen."]},
+ {"h":"En la app","p":["Cada lote muestra la fecha estimada de salida.","Rumi, Mi engorde, Proyectar un lote."]}
+],"rel":["Ganancia diaria de peso","Cuándo vender","Planificación del engorde"]},
+
+{"t":"Vueltas al año","a":"conceptos","r":"Cuántos lotes puede engordar un corral en un año. Más vueltas reparten mejor los costos fijos.","s":[
+ {"h":"Cómo se calcula","p":["Vueltas = 365 ÷ (días de engorde + días vacío entre lotes)."]},
+ {"h":"Ejemplo","p":["Engorde de 110 días y 10 días de limpieza: 365 ÷ 120 = 3 vueltas."]},
+ {"h":"Cómo aumentarlas","p":["Mejor ganancia diaria.","Comprar animales más pesados.","Tener el siguiente lote listo cuando sale el anterior."]}
+],"rel":["Planificación del engorde","Escala del engorde"]},
+
+{"t":"Consumo como porcentaje del peso","a":"conceptos","r":"Forma sencilla de estimar cuánto come un animal: un porcentaje de su peso vivo.","s":[
+ {"h":"Valores","p":["Materia seca: 2.2 a 2.8 % del peso vivo en engorde.","Ración tal como se sirve: depende de su humedad."]},
+ {"h":"Ejemplo","p":["Animal de 400 kg al 2.5 %: 10 kg de materia seca al día.","Si la ración tiene 85 % de materia seca: 10 ÷ 0.85 = 11.8 kg tal como se sirve."]},
+ {"h":"En Rumi","p":["Calculadoras, Consumo por peso."]}
+],"rel":["Materia seca y consumo","Lectura de comederos"]},
+
+{"t":"Nutrientes digestibles totales","a":"conceptos","r":"TND es una forma de medir la energía de un alimento: qué parte se digiere.","s":[
+ {"h":"Qué es","p":["Porcentaje del alimento que el animal digiere y aprovecha como energía."]},
+ {"h":"Valores de referencia","p":["Maíz: 85 a 90 %.","Sorgo: 80 a 84 %.","Heno de buena calidad: 55 a 60 %.","Pasto maduro: 45 a 50 %.","Ración de finalización: 72 a 80 %."]},
+ {"h":"Uso","p":["Comparar ingredientes por energía.","Formular raciones: la app usa estos valores."]}
+],"rel":["Energía en la ración","Formular una ración"]},
+
+{"t":"Margen bruto y margen neto","a":"conceptos","r":"El margen bruto mide lo que deja el lote; el neto, lo que queda después de todos los gastos de la finca.","s":[
+ {"h":"Margen bruto","p":["Ventas − compra de animales − alimento − sanidad − gastos directos del lote."]},
+ {"h":"Margen neto","p":["Margen bruto − gastos generales (sueldos fijos, energía, depreciación, intereses)."]},
+ {"h":"Por cabeza y por día","p":["Margen por cabeza = margen ÷ cabezas vendidas.","Margen por día = margen por cabeza ÷ días en engorde: sirve para comparar lotes de distinta duración."]},
+ {"h":"En la app","p":["La app calcula el margen por lote al vender y el estimado a la meta."]}
+],"rel":["Registros económicos","Depreciación e inversiones"]},
+
+{"t":"Precio por kilo o por cabeza","a":"conceptos","r":"Para comparar ofertas siempre hay que llevarlas a precio por kilo.","s":[
+ {"h":"Cómo convertir","p":["Precio por kilo = precio por cabeza ÷ peso del animal.","Precio por cabeza = precio por kilo × peso."]},
+ {"h":"Ejemplo","p":["Animal a 18,000 por cabeza que pesa 290 kg: 62 por kilo.","Otro a 19,000 que pesa 320 kg: 59 por kilo. El segundo es más barato por kilo."]},
+ {"h":"Regla","p":["Compra y vende por kilo, con báscula."]}
+],"rel":["Comprar ganado para engorde","Precio máximo de compra"]},
+
+{"t":"Eficiencia alimenticia","a":"conceptos","r":"Es la conversión al revés: cuántos kilos gana el animal por cada kilo de alimento.","s":[
+ {"h":"Cómo se calcula","p":["Eficiencia = kilos ganados ÷ kilos de alimento."]},
+ {"h":"Ejemplo","p":["Conversión de 7 a 1 equivale a eficiencia de 0.14 (ganó 0.14 kg por cada kg de alimento)."]},
+ {"h":"Uso","p":["Algunos técnicos y programas usan este número en vez de la conversión.","Más alto es mejor."]}
+],"rel":["Conversión alimenticia"]},
+
+{"t":"Unidades de peso y medida","a":"conceptos","r":"En el campo se mezclan libras, kilos, quintales, arrobas y manzanas. Saber convertir evita errores caros.","s":[
+ {"h":"Peso","p":["1 kilo = 2.2 libras.","1 libra = 0.454 kilos.","1 quintal = 100 libras = 45.4 kilos.","1 arroba = 25 libras = 11.3 kilos."]},
+ {"h":"Área","p":["1 manzana = 0.7 hectáreas = 7,000 m².","1 hectárea = 1.43 manzanas = 10,000 m²."]},
+ {"h":"Precios","p":["Precio por kilo = precio por libra × 2.2.","Precio por libra = precio por kilo ÷ 2.2."]},
+ {"h":"En Rumi","p":["Calculadoras, Convertir: libras, kilos, quintales, arrobas, manzanas y hectáreas."]}
+],"rel":["Kilos o libras en la app"]},
+
+{"t":"Costo por animal por día","a":"conceptos","r":"Lo que cuesta mantener un animal un día en el engorde. Ayuda a decidir si vale la pena esperar para vender.","s":[
+ {"h":"Cómo se calcula","p":["(Alimento del día + parte de sanidad, mano de obra y gastos) ÷ cabezas."]},
+ {"h":"Uso","p":["Si un día más cuesta más que lo que valen los kilos ganados ese día, conviene vender."]},
+ {"h":"Ejemplo","p":["Cuesta 90 por día y gana 1.2 kg a 60 = 72: cada día pierdes 18."]}
+],"rel":["Cuándo vender","Costo por kilo ganado"]},
+
+{"t":"Retorno de la inversión","a":"conceptos","r":"Mide cuánto gana el dinero invertido en el lote. Permite comparar el engorde con otras opciones.","s":[
+ {"h":"Cómo se calcula","p":["Retorno = margen ÷ dinero invertido × 100.","Anualizado = retorno × 365 ÷ días del engorde."]},
+ {"h":"Ejemplo","p":["Invertiste 500,000 y ganaste 40,000 en 120 días: 8 % en el período, unos 24 % al año."]},
+ {"h":"Uso","p":["Compara con la tasa de un crédito o de un depósito.","Si el retorno anual es menor que la tasa del crédito, no conviene endeudarse."]}
+],"rel":["Financiamiento y crédito","Margen bruto y margen neto"]},
+
+{"t":"Peso meta","a":"conceptos","r":"El peso al que planeas vender. Define la duración del engorde y el margen.","s":[
+ {"h":"Cómo elegirlo","p":["Lo que pide o paga mejor tu comprador.","El acabado que logran tus animales a ese peso.","El punto en que los kilos extra empiezan a costar más de lo que valen."]},
+ {"h":"Valores comunes","p":["Muchos engordes en la región venden entre 430 y 520 kg (950 a 1,150 libras).","Depende de raza, sexo y mercado."]},
+ {"h":"En la app","p":["Pones un peso meta general en Más y uno propio por lote."]}
+],"rel":["Días a la meta","Cuándo vender","Grado de acabado"]}
+]

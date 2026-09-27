@@ -1,0 +1,111 @@
+[
+{"t":"Usar el menú de Rumi","a":"app","r":"Rumi trabaja con un menú: eliges un área y te muestra todo lo que puede hacer ahí con tus datos.","s":[
+ {"h":"Cómo se usa","p":["Toca el botón de Rumi abajo a la derecha.","Elige un área: Mi engorde, Mis lotes, Anotar, Alimentación, Salud, ¿Qué tiene mi animal?, Calculadoras, Dinero y ventas, Guía de engorde o Usar la app.","Dentro del área, toca lo que quieres saber o hacer.","El botón Menú te regresa a las áreas y la flecha regresa un paso."]},
+ {"h":"Temas de la guía","p":["Cada tema se abre con un resumen y sus partes: qué es, señales, qué hacer, prevención, números y errores comunes.","Toca Ver todo para leer el tema completo o una parte para ir directo.","Al final aparecen temas relacionados."]},
+ {"h":"Calculadoras","p":["Te piden solo los números necesarios.","Usan tu unidad de peso y tu moneda."]}
+],"rel":["Pantalla Hoy y avisos","Proyecciones en la app"]},
+
+{"t":"Crear un lote en la app","a":"app","r":"Un lote es un grupo de animales que entró junto. Se crea una vez y luego se le anotan alimento, pesajes y todo lo demás.","s":[
+ {"h":"Pasos","p":["Toca Registrar y luego Nuevo lote.","Paso 1: nombre, fecha de entrada, peso meta, tipo, proveedor y ración.","Paso 2: cada animal con arete, peso, raza, color y foto.","Paso 3: precio de compra y flete.","Toca Crear lote."]},
+ {"h":"Precio de compra","p":["Precio del lote: un precio para todos (por kilo o el total). El costo se reparte igual entre los animales.","Precio por animal: escribes lo que pagaste por cada uno en su fila."]},
+ {"h":"Consejos","p":["Enter pasa al siguiente campo y agrega filas solas.","Puedes pegar una lista de pesos a la vez.","La raza del animal anterior se copia en la fila nueva."]}
+],"rel":["Animales y fotos","Pesar en la app"]},
+
+{"t":"Animales y fotos","a":"app","r":"Cada animal tiene su ficha con foto, peso, ganancia, raza, color, costo e historia.","s":[
+ {"h":"Ver los animales","p":["Entra al lote y toca la pestaña Animales.","Ordena por arete, más pesado, mejor o peor ganancia.","Toca un animal para ver su ficha."]},
+ {"h":"Fotos","p":["Al crear el lote toca el recuadro Foto de cada fila.","En la ficha toca la foto para verla o para tomarla si no tiene.","En Editar puedes cambiarla o quitarla.","Las fotos se guardan en el teléfono."]},
+ {"h":"Editar","p":["En la ficha toca Editar para cambiar arete, peso de entrada, raza, color, precio o nota.","Quitar este animal lo saca del lote."]}
+],"rel":["Crear un lote en la app","Pesar en la app"]},
+
+{"t":"Anotar alimento en la app","a":"app","r":"Anotar el alimento de cada entrega permite calcular consumo, conversión y costos reales.","s":[
+ {"h":"Pasos","p":["Toca Registrar y luego Alimento, o el botón de la entrega que falta en Hoy.","Elige el lote y la ración.","Escribe los kilos (o libras) entregados.","Puedes anotar la lectura del comedero."]},
+ {"h":"Consejos","p":["Anota en el momento para no olvidar.","Si das la misma cantidad a varios lotes, anótalos todos en la misma pantalla.","Configura tus horarios en Más para que Hoy te recuerde."]}
+],"rel":["Lectura de comederos","Pantalla Hoy y avisos"]},
+
+{"t":"Pesar en la app","a":"app","r":"Los pesajes son la base de la ganancia, las proyecciones y los animales atrasados.","s":[
+ {"h":"Por animal","p":["Toca Registrar, Pesaje, elige el lote.","Escribe el peso de cada arete; Enter pasa al siguiente.","La app marca en rojo los pesos raros."]},
+ {"h":"Por grupo","p":["Si no pesas por arete, puedes anotar el peso promedio o total del grupo."]},
+ {"h":"Después","p":["La app actualiza la ganancia, la fecha de salida y los atrasados.","Revisa en el lote la pestaña Animales."]}
+],"rel":["Pesaje","Animales atrasados"]},
+
+{"t":"Sanidad y retiros en la app","a":"app","r":"Anotar cada tratamiento con su retiro te protege de vender animales con residuos.","s":[
+ {"h":"Pasos","p":["Toca Registrar, Sanidad.","Elige el lote o los animales tratados.","Tipo, producto, cabezas, costo y días de retiro."]},
+ {"h":"Avisos","p":["Hoy muestra los lotes en retiro.","Al vender un lote en retiro la app te avisa."]}
+],"rel":["Retiros y residuos","Vacunación"]},
+
+{"t":"Registrar una venta","a":"app","r":"La venta cierra el lote y calcula el margen real.","s":[
+ {"h":"Pasos","p":["Toca Registrar, Venta.","Elige el lote, las cabezas (o los aretes), los kilos y el precio.","Pon el comprador."]},
+ {"h":"Después","p":["Si vendiste todo, el lote pasa a vendidos con sus números finales.","Compara el margen con otros lotes en Gráficos."]}
+],"rel":["Preparar la venta","Registros económicos"]},
+
+{"t":"Registrar una muerte","a":"app","r":"Anotar muertes con su causa mantiene bien las cabezas, los costos y ayuda a encontrar problemas.","s":[
+ {"h":"Pasos","p":["Toca Registrar, Baja.","Elige el lote, cuántas cabezas o el arete, y la causa."]},
+ {"h":"Por qué importa","p":["La mortalidad y su costo aparecen en el lote.","Si una causa se repite, la ves rápido."]}
+],"rel":["Muerte de un animal","Mortalidad y su costo"]},
+
+{"t":"Gastos en la app","a":"app","r":"Los gastos de un lote o generales hacen que el costo por kilo y el margen sean reales.","s":[
+ {"h":"Pasos","p":["Toca Registrar, Gasto.","Monto, categoría y si es de un lote o general.","Detalle opcional."]},
+ {"h":"Ver y borrar","p":["Los gastos generales aparecen en Más, Gastos generales.","Los de lote, en el Historial del lote."]}
+],"rel":["Estructura de costos","Registros económicos"]},
+
+{"t":"Raciones y formular dieta","a":"app","r":"Las raciones guardan el costo por kilo de cada mezcla. Formular dieta calcula la más barata con tus precios.","s":[
+ {"h":"Crear una ración","p":["En Más, Raciones y dietas, Nueva ración.","Nombre, costo por kilo e ingredientes opcionales."]},
+ {"h":"Formular","p":["En Más, Formular dieta, o desde Rumi, Alimentación.","Pon el peso y la ganancia, enciende tus ingredientes y corrige precios.","Toca Formular y guarda el resultado como ración."]}
+],"rel":["Formular una ración","Costo de la ración"]},
+
+{"t":"Pantalla Hoy y avisos","a":"app","r":"Hoy es tu resumen del día: alimento pendiente, avisos y cómo van tus lotes.","s":[
+ {"h":"Qué muestra","p":["Cabezas, ganancia, conversión y costo por kilo.","Entregas de alimento del día.","Atención: animales atrasados, consumo bajo, lotes sin pesar, retiros, muertes.","Siguiente paso recomendado."]},
+ {"h":"Uso","p":["Toca cualquier aviso para ir a resolverlo."]}
+],"rel":["Anotar alimento en la app","Usar el menú de Rumi"]},
+
+{"t":"Gráficos en la app","a":"app","r":"Todos tus números en gráficas para ver tendencias y comparar lotes.","s":[
+ {"h":"Qué hay","p":["Peso, ganancia diaria, consumo, conversión, costos y margen.","Por lote o todos, y por período."]},
+ {"h":"Consejo","p":["Revisa los gráficos después de cada pesaje."]}
+],"rel":["Indicadores clave del engorde","Comparar lotes en la app"]},
+
+{"t":"Respaldo y restaurar","a":"app","r":"El respaldo es un archivo con todos tus datos. Con él recuperas todo si pierdes o cambias el teléfono.","s":[
+ {"h":"Descargar","p":["En Más, Tus datos, Descargar respaldo.","Guárdalo en Drive o envíatelo por WhatsApp.","Hazlo cada semana."]},
+ {"h":"Restaurar","p":["En Más, Tus datos, Restaurar, y elige el archivo.","Tus lotes y registros vuelven como estaban."]},
+ {"h":"Fotos","p":["Las fotos de los animales se quedan en el teléfono y no van en el respaldo."]}
+],"rel":["Descargar a Excel","Datos sin internet"]},
+
+{"t":"Descargar a Excel","a":"app","r":"Puedes sacar tus datos en archivos que abre Excel para analizarlos o compartirlos.","s":[
+ {"h":"Pasos","p":["En Más, Tus datos, elige qué descargar: lotes, alimento, pesajes, sanidad, ventas y muertes, gastos."]},
+ {"h":"Usos","p":["Mostrar tu historial al banco o a un socio.","Análisis propios."]}
+],"rel":["Respaldo y restaurar","Registros económicos"]},
+
+{"t":"Tu finca y ajustes","a":"app","r":"En Más, Tu finca, configuras los datos que la app usa para calcular.","s":[
+ {"h":"Qué se configura","p":["Nombre y ubicación.","Precio de venta por kilo o libra y moneda.","Peso meta general, ganancia esperada y desbaste.","Horarios de entrega de alimento.","Aviso de días sin pesar.","Unidad de peso."]},
+ {"h":"Consejo","p":["Actualiza el precio de venta cuando cambie el mercado: los márgenes dependen de él."]}
+],"rel":["Kilos o libras en la app","Desbaste"]},
+
+{"t":"Kilos o libras en la app","a":"app","r":"La app trabaja en la unidad que prefieras y convierte todo sola.","s":[
+ {"h":"Cambiar","p":["En Más, Tu finca, Unidad de peso: Libras o Kilos."]},
+ {"h":"Qué cambia","p":["Pesos, ganancias, consumos y precios se muestran y se escriben en esa unidad.","Tus datos guardados no cambian."]}
+],"rel":["Unidades de peso y medida","Tu finca y ajustes"]},
+
+{"t":"Apariencia y colores","a":"app","r":"Puedes elegir modo claro, oscuro o automático y la paleta de colores que más te guste.","s":[
+ {"h":"Cambiar","p":["En Más, Apariencia.","Tema: Automático, Claro u Oscuro.","Paleta: Clásica, Pradera, Océano, Terracota o Grafito."]}
+],"rel":["Tu finca y ajustes"]},
+
+{"t":"Corregir un registro","a":"app","r":"Si anotaste algo mal, bórralo y vuelve a anotarlo bien.","s":[
+ {"h":"Pasos","p":["Toca Registrar: abajo, en Lo último que anotaste, toca la papelera.","O entra al lote, pestaña Historial, y borra desde ahí.","Vuelve a anotarlo con los datos correctos."]},
+ {"h":"Lotes y animales","p":["Edita un lote desde su pestaña de datos.","Edita un animal desde su ficha."]}
+],"rel":["Respaldo y restaurar"]},
+
+{"t":"Proyecciones en la app","a":"app","r":"La app estima cuánto pesará cada lote y cuándo llega a la meta con su ganancia real.","s":[
+ {"h":"Dónde verlas","p":["En cada lote: fecha estimada de salida.","Rumi, Mi engorde, Proyectar un lote: eliges los días."]},
+ {"h":"Cómo calcula","p":["Usa la ganancia de los últimos pesajes o la esperada si no hay.","Proyecta el alimento y el margen de esos días."]}
+],"rel":["Días a la meta","Cuándo vender"]},
+
+{"t":"Comparar lotes en la app","a":"app","r":"Comparar lotes te dice qué compras, raciones y manejos te funcionan mejor.","s":[
+ {"h":"Dónde","p":["Rumi, Mi engorde, Mi mejor lote.","Gráficos, eligiendo varios lotes.","Lotes vendidos guardan sus números finales."]},
+ {"h":"Qué comparar","p":["Ganancia diaria, conversión, costo por kilo, mortalidad y margen por cabeza y por día."]}
+],"rel":["Indicadores clave del engorde","Registros económicos"]},
+
+{"t":"Datos sin internet","a":"app","r":"Rumentis funciona completo sin internet. Tus datos y fotos se guardan en el teléfono.","s":[
+ {"h":"Qué necesita internet","p":["Solo enviar el respaldo o el Excel por Drive, correo o WhatsApp."]},
+ {"h":"Privacidad","p":["Tus datos no se envían a ningún lado salvo que tú compartas el respaldo o el Excel."]},
+ {"h":"Cambiar de teléfono","p":["Descarga el respaldo, pásalo al teléfono nuevo, instala Rumentis y restaura."]}
+],"rel":["Respaldo y restaurar"]}
+]

@@ -1,0 +1,76 @@
+[
+{"t":"Deshidratación y sueros","a":"sanidad","r":"Un animal deshidratado se debilita rápido. Reconocerlo y darle líquidos a tiempo salva vidas, sobre todo después de viajes y diarreas.","s":[
+ {"h":"Señales","p":["Ojos hundidos.","Pellizco de piel del cuello que tarda más de 2 segundos en volver.","Nariz y boca secas.","Heces duras y poca orina.","Debilidad, no se levanta."]},
+ {"h":"Causas","p":["Viajes largos sin agua.","Diarrea.","Calor fuerte con agua escasa.","Fiebre alta."]},
+ {"h":"Qué hacer","p":["Agua limpia y fresca a voluntad.","Sueros orales para bovinos según la etiqueta, en animales que aún tragan.","Si está caído o muy débil, el veterinario puede darle suero en la vena.","Sombra y descanso."]},
+ {"h":"Prevención","p":["Agua al llegar y bebederos suficientes.","Viajes en horas frescas.","Atender diarreas temprano."]}
+],"rel":["Diarrea en el engorde","Recepción de ganado","Agua de bebida"]},
+
+{"t":"Tripanosomiasis","a":"sanidad","r":"Parásito de la sangre transmitido por moscas picadoras y tábanos, y por agujas compartidas. Causa anemia y pérdida de peso.","s":[
+ {"h":"Señales","p":["Fiebre que va y viene.","Anemia y mucosas pálidas.","Pérdida de peso a pesar de comer.","Lagrimeo, hinchazón en patas o papada."]},
+ {"h":"Diagnóstico","p":["El veterinario lo confirma con una muestra de sangre.","Se confunde con anaplasmosis: el diagnóstico evita tratar mal."]},
+ {"h":"Prevención","p":["Control de moscas y tábanos.","Una aguja limpia por animal cuando haya casos en la zona.","Revisión de animales traídos de zonas afectadas."]}
+],"rel":["Anaplasmosis","Moscas del cuerno y del establo","Aplicación de inyecciones"]},
+
+{"t":"Quijada o lengua de palo","a":"sanidad","r":"Infecciones por bacterias que entran por heridas en la boca. Dan bultos duros en la quijada o una lengua dura e hinchada.","s":[
+ {"h":"Quijada de palo","p":["Bulto duro en el hueso de la quijada que crece lento y puede abrirse con pus.","Viene de heridas por forrajes duros o espinas."]},
+ {"h":"Lengua de palo","p":["Lengua dura, hinchada y que sale de la boca.","Babea y no puede comer bien."]},
+ {"h":"Qué hacer","p":["Consulta al veterinario: la lengua de palo responde bien si se trata temprano.","La quijada de palo avanzada rara vez se cura: considera vender al animal sin retiros.","Revisa el forraje: pajas y espinas duras lastiman la boca."]}
+],"rel":["Heridas y curaciones","Defectos que hay que revisar al comprar"]},
+
+{"t":"Verrugas o papilomas","a":"sanidad","r":"Bultos en la piel causados por un virus. Son comunes en animales jóvenes y suelen desaparecer solos.","s":[
+ {"h":"Cómo son","p":["Bultos grises o como coliflor en cabeza, cuello y hombros.","Se contagian por contacto, cercas, mangas y agujas."]},
+ {"h":"Qué hacer","p":["Casi siempre desaparecen en meses.","Las muy grandes o que sangran las puede quitar el veterinario.","Separa a los muy afectados si es posible."]},
+ {"h":"Prevención","p":["Agujas limpias y desinfección de equipo.","Revisión al comprar: algunos compradores castigan animales con muchas verrugas."]}
+],"rel":["Problemas de piel","Defectos que hay que revisar al comprar"]},
+
+{"t":"Tétanos","a":"sanidad","r":"Enfermedad clostridial que entra por heridas y causa rigidez de los músculos. Casi siempre es mortal.","s":[
+ {"h":"Señales","p":["Rigidez: camina como caballete, cola levantada.","Orejas paradas y tercer párpado visible.","Timpanismo porque no puede eructar.","Se cae con las patas estiradas."]},
+ {"h":"Cuándo aparece","p":["1 a 3 semanas después de castraciones, ligas, descornes o heridas profundas."]},
+ {"h":"Prevención","p":["Vacuna clostridial que incluya tétanos.","Higiene en castraciones y curación de heridas.","Cuidado con las ligas en animales grandes."]}
+],"rel":["Enfermedades clostridiales","Castración","Heridas y curaciones"]},
+
+{"t":"Intoxicación por nitratos y cianuro","a":"sanidad","r":"Algunos pastos y cultivos acumulan nitratos o cianuro en ciertas condiciones. Pueden matar en minutos a horas.","s":[
+ {"h":"Nitratos","p":["Pastos abonados con mucho nitrógeno después de sequía, o rastrojos de maíz y sorgo estresados.","Señales: respiración rápida, mucosas y sangre color chocolate, debilidad, muerte."]},
+ {"h":"Cianuro","p":["Sorgo tierno o rebrotado, sorgo después de helada o sequía, yuca brava, algunas hojas.","Señales: respiración muy rápida, sangre roja brillante, temblores, muerte muy rápida."]},
+ {"h":"Qué hacer","p":["Saca a los animales del potrero o retira el forraje.","Llama al veterinario de inmediato: existen tratamientos si se actúa rápido."]},
+ {"h":"Prevención","p":["No pastorees sorgo de menos de 60 cm ni rebrotes tiernos.","El ensilaje baja el cianuro; el heno bien curado también.","Análisis de nitratos si sospechas del forraje.","Adapta a los animales a forrajes nuevos poco a poco."]}
+],"rel":["Intoxicación por plantas y hongos","Plantas tóxicas en potreros","Pastos de corte"]},
+
+{"t":"Animal caído que no se levanta","a":"sanidad","r":"Un animal que no se levanta puede tener muchas causas. Cuanto más tiempo pasa echado, más se daña.","s":[
+ {"h":"Causas posibles","p":["Golpes, fracturas o luxaciones.","Acidosis o intoxicaciones.","Anaplasmosis o babesiosis con anemia fuerte.","Enfermedades nerviosas (rabia, polioencefalomalacia).","Agotamiento después del viaje."]},
+ {"h":"Qué hacer","p":["No lo arrastres ni lo levantes a la fuerza.","Dale sombra, agua y comida a su alcance.","Cámbialo de lado cada pocas horas si puedes y ponle cama suave.","Llama al veterinario.","Si babea o no traga, no metas la mano en su boca."]},
+ {"h":"Decisión","p":["Si el veterinario no ve recuperación, un sacrificio humanitario evita sufrimiento.","Nunca vendas para consumo un animal caído o enfermo."]}
+],"rel":["Muerte de un animal","Bienestar animal","Rabia paralítica bovina"]},
+
+{"t":"Tomar muestras para laboratorio","a":"sanidad","r":"Un buen diagnóstico empieza con una buena muestra. Pregunta al veterinario o al laboratorio antes de tomarla.","s":[
+ {"h":"Heces","p":["Del recto, con guante, un puñado.","En bolsa limpia, sin aire, rotulada y refrigerada (sin congelar).","Para parásitos y coccidias."]},
+ {"h":"Sangre","p":["La toma el veterinario en tubos especiales.","Para anemia, anaplasmosis, babesiosis, tripanosomas y pruebas de enfermedades."]},
+ {"h":"Alimento y agua","p":["Varias submuestras mezcladas.","Bolsa o frasco limpio, rotulado.","Para micotoxinas, nitratos, sales o bacterias."]},
+ {"h":"Reglas","p":["Rotula con fecha, lote, arete y qué se sospecha.","Entrega rápido, en hielera.","Anota el resultado en la app junto al tratamiento."]}
+],"rel":["Análisis de ingredientes","Parásitos internos","Muerte de un animal"]},
+
+{"t":"Estrés y defensas","a":"sanidad","r":"El estrés baja las defensas del animal. Por eso casi todas las enfermedades del engorde aparecen después de viajes, mezclas y manejos bruscos.","s":[
+ {"h":"Qué estresa","p":["Transporte y ayuno.","Destete reciente.","Mezcla con animales desconocidos.","Castración, descorne o manejo brusco.","Calor, lodo, polvo y hacinamiento.","Cambios de ración."]},
+ {"h":"Cómo reducirlo","p":["Un cambio a la vez: no castres, vacunes y cambies de ración el mismo día.","Manejo tranquilo.","Agua, sombra y buena comida.","Lotes estables, sin mezclas."]},
+ {"h":"Resultado","p":["Menos neumonías y muertes.","Mejor consumo y ganancia.","Menos gasto en medicinas."]}
+],"rel":["Manejo tranquilo del ganado","Recepción de ganado","Neumonía o complejo respiratorio"]},
+
+{"t":"Fiebre aftosa y enfermedades exóticas","a":"sanidad","r":"La fiebre aftosa no está presente en Centroamérica. Si apareciera, cerraría mercados. Reconocer sus señales y avisar protege a todo el país.","s":[
+ {"h":"Señales que obligan a avisar","p":["Ampollas o llagas en la boca, lengua, patas o ubre.","Babeo abundante y cojera en varios animales a la vez.","Fiebre y caída fuerte del consumo en el lote."]},
+ {"h":"Qué hacer","p":["No muevas animales dentro ni fuera de la finca.","Avisa de inmediato a SENASA.","No dejes entrar ni salir personas y vehículos sin desinfección."]},
+ {"h":"Prevención","p":["Compra con guía y de origen conocido.","Bioseguridad en la entrada de la finca.","No alimentes con restos de comida de origen desconocido."]}
+],"rel":["Enfermedades de reporte obligatorio","Cuarentena y bioseguridad","Programas oficiales de sanidad"]},
+
+{"t":"Mordedura de serpiente","a":"sanidad","r":"Las serpientes venenosas pueden matar o dejar muy mal a un animal, sobre todo si la mordida es en la cara o el cuello.","s":[
+ {"h":"Señales","p":["Hinchazón grande y rápida, muchas veces en cara, nariz o patas.","Marcas de colmillos y sangrado.","Dificultad para respirar si la hinchazón es en la cabeza."]},
+ {"h":"Qué hacer","p":["Mantén al animal quieto y en la sombra.","Llama al veterinario: existen sueros y tratamientos.","No cortes ni chupes la herida, no pongas torniquetes."]},
+ {"h":"Prevención","p":["Chapea alrededor de corrales y bodegas.","Controla ratas: atraen serpientes."]}
+],"rel":["Hinchazones: qué pueden ser","Control de plagas en la bodega"]},
+
+{"t":"Hinchazones: qué pueden ser","a":"sanidad","r":"No todas las hinchazones son iguales. Algunas son urgencia y otras pueden esperar.","s":[
+ {"h":"Urgencia","p":["Hinchazón que crece rápido, caliente al inicio y fría después, que cruje al tocar: clostridial.","Hinchazón en la cara con dificultad para respirar: mordedura o alergia.","Panza inflada del lado izquierdo: timpanismo."]},
+ {"h":"Puede esperar al veterinario","p":["Bulto blando en el sitio de una inyección: absceso.","Bulto blando en el ombligo que se mete al empujarlo: hernia.","Hinchazón debajo de la quijada con animal flaco: parásitos o anemia."]},
+ {"h":"Reglas","p":["Anota dónde está, cuándo apareció y si crece.","Tómale la temperatura.","No revientes bultos con cuchillo."]}
+],"rel":["Enfermedades clostridiales","Heridas y curaciones","Hernias y prolapsos"]}
+]

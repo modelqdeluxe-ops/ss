@@ -1,0 +1,77 @@
+[
+{"t":"Guía de movilización y trazabilidad","a":"normas","r":"Mover ganado requiere documentos que dicen de dónde viene y a dónde va. Protege contra robos y enfermedades y es exigido por la autoridad y los compradores.","s":[
+ {"h":"Qué es","p":["Un documento oficial emitido por la autoridad sanitaria (SENASA en Honduras) para trasladar animales.","Indica origen, destino, número de animales, fierro y propietario."]},
+ {"h":"Cuándo se necesita","p":["Al comprar, vender o trasladar ganado entre fincas, a subastas o mataderos.","Los requisitos exactos y el trámite los define SENASA; consulta en su oficina local."]},
+ {"h":"Trazabilidad","p":["Es poder seguir a un animal desde su origen hasta el matadero.","Se basa en fierro, aretes oficiales cuando aplica, guías y registros de la finca.","Algunos mercados y plantas solo compran animales trazables."]},
+ {"h":"Buenas prácticas","p":["Guarda copia de todas las guías.","Anota en la app el proveedor y el origen de cada lote.","No compres animales sin guía."]}
+],"rel":["Registro de fierro y finca","Transporte: requisitos","Registros y trazabilidad"]},
+
+{"t":"Registro de fierro y finca","a":"normas","r":"Registrar tu fierro y tu finca te identifica como propietario y facilita guías, programas sanitarios y ventas.","s":[
+ {"h":"Fierro","p":["Se registra ante la autoridad correspondiente (municipalidad o la que indique la ley local).","Prueba la propiedad del ganado.","Cada fierro es único."]},
+ {"h":"Finca","p":["El registro ante SENASA permite emitir guías y participar en programas oficiales.","Algunos compradores y exportadores lo exigen."]},
+ {"h":"Consejo","p":["Consulta en tu municipalidad y en la oficina de SENASA más cercana los requisitos actuales."]}
+],"rel":["Guía de movilización y trazabilidad","Seguridad y robo de ganado"]},
+
+{"t":"Retiros y residuos","a":"normas","r":"Un animal tratado no puede ir al matadero hasta que termine el tiempo de retiro. Vender antes deja residuos en la carne y es ilegal.","s":[
+ {"h":"Qué es el retiro","p":["Días desde la última aplicación de un medicamento hasta que el animal puede sacrificarse.","Está en la etiqueta de cada producto registrado.","Es distinto para cada producto y a veces para cada vía de aplicación."]},
+ {"h":"Reglas","p":["Con varios productos, manda el retiro más largo.","Si usas un producto fuera de etiqueta por indicación del veterinario, el retiro puede ser mayor: pregúntale.","Anota siempre la fecha y el retiro."]},
+ {"h":"Consecuencias de no respetarlo","p":["Riesgo para la salud de quien come la carne.","Decomisos, multas y pérdida del comprador.","Cierre de mercados para todo el país."]},
+ {"h":"En la app","p":["Al anotar sanidad pones los días de retiro.","La app avisa en Hoy y al vender si el lote sigue en retiro."]}
+],"rel":["Uso responsable de antibióticos","Buenas prácticas ganaderas","Productos prohibidos en la alimentación"]},
+
+{"t":"Buenas prácticas ganaderas","a":"normas","r":"Son reglas sencillas para producir carne sana, cuidar a los animales, a las personas y al ambiente. Cada vez más compradores las exigen.","s":[
+ {"h":"Sanidad","p":["Plan sanitario con veterinario.","Medicamentos registrados, usados según etiqueta y con retiros respetados.","Registros de tratamientos."]},
+ {"h":"Alimentación","p":["Ingredientes de origen conocido, sin contaminantes.","Bodega limpia, seca y sin plagas.","Nada de productos prohibidos."]},
+ {"h":"Agua","p":["Agua limpia y suficiente.","Protección de fuentes de agua."]},
+ {"h":"Bienestar","p":["Manejo tranquilo, sombra, espacio, transporte adecuado."]},
+ {"h":"Personas y ambiente","p":["Trabajadores capacitados y protegidos.","Manejo correcto del estiércol, cadáveres y envases de químicos."]},
+ {"h":"Registros","p":["Identificación, movimientos, alimentos, sanidad y ventas."]}
+],"rel":["Retiros y residuos","Bienestar en la ley y en el mercado","Ambiente y manejo de desechos"]},
+
+{"t":"Bienestar en la ley y en el mercado","a":"normas","r":"El bienestar animal ya no es solo buena voluntad: aparece en leyes, en reglas de transporte y en requisitos de compradores.","s":[
+ {"h":"Qué se exige cada vez más","p":["Sin maltrato: sin golpes, sin picanas abusivas.","Agua, alimento y sombra.","Transporte con densidad y tiempos adecuados.","Sacrificio humanitario en rastros autorizados."]},
+ {"h":"Por qué importa","p":["Compradores grandes y cadenas de supermercados lo auditan.","Mercados de exportación lo exigen.","Mejora la calidad de la carne."]}
+],"rel":["Bienestar animal","Transporte: requisitos","Manejo tranquilo del ganado"]},
+
+{"t":"Transporte: requisitos","a":"normas","r":"El traslado de ganado debe hacerse con documentos en regla y en condiciones que protejan a los animales.","s":[
+ {"h":"Documentos","p":["Guía de movilización vigente.","Documentos del vehículo y del conductor según la ley de tránsito."]},
+ {"h":"Condiciones","p":["Vehículo limpio y desinfectado.","Piso antideslizante, sin partes que corten.","Densidad adecuada: ni hacinados ni sueltos.","Animales enfermos, débiles o muy pesados para viajar no deben transportarse."]},
+ {"h":"Buenas prácticas","p":["Viajes en horas frescas.","Paradas mínimas y sin dejar el camión al sol."]}
+],"rel":["Transporte de ganado","Guía de movilización y trazabilidad","Bienestar en la ley y en el mercado"]},
+
+{"t":"Programas oficiales de sanidad","a":"normas","r":"La autoridad sanitaria lleva programas contra enfermedades que afectan a todo el país. Participar protege tu finca y a tus vecinos.","s":[
+ {"h":"Programas comunes","p":["Gusano barrenador: vigilancia y reporte de casos.","Rabia paralítica bovina: vacunación y control del murciélago vampiro.","Brucelosis y tuberculosis: pruebas y certificación de hatos.","Vigilancia de enfermedades exóticas (como fiebre aftosa, que no está presente en Centroamérica)."]},
+ {"h":"Qué hacer","p":["Reporta casos sospechosos a SENASA.","Participa en campañas de vacunación.","Colabora con rastreos cuando el matadero encuentra lesiones."]}
+],"rel":["Enfermedades de reporte obligatorio","Gusano barrenador o gusanera","Rabia paralítica bovina"]},
+
+{"t":"Enfermedades de reporte obligatorio","a":"normas","r":"Algunas enfermedades deben reportarse a la autoridad sanitaria en cuanto se sospechan, porque pueden causar epidemias o afectar el comercio.","s":[
+ {"h":"Ejemplos","p":["Rabia.","Ántrax.","Gusano barrenador.","Tuberculosis y brucelosis.","Cualquier enfermedad con muchas muertes, ampollas en boca y patas o síntomas nerviosos raros."]},
+ {"h":"Cómo reportar","p":["Llama a la oficina local de SENASA o a tu veterinario.","No muevas animales ni cadáveres hasta recibir instrucciones.","Guarda la información: fechas, animales afectados, origen."]},
+ {"h":"Consejo","p":["Ten a mano el teléfono de SENASA de tu zona.","La lista oficial puede cambiar: consúltala con la autoridad."]}
+],"rel":["Programas oficiales de sanidad","Ántrax o carbón bacteridiano","Muerte de un animal"]},
+
+{"t":"Productos prohibidos en la alimentación","a":"normas","r":"Hay sustancias y materiales que no se pueden dar al ganado porque dañan a las personas o al animal. Usarlos trae sanciones y cierre de mercados.","s":[
+ {"h":"Ejemplos","p":["Clenbuterol y otros beta-agonistas no autorizados.","Hormonas no registradas.","Harinas de carne, hueso o sangre de rumiantes para alimentar rumiantes (riesgo de vaca loca).","Antibióticos como promotores de crecimiento donde no están permitidos.","Restos de comida con carne, basura o materiales contaminados."]},
+ {"h":"Reglas","p":["Usa solo productos registrados y según etiqueta.","Pide al proveedor la composición del concentrado.","Guarda facturas y etiquetas."]},
+ {"h":"Consejo","p":["Las listas cambian: consulta a SENASA y a tu comprador."]}
+],"rel":["Promotores de crecimiento e implantes","Gallinaza y pollinaza","Retiros y residuos"]},
+
+{"t":"Ambiente y manejo de desechos","a":"normas","r":"El engorde produce estiércol, aguas sucias, cadáveres y envases de químicos. Manejarlos bien evita multas y problemas con vecinos.","s":[
+ {"h":"Estiércol y aguas","p":["No descargar a quebradas ni ríos.","Compostaje o biodigestores.","Distancia de fuentes de agua."]},
+ {"h":"Cadáveres","p":["Entierro con cal lejos del agua, o lo que indique la autoridad.","Nunca a cielo abierto."]},
+ {"h":"Envases de químicos","p":["Triple lavado y perforado.","Entrega a programas de recolección.","Nunca reutilizar para agua o alimento."]},
+ {"h":"Suelo y bosque","p":["Protege nacimientos y orillas de quebradas.","Reforesta con sistemas silvopastoriles."]}
+],"rel":["Manejo del estiércol","Muerte de un animal","Sistemas silvopastoriles"]},
+
+{"t":"Seguridad del trabajador","a":"normas","r":"La ley laboral y el sentido común piden proteger a quienes trabajan con el ganado.","s":[
+ {"h":"Obligaciones básicas","p":["Equipo de protección: botas, guantes, mascarillas para químicos.","Capacitación en manejo de animales y químicos.","Botiquín de primeros auxilios."]},
+ {"h":"Riesgos","p":["Golpes y aplastamientos en la manga.","Enfermedades que pasan de los animales.","Intoxicaciones por plaguicidas.","Accidentes con maquinaria."]},
+ {"h":"Consejo","p":["Revisa tus obligaciones laborales con la autoridad del trabajo o un asesor."]}
+],"rel":["Personal y seguridad en el trabajo","Enfermedades que se pegan a personas"]},
+
+{"t":"Rastro y sacrificio autorizado","a":"normas","r":"La carne para la venta debe venir de animales sacrificados en rastros o plantas autorizadas, con inspección sanitaria.","s":[
+ {"h":"Por qué","p":["Inspección antes y después del sacrificio.","Detección de enfermedades y residuos.","Higiene de la carne."]},
+ {"h":"Qué piden","p":["Guía de movilización.","Animales sanos y sin retiros.","Identificación del propietario."]},
+ {"h":"Consejo","p":["Vender carne de animales sacrificados en la finca para comercio no es legal y es un riesgo sanitario."]}
+],"rel":["Canales de venta","Retiros y residuos","Guía de movilización y trazabilidad"]}
+]

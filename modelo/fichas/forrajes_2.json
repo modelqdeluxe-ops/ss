@@ -1,0 +1,19 @@
+[
+{"t":"Microsilos en bolsa o barril","a":"forrajes","r":"Para pocos animales, ensilar en bolsas plásticas gruesas o barriles es barato y fácil.","s":[
+ {"h":"Materiales","p":["Bolsas plásticas gruesas (calibre alto) o barriles con tapa hermética.","Picadora y forraje en su punto (maíz, sorgo, pasto de corte con melaza)."]},
+ {"h":"Pasos","p":["Pica el forraje fino (1 a 2 cm).","Llena por capas y aprieta mucho para sacar el aire.","Cierra bien: amarra la bolsa sacando el aire o tapa el barril.","Guarda a la sombra, lejos de ratas y de objetos que perforen."]},
+ {"h":"Uso","p":["Abre después de 3 a 4 semanas.","Usa una bolsa completa en 1 a 2 días.","Descarta bolsas rotas o con moho."]}
+],"rel":["Ensilaje: cómo hacerlo","Ensilaje: calidad y problemas"]},
+
+{"t":"Bancos de proteína","a":"forrajes","r":"Pequeñas áreas sembradas con leguminosas o arbustos ricos en proteína, cerca del corral, para cortar y dar.","s":[
+ {"h":"Especies","p":["Leucaena, madero negro, cratylia, morera, nacedero, gandul."]},
+ {"h":"Manejo","p":["Siembra densa en surcos.","Corte cada 60 a 90 días a 1 metro de altura.","Fertiliza y controla malezas."]},
+ {"h":"Uso","p":["Picado en la ración, como parte de la proteína.","Ahorra harina de soya y otras proteínas compradas."]}
+],"rel":["Leguminosas y árboles forrajeros","Proteína en la ración"]},
+
+{"t":"Rastrojos de cosecha","a":"forrajes","r":"Lo que queda de maíz, sorgo o arroz después de cosechar sirve como forraje en verano si se mejora.","s":[
+ {"h":"Valor","p":["Mucha fibra, poca proteína (3 a 5 %) y poca energía."]},
+ {"h":"Cómo mejorarlos","p":["Pícalos para que coman más.","Agrega melaza y una fuente de nitrógeno bien formulada.","Complementa con minerales."]},
+ {"h":"Cuidados","p":["Rastrojos de maíz y sorgo estresados pueden tener nitratos.","Revisa que no tengan moho ni restos de agroquímicos recientes."]}
+],"rel":["Heno y pasto de corte en la ración","Intoxicación por nitratos y cianuro","Plan forrajero para el verano"]}
+]

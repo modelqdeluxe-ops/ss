@@ -41,6 +41,17 @@ if(quedan.length)throw new Error('Temas que aún piden escribir o hablar: '+qued
 const limpio=saber.map(({t,x,a})=>({t,x,a}));
 fs.writeFileSync(path.join(__dirname,'rumi_saber.json'),JSON.stringify(limpio,null,0));
 // La misma guía como script, para cargarla con <script> desde file:// (fetch no lee file://)
-fs.writeFileSync(path.join(RAIZ,'app/assets/rumi_guia.js'),'window.RUMI_GUIA='+JSON.stringify(limpio)+';\n');
+// Fichas profundas: cada tema con resumen, secciones con puntos y temas relacionados
+const FD=path.join(__dirname,'fichas');const fichas=[];
+for(const f of fs.readdirSync(FD).filter(f=>f.endsWith('.json')).sort())for(const o of JSON.parse(fs.readFileSync(path.join(FD,f),'utf8')))fichas.push(o);
+const titF=new Set();for(const o of fichas){if(titF.has(o.t))throw new Error('Ficha repetida: '+o.t);titF.add(o.t);if(!o.a||!o.r||!(o.s||[]).length)throw new Error('Ficha incompleta: '+o.t);}
+const faltan=[];for(const o of fichas){o.rel=(o.rel||[]).filter(r=>{if(titF.has(r))return true;faltan.push(o.t+' → '+r);return false;});}
+if(faltan.length)console.log('Relacionados que no existen (se quitaron):\n  '+faltan.join('\n  '));
+// los temas cortos con el mismo título que una ficha se quedan solo como ficha
+const cortos=limpio.filter(e=>!titF.has(e.t));
+fs.writeFileSync(path.join(RAIZ,'app/assets/rumi_guia.js'),'window.RUMI_GUIA='+JSON.stringify(cortos)+';\nwindow.RUMI_FICHAS='+JSON.stringify(fichas.map(({t,a,r,s,rel})=>({t,a,r,s,rel})))+';\n');
+const pts=fichas.reduce((n,o)=>n+o.s.reduce((m,x)=>m+x.p.length,0),0);
+const pa={};for(const o of fichas)pa[o.a]=(pa[o.a]||0)+1;
+console.log('Fichas:',fichas.length,'con',pts,'puntos',pa,'· temas cortos:',cortos.length);
 const cuenta={};for(const e of limpio)cuenta[e.a]=(cuenta[e.a]||0)+1;console.log(cuenta);
 console.log('Guía de Rumi:',saber.length,'temas');
