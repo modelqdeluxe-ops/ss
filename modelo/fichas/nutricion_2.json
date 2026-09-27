@@ -1,0 +1,137 @@
+[
+{"t":"Heno y pasto de corte en la ración","a":"nutricion","r":"El forraje picado da la fibra que la panza necesita. Su calidad cambia mucho según la edad de corte y cómo se guarda.","s":[
+ {"h":"Pasto de corte fresco","p":["King grass, Cuba OM-22, Maralfalfa, Taiwán: mucha producción por manzana.","Córtalo a 50 a 70 días en época de lluvia: más viejo es leñoso y pobre.","Pícalo a 2 a 5 cm y sírvelo el mismo día: picado de un día para otro se calienta y fermenta."]},
+ {"h":"Heno","p":["Pasto cortado, secado al sol y guardado en pacas.","Buen heno: verde, con hojas, olor agradable, sin polvo ni moho.","Heno amarillo, lleno de tallos o con olor a humedad alimenta poco."]},
+ {"h":"Rastrojos y pajas","p":["Rastrojo de maíz o sorgo, paja de arroz: mucha fibra y poca proteína.","Sirven como fibra efectiva en finalización, no como alimento principal.","Mejoran con melaza y urea bien formuladas."]},
+ {"h":"Cuánto","p":["Ver Fibra y forraje en la ración: 10 a 15 % en finalización y más en el inicio.","Pesa lo que sirves de forraje: es fácil dar de más o de menos a ojo."]}
+],"rel":["Fibra y forraje en la ración","Pastos de corte","Heno: cómo hacerlo y guardarlo"]},
+
+{"t":"Caña de azúcar en la ración","a":"nutricion","r":"La caña produce mucha energía por manzana y aguanta el verano. Tiene poca proteína, así que hay que completarla.","s":[
+ {"h":"Valor","p":["Rica en azúcares, pobre en proteína (2 a 4 %) y minerales.","Su fibra es poco digestible."]},
+ {"h":"Cómo usarla","p":["Córtala madura, con más azúcar, en la época seca.","Pícala fina y dala el mismo día: picada vieja se agria.","Complétala con fuente de proteína (urea bien usada, harinas o leguminosas) y minerales."]},
+ {"h":"Límites","p":["Como parte del forraje en desarrollo funciona bien.","Sola no permite ganancias altas.","Con urea, sigue las reglas de adaptación y mezcla."]}
+],"rel":["Caña de azúcar como forraje","Urea en la ración","Ración para la época seca"]},
+
+{"t":"Aditivos en la ración","a":"nutricion","r":"Los aditivos no son alimento, pero mejoran la digestión o previenen problemas. Úsalos solo con asesoría y productos registrados.","s":[
+ {"h":"Ionóforos","p":["Como la monensina o la lasalocida: mejoran la conversión y ayudan contra coccidias y timpanismo.","Dosis exacta: en exceso son tóxicos, y mortales para caballos y perros que coman la ración.","Mezcla perfecta en la ración y bodega separada."]},
+ {"h":"Amortiguadores","p":["Bicarbonato de sodio u óxido de magnesio: ayudan a controlar el ácido de la panza en raciones con mucho grano."]},
+ {"h":"Levaduras y probióticos","p":["Pueden mejorar el consumo y estabilizar la panza al inicio.","Resultados variables: mide en tus lotes."]},
+ {"h":"Secuestrantes de micotoxinas","p":["Arcillas y otros productos que atrapan toxinas de hongos.","No reemplazan un buen almacenamiento."]},
+ {"h":"Reglas","p":["Productos registrados y dosis del fabricante.","Anota qué aditivo usa cada ración.","Nunca uses sustancias prohibidas para engordar."]}
+],"rel":["Acidosis ruminal","Coccidiosis","Productos prohibidos en la alimentación"]},
+
+{"t":"Sal mineral y bloques","a":"nutricion","r":"En potrero, la sal mineral a libre acceso es la forma más barata de corregir la falta de minerales. Los bloques y sales proteinadas agregan proteína.","s":[
+ {"h":"Sal mineral","p":["Debe tener fósforo (6 a 10 % en zonas tropicales), calcio y microminerales.","Consumo esperado: 60 a 100 gramos por animal al día.","La sal blanca sola no cubre lo que falta."]},
+ {"h":"Saladeros","p":["Techados para que no se moje ni se endurezca.","Cerca de agua y de las zonas donde descansan.","Espacio para varios animales a la vez.","Revisa y repón cada pocos días."]},
+ {"h":"Bloques multinutricionales","p":["Mezcla de melaza, urea, minerales y un ligante.","Dan proteína y energía en época seca a animales en potrero.","El consumo se limita por la dureza del bloque."]},
+ {"h":"Sales proteinadas","p":["Sal con fuente de proteína (urea o harinas) para potrero seco.","Siguen las reglas de la urea: adaptar y no dar a animales flacos o en ayuno."]}
+],"rel":["Minerales principales","Suplementación en pastoreo","Deficiencias de minerales"]},
+
+{"t":"Lectura de comederos","a":"nutricion","r":"Revisar cuánto sobra en el comedero antes de servir dice si estás dando de más o de menos. Es la herramienta más útil del engordador.","s":[
+ {"h":"Cómo hacerlo","p":["Revisa a la misma hora cada día, antes de la primera entrega.","Mira el comedero completo, de punta a punta."]},
+ {"h":"Escala sencilla","p":["0: comedero limpio y lamido, animales esperando: sube la cantidad 5 %.","1: quedan migajas repartidas: está bien, mantén.","2: queda una capa delgada de alimento: baja 5 %.","3: queda mucho alimento: baja 10 % y revisa si hay un problema.","En la app puedes anotar la lectura en cada entrega."]},
+ {"h":"Reglas","p":["Ajusta en pasos pequeños.","No subas más de 0.5 kg por animal por día.","Si varios días seguidos queda comida, revisa salud, agua, calor y la ración.","Si el comedero está vacío por horas, el lote come con ansiedad y sube el riesgo de acidosis."]},
+ {"h":"Errores comunes","p":["Llenar el comedero hasta arriba 'para que no les falte'.","Dejar la comida vieja y echar la nueva encima.","Cambiar la cantidad cada día a lo loco."]}
+],"rel":["Acidosis ruminal","Horarios de alimentación","Desperdicio de alimento"]},
+
+{"t":"Horarios de alimentación","a":"nutricion","r":"Servir a la misma hora todos los días mantiene estable la panza y el consumo. Los animales se acostumbran a los horarios.","s":[
+ {"h":"Cuántas veces","p":["Dos a tres entregas al día es lo más común.","Más entregas reducen la acidosis y el alimento que se calienta en el comedero."]},
+ {"h":"Horario de ejemplo","p":["Primera entrega temprano, 6:00 a 7:00.","Segunda a media mañana o mediodía.","Tercera al final de la tarde, 15:00 a 16:00.","Con calor fuerte, carga más alimento temprano y en la tarde."]},
+ {"h":"Reglas","p":["Mismo orden de corrales cada día.","No retrases más de 30 minutos.","Distribuye parejo a lo largo del comedero.","En la app pones tus horarios en Más, Tu finca, y la pantalla Hoy te dice cuánto falta por dar."]}
+],"rel":["Lectura de comederos","Rutina diaria del engorde","Estrés por calor"]},
+
+{"t":"Mezclado de la ración","a":"nutricion","r":"Una ración bien formulada pero mal mezclada es otra ración. Cada bocado debe tener lo mismo.","s":[
+ {"h":"Orden de carga","p":["Primero los ingredientes que van en mayor cantidad (granos, forraje).","Luego los medianos (harinas, subproductos).","Los pequeños (núcleo mineral, urea, aditivos) mezclados antes con una parte del alimento (premezcla).","La melaza o líquidos al final, repartidos."]},
+ {"h":"Tiempo","p":["Mezcladora: sigue el tiempo del fabricante, usualmente 3 a 6 minutos después de la última carga.","Mezclar de más separa partículas y muele el forraje."]},
+ {"h":"Mezcla a mano","p":["En piso limpio, voltea con pala al menos 3 a 4 veces.","Haz tandas pequeñas para que quede pareja.","Pesa cada ingrediente: los botes y palas engañan."]},
+ {"h":"Cómo revisar","p":["Mira que no haya bolas de minerales o urea.","El color y la textura deben ser iguales en todo el comedero.","Si los animales escarban y seleccionan, la mezcla no es pareja o el forraje está muy largo."]}
+],"rel":["Intoxicación por urea","Mezcladora y equipo","Formular una ración"]},
+
+{"t":"Almacenamiento del alimento","a":"nutricion","r":"La bodega protege tu inversión. El alimento mojado, con moho o comido por plagas es dinero perdido y enfermedad.","s":[
+ {"h":"La bodega","p":["Techo sin goteras, piso de cemento y paredes que no dejen pasar lluvia.","Buena ventilación.","Sacos sobre tarimas, separados de la pared al menos 30 cm.","Minerales, medicinas y químicos en lugares separados del alimento."]},
+ {"h":"Manejo","p":["Primero que entra, primero que sale.","Revisa humedad, olor y temperatura de los granos cada semana.","No compres más de lo que puedes guardar bien.","Tapa bien los sacos abiertos."]},
+ {"h":"Señales de problema","p":["Olor a humedad o a moho.","Grano caliente, apelmazado o con telarañas.","Gorgojos, polillas o excremento de ratas."]},
+ {"h":"Qué hacer con alimento dañado","p":["No lo des al ganado.","Separa lo dañado de lo bueno.","Si dudas, pide un análisis de micotoxinas."]}
+],"rel":["Control de plagas en la bodega","Intoxicación por plantas y hongos","Bodega de alimento"]},
+
+{"t":"Control de plagas en la bodega","a":"nutricion","r":"Ratas, ratones, aves e insectos comen alimento, lo ensucian y traen enfermedades como leptospirosis y salmonela.","s":[
+ {"h":"Ratas y ratones","p":["Sella huecos, pon mallas en ventanas y bajo puertas.","Mantén limpio alrededor de la bodega, sin monte ni basura.","Usa trampas y cebos en estaciones cerradas, lejos del alcance del ganado, perros y niños."]},
+ {"h":"Aves","p":["Mallas en aleros y aberturas.","No dejes alimento regado fuera de la bodega."]},
+ {"h":"Insectos","p":["Gorgojos y polillas en granos: rotación del inventario y limpieza.","Tratamientos solo con productos autorizados para granos y respetando tiempos."]},
+ {"h":"Registro","p":["Anota fechas de colocación y revisión de cebos.","Revisa cada semana."]}
+],"rel":["Almacenamiento del alimento","Leptospirosis","Bodega de alimento"]},
+
+{"t":"Conversión alimenticia","a":"nutricion","r":"La conversión dice cuántos kilos de alimento necesita el animal para ganar un kilo. Es el número que más define tu costo.","s":[
+ {"h":"Cómo se calcula","p":["Conversión = kilos de alimento consumido ÷ kilos ganados en el mismo período.","Se calcula mejor en materia seca.","Ejemplo: comieron 700 kg y ganaron 100 kg: conversión de 7 a 1."]},
+ {"h":"Valores de referencia","p":["Finalización en corral con buena ración: 6 a 8 kg de alimento tal como se ofrece por kilo ganado.","Iniciación y animales livianos convierten mejor.","Animales pesados y muy engrasados convierten peor."]},
+ {"h":"Cómo mejorarla","p":["Ración balanceada, sin exceso de proteína ni falta de energía.","Menos desperdicio en comederos.","Animales sanos, desparasitados y sin estrés.","Vender a tiempo: los últimos kilos cuestan más.","Agua y sombra suficientes.","Procesar bien el grano."]},
+ {"h":"En la app","p":["La app calcula la conversión de cada lote con el alimento que anotas y los pesajes.","Si no anotas todo el alimento, la conversión sale mejor de lo real."]}
+],"rel":["Costo por kilo ganado","Desperdicio de alimento","Cuándo vender"]},
+
+{"t":"Consumo bajo","a":"nutricion","r":"Cuando un lote come menos de lo normal, algo anda mal. Hay que encontrar la causa rápido.","s":[
+ {"h":"Causas a revisar primero","p":["Agua: bebedero vacío, sucio, flotador dañado.","Calor fuerte sin sombra suficiente.","Alimento con moho, mal olor o mezclado distinto.","Cambio brusco de ración o de ingrediente.","Acidosis subaguda por exceso de grano.","Enfermedad en el lote (neumonía, parásitos)."]},
+ {"h":"Cómo investigar","p":["Compara con los días anteriores en la app.","Revisa si es un animal o todo el lote.","Huele y mira el alimento, revisa la bodega.","Mira las heces y cuenta cuántos rumian echados.","Tómale la temperatura a los que no se acercan."]},
+ {"h":"Qué hacer","p":["Corrige el agua y el alimento primero.","Baja la ración un paso si sospechas acidosis y sube poco a poco.","Llama al veterinario si hay fiebre o varios decaídos."]},
+ {"h":"Aviso en la app","p":["La app te avisa en Hoy cuando un lote comió menos ayer que su promedio de la semana."]}
+],"rel":["Acidosis ruminal","Agua de bebida","Estrés por calor"]},
+
+{"t":"Suplementación en pastoreo","a":"nutricion","r":"En potrero, el pasto da la base y el suplemento cubre lo que falta. Bien hecho permite ganar peso incluso en verano.","s":[
+ {"h":"Qué falta según la época","p":["Lluvia: el pasto tiene agua y proteína, falta energía y minerales.","Verano: pasto seco con poca proteína; falta proteína, energía y minerales."]},
+ {"h":"Opciones","p":["Sal mineral siempre.","Sales proteinadas o bloques en verano.","Concentrado de 0.5 a 1 % del peso vivo para ganar más.","Semiestabulado: pasto de día y ración en corral en la tarde."]},
+ {"h":"Ganancias esperadas","p":["Solo pasto en lluvia: 0.4 a 0.7 kg por día.","Pasto más suplemento bien hecho: 0.7 a 1 kg por día.","Semiestabulado con buena ración: 0.9 a 1.2 kg por día."]},
+ {"h":"Reglas","p":["Suplementa a la misma hora cada día.","Comederos suficientes para que coman todos a la vez.","Calcula si el kilo extra ganado paga el suplemento."]}
+],"rel":["Engorde en pastoreo","Engorde semiestabulado","Sal mineral y bloques"]},
+
+{"t":"Crecimiento compensatorio","a":"nutricion","r":"Un animal que pasó hambre y luego come bien gana más rápido que uno que siempre estuvo bien. Se puede aprovechar al comprar.","s":[
+ {"h":"Cómo funciona","p":["Después de un período de restricción, el animal come más y convierte mejor por un tiempo.","El efecto dura de 1 a 3 meses."]},
+ {"h":"Cómo aprovecharlo","p":["Comprar animales flacos pero sanos, a buen precio por kilo.","Darles buena ración desde la adaptación.","Medir su ganancia real en la app en los primeros pesajes."]},
+ {"h":"Cuidados","p":["Un animal flaco por enfermedad o parásitos no compensa igual.","Restricciones muy largas o muy fuertes dejan animales pequeños para siempre.","Revisa dientes, patas y salud antes de comprar flacos."]}
+],"rel":["Comprar ganado para engorde","Ración de desarrollo","Animales atrasados"]},
+
+{"t":"Grado de acabado","a":"nutricion","r":"El acabado es la cobertura de grasa del animal al vender. Define el rendimiento en canal y el precio en muchos mercados.","s":[
+ {"h":"Cómo se ve","p":["Costillas cubiertas, que no se marcan.","Base de la cola con grasa a los lados.","Pecho y paleta llenos.","Lomo ancho y parejo."]},
+ {"h":"Condición corporal","p":["Escala de 1 (muy flaco) a 9 (muy gordo) en engorde de carne.","Para venta en canal se busca 5 a 6 según el comprador.","Pasar de 7 es poner grasa cara que muchas veces se recorta."]},
+ {"h":"Por qué importa","p":["Mejor rendimiento en canal.","Carne con mejor presentación.","Pero cada kilo de grasa cuesta más alimento que un kilo de músculo."]},
+ {"h":"Regla práctica","p":["Pregunta a tu comprador qué acabado paga mejor.","Vende cuando llega a ese acabado, no después."]}
+],"rel":["Cuándo vender","Rendimiento en canal","Ración de finalización"]},
+
+{"t":"Promotores de crecimiento e implantes","a":"nutricion","r":"Existen productos hormonales y no hormonales que aumentan la ganancia. Su uso depende de la ley y del mercado al que vendes.","s":[
+ {"h":"Qué son","p":["Implantes: pequeñas cápsulas que se ponen debajo del cuero de la oreja y liberan hormonas por semanas.","Otros promotores van en la ración."]},
+ {"h":"Reglas","p":["Solo productos registrados y permitidos en el país.","Aplicación correcta en la oreja, con higiene.","Respeta los tiempos de retiro.","Algunos compradores y mercados de exportación no aceptan animales implantados: pregunta antes."]},
+ {"h":"Prohibidos","p":["El clenbuterol y otros beta-agonistas no autorizados están prohibidos: dañan la salud de las personas.","Usar sustancias prohibidas trae decomisos, multas y cierre de mercados."]},
+ {"h":"Recomendación","p":["Decide con tu veterinario y según tu mercado.","Un buen manejo, sanidad y ración dan más resultado que cualquier producto."]}
+],"rel":["Productos prohibidos en la alimentación","Retiros y residuos","Buenas prácticas ganaderas"]},
+
+{"t":"Ración para la época seca","a":"nutricion","r":"En verano el pasto baja en cantidad y calidad. Planear el forraje y ajustar la ración evita perder lo ganado.","s":[
+ {"h":"Qué cambia","p":["Pasto seco con poca proteína y poca digestibilidad.","Menos consumo si solo hay pasto seco.","El calor aumenta la necesidad de agua."]},
+ {"h":"Opciones de forraje","p":["Ensilaje de maíz o sorgo hecho en invierno.","Heno guardado.","Caña de azúcar picada.","Pasto de corte con riego.","Rastrojos mejorados con melaza y urea."]},
+ {"h":"Ajustes de la ración","p":["Más proteína para aprovechar el forraje seco.","Minerales y vitamina A reforzados.","Agua de sobra y a la sombra."]},
+ {"h":"Plan","p":["Calcula en la app cuánto alimento necesitas por mes y compra el grano en cosecha.","Decide si compras animales al inicio del verano, cuando suelen estar baratos, solo si tienes el forraje asegurado."]}
+],"rel":["Plan forrajero para el verano","Época seca","Caña de azúcar en la ración"]},
+
+{"t":"Alimentación con calor","a":"nutricion","r":"El calor baja el consumo y la ganancia. Ajustar horarios y ración ayuda a que sigan comiendo.","s":[
+ {"h":"Ajustes","p":["Sirve 60 a 70 % de la ración en la tarde y noche, cuando refresca.","Evita servir al mediodía.","No subas el grano en días de calor fuerte.","Mantén la fibra para que la panza no se caliente con acidosis."]},
+ {"h":"Agua y sales","p":["Más bebederos o más caudal.","Sal y potasio suficientes en la ración.","Agua fresca: tanques a la sombra."]},
+ {"h":"Señales de que falta","p":["Consumo que cae en las tardes calientes.","Jadeo en el comedero.","Animales amontonados en la sombra sin comer."]}
+],"rel":["Estrés por calor","Golpe de calor","Horarios de alimentación"]},
+
+{"t":"Análisis de ingredientes","a":"nutricion","r":"Las tablas de nutrientes son promedios. Un análisis de laboratorio de tus ingredientes hace la ración más exacta y ahorra dinero.","s":[
+ {"h":"Qué analizar","p":["Materia seca (humedad).","Proteína cruda.","Fibra (FDN y FDA).","Energía estimada.","Calcio y fósforo.","Micotoxinas en granos sospechosos."]},
+ {"h":"Cómo tomar la muestra","p":["Toma pedacitos de varios sacos o varios puntos del silo.","Mézclalos y saca una muestra de medio a un kilo.","Bolsa sellada, sin aire, y llévala pronto al laboratorio.","Rotula con fecha, ingrediente y proveedor."]},
+ {"h":"Cuándo","p":["Cada ensilaje nuevo.","Cada cambio de proveedor de un subproducto.","Cuando los animales no dan la ganancia esperada."]},
+ {"h":"Usar los resultados","p":["Corrige los valores en tu formulación.","Compara proveedores por nutrientes, no solo por precio."]}
+],"rel":["Formular una ración","Subproductos para la ración","Ensilaje: calidad y problemas"]},
+
+{"t":"Costo de la ración","a":"nutricion","r":"El alimento es el mayor costo después de la compra de animales. Pequeños ahorros por kilo se multiplican en cientos de animales.","s":[
+ {"h":"Cómo calcularlo","p":["Costo por kilo de mezcla = suma de (precio de cada ingrediente × su porcentaje).","Incluye flete, molienda y mermas.","Costo de alimento por kilo ganado = costo por kilo de mezcla × conversión."]},
+ {"h":"Cómo bajarlo","p":["Formula al mínimo costo con tus precios reales.","Usa subproductos locales bien analizados.","Compra el grano en cosecha si tienes bodega.","Reduce el desperdicio en comederos y bodega.","Mejora la conversión: es más poderoso que bajar el precio."]},
+ {"h":"Cuidado","p":["La ración más barata no siempre da el kilo ganado más barato.","Si baja la ganancia, subes el costo fijo por día de cada animal."]},
+ {"h":"En la app","p":["Formular dieta te da el costo por kilo y por animal al día.","Los gráficos muestran el costo por kilo ganado de cada lote."]}
+],"rel":["Formular una ración","Costo por kilo ganado","Desperdicio de alimento"]},
+
+{"t":"Desperdicio de alimento","a":"nutricion","r":"El alimento que cae al suelo, se moja o se lo comen las plagas no engorda a nadie. Reducirlo es ganancia directa.","s":[
+ {"h":"Dónde se pierde","p":["Comederos sin barrera o muy bajos: lo tiran al piso.","Lluvia sobre comederos sin techo.","Alimento que se calienta y se echa a perder en el comedero.","Pájaros, ratas y perros.","Mala mezcla: seleccionan y dejan lo que no les gusta.","Sacos rotos en bodega y transporte."]},
+ {"h":"Cómo reducirlo","p":["Barrera de tubo o cable sobre el comedero.","Techo o comedero con alero.","Servir la cantidad justa según la lectura del comedero.","Limpiar sobrantes viejos antes de servir.","Control de plagas."]},
+ {"h":"Cuánto cuesta","p":["Un 5 % de desperdicio en un lote de 100 animales que come 1,000 kg al día son 50 kg diarios: 1,500 kg al mes."]}
+],"rel":["Lectura de comederos","Comederos","Control de plagas en la bodega"]}
+]

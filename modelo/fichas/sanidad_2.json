@@ -1,0 +1,141 @@
+[
+{"t":"Intoxicación por plantas y hongos","a":"sanidad","r":"Plantas tóxicas del potrero y hongos en el alimento guardado pueden enfermar o matar a varios animales a la vez.","s":[
+ {"h":"Plantas de riesgo en el trópico","p":["Hojas de yuca y sorgo tierno o rebrotado después de sequía o helada: pueden dar cianuro.","Helechos (Pteridium): orina con sangre y tumores con consumo largo.","Higuerilla (ricino): semillas muy tóxicas.","Plantas de adorno como la adelfa o laurel rosa: basta una poca cantidad.","Leucaena en exceso sin adaptación: pérdida de pelo y problemas de tiroides.","Pastos con mucho nitrato después de abono fuerte y sequía."]},
+ {"h":"Hongos y micotoxinas","p":["Maíz, sorgo o concentrado mojado que se enmohece produce toxinas (aflatoxinas y otras).","Bajan el consumo, la ganancia y las defensas; en exceso dañan el hígado.","No siempre se ve el moho: el grano quebrado y húmedo es de riesgo."]},
+ {"h":"Señales","p":["Varios animales enfermos o muertos a la vez.","Temblores, babeo, respiración rápida, convulsiones.","Diarrea, cólico, orina con sangre.","Baja de consumo sin causa clara en todo el lote."]},
+ {"h":"Qué hacer","p":["Saca a los animales del potrero o retira el alimento sospechoso.","Llama al veterinario y guarda una muestra del alimento o de la planta.","Da agua limpia y heno de confianza."]},
+ {"h":"Prevención","p":["Recorre los potreros y arranca plantas tóxicas antes de meter ganado.","No sueltes animales con hambre en potreros nuevos.","Compra grano seco y guárdalo en bodega seca y ventilada.","Descarta alimento con olor a moho, apelmazado o caliente.","Pide análisis de micotoxinas si compras grano en gran cantidad."]}
+],"rel":["Almacenamiento del alimento","Plantas tóxicas en potreros","Maíz y otros granos"]},
+
+{"t":"Golpe de calor","a":"sanidad","r":"Cuando el calor y la humedad superan la capacidad del animal de enfriarse, deja de comer, jadea y puede morir. Los animales gordos y de razas europeas sufren más.","s":[
+ {"h":"Señales","p":["Jadeo con boca abierta y lengua afuera.","Babeo y cabeza estirada.","Se amontonan en la sombra o junto al bebedero.","Dejan de comer en las horas calientes.","Temblores, se caen: emergencia."]},
+ {"h":"Qué hacer en el momento","p":["No los muevas ni los trabajes.","Moja el piso y a los animales con agua, sobre todo la cabeza y el cuello; mejor si hay viento.","Asegura agua fresca de sobra y espacio en el bebedero.","Llama al veterinario si un animal está caído o muy agitado."]},
+ {"h":"Prevención","p":["Sombra de 3 a 4 m² por animal.","Agua fresca, limpia y con buen caudal; agrega bebederos en verano.","Sirve más alimento temprano y al final de la tarde.","Trabaja el ganado solo antes de las 9 de la mañana.","Revisa el índice de calor en la calculadora de Rumi."]},
+ {"h":"Números clave","p":["Índice de calor de 72 a 78: alerta.","79 a 83: peligro.","84 o más: emergencia.","Un animal con calor puede tomar el doble de agua."]}
+],"rel":["Estrés por calor","Sombra","Bebederos","Índice de calor"]},
+
+{"t":"Heridas y curaciones","a":"sanidad","r":"Una herida mal curada atrae moscas, gusanera e infecciones. La regla es curar el mismo día y revisar hasta que cierre.","s":[
+ {"h":"Pasos para curar","p":["Sujeta bien al animal en la manga.","Lava con agua limpia y jabón, retira pelos, tierra y tejido muerto.","Aplica un antiséptico de uso veterinario.","Pon un producto cicatrizante y repelente de moscas.","Revisa cada día; repite la curación si hace falta."]},
+ {"h":"Cuándo llamar al veterinario","p":["Herida profunda, que sangra mucho o que deja ver hueso o tendón.","Hinchazón que crece rápido, caliente o que cruje al tocar.","Herida con mal olor y el animal con fiebre.","Heridas en articulaciones o en el ojo."]},
+ {"h":"Abscesos","p":["Son bultos con pus, muchas veces en sitios de inyección.","Cuando están blandos, el veterinario los abre, drena y lava.","Si el absceso está cerca de la venta, avisa: se recorta en el matadero."]},
+ {"h":"Prevención","p":["Arregla clavos, alambres y tablas que cortan.","Manejo tranquilo, sin palos ni chuzos.","Agujas limpias y bien afiladas.","Castraciones y descornes con higiene y en época de pocas moscas."]}
+],"rel":["Gusano barrenador o gusanera","Aplicación de inyecciones","Mantenimiento de instalaciones"]},
+
+{"t":"Vacunación","a":"sanidad","r":"Las vacunas previenen enfermedades que matan rápido o que bajan mucho la ganancia. Solo funcionan si se guardan, aplican y refuerzan bien.","s":[
+ {"h":"Vacunas más usadas en engorde","p":["Clostridiales (polivalente): casi obligatoria en todo engorde.","Respiratorias (IBR, DVB, PI3, VRSB y bacterias): según el riesgo y el veterinario.","Rabia: en zonas con murciélago vampiro.","Ántrax: en zonas con antecedentes.","Leptospirosis: según la zona."]},
+ {"h":"Cómo conservarlas","p":["Entre 2 y 8 °C, nunca congeladas.","En hielera con hielo al llevarlas al corral, sin que el frasco toque directo el hielo.","Protegidas del sol.","Frasco abierto: úsalo el mismo día y bota el sobrante."]},
+ {"h":"Cómo aplicar","p":["Animales sanos, descansados y con agua.","En el cuello (tabla del cuello), nunca en la pierna ni en la nalga.","Subcutánea o intramuscular según la etiqueta.","Una aguja limpia cada 10 a 15 animales o antes si se dobla o pierde filo.","Dosis exacta con jeringa calibrada."]},
+ {"h":"Refuerzos","p":["Muchas vacunas necesitan segunda dosis a los 21 a 30 días para proteger bien.","Anota la fecha del refuerzo en la app y cúmplela.","La protección tarda 2 a 3 semanas en formarse después de la última dosis."]},
+ {"h":"Errores comunes","p":["Vacunar animales enfermos o recién llegados sin agua ni descanso.","Mezclar vacunas en la misma jeringa.","Aplicar en la pierna: deja lesiones en cortes caros.","No aplicar el refuerzo.","Usar vacunas vencidas o calentadas."]}
+],"rel":["Plan sanitario de ingreso","Aplicación de inyecciones","Enfermedades clostridiales"]},
+
+{"t":"Desparasitación y resistencia","a":"sanidad","r":"Desparasitar bien es dar el producto correcto, a la dosis correcta, en el momento correcto. Hacerlo mal cría parásitos que ya no mueren.","s":[
+ {"h":"Grupos de productos","p":["Lactonas macrocíclicas (ivermectina, doramectina y otras): gusanos y algunos parásitos externos.","Benzimidazoles (albendazol, fenbendazol y otros): gusanos; algunos actúan sobre fasciola.","Levamisol: gusanos redondos.","Productos específicos contra fasciola (por ejemplo closantel u otros).","Cada grupo mata de forma distinta: rotar marcas del mismo grupo no es rotar."]},
+ {"h":"Cómo desparasitar","p":["Calcula la dosis por el peso real; si no pesas, usa el peso del más grande del grupo.","Revisa la concentración del producto en la etiqueta.","Calibra la jeringa o la pistola antes de empezar.","Aplica en el sitio y la vía que dice la etiqueta.","Anota producto, dosis, fecha y retiro."]},
+ {"h":"Cuándo","p":["Siempre al ingreso al engorde.","En engorde de corral cerrado, muchas veces basta una desparasitación bien hecha.","En pastoreo o semiestabulado, repite según el plan del veterinario y la época de lluvias."]},
+ {"h":"Evitar resistencia","p":["No des dosis bajas.","No desparasites por costumbre si no hay necesidad.","Rota grupos químicos según el veterinario.","Haz conteos de huevos en heces para ver si el producto funciona."]},
+ {"h":"Retiros","p":["Algunos inyectables de larga acción tienen retiros de más de un mes.","Si vendes pronto, elige un producto con retiro corto.","La app te avisa si intentas vender un lote en retiro."]}
+],"rel":["Parásitos internos","Fasciola o duela del hígado","Uso responsable de antibióticos"]},
+
+{"t":"Uso responsable de antibióticos","a":"sanidad","r":"Los antibióticos salvan animales, pero mal usados crean bacterias resistentes y dejan residuos en la carne. Úsalos solo cuando hacen falta y como indica el veterinario.","s":[
+ {"h":"Cuándo sí","p":["Infecciones bacterianas diagnosticadas: neumonía, gabarro, heridas infectadas.","Cuando el veterinario lo indica para el lote en riesgo alto."]},
+ {"h":"Cuándo no","p":["Diarreas por cambio de ración.","Animales flacos sin diagnóstico.","Virus solos (no los matan).","Como engorde o para que coman más: está prohibido en muchos países y no es buena práctica."]},
+ {"h":"Reglas de uso","p":["Producto registrado, dosis por peso, vía indicada y duración completa.","No mezcles antibióticos en la misma jeringa.","Máximo 10 ml por sitio de inyección intramuscular, en el cuello.","Guarda el frasco en su caja, lejos del sol."]},
+ {"h":"Retiros","p":["El retiro es el tiempo desde la última dosis hasta que el animal puede ir al matadero.","Si usaste varios productos, manda el retiro más largo.","Anota siempre en la app el retiro: te avisa antes de vender.","Vender en retiro puede causar decomiso, multas y pérdida del comprador."]}
+],"rel":["Retiros y residuos","Neumonía o complejo respiratorio","Aplicación de inyecciones"]},
+
+{"t":"Aplicación de inyecciones","a":"sanidad","r":"Inyectar bien cuida la salud del animal y la calidad de la carne. Una mala inyección deja abscesos, lesiones y pérdidas en la canal.","s":[
+ {"h":"Dónde","p":["En la tabla del cuello: triángulo delante del hombro, debajo de la cresta y arriba de la vena del cuello.","Nunca en la pierna, la nalga o el lomo: son los cortes más caros."]},
+ {"h":"Vías","p":["Subcutánea: debajo del cuero, levantando un pliegue; aguja corta.","Intramuscular: en el músculo del cuello, aguja más larga.","Intravenosa: solo la aplica el veterinario.","Sigue siempre la vía que dice la etiqueta."]},
+ {"h":"Agujas","p":["Calibre 16 a 18; largo de 1/2 a 3/4 de pulgada para subcutánea y 1 a 1.5 pulgadas para intramuscular en adultos.","Cambia la aguja cada 10 a 15 animales o si se dobla, se despunta o se ensucia.","Nunca enderces una aguja doblada.","Aguja quebrada dentro del animal: márcalo y avisa al comprador."]},
+ {"h":"Buenas prácticas","p":["Animal bien sujeto en la manga.","Piel limpia y seca.","Máximo 10 ml por sitio intramuscular; separa los sitios al menos una mano.","Anota producto y fecha en la app."]}
+],"rel":["Vacunación","Uso responsable de antibióticos","Manga, brete y embudo"]},
+
+{"t":"Botiquín del engorde","a":"sanidad","r":"Tener a mano lo necesario te deja actuar rápido. Un botiquín ordenado ahorra muertes y viajes.","s":[
+ {"h":"Equipo","p":["Termómetro digital (y uno de repuesto).","Jeringas desechables de 3, 5, 10 y 20 ml, y jeringa automática o pistola.","Agujas de distintos largos y calibres.","Guantes, tijeras, bisturí, pinzas y sogas.","Lámpara de mano, cuaderno o teléfono con la app.","Sonda para timpanismo y trocar (solo para uso capacitado)."]},
+ {"h":"Insumos","p":["Antiséptico (yodo o clorhexidina) y jabón.","Producto para heridas con repelente y larvicida.","Sueros orales para deshidratación.","Vitaminas y los productos que tu veterinario indique para emergencias.","Desparasitantes y vacunas del plan, en su debida conservación."]},
+ {"h":"Orden y seguridad","p":["Guárdalo bajo llave, en lugar fresco y sin sol.","Revisa fechas de vencimiento cada mes.","Separa medicamentos de venenos y de alimento.","Ten a mano el teléfono del veterinario y de SENASA."]}
+],"rel":["Revisión diaria de los animales","Uso responsable de antibióticos","Corral de enfermos"]},
+
+{"t":"Plan sanitario de ingreso","a":"sanidad","r":"Lo que haces en las primeras horas y semanas define la salud de todo el lote. Un buen protocolo de ingreso baja enfermedades y muertes.","s":[
+ {"h":"Al llegar","p":["Descarga con calma, deja descansar con agua y heno de buena calidad.","Revisa uno por uno: cojos, heridos, flacos o enfermos van aparte.","No hagas el manejo sanitario si llegaron muy cansados; espera unas horas o al día siguiente temprano."]},
+ {"h":"Día 1 (o al día siguiente)","p":["Pesa a cada animal y ponle arete.","Vacuna clostridial polivalente.","Desparasitante interno y externo según el veterinario.","Vacuna respiratoria si está en tu plan.","Vitaminas si el veterinario lo recomienda.","Anota todo en la app con el lote y la fecha."]},
+ {"h":"Días 1 a 21","p":["Revisión dos veces al día con el método DART.","Toma la temperatura a los sospechosos.","Tratamiento temprano de los enfermos.","Adaptación gradual a la ración."]},
+ {"h":"Día 21 a 30","p":["Refuerzo de la vacuna clostridial y de la respiratoria si aplica.","Primer pesaje de control para ver quién arranca y quién no.","Castración o descorne, si se hacen, cuando el animal ya esté sano y adaptado."]},
+ {"h":"Reglas","p":["Todo animal nuevo entra al corral de recepción, no con los que ya están.","Un protocolo escrito con tu veterinario, siempre igual, da mejores resultados que improvisar.","Guarda registro de cuántos se enfermaron por lote y de qué origen."]}
+],"rel":["Recepción de ganado","Vacunación","Neumonía o complejo respiratorio","Cuarentena y bioseguridad"]},
+
+{"t":"Cuarentena y bioseguridad","a":"sanidad","r":"La bioseguridad son las barreras para que no entren enfermedades a tu finca ni se riegen dentro de ella.","s":[
+ {"h":"Animales que entran","p":["Compra a proveedores conocidos, con guía de movilización y animales revisados.","Corral de cuarentena separado, sin compartir bebederos con los demás.","Observa 2 a 3 semanas antes de mezclar.","Trata parásitos externos antes de que entren."]},
+ {"h":"Personas y vehículos","p":["Los camiones de ganado no deben entrar a los corrales; que carguen desde el embarcadero.","Visitas con botas limpias o desinfectadas.","Limpia equipo prestado (mangas portátiles, básculas) antes de usarlo."]},
+ {"h":"Dentro de la finca","p":["Trabaja primero con los animales sanos y al final con los enfermos.","Agujas y equipo limpio entre animales.","Control de ratas, perros y aves en bodegas.","Retira y dispone rápido los cadáveres."]},
+ {"h":"Agua y alimento","p":["Agua de bebederos, no de charcos o quebradas compartidas.","Alimento guardado en bodega cerrada.","No uses restos de comida de cocina ni subproductos de origen dudoso."]}
+],"rel":["Plan sanitario de ingreso","Corral de enfermos","Muerte de un animal"]},
+
+{"t":"Corral de enfermos","a":"sanidad","r":"Un corral aparte para enfermos y lesionados facilita tratarlos, los recupera mejor y protege al resto.","s":[
+ {"h":"Cómo debe ser","p":["Cerca de la manga pero lejos de los corrales de recepción.","Con sombra, piso seco y blando.","Bebedero propio con agua limpia.","Comedero con heno de buena calidad y un poco de la ración.","Espacio para que el animal se eche cómodo."]},
+ {"h":"Manejo","p":["Anota cada animal que entra: fecha, arete, temperatura y tratamiento.","Revisa dos veces al día.","Devuélvelo a su lote cuando coma bien y tenga temperatura normal por dos días.","Si no mejora en el tiempo que dijo el veterinario, decide si venderlo (sin retiro) o sacrificarlo."]},
+ {"h":"Animales crónicos","p":["Los que se enferman varias veces rara vez recuperan su ganancia.","Venderlos a tiempo (respetando retiros) suele costar menos que seguir tratándolos."]}
+],"rel":["Revisión diaria de los animales","Cuarentena y bioseguridad","Animales atrasados"]},
+
+{"t":"Muerte de un animal","a":"sanidad","r":"Cada muerte es una pérdida de todo lo invertido. Saber por qué murió ayuda a salvar a los demás.","s":[
+ {"h":"Qué hacer primero","p":["Revisa si sangra por nariz, boca o ano: si es así, no lo abras y llama al veterinario (posible ántrax).","Aparta al resto del lote del lugar.","Anota la muerte en la app con la causa probable."]},
+ {"h":"Necropsia","p":["El veterinario abre el cadáver y ve pulmones, hígado, panza e intestinos.","Hazla lo antes posible: después de 12 horas con calor se pierde información.","Si murieron varios, es aún más importante."]},
+ {"h":"Disposición del cadáver","p":["Entierro profundo, lejos de fuentes de agua y de corrales, con cal.","O incineración o lo que indique la autoridad.","No dejes cadáveres al aire: atraen perros, zopilotes y riegan enfermedades.","No consumas ni vendas carne de animales muertos o enfermos."]},
+ {"h":"Aprender de cada muerte","p":["Revisa cada mes en la app las causas de muerte por lote y por origen.","Si una causa se repite, cambia el manejo con tu veterinario.","Una mortalidad mayor de 1 a 2 % en engorde de corral indica un problema."]}
+],"rel":["Ántrax o carbón bacteridiano","Mortalidad y su costo","Cuarentena y bioseguridad"]},
+
+{"t":"Problemas de piel","a":"sanidad","r":"Tiña, fotosensibilización, piojos y sarna dañan el cuero, causan picazón y bajan la ganancia.","s":[
+ {"h":"Tiña","p":["Manchas redondas sin pelo, con costra gris, sobre todo en cara y cuello.","Se contagia entre animales y a personas.","Es más común en animales jóvenes y corrales húmedos y oscuros.","Consulta el tratamiento; mejora con sol y buena nutrición."]},
+ {"h":"Fotosensibilización","p":["La piel blanca se quema al sol, se enrojece, se hincha y se pela.","Viene de algunas plantas o de daño del hígado.","Saca a los animales del sol y del potrero sospechoso y consulta al veterinario."]},
+ {"h":"Piojos y sarna","p":["Picazón fuerte, se rascan contra postes, zonas sin pelo.","Más comunes en época fresca y con hacinamiento.","Se tratan con productos antiparasitarios externos según etiqueta."]},
+ {"h":"Prevención","p":["Control de parásitos externos al ingreso.","Corrales con sol y ventilación.","Buena nutrición mineral y vitamínica."]}
+],"rel":["Garrapatas","Enfermedades que se pegan a personas","Minerales principales"]},
+
+{"t":"Deficiencias de minerales","a":"sanidad","r":"La falta de fósforo, cobre, zinc, selenio o cobalto no mata rápido, pero frena la ganancia y baja las defensas.","s":[
+ {"h":"Fósforo","p":["Muy común en potreros del trópico.","Señales: los animales lamen tierra, huesos o madera; poca ganancia.","Se corrige con sal mineral o núcleo mineral con fósforo."]},
+ {"h":"Cobre","p":["Pelo descolorido (negro que se vuelve rojizo), anemia, diarrea.","El exceso de molibdeno o azufre lo bloquea."]},
+ {"h":"Zinc","p":["Piel gruesa, pérdida de pelo, cascos débiles, más infecciones."]},
+ {"h":"Selenio y vitamina E","p":["Debilidad muscular, animales que se cansan al caminar.","El exceso de selenio es tóxico: no lo agregues por tu cuenta."]},
+ {"h":"Cobalto","p":["Necesario para la vitamina B12 que fabrica la panza.","Falta: poco apetito, anemia, pelo feo."]},
+ {"h":"Prevención","p":["Núcleo mineral completo en la ración de corral.","Sal mineral a libre acceso en potrero, en saladeros techados.","La sal blanca sola no alcanza.","Análisis de suelo o de forraje para saber qué falta en tu zona."]}
+],"rel":["Minerales principales","Microminerales y vitaminas","Sal mineral y bloques"]},
+
+{"t":"Enfermedades virales respiratorias y DVB","a":"sanidad","r":"IBR, diarrea viral bovina (DVB), PI3 y VRSB son virus que bajan las defensas y abren paso a la neumonía.","s":[
+ {"h":"IBR (rinotraqueítis)","p":["Fiebre, nariz roja con costras, moco, lagrimeo.","Se contagia por contacto y aire."]},
+ {"h":"DVB (diarrea viral bovina)","p":["Puede dar diarrea, llagas en la boca y bajar mucho las defensas.","Algunos animales nacen infectados de por vida (persistentemente infectados) y contagian sin parar."]},
+ {"h":"PI3 y VRSB","p":["Virus respiratorios que complican la neumonía, sobre todo en animales jóvenes."]},
+ {"h":"Control","p":["Vacunas respiratorias según tu veterinario, idealmente antes o al llegar al engorde.","Evita mezclar muchos orígenes.","Buen manejo de recepción y menos estrés.","Si hay muchos casos, pide pruebas de laboratorio para saber qué virus circula."]}
+],"rel":["Neumonía o complejo respiratorio","Vacunación","Recepción de ganado"]},
+
+{"t":"Defectos que hay que revisar al comprar","a":"sanidad","r":"Hay problemas que, si los compras, te harán perder dinero todo el engorde. Revisarlos en la subasta o la finca de origen ahorra dolores de cabeza.","s":[
+ {"h":"Revisa","p":["Hernias de ombligo o de escroto (bulto blando).","Ojos: manchas blancas, ceguera.","Patas y pezuñas: cojeras, articulaciones hinchadas.","Boca: dientes gastados o faltantes en animales viejos.","Respiración: tos, moco, respiración rápida.","Piel: tiña, sarna, garrapatas, heridas y gusanera."]},
+ {"h":"Condición","p":["Animales demasiado flacos pueden estar enfermos, no solo mal comidos.","Panza muy abultada puede ser parásitos o llenado para pesar más.","Animales nerviosos o agresivos engordan peor y son peligrosos."]},
+ {"h":"Documentos","p":["Guía de movilización de SENASA.","Registro de vacunas y tratamientos si el vendedor lo tiene.","Origen de los animales."]},
+ {"h":"Regla práctica","p":["Si dudas de un animal, no lo compres o bájale el precio.","Un animal problema cuesta más que su descuento."]}
+],"rel":["Comprar ganado para engorde","Hernias y prolapsos","Guía de movilización y trazabilidad"]},
+
+{"t":"Hernias y prolapsos","a":"sanidad","r":"Son bultos por salida de tejido o de órganos. Algunos se pueden manejar, otros obligan a vender o a llamar al veterinario rápido.","s":[
+ {"h":"Hernia de ombligo","p":["Bulto blando en el ombligo que se mete al empujarlo.","Si es pequeña puede no dar problema; si crece, se endurece o duele, llama al veterinario.","Evita comprar animales con hernias grandes."]},
+ {"h":"Prolapso rectal","p":["Sale parte del recto por el ano, rojo y húmedo.","Viene de tos fuerte, diarrea, esfuerzo o implantes mal usados.","Protégelo de golpes y moscas, mantenlo húmedo y limpio, y llama al veterinario pronto."]},
+ {"h":"Qué decidir","p":["Si el problema se repite o no tiene arreglo, vende al animal (sin retiros) antes de que pierda más.","Anota en la app para no comprar de nuevo a ese proveedor si se repite."]}
+],"rel":["Defectos que hay que revisar al comprar","Diarrea en el engorde"]},
+
+{"t":"Orina roja u oscura","a":"sanidad","r":"La orina roja o café es una señal de alarma. Puede venir de varias enfermedades distintas, y el tratamiento cambia según la causa.","s":[
+ {"h":"Posibles causas","p":["Babesiosis (ranilla roja): fiebre y orina roja, transmitida por garrapata.","Leptospirosis: orina oscura, fiebre, anemia.","Hemoglobinuria bacilar (clostridial): muerte rápida.","Helecho (Pteridium) consumido por mucho tiempo: sangre en la orina.","Algunas intoxicaciones por plantas o cobre."]},
+ {"h":"Qué hacer","p":["Separa al animal, tómale la temperatura y no lo corras.","Llama al veterinario el mismo día.","Revisa garrapatas en el animal y en el lote.","Revisa el potrero buscando helecho u otras plantas."]},
+ {"h":"Prevención","p":["Control de garrapatas.","Vacuna clostridial completa.","Control de ratas y agua limpia.","Limpieza de plantas tóxicas."]}
+],"rel":["Babesiosis o ranilla roja","Leptospirosis","Enfermedades clostridiales","Intoxicación por plantas y hongos"]},
+
+{"t":"Enfermedades que se pegan a personas","a":"sanidad","r":"Varias enfermedades del ganado pasan a las personas. Protegerse es parte del trabajo diario en la finca.","s":[
+ {"h":"Las principales","p":["Rabia: por saliva; mortal si no se vacuna a tiempo a la persona.","Ántrax: por contacto con cadáveres o cueros.","Brucelosis: por fetos, placentas y leche cruda.","Tuberculosis: por aire y leche cruda.","Leptospirosis: por orina, lodo y agua contaminada.","Tiña: por contacto con la piel."]},
+ {"h":"Protección","p":["Guantes al tocar animales enfermos, muertos, heridas o fetos.","No metas la mano en la boca de un animal que babea.","Lávate las manos antes de comer, beber o fumar.","No comas carne de animales muertos o enfermos ni leche cruda de hatos sin control.","Botas en corrales y lodo."]},
+ {"h":"Si te enfermas","p":["Ve al centro de salud y di que trabajas con ganado.","Fiebre que va y viene, dolores y cansancio pueden ser brucelosis.","Si te mordió o te babeó un animal sospechoso de rabia, ve el mismo día."]}
+],"rel":["Rabia paralítica bovina","Ántrax o carbón bacteridiano","Brucelosis y tuberculosis","Leptospirosis"]},
+
+{"t":"Brucelosis y tuberculosis","a":"sanidad","r":"Son enfermedades bajo programa oficial por su riesgo para las personas y el comercio. En engorde importan por el origen de los animales y la venta.","s":[
+ {"h":"Brucelosis","p":["Causa abortos en hembras y problemas en toros.","Se contagia a personas por placentas, fetos y leche cruda.","Las novillas y vacas de descarte que entran al engorde pueden portarla."]},
+ {"h":"Tuberculosis","p":["Enfermedad lenta que adelgaza al animal y daña pulmones.","Se detecta con prueba de tuberculina y en el matadero.","Un hallazgo en el matadero lleva a rastrear la finca de origen."]},
+ {"h":"Qué hacer","p":["Compra a fincas con control o certificación cuando sea posible.","Participa en los programas de SENASA.","Si el matadero reporta lesiones, colabora con el rastreo."]}
+],"rel":["Programas oficiales de sanidad","Enfermedades que se pegan a personas","Guía de movilización y trazabilidad"]}
+]

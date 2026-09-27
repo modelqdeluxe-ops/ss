@@ -1,0 +1,104 @@
+[
+{"t":"Diseño de corrales","a":"instalaciones","r":"Un buen corral facilita el trabajo, reduce el estrés y ayuda a la salud. Pensar bien el diseño ahorra dinero por años.","s":[
+ {"h":"Ubicación","p":["Terreno alto con buen drenaje y ligera pendiente (2 a 4 %).","Lejos de quebradas y casas.","Con acceso para camiones de alimento y ganado.","Cerca de agua y electricidad."]},
+ {"h":"Distribución","p":["Corrales de engorde en fila con comederos hacia un callejón de alimentación.","Callejón de manejo detrás que lleva a la manga.","Corral de recepción y de enfermos aparte.","Bodega cerca del callejón de alimentación."]},
+ {"h":"Medidas de referencia","p":["10 a 15 m² por animal en tierra, 3.5 a 5 m² en cemento.","30 a 45 cm de comedero por animal.","3 a 4 m² de sombra por animal.","Cercas de 1.5 a 1.8 m de altura."]},
+ {"h":"Errores comunes","p":["Corrales en partes bajas que se inundan.","Comederos dentro del corral, donde se ensucian.","Sin callejones: todo manejo es una pelea."]}
+],"rel":["Espacio por animal","Comederos","Pisos y drenaje"]},
+
+{"t":"Comederos","a":"instalaciones","r":"El comedero debe ser cómodo para el animal, fácil de limpiar y evitar desperdicio.","s":[
+ {"h":"Tipos","p":["Lineal de cemento: durable y fácil de limpiar.","De madera o tubo cortado: más barato.","Llantas cortadas: solo para pocos animales."]},
+ {"h":"Medidas","p":["Ancho de 60 a 70 cm y profundidad de 25 a 40 cm.","Borde del lado del animal a 50 a 60 cm del suelo.","Fondo liso y redondeado, sin esquinas donde se pudra la comida."]},
+ {"h":"Barrera","p":["Tubo o cable sobre el comedero a la altura del cuello.","Evita que se metan, ensucien o tiren alimento."]},
+ {"h":"Ubicación","p":["En el borde del corral, con acceso desde el callejón.","Plataforma de cemento de 2 a 3 m frente al comedero para que no se haga lodo.","Techo o alero en zonas de mucha lluvia."]}
+],"rel":["Espacio por animal","Desperdicio de alimento","Lectura de comederos"]},
+
+{"t":"Bebederos","a":"instalaciones","r":"Agua limpia y suficiente es la base de todo. Un bebedero bien diseñado se llena rápido y se limpia fácil.","s":[
+ {"h":"Tipos","p":["Pila de cemento con flotador.","Bebederos plásticos o metálicos.","Bebederos automáticos de nivel constante."]},
+ {"h":"Medidas y capacidad","p":["Altura de 50 a 70 cm.","Espacio para que beba 10 a 15 % del lote a la vez.","Caudal suficiente para recuperar el nivel en pocos minutos."]},
+ {"h":"Ubicación","p":["A la sombra.","Separado del comedero para que no caiga comida.","Accesible desde dos corrales para ahorrar.","Con piso firme alrededor."]},
+ {"h":"Mantenimiento","p":["Lavar cada semana.","Revisar flotadores y fugas a diario.","Válvula de desagüe para vaciar fácil."]}
+],"rel":["Agua de bebida","Agua: fuentes, tanques y calidad","Estrés por calor"]},
+
+{"t":"Sombra","a":"instalaciones","r":"La sombra es la forma más barata de combatir el calor. En el trópico no es un lujo: es parte de la ración.","s":[
+ {"h":"Cuánta","p":["3 a 4 m² por animal.","Altura de 3 a 4 metros para que circule el aire."]},
+ {"h":"Materiales","p":["Techo de lámina con aislante o pintura blanca arriba.","Sarán o malla de sombra de 70 a 80 %.","Árboles en corrales de tierra o potreros."]},
+ {"h":"Orientación","p":["Techos de norte a sur hacen que la sombra se mueva y el piso se seque.","Techos de este a oeste dan sombra fija; el piso debajo se enloda."]},
+ {"h":"Errores comunes","p":["Sombras muy bajas que acumulan calor.","Muy poca sombra: los animales se amontonan y se estresan."]}
+],"rel":["Estrés por calor","Golpe de calor","Sistemas silvopastoriles"]},
+
+{"t":"Pisos y drenaje","a":"instalaciones","r":"Un corral con lodo permanente enferma patas, pulmones y baja la ganancia. El drenaje se diseña antes de construir.","s":[
+ {"h":"Pendiente","p":["2 a 4 % hacia afuera del comedero.","Canales que lleven el agua lejos del corral."]},
+ {"h":"Tipo de piso","p":["Tierra compactada: barata, necesita más espacio y mantenimiento.","Cemento con acabado rugoso: fácil de limpiar, necesita menos espacio, pero se calienta y puede lastimar patas.","Plataforma de cemento frente a comederos y bebederos siempre."]},
+ {"h":"Mantenimiento","p":["Retira el estiércol con frecuencia.","Rellena huecos donde se junta agua.","Montículos de tierra seca en época de lluvias para que descansen."]}
+],"rel":["Diseño de corrales","Cojeras y problemas de pezuña","Manejo del estiércol"]},
+
+{"t":"Manga, brete y embudo","a":"instalaciones","r":"La manga es la herramienta de trabajo más usada. Una buena manga hace el manejo rápido, seguro y sin golpes.","s":[
+ {"h":"Partes","p":["Corral de espera.","Embudo o corral de encierro que lleva a la manga.","Manga: pasillo angosto donde los animales van en fila.","Cepo o brete al final para sujetar la cabeza.","Báscula y puerta de apartado a la salida."]},
+ {"h":"Medidas","p":["Ancho de manga de 70 a 80 cm para animales de engorde.","Paredes de 1.6 a 1.8 m, cerradas en la parte baja para que no se distraigan.","Largo para 4 a 6 animales en fila.","Manga curva: aprovecha que el animal quiere volver al punto de partida."]},
+ {"h":"Seguridad","p":["Pasarela lateral para trabajar desde arriba.","Puertas que se cierren sin que la persona entre a la manga.","Nada que corte o pinche."]}
+],"rel":["Trabajo en la manga","Manejo tranquilo del ganado","Báscula"]},
+
+{"t":"Báscula","a":"instalaciones","r":"Sin báscula se engorda a ciegas. Es la inversión que más rápido se paga.","s":[
+ {"h":"Tipos","p":["Báscula de plataforma con jaula individual.","Báscula de barras bajo una jaula en la salida de la manga.","Báscula para grupos (menos precisa por animal)."]},
+ {"h":"Instalación","p":["Base firme y a nivel.","Protegida del sol y la lluvia.","Al final de la manga para pesar uno por uno."]},
+ {"h":"Calibración","p":["Revisa con un peso conocido cada cierto tiempo.","Limpia estiércol y piedras bajo la plataforma.","Pon en cero antes de pesar."]}
+],"rel":["Pesaje","Manga, brete y embudo","Estimar el peso sin báscula"]},
+
+{"t":"Embarcadero","a":"instalaciones","r":"Un buen embarcadero hace que la carga y descarga sea rápida y sin lesiones.","s":[
+ {"h":"Medidas","p":["Rampa con pendiente máxima de 20 a 25 grados.","Escalones o listones antideslizantes cada 20 a 30 cm.","Plataforma plana al final, al nivel del camión.","Ancho de 75 a 90 cm."]},
+ {"h":"Reglas","p":["Paredes laterales cerradas para que no se distraigan.","Buena luz, sin sombras fuertes.","Los camiones no deben entrar a los corrales."]}
+],"rel":["Transporte de ganado","Manejo tranquilo del ganado","Cuarentena y bioseguridad"]},
+
+{"t":"Bodega de alimento","a":"instalaciones","r":"La bodega guarda uno de tus mayores gastos. Construirla bien reduce pérdidas por humedad y plagas.","s":[
+ {"h":"Construcción","p":["Piso de cemento más alto que el terreno.","Techo sin goteras con buen alero.","Paredes cerradas y ventilación con malla.","Puertas que cierren bien, con candado."]},
+ {"h":"Organización","p":["Tarimas para sacos.","Área separada para minerales y aditivos.","Medicinas y químicos en otro cuarto.","Zona de mezcla cerca de la puerta."]},
+ {"h":"Capacidad","p":["Suficiente para al menos 2 a 4 semanas de alimento.","Más si compras grano en cosecha."]}
+],"rel":["Almacenamiento del alimento","Control de plagas en la bodega","Mezcladora y equipo"]},
+
+{"t":"Cercas","a":"instalaciones","r":"Las cercas mantienen a los animales donde deben estar y permiten dividir potreros.","s":[
+ {"h":"Cerca de corral","p":["Tubo, madera tratada o cable: fuerte y sin partes que corten.","Altura de 1.5 a 1.8 m."]},
+ {"h":"Cerca de potrero","p":["Alambre de púas de 4 a 5 hilos con postes cada 2.5 a 3 m.","Cercas vivas de madero negro u otros: más baratas y dan forraje y sombra."]},
+ {"h":"Cerca eléctrica","p":["Barata para dividir apartos.","Energizador bien aterrizado.","Limpia la maleza que toca el alambre.","Enseña a los animales a respetarla en un corral pequeño primero."]}
+],"rel":["Pastoreo rotacional","Mantenimiento de instalaciones"]},
+
+{"t":"Agua: fuentes, tanques y calidad","a":"instalaciones","r":"Un engorde necesita mucha agua todos los días. Asegurar la fuente y la reserva evita emergencias.","s":[
+ {"h":"Cuánta necesitas","p":["40 a 70 litros por animal al día, hasta el doble con calor.","100 animales pueden necesitar 5,000 a 10,000 litros diarios."]},
+ {"h":"Fuentes","p":["Pozo, nacimiento, río o red municipal.","Cosecha de agua de lluvia de techos en reservorios."]},
+ {"h":"Reserva","p":["Tanque elevado para al menos 2 a 3 días de consumo.","Da agua por gravedad si falla la bomba."]},
+ {"h":"Calidad","p":["Análisis si es de pozo: sales, nitratos, azufre, bacterias.","Evita que el ganado beba de ríos y charcos."]},
+ {"h":"Bombeo","p":["Bomba solar donde no hay luz eléctrica.","Revisa filtros y flotadores cada semana."]}
+],"rel":["Agua de bebida","Bebederos","Riego de pastos"]},
+
+{"t":"Manejo del estiércol","a":"instalaciones","r":"Un animal de engorde produce unos 20 a 30 kg de estiércol al día. Manejarlo bien evita moscas, olores y problemas con vecinos, y da abono.","s":[
+ {"h":"Retiro","p":["Limpieza de corrales cada cierto tiempo, más seguido en lluvia.","Raspado de plataformas de cemento a diario o semanal."]},
+ {"h":"Compostaje","p":["Amontona el estiércol lejos de corrales, casas y fuentes de agua.","Voltéalo cada cierto tiempo: el calor mata semillas y microbios.","A los 2 a 3 meses sirve de abono."]},
+ {"h":"Otros usos","p":["Biodigestor para gas de cocina.","Lombricompost."]},
+ {"h":"Reglas","p":["No botes estiércol en quebradas.","Cuida que la escorrentía del corral no llegue a fuentes de agua."]}
+],"rel":["Moscas del cuerno y del establo","Fertilizar pastos","Ambiente y manejo de desechos"]},
+
+{"t":"Galera o engorde techado","a":"instalaciones","r":"Corrales techados con piso de cemento permiten engordar en poco espacio y protegen de lluvia y sol.","s":[
+ {"h":"Ventajas","p":["Menos lodo y menos problemas de patas en lluvia.","Mejor control de moscas y limpieza.","Menos espacio por animal."]},
+ {"h":"Requisitos","p":["Techo alto (4 a 5 m) con buena ventilación.","Piso rugoso con pendiente al drenaje.","Limpieza diaria o frecuente.","Plan para el estiércol."]},
+ {"h":"Costos","p":["Inversión alta por animal.","Se justifica con engordes continuos y buena rotación."]}
+],"rel":["Diseño de corrales","Pisos y drenaje","Presupuesto de instalaciones"]},
+
+{"t":"Presupuesto de instalaciones","a":"instalaciones","r":"Las instalaciones deben pagarse con los animales que engordas. Calcular su costo por cabeza evita inversiones que no rinden.","s":[
+ {"h":"Qué incluir","p":["Corrales, comederos, bebederos, sombra.","Manga, báscula, embarcadero.","Bodega y equipo de mezcla.","Agua y electricidad."]},
+ {"h":"Costo por animal","p":["Divide la inversión entre los años de vida útil y los animales que engordas por año.","Ejemplo: 200,000 de inversión, 10 años, 300 animales al año = unos 67 por animal."]},
+ {"h":"Ahorrar","p":["Materiales locales y tratados.","Construir por etapas.","Primero lo que más rinde: báscula, bebederos, sombra y comederos."]}
+],"rel":["Depreciación e inversiones","Diseño de corrales","Escala del engorde"]},
+
+{"t":"Mantenimiento de instalaciones","a":"instalaciones","r":"Un clavo salido o un bebedero goteando cuestan más de lo que parece. El mantenimiento preventivo es barato.","s":[
+ {"h":"Revisión semanal","p":["Cercas, puertas, bisagras y candados.","Clavos, alambres y tablas rotas.","Flotadores, tuberías y fugas.","Comederos rotos o con filos."]},
+ {"h":"Revisión antes de las lluvias","p":["Techos, canales y drenajes.","Pisos y zonas donde se junta agua."]},
+ {"h":"Registro","p":["Anota los gastos de mantenimiento en la app como gastos generales."]}
+],"rel":["Heridas y curaciones","Cercas","Pisos y drenaje"]},
+
+{"t":"Mezcladora y equipo","a":"instalaciones","r":"El equipo correcto hace que la ración salga pareja y ahorra horas de trabajo.","s":[
+ {"h":"Equipo básico","p":["Báscula pequeña para pesar ingredientes.","Picadora de pasto.","Molino o quebradora de grano.","Carretas o carretillas para servir."]},
+ {"h":"Mezcladora","p":["Horizontal o vertical, estacionaria o de arrastre.","Tamaño según la ración diaria.","Tiempo de mezclado según el fabricante."]},
+ {"h":"Mantenimiento","p":["Limpieza diaria de restos.","Afilado de cuchillas de picadora.","Revisión de correas, cadenas y rodamientos."]},
+ {"h":"Seguridad","p":["Guardas en partes que giran.","Nunca meter las manos con la máquina encendida.","Apagar y desconectar antes de limpiar."]}
+],"rel":["Mezclado de la ración","Bodega de alimento","Personal y seguridad en el trabajo"]}
+]

@@ -1,0 +1,147 @@
+[
+{"t":"Cómo funciona la panza (rumen)","a":"nutricion","r":"El bovino no digiere solo: millones de microbios en la panza fermentan el alimento. Alimentar bien es alimentar a esos microbios.","s":[
+ {"h":"Los cuatro estómagos","p":["Panza o rumen: el más grande, donde fermentan los microbios.","Redecilla: ayuda a devolver el bolo para rumiar.","Librillo: absorbe agua.","Cuajar: el estómago verdadero, con ácido como el nuestro."]},
+ {"h":"Qué hacen los microbios","p":["Rompen la fibra del pasto que el animal solo no podría digerir.","Convierten azúcares y almidón en ácidos grasos que dan la energía al animal.","Fabrican proteína de alta calidad a partir de nitrógeno, incluso de urea.","Producen vitaminas del grupo B y vitamina K."]},
+ {"h":"La rumia","p":["El animal regresa el bolo a la boca y lo mastica de nuevo.","La saliva que produce al rumiar trae bicarbonato que calma el ácido de la panza.","Sin fibra larga no hay rumia, no hay saliva y aparece la acidosis."]},
+ {"h":"Reglas que salen de aquí","p":["Los microbios necesitan tiempo para acostumbrarse a una ración nueva: 2 a 4 semanas.","Cambios bruscos matan a los microbios útiles.","Energía y proteína deben llegar juntas para que los microbios crezcan.","Agua limpia y constante es indispensable para la fermentación."]}
+],"rel":["Fibra y forraje en la ración","Adaptación al concentrado","Acidosis ruminal"]},
+
+{"t":"Materia seca y consumo","a":"nutricion","r":"Todo cálculo de ración se hace en materia seca: lo que queda del alimento sin el agua. Sin esto se comparan mal los ingredientes.","s":[
+ {"h":"Qué es","p":["Materia seca es el alimento sin su agua.","Un pasto fresco puede tener 20 % de materia seca: de 10 kg, solo 2 kg son alimento seco.","Un grano como el maíz tiene cerca de 88 % de materia seca."]},
+ {"h":"Cuánto comen","p":["Un novillo de engorde come entre 2.2 y 2.8 % de su peso vivo en materia seca al día.","Un animal de 350 kg come unos 8 a 9.5 kg de materia seca.","Al inicio, con calor o enfermos comen menos.","Raciones con mucha fibra de mala calidad bajan el consumo."]},
+ {"h":"Cómo calcular","p":["Kilos tal como se sirven = kilos de materia seca ÷ fracción de materia seca.","Ejemplo: 3 kg de materia seca de ensilaje con 30 % MS = 3 ÷ 0.30 = 10 kg de ensilaje fresco.","La calculadora de Rumi te da el consumo según el peso."]},
+ {"h":"Qué baja el consumo","p":["Calor fuerte y falta de sombra.","Agua escasa o sucia.","Alimento con moho o mal olor.","Acidosis subaguda.","Comederos sucios o con poco espacio.","Enfermedades y parásitos."]}
+],"rel":["Consumo bajo","Calidad del forraje y edad de corte","Formular una ración"]},
+
+{"t":"Energía en la ración","a":"nutricion","r":"La energía es lo que más limita la ganancia de peso en el engorde. Viene sobre todo de granos, melaza y forrajes de buena calidad.","s":[
+ {"h":"Cómo se mide","p":["TND (total de nutrientes digestibles): porcentaje del alimento que se digiere.","Energía neta de ganancia (ENg): la energía que realmente queda para ganar peso.","Una ración de finalización suele tener 72 a 80 % de TND."]},
+ {"h":"Fuentes de energía","p":["Granos: maíz, sorgo, arroz quebrado.","Melaza y subproductos con azúcar.","Pulpa de cítricos, cáscara de soya y otros con fibra digestible.","Grasas en poca cantidad (no más de 5 a 6 % de la ración total)."]},
+ {"h":"Señales de falta de energía","p":["Ganancia baja aunque coman bien.","Animales que no engrasan al final.","Buen tamaño pero flacos."]},
+ {"h":"Cuidados","p":["Más energía por grano exige más cuidado con la acidosis.","Sube el grano poco a poco.","Equilibra siempre con proteína y minerales."]}
+],"rel":["Proteína en la ración","Maíz y otros granos","Acidosis ruminal"]},
+
+{"t":"Proteína en la ración","a":"nutricion","r":"La proteína forma músculo y alimenta a los microbios de la panza. Hace falta más en animales jóvenes y livianos.","s":[
+ {"h":"Cuánta","p":["Iniciación y animales livianos: 13 a 15 % de proteína cruda en la materia seca.","Desarrollo: 12 a 13 %.","Finalización: 11 a 12 %.","Dar más de lo necesario es plata botada: el exceso se elimina en la orina."]},
+ {"h":"Tipos","p":["Proteína degradable: la usan los microbios de la panza (incluye urea).","Proteína de escape o sobrepasante: pasa sin degradarse y se digiere en el intestino.","Los animales jóvenes aprovechan más la proteína de escape."]},
+ {"h":"Fuentes","p":["Harina de soya, harina de coquito o palmiste, harina de algodón.","Urea (nitrógeno no proteico) en cantidad limitada.","Leguminosas: leucaena, madero negro, cratylia, gandul.","Gallinaza: ver restricciones y riesgos antes de usarla."]},
+ {"h":"Señales de falta de proteína","p":["Poco consumo de forrajes secos.","Ganancia baja en animales jóvenes.","Pelo feo y crecimiento de esqueleto sin carne."]}
+],"rel":["Urea en la ración","Harina de soya y otras proteínas","Energía en la ración"]},
+
+{"t":"Fibra y forraje en la ración","a":"nutricion","r":"Aunque la ración sea de concentrado, el animal necesita fibra larga para rumiar y mantener la panza sana.","s":[
+ {"h":"Para qué sirve","p":["Estimula la rumia y la saliva, que calma el ácido de la panza.","Mantiene el movimiento del rumen.","Da una capa de fibra que protege la pared de la panza."]},
+ {"h":"Cuánto","p":["Iniciación: 40 a 60 % de forraje.","Desarrollo: 25 a 35 %.","Finalización: al menos 10 a 15 % de forraje efectivo.","Con menos, sube el riesgo de acidosis, abscesos de hígado y timpanismo."]},
+ {"h":"Tamaño de picado","p":["Picado de 2 a 5 cm estimula la rumia.","Picado muy fino (menos de 1 cm) pierde efecto de fibra.","Forraje muy largo lo seleccionan y desperdician."]},
+ {"h":"Señales de poca fibra","p":["Pocos animales rumiando cuando están echados.","Heces sueltas y brillantes.","Consumo que sube y baja.","Lamen o comen tierra, madera o cama."]}
+],"rel":["Acidosis ruminal","Heno y pasto de corte en la ración","Mezclado de la ración"]},
+
+{"t":"Minerales principales","a":"nutricion","r":"Calcio, fósforo, sal, magnesio, potasio y azufre se necesitan en cantidades grandes. Un núcleo mineral bien balanceado los cubre.","s":[
+ {"h":"Calcio y fósforo","p":["Forman hueso y participan en el metabolismo de energía.","Relación calcio a fósforo de 1.5 a 2 a 1.","Las raciones con mucho grano tienen poco calcio y mucho fósforo: hay que agregar calcio (carbonato)."]},
+ {"h":"Sal (sodio y cloro)","p":["Regula el agua del cuerpo.","Mejora el consumo y el gusto.","0.25 a 0.5 % de la ración."]},
+ {"h":"Magnesio y potasio","p":["Importantes en animales estresados y con calor.","El potasio baja en raciones muy altas en grano."]},
+ {"h":"Azufre","p":["Necesario para que los microbios fabriquen proteína, sobre todo con urea.","En exceso (más de 0.4 % de la ración) causa problemas nerviosos."]},
+ {"h":"Cómo darlos","p":["En corral: núcleo mineral mezclado en la ración, usualmente 1.5 a 2 % de la materia seca, según el fabricante.","En potrero: sal mineral a libre acceso en saladeros techados.","Revisa la etiqueta: fósforo mínimo 6 a 8 % en sales para pastoreo tropical."]}
+],"rel":["Microminerales y vitaminas","Cálculos urinarios","Sal mineral y bloques"]},
+
+{"t":"Microminerales y vitaminas","a":"nutricion","r":"Se necesitan en cantidades muy pequeñas pero son clave para defensas, cascos, pelo y ganancia.","s":[
+ {"h":"Microminerales","p":["Zinc: piel, cascos, defensas.","Cobre: sangre, pelo, defensas.","Selenio: músculos y defensas; tóxico en exceso.","Cobalto: para que la panza fabrique vitamina B12.","Yodo: tiroides.","Manganeso: huesos y articulaciones."]},
+ {"h":"Vitaminas","p":["Vitamina A: vista, piel y defensas; baja en pastos secos y granos viejos.","Vitamina D: huesos; la forma el animal con el sol.","Vitamina E: defensas y músculos.","Las del grupo B las fabrica la panza sana."]},
+ {"h":"Cuándo reforzar","p":["Al ingreso, en animales estresados.","En época seca, cuando el pasto está seco y amarillo.","Con raciones de grano almacenado por mucho tiempo."]},
+ {"h":"Reglas","p":["Usa un núcleo mineral completo y confiable.","No agregues selenio ni cobre por tu cuenta.","Guarda los minerales secos y bien cerrados."]}
+],"rel":["Minerales principales","Deficiencias de minerales","Plan sanitario de ingreso"]},
+
+{"t":"Agua de bebida","a":"nutricion","r":"El agua es el nutriente más importante y el más olvidado. Un animal sin agua suficiente deja de comer y de ganar.","s":[
+ {"h":"Cuánta toman","p":["Entre 40 y 70 litros al día por animal de engorde, según peso y clima.","Con calor fuerte pueden tomar el doble.","Regla práctica: 5 a 7 litros por cada kilo de materia seca que comen, más con calor."]},
+ {"h":"Calidad","p":["Limpia, sin olor, sin verdín ni algas.","Fresca: el agua caliente se toma menos.","Sin estiércol ni orina.","Si es de pozo, analiza sales, nitratos y azufre."]},
+ {"h":"Bebederos","p":["Lava los bebederos cada semana y bota el agua sucia.","Espacio para que beban 10 a 15 % del lote a la vez.","Revisa flotadores y tuberías cada día.","Ubica bebederos a la sombra y lejos del comedero para que no caiga comida."]},
+ {"h":"Señales de falta de agua","p":["Baja el consumo de alimento.","Heces secas y duras.","Animales amontonados en el bebedero.","Ojos hundidos y piel que tarda en volver al pellizcarla."]}
+],"rel":["Bebederos","Golpe de calor","Consumo bajo"]},
+
+{"t":"Adaptación al concentrado","a":"nutricion","r":"Pasar de pasto a una ración con grano necesita 3 a 4 semanas. Es el paso más importante para evitar acidosis y muertes.","s":[
+ {"h":"Por qué adaptar","p":["Los microbios de la panza que digieren pasto son distintos a los que digieren grano.","Necesitan semanas para cambiar.","La pared de la panza también se adapta para absorber más ácidos."]},
+ {"h":"Programa de ejemplo","p":["Días 1 a 5: 60 % forraje, 40 % concentrado.","Días 6 a 10: 45 % forraje, 55 % concentrado.","Días 11 a 15: 30 % forraje, 70 % concentrado.","Días 16 a 21: 20 % forraje, 80 % concentrado.","Día 22 en adelante: 10 a 15 % forraje, 85 a 90 % concentrado (finalización).","Pasa al siguiente paso solo si el comedero queda limpio y no hay diarrea."]},
+ {"h":"Otro método","p":["Mantener la misma ración y subir la cantidad servida poco a poco, 0.5 kg por animal cada 2 a 3 días.","Funciona si lees bien los comederos."]},
+ {"h":"Señales de que vas muy rápido","p":["Heces sueltas y agrias.","Animales que dejan comida un día y se la terminan el otro.","Cojeras y timpanismo.","Baja de consumo."]},
+ {"h":"Errores comunes","p":["Dar ración de finalización desde el primer día.","Saltar pasos cuando el animal parece estar bien.","Cambiar de ración y de corral el mismo día."]}
+],"rel":["Acidosis ruminal","Lectura de comederos","Ración de inicio"]},
+
+{"t":"Ración de inicio","a":"nutricion","r":"La ración de los primeros días debe ser apetecible, con buena fibra y más proteína, para que los recién llegados coman pronto.","s":[
+ {"h":"Objetivos","p":["Que el animal empiece a comer en las primeras 24 a 48 horas.","Recuperar el agua y el peso perdido en el viaje.","Acostumbrar la panza al concentrado sin riesgo."]},
+ {"h":"Cómo es","p":["Heno o pasto seco de buena calidad a libre acceso los primeros días.","Concentrado de 13 a 15 % de proteína, poco a poco.","Forraje del 40 al 60 % de la ración.","Minerales y vitaminas completos."]},
+ {"h":"Manejo","p":["Sirve el heno encima del concentrado para que lo encuentren.","Comederos limpios y fáciles de ver.","Bebederos con agua corriendo para que la escuchen.","Revisa quién no se acerca a comer: suelen ser los primeros enfermos."]},
+ {"h":"Números","p":["Un recién llegado come 1.5 a 2 % de su peso en materia seca la primera semana.","El consumo normal se alcanza en 2 a 3 semanas."]}
+],"rel":["Recepción de ganado","Adaptación al concentrado","Proteína en la ración"]},
+
+{"t":"Ración de desarrollo","a":"nutricion","r":"Etapa intermedia en la que el animal crece esqueleto y músculo. Busca buena ganancia con costo moderado.","s":[
+ {"h":"Cuándo","p":["Animales livianos (menos de 300 kg) antes de pasar a finalización.","O en semiestabulado con pasto más suplemento."]},
+ {"h":"Cómo es","p":["Proteína de 12 a 13 %.","Forraje de 25 a 40 % de la ración.","Energía media: 68 a 72 % de TND."]},
+ {"h":"Ganancias esperadas","p":["1.0 a 1.3 kg por día en corral con ración balanceada.","0.6 a 0.9 kg por día en pastoreo con suplemento."]},
+ {"h":"Cuándo pasar a finalización","p":["Cuando el animal llega a unos 350 kg o le faltan 90 a 120 días para la venta.","Cuando el precio del grano hace rentable acelerar la ganancia."]}
+],"rel":["Ración de finalización","Crecimiento compensatorio","Suplementación en pastoreo"]},
+
+{"t":"Ración de finalización","a":"nutricion","r":"Es la ración con más energía, para ganar peso rápido y dar buena cobertura de grasa antes de la venta.","s":[
+ {"h":"Cómo es","p":["Energía alta: 75 a 80 % de TND.","Proteína de 11 a 12 %.","Forraje de 10 a 15 % para cuidar la panza.","Núcleo mineral completo, con calcio extra por el grano."]},
+ {"h":"Ganancias esperadas","p":["1.3 a 1.8 kg por día en novillos cruzados bien adaptados.","Conversión de 6 a 8 kg de alimento por kg de ganancia."]},
+ {"h":"Duración","p":["Normalmente 60 a 120 días, según el peso de entrada y la meta.","Más días de lo necesario empeoran la conversión: el animal pone grasa, que cuesta más."]},
+ {"h":"Cuidados","p":["Lectura de comederos diaria.","Horarios fijos.","Vigilar heces, cojeras y consumo.","Sombra y agua de sobra: la ración de finalización produce más calor."]}
+],"rel":["Adaptación al concentrado","Grado de acabado","Conversión alimenticia"]},
+
+{"t":"Formular una ración","a":"nutricion","r":"Formular es combinar ingredientes para cubrir lo que el animal necesita al menor costo. La app lo hace por ti con tus precios.","s":[
+ {"h":"Pasos","p":["Define el animal: peso y ganancia que buscas.","Calcula lo que necesita: materia seca, energía, proteína, calcio, fósforo.","Lista los ingredientes que tienes, con su precio y su valor nutritivo.","Busca la mezcla que cumple todo al menor costo.","Revisa límites: forraje mínimo, urea máxima, grasa máxima."]},
+ {"h":"Datos que necesitas de cada ingrediente","p":["Materia seca.","Energía (TND o energía neta).","Proteína cruda.","Calcio y fósforo.","Precio por kilo en tu finca, con flete incluido."]},
+ {"h":"Comparar ingredientes","p":["Compara el precio por unidad de nutriente, no por quintal.","Ejemplo: precio de un kilo de proteína = precio por kilo ÷ (proteína % ÷ 100).","Un ingrediente barato con poca materia seca puede salir caro."]},
+ {"h":"En la app","p":["En Más, Raciones y dietas, Formular dieta.","Pon el peso, la ganancia, enciende los ingredientes que tienes y corrige precios.","Guarda la mezcla como ración y úsala al anotar alimento."]},
+ {"h":"Reglas","p":["Analiza tus ingredientes cuando sea posible: las tablas son promedios.","Revisa la fórmula cada vez que cambian mucho los precios.","Consulta a un nutricionista para raciones con subproductos poco comunes."]}
+],"rel":["Costo de la ración","Análisis de ingredientes","Materia seca y consumo"]},
+
+{"t":"Maíz y otros granos","a":"nutricion","r":"Los granos son la principal fuente de energía del engorde. Cómo se procesan cambia cuánto aprovecha el animal.","s":[
+ {"h":"Maíz","p":["Alto en energía (unos 85 a 90 % de TND) y bajo en proteína (8 a 9 %).","Entero lo aprovechan menos: parte sale en el estiércol.","Quebrado o rolado grueso es lo más usado; molido muy fino aumenta la acidosis."]},
+ {"h":"Sorgo","p":["Un poco menos de energía que el maíz y grano más duro.","Hay que molerlo o rolarlo: entero casi no se digiere.","Algunas variedades tienen taninos que bajan la digestión de la proteína."]},
+ {"h":"Arroz y otros","p":["Arroz quebrado o puntilla: buena energía, fermenta rápido.","Trigo y cebada: muy rápida fermentación; usarlos con cuidado."]},
+ {"h":"Calidad","p":["Grano seco (menos de 14 % de humedad) para guardar.","Sin moho, sin olor a humedad, sin gorgojos.","Revisa micotoxinas en compras grandes."]},
+ {"h":"Reglas","p":["Mezcla granos distintos para bajar el riesgo de acidosis y aprovechar precios.","No pases de 70 a 80 % de grano en la ración total sin asesoría.","Compra en cosecha cuando el precio es más bajo, si tienes buena bodega."]}
+],"rel":["Energía en la ración","Acidosis ruminal","Almacenamiento del alimento"]},
+
+{"t":"Harina de soya y otras proteínas","a":"nutricion","r":"Las harinas de oleaginosas son la proteína vegetal más usada. Elegir bien según el precio por kilo de proteína ahorra mucho dinero.","s":[
+ {"h":"Harina de soya","p":["44 a 48 % de proteína, muy digestible y confiable.","Suele ser la más cara por quintal, pero no siempre por kilo de proteína."]},
+ {"h":"Harina de coquito o palmiste","p":["14 a 18 % de proteína y bastante fibra y grasa.","Barata en zonas de palma; buena para desarrollo."]},
+ {"h":"Harina de algodón","p":["35 a 40 % de proteína.","Contiene gosipol, tóxico en exceso para animales jóvenes: limita su uso."]},
+ {"h":"Otras","p":["DDGS o granos de destilería: proteína y energía, revisar azufre.","Harina de ajonjolí, de maní: según disponibilidad y calidad (cuidado con aflatoxinas en maní)."]},
+ {"h":"Cómo decidir","p":["Calcula el precio por kilo de proteína de cada una.","Combina una de alta calidad (soya) con otra barata.","Revisa humedad y olor: las harinas húmedas se enmohecen."]}
+],"rel":["Proteína en la ración","Subproductos para la ración","Formular una ración"]},
+
+{"t":"Urea en la ración","a":"nutricion","r":"La urea es la proteína más barata porque los microbios la convierten en proteína. Bien usada ahorra mucho; mal usada mata.","s":[
+ {"h":"Cómo funciona","p":["La urea se vuelve amoníaco en la panza.","Los microbios usan ese amoníaco junto con energía para hacer proteína.","Sin energía suficiente, el amoníaco pasa a la sangre y envenena."]},
+ {"h":"Límites","p":["Máximo 1 % de la ración total en materia seca.","No más de un tercio de la proteína total.","En sales proteinadas o bloques, según la formulación del fabricante."]},
+ {"h":"Cómo usarla","p":["Adapta en 1 a 2 semanas empezando con la mitad.","Mezcla muy bien: primero con una parte pequeña del alimento.","Siempre con grano o melaza y con azufre.","Nunca en el agua de bebida."]},
+ {"h":"No la uses","p":["En animales flacos, en ayuno o enfermos.","En terneros muy jóvenes.","Si no puedes mezclarla parejo."]}
+],"rel":["Intoxicación por urea","Proteína en la ración","Melaza"]},
+
+{"t":"Melaza","a":"nutricion","r":"La melaza da energía rápida, mejora el sabor y pega el polvo de la ración. Es buena aliada en cantidades moderadas.","s":[
+ {"h":"Valor","p":["Unos 70 a 75 % de materia seca, rica en azúcares.","Poca proteína.","Aporta potasio y azufre."]},
+ {"h":"Cuánto usar","p":["5 a 10 % de la ración en corral es lo más común.","Más de 15 % puede dar diarrea y problemas si no se formula bien."]},
+ {"h":"Usos","p":["Mejorar el gusto de raciones con subproductos o forrajes toscos.","Reducir polvo y que el animal no seleccione.","Vehículo para urea en suplementos de potrero (melaza-urea), con formulación correcta."]},
+ {"h":"Cuidados","p":["Guárdala en tanque tapado para que no le caiga agua.","En tiempo frío se pone espesa; se diluye con poca agua al mezclar.","No dejes melaza con urea expuesta a la lluvia."]}
+],"rel":["Energía en la ración","Urea en la ración","Mezclado de la ración"]},
+
+{"t":"Subproductos para la ración","a":"nutricion","r":"Los subproductos de la agroindustria pueden bajar mucho el costo de la ración si se conocen sus límites.","s":[
+ {"h":"Pulpa de cítricos","p":["Energía parecida a un grano pero con fibra digestible: menos riesgo de acidosis.","Alta en calcio.","Fresca se daña rápido; seca o ensilada se guarda mejor."]},
+ {"h":"Cascarilla o cáscara de soya","p":["Fibra muy digestible y energía moderada.","Buena para bajar el grano sin perder energía."]},
+ {"h":"Afrecho o salvado de trigo, semolina de arroz","p":["Energía media y proteína de 12 a 16 %.","Alto en fósforo: cuidar el calcio.","La semolina de arroz se enrancia rápido."]},
+ {"h":"Rechazo de banano","p":["Energía con mucha agua (poca materia seca).","Se da picado, mezclado con fuente de proteína y fibra.","Cuidado con el látex del verde y con el costo del transporte por el agua."]},
+ {"h":"Pulpa y cáscara de café, cacao","p":["Tienen cafeína, taninos o teobromina: úsalas en poca cantidad y con asesoría.","Mejor ensiladas o secas."]},
+ {"h":"Reglas","p":["Pide análisis o datos confiables de cada subproducto.","Calcula el costo por materia seca, incluido el flete.","Introdúcelos poco a poco.","Revisa que no traigan contaminantes, plásticos ni químicos."]}
+],"rel":["Formular una ración","Costo de la ración","Análisis de ingredientes"]},
+
+{"t":"Gallinaza y pollinaza","a":"nutricion","r":"Son camas de aves usadas como proteína barata. Tienen riesgos sanitarios y legales importantes que hay que conocer antes de usarlas.","s":[
+ {"h":"Riesgos","p":["Pueden traer restos de medicamentos de las aves, metales, plumas, vidrio y tierra.","Transmiten salmonela, clostridios y botulismo si no se tratan.","En muchos países su uso en rumiantes está prohibido o regulado por el riesgo de encefalopatía (vaca loca) y de residuos.","Algunos mercados y plantas no compran animales alimentados con cama de aves."]},
+ {"h":"Antes de usarla","p":["Consulta la norma vigente con SENASA y los requisitos de tu comprador.","Si está permitido, solo material tratado (compostado o ensilado) y de origen conocido.","Nunca cama de aves con restos de harina de carne o de huesos."]},
+ {"h":"Alternativas","p":["Urea bien usada con melaza o grano.","Harinas vegetales y leguminosas forrajeras."]}
+],"rel":["Productos prohibidos en la alimentación","Proteína en la ración","Buenas prácticas ganaderas"]},
+
+{"t":"Ensilaje en la ración","a":"nutricion","r":"El ensilaje de maíz o sorgo es un forraje con buena energía que se guarda para todo el año. Bien hecho es la base de muchos engordes.","s":[
+ {"h":"Valor","p":["Ensilaje de maíz: 30 a 35 % de materia seca y buena energía por el grano.","Ensilaje de sorgo o de pasto: menos energía, más fibra.","La proteína es baja (7 a 9 %): hay que completarla."]},
+ {"h":"Cuánto dar","p":["En desarrollo puede ser 40 a 60 % de la materia seca.","En finalización se usa como el forraje de la ración (10 a 25 %)."]},
+ {"h":"Calidad al usarlo","p":["Olor agradable, a vinagre suave o fruta.","Color verde amarillento, no café oscuro ni negro.","Sin moho blanco ni azul, ni partes calientes.","Descarta las partes dañadas: dan diarreas, abortos y bajan el consumo."]},
+ {"h":"Manejo en el comedero","p":["Saca solo lo que se va a comer ese día.","No lo dejes al sol horas antes de servir.","Mézclalo con el concentrado para que no seleccionen."]}
+],"rel":["Ensilaje: cómo hacerlo","Ensilaje: calidad y problemas","Fibra y forraje en la ración"]}
+]

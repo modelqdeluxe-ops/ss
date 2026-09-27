@@ -1,0 +1,181 @@
+[
+{"t":"Revisión diaria de los animales","a":"sanidad","r":"Recorrer los corrales con ojo entrenado, mañana y tarde, es la medicina más barata del engorde: encuentra al enfermo antes de que se complique.","s":[
+ {"h":"Cuándo y cómo","p":["Revisa dos veces al día: temprano antes de servir y en la tarde después de la última entrega.","Entra al corral despacio, sin perros ni gritos, y deja que los animales se levanten solos.","Mira primero de lejos al grupo completo y después animal por animal.","Dedica al menos 10 a 15 minutos por corral en las primeras tres semanas después de la llegada."]},
+ {"h":"Señales de un animal sano","p":["Se acerca al comedero cuando sirves y come con ganas.","Rumia echado y tranquilo buena parte del día.","Orejas levantadas, ojos brillantes y nariz húmeda y limpia.","Estiércol en forma de torta, ni muy duro ni aguado.","Respira tranquilo, sin mover mucho los costados ni abrir la boca.","Pelo parejo y brillante, sin zonas levantadas."]},
+ {"h":"Señales de alarma","p":["Se queda atrás del grupo o no se levanta al entrar al corral.","Orejas caídas, cabeza baja, ojos hundidos o lagrimeo.","Moco espeso, tos, respiración rápida o con la boca abierta.","Panza hundida del lado izquierdo (no está comiendo) o muy inflada.","Diarrea, heces con sangre o estiércol muy seco.","Cojera, hinchazones, heridas o gusanera.","Se lame o patea la panza, rechina los dientes o se aparta del grupo."]},
+ {"h":"Método DART para enfermedad respiratoria","p":["D de deprimido: cabeza baja, orejas caídas, poco alerta.","A de apetito: no se acerca al comedero o come poco.","R de respiración: rápida, con esfuerzo o con ruido.","T de temperatura: más de 39.5 °C en el termómetro.","Un animal con dos o más de estas señales debe sacarse a revisión ese mismo día."]},
+ {"h":"Qué hacer al encontrar uno","p":["Sepáralo con calma al corral de enfermos con agua, sombra y heno.","Tómale la temperatura antes de tratar; anótala.","Llama o consulta al veterinario y sigue su tratamiento completo.","Anota en la app el tratamiento, el producto y los días de retiro.","Vuelve a revisarlo cada día hasta que coma y tenga temperatura normal."]},
+ {"h":"Errores comunes","p":["Revisar solo al servir la comida: el enfermo se mezcla con el grupo y no se ve.","Esperar a que el animal deje de comer del todo para actuar.","Tratar sin tomar la temperatura ni anotar nada.","No volver a revisar al animal tratado."]}
+],"rel":["Signos vitales y cómo tomarlos","Neumonía o complejo respiratorio","Corral de enfermos"]},
+
+{"t":"Signos vitales y cómo tomarlos","a":"sanidad","r":"Temperatura, respiración, pulso y movimientos de la panza dicen mucho de la salud de un animal. Aprender a medirlos te ayuda a decidir rápido.","s":[
+ {"h":"Valores normales en bovino adulto","p":["Temperatura: 38.0 a 39.3 °C; hasta 39.5 °C con calor o después de moverlo.","Respiración en reposo: 10 a 30 por minuto; con calor fuerte puede subir mucho.","Pulso: 60 a 80 latidos por minuto.","Movimientos de la panza: 1 a 2 por minuto, que se sienten al presionar el hueco del lado izquierdo.","Mucosas (encías, párpado): rosadas y húmedas."]},
+ {"h":"Temperatura","p":["Usa termómetro digital en el recto, lubricado, apoyado contra la pared del recto, por un minuto o hasta que pite.","Tómala con el animal quieto en la manga y en la sombra.","Más de 39.5 °C en reposo es fiebre; más de 40.5 °C es fiebre alta.","Menos de 38 °C en un animal decaído es grave: puede estar en choque o muy débil.","Limpia y desinfecta el termómetro entre animales."]},
+ {"h":"Respiración","p":["Cuenta cuántas veces sube el costado en 30 segundos y multiplica por dos.","Respirar con la boca abierta, estirar el cuello o gemir indica problema serio.","Distingue el jadeo por calor (todo el grupo, en horas calientes) de la neumonía (un animal, con fiebre y moco)."]},
+ {"h":"Panza (rumen)","p":["Pon el puño en el hueco del lado izquierdo y cuenta las contracciones en dos minutos.","Sin movimientos: indigestión, acidosis o fiebre alta.","Panza muy inflada y dura del lado izquierdo: timpanismo, es urgencia.","Un animal sano rumia 7 a 10 horas al día."]},
+ {"h":"Mucosas y ojos","p":["Pálidas o blancas: anemia (parásitos, anaplasmosis, babesiosis).","Amarillas: problema de hígado o destrucción de sangre (anaplasmosis).","Azuladas: falta de oxígeno, neumonía grave o intoxicación.","Ojos hundidos: deshidratación; pellizca la piel del cuello, si tarda en volver hay deshidratación."]},
+ {"h":"Reglas prácticas","p":["Siempre toma la temperatura antes de dar antibiótico.","Anota los valores en la app o en un cuaderno con la fecha y el arete.","Compara con otros animales sanos del mismo corral a la misma hora.","Si varios animales tienen fiebre a la vez, llama al veterinario ese mismo día."]}
+],"rel":["Revisión diaria de los animales","Neumonía o complejo respiratorio","Golpe de calor"]},
+
+{"t":"Neumonía o complejo respiratorio","a":"sanidad","r":"Es la enfermedad que más animales mata y enferma en el engorde, sobre todo en las primeras cuatro semanas después de la llegada. Actuar el primer día cambia todo.","s":[
+ {"h":"Qué es","p":["Una infección de los pulmones causada por una mezcla de virus (IBR, DVB, PI3, VRSB) y bacterias (Mannheimia, Pasteurella, Histophilus, Mycoplasma).","El estrés baja las defensas y los virus abren la puerta a las bacterias.","También la llaman fiebre del embarque porque aparece después del transporte."]},
+ {"h":"Por qué aparece","p":["Viajes largos, ayuno y deshidratación.","Mezcla de animales de muchos orígenes.","Destete reciente, castración o descorne cerca de la llegada.","Polvo, cambios bruscos de temperatura, corrales mal ventilados o lodosos.","Falta de vacunas antes de llegar."]},
+ {"h":"Señales","p":["Orejas caídas, cabeza baja y ojos apagados.","Deja de comer o come muy poco.","Fiebre de 40 °C o más.","Moco en la nariz, lagrimeo y tos.","Respiración rápida, con esfuerzo o con la boca abierta en casos graves.","Aparece más entre los días 5 y 21 después de la llegada."]},
+ {"h":"Qué hacer","p":["Separa al animal y tómale la temperatura.","Trata el primer día con el antibiótico que indique tu veterinario; cada día de espera baja la posibilidad de curarlo.","Termina el tratamiento completo aunque mejore antes.","Si en 48 a 72 horas no mejora (sigue con fiebre o sin comer), vuelve a consultar: puede necesitar otro producto.","Anota producto, dosis, fecha y retiro en la app.","Si enferman más de 5 a 10 % del lote, revisa con el veterinario el manejo y considera tratar a todo el grupo según su criterio."]},
+ {"h":"Prevención","p":["Compra animales vacunados y destetados con anticipación cuando se pueda.","Viajes cortos, con buena carga y sin maltrato.","Al llegar: agua, heno de buena calidad y descanso antes de trabajarlos.","Vacuna respiratoria según el plan de tu veterinario.","Corrales con sombra, buena ventilación y sin polvo; moja el piso en verano.","No mezcles lotes nuevos con animales que ya están en engorde."]},
+ {"h":"Números clave","p":["La mayoría de casos aparecen en las primeras 3 a 4 semanas.","Un animal que se enferma de neumonía puede ganar 50 a 100 gramos menos por día durante todo el engorde.","Las recaídas son más frecuentes cuando el tratamiento se empieza tarde."]},
+ {"h":"Errores comunes","p":["Esperar a que el animal tosa mucho para tratar: la tos llega tarde.","Cambiar de antibiótico cada día.","Suspender el tratamiento cuando el animal vuelve a comer.","No respetar el retiro antes de vender."]}
+],"rel":["Plan sanitario de ingreso","Recepción de ganado","Uso responsable de antibióticos"]},
+
+{"t":"Acidosis ruminal","a":"sanidad","r":"Es el problema digestivo más importante del engorde con concentrado. Aparece cuando los animales comen mucho grano de golpe y la panza se vuelve ácida.","s":[
+ {"h":"Qué es","p":["El grano tiene almidón que se fermenta muy rápido en la panza y produce ácidos.","Si se produce más ácido del que la panza puede quitar, baja el pH y mueren las bacterias buenas.","Hay acidosis aguda (grave, en horas) y subaguda (escondida, baja la ganancia sin que se note)."]},
+ {"h":"Causas","p":["Pasar de pasto a concentrado de golpe, sin adaptación.","Comederos que se quedan vacíos muchas horas y luego los animales comen con hambre.","Cambios bruscos de ración o de cantidad.","Poco forraje o forraje muy picado en la ración.","Errores al mezclar: bolsas de grano sueltas, mezcla dispareja.","Días de calor seguidos de noches frescas en que comen de más."]},
+ {"h":"Señales de acidosis aguda","p":["Deja de comer de repente, panza sin movimiento.","Diarrea espumosa, con olor agrio y a veces con granos enteros.","Deshidratación, ojos hundidos, se tambalea o se queda echado.","Puede morir en uno o dos días."]},
+ {"h":"Señales de acidosis subaguda","p":["El consumo del lote sube y baja de un día a otro.","Heces sueltas, con burbujas o con grano sin digerir.","Cojeras (laminitis) semanas después.","Abscesos de hígado al matadero y menor ganancia sin causa clara."]},
+ {"h":"Qué hacer","p":["Retira el concentrado a los animales afectados y dales heno de buena calidad y agua.","Llama al veterinario: los casos agudos necesitan tratamiento urgente.","Revisa la mezcla y la cantidad servida; vuelve un paso atrás en la adaptación.","Anota en la app el día y el lote para ver si se repite."]},
+ {"h":"Prevención","p":["Adapta al concentrado en 3 a 4 semanas, subiendo poco a poco.","Mantén al menos 10 a 15 % de forraje en la ración de finalización.","Sirve a la misma hora todos los días, dos o tres veces al día.","Lee los comederos y ajusta la cantidad en pasos pequeños (5 a 10 %).","Evita que el comedero quede vacío más de 2 a 3 horas.","Consulta con tu nutricionista el uso de aditivos que estabilizan la panza (por ejemplo ionóforos o bicarbonato)."]},
+ {"h":"Errores comunes","p":["Dar más grano para que engorden más rápido sin adaptar.","Cambiar de ración el mismo día que se cambia de corral.","Moler el grano demasiado fino.","Ignorar las heces sueltas y el consumo que varía."]}
+],"rel":["Adaptación al concentrado","Lectura de comederos","Abscesos de hígado","Cojeras y problemas de pezuña"]},
+
+{"t":"Timpanismo o panza inflada","a":"sanidad","r":"La panza se llena de gas que el animal no puede sacar. Es una urgencia: puede matar en pocas horas por presión sobre los pulmones.","s":[
+ {"h":"Tipos","p":["Gas libre: el gas está arriba y no sale porque algo tapa el esófago o la panza no se mueve.","Espumoso: el gas queda atrapado en espuma; es típico con leguminosas tiernas o raciones con mucho grano fino.","Crónico: se repite en el mismo animal por daño de nervios o abscesos."]},
+ {"h":"Señales","p":["Lado izquierdo muy inflado, se ve desde atrás del animal.","Incomodidad, patea la panza, se echa y se levanta.","Respiración rápida, boca abierta, lengua afuera.","Puede caer y morir si no se atiende."]},
+ {"h":"Qué hacer de inmediato","p":["Llama al veterinario.","Haz caminar al animal despacio y mantenlo con la cabeza en alto.","Si es gas libre, una sonda por la boca hasta la panza lo saca; hazlo solo si sabes hacerlo.","En el espumoso se usan antiespumantes por la boca que indica el veterinario.","Perforar la panza (trocar) es una medida de último recurso y debe hacerla alguien capacitado."]},
+ {"h":"Prevención","p":["Adaptación correcta al concentrado y forraje suficiente en la ración.","No moler el grano demasiado fino.","No soltar animales con hambre a potreros de leguminosa tierna o mojada.","Sirve la ración a horas fijas para que no coman con ansiedad.","Separa y vigila a los que se inflan seguido; si se repite, considera venderlos."]},
+ {"h":"Errores comunes","p":["Esperar a ver si se le pasa solo.","Dar aceite o remedios caseros sin saber qué tipo de timpanismo es.","Pinchar la panza con cualquier cuchillo en un sitio equivocado."]}
+],"rel":["Acidosis ruminal","Adaptación al concentrado","Leguminosas y árboles forrajeros"]},
+
+{"t":"Abscesos de hígado","a":"sanidad","r":"Son bolsas de pus en el hígado que aparecen casi siempre después de acidosis. No se ven en vida, pero bajan la ganancia y el matadero decomisa el hígado.","s":[
+ {"h":"Por qué aparecen","p":["La acidosis daña la pared de la panza y las bacterias pasan a la sangre y llegan al hígado.","Son más comunes con raciones muy altas en grano y poco forraje.","Los comederos que se vacían y los cambios bruscos de ración los aumentan."]},
+ {"h":"Cómo afectan","p":["Menor consumo y ganancia diaria.","Peor conversión alimenticia.","Decomiso de hígados y a veces de partes de la canal si hay adherencias.","Abscesos grandes pueden romperse y matar al animal."]},
+ {"h":"Cómo saber si los tienes","p":["Pide al matadero el reporte de hígados decomisados de tu lote.","Si más de 10 a 15 % de los hígados salen con abscesos, revisa la ración y el manejo del comedero.","Una ganancia más baja de lo esperado en la finalización puede ser señal."]},
+ {"h":"Prevención","p":["Todo lo que previene la acidosis: adaptación, forraje efectivo, horarios fijos.","Consulta con tu veterinario o nutricionista los aditivos autorizados que los reducen.","Evita granos molidos muy finos."]}
+],"rel":["Acidosis ruminal","Fibra y forraje en la ración","Calidad de canal"]},
+
+{"t":"Diarrea en el engorde","a":"sanidad","r":"La diarrea es una señal, no una enfermedad. Hay que buscar la causa: ración, parásitos, infecciones o agua.","s":[
+ {"h":"Causas más comunes","p":["Cambios bruscos de ración o exceso de grano (acidosis).","Alimento con moho o fermentado.","Parásitos internos y coccidias.","Infecciones como salmonella o diarrea viral bovina.","Agua sucia o contaminada.","Pasto muy tierno y mojado."]},
+ {"h":"Cómo leer las heces","p":["Espumosa, agria, con granos: problema de ración o acidosis.","Con sangre o moco y pujo: coccidiosis o infección; urgente.","Verde y aguada en potrero tierno: exceso de agua del pasto.","Negra o muy oscura: puede ser sangrado en el estómago.","Varios animales al mismo tiempo: busca algo común (alimento, agua)."]},
+ {"h":"Qué hacer","p":["Separa a los más afectados y dales agua limpia a voluntad y heno.","Revisa la mezcla, el grano y el alimento guardado.","Tómale la temperatura: con fiebre suele ser infección.","Consulta al veterinario; un análisis de heces aclara si son parásitos o coccidias.","Los sueros orales ayudan a reponer agua y sales en animales débiles."]},
+ {"h":"Prevención","p":["Cambios de ración graduales.","Bodega seca para evitar moho.","Bebederos limpios cada semana.","Desparasitación según el plan del veterinario.","Corrales sin charcos ni lodo acumulado."]}
+],"rel":["Acidosis ruminal","Coccidiosis","Parásitos internos","Almacenamiento del alimento"]},
+
+{"t":"Coccidiosis","a":"sanidad","r":"Parásito microscópico del intestino que ataca más a animales jóvenes y estresados, en corrales húmedos y sucios.","s":[
+ {"h":"Señales","p":["Diarrea con moco o sangre y pujo.","Cola y patas traseras manchadas.","Pérdida de peso y deshidratación.","En casos graves: temblores o signos nerviosos."]},
+ {"h":"Cuándo aparece","p":["En las primeras semanas del engorde, con estrés de llegada.","En corrales con lodo, estiércol acumulado o comederos a ras de suelo.","Cuando hay mucha densidad de animales."]},
+ {"h":"Qué hacer","p":["Consulta al veterinario para confirmar con análisis de heces.","El tratamiento es con productos específicos contra coccidias, según su indicación.","Separa a los enfermos y dales agua y sueros."]},
+ {"h":"Prevención","p":["Pisos secos y limpieza frecuente del estiércol.","Comederos y bebederos elevados, que no se ensucien con heces.","Algunos aditivos en la ración previenen coccidias; consulta a tu nutricionista.","Evita el hacinamiento."]}
+],"rel":["Diarrea en el engorde","Pisos y drenaje","Recepción de ganado"]},
+
+{"t":"Parásitos internos","a":"sanidad","r":"Gusanos del estómago, intestino y pulmón roban nutrientes y bajan la ganancia. En el trópico húmedo son un problema constante, sobre todo en animales que vienen de potrero.","s":[
+ {"h":"Principales parásitos","p":["Gusanos del cuajar y del intestino (Haemonchus, Cooperia, Ostertagia, Trichostrongylus).","Gusanos del pulmón (Dictyocaulus): causan tos.","Duela del hígado (Fasciola) en zonas con charcos y caracoles.","Tenias y coccidias en animales jóvenes."]},
+ {"h":"Señales","p":["Pelo opaco y parado.","Baja ganancia de peso sin otra causa.","Diarrea y cola sucia.","Anemia: mucosas pálidas.","Edema debajo de la quijada (papada o 'botella') en infestaciones fuertes."]},
+ {"h":"Desparasitación al ingreso","p":["Desparasita a todos los animales al llegar, con el producto y la dosis por peso que indique tu veterinario.","Pesa o estima bien el peso: dar menos dosis de la necesaria favorece la resistencia.","En corral cerrado, con buen manejo, la reinfección es baja; en potrero se repite según el plan."]},
+ {"h":"Resistencia a desparasitantes","p":["Usar siempre el mismo producto o dosis bajas hace que los parásitos ya no mueran.","Rota el grupo químico (no solo la marca) según indique el veterinario.","Un análisis de heces antes y 10 a 14 días después del tratamiento dice si el producto funciona."]},
+ {"h":"Reglas prácticas","p":["Calcula la dosis con el animal más pesado del grupo o por peso individual.","Respeta los días de retiro de la etiqueta antes de vender.","Anota en la app el producto y la fecha.","No mezcles desparasitantes con otros productos en la misma jeringa."]}
+],"rel":["Desparasitación y resistencia","Fasciola o duela del hígado","Plan sanitario de ingreso"]},
+
+{"t":"Fasciola o duela del hígado","a":"sanidad","r":"Parásito en forma de hoja que vive en el hígado. Se contagia en potreros húmedos donde hay caracoles de agua.","s":[
+ {"h":"Cómo se contagia","p":["Los huevos salen en el estiércol, pasan por un caracol de agua y la larva queda en el pasto húmedo.","Los animales la comen al pastar cerca de charcos, quebradas o zonas encharcadas."]},
+ {"h":"Señales","p":["Baja de peso y mal pelo.","Anemia y edema debajo de la quijada.","Decomiso de hígados en el matadero, con conductos engrosados."]},
+ {"h":"Qué hacer","p":["Consulta al veterinario: no todos los desparasitantes matan la fasciola.","Usa un producto específico contra fasciola si hay antecedentes en la zona o de donde vienen los animales.","Pide al matadero el reporte de hígados."]},
+ {"h":"Prevención","p":["Cerca las zonas encharcadas y los bordes de quebradas.","Da agua en bebederos, no en charcos.","Drena los potreros cuando sea posible."]}
+],"rel":["Parásitos internos","Abscesos de hígado","Agua de bebida"]},
+
+{"t":"Garrapatas","a":"sanidad","r":"Chupan sangre, transmiten anaplasmosis y babesiosis, dañan el cuero y bajan la ganancia. Su control debe ser planificado para no crear resistencia.","s":[
+ {"h":"Daños","p":["Pérdida de sangre y de peso.","Transmiten ranilla (babesiosis y anaplasmosis).","Heridas que atraen moscas y gusanera.","Estrés y menos consumo de alimento."]},
+ {"h":"Control","p":["Baña o aplica el producto cuando haya garrapatas visibles, siguiendo la etiqueta.","Moja bien todo el cuerpo: orejas, entre las patas, ubre o escroto y debajo de la cola.","Usa la dosis y dilución correctas; menos producto no mata y crea resistencia.","Rota los grupos químicos según indique el técnico.","Los productos derrame (pour-on) e inyectables tienen retiros largos; revisa antes de vender."]},
+ {"h":"Resistencia","p":["Si después de un baño bien hecho siguen vivas muchas garrapatas, puede haber resistencia.","Una prueba de resistencia en laboratorio indica qué productos funcionan en tu finca."]},
+ {"h":"Prevención","p":["Revisa a los animales al llegar y trátalos antes de meterlos al corral.","Mantén el monte corto alrededor de corrales.","En potreros, la rotación ayuda a romper el ciclo.","Los animales cebuinos y sus cruces resisten mejor la garrapata."]},
+ {"h":"Seguridad","p":["Usa guantes, mascarilla y ropa de manga larga al preparar y aplicar.","No botes restos de baño en quebradas o fuentes de agua.","Guarda los productos bajo llave, lejos del alimento."]}
+],"rel":["Anaplasmosis","Babesiosis o ranilla roja","Uso responsable de antibióticos"]},
+
+{"t":"Moscas del cuerno y del establo","a":"sanidad","r":"Las moscas molestan, pican y chupan sangre. Un animal que se pasa el día espantando moscas come y gana menos.","s":[
+ {"h":"Tipos","p":["Mosca del cuerno: pequeña, se agrupa en lomo y costados; vive sobre el animal.","Mosca de los establos: pica en las patas, se cría en estiércol mezclado con alimento.","Mosca doméstica: no pica, pero ensucia y lleva enfermedades."]},
+ {"h":"Daños","p":["Estrés, menos tiempo comiendo y descansando.","Pérdida de peso y de sangre.","Transmiten enfermedades de ojos y piel."]},
+ {"h":"Control","p":["La clave es quitar dónde se crían: estiércol y alimento mojado acumulado.","Limpia bajo comederos y alrededor de bebederos cada semana.","Usa productos insecticidas solo cuando hay muchas moscas y según etiqueta.","Trampas y cebos en zonas de descanso ayudan.","Rota los productos para evitar resistencia."]},
+ {"h":"Umbral práctico","p":["Más de 200 moscas del cuerno por animal justifican un tratamiento.","Si ves a los animales amontonados y pateando todo el día, actúa."]}
+],"rel":["Manejo del estiércol","Gusano barrenador","Queratoconjuntivitis u ojo rosado"]},
+
+{"t":"Gusano barrenador o gusanera","a":"sanidad","r":"La mosca pone huevos en heridas y las larvas comen carne viva. Es una plaga de control oficial: los casos se reportan a SENASA.","s":[
+ {"h":"Dónde aparece","p":["Heridas de castración, descorne, aretes, fierros o golpes.","Ombligos de terneros.","Heridas por garrapatas o alambre."]},
+ {"h":"Señales","p":["Herida que crece, con mal olor y líquido.","Larvas blancas visibles dentro.","El animal se lame, se rasca y se aparta."]},
+ {"h":"Qué hacer","p":["Limpia la herida, saca las larvas y aplica un producto larvicida y repelente de uso veterinario.","Revisa la herida cada día hasta que cierre.","Reporta el caso a SENASA: es parte del programa oficial de control.","Guarda algunas larvas en alcohol si el técnico las pide."]},
+ {"h":"Prevención","p":["Revisa y cura toda herida el mismo día.","Haz castraciones, descornes y aretes en época de menos moscas y con repelente.","Arregla clavos, alambres y tablas que cortan en los corrales.","Revisa a los animales nuevos antes de meterlos con el resto."]}
+],"rel":["Heridas y curaciones","Programas oficiales de sanidad","Castración"]},
+
+{"t":"Tórsalo o nuche","a":"sanidad","r":"Larva de una mosca que vive debajo del cuero formando bolitas con un agujero. Daña el cuero y molesta al animal.","s":[
+ {"h":"Señales","p":["Bultos en el lomo y costados con un orificio por donde respira la larva.","Picazón y molestia.","Cueros con agujeros al matadero."]},
+ {"h":"Qué hacer","p":["Los tratamientos contra parásitos externos o los endectocidas los controlan; consulta cuál usar.","Se puede sacar la larva apretando el nódulo y desinfectando.","No revientes la larva dentro del cuero: causa infección."]},
+ {"h":"Prevención","p":["Control de moscas y de monte alrededor.","Revisa a los animales nuevos y trátalos al ingreso si traen nuches."]}
+],"rel":["Moscas del cuerno y del establo","Parásitos internos"]},
+
+{"t":"Anaplasmosis","a":"sanidad","r":"Enfermedad de la sangre transmitida por garrapatas, moscas y agujas sucias. Destruye glóbulos rojos y puede matar a animales adultos.","s":[
+ {"h":"Señales","p":["Fiebre alta al inicio.","Mucosas pálidas y luego amarillas.","Debilidad, cansancio, se queda atrás.","Orina normal (a diferencia de babesiosis).","Animales agresivos o que se caen al manejarlos por falta de oxígeno."]},
+ {"h":"Qué hacer","p":["Consulta al veterinario de inmediato; el tratamiento existe pero debe ser a tiempo.","Maneja al animal con mucha calma: el esfuerzo puede matarlo.","Dale sombra, agua y alimento cerca."]},
+ {"h":"Prevención","p":["Control de garrapatas y moscas.","Usa una aguja limpia por animal o por pocos animales al vacunar o inyectar.","Desinfecta instrumentos de castración, descorne y aretes entre animales.","Los animales que vienen de zonas sin garrapata son más susceptibles."]}
+],"rel":["Babesiosis o ranilla roja","Garrapatas","Aplicación de inyecciones"]},
+
+{"t":"Babesiosis o ranilla roja","a":"sanidad","r":"Parásito de la sangre transmitido por la garrapata. Rompe glóbulos rojos y la orina se pone roja o café.","s":[
+ {"h":"Señales","p":["Fiebre alta.","Orina roja, café o color café con leche.","Mucosas pálidas o amarillas.","En algunos casos, signos nerviosos: se tambalea, convulsiones.","Muerte rápida en animales sin inmunidad."]},
+ {"h":"Qué hacer","p":["Llama al veterinario: hay tratamiento específico.","No corras ni estreses al animal.","Separa y da agua, sombra y comida fácil de alcanzar."]},
+ {"h":"Prevención","p":["Control estratégico de garrapatas.","Cuidado especial con animales traídos de zonas altas o frías sin garrapata.","Pregunta por vacunas o premuniciones disponibles en tu zona."]},
+ {"h":"Diferencias con otras causas de orina roja","p":["Babesiosis: fiebre y orina roja.","Anaplasmosis: anemia y amarillez, orina normal.","Leptospirosis: orina roja, a veces abortos en hembras.","Intoxicaciones por algunas plantas también dan orina oscura."]}
+],"rel":["Anaplasmosis","Garrapatas","Leptospirosis"]},
+
+{"t":"Enfermedades clostridiales","a":"sanidad","r":"Grupo de enfermedades por bacterias que viven en el suelo y matan muy rápido: pierna negra, edema maligno, enterotoxemia y otras. Se previenen con vacuna.","s":[
+ {"h":"Cuáles son","p":["Pierna negra (carbón sintomático): hinchazón en músculos grandes que cruje al tocar.","Edema maligno: hinchazón en heridas o sitios de inyección.","Enterotoxemia: muerte súbita, a veces con diarrea, en animales bien comidos.","Hemoglobinuria bacilar: orina roja y muerte rápida.","Tétanos: rigidez después de heridas o castraciones."]},
+ {"h":"Señales","p":["Muchas veces solo se encuentra al animal muerto.","Cojera fuerte con hinchazón caliente y luego fría que cruje.","Fiebre y decaimiento rápido.","Hinchazón rápida alrededor de heridas."]},
+ {"h":"Qué hacer","p":["Llama al veterinario y no abras el cadáver si sangra por nariz, boca o ano (descartar ántrax).","Revisa la vacunación del resto del lote.","El tratamiento rara vez funciona; la prevención es lo importante."]},
+ {"h":"Prevención","p":["Vacuna polivalente contra clostridios al ingreso.","Refuerzo a los 21 a 30 días; una sola dosis protege poco.","Agujas limpias y aplicación en el cuello.","Cura rápida de heridas."]}
+],"rel":["Vacunación","Ántrax o carbón bacteridiano","Aplicación de inyecciones"]},
+
+{"t":"Ántrax o carbón bacteridiano","a":"sanidad","r":"Enfermedad grave y contagiosa a las personas. Mata en horas. Es de reporte obligatorio a SENASA.","s":[
+ {"h":"Señales","p":["Muerte súbita, a veces varios animales.","Sangre oscura que no coagula por nariz, boca o ano.","El cadáver se hincha muy rápido y no se pone rígido."]},
+ {"h":"Qué hacer","p":["No abras ni muevas el cadáver: las esporas contaminan el suelo por décadas.","Aísla la zona, saca al resto de animales y llama al veterinario y a SENASA.","No consumas ni vendas carne de ese animal.","Usa guantes si tuviste contacto y consulta al médico si tienes heridas o granos en la piel."]},
+ {"h":"Prevención","p":["En zonas con antecedentes, vacunación anual según el programa oficial.","Disposición correcta de cadáveres (entierro profundo con cal o incineración según autoridad)."]}
+],"rel":["Muerte de un animal","Enfermedades clostridiales","Enfermedades que se pegan a personas"]},
+
+{"t":"Rabia paralítica bovina","a":"sanidad","r":"La transmite el murciélago vampiro. No tiene cura y se contagia a las personas. Se previene con vacuna y control del murciélago.","s":[
+ {"h":"Señales","p":["Mordidas pequeñas que sangran en cuello, lomo o patas.","Cambios de conducta, babeo, dificultad para tragar.","Parálisis que empieza en las patas traseras.","Muerte en pocos días."]},
+ {"h":"Qué hacer","p":["No metas la mano en la boca de un animal que babea o no traga: puede ser rabia.","Aísla al animal y avisa al veterinario y a SENASA.","Si alguien tuvo contacto con saliva, que vaya al centro de salud el mismo día."]},
+ {"h":"Prevención","p":["Vacunación antirrábica anual en zonas de riesgo.","Reporta mordidas de murciélago a SENASA para el control del vampiro.","Revisa a los animales en la mañana buscando mordidas frescas."]}
+],"rel":["Enfermedades que se pegan a personas","Programas oficiales de sanidad","Vacunación"]},
+
+{"t":"Leptospirosis","a":"sanidad","r":"Bacteria que se transmite por orina de animales infectados, incluidas ratas, en agua y lodo. Afecta a bovinos y personas.","s":[
+ {"h":"Señales en bovinos","p":["Fiebre, decaimiento.","Orina roja o oscura en algunos casos.","Anemia y amarillez.","En hembras, abortos."]},
+ {"h":"Prevención","p":["Control de ratas en bodegas y corrales.","Evita que el ganado beba de charcos y aguas estancadas.","Vacunación según la zona y el criterio del veterinario."]},
+ {"h":"Cuidado de las personas","p":["Usa botas y guantes al trabajar con orina, lodo o animales enfermos.","Lávate las manos antes de comer.","Si tienes fiebre, dolor de cuerpo y ojos rojos después de trabajar en lodo, ve al médico y dile que trabajas con ganado."]}
+],"rel":["Babesiosis o ranilla roja","Enfermedades que se pegan a personas","Control de plagas en la bodega"]},
+
+{"t":"Queratoconjuntivitis u ojo rosado","a":"sanidad","r":"Infección del ojo que se contagia por moscas, polvo y pastos altos. Duele, baja el consumo y puede dejar ciego al animal.","s":[
+ {"h":"Señales","p":["Lagrimeo abundante y ojo cerrado.","Ojo rojo y sensible a la luz.","Mancha blanca o azulada en el centro del ojo.","En casos graves, úlcera que puede reventar."]},
+ {"h":"Qué hacer","p":["Separa al animal y ponlo en sombra.","Consulta al veterinario por el tratamiento (colirios, pomadas o inyecciones).","Un parche en el ojo protege de luz y moscas.","Trata temprano: la mancha blanca que avanza es más difícil de curar."]},
+ {"h":"Prevención","p":["Control de moscas.","Reduce polvo mojando corrales en verano.","Evita pastos muy altos con espigas.","Aísla a los primeros casos para que no contagien."]}
+],"rel":["Moscas del cuerno y del establo","Sombra","Época seca"]},
+
+{"t":"Cojeras y problemas de pezuña","a":"sanidad","r":"Un animal cojo camina menos al comedero y al bebedero y gana menos. Las causas van desde piedras y lodo hasta infecciones y acidosis.","s":[
+ {"h":"Causas comunes","p":["Gabarro o pododermatitis: infección entre las pezuñas con mal olor e hinchazón.","Piso con piedras, cemento áspero o lodo permanente.","Clavos, espinas y heridas.","Laminitis por acidosis: cojera de varias patas semanas después.","Golpes al manejo o peleas."]},
+ {"h":"Señales","p":["Apoya poco una pata o camina rígido.","Hinchazón arriba de la pezuña.","Mal olor entre los dedos.","Se queda echado más tiempo."]},
+ {"h":"Qué hacer","p":["Levanta la pata en la manga y limpia para ver la causa.","Saca piedras o espinas y desinfecta.","El gabarro necesita tratamiento que indique el veterinario.","Pon al animal en un corral seco y blando.","Anota en la app para ver si se repite en el lote."]},
+ {"h":"Prevención","p":["Pisos parejos, secos y sin piedras sueltas.","Pediluvio (paso de patas) en la entrada de la manga si hay muchos casos, con producto indicado.","Control de acidosis.","Manejo tranquilo sin carreras."]}
+],"rel":["Pisos y drenaje","Acidosis ruminal","Manejo tranquilo del ganado"]},
+
+{"t":"Cálculos urinarios","a":"sanidad","r":"Piedras que tapan la uretra de los machos, sobre todo castrados, cuando la ración tiene mucho fósforo y poco calcio o falta agua.","s":[
+ {"h":"Señales","p":["Puja para orinar y solo salen gotas o nada.","Patea la panza, levanta la cola, se estira.","Cristales en los pelos del prepucio.","Si la vejiga revienta: la panza se llena de líquido y el animal parece mejorar antes de empeorar."]},
+ {"h":"Qué hacer","p":["Es urgencia: llama al veterinario.","Muchas veces se necesita cirugía o sacrificio para aprovechar la carne si no hay retiros."]},
+ {"h":"Prevención","p":["Relación calcio a fósforo de al menos 2 a 1 en la ración (pídelo a tu nutricionista).","Sal en la ración para que tomen más agua.","Agua limpia, fresca y abundante siempre.","Aditivos acidificantes de la orina solo con indicación técnica."]}
+],"rel":["Minerales principales","Agua de bebida","Castración"]},
+
+{"t":"Polioencefalomalacia","a":"sanidad","r":"Daño del cerebro por falta de vitamina B1 o exceso de azufre en la ración o el agua. Aparece en animales con mucho concentrado.","s":[
+ {"h":"Señales","p":["Ceguera: choca con las cercas.","Presiona la cabeza contra la pared.","Mira hacia arriba, temblores, convulsiones.","Se cae y pedalea."]},
+ {"h":"Qué hacer","p":["Llama al veterinario de inmediato: la vitamina B1 inyectada temprano puede salvarlo.","Revisa el azufre de la ración y del agua (subproductos, agua de pozo)."]},
+ {"h":"Prevención","p":["Adaptación correcta al concentrado.","Cuidado con ingredientes altos en azufre (algunos subproductos de destilería, melaza en exceso).","Análisis del agua si es de pozo."]}
+],"rel":["Acidosis ruminal","Agua de bebida","Subproductos para la ración"]},
+
+{"t":"Intoxicación por urea","a":"sanidad","r":"La urea da proteína barata, pero en exceso o mal mezclada se vuelve amoníaco en la sangre y mata en minutos a horas.","s":[
+ {"h":"Causas","p":["Mezcla dispareja: bolas de urea en la ración.","Animales sin adaptar que comen mucho de golpe.","Urea disuelta en agua de bebida o lluvia sobre melaza con urea.","Errores al pesar: más de lo formulado."]},
+ {"h":"Señales","p":["Temblores de músculos, especialmente en cara y orejas.","Babeo, rechinar de dientes, falta de coordinación.","Respiración rápida y dolor de panza.","Se cae con convulsiones y muere."]},
+ {"h":"Qué hacer","p":["Llama al veterinario de inmediato.","Saca el alimento con urea.","Dar vinagre por la boca en grandes cantidades es una medida de emergencia usada en el campo; pregúntalo antes al veterinario."]},
+ {"h":"Reglas para usar urea","p":["No más de 1 % de la ración total ni más de un tercio de la proteína.","Adapta en 1 a 2 semanas subiendo poco a poco.","Mezcla primero con una parte del alimento y luego con el resto.","Nunca en el agua.","Siempre con fuente de energía (grano, melaza) y azufre.","No la des a animales flacos, en ayuno o enfermos."]}
+],"rel":["Urea en la ración","Mezclado de la ración","Proteína en la ración"]}
+]

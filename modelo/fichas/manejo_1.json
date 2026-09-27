@@ -1,0 +1,117 @@
+[
+{"t":"Comprar ganado para engorde","a":"manejo","r":"La ganancia del engorde empieza en la compra. Un buen animal a buen precio se engorda fácil; uno malo o caro no se recupera nunca.","s":[
+ {"h":"Qué buscar","p":["Animales sanos, alertas, con buen apetito.","Estructura: patas derechas, buen largo, pecho amplio.","Edad de 12 a 24 meses para engorde de corral.","Peso de entrada acorde a tu plan (comúnmente 250 a 350 kg).","Lotes parejos en peso, edad y tipo."]},
+ {"h":"Qué evitar","p":["Flacos por enfermedad, con tos, diarrea o cojos.","Hernias, ojos dañados, heridas o gusanera.","Animales viejos con dientes gastados.","Muy nerviosos o agresivos.","Animales sin guía de movilización ni origen claro."]},
+ {"h":"El precio","p":["Compara siempre por kilo en pie, no por cabeza.","Calcula antes en Rumi el precio máximo que puedes pagar con tus costos.","Considera el desbaste: el animal lleno pesa más.","Suma flete, comisiones y pérdidas de viaje."]},
+ {"h":"Origen","p":["Mejor pocos orígenes conocidos que muchos distintos.","Pregunta si fueron vacunados, desparasitados y destetados.","Anota el proveedor en el lote: la app te dirá qué proveedor rinde mejor."]},
+ {"h":"Errores comunes","p":["Comprar el lote barato sin revisar animal por animal.","Pagar por cabeza sin pesar.","Llenar el corral con animales de cinco fincas distintas.","Comprar sin tener el alimento y la sanidad listos."]}
+],"rel":["Precio máximo de compra","Defectos que hay que revisar al comprar","Transporte de ganado"]},
+
+{"t":"Comprar en subasta o feria","a":"manejo","r":"La subasta permite comprar muchos animales en un día, pero mezcla orígenes y trae más riesgo de enfermedades.","s":[
+ {"h":"Antes","p":["Decide cuántos animales, de qué peso y tu precio máximo por kilo.","Revisa el calendario y el catálogo si hay.","Lleva la calculadora de Rumi lista con tus costos."]},
+ {"h":"En la subasta","p":["Llega temprano y mira los lotes en los corrales antes de la venta.","Observa cómo caminan, respiran y si comen.","Evita lotes muy desparejos o con animales enfermos.","No te dejes llevar por la puja: respeta tu precio máximo."]},
+ {"h":"Después","p":["Transporte directo a tu finca, sin paradas largas.","Recepción con cuarentena y plan sanitario completo.","Espera más casos de neumonía que con animales de una sola finca."]}
+],"rel":["Comprar ganado para engorde","Plan sanitario de ingreso","Recepción de ganado"]},
+
+{"t":"Transporte de ganado","a":"manejo","r":"Un viaje mal hecho causa golpes, pérdida de peso, enfermedades y muertes. Un buen transporte es parte del engorde.","s":[
+ {"h":"Antes de cargar","p":["Guía de movilización de SENASA en regla.","Camión limpio, con piso antideslizante y sin clavos o latas salidas.","Animales descansados y con agua.","Ayuno corto: no más de 12 horas sin comida antes del viaje."]},
+ {"h":"Carga","p":["Usa rampa o embarcadero, con calma y sin palos eléctricos de más.","Densidad correcta: ni muy apretados (se caen y se pisan) ni muy sueltos (se golpean).","Separa animales de tamaños muy distintos o con cuernos."]},
+ {"h":"Durante el viaje","p":["Maneja suave, sin frenazos ni curvas rápidas.","Viaja en horas frescas.","En viajes largos, revisa en paradas cortas y no dejes el camión parado al sol."]},
+ {"h":"Pérdidas esperadas","p":["Un animal pierde 3 a 8 % de su peso en un viaje de varias horas, sobre todo agua y contenido de la panza.","La mayor parte se recupera en 1 a 2 semanas con buen manejo."]}
+],"rel":["Recepción de ganado","Neumonía o complejo respiratorio","Transporte: requisitos"]},
+
+{"t":"Recepción de ganado","a":"manejo","r":"Las primeras tres semanas deciden si el lote arranca bien. Recibir con calma, agua y buena comida vale tanto como las vacunas.","s":[
+ {"h":"Al bajar del camión","p":["Descarga despacio, sin gritos ni golpes.","Cuenta los animales y revisa la guía.","Aparta de una vez los cojos, heridos o decaídos."]},
+ {"h":"Primeras 24 horas","p":["Agua limpia y abundante; deja que el bebedero desborde un poco para que lo encuentren.","Heno o pasto seco de buena calidad a voluntad.","Descanso en corral de recepción con sombra.","No mezclar con otros lotes."]},
+ {"h":"Días 1 a 7","p":["Plan sanitario de ingreso cuando estén descansados.","Pesaje y aretes.","Inicio de la ración de adaptación.","Revisión dos veces al día."]},
+ {"h":"Días 7 a 21","p":["Adaptación gradual al concentrado.","Atención a neumonía: fiebre, moco, orejas caídas.","Registro de enfermos y tratamientos en la app."]},
+ {"h":"Metas","p":["Que coman bien en 3 a 5 días.","Menos de 10 % de enfermos en las primeras 3 semanas.","Cero muertes."]}
+],"rel":["Plan sanitario de ingreso","Ración de inicio","Transporte de ganado"]},
+
+{"t":"Identificación de animales","a":"manejo","r":"Identificar a cada animal permite seguir su peso, salud y costo. Sin identificación solo tienes promedios.","s":[
+ {"h":"Aretes","p":["Numerados, grandes y fáciles de leer a distancia.","Se ponen en el centro de la oreja, entre las venas grandes, con aplicador limpio.","Evita épocas de muchas moscas o cura la herida.","Usa el mismo número en la app."]},
+ {"h":"Fierro","p":["Marca de propiedad registrada.","Un solo lugar, rápido, con el fierro a la temperatura correcta.","Evita las piernas: dañan cuero valioso.","Cura y vigila contra gusanera."]},
+ {"h":"Foto del animal","p":["Una foto al ingresar ayuda a reconocerlo si pierde el arete.","En la app puedes tomar la foto al crear el lote o desde la ficha del animal."]},
+ {"h":"Arete perdido","p":["Identifícalo de nuevo cuanto antes con la foto, el color y las señas.","Edita el arete en la app para no perder su historia de pesos."]}
+],"rel":["Registros y trazabilidad","Guía de movilización y trazabilidad","Pesaje"]},
+
+{"t":"Pesaje","a":"manejo","r":"Pesar es la única forma de saber si el engorde va bien. Todo número importante sale del peso.","s":[
+ {"h":"Para qué pesar","p":["Calcular la ganancia diaria real.","Detectar animales atrasados.","Ajustar la ración y la dosis de medicamentos.","Decidir cuándo vender.","Calcular la conversión y el costo por kilo ganado."]},
+ {"h":"Cada cuánto","p":["Al ingreso, siempre.","Cada 21 a 30 días durante el engorde.","Antes de vender."]},
+ {"h":"Cómo pesar bien","p":["Siempre a la misma hora, de preferencia temprano antes de servir.","Con las mismas condiciones de agua y comida.","Báscula calibrada: revisa con un peso conocido.","Anota cada animal por arete en la app."]},
+ {"h":"Errores comunes","p":["Pesar unos días en la mañana y otros en la tarde.","Pesar recién comidos o recién tomados de agua.","Solo pesar una muestra y creer que es el promedio del lote.","No anotar los pesos de inmediato."]}
+],"rel":["Estimar el peso sin báscula","Báscula","Animales atrasados"]},
+
+{"t":"Estimar el peso sin báscula","a":"manejo","r":"Sin báscula se puede estimar el peso con cinta. No es exacto, pero es mucho mejor que al ojo.","s":[
+ {"h":"Cinta de pesaje","p":["Rodea el pecho justo detrás de las patas delanteras.","La cinta ya trae la escala en kilos o libras.","Animal parado derecho, con la cabeza normal."]},
+ {"h":"Fórmula con cinta métrica","p":["Mide el perímetro del pecho y el largo del cuerpo (de la punta del hombro a la punta de la nalga) en centímetros.","Peso aproximado en kg = perímetro × perímetro × largo ÷ 10,840.","Ejemplo: perímetro 180 cm y largo 160 cm = 180 × 180 × 160 ÷ 10,840 ≈ 478 kg.","Usa la calculadora de Rumi."]},
+ {"h":"Precisión","p":["El error puede ser de 5 a 10 %.","Es mejor para seguir la ganancia del mismo animal que para vender.","Para vender, pesa siempre en báscula."]}
+],"rel":["Pesaje","Báscula","Vender en pie o en canal"]},
+
+{"t":"Formar lotes","a":"manejo","r":"Agrupar animales parecidos facilita alimentar, manejar y vender. Un lote parejo come y gana parejo.","s":[
+ {"h":"Criterios","p":["Peso parecido: diferencias de no más de 50 kg dentro del lote.","Mismo sexo y condición (enteros con enteros, castrados con castrados).","Edad similar.","Mismo origen cuando sea posible."]},
+ {"h":"Tamaño del lote","p":["De acuerdo al corral y al espacio de comedero.","Lotes de 30 a 80 cabezas son fáciles de manejar.","Muy grandes: los tímidos comen menos."]},
+ {"h":"Reagrupar","p":["Evita mezclar lotes durante el engorde: se pelean y bajan la ganancia.","Si tienes que mezclar, hazlo al inicio, con comida y espacio de sobra."]},
+ {"h":"En la app","p":["Cada lote tiene nombre, tipo, raza, proveedor y ración.","Así comparas lotes y sabes qué te funcionó."]}
+],"rel":["Espacio por animal","Enteros o castrados","Comprar ganado para engorde"]},
+
+{"t":"Manejo tranquilo del ganado","a":"manejo","r":"El ganado manejado con calma se estresa menos, se enferma menos, gana más y es más seguro para las personas.","s":[
+ {"h":"Cómo ve y piensa el bovino","p":["Ve casi alrededor de sí, pero tiene un punto ciego justo detrás.","Le asustan las sombras, los contrastes, los objetos que se mueven y los ruidos fuertes.","Sigue a sus compañeros: mueve grupos, no animales sueltos."]},
+ {"h":"Zona de fuga y punto de balance","p":["La zona de fuga es la distancia a la que el animal se aleja de ti.","Entra en esa zona para que avance y sal para que se detenga.","El punto de balance está a la altura del hombro: si te pones detrás de él, el animal avanza; si te pones delante, retrocede."]},
+ {"h":"Reglas","p":["Sin gritos, sin perros, sin palos.","Usa banderas o varas como extensión del brazo, no para pegar.","Mueve grupos pequeños a paso de caminata.","Deja que vean hacia dónde van."]},
+ {"h":"Beneficios","p":["Menos golpes y moretones en la canal.","Menos accidentes de trabajadores.","Mejor consumo después del manejo."]}
+],"rel":["Trabajo en la manga","Bienestar animal","Manga, brete y embudo"]},
+
+{"t":"Trabajo en la manga","a":"manejo","r":"La manga es donde se pesa, vacuna y trata. Trabajarla bien ahorra tiempo, golpes y accidentes.","s":[
+ {"h":"Preparación","p":["Revisa que puertas, trancas y el cepo funcionen.","Ten listos los productos, jeringas y la app para anotar.","Trabaja temprano, en horas frescas."]},
+ {"h":"Durante","p":["Llena la manga sin apretar de más.","Un animal a la vez en el cepo, bien sujeto.","Trabaja rápido pero sin prisa: cada paso anotado.","Suelta con calma: un animal que sale corriendo se golpea."]},
+ {"h":"Seguridad","p":["Nunca te pongas entre un animal y la pared sin salida.","Cuidado con las patadas hacia adelante y los cabezazos.","No metas brazos entre las tablas.","Siempre al menos dos personas."]}
+],"rel":["Manejo tranquilo del ganado","Manga, brete y embudo","Aplicación de inyecciones"]},
+
+{"t":"Castración","a":"manejo","r":"Castrar produce animales más mansos y carne con más grasa, pero reduce algo la ganancia. Si se hace, mejor joven y con buen manejo.","s":[
+ {"h":"Cuándo","p":["Lo ideal es antes de los 6 meses: menos estrés y menos pérdida de peso.","En animales grandes hazlo con el animal sano y adaptado, no al llegar.","En época de pocas moscas."]},
+ {"h":"Métodos","p":["Quirúrgico (cuchillo): seguro si se hace con higiene; necesita cuidado de la herida.","Liga o anillo: en animales jóvenes; hay riesgo de tétanos.","Pinza (burdizzo): sin herida; hay que verificar que funcionó.","Consulta con tu veterinario el control del dolor."]},
+ {"h":"Cuidados","p":["Vacuna clostridial al día.","Repelente y cura contra gusanera.","Vigila sangrado, hinchazón y fiebre por una semana."]},
+ {"h":"Efecto en el engorde","p":["El castrado gana algo menos que el entero pero se engrasa antes.","Algunos compradores pagan mejor el castrado por la calidad de la carne."]}
+],"rel":["Enteros o castrados","Gusano barrenador o gusanera","Enfermedades clostridiales"]},
+
+{"t":"Despunte y descorne","a":"manejo","r":"Los cuernos causan golpes y heridas en compañeros y trabajadores. Quitarlos o despuntarlos reduce daños en la canal.","s":[
+ {"h":"Cuándo","p":["El descornado es mucho más fácil y seguro en terneros jóvenes.","En adultos, solo despuntar la punta o hacerlo con el veterinario."]},
+ {"h":"Cuidados","p":["Hazlo en época de pocas moscas.","Controla el sangrado y aplica repelente.","No lo hagas al mismo tiempo que otros manejos estresantes al llegar."]},
+ {"h":"Alternativas","p":["Formar lotes separados de animales con cuernos.","Comederos con suficiente espacio para que no peleen."]}
+],"rel":["Heridas y curaciones","Espacio por animal","Bienestar animal"]},
+
+{"t":"Enteros o castrados","a":"manejo","r":"Los toretes enteros ganan más y convierten mejor; los castrados son más mansos y se engrasan antes. La mejor opción depende de tu mercado.","s":[
+ {"h":"Enteros","p":["Ganan de 5 a 15 % más por día.","Mejor conversión y más músculo.","Más peleas, montas y nervios.","Algunos compradores los pagan menos por menor grasa."]},
+ {"h":"Castrados","p":["Más tranquilos y fáciles de manejar.","Engrasan más temprano: buen acabado con menos peso.","Carne más suave y con más marmoleo."]},
+ {"h":"Cómo decidir","p":["Pregunta al comprador qué paga mejor.","Compara en la app el margen de lotes de enteros y castrados.","No mezcles enteros con castrados en el mismo corral."]}
+],"rel":["Castración","Toretes que se montan","Formar lotes"]},
+
+{"t":"Animales atrasados","a":"manejo","r":"En todo lote hay animales que ganan mucho menos que el promedio. Encontrarlos a tiempo evita que se coman tu margen.","s":[
+ {"h":"Cómo encontrarlos","p":["Pesa por arete: la app marca a los que ganan menos del 70 % del promedio del lote.","Mira quién se queda atrás en el comedero.","Revisa pelo, heces, respiración y patas."]},
+ {"h":"Causas comunes","p":["Enfermedad pasada, sobre todo neumonía.","Parásitos.","Dientes malos o animal viejo.","Animal dominado que no llega al comedero.","Cojeras."]},
+ {"h":"Qué hacer","p":["Revisa y trata la causa si tiene arreglo.","Pásalo a un corral con menos competencia.","Si en el siguiente pesaje sigue atrasado, véndelo sin retiros activos.","Anota el proveedor para evaluar compras futuras."]}
+],"rel":["Pesaje","Corral de enfermos","Comprar ganado para engorde"]},
+
+{"t":"Rutina diaria del engorde","a":"manejo","r":"El engorde es disciplina: hacer lo mismo, bien, todos los días. Una rutina escrita evita olvidos.","s":[
+ {"h":"Temprano","p":["Lectura de comederos.","Revisión de animales: enfermos, cojos, hinchados.","Revisión de bebederos y flotadores.","Primera entrega de alimento."]},
+ {"h":"Media mañana","p":["Tratamiento de enfermos.","Mezcla de la ración para las siguientes entregas.","Limpieza de comederos y bebederos que lo necesiten."]},
+ {"h":"Tarde","p":["Segunda o tercera entrega.","Otra revisión de animales.","Anotar todo en la app: alimento, tratamientos, muertes, gastos."]},
+ {"h":"Cada semana","p":["Limpiar bebederos a fondo.","Revisar cercas, puertas y la bodega.","Revisar inventario de alimento y medicinas."]},
+ {"h":"Cada 3 a 4 semanas","p":["Pesaje.","Revisar números de cada lote en la app y ajustar."]}
+],"rel":["Lectura de comederos","Revisión diaria de los animales","Registros y trazabilidad"]},
+
+{"t":"Registros y trazabilidad","a":"manejo","r":"Lo que no se anota no se puede mejorar. Los registros te dicen dónde ganas y dónde pierdes, y te abren mercados que piden trazabilidad.","s":[
+ {"h":"Qué anotar","p":["Entrada de cada lote: fecha, número de animales, peso, precio, proveedor.","Alimento entregado cada día.","Pesajes.","Tratamientos y vacunas con retiro.","Muertes y su causa.","Gastos y ventas."]},
+ {"h":"Para qué sirven","p":["Calcular ganancia, conversión, costo por kilo y margen reales.","Decidir cuándo vender.","Comparar proveedores, raciones y épocas.","Demostrar al comprador y a la autoridad qué recibió cada animal."]},
+ {"h":"Con la app","p":["Todo se guarda en el teléfono y te da los números solo.","Descarga el respaldo cada semana y los datos a Excel cuando los necesites."]}
+],"rel":["Guía de movilización y trazabilidad","Registros económicos","Identificación de animales"]},
+
+{"t":"Espacio por animal","a":"manejo","r":"Con poco espacio los animales pelean, se ensucian y comen menos. Con demasiado, desperdicias corral e inversión.","s":[
+ {"h":"Corral","p":["Piso de tierra: 10 a 15 m² por animal (más en época de lluvia).","Piso de cemento: 3.5 a 5 m² por animal."]},
+ {"h":"Comedero","p":["30 a 45 cm lineales por animal si todos comen a la vez.","15 a 20 cm si siempre hay comida disponible.","Animales con cuernos necesitan más."]},
+ {"h":"Bebedero","p":["Que puedan beber 10 a 15 % del lote a la vez.","Unos 3 cm lineales de bebedero por animal, o un bebedero redondo cada 20 a 25 animales."]},
+ {"h":"Sombra","p":["3 a 4 m² por animal."]},
+ {"h":"Calculadora","p":["En Rumi, Calculadoras, Espacio de corral y comedero, te lo calcula para tus cabezas."]}
+],"rel":["Diseño de corrales","Comederos","Sombra"]}
+]

@@ -1,0 +1,112 @@
+[
+{"t":"Estrés por calor","a":"manejo","r":"En el trópico el calor es un enemigo diario del engorde. Un animal con calor come menos, gana menos y se enferma más.","s":[
+ {"h":"Cómo reconocerlo","p":["Jadeo y respiración rápida.","Se amontonan en la sombra y el bebedero.","Dejan de comer en las horas calientes.","Babeo y cabeza estirada."]},
+ {"h":"Medidas en el corral","p":["Sombra de 3 a 4 m² por animal, alta (3 a 4 metros) y orientada para que el piso se seque.","Agua fresca de sobra, con más bebederos en verano.","Cortinas o árboles que den viento, sin tapar la ventilación.","Aspersión o mojado del piso en días extremos."]},
+ {"h":"Medidas de manejo","p":["No trabajes el ganado después de las 9 de la mañana en días calientes.","Pesa y embarca temprano o en la tarde.","Sirve más alimento al final de la tarde.","Evita cambios de ración en olas de calor."]},
+ {"h":"Animales más sensibles","p":["Razas europeas y sus cruces con más sangre europea.","Animales pesados y engrasados en finalización.","Animales oscuros.","Enfermos o recién llegados."]}
+],"rel":["Golpe de calor","Sombra","Alimentación con calor","Índice de calor"]},
+
+{"t":"Época de lluvias","a":"manejo","r":"La lluvia trae lodo, moscas, parásitos y enfermedades de patas y pulmones. Prepararse evita pérdidas.","s":[
+ {"h":"Corrales","p":["Revisa drenajes y canales antes de que empiecen las lluvias.","Retira el estiércol más seguido: con agua se vuelve lodo.","Lomas o montículos secos para que los animales descansen.","Reduce la carga si el corral se enloda mucho."]},
+ {"h":"Alimento","p":["Protege comederos y bodega de la lluvia.","Revisa el grano: la humedad trae moho.","No dejes ración mojada en el comedero de un día para otro."]},
+ {"h":"Sanidad","p":["Vigila cojeras y gabarro.","Más control de moscas y parásitos.","Neumonías con cambios bruscos de temperatura."]},
+ {"h":"Potreros","p":["Buen momento para sembrar y fertilizar pastos.","Haz ensilaje y heno para el verano con el pasto que sobra."]}
+],"rel":["Pisos y drenaje","Cojeras y problemas de pezuña","Ensilaje: cómo hacerlo"]},
+
+{"t":"Época seca","a":"manejo","r":"El verano trae poco pasto, polvo y calor. Es la época de más costo de alimento, pero también de ganado barato para comprar.","s":[
+ {"h":"Preparación","p":["Ten el forraje guardado antes de que empiece: ensilaje, heno, caña.","Calcula el alimento de todos los meses secos.","Asegura agua: pozos, tanques y bombas revisados."]},
+ {"h":"Manejo","p":["Moja el piso para bajar el polvo que irrita ojos y pulmones.","Refuerza sombra y bebederos.","Vigila el ojo rosado y la neumonía por polvo."]},
+ {"h":"Oportunidades","p":["Muchos ganaderos venden animales flacos en verano: puedes comprar barato si tienes alimento.","Calcula en Rumi el precio máximo de compra con tus costos de verano."]}
+],"rel":["Ración para la época seca","Plan forrajero para el verano","Queratoconjuntivitis u ojo rosado"]},
+
+{"t":"Cuándo vender","a":"manejo","r":"Vender en el momento correcto es tan importante como comprar bien. Cada día de más cuesta alimento, y los últimos kilos son los más caros.","s":[
+ {"h":"Señales de que está listo","p":["Llegó al peso meta que pide tu comprador.","Tiene el acabado de grasa buscado.","Su ganancia diaria empieza a bajar mientras el consumo sigue alto."]},
+ {"h":"Números","p":["Compara el costo de un día más de engorde con lo que valen los kilos que ganará ese día.","Si el costo del kilo ganado supera el precio de venta por kilo, cada día pierdes.","La app te muestra la fecha estimada de llegada a la meta y el margen si vendes hoy."]},
+ {"h":"Otros factores","p":["Precio del mercado y temporada.","Retiros de medicamentos pendientes.","Capacidad de corral para el siguiente lote.","Flujo de caja."]},
+ {"h":"Errores comunes","p":["Esperar un mejor precio con animales que ya no ganan.","Vender con retiro activo.","Vender sin pesar."]}
+],"rel":["Preparar la venta","Grado de acabado","Punto de equilibrio"]},
+
+{"t":"Preparar la venta","a":"manejo","r":"Cómo se prepara el embarque cambia el peso que te pagan y la calidad de la canal.","s":[
+ {"h":"Antes","p":["Revisa en la app que el lote no tenga retiros activos.","Acuerda con el comprador el precio, la forma de pesar, el desbaste y la forma de pago.","Prepara la guía de movilización."]},
+ {"h":"Ayuno y desbaste","p":["El comprador suele descontar un porcentaje por llenado (desbaste), comúnmente 3 a 5 %.","Si pesas en la finca, acuerda horas de ayuno o el descuento.","Un ayuno muy largo baja el rendimiento y la calidad."]},
+ {"h":"Embarque","p":["Temprano, con calma, sin golpes.","Camión limpio y en buen estado.","No mezcles animales de lotes que no se conocen el día de la venta."]},
+ {"h":"Registro","p":["Anota la venta en la app con cabezas, kilos, precio y comprador.","Así la app calcula el margen real del lote."]}
+],"rel":["Cuándo vender","Vender en pie o en canal","Transporte de ganado"]},
+
+{"t":"Engorde en corral","a":"manejo","r":"El animal vive en el corral y todo su alimento se le lleva. Es el sistema de mayor ganancia diaria y control, pero con más costo y trabajo.","s":[
+ {"h":"Ventajas","p":["Ganancias de 1.2 a 1.8 kg por día.","Ciclos cortos: 90 a 150 días.","Control total de la ración y la salud.","Poca tierra para muchos animales."]},
+ {"h":"Desventajas","p":["Alto costo de alimento.","Más riesgo de acidosis y enfermedades por densidad.","Necesita capital, instalaciones y personal constante.","Manejo de estiércol y moscas."]},
+ {"h":"Claves del éxito","p":["Buena compra y recepción.","Adaptación al concentrado.","Lectura de comederos y horarios fijos.","Registros diarios y pesajes.","Venta a tiempo."]}
+],"rel":["Diseño de corrales","Ración de finalización","Planificación del engorde"]},
+
+{"t":"Engorde semiestabulado","a":"manejo","r":"Los animales pastorean parte del día y reciben ración en corral. Combina lo barato del pasto con la ganancia del concentrado.","s":[
+ {"h":"Cómo funciona","p":["Pastoreo en las horas frescas de la mañana.","Corral con sombra, agua y ración en la tarde y noche.","La ración cubre lo que al pasto le falta."]},
+ {"h":"Ventajas","p":["Menos costo que el corral completo.","Mejor ganancia que el pastoreo solo.","Aprovecha potreros propios."]},
+ {"h":"Claves","p":["Potreros bien manejados con rotación.","Ración con buena energía y minerales.","Horario fijo de entrada al corral.","Control de parásitos más frecuente que en corral."]},
+ {"h":"Ganancias esperadas","p":["0.8 a 1.2 kg por día con buena ración y pasto."]}
+],"rel":["Suplementación en pastoreo","Pastoreo rotacional","Engorde en pastoreo"]},
+
+{"t":"Engorde en pastoreo","a":"manejo","r":"El engorde a pasto es el más barato por día, pero el más lento. Su éxito depende del manejo del pasto.","s":[
+ {"h":"Ganancias","p":["Solo pasto en época de lluvia: 0.4 a 0.7 kg por día.","Con suplemento: 0.7 a 1 kg por día.","En verano sin suplemento puede ser cero o pérdida."]},
+ {"h":"Claves","p":["Pastos mejorados y bien fertilizados.","Rotación de potreros con descanso suficiente.","Carga animal ajustada a la producción de pasto.","Sal mineral siempre.","Agua en cada potrero o cerca."]},
+ {"h":"Ventajas y desventajas","p":["Bajo costo por día y poca mano de obra.","Ciclos largos: 1 a 2 años.","Más riesgo de parásitos y garrapatas.","Depende del clima."]}
+],"rel":["Pastoreo rotacional","Carga animal y aforo","Suplementación en pastoreo"]},
+
+{"t":"Razas para engorde en el trópico","a":"manejo","r":"En el trópico la raza debe aguantar calor, garrapatas y parásitos. Los cruces bien hechos combinan resistencia y carne.","s":[
+ {"h":"Cebuinas","p":["Brahman, Nelore, Gyr, Guzerat, Indubrasil.","Aguantan calor y garrapata, rústicas.","Ganancia moderada y carne menos tierna que las europeas."]},
+ {"h":"Europeas de carne","p":["Angus, Charolais, Simmental, Hereford.","Mucha carne y buena calidad, pero sufren con calor y garrapata.","Mejor usadas en cruces."]},
+ {"h":"Cruces y compuestas","p":["Brangus, Beefmaster, Simbrah, Charbray.","Combinan resistencia tropical con carne.","Son muy buscadas para engorde de corral."]},
+ {"h":"De leche","p":["Holstein, Pardo Suizo, Jersey y sus cruces.","Ganan rápido con buena ración pero rinden menos en canal."]},
+ {"h":"Con la app","p":["Anota la raza de cada animal al crear el lote.","Compara ganancia y margen por raza con tus propios números."]}
+],"rel":["Comprar ganado para engorde","Novillos de lechería","Estrés por calor"]},
+
+{"t":"Edad por los dientes","a":"manejo","r":"Los dientes delanteros de abajo cambian con la edad. Sirven para estimar la edad al comprar.","s":[
+ {"h":"Cómo se ven","p":["El bovino solo tiene dientes delanteros abajo: 8 incisivos.","Los de leche son pequeños; los permanentes son anchos y grandes."]},
+ {"h":"Cambio de dientes","p":["Todos de leche: menos de 18 a 20 meses.","2 permanentes (primer par): unos 2 años.","4 permanentes: unos 2.5 a 3 años.","6 permanentes: unos 3 a 3.5 años.","8 permanentes (boca llena): 4 años o más.","Varía según raza y alimentación."]},
+ {"h":"Para el engorde","p":["Animales de 2 a 4 dientes son los más comunes en engorde de corral.","Boca llena con dientes gastados: animal viejo, convierte peor.","Algunos compradores pagan según la dentición."]}
+],"rel":["Comprar ganado para engorde","Calidad de canal"]},
+
+{"t":"Personal y seguridad en el trabajo","a":"manejo","r":"Los trabajadores bien capacitados y seguros cuidan mejor al ganado. Los accidentes con ganado son frecuentes y serios.","s":[
+ {"h":"Capacitación","p":["Enseña a leer comederos, revisar enfermos y anotar en la app.","Explica el manejo tranquilo y la seguridad en la manga.","Escribe la rutina y los protocolos."]},
+ {"h":"Seguridad","p":["Botas, guantes y ropa adecuada.","Nunca trabajar solo con animales bravos.","Cuidado con químicos: guantes, mascarilla y lectura de etiquetas.","Botiquín para personas."]},
+ {"h":"Salud","p":["Vacuna contra tétanos para los trabajadores.","Lavado de manos antes de comer.","Atención médica si tienen fiebre después de tocar animales enfermos."]},
+ {"h":"Motivación","p":["Reconoce los buenos resultados: menos enfermos, buen consumo.","Compartir los números del lote ayuda a que se involucren."]}
+],"rel":["Enfermedades que se pegan a personas","Trabajo en la manga","Seguridad del trabajador"]},
+
+{"t":"Bienestar animal","a":"manejo","r":"Un animal bien tratado produce más y mejor carne. El bienestar es una exigencia creciente de compradores y mercados.","s":[
+ {"h":"Las cinco libertades","p":["Libre de hambre y sed: alimento y agua suficientes.","Libre de incomodidad: sombra, piso seco y espacio.","Libre de dolor, lesiones y enfermedad: prevención y tratamiento rápido.","Libre para expresar su comportamiento normal: espacio y compañía.","Libre de miedo y angustia: manejo tranquilo."]},
+ {"h":"En la práctica","p":["Sin golpes, gritos ni picanas innecesarias.","Transporte adecuado.","Atención rápida a enfermos y lesionados.","Sacrificio humanitario cuando no hay recuperación."]},
+ {"h":"Beneficios","p":["Mejor ganancia y menos enfermedades.","Canales con menos golpes.","Acceso a compradores exigentes."]}
+],"rel":["Manejo tranquilo del ganado","Bienestar en la ley y en el mercado","Transporte de ganado"]},
+
+{"t":"Planificación del engorde","a":"manejo","r":"Planear cuántos animales, cuándo comprarlos y cuándo venderlos permite usar mejor los corrales y el dinero.","s":[
+ {"h":"Preguntas clave","p":["¿Cuántos animales caben en mis corrales y comederos?","¿Cuánto alimento puedo conseguir y guardar?","¿Cuánto capital tengo para comprar y alimentar?","¿Cuándo pagan mejor los compradores?"]},
+ {"h":"Ciclo","p":["Duración del engorde = (peso meta − peso de entrada) ÷ ganancia diaria.","Ejemplo: de 300 a 460 kg a 1.4 kg por día son unos 115 días.","Vueltas al año = 365 ÷ (días de engorde + días de limpieza entre lotes)."]},
+ {"h":"Escalonar","p":["Comprar lotes cada cierto tiempo reparte el riesgo de precio.","Así siempre hay un lote vendiéndose y otro entrando."]},
+ {"h":"En la app","p":["Rumi proyecta cada lote y te dice cuándo llega a la meta.","El alimento para el mes te dice cuánto comprar."]}
+],"rel":["Presupuesto de un lote","Capital de trabajo","Cuándo vender"]},
+
+{"t":"Toretes que se montan","a":"manejo","r":"Algunos animales montan a un compañero una y otra vez. El montado se lastima, no come y puede morir.","s":[
+ {"h":"Señales","p":["Un animal con el lomo y la cola sin pelo o lastimados.","Grupo persiguiendo al mismo animal.","Animal montado que se esconde en una esquina."]},
+ {"h":"Qué hacer","p":["Saca al animal montado a otro corral.","Si es un solo montador, sácalo a él.","Revisa heridas y cojeras."]},
+ {"h":"Prevención","p":["No mezcles lotes a mitad del engorde.","Espacio suficiente.","Lotes parejos en tamaño.","Revisa implantes mal aplicados con el veterinario si el problema es frecuente."]}
+],"rel":["Enteros o castrados","Formar lotes","Espacio por animal"]},
+
+{"t":"Novillos de lechería","a":"manejo","r":"Los machos de razas lecheras son baratos y ganan peso rápido con buena ración, pero hay que manejar sus diferencias.","s":[
+ {"h":"Ventajas","p":["Precio de compra bajo.","Buena ganancia diaria y conversión en corral.","Disponibles todo el año cerca de zonas lecheras."]},
+ {"h":"Desventajas","p":["Rinden menos en canal (menos músculo, huesos largos).","Engrasan distinto y algunos compradores pagan menos.","Sufren más con calor si son Holstein puros."]},
+ {"h":"Manejo","p":["Terneros de lechería necesitan buen inicio y cuidado de neumonía y diarrea.","Raciones con buena energía y proteína.","Calcula tu margen con el precio real que te pagan por ellos."]}
+],"rel":["Razas para engorde en el trópico","Rendimiento en canal","Precio máximo de compra"]},
+
+{"t":"Hembras en engorde","a":"manejo","r":"Novillas y vacas de descarte también se engordan. Tienen ciclos y precios distintos a los machos.","s":[
+ {"h":"Novillas","p":["Ganan un poco menos que los machos y engrasan antes.","Pueden estar preñadas: revísalas al comprar.","El celo interrumpe el consumo y causa montas."]},
+ {"h":"Vacas de descarte","p":["Engorde corto de 60 a 90 días para mejorar su condición y su precio.","Revisa dientes, ubre, patas y preñez.","Pueden traer brucelosis o tuberculosis: compra con control."]},
+ {"h":"Manejo","p":["Lotes separados de los machos.","Ración de finalización corta y bien adaptada.","Anota el tipo en la app para comparar su margen."]}
+],"rel":["Brucelosis y tuberculosis","Formar lotes","Grado de acabado"]},
+
+{"t":"Seguridad y robo de ganado","a":"manejo","r":"El abigeato (robo de ganado) causa grandes pérdidas. La identificación y los registros ayudan a prevenir y recuperar.","s":[
+ {"h":"Prevención","p":["Fierro registrado y aretes en todos los animales.","Fotos de los animales en la app.","Conteos frecuentes, anotados.","Cercas y portones en buen estado, con candado.","Iluminación en corrales cerca de caminos."]},
+ {"h":"Si ocurre","p":["Denuncia de inmediato a la policía y a las autoridades ganaderas.","Presenta registros, fotos y guías.","Avisa a vecinos y a mataderos de la zona."]},
+ {"h":"Compras","p":["No compres animales sin guía de movilización ni fierro claro.","Comprar ganado robado también es delito."]}
+],"rel":["Identificación de animales","Guía de movilización y trazabilidad","Registro de fierro y finca"]}
+]

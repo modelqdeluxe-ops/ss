@@ -1,0 +1,125 @@
+[
+{"t":"Pastos para potrero en el trópico","a":"forrajes","r":"Elegir el pasto correcto para tu suelo y clima define cuánta carne produce cada manzana.","s":[
+ {"h":"Brachiarias","p":["Brizantha (Marandú, Toledo), Decumbens, Humidicola e híbridos como Mulato II y Cayman.","Aguantan suelos pobres y sequía moderada.","Algunas soportan encharcamiento (Humidicola, Cayman).","Buena producción con fertilización."]},
+ {"h":"Panicum (Guinea)","p":["Mombasa, Tanzania, Massai.","Muy productivos y de buena calidad en suelos fértiles.","Necesitan buen manejo de altura de pastoreo."]},
+ {"h":"Estrellas y otros","p":["Estrella africana, Transvala, Bermuda: buenos en suelos fértiles y con fertilización.","Pastos nativos o naturalizados (grama): baja producción."]},
+ {"h":"Cómo elegir","p":["Mira tu suelo (fertilidad, drenaje) y la lluvia de tu zona.","Pregunta qué funciona a vecinos y al técnico de la zona.","Combina variedades en distintos potreros para repartir el riesgo."]}
+],"rel":["Establecer un potrero","Pastoreo rotacional","Fertilizar pastos"]},
+
+{"t":"Pastos de corte","a":"forrajes","r":"Los pastos de corte producen mucho forraje por manzana para dar picado en el corral o hacer ensilaje.","s":[
+ {"h":"Variedades","p":["King grass, Cuba OM-22, Maralfalfa, Taiwán, CT-115, Camerún.","Algunas variedades nuevas tienen menos pelusa y más hoja."]},
+ {"h":"Manejo","p":["Siembra por tallos o esquejes en surcos al inicio de las lluvias.","Corta a 50 a 70 días en lluvia y a 70 a 90 días en verano.","Corta a 10 a 15 cm del suelo.","Fertiliza con nitrógeno después de cada corte."]},
+ {"h":"Producción","p":["Con buen manejo, de 100 a más de 200 toneladas de forraje verde por hectárea al año.","Una manzana bien manejada puede alimentar muchos animales en corral."]},
+ {"h":"Errores comunes","p":["Cortar muy viejo: mucho tallo leñoso y poca calidad.","No fertilizar: el rendimiento cae año con año.","Picar y dejar de un día para otro."]}
+],"rel":["Heno y pasto de corte en la ración","Calidad del forraje y edad de corte","Fertilizar pastos"]},
+
+{"t":"Establecer un potrero","a":"forrajes","r":"Sembrar bien desde el inicio ahorra años de pasto ralo y malezas.","s":[
+ {"h":"Preparación","p":["Análisis de suelo para saber si hace falta cal y abono.","Control de malezas antes de sembrar.","Preparación del suelo según la pendiente: labranza mínima en laderas."]},
+ {"h":"Siembra","p":["Al inicio de las lluvias.","Semilla certificada y la cantidad que indica el proveedor.","Tapa poco la semilla pequeña (1 a 2 cm).","En pastos de tallo, surcos con material fresco."]},
+ {"h":"Primeros meses","p":["Control de malezas a mano o con herbicida selectivo.","Primer pastoreo suave cuando el pasto esté bien enraizado (tirar de una planta no la arranca).","Fertilización de establecimiento."]}
+],"rel":["Análisis de suelo y encalado","Control de malezas","Pastos para potrero en el trópico"]},
+
+{"t":"Fertilizar pastos","a":"forrajes","r":"El pasto es un cultivo. Sin abono, cada año produce menos y las malezas ganan.","s":[
+ {"h":"Nutrientes","p":["Nitrógeno: el que más aumenta la producción.","Fósforo: para raíces; muy escaso en suelos tropicales.","Potasio: para resistencia y rebrote.","Cal: corrige la acidez del suelo."]},
+ {"h":"Cuándo","p":["Al inicio y a mitad de la época de lluvias.","Después del pastoreo o del corte.","Nunca con suelo seco."]},
+ {"h":"Estiércol","p":["El estiércol compostado del corral es un buen abono para potreros y pastos de corte.","Úsalo compostado para no regar semillas de malezas ni parásitos."]},
+ {"h":"Números","p":["El abono debe pagar: calcula cuánto forraje extra da y cuántos kilos de carne produce.","El análisis de suelo evita gastar en lo que no hace falta."]}
+],"rel":["Análisis de suelo y encalado","Manejo del estiércol","Pastos de corte"]},
+
+{"t":"Pastoreo rotacional","a":"forrajes","r":"Dividir el terreno y rotar a los animales deja descansar el pasto. Produce más forraje y de mejor calidad.","s":[
+ {"h":"Cómo funciona","p":["El potrero se divide en varios apartos.","Los animales pastan uno por pocos días y pasan al siguiente.","Cada aparto descansa hasta recuperarse."]},
+ {"h":"Tiempos de referencia","p":["Ocupación de 1 a 3 días por aparto.","Descanso de 25 a 35 días en lluvia y 35 a 50 días en verano, según el pasto.","Entra cuando el pasto tiene la altura recomendada y sal antes de dejarlo pelado."]},
+ {"h":"Alturas de ejemplo","p":["Brachiaria brizantha: entrar a 30 a 40 cm, salir a 15 a 20 cm.","Mombasa: entrar a 80 a 90 cm, salir a 30 a 40 cm."]},
+ {"h":"Beneficios","p":["Más animales por manzana.","Menos malezas.","Mejor calidad del pasto.","Corta el ciclo de algunos parásitos."]}
+],"rel":["Carga animal y aforo","Cercas","Engorde en pastoreo"]},
+
+{"t":"Carga animal y aforo","a":"forrajes","r":"La carga es cuántos animales aguanta un potrero. El aforo mide cuánto pasto hay para calcularla.","s":[
+ {"h":"Unidad animal","p":["Una unidad animal es 450 kg de peso vivo.","Un novillo de 300 kg es 0.67 unidades animal."]},
+ {"h":"Cómo aforar","p":["Tira un marco de 1 m² en varios puntos al azar.","Corta el pasto a la altura que dejaría el animal y pésalo.","Promedia y multiplica por el área: kilos de forraje verde disponible."]},
+ {"h":"Calcular la carga","p":["Un animal consume unos 10 a 12 % de su peso en forraje verde al día (según la materia seca del pasto).","Usa solo 50 a 60 % del forraje disponible para no sobrepastorear.","Cabezas = forraje aprovechable por día ÷ consumo por animal.","La calculadora de Rumi te ayuda con la carga."]},
+ {"h":"Señales de sobrecarga","p":["Pasto pelado y suelo descubierto.","Aumento de malezas.","Animales que no ganan peso."]}
+],"rel":["Pastoreo rotacional","Materia seca y consumo","Unidad animal"]},
+
+{"t":"Control de malezas","a":"forrajes","r":"Las malezas le roban agua, luz y abono al pasto. Algunas son tóxicas. Se controlan mejor con buen pasto que con químicos.","s":[
+ {"h":"Prevención","p":["No sobrepastorear: el pasto fuerte tapa a la maleza.","Fertilizar el pasto.","Estiércol compostado, no fresco, para no regar semillas."]},
+ {"h":"Control","p":["Chapia o corte antes de que la maleza haga semilla.","Arranque manual de plantas tóxicas.","Herbicidas selectivos según etiqueta, con equipo de protección y respetando el tiempo antes de meter ganado."]},
+ {"h":"Seguridad","p":["Lee la etiqueta: algunos herbicidas piden días sin pastoreo.","No laves equipos en quebradas."]}
+],"rel":["Plantas tóxicas en potreros","Pastoreo rotacional","Recuperar un potrero degradado"]},
+
+{"t":"Plantas tóxicas en potreros","a":"forrajes","r":"Conocer las plantas tóxicas de tu zona evita muertes. El ganado con hambre come lo que normalmente evitaría.","s":[
+ {"h":"Comunes en Centroamérica","p":["Helecho macho (Pteridium).","Higuerilla (ricino).","Adelfa o laurel rosa.","Chilca y otras según la zona.","Yuca brava y sorgos rebrotados (cianuro)."]},
+ {"h":"Cuándo hay más riesgo","p":["Animales con hambre o recién llegados.","Potreros pelados en verano.","Después de una chapia, cuando las plantas quedan a la vista y marchitas."]},
+ {"h":"Qué hacer","p":["Recorre y arranca las plantas tóxicas antes de meter animales.","No tires restos de jardinería al potrero.","Si sospechas intoxicación, saca los animales y llama al veterinario con una muestra de la planta."]}
+],"rel":["Intoxicación por plantas y hongos","Control de malezas"]},
+
+{"t":"Ensilaje: cómo hacerlo","a":"forrajes","r":"El ensilaje conserva forraje en buen estado fermentándolo sin aire. Bien hecho dura meses y alimenta en verano.","s":[
+ {"h":"Qué ensilar","p":["Maíz: el mejor, cortado cuando el grano está en estado lechoso-pastoso (línea de leche a la mitad).","Sorgo forrajero o de doble propósito.","Pastos de corte, con un poco de melaza para ayudar a fermentar."]},
+ {"h":"Pasos","p":["Corta y pica a 1 a 2 cm.","Llena el silo rápido, en el menor tiempo posible.","Compacta capa por capa (20 a 30 cm) con tractor o pisando mucho.","Tapa con plástico grueso sin agujeros el mismo día.","Pon peso encima: llantas o sacos de tierra."]},
+ {"h":"Tipos de silo","p":["Silo de trinchera o de montón (bunker).","Silo en bolsa grande.","Microsilos en bolsas o barriles: buenos para pocos animales."]},
+ {"h":"Tiempos","p":["Espera al menos 3 a 4 semanas antes de abrir.","Bien cerrado dura muchos meses."]}
+],"rel":["Ensilaje: calidad y problemas","Ensilaje en la ración","Plan forrajero para el verano"]},
+
+{"t":"Ensilaje: calidad y problemas","a":"forrajes","r":"Un ensilaje mal hecho pierde valor y puede enfermar. Aprende a reconocer uno bueno y a evitar las pérdidas.","s":[
+ {"h":"Ensilaje bueno","p":["Olor agradable, a vinagre suave o fruta fermentada.","Color verde amarillento o verde oliva.","Textura firme, húmedo pero sin escurrir agua."]},
+ {"h":"Ensilaje malo","p":["Olor a mantequilla rancia o a amoníaco: mala fermentación.","Color café oscuro o negro, olor a tabaco: se calentó.","Moho blanco, azul o verde.","Muy aguado y con mal olor: estaba muy húmedo."]},
+ {"h":"Causas de pérdidas","p":["Mala compactación: queda aire.","Plástico roto o mal sellado.","Forraje muy seco o muy húmedo.","Llenado lento."]},
+ {"h":"Al abrirlo","p":["Saca de una cara del silo, parejo.","Saca cada día al menos 15 a 20 cm de la cara para que no se caliente.","Tapa lo que no uses.","Descarta la capa con moho."]}
+],"rel":["Ensilaje: cómo hacerlo","Ensilaje en la ración","Intoxicación por plantas y hongos"]},
+
+{"t":"Heno: cómo hacerlo y guardarlo","a":"forrajes","r":"El heno es pasto secado al sol. Guarda la calidad del pasto joven para el verano.","s":[
+ {"h":"Cuándo cortar","p":["Pasto joven, antes de florecer: más hoja y proteína.","En días secos y soleados, sin lluvia pronosticada."]},
+ {"h":"Secado","p":["Voltea el pasto para que seque parejo.","Está listo cuando los tallos se quiebran y no hay humedad al torcerlos (menos de 18 a 20 % de humedad).","Empacar húmedo produce moho y puede incendiarse."]},
+ {"h":"Almacenamiento","p":["Bajo techo, sobre tarimas, con ventilación.","Separado del suelo y de las paredes."]},
+ {"h":"Calidad","p":["Verde, con hojas, olor agradable, sin polvo.","El heno amarillo, café o con polvo alimenta poco y enferma."]}
+],"rel":["Heno y pasto de corte en la ración","Plan forrajero para el verano","Bodega de alimento"]},
+
+{"t":"Leguminosas y árboles forrajeros","a":"forrajes","r":"Plantas que fijan nitrógeno del aire y dan proteína barata al ganado. Mejoran el suelo y el pasto.","s":[
+ {"h":"Opciones","p":["Leucaena: muy rica en proteína; con límite por la mimosina.","Madero negro (Gliricidia): bancos forrajeros y cercas vivas.","Cratylia: aguanta bien la sequía.","Gandul, cannavalia, maní forrajero.","Morera y nacedero (no leguminosas, pero ricos en proteína)."]},
+ {"h":"Uso","p":["Bancos forrajeros cerca del corral para cortar y dar picado.","Asociadas con pastos en potreros.","Como complemento, no como alimento único: 20 a 30 % de la ración como máximo."]},
+ {"h":"Cuidados","p":["Adapta poco a poco para evitar timpanismo y toxicidad.","La leucaena en exceso y sin adaptación da pérdida de pelo y problemas de tiroides."]}
+],"rel":["Proteína en la ración","Sistemas silvopastoriles","Timpanismo o panza inflada"]},
+
+{"t":"Caña de azúcar como forraje","a":"forrajes","r":"La caña produce mucha energía por manzana y aguanta el verano en el campo. Es una buena reserva viva.","s":[
+ {"h":"Ventajas","p":["Alta producción de materia verde.","Mantiene su calidad en verano: se corta cuando se necesita.","Pocos cuidados una vez establecida."]},
+ {"h":"Manejo","p":["Variedades forrajeras o de azúcar con buen rendimiento.","Cosecha madura en verano.","Pica fina y da el mismo día."]},
+ {"h":"Límites","p":["Muy baja en proteína y minerales.","Necesita complementos para ganancias buenas."]}
+],"rel":["Caña de azúcar en la ración","Plan forrajero para el verano"]},
+
+{"t":"Riego de pastos","a":"forrajes","r":"El riego mantiene la producción de pasto en verano. Se justifica en pastos de corte de alto rendimiento y cerca de fuentes de agua.","s":[
+ {"h":"Cuándo conviene","p":["Pastos de corte cerca del corral.","Zonas con verano largo y agua disponible.","Cuando el costo del riego es menor que comprar forraje o grano."]},
+ {"h":"Sistemas","p":["Aspersión: fácil de mover.","Gravedad por surcos: barato si el terreno lo permite.","Goteo: eficiente pero caro para pastos."]},
+ {"h":"Reglas","p":["Riega con constancia: poco y seguido es peor que menos veces bien hecho.","Fertiliza junto con el riego para aprovecharlo.","Revisa los permisos de uso de agua."]}
+],"rel":["Pastos de corte","Plan forrajero para el verano","Agua: fuentes, tanques y calidad"]},
+
+{"t":"Plan forrajero para el verano","a":"forrajes","r":"El verano se prepara en invierno. Calcular el forraje que vas a necesitar evita comprar caro o perder peso.","s":[
+ {"h":"Calcula lo que necesitas","p":["Kilos de forraje por animal al día × número de animales × días de verano.","Suma 20 % por pérdidas.","Ejemplo: 50 animales × 8 kg de ensilaje × 150 días = 60,000 kg + 20 % = 72,000 kg."]},
+ {"h":"Opciones","p":["Ensilaje hecho en lluvia.","Heno.","Caña de azúcar en pie.","Pasto de corte con riego.","Compra de subproductos o rastrojos."]},
+ {"h":"Calendario","p":["Siembra de maíz o sorgo para ensilar al inicio de las lluvias.","Ensilaje y heno a mitad y final de las lluvias.","Revisión de reservas antes de que termine el invierno."]},
+ {"h":"En la app","p":["Rumi te dice cuánto alimento consumen tus lotes por mes."]}
+],"rel":["Ensilaje: cómo hacerlo","Ración para la época seca","Época seca"]},
+
+{"t":"Recuperar un potrero degradado","a":"forrajes","r":"Un potrero con poco pasto, suelo pelado y muchas malezas produce muy poco. Se puede recuperar con un plan.","s":[
+ {"h":"Señales de degradación","p":["Menos de la mitad del suelo cubierto de pasto.","Malezas y plantas duras que el ganado no come.","Suelo compactado o con cárcavas."]},
+ {"h":"Plan","p":["Descanso del potrero.","Control de malezas.","Análisis de suelo, cal y abono.","Resiembra al inicio de las lluvias si hace falta.","Volver a pastorear con carga moderada y rotación."]},
+ {"h":"Prevención","p":["Carga adecuada.","Rotación con descansos.","Fertilización periódica."]}
+],"rel":["Establecer un potrero","Control de malezas","Carga animal y aforo"]},
+
+{"t":"Sistemas silvopastoriles","a":"forrajes","r":"Combinar árboles, pastos y ganado da sombra, forraje, madera y mejora el suelo.","s":[
+ {"h":"Tipos","p":["Árboles dispersos en potreros.","Cercas vivas.","Bancos forrajeros.","Pastoreo en callejones de leucaena u otras arbustivas."]},
+ {"h":"Beneficios","p":["Sombra que reduce el estrés por calor.","Forraje extra rico en proteína.","Mejor suelo y retención de agua.","Madera, leña y frutas."]},
+ {"h":"Cuidados","p":["No sembrar árboles tóxicos.","Manejar la sombra para que el pasto reciba luz.","Proteger árboles jóvenes del ganado."]}
+],"rel":["Leguminosas y árboles forrajeros","Sombra","Estrés por calor"]},
+
+{"t":"Calidad del forraje y edad de corte","a":"forrajes","r":"El mismo pasto puede ser buen alimento o casi paja según la edad a la que se corta o se pastorea.","s":[
+ {"h":"Pasto joven","p":["Más hojas, más proteína (10 a 14 %) y más digestible.","Menos cantidad por corte."]},
+ {"h":"Pasto viejo","p":["Más tallo y fibra dura, proteína de 4 a 6 %.","Más cantidad pero alimenta mucho menos.","El animal come menos porque tarda en digerir."]},
+ {"h":"Punto óptimo","p":["Antes de florecer o espigar.","En pastos de corte, 50 a 70 días en lluvia.","En pastoreo, a la altura recomendada de entrada."]},
+ {"h":"Señales de buena calidad","p":["Mucha hoja verde y tallos tiernos.","El ganado lo come sin dejar sobras.","Buen color y olor."]}
+],"rel":["Pastos de corte","Pastoreo rotacional","Materia seca y consumo"]},
+
+{"t":"Análisis de suelo y encalado","a":"forrajes","r":"El análisis de suelo dice qué le falta a tu tierra. Así no gastas en abono que no hace falta.","s":[
+ {"h":"Cómo tomar la muestra","p":["Recorre el potrero en zigzag y toma 15 a 20 submuestras de 0 a 20 cm.","Mézclalas y envía un kilo al laboratorio.","Una muestra por cada potrero o zona distinta."]},
+ {"h":"Qué dice","p":["pH o acidez.","Fósforo, potasio, calcio, magnesio.","Materia orgánica.","A veces aluminio y microelementos."]},
+ {"h":"Encalado","p":["Los suelos ácidos (pH menor de 5.5) limitan el pasto.","La cal corrige la acidez y aporta calcio.","Aplícala meses antes de sembrar o fertilizar, según la recomendación."]}
+],"rel":["Fertilizar pastos","Establecer un potrero"]}
+]
