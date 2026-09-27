@@ -37,7 +37,7 @@
 {"t":"Horarios de alimentación","a":"nutricion","r":"Servir a la misma hora todos los días mantiene estable la panza y el consumo. Los animales se acostumbran a los horarios.","s":[
  {"h":"Cuántas veces","p":["Dos a tres entregas al día es lo más común.","Más entregas reducen la acidosis y el alimento que se calienta en el comedero."]},
  {"h":"Horario de ejemplo","p":["Primera entrega temprano, 6:00 a 7:00.","Segunda a media mañana o mediodía.","Tercera al final de la tarde, 15:00 a 16:00.","Con calor fuerte, carga más alimento temprano y en la tarde."]},
- {"h":"Reglas","p":["Mismo orden de corrales cada día.","No retrases más de 30 minutos.","Distribuye parejo a lo largo del comedero.","En la app pones tus horarios en Más, Tu finca, y la pantalla Hoy te dice cuánto falta por dar."]}
+ {"h":"Reglas","p":["Mismo orden de corrales cada día.","No retrases más de 30 minutos.","Distribuye parejo a lo largo del comedero.","En la app pones tus horarios en Más, Configuración, y la pantalla Hoy te dice cuánto falta por dar."]}
 ],"rel":["Lectura de comederos","Rutina diaria del engorde","Estrés por calor"]},
 
 {"t":"Mezclado de la ración","a":"nutricion","r":"Una ración bien formulada pero mal mezclada es otra ración. Cada bocado debe tener lo mismo.","s":[

@@ -15,7 +15,10 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/fotos.js` — fotos de los animales: cámara dentro de la app (getUserMedia). En Android se
     guardan como JPEG en la memoria interna (`Android.fotoGuardar/fotoLeer`, clase `Fotos` en smali);
     en un navegador, en IndexedDB. No salen del teléfono ni van en el respaldo.
-  - `app/smali/` — el código Android (WebView, guardar archivos, permiso de cámara, fotos).
+  - `app/assets/extras.js` — Agenda de tareas, Bodega de alimento e informe de lote para compartir.
+  - `app/assets/fondos/` — fotos de fondo (Wikimedia Commons, CC0 y dominio público; créditos en Más,
+    Ayuda, Acerca de).
+  - `app/smali/` — el código Android (WebView, guardar archivos, permiso de cámara, fotos, compartir).
   - `app/apktool.yml` — versión (`versionCode`, `versionName`) y SDK.
 - `modelo/` — el conocimiento de Rumi.
   - `fichas/*.json` — temas a fondo: `{t, a, r (resumen), s: [{h, p: [puntos]}], rel: [temas]}`.

@@ -114,7 +114,7 @@ svg{display:block}
 
 /* ---------- estructura ---------- */
 html,body{overflow-x:hidden}
-#app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));overflow-x:hidden;overflow-x:clip}
+#app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:calc(170px + env(safe-area-inset-bottom,0px));overflow-x:hidden;overflow-x:clip}
 .hd{background:var(--head);color:var(--htx);padding:10px 20px 24px;display:flex;flex-direction:column;gap:18px}
 @media (min-width:760px){.hd{border-radius:0 0 24px 24px}}
 .hd .top{display:flex;justify-content:space-between;align-items:center;min-height:44px;gap:12px}
@@ -343,6 +343,21 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .glee li{position:relative;padding-left:18px;font-size:14px;line-height:1.45}
 .glee li::before{content:'';position:absolute;left:2px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--anil5)}
 .glee li.ok::before{background:var(--verde)}.glee li.w::before{background:var(--rojo)}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13.5px;border-radius:12px}
+.ag-row{align-items:center}
+.ag-acts{display:flex;gap:6px;align-items:center;flex:none}
+.ag-ok{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--verde);display:flex;align-items:center;justify-content:center}
+.ag-ok svg{width:18px;height:18px}
+.ag-card{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit}
+.ag-h{display:flex;align-items:center;gap:12px}.ag-h>div{flex:1;display:flex;flex-direction:column}.ag-h b{font-size:16px}.ag-h span{font-size:13px;color:var(--ink2)}.ag-h>svg{width:18px;height:18px;color:var(--ink2)}
+.ag-mini{display:flex;align-items:center;gap:8px;font-size:14px;padding-left:4px}
+.ag-mini i{width:8px;height:8px;border-radius:50%;background:var(--anil5);flex:none}.ag-mini i.t-r{background:var(--rojo)}.ag-mini i.t-v{background:var(--verde)}.ag-mini i.t-y{background:var(--arete-e)}
+.mas-ic.t-a{background:var(--anil-bg);color:var(--anil5)}
+.bod{display:flex;flex-direction:column;gap:10px}
+.bod-t{display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;padding:0;color:inherit;text-align:left}.bod-t b{font-size:17px}.bod-t span{font-size:13px;color:var(--ink2)}
+.bod-n{display:flex;justify-content:space-between;gap:10px}.bod-n>div{display:flex;flex-direction:column}.bod-n .hf{font-size:22px}.bod-n small{font-size:12.5px;color:var(--ink2)}
+.bod-bar{height:8px;border-radius:4px;background:var(--card2);overflow:hidden}.bod-bar i{display:block;height:100%;border-radius:4px}
+body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
 /* Rumi por menús */
 .tbw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tbw .tb td,.tbw .tb th{white-space:nowrap}
@@ -1075,6 +1090,7 @@ let rq=0;
 function scheduleRender(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;render();});}
 function render(){
   const r=route();const fn=PAGES[r.p]||PAGES.hoy;
+  document.body.dataset.sub=r.id||'';
   document.body.dataset.pg=r.p==='metodologia'?'mas':PAGES[r.p]?r.p:'hoy';
   $('#app').innerHTML=aUnidad(fn(r.id,r.id2));
   {const m=$('#app main');if(m&&!m.querySelector('.vineta'))m.insertAdjacentHTML('beforeend','<figure class="vineta" aria-hidden="true"></figure>');}animarRuta();
@@ -1170,7 +1186,7 @@ PAGES.lote=id=>{
     hero=`<div class="hcard"><div style="display:flex;flex-direction:column;gap:2px"><span class="hf" style="font-size:30px;line-height:1.1;color:${x.margenReal>=0?'#A9CDB0':'#F0A99D'}">${money(x.margenReal)}</span><span style="font-size:13.5px;color:var(--htx2)">margen del lote, ${money(cb?x.margenReal/cb:0)} por cabeza</span></div><span style="font-size:14px">Vendido el ${ffl(l.fechaCierre||'')} a ${nf(x.pesoHoy)} kg de promedio.</span></div>`;
   }
   const qa=x.activo?`<div class="qa">${[['pesaje','Pesaje'],['alimento','Alimento'],['sanidad','Sanidad'],['venta','Venta']].map(([k,t])=>`<button type="button" data-act="f" data-f="${k}" data-lote="${esc(id)}">${ico(k)}${t}</button>`).join('')}</div>
-   <div class="acts" style="margin-top:-18px;gap:4px 16px">${lnkB('f','Registrar muerte',`data-f="baja" data-lote="${esc(id)}"`)}${lnkB('f','Registrar gasto',`data-f="gasto" data-lote="${esc(id)}"`)}${lnkB('fpDesde','Formular su dieta',`data-id="${esc(id)}"`)}</div>`:'';
+   <div class="acts" style="margin-top:-18px;gap:4px 16px">${lnkB('f','Registrar muerte',`data-f="baja" data-lote="${esc(id)}"`)}${lnkB('f','Registrar gasto',`data-f="gasto" data-lote="${esc(id)}"`)}${lnkB('fpDesde','Formular su dieta',`data-id="${esc(id)}"`)}${lnkB('informeLote','Compartir informe',`data-id="${esc(id)}"`)}</div>`:'';
   const st=[['Días de engorde',nf(x.dec),x.activo?`de unos ${nf(x.dec+x.diasMeta)}`:'en total'],
     ['Ganancia diaria',x.gdp!=null?nf(x.activo?x.gdpUse:x.gdpTot,2)+' kg':'–',x.gdpRec!=null&&x.activo?'entre los dos últimos pesajes':'desde que entró'],
     ['Consumo',x.consumo!=null?nf(x.consumo,1)+' kg':'–','por cabeza al día, 7 días'],
@@ -3574,7 +3590,7 @@ SABER.push(
  {re:/agua (fria|caliente)|bebedero al sol/,t:'Agua fresca',x:'El agua muy caliente reduce el consumo. Pon los bebederos en sombra y revisa que se llenen rápido.'},
  {re:/descargar el camion|al bajar del camion|descarga/,t:'Descarga del camión',x:'Baja a los animales con calma por una rampa firme, sin gritos ni palos. Dales agua y heno y déjalos descansar antes de pesar o vacunar.'},
  {re:/mezclar bien|como mezclar|mezclado/,t:'Cómo mezclar',x:'Primero lo que va en mayor cantidad, luego lo mediano y al final los minerales y la urea, que van en poca cantidad y deben quedar bien repartidos. Mezcla de 3 a 5 minutos después de echar lo último.'},
- {re:/entregas al dia|veces al dia|horario de comida|a que hora (darles|servir)/,t:'Horarios de entrega',x:'Dos o tres entregas al día a horas fijas mantienen el rumen estable. En calor, da más en la tarde y noche. Cambia tus horarios en Más, Tu finca.'}
+ {re:/entregas al dia|veces al dia|horario de comida|a que hora (darles|servir)/,t:'Horarios de entrega',x:'Dos o tres entregas al día a horas fijas mantienen el rumen estable. En calor, da más en la tarde y noche. Cambia tus horarios en Más, Configuración.'}
 );
 
 /* ---------- más ejemplos para entender por parecido ---------- */
@@ -4569,6 +4585,7 @@ responder=function(txt){
 })();
 </script>
 <script src="fotos.js"></script>
+<script src="extras.js"></script>
 <script src="rumi_guia.js"></script>
 <script src="rumi_menu.js"></script>
 </body>

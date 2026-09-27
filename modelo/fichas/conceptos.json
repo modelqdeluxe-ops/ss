@@ -19,7 +19,7 @@
  {"h":"Qué es","p":["Un animal lleno pesa más por el agua y la comida en la panza.","El comprador descuenta ese peso para pagar el peso real."]},
  {"h":"Valores de referencia","p":["3 a 5 % en ayunos cortos o pesaje en finca.","El NRC usa 4 % como referencia.","Viajes largos pueden causar pérdidas mayores."]},
  {"h":"Ejemplo","p":["Pesa 500 kg en la finca con 4 % de desbaste: te pagan 480 kg."]},
- {"h":"En la app","p":["Pones el desbaste en Más, Tu finca, y se usa al calcular ventas y márgenes."]}
+ {"h":"En la app","p":["Pones el desbaste en Más, Configuración, y se usa al calcular ventas y márgenes."]}
 ],"rel":["Preparar la venta","Rendimiento en canal","Negociar con el comprador"]},
 
 {"t":"Unidad animal","a":"conceptos","r":"Medida que iguala animales de distintos pesos para calcular cuánto forraje o espacio necesitan.","s":[

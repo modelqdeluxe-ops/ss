@@ -100,6 +100,7 @@ function loteNivel(x){
   }
   ops.push({l:'Sus animales',ic:'vaca',sub:()=>({t:'Animales de '+x.l.nombre,intro:'¿Qué quieres ver de los animales?',ops:opsAnimales(x)})});
   if(x.activo)ops.push(f('Anotar pesaje de este lote','pesaje',{lote:x.id}),f('Anotar alimento','alimento',{}),f('Anotar sanidad','sanidad',{lote:x.id}),f('Anotar venta','venta',{lote:x.id}),f('Anotar muerte','baja',{lote:x.id}));
+  ops.push({l:'Compartir informe (WhatsApp)',run:()=>Extras.compartir(Extras.informe(x.id),x.l.nombre),keep:true});
   ops.push({l:'Abrir el lote',go:'#lote/'+encodeURIComponent(x.id)});
   return {t:x.l.nombre,intro:loteMsg(x).html,ops};
 }
@@ -166,7 +167,10 @@ const CALCS=()=>[
 /* ---------- áreas ---------- */
 const AREAS=[
  {id:'hoy',ic:'hoy',t:'Mi engorde',s:'Pendientes y números de hoy',intro:'Aquí te digo cómo va tu engorde con tus propios datos. ¿Qué quieres saber?',ops:()=>[
-   q('¿Qué hago hoy?','que hago hoy'),q('¿Qué lote está listo para vender?','que lote esta listo'),
+   q('¿Qué hago hoy?','que hago hoy'),
+   {l:'Mi agenda (tareas de hoy y próximas)',fn:()=>{const H=C_().H,T=Agenda.tareas();const h=T.filter(t=>t.f<=H),p=T.filter(t=>t.f>H&&t.f<=addDias(H,7));
+     return {html:(h.length?'<b>Hoy</b>'+lista(h.map(t=>t.t+': '+t.s)):'<b>Hoy no tienes tareas pendientes.</b>')+(p.length?'<p class="rh">Próximos 7 días</p>'+lista(p.map(t=>`${ffc(t.f)} · ${t.t}`)):''),btns:[['Abrir la agenda',{t:'go',go:'#agenda'}]]};}},
+   q('¿Qué lote está listo para vender?','que lote esta listo'),
    {l:'Lotes que toca pesar',fn:()=>{const C=C_(),d=+S.config.diasSinPesar||21;const P=C.act.filter(x=>x.diasSinPesar>d);return {html:P.length?`Toca pesar:`+tabla(['Lote','Último pesaje'],P.map(x=>[esc(x.l.nombre),cuando(x.ult.f)])):`Todos tus lotes están pesados en los últimos ${d} días.`,btns:P[0]?[['Anotar pesaje',{t:'form',k:'pesaje',p:{lote:P[0].id}}]]:[]};}},
    {l:'Lotes en retiro de medicinas',fn:()=>{const R0=C_().act.filter(x=>x.retiroHasta);return {html:R0.length?'En retiro (no vender a matadero antes):'+tabla(['Lote','Producto','Hasta'],R0.map(x=>[esc(x.l.nombre),esc(x.retiroProd||''),ffc(x.retiroHasta)])):'Ningún lote está en retiro.'};}},
    q('¿Cuántas cabezas tengo?','cuantas cabezas tengo'),q('¿Cuál es mi mejor lote?','cual es mi mejor lote'),
@@ -180,7 +184,10 @@ const AREAS=[
    q('Me equivoqué en un registro','me equivoque en un registro')]},
  {id:'alimento',ic:'alimento',t:'Alimentación',s:'Dietas, consumo, agua y forrajes',intro:'Hablemos de la comida de tus animales. ¿Qué necesitas?',ops:()=>[
    q('Formular una dieta barata','formula una dieta'),{l:'Abrir el formulador de dietas',go:'#formular'},
-   q('¿Cuánto alimento necesito para el mes?','cuanto alimento para el mes'),q('¿Cuánto comen mis lotes?','cuanto comen'),
+   q('¿Cuánto alimento necesito para el mes?','cuanto alimento para el mes'),
+   {l:'¿Para cuántos días me alcanza el alimento?',fn:()=>{const it=(S.config.bodega||{}).items||[];const E=it.map(i=>({i,e:Extras.bodega.estado(i)})).filter(o=>!o.e.sin);
+     return E.length?{html:'En tu bodega:'+tabla(['Producto','Hay','Alcanza'],E.map(o=>[esc(o.i.n),`${nf(Math.max(0,o.e.stock))} kg`,o.e.dias==null?'–':pl(Math.floor(o.e.dias),'día','días')])),btns:[['Abrir la bodega',{t:'go',go:'#bodega'}]]}:{html:'Aún no llevas la bodega. Anota tus compras de alimento y te digo para cuántos días alcanza.',btns:[['Abrir la bodega',{t:'go',go:'#bodega'}]]};}},
+   q('¿Cuánto comen mis lotes?','cuanto comen'),
    q('Programa de adaptación al concentrado','como adapto al concentrado'),q('¿Cuánta agua necesitan mis lotes?','cuanta agua necesitan'),
    q('¿Cuánto cuesta el kilo ganado?','cuanto cuesta el kilo ganado'),
    CALCS().find(c=>c.l==='Consumo según el peso'),CALCS().find(c=>c.l==='Mezcla de una ración por tandas'),CALCS().find(c=>c.l==='Ensilaje que necesito'),

@@ -187,7 +187,7 @@
 {
 "t": "Precio de venta",
 "kw": "precio de venta a como vender precio del ganado precio por kilo precio por libra",
-"x": "No sé el precio del mercado de hoy. Tú lo pones en Más, en Tu finca, y con él calculo tu margen, el precio mínimo para no perder y a cuánto puedes comprar."
+"x": "No sé el precio del mercado de hoy. Tú lo pones en Más, en Configuración, y con él calculo tu margen, el precio mínimo para no perder y a cuánto puedes comprar."
 },
 {
 "t": "Punto de equilibrio",
