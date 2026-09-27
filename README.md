@@ -18,13 +18,15 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/extras.js` — Agenda de tareas, Bodega de alimento e informe de lote para compartir.
   - `app/assets/ambiente.js` — colores según la hora y la época del año, clima de la zona (Open-Meteo,
     sin clave; ubicación aproximada del teléfono o la de Configuración), efectos de sol, nubes, lluvia y
-    estrellas, fotos de novillos en bucle en cada encabezado y la bienvenida animada (la primera vez,
+    estrellas dibujados en canvas, fotos de novillos en bucle en cada encabezado y la bienvenida animada (la primera vez,
     Rumi saluda y abre el recorrido).
   - `app/assets/fondos/` — `g01`–`g25.webp`, fotos de ganado (Wikimedia Commons, CC0 y dominio público;
-    créditos en Más, Ayuda, Acerca de) y el fondo de curvas `topo-*.svg`.
-  - `app/assets/ic3d/` — íconos 3D y la figura de Rumi (Fluent Emoji de Microsoft, licencia MIT).
+    créditos en Más, Ayuda, Acerca de) 
+  - `app/assets/iconos.js` — íconos Phosphor duotono (licencia MIT, `LICENCIA-phosphor.txt`).
+  - `app/assets/fondos/rumi.webp` — retrato de Rumi: Brahman en Costa Rica, foto de Bernard Gagnon (CC0).
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
-    compartir y lectura en voz alta con el lector de texto del teléfono).
+    compartir y lectura en voz alta: la clase `Voz` elige la voz en español más natural del teléfono;
+    su fuente Java está en `modelo/android/Voz.java`).
   - `app/apktool.yml` — versión (`versionCode`, `versionName`) y SDK.
 - `modelo/` — el conocimiento de Rumi.
   - `fichas/*.json` — temas a fondo: `{t, a, r (resumen), s: [{h, p: [puntos]}], rel: [temas]}`. Áreas:

@@ -621,12 +621,12 @@
 
     if-eqz v1, :cond_0
 
-    const-string v1, "#0F1A25"
+    const-string v1, "#0E1822"
 
     goto :goto_0
 
     :cond_0
-    const-string v1, "#F1EDE5"
+    const-string v1, "#0E1822"
 
     :goto_0
     invoke-static {v1}, Landroid/graphics/Color;->parseColor(Ljava/lang/String;)I

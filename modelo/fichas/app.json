@@ -768,7 +768,7 @@
  {
   "t": "Escuchar a Rumi",
   "a": "app",
-  "r": "Rumi puede leerte en voz alta sus respuestas y los pasos del recorrido. Usa la voz del teléfono.",
+  "r": "Rumi puede leerte en voz alta sus respuestas y los pasos del recorrido, con la voz en español más natural que tenga tu teléfono.",
   "s": [
    {
     "h": "Cómo se usa",
@@ -779,10 +779,26 @@
     ]
    },
    {
+    "h": "Elegir la voz",
+    "p": [
+     "Ve a Más, Configuración, Voz de Rumi.",
+     "Toca Probar para oír cada voz y elige la que te guste.",
+     "La primera de la lista es la más natural que tiene tu teléfono."
+    ]
+   },
+   {
+    "h": "Voces más naturales",
+    "p": [
+     "Toca Instalar voces más naturales: se abren los ajustes de voz del teléfono.",
+     "En Servicios de voz de Google, instala Español (Estados Unidos) y descarga las voces de alta calidad.",
+     "Vuelve a la app y elige la nueva voz."
+    ]
+   },
+   {
     "h": "Si no suena",
     "p": [
      "Sube el volumen del teléfono.",
-     "Revisa en los ajustes del teléfono que la voz de texto a voz tenga el idioma español instalado."
+     "Revisa que el teléfono tenga una voz en español instalada."
     ]
    }
   ],
@@ -799,15 +815,17 @@
    {
     "h": "De dónde sale",
     "p": [
-     "Del servicio Open-Meteo por internet, con la ubicación aproximada del teléfono.",
+     "Del servicio Open-Meteo por internet, con la ubicación aproximada del teléfono en ese momento.",
+     "Debajo del clima ves el nombre del lugar, para que sepas de dónde es el dato.",
      "Si no das permiso de ubicación, usa el lugar que pusiste en Más, Configuración, Ubicación.",
-     "Se actualiza cada 30 minutos cuando hay internet."
+     "Se actualiza cada 15 minutos cuando hay internet."
     ]
    },
    {
     "h": "Qué puedes hacer",
     "p": [
-     "Toca el clima para que Rumi te explique el riesgo de calor para el ganado.",
+     "Toca el clima para que Rumi te explique el riesgo de calor para el ganado, hora por hora.",
+     "Rumi te avisa si viene lluvia en las próximas horas.",
      "Sin internet, la app sigue funcionando y muestra la época del año."
     ]
    },

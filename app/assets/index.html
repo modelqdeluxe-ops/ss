@@ -326,34 +326,39 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .rbtn{width:50px;height:50px;flex:none;border-radius:25px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center}
 .rbtn.pri{background:var(--pri);border-color:var(--pri);color:var(--pritx)}
 .rbtn svg{width:22px;height:22px}
-/* Rumi 3D (Fluent Emoji, MIT) */
-.rm{display:inline-flex;align-items:center;justify-content:center;flex:none;position:relative}
-.rm img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 3px 5px rgba(0,0,0,.18))}
-.rm.bob img{animation:rmBob 3.2s ease-in-out infinite}
-.rm.talk img{animation:rmTalk .5s ease-in-out 2}
-.rm.think img{animation:rmThink 1.2s ease-in-out infinite}
+/* Rumi: retrato real de un Brahman (foto CC0) en círculo */
+.rm{display:inline-flex;align-items:center;justify-content:center;flex:none;position:relative;border-radius:50%}
+.rm img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;box-shadow:0 0 0 2px var(--card),0 0 0 3.5px color-mix(in srgb,var(--arete) 85%,transparent),0 4px 10px -2px rgba(0,0,0,.35)}
+.rm.talk::after,.rm.think::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--arete);opacity:0;animation:rmOnda 1.1s ease-out 2}
+.rm.think::after{animation:rmOnda 1.1s ease-out infinite}
+@keyframes rmOnda{0%{opacity:.8;transform:scale(.92)}100%{opacity:0;transform:scale(1.25)}}
 @keyframes rmBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes rmTalk{0%,100%{transform:rotate(0) scale(1)}30%{transform:rotate(-6deg) scale(1.05)}70%{transform:rotate(5deg) scale(1.03)}}
-@keyframes rmThink{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-#rumiFab{width:70px;height:70px;padding:0!important;border-radius:50%;border:0;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.95),rgba(255,255,255,.75) 60%,rgba(255,255,255,0) 72%);box-shadow:none;justify-content:center;gap:0;overflow:visible!important}
+@keyframes rmTalk{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+#rumiFab{width:66px;height:66px;padding:0!important;border-radius:50%;border:0;background:none;box-shadow:none;justify-content:center;gap:0;overflow:visible!important}
 #rumiFab span:not(.rm){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-#rumiFab .rm{width:64px!important;height:64px!important;margin:0!important}
-#rumiFab .rm img{filter:drop-shadow(0 8px 10px rgba(0,0,0,.35))}
-#rumiFab::after{content:'Rumi';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--head);color:var(--htx);font-size:11px;font-weight:700;padding:1px 8px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-.rumi-av{background:none!important;border-radius:0!important}
+#rumiFab .rm{width:62px!important;height:62px!important;margin:0!important}
+#rumiFab .rm img{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--arete),0 10px 22px -6px rgba(0,0,0,.55)}
+#rumiFab::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--arete);animation:rmPulso 2.8s ease-out infinite;pointer-events:none}
+@keyframes rmPulso{0%{opacity:.7;transform:scale(.95)}70%,100%{opacity:0;transform:scale(1.22)}}
+#rumiFab::after{content:'Rumi';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);background:var(--arete);color:#1b1b1b;font-size:11px;font-weight:800;letter-spacing:.3px;padding:1px 9px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.rumi-av{background:none!important;border-radius:50%!important}
 .rumi-av .rm{width:100%;height:100%}
 .rumi-hd{display:flex;width:44px;height:44px;align-items:center;justify-content:center}
-.rumi-hd .rm{width:44px!important;height:44px!important}
-.rm.av{width:34px;height:34px;padding:0;background:none}
+.rumi-hd .rm{width:42px!important;height:42px!important}
+.rm.av{width:32px;height:32px;padding:0;background:none}
 .rm.mini{width:28px;height:28px}
 .rumi-big .rm{width:72px;height:72px}.rumi-mini .rm{width:36px;height:36px}
 .gque{margin:4px 0 8px;font-size:13.5px;line-height:1.45;color:var(--ink2)}.gque b{color:var(--ink)}
 .glee{margin-top:10px;background:var(--bg);border-radius:14px;padding:10px 12px}
 .glee>b{font-size:13.5px}
 .glee ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
-.glee li{position:relative;padding-left:18px;font-size:14px;line-height:1.45}
-.glee li::before{content:'';position:absolute;left:2px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--anil5)}
-.glee li.ok::before{background:var(--verde)}.glee li.w::before{background:var(--rojo)}
+.glee li{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.45}
+.glee li .sw{flex:none;width:12px;height:12px;border-radius:3px;margin-top:.3em;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.glee li.sin::before{content:'';flex:none;width:12px;height:12px;margin-top:.3em;border-radius:50%;border:2px solid var(--ink2);opacity:.45;box-sizing:border-box}
+.glee li>span{flex:1;min-width:0}
+.glee li .st{flex:none;font-style:normal;font-size:11px;font-weight:800;padding:2px 7px;border-radius:7px;margin-top:.1em}
+.glee li .st.ok{background:color-mix(in srgb,var(--verde) 16%,transparent);color:var(--verde)}
+.glee li .st.w{background:color-mix(in srgb,var(--rojo) 14%,transparent);color:var(--rojo)}
 .btn.sm{min-height:36px;padding:0 12px;font-size:13.5px;border-radius:12px}
 .ag-row{align-items:center}
 .ag-acts{display:flex;gap:6px;align-items:center;flex:none}
@@ -369,6 +374,25 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .bod-n{display:flex;justify-content:space-between;gap:10px}.bod-n>div{display:flex;flex-direction:column}.bod-n .hf{font-size:22px}.bod-n small{font-size:12.5px;color:var(--ink2)}
 .bod-bar{height:8px;border-radius:4px;background:var(--card2);overflow:hidden}.bod-bar i{display:block;height:100%;border-radius:4px}
 body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
+
+/* íconos Phosphor duotono en cuadros de color */
+.i3{display:block;width:22px;height:22px;flex:none}
+.rm-area i.a3{width:44px;height:44px;border-radius:14px}
+.rm-area i.a3 .i3{width:26px;height:26px}
+.rm-op i.o3{--c:var(--anil5);width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);flex:none}
+.rm-op i.o3 .i3{width:21px;height:21px}
+[data-c=hoy],[data-c=negocio]{--c:var(--s4)}[data-c=lotes],[data-c=anotar],[data-c=manejo]{--c:var(--s1)}[data-c=alimento],[data-c=nutricion],[data-c=forrajes]{--c:var(--s3)}
+[data-c=salud],[data-c=sintomas],[data-c=sanidad],[data-c=thermometer]{--c:var(--s6)}[data-c=calc],[data-c=conceptos]{--c:var(--s5)}[data-c=dinero],[data-c=sun]{--c:var(--s2)}
+[data-c=guia],[data-c=fisiologia],[data-c=genetica]{--c:var(--verde)}[data-c=app],[data-c=instalaciones],[data-c=normas]{--c:var(--anil5)}[data-c=carne],[data-c=actualidad]{--c:var(--rojo)}
+.mas-ic .i3{width:22px;height:22px}
+
+.voz-l{display:flex;flex-direction:column;gap:6px}
+.voz-f{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 4px;background:var(--card)}
+.voz-f.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 7%,var(--card))}
+.voz-el{flex:1;display:flex;align-items:center;gap:10px;border:0;background:none;color:var(--ink);text-align:left;padding:6px;min-height:44px}
+.voz-el i{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--ink2)}
+.voz-f.on .voz-el i{border-color:var(--pri);box-shadow:inset 0 0 0 4px var(--card);background:var(--pri)}
+.voz-el span{display:flex;flex-direction:column}.voz-el b{font-size:15px}.voz-el small{font-size:12.5px;color:var(--ink2)}
 /* Rumi por menús */
 .rm-tog{margin-left:auto;display:flex;align-items:center;gap:6px;min-height:40px;min-width:40px;padding:0 10px;border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:13.5px;flex:none;justify-content:center}
 .rm-tog svg{width:18px;height:18px}
@@ -376,15 +400,15 @@ body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
 .rumi-panel.min>*:not(.rm-bar){display:none!important}
 .rumi-panel.min .rm-bar{position:static}
 .rm-buscar{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:0 12px;min-height:46px}
-.rm-buscar .i3{width:22px;height:22px}
+.rm-buscar .i3{width:22px;height:22px;color:var(--ink2)}
 .rm-buscar input{flex:1;min-width:0;border:0;background:transparent;font-size:15.5px;color:var(--ink);outline:none;min-height:44px}
 .rumi-panel.buscando .rm-areas,.rumi-panel.buscando .rm-lista{display:none}
 .rm-rc{margin:2px 2px 0;font-size:13px;color:var(--ink2)}
-.rm-area i.a3{background:none!important;width:44px;height:44px}
-.rm-area i.a3 .i3{width:40px;height:40px}
-.rm-op i.o3{background:none!important;width:34px;height:34px}
-.rm-op i.o3 .i3{width:30px;height:30px}
-.i3{display:block;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+
+
+
+
+
 
 .tbw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tbw .tb td,.tbw .tb th{white-space:nowrap}
@@ -444,7 +468,7 @@ body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
 #spot .tip .btn{min-height:48px;font-size:16px}
 #spot.centro .hole{box-shadow:0 0 0 9999px rgba(10,18,26,.74);outline:0}
 #spot .tip{padding-top:18px}
-#spot .tip .tip-rumi{position:absolute;top:-34px;right:14px;width:64px;height:64px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));animation:rmBob 3s ease-in-out infinite}
+#spot .tip .tip-rumi{position:absolute;top:-30px;right:16px;width:60px;height:60px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--arete),0 6px 14px rgba(0,0,0,.3)}
 #spot .tip .sm{font-size:13px;color:var(--ink2)}
 #spot .tip .tip-t{font-size:21px;padding-right:62px}
 #spot .tip p b{font-weight:800}
@@ -732,8 +756,7 @@ body:has(#pasoSnack.on) #rumiFab{opacity:0;pointer-events:none;transform:transla
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.rp{display:none}}
 /* ===== ambiente: fondo de la app, hora del día, clima y fotos ===== */
 .vineta{display:none!important}
-:root{--amb1:rgba(240,191,51,.16);--amb2:rgba(74,102,82,.12);--t1:.93;--t2:.80;--t3:.42;--tintc:rgba(0,0,0,0);--topo:url('fondos/topo-claro.svg')}
-:root[data-modo="dark"]{--topo:url('fondos/topo-oscuro.svg')}
+:root{--amb1:rgba(240,191,51,.16);--amb2:rgba(74,102,82,.12);--t1:.93;--t2:.80;--t3:.42;--tintc:rgba(0,0,0,0)}
 :root[data-momento="madrugada"]{--amb1:rgba(90,110,180,.14);--amb2:rgba(60,70,120,.12);--tintc:rgba(20,30,70,.35)}
 :root[data-momento="amanecer"]{--amb1:rgba(255,170,120,.22);--amb2:rgba(255,210,150,.14);--tintc:rgba(255,150,100,.22)}
 :root[data-momento="manana"]{--amb1:rgba(255,215,120,.20);--amb2:rgba(140,190,140,.12);--tintc:rgba(255,220,150,.10)}
@@ -746,7 +769,25 @@ body:has(#pasoSnack.on) #rumiFab{opacity:0;pointer-events:none;transform:transla
 :root[data-clima="lluvia"],:root[data-clima="tormenta"]{--tintc:rgba(60,80,110,.38);--amb1:rgba(120,150,190,.18)}
 :root[data-clima="nublado"]{--tintc:rgba(110,120,135,.22)}
 body{background:var(--bg)}
-body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 60% at 100% 0%,var(--amb1) 0,transparent 55%),radial-gradient(90% 55% at 0% 100%,var(--amb2) 0,transparent 60%),var(--topo) center/cover no-repeat,var(--bg);transition:background 2s}
+body::before{content:none}
+/* fondo de la app: cielo del momento, luces suaves, cerros en capas y textura fina */
+:root{--cerro:var(--s3);--cielo:color-mix(in srgb,var(--head) 16%,var(--bg))}
+:root[data-momento="amanecer"],:root[data-momento="atardecer"]{--cerro:color-mix(in srgb,var(--s3) 60%,#C0603A);--cielo:color-mix(in srgb,#F0A070 22%,var(--bg))}
+:root[data-momento="noche"],:root[data-momento="madrugada"]{--cerro:color-mix(in srgb,var(--s1) 70%,#101828);--cielo:color-mix(in srgb,#26345A 24%,var(--bg))}
+:root[data-epoca="seca"]{--cerro:color-mix(in srgb,var(--s3) 55%,#B08A50)}
+#fondo{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+#fondo i{position:absolute;display:block}
+#fondo .f-cielo{inset:0;background:linear-gradient(180deg,var(--cielo) 0%,var(--bg) 42%,var(--bg) 62%,color-mix(in srgb,var(--cerro) 7%,var(--bg)) 100%)}
+#fondo .f-orbe{width:120vw;height:120vw;border-radius:50%;filter:blur(40px);opacity:.9}
+#fondo .o1{right:-55vw;top:-30vw;background:radial-gradient(circle,var(--amb1) 0,transparent 62%);animation:orbe 38s ease-in-out infinite alternate}
+#fondo .o2{left:-60vw;top:35vh;background:radial-gradient(circle,var(--amb2) 0,transparent 62%);animation:orbe 46s ease-in-out infinite alternate-reverse}
+@keyframes orbe{to{transform:translate(-8vw,6vh) scale(1.08)}}
+#fondo .f-cerro{left:-5%;right:-5%;bottom:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+#fondo .c3{height:34vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 13%,var(--bg)),color-mix(in srgb,var(--cerro) 8%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 170 C150 110 300 120 430 150 S700 210 860 160 S1100 90 1200 120 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 170 C150 110 300 120 430 150 S700 210 860 160 S1100 90 1200 120 V300 H0Z'/></svg>")}
+#fondo .c2{height:25vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 20%,var(--bg)),color-mix(in srgb,var(--cerro) 12%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 120 C120 150 260 190 420 170 S720 90 900 120 S1120 190 1200 170 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 120 C120 150 260 190 420 170 S720 90 900 120 S1120 190 1200 170 V300 H0Z'/></svg>")}
+#fondo .c1{height:16vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 30%,var(--bg)),color-mix(in srgb,var(--cerro) 20%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 200 C200 170 330 120 520 140 S820 230 1000 190 S1150 150 1200 160 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 200 C200 170 330 120 520 140 S820 230 1000 190 S1150 150 1200 160 V300 H0Z'/></svg>")}
+#fondo .f-grano{inset:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .35 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.06;mix-blend-mode:multiply}
+:root[data-modo="dark"] #fondo .f-grano{mix-blend-mode:screen;opacity:.04}
 #app{background:transparent}
 .hd{position:relative;isolation:isolate;overflow:hidden;background:var(--head)}
 .hd>*:not(.hd-fx){position:relative;z-index:1}
@@ -756,56 +797,68 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .hd-fx .ft.kb{animation:kenb 10s ease-out forwards}
 @keyframes kenb{from{transform:scale(1.02)}to{transform:scale(1.1) translateX(-1.5%)}}
 .hd-fx .tinte{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--head) calc(var(--t1)*100%),transparent) 0%,color-mix(in srgb,var(--head) calc(var(--t2)*100%),transparent) 50%,color-mix(in srgb,var(--head) calc(var(--t3)*100%),transparent) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
-.hd-fx .fx-cielo,.hd-fx .fx-lluvia,.hd-fx .fx-nubes{position:absolute;inset:0;opacity:0;transition:opacity 1.5s}
-:root[data-momento="manana"]:not([data-clima="lluvia"]):not([data-clima="tormenta"]):not([data-clima="nublado"]) .fx-cielo,:root[data-momento="mediodia"]:not([data-clima="lluvia"]):not([data-clima="tormenta"]):not([data-clima="nublado"]) .fx-cielo,:root[data-momento="tarde"]:not([data-clima="lluvia"]):not([data-clima="tormenta"]):not([data-clima="nublado"]) .fx-cielo{opacity:1;background:radial-gradient(circle at 88% 8%,rgba(255,230,150,.55) 0,rgba(255,210,120,.18) 18%,transparent 40%);animation:solp 6s ease-in-out infinite}
-:root[data-momento="amanecer"] .fx-cielo,:root[data-momento="atardecer"] .fx-cielo{opacity:1;background:radial-gradient(circle at 85% 95%,rgba(255,160,90,.55) 0,rgba(255,120,90,.2) 25%,transparent 55%)}
-:root[data-momento="noche"] .fx-cielo,:root[data-momento="madrugada"] .fx-cielo{opacity:1;background-image:radial-gradient(1.4px 1.4px at 12% 18%,#fff 60%,transparent),radial-gradient(1px 1px at 28% 8%,#fff 60%,transparent),radial-gradient(1.6px 1.6px at 44% 22%,#fff 60%,transparent),radial-gradient(1px 1px at 63% 12%,#fff 60%,transparent),radial-gradient(1.3px 1.3px at 78% 26%,#fff 60%,transparent),radial-gradient(1px 1px at 90% 10%,#fff 60%,transparent),radial-gradient(1.2px 1.2px at 55% 34%,#fff 60%,transparent),radial-gradient(1px 1px at 20% 40%,#fff 60%,transparent);animation:estr 4s ease-in-out infinite alternate}
-@keyframes solp{50%{opacity:.75}}
-@keyframes estr{from{opacity:.5}to{opacity:1}}
-:root[data-clima="lluvia"] .fx-lluvia,:root[data-clima="tormenta"] .fx-lluvia{opacity:.55;background-image:repeating-linear-gradient(105deg,transparent 0 14px,rgba(210,225,255,.55) 14px 15px,transparent 15px 30px),repeating-linear-gradient(100deg,transparent 0 23px,rgba(210,225,255,.35) 23px 24px,transparent 24px 46px);background-size:220px 300px,300px 420px;animation:lluv .7s linear infinite}
-@keyframes lluv{to{background-position:-60px 300px,-80px 420px}}
-:root[data-clima="tormenta"] .hd-fx .tinte{animation:rayo 7s infinite}
-@keyframes rayo{0%,93%,97%,100%{filter:none}94%,96%{filter:brightness(1.9)}}
-:root[data-clima="nublado"] .fx-nubes,:root[data-clima="parcial"] .fx-nubes,:root[data-clima="lluvia"] .fx-nubes,:root[data-clima="tormenta"] .fx-nubes{opacity:.9;background:radial-gradient(60px 26px at 20% 20%,rgba(255,255,255,.35),transparent 70%),radial-gradient(90px 34px at 30% 16%,rgba(255,255,255,.28),transparent 70%),radial-gradient(80px 30px at 70% 12%,rgba(255,255,255,.3),transparent 70%),radial-gradient(110px 40px at 82% 18%,rgba(255,255,255,.22),transparent 70%);background-size:200% 100%;animation:nube 40s linear infinite}
-@keyframes nube{from{background-position:0 0}to{background-position:-100% 0}}
-.hd .meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-.hd .clima{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--htx)}
-.hd .clima img{width:26px;height:26px}
-.hd .clima b{font-weight:700}.hd .clima i{font-style:normal;color:var(--htx2)}
+.hd-fx .fx-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+:root[data-clima="lluvia"] .hd-fx .ft,:root[data-clima="tormenta"] .hd-fx .ft{filter:saturate(.75) brightness(.92)}
+:root[data-clima="nublado"] .hd-fx .ft,:root[data-clima="niebla"] .hd-fx .ft{filter:saturate(.85)}
+.hd .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hd .clima{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--htx);background:rgba(14,24,34,.28);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:4px 11px 4px 6px;border-radius:999px;cursor:pointer;max-width:62vw}
+.hd .clima>span{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.hd .clima .ct{font-weight:800;font-size:19px;letter-spacing:-.3px}.hd .clima em{font-style:normal;font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hd .clima em::first-letter{text-transform:uppercase}.hd .clima i{font-style:normal;color:var(--htx2);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci{width:26px;height:26px;flex:none;color:#F6C445;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+:root[data-clima="lluvia"] .ci,:root[data-clima="tormenta"] .ci,:root[data-clima="nublado"] .ci,:root[data-clima="niebla"] .ci{color:#DCE6F2}
+:root[data-momento="noche"] .ci,:root[data-momento="madrugada"] .ci{color:#E8E6FF}
 /* bienvenida */
-#splash{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#0E1822;overflow:hidden;transition:opacity .6s ease}
-#splash.fin{opacity:0;pointer-events:none}
-#splash .sp-foto{position:absolute;inset:-6%;background-size:cover;background-position:center;animation:spkb 4s ease-out forwards;filter:saturate(1.05)}
-@keyframes spkb{from{transform:scale(1.18)}to{transform:scale(1.02)}}
-#splash .sp-tinte{position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,24,34,.55) 0%,rgba(14,24,34,.35) 40%,rgba(14,24,34,.88) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
-.sp-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 28px;text-align:center;color:#fff}
-.sp-logo{width:min(42vw,180px);animation:splogo 1.1s cubic-bezier(.2,1.3,.35,1) both}
-.sp-logo svg{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,.45))}
+#splash{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#0E1822;overflow:hidden;transition:opacity .8s ease,transform .8s ease;color:#fff;font-family:inherit}
+#splash.fin{opacity:0;transform:scale(1.04);pointer-events:none}
+#splash .sp-foto{position:absolute;inset:-8%;background-size:cover;background-position:center;animation:spkb 7s ease-out forwards;opacity:0;animation-name:spkb,spfade;animation-duration:7s,1.4s;animation-fill-mode:forwards,forwards}
+@keyframes spkb{from{transform:scale(1.16)}to{transform:scale(1.02)}}
+@keyframes spfade{to{opacity:1}}
+#splash .sp-tinte{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 45%,rgba(14,24,34,.25) 0%,rgba(14,24,34,.7) 70%,rgba(14,24,34,.92) 100%),linear-gradient(180deg,rgba(14,24,34,.35),rgba(14,24,34,.1) 40%,rgba(14,24,34,.85))}
+.sp-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;padding:0 30px;text-align:center}
+.sp-logo{width:min(36vw,150px);opacity:0;animation:splogo 1.4s .25s cubic-bezier(.2,1.2,.35,1) forwards}
+.sp-logo svg{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 24px rgba(0,0,0,.5))}
 .sp-logo svg *{fill:#fff}
 .sp-logo svg .rsym *,.sp-logo svg [fill="#F0BF33"]{fill:#F0BF33}
-@keyframes splogo{0%{opacity:0;transform:translateY(24px) scale(.8) rotate(-4deg)}60%{opacity:1}100%{opacity:1;transform:none}}
-.sp-hola{margin:6px 0 0;font-family:'Bricolage Grotesque',sans-serif;font-size:24px;line-height:1.2;animation:spin .7s .55s ease-out both}
-.sp-lema{margin:0;font-size:15px;color:rgba(255,255,255,.82);animation:spin .7s .8s ease-out both}
-.sp-clima{display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.14);backdrop-filter:blur(6px);font-size:14.5px;animation:spin .7s 1.05s ease-out both}
-.sp-clima img{width:30px;height:30px}
-@keyframes spin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.sp-barra{position:absolute;left:50%;bottom:calc(46px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
-.sp-barra i{display:block;height:100%;width:100%;background:#F0BF33;transform-origin:left;animation:spbar 2.6s linear both}
+@keyframes splogo{0%{opacity:0;transform:translateY(26px) scale(.82)}60%{opacity:1}100%{opacity:1;transform:none}}
+.sp-hola{margin:4px 0 0;font-family:'Bricolage Grotesque',sans-serif;font-size:25px;line-height:1.25;opacity:0;animation:spin 1s 1.1s ease-out forwards;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.sp-hola b{color:#F0BF33}
+.sp-lema{margin:0;font-size:16px;line-height:1.45;color:rgba(255,255,255,.88);opacity:0;animation:spin 1s 1.9s ease-out forwards;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.sp-clima{display:flex;align-items:center;gap:8px;margin-top:4px;padding:8px 16px 8px 10px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:14.5px;opacity:0;animation:spin 1s 2.6s ease-out forwards}
+.sp-clima:empty{display:none}
+.sp-clima .ci{width:28px;height:28px}
+@keyframes spin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sp-barra{position:absolute;left:50%;bottom:calc(56px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:132px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+.sp-barra i{display:block;height:100%;width:100%;background:#F0BF33;transform-origin:left;animation:spbar 5.2s linear both}
+#splash.primera .sp-barra i{animation-duration:6.2s}
 @keyframes spbar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-#hola-rumi{position:fixed;inset:0;z-index:99990;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,18,26,.55);backdrop-filter:blur(3px);opacity:0;transition:opacity .35s}
+.sp-toca{position:absolute;left:0;right:0;bottom:calc(24px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-size:12.5px;color:rgba(255,255,255,.6);opacity:0;animation:spin 1s 3.2s ease-out forwards}
+@media (prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+#hola-rumi{position:fixed;inset:0;z-index:99990;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,18,26,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .4s}
 #hola-rumi.on{opacity:1}
-.hr-c{width:min(100%,520px);background:var(--card);border-radius:28px 28px 0 0;padding:26px 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;align-items:center;transform:translateY(40px);transition:transform .45s cubic-bezier(.2,1.2,.3,1)}
+.hr-c{position:relative;width:min(100%,520px);background:var(--card);border-radius:30px 30px 0 0;padding:72px 22px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;transform:translateY(40px);transition:transform .5s cubic-bezier(.2,.9,.25,1);box-shadow:0 -10px 40px rgba(0,0,0,.25)}
 #hola-rumi.on .hr-c{transform:none}
-.hr-rumi{position:relative;width:120px;height:120px;margin-top:-86px;animation:rmBob 2.6s ease-in-out infinite}
-.hr-rumi img:first-child{width:120px;height:120px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}
-.hr-mano{position:absolute;right:-26px;top:20px;width:52px;height:52px;transform-origin:70% 80%;animation:saludo 1s ease-in-out infinite}
-@keyframes saludo{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(22deg)}}
-.hr-globo{background:var(--bg);border-radius:20px;padding:14px 16px;text-align:center}
-.hr-globo>b{font-family:'Bricolage Grotesque',sans-serif;font-size:22px}
-.hr-globo p{margin:6px 0 0;font-size:16px;line-height:1.5}
+.hr-rumi{position:absolute;top:-58px;left:50%;width:116px;height:116px;margin-left:-58px}
+.hr-rumi::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--arete);animation:rmPulso 2.6s ease-out infinite}
+.hr-rumi img{width:116px;height:116px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 0 5px var(--card),0 0 0 8px var(--arete),0 14px 30px -8px rgba(0,0,0,.5)}
+.hr-sm{margin:0;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--arete-e,var(--ink2))}
+.hr-t{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-size:27px;line-height:1.15;color:var(--ink)}
+.hr-x{margin:0 0 8px;font-size:16.5px;line-height:1.55;color:var(--ink2);max-width:36ch}
+.hr-c .btn{min-height:52px;font-size:16.5px}
 </style>
 </head>
 <body>
+<div id="splash" role="presentation"><i class="sp-foto"></i><b class="sp-tinte"></b>
+ <div class="sp-c"><div class="sp-logo"><svg class=" rsym"viewBox="14.7 13.0 70.7 107.0" aria-hidden="true"><path d="M17.6 41.9C18.4 25.7 31.7 13.0 47.9 13.0H52.0C68.2 13.0 81.5 25.7 82.3 41.9L85.3 105.3C85.6 113.3 79.3 120.0 71.3 120.0H28.6C20.6 120.0 14.3 113.3 14.6 105.3ZM58.5 28.0C58.5 23.3 54.6 19.5 50.0 19.5C45.3 19.5 41.5 23.3 41.5 28.0C41.5 32.6 45.3 36.5 50.0 36.5C54.6 36.5 58.5 32.6 58.5 28.0Z" fill="#F0BF33"/><path d="M35.2 104.8V65.1H49.2Q51.6 65.1 53.7 65.6Q55.9 66.1 57.6 67.0Q59.4 67.9 60.7 69.3Q62.0 70.7 62.7 72.6Q63.4 74.5 63.4 76.8Q63.4 78.7 62.9 80.4Q62.3 82.1 61.1 83.5Q59.9 84.8 58.0 85.7Q56.1 86.6 53.4 86.9V87.4Q56.9 87.6 58.8 88.9Q60.7 90.1 61.6 92.1Q62.5 94.1 63.0 96.6L64.7 104.8H54.8L53.7 97.5Q53.4 95.4 52.8 94.0Q52.2 92.5 51.0 91.8Q49.8 91.0 47.7 91.0H44.3V104.8ZM44.3 84.3H48.1Q51.1 84.3 52.6 82.9Q54.1 81.4 54.1 78.4Q54.1 75.3 52.7 73.9Q51.4 72.5 48.5 72.5H44.3Z" fill="#22384D"/></svg><svg class=" rwm"viewBox="3.3 -78.0 368.0 79.3" aria-hidden="true"><path d="M105.1 0.0V-29.3L105.1 -52.7H118.1L117.9 -32.2H118.7Q119.2 -40.2 120.9 -45.0Q122.7 -49.7 125.8 -51.9Q128.8 -54.0 133.0 -54.0Q137.5 -54.0 140.2 -51.7Q143.0 -49.4 144.2 -44.6Q145.4 -39.8 145.2 -32.2H146.0Q146.5 -40.2 148.4 -44.9Q150.3 -49.7 153.5 -51.8Q156.6 -54.0 160.9 -54.0Q164.6 -54.0 167.3 -52.5Q170.0 -51.1 171.7 -48.3Q173.5 -45.4 174.4 -41.1Q175.3 -36.9 175.3 -31.1V0.0H160.0V-28.6Q160.0 -32.5 159.5 -35.1Q159.1 -37.7 158.0 -39.0Q156.9 -40.2 155.1 -40.2Q152.8 -40.2 151.1 -37.9Q149.4 -35.6 148.5 -31.3Q147.6 -27.0 147.6 -20.9V0.0H132.7V-28.9Q132.7 -32.8 132.2 -35.3Q131.7 -37.8 130.6 -39.0Q129.5 -40.2 127.8 -40.2Q125.5 -40.2 123.8 -38.1Q122.1 -35.9 121.2 -31.6Q120.3 -27.2 120.3 -20.7V0.0ZM3.3 0.0V-66.0H26.5Q30.5 -66.0 34.1 -65.2Q37.7 -64.4 40.6 -62.9Q43.6 -61.3 45.8 -59.0Q47.9 -56.7 49.1 -53.6Q50.3 -50.4 50.3 -46.5Q50.3 -43.3 49.4 -40.5Q48.4 -37.7 46.4 -35.4Q44.4 -33.2 41.2 -31.7Q38.0 -30.2 33.6 -29.6V-28.8Q39.5 -28.5 42.6 -26.4Q45.8 -24.4 47.3 -21.0Q48.8 -17.7 49.6 -13.5L52.4 0.0H36.0L34.1 -12.1Q33.6 -15.5 32.6 -17.9Q31.6 -20.3 29.6 -21.6Q27.7 -22.9 24.1 -22.9H18.5V0.0ZM202.9 1.3Q196.3 1.3 191.8 -0.7Q187.3 -2.7 184.6 -6.3Q181.9 -9.9 180.7 -14.8Q179.5 -19.6 179.5 -25.2Q179.5 -30.9 180.7 -36.0Q181.9 -41.2 184.6 -45.3Q187.2 -49.3 191.5 -51.7Q195.9 -54.0 202.2 -54.0Q208.3 -54.0 212.5 -51.8Q216.8 -49.6 219.3 -45.6Q221.9 -41.6 222.6 -36.2Q223.4 -30.9 222.4 -24.4L194.4 -23.8Q194.7 -17.1 196.5 -13.9Q198.6 -10.0 203.0 -10.0Q205.0 -10.0 206.3 -10.8Q207.6 -11.5 208.4 -12.9Q209.1 -14.3 209.3 -16.1Q209.6 -17.9 209.5 -20.1L223.4 -19.1Q223.8 -15.6 223.1 -12.0Q222.3 -8.4 220.1 -5.4Q217.8 -2.4 213.6 -0.5Q209.4 1.3 202.9 1.3ZM227.9 0.0V-30.3L227.9 -52.7H240.9L240.7 -32.1H241.5Q241.9 -39.8 243.7 -44.6Q245.5 -49.4 248.7 -51.7Q252.0 -54.0 256.8 -54.0Q264.4 -54.0 268.1 -48.5Q271.8 -43.1 271.8 -31.8V0.0H256.6V-29.1Q256.6 -34.9 255.3 -37.6Q254.0 -40.3 251.0 -40.3Q248.4 -40.3 246.6 -38.1Q244.8 -35.9 244.0 -31.5Q243.1 -27.1 243.1 -20.6V0.0ZM70.5 1.3Q63.0 1.3 59.4 -4.3Q55.8 -10.0 55.8 -22.0V-52.7H71.1V-23.4Q71.1 -17.4 72.3 -14.9Q73.6 -12.4 76.4 -12.4Q78.3 -12.4 79.7 -13.5Q81.2 -14.7 82.2 -17.0Q83.2 -19.2 83.7 -22.7Q84.2 -26.1 84.2 -30.8V-52.7H99.4V-24.3L99.4 0.0H86.4L86.5 -20.1H85.8Q85.4 -12.3 83.5 -7.6Q81.6 -2.9 78.3 -0.8Q75.1 1.3 70.5 1.3ZM350.3 1.3Q344.8 1.3 340.5 -0.0Q336.3 -1.3 333.5 -3.9Q330.7 -6.5 329.5 -10.3Q328.4 -14.1 329.1 -19.1L342.4 -20.3Q342.3 -17.0 343.2 -14.5Q344.0 -12.0 345.9 -10.6Q347.7 -9.3 350.6 -9.3Q353.2 -9.3 355.0 -10.4Q356.7 -11.5 356.7 -14.0Q356.7 -16.0 355.6 -17.3Q354.6 -18.6 352.4 -19.7Q350.2 -20.7 346.7 -21.8Q342.9 -23.0 339.6 -24.3Q336.4 -25.6 333.9 -27.3Q331.5 -29.1 330.2 -31.7Q328.8 -34.2 328.8 -37.9Q328.8 -43.0 331.4 -46.6Q333.9 -50.1 338.5 -52.1Q343.2 -54.0 349.5 -54.0Q355.3 -54.0 360.1 -52.1Q364.9 -50.2 367.5 -45.9Q370.1 -41.7 369.3 -34.7L356.3 -33.3Q356.6 -36.3 355.8 -38.5Q355.0 -40.7 353.2 -41.9Q351.5 -43.1 349.0 -43.1Q346.2 -43.1 344.7 -41.8Q343.2 -40.6 343.2 -38.6Q343.2 -36.9 344.3 -35.7Q345.4 -34.5 347.6 -33.6Q349.8 -32.7 353.0 -31.7Q356.1 -30.8 359.3 -29.5Q362.5 -28.2 365.2 -26.3Q367.9 -24.3 369.6 -21.4Q371.3 -18.5 371.3 -14.2Q371.3 -9.7 369.0 -6.1Q366.6 -2.6 362.0 -0.6Q357.3 1.3 350.3 1.3ZM296.4 1.0Q287.9 1.0 283.6 -3.5Q279.2 -8.2 279.2 -17.7V-40.8H274.5V-50.7H275.3Q280.1 -51.1 282.1 -53.7Q284.0 -56.2 284.5 -61.4L284.8 -63.9H294.1V-52.7H304.2V-40.5H294.1V-19.8Q294.1 -16.1 295.7 -14.3Q297.2 -12.6 299.6 -12.6Q300.8 -12.6 302.0 -13.0Q303.2 -13.4 304.2 -14.0V-0.1Q301.9 0.5 300.0 0.7Q298.0 1.0 296.4 1.0ZM308.8 0.0V-52.7H324.0V0.0ZM18.5 -34.1H24.8Q29.7 -34.1 32.2 -36.4Q34.8 -38.8 34.8 -43.9Q34.8 -49.0 32.5 -51.4Q30.2 -53.7 25.4 -53.7H18.5ZM194.6 -31.7 208.8 -32.1Q208.8 -33.9 208.5 -35.4Q208.0 -38.7 206.5 -40.4Q204.9 -42.0 202.2 -42.0Q199.2 -42.0 197.5 -40.1Q195.8 -38.2 195.1 -34.7Q194.8 -33.3 194.6 -31.7Z" fill="currentColor"/><path d="M308.4 -70.9C308.6 -74.8 311.9 -77.9 315.8 -77.9H317.0C320.9 -77.9 324.2 -74.8 324.4 -70.9L325.0 -60.1C325.1 -58.6 323.9 -57.2 322.3 -57.2H310.5C308.9 -57.2 307.6 -58.6 307.7 -60.1ZM318.8 -72.4C318.8 -73.8 317.7 -74.9 316.4 -74.9C315.0 -74.9 313.9 -73.8 313.9 -72.4C313.9 -71.1 315.0 -70.0 316.4 -70.0C317.7 -70.0 318.8 -71.1 318.8 -72.4Z" fill="currentColor"/></svg></div><p class="sp-hola">&nbsp;</p><p class="sp-lema">Tu engorde, con números claros<br>y hecho con cariño</p><div class="sp-clima"></div></div>
+ <div class="sp-barra"><i></i></div><p class="sp-toca">Toca para entrar</p></div>
+<script>(function(){window.SPLASH_T0=performance.now();var w=document.getElementById('splash');
+ if(navigator.webdriver&&!window.CON_BIENVENIDA){w.remove();return;}
+ var F=["g02.webp", "g03.webp", "g05.webp", "g07.webp", "g08.webp", "g12.webp", "g16.webp", "g04.webp", "g01.webp"];var h=new Date().getHours(),g=h<5?'Buena madrugada':h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
+ var f='';try{f=localStorage.getItem('rumentis-finca')||'';}catch(e){}
+ w.querySelector('.sp-foto').style.backgroundImage="url('fondos/"+F[Math.floor(Math.random()*F.length)]+"')";
+ var p=w.querySelector('.sp-hola');p.textContent=g+(f?', ':'');if(f){p.appendChild(document.createElement('br'));var b=document.createElement('b');b.textContent=f;p.appendChild(b);}
+ try{if(!localStorage.getItem('rumentis-bienvenida'))w.classList.add('primera');}catch(e){}
+})();</script>
+<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-cerro c1"></i><i class="f-grano"></i></div>
 <div id="app"></div>
 <nav class="bottom" aria-label="Secciones"><div class="in">
   <a href="#hoy" data-nav="hoy"></a>
@@ -899,6 +952,9 @@ const Wpts=pts=>pts.map(([f,v])=>[f,W(v)]);
 const r1u=v=>Math.round(v*10)/10,r2u=v=>Math.round(v*100)/100;
 function convTxt(t){
   const fmt=s=>{const v=parseFloat(String(s).replace(/,/g,''));const dec=(String(s).split('.')[1]||'').length;return nf(v*FK,dec);};
+  // proporciones como "6 a 8 kg de alimento por kg ganado" o "0.14 kg por cada kg": el número no cambia, solo la palabra de la unidad
+  const guard=[];const u2=w=>w.replace(/\bkg\b/g,'lb').replace(/\bkilos\b/g,'libras').replace(/\bkilo\b/g,'libra').replace(/\bKilos\b/g,'Libras');
+  t=t.replace(/(\d[\d,]*(?:\.\d+)?(?:\s*(?:a|y|-|o)\s*\d[\d,]*(?:\.\d+)?)?)\s*(kg|kilos)(\s+(?:de alimento\s+)?(?:tal como se (?:ofrece|sirve)\s+)?por\s+(?:cada\s+)?(?:kg|kilo)s?(?:\s+(?:ganados?|de ganancia|de alimento|de peso))?)/gi,(m,num,u,rest)=>{guard.push(num+' '+u2(u+rest).replace(/\b(lb|libra) ganado\b/,'$1 ganada'));return '\u0001'+(guard.length-1)+'\u0002';});
   t=t.replace(/(\d[\d,]*(?:\.\d+)?)(\s*)(a|y|-|o)(\s*)(\d[\d,]*(?:\.\d+)?)\s*(kg|kilos|kilogramos)\b/gi,(m,a,s1,sep,s2,b,u)=>`${fmt(a)}${s1}${sep}${s2}${fmt(b)} ${/kg/i.test(u)?'lb':'libras'}`);
   t=t.replace(/(\d[\d,]*(?:\.\d+)?)\s*(kg|kilos|kilogramos|kilo)\b/gi,(m,a,u)=>`${fmt(a)} ${/kg/i.test(u)?'lb':'libras'}`);
   t=t.replace(/\b(el|un|del|al|cada) kilo\b/g,(m,a)=>({el:'la libra',un:'una libra',del:'de la libra',al:'a la libra',cada:'cada libra'})[a]);
@@ -907,6 +963,7 @@ function convTxt(t){
   t=t.replace(/\bKilogramos\b/g,'Libras').replace(/\bkilogramos\b/g,'libras').replace(/\bKilos\b/g,'Libras').replace(/\bkilos\b/g,'libras').replace(/\bKilo\b/g,'Libra').replace(/\bkilo\b/g,'libra').replace(/\bkg\b/g,'lb').replace(/\bKg\b/g,'Lb').replace(/\bKG\b/g,'LB');
   t=t.replace(/\b(libras?|Libras?)(\s+)(ganad|entregad|vendid|comprad|perdid|pesad|servid|repartid)o(s?)\b/g,'$1$2$3a$4');
   t=t.replace(/\b(la|una|cada) libra (ganad|entregad|vendid|comprad)o\b/g,'$1 libra $2a');
+  t=t.replace(/\u0001(\d+)\u0002/g,(m,i)=>guard[+i]);
   return t;
 }
 function aUnidad(html){
@@ -1081,7 +1138,8 @@ function calc(){
   const act=Object.values(L).filter(x=>x.activo).sort((a,b)=>byName(a.l,b.l));
   const cer=Object.values(L).filter(x=>!x.activo).sort((a,b)=>(b.l.fechaCierre||'').localeCompare(a.l.fechaCierre||''));
   const cabT=act.reduce((s,x)=>s+x.cab,0);
-  const gdpP=cabT?act.reduce((s,x)=>s+x.gdpUse*x.cab,0)/cabT:null;
+  const conG=act.filter(x=>x.gdp!=null),cabG=conG.reduce((s,x)=>s+x.cab,0);
+  const gdpP=cabG?conG.reduce((s,x)=>s+x.gdp*x.cab,0)/cabG:null;
   const kgA=act.reduce((s,x)=>s+x.kgTot,0),kgG=act.reduce((s,x)=>s+Math.max(0,x.kgGan),0);
   const opA=act.reduce((s,x)=>s+x.costoOp,0);
   const kgPie=act.reduce((s,x)=>s+x.pesoHoy*x.cab,0);
@@ -1181,8 +1239,8 @@ function stackBars(rows,parts){
 
 /* ============ marca ============ */
 const LOGO_HD=`<svg viewBox="-0.0 -84.2 444.7 85.5" aria-hidden="true"><path d="M2.3 -61.4C2.9 -74.1 13.4 -84.1 26.2 -84.1H29.3C42.1 -84.1 52.6 -74.1 53.2 -61.4L55.5 -11.5C55.8 -5.2 50.8 0.0 44.5 0.0H11.0C4.7 0.0 -0.2 -5.2 0.0 -11.5ZM34.4 -72.3C34.4 -76.0 31.4 -79.0 27.7 -79.0C24.1 -79.0 21.1 -76.0 21.1 -72.3C21.1 -68.6 24.1 -65.6 27.7 -65.6C31.4 -65.6 34.4 -68.6 34.4 -72.3Z" fill="#F0BF33"/><path d="M16.2 -11.9V-43.1H27.1Q29.0 -43.1 30.7 -42.7Q32.4 -42.4 33.8 -41.6Q35.2 -40.9 36.2 -39.8Q37.2 -38.7 37.8 -37.2Q38.4 -35.7 38.4 -33.9Q38.4 -32.4 37.9 -31.0Q37.5 -29.7 36.5 -28.7Q35.6 -27.6 34.1 -26.9Q32.6 -26.2 30.5 -25.9V-25.5Q33.2 -25.4 34.7 -24.4Q36.2 -23.4 36.9 -21.9Q37.7 -20.3 38.0 -18.3L39.3 -11.9H31.6L30.7 -17.6Q30.5 -19.2 30.0 -20.4Q29.5 -21.5 28.6 -22.1Q27.7 -22.7 26.0 -22.7H23.3V-11.9ZM23.3 -28.0H26.3Q28.6 -28.0 29.8 -29.1Q31.0 -30.3 31.0 -32.7Q31.0 -35.1 29.9 -36.2Q28.9 -37.3 26.6 -37.3H23.3Z" fill="#22384D"/><path d="M178.5 0.0V-29.3L178.5 -52.7H191.5L191.3 -32.2H192.1Q192.6 -40.2 194.3 -45.0Q196.1 -49.7 199.2 -51.9Q202.2 -54.0 206.4 -54.0Q210.9 -54.0 213.6 -51.7Q216.3 -49.4 217.6 -44.6Q218.8 -39.8 218.6 -32.2H219.4Q219.9 -40.2 221.8 -44.9Q223.7 -49.7 226.8 -51.8Q230.0 -54.0 234.3 -54.0Q238.0 -54.0 240.7 -52.5Q243.4 -51.1 245.1 -48.3Q246.9 -45.4 247.8 -41.1Q248.7 -36.9 248.7 -31.1V0.0H233.4V-28.6Q233.4 -32.5 232.9 -35.1Q232.5 -37.7 231.4 -39.0Q230.3 -40.2 228.5 -40.2Q226.2 -40.2 224.5 -37.9Q222.8 -35.6 221.9 -31.3Q221.0 -27.0 221.0 -20.9V0.0H206.1V-28.9Q206.1 -32.8 205.6 -35.3Q205.1 -37.8 204.0 -39.0Q202.9 -40.2 201.2 -40.2Q198.8 -40.2 197.2 -38.1Q195.5 -35.9 194.6 -31.6Q193.7 -27.2 193.7 -20.7V0.0ZM76.7 0.0V-66.0H99.9Q103.9 -66.0 107.5 -65.2Q111.1 -64.4 114.0 -62.9Q117.0 -61.3 119.2 -59.0Q121.3 -56.7 122.5 -53.6Q123.7 -50.4 123.7 -46.5Q123.7 -43.3 122.8 -40.5Q121.8 -37.7 119.8 -35.4Q117.8 -33.2 114.6 -31.7Q111.4 -30.2 107.0 -29.6V-28.8Q112.9 -28.5 116.0 -26.4Q119.2 -24.4 120.7 -21.0Q122.2 -17.7 123.0 -13.5L125.8 0.0H109.4L107.5 -12.1Q107.0 -15.5 106.0 -17.9Q105.0 -20.3 103.0 -21.6Q101.1 -22.9 97.5 -22.9H91.9V0.0ZM276.3 1.3Q269.7 1.3 265.2 -0.7Q260.7 -2.7 258.0 -6.3Q255.3 -9.9 254.1 -14.8Q252.9 -19.6 252.9 -25.2Q252.9 -30.9 254.1 -36.0Q255.3 -41.2 258.0 -45.3Q260.6 -49.3 264.9 -51.7Q269.3 -54.0 275.6 -54.0Q281.6 -54.0 285.9 -51.8Q290.2 -49.6 292.7 -45.6Q295.2 -41.6 296.0 -36.2Q296.8 -30.9 295.8 -24.4L267.8 -23.8Q268.1 -17.1 269.9 -13.9Q272.0 -10.0 276.4 -10.0Q278.4 -10.0 279.7 -10.8Q281.0 -11.5 281.8 -12.9Q282.5 -14.3 282.7 -16.1Q283.0 -17.9 282.8 -20.1L296.8 -19.1Q297.2 -15.6 296.5 -12.0Q295.7 -8.4 293.4 -5.4Q291.2 -2.4 287.0 -0.5Q282.8 1.3 276.3 1.3ZM301.3 0.0V-30.3L301.3 -52.7H314.3L314.1 -32.1H314.9Q315.3 -39.8 317.1 -44.6Q318.9 -49.4 322.1 -51.7Q325.4 -54.0 330.2 -54.0Q337.8 -54.0 341.5 -48.5Q345.2 -43.1 345.2 -31.8V0.0H330.0V-29.1Q330.0 -34.9 328.7 -37.6Q327.4 -40.3 324.4 -40.3Q321.8 -40.3 320.0 -38.1Q318.2 -35.9 317.4 -31.5Q316.5 -27.1 316.5 -20.6V0.0ZM143.9 1.3Q136.4 1.3 132.8 -4.3Q129.2 -10.0 129.2 -22.0V-52.7H144.5V-23.4Q144.5 -17.4 145.7 -14.9Q147.0 -12.4 149.8 -12.4Q151.7 -12.4 153.1 -13.5Q154.6 -14.7 155.6 -17.0Q156.6 -19.2 157.1 -22.7Q157.6 -26.1 157.6 -30.8V-52.7H172.8V-24.3L172.8 0.0H159.8L159.9 -20.1H159.2Q158.8 -12.3 156.9 -7.6Q155.0 -2.9 151.7 -0.8Q148.5 1.3 143.9 1.3ZM423.7 1.3Q418.2 1.3 413.9 -0.0Q409.7 -1.3 406.9 -3.9Q404.1 -6.5 402.9 -10.3Q401.8 -14.1 402.5 -19.1L415.8 -20.3Q415.7 -17.0 416.6 -14.5Q417.4 -12.0 419.2 -10.6Q421.1 -9.3 424.0 -9.3Q426.6 -9.3 428.3 -10.4Q430.1 -11.5 430.1 -14.0Q430.1 -16.0 429.0 -17.3Q428.0 -18.6 425.8 -19.7Q423.6 -20.7 420.1 -21.8Q416.3 -23.0 413.0 -24.3Q409.8 -25.6 407.3 -27.3Q404.9 -29.1 403.6 -31.7Q402.2 -34.2 402.2 -37.9Q402.2 -43.0 404.8 -46.6Q407.3 -50.1 411.9 -52.1Q416.6 -54.0 422.9 -54.0Q428.7 -54.0 433.5 -52.1Q438.3 -50.2 440.9 -45.9Q443.5 -41.7 442.7 -34.7L429.7 -33.3Q430.0 -36.3 429.2 -38.5Q428.4 -40.7 426.6 -41.9Q424.9 -43.1 422.4 -43.1Q419.6 -43.1 418.1 -41.8Q416.6 -40.6 416.6 -38.6Q416.6 -36.9 417.7 -35.7Q418.8 -34.5 421.0 -33.6Q423.2 -32.7 426.4 -31.7Q429.5 -30.8 432.7 -29.5Q435.9 -28.2 438.6 -26.3Q441.3 -24.3 443.0 -21.4Q444.7 -18.5 444.7 -14.2Q444.7 -9.7 442.3 -6.1Q440.0 -2.6 435.4 -0.6Q430.7 1.3 423.7 1.3ZM369.8 1.0Q361.3 1.0 357.0 -3.5Q352.6 -8.2 352.6 -17.7V-40.8H347.9V-50.7H348.7Q353.5 -51.1 355.5 -53.7Q357.4 -56.2 357.9 -61.4L358.2 -63.9H367.5V-52.7H377.6V-40.5H367.5V-19.8Q367.5 -16.1 369.1 -14.3Q370.6 -12.6 373.0 -12.6Q374.2 -12.6 375.4 -13.0Q376.6 -13.4 377.6 -14.0V-0.1Q375.3 0.5 373.4 0.7Q371.4 1.0 369.8 1.0ZM382.2 0.0V-52.7H397.4V0.0ZM91.9 -34.1H98.2Q103.1 -34.1 105.6 -36.4Q108.2 -38.8 108.2 -43.9Q108.2 -49.0 105.9 -51.4Q103.6 -53.7 98.8 -53.7H91.9ZM268.0 -31.7 282.2 -32.1Q282.2 -33.9 281.9 -35.4Q281.4 -38.7 279.9 -40.4Q278.3 -42.0 275.6 -42.0Q272.6 -42.0 270.9 -40.1Q269.2 -38.2 268.5 -34.7Q268.2 -33.3 268.0 -31.7Z" fill="currentColor"/><path d="M381.8 -70.9C382.0 -74.8 385.3 -77.9 389.2 -77.9H390.4C394.3 -77.9 397.6 -74.8 397.8 -70.9L398.4 -60.1C398.5 -58.6 397.3 -57.2 395.7 -57.2H383.9C382.3 -57.2 381.0 -58.6 381.1 -60.1ZM392.2 -72.4C392.2 -73.8 391.1 -74.9 389.8 -74.9C388.4 -74.9 387.3 -73.8 387.3 -72.4C387.3 -71.1 388.4 -70.0 389.8 -70.0C391.1 -70.0 392.2 -71.1 392.2 -72.4Z" fill="#F0BF33"/></svg>`;
-const VERSION_APP='3.7';
-const CREDITOS_FOTOS=["autor no indicado (dominio público, Wikimedia Commons): 5 fotos", "USDA NRCS Texas (dominio público, Wikimedia Commons): 11 fotos", "Bernard Gagnon (CC0, Wikimedia Commons): 2 fotos", "Fiszi37 (CC0, Wikimedia Commons): 1 foto", "Scott Bauer, USDA ARS (dominio público, Wikimedia Commons): 2 fotos", "USDAgov (dominio público, Wikimedia Commons): 1 foto", "Miguelrangeljr (dominio público, Wikimedia Commons): 1 foto", "Quintin Soloviev (CC0, Wikimedia Commons): 1 foto", "(USDA) (dominio público, Wikimedia Commons): 1 foto", "Íconos 3D y figura de Rumi: Fluent Emoji de Microsoft (licencia MIT).", "Clima: Open-Meteo (datos abiertos, CC BY 4.0)."];window.CREDITOS_FOTOS=CREDITOS_FOTOS;
+const VERSION_APP='3.8';
+const CREDITOS_FOTOS=["autor no indicado (dominio público, Wikimedia Commons): 5 fotos", "USDA NRCS Texas (dominio público, Wikimedia Commons): 11 fotos", "Bernard Gagnon (CC0, Wikimedia Commons): 2 fotos", "Fiszi37 (CC0, Wikimedia Commons): 1 foto", "Scott Bauer, USDA ARS (dominio público, Wikimedia Commons): 2 fotos", "USDAgov (dominio público, Wikimedia Commons): 1 foto", "Miguelrangeljr (dominio público, Wikimedia Commons): 1 foto", "Quintin Soloviev (CC0, Wikimedia Commons): 1 foto", "(USDA) (dominio público, Wikimedia Commons): 1 foto", "Íconos: Phosphor Icons (licencia MIT). Foto de Rumi: Bernard Gagnon, Wikimedia Commons (CC0).", "Clima: Open-Meteo (datos abiertos, CC BY 4.0)."];window.CREDITOS_FOTOS=CREDITOS_FOTOS;
 const FIRMA=`<svg class=" rsym"viewBox="14.7 13.0 70.7 107.0" aria-hidden="true"><path d="M17.6 41.9C18.4 25.7 31.7 13.0 47.9 13.0H52.0C68.2 13.0 81.5 25.7 82.3 41.9L85.3 105.3C85.6 113.3 79.3 120.0 71.3 120.0H28.6C20.6 120.0 14.3 113.3 14.6 105.3ZM58.5 28.0C58.5 23.3 54.6 19.5 50.0 19.5C45.3 19.5 41.5 23.3 41.5 28.0C41.5 32.6 45.3 36.5 50.0 36.5C54.6 36.5 58.5 32.6 58.5 28.0Z" fill="#F0BF33"/><path d="M35.2 104.8V65.1H49.2Q51.6 65.1 53.7 65.6Q55.9 66.1 57.6 67.0Q59.4 67.9 60.7 69.3Q62.0 70.7 62.7 72.6Q63.4 74.5 63.4 76.8Q63.4 78.7 62.9 80.4Q62.3 82.1 61.1 83.5Q59.9 84.8 58.0 85.7Q56.1 86.6 53.4 86.9V87.4Q56.9 87.6 58.8 88.9Q60.7 90.1 61.6 92.1Q62.5 94.1 63.0 96.6L64.7 104.8H54.8L53.7 97.5Q53.4 95.4 52.8 94.0Q52.2 92.5 51.0 91.8Q49.8 91.0 47.7 91.0H44.3V104.8ZM44.3 84.3H48.1Q51.1 84.3 52.6 82.9Q54.1 81.4 54.1 78.4Q54.1 75.3 52.7 73.9Q51.4 72.5 48.5 72.5H44.3Z" fill="#22384D"/></svg><svg class=" rwm"viewBox="3.3 -78.0 368.0 79.3" aria-hidden="true"><path d="M105.1 0.0V-29.3L105.1 -52.7H118.1L117.9 -32.2H118.7Q119.2 -40.2 120.9 -45.0Q122.7 -49.7 125.8 -51.9Q128.8 -54.0 133.0 -54.0Q137.5 -54.0 140.2 -51.7Q143.0 -49.4 144.2 -44.6Q145.4 -39.8 145.2 -32.2H146.0Q146.5 -40.2 148.4 -44.9Q150.3 -49.7 153.5 -51.8Q156.6 -54.0 160.9 -54.0Q164.6 -54.0 167.3 -52.5Q170.0 -51.1 171.7 -48.3Q173.5 -45.4 174.4 -41.1Q175.3 -36.9 175.3 -31.1V0.0H160.0V-28.6Q160.0 -32.5 159.5 -35.1Q159.1 -37.7 158.0 -39.0Q156.9 -40.2 155.1 -40.2Q152.8 -40.2 151.1 -37.9Q149.4 -35.6 148.5 -31.3Q147.6 -27.0 147.6 -20.9V0.0H132.7V-28.9Q132.7 -32.8 132.2 -35.3Q131.7 -37.8 130.6 -39.0Q129.5 -40.2 127.8 -40.2Q125.5 -40.2 123.8 -38.1Q122.1 -35.9 121.2 -31.6Q120.3 -27.2 120.3 -20.7V0.0ZM3.3 0.0V-66.0H26.5Q30.5 -66.0 34.1 -65.2Q37.7 -64.4 40.6 -62.9Q43.6 -61.3 45.8 -59.0Q47.9 -56.7 49.1 -53.6Q50.3 -50.4 50.3 -46.5Q50.3 -43.3 49.4 -40.5Q48.4 -37.7 46.4 -35.4Q44.4 -33.2 41.2 -31.7Q38.0 -30.2 33.6 -29.6V-28.8Q39.5 -28.5 42.6 -26.4Q45.8 -24.4 47.3 -21.0Q48.8 -17.7 49.6 -13.5L52.4 0.0H36.0L34.1 -12.1Q33.6 -15.5 32.6 -17.9Q31.6 -20.3 29.6 -21.6Q27.7 -22.9 24.1 -22.9H18.5V0.0ZM202.9 1.3Q196.3 1.3 191.8 -0.7Q187.3 -2.7 184.6 -6.3Q181.9 -9.9 180.7 -14.8Q179.5 -19.6 179.5 -25.2Q179.5 -30.9 180.7 -36.0Q181.9 -41.2 184.6 -45.3Q187.2 -49.3 191.5 -51.7Q195.9 -54.0 202.2 -54.0Q208.3 -54.0 212.5 -51.8Q216.8 -49.6 219.3 -45.6Q221.9 -41.6 222.6 -36.2Q223.4 -30.9 222.4 -24.4L194.4 -23.8Q194.7 -17.1 196.5 -13.9Q198.6 -10.0 203.0 -10.0Q205.0 -10.0 206.3 -10.8Q207.6 -11.5 208.4 -12.9Q209.1 -14.3 209.3 -16.1Q209.6 -17.9 209.5 -20.1L223.4 -19.1Q223.8 -15.6 223.1 -12.0Q222.3 -8.4 220.1 -5.4Q217.8 -2.4 213.6 -0.5Q209.4 1.3 202.9 1.3ZM227.9 0.0V-30.3L227.9 -52.7H240.9L240.7 -32.1H241.5Q241.9 -39.8 243.7 -44.6Q245.5 -49.4 248.7 -51.7Q252.0 -54.0 256.8 -54.0Q264.4 -54.0 268.1 -48.5Q271.8 -43.1 271.8 -31.8V0.0H256.6V-29.1Q256.6 -34.9 255.3 -37.6Q254.0 -40.3 251.0 -40.3Q248.4 -40.3 246.6 -38.1Q244.8 -35.9 244.0 -31.5Q243.1 -27.1 243.1 -20.6V0.0ZM70.5 1.3Q63.0 1.3 59.4 -4.3Q55.8 -10.0 55.8 -22.0V-52.7H71.1V-23.4Q71.1 -17.4 72.3 -14.9Q73.6 -12.4 76.4 -12.4Q78.3 -12.4 79.7 -13.5Q81.2 -14.7 82.2 -17.0Q83.2 -19.2 83.7 -22.7Q84.2 -26.1 84.2 -30.8V-52.7H99.4V-24.3L99.4 0.0H86.4L86.5 -20.1H85.8Q85.4 -12.3 83.5 -7.6Q81.6 -2.9 78.3 -0.8Q75.1 1.3 70.5 1.3ZM350.3 1.3Q344.8 1.3 340.5 -0.0Q336.3 -1.3 333.5 -3.9Q330.7 -6.5 329.5 -10.3Q328.4 -14.1 329.1 -19.1L342.4 -20.3Q342.3 -17.0 343.2 -14.5Q344.0 -12.0 345.9 -10.6Q347.7 -9.3 350.6 -9.3Q353.2 -9.3 355.0 -10.4Q356.7 -11.5 356.7 -14.0Q356.7 -16.0 355.6 -17.3Q354.6 -18.6 352.4 -19.7Q350.2 -20.7 346.7 -21.8Q342.9 -23.0 339.6 -24.3Q336.4 -25.6 333.9 -27.3Q331.5 -29.1 330.2 -31.7Q328.8 -34.2 328.8 -37.9Q328.8 -43.0 331.4 -46.6Q333.9 -50.1 338.5 -52.1Q343.2 -54.0 349.5 -54.0Q355.3 -54.0 360.1 -52.1Q364.9 -50.2 367.5 -45.9Q370.1 -41.7 369.3 -34.7L356.3 -33.3Q356.6 -36.3 355.8 -38.5Q355.0 -40.7 353.2 -41.9Q351.5 -43.1 349.0 -43.1Q346.2 -43.1 344.7 -41.8Q343.2 -40.6 343.2 -38.6Q343.2 -36.9 344.3 -35.7Q345.4 -34.5 347.6 -33.6Q349.8 -32.7 353.0 -31.7Q356.1 -30.8 359.3 -29.5Q362.5 -28.2 365.2 -26.3Q367.9 -24.3 369.6 -21.4Q371.3 -18.5 371.3 -14.2Q371.3 -9.7 369.0 -6.1Q366.6 -2.6 362.0 -0.6Q357.3 1.3 350.3 1.3ZM296.4 1.0Q287.9 1.0 283.6 -3.5Q279.2 -8.2 279.2 -17.7V-40.8H274.5V-50.7H275.3Q280.1 -51.1 282.1 -53.7Q284.0 -56.2 284.5 -61.4L284.8 -63.9H294.1V-52.7H304.2V-40.5H294.1V-19.8Q294.1 -16.1 295.7 -14.3Q297.2 -12.6 299.6 -12.6Q300.8 -12.6 302.0 -13.0Q303.2 -13.4 304.2 -14.0V-0.1Q301.9 0.5 300.0 0.7Q298.0 1.0 296.4 1.0ZM308.8 0.0V-52.7H324.0V0.0ZM18.5 -34.1H24.8Q29.7 -34.1 32.2 -36.4Q34.8 -38.8 34.8 -43.9Q34.8 -49.0 32.5 -51.4Q30.2 -53.7 25.4 -53.7H18.5ZM194.6 -31.7 208.8 -32.1Q208.8 -33.9 208.5 -35.4Q208.0 -38.7 206.5 -40.4Q204.9 -42.0 202.2 -42.0Q199.2 -42.0 197.5 -40.1Q195.8 -38.2 195.1 -34.7Q194.8 -33.3 194.6 -31.7Z" fill="currentColor"/><path d="M308.4 -70.9C308.6 -74.8 311.9 -77.9 315.8 -77.9H317.0C320.9 -77.9 324.2 -74.8 324.4 -70.9L325.0 -60.1C325.1 -58.6 323.9 -57.2 322.3 -57.2H310.5C308.9 -57.2 307.6 -58.6 307.7 -60.1ZM318.8 -72.4C318.8 -73.8 317.7 -74.9 316.4 -74.9C315.0 -74.9 313.9 -73.8 313.9 -72.4C313.9 -71.1 315.0 -70.0 316.4 -70.0C317.7 -70.0 318.8 -71.1 318.8 -72.4Z" fill="currentColor"/></svg>`;
 
 /* ============ render ============ */
@@ -1257,7 +1315,7 @@ PAGES.hoy=()=>{
     `<section class="sec">${secH('Lotes en engorde')}<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><p class="hint">No tienes lotes en engorde ahora.</p><button type="button" class="btn pri" data-act="f" data-f="lote">Nuevo lote</button></div></section>`;
   return `<header class="hd">${hdTop(fechaLarga())}
    <div class="ttl"><span class="eyebrow">${esc(cfg.finca)}</span><div class="big"><h1>${pl(C.cabT,'cabeza','cabezas')}</h1><span>en ${pl(C.act.length,'lote','lotes')}</span></div></div>
-   <div class="kpis"><div class="kpi"><b>${nf(C.gdpP,2)} kg</b><span>ganancia diaria</span></div><div class="kpi"><b>${C.conv?nf(C.conv,1)+' a 1':'–'}</b><span>conversión</span></div><div class="kpi"><b>${C.costoKg?pk(C.costoKg):'–'}</b><span>costo por kg ganado</span></div></div></header>
+   <div class="kpis"><div class="kpi"><b>${C.gdpP!=null?nf(C.gdpP,2):nf(+cfg.gdpEsperada||1.3,2)} kg</b><span>${C.gdpP!=null?'ganancia diaria':'ganancia esperada'}</span></div><div class="kpi"><b>${C.conv?nf(C.conv,1)+' a 1':'–'}</b><span>conversión</span></div><div class="kpi"><b>${C.costoKg?pk(C.costoKg):'–'}</b><span>costo por kg ganado</span></div></div></header>
    <main class="bd">${pasosCard()}${alim}${al}${lot}<p class="hint sync" style="text-align:center"></p></main>`;
 };
 
@@ -1374,7 +1432,7 @@ PAGES.graficos=()=>{
   const chipsL=[['todos','Todos los lotes']].concat(C.act.map(x=>[x.id,x.l.nombre]),C.cer.map(x=>[x.id,x.l.nombre+' (vendido)'])).map(([v,t])=>`<button type="button" class="chip" data-act="ui" data-k="gLote" data-v="${esc(v)}" aria-pressed="${sel===v}">${esc(t)}</button>`).join('');
   const chipsP=[['30','30 días'],['90','90 días'],['todo','Todo']].map(([v,t])=>`<button type="button" class="chip" data-act="ui" data-k="gPer" data-v="${v}" aria-pressed="${per===v}">${t}</button>`).join('');
   const EXP=explicaGraficos(C,sel);
-  const card=(t,val,sub,body,nota='')=>{const e=EXP[t];return `<section class="gcard"><h3>${t}</h3>${val?`<div class="gv"><b>${val}</b><span class="sm">${sub}</span></div>`:''}${e&&e.que?`<p class="gque"><b>Qué estás viendo:</b> ${e.que}</p>`:''}${body}${nota&&!(e&&e.que)?`<p class="hint">${nota}</p>`:''}${e&&e.lee&&e.lee.length?`<div class="glee"><b>Lo que dicen tus números</b><ul>${e.lee.map(([k,t])=>`<li class="${k}">${t}</li>`).join('')}</ul></div>`:''}</section>`;};
+  const card=(t,val,sub,body,nota='')=>{const e=EXP[t];return `<section class="gcard"><h3>${t}</h3>${val?`<div class="gv"><b>${val}</b><span class="sm">${sub}</span></div>`:''}${e&&e.que?`<p class="gque"><b>Qué estás viendo:</b> ${e.que}</p>`:''}${body}${nota&&!(e&&e.que)?`<p class="hint">${nota}</p>`:''}${e&&e.lee&&e.lee.length?`<div class="glee"><b>Lo que dicen tus números</b><ul>${e.lee.map(([k,t,c])=>`<li class="${k}${c?'':' sin'}">${c?`<i class="sw" style="background:${c}"></i>`:''}<span>${t}</span>${k==='ok'?'<em class="st ok">Bien</em>':k==='w'?'<em class="st w">Revisar</em>':''}</li>`).join('')}</ul></div>`:''}</section>`;};
   const inP=f=>f>=desde;
   const col=i=>SC[i%SC.length];
   let out='';
@@ -1427,43 +1485,47 @@ function explicaGraficos(C,sel){
   const top=(A,f,asc)=>A.slice().sort((a,b)=>asc?f(a)-f(b):f(b)-f(a));
   if(sel==='todos'){
     const A=C.act.length?C.act:C.cer.slice(0,4);if(!A.length)return E;
+    // cada viñeta lleva el color de su lote en el gráfico; la etiqueta aparte dice si está bien o hay que revisar
+    const cl=x=>SC[A.indexOf(x)%SC.length];
+    const act=A.filter(x=>x.activo),prom=f=>{const v=A.map(f).filter(v=>v!=null&&isFinite(v));return v.length?v.reduce((s,v)=>s+v,0)/v.length:null;};
     // peso
-    const pes=top(A,x=>x.pesoHoy)[0],lento=top(A.filter(x=>x.activo),x=>x.gdpUse,true)[0];
-    const prox=top(A.filter(x=>x.activo&&!x.listo),x=>x.diasMeta||1e9,true)[0];
+    const pesP=A.reduce((s,x)=>s+x.pesoHoy*x.cab,0)/Math.max(1,A.reduce((s,x)=>s+x.cab,0));
     E['Peso promedio']={que:'cada línea es un lote. Abajo están las fechas y a la izquierda el peso promedio por cabeza. Mientras más empinada la línea, más rápido suben de peso. La parte punteada es el peso estimado desde el último pesaje hasta hoy.',
-      lee:[['i',`${n(pes)} es el más pesado: ${nf(pes.pesoHoy)} kg por cabeza.`]].concat(prox?[['ok',`${n(prox)} es el próximo en llegar a su meta de ${nf(prox.meta)} kg, cerca del ${ffc(prox.fechaMeta)}.`]]:[]).concat(A.filter(x=>x.listo).map(x=>['ok',`${n(x)} ya llegó a su meta: puedes venderlo${x.retiroHasta?` después del ${ffc(x.retiroHasta)} (retiro)`:''}.`])).concat(lento&&A.length>1?[['w',`${n(lento)} es el que sube más lento (${nf(lento.gdpUse,2)} kg por día).`]]:[])};
+      lee:A.map(x=>[x.listo?'ok':'i',`${n(x)}: ${nf(x.pesoHoy)} kg por cabeza${x.activo?(x.listo?`, ya pasó su meta de ${nf(x.meta)} kg${x.retiroHasta?` (en retiro hasta el ${ffc(x.retiroHasta)})`:''}`:`, le faltan ${nf(x.falta)} kg para su meta; llega cerca del ${ffc(x.fechaMeta)}`):', al vender'}${x.estimado?' (estimado: aún sin pesajes)':''}.`,cl(x)])
+        .concat([['i',`Promedio de todos: ${nf(pesP)} kg por cabeza.`,null]])};
     // ganancia
-    const bajos=A.filter(x=>x.activo&&x.gdpUse<1.2),mejor=top(A,x=>x.gdpUse)[0];
-    E['Ganancia diaria']={que:'cada barra es un lote y muestra cuántos kilos sube cada animal por día, medido entre sus dos últimos pesajes. Barra más larga es mejor. En corral, lo normal es de 1.2 a 1.6 kg por día.',
-      lee:[['ok',`El que más gana es ${n(mejor)}: ${nf(mejor.gdpUse,2)} kg por día.`]].concat(bajos.length?[['w',`${bajos.map(n).join(', ')} ${bajos.length>1?'están':'está'} por debajo de 1.2 kg por día: revisa ración, agua, salud y lectura de comederos.`]]:[['ok','Todos tus lotes en engorde ganan 1.2 kg por día o más.']]).concat(A.filter(x=>x.estimado).map(x=>['i',`${n(x)} aún no tiene pesajes: su valor es la ganancia esperada de tu configuración, no la real.`]))};
+    const gp=prom(x=>x.gdpUse);
+    E['Ganancia diaria']={que:'cada barra es un lote y muestra cuántos kilos sube cada animal por día, medido entre sus pesajes (desde el pesaje de al menos 7 días antes del último). Barra más larga es mejor. En corral, lo normal es de 1.2 a 1.6 kg por día; en potrero con suplemento, de 0.6 a 1 kg.',
+      lee:A.map(x=>{const g=x.gdpUse;const est=x.gdp==null;return [est?'i':g>=1.2?'ok':'w',`${n(x)}: ${wtxt(g,2)} por día${est?' (es la ganancia esperada de tu configuración, falta pesar)':g>=1.2?'':'. Está por debajo de 1.2: revisa ración, agua, salud y comederos'}${!est&&gp&&A.length>1?`, ${g>=gp?nf((g/gp-1)*100,0)+' % arriba':nf((1-g/gp)*100,0)+' % abajo'} del promedio`:''}.`,cl(x)];})};
     // consumo
-    const baja=A.filter(x=>x.bajaCons);
-    E['Consumo por cabeza']={que:'kilos de alimento que come cada animal al día, por fecha. Una línea por lote. Si la línea baja de golpe, algo pasa: calor, agua, alimento o enfermedad.',
-      lee:A.filter(x=>x.consumo&&x.pesoHoy).map(x=>['i',`${n(x)} come ${nf(x.consumo,1)} kg por cabeza al día, ${nf(x.consumo/x.pesoHoy*100,1)} % de su peso.`]).concat(baja.map(x=>['w',`${n(x)} comió menos ayer de lo normal. Revisa bebederos, comederos y animales enfermos.`]))};
+    E['Consumo por cabeza']={que:'kilos de alimento (tal como se sirve) que come cada animal al día, por fecha. Una línea por lote. Lo normal en engorde es de 2.5 a 3.2 % del peso tal como se sirve. Si la línea baja de golpe, algo pasa: calor, agua, alimento o enfermedad.',
+      lee:A.map(x=>{if(!x.consumo)return ['i',`${n(x)}: sin entregas anotadas en los últimos 7 días.`,cl(x)];const pc=x.consumo/x.pesoHoy*100;return [x.bajaCons||pc<2.2?'w':'ok',`${n(x)}: ${nf(x.consumo,1)} kg por cabeza al día, ${nf(pc,1)} % de su peso${x.bajaCons?`. Ayer comió ${nf(x.consAyer,1)} kg, menos de lo normal: revisa bebederos, comederos y enfermos`:pc<2.2?': poco, revisa si hay sobras o calor':''}.`,cl(x)];})};
     // alimento por día
     const hoyF=C.H,d7=[...Array(7).keys()].map(i=>addDias(hoyF,-1-i)),d14=[...Array(7).keys()].map(i=>addDias(hoyF,-8-i));
-    const kgP=ds=>A.reduce((s,x)=>s+ds.reduce((a,f)=>a+(x.kgDia[f]||0),0),0)/7;const a1=kgP(d7),a0=kgP(d14);
-    E['Alimento entregado por día']={que:'cada columna es un día y muestra los kilos de alimento que anotaste, por lote. Días sin columna son días sin entregas anotadas.',
-      lee:a1?[['i',`La última semana entregaste en promedio ${nf(a1)} kg por día.`]].concat(a0?[[Math.abs(a1/a0-1)<0.05?'ok':'i',`Eso es ${a1>=a0?'un':'un'} ${nf(Math.abs(a1/a0-1)*100,0)} % ${a1>=a0?'más':'menos'} que la semana anterior${a1>=a0?' (normal si los animales crecen)':''}.`]]:[]):[['w','No hay entregas anotadas la última semana: anótalas para que la conversión y los costos sean reales.']]};
+    const kg7=(x,ds)=>ds.reduce((a,f)=>a+(x.kgDia[f]||0),0)/7;const a1=A.reduce((s,x)=>s+kg7(x,d7),0),a0=A.reduce((s,x)=>s+kg7(x,d14),0);
+    E['Alimento entregado por día']={que:'cada columna es un día y está dividida en colores, uno por lote: la altura total son los kilos que entregaste ese día. Días sin columna son días sin entregas anotadas.',
+      lee:(a1?[['i',`La última semana entregaste en promedio <b>${nf(a1)} kg por día</b>${a0?`, ${nf(Math.abs(a1/a0-1)*100,0)} % ${a1>=a0?'más':'menos'} que la semana anterior${a1>=a0?' (normal si los animales crecen)':''}`:''}.`,null]]:[['w','No hay entregas anotadas la última semana: anótalas para que la conversión y los costos sean reales.',null]])
+        .concat(A.filter(x=>kg7(x,d7)>0).map(x=>['i',`${n(x)}: ${nf(kg7(x,d7))} kg por día (${nf(kg7(x,d7)/Math.max(1,x.cab),1)} por cabeza).`,cl(x)]))};
     // conversión
     const cv=A.filter(x=>x.conv);
-    E['Conversión alimenticia']={que:'cuántos kilos de alimento necesita cada lote para ganar un kilo de peso. Barra más corta es mejor. En finalización lo normal es de 6 a 8 kg por kilo ganado.',
-      lee:cv.length?[['ok',`El que mejor convierte es ${n(top(cv,x=>x.conv,true)[0])}: ${nf(top(cv,x=>x.conv,true)[0].conv,1)} a 1.`]].concat(cv.filter(x=>x.conv>8).map(x=>['w',`${n(x)} convierte ${nf(x.conv,1)} a 1: alto. Revisa desperdicio en comederos, ración y salud.`])):[['i','Aún no hay suficientes pesajes y entregas para calcularla.']]};
+    E['Conversión alimenticia']={que:'cuántos kilos de alimento (tal como se sirve) necesita cada lote para ganar un kilo de peso, en todo su engorde. Barra más corta es mejor. En finalización con concentrado lo normal es de 6 a 8 a 1.',
+      lee:cv.length?cv.map(x=>[x.conv<=8?'ok':'w',`${n(x)}: ${nf(x.conv,1)} a 1${x.conv<=8?', dentro de lo normal':'. Alto: revisa desperdicio en comederos, ración y salud'}.`,cl(x)]):[['i','Aún no hay suficientes pesajes y entregas para calcularla.',null]]};
     // costo kilo
     const ck=A.filter(x=>x.costoKgGan);
-    E['Costo por kilo ganado']={que:'cuánto te cuesta producir cada kilo que ganan (alimento, sanidad y gastos, sin contar la compra). Compáralo con tu precio de venta.',
-      lee:ck.map(x=>[x.costoKgGan<pv?'ok':'w',x.costoKgGan<pv?`${n(x)} produce el kilo a ${pk(x.costoKgGan)}, menos que el precio de venta (${pk(pv)}): cada kilo ganado deja ${pk(pv-x.costoKgGan)}.`:`${n(x)} produce el kilo a ${pk(x.costoKgGan)}, más que el precio de venta (${pk(pv)}): cada kilo ganado pierde ${pk(x.costoKgGan-pv)}.`])};
+    E['Costo por kilo ganado']={que:'cuánto te cuesta producir cada kilo que ganan: alimento, sanidad, gastos del lote y su parte de los gastos generales, sin contar la compra. Si es menor que tu precio de venta, cada kilo que ganan deja dinero.',
+      lee:ck.length?ck.map(x=>[x.costoKgGan<pv?'ok':'w',x.costoKgGan<pv?`${n(x)}: ${pk(x.costoKgGan)}, menos que tu precio de venta (${pk(pv)}); cada kilo ganado deja ${pk(pv-x.costoKgGan)}.`:`${n(x)}: ${pk(x.costoKgGan)}, más que tu precio de venta (${pk(pv)}); cada kilo ganado pierde ${pk(x.costoKgGan-pv)}.`,cl(x)]):[['i','Falta anotar alimento y pesajes para calcularlo.',null]]};
     // inversión
-    const tot=A.reduce((s,x)=>s+x.costoTot,0),comp=A.reduce((s,x)=>s+x.compra,0),ali=A.reduce((s,x)=>s+x.costoAlim,0);
-    E['Inversión por lote']={que:'cuánto dinero llevas metido en cada lote, separado en compra de animales, alimento, sanidad y otros gastos.',
-      lee:tot?[['i',`En total llevas ${money(tot)}: ${nf(comp/tot*100,0)} % en compra y ${nf(ali/tot*100,0)} % en alimento.`]]:[]};
+    const tot=A.reduce((s,x)=>s+x.costoTot,0),comp=A.reduce((s,x)=>s+x.compra,0),ali=A.reduce((s,x)=>s+x.costoAlim,0),sa=A.reduce((s,x)=>s+x.san,0),ot=A.reduce((s,x)=>s+x.gas,0);
+    E['Inversión por lote']={que:'cuánto dinero llevas metido en cada lote. Cada barra se divide por colores: compra de animales, alimento, sanidad y otros gastos.',
+      lee:tot?[['i',`Compra: ${money(comp)} (${nf(comp/tot*100,0)} %).`,'var(--s1)'],['i',`Alimento: ${money(ali)} (${nf(ali/tot*100,0)} %).`,'var(--s4)'],['i',`Sanidad: ${money(sa)} (${nf(sa/tot*100,0)} %).`,'var(--s3)'],['i',`Otros: ${money(ot)} (${nf(ot/tot*100,0)} %).`,'var(--s2)'],['i',`En total llevas <b>${money(tot)}</b>, ${money(tot/Math.max(1,A.reduce((s,x)=>s+x.cab0,0)))} por animal que entró.`,null]]:[]};
     // margen
-    const all=C.act.concat(C.cer);const neg=all.filter(x=>(x.activo?x.proy.margen:x.margenReal)<0);
-    E['Margen por cabeza']={que:'lo que deja cada animal. En lotes en engorde es una estimación si venden al llegar a la meta con tu precio de venta actual; en los vendidos es el resultado real. Verde gana, rojo pierde.',
-      lee:[['i',`Con tu precio de venta de ${pk(pv)}, el margen estimado de los lotes en engorde es ${money(C.act.reduce((s,x)=>s+x.proy.margen,0))}.`]].concat(neg.map(x=>['w',`${n(x)} ${x.activo?'perdería':'perdió'} dinero. ${x.activo?'Revisa el costo por kilo y el precio mínimo para no perder en Rumi.':''}`]))};
-    E['Cabezas en engorde']={que:'cuántos animales tenías en engorde cada día: sube cuando entra un lote y baja con ventas y muertes.',lee:[['i',`Hoy tienes ${nf(C.cabT)} cabezas en ${pl(C.act.length,'lote','lotes')}.`]]};
+    const all=C.act.concat(C.cer);
+    E['Margen por cabeza']={que:'lo que deja cada animal. En lotes en engorde es una estimación si venden al llegar a la meta con tu precio de venta actual y el desbaste; en los vendidos es el resultado real. Barra verde gana, barra roja pierde.',
+      lee:all.map(x=>{const cb=x.activo?x.proy.cabBase:(x.cab0-x.bajas)||1,m=(x.activo?x.proy.margen:x.margenReal)/cb;return [m>=0?'ok':'w',`${n(x)}: ${m>=0?'gana':'pierde'} ${money(Math.abs(m))} por cabeza${x.activo?' (estimado)':' (real)'}${m<0&&x.activo?'. Revisa el precio mínimo para no perder en Rumi':''}.`,m>=0?'var(--verde)':'var(--rojo)'];})
+        .concat(act.length?[['i',`Todos los lotes en engorde juntos: ${money(act.reduce((s,x)=>s+x.proy.margen,0))} con el precio de ${pk(pv)}.`,null]]:[])};
+    E['Cabezas en engorde']={que:'cuántos animales tenías en engorde cada día: sube cuando entra un lote y baja con ventas y muertes.',lee:[['i',`Hoy tienes ${nf(C.cabT)} cabezas en ${pl(C.act.length,'lote','lotes')}.`,'var(--s1)']].concat(A.map(x=>['i',`${n(x)}: ${nf(x.cab)} de ${nf(x.cab0)} que entraron${x.bajas?`, ${pl(x.bajas,'muerte','muertes')}`:''}${x.vend?`, ${nf(x.vend)} vendidos`:''}.`,cl(x)]))};
     const cab0=A.reduce((s,x)=>s+x.cab0,0),baj=A.reduce((s,x)=>s+x.bajas,0),mo=cab0?baj/cab0*100:0;
-    E['Mortalidad']={que:'qué porcentaje de los animales que entraron a cada lote ha muerto. En corral, lo aceptable es menos de 1 a 2 %.',lee:[[mo<=2?'ok':'w',`Tu mortalidad es ${nf(mo,1)} % (${pl(baj,'muerte','muertes')} de ${nf(cab0)} animales). ${mo<=2?'Está dentro de lo normal.':'Está alta: revisa compra, recepción y sanidad con tu veterinario.'}`]]};
+    E['Mortalidad']={que:'qué porcentaje de los animales que entraron a cada lote ha muerto. En corral, lo aceptable es menos de 1 a 2 %.',lee:[[mo<=2?'ok':'w',`En total ${nf(mo,1)} % (${pl(baj,'muerte','muertes')} de ${nf(cab0)} animales). ${mo<=2?'Está dentro de lo normal.':'Está alta: revisa compra, recepción y sanidad con tu veterinario.'}`,'var(--s6)']].concat(A.filter(x=>x.bajas).map(x=>[x.mort*100<=2?'ok':'w',`${n(x)}: ${nf(x.mort*100,1)} % (${pl(x.bajas,'muerte','muertes')}).`,'var(--s6)']))};
     E['Lectura de comederos']={que:'cómo estaba el comedero antes de cada entrega. Muchos vacíos: los animales se quedan con hambre, sube un poco la ración. Muchos con sobra: baja la ración.'};
   }else{
     const x=C.L[sel];if(!x)return E;
@@ -1480,6 +1542,9 @@ function explicaGraficos(C,sel){
     E['Costo por kilo ganado']={que:'la barra muestra todo lo invertido en el lote a la fecha, separado en compra, alimento, sanidad y otros.',lee:x.costoKgGan?[[x.costoKgGan<pv?'ok':'w',`Cada kilo que gana cuesta ${pk(x.costoKgGan)} y lo vendes a ${pk(pv)}.`],['i',`Llevas invertido ${money(x.costoTot)}: ${nf(x.compra/Math.max(1,x.costoTot)*100,0)} % es la compra.`]]:[]};
     E['Cabezas en el lote']={que:'cuántos animales había en el lote cada día: baja con muertes y ventas.',lee:[['i',`Entraron ${nf(x.cab0)}${x.bajas?`, murieron ${x.bajas}`:''}${x.vend?`, se vendieron ${x.vend}`:''}.`]]};
     E['Lectura de comederos']={que:'cómo estaba el comedero antes de cada entrega. Muchos vacíos: sube un poco la ración. Muchos con sobra: bájala.'};
+    // mismo color que la línea o barra de cada gráfico
+    const COL={'Peso promedio':'var(--s1)','Ganancia diaria':'var(--s1)','Consumo por cabeza':'var(--s2)','Alimento entregado por día':'var(--s4)','Conversión alimenticia':'var(--s2)','Cabezas en el lote':'var(--s1)'};
+    for(const [t,e] of Object.entries(E))if(e.lee)e.lee=e.lee.map(([k,tx,c])=>[k,tx,c!==undefined?c:(COL[t]||null)]);
   }
   return E;
 }
@@ -1526,6 +1591,7 @@ const MAS_SUB={
    <section class="sec">${secH('Alimentación y avisos')}<div class="card pad cfg-c">
     ${f('horas','Horarios de entrega de alimento',cfg.horas,'','Sepáralos con comas. Por ejemplo: 6:00, 11:00, 15:00. La pantalla Hoy te recuerda cada entrega.')}
     ${f('diasSinPesar','Avisarme si un lote no se pesa en',cfg.diasSinPesar,'inputmode="numeric"','','días')}</div></section>
+   <section class="sec">${secH('Voz de Rumi')}<div class="card pad cfg-c" id="vozCfg">${vozCfgHtml()}</div></section>
    <section class="sec">${secH('Unidad de peso')}<div class="card pad cfg-c"><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div><small class="hint" style="margin:0">Pesos, ganancias y precios se muestran y se escriben en ${U()==='lb'?'libras':'kilos'}. Tus datos no cambian.</small></div></section>
    <div class="cfg-save"><button class="btn pri full">Guardar configuración</button></div></form></main>`;
  },
@@ -2135,7 +2201,7 @@ function guardarFormula(F,nombre){
 
 /* ============ Rumi: imagen ============ */
 function rumiSVG(cls=''){
-  return `<span class="rm ${cls}" aria-hidden="true"><img class="rm-b" src="ic3d/rumi.webp" alt="" draggable="false"></span>`;
+  return `<span class="rm ${cls}" aria-hidden="true"><img class="rm-b" src="fondos/rumi.webp" alt="" draggable="false"></span>`;
 }
 
 
@@ -2228,9 +2294,9 @@ function habilidades(t,e,txt){
   // índice de calor
   if(/(indice de )?calor|temperatura|estres (calorico|por calor)|humedad/.test(t)&&/\d/.test(t)){
     const nums=[...t.matchAll(/(\d+(?:[.,]\d+)?)/g)].map(m=>numTxt(m[1]));
-    const T=nums.find(v=>v>=15&&v<=50),RH=nums.find(v=>v!==T&&v>=10&&v<=100)??60;
-    if(T){const thi=(1.8*T+32)-(0.55-0.0055*RH)*(1.8*T-26);const nv=thi<74?['Normal','verde','Sin riesgo. Mantén agua y sombra.']:thi<79?['Alerta','tierra','Da agua fresca, sombra y sirve más en horas frescas.']:thi<84?['Peligro','rojo','No manejes animales, moja pisos o techos si puedes y vigila la respiración.']:['Emergencia','rojo','Riesgo de muertes. No los muevas, agua y sombra al máximo, y llama al veterinario si jadean con la boca abierta.'];
-      return {html:`Con ${nf(T)} °C y ${nf(RH)} % de humedad el índice de calor es <b>${nf(thi)}</b>: <span class="pill p-${nv[1]}">${nv[0]}</span><br>${nv[2]}<p class="sm" style="margin:8px 0 0">Los cebuinos y los cruces con Brahman aguantan más calor que las razas europeas.</p>`,sug:['Consejos para el calor','¿Cuánta agua necesitan?']};}
+    const iT=nums.findIndex(v=>v>=15&&v<=50),T=iT>=0?nums[iT]:null,RH=nums.slice(iT+1).find(v=>v>=10&&v<=100)??nums.find((v,i)=>i!==iT&&v>=10&&v<=100)??60;
+    if(T){const thi=(1.8*T+32)-(0.55-0.0055*RH)*(1.8*T-26);const nv=thi<75?['Normal','verde','Sin riesgo. Mantén agua y sombra.']:thi<79?['Alerta','tierra','Da agua fresca, sombra y sirve más en horas frescas.']:thi<84?['Peligro','rojo','No manejes animales, moja pisos o techos si puedes y vigila la respiración.']:['Emergencia','rojo','Riesgo de muertes. No los muevas, agua y sombra al máximo, y llama al veterinario si jadean con la boca abierta.'];
+      return {html:`Con ${nf(T)} °C y ${nf(RH)} % de humedad el índice de calor es <b>${nf(Math.round(thi))}</b>: <span class="pill p-${nv[1]}">${nv[0]}</span><br>${nv[2]}<p class="sm" style="margin:8px 0 0">Los cebuinos y los cruces con Brahman aguantan más calor que las razas europeas.</p>`,sug:['Consejos para el calor','¿Cuánta agua necesitan?']};}
   }
   // conversiones de unidades
   if(/convert|cuant[oa]s? (kilos|kg|libras|quintales) (son|es|hay|equivalen)|(a|en) (kilos|libras|quintales)\b/.test(t)&&(e.kg!=null||e.sueltos.length)){
@@ -2254,7 +2320,7 @@ function habilidades(t,e,txt){
   // punto de equilibrio
   if(/equilibrio|precio minimo|no perder|sin perder|a cuanto (tengo que|debo|necesito) vender|minimo para vender/.test(t)){
     const L=lotesDe(e);if(!L.length)return {html:'Cuando tengas lotes en engorde te digo el precio mínimo de venta de cada uno.'};
-    return {html:'Precio mínimo por kilo para no perder, vendiendo en la meta:'+tabla(['Lote','Mínimo','Hoy pagan'],L.map(x=>{const pe=x.proy.costoFinal/Math.max(1,Math.max(x.meta,x.pesoHoy)*(1-desb())*x.cab);return [esc(x.l.nombre),`<b>${pk(pe)}</b>`,pk(+cfg.precioVentaKg)];}))+'<p class="sm" style="margin:8px 0 0">Incluye compra, alimento hasta la meta, sanidad, gastos del lote y gastos generales, y descuenta '+nf(desb()*100)+' % de desbaste.</p>',sug:['¿Cuánto voy a ganar?']};
+    return {html:'Precio mínimo por kilo para no perder, vendiendo en la meta:'+tabla(['Lote','Mínimo','Hoy pagan'],L.map(x=>{const pe=Math.max(0,x.proy.costoFinal-x.ingresos)/Math.max(1,Math.max(x.meta,x.pesoHoy)*(1-desb())*x.cab);return [esc(x.l.nombre),`<b>${pk(pe)}</b>`,pk(+cfg.precioVentaKg)];}))+'<p class="sm" style="margin:8px 0 0">Incluye compra, alimento hasta la meta, sanidad, gastos del lote y gastos generales, resta lo que ya vendiste del lote y descuenta '+nf(desb()*100)+' % de desbaste.</p>',sug:['¿Cuánto voy a ganar?']};
   }
   // precio máximo de compra
   if(/(a cuanto|cuanto) (puedo|debo|conviene|me conviene) (pagar|comprar)|precio maximo (de compra|para comprar)|comprar novillos? (de|a)/.test(t)){
@@ -2276,9 +2342,12 @@ function habilidades(t,e,txt){
   // agua
   if(/agua/.test(t)&&/cuant|necesit|toman|beben|consum/.test(t)){
     const L=lotesDe(e);if(!L.length)return {html:'Un novillo de engorde toma de 30 a 60 litros al día, más con calor.'};
-    const rows=L.map(x=>{const ms=(x.consumo||x.pesoHoy*0.026)*0.88;const l=ms*4.5;return [esc(x.l.nombre),nf(l)+' L',nf(l*x.cab)+' L'];});
-    const tot=L.reduce((s,x)=>s+(x.consumo||x.pesoHoy*0.026)*0.88*4.5*x.cab,0);
-    return {html:`Necesitan unos <b>${nf(tot)} litros al día</b>, y hasta ${nf(tot*1.3)} con calor fuerte.`+tabla(['Lote','Por animal','Lote'],rows),sug:['Consejos para el calor']};
+    const cl=window.Clima&&Clima.actual(),tmax=cl&&cl.max&&cl.max[0]!=null?cl.max[0]:(cl?cl.t:null);
+    const lpk=litrosPorKgMS(tmax??27);
+    const aguaDe=x=>(x.consumo||x.pesoHoy*0.026)*0.88*lpk;
+    const rows=L.map(x=>{const l=aguaDe(x);return [esc(x.l.nombre),nf(l)+' L',nf(l*x.cab)+' L'];});
+    const tot=L.reduce((s,x)=>s+aguaDe(x)*x.cab,0);
+    return {html:`Necesitan unos <b>${nf(tot)} litros al día</b>${tmax!=null?` con la máxima de hoy (${nf(tmax)} °C)`:', y más con calor fuerte'}.`+tabla(['Lote','Por animal','Lote'],rows)+'<p class="sm" style="margin:8px 0 0">Se calcula con lo que comen en materia seca: de 3.5 litros por kilo con clima fresco a 7 litros con calor fuerte.</p>',sug:['Consejos para el calor']};
   }
   // espacio de corral y comedero
   if(/espacio|metros|cuanto comedero|largo (del|de) comedero|cuantos bebederos|tamano del corral/.test(t)){
@@ -2457,6 +2526,8 @@ function animalesCalc(x){
 }
 /* ---------- modelo económico: gastos generales, desbaste y alimento hasta la meta ---------- */
 const desb=()=>Math.max(0,Math.min(15,+S.config.desbaste||0))/100;
+// litros de agua por kilo de materia seca según la temperatura máxima del día
+const litrosPorKgMS=t=>t>=32?7:t>=27?5.5:t>=21?4.5:3.5;
 // el consumo escala con el peso metabólico (peso^0.75, NRC): promedio entre hoy y la meta
 function factorConsumo(p0,p1){if(!(p0>0)||!(p1>p0))return 1;return ((Math.pow(p0,.75)+Math.pow(p1,.75))/2)/Math.pow(p0,.75);}
 function alimentoProy(x,pesoFinal,dias){const cons=x.consumo||x.pesoHoy*0.026;return cons*factorConsumo(x.pesoHoy,pesoFinal)*x.cab*Math.max(0,dias)*(x.costoKgR||0);}
@@ -2553,7 +2624,7 @@ PAGES.hoy=()=>{
   const lotes=`<section class="sec">${secH('Lotes en engorde',C.act.length,lnk('#lotes','Ver lotes'))}${C.act.length?`<div class="card ltab">${filas}</div>`:`<div class="card pad"><p class="hint">No tienes lotes en engorde.</p><button type="button" class="btn pri" data-act="f" data-f="lote">Nuevo lote</button></div>`}</section>`;
   return `<header class="hd">${hdTop(fechaLarga())}
    <div class="ttl"><span class="eyebrow">${esc(cfg.finca)}</span><div class="big"><h1>${pl(C.cabT,'cabeza','cabezas')}</h1><span>en ${pl(C.act.length,'lote','lotes')}, ${nf(C.kgPie)} kg en pie</span></div></div>
-   <div class="kpis"><div class="kpi"><b>${nf(C.gdpP,2)} kg</b><span>ganancia diaria</span></div><div class="kpi"><b>${C.conv?nf(C.conv,1)+' a 1':'–'}</b><span>conversión</span></div><div class="kpi"><b>${C.costoKg?pk(C.costoKg):'–'}</b><span>costo por kg ganado</span></div></div></header>
+   <div class="kpis"><div class="kpi"><b>${C.gdpP!=null?nf(C.gdpP,2):nf(+cfg.gdpEsperada||1.3,2)} kg</b><span>${C.gdpP!=null?'ganancia diaria':'ganancia esperada'}</span></div><div class="kpi"><b>${C.conv?nf(C.conv,1)+' a 1':'–'}</b><span>conversión</span></div><div class="kpi"><b>${C.costoKg?pk(C.costoKg):'–'}</b><span>costo por kg ganado</span></div></div></header>
    <main class="bd">${pasosCard()}${pasoCard(pasoGlobal(C))}${alim}${al}${lotes}<p class="hint sync" style="text-align:center"></p></main>`;
 };
 
@@ -3234,11 +3305,54 @@ const TOUR=[
 let SPOT=null;
 function iniciarTour(){try{localStorage.setItem('rumentis-tour','1');}catch(e){}spot(TOUR);}
 const hayVoz=()=>!!((window.Android&&Android.hablar)||window.speechSynthesis);
-function leer(t){
-  t=String(t||'').replace(/<[^>]+>/g,'');
-  try{if(window.Android&&Android.hablar){Android.hablar(t);return;}}catch(e){}
-  try{const u=new SpeechSynthesisUtterance(t);u.lang='es-MX';u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}
+/* ---------- voz de Rumi: la mejor voz en español del teléfono y texto preparado para leerse natural ---------- */
+const MONEDA_VOZ={L:'lempiras',Q:'quetzales','C$':'córdobas','₡':'colones','$':'dólares',B:'balboas'};
+function paraVoz(t){
+  const mon=S.config.moneda||'L',monP=MONEDA_VOZ[mon]||'';
+  t=String(t||'').replace(/<br\s*\/?>/gi,'. ').replace(/<\/(p|li|tr|div|h\d)>/gi,'. ').replace(/<\/t[dh]>/gi,', ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,' y ');
+  t=t.replace(/[•·|→]/g,', ').replace(/\s*\.\s*(\.\s*)+/g,'. ');
+  // números: sin separador de miles y con coma decimal, como se leen en español
+  for(let i=0;i<3;i++)t=t.replace(/(\d),(\d{3})(?!\d)/g,'$1$2');
+  t=t.replace(/(\d)\.(\d)/g,'$1,$2');
+  if(monP){const m=mon.replace(/[$]/g,'\\$');t=t.replace(new RegExp(m+'\\s?(\\d[\\d,]*)','g'),'$1 '+monP);}
+  t=t.replace(/(\d)\s?°\s?C?\b/g,'$1 grados').replace(/(\d)\s?%/g,'$1 por ciento')
+   .replace(/\bkg\b/g,'kilos').replace(/\blb\b/g,'libras').replace(/\bkm\/h\b/g,'kilómetros por hora').replace(/\bml\b/g,'mililitros').replace(/\bm²/g,'metros cuadrados')
+   .replace(/\bITH\b/g,'índice de calor').replace(/\bcab\.?\b/g,'cabezas').replace(/(\d+(?:,\d+)?) a 1\b/g,'$1 a uno').replace(/\bqq\b/g,'quintales').replace(/\bmz\b/g,'manzanas')
+   .replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu,'');
+  return t.replace(/\s+([,.;:])/g,'$1').replace(/\s+/g,' ').trim();
 }
+const vozElegida=()=>{try{return localStorage.getItem('rumentis-voz')||'';}catch(e){return '';}};
+function mejorVozWeb(){const V=(window.speechSynthesis&&speechSynthesis.getVoices()||[]).filter(v=>/^es/i.test(v.lang));const el=vozElegida();
+  return V.find(v=>v.name===el)||V.sort((a,b)=>sc(b)-sc(a))[0]||null;function sc(v){return (/natural|neural|online|google|premium|enhanced/i.test(v.name)?50:0)+(/US|MX|419/i.test(v.lang)?20:0)+(v.localService?0:5);}}
+function leer(t){
+  t=paraVoz(t);if(!t)return;
+  try{if(window.Android&&Android.hablarCon){Android.hablarCon(t,vozElegida());return;}if(window.Android&&Android.hablar){Android.hablar(t);return;}}catch(e){}
+  try{const u=new SpeechSynthesisUtterance(t);const v=mejorVozWeb();if(v){u.voice=v;u.lang=v.lang;}else u.lang='es-MX';u.rate=1;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}
+}
+function vocesDisponibles(){
+  try{if(window.Android&&Android.vozLista){const j=JSON.parse(Android.vozLista());return {listo:j.listo,motor:j.motor,voces:j.voces.map(v=>({n:v.n,p:v.p,q:v.q,red:v.red}))};}}catch(e){}
+  const V=(window.speechSynthesis&&speechSynthesis.getVoices()||[]).filter(v=>/^es/i.test(v.lang));
+  return {listo:true,voces:V.map(v=>({n:v.name,p:(v.lang.split('-')[1]||''),q:/natural|neural|online|google/i.test(v.name)?500:300,red:!v.localService}))};
+}
+const PAIS_VOZ={US:'Latinoamérica',MX:'México','419':'Latinoamérica',ES:'España',CO:'Colombia',AR:'Argentina',CL:'Chile',PE:'Perú',VE:'Venezuela',CR:'Costa Rica',HN:'Honduras',GT:'Guatemala'};
+function vozCfgHtml(){
+  const D=vocesDisponibles();
+  if(!D.listo&&!D.voces.length){setTimeout(()=>{const e=$('#vozCfg');if(e)e.innerHTML=vozCfgHtml();},1200);return '<p class="hint" style="margin:0">Buscando las voces del teléfono…</p>';}
+  if(!D.voces.length)return `<p class="hint" style="margin:0">Tu teléfono no tiene voces en español instaladas.</p>${window.Android&&Android.vozAjustes?'<button type="button" class="btn full" data-act="vozInstalar">Instalar voces en español</button>':''}`;
+  const el=vozElegida()||D.voces[0].n;
+  const nom=(v,i)=>`Voz ${i+1} · ${PAIS_VOZ[v.p]||v.p||'español'}`;
+  const cal=v=>v.q>=500?'muy natural':v.q>=400?'natural':'básica';
+  return `<p class="hint" style="margin:0 0 4px">Elige la voz que te guste más. La primera es la más natural que tiene tu teléfono.</p>
+   <div class="voz-l">${D.voces.slice(0,8).map((v,i)=>`<div class="voz-f${v.n===el?' on':''}"><button type="button" class="voz-el" data-act="vozElegir" data-n="${esc(v.n)}" aria-pressed="${v.n===el}"><i></i><span><b>${nom(v,i)}</b><small>${cal(v)}${v.red?' · necesita internet':''}${i===0?' · recomendada':''}</small></span></button><button type="button" class="btn sm" data-act="vozProbar" data-n="${esc(v.n)}">Probar</button></div>`).join('')}</div>
+   ${window.Android&&Android.vozAjustes?`<button type="button" class="btn full" data-act="vozInstalar">Instalar voces más naturales</button><small class="hint" style="margin:0">Abre los ajustes de voz del teléfono. En "Servicios de voz de Google", toca Instalar datos de voz, elige Español (Estados Unidos) y descarga las voces de alta calidad. Luego vuelve aquí y elige la nueva voz.</small>`:''}`;
+}
+const FRASE_PRUEBA='Hola, soy Rumi. Hoy tus novillos ganaron 1.4 kg por día y el kilo te cuesta L 38.50. Vamos bien.';
+Object.assign(ACTS,{
+  vozElegir:el=>{try{localStorage.setItem('rumentis-voz',el.dataset.n);}catch(e){}const e=$('#vozCfg');if(e)e.innerHTML=vozCfgHtml();leer(FRASE_PRUEBA);},
+  vozProbar:el=>{const t=paraVoz(FRASE_PRUEBA);try{if(window.Android&&Android.hablarCon){Android.hablarCon(t,el.dataset.n);return;}}catch(e){}
+    try{const u=new SpeechSynthesisUtterance(t);const v=speechSynthesis.getVoices().find(v=>v.name===el.dataset.n);if(v){u.voice=v;u.lang=v.lang;}speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}},
+  vozInstalar:()=>{try{Android.vozAjustes();}catch(e){}}
+});
 function callarVoz(){try{if(window.Android&&Android.callar){Android.callar();return;}}catch(e){}try{speechSynthesis.cancel();}catch(e){}}
 function spot(steps,i=0){
   const leyendo=SPOT&&SPOT.voz;cerrarSpot(true);SPOT={steps,i,voz:leyendo};const s=steps[i];
@@ -3248,7 +3362,7 @@ function spot(steps,i=0){
   if(el)el.scrollIntoView({block:'center',behavior:'instant'});
   const w=document.createElement('div');w.id='spot';w.setAttribute('role','dialog');w.setAttribute('aria-label',s.t);if(!el)w.className='centro';
   const last=i===steps.length-1,varios=steps.length>1;
-  w.innerHTML=`<div class="hole"></div><div class="tip">${varios?`<img class="tip-rumi" src="ic3d/rumi.webp" alt="">`:''}<span class="sm">${varios?`Paso ${i+1} de ${steps.length}`:''}</span>${varios?`<div class="tip-pts">${steps.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>`:''}<b class="tip-t">${esc(s.t)}</b><p>${s.x}</p><div class="acts">${varios&&hayVoz()?`<button type="button" class="btn tip-voz" data-act="spotVoz" aria-pressed="${!!SPOT.voz}">${SPOT.voz?'Callar':'Escuchar'}</button>`:''}<span style="flex:1"></span>${varios&&!last?'<button type="button" class="btn" data-act="spotFin">Salir</button>':''}<button type="button" class="btn pri" data-act="${last?'spotFin':'spotSig'}">${last?'Entendido':'Siguiente'}</button></div></div>`;
+  w.innerHTML=`<div class="hole"></div><div class="tip">${varios?`<img class="tip-rumi" src="fondos/rumi.webp" alt="">`:''}<span class="sm">${varios?`Paso ${i+1} de ${steps.length}`:''}</span>${varios?`<div class="tip-pts">${steps.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>`:''}<b class="tip-t">${esc(s.t)}</b><p>${s.x}</p><div class="acts">${varios&&hayVoz()?`<button type="button" class="btn tip-voz" data-act="spotVoz" aria-pressed="${!!SPOT.voz}">${SPOT.voz?'Callar':'Escuchar'}</button>`:''}<span style="flex:1"></span>${varios&&!last?'<button type="button" class="btn" data-act="spotFin">Salir</button>':''}<button type="button" class="btn pri" data-act="${last?'spotFin':'spotSig'}">${last?'Entendido':'Siguiente'}</button></div></div>`;
   document.body.appendChild(w);ubicarSpot();
   if(SPOT.voz)leer(s.t+'. '+s.x);
   setTimeout(()=>{const b=$('#spot .btn.pri');if(b)b.focus({preventScroll:true});},50);
@@ -4693,6 +4807,7 @@ responder=function(txt){
 })();
 </script>
 <script src="fotos.js"></script>
+<script src="iconos.js"></script>
 <script src="extras.js"></script>
 <script src="ambiente.js"></script>
 <script src="rumi_guia.js"></script>

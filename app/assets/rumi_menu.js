@@ -25,9 +25,7 @@ const IC2={
  vaca:'<path d="M5 8c0-2 1.5-3 3-3h8c1.5 0 3 1 3 3v6a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5z"/><path d="M5 8L2 6M19 8l3-2M9.5 12h.01M14.5 12h.01M10 16h4"/>'
 };
 const ic=(k,sw=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC2[k]||''}</svg>`;
-const I3D={hoy:'chart_increasing',lotes:'cow',anotar:'clipboard',alimento:'sheaf_of_rice',salud:'stethoscope',sintomas:'thermometer',calc:'abacus',dinero:'money_bag',guia:'books',app:'mobile_phone',ciencia:'microscope',
-  sanidad:'syringe',nutricion:'ear_of_corn',manejo:'ox',forrajes:'herb',instalaciones:'house',negocio:'money_bag',normas:'newspaper',conceptos:'light_bulb',fisiologia:'dna',carne:'test_tube',genetica:'dna',actualidad:'newspaper',buscar:'magnifying_glass_tilted_left'};
-const i3=k=>`<img class="i3" src="ic3d/${I3D[k]||k}.webp" alt="" draggable="false">`;
+const i3=k=>icono(k);
 const lista=p=>`<ul class="rl">${p.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
 
 /* ---------- guía: fichas con partes ---------- */
@@ -135,17 +133,17 @@ const cPeso=(k='p',lab='Peso del animal')=>({k,l:lab,peso:true,min:10,max:3000})
 const cN=(k,l,u,min,max,def)=>({k,l,u,min,max,def});
 const aKg=v=>toKg(v);
 const R=(t,filas,nota)=>({html:`<b>${esc(t)}</b>`+tabla(null,filas.map(([a,b])=>[esc(a),`<b>${b}</b>`]))+(nota?`<p class="rs">${nota}</p>`:''),nou:true});
-const kgTxt=kg=>U()==='lb'?`${nf(kg*FK,1)} lb`:`${nf(kg,1)} kg`;
+const kgTxt=(kg,d=1)=>U()==='lb'?`${nf(kg*FK,d)} lb`:`${nf(kg,d)} kg`;
 const precioU=()=>U()==='lb'?'por libra':'por kilo';
 const CALCS=()=>[
  {l:'Índice de calor',calc:{campos:[cN('t','Temperatura','°C',10,50),cN('h','Humedad','%',5,100)],frase:v=>`indice de calor con ${v.t} grados y ${v.h} % de humedad`,intro:'Dime la temperatura y la humedad y te digo el riesgo para tus animales.'}},
  cc('Peso por cinta (sin báscula)',[cN('pt','Perímetro del pecho','cm',60,300),cN('lc','Largo del cuerpo','cm',60,300)],v=>{const kg=v.pt*v.pt*v.lc/10840;return R('Peso estimado',[['Peso aproximado',kgTxt(kg)],['Rango probable',`${kgTxt(kg*0.92)} a ${kgTxt(kg*1.08)}`]],'Mide el pecho justo detrás de las patas delanteras y el largo de la punta del hombro a la punta de la nalga. Para vender, usa báscula.');},'Mide con cinta métrica en centímetros.'),
- cc('Ganancia diaria',[cPeso('a','Peso inicial'),cPeso('b','Peso final'),cN('d','Días entre pesajes','días',1,1000)],v=>{const g=(aKg(v.b)-aKg(v.a))/v.d;return R('Ganancia diaria',[['Ganó en total',kgTxt(aKg(v.b)-aKg(v.a))],['Por día',kgTxt(g)]],g>=1.4?'Excelente para corral.':g>=1?'Buena ganancia.':g>=0.6?'Normal para pastoreo con suplemento.':'Baja: revisa ración, salud y agua.');},'Pon los dos pesos y los días entre ellos.'),
+ cc('Ganancia diaria',[cPeso('a','Peso inicial'),cPeso('b','Peso final'),cN('d','Días entre pesajes','días',1,1000)],v=>{const g=(aKg(v.b)-aKg(v.a))/v.d;return R('Ganancia diaria',[['Ganó en total',kgTxt(aKg(v.b)-aKg(v.a))],['Por día',kgTxt(g,2)]],g>=1.4?'Excelente para corral.':g>=1?'Buena ganancia.':g>=0.6?'Normal para pastoreo con suplemento.':'Baja: revisa ración, salud y agua.');},'Pon los dos pesos y los días entre ellos.'),
  cc('Días para llegar a un peso',[cPeso('a','Peso actual'),cPeso('b','Peso meta'),cN('g','Ganancia diaria',()=>UW()+'/día',0.05,5)],v=>{const d=Math.ceil((aKg(v.b)-aKg(v.a))/aKg(v.g));return R('Días a la meta',[['Días',d>0?nf(d):'ya llegó'],['Fecha estimada',d>0?ffl(addDias(hoy(),d)):'hoy']]);},'Pon el peso de hoy, la meta y cuánto sube por día.'),
  cc('Conversión alimenticia',[cN('al','Alimento consumido',()=>UW(),1,1e7),cN('g','Kilos ganados',()=>UW(),0.1,1e6)],v=>{const c=v.al/v.g;return R('Conversión',[['Conversión',`${nf(c,1)} a 1`],['Eficiencia',nf(1/c,3)]],c<=6.5?'Excelente.':c<=8?'Está bien para finalización.':'Alta: revisa desperdicio, ración y salud.');},'Pon el alimento que comieron y los kilos que ganaron en el mismo período.'),
  cc('Costo por kilo ganado',[cN('m','Costo del kilo de mezcla',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e4),cN('c','Conversión (kg de alimento por kg ganado)','a 1',1,30),cN('o','Otros costos por kilo ganado',()=>S.config.moneda||'L',0,1e4,0)],v=>{const t=v.m*v.c+(v.o||0);return R('Costo por kilo ganado',[['Alimento',money2(v.m*v.c)],['Total',money2(t)],['Precio de venta actual',pk(+S.config.precioVentaKg)]],t<pU(+S.config.precioVentaKg)?'Producir cada kilo te cuesta menos de lo que te pagan: bien.':'Cada kilo te cuesta más de lo que te pagan: revisa la ración y la conversión.');},'El costo del kilo de mezcla está en tus raciones.'),
  cc('Consumo según el peso',[cPeso('p','Peso del animal'),cN('pc','Consumo en materia seca','% del peso',1,4,2.5),cN('ms','Materia seca de la ración','%',10,100,85)],v=>{const kg=aKg(v.p)*v.pc/100;return R('Consumo diario',[['Materia seca',kgTxt(kg)],['Tal como se sirve',kgTxt(kg/(v.ms/100))]],'Engorde: 2.2 a 2.8 % del peso en materia seca. Menos al inicio y con calor.');},'Pon el peso; los porcentajes ya traen valores comunes.'),
- cc('Agua que necesitan',[cPeso('p','Peso del animal'),cN('t','Temperatura del día','°C',10,45,30),cN('n','Cabezas','cab.',1,1e5,1)],v=>{const kg=aKg(v.p);let l=kg*0.1*(v.t>=32?1.6:v.t>=27?1.3:1);l=Math.max(25,l);return R('Agua al día',[['Por animal',`${nf(l)} litros`],['Todo el grupo',`${nf(l*v.n)} litros`],['Reserva para 3 días',`${nf(l*v.n*3)} litros`]],'Con calor fuerte pueden tomar más. Nunca debe faltar.');},'Pon el peso, la temperatura y cuántos animales.'),
+ cc('Agua que necesitan',[cPeso('p','Peso del animal'),cN('t','Temperatura del día','°C',10,45,30),cN('n','Cabezas','cab.',1,1e5,1)],v=>{const kg=aKg(v.p);const l=kg*0.024*litrosPorKgMS(v.t);return R('Agua al día',[['Por animal',`${nf(l)} litros`],['Todo el grupo',`${nf(l*v.n)} litros`],['Reserva para 3 días',`${nf(l*v.n*3)} litros`]],'Se calcula con lo que comen (2.4 % del peso en materia seca): de 3.5 litros por kilo comido con clima fresco a 7 con calor fuerte. Nunca debe faltar.');},'Pon el peso, la temperatura máxima del día y cuántos animales.'),
  {l:'Dosis de un medicamento',goArea:'salud'},
  cc('Dosis por peso (según la etiqueta)',[cPeso('p','Peso del animal'),cN('ml','ml de la etiqueta','ml',0.1,100,1),cN('cada','por cada',()=>UW(),1,500,U()==='lb'?110:50)],v=>{const d=v.ml*v.p/v.cada;return R('Dosis',[['Dosis para este animal',`${nf(d,1)} ml`]],'Usa siempre la dosis y la vía de la etiqueta de tu producto, y consulta a tu veterinario. Respeta el retiro.');},'Copia de la etiqueta cuántos ml van por cada cuánto peso.'),
  {l:'Espacio de corral y comedero',calc:{campos:[cN('n','Cabezas','cab.',1,5000)],frase:v=>`espacio de comedero para ${v.n} cabezas`,intro:'¿Para cuántas cabezas calculo el corral, el comedero, la sombra y el bebedero?'}},
@@ -154,7 +152,7 @@ const CALCS=()=>[
  {l:'Rendimiento en canal',calc:{campos:[cPeso('p','Peso vivo')],frase:v=>`rendimiento en canal de ${v.p} ${uPal()}`,intro:'¿Cuánto pesa el animal vivo? Te digo cuánto da en canal.'}},
  cc('Comparar pie y canal',[cN('pc','Precio de la canal',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e5),cN('r','Rendimiento esperado','%',40,70,56),cN('pp','Oferta en pie',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e5)],v=>{const eq=v.pc*v.r/100;return R('Pie o canal',[['Precio en canal equivale en pie a',money2(eq)],['Oferta en pie',money2(v.pp)],['Conviene',eq>v.pp?'vender en canal':'vender en pie']],'Revisa también el desbaste y quién paga el flete.');},'Compara las dos ofertas.'),
  cc('Desbaste al vender',[cPeso('p','Peso lleno'),cN('d','Desbaste','%',0,15,+S.config.desbaste||4),cN('pr','Precio',()=>`${S.config.moneda||'L'} ${precioU()}`,0,1e5,0)],v=>{const pag=v.p*(1-v.d/100);return R('Peso que te pagan',[['Peso pagado',`${nf(pag,1)} ${UW()}`],['Descuento',`${nf(v.p-pag,1)} ${UW()}`]].concat(v.pr?[['Valor',money(pag*v.pr)]]:[]));},'Pon el peso en finca y el porcentaje de desbaste.'),
- cc('Margen de un negocio',[cPeso('pc','Peso de compra'),cN('prc','Precio de compra',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e5),cPeso('pv','Peso de venta'),cN('prv','Precio de venta',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e5,r2u(pU(+S.config.precioVentaKg))),cN('ck','Costo por kilo ganado',()=>`${S.config.moneda||'L'} ${precioU()}`,0,1e5),cN('o','Otros costos por cabeza',()=>S.config.moneda||'L',0,1e6,0)],v=>{const comp=v.pc*v.prc,vent=v.pv*v.prv,eng=(v.pv-v.pc)*v.ck;const m=vent-comp-eng-(v.o||0);return R('Margen por cabeza',[['Venta',money(vent)],['Compra',money(comp)],['Engorde',money(eng)],['Otros',money(v.o||0)],['Margen',money(m)]],m>0?'El negocio deja ganancia.':'Con estos números pierdes: baja el precio de compra o el costo.');},'Pon los precios en la unidad de la app.'),
+ cc('Margen de un negocio',[cPeso('pc','Peso de compra'),cN('prc','Precio de compra',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e5),cPeso('pv','Peso de venta en la finca'),cN('d','Desbaste','%',0,15,+S.config.desbaste||4),cN('prv','Precio de venta',()=>`${S.config.moneda||'L'} ${precioU()}`,0.01,1e5,r2u(pU(+S.config.precioVentaKg))),cN('ck','Costo por kilo ganado',()=>`${S.config.moneda||'L'} ${precioU()}`,0,1e5),cN('o','Otros costos por cabeza',()=>S.config.moneda||'L',0,1e6,0)],v=>{const comp=v.pc*v.prc,vent=v.pv*(1-(v.d||0)/100)*v.prv,eng=(v.pv-v.pc)*v.ck;const m=vent-comp-eng-(v.o||0);return R('Margen por cabeza',[['Venta (con desbaste)',money(vent)],['Compra',money(comp)],['Engorde',money(eng)],['Otros',money(v.o||0)],['Margen',money(m)]],m>0?'El negocio deja ganancia.':'Con estos números pierdes: baja el precio de compra o el costo.');},'Pon los precios en la unidad de la app.'),
  {l:'Precio máximo de compra',calc:{campos:[cPeso('p','Peso de compra')],frase:v=>`a cuanto puedo comprar novillos de ${v.p} ${uPal()}`,intro:'¿De qué peso son los animales que piensas comprar?'}},
  cc('Precio por cabeza a precio por kilo',[cN('pr','Precio por cabeza',()=>S.config.moneda||'L',1,1e7),cPeso('p','Peso del animal')],v=>R('Precio por peso',[[precioU(),money2(v.pr/v.p)]],'Compara siempre las ofertas por peso.'),'Para comparar ofertas.'),
  cc('Interés de un crédito',[cN('m','Monto',()=>S.config.moneda||'L',1,1e9),cN('t','Tasa anual','%',0,100),cN('d','Días','días',1,3650,120)],v=>{const i=v.m*v.t/100*v.d/365;return R('Costo del crédito',[['Interés',money(i)],['Total a pagar',money(v.m+i)]]);},'Para sumar el costo del dinero al engorde.'),
@@ -171,23 +169,30 @@ const CALCS=()=>[
 
 /* ---------- clima de hoy y estrés por calor (ITH) ---------- */
 function ith(t,h){return (1.8*t+32)-(0.55-0.0055*h)*(1.8*t-26);}
-const ITH_NIV=[[74,'Normal','verde','Sin estrés por calor. Mantén agua limpia y sombra.'],
- [78,'Alerta','tierra','Empiezan a jadear y comen menos. Revisa que el agua alcance y no los muevas en horas de sol.'],
- [83,'Peligro','rojo','Comen menos y bajan la ganancia. Da la comida temprano y al atardecer, más agua y sombra, y no pesar ni vacunar a mediodía.'],
+const ITH_NIV=[[75,'Normal','verde','Sin estrés por calor. Mantén agua limpia y sombra.'],
+ [79,'Alerta','tierra','Empiezan a jadear y comen menos. Revisa que el agua alcance y no los muevas en horas de sol.'],
+ [84,'Peligro','rojo','Comen menos y bajan la ganancia. Da la comida temprano y al atardecer, más agua y sombra, y no pesar ni vacunar a mediodía.'],
  [999,'Emergencia','rojo','Riesgo de muerte por calor. Moja el piso o los animales, sombra total, agua de sobra y nada de manejo hasta que refresque.']];
+const nivelITH=v=>ITH_NIV.find(z=>v<z[0]);
 function climaMsg(){
   const c=window.Clima&&Clima.actual();
   if(!c||c.t==null){if(window.Clima)Clima.actualizar(true);
     return {html:`Aún no tengo el clima de tu zona. Necesito internet y saber dónde estás: da permiso de ubicación al teléfono o escribe tu pueblo en <b>Más, Configuración, Ubicación</b>.<br><br>Mientras tanto, estamos en <b>${{seca:'época seca',canicula:'canícula',lluvias:'época de lluvias'}[window.Clima?Clima.epoca():'lluvias']}</b>.`,btns:[['Abrir Configuración',{t:'go',go:'#mas/config'}]]};}
-  const v=ith(c.t,c.h??70),n=ITH_NIV.find(z=>v<=z[0]);
-  const hace=Math.round((Date.now()-c.ts)/60000);
-  const mx=c.max&&c.max[0]!=null?c.max[0]:null,pl0=c.probLluvia&&c.probLluvia[0]!=null?c.probLluvia[0]:null;
-  const vmx=mx!=null?ith(mx,Math.max(40,(c.h??70)-15)):null,nmx=vmx!=null?ITH_NIV.find(z=>vmx<=z[0]):null;
-  return {html:`<b>${esc(Clima.texto())}</b>${c.lugar?` en ${esc(c.lugar)}`:''}<br>Humedad ${Math.round(c.h??0)} %${c.viento!=null?`, viento ${Math.round(c.viento)} km/h`:''}.
-   ${mx!=null?`<br>Máxima de hoy: <b>${Math.round(mx)} °C</b>${pl0!=null?`, probabilidad de lluvia ${pl0} %`:''}.`:''}
-   <p class="rh">Calor en el ganado ahora</p>Índice de temperatura y humedad (ITH): <b>${nf(v,0)}</b>, <span class="pill p-${n[2]}">${n[1]}</span><br>${n[3]}
-   ${nmx&&nmx!==n?`<p class="rh">En la hora más caliente</p>Puede llegar a <b>${nf(vmx,0)}</b> (${nmx[1]}). ${nmx[3]}`:''}
-   <br><small>El Brahman y sus cruces aguantan más calor que las razas europeas, pero igual bajan su ganancia.</small><br><small>Dato de ${hace<2?'hace un momento':'hace '+pl(hace,'minuto','minutos')}. Clima: Open-Meteo.</small>`,btns:[['Actualizar el clima',{t:'clima'}]]};
+  const v=ith(c.t,c.h??70),n=nivelITH(v);
+  const hace=Math.max(0,Math.round((Date.now()-c.ts)/60000));
+  const H=(c.horas||[]).slice(0,12).filter(x=>x.t!=null);
+  const pico=H.reduce((m,x)=>{const i=ith(x.t,x.hr??c.h??70);return !m||i>m.i?{...x,i}:m;},null);
+  const lluviaProx=H.find(x=>(x.p||0)>=60||(x.mm||0)>=0.5);
+  const mx=c.max&&c.max[0]!=null?c.max[0]:null,mn=c.min&&c.min[0]!=null?c.min[0]:null,pl0=c.probLluvia&&c.probLluvia[0]!=null?c.probLluvia[0]:null;
+  const man=c.max&&c.max[1]!=null?`Mañana: entre ${Math.round(c.min[1])} y ${Math.round(c.max[1])} °C${c.probLluvia&&c.probLluvia[1]!=null?`, ${c.probLluvia[1]} % de probabilidad de lluvia`:''}.`:'';
+  const tabla0=H.length?tabla(['Hora','Temp.','Lluvia','Calor'],H.filter((x,i)=>i%2===0).map(x=>{const i=ith(x.t,x.hr??70),nv=nivelITH(i);return [x.h,`${Math.round(x.t)} °C`,`${x.p??0} %`,`<span class="pill p-${nv[2]}">${nv[1]}</span>`];})):'';
+  return {html:`<b>${esc(Clima.texto())}</b>${c.lugar?` en ${esc(c.lugar)}`:''}<br>Se siente como ${Math.round(c.sens??c.t)} °C · humedad ${Math.round(c.h??0)} %${c.viento!=null?` · viento ${Math.round(c.viento)} km/h`:''}.
+   ${mx!=null?`<br>Hoy: mínima ${Math.round(mn)} °C, máxima <b>${Math.round(mx)} °C</b>${pl0!=null?`, lluvia ${pl0} %`:''}.`:''}
+   <p class="rh">Calor en el ganado ahora</p>Índice de temperatura y humedad (ITH): <b>${nf(Math.round(v))}</b> <span class="pill p-${n[2]}">${n[1]}</span><br>${n[3]}
+   ${pico&&nivelITH(pico.i)!==n?`<p class="rh">Lo más fuerte de las próximas horas</p>A las <b>${pico.h}</b> el ITH llega a <b>${nf(Math.round(pico.i))}</b> (${nivelITH(pico.i)[1]}). ${nivelITH(pico.i)[3]}`:''}
+   ${lluviaProx?`<p class="rh">Lluvia</p>Probable lluvia cerca de las <b>${lluviaProx.h}</b> (${lluviaProx.p??0} %). Protege el alimento y revisa los drenajes.`:''}
+   ${tabla0?`<p class="rh">Próximas horas</p>${tabla0}`:''}${man?`<br>${man}`:''}
+   <br><small>El Brahman y sus cruces aguantan más calor que las razas europeas, pero igual bajan su ganancia.</small><br><small>Dato de ${hace<2?'hace un momento':'hace '+pl(hace,'minuto','minutos')}${c.origen==='gps'?', con la ubicación del teléfono':c.origen==='nombre'?`, para ${esc(c.q||'tu ubicación')}`:''}. Clima: Open-Meteo.</small>`,btns:[['Actualizar el clima',{t:'clima'}]]};
 }
 const AREAS=[
  {id:'hoy',ic:'hoy',t:'Mi engorde',s:'Pendientes y números de hoy',intro:'Aquí te digo cómo va tu engorde con tus propios datos. ¿Qué quieres saber?',ops:()=>[
@@ -307,7 +312,7 @@ function pintarPanel(){
   if(M.q)filtrar(M.q);
   bajar();
 }
-const opHtml=(o,act,i)=>`<button type="button" class="rm-op${o.guia!=null?' g':''}${o.form?' f':''}" data-act="${act}" data-i="${i}">${o.ic3?`<i class="o3">${i3(o.ic3)}</i>`:o.ic?`<i>${ic(o.ic,2)}</i>`:''}<span>${o.pre?`<small class="pre">${esc(o.pre)}</small>`:''}${esc(o.l)}${o.small?`<small>${esc(o.small)}</small>`:''}</span>${o.n?`<em class="rm-n">${o.n}</em>`:''}${ic('chev',2.2)}</button>`;
+const opHtml=(o,act,i)=>`<button type="button" class="rm-op${o.guia!=null?' g':''}${o.form?' f':''}" data-act="${act}" data-i="${i}">${o.ic3?`<i class="o3" data-c="${o.ic3}">${i3(o.ic3)}</i>`:o.ic?`<i>${ic(o.ic,2)}</i>`:''}<span>${o.pre?`<small class="pre">${esc(o.pre)}</small>`:''}${esc(o.l)}${o.small?`<small>${esc(o.small)}</small>`:''}</span>${o.n?`<em class="rm-n">${o.n}</em>`:''}${ic('chev',2.2)}</button>`;
 const togBtn=()=>`<button type="button" class="rm-tog" data-act="rmTog" aria-label="${M.min?'Ver opciones':'Ocultar opciones'}">${M.min?'<span>Ver opciones</span>':''}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${M.min?'M6 15l6-6 6 6':'M6 9l6 6 6-6'}"/></svg></button>`;
 const esLargo=()=>{const m=$('#rumiMsgs'),b=$('#rumiBody');if(!m||!b)return false;const r=m.querySelectorAll('.rrow');const l=r[r.length-1];return !!l&&l.offsetHeight>innerHeight*0.38;};
 /* ---------- buscador ---------- */
