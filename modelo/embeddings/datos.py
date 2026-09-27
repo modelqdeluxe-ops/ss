@@ -27,9 +27,22 @@ def texto_tema(e):
     return f"{e['t']}. {e.get('kw', '')}. {e['x']}"
 
 
+# Órdenes de la app que en realidad son temas de la Guía: se etiquetan con su tema.
+APP_A_TEMA = {
+    'cada cuanto peso': 'Cada cuánto pesar', 'como adapto al concentrado': 'Tiempo de acostumbramiento',
+    'plan sanitario de ingreso': 'Plan sanitario de ingreso', 'tengo un novillo con tos': 'Neumonía o fiebre del embarque',
+    'un animal no come': 'Consumo bajo', 'como mejorar el margen': 'Cómo mejorar el margen', 'cuanta agua necesitan': 'Agua',
+    'espacio de comedero': 'Tamaño del corral y comedero', 'donde esta el respaldo': 'Dónde está Respaldo',
+    'como exporto a excel': 'Dónde está Descargar para Excel', 'como cambio el precio de venta': 'Dónde está Ajustes',
+    'me equivoque en un registro': 'Dónde está Corregir un registro', 'llevame a los graficos': 'Dónde está Gráficos',
+    'hazme el recorrido': 'Recorrido por la app',
+}
+DEFINICION = __import__('re').compile(r'^(que es|que son|que significa|que quiere decir|quien eres|como te llamas|define)\b')
+
+
 def ejemplos_app():
-    """Frases de ejemplo de las órdenes de la app (EJEMPLOS en index.html)."""
-    import re, subprocess
+    """Frases de ejemplo de las órdenes de la app (EJEMPLOS en index.html), con su clase."""
+    import subprocess
     js = r"""
 const fs=require('fs');const L=fs.readFileSync(process.argv[1],'utf8').split('\n');
 const i=L.findIndex(l=>l.startsWith('const EJEMPLOS=['));let j=i;while(!/^\];?\s*$/.test(L[j]))j++;
@@ -38,8 +51,33 @@ console.log(JSON.stringify(E));"""
     out = subprocess.run(['node', '-e', js, str(RAIZ / 'app/assets/index.html')], capture_output=True, text=True, check=True).stdout
     frases = []
     for canon, variantes in json.loads(out):
-        frases += [canon] + list(variantes)
+        clase = APP_A_TEMA.get(canon, 'APP')
+        for f in [canon] + list(variantes):
+            if clase == 'APP' and DEFINICION.match(f):
+                continue   # "qué es…" es pregunta de la Guía, no orden de la app
+            frases.append((f, clase))
     return frases
+
+
+def fuera_generadas():
+    """Preguntas de otros temas armadas con plantillas, para que Rumi aprenda a reconocerlas."""
+    cosas = ('una pizza|un pastel|tortillas|baleadas|un sombrero|una mesa de madera|un jardin|una piscina|un cohete|una cometa|'
+             'un video para tiktok|una pagina web|un poema|un cuento|una cancion|una tarjeta de cumpleanos|un vestido|jabon|velas|'
+             'cerveza artesanal|un huerto de tomates|pan dulce|una casa de adobe|un mueble|una fiesta|un negocio de ropa').split('|')
+    temas = ('la bolsa de valores|el futbol|la politica|la religion|el clima|la luna llena y el amor|las criptomonedas|la historia de roma|'
+             'la programacion|el iphone|los dinosaurios|el espacio|la musica|las peliculas|los videojuegos|la salud mental|el embarazo|'
+             'la diabetes|el cancer|las vacunas del covid|el dengue|la gripe|el ingles|las matematicas|la quimica|la fisica').split('|')
+    animales = 'cerdos|pollos|gallinas|patos|conejos|cabras|ovejas|caballos|burros|perros|gatos|peces|tilapia|abejas|codornices'.split('|')
+    Q = []
+    for c in cosas:
+        Q += [f'como hago {c}', f'cuanto cuesta {c}']
+    for t in temas:
+        Q += [f'que sabes de {t}', f'explicame {t}']
+    for a in animales:
+        Q += [f'como engordo {a}', f'que les doy de comer a los {a}', f'que enfermedades tienen los {a}']
+    Q += ['como ordeño mas rapido', 'cuanta leche da una vaca', 'como preño mis vacas', 'como cuido un becerro recien nacido',
+          'como hago queso fresco', 'cada cuanto ordeño', 'que toro uso para inseminar', 'como detecto el celo de una vaca']
+    return Q
 
 
 def preguntas():
@@ -53,7 +91,8 @@ def preguntas():
             if o.get('t'):
                 Q.append((o['q'], o['t']))
     Q += [(q, 'FUERA') for q in json.load(open(D / 'fuera.json', encoding='utf8'))]
-    Q += [(q, 'APP') for q in ejemplos_app()]
+    Q += ejemplos_app()
+    Q += [(q, 'FUERA') for q in fuera_generadas()]
     temas = {e['t'] for e in guia()}
     malos = {c for _, c in Q if c not in temas | {'FUERA', 'APP'}}
     assert not malos, malos

@@ -101,7 +101,9 @@ E.responder=async function(txt,r){
     const reglaTema=(/^<b>([^<]+)<\/b><br>/.exec((r&&r.html)||'')||[])[1];
     if(top){
       if(top.c==='FUERA'&&top.s>=U.fuera){out={html:FUERA_HTML,sug:sugs(),nou:true};}
-      else if(top.c==='APP'){out=null;}                       // orden de la app: que respondan las reglas
+      else if(top.c==='APP'){                                  // orden de la app: que respondan las reglas
+        if(f==='debil'&&temas.length&&temas[0].s>=U.duda)out=respDuda(temas.slice(0,3).map(x=>x.c));
+      }
       else if(f==='saber'||f==='definicion'){
         // Las reglas ya dieron un tema: solo se cambia si el modelo está seguro de otro tema.
         const suyo=res.find(x=>x.c===reglaTema);
