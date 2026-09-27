@@ -70,7 +70,7 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
 **Qué se verificó y está correcto**
 - Todas las cifras de la presentación aparecen en la tesis o se derivan de ella: indicadores, escenarios, rangos de sensibilidad, riesgos, flujos, estado de resultados, balance, personal y materia prima.
 - Las referencias a tablas y figuras apuntan a la numeración final de la tesis.
-- En las tablas de los anexos y del estado de resultados, cada subtotal cuadra fila por fila.
+- En las tablas de los anexos y del estado de resultados, los valores son idénticos a los de la tesis. Los subtotales pueden diferir en L 1 (y el acumulado en L 2) de la suma de las cifras mostradas, porque se calculan con valores exactos; igual ocurre en la tesis. Se indica al pie de cada tabla. (Corrige la versión anterior de este informe, que decía que cuadraban exactamente: el script de comprobación tenía un error y no comparaba esas filas.)
 
 **Qué se corrigió**
 | Diap. | Problema | Corrección |
@@ -100,13 +100,29 @@ Se revisaron las 41 diapositivas y las notas del orador contra la tesis final. S
 - **Diapositivas 36 a 42:** una diapositiva índice con el número de cada una, la bibliografía y los anexos A, B y C. No se presentan; quedan para consulta del jurado.
 - Las notas del orador de mercado (13), inversión (23) y préstamo (24) indican a qué anexo saltar (número + Enter en PowerPoint).
 
-## 7. Cómo abrir los archivos
+## 7. Auditoría final de la presentación
+
+- Se cruzó con un script cada número de las 42 diapositivas y de sus notas contra el texto de la tesis final. Los números que no aparecen literalmente se derivan de la tesis y se revisaron uno por uno: millones redondeados, porcentajes de la estructura de costos, deltas del tornado y subtotales combinados.
+- Se eliminó el único dato sin respaldo en la tesis: "UHT > 135 °C" (diap. 9).
+- Correcciones de claridad y congruencia:
+  - Pasteurización a 72–75 °C / 15 s, como en la tesis (diap. 9 y 15).
+  - Presentación de 1 L, con 500 ml en una segunda etapa (diap. 15).
+  - "Consumo por cliente" (diap. 13).
+  - Etiqueta de tanques igual en las diapositivas 16 y 23.
+  - En el estado de resultados (diap. 24), intereses e ICS van en filas separadas, como en el anexo C, y se aclara que los costos fijos incluyen personal, operación y administración.
+  - Margen unitario explicado como precio menos costo variable (diap. 25).
+  - Nombres de las medidas de dispersión y del VaR (diap. 30).
+  - "Ocho estudios de los objetivos específicos" en conclusiones, en lugar de "siete dimensiones" (diap. 32).
+  - En el resumen se aclara "60 clientes (año 1) a 690 (año 10)".
+- Validación del archivo: aprobada. Se revisaron visualmente todas las diapositivas modificadas.
+
+## 8. Cómo abrir los archivos
 
 - **Tesis:** al abrirla, Word pregunta si desea actualizar los campos. Respondan **Sí**: la tabla de contenido y los índices de tablas, figuras y anexos ahora son campos automáticos y se recalculan con la paginación real. Si no aparece la pregunta: Ctrl+A y luego F9.
 - **Bibliografía:** está dentro del control de Citavi. Si la regeneran desde Citavi, las 9 entradas nuevas se borrarán; conviene cargarlas en Citavi.
 - **Excel:** las hojas nuevas son "Análisis Complementario" (escenarios, tornado, punto de equilibrio, estados financieros, VaR, conciliación y costos), "Modelo Casos" (réplica con fórmulas, 26 casos) e "Iteraciones @RISK" (10,000 iteraciones con media, desviación y percentiles). Se verificaron recalculando las 10,731 fórmulas en LibreOffice: 0 diferencias frente al cálculo independiente.
 
-## 8. Fuentes nuevas verificadas
+## 9. Fuentes nuevas verificadas
 
 - INE (2025a). Estadísticas de género en Honduras, julio 2025: https://ine.gob.hn/wp-content/uploads/2025/12/Estadisticas-de-brechas-en-Honduras-julio-2025.pdf
 - INE (2025b). EPHPM 2025: https://ine.gob.hn/2025/12/12/encuesta-permanente-de-hogares-de-propositos-multiples-ephpm-2025/
