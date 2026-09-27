@@ -2,6 +2,9 @@
 .super Ljava/lang/Object;
 .source "MainActivity.java"
 
+# interfaces
+.implements Landroid/speech/tts/TextToSpeech$OnInitListener;
+
 
 # annotations
 .annotation system Ldalvik/annotation/EnclosingClass;
@@ -16,6 +19,12 @@
 
 # instance fields
 .field final synthetic this$0:Lhn/hato/ganadero/MainActivity;
+
+.field private voz:Landroid/speech/tts/TextToSpeech;
+
+.field private vozOk:Z
+
+.field private vozPend:Ljava/lang/String;
 
 
 # direct methods
@@ -489,5 +498,121 @@
     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
 
     :catch_0
+    return-void
+.end method
+
+
+# Lectura en voz alta (tutorial y Rumi) con el lector de texto del tel\u00e9fono
+.method public hablar(Ljava/lang/String;)V
+    .locals 4
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    :try_start_0
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->voz:Landroid/speech/tts/TextToSpeech;
+
+    if-nez v0, :cond_listo
+
+    iput-object p1, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozPend:Ljava/lang/String;
+
+    new-instance v0, Landroid/speech/tts/TextToSpeech;
+
+    iget-object v1, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-direct {v0, v1, p0}, Landroid/speech/tts/TextToSpeech;-><init>(Landroid/content/Context;Landroid/speech/tts/TextToSpeech$OnInitListener;)V
+
+    iput-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->voz:Landroid/speech/tts/TextToSpeech;
+
+    return-void
+
+    :cond_listo
+    iget-boolean v1, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozOk:Z
+
+    if-nez v1, :cond_hablar
+
+    iput-object p1, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozPend:Ljava/lang/String;
+
+    return-void
+
+    :cond_hablar
+    const/4 v1, 0x0
+
+    const/4 v2, 0x0
+
+    const-string v3, "rumi"
+
+    invoke-virtual {v0, p1, v1, v2, v3}, Landroid/speech/tts/TextToSpeech;->speak(Ljava/lang/CharSequence;ILandroid/os/Bundle;Ljava/lang/String;)I
+    :try_end_0
+    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
+
+    :catch_0
+    return-void
+.end method
+
+.method public callar()V
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    const/4 v0, 0x0
+
+    iput-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozPend:Ljava/lang/String;
+
+    :try_start_0
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->voz:Landroid/speech/tts/TextToSpeech;
+
+    if-eqz v0, :cond_fin
+
+    invoke-virtual {v0}, Landroid/speech/tts/TextToSpeech;->stop()I
+    :try_end_0
+    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
+
+    :catch_0
+    :cond_fin
+    return-void
+.end method
+
+.method public onInit(I)V
+    .locals 4
+
+    if-nez p1, :cond_fin
+
+    :try_start_0
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->voz:Landroid/speech/tts/TextToSpeech;
+
+    if-eqz v0, :cond_fin
+
+    new-instance v1, Ljava/util/Locale;
+
+    const-string v2, "es"
+
+    const-string v3, "MX"
+
+    invoke-direct {v1, v2, v3}, Ljava/util/Locale;-><init>(Ljava/lang/String;Ljava/lang/String;)V
+
+    invoke-virtual {v0, v1}, Landroid/speech/tts/TextToSpeech;->setLanguage(Ljava/util/Locale;)I
+
+    const v1, 0x3f733333    # 0.95f
+
+    invoke-virtual {v0, v1}, Landroid/speech/tts/TextToSpeech;->setSpeechRate(F)I
+
+    const/4 v1, 0x1
+
+    iput-boolean v1, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozOk:Z
+
+    iget-object v1, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozPend:Ljava/lang/String;
+
+    if-eqz v1, :cond_fin
+
+    const/4 v2, 0x0
+
+    iput-object v2, p0, Lhn/hato/ganadero/MainActivity$Puente;->vozPend:Ljava/lang/String;
+
+    invoke-virtual {p0, v1}, Lhn/hato/ganadero/MainActivity$Puente;->hablar(Ljava/lang/String;)V
+    :try_end_0
+    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
+
+    :catch_0
+    :cond_fin
     return-void
 .end method

@@ -37,6 +37,10 @@
 
 .field private permisoPend:Landroid/webkit/PermissionRequest;
 
+.field private geoCb:Landroid/webkit/GeolocationPermissions$Callback;
+
+.field private geoOrigen:Ljava/lang/String;
+
 .field private ultimoAtras:J
 
 .field private web:Landroid/webkit/WebView;
@@ -673,7 +677,9 @@
     invoke-virtual {v0, v2}, Landroid/webkit/WebSettings;->setSupportZoom(Z)V
 
     .line 55
-    invoke-virtual {v0, v1}, Landroid/webkit/WebSettings;->setMediaPlaybackRequiresUserGesture(Z)V
+    invoke-virtual {v0, v2}, Landroid/webkit/WebSettings;->setMediaPlaybackRequiresUserGesture(Z)V
+
+    invoke-virtual {v0, v1}, Landroid/webkit/WebSettings;->setGeolocationEnabled(Z)V
 
     .line 57
     invoke-virtual {p0}, Lhn/hato/ganadero/MainActivity;->getResources()Landroid/content/res/Resources;
@@ -862,6 +868,47 @@
 
     invoke-super {p0, p1, p2, p3}, Landroid/app/Activity;->onRequestPermissionsResult(I[Ljava/lang/String;[I)V
 
+    const/16 v0, 0xf
+
+    if-ne p1, v0, :cond_cam
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity;->geoCb:Landroid/webkit/GeolocationPermissions$Callback;
+
+    if-eqz v0, :cond_fin
+
+    iget-object v1, p0, Lhn/hato/ganadero/MainActivity;->geoOrigen:Ljava/lang/String;
+
+    const/4 v2, 0x0
+
+    iput-object v2, p0, Lhn/hato/ganadero/MainActivity;->geoCb:Landroid/webkit/GeolocationPermissions$Callback;
+
+    if-eqz p3, :cond_geo_no
+
+    array-length v2, p3
+
+    if-lez v2, :cond_geo_no
+
+    const/4 v2, 0x0
+
+    aget v2, p3, v2
+
+    if-nez v2, :cond_geo_no
+
+    const/4 v2, 0x1
+
+    goto :goto_geo
+
+    :cond_geo_no
+    const/4 v2, 0x0
+
+    :goto_geo
+    const/4 p1, 0x0
+
+    invoke-interface {v0, v1, v2, p1}, Landroid/webkit/GeolocationPermissions$Callback;->invoke(Ljava/lang/String;ZZ)V
+
+    goto :cond_fin
+
+    :cond_cam
     const/16 v0, 0xe
 
     if-ne p1, v0, :cond_fin
@@ -898,5 +945,59 @@
     invoke-virtual {v0}, Landroid/webkit/PermissionRequest;->deny()V
 
     :cond_fin
+    return-void
+.end method
+
+
+# Ubicación aproximada para el clima de la zona (navigator.geolocation en la página)
+.method public pedirUbicacion(Ljava/lang/String;Landroid/webkit/GeolocationPermissions$Callback;)V
+    .locals 4
+
+    const/4 v3, 0x0
+
+    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
+
+    const/16 v1, 0x17
+
+    if-lt v0, v1, :cond_dar
+
+    const-string v0, "android.permission.ACCESS_COARSE_LOCATION"
+
+    invoke-virtual {p0, v0}, Landroid/app/Activity;->checkSelfPermission(Ljava/lang/String;)I
+
+    move-result v1
+
+    if-eqz v1, :cond_dar
+
+    iget-object v1, p0, Lhn/hato/ganadero/MainActivity;->geoCb:Landroid/webkit/GeolocationPermissions$Callback;
+
+    if-eqz v1, :cond_pedir
+
+    iget-object v2, p0, Lhn/hato/ganadero/MainActivity;->geoOrigen:Ljava/lang/String;
+
+    invoke-interface {v1, v2, v3, v3}, Landroid/webkit/GeolocationPermissions$Callback;->invoke(Ljava/lang/String;ZZ)V
+
+    :cond_pedir
+    iput-object p1, p0, Lhn/hato/ganadero/MainActivity;->geoOrigen:Ljava/lang/String;
+
+    iput-object p2, p0, Lhn/hato/ganadero/MainActivity;->geoCb:Landroid/webkit/GeolocationPermissions$Callback;
+
+    const/4 v1, 0x1
+
+    new-array v1, v1, [Ljava/lang/String;
+
+    aput-object v0, v1, v3
+
+    const/16 v2, 0xf
+
+    invoke-virtual {p0, v1, v2}, Landroid/app/Activity;->requestPermissions([Ljava/lang/String;I)V
+
+    return-void
+
+    :cond_dar
+    const/4 v0, 0x1
+
+    invoke-interface {p2, p1, v0, v3}, Landroid/webkit/GeolocationPermissions$Callback;->invoke(Ljava/lang/String;ZZ)V
+
     return-void
 .end method

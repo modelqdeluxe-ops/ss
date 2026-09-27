@@ -169,3 +169,13 @@
 
     return-void
 .end method
+
+.method public onGeolocationPermissionsShowPrompt(Ljava/lang/String;Landroid/webkit/GeolocationPermissions$Callback;)V
+    .locals 1
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$2;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-virtual {v0, p1, p2}, Lhn/hato/ganadero/MainActivity;->pedirUbicacion(Ljava/lang/String;Landroid/webkit/GeolocationPermissions$Callback;)V
+
+    return-void
+.end method

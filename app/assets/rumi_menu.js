@@ -25,6 +25,9 @@ const IC2={
  vaca:'<path d="M5 8c0-2 1.5-3 3-3h8c1.5 0 3 1 3 3v6a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5z"/><path d="M5 8L2 6M19 8l3-2M9.5 12h.01M14.5 12h.01M10 16h4"/>'
 };
 const ic=(k,sw=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC2[k]||''}</svg>`;
+const I3D={hoy:'chart_increasing',lotes:'cow',anotar:'clipboard',alimento:'sheaf_of_rice',salud:'stethoscope',sintomas:'thermometer',calc:'abacus',dinero:'money_bag',guia:'books',app:'mobile_phone',ciencia:'microscope',
+  sanidad:'syringe',nutricion:'ear_of_corn',manejo:'ox',forrajes:'herb',instalaciones:'house',negocio:'money_bag',normas:'newspaper',conceptos:'light_bulb',fisiologia:'dna',carne:'test_tube',genetica:'dna',actualidad:'newspaper',buscar:'magnifying_glass_tilted_left'};
+const i3=k=>`<img class="i3" src="ic3d/${I3D[k]||k}.webp" alt="" draggable="false">`;
 const lista=p=>`<ul class="rl">${p.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
 
 /* ---------- guía: fichas con partes ---------- */
@@ -39,7 +42,7 @@ function fichaNivel(i){
     .concat((f.rel||[]).filter(r=>FIDX.has(r)).map(r=>({l:r,ic:'link',pre:'Relacionado',sub:()=>fichaNivel(FIDX.get(r))})));
   return {t:f.t,intro:`<b>${esc(f.t)}</b><p class="rres">${esc(f.r)}</p><span class="rs">${f.s.length} partes y ${nPuntos(f)} puntos. Elige una parte o toca Ver todo el tema.</span>`,ops};
 }
-const opFichas=a=>{const F=fichasDe(a),C=cortosDe(a);return {l:SUB[a],ic:'libro',n:F.length,sub:()=>({t:SUB[a],intro:`Estos son mis temas de <b>${SUB[a].toLowerCase()}</b>: ${F.length} temas completos${C.length?` y ${C.length} datos rápidos`:''}. Elige uno.`,
+const opFichas=a=>{const F=fichasDe(a),C=cortosDe(a);return {l:SUB[a],ic3:a,n:F.length,sub:()=>({t:SUB[a],intro:`Estos son mis temas de <b>${SUB[a].toLowerCase()}</b>: ${F.length} temas completos${C.length?` y ${C.length} datos rápidos`:''}. Elige uno.`,
   ops:F.map(o=>({l:o.f.t,n:nPuntos(o.f),sub:()=>fichaNivel(o.i)})).concat(C.length?[{l:'Datos rápidos',ic:'libro',n:C.length,sub:()=>({t:'Datos rápidos: '+SUB[a],intro:'Datos cortos para consultar rápido.',ops:C.map(o=>({l:o.g.t,guia:o.i}))})}]:[])})};};
 const opTema=t=>FIDX.has(t)?{l:t,ic:'libro',sub:()=>fichaNivel(FIDX.get(t))}:null;
 
@@ -165,9 +168,31 @@ const CALCS=()=>[
 ];
 
 /* ---------- áreas ---------- */
+
+/* ---------- clima de hoy y estrés por calor (ITH) ---------- */
+function ith(t,h){return (1.8*t+32)-(0.55-0.0055*h)*(1.8*t-26);}
+const ITH_NIV=[[74,'Normal','verde','Sin estrés por calor. Mantén agua limpia y sombra.'],
+ [78,'Alerta','tierra','Empiezan a jadear y comen menos. Revisa que el agua alcance y no los muevas en horas de sol.'],
+ [83,'Peligro','rojo','Comen menos y bajan la ganancia. Da la comida temprano y al atardecer, más agua y sombra, y no pesar ni vacunar a mediodía.'],
+ [999,'Emergencia','rojo','Riesgo de muerte por calor. Moja el piso o los animales, sombra total, agua de sobra y nada de manejo hasta que refresque.']];
+function climaMsg(){
+  const c=window.Clima&&Clima.actual();
+  if(!c||c.t==null){if(window.Clima)Clima.actualizar(true);
+    return {html:`Aún no tengo el clima de tu zona. Necesito internet y saber dónde estás: da permiso de ubicación al teléfono o escribe tu pueblo en <b>Más, Configuración, Ubicación</b>.<br><br>Mientras tanto, estamos en <b>${{seca:'época seca',canicula:'canícula',lluvias:'época de lluvias'}[window.Clima?Clima.epoca():'lluvias']}</b>.`,btns:[['Abrir Configuración',{t:'go',go:'#mas/config'}]]};}
+  const v=ith(c.t,c.h??70),n=ITH_NIV.find(z=>v<=z[0]);
+  const hace=Math.round((Date.now()-c.ts)/60000);
+  const mx=c.max&&c.max[0]!=null?c.max[0]:null,pl0=c.probLluvia&&c.probLluvia[0]!=null?c.probLluvia[0]:null;
+  const vmx=mx!=null?ith(mx,Math.max(40,(c.h??70)-15)):null,nmx=vmx!=null?ITH_NIV.find(z=>vmx<=z[0]):null;
+  return {html:`<b>${esc(Clima.texto())}</b>${c.lugar?` en ${esc(c.lugar)}`:''}<br>Humedad ${Math.round(c.h??0)} %${c.viento!=null?`, viento ${Math.round(c.viento)} km/h`:''}.
+   ${mx!=null?`<br>Máxima de hoy: <b>${Math.round(mx)} °C</b>${pl0!=null?`, probabilidad de lluvia ${pl0} %`:''}.`:''}
+   <p class="rh">Calor en el ganado ahora</p>Índice de temperatura y humedad (ITH): <b>${nf(v,0)}</b>, <span class="pill p-${n[2]}">${n[1]}</span><br>${n[3]}
+   ${nmx&&nmx!==n?`<p class="rh">En la hora más caliente</p>Puede llegar a <b>${nf(vmx,0)}</b> (${nmx[1]}). ${nmx[3]}`:''}
+   <br><small>El Brahman y sus cruces aguantan más calor que las razas europeas, pero igual bajan su ganancia.</small><br><small>Dato de ${hace<2?'hace un momento':'hace '+pl(hace,'minuto','minutos')}. Clima: Open-Meteo.</small>`,btns:[['Actualizar el clima',{t:'clima'}]]};
+}
 const AREAS=[
  {id:'hoy',ic:'hoy',t:'Mi engorde',s:'Pendientes y números de hoy',intro:'Aquí te digo cómo va tu engorde con tus propios datos. ¿Qué quieres saber?',ops:()=>[
    q('¿Qué hago hoy?','que hago hoy'),
+   {l:'Clima de hoy y calor en el ganado',ic3:'sun',fn:climaMsg},
    {l:'Mi agenda (tareas de hoy y próximas)',fn:()=>{const H=C_().H,T=Agenda.tareas();const h=T.filter(t=>t.f<=H),p=T.filter(t=>t.f>H&&t.f<=addDias(H,7));
      return {html:(h.length?'<b>Hoy</b>'+lista(h.map(t=>t.t+': '+t.s)):'<b>Hoy no tienes tareas pendientes.</b>')+(p.length?'<p class="rh">Próximos 7 días</p>'+lista(p.map(t=>`${ffc(t.f)} · ${t.t}`)):''),btns:[['Abrir la agenda',{t:'go',go:'#agenda'}]]};}},
    q('¿Qué lote está listo para vender?','que lote esta listo'),
@@ -194,6 +219,7 @@ const AREAS=[
    opFichas('nutricion'),opFichas('forrajes')]},
  {id:'salud',ic:'salud',t:'Salud',s:'Sanidad, dosis y prevención',intro:'Vamos con la salud del ganado. Para medicinas y casos graves, confirma siempre con tu veterinario.',ops:()=>[
    {l:'¿Qué tiene mi animal? (síntomas)',ic:'sintomas',goArea:'sintomas'},
+   {l:'Clima de hoy y riesgo de calor',ic3:'thermometer',fn:climaMsg},
    q('Plan sanitario de ingreso','plan sanitario de ingreso'),
    {l:'Calendario de sanidad de un lote',sub:opLotes('Calendario de sanidad',x=>({fn:()=>calendario(x)}))},
    {l:'Dosis de un medicamento',sub:()=>({t:'Dosis de un medicamento',intro:'¿Qué producto vas a aplicar? Si no está, usa Dosis por peso con los datos de tu etiqueta.',ops:DOSIS.map(d=>({l:d.n,calc:{campos:[cPeso()],frase:v=>`dosis de ${d.re.source.split('|')[0].replace(/\\b/g,'')} para ${v.p} ${uPal()}`,intro:`¿Cuánto pesa el animal? Te calculo la dosis de <b>${esc(d.n)}</b>.`}})).concat([CALCS().find(c=>c.l==='Dosis por peso (según la etiqueta)')])})},
@@ -224,8 +250,9 @@ const areaDe=id=>AREAS.find(a=>a.id===id);
 /* ---------- estado del menú ---------- */
 const M={pila:[]};   // [] = menú principal; cada nivel: {t,ops,area}
 const nivel=()=>M.pila[M.pila.length-1]||null;
-function abrirArea(a){M.calc=null;M.pila=[{t:a.t,area:a.id,ops:a.ops().filter(Boolean)}];botSay({html:a.intro});pintarPanel();}
+function abrirArea(a){M.calc=null;M.min=false;M.q='';M.pila=[{t:a.t,area:a.id,ops:a.ops().filter(Boolean)}];botSay({html:a.intro});pintarPanel();}
 function entrar(sub,label){
+  M.min=false;M.q='';
   const n=sub();if(n.sub){entrar(n.sub,label);return;}
   if(n.fn){responderCon(label,n.fn);return;}
   M.pila.push({t:n.t,area:(nivel()||{}).area,ops:(n.ops||[]).filter(Boolean)});
@@ -238,7 +265,7 @@ function atras(){if(M.calc)M.calc=null;else if(M.pila.length>1)M.pila.pop();else
 function pensando(){const m=$('#rumiMsgs');if(m)m.insertAdjacentHTML('beforeend','<div class="rrow">'+rumiSVG('av think')+'<div class="rmsg b typing" aria-label="Rumi está pensando"><i></i><i></i><i></i></div></div>');const b=$('#rumiBody');if(b)b.scrollTop=b.scrollHeight;}
 function responderCon(label,fn){
   RUMI.log.push({u:label});pintarLog();pensando();
-  setTimeout(()=>{let r;try{r=fn();}catch(e){console.error(e);r=null;}if(!r||!r.html)r={html:'No pude calcular eso con tus datos. Revisa que tengas lotes y registros.'};delete r.sug;botSay(r);pintarPanel();},300);
+  setTimeout(()=>{let r;try{r=fn();}catch(e){console.error(e);r=null;}if(!r||!r.html)r={html:'No pude calcular eso con tus datos. Revisa que tengas lotes y registros.'};delete r.sug;botSay(r);M.min=esLargo();pintarPanel();},300);
 }
 const porFrase=(label,frase)=>responderCon(label,()=>{RUMI.last=nrm(frase);return responder(frase);});
 
@@ -261,22 +288,54 @@ const uDe=k=>k.peso?UW():typeof k.u==='function'?k.u():(k.u||'');
 function pintarPanel(){
   const p=$('#rumiPanel');if(!p)return;
   const n=nivel();
+  const buscar=`<div class="rm-buscar">${i3('buscar')}<input id="rmQ" type="search" placeholder="Buscar tema, cálculo, síntoma o lote…" autocomplete="off" enterkeyhint="search" value="${esc(M.q||'')}"></div><div id="rmRes" class="rm-ops"></div>`;
   if(!n){
-    p.innerHTML=`<div class="rm-bar"><b>¿En qué te ayudo?</b><span>Elige un área</span></div>
-     <div class="rm-areas">${AREAS.map(a=>`<button type="button" class="rm-area" data-act="rmArea" data-id="${a.id}" data-c="${a.id}"><i>${ic(a.ic,2)}</i><b>${a.t}</b><span>${a.s}</span></button>`).join('')}</div>`;
+    p.innerHTML=`<div class="rm-bar"><b>¿En qué te ayudo?</b>${togBtn()}</div>${buscar}
+     <div class="rm-areas">${AREAS.map(a=>`<button type="button" class="rm-area" data-act="rmArea" data-id="${a.id}" data-c="${a.id}"><i class="a3">${i3(a.id)}</i><b>${a.t}</b><span>${a.s}</span></button>`).join('')}</div>`;
   }else if(M.calc){
     const c=M.calc.calc;
-    p.innerHTML=`<div class="rm-bar">${barBtns()}<b>${esc(M.calc.l)}</b></div>
+    p.innerHTML=`<div class="rm-bar">${barBtns()}<b>${esc(M.calc.l)}</b>${togBtn()}</div>
      <form id="rmCalc" class="rm-calc" autocomplete="off">${c.campos.map(k=>`<div class="q"><label for="rmc_${k.k}">${esc(k.l)}</label><div class="unit"><input class="in" id="rmc_${k.k}" name="${k.k}" inputmode="decimal" enterkeyhint="next" value="${k.def!=null?esc(String(k.def)):''}"><em>${esc(uDe(k))}</em></div></div>`).join('')}
      <button class="btn pri full">Calcular</button></form>`;
   }else{
-    p.innerHTML=`<div class="rm-bar">${barBtns()}<b>${esc(n.t)}</b></div>
-     <div class="rm-ops">${n.ops.map((o,i)=>`<button type="button" class="rm-op${o.guia!=null?' g':''}${o.form?' f':''}" data-act="rmOp" data-i="${i}">${o.ic?`<i>${ic(o.ic,2)}</i>`:''}<span>${o.pre?`<small class="pre">${esc(o.pre)}</small>`:''}${esc(o.l)}${o.small?`<small>${esc(o.small)}</small>`:''}</span>${o.n?`<em class="rm-n">${o.n}</em>`:''}${ic('chev',2.2)}</button>`).join('')}</div>`;
+    p.innerHTML=`<div class="rm-bar">${barBtns()}<b>${esc(n.t)}</b>${togBtn()}</div>${n.ops.length>8?buscar:''}
+     <div class="rm-ops rm-lista">${n.ops.map((o,i)=>opHtml(o,'rmOp',i)).join('')}</div>`;
   }
   p.dataset.area=(M.pila[0]||{}).area||'';
+  p.classList.toggle('min',!!M.min);
   p.scrollTop=0;
+  if(M.q)filtrar(M.q);
   bajar();
 }
+const opHtml=(o,act,i)=>`<button type="button" class="rm-op${o.guia!=null?' g':''}${o.form?' f':''}" data-act="${act}" data-i="${i}">${o.ic3?`<i class="o3">${i3(o.ic3)}</i>`:o.ic?`<i>${ic(o.ic,2)}</i>`:''}<span>${o.pre?`<small class="pre">${esc(o.pre)}</small>`:''}${esc(o.l)}${o.small?`<small>${esc(o.small)}</small>`:''}</span>${o.n?`<em class="rm-n">${o.n}</em>`:''}${ic('chev',2.2)}</button>`;
+const togBtn=()=>`<button type="button" class="rm-tog" data-act="rmTog" aria-label="${M.min?'Ver opciones':'Ocultar opciones'}">${M.min?'<span>Ver opciones</span>':''}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${M.min?'M6 15l6-6 6 6':'M6 9l6 6 6-6'}"/></svg></button>`;
+const esLargo=()=>{const m=$('#rumiMsgs'),b=$('#rumiBody');if(!m||!b)return false;const r=m.querySelectorAll('.rrow');const l=r[r.length-1];return !!l&&l.offsetHeight>innerHeight*0.38;};
+/* ---------- buscador ---------- */
+const nq=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ ]+/g,' ').replace(/\s+/g,' ').trim();
+let IDX=null;
+function indice(){
+  if(IDX)return IDX;const L=[];
+  for(const a of AREAS){if(a.id==='guia'||a.id==='lotes')continue;let ops=[];try{ops=a.ops();}catch(e){}
+    for(const o of ops.filter(Boolean))if(!o.n||!o.sub)L.push({o,t:o.l,x:'',area:a.t,peso:3});}
+  for(const c of CALCS())if(!L.some(e=>e.o.l===c.l))L.push({o:c,t:c.l,x:'calculadora calcular',area:'Calculadoras',peso:3});
+  for(const sn of SINT)L.push({o:opSintoma(sn),t:sn[0],x:sn[1].join(' ')+' '+sn[2].join(' '),area:'¿Qué tiene mi animal?',peso:3});
+  FICHAS.forEach((f,i)=>L.push({o:{l:f.t,ic3:f.a,sub:()=>fichaNivel(i)},t:f.t,x:f.r+' '+f.s.map(z=>z.h+' '+z.p.join(' ')).join(' '),area:SUB[f.a]||'Guía',peso:2}));
+  GUIA.forEach((g,i)=>L.push({o:{l:g.t,guia:i},t:g.t,x:g.x,area:'Dato rápido · '+(SUB[g.a]||''),peso:1}));
+  for(const e of L){e.nt=nq(e.t);e.nx=nq(e.x);}
+  return IDX=L;
+}
+function filtrar(qq){
+  const box=$('#rmRes'),p=$('#rumiPanel');if(!box||!p)return;
+  const q=nq(qq);M.q=qq;p.classList.toggle('buscando',q.length>=2);
+  if(q.length<2){box.innerHTML='';return;}
+  const pal=q.split(' ').filter(w=>w.length>1);
+  const lotes=C_().act.filter(x=>nq(x.l.nombre).includes(q)).map(x=>({o:{l:x.l.nombre,small:'Mis lotes',ic3:'lotes',sub:()=>loteNivel(x)},sc:100}));
+  const R=indice().map(e=>{let sc=0;for(const w of pal){if(e.nt.includes(w))sc+=10*e.peso;else if(e.nx.includes(w))sc+=2*e.peso;else return null;}if(e.nt.startsWith(pal[0]))sc+=15;return {o:{...e.o,small:e.o.small||e.area},sc};}).filter(Boolean).sort((a,b)=>b.sc-a.sc);
+  M.res=lotes.concat(R).slice(0,40).map(r=>r.o);
+  box.innerHTML=M.res.length?`<p class="rm-rc">${M.res.length>=40?'Los 40 mejores resultados':pl(M.res.length,'resultado','resultados')}</p>`+M.res.map((o,i)=>opHtml(o,'rmRes',i)).join(''):'<p class="rm-rc">No encontré nada con esas palabras. Prueba con otra, por ejemplo: acidosis, dosis, margen, pesaje.</p>';
+}
+document.addEventListener('input',e=>{if(e.target.id==='rmQ')filtrar(e.target.value);});
+document.addEventListener('keydown',e=>{if(e.target.id==='rmQ'&&e.key==='Enter'){e.preventDefault();e.target.blur();}});
 /* siempre mostrar el mensaje más reciente de Rumi: si es corto, al fondo; si es largo, desde su inicio */
 function bajar(){
   const go=()=>{const b=$('#rumiBody'),m=$('#rumiMsgs');if(!b||!m)return;const rows=m.querySelectorAll('.rrow');const last=rows[rows.length-1];
@@ -328,8 +387,10 @@ Object.assign(ACTS,{
   rumiVoz:()=>{},
   rmArea:el=>abrirArea(areaDe(el.dataset.id)),
   rmOp:el=>{const n=nivel();if(n)elegir(n.ops[+el.dataset.i]);},
-  rmMenu:()=>menu(),
+  rmMenu:()=>{M.q='';menu();},
+  rmTog:()=>{M.min=!M.min;pintarPanel();},
+  rmRes:el=>{const o=(M.res||[])[+el.dataset.i];M.q='';M.min=false;if(o)elegir(o);},
   rmAtras:()=>atras()
 });
-window.RumiMenu={AREAS,CALCS,SINT,FICHAS,elegir,menu,abrirArea,M};
+window.RumiMenu={AREAS,CALCS,SINT,FICHAS,elegir,menu,abrirArea,M,clima:()=>responderCon('¿Cómo está el clima?',climaMsg)};
 })();

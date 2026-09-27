@@ -326,16 +326,27 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .rbtn{width:50px;height:50px;flex:none;border-radius:25px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center}
 .rbtn.pri{background:var(--pri);border-color:var(--pri);color:var(--pritx)}
 .rbtn svg{width:22px;height:22px}
-/* Rumi: botón redondo sin caja */
-#rumiFab{width:66px;height:66px;padding:0!important;border-radius:50%;border:3px solid var(--card);background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 55%,var(--arete-e) 100%);box-shadow:0 10px 24px -8px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.06);justify-content:center;gap:0}
-#rumiFab span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-#rumiFab .rm{width:60px!important;height:60px!important;margin:4px 0 0 0!important}
-.rm .earL{transform-box:fill-box;transform-origin:right top}.rm .earR{transform-box:fill-box;transform-origin:left top}
-.rumi-av{border-radius:50%!important;background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 60%,var(--arete-e) 100%)!important}
-.rumi-av .rm{width:88%;height:88%;margin-top:8%}
-.rumi-hd{display:flex;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#FFF4CF 0,var(--arete) 60%,var(--arete-e) 100%);align-items:center;justify-content:center;overflow:hidden}
-.rumi-hd .rm{width:42px!important;height:42px!important;margin-top:5px}
-.rm.av{width:34px;height:34px;border-radius:50%;background:var(--card2);padding:2px}
+/* Rumi 3D (Fluent Emoji, MIT) */
+.rm{display:inline-flex;align-items:center;justify-content:center;flex:none;position:relative}
+.rm img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 3px 5px rgba(0,0,0,.18))}
+.rm.bob img{animation:rmBob 3.2s ease-in-out infinite}
+.rm.talk img{animation:rmTalk .5s ease-in-out 2}
+.rm.think img{animation:rmThink 1.2s ease-in-out infinite}
+@keyframes rmBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes rmTalk{0%,100%{transform:rotate(0) scale(1)}30%{transform:rotate(-6deg) scale(1.05)}70%{transform:rotate(5deg) scale(1.03)}}
+@keyframes rmThink{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+#rumiFab{width:70px;height:70px;padding:0!important;border-radius:50%;border:0;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.95),rgba(255,255,255,.75) 60%,rgba(255,255,255,0) 72%);box-shadow:none;justify-content:center;gap:0;overflow:visible!important}
+#rumiFab span:not(.rm){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#rumiFab .rm{width:64px!important;height:64px!important;margin:0!important}
+#rumiFab .rm img{filter:drop-shadow(0 8px 10px rgba(0,0,0,.35))}
+#rumiFab::after{content:'Rumi';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--head);color:var(--htx);font-size:11px;font-weight:700;padding:1px 8px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.rumi-av{background:none!important;border-radius:0!important}
+.rumi-av .rm{width:100%;height:100%}
+.rumi-hd{display:flex;width:44px;height:44px;align-items:center;justify-content:center}
+.rumi-hd .rm{width:44px!important;height:44px!important}
+.rm.av{width:34px;height:34px;padding:0;background:none}
+.rm.mini{width:28px;height:28px}
+.rumi-big .rm{width:72px;height:72px}.rumi-mini .rm{width:36px;height:36px}
 .gque{margin:4px 0 8px;font-size:13.5px;line-height:1.45;color:var(--ink2)}.gque b{color:var(--ink)}
 .glee{margin-top:10px;background:var(--bg);border-radius:14px;padding:10px 12px}
 .glee>b{font-size:13.5px}
@@ -359,6 +370,22 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .bod-bar{height:8px;border-radius:4px;background:var(--card2);overflow:hidden}.bod-bar i{display:block;height:100%;border-radius:4px}
 body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
 /* Rumi por menús */
+.rm-tog{margin-left:auto;display:flex;align-items:center;gap:6px;min-height:40px;min-width:40px;padding:0 10px;border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:13.5px;flex:none;justify-content:center}
+.rm-tog svg{width:18px;height:18px}
+.rumi-panel.min{max-height:none;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.rumi-panel.min>*:not(.rm-bar){display:none!important}
+.rumi-panel.min .rm-bar{position:static}
+.rm-buscar{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:0 12px;min-height:46px}
+.rm-buscar .i3{width:22px;height:22px}
+.rm-buscar input{flex:1;min-width:0;border:0;background:transparent;font-size:15.5px;color:var(--ink);outline:none;min-height:44px}
+.rumi-panel.buscando .rm-areas,.rumi-panel.buscando .rm-lista{display:none}
+.rm-rc{margin:2px 2px 0;font-size:13px;color:var(--ink2)}
+.rm-area i.a3{background:none!important;width:44px;height:44px}
+.rm-area i.a3 .i3{width:40px;height:40px}
+.rm-op i.o3{background:none!important;width:34px;height:34px}
+.rm-op i.o3 .i3{width:30px;height:30px}
+.i3{display:block;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+
 .tbw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tbw .tb td,.tbw .tb th{white-space:nowrap}
 .rrow{min-width:0}.rmsg{min-width:0;overflow-wrap:anywhere}
@@ -412,15 +439,29 @@ body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
 #spot{position:fixed;inset:0;z-index:200}
 #spot .hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,18,26,.68);outline:3px solid var(--arete);outline-offset:0;transition:all .25s}
 #spot .tip{position:fixed;background:var(--card);color:var(--ink);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-#spot .tip b{font-family:'Bricolage Grotesque',sans-serif;font-size:19px}
+#spot .tip .tip-t{font-family:'Bricolage Grotesque',sans-serif;font-size:19px}
 #spot .tip p{margin:0 0 6px;font-size:15px;line-height:1.5}
-#spot .tip .btn{min-height:44px;font-size:15px}
+#spot .tip .btn{min-height:48px;font-size:16px}
+#spot.centro .hole{box-shadow:0 0 0 9999px rgba(10,18,26,.74);outline:0}
+#spot .tip{padding-top:18px}
+#spot .tip .tip-rumi{position:absolute;top:-34px;right:14px;width:64px;height:64px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));animation:rmBob 3s ease-in-out infinite}
+#spot .tip .sm{font-size:13px;color:var(--ink2)}
+#spot .tip .tip-t{font-size:21px;padding-right:62px}
+#spot .tip p b{font-weight:800}
+#spot .tip p{font-size:17px;line-height:1.55}
+#spot .tip .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#spot .tip-pts{display:flex;gap:5px}
+#spot .tip-pts i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+#spot .tip-pts i.on{background:var(--arete)}
+#spot .tip-voz[aria-pressed="true"]{background:var(--arete);color:#1b1b1b}
+.rmsg.b{position:relative}
+.rmsg.b .rm-oir{float:right;margin:-4px -6px 4px 8px;width:34px;height:34px;border-radius:50%;border:0;background:var(--card2);color:var(--ink2);display:grid;place-items:center;padding:0;cursor:pointer}
+.rmsg.b .rm-oir svg{width:18px;height:18px}
+.rmsg.b .rm-oir[aria-pressed="true"]{background:var(--arete);color:#1b1b1b;animation:rmTalk .6s ease-in-out infinite alternate}
 
 /* ---------- mascota Rumi ---------- */
 .rm{display:block;overflow:visible}
-.rm .eyes{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
 .rm .earL{transform-box:fill-box;transform-origin:right center}.rm .earR{transform-box:fill-box;transform-origin:left center}
-.rm.bob .rm-b{animation:bob 3.2s ease-in-out infinite}
 .rm.talk .earL{animation:earL .45s ease-in-out 2}.rm.talk .earR{animation:earR .45s ease-in-out 2}
 .rm.think .eyes{animation:look 1.2s ease-in-out infinite}
 @keyframes blink{0%,93%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
@@ -689,18 +730,79 @@ body:has(#pasoSnack.on) #rumiFab{opacity:0;pointer-events:none;transform:transla
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;font-size:14.5px;z-index:100;max-width:calc(100% - 40px);transition:opacity .2s,transform .2s;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.rp{display:none}}
-/* fondos con fotos reales (CC0 y dominio público, ver Acerca de) */
+/* ===== ambiente: fondo de la app, hora del día, clima y fotos ===== */
 .vineta{display:none!important}
-body[data-pg='hoy'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/pastoreo.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/pastoreo.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
-body[data-pg='lotes'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/llano.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/llano.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
-body[data-pg='registrar'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/descanso.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/descanso.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
-body[data-pg='graficos'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/montana.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/montana.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
-body[data-pg='mas'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/rio.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/rio.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
-body[data-pg='lote'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/pastoreo.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/pastoreo.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
-body[data-pg='animal'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/descanso.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/descanso.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
-body[data-pg='formular'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/llano.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/llano.webp');background-size:cover,cover;background-position:center,center 62%;background-repeat:no-repeat}
-body[data-pg='bodega'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/descanso.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/descanso.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
-body[data-pg='agenda'] .hd{background-image:linear-gradient(180deg,rgba(14,24,34,.9) 0%,rgba(14,24,34,.78) 50%,rgba(14,24,34,.5) 100%),url('fondos/montana.webp');background-image:linear-gradient(180deg,color-mix(in srgb,var(--head) 93%,transparent) 0%,color-mix(in srgb,var(--head) 80%,transparent) 48%,color-mix(in srgb,var(--head) 45%,transparent) 100%),url('fondos/montana.webp');background-size:cover,cover;background-position:center,center 55%;background-repeat:no-repeat}
+:root{--amb1:rgba(240,191,51,.16);--amb2:rgba(74,102,82,.12);--t1:.93;--t2:.80;--t3:.42;--tintc:rgba(0,0,0,0);--topo:url('fondos/topo-claro.svg')}
+:root[data-modo="dark"]{--topo:url('fondos/topo-oscuro.svg')}
+:root[data-momento="madrugada"]{--amb1:rgba(90,110,180,.14);--amb2:rgba(60,70,120,.12);--tintc:rgba(20,30,70,.35)}
+:root[data-momento="amanecer"]{--amb1:rgba(255,170,120,.22);--amb2:rgba(255,210,150,.14);--tintc:rgba(255,150,100,.22)}
+:root[data-momento="manana"]{--amb1:rgba(255,215,120,.20);--amb2:rgba(140,190,140,.12);--tintc:rgba(255,220,150,.10)}
+:root[data-momento="mediodia"]{--amb1:rgba(255,235,160,.22);--amb2:rgba(120,190,220,.12);--tintc:rgba(255,255,255,.04);--t3:.36}
+:root[data-momento="tarde"]{--amb1:rgba(255,190,90,.22);--amb2:rgba(150,180,110,.12);--tintc:rgba(255,190,90,.14)}
+:root[data-momento="atardecer"]{--amb1:rgba(255,130,90,.24);--amb2:rgba(170,90,150,.14);--tintc:rgba(240,110,80,.26)}
+:root[data-momento="noche"]{--amb1:rgba(80,100,170,.16);--amb2:rgba(40,60,110,.14);--tintc:rgba(10,20,50,.42);--t3:.62}
+:root[data-epoca="lluvias"]{--amb2:rgba(80,150,100,.16)}
+:root[data-epoca="seca"]{--amb2:rgba(210,160,90,.16)}
+:root[data-clima="lluvia"],:root[data-clima="tormenta"]{--tintc:rgba(60,80,110,.38);--amb1:rgba(120,150,190,.18)}
+:root[data-clima="nublado"]{--tintc:rgba(110,120,135,.22)}
+body{background:var(--bg)}
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 60% at 100% 0%,var(--amb1) 0,transparent 55%),radial-gradient(90% 55% at 0% 100%,var(--amb2) 0,transparent 60%),var(--topo) center/cover no-repeat,var(--bg);transition:background 2s}
+#app{background:transparent}
+.hd{position:relative;isolation:isolate;overflow:hidden;background:var(--head)}
+.hd>*:not(.hd-fx){position:relative;z-index:1}
+.hd-fx{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hd-fx .ft{position:absolute;inset:-4%;background-size:cover;background-position:center 60%;opacity:0;transition:opacity 1.8s ease}
+.hd-fx .ft.on{opacity:1}
+.hd-fx .ft.kb{animation:kenb 10s ease-out forwards}
+@keyframes kenb{from{transform:scale(1.02)}to{transform:scale(1.1) translateX(-1.5%)}}
+.hd-fx .tinte{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--head) calc(var(--t1)*100%),transparent) 0%,color-mix(in srgb,var(--head) calc(var(--t2)*100%),transparent) 50%,color-mix(in srgb,var(--head) calc(var(--t3)*100%),transparent) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
+.hd-fx .fx-cielo,.hd-fx .fx-lluvia,.hd-fx .fx-nubes{position:absolute;inset:0;opacity:0;transition:opacity 1.5s}
+:root[data-momento="manana"]:not([data-clima="lluvia"]):not([data-clima="tormenta"]):not([data-clima="nublado"]) .fx-cielo,:root[data-momento="mediodia"]:not([data-clima="lluvia"]):not([data-clima="tormenta"]):not([data-clima="nublado"]) .fx-cielo,:root[data-momento="tarde"]:not([data-clima="lluvia"]):not([data-clima="tormenta"]):not([data-clima="nublado"]) .fx-cielo{opacity:1;background:radial-gradient(circle at 88% 8%,rgba(255,230,150,.55) 0,rgba(255,210,120,.18) 18%,transparent 40%);animation:solp 6s ease-in-out infinite}
+:root[data-momento="amanecer"] .fx-cielo,:root[data-momento="atardecer"] .fx-cielo{opacity:1;background:radial-gradient(circle at 85% 95%,rgba(255,160,90,.55) 0,rgba(255,120,90,.2) 25%,transparent 55%)}
+:root[data-momento="noche"] .fx-cielo,:root[data-momento="madrugada"] .fx-cielo{opacity:1;background-image:radial-gradient(1.4px 1.4px at 12% 18%,#fff 60%,transparent),radial-gradient(1px 1px at 28% 8%,#fff 60%,transparent),radial-gradient(1.6px 1.6px at 44% 22%,#fff 60%,transparent),radial-gradient(1px 1px at 63% 12%,#fff 60%,transparent),radial-gradient(1.3px 1.3px at 78% 26%,#fff 60%,transparent),radial-gradient(1px 1px at 90% 10%,#fff 60%,transparent),radial-gradient(1.2px 1.2px at 55% 34%,#fff 60%,transparent),radial-gradient(1px 1px at 20% 40%,#fff 60%,transparent);animation:estr 4s ease-in-out infinite alternate}
+@keyframes solp{50%{opacity:.75}}
+@keyframes estr{from{opacity:.5}to{opacity:1}}
+:root[data-clima="lluvia"] .fx-lluvia,:root[data-clima="tormenta"] .fx-lluvia{opacity:.55;background-image:repeating-linear-gradient(105deg,transparent 0 14px,rgba(210,225,255,.55) 14px 15px,transparent 15px 30px),repeating-linear-gradient(100deg,transparent 0 23px,rgba(210,225,255,.35) 23px 24px,transparent 24px 46px);background-size:220px 300px,300px 420px;animation:lluv .7s linear infinite}
+@keyframes lluv{to{background-position:-60px 300px,-80px 420px}}
+:root[data-clima="tormenta"] .hd-fx .tinte{animation:rayo 7s infinite}
+@keyframes rayo{0%,93%,97%,100%{filter:none}94%,96%{filter:brightness(1.9)}}
+:root[data-clima="nublado"] .fx-nubes,:root[data-clima="parcial"] .fx-nubes,:root[data-clima="lluvia"] .fx-nubes,:root[data-clima="tormenta"] .fx-nubes{opacity:.9;background:radial-gradient(60px 26px at 20% 20%,rgba(255,255,255,.35),transparent 70%),radial-gradient(90px 34px at 30% 16%,rgba(255,255,255,.28),transparent 70%),radial-gradient(80px 30px at 70% 12%,rgba(255,255,255,.3),transparent 70%),radial-gradient(110px 40px at 82% 18%,rgba(255,255,255,.22),transparent 70%);background-size:200% 100%;animation:nube 40s linear infinite}
+@keyframes nube{from{background-position:0 0}to{background-position:-100% 0}}
+.hd .meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.hd .clima{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--htx)}
+.hd .clima img{width:26px;height:26px}
+.hd .clima b{font-weight:700}.hd .clima i{font-style:normal;color:var(--htx2)}
+/* bienvenida */
+#splash{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#0E1822;overflow:hidden;transition:opacity .6s ease}
+#splash.fin{opacity:0;pointer-events:none}
+#splash .sp-foto{position:absolute;inset:-6%;background-size:cover;background-position:center;animation:spkb 4s ease-out forwards;filter:saturate(1.05)}
+@keyframes spkb{from{transform:scale(1.18)}to{transform:scale(1.02)}}
+#splash .sp-tinte{position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,24,34,.55) 0%,rgba(14,24,34,.35) 40%,rgba(14,24,34,.88) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
+.sp-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 28px;text-align:center;color:#fff}
+.sp-logo{width:min(42vw,180px);animation:splogo 1.1s cubic-bezier(.2,1.3,.35,1) both}
+.sp-logo svg{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,.45))}
+.sp-logo svg *{fill:#fff}
+.sp-logo svg .rsym *,.sp-logo svg [fill="#F0BF33"]{fill:#F0BF33}
+@keyframes splogo{0%{opacity:0;transform:translateY(24px) scale(.8) rotate(-4deg)}60%{opacity:1}100%{opacity:1;transform:none}}
+.sp-hola{margin:6px 0 0;font-family:'Bricolage Grotesque',sans-serif;font-size:24px;line-height:1.2;animation:spin .7s .55s ease-out both}
+.sp-lema{margin:0;font-size:15px;color:rgba(255,255,255,.82);animation:spin .7s .8s ease-out both}
+.sp-clima{display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.14);backdrop-filter:blur(6px);font-size:14.5px;animation:spin .7s 1.05s ease-out both}
+.sp-clima img{width:30px;height:30px}
+@keyframes spin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.sp-barra{position:absolute;left:50%;bottom:calc(46px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+.sp-barra i{display:block;height:100%;width:100%;background:#F0BF33;transform-origin:left;animation:spbar 2.6s linear both}
+@keyframes spbar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+#hola-rumi{position:fixed;inset:0;z-index:99990;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,18,26,.55);backdrop-filter:blur(3px);opacity:0;transition:opacity .35s}
+#hola-rumi.on{opacity:1}
+.hr-c{width:min(100%,520px);background:var(--card);border-radius:28px 28px 0 0;padding:26px 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;align-items:center;transform:translateY(40px);transition:transform .45s cubic-bezier(.2,1.2,.3,1)}
+#hola-rumi.on .hr-c{transform:none}
+.hr-rumi{position:relative;width:120px;height:120px;margin-top:-86px;animation:rmBob 2.6s ease-in-out infinite}
+.hr-rumi img:first-child{width:120px;height:120px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}
+.hr-mano{position:absolute;right:-26px;top:20px;width:52px;height:52px;transform-origin:70% 80%;animation:saludo 1s ease-in-out infinite}
+@keyframes saludo{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(22deg)}}
+.hr-globo{background:var(--bg);border-radius:20px;padding:14px 16px;text-align:center}
+.hr-globo>b{font-family:'Bricolage Grotesque',sans-serif;font-size:22px}
+.hr-globo p{margin:6px 0 0;font-size:16px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -1079,8 +1181,8 @@ function stackBars(rows,parts){
 
 /* ============ marca ============ */
 const LOGO_HD=`<svg viewBox="-0.0 -84.2 444.7 85.5" aria-hidden="true"><path d="M2.3 -61.4C2.9 -74.1 13.4 -84.1 26.2 -84.1H29.3C42.1 -84.1 52.6 -74.1 53.2 -61.4L55.5 -11.5C55.8 -5.2 50.8 0.0 44.5 0.0H11.0C4.7 0.0 -0.2 -5.2 0.0 -11.5ZM34.4 -72.3C34.4 -76.0 31.4 -79.0 27.7 -79.0C24.1 -79.0 21.1 -76.0 21.1 -72.3C21.1 -68.6 24.1 -65.6 27.7 -65.6C31.4 -65.6 34.4 -68.6 34.4 -72.3Z" fill="#F0BF33"/><path d="M16.2 -11.9V-43.1H27.1Q29.0 -43.1 30.7 -42.7Q32.4 -42.4 33.8 -41.6Q35.2 -40.9 36.2 -39.8Q37.2 -38.7 37.8 -37.2Q38.4 -35.7 38.4 -33.9Q38.4 -32.4 37.9 -31.0Q37.5 -29.7 36.5 -28.7Q35.6 -27.6 34.1 -26.9Q32.6 -26.2 30.5 -25.9V-25.5Q33.2 -25.4 34.7 -24.4Q36.2 -23.4 36.9 -21.9Q37.7 -20.3 38.0 -18.3L39.3 -11.9H31.6L30.7 -17.6Q30.5 -19.2 30.0 -20.4Q29.5 -21.5 28.6 -22.1Q27.7 -22.7 26.0 -22.7H23.3V-11.9ZM23.3 -28.0H26.3Q28.6 -28.0 29.8 -29.1Q31.0 -30.3 31.0 -32.7Q31.0 -35.1 29.9 -36.2Q28.9 -37.3 26.6 -37.3H23.3Z" fill="#22384D"/><path d="M178.5 0.0V-29.3L178.5 -52.7H191.5L191.3 -32.2H192.1Q192.6 -40.2 194.3 -45.0Q196.1 -49.7 199.2 -51.9Q202.2 -54.0 206.4 -54.0Q210.9 -54.0 213.6 -51.7Q216.3 -49.4 217.6 -44.6Q218.8 -39.8 218.6 -32.2H219.4Q219.9 -40.2 221.8 -44.9Q223.7 -49.7 226.8 -51.8Q230.0 -54.0 234.3 -54.0Q238.0 -54.0 240.7 -52.5Q243.4 -51.1 245.1 -48.3Q246.9 -45.4 247.8 -41.1Q248.7 -36.9 248.7 -31.1V0.0H233.4V-28.6Q233.4 -32.5 232.9 -35.1Q232.5 -37.7 231.4 -39.0Q230.3 -40.2 228.5 -40.2Q226.2 -40.2 224.5 -37.9Q222.8 -35.6 221.9 -31.3Q221.0 -27.0 221.0 -20.9V0.0H206.1V-28.9Q206.1 -32.8 205.6 -35.3Q205.1 -37.8 204.0 -39.0Q202.9 -40.2 201.2 -40.2Q198.8 -40.2 197.2 -38.1Q195.5 -35.9 194.6 -31.6Q193.7 -27.2 193.7 -20.7V0.0ZM76.7 0.0V-66.0H99.9Q103.9 -66.0 107.5 -65.2Q111.1 -64.4 114.0 -62.9Q117.0 -61.3 119.2 -59.0Q121.3 -56.7 122.5 -53.6Q123.7 -50.4 123.7 -46.5Q123.7 -43.3 122.8 -40.5Q121.8 -37.7 119.8 -35.4Q117.8 -33.2 114.6 -31.7Q111.4 -30.2 107.0 -29.6V-28.8Q112.9 -28.5 116.0 -26.4Q119.2 -24.4 120.7 -21.0Q122.2 -17.7 123.0 -13.5L125.8 0.0H109.4L107.5 -12.1Q107.0 -15.5 106.0 -17.9Q105.0 -20.3 103.0 -21.6Q101.1 -22.9 97.5 -22.9H91.9V0.0ZM276.3 1.3Q269.7 1.3 265.2 -0.7Q260.7 -2.7 258.0 -6.3Q255.3 -9.9 254.1 -14.8Q252.9 -19.6 252.9 -25.2Q252.9 -30.9 254.1 -36.0Q255.3 -41.2 258.0 -45.3Q260.6 -49.3 264.9 -51.7Q269.3 -54.0 275.6 -54.0Q281.6 -54.0 285.9 -51.8Q290.2 -49.6 292.7 -45.6Q295.2 -41.6 296.0 -36.2Q296.8 -30.9 295.8 -24.4L267.8 -23.8Q268.1 -17.1 269.9 -13.9Q272.0 -10.0 276.4 -10.0Q278.4 -10.0 279.7 -10.8Q281.0 -11.5 281.8 -12.9Q282.5 -14.3 282.7 -16.1Q283.0 -17.9 282.8 -20.1L296.8 -19.1Q297.2 -15.6 296.5 -12.0Q295.7 -8.4 293.4 -5.4Q291.2 -2.4 287.0 -0.5Q282.8 1.3 276.3 1.3ZM301.3 0.0V-30.3L301.3 -52.7H314.3L314.1 -32.1H314.9Q315.3 -39.8 317.1 -44.6Q318.9 -49.4 322.1 -51.7Q325.4 -54.0 330.2 -54.0Q337.8 -54.0 341.5 -48.5Q345.2 -43.1 345.2 -31.8V0.0H330.0V-29.1Q330.0 -34.9 328.7 -37.6Q327.4 -40.3 324.4 -40.3Q321.8 -40.3 320.0 -38.1Q318.2 -35.9 317.4 -31.5Q316.5 -27.1 316.5 -20.6V0.0ZM143.9 1.3Q136.4 1.3 132.8 -4.3Q129.2 -10.0 129.2 -22.0V-52.7H144.5V-23.4Q144.5 -17.4 145.7 -14.9Q147.0 -12.4 149.8 -12.4Q151.7 -12.4 153.1 -13.5Q154.6 -14.7 155.6 -17.0Q156.6 -19.2 157.1 -22.7Q157.6 -26.1 157.6 -30.8V-52.7H172.8V-24.3L172.8 0.0H159.8L159.9 -20.1H159.2Q158.8 -12.3 156.9 -7.6Q155.0 -2.9 151.7 -0.8Q148.5 1.3 143.9 1.3ZM423.7 1.3Q418.2 1.3 413.9 -0.0Q409.7 -1.3 406.9 -3.9Q404.1 -6.5 402.9 -10.3Q401.8 -14.1 402.5 -19.1L415.8 -20.3Q415.7 -17.0 416.6 -14.5Q417.4 -12.0 419.2 -10.6Q421.1 -9.3 424.0 -9.3Q426.6 -9.3 428.3 -10.4Q430.1 -11.5 430.1 -14.0Q430.1 -16.0 429.0 -17.3Q428.0 -18.6 425.8 -19.7Q423.6 -20.7 420.1 -21.8Q416.3 -23.0 413.0 -24.3Q409.8 -25.6 407.3 -27.3Q404.9 -29.1 403.6 -31.7Q402.2 -34.2 402.2 -37.9Q402.2 -43.0 404.8 -46.6Q407.3 -50.1 411.9 -52.1Q416.6 -54.0 422.9 -54.0Q428.7 -54.0 433.5 -52.1Q438.3 -50.2 440.9 -45.9Q443.5 -41.7 442.7 -34.7L429.7 -33.3Q430.0 -36.3 429.2 -38.5Q428.4 -40.7 426.6 -41.9Q424.9 -43.1 422.4 -43.1Q419.6 -43.1 418.1 -41.8Q416.6 -40.6 416.6 -38.6Q416.6 -36.9 417.7 -35.7Q418.8 -34.5 421.0 -33.6Q423.2 -32.7 426.4 -31.7Q429.5 -30.8 432.7 -29.5Q435.9 -28.2 438.6 -26.3Q441.3 -24.3 443.0 -21.4Q444.7 -18.5 444.7 -14.2Q444.7 -9.7 442.3 -6.1Q440.0 -2.6 435.4 -0.6Q430.7 1.3 423.7 1.3ZM369.8 1.0Q361.3 1.0 357.0 -3.5Q352.6 -8.2 352.6 -17.7V-40.8H347.9V-50.7H348.7Q353.5 -51.1 355.5 -53.7Q357.4 -56.2 357.9 -61.4L358.2 -63.9H367.5V-52.7H377.6V-40.5H367.5V-19.8Q367.5 -16.1 369.1 -14.3Q370.6 -12.6 373.0 -12.6Q374.2 -12.6 375.4 -13.0Q376.6 -13.4 377.6 -14.0V-0.1Q375.3 0.5 373.4 0.7Q371.4 1.0 369.8 1.0ZM382.2 0.0V-52.7H397.4V0.0ZM91.9 -34.1H98.2Q103.1 -34.1 105.6 -36.4Q108.2 -38.8 108.2 -43.9Q108.2 -49.0 105.9 -51.4Q103.6 -53.7 98.8 -53.7H91.9ZM268.0 -31.7 282.2 -32.1Q282.2 -33.9 281.9 -35.4Q281.4 -38.7 279.9 -40.4Q278.3 -42.0 275.6 -42.0Q272.6 -42.0 270.9 -40.1Q269.2 -38.2 268.5 -34.7Q268.2 -33.3 268.0 -31.7Z" fill="currentColor"/><path d="M381.8 -70.9C382.0 -74.8 385.3 -77.9 389.2 -77.9H390.4C394.3 -77.9 397.6 -74.8 397.8 -70.9L398.4 -60.1C398.5 -58.6 397.3 -57.2 395.7 -57.2H383.9C382.3 -57.2 381.0 -58.6 381.1 -60.1ZM392.2 -72.4C392.2 -73.8 391.1 -74.9 389.8 -74.9C388.4 -74.9 387.3 -73.8 387.3 -72.4C387.3 -71.1 388.4 -70.0 389.8 -70.0C391.1 -70.0 392.2 -71.1 392.2 -72.4Z" fill="#F0BF33"/></svg>`;
-const VERSION_APP='3.6';
-const CREDITOS_FOTOS=['Brahman en Costa Rica y en el río Tárcoles: Bernard Gagnon, Wikimedia Commons (CC0).','Brahman cerca de Lipa, Filipinas: Fiszi37, Wikimedia Commons (CC0).','Brahman pastando en Brazos County, Texas: Beverly Moseley, USDA NRCS (dominio público).','Brahman en el llano: Wikimedia Commons (dominio público).'];window.CREDITOS_FOTOS=CREDITOS_FOTOS;
+const VERSION_APP='3.7';
+const CREDITOS_FOTOS=["autor no indicado (dominio público, Wikimedia Commons): 5 fotos", "USDA NRCS Texas (dominio público, Wikimedia Commons): 11 fotos", "Bernard Gagnon (CC0, Wikimedia Commons): 2 fotos", "Fiszi37 (CC0, Wikimedia Commons): 1 foto", "Scott Bauer, USDA ARS (dominio público, Wikimedia Commons): 2 fotos", "USDAgov (dominio público, Wikimedia Commons): 1 foto", "Miguelrangeljr (dominio público, Wikimedia Commons): 1 foto", "Quintin Soloviev (CC0, Wikimedia Commons): 1 foto", "(USDA) (dominio público, Wikimedia Commons): 1 foto", "Íconos 3D y figura de Rumi: Fluent Emoji de Microsoft (licencia MIT).", "Clima: Open-Meteo (datos abiertos, CC BY 4.0)."];window.CREDITOS_FOTOS=CREDITOS_FOTOS;
 const FIRMA=`<svg class=" rsym"viewBox="14.7 13.0 70.7 107.0" aria-hidden="true"><path d="M17.6 41.9C18.4 25.7 31.7 13.0 47.9 13.0H52.0C68.2 13.0 81.5 25.7 82.3 41.9L85.3 105.3C85.6 113.3 79.3 120.0 71.3 120.0H28.6C20.6 120.0 14.3 113.3 14.6 105.3ZM58.5 28.0C58.5 23.3 54.6 19.5 50.0 19.5C45.3 19.5 41.5 23.3 41.5 28.0C41.5 32.6 45.3 36.5 50.0 36.5C54.6 36.5 58.5 32.6 58.5 28.0Z" fill="#F0BF33"/><path d="M35.2 104.8V65.1H49.2Q51.6 65.1 53.7 65.6Q55.9 66.1 57.6 67.0Q59.4 67.9 60.7 69.3Q62.0 70.7 62.7 72.6Q63.4 74.5 63.4 76.8Q63.4 78.7 62.9 80.4Q62.3 82.1 61.1 83.5Q59.9 84.8 58.0 85.7Q56.1 86.6 53.4 86.9V87.4Q56.9 87.6 58.8 88.9Q60.7 90.1 61.6 92.1Q62.5 94.1 63.0 96.6L64.7 104.8H54.8L53.7 97.5Q53.4 95.4 52.8 94.0Q52.2 92.5 51.0 91.8Q49.8 91.0 47.7 91.0H44.3V104.8ZM44.3 84.3H48.1Q51.1 84.3 52.6 82.9Q54.1 81.4 54.1 78.4Q54.1 75.3 52.7 73.9Q51.4 72.5 48.5 72.5H44.3Z" fill="#22384D"/></svg><svg class=" rwm"viewBox="3.3 -78.0 368.0 79.3" aria-hidden="true"><path d="M105.1 0.0V-29.3L105.1 -52.7H118.1L117.9 -32.2H118.7Q119.2 -40.2 120.9 -45.0Q122.7 -49.7 125.8 -51.9Q128.8 -54.0 133.0 -54.0Q137.5 -54.0 140.2 -51.7Q143.0 -49.4 144.2 -44.6Q145.4 -39.8 145.2 -32.2H146.0Q146.5 -40.2 148.4 -44.9Q150.3 -49.7 153.5 -51.8Q156.6 -54.0 160.9 -54.0Q164.6 -54.0 167.3 -52.5Q170.0 -51.1 171.7 -48.3Q173.5 -45.4 174.4 -41.1Q175.3 -36.9 175.3 -31.1V0.0H160.0V-28.6Q160.0 -32.5 159.5 -35.1Q159.1 -37.7 158.0 -39.0Q156.9 -40.2 155.1 -40.2Q152.8 -40.2 151.1 -37.9Q149.4 -35.6 148.5 -31.3Q147.6 -27.0 147.6 -20.9V0.0H132.7V-28.9Q132.7 -32.8 132.2 -35.3Q131.7 -37.8 130.6 -39.0Q129.5 -40.2 127.8 -40.2Q125.5 -40.2 123.8 -38.1Q122.1 -35.9 121.2 -31.6Q120.3 -27.2 120.3 -20.7V0.0ZM3.3 0.0V-66.0H26.5Q30.5 -66.0 34.1 -65.2Q37.7 -64.4 40.6 -62.9Q43.6 -61.3 45.8 -59.0Q47.9 -56.7 49.1 -53.6Q50.3 -50.4 50.3 -46.5Q50.3 -43.3 49.4 -40.5Q48.4 -37.7 46.4 -35.4Q44.4 -33.2 41.2 -31.7Q38.0 -30.2 33.6 -29.6V-28.8Q39.5 -28.5 42.6 -26.4Q45.8 -24.4 47.3 -21.0Q48.8 -17.7 49.6 -13.5L52.4 0.0H36.0L34.1 -12.1Q33.6 -15.5 32.6 -17.9Q31.6 -20.3 29.6 -21.6Q27.7 -22.9 24.1 -22.9H18.5V0.0ZM202.9 1.3Q196.3 1.3 191.8 -0.7Q187.3 -2.7 184.6 -6.3Q181.9 -9.9 180.7 -14.8Q179.5 -19.6 179.5 -25.2Q179.5 -30.9 180.7 -36.0Q181.9 -41.2 184.6 -45.3Q187.2 -49.3 191.5 -51.7Q195.9 -54.0 202.2 -54.0Q208.3 -54.0 212.5 -51.8Q216.8 -49.6 219.3 -45.6Q221.9 -41.6 222.6 -36.2Q223.4 -30.9 222.4 -24.4L194.4 -23.8Q194.7 -17.1 196.5 -13.9Q198.6 -10.0 203.0 -10.0Q205.0 -10.0 206.3 -10.8Q207.6 -11.5 208.4 -12.9Q209.1 -14.3 209.3 -16.1Q209.6 -17.9 209.5 -20.1L223.4 -19.1Q223.8 -15.6 223.1 -12.0Q222.3 -8.4 220.1 -5.4Q217.8 -2.4 213.6 -0.5Q209.4 1.3 202.9 1.3ZM227.9 0.0V-30.3L227.9 -52.7H240.9L240.7 -32.1H241.5Q241.9 -39.8 243.7 -44.6Q245.5 -49.4 248.7 -51.7Q252.0 -54.0 256.8 -54.0Q264.4 -54.0 268.1 -48.5Q271.8 -43.1 271.8 -31.8V0.0H256.6V-29.1Q256.6 -34.9 255.3 -37.6Q254.0 -40.3 251.0 -40.3Q248.4 -40.3 246.6 -38.1Q244.8 -35.9 244.0 -31.5Q243.1 -27.1 243.1 -20.6V0.0ZM70.5 1.3Q63.0 1.3 59.4 -4.3Q55.8 -10.0 55.8 -22.0V-52.7H71.1V-23.4Q71.1 -17.4 72.3 -14.9Q73.6 -12.4 76.4 -12.4Q78.3 -12.4 79.7 -13.5Q81.2 -14.7 82.2 -17.0Q83.2 -19.2 83.7 -22.7Q84.2 -26.1 84.2 -30.8V-52.7H99.4V-24.3L99.4 0.0H86.4L86.5 -20.1H85.8Q85.4 -12.3 83.5 -7.6Q81.6 -2.9 78.3 -0.8Q75.1 1.3 70.5 1.3ZM350.3 1.3Q344.8 1.3 340.5 -0.0Q336.3 -1.3 333.5 -3.9Q330.7 -6.5 329.5 -10.3Q328.4 -14.1 329.1 -19.1L342.4 -20.3Q342.3 -17.0 343.2 -14.5Q344.0 -12.0 345.9 -10.6Q347.7 -9.3 350.6 -9.3Q353.2 -9.3 355.0 -10.4Q356.7 -11.5 356.7 -14.0Q356.7 -16.0 355.6 -17.3Q354.6 -18.6 352.4 -19.7Q350.2 -20.7 346.7 -21.8Q342.9 -23.0 339.6 -24.3Q336.4 -25.6 333.9 -27.3Q331.5 -29.1 330.2 -31.7Q328.8 -34.2 328.8 -37.9Q328.8 -43.0 331.4 -46.6Q333.9 -50.1 338.5 -52.1Q343.2 -54.0 349.5 -54.0Q355.3 -54.0 360.1 -52.1Q364.9 -50.2 367.5 -45.9Q370.1 -41.7 369.3 -34.7L356.3 -33.3Q356.6 -36.3 355.8 -38.5Q355.0 -40.7 353.2 -41.9Q351.5 -43.1 349.0 -43.1Q346.2 -43.1 344.7 -41.8Q343.2 -40.6 343.2 -38.6Q343.2 -36.9 344.3 -35.7Q345.4 -34.5 347.6 -33.6Q349.8 -32.7 353.0 -31.7Q356.1 -30.8 359.3 -29.5Q362.5 -28.2 365.2 -26.3Q367.9 -24.3 369.6 -21.4Q371.3 -18.5 371.3 -14.2Q371.3 -9.7 369.0 -6.1Q366.6 -2.6 362.0 -0.6Q357.3 1.3 350.3 1.3ZM296.4 1.0Q287.9 1.0 283.6 -3.5Q279.2 -8.2 279.2 -17.7V-40.8H274.5V-50.7H275.3Q280.1 -51.1 282.1 -53.7Q284.0 -56.2 284.5 -61.4L284.8 -63.9H294.1V-52.7H304.2V-40.5H294.1V-19.8Q294.1 -16.1 295.7 -14.3Q297.2 -12.6 299.6 -12.6Q300.8 -12.6 302.0 -13.0Q303.2 -13.4 304.2 -14.0V-0.1Q301.9 0.5 300.0 0.7Q298.0 1.0 296.4 1.0ZM308.8 0.0V-52.7H324.0V0.0ZM18.5 -34.1H24.8Q29.7 -34.1 32.2 -36.4Q34.8 -38.8 34.8 -43.9Q34.8 -49.0 32.5 -51.4Q30.2 -53.7 25.4 -53.7H18.5ZM194.6 -31.7 208.8 -32.1Q208.8 -33.9 208.5 -35.4Q208.0 -38.7 206.5 -40.4Q204.9 -42.0 202.2 -42.0Q199.2 -42.0 197.5 -40.1Q195.8 -38.2 195.1 -34.7Q194.8 -33.3 194.6 -31.7Z" fill="currentColor"/><path d="M308.4 -70.9C308.6 -74.8 311.9 -77.9 315.8 -77.9H317.0C320.9 -77.9 324.2 -74.8 324.4 -70.9L325.0 -60.1C325.1 -58.6 323.9 -57.2 322.3 -57.2H310.5C308.9 -57.2 307.6 -58.6 307.7 -60.1ZM318.8 -72.4C318.8 -73.8 317.7 -74.9 316.4 -74.9C315.0 -74.9 313.9 -73.8 313.9 -72.4C313.9 -71.1 315.0 -70.0 316.4 -70.0C317.7 -70.0 318.8 -71.1 318.8 -72.4Z" fill="currentColor"/></svg>`;
 
 /* ============ render ============ */
@@ -1093,7 +1195,7 @@ function render(){
   document.body.dataset.sub=r.id||'';
   document.body.dataset.pg=r.p==='metodologia'?'mas':PAGES[r.p]?r.p:'hoy';
   $('#app').innerHTML=aUnidad(fn(r.id,r.id2));
-  {const m=$('#app main');if(m&&!m.querySelector('.vineta'))m.insertAdjacentHTML('beforeend','<figure class="vineta" aria-hidden="true"></figure>');}animarRuta();
+  animarRuta();
   const nav=r.p==='lote'||r.p==='animal'?'lotes':r.p==='formular'||r.p==='metodologia'?'mas':r.p;
   $$('nav.bottom [data-nav]').forEach(a=>{if(a.dataset.nav===nav)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   updateSync();
@@ -1413,7 +1515,7 @@ const MAS_SUB={
   const cfg=S.config;
   const f=(k,l,v,extra='',hint='',unit='')=>`<div class="q"><label for="c_${k}">${l}</label>${unit?`<div class="unit">`:''}<input class="in" id="c_${k}" name="${k}" value="${esc(v)}" ${extra}>${unit?`<em>${unit}</em></div>`:''}${hint?`<small>${hint}</small>`:''}</div>`;
   return masHd('Configuración','Tus preferencias. La app las usa para calcular márgenes, fechas y avisos.')+`<main class="bd"><form class="cfg-f" data-form="cfg">
-   <section class="sec">${secH('Tu finca')}<div class="card pad cfg-c">${f('finca','Nombre de la finca',cfg.finca,'required')}${f('ubicacion','Ubicación',cfg.ubicacion,'placeholder="Aldea, municipio"')}</div></section>
+   <section class="sec">${secH('Tu finca')}<div class="card pad cfg-c">${f('finca','Nombre de la finca',cfg.finca,'required')}${f('ubicacion','Ubicación',cfg.ubicacion,'placeholder="Aldea, municipio"')}<p class="hint" style="margin:-4px 0 0">Con tu ubicación te muestro el clima de tu zona y el riesgo de calor para el ganado.</p></div></section>
    <section class="sec">${secH('Precio y moneda')}<div class="card pad cfg-c">
     <div class="two">${f('precioVentaKg','Precio de venta',r2u(PKd(+cfg.precioVentaKg||0)),'inputmode="decimal"','Lo que te pagan hoy. Actualízalo cuando cambie el mercado.','por kg')}${f('moneda','Moneda',cfg.moneda,'maxlength="4"')}</div></div></section>
    <section class="sec">${secH('Metas del engorde')}<div class="card pad cfg-c">
@@ -2033,20 +2135,9 @@ function guardarFormula(F,nombre){
 
 /* ============ Rumi: imagen ============ */
 function rumiSVG(cls=''){
-  return `<svg class="rm ${cls}" viewBox="0 0 120 120" aria-hidden="true"><g class="rm-b">`+
-  `<g class="earL"><path d="M37 45C25 44 13 55 9 71c-1.5 6 4 9 8.5 5.5C25 70 32 61 41 54z" fill="#D6CCBE"/><path d="M35 50c-8 1.5-15.5 10-18.5 19.5 1.6 1.6 3.4 1.6 5 0C27 62 32 57 38 54z" fill="#EAB9A9"/></g>`+
-  `<g class="earR"><path d="M83 45c12-1 24 10 28 26 1.5 6-4 9-8.5 5.5C95 70 88 61 79 54z" fill="#D6CCBE"/><path d="M85 50c8 1.5 15.5 10 18.5 19.5-1.6 1.6-3.4 1.6-5 0C93 62 88 57 82 54z" fill="#EAB9A9"/><path d="M101 62.5c3.3 0 5.8 2.5 5.8 5.6v8.6c0 1.8-1.4 3.2-3.2 3.2h-5.2c-1.8 0-3.2-1.4-3.2-3.2v-8.6c0-3.1 2.5-5.6 5.8-5.6z" fill="#F0BF33"/><path d="M95.2 76.2h11.6v.5c0 1.8-1.4 3.2-3.2 3.2h-5.2c-1.8 0-3.2-1.4-3.2-3.2z" fill="#D9A722"/><circle cx="101" cy="66.4" r="1.5" fill="#FBEFC4"/></g>`+
-  `<path d="M44 28c-2.6-2.6-3.3-6.5-1.9-10 3.3 1.3 5.8 3.8 7 7z" fill="#CBBE9F"/><path d="M76 28c2.6-2.6 3.3-6.5 1.9-10-3.3 1.3-5.8 3.8-7 7z" fill="#CBBE9F"/>`+
-  `<path d="M60 21c19 0 31 13.5 31 32 0 23-12.5 42-31 42S29 76 29 53c0-18.5 12-32 31-32z" fill="#F2EEE7"/>`+
-  `<path d="M29.8 58c1.5 18 12.5 35 30.2 37 17.7-2 28.7-19 30.2-37-4 13-14 22-30.2 22S33.8 71 29.8 58z" fill="#E3DBCE"/>`+
-  `<path d="M52 25c2.5-3.6 5.2-5.3 8-5.3s5.5 1.7 8 5.3c-2-.8-3.9-1-5.6-.6.6 1 .8 2.2.4 3.4-1-1.5-2.8-2.3-4.7-2.3-1.4 0-2.8.4-3.9 1 .3-.9.7-1.6 1.4-2.1-1.3-.2-2.4 0-3.6.6z" fill="#BFB3A3"/>`+
-  `<ellipse cx="38.5" cy="66" rx="6" ry="4" fill="#F2A696" opacity=".5"/><ellipse cx="81.5" cy="66" rx="6" ry="4" fill="#F2A696" opacity=".5"/>`+
-  `<g class="eyes"><ellipse cx="46" cy="52" rx="8.2" ry="9.4" fill="#6E625A" opacity=".35"/><ellipse cx="74" cy="52" rx="8.2" ry="9.4" fill="#6E625A" opacity=".35"/><ellipse cx="46" cy="52.5" rx="6.6" ry="7.9" fill="#231C19"/><ellipse cx="74" cy="52.5" rx="6.6" ry="7.9" fill="#231C19"/><circle cx="48.6" cy="49.2" r="2.8" fill="#fff"/><circle cx="76.6" cy="49.2" r="2.8" fill="#fff"/><circle cx="43.8" cy="56" r="1.2" fill="#fff" opacity=".85"/><circle cx="71.8" cy="56" r="1.2" fill="#fff" opacity=".85"/></g>`+
-  `<path d="M60 66c10.5 0 17 4.2 17 11.5 0 8.8-7.4 15.5-17 15.5s-17-6.7-17-15.5C43 70.2 49.5 66 60 66z" fill="#4B423E"/>`+
-  `<path d="M60 67.5c8 0 13.5 2.6 14.8 7-3.6-2.2-8.8-3.3-14.8-3.3s-11.2 1.1-14.8 3.3c1.3-4.4 6.8-7 14.8-7z" fill="#5E5450"/>`+
-  `<ellipse cx="53" cy="77" rx="2.7" ry="3.4" fill="#211A18"/><ellipse cx="67" cy="77" rx="2.7" ry="3.4" fill="#211A18"/>`+
-  `<path class="mouth" d="M53.5 85Q60 89.5 66.5 85" fill="none" stroke="#C9BDB2" stroke-width="2.4" stroke-linecap="round"/></g></svg>`;
+  return `<span class="rm ${cls}" aria-hidden="true"><img class="rm-b" src="ic3d/rumi.webp" alt="" draggable="false"></span>`;
 }
+
 
 /* ============ Rumi: saber de manejo ============ */
 const SABER=[
@@ -3090,7 +3181,7 @@ function abrirRumi(pre){
 function pintarLog(){const m=$('#rumiMsgs');if(!m)return;m.innerHTML=RUMI.log.map(msgHtml).join('');const b=$('#rumiBody');if(!b)return;const last=m.lastElementChild;if(last&&last.classList.contains('rrow')&&last.offsetHeight>b.clientHeight*0.6)b.scrollTop=last.offsetTop-12;else b.scrollTop=b.scrollHeight;}
 function msgHtml(x){
   if(x.u)return `<div class="rmsg u">${esc(x.u)}</div>`;
-  return `<div class="rrow">${rumiSVG('av')}<div class="rmsg b">${x.html}${x.btns&&x.btns.length?`<div class="acts" style="margin-top:10px">${x.btns.map(([l,a],i)=>`<button type="button" class="btn${i===0?' pri':''}" style="min-height:44px;font-size:14.5px;padding:0 14px" data-act="rumiDo" data-id="${a.id}">${esc(l)}</button>`).join('')}</div>`:''}</div></div>`;
+  return `<div class="rrow">${rumiSVG('av')}<div class="rmsg b">${hayVoz()?'<button type="button" class="rm-oir" data-act="rmOir" aria-label="Escuchar lo que dice Rumi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>':''}${x.html}${x.btns&&x.btns.length?`<div class="acts" style="margin-top:10px">${x.btns.map(([l,a],i)=>`<button type="button" class="btn${i===0?' pri':''}" style="min-height:44px;font-size:14.5px;padding:0 14px" data-act="rumiDo" data-id="${a.id}">${esc(l)}</button>`).join('')}</div>`:''}</div></div>`;
 }
 function pintarSug(list){const s=$('#rumiSug');if(s)s.innerHTML=(list||[]).map(t=>`<button type="button" class="chip" data-act="rumiAsk" data-q="${esc(t)}">${esc(t)}</button>`).join('');}
 function botSay(r){
@@ -3115,6 +3206,7 @@ function ejecutar(a){
   else if(a.t==='loteMeta'){const l=S.lotes[a.lote];if(l){put('lotes',a.lote,{...l,metaKg:Math.round(toKg(a.v))});botSay({html:`Listo, la meta de ${esc(l.nombre)} ahora es ${a.v} ${UW()}.`,sug:sugs(),nou:true});}}
   else if(a.t==='show'){closeSheet();if(location.hash!==a.go)location.hash=a.go;setTimeout(()=>spot([{sel:a.sel,t:'Aquí es',x:a.x}]),350);}
   else if(a.t==='tour'){closeSheet();iniciarTour();}
+  else if(a.t==='clima'){if(window.Clima)Clima.actualizar(true).then(()=>{if(window.RumiMenu&&RumiMenu.clima)RumiMenu.clima();});}
 }
 function llenar(p){
   const f=$('#sheet form');if(!f)return;
@@ -3129,37 +3221,49 @@ function llenar(p){
 
 /* ---------- recorrido con foco ---------- */
 const TOUR=[
-  {go:'#hoy',sel:'nav.bottom [data-nav="hoy"]',t:'Hoy',x:'Tu resumen del día: cuánto alimento falta dar, qué necesita atención y cómo van tus lotes.'},
-  {go:'#hoy',sel:'nav.bottom [data-nav="lotes"]',t:'Lotes',x:'Cada grupo de animales que entró junto. Tócalo para ver su peso, cuándo sale y cuánto vas a ganar.'},
-  {go:'#hoy',sel:'nav.bottom [data-nav="registrar"]',t:'Registrar',x:'El botón amarillo. Aquí anotas todo: alimento, pesajes, sanidad, ventas, muertes y gastos.'},
-  {go:'#hoy',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',x:'Todos tus números en gráficas: peso, ganancia diaria, consumo, conversión, costos y margen.'},
-  {go:'#hoy',sel:'nav.bottom [data-nav="mas"]',t:'Más',x:'Tus raciones, precios, horarios de entrega, respaldo y descargas para Excel.'},
-  {go:'#hoy',sel:'#rumiFab',t:'Rumi',x:'Si te pierdes, tócame y elige en mi menú lo que necesitas: tus números, anotar, alimentación, salud, calculadoras y la guía de engorde.'}
+  {go:'#hoy',t:'¡Vamos a conocer la app!',x:'Son pocos pasos. Lee con calma o toca <b>Escuchar</b> y yo te lo leo. Toca <b>Siguiente</b> para seguir.'},
+  {go:'#hoy',sel:'#app .hd .top .meta',t:'La fecha y el clima',x:'Aquí ves la fecha de hoy y el clima de tu zona. Los colores de la app cambian solitos con la hora: mañana, tarde y noche.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="hoy"]',t:'Hoy',x:'Aquí empieza todo. Ves cuántos animales tienes, cuánto deben comer hoy y qué necesita tu atención.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="lotes"]',t:'Lotes',x:'Un lote es un grupo de animales que compraste juntos. Toca un lote para ver sus animales, cuánto pesan y cuándo salen a la venta.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="registrar"]',t:'Anotar',x:'Este botón sirve para anotar todo: la comida que das, cuando pesas, las vacunas, las ventas, las muertes y los gastos. Si anotas, la app te saca las cuentas sola.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',x:'Son dibujos que te muestran si tus animales suben de peso y si estás ganando dinero. Cada dibujo trae su explicación.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="mas"]',t:'Más',x:'Aquí está la configuración, la agenda de tareas, la bodega de alimento, tus raciones, los gastos y la copia de tus datos.'},
+  {go:'#hoy',sel:'#rumiFab',t:'Rumi, tu ayudante',x:'Ese soy yo. Si tienes una duda, tócame. No tienes que escribir: solo eliges opciones. Te hago cuentas y te explico de salud, comida y ventas.'},
+  {go:'#hoy',t:'¡Listo para empezar!',x:'Tu primer paso: toca el botón de <b>Anotar</b> y elige <b>Nuevo lote</b> para registrar tus animales. Puedes volver a ver esta guía en <b>Más</b>, <b>Ayuda</b>.'}
 ];
 let SPOT=null;
 function iniciarTour(){try{localStorage.setItem('rumentis-tour','1');}catch(e){}spot(TOUR);}
+const hayVoz=()=>!!((window.Android&&Android.hablar)||window.speechSynthesis);
+function leer(t){
+  t=String(t||'').replace(/<[^>]+>/g,'');
+  try{if(window.Android&&Android.hablar){Android.hablar(t);return;}}catch(e){}
+  try{const u=new SpeechSynthesisUtterance(t);u.lang='es-MX';u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}
+}
+function callarVoz(){try{if(window.Android&&Android.callar){Android.callar();return;}}catch(e){}try{speechSynthesis.cancel();}catch(e){}}
 function spot(steps,i=0){
-  cerrarSpot();SPOT={steps,i};const s=steps[i];
+  const leyendo=SPOT&&SPOT.voz;cerrarSpot(true);SPOT={steps,i,voz:leyendo};const s=steps[i];
   if(s.go&&location.hash!==s.go&&(location.hash||'#hoy')!==s.go){location.hash=s.go;setTimeout(()=>spot(steps,i),300);return;}
-  const el=$(s.sel);
-  if(!el){if(i+1<steps.length)return spot(steps,i+1);cerrarSpot();return;}
-  el.scrollIntoView({block:'center',behavior:'instant'});
-  const w=document.createElement('div');w.id='spot';w.setAttribute('role','dialog');w.setAttribute('aria-label',s.t);
-  const last=i===steps.length-1;
-  w.innerHTML=`<div class="hole"></div><div class="tip"><span class="sm">${steps.length>1?`Paso ${i+1} de ${steps.length}`:''}</span><b>${esc(s.t)}</b><p>${s.x}</p><div class="acts" style="justify-content:flex-end">${steps.length>1&&!last?'<button type="button" class="btn" data-act="spotFin">Salir</button>':''}<button type="button" class="btn pri" data-act="${last?'spotFin':'spotSig'}">${last?'Entendido':'Siguiente'}</button></div></div>`;
+  const el=s.sel?$(s.sel):null;
+  if(s.sel&&!el){if(i+1<steps.length)return spot(steps,i+1);cerrarSpot();return;}
+  if(el)el.scrollIntoView({block:'center',behavior:'instant'});
+  const w=document.createElement('div');w.id='spot';w.setAttribute('role','dialog');w.setAttribute('aria-label',s.t);if(!el)w.className='centro';
+  const last=i===steps.length-1,varios=steps.length>1;
+  w.innerHTML=`<div class="hole"></div><div class="tip">${varios?`<img class="tip-rumi" src="ic3d/rumi.webp" alt="">`:''}<span class="sm">${varios?`Paso ${i+1} de ${steps.length}`:''}</span>${varios?`<div class="tip-pts">${steps.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>`:''}<b class="tip-t">${esc(s.t)}</b><p>${s.x}</p><div class="acts">${varios&&hayVoz()?`<button type="button" class="btn tip-voz" data-act="spotVoz" aria-pressed="${!!SPOT.voz}">${SPOT.voz?'Callar':'Escuchar'}</button>`:''}<span style="flex:1"></span>${varios&&!last?'<button type="button" class="btn" data-act="spotFin">Salir</button>':''}<button type="button" class="btn pri" data-act="${last?'spotFin':'spotSig'}">${last?'Entendido':'Siguiente'}</button></div></div>`;
   document.body.appendChild(w);ubicarSpot();
+  if(SPOT.voz)leer(s.t+'. '+s.x);
   setTimeout(()=>{const b=$('#spot .btn.pri');if(b)b.focus({preventScroll:true});},50);
 }
 function ubicarSpot(){
-  const w=$('#spot');if(!w||!SPOT)return;const s=SPOT.steps[SPOT.i],el=$(s.sel);if(!el)return;
-  const r=el.getBoundingClientRect(),p=6,hole=$('.hole',w),tip=$('.tip',w);
+  const w=$('#spot');if(!w||!SPOT)return;const s=SPOT.steps[SPOT.i],el=s.sel?$(s.sel):null;const hole=$('.hole',w),tip=$('.tip',w);
+  const vw=innerWidth,vh=innerHeight,tw=Math.min(360,vw-32);tip.style.width=tw+'px';
+  if(!el){Object.assign(hole.style,{left:vw/2+'px',top:vh/2+'px',width:'0px',height:'0px'});tip.style.left=(vw-tw)/2+'px';tip.style.top=Math.max(12,(vh-tip.offsetHeight)/2)+'px';return;}
+  const r=el.getBoundingClientRect(),p=6;
   Object.assign(hole.style,{left:r.left-p+'px',top:r.top-p+'px',width:r.width+p*2+'px',height:r.height+p*2+'px'});
-  const vw=innerWidth,vh=innerHeight,tw=Math.min(340,vw-32);tip.style.width=tw+'px';
   tip.style.left=Math.max(16,Math.min(vw-tw-16,r.left+r.width/2-tw/2))+'px';
   const th=tip.offsetHeight;
   if(r.top>vh/2)tip.style.top=Math.max(12,r.top-p-14-th)+'px';else tip.style.top=Math.min(vh-th-12,r.bottom+p+14)+'px';
 }
-function cerrarSpot(){const w=$('#spot');if(w)w.remove();SPOT=null;}
+function cerrarSpot(sigue){const w=$('#spot');if(w)w.remove();if(!sigue&&SPOT&&SPOT.voz)callarVoz();SPOT=null;if(!sigue)document.dispatchEvent(new Event('tourfin'));}
 addEventListener('resize',ubicarSpot);
 
 Object.assign(ACTS,{
@@ -3169,7 +3273,11 @@ Object.assign(ACTS,{
   rumiVoz:()=>escuchar(),
   tour:()=>{closeSheet();iniciarTour();},
   spotSig:()=>{if(SPOT)spot(SPOT.steps,SPOT.i+1);},
+  rmOir:el=>{const m=el.closest('.rmsg');if(!m)return;const c=m.cloneNode(true);c.querySelectorAll('button,.acts,svg').forEach(x=>x.remove());c.querySelectorAll('td,th,li,p,br,div,b').forEach(x=>x.append(' . '));
+    const t=c.textContent.replace(/\s*\.\s*(\.\s*)+/g,'. ').replace(/\s+/g,' ').trim();if(el.getAttribute('aria-pressed')==='true'){callarVoz();el.setAttribute('aria-pressed','false');return;}
+    document.querySelectorAll('.rm-oir[aria-pressed="true"]').forEach(b=>b.setAttribute('aria-pressed','false'));el.setAttribute('aria-pressed','true');leer(t);setTimeout(()=>el.setAttribute('aria-pressed','false'),Math.min(60000,t.length*75));},
   spotFin:()=>cerrarSpot(),
+  spotVoz:()=>{if(!SPOT)return;SPOT.voz=!SPOT.voz;const s=SPOT.steps[SPOT.i];if(SPOT.voz)leer(s.t+'. '+s.x);else callarVoz();const b=$('#spot .tip-voz');if(b){b.textContent=SPOT.voz?'Callar':'Escuchar';b.setAttribute('aria-pressed',SPOT.voz);}},
   paso:el=>ejecutar(RUMI.pasosGo[+el.dataset.i]),
   ocultarPasos:()=>{try{localStorage.setItem('rumentis-pasos-ocultos','1');}catch(e){}render();toast('Puedes pedirle los pasos a Rumi cuando quieras');}
 });
@@ -4586,6 +4694,7 @@ responder=function(txt){
 </script>
 <script src="fotos.js"></script>
 <script src="extras.js"></script>
+<script src="ambiente.js"></script>
 <script src="rumi_guia.js"></script>
 <script src="rumi_menu.js"></script>
 </body>
