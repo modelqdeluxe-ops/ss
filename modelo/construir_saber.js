@@ -1,5 +1,5 @@
 // Junta la guía de Rumi: el saber que ya trae la app (SABER, CONCEPTOS, LUGARES, TOUR)
-// más modelo/saber_extra.json y modelo/saber/*.json. Escribe app/assets/rumi_saber.json.
+// más modelo/saber_extra.json y modelo/saber/*.json. Escribe app/assets/rumi_guia.js y modelo/rumi_saber.json.
 const fs=require('fs'),path=require('path');
 const RAIZ=path.join(__dirname,'..');
 const html=fs.readFileSync(path.join(RAIZ,'app/assets/index.html'),'utf8').split('\n');
@@ -39,7 +39,7 @@ const quedan=saber.filter(e=>/pregúntame|pregúntale a rumi|dímelo|dime "|háb
 if(quedan.length)throw new Error('Temas que aún piden escribir o hablar: '+quedan.join(' | '));
 
 const limpio=saber.map(({t,x,a})=>({t,x,a}));
-fs.writeFileSync(path.join(RAIZ,'app/assets/rumi_saber.json'),JSON.stringify(limpio));
+fs.writeFileSync(path.join(__dirname,'rumi_saber.json'),JSON.stringify(limpio,null,0));
 // La misma guía como script, para cargarla con <script> desde file:// (fetch no lee file://)
 fs.writeFileSync(path.join(RAIZ,'app/assets/rumi_guia.js'),'window.RUMI_GUIA='+JSON.stringify(limpio)+';\n');
 const cuenta={};for(const e of limpio)cuenta[e.a]=(cuenta[e.a]||0)+1;console.log(cuenta);

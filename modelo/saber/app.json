@@ -37,12 +37,12 @@
 {
 "t": "Kilos o libras",
 "kw": "kilos libras unidades cambiar a libras cambiar a kilos",
-"x": "Puedes trabajar en kilos o en libras. Cámbialo en Más, en Tu engorde. Yo te entiendo en las dos y convierto solo."
+"x": "Puedes trabajar en kilos o en libras. Cámbialo en Más, en Tu finca. Yo te entiendo en las dos y convierto solo."
 },
 {
 "t": "Moneda de la app",
 "kw": "moneda lempiras dolares cambiar moneda",
-"x": "La moneda se cambia en Más, en Tu engorde. Por defecto usa lempiras."
+"x": "La moneda se cambia en Más, en Tu finca. Por defecto usa lempiras."
 },
 {
 "t": "Peso meta del lote",
@@ -92,7 +92,7 @@
 {
 "t": "Horarios de entrega",
 "kw": "horarios de entrega cuantas entregas al dia cambiar horario",
-"x": "En Más, en Tu engorde, pones cuántas entregas haces al día y a qué hora. Así la pantalla Hoy te dice cuánto falta por dar."
+"x": "En Más, en Tu finca, pones cuántas entregas haces al día y a qué hora. Así la pantalla Hoy te dice cuánto falta por dar."
 },
 {
 "t": "Usar la app sin saber mucho de teléfonos",

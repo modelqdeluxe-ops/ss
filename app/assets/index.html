@@ -91,6 +91,15 @@
   --overlay:rgba(0,0,0,.6);
   color-scheme:dark;
 }
+/* paletas de color (Más, Apariencia) */
+:root[data-paleta="potrero"][data-modo="light"]{--bg:#ECEFE4;--card:#F8F9F2;--card2:#DFE5D3;--line:#D3DAC4;--ink:#16261D;--ink2:#55655A;--head:#1D3A2B;--htx:#EEF1E6;--htx2:#B5C8B9;--arete:#EDC04A;--arete-e:#C49A1E;--anil:#1D3A2B;--anil5:#3F6F55;--anil3:#8FB19A;--pri:#1D3A2B;--pritx:#F8F9F2;--track:#D3DAC4;--fill:#3F6F55;--s1:#3F6F55;--anil-bg:rgba(63,111,85,.13)}
+:root[data-paleta="potrero"][data-modo="dark"]{--bg:#0D1913;--card:#15271D;--card2:#1D3327;--field:#0F1F17;--line:#274034;--ink:#E4EADF;--ink2:#9DB3A4;--head:#11231A;--htx:#E4EADF;--htx2:#9DB3A4;--anil5:#8FB19A;--fill:#8FB19A;--s1:#8FB19A;--track:#274034;--anil-bg:rgba(143,177,154,.15)}
+:root[data-paleta="barro"][data-modo="light"]{--bg:#F3EAE0;--card:#FCF7F1;--card2:#EBDDCD;--line:#E2D1BF;--ink:#2B1B14;--ink2:#6E5A4E;--head:#4B2B1F;--htx:#F6ECE2;--htx2:#D6BDAC;--arete:#F2B441;--arete-e:#C98A12;--anil:#4B2B1F;--anil5:#8A5236;--anil3:#C39A80;--pri:#4B2B1F;--pritx:#FCF7F1;--track:#E2D1BF;--fill:#8A5236;--s1:#8A5236;--anil-bg:rgba(138,82,54,.13)}
+:root[data-paleta="barro"][data-modo="dark"]{--bg:#19110D;--card:#261A14;--card2:#33241B;--field:#1E1510;--line:#3F2D23;--ink:#F0E4D8;--ink2:#BFA898;--head:#21150F;--htx:#F0E4D8;--htx2:#BFA898;--anil5:#D7A583;--fill:#D7A583;--s1:#D7A583;--track:#3F2D23;--anil-bg:rgba(215,165,131,.15)}
+:root[data-paleta="atardecer"][data-modo="light"]{--bg:#F2ECEE;--card:#FCF9FA;--card2:#E6DCE2;--line:#DCCFD7;--ink:#231629;--ink2:#665A6B;--head:#3A2344;--htx:#F5EEF3;--htx2:#CBB7D1;--arete:#F4A259;--arete-e:#CF7B2B;--anil:#3A2344;--anil5:#6D4C7D;--anil3:#AF97BA;--pri:#3A2344;--pritx:#FCF9FA;--track:#DCCFD7;--fill:#6D4C7D;--s1:#6D4C7D;--anil-bg:rgba(109,76,125,.13)}
+:root[data-paleta="atardecer"][data-modo="dark"]{--bg:#16101A;--card:#221828;--card2:#2D2134;--field:#1A131F;--line:#3A2C42;--ink:#EEE5F0;--ink2:#B6A6BC;--head:#1C1422;--htx:#EEE5F0;--htx2:#B6A6BC;--anil5:#C0A6CC;--fill:#C0A6CC;--s1:#C0A6CC;--track:#3A2C42;--anil-bg:rgba(192,166,204,.15);--pri:#F4A259}
+:root[data-paleta="mar"][data-modo="light"]{--bg:#E9EFF0;--card:#F7FAFA;--card2:#D9E4E6;--line:#CCDADC;--ink:#122429;--ink2:#51666B;--head:#0F3B45;--htx:#E8F1F2;--htx2:#A9C7CC;--arete:#F2C14E;--arete-e:#C79A1E;--anil:#0F3B45;--anil5:#2D7383;--anil3:#86B4BE;--pri:#0F3B45;--pritx:#F7FAFA;--track:#CCDADC;--fill:#2D7383;--s1:#2D7383;--anil-bg:rgba(45,115,131,.13)}
+:root[data-paleta="mar"][data-modo="dark"]{--bg:#0B171A;--card:#122428;--card2:#193136;--field:#0D1C20;--line:#223E44;--ink:#E2EEF0;--ink2:#99B6BB;--head:#0E2126;--htx:#E2EEF0;--htx2:#99B6BB;--anil5:#86B4BE;--fill:#86B4BE;--s1:#86B4BE;--track:#223E44;--anil-bg:rgba(134,180,190,.15)}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;height:100%}
 body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:15px/1.45 'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
@@ -496,6 +505,23 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .arow.head{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:-4px}
 .arow+.arow{margin-top:8px}
 .arow.raro .ar-p{border-color:var(--rojo);box-shadow:0 0 0 3px var(--rojo-bg)}
+:root[data-paleta]:not([data-paleta="noche"]) .hd{position:relative;isolation:isolate}
+:root[data-paleta]:not([data-paleta="noche"]) .hd::before{content:'';position:absolute;left:0;right:0;bottom:0;height:130px;background:var(--head);mix-blend-mode:color;pointer-events:none;z-index:-1}
+.mas-ir{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mas-ir button{display:flex;align-items:center;gap:8px;min-height:46px;padding:0 12px;border-radius:14px;border:1px solid var(--hline);background:var(--hcard);color:var(--htx);font-weight:700;font-size:14px;text-align:left}
+.mas-ir button svg{width:18px;height:18px;flex:none;color:var(--arete)}
+.mas-ic{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--anil-bg);color:var(--anil5);flex:none}
+.mas-ic svg{width:22px;height:22px}
+.mas-datos{display:flex;flex-direction:column;gap:12px}
+.chips.wrap{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.paletas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.pal{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:transparent;padding:4px 0;color:var(--ink2);font-size:12.5px;font-weight:700}
+.pal i{width:100%;max-width:58px;aspect-ratio:1;border-radius:16px;border:2px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.pal[aria-pressed="true"]{color:var(--ink)}
+.pal[aria-pressed="true"] i{border-color:var(--ink);box-shadow:0 0 0 3px var(--arete)}
+.mas-av{border:1.5px dashed var(--line);border-radius:16px;padding:12px 14px}
+.mas-av summary{font-weight:700;color:var(--ink2);cursor:pointer;min-height:32px;display:flex;align-items:center}
+.mas-av[open]{display:flex;flex-direction:column;gap:10px}
 .arow.acard{display:flex;gap:10px;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px}
 .arow.acard+.arow.acard{margin-top:10px}
 .ac-c{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
@@ -1218,35 +1244,45 @@ function lectCard(A,days){
 
 /* ---------- Más ---------- */
 PAGES.mas=()=>{
-  const cfg=S.config;let tema='auto';try{tema=localStorage.getItem('rumentis-tema')||'auto';}catch(e){}
+  const cfg=S.config;let tema='auto',pal='noche';try{tema=localStorage.getItem('rumentis-tema')||'auto';pal=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
   const rac=R.length?R.map(([k,r])=>`<button type="button" class="row" data-act="f" data-f="racion" data-id="${esc(k)}"><div class="tx"><b>${esc(r.nombre)}</b><span>${pk(r.costoKg)} el kilo${(r.ings||[]).length?', '+r.ings.map(i=>esc(i.n)).join(', '):''}</span></div>${ico('chev')}</button>`).join(''):`<p class="empty">Aún no tienes raciones.</p>`;
-  const C=calc();const gg=[...C.generales].reverse().slice(0,8);
+  const C=calc();const gg=[...C.generales].reverse().slice(0,6);
   const gas=gg.length?gg.map(i=>`<div class="row"><div class="tx"><b>${esc(i.cat)}: ${money(i.monto)}</b><span>${ffc(i.f)}${i.desc?', '+esc(i.desc):''}</span></div><button type="button" class="del" data-act="delItems" data-ids="${i.id}" aria-label="Borrar gasto">${ico('papelera')}</button></div>`).join(''):`<p class="empty">Sin gastos generales.</p>`;
   const f=(k,l,v,extra='',hint='')=>`<div class="q"><label for="c_${k}">${l}</label><input class="in" id="c_${k}" name="${k}" value="${esc(v)}" ${extra}>${hint?`<small>${hint}</small>`:''}</div>`;
-  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><h1>Más</h1><p class="sub">Raciones, ajustes, descargas y respaldo.</p></div></header>
+  const IR=[['m-finca','Tu finca','lote'],['m-rac','Raciones','racion'],['m-gas','Gastos','gasto'],['m-datos','Datos','graficos'],['m-apar','Colores','hoy'],['m-ayuda','Ayuda','mas']];
+  const fila=(ic,b,sp,attrs)=>`<${attrs.startsWith('href')?'a':'button type="button"'} class="row" ${attrs}><span class="ic mas-ic">${ic}</span><div class="tx"><b>${b}</b><span>${sp}</span></div>${ico('chev')}</${attrs.startsWith('href')?'a':'button'}>`;
+  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(cfg.finca||'Mi engorde')}${cfg.ubicacion?' · '+esc(cfg.ubicacion):''}</span><h1>Más</h1><p class="sub">Tu finca, tus datos y cómo se ve la app.</p></div>
+   <div class="mas-ir">${IR.map(([id,t,ic])=>`<button type="button" data-act="irA" data-id="${id}">${ico(ic)}<span>${t}</span></button>`).join('')}</div></header>
   <main class="bd">
-   <section class="sec">${secH('Herramientas')}<div class="card rows">
-    <a class="row" href="#formular"><span class="ic ic-y" style="width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center">${ico('racion')}</span><div class="tx"><b>Formular dieta</b><span>La mezcla más barata que cubre lo que necesitan</span></div>${ico('chev')}</a>
-    <button type="button" class="row" data-act="rumiAskOpen" data-q="¿Qué puedes hacer?"><span class="rumi-mini">${rumiSVG()}</span><div class="tx"><b>Todo lo que hace Rumi</b><span>Cálculos, dosis, compras, proyecciones y más</span></div>${ico('chev')}</button>
-    <a class="row" href="#metodologia"><span class="ic" style="background:var(--card2)">${ico("graficos")}</span><div class="tx"><b>Cómo calcula Rumentis</b><span>Fórmulas, fuentes y supuestos de cada número</span></div>${ico("chev")}</a>
-    <button type="button" class="row" data-act="tour"><span class="ic ic-a" style="width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center">${ico('hoy')}</span><div class="tx"><b>Recorrido por la app</b><span>Seis pasos cortos</span></div>${ico('chev')}</button></div></section>
-   <section class="sec">${secH('Raciones',R.length,lnkB('f','Nueva ración','data-f="racion"'))}<div class="card rows">${rac}</div></section>
-   <section class="sec">${secH('Gastos generales','',lnkB('f','Registrar gasto','data-f="gasto"'))}<div class="card rows">${gas}</div><p class="hint">Los gastos que no son de un lote en particular, como sueldos o energía.</p></section>
-   <section class="sec">${secH('Unidad de peso')}<div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div><p class="hint">Pesos, ganancias, consumos y precios se muestran y se escriben en ${U()==='lb'?'libras':'kilos'}. Tus datos no cambian.</p></section>
-   <section class="sec">${secH('Tu engorde')}<form class="card pad" data-form="cfg" style="display:flex;flex-direction:column;gap:16px">
+   <section class="sec" id="m-finca">${secH('Tu finca')}<form class="card pad" data-form="cfg" style="display:flex;flex-direction:column;gap:16px">
     ${f('finca','Nombre',cfg.finca,'required')}${f('ubicacion','Ubicación',cfg.ubicacion,'placeholder="Aldea, municipio"')}
     <div class="two">${f('precioVentaKg','Precio de venta por kilo',r2u(PKd(+cfg.precioVentaKg||0)),'inputmode="decimal"')}${f('moneda','Moneda',cfg.moneda,'maxlength="4"')}</div>
     <div class="two">${f('metaKg','Peso meta de venta',Math.round(W(+cfg.metaKg||480)),'inputmode="numeric"','kg por cabeza')}${f('gdpEsperada','Ganancia esperada',r2u(W(+cfg.gdpEsperada||1.3)),'inputmode="decimal"','kg al día, para lotes sin pesar')}${f('desbaste','Desbaste al vender',cfg.desbaste??4,'inputmode="decimal"','% que pierden al pesarse en ayunas (el NRC usa 4 %)')}</div>
     ${f('horas','Horarios de entrega de alimento',cfg.horas,'','Sepáralos con comas. Por ejemplo: 6:00, 11:00, 15:00')}
     ${f('diasSinPesar','Avisar si un lote no se pesa en',cfg.diasSinPesar,'inputmode="numeric"','días')}
+    
+    <div class="q"><span class="lb">Unidad de peso</span><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div><small>Pesos, ganancias y precios se muestran en ${U()==='lb'?'libras':'kilos'}. Tus datos no cambian.</small></div>
     <button class="btn pri">Guardar</button></form></section>
-   <section class="sec">${secH('Apariencia')}<div class="seg" role="group" aria-label="Tema">${[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(([v,t])=>`<button type="button" data-act="tema" data-v="${v}" aria-pressed="${tema===v}">${t}</button>`).join('')}</div></section>
-   <section class="sec">${secH('Descargar para Excel')}<div class="acts">${[['expLotes','Lotes'],['expAlim','Alimento'],['expPes','Pesajes'],['expSan','Sanidad'],['expMov','Ventas y muertes'],['expGas','Gastos']].map(([a,t])=>`<button type="button" class="btn" data-act="${a}">${t}</button>`).join('')}</div></section>
-   <section class="sec">${secH('Respaldo')}<p class="hint">${MODE==='db'?'Tus datos se guardan en la nube.':window.Android?'Tus datos se guardan en este teléfono. Descarga un respaldo cada semana y guárdalo en Drive o mándatelo por WhatsApp.':'Tus datos se guardan en este dispositivo. Descarga respaldos con frecuencia.'}</p>
-    <div class="acts"><button type="button" class="btn pri" data-act="respaldo">Descargar respaldo</button><button type="button" class="btn" data-act="importar">Restaurar respaldo</button></div></section>
-   <section class="sec">${secH('Datos')}<div class="acts"><button type="button" class="btn" data-act="demo">Cargar engorde de ejemplo</button><button type="button" class="btn danger" data-act="borrarTodo">Borrar todo</button></div>
-    <div class="firma">${FIRMA}<span>versión 3.1</span></div></section>
+   <section class="sec" id="m-rac">${secH('Raciones y dietas',R.length,lnkB('f','Nueva ración','data-f="racion"'))}<div class="card rows">${fila(ico('racion'),'Formular dieta','Rumi calcula la mezcla más barata','href="#formular"')}${rac}</div></section>
+   <section class="sec" id="m-gas">${secH('Gastos generales')}<div class="card rows">${gas}</div><p class="hint">Sueldos, energía y otros gastos que no son de un lote. Se anotan en Registrar, Gasto; aquí los revisas o borras.</p></section>
+   <section class="sec" id="m-datos">${secH('Tus datos')}<div class="card pad mas-datos">
+     <p class="hint" style="margin:0">${MODE==='db'?'Tus datos se guardan en la nube.':window.Android?'Todo se guarda en este teléfono, también las fotos de tus animales. Descarga un respaldo cada semana y guárdalo en Drive o mándatelo por WhatsApp.':'Tus datos se guardan en este dispositivo. Descarga respaldos con frecuencia.'}</p>
+     <div class="acts"><button type="button" class="btn pri" data-act="respaldo">Descargar respaldo</button><button type="button" class="btn" data-act="importar">Restaurar</button></div>
+     <span class="lb">Descargar para Excel</span>
+     <div class="chips wrap">${[['expLotes','Lotes'],['expAlim','Alimento'],['expPes','Pesajes'],['expSan','Sanidad'],['expMov','Ventas y muertes'],['expGas','Gastos']].map(([a,t])=>`<button type="button" class="chip" data-act="${a}">${t}</button>`).join('')}</div></div></section>
+   <section class="sec" id="m-apar">${secH('Apariencia')}<div class="card pad" style="display:flex;flex-direction:column;gap:14px">
+     <div class="seg" role="group" aria-label="Tema">${[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(([v,t])=>`<button type="button" data-act="tema" data-v="${v}" aria-pressed="${tema===v}">${t}</button>`).join('')}</div>
+     <span class="lb">Paleta de colores</span>
+     <div class="paletas" id="apariencia">${PALETAS.map(([v,t,a,b,c])=>`<button type="button" class="pal" data-act="paleta" data-v="${v}" aria-pressed="${pal===v}"><i style="background:linear-gradient(135deg,${a} 0 55%,${b} 55% 72%,${c} 72%)"></i><span>${t}</span></button>`).join('')}</div></div></section>
+   <section class="sec" id="m-ayuda">${secH('Ayuda')}<div class="card rows">
+    ${fila(`<span class="rumi-mini">${rumiSVG()}</span>`,'Menú de Rumi','Números, salud, calculadoras y la guía de engorde','data-act="rumi"')}
+    ${fila(ico('hoy'),'Recorrido por la app','Seis pasos cortos','data-act="tour"')}
+    ${fila(ico('graficos'),'Cómo calcula Rumentis','Fórmulas, fuentes y supuestos de cada número','href="#metodologia"')}</div></section>
+   <details class="sec mas-av"><summary>Opciones avanzadas</summary>
+    <p class="hint">Para probar la app sin tus datos, o empezar de cero. Descarga un respaldo antes.</p>
+    <div class="acts"><button type="button" class="btn" data-act="demo">Probar con datos de ejemplo</button><button type="button" class="btn danger" data-act="borrarTodo">Borrar todo</button></div></details>
+   <div class="firma">${FIRMA}<span>versión 3.4</span></div>
   </main>`;
 };
 
@@ -1503,6 +1539,8 @@ const ACTS={
   reabrir:el=>{const id=el.dataset.id;put('lotes',id,{...S.lotes[id],estado:'activo',fechaCierre:null});toast('Lote reabierto');},
   unidad:el=>{put('ajustes','finca',{...S.config,unidad:el.dataset.v});toast(el.dataset.v==='lb'?'Ahora todo se muestra en libras':'Ahora todo se muestra en ki\u200blos');},
   tema:el=>{try{localStorage.setItem('rumentis-tema',el.dataset.v);}catch(e){}aplicarTema();render();},
+  paleta:el=>{try{localStorage.setItem('rumentis-paleta',el.dataset.v);}catch(e){}aplicarTema();render();},
+  irA:el=>{const t=document.getElementById(el.dataset.id);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});},
   importar:()=>$('#fileImp').click(),
   demo:()=>{if(Object.keys(S.lotes).length)confirmar('Cargar ejemplo','Se reemplazan todos tus datos por un engorde de ejemplo. Descarga un respaldo antes si lo necesitas.','Cargar ejemplo',cargarDemo);else cargarDemo();},
   borrarTodo:()=>confirmar('Borrar todo','Se eliminan todos los lotes, raciones y registros. Esto no se puede deshacer.','Borrar todo',()=>{borrarTodo();toast('Datos borrados');}),
@@ -1647,12 +1685,15 @@ sheetEl().addEventListener('click',e=>{if(e.target===sheetEl())closeSheet();});
 addEventListener('hashchange',()=>{closeSheet();UI.histAll=0;scrollTo(0,0);render();});
 
 /* ============ tema y puente Android ============ */
-function aplicarTema(){let t='auto';try{t=localStorage.getItem('rumentis-tema')||'auto';}catch(e){}
-  if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);syncBarras();}
+function aplicarTema(){let t='auto',pa='noche';try{t=localStorage.getItem('rumentis-tema')||'auto';pa=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
+  const r=document.documentElement;if(t==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',t);
+  let osc=t==='dark';if(t==='auto'){try{osc=matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){}}
+  r.setAttribute('data-modo',osc?'dark':'light');r.setAttribute('data-paleta',pa);syncBarras();}
+const PALETAS=[['noche','Noche','#22384D','#F0BF33','#F1EDE5'],['potrero','Potrero','#1D3A2B','#EDC04A','#ECEFE4'],['barro','Barro','#4B2B1F','#F2B441','#F3EAE0'],['atardecer','Atardecer','#3A2344','#F4A259','#F2ECEE'],['mar','Río','#0F3B45','#F2C14E','#E9EFF0']];
 function syncBarras(){if(!(window.Android&&Android.barras))return;
   requestAnimationFrame(()=>{try{const cs=getComputedStyle(document.documentElement);const h=cs.getPropertyValue('--head').trim();
     const nb=$('nav.bottom');const nbg=nb?getComputedStyle(nb).backgroundColor:h;Android.barras(h,nbg,true);}catch(e){}});}
-try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncBarras();render();});}catch(e){}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{aplicarTema();render();});}catch(e){}
 window.androidBack=()=>{if($('#spot')){cerrarSpot();return true;}const d=sheetEl();if(d&&d.open){closeSheet();return true;}return false;};
 window.hatoGuardado=ok=>toast(ok?'Archivo guardado':'No se pudo guardar el archivo',ok?2600:4000);
 
@@ -2661,10 +2702,10 @@ const ACCIONES={
 };
 const LUGARES=[
   {re:/grafic/,go:'#graficos',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',how:['Toca <b>Gráficos</b> abajo.','Arriba eliges un lote o todos, y el período.','Baja para ver peso, ganancia, consumo, conversión, costos, margen y más.']},
-  {re:/respaldo|copia de seguridad|backup|recuperar|restaurar/,go:'#mas',sel:'[data-act="respaldo"]',t:'Respaldo',how:['Toca <b>Más</b> abajo a la derecha.','Busca <b>Respaldo</b> y toca <b>Descargar respaldo</b>.','Guarda el archivo en Drive o mándatelo por WhatsApp.']},
-  {re:/excel|exportar|descargar (los )?datos|hoja de calculo|csv/,go:'#mas',sel:'[data-act="expLotes"]',t:'Descargar para Excel',how:['Toca <b>Más</b>.','En <b>Descargar para Excel</b> elige qué quieres: lotes, alimento, pesajes y más.']},
-  {re:/precio|horario|ajuste|configur|nombre de la finca|moneda|peso meta general/,go:'#mas',sel:'form[data-form="cfg"]',t:'Ajustes',how:['Toca <b>Más</b>.','En <b>Tu engorde</b> cambia el precio de venta, el peso meta, los horarios de entrega y más.','Toca <b>Guardar</b>.']},
-  {re:/tema|modo oscuro|oscuro|claro|colores/,go:'#mas',sel:'[data-act="tema"]',t:'Apariencia',how:['Toca <b>Más</b>.','En <b>Apariencia</b> elige Claro, Oscuro o Automático.']},
+  {re:/respaldo|copia de seguridad|backup|recuperar|restaurar/,go:'#mas',sel:'[data-act="respaldo"]',t:'Respaldo',how:['Toca <b>Más</b> abajo a la derecha.','En <b>Tus datos</b> toca <b>Descargar respaldo</b>.','Guarda el archivo en Drive o mándatelo por WhatsApp.']},
+  {re:/excel|exportar|descargar (los )?datos|hoja de calculo|csv/,go:'#mas',sel:'[data-act="expLotes"]',t:'Descargar para Excel',how:['Toca <b>Más</b>.','En <b>Tus datos</b>, en Descargar para Excel, elige qué quieres: lotes, alimento, pesajes y más.']},
+  {re:/precio|horario|ajuste|configur|nombre de la finca|moneda|peso meta general/,go:'#mas',sel:'form[data-form="cfg"]',t:'Ajustes',how:['Toca <b>Más</b>.','En <b>Tu finca</b> cambia el precio de venta, el peso meta, los horarios de entrega, la unidad de peso y más.','Toca <b>Guardar</b>.']},
+  {re:/tema|modo oscuro|oscuro|claro|colores/,go:'#mas',sel:'[data-act="tema"]',t:'Apariencia',how:['Toca <b>Más</b>.','En <b>Apariencia</b> elige Claro, Oscuro o Automático, y la paleta de colores que más te guste.']},
   {re:/borrar|eliminar|me equivoque|corregir|deshacer/,go:'#registrar',sel:'.del',t:'Corregir un registro',how:['Toca <b>Registrar</b>. Abajo, en <b>Lo último que anotaste</b>, toca la papelera del registro equivocado.','También puedes entrar al lote y borrarlo desde su <b>Historial</b>.','Luego vuelve a anotarlo bien.']},
   {re:/editar (el )?lote|cambiar (el )?lote|modificar (el )?lote/,go:'#lotes',sel:'.lote',t:'Editar un lote',how:['Toca <b>Lotes</b> y entra al lote.','Baja hasta <b>Datos del lote</b> y toca <b>Editar</b>.']},
   {re:/\blotes\b|ver (mis )?lotes/,go:'#lotes',sel:'nav.bottom [data-nav="lotes"]',t:'Lotes',how:['Toca <b>Lotes</b> abajo para ver tus lotes en engorde y los vendidos.']},
@@ -3332,7 +3373,7 @@ SABER.push(
  {re:/agua (fria|caliente)|bebedero al sol/,t:'Agua fresca',x:'El agua muy caliente reduce el consumo. Pon los bebederos en sombra y revisa que se llenen rápido.'},
  {re:/descargar el camion|al bajar del camion|descarga/,t:'Descarga del camión',x:'Baja a los animales con calma por una rampa firme, sin gritos ni palos. Dales agua y heno y déjalos descansar antes de pesar o vacunar.'},
  {re:/mezclar bien|como mezclar|mezclado/,t:'Cómo mezclar',x:'Primero lo que va en mayor cantidad, luego lo mediano y al final los minerales y la urea, que van en poca cantidad y deben quedar bien repartidos. Mezcla de 3 a 5 minutos después de echar lo último.'},
- {re:/entregas al dia|veces al dia|horario de comida|a que hora (darles|servir)/,t:'Horarios de entrega',x:'Dos o tres entregas al día a horas fijas mantienen el rumen estable. En calor, da más en la tarde y noche. Cambia tus horarios en Más, Tu engorde.'}
+ {re:/entregas al dia|veces al dia|horario de comida|a que hora (darles|servir)/,t:'Horarios de entrega',x:'Dos o tres entregas al día a horas fijas mantienen el rumen estable. En calor, da más en la tarde y noche. Cambia tus horarios en Más, Tu finca.'}
 );
 
 /* ---------- más ejemplos para entender por parecido ---------- */

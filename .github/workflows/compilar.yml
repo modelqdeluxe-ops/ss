@@ -1,5 +1,5 @@
 # Compila Rumentis y publica el APK y el AAB como Release de GitHub.
-# El APK con el modelo pesa ~550 MB: no cabe en el repo, pero sí en un Release (hasta 2 GB).
+# El APK y el AAB se publican en un Release para descargarlos.
 #
 # Firma: agrega en Settings > Secrets and variables > Actions los secretos
 #   KEYSTORE_B64 (el .keystore en base64), KEYSTORE_PASS, KEY_ALIAS (hato) y KEY_PASS.
