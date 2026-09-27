@@ -80,38 +80,52 @@ function respDuda(temas){
   return {html:'No estoy seguro de qué me preguntas. ¿Te refieres a alguno de estos temas?',sug:temas,nou:true};
 }
 
-// ¿Debe Rumi entender esta pregunta con la Guía, en vez de dejar la respuesta de las reglas?
+const firma=r=>typeof firmaRespuesta==='function'?firmaRespuesta(r):'otra';
+const esCharla=txt=>{try{const t=norm(txt).replace(/[¿?¡!,.]/g,' ').replace(/\s+/g,' ').trim();return typeof CHARLA!=='undefined'&&CHARLA.some(c=>c[0].test(t));}catch(e){return false;}};
+const esFueraTxt=r=>/^Eso (se sale de lo mío|no lo sé)/.test(texto(r&&r.html));
+
+// ¿Debe Rumi pasar esta pregunta por el modelo de comprensión?
 E.maneja=function(txt,r){
   if(E.estado==='apagado'||E.estado==='error')return false;
   if(E.esDosis(txt))return true;
-  if(r&&(r.run||r.btns&&r.btns.length))return false;
-  const f=typeof firmaRespuesta==='function'?firmaRespuesta(r):'otra';
-  return f==='debil'||f==='saber'||f==='definicion'||/^Eso (se sale de lo mío|no lo sé)/.test(texto(r&&r.html));
+  if(typeof RUMI!=='undefined'&&RUMI.flujo)return false;          // conversación guiada en curso (crear lote, pesar…)
+  if(esCharla(txt))return false;                                    // saludos y charla: los contestan las reglas
+  const f=firma(r);
+  if(E.estado!=='listo')return f==='debil'||f==='saber'||f==='definicion'||esFueraTxt(r);   // respaldo por palabras
+  return true;                                                       // con el modelo: siempre decide primero
 };
 
 E.responder=async function(txt,r){
   if(E.esDosis(txt)){botSay({html:RESP_DOSIS,sug:sugs(),nou:true});return;}
   E.ocupado=true;
-  let out=null;
+  let out=null,usarReglas=true;
   try{
     const {res,via}=await entender(txt);
-    const f=typeof firmaRespuesta==='function'?firmaRespuesta(r):'otra';
-    const top=res[0],seg=res[1];
+    const f=firma(r),top=res[0],seg=res[1];
     const temas=res.filter(x=>x.c!=='FUERA'&&x.c!=='APP'&&tema(x.c));
     const reglaTema=(/^<b>([^<]+)<\/b><br>/.exec((r&&r.html)||'')||[])[1];
-    if(top){
-      if(top.c==='FUERA'&&top.s>=U.fuera){out={html:FUERA_HTML,sug:sugs(),nou:true};}
-      else if(top.c==='APP'){                                  // orden de la app: que respondan las reglas
-        if(f==='debil'&&temas.length&&temas[0].s>=U.duda)out=respDuda(temas.slice(0,3).map(x=>x.c));
-      }
-      else if(f==='saber'||f==='definicion'){
-        // Las reglas ya dieron un tema: solo se cambia si el modelo está seguro de otro tema.
-        const suyo=res.find(x=>x.c===reglaTema);
-        if(tema(top.c)&&top.c!==reglaTema&&top.s>=U.tema&&(!suyo||suyo.s<top.s-0.03))out=respTema(top.c,temas);
-      }
-      else if(tema(top.c)&&top.s>=U.tema&&(!seg||seg.c===top.c||top.s-seg.s>=U.margen||!tema(seg.c)))out=respTema(top.c,temas);
+    const numeros=/\d/.test(txt)||/\blote\b/.test(norm(txt));      // las calculadoras y órdenes de la app llevan números
+    const accion=!!(r&&(r.run||r.btns&&r.btns.length));
+    const reglasUtiles=f!=='debil'&&!esFueraTxt(r)&&(numeros||!accion);
+    const claro=top&&top.s>=U.tema&&(!seg||seg.c===top.c||!tema(seg.c)||top.s-seg.s>=U.margen);
+    if(!top){/* sin resultado: quedan las reglas */}
+    else if(via==='palabras'){
+      // Sin el modelo: solo se corrigen las respuestas débiles o de "otro tema" de las reglas.
+      if(tema(top.c)&&claro&&(f==='debil'||esFueraTxt(r)||(reglaTema&&reglaTema!==top.c)))out=respTema(top.c,temas);
+    }
+    else if(top.c==='APP'||(seg&&seg.c==='APP'&&top.s-seg.s<0.03)){
+      // Orden o pregunta sobre tus datos: la contestan las reglas.
+      if(f==='debil'&&temas.length&&temas[0].s>=U.duda)out=respDuda(temas.slice(0,3).map(x=>x.c));
+    }
+    else if(top.c==='FUERA'){
+      if(top.s>=U.duda&&!(numeros&&accion))out={html:FUERA_HTML,sug:sugs(),nou:true};
+    }
+    else if(tema(top.c)){
+      if(reglaTema===top.c){/* las reglas dieron el mismo tema */}
+      else if(numeros&&reglasUtiles){/* calculadora de las reglas con tus números */}
+      else if(claro)out=respTema(top.c,temas);
       else if(temas.length&&temas[0].s>=U.duda)out=respDuda(temas.slice(0,3).map(x=>x.c));
-      else if(top.c==='FUERA'&&top.s>=U.duda)out={html:FUERA_HTML,sug:sugs(),nou:true};
+      else if(f==='debil'||accion&&!numeros)out={html:'No estoy seguro de haberte entendido. Pregúntame de otra forma, o toca una de estas opciones.',sug:temas.length?temas.slice(0,3).map(x=>x.c):sugs(),nou:true};
     }
     if(out)out.via=via;
   }catch(e){out=null;}

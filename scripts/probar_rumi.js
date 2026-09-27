@@ -26,6 +26,11 @@ const PREGUNTAS=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2],'utf8
   'que medidas lleva una manga para ganado',
   'donde entierro un novillo que se murio',
   'dosis de ivermectina para 350 kilos',
+  'hola rumi',
+  'pese el lote 3, 420 kilos',
+  'espacio de comedero para 50 cabezas',
+  'que es la acidosis',
+  'el ganado esta flaco y no se que hacer',
 ];
 
 (async()=>{
