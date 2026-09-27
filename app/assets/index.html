@@ -496,6 +496,47 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .arow.head{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:-4px}
 .arow+.arow{margin-top:8px}
 .arow.raro .ar-p{border-color:var(--rojo);box-shadow:0 0 0 3px var(--rojo-bg)}
+.arow.acard{display:flex;gap:10px;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px}
+.arow.acard+.arow.acard{margin-top:10px}
+.ac-c{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.ac-r{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr) 44px;gap:8px;align-items:center}
+.ac-r.r2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.pind .acard .ar-v{grid-column:1/-1}
+.acard .in{min-height:46px;padding:0 12px;font-size:15px}.acard .unit input{padding-right:34px}.acard .unit em{right:10px;font-size:13px}
+.acard .ar-v{display:none}.pind .acard .ar-v{display:block}
+.foto-b{flex:none;width:74px;border:1.5px dashed var(--line);border-radius:14px;background:var(--bg);color:var(--ink2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;position:relative;overflow:hidden}
+.foto-b small{font-size:11.5px;font-weight:700}
+.foto{position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;color:var(--ink2);overflow:hidden;flex:none}
+.foto svg{width:24px;height:24px}
+.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.foto.con svg{display:none}
+.foto-b:has(.foto.con){border-style:solid;border-color:var(--verde);padding:0}
+.foto-b:has(.foto.con) .foto{position:absolute;inset:0;width:auto;height:auto;border-radius:0}
+.foto-b:has(.foto.con) small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);color:#fff;padding:2px 0;text-align:center}
+.foto-b.grande{width:132px;height:132px}.foto-b.grande .foto{width:56px;height:56px}.foto-b.grande .foto svg{width:34px;height:34px}
+.foto-ed{display:flex;align-items:center;gap:16px}
+.aimg{position:relative;display:flex;flex:none}
+.aimg .foto.mini{position:absolute;inset:0;width:auto;height:auto;border-radius:12px;z-index:1;display:none}
+.aimg .foto.mini.con{display:flex}
+.aimg .foto.mini svg{display:none}
+.an-ttl{display:flex;align-items:center;gap:14px}
+.an-foto{flex:none;width:76px;height:76px;border-radius:20px;border:2px solid var(--hline);background:var(--hcard);padding:0;color:var(--htx2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.an-foto .foto{width:100%;height:100%;border-radius:0;color:var(--htx2)}
+.cam{position:fixed;inset:0;z-index:9999;background:#000;display:flex;margin:0;border:0;width:100%;height:100%;max-width:none;max-height:none;flex-direction:column;color:#fff;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.cam::backdrop{background:#000}
+.cam-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.cam-top b{font-size:17px}
+.cam-x{width:44px;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center}.cam-x svg{width:22px;height:22px}
+.cam-v{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cam-v video,.cam-v img{max-width:100%;max-height:100%;object-fit:contain}
+.cam-guia{position:absolute;inset:14% 8%;border:2px solid rgba(255,255,255,.5);border-radius:24px;pointer-events:none}
+.cam-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:18px 20px 26px}
+.cam-gal{justify-self:start;min-height:44px;padding:0 16px;border-radius:22px;border:0;background:rgba(255,255,255,.14);color:#fff;font-weight:700}
+.cam-disp{width:76px;height:76px;border-radius:50%;border:4px solid #fff;background:transparent;padding:5px}
+.cam-disp i{display:block;width:100%;height:100%;border-radius:50%;background:#fff}
+.cam-disp:active i{transform:scale(.9)}
+.cam.flash::after{content:'';position:fixed;inset:0;background:#fff;animation:camf .25s ease-out forwards;pointer-events:none}
+@keyframes camf{from{opacity:.9}to{opacity:0}}
 .xbtn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink2);display:flex;align-items:center;justify-content:center}.xbtn svg{width:18px;height:18px}
 .pegar{border:1.5px dashed var(--line);border-radius:14px;padding:10px 12px}
 .pegar summary{font-weight:700;font-size:14px;color:var(--anil5);cursor:pointer;min-height:28px;display:flex;align-items:center}
@@ -805,7 +846,7 @@ function calc(){
     const conv=kgGan>0&&kgTot>0?kgTot/kgGan:null;
     const san=g.sanidad.reduce((s,x)=>s+(+x.costo||0),0);
     const gas=g.gasto.reduce((s,x)=>s+(+x.monto||0),0);
-    const compra=cab0*p0*(+l.precioCompraKg||0)+(+l.flete||0);
+    const compra=(l.animales&&l.animales.length&&l.animales.every(z=>+z.costo>0)?l.animales.reduce((t,z)=>t+ +z.costo,0):cab0*p0*(+l.precioCompraKg||0))+(+l.flete||0);
     const costoOp=costoAlim+san+gas;
     const costoKgGan=kgGan>0?costoOp/kgGan:null;
     const costoTot=compra+costoOp;
@@ -1052,7 +1093,7 @@ PAGES.lote=id=>{
   const cons=`<section class="sec">${secH('Consumo por cabeza',UW()+' al día')}<div class="gcard">${lineChart({series:[{name:'Consumo',color:'var(--s2)',pts:Wpts(cd)}]})}</div></section>`;
   // números por cabeza
   const cb=x.activo?x.proy.cabBase:(x.cab0-x.bajas)||1,pc=v=>money(v/cb);
-  let eco=`<div><div class="t"><span>Compra</span><small>${nf(x.p0)} kg a ${pk(+l.precioCompraKg||0)}${+l.flete?', con flete':''}</small></div><span class="n">${pc(x.compra)}</span></div>
+  let eco=`<div><div class="t"><span>Compra</span><small>${l.modoPrecio==='animal'?'precio de cada animal':l.precioLote&&l.precioLote.tipo==='total'?'precio del lote, igual por animal':`${nf(x.p0)} kg a ${pk(+l.precioCompraKg||0)}`}${+l.flete?', con flete':''}</small></div><span class="n">${pc(x.compra)}</span></div>
    <div><div class="t"><span>Alimento a la fecha</span><small>${nf(x.kgTot/cb)} kg por cabeza</small></div><span class="n">${pc(x.costoAlim)}</span></div>`;
   if(x.activo)eco+=`<div><div class="t"><span>Alimento hasta la meta</span><small>unos ${x.diasMeta} días más</small></div><span class="n">${pc(x.proy.alimRest)}</span></div>`;
   eco+=`<div><div class="t"><span>Sanidad</span></div><span class="n">${pc(x.san)}</span></div>`;
@@ -1561,7 +1602,7 @@ function cargarDemo(){
     for(const t of L.pes)if(t<=end){const fp=addDias(ing,t);const pesos={};
       for(const a of an){const muerto=items.some(i=>i.tipo==='baja'&&i.lote===L.id&&i.animales&&i.animales.includes(a.id)&&i.f<=fp);if(muerto)continue;pesos[a.id]=Math.round((wi(a,t)+(rnd()-0.5)*8)*10)/10;}
       const vs=Object.values(pesos);items.push({tipo:'pesaje',f:fp,lote:L.id,prom:Math.round(vs.reduce((s,v)=>s+v,0)/vs.length*10)/10,cab:vs.length,pesos});}
-    const lote={nombre:L.nombre,cabezas:L.cab,animales:an.map(a=>({id:a.id,arete:a.arete,p0:a.p0})),fechaIngreso:ing,pesoIngreso:Math.round(an.reduce((s,a)=>s+a.p0,0)/an.length*10)/10,precioCompraKg:L.pc,flete:L.fl,tipo:L.tipo,raza:L.raza,metaKg:480,proveedor:L.prov,racion:L.id==='lt14'?RI:RF,estado:'activo'};
+    const lote={nombre:L.nombre,cabezas:L.cab,animales:an.map((a,i)=>({id:a.id,arete:a.arete,p0:a.p0,raza:['Brahman cruzado','Brahman','Brahman cruzado','Nelore','Brangus','Brahman cruzado','Gyr'][(i*5+3)%7],color:['Blanco','Gris','Rojo','Pinto rojo','Blanco','Cenizo','Negro','Barcino','Amarillo'][(i*7+2)%9],costo:Math.round(an.reduce((t,z)=>t+z.p0,0)*L.pc/an.length*100)/100})),modoPrecio:'lote',precioLote:{tipo:'kg'},fechaIngreso:ing,pesoIngreso:Math.round(an.reduce((s,a)=>s+a.p0,0)/an.length*10)/10,precioCompraKg:L.pc,flete:L.fl,tipo:L.tipo,raza:L.raza,metaKg:480,proveedor:L.prov,racion:L.id==='lt14'?RI:RF,estado:'activo'};
     if(L.venta){const fv=addDias(ing,end);const vs=an.filter(a=>vivo[a.id]);const kg=Math.round(vs.reduce((s,a)=>s+wi(a,end),0));items.push({tipo:'venta',f:fv,lote:L.id,cab:vs.length,animales:vs.map(a=>a.id),kg,precioKg:L.id==='lt9'?59.5:58,comprador:'Empacadora del Valle'});lote.estado='cerrado';lote.fechaCierre=fv;}
     put('lotes',L.id,lote);
   }
@@ -2060,7 +2101,7 @@ function animalesCalc(x){
     const fin=estado==='muerto'?muerto[a.id].f:estado==='vendido'?vendido[a.id].f:H;
     const pesoHoy=estado==='activo'?ult.v+(gdp||x.gdpUse)*Math.max(0,dias(ult.f,H)):(estado==='vendido'&&vendido[a.id].pesos&&vendido[a.id].pesos[a.id]?+vendido[a.id].pesos[a.id]:ult.v);
     const san=g.sanidad.filter(s=>!s.animales||s.animales.includes(a.id));
-    return {id:a.id,arete:a.arete,p0:+a.p0,nota:a.nota||'',serie,ult,gdp,estado,fin,pesoHoy,san,baja:muerto[a.id]||null,venta:vendido[a.id]||null,diasSinPesar:dias(ult.f,H),pesado:serie.length>1};
+    return {id:a.id,arete:a.arete,p0:+a.p0,nota:a.nota||'',raza:a.raza||'',color:a.color||'',costo:+a.costo||0,serie,ult,gdp,estado,fin,pesoHoy,san,baja:muerto[a.id]||null,venta:vendido[a.id]||null,diasSinPesar:dias(ult.f,H),pesado:serie.length>1};
   });
   out.sort((u,v)=>(parseInt(u.arete)||0)-(parseInt(v.arete)||0)||String(u.arete).localeCompare(String(v.arete)));
   return out;
@@ -2181,7 +2222,7 @@ function animalesSec(x){
   const filas=A.map(a=>{
     const c=a.estado!=='activo'?'':a.gdp==null?'':a.gdp>=prom?'var(--verde)':a.gdp>=prom*0.7?'var(--tierra)':'var(--rojo)';
     const est=a.estado==='muerto'?'<span class="pill p-rojo">Murió</span>':a.estado==='vendido'?'<span class="pill p-anil">Vendido</span>':`<b style="color:${c||'var(--ink)'}">${a.gdp!=null?nf(a.gdp,2)+' kg':'–'}</b>`;
-    return `<a class="arow2${a.estado!=='activo'?' off':''}" href="#animal/${encodeURIComponent(id)}/${encodeURIComponent(a.id)}">${tagHtml(a.arete)}<div class="tx"><b>${nf(a.pesoHoy)} kg</b><span>${a.pesado?`pesado ${cuando(a.ult.f)}`:'sin pesar desde la entrada'}</span></div><div class="av">${est}<span>${a.estado==='activo'?'por día':''}</span></div></a>`;
+    return `<a class="arow2${a.estado!=='activo'?' off':''}" href="#animal/${encodeURIComponent(id)}/${encodeURIComponent(a.id)}"><span class="aimg">${fotoBox(a.id,'mini')}${tagHtml(a.arete)}</span><div class="tx"><b>${nf(a.pesoHoy)} kg</b><span>${[a.raza,a.color].filter(Boolean).map(esc).join(', ')||(a.pesado?`pesado ${cuando(a.ult.f)}`:'sin pesar desde la entrada')}</span></div><div class="av">${est}<span>${a.estado==='activo'?'por día':''}</span></div></a>`;
   }).join('');
   return `<div class="an-res"><span><b>${act.length}</b> activos</span>${mu?`<span><b>${mu}</b> muertos</span>`:''}${ve?`<span><b>${ve}</b> vendidos</span>`:''}<span>ganancia de <b>${x.gdpMin!=null?nf(x.gdpMin,2):'–'}</b> a <b>${x.gdpMax!=null?nf(x.gdpMax,2)+' kg':'–'}</b></span></div>
    <div class="chips">${ORDENES.map(([v,t])=>`<button type="button" class="chip" data-act="ui" data-k="orden" data-v="${v}" aria-pressed="${o===v}">${t}</button>`).join('')}</div>
@@ -2209,10 +2250,10 @@ PAGES.animal=(lid,aid)=>{
   if(a.venta)ev.push({f:a.venta.f,t:'Vendido',s:a.venta.comprador||''});
   ev.sort((u,v)=>u.f<v.f?1:-1);
   const hist=`<section class="sec">${secH('Trazabilidad',ev.length)}<div class="card rows">${ev.map(e=>`<div class="row"><div class="tx"><b>${esc(e.t)}</b><span>${ffc(e.f)}${e.s?', '+esc(e.s):''}</span></div></div>`).join('')}</div></section>`;
-  const datos=`<section class="sec">${secH('Datos')}<div class="card pad eco" style="padding-top:6px"><div><span class="sm">Arete</span><span class="n">${esc(a.arete)}</span></div><div><span class="sm">Lote</span><span class="n">${esc(x.l.nombre)}</span></div><div><span class="sm">Raza</span><span class="n">${esc(x.l.raza||'–')}</span></div>${a.nota?`<div><span class="sm">Nota</span><span class="n">${esc(a.nota)}</span></div>`:''}</div>
+  const datos=`<section class="sec">${secH('Datos')}<div class="card pad eco" style="padding-top:6px"><div><span class="sm">Arete</span><span class="n">${esc(a.arete)}</span></div><div><span class="sm">Lote</span><span class="n">${esc(x.l.nombre)}</span></div><div><span class="sm">Raza</span><span class="n">${esc(a.raza||x.l.raza||'–')}</span></div><div><span class="sm">Color</span><span class="n">${esc(a.color||'–')}</span></div><div><span class="sm">Costo de compra</span><span class="n">${a.costo?money(a.costo):'–'}</span></div>${a.nota?`<div><span class="sm">Nota</span><span class="n">${esc(a.nota)}</span></div>`:''}</div>
    <div class="acts"><button type="button" class="btn" data-act="f" data-f="animal" data-lote="${esc(lid)}" data-id="${esc(aid)}">${ico('editar')}Editar</button></div></section>`;
   return `<header class="hd">${hdBack('#lote/'+encodeURIComponent(lid),esc(x.l.nombre),'<span class="sync"></span>')}
-   <div class="ttl" style="margin-top:-6px"><h1>Arete ${esc(a.arete)}</h1><p class="sub">${esc(x.l.nombre)}${x.l.raza?', '+esc(x.l.raza):''}. ${a.estado==='activo'?`En engorde desde el ${ffl(x.l.fechaIngreso)}.`:a.estado==='muerto'?`Murió el ${ffl(a.fin)}.`:`Vendido el ${ffl(a.fin)}.`}</p></div>${hero}</header>
+   <div class="ttl an-ttl" style="margin-top:-6px"><button type="button" class="an-foto" data-act="fotoVer" data-id="${esc(a.id)}" data-t="Arete ${esc(a.arete)}" aria-label="Ver foto">${fotoBox(a.id)}</button><div><h1>Arete ${esc(a.arete)}</h1><p class="sub">${esc(x.l.nombre)}${a.raza||x.l.raza?', '+esc(a.raza||x.l.raza):''}${a.color?', '+esc(a.color.toLowerCase()):''}. ${a.estado==='activo'?`En engorde desde el ${ffl(x.l.fechaIngreso)}.`:a.estado==='muerto'?`Murió el ${ffl(a.fin)}.`:`Vendido el ${ffl(a.fin)}.`}</p></div></div>${hero}</header>
    <main class="bd">${acc}${graf}${hist}${datos}</main>`;
 };
 
@@ -2234,112 +2275,179 @@ document.addEventListener('click',e=>{
 ACTS.multiTodos=el=>{const f=el.closest('form');const g=$(`.multi[data-name="${el.dataset.name}"]`,f);const bs=$$('button',g);const all=bs.every(b=>b.getAttribute('aria-pressed')==='true');bs.forEach(b=>b.setAttribute('aria-pressed',all?'false':'true'));
   f.elements[el.dataset.name].value=all?'':bs.map(b=>b.dataset.v).join(',');const c=g.parentNode.querySelector('[data-cnt]');if(c)c.textContent=`${all?0:bs.length} de ${bs.length}`;f.elements[el.dataset.name].dispatchEvent(new Event('change',{bubbles:true}));};
 
-/* ---------- nuevo lote: datos y luego cada animal ---------- */
+/* ---------- nuevo lote: datos, cada animal (arete, peso, raza, color y foto) y precio de compra ---------- */
 const _formLote0=FORMS.lote,_saveLote0=SAVE.lote;
-const filaAnimal=(ar='',peso='')=>`<div class="arow"><input class="in ar-t" name="ar_t" value="${esc(ar)}" aria-label="Arete" autocomplete="off"><div class="unit"><input class="in ar-p" name="ar_p" inputmode="decimal" value="${esc(peso)}" placeholder="Peso" aria-label="Peso de entrada" autocomplete="off"><em>kg</em></div><button type="button" class="xbtn" data-act="delFila" aria-label="Quitar">${ico('x')}</button></div>`;
+const RAZAS=['Brahman','Brahman cruzado','Nelore','Gyr','Guzerat','Indubrasil','Sardo negro','Brangus','Beefmaster','Simbrah','Charbray','Simmental','Charolais','Angus','Holstein','Pardo suizo','Jersey','Criollo','Cruzado'];
+const COLORES=['Blanco','Gris','Rojo','Negro','Café','Amarillo','Pinto blanco y negro','Pinto rojo','Barcino','Hosco','Cenizo','Moro','Josco'];
+const listasAnimal=()=>`<datalist id="dlRaza">${RAZAS.map(r=>`<option value="${r}">`).join('')}</datalist><datalist id="dlColor">${COLORES.map(r=>`<option value="${r}">`).join('')}</datalist>`;
+window.FOTOS_TEMP=new Set();
+const IC_CAM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+const fotoBox=(id,cls='')=>`<span class="foto ${cls}"><img data-foto="${esc(id)}" alt="" hidden>${IC_CAM}</span>`;
+const filaAnimal=(ar='',peso='',o={})=>{const id=o.id||uid('a');FOTOS_TEMP.add(id);return `<div class="arow acard" data-id="${esc(id)}">
+ <button type="button" class="foto-b" data-act="fotoFila" aria-label="Tomar foto del animal">${fotoBox(id)}<small>Foto</small></button>
+ <div class="ac-c"><div class="ac-r"><input class="in ar-t" name="ar_t" value="${esc(ar)}" placeholder="Arete" aria-label="Arete" autocomplete="off"><div class="unit"><input class="in ar-p" name="ar_p" inputmode="decimal" value="${esc(peso)}" placeholder="Peso" aria-label="Peso de entrada" autocomplete="off"><em>kg</em></div><button type="button" class="xbtn" data-act="delFila" aria-label="Quitar">${ico('x')}</button></div>
+ <div class="ac-r r2"><input class="in ar-r" name="ar_r" list="dlRaza" value="${esc(o.raza||'')}" placeholder="Raza" aria-label="Raza" autocomplete="off"><input class="in ar-c" name="ar_c" list="dlColor" value="${esc(o.color||'')}" placeholder="Color" aria-label="Color" autocomplete="off"><div class="unit ar-v"><input class="in ar-cv" name="ar_v" inputmode="decimal" value="${esc(o.costo||'')}" placeholder="Precio" aria-label="Precio de este animal" autocomplete="off"><em>${esc(S.config.moneda||'L')}</em></div></div></div></div>`;};
+const masComun=l=>{const c={};for(const v of l)if(v)c[v]=(c[v]||0)+1;return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';};
+const compraAnimales=l=>(l.animales||[]).reduce((s,a)=>s+(+a.costo||0),0);
+/* sección del precio de compra: promedio del lote (por kg o total, se reparte igual) o precio de cada animal */
+function precioSec(l,num0){
+  const mp=l?l.modoPrecio||'lote':'lote',tp=l&&l.precioLote?l.precioLote.tipo:'kg';
+  const val=l?(tp==='total'?Math.round(compraAnimales(l)||(+l.precioCompraKg*l.pesoIngreso*l.cabezas)):r2u(PKd(l.precioCompraKg))):'';
+  return `<div class="paso-t"><span>${num0}</span><b>Precio de compra</b></div>
+   ${segBtns('modoP',[['lote','Precio del lote'],['animal','Precio por animal']],mp)}
+   <div data-plote>${segBtns('tipoP',[['kg','Por kilo'],['total','Total del lote']],tp)}
+    ${q('Precio',inp('precio',val,{unit:'por kg',ph:'0.00',id:'l_precio'}),'','l_precio')}
+    <p class="hint" style="margin:0">Así se compra casi siempre: un precio para todo el lote. El costo se reparte igual entre los animales.</p></div>
+   <p class="hint" data-panimal hidden style="margin:0">Escribe el precio que pagaste por cada animal en su fila.</p>
+   ${q('Flete y comisión',inp('flete',l?l.flete||'':'',{unit:S.config.moneda||'L',ph:'0'}),'Total del lote')}`;
+}
+function prevPrecio(f){
+  const mp=fv(f,'modoP')||'lote';const pl_=$('[data-plote]',f),pa=$('[data-panimal]',f);if(!pl_)return;
+  pl_.hidden=mp!=='lote';if(pa)pa.hidden=mp!=='animal';f.classList.toggle('pind',mp==='animal');
+  const u=$('#l_precio',f);if(u){const em=u.parentNode.querySelector('em');if(em)em.textContent=fv(f,'tipoP')==='total'?(S.config.moneda||'L'):aUnidad('por kg');}
+}
+/* reparte o suma el costo de compra; devuelve null si falta algo */
+function costosCompra(f,an){
+  const mp=fv(f,'modoP')||'lote',kgT=an.reduce((s,a)=>s+a.p0,0);
+  if(mp==='animal'){const falta=an.filter(a=>!(a.costo>0)).length;if(falta)return {err:`Falta el precio de ${pl(falta,'animal','animales')}. Escríbelo en su fila o cambia a Precio del lote.`};
+    const tot=an.reduce((s,a)=>s+a.costo,0);return {mp,tot,pkg:kgT?tot/kgT:0};}
+  const tp=fv(f,'tipoP')||'kg',v=num(fv(f,'precio'))||0;
+  const tot=tp==='total'?v:precioToKg(v)*kgT;
+  an.forEach(a=>a.costo=an.length?Math.round(tot/an.length*100)/100:0);
+  return {mp,tp,tot,pkg:kgT?tot/kgT:0,v};
+}
 FORMS.lote=({id}={})=>{
   const l=id?S.lotes[id]:null;
   if(l&&!tieneAnimales(l))return _formLote0({id});
+  FOTOS_TEMP.clear();
   const nums=Object.values(S.lotes).map(z=>parseInt(String(z.nombre).replace(/\D/g,''))||0);
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
   const datos=`<div class="paso-t"><span>1</span><b>Datos del lote</b></div>
    ${q('Nombre',`<input class="in" name="nombre" value="${esc(l?l.nombre:'Lote '+((Math.max(0,...nums))+1))}" required autocomplete="off">`)}
-   <div class="two">${q('Fecha de entrada',`<input class="in" type="date" name="f" value="${l?l.fechaIngreso:hoy()}" max="${hoy()}" required>`)}${q('Precio de compra',inp('precio',l?r2u(PKd(l.precioCompraKg)):'',{unit:'por kg',ph:'0.00'}))}</div>
-   <div class="two">${q('Flete y comisión',inp('flete',l?l.flete||'':'',{unit:S.config.moneda||'L',ph:'0'}),'Total del lote')}${q('Peso meta',inp('meta',Math.round(W(l?l.metaKg:S.config.metaKg)),{mode:'numeric',unit:'kg'}))}</div>
+   <div class="two">${q('Fecha de entrada',`<input class="in" type="date" name="f" value="${l?l.fechaIngreso:hoy()}" max="${hoy()}" required>`)}${q('Peso meta',inp('meta',Math.round(W(l?l.metaKg:S.config.metaKg)),{mode:'numeric',unit:'kg'}))}</div>
    ${q('Tipo de animales',opts('tipo',TIPOS_LOTE,l?l.tipo:'Machos enteros'))}
-   <div class="two">${q('Raza o cruce',`<input class="in" name="raza" value="${esc(l?l.raza:'')}" placeholder="Brahman cruzado" autocomplete="off">`)}${q('Proveedor',`<input class="in" name="proveedor" value="${esc(l?l.proveedor:'')}" placeholder="Opcional" autocomplete="off">`)}</div>
+   <div class="two">${q('Proveedor',`<input class="in" name="proveedor" value="${esc(l?l.proveedor:'')}" placeholder="Opcional" autocomplete="off">`)}${l?q('Raza o cruce',`<input class="in" name="raza" list="dlRaza" value="${esc(l.raza||'')}" autocomplete="off">`):''}</div>
    ${R.length?q('Ración',opts('racion',R.map(([k,r])=>({v:k,t:r.nombre})),l?l.racion:R[0][0])):''}`;
-  if(l){openSheet(shHead('Editar lote',esc(l.nombre))+formWrap('lote',datos,foot('Guardar cambios')),null);$('#sheet form').dataset.id=id;return;}
+  if(l){
+    const pr=l.modoPrecio==='animal'?`<div class="paso-t"><span>2</span><b>Precio de compra</b></div><p class="hint" style="margin:0">Este lote se compró con precio por animal (${money(compraAnimales(l))} en total). Cambia el precio de un animal desde su ficha.</p>${q('Flete y comisión',inp('flete',l.flete||'',{unit:S.config.moneda||'L',ph:'0'}),'Total del lote')}<input type="hidden" name="modoP" value="animal">`:precioSec(l,2);
+    openSheet(shHead('Editar lote',esc(l.nombre))+formWrap('lote',listasAnimal()+datos+pr,foot('Guardar cambios','<b data-sum></b><span data-sub></span>')),()=>{const f=$('#sheet form');f.dataset.id=id;PREV.lote(f);});return;}
   const anim=`<div class="paso-t"><span>2</span><b>Animales</b></div>
-   ${segBtns('modoA',[['ind','Peso de cada animal'],['prom','Solo el promedio']],'ind')}
-   <div data-ind><p class="hint">Escribe el arete y el peso de entrada de cada animal. Enter pasa al siguiente y agrega filas solas.</p>
-    <div class="arow head"><span>Arete</span><span>Peso de entrada</span><span></span></div>
-    <div data-rows>${[1,2,3,4,5].map(i=>filaAnimal(String(i),'')).join('')}</div>
-    <div class="acts"><button type="button" class="btn" data-act="addFila">${ico('nuevo')}Agregar animal</button></div>
-    <details class="pegar"><summary>Pegar varios pesos a la vez</summary><textarea class="in" name="pegar" rows="3" placeholder="Por ejemplo: 650, 700, 680 o una línea por animal: 101 650"></textarea><button type="button" class="btn" data-act="pegarPesos">Llenar la lista</button></details></div>
-   <div data-prom hidden>
-    <div class="two">${q('Cabezas',inp('cabezas','',{mode:'numeric',ph:'0'}))}${q('¿Cómo pesaron?',segBtns('modo',[['prom','Promedio'],['tot','Total']],'prom'))}</div>
-    ${q('Peso de entrada',inp('val','',{xl:true,unit:'kg',ph:'0',id:'l_val'}),'Sin aretes no podrás seguir a cada animal. Puedes agregarlos después.','l_val')}</div>`;
-  openSheet(shHead('Nuevo lote','Registrar')+formWrap('lote',datos+anim,foot('Crear lote','<b data-sum></b><span data-sub></span>')),()=>PREV.lote($('#sheet form')));
+   <p class="hint" style="margin:0">Pon cada animal con su arete, peso de entrada, raza y color. Toca el recuadro de la cámara para tomarle una foto. Enter pasa al siguiente.</p>
+   <div data-rows>${[1,2,3].map(i=>filaAnimal(String(i),'')).join('')}</div>
+   <div class="acts"><button type="button" class="btn" data-act="addFila">${ico('nuevo')}Agregar animal</button></div>
+   <details class="pegar"><summary>Pegar varios pesos a la vez</summary><textarea class="in" name="pegar" rows="3" placeholder="Por ejemplo: 650, 700, 680 o una línea por animal: 101 650"></textarea><button type="button" class="btn" data-act="pegarPesos">Llenar la lista</button></details>`;
+  openSheet(shHead('Nuevo lote','Registrar')+formWrap('lote',listasAnimal()+datos+anim+precioSec(null,3),foot('Crear lote','<b data-sum></b><span data-sub></span>')),()=>PREV.lote($('#sheet form')));
 };
 PREV.lote=f=>{
-  if(!f)return;
-  const ind=fv(f,'modoA')!=='prom';const di=$('[data-ind]',f),dp=$('[data-prom]',f);if(di){di.hidden=!ind;dp.hidden=ind;}
-  const p=num(fv(f,'precio'))||0,fl=num(fv(f,'flete'))||0;let n=0,prom=0;
-  if(!di){return;}
-  if(ind){const ps=$$('input[name="ar_p"]',f).map(i=>num(i.value)).filter(v=>v>0);n=ps.length;prom=n?ps.reduce((s,v)=>s+v,0)/n:0;
-    $$('.arow',f).forEach(r=>{const i=$('.ar-p',r);if(!i)return;const k=toKg(num(i.value));r.classList.toggle('raro',k>0&&(k<120||k>650));});}
-  else{const c=num(fv(f,'cabezas')),v=num(fv(f,'val'));n=c||0;prom=c>0&&v>0?(fv(f,'modo')==='tot'?v/c:v):0;}
-  const tot=n&&prom&&p?n*prom*p+fl:0;
-  $('[data-sum]',f).textContent=n?`${pl(n,'animal','animales')}, ${nf(prom)} ${UW()}`:'';
-  $('[data-sub]',f).textContent=tot?`${money(tot)} de compra`:'';
+  if(!f)return;prevPrecio(f);
+  const id=f.dataset.id,l=id?S.lotes[id]:null;
+  if(l){if(!$('[data-plote]',f))return;const tp=fv(f,'tipoP'),v=num(fv(f,'precio'))||0,kgT=(l.animales||[]).reduce((s,a)=>s+ +a.p0,0);const tot=tp==='total'?v:precioToKg(v)*kgT;const n=(l.animales||[]).length;
+    $('[data-sum]',f).textContent=tot?money(tot+(num(fv(f,'flete'))||0)):'';$('[data-sub]',f).textContent=tot&&n?`${money(tot/n)} por animal`:'';return;}
+  const filas=$$('.acard',f).map(r=>({p:toKg(num($('.ar-p',r).value)),v:num($('.ar-cv',r).value)})).filter(o=>o.p>0);
+  $$('.acard',f).forEach(r=>{const k=toKg(num($('.ar-p',r).value));r.classList.toggle('raro',k>0&&(k<120||k>650));});
+  const n=filas.length,kgT=filas.reduce((s,o)=>s+o.p,0),fl=num(fv(f,'flete'))||0;
+  let tot=0;if((fv(f,'modoP')||'lote')==='animal')tot=filas.reduce((s,o)=>s+(o.v||0),0);else{const v=num(fv(f,'precio'))||0;tot=fv(f,'tipoP')==='total'?v:precioToKg(v)*kgT;}
+  $('[data-sum]',f).textContent=n?`${pl(n,'animal','animales')}, ${nf(W(kgT/n))} ${UW()}`:'';
+  $('[data-sub]',f).textContent=tot?`${money(tot+fl)} de compra, ${money(tot/Math.max(1,n))} por animal`:'';
 };
 SAVE.lote=f=>{
   const id=f.dataset.id,old=id?S.lotes[id]:null;
   if(old&&!tieneAnimales(old))return _saveLote0(f);
   const nombre=fv(f,'nombre').trim();if(!nombre)return ferr(f,'Escribe el nombre del lote.');
-  const base={nombre,fechaIngreso:fv(f,'f')||hoy(),precioCompraKg:Math.round(precioToKg(num(fv(f,'precio'))||0)*10000)/10000,flete:num(fv(f,'flete'))||0,
-    tipo:fv(f,'tipo'),raza:fv(f,'raza').trim(),metaKg:num(fv(f,'meta'))?Math.round(toKg(num(fv(f,'meta')))):+S.config.metaKg,proveedor:fv(f,'proveedor').trim(),racion:fv(f,'racion')||(old?old.racion:null)};
-  if(old){put('lotes',id,{...old,...base});closeSheet();toast('Lote actualizado');return;}
-  if(fv(f,'modoA')==='prom'){if(!f.elements.cabezas)return;return _saveLote0(f);}
-  const ts=$$('input[name="ar_t"]',f),ps=$$('input[name="ar_p"]',f);const an=[];const vistos=new Set();let raro=0;
-  for(let i=0;i<ps.length;i++){const v=num(ps[i].value);if(!(v>0))continue;let ar=(ts[i].value||'').trim()||String(i+1);if(vistos.has(ar))return ferr(f,`El arete ${ar} está repetido.`);vistos.add(ar);const kg=toKg(v);if(kg<120||kg>650)raro++;an.push({id:uid('a'),arete:ar,p0:Math.round(kg*10)/10});}
-  if(!an.length)return ferr(f,'Escribe el peso de al menos un animal, o cambia a "Solo el promedio".');
+  const base={nombre,fechaIngreso:fv(f,'f')||hoy(),flete:num(fv(f,'flete'))||0,
+    tipo:fv(f,'tipo'),metaKg:num(fv(f,'meta'))?Math.round(toKg(num(fv(f,'meta')))):+S.config.metaKg,proveedor:fv(f,'proveedor').trim(),racion:fv(f,'racion')||(old?old.racion:null)};
+  if(old){
+    const d={...old,...base,raza:f.elements.raza?fv(f,'raza').trim():old.raza};
+    if(old.modoPrecio!=='animal'){
+      const an=(old.animales||[]).map(a=>({...a,p0:+a.p0}));const c=costosCompra(f,an);
+      if(c.mp==='animal'){d.modoPrecio='animal';}  // se cambió a precio por animal: se conserva el reparto actual y se edita en cada ficha
+      else{d.animales=old.animales.map((a,i)=>({...a,costo:an[i].costo}));d.modoPrecio='lote';d.precioLote={tipo:c.tp};d.precioCompraKg=Math.round(c.pkg*10000)/10000;}
+    }
+    put('lotes',id,d);closeSheet();toast('Lote actualizado');return;}
+  const an=[];const vistos=new Set();let raro=0;
+  for(const r of $$('.acard',f)){const v=num($('.ar-p',r).value);if(!(v>0))continue;let ar=($('.ar-t',r).value||'').trim()||String(an.length+1);if(vistos.has(ar))return ferr(f,`El arete ${ar} está repetido.`);vistos.add(ar);const kg=toKg(v);if(kg<120||kg>650)raro++;
+    an.push({id:r.dataset.id,arete:ar,p0:Math.round(kg*10)/10,raza:$('.ar-r',r).value.trim(),color:$('.ar-c',r).value.trim(),costo:num($('.ar-cv',r).value)||0});}
+  if(!an.length)return ferr(f,'Escribe el peso de entrada de al menos un animal.');
+  const c=costosCompra(f,an);if(c.err)return ferr(f,c.err);
+  if(!(c.tot>0)&&!f.dataset.sinPrecio){f.dataset.sinPrecio='1';return ferr(f,'No pusiste el precio de compra. Sin él no puedo calcular el margen. Si quieres crearlo así, toca Crear lote otra vez.');}
   if(raro&&!f.dataset.ok){f.dataset.ok='1';return ferr(f,`${pl(raro,'animal tiene','animales tienen')} un peso poco común para engorde (marcados en rojo). Revísalos; si están bien, toca Crear lote otra vez.`);}
-  const d={...base,animales:an,cabezas:an.length,pesoIngreso:Math.round(promedio(an.map(a=>a.p0))*10)/10,estado:'activo'};
-  const nid=uid('l');put('lotes',nid,d);closeSheet();toast(`${nombre} creado con ${pl(an.length,'animal','animales')}`);
+  const d={...base,raza:masComun(an.map(a=>a.raza)),modoPrecio:c.mp,precioLote:c.mp==='lote'?{tipo:c.tp}:null,precioCompraKg:Math.round(c.pkg*10000)/10000,
+    animales:an,cabezas:an.length,pesoIngreso:Math.round(promedio(an.map(a=>a.p0))*10)/10,estado:'activo'};
+  const nid=uid('l');put('lotes',nid,d);FOTOS_TEMP.clear();closeSheet();toast(`${nombre} creado con ${pl(an.length,'animal','animales')}`);
   UI.nextTab='resumen';location.hash='#lote/'+encodeURIComponent(nid);
 };
 Object.assign(ACTS,{
-  addFila:el=>{const f=el.closest('form');const w=$('[data-rows]',f);const ts=$$('input[name="ar_t"]',f);const last=ts[ts.length-1];const n=last&&/^\d+$/.test(last.value)?String(+last.value+1):'';w.insertAdjacentHTML('beforeend',aUnidad(filaAnimal(n,'')));$('.ar-p',w.lastElementChild).focus();},
-  delFila:el=>{const r=el.closest('.arow');const f=r.closest('form');if($$('.arow',$('[data-rows]',f)).length>1)r.remove();else $$('input',r).forEach(i=>i.value='');PREV.lote(f);},
+  addFila:el=>{const f=el.closest('form');const w=$('[data-rows]',f);const rs=$$('.acard',w);const last=rs[rs.length-1];const lt=last&&$('.ar-t',last).value;const n=lt&&/^\d+$/.test(lt)?String(+lt+1):'';
+    w.insertAdjacentHTML('beforeend',aUnidad(filaAnimal(n,'',{raza:last?$('.ar-r',last).value:''})));$('.ar-p',w.lastElementChild).focus();},
+  delFila:el=>{const r=el.closest('.arow');const f=r.closest('form');if($$('.arow',$('[data-rows]',f)).length>1){Fotos.borrar(r.dataset.id);r.remove();}else $$('input',r).forEach(i=>i.value='');if(PREV[f.dataset.form])PREV[f.dataset.form](f);},
+  fotoFila:async el=>{const r=el.closest('.acard');const ar=$('.ar-t',r).value.trim();const b=await Fotos.tomar(ar?'Arete '+ar:'Foto del animal');if(!b)return;await Fotos.guardar(r.dataset.id,b);toast('Foto guardada');},
   pegarPesos:el=>{const f=el.closest('form');const txt=f.elements.pegar.value;const pares=[];
     for(const lin of txt.split(/\n|;/))for(const ch of lin.split(',')){const nums=(ch.match(/\d+(?:\.\d+)?/g)||[]).map(Number);if(nums.length===2)pares.push([String(nums[0]),nums[1]]);else nums.forEach(v=>pares.push([null,v]));}
     if(!pares.length){toast('No encontré pesos en el texto.');return;}
-    const w=$('[data-rows]',f);const ex=$$('.arow',w).filter(r=>num($('.ar-p',r).value)>0);let sig=ex.length?(+$('.ar-t',ex[ex.length-1]).value||ex.length)+1:1;
-    w.innerHTML=ex.map(r=>aUnidad(filaAnimal($('.ar-t',r).value,$('.ar-p',r).value))).join('')+pares.map(([ar,v])=>aUnidad(filaAnimal(ar||String(sig++),String(v)))).join('');
-    f.elements.pegar.value='';PREV.lote(f);toast(`Agregué ${pl(pares.length,'peso','pesos')}`);}
+    const w=$('[data-rows]',f);const vac=$$('.acard',w).filter(r=>!(num($('.ar-p',r).value)>0));vac.forEach(r=>{if(!$('.foto.con',r))r.remove();});
+    const ex=$$('.acard',w);const lt=ex.length?$('.ar-t',ex[ex.length-1]).value:'';let sig=(+lt||ex.length)+1;const rz=ex.length?$('.ar-r',ex[ex.length-1]).value:'';
+    w.insertAdjacentHTML('beforeend',pares.map(([ar,v])=>aUnidad(filaAnimal(ar||String(sig++),String(v),{raza:rz}))).join(''));
+    f.elements.pegar.value='';if(PREV[f.dataset.form])PREV[f.dataset.form](f);toast(`Agregué ${pl(pares.length,'peso','pesos')}`);}
 });
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter'||!e.target.classList)return;
-  if(e.target.classList.contains('ar-p')||e.target.classList.contains('ar-t')){
-    e.preventDefault();const f=e.target.form;const ins=$$('.ar-t,.ar-p',f);const i=ins.indexOf(e.target);
-    if(e.target.classList.contains('ar-t')){ins[i+1]&&ins[i+1].focus();return;}
-    const ps=$$('.ar-p',f);const j=ps.indexOf(e.target);if(ps[j+1])ps[j+1].focus();else ACTS.addFila($('[data-act="addFila"]',f));
+  if(e.target.closest&&e.target.closest('.acard')&&e.target.matches('input')){
+    e.preventDefault();const f=e.target.form;const r=e.target.closest('.acard');
+    if(e.target.classList.contains('ar-t')){$('.ar-p',r).focus();return;}
+    const rs=$$('.acard',f);const j=rs.indexOf(r);if(rs[j+1])$('.ar-p',rs[j+1]).focus();else ACTS.addFila($('[data-act="addFila"]',f));
   }
   if(e.target.classList.contains('pw')){e.preventDefault();const ps=$$('.pw',e.target.form);const j=ps.indexOf(e.target);if(ps[j+1])ps[j+1].focus();else e.target.blur();}
 });
 
 /* ---------- agregar animales a un lote existente / editar un animal ---------- */
 FORMS.animales=({lote}={})=>{
-  const l=S.lotes[lote];if(!l)return;
-  const body=`<p class="hint">Agrega los aretes y pesos de entrada de los animales de <b>${esc(l.nombre)}</b>.${tieneAnimales(l)?'':' Como este lote se anotó con promedio, los animales que agregues reemplazan ese promedio.'}</p>
-   <div class="arow head"><span>Arete</span><span>Peso de entrada</span><span></span></div><div data-rows>${[0,1,2].map(i=>filaAnimal(String((+areteSig(l))+i),'')).join('')}</div>
+  const l=S.lotes[lote];if(!l)return;FOTOS_TEMP.clear();
+  const ind=l.modoPrecio==='animal';
+  const body=`${listasAnimal()}<p class="hint">Agrega los animales de <b>${esc(l.nombre)}</b> con su arete, peso de entrada, raza, color y foto.${tieneAnimales(l)?'':' Como este lote se anotó con promedio, los animales que agregues reemplazan ese promedio.'}${ind?' Escribe el precio de cada uno.':` Su costo se calcula con el precio del lote (${pk(+l.precioCompraKg||0)} el kilo).`}</p>
+   <div data-rows>${[0,1,2].map(i=>filaAnimal(String((+areteSig(l))+i),'',{raza:l.raza||''})).join('')}</div>
    <div class="acts"><button type="button" class="btn" data-act="addFila">${ico('nuevo')}Agregar otro</button></div>
    <details class="pegar"><summary>Pegar varios pesos a la vez</summary><textarea class="in" name="pegar" rows="3" placeholder="650, 700, 680"></textarea><button type="button" class="btn" data-act="pegarPesos">Llenar la lista</button></details>`;
-  openSheet(shHead('Agregar animales',esc(l.nombre))+formWrap('animales',body,foot('Guardar animales','<b data-sum></b><span data-sub></span>'),`data-lote="${esc(lote)}"`));
+  openSheet(shHead('Agregar animales',esc(l.nombre))+formWrap('animales',body,foot('Guardar animales','<b data-sum></b><span data-sub></span>'),`data-lote="${esc(lote)}"`),()=>{const f=$('#sheet form');f.classList.toggle('pind',ind);});
 };
 PREV.animales=f=>{const ps=$$('input[name="ar_p"]',f).map(i=>num(i.value)).filter(v=>v>0);$('[data-sum]',f).textContent=ps.length?`${pl(ps.length,'animal','animales')}, ${nf(promedio(ps))} ${UW()}`:'';};
 SAVE.animales=f=>{
   const lid=f.dataset.lote,l=S.lotes[lid];if(!l)return;
-  const ts=$$('input[name="ar_t"]',f),ps=$$('input[name="ar_p"]',f);const prev=l.animales||[];const vistos=new Set(prev.map(a=>a.arete));const nuevos=[];
-  for(let i=0;i<ps.length;i++){const v=num(ps[i].value);if(!(v>0))continue;const ar=(ts[i].value||'').trim()||String(prev.length+nuevos.length+1);if(vistos.has(ar))return ferr(f,`El arete ${ar} ya existe.`);vistos.add(ar);nuevos.push({id:uid('a'),arete:ar,p0:Math.round(toKg(v)*10)/10});}
+  const prev=l.animales||[];const vistos=new Set(prev.map(a=>a.arete));const nuevos=[];const ind=l.modoPrecio==='animal';
+  for(const r of $$('.acard',f)){const v=num($('.ar-p',r).value);if(!(v>0))continue;const ar=($('.ar-t',r).value||'').trim()||String(prev.length+nuevos.length+1);if(vistos.has(ar))return ferr(f,`El arete ${ar} ya existe.`);vistos.add(ar);
+    const p0=Math.round(toKg(v)*10)/10;const costo=ind?num($('.ar-cv',r).value)||0:Math.round(p0*(+l.precioCompraKg||0)*100)/100;
+    if(ind&&!(costo>0))return ferr(f,`Falta el precio del arete ${ar}.`);
+    nuevos.push({id:r.dataset.id,arete:ar,p0,raza:$('.ar-r',r).value.trim(),color:$('.ar-c',r).value.trim(),costo});}
   if(!nuevos.length)return ferr(f,'Escribe al menos un peso.');
-  const all=prev.concat(nuevos);
-  put('lotes',lid,{...l,animales:all,cabezas:all.length,pesoIngreso:Math.round(promedio(all.map(a=>a.p0))*10)/10});
+  const all=prev.concat(nuevos);const kgT=all.reduce((s,a)=>s+ +a.p0,0);
+  const d={...l,animales:all,cabezas:all.length,pesoIngreso:Math.round(promedio(all.map(a=>+a.p0))*10)/10};
+  if(ind&&kgT)d.precioCompraKg=Math.round(compraAnimales(d)/kgT*10000)/10000;
+  if(!d.raza)d.raza=masComun(all.map(a=>a.raza));
+  put('lotes',lid,d);FOTOS_TEMP.clear();
   closeSheet();toast(`Agregué ${pl(nuevos.length,'animal','animales')} a ${l.nombre}`);UI.loteTab='animales';render();
 };
 FORMS.animal=({lote,id}={})=>{
   const l=S.lotes[lote];const a=l&&(l.animales||[]).find(z=>z.id===id);if(!a)return;
-  const body=`${q('Arete',`<input class="in" name="arete" value="${esc(a.arete)}" autocomplete="off">`)}${q('Peso de entrada',inp('p0',Math.round(W(a.p0)),{unit:'kg',xl:true}))}${q('Nota',`<input class="in" name="nota" value="${esc(a.nota||'')}" placeholder="Opcional: color, marca, señas" autocomplete="off">`)}
+  const ind=l.modoPrecio==='animal';
+  const body=`${listasAnimal()}<div class="foto-ed"><button type="button" class="foto-b grande" data-act="fotoAnimal" data-id="${esc(id)}" aria-label="Tomar foto">${fotoBox(id)}<small>Tomar foto</small></button><button type="button" class="lnk" data-act="fotoQuitar" data-id="${esc(id)}">Quitar foto</button></div>
+   <div class="two">${q('Arete',`<input class="in" name="arete" value="${esc(a.arete)}" autocomplete="off">`)}${q('Peso de entrada',inp('p0',Math.round(W(a.p0)),{unit:'kg'}))}</div>
+   <div class="two">${q('Raza',`<input class="in" name="raza" list="dlRaza" value="${esc(a.raza||'')}" autocomplete="off">`)}${q('Color',`<input class="in" name="color" list="dlColor" value="${esc(a.color||'')}" autocomplete="off">`)}</div>
+   ${ind?q('Precio de compra',inp('costo',a.costo||'',{unit:S.config.moneda||'L'}),'Lo que pagaste por este animal'):`<p class="hint" style="margin:0">Costo de compra: <b>${money(+a.costo||+a.p0*(+l.precioCompraKg||0))}</b>, su parte del precio del lote.</p>`}
+   ${q('Nota',`<input class="in" name="nota" value="${esc(a.nota||'')}" placeholder="Opcional: marcas, señas, cuernos" autocomplete="off">`)}
    <button type="button" class="btn danger" data-act="delAnimal" data-lote="${esc(lote)}" data-id="${esc(id)}">Quitar este animal del lote</button>`;
   openSheet(shHead('Arete '+esc(a.arete),esc(l.nombre))+formWrap('animal',body,foot('Guardar')),()=>{const f=$('#sheet form');f.dataset.lote=lote;f.dataset.id=id;});
 };
 SAVE.animal=f=>{const l=S.lotes[f.dataset.lote];if(!l)return;const ar=fv(f,'arete').trim();if(!ar)return ferr(f,'Escribe el arete.');
   if(l.animales.some(z=>z.arete===ar&&z.id!==f.dataset.id))return ferr(f,'Ese arete ya existe en el lote.');
-  const an=l.animales.map(z=>z.id===f.dataset.id?{...z,arete:ar,p0:Math.round(toKg(num(fv(f,'p0'))||W(z.p0))*10)/10,nota:fv(f,'nota').trim()}:z);
-  put('lotes',f.dataset.lote,{...l,animales:an,pesoIngreso:Math.round(promedio(an.map(a=>a.p0))*10)/10});closeSheet();toast('Animal actualizado');};
-ACTS.delAnimal=el=>{const l=S.lotes[el.dataset.lote];confirmar('Quitar animal','Se quita este animal del lote. Sus pesajes quedan en el historial del lote.','Quitar',()=>{const an=l.animales.filter(z=>z.id!==el.dataset.id);put('lotes',el.dataset.lote,{...l,animales:an,cabezas:an.length,pesoIngreso:an.length?Math.round(promedio(an.map(a=>a.p0))*10)/10:l.pesoIngreso});location.hash='#lote/'+encodeURIComponent(el.dataset.lote);toast('Animal quitado');});};
+  const an=l.animales.map(z=>z.id===f.dataset.id?{...z,arete:ar,p0:Math.round(toKg(num(fv(f,'p0'))||W(z.p0))*10)/10,raza:fv(f,'raza').trim(),color:fv(f,'color').trim(),nota:fv(f,'nota').trim(),...(f.elements.costo?{costo:num(fv(f,'costo'))||0}:{})}:z);
+  const d={...l,animales:an,pesoIngreso:Math.round(promedio(an.map(a=>+a.p0))*10)/10};
+  if(l.modoPrecio==='animal'){const kgT=an.reduce((s,a)=>s+ +a.p0,0);if(kgT)d.precioCompraKg=Math.round(compraAnimales(d)/kgT*10000)/10000;}
+  put('lotes',f.dataset.lote,d);closeSheet();toast('Animal actualizado');};
+Object.assign(ACTS,{
+  fotoAnimal:async el=>{const b=await Fotos.tomar('Foto del animal');if(!b)return;await Fotos.guardar(el.dataset.id,b);toast('Foto guardada');},
+  fotoQuitar:async el=>{await Fotos.borrar(el.dataset.id);$$(`img[data-foto="${CSS.escape(el.dataset.id)}"]`).forEach(i=>{i.dataset.puesta='';});Fotos.pintar(document);toast('Foto quitada');},
+  fotoVer:async el=>{const u=await Fotos.url(el.dataset.id);if(!u){const b=await Fotos.tomar(el.dataset.t);if(b){await Fotos.guardar(el.dataset.id,b);toast('Foto guardada');}return;}const w=document.createElement('dialog');w.className='cam ver';w.innerHTML=`<div class="cam-top"><b>${esc(el.dataset.t||'')}</b><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div><div class="cam-v"><img src="${u}" alt=""></div>`;document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}w.onclick=()=>w.remove();w.addEventListener('close',()=>w.remove());}
+});
+ACTS.delAnimal=el=>{const l=S.lotes[el.dataset.lote];confirmar('Quitar animal','Se quita este animal del lote. Sus pesajes quedan en el historial del lote.','Quitar',()=>{const an=l.animales.filter(z=>z.id!==el.dataset.id);Fotos.borrar(el.dataset.id);put('lotes',el.dataset.lote,{...l,animales:an,cabezas:an.length,pesoIngreso:an.length?Math.round(promedio(an.map(a=>a.p0))*10)/10:l.pesoIngreso});location.hash='#lote/'+encodeURIComponent(el.dataset.lote);toast('Animal quitado');});};
 
 /* ---------- pesaje animal por animal ---------- */
 const _formPesaje0=FORMS.pesaje,_savePesaje0=SAVE.pesaje,_prevPesaje0=PREV.pesaje;
@@ -4218,6 +4326,7 @@ responder=function(txt){
   setInterval(()=>{if(calc().H!==hoy()){ver++;render();}},60000);
 })();
 </script>
+<script src="fotos.js"></script>
 <script src="rumi_guia.js"></script>
 <script src="rumi_menu.js"></script>
 </body>

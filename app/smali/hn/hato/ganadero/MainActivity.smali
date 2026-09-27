@@ -35,6 +35,8 @@
 
 .field private pendienteDatos:Ljava/lang/String;
 
+.field private permisoPend:Landroid/webkit/PermissionRequest;
+
 .field private ultimoAtras:J
 
 .field private web:Landroid/webkit/WebView;
@@ -796,5 +798,101 @@
 
     invoke-virtual {v0, p1}, Landroid/webkit/WebView;->saveState(Landroid/os/Bundle;)Landroid/webkit/WebBackForwardList;
 
+    return-void
+.end method
+
+
+# Cámara para las fotos de los animales (getUserMedia en la página)
+.method public pedirCamara(Landroid/webkit/PermissionRequest;)V
+    .locals 3
+
+    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
+
+    const/16 v1, 0x17
+
+    if-lt v0, v1, :cond_dar
+
+    const-string v0, "android.permission.CAMERA"
+
+    invoke-virtual {p0, v0}, Landroid/app/Activity;->checkSelfPermission(Ljava/lang/String;)I
+
+    move-result v1
+
+    if-eqz v1, :cond_dar
+
+    iget-object v1, p0, Lhn/hato/ganadero/MainActivity;->permisoPend:Landroid/webkit/PermissionRequest;
+
+    if-eqz v1, :cond_pedir
+
+    invoke-virtual {v1}, Landroid/webkit/PermissionRequest;->deny()V
+
+    :cond_pedir
+    iput-object p1, p0, Lhn/hato/ganadero/MainActivity;->permisoPend:Landroid/webkit/PermissionRequest;
+
+    const/4 v1, 0x1
+
+    new-array v1, v1, [Ljava/lang/String;
+
+    const/4 v2, 0x0
+
+    aput-object v0, v1, v2
+
+    const/16 v2, 0xe
+
+    invoke-virtual {p0, v1, v2}, Landroid/app/Activity;->requestPermissions([Ljava/lang/String;I)V
+
+    return-void
+
+    :cond_dar
+    invoke-virtual {p1}, Landroid/webkit/PermissionRequest;->getResources()[Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-virtual {p1, v0}, Landroid/webkit/PermissionRequest;->grant([Ljava/lang/String;)V
+
+    return-void
+.end method
+
+.method public onRequestPermissionsResult(I[Ljava/lang/String;[I)V
+    .locals 3
+
+    invoke-super {p0, p1, p2, p3}, Landroid/app/Activity;->onRequestPermissionsResult(I[Ljava/lang/String;[I)V
+
+    const/16 v0, 0xe
+
+    if-ne p1, v0, :cond_fin
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity;->permisoPend:Landroid/webkit/PermissionRequest;
+
+    if-eqz v0, :cond_fin
+
+    const/4 v1, 0x0
+
+    iput-object v1, p0, Lhn/hato/ganadero/MainActivity;->permisoPend:Landroid/webkit/PermissionRequest;
+
+    if-eqz p3, :cond_negar
+
+    array-length v1, p3
+
+    if-lez v1, :cond_negar
+
+    const/4 v1, 0x0
+
+    aget v1, p3, v1
+
+    if-nez v1, :cond_negar
+
+    invoke-virtual {v0}, Landroid/webkit/PermissionRequest;->getResources()[Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-virtual {v0, v1}, Landroid/webkit/PermissionRequest;->grant([Ljava/lang/String;)V
+
+    goto :cond_fin
+
+    :cond_negar
+    invoke-virtual {v0}, Landroid/webkit/PermissionRequest;->deny()V
+
+    :cond_fin
     return-void
 .end method
