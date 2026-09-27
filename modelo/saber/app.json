@@ -1,22 +1,102 @@
 [
- {"t":"Anotar una muerte o baja","kw":"anotar muerte registrar baja se murio anotar baja","x":"Toca Registrar y luego Baja: elige el lote, cuántas cabezas y la causa. O dímelo: \"se murió un novillo del lote 12 de neumonía\". Así la mortalidad y los costos quedan bien."},
- {"t":"Anotar un gasto","kw":"anotar gasto registrar gasto planilla flete luz gasto general","x":"Toca Registrar y luego Gasto: pon el monto, la categoría (mano de obra, flete, medicinas, mantenimiento, luz y agua) y si es de un lote o general. O dímelo: \"pagué 3 mil de planilla\"."},
- {"t":"Crear una ración","kw":"crear racion nueva racion agregar racion mezcla nueva","x":"Toca Registrar y luego Ración, o entra a Más. Ponle nombre y el costo por kilo (o por libra). Después la eliges cada vez que anotas alimento. Si la formulas conmigo, la guardo por ti."},
- {"t":"Anotar animales con arete","kw":"anotar animales con arete registrar animal individual agregar animal","x":"Al crear el lote o después, puedes agregar animales con su número de arete y su peso. Luego, al pesar por arete, la app sigue a cada animal y te dice quién se atrasa."},
- {"t":"Pantalla Formular dieta","kw":"formulador pantalla formular dieta como uso el formulador","x":"En Más toca Formular dieta. Pon el peso de los animales y la ganancia que buscas, elige los ingredientes y la app calcula la mezcla más barata que cubre lo que necesitan. Puedes guardarla como ración."},
- {"t":"Cómo calcula Rumentis","kw":"como calcula metodologia formulas de la app de donde salen los numeros","x":"En Más, en Cómo calcula Rumentis, está explicado cada número: ganancia diaria entre pesajes, conversión con el alimento anotado, costo por kilo ganado, proyección al peso meta y margen. Todo sale de lo que anotas."},
- {"t":"Recorrido por la app","kw":"recorrido tutorial ensename la app como funciona la app guia","x":"Pídeme \"hazme el recorrido\" o entra a Más y toca Recorrido por la app. Te muestro cada pantalla paso a paso."},
- {"t":"Kilos o libras","kw":"kilos libras unidades cambiar a libras cambiar a kilos","x":"Puedes trabajar en kilos o en libras. Cámbialo en Más, en Tu engorde. Yo te entiendo en las dos y convierto solo."},
- {"t":"Moneda de la app","kw":"moneda lempiras dolares cambiar moneda","x":"La moneda se cambia en Más, en Tu engorde. Por defecto usa lempiras."},
- {"t":"Peso meta del lote","kw":"cambiar peso meta meta del lote a que peso vendo este lote","x":"Cada lote puede tener su peso meta. Entra al lote y edítalo, o dímelo: \"la meta del lote 12 es 480 kilos\". Con eso calculo la fecha de salida y el margen."},
- {"t":"Proyecciones","kw":"proyeccion cuanto pesara cuando llega a la meta fecha de salida","x":"Pregúntame \"¿cuánto pesará el lote 12 en 30 días?\" o \"¿cuándo llega a la meta?\". Uso la ganancia real de sus pesajes."},
- {"t":"Gráficas en el chat","kw":"grafica en el chat muestrame la grafica grafico aqui","x":"Pídeme \"muéstrame la gráfica de peso del lote 12\" y te la dibujo aquí mismo. También de consumo, conversión o costos."},
- {"t":"Comparar lotes","kw":"comparar lotes cual lote va mejor mejor lote peor lote","x":"Pregúntame \"¿cuál es mi mejor lote?\" o \"compara el lote 10 con el 12\" y te muestro ganancia, conversión, costo y margen de cada uno."},
- {"t":"Simular un negocio","kw":"simular negocio simulacion si compro si vendo cuanto ganaria","x":"Puedo simular antes de comprar: \"si compro 40 novillos de 300 kilos a 55, ¿cuánto gano?\". Uso tus costos reales o una ración formulada."},
- {"t":"Avisos de la app","kw":"avisos alertas notificaciones por que me avisa","x":"La app te avisa en Hoy cuando falta dar alimento, baja el consumo, un lote lleva tiempo sin pesarse, un animal se atrasa o hay retiros activos. Tócalos para ir a resolverlos."},
- {"t":"Restaurar respaldo","kw":"restaurar respaldo cargar respaldo recuperar datos importar","x":"En Más toca Restaurar respaldo y elige el archivo que descargaste. Tus lotes y registros vuelven tal como estaban."},
- {"t":"Lotes vendidos","kw":"lotes vendidos lotes cerrados historial de lotes","x":"En Lotes ves los activos y los vendidos. Los vendidos guardan sus números finales para comparar con los nuevos."},
- {"t":"Historial del lote","kw":"historial del lote registros del lote ver lo que anote","x":"Entra al lote y baja a Historial: ahí están todos sus registros. Desde ahí también puedes borrar uno equivocado."},
- {"t":"Horarios de entrega","kw":"horarios de entrega cuantas entregas al dia cambiar horario","x":"En Más, en Tu engorde, pones cuántas entregas haces al día y a qué hora. Así la pantalla Hoy te dice cuánto falta por dar."},
- {"t":"Usar la app sin saber mucho de teléfonos","kw":"no se usar el telefono me cuesta la app es dificil","x":"Tranquilo, háblame como a una persona: \"di 800 kilos al lote 12\" o \"pesé el lote 10\". Yo lleno los formularios. También puedes tocar el micrófono y hablar."}
+{
+"t": "Anotar una muerte o baja",
+"kw": "anotar muerte registrar baja se murio anotar baja",
+"x": "Toca Registrar y luego Baja: elige el lote, cuántas cabezas y la causa. O dímelo: \"se murió un novillo del lote 12 de neumonía\". Así la mortalidad y los costos quedan bien."
+},
+{
+"t": "Anotar un gasto",
+"kw": "anotar gasto registrar gasto planilla flete luz gasto general",
+"x": "Toca Registrar y luego Gasto: pon el monto, la categoría (mano de obra, flete, medicinas, mantenimiento, luz y agua) y si es de un lote o general. O dímelo: \"pagué 3 mil de planilla\"."
+},
+{
+"t": "Crear una ración",
+"kw": "crear racion nueva racion agregar racion mezcla nueva",
+"x": "Toca Registrar y luego Ración, o entra a Más. Ponle nombre y el costo por kilo (o por libra). Después la eliges cada vez que anotas alimento. Si la formulas conmigo, la guardo por ti."
+},
+{
+"t": "Anotar animales con arete",
+"kw": "anotar animales con arete registrar animal individual agregar animal",
+"x": "Al crear el lote o después, puedes agregar animales con su número de arete y su peso. Luego, al pesar por arete, la app sigue a cada animal y te dice quién se atrasa."
+},
+{
+"t": "Pantalla Formular dieta",
+"kw": "formulador pantalla formular dieta como uso el formulador",
+"x": "En Más toca Formular dieta. Pon el peso de los animales y la ganancia que buscas, elige los ingredientes y la app calcula la mezcla más barata que cubre lo que necesitan. Puedes guardarla como ración."
+},
+{
+"t": "Cómo calcula Rumentis",
+"kw": "como calcula metodologia formulas de la app de donde salen los numeros",
+"x": "En Más, en Cómo calcula Rumentis, está explicado cada número: ganancia diaria entre pesajes, conversión con el alimento anotado, costo por kilo ganado, proyección al peso meta y margen. Todo sale de lo que anotas."
+},
+{
+"t": "Recorrido por la app",
+"kw": "recorrido tutorial ensename la app como funciona la app guia",
+"x": "Pídeme \"hazme el recorrido\" o entra a Más y toca Recorrido por la app. Te muestro cada pantalla paso a paso."
+},
+{
+"t": "Kilos o libras",
+"kw": "kilos libras unidades cambiar a libras cambiar a kilos",
+"x": "Puedes trabajar en kilos o en libras. Cámbialo en Más, en Tu engorde. Yo te entiendo en las dos y convierto solo."
+},
+{
+"t": "Moneda de la app",
+"kw": "moneda lempiras dolares cambiar moneda",
+"x": "La moneda se cambia en Más, en Tu engorde. Por defecto usa lempiras."
+},
+{
+"t": "Peso meta del lote",
+"kw": "cambiar peso meta meta del lote a que peso vendo este lote",
+"x": "Cada lote puede tener su peso meta. Entra al lote y edítalo, o dímelo: \"la meta del lote 12 es 480 kilos\". Con eso calculo la fecha de salida y el margen."
+},
+{
+"t": "Proyecciones",
+"kw": "proyeccion cuanto pesara cuando llega a la meta fecha de salida",
+"x": "Pregúntame \"¿cuánto pesará el lote 12 en 30 días?\" o \"¿cuándo llega a la meta?\". Uso la ganancia real de sus pesajes."
+},
+{
+"t": "Gráficas en el chat",
+"kw": "grafica en el chat muestrame la grafica grafico aqui",
+"x": "Pídeme \"muéstrame la gráfica de peso del lote 12\" y te la dibujo aquí mismo. También de consumo, conversión o costos."
+},
+{
+"t": "Comparar lotes",
+"kw": "comparar lotes cual lote va mejor mejor lote peor lote",
+"x": "Pregúntame \"¿cuál es mi mejor lote?\" o \"compara el lote 10 con el 12\" y te muestro ganancia, conversión, costo y margen de cada uno."
+},
+{
+"t": "Simular un negocio",
+"kw": "simular negocio simulacion si compro si vendo cuanto ganaria",
+"x": "Puedo simular antes de comprar: \"si compro 40 novillos de 300 kilos a 55, ¿cuánto gano?\". Uso tus costos reales o una ración formulada."
+},
+{
+"t": "Avisos de la app",
+"kw": "avisos alertas notificaciones por que me avisa",
+"x": "La app te avisa en Hoy cuando falta dar alimento, baja el consumo, un lote lleva tiempo sin pesarse, un animal se atrasa o hay retiros activos. Tócalos para ir a resolverlos."
+},
+{
+"t": "Restaurar respaldo",
+"kw": "restaurar respaldo cargar respaldo recuperar datos importar",
+"x": "En Más toca Restaurar respaldo y elige el archivo que descargaste. Tus lotes y registros vuelven tal como estaban."
+},
+{
+"t": "Lotes vendidos",
+"kw": "lotes vendidos lotes cerrados historial de lotes",
+"x": "En Lotes ves los activos y los vendidos. Los vendidos guardan sus números finales para comparar con los nuevos."
+},
+{
+"t": "Historial del lote",
+"kw": "historial del lote registros del lote ver lo que anote",
+"x": "Entra al lote y baja a Historial: ahí están todos sus registros. Desde ahí también puedes borrar uno equivocado."
+},
+{
+"t": "Horarios de entrega",
+"kw": "horarios de entrega cuantas entregas al dia cambiar horario",
+"x": "En Más, en Tu engorde, pones cuántas entregas haces al día y a qué hora. Así la pantalla Hoy te dice cuánto falta por dar."
+},
+{
+"t": "Usar la app sin saber mucho de teléfonos",
+"kw": "no se usar el telefono me cuesta la app es dificil",
+"x": "Tranquilo, háblame como a una persona: \"di 800 kilos al lote 12\" o \"pesé el lote 10\". Yo lleno los formularios. También puedes tocar el micrófono y hablar."
+}
 ]

@@ -156,8 +156,8 @@
 },
 {
 "t": "Plantas tóxicas",
-"kw": "plantas toxicas envenenado intoxicacion hierba mala comieron algo",
-"x": "Con hambre, sobre todo en verano, comen plantas que normalmente dejan. Recorre los potreros y corrales, arranca lo sospechoso y no metas animales hambrientos a un potrero desconocido. Si varios se enferman de golpe, llama al veterinario."
+"kw": "plantas toxicas envenenado intoxicacion hierba mala comieron algo cola de caballo helecho lantana cinco negritos cascabelillo crotalaria veneno",
+"x": "Con hambre, sobre todo en verano, comen plantas que normalmente dejan. Recorre los potreros y corrales, arranca lo sospechoso y no metas animales hambrientos a un potrero desconocido. Si varios se enferman de golpe, llama al veterinario. En Centroamérica son comunes el helecho, la lantana (cinco negritos) y la crotalaria (cascabelillo)."
 },
 {
 "t": "Moretones y golpes antes de la venta",
@@ -321,8 +321,8 @@
 },
 {
 "t": "Ojo blanco",
-"kw": "ojo blanco llora lagrimea queratoconjuntivitis ojos",
-"x": "Puede ser queratoconjuntivitis, el \"ojo blanco\", que se contagia con moscas y polvo. Sepáralo del sol y del polvo, controla las moscas y consulta a tu veterinario para el tratamiento."
+"kw": "ojo blanco llora lagrimea queratoconjuntivitis ojos queratoconjuntivitis ojo rosado ojo blanco pinkeye",
+"x": "Es la infección del ojo que lo pone rojo, lloroso y luego con una mancha blanca. La contagian las moscas, el polvo y el pasto alto. Controla moscas y consulta al veterinario para tratarlo temprano."
 },
 {
 "t": "Verrugas",
@@ -351,7 +351,7 @@
 },
 {
 "t": "Fiebre",
-"kw": "fiebre temperatura termometro calentura",
+"kw": "fiebre temperatura termometro calentura temperatura normal grados termometro rectal",
 "x": "Tómale la temperatura en el recto con un termómetro: lo normal está entre 38 y 39.5 grados. Por encima de 39.5 tiene fiebre. Si además no come o está decaído, llama al veterinario."
 },
 {
@@ -361,8 +361,8 @@
 },
 {
 "t": "Cuánto comen",
-"kw": "cuanto come consumo de materia seca cuanto debe comer kilos al dia",
-"x": "Un novillo come más o menos de 2.3 a 2.8 % de su peso en materia seca al día, unos 9 a 11 kg para uno de 400 kg. Pregúntame \"¿cuánto comen?\" y te lo calculo con tus lotes."
+"kw": "cuanto come consumo de materia seca cuanto debe comer kilos al dia consumo de materia seca porcentaje del peso cuanto comen por peso",
+"x": "Un novillo en engorde come más o menos de 2.3 a 2.8 % de su peso vivo en materia seca al día. Al inicio y con calor come menos. La app estima el consumo de cada lote. Pregúntame \"¿cuánto comen?\" y te lo calculo con tus lotes."
 },
 {
 "t": "Pan viejo",
