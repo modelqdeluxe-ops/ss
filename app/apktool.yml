@@ -14,5 +14,3 @@ versionInfo:
 doNotCompress:
 - arsc
 - png
-- gguf
-- wasm

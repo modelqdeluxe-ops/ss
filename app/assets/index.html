@@ -317,6 +317,35 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .rbtn{width:50px;height:50px;flex:none;border-radius:25px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center}
 .rbtn.pri{background:var(--pri);border-color:var(--pri);color:var(--pritx)}
 .rbtn svg{width:22px;height:22px}
+/* Rumi por menús */
+.rumi-panel{flex-direction:column;align-items:stretch;gap:10px;max-height:min(52vh,440px);padding-top:10px;background:var(--bg);box-shadow:0 -8px 24px -18px rgba(0,0,0,.35)}
+.rm-bar{display:flex;align-items:center;gap:8px;min-height:40px;flex:none}
+.rm-bar b{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-bar>span{color:var(--ink2);font-size:13px}
+.rm-menu{display:flex;align-items:center;gap:6px;height:40px;padding:0 14px 0 11px;border-radius:20px;border:0;background:var(--pri);color:var(--pritx);font-weight:700;font-size:14px;flex:none}
+.rm-menu svg{width:17px;height:17px}
+.rm-atras{width:40px;height:40px;flex:none;border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.rm-atras svg{width:18px;height:18px}
+.rm-areas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-y:auto;min-height:0;padding-bottom:2px}
+.rm-area{--c:var(--anil5);text-align:left;border:1px solid var(--line);border-radius:16px;padding:11px 12px;background:var(--card);display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;row-gap:1px;align-items:center;color:var(--ink);min-height:66px}
+.rm-area i{grid-row:span 2;width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+.rm-area i svg{width:22px;height:22px}
+.rm-area b{font-size:14.5px;line-height:1.2}.rm-area span{font-size:12.5px;color:var(--ink2);line-height:1.25}
+.rm-area[data-c=hoy]{--c:var(--s4)}.rm-area[data-c=anotar]{--c:var(--s1)}.rm-area[data-c=alimento]{--c:var(--s3)}.rm-area[data-c=salud]{--c:var(--s6)}
+.rm-area[data-c=calc]{--c:var(--s5)}.rm-area[data-c=dinero]{--c:var(--s2)}.rm-area[data-c=guia]{--c:var(--verde)}.rm-area[data-c=app]{--c:var(--anil5)}
+.rm-ops{display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;padding-bottom:2px}
+.rm-op{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:10px 12px 10px 14px;min-height:50px;color:var(--ink);font-size:15px;line-height:1.3;flex:none}
+.rm-op span{flex:1;min-width:0}
+.rm-op>svg{width:16px;height:16px;color:var(--ink2);flex:none}
+.rm-op i{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--verde-bg);color:var(--verde);flex:none}
+.rm-op i svg{width:17px;height:17px}
+.rm-op.g{font-size:14.5px;min-height:46px}
+.rm-op.f span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--arete);margin-right:8px;vertical-align:1px}
+.rumi-panel[data-area=salud] .rm-op i{background:var(--rojo-bg);color:var(--rojo)}
+.rumi-panel[data-area=dinero] .rm-op i{background:var(--tierra-bg);color:var(--tierra)}
+.rm-calc{display:flex;flex-direction:column;gap:10px;overflow-y:auto;min-height:0}
+.rm-op:active,.rm-area:active,.rm-menu:active,.rm-atras:active{transform:scale(.98)}
+.rm-op,.rm-area,.rm-menu,.rm-atras{transition:transform .14s cubic-bezier(.2,.8,.2,1),background-color .2s}
 .paso{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:var(--card2);color:var(--ink)}
 .paso.ok{background:var(--verde);color:#fff}.paso svg{width:16px;height:16px}
 #spot{position:fixed;inset:0;z-index:200}
@@ -2571,9 +2600,9 @@ function responder(txt){
     if(/cuant[oa]s? (cabezas|animales|reses|novillos|ganado|toros)/.test(t))return {html:hayLotes?`Tienes <b>${pl(C.cabT,'cabeza','cabezas')}</b> en ${pl(C.act.length,'lote','lotes')}, con unos <b>${nf(C.kgPie)} kg</b> en pie.`:'Todavía no tienes lotes en engorde.',sug:sugs()};
     if(/conversion/.test(t))return {html:C.conv?`Tu conversión es de <b>${nf(C.conv,1)} a 1</b>: ${nf(C.conv,1)} kg de alimento por cada kilo ganado.${C.conv<=8?' Va bien.':' Está alta; revisa la ración y el desperdicio en comederos.'}`:'Todavía no hay datos suficientes. Necesito entregas de alimento y al menos un pesaje.',btns:[['Ver gráfico',{t:'go',go:'#graficos'}]]};
     if(/ganancia|cuanto (suben|sube|engordan|engorda)/.test(t)&&!/plata|dinero|margen/.test(t))return {html:C.gdpP?`En promedio suben <b>${nf(C.gdpP,2)} kg por día</b> por cabeza.`:'Aún no hay pesajes para calcularlo.',btns:[['Ver gráfico',{t:'go',go:'#graficos'}]]};
-    if(/costo|cuesta/.test(t))return {html:C.costoKg?`Cada kilo ganado te cuesta <b>${money2(C.costoKg)}</b>, y lo vendes a ${money2(+S.config.precioVentaKg)}.`:'Aún no hay datos suficientes para calcularlo.',sug:sugs()};
+    if(/costo|cuesta/.test(t))return {html:C.costoKg?`Cada kilo ganado te cuesta <b>${pk(C.costoKg)}</b>, y lo vendes a ${pk(+S.config.precioVentaKg)}.`:'Aún no hay datos suficientes para calcularlo.',sug:sugs()};
     if(/margen|utilidad|plata|dinero|cuanto (voy a )?gan/.test(t)){if(!hayLotes)return {html:'Cuando tengas lotes te digo cuánto esperas ganar con cada uno.'};const tot=C.act.reduce((s,x)=>s+x.proy.margen,0);return {html:`Si todos tus lotes llegan a su meta, el margen estimado es de <b>${money(tot)}</b>.<br>${C.act.map(x=>`${esc(x.l.nombre)}: ${money(x.proy.porCab)} por cabeza`).join('<br>')}`,btns:[['Ver gráficos',{t:'go',go:'#graficos'}]]};}
-    if(/cuanto (comen|come|comieron|alimento|comida)|consumo/.test(t)){return {html:hayLotes?`Hoy llevas <b>${nf(C.kgHoy)} kg</b> entregados de unos ${nf(C.prog)} por día.<br>${C.act.map(x=>`${esc(x.l.nombre)}: ${x.consumo?nf(x.consumo,1)+' kg por cabeza al día':'sin datos'}`).join('<br>')}`:'Todavía no tienes lotes en engorde.',sug:sugs()};}
+    if(/cuanto (comen|come|comieron|alimento|comida)|consumo/.test(t)){return {html:hayLotes?`Hoy llevas <b>${nf(C.kgHoy)} kg</b> entregados de unos ${nf(C.prog)} kg por día.<br>${C.act.map(x=>`${esc(x.l.nombre)}: ${x.consumo?nf(x.consumo,1)+' kg por cabeza al día':'sin datos'}`).join('<br>')}`:'Todavía no tienes lotes en engorde.',sug:sugs()};}
     const c=CONCEPTOS.find(c=>c.re.test(t));if(c)return {html:`<b>${c.t}</b><br>${c.x}`,sug:sugs()};
   }
   // acciones: abre el formulario ya lleno
@@ -2627,7 +2656,7 @@ function saludo(){
 function hoyMsg(){
   const C=calc();if(!C.act.length)return pasosMsg();
   const a=[];
-  if(C.sigEnt)a.push(`Falta la entrega de alimento de las <b>${esc(horaDe(C.sigEnt))}</b>. Llevas ${nf(C.kgHoy)} kg de unos ${nf(C.prog)}.`);
+  if(C.sigEnt)a.push(`Falta la entrega de alimento de las <b>${esc(horaDe(C.sigEnt))}</b>. Llevas ${nf(C.kgHoy)} kg de unos ${nf(C.prog)} kg.`);
   else a.push('Ya registraste todas las entregas de alimento de hoy.');
   for(const x of C.al.slice(0,5))a.push(`${esc(x.t)}: ${esc(x.s)}.`);
   return {html:'Esto es lo que tienes hoy:'+pasosHtml(a),btns:C.sigEnt?[[`Anotar entrega de las ${horaDe(C.sigEnt)}`,{t:'form',k:'alimento',p:{},n:C.sigEnt}]]:[],sug:sugs()};
@@ -2676,7 +2705,7 @@ function pasosCard(){
    <div class="rows">${P.map((p,i)=>`<button type="button" class="row" data-act="paso" data-i="${i}"><span class="paso${p.ok?' ok':''}">${p.ok?ico('check',2.6):i+1}</span><div class="tx"><b${p.ok?' style="text-decoration:line-through;color:var(--ink2)"':''}>${p.t}</b><span>${p.s}</span></div>${i===sig?'<span class="pill p-anil">Siguiente</span>':ico('chev')}</button>`).join('')}</div></div></section>`;
 }
 function rumiCard(){
-  return `<section class="card pad rumi-card"><div class="rumi-big">${rumiSVG('bob')}</div><div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:0"><p style="margin:0;font-size:15px;line-height:1.45"><b>Hola, soy Rumi.</b> Te enseño a usar la app, lleno formularios por ti, formulo dietas y te calculo lo que necesites. Escríbeme o háblame.</p><div class="acts"><button type="button" class="btn pri" data-act="tour">Hazme el recorrido</button><button type="button" class="btn" data-act="rumi">Preguntar</button></div></div></section>`;
+  return `<section class="card pad rumi-card"><div class="rumi-big">${rumiSVG('bob')}</div><div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:0"><p style="margin:0;font-size:15px;line-height:1.45"><b>Hola, soy Rumi.</b> Tus números, dietas, salud, calculadoras y una guía de engorde con cientos de temas. Todo desde mi menú, sin escribir.</p><div class="acts"><button type="button" class="btn pri" data-act="rumi">Abrir el menú de Rumi</button><button type="button" class="btn" data-act="tour">Recorrido</button></div></div></section>`;
 }
 const RUMI_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z"/><path d="M12 6.8l.9 1.9 1.9.9-1.9.9-.9 1.9-.9-1.9-1.9-.9 1.9-.9z" fill="currentColor" stroke-width="1.2"/></svg>';
 
@@ -2709,7 +2738,7 @@ function preguntar(txt){
   RUMI.log.push({u:txt});RUMI.last=nrm(txt);pintarLog();
   const m=$('#rumiMsgs');if(m)m.insertAdjacentHTML('beforeend','<div class="rrow">'+rumiSVG('av think')+'<div class="rmsg b typing" aria-label="Rumi está escribiendo"><i></i><i></i><i></i></div></div>');
   const b=$('#rumiBody');if(b)b.scrollTop=b.scrollHeight;
-  setTimeout(()=>{let r;try{r=responder(txt);}catch(e){r={html:'Algo falló al entender eso. Prueba decirlo de otra forma.'};}if(window.RumiEntiende&&RumiEntiende.maneja(txt,r)){RumiEntiende.responder(txt,r);return;}botSay(r);},380);
+  setTimeout(()=>{let r;try{r=responder(txt);}catch(e){r={html:'Algo falló al entender eso. Prueba decirlo de otra forma.'};}botSay(r);},380);
 }
 function ejecutar(a){
   if(!a)return;
@@ -2739,7 +2768,7 @@ const TOUR=[
   {go:'#hoy',sel:'nav.bottom [data-nav="registrar"]',t:'Registrar',x:'El botón amarillo. Aquí anotas todo: alimento, pesajes, sanidad, ventas, muertes y gastos.'},
   {go:'#hoy',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',x:'Todos tus números en gráficas: peso, ganancia diaria, consumo, conversión, costos y margen.'},
   {go:'#hoy',sel:'nav.bottom [data-nav="mas"]',t:'Más',x:'Tus raciones, precios, horarios de entrega, respaldo y descargas para Excel.'},
-  {go:'#hoy',sel:'#rumiFab',t:'Rumi',x:'Si te pierdes, tócame y pregúntame lo que sea. También puedes hablarme.'}
+  {go:'#hoy',sel:'#rumiFab',t:'Rumi',x:'Si te pierdes, tócame y elige en mi menú lo que necesitas: tus números, anotar, alimentación, salud, calculadoras y la guía de engorde.'}
 ];
 let SPOT=null;
 function iniciarTour(){try{localStorage.setItem('rumentis-tour','1');}catch(e){}spot(TOUR);}
@@ -4173,9 +4202,6 @@ responder=function(txt){
   if(usar){const rn=responderConRed(txt,r,pr);if(rn)return fin(rn,preprocesar(txt));}
   return r;
 };
-setTimeout(()=>{if(window.Android||window.RED_FORZAR)cargarRed();},900);
-/* Rumi entiende: comprensión de preguntas con la Guía de Rumi (ver rumi_entiende.js) */
-setTimeout(()=>{if(!window.Android&&!window.RUMI_FORZAR)return;const s=document.createElement('script');s.src='https://rumentis.local/rumi_entiende.js';document.head.appendChild(s);},2500);
 
 /* ============ arranque ============ */
 (function init(){
@@ -4192,5 +4218,7 @@ setTimeout(()=>{if(!window.Android&&!window.RUMI_FORZAR)return;const s=document.
   setInterval(()=>{if(calc().H!==hoy()){ver++;render();}},60000);
 })();
 </script>
+<script src="rumi_guia.js"></script>
+<script src="rumi_menu.js"></script>
 </body>
 </html>

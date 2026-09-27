@@ -32,6 +32,12 @@ for(const e of saber){if(e.a){delete e._f;continue;}if(areaDe.has(e.t))e.a=areaD
 const sinArea=saber.filter(e=>!e.a).map(e=>e.t);if(sinArea.length)throw new Error('Temas sin área: '+sinArea.join(' | '));
 const vistos=new Set();for(const e of saber){if(vistos.has(e.t))throw new Error('Tema repetido: '+e.t);vistos.add(e.t);}
 
+// Textos reescritos para el Rumi por menús (ya no se le escribe ni se le habla)
+const CORR=JSON.parse(fs.readFileSync(path.join(__dirname,'correcciones_menu.json'),'utf8'));
+for(const e of saber)if(CORR[e.t])e.x=CORR[e.t];
+const quedan=saber.filter(e=>/pregúntame|pregúntale a rumi|dímelo|dime "|háblame|micrófono|pídeme/i.test(e.x)).map(e=>e.t);
+if(quedan.length)throw new Error('Temas que aún piden escribir o hablar: '+quedan.join(' | '));
+
 const limpio=saber.map(({t,x,a})=>({t,x,a}));
 fs.writeFileSync(path.join(RAIZ,'app/assets/rumi_saber.json'),JSON.stringify(limpio));
 // La misma guía como script, para cargarla con <script> desde file:// (fetch no lee file://)
