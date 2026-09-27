@@ -1,0 +1,18 @@
+[
+ {"t":"Peso vivo y peso en canal","x":"El peso vivo es lo que pesa el animal entero; la canal es la carne con hueso después del matadero, sin cabeza, patas, cuero ni vísceras. La canal suele ser de 54 a 58 % del peso vivo en novillos de engorde.","a":"conceptos"},
+ {"t":"Materia seca y tal como se ofrece","x":"Tal como se ofrece es el alimento con su agua; materia seca es sin agua. Las necesidades y la conversión se calculan en materia seca para comparar alimentos distintos.","a":"conceptos"},
+ {"t":"Unidad animal","x":"Una unidad animal equivale a 450 kg de peso vivo. Sirve para calcular cuántos animales caben en un potrero o cuánto forraje necesitas.","a":"conceptos"},
+ {"t":"Ganancia diaria promedio","x":"Es cuánto sube cada animal por día en promedio entre dos pesajes: la diferencia de peso dividida entre los días. La app la calcula por lote y por animal.","a":"conceptos"},
+ {"t":"Eficiencia alimenticia","x":"Es lo contrario de la conversión: los kilos que gana el animal por cada kilo de alimento. Si la conversión es 7 a 1, la eficiencia es 1 entre 7, unos 0.14.","a":"conceptos"},
+ {"t":"Desbaste","x":"Es el peso que pierde el animal por vaciar la panza y la vejiga, por ejemplo al ayunar antes de pesar o en el viaje. Suele ser de 3 a 5 %. En Más ajustas el desbaste que usa la app al calcular ventas.","a":"conceptos"},
+ {"t":"Días a la meta","x":"Son los días que le faltan a un lote para llegar a su peso meta con la ganancia que lleva. La app los calcula y te muestra la fecha estimada de salida.","a":"conceptos"},
+ {"t":"Costo del kilo de mezcla","x":"Es lo que te cuesta un kilo de la ración ya mezclada, sumando los ingredientes en su proporción. Con él y la conversión sacas el costo de alimento por kilo ganado.","a":"conceptos"},
+ {"t":"Costo de alimento por kilo ganado","x":"Es el costo del kilo de mezcla multiplicado por la conversión. Por ejemplo, si el kilo de mezcla cuesta 8 y la conversión es 7 a 1, cada kilo ganado cuesta 56 en alimento.","a":"conceptos"},
+ {"t":"Punto de equilibrio en precio","x":"Es el precio de venta por kilo con el que recuperas exactamente lo invertido en el lote. Por debajo pierdes, por encima ganas.","a":"conceptos"},
+ {"t":"Inocuidad de la carne","x":"Carne inocua es la que no enferma a quien la come: sin residuos de medicamentos o químicos y de animales sanos. Se logra respetando retiros, usando productos registrados y llevando registros.","a":"normas"},
+ {"t":"Buenas prácticas ganaderas","x":"Son reglas sencillas para producir carne sana y cuidar a los animales y el ambiente: registros, sanidad preventiva, agua limpia, alimento sin contaminantes, bienestar, manejo de desechos y personal capacitado.","a":"normas"},
+ {"t":"Registro de la finca","x":"Tener la finca registrada ante las autoridades facilita obtener guías de movilización, participar en programas sanitarios y vender a compradores que exigen trazabilidad. Consulta a SENASA y a tu municipalidad.","a":"normas"},
+ {"t":"Compra de medicamentos","x":"Compra en agroveterinarias establecidas, revisa que el producto tenga registro, fecha de vencimiento vigente y empaque en buen estado. No uses productos vencidos ni de origen dudoso.","a":"normas"},
+ {"t":"Programas oficiales de sanidad","x":"SENASA lleva programas contra enfermedades como el gusano barrenador, la rabia, la brucelosis y la tuberculosis. Participar y reportar casos protege tu finca y la de tus vecinos.","a":"normas"},
+ {"t":"Bienestar en la ley y en el mercado","x":"Cada vez más compradores y mercados piden que el ganado se maneje sin maltrato: sin golpes, con agua, sombra y transporte adecuado. Cumplirlo abre mercados y mejora la calidad de la carne.","a":"normas"}
+]

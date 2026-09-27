@@ -1,0 +1,22 @@
+[
+ {"t":"Cómo se gana en el engorde","x":"Ganas si lo que te pagan por el animal gordo supera lo que pagaste por él más todo lo que gastaste para engordarlo. Las tres palancas son: comprar bien, producir el kilo barato y vender bien."},
+ {"t":"Precio por lote o por animal","x":"Al comprar un lote suele pagarse un precio promedio para todos. En la app puedes anotar el precio de todo el lote (repartido por igual entre los animales) o el precio de cada animal si lo compraste uno por uno."},
+ {"t":"Costo de compra por animal","x":"Si compraste el lote a precio promedio, cada animal carga la misma parte del costo. Si los compraste por separado, cada uno lleva su propio precio. Eso cambia el margen de cada animal, no el del lote."},
+ {"t":"Comparar precio por kilo y por cabeza","x":"Para comparar ofertas, lleva todo a precio por kilo: divide el precio por cabeza entre el peso real. Un animal barato por cabeza puede salir caro por kilo si pesa poco."},
+ {"t":"Flete y comisiones","x":"El flete, las comisiones y los gastos de la compra son parte del costo del lote. Anótalos al crear el lote; un flete alto puede comerse el margen de animales livianos."},
+ {"t":"Margen por cabeza","x":"Es lo que queda por animal al final: precio de venta menos compra, alimento, sanidad y gastos. La app lo estima por lote al llegar a la meta y lo calcula al venderlo."},
+ {"t":"Precio máximo de compra","x":"Antes de comprar, calcula cuánto puedes pagar como máximo para no perder: depende del peso de compra, del peso de venta, del precio de venta y de tu costo por kilo ganado. Pregúntale a Rumi en Calculadoras."},
+ {"t":"Vender por peso o al ojo","x":"Vender al ojo casi siempre favorece al comprador experto. Pesa en báscula y negocia por kilo o libra. Si no tienes báscula, pide pesar en una confiable."},
+ {"t":"Negociar con el comprador","x":"Llega sabiendo tu precio mínimo para no perder, el peso real y el rendimiento en canal estimado. Pregunta cómo pesa, qué descuentos aplica y cuándo paga."},
+ {"t":"Cuándo el negocio no da","x":"Si el precio de compra más el costo de engordar supera lo que te pagarán, no compres ese lote o cambia de estrategia: animales más livianos, ración más barata o vender en otra época."},
+ {"t":"Ahorro en alimento","x":"Pequeños ahorros en la ración se multiplican: bajar el costo del kilo de mezcla unos centavos, en cientos de animales por meses, es mucho dinero. Revisa precios y formula seguido."},
+ {"t":"Desperdicio de alimento","x":"El alimento que cae al suelo, se moja, se enmohece o se lo comen aves y ratas es plata perdida. Comederos bien diseñados, bodega cerrada y servir la cantidad justa reducen el desperdicio."},
+ {"t":"Muertes y su costo","x":"Cada animal muerto se lleva lo que costó más todo lo que comió. Una mortalidad baja, menor de 1 a 2 %, es clave para el margen. Invertir en recepción y sanidad se paga solo."},
+ {"t":"Llevar las cuentas del engorde","x":"Anota todas las compras, alimento, sanidad, gastos y ventas en la app. Con eso ves el costo real por kilo ganado y el margen de cada lote, y puedes decidir con números."},
+ {"t":"Comparar lotes vendidos","x":"Al cerrar cada lote, compara su ganancia diaria, conversión, costo por kilo y margen con los anteriores. Así ves qué compras, raciones y épocas te funcionan mejor."},
+ {"t":"Precios en libras y kilos","x":"En Honduras mucho ganado se negocia por libra en pie. Un precio por libra se convierte a kilo multiplicando por 2.2. La app trabaja en la unidad que elijas en Más."},
+ {"t":"Rendimiento y precio en canal","x":"Si te pagan en canal, el precio por kilo es mayor, pero sobre menos kilos (54 a 58 % del peso vivo). Compara: precio en canal × rendimiento debe superar el precio en pie para convenir."},
+ {"t":"Plan de compras","x":"Decide cuántos animales, de qué peso y en qué mes vas a comprar, cuánto alimento necesitarás y cuándo venderás. Tener el plan evita comprar a la carrera y caro."},
+ {"t":"Capital de trabajo","x":"El engorde necesita efectivo para comprar ganado y alimento semanas o meses antes de cobrar. Calcula cuánto necesitas hasta la venta y ten un margen para imprevistos."},
+ {"t":"Riesgos del engorde","x":"Los principales riesgos son: baja del precio de venta, subida del alimento, muertes, sequía y robo. Se reducen con buen manejo, registros, compradores seguros y no apostar todo a un solo lote."}
+]
