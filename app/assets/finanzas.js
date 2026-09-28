@@ -75,7 +75,7 @@ function movimientos(){
 function resultados(d0,d1){
   const C=calc(),fin=F(),en=f=>f>=d0&&f<=d1;
   let ventas=0,costoV=0,cabV=0;
-  for(const x of Object.values(C.L)){const porCab=x.costoTot/Math.max(1,x.cab0-x.bajas);
+  for(const x of Object.values(C.L)){const porCab=(x.costoTot-(x.gasGen||0))/Math.max(1,x.cab0-x.bajas);  // los gastos generales van aparte
     for(const v of x.g.venta)if(en(v.f)){ventas+=(+v.kg||0)*(+v.precioKg||0);costoV+=porCab*(+v.cab||0);cabV+=+v.cab||0;}}
   const generales=C.generales.filter(g=>en(g.f)).reduce((s,g)=>s+(+g.monto||0),0);
   const intereses=fin.creditos.reduce((s,c)=>s+interesEntre(c,d0,d1),0);

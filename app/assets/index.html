@@ -473,6 +473,38 @@ body[data-pg='mas'][data-sub='config'] #rumiFab{display:none}
 .rmsg .rres{margin:6px 0 0;line-height:1.5}
 .rmsg .rh{margin:12px 0 2px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15.5px;color:var(--anil5)}
 .rmsg .rs{display:block;margin-top:8px;font-size:13px;color:var(--ink2)}
+.rmsg-like{font-size:14.5px;line-height:1.5}
+.rmsg-like .rh{margin:12px 0 2px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15.5px;color:var(--anil5)}
+.rmsg-like .rs{display:block;margin-top:8px;font-size:13px;color:var(--ink2)}
+.rm-area[data-c=pro]{--c:var(--arete-e)}
+.rp-head{display:flex;align-items:center;gap:14px;margin:4px 0 10px}
+.rp-head>div:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}.rp-head>div:last-child b{font-size:16px;line-height:1.3}.rp-head>div:last-child>span{font-size:13px;color:var(--ink2);line-height:1.4}
+.gcard svg.rp-ring,.rp-ring{flex:none;width:86px!important;height:86px!important}
+.rp-big{flex:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:38px;line-height:1;min-width:84px;text-align:center}
+.rp-dims{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.rp-dim{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 28px;gap:8px;align-items:center;font-size:13.5px}
+.rp-b{height:8px;border-radius:4px;background:var(--card2);overflow:hidden}.rp-b i{display:block;height:100%;border-radius:4px}
+.rp-dim b{text-align:right;font-variant-numeric:tabular-nums}
+.rp-rec{margin:6px 0 4px;padding-left:22px;display:flex;flex-direction:column;gap:8px}.rp-rec li{line-height:1.45}.rp-rec li::marker{color:var(--arete-e);font-weight:800}
+.rp-svg{width:100%;height:auto;margin:4px 0;overflow:visible}.rp-svg text{font-family:'Atkinson Hyperlegible',sans-serif}
+.rp-tor{display:flex;flex-direction:column;gap:10px;margin:6px 0}
+.rp-tor>div{display:grid;grid-template-columns:1fr;gap:3px;font-size:13.5px}
+.rp-tor small{font-size:12px;color:var(--ink2)}
+.rp-tb{position:relative;height:10px;border-radius:5px;background:var(--card2)}
+.rp-tb i{position:absolute;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,var(--rojo),var(--arete-e) 50%,var(--verde))}
+.rp-tb u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);text-decoration:none}
+.rp-sem{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin:8px 0 6px}.rp-sem i{display:block;height:100%}
+.rp-semL{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}.rp-semL span{display:inline-flex;align-items:center;gap:6px}.rp-semL i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.s-verde{background:var(--verde)}.s-amarillo{background:var(--arete-e)}.s-rojo{background:var(--rojo)}.s-gris{background:var(--ink2);opacity:.45}
+.rp-kv{display:flex;flex-direction:column;margin:6px 0}.rp-kv>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;padding:7px 0;border-bottom:1px solid var(--line)}.rp-kv>div:last-child{border-bottom:0}
+.rp-kv em{font-style:normal;text-align:right;margin-left:auto}
+.rp-hoy{display:flex;align-items:center;gap:14px;padding:14px 16px;text-decoration:none;color:inherit}
+.rp-hoy .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.rp-hoy .eyebrow{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--arete-e);display:flex;align-items:center;gap:5px}
+.rp-hoy .eyebrow .i3{width:15px;height:15px}.rp-hoy b{font-size:15.5px;line-height:1.3}.rp-hoy .tx>span:last-child{font-size:13px;color:var(--ink2)}
+.rp-hoy>svg:last-child{width:20px;height:20px;color:var(--ink2);flex:none}
+.rp-hoy .rp-ring{width:58px!important;height:58px!important}
+.rp-card .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.rp-card .acts .btn{flex:1 1 auto}
+.hd .eyebrow .i3{width:16px;height:16px;vertical-align:-3px;color:var(--arete)}
 .ranim{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .ranim>div{display:flex;flex-direction:column;min-width:0}.ranim b{font-size:16px}.ranim span{font-size:13px;color:var(--ink2)}
 .foto.grande{width:84px;height:84px;border-radius:16px;background:var(--card2)}
@@ -1773,7 +1805,8 @@ PAGES.mas=(sub)=>{
   <main class="bd">
    <section class="sec">${secH('Tu negocio')}<div class="card rows">
     ${masFila(icono('finanzas','i3'),'Finanzas',finSub(),'href="#finanzas"','t-v')}
-    ${masFila(icono('inventario','i3'),'Inventario',invSub(),'href="#inventario"','t-y')}</div></section>
+    ${masFila(icono('inventario','i3'),'Inventario',invSub(),'href="#inventario"','t-y')}
+    ${masFila(icono('chispa','i3'),'Análisis de Rumi','Puntaje, riesgo, proveedores y qué hacer primero','href="#analisis"','t-a')}</div></section>
    <section class="sec">${secH('Tu finca')}<div class="card rows">
     ${masFila(mico('config'),'Configuración',`Precio ${pk(+cfg.precioVentaKg||0)}, meta ${nf(W(+cfg.metaKg||480))} ${UW()}, ${U()==='lb'?'libras':'kilos'}`,'href="#mas/config"','t-a')}
     ${masFila(mico('racion'),'Raciones y dietas',nR?pl(nR,'ración','raciones'):'Crea tu primera ración','href="#mas/raciones"','t-v')}
@@ -4964,5 +4997,6 @@ responder=function(txt){
 <script src="ambiente.js"></script>
 <script src="rumi_guia.js"></script>
 <script src="rumi_menu.js"></script>
+<script src="rumi_pro.js"></script>
 </body>
 </html>
