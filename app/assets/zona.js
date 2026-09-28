@@ -82,7 +82,7 @@ const MET=[
   {k:'costo',t:'Costo por kg ganado',alto:false,f:null},
   {k:'dias',t:'Días de engorde',alto:null,f:v=>nf(v)}];
 function puesto(v,q,alto){
-  if(v==null||!q)return null;const [a,b,c]=alto?[q.p75,q.p50,q.p25]:[q.p25,q.p50,q.p75],mejor=alto?(x,y)=>x>=y:(x,y)=>x<=y;
+  if(v==null||!q)return null;const [a,b,c]=alto?[q.p75,q.p50,q.p25]:[q.p25,q.p50,q.p75],mejor=alto?(x,y)=>x>=y-Math.abs(y)*0.005:(x,y)=>x<=y+Math.abs(y)*0.005;   // medio por ciento de tolerancia: lo que se ve igual cuenta igual
   return mejor(v,a)?{t:'Entre los mejores',c:'verde',s:3}:mejor(v,b)?{t:'Mejor que la mitad',c:'verde',s:2}:mejor(v,c)?{t:'Abajo de la mitad',c:'tierra',s:1}:{t:'Entre los más bajos',c:'rojo',s:0};
 }
 const NIVEL={celda:'fincas de tu zona (unos 100 km)',vecinas:'fincas de tu zona y las vecinas',pais:'fincas de tu país'};

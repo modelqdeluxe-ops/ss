@@ -166,7 +166,17 @@ const T={
   {h:'Últimos gastos',t:'Tus gastos',x:'Cada gasto general. Se reparte entre tus lotes para el costo real.'}]},
  datos:{t:'Tus datos',s:[
   {h:'Respaldo',t:'Respaldo',x:'Descarga una copia cada semana y guárdala en Drive o mándatela por WhatsApp. Si pierdes el teléfono, la restauras.'},
-  {h:'Descargar para Excel',t:'Excel',x:'Tus lotes, alimento, pesajes, sanidad, ventas y gastos en archivos para Excel.'}]}
+  {h:'Descargar para Excel',t:'Excel',x:'Tus lotes, alimento, pesajes, sanidad, ventas y gastos en archivos para Excel.'}]},
+ mercado:{t:'Precios del mercado',s:[
+  {h:'Lo que dice el mercado',t:'Señales',x:'Te aviso si el precio sube o baja con lotes listos, si tu precio de venta quedó atrás y si reponer está caro o barato.'},
+  {h:'Tus lotes a precio de mercado',t:'Tus márgenes',x:'Cuánto dejaría cada lote con el precio del mercado. Con un toque lo usas como tu precio de venta.'},
+  {h:'Tu mercado',t:'Tu mercado',x:'El precio de hoy, cuánto cambió en 4 semanas y en el año, y dónde está dentro del rango del año.'},
+  {h:'Referencias internacionales',t:'Referencias',x:'Estados Unidos y Brasil en tu moneda: sirven para ver hacia dónde va el mercado.'},
+  {h:'Precios que viste en tu zona',t:'Tus precios',x:'Anota lo que te ofrecen o lo que viste en la subasta. Con eso sigo la tendencia de tu zona.'}]},
+ documentos:{t:'Documentos',s:[
+  {h:'Para el banco',t:'Informe para el banco',x:'Un PDF con tu balance, resultados, créditos, indicadores y riesgo para pedir un crédito.'},
+  {h:'Certificado de lote',t:'Certificado',x:'Para el comprador o el matadero: origen, sanidad con retiros, pesajes y aretes, con código QR.'},
+  {h:'Verificar',t:'Verificar',x:'Escribe el código de un documento y te digo si lo hiciste aquí y qué decía.'}]}
 };
 const clave=()=>{const r=route();if(r.p==='mas'&&r.id)return {config:'config',raciones:'raciones',gastos:'gastos',datos:'datos'}[r.id]||null;return T[r.p]?r.p:null;};
 const vistos=()=>LS('rumentis-tut')||{};
@@ -179,7 +189,7 @@ function tutorial(k){
   TUT=k;spot(pasos);
 }
 function abrirTut(k){
-  const go={hoy:'#hoy',lotes:'#lotes',registrar:'#registrar',finanzas:'#finanzas',inventario:'#inventario',graficos:'#graficos',mas:'#mas',config:'#mas/config',analisis:'#analisis',agenda:'#agenda',bodega:'#bodega',raciones:'#mas/raciones',formular:'#formular',gastos:'#mas/gastos',datos:'#mas/datos'}[k];
+  const go={hoy:'#hoy',lotes:'#lotes',registrar:'#registrar',finanzas:'#finanzas',inventario:'#inventario',graficos:'#graficos',mas:'#mas',config:'#mas/config',analisis:'#analisis',agenda:'#agenda',bodega:'#bodega',raciones:'#mas/raciones',formular:'#formular',gastos:'#mas/gastos',datos:'#mas/datos',mercado:'#mercado',documentos:'#documentos'}[k];
   if(k==='lote'){const x=calc().act[0];if(!x){toast('Primero crea un lote.');return;}location.hash='#lote/'+x.id;}
   else if(go&&location.hash!==go)location.hash=go;
   closeSheet();setTimeout(()=>tutorial(k),650);

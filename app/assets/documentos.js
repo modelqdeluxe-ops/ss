@@ -206,7 +206,7 @@ async function informeBanco(o){
   const {C,b,per,r,fin,cer}=datosBanco(),cfg=S.config,tt=titular();
   const resumen={t:'banco',finca:cfg.finca||'',f:hoy(),cab:C.cabT,act:C.act.length,pat:Math.round(b.patrimonio),act_:Math.round(b.activos),pas:Math.round(b.pasivos),ven:Math.round(r.ventas),net:Math.round(r.neta),tit:tt.nombre||'',id:tt.id||''};
   const {cod}=codigo('RMB',resumen);
-  const P=pdf({titulo:'Informe productivo y financiero',sub:o.para?`Preparado para ${o.para}`:'Engorde de ganado en corral',finca:cfg.finca||'Mi engorde',
+  const P=pdf({titulo:'Informe productivo y financiero',sub:o.para?`${tr('Preparado para')} ${o.para}`:'Engorde de ganado en corral',finca:cfg.finca||'Mi engorde',
     derecha:[`Al ${hoyL()}`,lugar()].filter(Boolean).join('\n'),autor:tt.nombre||cfg.finca||'',cod});
   P.encabezado();
   // productor
@@ -265,7 +265,7 @@ async function informeBanco(o){
     const pts=[[hoy(),F.caja]].concat(F.sem.map(s=>[addDias(s.f,6),s.acc]));
     P.linea(pts,{fmt:v=>money(v),etq:[[0,'hoy'],[Math.round(pts.length/2),ffc(pts[Math.round(pts.length/2)][0])],[pts.length-1,ffc(pts[pts.length-1][0])]]});
     P.texto(`Con el efectivo de hoy (${money(F.caja)}), el alimento de los lotes, los gastos generales y las cuotas de los créditos, `+(F.min.f===hoy()?`el dinero no baja de lo que hay hoy; a los 90 días quedaría ${money(F.fin)}.`:`el punto más bajo sería ${money(F.min.v)} el ${conA(F.min.f)}; a los 90 días quedaría ${money(F.fin)}.`)+(F.min.v<0?' Ese faltante habría que cubrirlo con crédito o ventas antes de esa fecha.':''));
-    const ev=F.sem.filter(s=>s.ent>0);if(ev.length)P.tabla(['Semana','Entra','Sale','Queda','Qué pasa'],ev.map(s=>[ffc(s.f),money(s.ent),money(s.sal),{t:money(s.acc),c:s.acc<0?COL.rojo:COL.ink},s.ev.join(', ')]),{w:[1,1.2,1.2,1.2,2.6],al:['l','r','r','r','l'],t:8});
+    const ev=F.sem.filter(s=>s.ent>0);if(ev.length)P.tabla(['Semana','Entradas','Salidas','Queda en caja','Qué pasa'],ev.map(s=>[ffc(s.f),money(s.ent),money(s.sal),{t:money(s.acc),c:s.acc<0?COL.rojo:COL.ink},s.ev.join(', ')]),{w:[1,1.2,1.2,1.2,2.6],al:['l','r','r','r','l'],t:8});
     P.nota('Supone que cada lote se vende al llegar a su meta al precio de venta configurado y que el consumo y los gastos siguen como hasta hoy.');}
   // riesgo
   if(C.act.some(x=>x.proy)&&window.RumiPro&&RumiPro.simFinca){const sf=RumiPro.simFinca(),q=p=>sf.T[Math.min(sf.N-1,Math.floor(p*sf.N))];
@@ -280,11 +280,11 @@ async function informeBanco(o){
   // declaración
   P.seccion('Declaración');
   P.texto('Los datos de este informe salen de los registros que el productor anota en Rumentis: compras, alimento, pesajes, sanidad, ventas, gastos, créditos e inventario. No son estados financieros auditados. El valor del ganado y las proyecciones son estimaciones con los precios configurados por el productor.',{t:8.6});
-  P.texto(`Código del informe: ${cod}. Emitido el ${hoyL()}.`,{t:8.6,b:true});
-  P.firmas(['Firma del productor',`Nombre e identificación${tt.nombre?`: ${tt.nombre}${tt.id?', '+tt.id:''}`:''}`]);
+  P.texto(`${tr('Código del informe:')} ${cod}. ${tr(`Emitido el ${hoyL()}.`)}`,{t:8.6,b:true});
+  P.firmas(['Firma del productor',tt.nombre?`${tr('Nombre e identificación')}: ${tt.nombre}${tt.id?', '+tt.id:''}`:'Nombre e identificación']);
   const buf=P.fin();
-  registrar({t:'banco',cod,f:hoy(),hh:new Date().toTimeString().slice(0,5),n:o.para?`Informe para ${o.para}`:'Informe productivo y financiero',snap:resumen});
-  return {buf,cod,nombre:`Informe-${archivo(cfg.finca||'finca')}-${hoy()}.pdf`,titulo:'Informe productivo y financiero'};
+  registrar({t:'banco',cod,f:hoy(),hh:new Date().toTimeString().slice(0,5),n:'Informe productivo y financiero',para:o.para||'',snap:resumen});
+  return {buf,cod,nombre:`${archivo(tr('Informe'))}-${archivo(cfg.finca||'finca')}-${hoy()}.pdf`,titulo:'Informe productivo y financiero'};
 }
 
 /* ================= CERTIFICADO DE LOTE ================= */
@@ -309,7 +309,7 @@ function textoQR(D,cod){
     TQ(`Cabezas: ${s.cab0} al entrar, ${s.cab} en el corral, ${s.vend} vendidas, ${s.bajas} muertas`),
     TQ(`Sanidad: ${pl(s.san.length,'registro','registros')}`)+'; '+(s.ret?TQ(`en retiro hasta el ${s.ret[0]}`)+` (${s.ret[1]})`:TQ(`sin retiros vigentes al ${s.f}`)),
   ];
-  if(s.hu!=null)L.push(TQ(`Huella: ${nf(s.hu,1)} kg CO2e por kg ganado`).replace(/\u0005|\u0006/g,''));
+  if(s.hu!=null)L.push(TQ(`Huella: ${nf(s.hu,1)} ${g5('kg CO2e por kg ganado')}`));
   if(s.aret.length)L.push(TQ(`Aretes: ${nf(s.aret.length)}, en el certificado`));
   return L.join('\n');
 }
@@ -367,11 +367,11 @@ async function certificadoLote(id,o={}){
   // declaración
   P.seccion('Declaración');
   P.texto('El productor declara que estos datos son los que registró en Rumentis para este lote. Este documento no reemplaza los certificados oficiales de sanidad, las guías de movilización ni la inspección veterinaria que pida la ley de su país.',{t:8.6});
-  P.texto(`Código de verificación: ${cod}. El productor lo comprueba en su app: Más, Documentos, Verificar un código.`,{t:8.6,b:true});
+  P.texto(`${tr('Código de verificación:')} ${cod}. ${tr('El productor lo comprueba en su app: Más, Documentos, Verificar un código.')}`,{t:8.6,b:true});
   P.firmas(['Firma del productor','Firma de quien recibe']);
   const buf=P.fin();
   registrar({t:'cert',cod,f:hoy(),hh:new Date().toTimeString().slice(0,5),lote:x.id,n:l.nombre,dest:o.destino||'',snap,hs:hashSan(x)});
-  return {buf,cod,nombre:`Certificado-${archivo(l.nombre)}-${hoy()}.pdf`,titulo:`Certificado de ${l.nombre}`};
+  return {buf,cod,nombre:`${archivo(tr('Certificado'))}-${archivo(l.nombre)}-${hoy()}.pdf`,titulo:`Certificado de ${l.nombre}`};
 }
 
 /* ---------- verificar un código ---------- */
@@ -447,7 +447,7 @@ ACTS.docHacer=async el=>{
       r=await informeBanco({para:v('para')});}
     else r=await certificadoLote(el.dataset.id,{destino:(f.elements.destino&&f.elements.destino.value||'').trim()});
     const ok=await enviar(r.nombre,r.buf,modo,r.titulo);
-    if(ok){if(modo==='guardar'&&!window.Android)toast('PDF descargado');else if(modo!=='guardar')toast(`Código ${r.cod}`,3200);}
+    if(ok){if(modo==='guardar'&&!window.Android)toast('PDF descargado');else if(modo!=='guardar')toast(`${tr('Código')} ${r.cod}`,3200);}
   }catch(e){console.error(e);const m=e&&e.message==='lib'?'No pude cargar el generador de PDF. Cierra y abre la app.':'No pude hacer el PDF. Revisa los datos e inténtalo otra vez.';if(err)err.textContent=tr(m);else toast(m);}
   finally{ocupado=false;B.forEach(b=>b.disabled=false);el.textContent=txt;}
 };
@@ -461,7 +461,7 @@ PAGES.documentos=()=>{
    <section class="sec">${secH('Para el banco')}<div class="card rows">${fila('gasto','Informe productivo y financiero','Balance, resultados, créditos, indicadores, flujo y riesgo','data-act="f" data-f="docBanco"','t-t')}</div></section>
    <section class="sec">${secH('Certificado de lote','con código QR')}<div class="card rows">${L.length?L.map(x=>fila('doc',esc(x.l.nombre),`${pl(x.activo?x.cab:x.cab0,'cabeza','cabezas')}${x.activo?'':', vendido'}${x.retiroHasta&&x.retiroHasta>C.H?` · en retiro hasta el ${ffc(x.retiroHasta)}`:''}`,`data-act="f" data-f="docCert" data-id="${esc(x.id)}"`,'t-v')).join(''):`<p class="empty">Aún no tienes lotes.</p>`}</div></section>
    <section class="sec">${secH('Verificar')}<div class="card rows">${fila('info','Verificar un código','¿Este documento lo hice yo? ¿Qué decía?','data-act="f" data-f="docVerificar"','t-a')}</div></section>
-   ${D.length?`<section class="sec">${secH('Emitidos',D.length)}<div class="card rows">${D.slice(0,12).map(d=>`<div class="row"><div class="tx"><b>${esc(d.t==='cert'?'Certificado: '+d.n:d.n)}</b><span>${ffc(d.f)} · <span data-no-tr>${esc(d.cod)}</span></span></div></div>`).join('')}</div></section>`:''}
+   ${D.length?`<section class="sec">${secH('Emitidos',D.length)}<div class="card rows">${D.slice(0,12).map(d=>`<div class="row"><div class="tx"><b>${d.t==='cert'?'Certificado de lote':'Informe productivo y financiero'}</b><span>${ffc(d.f)} · <span data-no-tr>${esc([d.t==='cert'?d.n:d.para,d.cod].filter(Boolean).join(' · '))}</span></span></div></div>`).join('')}</div></section>`:''}
    <p class="hint">Los documentos salen de tus registros. Cada uno lleva un código que solo este teléfono (o tu respaldo) puede comprobar.</p>
   </main>`;
 };

@@ -1,0 +1,540 @@
+Precios del mercado	Market prices	Preços do mercado
+Cuándo vender y cuándo comprar	When to sell and when to buy	Quando vender e quando comprar
+Informe para el banco y certificados con QR	Bank report and QR certificates	Relatório para o banco e certificados com QR
+Informe para el banco (PDF)	Bank report (PDF)	Relatório para o banco (PDF)
+Informes y certificados en PDF para el banco, el comprador o el matadero.	PDF reports and certificates for your bank, buyer or packer.	Relatórios e certificados em PDF para o banco, o comprador ou o frigorífico.
+Para el banco	For the bank	Para o banco
+Informe productivo y financiero	Production and financial report	Relatório produtivo e financeiro
+Balance, resultados, créditos, indicadores, flujo y riesgo	Balance sheet, results, loans, indicators, cash flow and risk	Balanço, resultados, créditos, indicadores, fluxo e risco
+Certificado de lote	Lot certificate	Certificado de lote
+con código QR	with QR code	com código QR
+{1} cabezas · en retiro hasta el {0}	{1} head · in withdrawal until {0}	{1} cabeças · em carência até {0}
+{0} cabezas, vendido	{0} head, sold	{0} cabeças, vendido
+Verificar	Verify	Verificar
+Verificar un código	Verify a code	Verificar um código
+¿Este documento lo hice yo? ¿Qué decía?	Did I issue this document? What did it say?	Fui eu que emiti este documento? O que ele dizia?
+Los documentos salen de tus registros. Cada uno lleva un código que solo este teléfono (o tu respaldo) puede comprobar.	Documents come from your records. Each one carries a code that only this phone (or your backup) can check.	Os documentos saem dos seus registros. Cada um leva um código que só este celular (ou o seu backup) pode conferir.
+Cuándo vender y cuándo comprar, con el mercado y los precios de tu zona.	When to sell and when to buy, with the market and prices in your area.	Quando vender e quando comprar, com o mercado e os preços da sua região.
+Revisado hace un momento.	Checked a moment ago.	Consultado agora há pouco.
+Actualizar	Refresh	Atualizar
+Lo que dice el mercado	What the market says	O que o mercado diz
+El precio del gordo bajó {0} {2} en {1} semanas	Fed cattle price fell {0} {2} in {1} weeks	O preço do boi gordo caiu {0} {2} em {1} semanas
+El precio del gordo subió {0} {2} en {1} semanas	Fed cattle price rose {0} {2} in {1} weeks	O preço do boi gordo subiu {0} {2} em {1} semanas
+Si {0} ya está listo, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada libra ganada.	If {0} is already finished, don't wait for it to drop further: every extra week costs feed and raises the cost of each pound gained.	Se {0} já está pronto, não espere cair mais: cada semana a mais custa ração e aumenta o custo de cada libra ganha.
+Si {0} ya está listo, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada kilo ganado.	If {0} is already finished, don't wait for it to drop further: every extra week costs feed and raises the cost of each kilo gained.	Se {0} já está pronto, não espere cair mais: cada semana a mais custa ração e aumenta o custo de cada quilo ganho.
+Si {0} y {1} ya están listos, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada libra ganada.	If {0} and {1} are already finished, don't wait for it to drop further: every extra week costs feed and raises the cost of each pound gained.	Se {0} e {1} já estão prontos, não espere cair mais: cada semana a mais custa ração e aumenta o custo de cada libra ganha.
+Si {0} y {1} ya están listos, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada kilo ganado.	If {0} and {1} are already finished, don't wait for it to drop further: every extra week costs feed and raises the cost of each kilo gained.	Se {0} e {1} já estão prontos, não espere cair mais: cada semana a mais custa ração e aumenta o custo de cada quilo ganho.
+Tu precio de venta no se parece al del mercado	Your sale price is far from the market	Seu preço de venda está muito longe do mercado
+Pusiste L {0} y lo último que anotaste está en L {1}. Revisa en Configuración la moneda y la unidad de precio.	You set L {0} and your latest recorded price is L {1}. Check the currency and price unit in Settings.	Você colocou L {0} e o último preço que anotou está em L {1}. Confira a moeda e a unidade de preço em Configurações.
+Pusiste L {0} y el mercado está en L {1}. Revisa en Configuración la moneda y la unidad de precio.	You set L {0} and the market is at L {1}. Check the currency and price unit in Settings.	Você colocou L {0} e o mercado está em L {1}. Confira a moeda e a unidade de preço em Configurações.
+Pusiste L {0}/{2} y lo último que anotaste está en L {1}/{3}. Revisa en Configuración la moneda y la unidad de precio.	You set L {0}/{2} and your latest recorded price is L {1}/{3}. Check the currency and price unit in Settings.	Você colocou L {0}/{2} e o último preço que anotou está em L {1}/{3}. Confira a moeda e a unidade de preço em Configurações.
+Pusiste L {0}/{2} y el mercado está en L {1}/{3}. Revisa en Configuración la moneda y la unidad de precio.	You set L {0}/{2} and the market is at L {1}/{3}. Check the currency and price unit in Settings.	Você colocou L {0}/{2} e o mercado está em L {1}/{3}. Confira a moeda e a unidade de preço em Configurações.
+Pusiste L {0}/@ y el mercado está en L {1}/@. Revisa en Configuración la moneda y la unidad de precio.	You set L {0}/@ and the market is at L {1}/@. Check the currency and price unit in Settings.	Você colocou L {0}/@ e o mercado está em L {1}/@. Confira a moeda e a unidade de preço em Configurações.
+Pusiste L {0}/@ y lo último que anotaste está en L {1}/@. Revisa en Configuración la moneda y la unidad de precio.	You set L {0}/@ and your latest recorded price is L {1}/@. Check the currency and price unit in Settings.	Você colocou L {0}/@ e o último preço que anotou está em L {1}/@. Confira a moeda e a unidade de preço em Configurações.
+El ganado para engorde está caro: {0} {1} más por libra que el gordo	Feeder cattle are expensive: {0} {1} more per pound than fed cattle	O boi magro está caro: {0} {1} a mais por libra que o boi gordo
+El ganado para engorde está caro: {0} {1} más por kilo que el gordo	Feeder cattle are expensive: {0} {1} more per kilo than fed cattle	O boi magro está caro: {0} {1} a mais por quilo que o boi gordo
+Anotaste L {0} el flaco y L {1} el gordo. Con esa diferencia el engorde tiene que ganar mucho para dejar dinero: calcula el precio máximo antes de comprar.	You recorded L {0} for feeders and L {1} for fed cattle. With that spread, feeding must gain a lot to make money: work out your top price before buying.	Você anotou L {0} o magro e L {1} o gordo. Com essa diferença a engorda precisa ganhar muito para dar lucro: calcule o preço máximo antes de comprar.
+Anotaste L {0}/{2} el flaco y L {1}/{3} el gordo. Con esa diferencia el engorde tiene que ganar mucho para dejar dinero: calcula el precio máximo antes de comprar.	You recorded L {0}/{2} for feeders and L {1}/{3} for fed cattle. With that spread, feeding must gain a lot to make money: work out your top price before buying.	Você anotou L {0}/{2} o magro e L {1}/{3} o gordo. Com essa diferença a engorda precisa ganhar muito para dar lucro: calcule o preço máximo antes de comprar.
+Referencias internacionales	International benchmarks	Referências internacionais
+en tu moneda	in your currency	na sua moeda
+No son el precio de tu zona: sirven para ver si el mercado de la carne sube o baja.	They are not your local price: they show whether the beef market is going up or down.	Não são o preço da sua região: servem para ver se o mercado da carne sobe ou desce.
+Novillo gordo en pie	Fed steer, live	Novilho gordo em pé
+Novillo gordo en canal	Fed steer, dressed	Novilho gordo em carcaça
+Estados Unidos, promedio nacional ponderado de la semana	United States, national weekly weighted average	Estados Unidos, média nacional ponderada da semana
+US$ {0} por {2} ({1} {3}) en pie, con el cambio de hoy	US$ {0} per {2} ({1} {3}) live, at today's exchange rate	US$ {0} por {2} ({1} {3}) em pé, com o câmbio de hoje
+US$ {0} por {2} ({1} {3}) en pie	US$ {0} per {2} ({1} {3}) live	US$ {0} por {2} ({1} {3}) em pé
+por {1} ({0} {2}) en canal	per {1} ({0} {2}) dressed	por {1} ({0} {2}) em carcaça
+{0} semanas	{0} weeks	{0} semanas
+{0} año	{0} year	{0} ano
+Rango de {0} meses	{0}-month range	Faixa de {0} meses
+En la mitad del rango del año.	In the middle of the year's range.	No meio da faixa do ano.
+Cerca del máximo del año.	Near the year's high.	Perto da máxima do ano.
+Cerca del mínimo del año.	Near the year's low.	Perto da mínima do ano.
+Fuente: USDA AMS, dato semanal.	Source: USDA AMS, weekly data.	Fonte: USDA AMS, dado semanal.
+Fuente: Cepea/Esalq-USP, dato diario.	Source: Cepea/Esalq-USP, daily data.	Fonte: Cepea/Esalq-USP, dado diário.
+Fuente: BCB, dato diario.	Source: BCB, daily data.	Fonte: BCB, dado diário.
+Boi gordo	Brazil fed steer (boi gordo)	Boi gordo
+Brasil, São Paulo, a plazo	Brazil, São Paulo, forward terms	Brasil, São Paulo, a prazo
+R$ {0} por arroba ({1} {2} de canal), con el cambio de hoy	R$ {0} per arroba ({1} {2} carcass), at today's exchange rate	R$ {0} por arroba ({1} {2} de carcaça), com o câmbio de hoje
+por arroba ({0} {2} de canal) · L {1}/@ en pie	per arroba ({0} {2} carcass) · L {1}/@ live	por arroba ({0} {2} de carcaça) · L {1}/@ em pé
+Bezerro (ternero)	Brazil calf (bezerro)	Bezerro
+Brasil, Mato Grosso do Sul	Brazil, Mato Grosso do Sul	Brasil, Mato Grosso do Sul
+Relación boi gordo y bezerro	Fed steer to calf ratio	Relação de troca boi gordo e bezerro
+Bezerros que paga un boi gordo de {0} arrobas	Calves bought by one {0}-arroba fed steer	Bezerros que um boi gordo de {0} arrobas compra
+promedio de {0} años: {1}. Más alto es mejor para reponer.	{0}-year average: {1}. Higher is better for restocking.	média de {0} anos: {1}. Quanto mais alta, melhor para repor.
+Maíz	Corn	Milho
+Brasil, Campinas (SP)	Brazil, Campinas (SP)	Brasil, Campinas (SP)
+por saca de {0} {1}	per {0} {1} bag	por saca de {0} {1}
+Dólar en Brasil (PTAX)	Dollar in Brazil (PTAX)	Dólar (PTAX)
+Banco Central do Brasil	Central Bank of Brazil	Banco Central do Brasil
+por dólar	per dollar	por dólar
+por cabeza	per head	por cabeça
+Precios que viste en tu zona	Prices you saw in your area	Preços que você viu na sua região
+No hay un precio público del ganado en tu país: anota lo que te ofrecen, lo que viste en la subasta o lo que pagó el vecino. Con eso sigo la tendencia y te aviso.	There is no public cattle price in your country: record what you are offered, what you saw at the sale barn or what your neighbor got. I use that to follow the trend and alert you.	Não há um preço público do gado no seu país: anote o que te oferecem, o que viu no leilão ou o que o vizinho recebeu. Com isso acompanho a tendência e te aviso.
+Anota lo que te ofrecen en tu zona para compararlo con el mercado.	Record what you are offered locally to compare it with the market.	Anote o que te oferecem na sua região para comparar com o mercado.
+Gordo (venta)	Fed (sale)	Gordo (venda)
+Flaco (compra)	Feeder (purchase)	Magro (compra)
+Flaco: L {0}	Feeder: L {0}	Magro: L {0}
+Gordo: L {0}	Fed: L {0}	Gordo: L {0}
+Flaco: L {0}/{1}	Feeder: L {0}/{1}	Magro: L {0}/{1}
+Gordo: L {0}/{1}	Fed: L {0}/{1}	Gordo: L {0}/{1}
+Flaco: L {0}/@	Feeder: L {0}/@	Magro: L {0}/@
+Gordo: L {0}/@	Fed: L {0}/@	Gordo: L {0}/@
+Borrar este precio	Delete this price	Apagar este preço
+Anotar un precio que vi	Record a price I saw	Anotar um preço que vi
+Tipo de cambio	Exchange rate	Câmbio
+{0} dólar	{0} US dollar	{0} dólar
+{0} real de Brasil	{0} Brazilian real	{0} real
+Tu mercado	Your market	Seu mercado
+Fuentes: USDA Agricultural Marketing Service (novillo gordo), Cepea/Esalq-USP (boi gordo, bezerro y milho), Banco Central do Brasil (PTAX) y ExchangeRate-API (tipos de cambio). El boi gordo se pasa a libra en pie con la arroba de {0} {2} (rendimiento de {1} {3}).	Sources: USDA Agricultural Marketing Service (fed steers), Cepea/Esalq-USP (boi gordo, bezerro and milho), Central Bank of Brazil (PTAX) and ExchangeRate-API (exchange rates). The boi gordo price is converted to live pounds using a {0} {2} arroba ({1} {3} dressing).	Fontes: USDA Agricultural Marketing Service (novilho gordo), Cepea/Esalq-USP (boi gordo, bezerro e milho), Banco Central do Brasil (PTAX) e ExchangeRate-API (câmbio). O boi gordo passa para libra em pé com a arroba de {0} {2} (rendimento de {1} {3}).
+Fuentes: USDA Agricultural Marketing Service (novillo gordo), Cepea/Esalq-USP (boi gordo, bezerro y milho), Banco Central do Brasil (PTAX) y ExchangeRate-API (tipos de cambio). El boi gordo se pasa a kilo en pie con la arroba de {0} {2} (rendimiento de {1} {3}).	Sources: USDA Agricultural Marketing Service (fed steers), Cepea/Esalq-USP (boi gordo, bezerro and milho), Central Bank of Brazil (PTAX) and ExchangeRate-API (exchange rates). The boi gordo price is converted to live kilos using a {0} {2} arroba ({1} {3} dressing).	Fontes: USDA Agricultural Marketing Service (novilho gordo), Cepea/Esalq-USP (boi gordo, bezerro e milho), Banco Central do Brasil (PTAX) e ExchangeRate-API (câmbio). O boi gordo passa para quilo em pé com a arroba de {0} {2} (rendimento de {1} {3}).
+Tu zona	Your area	Sua região
+Mercado	Market	Mercado
+Huella de carbono	Carbon footprint	Pegada de carbono
+Ver precios	See prices	Ver preços
+Qué pasa	What happens	O que acontece
+Tú contra tu zona	You versus your area	Você contra a sua região
+Compara tu ganancia diaria, conversión, mortalidad y costo por libra con otros engordes de tu zona, sin que nadie sepa quién eres. Solo se ve el grupo cuando hay al menos {0} fincas.	Compare your daily gain, conversion, death loss and cost per pound with other feedlots in your area, without anyone knowing who you are. The group only shows when there are at least {0} ranches.	Compare seu ganho diário, conversão, mortalidade e custo por libra com outras engordas da sua região, sem que ninguém saiba quem você é. O grupo só aparece quando há pelo menos {0} fazendas.
+Compara tu ganancia diaria, conversión, mortalidad y costo por kilo con otros engordes de tu zona, sin que nadie sepa quién eres. Solo se ve el grupo cuando hay al menos {0} fincas.	Compare your daily gain, conversion, death loss and cost per kilo with other feedlots in your area, without anyone knowing who you are. The group only shows when there are at least {0} ranches.	Compare seu ganho diário, conversão, mortalidade e custo por quilo com outras engordas da sua região, sem que ninguém saiba quem você é. O grupo só aparece quando há pelo menos {0} fazendas.
+Pronto podrás compararte, sin dar tu nombre, con otros engordes de tu zona: ganancia, conversión, mortalidad y costo por libra. Mientras tanto te comparo con la referencia.	Soon you will be able to compare yourself, without giving your name, with other feedlots in your area: gain, conversion, death loss and cost per pound. Meanwhile I compare you with the reference.	Em breve você poderá se comparar, sem dar seu nome, com outras engordas da sua região: ganho, conversão, mortalidade e custo por libra. Enquanto isso, comparo você com a referência.
+Pronto podrás compararte, sin dar tu nombre, con otros engordes de tu zona: ganancia, conversión, mortalidad y costo por kilo. Mientras tanto te comparo con la referencia.	Soon you will be able to compare yourself, without giving your name, with other feedlots in your area: gain, conversion, death loss and cost per kilo. Meanwhile I compare you with the reference.	Em breve você poderá se comparar, sem dar seu nome, com outras engordas da sua região: ganho, conversão, mortalidade e custo por quilo. Enquanto isso, comparo você com a referência.
+Ver qué se comparte y participar	See what is shared and join	Ver o que é compartilhado e participar
+Servidor de la comparación	Comparison server	Servidor da comparação
+Solo para quien administra la app: la dirección del servidor de Rumentis (servidor/zona).	Only for whoever runs the app: the address of the Rumentis server (servidor/zona).	Só para quem administra o app: o endereço do servidor do Rumentis (servidor/zona).
+Lo último que anotaste:	Your latest recorded price:	O último preço que você anotou:
+({0}, tus precios), baja {1} {3} en {2} semanas.	({0}, your prices), down {1} {3} in {2} weeks.	({0}, seus preços), cai {1} {3} em {2} semanas.
+({0}, tus precios), sube {1} {3} en {2} semanas.	({0}, your prices), up {1} {3} in {2} weeks.	({0}, seus preços), sobe {1} {3} em {2} semanas.
+({0}, USDA AMS), baja {1} {3} en {2} semanas.	({0}, USDA AMS), down {1} {3} in {2} weeks.	({0}, USDA AMS), cai {1} {3} em {2} semanas.
+({0}, USDA AMS), sube {1} {3} en {2} semanas.	({0}, USDA AMS), up {1} {3} in {2} weeks.	({0}, USDA AMS), sobe {1} {3} em {2} semanas.
+({0}, Cepea/Esalq-USP), sube {1} {3} en {2} semanas.	({0}, Cepea/Esalq-USP), up {1} {3} in {2} weeks.	({0}, Cepea/Esalq-USP), sobe {1} {3} em {2} semanas.
+({0}, Cepea/Esalq-USP), baja {1} {3} en {2} semanas.	({0}, Cepea/Esalq-USP), down {1} {3} in {2} weeks.	({0}, Cepea/Esalq-USP), cai {1} {3} em {2} semanas.
+Novillo gordo en pie:	Fed steer, live:	Novilho gordo em pé:
+Boi gordo:	Boi gordo:	Boi gordo:
+Tus lotes de los últimos {0} meses emitieron {1} {6} CO{2}e y subieron {3} {7}: {4} {8} CO{5}e por {9} ganado.	Your lots from the last {0} months emitted {1} {6} CO{2}e and gained {3} {7}: {4} {8} CO{5}e per {9} gained.	Seus lotes dos últimos {0} meses emitiram {1} {6} CO{2}e e ganharam {3} {7}: {4} {8} CO{5}e por {9} ganho.
+{1} CO{0}e	{1} CO{0}e	{1} CO{0}e
+por {0} ganado	per {0} gained	por {0} ganho
+por cabeza al día	per head per day	por cabeça por dia
+Por {1} ganado y por cabeza al día: {2} CO{0}e.	Per {1} gained and per head per day: {2} CO{0}e.	Por {1} ganho e por cabeça por dia: {2} CO{0}e.
+{0} es el lote con menos emisión por libra ganada ({2}); {1} el de más ({3}). Engordar más rápido y con mejor conversión baja la huella y el costo a la vez.	{0} is the lot with the lowest emissions per pound gained ({2}); {1} the highest ({3}). Faster gains and better conversion lower both the footprint and the cost.	{0} é o lote com menos emissão por libra ganha ({2}); {1} o de mais ({3}). Engordar mais rápido e com melhor conversão reduz a pegada e o custo ao mesmo tempo.
+{0} es el lote con menos emisión por kilo ganado ({2}); {1} el de más ({3}). Engordar más rápido y con mejor conversión baja la huella y el costo a la vez.	{0} is the lot with the lowest emissions per kilo gained ({2}); {1} the highest ({3}). Faster gains and better conversion lower both the footprint and the cost.	{0} é o lote com menos emissão por quilo ganho ({2}); {1} o de mais ({3}). Engordar mais rápido e com melhor conversão reduz a pegada e o custo ao mesmo tempo.
+Método IPCC {0} Nivel {1} con el alimento que anotaste. Solo lo que emiten el animal y su estiércol en el corral (metano del rumen, metano y óxido nitroso del estiércol), en CO{2} equivalente a {3} años (IPCC AR{4}). No incluye la producción del alimento, la cría antes de llegar ni el transporte.	IPCC {0} Tier {1} method with the feed you recorded. Only what the animal and its manure emit in the pen (rumen methane, manure methane and nitrous oxide), as {3}-year CO{2} equivalent (IPCC AR{4}). It does not include feed production, cow-calf before arrival or transport.	Método IPCC {0} Nível {1} com a ração que você anotou. Só o que o animal e seu esterco emitem no curral (metano do rúmen, metano e óxido nitroso do esterco), em CO{2} equivalente a {3} anos (IPCC AR{4}). Não inclui a produção da ração, a cria antes de chegar nem o transporte.
+IPCC {0}	IPCC {0}	IPCC {0}
+IPCC {0}, nivel {1}	IPCC {0}, Tier {1}	IPCC {0}, nível {1}
+{1} CO{0}e por {2} ganado	{1} CO{0}e per {2} gained	{1} CO{0}e por {2} ganho
+{1} CO{0}e por cabeza al día	{1} CO{0}e per head per day	{1} CO{0}e por cabeça por dia
+{1} CO{0}e del lote en el corral	{1} CO{0}e from the lot in the pen	{1} CO{0}e do lote no curral
+{0}, {1} días en el corral	{0}, {1} days in the pen	{0}, {1} dias no curral
+{0}, {1} día en el corral	{0}, {1} day in the pen	{0}, {1} dia no curral
+Parte	Share	Parte
+Metano del rumen	Rumen methane	Metano do rúmen
+Metano del estiércol	Manure methane	Metano do esterco
+Óxido nitroso del estiércol	Manure nitrous oxide	Óxido nitroso do esterco
+Por cabeza:	Per head:	Por cabeça:
+{0} {2} CO{1}e	{0} {2} CO{1}e	{0} {2} CO{1}e
+. Al día por cabeza:	. Per head per day:	. Por cabeça por dia:
+, comiendo {0} {1} de materia seca.	, eating {0} {1} of dry matter.	, comendo {0} {1} de matéria seca.
+Cómo bajarla	How to lower it	Como reduzir
+Mejorar la conversión {0} {1}	Improve conversion {0} {1}	Melhorar a conversão {0} {1}
+: unos {0} {4} CO{1}e menos ({2} {5}). Comen {3} {6} menos por cada libra que suben: menos desperdicio, ración bien balanceada, animales sanos y vender a tiempo.	: about {0} {4} CO{1}e less ({2} {5}). They eat {3} {6} less for every pound they gain: less waste, a well-balanced ration, healthy cattle and selling on time.	: cerca de {0} {4} CO{1}e a menos ({2} {5}). Comem {3} {6} menos por cada libra que ganham: menos desperdício, ração bem balanceada, animais sadios e vender na hora certa.
+: unos {0} {4} CO{1}e menos ({2} {5}). Comen {3} {6} menos por cada kilo que suben: menos desperdicio, ración bien balanceada, animales sanos y vender a tiempo.	: about {0} {4} CO{1}e less ({2} {5}). They eat {3} {6} less for every kilo they gain: less waste, a well-balanced ration, healthy cattle and selling on time.	: cerca de {0} {4} CO{1}e a menos ({2} {5}). Comem {3} {6} menos por cada quilo que ganham: menos desperdício, ração bem balanceada, animais sadios e vender na hora certa.
+Bajar el forraje a menos de {0} {1} en la terminación	Cut forage below {0} {1} in the finishing ration	Baixar a forragem para menos de {0} {1} na terminação
+: unos {0} {5} CO{1}e menos ({2} {6}). Con poco forraje el rumen produce menos metano (Ym de {3} a {4} {7}). Cámbialo de a poco y con tu nutricionista: más grano cuesta y exige adaptar bien.	: about {0} {5} CO{1}e less ({2} {6}). With little forage the rumen makes less methane (Ym from {3} to {4} {7}). Change it gradually and with your nutritionist: more grain costs more and needs careful step-up.	: cerca de {0} {5} CO{1}e a menos ({2} {6}). Com pouca forragem o rúmen produz menos metano (Ym de {3} para {4} {7}). Mude aos poucos e com seu nutricionista: mais grão custa mais e exige boa adaptação.
+Aditivo que reduce el metano ({0}-NOP)	Methane-reducing additive ({0}-NOP)	Aditivo que reduz o metano ({0}-NOP)
+: unos {0} {4} CO{1}e menos ({2} {5}). En estudios publicados baja alrededor de {3} {6} el metano entérico en engorde. Solo donde esté aprobado y con tu veterinario.	: about {0} {4} CO{1}e less ({2} {5}). Published studies show about {3} {6} less enteric methane in feedlots. Only where approved and with your veterinarian.	: cerca de {0} {4} CO{1}e a menos ({2} {5}). Estudos publicados mostram cerca de {3} {6} menos metano entérico em confinamento. Só onde for aprovado e com seu veterinário.
+Método IPCC {0} Nivel {1} con el alimento que anotaste: mezcla con {2} a {3} {4} de forraje. Incluye solo lo que emiten el animal y su estiércol en el corral; no incluye la producción del alimento ni la cría antes de llegar.	IPCC {0} Tier {1} method with the feed you recorded: mix with {2} to {3} {4} forage. It only includes what the animal and its manure emit in the pen; it does not include feed production or cow-calf before arrival.	Método IPCC {0} Nível {1} com a ração que você anotou: mistura com {2} a {3} {4} de forragem. Inclui só o que o animal e seu esterco emitem no curral; não inclui a produção da ração nem a cria antes de chegar.
+Método IPCC {0} Nivel {1} con el alimento que anotaste: mezcla con {2} a {3} {5} de forraje; corral con hasta {4} {6} de forraje. Incluye solo lo que emiten el animal y su estiércol en el corral; no incluye la producción del alimento ni la cría antes de llegar.	IPCC {0} Tier {1} method with the feed you recorded: mix with {2} to {3} {5} forage; feedlot ration with up to {4} {6} forage. It only includes what the animal and its manure emit in the pen; it does not include feed production or cow-calf before arrival.	Método IPCC {0} Nível {1} com a ração que você anotou: mistura com {2} a {3} {5} de forragem; confinamento com até {4} {6} de forragem. Inclui só o que o animal e seu esterco emitem no curral; não inclui a produção da ração nem a cria antes de chegar.
+Todavía no hay alimento anotado en este lote. Con las entregas de alimento calculo su huella de carbono.	No feed recorded for this lot yet. With the feed deliveries I calculate its carbon footprint.	Ainda não há ração anotada neste lote. Com as entregas de ração calculo a pegada de carbono dele.
+Todavía no hay alimento anotado. Con las entregas de alimento calculo la huella de carbono de cada lote.	No feed recorded yet. With the feed deliveries I calculate the carbon footprint of each lot.	Ainda não há ração anotada. Com as entregas de ração calculo a pegada de carbono de cada lote.
+Metano del rumen y del estiércol y óxido nitroso del estiércol mientras los animales están en el corral, calculados con el alimento registrado. No incluye la producción del alimento ni la cría.	Rumen and manure methane and manure nitrous oxide while the cattle are in the pen, calculated from the feed recorded. It does not include feed production or cow-calf.	Metano do rúmen e do esterco e óxido nitroso do esterco enquanto os animais estão no curral, calculados com a ração registrada. Não inclui a produção da ração nem a cria.
+Metano del rumen {0}, metano del estiércol {1} y óxido nitroso {2} {4} CO{3}e, con el alimento registrado. No incluye la producción del alimento ni la cría.	Rumen methane {0}, manure methane {1} and nitrous oxide {2} {4} CO{3}e, from the feed recorded. It does not include feed production or cow-calf.	Metano do rúmen {0}, metano do esterco {1} e óxido nitroso {2} {4} CO{3}e, com a ração registrada. Não inclui a produção da ração nem a cria.
+Compararte con tu zona	Compare with your area	Comparar-se com sua região
+Esto es lo que se comparte, una vez por semana como máximo:	This is what is shared, at most once a week:	Isto é o que se compartilha, no máximo uma vez por semana:
+País:	Country:	País:
+Zona:	Area:	Região:
+un cuadro de unos {0} {1}, sin tu ubicación exacta	a square of about {0} {1}, without your exact location	um quadrado de uns {0} {1}, sem sua localização exata
+solo el país (no tengo tu ubicación)	country only (I don't have your location)	só o país (não tenho sua localização)
+Moneda:	Currency:	Moeda:
+Ganancia diaria:	Daily gain:	Ganho diário:
+Conversión:	Conversion:	Conversão:
+Mortalidad:	Death loss:	Mortalidade:
+Costo por {0} ganado:	Cost per {0} gained:	Custo por {0} ganho:
+Días de engorde:	Days on feed:	Dias de engorda:
+Tamaño:	Size:	Tamanho:
+{0} a {1} cabezas	{0} to {1} head	{0} a {1} cabeças
+Quién:	Who:	Quem:
+un número al azar de este teléfono, no tu nombre	a random number from this phone, not your name	um número aleatório deste celular, não o seu nome
+No se comparte:	Not shared:	Não se compartilha:
+tu nombre ni el de la finca, tu ubicación exacta, tus lotes, animales, proveedores, compradores ni cuánto dinero ganas o debes.	your name or your ranch's, your exact location, your lots, cattle, suppliers, buyers, or how much money you make or owe.	seu nome nem o da fazenda, sua localização exata, seus lotes, animais, fornecedores, compradores nem quanto dinheiro você ganha ou deve.
+El grupo solo se muestra cuando hay al menos {0} fincas, y solo sus rangos: nadie puede ver los datos de una finca. Puedes salir cuando quieras y se borra todo lo que mandaste.	The group only shows when there are at least {0} ranches, and only its ranges: nobody can see one ranch's data. You can leave whenever you want and everything you sent is deleted.	O grupo só aparece quando há pelo menos {0} fazendas, e só as faixas: ninguém pode ver os dados de uma fazenda. Você pode sair quando quiser e tudo o que mandou é apagado.
+Participar	Join	Participar
+Ahora no	Not now	Agora não
+Gracias. Busco los datos de tu zona…	Thanks. Getting your area's data…	Obrigado. Buscando os dados da sua região…
+Buscando los datos de tu zona…	Getting your area's data…	Buscando os dados da sua região…
+Tus lotes de los últimos {0} meses contra {1} fincas: fincas de tu zona (unos {2} {3}).	Your lots from the last {0} months against {1} ranches: ranches in your area (about {2} {3}).	Seus lotes dos últimos {0} meses contra {1} fazendas: fazendas da sua região (uns {2} {3}).
+Tus lotes de los últimos {0} meses contra {1} fincas: fincas de tu zona y las vecinas.	Your lots from the last {0} months against {1} ranches: ranches in your area and nearby areas.	Seus lotes dos últimos {0} meses contra {1} fazendas: fazendas da sua região e das vizinhas.
+Tus lotes de los últimos {0} meses contra {1} fincas: fincas de tu país.	Your lots from the last {0} months against {1} ranches: ranches in your country.	Seus lotes dos últimos {0} meses contra {1} fazendas: fazendas do seu país.
+Tus lotes de los últimos {0} meses contra {1} finca: fincas de tu país.	Your lots from the last {0} months against {1} ranch: ranches in your country.	Seus lotes dos últimos {0} meses contra {1} fazenda: fazendas do seu país.
+Mejor que la mitad	Better than half	Melhor que a metade
+Entre los mejores	Among the best	Entre os melhores
+Abajo de la mitad	Below half	Abaixo da metade
+Entre los más bajos	Among the lowest	Entre os mais baixos
+Tú:	You:	Você:
+, la mitad entre {0} {2} y {1} {3}	, half between {0} {2} and {1} {3}	, a metade entre {0} {2} e {1} {3}
+, la mitad entre {0} a {1} y {2} a {3}	, half between {0} to {1} and {2} to {3}	, a metade entre {0} a {1} e {2} a {3}
+, la mitad entre L {0} y L {1}	, half between L {0} and L {1}	, a metade entre L {0} e L {1}
+, la mitad entre L {0}/{2} y L {1}/{3}	, half between L {0}/{2} and L {1}/{3}	, a metade entre L {0}/{2} e L {1}/{3}
+, la mitad entre L {0}/@ y L {1}/@	, half between L {0}/@ and L {1}/@	, a metade entre L {0}/@ e L {1}/@
+, la mitad entre {0} y {1}	, half between {0} and {1}	, a metade entre {0} e {1}
+, la mitad entre US$ {0} y US$ {1}	, half between US$ {0} and US$ {1}	, a metade entre US$ {0} e US$ {1}
+la mitad de las fincas	half of the ranches	a metade das fazendas
+el medio	the middle	o meio
+tú	you	você
+Tu punto fuerte:	Your strong point:	Seu ponto forte:
+Donde más puedes mejorar:	Where you can improve most:	Onde você mais pode melhorar:
+. Mira qué hacen distinto las fincas de arriba: ración, recepción, compras y días en el corral.	. See what the top ranches do differently: ration, receiving, buying and days in the pen.	. Veja o que as fazendas de cima fazem diferente: ração, recepção, compras e dias no curral.
+ganancia diaria	daily gain	ganho diário
+mortalidad	death loss	mortalidade
+costo por {0} ganado	cost per {0} gained	custo por {0} ganho
+días de engorde	days on feed	dias de engorda
+Datos anónimos, actualizados el {0}.	Anonymous data, updated {0}.	Dados anônimos, atualizados em {0}.
+Mi participación	My participation	Minha participação
+Listo: ya te comparo con tu zona	Done: I'm now comparing you with your area	Pronto: já comparo você com sua região
+Salir y borrar mis datos	Leave and delete my data	Sair e apagar meus dados
+Seguir participando	Keep participating	Continuar participando
+Todavía no tengo los datos de tu zona.	I don't have your area's data yet.	Ainda não tenho os dados da sua região.
+No pude conectarme. Lo intento otra vez cuando tengas internet.	I couldn't connect. I'll try again when you have internet.	Não consegui conectar. Tento de novo quando você tiver internet.
+Necesito al menos un lote con pesajes para comparar.	I need at least one lot with weighings to compare.	Preciso de pelo menos um lote com pesagens para comparar.
+Necesito al menos un lote con pesajes para participar.	I need at least one lot with weighings to take part.	Preciso de pelo menos um lote com pesagens para participar.
+Elige tu país en Configuración para participar.	Choose your country in Settings to take part.	Escolha seu país em Configurações para participar.
+Todavía somos pocos: hay {0} finca de tu país y necesito al menos {1} para comparar sin que nadie pueda saber de quién es cada dato. Invita a otros ganaderos a usar Rumentis. Mientras tanto, la referencia:	We are still few: there is {0} ranch from your country and I need at least {1} to compare without anyone being able to tell whose data is whose. Invite other cattlemen to use Rumentis. Meanwhile, the reference:	Ainda somos poucos: há {0} fazenda do seu país e preciso de pelo menos {1} para comparar sem que ninguém saiba de quem é cada dado. Convide outros pecuaristas a usar o Rumentis. Enquanto isso, a referência:
+Todavía somos pocos: hay {0} fincas de tu país y necesito al menos {1} para comparar sin que nadie pueda saber de quién es cada dato. Invita a otros ganaderos a usar Rumentis. Mientras tanto, la referencia:	We are still few: there are {0} ranches from your country and I need at least {1} to compare without anyone being able to tell whose data is whose. Invite other cattlemen to use Rumentis. Meanwhile, the reference:	Ainda somos poucos: há {0} fazendas do seu país e preciso de pelo menos {1} para comparar sem que ninguém saiba de quem é cada dado. Convide outros pecuaristas a usar o Rumentis. Enquanto isso, a referência:
+Todavía somos pocos: aún no hay fincas de tu país y necesito al menos {0} para comparar sin que nadie pueda saber de quién es cada dato. Invita a otros ganaderos a usar Rumentis. Mientras tanto, la referencia:	We are still few: there are no ranches from your country yet and I need at least {0} to compare without anyone being able to tell whose data is whose. Invite other cattlemen to use Rumentis. Meanwhile, the reference:	Ainda somos poucos: ainda não há fazendas do seu país e preciso de pelo menos {0} para comparar sem que ninguém saiba de quem é cada dado. Convide outros pecuaristas a usar o Rumentis. Enquanto isso, a referência:
+Sin conexión: lo intento cuando tengas internet	Offline: I'll try when you have internet	Sem conexão: tento quando você tiver internet
+Saliste de la comparación y se borraron tus datos	You left the comparison and your data was deleted	Você saiu da comparação e seus dados foram apagados
+No pude borrar tus datos: revisa tu conexión e inténtalo otra vez.	I couldn't delete your data: check your connection and try again.	Não consegui apagar seus dados: confira sua conexão e tente de novo.
+Esa dirección no sirve: debe empezar con https://	That address won't work: it must start with https://	Esse endereço não serve: precisa começar com https://
+Servidor guardado	Server saved	Servidor salvo
+¿Cómo voy contra los engordes de mi zona?	How am I doing against feedlots in my area?	Como estou contra as engordas da minha região?
+Certificado con QR	QR certificate	Certificado com QR
+PDF	PDF	PDF
+Informe para el banco	Bank report	Relatório para o banco
+Un PDF con tu finca, balance, resultados de {0} meses, créditos, indicadores, lotes, flujo de {1} días, riesgo y huella de carbono. Sirve para pedir un crédito o mostrar cómo va tu engorde.	A PDF with your ranch, balance sheet, {0}-month results, loans, indicators, lots, {1}-day cash flow, risk and carbon footprint. Use it to apply for a loan or show how your feedlot is doing.	Um PDF com sua fazenda, balanço, resultados de {0} meses, créditos, indicadores, lotes, fluxo de {1} dias, risco e pegada de carbono. Serve para pedir um crédito ou mostrar como vai sua engorda.
+Tu nombre	Your name	Seu nome
+Como aparece en tu identificación	As it appears on your ID	Como aparece no seu documento
+Número de identidad o RTN	ID or tax number	CPF ou CNPJ
+Teléfono	Phone	Telefone
+Para	For	Para
+Nombre del banco o cooperativa (opcional)	Bank or credit union name (optional)	Nome do banco ou cooperativa (opcional)
+Cabezas en engorde	Head on feed	Cabeças em engorda
+Ventas, {0} meses	Sales, {0} months	Vendas, {0} meses
+Utilidad neta, {0} meses	Net income, {0} months	Lucro líquido, {0} meses
+Utilidad neta, {0} meses:	Net income, {0} months:	Lucro líquido, {0} meses:
+Revisa antes tus datos en Finanzas: efectivo, créditos, equipo e insumos. Lo que no anotes no aparece en el informe.	Check your data in Finances first: cash, loans, equipment and supplies. Whatever you don't record won't appear in the report.	Revise antes seus dados em Finanças: caixa, créditos, equipamentos e insumos. O que você não anotar não aparece no relatório.
+Ver	View	Ver
+Compartir	Share	Compartilhar
+Certificado del lote	Lot certificate	Certificado do lote
+Un PDF para el comprador o el matadero: origen, sanidad con sus retiros, pesajes, alimentación, muertes, huella de carbono y aretes, con un código QR y un código para verificarlo.	A PDF for the buyer or packer: origin, health with withdrawal times, weighings, feeding, deaths, carbon footprint and ear tags, with a QR code and a code to verify it.	Um PDF para o comprador ou o frigorífico: origem, sanidade com as carências, pesagens, alimentação, mortes, pegada de carbono e brincos, com um código QR e um código para verificá-lo.
+Sin retiros vigentes: todos los tiempos de retiro ya se cumplieron.	No active withdrawals: all withdrawal times have been met.	Sem carências vigentes: todos os prazos de carência já foram cumpridos.
+En retiro hasta el	In withdrawal until	Em carência até
+por {0}. El certificado lo dirá.	for {0}. The certificate will say so.	por {0}. O certificado vai informar.
+Tratamientos	Treatments	Tratamentos
+Aretes	Ear tags	Brincos
+Destino	Destination	Destino
+Comprador o matadero (opcional)	Buyer or packer (optional)	Comprador ou frigorífico (opcional)
+Anota el proveedor en Editar lote: el comprador querrá saber de dónde vienen.	Record the supplier in Edit lot: the buyer will want to know where they come from.	Anote o fornecedor em Editar lote: o comprador vai querer saber de onde vêm.
+¿Qué precio es?	What price is it?	Que preço é?
+Ganado gordo	Fed cattle	Boi gordo
+lo que pagan por el terminado	what finished cattle bring	o que pagam pelo terminado
+Ganado para engorde	Feeder cattle	Boi magro
+lo que cuesta el que compras	what the ones you buy cost	o que custa o que você compra
+En pie.	Live weight.	Em pé.
+Dónde	Where	Onde
+Subasta, comprador, vecino… (opcional)	Sale barn, buyer, neighbor… (optional)	Leilão, comprador, vizinho… (opcional)
+Guardar precio	Save price	Salvar preço
+Escribe el código que viene en el informe o el certificado (RMB-… o RMC-…). Te digo si lo emitió esta app y qué decía.	Type the code printed on the report or certificate (RMB-… or RMC-…). I'll tell you whether this app issued it and what it said.	Digite o código que vem no relatório ou no certificado (RMB-… ou RMC-…). Digo se este app o emitiu e o que dizia.
+Código	Code	Código
+Escribe el código completo, por ejemplo RMC{0}A{1}B{2}C{3}D{4}E{5}F.	Type the full code, for example RMC{0}A{1}B{2}C{3}D{4}E{5}F.	Digite o código completo, por exemplo RMC{0}A{1}B{2}C{3}D{4}E{5}F.
+Este código no lo emitió este teléfono. Solo se pueden comprobar los documentos hechos aquí (también vienen en tu respaldo).	This phone did not issue this code. Only documents made here can be checked (they also come in your backup).	Este celular não emitiu este código. Só é possível conferir os documentos feitos aqui (eles também vêm no seu backup).
+El código existe, pero lo guardado no coincide con él: el respaldo pudo ser editado. No confíes en este documento.	The code exists, but the saved data does not match it: the backup may have been edited. Don't trust this document.	O código existe, mas o que está salvo não bate com ele: o backup pode ter sido editado. Não confie neste documento.
+Ojo: después de emitirlo se cambiaron registros de sanidad de este lote. Emite un certificado nuevo si el comprador lo necesita al día.	Note: health records for this lot were changed after it was issued. Issue a new certificate if the buyer needs it up to date.	Atenção: depois de emitido, registros de sanidade deste lote foram alterados. Emita um certificado novo se o comprador precisar dele atualizado.
+El lote de este certificado ya no está en la app.	This certificate's lot is no longer in the app.	O lote deste certificado não está mais no app.
+Código válido.	Valid code.	Código válido.
+Lo emitió esta app el {0} a las {1}:{2}.	This app issued it on {0} at {1}:{2}.	Este app o emitiu em {0} às {1}:{2}.
+Documento:	Document:	Documento:
+Finca:	Ranch:	Fazenda:
+Cabezas:	Head:	Cabeças:
+Patrimonio:	Equity:	Patrimônio:
+Lote:	Lot:	Lote:
+{0} al entrar, {1} en el corral, {2} vendidas, {3} muertas	{0} on arrival, {1} in the pen, {2} sold, {3} dead	{0} na entrada, {1} no curral, {2} vendidas, {3} mortas
+Sanidad:	Health:	Sanidade:
+{0} registros; sin retiros vigentes	{0} records; no active withdrawals	{0} registros; sem carências vigentes
+{0} registros; en retiro hasta el {1}	{0} records; in withdrawal until {1}	{0} registros; em carência até {1}
+Entró:	Arrived:	Entrou:
+Destino:	Destination:	Destino:
+Emitidos	Issued	Emitidos
+Preparando…	Preparing…	Preparando…
+No pude cargar el generador de PDF. Cierra y abre la app.	I couldn't load the PDF maker. Close and reopen the app.	Não consegui carregar o gerador de PDF. Feche e abra o app.
+No pude hacer el PDF. Revisa los datos e inténtalo otra vez.	I couldn't make the PDF. Check the data and try again.	Não consegui fazer o PDF. Confira os dados e tente de novo.
+No pude preparar el archivo. Revisa el espacio del teléfono.	I couldn't prepare the file. Check your phone's storage.	Não consegui preparar o arquivo. Confira o espaço do celular.
+PDF descargado	PDF downloaded	PDF baixado
+Preparado para	Prepared for	Preparado para
+Engorde de ganado en corral	Cattle feedlot	Confinamento de gado
+Al {0}	As of {0}	Em {0}
+Productor	Producer	Produtor
+Actividad	Activity	Atividade
+Engorde de ganado de carne en corral	Beef cattle feedlot	Confinamento de gado de corte
+Resumen	Summary	Resumo
+valores en L	amounts in L	valores em L
+cabezas en engorde en {0} lotes	head on feed in {0} lots	cabeças em engorda em {0} lotes
+cabezas en engorde en {0} lote	head on feed in {0} lot	cabeças em engorda em {0} lote
+valor del ganado a precio de venta	cattle value at sale price	valor do gado a preço de venda
+patrimonio (activos menos deudas)	equity (assets minus debts)	patrimônio (ativos menos dívidas)
+ventas de ganado, últimos {0} meses	cattle sales, last {0} months	vendas de gado, últimos {0} meses
+utilidad neta, últimos {0} meses	net income, last {0} months	lucro líquido, últimos {0} meses
+deudas (créditos y cuentas por pagar)	debts (loans and accounts payable)	dívidas (créditos e contas a pagar)
+La finca tiene {0} lotes en engorde con {1} cabezas y {2} {8} en pie. En los últimos {3} meses vendió {4} cabezas por L {5} y cerró {6} lotes. Sus deudas son el {7} {9} de sus activos.	The ranch has {0} lots on feed with {1} head and {2} {8} live weight. In the last {3} months it sold {4} head for L {5} and closed {6} lots. Its debts are {7} {9} of its assets.	A fazenda tem {0} lotes em engorda com {1} cabeças e {2} {8} em pé. Nos últimos {3} meses vendeu {4} cabeças por L {5} e fechou {6} lotes. Suas dívidas são {7} {9} dos seus ativos.
+La finca tiene {0} lotes en engorde con {1} cabezas y {2} {6} en pie. En los últimos {3} meses vendió {4} cabezas por L {5}. No tiene deudas registradas.	The ranch has {0} lots on feed with {1} head and {2} {6} live weight. In the last {3} months it sold {4} head for L {5}. It has no recorded debts.	A fazenda tem {0} lotes em engorda com {1} cabeças e {2} {6} em pé. Nos últimos {3} meses vendeu {4} cabeças por L {5}. Não tem dívidas registradas.
+Balance general	Balance sheet	Balanço patrimonial
+al {0}	as of {0}	em {0}
+Activos	Assets	Ativos
+% del total	% of total	% do total
+{0} del total	{0} of total	{0} do total
+Cuentas por cobrar	Accounts receivable	Contas a receber
+Ganado en engorde (precio de venta)	Cattle on feed (sale price)	Gado em engorda (preço de venda)
+Equipo (valor en libros)	Equipment (book value)	Equipamentos (valor contábil)
+Total activos	Total assets	Total de ativos
+Deudas y patrimonio	Debts and equity	Dívidas e patrimônio
+{0} de los activos	{0} of assets	{0} dos ativos
+Créditos (saldo con intereses)	Loans (balance with interest)	Créditos (saldo com juros)
+Total deudas	Total debts	Total de dívidas
+El ganado se valora al precio de venta de L {0} con {1} {3} de desbaste. Lo que costó hasta hoy: L {2}.	Cattle are valued at the sale price of L {0} with {1} {3} shrink. Cost to date: L {2}.	O gado é avaliado ao preço de venda de L {0} com {1} {3} de quebra. O que custou até hoje: L {2}.
+El ganado se valora al precio de venta de L {0}/{3} con {1} {4} de desbaste. Lo que costó hasta hoy: L {2}.	Cattle are valued at the sale price of L {0}/{3} with {1} {4} shrink. Cost to date: L {2}.	O gado é avaliado ao preço de venda de L {0}/{3} com {1} {4} de quebra. O que custou até hoje: L {2}.
+El ganado se valora al precio de venta de L {0}/@ con {1} {3} de desbaste. Lo que costó hasta hoy: L {2}.	Cattle are valued at the sale price of L {0}/@ with {1} {3} shrink. Cost to date: L {2}.	O gado é avaliado ao preço de venda de L {0}/@ com {1} {3} de quebra. O que custou até hoje: L {2}.
+Estado de resultados	Income statement	Demonstração de resultados
+{0} a {1}	{0} to {1}	{0} a {1}
+{0} de las ventas	{0} of sales	{0} das vendas
+Costo del ganado vendido	Cost of cattle sold	Custo do gado vendido
+Utilidad bruta	Gross profit	Lucro bruto
+Intereses	Interest	Juros
+Utilidad neta	Net income	Lucro líquido
+Además, el ganado en engorde vale L {0} más de lo que costó hasta hoy (ganancia no realizada, no incluida arriba).	In addition, cattle on feed are worth L {0} more than they have cost to date (unrealized gain, not included above).	Além disso, o gado em engorda vale L {0} a mais do que custou até hoje (ganho não realizado, não incluído acima).
+Además, el ganado en engorde vale L {0} menos de lo que costó hasta hoy (pérdida no realizada, no incluida arriba).	In addition, cattle on feed are worth L {0} less than they have cost to date (unrealized loss, not included above).	Além disso, o gado em engorda vale L {0} a menos do que custou até hoje (perda não realizada, não incluída acima).
+Crédito	Loan	Crédito
+Desde	Since	Desde
+Cuota al mes	Monthly payment	Parcela mensal
+Saldo	Balance	Saldo
+No hay créditos registrados.	No loans recorded.	Não há créditos registrados.
+Indicadores productivos	Production indicators	Indicadores produtivos
+Indicador	Indicator	Indicador
+Lotes vendidos, {0} meses	Lots sold, {0} months	Lotes vendidos, {0} meses
+Estado	Status	Situação
+Ganancia diaria por cabeza	Daily gain per head	Ganho diário por cabeça
+{0} {1} o más	{0} {1} or more	{0} {1} ou mais
+{0} a {1} o menos	{0} to {1} or less	{0} a {1} ou menos
+{0} {1} o menos	{0} {1} or less	{0} {1} ou menos
+Bueno	Good	Bom
+Aceptable	Acceptable	Aceitável
+A mejorar	Needs work	A melhorar
+Conversión (alimento por {0} ganado)	Conversion (feed per {0} gained)	Conversão (ração por {0} ganho)
+Costo del {0} ganado ({1} del precio de venta)	Cost of {0} gained ({1} of sale price)	Custo do {0} ganho ({1} do preço de venda)
+Costo de la libra ganada ({0} del precio de venta)	Cost per pound gained ({0} of sale price)	Custo da libra ganha ({0} do preço de venda)
+Costo del kilo ganado ({0} del precio de venta)	Cost per kilo gained ({0} of sale price)	Custo do quilo ganho ({0} do preço de venda)
+Costo de la arroba ganada ({0} del precio de venta)	Cost per arroba gained ({0} of sale price)	Custo da arroba ganha ({0} do preço de venda)
+Costo del quintal ganado ({0} del precio de venta)	Cost per hundredweight gained ({0} of sale price)	Custo do quintal ganho ({0} do preço de venda)
+Costo del {1} ({0} {2}) ganado ({3} del precio de venta)	Cost per {1} ({0} {2}) gained ({3} of sale price)	Custo do {1} ({0} {2}) ganho ({3} do preço de venda)
+Consumo de materia seca ({0} del peso)	Dry matter intake ({0} of body weight)	Consumo de matéria seca ({0} do peso)
+Los lotes vendidos en {0} meses estuvieron en promedio {1} días en el corral y dejaron L {2} de margen por cabeza.	Lots sold in {0} months spent an average of {1} days in the pen and left L {2} margin per head.	Os lotes vendidos em {0} meses ficaram em média {1} dias no curral e deixaram L {2} de margem por cabeça.
+Entró	Arrived	Entrou
+Peso hoy	Weight today	Peso hoje
+Margen estimado	Estimated margin	Margem estimada
+Lotes vendidos en los últimos {0} meses	Lots sold in the last {0} months	Lotes vendidos nos últimos {0} meses
+Ningún lote se cerró en los últimos {0} meses.	No lots were closed in the last {0} months.	Nenhum lote foi fechado nos últimos {0} meses.
+Dinero en los próximos {0} días	Cash over the next {0} days	Dinheiro nos próximos {0} dias
+proyección	projection	projeção
+hoy	today	hoje
+Con el efectivo de hoy (L {0}), el alimento de los lotes, los gastos generales y las cuotas de los créditos, el dinero no baja de lo que hay hoy; a los {1} días quedaría L {2}.	With today's cash (L {0}), the lots' feed, overhead and loan payments, cash never falls below today's level; after {1} days it would be L {2}.	Com o dinheiro de hoje (L {0}), a ração dos lotes, as despesas gerais e as parcelas dos créditos, o dinheiro não fica abaixo do que há hoje; em {1} dias ficaria L {2}.
+Con el efectivo de hoy (L {1}), el alimento de los lotes, los gastos generales y las cuotas de los créditos, el punto más bajo sería L {2} el {0}; a los {3} días quedaría L {4}. Ese faltante habría que cubrirlo con crédito o ventas antes de esa fecha.	With today's cash (L {1}), the lots' feed, overhead and loan payments, the low point would be L {2} on {0}; after {3} days it would be L {4}. That shortfall would need to be covered with credit or sales before that date.	Com o dinheiro de hoje (L {1}), a ração dos lotes, as despesas gerais e as parcelas dos créditos, o ponto mais baixo seria L {2} em {0}; em {3} dias ficaria L {4}. Essa falta teria de ser coberta com crédito ou vendas antes dessa data.
+Con el efectivo de hoy (L {1}), el alimento de los lotes, los gastos generales y las cuotas de los créditos, el punto más bajo sería L {2} el {0}; a los {3} días quedaría L {4}.	With today's cash (L {1}), the lots' feed, overhead and loan payments, the low point would be L {2} on {0}; after {3} days it would be L {4}.	Com o dinheiro de hoje (L {1}), a ração dos lotes, as despesas gerais e as parcelas dos créditos, o ponto mais baixo seria L {2} em {0}; em {3} dias ficaria L {4}.
+Entradas	Inflows	Entradas
+Salidas	Outflows	Saídas
+Queda en caja	Cash left	Fica em caixa
+Supone que cada lote se vende al llegar a su meta al precio de venta configurado y que el consumo y los gastos siguen como hasta hoy.	Assumes each lot is sold when it reaches its target at the configured sale price and that intake and expenses continue as they have so far.	Supõe que cada lote é vendido ao chegar à meta pelo preço de venda configurado e que o consumo e as despesas seguem como até hoje.
+Riesgo del engorde en curso	Risk of the current feeding	Risco da engorda em andamento
+probabilidad de que el engorde completo deje ganancia	probability that the whole feedlot makes a profit	probabilidade de a engorda inteira dar lucro
+margen en un mal escenario ({0} de cada {1} queda por debajo)	margin in a bad scenario ({0} in {1} ends up below it)	margem num cenário ruim ({0} em cada {1} fica abaixo)
+margen más probable (mediana)	most likely margin (median)	margem mais provável (mediana)
+Simulación de Montecarlo con {0} escenarios: varían el precio de venta, la ganancia diaria, el costo del alimento y las muertes hasta que cada lote llega a su meta.	Monte Carlo simulation with {0} scenarios: sale price, daily gain, feed cost and deaths vary until each lot reaches its target.	Simulação de Monte Carlo com {0} cenários: variam o preço de venda, o ganho diário, o custo da ração e as mortes até que cada lote chegue à meta.
+Declaración	Statement	Declaração
+Los datos de este informe salen de los registros que el productor anota en Rumentis: compras, alimento, pesajes, sanidad, ventas, gastos, créditos e inventario. No son estados financieros auditados. El valor del ganado y las proyecciones son estimaciones con los precios configurados por el productor.	The data in this report come from the records the producer keeps in Rumentis: purchases, feed, weighings, health, sales, expenses, loans and inventory. They are not audited financial statements. Cattle value and projections are estimates using the prices set by the producer.	Os dados deste relatório saem dos registros que o produtor anota no Rumentis: compras, ração, pesagens, sanidade, vendas, despesas, créditos e estoque. Não são demonstrações financeiras auditadas. O valor do gado e as projeções são estimativas com os preços configurados pelo produtor.
+Código del informe:	Report code:	Código do relatório:
+Emitido el {0}.	Issued on {0}.	Emitido em {0}.
+Emitido el {0}	Issued on {0}	Emitido em {0}
+Nombre e identificación	Name and ID	Nome e documento
+Firma del productor	Producer's signature	Assinatura do produtor
+Firma de quien recibe	Recipient's signature	Assinatura de quem recebe
+Página {0} de {1}	Page {0} of {1}	Página {0} de {1}
+Hecho con Rumentis	Made with Rumentis	Feito com Rumentis
+RUMENTIS · Certificado de lote	RUMENTIS · Lot certificate	RUMENTIS · Certificado de lote
+Emitido	Issued	Emitido
+proveedor	supplier	fornecedor
+Cabezas: {0} al entrar, {1} en el corral, {2} vendidas, {3} muertas	Head: {0} on arrival, {1} in the pen, {2} sold, {3} dead	Cabeças: {0} na entrada, {1} no curral, {2} vendidas, {3} mortas
+Sanidad: {0} registros	Health: {0} records	Sanidade: {0} registros
+Sanidad: {0} registro	Health: {0} record	Sanidade: {0} registro
+sin retiros vigentes al {0}{1}{2}	no active withdrawals as of {0}{1}{2}	sem carências vigentes em {0}{1}{2}
+en retiro hasta el {0}{1}{2}	in withdrawal until {0}{1}{2}	em carência até {0}{1}{2}
+Huella: {0} {2} CO{1}e por {3} ganado	Footprint: {0} {2} CO{1}e per {3} gained	Pegada: {0} {2} CO{1}e por {3} ganho
+Aretes: {0}, en el certificado	Ear tags: {0}, listed in the certificate	Brincos: {0}, no certificado
+Lee el código con la cámara del teléfono: trae el resumen de este certificado, sin internet.	Scan the code with your phone camera: it shows this certificate's summary, no internet needed.	Leia o código com a câmera do celular: traz o resumo deste certificado, sem internet.
+Días en el corral	Days in the pen	Dias no curral
+Origen y estado	Origin and status	Origem e situação
+Peso estimado hoy	Estimated weight today	Peso estimado hoje
+Peso de venta	Sale weight	Peso de venda
+En el corral hoy	In the pen today	No curral hoje
+{0} registros	{0} records	{0} registros
+{0} registro	{0} record	{0} registro
+Todos los tiempos de retiro de los productos aplicados ya se cumplieron.	All withdrawal times for the products used have been met.	Todos os prazos de carência dos produtos aplicados já foram cumpridos.
+Sin retiros vigentes al {0}	No active withdrawals as of {0}	Sem carências vigentes em {0}
+En retiro hasta el {0}	In withdrawal until {0}	Em carência até {0}
+por {0}. No debe ir a matadero antes de esa fecha.	for {0}. It must not go to slaughter before that date.	por {0}. Não deve ir para o abate antes dessa data.
+Sin retiro	No withdrawal	Sem carência
+Libre desde	Clear from	Liberado a partir de
+Ganancia diaria desde el anterior	Daily gain since the previous one	Ganho diário desde a anterior
+Entrada: {0}	Arrival: {0}	Entrada: {0}
+Cabezas pesadas	Head weighed	Cabeças pesadas
+No hay tratamientos registrados en este lote.	No treatments recorded for this lot.	Não há tratamentos registrados neste lote.
+No hay entregas de alimento anotadas.	No feed deliveries recorded.	Não há entregas de ração anotadas.
+Ingredientes	Ingredients	Ingredientes
+Sin ingredientes anotados	No ingredients recorded	Sem ingredientes anotados
+No anotada	Not recorded	Não anotada
+No anotado	Not recorded	Não anotado
+{0} aretes	{0} ear tags	{0} brincos
+{0} arete	{0} ear tag	{0} brinco
+En el corral	In the pen	No curral
+Murió	Died	Morreu
+El productor declara que estos datos son los que registró en Rumentis para este lote. Este documento no reemplaza los certificados oficiales de sanidad, las guías de movilización ni la inspección veterinaria que pida la ley de su país.	The producer declares that these are the data recorded in Rumentis for this lot. This document does not replace official health certificates, movement permits or any veterinary inspection required by law in their country.	O produtor declara que estes são os dados que registrou no Rumentis para este lote. Este documento não substitui os certificados sanitários oficiais, a GTA nem a inspeção veterinária exigida pela lei do seu país.
+Código de verificación:	Verification code:	Código de verificação:
+El productor lo comprueba en su app: Más, Documentos, Verificar un código.	The producer checks it in their app: More, Documents, Verify a code.	O produtor confere no app: Mais, Documentos, Verificar um código.
+{0} · {1} cabezas, novillos castrados	{0} · {1} head, steers	{0} · {1} cabeças, novilhos castrados
+{0} · {1} cabezas, machos enteros	{0} · {1} head, bulls	{0} · {1} cabeças, machos inteiros
+{0} · {1} cabezas, hembras	{0} · {1} head, heifers	{0} · {1} cabeças, fêmeas
+{0} · {1} cabezas, mixto	{0} · {1} head, mixed	{0} · {1} cabeças, misto
+{0} · {1} cabezas	{0} · {1} head	{0} · {1} cabeças
+{0} · {1} cabeza, hembras	{0} · {1} head, heifers	{0} · {1} cabeça, fêmeas
+{0} · {1} cabeza, novillos castrados	{0} · {1} head, steers	{0} · {1} cabeça, novilhos castrados
+{0} · {1} cabeza, machos enteros	{0} · {1} head, bulls	{0} · {1} cabeça, machos inteiros
+{0} · {1} cabeza, mixto	{0} · {1} head, mixed	{0} · {1} cabeça, misto
+{0} · {1} cabeza	{0} · {1} head	{0} · {1} cabeça
+Novillos castrados, {0}	Steers, {0}	Novilhos castrados, {0}
+Machos enteros, {0}	Bulls, {0}	Machos inteiros, {0}
+Hembras, {0}	Heifers, {0}	Fêmeas, {0}
+Mixto, {0}	Mixed, {0}	Misto, {0}
+{0} {4} de alimento en {1} días con entregas anotadas; conversión de {2} {5} de alimento por {6} ganada; consumo reciente de {3} {7} por cabeza al día.	{0} {4} of feed over {1} days with recorded deliveries; conversion of {2} {5} of feed per {6} gained; recent intake of {3} {7} per head per day.	{0} {4} de ração em {1} dias com entregas anotadas; conversão de {2} {5} de ração por {6} ganha; consumo recente de {3} {7} por cabeça por dia.
+{0} {4} de alimento en {1} días con entregas anotadas; conversión de {2} {5} de alimento por {6} ganado; consumo reciente de {3} {7} por cabeza al día.	{0} {4} of feed over {1} days with recorded deliveries; conversion of {2} {5} of feed per {6} gained; recent intake of {3} {7} per head per day.	{0} {4} de ração em {1} dias com entregas anotadas; conversão de {2} {5} de ração por {6} ganho; consumo recente de {3} {7} por cabeça por dia.
+{0} {3} de alimento en {1} días con entregas anotadas; conversión de {2} {4} de alimento por {5} ganada.	{0} {3} of feed over {1} days with recorded deliveries; conversion of {2} {4} of feed per {5} gained.	{0} {3} de ração em {1} dias com entregas anotadas; conversão de {2} {4} de ração por {5} ganha.
+{0} {3} de alimento en {1} días con entregas anotadas; conversión de {2} {4} de alimento por {5} ganado.	{0} {3} of feed over {1} days with recorded deliveries; conversion of {2} {4} of feed per {5} gained.	{0} {3} de ração em {1} dias com entregas anotadas; conversão de {2} {4} de ração por {5} ganho.
+{0} cabeza	{0} head	{0} cabeça
+Certificado de {0}	Certificate for {0}	Certificado de {0}
+Escribe el precio.	Enter the price.	Digite o preço.
+Ese precio es muy distinto al tuyo (L {0}). Revisa la unidad: es por libra.	That price is very different from yours (L {0}). Check the unit: it is per pound.	Esse preço é muito diferente do seu (L {0}). Confira a unidade: é por libra.
+Ese precio es muy distinto al tuyo (L {0}). Revisa la unidad: es por kilo.	That price is very different from yours (L {0}). Check the unit: it is per kilo.	Esse preço é muito diferente do seu (L {0}). Confira a unidade: é por quilo.
+Precio guardado	Price saved	Preço salvo
+Precio borrado	Price deleted	Preço apagado
+Precio de venta actualizado	Sale price updated	Preço de venda atualizado
+Cambiar tu precio de venta	Change your sale price	Mudar seu preço de venda
+Tu precio de venta pasa de	Your sale price changes from	Seu preço de venda passa de
+. Todos los márgenes se recalculan con el nuevo precio.	. All margins are recalculated with the new price.	. Todas as margens são recalculadas com o novo preço.
+Cambiar	Change	Mudar
+Tu precio de venta está {0} {1} arriba del mercado	Your sale price is {0} {1} above the market	Seu preço de venda está {0} {1} acima do mercado
+Tu precio de venta está {0} {1} abajo del mercado	Your sale price is {0} {1} below the market	Seu preço de venda está {0} {1} abaixo do mercado
+Pusiste L {1} y el mercado está en L {2} ({0}). Los márgenes y cuándo vender se calculan con tu precio: revísalo.	You set L {1} and the market is at L {2} ({0}). Margins and when to sell are calculated with your price: check it.	Você colocou L {1} e o mercado está em L {2} ({0}). As margens e quando vender são calculadas com o seu preço: revise-o.
+Pusiste L {1} y lo último que anotaste está en L {2} ({0}). Los márgenes y cuándo vender se calculan con tu precio: revísalo.	You set L {1} and your latest recorded price is L {2} ({0}). Margins and when to sell are calculated with your price: check it.	Você colocou L {1} e o último preço que anotou está em L {2} ({0}). As margens e quando vender são calculadas com o seu preço: revise-o.
+Pusiste L {1}/{3} y el mercado está en L {2}/{4} ({0}). Los márgenes y cuándo vender se calculan con tu precio: revísalo.	You set L {1}/{3} and the market is at L {2}/{4} ({0}). Margins and when to sell are calculated with your price: check it.	Você colocou L {1}/{3} e o mercado está em L {2}/{4} ({0}). As margens e quando vender são calculadas com o seu preço: revise-o.
+Pusiste L {1}/{3} y lo último que anotaste está en L {2}/{4} ({0}). Los márgenes y cuándo vender se calculan con tu precio: revísalo.	You set L {1}/{3} and your latest recorded price is L {2}/{4} ({0}). Margins and when to sell are calculated with your price: check it.	Você colocou L {1}/{3} e o último preço que anotou está em L {2}/{4} ({0}). As margens e quando vender são calculadas com o seu preço: revise-o.
+Pusiste L {1}/@ y el mercado está en L {2}/@ ({0}). Los márgenes y cuándo vender se calculan con tu precio: revísalo.	You set L {1}/@ and the market is at L {2}/@ ({0}). Margins and when to sell are calculated with your price: check it.	Você colocou L {1}/@ e o mercado está em L {2}/@ ({0}). As margens e quando vender são calculadas com o seu preço: revise-o.
+{0} está listo o por salir: buen momento para pedir precio a varios compradores.	{0} is finished or about to be: a good time to ask several buyers for a bid.	{0} está pronto ou quase: bom momento para pedir preço a vários compradores.
+{0} y {1} están listos o por salir: buen momento para pedir precio a varios compradores.	{0} and {1} are finished or about to be: a good time to ask several buyers for a bid.	{0} e {1} estão prontos ou quase: bom momento para pedir preço a vários compradores.
+{0} está listo o por salir y el precio está cerca del máximo del año: buen momento para pedir precio a varios compradores.	{0} is finished or about to be and the price is near the year's high: a good time to ask several buyers for a bid.	{0} está pronto ou quase e o preço está perto da máxima do ano: bom momento para pedir preço a vários compradores.
+{0} y {1} están listos o por salir y el precio está cerca del máximo del año: buen momento para pedir precio a varios compradores.	{0} and {1} are finished or about to be and the price is near the year's high: a good time to ask several buyers for a bid.	{0} e {1} estão prontos ou quase e o preço está perto da máxima do ano: bom momento para pedir preço a vários compradores.
+El precio del gordo está en lo más alto del año	Fed cattle price is at the year's high	O preço do boi gordo está na máxima do ano
+{0} está listo o por salir. Vender cerca del máximo protege tu margen.	{0} is finished or about to be. Selling near the high protects your margin.	{0} está pronto ou quase. Vender perto da máxima protege sua margem.
+{0} y {1} están listos o por salir. Vender cerca del máximo protege tu margen.	{0} and {1} are finished or about to be. Selling near the high protects your margin.	{0} e {1} estão prontos ou quase. Vender perto da máxima protege sua margem.
+El precio del gordo está en lo más bajo del año	Fed cattle price is at the year's low	O preço do boi gordo está na mínima do ano
+Tus lotes todavía no llegan a la meta: si siguen ganando bien, no hay apuro para vender ahora.	Your lots have not reached their target yet: if they keep gaining well, there is no rush to sell now.	Seus lotes ainda não chegaram à meta: se continuarem ganhando bem, não há pressa para vender agora.
+Buen momento para reponer: un boi gordo paga {0} bezerros	Good time to restock: one fed steer buys {0} calves	Bom momento para repor: um boi gordo paga {0} bezerros
+El promedio de {0} años es {1}. Cuando el boi compra más bezerros, la reposición está barata.	The {0}-year average is {1}. When a fed steer buys more calves, restocking is cheap.	A média de {0} anos é {1}. Quando o boi compra mais bezerros, a reposição está barata.
+Reponer está caro: un boi gordo paga {0} bezerros	Restocking is expensive: one fed steer buys {0} calves	Repor está caro: um boi gordo paga {0} bezerros
+El promedio de {0} años es {1}. Compra solo lo necesario y negocia el precio.	The {0}-year average is {1}. Buy only what you need and negotiate the price.	A média de {0} anos é {1}. Compre só o necessário e negocie o preço.
+¿Cuánto pagar?	How much to pay?	Quanto pagar?
+Buen momento para comprar ganado de engorde	Good time to buy feeder cattle	Bom momento para comprar boi magro
+El flaco (L {0}) cuesta casi lo mismo por kilo que el gordo (L {1}): cada kilo que suban vale más.	Feeders (L {0}) cost almost the same per kilo as fed cattle (L {1}): every kilo they gain is worth more.	O magro (L {0}) custa quase o mesmo por quilo que o gordo (L {1}): cada quilo que ganharem vale mais.
+El flaco (L {0}) cuesta casi lo mismo por libra que el gordo (L {1}): cada libra que suban vale más.	Feeders (L {0}) cost almost the same per pound as fed cattle (L {1}): every pound they gain is worth more.	O magro (L {0}) custa quase o mesmo por libra que o gordo (L {1}): cada libra que ganharem vale mais.
+El flaco (L {0}/{2}) cuesta casi lo mismo por libra que el gordo (L {1}/{3}): cada libra que suban vale más.	Feeders (L {0}/{2}) cost almost the same per pound as fed cattle (L {1}/{3}): every pound they gain is worth more.	O magro (L {0}/{2}) custa quase o mesmo por libra que o gordo (L {1}/{3}): cada libra que ganharem vale mais.
+El flaco (L {0}/{2}) cuesta casi lo mismo por kilo que el gordo (L {1}/{3}): cada kilo que suban vale más.	Feeders (L {0}/{2}) cost almost the same per kilo as fed cattle (L {1}/{3}): every kilo they gain is worth more.	O magro (L {0}/{2}) custa quase o mesmo por quilo que o gordo (L {1}/{3}): cada quilo que ganharem vale mais.
+El maíz subió {0} {2} en {1} semanas	Corn rose {0} {2} in {1} weeks	O milho subiu {0} {2} em {1} semanas
+Si tu bodega está baja, compra lo de un mes antes de que suba más y revisa el costo de tu ración.	If your stock is low, buy a month's worth before it rises further and check your ration cost.	Se seu estoque está baixo, compre o de um mês antes que suba mais e revise o custo da sua ração.
+El maíz bajó {0} {2} en {1} semanas	Corn fell {0} {2} in {1} weeks	O milho caiu {0} {2} em {1} semanas
+Buen momento para llenar la bodega si tienes dónde guardarlo seco.	Good time to fill your storage if you can keep it dry.	Bom momento para encher o depósito se tiver onde guardar seco.
+Precios del mercado: ¿vendo o espero?	Market prices: sell or wait?	Preços do mercado: vendo ou espero?
+Huella de carbono de mi engorde	My feedlot's carbon footprint	Pegada de carbono da minha engorda
+Informe para el banco o certificado de un lote	Bank report or lot certificate	Relatório para o banco ou certificado de um lote
+Abrir documentos	Open documents	Abrir documentos
+No disponible.	Not available.	Não disponível.
+Documentos en PDF	PDF documents	Documentos em PDF
+Hago el informe productivo y financiero para el banco y el certificado de cada lote con código QR para el comprador o el matadero.	I make the production and financial report for the bank and each lot's certificate with a QR code for the buyer or packer.	Faço o relatório produtivo e financeiro para o banco e o certificado de cada lote com código QR para o comprador ou o frigorífico.
+Todavía no tengo precios. Abre la página de precios con internet o anota los que ves en tu zona.	I don't have prices yet. Open the prices page with internet or record the ones you see in your area.	Ainda não tenho preços. Abra a página de preços com internet ou anote os que vê na sua região.
+No hay un precio público del ganado en tu país: anota los que ves en tu zona y sigo la tendencia.	There is no public cattle price in your country: record the ones you see in your area and I'll follow the trend.	Não há um preço público do gado no seu país: anote os que vê na sua região e acompanho a tendência.
+Buscando los precios de hoy…	Getting today's prices…	Buscando os preços de hoje…
+No pude traer los precios. Revisa tu conexión a internet y toca Actualizar.	I couldn't get the prices. Check your internet connection and tap Refresh.	Não consegui trazer os preços. Confira sua conexão com a internet e toque em Atualizar.
+Los precios tienen más de {0} días: la fuente no se ha actualizado.	Prices are more than {0} days old: the source hasn't been updated.	Os preços têm mais de {0} dias: a fonte não foi atualizada.
+Revisado hace {0} minutos.	Checked {0} minutes ago.	Consultado há {0} minutos.
+Revisado hace {0} horas.	Checked {0} hours ago.	Consultado há {0} horas.
+Revisado hace {0} hora.	Checked {0} hour ago.	Consultado há {0} hora.
+Revisado el {0}.	Checked on {0}.	Consultado em {0}.
+Revisado hace {0} horas. Sin conexión: muestro lo último que guardé.	Checked {0} hours ago. Offline: showing the last data I saved.	Consultado há {0} horas. Sem conexão: mostro o último que salvei.
+Revisado hace {0} minutos. Sin conexión: muestro lo último que guardé.	Checked {0} minutes ago. Offline: showing the last data I saved.	Consultado há {0} minutos. Sem conexão: mostro o último que salvei.
+Revisado el {0}. Sin conexión: muestro lo último que guardé.	Checked on {0}. Offline: showing the last data I saved.	Consultado em {0}. Sem conexão: mostro o último que salvei.
+Revisado hace un momento. Sin conexión: muestro lo último que guardé.	Checked a moment ago. Offline: showing the last data I saved.	Consultado agora há pouco. Sem conexão: mostro o último que salvei.
+Sin conexión: muestro lo último que guardé.	Offline: showing the last data I saved.	Sem conexão: mostro o último que salvei.
+Nada urgente del mercado por ahora.	Nothing urgent from the market for now.	Nada urgente do mercado por enquanto.
+Tus lotes a precio de mercado	Your lots at market price	Seus lotes a preço de mercado
+Margen al llegar a la meta con tu precio (L {0}) y con el del mercado (L {1}).	Margin at target weight with your price (L {0}) and with the market's (L {1}).	Margem ao chegar à meta com seu preço (L {0}) e com o do mercado (L {1}).
+Margen al llegar a la meta con tu precio (L {0}/{2}) y con el del mercado (L {1}/{3}).	Margin at target weight with your price (L {0}/{2}) and with the market's (L {1}/{3}).	Margem ao chegar à meta com seu preço (L {0}/{2}) e com o do mercado (L {1}/{3}).
+Margen al llegar a la meta con tu precio (L {0}/@) y con el del mercado (L {1}/@).	Margin at target weight with your price (L {0}/@) and with the market's (L {1}/@).	Margem ao chegar à meta com seu preço (L {0}/@) e com o do mercado (L {1}/@).
+Con tu precio	With your price	Com seu preço
+Con el mercado	With the market	Com o mercado
+Usar L {0} como mi precio de venta	Use L {0} as my sale price	Usar L {0} como meu preço de venda
+Usar L {0}/{1} como mi precio de venta	Use L {0}/{1} as my sale price	Usar L {0}/{1} como meu preço de venda
+Usar L {0}/@ como mi precio de venta	Use L {0}/@ as my sale price	Usar L {0}/@ como meu preço de venda
+Semana	Week	Semana
+Calendario	Calendar	Calendário
+Si {0} ya está listo, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada quintal ganado.	If {0} is already finished, don't wait for it to drop further: every extra week costs feed and raises the cost of each hundredweight gained.	Se {0} já está pronto, não espere cair mais: cada semana a mais custa ração e aumenta o custo de cada quintal ganho.
+Si {0} y {1} ya están listos, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada quintal ganado.	If {0} and {1} are already finished, don't wait for it to drop further: every extra week costs feed and raises the cost of each hundredweight gained.	Se {0} e {1} já estão prontos, não espere cair mais: cada semana a mais custa ração e aumenta o custo de cada quintal ganho.
+Supongo tu precio de hoy (L {0} el quintal) y que la ganancia diaria baja poco a poco al acercarse al peso final. Si el precio sube o baja, cambia el mejor día: pruébalo en el simulador.	I assume today's price (L {0} per hundredweight) and that daily gain slowly drops as they near their final weight. If the price goes up or down, the best day changes: try it in the simulator.	Suponho o seu preço de hoje (L {0} o quintal) e que o ganho diário cai aos poucos ao se aproximar do peso final. Se o preço sobe ou desce, muda o melhor dia: teste no simulador.
+Costo por quintal ganado	Cost per hundredweight gained	Custo por quintal ganho
+Costo del quintal ganado	Cost of hundredweight gained	Custo do quintal ganho
+, y luego en costo del quintal ganado.	, and then in cost of hundredweight gained.	, e depois em custo do quintal ganho.
+Precio por quintal	Price per hundredweight	Preço por quintal
+el dinero no baja de lo que hay hoy; a los {0} días quedaría L {1}.	cash never falls below today's level; after {0} days it would be L {1}.	o dinheiro não fica abaixo do que há hoje; em {0} dias ficaria L {1}.
+{0} a {1} ★	{0} to {1} ★	{0} a {1} ★
+L {0}/{2} a L {1}/{3}	L {0}/{2} to L {1}/{3}	L {0}/{2} a L {1}/{3}
+{0} {2} a L {1}/{3}	{0} {2} to L {1}/{3}	{0} {2} a L {1}/{3}
+{1}, {2} {4} a L {3}/{5}, {0}	{1}, {2} {4} to L {3}/{5}, {0}	{1}, {2} {4} a L {3}/{5}, {0}
+US$ {0} a US$ {1}	US$ {0} to US$ {1}	US$ {0} a US$ {1}
+{0} {2} a L {1}/@	{0} {2} to L {1}/@	{0} {2} a L {1}/@
+{1}, {2} {4} a L {3}/@, {0}	{1}, {2} {4} to L {3}/@, {0}	{1}, {2} {4} a L {3}/@, {0}
+Informe	Report	Relatório
+Certificado	Certificate	Certificado
+Señales	Signals	Sinais
+Te aviso si el precio sube o baja con lotes listos, si tu precio de venta quedó atrás y si reponer está caro o barato.	I alert you when the price rises or falls with lots ready, when your sale price has fallen behind and when restocking is expensive or cheap.	Aviso se o preço sobe ou cai com lotes prontos, se seu preço de venda ficou para trás e se repor está caro ou barato.
+Tus márgenes	Your margins	Suas margens
+Cuánto dejaría cada lote con el precio del mercado. Con un toque lo usas como tu precio de venta.	What each lot would make at the market price. One tap makes it your sale price.	Quanto cada lote deixaria com o preço do mercado. Com um toque você o usa como seu preço de venda.
+El precio de hoy, cuánto cambió en {0} semanas y en el año, y dónde está dentro del rango del año.	Today's price, how much it changed in {0} weeks and over the year, and where it sits in the year's range.	O preço de hoje, quanto mudou em {0} semanas e no ano, e onde está dentro da faixa do ano.
+Referencias	Benchmarks	Referências
+Estados Unidos y Brasil en tu moneda: sirven para ver hacia dónde va el mercado.	The United States and Brazil in your currency: they show where the market is heading.	Estados Unidos e Brasil na sua moeda: servem para ver para onde vai o mercado.
+Tus precios	Your prices	Seus preços
+Anota lo que te ofrecen o lo que viste en la subasta. Con eso sigo la tendencia de tu zona.	Record what you are offered or what you saw at the sale barn. I use it to follow your area's trend.	Anote o que te oferecem ou o que viu no leilão. Com isso acompanho a tendência da sua região.
+Un PDF con tu balance, resultados, créditos, indicadores y riesgo para pedir un crédito.	A PDF with your balance sheet, results, loans, indicators and risk to apply for a loan.	Um PDF com seu balanço, resultados, créditos, indicadores e risco para pedir um crédito.
+Certificado	Certificate	Certificado
+Para el comprador o el matadero: origen, sanidad con retiros, pesajes y aretes, con código QR.	For the buyer or packer: origin, health with withdrawal times, weighings and ear tags, with a QR code.	Para o comprador ou o frigorífico: origem, sanidade com carências, pesagens e brincos, com código QR.
+Escribe el código de un documento y te digo si lo hiciste aquí y qué decía.	Type a document's code and I'll tell you whether you made it here and what it said.	Digite o código de um documento e digo se você o fez aqui e o que dizia.
+Tus lotes a precio de mercado	Your lots at market price	Seus lotes a preço de mercado

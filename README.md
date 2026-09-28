@@ -45,6 +45,22 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
     Muéstrame la app).
   - `app/assets/avisos.js` — avisos de Rumi al teléfono (opcionales, apagados al inicio, uno al día como
     máximo y solo lo importante) y los datos del widget de inicio. Se configuran en Más, Configuración.
+  - `app/assets/huella.js` — huella de carbono de cada lote y de la finca (IPCC 2019, nivel 2, con el alimento
+    anotado): metano del rumen y del estiércol y óxido nitroso, en CO2e (AR6), y cómo bajarla. En la pestaña
+    Números del lote, en Análisis y en los documentos.
+  - `app/assets/documentos.js` — PDF para otros: informe productivo y financiero para el banco y certificado de
+    lote con código QR (se lee sin internet) y código de verificación (SHA-256). Los emitidos se guardan en
+    `S.config.docs` y se comprueban en Más, Documentos. Usa `lib/jspdf.umd.min.js` y `lib/qrcode.js` (MIT,
+    `lib/LICENCIAS.txt`), que se cargan al hacer el primer documento. En Android el PDF se abre, se comparte o se
+    guarda con las clases `Archivos`, `ProveedorArchivos` y `GuardarArchivo` (fuente en `modelo/android/`).
+  - `app/assets/mercado.js` — precios del mercado (página `#mercado`): lee la Release `mercado` del repositorio,
+    que llena `.github/workflows/mercado.yml` con `scripts/mercado/actualizar.js` dos veces al día (USDA AMS,
+    Cepea/Esalq-USP, Banco Central do Brasil y tipos de cambio). Estados Unidos y Brasil ven su mercado; los
+    demás, referencias en su moneda y los precios que anotan de su zona. Da señales de venta y compra que
+    entran en las alertas de Rumi y en los avisos al teléfono.
+  - `app/assets/zona.js` — comparación anónima y voluntaria con otros engordes de la zona (cuartiles de
+    ganancia, conversión, mortalidad, costo y días), contra el servidor de `servidor/zona`. Sin servidor
+    configurado, compara con la referencia.
   - `app/assets/fondos/rumi.webp` — retrato de Rumi: Brahman en Costa Rica, foto de Bernard Gagnon (CC0).
   - `app/assets/fondo_topo.svg` — curvas de nivel del fondo de la app (dibujadas por código, sin licencia de terceros).
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
@@ -66,6 +82,9 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
     leyes, estaciones, unidades, pastos, razas, precios y enfermedades). Ver `traducciones/LEEME.md`.
   - `ilustraciones/` → toros y paisajes de cada pantalla (`escenas.py` los escribe en index.html).
   - `embeddings/`, `datos/` — el modelo de comprensión de la versión 3.3 (ya no se usa; queda como historia).
+- `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
+- `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
+  (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
 - `scripts/build.sh` — APK: `dist/Rumentis.apk`.
 - `scripts/build_aab.sh` — AAB para Google Play: `dist/Rumentis.aab`.
 

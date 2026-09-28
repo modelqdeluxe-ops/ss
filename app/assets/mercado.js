@@ -94,7 +94,7 @@ function senales(){
     if(c4!=null&&listos.length){
       const nom=listos.slice(0,2).map(x=>x.l.nombre).join(' y ');
       if(c4>=0.03)add(0.6,`El precio del gordo subió ${nf(c4*100,0)} % en 4 semanas`,`${nom} ${listos.length===1?'está listo o por salir':'están listos o por salir'}${rg&&rg.pos>=0.85?' y el precio está cerca del máximo del año':''}: buen momento para pedir precio a varios compradores.`);
-      else if(c4<=-0.03)add(0.7,`El precio del gordo bajó ${nf(-c4*100,0)} % en 4 semanas`,`Si ${nom} ya ${listos.length===1?'está listo':'están listos'}, no esperes a que baje más: cada semana de más cuesta alimento y el kilo ganado sale más caro.`);
+      else if(c4<=-0.03)add(0.7,`El precio del gordo bajó ${nf(-c4*100,0)} % en 4 semanas`,`Si ${nom} ya ${listos.length===1?'está listo':'están listos'}, no esperes a que baje más: cada semana de más cuesta alimento y sube el costo de cada kilo ganado.`);
       else if(rg&&rg.pos>=0.9)add(0.5,'El precio del gordo está en lo más alto del año',`${nom} ${listos.length===1?'está listo o por salir':'están listos o por salir'}. Vender cerca del máximo protege tu margen.`);
     }
     // precio en lo más bajo del año con lotes que todavía ganan bien
@@ -123,7 +123,7 @@ function troca(){const b=ser('br_boi_gordo'),z=ser('br_bezerro');if(!b.length||!
 /* ---------- página ---------- */
 const pctS=v=>v==null?'–':`${v>0?'+':v<0?'−':''}${nf(Math.abs(v)*100,1)} %`;
 const pill=(v,inv)=>v==null?'':`<span class="pill p-${Math.abs(v)<0.01?'tierra':(v>0)!==!!inv?'verde':'rojo'}">${pctS(v)}</span>`;
-function barraRango(rg,fmt){if(!rg)return '';return `<div class="rp-ref"><div class="rp-ref-h"><span>Rango de 12 meses</span><b>${fmt(rg.lo)} a ${fmt(rg.hi)}</b></div><div class="rp-ref-t" style="background:linear-gradient(90deg,var(--rojo),var(--tierra),var(--verde))"><u style="left:${(Math.max(0,Math.min(1,rg.pos))*100).toFixed(1)}%"></u></div><small>${rg.pos>=0.85?'Cerca del máximo del año.':rg.pos<=0.15?'Cerca del mínimo del año.':'En la mitad del rango del año.'}</small></div>`;}
+function barraRango(rg,fmt){if(!rg)return '';return `<div class="rp-ref"><div class="rp-ref-h"><span>Rango de 12 meses</span><b>${fmt(rg.lo)} – ${fmt(rg.hi)}</b></div><div class="rp-ref-t" style="background:linear-gradient(90deg,var(--rojo),var(--tierra),var(--verde))"><u style="left:${(Math.max(0,Math.min(1,rg.pos))*100).toFixed(1)}%"></u></div><small>${rg.pos>=0.85?'Cerca del máximo del año.':rg.pos<=0.15?'Cerca del mínimo del año.':'En la mitad del rango del año.'}</small></div>`;}
 const doce=s=>{if(!s.length)return s;const d0=addDias(s[s.length-1][0],-365);return s.filter(p=>p[0]>=d0);};
 function tarjeta(k,{mia=false}={}){
   const s=ser(k),i=info(k);if(!s.length||!i)return '';const u=s[s.length-1],m=MON[k];
@@ -191,10 +191,9 @@ PAGES.mercado=()=>{
 
 /* ---------- formulario: precio que vi ---------- */
 FORMS.precioVisto=()=>{
-  const u=PUN[PU()];
   openSheet(shHead('Anotar un precio que vi')+formWrap('precioVisto',
     q('¿Qué precio es?',opts('tipo',[{v:'gordo',t:'Ganado gordo',s:'lo que pagan por el terminado'},{v:'flaco',t:'Ganado para engorde',s:'lo que cuesta el que compras'}],'gordo',{lo:true}))+
-    q('Precio',inp('v','',{unit:`${esc(S.config.moneda||'L')} ${u.por}`,xl:true,req:true}),'En pie.')+fecha()+
+    q(`Precio ${PUpor()}`,inp('v','',{unit:PUs(),xl:true,req:true,ph:'0.00'}),'En pie.')+fecha()+
     q('Dónde',inp('lugar','',{mode:'text',ph:'Subasta, comprador, vecino… (opcional)'})),
     foot('Guardar precio')));
 };
