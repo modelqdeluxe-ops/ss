@@ -583,3 +583,97 @@
     return-void
 .end method
 
+
+# ---- avisos de Rumi y widget ----
+.method public avisos(Ljava/lang/String;)V
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1}, Lhn/hato/ganadero/Avisos;->guardar(Landroid/content/Context;Ljava/lang/String;)V
+
+    return-void
+.end method
+
+.method public avisosActivar(ZI)V
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1, p2}, Lhn/hato/ganadero/Avisos;->activar(Landroid/content/Context;ZI)V
+
+    if-eqz p1, :cond_fin
+
+    invoke-static {v0}, Lhn/hato/ganadero/Avisos;->pedirPermiso(Landroid/app/Activity;)V
+
+    :cond_fin
+    return-void
+.end method
+
+.method public avisosEstado()Ljava/lang/String;
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0}, Lhn/hato/ganadero/Avisos;->estado(Landroid/content/Context;)Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+.method public avisosHora()I
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0}, Lhn/hato/ganadero/Avisos;->hora(Landroid/content/Context;)I
+
+    move-result v0
+
+    return v0
+.end method
+
+.method public avisoPrueba(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1, p2, p3}, Lhn/hato/ganadero/Avisos;->mostrar(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+
+    return-void
+.end method
+
+.method public avisoIr()Ljava/lang/String;
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    invoke-static {}, Lhn/hato/ganadero/Avisos;->tomarIr()Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+.method public widget(Ljava/lang/String;)V
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1}, Lhn/hato/ganadero/Avisos;->widget(Landroid/content/Context;Ljava/lang/String;)V
+
+    return-void
+.end method

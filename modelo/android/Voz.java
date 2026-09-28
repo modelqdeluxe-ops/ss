@@ -18,6 +18,7 @@ public final class Voz implements TextToSpeech.OnInitListener {
     private boolean listo;
     private String pendiente, pendVoz;
     private String elegida;
+    private String lengua;
 
     private Voz(Context c) { ctx = c.getApplicationContext(); tts = new TextToSpeech(ctx, this); }
 
@@ -27,10 +28,19 @@ public final class Voz implements TextToSpeech.OnInitListener {
         synchronized (this) {
             listo = estado == TextToSpeech.SUCCESS;
             if (listo) {
-                try { tts.setLanguage(new Locale("es", "US")); } catch (Exception e) { }
+                lengua();
                 if (pendiente != null) { String t = pendiente, v = pendVoz; pendiente = null; decir(t, v); }
             }
         }
+    }
+
+    /** Pone el idioma del motor según el idioma de la app (aunque no haya una voz elegida). */
+    private void lengua() {
+        if (idioma.equals(lengua)) return;
+        Locale l = "es".equals(idioma) ? new Locale("es", "US") : "pt".equals(idioma) ? new Locale("pt", "BR") : "en".equals(idioma) ? Locale.US : new Locale(idioma);
+        try { tts.setLanguage(l); } catch (Exception e) { }
+        lengua = idioma;
+        elegida = null;
     }
 
     /** Puntaje de una voz: calidad, que esté instalada, acento latinoamericano. */
@@ -66,6 +76,7 @@ public final class Voz implements TextToSpeech.OnInitListener {
     private synchronized void decir(String texto, String nombre) {
         if (!listo) { pendiente = texto; pendVoz = nombre; return; }
         try {
+            lengua();
             Voice v = buscar(nombre);
             if (v != null && (elegida == null || !elegida.equals(v.getName()))) { tts.setVoice(v); elegida = v.getName(); }
             tts.setSpeechRate(1.0f);
@@ -104,7 +115,7 @@ public final class Voz implements TextToSpeech.OnInitListener {
         try { return de(c).tts.isSpeaking(); } catch (Exception e) { return false; }
     }
 
-    /** Voces en español instaladas, ordenadas de mejor a peor, como JSON. */
+    /** Voces del idioma de la app instaladas, ordenadas de mejor a peor, como JSON. */
     public static String lista(Context c) {
         Voz z = de(c);
         StringBuilder sb = new StringBuilder("{\"listo\":").append(z.listo).append(",\"voces\":[");
@@ -112,7 +123,7 @@ public final class Voz implements TextToSpeech.OnInitListener {
             Set<Voice> vs = z.tts.getVoices();
             java.util.ArrayList<Voice> ls = new java.util.ArrayList<>();
             if (vs != null) for (Voice v : vs) if (puntaje(v) >= 0) ls.add(v);
-            java.util.Collections.sort(ls, (a, b) -> puntaje(b) - puntaje(a));
+            java.util.Collections.sort(ls, new java.util.Comparator<Voice>() { public int compare(Voice a, Voice b) { return puntaje(b) - puntaje(a); } });
             boolean primero = true;
             for (Voice v : ls) {
                 if (!primero) sb.append(',');
