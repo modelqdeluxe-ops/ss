@@ -1,0 +1,236 @@
+F96.t	Calcium to phosphorus ratio	Relação cálcio e fósforo
+F96.r	Calcium and phosphorus must be in the right proportion in the ration. Otherwise bone problems and urinary stones appear.	O cálcio e o fósforo devem estar na proporção certa na ração. Senão aparecem problemas de ossos e cálculos urinários.
+F96.0h	How much	Quanto
+F96.0.0	A ratio of 1.5 to 2 parts calcium per 1 part phosphorus.	Relação de 1,5 a 2 partes de cálcio para 1 de fósforo.
+F96.1h	Common problem	Problema comum
+F96.1.0	Rations with a lot of grain and bran have a lot of phosphorus and little calcium.	As rações com muito grão e farelo têm muito fósforo e pouco cálcio.
+F96.1.1	It is corrected with calcium carbonate.	Corrige-se com carbonato de cálcio.
+F96.2h	Consequences of a poor balance	Consequências de um mau equilíbrio
+F96.2.0	Urinary stones in males.	Cálculos urinários em machos.
+F96.2.1	Less bone growth.	Menor crescimento ósseo.
+F97.t	Rumen acidity (rumen pH)	Acidez do rúmen (pH ruminal)
+F97.r	pH measures how acidic the rumen is. When it drops too low, acidosis appears.	O pH mede quão ácido está o rúmen. Quando cai demais, aparece a acidose.
+F97.0h	Values	Valores
+F97.0.0	Normal on pasture: 6.2 to 6.8.	Normal com pasto: 6,2 a 6,8.
+F97.0.1	Feeding with grain: 5.8 to 6.2 is acceptable.	Engorda com grão: 5,8 a 6,2 é aceitável.
+F97.0.2	Below 5.6 for several hours a day: subacute acidosis.	Menos de 5,6 por várias horas ao dia: acidose subaguda.
+F97.0.3	Below 5.0: acute acidosis.	Menos de 5,0: acidose aguda.
+F97.1h	What lowers it	O que o baixa
+F97.1.0	A lot of fermentable grain all at once.	Muito grão fermentável de uma vez.
+F97.1.1	Little effective fiber and little rumination.	Pouca fibra efetiva e pouca ruminação.
+F97.1.2	Large meals after fasting.	Refeições grandes depois de jejum.
+F97.2h	What raises it	O que o sobe
+F97.2.0	Rumination and saliva.	Ruminação e saliva.
+F97.2.1	Long fiber.	Fibra longa.
+F97.2.2	Buffers such as bicarbonate.	Tamponantes como o bicarbonato.
+F98.t	Full weight and empty weight	Peso cheio e peso vazio
+F98.r	The same animal can weigh differently depending on how much water and feed it has in its rumen. It is the basis of shrink.	O mesmo animal pode pesar diferente conforme quanta água e comida tem no rúmen. É a base da quebra.
+F98.0h	Full weight	Peso cheio
+F98.0.0	With the rumen full of water and feed.	Com o rúmen cheio de água e comida.
+F98.0.1	It can be 5 to 8 % more than the empty weight.	Pode ser 5 a 8 % maior que o peso vazio.
+F98.1h	Fasted weight	Peso em jejum
+F98.1.0	After 12 to 16 hours without feed or water.	Depois de 12 a 16 horas sem comida e água.
+F98.1.1	It is the closest to the animal's real weight.	É o mais parecido com o peso real do animal.
+F98.2h	Practical use	Uso prático
+F98.2.0	Always weigh under the same conditions to compare.	Pese sempre nas mesmas condições para comparar.
+F98.2.1	At the sale, agree on which weight is used and the shrink.	Na venda, combine qual peso se usa e a quebra.
+F99.t	Mortality	Mortalidade
+F99.r	The percentage of animals that die out of those that arrived. It is a key indicator of health and management.	A porcentagem de animais que morrem dos que entraram. É um indicador-chave de sanidade e manejo.
+F99.0h	How it is calculated	Como se calcula
+F99.0.0	Mortality = dead animals ÷ animals that arrived × 100.	Mortalidade = animais mortos ÷ animais que entraram × 100.
+F99.1h	References	Referências
+F99.1.0	Good feedlot: less than 1 to 2 %.	Bom confinamento: menos de 1 a 2 %.
+F99.1.1	Over 3 %: review purchasing, receiving and health.	Mais de 3 %: revisar compra, recepção e sanidade.
+F99.2h	In the app	No app
+F99.2.0	It is calculated by lot and overall from the deaths you record.	É calculada por lote e no total com as baixas que você anota.
+F100.t	Days on feed	Dias de engorda
+F100.r	The time from when the lot arrives until it is sold. It defines how many lots fit in a year and the fixed cost of each animal.	O tempo desde que o lote entra até ser vendido. Define quantos lotes cabem em um ano e o custo fixo de cada animal.
+F100.0h	How it is calculated	Como se calcula
+F100.0.0	Sale date − arrival date.	Data de venda − data de entrada.
+F100.1h	References	Referências
+F100.1.0	Feedlot: 90 to 150 days depending on the arrival weight.	Confinamento: 90 a 150 dias conforme o peso de entrada.
+F100.1.1	Semi-confinement: 150 to 250 days.	Semiconfinamento: 150 a 250 dias.
+F100.1.2	Grazing: a year or more.	Pasto: um ano ou mais.
+F100.2h	How to shorten it without losing	Como encurtá-lo sem perder
+F100.2.0	Better daily gain with a good ration and health.	Melhor ganho diário com boa ração e sanidade.
+F100.2.1	Buy heavier if the price allows.	Comprar mais pesado se o preço permitir.
+F100.2.2	Sell when the target is reached.	Vender ao chegar à meta.
+F101.t	Dry matter and fresh matter	Matéria seca e matéria verde
+F101.r	Dry matter is what remains of the feed when all the water is removed. Requirements and rations are calculated on dry matter because water does not nourish.	A matéria seca é o que sobra da comida quando se tira toda a água. As exigências e as rações se calculam em matéria seca porque a água não alimenta.
+F101.0h	Examples	Exemplos
+F101.0.0	Green grass: 15 to 25 % dry matter (75 to 85 % is water).	Pasto verde: 15 a 25 % de matéria seca (75 a 85 % é água).
+F101.0.1	Silage: 25 to 35 %.	Silagem: 25 a 35 %.
+F101.0.2	Hay and grains: 85 to 90 %.	Feno e grãos: 85 a 90 %.
+F101.1h	How to convert	Como converter
+F101.1.0	Kilos of dry matter = kilos of feed × % dry matter ÷ 100.	Quilos de matéria seca = quilos de comida × % de matéria seca ÷ 100.
+F101.1.1	Example: 30 kg of grass at 20 % is 6 kg of dry matter.	Exemplo: 30 kg de pasto a 20 % são 6 kg de matéria seca.
+F101.2h	In your feedlot	No seu confinamento
+F101.2.0	That's why an animal needs so much green grass: most of it is water.	Por isso um animal precisa de tanto pasto verde: a maior parte é água.
+F101.2.1	The app calculates on dry matter when you formulate a ration.	O app calcula em matéria seca quando você formula uma ração.
+F102.t	Crude protein	Proteína bruta
+F102.r	Crude protein is the feed's nitrogen multiplied by 6.25. It includes true protein and non-protein nitrogen such as urea.	A proteína bruta é o nitrogênio da comida multiplicado por 6,25. Inclui proteína verdadeira e nitrogênio não proteico como a ureia.
+F102.0h	Common values	Valores comuns
+F102.0.0	Corn: 8 to 9 %.	Milho: 8 a 9 %.
+F102.0.1	Soybean meal: 44 to 48 %.	Farelo de soja: 44 a 48 %.
+F102.0.2	Young grass: 8 to 14 %; old grass: 3 to 6 %.	Pasto novo: 8 a 14 %; pasto velho: 3 a 6 %.
+F102.0.3	Urea: equivalent to about 280 % crude protein.	Ureia: equivale a uns 280 % de proteína bruta.
+F102.1h	Limitations	Limitações
+F102.1.0	It doesn't tell how much is degraded in the rumen.	Não diz quanto é degradado no rúmen.
+F102.1.1	It doesn't tell the quality of the amino acids.	Não diz a qualidade dos aminoácidos.
+F103.t	Compensatory gain	Ganho compensatório
+F103.r	It is the extra gain an animal that went hungry makes when it eats well again. It is exploited by buying thin but healthy animals.	É o ganho extra que um animal que passou fome faz quando volta a comer bem. Aproveita-se comprando animais magros, mas sadios.
+F103.0h	In numbers	Em números
+F103.0.0	In the first 2 to 3 months they can gain 10 to 30 % more than animals that always ate well.	Nos primeiros 2 a 3 meses podem ganhar 10 a 30 % mais que animais que sempre comeram bem.
+F103.0.1	They don't always recover all the lost ground.	Nem sempre recuperam todo o atraso.
+F103.1h	When it doesn't work	Quando não funciona
+F103.1.0	If the animal went hungry very young or for a long time.	Se o animal passou fome muito jovem ou por muito tempo.
+F103.1.1	If the thin animal is sick or has parasites.	Se o animal magro está doente ou tem parasitas.
+F104.t	Temperature-humidity index (THI)	Índice de temperatura e umidade (ITU)
+F104.r	THI combines temperature and humidity into a single number that indicates cattle heat stress. Rumi calculates it with your area's weather.	O ITU junta temperatura e umidade em um só número que indica o estresse por calor do gado. O Rumi o calcula com o clima da sua região.
+F104.0h	Formula	Fórmula
+F104.0.0	THI = (1.8 × T + 32) − (0.55 − 0.0055 × RH) × (1.8 × T − 26), with T in °C and RH the humidity in %.	ITU = (1,8 × T + 32) − (0,55 − 0,0055 × UR) × (1,8 × T − 26), com T em °C e UR a umidade em %.
+F104.0.1	You don't have to calculate it: the app does.	Você não precisa calculá-lo: o app faz isso.
+F104.1h	Levels for beef cattle	Níveis para gado de corte
+F104.1.0	74 or less: normal.	74 ou menos: normal.
+F104.1.1	75 to 78: alert.	75 a 78: alerta.
+F104.1.2	79 to 83: danger.	79 a 83: perigo.
+F104.1.3	84 or more: emergency.	84 ou mais: emergência.
+F104.2h	Watch out	Atenção
+F104.2.0	Zebu cattle tolerate more than European breeds.	O zebu aguenta mais que as raças europeias.
+F104.2.1	Direct sun, wind and hot nights change the real risk.	O sol direto, o vento e as noites quentes mudam o risco real.
+F105.t	Early maturity	Precocidade
+F105.r	An early-maturing animal reaches sale weight and fatness young. Early maturity depends on breed, mature size and feeding.	Um animal precoce chega jovem ao peso e à gordura de venda. A precocidade depende da raça, do tamanho adulto e da alimentação.
+F105.0h	What favors it	O que a favorece
+F105.0.0	British breeds and their crosses.	Raças britânicas e seus cruzamentos.
+F105.0.1	Moderate frame.	Frame moderado.
+F105.0.2	Good feeding from weaning.	Boa alimentação desde o desmame.
+F105.1h	Why it matters	Por que importa
+F105.1.0	More tender meat from young animals.	Carne mais macia de animais jovens.
+F105.1.1	Fewer maintenance days.	Menos dias de mantença.
+F105.1.2	Better grading by teeth.	Melhor classificação pelos dentes.
+F106.t	Stocking rate per hectare	Lotação por hectare
+F106.r	Stocking rate is how many animals (or animal units) each hectare of pasture carries. A rate higher than the grass can support degrades the pasture and lowers gain.	A lotação é quantos animais (ou unidades animais) cada hectare de pasto tem. Uma lotação maior do que o pasto suporta degrada o pasto e baixa o ganho.
+F106.0h	References in the tropics	Referências no trópico
+F106.0.0	Natural pasture without management: 0.5 to 1 animal unit per hectare.	Pasto nativo sem manejo: 0,5 a 1 unidade animal por hectare.
+F106.0.1	Improved pasture with rotation: 2 to 3.	Pasto melhorado com rotação: 2 a 3.
+F106.0.2	Improved, fertilized and irrigated pasture: 4 or more.	Pasto melhorado, adubado e irrigado: 4 ou mais.
+F106.1h	In your feedlot	No seu confinamento
+F106.1.0	Adjust stocking in the dry season: fewer animals or more supplement.	Ajuste a lotação na seca: menos animais ou mais suplemento.
+F106.1.1	Rumi calculates stocking with your paddocks and your animals.	O Rumi calcula a lotação com seus piquetes e seus animais.
+F107.t	Biological and economic efficiency	Eficiência biológica e econômica
+F107.r	A feeding operation can be very efficient at turning feed into meat and still lose money, or the other way round. You have to look at both efficiencies.	Uma engorda pode ser muito eficiente em converter comida em carne e mesmo assim perder dinheiro, ou o contrário. É preciso olhar as duas eficiências.
+F107.0h	Biological	Biológica
+F107.0.0	Feed conversion, daily gain, mortality.	Conversão alimentar, ganho diário, mortalidade.
+F107.1h	Economic	Econômica
+F107.1.0	Cost per kilo gained, margin per animal, return on investment.	Custo por quilo ganho, margem por animal, retorno do investimento.
+F107.2h	In your feedlot	No seu confinamento
+F107.2.0	The best lot is the one that leaves the most margin per day and per animal, not always the one that gains the most weight.	O melhor lote é o que deixa mais margem por dia e por animal, nem sempre o que mais ganha peso.
+F108.t	The bovine's four stomachs	Os quatro estômagos do bovino
+F108.r	Cattle have a stomach with four parts: rumen (paunch), reticulum (honeycomb), omasum (manyplies) and abomasum (true stomach). Each part does a different job to get the most out of grass.	O bovino tem um estômago com quatro partes: rúmen (pança), retículo (barrete), omaso (folhoso) e abomaso (coagulador). Cada parte faz um trabalho diferente para aproveitar o pasto.
+F108.0h	Rumen or paunch	Rúmen ou pança
+F108.0.0	It is the largest part: in a 450 kg steer it holds about 100 to 150 liters.	É a parte maior: num novilho de 450 kg cabem uns 100 a 150 litros.
+F108.0.1	It is a fermentation vat: billions of microbes that break down grass live there.	É uma panela de fermentação: ali vivem bilhões de micróbios que desfazem o pasto.
+F108.0.2	It moves once or twice a minute to mix the feed.	Movimenta-se uma ou duas vezes por minuto para misturar a comida.
+F108.1h	Reticulum or honeycomb	Retículo ou barrete
+F108.1.0	It is attached to the rumen and shaped like a honeycomb.	Fica colado ao rúmen e tem forma de favo de mel.
+F108.1.1	It separates what is already ground from what still needs chewing.	Separa o que já está moído do que ainda falta ruminar.
+F108.1.2	Nails and wires the animal swallows end up there; hence 'hardware disease' (traumatic reticulitis).	Ali caem pregos e arames que o animal engole; por isso se fala em 'reticulite traumática'.
+F108.2h	Omasum or manyplies	Omaso ou folhoso
+F108.2.0	It looks like a book with many pages.	Parece um livro com muitas folhas.
+F108.2.1	It removes water and minerals from the feed before passing it to the abomasum.	Retira água e minerais da comida antes de passá-la ao abomaso.
+F108.2.2	It lets only small particles through.	Deixa passar só as partículas pequenas.
+F108.3h	Abomasum or true stomach	Abomaso ou coagulador
+F108.3.0	It is the true stomach, like a person's.	É o estômago verdadeiro, como o das pessoas.
+F108.3.1	It has strong acid (pH 2 to 3) and enzymes that digest the protein of microbes and feed.	Tem ácido forte (pH 2 a 3) e enzimas que digerem a proteína dos micróbios e da comida.
+F108.3.2	From there the feed goes to the small intestine, where it is absorbed.	Dali a comida passa ao intestino delgado, onde é absorvida.
+F108.4h	In your feedlot	No seu confinamento
+F108.4.0	If you take care of the rumen, you take care of the whole animal: sudden feed changes make it sick.	Se você cuida do rúmen, cuida do animal inteiro: mudanças bruscas de comida o adoecem.
+F108.4.1	A healthy rumen shows in calm rumination, well-formed feces and good intake.	Um rúmen saudável se nota na ruminação tranquila, fezes bem formadas e bom consumo.
+F109.t	Rumen microbes	Micróbios do rúmen
+F109.r	Bacteria, protozoa, fungi and archaea live in the rumen. They, not the cow, digest the fiber. The rancher is really feeding the microbes, and the microbes feed the animal.	No rúmen vivem bactérias, protozoários, fungos e arqueias. Eles, não a vaca, digerem a fibra. Na verdade o pecuarista alimenta os micróbios e os micróbios alimentam o animal.
+F109.0h	Who they are	Quem são
+F109.0.0	Bacteria: the majority; each milliliter of rumen fluid holds billions.	Bactérias: são a maioria; em cada mililitro de líquido ruminal há bilhões.
+F109.0.1	Protozoa: they eat bacteria and starch, and help keep the rumen from getting too acidic.	Protozoários: comem bactérias e amido, e ajudam a que o rúmen não fique tão ácido.
+F109.0.2	Fungi: they break down the toughest fiber in grass.	Fungos: rompem a fibra mais dura do pasto.
+F109.0.3	Methanogenic archaea: they produce the methane gas the animal belches.	Arqueias metanogênicas: produzem o gás metano que o animal arrota.
+F109.1h	What they do	O que fazem
+F109.1.0	They break down grass cellulose, which the animal can't digest on its own.	Rompem a celulose do pasto, que o animal sozinho não consegue digerir.
+F109.1.1	They produce volatile fatty acids, the bovine's main energy source.	Produzem ácidos graxos voláteis, a principal fonte de energia do bovino.
+F109.1.2	They make protein from the feed's nitrogen and even from urea.	Fabricam proteína com o nitrogênio da comida e até com ureia.
+F109.1.3	They produce B-complex vitamins and vitamin K.	Produzem vitaminas do complexo B e vitamina K.
+F109.2h	Types by diet	Tipos conforme a comida
+F109.2.0	On pasture, fiber-eating bacteria dominate; they work slowly and need a pH close to 6.5.	Com pasto dominam as bactérias que comem fibra, que trabalham devagar e precisam de pH perto de 6,5.
+F109.2.1	On grain, starch-eating bacteria dominate; they work fast and lower the pH.	Com grão dominam as que comem amido, que trabalham rápido e baixam o pH.
+F109.2.2	Microbes take 2 to 3 weeks to adapt to a new feed.	Os micróbios levam de 2 a 3 semanas para se adaptar a uma comida nova.
+F109.3h	In your feedlot	No seu confinamento
+F109.3.0	That's why ration changes are made gradually, over 2 to 3 weeks.	Por isso as mudanças de ração se fazem aos poucos, em 2 a 3 semanas.
+F109.3.1	An animal that stops eating for several days loses part of its microbes and finds it hard to get going again.	Um animal que deixa de comer vários dias perde parte dos seus micróbios e custa a voltar a arrancar.
+F109.3.2	Feeding at the same time keeps the microbe population stable.	Dar a comida no mesmo horário mantém estável a população de micróbios.
+F110.t	Volatile fatty acids	Ácidos graxos voláteis
+F110.r	Rumen microbes turn grass and grain into three acids: acetic, propionic and butyric. The animal absorbs them through the rumen wall and gets 60 to 80 % of its energy from them.	Os micróbios do rúmen transformam o pasto e o grão em três ácidos: acético, propiônico e butírico. O animal os absorve pela parede do rúmen e deles tira entre 60 e 80 % da sua energia.
+F110.0h	Acetic acid	Ácido acético
+F110.0.0	It comes mainly from grass fiber.	Vem sobretudo da fibra do pasto.
+F110.0.1	It is used to make fat and as fuel for the muscles.	É usado para fazer gordura e como combustível dos músculos.
+F110.0.2	On all-grass diets it is 65 to 70 % of the acids.	Em dietas só de pasto é 65 a 70 % dos ácidos.
+F110.1h	Propionic acid	Ácido propiônico
+F110.1.0	It comes mainly from grain starch.	Vem sobretudo do amido do grão.
+F110.1.1	The liver turns it into glucose (sugar), because cattle absorb almost no sugar directly.	O fígado o converte em glicose (açúcar), porque o bovino quase não absorve açúcar direto.
+F110.1.2	It is the most efficient: less energy is lost as methane. That's why grain fattens faster.	É o mais eficiente: menos energia se perde como metano. Por isso o grão engorda mais rápido.
+F110.2h	Butyric acid	Ácido butírico
+F110.2.0	It is produced in smaller amounts.	É produzido em menor quantidade.
+F110.2.1	The rumen wall uses it as food and it helps its papillae grow.	A parede do rúmen o usa como alimento e ele ajuda a crescer as papilas.
+F110.3h	In your feedlot	No seu confinamento
+F110.3.0	More concentrate = more propionic = more gain and better conversion, but more risk of acidosis.	Mais concentrado = mais propiônico = mais ganho e melhor conversão, mas mais risco de acidose.
+F110.3.1	Ionophores such as monensin increase propionic and improve conversion.	Os ionóforos como a monensina aumentam o propiônico e melhoram a conversão.
+F110.3.2	The balance is giving enough fiber so the rumen doesn't turn acidic.	O equilíbrio é dar fibra suficiente para que o rúmen não acidifique.
+F111.t	Rumination and saliva	Ruminação e saliva
+F111.r	Ruminating is bringing feed back to the mouth to chew it again. While ruminating, the animal produces a lot of saliva, the rumen's natural antacid.	Ruminar é voltar a comida à boca para mastigá-la de novo. Enquanto rumina, o animal produz muita saliva, que é o antiácido natural do rúmen.
+F111.0h	What rumination is like	Como é a ruminação
+F111.0.0	Cattle ruminate 6 to 10 hours a day, mostly lying down and at night.	Um bovino rumina de 6 a 10 horas por dia, principalmente deitado e à noite.
+F111.0.1	Each bolus is chewed 40 to 70 times.	Cada bolo é mastigado de 40 a 70 vezes.
+F111.0.2	It ruminates more on grass and hay; less on rations with a lot of ground grain.	Rumina mais com pasto e feno; menos com rações de muito grão moído.
+F111.1h	Saliva	A saliva
+F111.1.0	An adult bovine produces 100 to 180 liters of saliva a day.	Um bovino adulto produz de 100 a 180 litros de saliva por dia.
+F111.1.1	It contains bicarbonate and phosphate that neutralize rumen acids.	Tem bicarbonato e fosfato que neutralizam os ácidos do rúmen.
+F111.1.2	Less rumination = less saliva = a more acidic rumen.	Menos ruminação = menos saliva = rúmen mais ácido.
+F111.2h	Signs to watch	Sinais para vigiar
+F111.2.0	In a healthy lot, more than half the animals lying down should be ruminating.	Em um lote sadio, mais da metade dos animais deitados deve estar ruminando.
+F111.2.1	If few are ruminating, effective fiber is lacking or there is acidosis.	Se poucos ruminam, falta fibra efetiva ou há acidose.
+F111.2.2	An animal that stops ruminating is sick: check it.	Um animal que para de ruminar está doente: examine-o.
+F111.3h	In your feedlot	No seu confinamento
+F111.3.0	Always leave some long fiber (grass chopped 2 to 5 cm, hay or stover).	Deixe sempre alguma fibra longa (capim picado de 2 a 5 cm, feno ou palhada).
+F111.3.1	Don't grind forage too fine: it loses its effect of making them ruminate.	Não moa a forragem fina demais: perde o efeito de fazer ruminar.
+F111.3.2	Bunks with enough space and calm animals ruminate better.	Cochos com espaço e animais tranquilos ruminam melhor.
+F112.t	Microbial protein	Proteína microbiana
+F112.r	Rumen microbes grow, multiply and then pass to the abomasum, where the animal digests them. That microbial protein covers between half and four fifths of the protein cattle need.	Os micróbios do rúmen crescem, se multiplicam e depois passam ao abomaso, onde o animal os digere. Essa proteína de micróbios cobre entre metade e quatro quintos da proteína que o bovino precisa.
+F112.0h	How it forms	Como se forma
+F112.0.0	Microbes take nitrogen (from feed protein or urea) and turn it into ammonia.	Os micróbios pegam nitrogênio (da proteína da comida ou da ureia) e o transformam em amônia.
+F112.0.1	With energy (starch, sugar, fiber) and that ammonia they build their own bodies.	Com energia (amido, açúcar, fibra) e essa amônia fabricam seu próprio corpo.
+F112.0.2	Without enough energy, the ammonia is wasted and leaves in the urine.	Sem energia suficiente, a amônia é desperdiçada e sai pela urina.
+F112.1h	Why it is so good	Por que é tão boa
+F112.1.0	It has very high-quality amino acids, similar to meat.	Tem aminoácidos de muito boa qualidade, parecida com a da carne.
+F112.1.1	It is the cheapest protein: it is made from grass, molasses and urea.	É a proteína mais barata: é feita com pasto, melaço e ureia.
+F112.1.2	A well-balanced feeding program makes the most of the microbes.	Uma engorda bem balanceada aproveita ao máximo os micróbios.
+F112.2h	Synchrony	Sincronia
+F112.2.0	Energy and nitrogen must reach the rumen at the same time.	Energia e nitrogênio devem chegar ao rúmen ao mesmo tempo.
+F112.2.1	That's why urea is mixed with molasses or grain, never on its own.	Por isso a ureia se mistura com melaço ou grão, nunca sozinha.
+F112.2.2	Splitting feed into several deliveries improves synchrony.	Dividir a comida em vários tratos melhora a sincronia.
+F112.3h	In your feedlot	No seu confinamento
+F112.3.0	Dry grasses low in protein (under 7 %) don't feed the microbes: the animal eats little.	Pastos secos com pouca proteína (menos de 7 %) não alimentam os micróbios: o animal come pouco.
+F112.3.1	A small amount of protein or urea with molasses wakes the microbes up and raises grass intake.	Uma pequena quantidade de proteína ou ureia com melaço desperta os micróbios e sobe o consumo de pasto.
+F113.t	Urea recycling	Reciclagem de ureia
+F113.r	Cattle have a trick: part of the urea the liver makes returns to the rumen through saliva and the rumen wall, and the microbes reuse it to make protein.	O bovino tem um truque: parte da ureia que o fígado faz volta ao rúmen pela saliva e pela parede do rúmen, e os micróbios a usam de novo para fazer proteína.
+F113.0h	How it works	Como funciona
+F113.0.0	Excess ammonia in the rumen passes into the blood.	A amônia que sobra no rúmen passa ao sangue.
+F113.0.1	The liver turns it into urea, which is less toxic.	O fígado a converte em ureia, que é menos tóxica.
+F113.0.2	Part leaves in the urine and part returns to the rumen with saliva.	Uma parte sai na urina e outra volta ao rúmen com a saliva.
+F113.1h	When it matters	Quando importa
+F113.1.0	In the dry season, with poor pastures, recycling helps survival.	Na época seca, com pastos pobres, a reciclagem ajuda a sobreviver.
+F113.1.1	Zebu cattle recycle urea more efficiently than European breeds.	O zebu recicla ureia com mais eficiência que as raças europeias.
+F113.1.2	The less protein in the diet, the more urea the animal recycles.	Quanto menos proteína tem a dieta, mais ureia o animal recicla.
+F113.2h	Cost	Custo
+F113.2.0	Turning ammonia into urea costs the liver energy.	Converter amônia em ureia custa energia ao fígado.
+F113.2.1	If there is too much protein in the ration, the animal spends energy getting rid of it and pollutes with nitrogen.	Se há proteína demais na ração, o animal gasta energia para eliminá-la e polui com nitrogênio.
+F113.3h	In your feedlot	No seu confinamento
+F113.3.0	Don't overspend on protein: past the requirement, you're just paying for expensive urine.	Não gaste demais com proteína: passada a exigência, você só paga urina cara.
+F113.3.1	Blood urea nitrogen, measured in a lab, tells whether protein is in excess or short.	O nitrogênio ureico no sangue, medido em laboratório, diz se sobra ou falta proteína.

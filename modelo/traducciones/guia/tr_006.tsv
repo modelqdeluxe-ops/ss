@@ -1,0 +1,199 @@
+F114.t	Glucose in the ruminant	Glicose no ruminante
+F114.r	Unlike people and pigs, cattle absorb almost no sugar from their feed: the microbes eat it first. The animal makes its own glucose in the liver, mainly from propionic acid.	Diferente das pessoas e dos porcos, o bovino quase não absorve açúcar da comida: os micróbios o comem primeiro. O animal fabrica sua própria glicose no fígado, sobretudo a partir do ácido propiônico.
+F114.0h	Where it comes from	De onde vem
+F114.0.0	From the propionic acid microbes make from starch.	Do ácido propiônico que os micróbios fazem com o amido.
+F114.0.1	From some amino acids in protein.	De alguns aminoácidos da proteína.
+F114.0.2	From starch that escapes the rumen and is digested in the intestine.	Do amido que escapa do rúmen e é digerido no intestino.
+F114.1h	What it uses it for	Para que a usa
+F114.1.0	The brain, red blood cells and the fetus depend on glucose.	O cérebro, os glóbulos vermelhos e o feto dependem da glicose.
+F114.1.1	During finishing it is used to build marbling fat.	Na engorda é usada para formar a gordura do marmoreio.
+F114.1.2	Insulin rises when there is more propionic acid and favors storing fat.	A insulina sobe quando há mais propiônico e favorece guardar gordura.
+F114.2h	In your feedlot	No seu confinamento
+F114.2.0	Grain rations give more propionic and more glucose: the animal fattens faster.	As rações com grão dão mais propiônico e mais glicose: o animal engorda mais rápido.
+F114.2.1	Well-processed corn provides more propionic than grass.	O milho bem processado fornece mais propiônico que o pasto.
+F114.2.2	An animal on a long fast burns fat and can develop ketosis, though it's rare in steers.	Um animal em jejum longo queima gordura e pode ter cetose, embora em novilhos seja raro.
+F115.t	The bovine liver	O fígado do bovino
+F115.r	The liver is the animal's chemical factory: it makes glucose, turns ammonia into urea, stores vitamins and minerals and clears toxins and drugs.	O fígado é a fábrica química do animal: faz glicose, converte a amônia em ureia, guarda vitaminas e minerais e limpa toxinas e medicamentos.
+F115.0h	Main jobs	Trabalhos principais
+F115.0.0	It turns propionic acid into glucose.	Converte o ácido propiônico em glicose.
+F115.0.1	It transforms toxic ammonia into urea.	Transforma a amônia tóxica em ureia.
+F115.0.2	It stores vitamin A, copper, iron and other reserves.	Guarda vitamina A, cobre, ferro e outras reservas.
+F115.0.3	It destroys toxins from plants, fungi and drugs.	Destrói toxinas de plantas, fungos e medicamentos.
+F115.1h	Common problems	Problemas comuns
+F115.1.0	Abscesses from acidosis: bacteria pass from the damaged rumen to the liver.	Abscessos por acidose: bactérias passam do rúmen danificado para o fígado.
+F115.1.1	Liver fluke: a parasite that lives in the liver's ducts.	Fasciola: um parasita que vive nos ductos do fígado.
+F115.1.2	Poisoning from plants or aflatoxins in damaged corn.	Intoxicações por plantas ou aflatoxinas do milho estragado.
+F115.2h	Drug withdrawal	Carência de medicamentos
+F115.2.0	The liver clears drugs little by little.	O fígado vai eliminando os medicamentos aos poucos.
+F115.2.1	That's why each product has withdrawal days before selling to the plant.	Por isso cada produto tem dias de carência antes de vender ao frigorífico.
+F115.2.2	Liver and kidney hold residues longer than meat.	O fígado e o rim guardam resíduos por mais tempo que a carne.
+F115.3h	In your feedlot	No seu confinamento
+F115.3.0	At the plant, ask to see the livers: if many have abscesses, review the grain adaptation.	No frigorífico, peça para ver os fígados: se muitos tiverem abscessos, revise a adaptação ao grão.
+F115.3.1	Don't use moldy corn: aflatoxins damage the liver and lower gain.	Não use milho mofado: as aflatoxinas danificam o fígado e baixam o ganho.
+F116.t	Digestion in the intestine	Digestão no intestino
+F116.r	After the abomasum, the feed passes to the small intestine, where protein, fat, starch that escaped the rumen, vitamins and minerals are absorbed. The large intestine carries out a second fermentation.	Depois do abomaso, a comida passa ao intestino delgado, onde se absorvem proteínas, gorduras, amido que escapou do rúmen, vitaminas e minerais. O intestino grosso faz uma segunda fermentação.
+F116.0h	Small intestine	Intestino delgado
+F116.0.0	It is about 40 meters long in an adult bovine.	Mede uns 40 metros em um bovino adulto.
+F116.0.1	The pancreas and bile help digestion.	O pâncreas e a bile ajudam a digerir.
+F116.0.2	Amino acids, fats, glucose, calcium, phosphorus and other minerals are absorbed.	Absorvem-se aminoácidos, gorduras, glicose, cálcio, fósforo e outros minerais.
+F116.1h	Large intestine	Intestino grosso
+F116.1.0	The cecum and colon have microbes that ferment what wasn't digested.	O ceco e o cólon têm micróbios que fermentam o que não foi digerido.
+F116.1.1	Water is reabsorbed there.	Ali se reabsorve água.
+F116.1.2	If a lot of starch reaches the large intestine, it ferments all at once and causes bubbly diarrhea.	Se chega muito amido ao intestino grosso, fermenta de uma vez e dá diarreia com bolhas.
+F116.2h	Signs in the feces	Sinais nas fezes
+F116.2.0	Feces with whole grains: the grain wasn't processed well or passes too fast.	Fezes com grãos inteiros: o grão não foi bem processado ou passa rápido demais.
+F116.2.1	Very loose, acidic feces: excess starch or acidosis.	Fezes muito líquidas e ácidas: excesso de amido ou acidose.
+F116.2.2	Feces with mucus or blood: possible coccidiosis or another infection.	Fezes com muco ou sangue: possível coccidiose ou outra infecção.
+F116.3h	In your feedlot	No seu confinamento
+F116.3.0	Cracking or grinding the grain greatly improves its digestion.	Quebrar ou moer o grão melhora muito sua digestão.
+F116.3.1	Feces are a window into what's happening inside: check them every day.	As fezes são uma janela para o que acontece por dentro: revise-as todo dia.
+F117.t	Passage rate and gut fill	Taxa de passagem e enchimento
+F117.r	Feed takes one to three days to travel the whole digestive tract. The faster it passes, the more the animal can eat, but the less time microbes have to digest it.	A comida leva de um a três dias para percorrer todo o tubo digestivo. Quanto mais rápido passa, mais o animal pode comer, mas menos tempo os micróbios têm para digeri-la.
+F117.0h	What limits intake	O que limita o consumo
+F117.0.0	With grass and forage: rumen fill. The animal stops eating because it is full.	Com pasto e forragem: o enchimento do rúmen. O animal para de comer porque está cheio.
+F117.0.1	With high-grain rations: energy. The animal stops eating because it has met its needs.	Com rações de muito grão: a energia. O animal para de comer porque já cobriu sua necessidade.
+F117.0.2	Heat, stress and disease also lower intake.	O calor, o estresse e as doenças também baixam o consumo.
+F117.1h	How to speed up passage	Como acelerar a passagem
+F117.1.0	Chop forage smaller.	Picar a forragem menor.
+F117.1.1	Feed younger, more digestible grasses.	Dar pastos mais novos e digestíveis.
+F117.1.2	Provide enough protein so the microbes work fast.	Dar proteína suficiente para os micróbios trabalharem rápido.
+F117.2h	The balance	O equilíbrio
+F117.2.0	If forage is ground too fine, it passes quickly but doesn't stimulate rumination.	Se a forragem está moída demais, passa rápido mas não faz ruminar.
+F117.2.1	Old, tough grass stays in the rumen for days: the animal eats little and gains little.	Pasto velho e duro fica dias no rúmen: o animal come pouco e ganha pouco.
+F117.3h	In your feedlot	No seu confinamento
+F117.3.0	Grass quality matters more than quantity: old grass fills but doesn't fatten.	A qualidade do pasto importa mais que a quantidade: um pasto velho enche mas não engorda.
+F117.3.1	Cut grasses at the right stage: usually 35 to 60 days depending on species and season.	Corte os pastos no ponto: costumam ser 35 a 60 dias conforme a espécie e a época.
+F118.t	Methane and belching	Metano e arroto
+F118.r	Rumen archaea produce methane to get rid of the hydrogen left over from fermentation. The animal gets it out by belching. It is lost energy: between 2 and 12 % of the feed's energy.	As arqueias do rúmen produzem metano para se livrar do hidrogênio que sobra da fermentação. O animal o elimina arrotando. É energia perdida: entre 2 e 12 % da energia da comida.
+F118.0h	Why it forms	Por que se forma
+F118.0.0	Fiber fermentation releases hydrogen.	A fermentação da fibra libera hidrogênio.
+F118.0.1	Archaea combine hydrogen and carbon to make methane.	As arqueias juntam hidrogênio e carbono e fazem metano.
+F118.0.2	That way the rumen doesn't fill with hydrogen and the microbes keep working.	Assim o rúmen não se enche de hidrogênio e os micróbios continuam trabalhando.
+F118.1h	How much is lost	Quanto se perde
+F118.1.0	With mature, poor pastures: 6 to 10 % of the energy.	Com pastos maduros e pobres: 6 a 10 % da energia.
+F118.1.1	With grain finishing rations: 3 to 4 %.	Com rações de engorda com grão: 3 a 4 %.
+F118.1.2	A steer produces about 150 to 250 grams of methane a day depending on its diet.	Um novilho produz uns 150 a 250 gramas de metano por dia conforme a dieta.
+F118.2h	The belch	O arroto
+F118.2.0	The animal belches every one or two minutes.	O animal arrota a cada um ou dois minutos.
+F118.2.1	If it can't belch, the rumen swells: that is bloat.	Se não consegue arrotar, o rúmen incha: isso é o timpanismo.
+F118.2.2	Let the animal stand, or on a slope with its head up, so it can belch.	É preciso deixar o animal de pé ou em declive com a cabeça para cima para que arrote.
+F118.3h	In your feedlot	No seu confinamento
+F118.3.0	Less methane = more energy to gain weight.	Menos metano = mais energia para ganhar peso.
+F118.3.1	Good forage, grain, ionophores and legumes lower methane per kilo of meat.	Boa forragem, grão, ionóforos e leguminosas baixam o metano por quilo de carne.
+F118.3.2	Finishing faster lowers each animal's total methane.	Terminar a engorda mais rápido baixa o metano total de cada animal.
+F119.t	Fat in the rumen	Gordura no rúmen
+F119.r	Rumen microbes change the unsaturated fats in feed into saturated fats. That's why beef fat is harder than pork or chicken fat, even if the animal eats vegetable oils.	Os micróbios do rúmen transformam as gorduras insaturadas da comida em gorduras saturadas. Por isso a gordura bovina é mais dura que a do porco ou do frango, mesmo que coma óleos vegetais.
+F119.0h	Biohydrogenation	Bio-hidrogenação
+F119.0.0	Fats from grass and seeds reach the rumen as unsaturated oils.	As gorduras do pasto e das sementes chegam ao rúmen como óleos insaturados.
+F119.0.1	Microbes add hydrogen and make them saturated.	Os micróbios lhes acrescentam hidrogênio e as tornam saturadas.
+F119.0.2	Along the way special acids such as CLA form, present in meat and milk.	No caminho se formam ácidos especiais como o CLA, presente na carne e no leite.
+F119.1h	Limit	Limite
+F119.1.0	More than 6 to 7 % total fat in the ration's dry matter harms fiber-digesting microbes.	Mais de 6 a 7 % de gordura total na matéria seca da ração prejudica os micróbios da fibra.
+F119.1.1	The animal eats less and digests forage worse.	O animal come menos e digere pior a forragem.
+F119.1.2	That's why oil is added in small amounts or as protected fat.	Por isso o óleo se adiciona em pouca quantidade ou como gordura protegida.
+F119.2h	In your feedlot	No seu confinamento
+F119.2.0	A little fat raises the ration's energy without risk of acidosis.	Um pouco de gordura sobe a energia da ração sem risco de acidose.
+F119.2.1	Cottonseed, palm kernel meal or protected fat are common sources.	Caroço de algodão, palmiste ou gordura protegida são fontes comuns.
+F119.2.2	Meat from grazing animals has somewhat more omega 3 and CLA.	A carne de animais a pasto tem um pouco mais de ômega 3 e CLA.
+F120.t	Rumen papillae	Papilas do rúmen
+F120.r	The rumen wall is covered with papillae, small fingers that increase the surface area to absorb acids. They grow or shrink depending on the diet.	A parede do rúmen é coberta de papilas, pequenos dedos que aumentam a superfície para absorver os ácidos. Crescem ou encolhem conforme a dieta.
+F120.0h	How they change	Como mudam
+F120.0.0	On energy diets, butyric and propionic acids make them grow.	Com dietas de energia, os ácidos butírico e propiônico as fazem crescer.
+F120.0.1	On poor pasture they become short and absorb less.	Com pasto pobre ficam curtas e absorvem menos.
+F120.0.2	They take 4 to 6 weeks to grow after a diet change.	Levam de 4 a 6 semanas para crescer depois de mudar a dieta.
+F120.1h	Why it matters	Por que importa
+F120.1.0	If there are many acids and few papillae, the acids build up and lower the pH.	Se há muitos ácidos e poucas papilas, os ácidos se acumulam e baixam o pH.
+F120.1.1	That's why an animal coming from pasture needs a slow adaptation to concentrate.	Por isso um animal que vem do pasto precisa de adaptação lenta ao concentrado.
+F120.1.2	Papillae damaged by acidosis let bacteria through to the liver.	As papilas danificadas pela acidose deixam passar bactérias ao fígado.
+F120.2h	In your feedlot	No seu confinamento
+F120.2.0	Adapt to concentrate over 2 to 3 weeks: give the papillae time to grow.	Adapte ao concentrado em 2 a 3 semanas: dê tempo para as papilas crescerem.
+F120.2.1	In the first days give more forage and raise the grain little by little.	Nos primeiros dias dê mais forragem e suba o grão aos poucos.
+F121.t	Tissue growth	Crescimento dos tecidos
+F121.r	The animal doesn't grow evenly: first it builds bone, then muscle and finally fat. So as it nears its mature weight, each kilo it gains has more fat and costs more feed.	O animal não cresce por igual: primeiro forma osso, depois músculo e por último gordura. Por isso, ao se aproximar do peso adulto, cada quilo que ganha tem mais gordura e custa mais comida.
+F121.0h	The order	A ordem
+F121.0.0	First the nervous system and bones.	Primeiro o sistema nervoso e os ossos.
+F121.0.1	Then muscle: the young animal gains mostly lean meat.	Depois o músculo: o animal jovem ganha sobretudo carne magra.
+F121.0.2	Finally fat: first around the organs, then between muscles, then under the skin and last inside the muscle (marbling).	Por último a gordura: primeiro nas vísceras, depois entre músculos, depois sob a pele e por fim dentro do músculo (marmoreio).
+F121.1h	Why fat costs more	Por que a gordura custa mais
+F121.1.0	A kilo of lean tissue is about 70 to 75 % water; it is built with little energy.	Um quilo de tecido magro tem uns 70 a 75 % de água; forma-se com pouca energia.
+F121.1.1	A kilo of fat has very little water and a lot of energy: it costs 2 to 3 times more feed.	Um quilo de gordura tem muito pouca água e muita energia: custa de 2 a 3 vezes mais comida.
+F121.1.2	That's why conversion gets worse at the end of the feeding period.	Por isso a conversão piora no final da engorda.
+F121.2h	Growth curve	Curva de crescimento
+F121.2.0	Gain rises in youth, peaks and then declines.	O ganho sobe na juventude, chega a um máximo e depois cai.
+F121.2.1	Animals with a larger mature size (high frame) reach the fattening stage later.	Animais maiores quando adultos (frame alto) chegam mais tarde à fase de engordar.
+F121.2.2	Intact males build more muscle and less fat than castrates.	Machos inteiros formam mais músculo e menos gordura que os castrados.
+F121.3h	In your feedlot	No seu confinamento
+F121.3.0	Don't overfeed: past the degree of finish your buyer pays for, you lose money.	Não engorde demais: passado o grau de acabamento que seu comprador paga, você perde dinheiro.
+F121.3.1	Young animals convert better; old or thin animals fatten fast at first through compensatory growth.	Animais jovens convertem melhor; animais velhos ou magros engordam rápido no começo pelo crescimento compensatório.
+F122.t	Muscle: how it grows	Músculo: como cresce
+F122.r	After birth the number of muscle fibers hardly changes: muscle grows because each fiber gets longer and thicker, thanks to reserve cells called satellite cells.	Depois do nascimento o número de fibras musculares quase não muda: o músculo cresce porque cada fibra fica mais comprida e mais grossa, graças a células de reserva chamadas satélite.
+F122.0h	Fibers and satellite cells	Fibras e células satélite
+F122.0.0	The number of fibers is set before birth; the dam's nutrition during pregnancy matters.	O número de fibras se define antes de nascer; a nutrição da mãe na prenhez importa.
+F122.0.1	Afterwards, satellite cells supply new nuclei so each fiber can grow.	Depois, as células satélite fornecem núcleos novos para cada fibra crescer.
+F122.0.2	Growth requires protein, energy and hormones such as growth hormone and IGF-1.	O crescimento precisa de proteína, energia e hormônios como o do crescimento e o IGF-1.
+F122.1h	Protein turnover	Renovação da proteína
+F122.1.0	Muscle is built and broken down all the time.	O músculo é formado e destruído o tempo todo.
+F122.1.1	Gaining muscle means building more than is broken down.	Ganhar músculo é formar mais do que se destrói.
+F122.1.2	Stress and disease increase breakdown: the animal loses weight.	O estresse e as doenças aumentam a destruição: o animal perde peso.
+F122.2h	What favors it	O que o favorece
+F122.2.0	Good protein in the ration, especially in young animals.	Boa proteína na ração, sobretudo em animais jovens.
+F122.2.1	Intact males, because of testosterone.	Machos inteiros, pela testosterona.
+F122.2.2	Hormonal implants where they are legal.	Implantes hormonais onde são legais.
+F122.2.3	Genetics for good muscling.	Genética de boa musculatura.
+F122.3h	In your feedlot	No seu confinamento
+F122.3.0	A sick animal loses muscle and takes weeks to recover it.	Um animal doente perde músculo e leva semanas para recuperá-lo.
+F122.3.1	In the first months of feeding, don't skimp on protein.	Nos primeiros meses de engorda, não economize proteína.
+F123.t	How marbling forms	Formação do marmoreio
+F123.r	Marbling is the fat that forms inside the muscle in fine streaks. It is the last fat to be deposited and gives the meat juiciness and flavor.	O marmoreio é a gordura que se forma dentro do músculo, em veios finos. É a última gordura a se depositar e dá suculência e sabor à carne.
+F123.0h	How it forms	Como se forma
+F123.0.0	Fat cells inside the muscle form from calfhood.	As células de gordura dentro do músculo se formam desde bezerro.
+F123.0.1	They grow mainly when the animal has surplus energy and glucose from grain.	Crescem sobretudo quando o animal tem energia de sobra e glicose do grão.
+F123.0.2	It is the last fat to fill; that's why it needs feeding time.	É a última gordura a encher; por isso precisa de tempo de engorda.
+F123.1h	What increases it	O que o aumenta
+F123.1.0	Genetics: Angus and Wagyu marble a lot; zebu little.	Genética: Angus e Wagyu marmoreiam muito; o zebu pouco.
+F123.1.1	Grain diets and enough days on feed.	Dietas com grão e dias suficientes de engorda.
+F123.1.2	Steers and heifers marble more than intact bulls.	Castrados e fêmeas marmoreiam mais que touros inteiros.
+F123.1.3	Keeping the calf from going hungry in its first months.	Evitar que o bezerro passe fome nos primeiros meses.
+F123.2h	In the tropics	No trópico
+F123.2.0	Brahman and Nelore naturally have little marbling.	O Brahman e o Nelore têm pouco marmoreio por natureza.
+F123.2.1	Crosses with European breeds improve marbling.	Os cruzamentos com raças europeias melhoram o marmoreio.
+F123.2.2	In Central America marbling is hardly paid for; payment is for weight, age and finish.	Na América Central quase não se paga por marmoreio; paga-se por peso, idade e acabamento.
+F123.3h	In your feedlot	No seu confinamento
+F123.3.0	If your buyer doesn't pay for marbling, don't lengthen the feeding period for it.	Se seu comprador não paga marmoreio, não prolongue a engorda por ele.
+F123.3.1	If you sell to a quality market, plan crosses and grain finishing.	Se você vende para um mercado de qualidade, planeje cruzamentos e engorda com grão.
+F124.t	Growth hormones	Hormônios do crescimento
+F124.r	Growth is directed by hormones: growth hormone, IGF-1, insulin, sex hormones, thyroid hormones and the stress hormone cortisol.	O crescimento é dirigido por hormônios: o do crescimento, o IGF-1, a insulina, os hormônios sexuais, os da tireoide e o cortisol do estresse.
+F124.0h	Those that promote growth	Os que fazem crescer
+F124.0.0	Growth hormone: it comes from the brain and tells the liver to produce IGF-1.	Hormônio do crescimento: sai do cérebro e manda o fígado produzir IGF-1.
+F124.0.1	IGF-1: it builds muscle and bone; it rises with good feed.	IGF-1: faz crescer músculo e osso; sobe com boa comida.
+F124.0.2	Insulin: stores energy as fat and muscle; it rises with energy-rich feed.	Insulina: guarda energia como gordura e músculo; sobe com comida rica em energia.
+F124.0.3	Testosterone: builds more muscle; that's why an intact bull grows faster.	Testosterona: faz mais músculo; por isso o touro inteiro cresce mais rápido.
+F124.1h	Metabolic hormones	Os do metabolismo
+F124.1.0	Thyroid hormones: they set the speed of the body's engine.	Hormônios da tireoide: marcam a velocidade do motor do corpo.
+F124.1.1	They drop in the heat: the animal produces less heat but also grows less.	Com calor caem: o animal produz menos calor, mas também cresce menos.
+F124.1.2	Leptin: produced by fat, it tells the brain there are reserves.	Leptina: é produzida pela gordura e avisa o cérebro que já há reservas.
+F124.2h	The stress hormone	O do estresse
+F124.2.0	Cortisol: rises with transport, fear, heat and pain.	Cortisol: sobe com o transporte, o medo, o calor e a dor.
+F124.2.1	It breaks down muscle for energy and lowers defenses.	Destrói músculo para tirar energia e baixa as defesas.
+F124.2.2	That's why stressed animals get sick and lose weight.	Por isso os animais estressados adoecem e perdem peso.
+F124.3h	In your feedlot	No seu confinamento
+F124.3.0	Good handling and good feed keep growth hormones high.	Bom trato e boa comida mantêm altos os hormônios do crescimento.
+F124.3.1	Implants mimic sex hormones; only where legal and respecting withdrawals.	Os implantes imitam os hormônios sexuais; só onde são legais e respeitando carências.
+F125.t	Maintenance energy	Energia de mantença
+F125.r	Before gaining a single kilo, the animal spends energy just to live: breathing, pumping blood, keeping its temperature and renewing tissues. That is maintenance, and it takes 40 to 60 % of what a finishing steer eats.	Antes de ganhar um só quilo, o animal gasta energia só para viver: respirar, bombear sangue, manter a temperatura e renovar tecidos. É a mantença, e leva entre 40 e 60 % do que come um novilho em engorda.
+F125.0h	How much it is	Quanto é
+F125.0.0	It is calculated with metabolic weight: weight raised to the power 0.75.	Calcula-se com o peso metabólico: o peso elevado à potência 0,75.
+F125.0.1	A 400 kg steer needs about 6 to 7 megacalories of net energy a day just to maintain itself.	Um novilho de 400 kg precisa de umas 6 a 7 megacalorias de energia líquida por dia só para se manter.
+F125.0.2	Zebu cattle spend about 10 % less than European breeds.	O zebu gasta cerca de 10 % menos que as raças europeias.
+F125.1h	What increases it	O que a aumenta
+F125.1.0	Walking a lot in large paddocks or with distant water.	Caminhar muito em piquetes grandes ou com água longe.
+F125.1.1	Cold or heat outside the comfort zone.	Frio ou calor fora da zona de conforto.
+F125.1.2	Disease, parasites and stress.	Doenças, parasitas e estresse.
+F125.1.3	Nervous animals spend more.	Animais nervosos gastam mais.
+F125.2h	Why it matters	Por que importa
+F125.2.0	Everything eaten above maintenance becomes gain.	Tudo o que come acima da mantença vira ganho.
+F125.2.1	If the animal eats barely enough to maintain itself, it goes months without gaining: you lose money every day.	Se o animal come apenas para se manter, passa meses sem subir: você perde dinheiro a cada dia.
+F125.2.2	Finishing fast dilutes the cost of maintenance.	Engordar rápido dilui o custo da mantença.
+F125.3h	In your feedlot	No seu confinamento
+F125.3.0	Nearby water, shade and calm animals lower maintenance.	Água perto, sombra e animais tranquilos baixam a mantença.
+F125.3.1	That's why slow feeding is expensive even if the feed is cheap.	Por isso a engorda lenta sai cara mesmo que a comida seja barata.

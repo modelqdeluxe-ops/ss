@@ -1,0 +1,235 @@
+F56.t	Weather in the app	O clima no app
+F56.r	Below the date, on Today, you see the weather in your area. The app's colors and decorations change with the time and the weather: sun, clouds, rain or stars.	Abaixo da data, em Hoje, você vê o clima da sua região. As cores e enfeites do app mudam com a hora e com o clima: sol, nuvens, chuva ou estrelas.
+F56.0h	Where it comes from	De onde vem
+F56.0.0	From the Open-Meteo service over the internet, with the phone's approximate location at that moment.	Do serviço Open-Meteo pela internet, com a localização aproximada do celular naquele momento.
+F56.0.1	Below the weather you see the place name, so you know where the data is from.	Abaixo do clima você vê o nome do lugar, para saber de onde é o dado.
+F56.0.2	If you don't allow location, it uses the place you entered in More, Settings, Location.	Se você não der permissão de localização, usa o lugar que você pôs em Mais, Configuração, Localização.
+F56.0.3	It updates every 15 minutes when there is internet.	Atualiza a cada 15 minutos quando há internet.
+F56.1h	What you can do	O que você pode fazer
+F56.1.0	Tap the weather so Rumi explains the heat risk for cattle, hour by hour.	Toque no clima para o Rumi explicar o risco de calor para o gado, hora por hora.
+F56.1.1	Rumi warns you if rain is coming in the next few hours.	O Rumi avisa se vem chuva nas próximas horas.
+F56.1.2	Without internet, the app keeps working and shows the season.	Sem internet, o app continua funcionando e mostra a época do ano.
+F56.2h	Privacy	Privacidade
+F56.2.0	Only the approximate location is sent to request the weather.	Só a localização aproximada é enviada para pedir o clima.
+F56.2.1	Your feedlot data does not leave the phone.	Seus dados da engorda não saem do celular.
+F57.t	App tour	Tour do app
+F57.r	The tour shows you step by step what each part of the app is for. It appears the first time and you can repeat it whenever you want.	O tour mostra passo a passo para que serve cada parte do app. Aparece na primeira vez e você pode repeti-lo quando quiser.
+F57.0h	How to see it again	Como ver de novo
+F57.0.0	Go to More, Help and tap App tour.	Vá em Mais, Ajuda e toque em Tour pelo app.
+F57.0.1	Or open Rumi, Using the app, Show me the app: there is a short tutorial for each page.	Ou abra o Rumi, Usar o app, Mostre-me o app: há um tutorial curto para cada página.
+F57.1h	During the tour	Durante o tour
+F57.1.0	Tap Next to move on and Exit to finish.	Toque em Próximo para avançar e Sair para terminar.
+F57.1.1	Tap Listen so Rumi reads each step to you.	Toque em Ouvir para o Rumi ler cada passo para você.
+F58.t	Welcome screen and colors of the day	Boas-vindas e cores do dia
+F58.r	Every time you open the app you see the welcome screen with cattle photos and a greeting for the time of day. The app's colors change gently with morning, noon, afternoon and night.	Cada vez que você abre o app vê as boas-vindas com fotos de gado e uma saudação conforme a hora. As cores do app mudam suavemente com a manhã, o meio-dia, a tarde e a noite.
+F58.0h	What it shows	O que mostra
+F58.0.0	Your greeting and your farm's name.	Sua saudação e o nome da sua fazenda.
+F58.0.1	The weather or the season.	O clima ou a época do ano.
+F58.0.2	Tap the screen to get in faster.	Toque na tela para entrar mais rápido.
+F58.1h	Colors and photos	Cores e fotos
+F58.1.0	The header photos change by themselves every few seconds.	As fotos do cabeçalho mudam sozinhas a cada poucos segundos.
+F58.1.1	If it rains in your area, you'll see rain in the header.	Se chover na sua região, você verá chuva no cabeçalho.
+F59.t	From muscle to meat	Do músculo à carne
+F59.r	After slaughter the muscle keeps working without oxygen: it uses up its sugar reserve (glycogen), produces lactic acid and stiffens. That process decides the color, tenderness and shelf life of the meat.	Depois do abate o músculo continua trabalhando sem oxigênio: gasta sua reserva de açúcar (glicogênio), produz ácido lático e fica rígido. Esse processo decide a cor, a maciez e a duração da carne.
+F59.0h	The first 24 hours	As primeiras 24 horas
+F59.0.0	The muscle's glycogen turns into lactic acid.	O glicogênio do músculo se transforma em ácido lático.
+F59.0.1	The pH drops from about 7 to about 5.5.	O pH cai de cerca de 7 para cerca de 5,5.
+F59.0.2	The muscle stiffens (rigor mortis) and then gradually softens.	O músculo fica rígido (rigor mortis) e depois vai amolecendo.
+F59.1h	Why the final pH matters	Por que o pH final importa
+F59.1.0	pH 5.4 to 5.7: bright red meat that keeps and sells well.	pH 5,4 a 5,7: carne vermelha brilhante, que dura e vende bem.
+F59.1.1	pH above 6: dark, firm and dry meat that spoils faster.	pH acima de 6: carne escura, firme e seca, que estraga mais rápido.
+F59.1.2	The final pH depends on the glycogen the animal had when it died.	O pH final depende do glicogênio que o animal tinha ao morrer.
+F59.2h	In your feedlot	No seu confinamento
+F59.2.0	A well-fed, calm animal arrives with enough glycogen.	Um animal bem alimentado e tranquilo chega com glicogênio suficiente.
+F59.2.1	Stress, fighting, long fasting and rough trips before the plant use up glycogen and give dark meat.	Estresse, brigas, jejum longo e viagens duras antes do frigorífico gastam o glicogênio e dão carne escura.
+F60.t	Dark cutting beef	Carne escura (corte escuro, DFD)
+F60.r	Dark, firm and dry meat appears when the animal arrives at slaughter without glycogen reserves because of stress. It is penalized in price because it looks bad and lasts less.	A carne escura, firme e seca aparece quando o animal chega ao abate sem reservas de glicogênio por estresse. É castigada no preço porque tem má aparência e dura menos.
+F60.0h	Causes	Causas
+F60.0.0	Long stress before slaughter: long trips, heat, fasting, mixing lots.	Estresse longo antes do abate: viagens longas, calor, jejum, mistura de lotes.
+F60.0.1	Intact bulls that fight and mount.	Touros inteiros que brigam e montam.
+F60.0.2	Nervous and mistreated animals.	Animais nervosos e maltratados.
+F60.0.3	Sudden weather changes.	Mudanças bruscas de clima.
+F60.1h	What it looks like	Como se vê
+F60.1.0	Dark red or almost purple color that does not brighten with air.	Cor vermelho-escura ou quase roxa que não clareia com o ar.
+F60.1.1	Dry, sticky surface.	Superfície seca e pegajosa.
+F60.1.2	It spoils faster because its pH is high.	Estraga mais rápido porque seu pH é alto.
+F60.2h	How to avoid it	Como evitar
+F60.2.0	Don't mix unfamiliar lots at loading or in the plant's pens.	Não misturar lotes desconhecidos no embarque nem nos currais do frigorífico.
+F60.2.1	Travel in cool hours and without delays.	Viajar nas horas frescas e sem demoras.
+F60.2.2	Calm handling, without electric prods or shouting.	Manejo tranquilo, sem choque elétrico nem gritos.
+F60.2.3	Water available before loading.	Água disponível antes do embarque.
+F60.3h	In your feedlot	No seu confinamento
+F60.3.0	If your buyer reports dark cutters, check loading and intact bulls.	Se seu comprador relatar cortes escuros, revise o embarque e os touros inteiros.
+F60.3.1	Good loading protects the price of months of work.	Um bom embarque protege o preço de meses de trabalho.
+F61.t	Meat tenderness	Maciez da carne
+F61.r	Tenderness depends on the enzymes that soften muscle after slaughter, on the collagen in the tissue that binds the fibers, on fat and on how the meat was chilled and aged.	A maciez depende das enzimas que amolecem o músculo depois do abate, do colágeno do tecido que une as fibras, da gordura e de como a carne foi resfriada e maturada.
+F61.0h	The enzymes	As enzimas
+F61.0.0	Calpains soften the meat in the days after slaughter.	As calpaínas amaciam a carne nos dias após o abate.
+F61.0.1	Calpastatin slows them down.	A calpastatina as freia.
+F61.0.2	Zebu cattle have more calpastatin: their meat is usually somewhat tougher.	O zebu tem mais calpastatina: sua carne costuma ser um pouco mais dura.
+F61.1h	Collagen	O colágeno
+F61.1.0	With age, collagen becomes tougher.	Com a idade, o colágeno fica mais resistente.
+F61.1.1	Young animals give more tender meat.	Animais jovens dão carne mais macia.
+F61.1.2	Cuts from the legs and neck have more collagen than the loin.	Cortes das pernas e do pescoço têm mais colágeno que o lombo.
+F61.2h	What improves it	O que a melhora
+F61.2.0	Slaughtering young, well-finished animals.	Abater animais jovens e bem terminados.
+F61.2.1	Aging the meat cold for 7 to 21 days.	Maturar a carne no frio de 7 a 21 dias.
+F61.2.2	Electrical stimulation of the carcass at the plant.	Estimulação elétrica da carcaça no frigorífico.
+F61.2.3	Genetics: there are DNA tests for tenderness.	Genética: há testes de DNA para maciez.
+F61.3h	In your feedlot	No seu confinamento
+F61.3.0	Short feeding periods with young animals give more tender meat.	Engordas curtas com animais jovens dão carne mais macia.
+F61.3.1	Good pre-slaughter handling avoids tough, dark meat.	Um bom manejo pré-abate evita carne dura e escura.
+F62.t	Aging meat	Maturação da carne
+F62.r	Aging meat means keeping it cold, between 0 and 4 °C, for several days so its enzymes soften it and improve its flavor.	Maturar a carne é guardá-la no frio, entre 0 e 4 °C, por vários dias para que suas enzimas a amaciem e melhorem o sabor.
+F62.0h	Types	Tipos
+F62.0.0	Wet aging: vacuum-packed in a bag; the most common.	Maturação úmida: a vácuo, em saco; a mais comum.
+F62.0.1	Dry aging: the piece exposed to air in controlled chambers; it loses weight but gains flavor.	Maturação a seco: a peça ao ar em câmaras controladas; perde peso mas ganha sabor.
+F62.0.2	Most of the softening happens in the first 14 days.	O maior amaciamento acontece nos primeiros 14 dias.
+F62.1h	Care	Cuidados
+F62.1.0	Constant cold: no power cuts or open chambers.	Frio constante: sem cortes de energia nem câmaras abertas.
+F62.1.1	Total hygiene so bacteria don't grow.	Higiene total para que não cresçam bactérias.
+F62.1.2	High-pH (dark) meat doesn't age well and spoils.	Carne com pH alto (escura) não matura bem e estraga.
+F62.2h	In your feedlot	No seu confinamento
+F62.2.0	If you sell your own beef or to restaurants, aging lets you charge more.	Se você vende carne própria ou para restaurantes, a maturação permite cobrar mais.
+F62.2.1	It is added value that depends on the quality of the animal you produce.	É valor agregado que depende da qualidade do animal que você produz.
+F63.t	Marbling and quality	Marmoreio e qualidade
+F63.r	Marbling is the streaks of fat inside the muscle. In many markets it is the basis of quality grading because it gives juiciness and flavor.	O marmoreio são os veios de gordura dentro do músculo. Em muitos mercados é a base da classificação de qualidade porque dá suculência e sabor.
+F63.0h	How it is graded	Como se classifica
+F63.0.0	It is assessed on the cut between the 12th and 13th ribs.	Avalia-se no corte entre a 12ª e a 13ª costela.
+F63.0.1	In the US the grades are Prime, Choice and Select, based on marbling and age.	Nos EUA as classes são Prime, Choice e Select conforme o marmoreio e a idade.
+F63.0.2	Japan and Australia have their own scales.	Japão e Austrália têm escalas próprias.
+F63.1h	In Central America	Na América Central
+F63.1.0	Most cattle are sold without payment for marbling.	A maioria do gado é vendida sem pagamento por marmoreio.
+F63.1.1	Some plants and restaurant chains pay more for well-finished steers with European crosses.	Alguns frigoríficos e redes de restaurantes pagam mais por novilhos com cruzamentos europeus bem terminados.
+F63.2h	In your feedlot	No seu confinamento
+F63.2.0	Ask your buyer how they grade and pay.	Pergunte ao seu comprador como classifica e paga.
+F63.2.1	Don't spend on marbling if they don't pay for it; focus on weight, yield and finish.	Não gaste com marmoreio se não pagarem por ele; foque em peso, rendimento e acabamento.
+F64.t	Meat color	Cor da carne
+F64.r	Meat color comes from myoglobin, a muscle protein. It changes with oxygen: bright red with air, purple without air and brown when it oxidizes.	A cor da carne vem da mioglobina, uma proteína do músculo. Muda com o oxigênio: vermelho brilhante com ar, roxa sem ar e marrom quando oxida.
+F64.0h	The three colors	As três cores
+F64.0.0	Purple: freshly cut or vacuum-packed meat. It is normal.	Roxa: carne recém-cortada ou embalada a vácuo. É normal.
+F64.0.1	Cherry red: after about 30 minutes in contact with air. It is what the customer looks for.	Vermelho-cereja: após uns 30 minutos em contato com o ar. É a que o cliente procura.
+F64.0.2	Brown: old or oxidized meat; the customer rejects it.	Marrom: carne velha ou oxidada; o cliente rejeita.
+F64.1h	What affects it	O que a afeta
+F64.1.0	Age: older animals have darker meat.	Idade: animais velhos têm carne mais escura.
+F64.1.1	High pH from stress: dark meat.	pH alto por estresse: carne escura.
+F64.1.2	Vitamin E in the diet: the red color lasts longer in the display case.	Vitamina E na dieta: a cor vermelha dura mais na vitrine.
+F64.2h	Fat color	Cor da gordura
+F64.2.0	White in grain-finished animals.	Branca em animais terminados com grão.
+F64.2.1	Yellow in grazing animals, from the carotene in grass, or in old animals.	Amarela em animais a pasto, pelo caroteno do capim, ou em animais velhos.
+F64.2.2	Some buyers penalize yellow fat.	Alguns compradores castigam a gordura amarela.
+F64.3h	In your feedlot	No seu confinamento
+F64.3.0	Finishing on grain for a few weeks whitens the fat.	Terminar com grão algumas semanas clareia a gordura.
+F64.3.1	Good handling at loading avoids dark meat.	Um bom manejo no embarque evita carne escura.
+F65.t	Dressing percentage: what raises and lowers it	Rendimento: o que aumenta e o que diminui
+F65.r	Dressing percentage is carcass weight divided by live weight. In tropical steers it usually ranges from 50 to 58 %. A few points of difference are worth a lot of money.	O rendimento de carcaça é o peso da carcaça dividido pelo peso vivo. Em novilhos do trópico costuma ir de 50 a 58 %. Alguns pontos de diferença valem muito dinheiro.
+F65.0h	What raises it	O que aumenta
+F65.0.0	More fat and muscle: well-finished animals.	Mais gordura e músculo: animais bem terminados.
+F65.0.1	Less gut fill: proper fasting before slaughter.	Menos conteúdo digestivo: jejum correto antes do abate.
+F65.0.2	Males, good muscling and beef crosses.	Machos, boa musculatura e cruzamentos de corte.
+F65.0.3	Rations with grain instead of just forage.	Rações com grão em vez de só forragem.
+F65.1h	What lowers it	O que diminui
+F65.1.0	A belly full of grass: a pasture animal yields less.	Barriga cheia de capim: um animal de pasto rende menos.
+F65.1.1	Thick hide, horns, caked mud.	Couro grosso, chifres, barro grudado.
+F65.1.2	Thin or dairy animals.	Animais magros ou leiteiros.
+F65.2h	Example	Exemplo
+F65.2.0	450 kg steer at 52 %: 234 kg carcass.	Novilho de 450 kg a 52 %: carcaça de 234 kg.
+F65.2.1	The same one at 56 %: 252 kg carcass.	O mesmo a 56 %: carcaça de 252 kg.
+F65.2.2	That's 18 kg more carcass without changing live weight.	São 18 kg a mais de carcaça, sem mudar o peso vivo.
+F65.3h	In your feedlot	No seu confinamento
+F65.3.0	If you sell on a carcass basis, good finish and proper fasting pay a lot.	Se você vende por carcaça, um bom acabamento e um jejum correto pagam muito.
+F65.3.1	Record the yield of each sale in the app to compare lots.	Anote o rendimento de cada venda no app para comparar lotes.
+F66.t	Carcass cuts	Cortes da carcaça
+F66.r	The carcass is divided into forequarters and hindquarters, and then into cuts. The hindquarter has the most expensive cuts; that's why animals with a good hindquarter are worth more.	A carcaça se divide em quartos dianteiros e traseiros, e depois em cortes. O traseiro tem os cortes mais caros; por isso os animais com bom traseiro valem mais.
+F66.0h	Hindquarter	Quarto traseiro
+F66.0.0	Tenderloin: the most tender cut.	Filé-mignon: o corte mais macio.
+F66.0.1	Ribeye and striploin (steaks, T-bone).	Contrafilé e filé de costela (bifes, T-bone).
+F66.0.2	Round: top round, rump, eye of round, shank.	Pernil: coxão mole, picanha e alcatra, patinho, lagarto.
+F66.0.3	It represents about 45 to 48 % of the carcass and most of its value.	Representa cerca de 45 a 48 % da carcaça e a maior parte do seu valor.
+F66.1h	Forequarter	Quarto dianteiro
+F66.1.0	Chuck, brisket, neck and ribs.	Paleta, peito, pescoço e costela.
+F66.1.1	Cuts for stewing, grinding and slow roasting.	Cortes para cozidos, moer e assar devagar.
+F66.1.2	They have more collagen and cost less.	Têm mais colágeno e custam menos.
+F66.2h	In your feedlot	No seu confinamento
+F66.2.0	Good feeding fills out the hindquarter and loin.	Uma boa engorda enche o traseiro e o lombo.
+F66.2.1	Avoid injecting in the leg: lesions damage the most expensive cuts.	Evite injetar na perna: as lesões danificam os cortes mais caros.
+F67.t	Injection-site lesions	Lesões por injeções
+F67.r	A badly placed injection leaves a lump, scar or abscess inside the muscle that the plant has to trim. If it was in the leg, meat from the most expensive cuts is lost.	Uma injeção mal aplicada deixa um caroço, cicatriz ou abscesso dentro do músculo que o frigorífico precisa aparar. Se foi na perna, perde-se carne dos cortes mais caros.
+F67.0h	Where to inject	Onde injetar
+F67.0.0	In the side of the neck, in front of the shoulder.	Na tábua do pescoço, na frente da paleta.
+F67.0.1	Subcutaneous (under the skin) whenever the product allows it.	Subcutânea (sob a pele) sempre que o produto permitir.
+F67.0.2	Never in the leg or the rump.	Nunca na perna nem na garupa.
+F67.1h	Good practices	Boas práticas
+F67.1.0	No more than 10 ml per injection site in the muscle.	Máximo de 10 ml por ponto de injeção no músculo.
+F67.1.1	Space each injection about 10 cm apart.	Separe cada injeção uns 10 cm.
+F67.1.2	Clean, sharp needles of the right size; change the needle every 10 to 15 animals or if it bends.	Agulhas limpas, afiadas e do tamanho certo; troque a agulha a cada 10 a 15 animais ou se entortar.
+F67.2h	In your feedlot	No seu confinamento
+F67.2.0	Ask the cowhand to always use the neck.	Peça ao vaqueiro para sempre usar o pescoço.
+F67.2.1	Record each treatment with its date in the app to respect the withdrawal time.	Anote no app cada tratamento com data para respeitar a carência.
+F68.t	Bruises	Pancadas e hematomas
+F68.r	Bruises on the carcass are trimmed and thrown away. Almost all come from handling in the last days: loading, transport and the plant's pens.	Os hematomas na carcaça são aparados e descartados. Quase todos vêm do manejo nos últimos dias: embarque, transporte e currais do frigorífico.
+F68.0h	Causes	Causas
+F68.0.0	Sticks, prods and blows in the chute.	Paus, ferrões e pancadas no tronco.
+F68.0.1	Overloaded trucks or trucks with protruding parts.	Caminhões superlotados ou com saliências.
+F68.0.2	Other animals' horns.	Chifres de outros animais.
+F68.0.3	Slippery floors and falls.	Pisos escorregadios e quedas.
+F68.1h	How much is lost	Quanto se perde
+F68.1.0	Each bruise can cost from half a kilo to several kilos of meat.	Cada hematoma pode custar de meio quilo a vários quilos de carne.
+F68.1.1	It also lowers the carcass grade.	Além disso, baixa a classificação da carcaça.
+F68.2h	In your feedlot	No seu confinamento
+F68.2.0	A loading chute with a good ramp and non-slip floor.	Embarcadouro com boa rampa e piso antiderrapante.
+F68.2.1	Load animals according to the truck's size.	Carga de animais conforme o tamanho do caminhão.
+F68.2.2	Flags or sacks instead of sticks to drive cattle.	Bandeiras ou sacos em vez de paus para tocar o gado.
+F69.t	Nutritional value of beef	Valor nutritivo da carne
+F69.r	Beef is one of the best sources of complete protein, iron, zinc and vitamin B12 for people.	A carne bovina é uma das melhores fontes de proteína completa, ferro, zinco e vitamina B12 para as pessoas.
+F69.0h	What it provides	O que fornece
+F69.0.0	About 20 to 22 g of protein per 100 g of raw lean meat.	Cerca de 20 a 22 g de proteína a cada 100 g de carne magra crua.
+F69.0.1	Heme iron, which is absorbed much better than iron from plants.	Ferro heme, que se absorve muito melhor que o das plantas.
+F69.0.2	Zinc, vitamin B12, niacin and selenium.	Zinco, vitamina B12, niacina e selênio.
+F69.1h	Fat	Gordura
+F69.1.0	Lean cuts have less than 5 % fat.	Os cortes magros têm menos de 5 % de gordura.
+F69.1.1	Beef fat has saturated fat and also monounsaturated fat, like avocado's.	A gordura bovina tem gordura saturada e também monoinsaturada, como a do abacate.
+F69.2h	For your family and customers	Para sua família e seus clientes
+F69.2.0	It is especially valuable for children, pregnant women and older adults.	É especialmente valiosa para crianças, gestantes e idosos.
+F69.2.1	Eating meat with vegetables in reasonable portions is part of a healthy diet.	Comer carne com verduras em porções razoáveis faz parte de uma dieta saudável.
+F70.t	Beef fat and omega 3	Gordura da carne e ômega 3
+F70.r	Beef fat changes with what the animal eats. Grazing animals have somewhat more omega 3 and CLA; grain-fed animals have more marbling and white fat.	A gordura da carne muda conforme o que o animal come. Os animais a pasto têm um pouco mais de ômega 3 e CLA; os de grão têm mais marmoreio e gordura branca.
+F70.0h	Grass	Pasto
+F70.0.0	More omega 3, CLA and vitamin E.	Mais ômega 3, CLA e vitamina E.
+F70.0.1	Yellower fat from carotene.	Gordura mais amarela pelo caroteno.
+F70.0.2	Less marbling and a stronger flavor.	Menos marmoreio e sabor mais intenso.
+F70.1h	Grain	Grão
+F70.1.0	More marbling and juiciness.	Mais marmoreio e suculência.
+F70.1.1	White fat.	Gordura branca.
+F70.1.2	Less omega 3.	Menos ômega 3.
+F70.2h	What matters	O importante
+F70.2.0	Both are nutritious; the omega 3 differences are small in the human diet.	As duas são nutritivas; as diferenças de ômega 3 são pequenas na dieta humana.
+F70.2.1	Some markets pay more for certified grass-fed beef.	Alguns mercados pagam mais por carne a pasto certificada.
+F71.t	Cold chain	Cadeia de frio
+F71.r	Meat keeps if it stays cold, between 0 and 4 °C, from the plant to the table. Every time it warms up, bacteria grow and shelf life shortens.	A carne se conserva se for mantida fria, entre 0 e 4 °C, do frigorífico até a mesa. Cada vez que esquenta, as bactérias crescem e a vida útil encurta.
+F71.0h	The rules	As regras
+F71.0.0	Chill the carcass quickly: below 7 °C at the center within the first 24 hours.	Resfriar a carcaça rápido: menos de 7 °C no centro nas primeiras 24 horas.
+F71.0.1	Transport in refrigerated trucks.	Transportar em caminhões refrigerados.
+F71.0.2	Sell from chilled display cases and freeze what doesn't sell soon.	Vender em vitrines refrigeradas e congelar o que não se vende logo.
+F71.1h	Approximate shelf life	Vida útil aproximada
+F71.1.0	Fresh meat in the display case: 3 to 5 days.	Carne fresca na vitrine: 3 a 5 dias.
+F71.1.1	Vacuum-packed and chilled: 4 to 8 weeks.	A vácuo e no frio: 4 a 8 semanas.
+F71.1.2	Frozen at -18 °C: months.	Congelada a -18 °C: meses.
+F71.2h	In your feedlot	No seu confinamento
+F71.2.0	If you sell beef directly, invest in refrigeration before anything else.	Se você vende carne direto, invista em frio antes de qualquer outra coisa.
+F71.2.1	A carcass with normal pH lasts much longer than a dark one.	Uma carcaça com pH normal dura muito mais que uma escura.
+F72.t	Meat safety	Inocuidade da carne
+F72.r	Safe meat is meat that doesn't make the person who eats it sick: no dangerous bacteria, no drug residues and no contaminants. Safety starts on the farm.	Carne inócua é carne que não faz mal a quem a come: sem bactérias perigosas, sem resíduos de medicamentos e sem contaminantes. A inocuidade começa na fazenda.
+F72.0h	Hazards	Perigos
+F72.0.0	Bacteria such as Salmonella and E. coli from feces.	Bactérias como Salmonella e E. coli das fezes.
+F72.0.1	Residues of antibiotics, dewormers and hormones.	Resíduos de antibióticos, vermífugos e hormônios.
+F72.0.2	Banned substances such as clenbuterol.	Substâncias proibidas como o clembuterol.
+F72.0.3	Heavy metals and pesticides.	Metais pesados e agrotóxicos.
+F72.1h	What you do	O que você faz
+F72.1.0	Respect the withdrawal time of each drug.	Respeitar a carência de cada medicamento.
+F72.1.1	Don't use banned products.	Não usar produtos proibidos.
+F72.1.2	Clean animals, free of mud, at loading.	Animais limpos e sem barro no embarque.
+F72.1.3	Treatment records: the app keeps them.	Registros de tratamentos: o app os guarda.
+F72.2h	Why it's in your interest	Por que convém a você
+F72.2.0	A residue finding can cancel the sale or close the whole market.	Um achado de resíduos pode cancelar a venda ou fechar o mercado inteiro.
+F72.2.1	Serious buyers require records.	Compradores sérios exigem registros.

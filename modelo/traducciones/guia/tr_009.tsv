@@ -1,0 +1,215 @@
+F153.t	Body condition	Condição corporal
+F153.r	Body condition is a score given to each animal according to its fatness, by looking at and feeling the ribs, spine, hips and tailhead.	A condição corporal é uma nota que se dá a cada animal conforme sua gordura, olhando e apalpando costelas, coluna, quadril e base da cauda.
+F153.0h	Scale from 1 to 9	Escala de 1 a 9
+F153.0.0	1 to 3: thin; ribs, spine and hip bones are visible.	1 a 3: magro, veem-se costelas, coluna e ossos do quadril.
+F153.0.1	4 to 5: moderate; only the last ribs are barely visible.	4 a 5: moderado, mal se veem as últimas costelas.
+F153.0.2	6 to 7: well covered; ribs not visible and felt with pressure.	6 a 7: bem coberto, costelas não se veem e se sentem com pressão.
+F153.0.3	8 to 9: very fat; fat at the tailhead and brisket.	8 a 9: muito gordo, gordura na base da cauda e no peito.
+F153.1h	Where to look	Onde olhar
+F153.1.0	Ribs: how many can be seen.	Costelas: quantas se veem.
+F153.1.1	Spine and point of the hip.	Coluna e ponta do quadril.
+F153.1.2	Tailhead and brisket (brisket fat = finished animal).	Base da cauda e peito (gordura no peito = animal terminado).
+F153.2h	In your feedlot	No seu confinamento
+F153.2.0	When buying: animals in condition 4 to 5 take advantage of compensatory growth.	Ao comprar: animais com condição 4 a 5 aproveitam o crescimento compensatório.
+F153.2.1	When selling: most buyers want 6 to 7.	Ao vender: a maioria dos compradores quer 6 a 7.
+F153.2.2	Going past 7 is spending feed on fat you aren't paid for.	Passar de 7 é gastar comida em gordura que não pagam.
+F154.t	Mature size and frame	Tamanho adulto e frame
+F154.r	Frame is how tall and long an animal is for its age. It predicts its mature size and the weight at which it will be finished.	O frame ou estrutura é quão alto e comprido é um animal para sua idade. Anuncia o tamanho que terá adulto e com que peso estará terminado.
+F154.0h	What it means	O que significa
+F154.0.0	High frame: large animal, grows more and finishes at a higher weight.	Frame alto: animal grande, cresce mais e termina com mais peso.
+F154.0.1	Low frame: small animal, fattens earlier and finishes at a lower weight.	Frame baixo: animal pequeno, engorda antes e termina com menos peso.
+F154.0.2	It is measured by hip height for the animal's age.	Mede-se pela altura na garupa conforme a idade.
+F154.1h	Why it matters	Por que importa
+F154.1.0	At the same weight, the low-frame animal is fatter.	No mesmo peso, o animal de frame baixo está mais gordo.
+F154.1.1	If you feed a high-frame animal only to a low weight, you sell it thin.	Se você engorda um frame alto até um peso baixo, vende magro.
+F154.1.2	If you feed a low-frame animal to a high weight, you spend on fat.	Se você engorda um frame baixo até um peso alto, gasta em gordura.
+F154.2h	In your feedlot	No seu confinamento
+F154.2.0	Form lots that are even in frame.	Forme lotes parelhos em frame.
+F154.2.1	Adjust the lot's target weight to the animals' frame.	Ajuste a meta de peso do lote ao frame dos animais.
+F154.2.2	In the app you can set a different target for each lot.	No app você pode colocar uma meta diferente para cada lote.
+F155.t	Residual feed intake (individual efficiency)	Consumo alimentar residual (eficiência individual)
+F155.r	Residual feed intake compares what an animal eats with what it should eat for its weight and gain. Efficient animals eat less to gain the same.	O consumo residual compara o que um animal come com o que deveria comer conforme seu peso e ganho. Os animais eficientes comem menos para ganhar o mesmo.
+F155.0h	How to understand it	Como se entende
+F155.0.0	Negative residual intake: it eats less than expected; it is efficient.	Consumo residual negativo: come menos do que o esperado; é eficiente.
+F155.0.1	Positive: it eats more than expected; it is inefficient.	Positivo: come mais do que o esperado; é ineficiente.
+F155.0.2	Animals in the same lot can differ by 10 to 20 %.	Entre animais do mesmo lote pode haver 10 a 20 % de diferença.
+F155.1h	Why it happens	Por que acontece
+F155.1.0	Differences in maintenance, activity, temperament and rumen microbes.	Diferenças na mantença, na atividade, no temperamento e nos micróbios do rúmen.
+F155.1.1	It is partly inherited: efficient bulls sire efficient offspring.	É em parte herdado: touros eficientes dão filhos eficientes.
+F155.2h	In your feedlot	No seu confinamento
+F155.2.0	Measuring it requires bunks that weigh what each animal eats; it is for research and genetics centers.	Medi-lo exige cochos que pesam o que cada animal come; é para centros de pesquisa e genética.
+F155.2.1	You can see something similar: animals in the same lot that gain much less than average on the same feed.	Você pode ver algo parecido: animais do mesmo lote que ganham muito menos que a média com a mesma comida.
+F156.t	Night cooling	Resfriamento noturno
+F156.r	After a hot day, the animal needs the night to cool down so it can shed the heat it stored. If the night is hot, it starts the next day already overheated and stress builds up.	Depois de um dia de calor, o animal precisa que a noite refresque para eliminar o calor que guardou. Se a noite é quente, começa o dia seguinte já com calor e o estresse se acumula.
+F156.0h	Why it is key	Por que é chave
+F156.0.0	The body stores heat during the day and sheds it at night.	O corpo guarda calor de dia e o elimina à noite.
+F156.0.1	Several hours of cooler temperatures are needed.	São necessárias várias horas com temperaturas mais frescas.
+F156.0.2	Heat waves with hot nights are the most dangerous.	As ondas de calor com noites quentes são as mais perigosas.
+F156.1h	What to do	O que fazer
+F156.1.0	Give most of the feed at dusk: the heat of digestion comes at night.	Dar a maior parte da comida ao entardecer: o calor da digestão chega à noite.
+F156.1.1	Don't handle or ship during the hottest hours.	Não manejar nem embarcar nas horas de mais calor.
+F156.1.2	Wet floors or animals during strong heat waves, with good drainage.	Molhar pisos ou animais em ondas de calor fortes, com boa drenagem.
+F156.2h	In your feedlot	No seu confinamento
+F156.2.0	Check your area's weather in Rumi: if the night doesn't drop below 24 °C and humidity is high, take precautions.	Veja o clima da sua região no Rumi: se a noite não baixa de 24 °C e há muita umidade, tome precauções.
+F157.t	Transport stress	Estresse de transporte
+F157.r	The trip is one of the hardest things for a bovine: fear, fasting, thirst, blows, heat and mixing with strangers. All of it raises cortisol, lowers defenses and makes it lose weight.	A viagem é das coisas mais duras para um bovino: medo, jejum, sede, pancadas, calor e mistura com desconhecidos. Tudo isso sobe o cortisol, baixa as defesas e faz perder peso.
+F157.0h	What happens to the body	O que acontece com o corpo
+F157.0.0	It loses 3 to 10 % of its weight: first rumen contents, then tissue water.	Perde entre 3 e 10 % do peso: primeiro o conteúdo do rúmen, depois água dos tecidos.
+F157.0.1	Rumen microbes change because of fasting.	Os micróbios do rúmen mudam pelo jejum.
+F157.0.2	Defenses drop for 1 to 3 weeks.	As defesas caem de 1 a 3 semanas.
+F157.1h	How to recover it	Como recuperá-lo
+F157.1.0	Clean water on arrival and good quality forage.	Água limpa na chegada e forragem de boa qualidade.
+F157.1.1	Let them rest before working them in the chute, if possible.	Deixar descansar antes de trabalhar no tronco, se possível.
+F157.1.2	Recovering the trip weight can take 1 to 3 weeks.	Recuperar o peso da viagem pode levar 1 a 3 semanas.
+F157.2h	In your feedlot	No seu confinamento
+F157.2.0	That's why first-month gain looks low.	Por isso o ganho do primeiro mês parece baixo.
+F157.2.1	The ideal arrival weight is the one taken after 1 to 3 days of rest.	O peso de entrada ideal é o tomado depois de 1 a 3 dias de descanso.
+F157.2.2	Traveling at night or in cool hours reduces the damage.	Viagens à noite ou nas horas frescas reduzem o dano.
+F158.t	Pain in cattle	Dor no bovino
+F158.r	Cattle feel pain like other animals, but hide it because they are prey animals. Pain lowers intake and gain.	O bovino sente dor como outros animais, mas a esconde porque é animal de presa. A dor baixa o consumo e o ganho.
+F158.0h	Signs of pain	Sinais de dor
+F158.0.0	Head down, drooping ears and dull eyes.	Cabeça baixa, orelhas caídas e olhos apagados.
+F158.0.1	It moves away from the group, grinds its teeth, kicks at its belly.	Afasta-se do grupo, range os dentes, chuta a barriga.
+F158.0.2	Lameness, a hunched posture, or lying down and getting up a lot.	Manqueira, postura encurvada ou deita e levanta muito.
+F158.1h	Pain from procedures	Dor de manejo
+F158.1.0	Castration and dehorning hurt, more so in large animals.	Castração e descorna doem, mais em animais grandes.
+F158.1.1	Doing it young, with local anesthesia and an anti-inflammatory, reduces pain and weight loss.	Fazer jovem e com anestesia local e anti-inflamatório reduz a dor e a perda de peso.
+F158.1.2	Markets increasingly require these practices.	Os mercados pedem cada vez mais essas práticas.
+F158.2h	In your feedlot	No seu confinamento
+F158.2.0	Ask your vet for a plan with an anti-inflammatory for castrations and surgeries.	Peça ao veterinário um plano com anti-inflamatório para castrações e cirurgias.
+F158.2.1	Animals that recover quickly from pain start eating again sooner.	Os animais que se recuperam rápido da dor voltam a comer antes.
+F159.t	Parasites and nutrition	Parasitas e nutrição
+F159.r	Parasites don't just steal feed: they damage the intestine, cause protein loss and take away appetite. An animal with parasites can eat the same and gain much less.	Os parasitas não só roubam comida: danificam o intestino, provocam perda de proteína e tiram o apetite. Um animal com parasitas pode comer o mesmo e ganhar muito menos.
+F159.0h	How they steal	Como roubam
+F159.0.0	Abomasal worms damage the wall and the animal digests less well.	Os vermes do abomaso danificam a parede e o animal digere pior.
+F159.0.1	Some suck blood and cause anemia.	Alguns chupam sangue e causam anemia.
+F159.0.2	The body spends protein repairing the damage and defending itself.	O corpo gasta proteína para reparar o dano e se defender.
+F159.1h	Effect on feeding	Efeito na engorda
+F159.1.0	Gain losses of 10 to 30 % in moderate infestations without clear signs.	Perdas de ganho de 10 a 30 % em infestações moderadas sem sinais claros.
+F159.1.1	Dull coat, pot belly and diarrhea in heavy cases.	Pelo opaco, barriga grande e diarreia em casos fortes.
+F159.2h	In your feedlot	No seu confinamento
+F159.2.0	Deworm at arrival based on fecal tests and your vet's advice.	Vermifugue na chegada conforme exames de fezes e o conselho do veterinário.
+F159.2.1	Good nutrition helps the animal tolerate parasites better.	Uma boa nutrição ajuda o animal a tolerar melhor os parasitas.
+F159.2.2	Avoid resistance: don't over-deworm or use low doses.	Evite a resistência: não vermifugue demais nem com doses baixas.
+F160.t	Puberty and sexual behavior	Puberdade e comportamento sexual
+F160.r	Intact males reach puberty between 12 and 18 months, zebu somewhat later. From then on they mount, fight and spend energy, but they also build more muscle.	Os machos inteiros chegam à puberdade entre 12 e 18 meses, e o zebu um pouco mais tarde. A partir daí montam, brigam e gastam energia, mas também formam mais músculo.
+F160.0h	In intact males	Em machos inteiros
+F160.0.0	They grow 5 to 15 % faster and convert better than castrates.	Crescem 5 a 15 % mais rápido e convertem melhor que os castrados.
+F160.0.1	They make less fat and less marbling.	Fazem menos gordura e menos marmoreio.
+F160.0.2	They mount and fight, with a risk of bruises and dark meat.	Montam e brigam, com risco de pancadas e carne escura.
+F160.1h	In females	Em fêmeas
+F160.1.0	They come into heat every 21 days and mount each other, losing weight.	Entram no cio a cada 21 dias e montam umas nas outras, perdendo peso.
+F160.1.1	Females pregnant when bought can abort or calve in the pen.	Fêmeas prenhes na compra podem abortar ou parir no curral.
+F160.2h	In your feedlot	No seu confinamento
+F160.2.0	Don't mix females with intact males.	Não misture fêmeas com machos inteiros.
+F160.2.1	Form even lots of intact males and don't add new animals to them.	Forme lotes parelhos de inteiros e não acrescente animais novos.
+F160.2.2	Check for pregnancy when buying females for feeding.	Verifique prenhez ao comprar fêmeas para engorda.
+F161.t	Laminitis	Laminite
+F161.r	Laminitis is inflammation of the laminae that join the hoof to the foot bone. In feedlots it almost always comes from acidosis caused by too much grain.	A laminite é a inflamação das lâminas que unem o casco ao osso da pata. Na engorda quase sempre vem de acidose por excesso de grão.
+F161.0h	How it happens	Como se produz
+F161.0.0	Acidosis releases toxins and histamine into the blood.	A acidose libera toxinas e histamina no sangue.
+F161.0.1	Those substances damage the blood vessels of the hoof.	Essas substâncias danificam os vasos sanguíneos do casco.
+F161.0.2	The hoof softens, hurts and grows misshapen.	O casco amolece, dói e cresce deformado.
+F161.1h	Signs	Sinais
+F161.1.0	An animal that walks as if on eggshells, with an arched back.	Animal que anda como se pisasse em ovos, com o lombo arqueado.
+F161.1.1	It spends a lot of time lying down.	Passa muito tempo deitado.
+F161.1.2	Months later: long, ridged, misshapen hooves.	Meses depois: cascos compridos, com anéis e deformados.
+F161.2h	In your feedlot	No seu confinamento
+F161.2.0	Slow adaptation to grain and enough fiber.	Adaptação lenta ao grão e fibra suficiente.
+F161.2.1	Avoid sudden changes, or days without feed followed by too much feed.	Evitar mudanças bruscas ou dias sem comida seguidos de comida em excesso.
+F162.t	Body composition	Composição do corpo
+F162.r	A steer is made of water, protein, fat and minerals. As it fattens, the share of fat rises and the share of water falls.	Um novilho é feito de água, proteína, gordura e minerais. À medida que engorda, a proporção de gordura sobe e a de água cai.
+F162.0h	A typical steer	Um novilho típico
+F162.0.0	Young and thin: about 60 to 65 % water, 18 to 20 % protein, 10 to 15 % fat.	Jovem e magro: uns 60 a 65 % de água, 18 a 20 % de proteína, 10 a 15 % de gordura.
+F162.0.1	Finished: about 50 to 55 % water, 16 to 17 % protein, 25 to 30 % fat.	Terminado: uns 50 a 55 % de água, 16 a 17 % de proteína, 25 a 30 % de gordura.
+F162.0.2	Minerals: 4 to 5 %, almost all in the bones.	Minerais: 4 a 5 %, quase tudo nos ossos.
+F162.1h	What you see and what you don't	O que se vê e o que não
+F162.1.0	Part of the weight is gut fill: 10 to 20 % of live weight.	Parte do peso é conteúdo digestivo: de 10 a 20 % do peso vivo.
+F162.1.1	That's why weight changes so much before and after eating and drinking.	Por isso o peso muda tanto antes e depois de comer e beber.
+F162.2h	In your feedlot	No seu confinamento
+F162.2.0	Always weighing at the same time and with the same handling makes the data comparable.	Pesar sempre na mesma hora e com o mesmo manejo torna os dados comparáveis.
+F162.2.1	Dressing percentage rises when the animal has more fat and less gut fill.	O rendimento de carcaça sobe quando o animal tem mais gordura e menos conteúdo digestivo.
+F163.t	Microbes and antibiotics	Micróbios e antibióticos
+F163.r	Antibiotics don't only kill disease-causing bacteria: they also affect the good microbes of the rumen and intestine, and misuse creates resistant bacteria.	Os antibióticos não só matam as bactérias que adoecem: também afetam os micróbios bons do rúmen e do intestino, e o mau uso cria bactérias resistentes.
+F163.0h	Effects on the rumen	Efeitos no rúmen
+F163.0.0	Some antibiotics given by mouth change fermentation.	Alguns antibióticos dados pela boca mudam a fermentação.
+F163.0.1	Ionophores are used precisely to change the microbes in a useful way.	Os ionóforos se usam justamente para mudar os micróbios de forma útil.
+F163.0.2	High, long doses can cause diarrhea and low intake.	Doses altas e longas podem causar diarreia e baixo consumo.
+F163.1h	Resistance	Resistência
+F163.1.0	Each use gives resistant bacteria an advantage.	Cada uso dá vantagem às bactérias resistentes.
+F163.1.1	Those bacteria can pass to people through meat, water or contact.	Essas bactérias podem passar às pessoas pela carne, pela água ou pelo contato.
+F163.1.2	That's why many countries limit antibiotics as growth promoters.	Por isso muitos países limitam os antibióticos como promotores de crescimento.
+F163.2h	In your feedlot	No seu confinamento
+F163.2.0	Use antibiotics only with a diagnosis and prescription.	Use antibióticos só com diagnóstico e receita.
+F163.2.1	Finish the full treatment and respect withdrawal times.	Termine o tratamento completo e respeite as carências.
+F163.2.2	Prevent with good handling, vaccines and biosecurity.	Previna com bom manejo, vacinas e biossegurança.
+F164.t	Smell, taste and preferences	Olfato, paladar e preferências
+F164.r	Cattle choose what they eat by smell, taste and texture. They reject what is moldy, bitter or smells of feces, and prefer what is sweet and fresh.	O bovino escolhe o que come pelo cheiro, pelo sabor e pela textura. Rejeita o mofado, o amargo e o que cheira a fezes, e prefere o doce e o fresco.
+F164.0h	What they like	O que gosta
+F164.0.0	Sweet taste: molasses, sugarcane, citrus.	Sabor doce: melaço, cana, cítricos.
+F164.0.1	Fresh, newly served feed.	Comida fresca e recém-servida.
+F164.0.2	Salt in the right amount.	Sal na quantidade certa.
+F164.1h	What they reject	O que rejeita
+F164.1.0	Feed that is moldy, over-fermented or hot.	Comida mofada, fermentada demais ou quente.
+F164.1.1	Grass near their own feces.	Pasto perto das próprias fezes.
+F164.1.2	Bitter tastes of some plants and medicines.	Sabores amargos de algumas plantas e remédios.
+F164.2h	In your feedlot	No seu confinamento
+F164.2.0	Clean the bunks: old feed at the bottom lowers intake.	Limpe os cochos: a comida velha no fundo baixa o consumo.
+F164.2.1	Introduce new ingredients little by little, mixed with familiar ones.	Introduza ingredientes novos aos poucos, misturados com os conhecidos.
+F164.2.2	Molasses helps them accept new or medicated rations.	O melaço ajuda a aceitarem rações novas ou medicadas.
+F165.t	How cattle graze	Como o bovino pasta
+F165.r	Cattle wrap grass with their tongue and tear it off. They graze 7 to 10 hours a day, mostly at dawn and dusk, and pick the most tender leaves.	O bovino enrola o pasto com a língua e o arranca. Pasta de 7 a 10 horas por dia, sobretudo ao amanhecer e ao entardecer, e escolhe as folhas mais tenras.
+F165.0h	How they eat	Como come
+F165.0.0	They take 30,000 to 40,000 bites a day.	Dá entre 30.000 e 40.000 bocados por dia.
+F165.0.1	They don't graze close: they need grass at least 10 to 15 cm tall to fill their mouth.	Não corta rente: precisa de pasto de pelo menos 10 a 15 cm para encher a boca.
+F165.0.2	If the grass is very short, the bite is small and the animal can't fill up.	Se o pasto está muito baixo, o bocado é pequeno e o animal não consegue se encher.
+F165.1h	When they eat	Quando come
+F165.1.0	Peaks at dawn and in the afternoon.	Picos ao amanhecer e à tarde.
+F165.1.1	In the heat they graze at night and rest in the shade during the day.	Com calor, pasta à noite e descansa de dia na sombra.
+F165.1.2	They ruminate mostly at night.	Rumina sobretudo à noite.
+F165.2h	Selection	Seleção
+F165.2.0	They pick leaves before stems, and green before dry.	Escolhe folhas antes de talos, e verde antes de seco.
+F165.2.1	They avoid grass next to their own feces.	Evita o pasto junto às próprias fezes.
+F165.2.2	That's why they leave ungrazed patches in large paddocks.	Por isso deixa manchas sem comer em piquetes grandes.
+F165.3h	In your feedlot	No seu confinamento
+F165.3.0	Grass at the right height = big bites = more intake.	Pasto na altura certa = bocados grandes = mais consumo.
+F165.3.1	Small paddocks with rotation make them graze more evenly.	Piquetes pequenos com rotação fazem com que comam mais por igual.
+F166.t	The bovine's daily rhythm	Ritmo do dia do bovino
+F166.r	Cattle follow a daily rhythm: they eat, rest, ruminate and eat again. Respecting that rhythm with fixed schedules improves intake and gain.	O bovino segue um ritmo diário: come, descansa, rumina e volta a comer. Respeitar esse ritmo com horários fixos melhora o consumo e o ganho.
+F166.0h	A typical day	Um dia típico
+F166.0.0	They eat heavily at dawn and dusk.	Come forte ao amanhecer e ao entardecer.
+F166.0.1	They rest and ruminate during the hot hours.	Descansa e rumina nas horas de calor.
+F166.0.2	At night they alternate ruminating, resting and some eating.	À noite alterna ruminação, descanso e um pouco de comida.
+F166.1h	Why schedules matter	Por que os horários importam
+F166.1.0	Rumen microbes get used to receiving feed at the same time.	Os micróbios do rúmen se acostumam a receber comida no mesmo horário.
+F166.1.1	Changing the schedule from one day to the next lowers intake.	Mudar o horário de um dia para outro baixa o consumo.
+F166.1.2	Long delays make them eat anxiously and become acidotic.	Atrasos longos fazem com que comam com ansiedade e acidifiquem.
+F166.2h	In your feedlot	No seu confinamento
+F166.2.0	Serve feed at the same time every day, within 30 minutes.	Sirva a comida no mesmo horário todos os dias, com diferença de menos de 30 minutos.
+F166.2.1	Set your feeding times in More, Settings: the app reminds you of each delivery.	Coloque seus horários de trato em Mais, Configuração: o app lembra você de cada trato.
+F167.t	Panting score	Escala de ofegação
+F167.r	Counting breaths and watching panting is the simplest way to measure heat stress in the pen.	Contar respirações e observar a ofegação é a forma mais simples de medir o estresse por calor no curral.
+F167.0h	Scores	Pontuações
+F167.0.0	0: normal breathing, under 40 per minute.	0: respiração normal, menos de 40 por minuto.
+F167.0.1	1: fast breathing, mouth closed, 40 to 70.	1: respiração rápida, boca fechada, 40 a 70.
+F167.0.2	2: panting with some drool, mouth closed, 70 to 120.	2: ofegação com um pouco de baba, boca fechada, 70 a 120.
+F167.0.3	3: mouth open, a lot of drool, 120 to 160.	3: boca aberta, muita baba, 120 a 160.
+F167.0.4	4: tongue out, head stretched, over 160: emergency.	4: língua para fora, cabeça esticada, mais de 160: emergência.
+F167.1h	How to count	Como contar
+F167.1.0	Watch the animal's flank for 15 seconds and multiply by 4.	Olhe o flanco do animal 15 segundos e multiplique por 4.
+F167.1.1	Count 5 to 10 animals in the lot during the hottest hours.	Conte em 5 a 10 animais do lote nas horas de mais calor.
+F167.2h	What to do	O que fazer
+F167.2.0	Score 2 in several animals: extra water and shade, don't handle them.	Pontuação 2 em vários animais: água extra e sombra, não manejá-los.
+F167.2.1	Score 3 or 4: wet them, cool them and call the vet if any go down.	Pontuação 3 ou 4: molhar, refrescar e chamar o veterinário se algum cair.
+F168.t	Why a sick animal stops eating	Por que o animal doente deixa de comer
+F168.r	When the body fights an infection, it releases substances that cause fever and drowsiness and take away hunger. It is a defense, but in feeding it costs days of gain.	Quando o corpo combate uma infecção, libera substâncias que dão febre, sono e tiram a fome. É uma defesa, mas na engorda custa dias de ganho.
+F168.0h	What happens inside	O que acontece por dentro
+F168.0.0	The defenses release cytokines that act on the brain.	As defesas liberam citocinas que agem no cérebro.
+F168.0.1	They lower appetite, raise temperature and the animal isolates itself.	Baixam o apetite, sobem a temperatura e o animal se isola.
+F168.0.2	The body uses muscle protein to make defenses.	O corpo usa proteína do músculo para fabricar defesas.
+F168.1h	Why it matters	Por que importa
+F168.1.0	An animal that doesn't eat for 2 or 3 days loses weight and its rumen microbes.	Um animal que não come por 2 ou 3 dias perde peso e seus micróbios do rúmen.
+F168.1.1	The drop in intake appears before coughing or high fever.	A queda do consumo aparece antes da tosse ou da febre alta.
+F168.2h	In your feedlot	No seu confinamento
+F168.2.0	Watch who doesn't come to the bunk when you feed: it is the first sign.	Observe quem não se aproxima do cocho quando você serve: é o primeiro sinal.
+F168.2.1	Separate those that don't eat and check their temperature.	Separe e meça a temperatura dos que não comem.

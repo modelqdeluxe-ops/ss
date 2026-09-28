@@ -124,7 +124,7 @@
     "p": [
      "Anota en el momento para no olvidar.",
      "Si das la misma cantidad a varios lotes, anótalos todos en la misma pantalla.",
-     "Configura tus horarios en Más para que Hoy te recuerde."
+     "Configura tus horarios en Configuración para que Hoy te recuerde."
     ]
    }
   ],
@@ -142,7 +142,7 @@
     "h": "Por animal",
     "p": [
      "Toca Registrar, Pesaje, elige el lote.",
-     "Escribe el peso de cada arete; Enter pasa al siguiente.",
+     "Escribe el peso de cada arete; Enter pasa al siguiente. Usa la lupa para buscar un arete.",
      "La app marca en rojo los pesos raros."
     ]
    },
@@ -305,7 +305,7 @@
      "Cabezas, ganancia, conversión y costo por kilo.",
      "Entregas de alimento del día.",
      "Atención: animales atrasados, consumo bajo, lotes sin pesar, retiros, muertes.",
-     "Siguiente paso recomendado."
+     "Siguiente paso recomendado. Ciérralo con la X cuando ya lo hiciste."
     ]
    },
    {
@@ -408,12 +408,12 @@
    {
     "h": "Qué se configura",
     "p": [
+     "Primero: idioma, país, unidad de peso (libras o kilos), moneda y cómo se cotiza el ganado y el alimento.",
      "Nombre y ubicación.",
-     "Precio de venta por kilo o libra y moneda.",
+     "Precio de venta.",
      "Peso meta general, ganancia esperada y desbaste.",
-     "Horarios de entrega de alimento.",
-     "Aviso de días sin pesar.",
-     "Unidad de peso."
+     "Horarios de entrega de alimento y aviso de días sin pesar.",
+     "Avisos al teléfono, widget y voz de Rumi."
     ]
    },
    {
@@ -436,7 +436,7 @@
    {
     "h": "Cambiar",
     "p": [
-     "En Más, Configuración, Unidad de peso: Libras o Kilos."
+     "En Más, Configuración, Idioma, moneda y unidades: Libras o Kilos."
     ]
    },
    {
@@ -504,7 +504,7 @@
     "h": "Dónde verlas",
     "p": [
      "En cada lote: fecha estimada de salida.",
-     "Rumi, Mi engorde, Proyectar un lote: eliges los días."
+     "Rumi, Mis lotes, elige un lote, Proyectar su peso: eliges los días."
     ]
    },
    {
@@ -553,7 +553,7 @@
    {
     "h": "Qué necesita internet",
     "p": [
-     "Solo enviar el respaldo o el Excel por Drive, correo o WhatsApp."
+     "Solo enviar el respaldo o el Excel por Drive, correo o WhatsApp, y actualizar el clima."
     ]
    },
    {
@@ -622,7 +622,7 @@
    {
     "h": "Empezar",
     "p": [
-     "En Más, Bodega de alimento.",
+     "En Inventario, Alimento, Bodega.",
      "Toca Agregar mis raciones e ingredientes o agrega productos uno por uno.",
      "Anota cuánto hay hoy con Contar bodega."
     ]
@@ -716,7 +716,7 @@
     "p": [
      "Abre a Rumi con el botón de la vaca.",
      "Toca la barra que dice Buscar tema, cálculo, síntoma o lote.",
-     "Escribe una o dos palabras; no importan los acentos.",
+     "Escribe una o dos palabras.",
      "Toca el resultado que quieres."
     ]
    },
@@ -768,7 +768,7 @@
  {
   "t": "Escuchar a Rumi",
   "a": "app",
-  "r": "Rumi puede leerte en voz alta sus respuestas y los pasos del recorrido, con la voz en español más natural que tenga tu teléfono.",
+  "r": "Rumi puede leerte en voz alta sus respuestas y los pasos del recorrido, con la voz más natural que tenga tu teléfono en el idioma de la app.",
   "s": [
    {
     "h": "Cómo se usa",
@@ -790,7 +790,7 @@
     "h": "Voces más naturales",
     "p": [
      "Toca Instalar voces más naturales: se abren los ajustes de voz del teléfono.",
-     "En Servicios de voz de Google, instala Español (Estados Unidos) y descarga las voces de alta calidad.",
+     "En Servicios de voz de Google, instala tu idioma y descarga las voces de alta calidad.",
      "Vuelve a la app y elige la nueva voz."
     ]
    },
@@ -798,7 +798,7 @@
     "h": "Si no suena",
     "p": [
      "Sube el volumen del teléfono.",
-     "Revisa que el teléfono tenga una voz en español instalada."
+     "Revisa que el teléfono tenga una voz instalada en tu idioma."
     ]
    }
   ],
@@ -851,7 +851,7 @@
     "h": "Cómo verlo otra vez",
     "p": [
      "Ve a Más, Ayuda y toca Recorrido por la app.",
-     "O abre a Rumi, Usar la app."
+     "O abre a Rumi, Usar la app, Muéstrame la app: hay un tutorial corto de cada página."
     ]
    },
    {

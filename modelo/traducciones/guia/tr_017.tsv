@@ -1,0 +1,250 @@
+F296.t	Auction cattle	Animais de leilão
+F296.r	Auction cattle usually come from several origins, with more stress and more exposure to disease. They need more careful arrival management.	O gado de leilão costuma vir de várias origens, com mais estresse e mais contato com doenças. Precisa de um manejo de entrada mais cuidadoso.
+F296.0h	Risks	Riscos
+F296.0.0	A mix of microbes from many farms.	Mistura de micróbios de muitas fazendas.
+F296.0.1	Hours without water or feed.	Horas sem água nem comida.
+F296.0.2	Unknown health history.	Histórico sanitário desconhecido.
+F296.1h	How to receive them	Como recebê-los
+F296.1.0	Quarantine apart from your other lots.	Quarentena separada dos seus outros lotes.
+F296.1.1	Full health plan on arrival.	Plano sanitário completo na entrada.
+F296.1.2	Strict watch for respiratory disease during the first 3 weeks.	Vigilância rigorosa de doenças respiratórias nas primeiras 3 semanas.
+F296.2h	In your feedlot	No seu confinamento
+F296.2.0	Pay a bit less for them to cover the higher risk.	Pague um pouco menos por eles para cobrir o risco maior.
+F296.2.1	Compare in the app the mortality and gain of auction lots versus farm lots.	Compare no app a mortalidade e o ganho de lotes de leilão contra lotes de fazenda.
+F297.t	Feeding intact bulls	Confinamento com touros inteiros
+F297.r	Feeding intact bulls takes advantage of their faster growth and better conversion, but requires more care in handling and selling.	Confinar touros inteiros aproveita seu maior crescimento e conversão, mas exige mais cuidado no manejo e na venda.
+F297.0h	Advantages	Vantagens
+F297.0.0	They gain 5 to 15 % faster.	Ganham de 5 a 15 % mais rápido.
+F297.0.1	They convert better and build more muscle.	Convertem melhor e fazem mais músculo.
+F297.0.2	You save the castration and its risk.	Você economiza a castração e seu risco.
+F297.1h	Disadvantages	Desvantagens
+F297.1.0	Mounting, fighting and bruises.	Montas, brigas e pancadas.
+F297.1.1	Higher risk of dark-cutting meat.	Mais risco de carne escura.
+F297.1.2	Some buyers pay less or prefer castrated animals.	Alguns compradores pagam menos ou preferem castrados.
+F297.2h	How to manage them	Como manejá-los
+F297.2.0	Closed lots: don't add new animals.	Lotes fechados: não acrescente animais novos.
+F297.2.1	Away from females.	Longe das fêmeas.
+F297.2.2	Slaughter before they get too mature (under 24 months).	Abate antes que fiquem muito maduros (menos de 24 meses).
+F297.2.3	Ship without mixing with other lots.	Embarque sem misturar com outros lotes.
+F298.t	Management during heavy rains	Manejo em chuvas intensas
+F298.r	Heavy rains fill pens with mud, increase lameness, skin disease and parasites, and lower gain.	As chuvas fortes enchem os currais de barro, aumentam mancadeiras, doenças de pele e parasitas, e baixam o ganho.
+F298.0h	Preparation	Preparação
+F298.0.0	Clean drains before the rains begin.	Drenos limpos antes de começarem as chuvas.
+F298.0.1	Mounds or high, dry areas for lying down.	Montes ou áreas altas e secas para deitar.
+F298.0.2	Roof or cover for the feed.	Telhado ou proteção para o alimento.
+F298.1h	During	Durante
+F298.1.0	Remove mud from bunks and waterers.	Retire o barro de cochos e bebedouros.
+F298.1.1	Fewer animals per pen.	Menos animais por curral.
+F298.1.2	Check feet and skin every week.	Revise patas e pele toda semana.
+F298.2h	After	Depois
+F298.2.0	Deworming based on tests.	Vermifugação conforme exames.
+F298.2.1	Control of flies and ticks, which increase.	Controle de moscas e carrapatos, que aumentam.
+F299.t	Safety when working cattle	Segurança ao trabalhar com gado
+F299.r	Kicks, horn injuries, crushing and falls are common accidents. With good facilities and habits almost all of them can be avoided.	Coices, chifradas, esmagamentos e quedas são acidentes comuns. Com boas instalações e bons hábitos quase todos são evitados.
+F299.0h	Basic rules	Regras básicas
+F299.0.0	Never stand between an animal and a wall with no way out.	Nunca fique entre um animal e a parede sem saída.
+F299.0.1	Always have an escape route in the chute and the pen.	Tenha sempre uma rota de fuga no brete e no curral.
+F299.0.2	Work with another person, not alone.	Trabalhe com outra pessoa, não sozinho.
+F299.0.3	Be careful with cows with calves and with bulls.	Cuidado com vacas com cria e com touros.
+F299.1h	Equipment	Equipamento
+F299.1.0	Steel-toe boots and clothes that won't snag.	Botas com biqueira e roupa que não enrosque.
+F299.1.1	Gloves when giving medicines.	Luvas ao aplicar medicamentos.
+F299.1.2	Needles discarded in a rigid container.	Agulhas descartadas em recipiente rígido.
+F300.t	Contingency plan	Plano de contingência
+F300.r	Having a plan for drought, flood, a disease outbreak or a price drop avoids panic decisions.	Ter um plano para seca, enchente, surto de doença ou queda de preços evita decisões de pânico.
+F300.0h	What to include	O que incluir
+F300.0.0	Forage and water reserves.	Reserva de forragem e água.
+F300.0.1	Contacts for a vet, a backup buyer and transport.	Contato de veterinário, comprador alternativo e transporte.
+F300.0.2	Cash reserve or approved credit.	Reserva de dinheiro ou crédito aprovado.
+F300.0.3	List of animals to sell first if needed.	Lista de animais que se vendem primeiro, se necessário.
+F300.1h	In your feedlot	No seu confinamento
+F300.1.0	Review the plan before every dry and rainy season.	Revise o plano antes de cada época seca e de chuvas.
+F300.1.1	Check the forecast and weather in Rumi.	Veja a previsão e o clima no Rumi.
+F301.t	Feeding with cut grass and molasses-urea	Engorda com capim de corte e melaço com ureia
+F301.r	This is a very common system on small farms: chopped cut grass free-choice, molasses with urea and some concentrate. Done well, it achieves 0.7 to 1 kg per day.	É uma engorda muito comum em fazendas pequenas: capim de corte picado à vontade, melaço com ureia e um pouco de concentrado. Bem feita, consegue 0,7 a 1 kg por dia.
+F301.0h	The base	A base
+F301.0.0	Tender chopped cut grass, 30 to 40 kg per animal per day (depending on weight).	Capim de corte novo picado, 30 a 40 kg por animal por dia (conforme o peso).
+F301.0.1	Molasses with 2 to 3 % urea, 1 to 2 kg per animal.	Melaço com 2 a 3 % de ureia, 1 a 2 kg por animal.
+F301.0.2	Free-choice mineral salt.	Sal mineral à vontade.
+F301.1h	To gain more	Para ganhar mais
+F301.1.0	Add 1 to 3 kg of concentrate or cracked corn.	Acrescentar 1 a 3 kg de concentrado ou milho quebrado.
+F301.1.1	A true protein source such as soybean meal, palm kernel meal or cottonseed.	Uma fonte de proteína verdadeira como farelo de soja, palmiste ou caroço de algodão.
+F301.2h	Precautions	Cuidados
+F301.2.0	Adapt to urea over 10 to 15 days; never give urea to hungry animals.	Adaptar à ureia em 10 a 15 dias; nunca dar ureia a animais famintos.
+F301.2.1	Mix the urea very well into the molasses.	Misturar muito bem a ureia no melaço.
+F301.2.2	Cut the grass at the right age.	Cortar o capim na idade certa.
+F302.t	Short intensive feeding	Confinamento curto intensivo
+F302.r	Short feeding of 90 to 120 days buys heavy animals (320 to 380 kg) and finishes them in the pen on a high-energy ration. It gives many turns per year with less risk per lot.	O confinamento curto de 90 a 120 dias compra animais pesados (320 a 380 kg) e os termina no curral com ração de alta energia. Dá muitos giros por ano com menos risco por lote.
+F302.0h	How it works	Como funciona
+F302.0.0	Adaptation to concentrate over 2 to 3 weeks.	Adaptação ao concentrado em 2 a 3 semanas.
+F302.0.1	Finishing ration with 70 to 85 % concentrate.	Ração de terminação com 70 a 85 % de concentrado.
+F302.0.2	Gains of 1.2 to 1.6 kg per day.	Ganhos de 1,2 a 1,6 kg por dia.
+F302.1h	Keys	Chaves
+F302.1.0	Buy at a good price: the buy-sell margin weighs a lot.	Comprar a bom preço: a margem de compra e venda pesa muito.
+F302.1.1	Ration with controlled cost.	Ração com custo controlado.
+F302.1.2	Sell as soon as they are finished: extra days are expensive.	Vender assim que estiverem terminados: os dias extras custam caro.
+F302.2h	In your feedlot	No seu confinamento
+F302.2.0	Before buying, calculate with Rumi the maximum purchase price and the days to target.	Antes de comprar, calcule com o Rumi o preço máximo de compra e os dias até a meta.
+F303.t	How much concentrate to give on pasture	Quanto concentrado dar no pasto
+F303.r	Supplementing concentrate on pasture raises gain. The amount depends on grass quality and the gain target.	Suplementar com concentrado no pasto aumenta o ganho. A quantidade depende da qualidade do pasto e da meta de ganho.
+F303.0h	References	Referências
+F303.0.0	0.3 to 0.5 % of weight: light protein or energy supplement; adds 150 to 300 g per day.	0,3 a 0,5 % do peso: suplemento proteico ou energético leve; aumenta 150 a 300 g por dia.
+F303.0.1	0.5 to 1 % of weight: pasture finishing with good gain (0.8 to 1 kg per day).	0,5 a 1 % do peso: engorda a pasto com bom ganho (0,8 a 1 kg por dia).
+F303.0.2	More than 1 % of weight: the animal stops eating grass and it looks like a feedlot.	Mais de 1 % do peso: o animal deixa de comer pasto e fica parecido com um confinamento.
+F303.1h	What to give	O que dar
+F303.1.0	Poor or dry grass: prioritize protein.	Pasto pobre ou seco: priorizar proteína.
+F303.1.1	Good rainy-season grass: prioritize energy (corn, molasses).	Pasto bom das chuvas: priorizar energia (milho, melaço).
+F303.2h	Precautions	Cuidados
+F303.2.0	Bunks with enough space for all to eat at once.	Cochos com espaço para que todos comam ao mesmo tempo.
+F303.2.1	Same time every day.	Mesmo horário todos os dias.
+F304.t	Selling the lot in parts	Vender o lote por partes
+F304.r	Animals in a lot don't reach the target at the same time. Selling the heaviest, finished ones first and keeping the rest a few more weeks improves price and pen use.	Os animais de um lote não chegam à meta ao mesmo tempo. Vender primeiro os mais pesados e terminados e deixar os demais algumas semanas a mais melhora o preço e o uso do curral.
+F304.0h	How to do it	Como fazer
+F304.0.0	Weigh the whole lot and sort them by weight.	Pese o lote inteiro e ordene por peso.
+F304.0.1	Sell those that already reached the target and finish.	Venda os que já chegaram à meta e ao acabamento.
+F304.0.2	The rest continue until the next weighing.	Os demais seguem até a próxima pesagem.
+F304.1h	Advantages	Vantagens
+F304.1.0	You don't give away kilos from the heavy ones or sell the light ones thin.	Você não dá de graça quilos dos pesados nem vende magros os leves.
+F304.1.1	You free up space for another lot.	Libera espaço para outro lote.
+F304.2h	In your feedlot	No seu confinamento
+F304.2.0	In the app, in each lot, you can sort the animals by weight.	No app, em cada lote, você pode ordenar os animais por peso.
+F304.2.1	Record the partial sale and the lot continues with those remaining.	Registre a venda parcial e o lote segue com os que ficaram.
+F305.t	Work hours according to the weather	Horários de trabalho conforme o clima
+F305.r	Working cattle during cool hours reduces stress, weight loss and accidents.	Trabalhar o gado nas horas frescas reduz o estresse, as perdas de peso e os acidentes.
+F305.0h	Rules	Regras
+F305.0.0	Chute work, vaccines, weighing and shipping: before 9 in the morning or after 4 in the afternoon.	Brete, vacinas, pesagens e embarques: antes das 9 da manhã ou depois das 4 da tarde.
+F305.0.1	Never work cattle when the THI is at danger or emergency.	Nunca trabalhe o gado com ITU em perigo ou emergência.
+F305.0.2	If you must, work small groups and quickly.	Se for preciso, trabalhe lotes pequenos e rápido.
+F305.1h	In your feedlot	No seu confinamento
+F305.1.0	Check today's weather in Rumi before planning chute work.	Veja no Rumi o clima de hoje antes de planejar trabalhos no brete.
+F306.t	Sorting by weight on arrival	Classificar por peso na entrada
+F306.r	Separating animals by weight on arrival forms more even lots that eat better and leave together.	Separar os animais por peso na chegada forma lotes mais uniformes que comem melhor e saem juntos.
+F306.0h	How	Como
+F306.0.0	Weigh them all on arrival.	Pese todos na entrada.
+F306.0.1	Form groups with no more than 30 to 40 kg difference.	Forme grupos com no máximo 30 a 40 kg de diferença.
+F306.0.2	Very light or lagging animals go to a separate pen with more attention.	Os muito leves ou atrasados vão para um curral à parte com mais atenção.
+F306.1h	Benefits	Benefícios
+F306.1.0	Less fighting and competition at the bunk.	Menos brigas e competição no cocho.
+F306.1.1	Ration adjusted to each group.	Ração ajustada a cada grupo.
+F306.1.2	More orderly sales.	Vendas mais organizadas.
+F307.t	Photos of the animals	Fotos dos animais
+F307.r	Taking a photo of each animal on arrival helps identify it, compare its change and settle doubts if an ear tag is lost.	Tirar uma foto de cada animal na chegada ajuda a identificá-lo, comparar sua mudança e tirar dúvidas se um brinco se perder.
+F307.0h	Tips	Dicas
+F307.0.0	Side photo, with the animal standing and good light.	Foto de lado, com o animal em pé e boa luz.
+F307.0.1	Make sure the ear tag and marks or spots are visible.	Que apareçam o brinco e as marcas ou manchas.
+F307.0.2	Repeat the photo halfway and at the end of feeding to see the change.	Repetir a foto no meio e no final do confinamento para ver a mudança.
+F307.1h	In the app	No app
+F307.1.0	When you register each animal you can take its photo with the main camera.	Ao registrar cada animal você pode tirar a foto com a câmera principal.
+F307.1.1	Photos are saved on your phone and don't use internet.	As fotos ficam no seu celular e não gastam internet.
+F308.t	Buying by season	Compras conforme a época
+F308.r	Cattle and feed prices change with the seasons. Buying at the right time improves the margin.	O preço do gado e da comida muda com as épocas. Comprar no momento certo melhora a margem.
+F308.0h	Common patterns in Central America	Padrões comuns na América Central
+F308.0.0	In the dry season many sell for lack of grass: calf prices may drop.	Na seca muitos vendem por falta de pasto: o bezerro pode baixar de preço.
+F308.0.1	At the start of the rains everyone wants to buy: the price rises.	No início das chuvas todos querem comprar: o preço sobe.
+F308.0.2	Finished steers often pay better when supply is lower, often at the end of the dry season.	O novilho gordo costuma pagar melhor quando há menos oferta, muitas vezes no fim da seca.
+F308.1h	In your feedlot	No seu confinamento
+F308.1.0	If you have feed stored, buying in the dry season and selling during scarcity can give a good margin.	Se você tem comida guardada, comprar na seca e vender na escassez pode dar boa margem.
+F308.1.1	Review your own price records year after year.	Revise seus próprios registros de preços ano a ano.
+F309.t	How money is made in feeding	Como se ganha dinheiro no confinamento
+F309.r	Feeding earns in two places: in the kilos you produce at a lower cost than you're paid, and in the price difference between buying and selling.	O confinamento ganha em dois lugares: nos quilos que você produz a um custo menor do que lhe pagam, e na diferença de preço entre comprar e vender.
+F309.0h	The three levers	As três alavancas
+F309.0.0	Buy well: a good animal at a good price per kilo.	Comprar bem: bom animal a bom preço por quilo.
+F309.0.1	Produce cheaply: good conversion, few deaths, lowest-cost ration.	Produzir barato: boa conversão, poucas mortes, ração ao menor custo.
+F309.0.2	Sell well: at the right weight and finish, to the best buyer and at a good time.	Vender bem: no peso e acabamento certos, ao melhor comprador e no bom momento.
+F309.1h	Production margin	Margem de produção
+F309.1.0	Every kilo the animal gains is worth the sale price.	Cada quilo que o animal ganha vale o preço de venda.
+F309.1.1	If producing that kilo costs you less, you earn on every kilo.	Se produzir esse quilo custa menos, você ganha em cada quilo.
+F309.1.2	Example: you sell at 60 per kilo and it costs 45 to produce: you earn 15 per kilo gained.	Exemplo: você vende a 60 o quilo e produzir custa 45: ganha 15 por quilo ganho.
+F309.2h	Price margin	Margem de preço
+F309.2.0	The kilo of a thin animal is often bought at a higher price than that of a finished one.	Muitas vezes o quilo do animal magro é comprado mais caro que o do gordo.
+F309.2.1	That negative difference is paid for by the kilos produced.	Essa diferença negativa é paga com os quilos produzidos.
+F309.2.2	That's why buying well matters so much.	Por isso comprar bem importa tanto.
+F309.3h	Simple formula	Fórmula simples
+F309.3.0	Margin = (sale weight × sale price) − (purchase weight × purchase price) − feed, health, labor and other costs.	Margem = (peso de venda × preço de venda) − (peso de compra × preço de compra) − custos de alimento, sanidade, mão de obra e outros.
+F310.t	Cost structure	Estrutura de custos
+F310.r	Knowing how much each cost weighs shows where the biggest savings opportunity is.	Saber quanto pesa cada custo mostra onde está a maior oportunidade de economia.
+F310.0h	Typical feedlot costs	Custos típicos do confinamento
+F310.0.0	Animal purchase: 60 to 75 % of total cost.	Compra do animal: 60 a 75 % do custo total.
+F310.0.1	Feed: 20 to 30 %.	Alimento: 20 a 30 %.
+F310.0.2	Health: 1 to 3 %.	Sanidade: 1 a 3 %.
+F310.0.3	Labor: 2 to 5 %.	Mão de obra: 2 a 5 %.
+F310.0.4	Freight, commissions, energy, maintenance and others: the rest.	Frete, comissões, energia, manutenção e outros: o resto.
+F310.1h	Variable and fixed costs	Custos variáveis e fixos
+F310.1.0	Variable: change with the number of animals (purchase, feed, medicines).	Variáveis: mudam com o número de animais (compra, alimento, medicamentos).
+F310.1.1	Fixed: paid the same whether there are many or few (fixed wages, facilities, security).	Fixos: pagam-se igual com muitos ou poucos (salários fixos, instalações, vigilância).
+F310.1.2	With more animals, the fixed cost per head goes down.	Com mais animais, o custo fixo por cabeça baixa.
+F310.2h	Hidden costs	Custos escondidos
+F310.2.0	Deaths: you lose the purchase and everything it ate.	Mortes: perde-se a compra e tudo o que comeu.
+F310.2.1	Feed waste.	Desperdício de alimento.
+F310.2.2	Extra days in the pen.	Dias a mais no curral.
+F310.2.3	Interest on invested capital.	Juros do capital investido.
+F310.3h	In the app	No app
+F310.3.0	Record all expenses, including overhead, so the cost is real.	Anote todos os gastos, também os gerais, para que o custo seja real.
+F310.3.1	The charts show where the money goes.	Os gráficos mostram para onde vai o dinheiro.
+F311.t	Cost per kilo gained	Custo por quilo ganho
+F311.r	It's how much it costs you to produce each kilo the animal gains. Comparing it with the sale price tells you whether feeding pays.	É quanto custa produzir cada quilo que o animal ganha. Compará-lo com o preço de venda diz se o confinamento dá dinheiro.
+F311.0h	How it's calculated	Como se calcula
+F311.0.0	Cost per kilo gained = (feed + health + labor + other expenses for the period) ÷ kilos gained.	Custo por quilo ganho = (alimento + sanidade + mão de obra + outros gastos do período) ÷ quilos ganhos.
+F311.0.1	It doesn't include the animal purchase.	Não inclui a compra do animal.
+F311.0.2	Feed only: cost per kilo of mix × conversion.	Só alimento: custo do quilo da mistura × conversão.
+F311.1h	Example	Exemplo
+F311.1.0	Mix at 8 per kilo and a 7 to 1 conversion: 56 of feed per kilo gained.	Mistura a 8 por quilo e conversão de 7 para 1: 56 de alimento por quilo ganho.
+F311.1.1	Plus 6 of other costs: 62 per kilo gained.	Mais 6 de outros custos: 62 por quilo ganho.
+F311.1.2	If you sell at 60 per kilo, each kilo produced loses 2.	Se você vende a 60 o quilo, cada quilo produzido perde 2.
+F311.2h	How to lower it	Como baixá-lo
+F311.2.0	Improve conversion (ration, health, waste).	Melhorar a conversão (ração, sanidade, desperdício).
+F311.2.1	Lower the cost of the mix.	Baixar o custo da mistura.
+F311.2.2	Reduce deaths.	Reduzir mortes.
+F311.2.3	Sell before the kilos become expensive.	Vender antes que os quilos fiquem caros.
+F311.3h	In the app	No app
+F311.3.0	It's calculated per lot with the feed and expenses you record.	É calculado por lote com o alimento e os gastos que você anota.
+F311.3.1	It appears in Today, in each lot and in Charts.	Aparece em Hoje, em cada lote e em Gráficos.
+F312.t	Break-even point	Ponto de equilíbrio
+F312.r	It's the sale price at which you neither win nor lose. Knowing it before selling gives you negotiating power.	É o preço de venda com o qual você não ganha nem perde. Sabê-lo antes de vender lhe dá poder para negociar.
+F312.0h	How it's calculated	Como se calcula
+F312.0.0	Break-even price = total lot cost ÷ kilos sold.	Preço de equilíbrio = custo total do lote ÷ quilos vendidos.
+F312.0.1	Total cost includes purchase, freight, feed, health, labor, deaths and expenses.	O custo total inclui compra, frete, alimento, sanidade, mão de obra, mortes e gastos.
+F312.0.2	Account for shrink: you're paid for fewer kilos than you weigh on the farm.	Considere a quebra: pagam menos quilos do que você pesa na fazenda.
+F312.1h	Example	Exemplo
+F312.1.0	Total cost 500,000 and you sell 10,000 kg: break-even of 50 per kilo.	Custo total 500.000 e você vende 10.000 kg: equilíbrio de 50 por quilo.
+F312.1.1	If you're offered 48, you lose 20,000.	Se oferecem 48, você perde 20.000.
+F312.1.2	If you're offered 55, you earn 50,000.	Se oferecem 55, você ganha 50.000.
+F312.2h	Uses	Usos
+F312.2.0	Know your minimum price before negotiating.	Saber seu preço mínimo antes de negociar.
+F312.2.1	Decide whether it's worth waiting or selling now.	Decidir se vale a pena esperar ou vender já.
+F312.2.2	Compare buyers.	Comparar compradores.
+F312.3h	In the app	No app
+F312.3.0	Rumi menu, Money and sales, Break-even price: it calculates it per lot selling at the target.	Menu do Rumi, Dinheiro e vendas, Preço mínimo para não perder: calcula por lote vendendo na meta.
+F313.t	Maximum purchase price	Preço máximo de compra
+F313.r	Before buying, calculate the most you can pay without losing. It's the most important tool for buying well.	Antes de comprar, calcule quanto pode pagar no máximo sem perder. É a ferramenta mais importante para comprar bem.
+F313.0h	What you need	O que você precisa
+F313.0.0	Purchase weight and expected sale weight.	Peso de compra e peso de venda esperado.
+F313.0.1	Expected sale price per kilo.	Preço de venda esperado por quilo.
+F313.0.2	Your cost per kilo gained.	Seu custo por quilo ganho.
+F313.0.3	Other costs per head: freight, health, commissions, expected deaths.	Outros custos por cabeça: frete, sanidade, comissões, mortes esperadas.
+F313.0.4	The margin you want to earn per head.	A margem que você quer ganhar por cabeça.
+F313.1h	Formula	Fórmula
+F313.1.0	Sale value = sale weight × sale price (with shrink).	Valor de venda = peso de venda × preço de venda (com quebra).
+F313.1.1	Cost of feeding = (sale weight − purchase weight) × cost per kilo gained + other costs.	Custo de engordar = (peso de venda − peso de compra) × custo por quilo ganho + outros custos.
+F313.1.2	Maximum to pay per animal = sale value − cost of feeding − desired margin.	Máximo a pagar por animal = valor de venda − custo de engordar − margem desejada.
+F313.1.3	Maximum per kilo = maximum per animal ÷ purchase weight.	Máximo por quilo = máximo por animal ÷ peso de compra.
+F313.2h	Example	Exemplo
+F313.2.0	Buy 300 kg, sell 460 kg at 60: worth 27,600.	Compra 300 kg, venda 460 kg a 60: vale 27.600.
+F313.2.1	Gaining 160 kg at 45 = 7,200, plus 800 of other costs: 8,000.	Ganhar 160 kg a 45 = 7.200, mais 800 de outros: 8.000.
+F313.2.2	You want to earn 1,500: maximum 27,600 − 8,000 − 1,500 = 18,100 per animal, about 60 per kilo.	Você quer ganhar 1.500: máximo 27.600 − 8.000 − 1.500 = 18.100 por animal, cerca de 60 por quilo.
+F313.3h	In the app	No app
+F313.3.0	Rumi menu, Money and sales, Maximum purchase price: enter the weight and use your real costs.	Menu do Rumi, Dinheiro e vendas, Preço máximo de compra: coloque o peso e use seus custos reais.
+F314.t	Buy-sell margin	Margem de compra e venda
+F314.r	The difference between the price per kilo when buying and when selling can help you or take away a lot of margin.	A diferença entre o preço por quilo de compra e o de venda pode ajudar ou tirar muita margem.
+F314.0h	How it works	Como funciona
+F314.0.0	Thin, light animals usually cost more per kilo than finished ones.	Os animais magros e leves costumam custar mais por quilo que os gordos.
+F314.0.1	You pay more for each kilo you buy than you're paid for each kilo you sell.	Você paga mais por cada quilo que compra do que recebe por cada quilo que vende.
+F314.0.2	That difference times the purchase weight is a loss the kilos produced must pay for.	Essa diferença multiplicada pelo peso de compra é uma perda que os quilos produzidos devem pagar.
+F314.1h	Example	Exemplo
+F314.1.0	You buy 300 kg at 64 and sell 460 kg at 60.	Você compra 300 kg a 64 e vende 460 kg a 60.
+F314.1.1	You lose 4 per kilo on the 300 kg bought: 1,200 per animal.	Perde 4 por quilo nos 300 kg comprados: 1.200 por animal.
+F314.1.2	The 160 kg gained must leave more than 1,200 for the business to work.	Os 160 kg ganhos devem deixar mais de 1.200 para o negócio valer.
+F314.2h	How to manage it	Como manejá-lo
+F314.2.0	Buy in seasons when thin cattle are cheap (start of the dry season in many areas).	Compre em épocas em que o gado magro está barato (início da seca em muitas regiões).
+F314.2.1	Buy slightly heavier animals if the spread is very high.	Compre animais um pouco mais pesados se o diferencial for muito alto.
+F314.2.2	Negotiate by the kilo, never per head by eye.	Negocie por quilo, nunca por cabeça no olho.

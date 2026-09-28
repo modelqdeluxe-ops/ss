@@ -1,0 +1,205 @@
+F431.t	Reference prices and how to use them	Preços de referência e como usá-los
+F431.r	Knowing your country's normal price range helps you avoid selling cheap or buying dear. Rumi has indicative ranges by country and compares your price.	Saber a faixa normal de preços do seu país ajuda a não vender barato nem comprar caro. O Rumi traz faixas orientativas por país e compara seu preço.
+F431.0h	What they are	O que são
+F431.0.0	Price ranges for live finished steers and feeder cattle, by country, from auctions, packing plants and public reports.	Faixas de preço do boi gordo em pé e do gado para engorda, por país, de leilões, frigoríficos e relatórios públicos.
+F431.0.1	They change every week and with weight, sex, breed, region and season.	Mudam toda semana e conforme peso, sexo, raça, região e época.
+F431.1h	How to use them	Como usá-los
+F431.1.0	If an offer is well below the range, ask at another plant or auction before selling.	Se uma oferta está muito abaixo da faixa, pergunte em outro frigorífico ou leilão antes de vender.
+F431.1.1	If you're asked for much more than the range for feeder cattle, calculate your maximum purchase price before paying.	Se pedem muito mais que a faixa por gado magro, calcule seu preço máximo de compra antes de pagar.
+F431.1.2	Update your sale price in Settings whenever the market changes: Rumi uses it to calculate margins, risk and the value of your cattle.	Atualize seu preço de venda em Configurações sempre que o mercado mudar: com ele o Rumi calcula margens, risco e o valor do seu gado.
+F431.2h	Watch out for	Cuidado com
+F431.2.0	Comparing live price with carcass price: on carcass the number is almost double because the animal dresses at about 55 %.	Comparar preço em pé com preço por carcaça: por carcaça o número é quase o dobro porque o animal rende cerca de 55 %.
+F431.2.1	Comparing pounds with kilos or arrobas: the app converts everything, but check each offer's unit.	Comparar libras com quilos ou arrobas: o app converte tudo, mas confira a unidade de cada oferta.
+F431.2.2	In countries with high inflation, compare in dollars.	Em países com inflação alta, compare em dólares.
+F432.t	Health calendar by region	Calendário sanitário conforme a região
+F432.r	Arrival vaccines are similar everywhere, but parasites, diseases and risk seasons change with the climate. Rumi builds your country's calendar in Health.	As vacinas de entrada são parecidas em todo lugar, mas os parasitas, as doenças e as épocas de risco mudam com o clima. O Rumi monta o calendário do seu país em Saúde.
+F432.0h	Humid tropics	Trópico úmido
+F432.0.0	Ticks and the diseases they carry (anaplasma and babesia) in the rains: control every 21 to 28 days and product rotation.	Carrapatos e doenças que transmitem (anaplasma e babesia) nas chuvas: controle a cada 21 a 28 dias e rotação de produtos.
+F432.0.1	Tórsalo (bot fly), horn fly, lameness in mud.	Berne, mosca-dos-chifres, mancadeiras no barro.
+F432.0.2	Paralytic rabies where there are vampire bats: annual vaccine.	Raiva paralítica onde há morcegos-vampiros: vacina anual.
+F432.1h	Dry and semi-arid tropics	Trópico seco e semiárido
+F432.1.0	Lack of water and forage, dust and pneumonia, vitamin A deficiency in the dry season.	Falta de água e forragem, poeira e pneumonias, falta de vitamina A na seca.
+F432.1.1	Water with salts and sulfates: have it tested.	Água com sais e sulfatos: faça uma análise.
+F432.2h	Subtropical and temperate	Subtropical e temperado
+F432.2.0	Respiratory complex with temperature swings, in autumn and winter.	Complexo respiratório com as mudanças de temperatura, no outono e no inverno.
+F432.2.1	Flies and pinkeye in summer; mud and cold in winter.	Moscas e ceratoconjuntivite no verão; barro e frio no inverno.
+F432.3h	Always	Sempre
+F432.3.0	Clostridial and respiratory vaccine on arrival, with a booster at 3 to 4 weeks.	Vacina clostridial e respiratória na entrada, com reforço às 3 a 4 semanas.
+F432.3.1	Your country's official programs (foot-and-mouth, brucellosis, tuberculosis, screwworm).	Programas oficiais do seu país (aftosa, brucelose, tuberculose, bicheira).
+F432.3.2	Vaccines and doses are decided by your vet.	As vacinas e doses são decididas pelo seu veterinário.
+F433.t	Beta-agonists (ractopamine and zilpaterol)	Beta-agonistas (ractopamina e zilpaterol)
+F433.r	They're additives given during the last 20 to 42 days so the animal builds more muscle and less fat. They raise gain and yield, but are banned in many countries and markets.	São aditivos dados nos últimos 20 a 42 dias para que o animal faça mais músculo e menos gordura. Sobem o ganho e o rendimento, mas são proibidos em muitos países e mercados.
+F433.0h	What they do	O que fazem
+F433.0.0	They divert nutrients from fat to muscle: more gain (5 to 15 %), better conversion and higher carcass yield.	Desviam nutrientes da gordura para o músculo: mais ganho (5 a 15 %), melhor conversão e mais rendimento de carcaça.
+F433.0.1	They can lower meat tenderness and increase heat stress and foot problems.	Podem baixar a maciez da carne e aumentar o estresse por calor e os problemas de patas.
+F433.1h	The law	A lei
+F433.1.0	Banned in the European Union, China, Russia and other markets, and in several Latin American countries.	Proibidos na União Europeia, China, Rússia e outros mercados, e em vários países da América Latina.
+F433.1.1	Clenbuterol is banned almost worldwide because of the risk to human health.	O clembuterol é proibido em quase todo o mundo pelo risco à saúde humana.
+F433.1.2	If you sell to an export plant, ask what it requires; a single animal with residues can close a market.	Se vende a um frigorífico exportador, pergunte o que exige; um só animal com resíduos pode fechar um mercado.
+F433.2h	If they're allowed	Se forem permitidos
+F433.2.0	Only with a prescription and following the label to the letter: dose, days and withdrawal.	Só com receita e seguindo o rótulo à risca: dose, dias e carência.
+F433.2.1	Never in stressed animals or in extreme heat.	Nunca em animais estressados ou com calor extremo.
+F434.t	Feeding heifers	Engorda de novilhas
+F434.r	Heifers gain more slowly and fatten earlier than steers, but are cheaper to buy. They can be good business if you adjust the target and the ration.	As novilhas engordam mais devagar e acumulam gordura antes que os novilhos, mas são compradas mais baratas. Podem ser bom negócio se você ajustar a meta e a ração.
+F434.0h	Differences from steers	Diferenças em relação ao novilho
+F434.0.0	They gain about 10 % less per day and convert somewhat worse.	Ganham cerca de 10 % menos por dia e convertem um pouco pior.
+F434.0.1	They reach finishing fat at a lighter weight: sell them 30 to 50 kg lighter.	Chegam à gordura de terminação com menos peso: venda 30 a 50 kg mais leves.
+F434.0.2	Pregnant ones fatten poorly and lose value at the plant: check by palpation or ultrasound when buying.	As prenhes engordam mal e perdem valor no frigorífico: examine por palpação ou ultrassom na compra.
+F434.1h	Management	Manejo
+F434.1.0	Don't mix them with intact bulls.	Não as misture com touros inteiros.
+F434.1.1	Heat lowers intake for a few days; it's normal.	O cio baixa o consumo por alguns dias; é normal.
+F434.1.2	With good genetics, some may be worth more as breeders than for beef.	Com boa genética, alguma pode valer mais como reprodutora do que para carne.
+F435.t	Feeding buffalo	Engorda de búfalos
+F435.r	Water buffalo use poor grass and forage better than cattle and tolerate humidity. Their meat is lean and sells well in some markets.	O búfalo aproveita pastos e forragens pobres melhor que o bovino e aguenta a umidade. Sua carne é magra e se vende bem em alguns mercados.
+F435.0h	Advantages	Vantagens
+F435.0.0	Good gain on coarse forage and by-products.	Bom ganho com forragens grosseiras e subprodutos.
+F435.0.1	More resistant than cattle to humid-area diseases and ticks.	Resiste a doenças de regiões úmidas e a carrapatos melhor que o bovino.
+F435.1h	Precautions	Cuidados
+F435.1.0	They need water or mud to cool off: without it they suffer more from heat than cattle.	Precisam de água ou lama para se refrescar: sem isso sofrem mais com o calor que o gado.
+F435.1.1	They're intelligent and handle better with calm and routine.	São inteligentes e se manejam melhor com calma e rotina.
+F435.1.2	Check whether your plant buys buffalo and at what price before feeding them.	Verifique se seu frigorífico compra búfalo e a que preço antes de engordar.
+F436.t	Feeding dairy males	Engorda de machos leiteiros
+F436.r	Male dairy calves (Holstein, Brown Swiss, Jersey) are cheap to buy. They can make money if raised and fed well, but yield less on the carcass.	Os bezerros machos de leite (Holandês, Pardo-Suíço, Jersey) são comprados baratos. Podem dar dinheiro se forem bem criados e engordados, mas rendem menos de carcaça.
+F436.0h	What to expect	O que esperar
+F436.0.0	They gain 1.2 to 1.5 kg per day in the pen on a good ration.	Ganham 1,2 a 1,5 kg por dia no curral com boa ração.
+F436.0.1	They dress 2 to 4 points lower than a zebu or a beef cross.	Rendem 2 a 4 pontos menos de carcaça que um zebu ou um cruzamento de corte.
+F436.0.2	They need about 20 % more energy for maintenance.	Precisam de cerca de 20 % mais energia para se manter.
+F436.1h	Keys	Chaves
+F436.1.0	Calf rearing is the most delicate part: colostrum, milk or replacer, and weaning at 2 months.	A criação do bezerro é o mais delicado: colostro, leite ou sucedâneo e desmame aos 2 meses.
+F436.1.1	Pneumonia and diarrhea are the greatest risk at the start.	Pneumonias e diarreias são o maior risco no início.
+F436.1.2	They're more heat-sensitive than zebu: shade and water.	São mais sensíveis ao calor que o zebu: sombra e água.
+F437.t	Live cattle exports	Exportação de gado em pé
+F437.r	Selling live steers to another country can pay more, but requires health status, traceability and papers in order. Borders close quickly when disease appears.	Vender novilhos em pé para outro país pode pagar mais, mas exige sanidade, rastreabilidade e papéis em ordem. As fronteiras fecham rápido diante de uma doença.
+F437.0h	What they require	O que pedem
+F437.0.0	Farm registration, official ear tags and movement permits.	Registro da fazenda, brincos oficiais e guias de trânsito.
+F437.0.1	Tuberculosis and brucellosis tests, and quarantine depending on the buying country.	Testes de tuberculose e brucelose, e quarentena conforme o país comprador.
+F437.0.2	Free of screwworm and ticks at shipment.	Livre de bicheira e carrapatos no embarque.
+F437.1h	Risks	Riscos
+F437.1.0	Border closures due to outbreaks (screwworm, foot-and-mouth).	Fechamento de fronteiras por surtos (bicheira, aftosa).
+F437.1.1	Smuggling hurts everyone: it can close an entire market.	O contrabando prejudica todos: pode fechar um mercado inteiro.
+F437.1.2	The exchange rate moves your price.	A taxa de câmbio mexe no seu preço.
+F438.t	Water quality: salts and sulfates	Qualidade da água: sais e sulfatos
+F438.r	Water is the nutrient they consume most. With a lot of salt, sulfates or nitrates, intake and gain drop, and animals can get sick.	A água é o nutriente que mais consomem. Com muito sal, sulfatos ou nitratos baixam o consumo e o ganho, e podem adoecer.
+F438.0h	What to measure	O que medir
+F438.0.0	Total dissolved solids: under 3,000 ppm is safe; over 5,000 lowers gain; over 7,000 is unusable.	Sólidos dissolvidos totais: menos de 3.000 ppm é seguro; mais de 5.000 baixa o ganho; mais de 7.000 não serve.
+F438.0.1	Sulfates: under 500 ppm; over 1,000 there's a risk of polioencephalomalacia (the blind animal that walks in circles).	Sulfatos: menos de 500 ppm; com mais de 1.000 há risco de polioencefalomalácia (o animal cego que anda em círculos).
+F438.0.2	Nitrates: under 100 ppm nitrate.	Nitratos: menos de 100 ppm de nitrato.
+F438.1h	What to do	O que fazer
+F438.1.0	Test well water at least once a year, and in the dry season.	Analise a água de poço pelo menos uma vez por ano, e na seca.
+F438.1.1	If the water carries sulfates, lower the ration's sulfur (molasses, DDGS, ammonium sulfate).	Se a água traz sulfatos, baixe o enxofre da ração (melaço, DDGS, sulfato de amônio).
+F438.1.2	Clean waterers every week: dirty water also lowers intake.	Limpe os bebedouros toda semana: a água suja também baixa o consumo.
+F439.t	Drought: a plan so you don't lose the feedlot	Seca: plano para não perder o confinamento
+F439.r	A drought raises forage prices, lowers feeder cattle prices and squeezes water. With a plan you decide on time instead of selling in a rush.	Uma seca sobe o preço da forragem, baixa o do gado magro e aperta a água. Com um plano você decide a tempo em vez de vender às pressas.
+F439.0h	Before	Antes
+F439.0.0	Store forage (silage, hay) from the rainy season.	Guarde forragem (silagem, feno) da época de chuvas.
+F439.0.1	Secure water: wells, reservoirs and pumps.	Garanta a água: poços, reservatórios e bombas.
+F439.0.2	Be clear on how many animals you can feed with what you have.	Tenha claro quantos animais consegue alimentar com o que tem.
+F439.1h	During	Durante
+F439.1.0	Sell first the animals that are ready and those gaining little.	Venda primeiro os animais prontos e os que ganham pouco.
+F439.1.1	Use cheap by-products: pulp, hulls, stover, cane, with properly managed urea and molasses.	Use subprodutos baratos: polpa, casca, restolhos, cana, com ureia e melaço bem manejados.
+F439.1.2	Check the maximum purchase price before bringing in new cattle: feed costs more.	Revise o preço máximo de compra antes de colocar gado novo: o alimento custa mais.
+F439.2h	After	Depois
+F439.2.0	Animals that went hungry gain fast when they eat again (compensatory gain): they can be good business.	Os animais que passaram fome ganham rápido ao voltar a comer (ganho compensatório): podem ser bom negócio.
+F439.2.1	Adapt the diet little by little to avoid acidosis.	Adapte a dieta aos poucos para evitar acidose.
+F440.t	Compost and biodigesters from manure	Composto e biodigestores com o esterco
+F440.r	A steer produces 20 to 30 kg of manure a day. Well managed it's fertilizer, gas and fewer flies; poorly managed it's odor, flies and polluted water.	Um novilho produz de 20 a 30 kg de esterco por dia. Bem manejado é adubo, gás e menos moscas; mal manejado é cheiro, moscas e água contaminada.
+F440.0h	Compost	Compostagem
+F440.0.0	Pile manure with stover or sawdust, turn it every 1 to 2 weeks and in 2 to 3 months you have fertilizer.	Amontoe esterco com restolho ou serragem, vire a cada 1 a 2 semanas e em 2 a 3 meses você tem adubo.
+F440.0.1	Compost heat kills fly eggs and weed seeds.	O calor do composto mata ovos de mosca e sementes de plantas daninhas.
+F440.1h	Biodigester	Biodigestor
+F440.1.0	It produces gas for cooking or heating water and a liquid fertilizer for pastures.	Produz gás para cozinhar ou esquentar água e um adubo líquido para pastos.
+F440.1.1	It works best with concrete-floored pens where manure can be washed down.	Funciona melhor com currais de piso de cimento onde se pode lavar o esterco.
+F440.2h	Protecting water	Cuidar da água
+F440.2.0	Don't let pen runoff reach rivers or wells.	Não deixe a água dos currais chegar a rios ou poços.
+F440.2.1	A retention pond or ditch avoids fines and problems with neighbors.	Uma lagoa ou vala de retenção evita multas e problemas com vizinhos.
+F441.t	Exchange rate and cattle prices	Câmbio e preço do gado
+F441.r	Cattle and corn are priced globally in dollars. When your currency devalues, cattle and imported feed go up; when it appreciates, they go down.	O gado e o milho são cotados no mundo em dólares. Quando sua moeda se desvaloriza, o gado e o alimento importado sobem; quando se valoriza, baixam.
+F441.0h	How it affects you	Como afeta você
+F441.0.0	If you export or sell to an export plant, a weak currency pays you more.	Se você exporta ou vende a um frigorífico exportador, uma moeda fraca paga mais.
+F441.0.1	Imported corn and soy rise with the dollar: so does your cost per kilo gained.	O milho e a soja importados sobem com o dólar: seu custo por quilo ganho também.
+F441.0.2	In countries with high inflation, compare prices in dollars so you don't fool yourself.	Em países com inflação alta, compare preços em dólares para não se enganar.
+F441.1h	What to do	O que fazer
+F441.1.0	Buy feed ahead of time when the exchange rate is in your favor.	Compre alimento com antecedência quando o câmbio estiver a seu favor.
+F441.1.1	Check your margin with Rumi's simulator: raise the feed cost and see what happens.	Revise sua margem com o simulador do Rumi: suba o custo do alimento e veja o que acontece.
+F442.t	Cattle as an asset in the accounts	O gado como ativo na contabilidade
+F442.r	Cattle on feed are a biological asset: their value changes every day with weight and price. Standard IAS 41 requires valuing them at market price minus selling costs.	O gado em confinamento é um ativo biológico: seu valor muda a cada dia com o peso e o preço. A norma IAS 41 (CPC 29) pede avaliá-lo a preço de mercado menos os custos de venda.
+F442.0h	How Rumentis values it	Como o Rumentis o avalia
+F442.0.0	Today's live weight, minus shrink, times your sale price.	Peso vivo de hoje, menos a quebra, vezes seu preço de venda.
+F442.0.1	That way your balance sheet shows what your feedlot is really worth, not just what you paid.	Assim seu balanço mostra quanto vale de verdade seu confinamento, não só o que você pagou.
+F442.1h	Why it matters	Por que importa
+F442.1.0	A bank looks at your balance sheet to lend to you: properly valued cattle show your real capacity.	Um banco olha seu balanço para emprestar: o gado bem avaliado mostra sua capacidade real.
+F442.1.1	Separating what the animal earned (weight) from what the market earned (price) tells you whether you're a good feeder or got lucky.	Separar o que o animal ganhou (peso) do que o mercado ganhou (preço) diz se você é um bom confinador ou teve sorte.
+F443.t	Cold stress	Estresse por frio
+F443.r	In temperate or high-altitude areas, cold with wind, rain and mud makes cattle spend more energy keeping warm and gain less.	Em regiões temperadas ou de altitude, o frio com vento, chuva e barro faz o gado gastar mais energia para se aquecer e ganhar menos.
+F443.0h	Signs	Sinais
+F443.0.0	Raised hair, huddling, shivering.	Pelo arrepiado, se amontoam, tremem.
+F443.0.1	They eat more but gain less.	Comem mais, mas ganham menos.
+F443.1h	What to do	O que fazer
+F443.1.0	Windbreak and dry bedding: a wet animal feels cold at much higher temperatures.	Abrigo do vento e cama seca: um animal molhado sente frio a temperaturas muito mais altas.
+F443.1.1	Raise the ration's energy, about 1 % for each degree below its comfort zone.	Suba a energia da ração, cerca de 1 % por grau abaixo da zona de conforto.
+F443.1.2	Unfrozen water and mud-free pens.	Água sem congelar e currais sem barro.
+F444.t	Pinkeye (keratoconjunctivitis)	Ceratoconjuntivite (olho rosado)
+F444.r	An eye infection causing tearing, a closed eye, a white spot and sometimes blindness. It's contagious and lowers gain.	Infecção do olho que causa lacrimejamento, olho fechado, mancha branca e às vezes cegueira. É contagiosa e baixa o ganho.
+F444.0h	Causes	Causas
+F444.0.0	A bacterium (Moraxella) carried by flies.	Uma bactéria (Moraxella) levada pelas moscas.
+F444.0.1	Dust, tall grass, strong sun and lack of shade favor it.	Poeira, pasto alto, sol forte e falta de sombra a favorecem.
+F444.0.2	White-faced breeds (Hereford) are more susceptible.	As raças de cara branca (Hereford) são mais sensíveis.
+F444.1h	What to do	O que fazer
+F444.1.0	Separate the sick ones and treat early with your vet.	Separe os doentes e trate cedo com seu veterinário.
+F444.1.1	Eye patches protect from sun and flies.	Tampões no olho protegem do sol e das moscas.
+F444.1.2	Fly control and shade to prevent it.	Controle de moscas e sombra para prevenir.
+F445.t	High-marbling breeds	Raças de alto marmoreio
+F445.r	Wagyu and Angus have fat within the muscle (marbling) that gives juicy, expensive meat. They only pay if you have a buyer who rewards that quality.	Wagyu e Angus têm gordura dentro do músculo (marmoreio) que dá carne suculenta e cara. Só compensam se você tiver um comprador que premie essa qualidade.
+F445.0h	What to know	O que saber
+F445.0.0	Wagyu needs long feeding periods (300 days or more) and special diets.	O Wagyu precisa de confinamentos longos (300 dias ou mais) e dietas especiais.
+F445.0.1	In the tropics they suffer from heat: they're used in crosses with zebu or criollo cattle.	No trópico sofrem com o calor: usam-se em cruzamento com zebu ou crioulos.
+F445.0.2	Without a market that pays for quality, they cost more than they return.	Sem um mercado que pague por qualidade, custam mais do que deixam.
+F446.t	Rains and feeding seasons by region	Chuvas e épocas do confinamento por região
+F446.r	Knowing when it rains and when it's dry in your area tells you when to buy, when to sell and when to expect health problems.	Saber quando chove e quando é seco na sua região diz quando comprar, quando vender e quando esperar problemas de saúde.
+F446.0h	Central America and the Caribbean	América Central e Caribe
+F446.0.0	Rains from May to October or November, with the mid-summer drought (canícula) in July and August; dry from November to April.	Chuvas de maio a outubro ou novembro, com a canícula (veranico) em julho e agosto; seca de novembro a abril.
+F446.0.1	Feeder cattle are usually cheapest at the end of the dry season; finished cattle most expensive at the start of the rains.	O gado magro costuma estar mais barato no fim da seca; o gordo, mais caro no início das chuvas.
+F446.1h	Tropical South America	América do Sul tropical
+F446.1.0	In central Brazil and the Chaco, rains from October to April.	No Brasil central e no Chaco, chuvas de outubro a abril.
+F446.1.1	In Colombia and Venezuela, two rainy seasons a year in many areas.	Na Colômbia e na Venezuela, duas estações chuvosas por ano em muitas regiões.
+F446.2h	Temperate areas	Regiões temperadas
+F446.2.0	Four seasons: winter lowers gain in open pens and autumn brings the respiratory complex.	Quatro estações: o inverno baixa o ganho em currais abertos e o outono traz o complexo respiratório.
+F447.t	Daily animal checks	Revisão diária dos animais
+F447.r	Walking the pens with a trained eye, morning and afternoon, is the cheapest medicine in feeding: it finds the sick animal before it gets complicated.	Percorrer os currais com olho treinado, de manhã e à tarde, é o remédio mais barato do confinamento: encontra o doente antes que se complique.
+F447.0h	When and how	Quando e como
+F447.0.0	Check twice a day: early before feeding and in the afternoon after the last feeding.	Revise duas vezes ao dia: cedo antes de servir e à tarde depois da última entrega.
+F447.0.1	Enter the pen slowly, without dogs or shouting, and let the animals get up on their own.	Entre no curral devagar, sem cães nem gritos, e deixe os animais se levantarem sozinhos.
+F447.0.2	First look at the whole group from a distance, then animal by animal.	Olhe primeiro de longe o grupo inteiro e depois animal por animal.
+F447.0.3	Spend at least 10 to 15 minutes per pen during the first three weeks after arrival.	Dedique pelo menos 10 a 15 minutos por curral nas primeiras três semanas depois da chegada.
+F447.1h	Signs of a healthy animal	Sinais de um animal sadio
+F447.1.0	It comes to the bunk when you feed and eats eagerly.	Aproxima-se do cocho quando você serve e come com vontade.
+F447.1.1	It ruminates lying down and calm much of the day.	Rumina deitado e tranquilo boa parte do dia.
+F447.1.2	Ears up, bright eyes and a moist, clean nose.	Orelhas levantadas, olhos brilhantes e focinho úmido e limpo.
+F447.1.3	Pat-shaped manure, neither too hard nor watery.	Esterco em forma de torta, nem muito duro nem aguado.
+F447.1.4	Breathes calmly, without heaving flanks or open-mouth breathing.	Respira tranquilo, sem mexer muito os flancos nem abrir a boca.
+F447.1.5	Even, shiny coat, with no raised patches.	Pelo uniforme e brilhante, sem áreas arrepiadas.
+F447.2h	Warning signs	Sinais de alarme
+F447.2.0	It lags behind the group or doesn't get up when you enter the pen.	Fica para trás do grupo ou não se levanta ao entrar no curral.
+F447.2.1	Droopy ears, low head, sunken eyes or tearing.	Orelhas caídas, cabeça baixa, olhos fundos ou lacrimejamento.
+F447.2.2	Thick nasal discharge, cough, fast or open-mouth breathing.	Muco espesso, tosse, respiração rápida ou com a boca aberta.
+F447.2.3	Sunken left flank (not eating) or very bloated.	Flanco esquerdo fundo (não está comendo) ou muito inchado.
+F447.2.4	Diarrhea, bloody manure or very dry manure.	Diarreia, fezes com sangue ou esterco muito seco.
+F447.2.5	Lameness, swellings, wounds or maggots.	Mancadeira, inchaços, feridas ou bicheira.
+F447.2.6	It licks or kicks at its belly, grinds its teeth or moves away from the group.	Lambe ou chuta a barriga, range os dentes ou se afasta do grupo.
+F447.3h	DART method for respiratory disease	Método DART para doença respiratória
+F447.3.0	D for depressed: low head, droopy ears, not alert.	D de deprimido: cabeça baixa, orelhas caídas, pouco alerta.
+F447.3.1	A for appetite: doesn't come to the bunk or eats little.	A de apetite: não se aproxima do cocho ou come pouco.
+F447.3.2	R for respiration: fast, labored or noisy.	R de respiração: rápida, com esforço ou com ruído.
+F447.3.3	T for temperature: over 39.5 °C on the thermometer.	T de temperatura: mais de 39,5 °C no termômetro.
+F447.3.4	An animal with two or more of these signs should be pulled for a check that same day.	Um animal com dois ou mais desses sinais deve ser separado para revisão no mesmo dia.
+F447.4h	What to do when you find one	O que fazer ao encontrar um
+F447.4.0	Calmly move it to the sick pen with water, shade and hay.	Leve-o com calma ao curral de doentes com água, sombra e feno.
+F447.4.1	Take its temperature before treating; record it.	Meça a temperatura antes de tratar; anote.
+F447.4.2	Call or consult the vet and follow the full treatment.	Ligue ou consulte o veterinário e siga o tratamento completo.
+F447.4.3	Record in the app the treatment, product and withdrawal days.	Anote no app o tratamento, o produto e os dias de carência.
+F447.4.4	Check it again every day until it eats and has a normal temperature.	Revise-o de novo todo dia até que coma e tenha temperatura normal.
+F447.5h	Common mistakes	Erros comuns
+F447.5.0	Checking only at feeding time: the sick one blends into the group and isn't seen.	Revisar só ao servir a comida: o doente se mistura ao grupo e não é visto.
+F447.5.1	Waiting until the animal stops eating completely to act.	Esperar que o animal pare de comer de vez para agir.
+F447.5.2	Treating without taking the temperature or recording anything.	Tratar sem medir a temperatura nem anotar nada.
+F447.5.3	Not rechecking the treated animal.	Não voltar a revisar o animal tratado.

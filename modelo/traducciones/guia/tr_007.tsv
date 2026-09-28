@@ -1,0 +1,214 @@
+F126.t	Thermal comfort zone	Zona de conforto térmico
+F126.r	Each animal has a temperature range in which it spends no energy cooling down or warming up. In the tropics the problem is almost always heat.	Cada animal tem uma faixa de temperatura em que não gasta energia para se refrescar nem se aquecer. No trópico o problema quase sempre é o calor.
+F126.0h	The limits	Os limites
+F126.0.0	European breeds start to suffer heat above about 25 °C with high humidity.	As raças europeias começam a sofrer com o calor acima de uns 25 °C com umidade alta.
+F126.0.1	Zebu cattle tolerate up to about 32 to 35 °C before cutting intake much.	O zebu aguenta até uns 32 a 35 °C antes de baixar muito o consumo.
+F126.0.2	Humidity makes everything worse: the animal can't evaporate its sweat.	A umidade piora tudo: o animal não consegue evaporar o suor.
+F126.1h	How it loses heat	Como perde calor
+F126.1.0	Sweating: zebu cattle have more and larger sweat glands.	Suando: o zebu tem mais glândulas de suor e maiores.
+F126.1.1	Panting: it breathes fast to get rid of heat.	Ofegando: respira rápido para eliminar calor.
+F126.1.2	Through the skin: more loose skin (dewlap, navel) gives more surface.	Pela pele: mais pele solta (barbela, umbigo) dá mais superfície.
+F126.1.3	Seeking shade, water and wind.	Buscando sombra, água e vento.
+F126.2h	Normal temperature	Temperatura normal
+F126.2.0	Body temperature: 38.0 to 39.3 °C.	Temperatura do corpo: 38,0 a 39,3 °C.
+F126.2.1	Breathing at rest: 20 to 40 per minute.	Respiração em repouso: 20 a 40 por minuto.
+F126.2.2	With more than 80 breaths per minute and an open mouth, the animal is in trouble.	Com mais de 80 respirações por minuto e boca aberta, o animal está com problemas.
+F126.3h	In your feedlot	No seu confinamento
+F126.3.0	Each degree above the limit lowers intake and gain.	Cada grau acima do limite baixa o consumo e o ganho.
+F126.3.1	The heaviest feed is best given early or at dusk.	A comida mais forte convém dar cedo ou ao entardecer.
+F126.3.2	The temperature-humidity index (THI) tells you the day's risk: Rumi calculates it with your area's weather.	O índice de temperatura e umidade (ITU) diz o risco do dia: o Rumi o calcula com o clima da sua região.
+F127.t	Zebu adaptation to the tropics	Adaptação do zebu ao trópico
+F127.r	Zebu cattle (Bos indicus: Brahman, Nelore, Gyr, Guzerat) come from India and are built for heat, ticks and poor pastures. That's why they are the backbone of beef cattle in the tropics.	O zebu (Bos indicus: Brahman, Nelore, Gir, Guzerá) vem da Índia e é feito para o calor, os carrapatos e os pastos pobres. Por isso é a base do gado de corte no trópico.
+F127.0h	Against heat	Contra o calor
+F127.0.0	More and larger sweat glands.	Mais glândulas de suor e maiores.
+F127.0.1	Short, shiny hair that reflects the sun; dark skin that protects from the rays.	Pelo curto e brilhante que reflete o sol; pele escura que protege dos raios.
+F127.0.2	Loose skin, dewlap and hump: more surface to shed heat.	Pele solta, barbela e cupim: mais superfície para eliminar calor.
+F127.0.3	It produces less internal heat because of its slower metabolism.	Produz menos calor interno pelo metabolismo mais lento.
+F127.1h	Against pests and poor pastures	Contra pragas e pastos pobres
+F127.1.0	More resistant to ticks: its skin twitches and it licks them off.	Mais resistente a carrapatos: sua pele se mexe e ele os lambe.
+F127.1.1	It recycles urea better: it handles the dry season better.	Recicla melhor a ureia: aguenta melhor a seca.
+F127.1.2	It walks more and forages in difficult paddocks.	Caminha mais e busca comida em pastos difíceis.
+F127.2h	Its disadvantages	Suas desvantagens
+F127.2.0	It grows somewhat slower than European breeds when feed is very good.	Cresce um pouco mais devagar que as raças europeias quando a comida é muito boa.
+F127.2.1	Somewhat less tender meat because it has more calpastatin, a protein that slows tenderization.	Carne um pouco menos macia por ter mais calpastatina, uma proteína que freia o amaciamento.
+F127.2.2	More nervous temperament; it needs calm handling.	Temperamento mais nervoso; precisa de manejo tranquilo.
+F127.3h	In your feedlot	No seu confinamento
+F127.3.0	Zebu by European crosses (F1) combine hardiness and growth: they have hybrid vigor.	Os cruzamentos zebu com europeu (F1) juntam rusticidade e crescimento: têm vigor híbrido.
+F127.3.1	In pens with shade and good feed, crossbreds perform very well.	No confinamento com sombra e boa comida, os cruzados rendem muito bem.
+F128.t	Water intake and regulation	Consumo de água e regulação
+F128.r	Water is the most important nutrient. A bovine can go weeks without eating but only a few days without water. Intake rises sharply with heat and with dry or salty rations.	A água é o nutriente mais importante. Um bovino aguenta semanas sem comer, mas só alguns dias sem água. O consumo sobe muito com o calor e com rações secas ou salgadas.
+F128.0h	How much it drinks	Quanto bebe
+F128.0.0	About 3 to 4 liters per kilo of dry matter eaten in a mild climate.	Uns 3 a 4 litros por quilo de matéria seca que come em clima temperado.
+F128.0.1	In the heat it can reach 8 to 10 % of its weight: a 400 kg steer may drink 50 to 70 liters a day.	Com calor pode chegar a 8 a 10 % do peso: um novilho de 400 kg pode beber 50 a 70 litros por dia.
+F128.0.2	Rations with a lot of salt, protein or dry forage increase thirst.	Rações com muito sal, proteína ou forragem seca aumentam a sede.
+F128.1h	What water does	O que a água faz
+F128.1.0	It cools the body through sweat and panting.	Refresca o corpo com o suor e a respiração ofegante.
+F128.1.1	It carries nutrients and removes waste through urine.	Leva nutrientes e tira resíduos pela urina.
+F128.1.2	It keeps the rumen moist so the microbes can work.	Mantém o rúmen úmido para os micróbios trabalharem.
+F128.2h	Signs of shortage	Sinais de falta
+F128.2.0	Sunken eyes, skin that is slow to return when pinched, dry feces.	Olhos fundos, pele que demora a voltar ao ser beliscada, fezes secas.
+F128.2.1	Lower feed intake: no water, no intake.	Queda do consumo de comida: sem água não há consumo.
+F128.2.2	Fighting at the water trough.	Brigas no bebedouro.
+F128.3h	In your feedlot	No seu confinamento
+F128.3.0	Clean, cool water with free access.	Água limpa, fresca e à vontade.
+F128.3.1	Troughs with room for 10 % of the lot at a time.	Bebedouros com espaço para 10 % do lote ao mesmo tempo.
+F128.3.2	Less water = less feed = less gain, even if the ration is good.	Menos água = menos comida = menos ganho, mesmo que a ração seja boa.
+F129.t	The bovine immune system	Sistema imune do bovino
+F129.r	Cattle defenses have two lines: innate immunity, which reacts quickly to everything, and acquired immunity, which learns to recognize each microbe and remembers it. Vaccines train the second.	As defesas do bovino têm duas linhas: a imunidade inata, que reage rápido a tudo, e a adquirida, que aprende a reconhecer cada micróbio e se lembra dele. As vacinas treinam a segunda.
+F129.0h	First line	Primeira linha
+F129.0.0	Skin, nasal mucus, respiratory hairs and stomach acid.	Pele, muco do nariz, pelos do sistema respiratório e ácido do estômago.
+F129.0.1	Cells that eat microbes.	Células que comem os micróbios.
+F129.0.2	Fever: the body raises its temperature to stop microbes.	Febre: o corpo sobe a temperatura para frear os micróbios.
+F129.1h	Second line	Segunda linha
+F129.1.0	Antibodies: proteins that stick to a specific microbe.	Anticorpos: proteínas que grudam em um micróbio específico.
+F129.1.1	Memory cells: they remember the microbe for months or years.	Células de memória: lembram do micróbio por meses ou anos.
+F129.1.2	It takes 10 to 21 days to build up the first time.	Leva de 10 a 21 dias para se armar na primeira vez.
+F129.2h	What weakens it	O que a enfraquece
+F129.2.0	Transport stress, weaning, mixing lots and heat: cortisol lowers defenses.	Estresse de transporte, desmame, mistura de lotes e calor: o cortisol baixa as defesas.
+F129.2.1	Lack of energy, protein, zinc, copper, selenium and vitamins A and E.	Falta de energia, proteína, zinco, cobre, selênio e vitaminas A e E.
+F129.2.2	Parasites and previous diseases such as bovine viral diarrhea.	Parasitas e doenças anteriores como a diarreia viral bovina.
+F129.3h	In your feedlot	No seu confinamento
+F129.3.0	That's why the first 45 days after purchase have the most disease.	Por isso os primeiros 45 dias depois da compra são os de mais doença.
+F129.3.1	Vaccinate when the animal is calm and well fed, and give the second dose.	Vacine quando o animal estiver tranquilo e bem alimentado, e aplique a segunda dose.
+F129.3.2	Good handling at arrival is worth more than lots of medicine.	Um bom manejo na chegada vale mais que muitos remédios.
+F130.t	How vaccines work	Como funcionam as vacinas
+F130.r	A vaccine shows the body a dead or weakened microbe, or part of one, so it learns to defend itself without getting sick. Protection is not immediate.	Uma vacina mostra ao corpo um micróbio morto, enfraquecido ou uma parte dele, para que aprenda a se defender sem adoecer. A proteção não é imediata.
+F130.0h	Types	Tipos
+F130.0.0	Modified live: weakened microbes; they protect quickly and strongly, sometimes with a single dose.	Vivas modificadas: micróbios enfraquecidos; protegem rápido e forte, às vezes com uma só dose.
+F130.0.1	Inactivated or killed: safer but almost always need two doses.	Inativadas ou mortas: mais seguras, mas quase sempre precisam de duas doses.
+F130.0.2	Toxoids: against toxins, such as those of clostridia and tetanus.	Toxoides: contra as toxinas, como as de clostrídios e tétano.
+F130.1h	First dose and booster	Primeira dose e reforço
+F130.1.0	The first dose primes the body.	A primeira dose prepara o corpo.
+F130.1.1	The booster, 2 to 4 weeks later, triggers strong protection.	O reforço, 2 a 4 semanas depois, dispara a proteção forte.
+F130.1.2	Without a booster, many killed vaccines protect very little.	Sem reforço, muitas vacinas mortas protegem muito pouco.
+F130.2h	Taking care of the vaccine	Cuidar da vacina
+F130.2.0	Store between 2 and 8 °C, never frozen or in the sun.	Guardar entre 2 e 8 °C, nunca congelada nem ao sol.
+F130.2.1	Live vaccines are used within the first hour after mixing.	As vacinas vivas se usam na primeira hora depois de misturadas.
+F130.2.2	Don't clean the needle with alcohol if the vaccine is live.	Não limpar a agulha com álcool se a vacina for viva.
+F130.3h	In your feedlot	No seu confinamento
+F130.3.0	Vaccinating an animal that is already sick or very stressed protects little.	Vacinar um animal já doente ou muito estressado protege pouco.
+F130.3.1	Record the vaccine's date and batch in the app so you know when to boost.	Anote a data e o lote da vacina no app para saber quando reforçar.
+F131.t	Fever: what it is and what to do	Febre: o que é e o que fazer
+F131.r	Fever is body temperature above normal. In cattle, more than 39.5 °C at rest and in the shade is a sign of infection or heat stroke.	A febre é a temperatura do corpo acima do normal. No bovino, mais de 39,5 °C em repouso e à sombra é sinal de infecção ou de golpe de calor.
+F131.0h	How to measure it	Como medir
+F131.0.0	Rectal thermometer, for at least one minute.	Termômetro no reto, por pelo menos um minuto.
+F131.0.1	Measure in the morning with the animal calm: heat and running raise the temperature.	Meça de manhã e com o animal tranquilo: o calor e a correria sobem a temperatura.
+F131.0.2	Compare with two or three healthy animals from the same lot.	Compare com dois ou três animais sadios do mesmo lote.
+F131.1h	What it means	O que significa
+F131.1.0	39.5 to 40 °C: mild fever, keep watch.	39,5 a 40 °C: febre leve, vigie.
+F131.1.1	Above 40 °C: fever, almost always infection (pneumonia, anaplasma, babesia).	Mais de 40 °C: febre, quase sempre infecção (pneumonia, anaplasma, babesia).
+F131.1.2	Above 41 °C: serious, or heat stroke.	Mais de 41 °C: grave, ou golpe de calor.
+F131.2h	What to do	O que fazer
+F131.2.0	Separate the animal in the shade with water and feed.	Separe o animal na sombra com água e comida.
+F131.2.1	Call the vet to find the cause before giving antibiotics.	Chame o veterinário para saber a causa antes de dar antibióticos.
+F131.2.2	Record the temperature and treatment in the app.	Anote a temperatura e o tratamento no app.
+F132.t	Natural cattle behavior	Comportamento natural do gado
+F132.r	Cattle are prey and herd animals. Understanding how they see, hear and react lets you handle them with fewer blows, less stress and more gain.	O bovino é um animal de presa e de rebanho. Entender como vê, ouve e reage permite manejá-lo com menos pancadas, menos estresse e mais ganho.
+F132.0h	How they see	Como vê
+F132.0.0	They see almost all around, except right behind them.	Vê quase tudo ao redor, menos bem atrás dele.
+F132.0.1	They judge depth poorly: a shadow or puddle looks like a hole.	Enxerga mal a profundidade: uma sombra ou uma poça parecem um buraco.
+F132.0.2	They are startled by strong contrasts, moving objects and hanging clothes.	Assusta-se com contrastes fortes, objetos que se mexem e roupas penduradas.
+F132.1h	How they hear	Como ouve
+F132.1.0	They hear high-pitched sounds better than people.	Ouve melhor que as pessoas os sons agudos.
+F132.1.1	Shouting, whistling and metal banging stress them.	Gritos, assobios e batidas de metal o estressam.
+F132.1.2	Speak quietly and avoid loud noises in the chute.	Fale baixo e evite ruídos fortes no tronco.
+F132.2h	The herd	O rebanho
+F132.2.0	They feel safe in a group; an animal alone becomes nervous and dangerous.	Sente-se seguro em grupo; um animal sozinho fica nervoso e perigoso.
+F132.2.1	There is a hierarchy: dominant animals eat first.	Tem hierarquia: os dominantes comem primeiro.
+F132.2.2	Mixing lots causes fighting for several days.	Misturar lotes causa brigas por vários dias.
+F132.3h	Flight zone and point of balance	Zona de fuga e ponto de equilíbrio
+F132.3.0	The flight zone is the distance at which the animal moves away from you.	A zona de fuga é a distância em que o animal se afasta de você.
+F132.3.1	The point of balance is at the shoulder: if you pass behind it, the animal moves forward; in front of it, it backs up.	O ponto de equilíbrio fica na altura da paleta: se você passa por trás, ele avança; pela frente, recua.
+F132.3.2	Work at the edge of the flight zone, without barging in.	Trabalhe na borda da zona de fuga, sem entrar de repente.
+F132.4h	In your feedlot	No seu confinamento
+F132.4.0	Calmly handled animals eat more and gain more.	Animais manejados com calma comem mais e ganham mais.
+F132.4.1	Make sure animals low in the hierarchy can reach the bunk.	Cuide para que os animais de baixo na hierarquia alcancem o cocho.
+F133.t	Temperament and gain	Temperamento e ganho
+F133.r	Nervous animals gain less weight, get sick more and give tougher meat. Temperament is partly inherited and is also shaped by good handling.	Os animais nervosos ganham menos peso, adoecem mais e dão carne mais dura. O temperamento é em parte herdado e também se educa com bom manejo.
+F133.0h	How to measure it	Como medi-lo
+F133.0.0	Exit speed from the chute: those that bolt out are more nervous.	Velocidade de saída do tronco: os que saem correndo são mais nervosos.
+F133.0.1	Chute score: from 1 (calm) to 5 (very agitated).	Nota no tronco: de 1 (tranquilo) a 5 (muito agitado).
+F133.0.2	The distance at which it flees when you approach.	A distância em que foge quando você se aproxima.
+F133.1h	What it causes	O que causa
+F133.1.0	More cortisol in the blood: lower defenses and more energy spent.	Mais cortisol no sangue: menos defesas e mais gasto de energia.
+F133.1.1	Less intake: they spend more time on alert and less eating.	Menos consumo: passam mais tempo alerta e menos comendo.
+F133.1.2	Tougher meat and more cases of dark meat.	Carne mais dura e mais casos de carne escura.
+F133.2h	What to do	O que fazer
+F133.2.0	Buy calm animals when you can.	Compre animais tranquilos quando puder.
+F133.2.1	Get the lot used to your presence by walking calmly among them.	Acostume o lote à sua presença caminhando calmamente entre eles.
+F133.2.2	If an animal is very wild and puts people or the lot at risk, separate or sell it.	Se um animal é muito bravo e põe em risco as pessoas ou o lote, separe-o ou venda-o.
+F134.t	Sleep and rest	Sono e descanso
+F134.r	A bovine spends 10 to 14 hours a day lying down. Lying down it ruminates better, rests its legs and saves energy. A pen that doesn't allow lying down lowers gain.	Um bovino passa deitado de 10 a 14 horas por dia. Deitado rumina melhor, descansa as patas e economiza energia. Um curral que não permite deitar baixa o ganho.
+F134.0h	How much it rests	Quanto descansa
+F134.0.0	It truly sleeps only a few minutes at a time; the rest is resting and ruminating.	Dorme de verdade só alguns minutos por vez; o resto é descanso e ruminação.
+F134.0.1	It ruminates best lying on its chest.	Rumina melhor deitado sobre o peito.
+F134.0.2	If the floor is wet, muddy or very hard, it lies down less.	Se o piso está molhado, com lama ou muito duro, deita menos.
+F134.1h	What it needs	O que precisa
+F134.1.0	A dry, firm floor with drainage.	Piso seco e firme, com drenagem.
+F134.1.1	Room to lie down without stepping on each other.	Espaço para deitar sem se pisarem.
+F134.1.2	Shade during the hot hours.	Sombra nas horas de calor.
+F134.2h	In your feedlot	No seu confinamento
+F134.2.0	If many animals are standing in mud, the pen needs fixing.	Se muitos animais estão de pé na lama, o curral precisa de conserto.
+F134.2.1	Allow at least 10 to 15 m² per animal in a dirt pen; more in the rainy season.	Calcule pelo menos 10 a 15 m² por animal em curral de terra; mais na época de chuvas.
+F135.t	Blood and circulation	Sangue e circulação
+F135.r	Blood carries oxygen, nutrients, hormones and defenses throughout the body. A bovine has about 8 liters of blood per 100 kg of weight.	O sangue leva oxigênio, nutrientes, hormônios e defesas a todo o corpo. Um bovino tem uns 8 litros de sangue a cada 100 kg de peso.
+F135.0h	Components	Componentes
+F135.0.0	Red blood cells: carry oxygen; anaplasma and babesia destroy them.	Glóbulos vermelhos: levam oxigênio; o anaplasma e a babésia os destroem.
+F135.0.1	White blood cells: the defenses.	Glóbulos brancos: são as defesas.
+F135.0.2	Platelets: help clotting.	Plaquetas: ajudam a coagular.
+F135.0.3	Plasma: the fluid that carries nutrients and waste.	Plasma: o líquido que leva nutrientes e resíduos.
+F135.1h	Signs of anemia	Sinais de anemia
+F135.1.0	Pale or yellow mucous membranes of the eye or vulva.	Mucosas do olho ou da vulva pálidas ou amarelas.
+F135.1.1	Tiredness, rapid breathing and weakness.	Cansaço, respiração rápida e fraqueza.
+F135.1.2	Common causes: anaplasmosis, babesiosis, blood-sucking parasites and liver fluke.	Causas comuns: anaplasmose, babesiose, parasitas que chupam sangue e fasciola.
+F135.2h	Normal pulse	Pulso normal
+F135.2.0	60 to 80 beats per minute at rest.	De 60 a 80 batimentos por minuto em repouso.
+F135.2.1	It is taken under the tail, on the coccygeal artery.	Mede-se embaixo da cauda, na artéria coccígea.
+F135.2.2	It rises with fever, pain, heat and excitement.	Sobe com febre, dor, calor e excitação.
+F135.3h	In your feedlot	No seu confinamento
+F135.3.0	Check the color of the mucous membranes when an animal is dull.	Revise a cor das mucosas quando um animal estiver abatido.
+F135.3.1	A blood sample sent to the lab confirms anemia and its cause.	Uma amostra de sangue ao laboratório confirma a anemia e sua causa.
+F136.t	Breathing and lungs	Respiração e pulmões
+F136.r	Cattle lungs are small for their size and divided into lobes. That's why pneumonia hits them hard and leaves damage that lowers gain.	Os pulmões do bovino são pequenos para seu tamanho e divididos em lobos. Por isso as pneumonias o afetam muito e deixam sequelas que baixam o ganho.
+F136.0h	Particular features	Particularidades
+F136.0.0	They have little reserve capacity: any damage shows.	Têm pouca capacidade de reserva: qualquer dano se nota.
+F136.0.1	The lobes don't communicate well with each other: infection gets trapped.	Os lobos não se comunicam bem entre si: a infecção fica presa.
+F136.0.2	Nasal hairs and mucus trap dust and microbes, but stress weakens them.	Os pelos e o muco do nariz prendem poeira e micróbios, mas o estresse os enfraquece.
+F136.1h	What damages them	O que os danifica
+F136.1.0	Pen dust in the dry season.	Poeira do curral na época seca.
+F136.1.1	Ammonia from dirty, enclosed pens.	Amônia de currais sujos e fechados.
+F136.1.2	Viruses that open the door to bacteria, as in the respiratory complex.	Vírus que abrem a porta para bactérias, como no complexo respiratório.
+F136.2h	In your feedlot	No seu confinamento
+F136.2.0	Wet the pen or put up dust curtains in the dry season.	Molhe o curral ou coloque cortinas contra a poeira no verão.
+F136.2.1	Ventilation in roofed barns.	Ventilação em galpões cobertos.
+F136.2.2	An animal that had severe pneumonia may gain 50 to 100 grams less per day for the rest of the feeding period.	Um animal que teve pneumonia grave pode ganhar 50 a 100 gramas menos por dia pelo resto da engorda.
+F137.t	Kidneys and urine	Rins e urina
+F137.r	The kidneys filter the blood, remove waste such as urea and control the body's water and salt. Urine tells a lot about the animal's health.	Os rins filtram o sangue, retiram resíduos como a ureia e controlam a água e o sal do corpo. A urina conta muito da saúde do animal.
+F137.0h	What they do	O que fazem
+F137.0.0	They excrete urea, excess minerals and drugs.	Eliminam ureia, excesso de minerais e medicamentos.
+F137.0.1	They conserve water when the animal is thirsty.	Guardam água quando o animal tem sede.
+F137.0.2	They help keep the body's acid balance.	Ajudam a manter o equilíbrio ácido do corpo.
+F137.1h	Signs in the urine	Sinais na urina
+F137.1.0	Red or brown urine: possible babesia, leptospira or a toxic plant.	Urina vermelha ou marrom: possível babésia, leptospira ou planta tóxica.
+F137.1.1	Urine in drops or with straining: possible urinary stone in males.	Urina em gotas ou com esforço: possível cálculo urinário em machos.
+F137.1.2	Very dark, scant urine: lack of water.	Urina muito escura e pouca: falta de água.
+F137.2h	In your feedlot	No seu confinamento
+F137.2.0	Urinary stones: watch the calcium to phosphorus ratio and provide enough water and salt.	Cálculos urinários: vigie a relação cálcio e fósforo e dê água e sal suficientes.
+F137.2.1	Young castrated males have a narrower urethra and higher risk.	Machos castrados jovens têm a uretra mais estreita e mais risco.
+F138.t	Skin and hair	Pele e pelo
+F138.r	Skin is the first barrier against sun, insects and microbes. In the tropics, the type of hair and skin decides how much heat an animal can take.	A pele é a primeira barreira contra o sol, os insetos e os micróbios. No trópico, o tipo de pelo e de pele decide quanto calor um animal aguenta.
+F138.0h	The hair	O pelo
+F138.0.0	Short, smooth, shiny hair reflects the sun and lets the animal sweat.	Pelo curto, liso e brilhante reflete o sol e deixa suar.
+F138.0.1	Long, woolly hair holds heat: bad in the tropics.	Pelo longo e lanoso guarda calor: ruim no trópico.
+F138.0.2	Light colors absorb less heat; dark skin protects from the sun.	Cores claras absorvem menos calor; pele escura protege do sol.
+F138.1h	The slick hair gene	Gene do pelo curto (slick)
+F138.1.0	Some criollo breeds and the Senepol carry the 'slick' gene for very short hair.	Algumas raças crioulas e o Senepol têm o gene 'slick' de pelo muito curto.
+F138.1.1	Animals with this gene tolerate heat better.	Os animais com esse gene aguentam melhor o calor.
+F138.1.2	It is being used in crossbreeding for the tropics.	Está sendo usado em cruzamentos para o trópico.
+F138.2h	Common problems	Problemas comuns
+F138.2.0	Ticks, bot flies, flies and screwworm.	Carrapatos, berne, moscas e bicheira.
+F138.2.1	Fungi, mange, dermatophilosis and warts.	Fungos, sarna, dermatofilose e verrugas.
+F138.2.2	Photosensitization from plants or grasses on white skin.	Fotossensibilização por plantas ou pastos em pele branca.
+F138.3h	In your feedlot	No seu confinamento
+F138.3.0	A dull, rough coat usually means parasites, mineral deficiency or disease.	Um pelo opaco e arrepiado costuma indicar parasitas, deficiência de minerais ou doença.
+F138.3.1	Shedding the winter coat on time is a sign of good nutrition.	Trocar o pelo de inverno a tempo é sinal de boa nutrição.

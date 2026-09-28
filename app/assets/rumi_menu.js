@@ -6,6 +6,8 @@
 'use strict';
 const GUIA=window.RUMI_GUIA||[],FICHAS=window.RUMI_FICHAS||[];
 const FIDX=new Map(FICHAS.map((f,i)=>[f.t,i]));
+// con la guía traducida, los temas que el código nombra en español también se encuentran
+(window.RUMI_FICHAS_ES||[]).forEach((t,i)=>{if(!FIDX.has(t))FIDX.set(t,i);});
 const uPal=()=>U()==='lb'?'libras':'kilos';
 const IC2={
  hoy:'<path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/>',
@@ -42,7 +44,7 @@ function fichaNivel(i){
 }
 const opFichas=a=>{const F=fichasDe(a),C=cortosDe(a);return {l:SUB[a],ic3:a,n:F.length,sub:()=>({t:SUB[a],intro:`Estos son mis temas de <b>${SUB[a].toLowerCase()}</b>: ${F.length} temas completos${C.length?` y ${C.length} datos rápidos`:''}. Elige uno.`,
   ops:F.map(o=>({l:o.f.t,n:nPuntos(o.f),sub:()=>fichaNivel(o.i)})).concat(C.length?[{l:'Datos rápidos',ic:'libro',n:C.length,sub:()=>({t:'Datos rápidos: '+SUB[a],intro:'Datos cortos para consultar rápido.',ops:C.map(o=>({l:o.g.t,guia:o.i}))})}]:[])})};};
-const opTema=t=>FIDX.has(t)?{l:t,ic:'libro',sub:()=>fichaNivel(FIDX.get(t))}:null;
+const opTema=t=>FIDX.has(t)?{l:FICHAS[FIDX.get(t)].t,ic:'libro',sub:()=>fichaNivel(FIDX.get(t))}:null;
 
 /* ---------- utilidades ---------- */
 const q=(l,frase)=>({l,q:frase});

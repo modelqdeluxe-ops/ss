@@ -1,0 +1,263 @@
+F244.t	Receiving pen	Curral de recepção
+F244.r	A special pen for new arrivals makes it easier to watch and treat them and keeps them from infecting the rest.	Um curral especial para os recém-chegados facilita observá-los, tratá-los e evitar que contagiem o resto.
+F244.0h	What it should be like	Como deve ser
+F244.0.0	Separate from the feeding pens, near the chute.	Separado dos currais de engorda, perto do tronco.
+F244.0.1	Shade, water with good flow and a bunk with hay.	Sombra, água com boa vazão e cocho com feno.
+F244.0.2	Dry floor without mud.	Piso seco e sem lama.
+F244.0.3	A good view to watch the animals.	Boa visão para observar os animais.
+F244.1h	Use	Uso
+F244.1.0	Animals spend the first 2 to 3 weeks here.	Os animais passam aqui as primeiras 2 a 3 semanas.
+F244.1.1	Adaptation to concentrate is done here.	Aqui se faz a adaptação ao concentrado.
+F244.1.2	Clean and disinfect it between lots.	Limpe e desinfete entre lotes.
+F245.t	Footbath	Pedilúvio
+F245.r	A shallow bath at the chute entrance where animals walk through a disinfectant solution.	Um tanque raso na entrada do tronco onde os animais passam as patas por uma solução desinfetante.
+F245.0h	What for	Para quê
+F245.0.0	Preventing and controlling hoof infections when there are many cases.	Prevenir e controlar infecções de casco quando há muitos casos.
+F245.1h	Measurements	Medidas
+F245.1.0	3 meters long so each foot goes in at least twice.	Comprimento de 3 metros para cada pata entrar pelo menos duas vezes.
+F245.1.1	Solution depth of 10 to 15 cm.	Profundidade da solução de 10 a 15 cm.
+F245.2h	Management	Manejo
+F245.2.0	A solution recommended by the vet, changed as it gets dirty.	Solução indicada pelo veterinário e trocada conforme a sujeira.
+F245.2.1	Before it, a clean-water bath to remove mud.	Antes, uma passagem com água limpa para tirar a lama.
+F246.t	Rainwater harvesting	Captação de água de chuva
+F246.r	Barn and store roofs can fill tanks and reservoirs with water for the dry season.	Os telhados de galpões e depósitos podem encher caixas e reservatórios com água para a seca.
+F246.0h	How much can be collected	Quanto se pode juntar
+F246.0.0	Each millimeter of rain on a square meter of roof gives one liter.	Cada milímetro de chuva sobre um metro quadrado de telhado dá um litro.
+F246.0.1	A 200 m² roof with 1,200 mm of rain a year can give about 200,000 liters (minus losses).	Um telhado de 200 m² com 1.200 mm de chuva por ano pode dar uns 200.000 litros (menos perdas).
+F246.1h	How	Como
+F246.1.0	Clean gutters and downspouts.	Calhas e condutores limpos.
+F246.1.1	Discard the first roof wash.	Descartar a primeira água que lava o telhado.
+F246.1.2	Covered tanks or fenced reservoirs.	Caixas tampadas ou reservatórios cercados.
+F246.2h	Use	Uso
+F246.2.0	Water troughs in the dry season.	Bebedouros na seca.
+F246.2.1	Cleaning pens.	Limpeza de currais.
+F247.t	Shade cloth	Sombra de tela
+F247.r	When there are no trees, shade cloth is the fastest and cheapest way to provide shade in the pen.	Quando não há árvores, a tela de sombra (sombrite) é a forma mais rápida e barata de dar sombra no curral.
+F247.0h	How to set it up	Como fazer
+F247.0.0	70 to 80 % shade cloth.	Tela de 70 a 80 % de sombra.
+F247.0.1	2 to 4 m² per animal.	2 a 4 m² por animal.
+F247.0.2	3.5 to 4 m high so air flows and the animals can't reach it.	Altura de 3,5 a 4 m para o ar correr e os animais não alcançarem.
+F247.0.3	North-south orientation so the shade moves and the floor dries.	Orientação norte-sul para a sombra se mover e o piso secar.
+F247.1h	Care	Cuidados
+F247.1.0	Firm posts and tight cables: wind tears it.	Postes firmes e cabos esticados: o vento a rasga.
+F247.1.1	Check it after storms.	Revisar depois de tempestades.
+F248.t	Sprinklers and cooling	Aspersores e resfriamento
+F248.r	Wetting the animals or the roof during heat waves helps lower their temperature. It must be done right to avoid mud and excess humidity.	Molhar os animais ou o telhado em ondas de calor ajuda a baixar sua temperatura. É preciso fazer bem para não criar lama nem umidade excessiva.
+F248.0h	How	Como
+F248.0.0	Large-droplet sprinklers that wet the skin, not a fine mist that raises humidity.	Aspersores de gota grande que molhem a pele, não névoa fina que sobe a umidade.
+F248.0.1	Short cycles: wet for 1 to 2 minutes every 10 to 15 minutes.	Ciclos curtos: molhar 1 a 2 minutos a cada 10 a 15 minutos.
+F248.0.2	With wind or a fan so the water evaporates.	Com vento ou ventilador para a água evaporar.
+F248.1h	Care	Cuidados
+F248.1.0	Good drainage to avoid mud.	Boa drenagem para evitar lama.
+F248.1.1	Don't wet only some animals: they will all crowd together.	Não molhar só alguns animais: todos se amontoam.
+F249.t	Solar water pumps	Bombas solares de água
+F249.r	Pumps with solar panels draw water from wells or rivers without gasoline or grid electricity. They are increasingly cheap and common on farms.	As bombas com painéis solares tiram água de poços ou rios sem gasolina nem energia da rede. São cada vez mais baratas e comuns nas fazendas.
+F249.0h	Advantages	Vantagens
+F249.0.0	No fuel cost.	Sem custo de combustível.
+F249.0.1	They pump most exactly when it is hottest and cattle drink the most.	Bombeiam mais justo quando faz mais calor e o gado bebe mais água.
+F249.0.2	Little maintenance.	Pouca manutenção.
+F249.1h	What to consider	O que considerar
+F249.1.0	A reserve tank for the night and cloudy days: at least 2 days of use.	Caixa de reserva para a noite e os dias nublados: pelo menos 2 dias de consumo.
+F249.1.1	Calculate the water you need: about 50 to 70 liters per steer per day in the heat.	Calcule a água que precisa: uns 50 a 70 litros por novilho por dia com calor.
+F249.1.2	Protect the panels against theft.	Proteja os painéis contra roubo.
+F250.t	Trench or pile silo	Silo trincheira ou de superfície
+F250.r	A trench or pile silo stores large amounts of silage at low cost. What matters is packing well and covering without letting air in.	O silo trincheira ou de superfície guarda silagem em grandes quantidades a baixo custo. O importante é compactar bem e cobrir sem deixar entrar ar.
+F250.0h	Construction	Construção
+F250.0.0	Firm ground, sloped so water runs off.	Terreno firme, com declive para a água escorrer.
+F250.0.1	Walls of earth, wood or concrete in the trench.	Paredes de terra, madeira ou concreto na trincheira.
+F250.0.2	Thick plastic to cover and weight on top (tires, sacks of soil).	Lona grossa para cobrir e peso em cima (pneus, sacos de terra).
+F250.1h	Use	Uso
+F250.1.0	A feeding face that advances at least 15 to 30 cm a day so it doesn't spoil.	Frente de corte que avance pelo menos 15 a 30 cm por dia para não estragar.
+F250.1.1	Cut evenly, without loosening the rest.	Cortar por igual, sem afrouxar o resto.
+F251.t	Buying feeder cattle	Comprar gado para engorda
+F251.r	Feeding profit starts at the purchase. A good animal at a good price is easy to feed; a poor or expensive one never recovers.	O lucro da engorda começa na compra. Um bom animal a bom preço se engorda fácil; um ruim ou caro nunca se recupera.
+F251.0h	What to look for	O que buscar
+F251.0.0	Healthy, alert animals with a good appetite.	Animais sadios, alertas, com bom apetite.
+F251.0.1	Structure: straight legs, good length, wide chest.	Estrutura: patas retas, bom comprimento, peito amplo.
+F251.0.2	Age 12 to 24 months for feedlot finishing.	Idade de 12 a 24 meses para confinamento.
+F251.0.3	Arrival weight in line with your plan (commonly 250 to 350 kg).	Peso de entrada de acordo com seu plano (comumente 250 a 350 kg).
+F251.0.4	Lots even in weight, age and type.	Lotes parelhos em peso, idade e tipo.
+F251.1h	What to avoid	O que evitar
+F251.1.0	Thin from disease, coughing, with diarrhea or lame.	Magros por doença, com tosse, diarreia ou mancos.
+F251.1.1	Hernias, damaged eyes, wounds or screwworm.	Hérnias, olhos danificados, feridas ou bicheira.
+F251.1.2	Old animals with worn teeth.	Animais velhos com dentes gastos.
+F251.1.3	Very nervous or aggressive.	Muito nervosos ou agressivos.
+F251.1.4	Animals without a movement permit or clear origin.	Animais sem guia de trânsito nem origem clara.
+F251.2h	The price	O preço
+F251.2.0	Always compare per kilo live weight, not per head.	Compare sempre por quilo vivo, não por cabeça.
+F251.2.1	Calculate beforehand in Rumi the maximum price you can pay with your costs.	Calcule antes no Rumi o preço máximo que você pode pagar com seus custos.
+F251.2.2	Consider shrink: a full animal weighs more.	Considere a quebra: o animal cheio pesa mais.
+F251.2.3	Add freight, commissions and trip losses.	Some frete, comissões e perdas de viagem.
+F251.3h	Origin	Origem
+F251.3.0	Better a few known sources than many different ones.	Melhor poucas origens conhecidas do que muitas diferentes.
+F251.3.1	Ask whether they were vaccinated, dewormed and weaned.	Pergunte se foram vacinados, vermifugados e desmamados.
+F251.3.2	Record the supplier in the lot: the app will tell you which supplier performs best.	Anote o fornecedor no lote: o app dirá qual fornecedor rende melhor.
+F251.4h	Common mistakes	Erros comuns
+F251.4.0	Buying the cheap lot without checking animal by animal.	Comprar o lote barato sem revisar animal por animal.
+F251.4.1	Paying per head without weighing.	Pagar por cabeça sem pesar.
+F251.4.2	Filling the pen with animals from five different farms.	Encher o curral com animais de cinco fazendas diferentes.
+F251.4.3	Buying without having the feed and health plan ready.	Comprar sem ter a ração e a sanidade prontas.
+F252.t	Buying at auction	Comprar em leilão ou feira
+F252.r	An auction lets you buy many animals in a day, but it mixes origins and brings more disease risk.	O leilão permite comprar muitos animais num dia, mas mistura origens e traz mais risco de doenças.
+F252.0h	Before	Antes
+F252.0.0	Decide how many animals, what weight and your maximum price per kilo.	Decida quantos animais, de que peso e seu preço máximo por quilo.
+F252.0.1	Check the schedule and the catalog if there is one.	Veja o calendário e o catálogo, se houver.
+F252.0.2	Have Rumi's calculator ready with your costs.	Leve a calculadora do Rumi pronta com seus custos.
+F252.1h	At the auction	No leilão
+F252.1.0	Arrive early and look at the lots in the pens before the sale.	Chegue cedo e olhe os lotes nos currais antes da venda.
+F252.1.1	Watch how they walk, breathe and whether they eat.	Observe como caminham, respiram e se comem.
+F252.1.2	Avoid very uneven lots or lots with sick animals.	Evite lotes muito desparelhos ou com animais doentes.
+F252.1.3	Don't get carried away by the bidding: respect your maximum price.	Não se deixe levar pelos lances: respeite seu preço máximo.
+F252.2h	Afterwards	Depois
+F252.2.0	Direct transport to your farm, without long stops.	Transporte direto à sua fazenda, sem paradas longas.
+F252.2.1	Receiving with quarantine and a full health plan.	Recepção com quarentena e plano sanitário completo.
+F252.2.2	Expect more pneumonia cases than with animals from a single farm.	Espere mais casos de pneumonia do que com animais de uma só fazenda.
+F253.t	Cattle transport	Transporte de gado
+F253.r	A badly done trip causes bruises, weight loss, disease and death. Good transport is part of feeding.	Uma viagem malfeita causa pancadas, perda de peso, doenças e mortes. Um bom transporte faz parte da engorda.
+F253.0h	Before loading	Antes de carregar
+F253.0.0	Movement permit in order from your country's animal health service (SENASA in Honduras).	Guia de trânsito em ordem, do serviço de sanidade animal do seu país (SENASA em Honduras).
+F253.0.1	A clean truck, with a non-slip floor and no protruding nails or sheet metal.	Caminhão limpo, com piso antiderrapante e sem pregos ou chapas soltas.
+F253.0.2	Rested animals with water.	Animais descansados e com água.
+F253.0.3	Short fast: no more than 12 hours without feed before the trip.	Jejum curto: não mais de 12 horas sem comida antes da viagem.
+F253.1h	Loading	Carga
+F253.1.0	Use a ramp or loading chute, calmly and without overusing electric prods.	Use rampa ou embarcadouro, com calma e sem choque elétrico demais.
+F253.1.1	Correct density: not too tight (they fall and get trampled) nor too loose (they bang around).	Densidade certa: nem muito apertados (caem e se pisam) nem muito soltos (se machucam).
+F253.1.2	Separate animals of very different sizes or with horns.	Separe animais de tamanhos muito diferentes ou com chifres.
+F253.2h	During the trip	Durante a viagem
+F253.2.0	Drive smoothly, without sudden braking or fast turns.	Dirija suave, sem freadas nem curvas rápidas.
+F253.2.1	Travel in cool hours.	Viaje nas horas frescas.
+F253.2.2	On long trips, check at short stops and don't leave the truck parked in the sun.	Em viagens longas, revise em paradas curtas e não deixe o caminhão parado ao sol.
+F253.3h	Expected losses	Perdas esperadas
+F253.3.0	An animal loses 3 to 8 % of its weight on a trip of several hours, mostly water and rumen contents.	Um animal perde 3 a 8 % do peso numa viagem de várias horas, sobretudo água e conteúdo do rúmen.
+F253.3.1	Most of it is recovered in 1 to 2 weeks with good handling.	A maior parte se recupera em 1 a 2 semanas com bom manejo.
+F254.t	Receiving cattle	Recepção de gado
+F254.r	The first three weeks decide whether the lot gets off to a good start. Receiving calmly, with water and good feed, is worth as much as vaccines.	As três primeiras semanas decidem se o lote arranca bem. Receber com calma, água e boa comida vale tanto quanto as vacinas.
+F254.0h	When unloading the truck	Ao descer do caminhão
+F254.0.0	Unload slowly, without shouting or blows.	Descarregue devagar, sem gritos nem pancadas.
+F254.0.1	Count the animals and check the permit.	Conte os animais e confira a guia.
+F254.0.2	Separate right away the lame, injured or dull ones.	Separe logo os mancos, feridos ou abatidos.
+F254.1h	First 24 hours	Primeiras 24 horas
+F254.1.0	Plenty of clean water; let the trough overflow a little so they find it.	Água limpa e abundante; deixe o bebedouro transbordar um pouco para que o encontrem.
+F254.1.1	Good-quality hay or dry grass free choice.	Feno ou pasto seco de boa qualidade à vontade.
+F254.1.2	Rest in a receiving pen with shade.	Descanso em curral de recepção com sombra.
+F254.1.3	Don't mix with other lots.	Não misturar com outros lotes.
+F254.2h	Days 1 to 7	Dias 1 a 7
+F254.2.0	Arrival health plan once they are rested.	Plano sanitário de entrada quando estiverem descansados.
+F254.2.1	Weighing and ear tags.	Pesagem e brincos.
+F254.2.2	Start of the adaptation ration.	Início da ração de adaptação.
+F254.2.3	Checks twice a day.	Revisão duas vezes por dia.
+F254.3h	Days 7 to 21	Dias 7 a 21
+F254.3.0	Gradual adaptation to concentrate.	Adaptação gradual ao concentrado.
+F254.3.1	Watch for pneumonia: fever, nasal discharge, drooping ears.	Atenção à pneumonia: febre, muco, orelhas caídas.
+F254.3.2	Record sick animals and treatments in the app.	Registro de doentes e tratamentos no app.
+F254.4h	Goals	Metas
+F254.4.0	That they eat well within 3 to 5 days.	Que comam bem em 3 a 5 dias.
+F254.4.1	Less than 10 % sick in the first 3 weeks.	Menos de 10 % de doentes nas primeiras 3 semanas.
+F254.4.2	Zero deaths.	Zero mortes.
+F255.t	Animal identification	Identificação de animais
+F255.r	Identifying each animal lets you follow its weight, health and cost. Without identification you only have averages.	Identificar cada animal permite acompanhar seu peso, saúde e custo. Sem identificação você só tem médias.
+F255.0h	Ear tags	Brincos
+F255.0.0	Numbered, large and easy to read from a distance.	Numerados, grandes e fáceis de ler à distância.
+F255.0.1	Placed in the center of the ear, between the large veins, with a clean applicator.	Colocam-se no centro da orelha, entre as veias grandes, com aplicador limpo.
+F255.0.2	Avoid seasons with many flies, or treat the wound.	Evite épocas de muitas moscas ou cure a ferida.
+F255.0.3	Use the same number in the app.	Use o mesmo número no app.
+F255.1h	Branding	Marca a fogo
+F255.1.0	A registered ownership brand.	Marca de propriedade registrada.
+F255.1.1	One place, quickly, with the iron at the right temperature.	Um só lugar, rápido, com o ferro na temperatura certa.
+F255.1.2	Avoid the hindquarters: it damages valuable hide.	Evite as pernas: danifica couro valioso.
+F255.1.3	Treat it and watch for screwworm.	Cure e vigie contra bicheira.
+F255.2h	Photo of the animal	Foto do animal
+F255.2.0	A photo at arrival helps recognize it if it loses its tag.	Uma foto na entrada ajuda a reconhecê-lo se perder o brinco.
+F255.2.1	In the app you can take the photo when creating the lot or from the animal's card.	No app você pode tirar a foto ao criar o lote ou pela ficha do animal.
+F255.3h	Lost tag	Brinco perdido
+F255.3.0	Identify it again as soon as possible with the photo, color and markings.	Identifique-o de novo o quanto antes com a foto, a cor e os sinais.
+F255.3.1	Edit the tag in the app so you don't lose its weight history.	Edite o brinco no app para não perder seu histórico de pesos.
+F256.t	Weighing	Pesagem
+F256.r	Weighing is the only way to know whether feeding is going well. Every important number comes from the weight.	Pesar é a única forma de saber se a engorda vai bem. Todo número importante sai do peso.
+F256.0h	Why weigh	Para que pesar
+F256.0.0	Calculate the real daily gain.	Calcular o ganho diário real.
+F256.0.1	Detect lagging animals.	Detectar animais atrasados.
+F256.0.2	Adjust the ration and drug doses.	Ajustar a ração e a dose de medicamentos.
+F256.0.3	Decide when to sell.	Decidir quando vender.
+F256.0.4	Calculate conversion and cost per kilo gained.	Calcular a conversão e o custo por quilo ganho.
+F256.1h	How often	Com que frequência
+F256.1.0	At arrival, always.	Na entrada, sempre.
+F256.1.1	Every 21 to 30 days during feeding.	A cada 21 a 30 dias durante a engorda.
+F256.1.2	Before selling.	Antes de vender.
+F256.2h	How to weigh well	Como pesar bem
+F256.2.0	Always at the same time, preferably early before feeding.	Sempre no mesmo horário, de preferência cedo antes de tratar.
+F256.2.1	Under the same water and feed conditions.	Nas mesmas condições de água e comida.
+F256.2.2	A calibrated scale: check it with a known weight.	Balança calibrada: confira com um peso conhecido.
+F256.2.3	Record each animal by tag in the app.	Anote cada animal pelo brinco no app.
+F256.3h	Common mistakes	Erros comuns
+F256.3.0	Weighing some days in the morning and others in the afternoon.	Pesar uns dias de manhã e outros à tarde.
+F256.3.1	Weighing right after they eat or drink.	Pesar logo depois de comerem ou beberem água.
+F256.3.2	Weighing only a sample and assuming it is the lot average.	Pesar só uma amostra e achar que é a média do lote.
+F256.3.3	Not recording the weights right away.	Não anotar os pesos na hora.
+F257.t	Estimating weight without a scale	Estimar o peso sem balança
+F257.r	Without a scale you can estimate weight with a tape. It isn't exact, but it is much better than by eye.	Sem balança dá para estimar o peso com fita. Não é exato, mas é muito melhor que no olho.
+F257.0h	Weigh tape	Fita de pesagem
+F257.0.0	Wrap it around the chest just behind the front legs.	Passe ao redor do peito logo atrás das patas dianteiras.
+F257.0.1	The tape already has the scale in kilos or pounds.	A fita já traz a escala em quilos ou libras.
+F257.0.2	The animal standing straight, head in a normal position.	Animal de pé e reto, com a cabeça normal.
+F257.1h	Formula with a measuring tape	Fórmula com fita métrica
+F257.1.0	Measure the heart girth and body length (point of shoulder to point of buttock) in centimeters.	Meça o perímetro torácico e o comprimento do corpo (da ponta da paleta à ponta da nádega) em centímetros.
+F257.1.1	Approximate weight in kg = girth × girth × length ÷ 10,840.	Peso aproximado em kg = perímetro × perímetro × comprimento ÷ 10.840.
+F257.1.2	Example: girth 180 cm and length 160 cm = 180 × 180 × 160 ÷ 10,840 ≈ 478 kg.	Exemplo: perímetro 180 cm e comprimento 160 cm = 180 × 180 × 160 ÷ 10.840 ≈ 478 kg.
+F257.1.3	Use Rumi's calculator.	Use a calculadora do Rumi.
+F257.2h	Accuracy	Precisão
+F257.2.0	The error can be 5 to 10 %.	O erro pode ser de 5 a 10 %.
+F257.2.1	It is better for following the same animal's gain than for selling.	É melhor para acompanhar o ganho do mesmo animal do que para vender.
+F257.2.2	To sell, always weigh on a scale.	Para vender, pese sempre na balança.
+F258.t	Forming lots	Formar lotes
+F258.r	Grouping similar animals makes feeding, handling and selling easier. An even lot eats and gains evenly.	Agrupar animais parecidos facilita alimentar, manejar e vender. Um lote parelho come e ganha por igual.
+F258.0h	Criteria	Critérios
+F258.0.0	Similar weight: no more than 50 kg difference within the lot.	Peso parecido: diferenças de no máximo 50 kg dentro do lote.
+F258.0.1	Same sex and status (intact with intact, castrated with castrated).	Mesmo sexo e condição (inteiros com inteiros, castrados com castrados).
+F258.0.2	Similar age.	Idade parecida.
+F258.0.3	Same origin when possible.	Mesma origem quando possível.
+F258.1h	Lot size	Tamanho do lote
+F258.1.0	According to the pen and the bunk space.	De acordo com o curral e o espaço de cocho.
+F258.1.1	Lots of 30 to 80 head are easy to manage.	Lotes de 30 a 80 cabeças são fáceis de manejar.
+F258.1.2	Very large: the timid ones eat less.	Muito grandes: os tímidos comem menos.
+F258.2h	Regrouping	Reagrupar
+F258.2.0	Avoid mixing lots during feeding: they fight and gain less.	Evite misturar lotes durante a engorda: brigam e baixam o ganho.
+F258.2.1	If you have to mix, do it at the start, with plenty of feed and space.	Se tiver que misturar, faça no início, com comida e espaço de sobra.
+F258.3h	In the app	No app
+F258.3.0	Each lot has a name, type, breed, supplier and ration.	Cada lote tem nome, tipo, raça, fornecedor e ração.
+F258.3.1	That way you compare lots and know what worked for you.	Assim você compara lotes e sabe o que funcionou.
+F259.t	Calm cattle handling	Manejo tranquilo do gado
+F259.r	Cattle handled calmly get less stressed, get sick less, gain more and are safer for people.	O gado manejado com calma se estressa menos, adoece menos, ganha mais e é mais seguro para as pessoas.
+F259.0h	How cattle see and think	Como o bovino vê e pensa
+F259.0.0	They see almost all around, but have a blind spot right behind them.	Vê quase ao redor de si, mas tem um ponto cego bem atrás.
+F259.0.1	Shadows, contrasts, moving objects and loud noises scare them.	Assustam-no as sombras, os contrastes, os objetos que se mexem e os ruídos fortes.
+F259.0.2	They follow their companions: move groups, not loose animals.	Segue os companheiros: mova grupos, não animais soltos.
+F259.1h	Flight zone and point of balance	Zona de fuga e ponto de equilíbrio
+F259.1.0	The flight zone is the distance at which the animal moves away from you.	A zona de fuga é a distância em que o animal se afasta de você.
+F259.1.1	Enter that zone to make it move forward, and step out to make it stop.	Entre nessa zona para ele avançar e saia para ele parar.
+F259.1.2	The point of balance is at the shoulder: if you stand behind it, the animal moves forward; in front of it, it backs up.	O ponto de equilíbrio fica na altura da paleta: se você se põe atrás dele, o animal avança; se se põe na frente, recua.
+F259.2h	Rules	Regras
+F259.2.0	No shouting, no dogs, no sticks.	Sem gritos, sem cães, sem paus.
+F259.2.1	Use flags or poles as an extension of your arm, not to hit.	Use bandeiras ou varas como extensão do braço, não para bater.
+F259.2.2	Move small groups at a walking pace.	Mova grupos pequenos a passo.
+F259.2.3	Let them see where they are going.	Deixe que vejam para onde vão.
+F259.3h	Benefits	Benefícios
+F259.3.0	Fewer blows and bruises on the carcass.	Menos pancadas e hematomas na carcaça.
+F259.3.1	Fewer accidents for workers.	Menos acidentes de trabalhadores.
+F259.3.2	Better intake after handling.	Melhor consumo depois do manejo.
+F260.t	Working the chute	Trabalho no tronco
+F260.r	The chute is where you weigh, vaccinate and treat. Working it well saves time, blows and accidents.	O tronco é onde se pesa, vacina e trata. Trabalhar bem nele economiza tempo, pancadas e acidentes.
+F260.0h	Preparation	Preparação
+F260.0.0	Check that gates, bars and the headgate work.	Confira se porteiras, trancas e o tronco de contenção funcionam.
+F260.0.1	Have the products, syringes and the app ready to record.	Tenha prontos os produtos, as seringas e o app para anotar.
+F260.0.2	Work early, in the cool hours.	Trabalhe cedo, nas horas frescas.
+F260.1h	During	Durante
+F260.1.0	Fill the race without overcrowding.	Encha a seringa sem apertar demais.
+F260.1.1	One animal at a time in the headgate, well restrained.	Um animal por vez na contenção, bem preso.
+F260.1.2	Work fast but without rushing: every step recorded.	Trabalhe rápido mas sem pressa: cada passo anotado.
+F260.1.3	Release calmly: an animal that bolts out gets hurt.	Solte com calma: um animal que sai correndo se machuca.
+F260.2h	Safety	Segurança
+F260.2.0	Never stand between an animal and a wall with no way out.	Nunca fique entre um animal e a parede sem saída.
+F260.2.1	Watch out for forward kicks and head butts.	Cuidado com os coices para a frente e as cabeçadas.
+F260.2.2	Don't put your arms between the boards.	Não enfie os braços entre as tábuas.
+F260.2.3	Always at least two people.	Sempre pelo menos duas pessoas.

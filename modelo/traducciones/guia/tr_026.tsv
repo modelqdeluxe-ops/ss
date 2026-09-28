@@ -1,0 +1,208 @@
+F448.t	Vital signs and how to take them	Sinais vitais e como medi-los
+F448.r	Temperature, breathing, pulse and rumen movements say a lot about an animal's health. Learning to measure them helps you decide quickly.	Temperatura, respiração, pulso e movimentos do rúmen dizem muito da saúde de um animal. Aprender a medi-los ajuda você a decidir rápido.
+F448.0h	Normal values in adult cattle	Valores normais em bovino adulto
+F448.0.0	Temperature: 38.0 to 39.3 °C; up to 39.5 °C in heat or after moving it.	Temperatura: 38,0 a 39,3 °C; até 39,5 °C com calor ou depois de movimentá-lo.
+F448.0.1	Breathing at rest: 10 to 30 per minute; in strong heat it can rise a lot.	Respiração em repouso: 10 a 30 por minuto; com calor forte pode subir muito.
+F448.0.2	Pulse: 60 to 80 beats per minute.	Pulso: 60 a 80 batimentos por minuto.
+F448.0.3	Rumen movements: 1 to 2 per minute, felt by pressing the hollow on the left side.	Movimentos do rúmen: 1 a 2 por minuto, sentidos ao pressionar a fossa do lado esquerdo.
+F448.0.4	Mucous membranes (gums, eyelid): pink and moist.	Mucosas (gengivas, pálpebra): rosadas e úmidas.
+F448.1h	Temperature	Temperatura
+F448.1.0	Use a lubricated digital thermometer in the rectum, resting against the rectal wall, for one minute or until it beeps.	Use termômetro digital no reto, lubrificado, apoiado contra a parede do reto, por um minuto ou até apitar.
+F448.1.1	Take it with the animal still in the chute and in the shade.	Meça com o animal quieto no brete e na sombra.
+F448.1.2	Over 39.5 °C at rest is fever; over 40.5 °C is high fever.	Mais de 39,5 °C em repouso é febre; mais de 40,5 °C é febre alta.
+F448.1.3	Under 38 °C in a droopy animal is serious: it may be in shock or very weak.	Menos de 38 °C num animal abatido é grave: pode estar em choque ou muito fraco.
+F448.1.4	Clean and disinfect the thermometer between animals.	Limpe e desinfete o termômetro entre animais.
+F448.2h	Breathing	Respiração
+F448.2.0	Count how many times the flank rises in 30 seconds and multiply by two.	Conte quantas vezes o flanco sobe em 30 segundos e multiplique por dois.
+F448.2.1	Open-mouth breathing, stretching the neck or groaning indicates a serious problem.	Respirar com a boca aberta, esticar o pescoço ou gemer indica problema sério.
+F448.2.2	Tell heat panting (the whole group, in hot hours) apart from pneumonia (one animal, with fever and discharge).	Diferencie a ofegância por calor (todo o grupo, nas horas quentes) da pneumonia (um animal, com febre e muco).
+F448.3h	Rumen	Rúmen
+F448.3.0	Put your fist in the hollow on the left side and count the contractions in two minutes.	Coloque o punho na fossa do lado esquerdo e conte as contrações em dois minutos.
+F448.3.1	No movements: indigestion, acidosis or high fever.	Sem movimentos: indigestão, acidose ou febre alta.
+F448.3.2	Very bloated, hard left side: bloat, an emergency.	Rúmen muito inchado e duro do lado esquerdo: timpanismo, é urgência.
+F448.3.3	A healthy animal ruminates 7 to 10 hours a day.	Um animal sadio rumina 7 a 10 horas por dia.
+F448.4h	Mucous membranes and eyes	Mucosas e olhos
+F448.4.0	Pale or white: anemia (parasites, anaplasmosis, babesiosis).	Pálidas ou brancas: anemia (parasitas, anaplasmose, babesiose).
+F448.4.1	Yellow: liver problem or blood destruction (anaplasmosis).	Amarelas: problema de fígado ou destruição de sangue (anaplasmose).
+F448.4.2	Bluish: lack of oxygen, severe pneumonia or poisoning.	Azuladas: falta de oxigênio, pneumonia grave ou intoxicação.
+F448.4.3	Sunken eyes: dehydration; pinch the neck skin, if it's slow to return there's dehydration.	Olhos fundos: desidratação; belisque a pele do pescoço, se demora a voltar há desidratação.
+F448.5h	Practical rules	Regras práticas
+F448.5.0	Always take the temperature before giving an antibiotic.	Sempre meça a temperatura antes de dar antibiótico.
+F448.5.1	Record the values in the app or a notebook with the date and ear tag.	Anote os valores no app ou num caderno com a data e o brinco.
+F448.5.2	Compare with other healthy animals in the same pen at the same time.	Compare com outros animais sadios do mesmo curral no mesmo horário.
+F448.5.3	If several animals have fever at once, call the vet that same day.	Se vários animais têm febre ao mesmo tempo, chame o veterinário no mesmo dia.
+F449.t	Pneumonia or respiratory complex	Pneumonia ou complexo respiratório
+F449.r	It's the disease that kills and sickens the most animals in feeding, especially in the first four weeks after arrival. Acting on the first day changes everything.	É a doença que mais mata e adoece animais no confinamento, sobretudo nas primeiras quatro semanas depois da chegada. Agir no primeiro dia muda tudo.
+F449.0h	What it is	O que é
+F449.0.0	A lung infection caused by a mix of viruses (IBR, BVD, PI3, BRSV) and bacteria (Mannheimia, Pasteurella, Histophilus, Mycoplasma).	Uma infecção dos pulmões causada por uma mistura de vírus (IBR, BVD, PI3, BRSV) e bactérias (Mannheimia, Pasteurella, Histophilus, Mycoplasma).
+F449.0.1	Stress lowers defenses and viruses open the door to bacteria.	O estresse baixa as defesas e os vírus abrem a porta para as bactérias.
+F449.0.2	It's also called shipping fever because it appears after transport.	Também é chamada de febre do transporte porque aparece depois da viagem.
+F449.1h	Why it appears	Por que aparece
+F449.1.0	Long trips, fasting and dehydration.	Viagens longas, jejum e desidratação.
+F449.1.1	Mixing animals from many origins.	Mistura de animais de muitas origens.
+F449.1.2	Recent weaning, castration or dehorning close to arrival.	Desmame recente, castração ou descorna perto da chegada.
+F449.1.3	Dust, sudden temperature changes, poorly ventilated or muddy pens.	Poeira, mudanças bruscas de temperatura, currais mal ventilados ou com barro.
+F449.1.4	No vaccines before arrival.	Falta de vacinas antes de chegar.
+F449.2h	Signs	Sinais
+F449.2.0	Droopy ears, low head and dull eyes.	Orelhas caídas, cabeça baixa e olhos apagados.
+F449.2.1	Stops eating or eats very little.	Para de comer ou come muito pouco.
+F449.2.2	Fever of 40 °C or more.	Febre de 40 °C ou mais.
+F449.2.3	Nasal discharge, tearing and cough.	Muco no nariz, lacrimejamento e tosse.
+F449.2.4	Fast, labored or open-mouth breathing in severe cases.	Respiração rápida, com esforço ou com a boca aberta nos casos graves.
+F449.2.5	It shows up most between days 5 and 21 after arrival.	Aparece mais entre os dias 5 e 21 depois da chegada.
+F449.3h	What to do	O que fazer
+F449.3.0	Separate the animal and take its temperature.	Separe o animal e meça a temperatura.
+F449.3.1	Treat on day one with the antibiotic your vet prescribes; each day of waiting lowers the chance of a cure.	Trate no primeiro dia com o antibiótico que seu veterinário indicar; cada dia de espera baixa a chance de cura.
+F449.3.2	Finish the full treatment even if it improves earlier.	Termine o tratamento completo mesmo que melhore antes.
+F449.3.3	If it doesn't improve in 48 to 72 hours (still febrile or not eating), consult again: it may need another product.	Se em 48 a 72 horas não melhorar (continua com febre ou sem comer), consulte de novo: pode precisar de outro produto.
+F449.3.4	Record product, dose, date and withdrawal in the app.	Anote produto, dose, data e carência no app.
+F449.3.5	If more than 5 to 10 % of the lot gets sick, review management with the vet and consider treating the whole group at their discretion.	Se adoecerem mais de 5 a 10 % do lote, revise o manejo com o veterinário e considere tratar o grupo todo a critério dele.
+F449.4h	Prevention	Prevenção
+F449.4.0	Buy vaccinated animals weaned well in advance when possible.	Compre animais vacinados e desmamados com antecedência quando possível.
+F449.4.1	Short trips, with a good load and no mistreatment.	Viagens curtas, com boa lotação e sem maus-tratos.
+F449.4.2	On arrival: water, good-quality hay and rest before working them.	Na chegada: água, feno de boa qualidade e descanso antes de trabalhá-los.
+F449.4.3	Respiratory vaccine according to your vet's plan.	Vacina respiratória conforme o plano do seu veterinário.
+F449.4.4	Pens with shade, good ventilation and no dust; wet the floor in the dry season.	Currais com sombra, boa ventilação e sem poeira; molhe o piso na seca.
+F449.4.5	Don't mix new lots with animals already on feed.	Não misture lotes novos com animais que já estão em confinamento.
+F449.5h	Key numbers	Números-chave
+F449.5.0	Most cases appear in the first 3 to 4 weeks.	A maioria dos casos aparece nas primeiras 3 a 4 semanas.
+F449.5.1	An animal that gets pneumonia may gain 50 to 100 grams less per day for the whole feeding period.	Um animal que tem pneumonia pode ganhar 50 a 100 gramas a menos por dia durante todo o confinamento.
+F449.5.2	Relapses are more frequent when treatment starts late.	As recaídas são mais frequentes quando o tratamento começa tarde.
+F449.6h	Common mistakes	Erros comuns
+F449.6.0	Waiting until the animal coughs a lot to treat: coughing comes late.	Esperar o animal tossir muito para tratar: a tosse chega tarde.
+F449.6.1	Changing antibiotic every day.	Trocar de antibiótico todo dia.
+F449.6.2	Stopping treatment when the animal starts eating again.	Suspender o tratamento quando o animal volta a comer.
+F449.6.3	Not respecting withdrawal before selling.	Não respeitar a carência antes de vender.
+F450.t	Ruminal acidosis	Acidose ruminal
+F450.r	It's the most important digestive problem in concentrate feeding. It appears when animals eat a lot of grain at once and the rumen turns acidic.	É o problema digestivo mais importante do confinamento com concentrado. Aparece quando os animais comem muito grão de uma vez e o rúmen fica ácido.
+F450.0h	What it is	O que é
+F450.0.0	Grain has starch that ferments very fast in the rumen and produces acids.	O grão tem amido que fermenta muito rápido no rúmen e produz ácidos.
+F450.0.1	If more acid is produced than the rumen can remove, pH drops and the good bacteria die.	Se se produz mais ácido do que o rúmen consegue remover, o pH cai e morrem as bactérias boas.
+F450.0.2	There's acute acidosis (severe, within hours) and subacute (hidden, lowering gain unnoticed).	Há acidose aguda (grave, em horas) e subaguda (escondida, baixa o ganho sem que se note).
+F450.1h	Causes	Causas
+F450.1.0	Switching from grass to concentrate abruptly, without adaptation.	Passar do pasto para o concentrado de uma vez, sem adaptação.
+F450.1.1	Bunks left empty for many hours, then animals eat hungry.	Cochos que ficam vazios muitas horas e depois os animais comem com fome.
+F450.1.2	Abrupt changes in ration or amount.	Mudanças bruscas de ração ou de quantidade.
+F450.1.3	Little forage or forage chopped too fine in the ration.	Pouca forragem ou forragem picada demais na ração.
+F450.1.4	Mixing errors: loose pockets of grain, uneven mix.	Erros na mistura: bolsões de grão soltos, mistura desigual.
+F450.1.5	Hot days followed by cool nights when they overeat.	Dias de calor seguidos de noites frescas em que comem demais.
+F450.2h	Signs of acute acidosis	Sinais de acidose aguda
+F450.2.0	Suddenly stops eating, rumen not moving.	Para de comer de repente, rúmen sem movimento.
+F450.2.1	Frothy, sour-smelling diarrhea, sometimes with whole grains.	Diarreia espumosa, com cheiro azedo e às vezes com grãos inteiros.
+F450.2.2	Dehydration, sunken eyes, staggering or staying down.	Desidratação, olhos fundos, cambaleia ou fica deitado.
+F450.2.3	It can die within one or two days.	Pode morrer em um ou dois dias.
+F450.3h	Signs of subacute acidosis	Sinais de acidose subaguda
+F450.3.0	The lot's intake goes up and down from day to day.	O consumo do lote sobe e desce de um dia para o outro.
+F450.3.1	Loose manure, bubbly or with undigested grain.	Fezes soltas, com bolhas ou com grão não digerido.
+F450.3.2	Lameness (laminitis) weeks later.	Mancadeiras (laminite) semanas depois.
+F450.3.3	Liver abscesses at slaughter and lower gain with no clear cause.	Abscessos de fígado no frigorífico e menor ganho sem causa clara.
+F450.4h	What to do	O que fazer
+F450.4.0	Withdraw concentrate from affected animals and give them good-quality hay and water.	Retire o concentrado dos animais afetados e dê feno de boa qualidade e água.
+F450.4.1	Call the vet: acute cases need urgent treatment.	Chame o veterinário: os casos agudos precisam de tratamento urgente.
+F450.4.2	Check the mix and the amount fed; go back one step in adaptation.	Revise a mistura e a quantidade servida; volte um passo na adaptação.
+F450.4.3	Record the day and lot in the app to see if it repeats.	Anote no app o dia e o lote para ver se se repete.
+F450.5h	Prevention	Prevenção
+F450.5.0	Adapt to concentrate over 3 to 4 weeks, raising it little by little.	Adapte ao concentrado em 3 a 4 semanas, subindo aos poucos.
+F450.5.1	Keep at least 10 to 15 % forage in the finishing ration.	Mantenha pelo menos 10 a 15 % de forragem na ração de terminação.
+F450.5.2	Feed at the same time every day, two or three times a day.	Sirva no mesmo horário todos os dias, duas ou três vezes ao dia.
+F450.5.3	Read bunks and adjust the amount in small steps (5 to 10 %).	Leia os cochos e ajuste a quantidade em passos pequenos (5 a 10 %).
+F450.5.4	Don't let the bunk sit empty for more than 2 to 3 hours.	Evite que o cocho fique vazio mais de 2 a 3 horas.
+F450.5.5	Ask your nutritionist about additives that stabilize the rumen (for example ionophores or bicarbonate).	Consulte seu nutricionista sobre o uso de aditivos que estabilizam o rúmen (por exemplo ionóforos ou bicarbonato).
+F450.6h	Common mistakes	Erros comuns
+F450.6.0	Giving more grain so they fatten faster without adapting.	Dar mais grão para engordarem mais rápido sem adaptar.
+F450.6.1	Changing ration on the same day as changing pen.	Mudar de ração no mesmo dia em que se muda de curral.
+F450.6.2	Grinding the grain too fine.	Moer o grão fino demais.
+F450.6.3	Ignoring loose manure and fluctuating intake.	Ignorar as fezes soltas e o consumo que varia.
+F451.t	Bloat	Timpanismo (rúmen inchado)
+F451.r	The rumen fills with gas the animal can't get out. It's an emergency: it can kill within a few hours from pressure on the lungs.	O rúmen se enche de gás que o animal não consegue eliminar. É uma urgência: pode matar em poucas horas pela pressão sobre os pulmões.
+F451.0h	Types	Tipos
+F451.0.0	Free gas: the gas is on top and doesn't come out because something blocks the esophagus or the rumen isn't moving.	Gás livre: o gás está em cima e não sai porque algo tapa o esôfago ou o rúmen não se move.
+F451.0.1	Frothy: the gas is trapped in foam; typical with lush legumes or rations with a lot of fine grain.	Espumoso: o gás fica preso na espuma; é típico com leguminosas novas ou rações com muito grão fino.
+F451.0.2	Chronic: it recurs in the same animal due to nerve damage or abscesses.	Crônico: repete-se no mesmo animal por dano de nervos ou abscessos.
+F451.1h	Signs	Sinais
+F451.1.0	Left side very bloated, visible from behind the animal.	Lado esquerdo muito inchado, visível de trás do animal.
+F451.1.1	Discomfort, kicking at the belly, lying down and getting up.	Desconforto, chuta a barriga, deita e levanta.
+F451.1.2	Fast breathing, open mouth, tongue out.	Respiração rápida, boca aberta, língua para fora.
+F451.1.3	It can collapse and die if not treated.	Pode cair e morrer se não for atendido.
+F451.2h	What to do immediately	O que fazer imediatamente
+F451.2.0	Call the vet.	Chame o veterinário.
+F451.2.1	Walk the animal slowly and keep its head up.	Faça o animal caminhar devagar e mantenha a cabeça no alto.
+F451.2.2	If it's free gas, a tube through the mouth into the rumen releases it; do it only if you know how.	Se for gás livre, uma sonda pela boca até o rúmen o elimina; faça só se souber.
+F451.2.3	For frothy bloat, oral anti-foaming agents prescribed by the vet are used.	No espumoso usam-se antiespumantes pela boca indicados pelo veterinário.
+F451.2.4	Puncturing the rumen (trocar) is a last-resort measure and must be done by someone trained.	Perfurar o rúmen (trocarte) é uma medida de último recurso e deve ser feita por alguém treinado.
+F451.3h	Prevention	Prevenção
+F451.3.0	Correct adaptation to concentrate and enough forage in the ration.	Adaptação correta ao concentrado e forragem suficiente na ração.
+F451.3.1	Don't grind grain too fine.	Não moer o grão fino demais.
+F451.3.2	Don't turn hungry animals out onto lush or wet legume pastures.	Não soltar animais com fome em pastos de leguminosa nova ou molhada.
+F451.3.3	Feed at fixed times so they don't eat anxiously.	Sirva a ração em horários fixos para que não comam com ansiedade.
+F451.3.4	Separate and watch those that bloat often; if it recurs, consider selling them.	Separe e vigie os que incham com frequência; se se repetir, considere vendê-los.
+F451.4h	Common mistakes	Erros comuns
+F451.4.0	Waiting to see if it passes on its own.	Esperar para ver se passa sozinho.
+F451.4.1	Giving oil or home remedies without knowing what type of bloat it is.	Dar óleo ou remédios caseiros sem saber que tipo de timpanismo é.
+F451.4.2	Puncturing the rumen with any knife in the wrong spot.	Furar o rúmen com qualquer faca no lugar errado.
+F452.t	Liver abscesses	Abscessos de fígado
+F452.r	They're pockets of pus in the liver that almost always follow acidosis. They can't be seen in the live animal, but they lower gain and the slaughterhouse condemns the liver.	São bolsas de pus no fígado que aparecem quase sempre depois de acidose. Não se veem em vida, mas baixam o ganho e o frigorífico condena o fígado.
+F452.0h	Why they appear	Por que aparecem
+F452.0.0	Acidosis damages the rumen wall and bacteria pass into the blood and reach the liver.	A acidose danifica a parede do rúmen e as bactérias passam para o sangue e chegam ao fígado.
+F452.0.1	They're more common with very high-grain, low-forage rations.	São mais comuns com rações muito altas em grão e pouca forragem.
+F452.0.2	Bunks that run empty and abrupt ration changes increase them.	Os cochos que esvaziam e as mudanças bruscas de ração os aumentam.
+F452.1h	How they affect	Como afetam
+F452.1.0	Lower intake and daily gain.	Menor consumo e ganho diário.
+F452.1.1	Worse feed conversion.	Pior conversão alimentar.
+F452.1.2	Condemned livers and sometimes parts of the carcass if there are adhesions.	Condenação de fígados e às vezes de partes da carcaça se houver aderências.
+F452.1.3	Large abscesses can burst and kill the animal.	Abscessos grandes podem se romper e matar o animal.
+F452.2h	How to know if you have them	Como saber se você os tem
+F452.2.0	Ask the slaughterhouse for the report of condemned livers from your lot.	Peça ao frigorífico o relatório de fígados condenados do seu lote.
+F452.2.1	If more than 10 to 15 % of livers have abscesses, review the ration and bunk management.	Se mais de 10 a 15 % dos fígados saem com abscessos, revise a ração e o manejo de cocho.
+F452.2.2	Lower-than-expected gain during finishing can be a sign.	Um ganho mais baixo que o esperado na terminação pode ser sinal.
+F452.3h	Prevention	Prevenção
+F452.3.0	Everything that prevents acidosis: adaptation, effective forage, fixed schedules.	Tudo o que previne a acidose: adaptação, forragem efetiva, horários fixos.
+F452.3.1	Ask your vet or nutritionist about authorized additives that reduce them.	Consulte seu veterinário ou nutricionista sobre os aditivos autorizados que os reduzem.
+F452.3.2	Avoid very finely ground grains.	Evite grãos moídos muito finos.
+F453.t	Diarrhea in the feedlot	Diarreia no confinamento
+F453.r	Diarrhea is a sign, not a disease. You have to find the cause: ration, parasites, infections or water.	A diarreia é um sinal, não uma doença. É preciso buscar a causa: ração, parasitas, infecções ou água.
+F453.0h	Most common causes	Causas mais comuns
+F453.0.0	Abrupt ration changes or too much grain (acidosis).	Mudanças bruscas de ração ou excesso de grão (acidose).
+F453.0.1	Moldy or fermented feed.	Alimento com mofo ou fermentado.
+F453.0.2	Internal parasites and coccidia.	Parasitas internos e coccídios.
+F453.0.3	Infections such as salmonella or bovine viral diarrhea.	Infecções como salmonela ou diarreia viral bovina.
+F453.0.4	Dirty or contaminated water.	Água suja ou contaminada.
+F453.0.5	Very lush, wet grass.	Pasto muito novo e molhado.
+F453.1h	How to read manure	Como ler as fezes
+F453.1.0	Frothy, sour, with grains: a ration problem or acidosis.	Espumosa, azeda, com grãos: problema de ração ou acidose.
+F453.1.1	With blood or mucus and straining: coccidiosis or infection; urgent.	Com sangue ou muco e esforço: coccidiose ou infecção; urgente.
+F453.1.2	Green and watery on lush pasture: excess water from the grass.	Verde e aguada em pasto novo: excesso de água do capim.
+F453.1.3	Black or very dark: there may be bleeding in the stomach.	Preta ou muito escura: pode ser sangramento no estômago.
+F453.1.4	Several animals at once: look for something in common (feed, water).	Vários animais ao mesmo tempo: procure algo em comum (alimento, água).
+F453.2h	What to do	O que fazer
+F453.2.0	Separate the most affected and give them free-choice clean water and hay.	Separe os mais afetados e dê água limpa à vontade e feno.
+F453.2.1	Check the mix, the grain and the stored feed.	Revise a mistura, o grão e o alimento guardado.
+F453.2.2	Take its temperature: with fever it's usually an infection.	Meça a temperatura: com febre costuma ser infecção.
+F453.2.3	Consult the vet; a fecal test clarifies whether it's parasites or coccidia.	Consulte o veterinário; um exame de fezes esclarece se são parasitas ou coccídios.
+F453.2.4	Oral electrolytes help replace water and salts in weak animals.	Os soros orais ajudam a repor água e sais em animais fracos.
+F453.3h	Prevention	Prevenção
+F453.3.0	Gradual ration changes.	Mudanças de ração graduais.
+F453.3.1	Dry storage to avoid mold.	Armazém seco para evitar mofo.
+F453.3.2	Clean waterers every week.	Bebedouros limpos toda semana.
+F453.3.3	Deworming according to the vet's plan.	Vermifugação conforme o plano do veterinário.
+F453.3.4	Pens without puddles or built-up mud.	Currais sem poças nem barro acumulado.
+F454.t	Coccidiosis	Coccidiose
+F454.r	A microscopic intestinal parasite that attacks young and stressed animals most, in damp, dirty pens.	Parasita microscópico do intestino que ataca mais animais jovens e estressados, em currais úmidos e sujos.
+F454.0h	Signs	Sinais
+F454.0.0	Diarrhea with mucus or blood and straining.	Diarreia com muco ou sangue e esforço.
+F454.0.1	Soiled tail and hind legs.	Cauda e patas traseiras sujas.
+F454.0.2	Weight loss and dehydration.	Perda de peso e desidratação.
+F454.0.3	In severe cases: tremors or nervous signs.	Em casos graves: tremores ou sinais nervosos.
+F454.1h	When it appears	Quando aparece
+F454.1.0	In the first weeks on feed, with arrival stress.	Nas primeiras semanas do confinamento, com o estresse de chegada.
+F454.1.1	In pens with mud, built-up manure or ground-level bunks.	Em currais com barro, esterco acumulado ou cochos rente ao chão.
+F454.1.2	When stocking density is high.	Quando há muita densidade de animais.
+F454.2h	What to do	O que fazer
+F454.2.0	Consult the vet to confirm with a fecal test.	Consulte o veterinário para confirmar com exame de fezes.
+F454.2.1	Treatment uses specific anti-coccidial products, as prescribed.	O tratamento é com produtos específicos contra coccídios, conforme a indicação.
+F454.2.2	Separate the sick and give water and electrolytes.	Separe os doentes e dê água e soros.
+F454.3h	Prevention	Prevenção
+F454.3.0	Dry floors and frequent manure removal.	Pisos secos e limpeza frequente do esterco.
+F454.3.1	Raised bunks and waterers that don't get soiled with manure.	Cochos e bebedouros elevados, que não se sujem com fezes.
+F454.3.2	Some ration additives prevent coccidia; ask your nutritionist.	Alguns aditivos na ração previnem coccídios; consulte seu nutricionista.
+F454.3.3	Avoid overcrowding.	Evite a superlotação.

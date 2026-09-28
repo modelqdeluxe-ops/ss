@@ -40,7 +40,7 @@
  {"h":"Cómo se calcula","p":["Días = (peso meta − peso actual) ÷ ganancia diaria."]},
  {"h":"Ejemplo","p":["Pesa 400 kg, meta 480 kg, gana 1.4 kg: 80 ÷ 1.4 = 57 días."]},
  {"h":"Usos","p":["Planificar la venta y el siguiente lote.","Calcular el alimento que falta.","Proyectar el margen."]},
- {"h":"En la app","p":["Cada lote muestra la fecha estimada de salida.","Rumi, Mi engorde, Proyectar un lote."]}
+ {"h":"En la app","p":["Cada lote muestra la fecha estimada de salida.","Rumi, Análisis de Rumi, ¿Cuándo me conviene vender?"]}
 ],"rel":["Ganancia diaria de peso","Cuándo vender","Planificación del engorde"]},
 
 {"t":"Vueltas al año","a":"conceptos","r":"Cuántos lotes puede engordar un corral en un año. Más vueltas reparten mejor los costos fijos.","s":[
@@ -81,7 +81,7 @@
 ],"rel":["Conversión alimenticia"]},
 
 {"t":"Unidades de peso y medida","a":"conceptos","r":"En el campo se mezclan libras, kilos, quintales, arrobas y manzanas. Saber convertir evita errores caros.","s":[
- {"h":"Peso","p":["1 kilo = 2.2 libras.","1 libra = 0.454 kilos.","1 quintal = 100 libras = 45.4 kilos.","1 arroba = 25 libras = 11.3 kilos."]},
+ {"h":"Peso","p":["1 kilo = 2.2 libras.","1 libra = 0.454 kilos.","1 quintal = 100 libras = 45.4 kilos.","1 arroba (Centroamérica) = 25 libras = 11.3 kilos; en Brasil la arroba es de 15 kg."]},
  {"h":"Área","p":["1 manzana = 0.7 hectáreas = 7,000 m².","1 hectárea = 1.43 manzanas = 10,000 m²."]},
  {"h":"Precios","p":["Precio por kilo = precio por libra × 2.2.","Precio por libra = precio por kilo ÷ 2.2."]},
  {"h":"En Rumi","p":["Calculadoras, Convertir: libras, kilos, quintales, arrobas, manzanas y hectáreas."]}
@@ -102,6 +102,6 @@
 {"t":"Peso meta","a":"conceptos","r":"El peso al que planeas vender. Define la duración del engorde y el margen.","s":[
  {"h":"Cómo elegirlo","p":["Lo que pide o paga mejor tu comprador.","El acabado que logran tus animales a ese peso.","El punto en que los kilos extra empiezan a costar más de lo que valen."]},
  {"h":"Valores comunes","p":["Muchos engordes en la región venden entre 430 y 520 kg (950 a 1,150 libras).","Depende de raza, sexo y mercado."]},
- {"h":"En la app","p":["Pones un peso meta general en Más y uno propio por lote."]}
+ {"h":"En la app","p":["Pones un peso meta general en Configuración y uno propio por lote."]}
 ],"rel":["Días a la meta","Cuándo vender","Grado de acabado"]}
 ]

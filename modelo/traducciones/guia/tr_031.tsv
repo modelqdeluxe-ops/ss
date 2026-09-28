@@ -1,0 +1,201 @@
+F510.t	Ringworm or skin fungus	Tinha ou fungos da pele
+F510.r	Ringworm is a fungal infection that forms round, gray, hairless patches, mostly on the face and neck. It spreads to other animals and to people.	A tinha é uma infecção por fungos que forma manchas redondas, cinzentas e sem pelo, sobretudo na cara e no pescoço. Passa para outros animais e para as pessoas.
+F510.0h	Signs	Sinais
+F510.0.0	Hairless circles of 2 to 5 cm with a gray crust.	Círculos de 2 a 5 cm sem pelo e com crosta cinza.
+F510.0.1	More common in young animals, in damp pens with little sun.	Mais comum em animais jovens, em currais úmidos e com pouco sol.
+F510.1h	What to do	O que fazer
+F510.1.0	It usually heals on its own in weeks or months.	Costuma curar sozinha em semanas ou meses.
+F510.1.1	Antifungal skin products speed up healing.	Produtos antifúngicos na pele aceleram a cura.
+F510.1.2	Wear gloves and wash your hands: it spreads to people.	Use luvas e lave as mãos: passa para as pessoas.
+F511.t	Dermatophilosis	Dermatofilose
+F511.r	Dermatophilosis is a skin infection by a bacterium that takes advantage of moisture and tick bites. It forms thick paintbrush-like scabs.	A dermatofilose é uma infecção de pele por uma bactéria que aproveita a umidade e as picadas de carrapatos. Forma crostas grossas como pincel.
+F511.0h	Signs	Sinais
+F511.0.0	Hard scabs with matted hair on the back, neck and legs.	Crostas duras com pelos grudados no lombo, pescoço e patas.
+F511.0.1	Removing them leaves moist, red skin.	Ao retirá-las fica a pele úmida e vermelha.
+F511.0.2	It worsens in the rainy season.	Piora na época de chuvas.
+F511.1h	What to do	O que fazer
+F511.1.0	Separate the animal and keep it dry.	Separar e manter o animal seco.
+F511.1.1	Antibiotic treatment prescribed by the vet in widespread cases.	Tratamento antibiótico indicado pelo veterinário em casos extensos.
+F511.1.2	Tick control.	Controle de carrapatos.
+F512.t	Lungworms	Vermes pulmonares
+F512.r	Some worms live in the airways and cause coughing and pneumonia. They're more common in young animals on wet pastures.	Alguns vermes vivem nos brônquios e causam tosse e pneumonia. São mais comuns em animais jovens em pastos úmidos.
+F512.0h	Signs	Sinais
+F512.0.0	Dry cough, especially when moving the animals.	Tosse seca, sobretudo ao movimentar os animais.
+F512.0.1	Fast breathing and weight loss.	Respiração rápida e perda de peso.
+F512.0.2	Several young animals from the same pasture affected.	Vários animais jovens do mesmo pasto afetados.
+F512.1h	What to do	O que fazer
+F512.1.0	The vet confirms it with a special fecal test.	O veterinário confirma com exame de fezes especial.
+F512.1.1	Most broad-spectrum dewormers control them.	A maioria dos vermífugos de amplo espectro os controla.
+F513.t	Lead poisoning	Intoxicação por chumbo
+F513.r	Lead from old batteries, paint and used oil is one of the most common poisonings in cattle, because they're curious and lick everything.	O chumbo de baterias velhas, tinta e óleo queimado é uma das intoxicações mais comuns em bovinos, porque são curiosos e lambem tudo.
+F513.0h	Signs	Sinais
+F513.0.0	Blindness, animal bumping into objects.	Cegueira, animal que bate em objetos.
+F513.0.1	Tremors, teeth grinding, foam at the mouth.	Tremores, ranger de dentes, espuma na boca.
+F513.0.2	Convulsions and rapid death.	Convulsões e morte rápida.
+F513.1h	What to do	O que fazer
+F513.1.0	Call the vet immediately.	Chame o veterinário imediatamente.
+F513.1.1	Find and remove the source: batteries, paint cans, motor oil.	Procure e retire a fonte: baterias, latas de tinta, óleo de motor.
+F513.2h	Prevention	Prevenção
+F513.2.0	Never leave batteries or scrap in pastures or pens.	Nunca deixe baterias nem sucata em pastos ou currais.
+F513.2.1	Check places where trash was burned.	Revise os lugares onde se queimou lixo.
+F514.t	Pesticide poisoning	Intoxicação por agrotóxicos
+F514.r	Misused tick killers, insecticides and herbicides can poison cattle. Organophosphates are the most dangerous.	Carrapaticidas, inseticidas e herbicidas mal usados podem intoxicar o gado. Os organofosforados são os mais perigosos.
+F514.0h	Signs	Sinais
+F514.0.0	Drooling, tearing, diarrhea and frequent urination.	Babeira, lacrimejamento, diarreia e urinar muito.
+F514.0.1	Muscle tremors, small pupils and difficulty breathing.	Tremores musculares, pupilas pequenas e dificuldade para respirar.
+F514.1h	What to do	O que fazer
+F514.1.0	Call the vet: there's an antidote for organophosphates.	Chame o veterinário: existe antídoto para organofosforados.
+F514.1.1	Wash with soap and water if it was a dip.	Lave com água e sabão se foi um banho.
+F514.1.2	Keep the product label.	Guarde o rótulo do produto.
+F514.2h	Prevention	Prevenção
+F514.2.0	Measure the dose well and don't mix products.	Meça bem a dose e não misture produtos.
+F514.2.1	Don't dip animals in strong heat or when stressed.	Não banhe animais com calor forte nem estressados.
+F514.2.2	Don't graze freshly sprayed pastures before the indicated time.	Não paste em pastos recém-pulverizados antes do tempo indicado.
+F515.t	Salt poisoning and water deprivation	Intoxicação por sal e falta de água
+F515.r	When animals go many hours without water and then drink all at once, or eat a lot of salt without water, they can suffer brain damage.	Quando os animais passam muitas horas sem água e depois bebem de uma vez, ou comem muito sal sem água, podem sofrer dano cerebral.
+F515.0h	Signs	Sinais
+F515.0.0	Blind animals walking in circles or pressing their heads against the wall.	Animais cegos, que andam em círculos ou pressionam a cabeça contra a parede.
+F515.0.1	Convulsions after drinking water again.	Convulsões depois de voltar a beber água.
+F515.1h	What to do	O que fazer
+F515.1.0	Give water little by little to animals that went a long time without drinking.	Dê água aos poucos a animais que passaram muito tempo sem beber.
+F515.1.1	Call the vet.	Chame o veterinário.
+F515.2h	Prevention	Prevenção
+F515.2.0	Water always available, especially with salty rations.	Água sempre disponível, sobretudo com rações salgadas.
+F515.2.1	Check pumps, floats and pipes every day.	Revise bombas, boias e canos todos os dias.
+F516.t	Sudden death: possible causes	Morte súbita: possíveis causas
+F516.r	Finding an animal dead without having seen it sick is alarming. The most common causes are few and the vet can identify them with a necropsy.	Encontrar um animal morto sem tê-lo visto doente assusta. As causas mais comuns são poucas e o veterinário pode identificá-las com uma necropsia.
+F516.0h	Most frequent causes	Causas mais frequentes
+F516.0.0	Clostridial diseases (blackleg, enterotoxemia).	Doenças clostridiais (carbúnculo sintomático, enterotoxemia).
+F516.0.1	Bloat or acute acidosis.	Timpanismo ou acidose aguda.
+F516.0.2	Anthrax: don't open the carcass.	Antraz (carbúnculo hemático): não abra o cadáver.
+F516.0.3	Poisoning: plants, nitrates, urea, lead.	Intoxicações: plantas, nitratos, ureia, chumbo.
+F516.0.4	Lightning, heat stroke, snakebite.	Raios, golpe de calor, picada de cobra.
+F516.1h	What to do	O que fazer
+F516.1.0	If dark blood comes from the nose, mouth or anus and the body doesn't stiffen, suspect anthrax: don't open it and call the official vet.	Se sai sangue escuro pelo nariz, boca ou ânus e o corpo não fica rígido, suspeite de antraz: não abra e chame o veterinário oficial.
+F516.1.1	In other cases, ask for a necropsy the same day.	Nos outros casos, peça uma necropsia no mesmo dia.
+F516.1.2	Check the other animals and the day's feed.	Revise os demais animais e a comida do dia.
+F516.2h	In your feedlot	No seu confinamento
+F516.2.0	Record each death in the app with its cause.	Registre cada morte no app com a causa.
+F516.2.1	Several deaths in a row: stop ration changes and call the vet.	Várias mortes seguidas: pare as mudanças de ração e chame o veterinário.
+F517.t	Metaphylaxis on arrival	Metafilaxia na entrada
+F517.r	Metaphylaxis means treating a whole high-risk lot with antibiotics on arrival, before they get sick. It reduces pneumonia, but must be used judiciously so as not to create resistance.	A metafilaxia é tratar com antibiótico todo um lote de alto risco na chegada, antes que adoeçam. Reduz a pneumonia, mas deve ser usada com critério para não criar resistência.
+F517.0h	When it's justified	Quando se justifica
+F517.0.0	Light, newly weaned, auction animals from several origins.	Animais leves, recém-desmamados, de leilão e de várias origens.
+F517.0.1	Long trips and very stressed animals.	Viagens longas e animais muito estressados.
+F517.0.2	A history of many sick animals in similar lots.	Histórico de muitos doentes em lotes parecidos.
+F517.1h	When not	Quando não
+F517.1.0	Heavy, single-origin, preconditioned and vaccinated animals.	Animais pesados, de uma só origem, pré-condicionados e vacinados.
+F517.1.1	As a habit in every lot.	Como costume em todos os lotes.
+F517.2h	In your feedlot	No seu confinamento
+F517.2.0	Decide with your vet based on the risk of each purchase.	Decida com seu veterinário conforme o risco de cada compra.
+F517.2.1	Record the treatment and its withdrawal in the app.	Registre o tratamento e sua carência no app.
+F518.t	Tick fever (tristeza parasitaria)	Tristeza parasitária
+F518.r	Tick fever is the combination of anaplasmosis and babesiosis, two blood diseases transmitted by ticks and insects. They kill adult animals arriving from tick-free areas.	Chama-se tristeza parasitária o conjunto de anaplasmose e babesiose, duas doenças do sangue transmitidas por carrapatos e insetos. Matam animais adultos que chegam de regiões sem carrapatos.
+F518.0h	Signs	Sinais
+F518.0.0	High fever, depression and going off feed.	Febre alta, abatimento e parar de comer.
+F518.0.1	Pale or yellow mucous membranes.	Mucosas pálidas ou amarelas.
+F518.0.2	Dark urine in babesiosis.	Urina escura na babesiose.
+F518.0.3	Aggressive animal or one that collapses in severe cases.	Animal agressivo ou que cai nos casos graves.
+F518.1h	Who is at risk	Quem está em risco
+F518.1.0	Animals brought from high or cold areas without prior contact.	Animais trazidos de regiões altas ou frias sem contato prévio.
+F518.1.1	European-breed animals.	Animais de raças europeias.
+F518.1.2	Stressed lots with many ticks.	Lotes estressados com muitos carrapatos.
+F518.2h	What to do	O que fazer
+F518.2.0	Call the vet: treatment differs for each one.	Chamar o veterinário: o tratamento é diferente para cada uma.
+F518.2.1	Don't drive or stress the sick animal.	Não tocar nem estressar o animal doente.
+F518.2.2	Tick and fly control.	Controle de carrapatos e moscas.
+F519.t	Treatment protocol	Protocolo de tratamento
+F519.r	A protocol is a written plan, made with the vet, stating what to do for each common disease: which product, what dose, how many days and when to switch if it doesn't improve.	Um protocolo é um plano escrito, feito com o veterinário, que diz o que fazer com cada doença comum: qual produto, que dose, quantos dias e quando mudar se não melhorar.
+F519.0h	What it includes	O que inclui
+F519.0.0	How to recognize the disease.	Como reconhecer a doença.
+F519.0.1	First treatment and dose by weight.	Primeiro tratamento e dose por peso.
+F519.0.2	What to do if it doesn't improve in 2 to 3 days.	O que fazer se não melhorar em 2 a 3 dias.
+F519.0.3	Withdrawal before sale.	Carência para a venda.
+F519.1h	Benefits	Benefícios
+F519.1.0	Everyone on the farm treats the same way.	Todos na fazenda tratam igual.
+F519.1.1	Less unnecessary antibiotic use.	Menos uso desnecessário de antibióticos.
+F519.1.2	Clear records for buyers.	Registros claros para compradores.
+F519.2h	In your feedlot	No seu confinamento
+F519.2.0	Ask your vet for a protocol for pneumonia, diarrhea, lameness and anaplasma.	Peça ao seu veterinário um protocolo para pneumonia, diarreia, mancadeira e anaplasma.
+F519.2.1	Record each treatment in the app.	Anote cada tratamento no app.
+F520.t	Humane euthanasia	Eutanásia humanitária
+F520.r	When an animal suffers with no chance of recovery, the right decision is to end its life without pain. It must be done by a vet or a trained person.	Quando um animal sofre sem possibilidade de se recuperar, a decisão correta é terminar sua vida sem dor. Deve ser feita por um veterinário ou uma pessoa treinada.
+F520.0h	When to consider it	Quando considerar
+F520.0.0	Severe leg fractures.	Fraturas graves de patas.
+F520.0.1	A downer that doesn't get up after treatment.	Animal caído que não se levanta depois do tratamento.
+F520.0.2	Incurable disease with a lot of pain.	Doença sem cura com muita dor.
+F520.1h	How to do it properly	Como fazer bem
+F520.1.0	With approved methods and trained staff.	Com métodos aprovados e pessoal preparado.
+F520.1.1	Never let the animal suffer for days.	Nunca deixar o animal sofrer por dias.
+F520.1.2	Dispose of the carcass according to regulations.	Dar destino ao cadáver conforme as normas.
+F521.t	Feedlot health calendar	Calendário sanitário do confinamento
+F521.r	A calendar organizes vaccines, dewormings and checks from arrival to sale, and prevents omissions and withdrawals running into the sale.	Um calendário organiza vacinas, vermifugações e revisões desde a chegada até a venda, e evita esquecimentos e carências em cima da venda.
+F521.0h	On arrival	Na entrada
+F521.0.0	Clostridial and respiratory vaccine according to risk.	Vacina clostridial e respiratória conforme o risco.
+F521.0.1	Deworming based on tests.	Vermifugação conforme exames.
+F521.0.2	Vitamins A, D and E.	Vitaminas A, D e E.
+F521.0.3	Tick and fly control.	Controle de carrapatos e moscas.
+F521.1h	Week 3 to 4	Semana 3 a 4
+F521.1.0	Vaccine boosters.	Reforço de vacinas.
+F521.1.1	Check lagging animals.	Revisão de animais atrasados.
+F521.2h	During feeding	Durante o confinamento
+F521.2.0	Tick control according to load.	Controle de carrapatos conforme a carga.
+F521.2.1	Daily checks and periodic weighings.	Revisão diária e pesagens periódicas.
+F521.3h	Before selling	Antes de vender
+F521.3.0	Check that no treatment is still under withdrawal.	Verifique que nenhum tratamento esteja em carência.
+F521.3.1	The app warns you about lots under withdrawal.	O app avisa dos lotes em carência.
+F522.t	Diseases by season	Doenças por época do ano
+F522.r	Each season brings its problems. Preparing ahead lowers losses.	Cada época traz seus problemas. Preparar-se antes baixa as perdas.
+F522.0h	Dry season	Época seca
+F522.0.0	Vitamin A and protein deficiency.	Deficiência de vitamina A e de proteína.
+F522.0.1	Dust and pneumonia.	Poeira e pneumonias.
+F522.0.2	Poisoning by plants that stay green.	Intoxicações por plantas que ficam verdes.
+F522.1h	Start of the rains	Início das chuvas
+F522.1.0	Ticks, flies and bot flies increase.	Aumentam carrapatos, moscas e berne.
+F522.1.1	Bloat with lush grass.	Timpanismo com pastos novos.
+F522.1.2	Clostridial diseases with pasture changes.	Clostridioses com mudanças de pasto.
+F522.2h	Heavy rains	Chuvas fortes
+F522.2.0	Lameness, skin problems, parasites and liver fluke.	Mancadeiras, problemas de pele, parasitas e fascíola.
+F522.2.1	Leptospirosis from stagnant water.	Leptospirose por água parada.
+F522.3h	Mid-summer drought and heat waves	Veranico e ondas de calor
+F522.3.0	Heat stress and heat stroke.	Estresse por calor e golpe de calor.
+F522.3.1	Drop in intake.	Queda de consumo.
+F523.t	Biosecurity for visitors and vehicles	Biossegurança para visitas e veículos
+F523.r	Diseases enter the farm on boots, tires, trucks and outside animals. A few simple rules close the door.	As doenças entram na fazenda em botas, pneus, caminhões e animais de fora. Umas regras simples fecham a porta.
+F523.0h	Rules	Regras
+F523.0.0	Cattle trucks stay outside the pens when possible.	Caminhões de gado ficam fora dos currais quando possível.
+F523.0.1	Footbath or boot washing at the entrance.	Pedilúvio ou lavagem de botas na entrada.
+F523.0.2	Visitors coming from other farms or slaughterhouses don't enter the pens without clean clothes.	Visitantes que vêm de outras fazendas ou frigoríficos não entram nos currais sem roupa limpa.
+F523.1h	Animals	Animais
+F523.1.0	2 to 3 week quarantine for every new animal.	Quarentena de 2 a 3 semanas para todo animal novo.
+F523.1.1	Dogs and birds from other farms away from the feed.	Cães e aves de outras fazendas longe da comida.
+G0.t	Acidosis	Acidose
+G0.x	It happens when they eat a lot of grain at once. Signs: intake drops, sour-smelling diarrhea, lameness and droopy animals. To avoid it: adapt to concentrate over 2 to 3 weeks, keep at least 8 to 10 % forage, always feed at the same time and don't leave the bunk empty for hours. If you see several cases, call your vet.	Acontece quando comem muito grão de uma vez. Sinais: o consumo cai, diarreia com cheiro ácido, mancadeiras e animais abatidos. Para evitar: adapte ao concentrado em 2 a 3 semanas, mantenha pelo menos 8 a 10 % de forragem, sirva sempre no mesmo horário e não deixe o cocho vazio por horas. Se vir vários casos, chame seu veterinário.
+G1.t	Bloat	Timpanismo
+G1.x	The rumen swells on the left side with gas or froth. It usually comes from very finely ground grain or abrupt changes. Grind the grain coarser, provide fiber and change the diet little by little. A bloated animal struggling to breathe is an emergency: call the vet immediately.	O rúmen incha do lado esquerdo por gás ou espuma. Costuma vir de grãos moídos muito finos ou mudanças bruscas. Moa o grão mais grosso, dê fibra e mude a dieta aos poucos. Um animal inchado e com dificuldade para respirar é uma urgência: chame o veterinário imediatamente.
+G2.t	Pneumonia or shipping fever	Pneumonia ou febre do transporte
+G2.x	It's the most common disease in the first 2 to 4 weeks after arrival. Signs: cough, nasal discharge, droopy ears, fast breathing and not eating. What helps: short, calm transport, water and hay on arrival, ventilated dust-free pens, and checking animals twice a day. Treat early as your vet directs.	É a doença mais comum nas primeiras 2 a 4 semanas depois da chegada. Sinais: tosse, muco no nariz, orelhas caídas, respiração rápida e não comem. Ajuda: transporte curto e tranquilo, água e feno na chegada, currais ventilados e sem poeira, e revisar os animais duas vezes ao dia. Trate cedo com indicação do seu veterinário.
+G3.t	Receiving new animals	Recepção de animais novos
+G3.x	On arrival: clean water and good-quality hay, 12 to 24 hours of rest before handling them, then weigh, identify, vaccinate and deworm. Start with a high-forage ration and adapt to concentrate little by little. Watch them morning and afternoon for the first three weeks.	Na chegada: água limpa e feno de boa qualidade, descanso de 12 a 24 horas antes de manejá-los, depois pesar, identificar, vacinar e vermifugar. Comece com uma ração alta em forragem e adapte ao concentrado aos poucos. Observe-os de manhã e à tarde nas primeiras três semanas.
+G4.t	Heat	Calor
+G4.x	Heat lowers intake and gain. Provide 2 to 4 m² of shade per animal, free-choice cool water, and feed more during the cool hours, early and late in the afternoon. Don't handle them at noon. In Rumi's menu, Calculators, Heat index, I tell you the risk from your temperature and humidity.	O calor baixa o consumo e o ganho. Dê sombra de 2 a 4 m² por animal, água fresca à vontade e sirva mais alimento nas horas frescas, cedo e no fim da tarde. Não os maneje ao meio-dia. No menu do Rumi, Calculadoras, Índice de calor, eu digo o risco com sua temperatura e umidade.
+G5.t	Water	Água
+G5.x	A steer drinks 30 to 60 liters a day, more in heat. Clean waterers every week and allow about 30 cm of waterer for every 10 animals. If they drink little water, they eat little.	Um novilho bebe de 30 a 60 litros por dia, mais com calor. Limpe os bebedouros toda semana e deixe uns 30 cm de bebedouro para cada 10 animais. Se bebem pouca água, comem pouco.
+G6.t	Urea	Ureia
+G6.x	It provides cheap protein, but carefully: no more than 1 % of the diet's dry matter, well mixed and never in water. Introduce it little by little. If you see tremors, drooling or staggering after eating, it may be poisoning: call the vet immediately.	Fornece proteína barata, mas com cuidado: não mais de 1 % da matéria seca da dieta, bem misturada e nunca na água. Introduza aos poucos. Se vir tremores, babeira ou cambaleio depois de comer, pode ser intoxicação: chame o veterinário imediatamente.
+G7.t	Storing feed	Armazenar alimento
+G7.x	Keep grain dry, on pallets and away from the wall. Don't use moldy corn: aflatoxins lower gain and make animals sick. Use first what came in first.	Guarde o grão seco, sobre paletes e longe da parede. Não use milho com mofo: as aflatoxinas baixam o ganho e adoecem. Use primeiro o que entrou primeiro.
+G8.t	Silage	Silagem
+G8.x	Cut the corn when the grain is milky to doughy, chop fine, pack very well and cover without air. When you open it, remove an even face every day and discard anything rotten or moldy.	Corte o milho com o grão leitoso a pastoso, pique fino, compacte muito bem e cubra sem ar. Ao abrir, retire uma face uniforme a cada dia e descarte o podre ou com mofo.
+G9.t	Implants	Implantes
+G9.x	They increase gain, but check your country's regulations and what your buyer accepts: some markets don't allow them. Always record product and date in Health.	Aumentam o ganho, mas revise a regulação do seu país e o que seu comprador aceita: alguns mercados não os permitem. Registre sempre produto e data em Sanidade.
+G10.t	Entry weight	Peso de entrada
+G10.x	In pen feeding it's common to buy between 250 and 350 kg. Lighter ones take longer and convert better; heavier ones finish fast but eat more per day. Compare with the price: in Rumi's menu, Money and sales, Maximum purchase price.	No confinamento em curral o comum é comprar entre 250 e 350 kg. Mais leves demoram mais e convertem melhor; mais pesados saem rápido, mas comem mais por dia. Compare com o preço: no menu do Rumi, Dinheiro e vendas, Preço máximo de compra.
+G11.t	Transport shrink	Quebra no transporte
+G11.x	On the trip they lose 3 to 8 % of their weight, depending on hours and heat. Weigh after they rest and drink, or discount that shrink. Haul during cool hours and without overloading the truck.	Na viagem perdem de 3 a 8 % do peso, conforme as horas e o calor. Pese depois que descansarem e beberem água, ou desconte essa quebra. Transporte nas horas frescas e sem sobrecarregar o caminhão.
+G12.t	How often to weigh	A cada quanto pesar
+G12.x	Every 21 to 28 days is enough. Always weigh at the same time, preferably in the morning before feeding. That way gains are comparable.	A cada 21 a 28 dias é suficiente. Pese sempre no mesmo horário, de preferência de manhã antes de servir. Assim os ganhos são comparáveis.
+G13.t	Flies and parasites	Moscas e parasitas
+G13.x	Remove manure often, avoid puddles and control flies at the bunks. Deworm on arrival and repeat as your vet advises.	Retire o esterco com frequência, evite poças e controle as moscas nos cochos. Vermifugue na entrada e repita conforme indicar seu veterinário.
+G14.t	Diarrhea	Diarreia
+G14.x	It can come from abrupt diet changes, too much grain, moldy feed or infections. Check the ration and the water. If there's blood, fever or several animals, call the vet.	Pode vir de mudanças bruscas de dieta, excesso de grão, alimento com mofo ou infecções. Revise a ração e a água. Se houver sangue, febre ou vários animais, chame o veterinário.

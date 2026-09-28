@@ -1,0 +1,241 @@
+F455.t	Internal parasites	Parasitas internos
+F455.r	Stomach, intestinal and lung worms steal nutrients and lower gain. In the humid tropics they're a constant problem, especially in animals coming off pasture.	Vermes do estômago, intestino e pulmão roubam nutrientes e baixam o ganho. No trópico úmido são um problema constante, sobretudo em animais que vêm do pasto.
+F455.0h	Main parasites	Principais parasitas
+F455.0.0	Abomasal and intestinal worms (Haemonchus, Cooperia, Ostertagia, Trichostrongylus).	Vermes do abomaso e do intestino (Haemonchus, Cooperia, Ostertagia, Trichostrongylus).
+F455.0.1	Lungworms (Dictyocaulus): cause coughing.	Vermes do pulmão (Dictyocaulus): causam tosse.
+F455.0.2	Liver fluke (Fasciola) in areas with puddles and snails.	Fascíola do fígado (Fasciola) em regiões com poças e caramujos.
+F455.0.3	Tapeworms and coccidia in young animals.	Tênias e coccídios em animais jovens.
+F455.1h	Signs	Sinais
+F455.1.0	Dull, rough coat.	Pelo opaco e arrepiado.
+F455.1.1	Low weight gain with no other cause.	Baixo ganho de peso sem outra causa.
+F455.1.2	Diarrhea and dirty tail.	Diarreia e cauda suja.
+F455.1.3	Anemia: pale mucous membranes.	Anemia: mucosas pálidas.
+F455.1.4	Swelling under the jaw ('bottle jaw') in heavy infestations.	Edema embaixo da mandíbula ('papeira') em infestações fortes.
+F455.2h	Deworming on arrival	Vermifugação na entrada
+F455.2.0	Deworm every animal on arrival, with the product and dose by weight your vet indicates.	Vermifugue todos os animais na chegada, com o produto e a dose por peso que seu veterinário indicar.
+F455.2.1	Weigh or estimate weight well: underdosing favors resistance.	Pese ou estime bem o peso: dar dose menor que a necessária favorece a resistência.
+F455.2.2	In a closed pen with good management reinfection is low; on pasture it's repeated according to the plan.	No curral fechado, com bom manejo, a reinfecção é baixa; no pasto repete-se conforme o plano.
+F455.3h	Dewormer resistance	Resistência a vermífugos
+F455.3.0	Always using the same product or low doses means the parasites stop dying.	Usar sempre o mesmo produto ou doses baixas faz os parasitas deixarem de morrer.
+F455.3.1	Rotate the chemical group (not just the brand) as the vet indicates.	Rotacione o grupo químico (não só a marca) conforme indicar o veterinário.
+F455.3.2	A fecal test before and 10 to 14 days after treatment tells you whether the product works.	Um exame de fezes antes e 10 a 14 dias depois do tratamento diz se o produto funciona.
+F455.4h	Practical rules	Regras práticas
+F455.4.0	Calculate the dose for the heaviest animal in the group or by individual weight.	Calcule a dose com o animal mais pesado do grupo ou pelo peso individual.
+F455.4.1	Respect the label's withdrawal days before selling.	Respeite os dias de carência do rótulo antes de vender.
+F455.4.2	Record the product and date in the app.	Anote no app o produto e a data.
+F455.4.3	Don't mix dewormers with other products in the same syringe.	Não misture vermífugos com outros produtos na mesma seringa.
+F456.t	Fasciola or liver fluke	Fascíola ou baratinha do fígado
+F456.r	A leaf-shaped parasite that lives in the liver. It's picked up on wet pastures where there are water snails.	Parasita em forma de folha que vive no fígado. Contagia-se em pastos úmidos onde há caramujos de água.
+F456.0h	How it spreads	Como se contagia
+F456.0.0	Eggs come out in the manure, pass through a water snail and the larva ends up on wet grass.	Os ovos saem no esterco, passam por um caramujo de água e a larva fica no pasto úmido.
+F456.0.1	Animals eat it while grazing near puddles, streams or waterlogged areas.	Os animais a ingerem ao pastar perto de poças, córregos ou áreas alagadas.
+F456.1h	Signs	Sinais
+F456.1.0	Weight loss and poor coat.	Perda de peso e pelo ruim.
+F456.1.1	Anemia and swelling under the jaw.	Anemia e edema embaixo da mandíbula.
+F456.1.2	Condemned livers at slaughter, with thickened ducts.	Condenação de fígados no frigorífico, com ductos espessados.
+F456.2h	What to do	O que fazer
+F456.2.0	Consult the vet: not all dewormers kill liver fluke.	Consulte o veterinário: nem todos os vermífugos matam a fascíola.
+F456.2.1	Use a fluke-specific product if there's a history in the area or where the animals come from.	Use um produto específico contra fascíola se houver histórico na região ou de onde vêm os animais.
+F456.2.2	Ask the slaughterhouse for the liver report.	Peça ao frigorífico o relatório de fígados.
+F456.3h	Prevention	Prevenção
+F456.3.0	Fence off waterlogged areas and stream banks.	Cerque as áreas alagadas e as margens de córregos.
+F456.3.1	Provide water in troughs, not puddles.	Dê água em bebedouros, não em poças.
+F456.3.2	Drain pastures when possible.	Drene os pastos quando possível.
+F457.t	Ticks	Carrapatos
+F457.r	They suck blood, transmit anaplasmosis and babesiosis, damage the hide and lower gain. Their control must be planned so as not to create resistance.	Sugam sangue, transmitem anaplasmose e babesiose, danificam o couro e baixam o ganho. Seu controle deve ser planejado para não criar resistência.
+F457.0h	Damage	Danos
+F457.0.0	Loss of blood and weight.	Perda de sangue e de peso.
+F457.0.1	They transmit tick fever (babesiosis and anaplasmosis).	Transmitem a tristeza parasitária (babesiose e anaplasmose).
+F457.0.2	Wounds that attract flies and screwworm.	Feridas que atraem moscas e bicheira.
+F457.0.3	Stress and lower feed intake.	Estresse e menos consumo de alimento.
+F457.1h	Control	Controle
+F457.1.0	Dip or apply the product when ticks are visible, following the label.	Banhe ou aplique o produto quando houver carrapatos visíveis, seguindo o rótulo.
+F457.1.1	Wet the whole body well: ears, between the legs, udder or scrotum and under the tail.	Molhe bem todo o corpo: orelhas, entre as patas, úbere ou escroto e embaixo da cauda.
+F457.1.2	Use the right dose and dilution; less product doesn't kill and creates resistance.	Use a dose e a diluição corretas; menos produto não mata e cria resistência.
+F457.1.3	Rotate chemical groups as the technician indicates.	Rotacione os grupos químicos conforme indicar o técnico.
+F457.1.4	Pour-on and injectable products have long withdrawals; check before selling.	Os produtos pour-on e injetáveis têm carências longas; revise antes de vender.
+F457.2h	Resistance	Resistência
+F457.2.0	If many ticks are still alive after a well-done dip, there may be resistance.	Se depois de um banho bem feito muitos carrapatos continuam vivos, pode haver resistência.
+F457.2.1	A lab resistance test shows which products work on your farm.	Um teste de resistência em laboratório indica quais produtos funcionam na sua fazenda.
+F457.3h	Prevention	Prevenção
+F457.3.0	Check animals on arrival and treat them before putting them in the pen.	Revise os animais na chegada e trate-os antes de colocá-los no curral.
+F457.3.1	Keep brush short around pens.	Mantenha o mato baixo ao redor dos currais.
+F457.3.2	On pasture, rotation helps break the cycle.	No pasto, a rotação ajuda a quebrar o ciclo.
+F457.3.3	Zebu animals and their crosses resist ticks better.	Os animais zebuínos e seus cruzamentos resistem melhor ao carrapato.
+F457.4h	Safety	Segurança
+F457.4.0	Use gloves, mask and long sleeves when preparing and applying.	Use luvas, máscara e roupa de manga longa ao preparar e aplicar.
+F457.4.1	Don't dump dip leftovers in streams or water sources.	Não jogue restos de banho em córregos ou fontes de água.
+F457.4.2	Keep products locked up, away from feed.	Guarde os produtos trancados, longe do alimento.
+F458.t	Horn flies and stable flies	Moscas-dos-chifres e moscas-dos-estábulos
+F458.r	Flies bother, bite and suck blood. An animal that spends the day swatting flies eats and gains less.	As moscas incomodam, picam e sugam sangue. Um animal que passa o dia espantando moscas come e ganha menos.
+F458.0h	Types	Tipos
+F458.0.0	Horn fly: small, clusters on the back and sides; lives on the animal.	Mosca-dos-chifres: pequena, agrupa-se no lombo e nos lados; vive sobre o animal.
+F458.0.1	Stable fly: bites the legs, breeds in manure mixed with feed.	Mosca-dos-estábulos: pica nas patas, cria-se em esterco misturado com alimento.
+F458.0.2	House fly: doesn't bite, but soils and carries disease.	Mosca doméstica: não pica, mas suja e leva doenças.
+F458.1h	Damage	Danos
+F458.1.0	Stress, less time eating and resting.	Estresse, menos tempo comendo e descansando.
+F458.1.1	Loss of weight and blood.	Perda de peso e de sangue.
+F458.1.2	They transmit eye and skin diseases.	Transmitem doenças de olhos e pele.
+F458.2h	Control	Controle
+F458.2.0	The key is removing where they breed: built-up manure and wet feed.	A chave é eliminar onde se criam: esterco e alimento molhado acumulados.
+F458.2.1	Clean under bunks and around waterers every week.	Limpe embaixo dos cochos e ao redor dos bebedouros toda semana.
+F458.2.2	Use insecticides only when there are many flies and according to the label.	Use inseticidas só quando houver muitas moscas e conforme o rótulo.
+F458.2.3	Traps and baits in resting areas help.	Armadilhas e iscas nas áreas de descanso ajudam.
+F458.2.4	Rotate products to avoid resistance.	Rotacione os produtos para evitar resistência.
+F458.3h	Practical threshold	Limiar prático
+F458.3.0	More than 200 horn flies per animal justifies treatment.	Mais de 200 moscas-dos-chifres por animal justificam um tratamento.
+F458.3.1	If you see animals bunched and kicking all day, act.	Se vir os animais amontoados e chutando o dia todo, aja.
+F459.t	New World screwworm	Bicheira (Cochliomyia)
+F459.r	The fly lays eggs in wounds and the larvae eat living flesh. It's an officially controlled pest: cases are reported to SENASA.	A mosca põe ovos em feridas e as larvas comem carne viva. É uma praga de controle oficial: os casos são notificados ao SENASA.
+F459.0h	Where it appears	Onde aparece
+F459.0.0	Castration, dehorning, ear tag, branding or bruise wounds.	Feridas de castração, descorna, brincos, marcação a ferro ou pancadas.
+F459.0.1	Calves' navels.	Umbigos de bezerros.
+F459.0.2	Wounds from ticks or wire.	Feridas por carrapatos ou arame.
+F459.1h	Signs	Sinais
+F459.1.0	A growing wound with a bad smell and fluid.	Ferida que cresce, com mau cheiro e líquido.
+F459.1.1	White larvae visible inside.	Larvas brancas visíveis dentro.
+F459.1.2	The animal licks, scratches and moves away.	O animal se lambe, se coça e se afasta.
+F459.2h	What to do	O que fazer
+F459.2.0	Clean the wound, remove the larvae and apply a veterinary larvicide and repellent.	Limpe a ferida, retire as larvas e aplique um produto larvicida e repelente de uso veterinário.
+F459.2.1	Check the wound every day until it closes.	Revise a ferida todo dia até fechar.
+F459.2.2	Report the case to SENASA: it's part of the official control program.	Notifique o caso ao SENASA: faz parte do programa oficial de controle.
+F459.2.3	Keep some larvae in alcohol if the technician asks for them.	Guarde algumas larvas em álcool se o técnico pedir.
+F459.3h	Prevention	Prevenção
+F459.3.0	Check and treat every wound the same day.	Revise e trate toda ferida no mesmo dia.
+F459.3.1	Do castration, dehorning and tagging when there are fewer flies, and with repellent.	Faça castrações, descornas e brincos na época de menos moscas e com repelente.
+F459.3.2	Fix nails, wires and boards that cut in the pens.	Conserte pregos, arames e tábuas que cortam nos currais.
+F459.3.3	Check new animals before putting them with the rest.	Revise os animais novos antes de colocá-los com o resto.
+F460.t	Tórsalo (bot fly larva)	Berne
+F460.r	The larva of a fly that lives under the skin, forming lumps with a hole. It damages the hide and bothers the animal.	Larva de uma mosca que vive embaixo do couro formando bolinhas com um furo. Danifica o couro e incomoda o animal.
+F460.0h	Signs	Sinais
+F460.0.0	Lumps on the back and sides with a hole through which the larva breathes.	Caroços no lombo e nos lados com um orifício por onde a larva respira.
+F460.0.1	Itching and discomfort.	Coceira e incômodo.
+F460.0.2	Hides with holes at slaughter.	Couros com furos no frigorífico.
+F460.1h	What to do	O que fazer
+F460.1.0	External parasite treatments or endectocides control them; ask which to use.	Os tratamentos contra parasitas externos ou os endectocidas os controlam; consulte qual usar.
+F460.1.1	The larva can be removed by squeezing the nodule and disinfecting.	Pode-se retirar a larva apertando o nódulo e desinfetando.
+F460.1.2	Don't burst the larva inside the skin: it causes infection.	Não estoure a larva dentro do couro: causa infecção.
+F460.2h	Prevention	Prevenção
+F460.2.0	Control flies and the brush around.	Controle de moscas e do mato ao redor.
+F460.2.1	Check new animals and treat them on arrival if they have bot lumps.	Revise os animais novos e trate-os na entrada se trouxerem bernes.
+F461.t	Anaplasmosis	Anaplasmose
+F461.r	A blood disease transmitted by ticks, flies and dirty needles. It destroys red blood cells and can kill adult animals.	Doença do sangue transmitida por carrapatos, moscas e agulhas sujas. Destrói glóbulos vermelhos e pode matar animais adultos.
+F461.0h	Signs	Sinais
+F461.0.0	High fever at the start.	Febre alta no início.
+F461.0.1	Pale, then yellow mucous membranes.	Mucosas pálidas e depois amarelas.
+F461.0.2	Weakness, tiredness, lagging behind.	Fraqueza, cansaço, fica para trás.
+F461.0.3	Normal urine (unlike babesiosis).	Urina normal (diferente da babesiose).
+F461.0.4	Animals that turn aggressive or collapse when handled due to lack of oxygen.	Animais agressivos ou que caem ao serem manejados por falta de oxigênio.
+F461.1h	What to do	O que fazer
+F461.1.0	Consult the vet immediately; treatment exists but must be timely.	Consulte o veterinário imediatamente; o tratamento existe, mas deve ser a tempo.
+F461.1.1	Handle the animal very calmly: exertion can kill it.	Maneje o animal com muita calma: o esforço pode matá-lo.
+F461.1.2	Give it shade, water and feed nearby.	Dê sombra, água e alimento por perto.
+F461.2h	Prevention	Prevenção
+F461.2.0	Tick and fly control.	Controle de carrapatos e moscas.
+F461.2.1	Use a clean needle per animal or per few animals when vaccinating or injecting.	Use uma agulha limpa por animal ou por poucos animais ao vacinar ou injetar.
+F461.2.2	Disinfect castration, dehorning and tagging instruments between animals.	Desinfete os instrumentos de castração, descorna e brincos entre animais.
+F461.2.3	Animals from tick-free areas are more susceptible.	Os animais que vêm de regiões sem carrapato são mais suscetíveis.
+F462.t	Babesiosis (red-water tick fever)	Babesiose (tristeza parasitária)
+F462.r	A blood parasite transmitted by ticks. It breaks red blood cells and the urine turns red or brown.	Parasita do sangue transmitido pelo carrapato. Rompe glóbulos vermelhos e a urina fica vermelha ou marrom.
+F462.0h	Signs	Sinais
+F462.0.0	High fever.	Febre alta.
+F462.0.1	Red, brown or coffee-with-milk colored urine.	Urina vermelha, marrom ou cor de café com leite.
+F462.0.2	Pale or yellow mucous membranes.	Mucosas pálidas ou amarelas.
+F462.0.3	In some cases, nervous signs: staggering, convulsions.	Em alguns casos, sinais nervosos: cambaleia, convulsões.
+F462.0.4	Rapid death in animals without immunity.	Morte rápida em animais sem imunidade.
+F462.1h	What to do	O que fazer
+F462.1.0	Call the vet: there's specific treatment.	Chame o veterinário: há tratamento específico.
+F462.1.1	Don't run or stress the animal.	Não corra nem estresse o animal.
+F462.1.2	Separate it and give water, shade and easily reached feed.	Separe e dê água, sombra e comida fácil de alcançar.
+F462.2h	Prevention	Prevenção
+F462.2.0	Strategic tick control.	Controle estratégico de carrapatos.
+F462.2.1	Special care with animals brought from high or cold tick-free areas.	Cuidado especial com animais trazidos de regiões altas ou frias sem carrapato.
+F462.2.2	Ask about vaccines or premunition available in your area.	Pergunte por vacinas ou premunições disponíveis na sua região.
+F462.3h	Differences from other causes of red urine	Diferenças com outras causas de urina vermelha
+F462.3.0	Babesiosis: fever and red urine.	Babesiose: febre e urina vermelha.
+F462.3.1	Anaplasmosis: anemia and yellowing, normal urine.	Anaplasmose: anemia e amarelidão, urina normal.
+F462.3.2	Leptospirosis: red urine, sometimes abortions in females.	Leptospirose: urina vermelha, às vezes abortos em fêmeas.
+F462.3.3	Poisoning by some plants also gives dark urine.	Intoxicações por algumas plantas também dão urina escura.
+F463.t	Clostridial diseases	Doenças clostridiais
+F463.r	A group of diseases from soil bacteria that kill very fast: blackleg, malignant edema, enterotoxemia and others. They're prevented with vaccine.	Grupo de doenças por bactérias que vivem no solo e matam muito rápido: carbúnculo sintomático, edema maligno, enterotoxemia e outras. Previnem-se com vacina.
+F463.0h	Which they are	Quais são
+F463.0.0	Blackleg: swelling in large muscles that crackles when touched.	Carbúnculo sintomático (manqueira): inchaço em músculos grandes que crepita ao tocar.
+F463.0.1	Malignant edema: swelling at wounds or injection sites.	Edema maligno: inchaço em feridas ou locais de injeção.
+F463.0.2	Enterotoxemia: sudden death, sometimes with diarrhea, in well-fed animals.	Enterotoxemia: morte súbita, às vezes com diarreia, em animais bem alimentados.
+F463.0.3	Bacillary hemoglobinuria: red urine and rapid death.	Hemoglobinúria bacilar: urina vermelha e morte rápida.
+F463.0.4	Tetanus: stiffness after wounds or castrations.	Tétano: rigidez depois de feridas ou castrações.
+F463.1h	Signs	Sinais
+F463.1.0	Often the animal is just found dead.	Muitas vezes só se encontra o animal morto.
+F463.1.1	Severe lameness with a hot, then cold, crackling swelling.	Mancadeira forte com inchaço quente e depois frio que crepita.
+F463.1.2	Fever and rapid decline.	Febre e abatimento rápido.
+F463.1.3	Rapid swelling around wounds.	Inchaço rápido ao redor de feridas.
+F463.2h	What to do	O que fazer
+F463.2.0	Call the vet and don't open the carcass if it bleeds from the nose, mouth or anus (rule out anthrax).	Chame o veterinário e não abra o cadáver se sangrar pelo nariz, boca ou ânus (descartar antraz).
+F463.2.1	Check the vaccination of the rest of the lot.	Revise a vacinação do resto do lote.
+F463.2.2	Treatment rarely works; prevention is what matters.	O tratamento raramente funciona; a prevenção é o importante.
+F463.3h	Prevention	Prevenção
+F463.3.0	Polyvalent clostridial vaccine on arrival.	Vacina polivalente contra clostrídios na entrada.
+F463.3.1	Booster at 21 to 30 days; a single dose protects little.	Reforço aos 21 a 30 dias; uma só dose protege pouco.
+F463.3.2	Clean needles and injection in the neck.	Agulhas limpas e aplicação no pescoço.
+F463.3.3	Prompt wound care.	Cura rápida de feridas.
+F464.t	Anthrax	Antraz (carbúnculo hemático)
+F464.r	A serious disease that spreads to people. It kills within hours. It must be reported to SENASA.	Doença grave e contagiosa para as pessoas. Mata em horas. É de notificação obrigatória ao SENASA.
+F464.0h	Signs	Sinais
+F464.0.0	Sudden death, sometimes of several animals.	Morte súbita, às vezes de vários animais.
+F464.0.1	Dark, non-clotting blood from the nose, mouth or anus.	Sangue escuro que não coagula pelo nariz, boca ou ânus.
+F464.0.2	The carcass swells very fast and doesn't stiffen.	O cadáver incha muito rápido e não fica rígido.
+F464.1h	What to do	O que fazer
+F464.1.0	Don't open or move the carcass: spores contaminate the soil for decades.	Não abra nem mova o cadáver: os esporos contaminam o solo por décadas.
+F464.1.1	Isolate the area, remove the other animals and call the vet and SENASA.	Isole a área, retire os outros animais e chame o veterinário e o SENASA.
+F464.1.2	Don't eat or sell meat from that animal.	Não consuma nem venda carne desse animal.
+F464.1.3	Wear gloves if you had contact and see a doctor if you have wounds or sores on your skin.	Use luvas se teve contato e consulte o médico se tiver feridas ou espinhas na pele.
+F464.2h	Prevention	Prevenção
+F464.2.0	In areas with a history, annual vaccination according to the official program.	Em regiões com histórico, vacinação anual conforme o programa oficial.
+F464.2.1	Proper carcass disposal (deep burial with lime or incineration as the authority directs).	Destinação correta de cadáveres (enterro profundo com cal ou incineração conforme a autoridade).
+F465.t	Bovine paralytic rabies	Raiva paralítica bovina
+F465.r	It's transmitted by the vampire bat. It has no cure and spreads to people. It's prevented with vaccine and bat control.	É transmitida pelo morcego-vampiro. Não tem cura e passa para as pessoas. Previne-se com vacina e controle do morcego.
+F465.0h	Signs	Sinais
+F465.0.0	Small bleeding bites on the neck, back or legs.	Mordidas pequenas que sangram no pescoço, lombo ou patas.
+F465.0.1	Behavior changes, drooling, difficulty swallowing.	Mudanças de comportamento, babeira, dificuldade para engolir.
+F465.0.2	Paralysis starting in the hind legs.	Paralisia que começa nas patas traseiras.
+F465.0.3	Death within a few days.	Morte em poucos dias.
+F465.1h	What to do	O que fazer
+F465.1.0	Don't put your hand in the mouth of an animal that drools or can't swallow: it may be rabies.	Não coloque a mão na boca de um animal que baba ou não engole: pode ser raiva.
+F465.1.1	Isolate the animal and notify the vet and SENASA.	Isole o animal e avise o veterinário e o SENASA.
+F465.1.2	If anyone had contact with saliva, they should go to a health center the same day.	Se alguém teve contato com saliva, que vá ao posto de saúde no mesmo dia.
+F465.2h	Prevention	Prevenção
+F465.2.0	Annual rabies vaccination in risk areas.	Vacinação antirrábica anual em regiões de risco.
+F465.2.1	Report bat bites to SENASA for vampire control.	Notifique mordidas de morcego ao SENASA para o controle do vampiro.
+F465.2.2	Check animals in the morning for fresh bites.	Revise os animais de manhã procurando mordidas frescas.
+F466.t	Leptospirosis	Leptospirose
+F466.r	A bacterium spread through the urine of infected animals, including rats, in water and mud. It affects cattle and people.	Bactéria transmitida pela urina de animais infectados, incluindo ratos, na água e no barro. Afeta bovinos e pessoas.
+F466.0h	Signs in cattle	Sinais em bovinos
+F466.0.0	Fever, depression.	Febre, abatimento.
+F466.0.1	Red or dark urine in some cases.	Urina vermelha ou escura em alguns casos.
+F466.0.2	Anemia and yellowing.	Anemia e amarelidão.
+F466.0.3	In females, abortions.	Em fêmeas, abortos.
+F466.1h	Prevention	Prevenção
+F466.1.0	Rat control in storerooms and pens.	Controle de ratos nos armazéns e currais.
+F466.1.1	Keep cattle from drinking from puddles and stagnant water.	Evite que o gado beba de poças e águas paradas.
+F466.1.2	Vaccination depending on the area and the vet's judgment.	Vacinação conforme a região e o critério do veterinário.
+F466.2h	Protecting people	Cuidado com as pessoas
+F466.2.0	Wear boots and gloves when working with urine, mud or sick animals.	Use botas e luvas ao trabalhar com urina, barro ou animais doentes.
+F466.2.1	Wash your hands before eating.	Lave as mãos antes de comer.
+F466.2.2	If you have fever, body aches and red eyes after working in mud, see a doctor and say you work with cattle.	Se tiver febre, dor no corpo e olhos vermelhos depois de trabalhar no barro, vá ao médico e diga que trabalha com gado.
+F467.t	Keratoconjunctivitis or pinkeye	Ceratoconjuntivite ou olho rosado
+F467.r	An eye infection spread by flies, dust and tall grass. It hurts, lowers intake and can blind the animal.	Infecção do olho transmitida por moscas, poeira e pastos altos. Dói, baixa o consumo e pode deixar o animal cego.
+F467.0h	Signs	Sinais
+F467.0.0	Heavy tearing and a closed eye.	Lacrimejamento abundante e olho fechado.
+F467.0.1	Red eye, sensitive to light.	Olho vermelho e sensível à luz.
+F467.0.2	White or bluish spot in the center of the eye.	Mancha branca ou azulada no centro do olho.
+F467.0.3	In severe cases, an ulcer that can rupture.	Em casos graves, úlcera que pode estourar.
+F467.1h	What to do	O que fazer
+F467.1.0	Separate the animal and put it in the shade.	Separe o animal e coloque-o na sombra.
+F467.1.1	Consult the vet about treatment (eye drops, ointments or injections).	Consulte o veterinário sobre o tratamento (colírios, pomadas ou injeções).
+F467.1.2	An eye patch protects from light and flies.	Um tampão no olho protege da luz e das moscas.
+F467.1.3	Treat early: an advancing white spot is harder to cure.	Trate cedo: a mancha branca que avança é mais difícil de curar.
+F467.2h	Prevention	Prevenção
+F467.2.0	Fly control.	Controle de moscas.
+F467.2.1	Reduce dust by wetting pens in the dry season.	Reduza a poeira molhando os currais na seca.
+F467.2.2	Avoid very tall grass with seed heads.	Evite pastos muito altos com espigas.
+F467.2.3	Isolate the first cases so they don't spread it.	Isole os primeiros casos para que não contagiem.

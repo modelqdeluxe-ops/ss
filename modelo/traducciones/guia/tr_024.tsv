@@ -1,0 +1,219 @@
+F414.t	Bypass protein	Proteína de escape (by-pass)
+F414.r	Bypass protein is the part of dietary protein that isn't broken down in the rumen and goes straight to the intestine. It's useful in fast-growing young animals.	A proteína de escape é a parte da proteína do alimento que não se degrada no rúmen e chega direto ao intestino. É útil em animais jovens que crescem rápido.
+F414.0h	Sources	Fontes
+F414.0.0	Toasted or treated soybean meal.	Farelo de soja tostado ou tratado.
+F414.0.1	Distillers' grains (DDGS) and corn gluten.	Grãos de destilaria (DDGS) e glúten de milho.
+F414.0.2	Cottonseed meal and palm kernel meal have a bypass fraction.	O farelo de algodão e a torta de palmiste têm uma parte de escape.
+F414.0.3	Fish meal used to be common, but its use in ruminants is restricted in many countries.	A farinha de peixe era comum, mas seu uso em ruminantes tem restrições em muitos países.
+F414.1h	When it pays	Quando convém
+F414.1.0	Light steers of 150 to 280 kg with high gain.	Novilhos leves de 150 a 280 kg com ganho alto.
+F414.1.1	Rations with a lot of urea, where true protein is lacking.	Rações com muita ureia, onde falta proteína verdadeira.
+F414.1.2	Newly arrived animals that eat little.	Animais recém-chegados que comem pouco.
+F414.2h	In your feedlot	No seu confinamento
+F414.2.0	First cover degradable protein, which is the cheapest.	Primeiro cubra a proteína degradável, que é a mais barata.
+F414.2.1	If your lot is light and gain doesn't rise, ask whether bypass protein is lacking.	Se seu lote é leve e o ganho não sobe, pergunte se falta proteína de escape.
+F415.t	Starch and grain processing	Amido e processamento de grãos
+F415.r	Grain starch is the main energy source in feedlot rations. How grain is processed changes how much starch is used.	O amido dos grãos é a principal fonte de energia das rações de confinamento. Como o grão é processado muda quanto amido é aproveitado.
+F415.0h	Processing methods	Formas de processar
+F415.0.0	Whole grain: digested less; part comes out in the manure, especially in large animals.	Grão inteiro: digere-se menos; parte sai nas fezes, sobretudo em animais grandes.
+F415.0.1	Cracked or coarsely ground: good digestion and less dust.	Quebrado ou moído grosso: boa digestão e menos pó.
+F415.0.2	Finely ground: digested quickly, but acidosis risk rises.	Moído fino: digere rápido, mas sobe o risco de acidose.
+F415.0.3	Steam-flaked: the best digestion, but requires industrial equipment.	Floculado a vapor: a melhor digestão, mas precisa de equipamento industrial.
+F415.1h	Fermentation rate	Velocidade de fermentação
+F415.1.0	Wheat and barley: very fast, more risk.	Trigo e cevada: muito rápidos, mais risco.
+F415.1.1	Corn: intermediate.	Milho: intermediário.
+F415.1.2	Sorghum: slow; needs grinding to be used.	Sorgo: lento; precisa de moagem para ser aproveitado.
+F415.2h	In your feedlot	No seu confinamento
+F415.2.0	Corn cracked into 3 or 4 pieces is the most practical for farms.	Milho quebrado em 3 ou 4 pedaços é o mais prático para fazendas.
+F415.2.1	If you see a lot of whole grain in the manure, grind a little more.	Se vir muito grão inteiro nas fezes, moa um pouco mais.
+F415.2.2	Ground fine like flour only with adaptation and good fiber.	Moído fino como farinha, só com adaptação e boa fibra.
+F416.t	Sorghum in the ration	Sorgo na ração
+F416.r	Sorghum is a grain widely used in dry areas because it resists drought. It has almost as much energy as corn, but it's digested worse if not ground well.	O sorgo é um grão muito usado em regiões secas porque resiste à seca. Tem quase tanta energia quanto o milho, mas é pior digerido se não for bem moído.
+F416.0h	Characteristics	Características
+F416.0.0	It provides about 90 to 95 % of corn's energy when well processed.	Fornece cerca de 90 a 95 % da energia do milho quando bem processado.
+F416.0.1	The grain is hard and small: whole, it escapes undigested.	O grão é duro e pequeno: inteiro escapa sem ser digerido.
+F416.0.2	Some varieties have tannins that lower protein digestion.	Algumas variedades têm taninos que baixam a digestão da proteína.
+F416.1h	How to use it	Como usar
+F416.1.0	Always ground or cracked.	Sempre moído ou quebrado.
+F416.1.1	It can replace all or part of the corn depending on price.	Pode substituir todo ou parte do milho conforme o preço.
+F416.1.2	Prefer white-grain or low-tannin varieties.	Prefira variedades de grão branco ou com poucos taninos.
+F416.2h	Forage sorghum	Sorgo forrageiro
+F416.2.0	Young plants and regrowth after drought may contain cyanide.	A planta jovem e a rebrota depois da seca podem ter cianeto.
+F416.2.1	Wait until the plant is over 60 cm or make silage to lower the risk.	Espere a planta passar de 60 cm ou faça silagem para baixar o risco.
+F417.t	Effective fiber	Fibra efetiva
+F417.r	Not all fiber makes animals ruminate. Effective fiber is the kind long and stiff enough to stimulate rumination and saliva, and so protect the rumen.	Nem toda fibra faz ruminar. A fibra efetiva é a que tem comprimento e dureza suficientes para estimular a ruminação e a saliva, e assim proteger o rúmen.
+F417.0h	How much is needed	Quanto é necessário
+F417.0.0	Intensive feedlot rations: at least 8 to 10 % forage in the dry matter, with 2 to 5 cm particles.	Rações de confinamento intensivo: pelo menos 8 a 10 % de forragem na matéria seca, com partículas de 2 a 5 cm.
+F417.0.1	Starter rations: 30 to 50 % forage.	Rações iniciais: 30 a 50 % de forragem.
+F417.0.2	Less effective fiber = more risk of acidosis and abscesses.	Menos fibra efetiva = mais risco de acidose e abscessos.
+F417.1h	Sources	Fontes
+F417.1.0	Coarsely chopped hay or grass.	Feno ou capim picado grosso.
+F417.1.1	Chopped corn or sorghum stover.	Restolho de milho ou sorgo picado.
+F417.1.2	Cottonseed hulls (provide effective fiber despite being small).	Casca de algodão (fornece fibra efetiva apesar de ser pequena).
+F417.1.3	Fine by-products like soybean hulls have fiber but little rumination effect.	Os subprodutos finos como a casca de soja têm fibra, mas pouco efeito de ruminação.
+F417.2h	In your feedlot	No seu confinamento
+F417.2.0	Count animals ruminating two hours after eating: more than half should be.	Conte os animais ruminando duas horas depois de comer: mais da metade deve estar ruminando.
+F417.2.1	Very liquid, bubbly manure indicates too little effective fiber.	Fezes muito líquidas e com bolhas indicam pouca fibra efetiva.
+F418.t	Protected fat	Gordura protegida
+F418.r	Protected fat is treated so rumen microbes don't attack it. It provides a lot of energy without harming fiber digestion.	A gordura protegida é tratada para que os micróbios do rúmen não a ataquem. Assim fornece muita energia sem prejudicar a digestão da fibra.
+F418.0h	Types	Tipos
+F418.0.0	Calcium soaps of palm oil.	Sabões de cálcio de óleo de palma.
+F418.0.1	Hydrogenated fats.	Gorduras hidrogenadas.
+F418.0.2	Whole cottonseed: its hull protects part of the oil.	Caroço de algodão inteiro: sua casca protege parte do óleo.
+F418.1h	When it's used	Quando se usa
+F418.1.0	To raise the ration's energy without more grain.	Para subir a energia da ração sem mais grão.
+F418.1.1	In hot seasons: fat produces less heat when digested than starch or fiber.	Em épocas de calor: a gordura produz menos calor ao ser digerida que o amido ou a fibra.
+F418.1.2	It's expensive; it's used more in dairy than in feedlots.	É cara; usa-se mais na pecuária de leite que no confinamento.
+F418.2h	In your feedlot	No seu confinamento
+F418.2.0	If price allows, 2 to 3 % extra fat in the finishing ration can help with heat.	Se o preço permitir, 2 a 3 % de gordura extra na ração de terminação pode ajudar com o calor.
+F418.2.1	Don't exceed 6 to 7 % total fat in the ration.	Não passe de 6 a 7 % de gordura total na ração.
+F419.t	Yeasts and probiotics	Leveduras e probióticos
+F419.r	Live yeasts and probiotics are good microbes added to the ration to stabilize the rumen and gut.	As leveduras vivas e os probióticos são micróbios bons que se acrescentam à ração para estabilizar o rúmen e o intestino.
+F419.0h	What they do	O que fazem
+F419.0.0	Yeasts consume oxygen in the rumen and favor fiber-digesting bacteria.	As leveduras consomem oxigênio no rúmen e favorecem as bactérias que digerem fibra.
+F419.0.1	They can stabilize pH and intake in newly arrived animals.	Podem estabilizar o pH e o consumo em animais recém-chegados.
+F419.0.2	Some probiotics compete with harmful bacteria in the intestine.	Alguns probióticos competem com bactérias nocivas no intestino.
+F419.1h	Results	Resultados
+F419.1.0	Results vary: better in stressed animals and during adaptation.	Os resultados são variáveis: melhores em animais estressados e na adaptação.
+F419.1.1	They rarely replace good management.	Raramente substituem um bom manejo.
+F419.2h	In your feedlot	No seu confinamento
+F419.2.0	They can be useful in the receiving ration.	Podem ser úteis na ração de recepção.
+F419.2.1	Calculate whether the cost pays off with fewer sick animals or better intake.	Calcule se o custo se paga com menos doentes ou melhor consumo.
+F420.t	Essential oils and plant extracts	Óleos essenciais e extratos de plantas
+F420.r	These are plant compounds such as oregano, garlic, cinnamon or tannins being studied to improve fermentation, lower methane and reduce antibiotic use.	São compostos de plantas como orégano, alho, canela ou taninos estudados para melhorar a fermentação, baixar o metano e reduzir o uso de antibióticos.
+F420.0h	What's known	O que se sabe
+F420.0.0	Some lower protein breakdown or methane.	Alguns baixam a degradação da proteína ou o metano.
+F420.0.1	Tannins from legumes protect protein and help against parasites.	Os taninos de leguminosas protegem a proteína e ajudam contra parasitas.
+F420.0.2	Results vary a lot between products and doses.	Os resultados variam muito entre produtos e doses.
+F420.1h	In your feedlot	No seu confinamento
+F420.1.0	Ask for proof of results in beef cattle before paying for an expensive additive.	Peça provas de resultados em gado de corte antes de pagar por um aditivo caro.
+F420.1.1	Legumes and fodder trees give you natural tannins at low cost.	As leguminosas e árvores forrageiras dão taninos naturais a baixo custo.
+F421.t	Buffers and bicarbonate	Tamponantes e bicarbonato
+F421.r	Buffers such as sodium bicarbonate help neutralize rumen acid. They're used in high-grain rations or in hot seasons.	Os tamponantes, como o bicarbonato de sódio, ajudam a neutralizar o ácido do rúmen. Usam-se em rações com muito grão ou em épocas de calor.
+F421.0h	How they're used	Como se usam
+F421.0.0	Sodium bicarbonate: 0.5 to 1 % of the ration's dry matter.	Bicarbonato de sódio: 0,5 a 1 % da matéria seca da ração.
+F421.0.1	Magnesium oxide: complements bicarbonate.	Óxido de magnésio: complementa o bicarbonato.
+F421.0.2	They don't replace effective fiber or good adaptation.	Não substituem a fibra efetiva nem uma boa adaptação.
+F421.1h	When they help	Quando ajudam
+F421.1.0	In the transition to concentrate.	Na transição para o concentrado.
+F421.1.1	In heat, when animals ruminate less.	Com calor, quando os animais ruminam menos.
+F421.1.2	When loose manure is seen across the whole lot.	Quando se veem fezes soltas em todo o lote.
+F422.t	Mycotoxins in feed	Micotoxinas no alimento
+F422.r	Mycotoxins are poisons produced by some molds in poorly stored grains, silages and by-products. They lower intake, damage the liver and immunity, and some pass into milk.	As micotoxinas são venenos produzidos por alguns fungos em grãos, silagens e subprodutos mal guardados. Baixam o consumo, danificam o fígado e as defesas, e algumas passam para o leite.
+F422.0h	The most common	As mais comuns
+F422.0.0	Aflatoxins: in corn, peanuts and cottonseed with moisture and heat.	Aflatoxinas: em milho, amendoim e caroço de algodão com umidade e calor.
+F422.0.1	Fumonisins and zearalenone: in corn.	Fumonisinas e zearalenona: no milho.
+F422.0.2	Deoxynivalenol (vomitoxin): in small grains.	Desoxinivalenol (vomitoxina): em grãos pequenos.
+F422.1h	Signs	Sinais
+F422.1.0	Intake drop with no clear reason.	Queda de consumo sem razão clara.
+F422.1.1	Diarrhea, dull coat and more disease.	Diarreia, pelo opaco e mais doenças.
+F422.1.2	Grain with visible mold, a musty smell, or green or black dust.	Grão com mofo visível, cheiro de mofado ou pó verde ou preto.
+F422.2h	What to do	O que fazer
+F422.2.0	Buy dry grain (under 14 % moisture) and store it dry and ventilated.	Compre grão seco (menos de 14 % de umidade) e guarde seco e ventilado.
+F422.2.1	Don't use moldy grain or silage.	Não use grão nem silagem mofados.
+F422.2.2	Mycotoxin binders exist; they help but don't fix heavily contaminated grain.	Existem sequestrantes de micotoxinas; ajudam, mas não consertam um grão muito contaminado.
+F422.2.3	Send a sample to the lab if you suspect it.	Envie uma amostra ao laboratório se suspeitar.
+F423.t	Vitamins A, D and E in the dry season	Vitaminas A, D e E na época seca
+F423.r	When grass dries out, the carotene that provides vitamin A and vitamin E is lost. After 2 to 4 months of drought, many animals are deficient.	Quando o pasto seca, perde-se o caroteno que dá a vitamina A e a vitamina E. Depois de 2 a 4 meses de seca, muitos animais têm deficiência.
+F423.0h	Signs	Sinais
+F423.0.0	Watery eyes, blindness at dusk.	Olhos lacrimejantes, cegueira ao entardecer.
+F423.0.1	Rough coat and more respiratory disease.	Pelo áspero e mais doenças respiratórias.
+F423.0.2	Lower gain.	Menos ganho.
+F423.1h	How to provide them	Como fornecê-las
+F423.1.0	In mineral salt with vitamins.	No sal mineral com vitaminas.
+F423.1.1	Vitamin premix in the ration.	Pré-mistura vitamínica na ração.
+F423.1.2	A, D and E injection on arrival or every 2 to 3 months in the dry season.	Injeção de A, D e E na entrada ou a cada 2 a 3 meses na seca.
+F423.2h	In your feedlot	No seu confinamento
+F423.2.0	Grain and stored hay have little vitamin A and E.	O grão e o feno guardado têm pouca vitamina A e E.
+F423.2.1	In the pen, always add vitamins to the ration.	No curral, sempre acrescente vitaminas à ração.
+F424.t	Selenium and vitamin E	Selênio e vitamina E
+F424.r	Selenium and vitamin E work together to protect cells. In areas with selenium-poor soils, their lack lowers immunity and damages muscles.	O selênio e a vitamina E trabalham juntos para proteger as células. Em regiões com solos pobres em selênio, sua falta baixa as defesas e danifica os músculos.
+F424.0h	Signs of deficiency	Sinais de falta
+F424.0.0	More disease and poorer vaccine response.	Mais doenças e pior resposta às vacinas.
+F424.0.1	Weak muscles, stiff animals or animals that tire easily.	Músculos fracos, animais rígidos ou que se cansam fácil.
+F424.0.2	In calves, white muscle disease.	Em bezerros, doença do músculo branco.
+F424.1h	How to provide them	Como fornecê-los
+F424.1.0	In mineral salt or in the ration at the manufacturer's dose.	No sal mineral ou na ração conforme a dose do fabricante.
+F424.1.1	Injected on arrival, with a prescription.	Injetados na entrada, com receita.
+F424.2h	Caution	Cuidado
+F424.2.0	The margin between what's needed and what's toxic is small.	A margem entre o necessário e o tóxico é pequena.
+F424.2.1	Never combine several sources without calculating the total.	Nunca some várias fontes sem calcular o total.
+F425.t	Sulfur in the ration	Enxofre na ração
+F425.r	Sulfur is needed for microbes to make protein, but in excess it causes polioencephalomalacia and blocks copper.	O enxofre é necessário para os micróbios fazerem proteína, mas em excesso causa polioencefalomalácia e bloqueia o cobre.
+F425.0h	How much	Quanto
+F425.0.0	Needed: about 0.15 to 0.2 % of dry matter.	Necessário: cerca de 0,15 a 0,2 % da matéria seca.
+F425.0.1	Risk: above 0.3 to 0.4 % counting ration and water.	Risco: acima de 0,3 a 0,4 % somando ração e água.
+F425.0.2	With urea, sulfur is added at a ratio of 10 to 15 parts nitrogen to 1 part sulfur.	Com ureia acrescenta-se enxofre na relação de 10 a 15 partes de nitrogênio para 1 de enxofre.
+F425.1h	Sources of excess	Fontes de excesso
+F425.1.0	DDGS and other ethanol by-products.	DDGS e outros subprodutos do etanol.
+F425.1.1	Molasses from some sugar mills.	Melaço de algumas usinas.
+F425.1.2	Well water with sulfates.	Água de poço com sulfatos.
+F425.2h	In your feedlot	No seu confinamento
+F425.2.0	If you use a lot of DDGS or molasses, ask for a sulfur analysis.	Se usa muito DDGS ou melaço, peça análise de enxofre.
+F425.2.1	Test the water from new wells.	Analise a água de poços novos.
+F426.t	Cobalt and vitamin B12	Cobalto e vitamina B12
+F426.r	Rumen microbes use cobalt to make vitamin B12, which the animal needs to use energy from propionic acid.	Os micróbios do rúmen usam o cobalto para fabricar vitamina B12, que o animal precisa para aproveitar a energia do ácido propiônico.
+F426.0h	Signs of deficiency	Sinais de falta
+F426.0.0	Loss of appetite and weight with no other cause.	Perda de apetite e de peso sem outra causa.
+F426.0.1	Rough coat and anemia.	Pelo áspero e anemia.
+F426.0.2	Common on poor sandy or volcanic soils.	Comum em solos arenosos ou vulcânicos pobres.
+F426.1h	How to provide it	Como fornecê-lo
+F426.1.0	Mineral salt with cobalt.	Sal mineral com cobalto.
+F426.1.1	A B12 injection gives a quick but short effect.	A injeção de B12 dá um efeito rápido, mas curto.
+F427.t	Sodium and potassium in hot weather	Sódio e potássio com calor
+F427.r	In heat the animal loses potassium and sodium through sweat and urine. Replacing them helps maintain intake and hydration.	Com calor o animal perde potássio e sódio pelo suor e pela urina. Repô-los ajuda a manter o consumo e a hidratação.
+F427.0h	What happens	O que acontece
+F427.0.0	Cattle sweat is rich in potassium.	O suor do bovino é rico em potássio.
+F427.0.1	In heat the potassium requirement rises to 1.2 to 1.5 % of the ration.	Com calor a necessidade de potássio sobe para 1,2 a 1,5 % da ração.
+F427.0.2	Sodium from salt maintains thirst and water intake.	O sódio do sal mantém a sede e o consumo de água.
+F427.1h	What to do	O que fazer
+F427.1.0	Salt always available.	Sal sempre disponível.
+F427.1.1	High-grain rations are low in potassium: forage and molasses provide it.	Rações com muito grão têm pouco potássio: a forragem e o melaço o fornecem.
+F427.1.2	Electrolytes in the water when receiving very stressed cattle or in heat waves.	Eletrólitos na água ao receber gado muito estressado ou em ondas de calor.
+F428.t	Energy of tropical forages	Energia das forragens tropicais
+F428.r	Tropical grasses have less energy than grains and temperate grasses. Knowing how much they provide avoids expecting impossible gains.	Os capins tropicais têm menos energia que os grãos e que os pastos temperados. Saber quanto fornecem evita esperar ganhos impossíveis.
+F428.0h	Approximate values	Valores aproximados
+F428.0.0	Well-managed young grass: 55 to 62 % total digestible nutrients.	Capim novo bem manejado: 55 a 62 % de nutrientes digestíveis totais.
+F428.0.1	Cut grass at a good age: 52 to 58 %.	Capim de corte na idade certa: 52 a 58 %.
+F428.0.2	Old grass or stover: 42 to 50 %.	Capim velho ou restolho: 42 a 50 %.
+F428.0.3	Corn grain: about 85 to 90 %.	Milho grão: cerca de 85 a 90 %.
+F428.1h	What gain they allow	Que ganho permitem
+F428.1.0	Old grass only: the animal barely maintains.	Só com capim velho: o animal mal se mantém.
+F428.1.1	Young grass only: 0.4 to 0.7 kg per day.	Só com capim novo: 0,4 a 0,7 kg por dia.
+F428.1.2	With 0.5 to 1 % of body weight in concentrate: 0.7 to 1 kg per day.	Com 0,5 a 1 % do peso em concentrado: 0,7 a 1 kg por dia.
+F428.2h	In your feedlot	No seu confinamento
+F428.2.0	If your target is over 1 kg per day, you need concentrate or very good forages.	Se sua meta é mais de 1 kg por dia, você precisa de concentrado ou forragens muito boas.
+F428.2.1	Rumi's calculators tell you how much supplement is needed.	As calculadoras do Rumi dizem quanto suplemento é necessário.
+F429.t	Ration by stage	Ração conforme a etapa
+F429.r	Feeding is divided into stages and each needs a different ration: receiving, growing and finishing. Changing the ration with the stage saves money and avoids problems.	O confinamento se divide em etapas e cada uma precisa de uma ração diferente: recepção, crescimento e terminação. Mudar a ração com a etapa economiza dinheiro e evita problemas.
+F429.0h	Receiving (2 to 3 weeks)	Recepção (2 a 3 semanas)
+F429.0.0	Lots of good-quality forage and some concentrate.	Muita forragem de boa qualidade e um pouco de concentrado.
+F429.0.1	Protein of 13 to 14 % for light, stressed animals.	Proteína de 13 a 14 % para animais leves e estressados.
+F429.0.2	Vitamins and minerals for immunity.	Vitaminas e minerais para as defesas.
+F429.1h	Growing	Crescimento
+F429.1.0	More energy little by little.	Mais energia aos poucos.
+F429.1.1	Protein of 12 to 13 %.	Proteína de 12 a 13 %.
+F429.1.2	The animal builds muscle: it's the stage with the best conversion.	O animal forma músculo: é a etapa de melhor conversão.
+F429.2h	Finishing	Terminação
+F429.2.0	Maximum energy the rumen tolerates, with minimum effective fiber.	Máxima energia que o rúmen tolere, com fibra efetiva mínima.
+F429.2.1	Protein of 11 to 12 %.	Proteína de 11 a 12 %.
+F429.2.2	The animal lays down fat: conversion worsens.	O animal faz gordura: a conversão piora.
+F429.3h	In your feedlot	No seu confinamento
+F429.3.0	Save one ration per stage in the app and switch from one to the next over 5 to 7 days.	Guarde uma ração por etapa no app e troque de uma para outra em 5 a 7 dias.
+F429.3.1	Rumi reminds you about adaptation to concentrate.	O Rumi lembra você da adaptação ao concentrado.
+F430.t	Requirements by breed and climate	Exigências por raça e clima
+F430.r	What a steer needs to eat depends on its weight, the gain you want, its breed and the heat. Rumi calculates the full table in Guide, Reference tables.	O que um novilho precisa comer depende do peso, do ganho que você busca, da raça e do calor. O Rumi calcula a tabela completa em Guia, Tabelas de referência.
+F430.0h	Breed	A raça
+F430.0.0	Zebu (Brahman, Nelore) needs about 10 % less maintenance energy than a European breed.	O zebu (Brahman, Nelore) precisa de cerca de 10 % menos energia de manutenção que um europeu.
+F430.0.1	Dairy males (Holstein, Brown Swiss) need about 20 % more: they spend more on maintenance.	Os machos leiteiros (Holandês, Pardo-Suíço) precisam de cerca de 20 % a mais: gastam mais para se manter.
+F430.0.2	F1 crosses gain more than their parents thanks to hybrid vigor.	Os cruzamentos F1 ganham mais que os pais pelo vigor híbrido.
+F430.1h	Climate	O clima
+F430.1.0	Above 27 °C they eat less: 5 to 15 % less in heat and up to 35 % less in extreme heat without cool nights.	Acima de 27 °C comem menos: de 5 a 15 % menos com calor e até 35 % menos com calor extremo sem noites frescas.
+F430.1.1	Panting costs energy: maintenance rises 7 to 20 % in heat.	Ofegar gasta energia: a manutenção sobe de 7 a 20 % com calor.
+F430.1.2	In cold (below 5 to 10 °C depending on coat) they need more energy, about 1 % more for each degree below their comfort zone.	Com frio (menos de 5 a 10 °C conforme o pelo) precisam de mais energia, cerca de 1 % a mais por grau abaixo da zona de conforto.
+F430.1.3	Water rises a lot with heat: from 5 liters per kilo of dry matter in mild weather to 8 or more in heat.	A água sobe muito com o calor: de 5 litros por quilo de matéria seca em clima temperado a 8 ou mais com calor.
+F430.2h	How to use the table	Como usar a tabela
+F430.2.0	Choose the type of animal and your farm's climate.	Escolha o tipo de animal e o clima da sua fazenda.
+F430.2.1	See how much they should eat in dry matter and the ration's protein for each weight.	Veja quanto devem comer em matéria seca e a proteína da ração para cada peso.
+F430.2.2	If they eat less than the table says, look for the cause: heat, water, bunks, disease or an unpalatable ration.	Se comem menos do que diz a tabela, procure a causa: calor, água, cochos, doença ou uma ração pouco apetitosa.
+F430.2.3	Use Formulate ration to build the mix.	Para montar a mistura use Formular dieta.

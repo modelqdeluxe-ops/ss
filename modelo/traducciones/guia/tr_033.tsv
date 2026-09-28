@@ -1,0 +1,116 @@
+G74.t	Recording a weighing	Anotar uma pesagem
+G74.x	Tap Record and then Weighing, choose the lot and enter each animal's weight or the group average. You can also open it from Rumi's menu, in Record.	Toque em Registrar e depois em Pesagem, escolha o lote e coloque o peso de cada animal ou a média do grupo. Também pode abrir pelo menu do Rumi, em Anotar.
+G75.t	Recording a sale	Anotar uma venda
+G75.x	Tap Record and then Sale, choose the lot, the head, the kilos and the price. You can also open it from Rumi's menu, in Record.	Toque em Registrar e depois em Venda, escolha o lote, as cabeças, os quilos e o preço. Também pode abrir pelo menu do Rumi, em Anotar.
+G76.t	Recording health	Anotar sanidade
+G76.x	Tap Record and then Health. Enter the product, how many head, the cost and the withdrawal days. The app warns you if you want to sell before the withdrawal ends.	Toque em Registrar e depois em Sanidade. Coloque o produto, quantas cabeças, o custo e os dias de carência. O app avisa se você quiser vender antes de terminar a carência.
+G77.t	Creating a lot	Criar um lote
+G77.x	Tap Record and then New lot. Enter the lot's details and each animal with its ear tag, weight, breed, color and photo. The purchase price can be an average for the whole lot or one per animal.	Toque em Registrar e depois em Novo lote. Coloque os dados do lote e cada animal com seu brinco, peso, raça, cor e foto. O preço de compra pode ser uma média para todo o lote ou um por animal.
+G78.t	Ear-tagged animals	Animais com brinco
+G78.x	If you weigh each animal with its ear tag, the app keeps its history: weights, gain, photo and whether it's falling behind. Open the lot and tap Animals.	Se você pesa cada animal com seu brinco, o app guarda sua história: pesos, ganho, foto e se está atrasando. Entre no lote e toque em Animais.
+G79.t	Rumi without internet	Rumi sem internet
+G79.x	Everything works without internet: your data and your animals' photos are saved on the phone, and Rumi calculates right here. You only need internet to send your backup to Drive or WhatsApp.	Tudo funciona sem internet: seus dados e as fotos dos seus animais ficam no celular, e o Rumi calcula aqui mesmo. Só precisa de internet para mandar seu backup ao Drive ou WhatsApp.
+G80.t	Who Rumi is	Quem é o Rumi
+G80.x	I'm Rumi, Rumentis's assistant. I work with a menu: you choose an area and I show you what I can do there, with your own data. I can make mistakes: for medicines and big decisions, confirm with your vet.	Sou o Rumi, o ajudante do Rumentis. Trabalho com um menu: você escolhe uma área e eu mostro o que posso fazer ali, com seus próprios dados. Posso errar: para medicamentos e decisões grandes confirme com seu veterinário.
+G81.t	Data on the phone	Dados no celular
+G81.x	Your data stays on your phone. I don't send it anywhere; it only leaves if you download the backup or the Excel file and share it.	Seus dados ficam no seu celular. Não os mando para lugar nenhum; só saem se você baixar o backup ou o Excel e compartilhar.
+G82.t	Changing phones	Trocar de celular
+G82.x	Download the backup from More, move it to the new phone, install Rumentis and in More tap Restore backup.	Baixe o backup em Mais, passe para o celular novo, instale o Rumentis e em Mais toque em Restaurar backup.
+G83.t	Low gain	Ganho baixo
+G83.x	Check in this order: that they have plenty of clean water, that the bunk isn't left empty, the ration and its quality, parasites, disease and heat. Weighing at the same time avoids errors. See each lot's gain in Charts.	Revise nesta ordem: que tenham água limpa de sobra, que o cocho não fique vazio, a ração e sua qualidade, parasitas, doenças e calor. Pesar no mesmo horário evita erros. Veja o ganho de cada lote em Gráficos.
+G84.t	Mineral salt on pasture	Sal mineral no pasto
+G84.x	On pasture offer free-choice mineral salt in covered feeders. Plain white salt doesn't cover phosphorus or trace minerals. In the pen, the mineral premix goes inside the mix.	No pasto ofereça sal mineral à vontade em saleiros cobertos. O sal branco sozinho não cobre fósforo nem microminerais. No curral, o núcleo mineral vai dentro da mistura.
+G85.t	Deworming	Vermifugar
+G85.x	Deworm on arrival and repeat as your vet advises. Rotate products so parasites don't become resistant. For the dose by weight, in Rumi's menu go to Health, Medicine dose.	Vermifugue na entrada e repita conforme indicar seu veterinário. Rotacione os produtos para que não fiquem resistentes. Para a dose por peso, no menu do Rumi entre em Saúde, Dose de um medicamento.
+G86.t	Horn flies and stable flies	Mosca-dos-chifres e moscas-dos-estábulos
+G86.x	Flies bother the animals, lower intake and transmit diseases. Remove manure often, avoid spilled and wet feed, and use traps or products as your vet advises.	As moscas incomodam, baixam o consumo e transmitem doenças. Retire o esterco com frequência, evite alimento espalhado e molhado, e use armadilhas ou produtos conforme seu veterinário.
+G87.t	Withdrawal before selling	Carência antes de vender
+G87.x	Don't sell for slaughter an animal still under a medicine withdrawal. The app keeps count of the withdrawal days for what you recorded in Health and warns you.	Não venda ao frigorífico um animal que ainda está em carência por um medicamento. O app conta os dias de carência do que você anotou em Sanidade e avisa.
+G88.t	Length of feeding	Duração do confinamento
+G88.x	It depends on the entry weight and the target. On a good pen ration they gain 1.2 to 1.6 kg per day, so a 300 kg steer reaches 450 kg in about 100 to 125 days. In Rumi's menu, My feedlot, Project a lot, I give you your lot's date.	Depende do peso de entrada e da meta. Com uma boa ração de curral sobem de 1,2 a 1,6 kg por dia, então um novilho de 300 kg chega a 450 kg em uns 100 a 125 dias. No menu do Rumi, Meu confinamento, Projetar um lote, eu dou a data do seu lote.
+G89.t	Feeding in the rainy or dry season	Confinar nas chuvas ou na seca
+G89.x	In the pen you can do it all year; in the dry season the challenge is forage and heat, and in the rainy season, mud. What matters most is buying well and keeping the cost per kilo gained below the sale price.	No curral se pode o ano todo; na seca o desafio é a forragem e o calor, e nas chuvas o barro. O que mais importa é comprar bem e que o custo por quilo ganho fique abaixo do preço de venda.
+G90.t	Feedlot size	Tamanho do confinamento
+G90.x	There's no fixed number: it depends on your fixed costs, labor and space. With few animals, overhead weighs more per head. In Rumi's menu, Money and sales, Maximum purchase price, you see whether the numbers work.	Não há um número fixo: depende dos seus custos fixos, mão de obra e espaço. Com poucos animais, os gastos gerais pesam mais por cabeça. No menu do Rumi, Dinheiro e vendas, Preço máximo de compra, você vê se os números fecham.
+G91.t	Starting a feedlot	Começar um confinamento
+G91.x	Start with a lot you can handle: a pen with shade, water and a bunk, a formulated ration and an arrival health plan with your vet. In the app create the lot and record feed and weighings. In Rumi's menu, Using the app, Where do I start, I guide you.	Comece com um lote que consiga manejar: curral com sombra, água e cocho, uma ração formulada e um plano sanitário de entrada com seu veterinário. No app crie o lote e anote alimento e pesagens. No menu do Rumi, Usar o app, Por onde começo, eu guio você.
+G92.t	Calf deaths	Morte de bezerros
+G92.x	The most common causes are diarrhea, respiratory problems, infected navel and too little milk or colostrum. This requires examining the animal: call your vet and record each loss in the app to see if there's a pattern.	As causas mais comuns são diarreias, problemas respiratórios, umbigo infeccionado e pouco leite ou colostro. Isso exige examinar o animal: chame seu veterinário e anote cada baixa no app para ver se há um padrão.
+G93.t	Broken leg	Pata quebrada
+G93.x	Separate it, don't force it to walk and call your vet. If it can't be fixed, they'll tell you how to euthanize it without suffering. Record the loss in the app.	Separe, não force a caminhar e chame seu veterinário. Se não tiver conserto, ele dirá como sacrificá-lo sem sofrimento. Anote a baixa no app.
+G94.t	White eye	Olho branco
+G94.x	It's the eye infection that turns the eye red and watery and then gives it a white spot. It's spread by flies, dust and tall grass. Control flies and see the vet to treat it early.	É a infecção do olho que o deixa vermelho, lacrimejante e depois com uma mancha branca. É transmitida por moscas, poeira e pasto alto. Controle as moscas e consulte o veterinário para tratar cedo.
+G95.t	Warts	Verrugas
+G95.x	Warts are caused by a virus and almost always fall off on their own within a few months. Avoid sharing needles and equipment between animals. If there are many or they bleed, see your vet.	As verrugas são causadas por um vírus e quase sempre caem sozinhas em alguns meses. Evite compartilhar agulhas e equipamentos entre animais. Se forem muitas ou sangrarem, consulte seu veterinário.
+G96.t	Brucellosis	Brucelose
+G96.x	It's a disease that causes abortions in females and spreads to people through raw milk and contact with fetuses. It's less common in male feedlots, but if you handle females, do the tests SENASA requires.	É uma doença que causa abortos em fêmeas e passa para as pessoas pelo leite cru e contato com fetos. No confinamento de machos é menos comum, mas se você maneja fêmeas, faça os testes que o SENASA pedir.
+G97.t	Bovine tuberculosis	Tuberculose bovina
+G97.x	It's a slowly progressing lung disease that spreads to people. Animals lose weight and cough. If you suspect it, notify your vet and SENASA for testing.	É uma doença dos pulmões que avança devagar e passa para as pessoas. Os animais emagrecem e tossem. Se suspeitar, avise seu veterinário e o SENASA para os testes.
+G98.t	Foot-and-mouth disease	Febre aftosa
+G98.x	It's a very contagious disease that causes blisters on the mouth and feet. It isn't present in Central America, so any suspicion is reported immediately to SENASA.	É uma doença muito contagiosa que dá bolhas na boca e nas patas. Na América Central não está presente, e por isso qualquer suspeita se notifica imediatamente ao SENASA.
+G99.t	Fever	Febre
+G99.x	Take the temperature in the rectum with a thermometer: normal is between 38 and 39.5 degrees. Above 39.5 it has a fever. If it also isn't eating or is droopy, call the vet.	Meça a temperatura no reto com um termômetro: o normal está entre 38 e 39,5 graus. Acima de 39,5 tem febre. Se além disso não come ou está abatido, chame o veterinário.
+G100.t	Manure as a sign	Esterco como sinal
+G100.x	Normal manure forms a pat that settles. Very loose may be too much grain or disease; very hard and dry may be lack of water or a lot of dry fiber. Use it as a sign of how the ration is going.	O esterco normal forma uma torta que se assenta. Muito solto pode ser excesso de grão ou doença; muito duro e seco pode ser falta de água ou muita fibra seca. Use como sinal de como vai a ração.
+G101.t	How much they eat	Quanto comem
+G101.x	A feedlot steer eats roughly 2.3 to 2.8 % of its live weight in dry matter per day. At the start and in heat it eats less. The app estimates each lot's intake: see it in Rumi's menu, Feeding, How much they eat.	Um novilho em confinamento come mais ou menos de 2,3 a 2,8 % do seu peso vivo em matéria seca por dia. No início e com calor come menos. O app estima o consumo de cada lote: veja no menu do Rumi, Alimentação, Quanto comem.
+G102.t	Stale bread	Pão velho
+G102.x	Stale bread gives energy, but it's like very finely ground grain: in excess it causes acidosis. Use it in small amounts, inside the ration, free of mold and plastic, and adapt little by little.	O pão velho dá energia, mas é como grão muito moído: em excesso causa acidose. Use em pouca quantidade, dentro da ração, sem mofo nem plástico, e adapte aos poucos.
+G103.t	Plantain or banana peel	Casca de banana
+G103.x	Yes, in small amounts and fresh, as a complement. It has little protein and a lot of water, so it doesn't replace the ration. Don't let it rot in the bunk.	Sim, em pouca quantidade e fresca, como complemento. Tem pouca proteína e muita água, então não substitui a ração. Evite que apodreça no cocho.
+G104.t	Cassava	Mandioca
+G104.x	Cassava gives good energy, but raw and fresh it can contain a toxic compound. Use it dried or chopped and aired, in moderate amounts, and balance the protein with another source.	A mandioca dá boa energia, mas crua e fresca pode ter um composto tóxico. Use seca ou picada e arejada, em quantidade moderada, e equilibre a proteína com outra fonte.
+G105.t	Dry matter	Matéria seca
+G105.x	It's what's left of the feed if you remove the water. It's used to compare feeds, because a kilo of silage carries a lot of water and a kilo of corn almost none. The app's formulator works on dry matter.	É o que sobra do alimento se você tira a água. Usa-se para comparar alimentos, porque um quilo de silagem traz muita água e um quilo de milho quase nada. O formulador do app trabalha em matéria seca.
+G106.t	Mixing the ration	Misturar a ração
+G106.x	First mix the small ingredients, such as premix and urea, with part of the grain, and then add it to the rest. That way every animal eats evenly and doesn't get too much of anything.	Misture primeiro os ingredientes pequenos, como núcleo e ureia, com uma parte do grão, e depois acrescente ao resto. Assim cada animal come por igual e não passa de nada.
+G107.t	Fights at the bunk	Brigas no cocho
+G107.x	Give enough space, about 30 cm per animal, feed at the same time and spread the feed along the whole bunk. Separate very dominant or very small animals.	Dê espaço suficiente, uns 30 cm por animal, sirva no mesmo horário e distribua o alimento ao longo de todo o cocho. Separe os muito dominantes ou os muito pequenos.
+G108.t	Grouping by size	Agrupar por tamanho
+G108.x	Better not to mix: big ones won't let small ones eat and the lot becomes uneven. Group by similar weight; that also makes it easier to plan the sale.	Melhor não misturar: os grandes não deixam os pequenos comerem e o lote fica desigual. Agrupe por peso parecido, assim também é mais fácil planejar a venda.
+G109.t	Lagging animals	Animais atrasados
+G109.x	Separate them into their own group, check them for disease or parasites and give them room to eat. If you weigh by ear tag, the app tells you which are falling behind.	Separe-os num grupo próprio, examine se têm doença ou parasitas e dê espaço para comer. Se você pesa por brinco, o app diz quais estão atrasando.
+G110.t	Animals that mount	Animais que montam
+G110.x	It sometimes happens with young bulls or stressed animals, and it can injure the one being mounted. Separate the rider or the one being ridden, and review space and management.	Às vezes acontece com tourinhos ou animais estressados, e pode machucar o montado. Separe o que monta ou o que é montado, revise o espaço e o manejo.
+G111.t	Dust in the pen	Poeira no curral
+G111.x	A little coughing with dust can happen, but if there's discharge, fever, droopy ears or they're not eating, it may be pneumonia. Wet the pen to keep dust down and watch them morning and afternoon.	Um pouco de tosse com poeira pode acontecer, mas se há muco, febre, orelhas caídas ou não comem, pode ser pneumonia. Molhe o curral para baixar a poeira e vigie-os de manhã e à tarde.
+G112.t	Sale weight	Peso de venda
+G112.x	It depends on what your buyer pays best for; many feedlots sell around 450 to 500 kg. Set your target weight in More and the app calculates when each lot will reach it.	Depende do que seu comprador paga melhor; muitos confinamentos vendem perto de 450 a 500 kg. Coloque seu peso meta em Mais e o app calcula quando cada lote chega.
+G113.t	Labor	Mão de obra
+G113.x	It depends on size and on whether you mix by hand or by machine. Record payroll as an expense in the app: that way you see how much it costs you per head per day.	Depende do tamanho e de se você mistura à mão ou com máquina. Anote a folha como gasto no app: assim vê quanto custa por cabeça por dia.
+G114.t	Financing	Financiamento
+G114.x	That depends on your bank or cooperative. What I can help with is knowing whether the business pays: in Rumi's menu, Money and sales, look at the maximum purchase price and the break-even price, and export your data to Excel from More.	Isso depende do seu banco ou cooperativa. O que eu posso é ajudar a saber se o negócio compensa: no menu do Rumi, Dinheiro e vendas, veja o preço máximo de compra e o preço mínimo para não perder, e baixe seus dados para Excel em Mais.
+G115.t	The moon	A lua
+G115.x	There's no evidence that the moon changes weight gain. What does matter is the ration, water, heat and health. Better to focus on those.	Não há provas de que a lua mude o ganho de peso. O que influi é a ração, a água, o calor e a sanidade. Melhor focar nisso.
+G116.t	Salt with ash	Sal com cinza
+G116.x	Ash doesn't provide what they lack and can carry trash. Use mineral salt or a mineral premix, which cover calcium, phosphorus and trace minerals.	A cinza não fornece o que falta e pode trazer sujeira. Use sal mineral ou núcleo mineral, que cobrem cálcio, fósforo e microminerais.
+G117.t	Green water in the waterer	Água verde no bebedouro
+G117.x	The green is algae from sun and dirt. Empty and scrub the waterer every week and, if you can, give it shade. Clean water makes them drink more and eat more.	O verde são algas pelo sol e pela sujeira. Esvazie e escove o bebedouro toda semana e, se puder, dê sombra. A água limpa faz que bebam mais e comam mais.
+G118.t	They eat dirt	Comem terra
+G118.x	Eating dirt can be a sign of a lack of minerals or fiber. Check that the ration includes mineral premix and enough forage.	Comer terra pode ser sinal de falta de minerais ou de fibra. Verifique se a ração leva núcleo mineral e forragem suficiente.
+G119.t	They eat hair	Comem pelo
+G119.x	It may be a lack of fiber or minerals, or boredom in the pen. Check the forage and the mineral premix in the ration.	Pode ser falta de fibra ou de minerais, ou tédio no curral. Revise a forragem e o núcleo mineral da ração.
+G120.t	Wet feed	Alimento molhado
+G120.x	Remove wet feed from the bunk before feeding, because it ferments and molds. If you can, roof the bunk and feed amounts that get eaten within the day.	Tire o molhado do cocho antes de servir, porque fermenta e dá mofo. Se puder, coloque teto no cocho e sirva quantidades que sejam comidas no dia.
+G121.t	Animal that arrives weak	Animal que chega fraco
+G121.x	The best thing on arrival is free-choice clean water and good-quality hay. If it's very weak, your vet can give it electrolytes or IV fluids.	O melhor na chegada é água limpa à vontade e feno de boa qualidade. Se vier muito fraco, seu veterinário pode dar eletrólitos ou soro.
+G122.t	Gain on pasture	Ganho no pasto
+G122.x	On grass, gain is lower and changes a lot with the season: in the rains with good grass they can gain over half a kilo a day, and in the dry season without supplement sometimes nothing. In the pen on a good ration they gain 1.2 to 1.6 kg.	No pasto o ganho é menor e muda muito com a época: nas chuvas com bom pasto podem ganhar mais de meio quilo por dia, e na seca sem suplemento às vezes nada. No curral com boa ração ganham de 1,2 a 1,6 kg.
+G123.t	Semi-confinement	Semiconfinamento
+G123.x	It's when animals graze part of the day and receive a supplement or ration in the pen. It gains more than grazing alone and costs less than full confinement.	É quando os animais pastejam parte do dia e no curral recebem suplemento ou ração. Ganha mais que só o pastejo e custa menos que o curral completo.
+G124.t	Females for feeding	Fêmeas para confinamento
+G124.x	Heifers fatten more slowly and lay down fat earlier than males, and they're sometimes paid less. They can pay off if you buy them cheap; run the numbers with "how much can I pay".	As novilhas engordam mais devagar e acumulam gordura antes que os machos, e às vezes pagam menos por elas. Podem compensar se você as compra barato; faça a conta com "quanto posso pagar".
+G125.t	Weaning	Desmame
+G125.x	It's separating the calf from its mother earlier than normal. That's cow-calf work, not feeding: in the app we focus on steers that have already entered the feedlot.	É separar o bezerro da mãe antes do normal. Isso é da cria, não do confinamento: no app focamos em novilhos que já entraram para engordar.
+G126.t	Recording a death or loss	Anotar uma morte ou baixa
+G126.x	Tap Record and then Loss: choose the lot, how many head and the cause. That way mortality and costs are correct. You can also open it from Rumi's menu, in Record.	Toque em Registrar e depois em Baixa: escolha o lote, quantas cabeças e a causa. Assim a mortalidade e os custos ficam certos. Também pode abrir pelo menu do Rumi, em Anotar.
+G127.t	Recording an expense	Anotar um gasto
+G127.x	Tap Record and then Expense: enter the amount, the category (labor, freight, medicines, maintenance, power and water) and whether it's for one lot or general. You can also open it from Rumi's menu, in Record.	Toque em Registrar e depois em Despesa: coloque o valor, a categoria (mão de obra, frete, medicamentos, manutenção, luz e água) e se é de um lote ou geral. Também pode abrir pelo menu do Rumi, em Anotar.
+G128.t	Creating a ration	Criar uma ração
+G128.x	Go to More and tap Rations and diets. Give it a name and the cost per kilo (or per pound). Then you choose it each time you record feed. If you formulate it with Formulate ration, you save it with one tap.	Entre em Mais e toque em Rações e dietas. Dê um nome e o custo por quilo (ou por libra). Depois você a escolhe cada vez que anota alimento. Se a formular com Formular dieta, guarda com um toque.
+G129.t	Recording ear-tagged animals	Anotar animais com brinco
+G129.x	When creating the lot you enter each animal with its ear tag, weight, breed, color and photo. Then, when weighing by ear tag, the app follows each animal and tells you which are lagging.	Ao criar o lote você coloca cada animal com seu brinco, peso, raça, cor e foto. Depois, ao pesar por brinco, o app acompanha cada animal e diz quem está atrasando.
+G130.t	Formulate ration screen	Tela Formular dieta
+G130.x	In More tap Formulate ration. Enter the animals' weight and the gain you want, choose the ingredients and the app calculates the cheapest mix that covers what they need. You can save it as a ration.	Em Mais toque em Formular dieta. Coloque o peso dos animais e o ganho que você busca, escolha os ingredientes e o app calcula a mistura mais barata que cobre o que precisam. Pode guardá-la como ração.
+G131.t	How Rumentis calculates	Como o Rumentis calcula
+G131.x	In More, in Help, How Rumentis calculates, every number is explained: daily gain between weighings, conversion from recorded feed, cost per kilo gained, projection to target weight and margin. Everything comes from what you record.	Em Mais, em Ajuda, Como o Rumentis calcula, está explicado cada número: ganho diário entre pesagens, conversão com o alimento anotado, custo por quilo ganho, projeção ao peso meta e margem. Tudo sai do que você anota.

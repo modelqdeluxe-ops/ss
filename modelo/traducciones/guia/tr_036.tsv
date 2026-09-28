@@ -1,0 +1,116 @@
+G241.t	Grazing grasses	Capins para pastejo
+G241.x	Brachiaria (brizantha, decumbens, hybrids), Mombasa and star grass are common in the tropics. They withstand grazing if rotated and not overstocked.	Braquiária (brizantha, decumbens, híbridos), Mombaça e grama-estrela são comuns no trópico. Aguentam o pastejo se forem rotacionados e não sobrecarregados.
+G242.t	Silage: losses	Silagem: perdas
+G242.x	Silage is lost to air: poorly packed, poorly covered or taking out too little each day. Remove an even face every day and discard anything hot, rotten or moldy.	A silagem se perde pelo ar: mal compactada, mal coberta ou retirando pouco por dia. Retire uma face uniforme todos os dias e descarte o quente, podre ou com mofo.
+G243.t	Silage: how much to make	Silagem: quanto fazer
+G243.x	Calculate the kilos of silage per animal per day, times the dry-season days and the head count, and add about 20 % for losses. In Rumi's menu, Feeding, Feed for the month, I give you the kilos your lots consume.	Calcule os quilos de silagem por animal por dia, vezes os dias de seca e as cabeças, e some uns 20 % de perdas. No menu do Rumi, Alimentação, Alimento para o mês, eu dou os quilos que seus lotes consomem.
+G244.t	Hay: how to make it	Feno: como fazer
+G244.x	Cut the grass before it heads out too much, let it dry in the sun while turning it, and bale when it's dry but before the leaves shatter. Damp hay molds and heats.	Corte o capim antes que espigue muito, deixe secar ao sol virando, e enfarde quando estiver seco, mas sem que as folhas quebrem. Um feno úmido embolorece e esquenta.
+G245.t	Ammoniating stover	Amonização de restolhos
+G245.x	Treating stover or straw with urea under plastic improves its digestibility and protein. It must be done with a technician's recipe and aired out before feeding.	Tratar restolho ou palha com ureia sob plástico melhora sua digestibilidade e proteína. Deve ser feito com a receita de um técnico e arejado antes de fornecer.
+G246.t	Pasture rotation	Rotação de pastos
+G246.x	Divide the land into several paddocks and rotate the cattle so each one rests about 3 to 5 weeks depending on rain. The grass regrows better and feeds more animals.	Divida o terreno em vários piquetes e rotacione o gado para que cada um descanse umas 3 a 5 semanas conforme a chuva. O capim rebrota melhor e alimenta mais animais.
+G247.t	Stocking rate on pasture	Lotação no pasto
+G247.x	It depends on the grass, rain and fertilizer. Overstocking finishes the grass and the animals gain less. Adjust the stocking rate in the dry season or supplement. One animal unit is 450 kg of live weight.	Depende do capim, da chuva e do adubo. Sobrecarregar acaba com o pasto e os animais ganham menos. Ajuste a lotação na seca ou suplemente. Uma unidade animal são 450 kg de peso vivo.
+G248.t	Living fences	Cercas vivas
+G248.x	Living fences of gliricidia or gumbo-limbo give cheap posts, shade and, in the case of gliricidia, forage. Prune them so they don't shade the grass too much.	As cercas vivas de gliricídia ou almácega dão postes baratos, sombra e, no caso da gliricídia, forragem. Pode para que não façam sombra demais ao pasto.
+G249.t	Cane with urea	Cana com ureia
+G249.x	Chopped cane with a little urea is a dry-season forage used in the tropics. The urea must be well mixed, in small amounts and with gradual adaptation, following a technician's recipe.	A cana picada com um pouco de ureia é uma forragem de seca usada no trópico. A ureia deve ir bem misturada, em pouca quantidade e com adaptação gradual, seguindo a receita de um técnico.
+G250.t	Arrival day	Dia de chegada
+G250.x	Unload the animals calmly down a ramp, take them to a pen with shade, clean water and hay, and let them rest. Don't process them the same day if they come from a long trip.	Desembarque os animais com calma por uma rampa, leve-os a um curral com sombra, água limpa e feno, e deixe descansar. Não faça o manejo no mesmo dia se vierem de uma viagem longa.
+G251.t	First three weeks	Primeiras três semanas
+G251.x	It's the riskiest period: respiratory disease, low intake and diet changes. Check twice a day, adapt to concentrate little by little and treat sick animals early.	É o período de mais risco: doenças respiratórias, pouco consumo e mudanças de dieta. Revise duas vezes ao dia, adapte ao concentrado aos poucos e trate cedo os doentes.
+G252.t	Ear tag identification	Identificação com brincos
+G252.x	Tag each animal on arrival. It lets you track its weight and health and meet traceability requirements. In the app you can weigh by ear tag and see who's falling behind.	Coloque brinco em cada animal na entrada. Permite seguir seu peso e sua sanidade e cumprir a rastreabilidade. No app você pode pesar por brinco e ver quem atrasa.
+G253.t	Weighing on a scale	Pesagem na balança
+G253.x	Weigh on a calibrated scale, at the same time and before feeding. Check the scale with a known weight now and then: an error of a few kilos changes your gain calculations.	Pese em balança calibrada, no mesmo horário e antes de servir. Confira a balança com um peso conhecido de vez em quando: um erro de poucos quilos muda seus cálculos de ganho.
+G254.t	Group weighing	Pesagem por grupo
+G254.x	If you don't have an individual scale, weigh the whole group on a truck or group scale and divide by the head count. In the app you record the lot's average weight.	Se não tiver balança individual, pese o grupo inteiro numa balança de caminhão ou de grupo e divida pelas cabeças. No app você anota o peso médio do lote.
+G255.t	Fasting before weighing	Jejum antes de pesar
+G255.x	An animal full of feed and water weighs several kilos more. To compare, always weigh under the same conditions, preferably in the morning before feeding.	Um animal cheio de comida e água pesa vários quilos a mais. Para comparar, pese sempre nas mesmas condições, de preferência de manhã antes de servir.
+G256.t	Chute and head gate	Brete e tronco
+G256.x	A chute with a funnel, alley and head gate makes handling safer and faster: vaccinate, weigh and check without bruises. It's one of the best investments in feeding.	Um brete com funil, corredor e tronco de contenção torna o manejo mais seguro e rápido: vacinar, pesar e revisar sem pancadas. É um dos melhores investimentos do confinamento.
+G257.t	Handling stress	Estresse no manejo
+G257.x	Every rough handling lowers intake for a day or two. Group the tasks so you handle them few times, in cool hours and without shouting or prods.	Cada manejo brusco baixa o consumo por um ou dois dias. Agrupe os trabalhos para manejá-los poucas vezes, nas horas frescas e sem gritos nem ferrão.
+G258.t	Using the electric prod	Uso do choque elétrico
+G258.x	Use it as little as possible and never on the face or anus. A beaten or frightened animal eats less and gives bruised meat. Better a flag or paddle and patience.	Use o mínimo possível e nunca na cara nem no ânus. Um animal machucado ou assustado come menos e dá carne com hematomas. Melhor bandeira ou raquete e paciência.
+G259.t	Castration in the feedlot	Castração no confinamento
+G259.x	Castrating large animals on entry stresses them and lowers gain for several weeks. If you're going to castrate, do it young, with hygiene and watching for flies and screwworm.	Castrar animais grandes ao entrar no confinamento os estressa e baixa o ganho por várias semanas. Se for castrar, faça jovens, com higiene e vigiando moscas e bicheira.
+G260.t	Pen density	Densidade do curral
+G260.x	With too many animals per pen there's more mud, fighting, disease and less intake. As a guide, about 12 m² per animal on dirt and 30 cm of bunk per head.	Com animais demais por curral há mais barro, brigas, doenças e menos consumo. Como guia, uns 12 m² por animal na terra e 30 cm de cocho por cabeça.
+G261.t	Daily records	Registros diários
+G261.x	Each day record the feed delivered and the bunk reading. Every 3 to 4 weeks, the weighing. Also record health, deaths, expenses and sales. With that the app calculates everything.	Todo dia anote o alimento entregue e a leitura de cocho. A cada 3 a 4 semanas, a pesagem. Anote também sanidade, mortes, gastos e vendas. Com isso o app calcula tudo.
+G262.t	Animals that don't eat at first	Animais que não comem no início
+G262.x	Many pasture animals don't know the bunk. Put hay on top of the concentrate and the bunk near the water. In a few days they learn to eat.	Muitos animais de pasto não conhecem o cocho. Coloque feno em cima do concentrado e o cocho perto da água. Em poucos dias aprendem a comer.
+G263.t	Sprinkling and ventilation	Aspersão e ventilação
+G263.x	Wetting animals with sprinklers during hot hours, with good ventilation, helps lower their temperature. Wet the body, not just the ground, and avoid creating mud.	Molhar os animais com aspersores nas horas de calor, com boa ventilação, ajuda a baixar a temperatura. Molhe o corpo, não só o chão, e evite formar barro.
+G264.t	Night feeding	Consumo noturno
+G264.x	In strong heat, part of the intake shifts to the night. Make sure there's feed in the bunk late in the afternoon and water all night.	Com muito calor, parte do consumo passa para a noite. Garanta comida no cocho no fim da tarde e água a noite toda.
+G265.t	Transport to the sale	Transporte para a venda
+G265.x	Load in cool hours, without overloading the truck, with a non-slip floor and without bruising. A bad trip lowers weight and leaves bruises the slaughterhouse discounts.	Embarque nas horas frescas, sem sobrecarregar o caminhão, com piso antiderrapante e sem pancadas. Uma viagem ruim baixa o peso e deixa hematomas que o frigorífico desconta.
+G266.t	Fasting before the sale	Jejum antes da venda
+G266.x	Many buyers apply a discount or shrink for gut fill. Ask your buyer how they weigh and discount, and put it in your calculations: in More you set the sale discount.	Muitos compradores aplicam um desconto ou quebra pelo enchimento. Pergunte ao seu comprador como pesa e desconta e coloque nos seus cálculos: em Mais você ajusta o desconto de venda.
+G267.t	Dogs in the pen	Cães no curral
+G267.x	Dogs frighten cattle and can spread diseases. Keep them out of the pens and the feed storeroom.	Os cães assustam o gado e podem transmitir doenças. Mantenha-os fora dos currais e do depósito de ração.
+G268.t	Worker safety	Segurança dos trabalhadores
+G268.x	Work with a chute and head gate, never alone with aggressive animals, and wear gloves when treating wounds or touching sick or dead animals. Several cattle diseases spread to people.	Trabalhe com brete e tronco, nunca sozinho com animais bravos, e use luvas ao tratar feridas ou tocar animais doentes ou mortos. Várias doenças do gado passam para as pessoas.
+G269.t	Weekly work plan	Plano de trabalho semanal
+G269.x	Every day: feed, water, bunk reading and checking the sick. Every week: clean waterers and bunks, check fences and the storeroom. Every 3 to 4 weeks: weighing. In Rumi's menu, My feedlot, What do I do today, I tell you what's pending.	Todo dia: alimento, água, leitura de cochos e revisar doentes. Toda semana: limpar bebedouros e cochos, revisar cercas e armazém. A cada 3 a 4 semanas: pesagem. No menu do Rumi, Meu confinamento, O que faço hoje, eu digo o pendente.
+G270.t	Staggered exit	Saída escalonada
+G270.x	Not all reach the weight at the same time. Selling the heaviest first and keeping the rest a few more weeks can improve the average price. In the app you can record partial sales.	Nem todos chegam ao peso ao mesmo tempo. Vender primeiro os mais pesados e deixar os demais algumas semanas a mais pode melhorar o preço médio. No app você pode anotar vendas parciais.
+G271.t	Daily pen routine	Rotina diária do curral
+G271.x	Early: bunk reading, first feeding and checking the sick. Mid-morning: check water and shade. Afternoon: second feeding and another check. Record everything in the app right away so you don't forget.	Cedo: leitura de cochos, primeira entrega e revisão de doentes. Meio da manhã: revisar água e sombra. Tarde: segunda entrega e outra revisão. Anote tudo no app na hora para não esquecer.
+G272.t	Signs of a lot doing well	Sinais de um lote que vai bem
+G272.x	Clean bunks at feeding time, animals ruminating lying down, pat-shaped manure, little coughing, shiny coats and even gain between weighings. If any of that changes, check ration, water and health.	Cochos limpos na hora de servir, animais ruminando deitados, esterco em torta, pouca tosse, pelo brilhante e ganho uniforme entre pesagens. Se algo disso mudar, revise ração, água e sanidade.
+G273.t	Weighing to decide	Pesar para decidir
+G273.x	Weighing isn't just for knowing how much they weigh: it tells you whether the ration works, whether animals are lagging and when to sell. Weigh every 21 to 28 days and compare each animal's gain in the app.	Pesar não é só para saber quanto pesam: diz se a ração funciona, se há animais atrasados e quando vender. Pese a cada 21 a 28 dias e compare o ganho de cada animal no app.
+G274.t	Animal that doesn't gain weight	Animal que não ganha peso
+G274.x	If an animal doesn't gain while the lot does, check it: teeth, feet, parasites, disease or others not letting it eat. Separate it if needed; if it doesn't improve, consider selling it early so you don't lose more.	Se um animal não sobe enquanto o lote sim, examine: dentes, patas, parasitas, doença ou que não o deixem comer. Separe se necessário; se não melhorar, considere vendê-lo antes para não perder mais.
+G275.t	Old animals or bad teeth	Animais velhos ou com dentes ruins
+G275.x	Animals with worn or missing teeth eat and use feed less well. When buying, check the mouth; on feed, give them a more finely chopped ration or sell them earlier.	Os animais com dentes gastos ou faltando comem e aproveitam menos. Na compra, revise a boca; no confinamento, dê ração mais picada ou venda antes.
+G276.t	Docility and temperament	Mansidão e temperamento
+G276.x	Nervous animals eat less, bruise themselves and give poorer-quality meat. When buying, watch how they react in the chute; in the pen, handle them calmly so they settle down.	Os animais nervosos comem menos, se machucam e dão carne de pior qualidade. Na compra, observe como reagem no brete; no curral, maneje com calma para que amansem.
+G277.t	Cattle from different origins	Gado de diferentes procedências
+G277.x	Putting together animals from several farms raises the risk of disease and fighting. If there's no other option, receive them with quarantine, vaccines and close watching in the first weeks.	Juntar animais de várias fazendas aumenta o risco de doenças e brigas. Se não houver outra opção, receba com quarentena, vacinas e boa observação nas primeiras semanas.
+G278.t	Young bulls that fight	Tourinhos que brigam
+G278.x	Intact males from different origins fight when put together. Group them at the start, with enough space, several water points and a long bunk. Separate very aggressive ones.	Os inteiros de origens diferentes brigam ao serem juntados. Agrupe-os no início, com espaço suficiente, vários pontos de água e cocho comprido. Separe os muito agressivos.
+G279.t	Castration by knife, band or clamp	Castração com faca, elástico ou burdizzo
+G279.x	Any method should be done young, with hygiene, fly control and pain relief as your vet advises. In large animals the stress and weight loss are greater.	Qualquer método deve ser feito jovem, com higiene, controle de moscas e alívio da dor conforme seu veterinário. Em animais grandes o estresse e a perda de peso são maiores.
+G280.t	Branding	Marcar a ferro
+G280.x	Brand in a single place, with the iron at the right temperature, for a few seconds and with the animal well restrained. Avoid the leg: it damages the most valuable hide. Treat and watch the wound against screwworm.	Marque num só lugar, com o ferro na temperatura certa, uns segundos e com o animal bem contido. Evite a perna: danifica o couro de mais valor. Trate e vigie a ferida contra a bicheira.
+G281.t	Ear tags: how to put them in	Brincos: como colocar
+G281.x	Put the tag in the center of the ear, between the large veins, with a clean, disinfected applicator. Avoid the peak fly season or treat the wound. Record the number in the app.	Coloque o brinco no centro da orelha, entre as veias grandes, com o aplicador limpo e desinfetado. Evite a época de mais moscas ou trate a ferida. Anote o número no app.
+G282.t	Lost ear tag	Brinco perdido
+G282.x	If an animal loses its tag, identify it again as soon as possible with a new tag and record in the app that it's the same animal (edit ear tag), so you don't lose its weight history.	Se um animal perde o brinco, identifique-o de novo o quanto antes com um brinco novo e anote no app que é o mesmo animal (editar brinco), para não perder seu histórico de pesos.
+G283.t	Recording breed and color	Registrar raça e cor
+G283.x	Recording each animal's breed and color helps identify it and compare which type of animal performs best for you. In the app it's recorded per animal when creating the lot.	Anotar raça e cor de cada animal ajuda a identificá-lo e a comparar que tipo de animal rende mais. No app se anota por animal ao criar o lote.
+G284.t	Comparing animal types	Comparar tipos de animais
+G284.x	With per-animal records you can see whether crossbreds or Brahmans gain more, intact or castrated, those you bought from one supplier or another. That way you buy better next time.	Com os registros por animal você pode ver se ganham mais os cruzados ou os Brahman, os inteiros ou os castrados, os comprados de um fornecedor ou de outro. Assim compra melhor na próxima vez.
+G285.t	Stress-free loading and unloading	Embarque e desembarque sem estresse
+G285.x	Use the ramp, move small groups, without shouting or sticks, and let the animals see the way. With good light and no strange shadows they walk in on their own.	Use a rampa, mova grupos pequenos, sem gritos nem paus, e deixe que os animais vejam o caminho. Com boa luz e sem sombras estranhas entram sozinhos.
+G286.t	Long trips	Viagens longas
+G286.x	On trips of many hours, leave in cool hours, don't overload, check the animals at stops and on arrival give them water, hay and rest before processing them.	Em viagens de muitas horas, saia nas horas frescas, não sobrecarregue, revise os animais nas paradas e na chegada dê água, feno e descanso antes do manejo.
+G287.t	Receiving animals at night	Receber animais à noite
+G287.x	If they arrive at night, unload them with light, give them water and hay and let them rest. Do the health work the next day, in daylight and calmly.	Se chegarem à noite, desembarque com luz, dê água e feno e deixe descansar. O manejo sanitário faça no dia seguinte, com luz e calma.
+G288.t	Watching newcomers	Observar os recém-chegados
+G288.x	For the first 21 days watch morning and afternoon: that they eat, drink water, ruminate and don't cough. Note those that hang back from the bunk: they're usually the first to get sick.	Nos primeiros 21 dias observe de manhã e à tarde: que comam, bebam água, ruminem e não tussam. Anote os que ficam atrás do cocho: costumam ser os primeiros doentes.
+G289.t	Animals that don't drink water	Animais que não bebem água
+G289.x	Some pasture animals don't know float waterers. Let the waterer overflow a little the first days so they hear the water, or set out an open trough.	Alguns animais de pasto não conhecem o bebedouro de boia. Deixe o bebedouro transbordar um pouco nos primeiros dias para que escutem a água, ou coloque um tanque aberto.
+G290.t	Naming lots or groups	Dar nomes ou grupos
+G290.x	Naming lots by entry date or supplier makes them easier to follow. In the app each lot has a name, type, breed, supplier and ration.	Nomear os lotes pela data de entrada ou pelo fornecedor facilita acompanhá-los. No app cada lote tem nome, tipo, raça, fornecedor e ração.
+G291.t	Worker health	Saúde dos trabalhadores
+G291.x	Whoever handles cattle should have their vaccines (tetanus), wear gloves with sick animals, wash their hands and not eat in the pens. A trained worker takes better care of the cattle.	Quem maneja o gado deve ter suas vacinas (tétano), usar luvas com animais doentes, lavar as mãos e não comer nos currais. Um trabalhador treinado cuida melhor do gado.
+G292.t	Training staff	Treinar o pessoal
+G292.x	Explain to your workers how to read the bunk, check sick animals, record in the app and handle calmly. A good cowhand saves deaths, bruises and feed.	Explique aos seus trabalhadores como ler o cocho, revisar doentes, anotar no app e manejar com calma. Um bom vaqueiro evita mortes, pancadas e desperdício de alimento.
+G293.t	Management in the rainy season	Manejo na época de chuvas
+G293.x	In the rain: remove manure more often, look after drainage, protect feed from water, check feet and watch for pneumonia and parasites.	Com chuva: limpe o esterco com mais frequência, cuide da drenagem, proteja o alimento da água, revise as patas e vigie pneumonias e parasitas.
+G294.t	Management in the dry season	Manejo na época seca
+G294.x	In the dry season: ensure plenty of water, shade, stored forage (silage, hay, cane) and control dust by wetting the pens. It's a good time to buy thin animals.	Na seca: garanta água de sobra, sombra, forragem guardada (silagem, feno, cana) e controle a poeira molhando os currais. É boa época para comprar animais magros.
+G295.t	Weaning before feeding	Desmame antes do confinamento
+G295.x	Calves weaned abruptly and sent to the feedlot the same day get sick more. Ideally they arrive weaned, vaccinated and used to the bunk a few weeks beforehand.	Os bezerros desmamados de uma vez e enviados ao confinamento no mesmo dia adoecem mais. O ideal é que cheguem desmamados, vacinados e acostumados ao cocho algumas semanas antes.
+G296.t	How money is made in feeding	Como se ganha no confinamento
+G296.x	You earn if what you're paid for the finished animal exceeds what you paid for it plus everything you spent fattening it. The three levers are: buy well, produce the kilo cheaply and sell well.	Você ganha se o que pagam pelo animal gordo supera o que você pagou por ele mais tudo o que gastou para engordá-lo. As três alavancas são: comprar bem, produzir o quilo barato e vender bem.
+G297.t	Price per lot or per animal	Preço por lote ou por animal
+G297.x	When buying a lot, an average price is usually paid for all. In the app you can record the price for the whole lot (split equally among the animals) or each animal's price if you bought them one by one.	Na compra de um lote costuma-se pagar um preço médio para todos. No app você pode anotar o preço de todo o lote (repartido por igual entre os animais) ou o preço de cada animal se comprou um por um.
+G298.t	Purchase cost per animal	Custo de compra por animal
+G298.x	If you bought the lot at an average price, each animal carries the same share of the cost. If you bought them separately, each one carries its own price. That changes each animal's margin, not the lot's.	Se você comprou o lote a preço médio, cada animal carrega a mesma parte do custo. Se comprou separados, cada um leva seu próprio preço. Isso muda a margem de cada animal, não a do lote.

@@ -1,0 +1,262 @@
+F169.t	Rumen movements	Movimentos do rúmen
+F169.r	The rumen contracts 1 to 3 times a minute to mix the feed. Listening with your ear or a stethoscope on the left side tells you whether it is working well.	O rúmen se contrai de 1 a 3 vezes por minuto para misturar a comida. Escutá-lo com o ouvido ou um estetoscópio no lado esquerdo diz se funciona bem.
+F169.0h	How to listen	Como escutar
+F169.0.0	Put your ear or the stethoscope in the hollow of the left flank.	Ponha o ouvido ou o estetoscópio na fossa do flanco esquerdo.
+F169.0.1	Listen for 2 minutes: you should hear sounds like distant thunder, 2 to 6 times.	Escute 2 minutos: deve ouvir ruídos como de trovoada distante, de 2 a 6 vezes.
+F169.1h	What it means	O que significa
+F169.1.0	No sounds: the rumen has stopped; it may be acidosis, fever, pain or a blockage.	Sem ruídos: o rúmen está parado; pode ser acidose, febre, dor ou bloqueio.
+F169.1.1	A very swollen, tense left flank: bloat.	Flanco esquerdo muito inchado e tenso: timpanismo.
+F169.1.2	Slow movements: a sick animal or poor-quality feed.	Movimentos lentos: animal doente ou com comida de má qualidade.
+F169.2h	In your feedlot	No seu confinamento
+F169.2.0	Check the rumen of every animal that isn't eating.	Examine o rúmen de todo animal que não come.
+F169.2.1	A vet can recommend treatment to get it going again.	Um veterinário pode indicar tratamento para reativá-lo.
+F170.t	Mucous membranes: what their colors say	Mucosas: o que suas cores dizem
+F170.r	The color of the gums, eye and vulva shows how the animal's blood is doing. Checking them takes seconds and gives a lot of information.	A cor das gengivas, do olho e da vulva mostra como está o sangue do animal. Revisá-las leva segundos e dá muita informação.
+F170.0h	Colors	Cores
+F170.0.0	Pink: normal.	Rosado: normal.
+F170.0.1	Pale or white: anemia (anaplasma, babesia, parasites, bleeding).	Pálido ou branco: anemia (anaplasma, babésia, parasitas, hemorragia).
+F170.0.2	Yellow: jaundice, a liver problem or destruction of red blood cells.	Amarelo: icterícia, problema de fígado ou destruição de glóbulos vermelhos.
+F170.0.3	Purple or bluish: lack of oxygen, serious.	Roxo ou azulado: falta de oxigênio, grave.
+F170.0.4	Very red: fever, heat stroke or poisoning.	Muito vermelho: febre, golpe de calor ou intoxicação.
+F170.1h	How to check them	Como revisá-las
+F170.1.0	Pull the lower eyelid down slightly and look at the white of the eye and its rim.	Baixe um pouco a pálpebra inferior e olhe o branco do olho e sua borda.
+F170.1.1	Check the gums if you can open the mouth safely.	Revise as gengivas se puder abrir a boca com segurança.
+F170.1.2	Compare with a healthy animal from the lot.	Compare com um animal sadio do lote.
+F171.t	Lymph nodes	Linfonodos
+F171.r	Lymph nodes are the defense system's filters. When there is an infection nearby, they swell. Some can be felt under the skin.	Os linfonodos são filtros das defesas. Quando há infecção por perto, incham. Alguns podem ser apalpados sob a pele.
+F171.0h	Where to feel them	Onde apalpá-los
+F171.0.0	In front of the shoulder (prescapular).	Na frente da paleta (pré-escapulares).
+F171.0.1	In the flank, in front of the thigh (prefemoral).	No flanco, na frente da coxa (pré-femorais).
+F171.0.2	Under the jaw.	Embaixo da mandíbula.
+F171.1h	What it means if they are enlarged	O que significa se estão grandes
+F171.1.0	Infection in the area they drain: wounds, abscesses, ticks.	Infecção na região que drenam: feridas, abscessos, carrapatos.
+F171.1.1	If they are enlarged all over the body: a general disease such as trypanosomiasis or leukosis.	Se estão grandes no corpo todo: doença geral, como tripanossomíase ou leucose.
+F171.2h	In your feedlot	No seu confinamento
+F171.2.0	Check them in animals that don't gain weight or have fever.	Revise-os em animais que não ganham peso ou têm febre.
+F171.2.1	A vet can take a sample if a serious disease is suspected.	Um veterinário pode colher amostra se suspeitar de uma doença séria.
+F172.t	Nitrogen, manure and the environment	Nitrogênio, esterco e ambiente
+F172.r	Cattle retain only a small part of the nitrogen they eat; the rest leaves in urine and feces. That nitrogen can fertilize your pastures or pollute the water.	O bovino só guarda no corpo uma parte pequena do nitrogênio que come; o resto sai na urina e nas fezes. Esse nitrogênio pode adubar seus pastos ou contaminar a água.
+F172.0h	Facts	Dados
+F172.0.0	A finishing steer retains about 10 to 20 % of the nitrogen it eats.	Um novilho em engorda retém cerca de 10 a 20 % do nitrogênio que come.
+F172.0.1	Most of the excess leaves as urea in the urine and turns into ammonia.	A maior parte do excesso sai como ureia na urina e vira amônia.
+F172.0.2	Ammonia smells bad and is lost to the air.	A amônia dá mau cheiro e se perde no ar.
+F172.1h	What to do	O que fazer
+F172.1.0	Don't feed more protein than needed.	Não dar mais proteína que o necessário.
+F172.1.1	Collect and compost the pen manure.	Recolher e compostar o esterco do curral.
+F172.1.2	Use the manure as fertilizer on the cut-and-carry grasses.	Usar o esterco como adubo nos capins de corte.
+F173.t	Bone growth	Crescimento do osso
+F173.r	Bone grows in length through cartilage at its ends. When that cartilage closes, the animal stops growing taller; that happens at 2 to 4 years depending on the bone and the breed.	O osso cresce em comprimento por cartilagens nas pontas. Quando essas cartilagens se fecham, o animal para de crescer em altura; isso acontece dos 2 aos 4 anos conforme o osso e a raça.
+F173.0h	What it needs	O que precisa
+F173.0.0	Calcium, phosphorus, vitamin D and protein.	Cálcio, fósforo, vitamina D e proteína.
+F173.0.1	Enough energy in youth.	Energia suficiente na juventude.
+F173.1h	Why it matters in feeding	Por que importa na engorda
+F173.1.0	An animal that went hungry when young ends up with less frame.	Um animal que passou fome jovem fica com menos estrutura.
+F173.1.1	Animals with a good skeleton can carry more muscle.	Animais com bom esqueleto podem carregar mais músculo.
+F173.1.2	Bones are part of the weight that isn't sold as meat.	Os ossos são parte do peso que não se vende como carne.
+F174.t	Shade and solar radiation	Sombra e radiação solar
+F174.r	Direct sun heats the animal as much as the air. Good shade can cut the heat load it receives by 30 % or more.	O sol direto aquece o animal tanto quanto o ar. Uma boa sombra pode baixar a carga de calor que recebe em até 30 % ou mais.
+F174.0h	What shade does	O que a sombra faz
+F174.0.0	It blocks direct solar radiation.	Tira a radiação direta do sol.
+F174.0.1	It lowers skin temperature and breathing.	Baixa a temperatura da pele e a respiração.
+F174.0.2	Trees also cool through the moisture of their leaves.	As árvores, além disso, refrescam pela umidade das folhas.
+F174.1h	How much is needed	Quanto é necessário
+F174.1.0	About 2 to 4 m² of shade per animal in a pen.	Uns 2 a 4 m² de sombra por animal no curral.
+F174.1.1	3 to 4 m high so air can flow.	Altura de 3 a 4 m para o ar circular.
+F174.1.2	Oriented so the shade moves and dries the floor.	Orientada para que a sombra se mova e seque o piso.
+F174.2h	In your feedlot	No seu confinamento
+F174.2.0	Shade is one of the investments that pays off most in the tropics.	A sombra é dos investimentos que mais se pagam no trópico.
+F174.2.1	Black animals or European breeds need it more.	Os animais pretos ou de raças europeias precisam mais dela.
+F175.t	Intake and body weight	Consumo e peso do animal
+F175.r	A steer eats 2 to 3 % of its weight in dry matter. Light animals eat more per kilo of weight than heavy ones.	Um novilho come de 2 a 3 % do seu peso em matéria seca. Os leves comem mais por quilo de peso que os pesados.
+F175.0h	Reference values	Valores de referência
+F175.0.0	200 kg: about 2.6 to 3 % (5 to 6 kg of dry matter).	200 kg: cerca de 2,6 a 3 % (5 a 6 kg de matéria seca).
+F175.0.1	350 kg: about 2.3 to 2.6 % (8 to 9 kg).	350 kg: cerca de 2,3 a 2,6 % (8 a 9 kg).
+F175.0.2	450 kg: about 2 to 2.3 % (9 to 10 kg).	450 kg: cerca de 2 a 2,3 % (9 a 10 kg).
+F175.1h	What changes it	O que o muda
+F175.1.0	Feed quality: old grass lowers intake.	Qualidade da comida: pasto velho baixa o consumo.
+F175.1.1	Heat: it can drop 10 to 30 %.	Calor: pode cair 10 a 30 %.
+F175.1.2	The animal's fatness: very fat animals eat less.	Gordura do animal: os muito gordos comem menos.
+F175.2h	In your feedlot	No seu confinamento
+F175.2.0	The app estimates the expected intake from your lots' weight.	O app estima o consumo esperado com o peso dos seus lotes.
+F175.2.1	If they eat much less than expected, look for the cause.	Se comem muito menos que o esperado, procure a causa.
+F176.t	Growth of males and females	Crescimento de machos e fêmeas
+F176.r	At the same age and feed, intact males grow fastest, then steers, and finally heifers. Heifers fatten earlier and finish at a lower weight.	Com a mesma idade e comida, os machos inteiros crescem mais rápido, depois os castrados e por último as fêmeas. As fêmeas engordam antes e terminam com menos peso.
+F176.0h	Typical differences	Diferenças típicas
+F176.0.0	Intact bulls: the highest gain and best conversion.	Touros inteiros: o maior ganho e a melhor conversão.
+F176.0.1	Castrated steers: intermediate gain, more marbling.	Novilhos castrados: ganho intermediário, mais marmoreio.
+F176.0.2	Heifers: lower gain; they finish 50 to 80 kg lighter than steers.	Fêmeas: ganho menor e terminam com 50 a 80 kg menos que os novilhos.
+F176.1h	In your feedlot	No seu confinamento
+F176.1.0	Don't mix sexes in the same lot.	Não misture sexos no mesmo lote.
+F176.1.1	Adjust the target weight by sex: the app allows one target per lot.	Ajuste a meta de peso conforme o sexo: o app permite uma meta por lote.
+F177.t	Pasture grasses for the tropics	Capins para pastagem no trópico
+F177.r	Choosing the right grass for your soil and climate determines how much beef each hectare produces.	Escolher o capim certo para seu solo e clima define quanta carne cada hectare produz.
+F177.0h	Brachiarias	Braquiárias
+F177.0.0	Brizantha (Marandú, Toledo), Decumbens, Humidicola and hybrids such as Mulato II and Cayman.	Brizantha (Marandu, Xaraés/Toledo), Decumbens, Humidícola e híbridos como Mulato II e Cayman.
+F177.0.1	They tolerate poor soils and moderate drought.	Aguentam solos pobres e seca moderada.
+F177.0.2	Some tolerate waterlogging (Humidicola, Cayman).	Alguns suportam encharcamento (Humidícola, Cayman).
+F177.0.3	Good yields with fertilization.	Boa produção com adubação.
+F177.1h	Panicum (Guinea grass)	Panicum (capim-colonião)
+F177.1.0	Mombasa, Tanzania, Massai.	Mombaça, Tanzânia, Massai.
+F177.1.1	Very productive and good quality on fertile soils.	Muito produtivos e de boa qualidade em solos férteis.
+F177.1.2	They need good management of grazing height.	Precisam de bom manejo da altura de pastejo.
+F177.2h	Star grasses and others	Estrelas e outros
+F177.2.0	African star grass, Transvala, Bermuda: good on fertile, fertilized soils.	Grama-estrela-africana, Transvala, Bermuda: bons em solos férteis e com adubação.
+F177.2.1	Native or naturalized grasses: low production.	Pastos nativos ou naturalizados (grama): baixa produção.
+F177.3h	How to choose	Como escolher
+F177.3.0	Look at your soil (fertility, drainage) and your area's rainfall.	Olhe seu solo (fertilidade, drenagem) e a chuva da sua região.
+F177.3.1	Ask neighbors and the local technician what works.	Pergunte aos vizinhos e ao técnico da região o que funciona.
+F177.3.2	Combine varieties in different paddocks to spread the risk.	Combine variedades em piquetes diferentes para dividir o risco.
+F178.t	Cut-and-carry grasses	Capins de corte
+F178.r	Cut-and-carry grasses produce a lot of forage per hectare to feed chopped in the pen or to make silage.	Os capins de corte produzem muita forragem por hectare para dar picada no curral ou fazer silagem.
+F178.0h	Varieties	Variedades
+F178.0.0	King grass, Cuba OM-22, Maralfalfa, Taiwan, CT-115, Cameroon.	Capim-elefante (King grass, Cameroon), Cuba OM-22, Maralfalfa, Taiwan, CT-115, Capiaçu.
+F178.0.1	Some new varieties have less fuzz and more leaf.	Algumas variedades novas têm menos pelos e mais folha.
+F178.1h	Management	Manejo
+F178.1.0	Plant from stems or cuttings in furrows at the start of the rains.	Plante por colmos ou estacas em sulcos no início das chuvas.
+F178.1.1	Cut at 50 to 70 days in the rainy season and at 70 to 90 days in the dry season.	Corte aos 50 a 70 dias nas chuvas e aos 70 a 90 dias na seca.
+F178.1.2	Cut 10 to 15 cm above the ground.	Corte a 10 a 15 cm do solo.
+F178.1.3	Fertilize with nitrogen after each cut.	Aduba com nitrogênio depois de cada corte.
+F178.2h	Production	Produção
+F178.2.0	With good management, 100 to over 200 tonnes of green forage per hectare per year.	Com bom manejo, de 100 a mais de 200 toneladas de forragem verde por hectare por ano.
+F178.2.1	A well-managed plot can feed many animals in the pen.	Uma área bem manejada pode alimentar muitos animais no confinamento.
+F178.3h	Common mistakes	Erros comuns
+F178.3.0	Cutting too late: lots of woody stem and low quality.	Cortar muito velho: muito talo lenhoso e pouca qualidade.
+F178.3.1	Not fertilizing: yield falls year after year.	Não adubar: o rendimento cai ano a ano.
+F178.3.2	Chopping and leaving it overnight.	Picar e deixar de um dia para o outro.
+F179.t	Establishing a pasture	Formar um pasto
+F179.r	Planting well from the start saves years of thin pasture and weeds.	Plantar bem desde o início poupa anos de pasto ralo e mato.
+F179.0h	Preparation	Preparo
+F179.0.0	A soil test to know whether lime and fertilizer are needed.	Análise de solo para saber se precisa de calcário e adubo.
+F179.0.1	Weed control before planting.	Controle do mato antes de plantar.
+F179.0.2	Soil preparation according to the slope: minimum tillage on hillsides.	Preparo do solo conforme a declividade: cultivo mínimo nas encostas.
+F179.1h	Planting	Plantio
+F179.1.0	At the start of the rains.	No início das chuvas.
+F179.1.1	Certified seed at the rate the supplier recommends.	Semente certificada na quantidade que o fornecedor indica.
+F179.1.2	Cover small seed lightly (1 to 2 cm).	Cubra pouco a semente pequena (1 a 2 cm).
+F179.1.3	For stem-propagated grasses, furrows with fresh material.	Em capins de colmo, sulcos com material fresco.
+F179.2h	First months	Primeiros meses
+F179.2.0	Weed control by hand or with a selective herbicide.	Controle do mato à mão ou com herbicida seletivo.
+F179.2.1	First light grazing when the grass is well rooted (pulling a plant doesn't uproot it).	Primeiro pastejo leve quando o capim estiver bem enraizado (puxar uma planta não a arranca).
+F179.2.2	Establishment fertilization.	Adubação de formação.
+F180.t	Fertilizing pastures	Adubar pastos
+F180.r	Pasture is a crop. Without fertilizer, it produces less every year and weeds take over.	O pasto é uma lavoura. Sem adubo, a cada ano produz menos e o mato ganha.
+F180.0h	Nutrients	Nutrientes
+F180.0.0	Nitrogen: the one that increases production most.	Nitrogênio: o que mais aumenta a produção.
+F180.0.1	Phosphorus: for roots; very scarce in tropical soils.	Fósforo: para as raízes; muito escasso em solos tropicais.
+F180.0.2	Potassium: for resistance and regrowth.	Potássio: para resistência e rebrota.
+F180.0.3	Lime: corrects soil acidity.	Calcário: corrige a acidez do solo.
+F180.1h	When	Quando
+F180.1.0	At the start and middle of the rainy season.	No início e no meio da época de chuvas.
+F180.1.1	After grazing or cutting.	Depois do pastejo ou do corte.
+F180.1.2	Never on dry soil.	Nunca com solo seco.
+F180.2h	Manure	Esterco
+F180.2.0	Composted pen manure is a good fertilizer for pastures and cut grasses.	O esterco compostado do curral é um bom adubo para pastos e capins de corte.
+F180.2.1	Use it composted so you don't spread weed seeds or parasites.	Use-o compostado para não espalhar sementes de mato nem parasitas.
+F180.3h	Numbers	Números
+F180.3.0	Fertilizer must pay: calculate how much extra forage it gives and how many kilos of beef it produces.	O adubo deve se pagar: calcule quanta forragem a mais dá e quantos quilos de carne produz.
+F180.3.1	A soil test avoids spending on what isn't needed.	A análise de solo evita gastar no que não é necessário.
+F181.t	Rotational grazing	Pastejo rotacionado
+F181.r	Dividing the land and rotating the animals lets the grass rest. It produces more forage of better quality.	Dividir a área e rodar os animais deixa o pasto descansar. Produz mais forragem e de melhor qualidade.
+F181.0h	How it works	Como funciona
+F181.0.0	The pasture is divided into several paddocks.	O pasto é dividido em vários piquetes.
+F181.0.1	The animals graze one for a few days and move to the next.	Os animais pastam um por poucos dias e passam ao seguinte.
+F181.0.2	Each paddock rests until it recovers.	Cada piquete descansa até se recuperar.
+F181.1h	Reference times	Tempos de referência
+F181.1.0	Occupation of 1 to 3 days per paddock.	Ocupação de 1 a 3 dias por piquete.
+F181.1.1	Rest of 25 to 35 days in the rainy season and 35 to 50 in the dry season, depending on the grass.	Descanso de 25 a 35 dias nas chuvas e 35 a 50 dias na seca, conforme o capim.
+F181.1.2	Enter when the grass is at the recommended height and leave before grazing it bare.	Entre quando o capim estiver na altura recomendada e saia antes de deixá-lo rapado.
+F181.2h	Example heights	Alturas de exemplo
+F181.2.0	Brachiaria brizantha: enter at 30 to 40 cm, leave at 15 to 20 cm.	Brachiaria brizantha: entrar com 30 a 40 cm, sair com 15 a 20 cm.
+F181.2.1	Mombasa: enter at 80 to 90 cm, leave at 30 to 40 cm.	Mombaça: entrar com 80 a 90 cm, sair com 30 a 40 cm.
+F181.3h	Benefits	Benefícios
+F181.3.0	More animals per hectare.	Mais animais por hectare.
+F181.3.1	Fewer weeds.	Menos mato.
+F181.3.2	Better grass quality.	Melhor qualidade do pasto.
+F181.3.3	It breaks the cycle of some parasites.	Corta o ciclo de alguns parasitas.
+F182.t	Stocking rate and forage sampling	Lotação e amostragem de forragem
+F182.r	Stocking rate is how many animals a pasture can carry. Forage sampling measures how much grass there is to calculate it.	A lotação é quantos animais um pasto aguenta. A amostragem mede quanto pasto há para calculá-la.
+F182.0h	Animal unit	Unidade animal
+F182.0.0	An animal unit is 450 kg of live weight.	Uma unidade animal é 450 kg de peso vivo.
+F182.0.1	A 300 kg steer is 0.67 animal units.	Um novilho de 300 kg é 0,67 unidade animal.
+F182.1h	How to sample	Como amostrar
+F182.1.0	Throw a 1 m² frame at several random spots.	Jogue um quadro de 1 m² em vários pontos ao acaso.
+F182.1.1	Cut the grass at the height the animal would leave and weigh it.	Corte o pasto na altura que o animal deixaria e pese.
+F182.1.2	Average and multiply by the area: kilos of green forage available.	Tire a média e multiplique pela área: quilos de forragem verde disponível.
+F182.2h	Calculating the stocking rate	Calcular a lotação
+F182.2.0	An animal eats about 10 to 12 % of its weight in green forage a day (depending on the grass's dry matter).	Um animal consome uns 10 a 12 % do seu peso em forragem verde por dia (conforme a matéria seca do pasto).
+F182.2.1	Use only 50 to 60 % of the available forage to avoid overgrazing.	Use só 50 a 60 % da forragem disponível para não superpastejar.
+F182.2.2	Head = usable forage per day ÷ intake per animal.	Cabeças = forragem aproveitável por dia ÷ consumo por animal.
+F182.2.3	Rumi's calculator helps you with the stocking rate.	A calculadora do Rumi ajuda você com a lotação.
+F182.3h	Signs of overstocking	Sinais de superlotação
+F182.3.0	Grass grazed bare and exposed soil.	Pasto rapado e solo descoberto.
+F182.3.1	More weeds.	Aumento do mato.
+F182.3.2	Animals that don't gain weight.	Animais que não ganham peso.
+F183.t	Weed control	Controle de plantas daninhas
+F183.r	Weeds steal water, light and fertilizer from the grass. Some are toxic. They are better controlled with good grass than with chemicals.	O mato rouba água, luz e adubo do pasto. Algumas plantas são tóxicas. Controlam-se melhor com um bom pasto do que com químicos.
+F183.0h	Prevention	Prevenção
+F183.0.0	Don't overgraze: strong grass smothers weeds.	Não superpastejar: o pasto forte abafa o mato.
+F183.0.1	Fertilize the grass.	Adubar o pasto.
+F183.0.2	Composted, not fresh, manure so you don't spread seeds.	Esterco compostado, não fresco, para não espalhar sementes.
+F183.1h	Control	Controle
+F183.1.0	Slash or mow before the weed sets seed.	Roçada ou corte antes de o mato soltar semente.
+F183.1.1	Pull toxic plants by hand.	Arranque manual de plantas tóxicas.
+F183.1.2	Selective herbicides per the label, with protective equipment and respecting the time before turning cattle in.	Herbicidas seletivos conforme o rótulo, com equipamento de proteção e respeitando o tempo antes de soltar o gado.
+F183.2h	Safety	Segurança
+F183.2.0	Read the label: some herbicides require days without grazing.	Leia o rótulo: alguns herbicidas pedem dias sem pastejo.
+F183.2.1	Don't wash equipment in streams.	Não lave equipamentos em córregos.
+F184.t	Toxic plants in pastures	Plantas tóxicas nos pastos
+F184.r	Knowing the toxic plants in your area prevents deaths. Hungry cattle eat what they would normally avoid.	Conhecer as plantas tóxicas da sua região evita mortes. O gado com fome come o que normalmente evitaria.
+F184.0h	Common in Central America	Comuns na América Central
+F184.0.0	Bracken fern (Pteridium).	Samambaia (Pteridium).
+F184.0.1	Castor bean.	Mamona.
+F184.0.2	Oleander.	Espirradeira (oleandro).
+F184.0.3	Other local plants depending on the area.	Outras conforme a região.
+F184.0.4	Bitter cassava and regrown sorghum (cyanide).	Mandioca-brava e sorgos rebrotados (cianeto).
+F184.1h	When the risk is highest	Quando há mais risco
+F184.1.0	Hungry or newly arrived animals.	Animais com fome ou recém-chegados.
+F184.1.1	Bare pastures in the dry season.	Pastos rapados na seca.
+F184.1.2	After slashing, when plants are exposed and wilted.	Depois de uma roçada, quando as plantas ficam à vista e murchas.
+F184.2h	What to do	O que fazer
+F184.2.0	Walk the pasture and pull toxic plants before turning animals in.	Percorra e arranque as plantas tóxicas antes de soltar os animais.
+F184.2.1	Don't dump garden waste in the pasture.	Não jogue restos de jardinagem no pasto.
+F184.2.2	If you suspect poisoning, remove the animals and call the vet with a sample of the plant.	Se suspeitar de intoxicação, retire os animais e chame o veterinário com uma amostra da planta.
+F185.t	Silage: how to make it	Silagem: como fazer
+F185.r	Silage preserves forage in good condition by fermenting it without air. Done well, it keeps for months and feeds cattle in the dry season.	A silagem conserva a forragem em bom estado fermentando-a sem ar. Bem feita, dura meses e alimenta na seca.
+F185.0h	What to ensile	O que ensilar
+F185.0.0	Corn: the best, cut when the grain is at the milk-dough stage (milk line halfway).	Milho: o melhor, cortado quando o grão está no estado leitoso-pastoso (linha do leite na metade).
+F185.0.1	Forage or dual-purpose sorghum.	Sorgo forrageiro ou de duplo propósito.
+F185.0.2	Cut grasses, with a little molasses to help fermentation.	Capins de corte, com um pouco de melaço para ajudar a fermentar.
+F185.1h	Steps	Passos
+F185.1.0	Cut and chop to 1 to 2 cm.	Corte e pique a 1 a 2 cm.
+F185.1.1	Fill the silo fast, in the shortest time possible.	Encha o silo rápido, no menor tempo possível.
+F185.1.2	Pack layer by layer (20 to 30 cm) with a tractor or lots of trampling.	Compacte camada por camada (20 a 30 cm) com trator ou pisando muito.
+F185.1.3	Cover with thick plastic with no holes the same day.	Cubra com lona grossa sem furos no mesmo dia.
+F185.1.4	Put weight on top: tires or sacks of soil.	Ponha peso em cima: pneus ou sacos de terra.
+F185.2h	Types of silo	Tipos de silo
+F185.2.0	Trench or pile silo (bunker).	Silo trincheira ou de superfície (bunker).
+F185.2.1	Large bag silo.	Silo bolsa (bag).
+F185.2.2	Mini-silos in bags or barrels: good for a few animals.	Microssilos em sacos ou tambores: bons para poucos animais.
+F185.3h	Timing	Tempos
+F185.3.0	Wait at least 3 to 4 weeks before opening.	Espere pelo menos 3 a 4 semanas antes de abrir.
+F185.3.1	Well sealed, it keeps for many months.	Bem fechado, dura muitos meses.
+F186.t	Silage: quality and problems	Silagem: qualidade e problemas
+F186.r	Badly made silage loses value and can make animals sick. Learn to recognize good silage and avoid losses.	Uma silagem malfeita perde valor e pode adoecer. Aprenda a reconhecer uma boa e a evitar as perdas.
+F186.0h	Good silage	Silagem boa
+F186.0.0	Pleasant smell, like mild vinegar or fermented fruit.	Cheiro agradável, a vinagre suave ou fruta fermentada.
+F186.0.1	Yellowish-green or olive-green color.	Cor verde-amarelada ou verde-oliva.
+F186.0.2	Firm texture, moist but not dripping water.	Textura firme, úmida mas sem escorrer água.
+F186.1h	Bad silage	Silagem ruim
+F186.1.0	Smell of rancid butter or ammonia: poor fermentation.	Cheiro de manteiga rançosa ou de amônia: má fermentação.
+F186.1.1	Dark brown or black color, tobacco smell: it overheated.	Cor marrom-escura ou preta, cheiro de tabaco: esquentou.
+F186.1.2	White, blue or green mold.	Mofo branco, azul ou verde.
+F186.1.3	Very watery with a bad smell: it was too wet.	Muito aguada e com mau cheiro: estava úmida demais.
+F186.2h	Causes of losses	Causas de perdas
+F186.2.0	Poor packing: air remains.	Má compactação: fica ar.
+F186.2.1	Torn or poorly sealed plastic.	Lona rasgada ou mal vedada.
+F186.2.2	Forage too dry or too wet.	Forragem muito seca ou muito úmida.
+F186.2.3	Slow filling.	Enchimento lento.
+F186.3h	When opening it	Ao abri-lo
+F186.3.0	Take from one face of the silo, evenly.	Retire de uma face do silo, por igual.
+F186.3.1	Remove at least 15 to 20 cm from the face every day so it doesn't heat up.	Retire todo dia pelo menos 15 a 20 cm da face para não esquentar.
+F186.3.2	Cover what you don't use.	Cubra o que não usar.
+F186.3.3	Discard the moldy layer.	Descarte a camada com mofo.

@@ -1,0 +1,212 @@
+F13.t	Automatic weighing and sensors	Pesagem automática e sensores
+F13.r	Automatic scales weigh animals when they go to drink, without moving them to the chute. Together with other sensors, they give daily data on each animal.	As balanças automáticas pesam os animais quando vão beber água, sem levá-los ao tronco. Junto com outros sensores, dão dados diários de cada animal.
+F13.0h	Technologies	Tecnologias
+F13.0.0	Walk-over scales next to the water trough with a tag reader.	Balanças de passagem junto ao bebedouro com leitor de brincos.
+F13.0.1	Activity and rumination sensors in collars or ear tags.	Sensores de atividade e ruminação em coleiras ou brincos.
+F13.0.2	Cameras that estimate weight and condition.	Câmeras que estimam peso e condição corporal.
+F13.1h	What you gain	O que você ganha
+F13.1.0	Seeing the weight curve without stressing the cattle.	Ver a curva de peso sem estressar o gado.
+F13.1.1	Spotting sick animals before they look ill.	Detectar doentes antes que pareçam mal.
+F13.1.2	Choosing the right day to sell.	Decidir o dia certo de venda.
+F13.2h	In your feedlot	No seu confinamento
+F13.2.0	They are still expensive for small farms, but get cheaper every year.	Ainda são caras para fazendas pequenas, mas baixam de preço a cada ano.
+F13.2.1	Meanwhile, weighing every 3 to 4 weeks with a regular scale and recording it in the app gives you almost the same information.	Enquanto isso, pesar a cada 3 a 4 semanas com balança comum e anotar no app dá quase a mesma informação.
+F14.t	Virtual fences, drones and satellites	Cercas virtuais, drones e satélites
+F14.r	New technologies let you manage paddocks without wire, count cattle from the air and measure pasture from space.	Novas tecnologias permitem manejar piquetes sem arame, contar gado pelo ar e medir o pasto do espaço.
+F14.0h	Virtual fences	Cercas virtuais
+F14.0.0	GPS collars that warn with a sound and a mild stimulus when the animal nears the boundary.	Coleiras com GPS que avisam com som e um estímulo leve quando o animal se aproxima do limite.
+F14.0.1	Already used in some grazing countries; still rare in Central America.	Já são usadas em alguns países de pastejo; na América Central ainda são raras.
+F14.1h	Drones	Drones
+F14.1.0	Useful for counting cattle, checking fences and water points and finding lost animals.	Servem para contar gado, revisar cercas e aguadas e procurar animais perdidos.
+F14.1.1	You must follow the country's flight rules.	É preciso respeitar as normas de voo do país.
+F14.2h	Satellites	Satélites
+F14.2.0	Free images show how much green pasture there is in each paddock.	Imagens gratuitas mostram quanto pasto verde há em cada piquete.
+F14.2.1	They help plan stocking rate and the dry season.	Ajudam a planejar a lotação e a época seca.
+F14.3h	In your feedlot	No seu confinamento
+F14.3.0	Start simple: up-to-date records in the app and a good paddock plan.	Comece pelo simples: registros em dia no app e um bom plano de piquetes.
+F14.3.1	Technology helps most when your data is already organized.	A tecnologia serve mais quando você já tem dados organizados.
+F15.t	Data and apps in cattle feeding	Dados e apps na engorda
+F15.r	Keeping the numbers on your phone changed how cattle are fed: knowing how much each animal gains, what a kilo costs and when to sell, instead of guessing.	Levar os números no celular mudou a forma de engordar: saber quanto cada animal ganha, quanto custa o quilo e quando vender, em vez de adivinhar.
+F15.0h	What you achieve	O que se consegue
+F15.0.0	See the real gain of each lot and compare it with the target.	Ver o ganho real de cada lote e compará-lo com a meta.
+F15.0.1	Know the cost per kilo gained and the margin before selling.	Saber o custo por quilo ganho e a margem antes de vender.
+F15.0.2	Remember treatments, withdrawals, weighings and feed purchases.	Lembrar tratamentos, carências, pesagens e compras de ração.
+F15.1h	Good practices	Boas práticas
+F15.1.0	Record on the same day, even if it's little.	Anotar no mesmo dia, mesmo que seja pouco.
+F15.1.1	Weigh regularly: without weights, the numbers are estimates.	Pesar com regularidade: sem pesos, os números são estimados.
+F15.1.2	Back up the data every week.	Fazer backup dos dados toda semana.
+F15.2h	In Rumentis	No Rumentis
+F15.2.0	Everything works without internet and is saved on your phone.	Tudo funciona sem internet e fica salvo no seu celular.
+F15.2.1	The weather needs internet only to update.	O clima precisa de internet só para se atualizar.
+F15.2.2	Rumi helps you read your numbers and decide.	Rumi ajuda você a ler seus números e decidir.
+F16.t	El Niño, La Niña and the Dry Corridor	El Niño, La Niña e o Corredor Seco
+F16.r	El Niño and La Niña are changes in Pacific Ocean temperature that alter rainfall in Central America. El Niño usually brings drought to the Dry Corridor; La Niña, more rain.	El Niño e La Niña são mudanças na temperatura do Oceano Pacífico que alteram as chuvas na América Central. El Niño costuma trazer seca ao Corredor Seco; La Niña, mais chuva.
+F16.0h	El Niño	El Niño
+F16.0.0	Less rain and a longer midsummer drought on the Pacific slope.	Menos chuva e veranico mais longo na vertente do Pacífico.
+F16.0.1	The strong 2023–2024 El Niño caused droughts and losses of pasture and crops in the region.	O forte El Niño de 2023 e 2024 causou secas e perdas de pasto e de colheitas na região.
+F16.1h	La Niña	La Niña
+F16.1.0	More rain, floods and more humidity.	Mais chuvas, inundações e mais umidade.
+F16.1.1	More parasites, ticks, lameness and mud in the pens.	Mais parasitas, carrapatos, mancas e lama nos currais.
+F16.2h	The Dry Corridor	O Corredor Seco
+F16.2.0	A strip from Guatemala to Costa Rica with frequent droughts.	Faixa que vai da Guatemala à Costa Rica, com secas frequentes.
+F16.2.1	It includes much of southern and western Honduras.	Inclui boa parte do sul e do oeste de Honduras.
+F16.3h	In your feedlot	No seu confinamento
+F16.3.0	Follow your country's official seasonal forecasts.	Acompanhe as previsões oficiais do seu país para a temporada.
+F16.3.1	With an El Niño warning: store silage and hay, and buy fewer animals.	Com alerta de El Niño: guarde silagem e feno, e compre menos animais.
+F16.3.2	With a La Niña warning: prepare drainage and dry pens.	Com alerta de La Niña: prepare drenagens e currais secos.
+F17.t	More frequent heat waves	Ondas de calor mais frequentes
+F17.r	Recent years have been among the hottest on record worldwide, and heat waves in Central America are more frequent and intense. Heat stress is now a permanent cost of cattle feeding.	Os últimos anos estão entre os mais quentes já registrados no mundo, e as ondas de calor na América Central são mais frequentes e intensas. O estresse por calor já é um custo permanente da engorda.
+F17.0h	Effects on cattle	Efeitos no gado
+F17.0.0	Intake and daily gain drop.	Caem o consumo e o ganho diário.
+F17.0.1	Mortality rises in pens without shade.	Sobe a mortalidade em currais sem sombra.
+F17.0.2	Meat quality gets worse.	Piora a qualidade da carne.
+F17.1h	Adapting	Adaptar-se
+F17.1.0	Shade for all animals: natural or shade cloth.	Sombra para todos os animais: natural ou de tela.
+F17.1.1	Plenty of cool water, with troughs in the shade.	Água abundante e fresca, com bebedouros na sombra.
+F17.1.2	Feed at dusk and before dawn.	Comida ao entardecer e de madrugada.
+F17.1.3	Adapted genetics: zebu, crosses and slick hair.	Genética adaptada: zebu, cruzamentos e pelo curto (slick).
+F17.2h	In your feedlot	No seu confinamento
+F17.2.0	Check today's weather and heat index in Rumi.	Veja no Rumi o clima de hoje e o índice de calor.
+F17.2.1	Plan shipping and chute work for the cool hours.	Planeje o embarque e o trabalho no tronco para as horas frescas.
+F18.t	Avian influenza in dairy cows	Influenza aviária em vacas leiteiras
+F18.r	In 2024 the H5N1 avian influenza virus was detected in US dairy cows for the first time. It spread to many dairy herds in that country. It is a case study of how a virus can jump species.	Em 2024 o vírus da influenza aviária H5N1 foi detectado pela primeira vez em vacas leiteiras dos EUA. Espalhou-se por muitos rebanhos leiteiros daquele país. É um caso de estudo de como um vírus pode saltar de espécie.
+F18.0h	What is known	O que se sabe
+F18.0.0	It mainly affects milking cows: milk drops and changes appearance.	Afeta sobretudo vacas em lactação: o leite cai e muda de aspecto.
+F18.0.1	The virus is found in raw milk; pasteurization destroys it.	O vírus está no leite cru; a pasteurização o destrói.
+F18.0.2	There were a few mild cases in people working with cows.	Houve alguns casos leves em pessoas que trabalhavam com vacas.
+F18.1h	Beef cattle	Gado de corte
+F18.1.0	Cases in beef cattle have been very rare.	Os casos em gado de corte foram muito raros.
+F18.1.1	Properly cooked meat is not considered a risk.	A carne bem cozida não é considerada um risco.
+F18.2h	In your feedlot	No seu confinamento
+F18.2.0	Keep wild and backyard birds away from feed bunks and water troughs.	Mantenha aves silvestres e de quintal longe dos cochos e bebedouros.
+F18.2.1	Report to the official veterinarian any unusual disease in several animals at once.	Informe ao veterinário oficial qualquer doença estranha em vários animais ao mesmo tempo.
+F19.t	Lumpy skin disease	Dermatose nodular contagiosa
+F19.r	Lumpy skin disease is a viral disease of cattle that causes skin nodules, fever and large losses. It spread across Asia and in 2025 reached Italy and France. It is not present in the Americas.	A dermatose nodular contagiosa é uma doença viral dos bovinos que causa nódulos na pele, febre e grandes perdas. Espalhou-se pela Ásia e em 2025 chegou à Itália e à França. Não está nas Américas.
+F19.0h	What it causes	O que causa
+F19.0.0	Hard nodules in the skin all over the body.	Nódulos duros na pele de todo o corpo.
+F19.0.1	Fever, weight loss and damaged hides.	Febre, perda de peso e couros danificados.
+F19.0.2	It is spread by biting insects.	É transmitida por insetos que picam.
+F19.1h	Why it matters to you	Por que importa para você
+F19.1.0	It shows how exotic diseases advance with trade and climate.	Mostra como as doenças exóticas avançam com o comércio e o clima.
+F19.1.1	If it reached the Americas, it would close markets immediately.	Se chegasse às Américas, fecharia mercados na hora.
+F19.2h	What to do	O que fazer
+F19.2.0	Report to the official service any animal with many skin nodules and fever.	Informe ao serviço oficial qualquer animal com muitos nódulos na pele e febre.
+F19.2.1	Don't import animals or products without permits.	Não importe animais nem produtos sem autorização.
+F20.t	Foot-and-mouth disease in the Americas	Febre aftosa nas Américas
+F20.r	Central America is free of foot-and-mouth disease, and in South America most countries have controlled it. In 2025 the World Organisation for Animal Health recognized Brazil as free of FMD without vaccination.	A América Central está livre de febre aftosa, e na América do Sul a maioria dos países já a controlou. Em 2025 a Organização Mundial de Saúde Animal reconheceu o Brasil como livre de aftosa sem vacinação.
+F20.0h	Situation	Situação
+F20.0.0	Central America, Mexico, the US and Canada are free without vaccination.	América Central, México, EUA e Canadá estão livres sem vacinação.
+F20.0.1	South America made great progress in recent decades.	A América do Sul avançou muito nas últimas décadas.
+F20.0.2	In 2025 there were outbreaks in Europe (Germany, Hungary and Slovakia), a reminder that no country is safe.	Em 2025 houve surtos na Europa (Alemanha, Hungria e Eslováquia), que lembram que nenhum país está a salvo.
+F20.1h	Why it matters	Por que importa
+F20.1.0	Being FMD-free allows beef exports to the best markets.	Ser livre de aftosa permite exportar carne para os melhores mercados.
+F20.1.1	A single outbreak shuts down all exports.	Um único surto fecha todas as exportações.
+F20.2h	In your feedlot	No seu confinamento
+F20.2.0	Report immediately blisters in the mouth and feet, drooling and lameness in several animals.	Informe imediatamente bolhas na boca e nas patas, baba e manqueira em vários animais.
+F20.2.1	Don't buy smuggled cattle or products.	Não compre gado nem produtos de contrabando.
+F21.t	Cultivated meat and alternative proteins	Carne cultivada e proteínas alternativas
+F21.r	In recent years plant-based meats and lab-grown meat from cells have appeared. So far their market share is very small compared with beef.	Nos últimos anos surgiram carnes feitas de plantas e carne cultivada em laboratório a partir de células. Até agora sua participação no mercado é muito pequena frente à carne bovina.
+F21.0h	What they are	O que são
+F21.0.0	Plant-based meats: made with soy, peas and oils, with a taste and texture similar to meat.	Carnes vegetais: feitas com soja, ervilha e óleos, com sabor e textura parecidos com carne.
+F21.0.1	Cultivated meat: animal cells multiplied in tanks; approved in few countries with very small production.	Carne cultivada: células de animal multiplicadas em tanques; aprovada em poucos países e com produção muito pequena.
+F21.0.2	Some US states banned the sale of cultivated meat.	Alguns estados dos EUA proibiram a venda de carne cultivada.
+F21.1h	What is happening with demand	O que acontece com a demanda
+F21.1.0	Global beef consumption keeps growing in middle-income countries.	O consumo mundial de carne bovina continua crescendo em países de renda média.
+F21.1.1	Sales of plant-based meats grew and then stalled in several countries.	As vendas de carnes vegetais cresceram e depois estagnaram em vários países.
+F21.2h	In your feedlot	No seu confinamento
+F21.2.0	Natural beef, produced with good practices and a story, is still highly valued.	A carne bovina natural, produzida com boas práticas e com história, continua muito valorizada.
+F21.2.1	Tell the story of your production: it is an advantage over factory products.	Conte a história da sua produção: é uma vantagem frente aos produtos de fábrica.
+F22.t	Animal welfare: what markets demand	Bem-estar animal: o que os mercados exigem
+F22.r	Supermarkets, restaurants and importing countries increasingly require cattle to be raised humanely: without unnecessary pain, with shade, water and calm handling.	Supermercados, restaurantes e países importadores exigem cada vez mais que o gado seja criado com bom trato: sem dor desnecessária, com sombra, água e manejo tranquilo.
+F22.0h	What is most requested	O que mais se pede
+F22.0.0	Early castration and dehorning, with pain control.	Castração e descorna precoces e com controle da dor.
+F22.0.1	Transport with reasonable times and loads.	Transporte com tempos e cargas razoáveis.
+F22.0.2	Slaughter with effective stunning.	Abate com insensibilização efetiva.
+F22.0.3	No electric prods as a routine tool.	Nada de choque elétrico como ferramenta habitual.
+F22.1h	The five freedoms	As cinco liberdades
+F22.1.0	Freedom from hunger and thirst.	Livre de fome e sede.
+F22.1.1	Freedom from discomfort.	Livre de desconforto.
+F22.1.2	Freedom from pain, injury and disease.	Livre de dor, ferimentos e doenças.
+F22.1.3	Freedom from fear and distress.	Livre de medo e estresse.
+F22.1.4	Freedom to express normal behavior.	Livre para expressar seu comportamento normal.
+F22.2h	In your feedlot	No seu confinamento
+F22.2.0	Good handling also gives more gain and better meat.	O bom trato também dá mais ganho e melhor carne.
+F22.2.1	Keep handling records: they are your proof for a demanding buyer.	Guarde registros de manejo: são a prova diante de um comprador exigente.
+F23.t	Digital traceability and certifications	Rastreabilidade digital e certificações
+F23.r	Being able to follow each animal from birth to plate is already a requirement in many markets. Countries in the region are moving forward with official registries using ear tags and databases.	Poder acompanhar cada animal desde o nascimento até o prato já é requisito para muitos mercados. Os países da região avançam em registros oficiais com brincos e bases de dados.
+F23.0h	What it includes	O que inclui
+F23.0.0	Registration of the farm and the owner.	Registro da fazenda e do proprietário.
+F23.0.1	Unique identification of each animal.	Identificação única de cada animal.
+F23.0.2	Recording movements with permits.	Registro de trânsitos com guias.
+F23.0.3	Recording treatments and vaccines.	Registro de tratamentos e vacinas.
+F23.1h	Certifications	Certificações
+F23.1.0	Good livestock practices.	Boas práticas agropecuárias.
+F23.1.1	Deforestation-free.	Livre de desmatamento.
+F23.1.2	Animal welfare.	Bem-estar animal.
+F23.1.3	Organic or grass-fed production in some markets.	Produção orgânica ou a pasto em alguns mercados.
+F23.2h	In your feedlot	No seu confinamento
+F23.2.0	Keep your permits, official tags and treatment records up to date.	Mantenha em dia suas guias, brincos oficiais e registros de tratamentos.
+F23.2.1	The app keeps the history of each lot and you can export it to Excel.	O app guarda o histórico de cada lote e você pode exportá-lo para o Excel.
+F24.t	Input costs and volatility	Custos de insumos e volatilidade
+F24.r	Since 2021 the prices of grain, fertilizer and fuel have swung sharply because of the war in Ukraine, weather and shipping. This hits feeding costs directly.	Desde 2021 os preços de grãos, fertilizantes e combustíveis tiveram altas e baixas fortes por causa da guerra na Ucrânia, do clima e do transporte. Isso bate direto no custo da engorda.
+F24.0h	What moved	O que mudou
+F24.0.0	Corn and soybeans rose sharply in 2021 and 2022 and then fell.	O milho e a soja subiram muito em 2021 e 2022 e depois caíram.
+F24.0.1	Fertilizers hit record prices in 2022.	Os fertilizantes tiveram preços recorde em 2022.
+F24.0.2	Ocean freight and fuel rose at several points.	O frete marítimo e o combustível subiram em vários momentos.
+F24.1h	How to protect yourself	Como se proteger
+F24.1.0	Buy feed in advance when the price is low, if you have safe storage.	Compre ração antecipadamente quando o preço estiver baixo, se tiver um depósito seguro.
+F24.1.1	Look for local by-products as an alternative.	Procure subprodutos locais como alternativa.
+F24.1.2	Recalculate the ration cost every time a price changes.	Calcule o custo da ração cada vez que um preço mudar.
+F24.2h	In your feedlot	No seu confinamento
+F24.2.0	The app recalculates the cost per kilo gained with your prices.	O app recalcula o custo por quilo ganho com seus preços.
+F24.2.1	Use the feed store to know how much feed you have and how many days it will last.	Use o depósito para saber quanta ração você tem e para quantos dias dá.
+F25.t	Beef demand in the region	Demanda de carne na região
+F25.r	In Central America beef consumption grows with population and tourism, and several countries export beef. Nicaragua is one of the largest beef exporters in the region.	Na América Central o consumo de carne bovina cresce com a população e o turismo, e vários países exportam carne. A Nicarágua é um dos maiores exportadores de carne bovina da região.
+F25.0h	Trends	Tendências
+F25.0.0	More consumption in cities, supermarkets and restaurants.	Mais consumo nas cidades, supermercados e restaurantes.
+F25.0.1	Higher demands for quality, cuts and presentation.	Mais exigência de qualidade, cortes e apresentação.
+F25.0.2	Exports to the US, Mexico, the Caribbean and other markets.	Exportações para os EUA, México, Caribe e outros mercados.
+F25.1h	Opportunities	Oportunidades
+F25.1.0	Young, well-finished steers for quality cuts.	Novilhos jovens e bem terminados para cortes de qualidade.
+F25.1.1	Beef with a story: grass-fed, farm-raised, humanely handled.	Carne com história: a pasto, de fazenda, com bom trato.
+F25.1.2	Direct sales and local brands.	Vendas diretas e marcas locais.
+F25.2h	In your feedlot	No seu confinamento
+F25.2.0	Talk with your packing plant and buyers about which animal they pay best for.	Converse com seu frigorífico e seus compradores sobre qual animal pagam melhor.
+F25.2.1	Adjust your feeding to that market.	Ajuste sua engorda a esse mercado.
+F26.t	Banned products that keep turning up	Produtos proibidos que continuam aparecendo
+F26.r	Fattening substances such as clenbuterol are still sold illegally. They are a danger to human health and can close entire markets.	Ainda se vendem ilegalmente substâncias para engordar como o clembuterol. São um perigo para a saúde das pessoas e podem fechar mercados inteiros.
+F26.0h	Clenbuterol	Clembuterol
+F26.0.0	It is banned in food animals practically worldwide.	É proibido em animais de consumo em praticamente todo o mundo.
+F26.0.1	Its residues in meat can cause tremors, rapid heartbeat and serious problems in people.	Seus resíduos na carne podem causar tremores, taquicardia e problemas graves em pessoas.
+F26.0.2	There are cases of human poisoning in the region.	Há casos de intoxicação humana na região.
+F26.1h	Others	Outros
+F26.1.0	Ractopamine is banned in many markets, such as the European Union and China.	A ractopamina é proibida em muitos mercados, como a União Europeia e a China.
+F26.1.1	Unregistered hormones, antibiotics as growth promoters and unlabeled products.	Hormônios sem registro, antibióticos como promotores e produtos sem rótulo.
+F26.2h	In your feedlot	No seu confinamento
+F26.2.0	Never use unregistered products or recommendations from sellers without a prescription.	Nunca use produtos sem registro nem recomendações de vendedores sem receita.
+F26.2.1	Packing plants test for residues: a positive can lead to penalties.	Os frigoríficos fazem testes de resíduos: um positivo pode levar a sanções.
+F27.t	Recent science on zebu nutrition	Ciência recente sobre a nutrição do zebu
+F27.r	In recent decades, especially in Brazil, Nelore and its crosses have been studied extensively. Today we know zebu cattle have somewhat different needs from European breeds.	Nas últimas décadas, sobretudo no Brasil, a nutrição do Nelore e seus cruzamentos foi muito estudada. Hoje se sabe que o zebu tem necessidades um pouco diferentes das raças europeias.
+F27.0h	Findings	Descobertas
+F27.0.0	Zebu maintenance requirements are somewhat lower than those of European breeds.	A exigência de mantença do zebu é um pouco menor que a das raças europeias.
+F27.0.1	It responds very well to supplementation on pasture in the dry season.	Responde muito bem à suplementação a pasto na época seca.
+F27.0.2	The Brazilian BR-CORTE tables compile this data.	As tabelas brasileiras BR-CORTE reúnem esses dados.
+F27.1h	Application	Aplicação
+F27.1.0	Rations adjusted to zebu avoid overspending.	Rações ajustadas ao zebu evitam gastar demais.
+F27.1.1	Protein supplementation in the dry season and energy in the rainy season give very good results.	A suplementação proteica na seca e energética nas chuvas dá muito bom resultado.
+F27.2h	In your feedlot	No seu confinamento
+F27.2.0	Rumi's calculators take into account that your cattle are mostly zebu and crosses.	As calculadoras do Rumi levam em conta que seu gado é principalmente zebu e cruzados.
+F28.t	Using Rumi's menu	Usar o menu do Rumi
+F28.r	Rumi works with a menu: you choose an area and it shows you everything it can do there with your data.	Rumi trabalha com um menu: você escolhe uma área e ele mostra tudo o que pode fazer ali com seus dados.
+F28.0h	How to use it	Como usar
+F28.0.0	Tap the Rumi button at the bottom right.	Toque no botão do Rumi embaixo à direita.
+F28.0.1	Choose an area: My feedlot, My lots, Record, Feeding, Health, What's wrong with my animal?, Calculators, Money and sales, Feeding guide or Using the app.	Escolha uma área: Meu confinamento, Meus lotes, Anotar, Alimentação, Saúde, O que meu animal tem?, Calculadoras, Dinheiro e vendas, Guia de engorda ou Usar o app.
+F28.0.2	Inside the area, tap what you want to know or do.	Dentro da área, toque no que você quer saber ou fazer.
+F28.0.3	The Menu button takes you back to the areas and the arrow goes back one step.	O botão Menu leva de volta às áreas e a seta volta um passo.
+F28.1h	Guide topics	Temas do guia
+F28.1.0	Each topic opens with a summary and its parts: what it is, signs, what to do, prevention, numbers and common mistakes.	Cada tema abre com um resumo e suas partes: o que é, sinais, o que fazer, prevenção, números e erros comuns.
+F28.1.1	Tap See the whole topic to read it all, or a part to go straight to it.	Toque em Ver todo o tema para ler completo ou em uma parte para ir direto.
+F28.1.2	Related topics appear at the end.	No final aparecem temas relacionados.
+F28.2h	Calculators	Calculadoras
+F28.2.0	They ask only for the numbers needed.	Pedem só os números necessários.
+F28.2.1	They use your weight unit and your currency.	Usam sua unidade de peso e sua moeda.

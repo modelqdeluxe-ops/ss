@@ -1,0 +1,278 @@
+F29.t	Creating a lot in the app	Criar um lote no app
+F29.r	A lot is a group of animals that arrived together. You create it once and then record feed, weighings and everything else for it.	Um lote é um grupo de animais que entrou junto. Ele é criado uma vez e depois recebe as anotações de ração, pesagens e todo o resto.
+F29.0h	Steps	Passos
+F29.0.0	Tap Record and then New lot.	Toque em Registrar e depois em Novo lote.
+F29.0.1	Step 1: name, arrival date, target weight, type, supplier and ration.	Passo 1: nome, data de entrada, peso meta, tipo, fornecedor e ração.
+F29.0.2	Step 2: each animal with tag, weight, breed, color and photo.	Passo 2: cada animal com brinco, peso, raça, cor e foto.
+F29.0.3	Step 3: purchase price and freight.	Passo 3: preço de compra e frete.
+F29.0.4	Tap Create lot.	Toque em Criar lote.
+F29.1h	Purchase price	Preço de compra
+F29.1.0	Lot price: one price for all (per kilo or the total). The cost is split equally among the animals.	Preço do lote: um preço para todos (por quilo ou o total). O custo é dividido igualmente entre os animais.
+F29.1.1	Price per animal: you write what you paid for each one in its row.	Preço por animal: você escreve o que pagou por cada um na sua linha.
+F29.2h	Tips	Dicas
+F29.2.0	Enter moves to the next field and adds rows by itself.	Enter passa ao próximo campo e adiciona linhas sozinho.
+F29.2.1	You can paste a list of weights at once.	Você pode colar uma lista de pesos de uma vez.
+F29.2.2	The previous animal's breed is copied into the new row.	A raça do animal anterior é copiada na linha nova.
+F30.t	Animals and photos	Animais e fotos
+F30.r	Each animal has its own card with photo, weight, gain, breed, color, cost and history.	Cada animal tem sua ficha com foto, peso, ganho, raça, cor, custo e histórico.
+F30.0h	Viewing the animals	Ver os animais
+F30.0.0	Open the lot and tap the Animals tab.	Entre no lote e toque na aba Animais.
+F30.0.1	Sort by tag, heaviest, best or worst gain.	Ordene por brinco, mais pesado, melhor ou pior ganho.
+F30.0.2	Tap an animal to see its card.	Toque em um animal para ver sua ficha.
+F30.1h	Photos	Fotos
+F30.1.0	When creating the lot, tap the Photo box in each row.	Ao criar o lote, toque no quadro Foto de cada linha.
+F30.1.1	On the card, tap the photo to view it, or to take it if there is none.	Na ficha, toque na foto para vê-la ou para tirá-la se não houver.
+F30.1.2	In Edit you can change or remove it.	Em Editar você pode trocá-la ou removê-la.
+F30.1.3	Photos are saved on the phone.	As fotos ficam salvas no celular.
+F30.2h	Editing	Editar
+F30.2.0	On the card tap Edit to change the tag, entry weight, breed, color, price or note.	Na ficha toque em Editar para mudar brinco, peso de entrada, raça, cor, preço ou nota.
+F30.2.1	Remove this animal takes it out of the lot.	Remover este animal o tira do lote.
+F31.t	Recording feed in the app	Anotar ração no app
+F31.r	Recording the feed of each delivery lets the app calculate real intake, conversion and costs.	Anotar a ração de cada trato permite calcular consumo, conversão e custos reais.
+F31.0h	Steps	Passos
+F31.0.0	Tap Record and then Feed, or the button for the missing delivery on Today.	Toque em Registrar e depois em Ração, ou no botão do trato que falta em Hoje.
+F31.0.1	Choose the lot and the ration.	Escolha o lote e a ração.
+F31.0.2	Write the kilos (or pounds) delivered.	Escreva os quilos (ou libras) fornecidos.
+F31.0.3	You can record the bunk reading.	Você pode anotar a leitura de cocho.
+F31.1h	Tips	Dicas
+F31.1.0	Record it right away so you don't forget.	Anote na hora para não esquecer.
+F31.1.1	If you give the same amount to several lots, record them all on the same screen.	Se você dá a mesma quantidade a vários lotes, anote todos na mesma tela.
+F31.1.2	Set your feeding times in Settings so Today reminds you.	Configure seus horários em Configuração para que Hoje lembre você.
+F32.t	Weighing in the app	Pesar no app
+F32.r	Weighings are the basis of gain, projections and lagging animals.	As pesagens são a base do ganho, das projeções e dos animais atrasados.
+F32.0h	By animal	Por animal
+F32.0.0	Tap Record, Weighing, choose the lot.	Toque em Registrar, Pesagem e escolha o lote.
+F32.0.1	Write each tag's weight; Enter moves to the next one. Use the magnifying glass to find a tag.	Escreva o peso de cada brinco; Enter passa ao próximo. Use a lupa para achar um brinco.
+F32.0.2	The app marks unusual weights in red.	O app marca em vermelho os pesos estranhos.
+F32.1h	By group	Por grupo
+F32.1.0	If you don't weigh by tag, you can record the group's average or total weight.	Se você não pesa por brinco, pode anotar o peso médio ou total do grupo.
+F32.2h	Afterwards	Depois
+F32.2.0	The app updates the gain, the sale date and the lagging animals.	O app atualiza o ganho, a data de saída e os atrasados.
+F32.2.1	Check the Animals tab in the lot.	Veja no lote a aba Animais.
+F33.t	Health and withdrawal times in the app	Sanidade e carências no app
+F33.r	Recording each treatment with its withdrawal time protects you from selling animals with residues.	Anotar cada tratamento com sua carência protege você de vender animais com resíduos.
+F33.0h	Steps	Passos
+F33.0.0	Tap Record, Health.	Toque em Registrar, Sanidade.
+F33.0.1	Choose the lot or the treated animals.	Escolha o lote ou os animais tratados.
+F33.0.2	Type, product, head, cost and withdrawal days.	Tipo, produto, cabeças, custo e dias de carência.
+F33.1h	Alerts	Avisos
+F33.1.0	Today shows the lots under withdrawal.	Hoje mostra os lotes em carência.
+F33.1.1	If you sell a lot under withdrawal, the app warns you.	Ao vender um lote em carência, o app avisa você.
+F34.t	Recording a sale	Registrar uma venda
+F34.r	The sale closes the lot and calculates the real margin.	A venda fecha o lote e calcula a margem real.
+F34.0h	Steps	Passos
+F34.0.0	Tap Record, Sale.	Toque em Registrar, Venda.
+F34.0.1	Choose the lot, the head (or the tags), the kilos and the price.	Escolha o lote, as cabeças (ou os brincos), os quilos e o preço.
+F34.0.2	Enter the buyer.	Informe o comprador.
+F34.1h	Afterwards	Depois
+F34.1.0	If you sold everything, the lot moves to sold with its final numbers.	Se você vendeu tudo, o lote passa para vendidos com seus números finais.
+F34.1.1	Compare the margin with other lots in Charts.	Compare a margem com outros lotes em Gráficos.
+F35.t	Recording a death	Registrar uma morte
+F35.r	Recording deaths with their cause keeps head counts and costs correct and helps find problems.	Anotar as mortes com a causa mantém certas as cabeças e os custos e ajuda a encontrar problemas.
+F35.0h	Steps	Passos
+F35.0.0	Tap Record, Death.	Toque em Registrar, Morte.
+F35.0.1	Choose the lot, how many head or the tag, and the cause.	Escolha o lote, quantas cabeças ou o brinco, e a causa.
+F35.1h	Why it matters	Por que importa
+F35.1.0	Mortality and its cost appear in the lot.	A mortalidade e seu custo aparecem no lote.
+F35.1.1	If a cause repeats, you see it quickly.	Se uma causa se repete, você vê rápido.
+F36.t	Expenses in the app	Despesas no app
+F36.r	Lot or general expenses make the cost per kilo and the margin real.	As despesas de um lote ou gerais fazem o custo por quilo e a margem serem reais.
+F36.0h	Steps	Passos
+F36.0.0	Tap Record, Expense.	Toque em Registrar, Despesa.
+F36.0.1	Amount, category and whether it belongs to a lot or is general.	Valor, categoria e se é de um lote ou geral.
+F36.0.2	Optional detail.	Detalhe opcional.
+F36.1h	Viewing and deleting	Ver e apagar
+F36.1.0	General expenses appear in More, General expenses.	As despesas gerais aparecem em Mais, Despesas gerais.
+F36.1.1	Lot expenses, in the lot's History.	As do lote, no Histórico do lote.
+F37.t	Rations and formulating a diet	Rações e formular dieta
+F37.r	Rations store the cost per kilo of each mix. Formulate ration calculates the cheapest one with your prices.	As rações guardam o custo por quilo de cada mistura. Formular dieta calcula a mais barata com seus preços.
+F37.0h	Creating a ration	Criar uma ração
+F37.0.0	In More, Rations and diets, New ration.	Em Mais, Rações e dietas, Nova ração.
+F37.0.1	Name, cost per kilo and optional ingredients.	Nome, custo por quilo e ingredientes opcionais.
+F37.1h	Formulating	Formular
+F37.1.0	In More, Formulate ration, or from Rumi, Feeding.	Em Mais, Formular dieta, ou pelo Rumi, Alimentação.
+F37.1.1	Enter the weight and gain, turn on your ingredients and correct the prices.	Informe o peso e o ganho, ative seus ingredientes e corrija os preços.
+F37.1.2	Tap Formulate and save the result as a ration.	Toque em Formular e salve o resultado como ração.
+F38.t	The Today screen and alerts	Tela Hoje e avisos
+F38.r	Today is your daily summary: pending feed, alerts and how your lots are doing.	Hoje é seu resumo do dia: ração pendente, avisos e como vão seus lotes.
+F38.0h	What it shows	O que mostra
+F38.0.0	Head, gain, conversion and cost per kilo.	Cabeças, ganho, conversão e custo por quilo.
+F38.0.1	The day's feed deliveries.	Os tratos do dia.
+F38.0.2	Attention: lagging animals, low intake, lots not weighed, withdrawals, deaths.	Atenção: animais atrasados, consumo baixo, lotes sem pesar, carências, mortes.
+F38.0.3	Recommended next step. Close it with the X once you've done it.	Próximo passo recomendado. Feche-o com o X quando já o tiver feito.
+F38.1h	Use	Uso
+F38.1.0	Tap any alert to go and solve it.	Toque em qualquer aviso para ir resolvê-lo.
+F39.t	Charts in the app	Gráficos no app
+F39.r	All your numbers in charts to see trends and compare lots.	Todos os seus números em gráficos para ver tendências e comparar lotes.
+F39.0h	What's there	O que há
+F39.0.0	Weight, daily gain, intake, conversion, costs and margin.	Peso, ganho diário, consumo, conversão, custos e margem.
+F39.0.1	By lot or all lots, and by period.	Por lote ou todos, e por período.
+F39.1h	Tip	Dica
+F39.1.0	Check the charts after every weighing.	Revise os gráficos depois de cada pesagem.
+F40.t	Backup and restore	Backup e restaurar
+F40.r	The backup is a file with all your data. With it you recover everything if you lose or change your phone.	O backup é um arquivo com todos os seus dados. Com ele você recupera tudo se perder ou trocar de celular.
+F40.0h	Downloading	Baixar
+F40.0.0	In More, Your data, Download backup.	Em Mais, Seus dados, Baixar backup.
+F40.0.1	Save it in Drive or send it to yourself by WhatsApp.	Guarde no Drive ou envie para você pelo WhatsApp.
+F40.0.2	Do it every week.	Faça isso toda semana.
+F40.1h	Restoring	Restaurar
+F40.1.0	In More, Your data, Restore, and choose the file.	Em Mais, Seus dados, Restaurar, e escolha o arquivo.
+F40.1.1	Your lots and records come back as they were.	Seus lotes e registros voltam como estavam.
+F40.2h	Photos	Fotos
+F40.2.0	The animals' photos stay on the phone and are not included in the backup.	As fotos dos animais ficam no celular e não vão no backup.
+F41.t	Downloading to Excel	Baixar para o Excel
+F41.r	You can export your data to files that Excel opens, to analyze or share them.	Você pode tirar seus dados em arquivos que o Excel abre para analisá-los ou compartilhá-los.
+F41.0h	Steps	Passos
+F41.0.0	In More, Your data, choose what to download: lots, feed, weighings, health, sales and deaths, expenses.	Em Mais, Seus dados, escolha o que baixar: lotes, ração, pesagens, sanidade, vendas e mortes, despesas.
+F41.1h	Uses	Usos
+F41.1.0	Showing your history to the bank or a partner.	Mostrar seu histórico ao banco ou a um sócio.
+F41.1.1	Your own analyses.	Análises próprias.
+F42.t	Your farm and settings	Sua fazenda e ajustes
+F42.r	In More, Settings, you set the data the app uses to calculate.	Em Mais, Configuração, você define os dados que o app usa para calcular.
+F42.0h	What you set	O que se configura
+F42.0.0	First: language, country, weight unit (pounds or kilos), currency and how cattle and feed are priced.	Primeiro: idioma, país, unidade de peso (libras ou quilos), moeda e como se cotiza o gado e a ração.
+F42.0.1	Name and location.	Nome e localização.
+F42.0.2	Sale price.	Preço de venda.
+F42.0.3	General target weight, expected gain and shrink.	Peso meta geral, ganho esperado e quebra.
+F42.0.4	Feeding times and the no-weighing alert.	Horários de trato e aviso de dias sem pesar.
+F42.0.5	Phone alerts, widget and Rumi's voice.	Avisos no celular, widget e voz do Rumi.
+F42.1h	Tip	Dica
+F42.1.0	Update the sale price when the market changes: margins depend on it.	Atualize o preço de venda quando o mercado mudar: as margens dependem dele.
+F43.t	Kilos or pounds in the app	Quilos ou libras no app
+F43.r	The app works in the unit you prefer and converts everything by itself.	O app trabalha na unidade que você preferir e converte tudo sozinho.
+F43.0h	Changing it	Mudar
+F43.0.0	In More, Settings, Language, currency and units: Pounds or Kilos.	Em Mais, Configuração, Idioma, moeda e unidades: Libras ou Quilos.
+F43.1h	What changes	O que muda
+F43.1.0	Weights, gains, intakes and prices are shown and entered in that unit.	Pesos, ganhos, consumos e preços são mostrados e escritos nessa unidade.
+F43.1.1	Your saved data does not change.	Seus dados salvos não mudam.
+F44.t	Appearance and colors	Aparência e cores
+F44.r	You can choose light, dark or automatic mode and the color palette you like best.	Você pode escolher modo claro, escuro ou automático e a paleta de cores que mais gostar.
+F44.0h	Changing it	Mudar
+F44.0.0	In More, Appearance.	Em Mais, Aparência.
+F44.0.1	Theme: Automatic, Light or Dark.	Tema: Automático, Claro ou Escuro.
+F44.0.2	Palette: Classic, Meadow, Ocean, Terracotta or Graphite.	Paleta: Clássica, Pradaria, Oceano, Terracota ou Grafite.
+F45.t	Correcting a record	Corrigir um registro
+F45.r	If you recorded something wrong, delete it and record it again correctly.	Se você anotou algo errado, apague e anote de novo corretamente.
+F45.0h	Steps	Passos
+F45.0.0	Tap Record: at the bottom, in The last thing you recorded, tap the trash can.	Toque em Registrar: embaixo, em O último que você anotou, toque na lixeira.
+F45.0.1	Or open the lot, History tab, and delete it from there.	Ou entre no lote, aba Histórico, e apague por lá.
+F45.0.2	Record it again with the correct data.	Anote de novo com os dados corretos.
+F45.1h	Lots and animals	Lotes e animais
+F45.1.0	Edit a lot from its data tab.	Edite um lote pela aba de dados.
+F45.1.1	Edit an animal from its card.	Edite um animal pela ficha dele.
+F46.t	Projections in the app	Projeções no app
+F46.r	The app estimates how much each lot will weigh and when it reaches the target using its real gain.	O app estima quanto cada lote vai pesar e quando chega à meta com o ganho real.
+F46.0h	Where to see them	Onde vê-las
+F46.0.0	In each lot: estimated sale date.	Em cada lote: data estimada de saída.
+F46.0.1	Rumi, My lots, choose a lot, Project its weight: you choose the days.	Rumi, Meus lotes, escolha um lote, Projetar seu peso: você escolhe os dias.
+F46.1h	How it calculates	Como calcula
+F46.1.0	It uses the gain from the latest weighings, or the expected gain if there are none.	Usa o ganho das últimas pesagens, ou o esperado se não houver.
+F46.1.1	It projects the feed and the margin for those days.	Projeta a ração e a margem desses dias.
+F47.t	Comparing lots in the app	Comparar lotes no app
+F47.r	Comparing lots tells you which purchases, rations and management work best for you.	Comparar lotes mostra quais compras, rações e manejos funcionam melhor para você.
+F47.0h	Where	Onde
+F47.0.0	Rumi, My feedlot, My best lot.	Rumi, Meu confinamento, Meu melhor lote.
+F47.0.1	Charts, choosing several lots.	Gráficos, escolhendo vários lotes.
+F47.0.2	Sold lots keep their final numbers.	Os lotes vendidos guardam seus números finais.
+F47.1h	What to compare	O que comparar
+F47.1.0	Daily gain, conversion, cost per kilo, mortality and margin per head and per day.	Ganho diário, conversão, custo por quilo, mortalidade e margem por cabeça e por dia.
+F48.t	Data without internet	Dados sem internet
+F48.r	Rumentis works fully without internet. Your data and photos are saved on the phone.	O Rumentis funciona completo sem internet. Seus dados e fotos ficam salvos no celular.
+F48.0h	What needs internet	O que precisa de internet
+F48.0.0	Only sending the backup or the Excel file by Drive, email or WhatsApp, and updating the weather.	Só enviar o backup ou o Excel pelo Drive, e-mail ou WhatsApp, e atualizar o clima.
+F48.1h	Privacy	Privacidade
+F48.1.0	Your data is not sent anywhere unless you share the backup or the Excel file.	Seus dados não são enviados a lugar nenhum, a não ser que você compartilhe o backup ou o Excel.
+F48.2h	Changing phones	Trocar de celular
+F48.2.0	Download the backup, move it to the new phone, install Rumentis and restore.	Baixe o backup, passe para o celular novo, instale o Rumentis e restaure.
+F49.t	Task agenda	Agenda de tarefas
+F49.r	The Agenda builds by itself what needs to be done from your data: feedings, weighings, vaccine boosters, withdrawals, sales, feed store and backup.	A Agenda monta sozinha o que precisa ser feito com seus dados: tratos, pesagens, reforços de vacina, carências, vendas, depósito e backup.
+F49.0h	Where it is	Onde fica
+F49.0.0	On Today, the Today's schedule card.	Em Hoje, cartão Agenda de hoje.
+F49.0.1	In More, Agenda.	Em Mais, Agenda.
+F49.0.2	In Rumi, My feedlot, My agenda.	No Rumi, Meu confinamento, Minha agenda.
+F49.1h	What it includes	O que inclui
+F49.1.0	The day's pending feed deliveries.	Tratos pendentes do dia.
+F49.1.1	Lots due for weighing according to your alert days.	Lotes que precisam ser pesados conforme seus dias de aviso.
+F49.1.2	Vaccine booster 21 to 30 days after the first dose.	Reforço de vacina 21 a 30 dias depois da primeira dose.
+F49.1.3	Daily check of new arrivals during the first 3 weeks.	Revisão diária dos recém-chegados nas primeiras 3 semanas.
+F49.1.4	When each lot comes out of the drug withdrawal period.	Quando cada lote sai da carência de medicamentos.
+F49.1.5	Lots ready to sell or about to reach the target.	Lotes prontos para vender ou perto da meta.
+F49.1.6	Feed running out in the store.	Ração acabando no depósito.
+F49.1.7	Backup if you haven't downloaded one in over a week.	Backup se você não baixa um há mais de uma semana.
+F49.1.8	Your own reminders.	Seus próprios lembretes.
+F49.2h	How to use it	Como usar
+F49.2.0	Tap Do it to go straight to the form.	Toque em Fazer para ir direto ao formulário.
+F49.2.1	Tap the check mark to mark it as done.	Toque no visto para marcá-la como feita.
+F49.2.2	Add your own reminders with a date.	Adicione lembretes próprios com data.
+F50.t	The feed store in the app	Depósito de ração no app
+F50.r	Keep your feed inventory and the app tells you how many days it will last with what your lots actually eat.	Controle o estoque da sua ração e o app diz para quantos dias dá com o que seus lotes realmente comem.
+F50.0h	Getting started	Começar
+F50.0.0	In Inventory, Feed, Feed store.	Em Estoque, Ração, Depósito.
+F50.0.1	Tap Add my rations and ingredients, or add products one by one.	Toque em Adicionar minhas rações e ingredientes, ou adicione produtos um por um.
+F50.0.2	Record how much there is today with Count the store.	Anote quanto há hoje com Contar o depósito.
+F50.1h	Day to day	Dia a dia
+F50.1.0	Record each purchase with Record purchase.	Cada compra se anota com Anotar compra.
+F50.1.1	Consumption is deducted automatically with the feed deliveries you record.	O consumo é descontado sozinho com os tratos que você anota.
+F50.1.2	If a ration has ingredients with percentages, each ingredient is deducted in its proportion.	Se uma ração tem ingredientes com porcentagens, cada ingrediente é descontado na sua proporção.
+F50.1.3	Count the store from time to time to correct differences.	De vez em quando conte o depósito para corrigir diferenças.
+F50.2h	Alerts	Avisos
+F50.2.0	When a product will last fewer days than you chose, it appears in the Agenda so you buy it.	Quando um produto dá para menos dias do que você escolheu, aparece na Agenda para comprá-lo.
+F51.t	Sharing a lot report	Compartilhar o relatório de um lote
+F51.r	Send a lot summary by WhatsApp or anywhere: head, weight, gain, conversion, costs, margin and sale date.	Mande pelo WhatsApp ou onde quiser um resumo do lote: cabeças, peso, ganho, conversão, custos, margem e data de saída.
+F51.0h	How	Como
+F51.0.0	Open the lot and tap Share report.	Entre no lote e toque em Compartilhar relatório.
+F51.0.1	Or in Rumi, My lots, choose the lot and tap Share report.	Ou no Rumi, Meus lotes, escolha o lote e toque em Compartilhar relatório.
+F51.0.2	Choose WhatsApp, email or another app.	Escolha WhatsApp, e-mail ou outro app.
+F51.1h	What for	Para quê
+F51.1.0	Informing a partner or the owner of the cattle.	Informar um sócio ou o dono do gado.
+F51.1.1	Showing numbers to the bank or the buyer.	Mostrar números ao banco ou ao comprador.
+F51.1.2	Keeping a record of the lot.	Guardar um registro do lote.
+F52.t	How to read the charts	Como ler os gráficos
+F52.r	Each chart tells you what you are looking at and, below it, what your numbers say in words.	Cada gráfico diz o que você está vendo e, embaixo, o que seus números dizem em palavras.
+F52.0h	Above the chart	Acima do gráfico
+F52.0.0	What you're looking at: what each line, bar or column represents.	O que você está vendo: o que representa cada linha, barra ou coluna.
+F52.1h	Below the chart	Abaixo do gráfico
+F52.1.0	What your numbers say: the best and worst lot, alerts and comparisons with normal values.	O que seus números dizem: o melhor e o pior lote, alertas e comparações com valores normais.
+F52.1.1	Green dot: going well. Red dot: check it. Blue dot: information for you.	Ponto verde: vai bem. Ponto vermelho: revise. Ponto azul: dado para sua informação.
+F52.2h	Expected or real gain	Ganho esperado ou real
+F52.2.0	The expected gain in Settings is only used for lots without weighings.	O ganho esperado da Configuração só é usado em lotes sem pesagens.
+F52.2.1	As soon as you weigh, the charts use the real gain between weighings.	Assim que você pesa, os gráficos usam o ganho real entre pesagens.
+F53.t	Searching Rumi's menu	Buscar no menu do Rumi
+F53.r	Rumi's menu has a search box: type a word such as tick, ration or the name of a lot and it shows the matching topics, calculations and symptoms.	No menu do Rumi há uma busca: escreva uma palavra como carrapato, ração ou o nome de um lote e ele mostra os temas, cálculos e sintomas que coincidem.
+F53.0h	How to use it	Como usar
+F53.0.0	Open Rumi with the cow button.	Abra o Rumi com o botão da vaca.
+F53.0.1	Tap the bar that says Search topic, calculation, symptom or lot.	Toque na barra que diz Buscar tema, cálculo, sintoma ou lote.
+F53.0.2	Type one or two words.	Escreva uma ou duas palavras.
+F53.0.3	Tap the result you want.	Toque no resultado que você quer.
+F53.1h	What it finds	O que encontra
+F53.1.0	Guide topics, with their area.	Temas do guia, com sua área.
+F53.1.1	Calculators.	Calculadoras.
+F53.1.2	Symptoms from What's wrong with my animal?	Sintomas de O que meu animal tem?
+F53.1.3	Your lots by name.	Seus lotes pelo nome.
+F53.2h	Tip	Dica
+F53.2.0	Short words find more: heat, cough, price, silage.	Palavras curtas encontram mais: calor, tosse, preço, silagem.
+F53.2.1	The X in the bar clears the search.	O X da barra apaga a busca.
+F54.t	Hiding Rumi's options	Ocultar as opções do Rumi
+F54.r	When Rumi gives a long answer, the options hide by themselves so you can read everything. You can hide or show them whenever you want.	Quando o Rumi dá uma resposta longa, as opções se escondem sozinhas para você ler tudo. Você pode ocultá-las ou mostrá-las quando quiser.
+F54.0h	How to use it	Como usar
+F54.0.0	Tap the arrow next to How can I help? to hide the options.	Toque na seta ao lado de Em que posso ajudar? para ocultar as opções.
+F54.0.1	Tap Show options to bring them back.	Toque em Ver opções para que voltem a aparecer.
+F54.1h	Tip	Dica
+F54.1.0	With the options hidden you see the whole answer without scrolling.	Com as opções ocultas você vê a resposta completa sem mover a tela.
+F55.t	Listening to Rumi	Ouvir o Rumi
+F55.r	Rumi can read its answers and the tour steps aloud, with the most natural voice your phone has in the app's language.	O Rumi pode ler em voz alta suas respostas e os passos do tour, com a voz mais natural que seu celular tiver no idioma do app.
+F55.0h	How to use it	Como usar
+F55.0.0	Tap the speaker button on Rumi's bubble to hear that message.	Toque no botão do alto-falante no balão do Rumi para ouvir essa mensagem.
+F55.0.1	Tap it again to stop it.	Toque de novo para calá-lo.
+F55.0.2	In the app tour, tap Listen and each step is read by itself.	No tour do app, toque em Ouvir e cada passo é lido sozinho.
+F55.1h	Choosing the voice	Escolher a voz
+F55.1.0	Go to More, Settings, Rumi's voice.	Vá em Mais, Configuração, Voz do Rumi.
+F55.1.1	Tap Try to hear each voice and choose the one you like.	Toque em Testar para ouvir cada voz e escolha a que gostar.
+F55.1.2	The first one on the list is the most natural your phone has.	A primeira da lista é a mais natural que seu celular tem.
+F55.2h	More natural voices	Vozes mais naturais
+F55.2.0	Tap Install more natural voices: your phone's voice settings open.	Toque em Instalar vozes mais naturais: abrem-se os ajustes de voz do celular.
+F55.2.1	In Speech Services by Google, install your language and download the high-quality voices.	Em Serviços de fala do Google, instale seu idioma e baixe as vozes de alta qualidade.
+F55.2.2	Go back to the app and choose the new voice.	Volte ao app e escolha a nova voz.
+F55.3h	If there is no sound	Se não tocar
+F55.3.0	Turn up the phone's volume.	Aumente o volume do celular.
+F55.3.1	Check that the phone has a voice installed in your language.	Verifique se o celular tem uma voz instalada no seu idioma.

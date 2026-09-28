@@ -78,7 +78,7 @@
 {"t":"Mejorar el lote que compras","a":"genetica","r":"Aunque no críes, puedes mejorar la genética de lo que engordas escogiendo bien a quién le compras y guardando datos de cada origen.","s":[
  {"h":"Qué hacer","p":["Anota en cada lote de la app de dónde vino y la raza.","Compara ganancia, conversión y rendimiento por origen.","Repite con los criadores que te dan mejores animales y págales un poco más si hace falta."]},
  {"h":"Qué buscar al comprar","p":["Animales parejos en tamaño y raza.","Buen frame, lomo largo y pierna llena.","Temperamento tranquilo y pelo brillante."]},
- {"h":"En tu engorde","p":["Tus propios datos valen oro: después de 3 o 4 lotes sabrás qué origen te deja más dinero."]}],
+ {"h":"En tu engorde","p":["Tus propios datos valen oro: después de 3 o 4 lotes sabrás qué origen te deja más dinero. Míralo en Análisis de Rumi, Proveedores."]}],
  "rel":["Comprar ganado para engorde","Comparar lotes en la app","Formar lotes"]},
 {"t":"Razas cebú en detalle","a":"genetica","r":"El cebú (Bos indicus) incluye varias razas, cada una con sus fortalezas. En Centroamérica domina el Brahman y sus cruces.","s":[
  {"h":"Brahman","p":["Formado en EE.UU. con varias razas cebú.","Rojo o gris, gran tamaño y adaptación.","Base de muchas razas compuestas."]},

@@ -1,0 +1,279 @@
+F73.t	Slaughter and welfare	Abate e bem-estar
+F73.r	Well-done slaughter is quick, painless and stress-free. Besides being the right thing, it gives better meat.	Um abate bem feito é rápido, sem dor e sem estresse. Além de ser o correto, dá carne melhor.
+F73.0h	Good practices	Boas práticas
+F73.0.0	Rest and water in the plant's pens.	Descanso e água nos currais do frigorífico.
+F73.0.1	Driving without blows or prods.	Condução sem pancadas nem ferrões.
+F73.0.2	Effective stunning on the first attempt before bleeding.	Insensibilização efetiva na primeira tentativa antes da sangria.
+F73.1h	Effect on the meat	Efeito na carne
+F73.1.0	Less dark meat and fewer bruises.	Menos carne escura e menos hematomas.
+F73.1.1	Better bleeding and better preservation.	Melhor sangria e melhor conservação.
+F73.2h	In your feedlot	No seu confinamento
+F73.2.0	Sell to licensed plants that follow the rules.	Venda para frigoríficos autorizados que cumpram as normas.
+F73.2.1	Your reputation and your price also depend on where your animals end up.	Sua reputação e seu preço também dependem de onde seus animais terminam.
+F74.t	Carcass grading	Classificação de carcaças
+F74.r	Plants grade carcasses to pay differently according to quality. The most used criteria are age, sex, conformation, fat and weight.	Os frigoríficos classificam as carcaças para pagar diferente conforme a qualidade. Os critérios mais usados são idade, sexo, conformação, gordura e peso.
+F74.0h	Common criteria	Critérios comuns
+F74.0.0	Age by teeth: a young steer pays more than an old animal.	Idade pelos dentes: novilho jovem vale mais que animal velho.
+F74.0.1	Sex: castrated males, intact males or females.	Sexo: machos castrados, inteiros ou fêmeas.
+F74.0.2	Conformation: how full the round and loin are.	Conformação: quão cheios estão o pernil e o lombo.
+F74.0.3	Fat cover: neither too little nor too much.	Gordura de cobertura: nem muito pouca nem demais.
+F74.0.4	Carcass weight.	Peso da carcaça.
+F74.1h	In your feedlot	No seu confinamento
+F74.1.0	Ask your plant for its grading table.	Peça ao seu frigorífico a tabela de classificação.
+F74.1.1	Compare what you were paid with what the app projected.	Compare o que pagaram com o que o app projetou.
+F74.1.2	Adjust the purchase age and finish according to what they pay.	Ajuste a idade de compra e o acabamento conforme o que pagam.
+F75.t	Chilling shrink	Perdas por resfriamento
+F75.r	The carcass loses water while it cools in the chamber. That shrink, 1 to 3 %, makes the cold carcass weigh less than the hot one.	A carcaça perde água enquanto esfria na câmara. Essa quebra, de 1 a 3 %, faz a carcaça fria pesar menos que a quente.
+F75.0h	Why it happens	Por que acontece
+F75.0.0	The carcass surface dries out with the cold air.	A superfície da carcaça seca com o ar frio.
+F75.0.1	Carcasses with little fat cover lose more.	Carcaças com pouca gordura de cobertura perdem mais.
+F75.1h	At the sale	Na venda
+F75.1.0	Check whether you are paid on hot or cold carcass weight.	Veja se pagam por carcaça quente ou fria.
+F75.1.1	The difference can be 3 to 7 kg per animal.	A diferença pode ser de 3 a 7 kg por animal.
+F75.2h	In your feedlot	No seu confinamento
+F75.2.0	Good fat cover protects the carcass and reduces shrink.	Boa cobertura de gordura protege a carcaça e reduz a quebra.
+F75.2.1	Note in the app which carcass basis you are paid on.	Anote no app o tipo de carcaça com que pagam você.
+F76.t	Hide and by-products	Couro e subprodutos
+F76.r	Besides meat, the animal gives hide, offal, tallow and bone meal. Their value helps pay the plant and is sometimes deducted from or added to the price.	Além da carne, o animal dá couro, vísceras, sebo e farinha de ossos. Seu valor ajuda a pagar o frigorífico e às vezes se desconta ou se soma ao preço.
+F76.0h	The hide	O couro
+F76.0.0	It is damaged by ticks, bot flies, large brands and barbed wire.	Estraga-se com carrapatos, berne, marcas grandes e arame farpado.
+F76.0.1	A clean hide is worth more to the tannery.	Um couro limpo vale mais para o curtume.
+F76.1h	Other by-products	Outros subprodutos
+F76.1.0	Liver, heart, tongue and tripe for consumption.	Fígado, coração, língua e bucho para consumo.
+F76.1.1	Tallow, blood and bones for industry and animal feed.	Sebo, sangue e ossos para a indústria e ração animal.
+F76.2h	In your feedlot	No seu confinamento
+F76.2.0	Controlling ticks and bot flies also protects the hide.	Controlar carrapatos e berne também cuida do couro.
+F76.2.1	Put the brand in the right place and at the size needed.	Coloque a marca no lugar indicado e do tamanho necessário.
+F77.t	Bull, steer and cow beef	Carne de touro, novilho e vaca
+F77.r	Sex and age change the meat. The young castrated steer gives the most uniform meat; the bull, leaner meat; the cull cow, fattier and tougher meat.	O sexo e a idade mudam a carne. O novilho castrado jovem dá a carne mais uniforme; o touro, mais magra; a vaca de descarte, mais gorda e mais dura.
+F77.0h	Castrated steer	Novilho castrado
+F77.0.0	Good balance between muscle and fat.	Bom equilíbrio entre músculo e gordura.
+F77.0.1	Marbles more than the bull.	Marmoreia mais que o touro.
+F77.0.2	More tender meat and even color.	Carne mais macia e cor uniforme.
+F77.1h	Intact bull	Touro inteiro
+F77.1.0	More lean meat and better feed conversion.	Mais carne magra e melhor conversão na engorda.
+F77.1.1	Darker, firmer meat; higher risk of dark cutting.	Carne mais escura e firme; mais risco de corte escuro.
+F77.1.2	Some markets pay less for it.	Alguns mercados pagam menos por ele.
+F77.2h	Cull cow	Vaca de descarte
+F77.2.0	Darker and tougher meat because of age.	Carne mais escura e dura pela idade.
+F77.2.1	Yellow fat if she came from pasture.	Gordura amarela se veio do pasto.
+F77.2.2	Feeding her for a few weeks improves her price.	Engordá-la algumas semanas melhora o preço.
+F78.t	Meat pH	pH da carne
+F78.r	The pH of the meat 24 hours after slaughter is the best indicator of its quality: it tells whether it will look red, whether it will last and whether it will be tender.	O pH da carne 24 horas após o abate é o melhor indicador de sua qualidade: diz se vai ficar vermelha, se vai durar e se será macia.
+F78.0h	Values	Valores
+F78.0.0	5.4 to 5.7: normal, good quality.	5,4 a 5,7: normal, boa qualidade.
+F78.0.1	5.8 to 6.0: intermediate, somewhat dark.	5,8 a 6,0: intermediário, um pouco escura.
+F78.0.2	Above 6.0: dark cutter, penalized.	Acima de 6,0: corte escuro, é castigada.
+F78.1h	How it is measured	Como se mede
+F78.1.0	With a spear-tip pH meter in the loin, in the cold room.	Com um medidor de pH de ponta no lombo, na câmara fria.
+F78.1.1	Many plants measure it for grading.	Muitos frigoríficos o medem para classificar.
+F78.2h	In your feedlot	No seu confinamento
+F78.2.0	Ask the plant if it measures pH and request your results.	Pergunte ao frigorífico se mede pH e peça seus resultados.
+F78.2.1	If they come out high, review the handling in the last days.	Se saírem altos, revise o manejo dos últimos dias.
+F79.t	Average daily gain	Ganho médio diário
+F79.r	How many kilos each animal gains per day on average. It is the first number that tells you whether the feeding is going well.	Quantos quilos cada animal sobe por dia em média. É o primeiro número para saber se a engorda vai bem.
+F79.0h	How it is calculated	Como se calcula
+F79.0.0	Daily gain = (final weight − initial weight) ÷ days between the two weighings.	Ganho diário = (peso final − peso inicial) ÷ dias entre as duas pesagens.
+F79.0.1	For the lot: use the average of the live animals.	Para o lote: use a média dos animais vivos.
+F79.1h	Example	Exemplo
+F79.1.0	It arrived at 300 kg and after 28 days weighs 340 kg: 40 ÷ 28 = 1.43 kg per day.	Entrou com 300 kg e aos 28 dias pesa 340 kg: 40 ÷ 28 = 1,43 kg por dia.
+F79.2h	Reference values	Valores de referência
+F79.2.0	Feedlot with a good ration: 1.2 to 1.8 kg per day.	Confinamento com boa ração: 1,2 a 1,8 kg por dia.
+F79.2.1	Semi-confinement: 0.8 to 1.2 kg.	Semiconfinamento: 0,8 a 1,2 kg.
+F79.2.2	Grazing with a supplement: 0.6 to 1 kg.	Pasto com suplemento: 0,6 a 1 kg.
+F79.2.3	Grazing only: 0.3 to 0.7 kg.	Só pasto: 0,3 a 0,7 kg.
+F79.3h	Care when measuring	Cuidados ao medir
+F79.3.0	Weigh at the same time and in the same conditions.	Pese na mesma hora e nas mesmas condições.
+F79.3.1	Gains in the first weeks after the trip include recovered water.	Os ganhos das primeiras semanas após a viagem incluem água recuperada.
+F79.3.2	Periods shorter than 14 days give unreliable numbers.	Períodos menores que 14 dias dão números pouco confiáveis.
+F79.4h	In the app	No app
+F79.4.0	It is calculated automatically from your weighings, by lot and by animal.	É calculado sozinho com suas pesagens, por lote e por animal.
+F80.t	Dressing percentage	Rendimento de carcaça
+F80.r	The share of live weight that remains as carcass (meat with bone) after slaughter.	Que parte do peso vivo fica como carcaça (carne com osso) depois do abate.
+F80.0h	How it is calculated	Como se calcula
+F80.0.0	Dressing = carcass weight ÷ live weight × 100.	Rendimento = peso da carcaça ÷ peso vivo × 100.
+F80.1h	Example	Exemplo
+F80.1.0	A 480 kg steer gives a 269 kg carcass: 269 ÷ 480 = 56 %.	Um novilho de 480 kg dá uma carcaça de 269 kg: 269 ÷ 480 = 56 %.
+F80.2h	Reference values	Valores de referência
+F80.2.0	Well-finished feeder steers: 54 to 58 %.	Novilhos de engorda bem acabados: 54 a 58 %.
+F80.2.1	Thin or dairy animals: 48 to 52 %.	Animais magros ou leiteiros: 48 a 52 %.
+F80.2.2	Heavily muscled, well-finished animals: up to 60 % or more.	Animais com muito músculo e bom acabamento: até 60 % ou mais.
+F80.3h	What affects it	O que o afeta
+F80.3.0	Gut fill at weighing (hence the shrink).	Enchimento do rúmen ao pesar (por isso a quebra).
+F80.3.1	Fat finish.	Acabamento de gordura.
+F80.3.2	Breed and muscling.	Raça e musculatura.
+F80.3.3	Sex: intact males usually yield more.	Sexo: inteiros costumam render mais.
+F80.4h	In Rumi	No Rumi
+F80.4.0	Calculators, Dressing percentage: it gives you the expected carcass weight.	Calculadoras, Rendimento de carcaça: dá o peso esperado da carcaça.
+F81.t	Shrink	Quebra (desbaste)
+F81.r	The weight an animal loses when its rumen and bladder empty, from fasting or transport. It is deducted when selling.	O peso que um animal perde ao esvaziar o rúmen e a bexiga, por jejum ou transporte. É descontado na venda.
+F81.0h	What it is	O que é
+F81.0.0	A full animal weighs more because of the water and feed in its rumen.	Um animal cheio pesa mais pela água e comida no rúmen.
+F81.0.1	The buyer deducts that weight to pay for the real weight.	O comprador desconta esse peso para pagar o peso real.
+F81.1h	Reference values	Valores de referência
+F81.1.0	3 to 5 % with short fasts or on-farm weighing.	3 a 5 % em jejuns curtos ou pesagem na fazenda.
+F81.1.1	The NRC uses 4 % as a reference.	O NRC usa 4 % como referência.
+F81.1.2	Long trips can cause larger losses.	Viagens longas podem causar perdas maiores.
+F81.2h	Example	Exemplo
+F81.2.0	It weighs 500 kg on the farm with 4 % shrink: you are paid for 480 kg.	Pesa 500 kg na fazenda com 4 % de quebra: pagam 480 kg.
+F81.3h	In the app	No app
+F81.3.0	You set the shrink in More, Settings, and it is used when calculating sales and margins.	Você define a quebra em Mais, Configuração, e ela é usada ao calcular vendas e margens.
+F82.t	Animal unit	Unidade animal
+F82.r	A measure that equalizes animals of different weights to calculate how much forage or space they need.	Medida que iguala animais de pesos diferentes para calcular quanta forragem ou espaço precisam.
+F82.0h	What it is	O que é
+F82.0.0	One animal unit equals 450 kg of live weight.	Uma unidade animal equivale a 450 kg de peso vivo.
+F82.1h	How it is calculated	Como se calcula
+F82.1.0	Animal units = total live weight ÷ 450.	Unidades animais = peso vivo total ÷ 450.
+F82.2h	Example	Exemplo
+F82.2.0	40 steers of 300 kg = 12,000 kg = 26.7 animal units.	40 novilhos de 300 kg = 12.000 kg = 26,7 unidades animais.
+F82.3h	Uses	Usos
+F82.3.0	Pasture stocking: animal units per hectare or manzana.	Lotação de pastos: unidades animais por hectare ou manzana.
+F82.3.1	Forage and water budgets.	Orçamentos de forragem e água.
+F83.t	Heat index	Índice de calor
+F83.r	A number that combines temperature and humidity to tell how much heat the animal feels.	Número que combina temperatura e umidade para dizer quanto calor o animal sente.
+F83.0h	What it is	O que é
+F83.0.0	Also called the temperature-humidity index (THI).	Também chamado de índice de temperatura e umidade (ITU).
+F83.0.1	At the same temperature, with more humidity the animal cools itself less well.	Na mesma temperatura, com mais umidade o animal se refresca pior.
+F83.1h	Ranges	Faixas
+F83.1.0	Below 72: no stress.	Menos de 72: sem estresse.
+F83.1.1	72 to 78: alert.	72 a 78: alerta.
+F83.1.2	79 to 83: danger.	79 a 83: perigo.
+F83.1.3	84 or more: emergency.	84 ou mais: emergência.
+F83.2h	What to do in each range	O que fazer em cada faixa
+F83.2.0	Alert: check water and shade, feed later.	Alerta: revise água e sombra, trate mais tarde.
+F83.2.1	Danger: don't work the cattle, more water, wet the floor.	Perigo: não trabalhe o gado, mais água, molhe o piso.
+F83.2.2	Emergency: wet the animals, don't move them, watch the fat and dark ones.	Emergência: molhe os animais, não os mova, vigie os gordos e os escuros.
+F83.3h	In Rumi	No Rumi
+F83.3.0	Calculators, Heat index: you enter temperature and humidity.	Calculadoras, Índice de calor: você informa temperatura e umidade.
+F84.t	Days to target	Dias até a meta
+F84.r	How many days a lot still needs to reach its sale weight with the gain it has.	Quantos dias faltam para um lote chegar ao peso de venda com o ganho que tem.
+F84.0h	How it is calculated	Como se calcula
+F84.0.0	Days = (target weight − current weight) ÷ daily gain.	Dias = (peso meta − peso atual) ÷ ganho diário.
+F84.1h	Example	Exemplo
+F84.1.0	It weighs 400 kg, target 480 kg, gains 1.4 kg: 80 ÷ 1.4 = 57 days.	Pesa 400 kg, meta 480 kg, ganha 1,4 kg: 80 ÷ 1,4 = 57 dias.
+F84.2h	Uses	Usos
+F84.2.0	Planning the sale and the next lot.	Planejar a venda e o próximo lote.
+F84.2.1	Calculating the feed still needed.	Calcular a ração que falta.
+F84.2.2	Projecting the margin.	Projetar a margem.
+F84.3h	In the app	No app
+F84.3.0	Each lot shows the estimated sale date.	Cada lote mostra a data estimada de saída.
+F84.3.1	Rumi, Rumi's analysis, When should I sell?	Rumi, Análise do Rumi, Quando me convém vender?
+F85.t	Turns per year	Giros por ano
+F85.r	How many lots a pen can finish in a year. More turns spread fixed costs better.	Quantos lotes um curral pode engordar em um ano. Mais giros diluem melhor os custos fixos.
+F85.0h	How it is calculated	Como se calcula
+F85.0.0	Turns = 365 ÷ (days on feed + empty days between lots).	Giros = 365 ÷ (dias de engorda + dias vazios entre lotes).
+F85.1h	Example	Exemplo
+F85.1.0	A 110-day feeding period and 10 days of cleaning: 365 ÷ 120 = 3 turns.	Engorda de 110 dias e 10 dias de limpeza: 365 ÷ 120 = 3 giros.
+F85.2h	How to increase them	Como aumentá-los
+F85.2.0	Better daily gain.	Melhor ganho diário.
+F85.2.1	Buying heavier animals.	Comprar animais mais pesados.
+F85.2.2	Having the next lot ready when the previous one leaves.	Ter o próximo lote pronto quando o anterior sai.
+F86.t	Intake as a percentage of body weight	Consumo como porcentagem do peso
+F86.r	A simple way to estimate how much an animal eats: a percentage of its live weight.	Forma simples de estimar quanto um animal come: uma porcentagem do seu peso vivo.
+F86.0h	Values	Valores
+F86.0.0	Dry matter: 2.2 to 2.8 % of live weight when finishing.	Matéria seca: 2,2 a 2,8 % do peso vivo na engorda.
+F86.0.1	Ration as fed: depends on its moisture.	Ração como fornecida: depende da sua umidade.
+F86.1h	Example	Exemplo
+F86.1.0	A 400 kg animal at 2.5 %: 10 kg of dry matter a day.	Animal de 400 kg a 2,5 %: 10 kg de matéria seca por dia.
+F86.1.1	If the ration is 85 % dry matter: 10 ÷ 0.85 = 11.8 kg as fed.	Se a ração tem 85 % de matéria seca: 10 ÷ 0,85 = 11,8 kg como fornecida.
+F86.2h	In Rumi	No Rumi
+F86.2.0	Calculators, Intake by weight.	Calculadoras, Consumo pelo peso.
+F87.t	Total digestible nutrients	Nutrientes digestíveis totais
+F87.r	TDN is a way of measuring a feed's energy: the share that is digested.	NDT é uma forma de medir a energia de um alimento: que parte é digerida.
+F87.0h	What it is	O que é
+F87.0.0	The percentage of the feed the animal digests and uses as energy.	Porcentagem do alimento que o animal digere e aproveita como energia.
+F87.1h	Reference values	Valores de referência
+F87.1.0	Corn: 85 to 90 %.	Milho: 85 a 90 %.
+F87.1.1	Sorghum: 80 to 84 %.	Sorgo: 80 a 84 %.
+F87.1.2	Good quality hay: 55 to 60 %.	Feno de boa qualidade: 55 a 60 %.
+F87.1.3	Mature pasture: 45 to 50 %.	Pasto maduro: 45 a 50 %.
+F87.1.4	Finishing ration: 72 to 80 %.	Ração de terminação: 72 a 80 %.
+F87.2h	Use	Uso
+F87.2.0	Comparing ingredients by energy.	Comparar ingredientes pela energia.
+F87.2.1	Formulating rations: the app uses these values.	Formular rações: o app usa esses valores.
+F88.t	Gross margin and net margin	Margem bruta e margem líquida
+F88.r	Gross margin measures what the lot leaves; net margin, what remains after all the farm's expenses.	A margem bruta mede o que o lote deixa; a líquida, o que sobra depois de todas as despesas da fazenda.
+F88.0h	Gross margin	Margem bruta
+F88.0.0	Sales − cattle purchase − feed − health − the lot's direct expenses.	Vendas − compra de animais − ração − sanidade − despesas diretas do lote.
+F88.1h	Net margin	Margem líquida
+F88.1.0	Gross margin − overhead (fixed wages, energy, depreciation, interest).	Margem bruta − despesas gerais (salários fixos, energia, depreciação, juros).
+F88.2h	Per head and per day	Por cabeça e por dia
+F88.2.0	Margin per head = margin ÷ head sold.	Margem por cabeça = margem ÷ cabeças vendidas.
+F88.2.1	Margin per day = margin per head ÷ days on feed: useful to compare lots of different length.	Margem por dia = margem por cabeça ÷ dias de engorda: serve para comparar lotes de duração diferente.
+F88.3h	In the app	No app
+F88.3.0	The app calculates each lot's margin when you sell and the estimate at the target.	O app calcula a margem de cada lote ao vender e a estimada na meta.
+F89.t	Price per kilo or per head	Preço por quilo ou por cabeça
+F89.r	To compare offers you always have to convert them to price per kilo.	Para comparar ofertas é preciso sempre levá-las a preço por quilo.
+F89.0h	How to convert	Como converter
+F89.0.0	Price per kilo = price per head ÷ the animal's weight.	Preço por quilo = preço por cabeça ÷ peso do animal.
+F89.0.1	Price per head = price per kilo × weight.	Preço por cabeça = preço por quilo × peso.
+F89.1h	Example	Exemplo
+F89.1.0	An animal at 18,000 per head weighing 290 kg: 62 per kilo.	Animal a 18.000 por cabeça que pesa 290 kg: 62 por quilo.
+F89.1.1	Another at 19,000 weighing 320 kg: 59 per kilo. The second is cheaper per kilo.	Outro a 19.000 que pesa 320 kg: 59 por quilo. O segundo é mais barato por quilo.
+F89.2h	Rule	Regra
+F89.2.0	Buy and sell by the kilo, with a scale.	Compre e venda por quilo, com balança.
+F90.t	Feed efficiency	Eficiência alimentar
+F90.r	It is conversion upside down: how many kilos the animal gains for each kilo of feed.	É a conversão ao contrário: quantos quilos o animal ganha por cada quilo de ração.
+F90.0h	How it is calculated	Como se calcula
+F90.0.0	Efficiency = kilos gained ÷ kilos of feed.	Eficiência = quilos ganhos ÷ quilos de ração.
+F90.1h	Example	Exemplo
+F90.1.0	A conversion of 7 to 1 equals an efficiency of 0.14 (it gained 0.14 kg for each kg of feed).	Conversão de 7 para 1 equivale a eficiência de 0,14 (ganhou 0,14 kg por kg de ração).
+F90.2h	Use	Uso
+F90.2.0	Some technicians and programs use this number instead of conversion.	Alguns técnicos e programas usam este número em vez da conversão.
+F90.2.1	Higher is better.	Mais alto é melhor.
+F91.t	Units of weight and measure	Unidades de peso e medida
+F91.r	In the field, pounds, kilos, hundredweights, arrobas and manzanas get mixed. Knowing how to convert avoids costly mistakes.	No campo se misturam libras, quilos, quintais, arrobas e manzanas. Saber converter evita erros caros.
+F91.0h	Weight	Peso
+F91.0.0	1 kilo = 2.2 pounds.	1 quilo = 2,2 libras.
+F91.0.1	1 pound = 0.454 kilos.	1 libra = 0,454 quilo.
+F91.0.2	1 quintal (Central American hundredweight) = 100 pounds = 45.4 kilos.	1 quintal = 100 libras = 45,4 quilos.
+F91.0.3	1 arroba (Central America) = 25 pounds = 11.3 kilos; in Brazil the arroba is 15 kg.	1 arroba (América Central) = 25 libras = 11,3 quilos; no Brasil a arroba é de 15 kg.
+F91.1h	Area	Área
+F91.1.0	1 manzana = 0.7 hectares = 7,000 m².	1 manzana = 0,7 hectare = 7.000 m².
+F91.1.1	1 hectare = 1.43 manzanas = 10,000 m² = 2.47 acres.	1 hectare = 1,43 manzana = 10.000 m².
+F91.2h	Prices	Preços
+F91.2.0	Price per kilo = price per pound × 2.2.	Preço por quilo = preço por libra × 2,2.
+F91.2.1	Price per pound = price per kilo ÷ 2.2.	Preço por libra = preço por quilo ÷ 2,2.
+F91.3h	In Rumi	No Rumi
+F91.3.0	Calculators, Convert: pounds, kilos, hundredweights, arrobas, manzanas and hectares.	Calculadoras, Converter: libras, quilos, quintais, arrobas, manzanas e hectares.
+F92.t	Cost per animal per day	Custo por animal por dia
+F92.r	What it costs to keep one animal in the feedlot for a day. It helps decide whether it's worth waiting to sell.	O que custa manter um animal um dia na engorda. Ajuda a decidir se vale a pena esperar para vender.
+F92.0h	How it is calculated	Como se calcula
+F92.0.0	(The day's feed + a share of health, labor and expenses) ÷ head.	(Ração do dia + parte de sanidade, mão de obra e despesas) ÷ cabeças.
+F92.1h	Use	Uso
+F92.1.0	If one more day costs more than the kilos gained that day are worth, it pays to sell.	Se um dia a mais custa mais do que valem os quilos ganhos nesse dia, convém vender.
+F92.2h	Example	Exemplo
+F92.2.0	It costs 90 per day and gains 1.2 kg at 60 = 72: each day you lose 18.	Custa 90 por dia e ganha 1,2 kg a 60 = 72: cada dia você perde 18.
+F93.t	Return on investment	Retorno do investimento
+F93.r	It measures how much the money invested in the lot earns. It lets you compare cattle feeding with other options.	Mede quanto rende o dinheiro investido no lote. Permite comparar a engorda com outras opções.
+F93.0h	How it is calculated	Como se calcula
+F93.0.0	Return = margin ÷ money invested × 100.	Retorno = margem ÷ dinheiro investido × 100.
+F93.0.1	Annualized = return × 365 ÷ days on feed.	Anualizado = retorno × 365 ÷ dias de engorda.
+F93.1h	Example	Exemplo
+F93.1.0	You invested 500,000 and made 40,000 in 120 days: 8 % for the period, about 24 % a year.	Você investiu 500.000 e ganhou 40.000 em 120 dias: 8 % no período, uns 24 % ao ano.
+F93.2h	Use	Uso
+F93.2.0	Compare it with the rate on a loan or a deposit.	Compare com a taxa de um empréstimo ou de um depósito.
+F93.2.1	If the annual return is lower than the loan rate, borrowing doesn't pay.	Se o retorno anual for menor que a taxa do empréstimo, não convém se endividar.
+F94.t	Target weight	Peso meta
+F94.r	The weight you plan to sell at. It defines the length of the feeding period and the margin.	O peso com que você planeja vender. Define a duração da engorda e a margem.
+F94.0h	How to choose it	Como escolher
+F94.0.0	What your buyer asks for or pays best.	O que seu comprador pede ou paga melhor.
+F94.0.1	The finish your animals reach at that weight.	O acabamento que seus animais alcançam nesse peso.
+F94.0.2	The point where extra kilos start costing more than they are worth.	O ponto em que os quilos extras começam a custar mais do que valem.
+F94.1h	Common values	Valores comuns
+F94.1.0	Many feedlots in the region sell between 430 and 520 kg (950 to 1,150 pounds).	Muitos confinamentos da região vendem entre 430 e 520 kg (950 a 1.150 libras).
+F94.1.1	It depends on breed, sex and market.	Depende da raça, do sexo e do mercado.
+F94.2h	In the app	No app
+F94.2.0	You set a general target weight in Settings and one for each lot.	Você define um peso meta geral em Configuração e um próprio para cada lote.
+F95.t	Neutral and acid detergent fiber	Fibra em detergente neutro e ácido
+F95.r	NDF and ADF are lab analyses that measure forage fiber. They tell how much the animal will eat and how much it will digest.	FDN e FDA são análises de laboratório que medem a fibra da forragem. Dizem quanto o animal vai comer e quanto vai digerir.
+F95.0h	NDF	FDN
+F95.0.0	It measures all the fiber in the plant's cell wall.	Mede toda a fibra da parede da planta.
+F95.0.1	More NDF: the animal fills up sooner and eats less.	Mais FDN: o animal se enche antes e come menos.
+F95.0.2	Young grasses: 55 to 65 %; old grasses: over 70 %.	Pastos jovens: 55 a 65 %; pastos velhos: mais de 70 %.
+F95.1h	ADF	FDA
+F95.1.0	The toughest part of the fiber.	A parte mais dura da fibra.
+F95.1.1	More ADF: less digestible.	Mais FDA: menos digestível.
+F95.2h	Use	Uso
+F95.2.0	Comparing forages and deciding when to cut.	Comparar forragens e decidir a idade de corte.
+F95.2.1	Formulating the ration's forage precisely.	Formular com precisão a forragem da ração.

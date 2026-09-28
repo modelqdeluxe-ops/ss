@@ -19,7 +19,7 @@
  {"h":"Qué dicen","p":["Cuánta energía neta necesita un animal según su peso, sexo, raza y ganancia.","Cuánta proteína metabolizable y cuántos minerales y vitaminas.","Cuánto va a comer según su peso y la calidad de la comida."]},
  {"h":"Por qué importa la raza","p":["El cebú tiene un mantenimiento algo menor que las razas europeas.","Las tablas brasileñas se hicieron con Nelore y cruces, más parecidos al ganado de Centroamérica.","Las tablas de EE.UU. se hicieron sobre todo con razas europeas."]},
  {"h":"Ejemplo práctico","p":["Un novillo de 350 kg que gana 1 kg al día come unos 8 a 9 kg de materia seca.","Necesita cerca de 11 a 12 % de proteína cruda en la ración.","Y una ración con unas 1,1 a 1,2 megacalorías de ENg por kilo de materia seca."]},
- {"h":"En tu engorde","p":["Las calculadoras de Rumi usan valores de estas tablas ajustados al trópico.","Pesar a tiempo te dice si tu lote gana lo que la ración promete."]}],
+ {"h":"En tu engorde","p":["Las calculadoras de Rumi usan valores de estas tablas ajustados al trópico. Mira Rumi, Alimentación, Requerimientos por raza y clima.","Pesar a tiempo te dice si tu lote gana lo que la ración promete."]}],
  "rel":["Energía metabolizable y neta","Proteína metabolizable","Formular una ración","Materia seca y consumo"]},
 {"t":"Aminoácidos limitantes","a":"fisiologia","r":"La proteína está hecha de aminoácidos. Si falta uno, el animal no puede formar músculo aunque le sobren los demás. En bovinos de engorde los que más suelen faltar son la metionina y la lisina.","s":[
  {"h":"Cómo funciona","p":["El cuerpo arma proteína como un collar: si falta una cuenta, el collar queda incompleto.","El aminoácido que falta primero se llama limitante.","La proteína microbiana tiene un buen balance de aminoácidos."]},

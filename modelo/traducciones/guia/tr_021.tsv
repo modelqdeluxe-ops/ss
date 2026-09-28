@@ -1,0 +1,256 @@
+F368.t	Drinking water	Água de bebida
+F368.r	Water is the most important nutrient and the most forgotten. An animal without enough water stops eating and gaining.	A água é o nutriente mais importante e o mais esquecido. Um animal sem água suficiente para de comer e de ganhar.
+F368.0h	How much they drink	Quanto bebem
+F368.0.0	Between 40 and 70 liters a day per feedlot animal, depending on weight and weather.	Entre 40 e 70 litros por dia por animal de confinamento, conforme o peso e o clima.
+F368.0.1	In strong heat they can drink twice as much.	Com calor forte podem beber o dobro.
+F368.0.2	Rule of thumb: 5 to 7 liters per kilo of dry matter eaten, more in heat.	Regra prática: 5 a 7 litros por quilo de matéria seca que comem, mais com calor.
+F368.1h	Quality	Qualidade
+F368.1.0	Clean, odorless, without scum or algae.	Limpa, sem cheiro, sem limo nem algas.
+F368.1.1	Cool: warm water is drunk less.	Fresca: a água quente é menos bebida.
+F368.1.2	Free of manure and urine.	Sem esterco nem urina.
+F368.1.3	If it's well water, test salts, nitrates and sulfur.	Se for de poço, analise sais, nitratos e enxofre.
+F368.2h	Waterers	Bebedouros
+F368.2.0	Wash waterers every week and dump the dirty water.	Lave os bebedouros toda semana e jogue fora a água suja.
+F368.2.1	Space for 10 to 15 % of the lot to drink at once.	Espaço para 10 a 15 % do lote beber ao mesmo tempo.
+F368.2.2	Check floats and pipes every day.	Revise boias e canos todos os dias.
+F368.2.3	Place waterers in the shade and away from the bunk so feed doesn't fall in.	Coloque os bebedouros na sombra e longe do cocho para não cair comida.
+F368.3h	Signs of too little water	Sinais de falta de água
+F368.3.0	Feed intake drops.	O consumo de alimento cai.
+F368.3.1	Dry, hard manure.	Fezes secas e duras.
+F368.3.2	Animals crowding at the waterer.	Animais amontoados no bebedouro.
+F368.3.3	Sunken eyes and skin slow to return when pinched.	Olhos fundos e pele que demora a voltar ao ser beliscada.
+F369.t	Adapting to concentrate	Adaptação ao concentrado
+F369.r	Moving from grass to a grain ration takes 3 to 4 weeks. It's the most important step to avoid acidosis and deaths.	Passar do pasto para uma ração com grão exige 3 a 4 semanas. É o passo mais importante para evitar acidose e mortes.
+F369.0h	Why adapt	Por que adaptar
+F369.0.0	Rumen microbes that digest grass are different from those that digest grain.	Os micróbios do rúmen que digerem pasto são diferentes dos que digerem grão.
+F369.0.1	They need weeks to change.	Precisam de semanas para mudar.
+F369.0.2	The rumen wall also adapts to absorb more acids.	A parede do rúmen também se adapta para absorver mais ácidos.
+F369.1h	Example program	Programa de exemplo
+F369.1.0	Days 1 to 5: 60 % forage, 40 % concentrate.	Dias 1 a 5: 60 % forragem, 40 % concentrado.
+F369.1.1	Days 6 to 10: 45 % forage, 55 % concentrate.	Dias 6 a 10: 45 % forragem, 55 % concentrado.
+F369.1.2	Days 11 to 15: 30 % forage, 70 % concentrate.	Dias 11 a 15: 30 % forragem, 70 % concentrado.
+F369.1.3	Days 16 to 21: 20 % forage, 80 % concentrate.	Dias 16 a 21: 20 % forragem, 80 % concentrado.
+F369.1.4	Day 22 onward: 10 to 15 % forage, 85 to 90 % concentrate (finishing).	Dia 22 em diante: 10 a 15 % forragem, 85 a 90 % concentrado (terminação).
+F369.1.5	Move to the next step only if the bunk is left clean and there's no diarrhea.	Passe para o próximo passo só se o cocho ficar limpo e não houver diarreia.
+F369.2h	Another method	Outro método
+F369.2.0	Keep the same ration and raise the amount fed little by little, 0.5 kg per animal every 2 to 3 days.	Manter a mesma ração e subir a quantidade servida aos poucos, 0,5 kg por animal a cada 2 a 3 dias.
+F369.2.1	It works if you read bunks well.	Funciona se você lê bem os cochos.
+F369.3h	Signs you're going too fast	Sinais de que vai rápido demais
+F369.3.0	Loose, sour manure.	Fezes soltas e azedas.
+F369.3.1	Animals that leave feed one day and finish it the next.	Animais que deixam comida um dia e terminam no outro.
+F369.3.2	Lameness and bloat.	Mancadeiras e timpanismo.
+F369.3.3	Intake drops.	Queda de consumo.
+F369.4h	Common mistakes	Erros comuns
+F369.4.0	Feeding the finishing ration from day one.	Dar ração de terminação desde o primeiro dia.
+F369.4.1	Skipping steps when the animal seems fine.	Pular passos quando o animal parece estar bem.
+F369.4.2	Changing ration and pen on the same day.	Mudar de ração e de curral no mesmo dia.
+F370.t	Starter ration	Ração inicial
+F370.r	The ration for the first days should be palatable, with good fiber and more protein, so newcomers start eating soon.	A ração dos primeiros dias deve ser apetitosa, com boa fibra e mais proteína, para que os recém-chegados comam logo.
+F370.0h	Goals	Objetivos
+F370.0.0	Get the animal eating within the first 24 to 48 hours.	Que o animal comece a comer nas primeiras 24 a 48 horas.
+F370.0.1	Recover the water and weight lost in transit.	Recuperar a água e o peso perdidos na viagem.
+F370.0.2	Get the rumen used to concentrate without risk.	Acostumar o rúmen ao concentrado sem risco.
+F370.1h	What it's like	Como é
+F370.1.0	Good-quality hay or dry grass free-choice the first days.	Feno ou capim seco de boa qualidade à vontade nos primeiros dias.
+F370.1.1	Concentrate with 13 to 15 % protein, little by little.	Concentrado de 13 a 15 % de proteína, aos poucos.
+F370.1.2	Forage at 40 to 60 % of the ration.	Forragem de 40 a 60 % da ração.
+F370.1.3	Complete minerals and vitamins.	Minerais e vitaminas completos.
+F370.2h	Management	Manejo
+F370.2.0	Put the hay on top of the concentrate so they find it.	Sirva o feno em cima do concentrado para que o encontrem.
+F370.2.1	Clean bunks that are easy to see.	Cochos limpos e fáceis de ver.
+F370.2.2	Waterers with running water so they can hear it.	Bebedouros com água correndo para que a escutem.
+F370.2.3	Watch for those that don't come to eat: they're usually the first to get sick.	Observe quem não se aproxima para comer: costumam ser os primeiros doentes.
+F370.3h	Numbers	Números
+F370.3.0	A newcomer eats 1.5 to 2 % of its weight in dry matter the first week.	Um recém-chegado come 1,5 a 2 % do seu peso em matéria seca na primeira semana.
+F370.3.1	Normal intake is reached in 2 to 3 weeks.	O consumo normal é alcançado em 2 a 3 semanas.
+F371.t	Grower ration	Ração de crescimento
+F371.r	An intermediate stage where the animal grows frame and muscle. It aims for good gain at moderate cost.	Etapa intermediária em que o animal cresce esqueleto e músculo. Busca bom ganho com custo moderado.
+F371.0h	When	Quando
+F371.0.0	Light animals (under 300 kg) before moving to finishing.	Animais leves (menos de 300 kg) antes de passar à terminação.
+F371.0.1	Or in semi-confinement with grass plus supplement.	Ou em semiconfinamento com pasto mais suplemento.
+F371.1h	What it's like	Como é
+F371.1.0	Protein of 12 to 13 %.	Proteína de 12 a 13 %.
+F371.1.1	Forage at 25 to 40 % of the ration.	Forragem de 25 a 40 % da ração.
+F371.1.2	Medium energy: 68 to 72 % TDN.	Energia média: 68 a 72 % de NDT.
+F371.2h	Expected gains	Ganhos esperados
+F371.2.0	1.0 to 1.3 kg per day in the pen on a balanced ration.	1,0 a 1,3 kg por dia no curral com ração balanceada.
+F371.2.1	0.6 to 0.9 kg per day on pasture with a supplement.	0,6 a 0,9 kg por dia no pasto com suplemento.
+F371.3h	When to move to finishing	Quando passar à terminação
+F371.3.0	When the animal reaches about 350 kg or has 90 to 120 days left before sale.	Quando o animal chega a uns 350 kg ou faltam 90 a 120 dias para a venda.
+F371.3.1	When the grain price makes it profitable to speed up gain.	Quando o preço do grão torna rentável acelerar o ganho.
+F372.t	Finishing ration	Ração de terminação
+F372.r	It's the highest-energy ration, to gain weight fast and give good fat cover before sale.	É a ração com mais energia, para ganhar peso rápido e dar boa cobertura de gordura antes da venda.
+F372.0h	What it's like	Como é
+F372.0.0	High energy: 75 to 80 % TDN.	Energia alta: 75 a 80 % de NDT.
+F372.0.1	Protein of 11 to 12 %.	Proteína de 11 a 12 %.
+F372.0.2	Forage at 10 to 15 % to protect the rumen.	Forragem de 10 a 15 % para cuidar do rúmen.
+F372.0.3	Complete mineral premix, with extra calcium because of the grain.	Núcleo mineral completo, com cálcio extra por causa do grão.
+F372.1h	Expected gains	Ganhos esperados
+F372.1.0	1.3 to 1.8 kg per day in well-adapted crossbred steers.	1,3 a 1,8 kg por dia em novilhos cruzados bem adaptados.
+F372.1.1	Conversion of 6 to 8 kg of feed per kg of gain.	Conversão de 6 a 8 kg de alimento por kg de ganho.
+F372.2h	Length	Duração
+F372.2.0	Usually 60 to 120 days, depending on entry weight and target.	Normalmente 60 a 120 dias, conforme o peso de entrada e a meta.
+F372.2.1	More days than needed worsen conversion: the animal lays down fat, which costs more.	Mais dias que o necessário pioram a conversão: o animal põe gordura, que custa mais.
+F372.3h	Precautions	Cuidados
+F372.3.0	Daily bunk reading.	Leitura de cochos diária.
+F372.3.1	Fixed schedules.	Horários fixos.
+F372.3.2	Watch manure, lameness and intake.	Vigiar fezes, mancadeiras e consumo.
+F372.3.3	Plenty of shade and water: the finishing ration produces more heat.	Sombra e água de sobra: a ração de terminação produz mais calor.
+F373.t	Formulating a ration	Formular uma ração
+F373.r	Formulating means combining ingredients to cover what the animal needs at the lowest cost. The app does it for you with your prices.	Formular é combinar ingredientes para cobrir o que o animal precisa ao menor custo. O app faz isso por você com seus preços.
+F373.0h	Steps	Passos
+F373.0.0	Define the animal: weight and the gain you want.	Defina o animal: peso e ganho que você busca.
+F373.0.1	Calculate what it needs: dry matter, energy, protein, calcium, phosphorus.	Calcule o que precisa: matéria seca, energia, proteína, cálcio, fósforo.
+F373.0.2	List the ingredients you have, with their price and nutritional value.	Liste os ingredientes que você tem, com preço e valor nutritivo.
+F373.0.3	Find the mix that meets everything at the lowest cost.	Busque a mistura que cumpre tudo ao menor custo.
+F373.0.4	Check limits: minimum forage, maximum urea, maximum fat.	Revise limites: forragem mínima, ureia máxima, gordura máxima.
+F373.1h	Data you need for each ingredient	Dados de cada ingrediente
+F373.1.0	Dry matter.	Matéria seca.
+F373.1.1	Energy (TDN or net energy).	Energia (NDT ou energia líquida).
+F373.1.2	Crude protein.	Proteína bruta.
+F373.1.3	Calcium and phosphorus.	Cálcio e fósforo.
+F373.1.4	Price per kilo at your farm, freight included.	Preço por quilo na sua fazenda, com frete incluído.
+F373.2h	Comparing ingredients	Comparar ingredientes
+F373.2.0	Compare the price per unit of nutrient, not per sack.	Compare o preço por unidade de nutriente, não por saco.
+F373.2.1	Example: price of a kilo of protein = price per kilo ÷ (protein % ÷ 100).	Exemplo: preço de um quilo de proteína = preço por quilo ÷ (proteína % ÷ 100).
+F373.2.2	A cheap ingredient with little dry matter can end up expensive.	Um ingrediente barato com pouca matéria seca pode sair caro.
+F373.3h	In the app	No app
+F373.3.0	In More, Rations and diets, Formulate ration.	Em Mais, Rações e dietas, Formular dieta.
+F373.3.1	Enter the weight and gain, turn on the ingredients you have and correct prices.	Coloque o peso, o ganho, ative os ingredientes que você tem e corrija os preços.
+F373.3.2	Save the mix as a ration and use it when recording feed.	Guarde a mistura como ração e use-a ao anotar alimento.
+F373.4h	Rules	Regras
+F373.4.0	Analyze your ingredients when possible: tables are averages.	Analise seus ingredientes quando possível: as tabelas são médias.
+F373.4.1	Review the formula whenever prices change a lot.	Revise a fórmula sempre que os preços mudarem muito.
+F373.4.2	Consult a nutritionist for rations with unusual by-products.	Consulte um nutricionista para rações com subprodutos pouco comuns.
+F374.t	Corn and other grains	Milho e outros grãos
+F374.r	Grains are the main energy source in feeding. How they're processed changes how much the animal uses.	Os grãos são a principal fonte de energia do confinamento. Como são processados muda quanto o animal aproveita.
+F374.0h	Corn	Milho
+F374.0.0	High in energy (about 85 to 90 % TDN) and low in protein (8 to 9 %).	Alto em energia (cerca de 85 a 90 % de NDT) e baixo em proteína (8 a 9 %).
+F374.0.1	Whole, it's used less: part comes out in the manure.	Inteiro é menos aproveitado: parte sai no esterco.
+F374.0.2	Cracked or coarsely rolled is the most common; very finely ground increases acidosis.	Quebrado ou laminado grosso é o mais usado; moído muito fino aumenta a acidose.
+F374.1h	Sorghum	Sorgo
+F374.1.0	Slightly less energy than corn and a harder grain.	Um pouco menos de energia que o milho e grão mais duro.
+F374.1.1	It must be ground or rolled: whole it's barely digested.	É preciso moer ou laminar: inteiro quase não é digerido.
+F374.1.2	Some varieties have tannins that lower protein digestion.	Algumas variedades têm taninos que baixam a digestão da proteína.
+F374.2h	Rice and others	Arroz e outros
+F374.2.0	Broken rice or rice middlings: good energy, ferments fast.	Arroz quebrado ou quirera: boa energia, fermenta rápido.
+F374.2.1	Wheat and barley: very fast fermentation; use them with care.	Trigo e cevada: fermentação muito rápida; usar com cuidado.
+F374.3h	Quality	Qualidade
+F374.3.0	Dry grain (under 14 % moisture) for storage.	Grão seco (menos de 14 % de umidade) para guardar.
+F374.3.1	No mold, no musty smell, no weevils.	Sem mofo, sem cheiro de umidade, sem carunchos.
+F374.3.2	Check mycotoxins on large purchases.	Verifique micotoxinas em compras grandes.
+F374.4h	Rules	Regras
+F374.4.0	Mix different grains to lower acidosis risk and take advantage of prices.	Misture grãos diferentes para baixar o risco de acidose e aproveitar preços.
+F374.4.1	Don't exceed 70 to 80 % grain in the total ration without advice.	Não passe de 70 a 80 % de grão na ração total sem assessoria.
+F374.4.2	Buy at harvest when the price is lowest, if you have good storage.	Compre na colheita quando o preço está mais baixo, se tiver bom armazém.
+F375.t	Soybean meal and other proteins	Farelo de soja e outras proteínas
+F375.r	Oilseed meals are the most used plant protein. Choosing well by price per kilo of protein saves a lot of money.	Os farelos de oleaginosas são a proteína vegetal mais usada. Escolher bem pelo preço por quilo de proteína economiza muito dinheiro.
+F375.0h	Soybean meal	Farelo de soja
+F375.0.0	44 to 48 % protein, very digestible and reliable.	44 a 48 % de proteína, muito digestível e confiável.
+F375.0.1	It's usually the most expensive per sack, but not always per kilo of protein.	Costuma ser o mais caro por saco, mas nem sempre por quilo de proteína.
+F375.1h	Palm kernel meal	Torta de palmiste
+F375.1.0	14 to 18 % protein and quite a lot of fiber and fat.	14 a 18 % de proteína e bastante fibra e gordura.
+F375.1.1	Cheap in palm-growing areas; good for growing cattle.	Barata em regiões de palma; boa para crescimento.
+F375.2h	Cottonseed meal	Farelo de algodão
+F375.2.0	35 to 40 % protein.	35 a 40 % de proteína.
+F375.2.1	It contains gossypol, toxic in excess for young animals: limit its use.	Contém gossipol, tóxico em excesso para animais jovens: limite o uso.
+F375.3h	Others	Outras
+F375.3.0	DDGS or distillers' grains: protein and energy, check sulfur.	DDGS ou grãos de destilaria: proteína e energia, verificar enxofre.
+F375.3.1	Sesame and peanut meal: depending on availability and quality (watch for aflatoxins in peanut).	Farelo de gergelim e de amendoim: conforme disponibilidade e qualidade (cuidado com aflatoxinas no amendoim).
+F375.4h	How to decide	Como decidir
+F375.4.0	Calculate the price per kilo of protein for each.	Calcule o preço por quilo de proteína de cada um.
+F375.4.1	Combine a high-quality one (soy) with a cheap one.	Combine um de alta qualidade (soja) com outro barato.
+F375.4.2	Check moisture and smell: damp meals get moldy.	Revise umidade e cheiro: farelos úmidos embolorecem.
+F376.t	Urea in the ration	Ureia na ração
+F376.r	Urea is the cheapest protein because microbes turn it into protein. Used well it saves a lot; used badly it kills.	A ureia é a proteína mais barata porque os micróbios a transformam em proteína. Bem usada economiza muito; mal usada mata.
+F376.0h	How it works	Como funciona
+F376.0.0	Urea turns into ammonia in the rumen.	A ureia vira amônia no rúmen.
+F376.0.1	Microbes use that ammonia together with energy to make protein.	Os micróbios usam essa amônia junto com energia para fazer proteína.
+F376.0.2	Without enough energy, ammonia passes into the blood and poisons.	Sem energia suficiente, a amônia passa para o sangue e envenena.
+F376.1h	Limits	Limites
+F376.1.0	Maximum 1 % of the total ration on a dry matter basis.	Máximo 1 % da ração total em matéria seca.
+F376.1.1	No more than one third of total protein.	Não mais de um terço da proteína total.
+F376.1.2	In protein salts or blocks, per the manufacturer's formulation.	Em sais proteinados ou blocos, conforme a formulação do fabricante.
+F376.2h	How to use it	Como usar
+F376.2.0	Adapt over 1 to 2 weeks starting with half.	Adapte em 1 a 2 semanas começando com a metade.
+F376.2.1	Mix very well: first with a small part of the feed.	Misture muito bem: primeiro com uma parte pequena do alimento.
+F376.2.2	Always with grain or molasses and with sulfur.	Sempre com grão ou melaço e com enxofre.
+F376.2.3	Never in drinking water.	Nunca na água de bebida.
+F376.3h	Don't use it	Não use
+F376.3.0	In thin, fasted or sick animals.	Em animais magros, em jejum ou doentes.
+F376.3.1	In very young calves.	Em bezerros muito jovens.
+F376.3.2	If you can't mix it evenly.	Se não conseguir misturá-la por igual.
+F377.t	Molasses	Melaço
+F377.r	Molasses gives quick energy, improves taste and binds the dust in the ration. It's a good ally in moderate amounts.	O melaço dá energia rápida, melhora o sabor e segura o pó da ração. É um bom aliado em quantidades moderadas.
+F377.0h	Value	Valor
+F377.0.0	About 70 to 75 % dry matter, rich in sugars.	Cerca de 70 a 75 % de matéria seca, rico em açúcares.
+F377.0.1	Little protein.	Pouca proteína.
+F377.0.2	It provides potassium and sulfur.	Fornece potássio e enxofre.
+F377.1h	How much to use	Quanto usar
+F377.1.0	5 to 10 % of the ration in the pen is most common.	5 a 10 % da ração no curral é o mais comum.
+F377.1.1	More than 15 % can cause diarrhea and problems if not well formulated.	Mais de 15 % pode dar diarreia e problemas se não for bem formulado.
+F377.2h	Uses	Usos
+F377.2.0	Improve the taste of rations with by-products or coarse forages.	Melhorar o sabor de rações com subprodutos ou forragens grosseiras.
+F377.2.1	Reduce dust and keep the animal from sorting.	Reduzir o pó e evitar que o animal selecione.
+F377.2.2	Carrier for urea in pasture supplements (molasses-urea), with correct formulation.	Veículo para ureia em suplementos de pasto (melaço-ureia), com formulação correta.
+F377.3h	Precautions	Cuidados
+F377.3.0	Keep it in a covered tank so water doesn't get in.	Guarde em tanque tampado para não cair água.
+F377.3.1	In cold weather it thickens; dilute with a little water when mixing.	No frio fica espesso; dilua com pouca água ao misturar.
+F377.3.2	Don't leave molasses with urea exposed to rain.	Não deixe melaço com ureia exposto à chuva.
+F378.t	By-products for the ration	Subprodutos para a ração
+F378.r	Agro-industrial by-products can lower ration cost a lot if you know their limits.	Os subprodutos da agroindústria podem baixar muito o custo da ração se forem conhecidos seus limites.
+F378.0h	Citrus pulp	Polpa cítrica
+F378.0.0	Energy similar to a grain but with digestible fiber: less acidosis risk.	Energia parecida com um grão, mas com fibra digestível: menos risco de acidose.
+F378.0.1	High in calcium.	Alta em cálcio.
+F378.0.2	Fresh it spoils quickly; dried or ensiled it keeps better.	Fresca estraga rápido; seca ou ensilada se conserva melhor.
+F378.1h	Soybean hulls	Casca de soja
+F378.1.0	Very digestible fiber and moderate energy.	Fibra muito digestível e energia moderada.
+F378.1.1	Good for cutting grain without losing energy.	Boa para baixar o grão sem perder energia.
+F378.2h	Wheat bran, rice bran	Farelo de trigo, farelo de arroz
+F378.2.0	Medium energy and 12 to 16 % protein.	Energia média e proteína de 12 a 16 %.
+F378.2.1	High in phosphorus: watch the calcium.	Alto em fósforo: cuidar do cálcio.
+F378.2.2	Rice bran goes rancid quickly.	O farelo de arroz ranceia rápido.
+F378.3h	Cull bananas	Banana de descarte
+F378.3.0	Energy with a lot of water (little dry matter).	Energia com muita água (pouca matéria seca).
+F378.3.1	Fed chopped, mixed with a protein and fiber source.	Fornece-se picada, misturada com fonte de proteína e fibra.
+F378.3.2	Watch the latex in green fruit and the transport cost due to the water.	Cuidado com o látex da verde e com o custo do transporte por causa da água.
+F378.4h	Coffee pulp and hulls, cocoa	Polpa e casca de café, cacau
+F378.4.0	They contain caffeine, tannins or theobromine: use in small amounts and with advice.	Têm cafeína, taninos ou teobromina: use em pouca quantidade e com assessoria.
+F378.4.1	Better ensiled or dried.	Melhor ensiladas ou secas.
+F378.5h	Rules	Regras
+F378.5.0	Ask for analysis or reliable data for each by-product.	Peça análise ou dados confiáveis de cada subproduto.
+F378.5.1	Calculate the cost per unit of dry matter, freight included.	Calcule o custo por matéria seca, incluindo o frete.
+F378.5.2	Introduce them little by little.	Introduza-os aos poucos.
+F378.5.3	Check that they don't carry contaminants, plastics or chemicals.	Verifique que não tragam contaminantes, plásticos nem químicos.
+F379.t	Poultry litter	Cama de frango
+F379.r	It's used poultry bedding fed as cheap protein. It carries important health and legal risks you need to know before using it.	São camas de aves usadas como proteína barata. Têm riscos sanitários e legais importantes que é preciso conhecer antes de usar.
+F379.0h	Risks	Riscos
+F379.0.0	It may carry poultry drug residues, metals, feathers, glass and dirt.	Pode trazer restos de medicamentos das aves, metais, penas, vidro e terra.
+F379.0.1	It transmits salmonella, clostridia and botulism if not treated.	Transmite salmonela, clostrídios e botulismo se não for tratada.
+F379.0.2	In many countries its use in ruminants is banned or regulated due to the risk of encephalopathy (mad cow) and residues.	Em muitos países seu uso em ruminantes é proibido ou regulado pelo risco de encefalopatia (vaca louca) e de resíduos.
+F379.0.3	Some markets and plants won't buy animals fed poultry litter.	Alguns mercados e frigoríficos não compram animais alimentados com cama de aves.
+F379.1h	Before using it	Antes de usar
+F379.1.0	Check the current rules with SENASA and your buyer's requirements.	Consulte a norma vigente com o SENASA e os requisitos do seu comprador.
+F379.1.1	If allowed, only treated material (composted or ensiled) of known origin.	Se permitido, só material tratado (compostado ou ensilado) e de origem conhecida.
+F379.1.2	Never poultry litter with meat or bone meal residues.	Nunca cama de aves com restos de farinha de carne ou de ossos.
+F379.2h	Alternatives	Alternativas
+F379.2.0	Urea used properly with molasses or grain.	Ureia bem usada com melaço ou grão.
+F379.2.1	Plant meals and forage legumes.	Farelos vegetais e leguminosas forrageiras.
+F380.t	Silage in the ration	Silagem na ração
+F380.r	Corn or sorghum silage is a forage with good energy that's stored for the whole year. Done well, it's the base of many feedlots.	A silagem de milho ou sorgo é uma forragem com boa energia que se guarda para o ano todo. Bem feita é a base de muitos confinamentos.
+F380.0h	Value	Valor
+F380.0.0	Corn silage: 30 to 35 % dry matter and good energy from the grain.	Silagem de milho: 30 a 35 % de matéria seca e boa energia pelo grão.
+F380.0.1	Sorghum or grass silage: less energy, more fiber.	Silagem de sorgo ou de capim: menos energia, mais fibra.
+F380.0.2	Protein is low (7 to 9 %): it has to be supplemented.	A proteína é baixa (7 a 9 %): é preciso completá-la.
+F380.1h	How much to give	Quanto dar
+F380.1.0	In growing it can be 40 to 60 % of dry matter.	No crescimento pode ser 40 a 60 % da matéria seca.
+F380.1.1	In finishing it's used as the ration's forage (10 to 25 %).	Na terminação é usada como a forragem da ração (10 a 25 %).
+F380.2h	Quality when using it	Qualidade ao usar
+F380.2.0	Pleasant smell, of mild vinegar or fruit.	Cheiro agradável, de vinagre suave ou fruta.
+F380.2.1	Yellowish-green color, not dark brown or black.	Cor verde-amarelada, não marrom-escura nem preta.
+F380.2.2	No white or blue mold, and no hot spots.	Sem mofo branco ou azul, nem partes quentes.
+F380.2.3	Discard spoiled parts: they cause diarrhea and abortions and lower intake.	Descarte as partes estragadas: dão diarreias, abortos e baixam o consumo.
+F380.3h	Bunk management	Manejo no cocho
+F380.3.0	Take out only what will be eaten that day.	Tire só o que será comido nesse dia.
+F380.3.1	Don't leave it in the sun for hours before feeding.	Não deixe ao sol horas antes de servir.
+F380.3.2	Mix it with the concentrate so they don't sort.	Misture com o concentrado para que não selecionem.

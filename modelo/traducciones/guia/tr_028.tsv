@@ -1,0 +1,246 @@
+F468.t	Lameness and hoof problems	Mancadeiras e problemas de casco
+F468.r	A lame animal walks less to the bunk and the waterer and gains less. Causes range from stones and mud to infections and acidosis.	Um animal manco caminha menos até o cocho e o bebedouro e ganha menos. As causas vão de pedras e barro até infecções e acidose.
+F468.0h	Common causes	Causas comuns
+F468.0.0	Foot rot (pododermatitis): infection between the claws with a bad smell and swelling.	Podridão do casco (pododermatite): infecção entre as unhas com mau cheiro e inchaço.
+F468.0.1	Floors with stones, rough concrete or permanent mud.	Piso com pedras, cimento áspero ou barro permanente.
+F468.0.2	Nails, thorns and wounds.	Pregos, espinhos e feridas.
+F468.0.3	Laminitis from acidosis: lameness in several legs weeks later.	Laminite por acidose: mancadeira em várias patas semanas depois.
+F468.0.4	Knocks during handling or fights.	Pancadas no manejo ou brigas.
+F468.1h	Signs	Sinais
+F468.1.0	Puts little weight on one leg or walks stiffly.	Apoia pouco uma pata ou caminha rígido.
+F468.1.1	Swelling above the hoof.	Inchaço acima do casco.
+F468.1.2	Bad smell between the claws.	Mau cheiro entre as unhas.
+F468.1.3	Stays lying down longer.	Fica deitado mais tempo.
+F468.2h	What to do	O que fazer
+F468.2.0	Lift the foot in the chute and clean it to see the cause.	Levante a pata no brete e limpe para ver a causa.
+F468.2.1	Remove stones or thorns and disinfect.	Retire pedras ou espinhos e desinfete.
+F468.2.2	Foot rot needs treatment prescribed by the vet.	A podridão do casco precisa de tratamento indicado pelo veterinário.
+F468.2.3	Put the animal in a dry, soft pen.	Coloque o animal num curral seco e macio.
+F468.2.4	Record it in the app to see if it recurs in the lot.	Anote no app para ver se se repete no lote.
+F468.3h	Prevention	Prevenção
+F468.3.0	Even, dry floors without loose stones.	Pisos uniformes, secos e sem pedras soltas.
+F468.3.1	Footbath at the chute entrance if there are many cases, with the recommended product.	Pedilúvio na entrada do brete se houver muitos casos, com produto indicado.
+F468.3.2	Acidosis control.	Controle da acidose.
+F468.3.3	Calm handling without running.	Manejo tranquilo, sem correrias.
+F469.t	Urinary stones	Cálculos urinários
+F469.r	Stones that block the urethra of males, especially castrated ones, when the ration has a lot of phosphorus and little calcium, or water is short.	Pedras que entopem a uretra dos machos, sobretudo castrados, quando a ração tem muito fósforo e pouco cálcio ou falta água.
+F469.0h	Signs	Sinais
+F469.0.0	Strains to urinate and only drops or nothing come out.	Faz força para urinar e só saem gotas ou nada.
+F469.0.1	Kicks at the belly, raises the tail, stretches.	Chuta a barriga, levanta a cauda, se estica.
+F469.0.2	Crystals on the hairs of the sheath.	Cristais nos pelos do prepúcio.
+F469.0.3	If the bladder bursts: the belly fills with fluid and the animal seems to improve before getting worse.	Se a bexiga estoura: a barriga se enche de líquido e o animal parece melhorar antes de piorar.
+F469.1h	What to do	O que fazer
+F469.1.0	It's an emergency: call the vet.	É urgência: chame o veterinário.
+F469.1.1	Surgery is often needed, or slaughter to salvage the meat if there are no withdrawals.	Muitas vezes é preciso cirurgia ou abate para aproveitar a carne se não houver carências.
+F469.2h	Prevention	Prevenção
+F469.2.0	Calcium to phosphorus ratio of at least 2 to 1 in the ration (ask your nutritionist).	Relação cálcio:fósforo de pelo menos 2 para 1 na ração (peça ao seu nutricionista).
+F469.2.1	Salt in the ration so they drink more water.	Sal na ração para que bebam mais água.
+F469.2.2	Clean, cool, plentiful water at all times.	Água limpa, fresca e abundante sempre.
+F469.2.3	Urine-acidifying additives only on technical advice.	Aditivos acidificantes da urina só com indicação técnica.
+F470.t	Polioencephalomalacia	Polioencefalomalácia
+F470.r	Brain damage from lack of vitamin B1 or excess sulfur in the ration or water. It appears in animals on a lot of concentrate.	Dano do cérebro por falta de vitamina B1 ou excesso de enxofre na ração ou na água. Aparece em animais com muito concentrado.
+F470.0h	Signs	Sinais
+F470.0.0	Blindness: bumps into fences.	Cegueira: bate nas cercas.
+F470.0.1	Presses its head against the wall.	Pressiona a cabeça contra a parede.
+F470.0.2	Looks upward, tremors, convulsions.	Olha para cima, tremores, convulsões.
+F470.0.3	Falls and paddles.	Cai e pedala.
+F470.1h	What to do	O que fazer
+F470.1.0	Call the vet immediately: vitamin B1 injected early can save it.	Chame o veterinário imediatamente: a vitamina B1 injetada cedo pode salvá-lo.
+F470.1.1	Check the sulfur in the ration and water (by-products, well water).	Revise o enxofre da ração e da água (subprodutos, água de poço).
+F470.2h	Prevention	Prevenção
+F470.2.0	Correct adaptation to concentrate.	Adaptação correta ao concentrado.
+F470.2.1	Care with high-sulfur ingredients (some distillery by-products, too much molasses).	Cuidado com ingredientes altos em enxofre (alguns subprodutos de destilaria, melaço em excesso).
+F470.2.2	Water analysis if it's well water.	Análise da água se for de poço.
+F471.t	Urea poisoning	Intoxicação por ureia
+F471.r	Urea gives cheap protein, but in excess or poorly mixed it becomes ammonia in the blood and kills within minutes to hours.	A ureia dá proteína barata, mas em excesso ou mal misturada vira amônia no sangue e mata em minutos ou horas.
+F471.0h	Causes	Causas
+F471.0.0	Uneven mixing: lumps of urea in the ration.	Mistura desigual: bolos de ureia na ração.
+F471.0.1	Unadapted animals eating a lot at once.	Animais sem adaptação que comem muito de uma vez.
+F471.0.2	Urea dissolved in drinking water, or rain on molasses with urea.	Ureia dissolvida na água de bebida ou chuva sobre melaço com ureia.
+F471.0.3	Weighing errors: more than formulated.	Erros de pesagem: mais que o formulado.
+F471.1h	Signs	Sinais
+F471.1.0	Muscle tremors, especially in the face and ears.	Tremores musculares, especialmente na cara e nas orelhas.
+F471.1.1	Drooling, teeth grinding, lack of coordination.	Babeira, ranger de dentes, falta de coordenação.
+F471.1.2	Fast breathing and belly pain.	Respiração rápida e dor de barriga.
+F471.1.3	Collapses with convulsions and dies.	Cai com convulsões e morre.
+F471.2h	What to do	O que fazer
+F471.2.0	Call the vet immediately.	Chame o veterinário imediatamente.
+F471.2.1	Remove the feed with urea.	Retire o alimento com ureia.
+F471.2.2	Giving large amounts of vinegar by mouth is an emergency measure used in the field; ask the vet first.	Dar vinagre pela boca em grandes quantidades é uma medida de emergência usada no campo; pergunte antes ao veterinário.
+F471.3h	Rules for using urea	Regras para usar ureia
+F471.3.0	No more than 1 % of the total ration nor more than one third of the protein.	Não mais de 1 % da ração total nem mais de um terço da proteína.
+F471.3.1	Adapt over 1 to 2 weeks, raising little by little.	Adapte em 1 a 2 semanas subindo aos poucos.
+F471.3.2	Mix first with part of the feed and then with the rest.	Misture primeiro com uma parte do alimento e depois com o resto.
+F471.3.3	Never in water.	Nunca na água.
+F471.3.4	Always with an energy source (grain, molasses) and sulfur.	Sempre com fonte de energia (grão, melaço) e enxofre.
+F471.3.5	Don't give it to thin, fasted or sick animals.	Não dê a animais magros, em jejum ou doentes.
+F472.t	Plant and mold poisoning	Intoxicação por plantas e fungos
+F472.r	Toxic pasture plants and molds in stored feed can sicken or kill several animals at once.	Plantas tóxicas do pasto e fungos no alimento guardado podem adoecer ou matar vários animais ao mesmo tempo.
+F472.0h	Risky plants in the tropics	Plantas de risco no trópico
+F472.0.0	Cassava leaves and young sorghum or regrowth after drought or frost: can contain cyanide.	Folhas de mandioca e sorgo novo ou rebrotado depois de seca ou geada: podem dar cianeto.
+F472.0.1	Bracken fern (Pteridium): bloody urine and tumors with long-term intake.	Samambaia (Pteridium): urina com sangue e tumores com consumo prolongado.
+F472.0.2	Castor bean: very toxic seeds.	Mamona: sementes muito tóxicas.
+F472.0.3	Ornamental plants like oleander: a small amount is enough.	Plantas ornamentais como a espirradeira (oleandro): basta uma pequena quantidade.
+F472.0.4	Too much leucaena without adaptation: hair loss and thyroid problems.	Leucena em excesso sem adaptação: queda de pelo e problemas de tireoide.
+F472.0.5	Grasses high in nitrate after heavy fertilizing and drought.	Pastos com muito nitrato depois de adubação forte e seca.
+F472.1h	Molds and mycotoxins	Fungos e micotoxinas
+F472.1.0	Corn, sorghum or concentrate that gets wet and moldy produces toxins (aflatoxins and others).	Milho, sorgo ou concentrado molhado que embolorece produz toxinas (aflatoxinas e outras).
+F472.1.1	They lower intake, gain and immunity; in excess they damage the liver.	Baixam o consumo, o ganho e as defesas; em excesso danificam o fígado.
+F472.1.2	Mold isn't always visible: cracked, damp grain is at risk.	Nem sempre se vê o mofo: o grão quebrado e úmido é de risco.
+F472.2h	Signs	Sinais
+F472.2.0	Several animals sick or dead at once.	Vários animais doentes ou mortos ao mesmo tempo.
+F472.2.1	Tremors, drooling, fast breathing, convulsions.	Tremores, babeira, respiração rápida, convulsões.
+F472.2.2	Diarrhea, colic, bloody urine.	Diarreia, cólica, urina com sangue.
+F472.2.3	Intake drop with no clear cause across the whole lot.	Queda de consumo sem causa clara em todo o lote.
+F472.3h	What to do	O que fazer
+F472.3.0	Take the animals out of the pasture or remove the suspect feed.	Retire os animais do pasto ou o alimento suspeito.
+F472.3.1	Call the vet and keep a sample of the feed or plant.	Chame o veterinário e guarde uma amostra do alimento ou da planta.
+F472.3.2	Give clean water and trusted hay.	Dê água limpa e feno de confiança.
+F472.4h	Prevention	Prevenção
+F472.4.0	Walk the pastures and pull toxic plants before bringing in cattle.	Percorra os pastos e arranque plantas tóxicas antes de colocar o gado.
+F472.4.1	Don't turn hungry animals into new pastures.	Não solte animais com fome em pastos novos.
+F472.4.2	Buy dry grain and store it in a dry, ventilated storeroom.	Compre grão seco e guarde em armazém seco e ventilado.
+F472.4.3	Discard feed that smells moldy, is caked or hot.	Descarte alimento com cheiro de mofo, empedrado ou quente.
+F472.4.4	Ask for a mycotoxin analysis if you buy grain in large quantities.	Peça análise de micotoxinas se comprar grão em grande quantidade.
+F473.t	Heat stroke	Golpe de calor
+F473.r	When heat and humidity exceed the animal's ability to cool down, it stops eating, pants and can die. Fat animals and European breeds suffer more.	Quando o calor e a umidade superam a capacidade do animal de se resfriar, ele para de comer, ofega e pode morrer. Os animais gordos e de raças europeias sofrem mais.
+F473.0h	Signs	Sinais
+F473.0.0	Open-mouth panting with the tongue out.	Ofegância com a boca aberta e a língua para fora.
+F473.0.1	Drooling and outstretched head.	Babeira e cabeça esticada.
+F473.0.2	They crowd in the shade or by the waterer.	Amontoam-se na sombra ou junto ao bebedouro.
+F473.0.3	They stop eating during hot hours.	Param de comer nas horas quentes.
+F473.0.4	Tremors, collapsing: emergency.	Tremores, caem: emergência.
+F473.1h	What to do at the moment	O que fazer no momento
+F473.1.0	Don't move or work them.	Não os mova nem os trabalhe.
+F473.1.1	Wet the floor and the animals with water, especially head and neck; better if there's wind.	Molhe o piso e os animais com água, sobretudo a cabeça e o pescoço; melhor se houver vento.
+F473.1.2	Ensure plenty of cool water and space at the waterer.	Garanta água fresca de sobra e espaço no bebedouro.
+F473.1.3	Call the vet if an animal is down or very agitated.	Chame o veterinário se um animal estiver caído ou muito agitado.
+F473.2h	Prevention	Prevenção
+F473.2.0	Shade of 3 to 4 m² per animal.	Sombra de 3 a 4 m² por animal.
+F473.2.1	Cool, clean water with good flow; add waterers in the dry season.	Água fresca, limpa e com boa vazão; acrescente bebedouros no verão.
+F473.2.2	Feed more early and late in the afternoon.	Sirva mais alimento cedo e no fim da tarde.
+F473.2.3	Work cattle only before 9 in the morning.	Trabalhe o gado só antes das 9 da manhã.
+F473.2.4	Check the heat index in Rumi's calculator.	Veja o índice de calor na calculadora do Rumi.
+F473.3h	Key numbers	Números-chave
+F473.3.0	Heat index of 72 to 78: alert.	Índice de calor de 72 a 78: alerta.
+F473.3.1	79 to 83: danger.	79 a 83: perigo.
+F473.3.2	84 or more: emergency.	84 ou mais: emergência.
+F473.3.3	A heat-stressed animal can drink twice as much water.	Um animal com calor pode beber o dobro de água.
+F474.t	Wounds and wound care	Feridas e curativos
+F474.r	A poorly treated wound attracts flies, screwworm and infections. The rule is to treat the same day and check until it closes.	Uma ferida mal tratada atrai moscas, bicheira e infecções. A regra é tratar no mesmo dia e revisar até fechar.
+F474.0h	Steps to treat	Passos para tratar
+F474.0.0	Restrain the animal well in the chute.	Contenha bem o animal no brete.
+F474.0.1	Wash with clean water and soap, remove hair, dirt and dead tissue.	Lave com água limpa e sabão, retire pelos, terra e tecido morto.
+F474.0.2	Apply a veterinary antiseptic.	Aplique um antisséptico de uso veterinário.
+F474.0.3	Put on a healing product and fly repellent.	Coloque um produto cicatrizante e repelente de moscas.
+F474.0.4	Check every day; repeat the treatment if needed.	Revise todo dia; repita o curativo se necessário.
+F474.1h	When to call the vet	Quando chamar o veterinário
+F474.1.0	Deep wound, heavy bleeding or bone or tendon showing.	Ferida profunda, que sangra muito ou que deixa ver osso ou tendão.
+F474.1.1	Swelling that grows fast, is hot or crackles when touched.	Inchaço que cresce rápido, quente ou que crepita ao tocar.
+F474.1.2	Foul-smelling wound and the animal has fever.	Ferida com mau cheiro e o animal com febre.
+F474.1.3	Wounds on joints or the eye.	Feridas em articulações ou no olho.
+F474.2h	Abscesses	Abscessos
+F474.2.0	They're lumps with pus, often at injection sites.	São caroços com pus, muitas vezes em locais de injeção.
+F474.2.1	When soft, the vet opens, drains and flushes them.	Quando estão moles, o veterinário os abre, drena e lava.
+F474.2.2	If the abscess is close to sale, say so: it's trimmed at slaughter.	Se o abscesso está perto da venda, avise: é aparado no frigorífico.
+F474.3h	Prevention	Prevenção
+F474.3.0	Fix nails, wires and boards that cut.	Conserte pregos, arames e tábuas que cortam.
+F474.3.1	Calm handling, without sticks or goads.	Manejo tranquilo, sem paus nem ferrões.
+F474.3.2	Clean, sharp needles.	Agulhas limpas e bem afiadas.
+F474.3.3	Castration and dehorning with hygiene and when there are few flies.	Castrações e descornas com higiene e na época de poucas moscas.
+F475.t	Vaccination	Vacinação
+F475.r	Vaccines prevent diseases that kill fast or greatly lower gain. They only work if stored, given and boosted properly.	As vacinas previnem doenças que matam rápido ou que baixam muito o ganho. Só funcionam se forem bem guardadas, aplicadas e reforçadas.
+F475.0h	Vaccines most used in feeding	Vacinas mais usadas no confinamento
+F475.0.0	Clostridial (polyvalent): practically mandatory in every feedlot.	Clostridiais (polivalente): quase obrigatória em todo confinamento.
+F475.0.1	Respiratory (IBR, BVD, PI3, BRSV and bacteria): according to risk and the vet.	Respiratórias (IBR, BVD, PI3, BRSV e bactérias): conforme o risco e o veterinário.
+F475.0.2	Rabies: in areas with vampire bats.	Raiva: em regiões com morcego-vampiro.
+F475.0.3	Anthrax: in areas with a history.	Antraz: em regiões com histórico.
+F475.0.4	Leptospirosis: depending on the area.	Leptospirose: conforme a região.
+F475.1h	How to store them	Como conservá-las
+F475.1.0	Between 2 and 8 °C, never frozen.	Entre 2 e 8 °C, nunca congeladas.
+F475.1.1	In a cooler with ice when taking them to the pen, without the bottle touching the ice directly.	Em caixa térmica com gelo ao levá-las ao curral, sem que o frasco toque direto o gelo.
+F475.1.2	Protected from the sun.	Protegidas do sol.
+F475.1.3	Opened bottle: use it the same day and discard the rest.	Frasco aberto: use no mesmo dia e descarte a sobra.
+F475.2h	How to give them	Como aplicar
+F475.2.0	Healthy, rested animals with water.	Animais sadios, descansados e com água.
+F475.2.1	In the neck (neck triangle), never in the leg or rump.	No pescoço (tábua do pescoço), nunca na perna nem na garupa.
+F475.2.2	Subcutaneous or intramuscular according to the label.	Subcutânea ou intramuscular conforme o rótulo.
+F475.2.3	A clean needle every 10 to 15 animals, or sooner if it bends or dulls.	Uma agulha limpa a cada 10 a 15 animais ou antes se entortar ou perder o fio.
+F475.2.4	Exact dose with a calibrated syringe.	Dose exata com seringa calibrada.
+F475.3h	Boosters	Reforços
+F475.3.0	Many vaccines need a second dose at 21 to 30 days to protect well.	Muitas vacinas precisam de segunda dose aos 21 a 30 dias para proteger bem.
+F475.3.1	Record the booster date in the app and keep it.	Anote a data do reforço no app e cumpra.
+F475.3.2	Protection takes 2 to 3 weeks to build after the last dose.	A proteção leva 2 a 3 semanas para se formar depois da última dose.
+F475.4h	Common mistakes	Erros comuns
+F475.4.0	Vaccinating sick animals or new arrivals without water or rest.	Vacinar animais doentes ou recém-chegados sem água nem descanso.
+F475.4.1	Mixing vaccines in the same syringe.	Misturar vacinas na mesma seringa.
+F475.4.2	Injecting in the leg: it leaves lesions in expensive cuts.	Aplicar na perna: deixa lesões em cortes caros.
+F475.4.3	Not giving the booster.	Não aplicar o reforço.
+F475.4.4	Using expired or overheated vaccines.	Usar vacinas vencidas ou aquecidas.
+F476.t	Deworming and resistance	Vermifugação e resistência
+F476.r	Deworming well means the right product, at the right dose, at the right time. Doing it badly breeds parasites that no longer die.	Vermifugar bem é dar o produto certo, na dose certa, no momento certo. Fazer mal cria parasitas que já não morrem.
+F476.0h	Product groups	Grupos de produtos
+F476.0.0	Macrocyclic lactones (ivermectin, doramectin and others): worms and some external parasites.	Lactonas macrocíclicas (ivermectina, doramectina e outras): vermes e alguns parasitas externos.
+F476.0.1	Benzimidazoles (albendazole, fenbendazole and others): worms; some act on liver fluke.	Benzimidazóis (albendazol, fenbendazol e outros): vermes; alguns agem sobre a fascíola.
+F476.0.2	Levamisole: roundworms.	Levamisol: vermes redondos.
+F476.0.3	Fluke-specific products (for example closantel or others).	Produtos específicos contra fascíola (por exemplo closantel ou outros).
+F476.0.4	Each group kills in a different way: rotating brands within the same group isn't rotating.	Cada grupo mata de um jeito: trocar marcas do mesmo grupo não é rotacionar.
+F476.1h	How to deworm	Como vermifugar
+F476.1.0	Calculate the dose by actual weight; if you don't weigh, use the weight of the largest in the group.	Calcule a dose pelo peso real; se não pesar, use o peso do maior do grupo.
+F476.1.1	Check the product concentration on the label.	Confira a concentração do produto no rótulo.
+F476.1.2	Calibrate the syringe or gun before starting.	Calibre a seringa ou a pistola antes de começar.
+F476.1.3	Apply at the site and by the route the label states.	Aplique no local e pela via que o rótulo indica.
+F476.1.4	Record product, dose, date and withdrawal.	Anote produto, dose, data e carência.
+F476.2h	When	Quando
+F476.2.0	Always on entry to the feedlot.	Sempre na entrada do confinamento.
+F476.2.1	In a closed-pen feedlot, one well-done deworming is often enough.	No confinamento em curral fechado, muitas vezes basta uma vermifugação bem feita.
+F476.2.2	On pasture or in semi-confinement, repeat according to the vet's plan and the rainy season.	No pasto ou semiconfinamento, repita conforme o plano do veterinário e a época de chuvas.
+F476.3h	Avoiding resistance	Evitar resistência
+F476.3.0	Don't underdose.	Não dê doses baixas.
+F476.3.1	Don't deworm out of habit if there's no need.	Não vermifugue por costume se não houver necessidade.
+F476.3.2	Rotate chemical groups as the vet advises.	Rotacione grupos químicos conforme o veterinário.
+F476.3.3	Do fecal egg counts to see if the product works.	Faça contagem de ovos nas fezes para ver se o produto funciona.
+F476.4h	Withdrawals	Carências
+F476.4.0	Some long-acting injectables have withdrawals of more than a month.	Alguns injetáveis de longa ação têm carências de mais de um mês.
+F476.4.1	If you'll sell soon, choose a product with a short withdrawal.	Se vai vender logo, escolha um produto com carência curta.
+F476.4.2	The app warns you if you try to sell a lot under withdrawal.	O app avisa se você tentar vender um lote em carência.
+F477.t	Responsible antibiotic use	Uso responsável de antibióticos
+F477.r	Antibiotics save animals, but misused they create resistant bacteria and leave residues in meat. Use them only when needed and as the vet directs.	Os antibióticos salvam animais, mas mal usados criam bactérias resistentes e deixam resíduos na carne. Use só quando necessário e como o veterinário indicar.
+F477.0h	When yes	Quando sim
+F477.0.0	Diagnosed bacterial infections: pneumonia, foot rot, infected wounds.	Infecções bacterianas diagnosticadas: pneumonia, podridão do casco, feridas infectadas.
+F477.0.1	When the vet prescribes it for a high-risk lot.	Quando o veterinário indica para o lote em risco alto.
+F477.1h	When no	Quando não
+F477.1.0	Diarrhea from a ration change.	Diarreias por mudança de ração.
+F477.1.1	Thin animals without a diagnosis.	Animais magros sem diagnóstico.
+F477.1.2	Viruses alone (antibiotics don't kill them).	Só vírus (não os matam).
+F477.1.3	For fattening or to make them eat more: it's banned in many countries and isn't good practice.	Para engordar ou para que comam mais: é proibido em muitos países e não é boa prática.
+F477.2h	Rules of use	Regras de uso
+F477.2.0	Registered product, dose by weight, indicated route and full duration.	Produto registrado, dose por peso, via indicada e duração completa.
+F477.2.1	Don't mix antibiotics in the same syringe.	Não misture antibióticos na mesma seringa.
+F477.2.2	Maximum 10 ml per intramuscular injection site, in the neck.	Máximo 10 ml por local de injeção intramuscular, no pescoço.
+F477.2.3	Keep the bottle in its box, out of the sun.	Guarde o frasco na caixa, longe do sol.
+F477.3h	Withdrawals	Carências
+F477.3.0	Withdrawal is the time from the last dose until the animal can go to slaughter.	A carência é o tempo desde a última dose até o animal poder ir ao frigorífico.
+F477.3.1	If you used several products, the longest withdrawal rules.	Se usou vários produtos, vale a carência mais longa.
+F477.3.2	Always record the withdrawal in the app: it warns you before selling.	Anote sempre no app a carência: ele avisa antes de vender.
+F477.3.3	Selling under withdrawal can cause condemnation, fines and losing the buyer.	Vender em carência pode causar condenação, multas e perda do comprador.
+F478.t	Giving injections	Aplicação de injeções
+F478.r	Injecting properly protects the animal's health and meat quality. A bad injection leaves abscesses, lesions and carcass losses.	Injetar bem cuida da saúde do animal e da qualidade da carne. Uma má injeção deixa abscessos, lesões e perdas na carcaça.
+F478.0h	Where	Onde
+F478.0.0	In the neck triangle: in front of the shoulder, below the crest and above the jugular vein.	Na tábua do pescoço: triângulo à frente da paleta, abaixo da crista e acima da veia do pescoço.
+F478.0.1	Never in the leg, rump or loin: they're the most expensive cuts.	Nunca na perna, na garupa ou no lombo: são os cortes mais caros.
+F478.1h	Routes	Vias
+F478.1.0	Subcutaneous: under the skin, lifting a fold; short needle.	Subcutânea: embaixo do couro, levantando uma prega; agulha curta.
+F478.1.1	Intramuscular: into the neck muscle, longer needle.	Intramuscular: no músculo do pescoço, agulha mais longa.
+F478.1.2	Intravenous: given only by the vet.	Intravenosa: só o veterinário aplica.
+F478.1.3	Always follow the route stated on the label.	Siga sempre a via indicada no rótulo.
+F478.2h	Needles	Agulhas
+F478.2.0	Gauge 16 to 18; length 1/2 to 3/4 inch for subcutaneous and 1 to 1.5 inches for intramuscular in adults.	Calibre 16 a 18; comprimento de 1/2 a 3/4 de polegada para subcutânea e 1 a 1,5 polegada para intramuscular em adultos.
+F478.2.1	Change the needle every 10 to 15 animals or if it bends, dulls or gets dirty.	Troque a agulha a cada 10 a 15 animais ou se entortar, perder a ponta ou sujar.
+F478.2.2	Never straighten a bent needle.	Nunca endireite uma agulha torta.
+F478.2.3	Needle broken inside the animal: mark it and tell the buyer.	Agulha quebrada dentro do animal: marque-o e avise o comprador.
+F478.3h	Good practices	Boas práticas
+F478.3.0	Animal well restrained in the chute.	Animal bem contido no brete.
+F478.3.1	Clean, dry skin.	Pele limpa e seca.
+F478.3.2	Maximum 10 ml per intramuscular site; space sites at least a hand's width apart.	Máximo 10 ml por local intramuscular; separe os locais pelo menos um palmo.
+F478.3.3	Record product and date in the app.	Anote produto e data no app.

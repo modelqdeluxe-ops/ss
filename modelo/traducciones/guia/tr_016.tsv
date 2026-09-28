@@ -1,0 +1,284 @@
+F277.t	Age by the teeth	Idade pelos dentes
+F277.r	The lower front teeth change with age. They help estimate age when buying.	Os dentes da frente de baixo mudam com a idade. Servem para estimar a idade na compra.
+F277.0h	What they look like	Como são
+F277.0.0	Cattle only have front teeth on the bottom: 8 incisors.	O bovino só tem dentes da frente embaixo: 8 incisivos.
+F277.0.1	Milk teeth are small; permanent ones are wide and large.	Os de leite são pequenos; os permanentes são largos e grandes.
+F277.1h	Teeth change	Troca de dentes
+F277.1.0	All milk teeth: under 18 to 20 months.	Todos de leite: menos de 18 a 20 meses.
+F277.1.1	2 permanent (first pair): about 2 years.	2 permanentes (primeiro par): cerca de 2 anos.
+F277.1.2	4 permanent: about 2.5 to 3 years.	4 permanentes: cerca de 2,5 a 3 anos.
+F277.1.3	6 permanent: about 3 to 3.5 years.	6 permanentes: cerca de 3 a 3,5 anos.
+F277.1.4	8 permanent (full mouth): 4 years or older.	8 permanentes (boca cheia): 4 anos ou mais.
+F277.1.5	It varies with breed and feeding.	Varia conforme a raça e a alimentação.
+F277.2h	For feedlots	Para o confinamento
+F277.2.0	Animals with 2 to 4 teeth are the most common in feedlots.	Animais de 2 a 4 dentes são os mais comuns no confinamento.
+F277.2.1	Full mouth with worn teeth: old animal, converts worse.	Boca cheia com dentes gastos: animal velho, converte pior.
+F277.2.2	Some buyers pay according to dentition.	Alguns compradores pagam conforme a dentição.
+F278.t	Staff and workplace safety	Pessoal e segurança no trabalho
+F278.r	Well-trained, safe workers take better care of cattle. Accidents with cattle are frequent and serious.	Trabalhadores bem treinados e seguros cuidam melhor do gado. Os acidentes com gado são frequentes e graves.
+F278.0h	Training	Treinamento
+F278.0.0	Teach them to read bunks, check sick animals and record in the app.	Ensine a ler cochos, revisar doentes e anotar no app.
+F278.0.1	Explain calm handling and safety in the chute.	Explique o manejo tranquilo e a segurança no brete.
+F278.0.2	Write down the routine and the protocols.	Escreva a rotina e os protocolos.
+F278.1h	Safety	Segurança
+F278.1.0	Boots, gloves and proper clothing.	Botas, luvas e roupa adequada.
+F278.1.1	Never work alone with aggressive animals.	Nunca trabalhe sozinho com animais bravos.
+F278.1.2	Careful with chemicals: gloves, mask and reading labels.	Cuidado com químicos: luvas, máscara e leitura dos rótulos.
+F278.1.3	First-aid kit for people.	Kit de primeiros socorros para pessoas.
+F278.2h	Health	Saúde
+F278.2.0	Tetanus vaccine for workers.	Vacina antitetânica para os trabalhadores.
+F278.2.1	Hand washing before eating.	Lavar as mãos antes de comer.
+F278.2.2	Medical care if they get a fever after handling sick animals.	Atendimento médico se tiverem febre depois de tocar animais doentes.
+F278.3h	Motivation	Motivação
+F278.3.0	Recognize good results: fewer sick animals, good intake.	Reconheça os bons resultados: menos doentes, bom consumo.
+F278.3.1	Sharing the lot's numbers helps them get involved.	Compartilhar os números do lote ajuda a envolvê-los.
+F279.t	Animal welfare	Bem-estar animal
+F279.r	A well-treated animal produces more and better meat. Welfare is a growing demand from buyers and markets.	Um animal bem tratado produz mais e melhor carne. O bem-estar é uma exigência crescente de compradores e mercados.
+F279.0h	The five freedoms	As cinco liberdades
+F279.0.0	Freedom from hunger and thirst: enough feed and water.	Livre de fome e sede: alimento e água suficientes.
+F279.0.1	Freedom from discomfort: shade, dry floor and space.	Livre de desconforto: sombra, piso seco e espaço.
+F279.0.2	Freedom from pain, injury and disease: prevention and quick treatment.	Livre de dor, lesões e doença: prevenção e tratamento rápido.
+F279.0.3	Freedom to express normal behavior: space and company.	Livre para expressar seu comportamento normal: espaço e companhia.
+F279.0.4	Freedom from fear and distress: calm handling.	Livre de medo e angústia: manejo tranquilo.
+F279.1h	In practice	Na prática
+F279.1.0	No hitting, shouting or unnecessary prods.	Sem pancadas, gritos nem choques desnecessários.
+F279.1.1	Proper transport.	Transporte adequado.
+F279.1.2	Quick attention to sick and injured animals.	Atenção rápida a doentes e lesionados.
+F279.1.3	Humane euthanasia when there is no recovery.	Eutanásia humanitária quando não há recuperação.
+F279.2h	Benefits	Benefícios
+F279.2.0	Better gain and fewer diseases.	Melhor ganho e menos doenças.
+F279.2.1	Carcasses with fewer bruises.	Carcaças com menos hematomas.
+F279.2.2	Access to demanding buyers.	Acesso a compradores exigentes.
+F280.t	Feedlot planning	Planejamento do confinamento
+F280.r	Planning how many animals, when to buy them and when to sell them lets you make better use of pens and money.	Planejar quantos animais, quando comprá-los e quando vendê-los permite usar melhor os currais e o dinheiro.
+F280.0h	Key questions	Perguntas-chave
+F280.0.0	How many animals fit in my pens and bunks?	Quantos animais cabem nos meus currais e cochos?
+F280.0.1	How much feed can I get and store?	Quanto alimento consigo comprar e armazenar?
+F280.0.2	How much capital do I have to buy and feed?	Quanto capital tenho para comprar e alimentar?
+F280.0.3	When do buyers pay best?	Quando os compradores pagam melhor?
+F280.1h	Cycle	Ciclo
+F280.1.0	Feeding length = (target weight − entry weight) ÷ daily gain.	Duração do confinamento = (peso meta − peso de entrada) ÷ ganho diário.
+F280.1.1	Example: from 300 to 460 kg at 1.4 kg per day is about 115 days.	Exemplo: de 300 a 460 kg a 1,4 kg por dia são cerca de 115 dias.
+F280.1.2	Turns per year = 365 ÷ (feeding days + cleaning days between lots).	Giros por ano = 365 ÷ (dias de confinamento + dias de limpeza entre lotes).
+F280.2h	Staggering	Escalonar
+F280.2.0	Buying lots at regular intervals spreads the price risk.	Comprar lotes a intervalos regulares reparte o risco de preço.
+F280.2.1	That way there is always one lot selling and another coming in.	Assim sempre há um lote sendo vendido e outro entrando.
+F280.3h	In the app	No app
+F280.3.0	Rumi projects each lot and tells you when it reaches the target.	O Rumi projeta cada lote e diz quando chega à meta.
+F280.3.1	Feed for the month tells you how much to buy.	O alimento do mês diz quanto comprar.
+F281.t	Bullers (steers that mount)	Animais que montam (buller)
+F281.r	Some animals mount a pen-mate over and over. The mounted one gets hurt, stops eating and can die.	Alguns animais montam um companheiro repetidas vezes. O montado se machuca, não come e pode morrer.
+F281.0h	Signs	Sinais
+F281.0.0	An animal with a hairless or injured back and tailhead.	Um animal com o lombo e a cauda sem pelo ou machucados.
+F281.0.1	A group chasing the same animal.	Um grupo perseguindo o mesmo animal.
+F281.0.2	A mounted animal hiding in a corner.	Um animal montado que se esconde num canto.
+F281.1h	What to do	O que fazer
+F281.1.0	Move the mounted animal to another pen.	Leve o animal montado para outro curral.
+F281.1.1	If there is a single rider, remove that one.	Se for um só montador, retire ele.
+F281.1.2	Check wounds and lameness.	Revise feridas e mancadeiras.
+F281.2h	Prevention	Prevenção
+F281.2.0	Don't mix lots in the middle of the feeding period.	Não misture lotes no meio do confinamento.
+F281.2.1	Enough space.	Espaço suficiente.
+F281.2.2	Lots even in size.	Lotes uniformes em tamanho.
+F281.2.3	Check poorly applied implants with the vet if the problem is frequent.	Revise implantes mal aplicados com o veterinário se o problema for frequente.
+F282.t	Dairy steers	Novilhos de leite
+F282.r	Males of dairy breeds are cheap and gain weight fast on a good ration, but their differences must be managed.	Os machos de raças leiteiras são baratos e ganham peso rápido com boa ração, mas é preciso manejar suas diferenças.
+F282.0h	Advantages	Vantagens
+F282.0.0	Low purchase price.	Preço de compra baixo.
+F282.0.1	Good daily gain and conversion in the pen.	Bom ganho diário e conversão no curral.
+F282.0.2	Available all year near dairy areas.	Disponíveis o ano todo perto de regiões leiteiras.
+F282.1h	Disadvantages	Desvantagens
+F282.1.0	Lower carcass yield (less muscle, long bones).	Rendem menos de carcaça (menos músculo, ossos longos).
+F282.1.1	They fatten differently and some buyers pay less.	Engordam diferente e alguns compradores pagam menos.
+F282.1.2	Pure Holsteins suffer more from heat.	Os Holandeses puros sofrem mais com o calor.
+F282.2h	Management	Manejo
+F282.2.0	Dairy calves need a good start and care against pneumonia and diarrhea.	Bezerros de leite precisam de bom início e cuidado com pneumonia e diarreia.
+F282.2.1	Rations with good energy and protein.	Rações com boa energia e proteína.
+F282.2.2	Calculate your margin with the real price you are paid for them.	Calcule sua margem com o preço real que pagam por eles.
+F283.t	Females in the feedlot	Fêmeas no confinamento
+F283.r	Heifers and cull cows are also fattened. They have different cycles and prices than males.	Novilhas e vacas de descarte também são engordadas. Têm ciclos e preços diferentes dos machos.
+F283.0h	Heifers	Novilhas
+F283.0.0	They gain a bit less than males and fatten earlier.	Ganham um pouco menos que os machos e engordam antes.
+F283.0.1	They may be pregnant: check them when buying.	Podem estar prenhes: examine na compra.
+F283.0.2	Heat interrupts intake and causes mounting.	O cio interrompe o consumo e causa montas.
+F283.1h	Cull cows	Vacas de descarte
+F283.1.0	Short feeding of 60 to 90 days to improve their condition and price.	Engorda curta de 60 a 90 dias para melhorar sua condição e seu preço.
+F283.1.1	Check teeth, udder, feet and pregnancy.	Revise dentes, úbere, patas e prenhez.
+F283.1.2	They can carry brucellosis or tuberculosis: buy with testing.	Podem trazer brucelose ou tuberculose: compre com controle.
+F283.2h	Management	Manejo
+F283.2.0	Lots separate from males.	Lotes separados dos machos.
+F283.2.1	Short, well-adapted finishing ration.	Ração de terminação curta e bem adaptada.
+F283.2.2	Record the type in the app to compare its margin.	Anote o tipo no app para comparar a margem.
+F284.t	Security and cattle theft	Segurança e roubo de gado
+F284.r	Cattle rustling causes large losses. Identification and records help prevent it and recover animals.	O abigeato (roubo de gado) causa grandes perdas. A identificação e os registros ajudam a prevenir e recuperar.
+F284.0h	Prevention	Prevenção
+F284.0.0	Registered brand and ear tags on every animal.	Marca registrada e brincos em todos os animais.
+F284.0.1	Photos of the animals in the app.	Fotos dos animais no app.
+F284.0.2	Frequent counts, recorded.	Contagens frequentes, anotadas.
+F284.0.3	Fences and gates in good condition, with padlocks.	Cercas e porteiras em bom estado, com cadeado.
+F284.0.4	Lighting in pens near roads.	Iluminação nos currais perto de estradas.
+F284.1h	If it happens	Se acontecer
+F284.1.0	Report it immediately to the police and livestock authorities.	Denuncie imediatamente à polícia e às autoridades pecuárias.
+F284.1.1	Present records, photos and movement permits.	Apresente registros, fotos e guias.
+F284.1.2	Alert neighbors and slaughterhouses in the area.	Avise vizinhos e frigoríficos da região.
+F284.2h	Purchases	Compras
+F284.2.0	Don't buy animals without a movement permit or a clear brand.	Não compre animais sem guia de trânsito nem marca clara.
+F284.2.1	Buying stolen cattle is also a crime.	Comprar gado roubado também é crime.
+F285.t	Weaning and preconditioning	Desmame e pré-condicionamento
+F285.r	Calves weaned and prepared before being sold arrive at the feedlot healthier and gain from day one.	Os bezerros desmamados e preparados antes da venda chegam ao confinamento mais saudáveis e ganham desde o primeiro dia.
+F285.0h	What preconditioning is	O que é pré-condicionar
+F285.0.0	Wean 30 to 45 days before the sale.	Desmamar 30 a 45 dias antes da venda.
+F285.0.1	Vaccinate and give boosters on the farm of origin.	Vacinar e dar reforços na fazenda de origem.
+F285.0.2	Get them used to the bunk and the waterer.	Acostumar ao cocho e ao bebedouro.
+F285.0.3	Castrate and dehorn early if done.	Castrar e descornar cedo, se for feito.
+F285.1h	Advantages for the feeder	Vantagens para o confinador
+F285.1.0	Fewer pneumonias and deaths at receiving.	Menos pneumonias e mortes na recepção.
+F285.1.1	They start eating quickly.	Começam a comer rápido.
+F285.1.2	It's worth paying a bit more for preconditioned animals.	Vale a pena pagar um pouco mais por animais pré-condicionados.
+F285.2h	Questions for the seller	Perguntas ao vendedor
+F285.2.0	When were they weaned?	Quando foram desmamados?
+F285.2.1	Which vaccines and boosters do they have?	Quais vacinas e reforços têm?
+F285.2.2	Do they eat concentrate?	Comem concentrado?
+F286.t	Checklist for the first days	Checklist dos primeiros dias
+F286.r	A short list so you don't forget anything important when a new lot arrives.	Uma lista curta para não esquecer nada importante quando entra um lote novo.
+F286.0h	Before they arrive	Antes de chegarem
+F286.0.0	Clean receiving pen with shade, water and hay.	Curral de recepção limpo, com sombra, água e feno.
+F286.0.1	Vaccines, dewormers and equipment ready.	Vacinas, vermífugos e equipamento prontos.
+F286.0.2	Ear tags and the app ready to create the lot.	Brincos e o app prontos para criar o lote.
+F286.0.3	Starter ration prepared.	Ração inicial preparada.
+F286.1h	On arrival	Na chegada
+F286.1.0	Count, check the permit and the animals.	Contar, revisar a guia e os animais.
+F286.1.1	Water, hay and rest.	Água, feno e descanso.
+F286.1.2	Separate sick and injured animals.	Separar doentes e lesionados.
+F286.2h	Day 1 or 2	Dia 1 ou 2
+F286.2.0	Weigh, tag, photo.	Pesar, colocar brinco, foto.
+F286.2.1	Arrival health plan.	Plano sanitário de entrada.
+F286.2.2	Create the lot in the app with breed, color and price.	Criar o lote no app com raça, cor e preço.
+F286.3h	Weeks 1 to 3	Semanas 1 a 3
+F286.3.0	Check twice a day.	Revisar duas vezes ao dia.
+F286.3.1	Adapt to concentrate.	Adaptar ao concentrado.
+F286.3.2	Record treatments and feed.	Anotar tratamentos e alimento.
+F286.3.3	Vaccine boosters at 21 to 30 days.	Reforços de vacina aos 21 a 30 dias.
+F287.t	Counting cattle	Contar o gado
+F287.r	Counting often detects theft, escaped animals or deaths nobody saw.	Contar com frequência detecta roubos, animais fugidos ou mortos que não foram vistos.
+F287.0h	How to count	Como contar
+F287.0.0	Run the animals through a gate or the chute and count them one by one.	Faça os animais passarem por uma porteira ou pelo brete e conte um por um.
+F287.0.1	Count in groups of five so you don't lose track.	Conte em grupos de cinco para não se perder.
+F287.0.2	Two people count separately and compare.	Duas pessoas contam separadamente e comparam.
+F287.1h	When	Quando
+F287.1.0	On entering and leaving the farm.	Ao entrar e sair da fazenda.
+F287.1.1	At every weighing.	Em cada pesagem.
+F287.1.2	Every week in large paddocks.	Toda semana em pastos grandes.
+F287.2h	If one is missing	Se faltar um
+F287.2.0	Check fences, ravines and neighboring paddocks.	Revise cercas, grotas e pastos vizinhos.
+F287.2.1	Compare with the app's list of ear tags.	Compare com a lista de brincos do app.
+F287.2.2	If it doesn't turn up, report it.	Se não aparecer, denuncie.
+F288.t	Aggressive animals	Animais bravos
+F288.r	Some animals are nervous or aggressive. They are dangerous, get more stressed and gain less.	Alguns animais são nervosos ou agressivos. São perigosos, se estressam mais e ganham menos.
+F288.0h	Why	Por quê
+F288.0.0	Genetics and temperament.	Genética e temperamento.
+F288.0.1	Bad experiences with people.	Más experiências com pessoas.
+F288.0.2	Isolation from the group.	Isolamento do grupo.
+F288.1h	How to handle them	Como manejá-los
+F288.1.0	Never alone: always two people.	Nunca sozinho: sempre duas pessoas.
+F288.1.1	Move them with their group.	Mova-os com o grupo.
+F288.1.2	Chute in good condition and without distractions.	Brete em bom estado e sem distrações.
+F288.1.3	No shouting or hitting: they make the behavior worse.	Sem gritos nem pancadas: pioram o comportamento.
+F288.2h	Decision	Decisão
+F288.2.0	If an animal puts people at risk, sell it.	Se um animal põe as pessoas em risco, venda-o.
+F288.2.1	When buying, avoid animals that jump or charge in the chute.	Na compra, evite animais que pulam ou atacam no brete.
+F289.t	Pen lighting and schedules	Iluminação e horários do curral
+F289.r	Soft light at night and steady schedules help animals eat calmly and make watching easier.	Luz suave à noite e horários estáveis ajudam os animais a comer tranquilos e a vigiar.
+F289.0h	Light	Luz
+F289.0.0	Dim light in the pens lets them eat at night when it's hot and helps with watching.	Uma luz fraca nos currais permite que comam à noite com calor e ajuda a vigiar.
+F289.0.1	Avoid glaring lights in the chute: cattle won't walk toward strong light head-on.	Evite luzes que ofusquem no brete: o gado não avança em direção a uma luz forte de frente.
+F289.1h	Schedules	Horários
+F289.1.0	Same feeding and handling times every day.	Mesmos horários de comida e manejo todos os dias.
+F289.1.1	Chute work early.	Trabalho de brete cedo.
+F289.1.2	Avoid loud noises at night.	Evite barulhos fortes à noite.
+F290.t	Planning the shipment	Planejar o embarque
+F290.r	Sale day is prepared days in advance to avoid losses and headaches.	O dia da venda se prepara com dias de antecedência para evitar perdas e aborrecimentos.
+F290.0h	One week before	Uma semana antes
+F290.0.0	Check withdrawals and weights in the app.	Revise no app as carências e os pesos.
+F290.0.1	Confirm buyer, price, date and transport.	Confirme comprador, preço, data e transporte.
+F290.0.2	Request the movement permit.	Solicite a guia de trânsito.
+F290.1h	The day before	O dia anterior
+F290.1.0	Adjust the ration: don't change it abruptly.	Ajuste a ração: não mude de repente.
+F290.1.1	Fasting as agreed with the buyer.	Jejum combinado com o comprador.
+F290.1.2	Prepare the chute and the loading ramp.	Prepare o brete e o embarcadouro.
+F290.2h	The day	O dia
+F290.2.0	Early, calm loading.	Embarque cedo e tranquilo.
+F290.2.1	Weighing where agreed.	Pesagem onde foi combinado.
+F290.2.2	Record the sale in the app.	Anote a venda no app.
+F291.t	Feeding in the dry or the rainy season	Confinar na seca ou nas chuvas
+F291.r	The season changes feed cost, cattle price and the lot's health.	A época muda o custo do alimento, o preço do gado e a saúde do lote.
+F291.0h	Dry season	Época seca
+F291.0.0	Thin cattle are cheaper.	Gado magro mais barato.
+F291.0.1	Forage is scarce and expensive.	Forragem escassa e cara.
+F291.0.2	More heat and dust: watch for pinkeye and pneumonia.	Mais calor e poeira: cuidado com a ceratoconjuntivite e a pneumonia.
+F291.1h	Rainy season	Época das chuvas
+F291.1.0	Plenty of grass, cattle more expensive.	Pasto abundante, gado mais caro.
+F291.1.1	Mud, flies and foot problems.	Barro, moscas e problemas de cascos.
+F291.1.2	Good time to make silage.	Bom momento para fazer silagem.
+F291.2h	How to decide	Como decidir
+F291.2.0	Make the budget with the season's prices.	Faça o orçamento com os preços da época.
+F291.2.1	Compare with your previous lots in the app.	Compare com seus lotes anteriores no app.
+F291.2.2	Stagger so you don't depend on a single season.	Escalone para não depender de uma só época.
+F292.t	Tips for starting a feedlot	Dicas para começar um confinamento
+F292.r	Starting small, with clear numbers and good management, is the safest way to grow.	Começar pequeno, com números claros e bom manejo, é a forma mais segura de crescer.
+F292.0h	Before buying	Antes de comprar
+F292.0.0	Pen with shade, water and bunk ready.	Curral com sombra, água e cocho prontos.
+F292.0.1	Ration and feed secured.	Ração e alimento garantidos.
+F292.0.2	Health plan with a vet.	Plano sanitário com um veterinário.
+F292.0.3	Lot budget and maximum purchase price.	Orçamento do lote e preço máximo de compra.
+F292.1h	First lot	Primeiro lote
+F292.1.0	A lot you can handle well (for example 10 to 30 animals).	Um lote que você consiga manejar bem (por exemplo, 10 a 30 animais).
+F292.1.1	Even animals from a single origin.	Animais uniformes e de uma só origem.
+F292.1.2	Record everything in the app from day one.	Anote tudo no app desde o primeiro dia.
+F292.2h	After the first lot	Depois do primeiro lote
+F292.2.0	Review gain, conversion, cost per kilo and margin.	Revise ganho, conversão, custo por quilo e margem.
+F292.2.1	Fix what went wrong before growing.	Corrija o que deu errado antes de crescer.
+F292.2.2	Grow little by little.	Aumente aos poucos.
+F293.t	Mixing lots	Misturar lotes
+F293.r	Putting together animals from different origins causes fights over rank for several days, more stress and more disease. There are ways to do it with less harm.	Juntar animais de origens diferentes provoca brigas por hierarquia durante vários dias, mais estresse e mais doenças. Há formas de fazer isso com menos dano.
+F293.0h	What happens	O que acontece
+F293.0.0	Animals fight until they settle who's boss.	Os animais brigam até definir quem manda.
+F293.0.1	The weakest eat less.	Os mais fracos comem menos.
+F293.0.2	Microbes from different farms are shared.	Micróbios de fazendas diferentes são compartilhados.
+F293.1h	How to do it better	Como fazer melhor
+F293.1.0	Mix only at the start, not in the middle of the feeding period.	Misturar só no início, não no meio do confinamento.
+F293.1.1	Group animals of similar weight and size.	Juntar animais de peso e tamanho parecidos.
+F293.1.2	Give enough space and several feed and water points.	Dar espaço suficiente e vários pontos de comida e água.
+F293.1.3	Mix at dusk, with feed served.	Misturar ao entardecer, com a comida servida.
+F293.2h	Avoid	Evitar
+F293.2.0	Putting new animals into a lot of intact bulls.	Colocar animais novos num lote de touros inteiros.
+F293.2.1	Mixing lots right before shipping to slaughter.	Misturar lotes logo antes de embarcar para o frigorífico.
+F294.t	First 30 days of the lot	Primeiros 30 dias do lote
+F294.r	The first month is when most animals get sick and die. A clear plan for those days makes a difference for the whole feeding period.	O primeiro mês é quando mais animais adoecem e morrem. Um plano claro para esses dias faz diferença em todo o confinamento.
+F294.0h	Day 0 to 3	Dia 0 a 3
+F294.0.0	Clean water and quality forage on arrival.	Água limpa e forragem de qualidade na chegada.
+F294.0.1	Rest before working in the chute, if possible.	Descanso antes de trabalhar no brete, se possível.
+F294.0.2	Visual check of every animal: nose, eyes, breathing, feet.	Revisão visual de cada animal: nariz, olhos, respiração, patas.
+F294.1h	Week 1 to 2	Semana 1 a 2
+F294.1.0	Health plan: vaccines, deworming, vitamins.	Plano sanitário: vacinas, vermifugação, vitaminas.
+F294.1.1	Start concentrate little by little.	Começar o concentrado aos poucos.
+F294.1.2	Check twice a day and separate the droopy ones.	Revisar duas vezes ao dia e separar os abatidos.
+F294.2h	Week 3 to 4	Semana 3 a 4
+F294.2.0	Vaccine boosters.	Reforço de vacinas.
+F294.2.1	First control weighing.	Primeira pesagem de controle.
+F294.2.2	Adjust the ration according to intake.	Ajustar a ração conforme o consumo.
+F294.3h	In your feedlot	No seu confinamento
+F294.3.0	The app creates agenda tasks for these days when you register a new lot.	O app cria tarefas na agenda para esses dias quando você registra um lote novo.
+F295.t	Recording and learning from deaths	Registrar e aprender com as mortes
+F295.r	Every death is a loss, but also a lesson. Recording the cause, date and lot lets you find patterns and keep it from happening again.	Cada morte é uma perda, mas também uma lição. Registrar a causa, a data e o lote permite encontrar padrões e evitar que se repita.
+F295.0h	What to record	O que anotar
+F295.0.0	Date, lot and ear tag.	Data, lote e brinco.
+F295.0.1	Days since arrival.	Dias desde a chegada.
+F295.0.2	Earlier signs and treatments.	Sinais prévios e tratamentos.
+F295.0.3	Necropsy result if one was done.	Resultado da necropsia, se foi feita.
+F295.1h	What to look for	O que procurar
+F295.1.0	Deaths concentrated in the first 30 days: a receiving problem.	Mortes concentradas nos primeiros 30 dias: problema de recepção.
+F295.1.1	Deaths at the end of feeding: acidosis, bloat or heat.	Mortes no final do confinamento: acidose, timpanismo ou calor.
+F295.1.2	Several deaths from the same origin: check the supplier.	Várias mortes da mesma origem: revise o fornecedor.
+F295.2h	In your feedlot	No seu confinamento
+F295.2.0	The app calculates your mortality per lot and its cost.	O app calcula sua mortalidade por lote e o custo.

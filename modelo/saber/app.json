@@ -42,7 +42,7 @@
 {
 "t": "Moneda de la app",
 "kw": "moneda lempiras dolares cambiar moneda",
-"x": "La moneda se cambia en Más, en Configuración. Por defecto usa lempiras."
+"x": "La moneda se cambia en Más, en Configuración. Puedes elegir la de tu país o escribir otra."
 },
 {
 "t": "Peso meta del lote",

@@ -1,0 +1,118 @@
+G15.t	Lameness	Mancadeiras
+G15.x	It can come from acidosis, or floors with stones or mud. Keep the pen dry and free of sharp objects. A lame animal eats less: separate it and check it.	Podem vir de acidose, pisos com pedras ou barro. Mantenha o curral seco e sem objetos cortantes. Um animal manco come menos: separe e examine.
+G16.t	Calm handling	Manejo tranquilo
+G16.x	Move animals slowly, without shouting or sticks. A stressed animal eats less and gets sick more. Work in small groups and during cool hours.	Mova os animais devagar, sem gritos nem paus. Um animal estressado come menos e adoece mais. Trabalhe em grupos pequenos e nas horas frescas.
+G17.t	Minerals	Minerais
+G17.x	Include a mineral premix in the mix, 1.5 to 2 % of dry matter. That covers calcium, phosphorus, salt and trace minerals without depending on mineral feeders.	Inclua núcleo mineral na mistura, de 1,5 a 2 % da matéria seca. Assim você cobre cálcio, fósforo, sal e microminerais sem depender de saleiros.
+G18.t	Fiber and rumen	Fibra e rúmen
+G18.x	Even on a finishing diet, leave 8 to 15 % effective forage. If you see they don't ruminate or intake drops, fiber is lacking.	Mesmo que a dieta seja de terminação, deixe de 8 a 15 % de forragem efetiva. Se vir que não ruminam ou o consumo cai, falta fibra.
+G19.t	Bunk management	Manejo de cochos
+G19.x	Check the bunk before each feeding. Empty for more than 2 hours: raise the ration 3 to 5 %. A lot left over: lower it 3 to 5 %. Clean out anything old or wet. Record the reading at each feeding and I'll alert you.	Revise o cocho antes de cada entrega. Vazio por mais de 2 horas: suba a ração 3 a 5 %. Sobra muito: baixe 3 a 5 %. Limpe o velho ou molhado. Anote a leitura em cada entrega e eu aviso você.
+G20.t	How to improve the margin	Como melhorar a margem
+G20.x	What weighs most: buying well (price and weight), a cheap ration that meets requirements, good conversion, low mortality and selling at the right weight. Look at your cost per kilo gained: it must stay below the sale price per kilo. In Rumi's menu, Feeding, Formulate a ration, I look for a cheaper mix.	O que mais pesa: comprar bem (preço e peso), uma ração barata que cumpra o necessário, boa conversão, pouca mortalidade e vender no peso certo. Veja seu custo por quilo ganho: deve ficar abaixo do preço de venda por quilo. No menu do Rumi, Alimentação, Formular uma dieta, eu busco uma mistura mais barata.
+G21.t	Why record everything	Por que anotar tudo
+G21.x	Without records you don't know which lot earns and which loses. Recording feed every day and weighing every three weeks is enough for me to calculate conversion, costs and margin.	Sem registros você não sabe qual lote ganha e qual perde. Anotar o alimento todo dia e pesar a cada três semanas é suficiente para eu calcular conversão, custos e margem.
+G22.t	Conversion	Conversão
+G22.x	It's the kilos of feed an animal needs to gain one kilo of weight. If it says 7 to 1, it ate 7 kg of feed for every kilo it gained. The lower, the better. In concentrate feeding, normal is between 6 and 8.	São os quilos de alimento que um animal precisa para ganhar um quilo de peso. Se diz 7 para 1, comeu 7 kg de alimento para cada quilo que subiu. Quanto mais baixa, melhor. No confinamento com concentrado o normal está entre 6 e 8.
+G23.t	Daily gain	Ganho diário
+G23.x	It's the kilos each animal gains per day. It's calculated between one weighing and the next. In pen feeding, 1.2 to 1.6 kg per day is a good pace.	São os quilos que cada animal sobe por dia. Calcula-se entre uma pesagem e a seguinte. No confinamento em curral, de 1,2 a 1,6 kg por dia é um bom ritmo.
+G24.t	Margin	Margem
+G24.x	It's what's left after subtracting all costs, including the purchase of the animals, from what you receive for the sale. The app estimates it for each lot when it reaches its target weight.	É o que sobra depois de subtrair todos os custos, incluída a compra dos animais, do que você recebe pela venda. O app a estima para cada lote ao chegar ao peso meta.
+G25.t	Withdrawal	Carência
+G25.x	It's the days that must pass after giving a medicine before the animal can be sold for slaughter. When you record health with withdrawal days, the app warns you and won't let you forget when selling.	São os dias que devem passar depois de aplicar um medicamento para poder vender o animal ao frigorífico. Quando você registra sanidade com dias de carência, o app avisa e não deixa você esquecer ao vender.
+G26.t	Bunk reading	Leitura de cocho
+G26.x	It's how you find the bunk before feeding. Empty several times in a row: raise the ration. Leftovers: lower it. Clean is ideal.	É como você encontra o cocho antes de servir. Vazio várias vezes seguidas: suba a ração. Sobra: baixe. Limpo é o ideal.
+G27.t	Ration	Ração
+G27.x	It's the feed mix you give: for example corn, pulp, hay and premix. In the app you enter its name and the cost per kilo, so it calculates your costs.	É a mistura de alimento que você dá: por exemplo milho, polpa, feno e núcleo. No app você anota o nome e quanto custa o quilo, assim ele calcula seus custos.
+G28.t	Lot	Lote
+G28.x	It's a group of animals that came in together and are managed together until the sale. Everything in the app is recorded by lot.	É um grupo de animais que entraram juntos e são manejados juntos até a venda. Tudo no app se anota por lote.
+G29.t	Intake	Consumo
+G29.x	It's the kilos of feed each animal eats per day. If it drops suddenly, there may be a health, water or feed-quality problem; the app warns you.	São os quilos de alimento que cada animal come por dia. Se cai de repente, pode haver um problema de saúde, água ou qualidade do alimento; o app avisa.
+G30.t	Backup	Backup
+G30.x	It's a file with all your data. If your phone is lost or damaged, you recover everything with that file. Download it every week from More, in Your data. Animal photos stay on the phone and aren't included in the backup.	É um arquivo com todos os seus dados. Se o celular se perder ou estragar, com esse arquivo você recupera tudo. Baixe toda semana em Mais, em Seus dados. As fotos dos animais ficam no celular e não vão no backup.
+G31.t	Days on feed	Dias de confinamento
+G31.x	They're the days since the lot came in. They help compare lots and plan the sale.	São os dias desde que o lote entrou. Servem para comparar lotes e planejar a venda.
+G32.t	Where Charts is	Onde fica Gráficos
+G32.x	Tap Charts at the bottom. At the top choose a lot or all, and the period. Scroll down to see weight, gain, intake, conversion, costs, margin and more.	Toque em Gráficos embaixo. Em cima você escolhe um lote ou todos, e o período. Desça para ver peso, ganho, consumo, conversão, custos, margem e mais.
+G33.t	Where Backup is	Onde fica o Backup
+G33.x	Tap More at the bottom right. Go into Your data and tap Download backup. Save the file to Drive or send it to yourself on WhatsApp.	Toque em Mais embaixo à direita. Entre em Seus dados e toque em Baixar backup. Guarde o arquivo no Drive ou mande para você pelo WhatsApp.
+G34.t	Where Download for Excel is	Onde fica Baixar para Excel
+G34.x	Tap More. In Your data, under Download for Excel, choose what you want: lots, feed, weighings and more.	Toque em Mais. Em Seus dados, em Baixar para Excel, escolha o que quer: lotes, alimento, pesagens e mais.
+G35.t	Where Settings is	Onde ficam as Configurações
+G35.x	Tap More and then Settings. There you change the sale price, target weight, expected gain, feeding times, alerts and weight unit. Tap Save settings.	Toque em Mais e depois em Configurações. Ali você muda o preço de venda, o peso meta, o ganho esperado, os horários de entrega, os avisos e a unidade de peso. Toque em Salvar configurações.
+G36.t	Where Appearance is	Onde fica Aparência
+G36.x	Tap More. In Appearance choose Light, Dark or Automatic and the color palette you like best.	Toque em Mais. Em Aparência escolha Claro, Escuro ou Automático e a paleta de cores que mais gostar.
+G37.t	Where to correct a record	Onde corrigir um registro
+G37.x	Tap Record. At the bottom, in Your latest records, tap the trash can on the wrong record. You can also open the lot and delete it from its History. Then record it again correctly.	Toque em Registrar. Embaixo, em Seus últimos registros, toque na lixeira do registro errado. Você também pode entrar no lote e apagar pelo Histórico. Depois anote de novo corretamente.
+G38.t	Where to edit a lot	Onde editar um lote
+G38.x	Tap Lots and open the lot. Scroll down to Lot details and tap Edit.	Toque em Lotes e entre no lote. Desça até Dados do lote e toque em Editar.
+G39.t	Where Lots is	Onde fica Lotes
+G39.x	Tap Lots at the bottom to see your lots on feed and those sold.	Toque em Lotes embaixo para ver seus lotes em confinamento e os vendidos.
+G40.t	Where Today is	Onde fica Hoje
+G40.x	Tap Today at the bottom left.	Toque em Hoje embaixo à esquerda.
+G41.t	Today screen	Tela Hoje
+G41.x	Everything starts here. You see how many animals you have, how much they should eat today and what needs your attention.	Aqui começa tudo. Você vê quantos animais tem, quanto devem comer hoje e o que precisa da sua atenção.
+G42.t	Lots screen	Tela Lotes
+G42.x	A lot is a group of animals you bought together. Tap a lot to see its animals, how much they weigh and when they'll be ready for sale.	Um lote é um grupo de animais que você comprou juntos. Toque num lote para ver seus animais, quanto pesam e quando saem para a venda.
+G43.t	Record screen	Tela Registrar
+G43.x	This button is for recording everything: the feed you give, when you weigh, vaccines, sales, deaths and expenses. If you record, the app does the math for you.	Este botão serve para anotar tudo: a comida que você dá, quando pesa, as vacinas, as vendas, as mortes e os gastos. Se você anota, o app faz as contas sozinho.
+G44.t	Charts screen	Tela Gráficos
+G44.x	They're pictures that show whether your animals are gaining weight and whether you're making money. Each picture comes with its explanation.	São desenhos que mostram se seus animais estão ganhando peso e se você está ganhando dinheiro. Cada desenho traz sua explicação.
+G45.t	More screen	Tela Mais
+G45.x	A menu with: Settings, Rations and diets, Feed store, Overhead expenses, Schedule, Your data (backup and Excel), Appearance, Help and Advanced options.	Um menu com: Configurações, Rações e dietas, Depósito de ração, Despesas gerais, Agenda, Seus dados (backup e Excel), Aparência, Ajuda e Opções avançadas.
+G46.t	Rumi screen	Tela Rumi
+G46.x	If you get lost, tap Rumi and choose from its menu what you need: today's numbers, record, feeding, health, calculators, money, the feeding guide or how to use the app.	Se você se perder, toque no Rumi e escolha no menu o que precisa: seus números de hoje, anotar, alimentação, saúde, calculadoras, dinheiro, o guia de confinamento ou como usar o app.
+G47.t	New World screwworm	Bicheira (Cochliomyia)
+G47.x	It's the larva of a fly that eats living flesh in wounds, navels, castrations or dehorning. Check any wound daily, treat it and protect it with a screwworm product. If you find larvae, notify SENASA: it's a mandatory-report pest in Honduras.	É a larva de uma mosca que come a carne viva em feridas, umbigos, castrações ou descornas. Revise diariamente qualquer ferida, trate e proteja com um produto contra bicheira. Se encontrar larvas, avise o SENASA: é uma praga de notificação obrigatória em Honduras.
+G48.t	Tick fever (anaplasma and babesia)	Tristeza parasitária (anaplasma e babesia)
+G48.x	It's transmitted by ticks and flies. Signs: fever, weakness, pale or yellow mucous membranes, and with babesia brown or red urine. The animal falls behind or dies if not treated in time. Control ticks, don't use the same needle on several animals and call the vet at the first case.	É transmitida por carrapatos e moscas. Sinais: febre, fraqueza, mucosas pálidas ou amarelas e, na babesia, urina cor de café ou vermelha. O animal atrasa ou morre se não for tratado a tempo. Controle os carrapatos, não use a mesma agulha em vários animais e chame o veterinário no primeiro caso.
+G49.t	Blackleg and clostridial diseases	Carbúnculo sintomático e clostridioses
+G49.x	They're soil bacteria that cause rapid deaths, sometimes without signs. In blackleg a leg swells and crackles with gas when touched. They're prevented with a clostridial vaccine on arrival and its booster, as the label and your vet say.	São bactérias do solo que causam mortes rápidas, às vezes sem sinais. No carbúnculo sintomático uma perna incha e crepita pelo gás ao tocar. Previnem-se com vacina clostridial na entrada e seu reforço, conforme o rótulo e seu veterinário.
+G50.t	Sudden death and anthrax	Morte súbita e antraz
+G50.x	If an animal dies suddenly and bleeds from the nose, mouth or anus, don't open it: it may be anthrax, which spreads to people. Notify SENASA and your vet. For any death, bury the body deep, with lime, away from rivers and wells, and record the loss in the app.	Se um animal morre de repente e sangra pelo nariz, boca ou ânus, não o abra: pode ser antraz, que passa para as pessoas. Avise o SENASA e seu veterinário. Em qualquer morte, enterre o corpo fundo, com cal, longe de rios e poços, e anote a baixa no app.
+G51.t	Monensin and ionophores	Monensina e ionóforos
+G51.x	They improve conversion and help prevent acidosis and bloat. Use them only at the manufacturer's amount and very well mixed. They're deadly to horses, donkeys and dogs: never let them eat that mix.	Melhoram a conversão e ajudam a prevenir acidose e timpanismo. Use só na quantidade do fabricante e muito bem misturados. São mortais para cavalos, burros e cães: que nunca comam dessa mistura.
+G52.t	Vitamins on arrival	Vitaminas na entrada
+G52.x	Many feedlots give vitamins A, D and E on arrival because the animals arrive stressed. Use them per the label and your vet, and record them in Health.	Muitos confinamentos aplicam vitaminas A, D e E na entrada porque os animais chegam estressados. Use conforme o rótulo e seu veterinário, e anote em Sanidade.
+G53.t	Vaccines on arrival	Vacinas na entrada
+G53.x	The basics on arrival: clostridial vaccine with its booster and, depending on your area, rabies and respiratory vaccines. Your vet tells you which apply where you are. Record each vaccine in Health to keep track.	O básico na entrada: vacina clostridial com seu reforço e, conforme sua região, raiva e respiratórias. Seu veterinário diz quais se aplicam onde você está. Anote cada vacina em Sanidade para levar o controle.
+G54.t	Quarantine of purchased animals	Quarentena de animais comprados
+G54.x	Keep new animals separate from the ones you already have for two to three weeks. That way you see whether they bring diseases or parasites before mixing them.	Mantenha os animais novos separados dos que você já tem por duas a três semanas. Assim você vê se trazem doenças ou parasitas antes de misturá-los.
+G55.t	How to choose animals to buy	Como escolher animais para comprar
+G55.x	Look for alert animals with bright eyes, no discharge or cough, that walk well and have a good frame. Avoid very thin or pot-bellied ones. Weigh them on a scale, ask for the movement papers and ask which vaccines and dewormers they've had.	Procure animais alertas, de olhos brilhantes, sem muco nem tosse, que caminhem bem e com bom esqueleto. Evite os muito magros ou barrigudos. Pese-os na balança, peça os papéis de trânsito e pergunte que vacinas e vermífugos receberam.
+G56.t	Breeds for feeding	Raças para confinamento
+G56.x	In the tropics, Brahman and its crosses tolerate heat and ticks better. Crosses with Simmental, Charolais or Angus usually gain more weight and give a better carcass. Dairy males gain well but dress lower.	No trópico o Brahman e seus cruzamentos aguentam melhor o calor e os carrapatos. Os cruzamentos com Simental, Charolês ou Angus costumam ganhar mais peso e dar melhor carcaça. Os machos de leite ganham bem, mas rendem menos de carcaça.
+G57.t	Estimating weight with a tape	Estimar peso com fita
+G57.x	The tape measures the chest and estimates weight, but it can be off by 5 to 10 %. Use it to get an idea; to buy, sell and calculate gains, use a scale.	A fita mede o tórax e estima o peso, mas pode errar 5 a 10 %. Use para ter uma ideia; para comprar, vender e calcular ganhos use balança.
+G58.t	Bran and rice middlings	Farelo de trigo e de arroz
+G58.x	They provide energy and medium protein at a good price. They're high in phosphorus, so the ration needs calcium to avoid urinary stones. The app's formulator balances it for you.	Fornecem energia e proteína média a bom preço. Têm muito fósforo, então a ração precisa de cálcio para evitar cálculos urinários. O formulador do app balanceia por você.
+G59.t	Soybean meal	Farelo de soja
+G59.x	It's the most widely used protein source. It's expensive, so the right amount matters: the app's formulator calculates what's needed for the weight and gain you want.	É a fonte de proteína mais usada. É cara, então a quantidade certa importa: o formulador do app calcula o necessário conforme o peso e o ganho que você busca.
+G60.t	Corn and sorghum	Milho e sorgo
+G60.x	They're the energy base of feeding. Crack or grind them coarse: too fine raises the risk of acidosis and bloat. Sorghum yields a bit less than corn and pays when it's cheaper.	São a base de energia do confinamento. Quebre ou moa grosso: muito fino aumenta o risco de acidose e timpanismo. O sorgo rende um pouco menos que o milho e convém quando está mais barato.
+G61.t	Poultry litter	Cama de frango
+G61.x	It's cheap, but it can carry drug residues and bacteria, and many buyers and countries restrict it. Before using it, check with SENASA and your vet.	É barata, mas pode trazer resíduos de medicamentos e bactérias, e muitos compradores e países a restringem. Antes de usar, consulte o SENASA e seu veterinário.
+G62.t	Cut grass	Capim de corte
+G62.x	Cut it before it gets woody, roughly every 45 to 60 days depending on rain. Chop it short so less is wasted. Fertilize after each cut to keep yields up.	Corte antes que fique lenhoso, mais ou menos a cada 45 a 60 dias conforme a chuva. Pique curto para desperdiçar menos. Aduba depois de cada corte para manter o rendimento.
+G63.t	Leucaena and protein banks	Leucena e bancos de proteína
+G63.x	Legumes such as leucaena and gliricidia provide cheap protein. Leucaena shouldn't exceed one third of what they eat because it contains a substance that is harmful in excess.	As leguminosas como leucena e gliricídia dão proteína barata. A leucena não deve passar de um terço do que comem porque tem uma substância que em excesso faz mal.
+G64.t	Hay and bales	Feno e fardos
+G64.x	Hay provides the fiber the rumen needs. It should be dry, green and smell good; if it smells moldy, don't feed it. Store it under a roof and on pallets.	O feno dá a fibra que o rúmen precisa. Que esteja seco, verde e com bom cheiro; se cheira a mofo, não dê. Guarde sob teto e sobre paletes.
+G65.t	Preparing for the dry season	Preparar a seca
+G65.x	Plan forage before the dry season arrives: silage, hay or cane. Calculate how much you'll need per month and buy grain when it's cheap. In Rumi's menu, Feeding, Feed for the month, I calculate it with your lots.	Planeje a forragem antes que chegue a seca: silagem, feno ou cana. Calcule quanto vai precisar por mês e compre o grão quando estiver barato. No menu do Rumi, Alimentação, Alimento para o mês, eu calculo com seus lotes.
+G66.t	Mud and rain in the pen	Barro e chuva no curral
+G66.x	Mud lowers gain and causes lameness. Give the pen a slope, remove manure, build dry mounds for them to lie on and protect the bunks from rain.	O barro baixa o ganho e traz mancadeiras. Dê declive ao curral, limpe o esterco, faça montes secos para que deitem e proteja os cochos da chuva.
+G67.t	Pen and bunk size	Tamanho do curral e do cocho
+G67.x	As a guide: about 12 m² of pen per animal on a dirt floor, 30 cm of bunk per animal and 3 m² of shade. In Rumi's menu, Calculators, Pen and bunk space, I calculate it for your head count.	Como guia: uns 12 m² de curral por animal em piso de terra, 30 cm de cocho por animal e 3 m² de sombra. No menu do Rumi, Calculadoras, Espaço de curral e cocho, eu calculo para suas cabeças.
+G68.t	Toxic plants	Plantas tóxicas
+G68.x	When hungry, especially in the dry season, they eat plants they normally leave. Walk the pastures and pens, pull anything suspicious and don't put hungry animals in an unfamiliar pasture. If several get sick at once, call the vet. In Central America, bracken fern, lantana and crotalaria (rattlebox) are common.	Com fome, sobretudo na seca, comem plantas que normalmente deixam. Percorra os pastos e currais, arranque o suspeito e não coloque animais famintos num pasto desconhecido. Se vários adoecerem de uma vez, chame o veterinário. Na América Central são comuns a samambaia, a lantana (cambará) e a crotalária (guizo-de-cascavel).
+G69.t	Bruises and knocks before the sale	Hematomas e pancadas antes da venda
+G69.x	Bruises are lost as trimmed meat at the slaughterhouse. Load slowly, with a ramp, without sticks and without overfilling the truck. Horned animals bruise more.	As pancadas se perdem como carne aparada no frigorífico. Carregue devagar, com rampa, sem paus e sem encher demais o caminhão. Os animais com chifres se machucam mais.
+G70.t	Dehorning	Descornar
+G70.x	It's best done when they're young, with little pain and with the wound protected against flies and screwworm. That way there are fewer bruises in the pen and in transport.	É melhor fazer quando jovens, com pouca dor e com a ferida protegida contra moscas e bicheira. Assim há menos pancadas no curral e no transporte.
+G71.t	Feedlot costs	Custos do confinamento
+G71.x	After buying the animals, feed weighs the most: almost always more than two thirds of the cost of feeding. That's why a cheap ration and good conversion make the difference.	Depois da compra dos animais, o alimento é o que mais pesa: quase sempre mais de dois terços do custo de engordar. Por isso uma ração barata e uma boa conversão fazem a diferença.
+G72.t	Sale price	Preço de venda
+G72.x	I don't know today's market price. You set it in More, in Settings, and with it I calculate your margin, the minimum price to avoid a loss and how much you can pay when buying.	Não sei o preço do mercado de hoje. Você o coloca em Mais, em Configurações, e com ele eu calculo sua margem, o preço mínimo para não perder e quanto você pode pagar na compra.
+G73.t	Recording feed	Anotar alimento
+G73.x	Tap Record and then Feed, choose the lot, the ration and the kilos. You can also open it from Rumi's menu, in Record.	Toque em Registrar e depois em Ração, escolha o lote, a ração e os quilos. Também pode abrir pelo menu do Rumi, em Anotar.

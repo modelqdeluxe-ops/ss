@@ -1,0 +1,282 @@
+F315.t	Lot budget	Orçamento de um lote
+F315.r	Before buying a lot, make the full budget. It tells you whether it's worth it and how much money you need.	Antes de comprar um lote, faça o orçamento completo. Ele diz se vale a pena e quanto dinheiro você precisa.
+F315.0h	Expected income	Receitas esperadas
+F315.0.0	Head you expect to sell (minus expected deaths).	Cabeças que você espera vender (descontando as mortes esperadas).
+F315.0.1	Sale weight with shrink.	Peso de venda com quebra.
+F315.0.2	Expected sale price.	Preço de venda esperado.
+F315.1h	Costs	Custos
+F315.1.0	Purchase, freight and commissions.	Compra, frete e comissões.
+F315.1.1	Feed: kilos per day × days × cost per kilo.	Alimento: quilos por dia × dias × custo por quilo.
+F315.1.2	Arrival health and treatments.	Sanidade de entrada e tratamentos.
+F315.1.3	Proportional labor and overhead.	Mão de obra e gastos gerais proporcionais.
+F315.1.4	Interest if you use credit.	Juros se você usa crédito.
+F315.2h	Result	Resultado
+F315.2.0	Total margin and per head.	Margem total e por cabeça.
+F315.2.1	Break-even sale price.	Preço de equilíbrio de venda.
+F315.2.2	Maximum capital you need and when.	Capital máximo que você precisa e quando.
+F315.3h	Scenarios	Cenários
+F315.3.0	Also calculate with a sale price 5 to 10 % lower.	Calcule também com preço de venda 5 a 10 % mais baixo.
+F315.3.1	And with lower daily gain than expected.	E com ganho diário menor que o esperado.
+F315.3.2	If you lose a lot in the bad scenario, think twice.	Se no cenário ruim você perde muito, pense duas vezes.
+F316.t	Working capital	Capital de giro
+F316.r	Feeding needs money to buy and feed months before getting paid. Running out of cash midway through is very expensive.	O confinamento precisa de dinheiro para comprar e alimentar meses antes de receber. Ficar sem caixa no meio do confinamento sai muito caro.
+F316.0h	How much you need	Quanto você precisa
+F316.0.0	The full purchase of the lot at the start.	A compra completa do lote no início.
+F316.0.1	The daily feed and expenses until the sale.	O alimento e os gastos de todos os dias até a venda.
+F316.0.2	A 10 to 15 % cushion for surprises.	Uma reserva de 10 a 15 % para imprevistos.
+F316.1h	Cash flow	Fluxo de caixa
+F316.1.0	Record when money goes out and when it comes in.	Anote quando o dinheiro sai e quando entra.
+F316.1.1	Staggered lot sales help keep income more regular.	As vendas escalonadas de lotes ajudam a ter receitas mais seguidas.
+F316.1.2	Negotiate payment terms with feed suppliers.	Negocie prazos com fornecedores de alimento.
+F316.2h	Common mistakes	Erros comuns
+F316.2.0	Buying all the cattle without having the feed secured.	Comprar todo o gado sem ter o alimento garantido.
+F316.2.1	Selling in a hurry for lack of cash, with animals that aren't ready yet.	Vender às pressas por falta de caixa, com animais que ainda não estão prontos.
+F316.2.2	Mixing feedlot money with household expenses.	Misturar o dinheiro do confinamento com os gastos da casa.
+F317.t	Financing and credit	Financiamento e crédito
+F317.r	A loan can grow the feedlot if the margin pays the interest comfortably.	Um crédito pode fazer o confinamento crescer se a margem pagar os juros com folga.
+F317.0h	Before applying	Antes de pedir
+F317.0.0	Make the lot budget with the interest included.	Faça o orçamento do lote com os juros incluídos.
+F317.0.1	Compare the rate with your expected margin.	Compare a taxa com sua margem esperada.
+F317.0.2	Check the term: it must match the sale, not come before it.	Revise o prazo: deve coincidir com a venda, não antes.
+F317.1h	Cost of money	Custo do dinheiro
+F317.1.0	Interest = amount × annual rate × days ÷ 365.	Juros = valor × taxa anual × dias ÷ 365.
+F317.1.1	Example: 500,000 at 18 % per year for 120 days = about 29,600.	Exemplo: 500.000 a 18 % ao ano por 120 dias = cerca de 29.600.
+F317.1.2	That cost is added to the cost per head.	Esse custo se soma ao custo por cabeça.
+F317.2h	Sources	Fontes
+F317.2.0	Banks and cooperatives with livestock credit lines.	Bancos e cooperativas com linhas pecuárias.
+F317.2.1	Feed suppliers offering credit.	Fornecedores de alimento com crédito.
+F317.2.2	Share-feeding or custom feeding arrangements.	Esquemas de engorda em parceria ou por serviço.
+F317.3h	With the app	Com o app
+F317.3.0	Export your data to Excel to show your track record to the bank.	Baixe seus dados para Excel para mostrar seu histórico ao banco.
+F318.t	Feedlot risks	Riscos do confinamento
+F318.r	Feeding carries price, production and health risks. Knowing them lets you reduce them.	O confinamento tem riscos de preço, de produção e sanitários. Conhecê-los permite reduzi-los.
+F318.0h	Price risk	Risco de preço
+F318.0.0	A drop in the sale price during feeding.	Queda do preço de venda durante o confinamento.
+F318.0.1	A rise in feed prices.	Alta do preço do alimento.
+F318.0.2	Mitigation: staggered purchases, contracts with buyers, forward grain purchases.	Redução: compras escalonadas, contratos com compradores, compra antecipada de grão.
+F318.1h	Production risk	Risco de produção
+F318.1.0	Lower gain than expected.	Ganho menor que o esperado.
+F318.1.1	Drought that makes forage expensive.	Seca que encarece a forragem.
+F318.1.2	Mitigation: good ration, forage plan, records to detect problems early.	Redução: boa ração, plano forrageiro, registros para detectar problemas cedo.
+F318.2h	Health risk	Risco sanitário
+F318.2.0	Pneumonia outbreaks, deaths.	Surtos de pneumonia, mortes.
+F318.2.1	Mitigation: careful buying, receiving, vaccines, quarantine.	Redução: compra cuidadosa, recepção, vacinas, quarentena.
+F318.3h	Other risks	Outros riscos
+F318.3.0	Theft, accidents, changes in the law.	Roubo, acidentes, mudanças na lei.
+F318.3.1	Don't bet everything on a single lot or a single buyer.	Não apostar tudo num só lote nem num só comprador.
+F319.t	Sales channels	Canais de venda
+F319.r	Who you sell to changes the price, the payment method and the requirements.	A quem você vende muda o preço, a forma de pagamento e os requisitos.
+F319.0h	Middleman or on-farm buyer	Intermediário ou comprador na fazenda
+F319.0.0	Convenient: picks up at the farm.	Cômodo: busca na fazenda.
+F319.0.1	Usually pays less and sometimes by eye.	Costuma pagar menos e às vezes no olho.
+F319.0.2	Always negotiate with a scale.	Negocie sempre com balança.
+F319.1h	Auction	Leilão
+F319.1.0	Price set by competition on the day.	Preço pela concorrência do dia.
+F319.1.1	Commission and transport costs.	Custos de comissão e transporte.
+F319.1.2	Risk of low prices if there's a lot of cattle that day.	Risco de preços baixos se houver muito gado nesse dia.
+F319.2h	Packing plant or slaughterhouse	Frigorífico ou matadouro
+F319.2.0	Payment on carcass or live weight with clear rules.	Pagamento por carcaça ou em pé com regras claras.
+F319.2.1	They require traceability, no residues and animals within the weight and finish range.	Exigem rastreabilidade, sem resíduos e animais dentro da faixa de peso e acabamento.
+F319.2.2	They may pay quality premiums.	Podem pagar prêmios por qualidade.
+F319.3h	Butcher shops and direct sales	Açougues e venda direta
+F319.3.0	Better price if you have regular customers.	Melhor preço se você tiver clientes fixos.
+F319.3.1	You must use an authorized slaughterhouse and follow health rules.	É preciso abater em matadouro autorizado e cumprir as normas sanitárias.
+F320.t	Selling live or on carcass	Vender em pé ou por carcaça
+F320.r	Live, you're paid for the living animal; on carcass, for the bone-in meat after slaughter. Comparing well avoids losing money.	Em pé, pagam pelo animal vivo; por carcaça, pela carne com osso depois do abate. Comparar bem evita perder dinheiro.
+F320.0h	Live	Em pé
+F320.0.0	Payment per live kilo, usually with a shrink discount.	Pagamento por quilo vivo, normalmente com desconto de quebra.
+F320.0.1	You know the result the same day.	Você sabe o resultado no mesmo dia.
+F320.0.2	The buyer takes the yield risk.	O risco de rendimento fica com o comprador.
+F320.1h	On carcass	Por carcaça
+F320.1.0	Payment per kilo of hot or cold carcass.	Pagamento por quilo de carcaça quente ou fria.
+F320.1.1	The carcass weighs 54 to 58 % of live weight in well-finished feedlot steers.	A carcaça pesa 54 a 58 % do peso vivo em novilhos de confinamento bem terminados.
+F320.1.2	It suits you if your animals yield well (good muscle and finish).	Convém se seus animais rendem bem (bom músculo e acabamento).
+F320.2h	How to compare	Como comparar
+F320.2.0	Carcass price × dressing = equivalent live price.	Preço por carcaça × rendimento = preço equivalente em pé.
+F320.2.1	Example: 110 per carcass kilo × 0.56 = 61.6 per live kilo.	Exemplo: 110 por quilo de carcaça × 0,56 = 61,6 por quilo vivo.
+F320.2.2	Compare with the live offer after shrink.	Compare com a oferta em pé depois da quebra.
+F320.3h	Calculator	Calculadora
+F320.3.0	Rumi menu, Calculators, Compare live and carcass.	Menu do Rumi, Calculadoras, Comparar em pé e carcaça.
+F321.t	Negotiating with the buyer	Negociar com o comprador
+F321.r	Coming to the negotiation with your numbers clear changes the result.	Chegar à negociação com seus números claros muda o resultado.
+F321.0h	Before	Antes
+F321.0.0	Know your break-even price.	Conheça seu preço de equilíbrio.
+F321.0.1	Know the lot's real weight (weighed on a scale).	Conheça o peso real do lote (pesado na balança).
+F321.0.2	Find out prices from other buyers and the auction.	Pesquise preços de outros compradores e do leilão.
+F321.1h	What to agree on	O que combinar
+F321.1.0	Price per kilo and where it's weighed.	Preço por quilo e onde se pesa.
+F321.1.1	Shrink percentage or hours of fasting.	Porcentagem de quebra ou horas de jejum.
+F321.1.2	Penalties for bruises, out-of-range weight or sick animals.	Descontos por pancadas, peso fora da faixa ou animais doentes.
+F321.1.3	Payment date and method.	Data e forma de pagamento.
+F321.1.4	Who pays the freight.	Quem paga o frete.
+F321.2h	Rules	Regras
+F321.2.0	Put everything in writing, even if it's just a message.	Coloque tudo por escrito, mesmo que seja numa mensagem.
+F321.2.1	Don't sell by eye.	Não venda no olho.
+F321.2.2	Have more than one buyer to compare.	Tenha mais de um comprador para comparar.
+F322.t	Carcass quality	Qualidade da carcaça
+F322.r	Carcass quality sets the price at plants that grade. It is built throughout the whole feeding period.	A qualidade da carcaça define o preço nos frigoríficos que classificam. Ela se constrói durante todo o confinamento.
+F322.0h	What they look at	O que avaliam
+F322.0.0	Carcass weight.	Peso da carcaça.
+F322.0.1	Conformation: amount and shape of muscle.	Conformação: quantidade e forma do músculo.
+F322.0.2	Fat cover.	Cobertura de gordura.
+F322.0.3	Age by dentition.	Idade pela dentição.
+F322.0.4	Color of meat and fat.	Cor da carne e da gordura.
+F322.0.5	Bruises, abscesses and injuries.	Hematomas, abscessos e lesões.
+F322.1h	How to improve it	Como melhorá-la
+F322.1.0	Good genetics and young animals.	Boa genética e animais jovens.
+F322.1.1	Finishing ration with the right finish.	Ração de terminação com acabamento correto.
+F322.1.2	Injections in the neck, never in the leg.	Injeções no pescoço, nunca na perna.
+F322.1.3	Calm handling on the farm, in transport and loading.	Manejo tranquilo na fazenda, no transporte e no embarque.
+F322.1.4	Proper fasting and transport before slaughter.	Jejum e transporte adequados antes do abate.
+F322.2h	Ask for feedback	Peça retorno
+F322.2.0	Ask the slaughterhouse for your lot's carcass and condemnation data.	Solicite ao frigorífico os dados de carcaça e condenações do seu lote.
+F322.2.1	Record them in the app with the sale to learn from them.	Anote no app junto com a venda para aprender.
+F323.t	Price seasonality	Sazonalidade de preços
+F323.r	Cattle and feed prices go up and down in certain seasons. Taking advantage of it improves the margin.	Os preços do gado e do alimento sobem e descem em certas épocas. Aproveitar isso melhora a margem.
+F323.0h	Common patterns	Padrões comuns
+F323.0.0	In the dry season many ranchers sell thin animals: prices usually drop.	Na seca muitos pecuaristas vendem animais magros: costumam baixar de preço.
+F323.0.1	Grain is usually cheaper at harvest.	O grão costuma estar mais barato na colheita.
+F323.0.2	Meat demand rises at certain holidays and at year's end.	A demanda de carne sobe em certas festas e no fim do ano.
+F323.1h	How to take advantage	Como aproveitar
+F323.1.0	Buy animals when they're cheap if you have feed secured.	Compre animais quando estão baratos se tiver alimento garantido.
+F323.1.1	Plan to sell when prices usually rise.	Planeje vender quando os preços costumam subir.
+F323.1.2	Buy grain at harvest if you have good storage.	Compre grão na colheita se tiver bom armazém.
+F323.2h	Record your prices	Registre seus preços
+F323.2.0	Record purchase and sale prices in the app.	Anote os preços de compra e venda no app.
+F323.2.1	Over the years you'll see your area's pattern.	Com os anos você verá o padrão da sua região.
+F324.t	Financial records	Registros econômicos
+F324.r	Keeping accounts for each lot tells you what works and what doesn't. Without accounts, you decide blind.	Levar as contas de cada lote diz o que funciona e o que não. Sem contas, se decide às cegas.
+F324.0h	Per lot	Por lote
+F324.0.0	Purchase: head, kilos, price, freight.	Compra: cabeças, quilos, preço, frete.
+F324.0.1	Feed: kilos and cost.	Alimento: quilos e custo.
+F324.0.2	Lot health and expenses.	Sanidade e gastos do lote.
+F324.0.3	Sale: head, kilos, price.	Venda: cabeças, quilos, preço.
+F324.0.4	Total margin and per head.	Margem total e por cabeça.
+F324.1h	General	Gerais
+F324.1.0	Wages, energy, maintenance, interest.	Salários, energia, manutenção, juros.
+F324.1.1	They are split among lots by days and head.	São repartidos entre os lotes conforme os dias e as cabeças.
+F324.2h	Analysis	Análise
+F324.2.0	Compare lots: gain, conversion, cost per kilo, margin.	Compare lotes: ganho, conversão, custo por quilo, margem.
+F324.2.1	Compare suppliers, breeds, rations and seasons.	Compare fornecedores, raças, rações e épocas.
+F324.2.2	Find the lot that earned the most and repeat what you did.	Procure o lote que mais ganhou e copie o que você fez.
+F324.3h	In the app	No app
+F324.3.0	Everything you record generates these numbers automatically.	Tudo o que você anota gera esses números sozinho.
+F324.3.1	Export to Excel for more detailed analysis.	Baixe para Excel para análises mais detalhadas.
+F325.t	Mortality and its cost	Mortalidade e seu custo
+F325.r	Each dead animal takes with it what it cost plus everything it ate. Mortality is one of the most expensive and most avoidable costs.	Cada animal morto leva o que custou mais tudo o que comeu. A mortalidade é dos custos mais caros e mais evitáveis.
+F325.0h	How much it costs	Quanto custa
+F325.0.0	Purchase price + freight + feed eaten + treatments.	Preço de compra + frete + alimento consumido + tratamentos.
+F325.0.1	An animal that dies midway through feeding can cost more than its purchase price.	Um animal que morre no meio do confinamento pode custar mais que seu preço de compra.
+F325.1h	References	Referências
+F325.1.0	Well-managed feedlot: less than 1 to 2 %.	Confinamento bem manejado: menos de 1 a 2 %.
+F325.1.1	More than 3 % signals a serious buying, receiving or health problem.	Mais de 3 % indica um problema sério de compra, recepção ou sanidade.
+F325.2h	How to lower it	Como baixá-la
+F325.2.0	Careful buying.	Compra cuidadosa.
+F325.2.1	Receiving and arrival health plan.	Recepção e plano sanitário de entrada.
+F325.2.2	Daily checks and early treatment.	Revisão diária e tratamento precoce.
+F325.2.3	Adaptation to concentrate.	Adaptação ao concentrado.
+F325.2.4	Necropsies to learn from each death.	Necropsias para aprender com cada morte.
+F325.3h	In the app	No app
+F325.3.0	Record every death with its cause.	Anote cada morte com sua causa.
+F325.3.1	The app calculates mortality per lot and its cost in the margin.	O app calcula a mortalidade por lote e o custo na margem.
+F326.t	Feedlot scale	Escala do confinamento
+F326.r	With more animals, fixed costs are spread better. But growing without control multiplies mistakes.	Com mais animais, os custos fixos se repartem melhor. Mas crescer sem controle multiplica os erros.
+F326.0h	Advantages of growing	Vantagens de crescer
+F326.0.0	Lower fixed cost per head.	Menos custo fixo por cabeça.
+F326.0.1	Better buying power for feed and cattle.	Melhor poder de compra de alimento e gado.
+F326.0.2	More interest from large buyers.	Mais interesse de compradores grandes.
+F326.1h	Risks	Riscos
+F326.1.0	More capital at risk.	Mais capital em risco.
+F326.1.1	Needs more trained staff and better organization.	Precisa de mais pessoal treinado e melhor organização.
+F326.1.2	Health problems affect more animals.	Problemas sanitários afetam mais animais.
+F326.2h	How to grow	Como crescer
+F326.2.0	First master the numbers with small lots.	Primeiro domine os números com lotes pequenos.
+F326.2.1	Grow in stages, filling the capacity you already have.	Cresça por etapas, preenchendo a capacidade do que já tem.
+F326.2.2	Invest in what pays most: scale, water, shade, bunks.	Invista no que mais rende: balança, água, sombra, cochos.
+F327.t	Labor and productivity	Mão de obra e produtividade
+F327.r	Labor is an important cost, but a good worker saves much more than they cost.	O trabalho é um custo importante, mas um bom trabalhador economiza muito mais do que custa.
+F327.0h	References	Referências
+F327.0.0	A well-organized worker can look after several hundred penned animals with proper equipment.	Um trabalhador bem organizado pode atender várias centenas de animais no curral com equipamento adequado.
+F327.0.1	Without mixing and delivery equipment, more people are needed.	Sem equipamento de mistura e distribuição, é preciso mais gente.
+F327.1h	How to improve productivity	Como melhorar a produtividade
+F327.1.0	Clear, written routines.	Rotinas claras e escritas.
+F327.1.1	Proper equipment: mixer, carts, scale in the chute.	Equipamento adequado: misturador, carretas, balança no brete.
+F327.1.2	Facilities designed for the work.	Instalações pensadas para o trabalho.
+F327.2h	Cost per animal	Custo por animal
+F327.2.0	Add up the month's wages and benefits and divide by the animals cared for.	Some salários e encargos do mês e divida pelos animais atendidos.
+F327.2.1	Record payroll in the app as an overhead expense.	Anote a folha no app como gasto geral.
+F328.t	Depreciation and investments	Depreciação e investimentos
+F328.r	Facilities and equipment wear out. Including their annual cost shows the true result of the feedlot.	As instalações e o equipamento se desgastam. Incluir seu custo anual mostra o verdadeiro resultado do confinamento.
+F328.0h	Depreciation	Depreciação
+F328.0.0	Annual cost = (purchase value − salvage value) ÷ years of useful life.	Custo anual = (valor de compra − valor final) ÷ anos de vida útil.
+F328.0.1	Example: a 150,000 mixer that lasts 10 years costs 15,000 per year.	Exemplo: um misturador de 150.000 que dura 10 anos custa 15.000 por ano.
+F328.1h	Reference useful lives	Vidas úteis de referência
+F328.1.0	Concrete and pipe pens: 15 to 25 years.	Currais de cimento e tubo: 15 a 25 anos.
+F328.1.1	Treated wood: 8 to 12 years.	Madeira tratada: 8 a 12 anos.
+F328.1.2	Mechanical equipment: 8 to 12 years.	Equipamento mecânico: 8 a 12 anos.
+F328.1.3	Scale: 10 to 15 years.	Balança: 10 a 15 anos.
+F328.2h	Deciding on an investment	Decidir um investimento
+F328.2.0	How much does it save or produce per year?	Quanto economiza ou produz por ano?
+F328.2.1	In how many years does it pay for itself?	Em quantos anos se paga?
+F328.2.2	Is there something cheaper that gives the same result?	Há algo mais barato que dê o mesmo resultado?
+F329.t	Key feedlot indicators	Indicadores-chave do confinamento
+F329.r	A few well-measured numbers tell you whether your feedlot is going well. Check them in every lot.	Uns poucos números bem medidos dizem se seu confinamento vai bem. Revise-os em cada lote.
+F329.0h	Production	Produção
+F329.0.0	Average daily gain: target of 1.2 to 1.6 kg in the pen.	Ganho diário de peso: meta de 1,2 a 1,6 kg no curral.
+F329.0.1	Conversion: 6 to 8 kg of feed per kg gained.	Conversão: 6 a 8 kg de alimento por kg ganho.
+F329.0.2	Intake: 2.2 to 2.8 % of live weight in dry matter.	Consumo: 2,2 a 2,8 % do peso vivo em matéria seca.
+F329.0.3	Days on feed.	Dias de confinamento.
+F329.1h	Health	Sanidade
+F329.1.0	Mortality: less than 1 to 2 %.	Mortalidade: menos de 1 a 2 %.
+F329.1.1	Sick animals at receiving: less than 10 %.	Doentes na recepção: menos de 10 %.
+F329.1.2	Lagging animals per lot.	Animais atrasados por lote.
+F329.2h	Economics	Economia
+F329.2.0	Cost per kilo gained versus sale price.	Custo por quilo ganho frente ao preço de venda.
+F329.2.1	Margin per head and per day.	Margem por cabeça e por dia.
+F329.2.2	Break-even price versus market price.	Preço de equilíbrio frente ao preço de mercado.
+F329.3h	In the app	No app
+F329.3.0	Today and each lot show gain, conversion and cost.	Hoje e cada lote mostram ganho, conversão e custo.
+F329.3.1	Charts compares lots and periods.	Gráficos compara lotes e períodos.
+F330.t	Share feeding or custom feeding	Engorda em parceria ou por serviço
+F330.r	There are arrangements where one party provides the cattle and another the farm and the work. Done well, they share risk and profit.	Há acordos em que um põe o gado e outro a fazenda e o trabalho. Bem feitos, repartem risco e benefício.
+F330.0h	Types	Tipos
+F330.0.0	Sharing: the weight gain or profit is split in agreed percentages.	Em parceria: reparte-se o ganho de peso ou o lucro em porcentagens combinadas.
+F330.0.1	Custom feeding (boarding): the owner pays a fee per animal per day or per kilo gained.	Por serviço (hotelaria): o dono paga uma taxa por animal por dia ou por quilo ganho.
+F330.1h	What to agree on in writing	O que combinar por escrito
+F330.1.0	Who provides what: animals, feed, health, labor.	Quem põe o quê: animais, alimento, sanidade, mão de obra.
+F330.1.1	How weighing is done on entry and exit.	Como se pesa na entrada e na saída.
+F330.1.2	What happens with deaths.	O que acontece com as mortes.
+F330.1.3	How and when payment is made.	Como e quando se paga.
+F330.1.4	Length of the agreement.	Duração do acordo.
+F330.2h	With the app	Com o app
+F330.2.0	Create one lot per agreement and record everything to give clear accounts.	Crie um lote para cada acordo e anote tudo para prestar contas claras.
+F331.t	How the app uses your data	Como o app usa seus dados
+F331.r	The app turns your records into decisions: when to sell, how much to pay, which lot is doing better.	O app transforma seus registros em decisões: quando vender, quanto pagar, qual lote vai melhor.
+F331.0h	What it calculates	O que calcula
+F331.0.0	Daily gain per lot and per animal.	Ganho diário por lote e por animal.
+F331.0.1	Conversion and cost per kilo gained.	Conversão e custo por quilo ganho.
+F331.0.2	Estimated date of reaching the target.	Data estimada de chegada à meta.
+F331.0.3	Estimated margin and break-even price.	Margem estimada e preço de equilíbrio.
+F331.0.4	Feed needed for the month.	Alimento necessário para o mês.
+F331.1h	What it needs from you	O que precisa de você
+F331.1.0	Record feed every day.	Anotar o alimento todo dia.
+F331.1.1	Weigh every 3 to 4 weeks.	Pesar a cada 3 a 4 semanas.
+F331.1.2	Record health, deaths, expenses and sales.	Registrar sanidade, mortes, gastos e vendas.
+F331.1.3	Enter real prices.	Colocar preços reais.
+F331.2h	Decisions	Decisões
+F331.2.0	Sell a lot that no longer gains enough.	Vender um lote que já não ganha o suficiente.
+F331.2.1	Pull out lagging animals.	Tirar animais atrasados.
+F331.2.2	Buy at a price that leaves a profit.	Comprar a um preço que deixe lucro.
+F331.2.3	Change a ration that converts poorly.	Trocar uma ração que converte mal.
+F332.t	When feeding doesn't pay	Quando não convém confinar
+F332.r	Sometimes the best decision is not to buy. Feeding with the numbers against you just means working to lose.	Às vezes a melhor decisão é não comprar. Confinar com os números contra só é trabalhar para perder.
+F332.0h	Signs	Sinais
+F332.0.0	The maximum purchase price Rumi gives you is lower than the asking price for the cattle.	O preço máximo de compra que o Rumi dá é menor do que pedem pelo gado.
+F332.0.1	The cost per kilo gained is higher than the sale price per kilo.	O custo por quilo ganho é maior que o preço de venda por quilo.
+F332.0.2	You don't have feed or water secured for the whole cycle.	Você não tem alimento ou água garantidos para todo o ciclo.
+F332.0.3	You don't have capital to finish the feeding period.	Você não tem capital para terminar o confinamento.
+F332.1h	Alternatives	Alternativas
+F332.1.0	Wait for better purchase prices.	Esperar melhores preços de compra.
+F332.1.1	Feed fewer animals, but well.	Confinar menos animais, mas bem.
+F332.1.2	Offer your pens for custom feeding.	Oferecer seus currais para engorda por serviço.
+F332.1.3	Finish on pasture at lower cost.	Engordar a pasto com menos custo.

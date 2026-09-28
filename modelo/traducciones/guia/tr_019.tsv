@@ -1,0 +1,247 @@
+F333.t	Contracts with buyers	Contratos com compradores
+F333.r	Agreeing on price and conditions before feeding ends reduces the risk of the market dropping.	Combinar preço e condições antes de terminar o confinamento reduz o risco de o mercado cair.
+F333.0h	What it can include	O que pode incluir
+F333.0.0	Fixed price or price formula.	Preço fixo ou fórmula de preço.
+F333.0.1	Weight and finish range.	Faixa de peso e acabamento.
+F333.0.2	Approximate delivery date.	Data aproximada de entrega.
+F333.0.3	Weighing method and shrink.	Forma de pesagem e quebra.
+F333.0.4	Penalties and premiums.	Descontos e prêmios.
+F333.0.5	Payment method and term.	Forma e prazo de pagamento.
+F333.1h	Advantages	Vantagens
+F333.1.0	You know how much you'll receive.	Você sabe quanto vai receber.
+F333.1.1	You plan purchases with more confidence.	Planeja a compra com mais segurança.
+F333.2h	Precautions	Cuidados
+F333.2.0	In writing and signed.	Por escrito e assinado.
+F333.2.1	Know how reliable the buyer is.	Conheça a seriedade do comprador.
+F333.2.2	Keep your word: trust is worth a lot.	Cumpra o combinado: a confiança vale muito.
+F334.t	Livestock insurance	Seguro pecuário
+F334.r	Insurance can cover deaths from disease, accidents or theft. Read carefully what it covers.	Um seguro pode cobrir mortes por doença, acidentes ou roubo. É preciso ler bem o que cobre.
+F334.0h	What it usually covers	O que costuma cobrir
+F334.0.0	Death from disease or accident.	Morte por doença ou acidente.
+F334.0.1	Sometimes theft or natural disasters.	Às vezes roubo ou desastres naturais.
+F334.1h	What they ask for	O que pedem
+F334.1.0	Identification of the animals.	Identificação dos animais.
+F334.1.1	Health records.	Registros sanitários.
+F334.1.2	Prompt notice when an animal dies, sometimes with a necropsy.	Aviso rápido quando morre um animal, às vezes com necropsia.
+F334.2h	How to decide	Como decidir
+F334.2.0	Compare the premium with your historical mortality in the app.	Compare o prêmio com sua mortalidade histórica no app.
+F334.2.1	Ask your bank or cooperative about insurance tied to credit.	Pergunte ao seu banco ou cooperativa por seguros ligados ao crédito.
+F335.t	Minimum price per pound	Preço mínimo por libra
+F335.r	Many people negotiate in pounds. Knowing your minimum price per pound keeps you from accepting offers that make you lose.	Muitos negociam em libras. Saber seu preço mínimo por libra evita aceitar ofertas que fazem você perder.
+F335.0h	How to calculate it	Como calcular
+F335.0.0	Minimum price per kilo = total lot cost ÷ kilos sold.	Preço mínimo por quilo = custo total do lote ÷ quilos vendidos.
+F335.0.1	Minimum price per pound = minimum price per kilo ÷ 2.2.	Preço mínimo por libra = preço mínimo por quilo ÷ 2,2.
+F335.1h	Example	Exemplo
+F335.1.0	A minimum of 50 per kilo equals 22.7 per pound.	Um mínimo de 50 por quilo equivale a 22,7 por libra.
+F335.2h	In the app	No app
+F335.2.0	If you work in pounds, Rumi gives it to you directly per pound in Money and sales, Break-even price.	Se você trabalha em libras, o Rumi dá direto por libra em Dinheiro e vendas, Preço mínimo para não perder.
+F336.t	Opportunity cost	Custo de oportunidade
+F336.r	The money and pens you use for feeding could be earning something else. Considering it helps you decide.	O dinheiro e os currais que você usa no confinamento poderiam estar rendendo em outra coisa. Considerar isso ajuda a decidir.
+F336.0h	What it is	O que é
+F336.0.0	What you stop earning by using your resources for feeding.	O que você deixa de ganhar por usar seus recursos no confinamento.
+F336.0.1	For example, the interest the money would earn in the bank, or renting out the paddocks.	Por exemplo, os juros que o dinheiro daria no banco ou o aluguel dos pastos.
+F336.1h	How to use it	Como usar
+F336.1.0	Compare the feedlot's return with other options.	Compare o retorno do confinamento com outras opções.
+F336.1.1	If feeding yields less than keeping the money safe, review your model.	Se o confinamento rende menos que deixar o dinheiro seguro, revise seu modelo.
+F337.t	Value of gain	Valor do ganho
+F337.r	The value of gain is what you're paid for each kilo the animal puts on at your farm. It's calculated by subtracting what the animal cost on arrival from what it's worth on leaving, and dividing by the kilos gained. Comparing it with the cost per kilo gained tells you whether feeding makes money.	O valor do ganho é o que pagam por cada quilo que o animal sobe na sua fazenda. Calcula-se subtraindo o que o animal custou na entrada do que vale na saída e dividindo pelos quilos ganhos. Compará-lo com o custo por quilo ganho diz se o confinamento dá dinheiro.
+F337.0h	How it's calculated	Como se calcula
+F337.0.0	Sale value of the animal minus purchase cost.	Valor de venda do animal menos custo de compra.
+F337.0.1	Divided by the kilos it gained while on feed.	Dividido pelos quilos que ganhou no confinamento.
+F337.0.2	Example: you bought at 18,000, sold at 31,500 and it gained 180 kg: the value of gain is 75 per kilo.	Exemplo: você comprou por 18.000, vendeu por 31.500 e ganhou 180 kg: o valor do ganho é 75 por quilo.
+F337.1h	Why it isn't the same as the price	Por que não é igual ao preço
+F337.1.0	Light animals are usually bought at a higher price per kilo than heavy ones.	O animal leve costuma ser comprado mais caro por quilo que o pesado.
+F337.1.1	That difference makes the kilo gained worth less than the sale price per kilo.	Essa diferença faz o quilo ganho valer menos que o preço de venda por quilo.
+F337.1.2	If the purchase price per kilo rises a lot, the value of gain drops.	Se o preço de compra por quilo sobe muito, o valor do ganho baixa.
+F337.2h	The golden rule	A regra de ouro
+F337.2.0	If the cost per kilo gained is lower than the value of gain, you make money.	Se o custo por quilo ganho é menor que o valor do ganho, você ganha dinheiro.
+F337.2.1	If it's higher, you lose even if the animal fattens well.	Se é maior, você perde mesmo que o animal engorde bem.
+F337.3h	In your feedlot	No seu confinamento
+F337.3.0	The app shows you each lot's cost per kilo gained.	O app mostra o custo por quilo ganho de cada lote.
+F337.3.1	Before buying, use the maximum purchase price so the numbers work.	Antes de comprar, use o preço máximo de compra para que os números fechem.
+F338.t	Price spread by weight	Diferença de preço por peso
+F338.r	In almost every market a kilo of light calf is worth more than a kilo of heavy steer. That spread determines whether it pays to buy light or heavy.	Em quase todos os mercados o quilo do bezerro leve vale mais que o quilo do novilho pesado. Essa diferença define quanto convém comprar leve ou pesado.
+F338.0h	Why it happens	Por que acontece
+F338.0.0	A light animal still has all its efficient gain ahead of it.	O animal leve ainda tem todo seu ganho eficiente pela frente.
+F338.0.1	There's more demand for calves to feed.	Há mais demanda de bezerros para engordar.
+F338.0.2	A heavy animal leaves less margin for the next owner.	O animal pesado já tem menos margem para o próximo dono.
+F338.1h	How to use it	Como usar
+F338.1.0	If the spread is small, it pays to buy light and feed longer.	Se a diferença é pequena, convém comprar leve e engordar mais tempo.
+F338.1.1	If it's very large, it sometimes pays to buy heavier and do short feeding.	Se é muito grande, às vezes convém comprar mais pesado e fazer confinamentos curtos.
+F338.1.2	Always compare with your cost per kilo gained.	Compare sempre com seu custo por quilo ganho.
+F338.2h	In your feedlot	No seu confinamento
+F338.2.0	Record price and weight of each purchase in the app to see how the spread changes in your area.	Anote preço e peso de cada compra no app para ver como a diferença muda na sua região.
+F338.2.1	Rumi calculates the margin with your numbers.	O Rumi calcula a margem com seus números.
+F339.t	Buying lighter or heavier	Comprar mais leve ou mais pesado
+F339.r	Buying light or heavy animals changes the feeding time, the risk, the conversion and the capital you need.	Comprar animais leves ou pesados muda o tempo de confinamento, o risco, a conversão e o capital que você precisa.
+F339.0h	Light (150 to 250 kg)	Leves (150 a 250 kg)
+F339.0.0	Cheaper per animal, but more expensive per kilo.	Mais baratos por animal, mas mais caros por quilo.
+F339.0.1	They convert better and have more compensatory growth.	Convertem melhor e têm mais crescimento compensatório.
+F339.0.2	More disease risk and more time on the farm.	Mais risco de doença e mais tempo na fazenda.
+F339.1h	Heavy (300 to 380 kg)	Pesados (300 a 380 kg)
+F339.1.0	More capital per animal, but short feeding.	Mais capital por animal, mas confinamento curto.
+F339.1.1	Less health risk and more turns per year.	Menos risco sanitário e mais giros por ano.
+F339.1.2	Worse conversion because they're already fattening.	Pior conversão porque já estão engordurando.
+F339.2h	How to decide	Como decidir
+F339.2.0	Compare the expected margin per animal and per month.	Compare a margem esperada por animal e por mês.
+F339.2.1	Consider your available feed, your capital and your experience.	Considere sua comida disponível, seu capital e sua experiência.
+F339.2.2	Try it with one lot and compare in the app.	Teste com um lote e compare no app.
+F340.t	Sensitivity analysis	Análise de sensibilidade
+F340.r	A sensitivity analysis answers: what happens to my profit if the sale price drops 10 %, or feed goes up, or the animals gain less? It prepares you for market shocks.	Uma análise de sensibilidade responde: o que acontece com meu lucro se o preço de venda cair 10 %, ou a comida subir, ou os animais ganharem menos? Prepara você para os golpes do mercado.
+F340.0h	Which variables to move	Quais variáveis mexer
+F340.0.0	Sale price.	Preço de venda.
+F340.0.1	Purchase price.	Preço de compra.
+F340.0.2	Ration cost.	Custo da ração.
+F340.0.3	Daily gain and mortality.	Ganho diário e mortalidade.
+F340.1h	How to do it	Como fazer
+F340.1.0	Calculate your normal margin.	Calcule sua margem normal.
+F340.1.1	Change one variable at a time and see how much the margin drops.	Mude uma variável por vez e veja quanto a margem baixa.
+F340.1.2	The variable that moves the result most is the one you must watch most.	A variável que mais mexe o resultado é a que você mais deve vigiar.
+F340.2h	In your feedlot	No seu confinamento
+F340.2.0	Almost always the sale and purchase prices weigh more than feed.	Quase sempre o preço de venda e de compra pesam mais que a comida.
+F340.2.1	That's why negotiating the purchase well is as important as feeding well.	Por isso negociar bem a compra é tão importante quanto engordar bem.
+F340.2.2	Rumi can project your lot with different prices.	O Rumi pode projetar seu lote com preços diferentes.
+F341.t	Feedlot cash flow	Fluxo de caixa do confinamento
+F341.r	Cash flow shows when money goes out and when it comes in. In feeding you pay a lot at the start (purchase) and every week (feed), but you get paid at the end.	O fluxo de caixa mostra quando o dinheiro sai e quando entra. No confinamento se paga muito no início (compra) e toda semana (comida), mas se recebe no final.
+F341.0h	Why it matters	Por que importa
+F341.0.0	You can have a profitable lot and run out of money to buy feed.	Você pode ter um lote rentável e ficar sem dinheiro para comprar comida.
+F341.0.1	Selling in a hurry for lack of cash almost always turns out expensive.	Vender às pressas por falta de caixa quase sempre sai caro.
+F341.1h	How to manage it	Como manejar
+F341.1.0	Calculate the feed cost per week and for the whole feeding period before buying.	Calcule o custo de comida por semana e por todo o confinamento antes de comprar.
+F341.1.1	Stagger lots so sales arrive in different months.	Escalone os lotes para que as vendas cheguem em meses diferentes.
+F341.1.2	Keep an emergency reserve.	Tenha uma reserva para emergências.
+F341.2h	In your feedlot	No seu confinamento
+F341.2.0	The app shows you each lot's accumulated cost and the estimate until the sale.	O app mostra o custo acumulado de cada lote e a estimativa até a venda.
+F342.t	Group buying and cooperatives	Compras em grupo e cooperativas
+F342.r	Joining other ranchers to buy feed, medicines and cattle, or to sell together, lowers costs and gives more bargaining power.	Juntar-se a outros pecuaristas para comprar alimento, medicamentos e gado, ou para vender juntos, baixa custos e dá mais força para negociar.
+F342.0h	Benefits	Benefícios
+F342.0.0	Better volume prices on concentrate, salt and medicines.	Melhores preços por volume em concentrado, sal e medicamentos.
+F342.0.1	Full trucks to haul cattle.	Caminhões completos para transportar gado.
+F342.0.2	Selling large, even lots at a better price.	Venda de lotes grandes e uniformes a melhor preço.
+F342.1h	Precautions	Cuidados
+F342.1.0	Clear, written agreements.	Acordos claros e por escrito.
+F342.1.1	Transparent records of who contributed what.	Registros transparentes de quem contribuiu com o quê.
+F342.1.2	Common health rules so diseases don't get mixed.	Regras sanitárias comuns para não misturar doenças.
+F343.t	Hidden costs	Custos que não se veem
+F343.r	Many ranchers only count the purchase and the concentrate, and forget costs that eat the margin: shrink, deaths, interest, depreciation, your own labor.	Muitos pecuaristas só contam a compra e o concentrado e esquecem custos que comem a margem: quebras, mortes, juros, depreciação, seu próprio trabalho.
+F343.0h	The most forgotten	Os mais esquecidos
+F343.0.0	Shrink when buying and selling.	Quebra na compra e na venda.
+F343.0.1	Dead and lagging animals.	Animais mortos e atrasados.
+F343.0.2	Interest on money, or what you stopped earning with it.	Juros do dinheiro ou o que você deixou de ganhar com ele.
+F343.0.3	Wear of facilities and equipment.	Desgaste de instalações e equipamento.
+F343.0.4	Your time and your family's.	Seu tempo e o da sua família.
+F343.1h	In your feedlot	No seu confinamento
+F343.1.0	Record overhead expenses in the app so they go into the cost.	Registre gastos gerais no app para que entrem no custo.
+F343.1.1	The app discounts deaths and calculates the real cost per kilo.	O app desconta as mortes e calcula o custo real por quilo.
+F344.t	Deciding with data	Decidir com dados
+F344.r	The difference between a feedlot that earns and one that loses is often not the feed or the breed, but deciding on time with real numbers.	A diferença entre um confinamento que ganha e um que perde muitas vezes não é a comida nem a raça, mas decidir a tempo com números reais.
+F344.0h	Questions your data answers	Perguntas que seus dados respondem
+F344.0.0	How much does each lot gain per day compared with the target?	Quanto ganha cada lote por dia comparado com a meta?
+F344.0.1	How much does a kilo gained cost me?	Quanto me custa o quilo ganho?
+F344.0.2	Which animals are falling behind?	Quais animais estão ficando para trás?
+F344.0.3	When is it best to sell?	Quando convém vender?
+F344.1h	Habits	Hábitos
+F344.1.0	Weigh every 3 to 4 weeks.	Pesar a cada 3 a 4 semanas.
+F344.1.1	Record the actual feed, not the planned amount.	Anotar a comida real, não a planejada.
+F344.1.2	Review the numbers every week with Rumi.	Revisar os números toda semana com o Rumi.
+F344.2h	In your feedlot	No seu confinamento
+F344.2.0	After 3 or 4 lots you'll have your own history: use it to buy and sell better.	Depois de 3 ou 4 lotes você terá sua própria história: use-a para comprar e vender melhor.
+F345.t	Movement permit and traceability	Guia de trânsito e rastreabilidade
+F345.r	Moving cattle requires documents stating where they come from and where they're going. It protects against theft and disease and is required by authorities and buyers.	Mover gado exige documentos que dizem de onde vem e para onde vai. Protege contra roubos e doenças e é exigido pela autoridade e pelos compradores.
+F345.0h	What it is	O que é
+F345.0.0	An official document issued by the animal health authority (SENASA in Honduras) to move animals.	Um documento oficial emitido pela autoridade sanitária (SENASA em Honduras) para transportar animais.
+F345.0.1	It states origin, destination, number of animals, brand and owner.	Indica origem, destino, número de animais, marca e proprietário.
+F345.1h	When it's needed	Quando é necessário
+F345.1.0	When buying, selling or moving cattle between farms, to auctions or slaughterhouses.	Ao comprar, vender ou transportar gado entre fazendas, para leilões ou frigoríficos.
+F345.1.1	The exact requirements and procedure are set by SENASA; ask at its local office.	Os requisitos exatos e o trâmite são definidos pelo SENASA; consulte o escritório local.
+F345.2h	Traceability	Rastreabilidade
+F345.2.0	It means being able to follow an animal from its origin to the slaughterhouse.	É poder seguir um animal desde a origem até o frigorífico.
+F345.2.1	It's based on brands, official ear tags where applicable, permits and farm records.	Baseia-se em marca, brincos oficiais quando aplicável, guias e registros da fazenda.
+F345.2.2	Some markets and plants only buy traceable animals.	Alguns mercados e frigoríficos só compram animais rastreáveis.
+F345.3h	Good practices	Boas práticas
+F345.3.0	Keep a copy of every permit.	Guarde cópia de todas as guias.
+F345.3.1	Record in the app the supplier and origin of each lot.	Anote no app o fornecedor e a origem de cada lote.
+F345.3.2	Don't buy animals without a permit.	Não compre animais sem guia.
+F346.t	Brand and farm registration	Registro de marca e fazenda
+F346.r	Registering your brand and your farm identifies you as the owner and makes permits, health programs and sales easier.	Registrar sua marca e sua fazenda identifica você como proprietário e facilita guias, programas sanitários e vendas.
+F346.0h	Brand	Marca
+F346.0.0	It's registered with the appropriate authority (the municipality or whichever local law indicates).	Registra-se na autoridade correspondente (prefeitura ou a que a lei local indicar).
+F346.0.1	It proves ownership of the cattle.	Prova a propriedade do gado.
+F346.0.2	Each brand is unique.	Cada marca é única.
+F346.1h	Farm	Fazenda
+F346.1.0	Registration with SENASA lets you issue permits and join official programs.	O registro no SENASA permite emitir guias e participar de programas oficiais.
+F346.1.1	Some buyers and exporters require it.	Alguns compradores e exportadores exigem.
+F346.2h	Advice	Conselho
+F346.2.0	Check the current requirements at your municipality and the nearest SENASA office.	Consulte na sua prefeitura e no escritório do SENASA mais próximo os requisitos atuais.
+F347.t	Withdrawals and residues	Carências e resíduos
+F347.r	A treated animal can't go to slaughter until the withdrawal time is over. Selling earlier leaves residues in the meat and is illegal.	Um animal tratado não pode ir ao frigorífico até terminar o período de carência. Vender antes deixa resíduos na carne e é ilegal.
+F347.0h	What withdrawal is	O que é a carência
+F347.0.0	Days from the last dose of a medicine until the animal can be slaughtered.	Dias desde a última aplicação de um medicamento até o animal poder ser abatido.
+F347.0.1	It's on the label of every registered product.	Está no rótulo de cada produto registrado.
+F347.0.2	It differs for each product and sometimes for each route of administration.	É diferente para cada produto e às vezes para cada via de aplicação.
+F347.1h	Rules	Regras
+F347.1.0	With several products, the longest withdrawal rules.	Com vários produtos, vale a carência mais longa.
+F347.1.1	If you use a product off-label on the vet's advice, the withdrawal may be longer: ask them.	Se você usa um produto fora da bula por indicação do veterinário, a carência pode ser maior: pergunte.
+F347.1.2	Always record the date and the withdrawal.	Anote sempre a data e a carência.
+F347.2h	Consequences of not respecting it	Consequências de não respeitar
+F347.2.0	Risk to the health of whoever eats the meat.	Risco para a saúde de quem come a carne.
+F347.2.1	Condemnations, fines and losing the buyer.	Condenações, multas e perda do comprador.
+F347.2.2	Markets closed to the whole country.	Fechamento de mercados para todo o país.
+F347.3h	In the app	No app
+F347.3.0	When recording health you enter the withdrawal days.	Ao anotar sanidade você coloca os dias de carência.
+F347.3.1	The app warns in Today and when selling if the lot is still in withdrawal.	O app avisa em Hoje e na venda se o lote ainda está em carência.
+F348.t	Good livestock practices	Boas práticas pecuárias
+F348.r	Simple rules to produce safe meat and care for animals, people and the environment. More and more buyers require them.	São regras simples para produzir carne sadia e cuidar dos animais, das pessoas e do ambiente. Cada vez mais compradores as exigem.
+F348.0h	Health	Sanidade
+F348.0.0	Health plan with a vet.	Plano sanitário com veterinário.
+F348.0.1	Registered medicines, used per label with withdrawals respected.	Medicamentos registrados, usados conforme a bula e com carências respeitadas.
+F348.0.2	Treatment records.	Registros de tratamentos.
+F348.1h	Feeding	Alimentação
+F348.1.0	Ingredients of known origin, free of contaminants.	Ingredientes de origem conhecida, sem contaminantes.
+F348.1.1	Clean, dry, pest-free storage.	Armazém limpo, seco e sem pragas.
+F348.1.2	No banned products.	Nada de produtos proibidos.
+F348.2h	Water	Água
+F348.2.0	Clean and sufficient water.	Água limpa e suficiente.
+F348.2.1	Protection of water sources.	Proteção das fontes de água.
+F348.3h	Welfare	Bem-estar
+F348.3.0	Calm handling, shade, space, proper transport.	Manejo tranquilo, sombra, espaço, transporte adequado.
+F348.4h	People and environment	Pessoas e ambiente
+F348.4.0	Trained and protected workers.	Trabalhadores treinados e protegidos.
+F348.4.1	Proper handling of manure, carcasses and chemical containers.	Manejo correto do esterco, cadáveres e embalagens de químicos.
+F348.5h	Records	Registros
+F348.5.0	Identification, movements, feed, health and sales.	Identificação, movimentações, alimentos, sanidade e vendas.
+F349.t	Welfare in law and in the market	Bem-estar na lei e no mercado
+F349.r	Animal welfare is no longer just goodwill: it appears in laws, in transport rules and in buyer requirements.	O bem-estar animal já não é só boa vontade: aparece em leis, em regras de transporte e em requisitos de compradores.
+F349.0h	What is increasingly required	O que se exige cada vez mais
+F349.0.0	No mistreatment: no hitting, no abusive prods.	Sem maus-tratos: sem pancadas, sem choques abusivos.
+F349.0.1	Water, feed and shade.	Água, alimento e sombra.
+F349.0.2	Transport with proper density and times.	Transporte com densidade e tempos adequados.
+F349.0.3	Humane slaughter at authorized slaughterhouses.	Abate humanitário em matadouros autorizados.
+F349.1h	Why it matters	Por que importa
+F349.1.0	Large buyers and supermarket chains audit it.	Grandes compradores e redes de supermercados auditam.
+F349.1.1	Export markets require it.	Mercados de exportação exigem.
+F349.1.2	It improves meat quality.	Melhora a qualidade da carne.
+F350.t	Transport: requirements	Transporte: requisitos
+F350.r	Moving cattle must be done with documents in order and in conditions that protect the animals.	O transporte de gado deve ser feito com documentos em ordem e em condições que protejam os animais.
+F350.0h	Documents	Documentos
+F350.0.0	Valid movement permit.	Guia de trânsito vigente.
+F350.0.1	Vehicle and driver documents as required by traffic law.	Documentos do veículo e do motorista conforme a lei de trânsito.
+F350.1h	Conditions	Condições
+F350.1.0	Clean, disinfected vehicle.	Veículo limpo e desinfetado.
+F350.1.1	Non-slip floor, no sharp parts.	Piso antiderrapante, sem partes cortantes.
+F350.1.2	Proper density: neither crowded nor loose.	Densidade adequada: nem amontoados nem soltos.
+F350.1.3	Sick, weak or too-heavy animals should not be transported.	Animais doentes, fracos ou pesados demais para viajar não devem ser transportados.
+F350.2h	Good practices	Boas práticas
+F350.2.0	Travel in cool hours.	Viagens nas horas frescas.
+F350.2.1	Minimal stops and never leave the truck in the sun.	Paradas mínimas e sem deixar o caminhão no sol.
+F351.t	Official health programs	Programas oficiais de sanidade
+F351.r	The animal health authority runs programs against diseases that affect the whole country. Taking part protects your farm and your neighbors.	A autoridade sanitária mantém programas contra doenças que afetam todo o país. Participar protege sua fazenda e seus vizinhos.
+F351.0h	Common programs	Programas comuns
+F351.0.0	New World screwworm: surveillance and case reporting.	Bicheira (Cochliomyia): vigilância e notificação de casos.
+F351.0.1	Bovine paralytic rabies: vaccination and vampire bat control.	Raiva paralítica bovina: vacinação e controle do morcego-vampiro.
+F351.0.2	Brucellosis and tuberculosis: testing and herd certification.	Brucelose e tuberculose: testes e certificação de rebanhos.
+F351.0.3	Surveillance of exotic diseases (such as foot-and-mouth disease, which is not present in Central America).	Vigilância de doenças exóticas (como a febre aftosa, que não está presente na América Central).
+F351.1h	What to do	O que fazer
+F351.1.0	Report suspected cases to SENASA.	Notifique casos suspeitos ao SENASA.
+F351.1.1	Take part in vaccination campaigns.	Participe das campanhas de vacinação.
+F351.1.2	Cooperate with tracebacks when the slaughterhouse finds lesions.	Colabore com os rastreamentos quando o frigorífico encontra lesões.

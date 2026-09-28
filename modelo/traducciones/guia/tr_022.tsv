@@ -1,0 +1,244 @@
+F381.t	Hay and cut grass in the ration	Feno e capim de corte na ração
+F381.r	Chopped forage provides the fiber the rumen needs. Its quality changes a lot with cutting age and how it's stored.	A forragem picada dá a fibra que o rúmen precisa. Sua qualidade muda muito conforme a idade de corte e como é guardada.
+F381.0h	Fresh cut grass	Capim de corte fresco
+F381.0.0	King grass, Cuba OM-22, Maralfalfa, Taiwan: high yield per acre.	Capim King grass, Cuba OM-22, Maralfalfa, Taiwan: muita produção por hectare.
+F381.0.1	Cut it at 50 to 70 days in the rainy season: older it's woody and poor.	Corte com 50 a 70 dias na época de chuva: mais velho fica lenhoso e pobre.
+F381.0.2	Chop it to 2 to 5 cm and feed it the same day: chopped overnight it heats and ferments.	Pique em 2 a 5 cm e sirva no mesmo dia: picado de um dia para o outro esquenta e fermenta.
+F381.1h	Hay	Feno
+F381.1.0	Grass that's cut, sun-dried and stored in bales.	Capim cortado, seco ao sol e guardado em fardos.
+F381.1.1	Good hay: green, leafy, pleasant smell, no dust or mold.	Bom feno: verde, com folhas, cheiro agradável, sem pó nem mofo.
+F381.1.2	Yellow, stemmy or musty hay has little feed value.	Feno amarelo, cheio de talos ou com cheiro de umidade alimenta pouco.
+F381.2h	Stover and straw	Restolhos e palhas
+F381.2.0	Corn or sorghum stover, rice straw: lots of fiber and little protein.	Restolho de milho ou sorgo, palha de arroz: muita fibra e pouca proteína.
+F381.2.1	They work as effective fiber in finishing, not as the main feed.	Servem como fibra efetiva na terminação, não como alimento principal.
+F381.2.2	They improve with well-formulated molasses and urea.	Melhoram com melaço e ureia bem formulados.
+F381.3h	How much	Quanto
+F381.3.0	See Fiber and forage in the ration: 10 to 15 % in finishing and more at the start.	Veja Fibra e forragem na ração: 10 a 15 % na terminação e mais no início.
+F381.3.1	Weigh the forage you feed: it's easy to give too much or too little by eye.	Pese a forragem que serve: é fácil dar demais ou de menos no olho.
+F382.t	Sugarcane in the ration	Cana-de-açúcar na ração
+F382.r	Sugarcane produces a lot of energy per acre and withstands the dry season. It has little protein, so it has to be supplemented.	A cana produz muita energia por hectare e aguenta a seca. Tem pouca proteína, então é preciso completá-la.
+F382.0h	Value	Valor
+F382.0.0	Rich in sugars, poor in protein (2 to 4 %) and minerals.	Rica em açúcares, pobre em proteína (2 a 4 %) e minerais.
+F382.0.1	Its fiber is poorly digestible.	Sua fibra é pouco digestível.
+F382.1h	How to use it	Como usar
+F382.1.0	Cut it mature, with more sugar, in the dry season.	Corte madura, com mais açúcar, na época seca.
+F382.1.1	Chop it fine and feed it the same day: old chopped cane turns sour.	Pique fina e forneça no mesmo dia: picada velha azeda.
+F382.1.2	Supplement it with a protein source (properly used urea, meals or legumes) and minerals.	Complete com fonte de proteína (ureia bem usada, farelos ou leguminosas) e minerais.
+F382.2h	Limits	Limites
+F382.2.0	It works well as part of the forage in growing.	Como parte da forragem no crescimento funciona bem.
+F382.2.1	Alone it doesn't allow high gains.	Sozinha não permite ganhos altos.
+F382.2.2	With urea, follow the adaptation and mixing rules.	Com ureia, siga as regras de adaptação e mistura.
+F383.t	Additives in the ration	Aditivos na ração
+F383.r	Additives aren't feed, but they improve digestion or prevent problems. Use them only with advice and registered products.	Os aditivos não são alimento, mas melhoram a digestão ou previnem problemas. Use só com assessoria e produtos registrados.
+F383.0h	Ionophores	Ionóforos
+F383.0.0	Such as monensin or lasalocid: they improve conversion and help against coccidia and bloat.	Como a monensina ou a lasalocida: melhoram a conversão e ajudam contra coccídios e timpanismo.
+F383.0.1	Exact dose: in excess they're toxic, and deadly to horses and dogs that eat the ration.	Dose exata: em excesso são tóxicos, e mortais para cavalos e cães que comam a ração.
+F383.0.2	Perfect mixing in the ration and separate storage.	Mistura perfeita na ração e armazém separado.
+F383.1h	Buffers	Tamponantes
+F383.1.0	Sodium bicarbonate or magnesium oxide: help control rumen acid in high-grain rations.	Bicarbonato de sódio ou óxido de magnésio: ajudam a controlar o ácido do rúmen em rações com muito grão.
+F383.2h	Yeasts and probiotics	Leveduras e probióticos
+F383.2.0	They can improve intake and stabilize the rumen at the start.	Podem melhorar o consumo e estabilizar o rúmen no início.
+F383.2.1	Results vary: measure them in your lots.	Resultados variáveis: meça nos seus lotes.
+F383.3h	Mycotoxin binders	Sequestrantes de micotoxinas
+F383.3.0	Clays and other products that trap fungal toxins.	Argilas e outros produtos que prendem toxinas de fungos.
+F383.3.1	They don't replace good storage.	Não substituem um bom armazenamento.
+F383.4h	Rules	Regras
+F383.4.0	Registered products and the manufacturer's dose.	Produtos registrados e dose do fabricante.
+F383.4.1	Record which additive each ration uses.	Anote qual aditivo cada ração usa.
+F383.4.2	Never use banned substances for fattening.	Nunca use substâncias proibidas para engordar.
+F384.t	Mineral salt and blocks	Sal mineral e blocos
+F384.r	On pasture, free-choice mineral salt is the cheapest way to correct mineral shortages. Blocks and protein salts add protein.	No pasto, o sal mineral à vontade é a forma mais barata de corrigir a falta de minerais. Os blocos e sais proteinados acrescentam proteína.
+F384.0h	Mineral salt	Sal mineral
+F384.0.0	It should contain phosphorus (6 to 10 % in tropical areas), calcium and trace minerals.	Deve ter fósforo (6 a 10 % em regiões tropicais), cálcio e microminerais.
+F384.0.1	Expected intake: 60 to 100 grams per animal per day.	Consumo esperado: 60 a 100 gramas por animal por dia.
+F384.0.2	Plain white salt alone doesn't cover what's missing.	O sal branco sozinho não cobre o que falta.
+F384.1h	Mineral feeders	Saleiros
+F384.1.0	Covered so it doesn't get wet or harden.	Cobertos para que não molhe nem endureça.
+F384.1.1	Near water and the areas where they rest.	Perto da água e das áreas onde descansam.
+F384.1.2	Space for several animals at once.	Espaço para vários animais ao mesmo tempo.
+F384.1.3	Check and refill every few days.	Revise e reponha a cada poucos dias.
+F384.2h	Multinutrient blocks	Blocos multinutricionais
+F384.2.0	A mix of molasses, urea, minerals and a binder.	Mistura de melaço, ureia, minerais e um aglutinante.
+F384.2.1	They provide protein and energy in the dry season to animals on pasture.	Fornecem proteína e energia na época seca a animais no pasto.
+F384.2.2	Intake is limited by the hardness of the block.	O consumo é limitado pela dureza do bloco.
+F384.3h	Protein salts	Sais proteinados
+F384.3.0	Salt with a protein source (urea or meals) for dry pasture.	Sal com fonte de proteína (ureia ou farelos) para pasto seco.
+F384.3.1	They follow the urea rules: adapt and don't give to thin or fasted animals.	Seguem as regras da ureia: adaptar e não dar a animais magros ou em jejum.
+F385.t	Bunk reading	Leitura de cochos
+F385.r	Checking how much is left in the bunk before feeding tells you whether you're giving too much or too little. It's the feeder's most useful tool.	Revisar quanto sobra no cocho antes de servir diz se você está dando demais ou de menos. É a ferramenta mais útil do confinador.
+F385.0h	How to do it	Como fazer
+F385.0.0	Check at the same time every day, before the first feeding.	Revise no mesmo horário todo dia, antes da primeira entrega.
+F385.0.1	Look at the whole bunk, end to end.	Olhe o cocho inteiro, de ponta a ponta.
+F385.1h	Simple scale	Escala simples
+F385.1.0	0: bunk clean and licked, animals waiting: raise the amount 5 %.	0: cocho limpo e lambido, animais esperando: suba a quantidade 5 %.
+F385.1.1	1: scattered crumbs left: it's fine, keep it.	1: sobram migalhas espalhadas: está bem, mantenha.
+F385.1.2	2: a thin layer of feed left: lower 5 %.	2: sobra uma camada fina de alimento: baixe 5 %.
+F385.1.3	3: a lot of feed left: lower 10 % and check for a problem.	3: sobra muito alimento: baixe 10 % e verifique se há um problema.
+F385.1.4	In the app you can record the reading at each feeding.	No app você pode anotar a leitura em cada entrega.
+F385.2h	Rules	Regras
+F385.2.0	Adjust in small steps.	Ajuste em passos pequenos.
+F385.2.1	Don't raise more than 0.5 kg per animal per day.	Não suba mais de 0,5 kg por animal por dia.
+F385.2.2	If feed is left several days in a row, check health, water, heat and the ration.	Se sobra comida vários dias seguidos, revise saúde, água, calor e a ração.
+F385.2.3	If the bunk is empty for hours, the lot eats anxiously and acidosis risk rises.	Se o cocho fica vazio por horas, o lote come com ansiedade e sobe o risco de acidose.
+F385.3h	Common mistakes	Erros comuns
+F385.3.0	Filling the bunk to the top 'so they don't run short'.	Encher o cocho até em cima 'para não faltar'.
+F385.3.1	Leaving old feed and throwing new feed on top.	Deixar a comida velha e jogar a nova por cima.
+F385.3.2	Changing the amount every day at random.	Mudar a quantidade todo dia sem critério.
+F386.t	Feeding times	Horários de alimentação
+F386.r	Feeding at the same time every day keeps the rumen and intake stable. Animals get used to the schedule.	Servir no mesmo horário todos os dias mantém estáveis o rúmen e o consumo. Os animais se acostumam aos horários.
+F386.0h	How many times	Quantas vezes
+F386.0.0	Two to three feedings a day is most common.	Duas a três entregas por dia é o mais comum.
+F386.0.1	More feedings reduce acidosis and feed heating in the bunk.	Mais entregas reduzem a acidose e o alimento que esquenta no cocho.
+F386.1h	Example schedule	Horário de exemplo
+F386.1.0	First feeding early, 6:00 to 7:00.	Primeira entrega cedo, 6:00 a 7:00.
+F386.1.1	Second at mid-morning or noon.	Segunda no meio da manhã ou ao meio-dia.
+F386.1.2	Third late in the afternoon, 15:00 to 16:00.	Terceira no fim da tarde, 15:00 a 16:00.
+F386.1.3	In strong heat, load more feed early and in the afternoon.	Com calor forte, carregue mais alimento cedo e à tarde.
+F386.2h	Rules	Regras
+F386.2.0	Same pen order every day.	Mesma ordem de currais todo dia.
+F386.2.1	Don't be more than 30 minutes late.	Não atrase mais de 30 minutos.
+F386.2.2	Spread evenly along the bunk.	Distribua por igual ao longo do cocho.
+F386.2.3	In the app you set your times in More, Settings, and the Today screen tells you how much is left to feed.	No app você define seus horários em Mais, Configurações, e a tela Hoje diz quanto falta dar.
+F387.t	Mixing the ration	Mistura da ração
+F387.r	A well-formulated but poorly mixed ration is a different ration. Every bite should contain the same.	Uma ração bem formulada mas mal misturada é outra ração. Cada bocado deve ter o mesmo.
+F387.0h	Loading order	Ordem de carga
+F387.0.0	First the ingredients in the largest amounts (grains, forage).	Primeiro os ingredientes em maior quantidade (grãos, forragem).
+F387.0.1	Then the medium ones (meals, by-products).	Depois os médios (farelos, subprodutos).
+F387.0.2	The small ones (mineral premix, urea, additives) mixed first with part of the feed (premix).	Os pequenos (núcleo mineral, ureia, aditivos) misturados antes com uma parte do alimento (pré-mistura).
+F387.0.3	Molasses or liquids last, spread out.	O melaço ou líquidos por último, distribuídos.
+F387.1h	Time	Tempo
+F387.1.0	Mixer: follow the manufacturer's time, usually 3 to 6 minutes after the last load.	Misturador: siga o tempo do fabricante, geralmente 3 a 6 minutos depois da última carga.
+F387.1.1	Overmixing separates particles and grinds the forage.	Misturar demais separa partículas e mói a forragem.
+F387.2h	Mixing by hand	Mistura manual
+F387.2.0	On a clean floor, turn with a shovel at least 3 to 4 times.	Em piso limpo, vire com pá pelo menos 3 a 4 vezes.
+F387.2.1	Make small batches so it comes out even.	Faça bateladas pequenas para ficar uniforme.
+F387.2.2	Weigh each ingredient: buckets and shovels are deceiving.	Pese cada ingrediente: baldes e pás enganam.
+F387.3h	How to check	Como revisar
+F387.3.0	Make sure there are no lumps of minerals or urea.	Veja que não haja bolos de minerais ou ureia.
+F387.3.1	Color and texture should be the same along the whole bunk.	A cor e a textura devem ser iguais em todo o cocho.
+F387.3.2	If animals dig and sort, the mix isn't even or the forage is too long.	Se os animais fuçam e selecionam, a mistura não está uniforme ou a forragem está longa demais.
+F388.t	Feed storage	Armazenamento do alimento
+F388.r	The storeroom protects your investment. Wet, moldy or pest-eaten feed is lost money and disease.	O armazém protege seu investimento. O alimento molhado, com mofo ou comido por pragas é dinheiro perdido e doença.
+F388.0h	The storeroom	O armazém
+F388.0.0	Leak-free roof, concrete floor and walls that keep rain out.	Telhado sem goteiras, piso de cimento e paredes que não deixem passar chuva.
+F388.0.1	Good ventilation.	Boa ventilação.
+F388.0.2	Sacks on pallets, at least 30 cm from the wall.	Sacos sobre paletes, afastados da parede pelo menos 30 cm.
+F388.0.3	Minerals, medicines and chemicals stored apart from feed.	Minerais, medicamentos e químicos em lugares separados do alimento.
+F388.1h	Management	Manejo
+F388.1.0	First in, first out.	Primeiro que entra, primeiro que sai.
+F388.1.1	Check grain moisture, smell and temperature every week.	Revise umidade, cheiro e temperatura dos grãos toda semana.
+F388.1.2	Don't buy more than you can store well.	Não compre mais do que consegue guardar bem.
+F388.1.3	Close open sacks tightly.	Feche bem os sacos abertos.
+F388.2h	Warning signs	Sinais de problema
+F388.2.0	Musty or moldy smell.	Cheiro de umidade ou de mofo.
+F388.2.1	Hot, caked grain or grain with webbing.	Grão quente, empedrado ou com teias.
+F388.2.2	Weevils, moths or rat droppings.	Carunchos, traças ou fezes de ratos.
+F388.3h	What to do with spoiled feed	O que fazer com alimento estragado
+F388.3.0	Don't feed it to cattle.	Não dê ao gado.
+F388.3.1	Separate the spoiled from the good.	Separe o estragado do bom.
+F388.3.2	If in doubt, ask for a mycotoxin test.	Se tiver dúvida, peça uma análise de micotoxinas.
+F389.t	Pest control in the storeroom	Controle de pragas no armazém
+F389.r	Rats, mice, birds and insects eat feed, soil it and bring diseases like leptospirosis and salmonella.	Ratos, camundongos, aves e insetos comem o alimento, sujam e trazem doenças como leptospirose e salmonela.
+F389.0h	Rats and mice	Ratos e camundongos
+F389.0.0	Seal holes, put screens on windows and under doors.	Vede buracos, coloque telas nas janelas e sob as portas.
+F389.0.1	Keep the area around the storeroom clean, free of brush and garbage.	Mantenha limpo ao redor do armazém, sem mato nem lixo.
+F389.0.2	Use traps and baits in closed stations, out of reach of cattle, dogs and children.	Use armadilhas e iscas em estações fechadas, longe do alcance do gado, cães e crianças.
+F389.1h	Birds	Aves
+F389.1.0	Screens on eaves and openings.	Telas nos beirais e aberturas.
+F389.1.1	Don't leave feed spilled outside the storeroom.	Não deixe alimento espalhado fora do armazém.
+F389.2h	Insects	Insetos
+F389.2.0	Weevils and moths in grain: inventory rotation and cleaning.	Carunchos e traças nos grãos: rotação do estoque e limpeza.
+F389.2.1	Treatments only with products authorized for grain and respecting intervals.	Tratamentos só com produtos autorizados para grãos e respeitando os prazos.
+F389.3h	Record	Registro
+F389.3.0	Record dates of bait placement and checks.	Anote datas de colocação e revisão das iscas.
+F389.3.1	Check every week.	Revise toda semana.
+F390.t	Feed conversion	Conversão alimentar
+F390.r	Conversion tells you how many kilos of feed the animal needs to gain one kilo. It's the number that most defines your cost.	A conversão diz quantos quilos de alimento o animal precisa para ganhar um quilo. É o número que mais define seu custo.
+F390.0h	How it's calculated	Como se calcula
+F390.0.0	Conversion = kilos of feed eaten ÷ kilos gained in the same period.	Conversão = quilos de alimento consumido ÷ quilos ganhos no mesmo período.
+F390.0.1	It's best calculated on dry matter.	Calcula-se melhor em matéria seca.
+F390.0.2	Example: they ate 700 kg and gained 100 kg: a 7 to 1 conversion.	Exemplo: comeram 700 kg e ganharam 100 kg: conversão de 7 para 1.
+F390.1h	Reference values	Valores de referência
+F390.1.0	Pen finishing on a good ration: 6 to 8 kg of as-fed feed per kilo gained.	Terminação no curral com boa ração: 6 a 8 kg de alimento como oferecido por quilo ganho.
+F390.1.1	Starting and light animals convert better.	O início e os animais leves convertem melhor.
+F390.1.2	Heavy, very fat animals convert worse.	Animais pesados e muito gordos convertem pior.
+F390.2h	How to improve it	Como melhorá-la
+F390.2.0	Balanced ration, without excess protein or lack of energy.	Ração balanceada, sem excesso de proteína nem falta de energia.
+F390.2.1	Less waste at the bunks.	Menos desperdício nos cochos.
+F390.2.2	Healthy, dewormed, unstressed animals.	Animais sadios, vermifugados e sem estresse.
+F390.2.3	Sell on time: the last kilos cost more.	Vender a tempo: os últimos quilos custam mais.
+F390.2.4	Enough water and shade.	Água e sombra suficientes.
+F390.2.5	Process grain properly.	Processar bem o grão.
+F390.3h	In the app	No app
+F390.3.0	The app calculates each lot's conversion from the feed you record and the weighings.	O app calcula a conversão de cada lote com o alimento que você anota e as pesagens.
+F390.3.1	If you don't record all the feed, conversion comes out better than it really is.	Se você não anota todo o alimento, a conversão sai melhor do que a real.
+F391.t	Low intake	Consumo baixo
+F391.r	When a lot eats less than normal, something is wrong. You have to find the cause fast.	Quando um lote come menos que o normal, algo está errado. É preciso encontrar a causa rápido.
+F391.0h	Causes to check first	Causas a revisar primeiro
+F391.0.0	Water: empty or dirty waterer, broken float.	Água: bebedouro vazio, sujo, boia estragada.
+F391.0.1	Strong heat without enough shade.	Calor forte sem sombra suficiente.
+F391.0.2	Feed with mold, a bad smell or mixed differently.	Alimento com mofo, mau cheiro ou misturado diferente.
+F391.0.3	Abrupt change of ration or ingredient.	Mudança brusca de ração ou de ingrediente.
+F391.0.4	Subacute acidosis from too much grain.	Acidose subaguda por excesso de grão.
+F391.0.5	Disease in the lot (pneumonia, parasites).	Doença no lote (pneumonia, parasitas).
+F391.1h	How to investigate	Como investigar
+F391.1.0	Compare with previous days in the app.	Compare com os dias anteriores no app.
+F391.1.1	Check whether it's one animal or the whole lot.	Veja se é um animal ou o lote inteiro.
+F391.1.2	Smell and look at the feed, check the storeroom.	Cheire e olhe o alimento, revise o armazém.
+F391.1.3	Look at the manure and count how many ruminate lying down.	Olhe as fezes e conte quantos ruminam deitados.
+F391.1.4	Take the temperature of those that don't come up.	Meça a temperatura dos que não se aproximam.
+F391.2h	What to do	O que fazer
+F391.2.0	Fix water and feed first.	Corrija a água e o alimento primeiro.
+F391.2.1	Drop the ration one step if you suspect acidosis and raise it little by little.	Baixe a ração um passo se suspeitar de acidose e suba aos poucos.
+F391.2.2	Call the vet if there's fever or several droopy animals.	Chame o veterinário se houver febre ou vários abatidos.
+F391.3h	Alert in the app	Aviso no app
+F391.3.0	The app warns you in Today when a lot ate less yesterday than its weekly average.	O app avisa em Hoje quando um lote comeu ontem menos que sua média da semana.
+F392.t	Supplementation on pasture	Suplementação no pasto
+F392.r	On pasture, grass provides the base and the supplement covers what's missing. Done well, it allows weight gain even in the dry season.	No pasto, o capim dá a base e o suplemento cobre o que falta. Bem feito permite ganhar peso até na seca.
+F392.0h	What's missing by season	O que falta conforme a época
+F392.0.0	Rainy: grass has water and protein; energy and minerals are lacking.	Chuvas: o pasto tem água e proteína, falta energia e minerais.
+F392.0.1	Dry: dry grass with little protein; protein, energy and minerals are lacking.	Seca: pasto seco com pouca proteína; falta proteína, energia e minerais.
+F392.1h	Options	Opções
+F392.1.0	Mineral salt always.	Sal mineral sempre.
+F392.1.1	Protein salts or blocks in the dry season.	Sais proteinados ou blocos na seca.
+F392.1.2	Concentrate at 0.5 to 1 % of live weight to gain more.	Concentrado de 0,5 a 1 % do peso vivo para ganhar mais.
+F392.1.3	Semi-confinement: pasture by day and ration in the pen in the afternoon.	Semiconfinamento: pasto de dia e ração no curral à tarde.
+F392.2h	Expected gains	Ganhos esperados
+F392.2.0	Grass only in the rainy season: 0.4 to 0.7 kg per day.	Só pasto nas chuvas: 0,4 a 0,7 kg por dia.
+F392.2.1	Grass plus a well-done supplement: 0.7 to 1 kg per day.	Pasto mais suplemento bem feito: 0,7 a 1 kg por dia.
+F392.2.2	Semi-confinement with a good ration: 0.9 to 1.2 kg per day.	Semiconfinamento com boa ração: 0,9 a 1,2 kg por dia.
+F392.3h	Rules	Regras
+F392.3.0	Supplement at the same time every day.	Suplemente no mesmo horário todo dia.
+F392.3.1	Enough bunks for all to eat at once.	Cochos suficientes para que todos comam ao mesmo tempo.
+F392.3.2	Calculate whether the extra kilo gained pays for the supplement.	Calcule se o quilo extra ganho paga o suplemento.
+F393.t	Compensatory growth	Crescimento compensatório
+F393.r	An animal that went hungry and then eats well gains faster than one that was always well fed. You can take advantage of it when buying.	Um animal que passou fome e depois come bem ganha mais rápido que um que sempre esteve bem. Dá para aproveitar na compra.
+F393.0h	How it works	Como funciona
+F393.0.0	After a period of restriction, the animal eats more and converts better for a while.	Depois de um período de restrição, o animal come mais e converte melhor por um tempo.
+F393.0.1	The effect lasts 1 to 3 months.	O efeito dura de 1 a 3 meses.
+F393.1h	How to take advantage of it	Como aproveitar
+F393.1.0	Buy thin but healthy animals at a good price per kilo.	Comprar animais magros mas sadios, a bom preço por quilo.
+F393.1.1	Give them a good ration from adaptation onward.	Dar boa ração desde a adaptação.
+F393.1.2	Measure their real gain in the app at the first weighings.	Medir o ganho real no app nas primeiras pesagens.
+F393.2h	Precautions	Cuidados
+F393.2.0	An animal thin from disease or parasites doesn't compensate the same way.	Um animal magro por doença ou parasitas não compensa igual.
+F393.2.1	Very long or very severe restrictions leave animals small for good.	Restrições muito longas ou muito fortes deixam animais pequenos para sempre.
+F393.2.2	Check teeth, feet and health before buying thin animals.	Revise dentes, patas e saúde antes de comprar magros.
+F394.t	Degree of finish	Grau de acabamento
+F394.r	Finish is the animal's fat cover at sale. It sets carcass yield and price in many markets.	O acabamento é a cobertura de gordura do animal na venda. Define o rendimento de carcaça e o preço em muitos mercados.
+F394.0h	What it looks like	Como se vê
+F394.0.0	Ribs covered, not showing.	Costelas cobertas, que não aparecem.
+F394.0.1	Tailhead with fat on the sides.	Base da cauda com gordura dos lados.
+F394.0.2	Full brisket and shoulder.	Peito e paleta cheios.
+F394.0.3	Wide, even back.	Lombo largo e uniforme.
+F394.1h	Body condition	Condição corporal
+F394.1.0	Scale from 1 (very thin) to 9 (very fat) in beef cattle.	Escala de 1 (muito magro) a 9 (muito gordo) em gado de corte.
+F394.1.1	For carcass sales, 5 to 6 is sought depending on the buyer.	Para venda por carcaça busca-se 5 a 6, conforme o comprador.
+F394.1.2	Going past 7 means adding expensive fat that is often trimmed.	Passar de 7 é colocar gordura cara que muitas vezes é aparada.
+F394.2h	Why it matters	Por que importa
+F394.2.0	Better carcass yield.	Melhor rendimento de carcaça.
+F394.2.1	Better-looking meat.	Carne com melhor apresentação.
+F394.2.2	But each kilo of fat costs more feed than a kilo of muscle.	Mas cada quilo de gordura custa mais alimento que um quilo de músculo.
+F394.3h	Rule of thumb	Regra prática
+F394.3.0	Ask your buyer which finish pays best.	Pergunte ao seu comprador qual acabamento paga melhor.
+F394.3.1	Sell when it reaches that finish, not after.	Venda quando chegar a esse acabamento, não depois.

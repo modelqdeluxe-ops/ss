@@ -1,0 +1,118 @@
+G182.t	Average daily gain	Ganho médio diário
+G182.x	It's how much each animal gains per day on average between two weighings: the weight difference divided by the days. The app calculates it per lot and per animal.	É quanto cada animal sobe por dia em média entre duas pesagens: a diferença de peso dividida pelos dias. O app calcula por lote e por animal.
+G183.t	Cost per kilo of mix	Custo do quilo de mistura
+G183.x	It's what a kilo of the mixed ration costs you, adding the ingredients in their proportion. With it and conversion you get the feed cost per kilo gained.	É o que custa um quilo da ração já misturada, somando os ingredientes na sua proporção. Com ele e a conversão você tira o custo de alimento por quilo ganho.
+G184.t	Feed cost per kilo gained	Custo de alimento por quilo ganho
+G184.x	It's the cost per kilo of mix multiplied by the conversion. For example, if a kilo of mix costs 8 and conversion is 7 to 1, each kilo gained costs 56 in feed.	É o custo do quilo de mistura multiplicado pela conversão. Por exemplo, se o quilo de mistura custa 8 e a conversão é 7 para 1, cada quilo ganho custa 56 em alimento.
+G185.t	Break-even price	Ponto de equilíbrio em preço
+G185.x	It's the sale price per kilo at which you recover exactly what you invested in the lot. Below it you lose, above it you win.	É o preço de venda por quilo com o qual você recupera exatamente o investido no lote. Abaixo você perde, acima ganha.
+G186.t	Farm registration	Registro da fazenda
+G186.x	Having the farm registered with the authorities makes it easier to get movement permits, join health programs and sell to buyers who require traceability. Check with SENASA and your municipality.	Ter a fazenda registrada nas autoridades facilita obter guias de trânsito, participar de programas sanitários e vender a compradores que exigem rastreabilidade. Consulte o SENASA e sua prefeitura.
+G187.t	Buying medicines	Compra de medicamentos
+G187.x	Buy at established farm-supply stores, check that the product is registered, not expired and in good packaging. Don't use expired products or those of doubtful origin.	Compre em casas agropecuárias estabelecidas, verifique que o produto tenha registro, validade vigente e embalagem em bom estado. Não use produtos vencidos nem de origem duvidosa.
+G188.t	Feedlot budget	Orçamento do confinamento
+G188.x	Add up the purchase of the animals, feed for every day on feed, health, labor, transport and a cushion for surprises. Purchase and feed are almost everything. In Rumi's menu, Money and sales, Maximum purchase price, you see whether the numbers work.	Some a compra dos animais, o alimento de todos os dias de confinamento, sanidade, mão de obra, transporte e uma reserva para imprevistos. A compra e o alimento são quase tudo. No menu do Rumi, Dinheiro e vendas, Preço máximo de compra, você vê se os números fecham.
+G189.t	Cost per kilo gained vs sale price	Custo do quilo ganho vs preço de venda
+G189.x	As long as each kilo they gain costs you less than what you're paid per kilo, it pays to continue. When the cost approaches the price, it's time to sell. The app shows it per lot.	Enquanto cada quilo que ganham custar menos do que pagam por quilo, convém continuar. Quando o custo se aproxima do preço, é hora de vender. O app mostra por lote.
+G190.t	Fixed and variable costs	Custos fixos e variáveis
+G190.x	Variable costs grow with each animal (purchase, feed, health). Fixed costs are paid the same with few or many (wages, power, maintenance). With more animals, the fixed cost per head goes down. In the app you record overhead in Expenses.	Os variáveis crescem com cada animal (compra, alimento, sanidade). Os fixos se pagam igual com poucos ou muitos (salários, luz, manutenção). Com mais animais, o custo fixo por cabeça baixa. No app você anota os gerais em Despesas.
+G191.t	Cash flow	Fluxo de caixa
+G191.x	In feeding you spend every day and get paid at the end. Plan how much you need for feed until the sale, and consider selling in parts or staggering lot entries.	No confinamento você gasta todos os dias e recebe no final. Planeje quanto precisa para alimento até a venda e considere vender por partes ou escalonar a entrada de lotes.
+G192.t	Staggering lots	Escalonar lotes
+G192.x	Bringing in lots at intervals spreads work, pen use and price risk, and gives you more regular sales.	Colocar lotes a intervalos reparte o trabalho, o uso dos currais e o risco de preço, e dá vendas mais seguidas.
+G193.t	Price risk	Risco de preço
+G193.x	The sale price can drop during feeding. Negotiate with buyers ahead of time, don't depend on just one and check each lot's break-even price.	O preço de venda pode cair durante o confinamento. Negocie com compradores antes, não dependa de um só e revise o preço mínimo para não perder de cada lote.
+G194.t	Buyers and contracts	Compradores e contratos
+G194.x	Having regular buyers or a price agreement before feeding ends reduces risk. Make clear how they weigh, what discounts apply and when they pay.	Ter compradores fixos ou um acordo de preço antes de terminar o confinamento reduz o risco. Deixe claro como pesam, que descontos aplicam e quando pagam.
+G195.t	Discounts when selling	Descontos na venda
+G195.x	Buyers usually discount a percentage of weight for gut fill, plus penalties for bruises or out-of-weight animals. Ask beforehand and enter it in More so the margins come out real.	Os compradores costumam descontar uma porcentagem do peso pelo enchimento, além de castigos por pancadas ou animais fora do peso. Pergunte antes e anote em Mais para que as margens saiam reais.
+G196.t	Meat quality	Qualidade da carne
+G196.x	Young animals, well fed to the end and handled without stress, give more tender meat with better fat. Stress before slaughter gives dark, tough meat.	Os animais jovens, bem alimentados até o final e manejados sem estresse dão carne mais macia e com melhor gordura. O estresse antes do abate dá carne escura e dura.
+G197.t	Slaughterhouses and packing plants	Matadouros e frigoríficos
+G197.x	In Honduras you can sell to municipal slaughterhouses, packing plants or middlemen. Large plants usually pay by yield and quality; ask about their conditions before selling.	Em Honduras você pode vender a matadouros municipais, frigoríficos ou intermediários. Os frigoríficos grandes costumam pagar por rendimento e qualidade; pergunte suas condições antes de vender.
+G198.t	Cattle and beef exports	Exportação de gado e carne
+G198.x	Part of Central America's cattle is exported live or as beef. Those buyers require traceability, up-to-date health and respected withdrawals. Keeping your records in the app helps you comply.	Parte do gado da América Central é exportada em pé ou como carne. Esses compradores exigem rastreabilidade, sanidade em dia e respeito às carências. Levar seus registros no app ajuda a cumprir.
+G199.t	SENASA	SENASA
+G199.x	SENASA is the animal health authority in Honduras. It controls cattle movement, notifiable diseases, drug registration and traceability. For any unusual disease or mass deaths, notify them.	O SENASA é a autoridade de sanidade animal em Honduras. Controla o trânsito de gado, as doenças de notificação obrigatória, o registro de medicamentos e a rastreabilidade. Diante de qualquer doença estranha ou mortes em massa, avise-os.
+G200.t	Cattle movement	Trânsito de gado
+G200.x	To move cattle between farms or to a sale you need the transfer documents SENASA and the municipality require. When buying, demand those papers: that way you avoid stolen or sick animals.	Para mover gado entre fazendas ou para a venda são necessários os documentos de trânsito que o SENASA e a prefeitura pedem. Na compra, exija esses papéis: assim evita animais roubados ou doentes.
+G201.t	Traceability	Rastreabilidade
+G201.x	Traceability lets you know where each animal comes from. It's based on official ear tags and records. More and more buyers and export markets require it.	A rastreabilidade permite saber de onde vem cada animal. Baseia-se em brincos oficiais e registros. Cada vez mais compradores e mercados de exportação a exigem.
+G202.t	Brand	Marca a ferro
+G202.x	The brand identifies the owner and must be registered with your municipality. Brand where it least damages the hide and with good technique to avoid infections.	A marca identifica o dono e deve estar registrada na sua prefeitura. Marque onde menos danifique o couro e com boa técnica para evitar infecções.
+G203.t	Registered medicines	Medicamentos registrados
+G203.x	Use only registered veterinary products bought at authorized farm-supply stores. Unregistered products may be counterfeit or leave residues in the meat.	Use só produtos veterinários registrados, comprados em casas agropecuárias autorizadas. Os produtos sem registro podem ser falsos ou deixar resíduos na carne.
+G204.t	Banned substances	Substâncias proibidas
+G204.x	Substances such as clenbuterol are banned because their residues in meat make people sick. Using them can close markets and bring penalties. Rumi doesn't give information on how to use them.	Substâncias como o clembuterol são proibidas porque seus resíduos na carne adoecem as pessoas. Usá-las pode fechar mercados e trazer sanções. O Rumi não dá informação para usá-las.
+G205.t	Residues in meat	Resíduos na carne
+G205.x	If you sell an animal before a medicine's withdrawal ends, the meat carries residues. Always respect the label's withdrawal days; the app warns you based on what you recorded in Health.	Se você vende um animal antes de terminar a carência de um medicamento, a carne leva resíduos. Respeite sempre os dias de carência do rótulo; o app avisa com o que você anotou em Sanidade.
+G206.t	Cattle theft	Roubo de gado
+G206.x	To protect yourself: brand and ear-tag your animals, keep records, check fences, coordinate with neighbors and report to the police and the municipality. When buying, demand movement papers.	Para se proteger: marque e coloque brinco nos seus animais, mantenha registros, revise cercas, coordene com vizinhos e denuncie à polícia e à prefeitura. Na compra, exija papéis de trânsito.
+G207.t	Technical assistance	Assistência técnica
+G207.x	A technician or animal scientist can help you with rations, pastures and facilities, and the vet with health. Institutions such as the Ministry of Agriculture (SAG), agricultural schools and cooperatives offer training.	Um técnico ou zootecnista pode ajudar com rações, pastos e instalações, e o veterinário com a sanidade. Instituições como a SAG, escolas agrícolas e cooperativas oferecem capacitações.
+G208.t	Environment	Meio ambiente
+G208.x	Don't pile manure near rivers or wells; compost it and use it as fertilizer. Handle dead animals by burying them away from water. That way you avoid fines and problems with neighbors.	Não acumule esterco perto de rios ou poços, faça compostagem e use como adubo. Enterre os animais mortos longe da água. Assim evita multas e problemas com os vizinhos.
+G209.t	How much cut grass to plant	Quanto capim de corte plantar
+G209.x	Calculate the kilos of fresh grass per animal per day, times the animals and the days, and compare with what your grass yields per cut. A well-fertilized, watered plot yields much more than a neglected one.	Calcule os quilos de capim fresco por animal por dia, vezes os animais e os dias, e compare com o que seu capim rende por corte. Uma área bem adubada e com água rende muito mais que uma descuidada.
+G210.t	Cutting age and quality	Idade de corte e qualidade
+G210.x	Young grass has more protein and is more digestible, but yields fewer kilos; old grass yields more but feeds less. Find the middle point: before it flowers and turns woody.	O capim novo tem mais proteína e se digere melhor, mas rende menos quilos; o velho rende mais, mas alimenta menos. Busque o ponto médio: antes de florescer e ficar lenhoso.
+G211.t	Drought-tolerant grasses	Capins que aguentam seca
+G211.x	Some Brachiarias, Mombasa grass and Guinea grass withstand drought better than others, but none produces the same without water. Store forage for the dry season even if you have resistant grasses.	Algumas braquiárias, o capim Mombaça e o Colonião aguentam melhor a seca que outros, mas nenhum produz igual sem água. Guarde forragem para a seca mesmo que tenha capins resistentes.
+G212.t	Renovating a pasture	Renovar um pasto
+G212.x	A pasture with many weeds and little grass needs rest, weed control, fertilizer and sometimes reseeding. Do it at the start of the rains.	Um pasto com muita planta daninha e pouco capim precisa de descanso, controle de daninhas, adubo e às vezes ressemear. Faça no início das chuvas.
+G213.t	Weeds in the pasture	Plantas daninhas no pasto
+G213.x	Weeds compete with grass and some are toxic. Control them by slashing before they seed and with good grazing management; overgrazing favors them.	As daninhas competem com o capim e algumas são tóxicas. Controle roçando antes que sementem e com bom manejo do pastejo; o superpastejo as favorece.
+G214.t	Corn for silage	Milho para silagem
+G214.x	Plant varieties with good plant and grain yield, at good density and with fertilizer. Corn silage gives energy; complement it with protein in the ration.	Plante variedades de bom rendimento de planta e grão, com boa densidade e adubo. A silagem de milho dá energia; complete com proteína na ração.
+G215.t	Sealing the silo	Vedação do silo
+G215.x	Cover the silo with thick plastic without holes and put weight on top (tires, bags of soil). Check and patch holes: wherever air gets in, it rots.	Cubra o silo com plástico grosso sem furos e coloque peso em cima (pneus, sacos de terra). Revise e remende os furos: por onde entra ar, apodrece.
+G216.t	Opening the silo	Abrir o silo
+G216.x	Wait at least 3 to 4 weeks before opening it. Take from a single face, evenly, at least about 15 to 20 cm per day so it doesn't heat. Re-cover what you don't use.	Espere pelo menos 3 a 4 semanas antes de abrir. Retire de uma só face, por igual, pelo menos uns 15 a 20 cm por dia para que não esquente. Volte a cobrir o que não usar.
+G217.t	Good-quality hay	Feno de boa qualidade
+G217.x	Good hay is green, leafy, pleasant-smelling and free of dust and mold. If it's yellow, stemmy or smells damp, it feeds little or does harm.	O bom feno é verde, com folhas, cheiro agradável e sem pó nem mofo. Se está amarelo, com muitos talos ou cheira a umidade, alimenta pouco ou faz mal.
+G218.t	Sugarcane: when to cut it	Cana: quando cortar
+G218.x	Forage cane is cut mature, when it has more sugar, and chopped fresh every day. Old chopped cane ferments and loses value.	A cana para forragem se corta madura, quando tem mais açúcar, e se pica fresca todo dia. Picada velha fermenta e perde valor.
+G219.t	Forage banks	Bancos forrageiros
+G219.x	A forage bank is a plot of cut grass or shrubs such as leucaena, gliricidia or mulberry near the pens, to cut and feed fresh. It saves concentrate and gives cheap protein.	Um banco forrageiro é uma área de capim de corte ou arbustos como leucena, gliricídia ou amoreira perto dos currais, para cortar e dar fresco. Economiza concentrado e dá proteína barata.
+G220.t	Mulberry and other shrubs	Amoreira e outros arbustos
+G220.x	Mulberry, nacedero (Trichanthera) and other fodder shrubs provide leaves with good protein. They're cut and fed chopped. Use them as a complement, not as the only feed.	A amoreira, o nacedero (Trichanthera) e outros arbustos forrageiros dão folhas com boa proteína. Cortam-se e dão-se picados. Use como complemento, não como a única comida.
+G221.t	Bunk and waterer together or apart	Cocho e bebedouro juntos ou separados
+G221.x	Put the waterer near but not right next to the bunk, so feed doesn't fall into the water and dirty it. The animal shouldn't have to walk far between them.	Coloque o bebedouro perto, mas não colado ao cocho, para que não caia comida na água nem se suje. Que o animal não precise caminhar muito entre um e outro.
+G222.t	Bunk width	Largura do cocho
+G222.x	A linear bunk is usually about 60 to 70 cm wide and 30 to 40 cm deep, with the animal-side edge at chest height. Smooth inside for easy cleaning.	Um cocho linear costuma ter uns 60 a 70 cm de largura e 30 a 40 cm de profundidade, com a borda do lado do animal na altura do peito. Liso por dentro para limpar fácil.
+G223.t	Bunk barrier	Barreira do cocho
+G223.x	A pipe or cable over the bunk at neck height keeps animals from climbing in or soiling the feed and reduces waste.	Um tubo ou cabo sobre o cocho, na altura do pescoço, evita que os animais entrem ou sujem a comida e reduz o desperdício.
+G224.t	Feed alley	Corredor de alimentação
+G224.x	A firm alley behind the bunks lets you feed with a wheelbarrow or truck without entering the pen, with less work and better hygiene.	Um corredor firme atrás dos cochos permite servir com carrinho de mão ou caminhão sem entrar no curral, com menos trabalho e mais higiene.
+G225.t	Cheap pen materials	Materiais baratos para currais
+G225.x	Treated wood, used pipe, living fences and shade cloth can lower the cost of a pen. What mustn't be missing: sturdy fences, a draining floor, shade, water and clean bunks.	Madeira tratada, tubo usado, cercas vivas e sombrite podem baratear o curral. O que não pode faltar: cercas firmes, piso com drenagem, sombra, água e cochos limpos.
+G226.t	Storing water	Armazenar água
+G226.x	An elevated tank lets you supply water by gravity even if the pump fails. Plan several days of reserve for all the cattle, more in the dry season.	Uma caixa-d'água elevada permite dar água por gravidade mesmo se a bomba falhar. Calcule vários dias de reserva para todo o gado, mais na seca.
+G227.t	Power and pumping	Energia e bombeamento
+G227.x	A solar or wind pump can provide water where there's no electricity. Check filters and floats every week: a dry waterer on a hot day is very serious.	Uma bomba solar ou de vento pode dar água onde não há luz elétrica. Revise filtros e boias toda semana: um bebedouro seco num dia quente é muito grave.
+G228.t	Electric fences	Cercas elétricas
+G228.x	Electric fencing is a cheap way to divide pastures. Keep the energizer well grounded and clear the weeds touching the wire so it doesn't lose strength.	A cerca elétrica é barata para dividir pastos. Mantenha o eletrificador bem aterrado e limpe o mato que toca o arame para que não perca força.
+G229.t	Pen orientation	Orientação do curral
+G229.x	If you can, orient shade roofs north to south so the shade moves during the day and the floor dries, and take advantage of the wind to cool off.	Se puder, oriente os telhados de sombra de norte a sul para que a sombra se mova durante o dia e o piso seque, e aproveite o vento para refrescar.
+G230.t	Feedlot pen design	Projeto do curral de confinamento
+G230.x	A good pen has a 2 to 4 % slope to drain, the bunk at the high end with a concrete apron in front, a waterer between pens, shade and sturdy fences. Leave alleys to feed without entering the pen.	Um bom curral tem declive de 2 a 4 % para escoar, cocho na parte alta com piso de cimento na frente, bebedouro entre currais, sombra e cercas firmes. Deixe corredores para servir sem entrar no curral.
+G231.t	Floor in front of the bunk	Piso na frente do cocho
+G231.x	A concrete strip about 3 meters wide in front of the bunk prevents mud where they stand most. It's where the investment shows most in the rainy season.	Uma faixa de cimento de uns 3 metros na frente do cocho evita o barro onde mais ficam em pé. É onde mais se nota o investimento na época de chuva.
+G232.t	Bunk types	Tipos de cocho
+G232.x	The bunk should be smooth, easy to clean and at the animal's chest height, about 50 to 70 cm. Concrete ones last longer. Avoid corners where old feed builds up.	O cocho deve ser liso, fácil de limpar e na altura do peito do animal, uns 50 a 70 cm. Os de cimento duram mais. Evite cantos onde se acumule alimento velho.
+G233.t	Artificial shade	Sombra artificial
+G233.x	Provide about 3 m² of shade per animal, 3.5 to 4 meters high so air flows. Shade cloth works, but a metal roof also protects from rain.	Coloque uns 3 m² de sombra por animal, a 3,5 ou 4 metros de altura para que o ar circule. O sombrite serve, mas o telhado de chapa protege também da chuva.
+G234.t	Trees in the pen	Árvores no curral
+G234.x	Trees give good shade and lower the heat. Protect the trunk with a fence so they don't damage it, and avoid trees with toxic fruit.	As árvores dão boa sombra e baixam o calor. Proteja o tronco com cerca para que não o danifiquem e evite árvores com frutos tóxicos.
+G235.t	Pen fences	Cercas do curral
+G235.x	Fences should be sturdy and without points: pipe, wooden rails or cable. Avoid barbed wire inside the pen because it damages the hide.	As cercas devem ser firmes e sem pontas: tubo, réguas de madeira ou cabo. Evite arame farpado dentro do curral porque machuca o couro.
+G236.t	Livestock scale	Balança para gado
+G236.x	Without a scale you don't know how much they gain or how much to pay or charge. An individual or group scale pays for itself with better purchases and sales.	Sem balança você não sabe quanto ganham nem quanto pagar ou cobrar. Uma balança individual ou de grupo se paga sozinha com melhores compras e vendas.
+G237.t	Feed mixer	Misturador de ração
+G237.x	A mixer gives an even ration and saves work. If you mix by hand, do it on a clean floor, in layers and turning several times.	Um misturador dá uma ração uniforme e economiza trabalho. Se você mistura à mão, faça sobre piso limpo, em camadas e virando várias vezes.
+G238.t	Forage chopper	Picadeira de capim
+G238.x	Chopping cut grass to 2 to 5 cm reduces waste and lets you mix it with the concentrate. Sharpen the blades: an uneven chop makes them sort.	Picar o capim de corte em 2 a 5 cm reduz o desperdício e permite misturá-lo com o concentrado. Afie as facas: um picado desigual faz que escolham.
+G239.t	Trench silo and bag silo	Silo trincheira e silo bolsa
+G239.x	A trench or pile silo works for large volumes; a bag silo for small producers. In either one, the key is to chop fine, pack well and cover without air.	O silo trincheira ou de superfície serve para volumes grandes; o de bolsa, para pequenos produtores. Em qualquer um, o chave é picar fino, compactar bem e cobrir sem ar.
+G240.t	Cut grasses in Honduras	Capins de corte em Honduras
+G240.x	The most used are King grass, Taiwan, Cameroon, CT-115, Cuba 22 and Maralfalfa. They yield a lot with water and fertilizer. Cut them before they turn woody so they have good protein.	Os mais usados são King grass, Taiwan, Camerún, CT-115, Cuba 22 e Maralfalfa. Rendem muito com água e adubo. Corte antes que fiquem lenhosos para que tenham boa proteína.

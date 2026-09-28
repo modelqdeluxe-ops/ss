@@ -1,0 +1,226 @@
+F206.t	Star grass and other creeping grasses	Grama-estrela e outros capins rasteiros
+F206.r	Star grass, pangola and other creeping grasses cover the soil well and tolerate trampling. They have good quality if managed with rotation.	A grama-estrela, a pangola e outros capins rasteiros cobrem bem o solo e aguentam o pisoteio. Têm boa qualidade se manejados com rotação.
+F206.0h	Characteristics	Características
+F206.0.0	They grow by stolons that cover the soil.	Crescem por estolões que cobrem o solo.
+F206.0.1	Good quality when young.	Boa qualidade quando novos.
+F206.0.2	Star grass can accumulate nitrates or cyanide with heavy fertilization and regrowth after drought.	A grama-estrela pode acumular nitratos ou cianeto com muita adubação e rebrota depois da seca.
+F206.1h	Management	Manejo
+F206.1.0	Graze at 20 to 30 cm height.	Pastejo com 20 a 30 cm de altura.
+F206.1.1	Rest periods of 21 to 30 days in the rains.	Descansos de 21 a 30 dias nas chuvas.
+F207.t	Spittlebug in pastures	Cigarrinha-das-pastagens
+F207.r	The spittlebug is an insect that sucks grass sap and dries it out. Its nymphs hide in white foam at the base of the plant.	A cigarrinha é um inseto que chupa a seiva dos capins e os seca. Suas ninfas se escondem numa espuma branca na base da planta.
+F207.0h	Signs	Sinais
+F207.0.0	White foam at the base of the grass.	Espuma branca na base dos capins.
+F207.0.1	Yellow leaves that then dry up as if burned.	Folhas amarelas que depois secam como queimadas.
+F207.0.2	More common in the rainy season and on susceptible brachiarias.	Mais na época de chuvas e em braquiárias suscetíveis.
+F207.1h	Control	Controle
+F207.1.0	Plant resistant varieties.	Plantar variedades resistentes.
+F207.1.1	Graze to lower the grass and expose the nymphs to the sun.	Pastejar para baixar o capim e expor as ninfas ao sol.
+F207.1.2	Fungi that attack the insect (biological control).	Fungos que atacam o inseto (controle biológico).
+F207.1.3	Insecticides only on technical advice and respecting the time before grazing.	Inseticidas só com recomendação técnica e respeitando o tempo antes de pastejar.
+F208.t	Saving rainy-season forage for the dry season	Conservar forragem das chuvas para a seca
+F208.r	In the rainy season there is extra grass and in the dry season there isn't enough. Storing the surplus as silage or hay is the safest way to keep gains up all year.	Na época de chuvas sobra pasto e na seca falta. Guardar o excedente como silagem ou feno é a forma mais segura de manter o ganho o ano todo.
+F208.0h	How much to store	Quanto guardar
+F208.0.0	Calculate the days of dry season and the number of animals.	Calcule os dias de seca e o número de animais.
+F208.0.1	A 350 kg steer eats about 8 to 9 kg of dry matter a day.	Um novilho de 350 kg come uns 8 a 9 kg de matéria seca por dia.
+F208.0.2	Store at least 20 % extra for losses.	Guarde pelo menos 20 % a mais por perdas.
+F208.1h	Options	Opções
+F208.1.0	Silage from cut grass, corn or sorghum.	Silagem de capim de corte, milho ou sorgo.
+F208.1.1	Hay from fine grasses.	Feno de capins finos.
+F208.1.2	Deferred standing grass: close paddocks at the end of the rains.	Pasto diferido em pé: vedar pastos no fim das chuvas.
+F208.2h	In your feedlot	No seu confinamento
+F208.2.0	Plan your cattle purchases according to the forage you'll have in the dry season.	Planeje suas compras de gado conforme a forragem que terá na seca.
+F208.2.1	Record your stored forage in the app's feed store.	Registre sua forragem guardada no depósito do app.
+F209.t	Heritability	Herdabilidade
+F209.r	Heritability tells what part of a trait passes from parents to offspring. It ranges from 0 to 1: the higher it is, the faster it improves with selection.	A herdabilidade diz que parte de uma característica passa de pais para filhos. Vai de 0 a 1: quanto mais alta, mais rápido se melhora com seleção.
+F209.0h	Typical values	Valores típicos
+F209.0.0	Average daily gain: 0.3 to 0.4 (medium).	Ganho diário de peso: 0,3 a 0,4 (médio).
+F209.0.1	Feed conversion: about 0.3.	Conversão alimentar: cerca de 0,3.
+F209.0.2	Dressing percentage and ribeye area: 0.3 to 0.5.	Rendimento e área de olho de lombo: 0,3 a 0,5.
+F209.0.3	Marbling: 0.4 to 0.5 (high).	Marmoreio: 0,4 a 0,5 (alta).
+F209.0.4	Temperament: 0.3 to 0.4.	Temperamento: 0,3 a 0,4.
+F209.0.5	Fertility: 0.05 to 0.15 (low; depends more on management).	Fertilidade: 0,05 a 0,15 (baixa; depende mais do manejo).
+F209.1h	What it means	O que significa
+F209.1.0	High heritability: choosing good parents gives similar offspring.	Herdabilidade alta: escolher bons pais dá filhos parecidos.
+F209.1.1	Low heritability: environment and management matter more than genetics.	Herdabilidade baixa: o ambiente e o manejo pesam mais que a genética.
+F209.1.2	Nothing is 100 % genetic: feed and management always count.	Nada é 100 % genético: a comida e o manejo sempre contam.
+F209.2h	In your feedlot	No seu confinamento
+F209.2.0	Buying calves from good beef bulls gives animals that gain more.	Comprar bezerros de bons touros de corte dá animais que ganham mais.
+F209.2.1	If you always buy from the same breeder and it goes well, take care of that relationship.	Se você compra sempre do mesmo criador e vai bem, cuide dessa relação.
+F210.t	Hybrid vigor or heterosis	Vigor híbrido ou heterose
+F210.r	When two different breeds are crossed, the offspring usually perform better than the average of their parents. That extra is hybrid vigor, and it is greater the more different the breeds are.	Quando se cruzam duas raças diferentes, os filhos costumam render mais que a média dos pais. Esse extra é o vigor híbrido, e é maior quanto mais diferentes forem as raças.
+F210.0h	How much it gives	Quanto dá
+F210.0.0	In zebu by European crosses hybrid vigor is very high.	Nos cruzamentos zebu com europeu o vigor híbrido é muito alto.
+F210.0.1	It can raise growth by 5 to 15 % and more in fertility and survival.	Pode aumentar de 5 a 15 % o crescimento e mais a fertilidade e a sobrevivência.
+F210.0.2	The first cross (F1) has the most.	O máximo está no primeiro cruzamento (F1).
+F210.1h	Why it is lost	Por que se perde
+F210.1.0	If you cross F1 with F1, part of the vigor is lost.	Se você cruza F1 com F1, parte do vigor se perde.
+F210.1.1	Rotational crosses or composite breeds keep part of it.	Os cruzamentos rotacionais ou as raças compostas mantêm uma parte.
+F210.2h	In your feedlot	No seu confinamento
+F210.2.0	F1 Brahman by Angus, Simmental or Charolais steers are highly sought for feeding.	Novilhos F1 Brahman com Angus, Simmental ou Charolês são muito procurados para engorda.
+F210.2.1	They combine heat resistance with growth and meat.	Unem resistência ao calor com crescimento e carne.
+F211.t	Beef crossbreeding in the tropics	Cruzamentos para corte no trópico
+F211.r	Crossing zebu with European beef breeds combines hardiness and growth. The ideal proportion depends on the climate and the farm's management.	Cruzar zebu com raças europeias de corte combina rusticidade e crescimento. A proporção ideal depende do clima e do manejo da fazenda.
+F211.0h	Proportions	Proporções
+F211.0.0	50 % zebu and 50 % European (F1): the best balance and the greatest hybrid vigor.	50 % zebu e 50 % europeu (F1): o melhor equilíbrio e o maior vigor híbrido.
+F211.0.1	More than 50 % European: more meat and marbling, but suffers more from heat and ticks.	Mais de 50 % europeu: mais carne e marmoreio, mas sofre mais com o calor e os carrapatos.
+F211.0.2	More than 50 % zebu: hardier, somewhat less growth.	Mais de 50 % zebu: mais rústico, um pouco menos de crescimento.
+F211.1h	European breeds used	Raças europeias usadas
+F211.1.0	Angus: marbling and early maturity.	Angus: marmoreio e precocidade.
+F211.1.1	Charolais and Simmental: size and muscle.	Charolês e Simmental: tamanho e músculo.
+F211.1.2	Senepol and Romosinuano: taurine breeds adapted to heat.	Senepol e Romosinuano: raças taurinas adaptadas ao calor.
+F211.2h	In your feedlot	No seu confinamento
+F211.2.0	In pens with shade and good feed, crosses with 50 to 75 % European perform very well.	No confinamento com sombra e boa comida, os cruzados com 50 a 75 % europeu rendem muito bem.
+F211.2.1	On hot pasture without shade, more zebu blood is better.	Em pasto quente e sem sombra, convém mais sangue zebu.
+F212.t	Composite breeds	Raças compostas
+F212.r	Composite breeds were formed by crossing two or more breeds and fixing the result. They keep part of the hybrid vigor and are easier to manage than rotational crosses.	As raças compostas se formaram cruzando duas ou mais raças e fixando o resultado. Mantêm parte do vigor híbrido e são mais fáceis de manejar que os cruzamentos rotacionais.
+F212.0h	Examples	Exemplos
+F212.0.0	Brangus: about 3/8 Brahman and 5/8 Angus.	Brangus: cerca de 3/8 Brahman e 5/8 Angus.
+F212.0.1	Braford: Brahman with Hereford.	Braford: Brahman com Hereford.
+F212.0.2	Santa Gertrudis: about 3/8 Brahman and 5/8 Shorthorn.	Santa Gertrudis: cerca de 3/8 Brahman e 5/8 Shorthorn.
+F212.0.3	Simbrah: Simmental with Brahman.	Simbrasil/Simbrah: Simmental com Brahman.
+F212.0.4	Beefmaster: Brahman, Hereford and Shorthorn.	Beefmaster: Brahman, Hereford e Shorthorn.
+F212.0.5	Charbray: Charolais with Brahman.	Canchim/Charbray: Charolês com zebu.
+F212.1h	Advantages	Vantagens
+F212.1.0	Uniform animals adapted to moderate heat.	Animais parelhos e adaptados ao calor moderado.
+F212.1.1	Good growth and good meat.	Bom crescimento e boa carne.
+F212.2h	In your feedlot	No seu confinamento
+F212.2.0	Composite-breed calves usually finish well in feedlots and semi-confinement.	Bezerros de raças compostas costumam engordar bem em confinamento e semiconfinamento.
+F212.2.1	Check that they come from breeders with good records.	Verifique se vêm de criadores com bom registro.
+F213.t	Criollo and adapted breeds	Raças crioulas e adaptadas
+F213.r	Criollo breeds descend from the cattle the Spanish brought five centuries ago. They adapted to the tropics and carry valuable resistance genes.	As raças crioulas descendem do gado que os espanhóis trouxeram há cinco séculos. Adaptaram-se ao trópico e guardam genes valiosos de resistência.
+F213.0h	Examples	Exemplos
+F213.0.0	Romosinuano, Blanco Orejinegro, Costeño con Cuernos, Sanmartinero (Colombia).	Romosinuano, Blanco Orejinegro, Costeño con Cuernos, Sanmartinero (Colômbia).
+F213.0.1	Reyna (Nicaragua).	Reyna (Nicarágua).
+F213.0.2	Criollo Limonero (Venezuela).	Criollo Limonero (Venezuela).
+F213.0.3	Senepol (Caribbean islands), a cross of N'Dama and Red Poll.	Senepol (ilhas do Caribe), cruzamento de N'Dama e Red Poll.
+F213.1h	Strengths	Virtudes
+F213.1.0	They tolerate heat without being zebu: many carry the slick hair gene.	Toleram calor sem ser zebu: muitas têm o gene do pelo curto.
+F213.1.1	Good fertility and calm temperament.	Boa fertilidade e temperamento tranquilo.
+F213.1.2	More tender meat than zebu.	Carne mais macia que a do zebu.
+F213.2h	In your feedlot	No seu confinamento
+F213.2.0	Crossed with zebu, they give hybrid vigor without losing adaptation.	Cruzadas com zebu dão vigor híbrido sem perder adaptação.
+F213.2.1	They are an alternative to European breeds in very hot areas.	São uma alternativa às raças europeias em regiões muito quentes.
+F214.t	The slick hair gene	Gene do pelo curto (slick)
+F214.r	The slick hair gene, in the prolactin receptor, gives very short, shiny hair that helps shed heat. It came from Caribbean criollo breeds and Senepol.	O gene do pelo curto, no receptor da prolactina, dá um pelo muito curto e brilhante que ajuda a eliminar calor. Veio de raças crioulas do Caribe e do Senepol.
+F214.0h	What it does	O que faz
+F214.0.0	Very short, fine hair all year.	Pelo muito curto e fino o ano todo.
+F214.0.1	Animals with the gene keep a lower temperature and eat more in the heat.	Os animais com o gene mantêm menos temperatura e comem mais com calor.
+F214.0.2	It is dominant: one copy is enough to show.	É dominante: com uma cópia já se nota.
+F214.1h	How it is used	Como se usa
+F214.1.0	By crossing with Senepol or criollos that carry it.	Cruzando com Senepol ou crioulos que o têm.
+F214.1.1	A DNA test shows which animals carry it.	Com teste de DNA se sabe quais animais o portam.
+F214.1.2	It has also been introduced by gene editing; in 2022 US authorities considered it low risk.	Também foi introduzido por edição genética; em 2022 as autoridades dos EUA o consideraram de baixo risco.
+F214.2h	In your feedlot	No seu confinamento
+F214.2.0	Steers with the gene handle a hot pen better.	Novilhos com o gene aguentam melhor o curral quente.
+F214.2.1	Ask the breeder whether his bulls carry it.	Pergunte ao criador se seus touros o portam.
+F215.t	Expected progeny differences	Diferenças esperadas na progênie
+F215.r	The EPD (DEP in Spanish) predicts how much better or worse a bull's offspring will be compared with the breed average. It is the main tool for choosing bulls.	A DEP (EPD em inglês) prevê quanto melhores ou piores serão os filhos de um touro comparados com a média da raça. É a principal ferramenta para escolher touros.
+F215.0h	How to read it	Como se lê
+F215.0.0	Weaning weight EPD +10 kg: his calves will weigh 5 kg more on average (half comes from the bull).	DEP de peso à desmama +10 kg: seus filhos pesarão em média 5 kg a mais (metade vem do touro).
+F215.0.1	Compare bulls of the same breed and the same evaluation year.	Compare entre touros da mesma raça e do mesmo ano de avaliação.
+F215.0.2	Each EPD comes with an accuracy: the higher, the more reliable.	Cada DEP traz uma acurácia: mais alta, mais confiável.
+F215.1h	Useful EPDs for beef	DEPs úteis para corte
+F215.1.0	Weaning and yearling weight: growth.	Peso à desmama e ao ano: crescimento.
+F215.1.1	Ribeye area and yield: muscle.	Área de olho de lombo e rendimento: músculo.
+F215.1.2	Marbling and fat: carcass quality.	Marmoreio e gordura: qualidade de carcaça.
+F215.1.3	Docility: temperament.	Docilidade: temperamento.
+F215.2h	In your feedlot	No seu confinamento
+F215.2.0	Even if you don't breed, you can prefer calves from breeders who use bulls with good EPDs.	Mesmo sem criar, você pode preferir bezerros de criadores que usam touros com boas DEPs.
+F215.2.1	Those calves usually gain more and more evenly.	Esses bezerros costumam ganhar mais e mais por igual.
+F216.t	Genomic selection	Seleção genômica
+F216.r	With a hair or blood sample, an animal's DNA is read and its genetic value is predicted from birth, without waiting to see its offspring.	Com uma amostra de pelo ou sangue se lê o DNA de um animal e se prevê seu valor genético desde o nascimento, sem esperar ver seus filhos.
+F216.0h	What it offers	O que oferece
+F216.0.0	More accuracy in young bulls.	Mais precisão em touros jovens.
+F216.0.1	It detects genes for defects, color, horns and meat quality.	Detecta genes de defeitos, cor, chifres e qualidade de carne.
+F216.0.2	It confirms parentage.	Confirma a paternidade.
+F216.1h	Current situation	Situação atual
+F216.1.0	It is already used in the main beef breeds, including Brahman and Nelore.	Já se usa nas principais raças de corte, incluindo Brahman e Nelore.
+F216.1.1	The cost of the tests has dropped a lot in recent years.	O custo dos testes baixou muito nos últimos anos.
+F216.2h	In your feedlot	No seu confinamento
+F216.2.0	It is mainly for breeders.	É sobretudo para criadores.
+F216.2.1	You benefit when buying calves from herds that use it: more uniform and predictable.	Você se beneficia ao comprar bezerros de rebanhos que a usam: mais parelhos e previsíveis.
+F217.t	Gene editing in cattle	Edição genética em bovinos
+F217.r	Gene editing changes one letter of DNA precisely, without inserting genes from other species. It is used to copy useful genes that already exist in other breeds, such as slick hair or hornlessness.	A edição genética muda uma letra do DNA de forma precisa, sem colocar genes de outras espécies. É usada para copiar genes úteis que já existem em outras raças, como o pelo curto ou a ausência de chifres.
+F217.0h	Examples	Exemplos
+F217.0.0	Slick hair to tolerate heat.	Pelo curto para tolerar calor.
+F217.0.1	Hornless animals, to avoid dehorning.	Animais sem chifres, para evitar a descorna.
+F217.0.2	Resistance to some diseases, under research.	Resistência a algumas doenças, em pesquisa.
+F217.1h	Rules	Regras
+F217.1.0	Each country has different rules; some treat it as normal breeding and others as transgenic.	Cada país tem regras diferentes; alguns a tratam como melhoramento normal e outros como transgênico.
+F217.1.1	Its commercial use is still small.	Seu uso comercial ainda é pequeno.
+F217.2h	In your feedlot	No seu confinamento
+F217.2.0	It's not something you'll use soon, but it may change breeds in the coming years.	Não é algo que você usará logo, mas pode mudar as raças nos próximos anos.
+F217.2.1	What reaches your farm are crosses and bulls with those genes.	O que chega à sua fazenda são cruzamentos e touros com esses genes.
+F218.t	Double muscling	Dupla musculatura
+F218.r	Some breeds such as Belgian Blue and Piedmontese have a fault in the myostatin gene, which normally limits muscle growth. Their animals have enormous muscles.	Algumas raças como a Azul Belga e a Piemontesa têm uma falha no gene da miostatina, que normalmente freia o crescimento do músculo. Seus animais têm músculos enormes.
+F218.0h	Advantages	Vantagens
+F218.0.0	Much more muscle and dressing percentage.	Muito mais músculo e rendimento de carcaça.
+F218.0.1	Very lean, tender meat.	Carne muito magra e macia.
+F218.1h	Disadvantages	Desvantagens
+F218.1.0	Difficult calvings in purebreds.	Partos difíceis em raças puras.
+F218.1.1	Less fat, which can make the meat less juicy.	Menos gordura, o que pode deixar a carne menos suculenta.
+F218.1.2	More sensitive to stress and heat.	Mais sensíveis ao estresse e ao calor.
+F218.2h	In your feedlot	No seu confinamento
+F218.2.0	Crosses with these breeds can give very muscular steers.	Cruzamentos com essas raças podem dar novilhos muito musculosos.
+F218.2.1	In the tropics they are little used because of their low heat tolerance.	No trópico são pouco usadas por sua baixa tolerância ao calor.
+F219.t	Genetics of meat quality	Genética da qualidade da carne
+F219.r	Tenderness and marbling are inherited. There are DNA tests that look for variants of the calpain and calpastatin genes to choose animals with more tender meat.	A maciez e o marmoreio são herdados. Há testes de DNA que buscam variantes dos genes da calpaína e da calpastatina para escolher animais de carne mais macia.
+F219.0h	Known genes	Genes conhecidos
+F219.0.0	Calpain 1 (CAPN1) and calpastatin (CAST): tenderness.	Calpaína 1 (CAPN1) e calpastatina (CAST): maciez.
+F219.0.1	Favorable variants are more common in European breeds than in zebu.	As variantes favoráveis são mais comuns em raças europeias que no zebu.
+F219.0.2	Marbling: many small genes; it improves with EPDs and genomics.	Marmoreio: muitos genes pequenos; melhora-se com DEPs e genômica.
+F219.1h	In your feedlot	No seu confinamento
+F219.1.0	If you sell quality beef, ask for tested animals or crosses with Angus.	Se você vende carne de qualidade, peça animais testados ou cruzados com Angus.
+F219.1.1	For the ordinary market, age and management matter more than these genes.	Para o mercado comum, a idade e o manejo pesam mais que esses genes.
+F220.t	Genetics and tick resistance	Genética e resistência a carrapatos
+F220.r	Tick resistance is moderately heritable. Zebu and some criollos carry far fewer ticks than European breeds.	A resistência a carrapatos é moderadamente herdável. O zebu e alguns crioulos carregam muito menos carrapatos que as raças europeias.
+F220.0h	Facts	Dados
+F220.0.0	Heritability about 0.2 to 0.4.	Herdabilidade de cerca de 0,2 a 0,4.
+F220.0.1	A Brahman may carry a fraction of the ticks of a Holstein in the same pasture.	Um Brahman pode carregar uma fração dos carrapatos de um Holandês no mesmo pasto.
+F220.0.2	F1 crosses have intermediate resistance.	Os cruzados F1 têm resistência intermediária.
+F220.1h	Why it matters today	Por que importa hoje
+F220.1.0	Ticks have become resistant to many acaricides.	Os carrapatos ficaram resistentes a muitos carrapaticidas.
+F220.1.1	Using more resistant animals reduces treatments and costs.	Usar animais mais resistentes reduz banhos e custos.
+F220.2h	In your feedlot	No seu confinamento
+F220.2.0	In pastures with many ticks, prefer animals with more zebu blood.	Em pastos com muitos carrapatos, prefira animais com mais sangue zebu.
+F220.2.1	Combine genetics, pasture rotation and strategic treatments.	Combine genética, rotação de pastos e banhos estratégicos.
+F221.t	Genotype and environment	Genótipo e ambiente
+F221.r	An animal doesn't perform the same everywhere. The breed that gains best in a temperate feedlot may be the worst on a hot pasture. This is called genotype by environment interaction.	Um animal não rende igual em todo lugar. A raça que melhor ganha em um confinamento temperado pode ser a pior em um pasto quente. Isso se chama interação genótipo por ambiente.
+F221.0h	Examples	Exemplos
+F221.0.0	Purebred Angus gains a lot in a cool climate, but suffers in humid heat.	O Angus puro ganha muito em clima fresco, mas sofre no calor úmido.
+F221.0.1	Brahman gains less in a cool feedlot, but survives and gains in heat and ticks.	O Brahman ganha menos em confinamento fresco, mas sobrevive e ganha no calor e com carrapatos.
+F221.0.2	Crosses fall in between.	Os cruzados ficam no meio.
+F221.1h	In your feedlot	No seu confinamento
+F221.1.0	Choose genetics according to your climate, facilities and feed.	Escolha a genética conforme seu clima, suas instalações e sua comida.
+F221.1.1	Record the breed in the app and compare lots: your data will tell you what performs best on your farm.	Anote a raça no app e compare os lotes: seus dados dirão o que rende melhor na sua fazenda.
+F222.t	Inbreeding	Consanguinidade
+F222.r	Inbreeding is mating between relatives. It increases the likelihood of defects and lowers fertility and growth.	A consanguinidade é o cruzamento entre parentes. Aumenta a probabilidade de defeitos e baixa a fertilidade e o crescimento.
+F222.0h	Signs in a herd	Sinais em um rebanho
+F222.0.0	Smaller, weaker calves.	Bezerros menores e mais fracos.
+F222.0.1	Birth defects.	Defeitos de nascimento.
+F222.0.2	Lower fertility.	Menos fertilidade.
+F222.1h	How to avoid it	Como evitá-la
+F222.1.0	Change the bull every 2 to 3 years or use artificial insemination.	Trocar o touro a cada 2 a 3 anos ou usar inseminação.
+F222.1.1	Keep records of sires and dams.	Manter registro de pais e mães.
+F222.2h	In your feedlot	No seu confinamento
+F222.2.0	If you always buy from a small breeder and see lagging animals, ask about his bull.	Se você compra sempre de um criador pequeno e vê animais atrasados, pergunte pelo touro dele.
+F222.2.1	Prefer lots from herds with good genetic management.	Prefira lotes de rebanhos com bom manejo genético.
+F223.t	Genetic defects	Defeitos genéticos
+F223.r	Some defects are caused by recessive genes: they only appear if the calf gets one copy from the sire and another from the dam. Breed associations control them with DNA tests.	Alguns defeitos se devem a genes recessivos: só aparecem se o bezerro recebe uma cópia do pai e outra da mãe. As associações de raças os controlam com testes de DNA.
+F223.0h	How they work	Como funcionam
+F223.0.0	A carrier looks normal.	Um portador parece normal.
+F223.0.1	If two carriers are mated, a quarter of the offspring have the defect.	Se dois portadores cruzam, um quarto dos filhos tem o defeito.
+F223.0.2	DNA tests detect carriers.	Os testes de DNA detectam portadores.
+F223.1h	In your feedlot	No seu confinamento
+F223.1.0	Check for defects when buying: legs, jaw, hernias and eyes.	Verifique defeitos ao comprar: patas, mandíbula, hérnias e olhos.
+F223.1.1	If several animals from the same source show the same problem, tell the breeder.	Se vários animais de uma mesma origem saem com o mesmo problema, avise o criador.
+F224.t	Horns and polled genetics	Chifres e genética mocha
+F224.r	Hornlessness (polled animals) is dominant. Using polled bulls avoids dehorning, reduces bruises and improves welfare.	A ausência de chifres (animais mochos) é dominante. Usar touros mochos evita a descorna, reduz pancadas e hematomas e melhora o bem-estar.
+F224.0h	How it is inherited	Como se herda
+F224.0.0	A polled bull with two copies of the gene gives all polled offspring.	Um touro mocho com duas cópias do gene dá todos os filhos mochos.
+F224.0.1	With only one copy, about half are polled.	Com uma só cópia, dá cerca da metade mochos.
+F224.0.2	A DNA test tells how many copies it has.	O teste de DNA diz quantas cópias tem.
+F224.1h	In your feedlot	No seu confinamento
+F224.1.0	Polled steers cause fewer bruises in the pen and the truck.	Novilhos mochos causam menos hematomas no curral e no caminhão.
+F224.1.1	Many buyers prefer hornless or tipped animals.	Muitos compradores preferem animais sem chifres ou com pontas cortadas.

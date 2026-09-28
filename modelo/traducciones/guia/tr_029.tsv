@@ -1,0 +1,241 @@
+F479.t	Feedlot first-aid kit	Farmácia do confinamento
+F479.r	Having what you need at hand lets you act fast. An organized kit saves deaths and trips.	Ter à mão o necessário permite agir rápido. Uma farmácia organizada evita mortes e viagens.
+F479.0h	Equipment	Equipamento
+F479.0.0	Digital thermometer (and a spare).	Termômetro digital (e um de reserva).
+F479.0.1	Disposable syringes of 3, 5, 10 and 20 ml, and an automatic syringe or gun.	Seringas descartáveis de 3, 5, 10 e 20 ml, e seringa automática ou pistola.
+F479.0.2	Needles of different lengths and gauges.	Agulhas de diferentes comprimentos e calibres.
+F479.0.3	Gloves, scissors, scalpel, forceps and ropes.	Luvas, tesoura, bisturi, pinças e cordas.
+F479.0.4	Flashlight, notebook or phone with the app.	Lanterna, caderno ou celular com o app.
+F479.0.5	Bloat tube and trocar (for trained use only).	Sonda para timpanismo e trocarte (só para uso treinado).
+F479.1h	Supplies	Insumos
+F479.1.0	Antiseptic (iodine or chlorhexidine) and soap.	Antisséptico (iodo ou clorexidina) e sabão.
+F479.1.1	Wound product with repellent and larvicide.	Produto para feridas com repelente e larvicida.
+F479.1.2	Oral electrolytes for dehydration.	Soros orais para desidratação.
+F479.1.3	Vitamins and the products your vet recommends for emergencies.	Vitaminas e os produtos que seu veterinário indicar para emergências.
+F479.1.4	Dewormers and vaccines from the plan, properly stored.	Vermífugos e vacinas do plano, na devida conservação.
+F479.2h	Order and safety	Ordem e segurança
+F479.2.0	Keep it locked, in a cool place out of the sun.	Guarde trancada, em lugar fresco e sem sol.
+F479.2.1	Check expiry dates every month.	Revise as datas de validade todo mês.
+F479.2.2	Keep medicines apart from poisons and feed.	Separe medicamentos de venenos e de alimento.
+F479.2.3	Keep the vet's and SENASA's phone numbers handy.	Tenha à mão o telefone do veterinário e do SENASA.
+F480.t	Arrival health plan	Plano sanitário de entrada
+F480.r	What you do in the first hours and weeks sets the health of the whole lot. A good arrival protocol lowers disease and deaths.	O que você faz nas primeiras horas e semanas define a saúde de todo o lote. Um bom protocolo de entrada baixa doenças e mortes.
+F480.0h	On arrival	Na chegada
+F480.0.0	Unload calmly, let them rest with water and good-quality hay.	Descarregue com calma, deixe descansar com água e feno de boa qualidade.
+F480.0.1	Check them one by one: lame, injured, thin or sick ones go apart.	Revise um por um: mancos, feridos, magros ou doentes vão à parte.
+F480.0.2	Don't do the health work if they arrived very tired; wait a few hours or until early the next day.	Não faça o manejo sanitário se chegaram muito cansados; espere algumas horas ou até cedo no dia seguinte.
+F480.1h	Day 1 (or the next day)	Dia 1 (ou no dia seguinte)
+F480.1.0	Weigh each animal and put in an ear tag.	Pese cada animal e coloque o brinco.
+F480.1.1	Polyvalent clostridial vaccine.	Vacina clostridial polivalente.
+F480.1.2	Internal and external dewormer as the vet advises.	Vermífugo interno e externo conforme o veterinário.
+F480.1.3	Respiratory vaccine if it's in your plan.	Vacina respiratória se estiver no seu plano.
+F480.1.4	Vitamins if the vet recommends them.	Vitaminas se o veterinário recomendar.
+F480.1.5	Record everything in the app with the lot and date.	Anote tudo no app com o lote e a data.
+F480.2h	Days 1 to 21	Dias 1 a 21
+F480.2.0	Checks twice a day with the DART method.	Revisão duas vezes ao dia com o método DART.
+F480.2.1	Take the temperature of suspect animals.	Meça a temperatura dos suspeitos.
+F480.2.2	Early treatment of the sick.	Tratamento precoce dos doentes.
+F480.2.3	Gradual adaptation to the ration.	Adaptação gradual à ração.
+F480.3h	Days 21 to 30	Dias 21 a 30
+F480.3.0	Clostridial and, if applicable, respiratory vaccine boosters.	Reforço da vacina clostridial e da respiratória, se aplicável.
+F480.3.1	First control weighing to see who's taking off and who isn't.	Primeira pesagem de controle para ver quem arranca e quem não.
+F480.3.2	Castration or dehorning, if done, once the animal is healthy and adapted.	Castração ou descorna, se forem feitas, quando o animal já estiver sadio e adaptado.
+F480.4h	Rules	Regras
+F480.4.0	Every new animal enters the receiving pen, not with those already there.	Todo animal novo entra no curral de recepção, não com os que já estão.
+F480.4.1	A written protocol with your vet, always the same, gives better results than improvising.	Um protocolo escrito com seu veterinário, sempre igual, dá melhores resultados que improvisar.
+F480.4.2	Keep a record of how many got sick per lot and from which origin.	Registre quantos adoeceram por lote e de qual origem.
+F481.t	Quarantine and biosecurity	Quarentena e biossegurança
+F481.r	Biosecurity is the set of barriers that keep diseases from entering your farm or spreading within it.	A biossegurança são as barreiras para que doenças não entrem na sua fazenda nem se espalhem dentro dela.
+F481.0h	Incoming animals	Animais que entram
+F481.0.0	Buy from known suppliers, with a movement permit and inspected animals.	Compre de fornecedores conhecidos, com guia de trânsito e animais revisados.
+F481.0.1	Separate quarantine pen, not sharing waterers with the others.	Curral de quarentena separado, sem compartilhar bebedouros com os demais.
+F481.0.2	Observe for 2 to 3 weeks before mixing.	Observe 2 a 3 semanas antes de misturar.
+F481.0.3	Treat external parasites before they come in.	Trate parasitas externos antes de entrarem.
+F481.1h	People and vehicles	Pessoas e veículos
+F481.1.0	Cattle trucks shouldn't enter the pens; they should load from the loading ramp.	Os caminhões de gado não devem entrar nos currais; que carreguem pelo embarcadouro.
+F481.1.1	Visitors with clean or disinfected boots.	Visitas com botas limpas ou desinfetadas.
+F481.1.2	Clean borrowed equipment (portable chutes, scales) before using it.	Limpe equipamento emprestado (bretes portáteis, balanças) antes de usar.
+F481.2h	Within the farm	Dentro da fazenda
+F481.2.0	Work with healthy animals first and the sick ones last.	Trabalhe primeiro com os animais sadios e por último com os doentes.
+F481.2.1	Clean needles and equipment between animals.	Agulhas e equipamento limpos entre animais.
+F481.2.2	Control rats, dogs and birds in storerooms.	Controle de ratos, cães e aves nos armazéns.
+F481.2.3	Remove and dispose of carcasses quickly.	Retire e dê destino rápido aos cadáveres.
+F481.3h	Water and feed	Água e alimento
+F481.3.0	Water from troughs, not shared puddles or streams.	Água de bebedouros, não de poças ou córregos compartilhados.
+F481.3.1	Feed stored in a closed storeroom.	Alimento guardado em armazém fechado.
+F481.3.2	Don't use kitchen scraps or by-products of doubtful origin.	Não use restos de comida da cozinha nem subprodutos de origem duvidosa.
+F482.t	Sick pen	Curral de doentes
+F482.r	A separate pen for sick and injured animals makes treatment easier, helps them recover and protects the rest.	Um curral à parte para doentes e lesionados facilita tratá-los, os recupera melhor e protege o resto.
+F482.0h	What it should be like	Como deve ser
+F482.0.0	Close to the chute but away from the receiving pens.	Perto do brete, mas longe dos currais de recepção.
+F482.0.1	With shade, a dry, soft floor.	Com sombra, piso seco e macio.
+F482.0.2	Its own waterer with clean water.	Bebedouro próprio com água limpa.
+F482.0.3	Bunk with good-quality hay and a little of the ration.	Cocho com feno de boa qualidade e um pouco da ração.
+F482.0.4	Space for the animal to lie down comfortably.	Espaço para o animal deitar confortável.
+F482.1h	Management	Manejo
+F482.1.0	Record every animal that enters: date, ear tag, temperature and treatment.	Anote cada animal que entra: data, brinco, temperatura e tratamento.
+F482.1.1	Check twice a day.	Revise duas vezes ao dia.
+F482.1.2	Return it to its lot when it eats well and has had a normal temperature for two days.	Devolva ao lote quando comer bem e tiver temperatura normal por dois dias.
+F482.1.3	If it doesn't improve within the time the vet said, decide whether to sell it (no withdrawal) or euthanize it.	Se não melhorar no tempo que o veterinário disse, decida se vende (sem carência) ou sacrifica.
+F482.2h	Chronic animals	Animais crônicos
+F482.2.0	Those that get sick several times rarely recover their gain.	Os que adoecem várias vezes raramente recuperam o ganho.
+F482.2.1	Selling them in time (respecting withdrawals) usually costs less than continuing to treat them.	Vendê-los a tempo (respeitando carências) costuma custar menos que continuar tratando.
+F483.t	Death of an animal	Morte de um animal
+F483.r	Every death is a loss of everything invested. Knowing why it died helps save the others.	Cada morte é uma perda de tudo o que foi investido. Saber por que morreu ajuda a salvar os demais.
+F483.0h	What to do first	O que fazer primeiro
+F483.0.0	Check whether it's bleeding from the nose, mouth or anus: if so, don't open it and call the vet (possible anthrax).	Veja se sangra pelo nariz, boca ou ânus: se sim, não abra e chame o veterinário (possível antraz).
+F483.0.1	Move the rest of the lot away from the spot.	Afaste o resto do lote do local.
+F483.0.2	Record the death in the app with the probable cause.	Anote a morte no app com a causa provável.
+F483.1h	Necropsy	Necropsia
+F483.1.0	The vet opens the carcass and examines lungs, liver, rumen and intestines.	O veterinário abre o cadáver e examina pulmões, fígado, rúmen e intestinos.
+F483.1.1	Do it as soon as possible: after 12 hours in heat, information is lost.	Faça o quanto antes: depois de 12 horas com calor perde-se informação.
+F483.1.2	If several died, it's even more important.	Se morreram vários, é ainda mais importante.
+F483.2h	Carcass disposal	Destino do cadáver
+F483.2.0	Deep burial, away from water sources and pens, with lime.	Enterro profundo, longe de fontes de água e de currais, com cal.
+F483.2.1	Or incineration, or as the authority directs.	Ou incineração ou o que a autoridade indicar.
+F483.2.2	Don't leave carcasses in the open: they attract dogs and vultures and spread disease.	Não deixe cadáveres ao ar livre: atraem cães e urubus e espalham doenças.
+F483.2.3	Don't eat or sell meat from dead or sick animals.	Não consuma nem venda carne de animais mortos ou doentes.
+F483.3h	Learning from every death	Aprender com cada morte
+F483.3.0	Every month, review causes of death by lot and origin in the app.	Revise todo mês no app as causas de morte por lote e por origem.
+F483.3.1	If a cause repeats, change management with your vet.	Se uma causa se repete, mude o manejo com seu veterinário.
+F483.3.2	Mortality above 1 to 2 % in a feedlot indicates a problem.	Uma mortalidade acima de 1 a 2 % no confinamento indica um problema.
+F484.t	Skin problems	Problemas de pele
+F484.r	Ringworm, photosensitization, lice and mange damage the hide, cause itching and lower gain.	Tinha, fotossensibilização, piolhos e sarna danificam o couro, causam coceira e baixam o ganho.
+F484.0h	Ringworm	Tinha
+F484.0.0	Round hairless patches with a gray crust, mostly on the face and neck.	Manchas redondas sem pelo, com crosta cinza, sobretudo na cara e no pescoço.
+F484.0.1	It spreads between animals and to people.	Contagia-se entre animais e para pessoas.
+F484.0.2	It's more common in young animals and damp, dark pens.	É mais comum em animais jovens e currais úmidos e escuros.
+F484.0.3	Ask about treatment; it improves with sun and good nutrition.	Consulte o tratamento; melhora com sol e boa nutrição.
+F484.1h	Photosensitization	Fotossensibilização
+F484.1.0	White skin burns in the sun, reddens, swells and peels.	A pele branca queima ao sol, fica vermelha, incha e descasca.
+F484.1.1	It comes from certain plants or from liver damage.	Vem de algumas plantas ou de dano no fígado.
+F484.1.2	Take the animals out of the sun and the suspect pasture and consult the vet.	Tire os animais do sol e do pasto suspeito e consulte o veterinário.
+F484.2h	Lice and mange	Piolhos e sarna
+F484.2.0	Intense itching, rubbing against posts, hairless areas.	Coceira forte, se esfregam em postes, áreas sem pelo.
+F484.2.1	More common in the cool season and with overcrowding.	Mais comuns na época fresca e com superlotação.
+F484.2.2	Treated with external antiparasitic products per the label.	Tratam-se com produtos antiparasitários externos conforme o rótulo.
+F484.3h	Prevention	Prevenção
+F484.3.0	External parasite control on arrival.	Controle de parasitas externos na entrada.
+F484.3.1	Sunny, ventilated pens.	Currais com sol e ventilação.
+F484.3.2	Good mineral and vitamin nutrition.	Boa nutrição mineral e vitamínica.
+F485.t	Mineral deficiencies	Deficiências de minerais
+F485.r	Lack of phosphorus, copper, zinc, selenium or cobalt doesn't kill quickly, but it slows gain and lowers immunity.	A falta de fósforo, cobre, zinco, selênio ou cobalto não mata rápido, mas freia o ganho e baixa as defesas.
+F485.0h	Phosphorus	Fósforo
+F485.0.0	Very common on tropical pastures.	Muito comum em pastos do trópico.
+F485.0.1	Signs: animals lick dirt, bones or wood; little gain.	Sinais: os animais lambem terra, ossos ou madeira; pouco ganho.
+F485.0.2	Corrected with mineral salt or a mineral premix with phosphorus.	Corrige-se com sal mineral ou núcleo mineral com fósforo.
+F485.1h	Copper	Cobre
+F485.1.0	Faded coat (black turning reddish), anemia, diarrhea.	Pelo descolorido (preto que fica avermelhado), anemia, diarreia.
+F485.1.1	Excess molybdenum or sulfur blocks it.	O excesso de molibdênio ou enxofre o bloqueia.
+F485.2h	Zinc	Zinco
+F485.2.0	Thick skin, hair loss, weak hooves, more infections.	Pele grossa, queda de pelo, cascos fracos, mais infecções.
+F485.3h	Selenium and vitamin E	Selênio e vitamina E
+F485.3.0	Muscle weakness, animals that tire when walking.	Fraqueza muscular, animais que se cansam ao caminhar.
+F485.3.1	Excess selenium is toxic: don't add it on your own.	O excesso de selênio é tóxico: não acrescente por conta própria.
+F485.4h	Cobalt	Cobalto
+F485.4.0	Needed for the vitamin B12 the rumen makes.	Necessário para a vitamina B12 que o rúmen fabrica.
+F485.4.1	Deficiency: poor appetite, anemia, poor coat.	Falta: pouco apetite, anemia, pelo feio.
+F485.5h	Prevention	Prevenção
+F485.5.0	Complete mineral premix in the pen ration.	Núcleo mineral completo na ração de curral.
+F485.5.1	Free-choice mineral salt on pasture, in covered feeders.	Sal mineral à vontade no pasto, em saleiros cobertos.
+F485.5.2	Plain white salt alone isn't enough.	O sal branco sozinho não basta.
+F485.5.3	Soil or forage analysis to know what's lacking in your area.	Análise de solo ou de forragem para saber o que falta na sua região.
+F486.t	Viral respiratory diseases and BVD	Doenças virais respiratórias e BVD
+F486.r	IBR, bovine viral diarrhea (BVD), PI3 and BRSV are viruses that lower immunity and open the way to pneumonia.	IBR, diarreia viral bovina (BVD), PI3 e BRSV são vírus que baixam as defesas e abrem caminho para a pneumonia.
+F486.0h	IBR (rhinotracheitis)	IBR (rinotraqueíte)
+F486.0.0	Fever, red crusty nose, discharge, tearing.	Febre, focinho vermelho com crostas, muco, lacrimejamento.
+F486.0.1	It spreads by contact and through the air.	Contagia-se por contato e pelo ar.
+F486.1h	BVD (bovine viral diarrhea)	BVD (diarreia viral bovina)
+F486.1.0	It can cause diarrhea, mouth ulcers and severely lower immunity.	Pode dar diarreia, feridas na boca e baixar muito as defesas.
+F486.1.1	Some animals are born infected for life (persistently infected) and spread it constantly.	Alguns animais nascem infectados para a vida toda (persistentemente infectados) e contagiam sem parar.
+F486.2h	PI3 and BRSV	PI3 e BRSV
+F486.2.0	Respiratory viruses that complicate pneumonia, especially in young animals.	Vírus respiratórios que complicam a pneumonia, sobretudo em animais jovens.
+F486.3h	Control	Controle
+F486.3.0	Respiratory vaccines as your vet advises, ideally before or on arrival at the feedlot.	Vacinas respiratórias conforme seu veterinário, idealmente antes ou na chegada ao confinamento.
+F486.3.1	Avoid mixing many origins.	Evite misturar muitas origens.
+F486.3.2	Good receiving management and less stress.	Bom manejo de recepção e menos estresse.
+F486.3.3	If there are many cases, ask for lab tests to know which virus is circulating.	Se houver muitos casos, peça exames de laboratório para saber qual vírus circula.
+F487.t	Defects to check when buying	Defeitos a revisar na compra
+F487.r	Some problems, if you buy them, will make you lose money for the whole feeding period. Checking for them at the auction or the farm of origin saves headaches.	Há problemas que, se você os compra, farão perder dinheiro em todo o confinamento. Revisá-los no leilão ou na fazenda de origem evita dores de cabeça.
+F487.0h	Check	Revise
+F487.0.0	Umbilical or scrotal hernias (soft lump).	Hérnias de umbigo ou de escroto (caroço mole).
+F487.0.1	Eyes: white spots, blindness.	Olhos: manchas brancas, cegueira.
+F487.0.2	Legs and hooves: lameness, swollen joints.	Patas e cascos: mancadeiras, articulações inchadas.
+F487.0.3	Mouth: worn or missing teeth in old animals.	Boca: dentes gastos ou faltando em animais velhos.
+F487.0.4	Breathing: cough, discharge, fast breathing.	Respiração: tosse, muco, respiração rápida.
+F487.0.5	Skin: ringworm, mange, ticks, wounds and screwworm.	Pele: tinha, sarna, carrapatos, feridas e bicheira.
+F487.1h	Condition	Condição
+F487.1.0	Very thin animals may be sick, not just poorly fed.	Animais magros demais podem estar doentes, não só mal alimentados.
+F487.1.1	A very full belly may be parasites or filling to weigh more.	Barriga muito cheia pode ser parasitas ou enchimento para pesar mais.
+F487.1.2	Nervous or aggressive animals fatten worse and are dangerous.	Animais nervosos ou agressivos engordam pior e são perigosos.
+F487.2h	Documents	Documentos
+F487.2.0	SENASA movement permit.	Guia de trânsito do SENASA.
+F487.2.1	Vaccine and treatment record if the seller has one.	Registro de vacinas e tratamentos se o vendedor tiver.
+F487.2.2	Origin of the animals.	Origem dos animais.
+F487.3h	Rule of thumb	Regra prática
+F487.3.0	If you doubt an animal, don't buy it or lower the price.	Se tiver dúvida sobre um animal, não compre ou baixe o preço.
+F487.3.1	A problem animal costs more than its discount.	Um animal problemático custa mais que seu desconto.
+F488.t	Hernias and prolapses	Hérnias e prolapsos
+F488.r	They're lumps from tissue or organs protruding. Some can be managed; others force a sale or a quick call to the vet.	São caroços por saída de tecido ou de órgãos. Alguns se podem manejar, outros obrigam a vender ou a chamar o veterinário rápido.
+F488.0h	Umbilical hernia	Hérnia de umbigo
+F488.0.0	A soft lump at the navel that goes back in when pushed.	Caroço mole no umbigo que entra ao ser empurrado.
+F488.0.1	If small it may cause no problem; if it grows, hardens or hurts, call the vet.	Se for pequena pode não dar problema; se crescer, endurecer ou doer, chame o veterinário.
+F488.0.2	Avoid buying animals with large hernias.	Evite comprar animais com hérnias grandes.
+F488.1h	Rectal prolapse	Prolapso retal
+F488.1.0	Part of the rectum comes out through the anus, red and moist.	Sai parte do reto pelo ânus, vermelho e úmido.
+F488.1.1	It comes from hard coughing, diarrhea, straining or misused implants.	Vem de tosse forte, diarreia, esforço ou implantes mal usados.
+F488.1.2	Protect it from knocks and flies, keep it moist and clean, and call the vet soon.	Proteja de pancadas e moscas, mantenha úmido e limpo e chame o veterinário logo.
+F488.2h	What to decide	O que decidir
+F488.2.0	If the problem recurs or can't be fixed, sell the animal (no withdrawals) before it loses more.	Se o problema se repete ou não tem conserto, venda o animal (sem carências) antes que perca mais.
+F488.2.1	Record it in the app so you don't buy from that supplier again if it repeats.	Anote no app para não comprar de novo desse fornecedor se se repetir.
+F489.t	Red or dark urine	Urina vermelha ou escura
+F489.r	Red or brown urine is a warning sign. It can come from several different diseases, and treatment changes with the cause.	A urina vermelha ou marrom é um sinal de alarme. Pode vir de várias doenças diferentes, e o tratamento muda conforme a causa.
+F489.0h	Possible causes	Possíveis causas
+F489.0.0	Babesiosis (red-water tick fever): fever and red urine, transmitted by ticks.	Babesiose (tristeza parasitária): febre e urina vermelha, transmitida pelo carrapato.
+F489.0.1	Leptospirosis: dark urine, fever, anemia.	Leptospirose: urina escura, febre, anemia.
+F489.0.2	Bacillary hemoglobinuria (clostridial): rapid death.	Hemoglobinúria bacilar (clostridial): morte rápida.
+F489.0.3	Bracken fern (Pteridium) eaten over a long time: blood in the urine.	Samambaia (Pteridium) consumida por muito tempo: sangue na urina.
+F489.0.4	Some plant or copper poisonings.	Algumas intoxicações por plantas ou cobre.
+F489.1h	What to do	O que fazer
+F489.1.0	Separate the animal, take its temperature and don't run it.	Separe o animal, meça a temperatura e não o faça correr.
+F489.1.1	Call the vet the same day.	Chame o veterinário no mesmo dia.
+F489.1.2	Check for ticks on the animal and in the lot.	Procure carrapatos no animal e no lote.
+F489.1.3	Check the pasture for bracken or other plants.	Revise o pasto procurando samambaia ou outras plantas.
+F489.2h	Prevention	Prevenção
+F489.2.0	Tick control.	Controle de carrapatos.
+F489.2.1	Complete clostridial vaccination.	Vacina clostridial completa.
+F489.2.2	Rat control and clean water.	Controle de ratos e água limpa.
+F489.2.3	Clearing toxic plants.	Limpeza de plantas tóxicas.
+F490.t	Diseases that spread to people	Doenças que passam para as pessoas
+F490.r	Several cattle diseases pass to people. Protecting yourself is part of daily work on the farm.	Várias doenças do gado passam para as pessoas. Proteger-se é parte do trabalho diário na fazenda.
+F490.0h	The main ones	As principais
+F490.0.0	Rabies: through saliva; deadly if the person isn't vaccinated in time.	Raiva: pela saliva; mortal se a pessoa não for vacinada a tempo.
+F490.0.1	Anthrax: through contact with carcasses or hides.	Antraz: por contato com cadáveres ou couros.
+F490.0.2	Brucellosis: through fetuses, placentas and raw milk.	Brucelose: por fetos, placentas e leite cru.
+F490.0.3	Tuberculosis: through the air and raw milk.	Tuberculose: pelo ar e leite cru.
+F490.0.4	Leptospirosis: through urine, mud and contaminated water.	Leptospirose: por urina, barro e água contaminada.
+F490.0.5	Ringworm: through skin contact.	Tinha: por contato com a pele.
+F490.1h	Protection	Proteção
+F490.1.0	Gloves when touching sick or dead animals, wounds or fetuses.	Luvas ao tocar animais doentes, mortos, feridas ou fetos.
+F490.1.1	Don't put your hand in the mouth of a drooling animal.	Não coloque a mão na boca de um animal que baba.
+F490.1.2	Wash your hands before eating, drinking or smoking.	Lave as mãos antes de comer, beber ou fumar.
+F490.1.3	Don't eat meat from dead or sick animals or raw milk from uncontrolled herds.	Não coma carne de animais mortos ou doentes nem leite cru de rebanhos sem controle.
+F490.1.4	Boots in pens and mud.	Botas nos currais e no barro.
+F490.2h	If you get sick	Se você adoecer
+F490.2.0	Go to a health center and say you work with cattle.	Vá ao posto de saúde e diga que trabalha com gado.
+F490.2.1	Fever that comes and goes, aches and fatigue may be brucellosis.	Febre que vai e volta, dores e cansaço podem ser brucelose.
+F490.2.2	If an animal suspected of rabies bit you or drooled on you, go the same day.	Se um animal suspeito de raiva mordeu ou babou em você, vá no mesmo dia.
+F491.t	Brucellosis and tuberculosis	Brucelose e tuberculose
+F491.r	They're diseases under official programs because of their risk to people and trade. In feeding they matter because of the animals' origin and the sale.	São doenças sob programa oficial por seu risco para as pessoas e o comércio. No confinamento importam pela origem dos animais e pela venda.
+F491.0h	Brucellosis	Brucelose
+F491.0.0	It causes abortions in females and problems in bulls.	Causa abortos em fêmeas e problemas em touros.
+F491.0.1	It spreads to people through placentas, fetuses and raw milk.	Passa para as pessoas por placentas, fetos e leite cru.
+F491.0.2	Heifers and cull cows entering the feedlot may carry it.	As novilhas e vacas de descarte que entram no confinamento podem portá-la.
+F491.1h	Tuberculosis	Tuberculose
+F491.1.0	A slow disease that makes the animal lose weight and damages the lungs.	Doença lenta que emagrece o animal e danifica os pulmões.
+F491.1.1	It's detected with the tuberculin test and at the slaughterhouse.	Detecta-se com o teste de tuberculina e no frigorífico.
+F491.1.2	A finding at the slaughterhouse leads to tracing the farm of origin.	Um achado no frigorífico leva a rastrear a fazenda de origem.
+F491.2h	What to do	O que fazer
+F491.2.0	Buy from controlled or certified farms when possible.	Compre de fazendas com controle ou certificação quando possível.
+F491.2.1	Take part in SENASA's programs.	Participe dos programas do SENASA.
+F491.2.2	If the slaughterhouse reports lesions, cooperate with the traceback.	Se o frigorífico reportar lesões, colabore com o rastreamento.

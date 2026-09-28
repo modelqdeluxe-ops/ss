@@ -1,0 +1,218 @@
+F139.t	Minerals in the body	Minerais no corpo
+F139.r	Minerals build bones, move muscles, make enzymes work and strengthen defenses. They are often lacking in tropical pastures.	Os minerais formam os ossos, movem os músculos, fazem as enzimas trabalharem e fortalecem as defesas. Faltam com frequência nos pastos tropicais.
+F139.0h	Macrominerals	Macrominerais
+F139.0.0	Calcium and phosphorus: bones, muscles and energy. Phosphorus is the one most lacking in tropical pastures.	Cálcio e fósforo: ossos, músculos e energia. O fósforo é o que mais falta nos pastos tropicais.
+F139.0.1	Sodium and chloride (salt): body water and appetite.	Sódio e cloro (sal): água do corpo e apetite.
+F139.0.2	Magnesium and potassium: nerves and muscles.	Magnésio e potássio: nervos e músculos.
+F139.0.3	Sulfur: so the microbes can make protein.	Enxofre: para os micróbios fazerem proteína.
+F139.1h	Trace minerals	Microminerais
+F139.1.0	Zinc: skin, hooves and defenses.	Zinco: pele, cascos e defesas.
+F139.1.1	Copper: hair, blood and defenses; molybdenum and sulfur block it.	Cobre: pelo, sangue e defesas; o molibdênio e o enxofre o bloqueiam.
+F139.1.2	Selenium: defenses and muscle, together with vitamin E.	Selênio: defesas e músculo, junto com a vitamina E.
+F139.1.3	Cobalt: the microbes use it to make vitamin B12.	Cobalto: os micróbios o usam para fazer vitamina B12.
+F139.1.4	Iodine: thyroid and metabolism.	Iodo: tireoide e metabolismo.
+F139.2h	Signs of deficiency	Sinais de falta
+F139.2.0	Eating dirt, bones or wood, or licking walls (pica).	Comer terra, ossos, madeira ou lamber paredes (pica).
+F139.2.1	Dull, faded hair or 'spectacles' around the eyes.	Pelo opaco, descolorido ou com 'óculos' ao redor dos olhos.
+F139.2.2	Poor gain for no clear reason.	Pouco ganho sem razão clara.
+F139.3h	In your feedlot	No seu confinamento
+F139.3.0	Mineral salt always available or mixed into the ration.	Sal mineral sempre disponível ou misturado na ração.
+F139.3.1	Choose a mineral salt made for your area and type of pasture.	Escolha um sal mineral feito para sua região e seu tipo de pasto.
+F140.t	Vitamins in cattle	Vitaminas no bovino
+F140.r	Rumen microbes make the B vitamins and vitamin K. The animal needs to get vitamins A, D and E from outside.	Os micróbios do rúmen fabricam as vitaminas B e K. O animal precisa receber de fora as vitaminas A, D e E.
+F140.0h	Vitamin A	Vitamina A
+F140.0.0	It comes from the carotene in green grass.	Vem do caroteno do pasto verde.
+F140.0.1	In the dry season, on dry grass, it runs out in 2 to 4 months.	Na época seca, com pasto seco, acaba em 2 a 4 meses.
+F140.0.2	Its lack causes night blindness, watery eyes, poor gain and more disease.	Sua falta causa cegueira noturna, olhos lacrimejantes, pouco ganho e mais doenças.
+F140.1h	Vitamin D	Vitamina D
+F140.1.0	It forms in the skin with sunlight.	Forma-se na pele com o sol.
+F140.1.1	Animals in the sun rarely lack it.	Animais ao sol raramente têm falta.
+F140.1.2	It helps absorb calcium and phosphorus.	Ajuda a absorver cálcio e fósforo.
+F140.2h	Vitamin E	Vitamina E
+F140.2.0	It comes from green grass; stored grain has little.	Vem do pasto verde; o grão armazenado tem pouca.
+F140.2.1	It works together with selenium in defenses and muscle.	Trabalha junto com o selênio nas defesas e no músculo.
+F140.2.2	It is added to feedlot rations and at the arrival of stressed animals.	É adicionada em rações de confinamento e na chegada de animais estressados.
+F140.3h	B vitamins	Vitaminas B
+F140.3.0	The microbes make them; they are rarely lacking.	Os micróbios as fabricam; raramente faltam.
+F140.3.1	Thiamine (B1) can be lacking with acidosis or excess sulfur: it causes polioencephalomalacia.	A tiamina (B1) pode faltar em acidose ou com excesso de enxofre: causa polioencefalomalácia.
+F140.4h	In your feedlot	No seu confinamento
+F140.4.0	In the dry season or in pens without green forage, give vitamins A, D and E in the salt or by injection.	Na época seca ou no confinamento sem forragem verde, dê vitaminas A, D e E no sal ou injetadas.
+F140.4.1	A vitamin injection at arrival is a common, cheap practice.	A injeção de vitaminas na chegada é uma prática comum e barata.
+F141.t	Oxidative stress	Estresse oxidativo
+F141.r	When the animal suffers heat, stress or disease, harmful molecules called free radicals form in its body. Antioxidants such as vitamin E and selenium keep them in check.	Quando o animal sofre calor, estresse ou doença, formam-se em seu corpo moléculas prejudiciais chamadas radicais livres. Os antioxidantes como a vitamina E e o selênio os controlam.
+F141.0h	What causes it	O que o causa
+F141.0.0	Strong, prolonged heat.	Calor forte e prolongado.
+F141.0.1	Transport, weaning, mixing lots.	Transporte, desmame, mistura de lotes.
+F141.0.2	Infections and very rapid growth.	Infecções e crescimento muito rápido.
+F141.1h	What it provokes	O que provoca
+F141.1.0	Damage to defense cells and muscle.	Dano às células de defesa e ao músculo.
+F141.1.1	More disease and poorer recovery.	Mais doenças e pior recuperação.
+F141.2h	Antioxidants	Antioxidantes
+F141.2.0	Vitamin E, selenium, zinc, copper and manganese.	Vitamina E, selênio, zinco, cobre e manganês.
+F141.2.1	Green grass has natural antioxidants.	O pasto verde tem antioxidantes naturais.
+F141.2.2	Some plant-based additives also help.	Alguns aditivos vegetais também ajudam.
+F141.3h	In your feedlot	No seu confinamento
+F141.3.0	In hot weather and when receiving animals, make sure there is vitamin E and selenium.	Na época de calor e ao receber animais, garanta vitamina E e selênio.
+F141.3.1	Don't overdo selenium: it is toxic in excess. Follow the label dose.	Não exagere no selênio: é tóxico em excesso. Siga a dose do rótulo.
+F142.t	Hooves and legs	Cascos e patas
+F142.r	A bovine carries its whole weight on eight claws. If they hurt, it walks little, eats little and stops gaining weight.	Um bovino carrega todo o seu peso sobre oito unhas. Se doem, caminha pouco, come pouco e deixa de ganhar peso.
+F142.0h	What they are like	Como são
+F142.0.0	Each leg has two main claws and two dewclaws.	Cada pata tem duas unhas principais e duas rudimentares.
+F142.0.1	The hoof grows about 5 millimeters a month.	O casco cresce uns 5 milímetros por mês.
+F142.0.2	The hoof is made of keratin, like nails, and needs zinc and biotin.	O casco é de queratina, como as unhas, e precisa de zinco e biotina.
+F142.1h	What damages them	O que os danifica
+F142.1.0	Constant mud: it softens the hoof and lets bacteria in.	Lama permanente: amolece o casco e deixa entrar bactérias.
+F142.1.1	Stones, rough floors and slippery concrete.	Pedras, pisos ásperos e cimento escorregadio.
+F142.1.2	Acidosis: causes laminitis, inflammation inside the hoof.	Acidose: causa laminite, inflamação dentro do casco.
+F142.2h	In your feedlot	No seu confinamento
+F142.2.0	Dry pens and lanes without loose stones.	Currais secos e caminhos sem pedras soltas.
+F142.2.1	A lame animal gains less: check it in the chute.	Um animal que manca ganha menos: examine-o no tronco.
+F142.2.2	A footbath with copper or zinc sulfate helps in the rainy season.	Pedilúvio com sulfato de cobre ou zinco ajuda na época de chuvas.
+F143.t	Teeth and age	Dentes e idade
+F143.r	Cattle have no upper front teeth: they cut grass by pressing it with the tongue against a dental pad. The lower teeth change with age and are used to estimate it.	O bovino não tem dentes de cima na frente: corta o pasto apertando-o com a língua contra uma almofada. Os dentes de baixo mudam com a idade e servem para calculá-la.
+F143.0h	The teeth	A dentição
+F143.0.0	Lower front: 8 incisors. Upper: a hard dental pad.	Na frente embaixo: 8 incisivos. Em cima: uma almofada dura.
+F143.0.1	At the back: large molars for grinding.	Atrás: molares grandes para moer.
+F143.0.2	The long, rough tongue wraps around the grass.	A língua comprida e áspera enrola o pasto.
+F143.1h	Tooth replacement	Troca de dentes
+F143.1.0	Milk teeth until about 18 to 24 months.	Dentes de leite até cerca de 18 a 24 meses.
+F143.1.1	Two permanent teeth: about 2 years.	Dois dentes permanentes: cerca de 2 anos.
+F143.1.2	Four teeth: about 2.5 to 3 years; six: 3 to 3.5; eight: 4 years or more.	Quatro dentes: cerca de 2,5 a 3 anos; seis: 3 a 3,5; oito: 4 anos ou mais.
+F143.1.3	Zebu cattle may change them somewhat later.	O zebu pode trocar um pouco mais tarde.
+F143.2h	In your feedlot	No seu confinamento
+F143.2.0	The plant and the buyer use the teeth to grade the carcass.	O frigorífico e o comprador usam os dentes para classificar a carcaça.
+F143.2.1	Animals with fewer permanent teeth usually pay better.	Animais com menos dentes permanentes costumam valer mais.
+F143.2.2	Very tough pastures and dirt wear down the teeth of old animals.	Pastos muito duros e terra desgastam os dentes de animais velhos.
+F144.t	Digestibility	Digestibilidade
+F144.r	Digestibility is the part of the feed the animal uses and doesn't pass in the feces. A grass with 60 % digestibility leaves the animal 60 % of what it ate.	A digestibilidade é a parte da comida que o animal aproveita e não sai nas fezes. Um pasto com 60 % de digestibilidade deixa ao animal 60 % do que comeu.
+F144.0h	Examples	Exemplos
+F144.0.0	Well-processed corn grain: 85 to 90 %.	Grão de milho bem processado: 85 a 90 %.
+F144.0.1	Young, well-managed grass: 60 to 70 %.	Pasto novo bem manejado: 60 a 70 %.
+F144.0.2	Old grass or crop residue: 40 to 50 %.	Pasto velho ou palhada: 40 a 50 %.
+F144.1h	What lowers it	O que a baixa
+F144.1.0	Plant age: older means more lignin and less digestible.	Idade da planta: mais velha, mais lignina, menos digestível.
+F144.1.1	Little protein: the microbes work slowly.	Pouca proteína: os micróbios trabalham devagar.
+F144.1.2	Heat: tropical plants make more fiber in the heat.	Calor: as plantas tropicais fazem mais fibra com calor.
+F144.2h	Why it matters twice	Por que importa em dobro
+F144.2.0	A poorly digestible feed delivers less energy.	Uma comida pouco digestível entrega menos energia.
+F144.2.1	It also stays longer in the rumen and the animal eats less.	Além disso, fica mais tempo no rúmen e o animal come menos.
+F144.2.2	That's why an old grass fattens much less than a young one.	Por isso um pasto velho engorda muito menos que um novo.
+F144.3h	In your feedlot	No seu confinamento
+F144.3.0	A lab analysis measures digestibility.	A análise de laboratório mede a digestibilidade.
+F144.3.1	Cutting grasses on time is the cheapest way to raise it.	Cortar os pastos na hora certa é a forma mais barata de aumentá-la.
+F145.t	Tropical and temperate grasses	Pastos tropicais e temperados
+F145.r	Tropical grasses (C4 type) grow a lot with heat and sun, but make more fiber and less protein than temperate grasses. That's why a steer in the tropics gains less on pasture than in cooler areas.	Os pastos tropicais (tipo C4) crescem muito com calor e sol, mas fazem mais fibra e menos proteína que os pastos temperados. Por isso um novilho no trópico ganha menos a pasto do que em regiões frias.
+F145.0h	Differences	Diferenças
+F145.0.0	Tropical grasses: more yield per hectare, more fiber, less protein.	Pastos tropicais: mais produção por hectare, mais fibra, menos proteína.
+F145.0.1	Typical digestibility: 50 to 65 %, versus 65 to 80 % for temperate grasses.	Digestibilidade típica: 50 a 65 %, contra 65 a 80 % dos temperados.
+F145.0.2	They mature quickly: in a few weeks they lose quality.	Amadurecem rápido: em poucas semanas perdem qualidade.
+F145.1h	Consequence	Consequência
+F145.1.0	On good tropical pasture, a steer gains 0.4 to 0.7 kg a day.	Em bom pasto tropical, um novilho ganha 0,4 a 0,7 kg por dia.
+F145.1.1	With a supplement it can rise to 0.8 to 1 kg.	Com suplemento pode subir para 0,8 a 1 kg.
+F145.1.2	In a pen with a balanced ration it can gain 1.2 to 1.6 kg.	No confinamento com ração balanceada pode ganhar 1,2 a 1,6 kg.
+F145.2h	In your feedlot	No seu confinamento
+F145.2.0	Manage grazing so they eat young grass.	Maneje o pastejo para comer o pasto novo.
+F145.2.1	Supplement protein in the dry season and energy in the rainy season when you want more gain.	Suplemente proteína na seca e energia nas chuvas quando buscar mais ganho.
+F145.2.2	Legumes and fodder trees raise the pasture's protein.	As leguminosas e árvores forrageiras aumentam a proteína do pasto.
+F146.t	Metabolic weight	Peso metabólico
+F146.r	Large animals spend less energy per kilo than small ones. That's why requirements aren't calculated with normal weight but with metabolic weight: weight raised to the power 0.75.	Os animais grandes gastam menos energia por quilo que os pequenos. Por isso as exigências não se calculam com o peso normal, mas com o peso metabólico: o peso elevado à potência 0,75.
+F146.0h	How it is calculated	Como se calcula
+F146.0.0	Metabolic weight = live weight raised to 0.75.	Peso metabólico = peso vivo elevado a 0,75.
+F146.0.1	Example: 400 kg gives about 89 kg of metabolic weight; 200 kg gives about 53.	Exemplo: 400 kg dá uns 89 kg de peso metabólico; 200 kg dá uns 53.
+F146.0.2	The 400 kg animal weighs twice as much, but its maintenance is only 1.7 times higher.	O animal de 400 kg pesa o dobro, mas sua mantença é só 1,7 vez maior.
+F146.1h	What it's used for	Para que serve
+F146.1.0	Calculating maintenance energy.	Calcular a energia de mantença.
+F146.1.1	Comparing animals of different size.	Comparar animais de tamanhos diferentes.
+F146.1.2	Understanding why large animals convert differently.	Entender por que os animais grandes convertem diferente.
+F146.2h	In your feedlot	No seu confinamento
+F146.2.0	Rumi's calculators use metabolic weight to estimate what your lot needs.	As calculadoras do Rumi usam o peso metabólico para estimar o que seu lote precisa.
+F146.2.1	You don't have to do the math: just enter the weight.	Você não precisa fazer a conta: só informe o peso.
+F147.t	Metabolizable and net energy	Energia metabolizável e líquida
+F147.r	Not all the energy in feed ends up as meat. It is lost in feces, urine, methane and as heat. What is left to maintain and gain weight is net energy.	Nem toda a energia da comida vira carne. Perde-se nas fezes, na urina, no metano e como calor. O que sobra para manter e ganhar peso é a energia líquida.
+F147.0h	The energy ladder	A escada da energia
+F147.0.0	Gross energy: all the energy the feed has if burned.	Energia bruta: toda a que a comida tem se for queimada.
+F147.0.1	Digestible energy: gross minus what leaves in the feces.	Energia digestível: a bruta menos a que sai nas fezes.
+F147.0.2	Metabolizable energy: digestible minus what leaves in urine and methane.	Energia metabolizável: a digestível menos a que sai na urina e no metano.
+F147.0.3	Net energy: metabolizable minus the heat produced digesting and using the feed.	Energia líquida: a metabolizável menos o calor produzido ao digerir e usar a comida.
+F147.1h	Two types of net energy	Dois tipos de energia líquida
+F147.1.0	Net energy for maintenance (NEm): covers the cost of living.	Energia líquida de mantença (ELm): a que cobre o gasto para viver.
+F147.1.1	Net energy for gain (NEg): what becomes weight.	Energia líquida de ganho (ELg): a que se converte em peso.
+F147.1.2	The same feed is worth less for gain than for maintenance, because building tissue costs more.	A mesma comida vale menos para ganhar do que para manter, porque formar tecido gasta mais.
+F147.2h	Typical values per kilo of dry matter	Valores típicos por quilo de matéria seca
+F147.2.0	Ground corn: NEm about 2.0 and NEg about 1.4 megacalories.	Milho moído: ELm perto de 2,0 e ELg perto de 1,4 megacaloria.
+F147.2.1	Good tropical grass: NEm about 1.2 and NEg about 0.6.	Pasto tropical bom: ELm perto de 1,2 e ELg perto de 0,6.
+F147.2.2	Old grass: NEm about 0.9 and almost no NEg.	Pasto velho: ELm perto de 0,9 e ELg quase nada.
+F147.3h	In your feedlot	No seu confinamento
+F147.3.0	Modern requirement tables use this system.	As tabelas modernas de exigências usam este sistema.
+F147.3.1	The app's diet formulator helps you balance energy without doing these calculations by hand.	O formulador de dietas do app ajuda a balancear a energia sem fazer essas contas à mão.
+F148.t	Metabolizable protein	Proteína metabolizável
+F148.r	Metabolizable protein is what truly reaches the intestine and the animal absorbs: microbial protein plus feed protein that escaped the rumen.	A proteína metabolizável é a que de verdade chega ao intestino e o animal absorve: a proteína dos micróbios mais a proteína da comida que escapou do rúmen.
+F148.0h	Where it comes from	De onde vem
+F148.0.0	Microbial protein: made by microbes from degradable protein or urea plus energy.	Proteína microbiana: os micróbios a fazem com proteína degradável ou ureia e energia.
+F148.0.1	Bypass protein: the part of the feed not degraded in the rumen.	Proteína de escape (by-pass): a parte da comida que não se degrada no rúmen.
+F148.0.2	Both are digested in the abomasum and intestine.	As duas são digeridas no abomaso e no intestino.
+F148.1h	Why crude protein isn't enough	Por que a proteína bruta não basta
+F148.1.0	The crude protein on the label doesn't tell how much reaches the intestine.	A proteína bruta do rótulo não diz quanto chega ao intestino.
+F148.1.1	Two rations with 13 % protein can give different results.	Duas rações com 13 % de proteína podem dar resultados diferentes.
+F148.1.2	Young, fast-growing animals need more bypass protein.	Animais jovens e de crescimento rápido precisam de mais proteína de escape.
+F148.2h	In your feedlot	No seu confinamento
+F148.2.0	First make sure there is degradable protein for the microbes; it is the cheapest.	Primeiro garanta proteína degradável para os micróbios; é a mais barata.
+F148.2.1	Then, in light, fast-growing animals, add bypass sources such as roasted soybean meal, DDGS or seed meals.	Depois, em animais leves que crescem rápido, adicione fontes de escape como farelo de soja tostado, DDGS ou farelos de sementes.
+F149.t	Requirements: modern tables	Exigências: tabelas modernas
+F149.r	Nutritionists use scientific tables to know how much energy, protein and minerals each animal needs. The most used are those of the US National Academies (2016 edition) and, for zebu and the tropics, the Brazilian BR-CORTE tables.	Os nutricionistas usam tabelas científicas para saber quanta energia, proteína e minerais cada animal precisa. As mais usadas são as da Academia Nacional de Ciências dos EUA (edição de 2016) e, para zebu e trópico, as brasileiras BR-CORTE.
+F149.0h	What they say	O que dizem
+F149.0.0	How much net energy an animal needs by weight, sex, breed and gain.	Quanta energia líquida um animal precisa conforme peso, sexo, raça e ganho.
+F149.0.1	How much metabolizable protein and how many minerals and vitamins.	Quanta proteína metabolizável e quantos minerais e vitaminas.
+F149.0.2	How much it will eat by weight and feed quality.	Quanto vai comer conforme o peso e a qualidade da comida.
+F149.1h	Why breed matters	Por que a raça importa
+F149.1.0	Zebu cattle have somewhat lower maintenance than European breeds.	O zebu tem uma mantença um pouco menor que as raças europeias.
+F149.1.1	The Brazilian tables were built with Nelore and crosses, closer to Central American cattle.	As tabelas brasileiras foram feitas com Nelore e cruzados, mais parecidos com o gado da América Central.
+F149.1.2	The US tables were built mostly with European breeds.	As tabelas dos EUA foram feitas sobretudo com raças europeias.
+F149.2h	Practical example	Exemplo prático
+F149.2.0	A 350 kg steer gaining 1 kg a day eats about 8 to 9 kg of dry matter.	Um novilho de 350 kg que ganha 1 kg por dia come uns 8 a 9 kg de matéria seca.
+F149.2.1	It needs about 11 to 12 % crude protein in the ration.	Precisa de cerca de 11 a 12 % de proteína bruta na ração.
+F149.2.2	And a ration with about 1.1 to 1.2 megacalories of NEg per kilo of dry matter.	E de uma ração com umas 1,1 a 1,2 megacaloria de ELg por quilo de matéria seca.
+F149.3h	In your feedlot	No seu confinamento
+F149.3.0	Rumi's calculators use values from these tables adjusted to the tropics. See Rumi, Feeding, Requirements by breed and climate.	As calculadoras do Rumi usam valores dessas tabelas ajustados ao trópico. Veja Rumi, Alimentação, Exigências por raça e clima.
+F149.3.1	Weighing on time tells you whether your lot gains what the ration promises.	Pesar na hora certa diz se seu lote ganha o que a ração promete.
+F150.t	Limiting amino acids	Aminoácidos limitantes
+F150.r	Protein is made of amino acids. If one is missing, the animal can't build muscle even if it has plenty of the others. In finishing cattle the ones most often short are methionine and lysine.	A proteína é feita de aminoácidos. Se faltar um, o animal não consegue formar músculo mesmo que sobrem os demais. Em bovinos de engorda os que mais costumam faltar são a metionina e a lisina.
+F150.0h	How it works	Como funciona
+F150.0.0	The body builds protein like a necklace: if one bead is missing, the necklace stays incomplete.	O corpo monta a proteína como um colar: se falta uma conta, o colar fica incompleto.
+F150.0.1	The amino acid that runs out first is called limiting.	O aminoácido que falta primeiro se chama limitante.
+F150.0.2	Microbial protein has a good amino acid balance.	A proteína microbiana tem um bom equilíbrio de aminoácidos.
+F150.1h	When it matters	Quando importa
+F150.1.0	In young animals that grow very fast.	Em animais jovens que crescem muito rápido.
+F150.1.1	In rations with a lot of corn and DDGS, which are low in lysine.	Em rações com muito milho e DDGS, que têm pouca lisina.
+F150.1.2	In most tropical feeding programs, total protein must be covered first.	Na maioria das engordas tropicais, primeiro é preciso cobrir a proteína total.
+F150.2h	In your feedlot	No seu confinamento
+F150.2.0	Soybean meal has good lysine.	O farelo de soja tem boa lisina.
+F150.2.1	Rumen-protected amino acids exist, but they are expensive and rarely justified in finishing.	Existem aminoácidos protegidos para ruminantes, mas são caros e raramente se justificam na engorda.
+F151.t	Hunger and satiety	Fome e saciedade
+F151.r	The animal decides how much to eat from signals from the rumen, the blood and the brain: how full the rumen is, how much energy it has and how it feels.	O animal decide quanto comer por sinais do rúmen, do sangue e do cérebro: quão cheio está o rúmen, quanta energia tem e como se sente.
+F151.0h	Signals that stop eating	Sinais que freiam
+F151.0.0	Full rumen: on forage, the animal stops when nothing more fits.	Rúmen cheio: com forragem, o animal para quando não cabe mais.
+F151.0.1	Propionic acid in the liver: on grain, it signals there is enough energy.	Ácido propiônico no fígado: com grão, avisa que já há energia suficiente.
+F151.0.2	Leptin from fat: fat animals eat less per kilo.	Leptina da gordura: os animais gordos comem menos por quilo.
+F151.0.3	Heat, pain and disease.	Calor, dor e doença.
+F151.1h	Signals that encourage eating	Sinais que estimulam
+F151.1.0	Fresh feed in the bunk: the animal eats more when it is served.	Comida fresca no cocho: o animal come mais quando é servido.
+F151.1.1	The sweet taste of molasses.	O sabor doce do melaço.
+F151.1.2	Being in a group: they eat more when they see others eating.	Estar em grupo: comem mais quando veem outros comerem.
+F151.2h	In your feedlot	No seu confinamento
+F151.2.0	Feeding 2 or 3 times a day stimulates intake.	Tratar 2 ou 3 vezes por dia estimula o consumo.
+F151.2.1	Push the feed toward the animals several times a day.	Empurre a comida para perto do animal várias vezes ao dia.
+F151.2.2	If the whole lot's intake drops, look for heat, spoiled feed, water or disease.	Se cai o consumo do lote inteiro, procure calor, comida estragada, água ou doença.
+F152.t	Energy balance and body condition	Balanço de energia e condição corporal
+F152.r	If the animal eats more energy than it spends, it stores the surplus as muscle and fat; if it eats less, it uses its reserves. Body condition reflects that balance.	Se o animal come mais energia do que gasta, guarda a sobra como músculo e gordura; se come menos, gasta suas reservas. A condição corporal reflete esse balanço.
+F152.0h	Positive balance	Balanço positivo
+F152.0.0	It eats more than it spends: it gains weight.	Come mais do que gasta: sobe de peso.
+F152.0.1	First it builds muscle; if there is a lot left over, it builds fat.	Primeiro faz músculo; se sobra muito, faz gordura.
+F152.0.2	It is the goal of feeding.	É a meta da engorda.
+F152.1h	Negative balance	Balanço negativo
+F152.1.0	It eats less than it spends: it loses weight.	Come menos do que gasta: perde peso.
+F152.1.1	It uses fat and then muscle.	Gasta gordura e depois músculo.
+F152.1.2	It happens with drought, disease, strong heat or stress.	Acontece com seca, doença, calor forte ou estresse.
+F152.2h	In your feedlot	No seu confinamento
+F152.2.0	Weigh often: weight is the best mirror of the balance.	Pese com frequência: o peso é o melhor espelho do balanço.
+F152.2.1	The app marks in red the lots that lose weight or don't gain.	O app marca em vermelho os lotes que perdem ou não sobem de peso.

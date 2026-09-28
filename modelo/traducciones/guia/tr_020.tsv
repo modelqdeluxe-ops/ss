@@ -1,0 +1,254 @@
+F352.t	Notifiable diseases	Doenças de notificação obrigatória
+F352.r	Some diseases must be reported to the animal health authority as soon as they're suspected, because they can cause epidemics or affect trade.	Algumas doenças devem ser notificadas à autoridade sanitária assim que houver suspeita, porque podem causar epidemias ou afetar o comércio.
+F352.0h	Examples	Exemplos
+F352.0.0	Rabies.	Raiva.
+F352.0.1	Anthrax.	Antraz (carbúnculo hemático).
+F352.0.2	New World screwworm.	Bicheira (Cochliomyia).
+F352.0.3	Tuberculosis and brucellosis.	Tuberculose e brucelose.
+F352.0.4	Any disease with many deaths, blisters on the mouth and feet, or strange nervous signs.	Qualquer doença com muitas mortes, bolhas na boca e nas patas ou sintomas nervosos estranhos.
+F352.1h	How to report	Como notificar
+F352.1.0	Call the local SENASA office or your vet.	Ligue para o escritório local do SENASA ou para seu veterinário.
+F352.1.1	Don't move animals or carcasses until you get instructions.	Não mova animais nem cadáveres até receber instruções.
+F352.1.2	Keep the information: dates, affected animals, origin.	Guarde as informações: datas, animais afetados, origem.
+F352.2h	Advice	Conselho
+F352.2.0	Keep your area's SENASA phone number handy.	Tenha à mão o telefone do SENASA da sua região.
+F352.2.1	The official list can change: check it with the authority.	A lista oficial pode mudar: consulte a autoridade.
+F353.t	Banned feed products	Produtos proibidos na alimentação
+F353.r	Some substances and materials can't be fed to cattle because they harm people or the animal. Using them brings penalties and market closures.	Há substâncias e materiais que não se podem dar ao gado porque prejudicam as pessoas ou o animal. Usá-los traz sanções e fechamento de mercados.
+F353.0h	Examples	Exemplos
+F353.0.0	Clenbuterol and other unauthorized beta-agonists.	Clembuterol e outros beta-agonistas não autorizados.
+F353.0.1	Unregistered hormones.	Hormônios não registrados.
+F353.0.2	Ruminant meat, bone or blood meal fed to ruminants (mad cow risk).	Farinhas de carne, osso ou sangue de ruminantes para alimentar ruminantes (risco de vaca louca).
+F353.0.3	Antibiotics as growth promoters where they aren't allowed.	Antibióticos como promotores de crescimento onde não são permitidos.
+F353.0.4	Food scraps with meat, garbage or contaminated materials.	Restos de comida com carne, lixo ou materiais contaminados.
+F353.1h	Rules	Regras
+F353.1.0	Use only registered products, as labeled.	Use só produtos registrados e conforme a bula.
+F353.1.1	Ask the supplier for the concentrate's composition.	Peça ao fornecedor a composição do concentrado.
+F353.1.2	Keep invoices and labels.	Guarde notas fiscais e rótulos.
+F353.2h	Advice	Conselho
+F353.2.0	The lists change: check with SENASA and your buyer.	As listas mudam: consulte o SENASA e seu comprador.
+F354.t	Environment and waste management	Ambiente e manejo de resíduos
+F354.r	Feeding produces manure, dirty water, carcasses and chemical containers. Handling them well avoids fines and problems with neighbors.	O confinamento produz esterco, águas sujas, cadáveres e embalagens de químicos. Manejá-los bem evita multas e problemas com vizinhos.
+F354.0h	Manure and water	Esterco e águas
+F354.0.0	Don't discharge into streams or rivers.	Não despejar em córregos nem rios.
+F354.0.1	Composting or biodigesters.	Compostagem ou biodigestores.
+F354.0.2	Distance from water sources.	Distância de fontes de água.
+F354.1h	Carcasses	Cadáveres
+F354.1.0	Bury with lime away from water, or as the authority indicates.	Enterrar com cal longe da água, ou o que a autoridade indicar.
+F354.1.1	Never in the open.	Nunca a céu aberto.
+F354.2h	Chemical containers	Embalagens de químicos
+F354.2.0	Triple rinse and puncture.	Tríplice lavagem e perfuração.
+F354.2.1	Hand in to collection programs.	Entregar a programas de recolhimento.
+F354.2.2	Never reuse for water or feed.	Nunca reutilizar para água ou alimento.
+F354.3h	Soil and forest	Solo e floresta
+F354.3.0	Protect springs and stream banks.	Proteja nascentes e margens de córregos.
+F354.3.1	Reforest with silvopastoral systems.	Reflorestar com sistemas silvipastoris.
+F355.t	Worker safety	Segurança do trabalhador
+F355.r	Labor law and common sense call for protecting those who work with cattle.	A lei trabalhista e o bom senso pedem proteger quem trabalha com o gado.
+F355.0h	Basic obligations	Obrigações básicas
+F355.0.0	Protective equipment: boots, gloves, masks for chemicals.	Equipamento de proteção: botas, luvas, máscaras para químicos.
+F355.0.1	Training in animal and chemical handling.	Treinamento em manejo de animais e químicos.
+F355.0.2	First-aid kit.	Kit de primeiros socorros.
+F355.1h	Risks	Riscos
+F355.1.0	Blows and crushing in the chute.	Pancadas e esmagamentos no brete.
+F355.1.1	Diseases passed from animals.	Doenças transmitidas pelos animais.
+F355.1.2	Pesticide poisoning.	Intoxicações por agrotóxicos.
+F355.1.3	Machinery accidents.	Acidentes com máquinas.
+F355.2h	Advice	Conselho
+F355.2.0	Review your labor obligations with the labor authority or an advisor.	Revise suas obrigações trabalhistas com a autoridade do trabalho ou um assessor.
+F356.t	Authorized slaughter	Abate autorizado
+F356.r	Meat for sale must come from animals slaughtered at authorized slaughterhouses or plants, with health inspection.	A carne para venda deve vir de animais abatidos em matadouros ou frigoríficos autorizados, com inspeção sanitária.
+F356.0h	Why	Por quê
+F356.0.0	Inspection before and after slaughter.	Inspeção antes e depois do abate.
+F356.0.1	Detection of diseases and residues.	Detecção de doenças e resíduos.
+F356.0.2	Meat hygiene.	Higiene da carne.
+F356.1h	What they ask for	O que pedem
+F356.1.0	Movement permit.	Guia de trânsito.
+F356.1.1	Healthy animals with no withdrawals pending.	Animais sadios e sem carências pendentes.
+F356.1.2	Owner identification.	Identificação do proprietário.
+F356.2h	Advice	Conselho
+F356.2.0	Selling meat from animals slaughtered on the farm is not legal and is a health risk.	Vender carne de animais abatidos na fazenda para comércio não é legal e é um risco sanitário.
+F357.t	Prescription and use of veterinary drugs	Receita e uso de medicamentos veterinários
+F357.r	Veterinary drugs must be officially registered and used according to their label or the vet's prescription. Antibiotics increasingly require a prescription.	Os medicamentos veterinários devem ter registro oficial e ser usados conforme a bula ou a receita do veterinário. Os antibióticos exigem cada vez mais receita.
+F357.0h	Rules	Regras
+F357.0.0	Buy only products registered in your country.	Compre só produtos registrados no seu país.
+F357.0.1	Follow the label's dose, route and withdrawal.	Siga dose, via de aplicação e carência da bula.
+F357.0.2	Use a product off-label only with a vet's prescription, which sets a longer withdrawal.	Usar um produto fora da bula só com receita do veterinário, que fixa uma carência mais longa.
+F357.1h	Records	Registros
+F357.1.0	Record product, product batch, dose, animals, date and withdrawal.	Anote produto, lote do produto, dose, animais, data e carência.
+F357.1.1	Keep invoices and prescriptions.	Guarde notas e receitas.
+F357.2h	In your feedlot	No seu confinamento
+F357.2.0	The app saves each treatment with its withdrawal and warns you before selling.	O app guarda cada tratamento com sua carência e avisa antes de vender.
+F358.t	Proper pesticide use	Bom uso de agrotóxicos
+F358.r	Tick killers, insecticides and herbicides are poisons. Using them properly protects people, cattle, water and your sales.	Carrapaticidas, inseticidas e herbicidas são venenos. Usá-los bem protege as pessoas, o gado, a água e suas vendas.
+F358.0h	Rules	Regras
+F358.0.0	Only registered products, for the stated use.	Só produtos registrados e para o uso indicado.
+F358.0.1	Protective equipment when mixing and applying.	Equipamento de proteção ao misturar e aplicar.
+F358.0.2	Don't wash equipment or dump leftovers in rivers or streams.	Não lavar equipamentos nem jogar sobras em rios ou córregos.
+F358.0.3	Triple rinse and return empty containers to collection centers.	Tríplice lavagem e entrega das embalagens vazias nos centros de recolhimento.
+F358.1h	Withdrawals	Carências
+F358.1.0	Cattle dips have meat withdrawal days.	Os banhos no gado têm dias de carência para carne.
+F358.1.1	Herbicides on pastures have days before grazing again.	Os herbicidas nos pastos têm dias antes de voltar a pastejar.
+F359.t	Protecting water sources	Proteção de fontes de água
+F359.r	Many laws protect springs and river and stream banks with forest strips. Besides being mandatory, it protects the water your cattle drink.	Muitas leis protegem as nascentes e as margens de rios e córregos com faixas de mata. Além de obrigatório, cuida da água que seu gado bebe.
+F359.0h	Good practices	Boas práticas
+F359.0.0	Fence springs and banks so cattle can't get in.	Cercar nascentes e margens para que o gado não entre.
+F359.0.1	Bring water to troughs by pump, gravity or ram pump.	Levar a água a bebedouros com bomba, gravidade ou carneiro hidráulico.
+F359.0.2	Keep trees along the banks.	Manter árvores nas margens.
+F359.1h	Benefits	Benefícios
+F359.1.0	Cleaner water: less diarrhea and fewer parasites.	Água mais limpa: menos diarreias e parasitas.
+F359.1.1	Less erosion and mud.	Menos erosão e barro.
+F359.1.2	You comply with the law and can access environmental programs.	Você cumpre a lei e pode acessar programas ambientais.
+F360.t	Transport welfare rules	Normas de bem-estar no transporte
+F360.r	Many countries set rules for transporting cattle: maximum travel time, space per animal and vehicle conditions.	Muitos países estabelecem regras para o transporte de gado: tempo máximo de viagem, espaço por animal e condições do veículo.
+F360.0h	Common points	Pontos comuns
+F360.0.0	Animals fit to travel: not sick, severely lame or females about to calve.	Animais aptos para viajar: não doentes, mancos graves nem fêmeas prestes a parir.
+F360.0.1	Non-slip floor with no protrusions.	Piso antiderrapante e sem saliências.
+F360.0.2	Loading according to the animals' weight.	Carga conforme o peso dos animais.
+F360.0.3	Rest stops with water on long trips.	Descansos com água em viagens longas.
+F360.1h	In your feedlot	No seu confinamento
+F360.1.0	Ask the hauler to follow these rules: your cattle arrive better and without bruises.	Peça ao transportador que cumpra essas regras: seu gado chega melhor e sem pancadas.
+F361.t	How the rumen works	Como funciona o rúmen
+F361.r	Cattle don't digest on their own: millions of microbes in the rumen ferment the feed. Feeding well means feeding those microbes.	O bovino não digere sozinho: milhões de micróbios no rúmen fermentam o alimento. Alimentar bem é alimentar esses micróbios.
+F361.0h	The four stomachs	Os quatro estômagos
+F361.0.0	Rumen: the largest, where microbes ferment.	Rúmen (pança): o maior, onde os micróbios fermentam.
+F361.0.1	Reticulum: helps bring the cud back up for rumination.	Retículo: ajuda a devolver o bolo para ruminar.
+F361.0.2	Omasum: absorbs water.	Omaso: absorve água.
+F361.0.3	Abomasum: the true stomach, with acid like ours.	Abomaso: o estômago verdadeiro, com ácido como o nosso.
+F361.1h	What the microbes do	O que os micróbios fazem
+F361.1.0	They break down grass fiber the animal couldn't digest on its own.	Quebram a fibra do pasto que o animal sozinho não conseguiria digerir.
+F361.1.1	They turn sugars and starch into fatty acids that give the animal energy.	Transformam açúcares e amido em ácidos graxos que dão energia ao animal.
+F361.1.2	They make high-quality protein from nitrogen, even from urea.	Fabricam proteína de alta qualidade a partir de nitrogênio, até da ureia.
+F361.1.3	They produce B vitamins and vitamin K.	Produzem vitaminas do complexo B e vitamina K.
+F361.2h	Rumination	A ruminação
+F361.2.0	The animal brings the cud back to its mouth and chews it again.	O animal devolve o bolo à boca e mastiga de novo.
+F361.2.1	The saliva produced while ruminating carries bicarbonate that buffers rumen acid.	A saliva produzida ao ruminar traz bicarbonato que acalma o ácido do rúmen.
+F361.2.2	Without long fiber there's no rumination, no saliva, and acidosis appears.	Sem fibra longa não há ruminação, não há saliva e aparece a acidose.
+F361.3h	Rules that follow from this	Regras que vêm daqui
+F361.3.0	Microbes need time to adjust to a new ration: 2 to 4 weeks.	Os micróbios precisam de tempo para se acostumar a uma ração nova: 2 a 4 semanas.
+F361.3.1	Abrupt changes kill the useful microbes.	Mudanças bruscas matam os micróbios úteis.
+F361.3.2	Energy and protein must arrive together for microbes to grow.	Energia e proteína devem chegar juntas para os micróbios crescerem.
+F361.3.3	Clean, constant water is essential for fermentation.	Água limpa e constante é indispensável para a fermentação.
+F362.t	Dry matter and intake	Matéria seca e consumo
+F362.r	Every ration calculation is done on dry matter: what's left of the feed without the water. Without this, ingredients are compared wrongly.	Todo cálculo de ração se faz em matéria seca: o que sobra do alimento sem a água. Sem isso os ingredientes são comparados errado.
+F362.0h	What it is	O que é
+F362.0.0	Dry matter is the feed without its water.	Matéria seca é o alimento sem sua água.
+F362.0.1	Fresh grass may be 20 % dry matter: out of 10 kg, only 2 kg are dry feed.	Um capim fresco pode ter 20 % de matéria seca: de 10 kg, só 2 kg são alimento seco.
+F362.0.2	A grain like corn is about 88 % dry matter.	Um grão como o milho tem cerca de 88 % de matéria seca.
+F362.1h	How much they eat	Quanto comem
+F362.1.0	A feedlot steer eats between 2.2 and 2.8 % of its live weight in dry matter per day.	Um novilho de confinamento come entre 2,2 e 2,8 % do seu peso vivo em matéria seca por dia.
+F362.1.1	A 350 kg animal eats about 8 to 9.5 kg of dry matter.	Um animal de 350 kg come cerca de 8 a 9,5 kg de matéria seca.
+F362.1.2	At the start, in heat or when sick they eat less.	No início, com calor ou doentes comem menos.
+F362.1.3	Rations with a lot of poor-quality fiber lower intake.	Rações com muita fibra de má qualidade baixam o consumo.
+F362.2h	How to calculate	Como calcular
+F362.2.0	Kilos as fed = kilos of dry matter ÷ dry matter fraction.	Quilos como servidos = quilos de matéria seca ÷ fração de matéria seca.
+F362.2.1	Example: 3 kg of dry matter from silage at 30 % DM = 3 ÷ 0.30 = 10 kg of fresh silage.	Exemplo: 3 kg de matéria seca de silagem com 30 % MS = 3 ÷ 0,30 = 10 kg de silagem fresca.
+F362.2.2	Rumi's calculator gives you intake by weight.	A calculadora do Rumi dá o consumo conforme o peso.
+F362.3h	What lowers intake	O que baixa o consumo
+F362.3.0	Strong heat and lack of shade.	Calor forte e falta de sombra.
+F362.3.1	Scarce or dirty water.	Água escassa ou suja.
+F362.3.2	Moldy or bad-smelling feed.	Alimento com mofo ou mau cheiro.
+F362.3.3	Subacute acidosis.	Acidose subaguda.
+F362.3.4	Dirty bunks or too little bunk space.	Cochos sujos ou com pouco espaço.
+F362.3.5	Diseases and parasites.	Doenças e parasitas.
+F363.t	Energy in the ration	Energia na ração
+F363.r	Energy is what most limits weight gain in feeding. It comes mainly from grains, molasses and good-quality forages.	A energia é o que mais limita o ganho de peso no confinamento. Vem sobretudo de grãos, melaço e forragens de boa qualidade.
+F363.0h	How it's measured	Como se mede
+F363.0.0	TDN (total digestible nutrients): percentage of the feed that is digested.	NDT (nutrientes digestíveis totais): porcentagem do alimento que é digerida.
+F363.0.1	Net energy for gain (NEg): the energy actually left over for gaining weight.	Energia líquida de ganho (ELg): a energia que realmente sobra para ganhar peso.
+F363.0.2	A finishing ration usually has 72 to 80 % TDN.	Uma ração de terminação costuma ter 72 a 80 % de NDT.
+F363.1h	Energy sources	Fontes de energia
+F363.1.0	Grains: corn, sorghum, broken rice.	Grãos: milho, sorgo, arroz quebrado.
+F363.1.1	Molasses and sugary by-products.	Melaço e subprodutos com açúcar.
+F363.1.2	Citrus pulp, soybean hulls and others with digestible fiber.	Polpa cítrica, casca de soja e outros com fibra digestível.
+F363.1.3	Fats in small amounts (no more than 5 to 6 % of the total ration).	Gorduras em pouca quantidade (não mais de 5 a 6 % da ração total).
+F363.2h	Signs of low energy	Sinais de falta de energia
+F363.2.0	Low gain even though they eat well.	Ganho baixo mesmo comendo bem.
+F363.2.1	Animals that don't fatten at the end.	Animais que não engordam no final.
+F363.2.2	Good frame but thin.	Bom tamanho, mas magros.
+F363.3h	Precautions	Cuidados
+F363.3.0	More energy from grain requires more care with acidosis.	Mais energia por grão exige mais cuidado com a acidose.
+F363.3.1	Raise the grain little by little.	Suba o grão aos poucos.
+F363.3.2	Always balance with protein and minerals.	Equilibre sempre com proteína e minerais.
+F364.t	Protein in the ration	Proteína na ração
+F364.r	Protein builds muscle and feeds the rumen microbes. Young, light animals need more.	A proteína forma músculo e alimenta os micróbios do rúmen. Animais jovens e leves precisam de mais.
+F364.0h	How much	Quanta
+F364.0.0	Starting and light animals: 13 to 15 % crude protein in the dry matter.	Inicial e animais leves: 13 a 15 % de proteína bruta na matéria seca.
+F364.0.1	Growing: 12 to 13 %.	Crescimento: 12 a 13 %.
+F364.0.2	Finishing: 11 to 12 %.	Terminação: 11 a 12 %.
+F364.0.3	Giving more than needed is money thrown away: the excess is lost in urine.	Dar mais do que o necessário é dinheiro jogado fora: o excesso sai na urina.
+F364.1h	Types	Tipos
+F364.1.0	Degradable protein: used by rumen microbes (includes urea).	Proteína degradável: usada pelos micróbios do rúmen (inclui a ureia).
+F364.1.1	Bypass (escape) protein: passes undegraded and is digested in the intestine.	Proteína de escape ou by-pass: passa sem se degradar e é digerida no intestino.
+F364.1.2	Young animals make better use of bypass protein.	Os animais jovens aproveitam mais a proteína de escape.
+F364.2h	Sources	Fontes
+F364.2.0	Soybean meal, palm kernel meal, cottonseed meal.	Farelo de soja, torta de palmiste, farelo de algodão.
+F364.2.1	Urea (non-protein nitrogen) in limited amounts.	Ureia (nitrogênio não proteico) em quantidade limitada.
+F364.2.2	Legumes: leucaena, gliricidia, cratylia, pigeon pea.	Leguminosas: leucena, gliricídia, cratília, feijão-guandu.
+F364.2.3	Poultry litter: see restrictions and risks before using it.	Cama de frango: veja restrições e riscos antes de usar.
+F364.3h	Signs of low protein	Sinais de falta de proteína
+F364.3.0	Low intake of dry forages.	Pouco consumo de forragens secas.
+F364.3.1	Low gain in young animals.	Ganho baixo em animais jovens.
+F364.3.2	Rough coat and frame growth without meat.	Pelo feio e crescimento de esqueleto sem carne.
+F365.t	Fiber and forage in the ration	Fibra e forragem na ração
+F365.r	Even if the ration is concentrate, the animal needs long fiber to ruminate and keep the rumen healthy.	Mesmo que a ração seja de concentrado, o animal precisa de fibra longa para ruminar e manter o rúmen sadio.
+F365.0h	What it's for	Para que serve
+F365.0.0	It stimulates rumination and saliva, which buffers rumen acid.	Estimula a ruminação e a saliva, que acalma o ácido do rúmen.
+F365.0.1	It keeps the rumen moving.	Mantém o movimento do rúmen.
+F365.0.2	It forms a fiber mat that protects the rumen wall.	Forma uma camada de fibra que protege a parede do rúmen.
+F365.1h	How much	Quanto
+F365.1.0	Starting: 40 to 60 % forage.	Inicial: 40 a 60 % de forragem.
+F365.1.1	Growing: 25 to 35 %.	Crescimento: 25 a 35 %.
+F365.1.2	Finishing: at least 10 to 15 % effective forage.	Terminação: pelo menos 10 a 15 % de forragem efetiva.
+F365.1.3	With less, the risk of acidosis, liver abscesses and bloat rises.	Com menos, sobe o risco de acidose, abscessos de fígado e timpanismo.
+F365.2h	Chop length	Tamanho de picado
+F365.2.0	A 2 to 5 cm chop stimulates rumination.	Picado de 2 a 5 cm estimula a ruminação.
+F365.2.1	Very fine chop (under 1 cm) loses its fiber effect.	Picado muito fino (menos de 1 cm) perde o efeito de fibra.
+F365.2.2	Very long forage gets sorted and wasted.	Forragem muito longa é selecionada e desperdiçada.
+F365.3h	Signs of too little fiber	Sinais de pouca fibra
+F365.3.0	Few animals ruminating while lying down.	Poucos animais ruminando quando deitados.
+F365.3.1	Loose, shiny manure.	Fezes soltas e brilhantes.
+F365.3.2	Intake going up and down.	Consumo que sobe e desce.
+F365.3.3	They lick or eat dirt, wood or bedding.	Lambem ou comem terra, madeira ou cama.
+F366.t	Main minerals	Minerais principais
+F366.r	Calcium, phosphorus, salt, magnesium, potassium and sulfur are needed in large amounts. A well-balanced mineral premix covers them.	Cálcio, fósforo, sal, magnésio, potássio e enxofre são necessários em grandes quantidades. Um núcleo mineral bem balanceado os cobre.
+F366.0h	Calcium and phosphorus	Cálcio e fósforo
+F366.0.0	They build bone and take part in energy metabolism.	Formam osso e participam do metabolismo de energia.
+F366.0.1	Calcium to phosphorus ratio of 1.5 to 2 to 1.	Relação cálcio:fósforo de 1,5 a 2 para 1.
+F366.0.2	High-grain rations have little calcium and a lot of phosphorus: calcium (carbonate) must be added.	Rações com muito grão têm pouco cálcio e muito fósforo: é preciso acrescentar cálcio (calcário).
+F366.1h	Salt (sodium and chlorine)	Sal (sódio e cloro)
+F366.1.0	It regulates body water.	Regula a água do corpo.
+F366.1.1	It improves intake and palatability.	Melhora o consumo e o sabor.
+F366.1.2	0.25 to 0.5 % of the ration.	0,25 a 0,5 % da ração.
+F366.2h	Magnesium and potassium	Magnésio e potássio
+F366.2.0	Important in stressed and heat-stressed animals.	Importantes em animais estressados e com calor.
+F366.2.1	Potassium drops in very high-grain rations.	O potássio cai em rações com muito grão.
+F366.3h	Sulfur	Enxofre
+F366.3.0	Needed for microbes to make protein, especially with urea.	Necessário para os micróbios fabricarem proteína, sobretudo com ureia.
+F366.3.1	In excess (over 0.4 % of the ration) it causes nervous problems.	Em excesso (mais de 0,4 % da ração) causa problemas nervosos.
+F366.4h	How to provide them	Como fornecê-los
+F366.4.0	In the pen: mineral premix mixed into the ration, usually 1.5 to 2 % of dry matter, per the manufacturer.	No curral: núcleo mineral misturado na ração, geralmente 1,5 a 2 % da matéria seca, conforme o fabricante.
+F366.4.1	On pasture: free-choice mineral salt in covered feeders.	No pasto: sal mineral à vontade em cochos cobertos.
+F366.4.2	Check the label: minimum 6 to 8 % phosphorus in salts for tropical grazing.	Confira o rótulo: fósforo mínimo de 6 a 8 % em sais para pastejo tropical.
+F367.t	Trace minerals and vitamins	Microminerais e vitaminas
+F367.r	They're needed in very small amounts but are key for immunity, hooves, coat and gain.	São necessários em quantidades muito pequenas, mas são chave para defesas, cascos, pelo e ganho.
+F367.0h	Trace minerals	Microminerais
+F367.0.0	Zinc: skin, hooves, immunity.	Zinco: pele, cascos, defesas.
+F367.0.1	Copper: blood, coat, immunity.	Cobre: sangue, pelo, defesas.
+F367.0.2	Selenium: muscles and immunity; toxic in excess.	Selênio: músculos e defesas; tóxico em excesso.
+F367.0.3	Cobalt: so the rumen can make vitamin B12.	Cobalto: para o rúmen fabricar vitamina B12.
+F367.0.4	Iodine: thyroid.	Iodo: tireoide.
+F367.0.5	Manganese: bones and joints.	Manganês: ossos e articulações.
+F367.1h	Vitamins	Vitaminas
+F367.1.0	Vitamin A: vision, skin and immunity; low in dry grass and old grain.	Vitamina A: visão, pele e defesas; baixa em pastos secos e grãos velhos.
+F367.1.1	Vitamin D: bones; the animal makes it with sunlight.	Vitamina D: ossos; o animal a forma com o sol.
+F367.1.2	Vitamin E: immunity and muscles.	Vitamina E: defesas e músculos.
+F367.1.3	B vitamins are made by a healthy rumen.	As do complexo B são fabricadas pelo rúmen sadio.
+F367.2h	When to reinforce	Quando reforçar
+F367.2.0	On arrival, in stressed animals.	Na entrada, em animais estressados.
+F367.2.1	In the dry season, when grass is dry and yellow.	Na época seca, quando o pasto está seco e amarelo.
+F367.2.2	With rations of grain stored for a long time.	Com rações de grão armazenado por muito tempo.
+F367.3h	Rules	Regras
+F367.3.0	Use a complete, reliable mineral premix.	Use um núcleo mineral completo e confiável.
+F367.3.1	Don't add selenium or copper on your own.	Não acrescente selênio nem cobre por conta própria.
+F367.3.2	Keep minerals dry and tightly closed.	Guarde os minerais secos e bem fechados.

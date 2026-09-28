@@ -21,7 +21,7 @@
 
 {"t":"Cuándo vender","a":"manejo","r":"Vender en el momento correcto es tan importante como comprar bien. Cada día de más cuesta alimento, y los últimos kilos son los más caros.","s":[
  {"h":"Señales de que está listo","p":["Llegó al peso meta que pide tu comprador.","Tiene el acabado de grasa buscado.","Su ganancia diaria empieza a bajar mientras el consumo sigue alto."]},
- {"h":"Números","p":["Compara el costo de un día más de engorde con lo que valen los kilos que ganará ese día.","Si el costo del kilo ganado supera el precio de venta por kilo, cada día pierdes.","La app te muestra la fecha estimada de llegada a la meta y el margen si vendes hoy."]},
+ {"h":"Números","p":["Compara el costo de un día más de engorde con lo que valen los kilos que ganará ese día.","Si el costo del kilo ganado supera el precio de venta por kilo, cada día pierdes.","La app te muestra la fecha estimada de llegada a la meta, el margen si vendes hoy y, en Análisis de Rumi, el día que más te deja."]},
  {"h":"Otros factores","p":["Precio del mercado y temporada.","Retiros de medicamentos pendientes.","Capacidad de corral para el siguiente lote.","Flujo de caja."]},
  {"h":"Errores comunes","p":["Esperar un mejor precio con animales que ya no ganan.","Vender con retiro activo.","Vender sin pesar."]}
 ],"rel":["Preparar la venta","Grado de acabado","Punto de equilibrio"]},
@@ -57,7 +57,7 @@
  {"h":"Europeas de carne","p":["Angus, Charolais, Simmental, Hereford.","Mucha carne y buena calidad, pero sufren con calor y garrapata.","Mejor usadas en cruces."]},
  {"h":"Cruces y compuestas","p":["Brangus, Beefmaster, Simbrah, Charbray.","Combinan resistencia tropical con carne.","Son muy buscadas para engorde de corral."]},
  {"h":"De leche","p":["Holstein, Pardo Suizo, Jersey y sus cruces.","Ganan rápido con buena ración pero rinden menos en canal."]},
- {"h":"Con la app","p":["Anota la raza de cada animal al crear el lote.","Compara ganancia y margen por raza con tus propios números."]}
+ {"h":"Con la app","p":["Anota la raza de cada animal al crear el lote.","Compara ganancia y margen por raza con tus propios números. Mira también Guía, Tablas de referencia, Razas para engorde."]}
 ],"rel":["Comprar ganado para engorde","Novillos de lechería","Estrés por calor"]},
 
 {"t":"Edad por los dientes","a":"manejo","r":"Los dientes delanteros de abajo cambian con la edad. Sirven para estimar la edad al comprar.","s":[

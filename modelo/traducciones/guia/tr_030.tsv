@@ -1,0 +1,252 @@
+F492.t	Dehydration and electrolytes	Desidratação e soros
+F492.r	A dehydrated animal weakens fast. Recognizing it and giving fluids in time saves lives, especially after trips and diarrhea.	Um animal desidratado enfraquece rápido. Reconhecer e dar líquidos a tempo salva vidas, sobretudo depois de viagens e diarreias.
+F492.0h	Signs	Sinais
+F492.0.0	Sunken eyes.	Olhos fundos.
+F492.0.1	A neck skin pinch that takes more than 2 seconds to return.	Prega de pele do pescoço que demora mais de 2 segundos para voltar.
+F492.0.2	Dry nose and mouth.	Focinho e boca secos.
+F492.0.3	Hard manure and little urine.	Fezes duras e pouca urina.
+F492.0.4	Weakness, won't get up.	Fraqueza, não se levanta.
+F492.1h	Causes	Causas
+F492.1.0	Long trips without water.	Viagens longas sem água.
+F492.1.1	Diarrhea.	Diarreia.
+F492.1.2	Strong heat with scarce water.	Calor forte com pouca água.
+F492.1.3	High fever.	Febre alta.
+F492.2h	What to do	O que fazer
+F492.2.0	Free-choice clean, cool water.	Água limpa e fresca à vontade.
+F492.2.1	Oral electrolytes for cattle per the label, in animals that can still swallow.	Soros orais para bovinos conforme o rótulo, em animais que ainda engolem.
+F492.2.2	If it's down or very weak, the vet can give intravenous fluids.	Se está caído ou muito fraco, o veterinário pode dar soro na veia.
+F492.2.3	Shade and rest.	Sombra e descanso.
+F492.3h	Prevention	Prevenção
+F492.3.0	Water on arrival and enough waterers.	Água na chegada e bebedouros suficientes.
+F492.3.1	Travel in cool hours.	Viagens nas horas frescas.
+F492.3.2	Treat diarrhea early.	Atender diarreias cedo.
+F493.t	Trypanosomiasis	Tripanossomose
+F493.r	A blood parasite transmitted by biting flies and horseflies, and by shared needles. It causes anemia and weight loss.	Parasita do sangue transmitido por moscas picadoras e mutucas, e por agulhas compartilhadas. Causa anemia e perda de peso.
+F493.0h	Signs	Sinais
+F493.0.0	Fever that comes and goes.	Febre que vai e volta.
+F493.0.1	Anemia and pale mucous membranes.	Anemia e mucosas pálidas.
+F493.0.2	Weight loss despite eating.	Perda de peso apesar de comer.
+F493.0.3	Tearing, swelling in the legs or dewlap.	Lacrimejamento, inchaço nas patas ou na barbela.
+F493.1h	Diagnosis	Diagnóstico
+F493.1.0	The vet confirms it with a blood sample.	O veterinário confirma com uma amostra de sangue.
+F493.1.1	It's confused with anaplasmosis: diagnosis avoids the wrong treatment.	Confunde-se com anaplasmose: o diagnóstico evita tratar errado.
+F493.2h	Prevention	Prevenção
+F493.2.0	Control of flies and horseflies.	Controle de moscas e mutucas.
+F493.2.1	One clean needle per animal when there are cases in the area.	Uma agulha limpa por animal quando houver casos na região.
+F493.2.2	Check animals brought from affected areas.	Revisão de animais trazidos de regiões afetadas.
+F494.t	Lumpy jaw and wooden tongue	Actinomicose e actinobacilose (língua de pau)
+F494.r	Bacterial infections that enter through mouth wounds. They cause hard lumps on the jaw or a hard, swollen tongue.	Infecções por bactérias que entram por feridas na boca. Dão caroços duros na mandíbula ou uma língua dura e inchada.
+F494.0h	Lumpy jaw	Actinomicose (mandíbula)
+F494.0.0	A hard lump on the jawbone that grows slowly and may open with pus.	Caroço duro no osso da mandíbula que cresce devagar e pode abrir com pus.
+F494.0.1	It comes from wounds caused by hard forage or thorns.	Vem de feridas por forragens duras ou espinhos.
+F494.1h	Wooden tongue	Língua de pau
+F494.1.0	Hard, swollen tongue that sticks out of the mouth.	Língua dura, inchada e que sai da boca.
+F494.1.1	Drools and can't eat well.	Baba e não consegue comer bem.
+F494.2h	What to do	O que fazer
+F494.2.0	Consult the vet: wooden tongue responds well if treated early.	Consulte o veterinário: a língua de pau responde bem se tratada cedo.
+F494.2.1	Advanced lumpy jaw is rarely cured: consider selling the animal with no withdrawals.	A actinomicose avançada raramente se cura: considere vender o animal sem carências.
+F494.2.2	Check the forage: hard straw and thorns hurt the mouth.	Revise a forragem: palhas e espinhos duros machucam a boca.
+F495.t	Warts or papillomas	Verrugas ou papilomas
+F495.r	Skin lumps caused by a virus. They're common in young animals and usually go away on their own.	Caroços na pele causados por um vírus. São comuns em animais jovens e costumam desaparecer sozinhos.
+F495.0h	What they look like	Como são
+F495.0.0	Gray or cauliflower-like lumps on the head, neck and shoulders.	Caroços cinzentos ou como couve-flor na cabeça, pescoço e paletas.
+F495.0.1	They spread by contact, fences, chutes and needles.	Contagiam-se por contato, cercas, bretes e agulhas.
+F495.1h	What to do	O que fazer
+F495.1.0	They almost always disappear within months.	Quase sempre desaparecem em meses.
+F495.1.1	Very large or bleeding ones can be removed by the vet.	As muito grandes ou que sangram o veterinário pode retirar.
+F495.1.2	Separate heavily affected animals if possible.	Separe os muito afetados se possível.
+F495.2h	Prevention	Prevenção
+F495.2.0	Clean needles and equipment disinfection.	Agulhas limpas e desinfecção de equipamento.
+F495.2.1	Check when buying: some buyers penalize animals with many warts.	Revisão na compra: alguns compradores descontam animais com muitas verrugas.
+F496.t	Tetanus	Tétano
+F496.r	A clostridial disease that enters through wounds and causes muscle rigidity. It's almost always fatal.	Doença clostridial que entra por feridas e causa rigidez dos músculos. Quase sempre é mortal.
+F496.0h	Signs	Sinais
+F496.0.0	Rigidity: walks like a sawhorse, tail raised.	Rigidez: caminha como cavalete, cauda levantada.
+F496.0.1	Ears erect and third eyelid visible.	Orelhas eretas e terceira pálpebra visível.
+F496.0.2	Bloat because it can't belch.	Timpanismo porque não consegue arrotar.
+F496.0.3	Falls with legs outstretched.	Cai com as patas esticadas.
+F496.1h	When it appears	Quando aparece
+F496.1.0	1 to 3 weeks after castration, banding, dehorning or deep wounds.	1 a 3 semanas depois de castrações, elásticos, descornas ou feridas profundas.
+F496.2h	Prevention	Prevenção
+F496.2.0	Clostridial vaccine that includes tetanus.	Vacina clostridial que inclua tétano.
+F496.2.1	Hygiene in castration and wound care.	Higiene nas castrações e cura de feridas.
+F496.2.2	Caution with bands on large animals.	Cuidado com os elásticos em animais grandes.
+F497.t	Nitrate and cyanide poisoning	Intoxicação por nitratos e cianeto
+F497.r	Some grasses and crops accumulate nitrates or cyanide under certain conditions. They can kill within minutes to hours.	Alguns pastos e cultivos acumulam nitratos ou cianeto em certas condições. Podem matar em minutos ou horas.
+F497.0h	Nitrates	Nitratos
+F497.0.0	Grasses heavily fertilized with nitrogen after drought, or stressed corn and sorghum stover.	Pastos adubados com muito nitrogênio depois de seca, ou restolhos de milho e sorgo estressados.
+F497.0.1	Signs: fast breathing, chocolate-colored mucous membranes and blood, weakness, death.	Sinais: respiração rápida, mucosas e sangue cor de chocolate, fraqueza, morte.
+F497.1h	Cyanide	Cianeto
+F497.1.0	Young or regrowing sorghum, sorghum after frost or drought, bitter cassava, some leaves.	Sorgo novo ou rebrotado, sorgo depois de geada ou seca, mandioca brava, algumas folhas.
+F497.1.1	Signs: very fast breathing, bright red blood, tremors, very rapid death.	Sinais: respiração muito rápida, sangue vermelho brilhante, tremores, morte muito rápida.
+F497.2h	What to do	O que fazer
+F497.2.0	Take the animals out of the pasture or remove the forage.	Retire os animais do pasto ou a forragem.
+F497.2.1	Call the vet immediately: treatments exist if you act fast.	Chame o veterinário imediatamente: há tratamentos se agir rápido.
+F497.3h	Prevention	Prevenção
+F497.3.0	Don't graze sorghum under 60 cm or tender regrowth.	Não paste sorgo com menos de 60 cm nem rebrotas novas.
+F497.3.1	Ensiling lowers cyanide; well-cured hay does too.	A silagem baixa o cianeto; o feno bem curado também.
+F497.3.2	Nitrate analysis if you suspect the forage.	Análise de nitratos se suspeitar da forragem.
+F497.3.3	Adapt animals to new forages little by little.	Adapte os animais a forragens novas aos poucos.
+F498.t	Downer animal that won't get up	Animal caído que não se levanta
+F498.r	An animal that won't get up can have many causes. The longer it stays down, the more damage it suffers.	Um animal que não se levanta pode ter muitas causas. Quanto mais tempo fica deitado, mais se machuca.
+F498.0h	Possible causes	Causas possíveis
+F498.0.0	Blows, fractures or dislocations.	Pancadas, fraturas ou luxações.
+F498.0.1	Acidosis or poisoning.	Acidose ou intoxicações.
+F498.0.2	Anaplasmosis or babesiosis with severe anemia.	Anaplasmose ou babesiose com anemia forte.
+F498.0.3	Nervous diseases (rabies, polioencephalomalacia).	Doenças nervosas (raiva, polioencefalomalácia).
+F498.0.4	Exhaustion after the trip.	Esgotamento depois da viagem.
+F498.1h	What to do	O que fazer
+F498.1.0	Don't drag it or force it up.	Não o arraste nem o levante à força.
+F498.1.1	Give it shade, water and feed within reach.	Dê sombra, água e comida ao alcance.
+F498.1.2	Turn it every few hours if you can and give it soft bedding.	Mude-o de lado a cada poucas horas se puder e coloque cama macia.
+F498.1.3	Call the vet.	Chame o veterinário.
+F498.1.4	If it drools or can't swallow, don't put your hand in its mouth.	Se baba ou não engole, não coloque a mão na boca.
+F498.2h	Decision	Decisão
+F498.2.0	If the vet sees no recovery, humane euthanasia avoids suffering.	Se o veterinário não vê recuperação, a eutanásia humanitária evita sofrimento.
+F498.2.1	Never sell a downer or sick animal for consumption.	Nunca venda para consumo um animal caído ou doente.
+F499.t	Taking samples for the lab	Coletar amostras para laboratório
+F499.r	A good diagnosis starts with a good sample. Ask the vet or the lab before taking it.	Um bom diagnóstico começa com uma boa amostra. Pergunte ao veterinário ou ao laboratório antes de coletar.
+F499.0h	Manure	Fezes
+F499.0.0	From the rectum, with a glove, a handful.	Do reto, com luva, um punhado.
+F499.0.1	In a clean bag, without air, labeled and refrigerated (not frozen).	Em saco limpo, sem ar, rotulado e refrigerado (sem congelar).
+F499.0.2	For parasites and coccidia.	Para parasitas e coccídios.
+F499.1h	Blood	Sangue
+F499.1.0	The vet takes it in special tubes.	O veterinário coleta em tubos especiais.
+F499.1.1	For anemia, anaplasmosis, babesiosis, trypanosomes and disease tests.	Para anemia, anaplasmose, babesiose, tripanossomas e testes de doenças.
+F499.2h	Feed and water	Alimento e água
+F499.2.0	Several subsamples mixed together.	Várias subamostras misturadas.
+F499.2.1	Clean, labeled bag or jar.	Saco ou frasco limpo, rotulado.
+F499.2.2	For mycotoxins, nitrates, salts or bacteria.	Para micotoxinas, nitratos, sais ou bactérias.
+F499.3h	Rules	Regras
+F499.3.0	Label with date, lot, ear tag and what is suspected.	Rotule com data, lote, brinco e o que se suspeita.
+F499.3.1	Deliver quickly, in a cooler.	Entregue rápido, em caixa térmica.
+F499.3.2	Record the result in the app next to the treatment.	Anote o resultado no app junto ao tratamento.
+F500.t	Stress and immunity	Estresse e defesas
+F500.r	Stress lowers the animal's immunity. That's why almost all feedlot diseases appear after trips, mixing and rough handling.	O estresse baixa as defesas do animal. Por isso quase todas as doenças do confinamento aparecem depois de viagens, misturas e manejos bruscos.
+F500.0h	What causes stress	O que estressa
+F500.0.0	Transport and fasting.	Transporte e jejum.
+F500.0.1	Recent weaning.	Desmame recente.
+F500.0.2	Mixing with unfamiliar animals.	Mistura com animais desconhecidos.
+F500.0.3	Castration, dehorning or rough handling.	Castração, descorna ou manejo brusco.
+F500.0.4	Heat, mud, dust and overcrowding.	Calor, barro, poeira e superlotação.
+F500.0.5	Ration changes.	Mudanças de ração.
+F500.1h	How to reduce it	Como reduzir
+F500.1.0	One change at a time: don't castrate, vaccinate and change ration on the same day.	Uma mudança por vez: não castre, vacine e mude a ração no mesmo dia.
+F500.1.1	Calm handling.	Manejo tranquilo.
+F500.1.2	Water, shade and good feed.	Água, sombra e boa comida.
+F500.1.3	Stable lots, without mixing.	Lotes estáveis, sem misturas.
+F500.2h	Result	Resultado
+F500.2.0	Less pneumonia and fewer deaths.	Menos pneumonias e mortes.
+F500.2.1	Better intake and gain.	Melhor consumo e ganho.
+F500.2.2	Less spent on medicines.	Menos gasto com medicamentos.
+F501.t	Foot-and-mouth disease and exotic diseases	Febre aftosa e doenças exóticas
+F501.r	Foot-and-mouth disease isn't present in Central America. If it appeared, it would close markets. Recognizing its signs and reporting protects the whole country.	A febre aftosa não está presente na América Central. Se aparecesse, fecharia mercados. Reconhecer seus sinais e avisar protege todo o país.
+F501.0h	Signs you must report	Sinais que obrigam a avisar
+F501.0.0	Blisters or sores on the mouth, tongue, feet or udder.	Bolhas ou feridas na boca, língua, patas ou úbere.
+F501.0.1	Heavy drooling and lameness in several animals at once.	Babeira abundante e mancadeira em vários animais ao mesmo tempo.
+F501.0.2	Fever and a sharp intake drop in the lot.	Febre e queda forte do consumo no lote.
+F501.1h	What to do	O que fazer
+F501.1.0	Don't move animals within or out of the farm.	Não mova animais dentro nem fora da fazenda.
+F501.1.1	Notify SENASA immediately.	Avise imediatamente o SENASA.
+F501.1.2	Don't let people or vehicles in or out without disinfection.	Não deixe entrar nem sair pessoas e veículos sem desinfecção.
+F501.2h	Prevention	Prevenção
+F501.2.0	Buy with a permit and from a known origin.	Compre com guia e de origem conhecida.
+F501.2.1	Biosecurity at the farm entrance.	Biossegurança na entrada da fazenda.
+F501.2.2	Don't feed food scraps of unknown origin.	Não alimente com restos de comida de origem desconhecida.
+F502.t	Snakebite	Picada de cobra
+F502.r	Venomous snakes can kill or badly harm an animal, especially if the bite is on the face or neck.	As cobras venenosas podem matar ou deixar muito mal um animal, sobretudo se a picada for na cara ou no pescoço.
+F502.0h	Signs	Sinais
+F502.0.0	Large, fast swelling, often on the face, nose or legs.	Inchaço grande e rápido, muitas vezes na cara, focinho ou patas.
+F502.0.1	Fang marks and bleeding.	Marcas de presas e sangramento.
+F502.0.2	Difficulty breathing if the swelling is on the head.	Dificuldade para respirar se o inchaço for na cabeça.
+F502.1h	What to do	O que fazer
+F502.1.0	Keep the animal still and in the shade.	Mantenha o animal quieto e na sombra.
+F502.1.1	Call the vet: antivenoms and treatments exist.	Chame o veterinário: existem soros e tratamentos.
+F502.1.2	Don't cut or suck the wound, don't apply tourniquets.	Não corte nem chupe a ferida, não coloque torniquetes.
+F502.2h	Prevention	Prevenção
+F502.2.0	Clear brush around pens and storerooms.	Roce ao redor de currais e armazéns.
+F502.2.1	Control rats: they attract snakes.	Controle ratos: atraem cobras.
+F503.t	Swellings: what they may be	Inchaços: o que podem ser
+F503.r	Not all swellings are the same. Some are emergencies and others can wait.	Nem todos os inchaços são iguais. Alguns são urgência e outros podem esperar.
+F503.0h	Emergency	Urgência
+F503.0.0	Swelling that grows fast, hot at first and cold later, that crackles when touched: clostridial.	Inchaço que cresce rápido, quente no início e frio depois, que crepita ao tocar: clostridial.
+F503.0.1	Facial swelling with difficulty breathing: bite or allergy.	Inchaço na cara com dificuldade para respirar: picada ou alergia.
+F503.0.2	Bloated left side: bloat.	Flanco esquerdo inchado: timpanismo.
+F503.1h	Can wait for the vet	Pode esperar o veterinário
+F503.1.0	Soft lump at an injection site: abscess.	Caroço mole no local de uma injeção: abscesso.
+F503.1.1	Soft lump at the navel that goes in when pushed: hernia.	Caroço mole no umbigo que entra ao empurrar: hérnia.
+F503.1.2	Swelling under the jaw in a thin animal: parasites or anemia.	Inchaço embaixo da mandíbula com animal magro: parasitas ou anemia.
+F503.2h	Rules	Regras
+F503.2.0	Record where it is, when it appeared and whether it's growing.	Anote onde está, quando apareceu e se cresce.
+F503.2.1	Take its temperature.	Meça a temperatura.
+F503.2.2	Don't burst lumps with a knife.	Não estoure caroços com faca.
+F504.t	Photosensitization	Fotossensibilização
+F504.r	Photosensitization is a sunburn of the skin caused by substances in some plants or by liver damage. It affects white or hairless skin.	A fotossensibilização é uma queimadura da pele pelo sol, provocada por substâncias de algumas plantas ou por dano no fígado. Afeta a pele branca ou sem pelo.
+F504.0h	Causes	Causas
+F504.0.0	Brachiaria (Urochloa) grasses, especially decumbens, under certain conditions: they contain saponins that damage the liver.	Capins do gênero Brachiaria (Urochloa), sobretudo decumbens, em certas condições: têm saponinas que danificam o fígado.
+F504.0.1	Some toxic plants and pasture fungi.	Algumas plantas tóxicas e fungos do pasto.
+F504.0.2	Liver damage from other causes.	Dano no fígado por outras causas.
+F504.1h	Signs	Sinais
+F504.1.0	Red, swollen, crusty skin on ears, nose, back and white areas.	Pele vermelha, inchada e com crostas nas orelhas, focinho, lombo e partes brancas.
+F504.1.1	The animal seeks shade, scratches and stops eating.	O animal procura sombra, se coça e para de comer.
+F504.1.2	Sometimes watery eyes and jaundice (yellow mucous membranes).	Às vezes olhos lacrimejantes e icterícia (mucosas amarelas).
+F504.2h	What to do	O que fazer
+F504.2.0	Take the animals out of the suspect pasture and put them in the shade.	Retire os animais do pasto suspeito e coloque-os na sombra.
+F504.2.1	Call the vet: treatment depends on whether the liver is damaged.	Chame o veterinário: o tratamento depende de o fígado estar danificado.
+F504.2.2	Young animals and those newly put on those pastures are the most affected.	Os animais jovens e recém-chegados a esses pastos são os mais afetados.
+F505.t	Vesicular stomatitis	Estomatite vesicular
+F505.r	Vesicular stomatitis is a viral disease that causes blisters on the mouth, feet and udders. It looks a lot like foot-and-mouth disease, so it must always be reported.	A estomatite vesicular é uma doença viral que causa bolhas na boca, nas patas e nos úberes. Parece-se muito com a febre aftosa, por isso sempre deve ser notificada.
+F505.0h	Signs	Sinais
+F505.0.0	Heavy drooling and going off feed.	Babeira abundante e parar de comer.
+F505.0.1	Blisters and ulcers on the tongue, gums and between the claws.	Bolhas e úlceras na língua, gengivas e entre as unhas.
+F505.0.2	Lameness.	Mancadeira.
+F505.1h	What to do	O que fazer
+F505.1.0	Report immediately to the official veterinary service: only the lab can tell it from foot-and-mouth.	Notifique imediatamente o serviço veterinário oficial: só o laboratório a distingue da aftosa.
+F505.1.1	Separate sick animals and give them soft feed and water.	Separe os animais doentes e dê comida macia e água.
+F505.1.2	Wear gloves: it can also affect people.	Use luvas: também pode afetar as pessoas.
+F505.2h	Prevention	Prevenção
+F505.2.0	Control the insects that transmit it.	Controle de insetos, que a transmitem.
+F505.2.1	Quarantine new animals.	Quarentena de animais novos.
+F506.t	Bluetongue	Língua azul
+F506.r	Bluetongue is a viral disease transmitted by small biting midges. In tropical America the virus circulates, but in cattle it almost always passes without symptoms.	A língua azul é uma doença viral transmitida por mosquitos pequenos (maruins). No trópico americano o vírus circula, mas em bovinos quase sempre passa sem sintomas.
+F506.0h	In cattle	Em bovinos
+F506.0.0	Most don't get sick but carry the virus.	A maioria não adoece, mas carrega o vírus.
+F506.0.1	Sheep do suffer the severe disease.	Os ovinos sim sofrem a doença grave.
+F506.0.2	It matters for exporting live animals or semen.	Importa para exportar animais vivos ou sêmen.
+F506.1h	What to do	O que fazer
+F506.1.0	Control midge breeding sites: puddles, wet manure.	Controle criadouros de maruins: poças, esterco úmido.
+F506.1.1	If you have sheep nearby, ask the vet about vaccination.	Se tiver ovelhas por perto, pergunte ao veterinário sobre a vacinação.
+F507.t	Infectious bovine rhinotracheitis (IBR)	Rinotraqueíte infecciosa bovina (IBR)
+F507.r	IBR is caused by a herpesvirus. In the feedlot it causes respiratory disease with high fever and opens the door to bacterial pneumonia.	A IBR é causada por um herpesvírus. No confinamento provoca doença respiratória com febre alta e abre a porta para pneumonias bacterianas.
+F507.0h	Signs	Sinais
+F507.0.0	High fever, red and inflamed nose, nasal discharge.	Febre alta, focinho vermelho e inflamado, secreção nasal.
+F507.0.1	Cough, watery eyes and drop in intake.	Tosse, olhos lacrimejantes e queda de consumo.
+F507.0.2	It can cause abortions in females.	Pode causar abortos em fêmeas.
+F507.1h	Prevention	Prevenção
+F507.1.0	Respiratory vaccine that includes IBR, with a booster per the label.	Vacina respiratória que inclua IBR, com reforço conforme o rótulo.
+F507.1.1	Vaccinate before or on arrival at the feedlot, with the animal calm.	Vacinar antes ou na chegada ao confinamento, com o animal tranquilo.
+F507.2h	Fact	Dado
+F507.2.0	The virus stays hidden in the animal for life and can reactivate with stress.	O vírus fica escondido no animal para a vida toda e pode se reativar com estresse.
+F508.t	Persistently infected animals (BVD)	Animais persistentemente infectados (BVD)
+F508.r	Some calves were infected with bovine viral diarrhea virus before birth and carry it for life. They shed the virus constantly and make the rest of the lot sick.	Alguns bezerros se infectaram com o vírus da diarreia viral bovina antes de nascer e o carregam a vida toda. Espalham o vírus sem parar e adoecem os demais do lote.
+F508.0h	How it happens	Como se forma
+F508.0.0	The mother gets infected in the first months of pregnancy.	A mãe se infecta nos primeiros meses de prenhez.
+F508.0.1	The calf is born with the virus and its body doesn't recognize it as an enemy.	O bezerro nasce com o vírus e seu corpo não o reconhece como inimigo.
+F508.0.2	It usually grows poorly and gets sick often.	Costuma crescer pouco e adoecer com frequência.
+F508.1h	Effect on the feedlot	Efeito no confinamento
+F508.1.0	One such animal in a lot increases respiratory disease in its pen-mates.	Um animal assim num lote aumenta as doenças respiratórias dos companheiros.
+F508.1.1	It lowers the immunity of the whole group.	Baixa as defesas de todo o grupo.
+F508.2h	What to do	O que fazer
+F508.2.0	There are lab tests with an ear notch sample to detect them.	Existem testes de laboratório com amostra de orelha para detectá-los.
+F508.2.1	If an animal is always the most stunted and sickly, ask the vet about the test.	Se um animal é sempre o mais atrasado e doentio, pergunte ao veterinário pelo teste.
+F508.2.2	BVD vaccine on arrival.	Vacina contra BVD na entrada.
+F509.t	Mange	Sarna
+F509.r	Mange is caused by mites that live in the skin. It causes intense itching, hair loss and scabs. It's more common in thin, overcrowded animals and in the dry season.	A sarna é causada por ácaros que vivem na pele. Provoca coceira intensa, queda de pelo e crostas. É mais comum em animais magros, amontoados e na época seca.
+F509.0h	Signs	Sinais
+F509.0.0	Rubbing against posts and fences.	Esfregar-se em postes e cercas.
+F509.0.1	Hairless areas with scabs and thickened skin on the neck, tail and back.	Áreas sem pelo, com crostas e pele grossa no pescoço, cauda e lombo.
+F509.0.2	Weight loss in severe cases.	Perda de peso em casos fortes.
+F509.1h	What to do	O que fazer
+F509.1.0	The vet confirms it with a skin scraping.	O veterinário confirma com um raspado de pele.
+F509.1.1	Treat the whole lot with a mite product, not just those scratching.	Tratamento com produtos para ácaros em todo o lote, não só nos que se coçam.
+F509.1.2	Clean the posts and bunks where they rub.	Limpe postes e cochos onde se esfregam.
