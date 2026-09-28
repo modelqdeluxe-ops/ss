@@ -126,71 +126,97 @@ function pintarClima(){
 ACTS.climaVer=()=>{if(typeof abrirRumi==='function'&&window.RumiMenu&&RumiMenu.clima){abrirRumi();setTimeout(()=>RumiMenu.clima(),250);}else actualizarClima(true);};
 window.Clima={actual:()=>vigente()?CLIMA:null,actualizar:actualizarClima,momento,epoca,texto:textoClima,icono:iconoClima,tipo:()=>vigente()?tipoClima():'',nombre:WMO};
 
-/* ---------- efectos del cielo en el encabezado (canvas) ---------- */
+/* ---------- efectos del cielo en el encabezado ----------
+   Todo se mueve a la tasa de refresco del teléfono (60, 90 o 120 Hz):
+   - el sol, la luna y las estrellas se dibujan una vez y quedan como imagen;
+   - las nubes y la neblina se dibujan una vez en una tira del doble de ancho que la tarjeta gráfica desliza sin fin;
+   - la lluvia y la tormenta se dibujan en un lienzo cuadro a cuadro, con las gotas agrupadas en pocos trazos. */
 const FX=(()=>{
-  let VI=.15,cv=null,cx=null,W=0,H=0,dpr=1,tipo='',gotas=[],nubes=[],estrellas=[],salpic=[],rayo=0,sigRayo=0,ult=0,raf=0,t0=performance.now();
+  let VI=.15,cv=null,cx=null,W=0,H=0,dpr=1,tipo='',gotas=[],salpic=[],rayo=0,sigRayo=0,ult=0,raf=0;
+  let img=null,capaN=null,capaF=null,claveImg='',urls={};
   const reducido=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rnd=(a,b)=>a+Math.random()*(b-a);
-  let TAM=null;const RO=typeof ResizeObserver!=='undefined'?new ResizeObserver(e=>{const r=e[e.length-1].contentRect;TAM={width:r.width,height:r.height};medir();}):null;
-  function medir(){if(!cv)return;const b=TAM||(cv.parentNode||cv).getBoundingClientRect();if(!b.width)return;const d=Math.min(2,devicePixelRatio||1);if(cv.width===Math.round(b.width*d)&&cv.height===Math.round(b.height*d)&&W===b.width)return;dpr=d;W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
+  const llueve=()=>tipo==='lluvia'||tipo==='tormenta';
+  let TAM=null;const RO=typeof ResizeObserver!=='undefined'?new ResizeObserver(e=>{const q=e[e.length-1].contentRect;TAM={width:q.width,height:q.height};medir();}):null;
+  function medir(){if(!cv)return;const b=TAM||(cv.parentNode||cv).getBoundingClientRect();if(!b.width)return;const d=Math.min(2,devicePixelRatio||1);
+    if(cv.width===Math.round(b.width*d)&&cv.height===Math.round(b.height*d)&&W===b.width)return;dpr=d;W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
   function sembrar(){
-    const llueve=tipo==='lluvia'||tipo==='tormenta',n=llueve?Math.round(W*H/(tipo==='tormenta'?750:1000)):0;
-    gotas=Array.from({length:n},()=>nuevaGota(true));
-    const nn=tipo==='nublado'||llueve?7:tipo==='parcial'?4:tipo==='niebla'?0:0;
-    nubes=Array.from({length:nn},(_,i)=>nuevaNube(i,nn));
-    estrellas=Array.from({length:Math.round(W*H/2600)},()=>({x:rnd(0,W),y:rnd(0,H*.8),r:rnd(.4,1.3),f:rnd(0,6.28),v:rnd(.6,1.8)}));
+    const n=llueve()?Math.round(W*H/(tipo==='tormenta'?750:1000)):0;
+    gotas=Array.from({length:n},()=>nuevaGota(true));salpic=[];claveImg='';pintarFijo();arrancar();
   }
-  function nuevaGota(ini){const z=Math.random();return {x:rnd(-40,W+40),y:ini?rnd(-H,H):rnd(-60,-10),z,l:6+z*16,v:(420+z*520),a:.18+z*.42,w:.6+z*.9};}
-  function nuevaNube(i,n){const oscura=tipo==='lluvia'||tipo==='tormenta';return {x:(i/n)*W*1.3-W*.15+rnd(-20,20),y:rnd(-30,H*.22),s:rnd(.9,1.6),v:rnd(4,11),o:oscura?rnd(.22,.38):rnd(.08,.18),osc:oscura,partes:Array.from({length:6},(_,k)=>({dx:(k-2.5)*rnd(18,26),dy:rnd(-10,8)-Math.abs(k-2.5)*-2,r:rnd(20,34)}))};}
-  function nube(n){for(const p of n.partes){const x=n.x+p.dx*n.s,y=n.y+p.dy*n.s,rad=p.r*n.s*1.6;const g=cx.createRadialGradient(x,y,0,x,y,rad);
-      const c=n.osc?'38,50,66':'250,252,255';g.addColorStop(0,`rgba(${c},${n.o})`);g.addColorStop(.55,`rgba(${c},${n.o*.55})`);g.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=g;cx.beginPath();cx.arc(x,y,rad,0,6.283);cx.fill();}}
-  function sol(t){const m=r.dataset.momento;if(tipo==='lluvia'||tipo==='tormenta'||tipo==='nublado'||tipo==='niebla')return;if(m==='noche'||m==='madrugada')return luna(t);
-    const bajo=m==='amanecer'||m==='atardecer';const x=W*.94,y=bajo?H*.95:-H*.02,rad=bajo?44:32;
+  function nuevaGota(ini){const z=Math.random();return {x:rnd(-40,W+40),y:ini?rnd(-H,H):rnd(-60,-10),z,l:6+z*16,v:(420+z*520),c:z<.34?0:z<.67?1:2};}
+  const lienzo=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {c,x};};
+  function aFondo(el,c,k){if(!el)return;const poner=u=>{if(urls[k]&&urls[k].startsWith('blob:'))URL.revokeObjectURL(urls[k]);urls[k]=u;el.style.backgroundImage=`url("${u}")`;el.style.display='';};
+    try{if(c.toBlob)c.toBlob(b=>poner(b?URL.createObjectURL(b):c.toDataURL()));else poner(c.toDataURL());}catch(e){}}
+  /* sol, luna y estrellas */
+  function sol(x0){const m=r.dataset.momento;if(llueve()||tipo==='nublado'||tipo==='niebla')return;if(m==='noche'||m==='madrugada')return luna(x0);
+    const cx=x0,bajo=m==='amanecer'||m==='atardecer';const x=W*.94,y=bajo?H*.95:-H*.02,rad=bajo?44:32;
     const g=cx.createRadialGradient(x,y,0,x,y,rad*5);g.addColorStop(0,bajo?'rgba(255,190,120,.42)':'rgba(255,244,200,.38)');g.addColorStop(.25,bajo?'rgba(255,150,90,.16)':'rgba(255,230,150,.13)');g.addColorStop(1,'rgba(255,220,150,0)');
     cx.fillStyle=g;cx.beginPath();cx.arc(x,y,rad*5,0,6.283);cx.fill();
-    cx.save();cx.translate(x,y);cx.rotate(t*.00004);for(let k=0;k<12;k++){cx.rotate(Math.PI/6);const lg=cx.createLinearGradient(0,0,rad*4.2,0);lg.addColorStop(0,'rgba(255,240,200,.09)');lg.addColorStop(1,'rgba(255,240,200,0)');cx.fillStyle=lg;cx.beginPath();cx.moveTo(0,-3);cx.lineTo(rad*4.2,-12);cx.lineTo(rad*4.2,12);cx.lineTo(0,3);cx.fill();}cx.restore();
+    cx.save();cx.translate(x,y);for(let k=0;k<12;k++){cx.rotate(Math.PI/6);const lg=cx.createLinearGradient(0,0,rad*4.2,0);lg.addColorStop(0,'rgba(255,240,200,.09)');lg.addColorStop(1,'rgba(255,240,200,0)');cx.fillStyle=lg;cx.beginPath();cx.moveTo(0,-3);cx.lineTo(rad*4.2,-12);cx.lineTo(rad*4.2,12);cx.lineTo(0,3);cx.fill();}cx.restore();
     const d=cx.createRadialGradient(x,y,0,x,y,rad*.55);d.addColorStop(0,'rgba(255,255,245,.95)');d.addColorStop(1,'rgba(255,240,200,.0)');cx.fillStyle=d;cx.beginPath();cx.arc(x,y,rad*.55,0,6.283);cx.fill();}
-  function luna(t){for(const e of estrellas){const a=.35+.45*Math.sin(t*.001*e.v+e.f);cx.fillStyle=`rgba(255,255,240,${a.toFixed(3)})`;cx.beginPath();cx.arc(e.x,e.y,e.r,0,6.283);cx.fill();}
-    if(tipo==='nublado'||tipo==='lluvia'||tipo==='tormenta')return;const x=W*.56,y=H*.14,rad=15;
+  function luna(cx){let s=11;const q=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+    for(let i=0,n=Math.round(W*H/2600);i<n;i++){cx.fillStyle=`rgba(255,255,240,${(.3+q()*.55).toFixed(3)})`;cx.beginPath();cx.arc(q()*W,q()*H*.8,.4+q()*.9,0,6.283);cx.fill();}
+    if(tipo==='nublado'||llueve())return;const x=W*.56,y=H*.14,rad=15;
     const g=cx.createRadialGradient(x,y,0,x,y,rad*4);g.addColorStop(0,'rgba(230,236,255,.35)');g.addColorStop(1,'rgba(230,236,255,0)');cx.fillStyle=g;cx.beginPath();cx.arc(x,y,rad*4,0,6.283);cx.fill();
     cx.fillStyle='rgba(248,246,236,.95)';cx.beginPath();cx.arc(x,y,rad,0,6.283);cx.fill();cx.globalCompositeOperation='destination-out';cx.beginPath();cx.arc(x+8,y-5,rad*.95,0,6.283);cx.fill();cx.globalCompositeOperation='source-over';}
-  function lluvia(dt){const vi=VI;const ang=.12+vi*.35;
-    cx.lineCap='round';
+  /* nubes en una tira de dos anchos: cada nube se dibuja también un ancho más allá, así el bucle no tiene costura */
+  function tiraNubes(){
+    const nn=tipo==='nublado'||llueve()?7:tipo==='parcial'?4:0;if(!nn)return null;
+    const oscura=llueve(),{c,x}=lienzo(W*2,H),c0=oscura?'38,50,66':'250,252,255';
+    for(let i=0;i<nn;i++){const nx=(i/nn)*W+rnd(-20,20),ny=rnd(-30,H*.22),sc=rnd(.9,1.6),o=oscura?rnd(.22,.38):rnd(.08,.18);
+      for(let k=0;k<6;k++){const dx=(k-2.5)*rnd(18,26),dy=rnd(-10,8)+Math.abs(k-2.5)*2,rad=rnd(20,34)*sc*1.6;
+        for(const desp of [0,W,-W,2*W]){const px=nx+dx*sc+desp,py=ny+dy*sc;const g=x.createRadialGradient(px,py,0,px,py,rad);
+          g.addColorStop(0,`rgba(${c0},${o})`);g.addColorStop(.55,`rgba(${c0},${o*.55})`);g.addColorStop(1,`rgba(${c0},0)`);x.fillStyle=g;x.beginPath();x.arc(px,py,rad,0,6.283);x.fill();}}}
+    return c;
+  }
+  function tiraNiebla(){if(tipo!=='niebla')return null;const {c,x}=lienzo(W*2,H);
+    for(let k=0;k<3;k++){const y=H*(.35+k*.2);const g=x.createLinearGradient(0,y-30,0,y+30);g.addColorStop(0,'rgba(235,238,242,0)');g.addColorStop(.5,'rgba(235,238,242,.18)');g.addColorStop(1,'rgba(235,238,242,0)');
+      x.fillStyle=g;x.fillRect(0,y-30,W*2,60);}
+    return c;}
+  function pintarFijo(){
+    if(!cv||!W)return;const k=tipo+'|'+r.dataset.momento+'|'+W+'x'+H;if(k===claveImg)return;claveImg=k;
+    const {c,x}=lienzo(W,H);sol(x);aFondo(img,c,'cielo');
+    const n=tiraNubes();if(capaN){if(n){aFondo(capaN,n,'nubes');capaN.style.animationDuration=`${Math.round(W/(llueve()?11:7))}s`;}else capaN.style.display='none';}
+    const f=tiraNiebla();if(capaF){if(f){aFondo(capaF,f,'niebla');capaF.style.animationDuration=`${Math.round(W/4)}s`;}else capaF.style.display='none';}
+  }
+  /* lluvia: tres grupos de gotas según la cercanía, cada grupo en un solo trazo */
+  const GRUPO=[{a:.26,w:.75},{a:.4,w:1.05},{a:.56,w:1.35}];
+  function lluvia(dt){const ang=.12+VI*.35;cx.lineCap='round';
+    const P=[[],[],[]];
     for(const g of gotas){g.y+=g.v*dt;g.x+=g.v*dt*ang;
       if(g.y>H*(0.78+g.z*.22)){if(g.z>.55&&Math.random()<.5)salpic.push({x:g.x,y:H*(0.78+g.z*.22),t:0,z:g.z});Object.assign(g,nuevaGota(false));continue;}
-      const lg=cx.createLinearGradient(g.x,g.y,g.x-g.l*ang,g.y-g.l);lg.addColorStop(0,`rgba(215,228,245,${g.a})`);lg.addColorStop(1,'rgba(215,228,245,0)');
-      cx.strokeStyle=lg;cx.lineWidth=g.w;cx.beginPath();cx.moveTo(g.x,g.y);cx.lineTo(g.x-g.l*ang,g.y-g.l);cx.stroke();}
-    for(let i=salpic.length-1;i>=0;i--){const s=salpic[i];s.t+=dt;if(s.t>.28){salpic.splice(i,1);continue;}const k=s.t/.28;
-      cx.strokeStyle=`rgba(220,232,248,${(.45*(1-k)*s.z).toFixed(3)})`;cx.lineWidth=.8;cx.beginPath();cx.ellipse(s.x,s.y,2+k*7*s.z,.8+k*2,0,0,6.283);cx.stroke();}}
-  function niebla(t){for(let k=0;k<3;k++){const y=H*(.35+k*.2),off=((t*.006*(k+1))%(W*2))-W;const g=cx.createLinearGradient(0,y-30,0,y+30);g.addColorStop(0,'rgba(235,238,242,0)');g.addColorStop(.5,'rgba(235,238,242,.18)');g.addColorStop(1,'rgba(235,238,242,0)');cx.fillStyle=g;cx.fillRect(off,y-30,W*2,60);cx.fillRect(off-W*2,y-30,W*2,60);}}
+      P[g.c].push(g);}
+    P.forEach((L,i)=>{if(!L.length)return;cx.strokeStyle=`rgba(215,228,245,${GRUPO[i].a})`;cx.lineWidth=GRUPO[i].w;cx.beginPath();for(const g of L){cx.moveTo(g.x,g.y);cx.lineTo(g.x-g.l*ang,g.y-g.l);}cx.stroke();});
+    if(salpic.length){cx.lineWidth=.8;for(let i=salpic.length-1;i>=0;i--){const s=salpic[i];s.t+=dt;if(s.t>.28){salpic.splice(i,1);continue;}const k=s.t/.28;
+      cx.strokeStyle=`rgba(220,232,248,${(.45*(1-k)*s.z).toFixed(3)})`;cx.beginPath();cx.ellipse(s.x,s.y,2+k*7*s.z,.8+k*2,0,0,6.283);cx.stroke();}}}
   function relampago(t,dt){if(tipo!=='tormenta')return;if(!sigRayo)sigRayo=t+rnd(3000,9000);
     if(t>sigRayo){rayo=1;sigRayo=t+rnd(4000,11000);cv._camino=(()=>{let x=rnd(W*.2,W*.8),y=0;const p=[[x,y]];while(y<H*.75){y+=rnd(10,22);x+=rnd(-16,16);p.push([x,y]);}return p;})();}
     if(rayo>0){cx.fillStyle=`rgba(235,240,255,${(rayo*.35).toFixed(3)})`;cx.fillRect(0,0,W,H);
       if(rayo>.55&&cv._camino){cx.strokeStyle=`rgba(255,255,255,${rayo.toFixed(2)})`;cx.lineWidth=1.8;cx.shadowColor='rgba(190,210,255,.9)';cx.shadowBlur=12;cx.beginPath();cv._camino.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y));cx.stroke();cx.shadowBlur=0;}
       rayo=Math.max(0,rayo-dt*2.4);}}
-  function cuadro(t){raf=requestAnimationFrame(cuadro);if(!cv||!cv.isConnected){cancelAnimationFrame(raf);raf=0;return;}if(document.hidden)return;
-    // la lluvia necesita 30 cuadros; el sol, la luna y las nubes con 8 se ven igual y cuestan mucho menos.
-    // Durante el scroll o un cambio de página no se dibuja: eso tiene prioridad.
-    const mov=tipo==='lluvia'||tipo==='tormenta'||rayo>0;if(t-ult<(mov?33:125))return;if(t<(window.OCUPADO_HASTA||0)&&!mov)return;
-    const dt=Math.min(mov?.05:.15,(t-ult)/1000);ult=t;
-    // cielo despejado: el sol o la luna con sus estrellas se dibujan una vez y quedan como imagen (sin lienzo animado)
-    if(estatico()){const k=tipo+'|'+r.dataset.momento+'|'+W+'x'+H;if(k!==claveImg&&W){claveImg=k;cx.clearRect(0,0,W,H);sol(t);aImg();}return;}
-    if(img&&img.style.display!=='none'){img.style.display='none';cv.style.display='';}
-    cx.clearRect(0,0,W,H);sol(t);
-    for(const n of nubes){n.x+=n.v*dt;if(n.x-150*n.s>W)n.x=-150*n.s;nube(n);}
-    if(tipo==='niebla')niebla(t);
-    if(tipo==='lluvia'||tipo==='tormenta')lluvia(dt);
-    relampago(t,dt);}
-  let img=null,claveImg='',urlImg='';
-  const estatico=()=>!(tipo==='lluvia'||tipo==='tormenta'||tipo==='niebla'||tipo==='nublado'||tipo==='parcial');
-  function aImg(){if(!img)return;const listo=u=>{if(urlImg.startsWith('blob:'))URL.revokeObjectURL(urlImg);urlImg=u;img.style.backgroundImage=`url("${u}")`;img.style.display='';cv.style.display='none';};
-    try{if(cv.toBlob)cv.toBlob(b=>listo(b?URL.createObjectURL(b):cv.toDataURL()));else listo(cv.toDataURL());}catch(e){}}
-  function montar(canvas){cv=canvas;cx=cv.getContext('2d');
-    if(!img||img.parentNode!==cv.parentNode){img=document.createElement('i');img.className='fx-img';img.style.display='none';cv.parentNode.insertBefore(img,cv);claveImg='';}
+  // solo la lluvia usa el lienzo: un cuadro por cada refresco de la pantalla
+  function cuadro(t){
+    if(!cv||!cv.isConnected||!llueve()){raf=0;if(cv)cv.style.display='none';return;}
+    raf=requestAnimationFrame(cuadro);if(document.hidden){ult=t;return;}
+    const dt=Math.min(.05,ult?(t-ult)/1000:.016);ult=t;
+    cx.clearRect(0,0,W,H);lluvia(dt);relampago(t,dt);}
+  function arrancar(){
+    if(!cv)return;
+    if(!llueve()){cv.style.display='none';return;}
+    cv.style.display='';if(reducido){cx.clearRect(0,0,W,H);lluvia(0);return;}
+    if(!raf){ult=0;raf=requestAnimationFrame(cuadro);}
+  }
+  function montar(canvas){cv=canvas;cx=cv.getContext('2d');const pa=cv.parentNode;
+    if(!img||img.parentNode!==pa){img=document.createElement('i');img.className='fx-img';img.style.display='none';pa.insertBefore(img,cv);
+      capaN=document.createElement('i');capaN.className='fx-tira';capaN.style.display='none';pa.insertBefore(capaN,cv);
+      capaF=document.createElement('i');capaF.className='fx-tira fx-niebla';capaF.style.display='none';pa.insertBefore(capaF,cv);claveImg='';}
     // el tamaño llega con ResizeObserver, después de maquetar: no se fuerza una maquetación al cambiar de página
-    if(RO){if(!montar.obs){RO.observe(cv.parentNode);montar.obs=cv.parentNode;}}else medir();if(reducido){ult=0;cuadro(performance.now());cancelAnimationFrame(raf);raf=0;return;}if(!raf){ult=0;raf=requestAnimationFrame(cuadro);}}
+    if(RO){if(!montar.obs){RO.observe(pa);montar.obs=pa;}}else medir();
+    pintarFijo();arrancar();}
   addEventListener('resize',()=>{if(cv)medir();});
-  return {montar,viento:v=>{VI=Math.max(.08,v);},tipo:t=>{if(t===tipo)return;tipo=t;if(cv)sembrar();}};
+  new MutationObserver(()=>pintarFijo()).observe(r,{attributes:true,attributeFilter:['data-momento']});
+  const api={montar,viento:v=>{VI=Math.max(.08,v);},tipo:t=>{if(t===tipo)return;tipo=t;if(cv)sembrar();},estado:()=>({tipo,W,H,gotas:gotas.length,raf:!!raf})};window.CieloFX=api;return api;
 })();
 
 /* ---------- fotos de novillos en bucle en cada encabezado ---------- */

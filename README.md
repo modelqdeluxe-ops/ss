@@ -18,7 +18,7 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/extras.js` — Agenda de tareas, Bodega de alimento e informe de lote para compartir.
   - `app/assets/ambiente.js` — colores según la hora y la época del año, clima de la zona (Open-Meteo,
     sin clave; ubicación aproximada del teléfono o la de Configuración), efectos de sol, nubes, lluvia y
-    estrellas dibujados en canvas, fotos de novillos en bucle en cada encabezado y la bienvenida animada (la primera vez,
+    estrellas (el cielo se dibuja una vez como imagen y se mueve con CSS; la lluvia se pinta en cada cuadro), fotos de novillos en bucle en cada encabezado y la bienvenida animada (la primera vez,
     Rumi saluda y abre el recorrido).
   - `app/assets/fondos/` — `g01`–`g25.webp`, fotos de ganado (Wikimedia Commons, CC0 y dominio público;
     créditos en Más, Ayuda, Acerca de) 
@@ -75,7 +75,9 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
     compartir y lectura en voz alta: la clase `Voz` elige la voz más natural del teléfono en el idioma de la app;
     su fuente Java está en `modelo/android/Voz.java`). Los avisos (`Avisos`, `AvisoReceiver`) y el widget
-    (`RumiWidget`, `res/layout/rumi_widget.xml`) tienen su fuente en `modelo/android/`; se compilan con
+    (`RumiWidget`, `res/layout/rumi_widget.xml`) tienen su fuente en `modelo/android/`. `Pantalla`
+    (`modelo/android/Pantalla.java`) pide al teléfono su tasa de refresco más alta (90, 120 o 144 Hz) en
+    `onCreate` y `onResume`, así la app va a la tasa de la pantalla. Se compilan con
     `javac --release 8` contra `android-all.jar`, se pasan a dex con `dx` y a smali con apktool.
   - `app/apktool.yml` — versión (`versionCode`, `versionName`) y SDK.
 - `modelo/` — el conocimiento de Rumi.

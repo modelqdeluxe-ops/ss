@@ -607,6 +607,8 @@
     .line 42
     invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
 
+    invoke-static {p0}, Lhn/hato/ganadero/Pantalla;->maxima(Landroid/app/Activity;)V
+
     .line 43
     new-instance v0, Landroid/webkit/WebView;
 
@@ -810,6 +812,8 @@
 
     .line 139
     invoke-super {p0}, Landroid/app/Activity;->onResume()V
+
+    invoke-static {p0}, Lhn/hato/ganadero/Pantalla;->maxima(Landroid/app/Activity;)V
 
     iget-object v0, p0, Lhn/hato/ganadero/MainActivity;->web:Landroid/webkit/WebView;
 
