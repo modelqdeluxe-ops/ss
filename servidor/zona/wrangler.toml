@@ -1,0 +1,16 @@
+# Rumentis: servidor de la comparación anónima con la zona
+# 1. npx wrangler d1 create rumentis-zona   (copia el database_id que te da)
+# 2. npx wrangler d1 execute rumentis-zona --remote --file=schema.sql
+# 3. npx wrangler secret put SAL            (una frase larga al azar)
+# 4. npx wrangler deploy
+name = "rumentis-zona"
+main = "worker.js"
+compatibility_date = "2025-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rumentis-zona"
+database_id = "PON-AQUI-EL-ID-DE-TU-BASE"
+
+[vars]
+MINIMO = "5"   # fincas distintas que hacen falta para mostrar un grupo

@@ -1,0 +1,7 @@
+{
+  "name": "rumentis-zona",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node prueba.mjs", "deploy": "wrangler deploy"},
+  "devDependencies": {"miniflare": "3.20250718.3"}
+}

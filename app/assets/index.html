@@ -84,6 +84,15 @@
 .mk-v{display:flex;flex-direction:column;gap:2px}.mk-v b{font-size:26px;line-height:1.15}.mk-v span{font-size:13.5px;color:var(--ink2);line-height:1.4}
 .mk-c{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink2);align-items:center}.mk-c .pill{margin-left:4px}
 .mk-card .rp-ref{margin:0}
+/* comparación con la zona */
+.zn{display:flex;flex-direction:column;gap:16px;margin:12px 0 6px}.zn-m{display:flex;flex-direction:column;gap:6px}
+.zn-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14.5px;font-weight:700}
+.zn-t{position:relative;height:12px;border-radius:6px;background:var(--track)}.zn-t i{position:absolute;top:0;bottom:0;border-radius:6px;background:var(--anil5);opacity:.35}
+.zn-t em{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--ink2)}
+.zn-t u{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--arete-e);border:2.5px solid var(--card);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.zn-l{display:flex;flex-direction:column;gap:1px;font-size:13.5px;color:var(--ink2)}.zn-l b{color:var(--ink)}
+.zn-adv{margin-top:14px;font-size:13.5px;color:var(--ink2)}.zn-adv summary{cursor:pointer;font-weight:700}
+.zn-adv-b{display:flex;flex-direction:column;gap:8px;margin-top:8px}.zn-adv-b .btn{align-self:flex-start}
 .rp-ref-h{display:flex;justify-content:space-between;gap:10px;font-size:14px}.rp-ref-h b{white-space:nowrap}
 .rp-ref-t{position:relative;height:10px;border-radius:5px;opacity:.85}
 .rp-ref-t u{position:absolute;top:-5px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px var(--card)}
@@ -5262,7 +5271,7 @@ responder=function(txt){
 <script src="ambiente.js"></script>
 <script>/* la guía de Rumi en el idioma de la app */(function(){var L=window.I18N&&I18N.lang&&I18N.lang();document.write('<script src="rumi_guia'+(L==="en"||L==="pt"?"_"+L:"")+'.js"><\/script>');})();</script>
 <script src="rumi_menu.js"></script>
-<script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="huella.js"></script><script src="documentos.js"></script><script src="mercado.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
+<script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="huella.js"></script><script src="documentos.js"></script><script src="mercado.js"></script><script src="zona.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
 
 
 </body>
