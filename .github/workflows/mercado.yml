@@ -1,0 +1,39 @@
+# Precios de mercado para la app: los junta scripts/mercado/actualizar.js y los publica en la Release "mercado".
+# La app los lee con la API de GitHub (permite CORS). Corre dos veces al día (desde la rama principal) y a mano.
+name: Precios de mercado
+on:
+  schedule:
+    - cron: '17 11,23 * * *'
+  workflow_dispatch:
+  push:
+    branches: ['claude/**']
+    paths: ['scripts/mercado/actualizar.js', '.github/workflows/mercado.yml']
+permissions:
+  contents: write
+concurrency: mercado
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Traer lo que ya estaba publicado (para no perder la historia)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view mercado --json body -q .body > previo.md 2>/dev/null || true
+          node -e "const f=require('fs');const t=f.existsSync('previo.md')?f.readFileSync('previo.md','utf8'):'';const m=/RUMENTIS_MERCADO\n([\s\S]*?)\nRUMENTIS_MERCADO/.exec(t);if(m){JSON.parse(m[1]);f.writeFileSync('mercado_previo.json',m[1]);console.log('historia previa',m[1].length);}else console.log('sin historia previa');"
+      - name: Juntar precios
+        run: node scripts/mercado/actualizar.js
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view mercado >/dev/null 2>&1; then
+            gh release edit mercado --notes-file mercado.md
+          else
+            gh release create mercado --title "Datos de mercado (automático)" --notes-file mercado.md --prerelease --target "$GITHUB_SHA"
+          fi
+          gh release upload mercado mercado.json --clobber
