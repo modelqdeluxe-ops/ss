@@ -18,6 +18,7 @@ async function libs(){
   if(!(window.jspdf&&window.jspdf.jsPDF))await cargar('lib/jspdf.umd.min.js');
   if(!window.qrcode)await cargar('lib/qrcode.js');
   if(window.qrcode&&qrcode.stringToBytesFuncs)qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
+  if(!window.nacl)await cargar('lib/nacl-fast.min.js');
 }
 
 /* ---------- SHA-256 (en JS: crypto.subtle no existe en file://) ---------- */
@@ -28,7 +29,7 @@ const K256=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x
 function utf8(s){s=String(s);if(typeof TextEncoder!=='undefined')return new TextEncoder().encode(s);
   const u=unescape(encodeURIComponent(s)),b=new Uint8Array(u.length);for(let i=0;i<u.length;i++)b[i]=u.charCodeAt(i);return b;}
 function sha256(s){
-  const m=utf8(s),l=m.length,n=((l+9+63)>>6)<<6,b=new Uint8Array(n);b.set(m);b[l]=0x80;
+  const m=typeof s==='string'?utf8(s):s,l=m.length,n=((l+9+63)>>6)<<6,b=new Uint8Array(n);b.set(m);b[l]=0x80;
   const dv=new DataView(b.buffer);dv.setUint32(n-8,Math.floor(l/0x20000000));dv.setUint32(n-4,(l<<3)>>>0);
   const H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],w=new Uint32Array(64);
   const r=(x,k)=>(x>>>k)|(x<<(32-k));
@@ -45,6 +46,51 @@ function sha256(s){
 const canon=v=>v==null?'null':Array.isArray(v)?'['+v.map(canon).join(',')+']':typeof v==='object'?'{'+Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}':JSON.stringify(v);
 const codigo=(pre,obj)=>{const h=sha256(canon(obj)).toUpperCase();return {cod:`${pre}-${h.slice(0,4)}-${h.slice(4,8)}-${h.slice(8,12)}`,h};};
 const normCod=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+
+/* ---------- firma digital (Ed25519, tweetnacl) ----------
+   Cada teléfono crea una llave propia la primera vez (se guarda en la configuración y viaja en el respaldo).
+   - El PDF se firma completo: al final del archivo va un comentario %RUMENTIS-FIRMA con la huella SHA-256 de todo lo
+     anterior, la llave pública y la firma. Si cambia un solo byte, la verificación falla.
+   - El QR lleva los datos principales firmados dentro de un enlace a la página pública de verificación
+     (verificar/index.html). La verificación se hace en el teléfono de quien lo escanea, sin servidor. */
+const VERIFICAR='https://modelqdeluxe-ops.github.io/ss/verificar/';
+const deB64=t=>{const s=atob(t);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;};
+const b64u=u=>b64(u).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const deB64u=t=>deB64(t.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((t.length+3)%4));
+function llave(){
+  const f=S.config.firma;
+  if(f&&f.pub&&f.sec){try{const sec=deB64(f.sec);if(sec.length===64)return {pub:deB64(f.pub),sec,pubB:f.pub};}catch(e){}}
+  const k=nacl.sign.keyPair(),o={pub:b64(k.publicKey),sec:b64(k.secretKey),creada:hoy()};
+  put('ajustes','finca',{...S.config,firma:o});return {pub:k.publicKey,sec:k.secretKey,pubB:o.pub};
+}
+// huella de la llave: 16 caracteres para leer en voz alta o comparar a simple vista
+const huellaLlave=pubB=>{const h=sha256(deB64(pubB)).toUpperCase();return `${h.slice(0,4)} ${h.slice(4,8)} ${h.slice(8,12)} ${h.slice(12,16)}`;};
+const MSG_PDF=(h,cod,f)=>`RUMENTIS-PDF-1|${h}|${cod}|${f}`;
+const MSG_QR=j=>'RUMENTIS-QR-1|'+j;
+function firmarPDF(buf,cod){
+  const k=llave(),bytes=new Uint8Array(buf),h=sha256(bytes),f=new Date().toISOString();
+  const sig=nacl.sign.detached(utf8(MSG_PDF(h,cod,f)),k.sec);
+  const cola=utf8('\n%RUMENTIS-FIRMA '+JSON.stringify({v:1,alg:'Ed25519',cod,f,h,pub:k.pubB,sig:b64(sig)})+'\n');
+  const out=new Uint8Array(bytes.length+cola.length);out.set(bytes);out.set(cola,bytes.length);
+  return {buf:out.buffer,h,f};
+}
+// datos del QR firmados, dentro del enlace (después de #: no viajan al servidor de la página)
+function enlaceQR(datos){
+  const k=llave(),j=JSON.stringify({...datos,v:1}),sig=nacl.sign.detached(utf8(MSG_QR(j)),k.sec);
+  return `${VERIFICAR}#${b64u(utf8(j))}.${b64u(sig)}.${b64u(k.pub)}`;
+}
+/* comprobar un PDF de cualquier finca: la firma del final y la huella de todo lo anterior */
+function comprobarPDF(buf){
+  const u=new Uint8Array(buf),marca=utf8('\n%RUMENTIS-FIRMA ');
+  let i=-1;for(let p=u.length-marca.length;p>=Math.max(0,u.length-4096);p--){let ok=true;for(let q=0;q<marca.length;q++)if(u[p+q]!==marca[q]){ok=false;break;}if(ok){i=p;break;}}
+  if(i<0)return {est:'sinfirma'};
+  let d;try{let t='';for(let p=i+marca.length;p<u.length;p++)t+=String.fromCharCode(u[p]);d=JSON.parse(decodeURIComponent(escape(t.trim())));}catch(e){return {est:'danada'};}
+  const h=sha256(u.subarray(0,i));
+  if(h!==d.h)return {est:'alterado',d};
+  let ok=false;try{ok=nacl.sign.detached.verify(utf8(MSG_PDF(d.h,d.cod,d.f)),deB64(d.sig),deB64(d.pub));}catch(e){}
+  if(!ok)return {est:'firmamala',d};
+  const f=S.config.firma;return {est:'ok',d,huella:huellaLlave(d.pub),mia:!!(f&&f.pub===d.pub)};
+}
 
 /* ---------- textos ---------- */
 const desEsc=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
@@ -155,6 +201,18 @@ function pdf(meta){
     for(let r=0;r<n;r++){let c=0;while(c<n){if(!q.isDark(r,c)){c++;continue;}let e=c;while(e+1<n&&q.isDark(r,e+1))e++;
       d.rect(x+(mz+c)*s,y+(mz+r)*s,(e-c+1)*s+0.01,s+0.01,'F');c=e+1;}}
     return n;};
+  // recuadro de la firma digital, con su QR (si no va ya en otro lado del documento)
+  P.firmaDigital=(cod,qr)=>{
+    const k=llave(),lado=qr?30:0,alto=Math.max(lado,30)+6;P.espacio(alto+4);const y=P.y,x=M+(qr?lado+6:0)+4,an=AN-(qr?lado+6:0)-8;
+    d.setDrawColor(...COL.pri);d.setLineWidth(0.4);d.setFillColor(...COL.suave);d.roundedRect(M,y,AN,alto,2,2,'FD');
+    if(qr)P.qr(qr,M+3,y+3,lado);
+    fuente(9.5,'bold');color(COL.pri2);d.text(T('Documento firmado digitalmente'),x,y+4,{baseline:'top'});
+    fuente(7.8);color(COL.ink);
+    const L=d.splitTextToSize(lat(`${T(`Código ${cod}.`)} ${T('Firma Ed25519 de la llave')} ${huellaLlave(k.pubB)} (${T(S.config.finca||'Mi engorde')}).`),an)
+      .concat(d.splitTextToSize(T(qr?'Para comprobar que es auténtico y que nadie lo cambió: escanea este código o sube el PDF en':'Para comprobar que es auténtico y que nadie lo cambió: escanea el código QR de arriba o sube el PDF en'),an))
+      .concat([VERIFICAR.replace('https://','')]).concat(d.splitTextToSize(T('Si alguien cambia algo del documento, la verificación falla.'),an));
+    d.text(L,x,y+4+lh(9.5)+0.8,{baseline:'top'});
+    P.y=y+alto+4;};
   P.firmas=L=>{P.espacio(34);P.y+=16;const g=12,w=(AN-g*(L.length-1))/L.length;
     L.forEach((t,i)=>{const x=M+i*(w+g);d.setDrawColor(...COL.ink);d.setLineWidth(0.3);d.line(x,P.y,x+w,P.y);fuente(8);color(COL.gris);d.text(d.splitTextToSize(T(t),w),x,P.y+1.8,{baseline:'top'});});
     P.y+=12;};
@@ -280,9 +338,9 @@ async function informeBanco(o){
   // declaración
   P.seccion('Declaración');
   P.texto('Los datos de este informe salen de los registros que el productor anota en Rumentis: compras, alimento, pesajes, sanidad, ventas, gastos, créditos e inventario. No son estados financieros auditados. El valor del ganado y las proyecciones son estimaciones con los precios configurados por el productor.',{t:8.6});
-  P.texto(`${tr('Código del informe:')} ${cod}. ${tr(`Emitido el ${hoyL()}.`)}`,{t:8.6,b:true});
+  P.firmaDigital(cod,enlaceQR({t:'b',c:cod,fi:cfg.finca||'',lu:lugar(),e:hoy(),ti:tt.nombre||'',ca:C.cabT,lo:C.act.length,mo:S.config.moneda||'L',pa:Math.round(b.patrimonio),ve:Math.round(r.ventas),ne:Math.round(r.neta),de:Math.round(b.pasivos)}));
   P.firmas(['Firma del productor',tt.nombre?`${tr('Nombre e identificación')}: ${tt.nombre}${tt.id?', '+tt.id:''}`:'Nombre e identificación']);
-  const buf=P.fin();
+  const {buf}=firmarPDF(P.fin(),cod);
   registrar({t:'banco',cod,f:hoy(),hh:new Date().toTimeString().slice(0,5),n:'Informe productivo y financiero',para:o.para||'',snap:resumen});
   return {buf,cod,nombre:`${archivo(tr('Informe'))}-${archivo(cfg.finca||'finca')}-${hoy()}.pdf`,titulo:'Informe productivo y financiero'};
 }
@@ -313,6 +371,10 @@ function textoQR(D,cod){
   if(s.aret.length)L.push(TQ(`Aretes: ${nf(s.aret.length)}, en el certificado`));
   return L.join('\n');
 }
+// lo que va firmado en el QR del certificado (claves cortas para que el código no sea muy denso)
+function datosQR(D,cod,o){const s=D.snap;
+  return {t:'c',c:cod,lo:s.lote,fi:s.finca,lu:lugar(),e:s.f,in:s.ing,pr:s.prov,ti:[s.tipo,s.raza].filter(Boolean).join(', '),ca:[s.cab0,s.cab,s.vend,s.bajas],
+    pe:[s.p0,s.peso],sa:[s.san.length,s.ret?s.ret[0]:''],hu:s.hu,ar:s.aret.length,de:o&&o.destino||''};}
 async function certificadoLote(id,o={}){
   await libs();
   const C=calc(),x=C.L[id];if(!x)throw new Error('lote');
@@ -324,8 +386,8 @@ async function certificadoLote(id,o={}){
   // identificación con el QR a la derecha
   const y0=P.y,lado=46,xq=P.PW-P.M-lado;
   P.seccion('Identificación');
-  const yI=P.y;P.qr(textoQR(D,cod),xq,yI,lado);
-  P.fuente(7);P.color(COL.gris);P.d.text(P.d.splitTextToSize(T('Lee el código con la cámara del teléfono: trae el resumen de este certificado, sin internet.'),lado),xq,yI+lado+1.5,{baseline:'top'});
+  const yI=P.y;P.qr(enlaceQR(datosQR(D,cod,o)),xq,yI,lado);
+  P.fuente(7);P.color(COL.gris);P.d.text(P.d.splitTextToSize(T('Escanéalo con la cámara del teléfono para comprobar que el certificado es auténtico.'),lado),xq,yI+lado+1.5,{baseline:'top'});
   P.pares([['Lote',l.nombre],['Código',cod],['Finca',cfg.finca||'–'],['Ubicación',lugar()||'–'],['Productor',[tt.nombre,tt.id].filter(Boolean).join(', ')||'–'],['Tipo',[l.tipo,l.raza].filter(Boolean).join(', ')||'–'],
     ['Entró',conA(l.fechaIngreso)],[x.activo?'Días en el corral':'Vendido',x.activo?nf(x.dec):`${conA(l.fechaCierre)}, ${pl(x.dec,'día','días')} en el corral`]],{cols:2,an:P.AN-lado-6});
   P.y=Math.max(P.y,yI+lado+10);
@@ -367,9 +429,9 @@ async function certificadoLote(id,o={}){
   // declaración
   P.seccion('Declaración');
   P.texto('El productor declara que estos datos son los que registró en Rumentis para este lote. Este documento no reemplaza los certificados oficiales de sanidad, las guías de movilización ni la inspección veterinaria que pida la ley de su país.',{t:8.6});
-  P.texto(`${tr('Código de verificación:')} ${cod}. ${tr('El productor lo comprueba en su app: Más, Documentos, Verificar un código.')}`,{t:8.6,b:true});
+  P.firmaDigital(cod,null);
   P.firmas(['Firma del productor','Firma de quien recibe']);
-  const buf=P.fin();
+  const {buf}=firmarPDF(P.fin(),cod);
   registrar({t:'cert',cod,f:hoy(),hh:new Date().toTimeString().slice(0,5),lote:x.id,n:l.nombre,dest:o.destino||'',snap,hs:hashSan(x)});
   return {buf,cod,nombre:`${archivo(tr('Certificado'))}-${archivo(l.nombre)}-${hoy()}.pdf`,titulo:`Certificado de ${l.nombre}`};
 }
@@ -427,32 +489,33 @@ FORMS.docCert=({id})=>{
     <p class="err"></p></div>${pieDoc(`data-doc="cert" data-id="${esc(id)}"`)}</form>`);
 };
 FORMS.docVerificar=()=>{
-  openSheet(shHead('Verificar un código')+`<div class="sh-body">
-    <p class="hint" style="margin-top:0">Escribe el código que viene en el informe o el certificado (RMB-… o RMC-…). Te digo si lo emitió esta app y qué decía.</p>
+  openSheet(shHead('Verificar un documento')+`<div class="sh-body">
+    <p class="hint" style="margin-top:0">Sube un PDF de Rumentis, de cualquier finca: compruebo su firma digital y que nadie le cambió nada.</p>
+    <label class="btn full" style="position:relative;overflow:hidden">${mico('doc')}Elegir el PDF<input type="file" id="docPdf" accept="application/pdf,.pdf" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+    <div id="docPdfRes"></div>
+    <p class="hint" style="margin-bottom:0">O escribe el código de un documento que hiciste en este teléfono (RMB-… o RMC-…):</p>
     ${q('Código',`<input class="in" name="cod" id="docCod" autocomplete="off" autocapitalize="characters" placeholder="RMC-1A2B-3C4D-5E6F" style="text-transform:uppercase">`,'','docCod')}
-    <div id="docVer"></div></div><div class="sh-foot"><button type="button" class="btn pri" data-act="docVerificar" style="flex:1">Verificar</button></div>`,
-    el=>{const i=el.querySelector('#docCod');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ACTS.docVerificar();}});});
+    <div id="docVer"></div></div><div class="sh-foot"><button type="button" class="btn pri" data-act="docVerificar" style="flex:1">Verificar el código</button></div>`,
+    el=>{const i=el.querySelector('#docCod');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ACTS.docVerificar();}});
+      const f=el.querySelector('#docPdf');if(f)f.addEventListener('change',()=>{const a=f.files&&f.files[0];f.value='';if(a)verificarArchivo(a);});});
 };
 ACTS.docVerificar=()=>{const i=document.querySelector('#docCod'),o=document.querySelector('#docVer');if(!i||!o)return;o.innerHTML=aUnidad(verificarHtml(verificar(i.value)));};
-let ocupado=false;
-ACTS.docHacer=async el=>{
-  if(ocupado)return;const f=el.closest('form'),modo=el.dataset.modo,tipo=el.dataset.doc;const err=f&&f.querySelector('.err');if(err)err.textContent='';
-  const B=f?[...f.querySelectorAll('[data-act="docHacer"]')]:[el],txt=el.textContent;
-  ocupado=true;B.forEach(b=>b.disabled=true);el.textContent=tr('Preparando…');
-  try{
-    let r;
-    if(tipo==='banco'){const v=n=>(f.elements[n]&&f.elements[n].value||'').trim();
-      const tt={nombre:v('nombre'),id:v('id'),tel:v('tel')};
-      if(JSON.stringify(tt)!==JSON.stringify({nombre:'',id:'',tel:'',...titular()}))put('ajustes','finca',{...S.config,titular:tt});
-      r=await informeBanco({para:v('para')});}
-    else r=await certificadoLote(el.dataset.id,{destino:(f.elements.destino&&f.elements.destino.value||'').trim()});
-    const ok=await enviar(r.nombre,r.buf,modo,r.titulo);
-    if(ok){if(modo==='guardar'&&!window.Android)toast('PDF descargado');else if(modo!=='guardar')toast(`${tr('Código')} ${r.cod}`,3200);}
-  }catch(e){console.error(e);const m=e&&e.message==='lib'?'No pude cargar el generador de PDF. Cierra y abre la app.':'No pude hacer el PDF. Revisa los datos e inténtalo otra vez.';if(err)err.textContent=tr(m);else toast(m);}
-  finally{ocupado=false;B.forEach(b=>b.disabled=false);el.textContent=txt;}
-};
-
-/* página Documentos (Más) */
+async function verificarArchivo(file){
+  const o=document.querySelector('#docPdfRes');if(!o)return;o.innerHTML=aUnidad('<p class="hint">Comprobando…</p>');
+  try{await libs();const buf=await file.arrayBuffer();o.innerHTML=aUnidad(pdfHtml(comprobarPDF(buf),file.name));}
+  catch(e){o.innerHTML=aUnidad('<p class="prev warn">No pude leer el archivo.</p>');}
+}
+function pdfHtml(r,nombre){
+  if(r.est==='sinfirma')return `<p class="prev warn"><b>Sin firma digital.</b> Este PDF no fue firmado por Rumentis (o se hizo con una versión anterior).</p>`;
+  if(r.est==='danada')return `<p class="prev warn"><b>Firma dañada.</b> El final del archivo no se puede leer: el documento pudo ser modificado.</p>`;
+  if(r.est==='alterado')return `<p class="prev warn"><b>El documento fue modificado.</b> Tiene la firma de Rumentis, pero su contenido ya no es el que se firmó. No confíes en él.</p>`;
+  if(r.est==='firmamala')return `<p class="prev warn"><b>Firma falsa.</b> La firma no corresponde a la llave que dice. No confíes en este documento.</p>`;
+  const d=r.d,f=d.f?new Date(d.f):null;
+  return `<p class="prev ok"><b>Documento auténtico.</b> La firma digital es válida y nadie lo modificó desde que se firmó${r.mia?'. Lo firmaste tú, con este teléfono':''}.</p>
+    <ul class="rp-lista"><li><b>Código:</b> <span data-no-tr>${esc(d.cod||'')}</span></li><li><b>Firmado:</b> ${f?`${ffl(f.toISOString().slice(0,10))}, ${esc(f.toTimeString().slice(0,5))}`:'–'}</li>
+    <li><b>Llave:</b> <span data-no-tr>${esc(r.huella)}</span></li></ul>
+    <p class="rs">La llave identifica al teléfono que lo firmó: si la finca te mandó antes otros documentos, la llave debe ser la misma.</p>`;
+}
 PAGES.documentos=()=>{
   const C=calc(),L=C.act.concat(C.cer.slice(0,8)),D=DOCS();
   const fila=(ic,t,s,attr,tono)=>masFila(mico(ic),t,s,attr,tono);
@@ -460,10 +523,11 @@ PAGES.documentos=()=>{
   <main class="bd">
    <section class="sec">${secH('Para el banco')}<div class="card rows">${fila('gasto','Informe productivo y financiero','Balance, resultados, créditos, indicadores, flujo y riesgo','data-act="f" data-f="docBanco"','t-t')}</div></section>
    <section class="sec">${secH('Certificado de lote','con código QR')}<div class="card rows">${L.length?L.map(x=>fila('doc',esc(x.l.nombre),`${pl(x.activo?x.cab:x.cab0,'cabeza','cabezas')}${x.activo?'':', vendido'}${x.retiroHasta&&x.retiroHasta>C.H?` · en retiro hasta el ${ffc(x.retiroHasta)}`:''}`,`data-act="f" data-f="docCert" data-id="${esc(x.id)}"`,'t-v')).join(''):`<p class="empty">Aún no tienes lotes.</p>`}</div></section>
-   <section class="sec">${secH('Verificar')}<div class="card rows">${fila('info','Verificar un código','¿Este documento lo hice yo? ¿Qué decía?','data-act="f" data-f="docVerificar"','t-a')}</div></section>
+   <section class="sec">${secH('Verificar')}<div class="card rows">${fila('info','Verificar un documento','Sube un PDF de cualquier finca o escribe un código','data-act="f" data-f="docVerificar"','t-a')}</div>
+    <p class="hint">${S.config.firma&&S.config.firma.pub?`Tu llave de firma digital: <b data-no-tr>${esc(huellaLlave(S.config.firma.pub))}</b>. Va en cada documento que haces.`:'Tus documentos se firman con una llave digital de este teléfono, que se crea al hacer el primero.'} Cualquiera puede comprobarlos sin la app: escaneando el QR o subiendo el PDF en <b data-no-tr>${esc(VERIFICAR.replace('https://',''))}</b>.</p></section>
    ${D.length?`<section class="sec">${secH('Emitidos',D.length)}<div class="card rows">${D.slice(0,12).map(d=>`<div class="row"><div class="tx"><b>${d.t==='cert'?'Certificado de lote':'Informe productivo y financiero'}</b><span>${ffc(d.f)} · <span data-no-tr>${esc([d.t==='cert'?d.n:d.para,d.cod].filter(Boolean).join(' · '))}</span></span></div></div>`).join('')}</div></section>`:''}
-   <p class="hint">Los documentos salen de tus registros. Cada uno lleva un código que solo este teléfono (o tu respaldo) puede comprobar.</p>
+   <p class="hint">Los documentos salen de tus registros y van firmados digitalmente: si alguien les cambia algo, la verificación falla.</p>
   </main>`;
 };
-window.Documentos={informeBanco,certificadoLote,verificar,sha256,canon,codigo,lat,T,enviar,datosCert,textoQR,libs};
+window.Documentos={informeBanco,certificadoLote,verificar,sha256,canon,codigo,lat,T,enviar,datosCert,textoQR,libs,comprobarPDF,enlaceQR,huellaLlave,llave,VERIFICAR,deB64u};
 })();

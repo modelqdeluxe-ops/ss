@@ -1,0 +1,2 @@
+nacl-fast.min.js — TweetNaCl.js 1.0.3 (https://github.com/dchest/tweetnacl-js)
+Dominio público (The Unlicense): "This is free and unencumbered software released into the public domain."

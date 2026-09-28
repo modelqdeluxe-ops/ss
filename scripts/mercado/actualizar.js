@@ -2,6 +2,9 @@
 // Corre en GitHub Actions (tiene internet); la app los lee de la Release "mercado" por la API de GitHub.
 // Fuentes públicas, sin llaves:
 //   - USDA AMS LMR Datamart, informe LM_CT150 (slug 2477): 5 Area Weekly Weighted Average Direct Slaughter Cattle.
+//   - Ganado de engorde en EE. UU. (Oklahoma National Stockyards, la referencia nacional del ternero):
+//     historia mensual de USDA ERS (Livestock prices, xlsx) y cada semana el reporte USDA AMS_1280 (PDF, se lee con
+//     pdftotext de poppler-utils).
 //   - Cepea/Esalq: indicadores del boi gordo (SP), bezerro (MS) y milho (Campinas).
 //   - Banco Central do Brasil, serie SGS 1: dólar PTAX (venta).
 //   - ExchangeRate-API (open.er-api.com): tipos de cambio contra el dólar.
@@ -54,6 +57,99 @@ async function usda() {
     novillo_gordo_canal: canal.length >= 4 ? { nombre: 'Novillo gordo en canal', unidad: 'USD/cwt', base: 'canal', region: '5 áreas', frecuencia: 'semanal',
       fuente: 'USDA AMS, LM_CT150, novillos en canal (dressed delivered), promedio ponderado', url: 'https://mpr.datamart.ams.usda.gov/', serie: canal.map(p => [p[0], p[1]]) } : null
   };
+}
+
+/* ---------- EE. UU.: ganado de engorde, Oklahoma City ----------
+   Novillos Medium and Large #1 de 500-550 lb (ternero) y 750-800 lb (novillo de engorde), en USD/cwt. */
+async function traerBin(url) {
+  let ult;
+  for (let i = 0; i < 3; i++) {
+    try { const r = await fetch(url, { headers: UA, signal: AbortSignal.timeout(60000) }); if (!r.ok) throw new Error(`HTTP ${r.status}`); return Buffer.from(await r.arrayBuffer()); }
+    catch (e) { ult = e; await new Promise(res => setTimeout(res, 3000 * (i + 1))); }
+  }
+  throw new Error(`${url}: ${ult && ult.message}`);
+}
+const deSerial = n => new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 864e5).toISOString().slice(0, 10);
+const MESES_EN = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+// "Aug-26/*" → "2026-08-01"
+const deMesEn = t => { const m = /^([A-Za-z]{3})-(\d{2})/.exec(String(t || '').trim()); if (!m || !MESES_EN[m[1].toLowerCase()]) return null; return `20${m[2]}-${String(MESES_EN[m[1].toLowerCase()]).padStart(2, '0')}-01`; };
+// Excel de ERS: hoja Historical (desde 2000) y hoja Current (los últimos meses, con el preliminar)
+function ersEngorde(buf) {
+  const X = require('xlsx'), wb = X.read(buf, { type: 'buffer' }), out = { t500: new Map(), t750: new Map() };
+  const H = wb.Sheets.Historical && X.utils.sheet_to_json(wb.Sheets.Historical, { header: 1 });
+  if (H) {
+    // columnas de novillos: la fila de rangos de peso dice "500-550 lbs" y "750-800 lbs" bajo "Steers: medium and large #1"
+    const iSub = H.findIndex(r => r && r.some(c => /500-550 lbs/i.test(String(c)))), sub = H[iSub] || [], cab = H[iSub - 1] || [];
+    const col = t => sub.findIndex((c, j) => new RegExp(t).test(String(c)) && /steers/i.test(String(cab[j] || '')));
+    const c5 = col('500-550'), c7 = col('750-800');
+    for (const r of H) if (r && typeof r[0] === 'number' && r[0] > 30000) {
+      const f = deSerial(r[0]);
+      if (c5 > 0 && typeof r[c5] === 'number') out.t500.set(f, r[c5]);
+      if (c7 > 0 && typeof r[c7] === 'number') out.t750.set(f, r[c7]);
+    }
+  }
+  const C = wb.Sheets.Current && X.utils.sheet_to_json(wb.Sheets.Current, { header: 1 });
+  if (C) {
+    const cab = C[0] || [], fechas = cab.map(c => typeof c === 'number' ? deSerial(c) : deMesEn(c));
+    const i0 = C.findIndex(r => r && /feeder cattle, oklahoma city/i.test(String(r[0] || '')));
+    if (i0 >= 0) {
+      let steers = false;
+      for (let i = i0 + 1; i < Math.min(C.length, i0 + 14); i++) {
+        const r = C[i] || [], t = String(r[0] || '');
+        if (/steers/i.test(t)) steers = true; else if (/heifers/i.test(t)) steers = false;
+        const k = steers && /500-550/.test(t) ? 't500' : steers && /750-800/.test(t) ? 't750' : null;
+        if (k) r.forEach((v, j) => { if (j && fechas[j] && typeof v === 'number') out[k].set(fechas[j], v); });
+      }
+    }
+  }
+  return { t500: [...out.t500].sort(), t750: [...out.t750].sort() };
+}
+/* reporte semanal AMS_1280 ya pasado a texto: promedio ponderado por cabezas de las filas de novillos M&L 1
+   con peso promedio en el rango; primero las filas sin comentario (Fleshy, Thin Fleshed, Fancy, Unweaned...) */
+function okcSemana(txt) {
+  const m = /Weighted Average Report for (\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(txt);
+  if (!m) throw new Error('OKC: sin fecha del reporte');
+  const fecha = `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  const filas = [];let dentro = false;
+  for (const l of txt.split(/\r?\n/)) {
+    if (/STEERS\s*-\s*Medium and Large 1\s*\(Per Cwt/i.test(l)) { dentro = true; continue; }
+    if (/\(Per Cwt|^\s*Source:|^\s*(HEIFERS|BULLS|SLAUGHTER|STEERS)\b/i.test(l)) { dentro = false; continue; }
+    if (!dentro) continue;
+    const r = /^\s*(\d+)\s+(\d{3,4})(?:-(\d{3,4}))?\s+(\d{3,4})\s+([\d.]+)(?:-([\d.]+))?\s+([\d.]+)\s*(.*)$/.exec(l);
+    if (r) filas.push({ cab: +r[1], peso: +r[4], precio: +r[7], nota: r[8].trim() });
+  }
+  if (!filas.length) throw new Error('OKC: no encontré filas de novillos Medium and Large 1');
+  const prom = (a, b) => {
+    const en = filas.filter(f => f.peso >= a && f.peso <= b && f.precio > 50 && f.precio < 1000);
+    const lisas = en.filter(f => !f.nota), usar = lisas.length ? lisas : en, cab = usar.reduce((s, f) => s + f.cab, 0);
+    return cab ? Math.round(usar.reduce((s, f) => s + f.precio * f.cab, 0) / cab * 100) / 100 : null;
+  };
+  return { fecha, t500: prom(500, 550), t750: prom(750, 800), filas: filas.length };
+}
+async function engorde() {
+  const t500 = new Map(), t750 = new Map(), avisos = [];
+  try {
+    const pag = await traer('https://www.ers.usda.gov/data-products/livestock-and-meat-domestic-data');
+    const u = (/href="(\/media\/\d+\/livestock-prices\.xlsx[^"]*)"/.exec(pag) || [])[1];
+    if (!u) throw new Error('no encontré el enlace del xlsx');
+    const e = ersEngorde(await traerBin('https://www.ers.usda.gov' + u.replace(/&amp;/g, '&')));
+    e.t500.forEach(([f, v]) => t500.set(f, v)); e.t750.forEach(([f, v]) => t750.set(f, v));
+    console.log('ERS engorde:', e.t500.length, 'meses de 500-550 lb,', e.t750.length, 'de 750-800 lb; último', e.t500[e.t500.length - 1]);
+  } catch (err) { avisos.push('ERS: ' + err.message); }
+  try {
+    const pdf = await traerBin('https://www.ams.usda.gov/mnreports/AMS_1280.pdf');
+    fs.writeFileSync('okc.pdf', pdf);
+    const txt = require('child_process').execFileSync('pdftotext', ['-layout', 'okc.pdf', '-']).toString();
+    const o = okcSemana(txt);
+    console.log('Oklahoma City', o.fecha, 'filas', o.filas, '500-550 lb:', o.t500, '750-800 lb:', o.t750);
+    if (o.t500) t500.set(o.fecha, o.t500); if (o.t750) t750.set(o.fecha, o.t750);
+  } catch (err) { avisos.push('Oklahoma City: ' + err.message); }
+  if (!t500.size && !t750.size) throw new Error(avisos.join('; '));
+  const base = { unidad: 'USD/cwt', base: 'vivo', region: 'Oklahoma City (Oklahoma National Stockyards)', frecuencia: 'semanal',
+    fuente: 'USDA AMS (reporte AMS_1280, subasta de Oklahoma City) y USDA ERS (Livestock prices), novillos Medium and Large #1', url: 'https://www.ams.usda.gov/mnreports/AMS_1280.pdf' };
+  const orden = m => [...m.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);
+  return { avisos, ternero: t500.size ? { ...base, nombre: 'Ternero de engorde (500-550 lb)', serie: orden(t500) } : null,
+    novillo: t750.size ? { ...base, nombre: 'Novillo de engorde (750-800 lb)', serie: orden(t750) } : null };
 }
 
 /* ---------- Brasil: Cepea ---------- */
@@ -128,6 +224,8 @@ async function ptax() {
 
   try { const u = await usda(); poner('us_novillo_gordo_pie', u.novillo_gordo_pie); poner('us_novillo_gordo_canal', u.novillo_gordo_canal); }
   catch (e) { out.errores.push('USDA: ' + e.message); }
+  try { const e = await engorde(); poner('us_ternero', e.ternero); poner('us_novillo_engorde', e.novillo); out.errores.push(...e.avisos); }
+  catch (e) { out.errores.push('Ganado de engorde EE. UU.: ' + e.message); }
   try { const b = await brasil(); poner('br_boi_gordo', b.boi_gordo); poner('br_bezerro', b.bezerro); poner('br_milho', b.milho); }
   catch (e) { out.errores.push('Cepea: ' + e.message); }
   try { poner('br_dolar_ptax', { nombre: 'Dólar PTAX', unidad: 'BRL/USD', base: 'venta', region: 'Brasil', frecuencia: 'diaria', fuente: 'Banco Central do Brasil, serie SGS 1', url: 'https://www.bcb.gov.br', serie: await ptax() }); }
@@ -147,4 +245,4 @@ async function ptax() {
   fs.writeFileSync('mercado.md', md);
   console.log(md.slice(0, md.indexOf('<!--')));
   console.log('bytes json', JSON.stringify(out).length, 'series', Object.keys(out.series).join(', '));
-})();
+})().catch(e => { console.error(e); process.exit(1); });

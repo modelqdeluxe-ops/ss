@@ -1,0 +1,34 @@
+# Publica la página pública de verificación de documentos (verificar/) en GitHub Pages:
+#   https://modelqdeluxe-ops.github.io/ss/verificar/
+# Una sola vez: Settings → Pages → Build and deployment → Source: GitHub Actions.
+name: Página de verificación
+on:
+  push:
+    branches: [main]
+    paths: ['verificar/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: pages
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}verificar/
+    steps:
+      - uses: actions/checkout@v4
+      - name: Armar el sitio
+        run: |
+          mkdir -p _sitio/verificar
+          cp verificar/* _sitio/verificar/
+          printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=verificar/"><title>Rumentis</title><a href="verificar/">Verificar un documento</a>\n' > _sitio/index.html
+          touch _sitio/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _sitio
+      - id: despliegue
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verificar documento · Rumentis</title>
+<meta name="description" content="Comprueba que un certificado o informe de Rumentis es auténtico y que nadie lo modificó.">
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#F3F5F2;--card:#fff;--ink:#16241E;--ink2:#56645E;--line:#DDE5E0;--pri:#1F7A63;--pri2:#155646;--ok:#1F7A63;--okbg:#E6F3EE;--mal:#B23A28;--malbg:#FBEAE6;--av:#9A6A12;--avbg:#FBF3E2}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1814;--card:#17231E;--ink:#E6F0EA;--ink2:#A3B3AB;--line:#2A3A33;--okbg:#16352B;--malbg:#3A1E19;--avbg:#3A2E14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--pri);color:#fff;padding:22px 16px 26px}
+header small{letter-spacing:.2em;font-weight:700;opacity:.8;font-size:12px}
+header h1{margin:4px 0 2px;font-size:24px;line-height:1.2}
+header p{margin:0;opacity:.9;font-size:14.5px}
+main{max-width:640px;margin:-14px auto 40px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{margin:0 0 8px;font-size:17px}
+.estado{border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.estado b{display:block;font-size:17px;margin-bottom:2px}
+.estado.ok{background:var(--okbg);color:var(--ok)}.estado.mal{background:var(--malbg);color:var(--mal)}.estado.av{background:var(--avbg);color:var(--av)}
+.estado span{color:var(--ink)}
+.ic{flex:none;width:28px;height:28px}
+dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:6px 12px;font-size:15px}
+dt{color:var(--ink2)}dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.llave{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em}
+.zona{display:block;margin-top:12px;border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--ink2);cursor:pointer}
+.zona.sobre{border-color:var(--pri);background:var(--okbg)}
+.btn{display:inline-block;background:var(--pri);color:#fff;border:0;border-radius:12px;padding:11px 18px;font:600 15px system-ui,sans-serif;cursor:pointer;margin-top:10px}
+.nota{font-size:13.5px;color:var(--ink2);margin:8px 0 0}
+input[type=file]{display:none}
+footer{text-align:center;font-size:12.5px;color:var(--ink2);padding:0 16px 30px}
+</style>
+</head>
+<body>
+<header><small>RUMENTIS</small><h1 data-t="titulo">Verificar un documento</h1><p data-t="sub">Comprueba que un certificado o informe es auténtico y que nadie lo cambió.</p></header>
+<main>
+ <section class="card" id="qr" hidden></section>
+ <section class="card">
+  <h2 data-t="pdfT">Comprobar el PDF completo</h2>
+  <p class="nota" data-t="pdfX" style="margin-top:0">Elige el archivo PDF que te mandaron. Se revisa aquí mismo, en tu teléfono o computadora: el archivo no se sube a ningún lado.</p>
+  <label class="zona" id="zona"><input type="file" id="archivo" accept="application/pdf,.pdf"><span data-t="elegir">Toca para elegir el PDF, o arrástralo aquí</span></label>
+  <div id="pdf"></div>
+ </section>
+ <section class="card">
+  <h2 data-t="comoT">¿Cómo funciona?</h2>
+  <p class="nota" data-t="como1" style="margin-top:0">Cada teléfono con Rumentis tiene una llave de firma digital propia (Ed25519). Al hacer un certificado o un informe, la app firma el PDF completo y los datos del código QR.</p>
+  <p class="nota" data-t="como2">Si alguien cambia una sola letra o número, la firma ya no coincide y aquí aparece como modificado. La llave (16 letras y números) identifica al teléfono que firmó: si la finca te mandó otros documentos, debe ser la misma.</p>
+  <p class="nota" data-t="como3">La firma prueba que el documento no fue alterado y quién lo firmó; los datos los anota el productor y no reemplazan los certificados oficiales.</p>
+ </section>
+</main>
+<footer>Rumentis · <span data-t="pie">verificación hecha en tu navegador, sin servidor</span></footer>
+<script src="nacl-fast.min.js"></script>
+<script>
+(function(){
+'use strict';
+/* ---------- idioma ---------- */
+const L=(navigator.language||'es').slice(0,2).toLowerCase(),lang=L==='en'||L==='pt'?L:'es';document.documentElement.lang=lang;
+const TXT={
+ en:{titulo:'Verify a document',sub:'Check that a certificate or report is authentic and that nobody changed it.',pdfT:'Check the full PDF',pdfX:'Choose the PDF file you were sent. It is checked right here, on your phone or computer: the file is not uploaded anywhere.',elegir:'Tap to choose the PDF, or drop it here',comoT:'How does it work?',
+  como1:'Every phone with Rumentis has its own digital signing key (Ed25519). When it makes a certificate or report, the app signs the whole PDF and the data in the QR code.',
+  como2:'If anyone changes a single letter or number, the signature no longer matches and it shows here as modified. The key (16 letters and numbers) identifies the phone that signed: if the ranch sent you other documents, it should be the same.',
+  como3:'The signature proves the document was not altered and who signed it; the data is entered by the producer and does not replace official certificates.',pie:'verified in your browser, no server',
+  qrOk:'Authentic',qrOkX:'The digital signature is valid: these are the data the ranch signed. Compare them with the paper.',qrMal:'Not authentic',qrMalX:'The signature does not match these data: the code was altered or is not from Rumentis.',qrDan:'Damaged code',qrDanX:'The QR code could not be read completely. Try scanning it again.',
+  pdfOk:'Authentic document',pdfOkX:'The digital signature is valid and nobody modified the PDF since it was signed.',pdfSin:'No digital signature',pdfSinX:'This PDF was not signed by Rumentis (or was made with an older version).',
+  pdfAlt:'The document was modified',pdfAltX:'It carries a Rumentis signature, but its content is no longer what was signed. Do not trust it.',pdfFal:'Forged signature',pdfFalX:'The signature does not belong to the key it claims. Do not trust this document.',pdfDan:'Damaged signature',pdfDanX:'The end of the file cannot be read: the document may have been modified.',
+  mismo:'Same key as the QR code you scanned.',otro:'Warning: this PDF was signed with a different key than the QR code you scanned.',leyendo:'Checking…',noLee:'The file could not be read.',
+  cert:'Lot certificate',banco:'Production and financial report',
+  k:{doc:'Document',c:'Code',lo:'Lot',fi:'Ranch',lu:'Location',ti:'Type',e:'Issued',in:'Arrived',pr:'Supplier',ca:'Head',pe:'Weight',sa:'Health',hu:'Carbon footprint',ar:'Ear tags',de:'Destination',titu:'Producer',cabT:'Head on feed',lots:'Lots on feed',pa:'Equity',ve:'Cattle sales, 12 months',ne:'Net income, 12 months',deu:'Debts',llave:'Signing key',firmado:'Signed'},
+  cab:(a,b,c,d)=>`${a} on arrival, ${b} in the pen, ${c} sold, ${d} dead`,pes:(a,b)=>`${a} kg on arrival, ${b} kg now or at sale`,san:(n,r)=>`${n} treatments; `+(r?`in withdrawal until ${r}`:'no active withdrawal'),hu:v=>`${v} kg CO2e per kg gained`},
+ pt:{titulo:'Verificar um documento',sub:'Confira se um certificado ou relatório é autêntico e se ninguém o alterou.',pdfT:'Conferir o PDF completo',pdfX:'Escolha o arquivo PDF que te enviaram. Ele é conferido aqui mesmo, no seu celular ou computador: o arquivo não é enviado a lugar nenhum.',elegir:'Toque para escolher o PDF, ou arraste aqui',comoT:'Como funciona?',
+  como1:'Cada celular com o Rumentis tem sua própria chave de assinatura digital (Ed25519). Ao fazer um certificado ou relatório, o app assina o PDF inteiro e os dados do código QR.',
+  como2:'Se alguém mudar uma única letra ou número, a assinatura deixa de bater e aqui aparece como alterado. A chave (16 letras e números) identifica o celular que assinou: se a fazenda te mandou outros documentos, deve ser a mesma.',
+  como3:'A assinatura prova que o documento não foi alterado e quem o assinou; os dados são anotados pelo produtor e não substituem os certificados oficiais.',pie:'verificação feita no seu navegador, sem servidor',
+  qrOk:'Autêntico',qrOkX:'A assinatura digital é válida: estes são os dados que a fazenda assinou. Compare com o papel.',qrMal:'Não é autêntico',qrMalX:'A assinatura não bate com estes dados: o código foi alterado ou não é do Rumentis.',qrDan:'Código danificado',qrDanX:'Não foi possível ler o código QR inteiro. Tente escanear de novo.',
+  pdfOk:'Documento autêntico',pdfOkX:'A assinatura digital é válida e ninguém alterou o PDF desde que foi assinado.',pdfSin:'Sem assinatura digital',pdfSinX:'Este PDF não foi assinado pelo Rumentis (ou foi feito com uma versão anterior).',
+  pdfAlt:'O documento foi alterado',pdfAltX:'Tem a assinatura do Rumentis, mas o conteúdo já não é o que foi assinado. Não confie nele.',pdfFal:'Assinatura falsa',pdfFalX:'A assinatura não corresponde à chave que diz ter. Não confie neste documento.',pdfDan:'Assinatura danificada',pdfDanX:'O final do arquivo não pode ser lido: o documento pode ter sido alterado.',
+  mismo:'Mesma chave do código QR que você escaneou.',otro:'Atenção: este PDF foi assinado com uma chave diferente da do código QR que você escaneou.',leyendo:'Conferindo…',noLee:'Não foi possível ler o arquivo.',
+  cert:'Certificado de lote',banco:'Relatório produtivo e financeiro',
+  k:{doc:'Documento',c:'Código',lo:'Lote',fi:'Fazenda',lu:'Localização',ti:'Tipo',e:'Emitido',in:'Entrou',pr:'Fornecedor',ca:'Cabeças',pe:'Peso',sa:'Sanidade',hu:'Pegada de carbono',ar:'Brincos',de:'Destino',titu:'Produtor',cabT:'Cabeças em engorda',lots:'Lotes em engorda',pa:'Patrimônio',ve:'Vendas de gado, 12 meses',ne:'Lucro líquido, 12 meses',deu:'Dívidas',llave:'Chave de assinatura',firmado:'Assinado'},
+  cab:(a,b,c,d)=>`${a} na entrada, ${b} no curral, ${c} vendidas, ${d} mortas`,pes:(a,b)=>`${a} kg na entrada, ${b} kg hoje ou na venda`,san:(n,r)=>`${n} tratamentos; `+(r?`em carência até ${r}`:'sem carência vigente'),hu:v=>`${v} kg CO2e por kg ganho`},
+ es:{qrOk:'Auténtico',qrOkX:'La firma digital es válida: estos son los datos que firmó la finca. Compáralos con el papel.',qrMal:'No es auténtico',qrMalX:'La firma no coincide con estos datos: el código fue alterado o no es de Rumentis.',qrDan:'Código dañado',qrDanX:'No se pudo leer el código QR completo. Intenta escanearlo otra vez.',
+  pdfOk:'Documento auténtico',pdfOkX:'La firma digital es válida y nadie modificó el PDF desde que se firmó.',pdfSin:'Sin firma digital',pdfSinX:'Este PDF no fue firmado por Rumentis (o se hizo con una versión anterior).',
+  pdfAlt:'El documento fue modificado',pdfAltX:'Tiene la firma de Rumentis, pero su contenido ya no es el que se firmó. No confíes en él.',pdfFal:'Firma falsa',pdfFalX:'La firma no corresponde a la llave que dice. No confíes en este documento.',pdfDan:'Firma dañada',pdfDanX:'El final del archivo no se puede leer: el documento pudo ser modificado.',
+  mismo:'La misma llave del código QR que escaneaste.',otro:'Ojo: este PDF se firmó con una llave distinta a la del código QR que escaneaste.',leyendo:'Comprobando…',noLee:'No se pudo leer el archivo.',
+  cert:'Certificado de lote',banco:'Informe productivo y financiero',
+  k:{doc:'Documento',c:'Código',lo:'Lote',fi:'Finca',lu:'Ubicación',ti:'Tipo',e:'Emitido',in:'Entró',pr:'Proveedor',ca:'Cabezas',pe:'Peso',sa:'Sanidad',hu:'Huella de carbono',ar:'Aretes',de:'Destino',titu:'Productor',cabT:'Cabezas en engorde',lots:'Lotes en engorde',pa:'Patrimonio',ve:'Ventas de ganado, 12 meses',ne:'Utilidad neta, 12 meses',deu:'Deudas',llave:'Llave de firma',firmado:'Firmado'},
+  cab:(a,b,c,d)=>`${a} al entrar, ${b} en el corral, ${c} vendidas, ${d} muertas`,pes:(a,b)=>`${a} kg al entrar, ${b} kg hoy o al vender`,san:(n,r)=>`${n} tratamientos; `+(r?`en retiro hasta el ${r}`:'sin retiro vigente'),hu:v=>`${v} kg CO2e por kg ganado`}};
+const T=TXT[lang];
+if(lang!=='es')document.querySelectorAll('[data-t]').forEach(e=>{const v=T[e.dataset.t];if(v)e.textContent=v;});
+document.title=(lang==='en'?'Verify document':lang==='pt'?'Verificar documento':'Verificar documento')+' · Rumentis';
+
+/* ---------- utilidades (idénticas a la app: documentos.js) ---------- */
+const utf8=s=>new TextEncoder().encode(s);
+const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+function sha256(m){const l=m.length,n=((l+9+63)>>6)<<6,b=new Uint8Array(n);b.set(m);b[l]=0x80;const dv=new DataView(b.buffer);dv.setUint32(n-8,Math.floor(l/0x20000000));dv.setUint32(n-4,(l<<3)>>>0);
+  const H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],w=new Uint32Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
+  for(let o=0;o<n;o+=64){for(let i=0;i<16;i++)w[i]=dv.getUint32(o+i*4);for(let i=16;i<64;i++){const a=w[i-15],c=w[i-2];w[i]=(w[i-16]+(r(a,7)^r(a,18)^(a>>>3))+w[i-7]+(r(c,17)^r(c,19)^(c>>>10)))>>>0;}
+    let [A,B,C,D,E,F,G,Hh]=H;for(let i=0;i<64;i++){const t1=(Hh+(r(E,6)^r(E,11)^r(E,25))+((E&F)^(~E&G))+K[i]+w[i])>>>0,t2=((r(A,2)^r(A,13)^r(A,22))+((A&B)^(A&C)^(B&C)))>>>0;Hh=G;G=F;F=E;E=(D+t1)>>>0;D=C;C=B;B=A;A=(t1+t2)>>>0;}
+    H[0]=(H[0]+A)>>>0;H[1]=(H[1]+B)>>>0;H[2]=(H[2]+C)>>>0;H[3]=(H[3]+D)>>>0;H[4]=(H[4]+E)>>>0;H[5]=(H[5]+F)>>>0;H[6]=(H[6]+G)>>>0;H[7]=(H[7]+Hh)>>>0;}
+  return H.map(x=>x.toString(16).padStart(8,'0')).join('');}
+const deB64=t=>{const s=atob(t);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;};
+const deB64u=t=>deB64(t.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((t.length+3)%4));
+const huella=pub=>{const h=sha256(pub).toUpperCase();return `${h.slice(0,4)} ${h.slice(4,8)} ${h.slice(8,12)} ${h.slice(12,16)}`;};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fecha=f=>{if(!f)return '';try{const d=new Date(f.length<=10?f+'T12:00:00':f);return d.toLocaleDateString(lang==='en'?'en-US':lang==='pt'?'pt-BR':'es',{day:'numeric',month:'long',year:'numeric'})+(f.length>10?', '+d.toLocaleTimeString(lang==='en'?'en-US':lang,{hour:'2-digit',minute:'2-digit'}):'');}catch(e){return f;}};
+const num=v=>v==null||v===''?'–':Number(v).toLocaleString(lang==='en'?'en-US':lang==='pt'?'pt-BR':'es-HN');
+const IC={ok:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>',
+  mal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>',
+  av:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/></svg>'};
+const estado=(c,t,x)=>`<div class="estado ${c}">${IC[c]}<div><b>${esc(t)}</b><span>${esc(x)}</span></div></div>`;
+const dl=rows=>`<dl>${rows.filter(r=>r[1]!=null&&r[1]!=='').map(([a,b])=>`<dt>${esc(a)}</dt><dd>${b}</dd>`).join('')}</dl>`;
+
+/* ---------- el QR: datos firmados en el enlace ---------- */
+let pubQR=null;
+function qr(){
+  const h=location.hash.slice(1);if(!h)return;
+  const box=document.getElementById('qr');box.hidden=false;
+  const p=h.split('.');
+  let d,j,sig,pub;
+  try{if(p.length!==3)throw 0;const jb=deB64u(p[0]);j=new TextDecoder().decode(jb);d=JSON.parse(j);sig=deB64u(p[1]);pub=deB64u(p[2]);if(sig.length!==64||pub.length!==32)throw 0;}
+  catch(e){box.innerHTML=estado('av',T.qrDan,T.qrDanX);return;}
+  const ok=nacl.sign.detached.verify(utf8('RUMENTIS-QR-1|'+j),sig,pub);
+  if(!ok){box.innerHTML=estado('mal',T.qrMal,T.qrMalX);return;}
+  pubQR=huella(pub);const k=T.k;let filas;
+  if(d.t==='c'){const ca=d.ca||[],pe=d.pe||[],sa=d.sa||[];
+    filas=[[k.doc,esc(T.cert)],[k.c,`<span class="llave">${esc(d.c)}</span>`],[k.lo,esc(d.lo)],[k.fi,esc(d.fi)],[k.lu,esc(d.lu)],[k.ti,esc(d.ti)],[k.e,esc(fecha(d.e))],
+      [k.in,esc(fecha(d.in))],[k.pr,esc(d.pr)],[k.ca,esc(T.cab(num(ca[0]),num(ca[1]),num(ca[2]),num(ca[3])))],[k.pe,esc(T.pes(num(pe[0]),num(pe[1])))],
+      [k.sa,esc(T.san(num(sa[0]),sa[1]?fecha(sa[1]):''))],[k.hu,d.hu!=null?esc(T.hu(num(d.hu))):''],[k.ar,d.ar?num(d.ar):''],[k.de,esc(d.de)]];}
+  else{filas=[[k.doc,esc(T.banco)],[k.c,`<span class="llave">${esc(d.c)}</span>`],[k.fi,esc(d.fi)],[k.lu,esc(d.lu)],[k.titu,esc(d.ti)],[k.e,esc(fecha(d.e))],
+      [k.cabT,num(d.ca)],[k.lots,num(d.lo)],[k.pa,esc((d.mo||'')+' '+num(d.pa))],[k.ve,esc((d.mo||'')+' '+num(d.ve))],[k.ne,esc((d.mo||'')+' '+num(d.ne))],[k.deu,esc((d.mo||'')+' '+num(d.de))]];}
+  filas.push([k.llave,`<span class="llave">${esc(pubQR)}</span>`]);
+  box.innerHTML=estado('ok',T.qrOk,T.qrOkX)+dl(filas);
+}
+
+/* ---------- el PDF completo: la firma del final y la huella de todo lo anterior ---------- */
+function comprobar(buf){
+  const u=new Uint8Array(buf),marca=utf8('\n%RUMENTIS-FIRMA ');
+  let i=-1;for(let p=u.length-marca.length;p>=Math.max(0,u.length-4096);p--){let ok=true;for(let q=0;q<marca.length;q++)if(u[p+q]!==marca[q]){ok=false;break;}if(ok){i=p;break;}}
+  if(i<0)return {est:'sin'};
+  let d;try{d=JSON.parse(new TextDecoder().decode(u.subarray(i+marca.length)).trim());}catch(e){return {est:'dan'};}
+  if(sha256(u.subarray(0,i))!==d.h)return {est:'alt'};
+  let ok=false;try{ok=nacl.sign.detached.verify(utf8(`RUMENTIS-PDF-1|${d.h}|${d.cod}|${d.f}`),deB64(d.sig),deB64(d.pub));}catch(e){}
+  return ok?{est:'ok',d,llave:huella(deB64(d.pub))}:{est:'fal'};
+}
+async function archivo(f){
+  const o=document.getElementById('pdf');o.innerHTML=`<p class="nota">${esc(T.leyendo)}</p>`;
+  try{const r=comprobar(await f.arrayBuffer());const k=T.k;
+    if(r.est==='ok'){o.innerHTML=estado('ok',T.pdfOk,T.pdfOkX)+dl([[k.c,`<span class="llave">${esc(r.d.cod)}</span>`],[k.firmado,esc(fecha(r.d.f))],[k.llave,`<span class="llave">${esc(r.llave)}</span>`]])+
+      (pubQR?`<p class="nota">${esc(pubQR===r.llave?T.mismo:T.otro)}</p>`:'');}
+    else o.innerHTML={sin:estado('av',T.pdfSin,T.pdfSinX),dan:estado('mal',T.pdfDan,T.pdfDanX),alt:estado('mal',T.pdfAlt,T.pdfAltX),fal:estado('mal',T.pdfFal,T.pdfFalX)}[r.est];
+  }catch(e){o.innerHTML=estado('av',T.noLee,'');}
+}
+const inp=document.getElementById('archivo'),zona=document.getElementById('zona');
+inp.addEventListener('change',()=>{if(inp.files[0])archivo(inp.files[0]);inp.value='';});
+['dragenter','dragover'].forEach(e=>zona.addEventListener(e,ev=>{ev.preventDefault();zona.classList.add('sobre');}));
+['dragleave','drop'].forEach(e=>zona.addEventListener(e,ev=>{ev.preventDefault();zona.classList.remove('sobre');}));
+zona.addEventListener('drop',ev=>{const f=ev.dataTransfer.files[0];if(f)archivo(f);});
+addEventListener('hashchange',qr);qr();
+window.Verificar={comprobar,huella};
+})();
+</script>
+</body>
+</html>

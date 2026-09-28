@@ -27,6 +27,7 @@ jobs:
           node -e "const f=require('fs');const t=f.existsSync('previo.md')?f.readFileSync('previo.md','utf8'):'';const m=/RUMENTIS_MERCADO\n([\s\S]*?)\nRUMENTIS_MERCADO/.exec(t);if(m){JSON.parse(m[1]);f.writeFileSync('mercado_previo.json',m[1]);console.log('historia previa',m[1].length);}else console.log('sin historia previa');"
       - name: Juntar precios
         run: |
+          sudo apt-get install -y -qq poppler-utils >/dev/null
           npm i --no-save --no-audit --no-fund xlsx@0.18.5 >/dev/null
           node scripts/mercado/actualizar.js
       - name: Publicar
