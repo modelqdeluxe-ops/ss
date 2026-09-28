@@ -68,7 +68,7 @@ function traducir(t){
   const mon=(typeof S!=='undefined'&&S.config&&S.config.moneda)||'L';
   const esc=mon.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const aL=x=>mon==='L'?x:x.replace(new RegExp('(^|[^A-Za-zÀ-ÿ])'+esc+'(?=\\s?[−-]?\\d|/)','g'),'$1L');
-  const deL=x=>mon==='L'||x==null?x:x.replace(/(^|[^A-Za-zÀ-ÿ])L(?=\s?[−-]?\d|\/)/g,'$1'+mon);
+  const deL=x=>mon==='L'||x==null?x:x.replace(/(^|[^A-Za-zÀ-ÿ])L(?=\s?[−-]?\d|\/)/g,(m,a)=>a+mon);
   const uno=s0=>{const s=aL(s0);const {key,vals}=norm(s);
     if(lang==='xx'){if(/[A-Za-zÀ-ÿ]/.test(key.replace(/\{\d+\}/g,'')))REC.set(key,(REC.get(key)||0)+1);return null;}
     // solo fechas, números o datos: se arman igual, con los meses y días en el idioma

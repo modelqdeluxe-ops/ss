@@ -239,12 +239,17 @@ const FN={
   compartirSemana:()=>{if(window._rpInforme&&window.Extras)Extras.compartir(window._rpInforme,'Informe de la semana');return null;}
 };
 const _ej=ejecutar;
+/* los botones de las respuestas funcionan igual desde Rumi o desde la página de Análisis:
+   si Rumi está cerrado, se abre y ahí responde */
+const rumiAbierto=()=>!!$('#rumiMsgs');
 ejecutar=function(a){
-  if(a&&a.t==='rumi'){RumiMenu.elegir({l:a.q.replace(/^./,c=>c.toUpperCase()),q:a.q});return;}
+  if(a&&a.t==='rumi'){const op={l:a.q.replace(/^./,c=>c.toUpperCase()),q:a.q};if(rumiAbierto())RumiMenu.elegir(op);else abrirRumi(op);return;}
+  if(a&&a.t==='ask'&&!rumiAbierto()){abrirRumi();setTimeout(()=>preguntar(a.q),60);return;}
   if(a&&a.t==='fn'){
-    if(a.fn==='escenarios'){RumiMenu.elegir(OPS().find(o=>o.l.startsWith('Escenarios')));return;}
+    if(a.fn==='escenarios'){const op=OPS().find(o=>o.l.startsWith('Escenarios'));if(rumiAbierto())RumiMenu.elegir(op);else abrirRumi(op);return;}
     if(a.fn==='compartirSemana'){FN.compartirSemana();return;}
-    if(!$('#rumiMsgs'))abrirRumi();const r=FN[a.fn]&&FN[a.fn](a);if(r){botSay(r);}return;}
+    if(a.fn==='simulador'){closeSheet();location.hash='#analisis/sim';return;}
+    if(!rumiAbierto())abrirRumi();const f=FN[a.fn]||(window.RumiMas&&RumiMas.FN[a.fn]);const r=f&&f(a);if(r){botSay(r);}return;}
   return _ej(a);
 };
 
@@ -257,7 +262,8 @@ const OPS=()=>[
   porLote('Chequeo de un lote',chequeoLoteHtml),
   {l:'Riesgo del negocio (probabilidad de ganar)',ic3:'dado',fn:riesgoFinca},
   porLote('Riesgo de un lote',riesgoLote),
-  {l:'Escenarios: ¿qué pasa si…?',calc:{campos:[{k:'p',l:'Precio de venta cambia',u:'%',min:-60,max:100,def:0},{k:'a',l:'Costo del alimento cambia',u:'%',min:-60,max:200,def:0},{k:'g',l:'Ganancia diaria cambia',u:'%',min:-60,max:60,def:0}],fn:escenarios,intro:'Pon cuánto cambia cada cosa (por ejemplo −10 si el precio baja 10 %). Te digo cómo queda el margen de cada lote.'}},
+  {l:'Escenarios: ¿qué pasa si…?',ic3:'dado',fn:()=>window.RumiMas?RumiMas.escenariosTipicos():escenarios({p:-10})},
+  {l:'Probar mis propios números',calc:{campos:[{k:'p',l:'Precio de venta cambia',u:'%',min:-60,max:100,def:0},{k:'a',l:'Costo del alimento cambia',u:'%',min:-60,max:200,def:0},{k:'g',l:'Ganancia diaria cambia',u:'%',min:-60,max:60,def:0}],fn:escenarios,intro:'Pon cuánto cambia cada cosa (por ejemplo −10 si el precio baja 10 %). Te digo cómo queda el margen de cada lote.'}},
   {l:'¿Dónde compro los que más rinden?',ic3:'trofeo',fn:()=>rankingHtml('prov')},
   {l:'¿Qué raza me rinde más?',fn:()=>rankingHtml('raza')},
   porLote('Semáforo de animales y venta escalonada',semaforo),

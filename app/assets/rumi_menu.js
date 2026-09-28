@@ -286,7 +286,7 @@ function elegir(op){
   if(op.goArea)return abrirArea(areaDe(op.goArea));
   if(op.guia!=null){const g=GUIA[op.guia];return responderCon(op.l,()=>({html:`<b>${esc(g.t)}</b><br>${esc(g.x)}`}));}
   if(op.sub)return entrar(op.sub,op.l);
-  if(op.calc){M.calc=op;RUMI.log.push({u:op.l});botSay({html:op.calc.intro||'Pon los números.',nou:true});pintarPanel();setTimeout(()=>{const i=$('#rmCalc input');if(i)i.focus();},60);}
+  if(op.calc){M.calc=op;M.min=false;RUMI.log.push({u:op.l});botSay({html:op.calc.intro||'Pon los números.',nou:true});pintarPanel();setTimeout(()=>{const i=$('#rmCalc input');if(i)i.focus();},60);}
 }
 
 /* ---------- panel inferior ---------- */
@@ -295,14 +295,14 @@ function pintarPanel(){
   const p=$('#rumiPanel');if(!p)return;
   const n=nivel();
   const buscar=`<div class="rm-buscar">${i3('buscar')}<input id="rmQ" type="search" placeholder="Buscar tema, cálculo, síntoma o lote…" autocomplete="off" enterkeyhint="search" value="${esc(M.q||'')}"></div><div id="rmRes" class="rm-ops"></div>`;
-  if(!n){
-    p.innerHTML=locTxt(`<div class="rm-bar"><b>¿En qué te ayudo?</b>${togBtn()}</div>${buscar}
-     <div class="rm-areas">${AREAS.map(a=>`<button type="button" class="rm-area" data-act="rmArea" data-id="${a.id}" data-c="${a.id}"><i class="a3">${i3(a.id)}</i><b>${a.t}</b><span>${a.s}</span></button>`).join('')}</div>`);
-  }else if(M.calc){
+  if(M.calc){
     const c=M.calc.calc;
     p.innerHTML=locTxt(`<div class="rm-bar">${barBtns()}<b>${esc(M.calc.l)}</b>${togBtn()}</div>
      <form id="rmCalc" class="rm-calc" autocomplete="off">${c.campos.map(k=>`<div class="q"><label for="rmc_${k.k}">${esc(k.l)}</label><div class="unit"><input class="in" id="rmc_${k.k}" name="${k.k}" inputmode="decimal" enterkeyhint="next" value="${k.def!=null?esc(String(k.def)):''}"><em>${esc(uDe(k))}</em></div></div>`).join('')}
      <button class="btn pri full">Calcular</button></form>`);
+  }else if(!n){
+    p.innerHTML=locTxt(`<div class="rm-bar"><b>¿En qué te ayudo?</b>${togBtn()}</div>${buscar}
+     <div class="rm-areas">${AREAS.map(a=>`<button type="button" class="rm-area" data-act="rmArea" data-id="${a.id}" data-c="${a.id}"><i class="a3">${i3(a.id)}</i><b>${a.t}</b><span>${a.s}</span></button>`).join('')}</div>`);
   }else{
     p.innerHTML=locTxt(`<div class="rm-bar">${barBtns()}<b>${esc(n.t)}</b>${togBtn()}</div>${n.ops.length>8?buscar:''}
      <div class="rm-ops rm-lista">${n.ops.map((o,i)=>opHtml(o,'rmOp',i)).join('')}</div>`);

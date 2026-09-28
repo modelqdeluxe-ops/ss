@@ -8,7 +8,7 @@ import android.speech.tts.Voice;
 import java.util.Locale;
 import java.util.Set;
 
-/** Lectura en voz alta con la mejor voz en español instalada en el teléfono. */
+/** Lectura en voz alta con la mejor voz del teléfono en el idioma de la app. */
 public final class Voz implements TextToSpeech.OnInitListener {
     private static Voz uno;
     /** Idioma de las voces que se buscan (es, en, pt…); lo pone la app según su idioma. */
