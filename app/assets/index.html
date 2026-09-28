@@ -345,6 +345,8 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .err{color:var(--rojo);font-weight:700;font-size:14px;margin:0}
 .err:empty{display:none}
 .ing{display:grid;grid-template-columns:1fr 96px 44px;gap:8px;align-items:center}
+.ing.hora-f{grid-template-columns:1fr 44px}
+.ing2{grid-template-columns:1fr 1fr 44px;padding-bottom:10px;border-bottom:1px solid var(--line)}.ing2>input[name=ing_n]{grid-column:1/3}.ing2>button{grid-column:3;grid-row:1}
 .ing button{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink2);display:flex;align-items:center;justify-content:center}
 .hist .row .tx b{font-weight:700}
 .del{width:40px;height:40px;border-radius:10px;border:0;background:transparent;color:var(--ink2);display:flex;align-items:center;justify-content:center;flex:none}
@@ -655,10 +657,21 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
   #app.pg-fwd>*{animation:pgFwd .38s cubic-bezier(.2,.8,.2,1) both}#app.pg-back>*{animation:pgBack .38s cubic-bezier(.2,.8,.2,1) both}
   #app.pg .bd>*{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
   #app.pg .bd>*:nth-child(2){animation-delay:.05s}#app.pg .bd>*:nth-child(3){animation-delay:.1s}#app.pg .bd>*:nth-child(4){animation-delay:.15s}#app.pg .bd>*:nth-child(5){animation-delay:.2s}#app.pg .bd>*:nth-child(n+6){animation-delay:.24s}
-  #app.pg .trk em,#app.pg .hb{transform-origin:left;animation:grow .9s cubic-bezier(.2,.8,.2,1) .2s both}
-  #app.pg .trk u{animation:slideTag .9s cubic-bezier(.2,.8,.2,1) .2s both}
-  #app.pg path.ln{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s ease-out .25s forwards}
-  #app.pg rect.cb{transform-box:fill-box;transform-origin:bottom;animation:growY .7s cubic-bezier(.2,.8,.2,1) .2s both}
+  #app.pg .trk em,#app.pg .hb,#app.pgv .trk em,#app.pgv .hb{transform-origin:left;animation:grow .9s cubic-bezier(.2,.8,.2,1) .2s both}
+  #app.pg .trk u,#app.pgv .trk u{animation:slideTag .9s cubic-bezier(.2,.8,.2,1) .2s both}
+  #app.pg path.ln,#app.pgv path.ln{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s ease-out .25s forwards}
+  #app.pg rect.cb,#app.pgv rect.cb{transform-box:fill-box;transform-origin:bottom;animation:growY .7s cubic-bezier(.2,.8,.2,1) .2s both}
+  /* View Transitions: la página nueva entra sobre la anterior (que no se apaga), la barra no se mueve */
+  ::view-transition-old(root){animation:none}
+  ::view-transition-new(root){animation:vtIn .3s cubic-bezier(.2,.8,.2,1) both}
+  nav.bottom{view-transition-name:barra}
+  #rumiFab{view-transition-name:rumifab}
+  #app>.hd{view-transition-name:encabezado}
+  ::view-transition-group(encabezado){animation-duration:.34s;animation-timing-function:cubic-bezier(.2,.8,.2,1);overflow:clip;border-radius:0 0 28px 28px}
+  ::view-transition-old(encabezado),::view-transition-new(encabezado){height:100%;object-fit:cover;object-position:top}
+  ::view-transition-old(encabezado){animation:vtFuera .14s ease-out both}
+  ::view-transition-new(encabezado){animation:vtEntra .3s ease-out both}
+  ::view-transition-group(barra),::view-transition-group(rumifab){animation-duration:.2s}
   dialog#sheet[open]{animation:shUp .34s cubic-bezier(.2,.8,.2,1)}
   dialog#sheet[open]::backdrop{animation:fadeIn .3s ease-out}
   dialog#sheet.closing{animation:shDown .19s ease-in forwards}
@@ -667,6 +680,7 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
   #rumiFab{animation:fabIn .5s cubic-bezier(.2,1.4,.4,1) .4s both}
 }
 @keyframes hdIn{from{opacity:.4}}
+@keyframes vtIn{from{opacity:0;transform:translateY(10px)}}@keyframes vtFuera{to{opacity:0}}@keyframes vtEntra{from{opacity:0}}
 @keyframes pgUp{from{opacity:0;transform:translateY(14px)}}
 @keyframes pgR{from{opacity:0;transform:translateX(26px)}}@keyframes pgL{from{opacity:0;transform:translateX(-26px)}}
 @keyframes pgFwd{from{opacity:0;transform:translateX(40px)}}@keyframes pgBack{from{opacity:0;transform:translateX(-40px)}}
@@ -703,6 +717,17 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .paso-card>svg{width:20px;height:20px;color:var(--ink2);flex:none}
 .alim-c{display:flex;flex-direction:column;gap:12px}
 .alim-c .ac1{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rp-fugas{margin:10px 0 4px;padding-left:22px;display:flex;flex-direction:column;gap:10px}.rp-fugas li::marker{font-weight:800;color:var(--arete-e)}
+/* horarios de entrega */
+.horas-aviso{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1.5px dashed color-mix(in srgb,var(--arete) 70%,var(--line));background:color-mix(in srgb,var(--arete) 10%,transparent);border-radius:14px;padding:10px 12px;color:var(--ink);font:inherit;font-size:14px;line-height:1.35}
+.horas-aviso>svg{flex:none;width:22px;height:22px;color:var(--arete-e);margin-top:1px}
+.horas-btn{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;border:1.5px solid var(--line);border-radius:14px;background:var(--field);color:var(--ink);font:inherit;padding:10px 14px;text-align:left}
+.horas-btn>svg{flex:none;width:22px;height:22px;color:var(--ink2)}.horas-btn b{flex:1;font-size:16px}
+.horas-mini{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;border:0;background:none;color:var(--anil5);font:inherit;font-weight:700;font-size:14px;padding:2px 0;margin-top:-6px}
+.horas-mini>svg{width:18px;height:18px}
+.hora-f input[type=time]{flex:1;font-size:18px;font-weight:700;min-height:52px}
+.ar-soft{background:color-mix(in srgb,var(--verde) 12%,var(--card));border-color:color-mix(in srgb,var(--verde) 40%,var(--line));color:var(--ink);font-weight:700}
+.ar-soft>svg{width:20px;height:20px;color:var(--verde)}
 .alim-c .ac1>div:first-child{display:flex;flex-direction:column}.alim-c .hf{font-size:24px;line-height:1.1}.alim-c small{font-size:13px;color:var(--ink2)}
 .segs{display:flex;gap:5px}.segs i{width:26px;height:9px;border-radius:5px;background:var(--track)}.segs i.on{background:var(--fill)}
 .ltab{overflow:hidden}
@@ -907,7 +932,29 @@ body::before{content:none}
 #fondo .f-luz{left:0;right:0;top:0;height:70vh;background:radial-gradient(120% 60% at 50% 0,color-mix(in srgb,var(--head) 14%,transparent),transparent 70%)}
 /* el encabezado termina en curva suave con sombra, en vez de un corte recto */
 .hd{border-radius:0 0 28px 28px;box-shadow:0 16px 34px -22px color-mix(in srgb,var(--head) 75%,#000)}
-@media (prefers-reduced-motion:reduce){#fondo .f-topo,#fondo .f-orbe{animation:none}}
+/* fondo animado: luces que respiran, curvas de nivel en dos capas que se cruzan, cerros que se mecen,
+   un rayo de luz que pasa y motas de polen que suben (luciérnagas de noche). Todo con transform y opacity. */
+#fondo .o1{animation:orbe 22s ease-in-out infinite alternate}
+#fondo .o2{animation:orbe2 28s ease-in-out infinite alternate}
+@keyframes orbe{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-14vw,8vh) scale(1.12)}100%{transform:translate(-4vw,16vh) scale(.96)}}
+@keyframes orbe2{0%{transform:translate(0,0) scale(1)}50%{transform:translate(16vw,-10vh) scale(1.1)}100%{transform:translate(6vw,6vh) scale(1.04)}}
+#fondo .f-topo{animation:topo 34s ease-in-out infinite alternate}
+#fondo .f-topo.t2{opacity:.35;transform:scale(1.35) rotate(180deg);animation:topo2 46s ease-in-out infinite alternate}
+@keyframes topo{0%{transform:translate3d(-2vw,0,0) scale(1.02)}100%{transform:translate3d(3vw,-5vh,0) scale(1.08)}}
+@keyframes topo2{0%{transform:translate3d(3vw,2vh,0) scale(1.35) rotate(180deg)}100%{transform:translate3d(-4vw,-4vh,0) scale(1.45) rotate(186deg)}}
+#fondo .c3{animation:cerro 26s ease-in-out infinite alternate}
+#fondo .c2{animation:cerro 19s ease-in-out -6s infinite alternate-reverse}
+#fondo .c1{animation:cerro 14s ease-in-out -3s infinite alternate}
+@keyframes cerro{from{transform:translate3d(-2.5%,0,0)}to{transform:translate3d(2.5%,.6vh,0)}}
+#fondo .f-rayo{top:-20vh;left:-60vw;width:60vw;height:150vh;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--arete) 13%,transparent) 45%,color-mix(in srgb,#fff 16%,transparent) 50%,color-mix(in srgb,var(--arete) 13%,transparent) 55%,transparent);transform:rotate(18deg);opacity:0;animation:rayo 16s ease-in-out 4s infinite}
+@keyframes rayo{0%{transform:translate3d(0,0,0) rotate(18deg);opacity:0}8%{opacity:1}42%{opacity:.9}55%{transform:translate3d(230vw,0,0) rotate(18deg);opacity:0}100%{transform:translate3d(230vw,0,0) rotate(18deg);opacity:0}}
+:root[data-modo="dark"] #fondo .f-rayo,:root[data-momento="noche"] #fondo .f-rayo,:root[data-momento="madrugada"] #fondo .f-rayo{display:none}
+#fondo .f-motas{inset:0}
+#fondo .f-motas b{position:absolute;bottom:-3vh;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;background:color-mix(in srgb,var(--arete) 55%,#fff);opacity:0;animation:mota var(--d) linear var(--r) infinite;will-change:transform,opacity}
+@keyframes mota{0%{transform:translate3d(0,0,0);opacity:0}10%{opacity:.75}50%{transform:translate3d(var(--w),-55vh,0)}90%{opacity:.5}100%{transform:translate3d(calc(var(--w) * -.6),-108vh,0);opacity:0}}
+:root[data-modo="dark"] #fondo .f-motas b,:root[data-momento="noche"] #fondo .f-motas b,:root[data-momento="madrugada"] #fondo .f-motas b{background:#FFE58A;box-shadow:0 0 8px 2px rgba(255,220,110,.55);animation-name:luciernaga}
+@keyframes luciernaga{0%{transform:translate3d(0,0,0);opacity:0}15%{opacity:.9}25%{opacity:.2}35%{opacity:.85}50%{transform:translate3d(var(--w),-50vh,0);opacity:.3}65%{opacity:.9}100%{transform:translate3d(calc(var(--w) * -.6),-104vh,0);opacity:0}}
+@media (prefers-reduced-motion:reduce){#fondo *{animation:none!important}#fondo .f-motas,#fondo .f-rayo{display:none}}
 #app{background:transparent}
 .hd{position:relative;isolation:isolate;overflow:hidden;background:var(--head)}
 .hd>*:not(.hd-fx){position:relative;z-index:1}
@@ -986,7 +1033,7 @@ body::before{content:none}
  var p=w.querySelector('.sp-hola');p.textContent=g+(f?', ':'');if(f){p.appendChild(document.createElement('br'));var b=document.createElement('b');b.textContent=f;p.appendChild(b);}
  try{if(!localStorage.getItem('rumentis-bienvenida'))w.classList.add('primera');}catch(e){}
 })();</script>
-<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-luz"></i><i class="f-topo"></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-cerro c1"></i><i class="f-grano"></i></div>
+<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-luz"></i><i class="f-topo"></i><i class="f-topo t2"></i><i class="f-rayo"></i><i class="f-motas"><b style="--x:45%;--s:7px;--d:28s;--r:-23s;--w:-1vw"></b><b style="--x:82%;--s:5px;--d:19s;--r:-15s;--w:2vw"></b><b style="--x:77%;--s:5px;--d:22s;--r:-4s;--w:1vw"></b><b style="--x:86%;--s:8px;--d:17s;--r:-29s;--w:8vw"></b><b style="--x:63%;--s:7px;--d:25s;--r:-19s;--w:6vw"></b><b style="--x:8%;--s:5px;--d:19s;--r:-7s;--w:-8vw"></b><b style="--x:46%;--s:6px;--d:24s;--r:-6s;--w:-5vw"></b><b style="--x:30%;--s:5px;--d:25s;--r:-14s;--w:-4vw"></b><b style="--x:96%;--s:5px;--d:26s;--r:-9s;--w:-5vw"></b><b style="--x:29%;--s:5px;--d:24s;--r:-3s;--w:-7vw"></b><b style="--x:29%;--s:5px;--d:29s;--r:-25s;--w:-9vw"></b><b style="--x:22%;--s:5px;--d:23s;--r:-29s;--w:-2vw"></b><b style="--x:9%;--s:8px;--d:19s;--r:-20s;--w:-3vw"></b><b style="--x:31%;--s:5px;--d:29s;--r:-23s;--w:-7vw"></b><b style="--x:25%;--s:5px;--d:16s;--r:-14s;--w:-0vw"></b><b style="--x:66%;--s:5px;--d:22s;--r:-6s;--w:4vw"></b></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-cerro c1"></i><i class="f-grano"></i></div>
 <div id="app"></div>
 <nav class="bottom" aria-label="Secciones"><div class="in">
   <a href="#hoy" data-nav="hoy"></a>
@@ -1010,7 +1057,7 @@ body::before{content:none}
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MESES_L=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const DIAS_L=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-const DEF_CFG={desbaste:4,unidad:'lb',finca:'Mi engorde',ubicacion:'',moneda:'L',precioVentaKg:59,metaKg:480,horas:'6:00, 11:00, 15:00',diasSinPesar:21,gdpEsperada:1.3};
+const DEF_CFG={desbaste:4,unidad:'lb',finca:'Mi engorde',ubicacion:'',moneda:'L',precioVentaKg:59,metaKg:480,horas:'',diasSinPesar:21,gdpEsperada:1.3};
 const TIPOS_LOTE=['Machos enteros','Novillos castrados','Hembras','Mixto'];
 const SAN_CLASES=['Vacuna','Desparasitante','Vitaminas','Tratamiento','Implante','Otro'];
 const CAUSAS=['Neumonía','Timpanismo','Acidosis','Accidente','Desconocida','Otra'];
@@ -1026,6 +1073,7 @@ const IC={
  inventario:'<path d="M12 3l8.5 4.5v9L12 21l-8.5-4.5v-9z"/><path d="M3.5 7.5L12 12l8.5-4.5M12 12v9M7.8 5.2l8.4 4.6"/>',
  back:'<path d="M15 5l-7 7 7 7"/>',chev:'<path d="M9 5l7 7-7 7"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+ reloj:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
  alimento:'<path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9a2 2 0 0 1-2-1.7L4 9z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/>',
  pesaje:'<path d="M4 20h16M6 20l2-9h8l2 9M12 11V5M8 5h8"/>',
  sanidad:'<path d="M18 3l3 3M16 5l3 3M5 19l-2 2M14 7l3 3-8 8H6v-3l8-8z"/>',
@@ -1065,9 +1113,21 @@ const sleep=t=>new Promise(r=>setTimeout(r,t));
 const num=v=>{if(v==null||v==='')return NaN;const n=parseFloat(String(v).replace(/\s/g,'').replace(/,/g,''));return n;};
 const cuando=f=>{const d=dias(f,hoy());return d===0?'hoy':d===1?'ayer':d===-1?'mañana':d>0?`hace ${d} días`:`en ${-d} días`;};
 const byName=(a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es',{numeric:true});
-const horas=()=>String(S.config.horas||'').split(/[,;]+/).map(s=>s.trim()).filter(Boolean);
+/* Horarios de entrega: los pone el usuario, no vienen de fábrica. Versiones anteriores guardaban
+   "6:00, 11:00, 15:00" sin que nadie los eligiera: esos se toman como vacíos hasta que el usuario los confirme. */
+const HORAS_VIEJAS='6:00,11:00,15:00';
+const horas=()=>{const c=S.config,t=String(c.horas||'');if(!c.horasPropias&&t.replace(/\s/g,'')===HORAS_VIEJAS)return [];
+  return t.split(/[,;]+/).map(s=>s.trim()).filter(Boolean);};
+const conHoras=()=>horas().length>0;
 const nEntregas=()=>Math.max(1,horas().length||1);
 const horaDe=n=>horas()[n-1]||`Entrega ${n}`;
+// "de las 6:00" o, sin horarios, "de alimento"
+const entDe=n=>conHoras()?`de las ${horaDe(n)}`:'de alimento';
+// 06:00 → 6:00; acepta 6, 6:5, 18.30, 6 pm
+function normHora(v){v=String(v||'').trim().toLowerCase();if(!v)return '';const pm=/p\.?\s*m/.test(v),am=/a\.?\s*m/.test(v);
+  const m=/(\d{1,2})(?:\s*[:.h]\s*(\d{1,2}))?/.exec(v);if(!m)return '';let h=+m[1],mi=+(m[2]||0);if(pm&&h<12)h+=12;if(am&&h===12)h=0;
+  if(h>23||mi>59)return '';return `${h}:${String(mi).padStart(2,'0')}`;}
+const minHora=t=>{const [h,m]=t.split(':').map(Number);return h*60+(m||0);};
 
 
 /* ============ unidad de peso: libras o kilos (todo se guarda en kilos) ============ */
@@ -1371,7 +1431,7 @@ function calc(){
   const hechas=new Set(hoyAl.map(i=>+i.n));
   const kgHoy=hoyAl.reduce((s,i)=>s+(+i.kg||0),0);
   let prog=0;for(const x of act){let s=0,n=0;for(let i=1;i<=3;i++){const f=addDias(H,-i);if(x.kgDia[f]!=null){s+=x.kgDia[f];n++;}}prog+=n?s/n:(x.consumo||x.pesoHoy*0.026)*x.cab;}
-  const sigEnt=[...Array(nEntregas()).keys()].map(i=>i+1).find(n=>!hechas.has(n))||null;
+  const sigEnt=conHoras()?([...Array(nEntregas()).keys()].map(i=>i+1).find(n=>!hechas.has(n))||null):(hechas.size?Math.max(...hechas)+1:1);
   // alertas
   const al=[];
   for(const x of act){
@@ -1636,7 +1696,7 @@ function tabsLote(x){const t=UI.loteTab||'resumen';const n=tieneAnimales(x.l)?x.
 PAGES.registrar=()=>{
   const C=calc();
   const sug=[];
-  if(C.act.length&&C.sigEnt)sug.push(`<button type="button" class="tile big" data-act="f" data-f="alimento" data-n="${C.sigEnt}"><span class="ic">${ico('alimento')}</span><div><b>Entrega de las ${esc(horaDe(C.sigEnt))}</b><span>${pl(C.act.length,'lote espera','lotes esperan')} su ración</span></div></button>`);
+  if(C.act.length&&C.sigEnt)sug.push(`<button type="button" class="tile big" data-act="f" data-f="alimento" data-n="${C.sigEnt}"><span class="ic">${ico('alimento')}</span><div><b>Entrega ${esc(entDe(C.sigEnt))}</b><span>${pl(C.act.length,'lote espera','lotes esperan')} su ración</span></div></button>`);
   const pes=C.act.filter(x=>x.diasSinPesar>(+S.config.diasSinPesar||21)).slice(0,2);
   for(const x of pes)sug.push(`<button type="button" class="tile big" style="background:var(--card);box-shadow:none;color:var(--ink)" data-act="f" data-f="pesaje" data-lote="${esc(x.id)}"><span class="ic ic-a">${ico('pesaje')}</span><div><b style="color:var(--ink)">Pesar ${esc(x.l.nombre)}</b><span style="color:var(--ink2)">El último pesaje fue ${cuando(x.ult.f)}</span></div></button>`);
   const last=t=>{const it=[...C.items].reverse().find(i=>i.tipo===t);return it?`Último: ${cuando(it.f)}`:'Sin registros aún';};
@@ -1833,7 +1893,7 @@ const MAS_SUB={
     <div class="nota-cfg">${ico('check',2.2)}<p><b>No es la ganancia real.</b> Solo se usa para estimar lotes que todavía no tienen pesajes. En cuanto pesas un lote, la app calcula su ganancia real entre pesajes y usa esa en proyecciones, fechas de salida, márgenes y gráficos.</p></div>
     ${f('desbaste','Desbaste al vender',cfg.desbaste??4,'inputmode="decimal"','Lo que pierden al pesarse en ayunas; el comprador lo descuenta. El NRC usa 4 %.','%')}</div></section>
    <section class="sec">${secH('Alimentación y avisos')}<div class="card pad cfg-c">
-    ${f('horas','Horarios de entrega de alimento',cfg.horas,'','Sepáralos con comas. Por ejemplo: 6:00, 11:00, 15:00. La pantalla Hoy te recuerda cada entrega.')}
+    <div class="q"><span class="lb">Horarios de entrega de alimento</span><button type="button" class="horas-btn" data-act="f" data-f="horas">${ico('reloj',2)}<b id="horasTxt">${conHoras()?esc(horas().join(', ')):'Aún no los pones'}</b><span class="lnk">${conHoras()?'Cambiar':'Poner'}</span></button><small class="hint">Tú decides a qué horas das de comer. En Hoy te recuerdo cada entrega.</small></div>
     ${f('diasSinPesar','Avisarme si un lote no se pesa en',cfg.diasSinPesar,'inputmode="numeric"','','días')}</div></section>
    <section class="sec">${secH('Voz de Rumi')}<div class="card pad cfg-c" id="vozCfg">${vozCfgHtml()}</div></section>
    <div class="cfg-save"><button class="btn pri full">Guardar configuración</button></div></form></main>`;
@@ -1957,15 +2017,35 @@ FORMS.alimento=({n}={})=>{
   const blocks=C.act.map(x=>{const p=programado(x,n);return `<div data-l="${esc(x.id)}"><div class="fh"><b>${esc(x.l.nombre)}</b><span class="sm">${pl(x.cab,'cabeza','cabezas')}${x.racion&&S.raciones[x.racion]?', '+esc(S.raciones[x.racion].nombre):''}</span></div>
     <div class="unit"><input class="in" name="kg_${esc(x.id)}" inputmode="decimal" placeholder="unos ${nf(W(p))}" data-prog="${Math.round(W(p)/5)*5}" aria-label="Kilos para ${esc(x.l.nombre)}" autocomplete="off"><em>kg</em></div>
     <div class="lect" data-name="lect_${esc(x.id)}" role="group" aria-label="Cómo estaba el comedero">${LECT.map((t,i)=>`<button type="button" data-v="${i}" aria-pressed="false">${t}</button>`).join('')}</div><input type="hidden" name="lect_${esc(x.id)}" value=""></div>`;}).join('');
-  const body=`<div class="two">${fecha()}${q('Entrega',`<select class="in" name="n">${[...Array(N).keys()].map(i=>`<option value="${i+1}"${i+1===n?' selected':''}>${esc(horaDe(i+1))}</option>`).join('')}</select>`)}</div>
+  const entSel=conHoras()?q('Entrega',`<select class="in" name="n">${[...Array(N).keys()].map(i=>`<option value="${i+1}"${i+1===n?' selected':''}>${esc(horaDe(i+1))}</option>`).join('')}</select>`)
+    :`<input type="hidden" name="n" value="${n}">`;
+  const body=`<div class="two">${fecha()}${entSel}</div>
+   <button type="button" class="horas-mini" data-act="f" data-f="horas" data-t="alimento">${ico('reloj',2)}${conHoras()?'Cambiar mis horarios':'Poner mis horarios de entrega'}</button>
    ${racSel}
-   <div class="sec"><div class="sec-h"><div><h2 style="font-size:17px">Kilos por lote</h2></div><button type="button" class="lnk" data-act="llenarProg">Llenar con lo de siempre</button></div>
-   <p class="hint" style="margin-top:-4px">Debajo de cada lote marca cómo estaba el comedero antes de servir. Es opcional.</p>
+   <button type="button" class="btn full ar-soft" data-act="llenarProg">${ico('check',2.4)}Servir lo de siempre a todos</button>
+   <div class="sec"><div class="sec-h"><div><h2 style="font-size:17px">Kilos por lote</h2></div></div>
+   <p class="hint" style="margin-top:-4px">Escribe lo que serviste a cada lote, o toca arriba para llenar todo con lo que sueles dar. Debajo, si quieres, marca cómo estaba el comedero.</p>
    <div class="card feed">${blocks}</div></div>`;
-  openSheet(shHead(`Entrega de las ${esc(horaDe(n))}`,'Alimento')+formWrap('alimento',body,foot('Guardar entrega','<b data-sum>0 kg</b><span>en total</span>')));
+  openSheet(shHead(`Entrega ${esc(entDe(n))}`,'Alimento')+formWrap('alimento',body,foot('Guardar entrega','<b data-sum>0 kg</b><span>en total</span>')));
+};
+/* horarios de entrega: el usuario pone sus horas con el reloj del teléfono */
+const horaRow=h=>`<div class="ing hora-f"><input class="in" type="time" name="hora" value="${h?esc(String(h).padStart(5,'0')):''}" aria-label="Hora de entrega"><button type="button" data-act="delHora" aria-label="Quitar">${ico('x')}</button></div>`;
+FORMS.horas=({t}={})=>{const hs=horas();
+  const body=`<p class="hint" style="margin:0">Pon las horas en que das de comer. En Hoy te recuerdo cada entrega, y al anotar el alimento ya aparece la hora.</p>
+   <div class="q"><span class="lb">Tus horarios</span><div data-horas style="display:flex;flex-direction:column;gap:8px">${(hs.length?hs:['']).map(horaRow).join('')}</div>
+   <button type="button" class="lnk" data-act="addHora" style="align-self:flex-start">Agregar otra hora</button></div>
+   ${hs.length?`<button type="button" class="btn" data-act="sinHoras">No uso horarios fijos</button>`:''}`;
+  openSheet(shHead('Horarios de entrega','Alimento')+formWrap('horas',body,foot('Guardar horarios'),t?`data-volver="${esc(t)}"`:''),()=>{const i=$('#sheet input[name="hora"]');if(i&&!i.value)i.focus();});
+};
+function guardarHoras(t){put('ajustes','finca',{...S.config,horas:t,horasPropias:true});}
+SAVE.horas=f=>{
+  const hs=[...new Set($$('input[name="hora"]',f).map(i=>normHora(i.value)).filter(Boolean))].sort((a,b)=>minHora(a)-minHora(b));
+  if(!hs.length)return ferr(f,'Pon al menos una hora, o toca No uso horarios fijos.');
+  guardarHoras(hs.join(', '));const v=f.dataset.volver;closeSheet();toast('Horarios guardados: '+hs.join(', '));
+  if(v==='alimento')setTimeout(()=>FORMS.alimento({}),260);
 };
 PREV.alimento=f=>{let t=0;$$('input[name^="kg_"]',f).forEach(i=>{const v=num(i.value);if(v>0)t+=v;});$('[data-sum]',f).textContent=nf(t)+' '+UW();
-  const h=$('#shTitle');if(h&&f.elements.n)h.textContent='Entrega de las '+horaDe(+f.elements.n.value);};
+  const h=$('#shTitle');if(h&&f.elements.n)h.textContent='Entrega '+entDe(+f.elements.n.value);};
 SAVE.alimento=f=>{
   const C=calc(),fch=fv(f,'f')||hoy(),n=+fv(f,'n')||1;
   const sel=fv(f,'racion'),manual=precioAToKg(num(fv(f,'costoKg'))||0);
@@ -2119,22 +2199,48 @@ SAVE.lote=f=>{
   if(!old)location.hash='#lote/'+encodeURIComponent(nid);
 };
 
+/* ración: nombre, ingredientes con su porcentaje y, si quieres, su precio; el costo de la mezcla sale solo */
+const tI=t=>window.I18N&&I18N.t?I18N.t(t):t;
+const PLANT_RAC={
+  ini:{n:'Iniciación',ings:[['heno',40],['maiz',35],['soya',12],['melaza',10],['nucleo',3]]},
+  cre:{n:'Crecimiento',ings:[['maiz',50],['heno',28],['soya',10],['melaza',9],['nucleo',3]]},
+  fin:{n:'Finalización',ings:[['maiz',65],['heno',15],['soya',8],['melaza',9],['nucleo',3]]}};
+// precio que el usuario ya puso para un ingrediente (en el formulador o en otra ración), por kilo
+function precioIngUsuario(nombre){const t=nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  for(const r of Object.values(S.raciones))for(const i of r.ings||[])if(i.pr>0&&i.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')===t)return +i.pr;
+  const g=INGS.find(i=>i.al.test(t));const p=g&&(S.config.precios||{})[g.id];return p>0?+p:null;}
+const ingRow=i=>`<div class="ing ing2"><input class="in" name="ing_n" value="${esc(i.n)}" placeholder="Ingrediente" list="ingLista" autocomplete="off" aria-label="Ingrediente">
+  <div class="unit"><input class="in" name="ing_p" value="${esc(i.p)}" inputmode="decimal" placeholder="0" aria-label="Porcentaje"><em>%</em></div>
+  <div class="unit"><input class="in" name="ing_pr" value="${i.pr>0?esc(r2u(PKdA(i.pr))):''}" inputmode="decimal" placeholder="precio" aria-label="Precio"><em>${PUAs()}</em></div>
+  <button type="button" data-act="delIng" aria-label="Quitar">${ico('x')}</button></div>`;
 FORMS.racion=({id}={})=>{
-  const r=id?S.raciones[id]:null;const ings=r&&r.ings&&r.ings.length?r.ings:[{n:'Maíz molido',p:''},{n:'',p:''}];
-  const body=`${q('Nombre',`<input class="in" name="nombre" value="${esc(r?r.nombre:'')}" placeholder="Finalización" required autocomplete="off">`)}
-   ${q(`Costo de la mezcla ${PUApor()}`,inp('costo',r?r2u(PKdA(r.costoKg)):'',{unit:PUAs(),ph:'0.00'}))}
-   <div class="q"><span class="lb">Ingredientes</span><div data-ings style="display:flex;flex-direction:column;gap:8px">${ings.map(ingRow).join('')}</div>
-   <button type="button" class="lnk" data-act="addIng" style="align-self:flex-start">Agregar ingrediente</button><small data-pct></small></div>
+  const r=id?S.raciones[id]:null;const ings=r&&r.ings&&r.ings.length?r.ings:[{n:'',p:''},{n:'',p:''}];
+  const nombres=[...new Set(INGS.map(i=>tI(i.n)).concat(...Object.values(S.raciones).map(x=>(x.ings||[]).map(i=>i.n))))];
+  const body=`${r?'':`<div class="q"><span class="lb">Empieza rápido</span><div class="chips">${Object.entries(PLANT_RAC).map(([k,v])=>`<button type="button" class="chip" data-act="racPlant" data-k="${k}">${v.n}</button>`).join('')}<a class="chip" href="#formular">Que Rumi la formule</a></div><small class="hint">Son mezclas de partida: ajusta los porcentajes a lo que tienes y a lo que diga tu nutricionista.</small></div>`}
+   ${q('Nombre',`<input class="in" name="nombre" value="${esc(r?r.nombre:'')}" placeholder="Finalización" required autocomplete="off">`)}
+   <div class="q"><span class="lb">Ingredientes, cuánto lleva de cada uno y su precio</span><div data-ings style="display:flex;flex-direction:column;gap:10px">${ings.map(ingRow).join('')}</div>
+   <datalist id="ingLista">${nombres.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+   <div style="display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="lnk" data-act="addIng">Agregar ingrediente</button><button type="button" class="lnk" data-act="completar100" hidden>Completar a 100 %</button></div><small data-pct></small></div>
+   ${q(`Costo de la mezcla ${PUApor()}`,inp('costo',r?r2u(PKdA(r.costoKg)):'',{unit:PUAs(),ph:'0.00'}),'Si pones el precio de cada ingrediente, lo calculo yo.')}
    ${r?`<button type="button" class="btn danger" data-act="delRacion" data-id="${esc(id)}">Eliminar ración</button>`:''}`;
-  openSheet(shHead(r?'Editar ración':'Nueva ración','Alimento')+formWrap('racion',body,foot('Guardar ración'),id?`data-id="${esc(id)}"`:''),()=>PREV.racion($('form',$('#sheet'))));
+  openSheet(shHead(r?'Editar ración':'Nueva ración','Alimento')+formWrap('racion',body,foot('Guardar ración'),id?`data-id="${esc(id)}"`:''),()=>{const f=$('form',$('#sheet'));if(r&&r.ings&&r.ings.some(i=>i.pr>0))f.elements.costo.dataset.auto='1';PREV.racion(f);});
 };
-const ingRow=i=>`<div class="ing"><input class="in" name="ing_n" value="${esc(i.n)}" placeholder="Ingrediente" autocomplete="off" aria-label="Ingrediente"><div class="unit"><input class="in" name="ing_p" value="${esc(i.p)}" inputmode="decimal" placeholder="0" aria-label="Porcentaje"><em>%</em></div><button type="button" data-act="delIng" aria-label="Quitar">${ico('x')}</button></div>`;
-PREV.racion=f=>{const t=$$('input[name="ing_p"]',f).reduce((s,i)=>s+(num(i.value)||0),0);$('[data-pct]',f).textContent=t?`Suma ${nf(t,1)} %`+(Math.abs(t-100)>0.5?', debería sumar 100 %':''):'';};
+function filasIng(f){return $$('.ing2',f).map(r=>({n:$('[name=ing_n]',r).value.trim(),p:num($('[name=ing_p]',r).value)||0,pr:num($('[name=ing_pr]',r).value)||0}));}
+PREV.racion=f=>{const F=filasIng(f).filter(i=>i.n||i.p);const t=F.reduce((s,i)=>s+i.p,0);
+  const falta=Math.round((100-t)*10)/10;const cb=$('[data-act="completar100"]',f);if(cb)cb.hidden=!(t>0&&Math.abs(falta)>0.05&&F.filter(i=>i.n).length);
+  let txt=t?`Suma ${nf(t,1)} %`+(Math.abs(falta)>0.5?(falta>0?`: faltan ${nf(falta,1)} %`:`: sobran ${nf(-falta,1)} %`):'. Bien.'):'';
+  // costo de la mezcla con los precios de cada ingrediente
+  const con=F.filter(i=>i.p>0);const c=f.elements.costo;
+  if(con.length&&con.every(i=>i.pr>0)&&t>0){const cost=con.reduce((s,i)=>s+i.p*i.pr,0)/t;txt+=` · Costo calculado: ${money2(cost)} ${PUApor()}`;
+    if(c&&(!c.value||c.dataset.auto)){c.value=r2u(cost);c.dataset.auto='1';}}
+  else if(con.some(i=>i.pr>0))txt+=' · Pon el precio de todos los ingredientes para calcular el costo.';
+  $('[data-pct]',f).innerHTML=aUnidad(esc(txt));};
+document.addEventListener('input',e=>{if(e.target.name==='costo'&&e.target.closest('form[data-form="racion"]'))delete e.target.dataset.auto;
+  if(e.target.name==='ing_n'&&e.target.closest('form[data-form="racion"]')){const r=e.target.closest('.ing2'),pi=$('[name=ing_pr]',r);if(pi&&!pi.value){const p=precioIngUsuario(e.target.value);if(p)pi.value=r2u(PKdA(p));}}});
 SAVE.racion=f=>{
   const nombre=fv(f,'nombre').trim();if(!nombre)return ferr(f,'Escribe el nombre de la ración.');
-  const c=num(fv(f,'costo'));if(!(c>0))return ferr(f,'Escribe el costo por kilo.');
-  const ns=$$('input[name="ing_n"]',f),ps=$$('input[name="ing_p"]',f);
-  const ings=ns.map((n,i)=>({n:n.value.trim(),p:num(ps[i].value)||0})).filter(i=>i.n);
+  const c=num(fv(f,'costo'));if(!(c>0))return ferr(f,'Escribe el costo por kilo, o el precio de cada ingrediente para que lo calcule.');
+  const ings=filasIng(f).filter(i=>i.n).map(i=>({n:i.n,p:i.p,...(i.pr>0?{pr:Math.round(precioAToKg(i.pr)*10000)/10000}:{})}));
   const id=f.dataset.id||uid('r');put('raciones',id,{...(S.raciones[f.dataset.id]||{}),nombre,costoKg:Math.round(precioAToKg(c)*10000)/10000,ings});closeSheet();toast('Ración guardada');
 };
 
@@ -2145,7 +2251,15 @@ const ACTS={
   confirmarSi:()=>{const fn=CONFIRM;CONFIRM=null;closeSheet();if(fn)fn();},
   ui:el=>{UI[el.dataset.k]=el.dataset.v;render();},
   llenarProg:()=>{const f=$('#sheet form');$$('input[name^="kg_"]',f).forEach(i=>{if(!i.value)i.value=i.dataset.prog;});PREV.alimento(f);},
-  addIng:()=>{const w=$('#sheet [data-ings]');w.insertAdjacentHTML('beforeend',ingRow({n:'',p:''}));$('input',w.lastElementChild).focus();},
+  addHora:()=>{const w=$('#sheet [data-horas]');w.insertAdjacentHTML('beforeend',horaRow(''));$('input',w.lastElementChild).focus();},
+  delHora:el=>{const r=el.closest('.hora-f');const w=r.parentNode;if(w.children.length>1)r.remove();else $('input',r).value='';},
+  sinHoras:()=>{guardarHoras('');closeSheet();toast('Listo: anotarás las entregas sin horario fijo.');},
+  addIng:()=>{const w=$('#sheet [data-ings]');w.insertAdjacentHTML('beforeend',aUnidad(ingRow({n:'',p:''})));$('input',w.lastElementChild).focus();},
+  racPlant:el=>{const P=PLANT_RAC[el.dataset.k],f=$('#sheet form');if(!f.elements.nombre.value)f.elements.nombre.value=tI(P.n);
+    $('[data-ings]',f).innerHTML=aUnidad(P.ings.map(([id,p])=>ingRow({n:tI(ING[id].n),p,pr:precioIngUsuario(ING[id].n)||0})).join(''));
+    $$('.chip[data-act="racPlant"]',f).forEach(c=>c.setAttribute('aria-pressed',c===el));PREV.racion(f);},
+  completar100:()=>{const f=$('#sheet form');const F=filasIng(f);const t=F.reduce((s,i)=>s+i.p,0);const rows=$$('.ing2',f).filter(r=>$('[name=ing_n]',r).value.trim());
+    const r=rows[rows.length-1];if(!r)return;const pi=$('[name=ing_p]',r);const v=Math.round(((num(pi.value)||0)+100-t)*10)/10;if(v<0){toast('Baja algún ingrediente: sobra más de lo que lleva el último.');return;}pi.value=v;PREV.racion(f);},
   delIng:el=>{const r=el.closest('.ing');const w=r.parentNode;if(w.children.length>1)r.remove();else $$('input',r).forEach(i=>i.value='');PREV.racion($('#sheet form'));},
   delRacion:el=>{const id=el.dataset.id;confirmar('Eliminar ración',`Se elimina la ración <b>${esc(S.raciones[id].nombre)}</b>. Los registros de alimento que ya hiciste conservan su costo.`,'Eliminar',()=>{put('raciones',id,null);toast('Ración eliminada');});},
   delItems:el=>{const ids=el.dataset.ids.split(',');confirmar('Borrar registro',ids.length>1?`Se borran ${ids.length} entregas de alimento de ese día.`:'Se borra este registro. Esto no se puede deshacer.','Borrar',()=>{
@@ -2237,7 +2351,7 @@ function cargarDemo(){
   let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};
   const H=hoy(),D=n=>addDias(H,n);
   const R=demoReg(),r2=v=>Math.round(v*100)/100,$c=v=>r2(v*R.c),$a=v=>r2(v*R.a),$h=v=>r2(v*R.h),$g=v=>Math.round(v*R.g);
-  put('ajustes','finca',{...DEF_CFG,unidad:R.u||U(),pais:R.pais,monedaCod:R.mon,moneda:{HNL:'L',USD:'$',BRL:'R$'}[R.mon],unidadPrecio:R.up||S.config.unidadPrecio,unidadAlim:R.ua||S.config.unidadAlim,finca:R.finca,ubicacion:R.ub,precioVentaKg:$c(66),metaKg:R.meta});
+  put('ajustes','finca',{...DEF_CFG,unidad:R.u||U(),pais:R.pais,monedaCod:R.mon,moneda:{HNL:'L',USD:'$',BRL:'R$'}[R.mon],unidadPrecio:R.up||S.config.unidadPrecio,unidadAlim:R.ua||S.config.unidadAlim,finca:R.finca,ubicacion:R.ub,horas:'6:00, 11:00, 15:00',horasPropias:true,precioVentaKg:$c(66),metaKg:R.meta});
   const RI='rIni',RF='rFin',[i1,i2,i3,i4,i5]=R.ing;
   put('raciones',RI,{nombre:R.rac[0],costoKg:$a(7.4),ings:[{n:i1,p:45},{n:i2,p:30},{n:i3,p:18},{n:i4,p:5},{n:i5,p:2}]});
   put('raciones',RF,{nombre:R.rac[1],costoKg:$a(6.8),ings:[{n:i1,p:64},{n:i3,p:20},{n:i2,p:13.5},{n:i5,p:2.5}]});
@@ -2312,10 +2426,10 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('submit',e=>{
   const f=e.target;if(!f.dataset.form)return;e.preventDefault();
-  if(f.dataset.form==='cfg'){const d={...S.config};for(const k of ['finca','ubicacion','horas'])d[k]=(f.elements[k].value||'').trim();
+  if(f.dataset.form==='cfg'){const d={...S.config};for(const k of ['finca','ubicacion'])d[k]=(f.elements[k].value||'').trim();
     for(const k of ['precioVentaKg','metaKg','diasSinPesar','gdpEsperada']){const v=num(f.elements[k].value);if(v>0)d[k]=k==='precioVentaKg'?Math.round(precioToKg(v)*10000)/10000:k==='metaKg'?Math.round(toKg(v)):k==='gdpEsperada'?Math.round(toKg(v)*100)/100:v;}
     {const v=(f.elements.desbaste&&f.elements.desbaste.value||'').trim();if(v!==''){const n=num(v);if(n>=0&&n<=15)d.desbaste=n;}}
-    if(!d.finca)d.finca='Mi engorde';if(!horas().length&&!d.horas)d.horas=DEF_CFG.horas;
+    if(!d.finca)d.finca='Mi engorde';
     put('ajustes','finca',d);toast('Ajustes guardados');return;}
   const er=$('.err',f);if(er)er.textContent='';
   if(SAVE[f.dataset.form])SAVE[f.dataset.form](f);
@@ -2329,7 +2443,12 @@ document.addEventListener('keydown',e=>{
 $('#fileImp').addEventListener('change',e=>{const file=e.target.files[0];e.target.value='';if(!file)return;const rd=new FileReader();rd.onload=()=>{try{restaurar(JSON.parse(rd.result));}catch(err){toast('No se pudo leer el archivo.',4000);}};rd.readAsText(file);});
 sheetEl().addEventListener('close',()=>{if(!sheetEl().open)$('#sheetBody').innerHTML='';});
 sheetEl().addEventListener('click',e=>{if(e.target===sheetEl())closeSheet();});
-addEventListener('hashchange',()=>{closeSheet();UI.histAll=0;scrollTo(0,0);render();});
+/* cambio de página: con View Transitions la página nueva aparece sobre la anterior, sin quedar en blanco;
+   la barra de abajo y el encabezado se quedan quietos o cambian de tamaño suave */
+let VT=0;
+addEventListener('hashchange',()=>{closeSheet();UI.histAll=0;const go=()=>{scrollTo(0,0);render();};
+  if(document.startViewTransition&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.hidden){VT=1;try{const t=document.startViewTransition(go);t.finished.finally(()=>{VT=0;});}catch(e){VT=0;go();}}
+  else go();});
 
 /* ============ tema y puente Android ============ */
 function aplicarTema(){let t='auto',pa='noche';try{t=localStorage.getItem('rumentis-tema')||'auto';pa=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
@@ -2760,7 +2879,10 @@ function animarRuta(){
     else if((pv==='lote'||pv==='formular')&&TABS.includes(r.p))dir='pg-back';
     else if(TABS.includes(pv)&&TABS.includes(r.p))dir=TABS.indexOf(r.p)>TABS.indexOf(pv)?'pg-right':'pg-left';}
   lastRoute=key;
-  app.classList.remove('pg','pg-tab','pg-fwd','pg-back','pg-left','pg-right');void app.offsetWidth;app.classList.add('pg',dir);
+  app.classList.remove('pg','pgv','pg-tab','pg-fwd','pg-back','pg-left','pg-right');void app.offsetWidth;
+  // con View Transitions solo se animan barras y gráficas: el contenido ya entra con la transición
+  if(VT){app.classList.add('pgv');clearTimeout(animarRuta.t);animarRuta.t=setTimeout(()=>app.classList.remove('pgv'),1400);return;}
+  app.classList.add('pg',dir);
   clearTimeout(animarRuta.t);animarRuta.t=setTimeout(()=>app.classList.remove('pg','pg-tab','pg-fwd','pg-back','pg-left','pg-right'),900);
 }
 const RIPPLE='.btn,.tile,.row,.lote,.qa button,.chip,.opt,.seg button,.lect button,nav.bottom a:not(.reg),#rumiFab,.rbtn';
@@ -2860,7 +2982,7 @@ function pasoLote(x){
   if(!g.sanidad.some(s=>s.f<=addDias(x.l.fechaIngreso,7)))return {t:'Registra la sanidad de ingreso',s:'Vacuna, desparasitante y vitaminas al llegar',act:'f',f:'sanidad',lote:x.id};
   if(!x.racion)return {t:'Asigna o formula su ración',s:'Así la app calcula costos y consumo',act:'fpDesde',id:x.id};
   if(x.sigEntregaPend)return null;
-  if(!g.alimento.some(a=>a.f===H))return {t:'Anota la entrega de alimento de hoy',s:'Con "Llenar con lo de siempre" es un toque',act:'f',f:'alimento',lote:x.id};
+  if(!g.alimento.some(a=>a.f===H))return {t:'Anota la entrega de alimento de hoy',s:'Con "Servir lo de siempre a todos" es un toque',act:'f',f:'alimento',lote:x.id};
   if(x.diasSinPesar>(+S.config.diasSinPesar||21))return {t:tieneAnimales(x.l)?'Pesa el lote animal por animal':'Pesa el lote',s:`Último pesaje ${cuando(x.ult.f)}`,act:'f',f:'pesaje',lote:x.id};
   if(x.atrasados&&x.atrasados.length)return {t:`Revisa ${pl(x.atrasados.length,'animal atrasado','animales atrasados')}`,s:'Ganan menos del 70 % que el promedio del lote',act:'ui',k:'loteTab',v:'animales',orden:'peor',lote:x.id};
   if(x.listo)return {t:'Ya puedes vender este lote',s:x.retiroHasta?`Ojo: retiro hasta el ${ffc(x.retiroHasta)}`:'Llegó a su peso meta',act:'f',f:'venta',lote:x.id};
@@ -2883,7 +3005,7 @@ function pasoCard(p,titulo='Siguiente paso'){
 function pasoGlobal(C){
   const L=[];
   for(const a of C.al.filter(a=>a.k==='raro'||a.k==='baja'||a.k==='cons'))L.push({t:a.t,s:a.s,act:'go',go:'#lote/'+a.lote,lote:a.lote});
-  if(C.act.length&&C.sigEnt)L.push({t:`Anota la entrega de las ${horaDe(C.sigEnt)}`,s:`${nf(C.kgHoy)} kg de unos ${nf(C.prog)} por día`,act:'f',f:'alimento',n:C.sigEnt});
+  if(C.act.length&&C.sigEnt)L.push({t:`Anota la entrega ${entDe(C.sigEnt)}`,s:`${nf(C.kgHoy)} kg de unos ${nf(C.prog)} por día`,act:'f',f:'alimento',n:C.sigEnt});
   for(const x of C.act){const p=pasoLote(x);if(p)L.push({...p,t:`${x.l.nombre}: ${p.t.charAt(0).toLowerCase()+p.t.slice(1)}`});}
   return L.find(p=>!pasoVisto(p))||null;
 }
@@ -2894,9 +3016,10 @@ PAGES.hoy=()=>{
   const C=calc(),cfg=S.config;
   if(!Object.keys(S.lotes).length)return _hoy0();
   const n=nEntregas();
-  const seg=[...Array(n).keys()].map(i=>`<i class="${C.hechas.has(i+1)?'on':''}"></i>`).join('');
+  const seg=conHoras()?[...Array(n).keys()].map(i=>`<i class="${C.hechas.has(i+1)?'on':''}"></i>`).join(''):'';
   const alim=C.act.length?`<div class="card pad alim-c"><div class="ac1"><div><span class="hf">${nf(C.kgHoy)} kg</span><small>de unos ${nf(C.prog)} hoy</small></div><div class="segs">${seg}</div></div>
-    ${C.sigEnt?`<button type="button" class="btn pri full" data-act="f" data-f="alimento" data-n="${C.sigEnt}">Anotar la entrega de las ${esc(horaDe(C.sigEnt))}</button>`:`<p class="hint" style="margin:0">Las ${n} entregas de hoy están anotadas.</p>`}</div>`:'';
+    ${C.sigEnt?`<button type="button" class="btn pri full" data-act="f" data-f="alimento" data-n="${C.sigEnt}">Anotar la entrega ${esc(entDe(C.sigEnt))}</button>`:`<p class="hint" style="margin:0">Las ${n} entregas de hoy están anotadas.</p>`}
+    ${conHoras()?'':`<button type="button" class="horas-aviso" data-act="f" data-f="horas">${ico('reloj',2)}<span><b>¿A qué horas das de comer?</b> Pon tus horarios y te recuerdo cada entrega.</span></button>`}</div>`:'';
   const alN=UI.alAll?C.al:C.al.slice(0,3);
   const al=C.al.length?`<section class="sec">${secH('Atención',C.al.length,C.al.length>3?lnkB('ui',UI.alAll?'Ver menos':'Ver todo','data-k="alAll" data-v="'+(UI.alAll?'':'1')+'"'):'')}<div class="card rows">${alN.map(alertRow).join('')}</div></section>`:'';
   const filas=C.act.map(x=>{const a=x.p0,b=Math.max(x.meta,x.pesoHoy),pc=b>a?Math.max(3,Math.min(100,(x.pesoHoy-a)/(b-a)*100)):100;
@@ -3366,7 +3489,7 @@ const CONCEPTOS=[
 ];
 const ACCIONES={
   alimento:{re:/aliment|comida|dar de comer|di de comer|dimos de comer|echar comida|servir|servi|entrega|concentrado|pienso|mixer|comieron/,
-    how:['Toca el botón amarillo <b>Registrar</b>, abajo al centro.','Toca <b>Alimento</b>.','Toca <b>Llenar con lo de siempre</b> o escribe los kilos de cada lote.','Si quieres, marca cómo estaba el comedero.','Toca <b>Guardar entrega</b>.'],show:['#registrar','.tile[data-f="alimento"]'],label:'Anotar alimento'},
+    how:['Toca el botón amarillo <b>Registrar</b>, abajo al centro.','Toca <b>Alimento</b>.','Toca <b>Servir lo de siempre a todos</b> o escribe los kilos de cada lote.','Si quieres, marca cómo estaba el comedero.','Toca <b>Guardar entrega</b>.'],show:['#registrar','.tile[data-f="alimento"]'],label:'Anotar alimento'},
   pesaje:{re:/\bpes(e|ar|amos|aron|aje|ajes|ado)\b|bascula|cuanto pesaron/,
     how:['Toca <b>Registrar</b> y luego <b>Pesaje</b>.','Elige el lote.','Escribe el peso promedio. Si pesaste a todos juntos, cambia a <b>Kilos totales</b>.','Toca <b>Guardar pesaje</b>. La app calcula cuánto subieron por día.'],show:['#registrar','.tile[data-f="pesaje"]'],label:'Anotar pesaje'},
   sanidad:{re:/vacun|desparasit|inyect|medic|tratamiento|tratar|vitamina|ivermectina|albendazol|oxitetra|sanidad|enferm|antibiotic/,
@@ -3487,10 +3610,11 @@ function saludo(){
 function hoyMsg(){
   const C=calc();if(!C.act.length)return pasosMsg();
   const a=[];
-  if(C.sigEnt)a.push(`Falta la entrega de alimento de las <b>${esc(horaDe(C.sigEnt))}</b>. Llevas ${nf(C.kgHoy)} kg de unos ${nf(C.prog)} kg.`);
+  if(!conHoras())a.push(`Llevas ${nf(C.kgHoy)} kg de alimento de unos ${nf(C.prog)} kg al día. Pon tus horarios de entrega en Más, Configuración, y te recuerdo cada una.`);
+  else if(C.sigEnt)a.push(`Falta la entrega de alimento de las <b>${esc(horaDe(C.sigEnt))}</b>. Llevas ${nf(C.kgHoy)} kg de unos ${nf(C.prog)} kg.`);
   else a.push('Ya registraste todas las entregas de alimento de hoy.');
   for(const x of C.al.slice(0,5))a.push(`${esc(x.t)}: ${esc(x.s)}.`);
-  return {html:'Esto es lo que tienes hoy:'+pasosHtml(a),btns:C.sigEnt?[[`Anotar entrega de las ${horaDe(C.sigEnt)}`,{t:'form',k:'alimento',p:{},n:C.sigEnt}]]:[],sug:sugs()};
+  return {html:'Esto es lo que tienes hoy:'+pasosHtml(a),btns:C.sigEnt?[[`Anotar entrega ${entDe(C.sigEnt)}`,{t:'form',k:'alimento',p:{},n:C.sigEnt}]]:[],sug:sugs()};
 }
 function listosMsg(){
   const C=calc();if(!C.act.length)return {html:'Todavía no tienes lotes en engorde.'};
@@ -5125,7 +5249,7 @@ responder=function(txt){
 <script src="ambiente.js"></script>
 <script>/* la guía de Rumi en el idioma de la app */(function(){var L=window.I18N&&I18N.lang&&I18N.lang();document.write('<script src="rumi_guia'+(L==="en"||L==="pt"?"_"+L:"")+'.js"><\/script>');})();</script>
 <script src="rumi_menu.js"></script>
-<script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
+<script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
 
 
 </body>

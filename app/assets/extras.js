@@ -108,7 +108,7 @@ const hechas=()=>cfg().hechas||{};
 function tareas(){
   const C=calc(),H=C.H,T=[],d=+S.config.diasSinPesar||21,hh=hechas();
   const add=(key,f,t,s,ic,act,tono)=>{if(hh[key]===H||(hh[key]&&hh[key]>=f&&!key.startsWith('dia:')))return;T.push({key,f,t,s,ic,act,tono});};
-  if(C.act.length&&C.sigEnt)add('ent:'+H+':'+C.sigEnt,H,`Entrega de alimento de las ${horaDe(C.sigEnt)}`,`Llevas ${nf(C.kgHoy)} kg de unos ${nf(C.prog)} kg`,'alimento',{t:'form',k:'alimento',n:C.sigEnt},'y');
+  if(C.act.length&&C.sigEnt&&conHoras())add('ent:'+H+':'+C.sigEnt,H,`Entrega de alimento de las ${horaDe(C.sigEnt)}`,`Llevas ${nf(C.kgHoy)} kg de unos ${nf(C.prog)} kg`,'alimento',{t:'form',k:'alimento',n:C.sigEnt},'y');
   for(const x of C.act){
     const nm=x.l.nombre;
     if(x.dec<21)add('dia:rev:'+x.id+':'+H,H,`Revisar recién llegados de ${nm}`,'Fiebre, tos, moco, que coman y tomen agua (lleva el termómetro)','ojo',null,'r');
