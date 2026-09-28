@@ -208,7 +208,7 @@ function pdf(meta){
     if(qr)P.qr(qr,M+3,y+3,lado);
     fuente(9.5,'bold');color(COL.pri2);d.text(T('Documento firmado digitalmente'),x,y+4,{baseline:'top'});
     fuente(7.8);color(COL.ink);
-    const L=d.splitTextToSize(lat(`${T(`Código ${cod}.`)} ${T('Firma Ed25519 de la llave')} ${huellaLlave(k.pubB)} (${T(S.config.finca||'Mi engorde')}).`),an)
+    const L=d.splitTextToSize(lat(`${T('Código')} ${cod}. ${T('Firma Ed25519 de la llave')} ${huellaLlave(k.pubB)} (${T(S.config.finca||'Mi engorde')}).`),an)
       .concat(d.splitTextToSize(T(qr?'Para comprobar que es auténtico y que nadie lo cambió: escanea este código o sube el PDF en':'Para comprobar que es auténtico y que nadie lo cambió: escanea el código QR de arriba o sube el PDF en'),an))
       .concat([VERIFICAR.replace('https://','')]).concat(d.splitTextToSize(T('Si alguien cambia algo del documento, la verificación falla.'),an));
     d.text(L,x,y+4+lh(9.5)+0.8,{baseline:'top'});
@@ -516,6 +516,25 @@ function pdfHtml(r,nombre){
     <li><b>Llave:</b> <span data-no-tr>${esc(r.huella)}</span></li></ul>
     <p class="rs">La llave identifica al teléfono que lo firmó: si la finca te mandó antes otros documentos, la llave debe ser la misma.</p>`;
 }
+let ocupado=false;
+ACTS.docHacer=async el=>{
+  if(ocupado)return;const f=el.closest('form'),modo=el.dataset.modo,tipo=el.dataset.doc;const err=f&&f.querySelector('.err');if(err)err.textContent='';
+  const B=f?[...f.querySelectorAll('[data-act="docHacer"]')]:[el],txt=el.textContent;
+  ocupado=true;B.forEach(b=>b.disabled=true);el.textContent=tr('Preparando…');
+  try{
+    let r;
+    if(tipo==='banco'){const v=n=>(f.elements[n]&&f.elements[n].value||'').trim();
+      const tt={nombre:v('nombre'),id:v('id'),tel:v('tel')};
+      if(JSON.stringify(tt)!==JSON.stringify({nombre:'',id:'',tel:'',...titular()}))put('ajustes','finca',{...S.config,titular:tt});
+      r=await informeBanco({para:v('para')});}
+    else r=await certificadoLote(el.dataset.id,{destino:(f.elements.destino&&f.elements.destino.value||'').trim()});
+    const ok=await enviar(r.nombre,r.buf,modo,r.titulo);
+    if(ok){if(modo==='guardar'&&!window.Android)toast('PDF descargado');else if(modo!=='guardar')toast(`${tr('Código')} ${r.cod}`,3200);}
+  }catch(e){console.error(e);const m=e&&e.message==='lib'?'No pude cargar el generador de PDF. Cierra y abre la app.':'No pude hacer el PDF. Revisa los datos e inténtalo otra vez.';if(err)err.textContent=tr(m);else toast(m);}
+  finally{ocupado=false;B.forEach(b=>b.disabled=false);el.textContent=txt;}
+};
+
+/* página Documentos (Más) */
 PAGES.documentos=()=>{
   const C=calc(),L=C.act.concat(C.cer.slice(0,8)),D=DOCS();
   const fila=(ic,t,s,attr,tono)=>masFila(mico(ic),t,s,attr,tono);
@@ -529,5 +548,5 @@ PAGES.documentos=()=>{
    <p class="hint">Los documentos salen de tus registros y van firmados digitalmente: si alguien les cambia algo, la verificación falla.</p>
   </main>`;
 };
-window.Documentos={informeBanco,certificadoLote,verificar,sha256,canon,codigo,lat,T,enviar,datosCert,textoQR,libs,comprobarPDF,enlaceQR,huellaLlave,llave,VERIFICAR,deB64u};
+window.Documentos={informeBanco,certificadoLote,verificar,sha256,canon,codigo,lat,T,enviar,datosCert,textoQR,libs,comprobarPDF,pdfHtml,enlaceQR,huellaLlave,llave,VERIFICAR,deB64u};
 })();

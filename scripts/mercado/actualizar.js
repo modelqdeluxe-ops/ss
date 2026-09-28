@@ -84,8 +84,8 @@ function ersEngorde(buf) {
     const c5 = col('500-550'), c7 = col('750-800');
     for (const r of H) if (r && typeof r[0] === 'number' && r[0] > 30000) {
       const f = deSerial(r[0]);
-      if (c5 > 0 && typeof r[c5] === 'number') out.t500.set(f, r[c5]);
-      if (c7 > 0 && typeof r[c7] === 'number') out.t750.set(f, r[c7]);
+      if (c5 > 0 && typeof r[c5] === 'number') out.t500.set(f, Math.round(r[c5] * 100) / 100);
+      if (c7 > 0 && typeof r[c7] === 'number') out.t750.set(f, Math.round(r[c7] * 100) / 100);
     }
   }
   const C = wb.Sheets.Current && X.utils.sheet_to_json(wb.Sheets.Current, { header: 1 });
@@ -98,7 +98,7 @@ function ersEngorde(buf) {
         const r = C[i] || [], t = String(r[0] || '');
         if (/steers/i.test(t)) steers = true; else if (/heifers/i.test(t)) steers = false;
         const k = steers && /500-550/.test(t) ? 't500' : steers && /750-800/.test(t) ? 't750' : null;
-        if (k) r.forEach((v, j) => { if (j && fechas[j] && typeof v === 'number') out[k].set(fechas[j], v); });
+        if (k) r.forEach((v, j) => { if (j && fechas[j] && typeof v === 'number') out[k].set(fechas[j], Math.round(v * 100) / 100); });
       }
     }
   }

@@ -538,3 +538,126 @@ Certificado	Certificate	Certificado
 Para el comprador o el matadero: origen, sanidad con retiros, pesajes y aretes, con código QR.	For the buyer or packer: origin, health with withdrawal times, weighings and ear tags, with a QR code.	Para o comprador ou o frigorífico: origem, sanidade com carências, pesagens e brincos, com código QR.
 Escribe el código de un documento y te digo si lo hiciste aquí y qué decía.	Type a document's code and I'll tell you whether you made it here and what it said.	Digite o código de um documento e digo se você o fez aqui e o que dizia.
 Tus lotes a precio de mercado	Your lots at market price	Seus lotes a preço de mercado
+Verificar un documento	Verify a document	Verificar um documento
+Sube un PDF de cualquier finca o escribe un código	Upload a PDF from any ranch or type a code	Envie um PDF de qualquer fazenda ou digite um código
+Tus documentos se firman con una llave digital de este teléfono, que se crea al hacer el primero. Cualquiera puede comprobarlos sin la app: escaneando el QR o subiendo el PDF en	Your documents are signed with a digital key from this phone, created when you make the first one. Anyone can check them without the app: by scanning the QR code or uploading the PDF at	Seus documentos são assinados com uma chave digital deste celular, criada ao fazer o primeiro. Qualquer pessoa pode conferi-los sem o app: escaneando o QR ou enviando o PDF em
+Tus documentos se firman con una llave digital de este teléfono, que se crea al hacer el primero.	Your documents are signed with a digital key from this phone, created when you make the first one.	Seus documentos são assinados com uma chave digital deste celular, criada ao fazer o primeiro.
+Tu llave de firma digital:	Your digital signing key:	Sua chave de assinatura digital:
+. Va en cada documento que haces. Cualquiera puede comprobarlos sin la app: escaneando el QR o subiendo el PDF en	. It goes on every document you make. Anyone can check them without the app: by scanning the QR code or uploading the PDF at	. Vai em cada documento que você faz. Qualquer pessoa pode conferi-los sem o app: escaneando o QR ou enviando o PDF em
+Los documentos salen de tus registros y van firmados digitalmente: si alguien les cambia algo, la verificación falla.	Documents come from your records and are digitally signed: if anyone changes anything, verification fails.	Os documentos saem dos seus registros e vão assinados digitalmente: se alguém mudar algo, a verificação falha.
+Sube un PDF de Rumentis, de cualquier finca: compruebo su firma digital y que nadie le cambió nada.	Upload a Rumentis PDF from any ranch: I check its digital signature and that nobody changed anything.	Envie um PDF do Rumentis, de qualquer fazenda: confiro a assinatura digital e se ninguém mudou nada.
+Elegir el PDF	Choose the PDF	Escolher o PDF
+O escribe el código de un documento que hiciste en este teléfono (RMB-… o RMC-…):	Or type the code of a document you made on this phone (RMB-… or RMC-…):	Ou digite o código de um documento que você fez neste celular (RMB-… ou RMC-…):
+Verificar el código	Verify the code	Verificar o código
+Documento firmado digitalmente	Digitally signed document	Documento assinado digitalmente
+Firma Ed{0} de la llave	Ed{0} signature from key	Assinatura Ed{0} da chave
+Para comprobar que es auténtico y que nadie lo cambió: escanea este código o sube el PDF en	To check that it is authentic and that nobody changed it: scan this code or upload the PDF at	Para conferir que é autêntico e que ninguém o alterou: escaneie este código ou envie o PDF em
+Para comprobar que es auténtico y que nadie lo cambió: escanea el código QR de arriba o sube el PDF en	To check that it is authentic and that nobody changed it: scan the QR code above or upload the PDF at	Para conferir que é autêntico e que ninguém o alterou: escaneie o código QR acima ou envie o PDF em
+Si alguien cambia algo del documento, la verificación falla.	If anyone changes anything in the document, verification fails.	Se alguém mudar algo do documento, a verificação falha.
+Escanéalo con la cámara del teléfono para comprobar que el certificado es auténtico.	Scan it with your phone camera to check that the certificate is authentic.	Escaneie com a câmera do celular para conferir se o certificado é autêntico.
+Documento auténtico.	Authentic document.	Documento autêntico.
+La firma digital es válida y nadie lo modificó desde que se firmó. Lo firmaste tú, con este teléfono.	The digital signature is valid and nobody has modified it since it was signed. You signed it, with this phone.	A assinatura digital é válida e ninguém o alterou desde que foi assinado. Você o assinou, com este celular.
+La firma digital es válida y nadie lo modificó desde que se firmó.	The digital signature is valid and nobody has modified it since it was signed.	A assinatura digital é válida e ninguém o alterou desde que foi assinado.
+Código:	Code:	Código:
+Firmado:	Signed:	Assinado:
+Llave:	Key:	Chave:
+La llave identifica al teléfono que lo firmó: si la finca te mandó antes otros documentos, la llave debe ser la misma.	The key identifies the phone that signed it: if the ranch sent you other documents before, the key should be the same.	A chave identifica o celular que o assinou: se a fazenda te mandou outros documentos antes, a chave deve ser a mesma.
+El documento fue modificado.	The document was modified.	O documento foi alterado.
+Tiene la firma de Rumentis, pero su contenido ya no es el que se firmó. No confíes en él.	It carries a Rumentis signature, but its content is no longer what was signed. Do not trust it.	Tem a assinatura do Rumentis, mas o conteúdo já não é o que foi assinado. Não confie nele.
+Sin firma digital.	No digital signature.	Sem assinatura digital.
+Este PDF no fue firmado por Rumentis (o se hizo con una versión anterior).	This PDF was not signed by Rumentis (or was made with an older version).	Este PDF não foi assinado pelo Rumentis (ou foi feito com uma versão anterior).
+Firma dañada.	Damaged signature.	Assinatura danificada.
+El final del archivo no se puede leer: el documento pudo ser modificado.	The end of the file cannot be read: the document may have been modified.	O final do arquivo não pode ser lido: o documento pode ter sido alterado.
+Firma falsa.	Forged signature.	Assinatura falsa.
+La firma no corresponde a la llave que dice. No confíes en este documento.	The signature does not belong to the key it claims. Do not trust this document.	A assinatura não corresponde à chave que diz ter. Não confie neste documento.
+Comprobando…	Checking…	Conferindo…
+No pude leer el archivo.	I couldn't read the file.	Não consegui ler o arquivo.
+Fuentes: USDA Agricultural Marketing Service (novillo gordo; ternero y novillo de engorde de la subasta de Oklahoma City, con la historia mensual de USDA ERS), Cepea/Esalq-USP (boi gordo, bezerro y milho), Banco Central do Brasil (PTAX) y ExchangeRate-API (tipos de cambio). El boi gordo se pasa a libra en pie con la arroba de {0} {2} (rendimiento de {1} {3}).	Sources: USDA Agricultural Marketing Service (fed steers; feeder calves and feeder steers from the Oklahoma City auction, with USDA ERS monthly history), Cepea/Esalq-USP (boi gordo, bezerro and milho), Central Bank of Brazil (PTAX) and ExchangeRate-API (exchange rates). The boi gordo price is converted to live pounds using a {0} {2} arroba ({1} {3} dressing).	Fontes: USDA Agricultural Marketing Service (novilho gordo; bezerro e garrote do leilão de Oklahoma City, com a série mensal do USDA ERS), Cepea/Esalq-USP (boi gordo, bezerro e milho), Banco Central do Brasil (PTAX) e ExchangeRate-API (câmbio). O boi gordo passa para libra em pé com a arroba de {0} {2} (rendimento de {1} {3}).
+Fuentes: USDA Agricultural Marketing Service (novillo gordo; ternero y novillo de engorde de la subasta de Oklahoma City, con la historia mensual de USDA ERS), Cepea/Esalq-USP (boi gordo, bezerro y milho), Banco Central do Brasil (PTAX) y ExchangeRate-API (tipos de cambio). El boi gordo se pasa a kilo en pie con la arroba de {0} {2} (rendimiento de {1} {3}).	Sources: USDA Agricultural Marketing Service (fed steers; feeder calves and feeder steers from the Oklahoma City auction, with USDA ERS monthly history), Cepea/Esalq-USP (boi gordo, bezerro and milho), Central Bank of Brazil (PTAX) and ExchangeRate-API (exchange rates). The boi gordo price is converted to live kilos using a {0} {2} arroba ({1} {3} dressing).	Fontes: USDA Agricultural Marketing Service (novilho gordo; bezerro e garrote do leilão de Oklahoma City, com a série mensal do USDA ERS), Cepea/Esalq-USP (boi gordo, bezerro e milho), Banco Central do Brasil (PTAX) e ExchangeRate-API (câmbio). O boi gordo passa para quilo em pé com a arroba de {0} {2} (rendimento de {1} {3}).
+Qué mejorar	What to improve	O que melhorar
+Vender con el mercado	Sell with the market	Vender com o mercado
+¿Mejoro?	Am I improving?	Estou melhorando?
+Raciones	Rations	Rações
+¿Qué mejorar primero?	What to improve first?	O que melhorar primeiro?
+Cuánto dinero te dejaría cada mejora en tus {0} lotes en engorde, hasta que lleguen a su meta:	How much money each improvement would make you on your {0} lots on feed, until they reach their target:	Quanto dinheiro cada melhoria deixaria nos seus {0} lotes em engorda, até chegarem à meta:
+Una muerte menos en cada lote: L {0}	One fewer death in each lot: L {0}	Uma morte a menos em cada lote: L {0}
+Recepción con agua y heno, vacunas al llegar y separar rápido a los decaídos.	Receiving with water and hay, vaccines on arrival and quickly pulling sick cattle.	Recepção com água e feno, vacinas na chegada e separar rápido os abatidos.
+Vender {0} {2} más caro: L {1}	Sell {0} {2} higher: L {1}	Vender {0} {2} mais caro: L {1}
+Pide precio a varios compradores, vende en lote parejo y con buen acabado.	Get bids from several buyers, sell even lots with good finish.	Peça preço a vários compradores, venda lote uniforme e bem terminado.
+Alimento {0} {2} más barato: L {1}	Feed {0} {2} cheaper: L {1}	Ração {0} {2} mais barata: L {1}
+Compra los granos en cosecha, cambia un ingrediente caro por uno equivalente y evita el desperdicio.	Buy grain at harvest, swap an expensive ingredient for an equivalent one and avoid waste.	Compre os grãos na colheita, troque um ingrediente caro por um equivalente e evite o desperdício.
+Ganancia diaria {0} {2} más alta: L {1}	Daily gain {0} {2} higher: L {1}	Ganho diário {0} {2} maior: L {1}
+Ración bien balanceada, comederos limpios, agua fresca, sombra y animales sanos.	A well-balanced ration, clean bunks, fresh water, shade and healthy cattle.	Ração bem balanceada, cochos limpos, água fresca, sombra e animais sadios.
+Calculado con tus lotes, tu precio de venta (L {0}) y el costo de tu ración. La que más vale va primero.	Calculated with your lots, your sale price (L {0}) and your ration cost. The most valuable one comes first.	Calculado com seus lotes, seu preço de venda (L {0}) e o custo da sua ração. A que mais vale vem primeiro.
+Calculado con tus lotes, tu precio de venta (L {0}/{1}) y el costo de tu ración. La que más vale va primero.	Calculated with your lots, your sale price (L {0}/{1}) and your ration cost. The most valuable one comes first.	Calculado com seus lotes, seu preço de venda (L {0}/{1}) e o custo da sua ração. A que mais vale vem primeiro.
+Calculado con tus lotes, tu precio de venta (L {0}/@) y el costo de tu ración. La que más vale va primero.	Calculated with your lots, your sale price (L {0}/@) and your ration cost. The most valuable one comes first.	Calculado com seus lotes, seu preço de venda (L {0}/@) e o custo da sua ração. A que mais vale vem primeiro.
+¿Vendo ahora o espero, con el mercado?	Sell now or wait, with the market?	Vendo agora ou espero, com o mercado?
+El precio del gordo bajó {0} {3} en {1} semanas (tus precios). Supongo que sigue a la mitad de ese ritmo, con un tope de {2} {4}.	Fed cattle price fell {0} {3} in {1} weeks (your prices). I assume it continues at half that pace, capped at {2} {4}.	O preço do boi gordo caiu {0} {3} em {1} semanas (seus preços). Suponho que continue na metade desse ritmo, com teto de {2} {4}.
+El precio del gordo subió {0} {3} en {1} semanas (tus precios). Supongo que sigue a la mitad de ese ritmo, con un tope de {2} {4}.	Fed cattle price rose {0} {3} in {1} weeks (your prices). I assume it continues at half that pace, capped at {2} {4}.	O preço do boi gordo subiu {0} {3} em {1} semanas (seus preços). Suponho que continue na metade desse ritmo, com teto de {2} {4}.
+El precio del gordo subió {0} {3} en {1} semanas (USDA AMS). Supongo que sigue a la mitad de ese ritmo, con un tope de {2} {4}.	Fed cattle price rose {0} {3} in {1} weeks (USDA AMS). I assume it continues at half that pace, capped at {2} {4}.	O preço do boi gordo subiu {0} {3} em {1} semanas (USDA AMS). Suponho que continue na metade desse ritmo, com teto de {2} {4}.
+El precio del gordo bajó {0} {3} en {1} semanas (USDA AMS). Supongo que sigue a la mitad de ese ritmo, con un tope de {2} {4}.	Fed cattle price fell {0} {3} in {1} weeks (USDA AMS). I assume it continues at half that pace, capped at {2} {4}.	O preço do boi gordo caiu {0} {3} em {1} semanas (USDA AMS). Suponho que continue na metade desse ritmo, com teto de {2} {4}.
+El precio del gordo subió {0} {3} en {1} semanas (Cepea/Esalq-USP). Supongo que sigue a la mitad de ese ritmo, con un tope de {2} {4}.	Fed cattle price rose {0} {3} in {1} weeks (Cepea/Esalq-USP). I assume it continues at half that pace, capped at {2} {4}.	O preço do boi gordo subiu {0} {3} em {1} semanas (Cepea/Esalq-USP). Suponho que continue na metade desse ritmo, com teto de {2} {4}.
+El precio del gordo bajó {0} {3} en {1} semanas (Cepea/Esalq-USP). Supongo que sigue a la mitad de ese ritmo, con un tope de {2} {4}.	Fed cattle price fell {0} {3} in {1} weeks (Cepea/Esalq-USP). I assume it continues at half that pace, capped at {2} {4}.	O preço do boi gordo caiu {0} {3} em {1} semanas (Cepea/Esalq-USP). Suponho que continue na metade desse ritmo, com teto de {2} {4}.
+Con tu precio de hoy	With today's price	Com seu preço de hoje
+Con la tendencia del mercado	With the market trend	Com a tendência do mercado
+Vender en {0} días	Sell in {0} days	Vender em {0} dias
+Vender en {0} día	Sell in {0} day	Vender em {0} dia
+Vender ya	Sell now	Vender já
+{0}: con el precio bajando, conviene adelantar la venta {1} días.	{0}: with the price falling, it pays to sell {1} days earlier.	{0}: com o preço caindo, vale adiantar a venda em {1} dias.
+{0}: con el precio bajando, conviene adelantar la venta {1} día.	{0}: with the price falling, it pays to sell {1} day earlier.	{0}: com o preço caindo, vale adiantar a venda em {1} dia.
+{0}: con el precio subiendo, puedes esperar {1} días más si siguen ganando bien.	{0}: with the price rising, you can wait {1} more days if they keep gaining well.	{0}: com o preço subindo, você pode esperar mais {1} dias se continuarem ganhando bem.
+{0}: con el precio subiendo, puedes esperar {1} día más si siguen ganando bien.	{0}: with the price rising, you can wait {1} more day if they keep gaining well.	{0}: com o preço subindo, você pode esperar mais {1} dia se continuarem ganhando bem.
+El mercado puede cambiar de dirección: úsalo como guía y pide precio a varios compradores.	The market can change direction: use it as a guide and get bids from several buyers.	O mercado pode mudar de direção: use como guia e peça preço a vários compradores.
+La tendencia del mercado no cambia el mejor día de venta: sigue el plan.	The market trend does not change the best sale day: stick to the plan.	A tendência do mercado não muda o melhor dia de venda: siga o plano.
+Ningún lote está listo ni a menos de {0} días de su meta. Te aviso cuando alguno se acerque.	No lot is finished or within {0} days of its target. I'll let you know when one gets close.	Nenhum lote está pronto nem a menos de {0} dias da meta. Aviso quando algum se aproximar.
+Todavía no tengo cómo va el precio del gordo en tu zona. Abre Precios del mercado con internet, o anota ahí los precios que ves, y te digo si conviene esperar.	I don't yet know how fed cattle prices are moving in your area. Open Market prices with internet, or record there the prices you see, and I'll tell you whether it pays to wait.	Ainda não sei como vai o preço do boi gordo na sua região. Abra Preços do mercado com internet, ou anote ali os preços que vê, e digo se vale esperar.
+¿Estoy mejorando lote a lote?	Am I improving lot by lot?	Estou melhorando lote a lote?
+Necesito al menos dos lotes vendidos para ver si vas mejorando. Cuando cierres el segundo, te lo muestro.	I need at least two sold lots to see if you are improving. When you close the second one, I'll show you.	Preciso de pelo menos dois lotes vendidos para ver se você está melhorando. Quando fechar o segundo, eu mostro.
+Tus {0} lotes vendidos, del más viejo al más nuevo. Comparo el primero con el último.	Your {0} sold lots, from oldest to newest. I compare the first with the last.	Seus {0} lotes vendidos, do mais antigo ao mais novo. Comparo o primeiro com o último.
+Tus {0} lotes vendidos, del más viejo al más nuevo. Comparo los {1} primeros con los {2} últimos.	Your {0} sold lots, from oldest to newest. I compare the first {1} with the last {2}.	Seus {0} lotes vendidos, do mais antigo ao mais novo. Comparo os {1} primeiros com os {2} últimos.
+Conv.	Conv.	Conv.
+Costo {0} ganado	Cost per {0} gained	Custo {0} ganho
+{0} a {1} →	{0} to {1} →	{0} a {1} →
+Vas mejorando en todo. Sigue haciendo lo mismo.	You are improving across the board. Keep doing the same.	Você está melhorando em tudo. Continue fazendo o mesmo.
+Mejoraste en	You improved in	Você melhorou em
+. Empeoraste en	. You got worse in	. Piorou em
+: revisa qué cambió en esos lotes (proveedor, ración, época o manejo).	: check what changed in those lots (supplier, ration, season or management).	: veja o que mudou nesses lotes (fornecedor, ração, época ou manejo).
+Tus últimos lotes van peor en	Your latest lots are doing worse in	Seus últimos lotes estão piores em
+. Compara proveedor, ración y época con los mejores.	. Compare supplier, ration and season with the best ones.	. Compare fornecedor, ração e época com os melhores.
+Tus lotes van parejos: sin cambios grandes de uno a otro.	Your lots are even: no big changes from one to the next.	Seus lotes estão parelhos: sem grandes mudanças de um para outro.
+margen por cabeza	margin per head	margem por cabeça
+Con pocos lotes la diferencia puede ser suerte o la época del año; compara al menos tres o cuatro lotes.	With few lots the difference may be luck or the season; compare at least three or four lots.	Com poucos lotes a diferença pode ser sorte ou a época do ano; compare pelo menos três ou quatro lotes.
+¿Con qué ración te sale más barato engordar?	Which ration makes gain cheapest?	Com qual ração sai mais barato engordar?
+¿Con qué ración me sale más barato engordar?	Which ration makes my gain cheapest?	Com qual ração me sai mais barato engordar?
+Entre pesaje y pesaje veo cuánto subió cada lote y qué comió. Cuento solo los tramos donde una ración fue al menos {0} {1} de lo que comieron.	Between weighings I see how much each lot gained and what it ate. I only count stretches where one ration was at least {0} {1} of what they ate.	Entre uma pesagem e outra vejo quanto cada lote ganhou e o que comeu. Conto só os trechos em que uma ração foi pelo menos {0} {1} do que comeram.
+{3} tramos, {0}, {1}, {2}	{3} stretches, {0}, {1}, {2}	{3} trechos, {0}, {1}, {2}
+{2} tramos, {0}, {1}	{2} stretches, {0}, {1}	{2} trechos, {0}, {1}
+{1} tramos, {0}	{1} stretches, {0}	{1} trechos, {0}
+{1} tramo, {0}	{1} stretch, {0}	{1} trecho, {0}
+La más barata	The cheapest	A mais barata
+te deja el kilo ganado a L {0};	makes each kilo gained cost L {0};	deixa o quilo ganho a L {0};
+te deja la libra ganada a L {0};	makes each pound gained cost L {0};	deixa a libra ganha a L {0};
+te deja la libra ganada a L {0}/{1};	makes each pound gained cost L {0}/{1};	deixa a libra ganha a L {0}/{1};
+te deja el kilo ganado a L {0}/{1};	makes each kilo gained cost L {0}/{1};	deixa o quilo ganho a L {0}/{1};
+te deja el kilo ganado a L {0}/@;	makes each kilo gained cost L {0}/@;	deixa o quilo ganho a L {0}/@;
+a L {0}. Con lo que suben tus lotes en un mes ({1} {3}), la diferencia es de unos L {2}.	L {0}. With what your lots gain in a month ({1} {3}), the difference is about L {2}.	a L {0}. Com o que seus lotes ganham em um mês ({1} {3}), a diferença é de uns L {2}.
+a L {0}/{3}. Con lo que suben tus lotes en un mes ({1} {4}), la diferencia es de unos L {2}.	L {0}/{3}. With what your lots gain in a month ({1} {4}), the difference is about L {2}.	a L {0}/{3}. Com o que seus lotes ganham em um mês ({1} {4}), a diferença é de uns L {2}.
+a L {0}/@. Con lo que suben tus lotes en un mes ({1} {3}), la diferencia es de unos L {2}.	L {0}/@. With what your lots gain in a month ({1} {3}), the difference is about L {2}.	a L {0}/@. Com o que seus lotes ganham em um mês ({1} {3}), a diferença é de uns L {2}.
+{0} te deja el kilo ganado a L {2}; {1} a L {3}.	{0} makes each kilo gained cost L {2}; {1}, L {3}.	{0} deixa o quilo ganho a L {2}; {1} a L {3}.
+{0} te deja la libra ganada a L {2}; {1} a L {3}.	{0} makes each pound gained cost L {2}; {1}, L {3}.	{0} deixa a libra ganha a L {2}; {1} a L {3}.
+Ojo: las raciones de inicio se usan con animales livianos, que convierten mejor; compara raciones de la misma etapa antes de decidir.	Note: starter rations are fed to lighter cattle, which convert better; compare rations of the same stage before deciding.	Atenção: as rações de início são usadas com animais leves, que convertem melhor; compare rações da mesma fase antes de decidir.
+Necesito entregas de alimento con su ración y al menos dos pesajes del mismo lote para comparar raciones.	I need feed deliveries with their ration and at least two weighings of the same lot to compare rations.	Preciso de entregas de ração com a ração indicada e pelo menos duas pesagens do mesmo lote para comparar rações.
+Sin ración anotada	No ration recorded	Sem ração anotada
+Ración borrada	Deleted ration	Ração apagada
+Buen momento para reponer: el ternero está barato frente al gordo	Good time to restock: feeder calves are cheap compared with fed cattle	Bom momento para repor: o bezerro está barato frente ao boi gordo
+Reponer está caro: el ternero vale mucho frente al gordo	Restocking is expensive: feeder calves are pricey compared with fed cattle	Repor está caro: o bezerro vale muito frente ao boi gordo
+La libra del ternero vale {0} veces la del gordo; el promedio de {1} años es {2}.	A pound of feeder calf is worth {0} times a pound of fed cattle; the {1}-year average is {2}.	A libra do bezerro vale {0} vezes a do boi gordo; a média de {1} anos é {2}.
+La libra del ternero vale {0} veces la del gordo; el promedio de {1} años es {2}. Compra solo lo necesario y calcula tu precio máximo.	A pound of feeder calf is worth {0} times a pound of fed cattle; the {1}-year average is {2}. Buy only what you need and work out your top price.	A libra do bezerro vale {0} vezes a do boi gordo; a média de {1} anos é {2}. Compre só o necessário e calcule seu preço máximo.
+Ternero de engorde ({0} a {1} {2})	Feeder calf ({0} to {1} {2})	Bezerro de engorda ({0} a {1} {2})
+Novillo de engorde ({0} a {1} {2})	Feeder steer ({0} to {1} {2})	Garrote de engorda ({0} a {1} {2})
+Estados Unidos, subasta de Oklahoma City	United States, Oklahoma City auction	Estados Unidos, leilão de Oklahoma City
+Fuente: USDA AMS y ERS, dato semanal.	Source: USDA AMS and ERS, weekly data.	Fonte: USDA AMS e ERS, dado semanal.
+Ternero contra gordo	Feeder calf versus fed cattle	Bezerro contra boi gordo
+Cuántas veces vale la libra del ternero la del novillo gordo	How many times a pound of feeder calf is worth a pound of fed steer	Quantas vezes a libra do bezerro vale a do novilho gordo
+promedio de {0} años: {1}. Más bajo es mejor para reponer.	{0}-year average: {1}. Lower is better for restocking.	média de {0} anos: {1}. Quanto mais baixa, melhor para repor.
+L {0} – L {1}	L {0} – L {1}	L {0} – L {1}

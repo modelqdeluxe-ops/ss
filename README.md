@@ -49,15 +49,21 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
     anotado): metano del rumen y del estiércol y óxido nitroso, en CO2e (AR6), y cómo bajarla. En la pestaña
     Números del lote, en Análisis y en los documentos.
   - `app/assets/documentos.js` — PDF para otros: informe productivo y financiero para el banco y certificado de
-    lote con código QR (se lee sin internet) y código de verificación (SHA-256). Los emitidos se guardan en
-    `S.config.docs` y se comprueban en Más, Documentos. Usa `lib/jspdf.umd.min.js` y `lib/qrcode.js` (MIT,
-    `lib/LICENCIAS.txt`), que se cargan al hacer el primer documento. En Android el PDF se abre, se comparte o se
+    lote. Van firmados digitalmente: cada teléfono crea una llave Ed25519 (`S.config.firma`, viaja en el respaldo);
+    el PDF lleva al final `%RUMENTIS-FIRMA {…}` con la huella SHA-256 de todo lo anterior y la firma, y el QR es un
+    enlace a la página pública de verificación con los datos firmados después de `#`. En Más, Documentos se
+    verifica cualquier PDF de Rumentis (de cualquier finca) o un código emitido en el teléfono. Usa
+    `lib/jspdf.umd.min.js`, `lib/qrcode.js` (MIT) y `lib/nacl-fast.min.js` (TweetNaCl, dominio público); ver
+    `lib/LICENCIAS.txt`. Se cargan al hacer el primer documento. En Android el PDF se abre, se comparte o se
     guarda con las clases `Archivos`, `ProveedorArchivos` y `GuardarArchivo` (fuente en `modelo/android/`).
   - `app/assets/mercado.js` — precios del mercado (página `#mercado`): lee la Release `mercado` del repositorio,
     que llena `.github/workflows/mercado.yml` con `scripts/mercado/actualizar.js` dos veces al día (USDA AMS,
-    Cepea/Esalq-USP, Banco Central do Brasil y tipos de cambio). Estados Unidos y Brasil ven su mercado; los
+    Cepea/Esalq-USP, Banco Central do Brasil y tipos de cambio; en EE. UU. también el ternero y el novillo de engorde
+    de la subasta de Oklahoma City, de USDA AMS y ERS). Estados Unidos y Brasil ven su mercado; los
     demás, referencias en su moneda y los precios que anotan de su zona. Da señales de venta y compra que
     entran en las alertas de Rumi y en los avisos al teléfono.
+  - `app/assets/rumi_analisis3.js` — más análisis de Rumi: ¿qué mejorar primero? (cada palanca en dinero),
+    ¿vendo ahora o espero, con el mercado?, ¿estoy mejorando lote a lote? y ¿con qué ración sale más barato engordar?
   - `app/assets/zona.js` — comparación anónima y voluntaria con otros engordes de la zona (cuartiles de
     ganancia, conversión, mortalidad, costo y días), contra el servidor de `servidor/zona`. Sin servidor
     configurado, compara con la referencia.
@@ -85,6 +91,9 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
     leyes, estaciones, unidades, pastos, razas, precios y enfermedades). Ver `traducciones/LEEME.md`.
   - `ilustraciones/` → toros y paisajes de cada pantalla (`escenas.py` los escribe en index.html).
   - `embeddings/`, `datos/` — el modelo de comprensión de la versión 3.3 (ya no se usa; queda como historia).
+- `verificar/` — página pública de verificación de documentos (un solo HTML + `nacl-fast.min.js`): abre el enlace
+  del QR o recibe el PDF y comprueba la firma en el navegador, sin servidor. La publica `.github/workflows/pages.yml`
+  en https://modelqdeluxe-ops.github.io/ss/verificar/ desde `main` (una vez: Settings → Pages → Source: GitHub Actions).
 - `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.

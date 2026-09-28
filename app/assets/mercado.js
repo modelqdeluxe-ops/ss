@@ -55,15 +55,15 @@ const tasa=c=>{if(c==='USD')return 1;const t=M&&M.d.cambio&&M.d.cambio.tasas;if(
 function aMia(v,de){const c=cod();if(c===de)return v;const a=tasa(de),b=tasa(c);return a&&b?v/a*b:null;}
 const region=()=>{const p=S.config.pais,c=cod();return p==='US'&&c==='USD'?'us':p==='BR'&&c==='BRL'?'br':'otro';};
 // precio por kilo en pie, en la moneda de cada serie
-const KG={us_novillo_gordo_pie:v=>v/US_CWT,br_boi_gordo:v=>v/ARROBA_PIE};
-const MON={us_novillo_gordo_pie:'USD',us_novillo_gordo_canal:'USD',br_boi_gordo:'BRL',br_bezerro:'BRL',br_milho:'BRL',br_dolar_ptax:'BRL'};
+const KG={us_novillo_gordo_pie:v=>v/US_CWT,us_ternero:v=>v/US_CWT,us_novillo_engorde:v=>v/US_CWT,br_boi_gordo:v=>v/ARROBA_PIE};
+const MON={us_ternero:'USD',us_novillo_engorde:'USD',us_novillo_gordo_pie:'USD',us_novillo_gordo_canal:'USD',br_boi_gordo:'BRL',br_bezerro:'BRL',br_milho:'BRL',br_dolar_ptax:'BRL'};
 const SIM={USD:'US$',BRL:'R$'};
 const nat=(v,m,d=2)=>g5(`${SIM[m]||m} ${nf(v,d)}`);
-const UNI={us_novillo_gordo_pie:'por cwt (100 lb) en pie',us_novillo_gordo_canal:'por cwt (100 lb) en canal',br_boi_gordo:'por arroba (15 kg de canal)',br_bezerro:'por cabeza',br_milho:'por saca de 60 kg',br_dolar_ptax:'por dólar'};
-const NOM={us_novillo_gordo_pie:'Novillo gordo en pie',us_novillo_gordo_canal:'Novillo gordo en canal',br_boi_gordo:'Boi gordo',br_bezerro:'Bezerro (ternero)',br_milho:'Maíz',br_dolar_ptax:'Dólar en Brasil (PTAX)'};
-const LUGAR={us_novillo_gordo_pie:'Estados Unidos, promedio nacional ponderado de la semana',us_novillo_gordo_canal:'Estados Unidos, promedio nacional ponderado de la semana',
+const UNI={us_ternero:'por cwt (100 lb) en pie',us_novillo_engorde:'por cwt (100 lb) en pie',us_novillo_gordo_pie:'por cwt (100 lb) en pie',us_novillo_gordo_canal:'por cwt (100 lb) en canal',br_boi_gordo:'por arroba (15 kg de canal)',br_bezerro:'por cabeza',br_milho:'por saca de 60 kg',br_dolar_ptax:'por dólar'};
+const NOM={us_ternero:'Ternero de engorde (500 a 550 lb)',us_novillo_engorde:'Novillo de engorde (750 a 800 lb)',us_novillo_gordo_pie:'Novillo gordo en pie',us_novillo_gordo_canal:'Novillo gordo en canal',br_boi_gordo:'Boi gordo',br_bezerro:'Bezerro (ternero)',br_milho:'Maíz',br_dolar_ptax:'Dólar en Brasil (PTAX)'};
+const LUGAR={us_ternero:'Estados Unidos, subasta de Oklahoma City',us_novillo_engorde:'Estados Unidos, subasta de Oklahoma City',us_novillo_gordo_pie:'Estados Unidos, promedio nacional ponderado de la semana',us_novillo_gordo_canal:'Estados Unidos, promedio nacional ponderado de la semana',
   br_boi_gordo:'Brasil, São Paulo, a plazo',br_bezerro:'Brasil, Mato Grosso do Sul',br_milho:'Brasil, Campinas (SP)',br_dolar_ptax:'Banco Central do Brasil'};
-const FUENTE={us_novillo_gordo_pie:'USDA AMS',us_novillo_gordo_canal:'USDA AMS',br_boi_gordo:'Cepea/Esalq-USP',br_bezerro:'Cepea/Esalq-USP',br_milho:'Cepea/Esalq-USP',br_dolar_ptax:'BCB'};
+const FUENTE={us_ternero:'USDA AMS y ERS',us_novillo_engorde:'USDA AMS y ERS',us_novillo_gordo_pie:'USDA AMS',us_novillo_gordo_canal:'USDA AMS',br_boi_gordo:'Cepea/Esalq-USP',br_bezerro:'Cepea/Esalq-USP',br_milho:'Cepea/Esalq-USP',br_dolar_ptax:'BCB'};
 // serie en precio por kilo en pie y en la moneda del usuario
 function serieMia(k){const f=KG[k];if(!f)return [];const m=MON[k];const r=aMia(1,m);if(r==null)return [];return ser(k).map(([d,v])=>[d,f(v)*r]);}
 
@@ -102,6 +102,9 @@ function senales(){
   }
   // reposición: Brasil con la relación de troca, los demás con lo que anotaste
   const r=region();
+  if(r==='us'){const t=relUS();if(t&&t.prom){const d=t.v/t.prom-1;
+    if(d<=-0.05)add(0.45,'Buen momento para reponer: el ternero está barato frente al gordo',`La libra del ternero vale ${nf(t.v,2)} veces la del gordo; el promedio de 2 años es ${nf(t.prom,2)}.`,['¿Cuánto pagar?',{t:'go',go:'#analisis/compra'}]);
+    else if(d>=0.05)add(0.35,'Reponer está caro: el ternero vale mucho frente al gordo',`La libra del ternero vale ${nf(t.v,2)} veces la del gordo; el promedio de 2 años es ${nf(t.prom,2)}. Compra solo lo necesario y calcula tu precio máximo.`,['¿Cuánto pagar?',{t:'go',go:'#analisis/compra'}]);}}
   if(r==='br'){const t=troca();if(t&&t.prom){const d=t.v/t.prom-1;
     if(d>=0.05)add(0.45,`Buen momento para reponer: un boi gordo paga ${nf(t.v,2)} bezerros`,`El promedio de 2 años es ${nf(t.prom,2)}. Cuando el boi compra más bezerros, la reposición está barata.`);
     else if(d<=-0.05)add(0.35,`Reponer está caro: un boi gordo paga ${nf(t.v,2)} bezerros`,`El promedio de 2 años es ${nf(t.prom,2)}. Compra solo lo necesario y negocia el precio.`);}}
@@ -115,12 +118,18 @@ function senales(){
     else if(c<=-0.08)add(0.4,`El maíz bajó ${nf(-c*100,0)} % en 4 semanas`,'Buen momento para llenar la bodega si tienes dónde guardarlo seco.',['Ver la bodega',{t:'go',go:'#bodega'}]);}}
   return L.sort((a,b)=>b.p-a.p);
 }
+/* EE. UU.: cuántas veces vale la libra del ternero la del novillo gordo (con el dato del gordo más cercano, hasta 10 días antes) */
+function relUS(){const t=ser('us_ternero'),g=ser('us_novillo_gordo_pie');if(!t.length||!g.length)return null;
+  const pts=t.map(([f,v])=>{const p=en(g,f);return p&&dias(p[0],f)<=10?[f,v/p[1]]:null;}).filter(Boolean);if(!pts.length)return null;
+  const u=pts[pts.length-1];return {v:u[1],f:u[0],pts,prom:pts.length>=12?pts.reduce((s,p)=>s+p[1],0)/pts.length:null};}
 /* relação de troca: bezerros que paga un boi gordo de 18 arrobas */
 function troca(){const b=ser('br_boi_gordo'),z=ser('br_bezerro');if(!b.length||!z.length)return null;
   const Z=new Map(z),pts=b.filter(p=>Z.has(p[0])).map(p=>[p[0],p[1]*BOI_ARROBAS/Z.get(p[0])]);if(!pts.length)return null;
   const u=pts[pts.length-1];return {v:u[1],f:u[0],pts,prom:pts.length>=60?pts.reduce((s,p)=>s+p[1],0)/pts.length:null};}
 
 /* ---------- página ---------- */
+// lo que compras: que baje es bueno
+const COMPRA=new Set(['br_milho','br_bezerro','us_ternero','us_novillo_engorde']);
 const pctS=v=>v==null?'–':`${v>0?'+':v<0?'−':''}${nf(Math.abs(v)*100,1)} %`;
 const pill=(v,inv)=>v==null?'':`<span class="pill p-${Math.abs(v)<0.01?'tierra':(v>0)!==!!inv?'verde':'rojo'}">${pctS(v)}</span>`;
 function barraRango(rg,fmt){if(!rg)return '';return `<div class="rp-ref"><div class="rp-ref-h"><span>Rango de 12 meses</span><b>${fmt(rg.lo)} – ${fmt(rg.hi)}</b></div><div class="rp-ref-t" style="background:linear-gradient(90deg,var(--rojo),var(--tierra),var(--verde))"><u style="left:${(Math.max(0,Math.min(1,rg.pos))*100).toFixed(1)}%"></u></div><small>${rg.pos>=0.85?'Cerca del máximo del año.':rg.pos<=0.15?'Cerca del mínimo del año.':'En la mitad del rango del año.'}</small></div>`;}
@@ -131,10 +140,10 @@ function tarjeta(k,{mia=false}={}){
   if(mia&&KG[k]){const sm=serieMia(k);if(!sm.length)return '';base=sm;const um=sm[sm.length-1];big=pk(um[1]);sub=`${nat(u[1],m)} ${g5(UNI[k])}${cod()!==m?`, con el cambio de hoy`:''}`;pts=doce(sm).map(([f,v])=>[f,PKd(v)]);fmt=v=>pk(v);}
   else{big=`${nat(u[1],m)}`;const en=KG[k]&&!mia?aMia(KG[k](u[1]),m):null;sub=g5(UNI[k])+(en!=null?` · ${pk(en)} en pie`:'');pts=doce(s);fmt=v=>nat(v,m);}
   const c4=cambio(s,28),c52=cambio(s,364),rg=rango(base);
-  const fr=k==='us_novillo_gordo_pie'||k==='us_novillo_gordo_canal'?'semanal':'diario';
+  const fr=/^us_/.test(k)?'semanal':'diario';
   return `<section class="gcard mk-card"><div class="mk-h"><div><h3>${NOM[k]}</h3><p class="rp-sub">${LUGAR[k]}</p></div><span class="mk-f">${ffc(u[0])}</span></div>
     <div class="mk-v"><b class="hf">${big}</b><span>${sub}</span></div>
-    <div class="mk-c">${c4!=null?`<span>4 semanas ${pill(c4,k==='br_milho'||k==='br_bezerro')}</span>`:''}${c52!=null?`<span>1 año ${pill(c52,k==='br_milho'||k==='br_bezerro')}</span>`:''}</div>
+    <div class="mk-c">${c4!=null?`<span>4 semanas ${pill(c4,COMPRA.has(k))}</span>`:''}${c52!=null?`<span>1 año ${pill(c52,COMPRA.has(k))}</span>`:''}</div>
     ${barraRango(rg,fmt)}
     ${lineChart({series:[{name:NOM[k],color:'var(--s1)',pts,dots:false}],h:150})}
     <p class="rs">Fuente: ${FUENTE[k]}, dato ${fr}.</p></section>`;
@@ -170,7 +179,11 @@ PAGES.mercado=()=>{
   const sen=S0.length?`<section class="sec">${secH('Lo que dice el mercado',S0.length)}<div class="gcard"><div class="rp-sen">${S0.map(s=>`<div class="rp-s ${s.p>=0.65?'r':s.p>=0.45?'a':'g'}"><b>${esc(s.t)}</b><span>${esc(s.s)}</span></div>`).join('')}</div></div></section>`:'';
   let mk='';
   if(M){
-    if(r==='us')mk=`<section class="sec">${secH('Tu mercado','Estados Unidos')}${tarjeta('us_novillo_gordo_pie',{mia:true})}${tarjeta('us_novillo_gordo_canal')}</section>`;
+    if(r==='us'){const t=relUS();
+      mk=`<section class="sec">${secH('Tu mercado','Estados Unidos')}${tarjeta('us_novillo_gordo_pie',{mia:true})}${tarjeta('us_ternero',{mia:true})}${tarjeta('us_novillo_engorde',{mia:true})}
+      ${t?`<section class="gcard mk-card"><div class="mk-h"><div><h3>Ternero contra gordo</h3><p class="rp-sub">Cuántas veces vale la libra del ternero la del novillo gordo</p></div><span class="mk-f">${ffc(t.f)}</span></div>
+        <div class="mk-v"><b class="hf">${nf(t.v,2)}</b><span>${t.prom?`promedio de 2 años: ${nf(t.prom,2)}. Más bajo es mejor para reponer.`:''}</span></div>${lineChart({series:[{name:'Relación',color:'var(--s1)',pts:doce(t.pts),dots:false}],h:140})}</section>`:''}
+      ${tarjeta('us_novillo_gordo_canal')}</section>`;}
     else if(r==='br'){const t=troca();
       mk=`<section class="sec">${secH('Tu mercado','Brasil')}${tarjeta('br_boi_gordo')}${tarjeta('br_bezerro')}
       ${t?`<section class="gcard mk-card"><div class="mk-h"><div><h3>Relación boi gordo y bezerro</h3><p class="rp-sub">Bezerros que paga un boi gordo de ${BOI_ARROBAS} arrobas</p></div><span class="mk-f">${ffc(t.f)}</span></div>
@@ -186,7 +199,7 @@ PAGES.mercado=()=>{
   return `${masHd('Precios del mercado','Cuándo vender y cuándo comprar, con el mercado y los precios de tu zona.')}
   <main class="bd"><section class="sec"><div class="card pad" style="display:flex;flex-direction:column;gap:10px">${est}<button type="button" class="btn" data-act="mercadoAct"${cargando?' disabled':''}>Actualizar</button></div></section>
    ${sen}${margenesHtml(ref)}${mk}${propiosHtml()}${fx}
-   <p class="hint">Fuentes: USDA Agricultural Marketing Service (novillo gordo), Cepea/Esalq-USP (boi gordo, bezerro y milho), Banco Central do Brasil (PTAX) y ExchangeRate-API (tipos de cambio). El boi gordo se pasa a kilo en pie con la arroba de 30 kg (rendimiento de 50 %).</p></main>`;
+   <p class="hint">Fuentes: USDA Agricultural Marketing Service (novillo gordo; ternero y novillo de engorde de la subasta de Oklahoma City, con la historia mensual de USDA ERS), Cepea/Esalq-USP (boi gordo, bezerro y milho), Banco Central do Brasil (PTAX) y ExchangeRate-API (tipos de cambio). El boi gordo se pasa a kilo en pie con la arroba de 30 kg (rendimiento de 50 %).</p></main>`;
 };
 
 /* ---------- formulario: precio que vi ---------- */
@@ -236,5 +249,5 @@ if(PAGES.analisis){const _pag=PAGES.analisis;
 leer();
 // al abrir la app, si los precios tienen más de 6 horas y hay internet
 setTimeout(()=>{if(navigator.onLine!==false)actualizar(false);},4000);
-window.Mercado={actualizar,senales,referencia,troca,resumenHtml,serieMia,cambio,rango,datos:()=>M,region,aMia};
+window.Mercado={actualizar,senales,referencia,troca,relUS,resumenHtml,serieMia,cambio,rango,datos:()=>M,region,aMia};
 })();

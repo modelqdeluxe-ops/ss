@@ -31,9 +31,11 @@ function progreso(){
     return {m,a,b,d,rel,mejor,igual:Math.abs(rel)<0.02};}).filter(Boolean);
   const mej=cambios.filter(c=>c.mejor&&!c.igual),peor=cambios.filter(c=>!c.mejor&&!c.igual);
   const rows=F.map(o=>[`<b>${esc(o.x.l.nombre)}</b><br><small>${ffc(o.x.l.fechaIngreso)}</small>`,`${nf(o.gdp,2)} kg`,o.conv?`${nf(o.conv,1)}`:'–',`${nf(o.mort,1)} %`,o.costo?pk(o.costo):'–',`<b style="color:var(--${o.mg>=0?'verde':'rojo'})">${money(o.mg)}</b>`]);
-  const txt=mej.length&&!peor.length?`Vas mejorando en todo: ${mej.map(c=>c.m.t.toLowerCase()).join(', ')}. Sigue haciendo lo mismo.`:
-    mej.length?`Mejoraste en ${mej.map(c=>c.m.t.toLowerCase()).join(', ')}, pero empeoraste en ${peor.map(c=>c.m.t.toLowerCase()).join(', ')}. Revisa qué cambió en esos lotes: proveedor, ración, época o manejo.`:
-    peor.length?`Tus últimos lotes van peor que los primeros en ${peor.map(c=>c.m.t.toLowerCase()).join(', ')}. Compara proveedor, ración y época con los mejores.`:'Tus lotes van parejos: sin cambios grandes de uno a otro.';
+  // cada indicador va aparte (en negrita) para que la frase se traduzca sin importar cuáles sean
+  const nom=L=>L.map(c=>`<b>${c.m.t.toLowerCase()}</b>`).join(', ');
+  const txt=mej.length&&!peor.length?'Vas mejorando en todo. Sigue haciendo lo mismo.':
+    mej.length?`Mejoraste en ${nom(mej)}. Empeoraste en ${nom(peor)}: revisa qué cambió en esos lotes (proveedor, ración, época o manejo).`:
+    peor.length?`Tus últimos lotes van peor en ${nom(peor)}. Compara proveedor, ración y época con los mejores.`:'Tus lotes van parejos: sin cambios grandes de uno a otro.';
   return {html:`<b>¿Estoy mejorando lote a lote?</b><br>Tus ${pl(F.length,'lote vendido','lotes vendidos')}, del más viejo al más nuevo. Comparo ${mitad===1?'el primero con el último':`los ${mitad} primeros con los ${mitad} últimos`}.`+
     tablaW(['Lote','Ganancia','Conv.','Muertes','Costo kg ganado','Margen por cabeza'],rows)+
     kvs(cambios.map(c=>[c.m.t,`${c.m.f(c.a)} → <b style="color:var(--${c.igual?'ink2':c.mejor?'verde':'rojo'})">${c.m.f(c.b)}</b>`]))+`<p>${txt}</p>`+
