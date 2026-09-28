@@ -17,7 +17,7 @@ function cola(){
   const add=(id,f,t,x,p,ir,dias=3)=>L.push({id,f,hasta:addDias(f,dias),t:txt(t),x:txt(x),p,ir:ir||'#hoy'});
   if(!Object.keys(S.lotes).length)return L;
   // señales de alerta de hoy: el mismo problema una vez por semana como máximo
-  try{for(const s of RumiMas.senales().slice(0,6))add('sen:'+clave(s.t)+':'+semana(H),H,s.t,s.s,s.p,'#analisis/senales',1);}catch(e){}
+  try{for(const s of RumiMas.senales().slice(0,6))add('sen:'+clave(s.t)+':'+semana(H),H,s.t,s.s,s.p,s.ir||'#analisis/senales',1);}catch(e){}
   // lo que toca en la agenda (sin las entregas de comida ni la revisión diaria: eso no necesita aviso)
   try{for(const t of Agenda.tareas()){if(/^(ent|dia|resp):/.test(t.key))continue;
     const p=/^ref:/.test(t.key)?0.75:/^bod:/.test(t.key)?0.85:/^ven:/.test(t.key)?0.7:/^pre:/.test(t.key)?0.55:/^ret:/.test(t.key)?0.5:/^pes:/.test(t.key)?0.45:/^propia:/.test(t.key)?0.8:0.4;
@@ -40,7 +40,7 @@ function datosWidget(){
   const hora=new Date().toTimeString().slice(0,5);
   return {finca:S.config.finca||'Rumentis',grande:txt(`${pl(C.cabT,'cabeza','cabezas')}`),sub:txt(`${pl(C.act.length,'lote','lotes')} · ${nf(C.kgPie)} kg en pie`),
     tareas:txt(T.length?`Hoy: ${pl(T.length,'tarea','tareas')} · ${T[0].t}`:'Hoy no tienes tareas pendientes'),
-    rumi:txt(s?`Rumi: ${s.t}`:'Rumi: todo en orden'),rumiIr:s?'#analisis/senales':'#analisis',act:txt(`Actualizado ${ffc(H)}, ${hora}`),anotar:txt('+ Anotar')};
+    rumi:txt(s?`Rumi: ${s.t}`:'Rumi: todo en orden'),rumiIr:s?(s.ir||'#analisis/senales'):'#analisis',act:txt(`Actualizado ${ffc(H)}, ${hora}`),anotar:txt('+ Anotar')};
 }
 let _v=-2,_t=0;
 function sincronizar(forzar){

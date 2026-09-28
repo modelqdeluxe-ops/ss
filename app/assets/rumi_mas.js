@@ -176,6 +176,8 @@ function senales(){
   // medicinas que vencen o se acaban
   try{const fn=S.config.fin||{};for(const it of (fn.insumos||[])){const q=Fin.insumo(it,fn.imovs||[]);if(q.sin)continue;if(it.min&&q.stock<=+it.min)add(0.45,`Quedan pocas unidades de ${it.n}`,`Tienes ${nf(q.stock)} y pediste aviso con ${nf(+it.min)}.`,['Ver inventario',{t:'go',go:'#inventario'}]);if(q.vence!=null&&q.vence<=30&&q.vence>=0)add(0.4,`${it.n} vence el ${ffc(q.venc)}`,'Úsalo primero o cámbialo.',null);}}catch(e){}
   // dinero
+  // mercado: precios que suben o bajan con lotes listos, reposición cara o barata (mercado.js)
+  try{if(window.Mercado)for(const m of Mercado.senales())S0.push(m);}catch(e){}
   try{const F=flujo90();if(F.min.v<0)add(0.65,`Te faltaría dinero cerca del ${ffc(F.min.f)}`,`Unos ${money(-F.min.v)} según tus gastos y ventas esperadas.`,['Ver el flujo',{t:'fn',fn:'flujo'}]);}catch(e){}
   return S0.sort((a,b)=>b.p-a.p);
 }

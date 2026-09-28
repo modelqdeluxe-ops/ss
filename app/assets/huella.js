@@ -107,7 +107,7 @@ function fincaHtml(){
   const rows=F.R.map(r=>[`<b>${esc(r.x.l.nombre)}</b>${r.x.activo?'':' (vendido)'}`,nf(r.co2.total/1000,1),r.porKg!=null?nf(r.porKg,1):'–',nf(r.porCabDia,1)]);
   const mejor=F.R.filter(r=>r.porKg!=null).sort((a,b)=>a.porKg-b.porKg);
   return {html:`<b>Huella de carbono de tu engorde</b><br>Tus lotes de los últimos 12 meses emitieron ${tco2(F.co2)} y subieron ${nf(F.kg)} kg: ${F.porKg!=null?nf(F.porKg,1):'–'} ${g5('kg CO2e por kg ganado')}.`+
-    tabla(['Lote','t CO2e',g5('kg CO2e por kg ganado'),g5('kg CO2e por cabeza al día')],rows)+
+    tabla(['Lote','t CO2e',g5('por kg ganado'),'por cabeza al día'],rows).replace('class="tb"','class="tb tw"')+`<p class="rs">${g5('Por kg ganado y por cabeza al día: kg CO2e.')}</p>`+
     (mejor.length>=2?`<p>${esc(mejor[0].x.l.nombre)} es el lote con menos emisión por kilo ganado (${nf(mejor[0].porKg,1)}); ${esc(mejor[mejor.length-1].x.l.nombre)} el de más (${nf(mejor[mejor.length-1].porKg,1)}). Engordar más rápido y con mejor conversión baja la huella y el costo a la vez.</p>`:'')+
     `<p class="rs">Método IPCC 2019 Nivel 2 con el alimento que anotaste. Solo lo que emiten el animal y su estiércol en el corral (metano del rumen, metano y óxido nitroso del estiércol), en CO2 equivalente a 100 años (IPCC AR6). No incluye la producción del alimento, la cría antes de llegar ni el transporte.</p>`};
 }
