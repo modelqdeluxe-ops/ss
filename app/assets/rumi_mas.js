@@ -256,7 +256,7 @@ document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset
 /* ================= Rumi: nuevas opciones en su área de análisis ================= */
 const porLote=(t,fn)=>({l:t,sub:()=>{const L=calc().act;if(!L.length)return {t,intro:'Todavía no tienes lotes en engorde.',ops:[{l:'Crear un lote',form:'lote',p:{}}]};
   return {t,intro:'¿De qué lote?',ops:L.map(x=>({l:x.l.nombre,small:pl(x.cab,'cabeza','cabezas'),fn:()=>fn(x)}))};}});
-const FN={flujo:flujoHtml,senales:senalesHtml,riesgoFinca:()=>RumiPro.riesgoFinca(),vender:a=>cuandoVender(calc().L[a.lote])};
+const FN={flujo:flujoHtml,senales:senalesHtml,riesgoFinca:()=>RumiPro.riesgoFinca(),vender:a=>cuandoVender(calc().L[(a||{}).lote])};
 const A=RumiMenu.AREAS.find(a=>a.id==='pro');
 if(A){const o=A.ops;A.ops=()=>{const L=o();const i=Math.max(0,L.findIndex(x=>x&&x.l&&x.l.startsWith('Riesgo del negocio')));
   L.splice(i,0,{l:'Señales de alerta',ic3:'chispa',fn:senalesHtml},porLote('¿Cuándo me conviene vender?',cuandoVender),{l:'Punto de equilibrio',fn:equilibrioHtml},{l:'¿En qué se va mi dinero?',ic3:'cartera',fn:costosHtml},{l:'Mi dinero en los próximos 90 días',ic3:'banco',fn:flujoHtml},{l:'Yo contra la referencia',fn:refHtml},{l:'¿Cuánto pagar por el próximo lote?',fn:compraHtml},{l:'Calendario de ventas y rendimiento',fn:calendarioHtml});
