@@ -899,6 +899,15 @@ body::before{content:none}
 #fondo .c1{height:16vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 30%,var(--bg)),color-mix(in srgb,var(--cerro) 20%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 200 C200 170 330 120 520 140 S820 230 1000 190 S1150 150 1200 160 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 200 C200 170 330 120 520 140 S820 230 1000 190 S1150 150 1200 160 V300 H0Z'/></svg>")}
 #fondo .f-grano{inset:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .35 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.06;mix-blend-mode:multiply}
 :root[data-modo="dark"] #fondo .f-grano{mix-blend-mode:screen;opacity:.04}
+/* curvas de nivel del terreno, muy suaves, que se desvanecen arriba y abajo y se mueven lento */
+#fondo .f-topo{inset:-3vh 0;background:color-mix(in srgb,var(--ink) 8%,transparent);-webkit-mask-image:url(fondo_topo.svg),linear-gradient(180deg,transparent 6%,#000 30%,#000 70%,transparent 94%);-webkit-mask-size:cover,100% 100%;-webkit-mask-position:center,0 0;-webkit-mask-repeat:no-repeat;-webkit-mask-composite:source-in;mask-image:url(fondo_topo.svg),linear-gradient(180deg,transparent 6%,#000 30%,#000 70%,transparent 94%);mask-size:cover,100% 100%;mask-position:center,0 0;mask-repeat:no-repeat;mask-composite:intersect;animation:topo 80s ease-in-out infinite alternate}
+@keyframes topo{to{transform:translate3d(0,-2.5vh,0) scale(1.04)}}
+:root[data-modo="dark"] #fondo .f-topo{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+/* luz del encabezado que baja sobre el contenido y lo une con la foto */
+#fondo .f-luz{left:0;right:0;top:0;height:70vh;background:radial-gradient(120% 60% at 50% 0,color-mix(in srgb,var(--head) 14%,transparent),transparent 70%)}
+/* el encabezado termina en curva suave con sombra, en vez de un corte recto */
+.hd{border-radius:0 0 28px 28px;box-shadow:0 16px 34px -22px color-mix(in srgb,var(--head) 75%,#000)}
+@media (prefers-reduced-motion:reduce){#fondo .f-topo,#fondo .f-orbe{animation:none}}
 #app{background:transparent}
 .hd{position:relative;isolation:isolate;overflow:hidden;background:var(--head)}
 .hd>*:not(.hd-fx){position:relative;z-index:1}
@@ -977,7 +986,7 @@ body::before{content:none}
  var p=w.querySelector('.sp-hola');p.textContent=g+(f?', ':'');if(f){p.appendChild(document.createElement('br'));var b=document.createElement('b');b.textContent=f;p.appendChild(b);}
  try{if(!localStorage.getItem('rumentis-bienvenida'))w.classList.add('primera');}catch(e){}
 })();</script>
-<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-cerro c1"></i><i class="f-grano"></i></div>
+<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-luz"></i><i class="f-topo"></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-cerro c1"></i><i class="f-grano"></i></div>
 <div id="app"></div>
 <nav class="bottom" aria-label="Secciones"><div class="in">
   <a href="#hoy" data-nav="hoy"></a>
@@ -1070,7 +1079,8 @@ const W=kg=>U()==='lb'?kg*FK:kg;
 const toKg=v=>U()==='lb'?v/FK:v;
 /* Unidad de precio. El ganado y el alimento pueden cotizarse en otra unidad que la de los pesos:
    Honduras y Centroamérica venden en pie por libra y compran el alimento por quintal; Estados Unidos
-   cotiza por cwt (100 lb); Brasil por arroba de 15 kg. Todo se guarda por kilo. */
+   cotiza por cwt (100 lb); Brasil por arroba: la del boi gordo es de 15 kg de canal, que en pie equivale a unos 30 kg
+   (el trato del boi a 50 %), por eso allí la arroba en pie es de 30 kg. Todo se guarda por kilo. */
 const PUN={
  kg:{kg:1,s:'kg',n:'kilo',f:0,el:'el kilo',por:'por kilo'},
  lb:{kg:1/FK,s:'lb',n:'libra',f:1,el:'la libra',por:'por libra'},
@@ -1078,6 +1088,7 @@ const PUN={
  cwt:{kg:100/FK,s:'cwt',n:'cwt (100 lb)',f:0,el:'el cwt (100 lb)',por:'por cwt (100 lb)'},
  arr:{kg:25/FK,s:'@',n:'arroba',f:1,el:'la arroba (25 lb)',por:'por arroba (25 lb)'},
  arrb:{kg:15,s:'@',n:'arroba',f:1,el:'la arroba (15 kg)',por:'por arroba (15 kg)'},
+ arrv:{kg:30,s:'@',n:'arroba',f:1,el:'la arroba (30 kg)',por:'por arroba (30 kg)'},
  t:{kg:1000,s:'t',n:'tonelada',f:1,el:'la tonelada',por:'por tonelada'},
  st:{kg:2000/FK,s:'ton',n:'tonelada corta',f:1,el:'la tonelada corta (2,000 lb)',por:'por tonelada corta (2,000 lb)'}
 };
@@ -1089,7 +1100,7 @@ const PAISES=[
  ['BZ','Belice','lb','lb','lb','BZ$'],['DO','República Dominicana','lb','lb','qq','RD$'],['MX','México','kg','kg','kg','$'],
  ['US','Estados Unidos','lb','cwt','st','$'],['CA','Canadá','lb','cwt','t','C$'],['CO','Colombia','kg','kg','kg','$'],
  ['VE','Venezuela','kg','kg','kg','Bs'],['EC','Ecuador','lb','lb','qq','$'],['PE','Perú','kg','kg','kg','S/'],
- ['BO','Bolivia','kg','kg','kg','Bs'],['BR','Brasil','kg','arrb','t','R$'],['PY','Paraguay','kg','kg','kg','₲'],
+ ['BO','Bolivia','kg','kg','kg','Bs'],['BR','Brasil','kg','arrv','t','R$'],['PY','Paraguay','kg','kg','kg','₲'],
  ['UY','Uruguay','kg','kg','kg','US$'],['AR','Argentina','kg','kg','t','$'],['CL','Chile','kg','kg','kg','$'],
  ['ES','España','kg','kg','kg','€'],['PT','Portugal','kg','kg','kg','€'],['FR','Francia','kg','kg','t','€'],
  ['AU','Australia','kg','kg','t','A$'],['NZ','Nueva Zelanda','kg','kg','t','NZ$'],['ZA','Sudáfrica','kg','kg','t','R'],
@@ -1106,7 +1117,7 @@ const PAIS_MON={HN:'HNL',GT:'GTQ',SV:'USD',NI:'NIO',CR:'CRC',PA:'PAB',BZ:'BZD',D
 const monedaCod=()=>{const c=S.config;if(c.monedaCod&&MONEDAS.some(m=>m[0]===c.monedaCod))return c.monedaCod;const m=MONEDAS.find(m=>m[1]===(c.moneda||'L'));return m?m[0]:'otra';};
 function unidadesHtml(){
   const c=S.config,sel=(k,ops,v,l)=>`<div class="q"><label for="u_${k}">${l}</label><select class="in" id="u_${k}" data-cfgsel="${k}">${ops.map(([o,t])=>`<option value="${o}"${o===v?' selected':''}>${g5(t)}</option>`).join('')}</select></div>`;
-  const uo=ks=>ks.map(k=>[k,{kg:'Por kilo (kg)',lb:'Por libra (lb)',qq:'Por quintal (100 lb)',cwt:'Por cwt (100 lb)',arr:'Por arroba de 25 lb',arrb:'Por arroba de 15 kg',t:'Por tonelada (1,000 kg)',st:'Por tonelada corta (2,000 lb)'}[k]]);
+  const uo=ks=>ks.map(k=>[k,{kg:'Por kilo (kg)',lb:'Por libra (lb)',qq:'Por quintal (100 lb)',cwt:'Por cwt (100 lb)',arr:'Por arroba de 25 lb',arrb:'Por arroba de 15 kg',arrv:'Por arroba de 30 kg en pie',t:'Por tonelada (1,000 kg)',st:'Por tonelada corta (2,000 lb)'}[k]]);
   const ej=`${money2(PKd(+c.precioVentaKg||59))} ${PUN[PU()].por}`;
   const mc=monedaCod();
   return `<div class="q"><span class="lb">Idioma</span><div class="seg" role="group" aria-label="Idioma" data-no-tr>${(window.I18N?I18N.IDIOMAS:[['es','Español']]).map(([v,t])=>`<button type="button" data-act="idioma" data-v="${v}" aria-pressed="${(window.I18N?I18N.lang():'es')===v}">${t}</button>`).join('')}</div></div>
@@ -1115,7 +1126,7 @@ function unidadesHtml(){
    <div class="q"><span class="lb">Peso de los animales</span><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras (lb)'],['kg','Kilos (kg)']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${g5(t)}</button>`).join('')}</div></div>
    <div class="q"><label for="u_moneda">Moneda</label><select class="in" id="u_moneda" data-cfgsel="monedaCod">${MONEDAS.map(([k,sm,n])=>`<option value="${k}"${k===mc?' selected':''}>${g5(sm)} · ${n}</option>`).join('')}<option value="otra"${mc==='otra'?' selected':''}>Otra moneda…</option></select></div>
    ${mc==='otra'?`<div class="q"><label for="u_monOtra">Símbolo de tu moneda</label><input class="in" id="u_monOtra" data-cfgsel="moneda" maxlength="5" value="${esc(c.moneda||'')}" placeholder="Por ejemplo: KSh"></div>`:''}
-   <div class="two">${sel('unidadPrecio',uo(['lb','kg','qq','cwt','arr','arrb']),PU(),'Precio del ganado')}${sel('unidadAlim',uo(['lb','kg','qq','arr','t','st']),PUA(),'Precio del alimento')}</div>
+   <div class="two">${sel('unidadPrecio',uo(['lb','kg','qq','cwt','arr','arrb','arrv']),PU(),'Precio del ganado')}${sel('unidadAlim',uo(['lb','kg','qq','arr','t','st']),PUA(),'Precio del alimento')}</div>
    <div class="nota-cfg">${ico('check',2.2)}<p>Así se verá tu precio de venta: <b>${g5(ej)}</b>. Pesos, precios y costos cambian en toda la app al momento; tus datos no cambian.</p></div>`;
 }
 document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.cfgsel)return;const k=el.dataset.cfgsel,v=el.value;
@@ -2077,7 +2088,7 @@ FORMS.lote=({id}={})=>{
   const l=id?S.lotes[id]:null;
   const nums=Object.values(S.lotes).map(z=>parseInt(String(z.nombre).replace(/\D/g,''))||0);
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
-  const body=`${q('Nombre',`<input class="in" name="nombre" value="${esc(l?l.nombre:'Lote '+((Math.max(0,...nums))+1))}" required autocomplete="off">`)}
+  const body=`${q('Nombre',`<input class="in" name="nombre" value="${esc(l?l.nombre:(window.I18N&&I18N.lang&&I18N.lang()==='en'?'Lot ':'Lote ')+((Math.max(0,...nums))+1))}" required autocomplete="off">`)}
    <div class="two">${q('Cabezas',inp('cabezas',l?l.cabezas:'',{mode:'numeric',ph:'0'}))}${q('Fecha de entrada',`<input class="in" type="date" name="f" value="${l?l.fechaIngreso:hoy()}" max="${hoy()}" required>`)}</div>
    ${q('¿Cómo pesaron al entrar?',segBtns('modo',[['prom','Peso promedio'],['tot','Kilos totales']],'prom'))}
    ${q('Peso de entrada',inp('val',l?Math.round(W(l.pesoIngreso)):'',{xl:true,unit:'kg',ph:'0',id:'l_val'}),'','l_val')}
@@ -2195,23 +2206,51 @@ function restaurar(o){
 }
 
 /* ============ ejemplo ============ */
+/* el engorde de ejemplo cambia con la región del idioma: Honduras (es), EE. UU. (en) o Brasil (pt).
+   Factores sobre los precios de Honduras: c ganado, a alimento, h sanidad e insumos, g gastos del mes, e equipo, caja y crédito;
+   dp suma kilos a la entrada (en EE. UU. y Brasil entran más pesados) y meta es el peso de venta. */
+const DEMO_REG={
+  es:{lote:'Lote',c:1,cc:1,a:1,h:1,g:1,e:1,dp:0,meta:480,pais:'HN',mon:'HNL',finca:'Engorde El Porvenir',ub:'Juticalpa, Olancho',
+    prov:['Subasta de Juticalpa','Hacienda Los Almendros','Subasta de Catacamas','Hacienda San José'],comp:'Empacadora del Valle',
+    rl:['Brahman cruzado','Brahman por Angus','Simbrah'],ra:['Brahman cruzado','Brahman','Brahman cruzado','Nelore','Brangus','Brahman cruzado','Gyr'],
+    rac:['Iniciación','Finalización'],ing:['Maíz molido','Heno picado','Pulpa de cítricos','Harina de soya','Núcleo mineral'],
+    prod:['Triple bacteriana','Ivermectina 1%','Vitaminas ADE','Albendazol oral','Oxitetraciclina'],nota:'Tos y fiebre',
+    planilla:'Planilla de 3 trabajadores',rep:'Reparación de bebedero',agro:'Agroservicio El Campo',banco:'Banco agrícola',
+    eq:['Corrales y comederos','Báscula ganadera','Picadora de forraje','Tractor'],ins:['Ivermectina 1 %','Vacuna clostridial','Oxitetraciclina LA','Vitamina AD3E','Aretes numerados']},
+  en:{lote:'Lot',u:'lb',up:'cwt',ua:'st',c:0.0785,cc:1.12,a:0.032,h:0.45,g:0.35,e:0.075,dp:75,meta:620,pais:'US',mon:'USD',finca:'Prairie Creek Feedyard',ub:'Hereford, Texas',
+    prov:['Amarillo Livestock Auction','Rocking R Ranch','Dalhart Sale Barn','Canadian River Ranch'],comp:'High Plains Beef',
+    rl:['Angus cross','Black baldy','Charolais cross'],ra:['Angus cross','Black Angus','Angus cross','Red Angus','Black baldy','Angus cross','Charolais cross'],
+    rac:['Starter','Finisher'],ing:['Steam-flaked corn','Corn silage','Wet distillers grains','Alfalfa hay','Supplement'],
+    prod:['Clostridial 7-way','Ivermectin pour-on','Vitamin ADE','Albendazole drench','Oxytetracycline LA'],nota:'Cough and fever',
+    planilla:'Payroll, 3 employees',rep:'Waterer repair',agro:'Hereford Feed & Supply',banco:'Farm Credit',
+    eq:['Pens and bunks','Cattle scale','Feed mixer truck','Tractor'],ins:['Ivermectin 1 %','Clostridial vaccine','Oxytetracycline LA','Vitamin AD3E','840 RFID tags']},
+  pt:{lote:'Lote',u:'kg',up:'arrv',ua:'t',c:0.1667,cc:1.1,a:0.12,h:0.2,g:0.4,e:0.2,dp:45,meta:560,pais:'BR',mon:'BRL',finca:'Confinamento Boa Vista',ub:'Rio Verde, Goiás',
+    prov:['Leilão de Rio Verde','Fazenda Santa Fé','Leilão de Jataí','Fazenda São João'],comp:'Frigorífico Vale Verde',
+    rl:['Nelore','Angus × Nelore','Senepol × Nelore'],ra:['Nelore','Nelore','Angus × Nelore','Nelore','Brangus','Nelore','Senepol × Nelore'],
+    rac:['Adaptação','Terminação'],ing:['Milho moído','Silagem de milho','Polpa cítrica','Farelo de soja','Núcleo mineral'],
+    prod:['Vacina polivalente clostridiose','Ivermectina 1%','Vitamina ADE','Albendazol oral','Oxitetraciclina'],nota:'Tosse e febre',
+    planilla:'Folha de 3 funcionários',rep:'Conserto de bebedouro',agro:'Agropecuária do Cerrado',banco:'Crédito rural',
+    eq:['Currais e cochos','Balança','Vagão misturador','Trator'],ins:['Ivermectina 1 %','Vacina clostridiose','Oxitetraciclina LA','Vitamina AD3E','Brincos numerados']}};
+const demoReg=()=>{const l=window.I18N&&I18N.lang&&I18N.lang();return DEMO_REG[l]||DEMO_REG.es;};
 function cargarDemo(){
   borrarTodo();
   let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};
   const H=hoy(),D=n=>addDias(H,n);
-  put('ajustes','finca',{...DEF_CFG,unidad:U(),pais:'HN',monedaCod:'HNL',unidadPrecio:S.config.unidadPrecio,unidadAlim:S.config.unidadAlim,finca:'Engorde El Porvenir',ubicacion:'Juticalpa, Olancho',precioVentaKg:66,metaKg:480});
-  const RI='rIni',RF='rFin';
-  put('raciones',RI,{nombre:'Iniciación',costoKg:7.4,ings:[{n:'Maíz molido',p:45},{n:'Heno picado',p:30},{n:'Pulpa de cítricos',p:18},{n:'Harina de soya',p:5},{n:'Núcleo mineral',p:2}]});
-  put('raciones',RF,{nombre:'Finalización',costoKg:6.8,ings:[{n:'Maíz molido',p:64},{n:'Pulpa de cítricos',p:20},{n:'Heno picado',p:13.5},{n:'Núcleo mineral',p:2.5}]});
+  const R=demoReg(),r2=v=>Math.round(v*100)/100,$c=v=>r2(v*R.c),$a=v=>r2(v*R.a),$h=v=>r2(v*R.h),$g=v=>Math.round(v*R.g);
+  put('ajustes','finca',{...DEF_CFG,unidad:R.u||U(),pais:R.pais,monedaCod:R.mon,moneda:{HNL:'L',USD:'$',BRL:'R$'}[R.mon],unidadPrecio:R.up||S.config.unidadPrecio,unidadAlim:R.ua||S.config.unidadAlim,finca:R.finca,ubicacion:R.ub,precioVentaKg:$c(66),metaKg:R.meta});
+  const RI='rIni',RF='rFin',[i1,i2,i3,i4,i5]=R.ing;
+  put('raciones',RI,{nombre:R.rac[0],costoKg:$a(7.4),ings:[{n:i1,p:45},{n:i2,p:30},{n:i3,p:18},{n:i4,p:5},{n:i5,p:2}]});
+  put('raciones',RF,{nombre:R.rac[1],costoKg:$a(6.8),ings:[{n:i1,p:64},{n:i3,p:20},{n:i2,p:13.5},{n:i5,p:2.5}]});
+  const [p1,p2,p3,p4]=R.prov,[r1,r2b,r3]=R.rl;
   const defs=[
-    {id:'lt14',nombre:'Lote 14',d:16,cab:52,p:302,pc:60,fl:9500,tipo:'Machos enteros',raza:'Brahman cruzado',prov:'Subasta de Juticalpa',g:1.35,pes:[]},
-    {id:'lt13',nombre:'Lote 13',d:41,cab:44,p:318,pc:58.5,fl:8200,tipo:'Novillos castrados',raza:'Brahman por Angus',prov:'Hacienda Los Almendros',g:1.42,pes:[14,35]},
-    {id:'lt12',nombre:'Lote 12',d:58,cab:48,p:325,pc:58,fl:8800,tipo:'Machos enteros',raza:'Brahman cruzado',prov:'Subasta de Catacamas',g:1.5,pes:[21,42]},
-    {id:'lt11',nombre:'Lote 11',d:79,cab:46,p:310,pc:57.5,fl:8600,tipo:'Machos enteros',raza:'Simbrah',prov:'Hacienda San José',g:1.38,pes:[21,42,56]},
-    {id:'lt10',nombre:'Lote 10',d:103,cab:40,p:352,pc:57,fl:7900,tipo:'Novillos castrados',raza:'Brahman cruzado',prov:'Subasta de Juticalpa',g:1.52,pes:[21,42,63,84,98]},
-    {id:'lt9',nombre:'Lote 9',d:195,cab:50,p:315,pc:56,fl:9000,tipo:'Machos enteros',raza:'Brahman cruzado',prov:'Subasta de Catacamas',g:1.44,pes:[21,42,63,84,105],venta:112},
-    {id:'lt8',nombre:'Lote 8',d:262,cab:45,p:320,pc:55,fl:8100,tipo:'Novillos castrados',raza:'Simbrah',prov:'Hacienda San José',g:1.36,pes:[21,42,63,84,105],venta:118}
-  ];
+    {id:'lt14',nombre:R.lote+' 14',d:16,cab:52,p:302,pc:60,fl:9500,tipo:'Machos enteros',raza:r1,prov:p1,g:1.35,pes:[]},
+    {id:'lt13',nombre:R.lote+' 13',d:41,cab:44,p:318,pc:58.5,fl:8200,tipo:'Novillos castrados',raza:r2b,prov:p2,g:1.42,pes:[14,35]},
+    {id:'lt12',nombre:R.lote+' 12',d:58,cab:48,p:325,pc:58,fl:8800,tipo:'Machos enteros',raza:r1,prov:p3,g:1.5,pes:[21,42]},
+    {id:'lt11',nombre:R.lote+' 11',d:79,cab:46,p:310,pc:57.5,fl:8600,tipo:'Machos enteros',raza:r3,prov:p4,g:1.38,pes:[21,42,56]},
+    {id:'lt10',nombre:R.lote+' 10',d:103,cab:40,p:352,pc:57,fl:7900,tipo:'Novillos castrados',raza:r1,prov:p1,g:1.52,pes:[21,42,63,84,98]},
+    {id:'lt9',nombre:R.lote+' 9',d:195,cab:50,p:315,pc:56,fl:9000,tipo:'Machos enteros',raza:r1,prov:p3,g:1.44,pes:[21,42,63,84,105],venta:112},
+    {id:'lt8',nombre:R.lote+' 8',d:262,cab:45,p:320,pc:55,fl:8100,tipo:'Novillos castrados',raza:r3,prov:p4,g:1.36,pes:[21,42,63,84,105],venta:118}
+  ].map(L=>({...L,p:L.p+R.dp,pc:r2(L.pc*R.c*R.cc),fl:Math.round(L.fl*(R.e<1?R.e*1.5:1))}));
   const items=[];
   for(const L of defs){
     const ing=D(-L.d),end=L.venta?L.venta:L.d;
@@ -2228,16 +2267,16 @@ function cargarDemo(){
     if(L.id==='lt9')bajas.push({t:40,causa:'Acidosis'});
     if(L.id==='lt8')bajas.push({t:12,causa:'Neumonía'});
     const san=(t,clase,prod,cst,ret,c)=>items.push({tipo:'sanidad',f:addDias(ing,t),lote:L.id,clase,producto:prod,cab:c||L.cab,costo:Math.round(cst*(c||L.cab)),retiro:ret,nota:''});
-    san(0,'Vacuna','Triple bacteriana',18,21);san(0,'Desparasitante','Ivermectina 1%',22,35);san(0,'Vitaminas','Vitaminas ADE',9,0);
-    if(L.d>60||L.venta)san(45,'Desparasitante','Albendazol oral',14,14);
-    if(L.id==='lt11')items.push({tipo:'sanidad',f:D(-10),lote:L.id,clase:'Tratamiento',producto:'Oxitetraciclina',cab:4,costo:1200,retiro:28,nota:'Tos y fiebre'});
+    san(0,'Vacuna',R.prod[0],$h(18),21);san(0,'Desparasitante',R.prod[1],$h(22),35);san(0,'Vitaminas',R.prod[2],$h(9),0);
+    if(L.d>60||L.venta)san(45,'Desparasitante',R.prod[3],$h(14),14);
+    if(L.id==='lt11')items.push({tipo:'sanidad',f:D(-10),lote:L.id,clase:'Tratamiento',producto:R.prod[4],cab:4,costo:Math.round($h(1200)),retiro:28,nota:R.nota});
     for(let t=0;t<=end;t++){
       const f=addDias(ing,t);if(f>H)break;
       for(const b of bajas)if(b.t===t){const vs=an.filter(a=>vivo[a.id]);const m=vs[Math.floor(rnd()*vs.length)];vivo[m.id]=false;items.push({tipo:'baja',f,lote:L.id,cab:1,animales:[m.id],causa:b.causa,nota:''});cab--;}
       if(L.venta&&t===end)break;
       const pct=0.021+Math.min(1,t/30)*0.005;let dia=w(t)*pct*cab*(0.96+rnd()*0.08);
       if(L.id==='lt12'&&t===L.d-1)dia*=0.74;
-      const rac=L.id==='lt14'||t<21?RI:RF,ck=rac===RI?7.4:6.8;
+      const rac=L.id==='lt14'||t<21?RI:RF,ck=rac===RI?$a(7.4):$a(6.8);
       const nE=f===H?2:3;
       for(let n=1;n<=nE;n++){
         let lect=rnd()<0.1?0:rnd()<0.75?1:rnd()<0.6?2:3;
@@ -2248,12 +2287,12 @@ function cargarDemo(){
     for(const t of L.pes)if(t<=end){const fp=addDias(ing,t);const pesos={};
       for(const a of an){const muerto=items.some(i=>i.tipo==='baja'&&i.lote===L.id&&i.animales&&i.animales.includes(a.id)&&i.f<=fp);if(muerto)continue;pesos[a.id]=Math.round((wi(a,t)+(rnd()-0.5)*8)*10)/10;}
       const vs=Object.values(pesos);items.push({tipo:'pesaje',f:fp,lote:L.id,prom:Math.round(vs.reduce((s,v)=>s+v,0)/vs.length*10)/10,cab:vs.length,pesos});}
-    const lote={nombre:L.nombre,cabezas:L.cab,animales:an.map((a,i)=>({id:a.id,arete:a.arete,p0:a.p0,raza:['Brahman cruzado','Brahman','Brahman cruzado','Nelore','Brangus','Brahman cruzado','Gyr'][(i*5+3)%7],color:['Blanco','Gris','Rojo','Pinto rojo','Blanco','Cenizo','Negro','Barcino','Amarillo'][(i*7+2)%9],costo:Math.round(an.reduce((t,z)=>t+z.p0,0)*L.pc/an.length*100)/100})),modoPrecio:'lote',precioLote:{tipo:'kg'},fechaIngreso:ing,pesoIngreso:Math.round(an.reduce((s,a)=>s+a.p0,0)/an.length*10)/10,precioCompraKg:L.pc,flete:L.fl,tipo:L.tipo,raza:L.raza,metaKg:480,proveedor:L.prov,racion:L.id==='lt14'?RI:RF,estado:'activo'};
-    if(L.venta){const fv=addDias(ing,end);const vs=an.filter(a=>vivo[a.id]);const kg=Math.round(vs.reduce((s,a)=>s+wi(a,end),0));items.push({tipo:'venta',f:fv,lote:L.id,cab:vs.length,animales:vs.map(a=>a.id),kg,precioKg:L.id==='lt9'?59.5:58,comprador:'Empacadora del Valle'});lote.estado='cerrado';lote.fechaCierre=fv;}
+    const lote={nombre:L.nombre,cabezas:L.cab,animales:an.map((a,i)=>({id:a.id,arete:a.arete,p0:a.p0,raza:R.ra[(i*5+3)%7],color:['Blanco','Gris','Rojo','Pinto rojo','Blanco','Cenizo','Negro','Barcino','Amarillo'][(i*7+2)%9],costo:Math.round(an.reduce((t,z)=>t+z.p0,0)*L.pc/an.length*100)/100})),modoPrecio:'lote',precioLote:{tipo:'kg'},fechaIngreso:ing,pesoIngreso:Math.round(an.reduce((s,a)=>s+a.p0,0)/an.length*10)/10,precioCompraKg:L.pc,flete:L.fl,tipo:L.tipo,raza:L.raza,metaKg:R.meta,proveedor:L.prov,racion:L.id==='lt14'?RI:RF,estado:'activo'};
+    if(L.venta){const fv=addDias(ing,end);const vs=an.filter(a=>vivo[a.id]);const kg=Math.round(vs.reduce((s,a)=>s+wi(a,end),0));items.push({tipo:'venta',f:fv,lote:L.id,cab:vs.length,animales:vs.map(a=>a.id),kg,precioKg:$c(L.id==='lt9'?59.5:58),comprador:R.comp});lote.estado='cerrado';lote.fechaCierre=fv;}
     put('lotes',L.id,lote);
   }
-  for(let m=0;m<9;m++){const f=D(-m*30-3);if(f<D(-262))break;items.push({tipo:'gasto',f,lote:null,cat:'Mano de obra',monto:18000,desc:'Planilla de 3 trabajadores'});items.push({tipo:'gasto',f:D(-m*30-8),lote:null,cat:'Energía y agua',monto:2400,desc:''});}
-  items.push({tipo:'gasto',f:D(-20),lote:'lt12',cat:'Mantenimiento',monto:3500,desc:'Reparación de bebedero'});
+  for(let m=0;m<9;m++){const f=D(-m*30-3);if(f<D(-262))break;items.push({tipo:'gasto',f,lote:null,cat:'Mano de obra',monto:$g(18000),desc:R.planilla});items.push({tipo:'gasto',f:D(-m*30-8),lote:null,cat:'Energía y agua',monto:$g(2400),desc:''});}
+  items.push({tipo:'gasto',f:D(-20),lote:'lt12',cat:'Mantenimiento',monto:$g(3500),desc:R.rep});
   addItems(items);
   location.hash='#hoy';toast('Engorde de ejemplo cargado');
 }
@@ -2986,7 +3025,7 @@ FORMS.lote=({id}={})=>{
   const nums=Object.values(S.lotes).map(z=>parseInt(String(z.nombre).replace(/\D/g,''))||0);
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
   const datos=`<div class="paso-t"><span>1</span><b>Datos del lote</b></div>
-   ${q('Nombre',`<input class="in" name="nombre" value="${esc(l?l.nombre:'Lote '+((Math.max(0,...nums))+1))}" required autocomplete="off">`)}
+   ${q('Nombre',`<input class="in" name="nombre" value="${esc(l?l.nombre:(window.I18N&&I18N.lang&&I18N.lang()==='en'?'Lot ':'Lote ')+((Math.max(0,...nums))+1))}" required autocomplete="off">`)}
    <div class="two">${q('Fecha de entrada',`<input class="in" type="date" name="f" value="${l?l.fechaIngreso:hoy()}" max="${hoy()}" required>`)}${q('Peso meta',inp('meta',Math.round(W(l?l.metaKg:S.config.metaKg)),{mode:'numeric',unit:'kg'}))}</div>
    ${q('Tipo de animales',opts('tipo',TIPOS_LOTE,l?l.tipo:'Machos enteros'))}
    <div class="two">${q('Proveedor',`<input class="in" name="proveedor" value="${esc(l?l.proveedor:'')}" placeholder="Opcional" autocomplete="off">`)}${l?q('Raza o cruce',`<input class="in" name="raza" list="dlRaza" value="${esc(l.raza||'')}" autocomplete="off">`):''}</div>

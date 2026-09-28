@@ -18,10 +18,21 @@ function momento(d=new Date()){
   if(h<sa-1)return 'madrugada';if(h<sa+1)return 'amanecer';if(h<11)return 'manana';if(h<14.5)return 'mediodia';
   if(h<pu-1)return 'tarde';if(h<pu+.6)return 'atardecer';return 'noche';
 }
-// Centroamérica: época seca de diciembre a abril, lluvias de mayo a noviembre (canícula en julio y agosto)
-function epoca(d=new Date()){const m=d.getMonth()+1;if(m===12||m<=4)return 'seca';if(m===7||m===8)return 'canicula';return 'lluvias';}
+// la época depende del país (o del idioma si aún no hay país):
+// Centroamérica y México: seca de diciembre a abril, lluvias de mayo a noviembre (canícula en julio y agosto);
+// Brasil, Paraguay y Bolivia: seca de mayo a septiembre, lluvias de octubre a abril;
+// EE. UU. y Canadá: cuatro estaciones; Argentina, Uruguay y Chile: cuatro estaciones al revés
+function zonaEpoca(){let p='';try{p=(typeof S!=='undefined'&&S.config&&S.config.pais)||'';}catch(e){}
+  if(/^(US|CA)$/.test(p))return 'norte';if(/^(BR|PY|BO)$/.test(p))return 'sur';if(/^(AR|UY|CL)$/.test(p))return 'austral';
+  if(!p){const l=window.I18N&&I18N.lang&&I18N.lang();if(l==='en')return 'norte';if(l==='pt')return 'sur';}
+  return 'centro';}
+function epoca(d=new Date()){const m=d.getMonth()+1,z=zonaEpoca();
+  if(z==='norte')return m===12||m<=2?'invierno':m<=5?'primavera':m<=8?'verano':'otono';
+  if(z==='austral')return m===12||m<=2?'verano':m<=5?'otono':m<=8?'invierno':'primavera';
+  if(z==='sur')return m>=5&&m<=9?'seca':'lluvias';
+  if(m===12||m<=4)return 'seca';if(m===7||m===8)return 'canicula';return 'lluvias';}
 const SALUDO={madrugada:'Buena madrugada',amanecer:'Buenos días',manana:'Buenos días',mediodia:'Buenas tardes',tarde:'Buenas tardes',atardecer:'Buenas tardes',noche:'Buenas noches'};
-const EPOCA_TXT={seca:'Época seca',canicula:'Canícula',lluvias:'Época de lluvias'};
+const EPOCA_TXT={seca:'Época seca',canicula:'Canícula',lluvias:'Época de lluvias',invierno:'Invierno',primavera:'Primavera',verano:'Verano',otono:'Otoño'};
 function aplicarMomento(){r.dataset.momento=momento();r.dataset.epoca=epoca();}
 aplicarMomento();setInterval(aplicarMomento,60000);
 

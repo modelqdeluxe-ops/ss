@@ -43,6 +43,7 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/avisos.js` — avisos de Rumi al teléfono (opcionales, apagados al inicio, uno al día como
     máximo y solo lo importante) y los datos del widget de inicio. Se configuran en Más, Configuración.
   - `app/assets/fondos/rumi.webp` — retrato de Rumi: Brahman en Costa Rica, foto de Bernard Gagnon (CC0).
+  - `app/assets/fondo_topo.svg` — curvas de nivel del fondo de la app (dibujadas por código, sin licencia de terceros).
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
     compartir y lectura en voz alta: la clase `Voz` elige la voz más natural del teléfono en el idioma de la app;
     su fuente Java está en `modelo/android/Voz.java`). Los avisos (`Avisos`, `AvisoReceiver`) y el widget
@@ -57,7 +58,9 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `areas.json` — área de cada tema; `correcciones_menu.json` — textos ajustados al Rumi por menús.
   - `construir_saber.js` → arma `app/assets/rumi_guia.js` (y `modelo/rumi_saber.json` para revisarla).
   - `traducciones/*.tsv` → catálogos de la interfaz (`armar_i18n.py`); `traducciones/guia/*.tsv` → la Guía
-    en inglés y portugués (`armar_guia_idiomas.js`, con `-v` lista lo que falte). Ver `traducciones/LEEME.md`.
+    en inglés y portugués (`armar_guia_idiomas.js`, con `-v` lista lo que falte); `traducciones/guia/region/`
+    → lo que cambia por región: el inglés trae datos de Estados Unidos y el portugués de Brasil (instituciones,
+    leyes, estaciones, unidades, pastos, razas, precios y enfermedades). Ver `traducciones/LEEME.md`.
   - `ilustraciones/` → toros y paisajes de cada pantalla (`escenas.py` los escribe en index.html).
   - `embeddings/`, `datos/` — el modelo de comprensión de la versión 3.3 (ya no se usa; queda como historia).
 - `scripts/build.sh` — APK: `dist/Rumentis.apk`.

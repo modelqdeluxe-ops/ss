@@ -284,23 +284,23 @@ window.Fin={balance,resultados,periodo,ganado,insumo,credito,equipo,movimientos,
   const base=cargarDemo;
   cargarDemo=function(){
     base.apply(this,arguments);
-    const D=n=>addDias(hoy(),n),id=p=>uid(p);
+    const D=n=>addDias(hoy(),n),id=p=>uid(p),R=typeof demoReg==='function'?demoReg():{a:1,h:1,e:1,agro:'Agroservicio El Campo',banco:'Banco agrícola',eq:['Corrales y comederos','Báscula ganadera','Picadora de forraje','Tractor'],ins:['Ivermectina 1 %','Vacuna clostridial','Oxitetraciclina LA','Vitamina AD3E','Aretes numerados']},$e=v=>Math.round(v*R.e),$h=v=>Math.round(v*R.h);
     const t0=toast;toast=()=>{};try{ACTS.bodegaAuto&&ACTS.bodegaAuto();}catch(e){}finally{toast=t0;}
-    const b=S.config.bodega||{items:[],movs:[]},pr={'maíz':6.2,'maiz':6.2,'heno':3.1,'pulpa':4.4,'harina':9.8,'melaza':5.6,'urea':14,'sal':8.5,'minerales':22};
+    const b=S.config.bodega||{items:[],movs:[]},pr={'silage':2.2,'silagem':2.2,'maíz':6.2,'maiz':6.2,'heno':3.1,'pulpa':4.4,'harina':9.8,'melaza':5.6,'urea':14,'sal':8.5,'minerales':22,'corn':6.2,'milho':6.2,'distillers':4.4,'polpa':4.4,'hay':3.1,'farelo':9.8,'supplement':22,'núcleo':22};
     const movs=[];b.items.forEach((it,i)=>{const k=Object.keys(pr).find(z=>it.n.toLowerCase().includes(z));const kg=[4200,2600,1800,950,700,400][i%6];
-      movs.push({id:id('m'),item:it.id,tipo:'compra',f:D(-12),kg,costo:Math.round(kg*(k?pr[k]:6)),prov:'Agroservicio El Campo'});
+      movs.push({id:id('m'),item:it.id,tipo:'compra',f:D(-12),kg,costo:Math.round(kg*(k?pr[k]:6)*R.a),prov:R.agro});
       movs.push({id:id('m'),item:it.id,tipo:'conteo',f:D(-3),kg:Math.round(kg*0.55)});});
-    const ins=[{n:'Ivermectina 1 %',cat:'Desparasitante',u:'ml',min:100},{n:'Vacuna clostridial',cat:'Vacuna',u:'dosis',min:40},{n:'Oxitetraciclina LA',cat:'Antibiótico',u:'ml',min:150},{n:'Vitamina AD3E',cat:'Vitamina o mineral',u:'ml',min:100},{n:'Aretes numerados',cat:'Insumo',u:'unidades',min:30}].map(x=>({id:id('in'),...x}));
+    const ins=[{n:R.ins[0],cat:'Desparasitante',u:'ml',min:100},{n:R.ins[1],cat:'Vacuna',u:'dosis',min:40},{n:R.ins[2],cat:'Antibiótico',u:'ml',min:150},{n:R.ins[3],cat:'Vitamina o mineral',u:'ml',min:100},{n:R.ins[4],cat:'Insumo',u:'unidades',min:30}].map(x=>({id:id('in'),...x}));
     const im=[];const mv=(i,t,f,cant,extra={})=>im.push({id:id('im'),item:ins[i].id,tipo:t,f,cant,...extra});
-    mv(0,'compra',D(-60),1000,{costo:4200,venc:D(420)});mv(0,'uso',D(-45),470);mv(0,'uso',D(-15),260);
-    mv(1,'compra',D(-50),100,{costo:5400,venc:D(22)});mv(1,'uso',D(-40),48);mv(1,'uso',D(-14),30);
-    mv(2,'compra',D(-30),500,{costo:6250,venc:D(300)});mv(2,'uso',D(-10),120);
-    mv(3,'compra',D(-40),250,{costo:2100,venc:D(200)});mv(3,'uso',D(-38),180);
-    mv(4,'compra',D(-70),200,{costo:3000});mv(4,'uso',D(-16),52);
-    const fin={caja:{efectivo:385000,cxc:0,cxp:42000,f:D(-2)},
-      creditos:[{id:id('cr'),n:'Banco agrícola',monto:1500000,tasa:12,f:D(-200),plazo:18,abonos:[{id:id('ab'),f:D(-110),monto:150000},{id:id('ab'),f:D(-20),monto:150000}]}],
-      equipos:[{id:id('eq'),n:'Corrales y comederos',cat:'Instalación',costo:620000,f:D(-1500),vida:20,res:10},{id:id('eq'),n:'Báscula ganadera',cat:'Equipo',costo:185000,f:D(-900),vida:15,res:10},
-        {id:id('eq'),n:'Picadora de forraje',cat:'Maquinaria',costo:95000,f:D(-600),vida:8,res:10},{id:id('eq'),n:'Tractor',cat:'Vehículo',costo:1250000,f:D(-2000),vida:12,res:15}],
+    mv(0,'compra',D(-60),1000,{costo:$h(4200),venc:D(420)});mv(0,'uso',D(-45),470);mv(0,'uso',D(-15),260);
+    mv(1,'compra',D(-50),100,{costo:$h(5400),venc:D(22)});mv(1,'uso',D(-40),48);mv(1,'uso',D(-14),30);
+    mv(2,'compra',D(-30),500,{costo:$h(6250),venc:D(300)});mv(2,'uso',D(-10),120);
+    mv(3,'compra',D(-40),250,{costo:$h(2100),venc:D(200)});mv(3,'uso',D(-38),180);
+    mv(4,'compra',D(-70),200,{costo:$h(3000)});mv(4,'uso',D(-16),52);
+    const fin={caja:{efectivo:$e(385000),cxc:0,cxp:$e(42000),f:D(-2)},
+      creditos:[{id:id('cr'),n:R.banco,monto:$e(1500000),tasa:12,f:D(-200),plazo:18,abonos:[{id:id('ab'),f:D(-110),monto:$e(150000)},{id:id('ab'),f:D(-20),monto:$e(150000)}]}],
+      equipos:[{id:id('eq'),n:R.eq[0],cat:'Instalación',costo:$e(620000),f:D(-1500),vida:20,res:10},{id:id('eq'),n:R.eq[1],cat:'Equipo',costo:$e(185000),f:D(-900),vida:15,res:10},
+        {id:id('eq'),n:R.eq[2],cat:'Maquinaria',costo:$e(95000),f:D(-600),vida:8,res:10},{id:id('eq'),n:R.eq[3],cat:'Vehículo',costo:$e(1250000),f:D(-2000),vida:12,res:15}],
       insumos:ins,imovs:im};
     put('ajustes','finca',{...S.config,bodega:{items:b.items,movs:b.movs.concat(movs)},fin});
     // el conteo de ayer se ajusta a lo que comen de verdad: alcanza para 2 a 5 semanas

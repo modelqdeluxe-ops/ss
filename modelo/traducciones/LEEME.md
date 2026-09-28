@@ -28,3 +28,19 @@ título de una parte, `F<n>.<s>.<p>` un punto; `G<n>.t` y `G<n>.x` los datos rá
 español; `-v` lo lista). `guia/origen.es` guarda el español que se tradujo: si cambias o mueves un tema,
 el script avisa qué ids cambiaron y los deja en español hasta que actualices su traducción y corras
 `node modelo/armar_guia_idiomas.js --fijar`.
+
+### Contenido regional
+
+El inglés es para Estados Unidos y el portugués para Brasil: donde el español habla de Honduras o
+Centroamérica (SENASA, manzanas, quintales, lempiras, época seca, razas, leyes, precios), la guía en
+inglés y portugués trae el dato de su región. Van en `guia/region/en/*.json` y `guia/region/pt/*.json`
+y reemplazan a la traducción:
+
+- `"F12": {t, r, s: [{h, p}], rel?}` — el tema entero (puede tener otras partes y otros puntos);
+- `"G40": {t, x}` — el dato rápido entero;
+- `"F91.0.2": "texto"` o `"G240.x": "texto"` — una sola línea;
+- `"+clave": {t, a, r, s, rel}` — un tema que solo existe en esa región.
+
+El script avisa si una clave no apunta a nada de la guía o si un tema regional queda incompleto.
+Las calculadoras de Rumi (`rumi_menu.js`, `RG()`), el engorde de ejemplo (`DEMO_REG` en `index.html`)
+y la época del año (`ambiente.js`, según el país) también siguen la región.
