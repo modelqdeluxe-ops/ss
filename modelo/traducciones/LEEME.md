@@ -18,3 +18,13 @@ español normalizadas: nombres de lotes, fechas, números y unidades se vuelven 
 
 Añadir una columna a los `.tsv`, generar `i18n_xx.js` en `armar_i18n.py`, cargarlo en
 `index.html` y sumar el idioma a `IDIOMAS` en `i18n.js`.
+
+## La Guía de Rumi
+
+Los temas de la guía (`rumi_guia.js`) se traducen aparte, en `guia/*.tsv`: `id<TAB>inglés<TAB>portugués`.
+Los ids siguen el orden de `RUMI_FICHAS` y `RUMI_GUIA`: `F<n>.t` título, `F<n>.r` resumen, `F<n>.<s>h`
+título de una parte, `F<n>.<s>.<p>` un punto; `G<n>.t` y `G<n>.x` los datos rápidos.
+`node modelo/armar_guia_idiomas.js` escribe `app/assets/rumi_guia_en.js` y `_pt.js` (lo que falte queda en
+español; `-v` lo lista). `guia/origen.es` guarda el español que se tradujo: si cambias o mueves un tema,
+el script avisa qué ids cambiaron y los deja en español hasta que actualices su traducción y corras
+`node modelo/armar_guia_idiomas.js --fijar`.

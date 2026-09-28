@@ -48,6 +48,27 @@ const {chromium}=require('playwright');const fs=require('fs');
      if(!(await p.$('#rumiMsgs')))await p.evaluate(()=>abrirRumi());
    }
  }
+ // partes nuevas: análisis de Rumi, tutoriales, tablas de referencia, avisos y configuración
+ await p.evaluate(()=>{try{closeSheet();}catch(e){}const c=document.querySelector('#rumiClose,[data-act="rumiClose"]');if(c)c.click();});
+ await go('#analisis');const partes=await p.$$eval('.rp-idx a',as=>as.map(a=>a.getAttribute('href')));for(const h of partes)await go(h);
+ await go('#mas/config');await p.evaluate(()=>{document.querySelectorAll('details').forEach(d=>d.open=true);});await W(300);
+ const pinta=async fn=>{await p.evaluate(fn);await W(250);};
+ await pinta(()=>{const d=document.createElement('div');d.id='recX';document.body.appendChild(d);});
+ const pon=h=>`document.getElementById('recX').insertAdjacentHTML('beforeend','<div>'+(${h})+'</div>')`;
+ // tutoriales: cada paso como se pinta en el globo
+ await p.evaluate(()=>{const X=document.getElementById('recX');for(const [k,d] of Object.entries(Ayuda.T)){X.insertAdjacentHTML('beforeend',`<div><b>${d.t}</b></div>`);for(const s of d.s)X.insertAdjacentHTML('beforeend',`<div><b>${s.t}</b><p>${s.x}</p></div>`);}
+   X.insertAdjacentHTML('beforeend','<div><b>¡Listo!</b><p>Si quieres repetir este tutorial, pídemelo en Rumi, Usar la app, <b>Muéstrame la app</b>.</p></div>');
+   for(const [k,f] of Object.entries(Ayuda.F)){X.insertAdjacentHTML('beforeend',`<div>${f.i||''}</div>`);for(const t of (f.p||[]))X.insertAdjacentHTML('beforeend',`<div>${t}</div>`);for(const t of Object.values(f.c||{}))X.insertAdjacentHTML('beforeend',`<div>${t}</div>`);}});
+ await W(400);
+ // tablas de referencia: todas las razas × climas, todos los países
+ await p.evaluate(()=>{const X=document.getElementById('recX'),R=RumiSaber2;const add=o=>{try{const r=typeof o==='function'?o():o;X.insertAdjacentHTML('beforeend','<div>'+(r&&r.html||r||'')+'</div>');}catch(e){X.insertAdjacentHTML('beforeend','<div>'+e.message+'</div>');}};
+   for(const r of R.RAZAS_G)for(const c of R.CLIMAS)add(()=>R.tablaReq(r.k,c.k));add(R.razasHtml);add(R.preciosHtml);
+   for(const pa of Object.keys(R.REG_PAIS))add(()=>R.calendarioRegion(pa));
+   for(const [k,f] of Object.entries(RumiMas.FN))add(f);
+   for(const a of Avisos.cola())X.insertAdjacentHTML('beforeend',`<div>${a.t}</div><div>${a.s}</div>`);});
+ await W(800);
+ for(const pa of await p.evaluate(()=>Object.keys(RumiSaber2.PRECIOS))){await p.evaluate(pa=>{S.config.pais=pa;const X=document.getElementById('recX');const r=RumiSaber2.preciosHtml();X.insertAdjacentHTML('beforeend','<div>'+(r.html||r)+'</div>');},pa);await W(80);}
+ await p.evaluate(()=>{try{Avisos.datosWidget();}catch(e){}});
  const keys=await p.evaluate(()=>[...I18N_REC.entries()]);
  fs.writeFileSync('claves_'+(process.argv[2]||'lb')+'.json',JSON.stringify(keys,null,0));
  console.log('claves',keys.length,'errores',errs.slice(0,5));
