@@ -224,6 +224,12 @@ html,body{overflow-x:hidden}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink2)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.legend.lx{margin-top:4px}
+.legend.lx i{background:none;border-radius:0}
+.legend.lx i.dash{width:16px;height:0;border-top:2.5px dashed var(--c)}
+.legend.lx i.vline{width:0;height:12px;border-left:2.5px solid var(--c)}
+.legend.lx i.hline{width:16px;height:0;border-top:2px dashed var(--c)}
+.legend.lx i.ring{width:9px;height:9px;border-radius:50%;border:2.5px solid var(--c)}
 .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .stat{background:var(--card);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
 .stat span{font-size:13px;color:var(--ink2)}
@@ -334,13 +340,13 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 @keyframes rmOnda{0%{opacity:.8;transform:scale(.92)}100%{opacity:0;transform:scale(1.25)}}
 @keyframes rmBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @keyframes rmTalk{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-#rumiFab{width:66px;height:66px;padding:0!important;border-radius:50%;border:0;background:none;box-shadow:none;justify-content:center;gap:0;overflow:visible!important}
+#rumiFab{width:50px;height:50px;padding:0!important;border-radius:50%;border:0;background:none;box-shadow:none;justify-content:center;gap:0;overflow:visible!important}
 #rumiFab span:not(.rm){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-#rumiFab .rm{width:62px!important;height:62px!important;margin:0!important}
-#rumiFab .rm img{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--arete),0 10px 22px -6px rgba(0,0,0,.55)}
-#rumiFab::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--arete);animation:rmPulso 2.8s ease-out infinite;pointer-events:none}
+#rumiFab .rm{width:46px!important;height:46px!important;margin:0!important}
+#rumiFab .rm img{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--arete),0 8px 18px -6px rgba(0,0,0,.5)}
+#rumiFab::before{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--arete);animation:rmPulso 2.8s ease-out infinite;pointer-events:none}
 @keyframes rmPulso{0%{opacity:.7;transform:scale(.95)}70%,100%{opacity:0;transform:scale(1.22)}}
-#rumiFab::after{content:'Rumi';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);background:var(--arete);color:#1b1b1b;font-size:11px;font-weight:800;letter-spacing:.3px;padding:1px 9px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+#rumiFab::after{content:'Rumi';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);background:var(--arete);color:#1b1b1b;font-size:9.5px;font-weight:800;letter-spacing:.3px;padding:0 7px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .rumi-av{background:none!important;border-radius:50%!important}
 .rumi-av .rm{width:100%;height:100%}
 .rumi-hd{display:flex;width:44px;height:44px;align-items:center;justify-content:center}
@@ -548,7 +554,7 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 
 /* ---------- transiciones ---------- */
 @media (prefers-reduced-motion:no-preference){
-  #app.pg>.hd{animation:hdIn .35s ease-out both}
+  #app.pg>.hd>*:not(.hd-fx){animation:hdIn .35s ease-out both}
   #app.pg-tab>main,#app.pg-right>main,#app.pg-left>main,#app.pg-fwd>main,#app.pg-back>main{animation-duration:.38s;animation-timing-function:cubic-bezier(.2,.8,.2,1);animation-fill-mode:both}
   #app.pg-tab>main{animation-name:pgUp}
   #app.pg-right>main{animation-name:pgR}#app.pg-left>main{animation-name:pgL}
@@ -703,13 +709,20 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .paso-t{display:flex;align-items:center;gap:10px;margin-top:4px}
 .paso-t span{width:28px;height:28px;border-radius:50%;background:var(--head);color:var(--arete);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 .paso-t b{font-family:'Bricolage Grotesque',sans-serif;font-size:18px}
-.plist{overflow:hidden}
+.plist{overflow:hidden;display:flex;flex-direction:column}
 .prow{display:grid;grid-template-columns:40px 1fr 128px;gap:4px 12px;align-items:center;padding:10px 14px}
 .prow+.prow{border-top:1px solid var(--line)}
 .prow .tx{display:flex;flex-direction:column;min-width:0}.prow .tx b{font-size:14.5px}.prow .tx span{font-size:12px;color:var(--ink2)}
 .prow .dif{grid-column:2/-1;font-size:12.5px;color:var(--ink2);text-align:right}.prow .dif:empty{display:none}
 .prow.ok .dif{color:var(--verde)}.prow.raro .dif{color:var(--rojo);font-weight:700}.prow.raro input{border-color:var(--rojo)}
 .prow .in{min-height:46px;font-size:17px;font-weight:700}
+.pbus{position:sticky;top:-2px;z-index:2;display:flex;gap:8px;align-items:center;padding:6px 0;background:var(--bg)}
+.pbus-in{flex:1;position:relative;display:block}
+.pbus-in svg{position:absolute;left:12px;top:50%;width:20px;height:20px;transform:translateY(-50%);color:var(--ink2);pointer-events:none}
+.pbus-in .in{padding-left:40px;min-height:46px;font-size:16px;width:100%}
+.pbf{flex:none}.pbf button{padding:0 12px}
+.prow[hidden]{display:none}
+.prow.hit{background:color-mix(in srgb,var(--arete) 16%,transparent)}
 .multi{display:flex;flex-wrap:wrap;gap:6px}
 .multi button{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-size:12.5px;font-weight:700;color:var(--ink);min-height:44px}
 .multi button[aria-pressed="true"]{border-color:var(--ink);background:var(--card2);box-shadow:inset 0 0 0 1px var(--ink)}
@@ -792,8 +805,13 @@ body::before{content:none}
 .hd{position:relative;isolation:isolate;overflow:hidden;background:var(--head)}
 .hd>*:not(.hd-fx){position:relative;z-index:1}
 .hd-fx{position:absolute;inset:0;z-index:0;pointer-events:none}
-.hd-fx .ft{position:absolute;inset:-4%;background-size:cover;background-position:center 60%;opacity:0;transition:opacity 1.8s ease}
+.hd-fx .ft{position:absolute;inset:-4%;background-size:cover;background-position:center 60%;opacity:0;will-change:opacity,transform}
 .hd-fx .ft.on{opacity:1}
+/* la foto nueva entra encima de la anterior, que se queda completa hasta que termina: sin bajón de luz */
+.hd-fx .ft.in{transition:opacity 1.6s ease}
+.hd-fx .ft.arriba{z-index:1}
+.hd-fx .tinte{z-index:2}
+.hd-fx .fx-cv{z-index:3}
 .hd-fx .ft.kb{animation:kenb 10s ease-out forwards}
 @keyframes kenb{from{transform:scale(1.02)}to{transform:scale(1.1) translateX(-1.5%)}}
 .hd-fx .tinte{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--head) calc(var(--t1)*100%),transparent) 0%,color-mix(in srgb,var(--head) calc(var(--t2)*100%),transparent) 50%,color-mix(in srgb,var(--head) calc(var(--t3)*100%),transparent) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
@@ -906,7 +924,8 @@ const IC={
  papelera:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
  editar:'<path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"/>',
  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
- send:'<path d="M4 12l16-8-6 16-2.5-6.5L4 12z"/>'
+ send:'<path d="M4 12l16-8-6 16-2.5-6.5L4 12z"/>',
+ buscar:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>'
 };
 const NAV={hoy:'Hoy',lotes:'Lotes',registrar:'Registrar',graficos:'Gráficos',mas:'Más'};
 const ico=(k,sw=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]||''}</svg>`;
@@ -1189,9 +1208,9 @@ function etiquetasX(x0,x1,X,h,izq,der){
     out.push({f,L,x});lastX=x;lastL=L;});
   return out.map((o,i)=>{const anchor=o.x-izq<30?'start':der-o.x<30?'end':'middle';return `<text x="${o.x.toFixed(1)}" y="${h-6}" text-anchor="${anchor}" font-size="12.5">${o.L}</text>`;}).join('');
 }
-function lineChart({series,refs=[],h=190,today=false,yZero=false,unit=''}){
-  const W=340,pl=40,pr=10,pt=12,pb=24;
-  const all=series.flatMap(s=>s.pts);
+function lineChart({series,refs=[],h=190,today=false,yZero=false,unit='',marks=[],extra=[]}){
+  const W=340,pl=40,pr=10,pt=today?22:12,pb=24;
+  const all=series.flatMap(s=>s.pts).concat(marks.map(m=>[m.f,m.v]));
   if(all.length<2)return `<p class="empty">Todavía no hay datos suficientes para esta gráfica.</p>`;
   let x0=Math.min(...all.map(p=>tms(p[0]))),x1=Math.max(...all.map(p=>tms(p[0])));
   if(x1===x0)x1=x0+864e5;
@@ -1201,15 +1220,19 @@ function lineChart({series,refs=[],h=190,today=false,yZero=false,unit=''}){
   const X=f=>pl+(W-pl-pr)*(tms(f)-x0)/(x1-x0),Y=v=>pt+(h-pt-pb)*(1-(v-lo)/(hi-lo||1));
   let g=tk.map(v=>`<line x1="${pl}" x2="${W-pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" style="stroke:var(--line)" stroke-width="1"/><text x="${pl-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="12.5">${fmtT(v)}</text>`).join('');
   g+=etiquetasX(x0,x1,X,h,pl,W-pr);
-  for(const r of refs)g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(r.v).toFixed(1)}" y2="${Y(r.v).toFixed(1)}" style="stroke:${r.color}" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${W-pr}" y="${(Y(r.v)-5).toFixed(1)}" text-anchor="end" font-size="12.5" font-weight="700" style="fill:${r.color};paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round">${esc(r.label)}</text>`;
-  if(today){const H=hoy();if(tms(H)>=x0&&tms(H)<=x1)g+=`<line x1="${X(H).toFixed(1)}" x2="${X(H).toFixed(1)}" y1="${pt}" y2="${h-pb}" style="stroke:var(--arete)" stroke-width="2"/>`;}
+  for(const r of refs)g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(r.v).toFixed(1)}" y2="${Y(r.v).toFixed(1)}" style="stroke:${r.color}" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${pl+4}" y="${(Y(r.v)-5).toFixed(1)}" text-anchor="start" font-size="12.5" font-weight="700" style="fill:${r.color};paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round">${esc(r.label)}</text>`;
+  if(today){const H=hoy();if(tms(H)>=x0&&tms(H)<=x1){const xh=X(H),an=W-pr-xh<24?'end':xh-pl<24?'start':'middle';g+=`<line x1="${xh.toFixed(1)}" x2="${xh.toFixed(1)}" y1="${pt}" y2="${h-pb}" style="stroke:var(--arete)" stroke-width="2"/><text x="${xh.toFixed(1)}" y="${pt-6}" text-anchor="${an}" font-size="11.5" font-weight="700" style="fill:var(--ink2)">hoy</text>`;}}
   for(const s of series){
     if(!s.pts.length)continue;
     const d='M'+s.pts.map(p=>`${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(' L');
     g+=`<path d="${d}" fill="none" style="stroke:${s.color}" stroke-width="${s.dash?2:2.5}" ${s.dash?'stroke-dasharray="3 5"':'class="ln" pathLength="1"'} stroke-linejoin="round" stroke-linecap="round"/>`;
     if(!s.dash&&(s.dots??s.pts.length<=14))g+=s.pts.map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3.5" style="fill:${s.color};stroke:var(--card)" stroke-width="2"/>`).join('');
   }
-  return `<svg viewBox="0 0 ${W} ${h}" role="img">${g}</svg>`+legend(series.filter(s=>!s.dash&&!s.noLegend));
+  // meta de cada lote: anillo del color del lote en la fecha proyectada
+  for(const m of marks)g+=`<circle cx="${X(m.f).toFixed(1)}" cy="${Y(m.v).toFixed(1)}" r="5" style="fill:var(--card);stroke:${m.color}" stroke-width="2.5"/>`;
+  const lg=legend(series.filter(s=>!s.dash&&!s.noLegend));
+  const ex=extra.length?`<div class="legend lx">${extra.map(e=>`<span><i class="${e.k}" style="--c:${e.color}"></i>${esc(e.t)}</span>`).join('')}</div>`:'';
+  return `<svg viewBox="0 0 ${W} ${h}" role="img">${g}</svg>`+lg+ex;
 }
 function colChart({days,series,stacked=true,h=170,unit=''}){
   const W=340,pl=40,pr=6,pt=10,pb=24;
@@ -1422,6 +1445,14 @@ PAGES.registrar=()=>{
 };
 
 /* ---------- Gráficos ---------- */
+/* proyección de un lote: del último pesaje a hoy (estimado) y de hoy a la meta, con un tope de un año */
+function proyMeta(x){
+  const H=hoy(),pts=[];if(x.ult&&x.ult.f<H)pts.push([x.ult.f,x.ult.v]);pts.push([H,x.pesoHoy]);
+  if(x.listo||!x.fechaMeta||x.fechaMeta<=H)return {pts,llega:false};
+  const tope=addDias(H,365);
+  if(x.fechaMeta<=tope){pts.push([x.fechaMeta,x.meta]);return {pts,llega:true,f:x.fechaMeta,v:x.meta};}
+  pts.push([tope,x.pesoHoy+(x.gdpUse||0)*365]);return {pts,llega:false};
+}
 PAGES.graficos=()=>{
   try{localStorage.setItem('rumentis-vio-graficos','1');}catch(e){}
   const C=calc();
@@ -1440,7 +1471,11 @@ PAGES.graficos=()=>{
     const A=C.act.length?C.act:C.cer.slice(0,4);
     const cab=A.reduce((s,x)=>s+x.cab,0)||1;
     const pp=A.reduce((s,x)=>s+x.pesoHoy*x.cab,0)/cab;
-    out+=card('Peso promedio',`${nf(pp)} kg`,'promedio de los lotes en engorde',lineChart({series:A.map((x,i)=>({name:x.l.nombre,color:col(i),pts:Wpts(x.serie.filter(p=>inP(p.f)||p===x.serie[x.serie.length-1]).map(p=>[p.f,p.v]))})).concat(A.filter(x=>x.activo&&x.ult.f<H).map(x=>({name:'',color:col(A.indexOf(x)),dash:true,pts:Wpts([[x.ult.f,x.ult.v],[H,x.pesoHoy]])}))),today:true}),'La línea punteada es el peso estimado desde el último pesaje hasta hoy.');
+    const PR=A.filter(x=>x.activo).map(x=>({x,pr:proyMeta(x)}));
+    const metas=[...new Set(A.filter(x=>x.activo).map(x=>Math.round(W(x.meta))))];
+    const refsM=metas.length===1?[{v:metas[0],label:'meta '+nf(metas[0])+' '+UW(),color:'var(--verde)'}]:metas.map(v=>({v,label:'meta '+A.filter(x=>x.activo&&Math.round(W(x.meta))===v).map(x=>x.l.nombre).join(', '),color:'var(--verde)'}));
+    out+=card('Peso promedio',`${nf(pp)} kg`,'promedio de los lotes en engorde',lineChart({series:A.map((x,i)=>({name:x.l.nombre,color:col(i),pts:Wpts(x.serie.filter(p=>inP(p.f)||p===x.serie[x.serie.length-1]).map(p=>[p.f,p.v]))})).concat(PR.map(({x,pr})=>({name:'',color:col(A.indexOf(x)),dash:true,pts:Wpts(pr.pts)}))),refs:refsM,marks:PR.filter(o=>o.pr.llega).map(({x,pr})=>({f:pr.f,v:W(pr.v),color:col(A.indexOf(x))})),today:true,h:220,
+      extra:[{k:'dash',color:'var(--ink2)',t:'proyección'},{k:'ring',color:'var(--ink2)',t:'llega a la meta'},{k:'hline',color:'var(--verde)',t:'peso meta'},{k:'vline',color:'var(--arete)',t:'hoy'}]}),'La línea punteada es el peso estimado y la proyección hasta la meta.');
     out+=card('Ganancia diaria',`${nf(C.gdpP,2)} kg`,'por cabeza al día, promedio',hBars(A.map((x,i)=>({label:x.l.nombre,v:W(x.gdpUse),color:col(i)})),{fmt:v=>nf(v,2)+' '+UW()}),'Entre los dos últimos pesajes de cada lote.');
     out+=card('Consumo por cabeza','', '',lineChart({series:A.map((x,i)=>({name:x.l.nombre,color:col(i),pts:Wpts(Object.entries(x.consDia).filter(([f])=>inP(f)&&f<H).sort())}))}),'Kilos de alimento por cabeza al día.');
     const days=[];for(let f=per==='todo'?(Object.keys(C.items.reduce((m,i)=>(i.tipo==='alimento'&&(m[i.f]=1),m),{})).sort()[0]||H):desde;f<=H;f=addDias(f,1))days.push(f);
@@ -1462,7 +1497,8 @@ PAGES.graficos=()=>{
     const x=C.L[sel];
     const pts=Wpts(x.serie.map(p=>[p.f,p.v]));const ser=[{name:'Peso',color:'var(--s1)',pts}];
     if(x.activo)ser.push({name:'Proyección',color:'var(--s1)',dash:true,pts:Wpts([[x.ult.f,x.ult.v],[x.fechaMeta>x.ult.f?x.fechaMeta:addDias(x.ult.f,1),Math.max(x.meta,x.pesoHoy)]])});
-    out+=card('Peso promedio',`${nf(x.pesoHoy)} kg`,x.activo?`meta ${nf(x.meta)} kg el ${ffc(x.fechaMeta)}`:'al vender',lineChart({series:ser,refs:[{v:W(x.meta),label:'meta '+nf(W(x.meta))+' '+UW(),color:'var(--verde)'}],today:x.activo}));
+    out+=card('Peso promedio',`${nf(x.pesoHoy)} kg`,x.activo?`meta ${nf(x.meta)} kg el ${ffc(x.fechaMeta)}`:'al vender',lineChart({series:ser,refs:[{v:W(x.meta),label:'meta '+nf(W(x.meta))+' '+UW(),color:'var(--verde)'}],today:x.activo,h:210,marks:x.activo&&!x.listo?[{f:x.fechaMeta,v:W(x.meta),color:'var(--s1)'}]:[],
+      extra:x.activo?[{k:'dash',color:'var(--s1)',t:'proyección'},{k:'hline',color:'var(--verde)',t:'peso meta'},{k:'vline',color:'var(--arete)',t:'hoy'}]:[]}));
     const perP=[];for(let i=1;i<x.serie.length;i++){const a=x.serie[i-1],b=x.serie[i],d=dias(a.f,b.f);if(d>0){let kg=0;for(const [f,k] of Object.entries(x.kgDia))if(f>=a.f&&f<b.f)kg+=k;const cabm=x.cabEn(b.f);perP.push({label:`${ffc(a.f)} al ${ffc(b.f)}`,gdp:(b.v-a.v)/d,conv:kg&&cabm&&b.v>a.v?kg/((b.v-a.v)*cabm):null});}}
     out+=card('Ganancia diaria',x.gdp?nf(x.activo?x.gdpUse:x.gdpTot,2)+' kg':'','por cabeza al día',hBars(perP.map(p=>({label:p.label,v:W(p.gdp),color:'var(--s1)'})),{fmt:v=>nf(v,2)+' '+UW()}),'Entre cada pesaje.');
     out+=card('Consumo por cabeza',x.consumo?nf(x.consumo,1)+' kg':'','al día, últimos 7 días',lineChart({series:[{name:'Consumo',color:'var(--s2)',pts:Wpts(Object.entries(x.consDia).filter(([f])=>inP(f)&&f<H).sort())}]}));
@@ -1490,7 +1526,7 @@ function explicaGraficos(C,sel){
     const act=A.filter(x=>x.activo),prom=f=>{const v=A.map(f).filter(v=>v!=null&&isFinite(v));return v.length?v.reduce((s,v)=>s+v,0)/v.length:null;};
     // peso
     const pesP=A.reduce((s,x)=>s+x.pesoHoy*x.cab,0)/Math.max(1,A.reduce((s,x)=>s+x.cab,0));
-    E['Peso promedio']={que:'cada línea es un lote. Abajo están las fechas y a la izquierda el peso promedio por cabeza. Mientras más empinada la línea, más rápido suben de peso. La parte punteada es el peso estimado desde el último pesaje hasta hoy.',
+    E['Peso promedio']={que:'cada línea es un lote. Abajo están las fechas y a la izquierda el peso promedio por cabeza. Mientras más empinada la línea, más rápido suben de peso. La parte punteada es el peso estimado desde el último pesaje y su proyección hasta la meta; el anillo marca el día en que llegaría. La línea verde es el peso meta y la vertical amarilla es hoy.',
       lee:A.map(x=>[x.listo?'ok':'i',`${n(x)}: ${nf(x.pesoHoy)} kg por cabeza${x.activo?(x.listo?`, ya pasó su meta de ${nf(x.meta)} kg${x.retiroHasta?` (en retiro hasta el ${ffc(x.retiroHasta)})`:''}`:`, le faltan ${nf(x.falta)} kg para su meta; llega cerca del ${ffc(x.fechaMeta)}`):', al vender'}${x.estimado?' (estimado: aún sin pesajes)':''}.`,cl(x)])
         .concat([['i',`Promedio de todos: ${nf(pesP)} kg por cabeza.`,null]])};
     // ganancia
@@ -1530,7 +1566,7 @@ function explicaGraficos(C,sel){
   }else{
     const x=C.L[sel];if(!x)return E;
     const pct=x.meta>x.p0?Math.min(100,(x.pesoHoy-x.p0)/(x.meta-x.p0)*100):100;
-    E['Peso promedio']={que:'la línea sólida es el peso promedio por cabeza en cada pesaje; la punteada es la proyección hasta la meta con la ganancia actual. La línea verde horizontal es el peso meta.',
+    E['Peso promedio']={que:'la línea sólida es el peso promedio por cabeza en cada pesaje; la punteada es la proyección hasta la meta con la ganancia actual y el anillo es el día en que llegaría. La línea verde horizontal es el peso meta y la vertical amarilla es hoy.',
       lee:[['i',`Entró con ${nf(x.p0)} kg y ${x.activo?'hoy pesa unos':'salió con'} ${nf(x.pesoHoy)} kg: ${x.activo?`lleva ${nf(pct,0)} % del camino a la meta`:`ganó ${nf(x.pesoHoy-x.p0)} kg`}.`]].concat(x.activo?[x.listo?['ok','Ya llegó a la meta: puedes venderlo.']:['i',`Le faltan ${nf(x.falta)} kg; al ritmo actual llega cerca del ${ffc(x.fechaMeta)} (${pl(x.diasMeta,'día','días')}).`]]:[]).concat(x.estimado?[['w','Aún no tiene pesajes: el peso de hoy es estimado con la ganancia esperada. Pésalo para tener datos reales.']]:[])};
     const pp=[];for(let i=1;i<x.serie.length;i++){const a=x.serie[i-1],b=x.serie[i],d=dias(a.f,b.f);if(d>0)pp.push((b.v-a.v)/d);}
     const tend=pp.length>1?pp[pp.length-1]-pp[pp.length-2]:0;
@@ -2816,7 +2852,11 @@ document.addEventListener('keydown',e=>{
     if(e.target.classList.contains('ar-t')){$('.ar-p',r).focus();return;}
     const rs=$$('.acard',f);const j=rs.indexOf(r);if(rs[j+1])$('.ar-p',rs[j+1]).focus();else ACTS.addFila($('[data-act="addFila"]',f));
   }
-  if(e.target.classList.contains('pw')){e.preventDefault();const ps=$$('.pw',e.target.form);const j=ps.indexOf(e.target);if(ps[j+1])ps[j+1].focus();else e.target.blur();}
+  if(e.target.classList.contains('pbq')){e.preventDefault();const r=$$('.prow',e.target.form).find(r=>!r.hidden);if(r)$('.pw',r).focus();return;}
+  if(e.target.classList.contains('pw')){e.preventDefault();const f=e.target.form,q=$('.pbq',f);
+    // si llegó con la lupa, vuelve a la lupa para buscar el siguiente arete
+    if(q&&q.value.trim()){q.value='';pbFiltrar(f);q.focus();return;}
+    const ps=$$('.pw',f).filter(i=>!i.closest('.prow').hidden);const j=ps.indexOf(e.target);if(ps[j+1])ps[j+1].focus();else e.target.blur();}
 });
 
 /* ---------- agregar animales a un lote existente / editar un animal ---------- */
@@ -2876,10 +2916,25 @@ FORMS.pesaje=({lote,modo}={})=>{
   if(!lote&&C.act.length>1){openSheet(shHead('¿Qué lote vas a pesar?','Pesaje')+`<div class="sh-body"><div class="sug">${C.act.map(x=>`<button type="button" class="tile big" style="background:var(--card);color:var(--ink);box-shadow:none" data-act="f" data-f="pesaje" data-lote="${esc(x.id)}">${tagHtml(String(x.l.nombre).replace(/\D/g,'')||'L')}<div><b style="color:var(--ink)">${esc(x.l.nombre)}</b><span style="color:var(--ink2)">${pl(x.cab,'cabeza','cabezas')}, último pesaje ${cuando(x.ult.f)}</span></div></button>`).join('')}</div></div>`);return;}
   const x=C.L[lote]||C.act[0];
   if(!x||!tieneAnimales(x.l)||modo==='grupo'){_formPesaje0({lote:x?x.id:lote});return;}
-  const filas=x.animAct.map(a=>`<div class="prow" data-a="${esc(a.id)}">${tagHtml(a.arete)}<div class="tx"><b>${nf(a.ult.v)} kg</b><span>${a.pesado?'pesado '+cuando(a.ult.f):'al entrar'}</span></div><div class="unit"><input class="in pw" name="pw_${esc(a.id)}" inputmode="decimal" placeholder="Peso" aria-label="Peso del arete ${esc(a.arete)}" autocomplete="off"><em>kg</em></div><small class="dif"></small></div>`).join('');
-  const body=`${fecha()}<p class="hint">Escribe el peso de cada animal que pase por la báscula. Enter pasa al siguiente; los que dejes vacíos no se guardan. <button type="button" class="lnk" data-act="f" data-f="pesaje" data-lote="${esc(x.id)}" data-modo="grupo" style="padding:0">Pesar en grupo</button></p><div class="card plist">${filas}</div>`;
+  const filas=x.animAct.map(a=>`<div class="prow" data-a="${esc(a.id)}" data-ar="${esc(String(a.arete).toLowerCase())}">${tagHtml(a.arete)}<div class="tx"><b>${nf(a.ult.v)} kg</b><span>${a.pesado?'pesado '+cuando(a.ult.f):'al entrar'}</span></div><div class="unit"><input class="in pw" name="pw_${esc(a.id)}" inputmode="decimal" placeholder="Peso" aria-label="Peso del arete ${esc(a.arete)}" autocomplete="off"><em>kg</em></div><small class="dif"></small></div>`).join('');
+  const body=`${fecha()}<p class="hint">Escribe el peso de cada animal que pase por la báscula. Con la lupa buscas su arete: Enter te lleva a su peso y otro Enter te regresa a la lupa. Los que dejes vacíos no se guardan. <button type="button" class="lnk" data-act="f" data-f="pesaje" data-lote="${esc(x.id)}" data-modo="grupo" style="padding:0">Pesar en grupo</button></p>
+   <div class="pbus"><label class="pbus-in">${ico('buscar',2.2)}<input type="search" class="in pbq" placeholder="Buscar arete" inputmode="search" autocomplete="off" aria-label="Buscar un animal por su arete"></label>
+    <div class="seg pbf" role="group" aria-label="Mostrar"><button type="button" data-pbf="todos" aria-pressed="true">Todos</button><button type="button" data-pbf="faltan" aria-pressed="false">Faltan</button></div></div>
+   <p class="hint pbnada" hidden>Ningún arete coincide. Revisa el número.</p>
+   <div class="card plist">${filas}</div>`;
   openSheet(shHead(`Pesaje de ${esc(x.l.nombre)}`,'Animal por animal')+formWrap('pesajeInd',body,foot('Guardar pesaje','<b data-sum>0 pesados</b><span data-sub></span>'),`data-lote="${esc(x.id)}"`));
 };
+/* lupa del pesaje: filtra por arete (coincidencia exacta primero) y, si quieres, solo los que faltan */
+function pbFiltrar(f){
+  const q=$('.pbq',f);if(!q)return;const t=q.value.trim().toLowerCase().replace(/\s+/g,''),solo=f.dataset.pbf==='faltan';
+  const rows=$$('.prow',f);let vis=0;
+  for(const r of rows){const ar=(r.dataset.ar||'').replace(/\s+/g,''),hecho=num($('.pw',r).value)>0;
+    const ok=(!t||ar.includes(t))&&(!solo||!hecho||(t&&ar===t));r.hidden=!ok;r.classList.toggle('hit',!!t&&ok);if(ok)vis++;
+    r.style.order=t&&ar===t?'-2':t&&ar.startsWith(t)?'-1':'';}
+  const nada=$('.pbnada',f);if(nada)nada.hidden=vis>0;
+}
+document.addEventListener('input',e=>{if(e.target.classList&&e.target.classList.contains('pbq'))pbFiltrar(e.target.form);});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pbf]');if(!b)return;const f=b.closest('form');f.dataset.pbf=b.dataset.pbf;$$('[data-pbf]',f).forEach(z=>z.setAttribute('aria-pressed',String(z===b)));pbFiltrar(f);});
 PREV.pesajeInd=f=>{
   const x=calc().L[f.dataset.lote];if(!x)return;const fch=fv(f,'f')||hoy();let n=0,s=0,raros=0;
   for(const a of x.animAct){const i=f.elements['pw_'+a.id];if(!i)continue;const v=num(i.value),row=i.closest('.prow'),dd=$('.dif',row);

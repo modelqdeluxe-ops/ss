@@ -120,7 +120,7 @@ const FX=(()=>{
   let VI=.15,cv=null,cx=null,W=0,H=0,dpr=1,tipo='',gotas=[],nubes=[],estrellas=[],salpic=[],rayo=0,sigRayo=0,ult=0,raf=0,t0=performance.now();
   const reducido=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rnd=(a,b)=>a+Math.random()*(b-a);
-  function medir(){if(!cv)return;const b=cv.getBoundingClientRect();dpr=Math.min(2,devicePixelRatio||1);W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
+  function medir(){if(!cv)return;const b=cv.getBoundingClientRect();const d=Math.min(2,devicePixelRatio||1);if(cv.width===Math.round(b.width*d)&&cv.height===Math.round(b.height*d)&&W===b.width)return;dpr=d;W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
   function sembrar(){
     const llueve=tipo==='lluvia'||tipo==='tormenta',n=llueve?Math.round(W*H/(tipo==='tormenta'?750:1000)):0;
     gotas=Array.from({length:n},()=>nuevaGota(true));
@@ -172,19 +172,38 @@ const FX=(()=>{
 const OFF={hoy:0,lotes:5,registrar:10,graficos:15,mas:20,lote:3,animal:8,formular:13,agenda:18,bodega:23,metodologia:7};
 let idx=Math.floor(Math.random()*FOTOS.length),ultimaPg='';
 const url=i=>`fondos/${FOTOS[((i%FOTOS.length)+FOTOS.length)%FOTOS.length]}`;
+/* El encabezado se vuelve a dibujar con cada cambio de datos. Para que la foto no parpadee, la capa de fotos
+   es siempre la misma: se mueve al encabezado nuevo y su acercamiento lento sigue donde iba. */
+let FXN=null,t0=0,cambiando=0,pendiente=null;
+const dec=u=>{const im=new Image();im.src=u;return (im.decode?im.decode():new Promise(r=>{im.onload=r;})).catch(()=>{});};
+function capas(){const [a,b]=FXN.querySelectorAll('.ft');const on=a.classList.contains('on')&&!a.classList.contains('arriba')?a:b.classList.contains('on')?b:a;return {on,off:on===a?b:a};}
 function montar(){
-  const hd=document.querySelector('#app .hd');if(!hd||hd.querySelector('.hd-fx')||!FOTOS.length)return;
-  const pg=document.body.dataset.pg||'hoy';
-  if(pg!==ultimaPg){idx=(OFF[pg]||0)+Math.floor(Math.random()*3);ultimaPg=pg;}
-  hd.insertAdjacentHTML('afterbegin',`<div class="hd-fx" aria-hidden="true"><i class="ft on" style="background-image:url('${url(idx)}')"></i><i class="ft"></i><b class="tinte"></b><canvas class="fx-cv"></canvas></div>`);
-  FX.montar(hd.querySelector('.fx-cv'));
+  const hd=document.querySelector('#app .hd');if(!hd||!FOTOS.length)return;
+  if(hd.querySelector('.hd-fx'))return;
+  const pg=document.body.dataset.pg||'hoy',nueva=!!FXN&&pg!==ultimaPg;
+  if(!FXN){
+    idx=(OFF[pg]||0)+Math.floor(Math.random()*3);ultimaPg=pg;
+    FXN=document.createElement('div');FXN.className='hd-fx';FXN.setAttribute('aria-hidden','true');
+    FXN.innerHTML=`<i class="ft on kb" style="background-image:url('${url(idx)}')"></i><i class="ft"></i><b class="tinte"></b><canvas class="fx-cv"></canvas>`;
+    t0=performance.now();
+  }
+  hd.insertBefore(FXN,hd.firstChild);
+  // al moverla, el navegador reinicia la animación: la retomamos en el mismo punto
+  const el=performance.now()-t0;FXN.querySelectorAll('.ft.kb').forEach(f=>f.style.animationDelay=`-${Math.round(el)}ms`);
+  FX.montar(FXN.querySelector('.fx-cv'));
   pintarClima();
+  if(nueva){ultimaPg=pg;cambiar((OFF[pg]||0)+Math.floor(Math.random()*3));}
 }
-function siguiente(){
-  const fx=document.querySelector('#app .hd .hd-fx');if(!fx||document.hidden)return;
-  idx++;const [a,b]=fx.querySelectorAll('.ft');const on=a.classList.contains('on')?a:b,off=on===a?b:a;
-  const img=new Image();img.onload=()=>{off.style.backgroundImage=`url('${url(idx)}')`;off.classList.remove('kb');void off.offsetWidth;off.classList.add('on','kb');on.classList.remove('on');};img.src=url(idx);
+function cambiar(n){
+  if(!FXN)return;if(cambiando){pendiente=n;return;}cambiando=1;idx=n;const u=url(idx);
+  dec(u).then(()=>{
+    const {on,off}=capas();
+    off.style.backgroundImage=`url('${u}')`;off.style.animationDelay='0ms';off.classList.remove('kb','on','in');void off.offsetWidth;
+    t0=performance.now();off.classList.add('arriba','in','on','kb');
+    setTimeout(()=>{on.classList.remove('on','in','kb','arriba');off.classList.remove('arriba','in');cambiando=0;if(pendiente!=null){const p=pendiente;pendiente=null;cambiar(p);}},1700);
+  });
 }
+function siguiente(){if(!FXN||document.hidden||!FXN.isConnected)return;cambiar(idx+1);}
 setInterval(siguiente,8000);
 new MutationObserver(()=>montar()).observe(document.getElementById('app'),{childList:true});
 montar();
