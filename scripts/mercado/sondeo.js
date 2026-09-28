@@ -1,20 +1,16 @@
-// Sondeo (diagnóstico): fuentes públicas del precio del ternero / novillo de engorde en EE. UU.
+// Sondeo 2 (diagnóstico): contenido del reporte de Oklahoma City (PDF) y del Excel de precios de ERS
+const {execSync}=require('child_process');const fs=require('fs');
 const cortar=(t,n=600)=>String(t).replace(/\s+/g,' ').slice(0,n);
-async function ver(url,{grep,n=600}={}){
-  try{const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (rumentis)'},redirect:'follow'});const t=await r.text();
-    console.log('\n==',r.status,url,'tipo',r.headers.get('content-type'),'largo',t.length);
-    if(grep){const L=t.split(/\n/).filter(l=>grep.test(l)).slice(0,40);console.log(L.map(l=>cortar(l,300)).join('\n'));}
-    else console.log(cortar(t,n));
-    return t;}catch(e){console.log('\n== ERROR',url,e.message);return '';}
-}
+async function bajar(url,arch){const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (rumentis)'}});const b=Buffer.from(await r.arrayBuffer());fs.writeFileSync(arch,b);console.log('\n==',r.status,url,r.headers.get('content-type'),b.length);return r.status;}
 (async()=>{
-  const lista=await ver('https://mpr.datamart.ams.usda.gov/services/v1.1/reports',{n:300});
-  try{const j=JSON.parse(lista);const a=(j.results||j).filter(x=>/feeder|stocker|calf|calves/i.test(JSON.stringify(x)));console.log('datamart feeder',JSON.stringify(a).slice(0,3000));}catch(e){console.log('lista no json');}
-  await ver('https://www.ams.usda.gov/market-news/livestock-poultry-grain',{grep:/feeder|stocker/i});
-  await ver('https://www.ams.usda.gov/market-news/feeder-and-replacement-cattle-auctions',{grep:/mnreports|\.txt|\.pdf|feeder/i});
-  for(const id of ['ams_1920','ams_1832','ams_1834','ams_2466','sj_ls850','ko_ls750','ams_1281','ams_1280'])await ver(`https://www.ams.usda.gov/mnreports/${id}.txt`,{n:500});
-  await ver('https://marsapi.ams.usda.gov/services/v1.2/reports',{n:200});
-  await ver('https://www.cmegroup.com/ftp/cash_settled_commodity_index_prices/daily_data/',{n:1500});
-  await ver('https://www.ers.usda.gov/data-products/livestock-and-meat-domestic-data',{grep:/xlsx|csv|price/i});
-  await ver('https://mymarketnews.ams.usda.gov/viewReport/1920',{n:800});
+  // enlaces de la página de subastas
+  const h=await (await fetch('https://www.ams.usda.gov/market-news/feeder-and-replacement-cattle-auctions',{headers:{'User-Agent':'Mozilla/5.0'}})).text();
+  const L=[...h.matchAll(/href="([^"]+)"[^>]*>([^<]{2,80})</g)].filter(m=>/mnreports|MARS|viewReport|Oklahoma|National|Joplin|Dodge|Texas|Nebraska/i.test(m[1]+m[2])).map(m=>m[2].trim()+' -> '+m[1]);
+  console.log('enlaces',L.slice(0,80).join('\n'));
+  for(const id of ['1280','1920','2466','1953','3456']){const a='r'+id+'.pdf';if(await bajar(`https://www.ams.usda.gov/mnreports/LSD_MARS_${id}.pdf`,a)===200){try{const t=execSync(`pdftotext -layout ${a} -`).toString();console.log(t.slice(0,3500));}catch(e){console.log('pdftotext',e.message);}}}
+  if(await bajar('https://www.ers.usda.gov/media/5536/livestock-prices.xlsx','lp.xlsx')===200){
+    execSync('npm i --no-save --no-audit --no-fund xlsx@0.18.5 >/dev/null');const X=require('xlsx');const wb=X.readFile('lp.xlsx');
+    for(const n of wb.SheetNames){const rows=X.utils.sheet_to_json(wb.Sheets[n],{header:1});console.log('\n-- hoja',n,rows.length);rows.slice(0,8).forEach(r=>console.log(cortar(JSON.stringify(r),400)));console.log('...');rows.slice(-4).forEach(r=>console.log(cortar(JSON.stringify(r),400)));}
+  }
+  for(const u of ['https://mymarketnews.ams.usda.gov/National_Feeder_Stocker_Dashboard','https://mymarketnews.ams.usda.gov/public_data'])try{const r=await fetch(u,{headers:{'User-Agent':'Mozilla/5.0'}});console.log('\n==',r.status,u,cortar(await r.text(),500));}catch(e){console.log('ERR',u,e.message);}
 })();

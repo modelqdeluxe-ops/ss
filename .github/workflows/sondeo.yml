@@ -13,4 +13,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - run: sudo apt-get install -y poppler-utils >/dev/null
       - run: node scripts/mercado/sondeo.js
