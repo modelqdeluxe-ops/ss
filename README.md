@@ -35,6 +35,9 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/rumi_mas.js` — análisis avanzados de Rumi (señales de la semana, cuándo vender, curva de
     ganancia, punto de equilibrio, costos, flujo a 90 días, compras, calendario, escenarios y simulador) y la
     página `#analisis` con su índice.
+  - `app/assets/rumi_analisis2.js` — más análisis de Rumi: lo que te está costando dinero, ¿estoy dando de
+    más o de menos? (comedero), de dónde sale la ganancia (compra y venta contra engorde), comparar lotes,
+    sanidad y muertes, y cuántos días alcanza el alimento de la bodega.
   - `app/assets/rumi_saber2.js` — tablas de referencia: requerimientos por raza y clima, razas para engorde,
     precios orientativos por país y calendario sanitario por región.
   - `app/assets/ayuda.js` — ayuda en cada formulario («¿Qué anoto aquí?» y una nota por campo) y el

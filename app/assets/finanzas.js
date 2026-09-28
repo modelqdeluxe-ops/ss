@@ -166,7 +166,7 @@ PAGES.finanzas=()=>{
     ${Rs.dep?linea('Depreciación del equipo',Rs.dep,{neg:true}):''}
     ${linea('Ganancia neta',Rs.neta,{b:true,cls:'tot'})}
     <div class="glee"><b>Lo que dicen tus números</b><ul>
-      <li class="sin"><span>El ganado en engorde vale hoy ${money(Math.abs(Rs.noReal))} ${Rs.noReal>=0?'más':'menos'} de lo que te ha costado. Esa ganancia todavía no es dinero: se hace real al vender.</span></li>
+      <li class="sin"><span>El ganado en engorde vale hoy ${money(Math.abs(Rs.noReal))} ${Rs.noReal>=0?'más de lo que te ha costado. Esa ganancia todavía no es dinero: se hace real al vender.':'menos de lo que te ha costado. Esa pérdida todavía no es real: puede cambiar con el peso y el precio hasta que vendas.'}</span></li>
       ${act.length?`<li class="sin"><span>Si vendes todos los lotes en engorde al llegar a su meta con el precio de hoy, dejarían <b>${money(margenProy)}</b>.</span></li>`:''}
       ${Rs.ventas?`<li class="sin"><span>Margen sobre ventas: ${pct(Rs.bruta/Rs.ventas,1)}.</span></li>`:''}
       ${alertas.map(([c,t])=>`<li class="sin"><span>${t}</span><em class="st w">Revisar</em></li>`).join('')}</ul></div></section>`;

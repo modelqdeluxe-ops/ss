@@ -1,0 +1,148 @@
+: Sube la ración {0} a {1} {2}: se la terminan y esperan.	: Raise the ration {0} to {1} {2}: they finish it and wait.	: Aumente a ração {0} a {1} {2}: eles acabam e ficam esperando.
+: Baja la ración {0} a {1} {2}: está sobrando y se desperdicia.	: Lower the ration {0} to {1} {2}: feed is left over and wasted.	: Diminua a ração {0} a {1} {2}: está sobrando e se desperdiça.
+: Comen menos que la semana pasada: revisa agua, calor, salud y la mezcla.	: They eat less than last week: check water, heat, health and the mix.	: Comem menos que na semana passada: confira água, calor, saúde e a mistura.
+: Comen poco para su peso: revisa agua, sombra y enfermos.	: They eat little for their weight: check water, shade and sick animals.	: Comem pouco para o peso: confira água, sombra e doentes.
+: Consumo muy alto para su peso: revisa desperdicio en el comedero y la báscula del alimento.	: Very high intake for their weight: check bunk waste and the feed scale.	: Consumo muito alto para o peso: confira o desperdício no cocho e a balança da ração.
+Todos tus lotes comen bien. Sigue leyendo el comedero antes de cada entrega.	All your lots are eating well. Keep reading the bunk before every delivery.	Todos os seus lotes estão comendo bem. Continue lendo o cocho antes de cada trato.
+Todavía no hay entregas de alimento anotadas. Cuando anotes unos días, te digo si estás dando de más o de menos.	No feed deliveries recorded yet. Once you record a few days, I'll tell you whether you're feeding too much or too little.	Ainda não há tratos anotados. Quando anotar alguns dias, digo se está dando demais ou de menos.
+Tus lotes comen unos {0} {2} al día, que cuestan L {1} al día.	Your lots eat about {0} {2} a day, which costs L {1} a day.	Seus lotes comem uns {0} {2} por dia, que custam L {1} por dia.
+¿Estoy dando de más o de menos?	Am I feeding too much or too little?	Estou dando demais ou de menos?
+¿De dónde sale mi ganancia?	Where does my profit come from?	De onde vem o meu lucro?
+¿De dónde sale tu ganancia?	Where does your profit come from?	De onde vem o seu lucro?
+Tu margen tiene dos partes. La compra y venta: lo que valen al precio de venta los animales que compraste, menos lo que pagaste por ellos con flete. El engorde: lo que vale el peso que suben, menos todo lo que gastaste para que suban.	Your margin has two parts. Buying and selling: what the cattle you bought are worth at your sale price, minus what you paid for them including freight. Feeding: what the weight they gain is worth, minus everything you spent to put it on.	Sua margem tem duas partes. Compra e venda: quanto valem, ao preço de venda, os animais que você comprou, menos o que pagou por eles com frete. Engorda: quanto vale o peso que ganham, menos tudo o que gastou para que ganhem.
+Ganas engordando (L {0}) pero pierdes comprando (L {1}): pagas más por lo que compras de lo que te pagan al vender. Negociar la compra o comprar animales un poco más pesados es donde más puedes mejorar.	You make money feeding (L {0}) but lose it buying (L {1}): you pay more for what you buy than you get when you sell. Negotiating the purchase or buying somewhat heavier cattle is where you can improve most.	Você ganha engordando (L {0}) mas perde comprando (L {1}): paga mais pelo que compra do que recebe ao vender. Negociar a compra ou comprar animais um pouco mais pesados é onde mais pode melhorar.
+Ganas comprando bien (L {0}) pero el engorde te cuesta más de lo que vale lo que suben (L {1}). Revisa el costo de la ración, la conversión y los días de más en el corral.	You make money buying well (L {0}) but feeding costs more than the gain is worth (L {1}). Check ration cost, feed conversion and extra days in the pen.	Você ganha comprando bem (L {0}) mas a engorda custa mais do que vale o que ganham (L {1}). Confira o custo da ração, a conversão e os dias a mais no curral.
+Pierdes en la compra (L {0}) y en el engorde (L {1}). Antes del próximo lote calcula el precio máximo de compra y revisa la ración.	You lose on the purchase (L {0}) and on feeding (L {1}). Before the next lot, work out the maximum purchase price and review the ration.	Você perde na compra (L {0}) e na engorda (L {1}). Antes do próximo lote, calcule o preço máximo de compra e revise a ração.
+Ganas en las dos partes: en la compra (L {0}) y en el engorde (L {1}). Bien.	You make money on both parts: buying (L {0}) and feeding (L {1}). Good.	Você ganha nas duas partes: na compra (L {0}) e na engorda (L {1}). Bom.
+En lotes en engorde es la proyección al vender en su meta con tu precio de venta; en los vendidos, lo real.	For lots on feed it's the projection when sold at target with your sale price; for sold lots, the actual result.	Nos lotes em engorda é a projeção ao vender na meta com seu preço de venda; nos vendidos, o real.
+Aún no tienes lotes.	You don't have any lots yet.	Você ainda não tem lotes.
+Necesito al menos dos lotes para compararlos.	I need at least two lots to compare them.	Preciso de pelo menos dois lotes para compará-los.
+Comparar mis lotes	Compare my lots	Comparar meus lotes
+Comparar tus lotes	Compare your lots	Comparar seus lotes
+Lado a lado, con ★ el mejor de cada columna y en rojo el más flojo.	Side by side, with ★ on the best in each column and the weakest in red.	Lado a lado, com ★ o melhor de cada coluna e em vermelho o mais fraco.
+{0} deja L {2} más por cabeza cada día que {1}.	{0} makes L {2} more per head each day than {1}.	{0} deixa L {2} a mais por cabeça por dia que {1}.
+Gana {0} {1} más por día.	Gains {0} {1} more per day.	Ganha {0} {1} a mais por dia.
+Convierte mejor: {0} contra {1}.	Better feed conversion: {0} vs {1}.	Converte melhor: {0} contra {1}.
+Se le mueren menos: {0} {2} contra {1} {3}.	Fewer deaths: {0} {2} vs {1} {3}.	Morrem menos: {0} {2} contra {1} {3}.
+Se compró más barato: L {0} contra L {1}.	Bought cheaper: L {0} vs L {1}.	Foi comprado mais barato: L {0} contra L {1}.
+Repite lo que hiciste con el mejor: mismo proveedor, raza, ración y manejo.	Repeat what you did with the best one: same supplier, breed, ration and management.	Repita o que fez com o melhor: mesmo fornecedor, raça, ração e manejo.
+Margen por cabeza al día	Margin per head per day	Margem por cabeça por dia
+El margen por cabeza al día pone en la misma balanza lotes cortos y largos. En los lotes en engorde es proyectado a su meta.	Margin per head per day puts short and long lots on the same scale. For lots on feed it's projected to their target.	A margem por cabeça por dia coloca lotes curtos e longos na mesma balança. Nos lotes em engorda é projetada até a meta.
+Sanidad y muertes: qué me dicen	Health and deaths: what they tell me	Sanidade e mortes: o que me dizem
+Sanidad y muertes	Health and deaths	Sanidade e mortes
+Gastas L {0} por cabeza en sanidad; tratas a {1} {3} de los animales y se muere el {2} {4}.	You spend L {0} per head on health; you treat {1} {3} of the cattle and {2} {4} die.	Você gasta L {0} por cabeça em sanidade; trata {1} {3} dos animais e morrem {2} {4}.
+El {0} {2} de tus tratamientos fue en las primeras {1} semanas. El problema está en la llegada: agua y heno al llegar, descanso, vacuna respiratoria y compras de pocos orígenes.	{0} {2} of your treatments were in the first {1} weeks. The problem is at arrival: water and hay on arrival, rest, a respiratory vaccine and buying from fewer sources.	{0} {2} dos seus tratamentos foram nas primeiras {1} semanas. O problema está na chegada: água e feno ao chegar, descanso, vacina respiratória e compras de poucas origens.
+La mitad o más de tus muertes ({0} de {1}) pasan en las primeras {2} semanas: refuerza la recepción y separa rápido a los decaídos.	Half or more of your deaths ({0} of {1}) happen in the first {2} weeks: strengthen receiving and pull droopy animals quickly.	Metade ou mais das suas mortes ({0} de {1}) acontecem nas primeiras {2} semanas: reforce a recepção e separe logo os abatidos.
+Tu mortalidad ({0} {3}) está arriba de lo aceptable en engorde ({1} a {2} {4}).	Your death loss ({0} {3}) is above what's acceptable in a feedlot ({1} to {2} {4}).	Sua mortalidade ({0} {3}) está acima do aceitável em confinamento ({1} a {2} {4}).
+Tratas a {0} {1} de los animales que entran: es mucho. Revisa origen, transporte y el plan de ingreso con tu veterinario.	You treat {0} {1} of the cattle that arrive: that's a lot. Review source, transport and the arrival plan with your vet.	Você trata {0} {1} dos animais que entram: é muito. Revise origem, transporte e o plano de entrada com seu veterinário.
+Causa de muerte más común:	Most common cause of death:	Causa de morte mais comum:
+, {0} de {1}.	, {0} of {1}.	, {0} de {1}.
+Casi siempre empieza por estrés de viaje, polvo y mezcla de orígenes.	It almost always starts with travel stress, dust and mixing sources.	Quase sempre começa com estresse de viagem, poeira e mistura de origens.
+Tiene que ver con la ración: adaptación lenta al grano, horarios fijos y comederos limpios.	It's about the ration: slow adaptation to grain, fixed feeding times and clean bunks.	Tem a ver com a ração: adaptação lenta ao grão, horários fixos e cochos limpos.
+Tus números de sanidad se ven bien. Sigue con el plan de ingreso y el calendario de vacunas.	Your health numbers look good. Keep up the arrival plan and the vaccine calendar.	Seus números de sanidade estão bons. Continue com o plano de entrada e o calendário de vacinas.
+Referencia de engorde en corral: menos de {0} {2} de tratados y menos de {1} {3} de muertes. Para medicinas, consulta a tu veterinario.	Feedlot reference: under {0} {2} treated and under {1} {3} deaths. For medicines, consult your vet.	Referência de confinamento: menos de {0} {2} de tratados e menos de {1} {3} de mortes. Para medicamentos, consulte seu veterinário.
+¿Cuándo se me acaba el alimento?	When will I run out of feed?	Quando a ração vai acabar?
+¿Cuándo se acaba el alimento?	When does the feed run out?	Quando a ração acaba?
+Con lo que comen tus lotes esta semana:	With what your lots are eating this week:	Com o que seus lotes estão comendo nesta semana:
+La bodega no está disponible.	The feed store isn't available.	O depósito não está disponível.
+Aún no anotas compras en la bodega. Cuando anotes lo que compras, te digo cuántos días te alcanza cada ingrediente y cuándo comprar.	You haven't recorded purchases in the feed store yet. Once you record what you buy, I'll tell you how many days each ingredient lasts and when to buy.	Você ainda não anotou compras no depósito. Quando anotar o que compra, digo quantos dias dura cada ingrediente e quando comprar.
+: compra unos {0} {2} para {1} semanas.	: buy about {0} {2} for {1} weeks.	: compre uns {0} {2} para {1} semanas.
+Pedir con una semana de margen evita cambios bruscos de ración.	Ordering a week ahead avoids sudden ration changes.	Pedir com uma semana de folga evita mudanças bruscas de ração.
+Tienes alimento para más de dos semanas.	You have feed for more than two weeks.	Você tem ração para mais de duas semanas.
+Cuenta la bodega de vez en cuando: con el conteo real el cálculo se corrige solo.	Count the feed store now and then: with the real count the calculation corrects itself.	Conte o depósito de vez em quando: com a contagem real o cálculo se corrige sozinho.
+Comprar ya	Buy now	Comprar já
+Pronto	Soon	Em breve
+En bodega	In store	No depósito
+Usan al día	Used per day	Usam por dia
+Se acaba	Runs out	Acaba em
+Último comedero	Last bunk reading	Última leitura de cocho
+Contra la semana pasada	vs last week	Contra a semana passada
+Compra y venta	Buying and selling	Compra e venda
+Tratados	Treated	Tratados
+Sanidad por cabeza	Health per head	Sanidade por cabeça
+Alto	High	Alto
+Vigilar	Watch	Vigiar
+Ajustar	Adjust	Ajustar
+Lo que dice	What it says	O que diz
+Qué hacer	What to do	O que fazer
+Anotar alimento	Record feed	Anotar ração
+Lo que te está costando dinero	What's costing you money	O que está custando dinheiro
+Lo que me está costando dinero	What's costing me money	O que está me custando dinheiro
+Ordenado por lo que más plata te puede ahorrar esta semana:	Sorted by what could save you the most money this week:	Ordenado pelo que mais pode economizar nesta semana:
+{0} ya llegó a su meta	{0} has reached its target	{0} já chegou à meta
+Cada semana en el corral te cuesta unos L {0} más de lo que suben.	Each week in the pen costs you about L {0} more than they gain.	Cada semana no curral custa uns L {0} a mais do que eles ganham.
+Todavía sube más de lo que come (L {0} a la semana), pero el riesgo y el costo crecen. Ofrécelo.	It still gains more than it eats (L {0} a week), but risk and cost keep growing. Offer it for sale.	Ainda ganha mais do que come (L {0} por semana), mas o risco e o custo crescem. Ofereça para venda.
+Sobra comida en {0}	Feed is left over in {0}	Sobra ração em {0}
+Si bajas {0} {2} la ración, ahorras unos L {1} a la semana.	If you lower the ration {0} {2}, you save about L {1} a week.	Se diminuir a ração {0} {2}, economiza uns L {1} por semana.
+{0} se queda con el comedero vacío	{0} is left with an empty bunk	{0} fica com o cocho vazio
+Pierde ganancia: si le falta {0} {3} de comida, deja de subir unos {1} {4} a la semana (L {2}).	It loses gain: if it's {0} {3} short on feed, it stops gaining about {1} {4} a week (L {2}).	Perde ganho: se faltar {0} {3} de ração, deixa de ganhar uns {1} {4} por semana (L {2}).
+Una baja de consumo suele avisar de calor, agua o enfermedad dos o tres días antes. Revísalo hoy.	A drop in intake often warns of heat, water or disease two or three days ahead. Check it today.	Uma queda de consumo costuma avisar de calor, água ou doença dois ou três dias antes. Confira hoje.
+En {0} engordar cuesta casi lo que vale	In {0} gain costs almost what it's worth	Em {0} engordar custa quase o que vale
+Producir la ganancia te cuesta L {0} y la vendes a L {1}. Revisa la ración y la conversión.	Producing the gain costs you L {0} and you sell it at L {1}. Review the ration and feed conversion.	Produzir o ganho custa L {0} e você vende a L {1}. Revise a ração e a conversão.
+{0} lleva {1} días sin pesar	{0} hasn't been weighed in {1} days	{0} está há {1} dias sem pesar
+Sin pesajes no sé si la ración funciona ni cuándo vender. Pésalo esta semana.	Without weighings I can't tell if the ration works or when to sell. Weigh it this week.	Sem pesagens não sei se a ração funciona nem quando vender. Pese nesta semana.
+No encontré fugas de dinero esta semana. Sigue así: anota cada entrega y pesa cada {0} a {1} semanas.	I found no money leaks this week. Keep it up: record every delivery and weigh every {0} to {1} weeks.	Não encontrei vazamentos de dinheiro nesta semana. Continue assim: anote cada trato e pese a cada {0} a {1} semanas.
+Son estimaciones con tus registros, tu precio de venta y el costo de tu ración.	These are estimates based on your records, your sale price and your ration cost.	São estimativas com seus registros, seu preço de venda e o custo da sua ração.
+Fugas de dinero	Money leaks	Vazamentos de dinheiro
+Origen de la ganancia	Where profit comes from	Origem do lucro
+Comedero	Bunk	Cocho
+Comparar lotes	Compare lots	Comparar lotes
+Alimento en bodega	Feed in store	Ração no depósito
+Puntaje, fugas de dinero, comedero, lotes, sanidad, ventas y riesgo	Score, money leaks, bunks, lots, health, sales and risk	Pontuação, vazamentos de dinheiro, cocho, lotes, sanidade, vendas e risco
+¿A qué horas das de comer?	What times do you feed?	Em que horários você trata?
+Pon tus horarios y te recuerdo cada entrega.	Set your times and I'll remind you of each delivery.	Coloque seus horários e eu lembro cada trato.
+Anotar la entrega de alimento	Record the feed delivery	Anotar o trato
+Anota la entrega de alimento	Record the feed delivery	Anote o trato
+Registrar entrega de alimento	Record feed delivery	Registrar trato
+Anotar entrega de alimento	Record feed delivery	Anotar trato
+Entrega de alimento	Feed delivery	Trato
+Aún no los pones	Not set yet	Ainda não definidos
+Poner	Set	Definir
+Cambiar	Change	Mudar
+Poner mis horarios de entrega	Set my feeding times	Definir meus horários de trato
+Cambiar mis horarios	Change my times	Mudar meus horários
+Poner mis horarios	Set my times	Definir meus horários
+Horarios de entrega	Feeding times	Horários de trato
+Horarios de entrega de alimento	Feed delivery times	Horários de trato
+Tú decides a qué horas das de comer. En Hoy te recuerdo cada entrega.	You decide what times you feed. On Today I remind you of each delivery.	Você decide em que horários trata. Em Hoje eu lembro cada trato.
+Pon las horas en que das de comer. En Hoy te recuerdo cada entrega, y al anotar el alimento ya aparece la hora.	Set the times you feed. On Today I remind you of each delivery, and the time is already filled in when you record feed.	Coloque os horários em que você trata. Em Hoje eu lembro cada trato, e ao anotar a ração o horário já aparece.
+Tus horarios	Your times	Seus horários
+Hora de entrega	Delivery time	Horário do trato
+Agregar otra hora	Add another time	Adicionar outro horário
+No uso horarios fijos	I don't use fixed times	Não uso horários fixos
+Guardar horarios	Save times	Salvar horários
+Horario guardado	Time saved	Horário salvo
+{0} horarios guardados	{0} times saved	{0} horários salvos
+Pon al menos una hora, o toca No uso horarios fijos.	Set at least one time, or tap I don't use fixed times.	Coloque pelo menos um horário, ou toque em Não uso horários fixos.
+Listo: anotarás las entregas sin horario fijo.	Done: you'll record deliveries without fixed times.	Pronto: você vai anotar os tratos sem horário fixo.
+Llevas {0} {2} de alimento de unos {1} {3} al día. Pon tus horarios de entrega en Más, Configuración, y te recuerdo cada una.	You've delivered {0} {2} of feed out of about {1} {3} a day. Set your feeding times in More, Settings, and I'll remind you of each one.	Você já deu {0} {2} de ração de uns {1} {3} por dia. Coloque seus horários de trato em Mais, Configuração, e eu lembro cada um.
+Entrega {0}	Delivery {0}	Trato {0}
+Servir lo de siempre a todos	Serve the usual to all	Servir o de sempre a todos
+Escribe lo que serviste a cada lote, o toca arriba para llenar todo con lo que sueles dar. Debajo, si quieres, marca cómo estaba el comedero.	Write what you served each lot, or tap above to fill everything with what you usually give. Below, if you like, mark how the bunk looked.	Escreva o que serviu a cada lote, ou toque acima para preencher tudo com o que costuma dar. Embaixo, se quiser, marque como estava o cocho.
+de tus entregas del día. Las horas de tus entregas las pones tú con	of your daily deliveries. You set your delivery times with	dos seus tratos do dia. Os horários dos tratos você define com
+. Con esto sé cuánto comen tus lotes, cuánto te cuesta y cuánto te queda en la bodega.	. With this I know how much your lots eat, what it costs you and how much is left in the feed store.	. Com isso sei quanto seus lotes comem, quanto custa e quanto sobra no depósito.
+Suma {0} {1}.	Total {0} {1}.	Soma {0} {1}.
+Bien.	Good.	Bom.
+Costo calculado de la mezcla: L {0}	Calculated mix cost: L {0}	Custo calculado da mistura: L {0}
+Faltan {0} {1}.	{0} {1} missing.	Faltam {0} {1}.
+Sobran {0} {1}.	{0} {1} too much.	Sobram {0} {1}.
+Pon el precio de todos los ingredientes para calcular el costo.	Enter the price of every ingredient to calculate the cost.	Coloque o preço de todos os ingredientes para calcular o custo.
+Completar a {0} {1}	Complete to {0} {1}	Completar até {0} {1}
+Escribe el costo por kilo, o el precio de cada ingrediente para que lo calcule.	Enter the cost per kilo, or the price of each ingredient so I can calculate it.	Escreva o custo por quilo, ou o preço de cada ingrediente para que eu calcule.
+Escribe el costo por libra, o el precio de cada ingrediente para que lo calcule.	Enter the cost per pound, or the price of each ingredient so I can calculate it.	Escreva o custo por libra, ou o preço de cada ingrediente para que eu calcule.
+Baja algún ingrediente: sobra más de lo que lleva el último.	Lower some ingredient: the excess is more than the last one contains.	Diminua algum ingrediente: sobra mais do que o último leva.
+Ingredientes, cuánto lleva de cada uno y su precio	Ingredients, how much of each and its price	Ingredientes, quanto leva de cada um e o preço
+precio	price	preço
+Si pones el precio de cada ingrediente, lo calculo yo.	If you enter each ingredient's price, I'll calculate it.	Se colocar o preço de cada ingrediente, eu calculo.
+Empieza rápido	Quick start	Começo rápido
+Que Rumi la formule	Let Rumi formulate it	Deixe o Rumi formular
+Son mezclas de partida: ajusta los porcentajes a lo que tienes y a lo que diga tu nutricionista.	These are starting mixes: adjust the percentages to what you have and what your nutritionist says.	São misturas de partida: ajuste as porcentagens ao que você tem e ao que seu nutricionista disser.
+Iniciación	Starter	Adaptação
+Crecimiento	Grower	Crescimento
+Finalización	Finisher	Terminação
+Maíz molido	Ground corn	Milho moído
+Pulpa de cítricos	Citrus pulp	Polpa cítrica
+Harina de soya	Soybean meal	Farelo de soja
+Núcleo mineral	Mineral premix	Núcleo mineral
+Lo normal en engorde es que coman entre {0} y {1} {4} de su peso cada día (tal como se sirve, un poco más con ensilaje). Cambia la ración de a poco, {2} a {3} {5} por vez.	In a feedlot they normally eat {0} to {1} {4} of their weight each day (as fed, a bit more with silage). Change the ration gradually, {2} to {3} {5} at a time.	No confinamento o normal é comerem entre {0} e {1} {4} do peso por dia (como servido, um pouco mais com silagem). Mude a ração aos poucos, {2} a {3} {5} por vez.
+(vendido)	(sold)	(vendido)

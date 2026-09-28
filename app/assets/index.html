@@ -717,6 +717,7 @@ nav.bottom .reg:active .sq{transform:scale(.9)}
 .paso-card>svg{width:20px;height:20px;color:var(--ink2);flex:none}
 .alim-c{display:flex;flex-direction:column;gap:12px}
 .alim-c .ac1{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rp-lista{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
 .rp-fugas{margin:10px 0 4px;padding-left:22px;display:flex;flex-direction:column;gap:10px}.rp-fugas li::marker{font-weight:800;color:var(--arete-e)}
 /* horarios de entrega */
 .horas-aviso{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1.5px dashed color-mix(in srgb,var(--arete) 70%,var(--line));background:color-mix(in srgb,var(--arete) 10%,transparent);border-radius:14px;padding:10px 12px;color:var(--ink);font:inherit;font-size:14px;line-height:1.35}
@@ -1238,7 +1239,7 @@ function precioTxt(html,G){
   }
   // "costo por kilo ganado" habla de dinero: va en la unidad de precio del ganado
   if(PU()!==U()){const u=PUN[PU()];
-    html=html.replace(/\b(costo|Costo|cuesta|cuestan)(\s+(?:por|del|de cada|por cada|de un|cada))\s+(?:kg|kilo|kilogramo)\s+ganado\b/g,(m,a,b)=>a+b+' '+keep(u.n+(u.f?' ganada':' ganado')));}
+    html=html.replace(/\b(costo|Costo|cuesta|cuestan)(\s+(?:por|del|de cada|por cada|de un|cada))\s+(?:kg|kilo|kilogramo)\s+ganado\b/g,(m,a,b)=>a+(u.f&&/^\s+del$/.test(b)?' de la':b)+' '+keep(u.n+(u.f?' ganada':' ganado')));}
   return html;
 }
 function aUnidad(html){
@@ -2041,7 +2042,7 @@ function guardarHoras(t){put('ajustes','finca',{...S.config,horas:t,horasPropias
 SAVE.horas=f=>{
   const hs=[...new Set($$('input[name="hora"]',f).map(i=>normHora(i.value)).filter(Boolean))].sort((a,b)=>minHora(a)-minHora(b));
   if(!hs.length)return ferr(f,'Pon al menos una hora, o toca No uso horarios fijos.');
-  guardarHoras(hs.join(', '));const v=f.dataset.volver;closeSheet();toast('Horarios guardados: '+hs.join(', '));
+  guardarHoras(hs.join(', '));const v=f.dataset.volver;closeSheet();toast(hs.length===1?'Horario guardado':`${hs.length} horarios guardados`);
   if(v==='alimento')setTimeout(()=>FORMS.alimento({}),260);
 };
 PREV.alimento=f=>{let t=0;$$('input[name^="kg_"]',f).forEach(i=>{const v=num(i.value);if(v>0)t+=v;});$('[data-sum]',f).textContent=nf(t)+' '+UW();
@@ -2228,13 +2229,13 @@ FORMS.racion=({id}={})=>{
 function filasIng(f){return $$('.ing2',f).map(r=>({n:$('[name=ing_n]',r).value.trim(),p:num($('[name=ing_p]',r).value)||0,pr:num($('[name=ing_pr]',r).value)||0}));}
 PREV.racion=f=>{const F=filasIng(f).filter(i=>i.n||i.p);const t=F.reduce((s,i)=>s+i.p,0);
   const falta=Math.round((100-t)*10)/10;const cb=$('[data-act="completar100"]',f);if(cb)cb.hidden=!(t>0&&Math.abs(falta)>0.05&&F.filter(i=>i.n).length);
-  let txt=t?`Suma ${nf(t,1)} %`+(Math.abs(falta)>0.5?(falta>0?`: faltan ${nf(falta,1)} %`:`: sobran ${nf(-falta,1)} %`):'. Bien.'):'';
+  const pz=[];if(t)pz.push(`Suma ${nf(t,1)} %.`,Math.abs(falta)>0.5?(falta>0?`Faltan ${nf(falta,1)} %.`:`Sobran ${nf(-falta,1)} %.`):'Bien.');
   // costo de la mezcla con los precios de cada ingrediente
   const con=F.filter(i=>i.p>0);const c=f.elements.costo;
-  if(con.length&&con.every(i=>i.pr>0)&&t>0){const cost=con.reduce((s,i)=>s+i.p*i.pr,0)/t;txt+=` · Costo calculado: ${money2(cost)} ${PUApor()}`;
+  if(con.length&&con.every(i=>i.pr>0)&&t>0){const cost=con.reduce((s,i)=>s+i.p*i.pr,0)/t;pz.push(`Costo calculado de la mezcla: ${money2(cost)}`);
     if(c&&(!c.value||c.dataset.auto)){c.value=r2u(cost);c.dataset.auto='1';}}
-  else if(con.some(i=>i.pr>0))txt+=' · Pon el precio de todos los ingredientes para calcular el costo.';
-  $('[data-pct]',f).innerHTML=aUnidad(esc(txt));};
+  else if(con.some(i=>i.pr>0))pz.push('Pon el precio de todos los ingredientes para calcular el costo.');
+  $('[data-pct]',f).innerHTML=aUnidad(pz.map(x=>`<span>${esc(x)}</span>`).join(' '));};
 document.addEventListener('input',e=>{if(e.target.name==='costo'&&e.target.closest('form[data-form="racion"]'))delete e.target.dataset.auto;
   if(e.target.name==='ing_n'&&e.target.closest('form[data-form="racion"]')){const r=e.target.closest('.ing2'),pi=$('[name=ing_pr]',r);if(pi&&!pi.value){const p=precioIngUsuario(e.target.value);if(p)pi.value=r2u(PKdA(p));}}});
 SAVE.racion=f=>{

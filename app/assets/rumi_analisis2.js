@@ -36,13 +36,13 @@ function comedero(x){
 function comederoHtml(){
   const L=lotesConDatos();if(!L.length)return {html:'Todavía no hay entregas de alimento anotadas. Cuando anotes unos días, te digo si estás dando de más o de menos.'};
   const rows=L.map(x=>{const r=comedero(x);return [`<b>${esc(x.l.nombre)}</b>`,r.c1!=null?`${nf(r.c1,1)} kg`:'–',r.pesoPct!=null?pct(r.pesoPct,1):'–',
-    r.tend!=null?`${r.tend>=0?'+':''}${nf(r.tend*100,0)} %`:'–',r.lect.length?r.lect.map(v=>LECT[v][0]).join(' '):'–',pill(r.c,r.c==='verde'?'Bien':'Ajustar')];});
+    r.tend!=null?(t=>`${t>0?'+':''}${nf(t,0)} %`)(Math.round(r.tend*100)||0):'–',r.lect.length?LECT[r.lect[r.lect.length-1]]:'–',pill(r.c,r.c==='verde'?'Bien':'Ajustar')];});
   const R=L.map(x=>({x,r:comedero(x)})),aj=R.filter(o=>o.r.c!=='verde');
   const dia=R.reduce((s,o)=>s+(o.r.c1||0)*o.x.cab,0),cost=R.reduce((s,o)=>s+(o.r.costoDia||0)*o.x.cab,0);
-  return {html:`<b>¿Estoy dando de más o de menos?</b><br>Tus lotes comen unos <b>${nf(dia)} kg</b> al día, que cuestan <b>${money(cost)}</b> al día.`+
-    tabla(['Lote','Por cabeza','% del peso','Contra la semana pasada','Comedero','Estado'],rows)+
+  return {html:`<b>¿Estoy dando de más o de menos?</b><br>Tus lotes comen unos ${nf(dia)} kg al día, que cuestan ${money(cost)} al día.`+
+    tabla(['Lote','Por cabeza','% del peso','Contra la semana pasada','Último comedero','Estado'],rows)+
     (aj.length?`<p class="rh">Qué hacer</p>`+aj.map(o=>`<b>${esc(o.x.l.nombre)}</b>: ${o.r.hacer}`).join('<br>'):nota('Todos tus lotes comen bien. Sigue leyendo el comedero antes de cada entrega.'))+
-    nota('Comedero: V vacío, L limpio, P poco, S sobra. Lo normal en engorde es que coman entre 2.2 y 3 % de su peso cada día (tal como se sirve, un poco más con ensilaje). Cambia la ración de a poco, 3 a 5 % por vez.'),
+    nota('Lo normal en engorde es que coman entre 2.2 y 3 % de su peso cada día (tal como se sirve, un poco más con ensilaje). Cambia la ración de a poco, 3 a 5 % por vez.'),
     btns:[['Anotar alimento',{t:'form',k:'alimento',p:{}}]]};
 }
 
@@ -63,11 +63,11 @@ function origenHtml(){
   const rows=L.map(x=>{const o=origen(x);return [`<b>${esc(x.l.nombre)}</b>${x.activo?'':' (vendido)'}`,`<span style="color:var(--${o.spread>=0?'verde':'rojo'})">${money(o.spread)}</span>`,`<span style="color:var(--${o.engorde>=0?'verde':'rojo'})">${money(o.engorde)}</span>`,`<b>${money(o.total)}</b>`];});
   const T=L.map(origen),sp=T.reduce((s,o)=>s+o.spread,0),en=T.reduce((s,o)=>s+o.engorde,0);
   let msg;
-  if(sp<0&&en>0)msg=`Ganas <b>engordando</b> (${money(en)}) pero pierdes <b>comprando</b> (${money(sp)}): pagas cada kilo más caro de lo que lo vendes. Negociar la compra o comprar un poco más pesado es donde más puedes mejorar.`;
-  else if(sp>=0&&en<0)msg=`Ganas <b>comprando bien</b> (${money(sp)}) pero el <b>engorde</b> te cuesta más de lo que vale lo que suben (${money(en)}). Revisa el costo de la ración, la conversión y los días de más en el corral.`;
+  if(sp<0&&en>0)msg=`Ganas engordando (${money(en)}) pero pierdes comprando (${money(sp)}): pagas más por lo que compras de lo que te pagan al vender. Negociar la compra o comprar animales un poco más pesados es donde más puedes mejorar.`;
+  else if(sp>=0&&en<0)msg=`Ganas comprando bien (${money(sp)}) pero el engorde te cuesta más de lo que vale lo que suben (${money(en)}). Revisa el costo de la ración, la conversión y los días de más en el corral.`;
   else if(sp<0&&en<0)msg=`Pierdes en la compra (${money(sp)}) y en el engorde (${money(en)}). Antes del próximo lote calcula el precio máximo de compra y revisa la ración.`;
   else msg=`Ganas en las dos partes: en la compra (${money(sp)}) y en el engorde (${money(en)}). Bien.`;
-  return {html:`<b>¿De dónde sale mi ganancia?</b><br>Tu margen tiene dos partes: la <b>compra y venta</b> (lo que valen al precio de venta los kilos que compraste, menos lo que pagaste con flete) y el <b>engorde</b> (lo que valen los kilos que suben, menos todo lo que gastaste para que suban).`+
+  return {html:`<b>¿De dónde sale mi ganancia?</b><br>Tu margen tiene dos partes. La compra y venta: lo que valen al precio de venta los animales que compraste, menos lo que pagaste por ellos con flete. El engorde: lo que vale el peso que suben, menos todo lo que gastaste para que suban.`+
     tabla(['Lote','Compra y venta','Engorde','Margen'],rows)+`<p class="rh">Lo que dice</p>${msg}`+
     nota('En lotes en engorde es la proyección al vender en su meta con tu precio de venta; en los vendidos, lo real.'),btns:[['¿Cuánto pagar por el próximo lote?',{t:'go',go:'#analisis/compra'}]]};
 }
@@ -85,10 +85,10 @@ function compararHtml(){
   const rows=V.map(({x,v})=>[`<b>${esc(x.l.nombre)}</b>${x.activo?'':' (vendido)'}`].concat(cols.map(([k,,f])=>v[k]==null||!isFinite(v[k])?'–':`<span style="${best[k]===x.id?'color:var(--verde);font-weight:800':worst[k]===x.id?'color:var(--rojo)':''}">${f(v[k])}${best[k]===x.id?' ★':''}</span>`)));
   const top=V.filter(o=>o.v.md!=null).sort((a,b)=>b.v.md-a.v.md);
   let msg='';if(top.length>=2){const a=top[0],z=top[top.length-1];
-    const por=[];if(a.v.g&&z.v.g&&a.v.g>z.v.g*1.05)por.push(`gana ${nf(a.v.g-z.v.g,2)} kg más por día`);if(a.v.conv&&z.v.conv&&a.v.conv<z.v.conv*0.95)por.push(`convierte mejor (${nf(a.v.conv,1)} contra ${nf(z.v.conv,1)})`);
-    if(a.v.mort<z.v.mort)por.push(`se le mueren menos (${pct(a.v.mort,1)} contra ${pct(z.v.mort,1)})`);
-    const pa=+a.x.l.precioCompraKg||0,pz=+z.x.l.precioCompraKg||0;if(pa&&pz&&pa<pz*0.97)por.push(`se compró más barato (${pk(pa)} contra ${pk(pz)})`);
-    msg=`<p class="rh">Lo que dice</p><b>${esc(a.x.l.nombre)}</b> deja <b>${money2(a.v.md-z.v.md)}</b> más por cabeza cada día que <b>${esc(z.x.l.nombre)}</b>${por.length?': '+por.join(', ')+'.':'.'} Repite lo que hiciste con el mejor: mismo proveedor, raza, ración y manejo.`;}
+    const por=[];if(a.v.g&&z.v.g&&a.v.g>z.v.g*1.05)por.push(`Gana ${nf(a.v.g-z.v.g,2)} kg más por día.`);if(a.v.conv&&z.v.conv&&a.v.conv<z.v.conv*0.95)por.push(`Convierte mejor: ${nf(a.v.conv,1)} contra ${nf(z.v.conv,1)}.`);
+    if(a.v.mort<z.v.mort)por.push(`Se le mueren menos: ${pct(a.v.mort,1)} contra ${pct(z.v.mort,1)}.`);
+    const pa=+a.x.l.precioCompraKg||0,pz=+z.x.l.precioCompraKg||0;if(pa&&pz&&pa<pz*0.97)por.push(`Se compró más barato: ${pk(pa)} contra ${pk(pz)}.`);
+    msg=`<p class="rh">Lo que dice</p>${esc(a.x.l.nombre)} deja ${money2(a.v.md-z.v.md)} más por cabeza cada día que ${esc(z.x.l.nombre)}.${por.length?`<ul class="rp-lista">${por.map(t=>`<li>${t}</li>`).join('')}</ul>`:''}<p>Repite lo que hiciste con el mejor: mismo proveedor, raza, ración y manejo.</p>`;}
   return {html:`<b>Comparar mis lotes</b><br>Lado a lado, con ★ el mejor de cada columna y en rojo el más flojo.`+tabla(['Lote','Ganancia diaria','Conversión',`Costo por ${UW()} ganado`,'Mortalidad','Margen por cabeza al día'],rows)+msg+
     nota('El margen por cabeza al día pone en la misma balanza lotes cortos y largos. En los lotes en engorde es proyectado a su meta.')};
 }
@@ -106,14 +106,14 @@ function sanidadHtml(){
     return [`<b>${esc(x.l.nombre)}</b>`,pct(tr,0),pct(x.mort,1),x.cab0?money2(x.san/x.cab0):'–',pill(x.mort>0.02||tr>0.25?'rojo':x.mort>0.01||tr>0.15?'tierra':'verde',x.mort>0.02||tr>0.25?'Alto':x.mort>0.01||tr>0.15?'Vigilar':'Bien')];});
   const ins=[];
   const tr=cab0?trat/cab0:0,mo=cab0?bajas/cab0:0;
-  if(trat&&trat21/trat>=0.5)ins.push(`El <b>${pct(trat21/trat)}</b> de tus tratamientos fue en las <b>primeras 3 semanas</b>. El problema está en la llegada: agua y heno al llegar, descanso, vacuna respiratoria y compras de pocos orígenes.`);
+  if(trat&&trat21/trat>=0.5)ins.push(`El ${pct(trat21/trat)} de tus tratamientos fue en las primeras 3 semanas. El problema está en la llegada: agua y heno al llegar, descanso, vacuna respiratoria y compras de pocos orígenes.`);
   if(bajas&&bajas21/bajas>=0.5)ins.push(`La mitad o más de tus muertes (${nf(bajas21)} de ${nf(bajas)}) pasan en las primeras 3 semanas: refuerza la recepción y separa rápido a los decaídos.`);
   if(mo>0.015)ins.push(`Tu mortalidad (${pct(mo,1)}) está arriba de lo aceptable en engorde (1 a 1.5 %).`);
   if(tr>0.2)ins.push(`Tratas a ${pct(tr)} de los animales que entran: es mucho. Revisa origen, transporte y el plan de ingreso con tu veterinario.`);
   const top=Object.entries(causas).sort((a,b)=>b[1]-a[1]);
-  if(top.length)ins.push(`Causa de muerte más común: <b>${esc(top[0][0])}</b> (${nf(top[0][1])} de ${nf(bajas)}).${/neumon|respir/i.test(top[0][0])?' Casi siempre empieza por estrés de viaje, polvo y mezcla de orígenes.':/acidosis|timpan/i.test(top[0][0])?' Tiene que ver con la ración: adaptación lenta al grano, horarios fijos y comederos limpios.':''}`);
+  if(top.length)ins.push(`Causa de muerte más común: <b>${esc(top[0][0])}</b>, ${nf(top[0][1])} de ${nf(bajas)}.`+(/neumon|respir/i.test(top[0][0])?'<br>Casi siempre empieza por estrés de viaje, polvo y mezcla de orígenes.':/acidosis|timpan/i.test(top[0][0])?'<br>Tiene que ver con la ración: adaptación lenta al grano, horarios fijos y comederos limpios.':''));
   if(!ins.length)ins.push('Tus números de sanidad se ven bien. Sigue con el plan de ingreso y el calendario de vacunas.');
-  return {html:`<b>Sanidad y muertes: qué me dicen</b><br>Gastas <b>${cab0?money2(costo/cab0):'–'}</b> por cabeza en sanidad; tratas a <b>${pct(tr)}</b> de los animales y se muere el <b>${pct(mo,1)}</b>.`+
+  return {html:`<b>Sanidad y muertes: qué me dicen</b><br>Gastas ${cab0?money2(costo/cab0):'–'} por cabeza en sanidad; tratas a ${pct(tr)} de los animales y se muere el ${pct(mo,1)}.`+
     tabla(['Lote','Tratados','Mortalidad','Sanidad por cabeza','Estado'],rows)+`<p class="rh">Lo que dice</p>`+ins.join('<br>')+nota('Referencia de engorde en corral: menos de 15 % de tratados y menos de 1.5 % de muertes. Para medicinas, consulta a tu veterinario.')};
 }
 
@@ -127,7 +127,7 @@ function bodegaHtml(){
     return [`<b>${esc(o.it.n)}</b>`,`${nf(Math.max(0,o.stock))} kg`,o.e.dia>0?`${nf(o.e.dia)} kg`:'–',d==null?'–':`${nf(Math.max(0,d))} días`,d==null?'–':ffc(addDias(H,Math.max(0,Math.floor(d)))),pill(c,d!=null&&d<7?'Comprar ya':d!=null&&d<14?'Pronto':'Bien')];});
   const urg=inv.filter(o=>o.e.dias!=null&&o.e.dias<14);
   return {html:`<b>¿Cuándo se me acaba el alimento?</b><br>Con lo que comen tus lotes esta semana:`+tabla(['Ingrediente','En bodega','Usan al día','Alcanza','Se acaba','Estado'],rows)+
-    (urg.length?`<p class="rh">Qué hacer</p>Compra ${urg.map(o=>`<b>${esc(o.it.n)}</b> (unos ${nf(Math.ceil(o.e.dia*21/50)*50)} kg para 3 semanas)`).join(', ')}. Pedir con una semana de margen evita cambios bruscos de ración.`:nota('Tienes alimento para más de dos semanas.'))+
+    (urg.length?`<p class="rh">Qué hacer</p>${urg.map(o=>`<b>${esc(o.it.n)}</b>: compra unos ${nf(Math.ceil(o.e.dia*21/50)*50)} kg para 3 semanas.`).join('<br>')}<br>Pedir con una semana de margen evita cambios bruscos de ración.`:nota('Tienes alimento para más de dos semanas.'))+
     nota('Cuenta la bodega de vez en cuando: con el conteo real el cálculo se corrige solo.'),btns:[['Abrir la bodega',{t:'go',go:'#bodega'}]]};
 }
 
@@ -139,14 +139,14 @@ function fugasHtml(){
     const cons=x.consumo||x.pesoHoy*0.026,costoDia=cons*x.cab*(x.costoKgR||0);
     // pasados de su meta: cada día cuesta más de lo que suben
     if(x.listo){const valor=x.gdpUse*x.cab*p*(1-d);const neto=(valor-costoDia)*7;
-      F.push({t:`${esc(x.l.nombre)} ya llegó a su meta`,s:neto<0?`Cada semana en el corral te cuesta unos <b>${money(-neto)}</b> más de lo que suben.`:`Todavía sube más de lo que come (${money(neto)} a la semana), pero el riesgo y el costo crecen. Ofrécelo.`,go:'#analisis/vender',prio:neto<0?-neto:neto*0.2});}
+      F.push({t:`${esc(x.l.nombre)} ya llegó a su meta`,s:neto<0?`Cada semana en el corral te cuesta unos ${money(-neto)} más de lo que suben.`:`Todavía sube más de lo que come (${money(neto)} a la semana), pero el riesgo y el costo crecen. Ofrécelo.`,go:'#analisis/vender',prio:neto<0?-neto:neto*0.2});}
     // comedero con sobras: desperdicio estimado 4 %
     const r=comedero(x);
-    if(r.sob>=2)F.push({t:`Sobra comida en ${esc(x.l.nombre)}`,s:`Si baja 4 % la ración, ahorras unos <b>${money(costoDia*0.04*7)}</b> a la semana.`,prio:costoDia*0.04*7,go:'#analisis/comedero'});
+    if(r.sob>=2)F.push({t:`Sobra comida en ${esc(x.l.nombre)}`,s:`Si bajas 4 % la ración, ahorras unos ${money(costoDia*0.04*7)} a la semana.`,prio:costoDia*0.04*7,go:'#analisis/comedero'});
     if(r.vac>=2)F.push({t:`${esc(x.l.nombre)} se queda con el comedero vacío`,s:`Pierde ganancia: si le falta 5 % de comida, deja de subir unos ${nf(x.gdpUse*0.05*x.cab*7)} kg a la semana (${money(x.gdpUse*0.05*x.cab*7*p)}).`,prio:x.gdpUse*0.05*x.cab*7*p,go:'#analisis/comedero'});
     if(x.bajaCons)F.push({t:`${esc(x.l.nombre)} comió menos ayer`,s:'Una baja de consumo suele avisar de calor, agua o enfermedad dos o tres días antes. Revísalo hoy.',prio:costoDia*0.5,go:'#lote/'+encodeURIComponent(x.id)});
     // costo de ganancia arriba del precio
-    if(x.costoKgGan&&p&&x.costoKgGan>p*0.95&&x.kgGan>0){const gSem=x.gdpUse*x.cab*7;F.push({t:`En ${esc(x.l.nombre)} el kilo ganado cuesta casi lo que vale`,s:`Producir un kilo te cuesta ${pk(x.costoKgGan)} y lo vendes a ${pk(p)}. Revisa la ración y la conversión: a la semana son ${nf(gSem)} kg.`,prio:Math.max(0,(x.costoKgGan-p*0.8))*gSem,go:'#analisis/costos'});}
+    if(x.costoKgGan&&p&&x.costoKgGan>p*0.95&&x.kgGan>0){const gSem=x.gdpUse*x.cab*7;F.push({t:`En ${esc(x.l.nombre)} engordar cuesta casi lo que vale`,s:`Producir la ganancia te cuesta ${pk(x.costoKgGan)} y la vendes a ${pk(p)}. Revisa la ración y la conversión.`,prio:Math.max(0,(x.costoKgGan-p*0.8))*gSem,go:'#analisis/costos'});}
     // sin pesar: decides a ciegas
     const dsp=dias(x.ult.f,C.H);if(dsp>(+S.config.diasSinPesar||21)+7)F.push({t:`${esc(x.l.nombre)} lleva ${dsp} días sin pesar`,s:'Sin pesajes no sé si la ración funciona ni cuándo vender. Pésalo esta semana.',prio:costoDia*0.3,go:'#lote/'+encodeURIComponent(x.id)});
   }
