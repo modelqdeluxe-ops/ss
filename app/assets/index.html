@@ -963,9 +963,61 @@ const UW=()=>U();
 const UNOM=()=>U()==='lb'?'libra':'kilo';
 const W=kg=>U()==='lb'?kg*FK:kg;
 const toKg=v=>U()==='lb'?v/FK:v;
-const PKd=pkg=>U()==='lb'?pkg/FK:pkg;
-const precioToKg=p=>U()==='lb'?p*FK:p;
-const pk=pkg=>money2(PKd(pkg));
+/* Unidad de precio. El ganado y el alimento pueden cotizarse en otra unidad que la de los pesos:
+   Honduras y Centroamérica venden en pie por libra y compran el alimento por quintal; Estados Unidos
+   cotiza por cwt (100 lb); Brasil por arroba de 15 kg. Todo se guarda por kilo. */
+const PUN={
+ kg:{kg:1,s:'kg',n:'kilo',f:0,el:'el kilo',por:'por kilo'},
+ lb:{kg:1/FK,s:'lb',n:'libra',f:1,el:'la libra',por:'por libra'},
+ qq:{kg:100/FK,s:'qq',n:'quintal',f:0,el:'el quintal',por:'por quintal'},
+ cwt:{kg:100/FK,s:'cwt',n:'cwt (100 lb)',f:0,el:'el cwt (100 lb)',por:'por cwt (100 lb)'},
+ arr:{kg:25/FK,s:'@',n:'arroba',f:1,el:'la arroba (25 lb)',por:'por arroba (25 lb)'},
+ arrb:{kg:15,s:'@',n:'arroba',f:1,el:'la arroba (15 kg)',por:'por arroba (15 kg)'},
+ t:{kg:1000,s:'t',n:'tonelada',f:1,el:'la tonelada',por:'por tonelada'},
+ st:{kg:2000/FK,s:'ton',n:'tonelada corta',f:1,el:'la tonelada corta (2,000 lb)',por:'por tonelada corta (2,000 lb)'}
+};
+const PU=()=>PUN[S.config.unidadPrecio]?S.config.unidadPrecio:U();
+/* cómo se pesa y se cotiza en cada país; el usuario puede cambiar cada cosa después */
+const PAISES=[
+ ['HN','Honduras','lb','lb','qq','L'],['GT','Guatemala','lb','lb','qq','Q'],['SV','El Salvador','lb','lb','qq','$'],
+ ['NI','Nicaragua','lb','lb','qq','C$'],['CR','Costa Rica','kg','kg','kg','₡'],['PA','Panamá','lb','lb','qq','B/.'],
+ ['BZ','Belice','lb','lb','lb','BZ$'],['DO','República Dominicana','lb','lb','qq','RD$'],['MX','México','kg','kg','kg','$'],
+ ['US','Estados Unidos','lb','cwt','st','$'],['CA','Canadá','lb','cwt','t','C$'],['CO','Colombia','kg','kg','kg','$'],
+ ['VE','Venezuela','kg','kg','kg','Bs'],['EC','Ecuador','lb','lb','qq','$'],['PE','Perú','kg','kg','kg','S/'],
+ ['BO','Bolivia','kg','kg','kg','Bs'],['BR','Brasil','kg','arrb','t','R$'],['PY','Paraguay','kg','kg','kg','₲'],
+ ['UY','Uruguay','kg','kg','kg','US$'],['AR','Argentina','kg','kg','t','$'],['CL','Chile','kg','kg','kg','$'],
+ ['ES','España','kg','kg','kg','€'],['PT','Portugal','kg','kg','kg','€'],['FR','Francia','kg','kg','t','€'],
+ ['AU','Australia','kg','kg','t','A$'],['NZ','Nueva Zelanda','kg','kg','t','NZ$'],['ZA','Sudáfrica','kg','kg','t','R'],
+ ['PH','Filipinas','kg','kg','kg','₱'],['IN','India','kg','kg','kg','₹'],['otro','Otro país','','','','']
+];
+function unidadesHtml(){
+  const c=S.config,sel=(k,ops,v,l)=>`<div class="q"><label for="u_${k}">${l}</label><select class="in" id="u_${k}" data-cfgsel="${k}">${ops.map(([o,t])=>`<option value="${o}"${o===v?' selected':''}>${g5(t)}</option>`).join('')}</select></div>`;
+  const uo=ks=>ks.map(k=>[k,{kg:'Por kilo (kg)',lb:'Por libra (lb)',qq:'Por quintal (100 lb)',cwt:'Por cwt (100 lb)',arr:'Por arroba de 25 lb',arrb:'Por arroba de 15 kg',t:'Por tonelada (1,000 kg)',st:'Por tonelada corta (2,000 lb)'}[k]]);
+  const ej=`${money2(PKd(+c.precioVentaKg||59))} ${PUN[PU()].por}`;
+  return `${sel('pais',[['','Elige tu país']].concat(PAISES.map(p=>[p[0],p[1]])),c.pais||'','País')}
+   <small class="hint" style="margin:-6px 0 0">Al elegir el país pongo cómo se pesa y se cotiza ahí. Puedes cambiar cada cosa abajo.</small>
+   <div class="q"><span class="lb">Peso de los animales</span><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div></div>
+   <div class="two">${sel('unidadPrecio',uo(['lb','kg','qq','cwt','arr','arrb']),PU(),'Precio del ganado')}${sel('unidadAlim',uo(['lb','kg','qq','arr','t','st']),PUA(),'Precio del alimento')}</div>
+   <small class="hint" style="margin:0">Tu precio de venta se ve así: <b>${g5(ej)}</b>. Pesos, precios y costos cambian de unidad en toda la app; tus datos no cambian.</small>`;
+}
+document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.cfgsel)return;const k=el.dataset.cfgsel,v=el.value;
+  if(k==='pais'){const p=PAISES.find(z=>z[0]===v);if(!p)return;const d={...S.config,pais:v};if(p[2]){d.unidad=p[2];d.unidadPrecio=p[3];d.unidadAlim=p[4];d.moneda=p[5];}
+    put('ajustes','finca',d);toast(p[2]?`Listo: ${p[1]}, precios ${PUN[p[3]].por} y moneda ${p[5]}`:'Elige abajo tus unidades');return;}
+  put('ajustes','finca',{...S.config,[k]:v});toast('Unidad cambiada. Tus datos no cambian.');});
+const PUA=()=>PUN[S.config.unidadAlim]?S.config.unidadAlim:U();
+const PKd=pkg=>pkg*PUN[PU()].kg;
+const precioToKg=p=>p/PUN[PU()].kg;
+const PKdA=pkg=>pkg*PUN[PUA()].kg;
+const precioAToKg=p=>p/PUN[PUA()].kg;
+/* cuántas unidades de peso de pantalla hay en una unidad de precio (cwt en libras = 100) */
+const PW=()=>PUN[PU()].kg/(U()==='lb'?1/FK:1),PWA=()=>PUN[PUA()].kg/(U()==='lb'?1/FK:1);
+/* texto protegido: aUnidad no lo convierte a libras */
+const g5=t=>'\u0005'+t+'\u0006';
+const PUel=()=>g5(PUN[PU()].el),PUpor=()=>g5(PUN[PU()].por),PUs=()=>g5((S.config.moneda||'L')+'/'+PUN[PU()].s);
+const PUAel=()=>g5(PUN[PUA()].el),PUApor=()=>g5(PUN[PUA()].por),PUAs=()=>g5((S.config.moneda||'L')+'/'+PUN[PUA()].s);
+/* pk: precio del ganado; pkA: precio del alimento. La marca invisible le dice a aUnidad qué unidad poner después */
+const pk=pkg=>money2(PKd(pkg))+'\u2063';
+const pkA=pkg=>money2(PKdA(pkg))+'\u2064';
 const wtxt=(kg,d=0)=>nf(W(kg),d)+' '+UW();
 const Wpts=pts=>pts.map(([f,v])=>[f,W(v)]);
 const r1u=v=>Math.round(v*10)/10,r2u=v=>Math.round(v*100)/100;
@@ -985,9 +1037,30 @@ function convTxt(t){
   t=t.replace(/\u0001(\d+)\u0002/g,(m,i)=>guard[+i]);
   return t;
 }
+function precioTxt(html,G){
+  const keep=t=>{G.push(t);return '\u0007'+(G.length-1)+'\u0008';};
+  html=html.replace(/\u0005([^\u0006]*)\u0006/g,(m,t)=>keep(t));
+  for(const [mk,P] of [['\u2063',PU],['\u2064',PUA]]){
+    const u=PUN[P()];
+    html=html.replace(new RegExp(mk+'((?:</b>)?)(\\s+)(el kilo|por kilo|el kg|por kg|cada kilo|la libra|por libra|cada libra)(?![a-záéíóú])','g'),(m,b,sp,ph)=>b+sp+keep(/^el|^la/.test(ph)?u.el:u.por));
+    html=html.split(mk).join(P()!==U()?keep('/'+u.s):'');
+  }
+  // "costo por kilo ganado" habla de dinero: va en la unidad de precio del ganado
+  if(PU()!==U()){const u=PUN[PU()];
+    html=html.replace(/\b(costo|Costo|cuesta|cuestan)(\s+(?:por|del|de cada|por cada|de un|cada))\s+(?:kg|kilo|kilogramo)\s+ganado\b/g,(m,a,b)=>a+b+' '+keep(u.n+(u.f?' ganada':' ganado')));}
+  return html;
+}
 function aUnidad(html){
-  if(U()!=='lb'||html==null)return html;
-  return String(html).replace(/(^|>)([^<]+)(?=<|$)/g,(m,a,txt)=>a+convTxt(txt));
+  if(html==null)return html;
+  const G=[];html=precioTxt(String(html),G);
+  if(U()==='lb')html=html.replace(/(^|>)([^<]+)(?=<|$)/g,(m,a,txt)=>a+convTxt(txt));
+  return html.replace(/\u0007(\d+)\u0008/g,(m,i)=>G[+i]);
+}
+/* igual que aUnidad pero sin pasar kilos a libras: para textos que ya vienen en la unidad de la app */
+function locTxt(html){
+  if(html==null)return html;
+  const G=[];html=precioTxt(String(html),G);
+  return html.replace(/\u0007(\d+)\u0008/g,(m,i)=>G[+i]);
 }
 
 /* ============ estado y almacenamiento ============ */
@@ -1618,7 +1691,7 @@ const MAS_SUB={
   return masHd('Configuración','Tus preferencias. La app las usa para calcular márgenes, fechas y avisos.')+`<main class="bd"><form class="cfg-f" data-form="cfg">
    <section class="sec">${secH('Tu finca')}<div class="card pad cfg-c">${f('finca','Nombre de la finca',cfg.finca,'required')}${f('ubicacion','Ubicación',cfg.ubicacion,'placeholder="Aldea, municipio"')}<p class="hint" style="margin:-4px 0 0">Con tu ubicación te muestro el clima de tu zona y el riesgo de calor para el ganado.</p></div></section>
    <section class="sec">${secH('Precio y moneda')}<div class="card pad cfg-c">
-    <div class="two">${f('precioVentaKg','Precio de venta',r2u(PKd(+cfg.precioVentaKg||0)),'inputmode="decimal"','Lo que te pagan hoy. Actualízalo cuando cambie el mercado.','por kg')}${f('moneda','Moneda',cfg.moneda,'maxlength="4"')}</div></div></section>
+    <div class="two">${f('precioVentaKg','Precio de venta',r2u(PKd(+cfg.precioVentaKg||0)),'inputmode="decimal"','Lo que te pagan hoy. Actualízalo cuando cambie el mercado.',PUs())}${f('moneda','Moneda',cfg.moneda,'maxlength="4"')}</div></div></section>
    <section class="sec">${secH('Metas del engorde')}<div class="card pad cfg-c">
     ${f('metaKg','Peso meta de venta',Math.round(W(+cfg.metaKg||480)),'inputmode="numeric"','Peso por cabeza al que planeas vender. Cada lote puede tener su propia meta.','kg')}
     ${f('gdpEsperada','Ganancia diaria esperada',r2u(W(+cfg.gdpEsperada||1.3)),'inputmode="decimal"','','kg/día')}
@@ -1628,12 +1701,12 @@ const MAS_SUB={
     ${f('horas','Horarios de entrega de alimento',cfg.horas,'','Sepáralos con comas. Por ejemplo: 6:00, 11:00, 15:00. La pantalla Hoy te recuerda cada entrega.')}
     ${f('diasSinPesar','Avisarme si un lote no se pesa en',cfg.diasSinPesar,'inputmode="numeric"','','días')}</div></section>
    <section class="sec">${secH('Voz de Rumi')}<div class="card pad cfg-c" id="vozCfg">${vozCfgHtml()}</div></section>
-   <section class="sec">${secH('Unidad de peso')}<div class="card pad cfg-c"><div class="seg" role="group" aria-label="Unidad de peso">${[['lb','Libras'],['kg','Ki&#8203;los']].map(([v,t])=>`<button type="button" data-act="unidad" data-v="${v}" aria-pressed="${U()===v}">${t}</button>`).join('')}</div><small class="hint" style="margin:0">Pesos, ganancias y precios se muestran y se escriben en ${U()==='lb'?'libras':'kilos'}. Tus datos no cambian.</small></div></section>
+   <section class="sec">${secH('Unidades y país')}<div class="card pad cfg-c">${unidadesHtml()}</div></section>
    <div class="cfg-save"><button class="btn pri full">Guardar configuración</button></div></form></main>`;
  },
  raciones:()=>{
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
-  const rac=R.length?R.map(([k,r])=>`<button type="button" class="row" data-act="f" data-f="racion" data-id="${esc(k)}"><div class="tx"><b>${esc(r.nombre)}</b><span>${pk(r.costoKg)} el kilo${(r.ings||[]).length?', '+r.ings.map(i=>esc(i.n)).join(', '):''}</span></div>${ico('chev')}</button>`).join(''):`<p class="empty">Aún no tienes raciones.</p>`;
+  const rac=R.length?R.map(([k,r])=>`<button type="button" class="row" data-act="f" data-f="racion" data-id="${esc(k)}"><div class="tx"><b>${esc(r.nombre)}</b><span>${pkA(r.costoKg)} el kilo${(r.ings||[]).length?', '+r.ings.map(i=>esc(i.n)).join(', '):''}</span></div>${ico('chev')}</button>`).join(''):`<p class="empty">Aún no tienes raciones.</p>`;
   return masHd('Raciones y dietas','Tus mezclas y su costo por kilo. Las eliges cada vez que anotas alimento.')+`<main class="bd">
    <section class="sec"><div class="card rows">${masFila(mico('formula'),'Formular una dieta','Rumi calcula la mezcla más barata con tus precios','href="#formular"','t-v')}${masFila(ico('nuevo'),'Nueva ración','Nombre, costo por kilo e ingredientes','data-act="f" data-f="racion"','t-a')}</div></section>
    <section class="sec">${secH('Tus raciones',R.length)}<div class="card rows">${rac}</div></section></main>`;
@@ -1744,7 +1817,7 @@ FORMS.alimento=({n}={})=>{
   const C=calc();if(!C.act.length){toast('Primero crea un lote.');return;}
   const N=nEntregas();n=+n||C.sigEnt||1;
   const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
-    const racSel=R.length?q('Ración',opts('racion',[{v:'_lote',t:'La de cada lote',s:'la que tiene asignada'}].concat(R.map(([k,r])=>({v:k,t:r.nombre,s:pk(r.costoKg)+' el kilo'}))),'_lote',{lo:true})):q('Costo del alimento',inp('costoKg','',{unit:'por kg',ph:'0.00'}),'Aún no tienes raciones. Puedes crear una en Registrar, Ración.');
+    const racSel=R.length?q('Ración',opts('racion',[{v:'_lote',t:'La de cada lote',s:'la que tiene asignada'}].concat(R.map(([k,r])=>({v:k,t:r.nombre,s:pkA(r.costoKg)+' el kilo'}))),'_lote',{lo:true})):q('Costo del alimento',inp('costoKg','',{unit:PUAs(),ph:'0.00'}),'Aún no tienes raciones. Puedes crear una en Registrar, Ración.');
   const blocks=C.act.map(x=>{const p=programado(x,n);return `<div data-l="${esc(x.id)}"><div class="fh"><b>${esc(x.l.nombre)}</b><span class="sm">${pl(x.cab,'cabeza','cabezas')}${x.racion&&S.raciones[x.racion]?', '+esc(S.raciones[x.racion].nombre):''}</span></div>
     <div class="unit"><input class="in" name="kg_${esc(x.id)}" inputmode="decimal" placeholder="unos ${nf(W(p))}" data-prog="${Math.round(W(p)/5)*5}" aria-label="Kilos para ${esc(x.l.nombre)}" autocomplete="off"><em>kg</em></div>
     <div class="lect" data-name="lect_${esc(x.id)}" role="group" aria-label="Cómo estaba el comedero">${LECT.map((t,i)=>`<button type="button" data-v="${i}" aria-pressed="false">${t}</button>`).join('')}</div><input type="hidden" name="lect_${esc(x.id)}" value=""></div>`;}).join('');
@@ -1759,7 +1832,7 @@ PREV.alimento=f=>{let t=0;$$('input[name^="kg_"]',f).forEach(i=>{const v=num(i.v
   const h=$('#shTitle');if(h&&f.elements.n)h.textContent='Entrega de las '+horaDe(+f.elements.n.value);};
 SAVE.alimento=f=>{
   const C=calc(),fch=fv(f,'f')||hoy(),n=+fv(f,'n')||1;
-  const sel=fv(f,'racion'),manual=num(fv(f,'costoKg'))||0;
+  const sel=fv(f,'racion'),manual=precioAToKg(num(fv(f,'costoKg'))||0);
   const items=[];let tot=0;
   for(const x of C.act){const kgU=num(fv(f,'kg_'+x.id));if(!(kgU>0))continue;const kg=Math.round(toKg(kgU)*10)/10;const lc=fv(f,'lect_'+x.id);
     const rac=sel==='_lote'?(x.racion||null):(sel||null);const costo=rac&&S.raciones[rac]?+S.raciones[rac].costoKg||0:(manual||x.costoKgR||0);
@@ -1838,7 +1911,7 @@ FORMS.venta=({lote}={})=>{
   const body=`${q('Lote',loteOpts(lote))}${q('Cabezas vendidas',inp('cab','',{mode:'numeric'}),'Si vendes todo el lote, se cierra y pasa a Vendidos.')}
    ${q('¿Cómo pesaron?',segBtns('modo',[['tot','Kilos totales'],['prom','Peso promedio']],'tot'))}
    ${q('Peso',inp('val','',{xl:true,unit:'kg',ph:'0',id:'v_val'}),'','v_val')}
-   <div class="two">${q('Precio por kilo',inp('precio',r2u(PKd(+S.config.precioVentaKg||0)),{unit:S.config.moneda||'L'}))}${fecha()}</div>
+   <div class="two">${q(`Precio ${PUpor()}`,inp('precio',r2u(PKd(+S.config.precioVentaKg||0)),{unit:PUs()}))}${fecha()}</div>
    ${q('Comprador',`<input class="in" name="comprador" placeholder="Opcional" autocomplete="off">`)}
    <div class="prev" data-prev hidden></div>`;
   openSheet(shHead('Venta','Registrar')+formWrap('venta',body,foot('Guardar venta','<b data-sum></b><span data-sub></span>')),()=>PREV.venta($('form',$('#sheet'))));
@@ -1850,7 +1923,7 @@ PREV.venta=f=>{
   if(!c.dataset.touched)c.value=x.cab;
   const cab=num(c.value)||0,v=num(fv(f,'val')),pr=num(fv(f,'precio'));
   const tu=fv(f,'modo')==='tot'?v:v*cab;
-  $('[data-sum]',f).textContent=tu>0&&pr>0?money(tu*pr):'';$('[data-sub]',f).textContent=tu>0&&pr>0?`${nf(tu)} ${UW()}, ${nf(tu/(cab||1))} ${UW()} por cabeza`:'';
+  $('[data-sum]',f).textContent=tu>0&&pr>0?money(tu*pr/PW()):'';$('[data-sub]',f).textContent=tu>0&&pr>0?`${nf(tu)} ${UW()}, ${nf(tu/(cab||1))} ${UW()} por cabeza`:'';
   const r=x.retiroHasta&&(fv(f,'f')||hoy())<x.retiroHasta;
   pv.hidden=!r;pv.classList.add('warn');if(r)pv.innerHTML=`Este lote está en retiro por <b>${esc(x.retiroProd)}</b> hasta el <b>${ffl(x.retiroHasta)}</b>. No lo vendas a matadero antes de esa fecha.`;
 };
@@ -1883,7 +1956,7 @@ FORMS.lote=({id}={})=>{
    <div class="two">${q('Cabezas',inp('cabezas',l?l.cabezas:'',{mode:'numeric',ph:'0'}))}${q('Fecha de entrada',`<input class="in" type="date" name="f" value="${l?l.fechaIngreso:hoy()}" max="${hoy()}" required>`)}</div>
    ${q('¿Cómo pesaron al entrar?',segBtns('modo',[['prom','Peso promedio'],['tot','Kilos totales']],'prom'))}
    ${q('Peso de entrada',inp('val',l?Math.round(W(l.pesoIngreso)):'',{xl:true,unit:'kg',ph:'0',id:'l_val'}),'','l_val')}
-   <div class="two">${q('Precio de compra',inp('precio',l?r2u(PKd(l.precioCompraKg)):'',{unit:'por kg',ph:'0.00'}))}${q('Flete y comisión',inp('flete',l?l.flete||'':'',{unit:S.config.moneda||'L',ph:'0'}),'Total del lote')}</div>
+   <div class="two">${q(`Precio de compra ${PUpor()}`,inp('precio',l?r2u(PKd(l.precioCompraKg)):'',{unit:PUs(),ph:'0.00'}))}${q('Flete y comisión',inp('flete',l?l.flete||'':'',{unit:S.config.moneda||'L',ph:'0'}),'Total del lote')}</div>
    <div class="prev" data-prev hidden></div>
    ${q('Tipo de animales',opts('tipo',TIPOS_LOTE,l?l.tipo:'Machos enteros'))}
    <div class="two">${q('Raza o cruce',`<input class="in" name="raza" value="${esc(l?l.raza:'')}" placeholder="Brahman cruzado" autocomplete="off">`)}${q('Peso meta',inp('meta',Math.round(W(l?l.metaKg:S.config.metaKg)),{mode:'numeric',unit:'kg'}))}</div>
@@ -1913,7 +1986,7 @@ SAVE.lote=f=>{
 FORMS.racion=({id}={})=>{
   const r=id?S.raciones[id]:null;const ings=r&&r.ings&&r.ings.length?r.ings:[{n:'Maíz molido',p:''},{n:'',p:''}];
   const body=`${q('Nombre',`<input class="in" name="nombre" value="${esc(r?r.nombre:'')}" placeholder="Finalización" required autocomplete="off">`)}
-   ${q('Costo por kilo de la mezcla',inp('costo',r?r2u(PKd(r.costoKg)):'',{unit:S.config.moneda||'L',ph:'0.00'}))}
+   ${q(`Costo de la mezcla ${PUApor()}`,inp('costo',r?r2u(PKdA(r.costoKg)):'',{unit:PUAs(),ph:'0.00'}))}
    <div class="q"><span class="lb">Ingredientes</span><div data-ings style="display:flex;flex-direction:column;gap:8px">${ings.map(ingRow).join('')}</div>
    <button type="button" class="lnk" data-act="addIng" style="align-self:flex-start">Agregar ingrediente</button><small data-pct></small></div>
    ${r?`<button type="button" class="btn danger" data-act="delRacion" data-id="${esc(id)}">Eliminar ración</button>`:''}`;
@@ -1926,7 +1999,7 @@ SAVE.racion=f=>{
   const c=num(fv(f,'costo'));if(!(c>0))return ferr(f,'Escribe el costo por kilo.');
   const ns=$$('input[name="ing_n"]',f),ps=$$('input[name="ing_p"]',f);
   const ings=ns.map((n,i)=>({n:n.value.trim(),p:num(ps[i].value)||0})).filter(i=>i.n);
-  const id=f.dataset.id||uid('r');put('raciones',id,{...(S.raciones[f.dataset.id]||{}),nombre,costoKg:Math.round(precioToKg(c)*10000)/10000,ings});closeSheet();toast('Ración guardada');
+  const id=f.dataset.id||uid('r');put('raciones',id,{...(S.raciones[f.dataset.id]||{}),nombre,costoKg:Math.round(precioAToKg(c)*10000)/10000,ings});closeSheet();toast('Ración guardada');
 };
 
 /* ============ acciones ============ */
@@ -1953,12 +2026,12 @@ const ACTS={
   demo:()=>{if(Object.keys(S.lotes).length)confirmar('Cargar ejemplo','Se reemplazan todos tus datos por un engorde de ejemplo. Descarga un respaldo antes si lo necesitas.','Cargar ejemplo',cargarDemo);else cargarDemo();},
   borrarTodo:()=>confirmar('Borrar todo','Se eliminan todos los lotes, raciones y registros. Esto no se puede deshacer.','Borrar todo',()=>{borrarTodo();toast('Datos borrados');}),
   respaldo:()=>descargar(`rumentis-respaldo-${slug()}-${hoy()}.json`,JSON.stringify({app:'rumentis-engorde',version:2,fecha:new Date().toISOString(),lotes:S.lotes,raciones:S.raciones,diario:S.diario,config:S.config})),
-  expLotes:()=>{const C=calc();const u=UW();csv('lotes',['Lote','Estado','Entrada','Cabezas al entrar','Cabezas hoy','Muertes','Vendidas',`Peso de entrada (${u})`,`Peso actual o de venta (${u})`,`Meta (${u})`,'Días',`Ganancia diaria (${u})`,`Consumo ${u}/cab/día`,'Conversión',`Alimento (${u})`,'Costo alimento','Sanidad','Otros gastos','Compra',`Costo por ${u} ganado`,'Ingresos por venta','Margen'],
+  expLotes:()=>{const C=calc();const u=UW();csv('lotes',['Lote','Estado','Entrada','Cabezas al entrar','Cabezas hoy','Muertes','Vendidas',`Peso de entrada (${u})`,`Peso actual o de venta (${u})`,`Meta (${u})`,'Días',`Ganancia diaria (${u})`,`Consumo ${u}/cab/día`,'Conversión',`Alimento (${u})`,'Costo alimento','Sanidad','Otros gastos','Compra',`Costo por ${PUN[PU()].s} ganado`,'Ingresos por venta','Margen'],
     Object.values(C.L).map(x=>[x.l.nombre,x.activo?'En engorde':'Vendido',x.l.fechaIngreso,x.cab0,x.cab,x.bajas,x.vend,r1(W(x.p0)),r1(W(x.pesoHoy)),Math.round(W(x.meta)),x.dec,r2(W(x.activo?x.gdpUse:x.gdpTot)),r2(x.consumo!=null?W(x.consumo):null),r2(x.conv),Math.round(W(x.kgTot)),Math.round(x.costoAlim),Math.round(x.san),Math.round(x.gas),Math.round(x.compra),r2(x.costoKgGan!=null?PKd(x.costoKgGan):null),Math.round(x.ingresos),Math.round(x.activo?x.proy.margen:x.margenReal)]));},
-  expAlim:()=>csvItems('alimento',['Fecha','Lote','Entrega',UW()==='lb'?'Libras':'Kilos','Ración',`Costo por ${UW()}`,'Comedero'],i=>[i.f,ln(i.lote),horaDe(+i.n),r1(W(+i.kg)),i.racion&&S.raciones[i.racion]?S.raciones[i.racion].nombre:'',r2(PKd(+i.costoKg||0)),i.lect==null?'':LECT[+i.lect]]),
+  expAlim:()=>csvItems('alimento',['Fecha','Lote','Entrega',UW()==='lb'?'Libras':'Kilos','Ración',`Costo por ${PUN[PUA()].s}`,'Comedero'],i=>[i.f,ln(i.lote),horaDe(+i.n),r1(W(+i.kg)),i.racion&&S.raciones[i.racion]?S.raciones[i.racion].nombre:'',r2(PKdA(+i.costoKg||0)),i.lect==null?'':LECT[+i.lect]]),
   expPes:()=>csvItems('pesaje',['Fecha','Lote',`Peso promedio (${UW()})`,'Cabezas pesadas'],i=>[i.f,ln(i.lote),r1(W(+i.prom)),i.cab]),
   expSan:()=>csvItems('sanidad',['Fecha','Lote','Tipo','Producto','Cabezas','Costo','Días de retiro','Nota'],i=>[i.f,ln(i.lote),i.clase,i.producto,i.cab,i.costo,i.retiro,i.nota]),
-  expMov:()=>{const it=calc().items.filter(i=>i.tipo==='venta'||i.tipo==='baja');csv('ventas-y-muertes',['Fecha','Lote','Movimiento','Cabezas',UW()==='lb'?'Libras':'Kilos',`Precio por ${UW()}`,'Total','Comprador o causa'],it.map(i=>i.tipo==='venta'?[i.f,ln(i.lote),'Venta',i.cab,Math.round(W(+i.kg)),r2(PKd(+i.precioKg)),Math.round(i.kg*i.precioKg),i.comprador]:[i.f,ln(i.lote),'Muerte',i.cab,'','','',i.causa]));},
+  expMov:()=>{const it=calc().items.filter(i=>i.tipo==='venta'||i.tipo==='baja');csv('ventas-y-muertes',['Fecha','Lote','Movimiento','Cabezas',UW()==='lb'?'Libras':'Kilos',`Precio por ${PUN[PU()].s}`,'Total','Comprador o causa'],it.map(i=>i.tipo==='venta'?[i.f,ln(i.lote),'Venta',i.cab,Math.round(W(+i.kg)),r2(PKd(+i.precioKg)),Math.round(i.kg*i.precioKg),i.comprador]:[i.f,ln(i.lote),'Muerte',i.cab,'','','',i.causa]));},
   expGas:()=>csvItems('gasto',['Fecha','Lote','Concepto','Monto','Detalle'],i=>[i.f,i.lote?ln(i.lote):'General',i.cat,i.monto,i.desc])
 };
 const r1=v=>v==null||!isFinite(v)?'':Math.round(v*10)/10,r2=v=>v==null||!isFinite(v)?'':Math.round(v*100)/100;
@@ -2309,7 +2382,7 @@ function habilidades(t,e,txt){
     if(!F.ok)return {html:`<b>Dieta para ${nf(bw)} kg ganando ${nf(adg,2)} kg al día</b><br>${F.msg}`,btns:[['Abrir el formulador',{t:'go',go:'#formular',fp:{bw,adg,ids:use}}]],sug:['Formula una dieta con maíz, soya, pulpa y heno','¿Qué es la conversión?']};
     RUMI.lastF=F;
     return {html:`<b>Dieta de menor costo para ${nf(bw)} kg ganando ${nf(adg,2)} kg al día</b>${x?` (${esc(x.l.nombre)})`:''}${formTabla(F)}
-      <div class="kv"><span>Costo por kilo de mezcla</span><b>${pk(F.costoKg)}</b></div><div class="kv"><span>Come por animal al día</span><b>${nf(F.kgTC,1)} kg, ${money2(F.costoDia)}</b></div><div class="kv"><span>Costo de alimento por kilo ganado</span><b>${pk(F.costoKgGan)}</b></div>
+      <div class="kv"><span>Costo por kilo de mezcla</span><b>${pkA(F.costoKg)}</b></div><div class="kv"><span>Come por animal al día</span><b>${nf(F.kgTC,1)} kg, ${money2(F.costoDia)}</b></div><div class="kv"><span>Costo de alimento por kilo ganado</span><b>${pk(F.costoKgGan)}</b></div>
       ${formNut(F)}<p class="sm" style="margin:8px 0 0">Guía basada en tablas de nutrición (NRC) con precios de tu lista. Ajusta con análisis de tus ingredientes y tu nutricionista.</p>`,
       btns:[['Guardar como ración',{t:'saveF'}],['Ajustar en el formulador',{t:'go',go:'#formular',fp:{bw,adg,ids:use}}]],sug:['Formula para 450 kg ganando 1.5','¿Cómo adapto al concentrado?']};
   }
@@ -2430,7 +2503,7 @@ function habilidades(t,e,txt){
   // qué lleva una ración
   if(/que lleva|ingredientes de|composicion|que tiene la racion/.test(t)){
     const R=Object.values(S.raciones);const r=R.find(r=>t.includes(nrm(r.nombre)))||R[0];if(!r)return {html:'Todavía no tienes raciones. ¿Formulamos una?',btns:[['Formular dieta',{t:'go',go:'#formular'}]]};
-    return {html:`<b>${esc(r.nombre)}</b>, ${pk(r.costoKg)} el kilo`+((r.ings||[]).length?tabla(null,r.ings.map(i=>[esc(i.n),`${nf(i.p,1)} %`])):'<br>Sin ingredientes anotados.')};
+    return {html:`<b>${esc(r.nombre)}</b>, ${pkA(r.costoKg)} el kilo`+((r.ings||[]).length?tabla(null,r.ings.map(i=>[esc(i.n),`${nf(i.p,1)} %`])):'<br>Sin ingredientes anotados.')};
   }
   // cambiar ajustes por voz
   let m=t.match(/(?:cambia|pon|actualiza|sube|baja|ajusta)\w*\s+(?:el\s+)?precio(?: de venta)?\s+(?:a|en)\s+(?:l\s*)?(\d+(?:[.,]\d+)?)/);
@@ -2468,12 +2541,12 @@ PAGES.formular=()=>{
   if(!UI.fp){const bw=C.act.length?Math.round(C.act.reduce((s,x)=>s+x.pesoHoy*x.cab,0)/Math.max(1,C.cabT)):350;UI.fp={bw,adg:1.4,cab:C.cabT||50,lote:''};}
   const fp=UI.fp,F=UI.fres;
   const lotes=C.act.map(x=>`<button type="button" class="chip" data-act="fpLote" data-id="${esc(x.id)}" aria-pressed="${fp.lote===x.id}">${esc(x.l.nombre)}</button>`).join('');
-  const ings=INGS.map(i=>{const on=fp.ids?fp.ids.includes(i.id):ingOn(i.id);return `<div class="ingr${on?' on':''}"><button type="button" class="tog" data-act="fpIng" data-id="${i.id}" role="switch" aria-checked="${on}" aria-label="${esc(i.n)}"><span></span></button><div class="tx"><b>${esc(i.n)}</b><span>${nf(i.pc,i.pc<20?1:0)} % proteína, ${nf(i.ms)} % materia seca</span></div><div class="unit" style="width:112px"><input class="in" inputmode="decimal" data-precio="${i.id}" value="${r2u(PKd(ingPrecio(i.id)))}" aria-label="Precio por kilo de ${esc(i.n)}"><em>${esc(S.config.moneda||'L')}</em></div></div>`;}).join('');
+  const ings=INGS.map(i=>{const on=fp.ids?fp.ids.includes(i.id):ingOn(i.id);return `<div class="ingr${on?' on':''}"><button type="button" class="tog" data-act="fpIng" data-id="${i.id}" role="switch" aria-checked="${on}" aria-label="${esc(i.n)}"><span></span></button><div class="tx"><b>${esc(i.n)}</b><span>${nf(i.pc,i.pc<20?1:0)} % proteína, ${nf(i.ms)} % materia seca</span></div><div class="unit" style="width:112px"><input class="in" inputmode="decimal" data-precio="${i.id}" value="${r2u(PKdA(ingPrecio(i.id)))}" aria-label="Precio de ${esc(i.n)}"><em>${PUAs()}</em></div></div>`;}).join('');
   let res='';
   if(F&&F.ok){
     res=`<section class="sec" id="fres">${secH('Resultado','dieta de menor costo')}
      <div class="card pad" style="display:flex;flex-direction:column;gap:12px">
-      <div class="kpis dark"><div class="kpi"><b>${pk(F.costoKg)}</b><span>por kilo de mezcla</span></div><div class="kpi"><b>${nf(F.kgTC,1)} kg</b><span>por animal al día</span></div><div class="kpi"><b>${nf(F.gdpEst,2)} kg</b><span>ganancia esperada</span></div></div>
+      <div class="kpis dark"><div class="kpi"><b>${pkA(F.costoKg)}</b><span>por kilo de mezcla</span></div><div class="kpi"><b>${nf(F.kgTC,1)} kg</b><span>por animal al día</span></div><div class="kpi"><b>${nf(F.gdpEst,2)} kg</b><span>ganancia esperada</span></div></div>
       ${formTabla(F)}
       <div class="kv"><span>Costo por animal al día</span><b>${money2(F.costoDia)}</b></div>
       <div class="kv"><span>Costo del lote al día (${nf(fp.cab)} cabezas)</span><b>${money(F.costoDia*fp.cab)}</b></div>
@@ -2507,7 +2580,7 @@ Object.assign(ACTS,{
   fpGuardar:()=>{const F=UI.fres;if(!F)return;const n=($('#fNom').value||'').trim();guardarFormula(F,n);toast('Ración guardada. Ya puedes usarla en tus entregas.');}
 });
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.fp;if(k&&UI.fp){const v=num(e.target.value);UI.fp[k]=(k==='bw'||k==='adg')?toKg(v):v;}});
-document.addEventListener('change',e=>{const id=e.target.dataset&&e.target.dataset.precio;if(!id)return;const v=num(e.target.value);if(!(v>=0))return;put('ajustes','finca',{...S.config,precios:{...(S.config.precios||{}),[id]:Math.round(precioToKg(v)*10000)/10000}});UI.fres=null;});
+document.addEventListener('change',e=>{const id=e.target.dataset&&e.target.dataset.precio;if(!id)return;const v=num(e.target.value);if(!(v>=0))return;put('ajustes','finca',{...S.config,precios:{...(S.config.precios||{}),[id]:Math.round(precioAToKg(v)*10000)/10000}});UI.fres=null;});
 
 /* ============ animaciones ============ */
 let lastRoute=null;
@@ -2751,8 +2824,8 @@ function precioSec(l,num0){
   const val=l?(tp==='total'?Math.round(compraAnimales(l)||(+l.precioCompraKg*l.pesoIngreso*l.cabezas)):r2u(PKd(l.precioCompraKg))):'';
   return `<div class="paso-t"><span>${num0}</span><b>Precio de compra</b></div>
    ${segBtns('modoP',[['lote','Precio del lote'],['animal','Precio por animal']],mp)}
-   <div data-plote>${segBtns('tipoP',[['kg','Por kilo'],['total','Total del lote']],tp)}
-    ${q('Precio',inp('precio',val,{unit:'por kg',ph:'0.00',id:'l_precio'}),'','l_precio')}
+   <div data-plote>${segBtns('tipoP',[['kg',`Por ${g5(PUN[PU()].n)}`],['total','Total del lote']],tp)}
+    ${q('Precio',inp('precio',val,{unit:PUs(),ph:'0.00',id:'l_precio'}),'','l_precio')}
     <p class="hint" style="margin:0">Así se compra casi siempre: un precio para todo el lote. El costo se reparte igual entre los animales.</p></div>
    <p class="hint" data-panimal hidden style="margin:0">Escribe el precio que pagaste por cada animal en su fila.</p>
    ${q('Flete y comisión',inp('flete',l?l.flete||'':'',{unit:S.config.moneda||'L',ph:'0'}),'Total del lote')}`;
@@ -2760,7 +2833,7 @@ function precioSec(l,num0){
 function prevPrecio(f){
   const mp=fv(f,'modoP')||'lote';const pl_=$('[data-plote]',f),pa=$('[data-panimal]',f);if(!pl_)return;
   pl_.hidden=mp!=='lote';if(pa)pa.hidden=mp!=='animal';f.classList.toggle('pind',mp==='animal');
-  const u=$('#l_precio',f);if(u){const em=u.parentNode.querySelector('em');if(em)em.textContent=fv(f,'tipoP')==='total'?(S.config.moneda||'L'):aUnidad('por kg');}
+  const u=$('#l_precio',f);if(u){const em=u.parentNode.querySelector('em');if(em)em.textContent=fv(f,'tipoP')==='total'?(S.config.moneda||'L'):locTxt(PUs());}
 }
 /* reparte o suma el costo de compra; devuelve null si falta algo */
 function costosCompra(f,an){
@@ -2976,12 +3049,12 @@ FORMS.venta=({lote}={})=>{
   const x=lote&&calc().L[lote];if(!x||!tieneAnimales(x.l))return _formVenta0({lote});
   const body=`${animSel(x,'animales',null,true)}${q('¿Cómo pesaron?',segBtns('modo',[['tot','Kilos totales'],['prom','Peso promedio']],'tot'))}
    ${q('Peso',inp('val','',{xl:true,unit:'kg',ph:'0',id:'v_val'}),'','v_val')}
-   <div class="two">${q('Precio por kilo',inp('precio',r2u(PKd(+S.config.precioVentaKg||0)),{unit:S.config.moneda||'L'}))}${fecha()}</div>
+   <div class="two">${q(`Precio ${PUpor()}`,inp('precio',r2u(PKd(+S.config.precioVentaKg||0)),{unit:PUs()}))}${fecha()}</div>
    ${q('Comprador',`<input class="in" name="comprador" placeholder="Opcional" autocomplete="off">`)}<div class="prev" data-prev hidden></div>`;
   openSheet(shHead('Venta',esc(x.l.nombre))+formWrap('ventaAn',body,foot('Guardar venta','<b data-sum></b><span data-sub></span>')),()=>{const f=$('#sheet form');f.dataset.lote=x.id;PREV.ventaAn(f);});
 };
 PREV.ventaAn=f=>{const x=calc().L[f.dataset.lote];if(!x)return;const n=(fv(f,'animales')||'').split(',').filter(Boolean).length,v=num(fv(f,'val')),pr=num(fv(f,'precio'));
-  const tu=fv(f,'modo')==='tot'?v:v*n;$('[data-sum]',f).textContent=tu>0&&pr>0?money(tu*pr):'';$('[data-sub]',f).textContent=n?`${pl(n,'animal','animales')}${tu>0?`, ${nf(tu/(n||1))} ${UW()} por cabeza`:''}`:'';
+  const tu=fv(f,'modo')==='tot'?v:v*n;$('[data-sum]',f).textContent=tu>0&&pr>0?money(tu*pr/PW()):'';$('[data-sub]',f).textContent=n?`${pl(n,'animal','animales')}${tu>0?`, ${nf(tu/(n||1))} ${UW()} por cabeza`:''}`:'';
   const pv=$('[data-prev]',f);const r=x.retiroHasta&&(fv(f,'f')||hoy())<x.retiroHasta;pv.hidden=!r;pv.classList.add('warn');if(r)pv.innerHTML=`Este lote está en retiro por <b>${esc(x.retiroProd)}</b> hasta el <b>${ffl(x.retiroHasta)}</b>. No lo vendas a matadero antes de esa fecha.`;};
 SAVE.ventaAn=f=>{const x=calc().L[f.dataset.lote];const ids=(fv(f,'animales')||'').split(',').filter(Boolean);if(!ids.length)return ferr(f,'Elige los animales vendidos.');
   const v=num(fv(f,'val'));if(!(v>0))return ferr(f,'Escribe el peso.');const kg=toKg(fv(f,'modo')==='tot'?v:v*ids.length),pr=precioToKg(num(fv(f,'precio')));if(!(pr>0))return ferr(f,'Escribe el precio.');
@@ -3222,7 +3295,7 @@ function resumenP(k,p,e){
   const a=[];if(p.lote&&S.lotes[p.lote])a.push(esc(S.lotes[p.lote].nombre));
   const kg=p.val||p['kg_'+p.lote];if(kg)a.push(`${nf(kg)} ${UW()}`);
   if(p.cab&&k!=='baja')a.push(pl(p.cab,'cabeza','cabezas'));if(k==='baja')a.push(pl(p.cab,'cabeza','cabezas'));
-  if(p.cabezas)a.push(pl(p.cabezas,'cabeza','cabezas'));if(p.monto)a.push(money(p.monto));if(p.precio)a.push(`${money2(p.precio)} ${U()==='lb'?'la libra':'el kilo'}`);if(p.causa)a.push(p.causa.toLowerCase());if(p.clase)a.push(p.clase.toLowerCase());
+  if(p.cabezas)a.push(pl(p.cabezas,'cabeza','cabezas'));if(p.monto)a.push(money(p.monto));if(p.precio)a.push(`${money2(p.precio)} ${PUel()}`);if(p.causa)a.push(p.causa.toLowerCase());if(p.clase)a.push(p.clase.toLowerCase());
   if(p.f)a.push(`fecha ${ffc(p.f)}`);
   return a.length>1?a.slice(0,-1).join(', ')+' y '+a[a.length-1]:a[0]||'';
 }
@@ -3961,7 +4034,7 @@ function metricaLote(x,m){
     case 'margen':{const mg=x.activo?x.proy.margen:x.margenReal;return {html:`${n} ${x.activo?'dejaría':'dejó'} <b>${money(mg)}</b>, ${money(mg/cb)} por cabeza${x.activo?`, si sale a ${nf(x.meta)} kg y ${pk(+S.config.precioVentaKg)} el kilo`:''}.`};}
     case 'muertes':return {html:x.bajas?`En ${n} han muerto <b>${pl(x.bajas,'animal','animales')}</b>, ${nf(x.mort*100,1)} % del lote: ${x.g.baja.map(b=>`${b.causa||'sin causa'} el ${ffc(b.f)}`).join(', ')}.`:`En ${n} no ha muerto ningún animal.`};
     case 'retiro':return {html:x.retiroHasta?`${n} está en retiro por <b>${esc(x.retiroProd)}</b> hasta el <b>${ffl(x.retiroHasta)}</b>. No lo vendas a matadero antes.`:`${n} no tiene ningún retiro pendiente.`};
-    case 'racion':{const r=x.racion&&S.raciones[x.racion];return {html:r?`${n} come <b>${esc(r.nombre)}</b>, a ${pk(r.costoKg)} el kilo${(r.ings||[]).length?': '+r.ings.map(i=>`${esc(i.n)} ${nf(i.p,1)} %`).join(', '):''}.`:`${n} no tiene ración asignada.`,btns:[['Formular su dieta',{t:'formular',lote:x.id,p:{auto:true}}]]};}
+    case 'racion':{const r=x.racion&&S.raciones[x.racion];return {html:r?`${n} come <b>${esc(r.nombre)}</b>, a ${pkA(r.costoKg)} el kilo${(r.ings||[]).length?': '+r.ings.map(i=>`${esc(i.n)} ${nf(i.p,1)} %`).join(', '):''}.`:`${n} no tiene ración asignada.`,btns:[['Formular su dieta',{t:'formular',lote:x.id,p:{auto:true}}]]};}
     case 'inversion':return {html:`En ${n} llevas <b>${money(x.costoTot)}</b>: compra ${money(x.compra)}, alimento ${money(x.costoAlim)}, sanidad ${money(x.san)}${x.gas?` y otros ${money(x.gas)}`:''}.`};
     case 'dias':return {html:`${n} lleva <b>${x.dec} días</b> de engorde; entró el ${ffl(x.l.fechaIngreso)}.`};
     case 'cabezas':return {html:`${n} tiene <b>${pl(x.activo?x.cab:0,'cabeza','cabezas')}</b>${x.bajas?`; entraron ${x.cab0} y han muerto ${x.bajas}`:''}${x.vend?`; se han vendido ${x.vend}`:''}.`};
@@ -4388,7 +4461,7 @@ function simularNegocio(t,e){
   const p1=mv?(mv[2]?(/lib|lb/.test(mv[2])?+mv[1]*0.45359237:+mv[1]):toKg(+mv[1])):(+S.config.metaKg||480);
   const lotesT=Object.values(C.L);const pcProm=lotesT.length?lotesT.reduce((s,x)=>s+(+x.l.precioCompraKg||0),0)/lotesT.length:0;
   const pc=precios[0]||pcProm,pv=precios[1]||(+S.config.precioVentaKg||0);
-  if(!p0)return {html:`Dime el peso de compra, por ejemplo <b>"si compro 50 novillos de ${U()==='lb'?'650 libras a 27 la libra':'300 kilos a 60 el kilo'}"</b>.`,sug:sugs()};
+  if(!p0)return {html:`Dime el peso de compra, por ejemplo <b>"si compro 50 novillos de ${U()==='lb'?'650 libras':'300 kilos'} a ${nf(PKd(59))} ${PUel()}"</b>.`,sug:sugs()};
   if(!pc)return {html:'¿A cuánto los compras? Dime el precio por kilo o por libra.',sug:sugs()};
   const g=C.gdpP||(+S.config.gdpEsperada||1.3);
   let ckg=C.costoKg;if(!ckg){const F=formular({bw:(p0+p1)/2,adg:Math.min(1.6,g)});ckg=F.ok?F.costoKgGan*1.15:50;}
@@ -4412,7 +4485,7 @@ function recomendaciones(){
     if(x.diasSinPesar>(+S.config.diasSinPesar||21))R_.push([3,`Pesa <b>${esc(x.l.nombre)}</b>: el último pesaje fue ${cuando(x.ult.f)} y los cálculos pierden precisión.`,{t:'form',k:'pesaje',p:{lote:x.id}}]);
     if(x.mort>0.02)R_.push([2,`<b>${esc(x.l.nombre)}</b> tiene ${nf(x.mort*100,1)} % de mortalidad, más de lo esperado (1 a 2 %). Refuerza la recepción y la sanidad.`,{t:'ask',q:'Plan sanitario de ingreso'}]);
     if(x.racion&&S.raciones[x.racion]){const F=formular({bw:x.pesoHoy,adg:Math.min(1.6,x.gdpUse)});const act=+S.raciones[x.racion].costoKg||0;
-      if(F.ok&&act&&F.costoKg<act*0.93)R_.push([3,`Con tus precios, una dieta formulada para <b>${esc(x.l.nombre)}</b> costaría ${pk(F.costoKg)} el kilo contra ${pk(act)} de su ración actual (${nf((1-F.costoKg/act)*100,0)} % menos).`,{t:'formular',lote:x.id,p:{auto:true}}]);}
+      if(F.ok&&act&&F.costoKg<act*0.93)R_.push([3,`Con tus precios, una dieta formulada para <b>${esc(x.l.nombre)}</b> costaría ${pkA(F.costoKg)} el kilo contra ${pk(act)} de su ración actual (${nf((1-F.costoKg/act)*100,0)} % menos).`,{t:'formular',lote:x.id,p:{auto:true}}]);}
   }
   if(C.genDia>0&&C.cabT&&C.genDia>8)R_.push([3,`Tus gastos generales son ${money2(C.genDia)} por cabeza al día: con más animales en el corral se reparten mejor.`,null]);
   if(!R_.length)return {html:'Revisé todos tus lotes y no encontré nada preocupante. Sigue anotando el alimento a diario y pesando cada tres semanas.',sug:['¿Cuándo me conviene vender?','¿Cuánto voy a ganar?']};
@@ -4482,7 +4555,7 @@ function iniciarCrear(t,e){
 function pasoCrear(){
   const F=RUMI.flujo,d=F.d;
   if(F.paso==='fecha')return {html:`Perfecto, <b>${esc(d.nombre)}</b>. <b>Paso 2 de 4:</b> ¿qué día entraron los animales?`,sug:['Hoy','Ayer','Cancelar']};
-  if(F.paso==='precio')return {html:`<b>Paso 3 de 4:</b> ¿a cuánto compraste ${U()==='lb'?'la libra':'el kilo'} en pie? Si no lo sabes aún, di "después".`,sug:['Después','Cancelar'],nou:true};
+  if(F.paso==='precio')return {html:`<b>Paso 3 de 4:</b> ¿a cuánto compraste ${PUel()} en pie? Si no lo sabes aún, di "después".`,sug:['Después','Cancelar'],nou:true};
   if(F.paso==='pesos')return {html:`<b>Paso 4 de 4:</b> ahora el peso de cada animal${d.cab?` (me dijiste que son ${d.cab})`:''}, en ${U()==='lb'?'libras':'kilos'}. Mándalos separados por coma, por ejemplo <b>${U()==='lb'?'650, 700, 680':'300, 320, 310'}</b>, o con su arete: <b>101 ${U()==='lb'?'650':'300'}, 102 ${U()==='lb'?'700':'320'}</b>. Puedes mandarlos en varios mensajes. Cuando termines, di <b>listo</b>.`,sug:['Cancelar'],nou:true};
   if(F.paso==='confirmar'){const ps=d.an.map(a=>a.p0);const prom=promedio(ps);const inv=d.precio?ps.reduce((s,v)=>s+v,0)*d.precio:0;
     return {html:`Revisa antes de crearlo:`+tabla(null,[['Nombre',esc(d.nombre)],['Entrada',ffl(d.f)],['Animales',nf(d.an.length)],['Peso promedio',`${nf(prom)} kg`],['Rango',`${nf(Math.min(...ps))} a ${nf(Math.max(...ps))} kg`],['Precio de compra',d.precio?`${pk(d.precio)} el kilo`:'sin anotar'],['Inversión',inv?money(inv):'–']])+'¿Lo creo?',btns:[['Crear lote',{t:'flujoCrear'}],['Revisar en el formulario',{t:'flujoForm'}]],sug:['Sí, créalo','Cancelar']};}
@@ -4497,7 +4570,7 @@ function manejarCrear(t,raw){
     if(!f)return {html:'No entendí la fecha. Dime "hoy", "ayer", "hace 3 días" o una fecha como "20 de septiembre".',sug:['Hoy','Ayer']};
     d.f=f;F.paso='precio';return pasoCrear();}
   if(F.paso==='precio'){if(/despues|no se|luego|no lo se|salta|omitir|sin precio/.test(t)){d.precio=0;F.paso='pesos';return pasoCrear();}
-    const n=numsDe(t)[0];if(!(n>0))return {html:`Dime un número, por ejemplo <b>${U()==='lb'?'27':'60'}</b>, o "después".`,sug:['Después'],nou:true};
+    const n=numsDe(t)[0];if(!(n>0))return {html:`Dime un número, por ejemplo <b>${nf(PKd(60))}</b>, o "después".`,sug:['Después'],nou:true};
     d.precio=/kilo|kg/.test(t)?n:precioToKg(n);F.paso='pesos';return pasoCrear();}
   if(F.paso==='pesos'){
     if(LISTO.test(t)){if(!d.an.length)return {html:'Todavía no me has dado ningún peso. Mándame al menos uno.'};F.paso='confirmar';return pasoCrear();}
