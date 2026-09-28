@@ -1,0 +1,311 @@
+{
+ "F8.2.0": "In the US, 3-NOP (Bovaer) is approved but still little used in feedyards; some packers and branded programs pay carbon incentives for it.",
+ "F14.0.1": "Already sold in the US and Australia for grazing cattle, though still expensive for most operations.",
+ "F14.2.1": "They help plan stocking rate, stockpiling and drought decisions; the USDA and the Drought Monitor also publish pasture and drought maps.",
+ "F123.2.2": "In the US marbling is paid through the quality grade: Prime and Choice earn premiums over Select on a grid.",
+ "F345": {"t": "Official ID and interstate movement",
+  "r": "In the US, moving cattle across state lines requires official identification and a health certificate in most cases. Brand inspection states add their own paperwork. It protects against theft and disease and lets outbreaks be traced fast.",
+  "s": [
+   {"h": "Interstate movement", "p": [
+     "Sexually intact cattle 18 months and older, dairy cattle, and rodeo and exhibition cattle need official ID (840 RFID ear tags since November 2024) to cross state lines.",
+     "Feeder cattle under 18 months are exempt from the federal ID rule, but many states set their own requirements.",
+     "Most interstate moves need an Interstate Certificate of Veterinary Inspection (ICVI), unless the cattle go directly to slaughter or to an approved livestock market.",
+     "Always check the destination state's entry rules with its state veterinarian's office."]},
+   {"h": "Brand inspection", "p": [
+     "Many western states (Montana, Wyoming, Colorado, Idaho, Nevada, Oregon, Washington, New Mexico and others) require a brand inspection for a change of ownership or to leave the brand area.",
+     "Keep the brand inspection certificate and the bill of sale with the cattle."]},
+   {"h": "Traceability", "p": [
+     "It means being able to follow an animal from its birth premises to the packer.",
+     "It rests on premises ID, official ear tags, ICVIs, brand papers and your own records.",
+     "Branded and export programs (source and age verified, NHTC) only buy animals with verified records."]},
+   {"h": "Good practices", "p": [
+     "Keep a copy of every ICVI, brand inspection and bill of sale.",
+     "Record in the app the supplier and origin of each lot.",
+     "Don't buy cattle without paperwork you can verify."]}]},
+ "F346": {"t": "Brand and premises registration",
+  "r": "In the US, brands are registered with the state and premises are registered with the state animal health office. Both identify you as the owner and make movement, health programs and sales easier.",
+  "s": [
+   {"h": "Brand", "p": [
+     "It's recorded with your state's brand board or department of agriculture; in brand-inspection states it's mandatory, elsewhere voluntary but useful.",
+     "It proves ownership of the cattle and helps recover stolen animals.",
+     "Each brand is unique in the state and must be renewed on the schedule your state sets."]},
+   {"h": "Premises ID", "p": [
+     "A premises identification number (PIN) from your state animal health official is needed to order official 840 tags.",
+     "It's used to trace animals quickly in a disease outbreak.",
+     "Many packers and branded programs require it."]},
+   {"h": "Advice", "p": [
+     "Check the current rules with your state veterinarian's office and brand board.",
+     "Register before you need to ship: it can take several days."]}]},
+ "F350.0.0": "A valid ICVI or brand inspection when required, plus the bill of sale.",
+ "F350.0.1": "Truck and driver documents under FMCSA rules (CDL, hours of service); livestock haulers have some specific exemptions.",
+ "F351": {"t": "Official health programs in the US",
+  "r": "USDA APHIS and the state veterinarians run programs against diseases that affect the whole country. Taking part protects your operation, your neighbors and US beef exports.",
+  "s": [
+   {"h": "Main programs", "p": [
+     "Brucellosis: all states are Class Free; surveillance continues, with extra rules around the Greater Yellowstone Area.",
+     "Tuberculosis: most states are accredited free; slaughter surveillance and herd tracebacks find the few cases.",
+     "Cattle fever tick eradication: a permanent quarantine zone along the Texas–Mexico border.",
+     "Foreign animal diseases such as foot-and-mouth disease and New World screwworm: surveillance and emergency response.",
+     "BSE surveillance at slaughter and the feed ban on ruminant protein."]},
+   {"h": "What to do", "p": [
+     "Report suspected cases to your vet, your state veterinarian or the USDA APHIS Veterinary Services office.",
+     "Follow your state's testing and vaccination rules (for example, calfhood brucellosis vaccination in some states).",
+     "Cooperate with tracebacks when the packer finds TB lesions or residues."]}]},
+ "F352": {"t": "Reportable diseases in the US",
+  "r": "Some diseases must be reported to the state veterinarian or USDA APHIS as soon as they're suspected, because they can cause epidemics or close export markets.",
+  "s": [
+   {"h": "Examples", "p": [
+     "Foot-and-mouth disease and vesicular stomatitis (blisters on the mouth and feet).",
+     "New World screwworm.",
+     "Anthrax and rabies.",
+     "Tuberculosis and brucellosis.",
+     "Cattle fever ticks and bovine babesiosis.",
+     "BSE (mad cow) and any unexplained cluster of deaths or strange nervous signs."]},
+   {"h": "How to report", "p": [
+     "Call your vet, your state veterinarian's office or the USDA APHIS Veterinary Services district office.",
+     "A foreign animal disease diagnostician will be sent to investigate at no cost to you.",
+     "Don't move animals or carcasses until you get instructions, and keep the dates, affected animals and origin."]},
+   {"h": "Advice", "p": [
+     "Save your state veterinarian's phone number in your phone today.",
+     "Each state keeps its own reportable list: check it on the state's website."]}]},
+ "F353": {"t": "Banned feed products in the US",
+  "r": "The FDA controls what cattle can eat. Some substances and materials are banned because they harm people or cattle, and using them brings penalties, condemned carcasses and lost markets.",
+  "s": [
+   {"h": "Banned", "p": [
+     "Mammalian meat and bone meal fed to ruminants (FDA feed ban since 1997, strengthened in 2009).",
+     "Clenbuterol and any drug not approved for cattle.",
+     "Medically important antibiotics for growth promotion (banned since 2017); in feed they need a Veterinary Feed Directive.",
+     "Garbage, food waste with meat, and feed contaminated with pesticides or mycotoxins above FDA action levels."]},
+   {"h": "Rules", "p": [
+     "Use only FDA-approved drugs and feed additives, exactly as labeled.",
+     "Extra-label drug use in feed is never allowed, even with a prescription.",
+     "Keep feed tags, invoices and VFD copies (at least 2 years)."]},
+   {"h": "Advice", "p": [
+     "Rules change: check with your state feed control office, your nutritionist and your packer."]}]},
+ "F356": {"t": "Inspected slaughter",
+  "r": "In the US, meat for sale must come from animals slaughtered under USDA FSIS inspection or a state program equal to it. Custom-exempt plants can only process meat for the owner's own use.",
+  "s": [
+   {"h": "Types of plants", "p": [
+     "USDA-inspected: meat can be sold anywhere in the US and exported.",
+     "State-inspected (MPI): meat can be sold only within the state, except in the Cooperative Interstate Shipment program.",
+     "Custom-exempt: meat is stamped Not for Sale and goes only to the animal's owners."]},
+   {"h": "What they check", "p": [
+     "Inspection before and after slaughter, humane handling under the Humane Methods of Slaughter Act.",
+     "Residue testing: violations are published and traced back to the seller.",
+     "Owner and origin records."]},
+   {"h": "Advice", "p": [
+     "Selling beef by the quarter or half is legal if it's processed at a custom plant and sold as a live animal share; check your state's rules."]}]},
+ "F357": {"t": "Veterinary drugs and prescriptions in the US",
+  "r": "Veterinary drugs must be FDA-approved and used as labeled or under a veterinarian's prescription. Since 2023 all medically important antibiotics require a prescription or a VFD.",
+  "s": [
+   {"h": "Rules", "p": [
+     "You need a valid veterinarian-client-patient relationship (VCPR) to get prescriptions and VFDs.",
+     "Follow the label's dose, route, site and withdrawal; BQA asks for injections in the neck, never the top butt.",
+     "Extra-label use (AMDUCA) only on a vet's written order, with an extended withdrawal, and never in feed."]},
+   {"h": "Records", "p": [
+     "Record product, lot number, dose, animals, date and withdrawal.",
+     "Keep prescriptions and VFDs for at least 2 years."]},
+   {"h": "In your feedlot", "p": [
+     "The app saves each treatment with its withdrawal and warns you before selling."]}]},
+ "F360": {"t": "Transport welfare rules in the US",
+  "r": "The federal 28-hour law limits how long cattle can travel without being unloaded for food, water and rest. BQA transportation certification sets good practices for haulers.",
+  "s": [
+   {"h": "Main rules", "p": [
+     "No more than 28 consecutive hours on a truck without unloading for at least 5 hours with feed and water.",
+     "Only animals fit to travel: no downers, severely lame animals or cows about to calve.",
+     "Non-slip floor, no protrusions, loading density according to weight.",
+     "Many packers only accept cattle hauled by BQA Transportation (BQAT) certified drivers."]},
+   {"h": "In your feedlot", "p": [
+     "Ask your hauler for BQAT certification: your cattle arrive with less shrink and fewer bruises."]}]},
+ "F379": {"t": "Poultry litter",
+  "r": "Poultry litter is used bedding from broiler houses, sometimes fed as cheap protein in the Southeast. It isn't federally banned in the US, but the FDA discourages it, and it carries health and market risks.",
+  "s": [
+   {"h": "Risks", "p": [
+     "Drug residues, metals, feathers, glass and dirt.",
+     "Salmonella, clostridia and botulism if not deep-stacked or ensiled properly.",
+     "It may contain spilled poultry feed with ruminant-derived protein, which the FDA feed ban forbids for cattle.",
+     "Many packers, branded programs and export markets won't buy cattle fed poultry litter."]},
+   {"h": "Before using it", "p": [
+     "Check your state's rules, your buyer's requirements and your BQA program.",
+     "If you use it, only deep-stacked litter heated to over 130 °F, of known origin, with a withdrawal period before slaughter.",
+     "Never litter that could contain meat and bone meal."]},
+   {"h": "Alternatives", "p": [
+     "Distillers' grains, corn gluten feed and soybean meal.",
+     "Urea used properly with grain or liquid supplement."]}]},
+ "F395": {"t": "Growth-promoting implants",
+  "r": "In the US, hormone implants are FDA-approved and used in most feedyard cattle. They raise gain 10 to 20 % and improve feed efficiency. Natural and export programs don't allow them.",
+  "s": [
+   {"h": "What they are", "p": [
+     "Small pellets placed under the skin in the middle third of the back of the ear.",
+     "They release estradiol, trenbolone acetate or both over 70 to 200 days.",
+     "Most have no withdrawal time, but read each label."]},
+   {"h": "How to use them", "p": [
+     "Clean ear and needle, correct placement: an abscessed or crushed implant doesn't work.",
+     "Match the implant strength to the days on feed and the target grade: aggressive programs can lower marbling.",
+     "Record the product and date for every animal."]},
+   {"h": "Markets that don't accept them", "p": [
+     "Non-Hormone Treated Cattle (NHTC) for the European Union, natural, organic and never-ever programs.",
+     "These programs pay a premium; compare it with the lost gain."]},
+   {"h": "Banned", "p": [
+     "Clenbuterol and any drug not approved for cattle are illegal and detected by FSIS residue testing."]}]},
+ "F433": {"t": "Beta-agonists (ractopamine and zilpaterol)",
+  "r": "They're feed additives given during the last 28 to 42 days so the animal builds more muscle and less fat. In the US ractopamine (Optaflexx) is FDA-approved; zilpaterol (Zilmax) hasn't been sold since 2013.",
+  "s": [
+   {"h": "What they do", "p": [
+     "They divert nutrients from fat to muscle: more gain, better conversion and higher carcass yield, often 15 to 25 lb more carcass.",
+     "They can lower tenderness and increase heat stress and mobility problems if misused."]},
+   {"h": "The law and markets", "p": [
+     "Allowed in the US, but banned in the European Union, China, Russia and others.",
+     "Many packers ask for ractopamine-free cattle for export programs: ask before feeding it.",
+     "Clenbuterol is illegal in the US and almost worldwide."]},
+   {"h": "If you use them", "p": [
+     "Only as labeled, with the right dose and days, and respecting the withdrawal.",
+     "Avoid feeding them during extreme heat and handle cattle calmly at shipping."]}]},
+ "F432": {"t": "Health calendar by region",
+  "r": "Arrival vaccines are similar everywhere, but parasites, diseases and risk seasons change across the US. Rumi builds your calendar in Health.",
+  "s": [
+   {"h": "Southeast and Gulf Coast", "p": [
+     "Horn flies, face flies and pinkeye from spring to fall.",
+     "Fescue toxicosis on endophyte-infected pastures in summer.",
+     "Anaplasmosis and internal parasites; cattle fever ticks only in the Texas border quarantine zone."]},
+   {"h": "Great Plains and Midwest", "p": [
+     "Respiratory disease (BRD) in fall-arriving calves and with big temperature swings.",
+     "Cold stress, mud and frostbite in winter.",
+     "Wheat pasture bloat and grass tetany in spring."]},
+   {"h": "Southwest and West", "p": [
+     "High sulfates and salts in well water: have it tested.",
+     "Dust and pneumonia in dry pens; vesicular stomatitis outbreaks in summer.",
+     "Poisonous plants such as larkspur, locoweed and lupine on rangeland."]},
+   {"h": "Always", "p": [
+     "Clostridial and respiratory vaccines on arrival, with a booster at 3 to 4 weeks.",
+     "Your state's programs (brucellosis, tuberculosis, trichomoniasis in breeding bulls).",
+     "Vaccines and doses are decided by your vet."]}]},
+ "F437": {"t": "Cattle imports and exports",
+  "r": "The US imports feeder cattle from Mexico and trades cattle both ways with Canada. Borders close quickly when disease appears, as with New World screwworm in 2024–2025.",
+  "s": [
+   {"h": "How it works", "p": [
+     "Mexico usually sends over a million feeder cattle a year, inspected and dipped for ticks at the border.",
+     "Canada and the US trade feeders and fed cattle; they need official ID and health certificates.",
+     "US breeding cattle are exported to Mexico, Canada and other countries under each importer's rules."]},
+   {"h": "Risks", "p": [
+     "Border closures due to outbreaks (screwworm, tuberculosis, foot-and-mouth) change feeder supply and prices overnight.",
+     "Trade policy and tariffs can move prices too.",
+     "A strong dollar makes US cattle and beef more expensive abroad."]}]},
+ "F441": {"t": "The dollar and cattle prices",
+  "r": "US beef competes in world markets in dollars. A strong dollar makes US beef exports more expensive and imports cheaper, which pressures cattle prices; a weak dollar does the opposite.",
+  "s": [
+   {"h": "How it affects you", "p": [
+     "Exports (to Japan, Korea, China, Mexico, Canada) add value to every fed steer; a strong dollar reduces them.",
+     "Imports of lean trim from Australia, Brazil and others compete with US cull cow beef.",
+     "The Mexican peso affects how many feeders come north."]},
+   {"h": "What to do", "p": [
+     "Follow CME futures: they already reflect currency and trade news.",
+     "Check your margin with Rumi's simulator: lower the sale price and see what happens."]}]},
+ "F442.r": "Cattle on feed are a biological asset whose value changes every day with weight and price. Most US producers use cash accounting for taxes, but lenders and the Farm Financial Standards Council recommend market-value balance sheets and accrual-adjusted income.",
+ "F442.1.0": "Your lender (a bank or the Farm Credit System) looks at your balance sheet to size your operating line: properly valued cattle show your real capacity.",
+ "F446": {"t": "Seasons and feeding by region",
+  "r": "In the US the cattle year follows the seasons: calves are weaned in the fall, grass grows from spring to summer and winter is the costly season. Knowing it tells you when to buy, when to sell and when to expect health problems.",
+  "s": [
+   {"h": "Great Plains and Midwest", "p": [
+     "Most calves are weaned and sold in October and November, when feeder prices usually are lowest.",
+     "Winter wheat pasture in the Southern Plains carries stockers from November to March.",
+     "Fed cattle prices usually are higher in spring and lower in late summer."]},
+   {"h": "South and Southeast", "p": [
+     "Long grazing season on bermuda, bahia and fescue; stockers go to the Plains feedyards.",
+     "Heat and humidity from May to September lower intake."]},
+   {"h": "West", "p": [
+     "Cattle graze rangeland and public land in summer and come down in the fall.",
+     "Drought is the main risk: check the U.S. Drought Monitor."]}]},
+ "F459.r": "The fly lays eggs in wounds and the larvae eat living flesh. It was eradicated from the US in 1966 and is a reportable foreign animal disease: any suspect case goes to the state veterinarian or USDA APHIS.",
+ "F459.2.2": "Report it right away to your vet, the state veterinarian or USDA APHIS, and save larvae in alcohol for the lab.",
+ "F460": {"t": "Cattle grubs (heel flies)",
+  "r": "Cattle grubs are larvae of heel flies (Hypoderma) that travel through the body and end up under the skin of the back, making lumps with a hole. They damage the hide and lower gain.",
+  "s": [
+   {"h": "Signs", "p": [
+     "Lumps along the back in late winter and spring, with a hole through which the grub breathes.",
+     "Cattle running with tails up in spring when heel flies lay eggs on the legs.",
+     "Damaged hides at slaughter."]},
+   {"h": "What to do", "p": [
+     "A macrocyclic lactone (ivermectin, doramectin) in the fall kills migrating grubs.",
+     "Treat before your area's cutoff date (usually early November): grubs killed later in the esophagus or spinal canal can cause bloat or paralysis.",
+     "Don't squeeze grubs out of the back: it can cause reactions."]},
+   {"h": "Prevention", "p": [
+     "Treat all incoming calves in the fall.",
+     "Ask your vet which product fits your parasite program."]}]},
+ "F461.r": "A blood disease transmitted by ticks, horse flies and dirty needles. It destroys red blood cells and can kill adult animals. In the US it's common in the South, the Midwest and the West.",
+ "F461.2.3": "Adult cattle from areas without anaplasmosis are more susceptible; some states allow chlortetracycline in feed under a VFD during the vector season.",
+ "F462.r": "A blood parasite transmitted by cattle fever ticks. The US eradicated it in 1943, but the ticks keep crossing along the Texas–Mexico border, where a permanent quarantine zone is maintained. It's a reportable disease.",
+ "F462.1.0": "Call the vet and the state veterinarian: it's reportable in the US.",
+ "F462.2.0": "Cattle leaving the Texas quarantine zone are inspected and dipped.",
+ "F462.2.1": "Report any ticks you can't identify on cattle from Mexico or South Texas.",
+ "F462.2.2": "Almost all US cattle have no immunity, so an outbreak would be severe.",
+ "F464.r": "A serious disease that spreads to people. It kills within hours. It's reportable to the state veterinarian and appears in spores in the soil of areas such as the Dakotas, Minnesota and Texas, often after floods or drought.",
+ "F464.1.1": "Isolate the area, remove the other animals and call the vet and the state veterinarian.",
+ "F465": {"t": "Rabies",
+  "r": "In the US cattle get rabies mostly from bites of skunks, raccoons, foxes and bats; there are no established vampire bats. It has no cure, spreads to people and is reportable.",
+  "s": [
+   {"h": "Signs", "p": [
+     "Behavior changes: aggression, bellowing, or dullness.",
+     "Drooling, difficulty swallowing, straining.",
+     "Paralysis starting in the hind legs, then death within a few days.",
+     "Bite wounds are rarely seen."]},
+   {"h": "What to do", "p": [
+     "Don't put your hand in the mouth of an animal that drools or can't swallow: it may be rabies.",
+     "Isolate the animal and notify the vet; the state lab must test the brain.",
+     "If anyone had contact with saliva, they should see a doctor the same day."]},
+   {"h": "Prevention", "p": [
+     "Vaccinate valuable animals in areas with rabies in wildlife.",
+     "Keep skunks and raccoons away from feed and water.",
+     "Check new animals for wounds and strange behavior."]}]},
+ "F479.2.3": "Keep the vet's and the state veterinarian's phone numbers handy.",
+ "F487.2.0": "Official ID, ICVI or brand inspection papers when required.",
+ "F491.2.1": "Follow your state's testing rules; the US is brucellosis Class Free, with extra rules around the Greater Yellowstone Area.",
+ "F501.r": "The US has been free of foot-and-mouth disease since 1929. An outbreak would close export markets overnight and halt cattle movement. Recognizing its signs and reporting protects the whole country.",
+ "F501.1.1": "Notify your state veterinarian or USDA APHIS immediately.",
+ "F505.r": "Vesicular stomatitis is a viral disease that causes blisters on the mouth, feet and udders. In the US it causes outbreaks in the Southwest and Rocky Mountain states in summer and fall. It looks like foot-and-mouth disease, so it must always be reported.",
+ "F518.r": "Tick fever combines anaplasmosis and babesiosis. Babesiosis was eradicated from the US except near the Texas–Mexico border, so what you'll mostly see is anaplasmosis, spread by ticks, flies and needles.",
+ "F518.1.0": "Adult cattle that never met the disease, for example from northern states.",
+ "F522": {"t": "Diseases by season",
+  "r": "Each season brings its problems in a US feedyard. Preparing ahead lowers losses.",
+  "s": [
+   {"h": "Fall", "p": [
+     "Respiratory disease (BRD) in newly weaned, commingled calves.",
+     "Grub treatment before the cutoff date."]},
+   {"h": "Winter", "p": [
+     "Cold stress, wind and mud raise energy needs and lower gain.",
+     "Frozen waterers and frostbite; nitrate risk in drought-stressed hay."]},
+   {"h": "Spring", "p": [
+     "Wet pens, foot rot and BRD with temperature swings.",
+     "Bloat on wheat pasture and grass tetany in cows on lush grass."]},
+   {"h": "Summer", "p": [
+     "Heat stress, especially in heavy black-hided cattle.",
+     "Flies and pinkeye; fescue toxicosis on pasture.",
+     "Blue-green algae in stagnant ponds."]}]},
+ "G47": {"t": "New World screwworm", "x": "It's the larva of a fly that eats living flesh in wounds, navels, castrations or dehorning. It was eradicated from the US in 1966, but it returned to Mexico in 2024. Check any wound daily. If you find larvae, save them in alcohol and call your state veterinarian or USDA APHIS right away: it's a reportable disease."},
+ "G50.x": "If an animal dies suddenly and bleeds from the nose, mouth or anus, don't open it: it may be anthrax, which spreads to people. Notify your vet and the state veterinarian. For any death, use rendering, composting or burial as your state allows, and record the loss in the app.",
+ "G61.x": "It isn't federally banned in the US, but the FDA discourages feeding it, and many packers and branded programs won't accept cattle fed poultry litter. Check your state's rules and your buyer before using it.",
+ "G68.x": "When hungry, especially in drought or early spring, they eat plants they normally leave. Walk the pastures, pull anything suspicious and don't put hungry animals in an unfamiliar pasture. If several get sick at once, call the vet. In the US watch for water hemlock, larkspur, locoweed, perilla mint, nightshade and nitrate-accumulating weeds.",
+ "G96.x": "It's a disease that causes abortions in females and spreads to people through raw milk and contact with fetuses. All US states are Class Free, but surveillance continues; if you handle heifers, follow your state's vaccination and testing rules.",
+ "G97.x": "It's a slowly progressing lung disease that spreads to people. Animals lose weight and cough. The US is almost free, and cases are usually found at slaughter and traced back to the herd. If you suspect it, notify your vet and the state veterinarian.",
+ "G98.x": "It's a very contagious disease that causes blisters on the mouth and feet. The US has been free since 1929, so any suspicion is reported immediately to the state veterinarian or USDA APHIS.",
+ "G163": {"t": "Disposing of dead animals", "x": "Pick up dead animals quickly and use a rendering service where available. Composting and burial are allowed in most states under rules on distance from wells, water tables and property lines; check with your state. Never sell a dead animal, and record the loss in the app."},
+ "G166.x": "For animals over 600 lb, 16 to 18 gauge needles are used; thicker if the product is viscous. For intramuscular, 1 to 1.5 inches; for subcutaneous, shorter, half to three quarters of an inch. Inject in the neck, change needles often and never straighten a bent one. (BQA guidelines)",
+ "G176": {"t": "Performance in US feedyards", "x": "Typical US feedyard steers enter at 700 to 900 lb, stay 150 to 200 days on a corn-based finishing ration and gain 3.5 to 4 lb per day with a feed conversion of about 6 lb of dry matter per lb of gain. Feed and cattle purchase make up most of the cost; interest and yardage the rest."},
+ "G177.x": "Well-fed cull cows can gain weight fast in short feeding periods of 50 to 90 days, often 3 to 4 lb per day, and gain value because they're bought cheap in the fall and sold higher in spring. Check that they're healthy, sound and free of drug withdrawals.",
+ "G178.x": "Cattle prices have seasons in the US: feeder calves are usually cheapest in October and November, when most are weaned, and fed cattle are usually higher in spring. Plan purchases and hedges with futures or LRP, and have your operating line ready.",
+ "G186.x": "A premises ID from your state animal health office lets you order official 840 tags, join health programs and sell to buyers who require traceability. In brand states, register your brand too.",
+ "G197": {"t": "Packers and sale barns", "x": "In the US fed cattle are sold to packers on a cash, formula or grid basis, and feeders mostly through auction barns, video and online sales. Four big packers buy most fed cattle; ask about grids, delivery and payment before selling."},
+ "G198": {"t": "Beef exports", "x": "The US exports beef mainly to Japan, Korea, China, Mexico, Canada and Taiwan. Those buyers require traceability, residue-free cattle and sometimes special programs (no hormones or no beta-agonists). Keeping your records in the app helps you comply."},
+ "G199": {"t": "USDA APHIS and the state veterinarian", "x": "USDA APHIS Veterinary Services and each state veterinarian's office are the animal health authorities in the US. They regulate interstate movement, official ID, reportable diseases and disease emergencies. The FDA regulates drugs and feed; USDA FSIS inspects meat."},
+ "G200.x": "To move cattle across state lines you usually need official ID and an ICVI, and in brand states a brand inspection. When buying, get a bill of sale and those papers: that way you avoid stolen or sick animals.",
+ "G207.x": "Your county Extension agent and your state land-grant university offer free help on rations, pastures, facilities and budgets; your vet helps with health. BQA training is free online or through your state beef council.",
+ "G240": {"t": "Hay crops in the US", "x": "The main hay and silage crops are alfalfa, grass hay (bermuda, timothy, brome, orchardgrass), corn silage and sorghum-sudan. Cut them at the right stage: alfalfa at bud to early bloom and grasses at boot stage give the best protein."},
+ "G248": {"t": "Fences", "x": "Most US operations use barbed wire for perimeter fences and high-tensile or polywire electric fence for rotational grazing. Electric fence is cheap and lets you split pastures quickly; check voltage often."},
+ "G249": {"t": "Liquid supplements", "x": "Molasses-based liquid supplements with urea are common on pasture and in growing rations in the US. The urea must be well mixed, in small amounts and with gradual adaptation; never let hungry cattle overconsume them."},
+ "G313": {"t": "Corn gluten feed", "x": "Corn gluten feed, a wet-milling by-product, is cheap in the Corn Belt and provides fiber, protein and digestible energy. It can replace part of the corn and soybean meal in growing rations; watch sulfur if you also feed distillers' grains."},
+ "G344": {"t": "Cottonseed", "x": "Whole cottonseed provides protein, fat and fiber and is common in the South and in dairy rations. Keep it under about 15 % of dry matter because of fat and gossypol, and watch for mold."},
+ "G63": {"t": "Legumes in pastures", "x": "Legumes such as alfalfa, clovers and lespedeza add cheap protein and nitrogen to pastures. Manage them to prevent bloat: introduce cattle full, use poloxalene or ionophores, and avoid lush alfalfa after frost or rain."},
+ "G308": {"t": "Prices per hundredweight", "x": "In the US cattle are priced in dollars per hundredweight ($/cwt), that is per 100 lb of live weight. A price of $300/cwt is $3.00 per lb or about $6.61 per kg. The app works in the unit you choose in More."},
+ "G384": {"t": "Diseases to report in the US", "x": "You must notify your state veterinarian or USDA APHIS if you suspect foot-and-mouth disease, vesicular stomatitis, screwworm, anthrax, rabies, tuberculosis, brucellosis, cattle fever ticks or any unexplained mass death. Reporting in time protects the whole country."},
+ "G153.x": "On every trip carry the papers that show where the animals come from and who owns them: bill of sale, ICVI for interstate moves, brand inspection in brand states and the destination's entry permit if it asks for one."
+}

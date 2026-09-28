@@ -1,0 +1,83 @@
+{
+ "F113.1.0": "In winter or drought, on dormant pastures, recycling helps survival.",
+ "F127.1.1": "It recycles urea better: it handles poor, dry forage better.",
+ "F134.2.1": "Allow at least 150 to 250 sq ft per head in a dirt pen; more in wet climates and during muddy seasons.",
+ "F136.1.0": "Pen dust on hot, dry days, typical of summer in the Southern Plains.",
+ "F136.2.0": "Sprinkle pens or put up dust curtains on dry, windy days.",
+ "F140.0.1": "On dormant or drought-stressed grass it runs out in 2 to 4 months.",
+ "F140.4.0": "In winter, drought or in pens without green forage, give vitamins A, D and E in the mineral or by injection.",
+ "F142.2.2": "A footbath with copper or zinc sulfate helps in wet, muddy months.",
+ "F232.2.2": "Mounds of dry earth for wet, muddy months so they can rest.",
+ "F246.r": "Barn and shed roofs can fill tanks and ponds with water for summer and drought.",
+ "F246.2.0": "Water troughs in summer and drought.",
+ "F300.1.0": "Review the plan before each winter and each summer grazing season.",
+ "F367.2.1": "In winter or drought, when grass is dormant, dry and brown.",
+ "F373.2.0": "Compare the price per unit of nutrient, not per ton.",
+ "F375.0.1": "It's usually the most expensive per ton, but not always per pound of protein.",
+ "F381.0.0": "Sorghum-sudan, pearl millet, alfalfa and corn for silage are the high-yield cut forages in the US.",
+ "F382.r": "Sugarcane is grown for cattle feed only in a few warm areas of the US (Florida, Louisiana, South Texas). It produces a lot of energy per acre but has little protein, so it has to be supplemented.",
+ "F382.1.0": "Cut it mature, with more sugar, in late fall and winter.",
+ "F384.2.1": "They provide protein and energy to animals on dormant winter pasture or crop residue.",
+ "F392.r": "On pasture, grass provides the base and the supplement covers what's missing. Done well, it allows weight gain even on dormant winter range.",
+ "F392.0.1": "Winter or drought: dormant grass with little protein; protein, energy and minerals are lacking.",
+ "F392.1.1": "Protein tubs, cubes or liquid supplement on winter range.",
+ "F396.t": "Winter and drought ration",
+ "F396.r": "In winter and in drought, grass drops in quantity and quality. Planning hay and silage and adjusting the ration avoids losing what was gained.",
+ "F396.1.0": "Corn or sorghum silage made in late summer.",
+ "F396.3.1": "Decide whether to buy calves in the fall, when they're usually cheapest, only if your feed is secured.",
+ "F423.t": "Vitamins A, D and E in winter and drought",
+ "F431.2.1": "Comparing $/cwt with $/lb, $/head or $/kg: the app converts everything, but check each offer's unit.",
+ "F439.0.0": "Store forage (hay, silage) from good years and keep a carryover.",
+ "F449.4.4": "Pens with windbreaks in winter, shade and ventilation in summer and no dust; sprinkle the floor on dry days.",
+ "F467.2.1": "Reduce dust by sprinkling pens on dry, windy days.",
+ "F473.2.1": "Cool, clean water with good flow; add tank space in summer.",
+ "F476.2.2": "On pasture or grow yards, repeat according to the vet's plan, usually in spring and fall.",
+ "F509.r": "Mange is caused by mites that live in the skin. It causes intense itching, hair loss and scabs. In the US it's most common in winter, in thin, crowded animals.",
+ "F511.0.2": "It worsens in winter, with long hair and close contact.",
+ "G65": {
+  "t": "Preparing for winter",
+  "x": "Before winter, make sure you have hay and silage for all the months without grass, windbreaks and bedding for cold snaps, waterers that won't freeze and a plan to scrape mud. Cold and wind raise energy needs: adjust the ration."
+ },
+ "G89": {
+  "t": "Feeding in winter or summer",
+  "x": "In the pen you can feed all year; in winter the challenges are cold, wind and mud, and in summer heat and flies. What matters most is buying well and keeping the cost of gain per pound below the value of gain."
+ },
+ "G122.x": "On grass, gain is lower and changes a lot with the season: stockers on good spring grass or wheat pasture gain 1.5 to 2.5 lb a day, and on dormant winter range without supplement sometimes nothing. In the feedyard on a finishing ration they gain 3.5 to 4 lb.",
+ "G145.x": "The ramp should be level with the truck floor, without gaps, with a non-slip floor and side guards. As a guide, about 30 inches wide, solid walls 5 to 5.5 feet high and steps 4 inches high by 12 to 18 inches deep, or a slope under 20 degrees. Tires at the end help the trailer dock without banging.",
+ "G146.x": "A working chute is usually over 20 feet long, 5 feet high, about 16 to 18 inches wide at the bottom and 26 to 30 inches at the top, with solid sides so the animal can't see out. A catwalk about 2 feet off the ground lets you work along it. A curved design and a Bud Box or tub help cattle flow.",
+ "G172.x": "Where it rains a lot, give more space per animal so the pen dries: 250 to 400 sq ft or more. In dry areas with good drainage 150 sq ft can be enough. Mounds help cattle stay dry.",
+ "G209.x": "Calculate the pounds of hay or forage per animal per day, times the animals and the days, and compare with what your fields yield per cutting. A well-fertilized, irrigated field yields much more than a neglected one.",
+ "G211.x": "Bermuda, old world bluestems and native warm-season grasses withstand drought better than others, but none produces the same without rain. Keep a hay carryover even if you have drought-tolerant grasses.",
+ "G226.x": "An elevated tank lets you supply water by gravity even if the pump fails. Plan several days of reserve for all the cattle, more in summer: a feeder steer drinks 10 to 20 gallons a day.",
+ "G233.x": "Where you use shade, provide about 20 to 40 sq ft per head, 10 to 12 feet high so air flows. In the northern states windbreaks for winter matter as much as shade for summer.",
+ "G241": {
+  "t": "Common US pasture grasses",
+  "x": "Bermudagrass and bahiagrass in the South, tall fescue in the transition zone, and smooth brome, orchardgrass and native bluestems in the Plains and Midwest. They withstand grazing if rotated and not overstocked."
+ },
+ "G243.x": "Calculate the pounds of silage per animal per day, times the winter days and the head count, and add about 20 % for shrink and losses. In Rumi's menu, Feeding, Feed for the month, I give you the amount your lots consume.",
+ "G247.x": "It depends on the grass, rain and fertilizer. Overstocking finishes the grass and the animals gain less. Adjust the stocking rate in drought or supplement. One animal unit is a 1,000 lb cow, and the NRCS publishes stocking rates by soil and range site.",
+ "G293": {
+  "t": "Managing wet weather and mud",
+  "x": "Mud can cut gain by 15 % or more. Keep drains and pens graded, scrape manure often, build mounds and add bedding in cold, wet spells. Protect feed from rain and check for foot rot."
+ },
+ "G294": {
+  "t": "Managing summer heat and drought",
+  "x": "In summer: ensure plenty of water, shade or sprinklers, feed later in the day and work cattle only in the early morning. In drought, cull early, secure hay and check nitrates in drought-stressed forage."
+ },
+ "G315.x": "Corn stalks after harvest are cheap winter grazing or fiber, but low in protein and energy. Supplement with protein, and in the ration they work as effective fiber.",
+ "G333.x": "On winter range, a protein supplement (cubes, tubs or liquid) keeps them from losing weight. Tubs are practical, but make sure they don't eat too much at once if they contain urea.",
+ "G334.x": "They're blocks or tubs with molasses, urea, minerals and sometimes fat that the animal licks. They're used on winter range and crop residue. If they contain urea, don't give them to hungry animals without adaptation.",
+ "G350": {
+  "t": "Vitamin A in winter and drought",
+  "x": "Dormant or drought-stressed grass and old hay carry little vitamin A. Calves coming off a long winter or drought may need vitamins on arrival or a mineral that contains them. Consult your vet."
+ },
+ "F43.t": "Pounds or kilos in the app",
+ "F43.0.0": "In More, Settings, Language, currency and units: Pounds or Kilos for weight, and cattle prices per cwt, per lb or per head.",
+ "F42.0.0": "First: language, country, weight unit (pounds or kilos), currency and how cattle (per cwt, per lb or per head) and feed are priced.",
+ "G133": {
+  "t": "Pounds or kilos",
+  "x": "You can work in pounds or kilos, and price cattle per hundredweight (cwt). Change it in More, in Settings. The app converts everything on its own."
+ },
+ "F92.2.0": "It costs $4.00 a day and gains 2.5 lb worth $1.40 each = $3.50: you lose $0.50 every day.",
+ "G184.x": "It's the cost per pound of ration dry matter times the feed conversion. For example, if a pound of dry matter costs 14 cents and conversion is 6.5 to 1, each pound of gain costs about 91 cents in feed; add yardage for the total cost of gain."
+}

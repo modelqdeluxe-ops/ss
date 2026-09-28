@@ -1,0 +1,536 @@
+{
+ "F8.2.0": "No Brasil o 3-NOP (Bovaer) foi aprovado em 2021, mas ainda é pouco usado nos confinamentos por custo.",
+ "F14.0.1": "No Brasil já há colares e cercas virtuais em teste e à venda, mas ainda são pouco usados.",
+ "F123.2.2": "No Brasil o frigorífico paga por arroba de carcaça, com bonificação por acabamento, idade (dentição) e programas de raça como o Angus; marmoreio só é pago em nichos.",
+ "F381.0.0": "Capim-elefante (Napier, Cameroon, BRS Capiaçu, BRS Kurumi), cana e milho para silagem: muita produção por hectare.",
+ "F431.2.1": "Comparar arroba, quilo vivo e preço por cabeça: o app converte tudo, mas confira a unidade de cada oferta.",
+ "F345": {
+  "t": "GTA e rastreabilidade",
+  "r": "No Brasil todo trânsito de bovinos exige a GTA (Guia de Trânsito Animal), emitida pelo órgão de defesa agropecuária do estado. Ela protege contra roubo e doenças e é exigida por frigoríficos e compradores.",
+  "s": [
+   {
+    "h": "O que é a GTA",
+    "p": [
+     "Documento oficial obrigatório para mover bovinos para outra fazenda, leilão, exposição ou abate.",
+     "Traz origem, destino, número de animais por sexo e idade, e a finalidade.",
+     "É emitida pelo órgão estadual (Iagro, IMA, Adapar, Agrodefesa, CDA, Indea e outros), muitas vezes pela internet (e-GTA)."
+    ]
+   },
+   {
+    "h": "O que pedem para emitir",
+    "p": [
+     "Propriedade e produtor cadastrados no órgão estadual.",
+     "Rebanho declarado em dia e vacinação obrigatória comprovada (por exemplo, brucelose das bezerras).",
+     "Para alguns destinos, exames de brucelose e tuberculose."
+    ]
+   },
+   {
+    "h": "Rastreabilidade",
+    "p": [
+     "O Plano Nacional de Identificação Individual de Bovinos e Búfalos, lançado em 2024, vai exigir brinco oficial de todos os animais até 2032.",
+     "O SISBOV continua exigido para exportar à União Europeia e a outros mercados.",
+     "Frigoríficos exigem origem sem desmatamento ilegal e sem embargos."
+    ]
+   },
+   {
+    "h": "Boas práticas",
+    "p": [
+     "Guarde cópia de cada GTA e da nota fiscal de produtor.",
+     "Anote no app o fornecedor e a origem de cada lote.",
+     "Não compre animais sem GTA."
+    ]
+   }
+  ]
+ },
+ "F346": {
+  "t": "Marca e cadastro da propriedade",
+  "r": "Registrar sua marca e cadastrar a propriedade no órgão de defesa do estado identifica você como dono e é a base para emitir GTA, vender ao frigorífico e participar dos programas oficiais.",
+  "s": [
+   {
+    "h": "Marca",
+    "p": [
+     "Registra-se conforme as regras do estado ou do município.",
+     "Comprova a propriedade do gado; pela Lei 4.714/1965 só pode ser aplicada na cara, no pescoço e na parte baixa dos membros.",
+     "Cada marca é única."
+    ]
+   },
+   {
+    "h": "Propriedade",
+    "p": [
+     "O cadastro no órgão estadual de defesa agropecuária e a inscrição estadual de produtor rural permitem emitir GTA e nota fiscal.",
+     "O CAR (Cadastro Ambiental Rural) é exigido por bancos e frigoríficos.",
+     "Para exportar à UE, a fazenda precisa estar habilitada no SISBOV (Lista Trace)."
+    ]
+   },
+   {
+    "h": "Conselho",
+    "p": [
+     "Consulte no escritório local do órgão estadual e no sindicato rural os requisitos atuais."
+    ]
+   }
+  ]
+ },
+ "F350.0.0": "GTA válida e nota fiscal de produtor.",
+ "F350.0.1": "Documentos do caminhão e do motorista conforme o Código de Trânsito e as resoluções do Contran para transporte de animais.",
+ "F351": {
+  "t": "Programas sanitários oficiais no Brasil",
+  "r": "O MAPA e os órgãos estaduais de defesa agropecuária conduzem programas contra doenças que afetam todo o país. Participar protege sua fazenda, seus vizinhos e a exportação de carne.",
+  "s": [
+   {
+    "h": "Principais programas",
+    "p": [
+     "PNEFA (febre aftosa): o Brasil foi reconhecido livre sem vacinação em 2025; a vigilância continua.",
+     "PNCEBT (brucelose e tuberculose): vacinação obrigatória das bezerras de 3 a 8 meses e exames para trânsito e certificação.",
+     "PNCRH (raiva dos herbívoros e vaca louca): vacinação em áreas de risco e controle do morcego-vampiro.",
+     "Vigilância de doenças exóticas e de síndromes vesiculares, nervosas e hemorrágicas."
+    ]
+   },
+   {
+    "h": "O que fazer",
+    "p": [
+     "Notifique suspeitas ao serviço veterinário oficial, no escritório local do órgão estadual ou pelo sistema e-SISBRAVET do MAPA.",
+     "Declare o rebanho e comprove as vacinações nas etapas definidas pelo seu estado.",
+     "Colabore com as investigações quando o frigorífico encontra lesões ou resíduos."
+    ]
+   }
+  ]
+ },
+ "F352": {
+  "t": "Doenças de notificação obrigatória",
+  "r": "No Brasil algumas doenças devem ser notificadas ao serviço veterinário oficial assim que houver suspeita, porque podem causar epidemias ou fechar mercados.",
+  "s": [
+   {
+    "h": "Exemplos",
+    "p": [
+     "Febre aftosa e estomatite vesicular (bolhas na boca e nas patas).",
+     "Raiva e encefalopatia espongiforme bovina (vaca louca).",
+     "Carbúnculo hemático (antraz).",
+     "Tuberculose e brucelose.",
+     "Qualquer doença com muitas mortes ou sinais nervosos estranhos."
+    ]
+   },
+   {
+    "h": "Como notificar",
+    "p": [
+     "Procure o escritório local do órgão estadual de defesa agropecuária, seu veterinário ou o e-SISBRAVET do MAPA.",
+     "Não mova animais nem carcaças até receber instruções.",
+     "Guarde as informações: datas, animais afetados, origem."
+    ]
+   },
+   {
+    "h": "Conselho",
+    "p": [
+     "Tenha à mão o telefone do escritório de defesa agropecuária da sua região.",
+     "A lista oficial pode mudar: confira no site do MAPA."
+    ]
+   }
+  ]
+ },
+ "F353": {
+  "t": "Produtos proibidos na alimentação",
+  "r": "No Brasil o MAPA proíbe algumas substâncias e materiais na alimentação de bovinos porque prejudicam as pessoas ou os animais. Usá-los traz multas, condenações e perda de mercados.",
+  "s": [
+   {
+    "h": "Proibidos",
+    "p": [
+     "Proteínas e gorduras de origem animal (farinhas de carne, ossos, sangue, penas) na ração de ruminantes (IN 8/2004).",
+     "Cama de aviário e resíduos da criação de suínos na alimentação de ruminantes.",
+     "Anabolizantes hormonais para engorda de bovinos (proibidos desde 1991).",
+     "Antibióticos melhoradores de desempenho proibidos pelo MAPA, como colistina, tilosina, lincomicina e tiamulina."
+    ]
+   },
+   {
+    "h": "Regras",
+    "p": [
+     "Use só produtos registrados no MAPA, conforme o rótulo.",
+     "Peça ao fornecedor a composição do concentrado e o registro do produto.",
+     "Guarde notas fiscais e rótulos."
+    ]
+   },
+   {
+    "h": "Conselho",
+    "p": [
+     "As listas mudam: consulte o MAPA, seu nutricionista e o frigorífico."
+    ]
+   }
+  ]
+ },
+ "F356": {
+  "t": "Abate com inspeção",
+  "r": "No Brasil a carne para venda deve vir de animais abatidos em estabelecimento com inspeção oficial. O abate clandestino é crime e risco à saúde.",
+  "s": [
+   {
+    "h": "Tipos de inspeção",
+    "p": [
+     "SIF (federal): pode vender em todo o país e exportar.",
+     "SIE (estadual): vende dentro do estado.",
+     "SIM (municipal): vende dentro do município; com adesão ao SISBI-POA pode vender em todo o país."
+    ]
+   },
+   {
+    "h": "O que pedem",
+    "p": [
+     "GTA para abate.",
+     "Animais sadios e sem carências pendentes.",
+     "Identificação do produtor e, para exportação, rastreabilidade."
+    ]
+   },
+   {
+    "h": "Conselho",
+    "p": [
+     "Vender carne de animais abatidos na fazenda não é permitido e é risco sanitário."
+    ]
+   }
+  ]
+ },
+ "F357": {
+  "t": "Receita e uso de medicamentos veterinários",
+  "r": "Os medicamentos veterinários devem ter registro no MAPA e ser usados conforme o rótulo ou a receita do veterinário. Antimicrobianos devem ser usados com prescrição e com critério.",
+  "s": [
+   {
+    "h": "Regras",
+    "p": [
+     "Compre só produtos registrados no MAPA.",
+     "Siga dose, via e carência do rótulo; aplique no pescoço para não danificar cortes nobres.",
+     "Uso fora do rótulo só com receita do veterinário, que define uma carência maior."
+    ]
+   },
+   {
+    "h": "Registros",
+    "p": [
+     "Anote produto, partida, dose, animais, data e carência.",
+     "Guarde notas e receitas: o frigorífico e o PNCRC podem pedir."
+    ]
+   },
+   {
+    "h": "No seu confinamento",
+    "p": [
+     "O app guarda cada tratamento com sua carência e avisa antes de vender."
+    ]
+   }
+  ]
+ },
+ "F360": {
+  "t": "Normas de bem-estar no transporte",
+  "r": "No Brasil o MAPA e o Contran definem regras para o transporte de bovinos: veículo adequado, animais aptos e manejo sem maus-tratos. Os frigoríficos também auditam o bem-estar.",
+  "s": [
+   {
+    "h": "Pontos principais",
+    "p": [
+     "Animais aptos a viajar: não doentes, muito mancos ou fêmeas perto do parto.",
+     "Carroceria com piso antiderrapante, sem pontas e com divisórias.",
+     "Densidade de carga conforme o peso dos animais.",
+     "Paradas com água e descanso em viagens longas; uso mínimo do choque."
+    ]
+   },
+   {
+    "h": "No seu confinamento",
+    "p": [
+     "Peça ao transportador que siga essas regras: o gado chega melhor, com menos hematomas e menos condenações de carcaça."
+    ]
+   }
+  ]
+ },
+ "F379": {
+  "t": "Cama de frango",
+  "r": "A cama de frango é a maravalha usada nos aviários. No Brasil é proibida na alimentação de ruminantes desde 2004, pelo risco de vaca louca e de resíduos.",
+  "s": [
+   {
+    "h": "Por que é proibida",
+    "p": [
+     "Pode ter restos de ração de aves com farinhas de origem animal, proibidas para ruminantes.",
+     "Traz resíduos de medicamentos, metais, penas, vidro e sujeira.",
+     "Transmite salmonela, clostrídios e botulismo."
+    ]
+   },
+   {
+    "h": "Consequências",
+    "p": [
+     "Multas e interdição pelo MAPA.",
+     "Risco para o status sanitário do Brasil e para as exportações de carne."
+    ]
+   },
+   {
+    "h": "Alternativas",
+    "p": [
+     "Ureia bem usada com milho, cana ou melaço.",
+     "Farelo de soja, caroço e farelo de algodão, DDG de milho e leguminosas."
+    ]
+   }
+  ]
+ },
+ "F395": {
+  "t": "Promotores de crescimento",
+  "r": "No Brasil os anabolizantes hormonais (implantes) são proibidos para engorda de bovinos. O ganho extra vem de aditivos permitidos, como ionóforos, e de bom manejo.",
+  "s": [
+   {
+    "h": "O que é permitido",
+    "p": [
+     "Ionóforos (monensina, lasalocida, narasina) e outros aditivos registrados no MAPA.",
+     "Leveduras, óleos essenciais e tamponantes.",
+     "Sempre conforme o rótulo e com as carências respeitadas."
+    ]
+   },
+   {
+    "h": "O que é proibido",
+    "p": [
+     "Implantes e outros anabolizantes hormonais em bovinos de corte.",
+     "Clembuterol e qualquer produto sem registro.",
+     "Antibióticos melhoradores de desempenho vetados pelo MAPA."
+    ]
+   },
+   {
+    "h": "Fiscalização",
+    "p": [
+     "O PNCRC (Plano Nacional de Controle de Resíduos e Contaminantes) analisa amostras nos frigoríficos.",
+     "Resíduo encontrado leva a condenação, multas e investigação da fazenda."
+    ]
+   },
+   {
+    "h": "Recomendação",
+    "p": [
+     "Boa dieta, sanidade e bem-estar dão mais resultado que qualquer produto."
+    ]
+   }
+  ]
+ },
+ "F433": {
+  "t": "Beta-agonistas (ractopamina e zilpaterol)",
+  "r": "São aditivos dados nos últimos 20 a 42 dias para o animal fazer mais músculo e menos gordura. No Brasil o uso em bovinos é muito limitado, porque os principais compradores da carne brasileira não aceitam resíduos.",
+  "s": [
+   {
+    "h": "O que fazem",
+    "p": [
+     "Desviam nutrientes da gordura para o músculo: mais ganho, melhor conversão e mais rendimento de carcaça.",
+     "Podem baixar a maciez e aumentar o estresse por calor e problemas de cascos."
+    ]
+   },
+   {
+    "h": "A lei e os mercados",
+    "p": [
+     "Proibidos na União Europeia, na China, na Rússia e em outros mercados, que compram grande parte da carne brasileira.",
+     "O clembuterol é proibido no Brasil e em quase todo o mundo.",
+     "Antes de usar qualquer beta-agonista, confirme o registro no MAPA e se o seu frigorífico aceita."
+    ]
+   },
+   {
+    "h": "Se forem permitidos",
+    "p": [
+     "Só com receita e seguindo o rótulo à risca: dose, dias e carência.",
+     "Nunca em animais estressados nem em calor extremo."
+    ]
+   }
+  ]
+ },
+ "F432": {
+  "t": "Calendário sanitário por região",
+  "r": "As vacinas de entrada são parecidas em todo lugar, mas parasitas, doenças e épocas de risco mudam entre as regiões do Brasil. O Rumi monta seu calendário em Saúde.",
+  "s": [
+   {
+    "h": "Brasil Central (Centro-Oeste e Sudeste)",
+    "p": [
+     "Carrapato: controle estratégico com banhos a cada 21 dias a partir do início da seca, e rotação de princípios ativos com base no biocarrapaticidograma.",
+     "Mosca-dos-chifres, berne e mosca-dos-estábulos nas águas, esta última perto de usinas de cana (vinhaça e palhada).",
+     "Raiva onde há morcego-vampiro: vacina anual."
+    ]
+   },
+   {
+    "h": "Norte e Nordeste",
+    "p": [
+     "Norte: muita umidade, carrapato e tristeza parasitária o ano todo.",
+     "Semiárido: falta de água e forragem, água salobra e deficiência de vitamina A na seca."
+    ]
+   },
+   {
+    "h": "Sul",
+    "p": [
+     "Carrapato forte no verão e no outono; animais europeus mais sensíveis à tristeza.",
+     "Frio, barro e complexo respiratório no inverno."
+    ]
+   },
+   {
+    "h": "Sempre",
+    "p": [
+     "Vacinas contra clostridioses e doenças respiratórias na entrada, com reforço em 3 a 4 semanas.",
+     "Vacinação obrigatória contra brucelose das bezerras e as exigências do seu estado.",
+     "Vacinas e doses são decididas pelo seu veterinário."
+    ]
+   }
+  ]
+ },
+ "F437": {
+  "t": "Exportação de gado vivo",
+  "r": "O Brasil exporta bois vivos por navio, principalmente para a Turquia, o Oriente Médio e o Sudeste Asiático. Paga bem em algumas épocas, mas exige sanidade, rastreabilidade e bem-estar rigorosos.",
+  "s": [
+   {
+    "h": "O que exigem",
+    "p": [
+     "Estabelecimento de pré-embarque habilitado pelo MAPA, com quarentena.",
+     "Exames e vacinas conforme o país comprador, e animais identificados.",
+     "Animais livres de carrapato e de ferimentos no embarque."
+    ]
+   },
+   {
+    "h": "Riscos",
+    "p": [
+     "Mudanças de regras e suspensões pelos países compradores.",
+     "Críticas e ações judiciais sobre bem-estar no transporte marítimo.",
+     "O câmbio muda o preço oferecido."
+    ]
+   }
+  ]
+ },
+ "F441": {
+  "t": "Câmbio e preço da arroba",
+  "r": "O Brasil é o maior exportador de carne bovina do mundo, e a China compra perto da metade. Por isso o dólar e a demanda externa pesam muito no preço da arroba e do milho.",
+  "s": [
+   {
+    "h": "Como afeta você",
+    "p": [
+     "Real fraco torna a carne brasileira mais competitiva: o frigorífico exportador paga mais pela arroba.",
+     "Milho e farelo de soja também sobem com o dólar: seu custo por quilo ganho sobe junto.",
+     "Suspensões de habilitação de frigoríficos pela China derrubam a arroba em dias."
+    ]
+   },
+   {
+    "h": "O que fazer",
+    "p": [
+     "Acompanhe o indicador do boi gordo CEPEA/B3 e o dólar.",
+     "Trave parte do milho e da arroba quando os preços fecham sua margem.",
+     "Confira sua margem no simulador do Rumi: suba o custo do alimento e veja o que acontece."
+    ]
+   }
+  ]
+ },
+ "F442.r": "O gado em engorda é um ativo biológico: seu valor muda todo dia com o peso e o preço. No Brasil o CPC 29 (equivalente à IAS 41) manda avaliá-lo a valor justo; o produtor pessoa física declara a atividade pelo Livro Caixa Digital do Produtor Rural (LCDPR) quando exigido.",
+ "F442.1.0": "O banco olha seu balanço e seu histórico para liberar crédito rural: o gado bem avaliado mostra sua capacidade real.",
+ "F446": {
+  "t": "Chuvas e épocas de engorda no Brasil",
+  "r": "Saber quando chove e quando é seca na sua região diz quando comprar, quando vender e quando esperar problemas sanitários.",
+  "s": [
+   {
+    "h": "Centro-Oeste e Sudeste",
+    "p": [
+     "Águas de outubro a março e seca de abril-maio a setembro.",
+     "Confinamento na seca; a arroba costuma subir na entressafra (setembro a novembro) e cair na safra (março a junho)."
+    ]
+   },
+   {
+    "h": "Norte",
+    "p": [
+     "Chuvas de dezembro a maio e o “verão amazônico” de junho a novembro.",
+     "Muita umidade: carrapato, verminose e problemas de cascos."
+    ]
+   },
+   {
+    "h": "Nordeste",
+    "p": [
+     "No semiárido, chuvas curtas e irregulares entre janeiro e maio; a seca é longa.",
+     "Palma forrageira, cana e silagem são as reservas mais usadas."
+    ]
+   },
+   {
+    "h": "Sul",
+    "p": [
+     "Quatro estações: geadas no inverno, com pastagens de aveia e azevém; o frio baixa o ganho em currais abertos.",
+     "Verão quente com carrapato forte."
+    ]
+   }
+  ]
+ },
+ "F460": {
+  "t": "Berne",
+  "r": "O berne é a larva da mosca Dermatobia hominis, que usa outras moscas para levar seus ovos até o gado. Vive sob a pele formando caroços com um furo, estraga o couro e incomoda o animal. É comum no Brasil nas águas.",
+  "s": [
+   {
+    "h": "Sinais",
+    "p": [
+     "Caroços no lombo, costelas e paletas com um furo por onde a larva respira.",
+     "Coceira e incômodo.",
+     "Couros furados no frigorífico."
+    ]
+   },
+   {
+    "h": "O que fazer",
+    "p": [
+     "Endectocidas e produtos contra ectoparasitas controlam o berne; pergunte qual usar.",
+     "A larva pode ser retirada espremendo o nódulo e desinfetando.",
+     "Não estoure a larva dentro da pele: causa infecção."
+    ]
+   },
+   {
+    "h": "Prevenção",
+    "p": [
+     "Controle de moscas e de mato perto dos currais.",
+     "Revise os animais novos e trate-os na entrada se tiverem berne."
+    ]
+   }
+  ]
+ },
+ "F459.r": "A mosca põe ovos em feridas e as larvas comem carne viva. No Brasil a bicheira é endêmica e causa grandes perdas: a prevenção e o tratamento de cada ferida são diários.",
+ "F459.2.2": "Anote cada caso no app para ver em que época e em que manejo aparecem mais, e trate todas as feridas dos animais do lote.",
+ "F464.r": "Doença grave e contagiosa para as pessoas. Mata em horas. É de notificação obrigatória ao serviço veterinário oficial.",
+ "F464.1.1": "Isole a área, retire os outros animais e chame o veterinário e o órgão de defesa agropecuária do estado.",
+ "F465.1.1": "Isole o animal e avise o veterinário e o serviço veterinário oficial: a raiva é de notificação obrigatória.",
+ "F465.2.1": "Notifique mordidas de morcego e abrigos ao órgão de defesa do estado: o PNCRH faz o controle do morcego-vampiro (Desmodus rotundus).",
+ "F479.2.3": "Tenha à mão o telefone do veterinário e do órgão de defesa agropecuária do estado.",
+ "F487.2.0": "GTA e nota fiscal do vendedor.",
+ "F491.2.1": "Cumpra o PNCEBT: vacinação das bezerras e exames exigidos para trânsito e certificação.",
+ "F501.r": "O Brasil foi reconhecido pela Organização Mundial de Saúde Animal como livre de febre aftosa sem vacinação em 2025. Um foco fecharia mercados na hora. Reconhecer os sinais e avisar protege todo o país.",
+ "F501.1.1": "Avise imediatamente o serviço veterinário oficial.",
+ "F505.r": "A estomatite vesicular é uma doença viral que causa bolhas na boca, nas patas e nos úberes. Aparece no Brasil em surtos, e como se parece muito com a febre aftosa, deve ser sempre notificada.",
+ "G47": {
+  "t": "Bicheira",
+  "x": "É a larva da mosca Cochliomyia hominivorax, que come a carne viva em feridas, umbigos, castrações ou descornas. No Brasil é endêmica: revise diariamente qualquer ferida, trate e proteja com um produto contra bicheira, e evite fazer castração e descorna nas épocas de mais moscas."
+ },
+ "G50.x": "Se um animal morre de repente e sangra pelo nariz, boca ou ânus, não o abra: pode ser carbúnculo hemático (antraz), que passa para as pessoas. Avise seu veterinário e o serviço veterinário oficial. Em qualquer morte, enterre ou composte o corpo longe de rios e poços, e anote a perda no app.",
+ "G61.x": "No Brasil a cama de frango é proibida na alimentação de ruminantes desde 2004 (IN 8), pelo risco de vaca louca e de resíduos. Não use: pode trazer multa, interdição e problemas para a exportação.",
+ "G96.x": "É uma doença que causa abortos em fêmeas e passa para as pessoas pelo leite cru e contato com fetos. No Brasil a vacinação das bezerras de 3 a 8 meses é obrigatória, e fêmeas reprodutoras precisam de exames para trânsito em muitos casos.",
+ "G97.x": "É uma doença dos pulmões que avança devagar e passa para as pessoas. Os animais emagrecem e tossem. Se suspeitar, avise seu veterinário e o serviço veterinário oficial para os testes do PNCEBT.",
+ "G98.x": "É uma doença muito contagiosa que dá bolhas na boca e nas patas. O Brasil é livre sem vacinação desde 2025, e por isso qualquer suspeita se notifica imediatamente ao serviço veterinário oficial.",
+ "G153.x": "Em cada viagem leve a GTA e a nota fiscal de produtor, que mostram de onde vêm os animais e de quem são, o local e a data de saída e o destino.",
+ "G163": {
+  "t": "Destino de animais mortos",
+  "x": "Enterre os animais mortos num local marcado, longe dos currais, de poços, nascentes e rios, numa cova funda, cobertos com cal e depois com terra, ou use compostagem conforme as regras ambientais do seu estado. Nunca venda um animal morto."
+ },
+ "G166.x": "Para animais de mais de 300 kg usam-se agulhas 40 × 12 a 40 × 16 para intramuscular; mais grossas se o produto for espesso. Para subcutânea, mais curtas, como 25 × 8 ou 20 × 10. Aplique no pescoço e troque a agulha com frequência.",
+ "G176": {
+  "t": "Desempenho nos confinamentos brasileiros",
+  "x": "Nos confinamentos brasileiros, garrotes Nelore e cruzados entram com 360 a 420 kg, ficam 90 a 110 dias e ganham 1,4 a 1,7 kg por dia com dietas de 70 a 85 % de concentrado à base de milho, silagem e coprodutos. A compra do animal e a dieta somam mais de 85 % do custo."
+ },
+ "G177.x": "As vacas de descarte bem alimentadas podem ganhar peso rápido em confinamentos curtos, de 60 a 90 dias, com ganhos de 1,2 a 1,5 kg por dia, e às vezes deixam bom lucro porque são compradas baratas. Confira que estejam sadias e sem carências.",
+ "G178.x": "O confinamento tem época: na safra (março a junho) sobra boi de pasto e a arroba cai; na entressafra (setembro a novembro) falta boi e a arroba sobe. Por isso a maioria confina na seca. Planeje compras e travas de preço com tempo e tenha o dinheiro para gado e dieta.",
+ "G186.x": "Ter a fazenda cadastrada no órgão de defesa agropecuária do estado, com inscrição estadual e CAR, permite emitir GTA e nota fiscal, participar dos programas sanitários e vender a frigoríficos que exigem rastreabilidade.",
+ "G197": {
+  "t": "Frigoríficos e canais de venda",
+  "x": "No Brasil quase todo boi gordo é vendido a frigoríficos com SIF, pago por arroba de carcaça, com escala de abate combinada. Os grandes grupos compram a maior parte; pergunte o prazo de pagamento, as bonificações e os descontos antes de vender."
+ },
+ "G198": {
+  "t": "Exportação de carne",
+  "x": "O Brasil é o maior exportador de carne bovina do mundo; a China compra perto da metade, seguida por Estados Unidos, Chile e outros. Esses compradores exigem rastreabilidade, sanidade em dia, respeito às carências e, cada vez mais, origem sem desmatamento. Levar seus registros no app ajuda a cumprir."
+ },
+ "G199": {
+  "t": "MAPA e defesa agropecuária",
+  "x": "O MAPA (Ministério da Agricultura e Pecuária) e os órgãos estaduais de defesa agropecuária são as autoridades de sanidade animal no Brasil. Controlam a GTA, as doenças de notificação obrigatória, o registro de medicamentos e a rastreabilidade. Diante de qualquer doença estranha ou mortes em massa, avise-os."
+ },
+ "G200.x": "Para mover gado entre fazendas ou para a venda é preciso emitir a GTA no órgão de defesa do estado, com a vacinação em dia. Na compra, exija a GTA e a nota fiscal: assim evita animais roubados ou doentes.",
+ "G207.x": "Um técnico ou zootecnista pode ajudar com dietas, pastos e instalações, e o veterinário com a sanidade. A Embrapa, o Senar (com a Assistência Técnica e Gerencial), a Emater, universidades e cooperativas oferecem capacitações.",
+ "G308": {
+  "t": "Preços por arroba",
+  "x": "No Brasil o boi gordo é negociado por arroba de carcaça (15 kg), e a reposição por arroba viva (peso vivo ÷ 30), por quilo ou por cabeça. Uma arroba de R$ 310 com rendimento de 54 % equivale a cerca de R$ 11,16 por quilo vivo. O app trabalha na unidade que você escolher em Mais."
+ },
+ "G384": {
+  "t": "Doenças de notificação obrigatória",
+  "x": "Você deve avisar o serviço veterinário oficial se suspeitar de febre aftosa, estomatite vesicular, raiva, vaca louca, carbúnculo hemático, tuberculose, brucelose ou qualquer morte em massa sem explicação. Avisar a tempo protege toda a região."
+ },
+ "G249.x": "A cana picada com ureia e sulfato de amônio é uma forragem de seca muito usada no Brasil. A ureia deve ir bem misturada, a 1 % da cana fresca, com adaptação gradual, seguindo a receita de um técnico.",
+ "G247.x": "Depende do capim, da chuva e do adubo. Sobrecarregar acaba com o pasto e os animais ganham menos. Ajuste a lotação na seca ou suplemente. Uma unidade animal (UA) são 450 kg de peso vivo.",
+ "G302.x": "Vender no olho quase sempre favorece o comprador experiente. Pese na balança e negocie por quilo ou por arroba. Se não tiver balança, peça para pesar numa confiável.",
+ "F43.t": "Quilos ou arrobas no app",
+ "G133.t": "Quilos, arrobas ou libras",
+ "F43.0.0": "Em Mais, Configuração, Idioma, moeda e unidades: peso em Quilos ou Libras, e o preço do gado por arroba de 15 kg, por quilo ou por cabeça.",
+ "F42.0.0": "Primeiro: idioma, país, unidade de peso (quilos ou libras), moeda e como se cotiza o gado (por arroba, por quilo ou por cabeça) e a ração.",
+ "G133.x": "Você pode trabalhar em quilos ou em libras, e cotar o gado por arroba de 15 kg. Mude em Mais, em Configurações. O app converte tudo sozinho.",
+ "F92.2.0": "Custa R$ 15 por dia e ganha 1,2 kg a R$ 11 = R$ 13,20: você perde R$ 1,80 por dia.",
+ "G184.x": "É o custo do quilo de matéria seca da dieta multiplicado pela conversão. Por exemplo, se o quilo de matéria seca custa R$ 1,10 e a conversão é 7 para 1, cada quilo ganho custa R$ 7,70 em alimento."
+}
