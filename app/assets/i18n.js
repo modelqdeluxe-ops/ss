@@ -53,7 +53,7 @@ function norm(t){
 }
 function valor(v){
   if(v.d!=null&&v.f==null&&v.m==null)return v.d;
-  if(v.n!=null)return lang==='pt'?v.n.replace(/[.,]/g,c=>c==='.'?',':'.'):v.n;
+  if(v.n!=null)return v.n;   // los números se ven igual en toda la app
   if(v.w!=null)return (TDIA[lang]||DIA)[v.w];
   if(v.f==='l'){const M=(TMES[lang]||MES)[v.m];return lang==='en'?`${M} ${v.d}${v.y?', '+v.y:''}`:`${v.d} de ${M}${v.y?' de '+v.y:''}`;}
   if(v.f==='c'){const M=(TMESC[lang]||MESC)[v.m];return lang==='en'?`${M} ${v.d}${v.y?' '+v.y:''}`:`${v.d} ${M}${v.y?' '+v.y:''}`;}
@@ -64,9 +64,15 @@ function traducir(t){
   if(lang==='es'||!t)return t;
   const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(t);const core=m[2];if(!core||!/[A-Za-zÀ-ÿ]/.test(core))return t;
   const D=DIC[lang]||{};
-  const uno=s=>{const {key,vals}=norm(s);
+  // la moneda del usuario se escribe como "L" en el catálogo y se devuelve la suya al final
+  const mon=(typeof S!=='undefined'&&S.config&&S.config.moneda)||'L';
+  const esc=mon.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const aL=x=>mon==='L'?x:x.replace(new RegExp('(^|[^A-Za-zÀ-ÿ])'+esc+'(?=\\s?[−-]?\\d|/)','g'),'$1L');
+  const deL=x=>mon==='L'||x==null?x:x.replace(/(^|[^A-Za-zÀ-ÿ])L(?=\s?[−-]?\d|\/)/g,'$1'+mon);
+  const uno=s0=>{const s=aL(s0);const {key,vals}=norm(s);
     if(lang==='xx'){if(/[A-Za-zÀ-ÿ]/.test(key.replace(/\{\d+\}/g,'')))REC.set(key,(REC.get(key)||0)+1);return null;}
-    const tr=D[key];if(tr==null)return null;return tr.replace(/\{(\d+)\}/g,(x,i)=>vals[+i]!=null?valor(vals[+i]):x);};
+    // solo fechas, números o datos: se arman igual, con los meses y días en el idioma
+    const tr=D[key]!=null?D[key]:(/[A-Za-zÀ-ÿ]/.test(key.replace(/\{\d+\}/g,''))?null:key);if(tr==null)return null;return deL(tr.replace(/\{(\d+)\}/g,(x,i)=>vals[+i]!=null?valor(vals[+i]):x));};
   let r=uno(core);
   if(r==null&&lang!=='xx'){
     // por partes: frases separadas por punto, dos puntos o punto y coma

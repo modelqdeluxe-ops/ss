@@ -2106,6 +2106,7 @@ function csvItems(tipo,head,fn){csv(tipo,head,calc().items.filter(i=>i.tipo===ti
 function csv(nombre,head,rows){
   if(!rows.length){toast('No hay datos para descargar.');return;}
   const c=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  if(window.I18N)head=head.map(h=>I18N.t(String(h)));
   descargar(`rumentis-${nombre}-${hoy()}.csv`,'\uFEFF'+[head,...rows].map(r=>r.map(c).join(',')).join('\r\n'));
 }
 let DL=null;

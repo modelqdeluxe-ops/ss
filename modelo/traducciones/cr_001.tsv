@@ -1,0 +1,228 @@
+: {0} {3} en {1} días, {2} {4} al año.	: {0} {3} in {1} days, {2} {4} per year.	: {0} {3} em {1} dias, {2} {4} ao ano.
+{0}: debes L {1}	{0}: you owe L {1}	{0}: você deve L {1}
+L {1} al {2} {4} anual, vence el {0} · cuota L {3}	L {1} at {2} {4} annual, due {0} · payment L {3}	L {1} a {2} {4} ao ano, vence em {0} · parcela L {3}
+Todo sale de tus registros de compra, alimento, sanidad, gastos y ventas.	Everything comes from your purchase, feed, health, expense and sale records.	Tudo vem dos seus registros de compra, ração, sanidade, despesas e vendas.
+Cómo calculo	How I calculate	Como calculo
+Todo lo que tienes en la finca y cuánto vale.	Everything you have on the ranch and what it's worth.	Tudo o que você tem na fazenda e quanto vale.
+valor del inventario	inventory value	valor do estoque
+cabezas	head	cabeças
+avisos	alerts	avisos
+{0}: {1} cabezas	{0}: {1} head	{0}: {1} cabeças
+{1} {3} en pie, {2} {4} por cabeza · {0}	{1} {3} live weight, {2} {4} per head · {0}	{1} {3} de peso vivo, {2} {4} por cabeça · {0}
+costó L {0}	cost L {0}	custou L {0}
+{0} {2} · L {1}	{0} {2} · L {1}	{0} {2} · L {1}
+{1} {3} · L {2} · vence {0}	{1} {3} · L {2} · expires {0}	{1} {3} · L {2} · vence {0}
+bien	good	bem
+Uso	Use	Uso
+{1} dosis · L {2} · vence {0}	{1} doses · L {2} · expires {0}	{1} doses · L {2} · vence {0}
+vence en {0} días	expires in {0} days	vence em {0} dias
+por acabarse	running low	acabando
+{0} unidades · L {1}	{0} units · L {1}	{0} unidades · L {1}
+Instalación · costó L {1} en {0} · pierde L {2} al año	Facility · cost L {1} on {0} · loses L {2} per year	Instalação · custou L {1} em {0} · perde L {2} ao ano
+vale hoy	worth today	vale hoje
+Equipo · costó L {1} en {0} · pierde L {2} al año	Equipment · cost L {1} on {0} · loses L {2} per year	Equipamento · custou L {1} em {0} · perde L {2} ao ano
+Maquinaria · costó L {1} en {0} · pierde L {2} al año	Machinery · cost L {1} on {0} · loses L {2} per year	Maquinário · custou L {1} em {0} · perde L {2} ao ano
+Vehículo · costó L {1} en {0} · pierde L {2} al año	Vehicle · cost L {1} on {0} · loses L {2} per year	Veículo · custou L {1} em {0} · perde L {2} ao ano
+El ganado se valora con su peso en pie de hoy, menos desbaste, a tu precio de venta. El equipo pierde valor en línea recta durante su vida útil.	Cattle are valued at today's live weight, less shrink, at your sale price. Equipment loses value in a straight line over its useful life.	O gado é avaliado com o peso vivo de hoje, menos a quebra, pelo seu preço de venda. O equipamento perde valor em linha reta durante sua vida útil.
+Rumi piensa con tus datos	Rumi thinks with your data	O Rumi pensa com seus dados
+Puntaje, riesgo, proveedores y lo que haría primero.	Score, risk, suppliers and what I'd do first.	Nota, risco, fornecedores e o que eu faria primeiro.
+Tu engorde: Excelente	Your feedlot: Excellent	Sua engorda: Excelente
+Tu engorde: Bien	Your feedlot: Good	Sua engorda: Bem
+Tu engorde: Regular	Your feedlot: Fair	Sua engorda: Regular
+Tu engorde: Atención	Your feedlot: Needs attention	Sua engorda: Atenção
+{0} cabezas en {1} lotes. Puntaje ponderado por cabezas.	{0} head in {1} lots. Score weighted by head.	{0} cabeças em {1} lotes. Nota ponderada por cabeças.
+Tus lotes	Your lots	Seus lotes
+Lo que haría primero	What I'd do first	O que eu faria primeiro
+: Mortalidad de {0} {1}: arriba de lo aceptable. Repasa recepción, vacunas y el calendario de sanidad.	: Death loss of {0} {1}: above acceptable. Review receiving, vaccines and the health calendar.	: Mortalidade de {0} {1}: acima do aceitável. Revise recepção, vacinas e o calendário de sanidade.
+: {0} animales ganan menos del {1} {2} del promedio. Revísalos: pueden estar enfermos o no alcanzar comedero.	: {0} animals gain less than {1} {2} of the average. Check them: they may be sick or not getting bunk space.	: {0} animais ganham menos de {1} {2} da média. Examine-os: podem estar doentes ou sem acesso ao cocho.
+Probabilidad de que el engorde completo gane	Probability the whole feedlot makes a profit	Probabilidade de a engorda toda dar lucro
+{0} lotes en engorde, {1} escenarios	{0} lots on feed, {1} scenarios	{0} lotes em engorda, {1} cenários
+Distribución del margen en {0} escenarios	Margin distribution over {0} scenarios	Distribuição da margem em {0} cenários
+−L {0} mil a L {1} mil	−L {0}k to L {1}k	−L {0} mil a L {1} mil
+Riesgo de {0}	Risk of {0}	Risco de {0}
+Valor de lo que ganaron	Value of what they gained	Valor do que ganharam
+Prioridades	Priorities	Prioridades
+{0}: Convierte {1} a {2}: gasta mucho alimento por libra. Revisa desperdicio en comederos, tamaño de partícula y animales enfermos.	{0}: Converts {1} to {2}: it uses a lot of feed per pound. Check bunk waste, particle size and sick animals.	{0}: Converte {1} para {2}: gasta muita ração por libra. Revise desperdício nos cochos, tamanho de partícula e animais doentes.
+{0}: Convierte {1} a {2}: gasta mucho alimento por kilo. Revisa desperdicio en comederos, tamaño de partícula y animales enfermos.	{0}: Converts {1} to {2}: it uses a lot of feed per kilo. Check bunk waste, particle size and sick animals.	{0}: Converte {1} para {2}: gasta muita ração por quilo. Revise desperdício nos cochos, tamanho de partícula e animais doentes.
+{0}: {1} animales ganan menos del {2} {3} del promedio. Revísalos: pueden estar enfermos o no alcanzar comedero.	{0}: {1} animals gain less than {2} {3} of the average. Check them: they may be sick or not getting bunk space.	{0}: {1} animais ganham menos de {2} {3} da média. Examine-os: podem estar doentes ou sem acesso ao cocho.
+{0}: Mortalidad de {1} {2}: arriba de lo aceptable. Repasa recepción, vacunas y el calendario de sanidad.	{0}: Death loss of {1} {2}: above acceptable. Review receiving, vaccines and the health calendar.	{0}: Mortalidade de {1} {2}: acima do aceitável. Revise recepção, vacinas e o calendário de sanidade.
+L {0} mil	L {0}k	L {0} mil
+Cada animal de	Each animal from	Cada animal de
+deja L {0} más que uno de	makes L {0} more than one from	deixa L {0} a mais que um de
+: gana {0} {5} por día más y se mueren menos ({1} {6} contra {2} {7}). En lotes en engorde el margen es estimado; en los vendidos, real. Con un solo lote la diferencia puede ser suerte: compara al menos {3} o {4} lotes de cada uno.	: it gains {0} {5} more per day and fewer die ({1} {6} vs {2} {7}). For lots on feed the margin is estimated; for sold lots, actual. With a single lot the difference may be luck: compare at least {3} or {4} lots from each.	: ganha {0} {5} a mais por dia e morrem menos ({1} {6} contra {2} {7}). Nos lotes em engorda a margem é estimada; nos vendidos, real. Com um só lote a diferença pode ser sorte: compare pelo menos {3} ou {4} lotes de cada um.
+Rumi usa solo tus registros y la experiencia del engorde en corral. Para medicinas y casos graves, consulta a tu veterinario.	Rumi only uses your records and feedlot experience. For medicines and serious cases, consult your vet.	O Rumi usa só seus registros e a experiência do confinamento. Para medicamentos e casos graves, consulte seu veterinário.
+Rumi calcula la mezcla más barata que cubre lo que tus animales necesitan.	Rumi calculates the cheapest mix that covers what your animals need.	O Rumi calcula a mistura mais barata que cobre o que seus animais precisam.
+Ganancia que buscas	Target gain	Ganho desejado
+precio por libra	price per pound	preço por libra
+{0} {2} proteína, {1} {3} materia seca	{0} {2} protein, {1} {3} dry matter	{0} {2} proteína, {1} {3} matéria seca
+Precio de {0}	Price of {0}	Preço de {0}
+Precio de Sorgo molido	Price of ground sorghum	Preço do sorgo moído
+Precio de Harina de palmiste	Price of palm kernel meal	Preço do farelo de palmiste
+Precio de Semolina de arroz	Price of rice bran	Preço do farelo de arroz
+Precio de Afrecho de trigo	Price of wheat bran	Preço do farelo de trigo
+Granos de destilería (DDGS)	Distillers grains (DDGS)	Grãos de destilaria (DDGS)
+Precio de Granos de destilería (DDGS)	Price of distillers grains (DDGS)	Preço dos grãos de destilaria (DDGS)
+Precio de Melaza	Price of molasses	Preço do melaço
+Precio de Urea	Price of urea	Preço da ureia
+Precio de Heno o pasto seco picado	Price of chopped hay or dry grass	Preço do feno ou capim seco picado
+Precio de Ensilaje de maíz	Price of corn silage	Preço da silagem de milho
+Precio de King grass picado	Price of chopped king grass	Preço do capim king grass picado
+Precio de Carbonato de calcio	Price of calcium carbonate	Preço do calcário calcítico
+Enciende los que tienes y corrige los precios de tu zona. Se guardan para la próxima vez.	Turn on the ones you have and correct the prices for your area. They're saved for next time.	Ative os que você tem e corrija os preços da sua região. Eles ficam salvos para a próxima vez.
+Formular con Rumi	Formulate with Rumi	Formular com o Rumi
+{2} cabezas novillos castrados, {0}. Entró el {1}, hace {3} días.	{2} head of steers, {0}. Arrived {1}, {3} days ago.	{2} cabeças de novilhos castrados, {0}. Entrou em {1}, há {3} dias.
+{2} cabezas machos enteros, {0}. Entró el {1}, hace {3} días.	{2} head of intact bulls, {0}. Arrived {1}, {3} days ago.	{2} cabeças de machos inteiros, {0}. Entrou em {1}, há {3} dias.
+{2} cabezas machos enteros, {0}. Entró el {1}.	{2} head of intact bulls, {0}. Arrived {1}.	{2} cabeças de machos inteiros, {0}. Entrou em {1}.
+{2} cabezas novillos castrados, {0}. Entró el {1}.	{2} head of steers, {0}. Arrived {1}.	{2} cabeças de novilhos castrados, {0}. Entrou em {1}.
+{0} {1} al entrar	{0} {1} on arrival	{0} {1} na entrada
+Ya pasó la meta de {0} {1}. Puedes venderlo.	It already passed the {0} {1} target. You can sell it.	Já passou da meta de {0} {1}. Você pode vendê-lo.
+Secciones del lote	Lot sections	Seções do lote
+Animales ({0})	Animals ({0})	Animais ({0})
+de unos {0}	of about {0}	de uns {0}
+{0} muertes	{0} deaths	{0} mortes
+{0} pesajes	{0} weighings	{0} pesagens
+activos	active	ativos
+ganancia de	gain of	ganho de
+a	to	a
+{0} {2} a L {1}, con flete	{0} {2} at L {1}, with freight	{0} {2} a L {1}, com frete
+Alimento a la fecha	Feed to date	Ração até hoje
+{0} {1} por cabeza	{0} {1} per head	{0} {1} por cabeça
+unos {0} días más	about {0} more days	uns {0} dias a mais
+{0} {2} a L {1}	{0} {2} at L {1}	{0} {2} a L {1}
+L {0} el lote completo	L {0} for the whole lot	L {0} o lote completo
+{0} al día	{0} per day	{0} por dia
+Alimento: {0} {1}	Feed: {0} {1}	Ração: {0} {1}
+{0}, {1} entregas	{0}, {1} deliveries	{0}, {1} entregas
+Borrar este registro	Delete this record	Apagar este registro
+Pesaje: {0} {1} de promedio	Weighing: {0} {1} average	Pesagem: {0} {1} de média
+{0}, {1} cabezas pesadas	{0}, {1} head weighed	{0}, {1} cabeças pesadas
+Ver los {0} registros	See all {0} records	Ver os {0} registros
+Faltan {0} {1}	{0} {1} to go	Faltam {0} {1}
+Al ritmo actual llega a la meta el	At the current pace it reaches the target on	No ritmo atual atinge a meta em
+, en unos {0} días.	, in about {0} days.	, em uns {0} dias.
+Retiro	Withdrawal	Carência
+hasta el {0}	until {0}	até {0}
+Muerte: {0} cabeza	Death: {0} head	Morte: {0} cabeça
+{0}, Neumonía	{0}, Pneumonia	{0}, Pneumonia
+Revisa {0} animal atrasado	Check {0} animal falling behind	Revise {0} animal atrasado
+muertos	dead	mortos
+Otros gastos del lote	Other lot expenses	Outras despesas do lote
+Revisa {0} animales atrasados	Check {0} animals falling behind	Revise {0} animais atrasados
+margen del lote, L {0} por cabeza	lot margin, L {0} per head	margem do lote, L {0} por cabeça
+Vendido el {0} a {1} {2} de promedio.	Sold on {0} at {1} {2} average.	Vendido em {0} com {1} {2} de média.
+Venta: {0} cabezas	Sale: {0} head	Venda: {0} cabeças
+{1}, {2} {4} a L {3}, {0}	{1}, {2} {4} at L {3}, {0}	{1}, {2} {4} a L {3}, {0}
+Reabrir	Reopen	Reabrir
+en total	in total	no total
+vendidos	sold	vendidos
+resultado final	final result	resultado final
+{0} {1} de promedio	{0} {1} average	{0} {1} de média
+Ver foto	See photo	Ver foto
+Arete {0}	Ear tag {0}	Brinco {0}
+{0}, {1}, rojo. En engorde desde el {2}.	{0}, {1}, red. On feed since {2}.	{0}, {1}, vermelho. Em engorda desde {2}.
+{0}, {1}, blanco. En engorde desde el {2}.	{0}, {1}, white. On feed since {2}.	{0}, {1}, branco. Em engorda desde {2}.
+{0}, {1}, barcino. En engorde desde el {2}.	{0}, {1}, brindle. On feed since {2}.	{0}, {1}, rajado. Em engorda desde {2}.
+por día, puesto {0} de {1}	per day, rank {0} of {1}	por dia, posição {0} de {1}
+Tratar	Treat	Tratar
+Pesaje: {0} {1}	Weighing: {0} {1}	Pesagem: {0} {1}
+{0}, +{1} {4} en {2} días, {3} {5} por día	{0}, +{1} {4} in {2} days, {3} {5} per day	{0}, +{1} {4} em {2} dias, {3} {5} por dia
+Desparasitante: {0}	Dewormer: {0}	Vermífugo: {0}
+{0}, a todo el lote, retiro {1} días	{0}, whole lot, {1}-day withdrawal	{0}, todo o lote, carência {1} dias
+Vitaminas: {0}	Vitamins: {0}	Vitaminas: {0}
+{0}, a todo el lote	{0}, whole lot	{0}, todo o lote
+Vacuna: {0}	Vaccine: {0}	Vacina: {0}
+meta {1} {2} el {0}	target {1} {2} on {0}	meta {1} {2} em {0}
+la línea sólida es el peso promedio por cabeza en cada pesaje; la punteada es la proyección hasta la meta con la ganancia actual y el anillo es el día en que llegaría. La línea verde horizontal es el peso meta y la vertical amarilla es hoy.	the solid line is the average weight per head at each weighing; the dashed line is the projection to the target at the current gain and the ring is the day it would get there. The horizontal green line is the target weight and the yellow vertical line is today.	a linha sólida é o peso médio por cabeça em cada pesagem; a tracejada é a projeção até a meta com o ganho atual e o anel é o dia em que chegaria. A linha verde horizontal é o peso meta e a vertical amarela é hoje.
+Entró con {0} {3} y hoy pesa unos {1} {4}: lleva {2} {5} del camino a la meta.	It arrived at {0} {3} and today weighs about {1} {4}: it's {2} {5} of the way to target.	Entrou com {0} {3} e hoje pesa uns {1} {4}: já fez {2} {5} do caminho até a meta.
+cada barra es un período entre dos pesajes y muestra cuántas libras subió cada animal por día en ese período.	each bar is a period between two weighings and shows how many pounds each animal gained per day in that period.	cada barra é um período entre duas pesagens e mostra quantas libras cada animal ganhou por dia nesse período.
+{0} al {1}	{0} to {1}	{0} a {1}
+En el último período subió {0} {1} por día, buena ganancia.	In the last period it gained {0} {1} per day, a good gain.	No último período ganhou {0} {1} por dia, bom ganho.
+Bajó {0} {1} por día respecto al período anterior.	It dropped {0} {1} per day compared with the previous period.	Caiu {0} {1} por dia em relação ao período anterior.
+libras de alimento que come cada animal al día. Si baja de golpe, algo pasa: calor, agua, alimento o enfermedad.	pounds of feed each animal eats per day. If it drops suddenly, something is wrong: heat, water, feed or disease.	libras de ração que cada animal come por dia. Se cair de repente, algo está errado: calor, água, ração ou doença.
+Come {0} {2} por cabeza al día, {1} {3} de su peso.	It eats {0} {2} per head per day, {1} {3} of body weight.	Come {0} {2} por cabeça por dia, {1} {3} do peso.
+libras de alimento que anotaste cada día para este lote.	pounds of feed you recorded each day for this lot.	libras de ração que você registrou a cada dia para este lote.
+cuántas libras de alimento necesitó para ganar una libra en cada período entre pesajes. Barra más corta es mejor; lo normal es de {0} a {1}.	how many pounds of feed it needed to gain one pound in each period between weighings. Shorter is better; {0} to {1} is normal.	quantas libras de ração precisou para ganhar uma libra em cada período entre pesagens. Barra menor é melhor; o normal é de {0} para {1}.
+En todo el engorde convierte {0} a {1}: bien.	Over the whole feeding period it converts {0} to {1}: good.	Em toda a engorda converte {0} para {1}: bem.
+Cada libra que gana cuesta L {0} y lo vendes a L {1}.	Each pound it gains costs L {0} and you sell at L {1}.	Cada libra que ganha custa L {0} e você vende a L {1}.
+Llevas invertido L {0}: {1} {2} es la compra.	You've invested L {0}: {1} {2} is the purchase.	Você já investiu L {0}: {1} {2} é a compra.
+Entraron {0}.	{0} arrived.	Entraram {0}.
+Le faltan {1} {3}; al ritmo actual llega cerca del {0} ({2} días).	{1} {3} to go; at the current pace it gets there around {0} ({2} days).	Faltam {1} {3}; no ritmo atual chega por volta de {0} ({2} dias).
+Subió {0} {1} por día respecto al período anterior.	It rose {0} {1} per day compared with the previous period.	Subiu {0} {1} por dia em relação ao período anterior.
+Entraron {0}, murieron {1}.	{0} arrived, {1} died.	Entraram {0}, morreram {1}.
+al vender	at sale	na venda
+Entró con {0} {3} y salió con {1} {4}: ganó {2} {5}.	It arrived at {0} {3} and left at {1} {4}: it gained {2} {5}.	Entrou com {0} {3} e saiu com {1} {4}: ganhou {2} {5}.
+Anota cómo está el comedero en cada entrega para ver esta gráfica.	Record how the bunk looks at each delivery to see this chart.	Registre como está o cocho em cada entrega para ver este gráfico.
+al entrar	on arrival	na entrada
+Entraron {0}, murieron {1}, se vendieron {2}.	{0} arrived, {1} died, {2} were sold.	Entraram {0}, morreram {1}, foram vendidos {2}.
+ganancia este mes	profit this month	lucro este mês
+lo que ganaste este mes con lo que ya vendiste. El costo de lo vendido es lo que llevaba invertido cada animal vendido: compra, alimento, sanidad y gastos de su lote.	what you earned this month from what you already sold. The cost of goods sold is what each sold animal had invested in it: purchase, feed, health and its lot's expenses.	o que você ganhou este mês com o que já vendeu. O custo do vendido é o que cada animal vendido tinha investido: compra, ração, sanidade e despesas do seu lote.
+queda este mes: entró L {0} y salió L {1}	left over this month: L {0} in and L {1} out	sobra este mês: entrou L {0} e saiu L {1}
+A dónde se fue el dinero este mes	Where the money went this month	Para onde foi o dinheiro este mês
+ganancia este año	profit this year	lucro este ano
+lo que ganaste este año con lo que ya vendiste. El costo de lo vendido es lo que llevaba invertido cada animal vendido: compra, alimento, sanidad y gastos de su lote.	what you earned this year from what you already sold. The cost of goods sold is what each sold animal had invested in it: purchase, feed, health and its lot's expenses.	o que você ganhou este ano com o que já vendeu. O custo do vendido é o que cada animal vendido tinha investido: compra, ração, sanidade e despesas do seu lote.
+queda este año: entró L {0} y salió L {1}	left over this year: L {0} in and L {1} out	sobra este ano: entrou L {0} e saiu L {1}
+A dónde se fue el dinero este año	Where the money went this year	Para onde foi o dinheiro este ano
+ganancia desde el inicio	profit since the start	lucro desde o início
+lo que ganaste desde el inicio con lo que ya vendiste. El costo de lo vendido es lo que llevaba invertido cada animal vendido: compra, alimento, sanidad y gastos de su lote.	what you've earned since the start from what you already sold. The cost of goods sold is what each sold animal had invested in it: purchase, feed, health and its lot's expenses.	o que você ganhou desde o início com o que já vendeu. O custo do vendido é o que cada animal vendido tinha investido: compra, ração, sanidade e despesas do seu lote.
+queda desde el inicio: entró L {0} y salió L {1}	left over since the start: L {0} in and L {1} out	sobra desde o início: entrou L {0} e saiu L {1}
+A dónde se fue el dinero desde el inicio	Where the money went since the start	Para onde foi o dinheiro desde o início
+Cerrar	Close	Fechar
+L {0} la libra	L {0} per pound	L {0} a libra
+Libras por lote	Pounds per lot	Libras por lote
+Debajo de cada lote marca cómo estaba el comedero antes de servir. Es opcional.	Under each lot, mark how the bunk looked before feeding. It's optional.	Embaixo de cada lote, marque como estava o cocho antes do trato. É opcional.
+{1} cabezas, {0}	{1} head, {0}	{1} cabeças, {0}
+unos {0}	about {0}	uns {0}
+Kilos para {0}	Kilos for {0}	Quilos para {0}
+Libras para {0}	Pounds for {0}	Libras para {0}
+Cómo estaba el comedero	How the bunk looked	Como estava o cocho
+Pesaje de {0}	Weighing of {0}	Pesagem de {0}
+Escribe el peso de cada animal que pase por la báscula. Con la lupa buscas su arete: Enter te lleva a su peso y otro Enter te regresa a la lupa. Los que dejes vacíos no se guardan.	Enter the weight of each animal that crosses the scale. Use the magnifier to find its ear tag: Enter takes you to its weight and another Enter brings you back to the magnifier. Blank ones aren't saved.	Informe o peso de cada animal que passar pela balança. Com a lupa você busca o brinco: Enter leva ao peso e outro Enter volta para a lupa. Os que ficarem vazios não são salvos.
+Buscar arete	Search ear tag	Buscar brinco
+Buscar un animal por su arete	Search an animal by its ear tag	Buscar um animal pelo brinco
+Todos	All	Todos
+Faltan	Missing	Faltam
+Ningún arete coincide. Revisa el número.	No ear tag matches. Check the number.	Nenhum brinco corresponde. Confira o número.
+pesado hace {0} días	weighed {0} days ago	pesado há {0} dias
+Peso del arete {0}	Weight of ear tag {0}	Peso do brinco {0}
+{0} cab, {1} {2}	{0} hd, {1} {2}	{0} cab, {1} {2}
+Libras totales	Total pounds	Libras totais
+Si pesaste todo el lote, déjalo así.	If you weighed the whole lot, leave it as is.	Se pesou o lote todo, deixe assim.
+{0} cabezas, último pesaje hace {1} días	{0} head, last weighing {1} days ago	{0} cabeças, última pesagem há {1} dias
+Por ejemplo: {0}	For example: {0}	Por exemplo: {0}
+Todos o ninguno	All or none	Todos ou nenhum
+L	L	L
+Opcional	Optional	Opcional
+{0} animales	{0} animals	{0} animais
+de toda la finca	for the whole ranch	de toda a fazenda
+Pon cada animal con su arete, peso de entrada, raza y color. Toca el recuadro de la cámara para tomarle una foto. Enter pasa al siguiente.	Enter each animal with its ear tag, arrival weight, breed and color. Tap the camera box to take its photo. Enter moves to the next one.	Informe cada animal com brinco, peso de entrada, raça e cor. Toque no quadro da câmera para tirar uma foto. Enter passa para o próximo.
+Tomar foto del animal	Take the animal's photo	Tirar foto do animal
+Foto	Photo	Foto
+Precio de este animal	Price of this animal	Preço deste animal
+Agregar animal	Add animal	Adicionar animal
+Pegar varios pesos a la vez	Paste several weights at once	Colar vários pesos de uma vez
+Por ejemplo: {0}, {1}, {2} o una línea por animal: {3} {4}	For example: {0}, {1}, {2} or one line per animal: {3} {4}	Por exemplo: {0}, {1}, {2} ou uma linha por animal: {3} {4}
+Llenar la lista	Fill the list	Preencher a lista
+Por libra	Per pound	Por libra
+Por kilo	Per kilo	Por quilo
+Así se compra casi siempre: un precio para todo el lote. El costo se reparte igual entre los animales.	This is how it's usually bought: one price for the whole lot. The cost is split equally among the animals.	É assim que quase sempre se compra: um preço para todo o lote. O custo é dividido igualmente entre os animais.
+Escribe el precio que pagaste por cada animal en su fila.	Enter the price you paid for each animal in its row.	Informe o preço que você pagou por cada animal na sua linha.
+Costo de la mezcla por libra	Cost of the mix per pound	Custo da mistura por libra
+Costo de la mezcla por kilo	Cost of the mix per kilo	Custo da mistura por quilo
+Ingredientes	Ingredients	Ingredientes
+Porcentaje	Percentage	Porcentagem
+Agregar ingrediente	Add ingredient	Adicionar ingrediente
+Suma {0} {1}	Total {0} {1}	Soma {0} {1}
+Agrega los animales de	Add the animals of	Adicione os animais de
+con su arete, peso de entrada, raza, color y foto. Su costo se calcula con el precio del lote (L {0} la libra).	with their ear tag, arrival weight, breed, color and photo. Their cost is calculated from the lot price (L {0} per pound).	com brinco, peso de entrada, raça, cor e foto. O custo é calculado com o preço do lote (L {0} a libra).
+con su arete, peso de entrada, raza, color y foto. Su costo se calcula con el precio del lote (L {0} el kilo).	with their ear tag, arrival weight, breed, color and photo. Their cost is calculated from the lot price (L {0} per kilo).	com brinco, peso de entrada, raça, cor e foto. O custo é calculado com o preço do lote (L {0} o quilo).
+Agregar otro	Add another	Adicionar outro
+Quitar foto	Remove photo	Remover foto
+Costo de compra:	Purchase cost:	Custo de compra:
+, su parte del precio del lote.	, its share of the lot price.	, sua parte do preço do lote.
+Opcional: marcas, señas, cuernos	Optional: brands, marks, horns	Opcional: marcas, sinais, chifres
+Quitar este animal del lote	Remove this animal from the lot	Remover este animal do lote
+Último: {0} {2}, hace {1} días	Last: {0} {2}, {1} days ago	Último: {0} {2}, há {1} dias
+Ninguno (otro producto)	None (other product)	Nenhum (outro produto)
+Ración: {0}	Ration: {0}	Ração: {0}
+Ingrediente: {0}	Ingredient: {0}	Ingrediente: {0}
+Así la app descuenta lo que comen tus lotes.	That way the app deducts what your lots eat.	Assim o app desconta o que seus lotes comem.

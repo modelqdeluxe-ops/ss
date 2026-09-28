@@ -172,6 +172,7 @@ function informe(id){
   return u(L.join('\n'));
 }
 async function compartir(texto,titulo){
+  if(window.I18N)texto=I18N.txt(texto);
   if(window.Android&&Android.compartir){Android.compartir(texto);return;}
   if(navigator.share){try{await navigator.share({title:titulo,text:texto});return;}catch(e){if(e&&e.name==='AbortError')return;}}
   try{await navigator.clipboard.writeText(texto);toast('Informe copiado. Pégalo en WhatsApp.');}catch(e){descargar(`informe-${titulo}.txt`,texto);}

@@ -1,0 +1,246 @@
+Buena madrugada	Good early morning	Boa madrugada
+Buenos días	Good morning	Bom dia
+Buenas tardes	Good afternoon	Boa tarde
+Buenas noches	Good evening	Boa noite
+Mi engorde	My feedlot	Meu confinamento
+Machos enteros	Intact bulls	Machos inteiros
+Novillos castrados	Steers	Novilhos castrados
+Hembras	Heifers	Fêmeas
+Mixto	Mixed	Misto
+Vacuna	Vaccine	Vacina
+Desparasitante	Dewormer	Vermífugo
+Vitaminas	Vitamins	Vitaminas
+Tratamiento	Treatment	Tratamento
+Implante	Implant	Implante
+Otro	Other	Outro
+Neumonía	Pneumonia	Pneumonia
+Timpanismo	Bloat	Timpanismo
+Acidosis	Acidosis	Acidose
+Accidente	Accident	Acidente
+Desconocida	Unknown	Desconhecida
+Otra	Other	Outra
+Mano de obra	Labor	Mão de obra
+Flete	Freight	Frete
+Medicinas	Medicines	Medicamentos
+Mantenimiento	Maintenance	Manutenção
+Energía y agua	Power and water	Energia e água
+Otros	Other	Outros
+Vacío	Empty	Vazio
+Limpio	Clean	Limpo
+Poco	Little left	Pouco
+Sobra	Leftover	Sobra
+Hoy	Today	Hoje
+Lotes	Lots	Lotes
+Registrar	Record	Registrar
+Gráficos	Charts	Gráficos
+Más	More	Mais
+mañana	tomorrow	amanhã
+Honduras	Honduras	Honduras
+Guatemala	Guatemala	Guatemala
+El Salvador	El Salvador	El Salvador
+Nicaragua	Nicaragua	Nicarágua
+Costa Rica	Costa Rica	Costa Rica
+Panamá	Panama	Panamá
+Belice	Belize	Belize
+República Dominicana	Dominican Republic	República Dominicana
+México	Mexico	México
+Estados Unidos	United States	Estados Unidos
+Canadá	Canada	Canadá
+Colombia	Colombia	Colômbia
+Venezuela	Venezuela	Venezuela
+Ecuador	Ecuador	Equador
+Perú	Peru	Peru
+Bolivia	Bolivia	Bolívia
+Brasil	Brazil	Brasil
+Paraguay	Paraguay	Paraguai
+Uruguay	Uruguay	Uruguai
+Argentina	Argentina	Argentina
+Chile	Chile	Chile
+España	Spain	Espanha
+Portugal	Portugal	Portugal
+Francia	France	França
+Australia	Australia	Austrália
+Nueva Zelanda	New Zealand	Nova Zelândia
+Sudáfrica	South Africa	África do Sul
+Filipinas	Philippines	Filipinas
+India	India	Índia
+Otro país	Another country	Outro país
+Por arroba de {0} {1}	Per arroba of {0} {1}	Por arroba de {0} {1}
+Elige tu país	Choose your country	Escolha seu país
+País	Country	País
+Libras	Pounds	Libras
+Precio del ganado	Cattle price	Preço do gado
+Precio del alimento	Feed price	Preço da ração
+Elige abajo tus unidades	Choose your units below	Escolha suas unidades abaixo
+Unidad cambiada. Tus datos no cambian.	Unit changed. Your data stays the same.	Unidade alterada. Seus dados não mudam.
+Libra	Pound	Libra
+Se llenó el espacio de datos. Borra registros antiguos para seguir guardando.	Data storage is full. Delete old records to keep saving.	O espaço de dados está cheio. Apague registros antigos para continuar salvando.
+No tienes permiso para guardar cambios aquí.	You don't have permission to save changes here.	Você não tem permissão para salvar alterações aqui.
+Se perdió el acceso a los datos. Vuelve a abrir la app.	Access to the data was lost. Open the app again.	O acesso aos dados foi perdido. Abra o app de novo.
+Un cambio no se pudo guardar. Revisa tu conexión.	A change could not be saved. Check your connection.	Uma alteração não foi salva. Verifique sua conexão.
+Conectando	Connecting	Conectando
+Guardado en este teléfono	Saved on this phone	Salvo neste celular
+Guardado en este dispositivo	Saved on this device	Salvo neste dispositivo
+Hay cambios sin guardar	There are unsaved changes	Há alterações não salvas
+Guardando	Saving	Salvando
+Todo guardado	All saved	Tudo salvo
+Revisar	Check	Revisar
+Listo	Ready	Pronto
+Sin causa	No cause	Sem causa
+Subir	Increase	Aumentar
+Considera aumentar la ración de este lote	Consider increasing this lot's ration	Considere aumentar a ração deste lote
+Pesar	Weigh	Pesar
+estimado,	estimated,	estimado,
+promedio,	average,	média,
+Alimentación de hoy	Today's feeding	Alimentação de hoje
+Atención	Attention	Atenção
+Lotes en engorde	Lots on feed	Lotes em engorda
+Ver todos	See all	Ver todos
+conversión	feed conversion	conversão
+peso estimado, aún sin pesajes	estimated weight, not weighed yet	peso estimado, ainda sem pesagens
+peso promedio estimado hoy	estimated average weight today	peso médio estimado hoje
+Llegó a la meta	Reached target	Atingiu a meta
+Puedes venderlo.	You can sell it.	Você pode vendê-lo.
+Pesaje	Weighing	Pesagem
+Alimento	Feed	Ração
+Sanidad	Health	Sanidade
+Venta	Sale	Venda
+Registrar muerte	Record death	Registrar morte
+Registrar gasto	Record expense	Registrar despesa
+Formular su dieta	Formulate its ration	Formular sua dieta
+Compartir informe	Share report	Compartilhar relatório
+Días de engorde	Days on feed	Dias de engorda
+Ganancia diaria	Daily gain	Ganho diário
+desde que entró	since arrival	desde a entrada
+Consumo	Intake	Consumo
+por cabeza al día, {0} días	per head per day, {0} days	por cabeça por dia, {0} dias
+Conversión	Conversion	Conversão
+{0} de alimento por {1} ganado	{0} of feed per {1} gained	{0} de ração por {1} ganho
+Costo por {0} ganado	Cost per {0} gained	Custo por {0} ganho
+alimento, sanidad y gastos	feed, health and expenses	ração, sanidade e despesas
+Mortalidad	Death loss	Mortalidade
+Rendimiento	Performance	Desempenho
+Peso	Weight	Peso
+Proyección	Projection	Projeção
+Peso del lote	Lot weight	Peso do lote
+Consumo por cabeza	Intake per head	Consumo por cabeça
+al día	per day	por dia
+precio de cada animal	price of each animal	preço de cada animal
+precio del lote, igual por animal	lot price, same for each animal	preço do lote, igual por animal
+Venta estimada	Estimated sale	Venda estimada
+Números por cabeza	Numbers per head	Números por cabeça
+al llegar a la meta	at target weight	ao atingir a meta
+Historial	History	Histórico
+Sin registros todavía.	No records yet.	Ainda sem registros.
+Sin ración asignada	No ration assigned	Sem ração atribuída
+Datos del lote	Lot details	Dados do lote
+Resumen	Summary	Resumo
+Animales	Animals	Animais
+Números	Numbers	Números
+Sin registros aún	No records yet	Ainda sem registros
+Entrega a cada lote	Delivery to each lot	Entrega a cada lote
+Peso promedio del lote	Lot average weight	Peso médio do lote
+Vacuna, desparasitante, tratamiento	Vaccine, dewormer, treatment	Vacina, vermífugo, tratamento
+Cabezas, kilos y precio	Head, kilos and price	Cabeças, quilos e preço
+Muerte	Death	Morte
+Cabezas y causa	Head and cause	Cabeças e causa
+Gasto	Expense	Despesa
+Mano de obra, flete y otros	Labor, freight and other	Mão de obra, frete e outros
+Nuevo lote	New lot	Novo lote
+Cuando entran animales	When animals arrive	Quando entram animais
+Ración	Ration	Ração
+Mezcla y costo por kilo	Mix and cost per kilo	Mistura e custo por quilo
+General	General	Geral
+Lo último que anotaste	Your latest records	Seus últimos registros
+Ahora toca	Next up	Agora é hora de
+Anotar	Record	Registrar
+Todos los lotes	All lots	Todos os lotes
+{0} días	{0} days	{0} dias
+Todo	All	Tudo
+Qué estás viendo:	What you're seeing:	O que você está vendo:
+Lo que dicen tus números	What your numbers say	O que seus números dizem
+Bien	Good	Bem
+Peso promedio	Average weight	Peso médio
+promedio de los lotes en engorde	average of lots on feed	média dos lotes em engorda
+proyección	projection	projeção
+llega a la meta	reaches target	atinge a meta
+La línea punteada es el peso estimado y la proyección hasta la meta.	The dashed line is the estimated weight and the projection to the target.	A linha tracejada é o peso estimado e a projeção até a meta.
+por cabeza al día, promedio	per head per day, average	por cabeça por dia, média
+Alimento entregado por día	Feed delivered per day	Ração entregue por dia
+por día, promedio reciente	per day, recent average	por dia, média recente
+Conversión alimenticia	Feed conversion	Conversão alimentar
+kilos de alimento por kilo ganado	kilos of feed per kilo gained	quilos de ração por quilo ganho
+Mientras más baja, mejor aprovechan el alimento.	The lower, the better they use the feed.	Quanto menor, melhor aproveitam a ração.
+Costo por kilo ganado	Cost per kilo gained	Custo por quilo ganho
+promedio de los lotes	lot average	média dos lotes
+Alimento, sanidad y gastos entre los kilos que ha ganado cada lote.	Feed, health and expenses divided by the kilos each lot has gained.	Ração, sanidade e despesas divididas pelos quilos que cada lote ganhou.
+Compra	Purchase	Compra
+Inversión por lote	Investment per lot	Investimento por lote
+Margen por cabeza	Margin per head	Margem por cabeça
+estimado al llegar a la meta	estimated at target weight	estimado ao atingir a meta
+Cabezas en engorde	Head on feed	Cabeças em engorda
+Cabezas	Head	Cabeças
+de los lotes en engorde	of the lots on feed	dos lotes em engorda
+por cabeza al día	per head per day	por cabeça por dia
+al día, últimos {0} días	per day, last {0} days	por dia, últimos {0} dias
+en todo el engorde	over the whole feeding period	em toda a engorda
+Entre cada pesaje. Mientras más baja, mejor.	Between weighings. The lower, the better.	Entre cada pesagem. Quanto menor, melhor.
+sin contar la compra	excluding purchase	sem contar a compra
+Inversión a la fecha	Investment to date	Investimento até hoje
+Cabezas en el lote	Head in the lot	Cabeças no lote
+{0} arriba	{0} above	{0} acima
+{0} abajo	{0} below	{0} abaixo
+: poco, revisa si hay sobras o calor	: low, check for leftovers or heat	: pouco, veja se há sobras ou calor
+cada columna es un día y está dividida en colores, uno por lote: la altura total son los kilos que entregaste ese día. Días sin columna son días sin entregas anotadas.	each column is a day, split into colors, one per lot: the total height is the kilos you delivered that day. Days without a column have no recorded deliveries.	cada coluna é um dia, dividida em cores, uma por lote: a altura total são os quilos que você entregou nesse dia. Dias sem coluna não têm entregas registradas.
+No hay entregas anotadas la última semana: anótalas para que la conversión y los costos sean reales.	No deliveries recorded last week: record them so conversion and costs are real.	Não há entregas registradas na última semana: registre-as para que a conversão e os custos sejam reais.
+Aún no hay suficientes pesajes y entregas para calcularla.	There aren't enough weighings and deliveries to calculate it yet.	Ainda não há pesagens e entregas suficientes para calculá-la.
+cuánto te cuesta producir cada kilo que ganan: alimento, sanidad, gastos del lote y su parte de los gastos generales, sin contar la compra. Si es menor que tu precio de venta, cada kilo que ganan deja dinero.	how much it costs you to produce each kilo they gain: feed, health, lot expenses and their share of overhead, excluding purchase. If it is lower than your sale price, every kilo they gain makes money.	quanto custa produzir cada quilo que ganham: ração, sanidade, despesas do lote e sua parte das despesas gerais, sem contar a compra. Se for menor que seu preço de venda, cada quilo ganho dá lucro.
+Falta anotar alimento y pesajes para calcularlo.	Record feed and weighings to calculate it.	Falta registrar ração e pesagens para calculá-lo.
+cuánto dinero llevas metido en cada lote. Cada barra se divide por colores: compra de animales, alimento, sanidad y otros gastos.	how much money you have put into each lot. Each bar is split by color: animal purchase, feed, health and other expenses.	quanto dinheiro você investiu em cada lote. Cada barra é dividida por cores: compra de animais, ração, sanidade e outras despesas.
+cuántos animales tenías en engorde cada día: sube cuando entra un lote y baja con ventas y muertes.	how many animals you had on feed each day: it goes up when a lot arrives and down with sales and deaths.	quantos animais você tinha em engorda a cada dia: sobe quando entra um lote e desce com vendas e mortes.
+qué porcentaje de los animales que entraron a cada lote ha muerto. En corral, lo aceptable es menos de {0} a {1} {2}.	what percentage of the animals that entered each lot has died. In a feedlot, acceptable is under {0} to {1} {2}.	que porcentagem dos animais que entraram em cada lote morreu. No confinamento, o aceitável é menos de {0} a {1} {2}.
+Está dentro de lo normal.	It is within normal range.	Está dentro do normal.
+Está alta: revisa compra, recepción y sanidad con tu veterinario.	It is high: review purchasing, receiving and health with your vet.	Está alta: revise compra, recepção e sanidade com seu veterinário.
+Lectura de comederos	Bunk reading	Leitura de cocho
+cómo estaba el comedero antes de cada entrega. Muchos vacíos: los animales se quedan con hambre, sube un poco la ración. Muchos con sobra: baja la ración.	how the bunk looked before each delivery. Many empty: the animals go hungry, raise the ration a little. Many with leftovers: lower the ration.	como estava o cocho antes de cada entrega. Muitos vazios: os animais ficam com fome, aumente um pouco a ração. Muitos com sobra: diminua a ração.
+salió con	left with	saiu com
+Ya llegó a la meta: puedes venderlo.	It already reached the target: you can sell it.	Já atingiu a meta: você pode vendê-lo.
+días	days	dias
+Aún no tiene pesajes: el peso de hoy es estimado con la ganancia esperada. Pésalo para tener datos reales.	No weighings yet: today's weight is estimated with the expected gain. Weigh it to get real data.	Ainda sem pesagens: o peso de hoje é estimado com o ganho esperado. Pese para ter dados reais.
+cada barra es un período entre dos pesajes y muestra cuántos kilos subió cada animal por día en ese período.	each bar is a period between two weighings and shows how many kilos each animal gained per day in that period.	cada barra é um período entre duas pesagens e mostra quantos quilos cada animal ganhou por dia nesse período.
+Necesita al menos dos pesajes para mostrar la ganancia real.	It needs at least two weighings to show the real gain.	Precisa de pelo menos duas pesagens para mostrar o ganho real.
+kilos de alimento que come cada animal al día. Si baja de golpe, algo pasa: calor, agua, alimento o enfermedad.	kilos of feed each animal eats per day. If it drops suddenly, something is wrong: heat, water, feed or disease.	quilos de ração que cada animal come por dia. Se cair de repente, algo está errado: calor, água, ração ou doença.
+Ayer comió menos de lo normal: revisa agua, comederos y animales enfermos.	Yesterday it ate less than normal: check water, bunks and sick animals.	Ontem comeu menos que o normal: verifique água, cochos e animais doentes.
+kilos de alimento que anotaste cada día para este lote.	kilos of feed you recorded each day for this lot.	quilos de ração que você registrou a cada dia para este lote.
+: alto, revisa desperdicio y ración.	: high, check waste and ration.	: alto, verifique desperdício e ração.
+la barra muestra todo lo invertido en el lote a la fecha, separado en compra, alimento, sanidad y otros.	the bar shows everything invested in the lot to date, split into purchase, feed, health and other.	a barra mostra todo o investido no lote até hoje, separado em compra, ração, sanidade e outros.
+cuántos animales había en el lote cada día: baja con muertes y ventas.	how many animals were in the lot each day: it drops with deaths and sales.	quantos animais havia no lote a cada dia: cai com mortes e vendas.
+cómo estaba el comedero antes de cada entrega. Muchos vacíos: sube un poco la ración. Muchos con sobra: bájala.	how the bunk looked before each delivery. Many empty: raise the ration a little. Many with leftovers: lower it.	como estava o cocho antes de cada entrega. Muitos vazios: aumente um pouco a ração. Muitos com sobra: diminua.
+Configuración	Settings	Configurações
+Tus preferencias. La app las usa para calcular márgenes, fechas y avisos.	Your preferences. The app uses them to calculate margins, dates and alerts.	Suas preferências. O app as usa para calcular margens, datas e avisos.
+Idioma	Language	Idioma
+Tu finca	Your ranch	Sua fazenda
+Nombre de la finca	Ranch name	Nome da fazenda
+Ubicación	Location	Localização
+Precio y moneda	Price and currency	Preço e moeda
+Precio de venta	Sale price	Preço de venda
+Lo que te pagan hoy. Actualízalo cuando cambie el mercado.	What you are paid today. Update it when the market changes.	O que pagam hoje. Atualize quando o mercado mudar.
+Moneda	Currency	Moeda
+Metas del engorde	Feeding targets	Metas da engorda
+Peso meta de venta	Target sale weight	Peso meta de venda
+Peso por cabeza al que planeas vender. Cada lote puede tener su propia meta.	Weight per head at which you plan to sell. Each lot can have its own target.	Peso por cabeça em que você planeja vender. Cada lote pode ter sua própria meta.
+Ganancia diaria esperada	Expected daily gain	Ganho diário esperado
+{0}/día	{0}/day	{0}/dia
+Desbaste al vender	Shrink at sale	Quebra na venda
+Alimentación y avisos	Feeding and alerts	Alimentação e avisos
+Horarios de entrega de alimento	Feeding times	Horários de trato
+Sepáralos con comas. Por ejemplo: {0}:{1}, {2}:{3}, {4}:{5}. La pantalla Hoy te recuerda cada entrega.	Separate them with commas. For example: {0}:{1}, {2}:{3}, {4}:{5}. The Today screen reminds you of each delivery.	Separe com vírgulas. Por exemplo: {0}:{1}, {2}:{3}, {4}:{5}. A tela Hoje lembra cada entrega.
+Avisarme si un lote no se pesa en	Alert me if a lot isn't weighed in	Avisar se um lote não for pesado em
+Voz de Rumi	Rumi's voice	Voz do Rumi
+Unidades y país	Units and country	Unidades e país
+Raciones y dietas	Rations and diets	Rações e dietas
+Tus mezclas y su costo por kilo. Las eliges cada vez que anotas alimento.	Your mixes and their cost per kilo. You choose them each time you record feed.	Suas misturas e o custo por quilo. Você as escolhe cada vez que registra ração.
+Formular una dieta	Formulate a ration	Formular uma dieta
+Rumi calcula la mezcla más barata con tus precios	Rumi finds the cheapest mix with your prices	O Rumi calcula a mistura mais barata com seus preços
+Nueva ración	New ration	Nova ração
+Nombre, costo por kilo e ingredientes	Name, cost per kilo and ingredients	Nome, custo por quilo e ingredientes
