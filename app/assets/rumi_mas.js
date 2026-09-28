@@ -299,5 +299,5 @@ Object.assign(ACTS,{
 /* el índice de la página no cambia de ruta: solo baja a la parte */
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.rp-idx a');if(!a)return;e.preventDefault();const s=document.getElementById('rp_'+a.dataset.rp);if(s)s.scrollIntoView({block:'start',behavior:'smooth'});},true);
 
-window.RumiMas={FN,senales,senalesHtml,cuandoVender,curva,equilibrio,equilibrioHtml,costosHtml,flujo90,flujoHtml,refHtml,compraHtml,calendarioHtml,escenariosTipicos,simuladorHtml,valoresFinca};
+window.RumiMas={REF,FN,senales,senalesHtml,cuandoVender,curva,equilibrio,equilibrioHtml,costosHtml,flujo90,flujoHtml,refHtml,compraHtml,calendarioHtml,escenariosTipicos,simuladorHtml,valoresFinca};
 })();

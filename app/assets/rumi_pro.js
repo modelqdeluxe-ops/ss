@@ -298,5 +298,5 @@ function tarjetaHoy(){
 }
 const _hoy=PAGES.hoy;
 PAGES.hoy=function(){const h=_hoy.apply(this,arguments);const t=tarjetaHoy();return t?h.replace('<main class="bd">','<main class="bd">'+t):h;};
-window.RumiPro={chequeo,chequeoFinca,simular,riesgoLote,riesgoFinca,rankingHtml,semaforo,semana,escenarios,margenCon};
+window.RumiPro={chequeo,chequeoFinca,simular,simFinca,riesgoLote,riesgoFinca,rankingHtml,semaforo,semana,escenarios,margenCon};
 })();

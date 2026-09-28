@@ -22,6 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:exported="false" android:name=".GuardarArchivo" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/>
+        <provider android:authorities="hn.hato.ganadero.archivos" android:exported="false" android:grantUriPermissions="true" android:name=".ProveedorArchivos"/>
         <receiver android:exported="false" android:name=".AvisoReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

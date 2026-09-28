@@ -1637,7 +1637,7 @@ PAGES.lote=id=>{
     hero=`<div class="hcard"><div style="display:flex;flex-direction:column;gap:2px"><span class="hf" style="font-size:30px;line-height:1.1;color:${x.margenReal>=0?'#A9CDB0':'#F0A99D'}">${money(x.margenReal)}</span><span style="font-size:13.5px;color:var(--htx2)">margen del lote, ${money(cb?x.margenReal/cb:0)} por cabeza</span></div><span style="font-size:14px">Vendido el ${ffl(l.fechaCierre||'')} a ${nf(x.pesoHoy)} kg de promedio.</span></div>`;
   }
   const qa=x.activo?`<div class="qa">${[['pesaje','Pesaje'],['alimento','Alimento'],['sanidad','Sanidad'],['venta','Venta']].map(([k,t])=>`<button type="button" data-act="f" data-f="${k}" data-lote="${esc(id)}">${ico(k)}${t}</button>`).join('')}</div>
-   <div class="acts" style="margin-top:-18px;gap:4px 16px">${lnkB('f','Registrar muerte',`data-f="baja" data-lote="${esc(id)}"`)}${lnkB('f','Registrar gasto',`data-f="gasto" data-lote="${esc(id)}"`)}${lnkB('fpDesde','Formular su dieta',`data-id="${esc(id)}"`)}${lnkB('informeLote','Compartir informe',`data-id="${esc(id)}"`)}</div>`:'';
+   <div class="acts" style="margin-top:-18px;gap:4px 16px">${lnkB('f','Registrar muerte',`data-f="baja" data-lote="${esc(id)}"`)}${lnkB('f','Registrar gasto',`data-f="gasto" data-lote="${esc(id)}"`)}${lnkB('fpDesde','Formular su dieta',`data-id="${esc(id)}"`)}${lnkB('informeLote','Compartir informe',`data-id="${esc(id)}"`)}${lnkB('f','Certificado con QR',`data-f="docCert" data-id="${esc(id)}"`)}</div>`:'';
   const st=[['Días de engorde',nf(x.dec),x.activo?`de unos ${nf(x.dec+x.diasMeta)}`:'en total'],
     ['Ganancia diaria',x.gdp!=null?nf(x.activo?x.gdpUse:x.gdpTot,2)+' kg':'–',x.gdpRec!=null&&x.activo?'entre los dos últimos pesajes':'desde que entró'],
     ['Consumo',x.consumo!=null?nf(x.consumo,1)+' kg':'–','por cabeza al día, 7 días'],
@@ -1681,15 +1681,17 @@ PAGES.lote=id=>{
    ${l.proveedor?`<div><span class="sm">Proveedor</span><span class="n">${esc(l.proveedor)}</span></div>`:''}
    <div><span class="sm">Ración</span><span class="n">${esc(rac)}</span></div>
    ${x.retiroHasta?`<div><span class="sm">Retiro</span><span class="n">hasta el ${ffc(x.retiroHasta)}</span></div>`:''}</div>
-   <div class="acts"><button type="button" class="btn" data-act="f" data-f="lote" data-id="${esc(id)}">${ico('editar')}Editar</button>${!x.activo?`<button type="button" class="btn" data-act="reabrir" data-id="${esc(id)}">Reabrir</button>`:''}<button type="button" class="btn danger" data-act="delLote" data-id="${esc(id)}">Eliminar lote</button></div></section>`;
+   <div class="acts"><button type="button" class="btn" data-act="f" data-f="lote" data-id="${esc(id)}">${ico('editar')}Editar</button>${!x.activo?`<button type="button" class="btn" data-act="reabrir" data-id="${esc(id)}">Reabrir</button><button type="button" class="btn" data-act="f" data-f="docCert" data-id="${esc(id)}">Certificado con QR</button>`:''}<button type="button" class="btn danger" data-act="delLote" data-id="${esc(id)}">Eliminar lote</button></div></section>`;
   return `<header class="hd">${hdBack('#lotes','Lotes','<span class="sync"></span>')}
    <div class="ttl" style="margin-top:-6px"><h1>${esc(l.nombre)}</h1><p class="sub">${pl(x.activo?x.cab:x.cab0,'cabeza','cabezas')}${l.tipo?' '+esc(l.tipo).toLowerCase():''}${l.raza?', '+esc(l.raza):''}. Entró el ${ffl(l.fechaIngreso)}${x.activo?`, hace ${x.dec} días`:''}.</p></div>${hero}</header>
    ${tabsLote(x)}<main class="bd">${(()=>{const t=UI.loteTab||'resumen';
      if(t==='animales')return animalesSec(x);
-     if(t==='numeros')return ecoS+cons;
+     if(t==='numeros')return ecoS+cons+huellaSec(x);
      if(t==='historial')return hs+datos;
      return pasoCard(pasoLote(x))+qa+stats+peso;})()}</main>`;
 };
+/* huella de carbono del lote (huella.js) */
+function huellaSec(x){if(!window.Huella)return '';const r=Huella.loteHtml(x);return `<section class="sec">${secH('Huella de carbono','IPCC 2019')}<div class="gcard rp-card"><div class="rmsg-like">${r.html}</div></div></section>`;}
 function tabsLote(x){const t=UI.loteTab||'resumen';const n=tieneAnimales(x.l)?x.anim.filter(a=>a.estado==='activo').length:null;
   return `<nav class="tabs" aria-label="Secciones del lote">${[['resumen','Resumen'],['animales','Animales'+(n!=null?` (${n})`:'')],['numeros','Números'],['historial','Historial']].map(([v,l])=>`<button type="button" data-act="ui" data-k="loteTab" data-v="${v}" aria-current="${t===v?'page':'false'}">${l}</button>`).join('')}</nav>`;}
 
@@ -1874,6 +1876,7 @@ const MI={
  formula:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
  aviso:'<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/>',
+ doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
  agenda:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'
 };
 const mico=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MI[k]||''}</svg>`;
@@ -1953,7 +1956,8 @@ PAGES.mas=(sub)=>{
     ${masFila(mico('racion'),'Raciones y dietas',nR?pl(nR,'ración','raciones'):'Crea tu primera ración','href="#mas/raciones"','t-v')}
     ${masFila(mico('bodega'),'Bodega de alimento',bod?bod.txt:'Inventario y días que te alcanza','href="#bodega"','t-y')}
     ${masFila(mico('gasto'),'Gastos generales',gMes?`${money(gMes)} este mes`:'Sueldos, energía y otros','href="#mas/gastos"','t-t')}
-    ${masFila(mico('agenda'),'Agenda','Tareas de hoy y próximos días','href="#agenda"','t-a')}</div></section>
+    ${masFila(mico('agenda'),'Agenda','Tareas de hoy y próximos días','href="#agenda"','t-a')}
+    ${masFila(mico('doc'),'Documentos','Informe para el banco y certificados con QR','href="#documentos"','t-v')}</div></section>
    <section class="sec">${secH('Datos y personalización')}<div class="card rows">
     ${masFila(mico('datos'),'Tus datos','Respaldo y descargas para Excel','href="#mas/datos"','t-a')}
     ${masFila(mico('paleta'),'Apariencia',`${tema==='auto'?'Automático':tema==='dark'?'Oscuro':'Claro'}, paleta ${pn}`,'href="#mas/apariencia"','t-v')}</div></section>
@@ -5250,7 +5254,7 @@ responder=function(txt){
 <script src="ambiente.js"></script>
 <script>/* la guía de Rumi en el idioma de la app */(function(){var L=window.I18N&&I18N.lang&&I18N.lang();document.write('<script src="rumi_guia'+(L==="en"||L==="pt"?"_"+L:"")+'.js"><\/script>');})();</script>
 <script src="rumi_menu.js"></script>
-<script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
+<script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="huella.js"></script><script src="documentos.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
 
 
 </body>

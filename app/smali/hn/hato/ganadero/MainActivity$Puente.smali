@@ -677,3 +677,45 @@
 
     return-void
 .end method
+
+.method public compartirArchivo(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1, p2, p3, p4}, Lhn/hato/ganadero/Archivos;->compartir(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+
+    move-result v0
+
+    return v0
+.end method
+
+.method public guardarArchivo(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1, p2, p3}, Lhn/hato/ganadero/Archivos;->guardar(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+
+    move-result v0
+
+    return v0
+.end method
+
+.method public abrirArchivo(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+    .locals 1
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity$Puente;->this$0:Lhn/hato/ganadero/MainActivity;
+
+    invoke-static {v0, p1, p2, p3}, Lhn/hato/ganadero/Archivos;->abrir(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+
+    move-result v0
+
+    return v0
+.end method
