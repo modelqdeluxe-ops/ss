@@ -63,7 +63,7 @@
 .f-ay-b{padding:0 14px 12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink)}
 .f-ay-b p{margin:0 0 6px}.f-ay-b ul{margin:0;padding-left:18px}.f-ay-b li{margin:5px 0}
 .q small.f-tip{color:var(--ink2)}
-.tut-chip{display:inline-flex;align-self:flex-start;width:auto;max-width:100%;align-items:center;gap:8px;margin-top:12px;padding:4px 14px 4px 4px;border-radius:999px;border:1px solid var(--hline);background:var(--hcard);color:var(--htx);font:700 13px/1.2 inherit;transition:opacity .25s,transform .25s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.tut-chip{display:inline-flex;align-self:flex-start;width:auto;max-width:100%;align-items:center;gap:8px;margin-top:12px;padding:4px 14px 4px 4px;border-radius:999px;border:1px solid var(--hline);background:var(--hcard);color:var(--htx);font:700 13px/1.2 inherit;transition:opacity .25s,transform .25s}
 .tut-chip .rumi-av.sm{width:28px;height:28px}
 .tut-chip.fuera{opacity:0;transform:scale(.9)}
 
@@ -931,48 +931,43 @@ body::before{content:none}
 #fondo{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 #fondo i{position:absolute;display:block}
 #fondo .f-cielo{inset:0;background:linear-gradient(180deg,var(--cielo) 0%,var(--bg) 42%,var(--bg) 62%,color-mix(in srgb,var(--cerro) 7%,var(--bg)) 100%)}
-#fondo .f-orbe{width:120vw;height:120vw;border-radius:50%;filter:blur(40px);opacity:.9}
-#fondo .o1{right:-55vw;top:-30vw;background:radial-gradient(circle,var(--amb1) 0,transparent 62%);animation:orbe 38s ease-in-out infinite alternate}
-#fondo .o2{left:-60vw;top:35vh;background:radial-gradient(circle,var(--amb2) 0,transparent 62%);animation:orbe 46s ease-in-out infinite alternate-reverse}
-@keyframes orbe{to{transform:translate(-8vw,6vh) scale(1.08)}}
+#fondo .f-orbe{width:120vw;height:120vw;border-radius:50%;opacity:.9}
+#fondo .o1{right:-55vw;top:-30vw;background:radial-gradient(circle,var(--amb1) 0,transparent 62%)}
+#fondo .o2{left:-60vw;top:35vh;background:radial-gradient(circle,var(--amb2) 0,transparent 62%)}
 #fondo .f-cerro{left:-5%;right:-5%;bottom:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 #fondo .c3{height:34vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 13%,var(--bg)),color-mix(in srgb,var(--cerro) 8%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 170 C150 110 300 120 430 150 S700 210 860 160 S1100 90 1200 120 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 170 C150 110 300 120 430 150 S700 210 860 160 S1100 90 1200 120 V300 H0Z'/></svg>")}
 #fondo .c2{height:25vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 20%,var(--bg)),color-mix(in srgb,var(--cerro) 12%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 120 C120 150 260 190 420 170 S720 90 900 120 S1120 190 1200 170 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 120 C120 150 260 190 420 170 S720 90 900 120 S1120 190 1200 170 V300 H0Z'/></svg>")}
-#fondo .c1{height:16vh;background:linear-gradient(180deg,color-mix(in srgb,var(--cerro) 30%,var(--bg)),color-mix(in srgb,var(--cerro) 20%,var(--bg)));-webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 200 C200 170 330 120 520 140 S820 230 1000 190 S1150 150 1200 160 V300 H0Z'/></svg>");mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'><path d='M0 200 C200 170 330 120 520 140 S820 230 1000 190 S1150 150 1200 160 V300 H0Z'/></svg>")}
 #fondo .f-grano{inset:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .35 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.06;mix-blend-mode:multiply}
 :root[data-modo="dark"] #fondo .f-grano{mix-blend-mode:screen;opacity:.04}
-/* curvas de nivel del terreno, muy suaves, que se desvanecen arriba y abajo y se mueven lento */
-#fondo .f-topo{inset:-3vh 0;background:color-mix(in srgb,var(--ink) 8%,transparent);-webkit-mask-image:url(fondo_topo.svg),linear-gradient(180deg,transparent 6%,#000 30%,#000 70%,transparent 94%);-webkit-mask-size:cover,100% 100%;-webkit-mask-position:center,0 0;-webkit-mask-repeat:no-repeat;-webkit-mask-composite:source-in;mask-image:url(fondo_topo.svg),linear-gradient(180deg,transparent 6%,#000 30%,#000 70%,transparent 94%);mask-size:cover,100% 100%;mask-position:center,0 0;mask-repeat:no-repeat;mask-composite:intersect;animation:topo 80s ease-in-out infinite alternate}
-@keyframes topo{to{transform:translate3d(0,-2.5vh,0) scale(1.04)}}
-:root[data-modo="dark"] #fondo .f-topo{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 /* luz del encabezado que baja sobre el contenido y lo une con la foto */
 #fondo .f-luz{left:0;right:0;top:0;height:70vh;background:radial-gradient(120% 60% at 50% 0,color-mix(in srgb,var(--head) 14%,transparent),transparent 70%)}
 /* el encabezado termina en curva suave con sombra, en vez de un corte recto */
 .hd{border-radius:0 0 28px 28px;box-shadow:0 16px 34px -22px color-mix(in srgb,var(--head) 75%,#000)}
-/* fondo animado: luces que respiran, curvas de nivel en dos capas que se cruzan, cerros que se mecen,
-   un rayo de luz que pasa y motas de polen que suben (luciérnagas de noche). Todo con transform y opacity. */
-#fondo .o1{animation:orbe 22s ease-in-out infinite alternate}
-#fondo .o2{animation:orbe2 28s ease-in-out infinite alternate}
-@keyframes orbe{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-14vw,8vh) scale(1.12)}100%{transform:translate(-4vw,16vh) scale(.96)}}
-@keyframes orbe2{0%{transform:translate(0,0) scale(1)}50%{transform:translate(16vw,-10vh) scale(1.1)}100%{transform:translate(6vw,6vh) scale(1.04)}}
-#fondo .f-topo{animation:topo 34s ease-in-out infinite alternate}
-#fondo .f-topo.t2{opacity:.35;transform:scale(1.35) rotate(180deg);animation:topo2 46s ease-in-out infinite alternate}
-@keyframes topo{0%{transform:translate3d(-2vw,0,0) scale(1.02)}100%{transform:translate3d(3vw,-5vh,0) scale(1.08)}}
-@keyframes topo2{0%{transform:translate3d(3vw,2vh,0) scale(1.35) rotate(180deg)}100%{transform:translate3d(-4vw,-4vh,0) scale(1.45) rotate(186deg)}}
+/* fondo vivo (fondo.js): curvas de nivel que respiran, sombras de nubes y un cerro con pasto que mece el viento.
+   Aquí solo quedan las luces que respiran y los cerros de atrás que se mecen. */
+#fondo{contain:strict}
+#fondo .c2,#fondo .c3{will-change:transform}
+.hd-fx .fx-cv{will-change:transform}
+#fondo .f-vivo{inset:0;-webkit-mask-image:linear-gradient(180deg,transparent 4%,#000 26%,#000 72%,transparent 92%);mask-image:linear-gradient(180deg,transparent 4%,#000 26%,#000 72%,transparent 92%)}
+#fondo .f-vivo b{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;opacity:0;transition:opacity 3s linear;will-change:opacity}
+#fondo .f-vivo b.on{opacity:1}
+#fondo .f-sombras{inset:0}
+#fondo .f-sombras b{position:absolute;top:22vh;left:0;width:130vw;height:48vh;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--ink) 5%,transparent),transparent);will-change:transform;animation:sombra 95s linear infinite}
+#fondo .f-sombras b+b{top:52vh;width:100vw;height:36vh;animation-duration:70s;animation-delay:-40s}
+@keyframes sombra{from{transform:translate3d(-135vw,0,0)}to{transform:translate3d(105vw,0,0)}}
+:root[data-momento="noche"] #fondo .f-sombras,:root[data-momento="madrugada"] #fondo .f-sombras,:root[data-modo="dark"] #fondo .f-sombras,:root[data-clima="lluvia"] #fondo .f-sombras,:root[data-clima="tormenta"] #fondo .f-sombras,:root[data-clima="niebla"] #fondo .f-sombras{display:none}
+#fondo .f-pasto{left:0;bottom:0;width:100%;height:24vh;background-size:100% 100%;background-repeat:no-repeat}
+#fondo .f-pasto .f-franja{position:absolute;top:0;height:100%;background-repeat:no-repeat;will-change:transform;animation:ola var(--ola,8s) ease-in-out infinite}
+/* se mece suave y cada tanto pasa una ráfaga que agacha el pasto; cada franja la recibe un poco después */
+@keyframes ola{0%{transform:skewX(calc(var(--incl,4deg) * -.25))}18%{transform:skewX(calc(var(--incl,4deg) * -.55))}34%{transform:skewX(calc(var(--incl,4deg) * -.2))}
+  50%{transform:skewX(calc(var(--incl,4deg) * -.5))}62%{transform:skewX(calc(var(--incl,4deg) * -1.5))}72%{transform:skewX(calc(var(--incl,4deg) * -.7))}84%{transform:skewX(calc(var(--incl,4deg) * -.35))}100%{transform:skewX(calc(var(--incl,4deg) * -.25))}}
+.fondo-quieto #fondo *{animation-play-state:paused!important}
 #fondo .c3{animation:cerro 26s ease-in-out infinite alternate}
 #fondo .c2{animation:cerro 19s ease-in-out -6s infinite alternate-reverse}
-#fondo .c1{animation:cerro 14s ease-in-out -3s infinite alternate}
 @keyframes cerro{from{transform:translate3d(-2.5%,0,0)}to{transform:translate3d(2.5%,.6vh,0)}}
-#fondo .f-rayo{top:-20vh;left:-60vw;width:60vw;height:150vh;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--arete) 13%,transparent) 45%,color-mix(in srgb,#fff 16%,transparent) 50%,color-mix(in srgb,var(--arete) 13%,transparent) 55%,transparent);transform:rotate(18deg);opacity:0;animation:rayo 16s ease-in-out 4s infinite}
-@keyframes rayo{0%{transform:translate3d(0,0,0) rotate(18deg);opacity:0}8%{opacity:1}42%{opacity:.9}55%{transform:translate3d(230vw,0,0) rotate(18deg);opacity:0}100%{transform:translate3d(230vw,0,0) rotate(18deg);opacity:0}}
-:root[data-modo="dark"] #fondo .f-rayo,:root[data-momento="noche"] #fondo .f-rayo,:root[data-momento="madrugada"] #fondo .f-rayo{display:none}
-#fondo .f-motas{inset:0}
-#fondo .f-motas b{position:absolute;bottom:-3vh;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;background:color-mix(in srgb,var(--arete) 55%,#fff);opacity:0;animation:mota var(--d) linear var(--r) infinite;will-change:transform,opacity}
-@keyframes mota{0%{transform:translate3d(0,0,0);opacity:0}10%{opacity:.75}50%{transform:translate3d(var(--w),-55vh,0)}90%{opacity:.5}100%{transform:translate3d(calc(var(--w) * -.6),-108vh,0);opacity:0}}
-:root[data-modo="dark"] #fondo .f-motas b,:root[data-momento="noche"] #fondo .f-motas b,:root[data-momento="madrugada"] #fondo .f-motas b{background:#FFE58A;box-shadow:0 0 8px 2px rgba(255,220,110,.55);animation-name:luciernaga}
-@keyframes luciernaga{0%{transform:translate3d(0,0,0);opacity:0}15%{opacity:.9}25%{opacity:.2}35%{opacity:.85}50%{transform:translate3d(var(--w),-50vh,0);opacity:.3}65%{opacity:.9}100%{transform:translate3d(calc(var(--w) * -.6),-104vh,0);opacity:0}}
-@media (prefers-reduced-motion:reduce){#fondo *{animation:none!important}#fondo .f-motas,#fondo .f-rayo{display:none}}
+@media (prefers-reduced-motion:reduce){#fondo *{animation:none!important}}
 #app{background:transparent}
+main.bd>.sec:nth-child(n+4),main.bd>.gcard:nth-child(n+4),main.bd>section.rp-card:nth-child(n+4){content-visibility:auto;contain-intrinsic-size:auto 360px}
 .hd{position:relative;isolation:isolate;overflow:hidden;background:var(--head)}
 .hd>*:not(.hd-fx){position:relative;z-index:1}
 .hd-fx{position:absolute;inset:0;z-index:0;pointer-events:none}
@@ -987,10 +982,11 @@ body::before{content:none}
 @keyframes kenb{from{transform:scale(1.02)}to{transform:scale(1.1) translateX(-1.5%)}}
 .hd-fx .tinte{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--head) calc(var(--t1)*100%),transparent) 0%,color-mix(in srgb,var(--head) calc(var(--t2)*100%),transparent) 50%,color-mix(in srgb,var(--head) calc(var(--t3)*100%),transparent) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
 .hd-fx .fx-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hd-fx .fx-img{position:absolute;inset:0;z-index:3;background-size:100% 100%;background-repeat:no-repeat}
 :root[data-clima="lluvia"] .hd-fx .ft,:root[data-clima="tormenta"] .hd-fx .ft{filter:saturate(.75) brightness(.92)}
 :root[data-clima="nublado"] .hd-fx .ft,:root[data-clima="niebla"] .hd-fx .ft{filter:saturate(.85)}
 .hd .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.hd .clima{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--htx);background:rgba(14,24,34,.28);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:4px 11px 4px 6px;border-radius:999px;cursor:pointer;max-width:62vw}
+.hd .clima{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--htx);background:rgba(14,24,34,.42);border:1px solid rgba(255,255,255,.18);padding:4px 11px 4px 6px;border-radius:999px;cursor:pointer;max-width:62vw}
 .hd .clima>span{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .hd .clima .ct{font-weight:800;font-size:19px;letter-spacing:-.3px}.hd .clima em{font-style:normal;font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hd .clima em::first-letter{text-transform:uppercase}.hd .clima i{font-style:normal;color:var(--htx2);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ci{width:26px;height:26px;flex:none;color:#F6C445;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
@@ -1050,7 +1046,7 @@ body::before{content:none}
  var p=w.querySelector('.sp-hola');p.textContent=g+(f?', ':'');if(f){p.appendChild(document.createElement('br'));var b=document.createElement('b');b.textContent=f;p.appendChild(b);}
  try{if(!localStorage.getItem('rumentis-bienvenida'))w.classList.add('primera');}catch(e){}
 })();</script>
-<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-luz"></i><i class="f-topo"></i><i class="f-topo t2"></i><i class="f-rayo"></i><i class="f-motas"><b style="--x:45%;--s:7px;--d:28s;--r:-23s;--w:-1vw"></b><b style="--x:82%;--s:5px;--d:19s;--r:-15s;--w:2vw"></b><b style="--x:77%;--s:5px;--d:22s;--r:-4s;--w:1vw"></b><b style="--x:86%;--s:8px;--d:17s;--r:-29s;--w:8vw"></b><b style="--x:63%;--s:7px;--d:25s;--r:-19s;--w:6vw"></b><b style="--x:8%;--s:5px;--d:19s;--r:-7s;--w:-8vw"></b><b style="--x:46%;--s:6px;--d:24s;--r:-6s;--w:-5vw"></b><b style="--x:30%;--s:5px;--d:25s;--r:-14s;--w:-4vw"></b><b style="--x:96%;--s:5px;--d:26s;--r:-9s;--w:-5vw"></b><b style="--x:29%;--s:5px;--d:24s;--r:-3s;--w:-7vw"></b><b style="--x:29%;--s:5px;--d:29s;--r:-25s;--w:-9vw"></b><b style="--x:22%;--s:5px;--d:23s;--r:-29s;--w:-2vw"></b><b style="--x:9%;--s:8px;--d:19s;--r:-20s;--w:-3vw"></b><b style="--x:31%;--s:5px;--d:29s;--r:-23s;--w:-7vw"></b><b style="--x:25%;--s:5px;--d:16s;--r:-14s;--w:-0vw"></b><b style="--x:66%;--s:5px;--d:22s;--r:-6s;--w:4vw"></b></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-cerro c1"></i><i class="f-grano"></i></div>
+<div id="fondo" aria-hidden="true"><i class="f-cielo"></i><i class="f-orbe o1"></i><i class="f-orbe o2"></i><i class="f-luz"></i><i class="f-cerro c3"></i><i class="f-cerro c2"></i><i class="f-grano"></i></div>
 <div id="app"></div>
 <nav class="bottom" aria-label="Secciones"><div class="in">
   <a href="#hoy" data-nav="hoy"></a>
@@ -1120,7 +1116,8 @@ const dias=(a,b)=>Math.round((tms(b)-tms(a))/864e5);
 const addDias=(f,n)=>new Date(tms(f)+n*864e5).toISOString().slice(0,10);
 const ffc=f=>{if(!f)return '';const[y,m,d]=f.split('-');return `${+d} ${MESES[+m-1]}`+(y===hoy().slice(0,4)?'':` ${y}`);};
 const ffl=f=>{if(!f)return '';const[y,m,d]=f.split('-');return `${+d} de ${MESES_L[+m-1]}`+(y===hoy().slice(0,4)?'':` de ${y}`);};
-const nf=(n,d=0)=>(n==null||!isFinite(n))?'–':Number(n).toLocaleString('es-HN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const NFMT={};   // un formateador por cantidad de decimales: toLocaleString crea uno nuevo en cada llamada y es lento
+const nf=(n,d=0)=>(n==null||!isFinite(n))?'–':(NFMT[d]||(NFMT[d]=new Intl.NumberFormat('es-HN',{minimumFractionDigits:d,maximumFractionDigits:d}))).format(Number(n));
 const money=n=>`${S.config.moneda||'L'} ${nf(Math.round(n||0))}`;
 const money2=n=>`${S.config.moneda||'L'} ${nf(n,2)}`;
 const pl=(n,s,p)=>`${nf(n)} ${n===1?s:p}`;
@@ -2467,9 +2464,9 @@ sheetEl().addEventListener('close',()=>{if(!sheetEl().open)$('#sheetBody').inner
 sheetEl().addEventListener('click',e=>{if(e.target===sheetEl())closeSheet();});
 /* cambio de página: con View Transitions la página nueva aparece sobre la anterior, sin quedar en blanco;
    la barra de abajo y el encabezado se quedan quietos o cambian de tamaño suave */
-let VT=0;
+let VT=0,vtId=0;   // si tocas otra pestaña antes de que termine la transición, la vieja no apaga la nueva
 addEventListener('hashchange',()=>{closeSheet();UI.histAll=0;const go=()=>{scrollTo(0,0);render();};
-  if(document.startViewTransition&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.hidden){VT=1;try{const t=document.startViewTransition(go);t.finished.finally(()=>{VT=0;});}catch(e){VT=0;go();}}
+  if(document.startViewTransition&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.hidden){const id=++vtId;VT=1;try{const t=document.startViewTransition(go);t.finished.finally(()=>{if(id===vtId)VT=0;});}catch(e){if(id===vtId)VT=0;go();}}
   else go();});
 
 /* ============ tema y puente Android ============ */
@@ -2901,10 +2898,11 @@ function animarRuta(){
     else if((pv==='lote'||pv==='formular')&&TABS.includes(r.p))dir='pg-back';
     else if(TABS.includes(pv)&&TABS.includes(r.p))dir=TABS.indexOf(r.p)>TABS.indexOf(pv)?'pg-right':'pg-left';}
   lastRoute=key;
-  app.classList.remove('pg','pgv','pg-tab','pg-fwd','pg-back','pg-left','pg-right');void app.offsetWidth;
-  // con View Transitions solo se animan barras y gráficas: el contenido ya entra con la transición
+  app.classList.remove('pg','pgv','pg-tab','pg-fwd','pg-back','pg-left','pg-right');
+  // con View Transitions solo se animan barras y gráficas: el contenido ya entra con la transición.
+  // (sin leer tamaños aquí: obligaría a maquetar toda la página nueva dos veces)
   if(VT){app.classList.add('pgv');clearTimeout(animarRuta.t);animarRuta.t=setTimeout(()=>app.classList.remove('pgv'),1400);return;}
-  app.classList.add('pg',dir);
+  void app.offsetWidth;app.classList.add('pg',dir);
   clearTimeout(animarRuta.t);animarRuta.t=setTimeout(()=>app.classList.remove('pg','pg-tab','pg-fwd','pg-back','pg-left','pg-right'),900);
 }
 const RIPPLE='.btn,.tile,.row,.lote,.qa button,.chip,.opt,.seg button,.lect button,nav.bottom a:not(.reg),#rumiFab,.rbtn';
@@ -5269,6 +5267,7 @@ responder=function(txt){
 <script src="extras.js"></script>
 <script src="finanzas.js"></script>
 <script src="ambiente.js"></script>
+<script src="fondo.js"></script>
 <script>/* la guía de Rumi en el idioma de la app */(function(){var L=window.I18N&&I18N.lang&&I18N.lang();document.write('<script src="rumi_guia'+(L==="en"||L==="pt"?"_"+L:"")+'.js"><\/script>');})();</script>
 <script src="rumi_menu.js"></script>
 <script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="huella.js"></script><script src="documentos.js"></script><script src="mercado.js"></script><script src="zona.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>

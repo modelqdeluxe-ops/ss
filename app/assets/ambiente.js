@@ -131,7 +131,8 @@ const FX=(()=>{
   let VI=.15,cv=null,cx=null,W=0,H=0,dpr=1,tipo='',gotas=[],nubes=[],estrellas=[],salpic=[],rayo=0,sigRayo=0,ult=0,raf=0,t0=performance.now();
   const reducido=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rnd=(a,b)=>a+Math.random()*(b-a);
-  function medir(){if(!cv)return;const b=cv.getBoundingClientRect();const d=Math.min(2,devicePixelRatio||1);if(cv.width===Math.round(b.width*d)&&cv.height===Math.round(b.height*d)&&W===b.width)return;dpr=d;W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
+  let TAM=null;const RO=typeof ResizeObserver!=='undefined'?new ResizeObserver(e=>{const r=e[e.length-1].contentRect;TAM={width:r.width,height:r.height};medir();}):null;
+  function medir(){if(!cv)return;const b=TAM||(cv.parentNode||cv).getBoundingClientRect();if(!b.width)return;const d=Math.min(2,devicePixelRatio||1);if(cv.width===Math.round(b.width*d)&&cv.height===Math.round(b.height*d)&&W===b.width)return;dpr=d;W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
   function sembrar(){
     const llueve=tipo==='lluvia'||tipo==='tormenta',n=llueve?Math.round(W*H/(tipo==='tormenta'?750:1000)):0;
     gotas=Array.from({length:n},()=>nuevaGota(true));
@@ -168,13 +169,26 @@ const FX=(()=>{
       if(rayo>.55&&cv._camino){cx.strokeStyle=`rgba(255,255,255,${rayo.toFixed(2)})`;cx.lineWidth=1.8;cx.shadowColor='rgba(190,210,255,.9)';cx.shadowBlur=12;cx.beginPath();cv._camino.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y));cx.stroke();cx.shadowBlur=0;}
       rayo=Math.max(0,rayo-dt*2.4);}}
   function cuadro(t){raf=requestAnimationFrame(cuadro);if(!cv||!cv.isConnected){cancelAnimationFrame(raf);raf=0;return;}if(document.hidden)return;
-    if(t-ult<33)return;const dt=Math.min(.05,(t-ult)/1000);ult=t;
+    // la lluvia necesita 30 cuadros; el sol, la luna y las nubes con 8 se ven igual y cuestan mucho menos.
+    // Durante el scroll o un cambio de página no se dibuja: eso tiene prioridad.
+    const mov=tipo==='lluvia'||tipo==='tormenta'||rayo>0;if(t-ult<(mov?33:125))return;if(t<(window.OCUPADO_HASTA||0)&&!mov)return;
+    const dt=Math.min(mov?.05:.15,(t-ult)/1000);ult=t;
+    // cielo despejado: el sol o la luna con sus estrellas se dibujan una vez y quedan como imagen (sin lienzo animado)
+    if(estatico()){const k=tipo+'|'+r.dataset.momento+'|'+W+'x'+H;if(k!==claveImg&&W){claveImg=k;cx.clearRect(0,0,W,H);sol(t);aImg();}return;}
+    if(img&&img.style.display!=='none'){img.style.display='none';cv.style.display='';}
     cx.clearRect(0,0,W,H);sol(t);
     for(const n of nubes){n.x+=n.v*dt;if(n.x-150*n.s>W)n.x=-150*n.s;nube(n);}
     if(tipo==='niebla')niebla(t);
     if(tipo==='lluvia'||tipo==='tormenta')lluvia(dt);
     relampago(t,dt);}
-  function montar(canvas){cv=canvas;cx=cv.getContext('2d');medir();if(reducido){ult=0;cuadro(performance.now());cancelAnimationFrame(raf);raf=0;return;}if(!raf){ult=0;raf=requestAnimationFrame(cuadro);}}
+  let img=null,claveImg='',urlImg='';
+  const estatico=()=>!(tipo==='lluvia'||tipo==='tormenta'||tipo==='niebla'||tipo==='nublado'||tipo==='parcial');
+  function aImg(){if(!img)return;const listo=u=>{if(urlImg.startsWith('blob:'))URL.revokeObjectURL(urlImg);urlImg=u;img.style.backgroundImage=`url("${u}")`;img.style.display='';cv.style.display='none';};
+    try{if(cv.toBlob)cv.toBlob(b=>listo(b?URL.createObjectURL(b):cv.toDataURL()));else listo(cv.toDataURL());}catch(e){}}
+  function montar(canvas){cv=canvas;cx=cv.getContext('2d');
+    if(!img||img.parentNode!==cv.parentNode){img=document.createElement('i');img.className='fx-img';img.style.display='none';cv.parentNode.insertBefore(img,cv);claveImg='';}
+    // el tamaño llega con ResizeObserver, después de maquetar: no se fuerza una maquetación al cambiar de página
+    if(RO){if(!montar.obs){RO.observe(cv.parentNode);montar.obs=cv.parentNode;}}else medir();if(reducido){ult=0;cuadro(performance.now());cancelAnimationFrame(raf);raf=0;return;}if(!raf){ult=0;raf=requestAnimationFrame(cuadro);}}
   addEventListener('resize',()=>{if(cv)medir();});
   return {montar,viento:v=>{VI=Math.max(.08,v);},tipo:t=>{if(t===tipo)return;tipo=t;if(cv)sembrar();}};
 })();
@@ -209,8 +223,8 @@ function cambiar(n){
   if(!FXN)return;if(cambiando){pendiente=n;return;}cambiando=1;idx=n;const u=url(idx);
   dec(u).then(()=>{
     const {on,off}=capas();
-    off.style.backgroundImage=`url('${u}')`;off.style.animationDelay='0ms';off.classList.remove('kb','on','in');void off.offsetWidth;
-    t0=performance.now();off.classList.add('arriba','in','on','kb');
+    off.style.backgroundImage=`url('${u}')`;off.style.animationDelay='0ms';off.classList.remove('kb','on','in');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{t0=performance.now();off.classList.add('arriba','in','on','kb');}));
     setTimeout(()=>{on.classList.remove('on','in','kb','arriba');off.classList.remove('arriba','in');cambiando=0;if(pendiente!=null){const p=pendiente;pendiente=null;cambiar(p);}},1700);
   });
 }

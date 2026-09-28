@@ -62,7 +62,10 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
     ganancia, conversión, mortalidad, costo y días), contra el servidor de `servidor/zona`. Sin servidor
     configurado, compara con la referencia.
   - `app/assets/fondos/rumi.webp` — retrato de Rumi: Brahman en Costa Rica, foto de Bernard Gagnon (CC0).
-  - `app/assets/fondo_topo.svg` — curvas de nivel del fondo de la app (dibujadas por código, sin licencia de terceros).
+  - `app/assets/fondo.js` — fondo vivo sin partículas: curvas de nivel que respiran (se recalculan cada 3 s en un
+    rato libre y se funden), pasto en el cerro de adelante que mece el viento real de la zona y sombras de nubes.
+    Todo se dibuja fuera de pantalla y se muestra como imagen; el movimiento es transform u opacity (tarjeta
+    gráfica), así el scroll y el cambio de página no pierden cuadros.
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
     compartir y lectura en voz alta: la clase `Voz` elige la voz más natural del teléfono en el idioma de la app;
     su fuente Java está en `modelo/android/Voz.java`). Los avisos (`Avisos`, `AvisoReceiver`) y el widget
