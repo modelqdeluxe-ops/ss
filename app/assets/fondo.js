@@ -5,8 +5,11 @@
    - Pasto en el cerro de adelante: se dibuja una vez en franjas que la tarjeta gráfica inclina con una ola de viento
      que las recorre; la fuerza sale del viento real de la zona (Open-Meteo, en ambiente.js).
    - Sombras de nubes que cruzan el campo de día (capas que se deslizan, en CSS).
-   Todo el movimiento es transform u opacity: el procesador no trabaja cuadro a cuadro. Se detiene en segundo plano
-   y queda quieto si el teléfono pide menos movimiento. */
+   Todo lo que no se mueve (cielo, luces, cerros, el cerro del pasto y la textura) se hornea en UNA sola imagen:
+   así la tarjeta gráfica del teléfono pinta una capa en vez de ocho con máscaras y mezclas, y le sobra fuerza
+   para ir a la tasa de refresco de la pantalla (60, 90 o 120 Hz).
+   Todo el movimiento es transform u opacity: el procesador no trabaja cuadro a cuadro. Se detiene en segundo plano,
+   mientras tocas o haces scroll, y queda quieto si el teléfono pide menos movimiento. */
 (function(){
 'use strict';
 const R=document.documentElement,reducido=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -29,26 +32,31 @@ function ruido(x,y,z){
 
 /* ---------- colores de la paleta ---------- */
 const sonda=document.createElement('i');sonda.style.cssText='position:absolute;width:0;height:0;visibility:hidden';fondo.appendChild(sonda);
+// [r,g,b,a] del color CSS (acepta var() y color-mix)
 function rgb(css){sonda.style.color='';sonda.style.color=css;const v=getComputedStyle(sonda).color;
-  let m=/rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/.exec(v);if(m)return [+m[1],+m[2],+m[3]];
-  m=/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(v);if(m)return [m[1]*255,m[2]*255,m[3]*255].map(Math.round);return [120,130,125];}
+  let m=/rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/.exec(v);if(m)return [+m[1],+m[2],+m[3],m[4]!=null?+m[4]:1];
+  m=/color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+)(?: \/ ([\d.]+))?/.exec(v);if(m)return [m[1]*255,m[2]*255,m[3]*255].map(Math.round).concat(m[4]!=null?+m[4]:1);return [120,130,125,1];}
 let COL=null;
 function leerColores(){
   const noche=/noche|madrugada/.test(R.dataset.momento||'')||R.dataset.modo==='dark';
-  COL={ink:rgb('var(--ink)'),cerroA:rgb('color-mix(in srgb,var(--cerro) 30%,var(--bg))'),cerroB:rgb('color-mix(in srgb,var(--cerro) 20%,var(--bg))'),
+  COL={ink:rgb('var(--ink)'),bg:rgb('var(--bg)'),cielo:rgb('var(--cielo)'),amb1:rgb('var(--amb1)'),amb2:rgb('var(--amb2)'),
+    luzHd:rgb('color-mix(in srgb,var(--head) 14%,transparent)'),suelo:rgb('color-mix(in srgb,var(--cerro) 7%,var(--bg))'),
+    c3a:rgb('color-mix(in srgb,var(--cerro) 13%,var(--bg))'),c3b:rgb('color-mix(in srgb,var(--cerro) 8%,var(--bg))'),
+    c2a:rgb('color-mix(in srgb,var(--cerro) 20%,var(--bg))'),c2b:rgb('color-mix(in srgb,var(--cerro) 12%,var(--bg))'),cerroA:rgb('color-mix(in srgb,var(--cerro) 30%,var(--bg))'),cerroB:rgb('color-mix(in srgb,var(--cerro) 20%,var(--bg))'),
     pasto:rgb('color-mix(in srgb,var(--cerro) 55%,var(--bg))'),pasto2:rgb('color-mix(in srgb,var(--cerro) 40%,var(--bg))'),luz:rgb('var(--arete)'),noche,
     dia:!noche&&!/lluvia|tormenta|niebla/.test(R.dataset.clima||'')};
 }
-const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a.toFixed(3)})`;
+const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${(a==null?(c[3]==null?1:c[3]):a).toFixed(3)})`;
 
 /* ---------- capas ----------
    Se dibuja en lienzos fuera de pantalla y se muestra como imagen (blob): las imágenes no le cuestan al teléfono
    en cada cambio de página como sí los lienzos en pantalla. */
 const mk=(tag,cls)=>{const e=document.createElement(tag);e.className=cls;return e;};
-const capaT=mk('i','f-vivo'),imA=mk('b','on'),imB=mk('b','');capaT.append(imA,imB);
+// orden: imagen horneada, curvas de nivel, sombras de nubes y franjas de pasto
+const base=mk('i','f-base'),capaT=mk('i','f-vivo'),imA=mk('b','on'),imB=mk('b','');capaT.append(imA,imB);
 const sombras=mk('i','f-sombras');sombras.innerHTML='<b></b><b></b>';
 const capaP=mk('i','f-pasto');
-const c2=fondo.querySelector('.c2');fondo.insertBefore(capaT,fondo.querySelector('.c3'));fondo.insertBefore(sombras,fondo.querySelector('.c3'));fondo.insertBefore(capaP,c2?c2.nextSibling:null);
+fondo.append(base,capaT,sombras,capaP);
 const lienzo=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {c,x};};
 const URLS=new Map();
 function aImagen(el,cv,listo){
@@ -82,6 +90,10 @@ function curvas(cx){
     const maestra=n===4;
     cx.strokeStyle=rgba(COL.ink,maestra?lin*1.5:lin);cx.lineWidth=maestra?1.3*w+.2:.9*w+.15;cx.stroke();
   });
+  // se desvanece arriba y abajo: horneado aquí en vez de una máscara CSS, que le cuesta a la tarjeta gráfica en cada cuadro
+  cx.globalCompositeOperation='destination-in';const g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(.04,'rgba(0,0,0,0)');g.addColorStop(.26,'#000');g.addColorStop(.72,'#000');g.addColorStop(.92,'rgba(0,0,0,0)');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);cx.globalCompositeOperation='source-over';
 }
 /* dibuja el relieve siguiente en el lienzo de atrás y lo funde con el de adelante */
 let ocupadoHasta=0,espera=0;
@@ -98,15 +110,47 @@ const ocupar=ms=>{ocupadoHasta=Math.max(ocupadoHasta,performance.now()+ms);windo
 addEventListener('scroll',()=>ocupar(450),{passive:true,capture:true});
 addEventListener('touchmove',()=>ocupar(450),{passive:true});
 addEventListener('hashchange',()=>ocupar(900));
+// mientras tocas o haces scroll, el fondo se queda quieto: toda la tarjeta gráfica para lo que estás haciendo
+let tq=0;const quieto=()=>{if(!fondo.classList.contains('toque'))fondo.classList.add('toque');clearTimeout(tq);tq=setTimeout(()=>fondo.classList.remove('toque'),900);};
+addEventListener('pointerdown',quieto,{passive:true,capture:true});addEventListener('scroll',quieto,{passive:true,capture:true});addEventListener('touchmove',quieto,{passive:true});
 
-/* ---------- cerro de adelante con pasto en franjas ---------- */
+/* ---------- lo que no se mueve, horneado en una imagen ---------- */
 const NF=12;
 const cresta=x=>HP*(.3+.1*Math.sin(x/W*3.1+.6)+.06*Math.sin(x/W*7.3+2.1)+.03*Math.sin(x/W*15+1));
-function cerro(){
-  const {c,x}=lienzo(W,HP);
-  const g=x.createLinearGradient(0,HP*.3,0,HP);g.addColorStop(0,rgba(COL.cerroA,1));g.addColorStop(1,rgba(COL.cerroB,1));
-  x.fillStyle=g;x.beginPath();x.moveTo(0,HP);for(let xx=0;xx<=W;xx+=6)x.lineTo(xx,cresta(xx)+3);x.lineTo(W,HP);x.closePath();x.fill();
-  aImagen(capaP,c);
+const CERRO3=new Path2D('M0 170 C150 110 300 120 430 150 S700 210 860 160 S1100 90 1200 120 V300 H0Z');
+const CERRO2=new Path2D('M0 120 C120 150 260 190 420 170 S720 90 900 120 S1120 190 1200 170 V300 H0Z');
+let GRANO=null;
+function grano(){
+  // textura fina: puntitos al azar en un mosaico chico que se repite
+  const oscuro=R.dataset.modo==='dark',k=oscuro?'o':'c';if(GRANO&&GRANO.k===k)return GRANO.p;
+  const n=128,t=document.createElement('canvas');t.width=t.height=n;const x=t.getContext('2d'),d=x.createImageData(n,n);let s=99;
+  for(let i=0;i<n*n;i++){s=(s*16807)%2147483647;const v=s/2147483647;const o=i*4;
+    if(oscuro){d.data[o]=d.data[o+1]=255;d.data[o+2]=240;d.data[o+3]=Math.round(v*v*14);}else{d.data[o]=70;d.data[o+1]=62;d.data[o+2]=45;d.data[o+3]=Math.round(v*v*22);}}
+  x.putImageData(d,0,0);GRANO={k,p:t};return t;
+}
+function cerroSvg(x,path,h,a,b){
+  // como los cerros de CSS: 110 % de ancho, pegados abajo, la forma estirada de un dibujo de 1200 x 300
+  const y0=H-h;const g=x.createLinearGradient(0,y0,0,H);g.addColorStop(0,rgba(a,1));g.addColorStop(1,rgba(b,1));
+  x.save();x.translate(-W*.05,y0);x.scale(W*1.1/1200,h/300);x.fillStyle=g;x.fill(path);x.restore();
+}
+function hornear(){
+  const {c,x}=lienzo(W,H);
+  let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,rgba(COL.cielo,1));g.addColorStop(.42,rgba(COL.bg,1));g.addColorStop(.62,rgba(COL.bg,1));g.addColorStop(1,rgba(COL.suelo,1));
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  // luces suaves (las dos "orbes") y la luz del encabezado que baja
+  const orbe=(cx,cy,r,col)=>{const q=x.createRadialGradient(cx,cy,0,cx,cy,r);q.addColorStop(0,rgba(col,(col[3]==null?1:col[3])*.9));q.addColorStop(.62,rgba(col,0));x.fillStyle=q;x.fillRect(cx-r,cy-r,r*2,r*2);};
+  orbe(W*.95,W*.3,W*.6,COL.amb1);orbe(0,H*.35+W*.6,W*.6,COL.amb2);
+  x.save();x.translate(W/2,0);x.scale(W*1.2,H*.42);g=x.createRadialGradient(0,0,0,0,0,1);g.addColorStop(0,rgba(COL.luzHd));g.addColorStop(.7,rgba(COL.luzHd,0));x.fillStyle=g;x.fillRect(-1,0,2,1);x.restore();
+  cerroSvg(x,CERRO3,H*.34,COL.c3a,COL.c3b);cerroSvg(x,CERRO2,H*.25,COL.c2a,COL.c2b);
+  // cerro de adelante, donde crece el pasto
+  x.save();x.translate(0,H-HP);g=x.createLinearGradient(0,HP*.3,0,HP);g.addColorStop(0,rgba(COL.cerroA,1));g.addColorStop(1,rgba(COL.cerroB,1));
+  x.fillStyle=g;x.beginPath();x.moveTo(0,HP);for(let xx=0;xx<=W;xx+=6)x.lineTo(xx,cresta(xx)+3);x.lineTo(W,HP);x.closePath();x.fill();x.restore();
+  x.save();x.setTransform(1,0,0,1,0,0);x.fillStyle=x.createPattern(grano(),'repeat');x.fillRect(0,0,c.width,c.height);x.restore();
+  // se cambia cuando la imagen ya está lista para pintarse: sin un cuadro vacío
+  const tmp=mk('i','');aImagen(tmp,c,()=>{const u=URLS.get(tmp);URLS.delete(tmp);const im=new Image();im.src=u;
+    const poner=()=>{const vieja=base.dataset.u;base.dataset.u=u;base.style.backgroundImage=`url("${u}")`;fondo.classList.add('horneado');
+      if(vieja&&vieja.startsWith('blob:'))setTimeout(()=>URL.revokeObjectURL(vieja),4000);};
+    (im.decode?im.decode():Promise.resolve()).then(poner,poner);});
 }
 function pasto(){
   const n=Math.round(W/2.6),ancho=W/NF,margen=18;let s=7;const r=()=>{s=(s*16807)%2147483647;return s/2147483647;};
@@ -137,9 +181,9 @@ function viento(){try{const c=window.Clima&&Clima.actual();if(c&&c.viento!=null)
 
 /* ---------- armar ---------- */
 function medir(){dpr=Math.min(1.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;HP=Math.round(H*.24);}
-function todo(){medir();leerColores();const {c,x}=lienzo(W,H);relieve(performance.now()-t0);curvas(x);aImagen(frente,c);cerro();pasto();programar(CADA);}
+function todo(){medir();leerColores();const {c,x}=lienzo(W,H);relieve(performance.now()-t0);curvas(x);aImagen(frente,c);hornear();pasto();programar(CADA);}
 let PAUSA=false;
-new MutationObserver(()=>{clearTimeout(todo._t);todo._t=setTimeout(()=>{const antes=JSON.stringify(COL);leerColores();if(JSON.stringify(COL)!==antes){cerro();pasto();}},120);}).observe(R,{attributes:true,attributeFilter:['data-modo','data-paleta','data-momento','data-epoca','data-clima','data-tema']});
+new MutationObserver(()=>{clearTimeout(todo._t);todo._t=setTimeout(()=>{const antes=JSON.stringify(COL);leerColores();if(JSON.stringify(COL)!==antes){hornear();pasto();}},120);}).observe(R,{attributes:true,attributeFilter:['data-modo','data-paleta','data-momento','data-epoca','data-clima','data-tema']});
 addEventListener('resize',()=>{clearTimeout(medir._t);medir._t=setTimeout(todo,200);});
 document.addEventListener('visibilitychange',()=>{R.classList.toggle('fondo-quieto',document.hidden);});
 setInterval(viento,60000);

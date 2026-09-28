@@ -104,6 +104,8 @@ function observar(){
 const OPT={childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATR};
 function cambiar(l){lang=l;try{localStorage.setItem(LS,l);}catch(e){}document.documentElement.lang=l==='xx'?'es':l;location.reload();}
 window.I18N={t:traducir,norm,lang:()=>lang,IDIOMAS,cambiar,observar,
+  // para dibujar sin rehacer la pantalla: traducir la página nueva antes de compararla, y marcar un texto ya traducido
+  pre:n=>{if(lang!=='es')nodo(n);},marcar:n=>{if(n.nodeType===3)HECHO.set(n,n.data);},
   // para textos que la app arma para otros (WhatsApp, respaldo): traducir sin tocar el DOM
   txt:s=>String(s).split('\n').map(traducir).join('\n')};
 document.documentElement.lang=lang==='xx'?'es':lang;

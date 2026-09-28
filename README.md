@@ -70,8 +70,14 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/fondos/rumi.webp` — retrato de Rumi: Brahman en Costa Rica, foto de Bernard Gagnon (CC0).
   - `app/assets/fondo.js` — fondo vivo sin partículas: curvas de nivel que respiran (se recalculan cada 3 s en un
     rato libre y se funden), pasto en el cerro de adelante que mece el viento real de la zona y sombras de nubes.
-    Todo se dibuja fuera de pantalla y se muestra como imagen; el movimiento es transform u opacity (tarjeta
-    gráfica), así el scroll y el cambio de página no pierden cuadros.
+    Todo se dibuja fuera de pantalla y se muestra como imagen; lo que no se mueve (cielo, luces, cerros y textura)
+    va horneado en una sola imagen, sin máscaras ni mezclas CSS, para que la tarjeta gráfica del teléfono pinte
+    una capa y no ocho. El movimiento es transform u opacity y se pausa mientras tocas o haces scroll.
+  - Dibujado de páginas (`render` y `pintarEn` en `index.html`): la página nueva se compara con la que ya está y
+    solo se cambia lo distinto (no se rehace todo con `innerHTML`), así las fotos, los íconos y los botones que no
+    cambian no parpadean. Lo que el código pone después lleva `data-fijo` y se respeta; al terminar se lanza el
+    evento `rumentis-pintado`. No se usan View Transitions: la página cambia en el mismo cuadro y el contenido
+    solo se desliza un poco.
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
     compartir y lectura en voz alta: la clase `Voz` elige la voz más natural del teléfono en el idioma de la app;
     su fuente Java está en `modelo/android/Voz.java`). Los avisos (`Avisos`, `AvisoReceiver`) y el widget

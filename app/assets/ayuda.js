@@ -196,10 +196,13 @@ function abrirTut(k){
 }
 document.addEventListener('tourfin',()=>{if(!TUT)return;const m=vistos();m[TUT]=1;LS('rumentis-tut',m);TUT=null;const c=document.querySelector('.tut-chip');if(c){c.classList.add('fuera');setTimeout(()=>c.remove(),300);}});
 function chip(){
-  const k=clave();if(!k||vistos()[k]||document.querySelector('.tut-chip'))return;
-  if(k!=='hoy'&&!Object.keys(S.lotes).length)return;
+  // el aviso lleva data-fijo: al volver a dibujar la misma página se queda (no se borra y se vuelve a crear)
+  const k=clave(),c=document.querySelector('.tut-chip');
+  const va=!!k&&!vistos()[k]&&(k==='hoy'||Object.keys(S.lotes).length>0);
+  if(c){if(va&&c.dataset.k===k&&!c.classList.contains('fuera')&&c.isConnected&&c.closest('#app'))return;if(!c.classList.contains('fuera'))c.remove();}
+  if(!va||document.querySelector('.tut-chip:not(.fuera)'))return;
   const hd=document.querySelector('#app header.hd .ttl');if(!hd)return;
-  const b=document.createElement('button');b.type='button';b.className='tut-chip';b.dataset.act='tutPagina';b.dataset.k=k;
+  const b=document.createElement('button');b.type='button';b.className='tut-chip';b.dataset.act='tutPagina';b.dataset.k=k;b.setAttribute('data-fijo','');
   b.innerHTML=`<span class="rumi-av sm">${rumiSVG('mini')}</span><span>${txt('¿Cómo funciona esta página?')}</span>`;
   hd.appendChild(b);
 }

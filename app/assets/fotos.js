@@ -33,11 +33,12 @@ async function tiene(id){return !!(await url(id));}
 /* llena las <img data-foto> que aparezcan en pantalla */
 function pintar(root){
   (root||document).querySelectorAll('img[data-foto]').forEach(async im=>{
-    const id=im.dataset.foto;if(im.dataset.puesta===id)return;im.dataset.puesta=id;
+    const id=im.dataset.foto;if(im.dataset.puesta===id){const b=im.closest('.foto');if(b)b.classList.toggle('con',!im.hidden&&im.hasAttribute('src'));return;}im.dataset.puesta=id;
     const u=await url(id);const box=im.closest('.foto');
     if(u){im.src=u;im.hidden=false;if(box)box.classList.add('con');}else{im.removeAttribute('src');im.hidden=true;if(box)box.classList.remove('con');}
   });
 }
+document.addEventListener('rumentis-pintado',()=>pintar(document.getElementById('app')));
 new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1){if(n.matches&&n.matches('img[data-foto]'))pintar(n.parentNode);else if(n.querySelector&&n.querySelector('img[data-foto]'))pintar(n);}}).observe(document.documentElement,{childList:true,subtree:true});
 
 /* reduce una imagen a 720 px de lado mayor, JPEG */

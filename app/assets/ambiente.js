@@ -112,14 +112,17 @@ function actualizarClima(forzar){
   return pidiendo;
 }
 function pintarClima(){
-  r.dataset.clima=vigente()?tipoClima():'';
+  const tc=vigente()?tipoClima():'';if(r.dataset.clima!==tc)r.dataset.clima=tc;   // sin tocar el atributo si no cambió
   if(vigente())FX.viento(Math.min(1,(CLIMA.viento||0)/40));
   const m=document.querySelector('body[data-pg="hoy"] .hd .top .meta');
-  if(m&&!m.querySelector('.clima'))m.insertAdjacentHTML('beforeend',`<span class="clima"></span>`);
+  // data-fijo: al volver a dibujar la página, el chip del clima se queda (no se borra y se vuelve a poner)
+  if(m&&!m.querySelector('.clima'))m.insertAdjacentHTML('beforeend',`<span class="clima" data-fijo></span>`);
+  document.querySelectorAll('#app .hd .clima').forEach(e=>{if(!e.closest('body[data-pg="hoy"]'))e.remove();});
   document.querySelectorAll('.hd .clima').forEach(e=>{
-    e.innerHTML=vigente()?`${icono(iconoClima(),'ci')}<b class="ct">${Math.round(CLIMA.t)}°</b><span><em>${esc(textoClima().replace(/^[^,]+, /,''))}</em>${CLIMA.lugar?`<i>${esc(CLIMA.lugar)}</i>`:''}</span>`:`${icono(iconoClima(),'ci')}<span><em>${EPOCA_TXT[epoca()]}</em><i>Toca para ver el clima</i></span>`;
-    e.title=vigente()?'Clima de tu zona':'Da permiso de ubicación o pon tu lugar en Más, Configuración';
-    e.setAttribute('role','button');e.dataset.act='climaVer';
+    const h=vigente()?`${icono(iconoClima(),'ci')}<b class="ct">${Math.round(CLIMA.t)}°</b><span><em>${esc(textoClima().replace(/^[^,]+, /,''))}</em>${CLIMA.lugar?`<i>${esc(CLIMA.lugar)}</i>`:''}</span>`:`${icono(iconoClima(),'ci')}<span><em>${EPOCA_TXT[epoca()]}</em><i>Toca para ver el clima</i></span>`;
+    if(e._h!==h){e._h=h;e.innerHTML=h;}   // solo si cambió: no se rehace en cada toque
+    if(e._t!==h){e._t=h;e.title=vigente()?'Clima de tu zona':'Da permiso de ubicación o pon tu lugar en Más, Configuración';
+      e.setAttribute('role','button');e.dataset.act='climaVer';}
   });
   FX.tipo(vigente()?tipoClima():'');
 }
@@ -223,18 +226,19 @@ const FX=(()=>{
 const OFF={hoy:0,lotes:5,registrar:10,graficos:15,mas:20,lote:3,animal:8,formular:13,agenda:18,bodega:23,metodologia:7,finanzas:11,inventario:21,analisis:16};
 let idx=Math.floor(Math.random()*FOTOS.length),ultimaPg='';
 const url=i=>`fondos/${FOTOS[((i%FOTOS.length)+FOTOS.length)%FOTOS.length]}`;
-/* El encabezado se vuelve a dibujar con cada cambio de datos. Para que la foto no parpadee, la capa de fotos
-   es siempre la misma: se mueve al encabezado nuevo y su acercamiento lento sigue donde iba. */
+/* La capa de fotos es siempre la misma y lleva data-fijo: al volver a dibujar la página se queda en el encabezado
+   (que casi siempre es el mismo elemento). Si el encabezado sí es nuevo, se mueve a él y su acercamiento lento
+   sigue donde iba. */
 let FXN=null,t0=0,cambiando=0,pendiente=null;
 const dec=u=>{const im=new Image();im.src=u;return (im.decode?im.decode():new Promise(r=>{im.onload=r;})).catch(()=>{});};
 function capas(){const [a,b]=FXN.querySelectorAll('.ft');const on=a.classList.contains('on')&&!a.classList.contains('arriba')?a:b.classList.contains('on')?b:a;return {on,off:on===a?b:a};}
 function montar(){
   const hd=document.querySelector('#app .hd');if(!hd||!FOTOS.length)return;
-  if(hd.querySelector('.hd-fx'))return;
   const pg=document.body.dataset.pg||'hoy',nueva=!!FXN&&pg!==ultimaPg;
+  if(FXN&&FXN.parentNode===hd){pintarClima();if(nueva){ultimaPg=pg;cambiar((OFF[pg]||0)+Math.floor(Math.random()*3));}return;}
   if(!FXN){
     idx=(OFF[pg]||0)+Math.floor(Math.random()*3);ultimaPg=pg;
-    FXN=document.createElement('div');FXN.className='hd-fx';FXN.setAttribute('aria-hidden','true');
+    FXN=document.createElement('div');FXN.className='hd-fx';FXN.setAttribute('aria-hidden','true');FXN.setAttribute('data-fijo','');
     FXN.innerHTML=`<i class="ft on kb" style="background-image:url('${url(idx)}')"></i><i class="ft"></i><b class="tinte"></b><canvas class="fx-cv"></canvas>`;
     t0=performance.now();
   }
@@ -257,6 +261,7 @@ function cambiar(n){
 function siguiente(){if(!FXN||document.hidden||!FXN.isConnected)return;cambiar(idx+1);}
 setInterval(siguiente,8000);
 new MutationObserver(()=>montar()).observe(document.getElementById('app'),{childList:true});
+document.addEventListener('rumentis-pintado',montar);
 montar();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){aplicarMomento();actualizarClima();}});
 setInterval(()=>{if(!document.hidden)actualizarClima();},15*60e3);
