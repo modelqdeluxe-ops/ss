@@ -1,0 +1,765 @@
+Rumentis	Rumentis	Rumentis
+Rumi	Rumi	Rumi
+¿Cómo funciona esta página?	How does this page work?	Como funciona esta página?
+Ya lo hice, quitar aviso	Done, remove this notice	Já fiz, tirar aviso
+Idioma, moneda y unidades	Language, currency and units	Idioma, moeda e unidades
+Al elegir el país pongo su moneda y cómo se pesa y se cotiza ahí. Puedes cambiar cada cosa abajo.	When you choose the country I set its currency and how cattle are weighed and priced there. You can change each item below.	Ao escolher o país eu coloco a moeda e como se pesa e se cota o gado ali. Você pode mudar cada item abaixo.
+Libras ({0})	Pounds ({0})	Libras ({0})
+Kilos ({0})	Kilos ({0})	Quilos ({0})
+L · Lempira (Honduras)	L · Lempira (Honduras)	L · Lempira (Honduras)
+$ · Dólar de Estados Unidos	$ · US dollar	$ · Dólar dos Estados Unidos
+R$ · Real (Brasil)	R$ · Real (Brazil)	R$ · Real (Brasil)
+Q · Quetzal (Guatemala)	Q · Quetzal (Guatemala)	Q · Quetzal (Guatemala)
+C$ · Córdoba (Nicaragua)	C$ · Córdoba (Nicaragua)	C$ · Córdoba (Nicarágua)
+₡ · Colón (Costa Rica)	₡ · Colón (Costa Rica)	₡ · Colón (Costa Rica)
+B/. · Balboa (Panamá)	B/. · Balboa (Panama)	B/. · Balboa (Panamá)
+RD$ · Peso dominicano	RD$ · Dominican peso	RD$ · Peso dominicano
+BZ$ · Dólar de Belice	BZ$ · Belize dollar	BZ$ · Dólar de Belize
+$ · Peso mexicano	$ · Mexican peso	$ · Peso mexicano
+$ · Peso colombiano	$ · Colombian peso	$ · Peso colombiano
+Bs · Bolívar (Venezuela)	Bs · Bolívar (Venezuela)	Bs · Bolívar (Venezuela)
+S/ · Sol (Perú)	S/ · Sol (Peru)	S/ · Sol (Peru)
+Bs · Boliviano (Bolivia)	Bs · Boliviano (Bolivia)	Bs · Boliviano (Bolívia)
+₲ · Guaraní (Paraguay)	₲ · Guaraní (Paraguay)	₲ · Guarani (Paraguai)
+$U · Peso uruguayo	$U · Uruguayan peso	$U · Peso uruguaio
+$ · Peso argentino	$ · Argentine peso	$ · Peso argentino
+$ · Peso chileno	$ · Chilean peso	$ · Peso chileno
+CA$ · Dólar canadiense	CA$ · Canadian dollar	CA$ · Dólar canadense
+€ · Euro	€ · Euro	€ · Euro
+£ · Libra esterlina	£ · Pound sterling	£ · Libra esterlina
+A$ · Dólar australiano	A$ · Australian dollar	A$ · Dólar australiano
+NZ$ · Dólar neozelandés	NZ$ · New Zealand dollar	NZ$ · Dólar neozelandês
+R · Rand (Sudáfrica)	R · Rand (South Africa)	R · Rand (África do Sul)
+KSh · Chelín keniano	KSh · Kenyan shilling	KSh · Xelim queniano
+₦ · Naira (Nigeria)	₦ · Naira (Nigeria)	₦ · Naira (Nigéria)
+₱ · Peso filipino	₱ · Philippine peso	₱ · Peso filipino
+₹ · Rupia india	₹ · Indian rupee	₹ · Rupia indiana
+Rp · Rupia indonesia	Rp · Indonesian rupiah	Rp · Rupia indonésia
+¥ · Yuan (China)	¥ · Yuan (China)	¥ · Yuan (China)
+Otra moneda…	Other currency…	Outra moeda…
+Así se verá tu precio de venta:	This is how your sale price will look:	Assim ficará seu preço de venda:
+. Pesos, precios y costos cambian en toda la app al momento; tus datos no cambian.	. Weights, prices and costs change across the whole app instantly; your data doesn't change.	. Pesos, preços e custos mudam em todo o app na hora; seus dados não mudam.
+Lo que te pagan hoy por tu ganado. Actualízalo cuando cambie el mercado.	What you're paid today for your cattle. Update it when the market changes.	O que pagam hoje pelo seu gado. Atualize quando o mercado mudar.
+Avisos al teléfono y widget	Phone alerts and widget	Avisos no celular e widget
+En la app de Android, Rumi te puede mandar un aviso al día con lo importante de tu engorde y tienes un widget para la pantalla de inicio.	In the Android app, Rumi can send you one alert a day with what matters in your feedlot, and you get a widget for the home screen.	No app de Android, o Rumi pode mandar um aviso por dia com o importante do seu confinamento, e você tem um widget para a tela inicial.
+Tu teléfono no tiene voces instaladas en tu idioma.	Your phone has no voices installed in your language.	Seu celular não tem vozes instaladas no seu idioma.
+El ganado en engorde se valora como pide la NIC {0}: peso en pie de hoy × ({1} − desbaste) × tu precio de venta. Al lado se muestra su costo acumulado (compra, alimento, sanidad y gastos). La diferencia es ganancia no realizada: se hace real al vender. El equipo pierde valor en línea recta: (costo − valor final) ÷ años de vida útil.	Cattle on feed are valued as IAS {0} requires: today's live weight × ({1} − shrink) × your sale price. Next to it is their accumulated cost (purchase, feed, health and expenses). The difference is unrealized gain: it becomes real when you sell. Equipment loses value in a straight line: (cost − salvage value) ÷ years of useful life.	O gado em confinamento é avaliado como pede a IAS {0}: peso vivo de hoje × ({1} − quebra) × seu preço de venda. Ao lado aparece o custo acumulado (compra, alimento, sanidade e gastos). A diferença é ganho não realizado: vira real ao vender. O equipamento perde valor em linha reta: (custo − valor final) ÷ anos de vida útil.
+Ventas del período menos el costo de lo vendido: lo que llevaba invertido cada cabeza vendida (costo del lote sin gastos generales ÷ cabezas que no murieron). Luego se restan gastos generales, intereses de créditos (interés simple sobre el saldo; cada pago cubre primero el interés) y depreciación.	Sales for the period minus the cost of what was sold: what each sold head had invested (lot cost without overhead ÷ head that didn't die). Then overhead, loan interest (simple interest on the balance; each payment covers interest first) and depreciation are subtracted.	Vendas do período menos o custo do vendido: o que cada cabeça vendida tinha investido (custo do lote sem gastos gerais ÷ cabeças que não morreram). Depois se subtraem gastos gerais, juros de créditos (juros simples sobre o saldo; cada pagamento cobre primeiro os juros) e depreciação.
+Simulación de Montecarlo con {0} escenarios por lote: el precio de venta cambia con una distribución lognormal (±{1} {9}), la ganancia diaria ±{2} {10}, el costo del alimento ±{3} {11} y las muertes con una probabilidad de {4} {12} por cada {5} días que faltan. En la finca completa el precio es el mismo para todos los lotes en cada escenario. El precio para ganar {6} de cada {7} veces es el percentil {8} del precio que hace falta en cada escenario.	Monte Carlo simulation with {0} scenarios per lot: the sale price varies with a lognormal distribution (±{1} {9}), daily gain ±{2} {10}, feed cost ±{3} {11} and deaths with a probability of {4} {12} for every {5} days remaining. For the whole farm the price is the same for all lots in each scenario. The price to win {6} out of {7} times is the {8}th percentile of the price needed in each scenario.	Simulação de Monte Carlo com {0} cenários por lote: o preço de venda varia com uma distribuição lognormal (±{1} {9}), o ganho diário ±{2} {10}, o custo do alimento ±{3} {11} e as mortes com uma probabilidade de {4} {12} a cada {5} dias que faltam. Na fazenda inteira o preço é o mesmo para todos os lotes em cada cenário. O preço para ganhar {6} de cada {7} vezes é o percentil {8} do preço necessário em cada cenário.
+De {0} a {1}, promedio ponderado de: ganancia diaria ({2} a {3} {14}, {4} {15}), conversión ({5} a {6}, {7} {16}), rentabilidad sobre lo invertido ({8} {17} a {9} {18}, {10} {19}), salud (mortalidad hasta {11} {20}, animales atrasados y bajas de consumo, {12} {21}) y registros (días sin pesar y entregas anotadas, {13} {22}).	From {0} to {1}, weighted average of: daily gain ({2} to {3} {14}, {4} {15}), conversion ({5} to {6}, {7} {16}), return on investment ({8} {17} to {9} {18}, {10} {19}), health (mortality up to {11} {20}, lagging animals and intake drops, {12} {21}) and records (days without weighing and recorded feedings, {13} {22}).	De {0} a {1}, média ponderada de: ganho diário ({2} a {3} {14}, {4} {15}), conversão ({5} a {6}, {7} {16}), rentabilidade sobre o investido ({8} {17} a {9} {18}, {10} {19}), saúde (mortalidade até {11} {20}, animais atrasados e quedas de consumo, {12} {21}) e registros (dias sem pesar e entregas anotadas, {13} {22}).
+Puntaje, alertas, simulador, cuándo vender, tu dinero y el riesgo.	Score, alerts, simulator, when to sell, your money and risk.	Pontuação, alertas, simulador, quando vender, seu dinheiro e o risco.
+Partes del análisis	Parts of the analysis	Partes da análise
+Chequeo	Check-up	Checagem
+Alertas	Alerts	Alertas
+Simulador	Simulator	Simulador
+Equilibrio	Break-even	Equilíbrio
+Flujo {0} días	Cash flow {0} days	Fluxo {0} dias
+Referencia	Reference	Referência
+Riesgo	Risk	Risco
+Semana	Week	Semana
+Señales de alerta	Warning signs	Sinais de alerta
+Lo que cambió y merece tu atención.	What changed and deserves your attention.	O que mudou e merece sua atenção.
+{0} señales que merecen tu atención	{0} signs that deserve your attention	{0} sinais que merecem sua atenção
+{0}: mortalidad de {1} {2}	{0}: mortality of {1} {2}	{0}: mortalidade de {1} {2}
+Arriba del {0} {1} es alto. Repasa recepción, vacunas y agua.	Above {0} {1} is high. Review receiving, vaccines and water.	Acima de {0} {1} é alto. Revise recepção, vacinas e água.
+Quedan pocas unidades de {0}	Few units of {0} left	Restam poucas unidades de {0}
+Tienes {0} y pediste aviso con {1}.	You have {0} and asked to be alerted at {1}.	Você tem {0} e pediu aviso com {1}.
+{0} vence el {1}	{0} expires on {1}	{0} vence em {1}
+Úsalo primero o cámbialo.	Use it first or replace it.	Use primeiro ou troque.
+Ver inventario	See inventory	Ver estoque
+Simulador: ¿qué pasa si…?	Simulator: what if…?	Simulador: e se…?
+Mueve cada control y mira al momento cómo queda tu margen al vender cada lote en su meta.	Move each control and see instantly how your margin looks when each lot sells at its target.	Mexa cada controle e veja na hora como fica sua margem ao vender cada lote na meta.
+Precio {0} {1}	Price {0} {1}	Preço {0} {1}
+Maíz +{0} {1}	Corn +{0} {1}	Milho +{0} {1}
+Calor fuerte	Strong heat	Calor forte
+Todo en contra	Everything against you	Tudo contra
+Todo a favor	Everything in your favor	Tudo a favor
+Como hoy	Like today	Como hoje
+Muertes extra	Extra deaths	Mortes extras
+Con tu escenario	With your scenario	Com seu cenário
+Diferencia	Difference	Diferença
+La barra gris es el margen de hoy; la de color, con tu escenario.	The gray bar is today's margin; the colored one, with your scenario.	A barra cinza é a margem de hoje; a colorida, com seu cenário.
+sin ganancia	no profit	sem lucro
+el día que más deja	the day that pays most	o dia que mais rende
+Margen del lote si lo vendes ese día, en miles de L.	Lot margin if you sell that day, in thousands of L.	Margem do lote se vender nesse dia, em milhares de L.
+Lo que más te deja es vender alrededor del	What pays you most is selling around	O que mais rende é vender por volta de
+(en {0} días), con unos	(in {0} days), with about	(em {0} dias), com cerca de
+: L {0} de margen,	: L {0} margin,	: L {0} de margem,
+más que vender hoy. Después, cada día cuesta más de lo que suben.	more than selling today. After that, each day costs more than they gain.	a mais que vender hoje. Depois disso, cada dia custa mais do que eles ganham.
+Si vendes hoy	If you sell today	Se vender hoje
+En el mejor día	On the best day	No melhor dia
+Un día más hoy deja	One more day today leaves	Um dia a mais hoje deixa
+Un día más en {0} días deja	One more day in {0} days leaves	Um dia a mais em {0} dias deixa
+Supongo tu precio de hoy (L {0} la libra) y que la ganancia diaria baja poco a poco al acercarse al peso final. Si el precio sube o baja, cambia el mejor día: pruébalo en el simulador.	I assume today's price (L {0} per pound) and that daily gain slowly drops as they near final weight. If the price goes up or down, the best day changes: try it in the simulator.	Suponho seu preço de hoje (L {0} a libra) e que o ganho diário cai aos poucos perto do peso final. Se o preço subir ou baixar, muda o melhor dia: teste no simulador.
+Precio mínimo	Minimum price	Preço mínimo
+Peso mínimo	Minimum weight	Peso mínimo
+El	The	O
+precio mínimo	minimum price	preço mínimo
+es lo menos que te deben pagar por libra para no perder, con el peso al que planeas vender. El	is the least you must be paid per pound to avoid a loss, at the weight you plan to sell. The	é o mínimo que devem pagar por libra para não perder, com o peso em que você planeja vender. O
+peso mínimo	minimum weight	peso mínimo
+es lo que debe pesar cada animal para no perder con tu precio de hoy (L {0}). La	is what each animal must weigh to avoid a loss at today's price (L {0}). The	é o que cada animal deve pesar para não perder com seu preço de hoje (L {0}). A
+seguridad	safety margin	margem de segurança
+es cuánto puede bajar el precio antes de perder. Cuida	is how much the price can drop before you lose. Watch	é quanto o preço pode cair antes de perder. Cuidado com
+: con una baja de {0} {1} en el precio ya no gana. Negocia el precio antes de la salida.	: with a {0} {1} drop in price it no longer earns. Negotiate the price before it leaves.	: com uma queda de {0} {1} no preço já não ganha. Negocie o preço antes da saída.
+¿En qué se va tu dinero?	Where does your money go?	Para onde vai seu dinheiro?
+Lotes en engorde, con lo que falta hasta la meta.	Lots on feed, with what's left until the target.	Lotes em confinamento, com o que falta até a meta.
+Compra y flete	Purchase and freight	Compra e frete
+Sin contar la compra, el alimento es el	Not counting the purchase, feed is	Sem contar a compra, o alimento é
+de tus costos. Es alto: una mejor dieta o mejores precios de maíz y soya son tu mayor palanca.	of your costs. It's high: a better diet or better corn and soy prices are your biggest lever.	dos seus custos. É alto: uma dieta melhor ou melhores preços de milho e soja são sua maior alavanca.
+Compáralo con tu precio de venta (L {0}): si la libra ganada cuesta más que lo que te pagan por libra, ese lote gana solo por la diferencia entre el precio de compra y el de venta.	Compare it with your sale price (L {0}): if the pound gained costs more than you're paid per pound, that lot only earns from the difference between purchase and sale price.	Compare com seu preço de venda (L {0}): se a libra ganha custa mais do que pagam por libra, esse lote só ganha pela diferença entre o preço de compra e o de venda.
+Tu dinero en {0} días	Your money in {0} days	Seu dinheiro em {0} dias
+sin dinero	no money	sem dinheiro
+Dinero disponible cada semana, en miles de L.	Money available each week, in thousands of L.	Dinheiro disponível a cada semana, em milhares de L.
+Tienes hoy	You have today	Você tem hoje
+Va a entrar	Coming in	Vai entrar
+Va a salir	Going out	Vai sair
+En {0} días tendrías	In {0} days you'd have	Em {0} dias você teria
+No te falta dinero en los próximos {0} días con lo que sé hoy.	You won't run short of money in the next {0} days with what I know today.	Não vai faltar dinheiro nos próximos {0} dias com o que sei hoje.
+Lo que mueve tu dinero	What moves your money	O que mexe no seu dinheiro
+Semana del	Week of	Semana de
+venta de {0}	sale of {0}	venda de {0}
+cuota de {0}	installment of {0}	parcela de {0}
+venta de {0}, venta de {1}	sale of {0}, sale of {1}	venda de {0}, venda de {1}
+Salidas: alimento y gastos generales de cada lote hasta su meta, y cuotas de créditos. Entradas: la venta de cada lote al llegar a la meta. Anota tu efectivo en Finanzas para que empiece de lo que tienes.	Outflows: feed and overhead for each lot until its target, and loan installments. Inflows: each lot's sale when it reaches the target. Record your cash in Finances so it starts from what you have.	Saídas: alimento e gastos gerais de cada lote até a meta, e parcelas de créditos. Entradas: a venda de cada lote ao chegar à meta. Anote seu dinheiro em caixa em Finanças para começar do que você tem.
+Anotar mi efectivo	Record my cash	Anotar meu caixa
+Ver Finanzas	See Finances	Ver Finanças
+Tú contra la referencia	You versus the reference	Você contra a referência
+Tu promedio de lotes en engorde, pesado por cabezas. Verde es bueno; rojo, a mejorar.	Your average across lots on feed, weighted by head. Green is good; red, to improve.	Sua média dos lotes em confinamento, ponderada por cabeças. Verde é bom; vermelho, a melhorar.
+{0} a {1} {2} por día es muy bueno en corral con cruces cebú.	{0} to {1} {2} per day is very good in the pen with zebu crosses.	{0} a {1} {2} por dia é muito bom no curral com cruzamentos zebuínos.
+De {0} a {1} de alimento (tal como se sirve) por cada {2} de peso ganado es lo normal; menos es mejor.	From {0} to {1} of feed (as fed) per {2} of weight gained is normal; less is better.	De {0} a {1} de alimento (como servido) por cada {2} de peso ganho é o normal; menos é melhor.
+Menos de {0} {2} es excelente; más de {1} {3} indica problemas de recepción o sanidad.	Under {0} {2} is excellent; over {1} {3} points to receiving or health problems.	Menos de {0} {2} é excelente; mais de {1} {3} indica problemas de recepção ou sanidade.
+Costo de la libra ganada	Cost per pound gained	Custo da libra ganha
+{0} {1} del precio	{0} {1} of the price	{0} {1} do preço
+Si la libra ganada cuesta menos del {0} {1} de lo que te pagan por libra, el engorde deja dinero por sí solo.	If the pound gained costs less than {0} {1} of what you're paid per pound, the feedlot makes money on its own.	Se a libra ganha custa menos de {0} {1} do que pagam por libra, o confinamento dá dinheiro por si só.
+{0} {1} del peso	{0} {1} of weight	{0} {1} do peso
+Comen de {0} a {1} {2} de su peso en materia seca al día; poco consumo frena la ganancia.	They eat {0} to {1} {2} of their weight in dry matter per day; low intake slows gain.	Comem de {0} a {1} {2} do peso em matéria seca por dia; pouco consumo freia o ganho.
+Tu mayor oportunidad está en	Your biggest opportunity is in	Sua maior oportunidade está em
+consumo	intake	consumo
+, y luego en costo de la libra ganada.	, and then in cost per pound gained.	, e depois no custo da libra ganha.
+¿Cuánto pagar por el próximo lote?	How much to pay for the next lot?	Quanto pagar pelo próximo lote?
+Sin perder	Without losing	Sem perder
+Ganando {0} {1}	Earning {0} {1}	Ganhando {0} {1}
+Es el precio máximo por libra en pie que puedes pagar con tu ganancia diaria ({0} {4}), tu ración, tus gastos y tu precio de venta de hoy (L {1}), vendiendo a {2} {5}. En tus lotes actuales pagaste en promedio L {3}. Los animales más livianos aguantan un precio más alto por libra porque ganan más libras en tu finca.	It's the maximum price per live pound you can pay with your daily gain ({0} {4}), your ration, your expenses and today's sale price (L {1}), selling at {2} {5}. For your current lots you paid an average of L {3}. Lighter animals can bear a higher price per pound because they gain more pounds on your farm.	É o preço máximo por libra em pé que você pode pagar com seu ganho diário ({0} {4}), sua ração, seus gastos e seu preço de venda de hoje (L {1}), vendendo a {2} {5}. Nos seus lotes atuais você pagou em média L {3}. Os animais mais leves aguentam um preço mais alto por libra porque ganham mais libras na sua fazenda.
+Calendario de ventas y rendimiento	Sales calendar and return	Calendário de vendas e rendimento
+Sale	Leaves	Sai
+¿Cuánto rinde tu dinero al año?	How much does your money earn per year?	Quanto rende seu dinheiro ao ano?
+Es la ganancia sobre lo invertido llevada a un año. Compárala con la tasa de tu banco ({0} {1} anual): todos tus lotes rinden más que el banco.	It's the return on investment annualized. Compare it with your bank's rate ({0} {1} per year): all your lots earn more than the bank.	É o lucro sobre o investido levado a um ano. Compare com a taxa do seu banco ({0} {1} ao ano): todos os seus lotes rendem mais que o banco.
+Proveedores y razas	Suppliers and breeds	Fornecedores e raças
+Rumi usa solo tus registros y la experiencia del engorde en corral. Son estimaciones para decidir mejor; para medicinas y casos graves, consulta a tu veterinario.	Rumi uses only your records and pen-feeding experience. These are estimates to help you decide; for medicines and serious cases, consult your vet.	O Rumi usa só seus registros e a experiência do confinamento. São estimativas para decidir melhor; para medicamentos e casos graves, consulte seu veterinário.
+¿Qué anoto aquí?	What do I record here?	O que anoto aqui?
+Anota la comida que serviste en	Record the feed you served in	Anote a comida que você serviu em
+una	one	uma
+de tus entregas del día, por ejemplo la de las {0}:{1}. Con esto sé cuánto comen tus lotes, cuánto te cuesta y cuánto te queda en la bodega.	of your daily feedings, for example the {0}:{1} one. With this I know how much your lots eat, what it costs and how much is left in the feed store.	das suas entregas do dia, por exemplo a das {0}:{1}. Com isso sei quanto seus lotes comem, quanto custa e quanto resta no depósito.
+Escribe el	Enter the	Escreva o
+total	total	total
+que serviste a cada lote en esta entrega, no lo de un animal.	you served each lot in this feeding, not per animal.	que você serviu a cada lote nesta entrega, não o de um animal.
+¿Das siempre lo mismo? Toca	Always feed the same? Tap	Serve sempre o mesmo? Toque em
+y pongo el promedio de los últimos días. Solo corrige lo que cambió.	and I'll fill in the average of the last few days. Just correct what changed.	e eu coloco a média dos últimos dias. Corrija só o que mudou.
+Si un lote no comió en esta entrega, deja su casilla vacía.	If a lot didn't eat in this feeding, leave its box empty.	Se um lote não comeu nesta entrega, deixe a casa vazia.
+Debajo de cada lote marca cómo estaba el comedero	Below each lot, mark how the bunk looked	Embaixo de cada lote marque como estava o cocho
+antes	before	antes
+de servir:	feeding:	de servir:
+, se lo acabaron y esperaron (dales un poco más);	, they finished it and waited (give a bit more);	, acabaram e esperaram (dê um pouco mais);
+, comieron justo lo que necesitan;	, they ate just what they need;	, comeram só o que precisam;
+, sobró un poquito (está bien);	, a little was left (that's fine);	, sobrou um pouquinho (está bem);
+, sobró mucho (dales menos). Es opcional, pero con esto te digo si estás dando de más o de menos.	, a lot was left (give less). It's optional, but with it I can tell you whether you're feeding too much or too little.	, sobrou muito (dê menos). É opcional, mas com isso digo se você está dando demais ou de menos.
+El día en que serviste la comida. Casi siempre es hoy.	The day you served the feed. It's almost always today.	O dia em que serviu a comida. Quase sempre é hoje.
+Cuál de tus horarios de comida es. Los horarios se cambian en Más, Configuración.	Which of your feeding times it is. Times are changed in More, Settings.	Qual dos seus horários de comida é. Os horários se mudam em Mais, Configurações.
+La mezcla que serviste. «La de cada lote» usa la ración que tiene asignada cada lote; de ahí sale el costo.	The mix you served. «Each lot's own» uses the ration assigned to each lot; the cost comes from there.	A mistura que você serviu. «A de cada lote» usa a ração atribuída a cada lote; daí sai o custo.
+Anota el peso de cada animal del lote. Así encuentro a los que se atrasan y te digo cuáles vender primero.	Record each animal's weight in the lot. That way I find the ones falling behind and tell you which to sell first.	Anote o peso de cada animal do lote. Assim encontro os que atrasam e digo quais vender primeiro.
+Escribe el arete en la	Type the ear tag in the	Escreva o brinco na
+lupa	magnifier	lupa
+y presiona Enter: salto directo a su peso. Al presionar Enter en el peso vuelves a la lupa.	and press Enter: I jump straight to its weight. Pressing Enter on the weight takes you back to the magnifier.	e pressione Enter: pulo direto para o peso. Ao pressionar Enter no peso você volta para a lupa.
+para ver solo los que no has pesado.	to see only the ones you haven't weighed.	para ver só os que você não pesou.
+Los que dejes vacíos no cambian; puedes terminar otro día.	The ones you leave empty don't change; you can finish another day.	Os que deixar vazios não mudam; pode terminar outro dia.
+Si un peso es muy distinto al anterior, te aviso para que lo revises.	If a weight is very different from the previous one, I'll warn you so you can check it.	Se um peso for muito diferente do anterior, aviso para você revisar.
+El día del pesaje.	The day of the weighing.	O dia da pesagem.
+Anota cuánto pesaron tus animales. Con dos pesajes calculo cuánto ganan por día, cuándo llegan a la meta y cuánto te cuesta cada libra ganada.	Record how much your animals weighed. With two weighings I calculate how much they gain per day, when they reach the target and what each pound gained costs you.	Anote quanto pesaram seus animais. Com duas pesagens calculo quanto ganham por dia, quando chegam à meta e quanto custa cada libra ganha.
+Si pesaste a todos juntos o a un grupo, escribe el peso y cuántos animales se pesaron; yo saco el promedio.	If you weighed them all together or a group, enter the weight and how many animals were weighed; I'll work out the average.	Se pesou todos juntos ou um grupo, escreva o peso e quantos animais foram pesados; eu tiro a média.
+Pesa siempre a la misma hora, de preferencia temprano y antes de comer, para comparar bien.	Always weigh at the same time, preferably early and before eating, so comparisons are fair.	Pese sempre no mesmo horário, de preferência cedo e antes de comer, para comparar bem.
+El lote que pesaste.	The lot you weighed.	O lote que você pesou.
+Si escribes el peso promedio por animal o el total de todos los que subieron a la báscula.	Whether you enter the average weight per animal or the total of all that went on the scale.	Se você escreve o peso médio por animal ou o total de todos que subiram na balança.
+El número que marcó la báscula.	The number the scale showed.	O número que a balança marcou.
+Anota vacunas, desparasitantes, vitaminas o tratamientos. Así llevo su costo, te recuerdo los refuerzos y te aviso de los días de retiro antes de vender.	Record vaccines, dewormers, vitamins or treatments. That way I track their cost, remind you of boosters and warn you about withdrawal days before selling.	Anote vacinas, vermífugos, vitaminas ou tratamentos. Assim levo o custo, lembro dos reforços e aviso dos dias de carência antes de vender.
+Si solo trataste a unos animales, elige	If you only treated some animals, choose	Se tratou só alguns animais, escolha
+Algunos	Some	Alguns
+y toca sus aretes.	and tap their ear tags.	e toque nos brincos.
+Los días de retiro vienen en la etiqueta. Mientras dure el retiro no te dejo vender a matadero sin avisarte.	Withdrawal days are on the label. While the withdrawal lasts I won't let you sell for slaughter without warning you.	Os dias de carência vêm no rótulo. Enquanto durar a carência não deixo vender ao frigorífico sem avisar.
+El lote de los animales tratados.	The lot of the treated animals.	O lote dos animais tratados.
+Qué tipo de producto: vacuna, desparasitante, vitamina, antibiótico u otro.	What type of product: vaccine, dewormer, vitamin, antibiotic or other.	Que tipo de produto: vacina, vermífugo, vitamina, antibiótico ou outro.
+El nombre como sale en la etiqueta.	The name as it appears on the label.	O nome como aparece no rótulo.
+Cuántos animales recibieron el producto.	How many animals received the product.	Quantos animais receberam o produto.
+Lo que costó en total: producto y aplicación.	What it cost in total: product and application.	Quanto custou no total: produto e aplicação.
+El día en que lo aplicaste.	The day you applied it.	O dia em que aplicou.
+Opcional: dosis, quién lo aplicó, cómo reaccionaron.	Optional: dose, who applied it, how they reacted.	Opcional: dose, quem aplicou, como reagiram.
+Anota un animal que murió. Ajusto las cabezas del lote, su costo y la mortalidad, y te aviso si se repite una causa.	Record an animal that died. I adjust the lot's head count, its cost and mortality, and warn you if a cause repeats.	Anote um animal que morreu. Ajusto as cabeças do lote, o custo e a mortalidade, e aviso se uma causa se repetir.
+Toca el arete del animal que murió.	Tap the ear tag of the animal that died.	Toque no brinco do animal que morreu.
+Lo que crees que pasó. Si no sabes, elige «No se sabe».	What you think happened. If you don't know, choose «Unknown».	O que você acha que aconteceu. Se não souber, escolha «Não se sabe».
+El día en que murió.	The day it died.	O dia em que morreu.
+Opcional: síntomas, lo que le diste, lo que dijo el veterinario.	Optional: symptoms, what you gave it, what the vet said.	Opcional: sintomas, o que deu a ele, o que o veterinário disse.
+Anota los animales que vendiste. Calculo lo que ganaste por cabeza y, cuando vendes todo el lote, lo cierro con su resultado final.	Record the animals you sold. I calculate what you earned per head and, when you sell the whole lot, I close it with its final result.	Anote os animais que vendeu. Calculo o que ganhou por cabeça e, quando vende todo o lote, fecho com o resultado final.
+Toca los aretes vendidos, o «Todos» si salió el lote completo.	Tap the ear tags sold, or «All» if the whole lot left.	Toque nos brincos vendidos, ou «Todos» se saiu o lote completo.
+Escribe el peso y el precio tal como te los pagaron.	Enter the weight and price exactly as you were paid.	Escreva o peso e o preço tal como pagaram.
+Toca los aretes de los animales vendidos.	Tap the ear tags of the animals sold.	Toque nos brincos dos animais vendidos.
+Dónde y cómo los pesaron: en tu finca (peso lleno) o en la báscula del comprador.	Where and how they were weighed: on your farm (full weight) or on the buyer's scale.	Onde e como foram pesados: na sua fazenda (peso cheio) ou na balança do comprador.
+El peso que te pagaron, de todos los animales vendidos juntos.	The weight you were paid for, of all the animals sold together.	O peso que pagaram, de todos os animais vendidos juntos.
+Lo que te pagaron por cada unidad de peso.	What you were paid per unit of weight.	O que pagaram por cada unidade de peso.
+El día de la venta.	The day of the sale.	O dia da venda.
+Opcional. Me sirve para comparar compradores.	Optional. It helps me compare buyers.	Opcional. Serve para comparar compradores.
+Anota gastos que no son comida ni medicinas: sueldos, luz, combustible, reparaciones, fletes. Si es de un lote se suma a su costo; si es general lo reparto entre todos los lotes.	Record expenses that aren't feed or medicines: wages, power, fuel, repairs, freight. If it's for a lot it's added to its cost; if it's general I split it among all lots.	Anote gastos que não são comida nem medicamentos: salários, luz, combustível, consertos, fretes. Se é de um lote, soma ao custo dele; se é geral, reparto entre todos os lotes.
+Cuánto pagaste.	How much you paid.	Quanto você pagou.
+De qué es el gasto.	What the expense is for.	De que é o gasto.
+El lote al que pertenece, o «General» si es de toda la finca.	The lot it belongs to, or «General» if it's for the whole farm.	O lote a que pertence, ou «Geral» se é de toda a fazenda.
+El día del gasto.	The day of the expense.	O dia do gasto.
+Opcional: una nota para acordarte.	Optional: a note to remind you.	Opcional: uma nota para lembrar.
+Un lote es un grupo de animales que entraron juntos. Con él sigo su peso, su comida y sus costos, y te digo cuándo venderlos y cuánto vas a ganar.	A lot is a group of animals that came in together. With it I track their weight, feed and costs, and tell you when to sell them and how much you'll earn.	Um lote é um grupo de animais que entraram juntos. Com ele acompanho o peso, a comida e os custos, e digo quando vendê-los e quanto você vai ganhar.
+Si tus animales tienen arete, agrégalos uno por uno con su peso de entrada. Si no, escribe solo cuántos son y su peso promedio.	If your animals have ear tags, add them one by one with their entry weight. If not, just enter how many there are and their average weight.	Se seus animais têm brinco, acrescente um por um com o peso de entrada. Se não, escreva só quantos são e o peso médio.
+El precio de compra y el flete son importantes: con ellos calculo tu ganancia real.	The purchase price and freight matter: with them I calculate your real profit.	O preço de compra e o frete são importantes: com eles calculo seu lucro real.
+Un nombre fácil de reconocer, como «{0}» o «Novillos de marzo».	An easy name to recognize, like «{0}» or «March steers».	Um nome fácil de reconhecer, como «{0}» ou «Novilhos de março».
+El día en que llegaron a la finca.	The day they arrived at the farm.	O dia em que chegaram à fazenda.
+El peso por animal al que piensas venderlos.	The weight per animal at which you plan to sell them.	O peso por animal em que pensa vendê-los.
+Qué animales son: novillos, toretes, vaquillas…	What animals they are: steers, young bulls, heifers…	Que animais são: novilhos, tourinhos, novilhas…
+A quién se los compraste. Así comparo qué proveedor te rinde más.	Who you bought them from. That way I compare which supplier pays off best.	De quem você os comprou. Assim comparo qual fornecedor rende mais.
+La mezcla que van a comer.	The mix they'll eat.	A mistura que vão comer.
+Lo que pagaste por los animales.	What you paid for the animals.	O que você pagou pelos animais.
+Una ración es la mezcla que les das de comer. Con su costo calculo cuánto te cuesta alimentar cada lote y cada libra ganada.	A ration is the mix you feed them. With its cost I calculate what it costs to feed each lot and each pound gained.	Uma ração é a mistura que você dá de comer. Com o custo dela calculo quanto custa alimentar cada lote e cada libra ganha.
+Si escribes los ingredientes con su porcentaje, la bodega descuenta cada uno según lo que sirves.	If you enter the ingredients with their percentage, the feed store deducts each one according to what you feed.	Se escrever os ingredientes com a porcentagem, o depósito desconta cada um conforme o que você serve.
+Un nombre para reconocerla, como «Inicio» o «{0}».	A name to recognize it, like «Starter» or «{0}».	Um nome para reconhecê-la, como «Inicial» ou «{0}».
+Lo que te cuesta cada unidad de la mezcla ya hecha.	What each unit of the finished mix costs you.	O que custa cada unidade da mistura já pronta.
+Agrega animales al lote con su arete y su peso de entrada. Así puedo seguir a cada uno.	Add animals to the lot with their ear tag and entry weight. That way I can follow each one.	Acrescente animais ao lote com o brinco e o peso de entrada. Assim posso acompanhar cada um.
+Si tienes muchos, escribe el arete, pasa al peso y sigue con el siguiente sin tocar nada más.	If you have many, type the ear tag, move to the weight and continue with the next without touching anything else.	Se tiver muitos, escreva o brinco, passe ao peso e siga com o próximo sem tocar em mais nada.
+Los datos de este animal. Puedes corregir su arete, su peso de entrada o anotar su raza y color.	This animal's details. You can correct its ear tag or entry weight, or record its breed and color.	Os dados deste animal. Você pode corrigir o brinco, o peso de entrada ou anotar a raça e a cor.
+El número o código del arete.	The ear tag number or code.	O número ou código do brinco.
+Lo que pesó al llegar a la finca.	What it weighed on arriving at the farm.	O que pesou ao chegar à fazenda.
+Opcional. Me sirve para comparar razas.	Optional. It helps me compare breeds.	Opcional. Serve para comparar raças.
+Opcional. Ayuda a reconocerlo en el corral.	Optional. It helps you recognize it in the pen.	Opcional. Ajuda a reconhecê-lo no curral.
+Opcional.	Optional.	Opcional.
+Anota el peso de este animal. Lo comparo con su pesaje anterior para saber cuánto gana por día.	Record this animal's weight. I compare it with its previous weighing to know how much it gains per day.	Anote o peso deste animal. Comparo com a pesagem anterior para saber quanto ganha por dia.
+Agrega un producto de tu bodega de alimento: maíz, concentrado, heno, harina… Llevo cuánto te queda y te aviso antes de que se acabe.	Add a product to your feed store: corn, concentrate, hay, meal… I track how much you have left and warn you before it runs out.	Acrescente um produto ao depósito de ração: milho, concentrado, feno, farelo… Controlo quanto resta e aviso antes que acabe.
+El nombre del producto.	The product name.	O nome do produto.
+Cuántos días antes de que se acabe quieres que te avise.	How many days before it runs out you want to be warned.	Com quantos dias antes de acabar quer que eu avise.
+Anota lo que entró a la bodega. Lo sumo a lo que tienes.	Record what came into the feed store. I add it to what you have.	Anote o que entrou no depósito. Somo ao que você tem.
+El día en que llegó.	The day it arrived.	O dia em que chegou.
+Cuánto compraste.	How much you bought.	Quanto você comprou.
+Opcional. A quién se lo compraste.	Optional. Who you bought it from.	Opcional. De quem comprou.
+Cuenta lo que hay de verdad en la bodega. Corrijo mi cálculo con lo que cuentes; hazlo cada una o dos semanas.	Count what's really in the feed store. I correct my calculation with your count; do it every one or two weeks.	Conte o que há de verdade no depósito. Corrijo meu cálculo com sua contagem; faça a cada uma ou duas semanas.
+El día del conteo.	The day of the count.	O dia da contagem.
+Lo que hay ahora en la bodega.	What's in the feed store now.	O que há agora no depósito.
+Un recordatorio para tu agenda. Te lo muestro en Hoy el día que toca.	A reminder for your schedule. I show it to you in Today on the day it's due.	Um lembrete para sua agenda. Mostro em Hoje no dia certo.
+Qué hay que hacer.	What needs to be done.	O que precisa ser feito.
+El día en que toca hacerlo.	The day it's due.	O dia em que precisa ser feito.
+Agrega una medicina o insumo: vacunas, desparasitantes, jeringas, sal mineral… Llevo cuánto te queda, su valor y cuándo vence.	Add a medicine or supply: vaccines, dewormers, syringes, mineral salt… I track how much is left, its value and when it expires.	Acrescente um medicamento ou insumo: vacinas, vermífugos, seringas, sal mineral… Controlo quanto resta, o valor e quando vence.
+Qué tipo de producto es.	What type of product it is.	Que tipo de produto é.
+Cómo lo cuentas: {0}, dosis, frascos, bolsas…	How you count it: {0}, doses, bottles, bags…	Como você conta: {0}, doses, frascos, sacos…
+Te aviso cuando quede menos que esto.	I'll warn you when less than this is left.	Aviso quando restar menos que isto.
+Anota una compra, un uso o un conteo de este producto. Así el inventario siempre está al día.	Record a purchase, use or count of this product. That way the inventory is always up to date.	Anote uma compra, um uso ou uma contagem deste produto. Assim o estoque fica sempre em dia.
+El día del movimiento.	The day of the movement.	O dia do movimento.
+Cuánto compraste, usaste o hay ahora, según el caso.	How much you bought, used or have now, as the case may be.	Quanto comprou, usou ou há agora, conforme o caso.
+Lo que pagaste en total.	What you paid in total.	O que você pagou no total.
+La fecha de vencimiento de la etiqueta. Te aviso antes.	The expiry date on the label. I'll warn you beforehand.	A data de validade do rótulo. Aviso antes.
+Si lo usaste en un lote, elígelo.	If you used it on a lot, choose it.	Se usou num lote, escolha-o.
+Agrega equipo o instalaciones: báscula, corrales, tractor, bebederos… Calculo cuánto se desgasta cada año (depreciación) para tu balance.	Add equipment or facilities: scale, pens, tractor, waterers… I calculate how much they wear out each year (depreciation) for your balance sheet.	Acrescente equipamentos ou instalações: balança, currais, trator, bebedouros… Calculo quanto se desgastam por ano (depreciação) para seu balanço.
+El nombre del equipo o instalación.	The name of the equipment or facility.	O nome do equipamento ou instalação.
+Qué tipo es.	What type it is.	Que tipo é.
+Lo que te costó.	What it cost you.	O que custou.
+Cuándo lo compraste o construiste.	When you bought or built it.	Quando comprou ou construiu.
+Cuántos años crees que va a servir.	How many years you think it will last.	Quantos anos acha que vai servir.
+Anota un préstamo. Llevo cuánto debes, cuánto vas pagando de intereses y cuánto baja el capital.	Record a loan. I track how much you owe, how much interest you're paying and how much the principal goes down.	Anote um empréstimo. Controlo quanto você deve, quanto vai pagando de juros e quanto baixa o capital.
+Quién te prestó: banco, cooperativa, persona.	Who lent to you: bank, cooperative, person.	Quem emprestou: banco, cooperativa, pessoa.
+Cuánto te prestaron.	How much you were lent.	Quanto emprestaram.
+El interés que cobran al año.	The interest they charge per year.	Os juros que cobram por ano.
+Cuándo te dieron el dinero.	When you got the money.	Quando recebeu o dinheiro.
+En cuántos meses lo debes pagar.	How many months you have to pay it back.	Em quantos meses deve pagar.
+Anota un pago que hiciste al préstamo. Primero cubre los intereses y lo demás baja lo que debes.	Record a payment you made on the loan. It covers interest first and the rest lowers what you owe.	Anote um pagamento que fez ao empréstimo. Primeiro cobre os juros e o resto baixa o que você deve.
+El día del pago.	The day of the payment.	O dia do pagamento.
+Cuánto dinero tienes hoy y lo que te deben o debes. Lo uso en tu balance.	How much money you have today and what you're owed or owe. I use it in your balance sheet.	Quanto dinheiro você tem hoje e o que devem a você ou você deve. Uso no seu balanço.
+Puntaje, alertas, simulador, ventas, dinero y riesgo	Score, alerts, simulator, sales, money and risk	Pontuação, alertas, simulador, vendas, dinheiro e risco
+¿En qué se va mi dinero?	Where does my money go?	Para onde vai meu dinheiro?
+Mi dinero en los próximos {0} días	My money over the next {0} days	Meu dinheiro nos próximos {0} dias
+Yo contra la referencia	Me versus the reference	Eu contra a referência
+Probar mis propios números	Try my own numbers	Testar meus próprios números
+¿Cuándo vender {0}?	When to sell {0}?	Quando vender {0}?
+Abrir el simulador	Open the simulator	Abrir o simulador
+En qué se va tu dinero	Where your money goes	Para onde vai seu dinheiro
+Tu dinero en los próximos {0} días	Your money over the next {0} days	Seu dinheiro nos próximos {0} dias
+Calendario de ventas	Sales calendar	Calendário de vendas
+¿Qué pasa si…?	What if…?	E se…?
+Margen de todos tus lotes en engorde al llegar a su meta. Hoy:	Margin of all your lots on feed when they reach their target. Today:	Margem de todos os seus lotes em confinamento ao chegar à meta. Hoje:
+Si…	If…	Se…
+Tu margen	Your margin	Sua margem
+Cambio	Change	Mudança
+El precio baja {0} {1}	Price drops {0} {1}	O preço cai {0} {1}
+−L {0} mil	−L {0} thousand	−L {0} mil
+El precio sube {0} {1}	Price rises {0} {1}	O preço sobe {0} {1}
++L {0} mil	+L {0} thousand	+L {0} mil
+El maíz y la soya suben {0} {1}	Corn and soy go up {0} {1}	O milho e a soja sobem {0} {1}
+Ola de calor: ganan {0} {1} menos	Heat wave: they gain {0} {1} less	Onda de calor: ganham {0} {1} menos
+Mejoras la dieta: ganan {0} {1} más	You improve the diet: they gain {0} {1} more	Você melhora a dieta: ganham {0} {1} mais
+Todo en contra junto	Everything against you at once	Tudo contra ao mesmo tempo
+Si todo sale mal a la vez, perderías dinero: asegura el precio de venta o compra el alimento con tiempo. Mueve cada cosa a tu gusto en el simulador.	If everything goes wrong at once, you'd lose money: lock in the sale price or buy feed ahead of time. Move each item as you like in the simulator.	Se tudo der errado ao mesmo tempo, você perderia dinheiro: garanta o preço de venda ou compre o alimento com tempo. Mexa cada coisa como quiser no simulador.
+Escribe el peso y el precio tal como te los pagaron. Si el comprador pesó en tu finca, descuento el desbaste de Configuración.	Enter the weight and price exactly as you were paid. If the buyer weighed on your farm, I deduct the shrink from Settings.	Escreva o peso e o preço tal como pagaram. Se o comprador pesou na sua fazenda, desconto a quebra de Configurações.
+El lote de los animales vendidos.	The lot of the animals sold.	O lote dos animais vendidos.
+El peso que te pagaron.	The weight you were paid for.	O peso que pagaram.
+Anota los animales que murieron. Ajusto las cabezas del lote, su costo y la mortalidad, y te aviso si se repite una causa.	Record the animals that died. I adjust the lot's head count, its cost and mortality, and warn you if a cause repeats.	Anote os animais que morreram. Ajusto as cabeças do lote, o custo e a mortalidade, e aviso se uma causa se repetir.
+El lote del animal que murió.	The lot of the animal that died.	O lote do animal que morreu.
+Cuántos animales murieron.	How many animals died.	Quantos animais morreram.
+Requerimientos por raza y clima	Requirements by breed and climate	Exigências por raça e clima
+¿Qué tipo de animales engordas?	What type of animals do you feed?	Que tipo de animais você engorda?
+Requerimientos	Requirements	Exigências
+Cebú ({0}, {1}, {2}, Indubrasil)	Zebu ({0}, {1}, {2}, Indubrasil)	Zebu ({0}, {1}, {2}, Indubrasil)
+Cruce cebú por europeo (F{2}, {0}, {1})	Zebu × European cross (F{2}, {0}, {1})	Cruzamento zebu × europeu (F{2}, {0}, {1})
+Europeo de carne (Angus, Charolais, Hereford)	European beef (Angus, Charolais, Hereford)	Europeu de corte (Angus, Charolês, Hereford)
+Macho lechero (Holstein, Pardo Suizo)	Dairy male (Holstein, Brown Swiss)	Macho leiteiro (Holandês, Pardo-Suíço)
+¿Cómo es el clima en tu finca?	What's the climate like on your farm?	Como é o clima na sua fazenda?
+Fresco (menos de {0} {1})	Cool (under {0} {1})	Fresco (menos de {0} {1})
+Templado ({0} a {1} {2})	Mild ({0} to {1} {2})	Temperado ({0} a {1} {2})
+Cálido ({0} a {1} {2})	Warm ({0} to {1} {2})	Quente ({0} a {1} {2})
+Muy caliente (más de {0} {1})	Very hot (over {0} {1})	Muito quente (mais de {0} {1})
+Calendario sanitario de mi región	Health calendar for my region	Calendário sanitário da minha região
+Calendario sanitario: Honduras	Health calendar: Honduras	Calendário sanitário: Honduras
+Trópico húmedo.	Humid tropics.	Trópico úmido.
+Calor y humedad casi todo el año, lluvias largas. Los problemas grandes son garrapatas y enfermedades que transmiten, tórsalo, parásitos, cojeras en lodo y estrés por calor.	Heat and humidity almost all year, long rainy seasons. The big problems are ticks and the diseases they carry, bot flies, parasites, lameness in mud and heat stress.	Calor e umidade quase o ano todo, chuvas longas. Os grandes problemas são carrapatos e as doenças que transmitem, berne, parasitas, mancadeiras no barro e estresse por calor.
+Al ingreso de cada lote	On arrival of each lot	Na entrada de cada lote
+Día {0} (llegada)	Day {0} (arrival)	Dia {0} (chegada)
+Agua limpia, heno y descanso. Identificar y pesar después de {0} a {1} horas.	Clean water, hay and rest. Identify and weigh after {0} to {1} hours.	Água limpa, feno e descanso. Identificar e pesar depois de {0} a {1} horas.
+{0} polivalente ({1} u {2} vías). Vacuna respiratoria viral (IBR, DVB, PI{3} y VRSB) y contra Mannheimia si vienen de subasta o viaje largo.	{0} polyvalent ({1} or {2}-way). Viral respiratory vaccine (IBR, BVD, PI{3} and BRSV) and against Mannheimia if they come from an auction or a long trip.	{0} polivalente ({1} ou {2} vias). Vacina respiratória viral (IBR, BVD, PI{3} e BRSV) e contra Mannheimia se vierem de leilão ou viagem longa.
+Desparasitante interno de amplio espectro y control de parásitos externos. Vitaminas A, D y E.	Broad-spectrum internal dewormer and external parasite control. Vitamins A, D and E.	Vermífugo interno de amplo espectro e controle de parasitas externos. Vitaminas A, D e E.
+Refuerzo de la clostridial y de la respiratoria (si la etiqueta lo pide). Revisar a los que no ganan.	Clostridial and respiratory booster (if the label requires it). Check the ones not gaining.	Reforço da clostridial e da respiratória (se o rótulo pedir). Revisar os que não ganham.
+Cada día	Every day	Todo dia
+Revisar a los animales mañana y tarde: orejas caídas, tos, moco, no come. Los primeros {0} días son los de más riesgo.	Check the animals morning and afternoon: droopy ears, cough, discharge, not eating. The first {0} days are the riskiest.	Revisar os animais de manhã e à tarde: orelhas caídas, tosse, muco, não come. Os primeiros {0} dias são os de mais risco.
+Revisar que ningún tratamiento esté en retiro. La app te avisa.	Check that no treatment is still under withdrawal. The app warns you.	Verificar que nenhum tratamento esteja em carência. O app avisa.
+Lluvias (mayo a octubre) ·	Rainy season (May to October) ·	Chuvas (maio a outubro) ·
+ahora	now	agora
+Garrapatas: baño o producto cada {0} a {1} días; alterna el grupo químico cada año para evitar resistencia.	Ticks: dip or product every {0} to {1} days; switch chemical group each year to avoid resistance.	Carrapatos: banho ou produto a cada {0} a {1} dias; alterne o grupo químico a cada ano para evitar resistência.
+Tórsalo y mosca del cuerno: control en cuanto veas los primeros.	Bot fly and horn fly: control as soon as you see the first ones.	Berne e mosca-dos-chifres: controle assim que vir os primeiros.
+Vacuna contra rabia paralítica una vez al año si hay murciélagos vampiros en tu zona (casi toda Latinoamérica tropical).	Paralytic rabies vaccine once a year if there are vampire bats in your area (almost all of tropical Latin America).	Vacina contra raiva paralítica uma vez por ano se houver morcegos-vampiros na sua região (quase toda a América Latina tropical).
+Leptospirosis: vacuna si hay agua estancada o roedores.	Leptospirosis: vaccinate if there's stagnant water or rodents.	Leptospirose: vacina se houver água parada ou roedores.
+Pisos: lodo trae cojeras y pietín; rellena y drena los corrales.	Floors: mud brings lameness and foot rot; fill and drain the pens.	Pisos: o barro traz mancadeiras e podridão do casco; aterre e drene os currais.
+Anaplasma y babesia (ranilla): vigila fiebre, anemia y orina oscura.	Anaplasma and babesia (tick fever): watch for fever, anemia and dark urine.	Anaplasma e babesia (tristeza parasitária): vigie febre, anemia e urina escura.
+Seca (noviembre a abril)	Dry season (November to April)	Seca (novembro a abril)
+Vitaminas A, D y E al inicio de la seca si comen pasto seco.	Vitamins A, D and E at the start of the dry season if they eat dry grass.	Vitaminas A, D e E no início da seca se comem pasto seco.
+Agua: revisa caudal y limpieza; beben más con calor.	Water: check flow and cleanliness; they drink more in heat.	Água: revise vazão e limpeza; bebem mais com calor.
+Desparasitación estratégica al inicio de la seca.	Strategic deworming at the start of the dry season.	Vermifugação estratégica no início da seca.
+Sombra: al menos {0} a {1} {2} por animal.	Shade: at least {0} to {1} {2} per animal.	Sombra: pelo menos {0} a {1} {2} por animal.
+Todo el año	All year	O ano todo
+Ántrax y carbón sintomático: vacuna anual en zonas con casos.	Anthrax and blackleg: annual vaccine in areas with cases.	Antraz e carbúnculo sintomático: vacina anual em regiões com casos.
+Gusano barrenador: revisa y cura heridas, ombligos y castraciones cada día; es de reporte obligatorio.	Screwworm: check and treat wounds, navels and castrations every day; it's a mandatory-report pest.	Bicheira: revise e trate feridas, umbigos e castrações todo dia; é de notificação obrigatória.
+Es una guía general por clima. Las vacunas obligatorias, las enfermedades de tu zona y las dosis las decide tu veterinario y el servicio oficial de sanidad de tu país.	This is a general guide by climate. Mandatory vaccines, the diseases in your area and doses are decided by your vet and your country's official animal health service.	É um guia geral por clima. As vacinas obrigatórias, as doenças da sua região e as doses são decididas pelo seu veterinário e pelo serviço oficial de sanidade do seu país.
+Calendario de un lote	A lot's calendar	Calendário de um lote
+Precios de referencia por país	Reference prices by country	Preços de referência por país
+Precios de referencia del ganado	Cattle reference prices	Preços de referência do gado
+Tu país primero. Fuente: Subastas de Olancho, Choluteca y plantas empacadoras.	Your country first. Source: Olancho and Choluteca auctions and packing plants.	Seu país primeiro. Fonte: leilões de Olancho, Choluteca e frigoríficos.
+Gordo	Finished	Gordo
+Para engordar	Feeder	Para engorda
+por libra	per pound	por libra
+por kilo	per kilo	por quilo
+RD$ {0} a {1}	RD$ {0} to {1}	RD$ {0} a {1}
+Bs {0} a {1}	Bs {0} to {1}	Bs {0} a {1}
+por arroba de canal	per carcass arroba	por arroba de carcaça
+US$ {0} a {1}	US$ {0} to {1}	US$ {0} a {1}
+Tu precio de venta es	Your sale price is	Seu preço de venda está
+está por debajo	below	abaixo
+de la referencia. Pregunta en otras plantas o subastas antes de vender.	the reference. Ask at other plants or auctions before selling.	da referência. Pergunte em outros frigoríficos ou leilões antes de vender.
+Maíz amarillo en tu país: L {0} a {1} por libra.	Yellow corn in your country: L {0} to {1} per pound.	Milho amarelo no seu país: L {0} a {1} por libra.
+Son rangos orientativos	These are indicative ranges	São faixas orientativas
+de {0} a mediados de {1}, tomados de subastas, plantas y reportes públicos. El precio cambia cada semana y según peso, raza, sexo y región. Úsalos para saber si una oferta está muy fuera de lo normal, no para cerrar un negocio: confirma siempre en tu mercado.	from {0} to mid-{1}, taken from auctions, plants and public reports. Prices change every week and with weight, breed, sex and region. Use them to know whether an offer is way off normal, not to close a deal: always confirm in your market.	de {0} a meados de {1}, tiradas de leilões, frigoríficos e relatórios públicos. O preço muda toda semana e conforme peso, raça, sexo e região. Use para saber se uma oferta está muito fora do normal, não para fechar negócio: confirme sempre no seu mercado.
+Cambiar mi precio de venta	Change my sale price	Mudar meu preço de venda
+Tablas de referencia	Reference tables	Tabelas de referência
+Tablas que calculo para ti: requerimientos por raza y clima, calendario sanitario de tu región, razas y precios de referencia.	Tables I calculate for you: requirements by breed and climate, your region's health calendar, breeds and reference prices.	Tabelas que calculo para você: exigências por raça e clima, calendário sanitário da sua região, raças e preços de referência.
+Razas para engorde (comparación)	Breeds for feeding (comparison)	Raças para confinamento (comparação)
+Calendario sanitario de otra región	Health calendar for another region	Calendário sanitário de outra região
+Muéstrame la app	Show me the app	Me mostre o app
+¿Qué página te explico? Te llevo ahí y te muestro cada parte, paso a paso.	Which page should I explain? I'll take you there and show you each part, step by step.	Qual página explico? Levo você lá e mostro cada parte, passo a passo.
+Recorrido completo por la app	Full app tour	Tour completo pelo app
+{0} pasos	{0} steps	{0} passos
+Raciones	Rations	Rações
+Paso {0} de {1}	Step {0} of {1}	Passo {0} de {1}
+Salir	Exit	Sair
+vendido el {0}	sold on {0}	vendido em {0}
+por cabeza	per head	por cabeça
+Tu engorde de un vistazo	Your feedlot at a glance	Seu confinamento num relance
+Arriba ves cuántos animales tienes, cuánto pesan en total y tres números clave: ganancia diaria, conversión y costo por kilo ganado. Toca el clima para ver el riesgo de calor para tu ganado.	At the top you see how many animals you have, their total weight and three key numbers: daily gain, conversion and cost per kilo gained. Tap the weather to see the heat risk for your cattle.	Em cima você vê quantos animais tem, quanto pesam no total e três números-chave: ganho diário, conversão e custo por quilo ganho. Toque no clima para ver o risco de calor para seu gado.
+Un lote es un grupo de animales que entraron juntos. Aquí están todos, con cabezas y peso total.	A lot is a group of animals that came in together. They're all here, with head count and total weight.	Um lote é um grupo de animais que entraram juntos. Aqui estão todos, com cabeças e peso total.
+El lote	The lot	O lote
+Nombre, cabezas, qué animales son y cuándo entraron. Abajo están sus números principales.	Name, head count, what animals they are and when they came in. Below are its main numbers.	Nome, cabeças, que animais são e quando entraram. Embaixo estão seus números principais.
+Esta página todavía no tiene nada que mostrar.	This page has nothing to show yet.	Esta página ainda não tem nada para mostrar.
+Tu dinero	Your money	Seu dinheiro
+Arriba: tu patrimonio (lo que es tuyo de verdad), la ganancia de los últimos {0} meses y cuánto vale hoy tu ganado en pie.	At the top: your net worth (what's truly yours), the profit over the last {0} months and what your live cattle are worth today.	Em cima: seu patrimônio (o que é seu de verdade), o lucro dos últimos {0} meses e quanto vale hoje seu gado em pé.
+Todo lo que tienes	Everything you have	Tudo o que você tem
+El valor de todo lo que hay en la finca: ganado, alimento, medicinas y equipo.	The value of everything on the farm: cattle, feed, medicines and equipment.	O valor de tudo o que há na fazenda: gado, alimento, medicamentos e equipamento.
+Configuración, raciones, gastos generales, agenda y bodega.	Settings, rations, overhead, schedule and feed store.	Configurações, rações, despesas gerais, agenda e depósito.
+Lo que toca hoy o está atrasado. Toca «Hacer» y te abro el formulario.	What's due today or overdue. Tap «Do» and I'll open the form.	O que é para hoje ou está atrasado. Toque em «Fazer» e abro o formulário.
+Avisos al teléfono	Phone alerts	Avisos no celular
+Te mando como máximo un aviso al día, a la hora que elijas, solo cuando algo importa: un lote que baja su ganancia o come menos, alimento que se acaba, una vacuna que toca o un lote que llega a la meta. Se activan en Configuración, «Avisos al teléfono y widget».	I send you at most one alert a day, at the time you choose, only when something matters: a lot whose gain drops or that eats less, feed running out, a vaccine that's due or a lot reaching its target. Turn them on in Settings, «Phone alerts and widget».	Mando no máximo um aviso por dia, na hora que você escolher, só quando algo importa: um lote que baixa o ganho ou come menos, alimento acabando, uma vacina na data ou um lote chegando à meta. Ative em Configurações, «Avisos no celular e widget».
+Widget	Widget	Widget
+Mantén el dedo sobre la pantalla de inicio de tu teléfono, toca Widgets y busca Rumentis. Verás tus cabezas, las tareas de hoy y lo más importante que te digo.	Hold your finger on your phone's home screen, tap Widgets and look for Rumentis. You'll see your head count, today's tasks and the most important thing I have to tell you.	Mantenha o dedo sobre a tela inicial do celular, toque em Widgets e procure Rumentis. Você verá suas cabeças, as tarefas de hoje e o mais importante que tenho para dizer.
+Ir a Configuración	Go to Settings	Ir para Configurações
+Tu puntaje de {0} a {1} y la probabilidad de ganar dinero con lo que tienes en engorde. Tócalo y te digo qué haría yo primero.	Your score from {0} to {1} and the probability of making money with what you have on feed. Tap it and I'll tell you what I'd do first.	Sua pontuação de {0} a {1} e a probabilidade de ganhar dinheiro com o que você tem em confinamento. Toque e digo o que eu faria primeiro.
+Las tareas del día, armadas con tus datos: entregas de comida, pesajes, refuerzos de vacuna y retiros.	The day's tasks, built from your data: feedings, weighings, vaccine boosters and withdrawals.	As tarefas do dia, montadas com seus dados: entregas de comida, pesagens, reforços de vacina e carências.
+Lo más importante según tus números. Tócalo para hacerlo; si ya lo hiciste, quítalo con la X.	The most important thing according to your numbers. Tap it to do it; if you already did, remove it with the X.	O mais importante segundo seus números. Toque para fazer; se já fez, tire com o X.
+Comida de hoy	Today's feed	Comida de hoje
+Cuánto has servido hoy contra lo que comen normalmente. El botón abre la siguiente entrega.	How much you've fed today versus what they normally eat. The button opens the next feeding.	Quanto você serviu hoje contra o que comem normalmente. O botão abre a próxima entrega.
+Problemas de tus lotes: muertes, animales que comen menos, pesajes atrasados. Toca uno para ver el detalle.	Problems in your lots: deaths, animals eating less, overdue weighings. Tap one to see the details.	Problemas dos seus lotes: mortes, animais que comem menos, pesagens atrasadas. Toque num para ver o detalhe.
+Cada lote con su peso y lo que gana por día. Toca uno para ver todo sobre él.	Each lot with its weight and daily gain. Tap one to see everything about it.	Cada lote com seu peso e o que ganha por dia. Toque num para ver tudo sobre ele.
+Pregúntame	Ask me	Pergunte-me
+Cuando tengas una duda, tócame. Tengo tus números, calculadoras, síntomas y una guía completa de engorde.	Whenever you have a question, tap me. I have your numbers, calculators, symptoms and a complete feeding guide.	Quando tiver uma dúvida, toque em mim. Tenho seus números, calculadoras, sintomas e um guia completo de confinamento.
+En engorde y vendidos	On feed and sold	Em confinamento e vendidos
+Cambia entre los lotes que tienes ahora y los que ya vendiste, con su resultado final.	Switch between the lots you have now and the ones you've sold, with their final result.	Alterne entre os lotes que você tem agora e os que já vendeu, com o resultado final.
+Cada lote	Each lot	Cada lote
+Cabezas, días en engorde, peso y ganancia por día. «Listo» quiere decir que ya llegó a su peso meta. Tócalo para abrirlo.	Head count, days on feed, weight and daily gain. «Ready» means it has reached its target weight. Tap it to open it.	Cabeças, dias de confinamento, peso e ganho por dia. «Pronto» quer dizer que já chegou ao peso meta. Toque para abrir.
+Para un lote nuevo toca Registrar y luego Nuevo lote.	For a new lot tap Record and then New lot.	Para um lote novo toque em Registrar e depois em Novo lote.
+Qué toca	What's due	O que toca
+Lo que más necesita este lote ahora. Si ya lo hiciste, quítalo con la X.	What this lot needs most right now. If you already did it, remove it with the X.	O que este lote mais precisa agora. Se já fez, tire com o X.
+Anotar rápido	Quick record	Anotar rápido
+Pesaje, alimento, sanidad y venta de este lote con un toque.	Weighing, feed, health and sale for this lot with one tap.	Pesagem, alimento, sanidade e venda deste lote com um toque.
+Pestañas	Tabs	Abas
+Resumen, sus animales uno por uno, sus números de dinero y todo lo que has anotado.	Summary, its animals one by one, its money numbers and everything you've recorded.	Resumo, seus animais um por um, seus números de dinheiro e tudo o que você anotou.
+Días en engorde, ganancia diaria, conversión y cuándo llega a la meta.	Days on feed, daily gain, conversion and when it reaches the target.	Dias de confinamento, ganho diário, conversão e quando chega à meta.
+Su peso	Its weight	Seu peso
+Cada punto es un pesaje. La línea punteada es hacia dónde va si sigue ganando igual.	Each dot is a weighing. The dotted line is where it's heading if it keeps gaining the same.	Cada ponto é uma pesagem. A linha pontilhada é para onde vai se continuar ganhando igual.
+Lo que te toca anotar ahora mismo según tus horarios y tus lotes.	What you need to record right now according to your schedule and your lots.	O que você precisa anotar agora mesmo conforme seus horários e seus lotes.
+Todo lo que anotas	Everything you record	Tudo o que você anota
+Alimento, pesajes, sanidad, ventas, muertes, gastos, lotes nuevos y raciones. Cada formulario te explica qué llenar.	Feed, weighings, health, sales, deaths, expenses, new lots and rations. Each form explains what to fill in.	Alimento, pesagens, sanidade, vendas, mortes, gastos, lotes novos e rações. Cada formulário explica o que preencher.
+Lo último	The latest	O último
+Tus últimos registros. Si te equivocaste, tócalo para corregirlo o borrarlo.	Your latest records. If you made a mistake, tap it to correct or delete it.	Seus últimos registros. Se errou, toque para corrigir ou apagar.
+Balance	Balance sheet	Balanço
+Lo que tienes (efectivo, ganado, alimento, medicinas, equipo) menos lo que debes. El ganado vale lo que te pagarían hoy.	What you have (cash, cattle, feed, medicines, equipment) minus what you owe. Cattle are worth what you'd be paid today.	O que você tem (caixa, gado, alimento, medicamentos, equipamento) menos o que deve. O gado vale o que pagariam hoje.
+Lo que ganaste	What you earned	O que você ganhou
+Ventas menos el costo de lo vendido y los gastos. Cambia el período arriba: mes, año o {0} meses.	Sales minus the cost of what was sold and expenses. Change the period at the top: month, year or {0} months.	Vendas menos o custo do vendido e os gastos. Mude o período em cima: mês, ano ou {0} meses.
+Entradas y salidas	Money in and out	Entradas e saídas
+Cuánto dinero entró y salió cada mes. Te ayuda a ver cuándo vas a necesitar efectivo.	How much money came in and went out each month. It helps you see when you'll need cash.	Quanto dinheiro entrou e saiu a cada mês. Ajuda a ver quando você vai precisar de caixa.
+Cuánto rindió cada lote vendido por cada unidad de dinero invertida, y al año.	How much each sold lot returned per unit of money invested, and per year.	Quanto rendeu cada lote vendido por unidade de dinheiro investida, e ao ano.
+Préstamos	Loans	Empréstimos
+Tus préstamos, cuánto debes hoy y cuánto pagas de intereses. Toca uno para anotar un pago.	Your loans, how much you owe today and how much interest you pay. Tap one to record a payment.	Seus empréstimos, quanto deve hoje e quanto paga de juros. Toque num para anotar um pagamento.
+Tus animales por lote, con su peso y lo que valen hoy.	Your animals by lot, with their weight and what they're worth today.	Seus animais por lote, com o peso e quanto valem hoje.
+Lo que hay en bodega y para cuántos días alcanza. Te aviso antes de que se acabe.	What's in the feed store and how many days it will last. I warn you before it runs out.	O que há no depósito e para quantos dias dá. Aviso antes que acabe.
+Cuánto te queda de cada producto y cuándo vence. Anota compras, usos o conteos.	How much you have left of each product and when it expires. Record purchases, uses or counts.	Quanto resta de cada produto e quando vence. Anote compras, usos ou contagens.
+Báscula, corrales, maquinaria… con cuánto valen hoy después del desgaste.	Scale, pens, machinery… with what they're worth today after wear.	Balança, currais, máquinas… com quanto valem hoje depois do desgaste.
+Elige qué ver	Choose what to see	Escolha o que ver
+Todos los lotes juntos o uno solo, incluidos los vendidos.	All lots together or just one, including sold ones.	Todos os lotes juntos ou um só, incluindo os vendidos.
+Cada línea es un lote. La línea punteada es su proyección, los anillos marcan cuándo llega a la meta y la línea vertical es hoy.	Each line is a lot. The dotted line is its projection, the rings mark when it reaches the target and the vertical line is today.	Cada linha é um lote. A linha pontilhada é a projeção, os anéis marcam quando chega à meta e a linha vertical é hoje.
+Cuánto sube cada animal por día. Es el número que más dice si tu engorde va bien.	How much each animal gains per day. It's the number that best tells you whether your feedlot is doing well.	Quanto sobe cada animal por dia. É o número que mais diz se seu confinamento vai bem.
+Cuánta comida necesitas para un kilo de carne. Menos es mejor.	How much feed you need for a kilo of meat. Less is better.	Quanta comida você precisa para um quilo de carne. Menos é melhor.
+Lo que deja cada animal. Cada gráfico trae «Qué estás viendo» y mi explicación de tus números.	What each animal leaves you. Each chart has «What you're seeing» and my explanation of your numbers.	O que cada animal deixa. Cada gráfico traz «O que você está vendo» e minha explicação dos seus números.
+Mi análisis completo: puntaje, riesgo, simulador, proveedores y qué hacer primero.	My complete analysis: score, risk, simulator, suppliers and what to do first.	Minha análise completa: pontuação, risco, simulador, fornecedores e o que fazer primeiro.
+Respaldo, descargas para Excel, colores y avisos al teléfono.	Backup, Excel downloads, colors and phone alerts.	Backup, downloads para Excel, cores e avisos no celular.
+El recorrido por la app, cómo calculo cada número y el menú de Rumi.	The app tour, how I calculate each number and Rumi's menu.	O tour pelo app, como calculo cada número e o menu do Rumi.
+Lo primero	First things first	O primeiro
+Tu idioma, tu país, si pesas en libras o kilos, tu moneda y cómo se cotiza el ganado y el alimento. Cambia al momento y tus datos no cambian.	Your language, your country, whether you weigh in pounds or kilos, your currency and how cattle and feed are priced. It changes instantly and your data doesn't change.	Seu idioma, seu país, se você pesa em libras ou quilos, sua moeda e como se cotam o gado e o alimento. Muda na hora e seus dados não mudam.
+El nombre y la ubicación. Con la ubicación te doy el clima y el riesgo de calor.	The name and location. With the location I give you the weather and the heat risk.	O nome e a localização. Com a localização dou o clima e o risco de calor.
+Lo que te pagan hoy. Actualízalo cuando cambie el mercado: con él calculo márgenes y el valor del ganado.	What you're paid today. Update it when the market changes: I use it to calculate margins and the value of your cattle.	O que pagam hoje. Atualize quando o mercado mudar: com ele calculo margens e o valor do gado.
+El peso al que vendes, la ganancia esperada y el desbaste.	The weight you sell at, the expected gain and the shrink.	O peso em que você vende, o ganho esperado e a quebra.
+Tus horarios de comida y cada cuánto quieres pesar.	Your feeding times and how often you want to weigh.	Seus horários de comida e a cada quanto quer pesar.
+Un puntaje de {0} a {1} con cinco partes: ganancia, conversión, rentabilidad, salud y registros. Abajo, lo que haría primero.	A score from {0} to {1} with five parts: gain, conversion, profitability, health and records. Below, what I'd do first.	Uma pontuação de {0} a {1} com cinco partes: ganho, conversão, rentabilidade, saúde e registros. Embaixo, o que eu faria primeiro.
+Pruebo miles de escenarios con precios, ganancias y costos que cambian, y te digo la probabilidad de ganar.	I test thousands of scenarios with changing prices, gains and costs, and tell you the probability of making money.	Testo milhares de cenários com preços, ganhos e custos que mudam, e digo a probabilidade de ganhar.
+Mueve el precio, el costo del alimento o la ganancia diaria y mira al momento cómo cambia tu resultado.	Move the price, feed cost or daily gain and see instantly how your result changes.	Mexa o preço, o custo do alimento ou o ganho diário e veja na hora como muda seu resultado.
+El resumen de los últimos {0} días para compartir por WhatsApp.	The summary of the last {0} days to share on WhatsApp.	O resumo dos últimos {0} dias para compartilhar pelo WhatsApp.
+Qué proveedor y qué raza te dejan más dinero por cabeza.	Which supplier and which breed leave you the most money per head.	Qual fornecedor e qual raça deixam mais dinheiro por cabeça.
+Esta semana	This week	Esta semana
+Lo que viene en los próximos días.	What's coming in the next few days.	O que vem nos próximos dias.
+Tus recordatorios	Your reminders	Seus lembretes
+Agrega tus propias tareas; te las muestro el día que tocan.	Add your own tasks; I show them to you on the day they're due.	Acrescente suas próprias tarefas; mostro no dia certo.
+Cada producto	Each product	Cada produto
+Cuánto hay, para cuántos días alcanza y cuándo lo compraste. Anota compras y conteos aquí.	How much there is, how many days it will last and when you bought it. Record purchases and counts here.	Quanto há, para quantos dias dá e quando você comprou. Anote compras e contagens aqui.
+Agrega maíz, concentrado, heno o lo que tengas en la bodega.	Add corn, concentrate, hay or whatever you have in the feed store.	Acrescente milho, concentrado, feno ou o que tiver no depósito.
+Calculo la mezcla más barata que cubre lo que tus animales necesitan, con tus ingredientes y tus precios.	I calculate the cheapest mix that covers what your animals need, with your ingredients and your prices.	Calculo a mistura mais barata que cobre o que seus animais precisam, com seus ingredientes e seus preços.
+Tus mezclas con su costo. Las eliges al anotar la comida.	Your mixes with their cost. You choose them when recording feed.	Suas misturas com o custo. Você as escolhe ao anotar a comida.
+Para quién	For whom	Para quem
+Elige el lote o escribe el peso promedio y la ganancia que buscas.	Choose the lot or enter the average weight and the gain you want.	Escolha o lote ou escreva o peso médio e o ganho que busca.
+Marca los que tienes y pon su precio de hoy.	Check the ones you have and enter today's price.	Marque os que você tem e coloque o preço de hoje.
+Toca y te doy la mezcla más barata, su costo y cuánto dar por animal.	Tap and I'll give you the cheapest mix, its cost and how much to give per animal.	Toque e dou a mistura mais barata, o custo e quanto dar por animal.
+Lo que llevas gastado este mes en sueldos, luz, combustible y otros.	What you've spent this month on wages, power, fuel and other things.	O que você já gastou este mês em salários, luz, combustível e outros.
+Tus gastos	Your expenses	Seus gastos
+Cada gasto general. Se reparte entre tus lotes para el costo real.	Each overhead expense. It's split among your lots for the real cost.	Cada gasto geral. É repartido entre seus lotes para o custo real.
+Descarga una copia cada semana y guárdala en Drive o mándatela por WhatsApp. Si pierdes el teléfono, la restauras.	Download a copy every week and save it to Drive or send it to yourself on WhatsApp. If you lose your phone, you restore it.	Baixe uma cópia toda semana e guarde no Drive ou mande para você pelo WhatsApp. Se perder o celular, restaura.
+Excel	Excel	Excel
+Tus lotes, alimento, pesajes, sanidad, ventas y gastos en archivos para Excel.	Your lots, feed, weighings, health, sales and expenses in files for Excel.	Seus lotes, alimento, pesagens, sanidade, vendas e gastos em arquivos para Excel.
+¡Listo!	Done!	Pronto!
+Si quieres repetir este tutorial, pídemelo en Rumi, Usar la app,	If you want to repeat this tutorial, ask me in Rumi, Using the app,	Se quiser repetir este tutorial, peça no Rumi, Usar o app,
+Lo que te cuesta el alimento. Lo uso para sacar el costo de cada lote.	What the feed costs you. I use it to work out each lot's cost.	O que custa o alimento. Uso para tirar o custo de cada lote.
+Anota cuánto pesaron tus animales. Con dos pesajes calculo cuánto ganan por día, cuándo llegan a la meta y cuánto te cuesta cada kilo ganado.	Record how much your animals weighed. With two weighings I calculate how much they gain per day, when they reach the target and what each kilo gained costs you.	Anote quanto pesaram seus animais. Com duas pesagens calculo quanto ganham por dia, quando chegam à meta e quanto custa cada quilo ganho.
+Cuántos animales se pesaron.	How many animals were weighed.	Quantos animais foram pesados.
+Si se aplicó a todo el lote o solo a algunos animales.	Whether it was applied to the whole lot or only some animals.	Se foi aplicado a todo o lote ou só a alguns animais.
+Toca los aretes de los animales que trataste.	Tap the ear tags of the animals you treated.	Toque nos brincos dos animais que tratou.
+Días que deben pasar antes de vender a matadero. Viene en la etiqueta.	Days that must pass before selling for slaughter. It's on the label.	Dias que devem passar antes de vender ao frigorífico. Vem no rótulo.
+Cuántos animales vendiste.	How many animals you sold.	Quantos animais você vendeu.
+Transporte, comisión y otros gastos de la compra, del lote completo.	Transport, commission and other purchase expenses, for the whole lot.	Transporte, comissão e outros gastos da compra, do lote completo.
+Una ración es la mezcla que les das de comer. Con su costo calculo cuánto te cuesta alimentar cada lote y cada kilo ganado.	A ration is the mix you feed them. With its cost I calculate what it costs to feed each lot and each kilo gained.	Uma ração é a mistura que você dá de comer. Com o custo dela calculo quanto custa alimentar cada lote e cada quilo ganho.
+El nombre del ingrediente.	The ingredient name.	O nome do ingrediente.
+Qué parte de la mezcla es, en porcentaje.	What share of the mix it is, as a percentage.	Que parte da mistura é, em porcentagem.
+Si es una ración o un ingrediente de tus raciones, lo descuento solo cuando anotas alimento.	If it's a ration or an ingredient in your rations, I deduct it only when you record feed.	Se é uma ração ou um ingrediente das suas rações, desconto só quando você anota alimento.
+Opcional, para tu control.	Optional, for your records.	Opcional, para seu controle.
+Lo que valdría al final, al venderlo usado.	What it would be worth at the end, when sold used.	O que valeria no final, ao vendê-lo usado.
+Lo que tienes en caja y en tus cuentas de banco.	What you have in cash and in your bank accounts.	O que você tem em caixa e nas contas do banco.
+Ventas que todavía no te pagan.	Sales not yet paid to you.	Vendas que ainda não pagaram a você.
+Lo que debes a proveedores, sin contar préstamos.	What you owe suppliers, not counting loans.	O que você deve a fornecedores, sem contar empréstimos.
+La segunda dosis protege de verdad (día {0} a {1})	The second dose really protects (day {0} to {1})	A segunda dose protege de verdade (dia {0} a {1})
+{0}: desde este día se puede vender a matadero	{0}: from this day it can be sold for slaughter	{0}: a partir deste dia pode ser vendido ao frigorífico
+{0} alcanza para {1} días	{0} lasts {1} days	{0} dá para {1} dias
+Compra con tiempo: un cambio brusco de dieta baja la ganancia.	Buy ahead of time: an abrupt diet change lowers gain.	Compre com antecedência: uma mudança brusca de dieta baixa o ganho.
+{0} llega hoy a su peso meta	{0} reaches its target weight today	{0} chega hoje ao peso meta
+{0} cabezas con unos {1} {2}. Mira cuándo te conviene vender.	{0} head at about {1} {2}. See when it's best to sell.	{0} cabeças com cerca de {1} {2}. Veja quando convém vender.
+Tu semana con Rumi	Your week with Rumi	Sua semana com o Rumi
+Tus lotes suman unos {0} {1} por semana. Toca para ver el resumen y compartirlo.	Your lots add up to about {0} {1} per week. Tap to see the summary and share it.	Seus lotes somam cerca de {0} {1} por semana. Toque para ver o resumo e compartilhar.
+Fresco (menos de {0} {2}) · ganancia de {1} {3} por día	Cool (under {0} {2}) · gain of {1} {3} per day	Fresco (menos de {0} {2}) · ganho de {1} {3} por dia
+Come	Eats	Come
+Prot.	Prot.	Prot.
+Mcal	Mcal	Mcal
+{0} lb	{0} lb	{0} lb
+: kilos de materia seca al día; tal como se sirve es más si la ración trae agua (ensilaje, pasto verde).	: kilos of dry matter per day; as fed it's more if the ration contains water (silage, green grass).	: quilos de matéria seca por dia; como servido é mais se a ração traz água (silagem, capim verde).
+: proteína cruda de la ración en base seca.	: crude protein of the ration on a dry basis.	: proteína bruta da ração na matéria seca.
+: litros al día con ese clima.	: liters per day in that climate.	: litros por dia com esse clima.
+: megacalorías de energía neta al día para mantenerse y ganar (NASEM {0}). Cebú necesita {1} {3} menos para mantenerse; un macho lechero, {2} {4} más. Con calor comen menos y gastan más en jadear: por eso bajan la ganancia.	: megacalories of net energy per day for maintenance and gain (NASEM {0}). Zebu needs {1} {3} less for maintenance; a dairy male, {2} {4} more. In heat they eat less and spend more panting: that's why gain drops.	: megacalorias de energia líquida por dia para manutenção e ganho (NASEM {0}). O zebu precisa de {1} {3} menos para se manter; um macho leiteiro, {2} {4} mais. Com calor comem menos e gastam mais ofegando: por isso o ganho cai.
+Calcio de {0} a {1} {4} y fósforo de {2} a {3} {5} de la ración. Para una dieta con tus ingredientes usa Formular dieta.	Calcium from {0} to {1} {4} and phosphorus from {2} to {3} {5} of the ration. For a diet with your ingredients use Formulate ration.	Cálcio de {0} a {1} {4} e fósforo de {2} a {3} {5} da ração. Para uma dieta com seus ingredientes use Formular dieta.
+Templado ({0} a {1} {3}) · ganancia de {2} {4} por día	Mild ({0} to {1} {3}) · gain of {2} {4} per day	Temperado ({0} a {1} {3}) · ganho de {2} {4} por dia
+Cálido ({0} a {1} {3}) · ganancia de {2} {4} por día	Warm ({0} to {1} {3}) · gain of {2} {4} per day	Quente ({0} a {1} {3}) · ganho de {2} {4} por dia
+Muy caliente (más de {0} {2}) · ganancia de {1} {3} por día	Very hot (over {0} {2}) · gain of {1} {3} per day	Muito quente (mais de {0} {2}) · ganho de {1} {3} por dia
+Gana por día	Daily gain	Ganha por dia
+Rinde	Dressing	Rende
+cebú	zebu	zebu
+{0} y Guzerat	{0} and Guzerat	{0} e Guzerá
+Indubrasil	Indubrasil	Indubrasil
+compuesta	composite	composta
+Beefmaster	Beefmaster	Beefmaster
+Santa Gertrudis	Santa Gertrudis	Santa Gertrudis
+Senepol	Senepol	Senepol
+adaptada	adapted	adaptada
+Romosinuano y criollos	Romosinuano and criollos	Romosinuano e crioulos
+Angus	Angus	Angus
+europea	European	europeia
+Hereford	Hereford	Hereford
+Charolais	Charolais	Charolês
+Simmental	Simmental	Simental
+Limousin	Limousin	Limousin
+F{0} cebú por europeo	F{0} zebu × European	F{0} zebu × europeu
+cruce	cross	cruzamento
+Holstein y Pardo Suizo machos	Holstein and Brown Swiss males	Machos Holandês e Pardo-Suíço
+lechera	dairy	leiteira
+Ganancia en corral con buena ración en el trópico; en pastoreo es la mitad o menos.	Pen gain on a good ration in the tropics; on pasture it's half or less.	Ganho no curral com boa ração no trópico; no pasto é a metade ou menos.
+: rendimiento en canal.	: carcass dressing.	: rendimento de carcaça.
+: tolerancia al calor ({0} puntos es la mejor).	: heat tolerance ({0} points is best).	: tolerância ao calor ({0} pontos é a melhor).
+Carne y manejo	Meat and handling	Carne e manejo
+Carne	Meat	Carne
+Mansedumbre	Docility	Mansidão
+: La base del trópico: aguanta calor, garrapata y pasto pobre. Carne menos tierna; más nervioso.	: The backbone of the tropics: tolerates heat, ticks and poor grass. Less tender meat; more nervous.	: A base do trópico: aguenta calor, carrapato e pasto pobre. Carne menos macia; mais nervoso.
+: Muy rústico y de buena canal magra. Es la raza de Brasil.	: Very hardy with a good lean carcass. It's Brazil's breed.	: Muito rústico e de boa carcaça magra. É a raça do Brasil.
+: Más lecheros; engordan más lento que el {0}.	: More milky; they fatten more slowly than {0}.	: Mais leiteiros; engordam mais devagar que o {0}.
+: Rústico, de huesos largos; rinde algo menos.	: Hardy, long-boned; dresses somewhat lower.	: Rústico, de ossos longos; rende um pouco menos.
+: {0}/{1} cebú y {2}/{3} Angus: buena ganancia y carne con más marmoleo, aguanta calor.	: {0}/{1} zebu and {2}/{3} Angus: good gain and more marbled meat, heat tolerant.	: {0}/{1} zebu e {2}/{3} Angus: bom ganho e carne com mais marmoreio, aguenta calor.
+: Simmental por {0}: grande, gana rápido, buena canal.	: Simmental × {0}: large, fast-gaining, good carcass.	: Simental × {0}: grande, ganha rápido, boa carcaça.
+: Muy fértil y rústica; buena para cruces.	: Very fertile and hardy; good for crossing.	: Muito fértil e rústica; boa para cruzamentos.
+: Shorthorn por {0}, rojo, adaptado al calor.	: Shorthorn × {0}, red, heat-adapted.	: Shorthorn × {0}, vermelho, adaptado ao calor.
+: Europea adaptada al trópico, pelo corto (slick), mansa y de carne tierna.	: European breed adapted to the tropics, short (slick) coat, docile with tender meat.	: Europeia adaptada ao trópico, pelo curto (slick), mansa e de carne macia.
+: Criollos del trópico: mansos, rústicos y de carne tierna; ideales para cruzar con cebú.	: Tropical criollos: docile, hardy and with tender meat; ideal for crossing with zebu.	: Crioulos do trópico: mansos, rústicos e de carne macia; ideais para cruzar com zebu.
+: La de mejor marmoleo. En el trópico sufre calor: mejor en cruce.	: The best marbling. In the tropics it suffers from heat: better in crosses.	: A de melhor marmoreio. No trópico sofre com o calor: melhor em cruzamento.
+: Mansa y precoz; sensible a ojo rosado y cáncer de ojo con mucho sol.	: Docile and early-maturing; prone to pinkeye and eye cancer with a lot of sun.	: Mansa e precoce; sensível a olho rosado e câncer de olho com muito sol.
+: Mucho músculo y ganancia; necesita buena comida y sombra.	: Lots of muscle and gain; needs good feed and shade.	: Muito músculo e ganho; precisa de boa comida e sombra.
+: Grande y de rápido crecimiento; base del {0}.	: Large and fast-growing; the base of {0}.	: Grande e de crescimento rápido; base do {0}.
+: El mayor rendimiento en canal; carne magra.	: The highest carcass dressing; lean meat.	: O maior rendimento de carcaça; carne magra.
+: El vigor híbrido da {0} a {1} {2} más ganancia que sus padres en el trópico.	: Hybrid vigor gives {0} to {1} {2} more gain than the parents in the tropics.	: O vigor híbrido dá {0} a {1} {2} mais ganho que os pais no trópico.
+: Baratos al comprar; rinden menos en canal y necesitan más comida para mantenerse.	: Cheap to buy; they dress lower and need more feed for maintenance.	: Baratos na compra; rendem menos de carcaça e precisam de mais comida para se manter.
+Son rangos típicos de la literatura y de corrales de la región; tu manejo, la edad al comprar y la ración pesan más que la raza. Compara con tus propios lotes en Análisis de Rumi, «¿Qué raza me rinde más?».	These are typical ranges from the literature and the region's feedlots; your management, age at purchase and ration matter more than breed. Compare with your own lots in Rumi's analysis, «Which breed pays best for me?».	São faixas típicas da literatura e de currais da região; seu manejo, a idade na compra e a ração pesam mais que a raça. Compare com seus próprios lotes na Análise do Rumi, «Qual raça rende mais para mim?».
+por libra	per pound	por libra
+por kilo	per kilo	por quilo
+RD$ {0} a {1}	RD$ {0} to {1}	RD$ {0} a {1}
+Bs {0} a {1}	Bs {0} to {1}	Bs {0} a {1}
+por arroba de canal	per carcass arroba	por arroba de carcaça
+US$ {0} a {1}	US$ {0} to {1}	US$ {0} a {1}
+L {0} por libra	L {0} per pound	L {0} por libra
+Maíz amarillo en tu país: L {0} a {1} por libra.	Yellow corn in your country: L {0} to {1} per pound.	Milho amarelo no seu país: L {0} a {1} por libra.
+Calendario sanitario: Guatemala	Health calendar: Guatemala	Calendário sanitário: Guatemala
+Calendario sanitario: El Salvador	Health calendar: El Salvador	Calendário sanitário: El Salvador
+Trópico seco.	Dry tropics.	Trópico seco.
+Una época seca larga y dura. Los problemas son la falta de agua y de forraje, el polvo con neumonías, la falta de vitamina A y el calor fuerte.	A long, harsh dry season. The problems are lack of water and forage, dust with pneumonia, vitamin A deficiency and strong heat.	Uma época seca longa e dura. Os problemas são a falta de água e de forragem, a poeira com pneumonias, a falta de vitamina A e o calor forte.
+Garrapatas y moscas al inicio de las lluvias.	Ticks and flies at the start of the rains.	Carrapatos e moscas no início das chuvas.
+Timpanismo con pastos tiernos: cambia la dieta poco a poco.	Bloat with lush grass: change the diet little by little.	Timpanismo com pastos novos: mude a dieta aos poucos.
+Rabia paralítica: vacuna anual si hay murciélagos vampiros.	Paralytic rabies: annual vaccine if there are vampire bats.	Raiva paralítica: vacina anual se houver morcegos-vampiros.
+Vitaminas A, D y E: la falta de vitamina A es común con pasto seco.	Vitamins A, D and E: vitamin A deficiency is common on dry grass.	Vitaminas A, D e E: a falta de vitamina A é comum com pasto seco.
+Polvo: riega los corrales; baja las neumonías.	Dust: wet the pens; it lowers pneumonia.	Poeira: molhe os currais; baixa as pneumonias.
+Agua: calidad y cantidad, con sales bajas.	Water: quality and quantity, with low salts.	Água: qualidade e quantidade, com poucos sais.
+Proteína: suplementa con urea y melaza o bancos de proteína si hay potrero.	Protein: supplement with urea and molasses or protein banks if there's pasture.	Proteína: suplemente com ureia e melaço ou bancos de proteína se houver pasto.
+Plantas tóxicas: en la seca comen lo que queda verde.	Toxic plants: in the dry season they eat whatever is still green.	Plantas tóxicas: na seca comem o que fica verde.
+Estrés por calor: sombra, agua fresca y trabajar al amanecer.	Heat stress: shade, cool water and working at dawn.	Estresse por calor: sombra, água fresca e trabalhar ao amanhecer.
+Calendario sanitario: Nicaragua	Health calendar: Nicaragua	Calendário sanitário: Nicarágua
+Lluvias (mayo a noviembre) ·	Rainy season (May to November) ·	Chuvas (maio a novembro) ·
+Seca (diciembre a abril)	Dry season (December to April)	Seca (dezembro a abril)
+Calendario sanitario: Costa Rica	Health calendar: Costa Rica	Calendário sanitário: Costa Rica
+Calendario sanitario: Panamá	Health calendar: Panama	Calendário sanitário: Panamá
+Lluvias (mayo a diciembre) ·	Rainy season (May to December) ·	Chuvas (maio a dezembro) ·
+Seca (enero a abril)	Dry season (January to April)	Seca (janeiro a abril)
+Calendario sanitario: Belice	Health calendar: Belize	Calendário sanitário: Belize
+Lluvias (junio a diciembre) ·	Rainy season (June to December) ·	Chuvas (junho a dezembro) ·
+Seca (enero a mayo)	Dry season (January to May)	Seca (janeiro a maio)
+Calendario sanitario: República Dominicana	Health calendar: Dominican Republic	Calendário sanitário: República Dominicana
+Calendario sanitario: México	Health calendar: Mexico	Calendário sanitário: México
+Subtrópico.	Subtropics.	Subtrópico.
+Veranos calientes y lluviosos, inviernos suaves. Garrapata en verano, neumonías con los cambios de temperatura.	Hot, rainy summers and mild winters. Ticks in summer, pneumonia with temperature swings.	Verões quentes e chuvosos, invernos suaves. Carrapato no verão, pneumonias com as mudanças de temperatura.
+Verano (mayo a septiembre) ·	Summer (May to September) ·	Verão (maio a setembro) ·
+Garrapata: tratamientos estratégicos al inicio del calor.	Ticks: strategic treatments at the start of the hot season.	Carrapato: tratamentos estratégicos no início do calor.
+Mosca del cuerno y de los establos.	Horn fly and stable fly.	Mosca-dos-chifres e mosca-dos-estábulos.
+Estrés por calor: sombra y agua.	Heat stress: shade and water.	Estresse por calor: sombra e água.
+Invierno (noviembre a febrero)	Winter (November to February)	Inverno (novembro a fevereiro)
+Neumonías con los cambios bruscos de temperatura: reparo del viento.	Pneumonia with sudden temperature changes: windbreaks.	Pneumonias com as mudanças bruscas de temperatura: abrigo do vento.
+Barro en los corrales: drenaje.	Mud in the pens: drainage.	Barro nos currais: drenagem.
+Fiebre aftosa: sigue el programa oficial de tu país.	Foot-and-mouth disease: follow your country's official program.	Febre aftosa: siga o programa oficial do seu país.
+Rabia paralítica donde haya murciélagos vampiros.	Paralytic rabies where there are vampire bats.	Raiva paralítica onde houver morcegos-vampiros.
+Clostridiales y carbón: vacuna anual.	Clostridial diseases and anthrax: annual vaccine.	Clostridioses e carbúnculo: vacina anual.
+Calendario sanitario: Estados Unidos	Health calendar: United States	Calendário sanitário: Estados Unidos
+Templado.	Temperate.	Temperado.
+Cuatro estaciones. El complejo respiratorio en otoño e invierno es el problema número uno; en verano, moscas y ojo rosado; en invierno, estrés por frío y barro.	Four seasons. The respiratory complex in autumn and winter is problem number one; in summer, flies and pinkeye; in winter, cold stress and mud.	Quatro estações. O complexo respiratório no outono e no inverno é o problema número um; no verão, moscas e olho rosado; no inverno, estresse por frio e barro.
+Otoño (septiembre a noviembre) ·	Autumn (September to November) ·	Outono (setembro a novembro) ·
+Complejo respiratorio: vacuna antes del destete o al ingreso y metafilaxia en animales de alto riesgo con tu veterinario.	Respiratory complex: vaccinate before weaning or on arrival and metaphylaxis in high-risk animals with your vet.	Complexo respiratório: vacina antes do desmame ou na entrada e metafilaxia em animais de alto risco com seu veterinário.
+Recepción con reparo del viento y cama seca.	Receiving with windbreaks and dry bedding.	Recepção com abrigo do vento e cama seca.
+Invierno (diciembre a febrero)	Winter (December to February)	Inverno (dezembro a fevereiro)
+Estrés por frío: necesitan más energía ({0} {1} más por cada grado bajo el confort).	Cold stress: they need more energy ({0} {1} more for each degree below comfort).	Estresse por frio: precisam de mais energia ({0} {1} a mais por grau abaixo do conforto).
+Barro: cada {0} {1} de barro baja la ganancia; drena y raspa.	Mud: every {0} {1} of mud lowers gain; drain and scrape.	Barro: cada {0} {1} de barro baixa o ganho; drene e raspe.
+Agua sin congelarse.	Water that doesn't freeze.	Água sem congelar.
+Primavera (marzo a mayo)	Spring (March to May)	Primavera (março a maio)
+Pietín y problemas de patas con humedad.	Foot rot and foot problems with moisture.	Podridão do casco e problemas de patas com umidade.
+Revisa la condición al cambiar de dieta.	Check condition when changing diet.	Revise a condição ao mudar de dieta.
+Verano (junio a agosto)	Summer (June to August)	Verão (junho a agosto)
+Moscas y ojo rosado (queratoconjuntivitis): control de moscas y sombra.	Flies and pinkeye (keratoconjunctivitis): fly control and shade.	Moscas e olho rosado (ceratoconjuntivite): controle de moscas e sombra.
+Estrés por calor en días de más de {0} {1}: sombra, agua y aspersores.	Heat stress on days over {0} {1}: shade, water and sprinklers.	Estresse por calor em dias de mais de {0} {1}: sombra, água e aspersores.
+Clostridiales: vacuna al ingreso con refuerzo.	Clostridial diseases: vaccine on arrival with booster.	Clostridioses: vacina na entrada com reforço.
+Fiebre aftosa y otros programas oficiales según el país.	Foot-and-mouth disease and other official programs depending on the country.	Febre aftosa e outros programas oficiais conforme o país.
+Calendario sanitario: Canadá	Health calendar: Canada	Calendário sanitário: Canadá
+Calendario sanitario: Colombia	Health calendar: Colombia	Calendário sanitário: Colômbia
+Lluvias (abril a noviembre) ·	Rainy season (April to November) ·	Chuvas (abril a novembro) ·
+Seca (diciembre a marzo)	Dry season (December to March)	Seca (dezembro a março)
+Calendario sanitario: Venezuela	Health calendar: Venezuela	Calendário sanitário: Venezuela
+Calendario sanitario: Ecuador	Health calendar: Ecuador	Calendário sanitário: Equador
+Lluvias (enero a mayo)	Rainy season (January to May)	Chuvas (janeiro a maio)
+Seca (junio a diciembre) ·	Dry season (June to December) ·	Seca (junho a dezembro) ·
+Calendario sanitario: Perú	Health calendar: Peru	Calendário sanitário: Peru
+Lluvias (diciembre a abril)	Rainy season (December to April)	Chuvas (dezembro a abril)
+Seca (mayo a noviembre) ·	Dry season (May to November) ·	Seca (maio a novembro) ·
+Calendario sanitario: Bolivia	Health calendar: Bolivia	Calendário sanitário: Bolívia
+Verano (noviembre a marzo)	Summer (November to March)	Verão (novembro a março)
+Invierno (mayo a agosto)	Winter (May to August)	Inverno (maio a agosto)
+Calendario sanitario: Brasil	Health calendar: Brazil	Calendário sanitário: Brasil
+Lluvias (octubre a abril)	Rainy season (October to April)	Chuvas (outubro a abril)
+Seca (mayo a septiembre) ·	Dry season (May to September) ·	Seca (maio a setembro) ·
+Calendario sanitario: Paraguay	Health calendar: Paraguay	Calendário sanitário: Paraguai
+Calendario sanitario: Uruguay	Health calendar: Uruguay	Calendário sanitário: Uruguai
+Otoño (marzo a mayo)	Autumn (March to May)	Outono (março a maio)
+Invierno (junio a agosto)	Winter (June to August)	Inverno (junho a agosto)
+Primavera (septiembre a noviembre) ·	Spring (September to November) ·	Primavera (setembro a novembro) ·
+Verano (diciembre a febrero)	Summer (December to February)	Verão (dezembro a fevereiro)
+Calendario sanitario: Argentina	Health calendar: Argentina	Calendário sanitário: Argentina
+Calendario sanitario: Chile	Health calendar: Chile	Calendário sanitário: Chile
+Calendario sanitario: España	Health calendar: Spain	Calendário sanitário: Espanha
+Calendario sanitario: Portugal	Health calendar: Portugal	Calendário sanitário: Portugal
+Calendario sanitario: Francia	Health calendar: France	Calendário sanitário: França
+Calendario sanitario: Australia	Health calendar: Australia	Calendário sanitário: Austrália
+Árido y semiárido.	Arid and semi-arid.	Árido e semiárido.
+Poca lluvia, mucho calor y agua con sales. Cuida la calidad del agua, el polvo y el calor.	Little rain, a lot of heat and salty water. Watch water quality, dust and heat.	Pouca chuva, muito calor e água com sais. Cuide da qualidade da água, da poeira e do calor.
+Lluvias (noviembre a marzo)	Rainy season (November to March)	Chuvas (novembro a março)
+Garrapatas y moscas con las primeras lluvias.	Ticks and flies with the first rains.	Carrapatos e moscas com as primeiras chuvas.
+Timpanismo con rebrote.	Bloat with regrowth.	Timpanismo com rebrota.
+Seca (abril a octubre) ·	Dry season (April to October) ·	Seca (abril a outubro) ·
+Agua: análisis de sales y sulfatos (arriba de {0} ppm de sulfato causa polioencefalomalacia).	Water: test for salts and sulfates (over {0} ppm sulfate causes polioencephalomalacia).	Água: análise de sais e sulfatos (acima de {0} ppm de sulfato causa polioencefalomalácia).
+Vitamina A en seca.	Vitamin A in the dry season.	Vitamina A na seca.
+Polvo: riego de corrales.	Dust: water the pens.	Poeira: molhar os currais.
+Calor: sombra y agua fresca.	Heat: shade and cool water.	Calor: sombra e água fresca.
+Calendario sanitario: Nueva Zelanda	Health calendar: New Zealand	Calendário sanitário: Nova Zelândia
+Calendario sanitario: Sudáfrica	Health calendar: South Africa	Calendário sanitário: África do Sul
+Calendario sanitario: Filipinas	Health calendar: Philippines	Calendário sanitário: Filipinas
+Lluvias (junio a noviembre) ·	Rainy season (June to November) ·	Chuvas (junho a novembro) ·
+Seca (diciembre a mayo)	Dry season (December to May)	Seca (dezembro a maio)
+Calendario sanitario: India	Health calendar: India	Calendário sanitário: Índia
+Lluvias (junio a septiembre) ·	Rainy season (June to September) ·	Chuvas (junho a setembro) ·
+Seca (octubre a mayo)	Dry season (October to May)	Seca (outubro a maio)
+Tu país primero. Fuente: Subastas y rastros de la costa sur y Petén.	Your country first. Source: south coast and Petén auctions and slaughterhouses.	Seu país primeiro. Fonte: leilões e matadouros da costa sul e de Petén.
+Maíz amarillo en tu país: Q {0} a {1} por libra.	Yellow corn in your country: Q {0} to {1} per pound.	Milho amarelo no seu país: Q {0} a {1} por libra.
+Tu país primero. Fuente: Rastros y ferias de ganado.	Your country first. Source: slaughterhouses and cattle fairs.	Seu país primeiro. Fonte: matadouros e feiras de gado.
+Maíz amarillo en tu país: $ {0} a {1} por libra.	Yellow corn in your country: $ {0} to {1} per pound.	Milho amarelo no seu país: $ {0} a {1} por libra.
+Tu país primero. Fuente: Plantas exportadoras y subastas.	Your country first. Source: export plants and auctions.	Seu país primeiro. Fonte: frigoríficos exportadores e leilões.
+Maíz amarillo en tu país: C$ {0} a {1} por libra.	Yellow corn in your country: C$ {0} to {1} per pound.	Milho amarelo no seu país: C$ {0} a {1} por libra.
+Tu país primero. Fuente: Subastas ganaderas (novillo gordo en pie).	Your country first. Source: livestock auctions (live finished steer).	Seu país primeiro. Fonte: leilões de gado (novilho gordo em pé).
+Maíz amarillo en tu país: ₡ {0} a {1} por kilo.	Yellow corn in your country: ₡ {0} to {1} per kilo.	Milho amarelo no seu país: ₡ {0} a {1} por quilo.
+Tu país primero. Fuente: Subastas de Chiriquí, Veraguas y Los Santos.	Your country first. Source: Chiriquí, Veraguas and Los Santos auctions.	Seu país primeiro. Fonte: leilões de Chiriquí, Veraguas e Los Santos.
+Maíz amarillo en tu país: B/. {0} a {1} por libra.	Yellow corn in your country: B/. {0} to {1} per pound.	Milho amarelo no seu país: B/. {0} a {1} por libra.
+Tu país primero. Fuente: Ferias y mataderos.	Your country first. Source: fairs and slaughterhouses.	Seu país primeiro. Fonte: feiras e matadouros.
+Maíz amarillo en tu país: RD$ {0} a {1} por libra.	Yellow corn in your country: RD$ {0} to {1} per pound.	Milho amarelo no seu país: RD$ {0} a {1} por libra.
+Tu país primero. Fuente: SNIIM, subastas del sureste y norte.	Your country first. Source: SNIIM, southeast and north auctions.	Seu país primeiro. Fonte: SNIIM, leilões do sudeste e do norte.
+Maíz amarillo en tu país: $ {0} a {1} por kilo.	Yellow corn in your country: $ {0} to {1} per kilo.	Milho amarelo no seu país: $ {0} a {1} por quilo.
+Tu país primero. Fuente: USDA AMS: novillo gordo (fed steer) y novillo de {0} {1} (feeder).	Your country first. Source: USDA AMS: fed steer and {0} {1} feeder steer.	Seu país primeiro. Fonte: USDA AMS: novilho gordo (fed steer) e novilho de {0} {1} (feeder).
+Tu país primero. Fuente: Subastas de Córdoba, Meta y Antioquia.	Your country first. Source: Córdoba, Meta and Antioquia auctions.	Seu país primeiro. Fonte: leilões de Córdoba, Meta e Antioquia.
+Tu país primero. Fuente: Ferias de la costa y la Amazonía.	Your country first. Source: coastal and Amazon fairs.	Seu país primeiro. Fonte: feiras da costa e da Amazônia.
+Tu país primero. Fuente: Camales y ferias.	Your country first. Source: slaughterhouses (camales) and fairs.	Seu país primeiro. Fonte: matadouros (camales) e feiras.
+Maíz amarillo en tu país: S/ {0} a {1} por kilo.	Yellow corn in your country: S/ {0} to {1} per kilo.	Milho amarelo no seu país: S/ {0} a {1} por quilo.
+Tu país primero. Fuente: Frigoríficos de Santa Cruz y Beni.	Your country first. Source: Santa Cruz and Beni packing plants.	Seu país primeiro. Fonte: frigoríficos de Santa Cruz e Beni.
+Maíz amarillo en tu país: Bs {0} a {1} por kilo.	Yellow corn in your country: Bs {0} to {1} per kilo.	Milho amarelo no seu país: Bs {0} a {1} por quilo.
+Tu país primero. Fuente: Indicador del boi gordo (arroba de {0} {1} de canal) y bezerro. En Brasil la arroba del boi gordo es de canal (carcaça), no en pie.	Your country first. Source: boi gordo indicator (arroba of {0} {1} of carcass) and bezerro. In Brazil the boi gordo arroba is carcass weight (carcaça), not live.	Seu país primeiro. Fonte: indicador do boi gordo (arroba de {0} {1} de carcaça) e bezerro. No Brasil a arroba do boi gordo é de carcaça, não em pé.
+Maíz amarillo en tu país: R$ {0} a {1} por kilo.	Yellow corn in your country: R$ {0} to {1} per kilo.	Milho amarelo no seu país: R$ {0} a {1} por quilo.
+Tu país primero. Fuente: Frigoríficos (novillo al gancho llevado a pie).	Your country first. Source: packing plants (hook price converted to live).	Seu país primeiro. Fonte: frigoríficos (novilho no gancho convertido para em pé).
+Maíz amarillo en tu país: US$ {0} a {1} por kilo.	Yellow corn in your country: US$ {0} to {1} per kilo.	Milho amarelo no seu país: US$ {0} a {1} por quilo.
+Tu país primero. Fuente: INAC y ferias (novillo gordo, en pie).	Your country first. Source: INAC and fairs (live finished steer).	Seu país primeiro. Fonte: INAC e feiras (novilho gordo, em pé).
+Tu país primero. Fuente: Mercado Agroganadero de Cañuelas (novillo en pie, llevado a dólares). En Argentina el precio en pesos cambia muy rápido con la inflación; compara en dólares.	Your country first. Source: Cañuelas Agro-Livestock Market (live steer, converted to dollars). In Argentina the peso price changes very fast with inflation; compare in dollars.	Seu país primeiro. Fonte: Mercado Agroganadero de Cañuelas (novilho em pé, convertido a dólares). Na Argentina o preço em pesos muda muito rápido com a inflação; compare em dólares.
+Tu país primero. Fuente: Ferias de la zona sur.	Your country first. Source: southern zone fairs.	Seu país primeiro. Fonte: feiras da zona sul.
+Tu país primero. Fuente: MLA (precio en pie).	Your country first. Source: MLA (live price).	Seu país primeiro. Fonte: MLA (preço em pé).
+Maíz amarillo en tu país: A$ {0} a {1} por kilo.	Yellow corn in your country: A$ {0} to {1} per kilo.	Milho amarelo no seu país: A$ {0} a {1} por quilo.
+Tu país primero. Fuente: RMIS y subastas.	Your country first. Source: RMIS and auctions.	Seu país primeiro. Fonte: RMIS e leilões.
+Maíz amarillo en tu país: R {0} a {1} por kilo.	Yellow corn in your country: R {0} to {1} per kilo.	Milho amarelo no seu país: R {0} a {1} por quilo.
+{0} lotes · {1} {2} en pie	{0} lots · {1} {2} live	{0} lotes · {1} {2} em pé
+Hoy: {1} tareas · Refuerzo de vacuna de {0}	Today: {1} tasks · Vaccine booster for {0}	Hoje: {1} tarefas · Reforço de vacina de {0}
+Rumi: {0}: mortalidad de {1} {2}	Rumi: {0}: mortality of {1} {2}	Rumi: {0}: mortalidade de {1} {2}
+Actualizado {0}, {1}:{2}	Updated {0}, {1}:{2}	Atualizado {0}, {1}:{2}
++ Anotar	+ Record	+ Anotar
+Simbrah	Simbrah	Simbrah
+Brangus	Brangus	Brangus
+Elige un lote en engorde.	Choose a lot on feed.	Escolha um lote em confinamento.
+Tus lotes aguantan una baja de precio razonable.	Your lots can withstand a reasonable price drop.	Seus lotes aguentam uma queda de preço razoável.
+Todavía no hay costos anotados.	No costs recorded yet.	Ainda não há custos anotados.
+Es alto: una mejor dieta o mejores precios de maíz y soya son tu mayor palanca.	It's high: a better diet or better corn and soy prices are your biggest lever.	É alto: uma dieta melhor ou melhores preços de milho e soja são sua maior alavanca.
+Es bajo para un engorde en corral: revisa si los gastos generales o la sanidad se están comiendo el margen.	It's low for a pen feedlot: check whether overhead or health costs are eating the margin.	É baixo para um confinamento: verifique se os gastos gerais ou a sanidade estão comendo a margem.
+Costo del kilo ganado	Cost per kilo gained	Custo do quilo ganho
+Semáforo del lote	Lot traffic light	Semáforo do lote
+Más de la mitad de las veces sobra alimento: baja un poco la ración y ahorras sin perder ganancia.	More than half the time feed is left over: lower the ration a bit and you save without losing gain.	Mais da metade das vezes sobra alimento: baixe um pouco a ração e economize sem perder ganho.
+Se quedan sin comida: sube un poco la ración o agrega una entrega.	They run out of feed: raise the ration a bit or add a feeding.	Ficam sem comida: suba um pouco a ração ou acrescente uma entrega.
+Compra antes de que se acabe: un cambio brusco de dieta baja la ganancia.	Buy before it runs out: an abrupt diet change lowers gain.	Compre antes que acabe: uma mudança brusca de dieta baixa o ganho.
+Ver la bodega	See the feed store	Ver o depósito
+Ver el flujo	See the cash flow	Ver o fluxo
+Sin señales de alerta.	No warning signs.	Sem sinais de alerta.
+Revisé ganancia, consumo, pesos, retiros, costos, comederos, bodega, medicinas y dinero. Todo está en orden.	I checked gain, intake, weights, withdrawals, costs, bunks, feed store, medicines and money. Everything is in order.	Revisei ganho, consumo, pesos, carências, custos, cochos, depósito, medicamentos e dinheiro. Tudo está em ordem.
+Pon tu precio de venta en Configuración para calcular esto.	Set your sale price in Settings to calculate this.	Coloque seu preço de venda em Configurações para calcular isto.
+Necesito tu peso meta y tu precio de venta.	I need your target weight and your sale price.	Preciso do seu peso meta e do seu preço de venda.
+Si todo sale mal a la vez, perderías dinero: asegura el precio de venta o compra el alimento con tiempo.	If everything goes wrong at once, you'd lose money: lock in the sale price or buy feed ahead of time.	Se tudo der errado ao mesmo tempo, você perderia dinheiro: garanta o preço de venda ou compre o alimento com tempo.
+Aun con todo en contra, tu engorde gana. Buen colchón.	Even with everything against you, your feedlot makes money. Good cushion.	Mesmo com tudo contra, seu confinamento ganha. Boa margem de segurança.
+Con este escenario pierdes dinero.	With this scenario you lose money.	Com este cenário você perde dinheiro.
+Muy rústico y de buena canal magra. Es la raza de Brasil.	Very hardy with a good lean carcass. It's Brazil's breed.	Muito rústico e de boa carcaça magra. É a raça do Brasil.
+{0}/{1} cebú y {2}/{3} Angus: buena ganancia y carne con más marmoleo, aguanta calor.	{0}/{1} zebu and {2}/{3} Angus: good gain and more marbled meat, heat tolerant.	{0}/{1} zebu e {2}/{3} Angus: bom ganho e carne com mais marmoreio, aguenta calor.
+Simmental por Brahman: grande, gana rápido, buena canal.	Simmental × Brahman: large, fast-gaining, good carcass.	Simental × Brahman: grande, ganha rápido, boa carcaça.
+Shorthorn por Brahman, rojo, adaptado al calor.	Shorthorn × Brahman, red, heat-adapted.	Shorthorn × Brahman, vermelho, adaptado ao calor.
+La de mejor marmoleo. En el trópico sufre calor: mejor en cruce.	The best marbling. In the tropics it suffers from heat: better in crosses.	A de melhor marmoreio. No trópico sofre com o calor: melhor em cruzamento.
+¿Qué raza me rinde más a mí?	Which breed pays best for me?	Qual raça rende mais para mim?
+Plantas exportadoras y subastas	Export plants and auctions	Frigoríficos exportadores e leilões
+Subastas de Chiriquí, Veraguas y Los Santos	Chiriquí, Veraguas and Los Santos auctions	Leilões de Chiriquí, Veraguas e Los Santos
+Ferias y mataderos	Fairs and slaughterhouses	Feiras e matadouros
+Camales y ferias	Slaughterhouses (camales) and fairs	Matadouros (camales) e feiras
+Frigoríficos de Santa Cruz y Beni	Santa Cruz and Beni packing plants	Frigoríficos de Santa Cruz e Beni
+arroba de canal	carcass arroba	arroba de carcaça
+de la referencia. Buen precio: asegúralo con tu comprador.	the reference. Good price: lock it in with your buyer.	da referência. Bom preço: garanta com seu comprador.
+de la referencia.	the reference.	da referência.
+Trópico seco	Dry tropics	Trópico seco
+Subtrópico	Subtropics	Subtrópico
+Templado	Temperate	Temperado
+Árido y semiárido	Arid and semi-arid	Árido e semiárido
+Otras regiones	Other regions	Outras regiões
+¿De qué país?	Which country?	De que país?
+Un nombre fácil de reconocer, como «Lote {0}» o «Novillos de marzo».	An easy name to recognize, like «Lot {0}» or «March steers».	Um nome fácil de reconhecer, como «Lote {0}» ou «Novilhos de março».
+Un nombre para reconocerla, como «Inicio» o «Finalización».	A name to recognize it, like «Starter» or «Finishing».	Um nome para reconhecê-la, como «Inicial» ou «Terminação».
+Rumi te ayuda paso a paso	Rumi helps you step by step	O Rumi ajuda você passo a passo
+Hoy no tienes tareas pendientes	You have no pending tasks today	Hoje você não tem tarefas pendentes
+Rumi: todo en orden	Rumi: all in order	Rumi: tudo em ordem
+Falta el permiso.	Permission missing.	Falta a permissão.
+Toca Sí otra vez y permite las notificaciones, o actívalas en los ajustes del teléfono para Rumentis.	Tap Yes again and allow notifications, or turn them on in the phone's settings for Rumentis.	Toque em Sim de novo e permita as notificações, ou ative nas configurações do celular para o Rumentis.
+Listo: Rumi te avisará lo importante, una vez al día como máximo	Done: Rumi will alert you to what matters, at most once a day	Pronto: o Rumi vai avisar o importante, no máximo uma vez por dia
+Avisos apagados	Alerts off	Avisos desligados
+Rumi está pendiente de tu engorde	Rumi is keeping an eye on your feedlot	O Rumi está de olho no seu confinamento
+Así se verán los avisos: uno al día, solo lo importante.	This is how alerts will look: one a day, only what matters.	Assim ficarão os avisos: um por dia, só o importante.
+Primero permite las notificaciones de Rumentis	First allow Rumentis notifications	Primeiro permita as notificações do Rumentis
+Hora de los avisos:	Alert time:	Hora dos avisos:
+Moneda cambiada	Currency changed	Moeda alterada
+Listo, quité el aviso	Done, I removed the notice	Pronto, tirei o aviso
+Instalar voces	Install voices	Instalar vozes
