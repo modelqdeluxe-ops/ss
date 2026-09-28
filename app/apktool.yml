@@ -14,3 +14,5 @@ versionInfo:
 doNotCompress:
 - arsc
 - png
+- onnx
+- wasm
