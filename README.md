@@ -23,6 +23,15 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   - `app/assets/fondos/` — `g01`–`g25.webp`, fotos de ganado (Wikimedia Commons, CC0 y dominio público;
     créditos en Más, Ayuda, Acerca de) 
   - `app/assets/iconos.js` — íconos Phosphor duotono (licencia MIT, `LICENCIA-phosphor.txt`).
+  - `app/assets/finanzas.js` — Finanzas (balance con el ganado como activo biológico, estado de resultados,
+    flujo de dinero, créditos, rentabilidad de lotes) e Inventario (ganado, alimento, medicinas e insumos,
+    equipo con depreciación). Se guarda en `S.config.fin`.
+  - `app/assets/rumi_pro.js` — Análisis de Rumi: puntaje por lote y finca, riesgo con simulación de
+    Montecarlo, escenarios, ranking de proveedores y razas, semáforo de animales e informe semanal.
+  - `app/assets/voz_es.js` y `app/assets/rumi_voz.js` — voz natural de Rumi: texto a fonemas propio y la voz
+    Piper es_MX-ald-medium con ONNX Runtime Web, en `app/assets/voz/` (licencias en `voz/LICENCIAS.txt`).
+  - `app/assets/i18n.js` y `i18n_en.js`, `i18n_pt.js` — idiomas: traduce lo que aparece en pantalla con
+    catálogos de frases; los números, fechas y datos del usuario van como `{0}`, `{1}`…
   - `app/assets/fondos/rumi.webp` — retrato de Rumi: Brahman en Costa Rica, foto de Bernard Gagnon (CC0).
   - `app/smali/` — el código Android (WebView, guardar archivos, permisos de cámara y ubicación, fotos,
     compartir y lectura en voz alta: la clase `Voz` elige la voz en español más natural del teléfono;

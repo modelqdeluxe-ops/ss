@@ -83,6 +83,11 @@ window.VozRumi={hablar,callar,preparar,soporta,activa,medir,estado:()=>estado,
 if(typeof leer==='function'){
   const _leer=leer,_callar=callarVoz;
   leer=function(t){
+    // en otros idiomas lee la voz del teléfono en ese idioma (la voz natural es de español)
+    const L=window.I18N?I18N.lang():'es';
+    if(L!=='es'&&L!=='xx'){const txt=I18N.txt(String(t||'').replace(/<[^>]+>/g,' ')).replace(/\s+/g,' ').trim();if(!txt)return;
+      try{if(window.Android&&Android.vozIdioma){Android.vozIdioma(L);Android.hablarCon(txt,'');return;}}catch(e){}
+      try{const u=new SpeechSynthesisUtterance(txt);u.lang=L==='pt'?'pt-BR':'en-US';speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}return;}
     if(activa()&&soporta()){const txt=paraVoz(t);if(!txt)return;try{if(window.Android&&Android.callar)Android.callar();}catch(e){}
       hablar(txt).then(ok=>{if(!ok)_leer(t);});return;}
     return _leer(t);
@@ -93,6 +98,8 @@ if(typeof leer==='function'){
 if(typeof vozCfgHtml==='function'){
   const _cfg=vozCfgHtml;
   vozCfgHtml=function(){
+    const L=window.I18N?I18N.lang():'es';
+    if(L!=='es'&&L!=='xx')return `<p class="hint" style="margin:0">Rumi lee con la voz del teléfono en tu idioma. La voz natural de Rumi está en español.</p><button type="button" class="btn full" data-act="vozProbar">Escuchar a Rumi</button>${window.Android&&Android.vozAjustes?'<button type="button" class="btn full" data-act="vozInstalar">Instalar voces más naturales</button>':''}`;
     if(!soporta())return _cfg();
     const on=activa(),st=estado==='error'?'<small class="hint" style="margin:0;color:var(--rojo)">Este teléfono no pudo cargar la voz natural; se usa la del teléfono.</small>':'';
     return `<div class="voz-nat${on?' on':''}"><div class="tx"><b>Voz natural de Rumi</b><span>Voz neuronal que corre en tu teléfono, sin internet. Suena como una persona.</span></div>

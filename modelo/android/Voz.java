@@ -11,6 +11,8 @@ import java.util.Set;
 /** Lectura en voz alta con la mejor voz en español instalada en el teléfono. */
 public final class Voz implements TextToSpeech.OnInitListener {
     private static Voz uno;
+    /** Idioma de las voces que se buscan (es, en, pt…); lo pone la app según su idioma. */
+    public static String idioma = "es";
     private final Context ctx;
     private TextToSpeech tts;
     private boolean listo;
@@ -34,7 +36,7 @@ public final class Voz implements TextToSpeech.OnInitListener {
     /** Puntaje de una voz: calidad, que esté instalada, acento latinoamericano. */
     private static int puntaje(Voice v) {
         Locale l = v.getLocale();
-        if (l == null || !"es".equals(l.getLanguage())) return -1;
+        if (l == null || !idioma.equals(l.getLanguage())) return -1;
         Set<String> f = v.getFeatures();
         if (f != null && f.contains("notInstalled")) return -1;
         int p = v.getQuality();
@@ -126,6 +128,8 @@ public final class Voz implements TextToSpeech.OnInitListener {
         try { sb.append(org.json.JSONObject.quote(String.valueOf(z.tts.getDefaultEngine()))); } catch (Exception e) { sb.append("\"\""); }
         return sb.append('}').toString();
     }
+
+    public static void setIdioma(String i) { if (i != null && i.length() > 0) idioma = i; }
 
     /** Abre los ajustes de texto a voz del teléfono (para instalar voces de mejor calidad). */
     public static void ajustes(Context c) {

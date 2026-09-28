@@ -521,6 +521,16 @@
     return-void
 .end method
 
+.method public vozIdioma(Ljava/lang/String;)V
+    .locals 0
+    .annotation runtime Landroid/webkit/JavascriptInterface;
+    .end annotation
+
+    invoke-static {p1}, Lhn/hato/ganadero/Voz;->setIdioma(Ljava/lang/String;)V
+
+    return-void
+.end method
+
 .method public callar()V
     .locals 1
     .annotation runtime Landroid/webkit/JavascriptInterface;

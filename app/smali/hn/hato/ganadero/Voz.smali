@@ -9,6 +9,8 @@
 # static fields
 .field private static uno:Lhn/hato/ganadero/Voz;
 
+.field public static idioma:Ljava/lang/String; = "es"
+
 
 # instance fields
 .field private final ctx:Landroid/content/Context;
@@ -867,7 +869,7 @@
 
     if-eqz v0, :cond_9
 
-    const-string v2, "es"
+    sget-object v2, Lhn/hato/ganadero/Voz;->idioma:Ljava/lang/String;
 
     invoke-virtual {v0}, Ljava/util/Locale;->getLanguage()Ljava/lang/String;
 
@@ -1111,4 +1113,21 @@
     .catchall {:try_start_2 .. :try_end_2} :catchall_0
 
     throw p1
+.end method
+
+.method public static setIdioma(Ljava/lang/String;)V
+    .locals 1
+
+    if-eqz p0, :cond_0
+
+    invoke-virtual {p0}, Ljava/lang/String;->length()I
+
+    move-result v0
+
+    if-eqz v0, :cond_0
+
+    sput-object p0, Lhn/hato/ganadero/Voz;->idioma:Ljava/lang/String;
+
+    :cond_0
+    return-void
 .end method
