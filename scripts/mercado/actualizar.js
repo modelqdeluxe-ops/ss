@@ -63,7 +63,33 @@ async function cepea(pagina) {
   if (!tabla) throw new Error(`Cepea ${pagina}: no encontré la tabla del indicador`);
   const filas = [...tabla[0].matchAll(/<tr>\s*<td>(\d\d\/\d\d\/\d{4})<\/td>\s*<td>([\d.,]+)<\/td>/g)].map(m => [deDMY(m[1]), numBR(m[2])]).filter(p => p[0] && p[1] > 0);
   if (!filas.length) throw new Error(`Cepea ${pagina}: tabla sin datos`);
-  return filas;
+  // la serie histórica (planilla) del mismo indicador, si se puede leer
+  let hist = [];
+  try { hist = await cepeaSerie(t, pagina); } catch (e) { console.warn(`Cepea ${pagina}: sin serie histórica (${e.message})`); }
+  return hist.concat(filas);
+}
+async function cepeaSerie(html, pagina) {
+  const m = /href="([^"]*indicador\/series\/[^"]+)"/i.exec(html);
+  if (!m) throw new Error('sin enlace a la serie');
+  const url = new URL(m[1].replace(/&amp;/g, '&'), 'https://www.cepea.org.br/').href;
+  let XLSX; try { XLSX = require('xlsx'); } catch (e) { throw new Error('falta el paquete xlsx'); }
+  const r = await fetch(url, { headers: UA, signal: AbortSignal.timeout(60000) });
+  if (!r.ok) throw new Error(`HTTP ${r.status} en ${url}`);
+  const libro = XLSX.read(Buffer.from(await r.arrayBuffer()), { type: 'buffer' });
+  const hoja = libro.Sheets[libro.SheetNames[0]];
+  const filas = XLSX.utils.sheet_to_json(hoja, { header: 1, raw: true });
+  const out = [];
+  for (const f of filas) {
+    if (!f || f.length < 2) continue;
+    let d = f[0], v = f[1];
+    if (typeof d === 'number') { const o = XLSX.SSF.parse_date_code(d); d = o ? `${o.y}-${String(o.m).padStart(2, '0')}-${String(o.d).padStart(2, '0')}` : null; }
+    else if (typeof d === 'string') d = deDMY(d.trim()) || (/^\d\d\/\d{4}$/.test(d.trim()) ? null : null);
+    if (typeof v === 'string') v = numBR(v);
+    if (d && typeof v === 'number' && v > 0) out.push([d, v]);
+  }
+  console.log(`Cepea ${pagina}: serie ${url} → ${out.length} filas (${out[0] && out[0][0]} a ${out[out.length - 1] && out[out.length - 1][0]})`);
+  if (!out.length) throw new Error('planilla sin filas con fecha');
+  return out;
 }
 async function brasil() {
   const [boi, bez, mil] = await Promise.allSettled([cepea('boi-gordo'), cepea('bezerro'), cepea('milho')]);
@@ -90,7 +116,7 @@ async function cambios() {
   return { fecha, base: 'USD', tasas: r, fuente: 'ExchangeRate-API (open.er-api.com), tasas de referencia diarias', url: 'https://www.exchangerate-api.com' };
 }
 async function ptax() {
-  const j = await traer('https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/40?formato=json', 'json');
+  const j = await traer('https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/20?formato=json', 'json');
   return j.map(x => [deDMY(x.data), numBR(String(x.valor).replace('.', ','))]).filter(p => p[0] && p[1] > 0);
 }
 
