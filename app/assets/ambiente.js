@@ -169,7 +169,7 @@ const FX=(()=>{
 })();
 
 /* ---------- fotos de novillos en bucle en cada encabezado ---------- */
-const OFF={hoy:0,lotes:5,registrar:10,graficos:15,mas:20,lote:3,animal:8,formular:13,agenda:18,bodega:23,metodologia:7};
+const OFF={hoy:0,lotes:5,registrar:10,graficos:15,mas:20,lote:3,animal:8,formular:13,agenda:18,bodega:23,metodologia:7,finanzas:11,inventario:21};
 let idx=Math.floor(Math.random()*FOTOS.length),ultimaPg='';
 const url=i=>`fondos/${FOTOS[((i%FOTOS.length)+FOTOS.length)%FOTOS.length]}`;
 /* El encabezado se vuelve a dibujar con cada cambio de datos. Para que la foto no parpadee, la capa de fotos

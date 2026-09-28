@@ -364,6 +364,24 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--anil5);outli
 .glee li>span{flex:1;min-width:0}
 .glee li .st{flex:none;font-style:normal;font-size:11px;font-weight:800;padding:2px 7px;border-radius:7px;margin-top:.1em}
 .glee li .st.ok{background:color-mix(in srgb,var(--verde) 16%,transparent);color:var(--verde)}
+.fz-l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:14.5px}
+.fz-l span{display:flex;flex-direction:column;min-width:0}.fz-l small{font-size:12px;color:var(--ink2);margin-top:1px}
+.fz-l em{font-style:normal;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fz-l.b{font-weight:800}.fz-l.b em{font-weight:800}
+.fz-l.tot{border-top:2px solid var(--ink);font-size:16px}.fz-l.tot em{font-family:'Bricolage Grotesque',sans-serif;font-size:19px}
+.fz-t{margin:12px 0 2px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.fz-comp{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--card2);margin-top:12px;gap:2px}
+.fz-comp i{display:block;height:100%;min-width:3px}
+.fz-leg{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:13.5px}
+.fz-leg div{display:grid;grid-template-columns:12px 1fr auto 44px;gap:8px;align-items:center}
+.fz-leg i{width:12px;height:12px;border-radius:3px}.fz-leg b{white-space:nowrap;font-variant-numeric:tabular-nums}.fz-leg em{font-style:normal;color:var(--ink2);text-align:right}
+.fz-v{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:none}.fz-v b{white-space:nowrap}.fz-v small{font-size:12px;color:var(--ink2);white-space:nowrap}
+.fz-ins{flex-direction:column;align-items:stretch;gap:8px}
+.fz-ib{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;text-align:left;color:inherit;width:100%}
+.fz-ib .tx{flex:1;min-width:0}
+.fz-ia{display:flex;gap:8px;padding-left:54px}.fz-ia .btn{flex:1}
+.fz-cr .kv:first-child{padding-top:0}
+.gcard .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.gcard .acts .btn{flex:1}.gcard .acts .btn .i3{width:20px;height:20px}
 .glee li .st.w{background:color-mix(in srgb,var(--rojo) 14%,transparent);color:var(--rojo)}
 .btn.sm{min-height:36px;padding:0 12px;font-size:13.5px;border-radius:12px}
 .ag-row{align-items:center}
@@ -1742,6 +1760,8 @@ const MAS_SUB={
    ${masFila(mico('info'),'Probar con datos de ejemplo','Reemplaza tus datos por un engorde de ejemplo','data-act="demo"','t-a')}
    ${masFila(mico('aviso'),'Borrar todo','Elimina lotes, registros y ajustes de este teléfono','data-act="borrarTodo"','t-r')}</div><p class="hint">Descarga un respaldo antes de usar estas opciones.</p></section></main>`
 };
+const finSub=()=>{if(!window.Fin)return 'Balance, resultados y flujo de dinero';const b=Fin.balance();return b.activos?`Patrimonio ${money(b.patrimonio)}, ganado ${money(b.ganadoM)}`:'Balance, resultados y flujo de dinero';};
+const invSub=()=>{if(!window.Fin)return 'Ganado, alimento, medicinas y equipo';const C=calc(),n=(S.config.fin&&S.config.fin.insumos||[]).length;return `${pl(C.cabT,'cabeza','cabezas')}${n?`, ${pl(n,'insumo','insumos')}`:''}, alimento y equipo`;};
 PAGES.mas=(sub)=>{
   if(sub&&MAS_SUB[sub])return MAS_SUB[sub]();
   const cfg=S.config,C=calc();
@@ -1751,6 +1771,9 @@ PAGES.mas=(sub)=>{
   const bod=window.Bodega?Bodega.resumen():null;
   return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(cfg.finca||'Mi engorde')}${cfg.ubicacion?' · '+esc(cfg.ubicacion):''}</span><h1>Más</h1><p class="sub">Configuración, datos y ayuda.</p></div></header>
   <main class="bd">
+   <section class="sec">${secH('Tu negocio')}<div class="card rows">
+    ${masFila(icono('finanzas','i3'),'Finanzas',finSub(),'href="#finanzas"','t-v')}
+    ${masFila(icono('inventario','i3'),'Inventario',invSub(),'href="#inventario"','t-y')}</div></section>
    <section class="sec">${secH('Tu finca')}<div class="card rows">
     ${masFila(mico('config'),'Configuración',`Precio ${pk(+cfg.precioVentaKg||0)}, meta ${nf(W(+cfg.metaKg||480))} ${UW()}, ${U()==='lb'?'libras':'kilos'}`,'href="#mas/config"','t-a')}
     ${masFila(mico('racion'),'Raciones y dietas',nR?pl(nR,'ración','raciones'):'Crea tu primera ración','href="#mas/raciones"','t-v')}
@@ -2004,7 +2027,7 @@ SAVE.racion=f=>{
 
 /* ============ acciones ============ */
 const ACTS={
-  f:el=>{const k=el.dataset.f;if(FORMS[k])FORMS[k]({lote:el.dataset.lote,id:el.dataset.id,n:el.dataset.n,modo:el.dataset.modo});},
+  f:el=>{const k=el.dataset.f;if(FORMS[k])FORMS[k]({lote:el.dataset.lote,id:el.dataset.id,n:el.dataset.n,modo:el.dataset.modo,t:el.dataset.t});},
   cerrar:()=>closeSheet(),
   confirmarSi:()=>{const fn=CONFIRM;CONFIRM=null;closeSheet();if(fn)fn();},
   ui:el=>{UI[el.dataset.k]=el.dataset.v;render();},
@@ -4937,6 +4960,7 @@ responder=function(txt){
 <script src="fotos.js"></script>
 <script src="iconos.js"></script>
 <script src="extras.js"></script>
+<script src="finanzas.js"></script>
 <script src="ambiente.js"></script>
 <script src="rumi_guia.js"></script>
 <script src="rumi_menu.js"></script>

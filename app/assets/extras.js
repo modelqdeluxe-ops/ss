@@ -121,6 +121,7 @@ function tareas(){
     else if(x.fechaMeta&&x.fechaMeta<=addDias(H,28))add('pre:'+x.id+':'+x.fechaMeta,addDias(x.fechaMeta,-7)<H?H:addDias(x.fechaMeta,-7),`Preparar la venta de ${nm}`,`Llega a la meta cerca del ${ffc(x.fechaMeta)}: busca comprador y revisa retiros`,'venta',null,'v');
   }
   const b=B();for(const it of b.items){const e=estado(it);if(!e.sin&&e.dias!=null&&e.dias<(+it.min||7))add('bod:'+it.id+':'+H,H,`Comprar ${it.n}`,e.dias<1?'Se acaba hoy':`Alcanza para ${pl(Math.floor(e.dias),'día','días')}`,'bodega',{t:'go',go:'#bodega'},'r');}
+  if(window.tareasFin)for(const t of window.tareasFin())add(t.key,t.f,t.t,t.s,t.ic,t.act,t.tono);
   let ult=null;try{ult=localStorage.getItem('rumentis-ult-respaldo');}catch(e){}
   if(Object.keys(S.lotes).length&&(!ult||ult<addDias(H,-7)))add('resp:'+H,H,'Descargar respaldo',ult?`El último fue ${cuando(ult)}`:'Aún no has descargado ninguno','datos',{t:'go',go:'#mas/datos'},'a');
   for(const t of (cfg().tareas||[]))if(!t.hecho)T.push({key:'propia:'+t.id,f:t.f,t:t.t,s:'Recordatorio tuyo',ic:'nota',propia:t.id,tono:'a'});
@@ -177,5 +178,11 @@ async function compartir(texto,titulo){
 }
 ACTS.informeLote=el=>{const t=informe(el.dataset.id);if(t)compartir(t,S.lotes[el.dataset.id].nombre);};
 window.Extras={informe,compartir,bodega:{resumen,estado}};
-window.Bodega={resumen};
+/* valor de lo que hay en bodega: costo de la última compra con precio; si no, el precio del ingrediente o de la ración */
+function valorKg(it){const b=B(),c=[...b.movs].reverse().find(m=>m.item===it.id&&m.tipo==='compra'&&+m.costo>0&&+m.kg>0);if(c)return c.costo/c.kg;
+  if(it.tipo==='racion'&&S.raciones[it.ref])return +S.raciones[it.ref].costoKg||0;
+  if(it.tipo==='ing'&&typeof INGS!=='undefined'){const n=String(it.ref).trim().toLowerCase();const g=INGS.find(i=>String(i.n).toLowerCase()===n);if(g)return ingPrecio(g.id);}
+  return 0;}
+function inventario(){return B().items.map(it=>{const e=estado(it),st=e.sin?0:Math.max(0,e.stock),vk=valorKg(it);return {it,e,stock:st,valorKg:vk,valor:st*vk};});}
+window.Bodega={resumen,inventario};
 })();
