@@ -1,0 +1,109 @@
+{
+ "F63": {"t": "Marbling and quality grade",
+  "r": "Marbling is the flecks of fat inside the muscle. In the US it's the main factor in the USDA quality grade, and most packers pay premiums for higher grades on their grids.",
+  "s": [
+   {"h": "How it's graded", "p": [
+     "The grader looks at the ribeye between the 12th and 13th ribs.",
+     "USDA quality grades are Prime, Choice, Select and Standard, based on marbling and maturity.",
+     "Programs like Certified Angus Beef add requirements on top of Choice."]},
+   {"h": "In the US", "p": [
+     "About 80 % or more of fed cattle now grade Choice or Prime.",
+     "The Choice–Select spread and Prime premiums change through the year: check your packer's grid."]},
+   {"h": "On your operation", "p": [
+     "Ask your buyer how they grade and pay: live, dressed or on a grid.",
+     "Marbling pays only if you sell on a grid; otherwise focus on weight, dressing percentage and finish."]}]},
+ "F65.r": "Dressing percentage is carcass weight divided by live weight. US fed steers usually dress 62 to 65 %. A couple of points is a lot of money.",
+ "F65.2.0": "A 1,400 lb steer dressing 62 %: 868 lb carcass.",
+ "F65.2.1": "The same steer at 64 %: 896 lb carcass.",
+ "F65.2.2": "That's 28 lb more carcass without changing live weight.",
+ "F65.1.2": "Thin cattle, Holsteins and cattle carrying a lot of fill.",
+ "F66": {"t": "Carcass cuts",
+  "r": "The carcass is split into forequarters and hindquarters and then into primals. The loin and rib bring the highest prices, so well-muscled cattle are worth more.",
+  "s": [
+   {"h": "Hindquarter", "p": [
+     "Tenderloin: the most tender cut.",
+     "Short loin and sirloin: strip steaks, T-bones, porterhouse and top sirloin.",
+     "Round: top round, bottom round, eye of round and sirloin tip.",
+     "The loin and rib hold most of the carcass value."]},
+   {"h": "Forequarter", "p": [
+     "Rib (ribeye), chuck, brisket, plate and shank.",
+     "Cuts for roasts, grinding and slow cooking.",
+     "More connective tissue and lower prices, except the rib."]},
+   {"h": "On your operation", "p": [
+     "Good feeding fills the loin and round.",
+     "Never inject in the rump or round: injection-site lesions damage expensive cuts. BQA says neck only."]}]},
+ "F74": {"t": "Carcass grading and the grid",
+  "r": "US packers pay for fed cattle live, dressed (in the beef) or on a grid. A grid starts from a base price and adds premiums and discounts for USDA quality grade, yield grade and carcass weight.",
+  "s": [
+   {"h": "What the grid looks at", "p": [
+     "Quality grade: Prime, Choice, Select, Standard (marbling and maturity).",
+     "Yield grade 1 to 5: how much lean meat the carcass has; 4s and 5s are discounted.",
+     "Carcass weight: too light or too heavy (often over about 1,050 lb) gets discounted.",
+     "Dark cutters, bruises, liver condemnation and age over 30 months are discounted.",
+     "Premiums for programs such as Certified Angus Beef or NHTC."]},
+   {"h": "On your operation", "p": [
+     "Ask your packer for their grid and compare it with a live or dressed bid.",
+     "Compare what you were paid with what the app projected.",
+     "Adjust genetics, days on feed and target weight to what the grid rewards."]}]},
+ "F76.0.0": "It's damaged by grubs, lice, hot-iron brands and barbed wire.",
+ "F76.2.0": "Controlling lice and grubs also protects the hide.",
+ "F76.2.1": "Brand in the place your state requires, with the smallest brand that works.",
+ "F80.1.0": "A 1,400 lb steer gives an 896 lb carcass: 896 ÷ 1,400 = 64 %.",
+ "F80.2.0": "Well-finished fed steers: 62 to 65 %.",
+ "F80.2.1": "Thin or dairy cattle: 58 to 61 %.",
+ "F80.2.2": "Heavily muscled, well-finished cattle: 66 % or more.",
+ "F81.1.0": "The standard \"pencil shrink\" is 3 to 4 % when cattle are weighed at the feedyard.",
+ "F81.1.1": "NASEM uses 4 % as a reference.",
+ "F81.2.0": "Weighs 1,400 lb at the yard with 4 % shrink: you're paid for 1,344 lb.",
+ "F82": {"t": "Animal unit",
+  "r": "A measure that puts cattle of different sizes on the same scale to figure how much forage or space they need.",
+  "s": [
+   {"h": "What it is", "p": [
+     "In the US one animal unit (AU) is a 1,000 lb cow, with or without a calf."]},
+   {"h": "How it's calculated", "p": [
+     "Animal units = total live weight ÷ 1,000 lb."]},
+   {"h": "Example", "p": [
+     "40 steers of 650 lb = 26,000 lb = 26 animal units."]},
+   {"h": "Uses", "p": [
+     "Stocking rate: animal unit months (AUM) per acre or acres per AU.",
+     "Forage and water budgets."]}]},
+ "F89": {"t": "Price per hundredweight or per head",
+  "r": "US feeder and fed cattle are priced in dollars per hundredweight (cwt, 100 lb). To compare offers, always convert them to the same basis.",
+  "s": [
+   {"h": "How to convert", "p": [
+     "Price per cwt = price per head ÷ weight in lb × 100.",
+     "Price per head = price per cwt × weight in lb ÷ 100."]},
+   {"h": "Example", "p": [
+     "A 550 lb calf at $1,900 a head: $345 per cwt.",
+     "A 650 lb steer at $2,150: $331 per cwt. The heavier one is cheaper per pound, as is normal (the price slide)."]},
+   {"h": "Rule", "p": [
+     "Buy and sell by weight, on a certified scale."]}]},
+ "F91": {"t": "Units of weight and measure",
+  "r": "US cattle are traded in pounds and hundredweights, feed in tons and bushels, and land in acres. Knowing how to convert avoids costly mistakes.",
+  "s": [
+   {"h": "Weight", "p": [
+     "1 kilo = 2.2 pounds; 1 pound = 0.454 kilos.",
+     "1 hundredweight (cwt) = 100 lb; prices are quoted in $/cwt.",
+     "1 ton = 2,000 lb; 1 bushel of corn = 56 lb.",
+     "In Brazil the arroba is 15 kg of carcass; in Central America a quintal is 100 lb."]},
+   {"h": "Area", "p": [
+     "1 acre = 0.405 hectares = 43,560 sq ft.",
+     "1 hectare = 2.47 acres; a section is 640 acres."]},
+   {"h": "Prices", "p": [
+     "Price per lb = price per cwt ÷ 100.",
+     "Price per kilo = price per lb × 2.2."]},
+   {"h": "In Rumi", "p": [
+     "Calculators, Convert: pounds, kilos, hundredweights, acres and hectares."]}]},
+ "F94.1.0": "US fed steers are usually sold at 1,350 to 1,500 lb live; packers often discount carcasses over about 1,050 lb.",
+ "F104.2.0": "Brahman-influenced cattle tolerate heat better than black-hided British cattle.",
+ "F106": {"t": "Stocking rate",
+  "r": "Stocking rate is how many animals (or animal units) each acre of pasture carries. Carrying more than the forage can support degrades the pasture and lowers gains.",
+  "s": [
+   {"h": "US references", "p": [
+     "Arid Western rangeland: 20 to 50 acres or more per animal unit per year.",
+     "Improved pasture in the humid South and East: 2 to 4 acres per cow-calf pair.",
+     "Wheat pasture for stockers in fall and winter: about 1 to 2 acres per stocker."]},
+   {"h": "On your operation", "p": [
+     "Adjust the stocking rate in drought: fewer head or more supplement and hay.",
+     "Rumi calculates stocking with your pastures and your cattle."]}]}
+}

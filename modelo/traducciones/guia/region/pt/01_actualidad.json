@@ -1,0 +1,221 @@
+{
+ "F0": {"t": "Bicheira: um problema de todo dia",
+  "r": "No Brasil a mosca da bicheira (Cochliomyia hominivorax) nunca foi erradicada e está presente o ano todo, com picos no calor e nas chuvas. Na América Central e no México ela voltou em 2023 e virou emergência, o que mostra o estrago que pode causar.",
+  "s": [
+   {"h": "O que está acontecendo", "p": [
+     "Aqui a bicheira é endêmica: todo pecuarista convive com ela.",
+     "A partir de 2023 ela reapareceu na América Central, onde tinha sido erradicada, e em 2024 chegou ao México.",
+     "Os EUA fecharam a fronteira ao gado do México e reforçaram o controle, mostrando o peso comercial da praga.",
+     "Também há casos em pessoas, sobretudo com feridas expostas."]},
+   {"h": "Por que é grave", "p": [
+     "A mosca põe ovos em qualquer ferida, até no umbigo ou onde um carrapato foi arrancado.",
+     "As larvas comem carne viva e o animal pode morrer em poucos dias.",
+     "Afeta também cães, cavalos, porcos, animais silvestres e pessoas."]},
+   {"h": "O que fazer na fazenda", "p": [
+     "Revise todo dia feridas, umbigos, castrações, descornas e marcações.",
+     "Trate toda ferida com produto larvicida e repelente registrado no MAPA.",
+     "Evite castrar, descornar e marcar nos meses de mais moscas, ou proteja bem as feridas.",
+     "Controle o carrapato e o berne: as feridas que deixam atraem a mosca."]},
+   {"h": "Para o negócio", "p": [
+     "Bicheira em animais de venda ou de exportação dá desconto e pode barrar o embarque.",
+     "Couros com cicatrizes perdem valor no curtume."]}]},
+ "F1": {"t": "Técnica do inseto estéril",
+  "r": "Para acabar com a bicheira, milhões de moscas são criadas em fábricas, esterilizadas com radiação e soltas de aviões. Ao acasalar com as fêmeas selvagens não nascem larvas, e a população cai. Foi assim que os EUA, o México e a América Central se livraram dela.",
+  "s": [
+   {"h": "Como funciona", "p": [
+     "A fêmea da bicheira acasala uma só vez na vida.",
+     "Se acasala com um macho estéril, seus ovos não eclodem.",
+     "Soltando muito mais moscas estéreis que selvagens, a praga desaparece em algumas gerações."]},
+   {"h": "História", "p": [
+     "Com essa técnica os EUA, o México e a América Central eliminaram a praga entre 1950 e 2000.",
+     "Na América do Sul ela nunca foi aplicada em grande escala, e a bicheira continua presente.",
+     "Depois do rebrote de 2023, EUA e México anunciaram novas fábricas e centros de soltura."]},
+   {"h": "Seu papel", "p": [
+     "No Brasil o controle depende de você: revisar e tratar as feridas cedo.",
+     "Menos feridas (manejo calmo, instalações sem pontas, controle de carrapato) é a melhor prevenção."]}]},
+ "F2": {"t": "Fronteiras e comércio de carne",
+  "r": "Doenças e decisões sanitárias mudam o comércio de um dia para o outro. Em 2021 um caso atípico de vaca louca em Minas Gerais e Mato Grosso suspendeu as exportações à China por mais de três meses, e a arroba caiu.",
+  "s": [
+   {"h": "O que aconteceu", "p": [
+     "A China é o maior comprador da carne bovina brasileira.",
+     "Pelo protocolo com a China, um caso de vaca louca suspende as exportações até a investigação terminar.",
+     "Em 2021 a suspensão durou de setembro a dezembro; em 2023 um caso atípico no Pará parou os embarques por algumas semanas."]},
+   {"h": "Lição", "p": [
+     "A sanidade é um bem de todos: um caso fecha mercados e derruba o preço de todos.",
+     "O trânsito de gado sem GTA espalha doenças e enfraquece o sistema de vigilância."]},
+   {"h": "No seu confinamento", "p": [
+     "Compre gado com GTA e documentos em dia.",
+     "Acompanhe os comunicados do MAPA e da agência de defesa do seu estado antes de comprar ou vender."]}]},
+ "F3": {"t": "Preço da arroba e ciclo pecuário",
+  "r": "O preço do boi gordo e do bezerro sobe e desce em ciclos de alguns anos. Em 2023 a arroba caiu com muito descarte de fêmeas; em 2024 e 2025 o ciclo virou e a arroba e o bezerro voltaram a subir, puxados também pela forte exportação.",
+  "s": [
+   {"h": "Como o ciclo funciona", "p": [
+     "Com preço alto, o criador segura as fêmeas para cria: sai menos gado e o preço sobe mais.",
+     "Anos depois há mais bezerros, a oferta cresce e o preço cai.",
+     "Na baixa, o abate de vacas aumenta, o que acelera a virada seguinte."]},
+   {"h": "Situação recente", "p": [
+     "Em 2022 e 2023 o abate de fêmeas foi muito alto e a arroba caiu.",
+     "Com menos fêmeas, a oferta de bezerros diminuiu e o preço da reposição subiu.",
+     "Os preços recordes nos EUA e a demanda da China sustentaram as exportações brasileiras."]},
+   {"h": "No seu confinamento", "p": [
+     "Com reposição cara, a margem depende de engordar eficiente e vender bem.",
+     "Use a calculadora de preço máximo de compra antes de cada compra.",
+     "Considere travar parte do preço no mercado futuro do boi gordo na B3 ou com o frigorífico."]}]},
+ "F4.0.2": "No Brasil o MAPA proibiu vários antimicrobianos como promotores de crescimento (colistina em 2016; tilosina, lincomicina e tiamulina em 2020); os ionóforos continuam permitidos.",
+ "F5": {"t": "Resistência do carrapato aos carrapaticidas",
+  "r": "O carrapato-do-boi (Rhipicephalus microplus) ficou resistente a muitos produtos em quase todo o Brasil: piretroides, organofosforados, amitraz e, em várias regiões, ivermectina e fipronil. Banhar com mais frequência não resolve: piora o problema.",
+  "s": [
+   {"h": "Como a resistência se forma", "p": [
+     "Cada banho deixa vivos os carrapatos mais resistentes, que se reproduzem.",
+     "Doses baixas, misturas caseiras e banhos muito frequentes aceleram a resistência.",
+     "Usar sempre o mesmo grupo químico também."]},
+   {"h": "O que fazer", "p": [
+     "Faça o biocarrapaticidograma (teste de eficácia) em um laboratório ou com a Embrapa para saber o que funciona na sua fazenda.",
+     "Rotacione grupos químicos por temporada, não a cada banho.",
+     "Faça o controle estratégico: tratamentos na época certa (início da primavera) com dose e volume corretos.",
+     "Combine com rotação de pastos e raças mais resistentes, como o Nelore."]},
+   {"h": "No seu confinamento", "p": [
+     "No curral o carrapato se controla muito melhor que no pasto.",
+     "Anote cada banho no app para respeitar a carência da carne."]}]},
+ "F10": {"t": "Pecuária livre de desmatamento",
+  "r": "Frigoríficos, supermercados e países importadores exigem cada vez mais que o gado não venha de áreas desmatadas. O regulamento da União Europeia inclui a carne bovina e os grandes frigoríficos já monitoram seus fornecedores por satélite.",
+  "s": [
+   {"h": "O que pedem", "p": [
+     "Provar com o CAR e mapas que a fazenda não desmatou depois da data de corte.",
+     "Rastreabilidade do animal, incluindo os fornecedores indiretos (as fazendas de cria e recria).",
+     "Cumprir o Código Florestal (APP e Reserva Legal), as leis trabalhistas e não estar em lista de embargo do Ibama."]},
+   {"h": "Por que importa no Brasil", "p": [
+     "O Brasil é o maior exportador de carne bovina do mundo.",
+     "Protocolos como o Boi na Linha e os acordos com o Ministério Público no Pará levam essas regras às fazendas."]},
+   {"h": "No seu confinamento", "p": [
+     "Mantenha o CAR em dia e não abra mata para pasto: além de ilegal, bloqueia a venda a frigoríficos grandes.",
+     "Guarde GTAs e registros de origem de cada lote comprado."]}]},
+ "F12": {"t": "Brincos eletrônicos e RFID",
+  "r": "Os brincos eletrônicos (RFID) têm um chip com número único lido por um bastão ou pela balança. O Brasil lançou em 2024 o Plano Nacional de Identificação Individual de Bovinos e Búfalos, que prevê todo o rebanho identificado até 2032.",
+  "s": [
+   {"h": "Como funcionam", "p": [
+     "O brinco não tem bateria: o leitor o ativa por rádio ao se aproximar.",
+     "Lê-se o número em segundos e ele fica salvo junto ao peso ou ao tratamento.",
+     "O SISBOV, exigido para exportar à União Europeia, já usa identificação individual."]},
+   {"h": "Vantagens", "p": [
+     "Menos erros ao anotar brincos.",
+     "História completa de cada animal.",
+     "Requisito cada vez mais comum para exportar e para bonificações."]},
+   {"h": "No seu confinamento", "p": [
+     "Acompanhe o calendário do plano nacional no seu estado.",
+     "Coloque o número do brinco no app; se um dia usar leitor, o número é o mesmo."]}]},
+ "F16": {"t": "El Niño, La Niña e a seca",
+  "r": "El Niño e La Niña são mudanças na temperatura do Oceano Pacífico que alteram as chuvas no Brasil. El Niño costuma trazer seca ao Norte e ao Nordeste e chuva forte ao Sul; La Niña, seca no Sul e chuva no Norte.",
+  "s": [
+   {"h": "El Niño", "p": [
+     "Seca no Norte e no Nordeste e calor forte no Centro-Oeste.",
+     "O forte El Niño de 2023 e 2024 trouxe seca histórica na Amazônia e ondas de calor recordes."]},
+   {"h": "La Niña", "p": [
+     "Seca no Sul, como a estiagem que atingiu o Rio Grande do Sul em 2022.",
+     "Mais chuva no Norte e no Nordeste."]},
+   {"h": "A seca e o confinamento", "p": [
+     "Uma seca forte encarece o milho, a silagem e o bezerro de reposição.",
+     "Também atrasa as águas e prolonga o período de confinamento."]},
+   {"h": "No seu confinamento", "p": [
+     "Acompanhe as previsões do INMET para a temporada.",
+     "Com aviso de El Niño: garanta silagem e grãos com antecedência.",
+     "Com aviso de La Niña no Sul: prepare reservas de forragem e água."]}]},
+ "F17": {"t": "Ondas de calor mais frequentes",
+  "r": "Os últimos anos foram dos mais quentes já registrados, e as ondas de calor no Centro-Oeste e no Sudeste estão mais frequentes. O estresse por calor já é um custo permanente do confinamento, mesmo com gado zebuíno.",
+  "s": [
+   {"h": "Efeitos no gado", "p": [
+     "Cai o consumo e o ganho diário.",
+     "Sobe a mortalidade em currais sem sombra, sobretudo em animais cruzados e pesados.",
+     "Piora a qualidade da carne."]},
+   {"h": "Adaptar-se", "p": [
+     "Sombra para todos os animais: árvores ou sombrite.",
+     "Água abundante e fresca, com bebedouros na sombra.",
+     "Trato no fim da tarde e de madrugada.",
+     "Genética adaptada: Nelore, cruzamentos e pelo curto."]},
+   {"h": "No seu confinamento", "p": [
+     "Veja no Rumi o clima de hoje e o índice de calor.",
+     "Planeje o embarque e o trabalho no brete para as horas frescas."]}]},
+ "F18": {"t": "Gripe aviária (H5N1) em vacas leiteiras",
+  "r": "Em 2024 o vírus da gripe aviária H5N1 foi encontrado pela primeira vez em vacas leiteiras dos EUA e se espalhou por muitos rebanhos. No Brasil não houve casos em bovinos, mas em 2025 foi registrado o primeiro foco em granja comercial de aves.",
+  "s": [
+   {"h": "O que se sabe", "p": [
+     "Afeta sobretudo vacas em lactação: a produção de leite cai e o leite muda de aspecto.",
+     "O vírus está no leite cru; a pasteurização o destrói.",
+     "Houve casos humanos, em geral leves, em pessoas que lidavam com vacas ou aves infectadas."]},
+   {"h": "Gado de corte", "p": [
+     "Os casos em gado de corte foram muito raros.",
+     "A carne bem cozida não é considerada um risco."]},
+   {"h": "No seu confinamento", "p": [
+     "Mantenha aves silvestres e de quintal longe dos cochos e bebedouros.",
+     "Notifique ao serviço veterinário oficial qualquer doença estranha em vários animais ao mesmo tempo."]}]},
+ "F20": {"t": "Febre aftosa: Brasil livre sem vacinação",
+  "r": "Em 2025 a Organização Mundial de Saúde Animal reconheceu todo o Brasil como livre de febre aftosa sem vacinação. A vacina deixou de ser aplicada, e agora a vigilância e a notificação rápida são o que protege o rebanho e as exportações.",
+  "s": [
+   {"h": "Situação", "p": [
+     "A última vacinação contra aftosa no país foi encerrada em 2024.",
+     "EUA, Canadá, México e América Central também são livres sem vacinação.",
+     "Em 2025 houve focos na Europa (Alemanha, Hungria e Eslováquia): nenhum país está a salvo."]},
+   {"h": "Por que importa", "p": [
+     "O novo status pode abrir mercados que pagam mais, como Japão e Coreia do Sul.",
+     "Um só foco suspenderia as exportações e o trânsito de animais."]},
+   {"h": "No seu confinamento", "p": [
+     "Notifique imediatamente bolhas na boca e nas patas, babeira e mancadeira em vários animais ao serviço veterinário oficial do seu estado.",
+     "Não compre gado sem GTA nem produtos de contrabando."]}]},
+ "F23": {"t": "Rastreabilidade e certificações",
+  "r": "Poder seguir cada animal do nascimento ao prato já é requisito para muitos mercados. No Brasil a base é a GTA, o SISBOV para a União Europeia e o plano nacional de identificação individual.",
+  "s": [
+   {"h": "O que inclui", "p": [
+     "Cadastro da propriedade na agência de defesa do estado.",
+     "Identificação única de cada animal (brinco e, cada vez mais, RFID).",
+     "Registro de trânsito com a GTA.",
+     "Registro de tratamentos e vacinas."]},
+   {"h": "Certificações", "p": [
+     "Boas Práticas Agropecuárias (BPA da Embrapa).",
+     "Livre de desmatamento.",
+     "Bem-estar animal.",
+     "Carne orgânica, a pasto ou programas como a Carne Carbono Neutro."]},
+   {"h": "No seu confinamento", "p": [
+     "Mantenha em dia suas GTAs, brincos e registros de tratamentos.",
+     "O app guarda a história de cada lote e você pode exportá-la para Excel."]}]},
+ "F24": {"t": "Custos de insumos e volatilidade",
+  "r": "Desde 2021 os preços do milho, do farelo de soja, dos fertilizantes e do diesel tiveram altas e baixas fortes pela guerra na Ucrânia, o clima e o câmbio. Isso pesa direto no custo da arroba produzida.",
+  "s": [
+   {"h": "O que mudou", "p": [
+     "O milho e o farelo de soja subiram muito em 2021 e 2022 e depois caíram.",
+     "Os fertilizantes tiveram preços recordes em 2022, o que encareceu a silagem e o pasto.",
+     "O dólar alto encarece os insumos importados e a ração."]},
+   {"h": "Como se proteger", "p": [
+     "Compre milho na colheita da safrinha, quando costuma estar mais barato, se tiver onde armazenar.",
+     "Use subprodutos regionais como polpa cítrica, caroço de algodão, DDG ou bagaço de cana.",
+     "Recalcule o custo da ração cada vez que um preço mudar."]},
+   {"h": "No seu confinamento", "p": [
+     "O app recalcula o custo por quilo ganho com seus preços.",
+     "Use o depósito para saber quanto alimento tem e para quantos dias dá."]}]},
+ "F25": {"t": "Demanda de carne e exportação",
+  "r": "O Brasil é o maior exportador de carne bovina do mundo, e a China é de longe o maior comprador. O mercado interno continua sendo o destino da maior parte da carne produzida.",
+  "s": [
+   {"h": "Tendências", "p": [
+     "Exportações recordes em 2024 e 2025, com China, EUA e Oriente Médio entre os principais destinos.",
+     "O \"boi China\" (até 30 meses) recebe prêmio em muitos frigoríficos.",
+     "No mercado interno cresce a procura por carne de qualidade e marcas."]},
+   {"h": "Oportunidades", "p": [
+     "Novilhos jovens e bem terminados, com bom acabamento de gordura.",
+     "Programas de qualidade e bonificações (Angus, precoce, rastreado).",
+     "Venda direta e marcas locais."]},
+   {"h": "No seu confinamento", "p": [
+     "Pergunte ao seu frigorífico que animal ele paga melhor e quais são as bonificações.",
+     "Ajuste seu confinamento a esse mercado."]}]},
+ "F26": {"t": "Produtos proibidos que continuam aparecendo",
+  "r": "Ainda se vendem ilegalmente substâncias para engordar, como o clembuterol e anabolizantes. No Brasil os anabolizantes hormonais são proibidos em bovinos, e resíduos podem fechar mercados inteiros.",
+  "s": [
+   {"h": "Clembuterol e anabolizantes", "p": [
+     "O clembuterol é proibido em animais de produção em praticamente todo o mundo.",
+     "Os anabolizantes hormonais (implantes) são proibidos em bovinos no Brasil.",
+     "Seus resíduos na carne podem causar problemas graves nas pessoas."]},
+   {"h": "Outros", "p": [
+     "China, União Europeia e Rússia não aceitam carne com ractopamina: frigoríficos exportadores exigem gado livre dela.",
+     "Antibióticos como promotores proibidos pelo MAPA e produtos sem registro."]},
+   {"h": "No seu confinamento", "p": [
+     "Nunca use produtos sem registro no MAPA nem indicações de vendedores sem receita.",
+     "O MAPA faz análises de resíduos (PNCRC): um resultado positivo leva a sanções e à perda do comprador."]}]}
+}

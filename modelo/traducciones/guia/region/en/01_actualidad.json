@@ -1,0 +1,233 @@
+{
+ "F0": {"t": "New World screwworm: the threat at the border",
+  "r": "The New World screwworm was eradicated from the US decades ago with sterile flies, but it came back in Central America in 2023 and moved north through Mexico, with cases reported near the Texas border in 2025. It's the biggest animal health threat facing US cattle right now.",
+  "s": [
+   {"h": "What happened", "p": [
+     "For decades a barrier of sterile flies in Panama kept the pest out of North America.",
+     "From 2023 cases spread through Central America and in late 2024 reached Mexico.",
+     "In 2025 it kept moving north through Mexico, with detections close to the US border.",
+     "The US had a travel-related human case in 2025; people with open wounds are also at risk."]},
+   {"h": "Why it's serious", "p": [
+     "The fly lays eggs in any wound, even a navel or a spot where a tick was pulled off.",
+     "The larvae eat living flesh and an animal can die within days.",
+     "It also affects dogs, horses, pigs, wildlife and people."]},
+   {"h": "What to do on your operation", "p": [
+     "Check wounds, navels, castrations, dehorning sites and brands every day, especially on cattle from the south.",
+     "Treat wounds with a labeled larvicide and repellent.",
+     "Learn what the larvae look like and keep samples in alcohol if you find any.",
+     "It is a reportable disease: call your state veterinarian or USDA APHIS right away."]},
+   {"h": "For the business", "p": [
+     "USDA closed the border to Mexican feeder cattle in November 2024, reopened briefly and closed it again in 2025.",
+     "Check current USDA import and movement rules before buying cattle that came from Mexico or southern Texas."]}]},
+ "F1": {"t": "Sterile insect technique",
+  "r": "To get rid of screwworm, millions of flies are raised in plants, sterilized with radiation and released from aircraft. When they mate with wild females no larvae hatch, and the population collapses. This is how the US eradicated it.",
+  "s": [
+   {"h": "How it works", "p": [
+     "The female screwworm mates only once in her life.",
+     "If she mates with a sterile male, her eggs don't hatch.",
+     "Releasing far more sterile flies than wild ones wipes out the pest within a few generations."]},
+   {"h": "History", "p": [
+     "USDA used this technique to eradicate screwworm from the Southeast by 1959 and from the rest of the US by the early 1980s.",
+     "The US and Mexico then pushed the barrier south to Panama, where the COPEG plant maintained it for decades.",
+     "After the pest returned, USDA announced a sterile fly dispersal facility and a new production plant in South Texas, plus more flies from Mexico."]},
+   {"h": "Your role", "p": [
+     "The technique only works if wounds are treated and cases are reported early.",
+     "Cooperate with USDA and state crews if they survey or release flies in your area."]}]},
+ "F2": {"t": "Borders and the cattle trade",
+  "r": "Animal diseases can change the cattle trade overnight. The latest example was the US closing its border to Mexican feeder cattle because of screwworm in 2024 and 2025, which tightened feeder supplies and pushed prices higher.",
+  "s": [
+   {"h": "What happened", "p": [
+     "Mexico usually sends the US around a million feeder cattle a year.",
+     "USDA suspended those imports in November 2024, reopened briefly in 2025 and suspended them again.",
+     "Fewer feeders coming north added to the tight US supply and to record feeder prices."]},
+   {"h": "Lesson", "p": [
+     "Animal health is a shared asset: one outbreak can close markets.",
+     "Illegal or undocumented cattle movement spreads disease."]},
+   {"h": "On your operation", "p": [
+     "Buy cattle with official ID, health papers and brand inspection where your state requires it.",
+     "Follow USDA APHIS and your state veterinarian's announcements before buying or selling across state or national lines."]}]},
+ "F3": {"t": "Cattle prices and the cattle cycle",
+  "r": "Cattle prices move in cycles of several years. In 2024 and 2025 US fed and feeder cattle hit record prices because the national herd was at its smallest in about 70 years.",
+  "s": [
+   {"h": "How the cycle works", "p": [
+     "When prices are high, ranchers keep heifers to rebuild: fewer cattle go to market and prices rise further.",
+     "Years later there are more calves, supply grows and prices fall.",
+     "Droughts force cow sales and throw the cycle off."]},
+   {"h": "Recent situation", "p": [
+     "The 2020–2023 droughts in the Plains and West shrank the US cow herd.",
+     "With fewer calves and the Mexican border closed to feeders, calf and feeder prices set all-time highs.",
+     "Expensive feeders raise the break-even for everyone who feeds cattle."]},
+   {"h": "On your operation", "p": [
+     "With costly feeders, your margin depends on efficient gains and a good sale.",
+     "Run the maximum purchase price calculator before every purchase.",
+     "Consider price protection (futures, options or LRP insurance) instead of betting that prices keep rising."]}]},
+ "F4.0.2": "In the US, antibiotics can't be used for growth promotion: medically important drugs in feed need a Veterinary Feed Directive, and since 2023 all of them need a prescription.",
+ "F5": {"t": "Tick and fly resistance to pesticides",
+  "r": "Horn flies across the US have become resistant to pyrethroid ear tags and pour-ons in many areas, and resistance also shows up in some ticks. Treating more often doesn't solve it: it makes it worse.",
+  "s": [
+   {"h": "How resistance builds", "p": [
+     "Each treatment leaves the most resistant flies or ticks alive, and they breed.",
+     "Low doses, old tags left in and year-round use speed up resistance.",
+     "So does always using the same chemical class."]},
+   {"h": "What to do", "p": [
+     "Rotate chemical classes by season (pyrethroid, organophosphate, macrocyclic lactone), not every treatment.",
+     "Put ear tags in when flies reach about 200 per animal and remove them in the fall.",
+     "Treat only when needed, at the right dose and volume.",
+     "Combine with manure management, traps and feed-through products."]},
+   {"h": "On your operation", "p": [
+     "Watch for new pests such as the Asian longhorned tick in the eastern states, which can spread Theileria.",
+     "Record every treatment in the app to respect meat withdrawals."]}]},
+ "F10": {"t": "Sustainability and deforestation-free beef",
+  "r": "Big beef buyers increasingly ask for proof that cattle were raised responsibly. In the US the focus is on sustainability programs and traceability; deforestation rules like the European Union's mainly affect imported beef.",
+  "s": [
+   {"h": "What buyers ask for", "p": [
+     "Records of where cattle came from and how they were raised.",
+     "Beef Quality Assurance (BQA) certification.",
+     "Participation in sustainability programs and data on water, soil and emissions."]},
+   {"h": "Why it matters in the US", "p": [
+     "Packers and retailers pass buyer demands down to feedyards and ranches.",
+     "Export markets, especially the EU, have their own rules on hormones and origin."]},
+   {"h": "On your operation", "p": [
+     "Keep your BQA certification current and follow its practices.",
+     "Keep purchase papers, health records and source information for every lot."]}]},
+ "F12": {"t": "Electronic ear tags (RFID)",
+  "r": "Electronic ear tags (RFID) carry a chip with a unique number read by a wand or a scale. Since November 2024 USDA requires official ear tags to be both visual and electronic for cattle that need official ID when moving between states.",
+  "s": [
+   {"h": "How they work", "p": [
+     "The tag has no battery: the reader powers it by radio when it gets close.",
+     "The number is read in seconds and saved with the weight or treatment.",
+     "Official US tags start with 840 and are tied to your premises ID."]},
+   {"h": "Advantages", "p": [
+     "Fewer mistakes writing tag numbers.",
+     "A complete history for each animal.",
+     "Required for many export and verified programs."]},
+   {"h": "On your operation", "p": [
+     "Ask your state veterinarian which cattle need official ID; feeder cattle under 18 months are usually exempt for interstate movement, but many buyers still want it.",
+     "Enter the tag number in the app; if you use a reader later, the number is the same."]}]},
+ "F16": {"t": "El Niño, La Niña and drought",
+  "r": "El Niño and La Niña are changes in Pacific Ocean temperature that shift rainfall across the US. La Niña tends to bring drought to the southern Plains; El Niño tends to bring a wetter southern tier and a milder northern winter.",
+  "s": [
+   {"h": "La Niña", "p": [
+     "Drier, warmer winters in the southern Plains and Southwest.",
+     "The 2020–2023 La Niña years helped cause the drought that shrank the US cow herd."]},
+   {"h": "El Niño", "p": [
+     "Wetter, cooler winters in the South and Southeast.",
+     "Milder winters in the northern Plains."]},
+   {"h": "Drought and feed", "p": [
+     "Drought cuts pasture and hay, raises feed prices and forces early calf and cow sales.",
+     "The US Drought Monitor updates the map every week."]},
+   {"h": "On your operation", "p": [
+     "Follow NOAA's seasonal outlook for your area.",
+     "With a La Niña warning in the southern Plains: lock in hay and silage and plan for fewer head.",
+     "With an El Niño winter: prepare drainage and mud management in your pens."]}]},
+ "F17": {"t": "More frequent heat waves",
+  "r": "Recent years have been among the hottest on record, and heat waves in the Plains feedyard belt are more frequent. In June 2022 a heat and humidity event killed thousands of feedlot cattle in Kansas. Heat stress is now a regular summer cost.",
+  "s": [
+   {"h": "Effects on cattle", "p": [
+     "Intake and daily gain drop.",
+     "Deaths rise when hot days come with high humidity, no wind and warm nights.",
+     "Heavy, black-hided cattle near finish are the most at risk."]},
+   {"h": "Adapting", "p": [
+     "Shade structures in pens, at least for the heaviest cattle.",
+     "Extra water tank space and fresh, cool water.",
+     "Feed later in the afternoon and use sprinklers or pen misting during heat events.",
+     "Don't work or ship cattle during the hottest hours."]},
+   {"h": "On your operation", "p": [
+     "Check today's weather and the heat index in Rumi, and follow USDA's cattle heat stress forecast.",
+     "Plan shipping and chute work for early morning."]}]},
+ "F18": {"t": "Bird flu (H5N1) in dairy cows",
+  "r": "In March 2024 the H5N1 bird flu virus was found in US dairy cows for the first time and spread to herds in many states. It's a case study in how a virus can jump species, and it affects movement rules for dairy cattle.",
+  "s": [
+   {"h": "What we know", "p": [
+     "It mainly affects lactating cows: milk drops and changes appearance.",
+     "The virus is found in raw milk; pasteurization destroys it.",
+     "There were human cases, mostly mild, in people working with infected cows or poultry."]},
+   {"h": "Beef cattle", "p": [
+     "Cases in beef cattle have been very rare.",
+     "USDA testing has not found it in retail beef; properly cooked beef isn't considered a risk."]},
+   {"h": "On your operation", "p": [
+     "Lactating dairy cows moving between states need a negative test under the federal order; check current rules before buying cull dairy cows.",
+     "Keep wild birds and backyard poultry away from bunks and waterers, and don't feed raw milk to calves or cats."]}]},
+ "F20": {"t": "Foot-and-mouth disease",
+  "r": "The US has been free of foot-and-mouth disease since 1929 and doesn't vaccinate. An outbreak here would stop beef exports overnight, which is why any suspicion must be reported immediately.",
+  "s": [
+   {"h": "The situation", "p": [
+     "The US, Canada, Mexico and Central America are free without vaccination.",
+     "In 2025 the World Organisation for Animal Health recognized Brazil as free without vaccination.",
+     "In 2025 there were outbreaks in Europe (Germany, Hungary and Slovakia): no country is immune."]},
+   {"h": "Why it matters", "p": [
+     "FMD-free status is what lets US beef reach the best export markets.",
+     "A single case would halt exports and livestock movement."]},
+   {"h": "On your operation", "p": [
+     "Report blisters in the mouth or feet, drooling and lameness in several animals to your state veterinarian or USDA at once.",
+     "Keep a biosecurity plan (such as the Secure Beef Supply plan) ready so you can keep moving cattle during an outbreak."]}]},
+ "F23": {"t": "Traceability and verified programs",
+  "r": "Being able to trace each animal is already required for many markets. In the US, official ID and disease traceability rules apply to certain classes of cattle, and verified programs add premiums.",
+  "s": [
+   {"h": "What it includes", "p": [
+     "A premises ID for your operation.",
+     "Official ID (840 RFID tags) for cattle that need it.",
+     "Health certificates (CVI) and brand inspections when cattle move.",
+     "Treatment and vaccination records."]},
+   {"h": "Programs", "p": [
+     "Beef Quality Assurance (BQA).",
+     "Age and source verification and Non-Hormone Treated Cattle (NHTC) for some exports.",
+     "Natural, grass-fed or organic programs with their own rules.",
+     "Animal welfare audits by packers."]},
+   {"h": "On your operation", "p": [
+     "Keep your records, tags and papers up to date: they're needed to qualify for premiums.",
+     "The app stores each lot's history and exports it to Excel."]}]},
+ "F24": {"t": "Input costs and volatility",
+  "r": "Since 2021 corn, soybean meal, fertilizer and diesel prices have swung sharply with the war in Ukraine, weather and freight. Feed is the biggest cost after the feeder, so these swings hit your cost of gain directly.",
+  "s": [
+   {"h": "What moved", "p": [
+     "Corn and soybean meal jumped in 2021 and 2022 and then came down.",
+     "Fertilizer hit record prices in 2022, which raised hay and silage costs.",
+     "Diesel and trucking rose at several points."]},
+   {"h": "How to protect yourself", "p": [
+     "Contract corn or buy ahead when the price is low, if you have good storage.",
+     "Use local by-products like distillers grains or corn gluten feed as alternatives.",
+     "Recalculate your ration cost every time a price changes."]},
+   {"h": "On your operation", "p": [
+     "The app recalculates your cost per pound gained with your prices.",
+     "Use the feed store to see how much feed you have and how many days it will last."]}]},
+ "F25": {"t": "Beef demand",
+  "r": "US beef demand has stayed strong even with record retail prices, and the US is both a big exporter and the largest beef importer. Consumers keep paying more for higher-quality grades.",
+  "s": [
+   {"h": "Trends", "p": [
+     "More Choice and Prime beef: the share grading Choice or better has grown for years.",
+     "Ground beef demand pulls in lean trimmings, much of it imported.",
+     "Exports to Japan, South Korea, Mexico and China matter for value."]},
+   {"h": "Opportunities", "p": [
+     "Cattle that grade well and fit the packer's grid.",
+     "Branded and verified programs (Angus, natural, source-verified).",
+     "Direct sales and local brands."]},
+   {"h": "On your operation", "p": [
+     "Ask your packer or buyer which cattle earn premiums on their grid.",
+     "Adjust genetics, days on feed and target weight to that market."]}]},
+ "F26": {"t": "Banned products that still show up",
+  "r": "Substances like clenbuterol are illegal in food animals, and some approved products are banned by key export markets. Getting it wrong can mean residues, penalties and lost markets.",
+  "s": [
+   {"h": "Clenbuterol", "p": [
+     "It's illegal in food animals in the US and almost everywhere else.",
+     "Residues can cause tremors, a racing heart and serious problems in people.",
+     "It's often found in livestock shows and cattle smuggled from other countries."]},
+   {"h": "Others", "p": [
+     "Ractopamine is FDA-approved, but the EU, China and Russia ban it: cattle for those programs must be free of it.",
+     "Extra-label use of drugs in feed is illegal, and medically important antibiotics need a VFD or a prescription."]},
+   {"h": "On your operation", "p": [
+     "Use only approved products, exactly as labeled or prescribed by your veterinarian.",
+     "USDA FSIS tests carcasses for residues: a violation can land your name on the public repeat violator list."]}]},
+ "F27": {"t": "Recent science on cattle nutrition",
+  "r": "The 2016 NASEM beef nutrient requirements tables are the US standard, and research keeps refining them. Studies show breed type, days on feed and heat or cold change requirements more than older tables assumed.",
+  "s": [
+   {"h": "Findings", "p": [
+     "Brahman-influenced cattle need somewhat less energy for maintenance than British breeds.",
+     "Cold, mud and heat raise maintenance requirements significantly.",
+     "Research in Brazil (BR-CORTE) filled in data for Zebu cattle."]},
+   {"h": "Application", "p": [
+     "Rations tuned to your cattle type and weather avoid overfeeding.",
+     "Use a nutritionist and the NASEM model for your finishing rations."]},
+   {"h": "On your operation", "p": [
+     "Rumi's calculators adjust for breed type and climate; choose yours in Guide, Reference tables."]}]}
+}

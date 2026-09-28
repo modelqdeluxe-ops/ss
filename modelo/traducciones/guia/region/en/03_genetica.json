@@ -1,0 +1,63 @@
+{
+ "F145.r": "Warm-season (C4) grasses like bermudagrass and bahiagrass grow fast in heat but make more fiber and less protein than cool-season grasses like fescue, orchardgrass or wheat pasture. That's why stockers gain much more on wheat pasture than on summer bermuda.",
+ "F145.1.0": "On good warm-season pasture a stocker gains about 1 to 1.5 lb a day; on wheat pasture, 2 to 2.5 lb.",
+ "F145.1.1": "With supplement on summer grass it can reach about 1.8 to 2.2 lb.",
+ "F145.1.2": "In the feedyard on a finishing ration it can gain 3.5 to 4 lb.",
+ "F145.2.1": "Supplement protein on dormant winter range and energy on lush spring grass when you want more gain.",
+ "F145.2.2": "Legumes like alfalfa and clovers raise pasture protein.",
+ "F149.1.1": "The Brazilian BR-CORTE tables were built with Nelore and crosses, useful for Brahman-influenced cattle in the southern US.",
+ "F149.1.2": "The US NASEM tables were built mainly with British and Continental breeds, the typical feedyard cattle.",
+ "F149.2.0": "A 775 lb steer gaining 2.2 lb a day eats about 18 to 20 lb of dry matter.",
+ "F149.3.0": "Rumi's calculators use values from these tables adjusted to your cattle type and climate. See Rumi, Feeding, Requirements by breed and climate.",
+ "F211": {"t": "Crossbreeding for beef",
+  "r": "Crossing breeds adds hybrid vigor: more growth, fertility and survival than either parent. In the US most feeder cattle are British or British × Continental crosses, with Brahman crosses in the Gulf Coast and a fast-growing share of beef-on-dairy calves.",
+  "s": [
+   {"h": "Common crosses", "p": [
+     "Angus × Hereford (black baldy): hardy, fertile and good at grading.",
+     "British × Continental (Charolais, Simmental, Limousin): more muscle and yield.",
+     "Brahman × British (Brangus, Braford, F1 tigerstripe) in hot, humid southern states."]},
+   {"h": "Beef-on-dairy", "p": [
+     "Angus or other beef sires on Holstein and Jersey cows.",
+     "The calves grow and grade much better than straight dairy steers.",
+     "They're now a significant share of US fed cattle."]},
+   {"h": "On your operation", "p": [
+     "Uniform, black-hided British crosses usually bring the best feeder prices and fit Angus programs.",
+     "In the South, some Brahman influence helps cattle handle heat before they reach the yard."]}]},
+ "F213": {"t": "Heritage and adapted breeds",
+  "r": "Some US breeds descend from the cattle brought by the Spanish five centuries ago. They adapted to heat, poor forage and insects and carry valuable genes.",
+  "s": [
+   {"h": "Examples", "p": [
+     "Texas Longhorn: hardy, long-lived and easy calving.",
+     "Florida Cracker and Pineywoods: small, heat- and insect-tolerant Gulf Coast cattle.",
+     "Senepol (from the Caribbean), used in the Gulf Coast for heat tolerance.",
+     "Romosinuano, studied by USDA researchers in Florida."]},
+   {"h": "Strengths", "p": [
+     "Heat tolerance without Brahman: several carry the slick hair gene.",
+     "Good fertility and calm temperament.",
+     "More tender beef than Brahman."]},
+   {"h": "On your operation", "p": [
+     "Crossed with British breeds they add hybrid vigor and heat tolerance.",
+     "Straight heritage cattle are usually discounted as feeders: price them carefully."]}]},
+ "F226.r": "Zebu cattle (Bos indicus) include several breeds, each with its strengths. In the US, Brahman and its crosses are common in Texas, Florida and the Gulf Coast.",
+ "F226.3.0": "Brahman-cross feeders from the South perform well, but feedyards and buyers often discount high-percentage Brahman cattle for tenderness and temperament.",
+ "F276": {"t": "Breeds for the feedyard",
+  "r": "In the US the feedyard pays for growth, feed efficiency and grading. Black-hided British cattle and their crosses dominate, with Continental crosses, Holstein steers and beef-on-dairy cattle filling the rest.",
+  "s": [
+   {"h": "British", "p": [
+     "Angus and Red Angus, Hereford, Shorthorn.",
+     "Good marbling and grading; Angus-type cattle can qualify for Certified Angus Beef.",
+     "Most US feeder cattle are black-hided."]},
+   {"h": "Continental", "p": [
+     "Charolais, Simmental, Limousin, Gelbvieh.",
+     "More muscle, yield and growth; used in crosses with British breeds."]},
+   {"h": "Brahman-influenced", "p": [
+     "Brangus, Braford, Beefmaster, Santa Gertrudis, Simbrah.",
+     "Heat and insect tolerance; common from Texas to Florida.",
+     "Heavier Brahman influence can reduce tenderness and grading."]},
+   {"h": "Dairy and beef-on-dairy", "p": [
+     "Holstein steers: very uniform, long feeding period, lower dressing.",
+     "Beef-on-dairy crosses grow and grade much better than straight Holsteins."]},
+   {"h": "With the app", "p": [
+     "Record each animal's breed when you create the lot.",
+     "Compare gain and margin by breed with your own numbers. Also see Guide, Reference tables, Breeds for feeding."]}]}
+}

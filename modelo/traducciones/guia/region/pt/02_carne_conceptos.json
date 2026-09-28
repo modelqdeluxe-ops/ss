@@ -1,0 +1,87 @@
+{
+ "F63": {"t": "Marmoreio e qualidade",
+  "r": "O marmoreio são os veios de gordura dentro do músculo. Em vários mercados é a base da classificação de qualidade porque dá suculência e sabor. No Brasil o Nelore marmoreia pouco, e só alguns programas pagam por ele.",
+  "s": [
+   {"h": "Como se avalia", "p": [
+     "Olha-se o corte entre a 12ª e a 13ª costela.",
+     "Nos EUA as classes são Prime, Choice e Select conforme o marmoreio e a idade.",
+     "Japão e Austrália têm escalas próprias."]},
+   {"h": "No Brasil", "p": [
+     "A maioria dos frigoríficos paga pelo peso de carcaça, idade (dentição) e acabamento, não pelo marmoreio.",
+     "Programas como a Carne Angus Certificada e marcas premium pagam mais por cruzados Angus × Nelore jovens e bem terminados."]},
+   {"h": "No seu confinamento", "p": [
+     "Pergunte ao seu frigorífico como classifica e bonifica.",
+     "Não gaste com marmoreio se não pagam por ele; foque em peso, rendimento e acabamento."]}]},
+ "F65.r": "O rendimento de carcaça é o peso da carcaça dividido pelo peso vivo. Em bois de confinamento no Brasil costuma ficar entre 52 e 56 %. Poucos pontos de diferença valem muitas arrobas.",
+ "F65.2.0": "Boi de 540 kg a 52 %: carcaça de 281 kg, 18,7 @.",
+ "F65.2.1": "O mesmo a 55 %: carcaça de 297 kg, 19,8 @.",
+ "F65.2.2": "É mais de 1 arroba a mais por animal, sem mudar o peso vivo.",
+ "F66": {"t": "Cortes da carcaça",
+  "r": "A carcaça se divide em dianteiro, ponta de agulha e traseiro, e depois em cortes. O traseiro tem os cortes mais caros; por isso animais com bom traseiro valem mais.",
+  "s": [
+   {"h": "Traseiro", "p": [
+     "Filé mignon: o corte mais macio.",
+     "Contrafilé, alcatra, picanha e maminha.",
+     "Coxão mole, coxão duro, patinho e lagarto.",
+     "Representa cerca de 45 a 48 % da carcaça e a maior parte do seu valor."]},
+   {"h": "Dianteiro", "p": [
+     "Acém, paleta, peito, pescoço, músculo e o cupim, típico do zebu.",
+     "Cortes para cozidos, moer e assar devagar.",
+     "Têm mais colágeno e custam menos."]},
+   {"h": "No seu confinamento", "p": [
+     "Um bom confinamento enche o traseiro e o lombo.",
+     "Evite injetar na garupa ou na perna: as lesões danificam os cortes mais caros."]}]},
+ "F74": {"t": "Tipificação de carcaças",
+  "r": "Os frigoríficos classificam as carcaças para pagar diferente conforme a qualidade. No Brasil a tipificação considera sexo, maturidade pela dentição, acabamento de gordura e peso, e muitas plantas bonificam o 'boi China' e o bom acabamento.",
+  "s": [
+   {"h": "Critérios", "p": [
+     "Maturidade pelos dentes: dente de leite, 2, 4, 6 ou 8 dentes permanentes.",
+     "Sexo: macho inteiro, castrado ou fêmea.",
+     "Acabamento de gordura de 1 (ausente) a 5 (excessivo); o ideal é 3 (mediano) ou 4 (uniforme).",
+     "Peso da carcaça em arrobas: muitos frigoríficos descontam abaixo de 16 @ para machos.",
+     "Bonificações para animais até 30 meses (boi China), até 4 dentes e programas de qualidade."]},
+   {"h": "No seu confinamento", "p": [
+     "Peça ao frigorífico a tabela de bonificações e descontos.",
+     "Compare o que recebeu com o que o app projetou.",
+     "Ajuste a idade de compra e o acabamento conforme o que pagam."]}]},
+ "F76.0.0": "É danificado por carrapato, berne, marcas a ferro no lugar errado e arame farpado.",
+ "F76.2.0": "Controlar carrapato e berne também protege o couro.",
+ "F76.2.1": "Marque no lugar que a lei permite (cara, pescoço e parte baixa dos membros), com a marca do tamanho necessário.",
+ "F80.1.0": "Boi de 540 kg dá carcaça de 297 kg: 297 ÷ 540 = 55 %, ou 19,8 @.",
+ "F80.2.0": "Bois de confinamento bem terminados: 53 a 56 %.",
+ "F80.2.1": "Animais magros, de leite ou de pasto sem jejum: 48 a 51 %.",
+ "F80.2.2": "Cruzados com muito músculo e bom acabamento: 57 % ou mais.",
+ "F81.r": "O peso que o animal perde ao esvaziar o rúmen e a bexiga, por jejum ou transporte. No Brasil o frigorífico paga pelo peso da carcaça, mas o desbaste importa ao vender ou comprar em pé.",
+ "F81.2.0": "Pesa 540 kg na fazenda com 4 % de quebra: pagam 518 kg.",
+ "F82.3.0": "Lotação dos pastos: unidades animal por hectare (UA/ha).",
+ "F89": {"t": "Preço por arroba, por quilo ou por cabeça",
+  "r": "O boi gordo é cotado em R$ por arroba de carcaça, e o bezerro e o garrote muitas vezes por cabeça. Para comparar ofertas, leve tudo para a mesma base.",
+  "s": [
+   {"h": "Como converter", "p": [
+     "Preço por quilo vivo = preço por cabeça ÷ peso do animal.",
+     "Preço por arroba vivo = preço por quilo vivo × 15 (ou por cabeça ÷ arrobas de peso vivo, com 30 kg vivos por @).",
+     "Preço por cabeça = preço por quilo × peso."]},
+   {"h": "Exemplo", "p": [
+     "Bezerro de 210 kg a R$ 2.800 a cabeça: R$ 13,33 por quilo.",
+     "Outro de 240 kg a R$ 3.000: R$ 12,50 por quilo. O segundo é mais barato por quilo."]},
+   {"h": "Regra", "p": [
+     "Compre e venda por peso, com balança aferida."]}]},
+ "F91": {"t": "Unidades de peso e medida",
+  "r": "No Brasil o boi gordo se vende por arroba de carcaça, o milho por saca e a terra em hectares ou alqueires. Saber converter evita erros caros.",
+  "s": [
+   {"h": "Peso", "p": [
+     "1 quilo = 2,2 libras; 1 libra = 0,454 quilo.",
+     "1 arroba (@) = 15 kg de carcaça; na prática, 1 @ de peso vivo ≈ 30 kg.",
+     "1 saca de milho ou soja = 60 kg; 1 tonelada = 1.000 kg.",
+     "Na América Central a arroba é de 25 libras e o quintal de 100 libras."]},
+   {"h": "Área", "p": [
+     "1 hectare = 10.000 m².",
+     "1 alqueire paulista = 2,42 ha; 1 alqueire mineiro ou goiano = 4,84 ha."]},
+   {"h": "Preços", "p": [
+     "Preço por quilo de carcaça = preço da arroba ÷ 15.",
+     "Preço por quilo vivo ≈ preço da arroba ÷ 30 (com rendimento de 50 %)."]},
+   {"h": "No Rumi", "p": [
+     "Calculadoras, Converter: libras, quilos, arrobas, hectares e alqueires."]}]},
+ "F94.1.0": "No Brasil muitos confinamentos abatem com 18 a 22 @ de carcaça (cerca de 520 a 600 kg vivos).",
+ "F104.2.0": "O Nelore e o zebu aguentam mais calor que as raças europeias."
+}

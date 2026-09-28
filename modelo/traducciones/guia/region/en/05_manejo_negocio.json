@@ -1,0 +1,219 @@
+{
+ "F251.0.3": "Entry weight that fits your plan: US feedyards commonly place 600 to 900 lb feeders.",
+ "F251.1.4": "Cattle without required health papers, brand inspection or clear ownership.",
+ "F251.2.0": "Always compare by the hundredweight on weighed cattle, not by the head.",
+ "F251.2.3": "Add freight, commission and shrink from the trip.",
+ "F252.t": "Buying at the sale barn or video auction",
+ "F252.r": "A sale barn lets you buy many calves in one day, but it mixes sources and brings more disease risk. Video and online auctions sell uniform, often preconditioned loads straight from the ranch.",
+ "F252.0.1": "Check the sale schedule and consignment list or the video catalog.",
+ "F252.2.2": "Expect more respiratory disease than with ranch-direct, preconditioned calves.",
+ "F253.0.0": "Health certificate (CVI), brand inspection and official ID when your state or the destination requires them.",
+ "F253.2.2": "Under the federal 28-hour law, cattle in transit longer than 28 hours must be unloaded for 5 hours of feed, water and rest.",
+ "F255.1h": "Brands",
+ "F255.1.0": "A brand registered with your state brand board or department of agriculture.",
+ "F255.1.3": "Treat the brand and watch it for infection.",
+ "F268.r": "In the Plains and the South, summer heat events are the biggest seasonal threat in feedyards. A heat-stressed animal eats less, gains less and can die when heat, humidity and still air stack up.",
+ "F268.1.0": "Shade structures of 20 to 40 sq ft per head, tall enough (10 to 13 ft) for airflow.",
+ "F268.1.1": "Extra tank space and plenty of cool water; add portable tanks during heat events.",
+ "F268.3.2": "Black-hided cattle, which are most US feeders.",
+ "F269": {"t": "Mud and wet weather",
+  "r": "Spring rains, snowmelt and winter storms bring mud, flies, foot rot and respiratory disease. Mud alone can cut gains 15 % or more.",
+  "s": [
+   {"h": "Pens", "p": [
+     "Check drainage and pen slope before the wet season.",
+     "Scrape manure often: wet manure turns to mud.",
+     "Build mounds so cattle have a dry place to lie down.",
+     "Bed pens with straw or cornstalks in winter storms."]},
+   {"h": "Feed", "p": [
+     "Protect bunks and commodities from rain and snow.",
+     "Check grain: moisture brings mold.",
+     "Don't leave wet feed in the bunk overnight."]},
+   {"h": "Health", "p": [
+     "Watch for foot rot.",
+     "More fly and parasite control as it warms up.",
+     "Respiratory disease with sudden weather changes."]},
+   {"h": "Pastures", "p": [
+     "Keep cattle off wet fields to avoid pugging.",
+     "Plan hay and silage harvests around the weather."]}]},
+ "F270": {"t": "Drought years",
+  "r": "Drought cuts pasture and hay, pushes feed prices up and sends more calves and cows to town early. It's costly, but it can also mean cheaper feeders for those with feed.",
+  "s": [
+   {"h": "Preparation", "p": [
+     "Have hay and silage stored before you need it.",
+     "Budget feed for the whole period and check the US Drought Monitor.",
+     "Secure water: wells, ponds, tanks and pumps checked."]},
+   {"h": "Management", "p": [
+     "Sprinkle pens to cut dust that irritates eyes and lungs.",
+     "Watch for pinkeye and dust-related pneumonia.",
+     "Test drought-stressed forage for nitrate before feeding it."]},
+   {"h": "Opportunities", "p": [
+     "Many ranchers sell light calves early in drought: you can buy cheaper if you have feed.",
+     "Run the maximum purchase price calculator with your drought feed costs."]}]},
+ "F272.0.2": "Get health papers and brand inspection ready if the move requires them.",
+ "F273.0.0": "Gains of 3.5 to 4.2 lb a day.",
+ "F273.0.1": "150 to 200 days on feed, depending on entry weight.",
+ "F274": {"t": "Backgrounding",
+  "r": "Backgrounding grows calves on a forage-based ration or pasture with supplement before they enter the feedyard. It adds cheap pounds, frame and immunity to light or freshly weaned calves.",
+  "s": [
+   {"h": "How it works", "p": [
+     "Calves of 400 to 550 lb are fed a growing ration or grazed on wheat or summer pasture.",
+     "The goal is moderate gain, not finishing: 1.5 to 2.5 lb a day.",
+     "They leave at 700 to 850 lb for the feedyard."]},
+   {"h": "Advantages", "p": [
+     "Uses forage and by-products that cost less than a finishing ration.",
+     "Calves arrive at the yard healthier and bunk-broke.",
+     "Lets you catch a better price later in the year."]},
+   {"h": "Keys", "p": [
+     "Good receiving and vaccination program.",
+     "Ration with enough protein and energy for frame growth.",
+     "Price risk protection over the months you own the cattle."]},
+   {"h": "Expected gains", "p": [
+     "1.5 to 2.5 lb a day on a growing ration or good pasture."]}]},
+ "F275.t": "Stockers and grass finishing",
+ "F275.r": "Grazing stockers on grass is the cheapest gain per day, but slow. Finishing entirely on grass is a niche market (grass-fed beef) with its own rules.",
+ "F275.0.0": "Spring grass: 1.5 to 2 lb a day; wheat pasture up to 2.5 lb.",
+ "F275.0.1": "Summer grass with supplement: about 1.5 to 2 lb a day.",
+ "F275.0.2": "Dormant winter grass without supplement: little gain or weight loss.",
+ "F275.2.1": "Finishing on grass takes 20 to 30 months.",
+ "F296.r": "Sale barn calves often come from several sources, with more stress and more disease exposure. They need more careful receiving, and are often called high-risk calves.",
+ "F302.r": "Short-fed yearlings bought heavy (750 to 900 lb) are finished in 120 to 150 days on a high-energy ration. It gives more turns per year with less health risk per lot.",
+ "F302.0.2": "Gains of 3.5 to 4 lb a day.",
+ "F308.0h": "Common US patterns",
+ "F308.0.0": "In the fall run (October–November) many calves are sold at weaning: calf prices are usually lowest.",
+ "F308.0.1": "Feeder prices usually rise into late winter and spring as grass and wheat pasture demand grows.",
+ "F308.0.2": "Fed cattle prices usually peak in spring and are weakest in summer.",
+ "F309.1.2": "Example: you sell at $2.30 a pound and each pound gained costs $1.20 to put on: you earn $1.10 per pound gained, before the price slide on the feeder.",
+ "F311.r": "Cost of gain is what each pound the animal gains costs you. Comparing it with the value of gain tells you whether feeding pays. In the US it's usually $1.00 to $1.40 per pound.",
+ "F311.0.2": "Feed only: ration cost per pound × feed conversion.",
+ "F311.1.0": "Ration at $0.12 per pound as fed and 6.5 to 1 conversion: $0.78 of feed per pound gained.",
+ "F311.1.1": "Plus $0.30 of yardage, health, interest and other costs: $1.08 per pound gained.",
+ "F311.1.2": "If the value of gain on that pen is $1.00 a pound, each pound produced loses $0.08.",
+ "F312.1.0": "Total cost $3,220,000 and you sell 1,400,000 lb: break-even of $2.30 per lb ($230 per cwt).",
+ "F312.1.1": "If you're offered $226 per cwt, you lose $56,000.",
+ "F312.1.2": "If you're offered $240 per cwt, you earn $140,000.",
+ "F313.0.2": "Your cost of gain per pound.",
+ "F313.1.3": "Maximum per cwt = maximum per animal ÷ purchase weight × 100.",
+ "F313.2.0": "Buy at 800 lb, sell at 1,400 lb at $230 per cwt: worth $3,220.",
+ "F313.2.1": "Gaining 600 lb at $1.15 = $690, plus $60 of other costs: $750.",
+ "F313.2.2": "You want to earn $100: maximum $3,220 − $750 − $100 = $2,370 per head, about $296 per cwt.",
+ "F314.t": "The price slide and the buy-sell margin",
+ "F314.1.0": "You buy 800 lb at $300 per cwt and sell 1,400 lb at $230 per cwt.",
+ "F314.1.1": "You lose $0.70 a pound on the 800 lb you bought: $560 per head.",
+ "F314.1.2": "The 600 lb gained must bring in more than $560 for the deal to work.",
+ "F314.2.0": "Buy when feeders are cheap relative to fed cattle; watch the feeder-to-fed price ratio.",
+ "F317.1.1": "Example: $500,000 at 8 % a year for 150 days = about $16,400.",
+ "F317.2.0": "Farm Credit associations, banks and USDA Farm Service Agency loans.",
+ "F317.2.1": "Feed companies and feedyards that finance cattle and feed.",
+ "F317.2.2": "Custom feeding and partnership arrangements.",
+ "F318.0.2": "Mitigation: staggered purchases, forward contracts, CME futures and options, and USDA's Livestock Risk Protection (LRP) insurance.",
+ "F319": {"t": "Sales channels",
+  "r": "Who you sell to changes the price, how you're paid and what's required. US fed cattle are sold mostly to four big packers, on a cash or formula basis.",
+  "s": [
+   {"h": "Live (cash) sale", "p": [
+     "Priced per cwt on live weight with a pencil shrink, usually 4 %.",
+     "You know the result the day of the sale.",
+     "The packer takes the risk on dressing and grade."]},
+   {"h": "Dressed (in the beef)", "p": [
+     "Priced per cwt of hot carcass weight.",
+     "Pays off for cattle that dress well."]},
+   {"h": "Grid and formula", "p": [
+     "Base price plus premiums and discounts for grade, yield grade and weight.",
+     "Pays off for cattle that grade Choice or Prime and hit weight targets.",
+     "Branded programs add premiums (Certified Angus Beef, natural, NHTC)."]},
+   {"h": "Sale barns and direct sales", "p": [
+     "Sale barns and video auctions for feeders and cull cattle.",
+     "Direct-to-consumer beef needs a USDA-inspected or custom-exempt plant and state rules."]}]},
+ "F320": {"t": "Selling live or dressed",
+  "r": "Live, you're paid per cwt of live weight minus shrink; dressed (in the beef), per cwt of hot carcass weight. Comparing properly avoids leaving money on the table.",
+  "s": [
+   {"h": "Live", "p": [
+     "Paid per cwt with a pencil shrink, usually 4 %.",
+     "You know the result the same day.",
+     "The buyer takes the dressing risk."]},
+   {"h": "Dressed", "p": [
+     "Paid per cwt of hot carcass weight.",
+     "US fed steers dress 62 to 65 %.",
+     "It pays if your cattle dress well (muscle and finish)."]},
+   {"h": "How to compare", "p": [
+     "Dressed price × dressing percentage = equivalent live price.",
+     "Example: $365 per cwt dressed × 0.64 = $233.60 per cwt live.",
+     "Compare with the live bid after shrink."]},
+   {"h": "Calculator", "p": [
+     "Rumi menu, Calculators, Compare live and carcass."]}]},
+ "F323.0.0": "Calf prices are usually lowest in the fall run, when most calves are weaned and sold.",
+ "F323.0.1": "Corn is usually cheapest at harvest in October and November.",
+ "F323.0.2": "Beef demand rises for grilling season, from Memorial Day to Labor Day.",
+ "F323.1.1": "Plan to market fed cattle in spring, when prices usually peak.",
+ "F328.0.1": "Example: a $60,000 mixer wagon that lasts 10 years costs $6,000 a year.",
+ "F330": {"t": "Custom feeding and partnerships",
+  "r": "Custom feeding is very common in the US: you own the cattle and a feedyard feeds them for a fee. Partnerships split risk and profit between owners.",
+  "s": [
+   {"h": "How custom feeding works", "p": [
+     "The feedyard charges yardage per head per day plus feed at cost plus a markup.",
+     "Health, processing and other costs are billed to the owner.",
+     "The feedyard often helps with marketing and financing."]},
+   {"h": "What to agree on in writing", "p": [
+     "Yardage, feed markup and how rations are billed.",
+     "How cattle are weighed in and out, and shrink.",
+     "Who pays for deaths and health treatments.",
+     "Close-out reports and payment terms."]},
+   {"h": "With the app", "p": [
+     "Create one lot per pen or agreement and record the close-out to compare yards."]}]},
+ "F333.0.0": "Fixed price (forward contract) or a formula tied to a market report.",
+ "F334": {"t": "Price and livestock insurance",
+  "r": "In the US you can insure against a drop in cattle prices with USDA's Livestock Risk Protection (LRP), and against death with mortality insurance.",
+  "s": [
+   {"h": "Livestock Risk Protection", "p": [
+     "Sets a floor price for fed or feeder cattle for a set period.",
+     "Sold through crop insurance agents; USDA subsidizes part of the premium."]},
+   {"h": "Mortality insurance", "p": [
+     "Covers death from disease, accident or weather events.",
+     "Requires identification and health records."]},
+   {"h": "How to decide", "p": [
+     "Compare the premium with your historical death loss in the app.",
+     "Compare LRP with futures and options for your lot size."]}]},
+ "F335": {"t": "Break-even per hundredweight",
+  "r": "US cattle are traded per cwt. Knowing your break-even per cwt keeps you from accepting bids that lose money.",
+  "s": [
+   {"h": "How to calculate it", "p": [
+     "Break-even per lb = total lot cost ÷ pounds sold.",
+     "Break-even per cwt = break-even per lb × 100."]},
+   {"h": "Example", "p": [
+     "A $2.30 per lb break-even is $230 per cwt."]},
+   {"h": "In the app", "p": [
+     "Rumi gives it in your app's unit in Money and sales, Break-even price."]}]},
+ "F337.0.2": "Example: you bought an 800 lb feeder for $2,600 and sold it at 1,400 lb for $3,220: the value of gain is $620 ÷ 600 lb = $1.03 per lb.",
+ "F338.t": "The price slide",
+ "F339.0h": "Light calves (400 to 550 lb)",
+ "F339.1h": "Heavy feeders (750 to 900 lb)",
+ "F400.2.0": "5 % waste in a 1,000-head yard eating 50,000 lb a day is 2,500 lb daily: about 37 tons a month.",
+ "F291": {"t": "Feeding through winter or summer",
+  "r": "The season changes feed costs, cattle prices and pen conditions. Winter brings cold stress and mud; summer brings heat stress.",
+  "s": [
+   {"h": "Winter", "p": [
+     "Cold, wind and mud raise maintenance needs and cut gains.",
+     "Calves bought in the fall run are cheaper.",
+     "More respiratory disease with storms and big temperature swings."]},
+   {"h": "Summer", "p": [
+     "Heat events cut intake and can kill heavy cattle.",
+     "Flies and pinkeye; dust in dry pens.",
+     "Fed cattle prices are usually weaker."]},
+   {"h": "How to decide", "p": [
+     "Budget with the season's prices and expected gains.",
+     "Compare with your previous lots in the app.",
+     "Stagger placements so you don't depend on one season."]}]},
+ "F301": {"t": "Growing rations with silage and hay",
+  "r": "A simple backgrounding ration of corn silage, hay and a protein supplement grows calves cheaply before the feedyard. Done well it achieves 1.75 to 2.5 lb a day.",
+  "s": [
+   {"h": "The base", "p": [
+     "Corn silage, fed to appetite or limit-fed, as the main energy source.",
+     "Hay or haylage for effective fiber.",
+     "Mineral and vitamins with an ionophore."]},
+   {"h": "To gain more", "p": [
+     "Add 4 to 8 lb of corn or distillers grains.",
+     "Balance protein with distillers grains, soybean meal or a commercial supplement."]},
+   {"h": "Precautions", "p": [
+     "Adapt calves to silage and grain gradually.",
+     "Test silage and hay: quality varies a lot.",
+     "Limit-feeding saves money but needs enough bunk space for all."]}]}
+}

@@ -1,0 +1,180 @@
+{
+ "F251.0.3": "Peso de entrada de acordo com seu plano (comumente garrotes de 300 a 420 kg, 10 a 14 @ vivas).",
+ "F251.1.4": "Animais sem GTA nem origem clara.",
+ "F251.2.0": "Compare sempre por quilo vivo ou por arroba, não por cabeça.",
+ "F252.0.1": "Veja a agenda de leilões (presenciais, virtuais e pela TV) e o catálogo.",
+ "F253.0.0": "GTA em ordem, emitida pelo serviço veterinário estadual (Iagro, IMA, Adapar, Agrodefesa, CDA e outros).",
+ "F253.2.2": "Em viagens longas, revise em paradas curtas, não deixe o caminhão parado ao sol e siga as normas de bem-estar no transporte do MAPA e do Contran.",
+ "F255.1.0": "Marca de propriedade registrada, conforme as regras do seu estado.",
+ "F255.1.2": "Pela Lei 4.714/1965, marque só na cara, no pescoço ou abaixo da linha que une joelho e jarrete: fora disso desvaloriza o couro.",
+ "F269.t": "Período das águas",
+ "F269.r": "As águas (outubro a março no Brasil Central) trazem lama, moscas, parasitas e doenças de cascos e pulmões. Preparar-se evita perdas.",
+ "F269.3.1": "Faça silagem de milho, sorgo ou capim para o confinamento da seca.",
+ "F270.t": "Período seco",
+ "F270.r": "A seca (maio a setembro no Brasil Central) traz pouco pasto, poeira e calor seco. É a época do confinamento e da entressafra do boi.",
+ "F270.2.0": "Muitos pecuaristas vendem animais na seca por falta de pasto: com comida guardada você pode comprar e terminar no cocho.",
+ "F272.0.2": "Emita a GTA para o destino.",
+ "F272.1.0": "Se vender a peso vivo, o comprador costuma descontar a quebra (comumente 3 a 5 %); ao frigorífico, o que conta é o peso da carcaça no romaneio de abate.",
+ "F273.0.0": "Ganhos de 1,4 a 1,8 kg por dia em garrotes Nelore e cruzados.",
+ "F273.0.1": "Ciclos curtos: 80 a 120 dias, normalmente na seca.",
+ "F274": {"t": "Semiconfinamento e TIP",
+  "r": "No semiconfinamento e na TIP (terminação intensiva a pasto) os animais ficam no pasto e recebem concentrado no cocho. Combina o pasto barato com o ganho do grão.",
+  "s": [
+   {"h": "Como funciona", "p": [
+     "Semiconfinamento: suplemento de 0,8 a 1,2 % do peso vivo por dia no pasto, geralmente na seca.",
+     "TIP: 1,5 a 2 % do peso vivo em concentrado, normalmente nas águas ou na transição, com boa oferta de capim.",
+     "Cochos no pasto com espaço para todos comerem ao mesmo tempo."]},
+   {"h": "Vantagens", "p": [
+     "Menos custo e menos estrutura que o confinamento completo.",
+     "Bem mais ganho que só pasto e sal mineral.",
+     "Aproveita a braquiária e o Panicum da fazenda e libera pasto antes."]},
+   {"h": "Chaves", "p": [
+     "Pastos com massa suficiente e lotação ajustada.",
+     "Adaptação gradual ao concentrado para evitar acidose.",
+     "Horário fixo de trato e leitura de cocho.",
+     "Controle de carrapato e verminose, mais frequente que no confinamento."]},
+   {"h": "Ganhos esperados", "p": [
+     "Semiconfinamento: 0,6 a 0,9 kg por dia na seca.",
+     "TIP: 1,0 a 1,3 kg por dia com bom capim."]}]},
+ "F275.0.0": "Só pasto nas águas, com braquiária bem manejada: 0,5 a 0,8 kg por dia.",
+ "F275.0.1": "Com sal proteinado ou suplemento: 0,6 a 1 kg por dia.",
+ "F275.0.2": "Na seca só com sal mineral o ganho pode ser zero ou perda.",
+ "F275.2.1": "Ciclos longos: o boi de pasto costuma ser abatido com 30 a 36 meses.",
+ "F291.t": "Confinar na seca ou nas águas",
+ "F291.r": "No Brasil a maioria confina na seca, de maio a novembro, para vender na entressafra com a arroba mais alta. Confinar nas águas é possível, mas com outros custos e preços.",
+ "F291.0h": "Seca (confinamento tradicional)",
+ "F291.0.0": "Arroba mais alta na entressafra, na saída do confinamento.",
+ "F291.0.1": "Pasto escasso: a comida é toda no cocho e a reposição fica disputada.",
+ "F291.1h": "Águas",
+ "F291.1.0": "Pasto abundante: a arroba costuma cair na safra, de março a junho.",
+ "F301": {"t": "Engorda com cana e ureia ou capim de corte",
+  "r": "É uma engorda comum em fazendas menores: cana picada ou capim-elefante com ureia e um pouco de concentrado. Bem feita, consegue 0,7 a 1 kg por dia.",
+  "s": [
+   {"h": "A base", "p": [
+     "Cana picada fresca ou capim-elefante novo, 25 a 40 kg por animal por dia (conforme o peso).",
+     "Ureia com sulfato de amônio (9 para 1) a 1 % da cana fresca.",
+     "Sal mineral à vontade."]},
+   {"h": "Para ganhar mais", "p": [
+     "Acrescentar 1 a 3 kg de concentrado ou milho moído.",
+     "Uma fonte de proteína verdadeira como farelo de soja, caroço de algodão ou DDG de milho."]},
+   {"h": "Cuidados", "p": [
+     "Adaptar à ureia em 10 a 15 dias, começando com 0,5 %; nunca dar ureia a animais famintos.",
+     "Misturar muito bem a ureia na cana na hora de servir.",
+     "Cortar a cana madura e o capim na idade certa; cana picada não aguenta muitas horas no cocho."]}]},
+ "F302.r": "O confinamento curto de 80 a 110 dias compra garrotes pesados (360 a 420 kg, 12 a 14 @) e os termina no curral com dieta de alta energia. Dá mais de um giro por ano com menos risco por lote.",
+ "F302.0.2": "Ganhos de 1,4 a 1,7 kg por dia.",
+ "F308.0h": "Padrões comuns no Brasil Central",
+ "F308.0.0": "Na safra (março a junho) sobra boi de pasto e a arroba costuma cair.",
+ "F308.0.1": "De abril a junho, quando todos montam o confinamento, a reposição (garrote e boi magro) costuma subir.",
+ "F308.0.2": "A arroba costuma pagar melhor na entressafra, de setembro a novembro, quando falta boi de pasto.",
+ "F309.1.2": "Exemplo: a arroba vale R$ 310 e produzir uma arroba custa R$ 230: você ganha R$ 80 por arroba produzida.",
+ "F311.r": "É quanto custa produzir cada quilo que o animal ganha; no Brasil também se fala em custo da arroba produzida. Compará-lo com o preço de venda diz se o confinamento dá dinheiro.",
+ "F311.0.2": "Só alimento: custo do quilo de matéria seca da dieta × conversão.",
+ "F311.1.0": "Dieta a R$ 1,10 por kg de matéria seca e conversão de 7 para 1: R$ 7,70 de alimento por kg ganho.",
+ "F311.1.1": "Mais R$ 1,00 de outros custos (diária operacional): R$ 8,70 por kg ganho.",
+ "F311.1.2": "Como uns 62 % do ganho vira carcaça, a arroba produzida custa cerca de R$ 8,70 × 15 ÷ 0,62 ≈ R$ 210; com a arroba a R$ 310, sobram uns R$ 100 por arroba.",
+ "F312.0.2": "Considere o rendimento de carcaça: o frigorífico paga pelas arrobas de carcaça, não pelo peso vivo.",
+ "F312.1.0": "Custo total R$ 1.500.000 e você vende 5.000 arrobas de carcaça: equilíbrio de R$ 300 por arroba.",
+ "F312.1.1": "Se oferecem R$ 290, você perde R$ 50.000.",
+ "F312.1.2": "Se oferecem R$ 320, você ganha R$ 100.000.",
+ "F313.0.1": "Preço de venda esperado por arroba.",
+ "F313.1.0": "Valor de venda = arrobas de carcaça × preço da arroba.",
+ "F313.2.0": "Compra garrote de 390 kg e vende com 20 @ de carcaça a R$ 310: vale R$ 6.200.",
+ "F313.2.1": "Ganhar 180 kg a R$ 8,70 = R$ 1.566, mais R$ 250 de outros: R$ 1.816.",
+ "F313.2.2": "Você quer ganhar R$ 300: máximo 6.200 − 1.816 − 300 = R$ 4.084 por animal, cerca de R$ 10,47 por kg vivo ou R$ 314 por arroba viva (13 @).",
+ "F314.t": "Ágio da reposição",
+ "F314.1.0": "Você compra garrote de 390 kg (13 @ vivas) a R$ 330 por arroba e vende o boi gordo a R$ 310 por arroba.",
+ "F314.1.1": "Paga R$ 20 a mais por arroba nas 13 compradas: R$ 260 por animal.",
+ "F314.1.2": "Os quilos ganhos devem deixar mais de R$ 260 para o negócio valer.",
+ "F314.2.0": "Acompanhe a relação de troca (quantos garrotes um boi gordo compra) e compre quando a reposição está barata.",
+ "F317.1.1": "Exemplo: R$ 1.000.000 a 12 % ao ano por 120 dias = cerca de R$ 39.500.",
+ "F317.2.0": "Bancos e cooperativas de crédito, com linhas do Plano Safra (Pronamp, Pronaf, custeio e comercialização pecuária) e CPR.",
+ "F318.0.2": "Redução: compras escalonadas, venda a termo com o frigorífico, contratos futuros e opções de boi gordo na B3, compra antecipada de milho.",
+ "F319": {"t": "Canais de venda no Brasil",
+  "r": "A quem você vende muda o preço, o prazo de pagamento e os requisitos. No Brasil quase todo boi gordo vai para frigorífico, pago por arroba de carcaça.",
+  "s": [
+   {"h": "Frigorífico", "p": [
+     "Paga por arroba de carcaça, conforme o romaneio de abate, com a escala combinada antes.",
+     "Exige GTA, animais sem resíduos e dentro do peso e do acabamento pedidos.",
+     "Bonifica novilho precoce, cruzados e programas de qualidade; desconta carcaça leve ou sem gordura.",
+     "Pagamento à vista com desconto ou a prazo (comumente 30 dias): combine antes."]},
+   {"h": "Corretor ou intermediário", "p": [
+     "Cômodo: conhece as escalas e os compradores.",
+     "Cobra comissão; confirme sempre o preço e o frigorífico de destino."]},
+   {"h": "Leilão", "p": [
+     "Mais usado para reposição (bezerros, garrotes, vacas).",
+     "Preço pela concorrência do dia, com comissão e frete."]},
+   {"h": "Venda direta e açougues", "p": [
+     "Melhor preço se você tiver clientes fixos.",
+     "O abate precisa ser em estabelecimento com inspeção (SIF, SIE ou SIM)."]}]},
+ "F320": {"t": "Vender a peso vivo ou a peso morto",
+  "r": "A peso vivo, pagam pelo animal em pé; a peso morto, pelas arrobas da carcaça depois do abate. No Brasil o frigorífico compra quase sempre a peso morto.",
+  "s": [
+   {"h": "Peso vivo", "p": [
+     "Pagamento por quilo ou por arroba viva, normalmente com desconto de quebra.",
+     "Às vezes se negocia “boi a 50 %”: peso vivo com rendimento fixo de 50 %.",
+     "O risco de rendimento fica com o comprador."]},
+   {"h": "Peso morto (carcaça)", "p": [
+     "Pagamento por arroba de carcaça (15 kg), pesada no frigorífico depois da toalete.",
+     "A carcaça pesa 52 a 56 % do peso vivo em garrotes Nelore bem terminados; cruzados podem render mais.",
+     "Convém se seus animais rendem bem (bom músculo e acabamento)."]},
+   {"h": "Como comparar", "p": [
+     "Preço da arroba ÷ 15 × rendimento = preço equivalente por quilo vivo.",
+     "Exemplo: R$ 310 por arroba ÷ 15 × 0,54 = R$ 11,16 por quilo vivo.",
+     "Compare com a oferta a peso vivo depois da quebra."]},
+   {"h": "Calculadora", "p": [
+     "Menu do Rumi, Calculadoras, Comparar em pé e carcaça."]}]},
+ "F323.0.0": "Na safra do boi (março a junho) há muito gado gordo de pasto e a arroba costuma cair.",
+ "F323.0.1": "O milho costuma estar mais barato na colheita da safrinha (junho a agosto).",
+ "F323.0.2": "Na entressafra (setembro a novembro) falta boi de pasto e a arroba sobe; o fim do ano e a exportação também puxam a demanda.",
+ "F323.1.1": "Planeje o confinamento para vender na entressafra.",
+ "F328.0.1": "Exemplo: um vagão misturador de R$ 250.000 que dura 10 anos custa R$ 25.000 por ano.",
+ "F330": {"t": "Boitel e parceria",
+  "r": "No boitel o dono do gado paga para outro confinar seus animais; na parceria, um põe o gado e outro a estrutura e a comida. Bem feitos, repartem risco e benefício.",
+  "s": [
+   {"h": "Tipos", "p": [
+     "Boitel: diária por cabeça que inclui a dieta, ou preço por arroba produzida.",
+     "Parceria: repartem-se as arrobas produzidas ou o lucro em porcentagens combinadas."]},
+   {"h": "O que combinar por escrito", "p": [
+     "Quem põe o quê: animais, dieta, sanidade, mão de obra.",
+     "Como se pesa na entrada e na saída, e se vale o peso de carcaça do frigorífico.",
+     "O que acontece com as mortes e os refugos.",
+     "Como e quando se paga.",
+     "Duração do acordo."]},
+   {"h": "Com o app", "p": [
+     "Crie um lote para cada acordo e anote tudo para prestar contas claras."]}]},
+ "F333.0.0": "Preço fixo (boi a termo) ou preço referenciado ao indicador do boi gordo CEPEA/B3, com ágio ou deságio.",
+ "F333.0.5": "Forma e prazo de pagamento (à vista ou a prazo).",
+ "F334": {"t": "Seguro pecuário no Brasil",
+  "r": "O seguro pecuário cobre morte de animais por doença, acidente ou raio; o risco de preço se protege na B3. O governo subsidia parte do prêmio pelo PSR.",
+  "s": [
+   {"h": "O que costuma cobrir", "p": [
+     "Morte por doença, acidente, raio ou picada de cobra.",
+     "Alguns planos cobrem transporte e roubo."]},
+   {"h": "O que pedem", "p": [
+     "Identificação dos animais (brinco ou SISBOV).",
+     "Registros sanitários e vacinações em dia.",
+     "Aviso rápido quando morre um animal, às vezes com laudo veterinário."]},
+   {"h": "Risco de preço", "p": [
+     "Contratos futuros e opções de boi gordo na B3 protegem a arroba de venda.",
+     "A venda a termo com o frigorífico faz algo parecido sem margem na bolsa."]},
+   {"h": "Como decidir", "p": [
+     "Compare o prêmio com sua mortalidade histórica no app.",
+     "Pergunte ao seu banco ou cooperativa pela subvenção do PSR (Programa de Subvenção ao Prêmio do Seguro Rural)."]}]},
+ "F335": {"t": "Preço mínimo por arroba",
+  "r": "No Brasil o boi gordo se negocia por arroba de carcaça. Saber seu preço mínimo por arroba evita aceitar ofertas que fazem você perder.",
+  "s": [
+   {"h": "Como calcular", "p": [
+     "Preço mínimo por kg de carcaça = custo total do lote ÷ kg de carcaça vendidos.",
+     "Preço mínimo por arroba = preço mínimo por kg de carcaça × 15.",
+     "Se você tem o mínimo por kg vivo: divida pelo rendimento de carcaça e multiplique por 15."]},
+   {"h": "Exemplo", "p": [
+     "R$ 1.500.000 ÷ 75.000 kg de carcaça = R$ 20 por kg; × 15 = R$ 300 por arroba.",
+     "Um mínimo de R$ 10,80 por kg vivo com rendimento de 54 %: 10,80 ÷ 0,54 × 15 = R$ 300 por arroba."]},
+   {"h": "No app", "p": [
+     "Menu do Rumi, Dinheiro e vendas, Preço mínimo para não perder: dá o mínimo por kg; converta para arroba com o seu rendimento."]}]},
+ "F337.0.2": "Exemplo: você comprou por R$ 4.290, vendeu por R$ 6.200 e ganhou 180 kg: o valor do ganho é R$ 10,61 por kg.",
+ "F338.r": "No Brasil o bezerro e o garrote costumam valer mais por arroba que o boi gordo (o ágio da reposição). Essa diferença define quanto convém comprar leve ou pesado.",
+ "F339.0h": "Leves (bezerros de 180 a 250 kg, 6 a 8 @)",
+ "F339.1h": "Pesados (garrotes de 360 a 420 kg, 12 a 14 @)"
+}

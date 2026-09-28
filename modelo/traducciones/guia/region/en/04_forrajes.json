@@ -1,0 +1,242 @@
+{
+ "F177": {"t": "Pasture grasses in the US",
+  "r": "Picking the right grass for your soil and climate decides how many pounds of beef each acre produces. The US splits into cool-season grasses in the North and transition zone and warm-season grasses in the South.",
+  "s": [
+   {"h": "Cool-season grasses", "p": [
+     "Tall fescue, orchardgrass, Kentucky bluegrass, smooth bromegrass, perennial ryegrass.",
+     "Grow in spring and fall and slow down in summer heat.",
+     "Tall fescue dominates the transition zone; most old stands carry the toxic endophyte."]},
+   {"h": "Warm-season grasses", "p": [
+     "Bermudagrass and bahiagrass in the South.",
+     "Native grasses: big bluestem, indiangrass, switchgrass, little bluestem, grama and buffalograss.",
+     "Grow in summer heat and go dormant in winter."]},
+   {"h": "Annuals", "p": [
+     "Winter: wheat, cereal rye, oats and annual ryegrass for fall–spring grazing.",
+     "Summer: sorghum-sudangrass, pearl millet and crabgrass."]},
+   {"h": "How to choose", "p": [
+     "Look at your soil, drainage, rainfall and winter temperatures.",
+     "Ask your county Extension agent and NRCS office what works in your area.",
+     "Combining cool- and warm-season pastures spreads grazing over more of the year."]}]},
+ "F178": {"t": "Hay and silage crops",
+  "r": "Hay and silage crops produce a lot of forage per acre to feed in the pen or through winter. In US feedyards corn silage and alfalfa or grass hay are the usual roughages.",
+  "s": [
+   {"h": "Crops", "p": [
+     "Corn silage: the most common feedyard roughage.",
+     "Alfalfa hay and haylage; grass hay (brome, orchardgrass, bermudagrass, prairie hay).",
+     "Sorghum silage and small-grain silage (triticale, wheat, oats)."]},
+   {"h": "Management", "p": [
+     "Harvest corn silage at half to two-thirds milk line, about 32 to 38 % dry matter.",
+     "Cut alfalfa at bud to early bloom and grasses at boot stage.",
+     "Test every cutting or bunker for protein and energy.",
+     "Fertilize according to a soil test."]},
+   {"h": "Yields", "p": [
+     "Corn silage: about 18 to 30 tons of wet silage per acre.",
+     "Alfalfa: 4 to 8 tons of hay per acre per year, depending on water and cuttings."]},
+   {"h": "Common mistakes", "p": [
+     "Cutting too late: stems, fiber and low quality.",
+     "Baling hay too wet: mold and fire risk.",
+     "Poor packing and covering of silage bunkers."]}]},
+ "F179.1.0": "Seed cool-season grasses in late summer or early fall and warm-season grasses in late spring.",
+ "F179.1.3": "For sprigged grasses like hybrid bermudagrass, plant fresh sprigs into moist soil.",
+ "F180.0.1": "Phosphorus: for roots and stand; many pasture soils are short.",
+ "F180.1.0": "Cool-season grass: early spring and early fall. Warm-season grass: late spring and early summer.",
+ "F181.1.1": "Rest of 20 to 30 days in fast spring growth and 40 to 60 days in slow summer or fall growth.",
+ "F181.2.0": "Tall fescue: start grazing at about 8 inches and leave 3 to 4 inches.",
+ "F181.2.1": "Bermudagrass: start at about 6 inches and leave 2 to 3 inches.",
+ "F181.3.0": "More animals per acre.",
+ "F182.0.0": "An animal unit is a 1,000 lb cow.",
+ "F182.0.1": "A 650 lb steer is 0.65 animal units.",
+ "F184": {"t": "Toxic plants in pastures",
+  "r": "Knowing the toxic plants in your area prevents deaths. Hungry cattle eat what they would normally avoid, especially early in spring, in drought and after a frost.",
+  "s": [
+   {"h": "Common in the US", "p": [
+     "Larkspur and locoweed on Western rangeland.",
+     "Poison hemlock and water hemlock along ditches and creeks.",
+     "Oak buds and acorns, nightshades and perilla mint in the Southeast.",
+     "Johnsongrass and sorghums after drought or frost (prussic acid).",
+     "Pigweed, lambsquarters and drought-stressed crops that accumulate nitrate."]},
+   {"h": "When the risk is highest", "p": [
+     "Hungry or newly arrived cattle.",
+     "Overgrazed pastures in drought.",
+     "Early spring before grass grows, and right after a frost."]},
+   {"h": "What to do", "p": [
+     "Walk pastures and remove or fence off toxic plants before turning cattle in.",
+     "Don't dump yard waste or ornamental clippings (yew, oleander) in pastures.",
+     "If you suspect poisoning, remove the cattle and call your vet with a sample of the plant."]}]},
+ "F185.r": "Silage preserves forage by fermenting it without air. Done well it keeps for months and feeds cattle through winter.",
+ "F185.0.2": "Small grains (wheat, triticale, oats) cut at boot to early dough stage.",
+ "F187.r": "Hay is forage dried in the field. It keeps the quality of young grass or alfalfa for winter.",
+ "F188": {"t": "Legumes: alfalfa and clovers",
+  "r": "Legumes fix nitrogen from the air and give cattle cheap protein. They improve the soil and the grass they grow with.",
+  "s": [
+   {"h": "Options", "p": [
+     "Alfalfa: the highest-yielding, highest-protein hay crop.",
+     "Red and white clover: interseeded into fescue and other grasses.",
+     "Birdsfoot trefoil and sainfoin: don't cause bloat.",
+     "Annual lespedeza and arrowleaf clover in the South."]},
+   {"h": "Uses", "p": [
+     "Hay or haylage for receiving and growing rations.",
+     "Mixed into pastures, where clover also dilutes the fescue toxin.",
+     "As a protein source that replaces part of the purchased supplement."]},
+   {"h": "Precautions", "p": [
+     "Lush alfalfa and clover cause frothy bloat: don't turn hungry cattle in, and consider a bloat preventive.",
+     "Grazing alfalfa right after a killing frost also raises bloat risk."]}]},
+ "F189": {"t": "Summer annual forages",
+  "r": "Sorghum-sudangrass, sudangrass, pearl millet and crabgrass grow fast in summer heat and fill the summer slump when cool-season pastures stop growing.",
+  "s": [
+   {"h": "Advantages", "p": [
+     "Lots of forage in 45 to 60 days.",
+     "Can be grazed, green-chopped, baled or ensiled.",
+     "Good for double-cropping after wheat."]},
+   {"h": "Management", "p": [
+     "Graze sorghum-sudan and sudangrass once plants are over 18 to 24 inches.",
+     "Pearl millet has no prussic acid risk and is safer for grazing.",
+     "Leave 6 to 8 inches of stubble so it regrows."]},
+   {"h": "Risks", "p": [
+     "Prussic acid in young growth, regrowth after drought and after a frost.",
+     "Nitrate accumulation in drought or after heavy nitrogen: test before grazing or baling."]}]},
+ "F190.r": "Irrigation keeps forage producing through dry summers. It pays for high-yield hay and silage crops, as in much of the West.",
+ "F190.0.0": "High-value hay and silage crops.",
+ "F190.0.1": "Areas with dry summers, available water and water rights.",
+ "F190.2.2": "Check your water rights and state permits.",
+ "F191": {"t": "Winter feed plan",
+  "r": "Winter is planned in summer. Figuring how much hay, silage and grazing you'll need keeps you from buying expensive hay in January or losing weight.",
+  "s": [
+   {"h": "Figure what you need", "p": [
+     "Pounds of feed per head per day × head × days of winter feeding.",
+     "Add 15 to 25 % for storage and feeding losses (more for round bales stored outside).",
+     "Example: 100 stockers × 15 lb of hay × 120 days = 180,000 lb = 90 tons, plus 20 % = 108 tons."]},
+   {"h": "Options", "p": [
+     "Hay and corn silage.",
+     "Stockpiled fescue grazed in late fall and winter.",
+     "Cornstalk grazing after harvest.",
+     "Wheat or cereal rye pasture.",
+     "By-products like distillers grains, gluten feed or soybean hulls."]},
+   {"h": "Calendar", "p": [
+     "Plant silage corn and summer annuals in spring.",
+     "Put up hay in summer and stockpile fescue from August.",
+     "Test your hay and count your inventory before November."]},
+   {"h": "In the app", "p": [
+     "Rumi tells you how much feed your lots eat per month."]}]},
+ "F192.1.3": "Reseed in the right season for your grass: fall for cool-season, late spring for warm-season.",
+ "F193.0.3": "Grazing between rows of pine or pecan trees, common in the Southeast.",
+ "F194.2.1": "Hay grasses at boot stage; alfalfa at bud to early bloom.",
+ "F197": {"t": "Winter wheat and small-grain pasture",
+  "r": "Winter wheat, cereal rye, triticale and oats make high-quality fall and spring pasture. In the southern Plains, wheat pasture stockers are a classic way to add cheap pounds before the feedyard.",
+  "s": [
+   {"h": "What they give", "p": [
+     "20 to 30 % protein and very digestible forage.",
+     "Stockers commonly gain 2 to 2.5 lb a day."]},
+   {"h": "Management", "p": [
+     "Plant in late summer or early fall so there's forage by November.",
+     "Graze-out or pull cattle at first hollow stem if you want a grain crop.",
+     "About 1 to 2 acres per stocker, depending on rain."]},
+   {"h": "Precautions", "p": [
+     "Frothy bloat and grass tetany on lush wheat: feed a bloat preventive and magnesium.",
+     "Offer dry hay and mineral; watch stockers closely the first days."]}]},
+ "F198.r": "What's left of corn, sorghum or wheat after harvest makes useful fall and winter forage. Cornstalk grazing is one of the cheapest feeds in the Corn Belt.",
+ "F198.1.0": "Graze cornstalks: cattle eat the leftover grain and husks first.",
+ "F198.1.1": "Supplement protein, for example with distillers grains, once cattle move to stalks.",
+ "F199": {"t": "Bermudagrass and bahiagrass",
+  "r": "Bermudagrass and bahiagrass are the backbone warm-season pastures of the southern US: they handle heat, grazing and traffic, and respond strongly to fertilizer.",
+  "s": [
+   {"h": "Bermudagrass", "p": [
+     "Hybrid varieties like Coastal, Tifton 85 and Russell yield a lot of hay and pasture.",
+     "Responds very well to nitrogen fertilizer.",
+     "Good quality when grazed or cut young, every 4 to 5 weeks."]},
+   {"h": "Bahiagrass", "p": [
+     "Very persistent on sandy, low-fertility soils, especially in Florida and the Gulf Coast.",
+     "Lower quality than bermuda but tolerates heavy grazing."]},
+   {"h": "Management", "p": [
+     "Graze bermuda at about 6 inches and leave 2 to 3 inches.",
+     "Scout for fall armyworms from late summer: they can strip a field in days."]},
+   {"h": "Precautions", "p": [
+     "Summer protein and energy often fall short for young cattle: supplement stockers.",
+     "Heavily fertilized bermuda in drought can accumulate nitrate."]}]},
+ "F200": {"t": "Tall fescue and fescue toxicosis",
+  "r": "Tall fescue covers over 35 million acres in the US transition zone. Most old stands carry an endophyte fungus that makes ergot alkaloids, which cut gains and cause heat stress and poor circulation.",
+  "s": [
+   {"h": "Signs of fescue toxicosis", "p": [
+     "Rough hair coat that doesn't shed in summer.",
+     "Standing in ponds and shade, panting, low intake.",
+     "Lower gains; in winter, fescue foot (lameness, lost tail switches)."]},
+   {"h": "Management", "p": [
+     "Replace toxic stands with novel (friendly) endophyte varieties.",
+     "Interseed clover to dilute the toxins.",
+     "Keep seedheads clipped: they have the most alkaloids."]},
+   {"h": "For the feedyard", "p": [
+     "Cattle coming off toxic fescue may be heat-stressed and gain slowly for their first weeks.",
+     "Give them shade, water and time to recover."]}]},
+ "F201": {"t": "Alfalfa hay",
+  "r": "Alfalfa is the highest-quality hay crop in the US. It's widely used in receiving and growing rations for its protein and palatability.",
+  "s": [
+   {"h": "Quality", "p": [
+     "Prime and premium alfalfa: 18 to 22 % protein and high relative feed value.",
+     "Cut at bud to early bloom: later cuttings get stemmier."]},
+   {"h": "Use", "p": [
+     "Chopped into receiving rations to get stressed calves eating.",
+     "A small amount in finishing rations as effective fiber."]},
+   {"h": "Buying", "p": [
+     "Buy on a forage test (protein, NDF, RFV or RFQ), not just by looks.",
+     "Price it per ton of dry matter and per pound of protein."]}]},
+ "F202": {"t": "Native rangeland",
+  "r": "Much of the western US is native rangeland of bluestems, gramas, wheatgrasses and buffalograss. It's the base for cow-calf and stocker operations that supply feedyards.",
+  "s": [
+   {"h": "Main grasses", "p": [
+     "Tallgrass prairie: big bluestem, indiangrass, switchgrass (Flint Hills, Osage).",
+     "Mixed and shortgrass: little bluestem, blue grama, buffalograss, western wheatgrass."]},
+   {"h": "Management", "p": [
+     "Take half and leave half of the season's growth.",
+     "Prescribed burning in the Flint Hills and similar areas controls brush and improves summer gains."]},
+   {"h": "For the feedyard", "p": [
+     "Stockers off good summer grass often arrive at 750 to 900 lb and gain well on feed."]}]},
+ "F203": {"t": "Cool-season grasses and interseeding",
+  "r": "Besides fescue, orchardgrass, bromegrass, Kentucky bluegrass and ryegrass make high-quality spring and fall pasture across the northern US.",
+  "s": [
+   {"h": "Orchardgrass and brome", "p": [
+     "High quality and good hay grasses.",
+     "Less tolerant of close grazing than fescue."]},
+   {"h": "Ryegrass", "p": [
+     "Annual ryegrass overseeded into bermuda gives winter grazing in the South."]},
+   {"h": "Bluegrass", "p": [
+     "Persistent and palatable, but low yield in summer."]},
+   {"h": "On your operation", "p": [
+     "Interseeding clover and ryegrass raises pasture protein and lowers supplement costs.",
+     "Start cattle slowly on lush pasture to avoid bloat and grass tetany."]}]},
+ "F204.r": "Corn and sorghum are the best crops to ensile: they have enough sugar to ferment well and make a high-energy feed for winter and for the feedyard.",
+ "F206": {"t": "Stockpiled forage and winter grazing",
+  "r": "Stockpiling means letting pasture grow in late summer and fall and saving it to graze in winter. Stockpiled tall fescue is one of the cheapest winter feeds in the transition zone.",
+  "s": [
+   {"h": "How it works", "p": [
+     "Graze or clip fescue in early August, fertilize with nitrogen and let it grow.",
+     "Fescue keeps its quality into winter better than most grasses, and its toxins drop after a hard frost."]},
+   {"h": "Management", "p": [
+     "Strip-graze with polywire to waste less forage.",
+     "Graze bermudagrass first and save fescue for later."]}]},
+ "F207": {"t": "Fall armyworm and pasture pests",
+  "r": "Fall armyworm caterpillars can strip bermudagrass hay fields and pastures in a few days in late summer. Grasshoppers and white grubs can also cut forage.",
+  "s": [
+   {"h": "Signs", "p": [
+     "Fields that look frosted or brown overnight.",
+     "Caterpillars with an inverted Y on the head, mostly early and late in the day.",
+     "Worst from late summer to fall, after rains."]},
+   {"h": "Control", "p": [
+     "Scout often from July on.",
+     "If lush forage is ready, cut hay early instead of spraying.",
+     "Use labeled insecticides at threshold and respect grazing and haying intervals.",
+     "Ask your Extension agent for thresholds in your area."]}]},
+ "F208": {"t": "Storing forage for winter",
+  "r": "Summer grows more forage than cattle can eat, and winter grows almost none. Storing the surplus as hay or silage is the safest way to keep gains all year.",
+  "s": [
+   {"h": "How much to store", "p": [
+     "Count the days of winter feeding and the number of head.",
+     "A 775 lb steer eats about 18 to 20 lb of dry matter a day.",
+     "Store at least 20 % extra for losses."]},
+   {"h": "Options", "p": [
+     "Corn or sorghum silage, alfalfa and grass hay.",
+     "Round bales stored under a roof or on a gravel pad lose much less.",
+     "Stockpiled pasture and crop residues."]},
+   {"h": "On your operation", "p": [
+     "Plan feeder purchases around the feed you'll have in winter.",
+     "Record your stored forage in the app's feed store."]}]}
+}

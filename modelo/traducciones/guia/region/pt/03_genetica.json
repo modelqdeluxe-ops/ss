@@ -1,0 +1,56 @@
+{
+ "F149.1.1": "As tabelas BR-CORTE (Universidade Federal de Viçosa) foram feitas com Nelore e cruzados, o gado típico do Brasil.",
+ "F149.3.0": "As calculadoras do Rumi usam valores destas tabelas ajustados ao seu tipo de gado e clima. Veja Rumi, Alimentação, Exigências por raça e clima.",
+ "F211": {"t": "Cruzamento industrial",
+  "r": "Cruzar Nelore com raças taurinas combina rusticidade e crescimento. No Brasil o cruzamento industrial Angus × Nelore é o mais usado para produzir novilhos precoces para o confinamento.",
+  "s": [
+   {"h": "Proporções", "p": [
+     "½ Nelore × ½ Angus (F1): o melhor equilíbrio e o maior vigor híbrido.",
+     "Mais de 50 % taurino: mais carne e marmoreio, mas sofre mais com calor e carrapato.",
+     "Mais de 50 % zebu: mais rústico, um pouco menos de crescimento."]},
+   {"h": "Raças usadas no cruzamento", "p": [
+     "Angus e Red Angus: precocidade e marmoreio; o F1 Angus × Nelore é muito procurado.",
+     "Senepol e Bonsmara: taurinos adaptados ao calor.",
+     "Charolês, Simental e Limousin: tamanho e músculo; Caracu: raça local adaptada."]},
+   {"h": "No seu confinamento", "p": [
+     "No curral com sombra e boa comida, os cruzados F1 ganham mais e terminam mais cedo que o Nelore.",
+     "Muitos frigoríficos e programas pagam bonificação pelo cruzado bem terminado."]}]},
+ "F213": {"t": "Raças locais adaptadas",
+  "r": "As raças locais descendem do gado trazido pelos portugueses há cinco séculos. Adaptaram-se ao clima brasileiro e guardam genes valiosos de resistência.",
+  "s": [
+   {"h": "Exemplos", "p": [
+     "Caracu: taurino adaptado, usado em cruzamentos com Nelore.",
+     "Curraleiro Pé-Duro, do Nordeste semiárido.",
+     "Pantaneiro, adaptado às cheias do Pantanal.",
+     "Crioulo Lageano, do planalto catarinense."]},
+   {"h": "Virtudes", "p": [
+     "Toleram calor ou frio sem serem zebu.",
+     "Boa fertilidade e temperamento tranquilo.",
+     "Carne mais macia que a do zebu."]},
+   {"h": "No seu confinamento", "p": [
+     "Cruzados com Nelore dão vigor híbrido sem perder adaptação.",
+     "São alternativa às raças europeias em regiões muito quentes."]}]},
+ "F226.r": "O zebu (Bos indicus) inclui várias raças, cada uma com suas vantagens. No Brasil o Nelore domina o rebanho de corte, seguido por seus cruzamentos.",
+ "F226.3.0": "O Nelore é o animal mais comum no confinamento brasileiro: rústico, uniforme e de bom rendimento.",
+ "F276": {"t": "Raças para confinamento no Brasil",
+  "r": "No Brasil a raça precisa aguentar calor, carrapato e a seca. O Nelore é a base, e os cruzados com raças taurinas ganham mais no curral.",
+  "s": [
+   {"h": "Zebuínas", "p": [
+     "Nelore, Guzerá, Tabapuã, Brahman e Gir.",
+     "Aguentam calor e carrapato, rústicas e uniformes.",
+     "Ganho moderado e carne menos macia que as taurinas."]},
+   {"h": "Taurinas de corte", "p": [
+     "Angus, Red Angus, Hereford, Charolês, Simental.",
+     "Muita carne e boa qualidade, mas sofrem com calor e carrapato.",
+     "Melhor usadas em cruzamento com Nelore."]},
+   {"h": "Cruzados e compostos", "p": [
+     "Angus × Nelore, Senepol × Nelore, Brangus, Braford, Montana e Canchim.",
+     "Combinam resistência tropical com carne.",
+     "São muito procurados para confinamento e bonificados por vários frigoríficos."]},
+   {"h": "Leiteiros", "p": [
+     "Machos Holandês, Girolando e Jersey.",
+     "Ganham rápido com boa ração, mas rendem menos de carcaça."]},
+   {"h": "Com o app", "p": [
+     "Anote a raça de cada animal ao criar o lote.",
+     "Compare ganho e margem por raça com seus próprios números. Veja também Guia, Tabelas de referência, Raças para confinamento."]}]}
+}
