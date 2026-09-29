@@ -63,25 +63,30 @@ const CAM_KEY='rumentis-cam';
 async function traseras(){
   let ds=[];try{ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');}catch(e){}
   const back=ds.filter(d=>/back|rear|trasera|environment|posterior/i.test(d.label));
-  const lista=(back.length?back:ds.filter(d=>!/front|frontal|user/i.test(d.label)));
+  let lista=(back.length?back:ds.filter(d=>!/front|frontal|user/i.test(d.label)));
+  // las que se anuncian como gran angular, macro o teleobjetivo van al final
+  const rara=d=>/ultra|wide|angular|macro|tele|0[.,][4-7]/i.test(d.label)?1:0;
   const n=d=>{const m=String(d.label).match(/(\d+)/);return m?+m[1]:99;};
-  return lista.sort((a,b)=>n(a)-n(b));
+  return lista.sort((a,b)=>rara(a)-rara(b)||n(a)-n(b));
 }
 async function abrirCam(devId){
-  const base={width:{ideal:1920},height:{ideal:1440}};
+  // zoom:true pide poder controlar el acercamiento: en teléfonos con varias lentes en una sola cámara (Samsung) así se
+  // pone en 1x y no en la gran angular (0.6x)
+  const base={width:{ideal:1920},height:{ideal:1440},zoom:true};
   const v=devId?{...base,deviceId:{exact:devId}}:{...base,facingMode:{ideal:'environment'}};
   return navigator.mediaDevices.getUserMedia({video:v,audio:false});
 }
-async function zoom1(stream){
+async function zoom1(stream,z=1){
   try{const t=stream.getVideoTracks()[0];const c=t.getCapabilities?t.getCapabilities():{};
-    if(c.zoom){const z=Math.min(Math.max(1,c.zoom.min||1),c.zoom.max||1);await t.applyConstraints({advanced:[{zoom:z}]});}}catch(e){}
+    if(c.zoom){const v=Math.min(Math.max(z,c.zoom.min||1),c.zoom.max||1);await t.applyConstraints({advanced:[{zoom:v}]});return c.zoom;}}catch(e){}
+  return null;
 }
 /* o.soloCamara: sin galería (fotos de evidencia: tienen que tomarse en el momento) */
 function tomar(titulo,o={}){
   return new Promise(async ok=>{
     const w=document.createElement('dialog');w.className='cam';w.setAttribute('aria-label','Tomar foto');
     w.innerHTML=`<div class="cam-top"><b>${esc(titulo||'Foto del animal')}</b><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
-      <div class="cam-v"><video playsinline autoplay muted></video><i class="cam-guia"></i><p class="cam-msg">Abriendo la cámara…</p></div>
+      <div class="cam-v"><video playsinline autoplay muted></video><i class="cam-guia"></i><div class="cam-zoom" hidden></div><p class="cam-msg">Abriendo la cámara…</p></div>
       <div class="cam-bar"><button type="button" class="cam-gal"${o.soloCamara?' hidden':''}>Galería</button><button type="button" class="cam-disp" aria-label="Tomar foto" disabled><i></i></button><button type="button" class="cam-lente" hidden>Cambiar lente</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
     const v=w.querySelector('video'),msg=w.querySelector('.cam-msg'),disp=w.querySelector('.cam-disp'),lente=w.querySelector('.cam-lente');
@@ -96,7 +101,12 @@ function tomar(titulo,o={}){
       if(!v.videoWidth){toast('La cámara aún no está lista.');return;}
       w.classList.add('flash');const b=await aJpeg(v,v.videoWidth,v.videoHeight);fin(b);
     };
-    const mostrar=async s=>{stream=s;v.srcObject=s;await zoom1(s);try{await v.play();}catch(e){}msg.hidden=true;disp.disabled=false;
+    const zb=w.querySelector('.cam-zoom');
+    const mostrar=async s=>{stream=s;v.srcObject=s;const zc=await zoom1(s);try{await v.play();}catch(e){}msg.hidden=true;disp.disabled=false;
+      // botones de acercamiento (0.6x, 1x, 2x) si la cámara los permite
+      const niv=zc?[zc.min<.95?+(+zc.min).toFixed(1):0,1,zc.max>=2?2:0].filter(Boolean):[];
+      zb.hidden=niv.length<2;zb.innerHTML=niv.map(z=>`<button type="button" data-z="${z}" aria-pressed="${z===1}">${z}x</button>`).join('');
+      zb.onclick=async e=>{const b=e.target.closest('[data-z]');if(!b||!stream)return;await zoom1(stream,+b.dataset.z);zb.querySelectorAll('[data-z]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));};
       const lab=(s.getVideoTracks()[0]||{}).label||'';lente.hidden=lista.length<2;lente.textContent=lista.length>1?`Lente ${idx+1} de ${lista.length}`:'';};
     lente.onclick=async()=>{if(lista.length<2)return;idx=(idx+1)%lista.length;parar();disp.disabled=true;
       try{await mostrar(await abrirCam(lista[idx].deviceId));try{localStorage.setItem(CAM_KEY,lista[idx].deviceId);}catch(e){}}catch(e){toast('No pude abrir ese lente.');}};

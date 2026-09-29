@@ -174,10 +174,10 @@ function timbre(obtener,alSonar,alCambiar){
 // no se pueda abrir ni leer con otra cosa que no sea Rumentis. Cada archivo lleva un número único (fid): la app no
 // abre dos veces el mismo archivo ni uno que hizo ella misma.
 // Cada app hace archivos para la otra: el personal manda su reporte en .rumentis (lo abre Rumentis, la de la
-// administración) y la administración manda .campo (los abre Rumentis Campo). Si uno llega a la app equivocada, esta se
+// administración) y la administración manda .campo (los abre Rumentis Equipo). Si uno llega a la app equivocada, esta se
 // lo pasa a la otra.
 const MAGIA=enc('RUMENTIS'),LSA='rumentis-archivos';
-const TIPOS={jefe:{ext:'.rumentis',mime:'application/vnd.rumentis',app:'Rumentis'},vaquero:{ext:'.campo',mime:'application/vnd.rumentis.campo',app:'Rumentis Campo'}};
+const TIPOS={jefe:{ext:'.rumentis',mime:'application/vnd.rumentis',app:'Rumentis'},vaquero:{ext:'.campo',mime:'application/vnd.rumentis.campo',app:'Rumentis Equipo'}};
 const OTRA=CFG.app==='vaquero'?'jefe':'vaquero',PARA=TIPOS[OTRA];
 const paraDe=o=>o.para||(o.de==='jefe'?'vaquero':'jefe');
 let LLAVE_A=null;
@@ -217,7 +217,7 @@ async function recibirArchivo(u,fn){
   const para=paraDe(o);
   if(para!==CFG.app){
     let ok=false;try{ok=!!(window.Recibido&&Recibido.pasar&&Recibido.pasar(b64(u)));}catch(e){}
-    toast(para==='vaquero'?(ok?'Ese archivo es para Rumentis Campo: se abre ahí.':'Ese archivo es para la app Rumentis Campo. Ábrelo en esa app.')
+    toast(para==='vaquero'?(ok?'Ese archivo es para Rumentis Equipo: se abre ahí.':'Ese archivo es para la app Rumentis Equipo. Ábrelo en esa app.')
       :(ok?'Ese archivo es para Rumentis, la app de la administración: se abre ahí.':'Ese archivo es para Rumentis, la app de la administración. Ábrelo en esa app.'),4500);return false;
   }
   const v=visto(o.fid);

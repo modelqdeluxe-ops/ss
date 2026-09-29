@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rumentis Campo · Tu licencia</title>
-<meta name="description" content="La administración de la finca te dio una licencia de Rumentis Campo: descarga la app y actívala.">
+<title>Rumentis Equipo · Tu licencia</title>
+<meta name="description" content="La administración de la finca te dio una licencia de Rumentis Equipo: descarga la app y actívala.">
 <meta name="robots" content="noindex">
 <style>
 :root{--bg:#F1EDE5;--card:#fff;--ink:#1A2B3A;--ink2:#56645E;--line:#E2DCCF;--head:#22384D;--arete:#F0BF33;--pri:#22384D}
@@ -35,10 +35,10 @@ footer{text-align:center;font-size:12.5px;color:var(--ink2);padding:0 16px 30px}
 <main>
  <section class="card cod" id="licencia" hidden><span data-t="lic">Licencia</span><b id="codigo"></b>
   <button class="btn sec" id="copiarCod" type="button" data-t="copiarCod">Copiar la licencia</button></section>
- <section class="card"><a class="btn" id="tienda" href="https://play.google.com/store/apps/details?id=hn.hato.ganadero.vaquero" data-t="descargar">Descargar Rumentis Campo (gratis)</a>
+ <section class="card"><a class="btn" id="tienda" href="https://play.google.com/store/apps/details?id=hn.hato.ganadero.vaquero" data-t="descargar">Descargar Rumentis Equipo (gratis)</a>
   <p class="nota" data-t="android">Para teléfonos Android, en Google Play.</p></section>
  <section class="card"><ol>
-  <li data-t="p1">Descarga e instala <b>Rumentis Campo</b>.</li>
+  <li data-t="p1">Descarga e instala <b>Rumentis Equipo</b>.</li>
   <li data-t="p2">Ábrela y escribe tu nombre completo.</li>
   <li data-t="p3">Escribe la licencia de arriba, o toca <b>Pegar</b> después de copiar el enlace.</li>
   <li data-t="p4">Listo: cuando la administración confirme tu acceso, entras al equipo.</li></ol>
@@ -50,11 +50,11 @@ footer{text-align:center;font-size:12.5px;color:var(--ink2);padding:0 16px 30px}
 <script>
 (function(){
 var L=(navigator.language||'es').slice(0,2),T={
- en:{titulo:'Your license',sub:'The farm management invited you to the team.',lic:'License',copiarCod:'Copy the license',descargar:'Get Rumentis Campo (free)',android:'For Android phones, on Google Play.',
-  p1:'Download and install <b>Rumentis Campo</b>.',p2:'Open it and type your full name.',p3:'Type the license above, or tap <b>Paste</b> after copying the link.',p4:'Done: once the farm management confirms your access, you join the team.',
+ en:{titulo:'Your license',sub:'The farm management invited you to the team.',lic:'License',copiarCod:'Copy the license',descargar:'Get Rumentis Team (free)',android:'For Android phones, on Google Play.',
+  p1:'Download and install <b>Rumentis Team</b>.',p2:'Open it and type your full name.',p3:'Type the license above, or tap <b>Paste</b> after copying the link.',p4:'Done: once the farm management confirms your access, you join the team.',
   copiarEnl:'Copy the link (works offline)',nota:'This license is only for you. Don’t share it.',error:'This link has no license. Ask the farm management to send it again.',finca:'The team of ',copiado:'Copied'},
- pt:{titulo:'Sua licença',sub:'A administração da fazenda convidou você para a equipe.',lic:'Licença',copiarCod:'Copiar a licença',descargar:'Baixar Rumentis Campo (grátis)',android:'Para celulares Android, no Google Play.',
-  p1:'Baixe e instale o <b>Rumentis Campo</b>.',p2:'Abra e escreva seu nome completo.',p3:'Escreva a licença acima, ou toque em <b>Colar</b> depois de copiar o link.',p4:'Pronto: quando a administração confirmar seu acesso, você entra na equipe.',
+ pt:{titulo:'Sua licença',sub:'A administração da fazenda convidou você para a equipe.',lic:'Licença',copiarCod:'Copiar a licença',descargar:'Baixar Rumentis Equipe (grátis)',android:'Para celulares Android, no Google Play.',
+  p1:'Baixe e instale o <b>Rumentis Equipe</b>.',p2:'Abra e escreva seu nome completo.',p3:'Escreva a licença acima, ou toque em <b>Colar</b> depois de copiar o link.',p4:'Pronto: quando a administração confirmar seu acesso, você entra na equipe.',
   copiarEnl:'Copiar o link (sem internet)',nota:'A licença é só para você. Não compartilhe.',error:'Este link não traz uma licença. Peça à administração para mandar de novo.',finca:'A equipe de ',copiado:'Copiado'},
  es:{finca:'El equipo de ',copiado:'Copiado'}}[L]||{finca:'El equipo de ',copiado:'Copiado'};
 if(L==='en'||L==='pt'){document.documentElement.lang=L;[].forEach.call(document.querySelectorAll('[data-t]'),function(e){var k=e.getAttribute('data-t');if(T[k])e.innerHTML=T[k];});}

@@ -1,0 +1,149 @@
+Equipo por archivo	Team by file	Equipe por arquivo
+Sin internet	No internet	Sem internet
+Los datos viajan como archivo por WhatsApp o correo.	Data travels as a file by WhatsApp or email.	Os dados viajam como arquivo por WhatsApp ou e-mail.
+Última sincronización: {0}:{1}. Mientras vuelve, los datos viajan como archivo.	Last sync: {0}:{1}. Until it's back, data travels as a file.	Última sincronização: {0}:{1}. Enquanto não volta, os dados viajam como arquivo.
+Mientras vuelve, los datos viajan como archivo.	Until it's back, data travels as a file.	Enquanto não volta, os dados viajam como arquivo.
+Reintentar	Retry	Tentar de novo
+Lleva a tu personal las tareas, los lotes al día y la confirmación de sus reportes.	Sends your staff their tasks, up-to-date lots and the confirmation of their reports.	Leva à sua equipe as tarefas, os lotes em dia e a confirmação dos relatórios.
+Abre el reporte que te mandaron. También puedes tocarlo en WhatsApp y elegir Rumentis.	Opens the report they sent you. You can also tap it in WhatsApp and choose Rumentis.	Abre o relatório que te enviaram. Você também pode tocá-lo no WhatsApp e escolher o Rumentis.
+{0} entregas	{0} feedings	{0} tratos
+{0} entrega	{0} feeding	{0} trato
+Configurar	Set up	Configurar
+sugerido por entrega	suggested per feeding	sugerido por trato
+por entrega	per feeding	por trato
+Horarios de entrega	Feeding times	Horários de trato
+Sin horarios de entrega	No feeding times	Sem horários de trato
+Ponlos para que tu personal sepa cuándo servir	Set them so your staff knows when to feed	Defina-os para que sua equipe saiba quando tratar
+Poner los horarios de entrega	Set feeding times	Definir os horários de trato
+Alimentación	Feeding	Alimentação
+Plan de alimentación	Feeding plan	Plano de alimentação
+La cantidad que tu personal debe servir a cada lote en cada entrega. Vacía, la app sugiere una según lo que se ha servido o el peso de los animales.	The amount your staff should feed each lot at each feeding. If left blank, the app suggests one based on what has been fed or the animals' weight.	A quantidade que sua equipe deve servir a cada lote em cada trato. Vazia, o app sugere uma com base no que foi servido ou no peso dos animais.
+Ración de {0}	Ration for {0}	Ração de {0}
+Sin ración	No ration	Sem ração
+Sin ración asignada	No ration assigned	Sem ração atribuída
+Cantidad por entrega para {0}	Amount per feeding for {0}	Quantidade por trato para {0}
+Crear o cambiar raciones	Create or change rations	Criar ou alterar rações
+Plan de alimentación guardado	Feeding plan saved	Plano de alimentação salvo
+Sin cambios	No changes	Sem alterações
+No hay lotes en engorde.	There are no lots on feed.	Não há lotes em engorda.
+Plan de la administración: {0} {1} por entrega.	Management's plan: {0} {1} per feeding.	Plano da administração: {0} {1} por trato.
+Sugerido: {0} {3}, lo que se sirvió en la última entrega de las {1}:{2}.	Suggested: {0} {3}, what was fed at the last {1}:{2} feeding.	Sugerido: {0} {3}, o que foi servido no último trato das {1}:{2}.
+Sugerido: {0} {1}, lo que se sirvió en la última entrega.	Suggested: {0} {1}, what was fed at the last feeding.	Sugerido: {0} {1}, o que foi servido no último trato.
+Sugerido: {0} {2}, el promedio de las últimas {1} entregas.	Suggested: {0} {2}, the average of the last {1} feedings.	Sugerido: {0} {2}, a média dos últimos {1} tratos.
+Sugerido: {0} {4}, el promedio de las últimas {1} entregas de las {2}:{3}.	Suggested: {0} {4}, the average of the last {1} feedings at {2}:{3}.	Sugerido: {0} {4}, a média dos últimos {1} tratos das {2}:{3}.
+Sugerido: {0} {4}: comen {1} {5} por cabeza al día × {2} cabezas ÷ {3} entregas.	Suggested: {0} {4}: they eat {1} {5} per head per day × {2} head ÷ {3} feedings.	Sugerido: {0} {4}: comem {1} {5} por cabeça ao dia × {2} cabeças ÷ {3} tratos.
+Sugerido: {0} {3}: comen {1} {4} por cabeza al día × {2} cabezas.	Suggested: {0} {3}: they eat {1} {4} per head per day × {2} head.	Sugerido: {0} {3}: comem {1} {4} por cabeça ao dia × {2} cabeças.
+Sugerido: {0} {5}: {1} {6} del peso vivo ({2} cabezas de {3} {7}) ÷ {4} entregas.	Suggested: {0} {5}: {1} {6} of live weight ({2} head at {3} {7}) ÷ {4} feedings.	Sugerido: {0} {5}: {1} {6} do peso vivo ({2} cabeças de {3} {7}) ÷ {4} tratos.
+Sugerido: {0} {4}: {1} {5} del peso vivo ({2} cabezas de {3} {6}).	Suggested: {0} {4}: {1} {5} of live weight ({2} head at {3} {6}).	Sugerido: {0} {4}: {1} {5} do peso vivo ({2} cabeças de {3} {6}).
+A esa hora la app de tu personal envía el reporte del día o les avisa para que lo envíen.	At that time your staff's app sends the daily report or reminds them to send it.	Nesse horário o app da sua equipe envia o relatório do dia ou os lembra de enviá-lo.
+A esa hora la app de tu personal envía el reporte del día.	At that time your staff's app sends the daily report.	Nesse horário o app da sua equipe envia o relatório do dia.
+Tipo de tarea	Task type	Tipo de tarefa
+Nombre de la tarea	Task name	Nome da tarefa
+Escribe el nombre de la tarea.	Type the task name.	Escreva o nome da tarefa.
+Lote	Lot	Lote
+Las diarias y semanales vuelven a quedar pendientes cada día o cada semana.	Daily and weekly tasks become pending again each day or week.	As diárias e semanais voltam a ficar pendentes a cada dia ou semana.
+Se termina cuando anota la entrega de alimento y toma la foto de evidencia.	Completed when they record the feeding and take the proof photo.	É concluída quando registra o trato e tira a foto de comprovação.
+Se termina cuando anota el pesaje y toma la foto de evidencia.	Completed when they record the weighing and take the proof photo.	É concluída quando registra a pesagem e tira a foto de comprovação.
+Se termina cuando anota la sanidad y toma la foto de evidencia.	Completed when they record the treatment and take the proof photo.	É concluída quando registra a sanidade e tira a foto de comprovação.
+Se termina cuando toma la foto de evidencia.	Completed when they take the proof photo.	É concluída quando tira a foto de comprovação.
+Tareas asignadas	Assigned tasks	Tarefas atribuídas
+tareas de hoy	today's tasks	tarefas de hoje
+tareas asignadas terminadas hoy	assigned tasks completed today	tarefas atribuídas concluídas hoje
+Sin tareas	No tasks	Sem tarefas
+asignadas para hoy	assigned for today	atribuídas para hoje
+Asignadas por la administración	Assigned by management	Atribuídas pela administração
+Asignadas para hoy	Assigned for today	Atribuídas para hoje
+Asignadas para después	Assigned for later	Atribuídas para depois
+No tienes tareas asignadas para hoy.	You have no tasks assigned for today.	Você não tem tarefas atribuídas para hoje.
+Terminar con foto	Complete with photo	Concluir com foto
+Al anotar la entrega se pide la foto de evidencia.	The proof photo is requested when the feeding is recorded.	A foto de comprovação é pedida ao registrar o trato.
+Al anotar el pesaje se pide la foto de evidencia.	The proof photo is requested when the weighing is recorded.	A foto de comprovação é pedida ao registrar a pesagem.
+Al anotar la sanidad se pide la foto de evidencia.	The proof photo is requested when the treatment is recorded.	A foto de comprovação é pedida ao registrar a sanidade.
+Anotar la entrega	Record the feeding	Registrar o trato
+Anotar el pesaje	Record the weighing	Registrar a pesagem
+Anotar la sanidad	Record the treatment	Registrar a sanidade
+Ya la anotaste: toma la foto para terminarla.	Already recorded: take the photo to complete it.	Já registrada: tire a foto para concluí-la.
+Falta la foto	Photo missing	Falta a foto
+Atrasada	Overdue	Atrasada
+Nueva	New	Nova
+Pendientes de los lotes	Lot to-dos	Pendências dos lotes
+Los calcula Rumentis con los datos de cada lote.	Calculated by Rumentis from each lot's data.	Calculadas pelo Rumentis com os dados de cada lote.
+Los calcula Rumentis con los datos de cada lote: pesajes, vacunas y entregas.	Calculated by Rumentis from each lot's data: weighings, vaccines and feedings.	Calculadas pelo Rumentis com os dados de cada lote: pesagens, vacinas e tratos.
+Ver todo	See all	Ver tudo
+Próximos 7 días	Next 7 days	Próximos 7 dias
+Terminadas hoy	Completed today	Concluídas hoje
+Tu reporte de hoy	Your report for today	Seu relatório de hoje
+Se envía a las {0}:{1}	Sent at {0}:{1}	É enviado às {0}:{1}
+Enviado a las {0}:{1}	Sent at {0}:{1}	Enviado às {0}:{1}
+Enviado a las {0}:{1} · hay registros nuevos	Sent at {0}:{1} · there are new records	Enviado às {0}:{1} · há registros novos
+Pendiente desde las {0}:{1}	Pending since {0}:{1}	Pendente desde as {0}:{1}
+tareas asignadas	assigned tasks	tarefas atribuídas
+fotos	photos	fotos
+Sin internet.	No internet.	Sem internet.
+Envía el reporte como archivo por WhatsApp o correo; la administración lo abre en Rumentis.	Send the report as a file by WhatsApp or email; management opens it in Rumentis.	Envie o relatório como arquivo por WhatsApp ou e-mail; a administração o abre no Rumentis.
+Enviar por WhatsApp o correo	Send by WhatsApp or email	Enviar por WhatsApp ou e-mail
+Sin internet, el reporte se envía como archivo: elige WhatsApp o correo y mándalo a la administración, que lo abre en Rumentis.	Without internet, the report is sent as a file: choose WhatsApp or email and send it to management, who opens it in Rumentis.	Sem internet, o relatório é enviado como arquivo: escolha WhatsApp ou e-mail e envie à administração, que o abre no Rumentis.
+El reporte se envía como archivo y la actualización de la administración llega como archivo: tócalo en WhatsApp o ábrelo aquí.	The report is sent as a file and management's update arrives as a file: tap it in WhatsApp or open it here.	O relatório é enviado como arquivo e a atualização da administração chega como arquivo: toque nele no WhatsApp ou abra aqui.
+Hora del reporte	Report time	Horário do relatório
+Editar novedades	Edit notes	Editar novidades
+Novedades del día	Today's notes	Novidades do dia
+Un animal enfermo, un bebedero dañado, algo que haga falta…	A sick animal, a broken waterer, something that's needed…	Um animal doente, um bebedouro quebrado, algo que falte…
+Van en tu reporte de hoy de las {0}:{1}.	They go in your {0}:{1} report today.	Vão no seu relatório de hoje das {0}:{1}.
+Van en tu reporte de hoy; como ya salió, se envía de nuevo con ellas.	They go in today's report; since it was already sent, it's sent again with them.	Vão no seu relatório de hoje; como já saiu, ele é enviado de novo com elas.
+Guardar	Save	Salvar
+Novedades enviadas en tu reporte	Notes sent in your report	Novidades enviadas no seu relatório
+Novedades guardadas	Notes saved	Novidades salvas
+Novedades guardadas: van en tu reporte de las {0}:{1}	Notes saved: they go in your {0}:{1} report	Novidades salvas: vão no seu relatório das {0}:{1}
+Reporte del día enviado	Daily report sent	Relatório do dia enviado
+Elige WhatsApp o correo y envíalo a la administración.	Choose WhatsApp or email and send it to management.	Escolha WhatsApp ou e-mail e envie à administração.
+Terminar tarea	Complete task	Concluir tarefa
+Ya anotaste lo que pide esta tarea. Falta la foto.	You already recorded what this task asks for. The photo is missing.	Você já registrou o que esta tarefa pede. Falta a foto.
+Tomar foto de evidencia	Take proof photo	Tirar foto de comprovação
+Obligatoria para terminar la tarea	Required to complete the task	Obrigatória para concluir a tarefa
+Tomar otra foto	Take another photo	Tirar outra foto
+Tomar otra	Retake	Tirar outra
+Comentario para la administración	Comment for management	Comentário para a administração
+Opcional	Optional	Opcional
+Enviar	Send	Enviar
+Falta la foto de evidencia.	The proof photo is missing.	Falta a foto de comprovação.
+Tarea enviada a la administración	Task sent to management	Tarefa enviada à administração
+Tarea terminada: va en tu reporte del día	Task completed: it goes in your daily report	Tarefa concluída: vai no seu relatório do dia
+Este teléfono no puede tomar fotos.	This phone can't take photos.	Este telefone não pode tirar fotos.
+No se pudo guardar la foto. Intenta de nuevo.	Couldn't save the photo. Try again.	Não foi possível salvar a foto. Tente de novo.
+No se pudo conectar. Revisa tu internet.	Couldn't connect. Check your internet.	Não foi possível conectar. Verifique sua internet.
+Toca para enviarlo a la administración.	Tap to send it to management.	Toque para enviá-lo à administração.
+Poner la cantidad sugerida a todos	Fill in the suggested amount for all	Pôr a quantidade sugerida em todos
+Cantidad por lote	Amount per lot	Quantidade por lote
+Escribe lo que serviste a cada lote. Debajo de cada uno está la cantidad sugerida y de dónde sale. Si quieres, marca cómo estaba el comedero.	Enter what you fed each lot. Below each one is the suggested amount and where it comes from. If you like, mark how the bunk looked.	Escreva o que você serviu a cada lote. Abaixo de cada um está a quantidade sugerida e de onde vem. Se quiser, marque como estava o cocho.
+Escribe lo que serviste a cada lote. Debajo de cada uno está la cantidad sugerida y de dónde sale; el botón de arriba la pone en todos. Si quieres, marca cómo estaba el comedero.	Enter what you fed each lot. Below each one is the suggested amount and where it comes from; the button above fills it in for all. If you like, mark how the bunk looked.	Escreva o que você serviu a cada lote. Abaixo de cada um está a quantidade sugerida e de onde vem; o botão acima a coloca em todos. Se quiser, marque como estava o cocho.
+Anota la comida que serviste en	Record the feed you served in	Registre a comida que você serviu em
+una	one	um
+de las entregas del día. Con esto se sabe cuánto comen los lotes, cuánto cuesta y si se está dando de más o de menos.	of the day's feedings. This shows how much the lots eat, what it costs and whether you're feeding too much or too little.	dos tratos do dia. Com isso se sabe quanto os lotes comem, quanto custa e se está dando demais ou de menos.
+Debajo de cada lote está la	Below each lot is the	Abaixo de cada lote está a
+cantidad sugerida	suggested amount	quantidade sugerida
+y de dónde sale: el plan de alimentación, el promedio de las últimas entregas o el peso de los animales. El botón de arriba la pone en todos; solo corrige lo que cambió.	and where it comes from: the feeding plan, the average of the last feedings or the animals' weight. The button above fills it in for all; just correct what changed.	e de onde vem: o plano de alimentação, a média dos últimos tratos ou o peso dos animais. O botão acima a coloca em todos; só corrija o que mudou.
+Cuál de los horarios de entrega es.	Which feeding time it is.	Qual dos horários de trato é.
+pago único	one-time payment	pagamento único
+Licencia para tu personal	License for your staff	Licença para sua equipe
+La compra se simula y no se cobra.	The purchase is simulated and not charged.	A compra é simulada e não é cobrada.
+Licencia de	License for	Licença do
+Para una persona · pago único	For one person · one-time payment	Para uma pessoa · pagamento único
+Tu colaborador la activa en su teléfono con la app gratuita.	Your team member activates it on their phone with the free app.	Seu colaborador a ativa no telefone com o app gratuito.
+Anota alimento, pesajes, sanidad y muertes, y termina sus tareas con foto.	Records feed, weighings, treatments and deaths, and completes tasks with a photo.	Registra trato, pesagens, sanidade e mortes, e conclui as tarefas com foto.
+Si revocas la licencia, recibes otra sin costo para otra persona.	If you revoke the license, you get another one free for someone else.	Se você revogar a licença, recebe outra sem custo para outra pessoa.
+Comprar con Google Play	Buy with Google Play	Comprar com o Google Play
+Simular compra	Simulate purchase	Simular compra
+Crear sin costo	Create at no cost	Criar sem custo
+Compra simulada	Simulated purchase	Compra simulada
+Google Play	Google Play	Google Play
+En la app de Google Play aquí se paga con la cuenta de Google. En la app de prueba no se cobra.	In the Google Play app you pay here with your Google account. The test app doesn't charge.	No app do Google Play aqui se paga com a conta do Google. No app de teste não é cobrado.
+Comprar	Buy	Comprar
+Google Play no está disponible en este teléfono.	Google Play isn't available on this phone.	O Google Play não está disponível neste telefone.
+Puedes crear la licencia sin costo o probar la compra con Google Play.	You can create the license at no cost or test the purchase with Google Play.	Você pode criar a licença sem custo ou testar a compra com o Google Play.
+Cada licencia es para una sola persona y se queda con ella. Para sumar a otra persona, compra otra licencia.	Each license is for one person and stays with them. To add someone else, buy another license.	Cada licença é para uma única pessoa e fica com ela. Para somar outra pessoa, compre outra licença.
+{0} terminó: {1}	{0} completed: {1}	{0} concluiu: {1}
+{0} terminó: una tarea de la agenda	{0} completed: a schedule task	{0} concluiu: uma tarefa da agenda
+{0} · Una vez	{0} · One time	{0} · Uma vez
+{0} ya la ve pendiente en su app.	{0} now sees it as pending in their app.	{0} já a vê pendente no app.
+Sincronizado {0}:{1}	Synced {0}:{1}	Sincronizado {0}:{1}
+Tu personal registra en Rumentis Equipo y te envía su reporte del día.	Your staff records in Rumentis Team and sends you their daily report.	Sua equipe registra no Rumentis Equipe e envia o relatório do dia.

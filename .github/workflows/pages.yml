@@ -1,6 +1,6 @@
 # Publica en GitHub Pages las páginas públicas de Rumentis:
 #   https://modelqdeluxe-ops.github.io/ss/verificar/   verificación de documentos
-#   https://modelqdeluxe-ops.github.io/ss/campo/       la licencia de Rumentis Campo (el QR de la administración lleva aquí;
+#   https://modelqdeluxe-ops.github.io/ss/campo/       la licencia de Rumentis Equipo (el QR de la administración lleva aquí;
 #                                                      también en vaquero/, la dirección anterior)
 # Una sola vez: Settings → Pages → Build and deployment → Source: GitHub Actions.
 name: Páginas públicas

@@ -125,7 +125,7 @@ function tareas(){
   let ult=null;try{ult=localStorage.getItem('rumentis-ult-respaldo');}catch(e){}
   if(Object.keys(S.lotes).length&&(!ult||ult<addDias(H,-7)))add('resp:'+H,H,'Descargar respaldo',ult?`El último fue ${cuando(ult)}`:'Aún no has descargado ninguno','datos',{t:'go',go:'#mas/datos'},'a');
   // recordatorios propios y tareas del equipo. En la app de la administración, las del equipo (con "para") se ven en
-  // Equipo; en Rumentis Campo solo llegan las de esa persona.
+  // Equipo; en Rumentis Equipo solo llegan las de esa persona.
   const campo=window.RUMENTIS&&RUMENTIS.app==='vaquero';
   for(const t of (cfg().tareas||[])){
     if(t.para&&!campo)continue;

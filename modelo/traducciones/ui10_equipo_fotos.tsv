@@ -1,8 +1,8 @@
 Personal	Staff	Equipe
 Sin reporte hoy	No report today	Sem relatório hoje
 De una vez, diaria o semanal. Cada una se termina con una foto de evidencia.	One-time, daily or weekly. Each one is completed with a proof photo.	Única, diária ou semanal. Cada uma é concluída com uma foto de comprovação.
-A esa hora Rumentis Campo envía el reporte del día o avisa al colaborador para que lo envíe.	At that time Rumentis Campo sends the daily report or reminds the team member to send it.	Nesse horário o Rumentis Campo envia o relatório do dia ou lembra o colaborador de enviá-lo.
-A esa hora Rumentis Campo envía el reporte del día.	At that time Rumentis Campo sends the daily report.	Nesse horário o Rumentis Campo envia o relatório do dia.
+A esa hora Rumentis Equipo envía el reporte del día o avisa al colaborador para que lo envíe.	At that time Rumentis Team sends the daily report or reminds the team member to send it.	Nesse horário o Rumentis Equipe envia o relatório do dia ou lembra o colaborador de enviá-lo.
+A esa hora Rumentis Equipo envía el reporte del día.	At that time Rumentis Team sends the daily report.	Nesse horário o Rumentis Equipe envia o relatório do dia.
 Registrar los reportes al recibirlos	Record reports when they arrive	Registrar os relatórios ao recebê-los
 Apagado, cada reporte espera tu revisión.	When off, each report waits for your review.	Desligado, cada relatório aguarda sua revisão.
 Registrar al recibir	Record on arrival	Registrar ao receber
@@ -12,7 +12,7 @@ Aceptar solicitudes	Accept requests	Aceitar solicitações
 Ninguna disponible	None available	Nenhuma disponível
 Por archivo	By file	Por arquivo
 Reporte de un colaborador. Se abre con Rumentis.	A team member's report. Opens with Rumentis.	Relatório de um colaborador. Abre com o Rumentis.
-Actualización para el equipo: tareas, lotes y confirmaciones. Se abre con Rumentis Campo.	Update for the team: tasks, lots and confirmations. Opens with Rumentis Campo.	Atualização para a equipe: tarefas, lotes e confirmações. Abre com o Rumentis Campo.
+Actualización para el equipo: tareas, lotes y confirmaciones. Se abre con Rumentis Equipo.	Update for the team: tasks, lots and confirmations. Opens with Rumentis Team.	Atualização para a equipe: tarefas, lotes e confirmações. Abre com o Rumentis Equipe.
 Hora del reporte: {0}:{1}. Envía la actualización para que le llegue a tu equipo.	Report time: {0}:{1}. Send the update so your team gets it.	Horário do relatório: {0}:{1}. Envie a atualização para que chegue à sua equipe.
 al anotar la entrega	when the feeding is recorded	ao registrar o trato
 al anotar el pesaje	when the weighing is recorded	ao registrar a pesagem
@@ -30,7 +30,7 @@ Indicaciones	Instructions	Instruções
 Opcional: cantidad, horario, cómo hacerla…	Optional: amount, time, how to do it…	Opcional: quantidade, horário, como fazer…
 Revisar los bebederos…	Check the waterers…	Verificar os bebedouros…
 Las diarias y semanales se renuevan cada día o semana; el avance llega en cada reporte.	Daily and weekly tasks renew each day or week; progress comes in every report.	As diárias e semanais se renovam a cada dia ou semana; o progresso chega em cada relatório.
-Cada tarea se termina con una foto de evidencia tomada en Rumentis Campo.	Each task is completed with a proof photo taken in Rumentis Campo.	Cada tarefa é concluída com uma foto de comprovação tirada no Rumentis Campo.
+Cada tarea se termina con una foto de evidencia tomada en Rumentis Equipo.	Each task is completed with a proof photo taken in Rumentis Team.	Cada tarefa é concluída com uma foto de comprovação tirada no Rumentis Equipe.
 Tarea asignada a todo el equipo. Envía la actualización para que le llegue.	Task assigned to the whole team. Send the update so they get it.	Tarefa atribuída a toda a equipe. Envie a atualização para que ela chegue.
 Tarea asignada a {0}. Envía la actualización para que le llegue.	Task assigned to {0}. Send the update so they get it.	Tarefa atribuída a {0}. Envie a atualização para que ela chegue.
 Tarea asignada a todo el equipo	Task assigned to the whole team	Tarefa atribuída a toda a equipe
@@ -56,7 +56,7 @@ Pedir que la repita	Ask to redo it	Pedir para refazer
 «{0}» vuelve a quedar pendiente y solo se puede terminar con una foto nueva.	“{0}” goes back to pending and can only be completed with a new photo.	“{0}” volta a ficar pendente e só pode ser concluída com uma foto nova.
 Tarea pendiente otra vez. Envía la actualización para que le llegue.	Task pending again. Send the update so they get it.	Tarefa pendente de novo. Envie a atualização para que ela chegue.
 Tarea pendiente otra vez.	Task pending again.	Tarefa pendente de novo.
-{0} ya la ve pendiente en Rumentis Campo.	{0} now sees it as pending in Rumentis Campo.	{0} já a vê pendente no Rumentis Campo.
+{0} ya la ve pendiente en Rumentis Equipo.	{0} now sees it as pending in Rumentis Team.	{0} já a vê pendente no Rumentis Equipe.
 Se pidió repetirla	Redo requested	Refazer solicitado
 Pediste que la repita el {0}.	You asked to redo it on {0}.	Você pediu para refazer em {0}.
 Repetir	Redo	Refazer
@@ -81,9 +81,9 @@ Esta semana, desde el {0}.	This week, since {0}.	Esta semana, desde {0}.
 Teléfono vinculado	Linked phone	Telefone vinculado
 Revocar licencia	Revoke license	Revogar licença
 Revocar	Revoke	Revogar
-Se cierra su sesión en Rumentis Campo y recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.	Their Rumentis Campo session is closed and you get a new license for someone else. Their records stay on your operation.	A sessão dele no Rumentis Campo é encerrada e você recebe uma licença nova para outra pessoa. Os registros ficam na sua fazenda.
+Se cierra su sesión en Rumentis Equipo y recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.	Their Rumentis Team session is closed and you get a new license for someone else. Their records stay on your operation.	A sessão dele no Rumentis Equipe é encerrada e você recebe uma licença nova para outra pessoa. Os registros ficam na sua fazenda.
 ¿Revocar la licencia de {0}?	Revoke {0}'s license?	Revogar a licença de {0}?
-Su sesión en Rumentis Campo se cierra y la licencia {0} queda anulada. Recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.	Their Rumentis Campo session closes and license {0} is voided. You get a new license for someone else. Their records stay on your operation.	A sessão no Rumentis Campo é encerrada e a licença {0} fica anulada. Você recebe uma licença nova para outra pessoa. Os registros ficam na sua fazenda.
+Su sesión en Rumentis Equipo se cierra y la licencia {0} queda anulada. Recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.	Their Rumentis Team session closes and license {0} is voided. You get a new license for someone else. Their records stay on your operation.	A sessão no Rumentis Equipe é encerrada e a licença {0} fica anulada. Você recebe uma licença nova para outra pessoa. Os registros ficam na sua fazenda.
 Licencia revocada. Tienes una licencia nueva: {0}	License revoked. You have a new license: {0}	Licença revogada. Você tem uma licença nova: {0}
 Licencia revocada	License revoked	Licença revogada
 Licencias revocadas	Revoked licenses	Licenças revogadas
@@ -101,7 +101,7 @@ Historial	History	Histórico
 Todavía nadie la termina.	No one has completed it yet.	Ninguém a concluiu ainda.
 Quitar tarea	Remove task	Remover tarefa
 ¿Quitar esta tarea?	Remove this task?	Remover esta tarefa?
-«{0}» deja de aparecer en Rumentis Campo. Su historial se pierde.	“{0}” stops showing in Rumentis Campo. Its history is lost.	“{0}” deixa de aparecer no Rumentis Campo. O histórico é perdido.
+«{0}» deja de aparecer en Rumentis Equipo. Su historial se pierde.	“{0}” stops showing in Rumentis Team. Its history is lost.	“{0}” deixa de aparecer no Rumentis Equipe. O histórico é perdido.
 Quitar	Remove	Remover
 Tarea quitada	Task removed	Tarefa removida
 Sincronización	Sync	Sincronização

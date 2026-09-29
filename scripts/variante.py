@@ -36,7 +36,7 @@ if app == 'vaquero':
     for el in list(ap):
         if el.tag == 'receiver' and el.get(A + 'name', '').endswith('RumiWidget'):
             ap.remove(el)
-    # archivos del equipo: Rumentis abre los .rumentis (los reportes del personal); Rumentis Campo, los .campo
+    # archivos del equipo: Rumentis abre los .rumentis (los reportes del personal); Rumentis Equipo, los .campo
     # (las actualizaciones de la administración)
     for el in m.iter('data'):
         if el.get(A + 'mimeType') == 'application/vnd.rumentis':
@@ -70,6 +70,13 @@ sp = D / 'res/values/strings.xml'
 s = sp.read_text(encoding='utf-8')
 s = re.sub(r'(<string name="app_name">)[^<]*(</string>)', lambda x: x.group(1) + nombre + x.group(2), s)
 sp.write_text(s, encoding='utf-8')
+# la app del personal lleva su nombre en el idioma del teléfono: Rumentis Equipo, Team o Equipe
+if app == 'vaquero':
+    otros = {'en': 'Team Test', 'pt': 'Equipe Teste'} if prueba == '1' else {'en': 'Rumentis Team', 'pt': 'Rumentis Equipe'}
+    for q, n in otros.items():
+        dq = D / ('res/values-' + q)
+        dq.mkdir(exist_ok=True)
+        (dq / 'strings.xml').write_text('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string name="app_name">' + n + '</string>\n</resources>\n', encoding='utf-8')
 
 # ---- color del ícono ----
 cp = D / 'res/values/colors.xml'

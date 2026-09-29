@@ -26,6 +26,8 @@ const PERM=[['alimento','Entregar alimento'],['pesaje','Pesar'],['sanidad','Sani
 const PERM_DEF={alimento:true,pesaje:true,sanidad:true,bajas:true,tareas:true};
 const PERM_TIPO={alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad',baja:'bajas'};
 const servidor=()=>N.urlOk((EQ()&&EQ().servidor)||CFG.servidorEquipo);
+// con internet (servidor al alcance) todo viaja solo y los botones de archivo no hacen falta
+const enLinea=()=>!!servidor()&&!SY.err&&navigator.onLine!==false;
 const horaRep=()=>{const h=(EQ()||{}).horaReporte;return h!=null&&+h>=0&&+h<=23?+h:17;};
 const firmaJ=()=>{const f=S.config.firma;return f&&f.pub&&f.sec?{pub:f.pub,sec:f.sec}:null;};
 const conEquipo=()=>{const e=EQ();return !!(e&&e.id&&Object.keys(e.licencias||{}).length);};
@@ -40,6 +42,8 @@ const gratis=()=>CFG.prueba||esDueno();
 const tr=t=>window.I18N&&I18N.txt?I18N.txt(t):t;
 // "Equipo" en el catálogo es equipamiento (inventario): el nombre de esta pestaña va aparte
 const EQT=()=>`<span data-no-tr>${({en:'Team',pt:'Equipe'})[window.I18N&&I18N.lang?I18N.lang():'es']||'Equipo'}</span>`;
+// la app del personal: Rumentis Equipo, Team o Equipe según el idioma
+const NOMBRE_CAMPO=()=>({en:'Team',pt:'Equipe'})[window.I18N&&I18N.lang?I18N.lang():'es']||'Equipo';
 
 async function asegurarEquipo(){
   const e=EQ();if(e&&e.id&&e.caja&&e.clave)return e;
@@ -65,24 +69,38 @@ async function fichaEq(){
 }
 const cuentaOfuscada=()=>N.sha('RUMENTIS-CUENTA|'+(EQ()||{}).id).slice(0,40);
 function textoLicencia(c,url){
-  return tr(`Hola, te doy una licencia de Rumentis Campo para trabajar con el equipo de ${S.config.finca||'la finca'}.`)+'\n\n'+
+  return tr(`Hola, te doy una licencia de Rumentis Equipo para trabajar con el equipo de ${S.config.finca||'la finca'}.`)+'\n\n'+
     tr('1. Descarga la app (gratis):')+' '+CFG.tiendaVaquero+'\n'+tr('2. Ábrela, escribe tu nombre y esta licencia:')+' '+N.fmtLic(c)+'\n\n'+
     tr('O abre este enlace desde tu teléfono:')+' '+url;
 }
 
 /* ---------- compra con Google Play ---------- */
+/* Comprar una licencia: la misma hoja para todos. Con Google Play, el pago lo hace Google Play. Con el código maestro se
+   puede crear sin costo y también probar la compra real con Google Play; en la app de prueba la compra se simula. */
 ACTS.eqComprar=async()=>{
-  await asegurarEquipo();
-  if(esDueno()&&!CFG.prueba){
-    openSheet(shHead('Licencia sin costo',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p><b>Código maestro:</b> la licencia se crea al instante, sin costo, y sirve en Rumentis Campo como cualquier otra.</p></div></div>
-      <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Cancelar</button><button type="button" class="btn pri" data-act="eqCompraPrueba" style="flex:1">Crear licencia</button></div>`);return;}
-  if(CFG.prueba){
-    openSheet(shHead('Compra de prueba',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p>Esta es la <b>app de prueba</b>: la licencia se crea al instante y no se cobra nada. En la app de Google Play el pago lo hace Google Play.</p></div></div>
-      <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Cancelar</button><button type="button" class="btn pri" data-act="eqCompraPrueba" style="flex:1">Crear licencia</button></div>`);return;}
-  if(!N.pagosHay()){toast('Las licencias se compran en la app de Rumentis de Google Play.',4500);return;}
-  const c=N.nuevaLicencia();SY.pend={c,ts:Date.now()};guardarSY();
+  await asegurarEquipo();const p=precioLic(),gp=N.pagosHay()&&!CFG.prueba;
+  if(!gp&&!gratis()){toast('Las licencias se compran en la app de Rumentis de Google Play.',4500);return;}
+  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> La compra se simula y no se cobra.</p></div>`
+    :esDueno()?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Código maestro activo.</b> Puedes crear la licencia sin costo o probar la compra con Google Play.</p></div>`:'';
+  openSheet(shHead('Licencia para tu personal',EQT())+`<div class="sh-body eq-compra">${aviso}
+    <div class="eq-prod"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Licencia de <span data-no-tr>Rumentis ${NOMBRE_CAMPO()}</span></b><span>Para una persona · pago único</span></div>${p?`<strong data-no-tr>${esc(p)}</strong>`:''}</div>
+    <ul class="eq-lista"><li>${ico('check',2.4)}<span>Tu colaborador la activa en su teléfono con la app gratuita.</span></li>
+     <li>${ico('check',2.4)}<span>Anota alimento, pesajes, sanidad y muertes, y termina sus tareas con foto.</span></li>
+     <li>${ico('check',2.4)}<span>Si revocas la licencia, recibes otra sin costo para otra persona.</span></li></ul></div>
+    <div class="sh-foot eq-compra-f">${gp?`<button type="button" class="btn pri" data-act="eqPagar" style="flex:1.4">Comprar con Google Play</button>`:''}
+    ${CFG.prueba?`<button type="button" class="btn pri" data-act="eqSimular" style="flex:1.4">Simular compra</button>`:''}
+    ${esDueno()&&!CFG.prueba?`<button type="button" class="btn${gp?'':' pri'}" data-act="eqCompraPrueba" style="flex:1">Crear sin costo</button>`:''}</div>`);
+};
+ACTS.eqPagar=()=>{
+  if(!N.pagosHay()){toast('Google Play no está disponible en este teléfono.',4000);return;}
+  const c=N.nuevaLicencia();SY.pend={c,ts:Date.now()};guardarSY();closeSheet();
   try{Pagos.comprar(CFG.productoLicencia,cuentaOfuscada(),c);}catch(e){toast('No se pudo abrir Google Play.',4000);}
 };
+// app de prueba: la ventana de pago como la de Google Play, sin cobrar
+ACTS.eqSimular=()=>{const p=precioLic()||'US$1.99';
+  openSheet(shHead('Google Play','Compra simulada')+`<div class="sh-body eq-gp"><div class="eq-prod"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Licencia de <span data-no-tr>Rumentis ${NOMBRE_CAMPO()}</span></b><span>Rumentis</span></div><strong data-no-tr>${esc(p)}</strong></div>
+    <p class="hint">En la app de Google Play aquí se paga con la cuenta de Google. En la app de prueba no se cobra.</p></div>
+    <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Cancelar</button><button type="button" class="btn pri" data-act="eqCompraPrueba" style="flex:1.4">Comprar</button></div>`);};
 ACTS.eqCompraPrueba=async()=>{await asegurarEquipo();if(!gratis())return;const c=N.nuevaLicencia();crearLicencia(c,CFG.prueba?{prueba:true}:{dueno:true,ts:Date.now()});closeSheet();toast('Licencia creada');
   if(!location.hash.startsWith('#equipo'))location.hash='#equipo';setTimeout(()=>abrirLicencia(c),380);};
 N.pagosEscuchar(async o=>{
@@ -110,9 +128,9 @@ async function abrirLicencia(c){
   openSheet(shHead('Licencia de acceso',EQT())+`<div class="sh-body eq-lic">
     ${svg?`<div class="eq-qr">${svg}</div>`:''}
     <div class="eq-cod"><span>Licencia</span><b data-no-tr>${N.fmtLic(c)}</b></div>
-    <ol class="eq-pasos"><li>La persona escanea este código con la cámara de su teléfono y descarga <b>Rumentis Campo</b>, gratis en Google Play.</li>
+    <ol class="eq-pasos"><li>La persona escanea este código con la cámara de su teléfono y descarga <b>Rumentis Equipo</b>, gratis en Google Play.</li>
     <li>Al abrirla escribe su nombre y la licencia, o toca <b>Escanear QR</b>.</li><li>Te envía su solicitud de acceso; la abres aquí y le devuelves la actualización. Desde ahí te envía su reporte cada día.</li></ol>
-    <p class="hint">Cada licencia es para una sola persona. No la publiques.</p></div>
+    <p class="hint">Cada licencia es para una sola persona y se queda con ella. Para sumar a otra persona, compra otra licencia.</p></div>
     <div class="sh-foot"><button type="button" class="btn" data-act="eqCopiar" data-c="${c}" style="flex:1">Copiar</button><button type="button" class="btn pri" data-act="eqCompartir" data-c="${c}" style="flex:1.4">Enviar por WhatsApp</button></div>`);
 }
 ACTS.eqLicencia=el=>abrirLicencia(el.dataset.c);
@@ -195,12 +213,12 @@ function aplicarOps(v,ops,omitir){
         if(c.estado==='cerrado'&&P.bajas){d.estado='cerrado';d.fechaCierre=c.fechaCierre||hoy();}
         if(Object.keys(d).length){put('lotes',op.id,{...l,...d});cambios++;}}
       else if(op.k==='hecha'&&P.tareas){cfgNueva.hechas={...(cfgNueva.hechas||{}),[op.key]:op.f||hoy()};const ra={...(cfgNueva.repetirAg||{})};delete ra[op.key];cfgNueva.repetirAg=ra;
-        cfgCambio=true;cambios++;act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} hizo: ${op.txt||'una tarea de la agenda'}`});}
+        cfgCambio=true;cambios++;act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} terminó: ${op.txt||'una tarea de la agenda'}`});}
       else if(op.k==='tarea'){const t=(cfgNueva.tareas||[]).find(z=>z.id===op.id);if(!t||(t.para!=='todos'&&t.para!==v.id))continue;const f=/^\d{4}-\d\d-\d\d$/.test(op.f||'')?op.f:hoy();
-        const foto=/^[A-Za-z0-9_-]{6,40}$/.test(op.foto||'')?op.foto:'';
-        cfgNueva.tareas=cfgNueva.tareas.map(z=>z.id!==t.id?z:(z.rep||'una')==='una'?{...z,hecho:true,hechoPor:v.nombre,hechoV:v.id,hechoF:f,foto,repetir:null}
-          :(z.hechos||[]).some(x=>x.f===f&&x.v===v.id)?z:{...z,repetir:null,hechos:(z.hechos||[]).filter(x=>x.f>=addDias(hoy(),-70)).concat({f,v:v.id,n:v.nombre,foto})});
-        cfgCambio=true;cambios++;act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} hizo: ${t.t}`});}
+        const foto=/^[A-Za-z0-9_-]{6,40}$/.test(op.foto||'')?op.foto:'',nota=String(op.nota||'').slice(0,300);
+        cfgNueva.tareas=cfgNueva.tareas.map(z=>z.id!==t.id?z:(z.rep||'una')==='una'?{...z,hecho:true,hechoPor:v.nombre,hechoV:v.id,hechoF:f,foto,notaHecho:nota,repetir:null}
+          :(z.hechos||[]).some(x=>x.f===f&&x.v===v.id)?z:{...z,repetir:null,hechos:(z.hechos||[]).filter(x=>x.f>=addDias(hoy(),-70)).concat({f,v:v.id,n:v.nombre,foto,nota})});
+        cfgCambio=true;cambios++;act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} terminó: ${t.t}`});}
     }catch(err){}
   }
   const vs={...EQ().vaqueros,[v.id]:{...v,seq,ts:Date.now()}};
@@ -328,7 +346,7 @@ async function darDeBaja(vid){
   toast(`Licencia revocada. Tienes una licencia nueva: ${N.fmtLic(c2)}`,5000);
 }
 ACTS.eqBaja=el=>{const v=EQ().vaqueros[el.dataset.v];if(!v)return;
-  confirmar(`¿Revocar la licencia de ${esc(v.nombre)}?`,`Su sesión en Rumentis Campo se cierra y la licencia ${N.fmtLic(v.lic)} queda anulada. Recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.`,'Revocar',()=>darDeBaja(v.id));};
+  confirmar(`¿Revocar la licencia de ${esc(v.nombre)}?`,`Su sesión en Rumentis Equipo se cierra y la licencia ${N.fmtLic(v.lic)} queda anulada. Recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.`,'Revocar',()=>darDeBaja(v.id));};
 
 /* ---------- sincronizar por el servidor ---------- */
 let ocupado=null,prontoT=0;
@@ -379,6 +397,8 @@ let pubT=0;document.addEventListener('rumentis-pintado',()=>{if(!conEquipo()||!a
 // sin conexión en vivo, cada minuto; con ella, solo de vez en cuando por si acaso
 setInterval(()=>{if(!document.hidden&&conEquipo()&&servidor()&&!(T.vivo()&&Date.now()-(SY.ult||0)<5*60e3))sincronizar();},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&conEquipo()&&servidor())sincronizar();});
+addEventListener('online',()=>{if(conEquipo()&&servidor())sincronizar();});
+addEventListener('offline',()=>{if(location.hash.startsWith('#equipo'))scheduleRender();});
 
 /* ---------- por archivo (WhatsApp) ---------- */
 ACTS.eqEnviarArchivo=async()=>{
@@ -415,26 +435,34 @@ ACTS.eqSolicitud=el=>{const s=(EQ().solicitudes||{})[el.dataset.v];if(!s)return;
 const ACC={alimento:'Entregar alimento',pesaje:'Pesar',sanidad:'Sanidad'};
 function textoAcc(k,lote){const n=lote&&S.lotes[lote]?S.lotes[lote].nombre:'';
   return k==='alimento'?(n?`Entregar alimento a ${n}`:'Entregar alimento'):k==='pesaje'?(n?`Pesar ${n}`:'Pesar un lote'):k==='sanidad'?(n?`Sanidad en ${n}`:'Aplicar sanidad'):'';}
+const TIPO_H={alimento:'Se termina cuando anota la entrega de alimento y toma la foto de evidencia.',pesaje:'Se termina cuando anota el pesaje y toma la foto de evidencia.',
+  sanidad:'Se termina cuando anota la sanidad y toma la foto de evidencia.','':'Se termina cuando toma la foto de evidencia.'};
 FORMS.eqTarea=({id}={})=>{
   const vs=activos(),C=calc();
-  const body=`${q('¿Qué tipo de tarea?',opts('acc',[{v:'alimento',t:'Entregar alimento',s:'al anotar la entrega'},{v:'pesaje',t:'Pesar',s:'al anotar el pesaje'},{v:'sanidad',t:'Sanidad',s:'al anotar la sanidad'},{v:'',t:'Otra',s:'la marca el colaborador'}],'alimento'))}
-   ${q('¿En qué lote?',`<select class="in" name="lote"><option value="">Cualquier lote</option>${C.act.map(x=>`<option value="${esc(x.id)}">${esc(x.l.nombre)}</option>`).join('')}</select>`,'Para alimento, pesaje y sanidad.')}
-   ${q('¿Qué hay que hacer?',`<input class="in" name="t" placeholder="Revisar los bebederos…" autocomplete="off">`,'En alimento, pesaje y sanidad puede quedar vacío: se usa el nombre de la acción.')}
+  const body=`${q('Tipo de tarea',opts('acc',[{v:'alimento',t:'Entregar alimento'},{v:'pesaje',t:'Pesar'},{v:'sanidad',t:'Sanidad'},{v:'',t:'Otra'}],'alimento'))}
+   <p class="hint eq-tipo-h"></p>
+   <div class="eq-q-t">${q('Nombre de la tarea',`<input class="in" name="t" placeholder="Revisar los bebederos…" autocomplete="off" maxlength="80">`)}</div>
+   <div class="eq-q-lote">${q('Lote',`<select class="in" name="lote"><option value="">Cualquier lote</option>${C.act.map(x=>`<option value="${esc(x.id)}">${esc(x.l.nombre)}</option>`).join('')}</select>`)}</div>
    ${q('Indicaciones',`<textarea class="in" name="nota" rows="2" maxlength="400" placeholder="Opcional: cantidad, horario, cómo hacerla…"></textarea>`)}
    ${q('¿Para quién?',opts('para',[{v:'todos',t:'Todo el equipo'}].concat(vs.map(v=>({v:v.id,t:v.nombre}))),id||'todos'))}
-   ${q('¿Cada cuánto?',`<select class="in" name="rep">${['una','dia','s1','s2','s3','s4','s5'].map(k=>`<option value="${k}">${Agenda.REP[k]}</option>`).join('')}</select>`,'Las diarias y semanales se renuevan cada día o semana; el avance llega en cada reporte.')}
-   ${q('¿Desde cuándo?',`<input class="in" type="date" name="f" value="${hoy()}" min="${hoy()}">`)}
-   <p class="hint">Cada tarea se termina con una foto de evidencia tomada en Rumentis Campo.</p>`;
+   ${q('¿Cada cuánto?',`<select class="in" name="rep">${['una','dia','s1','s2','s3','s4','s5'].map(k=>`<option value="${k}">${Agenda.REP[k]}</option>`).join('')}</select>`,'Las diarias y semanales vuelven a quedar pendientes cada día o cada semana.')}
+   ${q('¿Desde cuándo?',`<input class="in" type="date" name="f" value="${hoy()}" min="${hoy()}">`)}`;
   openSheet(shHead('Asignar una tarea',EQT())+formWrap('eqTarea',body,foot('Asignar')));
+  tipoTarea();
 };
+// según el tipo: la explicación, el nombre (solo en Otra) y el lote (solo en las de alimento, pesaje y sanidad)
+function tipoTarea(){const f=$('#sheet form[data-form="eqTarea"]');if(!f)return;const k=fv(f,'acc');
+  const h=f.querySelector('.eq-tipo-h');if(h)h.textContent=tr(TIPO_H[k]||TIPO_H['']);
+  f.querySelector('.eq-q-t').hidden=!!ACC[k];f.querySelector('.eq-q-lote').hidden=!ACC[k];}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#sheet form[data-form="eqTarea"] .opts[data-name=acc] .opt'))setTimeout(tipoTarea,0);});
 SAVE.eqTarea=f=>{const acc=ACC[fv(f,'acc')]?fv(f,'acc'):'',lote=acc&&S.lotes[fv(f,'lote')]?fv(f,'lote'):'';
-  const t=fv(f,'t').trim()||textoAcc(acc,lote);if(!t)return ferr(f,'Escribe qué hay que hacer.');const para=fv(f,'para')||'todos';
+  const t=acc?textoAcc(acc,lote):fv(f,'t').trim();if(!t)return ferr(f,'Escribe el nombre de la tarea.');const para=fv(f,'para')||'todos';
   const quien=para==='todos'?'todo el equipo':((EQ().vaqueros||{})[para]||{}).nombre||'';
   const rep=Agenda.REP[fv(f,'rep')]?fv(f,'rep'):'una';
   put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).concat({id:uid('t'),t,f:fv(f,'f')||hoy(),hecho:false,para,rep,hechos:[],acc:acc?{k:acc,lote}:null,nota:String(fv(f,'nota')||'').trim().slice(0,400)})});closeSheet();
-  toast(servidor()?`Tarea asignada a ${quien}`:`Tarea asignada a ${quien}. Envía la actualización para que le llegue.`,4000);publicarEstado();};
+  toast(enLinea()?`Tarea asignada a ${quien}`:`Tarea asignada a ${quien}. Envía la actualización para que le llegue.`,4000);publicarEstado();};
 ACTS.eqTareaBorrar=el=>{const t=(S.config.tareas||[]).find(x=>x.id===el.dataset.id);if(!t)return;
-  confirmar('¿Quitar esta tarea?',`«${esc(t.t)}» deja de aparecer en Rumentis Campo. Su historial se pierde.`,'Quitar',()=>{
+  confirmar('¿Quitar esta tarea?',`«${esc(t.t)}» deja de aparecer en Rumentis Equipo. Su historial se pierde.`,'Quitar',()=>{
     put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).filter(x=>x.id!==t.id)});publicarEstado();toast('Tarea quitada');});};
 ACTS.eqServidor=()=>{const e=EQ()||{};
   openSheet(shHead('Servidor del equipo',EQT())+formWrap('eqServidor',`${q('Dirección del servidor',`<input class="in" name="s" value="${esc(e.servidor||'')}" placeholder="${esc(CFG.servidorEquipo||'192.168.1.10:8790')}" autocomplete="off" inputmode="url" data-no-tr>`,'La dirección que muestra el servidor de la finca al encenderlo. Sin servidor, el equipo se pasa los datos por archivo.')}`,foot('Guardar')));};
@@ -510,9 +538,9 @@ function paginaReporte(rid){
   const ck=ok=>`<span class="vq-ck${ok?' ok':''}" aria-hidden="true">${ok?ico('check',2.6):''}</span>`;
   const estado=nuevo?'':r.estado==='incluido'?`<div class="eq-prueba">${ico('check',2.2)}<p>Sus registros van en un reporte más reciente de ${esc(r.n)}.</p></div>`
     :`<div class="eq-hecho">${ico('check',2.4)}<div><b>${r.auto?'Registrado automáticamente':'Registrado'}</b><span><span>${pl(r.reg||0,'cambio en tu finca','cambios en tu finca')}</span>${r.omit?` · <span>${pl(r.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</span></div>
-      ${!servidor()&&r.regTs>Date.now()-864e5?`<button type="button" class="btn pri sm" data-act="eqEnviarArchivo">Enviar actualización</button>`:''}</div>`;
+      ${!enLinea()&&r.regTs>Date.now()-864e5?`<button type="button" class="btn pri sm" data-act="eqEnviarArchivo">Enviar actualización</button>`:''}</div>`;
   const filaT=(t,i)=>{const rep=pedidaRepetir(r,t),puede=t.ok&&!nuevo&&(t.id||t.key)&&!rep;
-    return `<div class="row vq-rt eq-rt">${ck(t.ok&&!rep)}<div class="tx"><b>${esc(t.t)}</b><span>${rep?'<span class="eq-pill t-r">Se pidió repetirla</span>':t.ok?(t.foto?'Terminada con foto':'Terminada'):'Pendiente'}</span>
+    return `<div class="row vq-rt eq-rt">${ck(t.ok&&!rep)}<div class="tx"><b>${esc(t.t)}</b><span>${rep?'<span class="eq-pill t-r">Se pidió repetirla</span>':t.ok?(t.foto?'Terminada con foto':'Terminada'):'Pendiente'}</span>${t.ok&&t.nota?`<span class="eq-com" data-no-tr>“${esc(t.nota)}”</span>`:''}
       ${puede?`<button type="button" class="lnk eq-rep" data-act="eqRepetir" data-r="${esc(rid)}" data-i="${i}">Pedir que la repita</button>`:''}</div>${t.ok&&t.foto?miniatura(t.foto):''}</div>`;};
   const filaReg=(d,estado)=>`<div class="row eq-reg">${icTipo(d.tipo)}<div class="tx"><b>${esc(d.t)}</b><span>${[d.f&&d.f!==r.fecha?ffc(d.f):'',d.h,estado].filter(Boolean).map(x=>`<span>${x}</span>`).join(' · ')}</span></div></div>`;
   return back+`<div class="ttl eq-rep-hd" style="margin-top:-6px"><span class="eyebrow">Reporte del día</span>
@@ -537,7 +565,7 @@ ACTS.eqRepLuego=()=>{location.hash=UI.eqVolver||'#equipo';};
 ACTS.eqRegistrar=el=>{const rid=el.dataset.r,om=Object.keys((UI.eqOmit||{})[rid]||{}).map(Number);
   const x=registrarReporte(rid,om);if(!x)return;if(UI.eqOmit)delete UI.eqOmit[rid];
   const r=EQ().reportes[rid],quedan=porRegistrar().length;
-  if(servidor()){toast(`Reporte de ${r.n} registrado: ${pl(x.reg,'cambio','cambios')} en tu finca`,3500);scheduleRender();return;}
+  if(enLinea()){toast(`Reporte de ${r.n} registrado: ${pl(x.reg,'cambio','cambios')} en tu finca`,3500);scheduleRender();return;}
   openSheet(shHead('Reporte registrado',EQT())+`<div class="sh-body"><div class="eq-prueba eq-ok">${ico('check',2.2)}<p><b data-no-tr>${esc(r.n)}</b><br><span>${pl(x.reg,'cambio en tu finca','cambios en tu finca')}</span>${x.omit?` · <span>${pl(x.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</p></div>
     <p>Envía la actualización al equipo: lleva la confirmación del reporte, las tareas y los lotes al día.</p>${quedan?`<p class="hint">Te ${quedan===1?'queda':'quedan'} ${pl(quedan,'reporte','reportes')} por registrar.</p>`:''}</div>
     <div class="sh-foot"><button type="button" class="btn" data-act="eqCerrarReg" style="flex:1">Luego</button><button type="button" class="btn pri" data-act="eqEnviarArchivo" style="flex:1.6">Enviar actualización</button></div>`);};
@@ -561,9 +589,9 @@ ACTS.eqRepetir=el=>{const rid=el.dataset.r,i=+el.dataset.i,r=((EQ()||{}).reporte
   confirmar('¿Pedir que la repita?',`«${esc(t.t)}» vuelve a quedar pendiente para ${esc(r.n)} y solo se puede terminar con una foto nueva.`,'Pedir que la repita',()=>{
     if(!repetirTarea({id:t.id,key:t.key},r.vid,r.fecha)){toast('Esa tarea ya no existe.',3000);return;}
     const e=EQ(),R={...(e.reportes||{})};R[rid]={...R[rid],repetir:{...(R[rid].repetir||{}),[t.id||t.key]:Date.now()}};guardarEQ({reportes:R});
-    publicarEstado(true);toast(servidor()?`${r.n} ya la ve pendiente en Rumentis Campo.`:'Tarea pendiente otra vez. Envía la actualización para que le llegue.',4000);});};
+    publicarEstado(true);toast(enLinea()?`${r.n} ya la ve pendiente en su app.`:'Tarea pendiente otra vez. Envía la actualización para que le llegue.',4000);});};
 document.addEventListener('change',ev=>{const t=ev.target;if(!t||!t.matches||!t.matches('[data-eqhora]'))return;
-  guardarEQ({horaReporte:+t.value});publicarEstado(true);toast(servidor()?`Hora del reporte: ${t.value}:00`:`Hora del reporte: ${t.value}:00. Envía la actualización para que le llegue a tu equipo.`,4000);});
+  guardarEQ({horaReporte:+t.value});publicarEstado(true);toast(enLinea()?`Hora del reporte: ${t.value}:00`:`Hora del reporte: ${t.value}:00. Envía la actualización para que le llegue a tu equipo.`,4000);});
 
 /* ---------- página de cada colaborador ---------- */
 function paginaColab(vid){
@@ -592,14 +620,14 @@ function paginaColab(vid){
    <section class="sec">${secH('Licencia')}<div class="card rows">
      <div class="row"><span class="mas-ic t-${activo?'v':'r'}">${icono('recibo','i3')}</span><div class="tx"><b data-no-tr>${N.fmtLic(v.lic)}</b><span>${activo?`En el equipo desde el ${ffc(v.alta)}`:`Revocada el ${ffc(v.baja||hoy())}`}</span></div></div>
      <div class="row"><span class="mas-ic t-a">${icono('escudo','i3')}</span><div class="tx"><b>Teléfono vinculado</b><span><span data-no-tr>${v.disp?esc(v.disp)+' · ':''}${N.huella(v.firma)}</span></span></div></div></div>
-    ${activo?`<button type="button" class="btn danger full eq-revocar" data-act="eqBaja" data-v="${esc(vid)}">Revocar licencia</button><p class="hint">Se cierra su sesión en Rumentis Campo y recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.</p>`:''}</section>
+    ${activo?`<button type="button" class="btn danger full eq-revocar" data-act="eqBaja" data-v="${esc(vid)}">Revocar licencia</button><p class="hint">Se cierra su sesión en Rumentis Equipo y recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.</p>`:''}</section>
   </main>`;
 }
 const primer=n=>String(n||'').trim().split(/\s+/)[0]||'';
 ACTS.eqRepsTodos=()=>{UI.eqRepsTodos=1;render();};
 ACTS.eqFotosTodas=()=>{UI.eqFotosTodas=1;render();};
 
-function botonComprar(txt){const p=gratis()?'':precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar">${ico('nuevo')}<span>${txt}</span>${p?`<span data-no-tr> · ${esc(p)}</span>`:''}</button>`;}
+function botonComprar(txt){const p=precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar"><span class="eq-comprar-t">${ico('nuevo')}<span>${txt}</span></span>${p?`<span class="eq-comprar-p"><span data-no-tr>${esc(p)}</span> · <span>pago único</span></span>`:''}</button>`;}
 function filaRep(r){const T=(r.res||{}).tareas||[],n=nRegs(r),v=((EQ()||{}).vaqueros||{})[r.vid]||{id:r.vid,nombre:r.n};
   return `<a class="row eq-v" href="#equipo/reporte/${encodeURIComponent(r.rid)}">${avV(v)}<div class="tx"><b>${esc(r.n)}</b><span><span>${ffc(r.fecha)}, ${hhmm(r.ts)}</span> · <span>${pl(n,'registro','registros')}</span>${T.length?` · <span>${T.filter(t=>t.ok).length} de ${T.length} tareas</span>`:''}</span>${r.estado==='nuevo'?'':`<span class="eq-est-r t-v">${EST_REP[r.estado]||''}</span>`}</div>${ico('chev')}</a>`;}
 // ---------- la pestaña Equipo ----------
@@ -626,22 +654,22 @@ function filaTareaEq(t,nombreDe){
 // detalle de una tarea: indicaciones, historial con fotos, pedir que la repitan y quitarla
 ACTS.eqTareaVer=el=>{const t=(S.config.tareas||[]).find(x=>x.id===el.dataset.id);if(!t)return;const e=EQ()||{};
   const nombre=x=>x==='todos'?'Todo el equipo':((e.vaqueros||{})[x]||{}).nombre||'';
-  const hist=(t.rep||'una')==='una'?(t.hecho?[{f:t.hechoF,n:t.hechoPor,foto:t.foto,v:t.hechoV}]:[]):(t.hechos||[]).slice().sort((a,b)=>a.f<b.f?1:-1).slice(0,14);
-  openSheet(shHead(esc(t.t),`${esc(nombre(t.para))} · ${repTxt(t)}`)+`<div class="sh-body eq-tv">
+  const hist=(t.rep||'una')==='una'?(t.hecho?[{f:t.hechoF,n:t.hechoPor,foto:t.foto,v:t.hechoV,nota:t.notaHecho}]:[]):(t.hechos||[]).slice().sort((a,b)=>a.f<b.f?1:-1).slice(0,14);
+  openSheet(shHead(esc(t.t),`<span>${esc(nombre(t.para))}</span> · <span>${repTxt(t)}</span>`)+`<div class="sh-body eq-tv">
     ${t.nota?`<div class="card pad eq-nota"><p data-no-tr>${esc(t.nota)}</p></div>`:''}
     <p class="hint">${t.acc&&t.acc.k?`${CHIP_ACC[t.acc.k]} se pide la foto de evidencia.`:'Se termina con una foto de evidencia.'} Desde el ${ffc(t.f)}.</p>
     ${t.repetir?`<div class="eq-prueba">${ico('reloj',2.2)}<p>Pediste que la repita el ${ffc(fDe(t.repetir.ts))}.</p></div>`:''}
-    <p class="rh">Historial</p>${hist.length?`<div class="card rows">${hist.map(h=>`<div class="row eq-rt"><span class="vq-ck ok" aria-hidden="true">${ico('check',2.6)}</span><div class="tx"><b>${esc(h.n||'')}</b><span>${h.f?ffl(h.f):''}</span></div>${h.foto?miniatura(h.foto):''}</div>`).join('')}</div>`:`<p class="hint">Todavía nadie la termina.</p>`}</div>
+    <p class="rh">Historial</p>${hist.length?`<div class="card rows">${hist.map(h=>`<div class="row eq-rt"><span class="vq-ck ok" aria-hidden="true">${ico('check',2.6)}</span><div class="tx"><b>${esc(h.n||'')}</b><span>${h.f?ffl(h.f):''}</span>${h.nota?`<span class="eq-com" data-no-tr>“${esc(h.nota)}”</span>`:''}</div>${h.foto?miniatura(h.foto):''}</div>`).join('')}</div>`:`<p class="hint">Todavía nadie la termina.</p>`}</div>
     <div class="sh-foot"><button type="button" class="btn danger" data-act="eqTareaBorrar" data-id="${esc(t.id)}" style="flex:1">Quitar tarea</button>${hist.length&&!t.repetir?`<button type="button" class="btn" data-act="eqTareaRepetir" data-id="${esc(t.id)}" style="flex:1.4">Pedir que la repita</button>`:''}</div>`);};
 ACTS.eqTareaRepetir=el=>{const t=(S.config.tareas||[]).find(x=>x.id===el.dataset.id);if(!t)return;const u=ultimaHecha(t);if(!u)return;
   const vid=u.v||t.hechoV||(t.para!=='todos'?t.para:'');
   confirmar('¿Pedir que la repita?',`«${esc(t.t)}» vuelve a quedar pendiente y solo se puede terminar con una foto nueva.`,'Pedir que la repita',()=>{
-    repetirTarea({id:t.id},vid,u.f);publicarEstado(true);toast(servidor()?'Tarea pendiente otra vez.':'Tarea pendiente otra vez. Envía la actualización para que le llegue.',3500);});};
+    repetirTarea({id:t.id},vid,u.f);publicarEstado(true);toast(enLinea()?'Tarea pendiente otra vez.':'Tarea pendiente otra vez. Envía la actualización para que le llegue.',3500);});};
 FORMS.eqAjustes=()=>{const e=EQ()||{},hr=horaRep(),srv=servidor();
   const libres=Object.values(e.licencias||{}).filter(l=>l.estado==='libre').length,bajas=Object.values(e.vaqueros||{}).filter(v=>v.estado==='baja');
   const conx=!srv?'':SY.err?`Sin conexión${SY.ult?` · última sincronización ${ffc(fDe(SY.ult))} ${hhmm(SY.ult)}`:''}`:SY.ult?`Sincronizado a las ${hhmm(SY.ult)}`:'Sin sincronizar todavía';
   openSheet(shHead('Ajustes del equipo',EQT())+`<div class="sh-body eq-aj">
-    <div class="q"><label for="eqHora">Hora del reporte</label><select class="in" id="eqHora" data-eqhora>${[12,13,14,15,16,17,18,19,20,21].map(x=>`<option value="${x}"${x===hr?' selected':''}>${x}:00</option>`).join('')}</select><small class="hint">A esa hora Rumentis Campo envía el reporte del día${srv?'':' o avisa al colaborador para que lo envíe'}.</small></div>
+    <div class="q"><label for="eqHora">Hora del reporte</label><select class="in" id="eqHora" data-eqhora>${[12,13,14,15,16,17,18,19,20,21].map(x=>`<option value="${x}"${x===hr?' selected':''}>${x}:00</option>`).join('')}</select><small class="hint">A esa hora la app de tu personal envía el reporte del día${srv?'':' o les avisa para que lo envíen'}.</small></div>
     <div class="card rows">
      <div class="row eq-sw"><div class="tx"><b>Registrar los reportes al recibirlos</b><span>Apagado, cada reporte espera tu revisión.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.autoReg!==false}" aria-label="Registrar al recibir" data-act="eqAutoReg"><span></span></button></div>
      <div class="row eq-sw"><div class="tx"><b>Aceptar solicitudes de acceso</b><span>Apagado, cada solicitud espera tu aprobación.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.auto!==false}" aria-label="Aceptar solicitudes" data-act="eqAuto"><span></span></button></div></div>
@@ -649,9 +677,7 @@ FORMS.eqAjustes=()=>{const e=EQ()||{},hr=horaRep(),srv=servidor();
     <div class="card rows">
      <button type="button" class="row" data-act="eqLicencias"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div class="tx"><b>Licencias sin usar</b><span>${libres?pl(libres,'licencia disponible','licencias disponibles'):'Ninguna disponible'}</span></div>${ico('chev')}</button>
      ${bajas.length?`<button type="button" class="row" data-act="eqAnteriores"><span class="mas-ic t-r">${ico('equipo')}</span><div class="tx"><b>Licencias revocadas</b><span>${pl(bajas.length,'persona','personas')}</span></div>${ico('chev')}</button>`:''}</div>
-    <p class="rh">Por archivo</p>
-    <div class="eq-arch-info"><p><b>.rumentis</b><span>Reporte de un colaborador. Se abre con Rumentis.</span></p><p><b>.campo</b><span>Actualización para el equipo: tareas, lotes y confirmaciones. Se abre con Rumentis Campo.</span></p></div>
-    <div class="eq-acciones"><button type="button" class="btn" data-act="eqEnviarArchivo">${ico('send')}Enviar actualización</button><button type="button" class="btn" data-act="eqRecibirArchivo">Abrir reporte</button></div></div>`);};
+    ${enLinea()?'':archivos()}</div>`);};
 ACTS.eqAjustes=()=>FORMS.eqAjustes();
 ACTS.eqAutoReg=el=>{const on=!((EQ()||{}).autoReg!==false);guardarEQ({autoReg:on});el.setAttribute('aria-checked',String(on));};
 ACTS.eqAnteriores=()=>{const B=Object.values((EQ()||{}).vaqueros||{}).filter(v=>v.estado==='baja');
@@ -660,22 +686,63 @@ ACTS.eqColabIr=el=>{closeSheet();location.hash='#equipo/colab/'+encodeURICompone
 ACTS.eqLicencias=()=>{const L=Object.values((EQ()||{}).licencias||{}).filter(l=>l.estado==='libre');
   openSheet(shHead('Licencias sin usar',EQT())+`<div class="sh-body">${L.length?`<div class="card rows">${L.map(l=>`<button type="button" class="row eq-l" data-act="eqLicencia" data-c="${l.c}"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div class="tx"><b data-no-tr>${N.fmtLic(l.c)}</b><span>${l.reemplaza?'Reemplaza a una licencia revocada · ':''}Ver QR y enviar</span></div>${ico('chev')}</button>`).join('')}</div>`:`<p class="hint">No tienes licencias disponibles.</p>`}
     ${botonComprar(gratis()?'Crear otra licencia':'Comprar otra licencia')}</div>`);};
+/* ---------- alimentación: lo que sirve el personal en cada entrega ----------
+   Horarios de entrega, la ración de cada lote y la cantidad por entrega. Si la administración fija la cantidad, en la
+   app del personal sale como "Plan de la administración"; si no, la sugerida con su explicación. */
+function seccionAlim(){
+  const C=calc();if(!C.act.length)return '';const hs=conHoras()?horas():[];
+  return `<section class="sec">${secH('Alimentación',hs.length?pl(hs.length,'entrega','entregas'):'',lnkB('f','Configurar','data-f="planAlim"'))}<div class="card rows eq-alim">
+    <button type="button" class="row eq-alim-h" data-act="f" data-f="horas"><span class="mas-ic t-y">${ico('reloj',2)}</span><div class="tx"><b>${hs.length?esc(hs.join(' · ')):'Sin horarios de entrega'}</b><span>${hs.length?'Horarios de entrega':'Ponlos para que tu personal sepa cuándo servir'}</span></div>${ico('chev')}</button>
+    ${C.act.map(x=>{const r=x.racion&&S.raciones[x.racion],pd=programadoDe(x,1),plan=+x.l.kgEnt>0;
+      return `<div class="row"><div class="tx"><b>${esc(x.l.nombre)}</b><span><span>${r?esc(r.nombre):'Sin ración asignada'}</span> · <span>${pl(x.cab,'cabeza','cabezas')}</span></span></div><div class="eq-alim-k"><b>${wtxt(pd.kg)}</b><span>${plan?'por entrega':'sugerido por entrega'}</span></div></div>`;}).join('')}</div></section>`;
+}
+FORMS.planAlim=()=>{
+  const C=calc();if(!C.act.length){toast('No hay lotes en engorde.');return;}const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
+  const body=`<p class="hint" style="margin-top:0">La cantidad que tu personal debe servir a cada lote en cada entrega. Vacía, la app sugiere una según lo que se ha servido o el peso de los animales.</p>
+    <button type="button" class="horas-mini" data-act="f" data-f="horas">${ico('reloj',2)}${conHoras()?`<span>Horarios de entrega</span>&nbsp;<span data-no-tr>${esc(horas().join(' · '))}</span>`:'Poner los horarios de entrega'}</button>
+    ${C.act.map(x=>{const pd=programadoDe({...x,l:{...x.l,kgEnt:0}},1);return `<div class="eq-plan"><div class="fh"><b>${esc(x.l.nombre)}</b><span class="sm">${pl(x.cab,'cabeza','cabezas')}</span></div>
+      <div class="two"><select class="in" name="rac_${esc(x.id)}" aria-label="Ración de ${esc(x.l.nombre)}"><option value="">Sin ración</option>${R.map(([k,r])=>`<option value="${esc(k)}"${x.racion===k?' selected':''}>${esc(r.nombre)}</option>`).join('')}</select>
+      <div class="unit"><input class="in" name="kg_${esc(x.id)}" inputmode="decimal" value="${+x.l.kgEnt>0?nf(W(+x.l.kgEnt)):''}" placeholder="${nf(W(pd.kg))}" aria-label="Cantidad por entrega para ${esc(x.l.nombre)}" autocomplete="off"><em>${UW()}</em></div></div>
+      <small class="feed-sug">${esc(pd.txt)}</small></div>`;}).join('')}
+    <p class="hint"><a class="lnk" href="#mas/raciones">Crear o cambiar raciones</a></p>`;
+  openSheet(shHead('Plan de alimentación',EQT())+formWrap('planAlim',body,foot('Guardar')));
+};
+SAVE.planAlim=f=>{const C=calc();let n=0;
+  for(const x of C.act){const v=parseFloat(String(fv(f,'kg_'+x.id)).replace(',','.')),kg=v>0?Math.round(toKg(v)):0,rac=fv(f,'rac_'+x.id)||null;
+    const l=S.lotes[x.id];if((+l.kgEnt||0)!==kg||(l.racion||null)!==(rac&&S.raciones[rac]?rac:null)){put('lotes',x.id,{...l,kgEnt:kg,racion:rac&&S.raciones[rac]?rac:(l.racion&&!rac?null:l.racion)});n++;}}
+  closeSheet();publicarEstado();toast(n?'Plan de alimentación guardado':'Sin cambios',3000);};
+
+/* Sin internet: los reportes y las actualizaciones viajan como archivo por WhatsApp o correo. La tarjeta explica
+   qué hace cada botón; con internet no aparece. */
+function archivos(){
+  const srv=servidor();
+  return `<div class="card pad eq-arch"><div class="eq-arch-h">${ico('aviso',2)}<div><b>${srv?'Sin internet':'Equipo por archivo'}</b><span>${srv?(SY.ult?`Última sincronización: ${hhmm(SY.ult)}. `:'')+'Mientras vuelve, los datos viajan como archivo.':'Los datos viajan como archivo por WhatsApp o correo.'}</span></div>${srv?`<button type="button" class="btn sm" data-act="eqSinc">Reintentar</button>`:''}</div>
+    <div class="eq-arch-b"><button type="button" class="btn pri" data-act="eqEnviarArchivo">${ico('send')}Enviar actualización</button><p>Lleva a tu personal las tareas, los lotes al día y la confirmación de sus reportes.</p></div>
+    <div class="eq-arch-b"><button type="button" class="btn" data-act="eqRecibirArchivo">Abrir reporte</button><p>Abre el reporte que te mandaron. También puedes tocarlo en WhatsApp y elegir Rumentis.</p></div></div>`;
+}
+// las tareas asignadas que tocan hoy y cuántas ya se terminaron
+function tareasHoy(){const H=hoy();let total=0,hechas=0;
+  for(const t of S.config.tareas||[]){if(!t.para||t.f>H)continue;const r=t.rep||'una';
+    if(r==='una'){if(t.hecho&&t.hechoF!==H)continue;total++;if(t.hecho)hechas++;}
+    else if(r==='dia'){total++;if((t.hechos||[]).some(x=>x.f===H))hechas++;}
+    else{const p=Agenda.progreso(t);if(p.completa&&!p.hoy)continue;total++;if(p.hoy)hechas++;}}
+  return {total,hechas};}
 PAGES.equipo=(sub,id)=>{
   if(sub==='reporte')return paginaReporte(id);
   if(sub==='colab')return paginaColab(id);
   UI.eqVolver='#equipo';
   const e=EQ()||{},L=Object.values(e.licencias||{}),V=Object.values(e.vaqueros||{}),act=V.filter(v=>v.estado==='activo'),libres=L.filter(l=>l.estado==='libre');
   const sols=Object.values(e.solicitudes||{}),pend=porRegistrar(),todos=REP().filter(r=>r.estado!=='nuevo'),hist=todos.slice(0,UI.eqHist?40:5);
-  const conHoy=act.filter(v=>repDe(v.id,hoy())).length,srv=servidor();
+  const conHoy=act.filter(v=>repDe(v.id,hoy())).length,srv=servidor(),th=tareasHoy(),fotosHoy=Object.values(e.fotos||{}).filter(x=>fDe(x.ts)===hoy()).length;
   const gear=`<button type="button" class="eq-gear-h" data-act="eqAjustes" aria-label="Ajustes del equipo">${mico('config')}</button>`;
-  const hd=`<header class="hd">${hdTop('<span class="sync"></span>'+(L.length?gear:''))}<div class="ttl"><span class="eyebrow">${esc(S.config.finca||'Mi engorde')}</span><h1>${EQT()}</h1><p class="sub">Tu personal registra en Rumentis Campo y te envía su reporte del día.</p>
-    ${L.length?`<div class="kpis"><div class="kpi"><b>${act.length}</b><span>${act.length===1?'colaborador':'colaboradores'}</span></div><div class="kpi"><b>${conHoy} de ${act.length}</b><span>reportes de hoy</span></div><div class="kpi"><b>${horaRep()}:00</b><span>hora del reporte</span></div></div>`:''}</div></header>`;
-  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> Las licencias se crean sin costo. Tu personal usa <b>Campo Prueba</b>.</p></div>`
-    :esDueno()?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Código maestro activo.</b> Tus licencias se crean sin costo y sirven en Rumentis Campo.</p></div>`:'';
+  const hd=`<header class="hd">${hdTop('<span class="sync"></span>'+(L.length?gear:''))}<div class="ttl"><span class="eyebrow">${esc(S.config.finca||'Mi engorde')}</span><h1>${EQT()}</h1><p class="sub">Tu personal registra en Rumentis Equipo y te envía su reporte del día.</p>
+    ${L.length?`<div class="kpis"><div class="kpi"><b>${th.hechas} de ${th.total}</b><span>tareas de hoy</span></div><div class="kpi"><b>${fotosHoy}</b><span>${fotosHoy===1?'foto de evidencia':'fotos de evidencia'}</span></div><div class="kpi"><b>${conHoy} de ${act.length}</b><span>reportes de hoy</span></div></div>`:''}</div></header>`;
+  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> Las licencias se crean sin costo. Tu personal usa <b>Equipo Prueba</b>.</p></div>`
+    :esDueno()?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Código maestro activo.</b> Tus licencias se crean sin costo y sirven en Rumentis Equipo.</p></div>`:'';
   if(!L.length)return hd+`<main class="bd">${aviso}<section class="sec"><div class="card pad eq-intro">
     <div class="eq-ilus" aria-hidden="true">${avatar('Juan Pérez')}${avatar('María López','b')}${avatar('Pedro Díaz','c')}</div>
     <h2>Suma a tu personal</h2>
-    <ul class="eq-lista"><li>${ico('check',2.4)}<span>Cada colaborador usa <b>Rumentis Campo</b> en su teléfono: gratis en Google Play.</span></li>
+    <ul class="eq-lista"><li>${ico('check',2.4)}<span>Cada colaborador usa <b>Rumentis Equipo</b> en su teléfono: gratis en Google Play.</span></li>
      <li>${ico('check',2.4)}<span>Anota entregas de alimento, pesajes, sanidad y muertes.</span></li>
      <li>${ico('check',2.4)}<span>Termina cada tarea con una foto de evidencia.</span></li>
      <li>${ico('check',2.4)}<span>Al final del día te llega su reporte y queda registrado en tu finca.</span></li>
@@ -686,13 +753,14 @@ PAGES.equipo=(sub,id)=>{
   const tareas=(S.config.tareas||[]).filter(t=>t.para&&((t.rep||'una')!=='una'||!t.hecho||t.repetir));
   const nombreDe=x=>x==='todos'?'Todo el equipo':((e.vaqueros||{})[x]||{}).nombre||'';
   return hd+`<main class="bd">${aviso}
-   ${srv&&SY.err?`<button type="button" class="eq-aviso-conx" data-act="eqSinc"><span class="eq-dot off" aria-hidden="true"></span><span>Sin conexión con el servidor${SY.ult?` desde las ${hhmm(SY.ult)}`:''}. Toca para reintentar.</span></button>`:''}
-   ${srv?'':`<div class="eq-acciones"><button type="button" class="btn pri" data-act="eqEnviarArchivo">${ico('send')}Enviar actualización</button><button type="button" class="btn" data-act="eqRecibirArchivo">Abrir reporte</button></div>`}
+
+   ${srv&&SY.err||!srv||navigator.onLine===false?archivos():''}
    ${pend.length?`<section class="sec">${secH('Por registrar',pend.length)}<div class="card rows eq-pend">${pend.map(filaRep).join('')}</div></section>`:''}
    ${sols.length?`<section class="sec">${secH('Solicitudes de acceso',sols.length)}<div class="card rows">${sols.map(s=>`<button type="button" class="row eq-v" data-act="eqSolicitud" data-v="${s.vid}">${avatar(s.nombre,'c')}<div class="tx"><b>${esc(s.nombre)}</b><span>Licencia <span data-no-tr>${N.fmtLic(s.lic)}</span></span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
    <section class="sec">${secH('Personal',act.length)}<div class="eq-colabs">${act.map(tarjetaColab).join('')}
     <button type="button" class="eq-colab eq-sumar" data-act="${libres.length?'eqLicencias':'eqComprar'}"><span class="eq-mas">${ico('nuevo')}</span><div class="eq-colab-tx"><b>Sumar a alguien</b><span class="eq-colab-d">${libres.length?pl(libres.length,'licencia disponible','licencias disponibles'):gratis()?'Crear una licencia':`Comprar una licencia${precioLic()?` · <span data-no-tr>${esc(precioLic())}</span>`:''}`}</span></div>${ico('chev')}</button></div></section>
-   <section class="sec">${secH('Tareas',tareas.length,lnkB('f','Asignar','data-f="eqTarea"'))}${tareas.length?`<div class="card rows">${tareas.map(t=>filaTareaEq(t,nombreDe)).join('')}</div>`:`<button type="button" class="card pad eq-vacio" data-act="f" data-f="eqTarea"><span class="mas-ic t-y">${icono('lista','i3')}</span><span><b>Asigna la primera tarea</b><span>De una vez, diaria o semanal. Cada una se termina con una foto de evidencia.</span></span></button>`}</section>
+   <section class="sec">${secH('Tareas asignadas',tareas.length,lnkB('f','Asignar','data-f="eqTarea"'))}${tareas.length?`<div class="card rows">${tareas.map(t=>filaTareaEq(t,nombreDe)).join('')}</div>`:`<button type="button" class="card pad eq-vacio" data-act="f" data-f="eqTarea"><span class="mas-ic t-y">${icono('lista','i3')}</span><span><b>Asigna la primera tarea</b><span>De una vez, diaria o semanal. Cada una se termina con una foto de evidencia.</span></span></button>`}</section>
+   ${seccionAlim()}
    ${hist.length?`<section class="sec">${secH('Reportes recientes')}<div class="card rows">${hist.map(filaRep).join('')}</div>${!UI.eqHist&&todos.length>5?`<button type="button" class="lnk" data-act="eqHistMas">Ver todos</button>`:''}</section>`:''}
    ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código maestro</button></p>`:''}
   </main>`;

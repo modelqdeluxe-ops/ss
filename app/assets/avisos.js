@@ -13,7 +13,7 @@ const semana=f=>{const d=new Date(f+'T12:00:00');const j=new Date(d.getFullYear(
 const clave=t=>String(t).replace(/[\d.,%−-]+/g,'#').replace(/\s+/g,' ').trim();
 
 function cola(){
-  // Rumentis Campo: solo el recordatorio del reporte del día
+  // Rumentis Equipo: solo el recordatorio del reporte del día
   if(window.colaAvisosPropia)return window.colaAvisosPropia().map(a=>({...a,t:txt(a.t),x:txt(a.x)}));
   const C=calc(),H=C.H,L=[];
   const add=(id,f,t,x,p,ir,dias=3)=>L.push({id,f,hasta:addDias(f,dias),t:txt(t),x:txt(x),p,ir:ir||'#hoy'});

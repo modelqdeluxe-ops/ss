@@ -102,7 +102,7 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `verificar/` — página pública de verificación de documentos (un solo HTML + `nacl-fast.min.js`): abre el enlace
   del QR o recibe el PDF y comprueba la firma en el navegador, sin servidor. La publica `.github/workflows/pages.yml`
   en https://modelqdeluxe-ops.github.io/ss/verificar/ desde `main` (una vez: Settings → Pages → Source: GitHub Actions).
-- `campo/` — página pública de la licencia de Rumentis Campo (el QR de la administración lleva aquí): muestra la
+- `campo/` — página pública de la licencia de Rumentis Equipo (el QR de la administración lleva aquí): muestra la
   licencia y el botón de Google Play. La publica el mismo `pages.yml` en https://modelqdeluxe-ops.github.io/ss/campo/
   (y también en `vaquero/`, la dirección anterior).
 - `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
@@ -114,7 +114,7 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   `.github/workflows/servidores.yml`. Paso a paso en `servidor/PUBLICAR.md`.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
-- `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisCampo.apk` y, con `todo`,
+- `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisEquipo.apk` y, con `todo`,
   sus AAB para Google Play (las de prueba, con `PRUEBA=1`). GitHub Actions deja un solo Release con lo último.
   `scripts/variante.py` cambia paquete, nombre, color del ícono, `config.js` y la autoridad de archivos.
 - `scripts/pagos.sh` — la app del dueño para Google Play: Gradle (proyecto en `scripts/donante/`) la arma con los
@@ -134,15 +134,17 @@ colaboradores y personal.
 
 **El día a día va por archivos (WhatsApp o correo), sin servidor:**
 
-1. El colaborador se activa en **Rumentis Campo** con su nombre y la licencia, y envía su *solicitud de acceso*.
+1. El colaborador se activa en **Rumentis Equipo** con su nombre y la licencia, y envía su *solicitud de acceso*.
    La administración la abre en Rumentis (se acepta sola, o se pregunta) y le devuelve la *actualización*.
 2. La administración asigna tareas **de una vez, diarias o semanales** (1 a 5 veces por semana) y fija la **hora
    del reporte** (12:00 a 21:00). Una tarea puede ir **ligada a una acción** (entregar alimento, pesar o sanidad, en
-   un lote o en cualquiera): al anotar esa acción, Campo pide la foto. Cada tarea puede llevar **indicaciones**. Le
+   un lote o en cualquiera): al anotar esa acción, la app del personal pide la foto. Cada tarea puede llevar **indicaciones**. Le
    llega con la siguiente actualización.
 3. El colaborador anota alimento, pesajes, sanidad y muertes y termina sus tareas. **Toda tarea se termina con una
-   foto de evidencia** tomada con la cámara en ese momento (sin galería): sin foto sigue pendiente. Los registros no
-   se pueden borrar desde Campo. En su perfil pone foto, cargo y teléfono. A la hora del reporte le llega un
+   foto de evidencia** tomada con la cámara en ese momento (sin galería): la hoja *Terminar tarea* muestra la foto (se
+   puede repetir), un comentario opcional para la administración y el botón **Enviar**, que se pone en verde solo
+   cuando ya hay foto. Sin foto la tarea sigue pendiente. Los registros no
+   se pueden borrar desde la app del personal. En su perfil pone foto, cargo y teléfono. A la hora del reporte le llega un
    aviso en el teléfono (Android; quedan programados 7 días aunque no abra la app): al tocarlo, la app abre el
    reporte ya armado para elegir WhatsApp o correo. La tarjeta de Hoy también lo envía con un toque.
 4. **Reporte del día** (se arma solo): sus registros, tareas del día hechas (con su foto) y pendientes, avance de las
@@ -157,6 +159,21 @@ colaboradores y personal.
 Lo que la administración todavía no registra vuelve a ir en el siguiente reporte (cada registro lleva su número, así
 nunca se duplica); el reporte anterior queda como *incluido*. Cada archivo se abre una sola vez.
 
+**App del personal (Rumentis Equipo; Team o Equipe según el idioma del teléfono)**: diseño propio para el trabajo del
+día. Hoy muestra el avance de las tareas asignadas, las *Asignadas por la administración* (tarjetas con indicaciones y
+el botón para hacerlas), las *Terminadas hoy* con su foto, Anotar, los *Pendientes de los lotes* (los que calcula
+Rumentis: pesajes, vacunas, entregas; aparte de lo asignado) y *Tu reporte de hoy* (qué lleva y a qué hora sale). El
+reporte solo lleva las tareas asignadas (y lo que se terminó de los lotes); si ese día no hay nada hecho, no sale uno
+vacío. Con internet no hay botón de enviar; sin internet aparece, con su explicación, para mandarlo como archivo.
+
+**Alimentación**: en la pestaña Equipo, los horarios de entrega y la cantidad por entrega de cada lote (*Plan de
+alimentación*). En el formulario de alimento cada lote muestra la cantidad sugerida y de dónde sale: el plan de la
+administración, el promedio de las últimas entregas a esa hora, o el consumo (o 2.6 % del peso vivo) repartido entre las
+entregas.
+
+**Licencias**: una sola hoja de compra con el precio y lo que incluye. En la app de Google Play se paga con Google Play;
+con el código maestro también se puede crear sin costo (y probar la compra real); en la app de prueba la compra se simula.
+
 **Con el servidor del equipo** (Cloudflare, `servidor/equipo`) todo esto llega solo: cada app hace una sola solicitud
 `/v1/sync` que envía lo pendiente y trae lo nuevo (los sobres inválidos se rechazan uno por uno, sin trabar la cola),
 el timbre WebSocket avisa al instante y, en reposo, no hay solicitudes. El reporte sale solo a la hora fijada; si
@@ -167,12 +184,12 @@ después anota algo o termina otra tarea, la administración recibe el reporte a
   su historial con fotos) y reportes recientes. Sin servidor, arriba van Enviar actualización / Abrir reporte; con
   servidor, esos botones quedan en Ajustes del equipo, junto con el estado de la sincronización y las licencias.
   Cada colaborador tiene su página (`#equipo/colab/<id>`): perfil, semana (días con reporte, tareas, registros),
-  reportes, galería de fotos de evidencia, tareas, permisos, licencia y **Revocar licencia**: su sesión en Campo se
+  reportes, galería de fotos de evidencia, tareas, permisos, licencia y **Revocar licencia**: su sesión en la app del personal se
   cierra y se borran de su teléfono los datos de la finca; la licencia queda anulada para siempre, la clave del
   equipo cambia y la administración recibe una **licencia nueva** para otra persona (el pago no se pierde).
 - **Fotos del equipo**: sobres `foto` (evidencia `eq-<fid>`) y `perfil` (`eq-pf-<id>`), JPEG de hasta 900 px,
   cifrados con la clave del equipo; se guardan con `Fotos` y `Fotos.limpiar` no las toca.
-- **Colaborador** (`app/assets/vaquero.js`, app **Rumentis Campo**, gratis): la bienvenida de Rumentis y luego su
+- **Colaborador** (`app/assets/vaquero.js`, app **Rumentis Equipo**, gratis): la bienvenida de Rumentis y luego su
   nombre y la licencia (escrita, pegada o escaneada del QR con BarcodeDetector o `lib/jsQR.js`). Solo Hoy, Lotes,
   Registrar, Tareas y Más: sin Rumi, sin dinero, sin documentos. Lo que anota va en una cola de operaciones
   numeradas que la administración confirma; al llegar la actualización se vuelven a aplicar las que faltan.
@@ -181,27 +198,27 @@ después anota algo o termina otra tarea, la administración recibe el reporte a
 - **Núcleo** (`app/assets/equipo_nucleo.js`): llaves Ed25519 y X25519 por teléfono (tweetnacl); sobres firmados y
   cifrados (alta y bienvenida con `nacl.box`, lo demás con la clave del equipo, `nacl.secretbox`).
 - **Archivos del equipo**: el colaborador manda `.rumentis` (`application/vnd.rumentis`, los abre Rumentis) y la
-  administración manda `.campo` (`application/vnd.rumentis.campo`, los abre Rumentis Campo; `variante.py` cambia el
+  administración manda `.campo` (`application/vnd.rumentis.campo`, los abre Rumentis Equipo; `variante.py` cambia el
   tipo en el manifiesto); si uno llega a la app equivocada, `Recibido.pasar` se lo entrega a la otra. Por dentro:
   `RUMENTIS` + tipo (1 = JSON, 2 = JSON comprimido) + nonce + `nacl.secretbox` con la llave de archivos de la app.
   Lleva un número único (`fid`): la app no abre dos veces el mismo archivo ni uno que hizo ella misma. En Android,
   tocar el archivo en WhatsApp o en el correo abre la app y lo recibe (`Enlace.deIntent` y el puente `Recibido`).
 - **Configuración** (`app/assets/config.js`): qué app es y si es de prueba (lo escribe `variante.py`), la llave RSA
-  de Google Play (para que Rumentis Campo compruebe la compra), el producto y los enlaces.
+  de Google Play (para que Rumentis Equipo compruebe la compra), el producto y los enlaces.
 - **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la clase está en la app), `Cripto`
   (firma RSA de Google) y `Recibido`; `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app de
   Google Play, que se arma con Gradle (`scripts/pagos.sh`).
 
 **Código maestro**: en Equipo, «Tengo un código maestro». Con él (en `equipo.js` solo está su huella SHA-256) la app
-de Google Play crea licencias sin costo; son licencias reales y Rumentis Campo las acepta. El precio que se muestra
+de Google Play crea licencias sin costo; son licencias reales y Rumentis Equipo las acepta. El precio que se muestra
 lo da Google Play (US$1.99 en `config.js` mientras no responde); la app vale US$3.99.
 
-Las apps **de prueba** (paquetes `.prueba`, `PRUEBA=1 scripts/variantes.sh`: Rumentis Prueba y Campo Prueba) no se
-publican: en la de la administración las licencias se crean sin costo y en Campo Prueba la licencia
+Las apps **de prueba** (paquetes `.prueba`, `PRUEBA=1 scripts/variantes.sh`: Rumentis Prueba y Equipo Prueba) no se
+publican: en la de la administración las licencias se crean sin costo y en Equipo Prueba la licencia
 `RV-PRUEBA-2026` entra a una finca de muestra. Una app de Google Play no acepta licencias de la app de prueba.
 
 Para vender en Google Play: publica **Rumentis** como app de pago y crea en ella el producto integrado
-`licencia_vaquero` (consumible, con su precio); publica **Rumentis Campo** gratis (paquete `hn.hato.ganadero.vaquero`).
+`licencia_vaquero` (consumible, con su precio); publica **Rumentis Equipo** gratis (paquete `hn.hato.ganadero.vaquero`).
 Copia la llave pública RSA de Rumentis en `playLlave` (`app/assets/config.js`).
 
 ## Rumi
@@ -229,7 +246,7 @@ Cada animal guarda su `costo`; la compra del lote es la suma más el flete.
 scripts/build.sh            # dist/Rumentis.apk
 scripts/build_aab.sh        # dist/Rumentis.aab
 scripts/variantes.sh        # las cuatro apps (APK)
-scripts/variantes.sh todo   # y los AAB de Rumentis y Rumentis Campo
+scripts/variantes.sh todo   # y los AAB de Rumentis y Rumentis Equipo
 ```
 
 Necesita Java; descarga apktool, uber-apk-signer, bundletool y las herramientas de Android la

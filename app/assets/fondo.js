@@ -2,10 +2,10 @@
    - Curvas de nivel que respiran: cada 3 segundos se calcula un relieve nuevo (ruido que cambia lento, marching
      squares) en un rato libre del teléfono, nunca durante el scroll ni al cambiar de página, y se funde con el
      anterior con una transición de opacidad. Así el mapa se deforma suave como agua o tierra viva.
-   - Pasto en el cerro de adelante: se dibuja una vez en franjas que la tarjeta gráfica inclina con una ola de viento
-     que las recorre; la fuerza sale del viento real de la zona (Open-Meteo, en ambiente.js).
+   - Un degradado de color con dos luces suaves y una textura fina, sin dibujos de cerros: las curvas de nivel son
+     el motivo y cubren toda la pantalla.
    - Sombras de nubes que cruzan el campo de día (capas que se deslizan, en CSS).
-   Todo lo que no se mueve (cielo, luces, cerros, el cerro del pasto y la textura) se hornea en UNA sola imagen:
+   Todo lo que no se mueve (degradado, luces y textura) se hornea en UNA sola imagen:
    así la tarjeta gráfica del teléfono pinta una capa en vez de ocho con máscaras y mezclas, y le sobra fuerza
    para ir a la tasa de refresco de la pantalla (60, 90 o 120 Hz).
    Todo el movimiento es transform u opacity: el procesador no trabaja cuadro a cuadro. Se detiene en segundo plano,
@@ -44,6 +44,7 @@ function leerColores(){
     c3a:rgb('color-mix(in srgb,var(--cerro) 13%,var(--bg))'),c3b:rgb('color-mix(in srgb,var(--cerro) 8%,var(--bg))'),
     c2a:rgb('color-mix(in srgb,var(--cerro) 20%,var(--bg))'),c2b:rgb('color-mix(in srgb,var(--cerro) 12%,var(--bg))'),cerroA:rgb('color-mix(in srgb,var(--cerro) 30%,var(--bg))'),cerroB:rgb('color-mix(in srgb,var(--cerro) 20%,var(--bg))'),
     pasto:rgb('color-mix(in srgb,var(--cerro) 55%,var(--bg))'),pasto2:rgb('color-mix(in srgb,var(--cerro) 40%,var(--bg))'),luz:rgb('var(--arete)'),noche,
+    linea:rgb('color-mix(in srgb,var(--cerro) 55%,var(--ink))'),bajo:rgb('color-mix(in srgb,var(--cerro) 26%,var(--bg))'),medio:rgb('color-mix(in srgb,var(--arete) 9%,var(--bg))'),
     dia:!noche&&!/lluvia|tormenta|niebla/.test(R.dataset.clima||'')};
 }
 const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${(a==null?(c[3]==null?1:c[3]):a).toFixed(3)})`;
@@ -52,18 +53,17 @@ const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${(a==null?(c[3]==null?1:c
    Se dibuja en lienzos fuera de pantalla y se muestra como imagen (blob): las imágenes no le cuestan al teléfono
    en cada cambio de página como sí los lienzos en pantalla. */
 const mk=(tag,cls)=>{const e=document.createElement(tag);e.className=cls;return e;};
-// orden: imagen horneada, curvas de nivel, sombras de nubes y franjas de pasto
+// orden: imagen horneada, curvas de nivel y sombras de nubes
 const base=mk('i','f-base'),capaT=mk('i','f-vivo'),imA=mk('b','on'),imB=mk('b','');capaT.append(imA,imB);
 const sombras=mk('i','f-sombras');sombras.innerHTML='<b></b><b></b>';
-const capaP=mk('i','f-pasto');
-fondo.append(base,capaT,sombras,capaP);
+fondo.append(base,capaT,sombras);
 const lienzo=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {c,x};};
 const URLS=new Map();
 function aImagen(el,cv,listo){
   const poner=u=>{const vieja=URLS.get(el);URLS.set(el,u);el.style.backgroundImage=`url("${u}")`;if(vieja&&vieja.startsWith('blob:'))setTimeout(()=>URL.revokeObjectURL(vieja),4000);if(listo)listo();};
   if(cv.toBlob)cv.toBlob(b=>{if(b)poner(URL.createObjectURL(b));else poner(cv.toDataURL());},'image/png');else poner(cv.toDataURL());
 }
-let W=0,H=0,HP=0,dpr=1,franjas=[];
+let W=0,H=0,dpr=1;
 
 /* ---------- curvas de nivel que respiran ---------- */
 const PASO=13,NIV=[-.72,-.54,-.36,-.18,0,.18,.36,.54,.72],CADA=3000;
@@ -75,7 +75,7 @@ function relieve(t){
     campo[j*cols+i]=ruido(x,y,z)*.78+ruido(x*2.1+7.3,y*2.1+1.7,z*1.6)*.22;}
 }
 function curvas(cx){
-  const w=Math.min(1,W/420),lin=COL.noche?.075:.085;
+  const w=Math.min(1,W/420),lin=COL.noche?.12:.15;
   NIV.forEach((nv,n)=>{
     cx.beginPath();
     for(let j=0;j<filas-1;j++)for(let i=0;i<cols-1;i++){
@@ -88,11 +88,11 @@ function curvas(cx){
         case 5:seg(L,T);seg(B,Rr);break;case 6:case 9:seg(T,B);break;case 7:case 8:seg(L,T);break;case 10:seg(T,Rr);seg(L,B);break;}
     }
     const maestra=n===4;
-    cx.strokeStyle=rgba(COL.ink,maestra?lin*1.5:lin);cx.lineWidth=maestra?1.3*w+.2:.9*w+.15;cx.stroke();
+    cx.strokeStyle=rgba(COL.linea,maestra?lin*1.55:lin);cx.lineWidth=maestra?1.5*w+.25:w+.2;cx.stroke();
   });
   // se desvanece arriba y abajo: horneado aquí en vez de una máscara CSS, que le cuesta a la tarjeta gráfica en cada cuadro
   cx.globalCompositeOperation='destination-in';const g=cx.createLinearGradient(0,0,0,H);
-  g.addColorStop(.04,'rgba(0,0,0,0)');g.addColorStop(.26,'#000');g.addColorStop(.72,'#000');g.addColorStop(.92,'rgba(0,0,0,0)');
+  g.addColorStop(.06,'rgba(0,0,0,0)');g.addColorStop(.3,'#000');g.addColorStop(1,'#000');
   cx.fillStyle=g;cx.fillRect(0,0,W,H);cx.globalCompositeOperation='source-over';
 }
 /* dibuja el relieve siguiente en el lienzo de atrás y lo funde con el de adelante */
@@ -115,10 +115,6 @@ let tq=0;const quieto=()=>{if(!fondo.classList.contains('toque'))fondo.classList
 addEventListener('pointerdown',quieto,{passive:true,capture:true});addEventListener('scroll',quieto,{passive:true,capture:true});addEventListener('touchmove',quieto,{passive:true});
 
 /* ---------- lo que no se mueve, horneado en una imagen ---------- */
-const NF=12;
-const cresta=x=>HP*(.3+.1*Math.sin(x/W*3.1+.6)+.06*Math.sin(x/W*7.3+2.1)+.03*Math.sin(x/W*15+1));
-const CERRO3=new Path2D('M0 170 C150 110 300 120 430 150 S700 210 860 160 S1100 90 1200 120 V300 H0Z');
-const CERRO2=new Path2D('M0 120 C120 150 260 190 420 170 S720 90 900 120 S1120 190 1200 170 V300 H0Z');
 let GRANO=null;
 function grano(){
   // textura fina: puntitos al azar en un mosaico chico que se repite
@@ -128,23 +124,15 @@ function grano(){
     if(oscuro){d.data[o]=d.data[o+1]=255;d.data[o+2]=240;d.data[o+3]=Math.round(v*v*14);}else{d.data[o]=70;d.data[o+1]=62;d.data[o+2]=45;d.data[o+3]=Math.round(v*v*22);}}
   x.putImageData(d,0,0);GRANO={k,p:t};return t;
 }
-function cerroSvg(x,path,h,a,b){
-  // como los cerros de CSS: 110 % de ancho, pegados abajo, la forma estirada de un dibujo de 1200 x 300
-  const y0=H-h;const g=x.createLinearGradient(0,y0,0,H);g.addColorStop(0,rgba(a,1));g.addColorStop(1,rgba(b,1));
-  x.save();x.translate(-W*.05,y0);x.scale(W*1.1/1200,h/300);x.fillStyle=g;x.fill(path);x.restore();
-}
 function hornear(){
   const {c,x}=lienzo(W,H);
-  let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,rgba(COL.cielo,1));g.addColorStop(.42,rgba(COL.bg,1));g.addColorStop(.62,rgba(COL.bg,1));g.addColorStop(1,rgba(COL.suelo,1));
+  // degradado en diagonal: el tono del cielo arriba, el fondo en medio y un verde de campo abajo
+  let g=x.createLinearGradient(0,0,W*.45,H);g.addColorStop(0,rgba(COL.cielo,1));g.addColorStop(.38,rgba(COL.bg,1));g.addColorStop(.7,rgba(COL.medio,1));g.addColorStop(1,rgba(COL.bajo,1));
   x.fillStyle=g;x.fillRect(0,0,W,H);
   // luces suaves (las dos "orbes") y la luz del encabezado que baja
   const orbe=(cx,cy,r,col)=>{const q=x.createRadialGradient(cx,cy,0,cx,cy,r);q.addColorStop(0,rgba(col,(col[3]==null?1:col[3])*.9));q.addColorStop(.62,rgba(col,0));x.fillStyle=q;x.fillRect(cx-r,cy-r,r*2,r*2);};
-  orbe(W*.95,W*.3,W*.6,COL.amb1);orbe(0,H*.35+W*.6,W*.6,COL.amb2);
+  orbe(W*.95,W*.3,W*.6,COL.amb1);orbe(0,H*.55+W*.4,W*.7,COL.amb2);
   x.save();x.translate(W/2,0);x.scale(W*1.2,H*.42);g=x.createRadialGradient(0,0,0,0,0,1);g.addColorStop(0,rgba(COL.luzHd));g.addColorStop(.7,rgba(COL.luzHd,0));x.fillStyle=g;x.fillRect(-1,0,2,1);x.restore();
-  cerroSvg(x,CERRO3,H*.34,COL.c3a,COL.c3b);cerroSvg(x,CERRO2,H*.25,COL.c2a,COL.c2b);
-  // cerro de adelante, donde crece el pasto
-  x.save();x.translate(0,H-HP);g=x.createLinearGradient(0,HP*.3,0,HP);g.addColorStop(0,rgba(COL.cerroA,1));g.addColorStop(1,rgba(COL.cerroB,1));
-  x.fillStyle=g;x.beginPath();x.moveTo(0,HP);for(let xx=0;xx<=W;xx+=6)x.lineTo(xx,cresta(xx)+3);x.lineTo(W,HP);x.closePath();x.fill();x.restore();
   x.save();x.setTransform(1,0,0,1,0,0);x.fillStyle=x.createPattern(grano(),'repeat');x.fillRect(0,0,c.width,c.height);x.restore();
   // se cambia cuando la imagen ya está lista para pintarse: sin un cuadro vacío
   const tmp=mk('i','');aImagen(tmp,c,()=>{const u=URLS.get(tmp);URLS.delete(tmp);const im=new Image();im.src=u;
@@ -152,42 +140,18 @@ function hornear(){
       if(vieja&&vieja.startsWith('blob:'))setTimeout(()=>URL.revokeObjectURL(vieja),4000);};
     (im.decode?im.decode():Promise.resolve()).then(poner,poner);});
 }
-function pasto(){
-  const n=Math.round(W/2.6),ancho=W/NF,margen=18;let s=7;const r=()=>{s=(s*16807)%2147483647;return s/2147483647;};
-  // una sola imagen con todo el pasto (y un margen a cada lado); cada franja muestra su pedazo
-  const {c,x}=lienzo(W+margen*2,HP);x.translate(margen,0);
-  for(let i=0;i<n;i++){const bx=(i+r()*.9)*W/n,by=cresta(bx)+2+r()*3,h=7+r()*15,w=.9+r()*1.1,inc=(r()-.5)*.5*h,t=r();
-    x.fillStyle=rgba(t>.5?COL.pasto:COL.pasto2,.55+t*.35);
-    x.beginPath();x.moveTo(bx-w,by);x.quadraticCurveTo(bx-w*.3+inc*.35,by-h*.55,bx+inc,by-h);x.quadraticCurveTo(bx+w*.3+inc*.35,by-h*.55,bx+w,by);x.closePath();x.fill();}
-  if(franjas.length!==NF){franjas.forEach(f=>f.remove());franjas=[];
-    for(let k=0;k<NF;k++){const f=mk('b','f-franja');f.style.animationDelay=`${(-k*0.38).toFixed(2)}s`;capaP.appendChild(f);franjas.push(f);}}  // cada franja un poco después: la ola recorre el cerro
-  const tmp=mk('i','');
-  aImagen(tmp,c,()=>{const u=URLS.get(tmp);URLS.delete(tmp);const vieja=capaP.dataset.pasto;capaP.dataset.pasto=u;
-    franjas.forEach((f,k)=>{const x0=k*ancho;f.style.left=x0+'px';f.style.width=ancho+'px';
-      // la franja recorta su pedazo exacto (sin huecos) y el pasto que se inclina puede salirse un poco a los lados
-      f.style.backgroundImage=`url("${u}")`;f.style.backgroundSize=`${W+margen*2}px ${HP}px`;f.style.backgroundPosition=`${-(x0+margen)}px 0`;
-      f.style.transformOrigin=`50% ${cresta(x0+ancho/2)+3}px`;});
-    if(vieja&&vieja.startsWith('blob:'))setTimeout(()=>URL.revokeObjectURL(vieja),4000);});
-  aplicarViento();
-}
 let VIENTO=.25;
-function aplicarViento(){
-  // más viento: se inclinan más y la ola pasa más seguido
-  capaP.style.setProperty('--incl',(2+VIENTO*7).toFixed(2)+'deg');
-  capaP.style.setProperty('--mece',(3.4-VIENTO*1.6).toFixed(2)+'s');
-  capaP.style.setProperty('--ola',(9-VIENTO*4).toFixed(2)+'s');
-}
-function viento(){try{const c=window.Clima&&Clima.actual();if(c&&c.viento!=null){VIENTO=Math.max(.12,Math.min(1,((+c.viento||0)+(+c.rachas||0)*.5)/45));aplicarViento();}}catch(e){}}
+function viento(){try{const c=window.Clima&&Clima.actual();if(c&&c.viento!=null){VIENTO=Math.max(.12,Math.min(1,((+c.viento||0)+(+c.rachas||0)*.5)/45));}}catch(e){}}
 
 /* ---------- armar ---------- */
-function medir(){dpr=Math.min(1.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;HP=Math.round(H*.24);}
-function todo(){medir();leerColores();const {c,x}=lienzo(W,H);relieve(performance.now()-t0);curvas(x);aImagen(frente,c);hornear();pasto();programar(CADA);}
+function medir(){dpr=Math.min(1.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;}
+function todo(){medir();leerColores();const {c,x}=lienzo(W,H);relieve(performance.now()-t0);curvas(x);aImagen(frente,c);hornear();programar(CADA);}
 let PAUSA=false;
-new MutationObserver(()=>{clearTimeout(todo._t);todo._t=setTimeout(()=>{const antes=JSON.stringify(COL);leerColores();if(JSON.stringify(COL)!==antes){hornear();pasto();}},120);}).observe(R,{attributes:true,attributeFilter:['data-modo','data-paleta','data-momento','data-epoca','data-clima','data-tema']});
+new MutationObserver(()=>{clearTimeout(todo._t);todo._t=setTimeout(()=>{const antes=JSON.stringify(COL);leerColores();if(JSON.stringify(COL)!==antes){hornear();}},120);}).observe(R,{attributes:true,attributeFilter:['data-modo','data-paleta','data-momento','data-epoca','data-clima','data-tema']});
 addEventListener('resize',()=>{clearTimeout(medir._t);medir._t=setTimeout(todo,200);});
 document.addEventListener('visibilitychange',()=>{R.classList.toggle('fondo-quieto',document.hidden);});
 setInterval(viento,60000);
 function iniciar(){todo();viento();}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',iniciar);else iniciar();
-window.FondoVivo={pausa:v=>{PAUSA=!!v;R.classList.toggle('fondo-quieto',!!v);},viento:v=>{VIENTO=Math.max(.12,Math.min(1,v));aplicarViento();},estado:()=>({W,H,VIENTO,franjas:franjas.length})};
+window.FondoVivo={pausa:v=>{PAUSA=!!v;R.classList.toggle('fondo-quieto',!!v);},viento:v=>{VIENTO=Math.max(.12,Math.min(1,v));},estado:()=>({W,H,VIENTO})};
 })();
