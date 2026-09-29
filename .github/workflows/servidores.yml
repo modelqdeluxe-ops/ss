@@ -3,9 +3,12 @@
 # CLOUDFLARE_ACCOUNT_ID. Paso a paso en servidor/PUBLICAR.md. Sin ellos, este flujo solo avisa que faltan.
 name: Publicar servidores
 
-# Por ahora el equipo usa el servidor local de la finca (servidor/equipo, npm run local): este flujo solo corre si
-# alguien lo lanza a mano desde Actions.
+# Corre solo al subir cambios del servidor o de este flujo, y también a mano. El botón "Run workflow" de GitHub solo
+# aparece cuando el flujo está en la rama principal; en otra rama, se vuelve a correr con "Re-run all jobs".
 on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['servidor/**', '.github/workflows/servidores.yml']
   workflow_dispatch:
 
 permissions:
