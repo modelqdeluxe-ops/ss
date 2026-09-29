@@ -1,7 +1,8 @@
 # Publicar los servidores de Rumentis
 
-> **Por ahora no se usa.** El equipo funciona con el servidor local de la finca (`servidor/equipo`, `npm run local`;
-> ver su `LEEME.md`). Esta guía queda para cuando quieras que funcione por internet desde cualquier lugar.
+> **Publicados** en https://rumentis-equipo.modelqdeluxe.workers.dev y https://rumentis-zona.modelqdeluxe.workers.dev.
+> Con ellos los registros llegan en vivo y el reporte del día se envía solo a su hora; sin señal, sigue por archivo.
+> El flujo "Publicar servidores" corre solo cada vez que cambia algo en `servidor/`.
 
 ## ¿Qué son?
 

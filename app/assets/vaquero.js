@@ -263,14 +263,26 @@ FORMS.vqReporte=()=>{
   openSheet(shHead('Reporte del día',ffc(H))+formWrap('vqReporte',body,foot('Enviar reporte')));
 };
 // el reporte se arma solo con lo del día: enviarlo es un toque (las novedades son opcionales)
-async function enviarReporte(nota){
-  if(VQ.demo){toast('En el modo de prueba el reporte no sale de este teléfono.',3500);return;}
-  if(!activo())return;
-  const u=await N.armarArchivo([await sobreReporte(nota||'')],VQ.vid);
-  N.compartirArchivo(N.nombreArchivo(`reporte-${miNombre()}-${hoy()}`),u,aUnidad('Reporte del día'));
-  VQ.ultRep={fecha:hoy(),ts:Date.now(),seq:+VQ.seq||0,n:(VQ.cola||[]).length};VQ.reportes=[VQ.ultRep].concat(VQ.reportes||[]).slice(0,30);guardarVQ();ver++;
-  closeSheet();render();toast('Elige WhatsApp o correo y envíalo a la administración.',4000);
+// con internet (servidor del equipo) sale solo; sin señal, como archivo por WhatsApp o correo
+async function enviarReporte(nota,{auto=false}={}){
+  if(VQ.demo){if(!auto)toast('En el modo de prueba el reporte no sale de este teléfono.',3500);return false;}
+  if(!activo())return false;
+  const s=await sobreReporte(nota||''),base=servidor();
+  const listo=()=>{VQ.ultRep={fecha:hoy(),ts:Date.now(),seq:+VQ.seq||0,n:(VQ.cola||[]).length,red:!!base};VQ.reportes=[VQ.ultRep].concat(VQ.reportes||[]).slice(0,30);guardarVQ();ver++;closeSheet();render();};
+  if(base){try{await N.pedir(base,'/v1/enviar',{e:VQ.e,quien:VQ.vid,firma:VQ.yo.firma.pub,sobres:[s]},VQ.yo.firma.sec);listo();
+      toast(auto?'Tu reporte del día se envió solo':'Reporte enviado a la administración',3800);return true;}catch(e){if(auto)return false;}}
+  if(auto)return false;
+  N.compartirArchivo(N.nombreArchivo(`reporte-${miNombre()}-${hoy()}`),await N.armarArchivo([s],VQ.vid),aUnidad('Reporte del día'));
+  listo();toast(base?'Sin conexión: envíalo por WhatsApp o correo.':'Elige WhatsApp o correo y envíalo a la administración.',4000);return true;
 }
+// a la hora del reporte, con internet, se envía solo (una vez al día; si falla, se reintenta cada 10 minutos)
+let autoT=0;
+function autoReporte(){
+  if(!servidor()||!activo()||VQ.demo||repHoy()||document.hidden)return;
+  if(new Date().getHours()<horaRep()||Date.now()-autoT<10*60e3)return;
+  autoT=Date.now();enviarReporte('',{auto:true});
+}
+setInterval(autoReporte,60000);document.addEventListener('visibilitychange',()=>setTimeout(autoReporte,1500));setTimeout(autoReporte,4000);
 ACTS.vqEnviarRep=()=>enviarReporte('');
 SAVE.vqReporte=async f=>enviarReporte(String((f.elements.nota||{}).value||'').trim());
 // al tocar el aviso de la hora del reporte, la app se abre y lo deja listo para enviar
@@ -285,15 +297,16 @@ function ajustarAviso(){
 window.colaAvisosPropia=()=>{
   if(!activo()||VQ.demo)return [];const H=hoy(),L=[];
   for(let i=0;i<7;i++){const d=addDias(H,i);if(i===0&&repHoy()&&!nuevosDesdeReporte())continue;
-    L.push({id:'rep:'+d,f:d,hasta:d,t:'Tu reporte del día está listo',x:'Toca aquí y elige WhatsApp o correo para enviarlo a la administración.',p:1,ir:'#hoy/enviar'});}
+    L.push(servidor()?{id:'rep:'+d,f:d,hasta:d,t:'Hora de tu reporte del día',x:'Toca aquí y se envía solo a la administración.',p:1,ir:'#hoy/enviar'}
+      :{id:'rep:'+d,f:d,hasta:d,t:'Tu reporte del día está listo',x:'Toca aquí y elige WhatsApp o correo para enviarlo a la administración.',p:1,ir:'#hoy/enviar'});}
   return L;
 };
 function tarjetaReporte(){
   if(VQ.demo)return '';
   const H=hoy(),r=repHoy(),hr=horaRep(),tarde=new Date().getHours()>=hr,nuevos=nuevosDesdeReporte();
   const res=resumenDia(H),hechas=res.tareas.filter(t=>t.ok).length,tot=res.tareas.length,nregs=Object.values(res.regs).reduce((a,b)=>a+b,0);
-  let tono='a',tit='Reporte del día',sub=`Se arma solo. Envíalo al terminar la jornada, a las ${hr}:00`,btn='Enviar reporte';
-  if(r&&!nuevos){tono='v';tit='Reporte enviado';sub=`Hoy a las ${hhmm(r.ts)}`;btn='';}
+  let tono='a',tit='Reporte del día',sub=servidor()?`Se envía solo por internet a las ${hr}:00`:`Se arma solo. Envíalo al terminar la jornada, a las ${hr}:00`,btn=servidor()?'Enviar ahora':'Enviar reporte';
+  if(r&&!nuevos){tono='v';tit='Reporte enviado';sub=r.red?`Hoy a las ${hhmm(r.ts)}, por internet`:`Hoy a las ${hhmm(r.ts)}`;btn='';}
   else if(r){tono='y';tit='Tienes registros nuevos';sub=`${pl(nuevos,'registro','registros')} después de tu reporte`;btn='Enviar reporte actualizado';}
   else if(tarde){tono='r';tit='Es hora de tu reporte';sub=`La administración lo espera a las ${hr}:00`;}
   const rv=VQ.rev&&VQ.rev.fecha>=addDias(H,-3)?VQ.rev:null;
@@ -410,7 +423,7 @@ PAGES.mas=sub=>{
   return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(VQ.finca||'')}</span><h1>Más</h1><p class="sub">Tu cuenta, tus reportes y ajustes.</p></div></header>
   <main class="bd">
    <section class="sec">${secH('Tu cuenta')}<div class="card pad vq-yo"><span class="eq-av xl" aria-hidden="true" data-no-tr>${esc(N.iniciales(VQ.nombre))}</span><div><b>${esc(VQ.nombre||'')}</b><span>Licencia <span data-no-tr>${VQ.demo?N.LIC_PRUEBA:N.fmtLic(VQ.lic||'')}</span></span><span>En el equipo de ${esc(VQ.finca||'')}${VQ.desde?` desde el ${ffc(VQ.desde)}`:''}</span></div></div></section>
-   ${VQ.demo?'':`<section class="sec">${secH('Reportes')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Reporte diario a las ${horaRep()}:00</b><span>${repHoy()?`Hoy lo enviaste a las ${hhmm(repHoy().ts)}`:'Hoy todavía no lo envías'}</span></div></div>
+   ${VQ.demo?'':`<section class="sec">${secH('Reportes')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Reporte diario a las ${horaRep()}:00</b><span>${repHoy()?`Hoy lo enviaste a las ${hhmm(repHoy().ts)}`:servidor()?'Se envía solo por internet':'Hoy todavía no lo envías'}</span></div></div>
     <div class="acts"><button type="button" class="btn pri" data-act="vqEnviarRep">Enviar reporte</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo de la administración</button></div>
     ${reps.length?`<div class="rows vq-reps">${reps.map(r=>`<div class="row"><div class="tx"><b>${ffc(r.fecha)}, ${hhmm(r.ts)}</b><span>${pl(r.n||0,'registro','registros')}</span></div></div>`).join('')}</div>`:''}
     <p class="hint">Tu reporte sale como archivo .rumentis y la administración lo abre con Rumentis. Lo que te mandan termina en .campo: en WhatsApp tócalo y elige Rumentis Campo. Cada archivo se abre una sola vez.</p></div></section>`}
@@ -464,7 +477,7 @@ function barra(){const nav=$('nav.bottom .in');if(!nav||nav.dataset.vq)return;na
 barra();
 document.addEventListener('rumentis-pintado',()=>{const r=route();const cur=r.p==='lote'?'lotes':r.p;$$('nav.bottom [data-nav]').forEach(a=>{if(a.dataset.nav===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});});
 
-window.Vaquero={VQ:()=>VQ,yo:()=>({v:VQ.vid,n:VQ.nombre}),alRecibir,sobreReporte,resumenDia,vivo:()=>T.vivo(),sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
+window.Vaquero={VQ:()=>VQ,autoReporte,yo:()=>({v:VQ.vid,n:VQ.nombre}),alRecibir,sobreReporte,resumenDia,vivo:()=>T.vivo(),sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
 if(!Object.keys(S.lotes).length&&activo()&&!VQ.demo)S.config.finca=VQ.finca||S.config.finca;
 document.documentElement.classList.add('vq-listo');
 render();

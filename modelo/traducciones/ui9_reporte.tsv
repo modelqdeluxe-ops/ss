@@ -272,3 +272,17 @@ Toca aquí y elige WhatsApp o correo para enviarlo a la administración.	Tap her
 Ver todos	See all	Ver todos
 Anota entregas de alimento, pesajes, sanidad y muertes; sus tareas se cumplen solas al anotarlas.	They record feed deliveries, weighings, health and deaths; their tasks complete themselves as they record.	Registra entregas de ração, pesagens, sanidade e mortes; as tarefas se cumprem sozinhas ao registrar.
 Al terminar el día te envía su reporte por WhatsApp o correo y, al abrirlo, queda registrado en tu finca.	At the end of the day they send you their report by WhatsApp or email and, when you open it, it's recorded on your farm.	No fim do dia envia o relatório pelo WhatsApp ou e-mail e, ao abrir, fica registrado na sua fazenda.
+Conectado por internet: los registros y reportes llegan solos.	Connected online: records and reports arrive on their own.	Conectado pela internet: os registros e relatórios chegam sozinhos.
+Sin conexión: se reintenta solo. Mientras, también sirven los archivos.	No connection: it retries on its own. Meanwhile, files work too.	Sem conexão: tenta de novo sozinho. Enquanto isso, os arquivos também servem.
+Se envía solo por internet a las {0}:{1}	It's sent automatically online at {0}:{1}	É enviado sozinho pela internet às {0}:{1}
+Se envía solo por internet	It's sent automatically online	É enviado sozinho pela internet
+Enviar ahora	Send now	Enviar agora
+Hoy a las {0}:{1}, por internet	Today at {0}:{1}, online	Hoje às {0}:{1}, pela internet
+Tu reporte del día se envió solo	Your daily report was sent automatically	Seu relatório do dia foi enviado sozinho
+Reporte enviado a la administración	Report sent to the farm management	Relatório enviado à administração
+Sin conexión: envíalo por WhatsApp o correo.	No connection: send it by WhatsApp or email.	Sem conexão: envie pelo WhatsApp ou e-mail.
+Hora de tu reporte del día	Time for your daily report	Hora do seu relatório do dia
+Toca aquí y se envía solo a la administración.	Tap here and it's sent to the farm management automatically.	Toque aqui e é enviado sozinho à administração.
+Llegó el reporte de {0}	{0}'s report arrived	Chegou o relatório de {0}
+{0} reporte nuevo	{0} new report	{0} relatório novo
+{0} reportes nuevos	{0} new reports	{0} relatórios novos

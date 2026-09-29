@@ -240,6 +240,8 @@ async function procesarReporte(s){
     ops:(Array.isArray(c.ops)?c.ops:[]).slice(0,3000),estado:'nuevo'};
   const orden=Object.values(R).sort((a,b)=>b.ts-a.ts);for(const x of orden.slice(120))if(x.estado!=='nuevo')delete R[x.rid];
   guardarEQ({reportes:R,vaqueros:{...e.vaqueros,[v.id]:{...v,ts:Date.now()}},act:actividad({ic:'reporte',v:v.id,n:v.nombre,txt:`${v.nombre} envió su reporte del ${ffc(fecha)}`})});
+  // automático: queda registrado en cuanto llega (por archivo o por internet)
+  if(EQ().autoReg!==false)registrarReporte(c.rid,[],true);
   ultimosRep.push(c.rid);return 1;
 }
 const REP=()=>Object.values((EQ()||{}).reportes||{}).sort((a,b)=>b.ts-a.ts);
@@ -301,7 +303,7 @@ let ocupado=null,prontoT=0;
 function sincronizarPronto(ms=1500){clearTimeout(prontoT);prontoT=setTimeout(()=>sincronizar(),ms);}
 async function sincronizar(){
   if(ocupado)return ocupado;const e=EQ(),base=servidor();if(!e||!e.id||!base||!navigator.onLine&&navigator.onLine!==undefined)return null;
-  ocupado=(async()=>{let nuevos=0;
+  ocupado=(async()=>{let nuevos=0;ultimosRep=[];
     try{
       const f=firmaJ();if(!f)return;
       if(SY.srv!==base){SY={...SY,srv:base,reg:0,cursor:0,lics:{},miembros:{},estadoPend:1};guardarSY();}
@@ -320,6 +322,9 @@ async function sincronizar(){
       if(SY.estadoPend&&SY.estado){SY.salida=(SY.salida||[]).filter(s=>s.r!=='estado').concat(SY.estado);SY.estadoPend=0;guardarSY();}
       await enviarSalida(base,f);
       SY.ult=Date.now();SY.err='';guardarSY();T.abrir();
+      // reportes que llegaron por internet
+      const reps=ultimosRep.slice();if(reps.length){const r=EQ().reportes[reps[reps.length-1]];
+        toast(reps.length===1?(r.estado==='nuevo'?`Llegó el reporte de ${r.n}`:`Reporte de ${r.n} registrado en tu finca`):`${pl(reps.length,'reporte nuevo','reportes nuevos')}`,4000);}
     }catch(err){SY.err=String(err&&err.message||err);guardarSY();}
     finally{ocupado=null;if(nuevos||location.hash.startsWith('#equipo'))scheduleRender();}
     return nuevos;})();
@@ -540,6 +545,7 @@ PAGES.equipo=(sub,id)=>{
   const tareas=(S.config.tareas||[]).filter(t=>t.para&&((t.rep||'una')!=='una'||!t.hecho));
   const nombreDe=x=>x==='todos'?'Todo el equipo':((e.vaqueros||{})[x]||{}).nombre||'';
   return hd+`<main class="bd">${aviso}
+   ${servidor()?`<p class="eq-red${SY.err?' off':''}"><i></i>${SY.err?'Sin conexión: se reintenta solo. Mientras, también sirven los archivos.':'Conectado por internet: los registros y reportes llegan solos.'}</p>`:''}
    <div class="eq-acciones"><button type="button" class="btn pri" data-act="eqEnviarArchivo">${ico('send')}Enviar actualización</button><button type="button" class="btn" data-act="eqRecibirArchivo">Abrir reporte</button><button type="button" class="btn eq-gear" data-act="eqAjustes" aria-label="Ajustes del equipo">${mico('config')}</button></div>
    ${pend.length?`<section class="sec">${secH('Por revisar',pend.length)}<div class="card rows eq-pend">${pend.map(filaRep).join('')}</div></section>`:''}
    ${sols.length?`<section class="sec">${secH('Solicitudes de acceso',sols.length)}<div class="card rows">${sols.map(s=>`<button type="button" class="row eq-v" data-act="eqSolicitud" data-v="${s.vid}">${avatar(s.nombre,'c')}<div class="tx"><b>${esc(s.nombre)}</b><span>Licencia <span data-no-tr>${N.fmtLic(s.lic)}</span></span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
