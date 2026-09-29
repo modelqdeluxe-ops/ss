@@ -1,0 +1,169 @@
+Personal	Staff	Equipe
+Sin reporte hoy	No report today	Sem relatório hoje
+De una vez, diaria o semanal. Cada una se termina con una foto de evidencia.	One-time, daily or weekly. Each one is completed with a proof photo.	Única, diária ou semanal. Cada uma é concluída com uma foto de comprovação.
+A esa hora Rumentis Campo envía el reporte del día o avisa al colaborador para que lo envíe.	At that time Rumentis Campo sends the daily report or reminds the team member to send it.	Nesse horário o Rumentis Campo envia o relatório do dia ou lembra o colaborador de enviá-lo.
+A esa hora Rumentis Campo envía el reporte del día.	At that time Rumentis Campo sends the daily report.	Nesse horário o Rumentis Campo envia o relatório do dia.
+Registrar los reportes al recibirlos	Record reports when they arrive	Registrar os relatórios ao recebê-los
+Apagado, cada reporte espera tu revisión.	When off, each report waits for your review.	Desligado, cada relatório aguarda sua revisão.
+Registrar al recibir	Record on arrival	Registrar ao receber
+Aceptar solicitudes de acceso	Accept access requests	Aceitar solicitações de acesso
+Apagado, cada solicitud espera tu aprobación.	When off, each request waits for your approval.	Desligado, cada solicitação aguarda sua aprovação.
+Aceptar solicitudes	Accept requests	Aceitar solicitações
+Ninguna disponible	None available	Nenhuma disponível
+Por archivo	By file	Por arquivo
+Reporte de un colaborador. Se abre con Rumentis.	A team member's report. Opens with Rumentis.	Relatório de um colaborador. Abre com o Rumentis.
+Actualización para el equipo: tareas, lotes y confirmaciones. Se abre con Rumentis Campo.	Update for the team: tasks, lots and confirmations. Opens with Rumentis Campo.	Atualização para a equipe: tarefas, lotes e confirmações. Abre com o Rumentis Campo.
+Hora del reporte: {0}:{1}. Envía la actualización para que le llegue a tu equipo.	Report time: {0}:{1}. Send the update so your team gets it.	Horário do relatório: {0}:{1}. Envie a atualização para que chegue à sua equipe.
+al anotar la entrega	when the feeding is recorded	ao registrar o trato
+al anotar el pesaje	when the weighing is recorded	ao registrar a pesagem
+al anotar la sanidad	when the treatment is recorded	ao registrar a sanidade
+la marca el colaborador	marked by the team member	marcada pelo colaborador
+Al anotar la entrega	When the feeding is recorded	Ao registrar o trato
+Al anotar el pesaje	When the weighing is recorded	Ao registrar a pesagem
+Al anotar la sanidad	When the treatment is recorded	Ao registrar a sanidade
+Al anotar la entrega se pide la foto de evidencia. Desde el {0}.	The proof photo is requested when the feeding is recorded. Starting {0}.	A foto de comprovação é pedida ao registrar o trato. A partir de {0}.
+Al anotar el pesaje se pide la foto de evidencia. Desde el {0}.	The proof photo is requested when the weighing is recorded. Starting {0}.	A foto de comprovação é pedida ao registrar a pesagem. A partir de {0}.
+Al anotar la sanidad se pide la foto de evidencia. Desde el {0}.	The proof photo is requested when the treatment is recorded. Starting {0}.	A foto de comprovação é pedida ao registrar a sanidade. A partir de {0}.
+Se termina con una foto de evidencia. Desde el {0}.	Completed with a proof photo. Starting {0}.	Concluída com uma foto de comprovação. A partir de {0}.
+En alimento, pesaje y sanidad puede quedar vacío: se usa el nombre de la acción.	For feeding, weighing and treatments you can leave it blank: the action's name is used.	Em trato, pesagem e sanidade pode ficar vazio: usa-se o nome da ação.
+Indicaciones	Instructions	Instruções
+Opcional: cantidad, horario, cómo hacerla…	Optional: amount, time, how to do it…	Opcional: quantidade, horário, como fazer…
+Revisar los bebederos…	Check the waterers…	Verificar os bebedouros…
+Las diarias y semanales se renuevan cada día o semana; el avance llega en cada reporte.	Daily and weekly tasks renew each day or week; progress comes in every report.	As diárias e semanais se renovam a cada dia ou semana; o progresso chega em cada relatório.
+Cada tarea se termina con una foto de evidencia tomada en Rumentis Campo.	Each task is completed with a proof photo taken in Rumentis Campo.	Cada tarefa é concluída com uma foto de comprovação tirada no Rumentis Campo.
+Tarea asignada a todo el equipo. Envía la actualización para que le llegue.	Task assigned to the whole team. Send the update so they get it.	Tarefa atribuída a toda a equipe. Envie a atualização para que ela chegue.
+Tarea asignada a {0}. Envía la actualización para que le llegue.	Task assigned to {0}. Send the update so they get it.	Tarefa atribuída a {0}. Envie a atualização para que ela chegue.
+Tarea asignada a todo el equipo	Task assigned to the whole team	Tarefa atribuída a toda a equipe
+Tarea asignada a {0}	Task assigned to {0}	Tarefa atribuída a {0}
+Por registrar · {0}:{1}	To record · {0}:{1}	A registrar · {0}:{1}
+Por registrar	To record	A registrar
+enviado a las {0}:{1}	sent at {0}:{1}	enviado às {0}:{1}
+registros	records	registros
+fotos de evidencia	proof photos	fotos de comprovação
+foto de evidencia	proof photo	foto de comprovação
+Foto de evidencia	Proof photo	Foto de comprovação
+Fotos de evidencia	Proof photos	Fotos de comprovação
+Terminada con foto	Completed with photo	Concluída com foto
+Terminada	Completed	Concluída
+Ver foto de evidencia	View proof photo	Ver foto de comprovação
+Terminó: {0}	Completed: {0}	Concluiu: {0}
+Terminó: una tarea asignada	Completed: an assigned task	Concluiu: uma tarefa atribuída
+Terminó: una tarea de la agenda	Completed: a schedule task	Concluiu: uma tarefa da agenda
+Envía la actualización al equipo: lleva la confirmación del reporte, las tareas y los lotes al día.	Send the update to the team: it carries the report confirmation, tasks and up-to-date lots.	Envie a atualização para a equipe: leva a confirmação do relatório, as tarefas e os lotes em dia.
+Pedir que la repita	Ask to redo it	Pedir para refazer
+¿Pedir que la repita?	Ask to redo it?	Pedir para refazer?
+«{0}» vuelve a quedar pendiente para {1} y solo se puede terminar con una foto nueva.	“{0}” goes back to pending for {1} and can only be completed with a new photo.	“{0}” volta a ficar pendente para {1} e só pode ser concluída com uma foto nova.
+«{0}» vuelve a quedar pendiente y solo se puede terminar con una foto nueva.	“{0}” goes back to pending and can only be completed with a new photo.	“{0}” volta a ficar pendente e só pode ser concluída com uma foto nova.
+Tarea pendiente otra vez. Envía la actualización para que le llegue.	Task pending again. Send the update so they get it.	Tarefa pendente de novo. Envie a atualização para que ela chegue.
+Tarea pendiente otra vez.	Task pending again.	Tarefa pendente de novo.
+{0} ya la ve pendiente en Rumentis Campo.	{0} now sees it as pending in Rumentis Campo.	{0} já a vê pendente no Rumentis Campo.
+Se pidió repetirla	Redo requested	Refazer solicitado
+Pediste que la repita el {0}.	You asked to redo it on {0}.	Você pediu para refazer em {0}.
+Repetir	Redo	Refazer
+Registros del día	Records of the day	Registros do dia
+Ese día no anotó registros.	No records that day.	Nesse dia não houve registros.
+Quedó fuera	Left out	Ficou de fora
+Reportes recientes	Recent reports	Relatórios recentes
+Registrado automáticamente	Recorded automatically	Registrado automaticamente
+Reporte de hoy registrado · {0}:{1}	Today's report recorded · {0}:{1}	Relatório de hoje registrado · {0}:{1}
+Reporte de hoy por registrar · {0}:{1}	Today's report to record · {0}:{1}	Relatório de hoje a registrar · {0}:{1}
+Reporte de hoy pendiente	Today's report pending	Relatório de hoje pendente
+Reporte de hoy a las {0}:{1}	Today's report at {0}:{1}	Relatório de hoje às {0}:{1}
+Reporta a las {0}:{1}	Reports at {0}:{1}	Relata às {0}:{1}
+Reportó · {0}:{1}	Reported · {0}:{1}	Relatou · {0}:{1}
+Llamar	Call	Ligar
+WhatsApp	WhatsApp	WhatsApp
+días con reporte	days with a report	dias com relatório
+tareas terminadas	tasks completed	tarefas concluídas
+Esta semana, desde el {0}.	This week, since {0}.	Esta semana, desde {0}.
+{0} fotos	{0} photos	{0} fotos
+{0} foto	{0} photo	{0} foto
+Teléfono vinculado	Linked phone	Telefone vinculado
+Revocar licencia	Revoke license	Revogar licença
+Revocar	Revoke	Revogar
+Se cierra su sesión en Rumentis Campo y recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.	Their Rumentis Campo session is closed and you get a new license for someone else. Their records stay on your operation.	A sessão dele no Rumentis Campo é encerrada e você recebe uma licença nova para outra pessoa. Os registros ficam na sua fazenda.
+¿Revocar la licencia de {0}?	Revoke {0}'s license?	Revogar a licença de {0}?
+Su sesión en Rumentis Campo se cierra y la licencia {0} queda anulada. Recibes una licencia nueva para otra persona. Sus registros se quedan en tu finca.	Their Rumentis Campo session closes and license {0} is voided. You get a new license for someone else. Their records stay on your operation.	A sessão no Rumentis Campo é encerrada e a licença {0} fica anulada. Você recebe uma licença nova para outra pessoa. Os registros ficam na sua fazenda.
+Licencia revocada. Tienes una licencia nueva: {0}	License revoked. You have a new license: {0}	Licença revogada. Você tem uma licença nova: {0}
+Licencia revocada	License revoked	Licença revogada
+Licencias revocadas	Revoked licenses	Licenças revogadas
+Revocada el {0}	Revoked on {0}	Revogada em {0}
+{0} persona	{0} person	{0} pessoa
+{0} personas	{0} people	{0} pessoas
+{0} licencia disponible	{0} license available	{0} licença disponível
+{0} licencias disponibles	{0} licenses available	{0} licenças disponíveis
+Licencias sin usar	Unused licenses	Licenças sem uso
+No tienes licencias disponibles.	You have no licenses available.	Você não tem licenças disponíveis.
+Ver QR y enviar	View QR and send	Ver QR e enviar
+Reemplaza a una licencia revocada · Ver QR y enviar	Replaces a revoked license · View QR and send	Substitui uma licença revogada · Ver QR e enviar
+{0} · Una vez	{0} · One time	{0} · Uma vez
+Historial	History	Histórico
+Todavía nadie la termina.	No one has completed it yet.	Ninguém a concluiu ainda.
+Quitar tarea	Remove task	Remover tarefa
+¿Quitar esta tarea?	Remove this task?	Remover esta tarefa?
+«{0}» deja de aparecer en Rumentis Campo. Su historial se pierde.	“{0}” stops showing in Rumentis Campo. Its history is lost.	“{0}” deixa de aparecer no Rumentis Campo. O histórico é perdido.
+Quitar	Remove	Remover
+Tarea quitada	Task removed	Tarefa removida
+Sincronización	Sync	Sincronização
+Sincronizar	Sync	Sincronizar
+Sincronizado a las {0}:{1}	Synced at {0}:{1}	Sincronizado às {0}:{1}
+Sin sincronizar todavía	Not synced yet	Ainda não sincronizado
+Sin conexión con el servidor desde las {0}:{1}. Toca para reintentar.	No connection to the server since {0}:{1}. Tap to retry.	Sem conexão com o servidor desde {0}:{1}. Toque para tentar de novo.
+Sin conexión con el servidor. Toca para reintentar.	No connection to the server. Tap to retry.	Sem conexão com o servidor. Toque para tentar de novo.
+Reporte no encontrado	Report not found	Relatório não encontrado
+Este reporte ya no está guardado en este teléfono.	This report is no longer stored on this phone.	Este relatório não está mais salvo neste telefone.
+Colaborador no encontrado	Team member not found	Colaborador não encontrado
+Esta foto todavía no llega a este teléfono. Llega con la siguiente sincronización o con el siguiente archivo del colaborador.	This photo hasn't reached this phone yet. It arrives with the next sync or the team member's next file.	Esta foto ainda não chegou a este telefone. Chega na próxima sincronização ou no próximo arquivo do colaborador.
+Todavía no envía reportes.	No reports sent yet.	Ainda não enviou relatórios.
+Sin tareas asignadas.	No assigned tasks.	Sem tarefas atribuídas.
+Tareas asignadas	Assigned tasks	Tarefas atribuídas
+Qué puede registrar	What they can record	O que pode registrar
+Incluido en uno más reciente	Included in a newer one	Incluído em um mais recente
+Reporte de {0} actualizado	{0}'s report updated	Relatório de {0} atualizado
+Reporte del día enviado	Daily report sent	Relatório do dia enviado
+Anota entregas de alimento, pesajes, sanidad y muertes.	Records feedings, weighings, treatments and deaths.	Registra tratos, pesagens, sanidade e mortes.
+Termina cada tarea con una foto de evidencia.	Completes each task with a proof photo.	Conclui cada tarefa com uma foto de comprovação.
+Al final del día te llega su reporte y queda registrado en tu finca.	At the end of the day you get their report and it's recorded on your operation.	No fim do dia chega o relatório e ele fica registrado na sua fazenda.
+No ve tus finanzas, precios ni a Rumi, y no puede borrar registros.	They can't see your finances, prices or Rumi, and can't delete records.	Não vê suas finanças, preços nem o Rumi, e não pode apagar registros.
+Cada licencia se paga una sola vez y es para una persona.	Each license is paid once and is for one person.	Cada licença é paga uma única vez e é para uma pessoa.
+Reporte pendiente	Report pending	Relatório pendente
+Hora del reporte: {0}:{1}	Report time: {0}:{1}	Horário do relatório: {0}:{1}
+Tareas: {0} de {1}	Tasks: {0} of {1}	Tarefas: {0} de {1}
+Agregar novedades	Add notes	Adicionar novidades
+Terminar con foto de evidencia	Complete with proof photo	Concluir com foto de comprovação
+Asignada	Assigned	Atribuída
+Cada registro queda con tu nombre.	Each record is saved under your name.	Cada registro fica com o seu nome.
+{0} registros sin reportar	{0} unreported records	{0} registros não relatados
+{0} registro sin reportar	{0} unreported record	{0} registro não relatado
+Registros sin reportar	Unreported records	Registros não relatados
+Por enviar	To send	A enviar
+Enviado	Sent	Enviado
+Evidencia	Proof	Comprovação
+Ya registraste lo que pide esta tarea. Toma la foto de evidencia para terminarla.	You already recorded what this task asks for. Take the proof photo to complete it.	Você já registrou o que esta tarefa pede. Tire a foto de comprovação para concluí-la.
+La tarea sigue pendiente: falta la foto de evidencia.	The task is still pending: the proof photo is missing.	A tarefa continua pendente: falta a foto de comprovação.
+Cada tarea se termina con una foto de evidencia.	Each task is completed with a proof photo.	Cada tarefa é concluída com uma foto de comprovação.
+Falta la foto de evidencia	Proof photo missing	Falta a foto de comprovação
+Tarea terminada	Task completed	Tarefa concluída
+Repetir con otra foto	Redo with a new photo	Refazer com outra foto
+Tu perfil	Your profile	Seu perfil
+Agregar foto	Add photo	Adicionar foto
+Agregar foto de perfil	Add profile photo	Adicionar foto de perfil
+Cambiar foto	Change photo	Trocar foto
+Cargo	Role	Cargo
+Encargado de corrales	Pen supervisor	Encarregado dos currais
+Perfil guardado	Profile saved	Perfil salvo
+Reporte del {0} registrado por la administración.	Report for {0} recorded by management.	Relatório de {0} registrado pela administração.
+{0} registro no se incluyó.	{0} record wasn't included.	{0} registro não foi incluído.
+{0} registros no se incluyeron.	{0} records weren't included.	{0} registros não foram incluídos.
+Enviar de nuevo	Send again	Enviar de novo
+{0} · desde el {1}	{0} · since {1}	{0} · desde {1}
+Enviado hoy a las {0}:{1}	Sent today at {0}:{1}	Enviado hoje às {0}:{1}
+Envío automático	Automatic sending	Envio automático
+Envío automático a las {0}:{1}	Sent automatically at {0}:{1}	Envio automático às {0}:{1}
+Abrir archivo	Open file	Abrir arquivo
+Sesión cerrada	Signed out	Sessão encerrada
+La administración revocó tu licencia. Los datos de la finca se borraron de este teléfono.	Management revoked your license. The operation's data was deleted from this phone.	A administração revogou sua licença. Os dados da fazenda foram apagados deste telefone.
+Activar otra licencia	Activate another license	Ativar outra licença
+Sin conexión	Offline	Sem conexão
+No se pudo abrir la cámara. Da permiso de cámara a la app en los ajustes del teléfono.	Couldn't open the camera. Give the app camera permission in the phone's settings.	Não foi possível abrir a câmera. Dê permissão de câmera ao app nos ajustes do telefone.
+Los registros no se pueden borrar. Si hay un error, avisa a la administración.	Records can't be deleted. If there's a mistake, let management know.	Os registros não podem ser apagados. Se houver um erro, avise a administração.

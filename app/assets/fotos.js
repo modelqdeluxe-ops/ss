@@ -76,12 +76,13 @@ async function zoom1(stream){
   try{const t=stream.getVideoTracks()[0];const c=t.getCapabilities?t.getCapabilities():{};
     if(c.zoom){const z=Math.min(Math.max(1,c.zoom.min||1),c.zoom.max||1);await t.applyConstraints({advanced:[{zoom:z}]});}}catch(e){}
 }
-function tomar(titulo){
+/* o.soloCamara: sin galería (fotos de evidencia: tienen que tomarse en el momento) */
+function tomar(titulo,o={}){
   return new Promise(async ok=>{
     const w=document.createElement('dialog');w.className='cam';w.setAttribute('aria-label','Tomar foto');
     w.innerHTML=`<div class="cam-top"><b>${esc(titulo||'Foto del animal')}</b><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
       <div class="cam-v"><video playsinline autoplay muted></video><i class="cam-guia"></i><p class="cam-msg">Abriendo la cámara…</p></div>
-      <div class="cam-bar"><button type="button" class="cam-gal">Galería</button><button type="button" class="cam-disp" aria-label="Tomar foto" disabled><i></i></button><button type="button" class="cam-lente" hidden>Cambiar lente</button></div>`;
+      <div class="cam-bar"><button type="button" class="cam-gal"${o.soloCamara?' hidden':''}>Galería</button><button type="button" class="cam-disp" aria-label="Tomar foto" disabled><i></i></button><button type="button" class="cam-lente" hidden>Cambiar lente</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
     const v=w.querySelector('video'),msg=w.querySelector('.cam-msg'),disp=w.querySelector('.cam-disp'),lente=w.querySelector('.cam-lente');
     let stream=null,hecho=false,lista=[],idx=0;
@@ -113,7 +114,7 @@ function tomar(titulo){
       if(hecho){s.getTracks().forEach(t=>t.stop());return;}
       await mostrar(s);
     }catch(e){
-      msg.textContent='No pude abrir la cámara. Revisa que Rumentis tenga permiso de cámara en los ajustes del teléfono, o elige una foto de tu galería.';
+      msg.textContent=o.soloCamara?'No se pudo abrir la cámara. Da permiso de cámara a la app en los ajustes del teléfono.':'No pude abrir la cámara. Revisa que Rumentis tenga permiso de cámara en los ajustes del teléfono, o elige una foto de tu galería.';
       w.classList.add('sin');
     }
   });
@@ -122,7 +123,8 @@ function tomar(titulo){
 async function limpiar(){
   const vivos=new Set();for(const l of Object.values(S.lotes||{}))for(const a of (l.animales||[]))vivos.add(a.id);
   if(!vivos.size)return;
-  for(const k of await ids())if(!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
+  // las del equipo (evidencias de tareas y fotos de perfil, 'eq-…') no son de animales: no se tocan
+  for(const k of await ids())if(!/^eq-/.test(k)&&!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
 }
 setTimeout(limpiar,15000);
 window.Fotos={guardar,borrar,url,tiene,tomar,pintar,ids,limpiar,NATIVO};

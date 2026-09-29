@@ -133,6 +133,16 @@ async function pedir(base,ruta,cuerpo,firmaSec){
   }finally{clearTimeout(t);}
 }
 
+/* ---------- fotos del equipo para enviar: JPEG de hasta 900 px (unos 80 a 150 KB) en base64 ---------- */
+async function fotoB64(id,max=900){
+  if(!window.Fotos)return '';let u=null;try{u=await Fotos.url(id);}catch(e){}if(!u)return '';
+  const im=new Image();const ok=await new Promise(r=>{im.onload=()=>r(true);im.onerror=()=>r(false);im.src=u;});
+  if(!ok||!im.naturalWidth)return '';
+  const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
+  c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',0.72).split(',')[1]||'';
+}
+
 /* ---------- timbre: conexión en vivo con el servidor ---------- */
 // Un WebSocket abierto mientras la app está en pantalla. El servidor solo dice "hay" cuando llega algo para este
 // teléfono y la app pide sus sobres al instante. Si se corta, se reintenta solo (cada vez más espaciado); mientras
@@ -294,6 +304,6 @@ const iniciales=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]||''
 window.EquipoNucleo={CFG,nacl:nacl_,cargar,enc,dec,b64,deB64,b64u,deB64u,azar,sha,canon,
   nuevaLicencia,normLic,licValida,fmtLic,hashLic,LIC_PRUEBA,esLicPrueba,
   nuevasLlaves,idDe,firmar,verificar,huella,sellar,sobrePlano,abrir,ficha,fichaValida,enlace,leerEnlace,
-  urlOk,pedir,timbre,armarArchivo,leerArchivo,recibirArchivo,escucharArchivos,nombreArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
+  urlOk,pedir,timbre,fotoB64,armarArchivo,leerArchivo,recibirArchivo,escucharArchivos,nombreArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
   pagosHay,pagosEscuchar,compraReal,haceCuanto,iniciales};
 })();

@@ -138,26 +138,40 @@ colaboradores y personal.
    La administración la abre en Rumentis (se acepta sola, o se pregunta) y le devuelve la *actualización*.
 2. La administración asigna tareas **de una vez, diarias o semanales** (1 a 5 veces por semana) y fija la **hora
    del reporte** (12:00 a 21:00). Una tarea puede ir **ligada a una acción** (entregar alimento, pesar o sanidad, en
-   un lote o en cualquiera): se cumple sola cuando el colaborador anota esa acción. Le llega con la siguiente
-   actualización.
-3. El colaborador anota alimento, pesajes, sanidad y muertes y marca sus tareas. A la hora del reporte le llega un
+   un lote o en cualquiera): al anotar esa acción, Campo pide la foto. Cada tarea puede llevar **indicaciones**. Le
+   llega con la siguiente actualización.
+3. El colaborador anota alimento, pesajes, sanidad y muertes y termina sus tareas. **Toda tarea se termina con una
+   foto de evidencia** tomada con la cámara en ese momento (sin galería): sin foto sigue pendiente. Los registros no
+   se pueden borrar desde Campo. En su perfil pone foto, cargo y teléfono. A la hora del reporte le llega un
    aviso en el teléfono (Android; quedan programados 7 días aunque no abra la app): al tocarlo, la app abre el
    reporte ya armado para elegir WhatsApp o correo. La tarjeta de Hoy también lo envía con un toque.
-4. **Reporte del día** (se arma solo): sus registros, tareas del día hechas y pendientes, avance de las semanales y,
-   si quiere, sus novedades. Sale como archivo `.rumentis`.
+4. **Reporte del día** (se arma solo): sus registros, tareas del día hechas (con su foto) y pendientes, avance de las
+   semanales y, si quiere, sus novedades. Sale como archivo `.rumentis`, con las fotos de evidencia y el perfil.
 5. La administración lo abre con Rumentis y **queda registrado al abrirlo** (en Ajustes del equipo se puede pedir
    revisarlo antes: cada registro con su marca y el botón **Registrar**). La página del reporte muestra novedades,
-   tareas del día, semanales, días reportados en la semana y lo que se registró.
+   tareas del día con la miniatura de su foto (se abre en grande), semanales y los registros del día con su hora.
+   Desde ahí se puede **pedir que repita** una tarea: vuelve a quedar pendiente y necesita una foto nueva.
 6. La administración envía la actualización (`.campo`): lotes al día, tareas y la confirmación de lo registrado,
    que el colaborador ve en la tarjeta de su reporte.
 
 Lo que la administración todavía no registra vuelve a ir en el siguiente reporte (cada registro lleva su número, así
 nunca se duplica); el reporte anterior queda como *incluido*. Cada archivo se abre una sola vez.
 
-- **Administración** (`app/assets/equipo.js`): pestaña **Equipo** con Enviar actualización / Abrir reporte /
-  Ajustes del equipo arriba, reportes por revisar, «Tu equipo hoy» (una tarjeta por colaborador con el estado de su
-  reporte de hoy y sus tareas), tareas con su frecuencia y avance, reportes y actividad; licencias en una hoja; la hoja de cada colaborador con sus reportes, permisos y tareas; dar de baja (la licencia
-  queda anulada y la clave del equipo cambia).
+**Con el servidor del equipo** (Cloudflare, `servidor/equipo`) todo esto llega solo: cada app hace una sola solicitud
+`/v1/sync` que envía lo pendiente y trae lo nuevo (los sobres inválidos se rechazan uno por uno, sin trabar la cola),
+el timbre WebSocket avisa al instante y, en reposo, no hay solicitudes. El reporte sale solo a la hora fijada; si
+después anota algo o termina otra tarea, la administración recibe el reporte actualizado (uno por día en las listas).
+
+- **Administración** (`app/assets/equipo.js`): pestaña **Equipo** con reportes por registrar, solicitudes,
+  **Personal** (una tarjeta por colaborador con foto, cargo y el estado de su reporte de hoy), tareas (cada una abre
+  su historial con fotos) y reportes recientes. Sin servidor, arriba van Enviar actualización / Abrir reporte; con
+  servidor, esos botones quedan en Ajustes del equipo, junto con el estado de la sincronización y las licencias.
+  Cada colaborador tiene su página (`#equipo/colab/<id>`): perfil, semana (días con reporte, tareas, registros),
+  reportes, galería de fotos de evidencia, tareas, permisos, licencia y **Revocar licencia**: su sesión en Campo se
+  cierra y se borran de su teléfono los datos de la finca; la licencia queda anulada para siempre, la clave del
+  equipo cambia y la administración recibe una **licencia nueva** para otra persona (el pago no se pierde).
+- **Fotos del equipo**: sobres `foto` (evidencia `eq-<fid>`) y `perfil` (`eq-pf-<id>`), JPEG de hasta 900 px,
+  cifrados con la clave del equipo; se guardan con `Fotos` y `Fotos.limpiar` no las toca.
 - **Colaborador** (`app/assets/vaquero.js`, app **Rumentis Campo**, gratis): la bienvenida de Rumentis y luego su
   nombre y la licencia (escrita, pegada o escaneada del QR con BarcodeDetector o `lib/jsQR.js`). Solo Hoy, Lotes,
   Registrar, Tareas y Más: sin Rumi, sin dinero, sin documentos. Lo que anota va en una cola de operaciones

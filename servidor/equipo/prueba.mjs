@@ -75,6 +75,12 @@ assert.equal((await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops',V,'jefe'
 assert.equal((await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops',V,'todos',vaq)]},vaq)).st,403);
 assert.equal((await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops','jefe','jefe',vaq)]},vaq)).st,400,'no se hace pasar por el jefe');
 x=await pedir('/v1/recibir',{e:E,quien:'jefe',desde:c1},jefe);assert.deepEqual(x.j.sobres.map(s=>s.t),['ops']);
+// /v1/sync: manda y recibe en una sola solicitud; un sobre malo no frena a los demás
+{const bueno=sobre('ops',V,'jefe',vaq),malo={...sobre('ops',V,'jefe',vaq),de:'v000000000000'};
+ x=await pedir('/v1/sync',{e:E,quien:V,desde:0,sobres:[bueno,malo]},vaq);assert.equal(x.st,200);
+ assert.deepEqual(x.j.guardados,[bueno.id]);assert.equal(x.j.rechazados.length,1);assert.ok(Array.isArray(x.j.sobres));
+ x=await pedir('/v1/sync',{e:E,quien:'jefe',desde:c1},jefe);assert.ok(x.j.sobres.some(s=>s.id===bueno.id),'el jefe lo recibe');
+ assert.equal((await pedir('/v1/sync',{e:E,quien:'jefe',desde:0},otro)).st,403);}
 // tiempo real: el timbre avisa al jefe cuando el vaquero manda algo, y al vaquero cuando el jefe publica
 const timbre=async(cuerpo,k)=>{const b=firmar({...cuerpo,ts:Date.now()},k);
   const r=await mf.dispatchFetch(B+'/v1/timbre?b='+b64u(Buffer.from(JSON.stringify(b))),{headers:{Upgrade:'websocket'}});

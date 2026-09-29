@@ -40,31 +40,50 @@ function registrarOps(col,id,data){
     if(Object.keys(campos).length)nuevaOp({k:'lote~',id,campos});
   }else if(col==='ajustes'&&data){
     const h0=S.config.hechas||{},h1=data.hechas||{};
-    for(const [k,f] of Object.entries(h1))if(h0[k]!==f){const t=(window.Agenda?Agenda.tareas():[]).find(x=>x.key===k);nuevaOp({k:'hecha',key:k,f,txt:t?t.t:''});logHecho(t?t.t:'',f);}
+    // cada tarea se termina con su foto de evidencia (FOTO_TAREA la pone vqHecha justo antes de marcarla)
+    const foto=FOTO_TAREA||'';
+    for(const [k,f] of Object.entries(h1))if(h0[k]!==f){const t=(window.Agenda?Agenda.tareas():[]).find(x=>x.key===k);nuevaOp({k:'hecha',key:k,f,txt:t?t.t:'',foto});logHecho(t?t.t:'',f,{foto,key:k});}
     // tareas asignadas: la de una vez al marcarla; las que se repiten, cada día que se hacen
     const t0=new Map((S.config.tareas||[]).map(t=>[t.id,t]));
     for(const t of data.tareas||[]){const a=t0.get(t.id);if(!a)continue;
-      if((t.rep||'una')==='una'){if(t.hecho&&!a.hecho){nuevaOp({k:'tarea',id:t.id,f:hoy()});logHecho(t.t);}}
-      else{const ya=new Set((a.hechos||[]).map(x=>x.f));for(const h of t.hechos||[])if(!ya.has(h.f)){nuevaOp({k:'tarea',id:t.id,f:h.f});logHecho(t.t,h.f);}}}
+      if((t.rep||'una')==='una'){if(t.hecho&&!a.hecho){nuevaOp({k:'tarea',id:t.id,f:hoy(),foto});logHecho(t.t,hoy(),{foto,id:t.id});}}
+      else{const ya=new Set((a.hechos||[]).map(x=>x.f));for(const h of t.hechos||[])if(!ya.has(h.f)){nuevaOp({k:'tarea',id:t.id,f:h.f,foto});logHecho(t.t,h.f,{foto,id:t.id});}}}
   }
 }
-/* Tareas que se cumplen solas: si la administración ligó la tarea a una acción (entregar alimento, pesar, sanidad;
-   en un lote o en cualquiera), al anotar esa acción la tarea queda hecha, igual que si la marcara a mano. */
+let FOTO_TAREA='';
+/* Tareas ligadas a una acción (entregar alimento, pesar, sanidad; en un lote o en cualquiera): al anotar esa acción la
+   tarea queda lista y solo falta su foto de evidencia para terminarla. */
 function autoTareas(items){
-  if(!activo())return;const hechas=[];
-  const L=(S.config.tareas||[]).map(t=>{
-    const a=t.acc;if(!a||!a.k)return t;
-    const it=items.find(i=>i.tipo===a.k&&(!a.lote||a.lote===i.lote)&&(!t.f||i.f>=t.f));if(!it)return t;
-    if((t.rep||'una')==='una'){if(t.hecho)return t;hechas.push(t.t);return {...t,hecho:true};}
-    const p=Agenda.progreso(t,it.f);if(p.hoy||(/^s\d$/.test(t.rep)&&p.completa))return t;
-    hechas.push(t.t);return {...t,hechos:(t.hechos||[]).concat({f:it.f,v:VQ.vid,n:VQ.nombre})};
-  });
-  if(!hechas.length)return;
-  put('ajustes','finca',{...S.config,tareas:L});   // pasa por registrarOps: queda la operación y va en el reporte
-  toast(hechas.length===1?`Tarea cumplida: ${hechas[0]}`:`${pl(hechas.length,'tarea cumplida','tareas cumplidas')}`,3500);
+  if(!activo())return;const L=[];
+  for(const t of S.config.tareas||[]){
+    const a=t.acc;if(!a||!a.k)continue;
+    const it=items.find(i=>i.tipo===a.k&&(!a.lote||a.lote===i.lote)&&(!t.f||i.f>=t.f));if(!it)continue;
+    const p=Agenda.progreso(t,it.f);if(p.hoy||p.completa)continue;
+    VQ.listas={...(VQ.listas||{}),[t.id]:it.f};L.push(t);
+  }
+  if(!L.length)return;guardarVQ();
+  const t=L[0];
+  setTimeout(()=>openSheet(shHead('Evidencia',esc(t.t))+`<div class="sh-body"><p>Ya registraste lo que pide esta tarea. Toma la foto de evidencia para terminarla.</p></div>
+    <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Después</button><button type="button" class="btn pri" data-act="vqHecha" data-p="${esc(t.id)}" data-t="${esc(t.t)}" style="flex:1.6">Tomar foto</button></div>`),450);
 }
-// lo que hizo cada día (para el resumen del reporte)
-function logHecho(t,f){f=f||hoy();VQ.hechosLog=(VQ.hechosLog||[]).filter(x=>x.f>=addDias(hoy(),-14)).concat({f,t:String(t||'Una tarea')});}
+// lo que hizo cada día (para el resumen del reporte): tarea, foto y a qué tarea corresponde
+// (si la administración pidió repetirla, la nueva reemplaza a la anterior de ese día)
+function logHecho(t,f,extra){f=f||hoy();const k=extra&&(extra.id||extra.key);
+  VQ.hechosLog=(VQ.hechosLog||[]).filter(x=>x.f>=addDias(hoy(),-14)&&!(k&&x.f===f&&(x.id||x.key)===k)).concat({f,t:String(t||'Una tarea'),...(extra||{})});}
+/* Terminar una tarea: primero la foto de evidencia; sin foto, la tarea sigue pendiente. */
+ACTS.vqHecha=async el=>{
+  const k=el.dataset.k||'',p=el.dataset.p||'',t=el.dataset.t||'Tarea';
+  if(!window.Fotos){toast('Este teléfono no puede tomar fotos.',3500);return;}
+  closeSheet();
+  const b=await Fotos.tomar('Evidencia · '+t,{soloCamara:true});
+  if(!b){toast('La tarea sigue pendiente: falta la foto de evidencia.',3800);return;}
+  const fid=N.b64u(N.azar(12));
+  try{await Fotos.guardar('eq-'+fid,b);}catch(e){toast('No se pudo guardar la foto. Intenta de nuevo.',3500);return;}
+  VQ.fotos={...(VQ.fotos||{}),[fid]:{ts:Date.now(),t,env:0}};
+  FOTO_TAREA=fid;try{ACTS.agHecha({dataset:{k:k||('propia:'+p),p}});}finally{FOTO_TAREA='';}
+  if(p){const L={...(VQ.listas||{})};delete L[p];VQ.listas=L;VQ.nuevas=(VQ.nuevas||[]).filter(x=>x!==p);}
+  guardarVQ();enviarPronto(800);render();toast('Tarea terminada',2500);
+};
 const _put=window.put;
 window.put=put=function(col,id,data){
   if(!APLICANDO&&activo()){
@@ -88,13 +107,16 @@ function aplicarEstado(est){
   APLICANDO=1;
   try{
     const yo=(est.vaqueros||{})[VQ.vid];
-    if(yo&&yo.estado==='baja'){darmeDeBaja();return;}
+    if(yo&&yo.estado==='baja'&&(!yo.lic||N.normLic(yo.lic)===N.normLic(VQ.lic))){darmeDeBaja();return;}
     if(yo)VQ.permisos=yo.permisos||VQ.permisos;
     VQ.nombres=Object.values(est.vaqueros||{}).map(v=>v.n).filter(Boolean);   // los compañeros: sus nombres no se traducen
     S.lotes=est.lotes||{};S.raciones=est.raciones||{};
     const di={};for(const it of est.items||[]){const k=String(it.f).slice(0,7);(di[k]=di[k]||{items:[]}).items.push(it);}S.diario=di;
     const c=est.cfg||{};
-    S.config={...DEF_CFG,...c,finca:c.finca||VQ.finca||DEF_CFG.finca,tareas:(c.tareas||[]).filter(t=>t.para==='todos'||t.para===VQ.vid),hechas:c.hechas||{}};
+    const antes=new Set((S.config.tareas||[]).map(t=>t.id));
+    S.config={...DEF_CFG,...c,finca:c.finca||VQ.finca||DEF_CFG.finca,tareas:(c.tareas||[]).filter(t=>t.para==='todos'||t.para===VQ.vid),hechas:c.hechas||{},repetirAg:c.repetirAg||{}};
+    // tareas nuevas: se marcan hasta que las vea
+    const nuevas=S.config.tareas.filter(t=>!antes.has(t.id)).map(t=>t.id);if(nuevas.length&&VQ.estadoTs)VQ.nuevas=[...new Set((VQ.nuevas||[]).concat(nuevas))];
     const ack=(est.acks||{})[VQ.vid]||0;VQ.cola=(VQ.cola||[]).filter(o=>o.seq>ack);VQ.ack=ack;
     if(c.horaReporte!=null)VQ.horaRep=+c.horaReporte;
     const rv=(est.rev||{})[VQ.vid];if(rv&&(!VQ.rev||rv.ts>VQ.rev.ts))VQ.rev=rv;
@@ -110,6 +132,9 @@ async function procesar(s){
   if(!s||s.e!==VQ.e||(s.para!==VQ.vid&&s.para!=='todos'))return 0;
   const vis=VQ.vistos||[];if(vis.includes(s.id))return 0;
   const jefe=VQ.ficha&&VQ.ficha.j,caja={pub:VQ.ficha&&VQ.ficha.k,sec:VQ.yo&&VQ.yo.caja.sec};let hecho=1;
+  // bienvenida, rechazo y baja son de una licencia: los de una licencia anterior no cuentan
+  if(/^(bienvenida|rechazo|baja)$/.test(s.t)){const c=await N.abrir(s,{caja,firmaPub:jefe});
+    if(c&&c.lic&&N.normLic(c.lic)!==N.normLic(VQ.lic)){VQ.vistos=(VQ.vistos||[]).concat(s.id).slice(-400);guardarVQ();return 0;}}
   if(s.t==='bienvenida'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;
     if(c.prueba&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pide a la administración una licencia de la app de Google Play.';}
     else if(c.compra&&N.compraReal(c.compra.json,c.compra.firma)===false){VQ.estado='rechazada';VQ.motivo='Esa licencia no salió de una compra válida.';}
@@ -133,7 +158,15 @@ async function adoptarFicha(o){
   if(fi.p&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pide a la administración una licencia de la app de Google Play.';guardarVQ();render();return false;}
   VQ.ficha=fi;VQ.e=fi.e;VQ.finca=fi.fn||VQ.finca;guardarVQ();ver++;return true;
 }
-function darmeDeBaja(){VQ.estado='baja';VQ.clave=null;VQ.claves={};VQ.cola=[];guardarVQ();render();}
+/* Licencia revocada: la sesión se cierra y los datos de la finca se borran de este teléfono (registros, fotos y llaves).
+   Queda solo el aviso; con una licencia nueva se empieza de cero, con llaves nuevas. */
+async function darmeDeBaja(){
+  const finca=VQ.finca||'';
+  try{if(window.Fotos)for(const k of await Fotos.ids())if(/^eq-/.test(k))await Fotos.borrar(k);}catch(e){}
+  try{localStorage.removeItem(LS_KEY);}catch(e){}
+  VQ={estado:'baja',fincaAnterior:finca,bajaTs:Date.now()};guardarVQ();
+  location.hash='#hoy';location.reload();
+}
 // los mensajes de una vez: primero las claves, luego lo demás, el estado al final
 const ORDEN={bienvenida:0,rechazo:1,clave:2,baja:3,estado:4};
 async function procesarVarios(L){let n=0;for(const s of [...L].sort((a,b)=>(ORDEN[a.t]??5)-(ORDEN[b.t]??5)||a.ts-b.ts))n+=await procesar(s);return n;}
@@ -145,7 +178,7 @@ async function sobreAlta(){
 }
 async function activar(nombre,lic,ficha){
   if(!VQ.yo)VQ.yo=await N.nuevasLlaves();
-  VQ.nombre=nombre;VQ.lic=lic;VQ.ficha=ficha;VQ.e=ficha.e;VQ.vid=N.idDe(VQ.yo.firma.pub);VQ.finca=ficha.fn||'';VQ.estado='pendiente';VQ.motivo='';VQ.altaEnviada=0;VQ.cursor=0;VQ.vistos=[];ver++;
+  VQ.nombre=nombre;VQ.lic=lic;VQ.ficha=ficha;VQ.e=ficha.e;VQ.vid=N.idDe(VQ.yo.firma.pub);VQ.finca=ficha.fn||'';VQ.estado='pendiente';VQ.motivo='';VQ.altaEnviada=0;VQ.cursor=0;ver++;
   VQ.alta=await sobreAlta();guardarVQ();render();
   if(servidor())await sincronizar();
 }
@@ -197,16 +230,46 @@ let ocupado=null,prontoT=0;
 function enviarPronto(ms=2500){clearTimeout(prontoT);prontoT=setTimeout(()=>sincronizar(),ms);}
 async function sobreOps(){if(!activo()||!(VQ.cola||[]).length||VQ.demo)return null;
   return N.sellar('ops',{e:VQ.e,de:VQ.vid,para:'jefe',carga:{ops:VQ.cola},clave:VQ.clave,g:VQ.gen,firmaSec:VQ.yo.firma.sec});}
+/* Lo que falta mandar a la administración: los registros (si cambiaron), las fotos de evidencia (hasta 3 por
+   solicitud) y el perfil. Cada uno trae marca() para anotarlo como entregado. */
+function hayPendientes(){
+  return !!(((VQ.cola||[]).length&&VQ.enviado!==VQ.seq)||Object.values(VQ.fotos||{}).some(f=>!f.env)||(VQ.perfil&&!VQ.perfil.env));
+}
+async function sobreFoto(fid){
+  const f=(VQ.fotos||{})[fid]||{},jpg=await N.fotoB64('eq-'+fid);if(!jpg)return null;
+  return N.sellar('foto',{e:VQ.e,de:VQ.vid,para:'jefe',carga:{fid,jpg,t:f.t||'',ts:f.ts||Date.now()},clave:VQ.clave,g:VQ.gen,firmaSec:VQ.yo.firma.sec});
+}
+async function sobrePerfil(){
+  const p=VQ.perfil;if(!p)return null;const jpg=p.foto?await N.fotoB64('eq-pf-yo',480):'';
+  return N.sellar('perfil',{e:VQ.e,de:VQ.vid,para:'jefe',carga:{cargo:p.cargo||'',tel:p.tel||'',jpg,ts:p.ts||Date.now()},clave:VQ.clave,g:VQ.gen,firmaSec:VQ.yo.firma.sec});
+}
+async function pendientes(){
+  const L=[];if(!activo()||VQ.demo)return L;
+  if((VQ.cola||[]).length&&(VQ.enviado!==VQ.seq||Date.now()-(VQ.enviadoTs||0)>10*60e3)){const seq=VQ.seq,s=await sobreOps();
+    if(s)L.push({s,marca:()=>{VQ.enviado=seq;VQ.enviadoTs=Date.now();}});}
+  let n=0;for(const [fid,f] of Object.entries(VQ.fotos||{})){if(f.env)continue;if(n>=3)break;
+    const s=await sobreFoto(fid);const marca=()=>{VQ.fotos={...VQ.fotos,[fid]:{...VQ.fotos[fid],env:1}};};
+    if(!s){marca();continue;}L.push({s,marca});n++;}
+  if(VQ.perfil&&!VQ.perfil.env){const s=await sobrePerfil();if(s)L.push({s,marca:()=>{VQ.perfil={...VQ.perfil,env:1};}});}
+  return L;
+}
 async function sincronizar(){
   if(ocupado)return ocupado;const base=servidor();if(!base||VQ.demo||!VQ.yo||!VQ.e||VQ.estado==='nuevo'||VQ.estado==='baja')return null;
   ocupado=(async()=>{let n=0;
     try{
       const yo=VQ.yo.firma;
       if(VQ.estado==='pendiente'&&!VQ.altaEnviada&&VQ.alta){await N.pedir(base,'/v1/alta',{h:N.hashLic(VQ.lic),sobre:VQ.alta});VQ.altaEnviada=Date.now();guardarVQ();}
-      for(let i=0;i<10;i++){const r=await N.pedir(base,'/v1/recibir',{e:VQ.e,quien:VQ.vid,firma:yo.pub,desde:VQ.cursor||0},yo.sec);
-        n+=await procesarVarios(r.sobres||[]);VQ.cursor=r.hasta||VQ.cursor;guardarVQ();if(!r.mas)break;}
-      const s=await sobreOps();
-      if(s&&(VQ.enviado!==VQ.seq||Date.now()-(VQ.enviadoTs||0)>10*60e3)){await N.pedir(base,'/v1/enviar',{e:VQ.e,quien:VQ.vid,firma:yo.pub,sobres:[s]},yo.sec);VQ.enviado=VQ.seq;VQ.enviadoTs=Date.now();}
+      // una solicitud por vuelta: manda registros, fotos y perfil pendientes y trae lo nuevo
+      for(let i=0;i<10;i++){
+        const env=activo()?await pendientes():[];let r;
+        try{r=await N.pedir(base,'/v1/sync',{e:VQ.e,quien:VQ.vid,firma:yo.pub,desde:VQ.cursor||0,sobres:env.map(x=>x.s)},yo.sec);}
+        catch(e){if(e.status!==403||!env.length)throw e;   // recién aceptado: el servidor todavía no lo tiene como miembro
+          r=await N.pedir(base,'/v1/sync',{e:VQ.e,quien:VQ.vid,firma:yo.pub,desde:VQ.cursor||0},yo.sec);env.length=0;}
+        const ok=new Set(r.guardados||[]),mal=new Set((r.rechazados||[]).map(x=>x.id));
+        for(const x of env)if(ok.has(x.s.id)||mal.has(x.s.id))x.marca();
+        n+=await procesarVarios(r.sobres||[]);VQ.cursor=r.hasta||VQ.cursor;guardarVQ();
+        if(!r.mas&&!(env.length&&hayPendientes()))break;
+      }
       VQ.ult=Date.now();VQ.err='';guardarVQ();T.abrir();
     }catch(err){VQ.err=String(err&&err.message||err);guardarVQ();}
     finally{ocupado=null;updateSync();if(n||!activo()||/^#(mas|hoy)?$/.test(location.hash.split('/')[0]))render();}
@@ -216,7 +279,8 @@ async function sincronizar(){
 // en vivo: el servidor avisa en cuanto el jefe manda algo (el estado, una tarea, la bienvenida)
 const T=N.timbre(async()=>{const base=servidor();if(!base||VQ.demo||!VQ.yo||!VQ.e||VQ.estado==='nuevo'||VQ.estado==='baja'||VQ.estado==='rechazada')return null;
   return {base,cuerpo:{e:VQ.e,quien:VQ.vid,firma:VQ.yo.firma.pub},firmaSec:VQ.yo.firma.sec};},()=>enviarPronto(150),()=>updateSync());
-setInterval(()=>{if(!document.hidden&&!(T.vivo()&&Date.now()-(VQ.ult||0)<5*60e3))sincronizar();},VQ.estado==='pendiente'?20000:60000);
+// sin conexión en vivo, cada minuto y medio; con ella, solo cada 5 minutos por si acaso
+setInterval(()=>{if(!document.hidden&&!(T.vivo()&&Date.now()-(VQ.ult||0)<5*60e3))sincronizar();},VQ.estado==='pendiente'?20000:90000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sincronizar();});
 addEventListener('online',()=>sincronizar());
 ACTS.vqSinc=async()=>{if(!servidor()){FORMS.vqReporte();return;}toast('Sincronizando…');const n=await sincronizar();
@@ -239,8 +303,10 @@ const repHoy=()=>{const r=VQ.ultRep;return r&&r.fecha===hoy()?r:null;};
 const nuevosDesdeReporte=()=>{const s=(VQ.ultRep&&VQ.ultRep.seq)||0;return (VQ.cola||[]).filter(o=>o.seq>s).length;};
 const hhmm=ts=>new Date(ts).toTimeString().slice(0,5);
 function resumenDia(H){
-  const hechas=(VQ.hechosLog||[]).filter(x=>x.f===H).map(x=>({t:x.t,ok:1}));
-  const pend=misTareas().filter(t=>t.f<=H).map(t=>({t:t.t,ok:0}));
+  const pendT=misTareas().filter(t=>t.f<=H),abiertas=new Set(pendT.map(t=>t.propia||t.key).filter(Boolean));
+  // si la administración pidió repetir una tarea, lo que se hizo antes ya no cuenta como terminado
+  const hechas=(VQ.hechosLog||[]).filter(x=>x.f===H&&!abiertas.has(x.id||x.key)).map(x=>({t:x.t,ok:1,foto:x.foto||'',id:x.id||'',key:x.key||''}));
+  const pend=pendT.map(t=>({t:t.t,ok:0,id:t.propia||'',key:t.propia?'':t.key}));
   const regs={};for(const i of misRegistros(H))regs[i.tipo]=(regs[i.tipo]||0)+1;
   const sem=(S.config.tareas||[]).filter(t=>/^s\d$/.test(t.rep||'')).map(t=>{const p=Agenda.progreso(t,H);return {t:t.t,n:p.n,meta:p.meta};});
   return {fecha:H,tareas:hechas.concat(pend),regs,sem};
@@ -264,23 +330,32 @@ FORMS.vqReporte=()=>{
 };
 // el reporte se arma solo con lo del día: enviarlo es un toque (las novedades son opcionales)
 // con internet (servidor del equipo) sale solo; sin señal, como archivo por WhatsApp o correo
-async function enviarReporte(nota,{auto=false}={}){
+async function enviarReporte(nota,{auto=false,act=false}={}){
   if(VQ.demo){if(!auto)toast('En el modo de prueba el reporte no sale de este teléfono.',3500);return false;}
   if(!activo())return false;
-  const s=await sobreReporte(nota||''),base=servidor();
-  const listo=()=>{VQ.ultRep={fecha:hoy(),ts:Date.now(),seq:+VQ.seq||0,n:(VQ.cola||[]).length,red:!!base};VQ.reportes=[VQ.ultRep].concat(VQ.reportes||[]).slice(0,30);guardarVQ();ver++;closeSheet();render();};
+  const base=servidor();
+  if(base){try{await sincronizar();}catch(e){}}   // primero las fotos y los registros pendientes
+  // el reporte actualizado conserva las novedades que ya se habían escrito hoy
+  if(!nota&&repHoy())nota=repHoy().nota||'';
+  const s=await sobreReporte(nota||'');
+  const listo=()=>{VQ.ultRep={fecha:hoy(),ts:Date.now(),seq:+VQ.seq||0,n:(VQ.cola||[]).length,red:!!base,nota:String(nota||'').slice(0,1500)};VQ.reportes=[VQ.ultRep].concat(VQ.reportes||[]).slice(0,30);guardarVQ();ver++;closeSheet();render();};
   if(base){try{await N.pedir(base,'/v1/enviar',{e:VQ.e,quien:VQ.vid,firma:VQ.yo.firma.pub,sobres:[s]},VQ.yo.firma.sec);listo();
-      toast(auto?'Tu reporte del día se envió solo':'Reporte enviado a la administración',3800);return true;}catch(e){if(auto)return false;}}
+      if(!act)toast(auto?'Reporte del día enviado':'Reporte enviado a la administración',3800);return true;}catch(e){if(auto)return false;}}
   if(auto)return false;
-  N.compartirArchivo(N.nombreArchivo(`reporte-${miNombre()}-${hoy()}`),await N.armarArchivo([s],VQ.vid),aUnidad('Reporte del día'));
+  // por archivo van también las fotos de evidencia y el perfil que falten
+  const fids=new Set([...(VQ.cola||[]).map(o=>o.foto).filter(Boolean),...Object.entries(VQ.fotos||{}).filter(([k,f])=>!f.env).map(([k])=>k)]);
+  const extra=[];for(const fid of fids)extra.push(await sobreFoto(fid));if(VQ.perfil)extra.push(await sobrePerfil());
+  N.compartirArchivo(N.nombreArchivo(`reporte-${miNombre()}-${hoy()}`),await N.armarArchivo([s,...extra.filter(Boolean)],VQ.vid),aUnidad('Reporte del día'));
   listo();toast(base?'Sin conexión: envíalo por WhatsApp o correo.':'Elige WhatsApp o correo y envíalo a la administración.',4000);return true;
 }
-// a la hora del reporte, con internet, se envía solo (una vez al día; si falla, se reintenta cada 10 minutos)
+/* A la hora del reporte, con internet, se envía solo (si falla, se reintenta cada 10 minutos). Si después de enviarlo
+   anota algo o termina otra tarea, la administración recibe el reporte actualizado (como mucho cada 10 minutos). */
 let autoT=0;
 function autoReporte(){
-  if(!servidor()||!activo()||VQ.demo||repHoy()||document.hidden)return;
+  if(!servidor()||!activo()||VQ.demo||document.hidden)return;
   if(new Date().getHours()<horaRep()||Date.now()-autoT<10*60e3)return;
-  autoT=Date.now();enviarReporte('',{auto:true});
+  const r=repHoy();if(r&&!((+VQ.seq||0)>(+r.seq||0)&&Date.now()-r.ts>=10*60e3))return;
+  autoT=Date.now();enviarReporte('',{auto:true,act:!!r}).then(ok=>{if(ok)autoT=0;},()=>{});
 }
 setInterval(autoReporte,60000);document.addEventListener('visibilitychange',()=>setTimeout(autoReporte,1500));setTimeout(autoReporte,4000);
 ACTS.vqEnviarRep=()=>enviarReporte('');
@@ -305,15 +380,15 @@ function tarjetaReporte(){
   if(VQ.demo)return '';
   const H=hoy(),r=repHoy(),hr=horaRep(),tarde=new Date().getHours()>=hr,nuevos=nuevosDesdeReporte();
   const res=resumenDia(H),hechas=res.tareas.filter(t=>t.ok).length,tot=res.tareas.length,nregs=Object.values(res.regs).reduce((a,b)=>a+b,0);
-  let tono='a',tit='Reporte del día',sub=servidor()?`Se envía solo por internet a las ${hr}:00`:`Se arma solo. Envíalo al terminar la jornada, a las ${hr}:00`,btn=servidor()?'Enviar ahora':'Enviar reporte';
-  if(r&&!nuevos){tono='v';tit='Reporte enviado';sub=r.red?`Hoy a las ${hhmm(r.ts)}, por internet`:`Hoy a las ${hhmm(r.ts)}`;btn='';}
-  else if(r){tono='y';tit='Tienes registros nuevos';sub=`${pl(nuevos,'registro','registros')} después de tu reporte`;btn='Enviar reporte actualizado';}
-  else if(tarde){tono='r';tit='Es hora de tu reporte';sub=`La administración lo espera a las ${hr}:00`;}
+  let tono='a',tit='Reporte del día',sub=servidor()?`Envío automático a las ${hr}:00`:`Hora del reporte: ${hr}:00`,btn=servidor()?'Enviar ahora':'Enviar reporte';
+  if(r&&!nuevos){tono='v';tit='Reporte enviado';sub=`Hoy a las ${hhmm(r.ts)}`;btn='';}
+  else if(r){tono='y';tit='Registros sin reportar';sub=`${pl(nuevos,'registro','registros')} después de tu reporte`;btn='Enviar de nuevo';}
+  else if(tarde){tono='r';tit='Reporte pendiente';sub=`Hora del reporte: ${hr}:00`;}
   const rv=VQ.rev&&VQ.rev.fecha>=addDias(H,-3)?VQ.rev:null;
   return `<section class="sec"><div class="card pad vq-rep vq-rep-${tono}"><div class="vq-rep-h"><span class="mas-ic t-${tono}">${icono('recibo','i3')}</span><div><b>${tit}</b><span>${sub}</span></div></div>
-    <p class="vq-rep-p"><span>Tareas de hoy: ${hechas} de ${tot}</span><span>${pl(nregs,'registro','registros')}</span></p>
-    ${btn?`<button type="button" class="btn${tono==='a'?'':' pri'} full" data-act="vqEnviarRep">${btn}</button><button type="button" class="lnk vq-rep-l" data-act="f" data-f="vqReporte">Ver el resumen o agregar novedades</button>`:''}
-    ${rv?`<p class="vq-conf">${ico('check',2.4)}<span><span>La administración registró tu reporte del ${ffc(rv.fecha)}.</span> <span>${pl(rv.reg,'cambio registrado','cambios registrados')}</span>${rv.omit?` · <span>${pl(rv.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</span></p>`:''}</div></section>`;
+    <p class="vq-rep-p"><span>Tareas: ${hechas} de ${tot}</span><span>${pl(nregs,'registro','registros')}</span></p>
+    ${btn?`<button type="button" class="btn${tono==='a'?'':' pri'} full" data-act="vqEnviarRep">${btn}</button><button type="button" class="lnk vq-rep-l" data-act="f" data-f="vqReporte">Agregar novedades</button>`:''}
+    ${rv?`<p class="vq-conf">${ico('check',2.4)}<span><span>Reporte del ${ffc(rv.fecha)} registrado por la administración.</span>${rv.omit?` <span>${pl(rv.omit,'registro no se incluyó','registros no se incluyeron')}.</span>`:''}</span></p>`:''}</div></section>`;
 }
 async function alRecibir(o){
   if(!(await adoptarFicha(o))){toast('Ese archivo no es de tu finca.',4000);return false;}
@@ -321,17 +396,25 @@ async function alRecibir(o){
 ACTS.vqRecibirArchivo=async()=>{const u=await N.elegirArchivo();if(u)await N.recibirArchivo(u,alRecibir);};
 // al tocar el archivo .campo de la administración en WhatsApp se abre la app y llega aquí
 N.escucharArchivos(alRecibir);
-ACTS.vqBorrar=()=>confirmar('¿Borrar los datos de este teléfono?','Se borran tu licencia y los datos de la finca. Lo que ya reportaste se queda en la finca.','Borrar',()=>{
-  try{localStorage.removeItem(LSV);localStorage.removeItem(LS_KEY);}catch(e){}location.hash='#hoy';location.reload();});
+/* ---------- perfil: foto, cargo y teléfono (le llegan a la administración) ---------- */
+const avatarYo=(cls='xl')=>`<span class="eq-av ${cls}${VQ.perfil&&VQ.perfil.foto?' con-foto':''}" aria-hidden="true" data-no-tr><span>${esc(N.iniciales(VQ.nombre))}</span>${VQ.perfil&&VQ.perfil.foto?'<img data-foto="eq-pf-yo" alt="" hidden>':''}</span>`;
+FORMS.vqPerfil=()=>{const p=VQ.perfil||{};
+  openSheet(shHead('Tu perfil',esc(VQ.nombre||''))+formWrap('vqPerfil',`<div class="vq-pf">${avatarYo()}<button type="button" class="btn sm" data-act="vqFotoPerfil">${icono('camara','i3')}${p.foto?'Cambiar foto':'Agregar foto'}</button></div>
+    ${q('Cargo',`<input class="in" name="cargo" value="${esc(p.cargo||'')}" placeholder="Encargado de corrales" autocomplete="off" maxlength="40">`)}
+    ${q('Teléfono',`<input class="in" name="tel" inputmode="tel" value="${esc(p.tel||'')}" placeholder="+504 9999 9999" autocomplete="tel" maxlength="24">`)}`,foot('Guardar')));};
+SAVE.vqPerfil=f=>{VQ.perfil={...(VQ.perfil||{}),cargo:fv(f,'cargo').trim().slice(0,40),tel:fv(f,'tel').trim().slice(0,24),ts:Date.now(),env:0};
+  guardarVQ();closeSheet();render();enviarPronto(500);toast('Perfil guardado');};
+ACTS.vqFotoPerfil=async()=>{if(!window.Fotos)return;const b=await Fotos.tomar('Foto de perfil');if(!b)return;
+  try{await Fotos.guardar('eq-pf-yo',b);}catch(e){toast('No se pudo guardar la foto.');return;}
+  VQ.perfil={...(VQ.perfil||{}),foto:Date.now(),ts:Date.now(),env:0};guardarVQ();enviarPronto(500);FORMS.vqPerfil();render();};
 
 /* ---------- lo que se ve: la sincronización ---------- */
 syncTxt=function(){
   if(VQ.demo)return 'Modo de prueba';
   const p=nuevosDesdeReporte();
-  if(!servidor())return p?`${pl(p,'registro','registros')} para tu reporte`:repHoy()?'Reporte enviado':'Guardado en este teléfono';
-  if(p)return VQ.err?`${pl(p,'registro','registros')} por enviar`:'Enviando';
-  if(T.vivo())return 'En línea';
-  return VQ.ult?'Todo enviado':'Guardado en este teléfono';
+  if(!servidor())return p?`${pl(p,'registro','registros')} sin reportar`:repHoy()?'Reporte enviado':'';
+  if(VQ.err)return p?`Sin conexión · ${pl(p,'registro','registros')} por enviar`:'Sin conexión';
+  return p?`${pl(p,'registro','registros')} por enviar`:VQ.ult?`Sincronizado ${hhmm(VQ.ult)}`:'';
 };
 
 /* ---------- pantallas ---------- */
@@ -349,15 +432,21 @@ function misTareas(){
 }
 function filaTarea(t,H){
   const hacer=t.act&&t.act.t==='form'&&P()[{alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad'}[t.act.k]]?`<button type="button" class="btn sm" data-act="f" data-f="${t.act.k}"${t.act.p&&t.act.p.lote?` data-lote="${esc(t.act.p.lote)}"`:''}${t.act.n?` data-n="${t.act.n}"`:''}>Hacer</button>`:'';
-  const ok=P().tareas?`<button type="button" class="ag-ok" data-act="agHecha" data-k="${esc(t.key)}" data-p="${esc(t.propia||'')}" aria-label="Marcar como hecha">${ico('check',2.4)}</button>`:'';
-  return `<div class="row ag-row"><span class="mas-ic t-${t.tono||'a'}">${icono(t.ic==='alimento'?'alimento':t.ic==='pesaje'?'pesaje':t.ic==='sanidad'?'jeringa':t.ic==='nota'?'nota':'ojo','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span>${t.propia&&(t.rep||'una')==='una'?'Asignada por la administración':esc(t.s)}${t.f>H?` · ${ffc(t.f)}`:t.f<H?' · atrasada':''}</span></div><div class="ag-acts">${hacer}${ok}</div></div>`;
+  // se termina con foto: las asignadas siempre; las de la agenda, si tiene permiso de tareas
+  const tt=t.propia?(S.config.tareas||[]).find(x=>x.id===t.propia):null;
+  const puede=!!t.propia||P().tareas;
+  const ok=puede?`<button type="button" class="ag-ok ag-cam" data-act="vqHecha" data-k="${esc(t.key)}" data-p="${esc(t.propia||'')}" data-t="${esc(t.t)}" aria-label="Terminar con foto de evidencia">${icono('camara','i3')}</button>`:'';
+  const lista=t.propia&&(VQ.listas||{})[t.propia],repetir=(tt&&tt.repetir)||(!t.propia&&(S.config.repetirAg||{})[t.key]),nueva=t.propia&&(VQ.nuevas||[]).includes(t.propia);
+  const sub=repetir?'<span class="vq-et t-r">Repetir con otra foto</span>':lista?'<span class="vq-et t-y">Falta la foto de evidencia</span>':
+    `${t.propia&&(t.rep||'una')==='una'?'Asignada':esc(t.s)}${t.f>H?` · ${ffc(t.f)}`:t.f<H?' · atrasada':''}`;
+  return `<div class="row ag-row"><span class="mas-ic t-${t.tono||'a'}">${icono(t.ic==='alimento'?'alimento':t.ic==='pesaje'?'pesaje':t.ic==='sanidad'?'jeringa':t.ic==='nota'?'nota':'ojo','i3')}</span><div class="tx"><b>${esc(t.t)}${nueva?' <span class="vq-et t-v">Nueva</span>':''}</b><span>${sub}</span>${tt&&tt.nota?`<span class="vq-ind" data-no-tr>${esc(tt.nota)}</span>`:''}</div><div class="ag-acts">${lista?'':hacer}${ok}</div></div>`;
 }
 const RTX={alimento:i=>`${nf(i.kg)} kg de alimento a ${nomL(i.lote)}`,pesaje:i=>i.prom?`Pesaje de ${nomL(i.lote)}: ${wtxt(i.prom)}`:`Pesaje de animales de ${nomL(i.lote)}`,sanidad:i=>`${i.producto||i.clase} en ${nomL(i.lote)}`,baja:i=>`${pl(+i.cab||1,'muerte','muertes')} en ${nomL(i.lote)}`};
 const nomL=id=>S.lotes[id]?S.lotes[id].nombre:'un lote';
 function misRegistros(dia){const mios=new Set((VQ.cola||[]).filter(o=>o.k==='item+').map(o=>o.it.id));
   return allItems().filter(i=>(!dia||i.f===dia)&&((i.por&&i.por.v===VQ.vid)||mios.has(i.id))).reverse();}
 function filaReg(i){const pend=(VQ.cola||[]).some(o=>o.k==='item+'&&o.it.id===i.id);
-  return `<div class="row"><span class="mas-ic t-${i.tipo==='baja'?'r':i.tipo==='alimento'?'y':i.tipo==='sanidad'?'v':'a'}">${icono(i.tipo==='baja'?'alerta':i.tipo==='sanidad'?'jeringa':i.tipo,'i3')}</span><div class="tx"><b>${esc((RTX[i.tipo]||(()=>i.tipo))(i))}</b><span><span>${cuando(i.f)}</span> · <span>${pend?'va en tu reporte':'reportado'}</span></span></div>${pend?`<button type="button" class="del" data-act="delItems" data-ids="${i.id}" aria-label="Borrar">${ico('papelera')}</button>`:''}</div>`;}
+  return `<div class="row"><span class="mas-ic t-${i.tipo==='baja'?'r':i.tipo==='alimento'?'y':i.tipo==='sanidad'?'v':'a'}">${icono(i.tipo==='baja'?'alerta':i.tipo==='sanidad'?'jeringa':i.tipo,'i3')}</span><div class="tx"><b>${esc((RTX[i.tipo]||(()=>i.tipo))(i))}</b><span><span>${cuando(i.f)}</span> · <span>${pend?'Por enviar':'Enviado'}</span></span></div></div>`;}
 
 function pantallaActivar(){
   const e=VQ.estado;
@@ -370,8 +459,8 @@ function pantallaActivar(){
     <button type="button" class="lnk" data-act="vqOtra">Usar otra licencia</button></div></main>`;
   if(e==='rechazada')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>No se pudo activar</h1><p>${esc(VQ.motivo||'La administración no aceptó la licencia.')}</p>
     <button type="button" class="btn pri full" data-act="vqOtra">Intentar con otra licencia</button></div></main>`;
-  if(e==='baja')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>Ya no estás en el equipo</h1><p>La administración dio de baja tu licencia. Lo que registraste se queda en la finca.</p>
-    <button type="button" class="btn danger full" data-act="vqBorrar">Borrar los datos de este teléfono</button><button type="button" class="lnk" data-act="vqOtra">Tengo otra licencia</button></div></main>`;
+  if(e==='baja')return `<main class="vq-act">${logo}<div class="card pad vq-card">${VQ.fincaAnterior?`<span class="eyebrow" data-no-tr>${esc(VQ.fincaAnterior)}</span>`:''}<h1>Sesión cerrada</h1><p>La administración revocó tu licencia. Los datos de la finca se borraron de este teléfono.</p>
+    <button type="button" class="btn pri full" data-act="vqOtra">Activar otra licencia</button></div></main>`;
   const pre=VQ.enlace?N.leerEnlace(VQ.enlace):null;
   return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>Bienvenido al equipo</h1><p>Con la licencia que te dio la administración anotas aquí la comida, los pesajes y la sanidad, y al terminar el día envías tu reporte.</p>
     <form id="vqForm" onsubmit="return false" novalidate>
@@ -395,11 +484,11 @@ PAGES.hoy=()=>{
   </main>`;
 };
 PAGES.registrar=()=>{const regs=misRegistros().slice(0,12);
-  return hdV('Registrar','Toca lo que quieres anotar. Va en tu reporte del día, con tu nombre.')+`<main class="bd"><section class="sec">${secH('Anotar')}${tilesReg()}</section>
+  return hdV('Registrar','Cada registro queda con tu nombre.')+`<main class="bd"><section class="sec">${secH('Anotar')}${tilesReg()}</section>
    <section class="sec">${secH('Lo último que anotaste')}${regs.length?`<div class="card rows">${regs.map(filaReg).join('')}</div>`:`<p class="hint">Todavía no anotas nada.</p>`}</section></main>`;};
 PAGES.tareas=()=>{const H=hoy(),T=misTareas();const hoyT=T.filter(t=>t.f<=H),sem=T.filter(t=>t.f>H&&t.f<=addDias(H,7)),mas=T.filter(t=>t.f>addDias(H,7));
   const sec=(t,L,v)=>`<section class="sec">${secH(t,L.length)}${L.length?`<div class="card rows">${L.map(x=>filaTarea(x,H)).join('')}</div>`:`<p class="hint">${v}</p>`}</section>`;
-  return hdV('Tareas','Lo que toca hacer: lo asignado por la administración y el manejo de los lotes.')+`<main class="bd">${sec('Hoy',hoyT,'Nada pendiente para hoy.')}${sec('Próximos 7 días',sem,'Nada en los próximos días.')}${mas.length?sec('Más adelante',mas,''):''}</main>`;};
+  return hdV('Tareas','Cada tarea se termina con una foto de evidencia.')+`<main class="bd">${sec('Hoy',hoyT,'Nada pendiente para hoy.')}${sec('Próximos 7 días',sem,'Nada en los próximos días.')}${mas.length?sec('Más adelante',mas,''):''}</main>`;};
 PAGES.lotes=()=>{const C=calc();
   const card=x=>`<a class="card lote vq-lote" href="#lote/${encodeURIComponent(x.id)}"><div class="l1"><div><span class="nm">${esc(x.l.nombre)}</span><span class="sm">${pl(x.cab,'cabeza','cabezas')}</span></div>${ico('chev')}</div>
     <div class="l2"><b>${nf(x.pesoHoy)} kg</b><span class="sm">${x.estimado?'estimado, ':'promedio, '}día ${x.dec} de engorde</span></div>
@@ -420,19 +509,19 @@ PAGES.mas=sub=>{
     <p>Lo que anotas se guarda en tu teléfono y viaja cifrado en tu reporte: solo la administración de tu finca puede leerlo.</p><p>Tu licencia es solo tuya; no la compartas.</p></div></section></main>`;
   if(sub==='idioma')return hdV('Idioma','',['#mas','Más'])+`<main class="bd"><section class="sec"><div class="card rows">${(window.I18N?I18N.IDIOMAS:[]).map(([k,t])=>`<button type="button" class="row" data-act="vqIdioma" data-l="${k}"><div class="tx"><b data-no-tr>${esc(t)}</b></div>${(window.I18N&&I18N.lang()===k)?ico('check',2.4):''}</button>`).join('')}</div></section></main>`;
   const reps=(VQ.reportes||[]).slice(0,7);
-  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(VQ.finca||'')}</span><h1>Más</h1><p class="sub">Tu cuenta, tus reportes y ajustes.</p></div></header>
+  const pf=VQ.perfil||{};
+  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(VQ.finca||'')}</span><h1>Más</h1></div></header>
   <main class="bd">
-   <section class="sec">${secH('Tu cuenta')}<div class="card pad vq-yo"><span class="eq-av xl" aria-hidden="true" data-no-tr>${esc(N.iniciales(VQ.nombre))}</span><div><b>${esc(VQ.nombre||'')}</b><span>Licencia <span data-no-tr>${VQ.demo?N.LIC_PRUEBA:N.fmtLic(VQ.lic||'')}</span></span><span>En el equipo de ${esc(VQ.finca||'')}${VQ.desde?` desde el ${ffc(VQ.desde)}`:''}</span></div></div></section>
-   ${VQ.demo?'':`<section class="sec">${secH('Reportes')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Reporte diario a las ${horaRep()}:00</b><span>${repHoy()?`Hoy lo enviaste a las ${hhmm(repHoy().ts)}`:servidor()?'Se envía solo por internet':'Hoy todavía no lo envías'}</span></div></div>
-    <div class="acts"><button type="button" class="btn pri" data-act="vqEnviarRep">Enviar reporte</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo de la administración</button></div>
-    ${reps.length?`<div class="rows vq-reps">${reps.map(r=>`<div class="row"><div class="tx"><b>${ffc(r.fecha)}, ${hhmm(r.ts)}</b><span>${pl(r.n||0,'registro','registros')}</span></div></div>`).join('')}</div>`:''}
-    <p class="hint">Tu reporte sale como archivo .rumentis y la administración lo abre con Rumentis. Lo que te mandan termina en .campo: en WhatsApp tócalo y elige Rumentis Campo. Cada archivo se abre una sola vez.</p></div></section>`}
+   <section class="sec"><button type="button" class="card pad vq-yo vq-yo-b" data-act="f" data-f="vqPerfil">${avatarYo()}<div><b>${esc(VQ.nombre||'')}</b>${pf.cargo?`<span data-no-tr>${esc(pf.cargo)}</span>`:''}<span>Licencia <span data-no-tr>${VQ.demo?N.LIC_PRUEBA:N.fmtLic(VQ.lic||'')}</span></span><span>${esc(VQ.finca||'')}${VQ.desde?` · desde el ${ffc(VQ.desde)}`:''}</span></div>${ico('chev')}</button>
+    ${!pf.foto&&!VQ.demo?`<button type="button" class="lnk" data-act="f" data-f="vqPerfil">Agregar foto de perfil</button>`:''}</section>
+   ${VQ.demo?'':`<section class="sec">${secH('Reporte diario')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>${horaRep()}:00</b><span>${repHoy()?`Enviado hoy a las ${hhmm(repHoy().ts)}`:servidor()?'Envío automático':'Pendiente hoy'}</span></div></div>
+    <div class="acts"><button type="button" class="btn pri" data-act="vqEnviarRep">Enviar reporte</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo</button></div>
+    ${reps.length?`<div class="rows vq-reps">${reps.map(r=>`<div class="row"><div class="tx"><b>${ffc(r.fecha)}, ${hhmm(r.ts)}</b><span>${pl(r.n||0,'registro','registros')}</span></div></div>`).join('')}</div>`:''}</div></section>`}
 
    <section class="sec">${secH('Ajustes')}<div class="card rows">
     ${masFila(mico('paleta'),'Apariencia','Modo claro u oscuro y colores','href="#mas/apariencia"','t-v')}
     ${masFila(mico('ayuda'),'Idioma',window.I18N?(I18N.IDIOMAS.find(x=>x[0]===I18N.lang())||['',''])[1]:'','href="#mas/idioma"','t-a')}
-    ${masFila(mico('info'),'Acerca de','Versión y privacidad','href="#mas/acerca"','t-a')}
-    ${masFila(mico('aviso'),'Borrar datos de este teléfono','Si dejas el equipo o cambias de teléfono','data-act="vqBorrar"','t-r')}</div></section>
+    ${masFila(mico('info'),'Acerca de','Versión y privacidad','href="#mas/acerca"','t-a')}</div></section>
    <div class="firma">${typeof FIRMA!=='undefined'?FIRMA:''}<span>Rumentis Campo · versión ${VERSION_APP}</span></div></main>`;
 };
 ACTS.vqIdioma=el=>{if(window.I18N)I18N.cambiar(el.dataset.l);};
@@ -463,12 +552,8 @@ FORMS.alimento=({n}={})=>{
    <div class="card feed">${blocks}</div></div>`;
   openSheet(shHead(`Entrega ${esc(entDe(n))}`,'Alimento')+formWrap('alimento',body,foot('Guardar entrega','<b data-sum>0 kg</b><span>en total</span>')));
 };
-// solo sus propios registros que todavía no se mandan se pueden borrar
-const _delItems=ACTS.delItems;
-ACTS.delItems=el=>{const ids=(el.dataset.ids||'').split(',');const mios=new Set((VQ.cola||[]).filter(o=>o.k==='item+').map(o=>o.it.id));
-  if(!ids.every(i=>mios.has(i))){toast('Eso ya está registrado en la finca: pide a la administración que lo corrija.',3500);return;}
-  // se quita de la cola: nunca sale en un reporte
-  VQ.cola=(VQ.cola||[]).filter(o=>!(o.k==='item+'&&ids.includes(o.it.id)));guardarVQ();APLICANDO=1;try{for(const i of ids)removeItem(i);}finally{APLICANDO=0;}render();};
+// los registros no se borran desde Campo: si hay un error, lo corrige la administración
+ACTS.delItems=()=>toast('Los registros no se pueden borrar. Si hay un error, avisa a la administración.',3800);
 
 /* ---------- barra de abajo del vaquero ---------- */
 const NAVV=[['hoy','Hoy'],['lotes','Lotes'],['registrar','Registrar'],['tareas','Tareas'],['mas','Más']];

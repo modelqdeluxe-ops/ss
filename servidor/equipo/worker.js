@@ -8,7 +8,7 @@
    - Cada quien lee solo lo suyo: el jefe lo que va para 'jefe'; un vaquero lo que va para él (su número sale de su
      llave pública) y, si es miembro, lo que va para 'todos'.
    Rutas (POST con JSON en text/plain): /v1/equipo, /v1/licencias, /v1/ficha, /v1/miembros, /v1/alta, /v1/enviar,
-   /v1/recibir. GET /v1/salud.
+   /v1/recibir y /v1/sync (manda y recibe en una sola solicitud). GET /v1/salud.
    Tiempo real: GET /v1/timbre?b=... abre un WebSocket (el pedido firmado va en b, en base64url). Un Durable Object
    por equipo (Timbre) guarda las conexiones y, cuando llega un sobre, le manda "hay" a quien le toca; la app entonces
    pide sus sobres con /v1/recibir. Por el timbre no pasa ningún dato. Las conexiones hibernan: mientras nadie
@@ -54,7 +54,40 @@ async function quien(env,b,{nuevoOk=false}={}){
 }
 function sobreOk(s){return s&&typeof s==='object'&&s.v===1&&typeof s.t==='string'&&typeof s.para==='string'&&typeof s.de==='string'&&typeof s.f==='string'&&typeof s.c==='string'&&JSON.stringify(s).length<=MAX_SOBRE;}
 
+// guarda los sobres válidos uno por uno: uno malo no frena a los demás
+async function guardarSobres(env,b,q,sobres){
+  const yo=q.jefe?'jefe':q.vid,st=[],ok=[],mal=[],paras=[];
+  for(const s of sobres.slice(0,60)){
+    let err='';
+    if(!sobreOk(s)||s.e!==b.e||s.de!==yo)err='sobre no válido';
+    else if(!q.jefe&&s.para!=='jefe')err='destino no válido';
+    else if(q.jefe&&s.para!=='todos'&&!V_RE.test(s.para))err='destino no válido';
+    if(err){mal.push({id:s&&s.id,error:err});continue;}
+    const r=q.jefe&&s.r==='estado'?'estado':null;
+    if(r)st.push(env.DB.prepare('DELETE FROM buzon WHERE equipo=? AND para=? AND r=?').bind(b.e,s.para,r));
+    st.push(env.DB.prepare('INSERT INTO buzon(equipo,para,de,r,cuerpo,creado) VALUES(?,?,?,?,?,?)').bind(b.e,s.para,yo,r,JSON.stringify(s),Date.now()));
+    ok.push(s.id);paras.push(s.para);
+  }
+  if(st.length)await env.DB.batch(st);
+  return {ok,mal,paras};
+}
+async function leerBuzon(env,b,q){
+  const desde=Math.max(0,Math.floor(+b.desde||0));let r;
+  if(q.jefe)r=await env.DB.prepare('SELECT id,cuerpo FROM buzon WHERE equipo=? AND para=? AND id>? ORDER BY id LIMIT ?').bind(b.e,'jefe',desde,POR_VEZ).all();
+  else if(q.miembro)r=await env.DB.prepare('SELECT id,cuerpo FROM buzon WHERE equipo=? AND para IN (?,?) AND id>? ORDER BY id LIMIT ?').bind(b.e,q.vid,'todos',desde,POR_VEZ).all();
+  else r=await env.DB.prepare('SELECT id,cuerpo FROM buzon WHERE equipo=? AND para=? AND id>? ORDER BY id LIMIT ?').bind(b.e,q.vid,desde,POR_VEZ).all();
+  const rows=r.results||[];
+  return {sobres:rows.map(x=>JSON.parse(x.cuerpo)),hasta:rows.length?rows[rows.length-1].id:desde,mas:rows.length===POR_VEZ};
+}
 const RUTAS={
+  async '/v1/sync'(b,env,ctx){
+    const q=await quien(env,b,{nuevoOk:true});if(!q)return mal('sin permiso',403);
+    const sobres=Array.isArray(b.sobres)?b.sobres:[];let g={ok:[],mal:[],paras:[]};
+    if(sobres.length){if(!q.jefe&&!q.miembro)return mal('sin permiso',403);g=await guardarSobres(env,b,q,sobres);if(g.paras.length)ctx.waitUntil(tocar(env,b.e,g.paras));}
+    const r=await leerBuzon(env,b,q);
+    if(Math.random()<0.02)ctx.waitUntil(env.DB.prepare('DELETE FROM buzon WHERE creado<?').bind(Date.now()-RETENER).run());
+    return json({ok:true,guardados:g.ok,rechazados:g.mal,...r});
+  },
   async '/v1/equipo'(b,env){
     if(!EQ_RE.test(b.e||'')||!B64_RE.test(b.firma||'')||!reciente(b.ts)||!(await verificar(b,b.firma)))return mal('pedido no válido');
     const ya=await firmaJefe(env,b.e);
