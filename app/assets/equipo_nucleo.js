@@ -130,19 +130,72 @@ async function pedir(base,ruta,cuerpo,firmaSec){
   }finally{clearTimeout(t);}
 }
 
-/* ---------- archivo para WhatsApp ---------- */
+/* ---------- archivo .rumentis (para WhatsApp) ---------- */
+// "RUMENTIS" + tipo (1 byte: 1 = JSON, 2 = JSON comprimido) + nonce (24) + nacl.secretbox con la llave de los archivos
+// de Rumentis. Los sobres de adentro ya van cifrados y firmados con las llaves del equipo; esta capa hace que el archivo
+// no se pueda abrir ni leer con otra cosa que no sea Rumentis. Cada archivo lleva un número único (fid): la app no
+// abre dos veces el mismo archivo ni uno que hizo ella misma.
+const MAGIA=enc('RUMENTIS'),EXT='.rumentis',MIME='application/vnd.rumentis',LSA='rumentis-archivos';
+let LLAVE_A=null;
+async function llaveArchivo(){const n=await nacl_();return LLAVE_A||(LLAVE_A=n.hash(enc('RUMENTIS-ARCHIVO-1|hn.hato.ganadero')).slice(0,32));}
+function vistos(){try{return JSON.parse(localStorage.getItem(LSA)||'{}')||{};}catch(e){return {};}}
+function marcarVisto(fid,como){if(!fid)return;const m=vistos();m[fid]=[como,Date.now()];
+  const k=Object.keys(m);if(k.length>1500)k.sort((a,b)=>m[a][1]-m[b][1]).slice(0,k.length-1500).forEach(x=>delete m[x]);
+  try{localStorage.setItem(LSA,JSON.stringify(m));}catch(e){}}
+const visto=fid=>{const v=vistos()[fid];return v?v[0]:null;};
 // extra: p. ej. la ficha del equipo en el archivo del jefe (así el vaquero que se activó sin enlace conoce sus llaves)
-function archivoTexto(sobres,de,extra){return JSON.stringify({rumentis:'equipo',v:1,de,ts:Date.now(),...(extra||{}),sobres});}
-function leerArchivo(txt){try{const o=JSON.parse(txt);if(o&&o.rumentis==='equipo'&&Array.isArray(o.sobres))return o;}catch(e){}return null;}
-function compartirArchivo(nombre,txt,titulo){
+async function armarArchivo(sobres,de,extra){
+  const n=await nacl_(),fid=b64u(azar(15));
+  let c=enc(JSON.stringify({rumentis:'equipo',v:2,fid,de,ts:Date.now(),...(extra||{}),sobres})),tipo=1;
+  const z=await comprimir(c);if(z&&z.length<c.length){c=z;tipo=2;}
+  const nonce=azar(24),caja=n.secretbox(c,nonce,await llaveArchivo());
+  const u=new Uint8Array(33+caja.length);u.set(MAGIA,0);u[8]=tipo;u.set(nonce,9);u.set(caja,33);
+  marcarVisto(fid,'m');return u;
+}
+const esRumentis=u=>u&&u.length>33&&MAGIA.every((x,i)=>u[i]===x);
+async function leerArchivo(u){
+  try{
+    u=u instanceof Uint8Array?u:new Uint8Array(u);let o;
+    if(esRumentis(u)){
+      const n=await nacl_();let c=n.secretbox.open(u.subarray(33),u.subarray(9,33),await llaveArchivo());if(!c)return null;
+      if(u[8]===2)c=await descomprimir(c);o=JSON.parse(dec(c));
+    }else{ // archivo .json de la versión anterior: se lee, y su número único es su huella
+      const t=dec(u);o=JSON.parse(t);if(o&&!o.fid)o.fid='j'+sha(t).slice(0,24);
+    }
+    if(o&&o.rumentis==='equipo'&&Array.isArray(o.sobres)&&o.fid)return o;
+  }catch(e){}
+  return null;
+}
+// abre un archivo recibido: comprueba que sea de Rumentis y que no se haya abierto antes, y se lo pasa a fn(o)
+async function recibirArchivo(u,fn){
+  const o=await leerArchivo(u);
+  if(!o){toast('Ese archivo no es de Rumentis.',4000);return false;}
+  const v=visto(o.fid);
+  if(v==='m'){toast('Ese archivo lo hiciste tú: mándaselo a tu equipo por WhatsApp.',4500);return false;}
+  if(v){toast('Ese archivo ya lo abriste. Cada archivo se abre una sola vez: pide uno nuevo.',5000);return false;}
+  const ok=await fn(o);if(ok!==false)marcarVisto(o.fid,'r');return ok!==false;
+}
+// nombre legible y distinto cada vez (fecha + hora), con la extensión .rumentis
+const nombreArchivo=base=>String(base||'rumentis').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)+'-'+new Date().toTimeString().slice(0,5).replace(':','')+EXT;
+function compartirArchivo(nombre,u,titulo){
   const A=window.Android;
-  if(A&&A.compartirArchivo){try{if(A.compartirArchivo(nombre,b64(enc(txt)),'application/json',titulo||nombre))return true;}catch(e){}}
-  try{const f=new File([txt],nombre,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:titulo||nombre}).catch(()=>{});return true;}}catch(e){}
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download=nombre;document.body.appendChild(a);a.click();
+  if(A&&A.compartirArchivo){try{if(A.compartirArchivo(nombre,b64(u),MIME,titulo||nombre))return true;}catch(e){}}
+  try{const f=new File([u],nombre,{type:MIME});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:titulo||nombre}).catch(()=>{});return true;}}catch(e){}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:MIME}));a.download=nombre;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);return true;
 }
-function elegirArchivo(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.json,.rumentis,application/json,text/plain,*/*';
-  i.onchange=()=>{const f=i.files&&i.files[0];if(!f){ok(null);return;}const rd=new FileReader();rd.onload=()=>ok(String(rd.result||''));rd.onerror=()=>ok(null);rd.readAsText(f);};i.click();});}
+function elegirArchivo(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.rumentis,.json,'+MIME+',application/octet-stream,*/*';
+  i.onchange=()=>{const f=i.files&&i.files[0];if(!f){ok(null);return;}const rd=new FileReader();rd.onload=()=>ok(new Uint8Array(rd.result));rd.onerror=()=>ok(null);rd.readAsArrayBuffer(f);};i.click();});}
+// Android: al tocar un archivo .rumentis en WhatsApp (o compartirlo a Rumentis) la app se abre y lo recibe
+let alRecibir=null;
+function tomarDeAndroid(){
+  if(!alRecibir||!window.Recibido||!Recibido.tomar)return;
+  let t='';try{t=Recibido.tomar();}catch(e){}if(!t)return;
+  try{recibirArchivo(deB64(t),alRecibir);}catch(e){}
+}
+function escucharArchivos(fn){alRecibir=fn;
+  window.archivoRecibido=()=>setTimeout(tomarDeAndroid,50);
+  if(document.readyState==='complete')setTimeout(tomarDeAndroid,700);else addEventListener('load',()=>setTimeout(tomarDeAndroid,700));}
 function compartirTexto(t){
   if(window.Android&&Android.compartir){try{Android.compartir(t);return;}catch(e){}}
   if(navigator.share){navigator.share({text:t}).catch(()=>{});return;}
@@ -201,6 +254,6 @@ const iniciales=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]||''
 window.EquipoNucleo={CFG,nacl:nacl_,cargar,enc,dec,b64,deB64,b64u,deB64u,azar,sha,canon,
   nuevaLicencia,normLic,licValida,fmtLic,hashLic,LIC_PRUEBA,esLicPrueba,
   nuevasLlaves,idDe,firmar,verificar,huella,sellar,sobrePlano,abrir,ficha,fichaValida,enlace,leerEnlace,
-  urlOk,pedir,archivoTexto,leerArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
+  urlOk,pedir,armarArchivo,leerArchivo,recibirArchivo,escucharArchivos,nombreArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
   pagosHay,pagosEscuchar,compraReal,haceCuanto,iniciales};
 })();

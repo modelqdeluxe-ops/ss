@@ -297,14 +297,15 @@ ACTS.eqEnviarArchivo=async()=>{
   const e=EQ();if(!e)return;const est=await publicarEstado(true);
   const sobres=(SY.archivo||[]).filter(s=>s.ts>Date.now()-30*864e5).concat(est?[est]:[]);
   if(!sobres.length){toast('Todavía no hay nada que mandar: primero activa a un vaquero.',4000);return;}
-  const nombre=`equipo-${String(S.config.finca||'finca').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'finca'}-${hoy()}.json`;
-  N.compartirArchivo(nombre,N.archivoTexto(sobres,'jefe',{ficha:await fichaEq()}),tr('Datos para el equipo'));
+  N.compartirArchivo(N.nombreArchivo(`equipo-${S.config.finca||'finca'}-${hoy()}`),await N.armarArchivo(sobres,'jefe',{ficha:await fichaEq()}),tr('Datos para el equipo'));
 };
-ACTS.eqRecibirArchivo=async()=>{
-  const t=await N.elegirArchivo();if(!t)return;const o=N.leerArchivo(t);if(!o){toast('Ese archivo no es de Rumentis.',4000);return;}
+async function alRecibir(o){
   await asegurarEquipo();let n=0;for(const s of o.sobres)n+=await procesar(s);
-  toast(n?`Listo: ${pl(n,'mensaje leído','mensajes leídos')}`:'Nada nuevo en ese archivo',3500);scheduleRender();
-};
+  toast(n?`Listo: ${pl(n,'mensaje leído','mensajes leídos')}`:'Nada nuevo en ese archivo',3500);scheduleRender();return true;
+}
+ACTS.eqRecibirArchivo=async()=>{const u=await N.elegirArchivo();if(u)await N.recibirArchivo(u,alRecibir);};
+// al tocar un archivo .rumentis en WhatsApp se abre la app y llega aquí
+N.escucharArchivos(alRecibir);
 
 /* ---------- permisos, tareas y ajustes ---------- */
 ACTS.eqPermiso=el=>{const e=EQ(),v=e.vaqueros[el.dataset.v];if(!v)return;const k=el.dataset.k;const p={...v.permisos,[k]:!v.permisos[k]};
@@ -347,7 +348,7 @@ function abrirVaquero(vid){
 }
 const ICA={alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad',baja:'alerta',lic:'recibo',alta:'estrella',tarea:'lista',borrar:'nota'};
 function filaAct(a){return `<div class="row eq-act"><span class="mas-ic t-${a.ic==='baja'||a.ic==='borrar'?'r':a.ic==='alimento'?'y':a.ic==='lic'||a.ic==='alta'?'v':'a'}">${icono(ICA[a.ic]||'info','i3')}</span><div class="tx"><b>${esc(a.txt)}</b><span>${N.haceCuanto(a.ts)}</span></div></div>`;}
-function botonComprar(txt){const p=gratis()?'':precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar">${ico('nuevo')}${txt}${p?` · <span data-no-tr>${esc(p)}</span>`:''}</button>`;}
+function botonComprar(txt){const p=gratis()?'':precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar">${ico('nuevo')}<span>${txt}</span>${p?`<span data-no-tr> · ${esc(p)}</span>`:''}</button>`;}
 PAGES.equipo=()=>{
   const e=EQ()||{},L=Object.values(e.licencias||{}),V=Object.values(e.vaqueros||{}),act=V.filter(v=>v.estado==='activo'),libres=L.filter(l=>l.estado==='libre');
   const sols=Object.values(e.solicitudes||{});const srv=servidor();
@@ -378,6 +379,7 @@ PAGES.equipo=()=>{
    <section class="sec">${secH('Sincronización')}<div class="card pad eq-sinc">
     <div class="eq-sinc-h"><span class="mas-ic ${srv?'t-v':'t-y'}">${icono(srv?'rayo':'datos','i3')}</span><div><b>${srv?'Automática por internet':'Por archivo (WhatsApp)'}</b><span>${srv?(SY.err?'No se pudo conectar: se reintenta sola':SY.ult?`Última vez: <span>${N.haceCuanto(SY.ult)}</span>`:'Todavía no se conecta'):'Sin servidor: manda los datos a tu equipo como archivo.'}</span></div></div>
     <div class="acts">${srv?`<button type="button" class="btn" data-act="eqSinc">Sincronizar ahora</button>`:''}<button type="button" class="btn" data-act="eqEnviarArchivo">Enviar al equipo</button><button type="button" class="btn" data-act="eqRecibirArchivo">Recibir archivo</button></div>
+    <p class="hint eq-arch">Los archivos del equipo terminan en .rumentis. En WhatsApp tócalo y elige Rumentis para abrirlo. Cada archivo se abre una sola vez.</p>
     <div class="row eq-tg"><div class="tx"><b>Aceptar vaqueros nuevos solos</b><span>Si lo apagas, te pregunto antes de dejar entrar a alguien.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.auto!==false}" aria-label="Aceptar solos" data-act="eqAuto"><span></span></button></div>
     <button type="button" class="lnk" data-act="eqServidor">Servidor del equipo</button></div></section>
    ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código de dueño</button></p>`:''}
@@ -407,6 +409,6 @@ PAGES.mas=(sub,...r)=>{const h=_mas(sub,...r);if(sub)return h;
 /* ---------- arranque ---------- */
 if(N.pagosHay()){try{Pagos.iniciar(CFG.productoLicencia);}catch(e){}}
 if(conEquipo()&&servidor())setTimeout(()=>sincronizar(),2500);
-window.Equipo={sincronizar,publicarEstado,estadoEquipo,procesar,aplicarOps,crearLicencia,asegurarEquipo,fichaEq,abrirLicencia,darDeBaja,SY:()=>SY};
+window.Equipo={alRecibir,sincronizar,publicarEstado,estadoEquipo,procesar,aplicarOps,crearLicencia,asegurarEquipo,fichaEq,abrirLicencia,darDeBaja,SY:()=>SY};
 pestana();if(route().p==='equipo'||route().p==='mas')render();
 })();

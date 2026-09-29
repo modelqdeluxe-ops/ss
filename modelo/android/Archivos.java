@@ -55,6 +55,7 @@ public final class Archivos {
 
     static String tipo(String nombre, String mime) {
         if (mime != null && mime.length() > 0) return mime;
+        if (nombre.toLowerCase().endsWith(".rumentis")) return "application/vnd.rumentis";
         int i = nombre.lastIndexOf('.');
         String t = i >= 0 ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(nombre.substring(i + 1).toLowerCase()) : null;
         return t != null ? t : "application/octet-stream";

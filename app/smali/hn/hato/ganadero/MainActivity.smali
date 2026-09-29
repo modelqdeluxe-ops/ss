@@ -776,12 +776,16 @@
 
     invoke-static {p0, v0}, Lhn/hato/ganadero/Avisos;->deIntent(Landroid/app/Activity;Landroid/webkit/WebView;)V
 
+    iget-object v0, p0, Lhn/hato/ganadero/MainActivity;->web:Landroid/webkit/WebView;
+
+    invoke-static {p0, v0}, Lhn/hato/ganadero/Enlace;->deIntent(Landroid/app/Activity;Landroid/webkit/WebView;)V
+
     invoke-static {p0}, Lhn/hato/ganadero/Avisos;->programar(Landroid/content/Context;)V
 
     return-void
 .end method
 
-# Al tocar un aviso de Rumi o el widget con la app abierta
+# Al tocar un aviso de Rumi, el widget o un archivo .rumentis con la app abierta
 .method protected onNewIntent(Landroid/content/Intent;)V
     .locals 1
 
@@ -792,6 +796,8 @@
     iget-object v0, p0, Lhn/hato/ganadero/MainActivity;->web:Landroid/webkit/WebView;
 
     invoke-static {p0, v0}, Lhn/hato/ganadero/Avisos;->deIntent(Landroid/app/Activity;Landroid/webkit/WebView;)V
+
+    invoke-static {p0, v0}, Lhn/hato/ganadero/Enlace;->deIntent(Landroid/app/Activity;Landroid/webkit/WebView;)V
 
     return-void
 .end method

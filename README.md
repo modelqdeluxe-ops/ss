@@ -139,10 +139,15 @@ Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia.
 - **Núcleo** (`app/assets/equipo_nucleo.js`): llaves Ed25519 y X25519 por teléfono (tweetnacl); sobres firmados y
   cifrados (alta y bienvenida con `nacl.box`, lo demás con la clave del equipo, `nacl.secretbox`); transporte por
   el servidor de relevo y, siempre, por archivo para WhatsApp.
+- **Archivo `.rumentis`** (tipo `application/vnd.rumentis`): `RUMENTIS` + tipo (1 = JSON, 2 = JSON comprimido) +
+  nonce + `nacl.secretbox` con la llave de archivos de la app, así que solo Rumentis lo abre. Lleva un número único
+  (`fid`): la app no abre dos veces el mismo archivo ni uno que hizo ella misma. En Android, tocar el archivo en
+  WhatsApp (o compartirlo a la app) abre Rumentis y lo recibe (`Enlace.deIntent` y el puente `Recibido`); los
+  `.json` de la versión anterior todavía se leen.
 - **Configuración** (`app/assets/config.js`): qué app es y si es de prueba (lo escribe `variante.py`), el servidor
   del equipo, la llave RSA de Google Play (para que el vaquero compruebe la compra), el producto y los enlaces.
-- **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la clase está en la app) y `Cripto`
-  (firma RSA de Google); `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app del dueño de
+- **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la clase está en la app), `Cripto`
+  (firma RSA de Google) y `Recibido` (el archivo `.rumentis` con que se abrió la app); `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app del dueño de
   Google Play, que se arma con Gradle (`scripts/pagos.sh`).
 
 **Modo dueño**: en Equipo, «Tengo un código de dueño». Con el código del dueño de la app (en `equipo.js` solo

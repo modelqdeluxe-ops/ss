@@ -197,11 +197,14 @@ ACTS.vqEnviarArchivo=async()=>{
   const L=[];if(VQ.estado==='pendiente'&&VQ.alta)L.push(VQ.alta);const s=await sobreOps();if(s)L.push(s);
   if(!L.length){toast('No tienes nada por mandar.',3000);return;}
   const nm=String(VQ.nombre||'vaquero').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  N.compartirArchivo(`rumentis-${nm}-${hoy()}.json`,N.archivoTexto(L,VQ.vid),aUnidad('Mis registros para el jefe'));
+  N.compartirArchivo(N.nombreArchivo(`${nm}-${hoy()}`),await N.armarArchivo(L,VQ.vid),aUnidad('Mis registros para el jefe'));
 };
-ACTS.vqRecibirArchivo=async()=>{const t=await N.elegirArchivo();if(!t)return;const o=N.leerArchivo(t);if(!o){toast('Ese archivo no es de Rumentis.',4000);return;}
-  if(!(await adoptarFicha(o))){toast('Ese archivo no es de tu jefe.',4000);return;}
-  const n=await procesarVarios(o.sobres);toast(n?'Listo: datos de tu jefe al día':'Nada nuevo para ti en ese archivo',3500);render();};
+async function alRecibir(o){
+  if(!(await adoptarFicha(o))){toast('Ese archivo no es de tu jefe.',4000);return false;}
+  const n=await procesarVarios(o.sobres);toast(n?'Listo: datos de tu jefe al día':'Nada nuevo para ti en ese archivo',3500);render();return true;}
+ACTS.vqRecibirArchivo=async()=>{const u=await N.elegirArchivo();if(u)await N.recibirArchivo(u,alRecibir);};
+// al tocar el archivo .rumentis del jefe en WhatsApp se abre la app y llega aquí
+N.escucharArchivos(alRecibir);
 ACTS.vqBorrar=()=>confirmar('¿Borrar los datos de este teléfono?','Se borran tu licencia y los datos de la finca. Lo que ya le llegó a tu jefe se queda con él.','Borrar',()=>{
   try{localStorage.removeItem(LSV);localStorage.removeItem(LS_KEY);}catch(e){}location.hash='#hoy';location.reload();});
 
@@ -303,7 +306,7 @@ PAGES.mas=sub=>{
   <main class="bd">
    <section class="sec">${secH('Tu cuenta')}<div class="card pad vq-yo"><span class="eq-av xl" aria-hidden="true" data-no-tr>${esc(N.iniciales(VQ.nombre))}</span><div><b>${esc(VQ.nombre||'')}</b><span>Licencia <span data-no-tr>${VQ.demo?N.LIC_PRUEBA:N.fmtLic(VQ.lic||'')}</span></span><span>En el equipo de ${esc(VQ.finca||'')}${VQ.desde?` desde el ${ffc(VQ.desde)}`:''}</span></div></div></section>
    <section class="sec">${secH('Envío a tu jefe')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic ${srv?'t-v':'t-y'}">${icono(srv?'rayo':'datos','i3')}</span><div><b>${VQ.demo?'Modo de prueba':srv?'Automático por internet':'Por archivo (WhatsApp)'}</b><span><span>${VQ.demo?'Nada sale de este teléfono':pend?pl(pend,'registro por enviar','registros por enviar'):'Todo enviado'}</span>${srv&&VQ.ult&&!VQ.demo?` · <span>${N.haceCuanto(VQ.ult)}</span>`:''}</span></div></div>
-    ${VQ.demo?'':`<div class="acts">${srv?`<button type="button" class="btn" data-act="vqSinc">Enviar ahora</button>`:''}<button type="button" class="btn" data-act="vqEnviarArchivo">Mandar por archivo</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo del jefe</button></div>`}</div></section>
+    ${VQ.demo?'':`<div class="acts">${srv?`<button type="button" class="btn" data-act="vqSinc">Enviar ahora</button>`:''}<button type="button" class="btn" data-act="vqEnviarArchivo">Mandar por archivo</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo del jefe</button></div><p class="hint">Los archivos del equipo terminan en .rumentis. En WhatsApp tócalo y elige Rumentis para abrirlo. Cada archivo se abre una sola vez.</p>`}</div></section>
    <section class="sec">${secH('Ajustes')}<div class="card rows">
     ${masFila(mico('paleta'),'Apariencia','Modo claro u oscuro y colores','href="#mas/apariencia"','t-v')}
     ${masFila(mico('ayuda'),'Idioma',window.I18N?(I18N.IDIOMAS.find(x=>x[0]===I18N.lang())||['',''])[1]:'','href="#mas/idioma"','t-a')}
@@ -353,7 +356,7 @@ function barra(){const nav=$('nav.bottom .in');if(!nav||nav.dataset.vq)return;na
 barra();
 document.addEventListener('rumentis-pintado',()=>{const r=route();const cur=r.p==='lote'?'lotes':r.p;$$('nav.bottom [data-nav]').forEach(a=>{if(a.dataset.nav===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});});
 
-window.Vaquero={VQ:()=>VQ,sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
+window.Vaquero={VQ:()=>VQ,alRecibir,sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
 if(!Object.keys(S.lotes).length&&activo()&&!VQ.demo)S.config.finca=VQ.finca||S.config.finca;
 document.documentElement.classList.add('vq-listo');
 render();
