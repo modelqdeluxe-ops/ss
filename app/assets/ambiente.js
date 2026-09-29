@@ -141,8 +141,12 @@ const FX=(()=>{
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const llueve=()=>tipo==='lluvia'||tipo==='tormenta';
   let TAM=null;const RO=typeof ResizeObserver!=='undefined'?new ResizeObserver(e=>{const q=e[e.length-1].contentRect;TAM={width:q.width,height:q.height};medir();}):null;
+  /* El alto del encabezado cambia de una página a otra: el cielo solo se vuelve a dibujar si cambia el ancho o si
+     el encabezado crece más de lo ya dibujado (en pasos de 60 px). Así cambiar de página no cuesta un dibujo. */
   function medir(){if(!cv)return;const b=TAM||(cv.parentNode||cv).getBoundingClientRect();if(!b.width)return;const d=Math.min(2,devicePixelRatio||1);
-    if(cv.width===Math.round(b.width*d)&&cv.height===Math.round(b.height*d)&&W===b.width)return;dpr=d;W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
+    const hN=W===b.width&&d===dpr?Math.max(H,Math.ceil(b.height/60)*60):Math.ceil(b.height/60)*60;
+    if(W===b.width&&hN===H&&d===dpr)return;dpr=d;W=b.width;H=hN;cv.parentNode.style.setProperty('--fxh',H+'px');
+    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);sembrar();}
   function sembrar(){
     const n=llueve()?Math.round(W*H/(tipo==='tormenta'?750:1000)):0;
     gotas=Array.from({length:n},()=>nuevaGota(true));salpic=[];claveImg='';pintarFijo();arrancar();
@@ -153,7 +157,7 @@ const FX=(()=>{
     try{if(c.toBlob)c.toBlob(b=>poner(b?URL.createObjectURL(b):c.toDataURL()));else poner(c.toDataURL());}catch(e){}}
   /* sol, luna y estrellas */
   function sol(x0){const m=r.dataset.momento;if(llueve()||tipo==='nublado'||tipo==='niebla')return;if(m==='noche'||m==='madrugada')return luna(x0);
-    const cx=x0,bajo=m==='amanecer'||m==='atardecer';const x=W*.94,y=bajo?H*.95:-H*.02,rad=bajo?44:32;
+    const cx=x0,bajo=m==='amanecer'||m==='atardecer',hv=Math.min(H,230);const x=W*.94,y=bajo?hv*.95:-hv*.02,rad=bajo?44:32;
     const g=cx.createRadialGradient(x,y,0,x,y,rad*5);g.addColorStop(0,bajo?'rgba(255,190,120,.42)':'rgba(255,244,200,.38)');g.addColorStop(.25,bajo?'rgba(255,150,90,.16)':'rgba(255,230,150,.13)');g.addColorStop(1,'rgba(255,220,150,0)');
     cx.fillStyle=g;cx.beginPath();cx.arc(x,y,rad*5,0,6.283);cx.fill();
     cx.save();cx.translate(x,y);for(let k=0;k<12;k++){cx.rotate(Math.PI/6);const lg=cx.createLinearGradient(0,0,rad*4.2,0);lg.addColorStop(0,'rgba(255,240,200,.09)');lg.addColorStop(1,'rgba(255,240,200,0)');cx.fillStyle=lg;cx.beginPath();cx.moveTo(0,-3);cx.lineTo(rad*4.2,-12);cx.lineTo(rad*4.2,12);cx.lineTo(0,3);cx.fill();}cx.restore();

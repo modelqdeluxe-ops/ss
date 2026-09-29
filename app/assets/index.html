@@ -956,10 +956,10 @@ main.bd>.sec:nth-child(n+4),main.bd>.gcard:nth-child(n+4),main.bd>section.rp-car
 .hd-fx .ft.kb{animation:kenb 10s ease-out forwards}
 @keyframes kenb{from{transform:scale(1.02)}to{transform:scale(1.1) translateX(-1.5%)}}
 .hd-fx .tinte{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--head) calc(var(--t1)*100%),transparent) 0%,color-mix(in srgb,var(--head) calc(var(--t2)*100%),transparent) 50%,color-mix(in srgb,var(--head) calc(var(--t3)*100%),transparent) 100%),linear-gradient(0deg,var(--tintc),var(--tintc))}
-.hd-fx .fx-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hd-fx .fx-img{position:absolute;inset:0;z-index:3;background-size:100% 100%;background-repeat:no-repeat}
+.hd-fx .fx-cv{position:absolute;top:0;left:0;width:100%;height:var(--fxh,100%);display:block}
+.hd-fx .fx-img{position:absolute;top:0;left:0;right:0;height:var(--fxh,100%);z-index:3;background-size:100% 100%;background-repeat:no-repeat}
 /* nubes y neblina: una tira del doble de ancho que se desliza sin fin (tarjeta gráfica, a la tasa de refresco) */
-.hd-fx .fx-tira{position:absolute;top:0;left:0;bottom:0;width:200%;z-index:3;background-size:100% 100%;background-repeat:no-repeat;will-change:transform;animation:tira 60s linear infinite}
+.hd-fx .fx-tira{position:absolute;top:0;left:0;height:var(--fxh,100%);width:200%;z-index:3;background-size:100% 100%;background-repeat:no-repeat;will-change:transform;animation:tira 60s linear infinite}
 @keyframes tira{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 @media (prefers-reduced-motion:reduce){.hd-fx .fx-tira{animation:none}}
 :root[data-clima="lluvia"] .hd-fx .ft,:root[data-clima="tormenta"] .hd-fx .ft{filter:saturate(.75) brightness(.92)}
@@ -1572,22 +1572,50 @@ function morfHijos(op,np){
     n=sig;}
   while(o){const s=o.nextSibling;if(!esFijo(o))op.removeChild(o);o=s;}
 }
-// pone html dentro de el cambiando solo lo necesario
-function pintarEn(el,html){
+// pone html dentro de el cambiando solo lo necesario. Con recortar, deja solo las primeras secciones de la página
+// (lo que se ve arriba): el resto llega en el cuadro siguiente.
+function pintarEn(el,html,recortar){
   const t=document.createElement('div');t.innerHTML=html;
+  let cortado=false;
+  if(recortar){const bd=t.querySelector(':scope>main.bd');if(bd&&bd.children.length>recortar+2){while(bd.children.length>recortar)bd.lastElementChild.remove();cortado=true;}}
   if(window.I18N&&I18N.pre)I18N.pre(t);   // se traduce antes de comparar: así solo cambia lo que de verdad cambió
-  morfHijos(el,t);
+  morfHijos(el,t);return cortado;
 }
+/* Páginas pesadas (Gráficos, Finanzas, Inventario): se arman de antemano en un rato libre del teléfono, así al
+   tocarlas ya están listas. Lo armado vale mientras no cambien los datos, el día, las unidades ni lo elegido en
+   pantalla; cualquier dibujado que no sea un cambio de página lo descarta. */
+const PRE={},PRE_PAGS=['graficos','finanzas','inventario'];
+const preClave=p=>[p,ver,hoy(),U(),PU(),JSON.stringify(UI),window.I18N?I18N.lang():'es',S.config.moneda||''].join('|');
+function htmlPagina(r){
+  const fn=PAGES[r.p]||PAGES.hoy;
+  if(!r.id&&PRE_PAGS.includes(r.p)&&PAGES[r.p]){const k=preClave(r.p),c=PRE[r.p];if(c&&c.k===k)return c.h;const h=aUnidad(fn());PRE[r.p]={k,h};return h;}
+  return aUnidad(fn(r.id,r.id2));
+}
+let preT=0;
+function precalentar(ms){
+  clearTimeout(preT);preT=setTimeout(()=>{const ric=window.requestIdleCallback||(f=>setTimeout(()=>f({timeRemaining:()=>50,didTimeout:true}),0));
+    ric(dl=>{if(document.hidden)return;if(window.OCUPADO_HASTA&&performance.now()<OCUPADO_HASTA){precalentar(400);return;}
+      const r=route();const p=PRE_PAGS.find(x=>x!==r.p&&PAGES[x]&&!(PRE[x]&&PRE[x].k===preClave(x)));if(!p)return;
+      // sin rato libre (animaciones siempre corriendo), se arma igual al vencer la espera
+      if(!dl.didTimeout&&dl.timeRemaining()<10){precalentar(150);return;}
+      try{PRE[p]={k:preClave(p),h:aUnidad(PAGES[p]())};}catch(e){}precalentar(150);},{timeout:1200});},ms==null?600:ms);
+}
+let porRuta=false,resto=0;
 function render(){
-  const r=route();const fn=PAGES[r.p]||PAGES.hoy;
+  const r=route();
+  if(!porRuta)for(const k in PRE)delete PRE[k];   // algo cambió en pantalla: lo armado de antemano ya no vale
+  const nueva=porRuta&&(r.p+'/'+(r.id||''))!==lastRoute;porRuta=false;
   document.body.dataset.sub=r.id||'';
   document.body.dataset.pg=r.p==='metodologia'?'mas':PAGES[r.p]?r.p:'hoy';
-  pintarEn($('#app'),aUnidad(fn(r.id,r.id2)));
+  const html=htmlPagina(r);cancelAnimationFrame(resto);
+  // al entrar a una página larga se pinta primero lo de arriba y el resto en el cuadro siguiente
+  if(pintarEn($('#app'),html,nueva?4:0))resto=requestAnimationFrame(()=>{resto=requestAnimationFrame(()=>{if(route().p!==r.p||route().id!==r.id)return;pintarEn($('#app'),html);updateSync();document.dispatchEvent(new Event('rumentis-pintado'));});});
   animarRuta();
   const nav=r.p==='lote'||r.p==='animal'?'lotes':r.p==='formular'||r.p==='metodologia'?'mas':r.p;
   $$('nav.bottom [data-nav]').forEach(a=>{if(a.dataset.nav===nav)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   updateSync();
   document.dispatchEvent(new Event('rumentis-pintado'));
+  precalentar();
 }
 const fechaLarga=()=>{const d=new Date();return `${DIAS_L[d.getDay()]} ${d.getDate()} de ${MESES_L[d.getMonth()]}`;};
 function hdTop(right){return `<div class="top"><span class="logo" aria-label="Rumentis">${LOGO_HD}</span><span class="meta">${right}</span></div>`;}
@@ -2492,7 +2520,7 @@ sheetEl().addEventListener('click',e=>{if(e.target===sheetEl())closeSheet();});
 /* cambio de página: sin View Transitions (en el teléfono sacan una foto de toda la pantalla en cada toque, y eso
    era lento y hacía parpadear la barra y el botón amarillo). La página nueva se arma sobre la misma, cambiando solo
    lo distinto, en el mismo cuadro. */
-addEventListener('hashchange',()=>{closeSheet();UI.histAll=0;scrollTo(0,0);render();});
+addEventListener('hashchange',()=>{closeSheet();UI.histAll=0;scrollTo(0,0);porRuta=true;render();});
 
 /* ============ tema y puente Android ============ */
 function aplicarTema(){let t='auto',pa='noche';try{t=localStorage.getItem('rumentis-tema')||'auto';pa=localStorage.getItem('rumentis-paleta')||'noche';}catch(e){}
