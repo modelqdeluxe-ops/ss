@@ -107,6 +107,9 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
 - `servidor/equipo/` — servidor de relevo del equipo (Cloudflare Workers + D1): guarda y entrega los sobres
   cifrados entre el jefe y sus vaqueros; `npm test` lo prueba y `npm run local` lo levanta en tu computadora.
+- `servidor/publicar.sh` — publica los dos servidores en Cloudflare (plan gratis) y pone sus direcciones en la app;
+  lo corre `.github/workflows/servidores.yml` con los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
+  Paso a paso, y cuánto cuesta, en `servidor/PUBLICAR.md`.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
 - `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisVaquero.apk` y, con `todo`,

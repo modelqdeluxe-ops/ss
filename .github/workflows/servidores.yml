@@ -1,0 +1,61 @@
+# Publica los servidores de Rumentis (equipo y zona) en Cloudflare y vuelve a compilar la app con sus direcciones.
+# Necesita dos secretos del repositorio (Settings > Secrets and variables > Actions): CLOUDFLARE_API_TOKEN y
+# CLOUDFLARE_ACCOUNT_ID. Paso a paso en servidor/PUBLICAR.md. Sin ellos, este flujo solo avisa que faltan.
+name: Publicar servidores
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['servidor/**', '.github/workflows/servidores.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency: servidores
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: ¿Están las llaves de Cloudflare?
+        id: llave
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$T" ] || [ -z "$A" ]; then
+            echo "hay=0" >> "$GITHUB_OUTPUT"
+            echo "::warning::Faltan los secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID. Pasos en servidor/PUBLICAR.md; después vuelve a correr este flujo."
+          else
+            echo "hay=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Probar los servidores
+        if: steps.llave.outputs.hay == '1'
+        run: |
+          for d in equipo zona; do (cd servidor/$d && npm install --no-audit --no-fund && npm test); done
+      - name: Publicar en Cloudflare
+        if: steps.llave.outputs.hay == '1'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bash servidor/publicar.sh | tee publicar.log
+      - name: Poner las direcciones en la app y compilarla
+        if: steps.llave.outputs.hay == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git checkout -- servidor/   # el id de la base D1 se pone solo al publicar; no hace falta guardarlo
+          if git diff --quiet -- app/; then echo "La app ya tenía estas direcciones."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/assets/config.js app/assets/zona.js
+          git commit -m "Direcciones de los servidores publicados en Cloudflare"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          # un push hecho con este token no dispara otros flujos: la compilación se pide aparte
+          gh workflow run compilar.yml --ref "$GITHUB_REF_NAME"
