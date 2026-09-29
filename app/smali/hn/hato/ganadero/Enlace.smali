@@ -23,7 +23,7 @@
     .registers 1
 
     .prologue
-    .line 44
+    .line 45
     const/4 v0, 0x0
 
     sput-object v0, Lhn/hato/ganadero/Enlace;->recibido:Ljava/lang/String;
@@ -35,7 +35,7 @@
     .registers 1
 
     .prologue
-    .line 25
+    .line 26
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -45,7 +45,7 @@
     .registers 1
 
     .prologue
-    .line 25
+    .line 26
     sget-object v0, Lhn/hato/ganadero/Enlace;->recibido:Ljava/lang/String;
 
     return-object v0
@@ -55,7 +55,7 @@
     .registers 1
 
     .prologue
-    .line 25
+    .line 26
     sput-object p0, Lhn/hato/ganadero/Enlace;->recibido:Ljava/lang/String;
 
     return-object p0
@@ -65,30 +65,30 @@
     .registers 7
 
     .prologue
-    .line 50
+    .line 51
     :try_start_0
     invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
 
     move-result-object v2
 
-    .line 51
+    .line 52
     if-nez v2, :cond_7
 
-    .line 80
+    .line 81
     :cond_6
     :goto_6
     return-void
 
-    .line 52
+    .line 53
     :cond_7
     invoke-virtual {v2}, Landroid/content/Intent;->getAction()Ljava/lang/String;
 
     move-result-object v0
 
-    .line 53
+    .line 54
     const/4 v1, 0x0
 
-    .line 54
+    .line 55
     const-string v3, "android.intent.action.VIEW"
 
     invoke-virtual {v3, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -101,11 +101,11 @@
 
     move-result-object v0
 
-    .line 60
+    .line 61
     :goto_18
     if-eqz v0, :cond_6
 
-    .line 62
+    .line 63
     new-instance v1, Landroid/content/Intent;
 
     invoke-virtual {p0}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
@@ -116,7 +116,7 @@
 
     invoke-virtual {p0, v1}, Landroid/app/Activity;->setIntent(Landroid/content/Intent;)V
 
-    .line 63
+    .line 64
     invoke-virtual {p0}, Landroid/app/Activity;->getContentResolver()Landroid/content/ContentResolver;
 
     move-result-object v1
@@ -125,23 +125,23 @@
 
     move-result-object v1
 
-    .line 64
+    .line 65
     if-eqz v1, :cond_6
 
-    .line 65
+    .line 66
     new-instance v0, Ljava/io/ByteArrayOutputStream;
 
     invoke-direct {v0}, Ljava/io/ByteArrayOutputStream;-><init>()V
     :try_end_35
     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_35} :catch_4f
 
-    .line 67
+    .line 68
     const/16 v2, 0x4000
 
     :try_start_37
     new-array v2, v2, [B
 
-    .line 69
+    .line 70
     :cond_39
     invoke-virtual {v1, v2}, Ljava/io/InputStream;->read([B)I
 
@@ -149,12 +149,12 @@
 
     if-lez v3, :cond_84
 
-    .line 70
+    .line 71
     const/4 v4, 0x0
 
     invoke-virtual {v0, v2, v4, v3}, Ljava/io/ByteArrayOutputStream;->write([BII)V
 
-    .line 71
+    .line 72
     invoke-virtual {v0}, Ljava/io/ByteArrayOutputStream;->size()I
     :try_end_46
     .catchall {:try_start_37 .. :try_end_46} :catchall_9e
@@ -165,19 +165,19 @@
 
     if-le v3, v4, :cond_39
 
-    .line 74
+    .line 75
     :try_start_4b
     invoke-virtual {v1}, Ljava/io/InputStream;->close()V
 
     goto :goto_6
 
-    .line 78
+    .line 79
     :catch_4f
     move-exception v0
 
     goto :goto_6
 
-    .line 55
+    .line 56
     :cond_51
     const-string v3, "android.intent.action.SEND"
 
@@ -187,14 +187,14 @@
 
     if-eqz v0, :cond_a3
 
-    .line 56
+    .line 57
     const-string v0, "android.intent.extra.STREAM"
 
     invoke-virtual {v2, v0}, Landroid/content/Intent;->getParcelableExtra(Ljava/lang/String;)Landroid/os/Parcelable;
 
     move-result-object v0
 
-    .line 57
+    .line 58
     instance-of v3, v0, Landroid/net/Uri;
 
     if-eqz v3, :cond_66
@@ -203,7 +203,7 @@
 
     goto :goto_18
 
-    .line 58
+    .line 59
     :cond_66
     invoke-virtual {v2}, Landroid/content/Intent;->getClipData()Landroid/content/ClipData;
 
@@ -237,11 +237,11 @@
 
     goto :goto_18
 
-    .line 74
+    .line 75
     :cond_84
     invoke-virtual {v1}, Ljava/io/InputStream;->close()V
 
-    .line 76
+    .line 77
     invoke-virtual {v0}, Ljava/io/ByteArrayOutputStream;->toByteArray()[B
 
     move-result-object v0
@@ -254,7 +254,7 @@
 
     sput-object v0, Lhn/hato/ganadero/Enlace;->recibido:Ljava/lang/String;
 
-    .line 77
+    .line 78
     if-eqz p1, :cond_6
 
     new-instance v0, Lhn/hato/ganadero/Enlace$1;
@@ -265,13 +265,13 @@
 
     goto/16 :goto_6
 
-    .line 74
+    .line 75
     :catchall_9e
     move-exception v0
 
     invoke-virtual {v1}, Ljava/io/InputStream;->close()V
 
-    .line 75
+    .line 76
     throw v0
     :try_end_a3
     .catch Ljava/lang/Throwable; {:try_start_4b .. :try_end_a3} :catch_4f
@@ -282,11 +282,136 @@
     goto/16 :goto_18
 .end method
 
+.method static otraApp(Ljava/lang/String;)Ljava/lang/String;
+    .registers 4
+
+    .prologue
+    .line 85
+    const-string v0, "hn.hato.ganadero"
+
+    .line 86
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    const-string v2, ".vaquero"
+
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-virtual {p0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_48
+
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    new-instance v2, Ljava/lang/StringBuilder;
+
+    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v2, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v0
+
+    const-string v2, ".vaquero"
+
+    invoke-virtual {v0, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Ljava/lang/String;->length()I
+
+    move-result v0
+
+    invoke-virtual {p0, v0}, Ljava/lang/String;->substring(I)Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    .line 88
+    :goto_47
+    return-object v0
+
+    .line 87
+    :cond_48
+    invoke-virtual {p0, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_6e
+
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    const-string v2, ".vaquero"
+
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    invoke-virtual {v0}, Ljava/lang/String;->length()I
+
+    move-result v0
+
+    invoke-virtual {p0, v0}, Ljava/lang/String;->substring(I)Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    goto :goto_47
+
+    .line 88
+    :cond_6e
+    const/4 v0, 0x0
+
+    goto :goto_47
+.end method
+
 .method public static registrar(Landroid/app/Activity;Landroid/webkit/WebView;)V
     .registers 6
 
     .prologue
-    .line 28
+    .line 29
     :try_start_0
     const-string v0, "hn.hato.ganadero.Pagos"
 
@@ -294,7 +419,7 @@
 
     move-result-object v0
 
-    .line 29
+    .line 30
     const/4 v1, 0x2
 
     new-array v1, v1, [Ljava/lang/Class;
@@ -331,14 +456,14 @@
 
     move-result-object v0
 
-    .line 30
+    .line 31
     const-string v1, "Pagos"
 
     invoke-virtual {p1, v0, v1}, Landroid/webkit/WebView;->addJavascriptInterface(Ljava/lang/Object;Ljava/lang/String;)V
     :try_end_29
     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_29} :catch_42
 
-    .line 35
+    .line 36
     :goto_29
     :try_start_29
     new-instance v0, Lhn/hato/ganadero/Enlace$Cripto;
@@ -351,12 +476,12 @@
     :try_end_33
     .catch Ljava/lang/Throwable; {:try_start_29 .. :try_end_33} :catch_40
 
-    .line 39
+    .line 40
     :goto_33
     :try_start_33
     new-instance v0, Lhn/hato/ganadero/Enlace$Recibido;
 
-    invoke-direct {v0}, Lhn/hato/ganadero/Enlace$Recibido;-><init>()V
+    invoke-direct {v0, p0}, Lhn/hato/ganadero/Enlace$Recibido;-><init>(Landroid/app/Activity;)V
 
     const-string v1, "Recibido"
 
@@ -364,23 +489,23 @@
     :try_end_3d
     .catch Ljava/lang/Throwable; {:try_start_33 .. :try_end_3d} :catch_3e
 
-    .line 42
+    .line 43
     :goto_3d
     return-void
 
-    .line 40
+    .line 41
     :catch_3e
     move-exception v0
 
     goto :goto_3d
 
-    .line 36
+    .line 37
     :catch_40
     move-exception v0
 
     goto :goto_33
 
-    .line 31
+    .line 32
     :catch_42
     move-exception v0
 
@@ -393,7 +518,7 @@
     .prologue
     const/4 v0, 0x0
 
-    .line 93
+    .line 130
     const/4 v1, 0x0
 
     :try_start_2
@@ -401,7 +526,7 @@
 
     move-result-object v1
 
-    .line 94
+    .line 131
     const-string v2, "RSA"
 
     invoke-static {v2}, Ljava/security/KeyFactory;->getInstance(Ljava/lang/String;)Ljava/security/KeyFactory;
@@ -416,17 +541,17 @@
 
     move-result-object v1
 
-    .line 95
+    .line 132
     const-string v2, "SHA1withRSA"
 
     invoke-static {v2}, Ljava/security/Signature;->getInstance(Ljava/lang/String;)Ljava/security/Signature;
 
     move-result-object v2
 
-    .line 96
+    .line 133
     invoke-virtual {v2, v1}, Ljava/security/Signature;->initVerify(Ljava/security/PublicKey;)V
 
-    .line 97
+    .line 134
     const-string v1, "UTF-8"
 
     invoke-virtual {p1, v1}, Ljava/lang/String;->getBytes(Ljava/lang/String;)[B
@@ -435,7 +560,7 @@
 
     invoke-virtual {v2, v1}, Ljava/security/Signature;->update([B)V
 
-    .line 98
+    .line 135
     const/4 v1, 0x0
 
     invoke-static {p2, v1}, Landroid/util/Base64;->decode(Ljava/lang/String;I)[B
@@ -448,11 +573,11 @@
 
     move-result v0
 
-    .line 100
+    .line 137
     :goto_30
     return v0
 
-    .line 99
+    .line 136
     :catch_31
     move-exception v1
 

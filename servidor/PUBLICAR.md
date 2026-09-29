@@ -1,5 +1,8 @@
 # Publicar los servidores de Rumentis
 
+> **Por ahora no se usa.** El equipo funciona con el servidor local de la finca (`servidor/equipo`, `npm run local`;
+> ver su `LEEME.md`). Esta guía queda para cuando quieras que funcione por internet desde cualquier lugar.
+
 ## ¿Qué son?
 
 Rumentis funciona sin internet. Hay dos cosas que necesitan un "punto de encuentro" en internet:

@@ -35,7 +35,7 @@
     .end annotation
 
     .prologue
-    .line 93
+    .line 95
     iput-object p1, p0, Lhn/hato/ganadero/Archivos$2;->val$n:Ljava/lang/String;
 
     iput-object p2, p0, Lhn/hato/ganadero/Archivos$2;->val$mime:Ljava/lang/String;
@@ -55,7 +55,7 @@
     .prologue
     const/4 v4, 0x1
 
-    .line 95
+    .line 97
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -84,14 +84,14 @@
 
     move-result-object v0
 
-    .line 96
+    .line 98
     new-instance v1, Landroid/content/Intent;
 
     const-string v2, "android.intent.action.VIEW"
 
     invoke-direct {v1, v2}, Landroid/content/Intent;-><init>(Ljava/lang/String;)V
 
-    .line 97
+    .line 99
     iget-object v2, p0, Lhn/hato/ganadero/Archivos$2;->val$n:Ljava/lang/String;
 
     iget-object v3, p0, Lhn/hato/ganadero/Archivos$2;->val$mime:Ljava/lang/String;
@@ -102,10 +102,10 @@
 
     invoke-virtual {v1, v0, v2}, Landroid/content/Intent;->setDataAndType(Landroid/net/Uri;Ljava/lang/String;)Landroid/content/Intent;
 
-    .line 98
+    .line 100
     invoke-virtual {v1, v4}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 100
+    .line 102
     :try_start_33
     iget-object v2, p0, Lhn/hato/ganadero/Archivos$2;->val$a:Landroid/app/Activity;
 
@@ -113,15 +113,15 @@
     :try_end_38
     .catch Ljava/lang/Exception; {:try_start_33 .. :try_end_38} :catch_39
 
-    .line 115
+    .line 117
     :goto_38
     return-void
 
-    .line 101
+    .line 103
     :catch_39
     move-exception v1
 
-    .line 103
+    .line 105
     :try_start_3a
     new-instance v1, Landroid/content/Intent;
 
@@ -129,7 +129,7 @@
 
     invoke-direct {v1, v2}, Landroid/content/Intent;-><init>(Ljava/lang/String;)V
 
-    .line 104
+    .line 106
     iget-object v2, p0, Lhn/hato/ganadero/Archivos$2;->val$n:Ljava/lang/String;
 
     iget-object v3, p0, Lhn/hato/ganadero/Archivos$2;->val$mime:Ljava/lang/String;
@@ -140,12 +140,12 @@
 
     invoke-virtual {v1, v2}, Landroid/content/Intent;->setType(Ljava/lang/String;)Landroid/content/Intent;
 
-    .line 105
+    .line 107
     const-string v2, "android.intent.extra.STREAM"
 
     invoke-virtual {v1, v2, v0}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Landroid/os/Parcelable;)Landroid/content/Intent;
 
-    .line 106
+    .line 108
     iget-object v2, p0, Lhn/hato/ganadero/Archivos$2;->val$n:Ljava/lang/String;
 
     invoke-static {v2, v0}, Landroid/content/ClipData;->newRawUri(Ljava/lang/CharSequence;Landroid/net/Uri;)Landroid/content/ClipData;
@@ -154,24 +154,24 @@
 
     invoke-virtual {v1, v0}, Landroid/content/Intent;->setClipData(Landroid/content/ClipData;)V
 
-    .line 107
+    .line 109
     const/4 v0, 0x1
 
     invoke-virtual {v1, v0}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 108
+    .line 110
     const-string v0, "Abrir con"
 
     invoke-static {v1, v0}, Landroid/content/Intent;->createChooser(Landroid/content/Intent;Ljava/lang/CharSequence;)Landroid/content/Intent;
 
     move-result-object v0
 
-    .line 109
+    .line 111
     const/4 v1, 0x1
 
     invoke-virtual {v0, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 110
+    .line 112
     iget-object v1, p0, Lhn/hato/ganadero/Archivos$2;->val$a:Landroid/app/Activity;
 
     invoke-virtual {v1, v0}, Landroid/app/Activity;->startActivity(Landroid/content/Intent;)V
@@ -180,11 +180,11 @@
 
     goto :goto_38
 
-    .line 111
+    .line 113
     :catch_6e
     move-exception v0
 
-    .line 112
+    .line 114
     iget-object v0, p0, Lhn/hato/ganadero/Archivos$2;->val$a:Landroid/app/Activity;
 
     const-string v1, "No hay una app para abrir el archivo."

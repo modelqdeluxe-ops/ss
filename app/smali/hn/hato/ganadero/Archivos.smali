@@ -22,21 +22,21 @@
     .registers 6
 
     .prologue
-    .line 91
+    .line 93
     invoke-static {p0, p1, p2}, Lhn/hato/ganadero/Archivos;->escribir(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 92
+    .line 94
     if-nez v0, :cond_8
 
     const/4 v0, 0x0
 
-    .line 117
+    .line 119
     :goto_7
     return v0
 
-    .line 93
+    .line 95
     :cond_8
     new-instance v1, Lhn/hato/ganadero/Archivos$2;
 
@@ -44,7 +44,7 @@
 
     invoke-virtual {p0, v1}, Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V
 
-    .line 117
+    .line 119
     const/4 v0, 0x1
 
     goto :goto_7
@@ -83,21 +83,21 @@
     .registers 7
 
     .prologue
-    .line 66
+    .line 68
     invoke-static {p0, p1, p2}, Lhn/hato/ganadero/Archivos;->escribir(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 67
+    .line 69
     if-nez v0, :cond_8
 
     const/4 v0, 0x0
 
-    .line 86
+    .line 88
     :goto_7
     return v0
 
-    .line 68
+    .line 70
     :cond_8
     new-instance v1, Lhn/hato/ganadero/Archivos$1;
 
@@ -105,7 +105,7 @@
 
     invoke-virtual {p0, v1}, Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V
 
-    .line 86
+    .line 88
     const/4 v0, 0x1
 
     goto :goto_7
@@ -286,21 +286,21 @@
     .registers 6
 
     .prologue
-    .line 122
+    .line 124
     invoke-static {p0, p1, p2}, Lhn/hato/ganadero/Archivos;->escribir(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 123
+    .line 125
     if-nez v0, :cond_8
 
     const/4 v0, 0x0
 
-    .line 136
+    .line 138
     :goto_7
     return v0
 
-    .line 124
+    .line 126
     :cond_8
     new-instance v1, Lhn/hato/ganadero/Archivos$3;
 
@@ -308,7 +308,7 @@
 
     invoke-virtual {p0, v1}, Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V
 
-    .line 136
+    .line 138
     const/4 v0, 0x1
 
     goto :goto_7
@@ -400,11 +400,11 @@
 
     if-lez v0, :cond_9
 
-    .line 61
+    .line 63
     :goto_8
     return-object p1
 
-    .line 58
+    .line 59
     :cond_9
     invoke-virtual {p0}, Ljava/lang/String;->toLowerCase()Ljava/lang/String;
 
@@ -422,16 +422,34 @@
 
     goto :goto_8
 
-    .line 59
+    .line 60
     :cond_18
+    invoke-virtual {p0}, Ljava/lang/String;->toLowerCase()Ljava/lang/String;
+
+    move-result-object v0
+
+    const-string v1, ".vaquero"
+
+    invoke-virtual {v0, v1}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_27
+
+    const-string p1, "application/vnd.rumentis.vaquero"
+
+    goto :goto_8
+
+    .line 61
+    :cond_27
     const/16 v0, 0x2e
 
     invoke-virtual {p0, v0}, Ljava/lang/String;->lastIndexOf(I)I
 
     move-result v0
 
-    .line 60
-    if-ltz v0, :cond_36
+    .line 62
+    if-ltz v0, :cond_45
 
     invoke-static {}, Landroid/webkit/MimeTypeMap;->getSingleton()Landroid/webkit/MimeTypeMap;
 
@@ -451,24 +469,24 @@
 
     move-result-object v0
 
-    .line 61
-    :goto_32
-    if-eqz v0, :cond_38
+    .line 63
+    :goto_41
+    if-eqz v0, :cond_47
 
-    :goto_34
+    :goto_43
     move-object p1, v0
 
     goto :goto_8
 
-    .line 60
-    :cond_36
+    .line 62
+    :cond_45
     const/4 v0, 0x0
 
-    goto :goto_32
+    goto :goto_41
 
-    .line 61
-    :cond_38
+    .line 63
+    :cond_47
     const-string v0, "application/octet-stream"
 
-    goto :goto_34
+    goto :goto_43
 .end method

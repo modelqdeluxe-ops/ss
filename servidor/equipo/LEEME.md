@@ -6,7 +6,7 @@ los guarda y los entrega; no tiene las llaves para leerlos. Corre en **Cloudflar
 **D1** (el plan gratis alcanza de sobra para miles de fincas).
 
 Sin servidor el equipo también funciona: el jefe y los vaqueros se pasan los datos como archivo (WhatsApp).
-Con servidor todo llega solo, cada minuto mientras la app está abierta.
+Con servidor todo llega solo y en vivo mientras la app está abierta.
 
 ## Qué se guarda
 
@@ -18,6 +18,24 @@ Con servidor todo llega solo, cada minuto mientras la app está abierta.
 
 Cada pedido va firmado (Ed25519) y con la hora; el servidor comprueba quién es y qué puede hacer: solo el jefe
 sube licencias, acepta o da de baja; un vaquero solo le escribe al jefe y solo lee lo suyo.
+
+## En la finca, sin internet (lo que se usa por ahora)
+
+El servidor corre en cualquier computadora de la finca (Windows, Mac o Linux con [Node.js](https://nodejs.org) 20 o
+más). Los teléfonos se conectan por el mismo Wi-Fi, o por el punto de acceso del teléfono del jefe.
+
+```sh
+cd servidor/equipo
+npm install          # solo la primera vez
+npm run local
+```
+
+Muestra una dirección como `192.168.1.10:8790`. En la app del jefe: **Equipo → Servidor del equipo**, se escribe esa
+dirección y listo; los vaqueros la reciben solos con la ficha del equipo. Mientras la computadora esté encendida y
+los teléfonos en el Wi-Fi, todo llega **en vivo**: cada teléfono mantiene abierta una conexión (el "timbre") y el
+servidor le avisa en cuanto hay algo para él. Los datos se guardan en `datos/` y no se pierden al apagar.
+
+Por la red de la finca va por `http`, pero no se puede leer nada: cada sobre va cifrado y firmado de punta a punta.
 
 ## Probarlo
 

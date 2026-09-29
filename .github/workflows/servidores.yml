@@ -3,10 +3,9 @@
 # CLOUDFLARE_ACCOUNT_ID. Paso a paso en servidor/PUBLICAR.md. Sin ellos, este flujo solo avisa que faltan.
 name: Publicar servidores
 
+# Por ahora el equipo usa el servidor local de la finca (servidor/equipo, npm run local): este flujo solo corre si
+# alguien lo lanza a mano desde Actions.
 on:
-  push:
-    branches: [main, 'claude/**']
-    paths: ['servidor/**', '.github/workflows/servidores.yml']
   workflow_dispatch:
 
 permissions:

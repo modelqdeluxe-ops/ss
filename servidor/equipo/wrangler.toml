@@ -10,3 +10,12 @@ compatibility_date = "2025-07-01"
 binding = "DB"
 database_name = "rumentis-equipo"
 database_id = "PON-AQUI-EL-ID-DE-TU-BASE"
+
+# el timbre en tiempo real (WebSocket): un Durable Object por equipo. Entra en el plan gratis (con SQLite).
+[[durable_objects.bindings]]
+name = "TIMBRE"
+class_name = "Timbre"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Timbre"]

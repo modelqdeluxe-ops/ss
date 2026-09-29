@@ -14,8 +14,12 @@
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
+        <package android:name="hn.hato.ganadero"/>
+        <package android:name="hn.hato.ganadero.vaquero"/>
+        <package android:name="hn.hato.ganadero.prueba"/>
+        <package android:name="hn.hato.ganadero.vaquero.prueba"/>
     </queries>
-    <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:roundIcon="@mipmap/ic_launcher" android:supportsRtl="false" android:theme="@style/Tema">
+    <application android:usesCleartextTraffic="true" android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:roundIcon="@mipmap/ic_launcher" android:supportsRtl="false" android:theme="@style/Tema">
         <activity android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|density|fontScale" android:exported="true" android:launchMode="singleTask" android:name=".MainActivity" android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

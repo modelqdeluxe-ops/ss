@@ -118,7 +118,10 @@ function leerEnlace(t){
 }
 
 /* ---------- servidor de relevo ---------- */
-const urlOk=u=>{u=String(u||'').trim().replace(/\/+$/,'');return /^https:\/\/[^\s/]+|^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?/.test(u)?u:'';};
+// https en internet; http solo dentro de la finca (red local: 192.168.x.x, 10.x.x.x, 172.16-31.x.x o un nombre .local).
+// Por http no se ve nada: los sobres van cifrados y firmados de punta a punta.
+const LOCAL=/^http:\/\/(127\.0\.0\.1|localhost|10(\.\d{1,3}){3}|192\.168(\.\d{1,3}){2}|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2}|[a-z0-9-]+\.local)(:\d{1,5})?$/i;
+const urlOk=u=>{u=String(u||'').trim().replace(/\/+$/,'');if(/^\d/.test(u))u='http://'+u;return /^https:\/\/[^\s/]+$/.test(u)||LOCAL.test(u)?u:'';};
 async function pedir(base,ruta,cuerpo,firmaSec){
   base=urlOk(base);if(!base)throw new Error('sin servidor');
   const b={...cuerpo,ts:Date.now()};if(firmaSec)b.f=await firmar(b,firmaSec);
@@ -130,12 +133,42 @@ async function pedir(base,ruta,cuerpo,firmaSec){
   }finally{clearTimeout(t);}
 }
 
+/* ---------- timbre: conexión en vivo con el servidor ---------- */
+// Un WebSocket abierto mientras la app está en pantalla. El servidor solo dice "hay" cuando llega algo para este
+// teléfono y la app pide sus sobres al instante. Si se corta, se reintenta solo (cada vez más espaciado); mientras
+// tanto la app sigue sincronizando cada minuto. obtener() da {base,cuerpo,firmaSec} o null si todavía no se puede.
+function timbre(obtener,alSonar,alCambiar){
+  let ws=null,vivo=false,espera=2000,pingT=0,reT=0,abriendo=false;
+  const cambio=v=>{if(vivo!==v){vivo=v;try{alCambiar&&alCambiar(v);}catch(e){}}};
+  async function abrir(){
+    clearTimeout(reT);if(ws||abriendo||document.hidden||typeof WebSocket==='undefined')return;
+    abriendo=true;let o=null;try{o=await obtener();}catch(e){}abriendo=false;
+    if(!o||ws||document.hidden)return;const base=urlOk(o.base);if(!base)return;
+    const b={...o.cuerpo,ts:Date.now()};b.f=await firmar(b,o.firmaSec);
+    let w;try{w=new WebSocket(base.replace(/^http/,'ws')+'/v1/timbre?b='+b64u(enc(JSON.stringify(b))));}catch(e){reintentar();return;}
+    ws=w;
+    w.onopen=()=>{espera=2000;cambio(true);clearInterval(pingT);pingT=setInterval(()=>{try{w.send('ping');}catch(e){}},25000);alSonar();};
+    w.onmessage=ev=>{if(ev.data==='hay')alSonar();};
+    w.onclose=w.onerror=()=>{if(ws!==w)return;ws=null;clearInterval(pingT);cambio(false);reintentar();};
+  }
+  function reintentar(){clearTimeout(reT);if(document.hidden)return;reT=setTimeout(abrir,espera);espera=Math.min(espera*2,120000);}
+  function cerrar(){const w=ws;ws=null;clearInterval(pingT);clearTimeout(reT);cambio(false);try{w&&w.close();}catch(e){}}
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)cerrar();else{espera=2000;abrir();}});
+  addEventListener('online',()=>{espera=2000;abrir();});
+  return {abrir,cerrar,vivo:()=>vivo,reiniciar(){cerrar();espera=2000;abrir();}};
+}
+
 /* ---------- archivo .rumentis (para WhatsApp) ---------- */
 // "RUMENTIS" + tipo (1 byte: 1 = JSON, 2 = JSON comprimido) + nonce (24) + nacl.secretbox con la llave de los archivos
 // de Rumentis. Los sobres de adentro ya van cifrados y firmados con las llaves del equipo; esta capa hace que el archivo
 // no se pueda abrir ni leer con otra cosa que no sea Rumentis. Cada archivo lleva un número único (fid): la app no
 // abre dos veces el mismo archivo ni uno que hizo ella misma.
-const MAGIA=enc('RUMENTIS'),EXT='.rumentis',MIME='application/vnd.rumentis',LSA='rumentis-archivos';
+// Cada app hace archivos para la otra: el vaquero manda .rumentis (los abre Rumentis, la del jefe) y el jefe manda
+// .vaquero (los abre Rumentis Vaquero). Si uno llega a la app equivocada, esta se lo pasa a la otra.
+const MAGIA=enc('RUMENTIS'),LSA='rumentis-archivos';
+const TIPOS={jefe:{ext:'.rumentis',mime:'application/vnd.rumentis',app:'Rumentis'},vaquero:{ext:'.vaquero',mime:'application/vnd.rumentis.vaquero',app:'Rumentis Vaquero'}};
+const OTRA=CFG.app==='vaquero'?'jefe':'vaquero',PARA=TIPOS[OTRA];
+const paraDe=o=>o.para||(o.de==='jefe'?'vaquero':'jefe');
 let LLAVE_A=null;
 async function llaveArchivo(){const n=await nacl_();return LLAVE_A||(LLAVE_A=n.hash(enc('RUMENTIS-ARCHIVO-1|hn.hato.ganadero')).slice(0,32));}
 function vistos(){try{return JSON.parse(localStorage.getItem(LSA)||'{}')||{};}catch(e){return {};}}
@@ -146,7 +179,7 @@ const visto=fid=>{const v=vistos()[fid];return v?v[0]:null;};
 // extra: p. ej. la ficha del equipo en el archivo del jefe (así el vaquero que se activó sin enlace conoce sus llaves)
 async function armarArchivo(sobres,de,extra){
   const n=await nacl_(),fid=b64u(azar(15));
-  let c=enc(JSON.stringify({rumentis:'equipo',v:2,fid,de,ts:Date.now(),...(extra||{}),sobres})),tipo=1;
+  let c=enc(JSON.stringify({rumentis:'equipo',v:2,fid,de,para:de==='jefe'?'vaquero':'jefe',ts:Date.now(),...(extra||{}),sobres})),tipo=1;
   const z=await comprimir(c);if(z&&z.length<c.length){c=z;tipo=2;}
   const nonce=azar(24),caja=n.secretbox(c,nonce,await llaveArchivo());
   const u=new Uint8Array(33+caja.length);u.set(MAGIA,0);u[8]=tipo;u.set(nonce,9);u.set(caja,33);
@@ -170,21 +203,27 @@ async function leerArchivo(u){
 async function recibirArchivo(u,fn){
   const o=await leerArchivo(u);
   if(!o){toast('Ese archivo no es de Rumentis.',4000);return false;}
+  const para=paraDe(o);
+  if(para!==CFG.app){
+    let ok=false;try{ok=!!(window.Recibido&&Recibido.pasar&&Recibido.pasar(b64(u)));}catch(e){}
+    toast(para==='vaquero'?(ok?'Ese archivo es para Rumentis Vaquero: se abre ahí.':'Ese archivo es para la app Rumentis Vaquero. Ábrelo en esa app.')
+      :(ok?'Ese archivo es para Rumentis, la app del jefe: se abre ahí.':'Ese archivo es para Rumentis, la app del jefe. Ábrelo en esa app.'),4500);return false;
+  }
   const v=visto(o.fid);
   if(v==='m'){toast('Ese archivo lo hiciste tú: mándaselo a tu equipo por WhatsApp.',4500);return false;}
   if(v){toast('Ese archivo ya lo abriste. Cada archivo se abre una sola vez: pide uno nuevo.',5000);return false;}
   const ok=await fn(o);if(ok!==false)marcarVisto(o.fid,'r');return ok!==false;
 }
 // nombre legible y distinto cada vez (fecha + hora), con la extensión .rumentis
-const nombreArchivo=base=>String(base||'rumentis').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)+'-'+new Date().toTimeString().slice(0,5).replace(':','')+EXT;
+const nombreArchivo=base=>String(base||'rumentis').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)+'-'+new Date().toTimeString().slice(0,5).replace(':','')+PARA.ext;
 function compartirArchivo(nombre,u,titulo){
   const A=window.Android;
-  if(A&&A.compartirArchivo){try{if(A.compartirArchivo(nombre,b64(u),MIME,titulo||nombre))return true;}catch(e){}}
-  try{const f=new File([u],nombre,{type:MIME});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:titulo||nombre}).catch(()=>{});return true;}}catch(e){}
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:MIME}));a.download=nombre;document.body.appendChild(a);a.click();
+  if(A&&A.compartirArchivo){try{if(A.compartirArchivo(nombre,b64(u),PARA.mime,titulo||nombre))return true;}catch(e){}}
+  try{const f=new File([u],nombre,{type:PARA.mime});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:titulo||nombre}).catch(()=>{});return true;}}catch(e){}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:PARA.mime}));a.download=nombre;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);return true;
 }
-function elegirArchivo(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.rumentis,.json,'+MIME+',application/octet-stream,*/*';
+function elegirArchivo(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.rumentis,.vaquero,.json,'+TIPOS.jefe.mime+','+TIPOS.vaquero.mime+',application/octet-stream,*/*';
   i.onchange=()=>{const f=i.files&&i.files[0];if(!f){ok(null);return;}const rd=new FileReader();rd.onload=()=>ok(new Uint8Array(rd.result));rd.onerror=()=>ok(null);rd.readAsArrayBuffer(f);};i.click();});}
 // Android: al tocar un archivo .rumentis en WhatsApp (o compartirlo a Rumentis) la app se abre y lo recibe
 let alRecibir=null;
@@ -254,6 +293,6 @@ const iniciales=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]||''
 window.EquipoNucleo={CFG,nacl:nacl_,cargar,enc,dec,b64,deB64,b64u,deB64u,azar,sha,canon,
   nuevaLicencia,normLic,licValida,fmtLic,hashLic,LIC_PRUEBA,esLicPrueba,
   nuevasLlaves,idDe,firmar,verificar,huella,sellar,sobrePlano,abrir,ficha,fichaValida,enlace,leerEnlace,
-  urlOk,pedir,armarArchivo,leerArchivo,recibirArchivo,escucharArchivos,nombreArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
+  urlOk,pedir,timbre,armarArchivo,leerArchivo,recibirArchivo,escucharArchivos,nombreArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
   pagosHay,pagosEscuchar,compraReal,haceCuanto,iniciales};
 })();

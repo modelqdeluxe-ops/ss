@@ -279,17 +279,21 @@ async function sincronizar(){
       await publicarEstado();
       if(SY.estadoPend&&SY.estado){SY.salida=(SY.salida||[]).filter(s=>s.r!=='estado').concat(SY.estado);SY.estadoPend=0;guardarSY();}
       await enviarSalida(base,f);
-      SY.ult=Date.now();SY.err='';guardarSY();
+      SY.ult=Date.now();SY.err='';guardarSY();T.abrir();
     }catch(err){SY.err=String(err&&err.message||err);guardarSY();}
-    finally{ocupado=null;if(location.hash.startsWith('#equipo'))scheduleRender();}
+    finally{ocupado=null;if(nuevos||location.hash.startsWith('#equipo'))scheduleRender();}
     return nuevos;})();
   return ocupado;
 }
+// en vivo: el servidor avisa en cuanto un vaquero manda algo y la app lo pide al instante
+const T=N.timbre(async()=>{const e=EQ(),base=servidor(),f=firmaJ();if(!e||!e.id||!base||!f||!SY.reg||SY.srv!==base)return null;
+  return {base,cuerpo:{e:e.id,quien:'jefe'},firmaSec:f.sec};},()=>sincronizarPronto(150),()=>{if(location.hash.startsWith('#equipo'))scheduleRender();});
 ACTS.eqSinc=async()=>{if(!servidor()){toast('Sin servidor: pásale los datos a tu equipo por archivo.',4000);return;}toast('Sincronizando…');const n=await sincronizar();
   toast(SY.err?'No se pudo sincronizar. Revisa tu internet.':n?`Listo: ${pl(n,'mensaje nuevo','mensajes nuevos')}`:'Todo al día',3000);};
 // cada vez que cambian tus datos, el equipo recibe el estado nuevo (si tienes vaqueros)
 let pubT=0;document.addEventListener('rumentis-pintado',()=>{if(!conEquipo()||!activos().length)return;clearTimeout(pubT);pubT=setTimeout(()=>publicarEstado(),2500);});
-setInterval(()=>{if(!document.hidden&&conEquipo()&&servidor())sincronizar();},60000);
+// sin conexión en vivo, cada minuto; con ella, solo de vez en cuando por si acaso
+setInterval(()=>{if(!document.hidden&&conEquipo()&&servidor()&&!(T.vivo()&&Date.now()-(SY.ult||0)<5*60e3))sincronizar();},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&conEquipo()&&servidor())sincronizar();});
 
 /* ---------- por archivo (WhatsApp) ---------- */
@@ -327,8 +331,9 @@ SAVE.eqTarea=f=>{const t=fv(f,'t').trim();if(!t)return ferr(f,'Escribe qué hay 
   put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).concat({id:uid('t'),t,f:fv(f,'f')||hoy(),hecho:false,para})});closeSheet();toast(`Tarea para ${quien}`);publicarEstado();};
 ACTS.eqTareaBorrar=el=>{put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).filter(t=>t.id!==el.dataset.id)});publicarEstado();};
 ACTS.eqServidor=()=>{const e=EQ()||{};
-  openSheet(shHead('Servidor del equipo',EQT())+formWrap('eqServidor',`${q('Dirección del servidor',`<input class="in" name="s" value="${esc(e.servidor||'')}" placeholder="${esc(CFG.servidorEquipo||'https://…')}" autocomplete="off" inputmode="url" data-no-tr>`,'Déjalo vacío para usar el de Rumentis. Sin servidor, el equipo se pasa los datos por archivo.')}`,foot('Guardar')));};
-SAVE.eqServidor=f=>{const s=fv(f,'s').trim();if(s&&!N.urlOk(s))return ferr(f,'Escribe una dirección que empiece con https://');guardarEQ({servidor:s});closeSheet();toast('Guardado');sincronizarPronto(200);};
+  openSheet(shHead('Servidor del equipo',EQT())+formWrap('eqServidor',`${q('Dirección del servidor',`<input class="in" name="s" value="${esc(e.servidor||'')}" placeholder="${esc(CFG.servidorEquipo||'192.168.1.10:8790')}" autocomplete="off" inputmode="url" data-no-tr>`,'La dirección que muestra el servidor de la finca al encenderlo. Sin servidor, el equipo se pasa los datos por archivo.')}`,foot('Guardar')));};
+SAVE.eqServidor=f=>{const s=fv(f,'s').trim();if(s&&!N.urlOk(s))return ferr(f,'Esa dirección no sirve. Escribe la que muestra el servidor de la finca, por ejemplo 192.168.1.10:8790.');
+  guardarEQ({servidor:s?N.urlOk(s):''});closeSheet();toast('Guardado');T.reiniciar();sincronizarPronto(200);};
 
 /* ---------- pantalla ---------- */
 const avatar=(n,cls='')=>`<span class="eq-av ${cls}" aria-hidden="true" data-no-tr>${esc(N.iniciales(n))}</span>`;
@@ -377,9 +382,9 @@ PAGES.equipo=()=>{
    <section class="sec">${secH('Tareas del equipo',tareas.length,lnkB('f','Asignar','data-f="eqTarea"'))}${tareas.length?`<div class="card rows">${tareas.map(t=>`<div class="row"><span class="mas-ic t-a">${icono('lista','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span>${esc(nombreDe(t.para))} · ${ffc(t.f)}</span></div><button type="button" class="del" data-act="eqTareaBorrar" data-id="${t.id}" aria-label="Quitar tarea">${ico('papelera')}</button></div>`).join('')}</div>`:`<p class="hint">Asigna tareas a un vaquero o a todos: les aparecen en su app.</p>`}</section>
    <section class="sec">${secH('Actividad')}${(e.act||[]).length?`<div class="card rows">${(e.act||[]).slice(0,UI.eqAct?60:12).map(filaAct).join('')}</div>${(e.act||[]).length>12&&!UI.eqAct?`<button type="button" class="lnk" data-act="eqActMas">Ver más</button>`:''}`:`<p class="hint">Aquí verás lo que registra tu equipo.</p>`}</section>
    <section class="sec">${secH('Sincronización')}<div class="card pad eq-sinc">
-    <div class="eq-sinc-h"><span class="mas-ic ${srv?'t-v':'t-y'}">${icono(srv?'rayo':'datos','i3')}</span><div><b>${srv?'Automática por internet':'Por archivo (WhatsApp)'}</b><span>${srv?(SY.err?'No se pudo conectar: se reintenta sola':SY.ult?`Última vez: <span>${N.haceCuanto(SY.ult)}</span>`:'Todavía no se conecta'):'Sin servidor: manda los datos a tu equipo como archivo.'}</span></div></div>
+    <div class="eq-sinc-h"><span class="mas-ic ${srv?'t-v':'t-y'}">${icono(srv?'rayo':'datos','i3')}</span><div><b>${srv?(T.vivo()?'En vivo':'Automática por el servidor'):'Por archivo (WhatsApp)'}</b><span>${srv?(T.vivo()?'Lo que registra tu equipo te llega al instante':SY.err?'No se pudo conectar: se reintenta sola':SY.ult?`Última vez: <span>${N.haceCuanto(SY.ult)}</span>`:'Todavía no se conecta'):'Sin servidor: manda los datos a tu equipo como archivo.'}</span></div></div>
     <div class="acts">${srv?`<button type="button" class="btn" data-act="eqSinc">Sincronizar ahora</button>`:''}<button type="button" class="btn" data-act="eqEnviarArchivo">Enviar al equipo</button><button type="button" class="btn" data-act="eqRecibirArchivo">Recibir archivo</button></div>
-    <p class="hint eq-arch">Los archivos del equipo terminan en .rumentis. En WhatsApp tócalo y elige Rumentis para abrirlo. Cada archivo se abre una sola vez.</p>
+    <p class="hint eq-arch">Lo que mandas a tu equipo termina en .vaquero y se abre en Rumentis Vaquero. Lo que te mandan tus vaqueros termina en .rumentis: en WhatsApp tócalo y elige Rumentis. Cada archivo se abre una sola vez.</p>
     <div class="row eq-tg"><div class="tx"><b>Aceptar vaqueros nuevos solos</b><span>Si lo apagas, te pregunto antes de dejar entrar a alguien.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.auto!==false}" aria-label="Aceptar solos" data-act="eqAuto"><span></span></button></div>
     <button type="button" class="lnk" data-act="eqServidor">Servidor del equipo</button></div></section>
    ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código de dueño</button></p>`:''}
@@ -409,6 +414,6 @@ PAGES.mas=(sub,...r)=>{const h=_mas(sub,...r);if(sub)return h;
 /* ---------- arranque ---------- */
 if(N.pagosHay()){try{Pagos.iniciar(CFG.productoLicencia);}catch(e){}}
 if(conEquipo()&&servidor())setTimeout(()=>sincronizar(),2500);
-window.Equipo={alRecibir,sincronizar,publicarEstado,estadoEquipo,procesar,aplicarOps,crearLicencia,asegurarEquipo,fichaEq,abrirLicencia,darDeBaja,SY:()=>SY};
+window.Equipo={alRecibir,vivo:()=>T.vivo(),sincronizar,publicarEstado,estadoEquipo,procesar,aplicarOps,crearLicencia,asegurarEquipo,fichaEq,abrirLicencia,darDeBaja,SY:()=>SY};
 pestana();if(route().p==='equipo'||route().p==='mas')render();
 })();

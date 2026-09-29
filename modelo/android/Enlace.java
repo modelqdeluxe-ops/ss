@@ -21,7 +21,8 @@ import java.security.spec.X509EncodedKeySpec;
    - "Cripto": comprueba la firma RSA de una compra de Google Play con la llave pública de la app (SHA1withRSA),
      para que la app del vaquero sepa que su licencia salió de una compra real.
    - "Recibido": el archivo .rumentis que abrió el usuario (tocándolo en WhatsApp o compartiéndolo a la app). deIntent
-     lo lee del Intent (onCreate y onNewIntent) y avisa a la página, que lo toma con Recibido.tomar(). */
+     lo lee del Intent (onCreate y onNewIntent) y avisa a la página, que lo toma con Recibido.tomar(). Si el archivo
+     es para la otra app (un .vaquero que llegó a Rumentis, o al revés), Recibido.pasar() se lo entrega a esa app. */
 public class Enlace {
     public static void registrar(Activity a, WebView w) {
         try {
@@ -36,7 +37,7 @@ public class Enlace {
         } catch (Throwable e) {
         }
         try {
-            w.addJavascriptInterface(new Recibido(), "Recibido");
+            w.addJavascriptInterface(new Recibido(a), "Recibido");
         } catch (Throwable e) {
         }
     }
@@ -79,7 +80,43 @@ public class Enlace {
         }
     }
 
+    /** La otra app del equipo: hn.hato.ganadero[.prueba] <-> hn.hato.ganadero.vaquero[.prueba]. */
+    static String otraApp(String p) {
+        String base = "hn.hato.ganadero";
+        if (p.startsWith(base + ".vaquero")) return base + p.substring((base + ".vaquero").length());
+        if (p.startsWith(base)) return base + ".vaquero" + p.substring(base.length());
+        return null;
+    }
+
     public static class Recibido {
+        private final Activity a;
+
+        Recibido(Activity a) {
+            this.a = a;
+        }
+
+        /** Entrega el archivo a la otra app del equipo; false si no está instalada. */
+        @JavascriptInterface
+        public boolean pasar(String b64) {
+            try {
+                String otra = otraApp(a.getPackageName());
+                if (otra == null) return false;
+                boolean aVaquero = otra.contains(".vaquero");
+                String n = Archivos.escribir(a, aVaquero ? "equipo.vaquero" : "equipo.rumentis", b64);
+                if (n == null) return false;
+                Uri u = Uri.parse("content://" + a.getPackageName() + ".archivos/" + Uri.encode(n));
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(u, Archivos.tipo(n, null));
+                i.setPackage(otra);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (i.resolveActivity(a.getPackageManager()) == null) return false;
+                a.startActivity(i);
+                return true;
+            } catch (Throwable e) {
+                return false;
+            }
+        }
+
         @JavascriptInterface
         public String tomar() {
             String r = recibido;

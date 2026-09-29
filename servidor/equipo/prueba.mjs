@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url);
 const nacl=require('../../app/assets/lib/nacl-fast.min.js');
 
-const mf=new Miniflare({modules:true,scriptPath:'worker.js',d1Databases:['DB'],compatibilityDate:'2025-07-01'});
+const mf=new Miniflare({modules:true,scriptPath:'worker.js',d1Databases:['DB'],durableObjects:{TIMBRE:{className:'Timbre',useSQLite:true}},compatibilityDate:'2025-07-01'});
 const db=await mf.getD1Database('DB');
 for(const s of readFileSync('schema.sql','utf8').replace(/--.*$/gm,'').split(';').map(x=>x.trim()).filter(Boolean))await db.prepare(s).run();
 
@@ -75,6 +75,21 @@ assert.equal((await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops',V,'jefe'
 assert.equal((await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops',V,'todos',vaq)]},vaq)).st,403);
 assert.equal((await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops','jefe','jefe',vaq)]},vaq)).st,400,'no se hace pasar por el jefe');
 x=await pedir('/v1/recibir',{e:E,quien:'jefe',desde:c1},jefe);assert.deepEqual(x.j.sobres.map(s=>s.t),['ops']);
+// tiempo real: el timbre avisa al jefe cuando el vaquero manda algo, y al vaquero cuando el jefe publica
+const timbre=async(cuerpo,k)=>{const b=firmar({...cuerpo,ts:Date.now()},k);
+  const r=await mf.dispatchFetch(B+'/v1/timbre?b='+b64u(Buffer.from(JSON.stringify(b))),{headers:{Upgrade:'websocket'}});
+  if(r.status!==101)return {st:r.status};const ws=r.webSocket;ws.accept();const msgs=[];ws.addEventListener('message',ev=>msgs.push(ev.data));return {st:101,ws,msgs};};
+const espera=ms=>new Promise(r=>setTimeout(r,ms));
+assert.equal((await mf.dispatchFetch(B+'/v1/timbre')).status,426,'sin WebSocket no');
+assert.equal((await timbre({e:E,quien:'jefe'},otro)).st,403,'firma de otro: no');
+const tj=await timbre({e:E,quien:'jefe'},jefe),tv=await timbre({e:E,quien:V,firma:vaq.pub},vaq);assert.equal(tj.st,101);assert.equal(tv.st,101);
+await pedir('/v1/enviar',{e:E,quien:V,sobres:[sobre('ops',V,'jefe',vaq)]},vaq);await espera(150);
+assert.deepEqual(tj.msgs,['hay'],'el jefe se entera al instante');assert.deepEqual(tv.msgs,[],'al vaquero no le toca');
+await pedir('/v1/enviar',{e:E,quien:'jefe',sobres:[sobre('estado','jefe','todos',jefe,{r:'estado'})]},jefe);await espera(150);
+assert.deepEqual(tv.msgs,['hay'],'el vaquero se entera del estado nuevo');assert.equal(tj.msgs.length,1);
+tv.ws.send('ping');await espera(100);assert.equal(tv.msgs.at(-1),'pong','ping y pong');
+tj.ws.close();tv.ws.close();
+{const r=await mf.dispatchFetch(B+'/v1/salud');assert.equal((await r.json()).timbre,true);}
 // baja: la licencia deja de encontrarse y el vaquero ya no puede mandar
 await pedir('/v1/licencias',{e:E,quien:'jefe',bajas:[h]},jefe);await pedir('/v1/miembros',{e:E,quien:'jefe',bajas:[V]},jefe);
 assert.equal((await pedir('/v1/ficha',{h})).st,404);

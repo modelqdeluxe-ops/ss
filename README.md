@@ -107,9 +107,11 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
 - `servidor/equipo/` — servidor de relevo del equipo (Cloudflare Workers + D1): guarda y entrega los sobres
   cifrados entre el jefe y sus vaqueros; `npm test` lo prueba y `npm run local` lo levanta en tu computadora.
-- `servidor/publicar.sh` — publica los dos servidores en Cloudflare (plan gratis) y pone sus direcciones en la app;
-  lo corre `.github/workflows/servidores.yml` con los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
-  Paso a paso, y cuánto cuesta, en `servidor/PUBLICAR.md`.
+- **Servidor en la finca** (lo que se usa por ahora): `cd servidor/equipo && npm install && npm run local` en una
+  computadora del mismo Wi-Fi; muestra la dirección que se escribe en Equipo → Servidor del equipo. Todo llega en
+  vivo (WebSocket "timbre", un Durable Object por equipo) y los datos quedan en `servidor/equipo/datos/`.
+- `servidor/publicar.sh` — para más adelante: publica los dos servidores en Cloudflare; lo corre a mano
+  `.github/workflows/servidores.yml`. Paso a paso en `servidor/PUBLICAR.md`.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
 - `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisVaquero.apk` y, con `todo`,
@@ -139,8 +141,10 @@ Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia.
 - **Núcleo** (`app/assets/equipo_nucleo.js`): llaves Ed25519 y X25519 por teléfono (tweetnacl); sobres firmados y
   cifrados (alta y bienvenida con `nacl.box`, lo demás con la clave del equipo, `nacl.secretbox`); transporte por
   el servidor de relevo y, siempre, por archivo para WhatsApp.
-- **Archivo `.rumentis`** (tipo `application/vnd.rumentis`): `RUMENTIS` + tipo (1 = JSON, 2 = JSON comprimido) +
-  nonce + `nacl.secretbox` con la llave de archivos de la app, así que solo Rumentis lo abre. Lleva un número único
+- **Archivos del equipo**: el vaquero manda `.rumentis` (`application/vnd.rumentis`, los abre Rumentis) y el jefe
+  manda `.vaquero` (`application/vnd.rumentis.vaquero`, los abre Rumentis Vaquero; `variante.py` cambia el tipo en
+  el manifiesto); si uno llega a la app equivocada, `Recibido.pasar` se lo entrega a la otra. Por dentro:
+  `RUMENTIS` + tipo (1 = JSON, 2 = JSON comprimido) + nonce + `nacl.secretbox` con la llave de archivos de la app, así que solo Rumentis lo abre. Lleva un número único
   (`fid`): la app no abre dos veces el mismo archivo ni uno que hizo ella misma. En Android, tocar el archivo en
   WhatsApp (o compartirlo a la app) abre Rumentis y lo recibe (`Enlace.deIntent` y el puente `Recibido`); los
   `.json` de la versión anterior todavía se leen.

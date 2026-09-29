@@ -8,7 +8,12 @@
    - Cada quien lee solo lo suyo: el jefe lo que va para 'jefe'; un vaquero lo que va para él (su número sale de su
      llave pública) y, si es miembro, lo que va para 'todos'.
    Rutas (POST con JSON en text/plain): /v1/equipo, /v1/licencias, /v1/ficha, /v1/miembros, /v1/alta, /v1/enviar,
-   /v1/recibir. GET /v1/salud. */
+   /v1/recibir. GET /v1/salud.
+   Tiempo real: GET /v1/timbre?b=... abre un WebSocket (el pedido firmado va en b, en base64url). Un Durable Object
+   por equipo (Timbre) guarda las conexiones y, cuando llega un sobre, le manda "hay" a quien le toca; la app entonces
+   pide sus sobres con /v1/recibir. Por el timbre no pasa ningún dato. Las conexiones hibernan: mientras nadie
+   escribe, no gastan. Si el Durable Object no está, todo sigue funcionando cada minuto como antes. */
+import {DurableObject} from 'cloudflare:workers';
 const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'86400'};
 const json=(o,st=200)=>new Response(JSON.stringify(o),{status:st,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...CORS}});
 const mal=(m,st=400)=>json({ok:false,error:m},st);
@@ -29,6 +34,11 @@ async function verificar(obj,firmaPub){
 }
 const EQ_RE=/^e[A-Za-z0-9_-]{10,40}$/,V_RE=/^v[0-9a-f]{12}$/,H_RE=/^[0-9a-f]{64}$/,B64_RE=/^[A-Za-z0-9+/]{43}=$/;
 const reciente=ts=>typeof ts==='number'&&Math.abs(Date.now()-ts)<VENTANA;
+// avisa por el timbre del equipo a quien le llegó algo ('jefe', un vaquero o 'todos')
+async function tocar(env,e,paras){
+  if(!env.TIMBRE||!paras.length)return;
+  try{await env.TIMBRE.get(env.TIMBRE.idFromName(e)).fetch('https://timbre/tocar',{method:'POST',body:JSON.stringify([...new Set(paras)])});}catch(err){}
+}
 
 async function firmaJefe(env,e){const r=await env.DB.prepare('SELECT firma FROM equipos WHERE id=?').bind(e).first();return r?r.firma:null;}
 async function firmaMiembro(env,e,vid){const r=await env.DB.prepare('SELECT firma FROM miembros WHERE equipo=? AND vid=?').bind(e,vid).first();return r?r.firma:null;}
@@ -75,7 +85,7 @@ const RUTAS={
     if(st.length)await env.DB.batch(st);
     return json({ok:true});
   },
-  async '/v1/alta'(b,env){
+  async '/v1/alta'(b,env,ctx){
     if(!H_RE.test(b.h||'')||!sobreOk(b.sobre))return mal('pedido no válido');
     const s=b.sobre;const L=await env.DB.prepare('SELECT equipo,baja,altas FROM licencias WHERE h=?').bind(b.h).first();
     if(!L||L.baja)return mal('no existe',404);
@@ -84,9 +94,10 @@ const RUTAS={
     await env.DB.batch([
       env.DB.prepare('UPDATE licencias SET altas=altas+1 WHERE h=?').bind(b.h),
       env.DB.prepare('INSERT INTO buzon(equipo,para,de,r,cuerpo,creado) VALUES(?,?,?,?,?,?)').bind(L.equipo,'jefe',s.de,null,JSON.stringify(s),Date.now())]);
+    ctx.waitUntil(tocar(env,L.equipo,['jefe']));
     return json({ok:true});
   },
-  async '/v1/enviar'(b,env){
+  async '/v1/enviar'(b,env,ctx){
     const q=await quien(env,b);if(!q||(!q.jefe&&!q.miembro))return mal('sin permiso',403);
     const sobres=Array.isArray(b.sobres)?b.sobres.slice(0,100):[];const st=[];const yo=q.jefe?'jefe':q.vid;
     for(const s of sobres){
@@ -97,7 +108,7 @@ const RUTAS={
       if(r)st.push(env.DB.prepare('DELETE FROM buzon WHERE equipo=? AND para=? AND r=?').bind(b.e,s.para,r));
       st.push(env.DB.prepare('INSERT INTO buzon(equipo,para,de,r,cuerpo,creado) VALUES(?,?,?,?,?,?)').bind(b.e,s.para,yo,r,JSON.stringify(s),Date.now()));
     }
-    if(st.length)await env.DB.batch(st);
+    if(st.length){await env.DB.batch(st);ctx.waitUntil(tocar(env,b.e,sobres.map(s=>s.para)));}
     return json({ok:true,guardados:sobres.length});
   },
   async '/v1/recibir'(b,env){
@@ -113,16 +124,45 @@ const RUTAS={
   }
 };
 
+// el timbre: quien pide lo prueba con su firma, igual que para /v1/recibir
+async function timbre(req,env,u){
+  if(!env.TIMBRE)return mal('sin timbre',404);
+  if((req.headers.get('Upgrade')||'').toLowerCase()!=='websocket')return mal('usa WebSocket',426);
+  let b;try{b=JSON.parse(new TextDecoder().decode(deB64u(u.searchParams.get('b')||'')));}catch(e){return mal('pedido no válido');}
+  const q=b&&typeof b==='object'?await quien(env,b,{nuevoOk:true}):null;if(!q)return mal('sin permiso',403);
+  const et=q.jefe?['jefe']:[q.vid,'todos'];
+  return env.TIMBRE.get(env.TIMBRE.idFromName(b.e)).fetch('https://timbre/abrir?et='+encodeURIComponent(JSON.stringify(et)),{headers:{Upgrade:'websocket'}});
+}
+export class Timbre extends DurableObject{
+  constructor(ctx,env){super(ctx,env);
+    // la app manda "ping" cada tanto para que la red no corte la conexión; se contesta sin despertar al objeto
+    try{ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping','pong'));}catch(e){}}
+  async fetch(req){
+    const u=new URL(req.url);
+    if(u.pathname==='/tocar'){const paras=await req.json();let n=0;
+      for(const p of paras)for(const ws of this.ctx.getWebSockets(String(p))){try{ws.send('hay');n++;}catch(e){}}
+      return new Response(String(n));}
+    const et=JSON.parse(u.searchParams.get('et')||'[]').map(String).slice(0,4);
+    const [cliente,servidor]=Object.values(new WebSocketPair());
+    this.ctx.acceptWebSocket(servidor,et);
+    return new Response(null,{status:101,webSocket:cliente});
+  }
+  webSocketMessage(ws,m){if(m==='ping')try{ws.send('pong');}catch(e){}}
+  webSocketClose(ws,code){try{ws.close(code===1005?1000:code,'');}catch(e){}}
+  webSocketError(ws){try{ws.close(1011,'');}catch(e){}}
+}
+
 export default {
-  async fetch(req,env){
+  async fetch(req,env,ctx){
     const u=new URL(req.url);
     if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
-    if(req.method==='GET'&&u.pathname==='/v1/salud')return json({ok:true,servicio:'rumentis-equipo'});
+    if(req.method==='GET'&&u.pathname==='/v1/salud')return json({ok:true,servicio:'rumentis-equipo',timbre:!!env.TIMBRE});
+    if(req.method==='GET'&&u.pathname==='/v1/timbre')return timbre(req,env,u);
     const f=RUTAS[u.pathname];if(!f)return mal('no existe',404);
     if(req.method!=='POST')return mal('usa POST',405);
     const t=await req.text();if(t.length>MAX_PEDIDO)return mal('muy grande',413);
     let b;try{b=JSON.parse(t);}catch(e){return mal('JSON no válido');}
     if(!b||typeof b!=='object')return mal('JSON no válido');
-    try{return await f(b,env);}catch(e){return mal('error del servidor',500);}
+    try{return await f(b,env,ctx);}catch(e){return mal('error del servidor',500);}
   }
 };
