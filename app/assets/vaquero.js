@@ -100,6 +100,14 @@ async function procesar(s){
   if(VQ.estadoEspera&&(VQ.claves||{})[VQ.estadoEspera.g]){const e=VQ.estadoEspera;VQ.estadoEspera=null;await procesar(e);}
   return hecho;
 }
+// el archivo del jefe trae la ficha del equipo: si me activé sin enlace, la tomo (solo si el archivo trae algo para mí)
+async function adoptarFicha(o){
+  if(VQ.ficha)return true;const fi=o&&o.ficha;if(!fi)return true;
+  if(!(o.sobres||[]).some(s=>s.para===VQ.vid&&s.e===fi.e))return false;
+  if(!(await N.fichaValida(fi)))return false;
+  if(fi.p&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pídele a tu jefe una licencia de la app de Google Play.';guardarVQ();render();return false;}
+  VQ.ficha=fi;VQ.e=fi.e;VQ.finca=fi.fn||VQ.finca;guardarVQ();ver++;return true;
+}
 function darmeDeBaja(){VQ.estado='baja';VQ.clave=null;VQ.claves={};VQ.cola=[];guardarVQ();render();}
 // los mensajes de una vez: primero las claves, luego lo demás, el estado al final
 const ORDEN={bienvenida:0,rechazo:1,clave:2,baja:3,estado:4};
@@ -116,6 +124,14 @@ async function activar(nombre,lic,ficha){
   VQ.alta=await sobreAlta();guardarVQ();render();
   if(servidor())await sincronizar();
 }
+// sin servidor y sin enlace: el vaquero queda pendiente con solo su licencia; su alta va firmada en un archivo para
+// el jefe, y del archivo que el jefe le devuelve toma las llaves del equipo
+async function activarSinFicha(nombre,lic){
+  if(!VQ.yo)VQ.yo=await N.nuevasLlaves();
+  VQ.nombre=nombre;VQ.lic=lic;VQ.ficha=null;VQ.e=null;VQ.vid=N.idDe(VQ.yo.firma.pub);VQ.finca='';VQ.estado='pendiente';VQ.motivo='';VQ.altaEnviada=0;VQ.cursor=0;VQ.vistos=[];ver++;
+  VQ.alta=await N.sobrePlano('alta',{de:VQ.vid,para:'jefe',carga:{lic,nombre,disp:'',ts:Date.now()},firmaSec:VQ.yo.firma.sec,extra:{k:VQ.yo.caja.pub,j:VQ.yo.firma.pub}});
+  guardarVQ();render();
+}
 async function buscarFicha(lic){
   const base=N.urlOk(CFG.servidorEquipo);if(!base)return null;
   try{const r=await N.pedir(base,'/v1/ficha',{h:N.hashLic(lic)});return r.ficha||null;}catch(e){if(e.status===404)return false;throw e;}
@@ -130,9 +146,9 @@ ACTS.vqActivar=async()=>{
   const b=f.querySelector('.btn.pri');b.disabled=true;b.textContent=aUnidad('Buscando tu licencia…');
   try{
     let ficha=enl&&enl.lic===lic?enl.ficha:null;
-    if(!ficha){try{ficha=await buscarFicha(lic);}catch(e){err.textContent=aUnidad('No hay internet para buscar la licencia. Conéctate o pídele a tu jefe el enlace o el QR.');return;}}
-    if(ficha===false||(!ficha&&servidor())){err.textContent=aUnidad('No encuentro esa licencia. Revísala con tu jefe.');return;}
-    if(!ficha){err.textContent=aUnidad('Para activar sin internet pega el enlace que te mandó tu jefe o escanea su QR.');return;}
+    if(!ficha){try{ficha=await buscarFicha(lic);}catch(e){ficha=null;}}   // sin internet: se sigue por archivo
+    if(ficha===false){err.textContent=aUnidad('No encuentro esa licencia. Revísala con tu jefe.');return;}
+    if(!ficha)return activarSinFicha(nombre,lic);
     if(!(await N.fichaValida(ficha))){err.textContent=aUnidad('Esa licencia no es válida.');return;}
     if(ficha.p&&!CFG.prueba){err.textContent=aUnidad('Esa licencia es de la app de prueba. Pídele a tu jefe una licencia de la app de Google Play.');return;}
     await activar(nombre,lic,ficha);
@@ -184,6 +200,7 @@ ACTS.vqEnviarArchivo=async()=>{
   N.compartirArchivo(`rumentis-${nm}-${hoy()}.json`,N.archivoTexto(L,VQ.vid),aUnidad('Mis registros para el jefe'));
 };
 ACTS.vqRecibirArchivo=async()=>{const t=await N.elegirArchivo();if(!t)return;const o=N.leerArchivo(t);if(!o){toast('Ese archivo no es de Rumentis.',4000);return;}
+  if(!(await adoptarFicha(o))){toast('Ese archivo no es de tu jefe.',4000);return;}
   const n=await procesarVarios(o.sobres);toast(n?'Listo: datos de tu jefe al día':'Nada nuevo para ti en ese archivo',3500);render();};
 ACTS.vqBorrar=()=>confirmar('¿Borrar los datos de este teléfono?','Se borran tu licencia y los datos de la finca. Lo que ya le llegó a tu jefe se queda con él.','Borrar',()=>{
   try{localStorage.removeItem(LSV);localStorage.removeItem(LS_KEY);}catch(e){}location.hash='#hoy';location.reload();});
@@ -227,8 +244,8 @@ function pantallaActivar(){
   const logo=`<div class="vq-logo">${typeof LOGO_HD!=='undefined'?LOGO_HD:''}<span>Vaquero</span></div>`;
   if(e==='pendiente')return `<main class="vq-act">${logo}<div class="card pad vq-card">
     <div class="vq-espera" aria-hidden="true"><i></i><i></i><i></i></div>
-    <h1>Esperando a tu jefe</h1><p>${VQ.finca?`Tu licencia ${N.fmtLic(VQ.lic)} es de ${esc(VQ.finca)}.`:`Tu licencia es ${N.fmtLic(VQ.lic)}.`} En cuanto tu jefe abra Rumentis, entras al equipo.</p>
-    ${servidor()?`<button type="button" class="btn pri full" data-act="vqRevisar">Revisar ahora</button>`:`<p class="hint">Sin internet del equipo: manda tu alta a tu jefe por WhatsApp y abre el archivo que él te devuelva.</p>
+    <h1>Esperando a tu jefe</h1><p>${VQ.finca?`Tu licencia ${N.fmtLic(VQ.lic)} es de ${esc(VQ.finca)}.`:`Tu licencia es ${N.fmtLic(VQ.lic)}.`}${servidor()&&VQ.ficha?' En cuanto tu jefe abra Rumentis, entras al equipo.':''}</p>
+    ${servidor()&&VQ.ficha?`<button type="button" class="btn pri full" data-act="vqRevisar">Revisar ahora</button>`:`<p class="hint">Sin internet del equipo: manda tu alta a tu jefe por WhatsApp y abre el archivo que él te devuelva.</p>
     <button type="button" class="btn pri full" data-act="vqEnviarArchivo">Mandar mi alta al jefe</button><button type="button" class="btn full" data-act="vqRecibirArchivo">Abrir archivo del jefe</button>`}
     <button type="button" class="lnk" data-act="vqOtra">Usar otra licencia</button></div></main>`;
   if(e==='rechazada')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>No se pudo activar</h1><p>${esc(VQ.motivo||'Tu jefe no aceptó la licencia.')}</p>
@@ -336,7 +353,7 @@ function barra(){const nav=$('nav.bottom .in');if(!nav||nav.dataset.vq)return;na
 barra();
 document.addEventListener('rumentis-pintado',()=>{const r=route();const cur=r.p==='lote'?'lotes':r.p;$$('nav.bottom [data-nav]').forEach(a=>{if(a.dataset.nav===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});});
 
-window.Vaquero={VQ:()=>VQ,sincronizar,procesar,procesarVarios,aplicarEstado,activar,modoPrueba,sobreOps,sobreAlta};
+window.Vaquero={VQ:()=>VQ,sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
 if(!Object.keys(S.lotes).length&&activo()&&!VQ.demo)S.config.finca=VQ.finca||S.config.finca;
 document.documentElement.classList.add('vq-listo');
 render();

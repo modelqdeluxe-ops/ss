@@ -1,4 +1,4 @@
-# Compila las cuatro apps de Rumentis (scripts/variantes.sh) y las publica como Release de GitHub.
+# Compila Rumentis y Rumentis Vaquero (scripts/variantes.sh) y las publica en un solo Release de GitHub.
 # La app del dueño se arma con Gradle para llevar Google Play Billing y sus dependencias (scripts/pagos.sh).
 #
 # Firma: agrega en Settings > Secrets and variables > Actions los secretos
@@ -27,7 +27,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-      - name: Compilar las cuatro apps (APK) y las dos de Google Play (AAB)
+      - name: Compilar Rumentis y Rumentis Vaquero (APK y AAB)
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
@@ -39,12 +39,16 @@ jobs:
           VN=$(grep -E '^\s*versionName:' app/apktool.yml | awk '{print $2}')
           echo "VN=$VN" >> "$GITHUB_ENV"
           cd dist && for f in *.apk *.aab; do mv "$f" "${f%.*}-$VN.${f##*.}"; done && ls -la
-      - name: Publicar Release
+      - name: Publicar (un solo Release con lo último)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # se borran las compilaciones anteriores de este flujo (tags v…): así en Releases solo queda la última
+          gh release list --limit 300 --json tagName -q '.[].tagName' | grep -E '^v[0-9]' | while read -r t; do
+            gh release delete "$t" --yes --cleanup-tag || true
+          done
           TAG="v$VN-${GITHUB_RUN_NUMBER}"
           gh release create "$TAG" dist/*-$VN.apk dist/*-$VN.aab \
-            --target "$GITHUB_SHA" --prerelease \
-            --title "Rumentis $VN (compilación $GITHUB_RUN_NUMBER)" \
-            --notes "Rumentis (dueño) y Rumentis Vaquero: APK para instalar y AAB para Google Play. Rumentis Prueba y Vaquero Prueba: para probar el equipo sin cobrar (licencia de prueba del vaquero: RV-PRUEBA-2026). Rama: $GITHUB_REF_NAME."
+            --target "$GITHUB_SHA" --latest \
+            --title "Rumentis $VN" \
+            --notes "Instala en tu teléfono Rumentis-$VN.apk (la tuya) y, en el de cada vaquero, RumentisVaquero-$VN.apk. Los .aab son para subir a Google Play. Rama: $GITHUB_REF_NAME, compilación $GITHUB_RUN_NUMBER."

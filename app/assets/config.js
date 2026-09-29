@@ -10,6 +10,8 @@ window.RUMENTIS={app:'jefe',prueba:false,
   playLlave:'',
   // producto de Google Play para cada licencia (consumible, "Productos integrados en la aplicación")
   productoLicencia:'licencia_vaquero',
+  // precio que se muestra mientras Google Play no dice el suyo (el precio de verdad se pone en Play Console)
+  precioLicencia:'US$1.99',
   tiendaVaquero:'https://play.google.com/store/apps/details?id=hn.hato.ganadero.vaquero',
   paginaVaquero:'https://modelqdeluxe-ops.github.io/ss/vaquero/'};
 if(window.RUMENTIS.app==='vaquero')document.documentElement.classList.add('vaquero');

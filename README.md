@@ -109,8 +109,8 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
   cifrados entre el jefe y sus vaqueros; `npm test` lo prueba y `npm run local` lo levanta en tu computadora.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
-- `scripts/variantes.sh` — las cuatro apps (ver «Equipo»): `dist/Rumentis.apk`, `RumentisVaquero.apk`,
-  `RumentisPrueba.apk`, `RumentisVaqueroPrueba.apk` y, con `todo`, los AAB de las dos de Google Play.
+- `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisVaquero.apk` y, con `todo`,
+  sus AAB para Google Play (las de prueba, con `PRUEBA=1`). GitHub Actions deja un solo Release con lo último.
   `scripts/variante.py` cambia paquete, nombre, color del ícono, `config.js` y la autoridad de archivos.
 - `scripts/pagos.sh` — la app del dueño para Google Play: Gradle (proyecto en `scripts/donante/`) la arma con los
   recursos, assets y manifiesto de la variante más Google Play Billing y sus dependencias (AndroidX, Play Services)
@@ -142,9 +142,17 @@ Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia.
   (firma RSA de Google); `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app del dueño de
   Google Play, que se arma con Gradle (`scripts/pagos.sh`).
 
-Las apps **de prueba** (paquetes `.prueba`) se instalan junto a las de Google Play: en la del jefe las licencias
-se crean sin cobrar; en la del vaquero, la licencia **`RV-PRUEBA-2026`** entra para siempre a una finca de
-muestra sin jefe. Una app de Google Play no acepta licencias de prueba.
+**Modo dueño**: en Equipo, «Tengo un código de dueño». Con el código del dueño de la app (en `equipo.js` solo
+está su huella SHA-256) la app de Google Play crea licencias sin cobrar; son licencias reales y Rumentis Vaquero
+las acepta. La pestaña Equipo siempre se ve; ahí se compra (o se crea) la primera licencia. El precio que se
+muestra lo da Google Play (US$1.99 en `config.js` mientras no responde); la app vale US$3.99.
+
+**Sin servidor** el vaquero se activa igual escribiendo solo la licencia: su alta sale firmada en un archivo para
+el jefe, y del archivo que el jefe le devuelve (lleva la ficha del equipo) toma las llaves del equipo.
+
+Las apps **de prueba** (paquetes `.prueba`, `PRUEBA=1 scripts/variantes.sh`) ya no se publican: en la del jefe
+las licencias se crean sin cobrar y en la del vaquero la licencia `RV-PRUEBA-2026` entra a una finca de muestra.
+Una app de Google Play no acepta licencias de la app de prueba.
 
 Para vender en Google Play: publica **Rumentis** como app de pago y crea en ella el producto integrado
 `licencia_vaquero` (consumible, con su precio); publica **Rumentis Vaquero** gratis. Copia la llave pública RSA

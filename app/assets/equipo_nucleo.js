@@ -80,6 +80,12 @@ async function sellar(t,{e,de,para,carga,caja,clave,g,firmaSec,extra}){
   const s={...(extra||{}),v:1,t,e,de,para,ts:Date.now(),id:b64u(n.randomBytes(9)),z,x:caja?'box':'sb',g:g||0,n:b64u(nonce),c:b64u(c)};
   s.f=await firmar(s,firmaSec);return s;
 }
+// alta sin llaves del jefe (el vaquero solo tiene el código de su licencia y no hay servidor): va firmada pero sin
+// cifrar, dentro del archivo que el vaquero le manda al jefe por WhatsApp
+async function sobrePlano(t,{de,para,carga,firmaSec,extra}){
+  const n=await nacl_();const s={...(extra||{}),v:1,t,e:null,de,para,ts:Date.now(),id:b64u(n.randomBytes(9)),x:'plano',c:JSON.stringify(carga)};
+  s.f=await firmar(s,firmaSec);return s;
+}
 // abre un sobre; firmaPub: la llave de firma de quien lo manda (si se sabe). Devuelve la carga o null.
 async function abrir(s,{caja,clave,firmaPub}={}){
   try{
@@ -125,7 +131,8 @@ async function pedir(base,ruta,cuerpo,firmaSec){
 }
 
 /* ---------- archivo para WhatsApp ---------- */
-function archivoTexto(sobres,de){return JSON.stringify({rumentis:'equipo',v:1,de,ts:Date.now(),sobres});}
+// extra: p. ej. la ficha del equipo en el archivo del jefe (así el vaquero que se activó sin enlace conoce sus llaves)
+function archivoTexto(sobres,de,extra){return JSON.stringify({rumentis:'equipo',v:1,de,ts:Date.now(),...(extra||{}),sobres});}
 function leerArchivo(txt){try{const o=JSON.parse(txt);if(o&&o.rumentis==='equipo'&&Array.isArray(o.sobres))return o;}catch(e){}return null;}
 function compartirArchivo(nombre,txt,titulo){
   const A=window.Android;
@@ -193,7 +200,7 @@ const iniciales=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]||''
 
 window.EquipoNucleo={CFG,nacl:nacl_,cargar,enc,dec,b64,deB64,b64u,deB64u,azar,sha,canon,
   nuevaLicencia,normLic,licValida,fmtLic,hashLic,LIC_PRUEBA,esLicPrueba,
-  nuevasLlaves,idDe,firmar,verificar,huella,sellar,abrir,ficha,fichaValida,enlace,leerEnlace,
+  nuevasLlaves,idDe,firmar,verificar,huella,sellar,sobrePlano,abrir,ficha,fichaValida,enlace,leerEnlace,
   urlOk,pedir,archivoTexto,leerArchivo,compartirArchivo,elegirArchivo,compartirTexto,qrSvg,escanearQR,cerrarLector,
   pagosHay,pagosEscuchar,compraReal,haceCuanto,iniciales};
 })();

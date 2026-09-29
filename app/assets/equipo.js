@@ -29,7 +29,13 @@ const servidor=()=>N.urlOk((EQ()&&EQ().servidor)||CFG.servidorEquipo);
 const firmaJ=()=>{const f=S.config.firma;return f&&f.pub&&f.sec?{pub:f.pub,sec:f.sec}:null;};
 const conEquipo=()=>{const e=EQ();return !!(e&&e.id&&Object.keys(e.licencias||{}).length);};
 const activos=()=>Object.values((EQ()||{}).vaqueros||{}).filter(v=>v.estado==='activo');
-const precioLic=()=>{try{return localStorage.getItem('rumentis-precio-lic')||'';}catch(e){return '';}};
+// el precio lo pone Google Play; mientras no responde, el de config.js (US$1.99)
+const precioLic=()=>{try{return localStorage.getItem('rumentis-precio-lic')||CFG.precioLicencia||'';}catch(e){return CFG.precioLicencia||'';}};
+/* Modo dueño: con el código del dueño de la app (solo se guarda su huella SHA-256), la app de Google Play crea
+   licencias sin cobrar. Son licencias reales: la app Rumentis Vaquero las acepta. */
+const HUELLA_DUENO='c53a11605d52e083e4790cbcf5cd51e647d34557bcbeaa521658191e1b4511dc';
+const esDueno=()=>!!(EQ()&&EQ().dueno);
+const gratis=()=>CFG.prueba||esDueno();
 const tr=t=>window.I18N&&I18N.txt?I18N.txt(t):t;
 // "Equipo" en el catálogo es equipamiento (inventario): el nombre de esta pestaña va aparte
 const EQT=()=>`<span data-no-tr>${({en:'Team',pt:'Equipe'})[window.I18N&&I18N.lang?I18N.lang():'es']||'Equipo'}</span>`;
@@ -49,7 +55,7 @@ function registrarAct(o){guardarEQ({act:actividad(o)});}
 function crearLicencia(c,compra){
   const e=EQ();if(e.licencias&&e.licencias[c])return e.licencias[c];
   const L={...e.licencias,[c]:{c,creada:hoy(),ts:Date.now(),compra,estado:'libre'}};
-  guardarEQ({licencias:L,act:actividad({ic:'lic',txt:`Compraste la licencia ${N.fmtLic(c)}`})});sincronizarPronto();return L[c];
+  guardarEQ({licencias:L,act:actividad({ic:'lic',txt:(compra&&(compra.dueno||compra.prueba)?`Creaste la licencia ${N.fmtLic(c)}`:`Compraste la licencia ${N.fmtLic(c)}`)})});sincronizarPronto();return L[c];
 }
 async function fichaEq(){
   const e=await asegurarEquipo();Documentos.llave();const f=firmaJ(),s=servidor(),fn=String(S.config.finca||'').slice(0,60),p=CFG.prueba?1:0;
@@ -66,6 +72,9 @@ function textoLicencia(c,url){
 /* ---------- compra con Google Play ---------- */
 ACTS.eqComprar=async()=>{
   await asegurarEquipo();
+  if(esDueno()&&!CFG.prueba){
+    openSheet(shHead('Licencia de dueño',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p><b>Modo dueño:</b> la licencia se crea al instante, sin cobrar, y sirve en Rumentis Vaquero como cualquier otra.</p></div></div>
+      <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Cancelar</button><button type="button" class="btn pri" data-act="eqCompraPrueba" style="flex:1">Crear licencia</button></div>`);return;}
   if(CFG.prueba){
     openSheet(shHead('Compra de prueba',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p>Esta es la <b>app de prueba</b>: la licencia se crea al instante y no se cobra nada. En la app de Google Play el pago lo hace Google Play.</p></div></div>
       <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Cancelar</button><button type="button" class="btn pri" data-act="eqCompraPrueba" style="flex:1">Crear licencia</button></div>`);return;}
@@ -73,7 +82,7 @@ ACTS.eqComprar=async()=>{
   const c=N.nuevaLicencia();SY.pend={c,ts:Date.now()};guardarSY();
   try{Pagos.comprar(CFG.productoLicencia,cuentaOfuscada(),c);}catch(e){toast('No se pudo abrir Google Play.',4000);}
 };
-ACTS.eqCompraPrueba=async()=>{await asegurarEquipo();const c=N.nuevaLicencia();crearLicencia(c,{prueba:true});closeSheet();toast('Licencia creada');
+ACTS.eqCompraPrueba=async()=>{await asegurarEquipo();if(!gratis())return;const c=N.nuevaLicencia();crearLicencia(c,CFG.prueba?{prueba:true}:{dueno:true,ts:Date.now()});closeSheet();toast('Licencia creada');
   if(!location.hash.startsWith('#equipo'))location.hash='#equipo';setTimeout(()=>abrirLicencia(c),380);};
 N.pagosEscuchar(async o=>{
   if(!o||!o.tipo)return;
@@ -120,7 +129,10 @@ async function enviarSalida(base,f){
 
 /* ---------- altas ---------- */
 async function procesarAlta(s){
-  const e=EQ();const carga=await N.abrir(s,{caja:{pub:s.k,sec:e.caja.sec},firmaPub:s.j});if(!carga)return;
+  const e=EQ();let carga=null;
+  if(s.x==='plano'){try{if(await N.verificar(s,s.f,s.j))carga=JSON.parse(s.c);}catch(err){carga=null;}}
+  else carga=await N.abrir(s,{caja:{pub:s.k,sec:e.caja.sec},firmaPub:s.j});
+  if(!carga||N.idDe(s.j)!==s.de)return;
   const c=N.normLic(carga.lic),L=(e.licencias||{})[c],vid=N.idDe(s.j),nombre=String(carga.nombre||'').trim().slice(0,60)||'Vaquero';
   const rechazar=async m=>{const f=firmaJ();encolar(await N.sellar('rechazo',{e:e.id,de:'jefe',para:vid,carga:{ok:false,motivo:m,lic:c},caja:{pub:s.k,sec:e.caja.sec},firmaSec:f.sec}));};
   if(!L)return rechazar('Esa licencia no es de este equipo.');
@@ -198,7 +210,9 @@ async function procesarOps(s){
   aplicarOps(v,carga.ops||[]);
 }
 async function procesar(s){
-  const e=EQ();if(!e||!s||s.e!==e.id||s.para!=='jefe')return 0;
+  const e=EQ();if(!e||!s||s.para!=='jefe')return 0;
+  // el alta sin cifrar (el vaquero se activó solo con el código, sin servidor) todavía no sabe el número del equipo
+  if(s.e!==e.id&&!(s.t==='alta'&&s.x==='plano'&&!s.e))return 0;
   const vis=SY.vistos||[];if(vis.includes(s.id))return 0;SY.vistos=vis.concat(s.id).slice(-600);guardarSY();
   if(s.t==='alta')await procesarAlta(s);else if(s.t==='ops')await procesarOps(s);else return 0;
   return 1;
@@ -284,7 +298,7 @@ ACTS.eqEnviarArchivo=async()=>{
   const sobres=(SY.archivo||[]).filter(s=>s.ts>Date.now()-30*864e5).concat(est?[est]:[]);
   if(!sobres.length){toast('Todavía no hay nada que mandar: primero activa a un vaquero.',4000);return;}
   const nombre=`equipo-${String(S.config.finca||'finca').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'finca'}-${hoy()}.json`;
-  N.compartirArchivo(nombre,N.archivoTexto(sobres,'jefe'),tr('Datos para el equipo'));
+  N.compartirArchivo(nombre,N.archivoTexto(sobres,'jefe',{ficha:await fichaEq()}),tr('Datos para el equipo'));
 };
 ACTS.eqRecibirArchivo=async()=>{
   const t=await N.elegirArchivo();if(!t)return;const o=N.leerArchivo(t);if(!o){toast('Ese archivo no es de Rumentis.',4000);return;}
@@ -333,13 +347,14 @@ function abrirVaquero(vid){
 }
 const ICA={alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad',baja:'alerta',lic:'recibo',alta:'estrella',tarea:'lista',borrar:'nota'};
 function filaAct(a){return `<div class="row eq-act"><span class="mas-ic t-${a.ic==='baja'||a.ic==='borrar'?'r':a.ic==='alimento'?'y':a.ic==='lic'||a.ic==='alta'?'v':'a'}">${icono(ICA[a.ic]||'info','i3')}</span><div class="tx"><b>${esc(a.txt)}</b><span>${N.haceCuanto(a.ts)}</span></div></div>`;}
-function botonComprar(txt){const p=precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar">${ico('nuevo')}${txt}${p?` · <span data-no-tr>${esc(p)}</span>`:''}</button>`;}
+function botonComprar(txt){const p=gratis()?'':precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar">${ico('nuevo')}${txt}${p?` · <span data-no-tr>${esc(p)}</span>`:''}</button>`;}
 PAGES.equipo=()=>{
   const e=EQ()||{},L=Object.values(e.licencias||{}),V=Object.values(e.vaqueros||{}),act=V.filter(v=>v.estado==='activo'),libres=L.filter(l=>l.estado==='libre');
   const sols=Object.values(e.solicitudes||{});const srv=servidor();
   const hd=`<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(S.config.finca||'Mi engorde')}</span><h1>${EQT()}</h1><p class="sub">Tus vaqueros registran desde su teléfono y tú lo ves aquí, en tus lotes.</p>
     ${L.length?`<div class="kpis"><div class="kpi"><b>${act.length}</b><span>${act.length===1?'vaquero':'vaqueros'}</span></div><div class="kpi"><b>${libres.length}</b><span>${libres.length===1?'licencia libre':'licencias libres'}</span></div><div class="kpi"><b>${allItems().filter(i=>i.f===hoy()&&i.por).length}</b><span>registros hoy</span></div></div>`:''}</div></header>`;
-  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> Las licencias se crean sin cobrar. Para el vaquero usa <b>Rumentis Vaquero Prueba</b>.</p></div>`:'';
+  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> Las licencias se crean sin cobrar. Para el vaquero usa <b>Rumentis Vaquero Prueba</b>.</p></div>`
+    :esDueno()?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Modo dueño.</b> Tus licencias se crean sin cobrar y sirven en Rumentis Vaquero.</p></div>`:'';
   if(!L.length)return hd+`<main class="bd">${aviso}<section class="sec"><div class="card pad eq-intro">
     <div class="eq-ilus" aria-hidden="true">${avatar('Juan Pérez')}${avatar('María López','b')}${avatar('Pedro Díaz','c')}</div>
     <h2>Suma a tus vaqueros</h2>
@@ -348,7 +363,8 @@ PAGES.equipo=()=>{
      <li>${ico('check',2.4)}<span>Les asignas tareas y decides qué puede registrar cada uno.</span></li>
      <li>${ico('check',2.4)}<span>Ellos no ven tus finanzas, precios ni a Rumi.</span></li></ul>
     <p class="hint">Cada licencia se paga una sola vez y es para una persona. Compras las que necesites.</p>
-    ${botonComprar('Comprar mi primera licencia')}</div></section></main>`;
+    ${botonComprar(gratis()?'Crear mi primera licencia':'Comprar mi primera licencia')}</div></section>
+    ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código de dueño</button></p>`:''}</main>`;
   const filaV=v=>`<button type="button" class="row eq-v" data-act="eqVaquero" data-v="${v.id}">${avatar(v.nombre)}<div class="tx"><b>${esc(v.nombre)}</b><span>${!v.ts?'Sin conectarse':`Activo <span>${N.haceCuanto(v.ts)}</span>`}${hoyDe(v.id)?` · <span>${pl(hoyDe(v.id),'registro hoy','registros hoy')}</span>`:''}</span></div>${ico('chev')}</button>`;
   const tareas=(S.config.tareas||[]).filter(t=>t.para&&!t.hecho);
   const nombreDe=id=>id==='todos'?'Todo el equipo':((e.vaqueros||{})[id]||{}).nombre||'';
@@ -356,7 +372,7 @@ PAGES.equipo=()=>{
    ${sols.length?`<section class="sec">${secH('Quieren entrar',sols.length)}<div class="card rows">${sols.map(s=>`<button type="button" class="row eq-v" data-act="eqSolicitud" data-v="${s.vid}">${avatar(s.nombre,'c')}<div class="tx"><b>${esc(s.nombre)}</b><span>Licencia <span data-no-tr>${N.fmtLic(s.lic)}</span></span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
    <section class="sec">${secH('Vaqueros',act.length)}${act.length?`<div class="card rows">${act.map(filaV).join('')}</div>`:`<p class="hint">Todavía nadie activa su licencia. Compártela y aparecerá aquí.</p>`}</section>
    ${libres.length?`<section class="sec">${secH('Licencias sin usar',libres.length)}<div class="card rows">${libres.map(l=>`<button type="button" class="row eq-l" data-act="eqLicencia" data-c="${l.c}"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div class="tx"><b data-no-tr>${N.fmtLic(l.c)}</b><span>Toca para ver el QR y enviarla</span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
-   <section class="sec">${botonComprar(libres.length?'Comprar otra licencia':'Comprar una licencia')}</section>
+   <section class="sec">${botonComprar(gratis()?(libres.length?'Crear otra licencia':'Crear una licencia'):(libres.length?'Comprar otra licencia':'Comprar una licencia'))}</section>
    <section class="sec">${secH('Tareas del equipo',tareas.length,lnkB('f','Asignar','data-f="eqTarea"'))}${tareas.length?`<div class="card rows">${tareas.map(t=>`<div class="row"><span class="mas-ic t-a">${icono('lista','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span>${esc(nombreDe(t.para))} · ${ffc(t.f)}</span></div><button type="button" class="del" data-act="eqTareaBorrar" data-id="${t.id}" aria-label="Quitar tarea">${ico('papelera')}</button></div>`).join('')}</div>`:`<p class="hint">Asigna tareas a un vaquero o a todos: les aparecen en su app.</p>`}</section>
    <section class="sec">${secH('Actividad')}${(e.act||[]).length?`<div class="card rows">${(e.act||[]).slice(0,UI.eqAct?60:12).map(filaAct).join('')}</div>${(e.act||[]).length>12&&!UI.eqAct?`<button type="button" class="lnk" data-act="eqActMas">Ver más</button>`:''}`:`<p class="hint">Aquí verás lo que registra tu equipo.</p>`}</section>
    <section class="sec">${secH('Sincronización')}<div class="card pad eq-sinc">
@@ -364,13 +380,18 @@ PAGES.equipo=()=>{
     <div class="acts">${srv?`<button type="button" class="btn" data-act="eqSinc">Sincronizar ahora</button>`:''}<button type="button" class="btn" data-act="eqEnviarArchivo">Enviar al equipo</button><button type="button" class="btn" data-act="eqRecibirArchivo">Recibir archivo</button></div>
     <div class="row eq-tg"><div class="tx"><b>Aceptar vaqueros nuevos solos</b><span>Si lo apagas, te pregunto antes de dejar entrar a alguien.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.auto!==false}" aria-label="Aceptar solos" data-act="eqAuto"><span></span></button></div>
     <button type="button" class="lnk" data-act="eqServidor">Servidor del equipo</button></div></section>
+   ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código de dueño</button></p>`:''}
   </main>`;
 };
 ACTS.eqActMas=()=>{UI.eqAct=1;render();};
+FORMS.eqDueno=()=>{openSheet(shHead('Código de dueño',EQT())+formWrap('eqDueno',`${q('Código',`<input class="in vq-lic" name="c" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="RD-XXXX-XXXX-XXXX-XXXX-XXXX" data-no-tr>`,'Solo para el dueño de Rumentis: con él creas licencias sin cobrar.')}`,foot('Activar')));};
+SAVE.eqDueno=async f=>{const c=String(fv(f,'c')||'').toUpperCase().replace(/[OÓ]/g,'0').replace(/[IÍL]/g,'1').replace(/[^0-9A-Z]/g,'').replace(/^RD/,'');
+  if(N.sha('RUMENTIS-DUENO|'+c)!==HUELLA_DUENO)return ferr(f,'Ese código no es válido.');
+  await asegurarEquipo();guardarEQ({dueno:true,act:actividad({ic:'alta',txt:'Activaste el modo dueño'})});closeSheet();toast('Modo dueño activado: tus licencias no se cobran.',4000);};
 
 /* ---------- pestaña en la barra y fila en Más ---------- */
 function pestana(){
-  const nav=$('nav.bottom .in');if(!nav)return;let a=nav.querySelector('[data-nav="equipo"]');const on=conEquipo()||CFG.prueba;
+  const nav=$('nav.bottom .in');if(!nav)return;let a=nav.querySelector('[data-nav="equipo"]');const on=true;   // siempre: aquí se compra la primera licencia
   if(on&&!a){a=document.createElement('a');a.href='#equipo';a.dataset.nav='equipo';a.innerHTML=ico('equipo')+`<span>${EQT()}</span>`;nav.insertBefore(a,nav.querySelector('[data-nav="mas"]'));}
   else if(!on&&a)a.remove();
   nav.classList.toggle('ocho',!!(on&&nav.children.length>7));
