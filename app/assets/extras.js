@@ -175,7 +175,9 @@ const _resp=ACTS.respaldo;ACTS.respaldo=(...a)=>{try{localStorage.setItem('rumen
 const _hoyA=PAGES.hoy;
 PAGES.hoy=(...a)=>{const html=_hoyA(...a);if(!Object.keys(S.lotes).length)return html;const H=calc().H,T=tareas().filter(t=>t.f<=H);
   const card=`<a class="card pad ag-card" href="#agenda"><div class="ag-h"><span class="mas-ic t-y">${i3('agenda')}</span><div><b>Agenda de hoy</b><span>${T.length?pl(T.length,'tarea pendiente','tareas pendientes'):'Todo al día'}</span></div>${ico('chev')}</div>${T.slice(0,3).map(t=>`<div class="ag-mini"><i class="t-${t.tono||'a'}"></i>${esc(t.t)}</div>`).join('')}</a>`;
-  return html.replace('<main class="bd">','<main class="bd">'+card);};
+  // los gráficos salieron de la barra de abajo (así sus íconos tienen espacio): aquí quedan a un toque
+  const graf=`<a class="card pad ag-card gr-card" href="#graficos"><div class="ag-h"><span class="mas-ic t-v">${ico('graficos')}</span><div><b>Gráficos</b><span>Peso, ganancia, consumo, costos y margen</span></div>${ico('chev')}</div></a>`;
+  return html.replace('<main class="bd">','<main class="bd">'+card+graf);};
 
 /* ================= INFORME DEL LOTE ================= */
 function informe(id){

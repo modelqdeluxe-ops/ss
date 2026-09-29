@@ -307,8 +307,8 @@ html,body{overflow-x:hidden}
 /* ---------- navegación inferior ---------- */
 nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--head);padding:0 6px env(safe-area-inset-bottom,0px);display:flex;justify-content:center}
 nav.bottom .in{display:flex;align-items:center;width:100%;max-width:560px;height:74px}
-nav.bottom a,nav.bottom button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;font-size:clamp(9.5px,2.75vw,12px);letter-spacing:-.1px;white-space:nowrap;font-weight:700;color:var(--htx2);background:none;border:0;padding:6px 0;min-height:56px;justify-content:center}
-nav.bottom svg{width:23px;height:23px}
+nav.bottom a,nav.bottom button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;font-size:clamp(10.5px,2.95vw,12.5px);letter-spacing:-.15px;white-space:nowrap;font-weight:700;color:var(--htx2);background:none;border:0;padding:6px 0;min-height:56px;justify-content:center}
+nav.bottom svg{width:26px;height:26px}
 nav.bottom .reg{flex:0 0 58px}
 nav.bottom [aria-current="page"]{color:var(--arete)}
 nav.bottom .reg{margin-top:-26px}
@@ -1008,10 +1008,7 @@ main.bd>.sec:nth-child(n+4),main.bd>.gcard:nth-child(n+4),main.bd>section.rp-car
 .hr-t{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-size:27px;line-height:1.15;color:var(--ink)}
 .hr-x{margin:0 0 8px;font-size:16.5px;line-height:1.55;color:var(--ink2);max-width:36ch}
 .hr-c .btn{min-height:52px;font-size:16.5px}
-/* ---------- Equipo (jefe) ---------- */
-nav.bottom .in.ocho a:not(.reg){font-size:clamp(8.6px,2.45vw,11.5px);letter-spacing:-.25px}
-nav.bottom .in.ocho svg{width:21px;height:21px}
-nav.bottom .in.ocho .reg{flex:0 0 54px}
+/* ---------- Equipo (administración) ---------- */
 .eq-av{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border-radius:50%;background:color-mix(in srgb,var(--verde) 22%,var(--card));color:var(--ink);font:800 14px/1 'Bricolage Grotesque',sans-serif;letter-spacing:.3px}
 .eq-av.b{background:color-mix(in srgb,var(--arete) 32%,var(--card))}.eq-av.c{background:color-mix(in srgb,var(--rojo) 18%,var(--card))}
 .eq-av.xl{width:56px;height:56px;font-size:19px}
@@ -1115,7 +1112,6 @@ button.eq-op{width:100%;text-align:left;font:inherit;color:inherit;background:no
   <a href="#finanzas" data-nav="finanzas"></a>
   <a href="#registrar" data-nav="registrar" class="reg"></a>
   <a href="#inventario" data-nav="inventario"></a>
-  <a href="#graficos" data-nav="graficos"></a>
   <a href="#mas" data-nav="mas"></a>
 </div></nav>
 <button type="button" id="rumiFab" data-act="rumi" aria-label="Ayuda: pregúntale a Rumi"></button>
@@ -2100,7 +2096,8 @@ PAGES.mas=(sub)=>{
   return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(cfg.finca||'Mi engorde')}${cfg.ubicacion?' · '+esc(cfg.ubicacion):''}</span><h1>Más</h1><p class="sub">Configuración, datos y ayuda.</p></div></header>
   <main class="bd">
    <section class="sec">${secH('Rumi')}<div class="card rows">
-    ${masFila(icono('chispa','i3'),'Análisis de Rumi','Puntaje, riesgo, proveedores y qué hacer primero','href="#analisis"','t-a')}</div></section>
+    ${masFila(icono('chispa','i3'),'Análisis de Rumi','Puntaje, riesgo, proveedores y qué hacer primero','href="#analisis"','t-a')}
+    ${masFila(ico('graficos'),'Gráficos','Peso, ganancia, consumo, costos y margen','href="#graficos"','t-v')}</div></section>
    <section class="sec">${secH('Tu finca')}<div class="card rows">
     ${masFila(mico('config'),'Configuración',`Precio ${pk(+cfg.precioVentaKg||0)}, meta ${nf(W(+cfg.metaKg||480))} ${UW()}, ${U()==='lb'?'libras':'kilos'}`,'href="#mas/config"','t-a')}
     ${masFila(mico('racion'),'Raciones y dietas',nR?pl(nR,'ración','raciones'):'Crea tu primera ración','href="#mas/raciones"','t-v')}
@@ -3657,7 +3654,7 @@ const ACCIONES={
     how:['Toca <b>Registrar</b> y luego <b>Ración</b>.','Escribe el nombre y cuánto cuesta el kilo de la mezcla.','Agrega los ingredientes con su porcentaje. Es opcional.','Toca <b>Guardar ración</b>.'],show:['#registrar','.tile[data-f="racion"]'],label:'Crear ración'}
 };
 const LUGARES=[
-  {re:/grafic/,go:'#graficos',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',how:['Toca <b>Gráficos</b> abajo.','Arriba eliges un lote o todos, y el período.','Baja para ver peso, ganancia, consumo, conversión, costos, margen y más.']},
+  {re:/grafic/,go:'#hoy',sel:'.gr-card',t:'Gráficos',how:['En Hoy toca Gráficos, debajo de la agenda. También está en Más.','Arriba eliges un lote o todos, y el período.','Baja para ver peso, ganancia, consumo, conversión, costos, margen y más.']},
   {re:/respaldo|copia de seguridad|backup|recuperar|restaurar/,go:'#mas/datos',sel:'[data-act="respaldo"]',t:'Respaldo',how:['Toca <b>Más</b> abajo a la derecha.','Entra a <b>Tus datos</b> y toca <b>Descargar respaldo</b>.','Guarda el archivo en Drive o mándatelo por WhatsApp.']},
   {re:/excel|exportar|descargar (los )?datos|hoja de calculo|csv/,go:'#mas/datos',sel:'[data-act="expLotes"]',t:'Descargar para Excel',how:['Toca <b>Más</b>.','En <b>Tus datos</b>, en Descargar para Excel, elige qué quieres: lotes, alimento, pesajes y más.']},
   {re:/precio|horario|ajuste|configur|nombre de la finca|moneda|peso meta general/,go:'#mas/config',sel:'form[data-form="cfg"]',t:'Ajustes',how:['Toca <b>Más</b>.','Entra a <b>Configuración</b> y cambia el precio de venta, el peso meta, los horarios de entrega, la unidad de peso y más.','Toca <b>Guardar</b>.']},
@@ -3877,8 +3874,8 @@ const TOUR=[
   {go:'#hoy',sel:'nav.bottom [data-nav="finanzas"]',t:'Finanzas',x:'Tu balance: cuánto vale lo que tienes, incluido el ganado en pie, lo que debes y lo que has ganado. También tus préstamos y el flujo de dinero.'},
   {go:'#hoy',sel:'nav.bottom [data-nav="registrar"]',t:'Anotar',x:'Este botón sirve para anotar todo: la comida que das, cuando pesas, las vacunas, las ventas, las muertes y los gastos. Si anotas, la app te saca las cuentas sola.'},
   {go:'#hoy',sel:'nav.bottom [data-nav="inventario"]',t:'Inventario',x:'Todo lo que hay en la finca: ganado, alimento en bodega, medicinas y equipo. Te avisa cuando algo se va a acabar.'},
-  {go:'#hoy',sel:'nav.bottom [data-nav="graficos"]',t:'Gráficos',x:'Son dibujos que te muestran si tus animales suben de peso y si estás ganando dinero. Cada dibujo trae su explicación.'},
-  {go:'#hoy',sel:'nav.bottom [data-nav="mas"]',t:'Más',x:'Aquí está la configuración, el análisis de Rumi, la agenda de tareas, tus raciones, los gastos y la copia de tus datos.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="equipo"]',t:'Equipo de trabajo',x:'Aquí sumas a tu personal: cada colaborador anota desde Rumentis Campo y al final del día te envía su reporte para que lo registres.'},
+  {go:'#hoy',sel:'nav.bottom [data-nav="mas"]',t:'Más',x:'Aquí están los gráficos, el análisis de Rumi, la configuración, la agenda de tareas, tus raciones, los gastos y la copia de tus datos.'},
   {go:'#hoy',sel:'#rumiFab',t:'Rumi, tu ayudante',x:'Ese soy yo. Si tienes una duda, tócame. No tienes que escribir: solo eliges opciones. Te hago cuentas y te explico de salud, comida y ventas.'},
   {go:'#hoy',t:'¡Listo para empezar!',x:'Tu primer paso: toca el botón de <b>Anotar</b> y elige <b>Nuevo lote</b> para registrar tus animales. Puedes volver a ver esta guía en <b>Más</b>, <b>Ayuda</b>.'}
 ];
