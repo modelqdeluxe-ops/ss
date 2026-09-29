@@ -112,8 +112,10 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `scripts/variantes.sh` — las cuatro apps (ver «Equipo»): `dist/Rumentis.apk`, `RumentisVaquero.apk`,
   `RumentisPrueba.apk`, `RumentisVaqueroPrueba.apk` y, con `todo`, los AAB de las dos de Google Play.
   `scripts/variante.py` cambia paquete, nombre, color del ícono, `config.js` y la autoridad de archivos.
-- `scripts/pagos.sh` — baja Google Play Billing de Google Maven, compila `modelo/android/Pagos.java` contra ella
-  y la deja como segundo dex (`classes2.dex`) para la app del jefe. Sin acceso a dl.google.com no hace nada.
+- `scripts/pagos.sh` — la app del dueño para Google Play: Gradle (proyecto en `scripts/donante/`) la arma con los
+  recursos, assets y manifiesto de la variante más Google Play Billing y sus dependencias (AndroidX, Play Services)
+  y `modelo/android/Pagos.java`; nuestro código smali entra como un dex más y los recursos conservan sus números
+  (`--stable-ids`). Sin Gradle o sin Google Maven, la app sale sin pagos (en GitHub Actions es error).
 - `scripts/build.sh` — APK: `dist/Rumentis.apk` (acepta `APP_DIR`, `SALIDA` y `DEX_EXTRA`).
 - `scripts/build_aab.sh` — AAB para Google Play: `dist/Rumentis.aab` (mismas variables).
 
@@ -136,8 +138,9 @@ Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia.
   el servidor de relevo y, siempre, por archivo para WhatsApp.
 - **Configuración** (`app/assets/config.js`): qué app es y si es de prueba (lo escribe `variante.py`), el servidor
   del equipo, la llave RSA de Google Play (para que el vaquero compruebe la compra), el producto y los enlaces.
-- **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la biblioteca está) y `Cripto`
-  (firma RSA de Google); `modelo/android/Pagos.java` es Google Play Billing 7.
+- **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la clase está en la app) y `Cripto`
+  (firma RSA de Google); `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app del dueño de
+  Google Play, que se arma con Gradle (`scripts/pagos.sh`).
 
 Las apps **de prueba** (paquetes `.prueba`) se instalan junto a las de Google Play: en la del jefe las licencias
 se crean sin cobrar; en la del vaquero, la licencia **`RV-PRUEBA-2026`** entra para siempre a una finca de
