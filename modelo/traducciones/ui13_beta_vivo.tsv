@@ -1,0 +1,78 @@
+Estima el peso con la cámara del teléfono.	Estimate weight with the phone camera.	Estime o peso com a câmera do celular.
+Prueba la medición contigo: la cámara te mide de frente y de costado junto a la marca, y estima tu estatura y tu peso. Todo se calcula aquí, sin internet.	Try the measurement on yourself: the camera measures you from the front and from the side next to the marker, and estimates your height and weight. Everything is calculated here, offline.	Teste a medição em você: a câmera mede você de frente e de lado junto ao marcador e estima sua altura e seu peso. Tudo é calculado aqui, sem internet.
+La cámara mide al animal de costado y por detrás junto a la marca, y estima su peso. Todo se calcula aquí, sin internet.	The camera measures the animal from the side and from behind next to the marker, and estimates its weight. Everything is calculated here, offline.	A câmera mede o animal de lado e por trás junto ao marcador e estima seu peso. Tudo é calculado aqui, sem internet.
+Qué medir	What to measure	O que medir
+Personas	People	Pessoas
+Ganado	Cattle	Gado
+Dos tomas: de frente y de costado. Cuando la silueta se pone verde, la foto se toma sola.	Two shots: front and side. When the outline turns green, the photo is taken automatically.	Duas tomadas: de frente e de lado. Quando a silhueta fica verde, a foto é tirada sozinha.
+Medir con la cámara	Measure with the camera	Medir com a câmera
+Una sola foto de costado	Single side photo	Uma única foto de lado
+Cómo hacerlo	How to do it	Como fazer
+Pega la marca en la pared a la altura del pecho.	Tape the marker to the wall at chest height.	Cole o marcador na parede na altura do peito.
+Párate pegado a la pared, junto a la marca. Quien sostiene el teléfono se aleja hasta que quepas de pies a cabeza (o apoya el teléfono y usa la cámara frontal).	Stand against the wall, next to the marker. Whoever holds the phone steps back until you fit from head to toe (or prop the phone up and use the front camera).	Fique encostado na parede, junto ao marcador. Quem segura o celular se afasta até você caber da cabeça aos pés (ou apoie o celular e use a câmera frontal).
+Primero de frente, con los brazos un poco separados; después de costado, con los brazos pegados. Quédate quieto cuando la silueta esté verde.	First facing the camera, arms slightly away from the body; then sideways, arms at your sides. Hold still when the outline is green.	Primeiro de frente, com os braços um pouco afastados; depois de lado, com os braços junto ao corpo. Fique parado quando a silhueta estiver verde.
+Con el animal de costado, pegado a la marca, aléjate hasta que quepa completo. Después, por detrás, con la marca a su lado.	With the animal side-on, right next to the marker, step back until it fits completely. Then from behind, with the marker beside it.	Com o animal de lado, encostado ao marcador, afaste-se até que ele caiba inteiro. Depois, por trás, com o marcador ao lado.
+Sostén el teléfono firme. Cuando la silueta esté verde, la foto se toma sola.	Hold the phone steady. When the outline is green, the photo is taken automatically.	Segure o celular firme. Quando a silhueta estiver verde, a foto é tirada sozinha.
+Calibración con la báscula	Scale calibration	Calibração com a balança
+Sin calibrar: el peso es un estimado general. Pésate en una báscula, mídete con la cámara y escribe tu peso: la app aprende.	Not calibrated: the weight is a general estimate. Weigh yourself on a scale, measure yourself with the camera and enter your weight: the app learns.	Sem calibrar: o peso é uma estimativa geral. Pese-se numa balança, meça-se com a câmera e digite seu peso: o app aprende.
+Sin calibrar: el peso es un estimado general. Mide animales recién pesados en la báscula y escribe su peso real: la app aprende de tus animales.	Not calibrated: the weight is a general estimate. Measure freshly weighed animals and enter their scale weight: the app learns from your animals.	Sem calibrar: o peso é uma estimativa geral. Meça animais recém-pesados na balança e digite o peso real: o app aprende com seus animais.
+Calibrar con mi peso	Calibrate with my weight	Calibrar com meu peso
+Calibrada con {0} medición. Error típico: ±{1} {2}.	Calibrated with {0} measurement. Typical error: ±{1} {2}.	Calibrada com {0} medição. Erro típico: ±{1} {2}.
+Calibrada con {0} mediciones. Error típico: ±{1} {2}.	Calibrated with {0} measurements. Typical error: ±{1} {2}.	Calibrada com {0} medições. Erro típico: ±{1} {2}.
+cámara sin calibrar: {0} {1}	camera, uncalibrated: {0} {1}	câmera sem calibrar: {0} {1}
+Beta: sirve para probar la medición. El peso de una persona con cámara es un estimado.	Beta: for testing the measurement. A person's weight from the camera is an estimate.	Beta: serve para testar a medição. O peso de uma pessoa pela câmera é uma estimativa.
+Paso {0} de {1} · De frente	Step {0} of {1} · Front	Passo {0} de {1} · De frente
+Paso {0} de {1} · De costado	Step {0} of {1} · Side	Passo {0} de {1} · De lado
+Paso {0} de {1} · Por detrás	Step {0} of {1} · From behind	Passo {0} de {1} · Por trás
+De frente	Front	De frente
+De costado	Side	De lado
+Por detrás	From behind	Por trás
+Junto a la marca, con los brazos un poco separados del cuerpo.	Next to the marker, arms slightly away from the body.	Junto ao marcador, com os braços um pouco afastados do corpo.
+Junto a la marca, con los brazos pegados al cuerpo.	Next to the marker, arms at your sides.	Junto ao marcador, com os braços junto ao corpo.
+El animal de costado, pegado a la marca.	The animal side-on, right next to the marker.	O animal de lado, encostado ao marcador.
+El animal de espaldas a la cámara, con la marca a su lado.	The animal facing away from the camera, with the marker beside it.	O animal de costas para a câmera, com o marcador ao lado.
+Ponte de frente, con los brazos un poco separados	Face the camera, arms slightly away from the body	Fique de frente, com os braços um pouco afastados
+Gírate de costado, con los brazos pegados	Turn sideways, arms at your sides	Vire de lado, com os braços junto ao corpo
+Que el animal quede de costado	Get the animal side-on	Deixe o animal de lado
+Que el animal quede de espaldas a la cámara	Get the animal facing away from the camera	Deixe o animal de costas para a câmera
+Párate frente a la cámara, de cuerpo completo	Stand in front of the camera, full body in view	Fique na frente da câmera, de corpo inteiro
+Apunta al animal, que se vea completo	Point at the animal, with all of it in view	Aponte para o animal, que apareça inteiro
+Detectado	Detected	Detectado
+Completo	Complete	Completo
+Distancia	Distance	Distância
+Marca	Marker	Marcador
+Ángulo	Angle	Ângulo
+Quieto	Still	Parado
+Quieto…	Hold still…	Fique parado…
+Acércate	Come closer	Aproxime-se
+Aléjate	Step back	Afaste-se
+Aléjate un poco	Step back a little	Afaste-se um pouco
+Que se vea el cuerpo completo	Get the whole body in view	Mostre o corpo inteiro
+Acércate: la marca se ve pequeña	Come closer: the marker looks too small	Aproxime-se: o marcador está pequeno
+Falta la marca de medida	The measuring marker is not in view	Falta o marcador de medida
+Abriendo la cámara…	Opening the camera…	Abrindo a câmera…
+Cargando el modelo de visión…	Loading the vision model…	Carregando o modelo de visão…
+No se pudo cargar el modelo de visión en este teléfono.	Couldn't load the vision model on this phone.	Não foi possível carregar o modelo de visão neste celular.
+No se pudo abrir esa cámara.	Couldn't open that camera.	Não foi possível abrir essa câmera.
+Que se vea completo y con la marca para tomar la foto.	Get the full body and the marker in view to take the photo.	Mostre o corpo inteiro e o marcador para tirar a foto.
+La cámara en vivo no está disponible.	The live camera is not available.	A câmera ao vivo não está disponível.
+Tomar la foto ahora	Take the photo now	Tirar a foto agora
+Girar cámara	Switch camera	Trocar câmera
+{0} cuadros/s	{0} frames/s	{0} quadros/s
+Tu medición	Your measurement	Sua medição
+estatura	height	altura
+de frente	front	de frente
+de fondo	depth	profundidade
+ancho	width	largura
+¿Sabes tu peso? Calibra con tu báscula	Know your weight? Calibrate with your scale	Sabe seu peso? Calibre com sua balança
+¿Lo pesaste en báscula? Calibra con su peso	Weighed it on a scale? Calibrate with its weight	Pesou na balança? Calibre com o peso dele
+Medir otra vez	Measure again	Medir de novo
+Calibrar con tu báscula	Calibrate with your scale	Calibrar com sua balança
+La cámara estima	The camera estimates	A câmera estima
+. Escribe lo que marcó la báscula.	. Enter what the scale showed.	. Digite o que a balança marcou.
+Calibrado con {0} medición de tu báscula.	Calibrated with {0} measurement from your scale.	Calibrado com {0} medição da sua balança.
+Calibrado con {0} mediciones de tu báscula.	Calibrated with {0} measurements from your scale.	Calibrado com {0} medições da sua balança.
+Otro animal	Another animal	Outro animal
+{0} {1} agregado. Mide otro animal o guarda el pesaje.	{0} {1} added. Measure another animal or save the weighing.	{0} {1} adicionado. Meça outro animal ou salve a pesagem.
+Las dos tomas dieron estaturas distintas: repite con la marca a la altura del pecho y pegado a la pared.	The two shots gave different heights: repeat with the marker at chest height and standing against the wall.	As duas tomadas deram alturas diferentes: repita com o marcador na altura do peito e encostado na parede.
+Una foto se tomó a mano: revisa que la silueta cubra bien el cuerpo.	One photo was taken manually: check that the outline covers the body well.	Uma foto foi tirada manualmente: confira se a silhueta cobre bem o corpo.

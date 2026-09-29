@@ -1,7 +1,8 @@
 # Rumentis — guía para continuar el trabajo
 
 Documento para la IA (o persona) que retome el proyecto. Léelo completo antes de tocar código.
-Última actualización: 29 sep 2026. Rama de trabajo: `claude/happy-ritchie-u6007w`.
+Última actualización: 29 sep 2026. Rama de trabajo: `claude/new-session-fdysl6` (sale de `claude/happy-ritchie-u6007w`;
+si el dueño indica otra rama, usa esa).
 
 ---
 
@@ -29,7 +30,7 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 ## 2. Reglas del dueño (respétalas siempre)
 
 - Responde **en español**. El dueño escribe informal; sé directo y claro.
-- Trabaja, haz commit y push **solo** en la rama `claude/happy-ritchie-u6007w` (`git push -u origin claude/happy-ritchie-u6007w`).
+- Trabaja, haz commit y push **solo** en la rama de trabajo indicada arriba (`git push -u origin <rama>`).
   No hagas push a otra rama sin permiso. No crees Pull Requests si no te lo pide.
 - No pongas identificadores de modelo de IA en commits ni en archivos del repo.
 - Nunca pidas tokens de Cloudflare en el chat: van en los secretos de GitHub (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, ya puestos).
@@ -53,8 +54,9 @@ app/assets/equipo_nucleo.js Cripto (tweetnacl), sobres firmados/cifrados, archiv
 app/assets/vaquero.js     App del personal (Rumentis Equipo): Hoy con tareas asignadas, terminar tarea con foto, reporte
 app/assets/fotos.js       Cámara propia (Fotos.tomar(titulo,{soloCamara,max})) y fotos guardadas (IndexedDB / Android)
 app/assets/fondo.js       Fondo animado (curvas de nivel + degradado)
-app/assets/vision.js      BETA: RF-DETR Seg con onnxruntime-web (Vision.segmentar(img))
-app/assets/pesocam.js     BETA: página #pesocam "Peso con cámara" (solo si config.beta)
+app/assets/vision.js      BETA: RF-DETR Seg con onnxruntime-web (Vision.segmentar(img); Vision.motor() en Web Worker)
+app/assets/pesocam.js     BETA: página #pesocam "Peso con cámara" (solo si config.beta): modos, fórmulas, calibración
+app/assets/camvivo.js     BETA: cámara en vivo (CamVivo.abrir): silueta en color, indicadores y captura automática
 app/assets/i18n*.js       Traducción en pantalla (catálogos generados, no editar a mano)
 modelo/traducciones/*.tsv Frases: clave<TAB>inglés<TAB>portugués  →  python3 modelo/armar_i18n.py
 modelo/vision/            BETA: seg.onnx (33 MB), ort.bundle.js, ort-wasm-simd-threaded.wasm, cv.js, aruco.js,
@@ -79,76 +81,47 @@ Detalles útiles:
 
 ## 4. Rumentis Beta: dónde quedó
 
-**Hecho y subido (commit `ba23cb8`, APK `RumentisBeta-5.0.0-beta.1.apk` en el Release de GitHub):**
+**5.0.0-beta.1** (commit `ba23cb8`): modelo RF-DETR Seg Nano (Apache 2.0) en ONNX int8 (33 MB, entrada 312×312;
+salidas `dets` [1,100,4], `labels` [1,100,91] logits COCO (**1 = persona, 21 = vaca**), `masks` [1,100,78,78]); marca
+ArUco MIP_36h12 id 7 de 16 cm con PDF para imprimir; peso con **una sola foto** de costado (`kg = a·área^b`) y
+calibración con báscula.
 
-- Modelo **RF-DETR Seg Nano** (Roboflow, Apache 2.0), preentrenado en COCO, exportado a ONNX (entrada 312×312) y
-  cuantizado a int8 (33 MB; máscaras casi iguales al original, IoU ≈ 0.99). Salidas: `dets` [1,100,4] cxcywh normalizado,
-  `labels` [1,100,91] logits COCO (**1 = persona, 21 = vaca**), `masks` [1,100,78,78] logits.
-- `vision.js`: `Vision.segmentar(img,{max,umbral})` → `{ok,score,clase,caja,W,H,mask,area,lienzo,ms}`. Corre en el
-  hilo principal (≈1.5 s por imagen en CPU de escritorio con WASM de 1 hilo). Clase fija: vaca (21) con respaldo en
-  animales parecidos.
-- Marca de medida: cuadro ArUco **MIP_36h12 id 7**, **16 cm** el cuadro negro. PDF para imprimir (carta) con regla de
-  10 cm (`ACTS.pcMarcaPdf`). Detección con js-aruco2 (`PesoCam.buscarMarca`) → píxeles por cm.
-- `pesocam.js` (página `#pesocam`, tarjeta en Hoy, botón en el formulario de pesaje): foto → silueta + marca →
-  medidas en cm (área, largo, alto) → `kg = a·área^b` (de fábrica a = 450/12500^1.5, b = 1.5, ±15 %).
-  Calibración con báscula (`S.config.pesoCam.cal`): 2–5 fotos ajusta a; 6+ ajusta a y b; muestra error típico.
-  Las fotos de un lote se guardan como un pesaje (`addItem({tipo:'pesaje',…,metodo:'camara'})`).
-- Probado con fotos de COCO (vacas) en Chromium: detección 94–97 %, marca bien medida (5.94 px/cm vs 6 reales).
+**5.0.0-beta.2** (esta rama): **cámara en vivo con captura automática**, lo que pidió el dueño:
 
-**No probado aún en un teléfono real** (velocidad en WASM de teléfono, cámara real, marca impresa).
+- `#pesocam` tiene modo **Personas / Ganado** (Personas por defecto; se recuerda en `localStorage` `rumentis-pc-modo`).
+  Personas: frente + costado → estatura y peso. Ganado: costado + por detrás → peso (se agrega al pesaje del lote);
+  "Una sola foto de costado" sigue disponible.
+- `vision.js`: núcleo compartido (`NUCLEO`) que se usa en la página y dentro de un **Web Worker** armado desde un Blob.
+  La página descarga `ort.bundle.js`, el `.wasm` y `seg.onnx` y se los pasa al worker (`env.wasm.wasmBinary`, import de
+  un Blob), así el worker no pide nada por red. Si falla, `Vision.motor()` corre en la página.
+  Por cuadro devuelve score, caja y ancho de cada fila de la silueta en una rejilla de 312, y la máscara 78×78.
+- `camvivo.js`: pantalla completa con video, silueta roja/ámbar/verde, marca encuadrada, "Paso 1 de 2 · De frente",
+  chips **Detectado · Completo · Distancia · Marca · Ángulo · Quieto**, indicación grande, progreso, cuadros/s reales,
+  captura manual, cambio a cámara frontal (en espejo), vibración + sonido, pantalla encendida (wakeLock).
+  Reglas en `CamVivo.REGLAS` (score 0.5, margen 2 %, marca ≥ 36 px, IoU ≥ 0.93, 3 cuadros) y en `PesoCam.MODOS`
+  (distancia y ángulo por paso). Cambio respecto al diseño: el ángulo de costado de una persona es **relativo** a la
+  toma de frente (≤ 0.3 y ≤ 75 % de la proporción de frente), porque una regla fija fallaba con personas gruesas.
+- Peso en vivo: `kg = c · V^b`, `V = A_principal(cm²) · ancho_secundario(cm) / 1000`; el ancho secundario es el
+  percentil 90 del ancho por fila en una franja del cuerpo (persona de costado 18–55 % de la altura; ganado por detrás
+  5–55 %). c de fábrica: persona 0.58, ganado 0.72. Calibración por modo (`cal` con `modo` y `V`): 1–5 → c = mediana
+  de kg/V; 6+ → también b (0.7–1.3). Las de ganado guardan también `A` de costado (sirve para la fórmula de una foto).
+- `Fotos.camara(frontal)` (fotos.js) abre la cámara trasera preferida (o la frontal) a 1280×960 para el video en vivo.
+- Probado en Chromium (escenas sintéticas con fotos de COCO): pide "Acércate" si está lejos, captura sola de frente,
+  rechaza el costado si sigue de frente, estatura 174 cm en una escena armada a 170 cm, calibración ajusta a la báscula.
+  ~1.4 s por cuadro en CPU de escritorio (en worker); la medición completa tarda ~20 s con las escenas de prueba.
+
+**No probado aún en un teléfono real** (velocidad en WASM de teléfono, que el WebView entregue el worker desde Blob,
+cámara real, marca impresa, fórmula de personas con gente real).
 
 ---
 
-## 5. SIGUIENTE TAREA (lo que pidió el dueño y quedó por hacer)
+## 5. SIGUIENTE TAREA
 
-El dueño no está en su finca, así que **la beta primero se prueba con PERSONAS** y luego se cambia a ganado.
-Pidió **video en tiempo real** con indicadores y **captura automática**:
-
-> "que sea en video en tiempo real, programa algo para que me muestre indicadores de reconocimiento en tiempo real,
-> distancia perfecta y eso, entonces cuando esté en verde la silueta captura una foto automáticamente, y así me pide
-> otro ángulo si es el caso"
-
-### Diseño propuesto (aprobado en espíritu por el dueño)
-
-1. **Modo Personas / Ganado** en `#pesocam` (Personas por defecto mientras no esté en la finca).
-   - Personas: clase COCO **1**, ángulos **frente** y **costado**; resultado: estatura (cm) y peso estimado.
-   - Ganado: clase **21**, ángulos **costado** y **atrás**; resultado: peso.
-2. **Motor en un Web Worker** para que el video no se trabe: crear el worker desde un **Blob URL** (la página es
-   `file://`, un worker de otro origen no se permite) y dentro hacer `import()` de `ort.bundle.js` desde
-   `Vision.BASE` (tiene CORS). El hilo principal dibuja el cuadro del video en un canvas 312×312, manda los píxeles
-   (transferibles); el worker normaliza, corre el modelo, elige la mejor detección de la clase pedida y devuelve
-   score, caja, máscara 78×78 y medidas (área y caja de la silueta en una rejilla de 312). Si el worker falla, usar el
-   camino actual en el hilo principal.
-3. **Pantalla de cámara en vivo** (nuevo `camvivo.js` o dentro de pesocam.js), pantalla completa:
-   - `<video>` + `<canvas>` encima con la **silueta** (máscara 78×78 escalada con suavizado) en **rojo / ámbar / verde**
-     y la marca encuadrada.
-   - Arriba: "Paso 1 de 2 · De frente" y chips de estado: **Detectado · Completo · Distancia · Marca · Ángulo · Quieto**.
-   - Al centro, una indicación grande: "Acércate", "Aléjate", "Falta la marca", "Gírate de costado", "Quieto…".
-   - Reglas (ajustables):
-     - detectado: score ≥ 0.5;
-     - completo: la silueta no toca los bordes (margen 2 %);
-     - distancia: persona, alto de la silueta entre 55 % y 85 % del cuadro; ganado, ancho entre 55 % y 88 %;
-     - marca: encontrada y con lado ≥ 36 px;
-     - ángulo por proporción ancho/alto de la silueta: persona de frente ≥ 0.24 (brazos un poco separados),
-       de costado ≤ 0.22; ganado de costado ≥ 1.15, de atrás ≤ 0.9;
-     - quieto: IoU de la caja entre cuadros seguidos ≥ 0.93.
-   - Cuando todo está en verde **3 cuadros seguidos** → captura automática: mediana de las medidas de esos cuadros +
-     imagen JPEG del cuadro, vibración (`navigator.vibrate`), y pasa al siguiente ángulo. Botón de captura manual de
-     respaldo. Mostrar cuadros por segundo reales, sin exagerar.
-4. **Cálculo con dos ángulos** (volumen): `kg = c · A_principal(cm²) · ancho_secundario(cm) / 1000`.
-   - Persona: A de frente × profundidad de costado; c de fábrica ≈ 0.58 (70 kg, 170 cm).
-   - Ganado: A de costado × ancho de atrás; c ≈ 0.72 (novillo de 450 kg).
-   - Calibración por modo con báscula (la de baño para personas): ajustar c con la mediana de kg·1000/(A·ancho); con 6
-     o más, ajustar también el exponente. Guardar en `S.config.pesoCam.cal` con `modo`.
-5. **Instrucciones para personas:** pegar la marca en la pared a la altura del pecho y pararse pegado a la pared junto
-   a ella; de frente con los brazos un poco separados; de costado con los brazos pegados.
-6. **Rendimiento:** WASM de 1 hilo (no hay SharedArrayBuffer en `file://`). En teléfono se espera ~1–3 inferencias
-   por segundo. A futuro: WebGPU (modelo fp16) o parte nativa de Android (TFLite/NNAPI) para 10–20 por segundo.
-7. **Pruebas:** Chromium acepta video falso: `--use-fake-device-for-media-stream --use-file-for-fake-video-capture=archivo.mjpeg`
-   (un .mjpeg es una secuencia de JPEG). Armar un video con una foto de persona de cuerpo completo más la marca
-   dibujada (fotos de personas de COCO: `https://s3.amazonaws.com/images.cocodataset.org/val2017/000000295478.jpg`,
-   `000000575081.jpg`, `000000481573.jpg`; así se descargan desde este entorno) y comprobar que se captura solo.
-8. Traducir todo (en/pt), actualizar README, subir `modelo/vision/VERSION` (p. ej. 5.0.0-beta.2), commit y push.
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.2.apk` y pruebe **Personas** con la marca impresa. Pedirle: cuadros/s
+   que muestra, si la captura sale sola, estatura medida vs. real, peso estimado vs. báscula (y calibrar).
+2. Con lo que reporte, ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) y la franja de la profundidad.
+   Si va muy lento (< 0.5 cuadros/s): bajar a 2 cuadros seguidos o probar WebGPU (modelo fp16) / parte nativa.
+3. Cuando esté en la finca: probar **Ganado** (costado + por detrás) y calibrar con la báscula.
 
 ### Ideas que el dueño aprobó para después
 - **Aprendizaje en la nube (fase 1):** con permiso del usuario, subir foto + medidas + peso de báscula a Cloudflare
@@ -177,8 +150,11 @@ Pruebas en `pruebas/` (se corren desde una carpeta de trabajo; escriben capturas
 - `equipo_t.js` todo el equipo (necesita `DUENO=<código maestro>` en el entorno; el dueño lo tiene, no está en el repo).
 - `red_t.js` equipo por internet (servidor local 8790), revocar licencia, cuenta solicitudes.
 - `v2_t.js` recorrido visual del equipo 4.9.0.
-- `beta_t.js` peso con cámara en la beta (usa 8112 con `cv.js`, `aruco.js`, `lado.jpg` = foto de vaca de costado,
-  `seg.onnx`, `ort.bundle.js`, `ort-wasm-simd-threaded.wasm`).
+- `beta_t.js` peso con cámara en la beta, ganado con una sola foto (usa 8112 con `cv.js`, `aruco.js`, `lado.jpg` =
+  vaca de costado, COCO 000000090062, `seg.onnx`, `ort.bundle.js`, `ort-wasm-simd-threaded.wasm`).
+- `vivo_t.js` cámara en vivo con personas (8112 además con `frente.jpg` = COCO 000000223959 y `lejos.jpg` =
+  COCO 000000295478; las fotos se bajan de `https://s3.amazonaws.com/images.cocodataset.org/val2017/<id>.jpg`).
+  `SIN_WORKER=1` prueba el respaldo sin Web Worker.
 - `vision_t.js` + `vision_prueba.html` el modelo solo en el navegador.
 - `humo.js` (usa `rel_mercado.json`), `morf_t.js`, `nav_t.js`, `fondo_t.js`, `cam_t.js` regresiones generales.
 - Traducciones: correr una prueba con `IDIOMA=xx` (graba las claves en `claves_*.json`) y

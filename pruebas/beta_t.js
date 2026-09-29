@@ -1,4 +1,4 @@
-// Rumentis Beta: peso con cámara. Foto sintética: un novillo de costado con la marca de 16 cm pegada al lado.
+// Rumentis Beta: peso con cámara, ganado con una sola foto (el modo en vivo se prueba en vivo_t.js). Foto sintética: un novillo de costado con la marca de 16 cm pegada al lado.
 const {chromium}=require('playwright');const fs=require('fs');const assert=require('assert');
 const CFG0=fs.readFileSync('/home/user/ss/app/assets/config.js','utf8');
 const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:false,","prueba:false,beta:true,");
@@ -7,7 +7,7 @@ const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:fal
  p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!/favicon|ERR_|net::|Failed to load resource/.test(m.text()))errs.push(m.text());});
  await p.route('**/config.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:cfg}));
  await p.addInitScript(i=>{window.VISION_BASE='http://127.0.0.1:8112/';window.__I=i;},IDI);
- await p.goto('http://127.0.0.1:8111/index.html#hoy');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('rumentis-bienvenida','1');localStorage.setItem('rumentis-idioma',window.__I);});await p.reload();await p.waitForTimeout(900);
+ await p.goto('http://127.0.0.1:8111/index.html#hoy');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('rumentis-bienvenida','1');localStorage.setItem('rumentis-idioma',window.__I);localStorage.setItem('rumentis-pc-modo','ganado');});await p.reload();await p.waitForTimeout(900);
  await p.evaluate(()=>cargarDemo());await p.waitForTimeout(400);
  assert.ok(await p.$('.pc-hoy'),'tarjeta en Hoy');
  // foto sintética: la vaca (640 px) llevada a 1600 px con la marca pegada; la marca mide 16 cm = 96 px → 6 px/cm
@@ -33,7 +33,7 @@ const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:fal
  const n0=await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length);await p.click('[data-act="pcGuardar"]');await p.waitForTimeout(400);
  assert.equal(await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length),n0+1,'pesaje guardado');
  // calibración: la báscula dice 520 kg
- for(const kg of [520,515]){await p.click('[data-act="pcCalibrar"]');await p.waitForSelector('#sheet form[data-form="pcCal"]',{timeout:60000});await p.fill('#sheet [name=kg]',String(Math.round(kg*2.20462)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);}
+ for(const kg of [520,515]){await p.click('[data-act="pcFoto"]');await p.waitForSelector('#sheet .pc-kg',{timeout:60000});await p.click('#sheet [data-act="pcCalRes"]');await p.waitForSelector('#sheet form[data-form="pcCal"]',{timeout:60000});await p.fill('#sheet [name=kg]',String(Math.round(kg*2.20462)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);}
  const m=await p.evaluate(()=>PesoCam.modelo());console.log('modelo',JSON.stringify(m));
  const e2=await p.evaluate(async()=>{const x=await PesoCam.analizar(window.__foto);return x.est.kg;});console.log('calibrado',e2);assert.ok(Math.abs(e2-517.5)<15,'se ajusta a la báscula');
  await p.screenshot({path:'beta_cal.png',fullPage:true});

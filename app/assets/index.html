@@ -1245,6 +1245,29 @@ html.vaquero .f-ayuda .rumi-av{display:none}
 /* cada botón en su lugar: el disparador siempre al centro, aunque falte la galería o el cambio de lente */
 .cam-bar .cam-gal{grid-column:1}.cam-bar .cam-disp{grid-column:2}.cam-bar .cam-lente{grid-column:3}
 @media (orientation:landscape){.cam-bar .cam-gal{grid-column:auto;grid-row:1}.cam-bar .cam-disp{grid-column:auto;grid-row:2}.cam-bar .cam-lente{grid-column:auto;grid-row:3}}
+/* peso con cámara (beta): modos, capturas y la cámara en vivo */
+.pc-modo{margin:0 0 4px}
+.pc-vivo p{margin:0;line-height:1.45;color:var(--ink2)}.pc-una{margin-top:8px}
+.pc-caps{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pc-caps figure{margin:0;display:flex;flex-direction:column;gap:4px}.pc-caps img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;background:#000}.pc-caps figcaption{font-size:12.5px;color:var(--ink2);text-align:center}
+.cv-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:0 12px 8px}
+.cv-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.12);font-size:12.5px;font-weight:700;color:rgba(255,255,255,.7)}
+.cv-chip i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35)}
+.cv-chip[data-s="ok"]{color:#fff}.cv-chip[data-s="ok"] i{background:#2ECC71}.cv-chip[data-s="no"] i{background:#E74C3C}
+.cv-v video{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain}
+.cv-lz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cv.espejo video,.cv.espejo .cv-lz{transform:scaleX(-1)}
+.cv-ind{position:absolute;left:12px;right:12px;bottom:16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;pointer-events:none}
+.cv-msg{max-width:100%;padding:10px 18px;border-radius:16px;background:rgba(0,0,0,.62);color:#fff;font:800 24px/1.2 'Bricolage Grotesque',sans-serif}
+.cv[data-estado="verde"] .cv-msg{background:rgba(46,204,113,.92);color:#06301A}
+.cv[data-estado="ambar"] .cv-msg{background:rgba(240,191,51,.92);color:#2B2006}
+.cv-tit{display:flex;flex-direction:column;gap:3px;min-width:0;padding-right:10px}.cv-sub{font-size:13.5px;line-height:1.35;color:rgba(255,255,255,.78)}.cv-sub:empty{display:none}
+.cv-prog{width:140px;height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden}.cv-prog i{display:block;height:100%;width:calc(var(--p,0)*100%);background:#2ECC71;transition:width .25s}
+.cv-th{position:absolute;right:12px;top:12px;width:64px;border-radius:10px;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.cv-fps{justify-self:start;grid-column:1;font-size:12.5px;color:rgba(255,255,255,.7);font-variant-numeric:tabular-nums}
+.cv .cv-man{grid-column:2}.cv .cv-gira{grid-column:3}
+.cv.carga .cv-msg::before{content:'';display:inline-block;width:18px;height:18px;margin-right:10px;vertical-align:-2px;border-radius:50%;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;animation:pcg 1s linear infinite}
+.cv.sin .cv-chips,.cv.sin .cv-bar{visibility:hidden}.cv.sin .cv-msg{font-size:17px;font-weight:600;font-family:inherit}
+@media (orientation:landscape){.cv-chips{position:absolute;top:58px;left:0;right:120px;z-index:2}.cv-msg{font-size:19px;padding:8px 14px}.cv .cv-gira{white-space:nowrap;font-size:12px;padding:0 10px}.cv-ind{bottom:10px}.cv-fps{grid-column:auto;grid-row:1;justify-self:center}.cv .cv-man{grid-column:auto;grid-row:2}.cv .cv-gira{grid-column:auto;grid-row:3}}
 </style>
 </head>
 <body>
@@ -5566,7 +5589,7 @@ responder=function(txt){
 <script src="rumi_menu.js"></script>
 <script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="huella.js"></script><script src="documentos.js"></script><script src="mercado.js"></script><script src="zona.js"></script><script src="rumi_analisis3.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
 <script src="equipo_nucleo.js"></script><script src="equipo.js"></script><script src="vaquero.js"></script>
-<script src="vision.js"></script><script src="pesocam.js"></script>
+<script src="vision.js"></script><script src="pesocam.js"></script><script src="camvivo.js"></script>
 
 
 </body>

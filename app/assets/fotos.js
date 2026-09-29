@@ -69,10 +69,10 @@ async function traseras(){
   const n=d=>{const m=String(d.label).match(/(\d+)/);return m?+m[1]:99;};
   return lista.sort((a,b)=>rara(a)-rara(b)||n(a)-n(b));
 }
-async function abrirCam(devId){
+async function abrirCam(devId,tam){
   // zoom:true pide poder controlar el acercamiento: en teléfonos con varias lentes en una sola cámara (Samsung) así se
   // pone en 1x y no en la gran angular (0.6x)
-  const base={width:{ideal:1920},height:{ideal:1440},zoom:true};
+  const base={...(tam||{width:{ideal:1920},height:{ideal:1440}}),zoom:true};
   const v=devId?{...base,deviceId:{exact:devId}}:{...base,facingMode:{ideal:'environment'}};
   return navigator.mediaDevices.getUserMedia({video:v,audio:false});
 }
@@ -129,6 +129,17 @@ function tomar(titulo,o={}){
     }
   });
 }
+/* la cámara para video en vivo (peso con cámara): la trasera principal (la que se eligió al tomar fotos) o la frontal */
+async function camara(frontal){
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))throw new Error('sin cámara');
+  const tam={width:{ideal:1280},height:{ideal:960}};
+  if(frontal)return navigator.mediaDevices.getUserMedia({video:{...tam,facingMode:'user'},audio:false});
+  let s=await abrirCam(null,tam);
+  const lista=await traseras();let g=null;try{g=localStorage.getItem(CAM_KEY);}catch(e){}
+  const d=lista.find(x=>x.deviceId===g)||lista[0],act=(s.getVideoTracks()[0].getSettings()||{}).deviceId;
+  if(d&&d.deviceId&&act&&d.deviceId!==act){s.getTracks().forEach(t=>t.stop());s=await abrirCam(d.deviceId,tam);}
+  await zoom1(s);return s;
+}
 /* borra fotos de animales que ya no existen (por ejemplo, un lote que no se guardó) */
 async function limpiar(){
   const vivos=new Set();for(const l of Object.values(S.lotes||{}))for(const a of (l.animales||[]))vivos.add(a.id);
@@ -137,5 +148,5 @@ async function limpiar(){
   for(const k of await ids())if(!/^eq-/.test(k)&&!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
 }
 setTimeout(limpiar,15000);
-window.Fotos={guardar,borrar,url,tiene,tomar,pintar,ids,limpiar,NATIVO};
+window.Fotos={guardar,borrar,url,tiene,tomar,camara,pintar,ids,limpiar,NATIVO};
 })();
