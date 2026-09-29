@@ -1220,6 +1220,28 @@ html.vaquero .f-ayuda .rumi-av{display:none}
 .eq-alim-k{display:flex;flex-direction:column;align-items:flex-end;flex:none}.eq-alim-k b{font-size:15px}.eq-alim-k span{font-size:12px;color:var(--ink2)}
 .eq-com{display:block;font-size:13px;font-style:italic;color:var(--ink);margin-top:2px}
 .eq-plan{padding:12px 0;border-top:1px solid var(--line)}.eq-plan .fh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+/* ---------- Rumentis Beta: peso con cámara ---------- */
+.pc-beta{display:inline-block;padding:2px 8px;border-radius:99px;background:#6b46c1;color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;vertical-align:middle}
+.eyebrow.pc-beta{font-size:12px;margin-bottom:4px;align-self:flex-start;width:fit-content;display:inline-block}
+.pc-hoy{display:flex;gap:12px;align-items:center;color:inherit;text-decoration:none;border:1.5px solid color-mix(in srgb,#6b46c1 45%,var(--line))}.pc-hoy>div{flex:1;display:flex;flex-direction:column;gap:3px}.pc-hoy>div>span{font-size:13.5px;color:var(--ink2)}.pc-hoy>svg{width:18px;height:18px;color:var(--ink2)}
+.pc-foto{margin-top:10px;min-height:54px;font-size:16px;gap:8px}.pc-foto svg,.pc-acts svg,.pc-cal .btn svg,.pc-f svg{width:20px;height:20px}
+.pc-f{margin-bottom:12px;gap:8px}
+.pc-sesion{display:flex;flex-direction:column;gap:12px}.pc-prom b{display:block;font:800 30px/1 'Bricolage Grotesque',sans-serif}.pc-prom span{font-size:13.5px;color:var(--ink2)}
+.pc-th{width:52px;height:40px;border-radius:10px;object-fit:cover;flex:none}
+.pc-acts{display:flex;gap:8px}.pc-acts .btn{flex:1;gap:8px}
+.pc-como{display:flex;flex-direction:column;gap:12px}
+.pc-marca-w{display:flex;gap:14px;align-items:center}.pc-marca-w>div{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.pc-marca-w span{font-size:13.5px;color:var(--ink2);line-height:1.4}
+.pc-marca{width:84px;height:84px;flex:none;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.pc-pasos{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.45}
+.pc-cal{display:flex;flex-direction:column;gap:10px}.pc-cal p{margin:0;line-height:1.45}.pc-cal .btn{gap:8px}
+.pc-nota{text-align:center}
+.pc-anal{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 0}.pc-anal p{margin:0;color:var(--ink2)}
+.pc-spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--line);border-top-color:#6b46c1;animation:pcg 1s linear infinite}@keyframes pcg{to{transform:rotate(360deg)}}
+.pc-res{width:100%;border-radius:16px;display:block}
+.pc-resw{display:flex;flex-direction:column;gap:12px}
+.pc-kg{text-align:center}.pc-kg b{display:block;font:800 40px/1.05 'Bricolage Grotesque',sans-serif}.pc-kg span{font-size:14px;color:var(--ink2)}
+.pc-med{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.pc-med>div{display:flex;flex-direction:column;gap:2px;padding:8px;border-radius:12px;background:var(--card2,rgba(0,0,0,.04));text-align:center}.pc-med b{font-size:14px}.pc-med span{font-size:11.5px;color:var(--ink2)}
+.pc-aviso{display:flex;gap:8px;align-items:flex-start;margin:0;padding:10px 12px;border-radius:12px;background:rgba(240,191,51,.18);font-size:13.5px;line-height:1.4}.pc-aviso svg{width:18px;height:18px;flex:none;color:var(--arete-e)}
 /* cada botón en su lugar: el disparador siempre al centro, aunque falte la galería o el cambio de lente */
 .cam-bar .cam-gal{grid-column:1}.cam-bar .cam-disp{grid-column:2}.cam-bar .cam-lente{grid-column:3}
 @media (orientation:landscape){.cam-bar .cam-gal{grid-column:auto;grid-row:1}.cam-bar .cam-disp{grid-column:auto;grid-row:2}.cam-bar .cam-lente{grid-column:auto;grid-row:3}}
@@ -5544,6 +5566,7 @@ responder=function(txt){
 <script src="rumi_menu.js"></script>
 <script src="rumi_pro.js"></script><script src="rumi_mas.js"></script><script src="rumi_analisis2.js"></script><script src="huella.js"></script><script src="documentos.js"></script><script src="mercado.js"></script><script src="zona.js"></script><script src="rumi_analisis3.js"></script><script src="rumi_saber2.js"></script><script src="ayuda.js"></script><script src="avisos.js"></script>
 <script src="equipo_nucleo.js"></script><script src="equipo.js"></script><script src="vaquero.js"></script>
+<script src="vision.js"></script><script src="pesocam.js"></script>
 
 
 </body>

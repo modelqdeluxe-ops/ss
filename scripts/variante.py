@@ -10,7 +10,7 @@ uso: variante.py <carpeta> <paquete> <nombre> <jefe|vaquero> <prueba 0|1> <color
 - la del vaquero no lleva el widget de Rumi;
 - con manifiesto de pagos (solo la app del jefe de Google Play): permisos y actividades de Google Play Billing.
 """
-import re, sys, pathlib
+import os, re, shutil, sys, pathlib
 import xml.etree.ElementTree as ET
 
 d, paquete, nombre, app, prueba, color = sys.argv[1:7]
@@ -94,7 +94,25 @@ for f in (D / 'smali').rglob('Archivos*.smali'):
 # ---- config.js ----
 cj = D / 'assets/config.js'
 s = cj.read_text(encoding='utf-8')
-s2 = re.sub(r"window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|false),", "window.RUMENTIS={app:'%s',prueba:%s," % (app, 'true' if prueba == '1' else 'false'), s, count=1)
+beta = os.environ.get('BETA') == '1'
+s2 = re.sub(r"window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|false),beta:(true|false),", "window.RUMENTIS={app:'%s',prueba:%s,beta:%s," % (app, 'true' if prueba == '1' else 'false', 'true' if beta else 'false'), s, count=1)
 assert s2 != s or ("app:'%s'" % app in s), 'no se pudo marcar config.js'
 cj.write_text(s2, encoding='utf-8')
-print('variante:', paquete, '·', nombre, '·', app, '· prueba' if prueba == '1' else '', '· pagos' if pagos else '')
+
+# ---- la beta lleva la visión (modelo, onnxruntime-web y el detector de la marca) ----
+if beta:
+    V = pathlib.Path(__file__).resolve().parents[1] / 'modelo' / 'vision'
+    dv = D / 'assets' / 'vision'
+    dv.mkdir(parents=True, exist_ok=True)
+    for f in ('seg.onnx', 'ort.bundle.js', 'ort-wasm-simd-threaded.wasm', 'cv.js', 'aruco.js'):
+        shutil.copy(V / f, dv / f)
+    lic = D / 'assets' / 'lib' / 'LICENCIAS.txt'
+    extra = '\n\n'.join((V / f).read_text(encoding='utf-8') for f in ('LICENCIA-rf-detr.txt', 'LICENCIA-onnxruntime.txt', 'LICENCIA-js-aruco2.txt'))
+    lic.write_text(lic.read_text(encoding='utf-8') + '\n\n' + extra, encoding='utf-8')
+    # su propia versión (modelo/vision/VERSION): la beta avanza aparte de la app publicada
+    vb = (V / 'VERSION').read_text(encoding='utf-8').strip()
+    ay = D / 'apktool.yml'
+    ay.write_text(re.sub(r'(versionName:\s*)\S+', lambda x: x.group(1) + vb, ay.read_text(encoding='utf-8')), encoding='utf-8')
+    ix = D / 'assets' / 'index.html'
+    ix.write_text(re.sub(r"const VERSION_APP='[^']*';", "const VERSION_APP='%s';" % vb, ix.read_text(encoding='utf-8'), count=1), encoding='utf-8')
+print('variante:', paquete, '·', nombre, '·', app, '· prueba' if prueba == '1' else '', '· beta' if beta else '', '· pagos' if pagos else '')

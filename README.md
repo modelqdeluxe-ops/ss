@@ -124,6 +124,25 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `scripts/build.sh` — APK: `dist/Rumentis.apk` (acepta `APP_DIR`, `SALIDA` y `DEX_EXTRA`).
 - `scripts/build_aab.sh` — AAB para Google Play: `dist/Rumentis.aab` (mismas variables).
 
+## Rumentis Beta (peso por cámara)
+
+La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `hn.hato.ganadero.beta`, versión en
+`modelo/vision/VERSION`): se instala junto a Rumentis sin tocar sus datos. `scripts/variantes.sh` la arma con
+`beta:true` en `config.js` y le copia `modelo/vision/` a `assets/vision/` (solo a ella). La app publicada sigue igual.
+
+- **Peso con cámara** (`app/assets/pesocam.js`, página `#pesocam`, tarjeta en Hoy y botón en el pesaje): una foto de
+  costado del animal junto a la **marca de medida** (cuadro negro de 16 cm, ArUco MIP 36h12 id 7; la app da el PDF para
+  imprimir con una regla de 10 cm para revisar la escala).
+- **Visión en el teléfono** (`app/assets/vision.js`): RF-DETR Seg Nano (Roboflow, Apache 2.0) en ONNX int8 (33 MB)
+  con onnxruntime-web (WebAssembly). Recorta la silueta del animal (clase vaca de COCO) sin internet; la foto no sale
+  del teléfono. `js-aruco2` (MIT) encuentra la marca y da los píxeles por centímetro.
+- **Cálculo**: con la silueta en cm (área, largo y alto), `kg = a · área^b`. De fábrica a y b son un estimado
+  general (±15 %); cada foto de un animal recién pesado en la báscula calibra la fórmula para la finca (con 2 a 5
+  fotos se ajusta a; con 6 o más, a y b), y la app muestra el error típico.
+- Las fotos de un lote se juntan en un **pesaje** (promedio y, si se indica, el peso de cada arete) que se guarda como
+  cualquier otro, marcado `metodo:'camara'`.
+- Cómo se generó el modelo y sus licencias: `modelo/vision/LEEME.md`.
+
 ## Equipo
 
 La app de la administración (**Rumentis**, de pago en Google Play) vende licencias para su personal: un producto

@@ -42,8 +42,8 @@ document.addEventListener('rumentis-pintado',()=>pintar(document.getElementById(
 new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1){if(n.matches&&n.matches('img[data-foto]'))pintar(n.parentNode);else if(n.querySelector&&n.querySelector('img[data-foto]'))pintar(n);}}).observe(document.documentElement,{childList:true,subtree:true});
 
 /* reduce una imagen a 720 px de lado mayor, JPEG */
-function aJpeg(fuente,w,h){
-  const k=Math.min(1,1024/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
+function aJpeg(fuente,w,h,max=1024){
+  const k=Math.min(1,max/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
   c.getContext('2d').drawImage(fuente,0,0,c.width,c.height);
   return new Promise(ok=>c.toBlob(b=>ok(b),'image/jpeg',0.8));
 }
@@ -99,7 +99,7 @@ function tomar(titulo,o={}){
     disp.onclick=async()=>{
       if(!v.videoWidth){try{await v.play();}catch(e){}await new Promise(r=>setTimeout(r,300));}
       if(!v.videoWidth){toast('La cámara aún no está lista.');return;}
-      w.classList.add('flash');const b=await aJpeg(v,v.videoWidth,v.videoHeight);fin(b);
+      w.classList.add('flash');const b=await aJpeg(v,v.videoWidth,v.videoHeight,o.max||1024);fin(b);
     };
     const zb=w.querySelector('.cam-zoom');
     const mostrar=async s=>{stream=s;v.srcObject=s;const zc=await zoom1(s);try{await v.play();}catch(e){}msg.hidden=true;disp.disabled=false;

@@ -1,0 +1,72 @@
+Peso con cámara	Camera weight	Peso pela câmera
+Beta	Beta	Beta
+Estima el peso con una foto de costado.	Estimate weight from a side photo.	Estime o peso com uma foto de lado.
+Una foto de costado junto a la marca de medida y el teléfono estima el peso. Todo se calcula aquí, sin internet.	A side photo next to the measuring marker and the phone estimates the weight. Everything is calculated here, offline.	Uma foto de lado junto ao marcador de medida e o celular estima o peso. Tudo é calculado aqui, sem internet.
+Tomar foto de un animal	Photograph an animal	Fotografar um animal
+Cómo tomar la foto	How to take the photo	Como tirar a foto
+Marca de medida	Measuring marker	Marcador de medida
+Un cuadro negro de {0} {3}. Imprímela en tamaño carta o A{1} al {2} {4}.	A black square of {0} {3}. Print it on letter or A{1} paper at {2} {4}.	Um quadrado preto de {0} {3}. Imprima em papel carta ou A{1} a {2} {4}.
+Descargar para imprimir	Download to print	Baixar para imprimir
+Pega la marca en la manga o en la cerca, a la altura de las costillas del animal.	Stick the marker on the chute or fence, at the height of the animal's ribs.	Cole o marcador no brete ou na cerca, na altura das costelas do animal.
+Pon al animal de costado, pegado a la marca, y aléjate hasta que quepa completo en la foto.	Stand the animal sideways, right next to the marker, and step back until it fits completely in the photo.	Coloque o animal de lado, junto ao marcador, e afaste-se até que ele caiba inteiro na foto.
+Toma la foto de frente al costado, con el teléfono acostado. Que se vean el animal entero y la marca.	Take the photo square to its side, with the phone horizontal. The whole animal and the marker must be visible.	Tire a foto de frente para o lado do animal, com o celular deitado. O animal inteiro e o marcador devem aparecer.
+Calibración con tu báscula	Calibration with your scale	Calibração com sua balança
+Sin calibrar: el peso es un estimado general. Toma fotos de animales recién pesados en la báscula y escribe su peso real: la app aprende de tus animales.	Not calibrated: the weight is a general estimate. Photograph animals just weighed on the scale and enter their real weight: the app learns from your animals.	Sem calibrar: o peso é uma estimativa geral. Fotografe animais recém-pesados na balança e escreva o peso real: o app aprende com seus animais.
+Calibrar con un animal pesado	Calibrate with a weighed animal	Calibrar com um animal pesado
+Calibrada con {0} fotos. Error típico: ±{1} {2}.	Calibrated with {0} photos. Typical error: ±{1} {2}.	Calibrada com {0} fotos. Erro típico: ±{1} {2}.
+Calibrada con {0} foto. Error típico: ±{1} {2}.	Calibrated with {0} photo. Typical error: ±{1} {2}.	Calibrada com {0} foto. Erro típico: ±{1} {2}.
+Beta: compara con la báscula antes de decidir ventas o raciones con este peso.	Beta: compare with the scale before deciding sales or rations with this weight.	Beta: compare com a balança antes de decidir vendas ou rações com este peso.
+Analizando la foto	Analyzing the photo	Analisando a foto
+Cargando el modelo de visión la primera vez…	Loading the vision model for the first time…	Carregando o modelo de visão pela primeira vez…
+Buscando al animal y la marca…	Looking for the animal and the marker…	Procurando o animal e o marcador…
+Peso estimado	Estimated weight	Peso estimado
+entre {0} {2} y {1} {3}	between {0} {2} and {1} {3}	entre {0} {2} e {1} {3}
+largo	length	comprimento
+alto	height	altura
+silueta	silhouette	silhueta
+seguridad	confidence	confiança
+Arete (opcional)	Ear tag (optional)	Brinco (opcional)
+Sin arete	No ear tag	Sem brinco
+Arete	Tag	Brinco
+Sin calibrar: estimado general.	Not calibrated: general estimate.	Sem calibrar: estimativa geral.
+Calibrado con {0} fotos de tu báscula.	Calibrated with {0} photos from your scale.	Calibrado com {0} fotos da sua balança.
+Calibrado con {0} foto de tu báscula.	Calibrated with {0} photo from your scale.	Calibrado com {0} foto da sua balança.
+Descartar	Discard	Descartar
+Agregar al pesaje	Add to weighing	Adicionar à pesagem
+Pesaje en curso	Weighing in progress	Pesagem em andamento
+promedio de {1} animal en {0}	average of {1} animal in {0}	média de {1} animal em {0}
+promedio de {1} animales en {0}	average of {1} animals in {0}	média de {1} animais em {0}
+Otra foto	Another photo	Outra foto
+{0} {1} agregado. Toma otra foto o guarda el pesaje.	{0} {1} added. Take another photo or save the weighing.	{0} {1} adicionado. Tire outra foto ou salve a pesagem.
+{0}: {1} {3} de promedio con cámara ({2} animales)	{0}: {1} {3} average by camera ({2} animals)	{0}: {1} {3} de média pela câmera ({2} animais)
+{0}: {1} {3} de promedio con cámara ({2} animal)	{0}: {1} {3} average by camera ({2} animal)	{0}: {1} {3} de média pela câmera ({2} animal)
+Calibrar con la báscula	Calibrate with the scale	Calibrar com a balança
+La foto estima	The photo estimates	A foto estima
+. Escribe lo que marcó la báscula para este animal.	. Enter what the scale showed for this animal.	. Escreva o que a balança marcou para este animal.
+Peso de báscula	Scale weight	Peso da balança
+Guardar calibración	Save calibration	Salvar calibração
+Escribe el peso de la báscula.	Enter the scale weight.	Escreva o peso da balança.
+Calibración guardada. Con una más empieza a ajustarse.	Calibration saved. With one more it starts adjusting.	Calibração salva. Com mais uma começa a se ajustar.
+Calibración guardada: error típico ±{0} {1}.	Calibration saved: typical error ±{0} {1}.	Calibração salva: erro típico ±{0} {1}.
+báscula	scale	balança
+foto: {0} {1} sin calibrar	photo: {0} {1} uncalibrated	foto: {0} {1} sem calibrar
+Borrar la calibración	Delete calibration	Apagar a calibração
+¿Borrar la calibración?	Delete the calibration?	Apagar a calibração?
+El peso vuelve a calcularse con el estimado general.	The weight goes back to the general estimate.	O peso volta a ser calculado com a estimativa geral.
+Calibración borrada	Calibration deleted	Calibração apagada
+Estimar con cámara (beta)	Estimate by camera (beta)	Estimar pela câmera (beta)
+No se pudo medir	Couldn't measure	Não foi possível medir
+Tomar otra	Take another	Tirar outra
+Cerrar	Close	Fechar
+Calibración	Calibration	Calibração
+No encontré al animal en la foto. Tómala de costado y que se vea completo.	I couldn't find the animal in the photo. Take it from the side with the whole animal visible.	Não encontrei o animal na foto. Tire de lado e com o animal inteiro.
+No encontré la marca de medida. Que se vea completa, sin reflejos ni sombras encima, y más cerca si está pequeña.	I couldn't find the measuring marker. It must be fully visible, without glare or shadows, and closer if it looks small.	Não encontrei o marcador de medida. Ele deve aparecer inteiro, sem reflexos nem sombras, e mais perto se estiver pequeno.
+El animal no se ve completo en la foto: el peso puede salir bajo.	The animal isn't fully in the photo: the weight may come out low.	O animal não aparece inteiro na foto: o peso pode sair baixo.
+La marca se ve torcida: toma la foto más de frente al costado del animal.	The marker looks skewed: take the photo more squarely to the animal's side.	O marcador parece torto: tire a foto mais de frente para o lado do animal.
+No se pudo analizar la foto en este teléfono.	The photo couldn't be analyzed on this phone.	Não foi possível analisar a foto neste celular.
+No se pudo preparar la marca.	The marker couldn't be prepared.	Não foi possível preparar o marcador.
+Pesaje en curso descartado: era de otro lote.	Weighing in progress discarded: it was from another lot.	Pesagem em andamento descartada: era de outro lote.
+Foto de costado, junto a la marca	Side photo, next to the marker	Foto de lado, junto ao marcador
+Animal recién pesado, junto a la marca	Freshly weighed animal, next to the marker	Animal recém-pesado, junto ao marcador
+Rumentis · Marca de medida ({0} {1})	Rumentis · Measuring marker ({0} {1})	Rumentis · Marcador de medida ({0} {1})
+Esta línea debe medir {0} {2}. Si no, imprime al {1} {3} (sin ajustar a la página).	This line must measure {0} {2}. If not, print at {1} {3} (no fit to page).	Esta linha deve medir {0} {2}. Se não, imprima a {1} {3} (sem ajustar à página).

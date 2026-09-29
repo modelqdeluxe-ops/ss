@@ -4,6 +4,8 @@
 #   Rumentis Equipo        hn.hato.ganadero.vaquero         la del personal de campo (gratis), se activa con una licencia
 #   Rumentis Prueba       hn.hato.ganadero.prueba          la del dueño con todo abierto: las licencias se crean sin cobrar
 #   Equipo Prueba         hn.hato.ganadero.vaquero.prueba  la del personal para probar (acepta la licencia RV-PRUEBA-2026)
+#   Rumentis Beta         hn.hato.ganadero.beta            la beta de la próxima versión: peso por cámara (modelo de visión
+#                                                          en el teléfono, modelo/vision); sin Google Play Billing
 # Se instalan juntas en el mismo teléfono. Salen en dist/ (APK) y, las de Google Play, también en AAB.
 # La del dueño lleva Google Play Billing y se arma con Gradle (scripts/pagos.sh); si no hay Gradle, sale sin pagos
 # (salvo con PAGOS_OBLIGATORIO=1, como en GitHub Actions). Las demás, con apktool (build.sh y build_aab.sh).
@@ -17,13 +19,13 @@ trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$RAIZ/dist"
 
 variante() {
-  local archivo="$1" paquete="$2" nombre="$3" app="$4" prueba="$5" color="$6"
+  local archivo="$1" paquete="$2" nombre="$3" app="$4" prueba="$5" color="$6" beta="${7:-0}"
   local D="$TMP/$archivo" aab=""
   cp -r "$RAIZ/app" "$D"
   rm -rf "$D/build" "$D/dist"
-  python3 "$RAIZ/scripts/variante.py" "$D" "$paquete" "$nombre" "$app" "$prueba" "$color"
-  [ "$QUE" = todo ] && [ "$prueba" = 0 ] && aab="$RAIZ/dist/$archivo.aab"
-  if [ "$app" = jefe ] && [ "$prueba" = 0 ]; then
+  BETA="$beta" python3 "$RAIZ/scripts/variante.py" "$D" "$paquete" "$nombre" "$app" "$prueba" "$color"
+  [ "$QUE" = todo ] && [ "$prueba" = 0 ] && [ "$beta" = 0 ] && aab="$RAIZ/dist/$archivo.aab"
+  if [ "$app" = jefe ] && [ "$prueba" = 0 ] && [ "$beta" = 0 ]; then
     local r=0; bash "$RAIZ/scripts/pagos.sh" "$D" "$RAIZ/dist/$archivo.apk" $aab || r=$?
     if [ "$r" = 0 ]; then return; fi
     if [ "$r" != 3 ]; then exit "$r"; fi
@@ -35,6 +37,7 @@ variante() {
 
 variante Rumentis              hn.hato.ganadero                "Rumentis"         jefe    0 "#ff22384d"
 variante RumentisEquipo         hn.hato.ganadero.vaquero        "Rumentis Equipo"  vaquero 0 "#ff12594a"
+variante RumentisBeta          hn.hato.ganadero.beta           "Rumentis Beta"    jefe    0 "#ff5b3a8c" 1
 # las de prueba solo si se piden (PRUEBA=1): para el día a día basta el código maestro en la app de verdad
 if [ "${PRUEBA:-0}" = 1 ]; then
 variante RumentisPrueba        hn.hato.ganadero.prueba         "Rumentis Prueba"  jefe    1 "#ffa0432a"

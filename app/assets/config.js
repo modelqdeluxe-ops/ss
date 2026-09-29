@@ -1,8 +1,9 @@
 /* Configuración de esta compilación de Rumentis. scripts/variantes.sh reescribe la primera línea para cada app:
    - app: 'jefe' (Rumentis, la app de pago de la administración) o 'vaquero' (Rumentis Equipo, gratis, para el personal).
    - prueba: true en las apps de prueba (las compras se simulan y no se cobra nada).
+   - beta: true en Rumentis Beta (peso por cámara con el modelo de visión).
    Lo demás lo llena el dueño de la app una vez: */
-window.RUMENTIS={app:'jefe',prueba:false,
+window.RUMENTIS={app:'jefe',prueba:false,beta:false,
   // servidor de relevo del equipo (servidor/equipo). Vacío: el equipo se pasa los datos por archivo (WhatsApp).
   servidorEquipo:'https://rumentis-equipo.modelqdeluxe.workers.dev',
   // llave pública RSA de Rumentis en Google Play (Play Console > Monetización > Configuración de la monetización).
@@ -16,3 +17,4 @@ window.RUMENTIS={app:'jefe',prueba:false,
   paginaVaquero:'https://modelqdeluxe-ops.github.io/ss/campo/'};
 if(window.RUMENTIS.app==='vaquero')document.documentElement.classList.add('vaquero');
 if(window.RUMENTIS.prueba)document.documentElement.classList.add('prueba');
+if(window.RUMENTIS.beta)document.documentElement.classList.add('beta');

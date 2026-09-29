@@ -9,7 +9,7 @@ name: Compilar Rumentis
 on:
   push:
     branches: [main, 'claude/**']
-    paths: ['app/**', 'scripts/**', 'modelo/android/**', '.github/workflows/compilar.yml']
+    paths: ['app/**', 'scripts/**', 'modelo/android/**', 'modelo/vision/**', '.github/workflows/compilar.yml']
   workflow_dispatch:
 
 permissions:
@@ -38,7 +38,9 @@ jobs:
           scripts/variantes.sh todo
           VN=$(grep -E '^\s*versionName:' app/apktool.yml | awk '{print $2}')
           echo "VN=$VN" >> "$GITHUB_ENV"
-          cd dist && for f in *.apk *.aab; do mv "$f" "${f%.*}-$VN.${f##*.}"; done && ls -la
+          VB=$(cat modelo/vision/VERSION)
+          echo "VB=$VB" >> "$GITHUB_ENV"
+          cd dist && for f in *.apk *.aab; do case "$f" in RumentisBeta*) v="$VB";; *) v="$VN";; esac; mv "$f" "${f%.*}-$v.${f##*.}"; done && ls -la
       - name: Publicar (un solo Release con lo último)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,7 +50,7 @@ jobs:
             gh release delete "$t" --yes --cleanup-tag || true
           done
           TAG="v$VN-${GITHUB_RUN_NUMBER}"
-          gh release create "$TAG" dist/*-$VN.apk dist/*-$VN.aab \
+          gh release create "$TAG" dist/*-$VN.apk dist/*-$VN.aab dist/RumentisBeta-$VB.apk \
             --target "$GITHUB_SHA" --latest \
             --title "Rumentis $VN" \
-            --notes "Instala Rumentis-$VN.apk en el teléfono de la administración y RumentisEquipo-$VN.apk en el de cada colaborador. Los .aab son para subir a Google Play. Rama: $GITHUB_REF_NAME, compilación $GITHUB_RUN_NUMBER."
+            --notes "Instala Rumentis-$VN.apk en el teléfono de la administración y RumentisEquipo-$VN.apk en el de cada colaborador. Los .aab son para subir a Google Play. RumentisBeta-$VB.apk es la beta de la próxima versión (peso por cámara); se instala aparte, sin tocar tus datos. Rama: $GITHUB_REF_NAME, compilación $GITHUB_RUN_NUMBER."
