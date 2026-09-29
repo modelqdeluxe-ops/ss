@@ -102,19 +102,19 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `verificar/` — página pública de verificación de documentos (un solo HTML + `nacl-fast.min.js`): abre el enlace
   del QR o recibe el PDF y comprueba la firma en el navegador, sin servidor. La publica `.github/workflows/pages.yml`
   en https://modelqdeluxe-ops.github.io/ss/verificar/ desde `main` (una vez: Settings → Pages → Source: GitHub Actions).
-- `vaquero/` — página pública de la licencia del vaquero (el QR del jefe lleva aquí): muestra la licencia y el
-  botón de Google Play. La publica el mismo `pages.yml` en https://modelqdeluxe-ops.github.io/ss/vaquero/.
+- `campo/` — página pública de la licencia de Rumentis Campo (el QR de la administración lleva aquí): muestra la
+  licencia y el botón de Google Play. La publica el mismo `pages.yml` en https://modelqdeluxe-ops.github.io/ss/campo/
+  (y también en `vaquero/`, la dirección anterior).
 - `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
 - `servidor/equipo/` — servidor de relevo del equipo (Cloudflare Workers + D1): guarda y entrega los sobres
   cifrados entre el jefe y sus vaqueros; `npm test` lo prueba y `npm run local` lo levanta en tu computadora.
-- **Servidor en la finca** (lo que se usa por ahora): `cd servidor/equipo && npm install && npm run local` en una
-  computadora del mismo Wi-Fi; muestra la dirección que se escribe en Equipo → Servidor del equipo. Todo llega en
-  vivo (WebSocket "timbre", un Durable Object por equipo) y los datos quedan en `servidor/equipo/datos/`.
+- Servidor opcional (hoy el equipo trabaja solo con archivos): `npm run local` lo levanta en una computadora del
+  mismo Wi-Fi y, con su dirección, todo llega en vivo (WebSocket "timbre"). No hay botón para configurarlo en la app.
 - `servidor/publicar.sh` — para más adelante: publica los dos servidores en Cloudflare; lo corre a mano
   `.github/workflows/servidores.yml`. Paso a paso en `servidor/PUBLICAR.md`.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
-- `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisVaquero.apk` y, con `todo`,
+- `scripts/variantes.sh` — las apps (ver «Equipo»): `dist/Rumentis.apk` y `RumentisCampo.apk` y, con `todo`,
   sus AAB para Google Play (las de prueba, con `PRUEBA=1`). GitHub Actions deja un solo Release con lo último.
   `scripts/variante.py` cambia paquete, nombre, color del ícono, `config.js` y la autoridad de archivos.
 - `scripts/pagos.sh` — la app del dueño para Google Play: Gradle (proyecto en `scripts/donante/`) la arma con los
@@ -126,49 +126,66 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 
 ## Equipo
 
-La app del dueño (**Rumentis**, de pago en Google Play) vende licencias para su equipo: un producto
-consumible (`licencia_vaquero`) por cada vaquero. Cada licencia es un código al azar de 95 bits
+La app de la administración (**Rumentis**, de pago en Google Play) vende licencias para su personal: un producto
+consumible (`licencia_vaquero`) por cada colaborador. Cada licencia es un código al azar de 95 bits
 (`RV-XXXX-XXXX-XXXX-XXXX-XXXX`, con letra de control) para una sola persona, y va dentro de la compra de
-Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia.
+Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia. En pantalla se habla de administración,
+colaboradores y personal.
 
-- **Jefe** (`app/assets/equipo.js`): con la primera licencia aparece la pestaña **Equipo**: licencias con QR,
-  enlace y botón de WhatsApp; vaqueros con sus permisos (alimento, pesaje, sanidad, muertes, tareas); tareas
-  asignadas; lo que registró cada uno; dar de baja (la licencia queda anulada y la clave del equipo cambia).
-- **Vaquero** (`app/assets/vaquero.js`, app **Rumentis Vaquero**, gratis): la bienvenida de Rumentis y luego su
+**El día a día va por archivos (WhatsApp o correo), sin servidor:**
+
+1. El colaborador se activa en **Rumentis Campo** con su nombre y la licencia, y envía su *solicitud de acceso*.
+   La administración la abre en Rumentis (se acepta sola, o se pregunta) y le devuelve la *actualización*.
+2. La administración asigna tareas **de una vez, diarias o semanales** (1 a 5 veces por semana) y fija la **hora
+   del reporte** (12:00 a 21:00). Le llega al colaborador con la siguiente actualización.
+3. El colaborador anota alimento, pesajes, sanidad y muertes y marca sus tareas. A la hora del reporte le llega un
+   aviso en el teléfono (Android; quedan programados 7 días aunque no abra la app) y la tarjeta de Hoy lo recuerda.
+4. **Reporte del día**: sus registros, tareas del día hechas y pendientes, avance de las semanales y sus novedades
+   (texto libre). Sale como archivo `.rumentis`.
+5. La administración lo abre con Rumentis y ve la página del reporte: novedades, tareas del día, semanales, días
+   reportados en la semana y cada registro con su marca. Nada toca la finca hasta tocar **Registrar**; lo desmarcado
+   queda fuera.
+6. La administración envía la actualización (`.campo`): lotes al día, tareas y la confirmación de lo registrado,
+   que el colaborador ve en la tarjeta de su reporte.
+
+Lo que la administración todavía no registra vuelve a ir en el siguiente reporte (cada registro lleva su número, así
+nunca se duplica); el reporte anterior queda como *incluido*. Cada archivo se abre una sola vez.
+
+- **Administración** (`app/assets/equipo.js`): pestaña **Equipo** con reportes por registrar, colaboradores y su
+  reporte de hoy, reporte diario (hora y archivos), tareas del equipo, licencias con QR y enlace, reportes
+  anteriores y actividad; la hoja de cada colaborador con sus reportes, permisos y tareas; dar de baja (la licencia
+  queda anulada y la clave del equipo cambia).
+- **Colaborador** (`app/assets/vaquero.js`, app **Rumentis Campo**, gratis): la bienvenida de Rumentis y luego su
   nombre y la licencia (escrita, pegada o escaneada del QR con BarcodeDetector o `lib/jsQR.js`). Solo Hoy, Lotes,
   Registrar, Tareas y Más: sin Rumi, sin dinero, sin documentos. Lo que anota va en una cola de operaciones
-  numeradas que el jefe confirma; al llegar el estado del jefe se vuelven a aplicar las que faltan.
+  numeradas que la administración confirma; al llegar la actualización se vuelven a aplicar las que faltan.
+- **Tareas que se repiten** (`app/assets/extras.js`, `Agenda.progreso`): `rep` es `una`, `dia` o `s1`…`s5`; cada
+  vez que se hacen queda en `hechos: [{f, v, n}]`; la semana va de lunes a domingo.
 - **Núcleo** (`app/assets/equipo_nucleo.js`): llaves Ed25519 y X25519 por teléfono (tweetnacl); sobres firmados y
-  cifrados (alta y bienvenida con `nacl.box`, lo demás con la clave del equipo, `nacl.secretbox`); transporte por
-  el servidor de relevo y, siempre, por archivo para WhatsApp.
-- **Archivos del equipo**: el vaquero manda `.rumentis` (`application/vnd.rumentis`, los abre Rumentis) y el jefe
-  manda `.vaquero` (`application/vnd.rumentis.vaquero`, los abre Rumentis Vaquero; `variante.py` cambia el tipo en
-  el manifiesto); si uno llega a la app equivocada, `Recibido.pasar` se lo entrega a la otra. Por dentro:
-  `RUMENTIS` + tipo (1 = JSON, 2 = JSON comprimido) + nonce + `nacl.secretbox` con la llave de archivos de la app, así que solo Rumentis lo abre. Lleva un número único
-  (`fid`): la app no abre dos veces el mismo archivo ni uno que hizo ella misma. En Android, tocar el archivo en
-  WhatsApp (o compartirlo a la app) abre Rumentis y lo recibe (`Enlace.deIntent` y el puente `Recibido`); los
-  `.json` de la versión anterior todavía se leen.
-- **Configuración** (`app/assets/config.js`): qué app es y si es de prueba (lo escribe `variante.py`), el servidor
-  del equipo, la llave RSA de Google Play (para que el vaquero compruebe la compra), el producto y los enlaces.
+  cifrados (alta y bienvenida con `nacl.box`, lo demás con la clave del equipo, `nacl.secretbox`).
+- **Archivos del equipo**: el colaborador manda `.rumentis` (`application/vnd.rumentis`, los abre Rumentis) y la
+  administración manda `.campo` (`application/vnd.rumentis.campo`, los abre Rumentis Campo; `variante.py` cambia el
+  tipo en el manifiesto); si uno llega a la app equivocada, `Recibido.pasar` se lo entrega a la otra. Por dentro:
+  `RUMENTIS` + tipo (1 = JSON, 2 = JSON comprimido) + nonce + `nacl.secretbox` con la llave de archivos de la app.
+  Lleva un número único (`fid`): la app no abre dos veces el mismo archivo ni uno que hizo ella misma. En Android,
+  tocar el archivo en WhatsApp o en el correo abre la app y lo recibe (`Enlace.deIntent` y el puente `Recibido`).
+- **Configuración** (`app/assets/config.js`): qué app es y si es de prueba (lo escribe `variante.py`), la llave RSA
+  de Google Play (para que Rumentis Campo compruebe la compra), el producto y los enlaces.
 - **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la clase está en la app), `Cripto`
-  (firma RSA de Google) y `Recibido` (el archivo `.rumentis` con que se abrió la app); `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app del dueño de
+  (firma RSA de Google) y `Recibido`; `modelo/android/Pagos.java` es Google Play Billing 7 y solo va en la app de
   Google Play, que se arma con Gradle (`scripts/pagos.sh`).
 
-**Modo dueño**: en Equipo, «Tengo un código de dueño». Con el código del dueño de la app (en `equipo.js` solo
-está su huella SHA-256) la app de Google Play crea licencias sin cobrar; son licencias reales y Rumentis Vaquero
-las acepta. La pestaña Equipo siempre se ve; ahí se compra (o se crea) la primera licencia. El precio que se
-muestra lo da Google Play (US$1.99 en `config.js` mientras no responde); la app vale US$3.99.
+**Código maestro**: en Equipo, «Tengo un código maestro». Con él (en `equipo.js` solo está su huella SHA-256) la app
+de Google Play crea licencias sin costo; son licencias reales y Rumentis Campo las acepta. El precio que se muestra
+lo da Google Play (US$1.99 en `config.js` mientras no responde); la app vale US$3.99.
 
-**Sin servidor** el vaquero se activa igual escribiendo solo la licencia: su alta sale firmada en un archivo para
-el jefe, y del archivo que el jefe le devuelve (lleva la ficha del equipo) toma las llaves del equipo.
-
-Las apps **de prueba** (paquetes `.prueba`, `PRUEBA=1 scripts/variantes.sh`) ya no se publican: en la del jefe
-las licencias se crean sin cobrar y en la del vaquero la licencia `RV-PRUEBA-2026` entra a una finca de muestra.
-Una app de Google Play no acepta licencias de la app de prueba.
+Las apps **de prueba** (paquetes `.prueba`, `PRUEBA=1 scripts/variantes.sh`: Rumentis Prueba y Campo Prueba) no se
+publican: en la de la administración las licencias se crean sin costo y en Campo Prueba la licencia
+`RV-PRUEBA-2026` entra a una finca de muestra. Una app de Google Play no acepta licencias de la app de prueba.
 
 Para vender en Google Play: publica **Rumentis** como app de pago y crea en ella el producto integrado
-`licencia_vaquero` (consumible, con su precio); publica **Rumentis Vaquero** gratis. Copia la llave pública RSA
-de Rumentis en `playLlave` y la dirección del servidor en `servidorEquipo` (`app/assets/config.js`).
+`licencia_vaquero` (consumible, con su precio); publica **Rumentis Campo** gratis (paquete `hn.hato.ganadero.vaquero`).
+Copia la llave pública RSA de Rumentis en `playLlave` (`app/assets/config.js`).
 
 ## Rumi
 
@@ -195,7 +212,7 @@ Cada animal guarda su `costo`; la compra del lote es la suma más el flete.
 scripts/build.sh            # dist/Rumentis.apk
 scripts/build_aab.sh        # dist/Rumentis.aab
 scripts/variantes.sh        # las cuatro apps (APK)
-scripts/variantes.sh todo   # y los AAB de Rumentis y Rumentis Vaquero
+scripts/variantes.sh todo   # y los AAB de Rumentis y Rumentis Campo
 ```
 
 Necesita Java; descarga apktool, uber-apk-signer, bundletool y las herramientas de Android la

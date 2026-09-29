@@ -55,9 +55,9 @@ public final class Archivos {
 
     static String tipo(String nombre, String mime) {
         if (mime != null && mime.length() > 0) return mime;
-        // archivos del equipo: los .rumentis los abre Rumentis (el jefe); los .vaquero, Rumentis Vaquero
+        // archivos del equipo: los .rumentis los abre Rumentis (la administración); los .campo, Rumentis Campo
         if (nombre.toLowerCase().endsWith(".rumentis")) return "application/vnd.rumentis";
-        if (nombre.toLowerCase().endsWith(".vaquero")) return "application/vnd.rumentis.vaquero";
+        if (nombre.toLowerCase().endsWith(".campo")) return "application/vnd.rumentis.campo";
         int i = nombre.lastIndexOf('.');
         String t = i >= 0 ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(nombre.substring(i + 1).toLowerCase()) : null;
         return t != null ? t : "application/octet-stream";

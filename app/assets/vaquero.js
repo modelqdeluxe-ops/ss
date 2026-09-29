@@ -38,11 +38,16 @@ function registrarOps(col,id,data){
     if(Object.keys(campos).length)nuevaOp({k:'lote~',id,campos});
   }else if(col==='ajustes'&&data){
     const h0=S.config.hechas||{},h1=data.hechas||{};
-    for(const [k,f] of Object.entries(h1))if(h0[k]!==f){const t=(window.Agenda?Agenda.tareas():[]).find(x=>x.key===k);nuevaOp({k:'hecha',key:k,f,txt:t?t.t:''});}
+    for(const [k,f] of Object.entries(h1))if(h0[k]!==f){const t=(window.Agenda?Agenda.tareas():[]).find(x=>x.key===k);nuevaOp({k:'hecha',key:k,f,txt:t?t.t:''});logHecho(t?t.t:'',f);}
+    // tareas asignadas: la de una vez al marcarla; las que se repiten, cada día que se hacen
     const t0=new Map((S.config.tareas||[]).map(t=>[t.id,t]));
-    for(const t of data.tareas||[])if(t.hecho&&t0.has(t.id)&&!t0.get(t.id).hecho)nuevaOp({k:'tarea',id:t.id});
+    for(const t of data.tareas||[]){const a=t0.get(t.id);if(!a)continue;
+      if((t.rep||'una')==='una'){if(t.hecho&&!a.hecho){nuevaOp({k:'tarea',id:t.id,f:hoy()});logHecho(t.t);}}
+      else{const ya=new Set((a.hechos||[]).map(x=>x.f));for(const h of t.hechos||[])if(!ya.has(h.f)){nuevaOp({k:'tarea',id:t.id,f:h.f});logHecho(t.t,h.f);}}}
   }
 }
+// lo que hizo cada día (para el resumen del reporte)
+function logHecho(t,f){f=f||hoy();VQ.hechosLog=(VQ.hechosLog||[]).filter(x=>x.f>=addDias(hoy(),-14)).concat({f,t:String(t||'Una tarea')});}
 const _put=window.put;
 window.put=put=function(col,id,data){
   if(!APLICANDO&&activo()){
@@ -59,7 +64,8 @@ function aplicarLocal(op){
   else if(op.k==='item~'){for(const d of Object.values(S.diario))d.items=(d.items||[]).map(i=>i.id===op.it.id?op.it:i);}
   else if(op.k==='lote~'){const l=S.lotes[op.id];if(l)S.lotes[op.id]={...l,...op.campos};}
   else if(op.k==='hecha'){S.config.hechas={...(S.config.hechas||{}),[op.key]:op.f};}
-  else if(op.k==='tarea'){S.config.tareas=(S.config.tareas||[]).map(t=>t.id===op.id?{...t,hecho:true}:t);}
+  else if(op.k==='tarea'){S.config.tareas=(S.config.tareas||[]).map(t=>t.id!==op.id?t:(t.rep||'una')==='una'?{...t,hecho:true}
+    :(t.hechos||[]).some(x=>x.f===op.f)?t:{...t,hechos:(t.hechos||[]).concat({f:op.f||hoy(),v:VQ.vid,n:VQ.nombre})});}
 }
 function aplicarEstado(est){
   APLICANDO=1;
@@ -73,11 +79,13 @@ function aplicarEstado(est){
     const c=est.cfg||{};
     S.config={...DEF_CFG,...c,finca:c.finca||VQ.finca||DEF_CFG.finca,tareas:(c.tareas||[]).filter(t=>t.para==='todos'||t.para===VQ.vid),hechas:c.hechas||{}};
     const ack=(est.acks||{})[VQ.vid]||0;VQ.cola=(VQ.cola||[]).filter(o=>o.seq>ack);VQ.ack=ack;
+    if(c.horaReporte!=null)VQ.horaRep=+c.horaReporte;
+    const rv=(est.rev||{})[VQ.vid];if(rv&&(!VQ.rev||rv.ts>VQ.rev.ts))VQ.rev=rv;
     for(const op of VQ.cola)aplicarLocal(op);
     VQ.estadoTs=est.ts||Date.now();VQ.finca=S.config.finca;guardarVQ();
     ver++;lsSave();
   }finally{APLICANDO=0;}
-  render();
+  ajustarAviso();render();
 }
 
 /* ---------- mensajes del jefe ---------- */
@@ -86,11 +94,11 @@ async function procesar(s){
   const vis=VQ.vistos||[];if(vis.includes(s.id))return 0;
   const jefe=VQ.ficha&&VQ.ficha.j,caja={pub:VQ.ficha&&VQ.ficha.k,sec:VQ.yo&&VQ.yo.caja.sec};let hecho=1;
   if(s.t==='bienvenida'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;
-    if(c.prueba&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pídele a tu jefe una licencia de la app de Google Play.';}
+    if(c.prueba&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pide a la administración una licencia de la app de Google Play.';}
     else if(c.compra&&N.compraReal(c.compra.json,c.compra.firma)===false){VQ.estado='rechazada';VQ.motivo='Esa licencia no salió de una compra válida.';}
-    else{VQ.estado='activo';VQ.vid=c.vid||VQ.vid;VQ.clave=c.clave;VQ.gen=c.gen;VQ.claves={...(VQ.claves||{}),[c.gen]:c.clave};VQ.permisos=c.permisos||{};VQ.finca=c.finca||VQ.finca;VQ.desde=hoy();ver++;
+    else{VQ.estado='activo';VQ.vid=c.vid||VQ.vid;VQ.clave=c.clave;VQ.gen=c.gen;VQ.claves={...(VQ.claves||{}),[c.gen]:c.clave};VQ.permisos=c.permisos||{};VQ.finca=c.finca||VQ.finca;VQ.desde=hoy();if(c.horaReporte!=null)VQ.horaRep=+c.horaReporte;ver++;ajustarAviso();
       toast(`¡Listo, ${primerNombre()}! Ya estás en el equipo de ${VQ.finca||'la finca'}.`,4500);}}
-  else if(s.t==='rechazo'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;if(VQ.estado!=='activo'){VQ.estado='rechazada';VQ.motivo=c.motivo||'Tu jefe no aceptó la licencia.';}}
+  else if(s.t==='rechazo'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;if(VQ.estado!=='activo'){VQ.estado='rechazada';VQ.motivo=c.motivo||'La administración no aceptó la licencia.';}}
   else if(s.t==='clave'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;VQ.claves={...(VQ.claves||{}),[c.gen]:c.clave};if(c.gen>(+VQ.gen||0)){VQ.gen=c.gen;VQ.clave=c.clave;}}
   else if(s.t==='baja'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;darmeDeBaja();}
   else if(s.t==='estado'){if(!activo())return 0;const k=(VQ.claves||{})[s.g];if(!k){VQ.estadoEspera=s;guardarVQ();return 0;}
@@ -105,7 +113,7 @@ async function adoptarFicha(o){
   if(VQ.ficha)return true;const fi=o&&o.ficha;if(!fi)return true;
   if(!(o.sobres||[]).some(s=>s.para===VQ.vid&&s.e===fi.e))return false;
   if(!(await N.fichaValida(fi)))return false;
-  if(fi.p&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pídele a tu jefe una licencia de la app de Google Play.';guardarVQ();render();return false;}
+  if(fi.p&&!CFG.prueba){VQ.estado='rechazada';VQ.motivo='Esa licencia es de la app de prueba. Pide a la administración una licencia de la app de Google Play.';guardarVQ();render();return false;}
   VQ.ficha=fi;VQ.e=fi.e;VQ.finca=fi.fn||VQ.finca;guardarVQ();ver++;return true;
 }
 function darmeDeBaja(){VQ.estado='baja';VQ.clave=null;VQ.claves={};VQ.cola=[];guardarVQ();render();}
@@ -138,7 +146,7 @@ async function buscarFicha(lic){
 }
 ACTS.vqActivar=async()=>{
   const f=$('#vqForm');if(!f)return;const nombre=(f.elements.nombre.value||'').trim().replace(/\s+/g,' '),txt=f.elements.lic.value||'';const err=$('.err',f);err.textContent='';
-  if(nombre.length<3||!/\s/.test(nombre)){err.textContent=aUnidad('Escribe tu nombre y apellido, como te conoce tu jefe.');return;}
+  if(nombre.length<3||!/\s/.test(nombre)){err.textContent=aUnidad('Escribe tu nombre y apellido.');return;}
   if(N.esLicPrueba(txt))return modoPrueba(nombre);
   const enl=N.leerEnlace(txt)||N.leerEnlace(VQ.enlace||'');let lic=enl?enl.lic:N.normLic(txt);
   if(enl&&N.normLic(txt)&&N.licValida(N.normLic(txt))&&N.normLic(txt)!==enl.lic)lic=N.normLic(txt);
@@ -147,20 +155,20 @@ ACTS.vqActivar=async()=>{
   try{
     let ficha=enl&&enl.lic===lic?enl.ficha:null;
     if(!ficha){try{ficha=await buscarFicha(lic);}catch(e){ficha=null;}}   // sin internet: se sigue por archivo
-    if(ficha===false){err.textContent=aUnidad('No encuentro esa licencia. Revísala con tu jefe.');return;}
+    if(ficha===false){err.textContent=aUnidad('No encuentro esa licencia. Revísala con la administración.');return;}
     if(!ficha)return activarSinFicha(nombre,lic);
     if(!(await N.fichaValida(ficha))){err.textContent=aUnidad('Esa licencia no es válida.');return;}
-    if(ficha.p&&!CFG.prueba){err.textContent=aUnidad('Esa licencia es de la app de prueba. Pídele a tu jefe una licencia de la app de Google Play.');return;}
+    if(ficha.p&&!CFG.prueba){err.textContent=aUnidad('Esa licencia es de la app de prueba. Pide a la administración una licencia de la app de Google Play.');return;}
     await activar(nombre,lic,ficha);
   }finally{if(b.isConnected){b.disabled=false;b.textContent=aUnidad('Activar');}}
 };
 ACTS.vqEscanear=async()=>{const t=await N.escanearQR();if(!t)return;const enl=N.leerEnlace(t);
   if(!enl){toast('Ese QR no es una licencia de Rumentis.',3500);return;}VQ.enlace=t;guardarVQ();const f=$('#vqForm');if(f){f.elements.lic.value=N.fmtLic(enl.lic);f.elements.lic.dispatchEvent(new Event('input'));}
-  toast(`Licencia de ${enl.ficha.fn||'tu jefe'} lista`,3000);};
+  toast(`Licencia de ${enl.ficha.fn||'la finca'} lista`,3000);};
 ACTS.vqPegar=async()=>{try{const t=await navigator.clipboard.readText();const f=$('#vqForm');if(!f||!t)return;const enl=N.leerEnlace(t);
   if(enl){VQ.enlace=t;guardarVQ();f.elements.lic.value=N.fmtLic(enl.lic);}else f.elements.lic.value=t.trim();}catch(e){toast('Mantén presionado el campo y elige Pegar.',3500);}};
 ACTS.vqOtra=()=>{VQ.estado='nuevo';VQ.alta=null;VQ.ficha=null;VQ.enlace='';guardarVQ();render();};
-ACTS.vqRevisar=async()=>{if(!servidor()){toast('Sin servidor: pide a tu jefe el archivo del equipo.',4000);return;}toast('Revisando…');await sincronizar();if(!activo())toast('Tu jefe todavía no confirma.',3000);};
+ACTS.vqRevisar=async()=>{if(!servidor()){toast('Pide a la administración tu archivo de acceso.',4000);return;}toast('Revisando…');await sincronizar();if(!activo())toast('La administración todavía no confirma.',3000);};
 function modoPrueba(nombre){
   VQ={...VQ,estado:'activo',demo:true,nombre,lic:'RVPRUEBA2026',vid:'vprueba',finca:'Finca de prueba',permisos:{alimento:true,pesaje:true,sanidad:true,bajas:true,tareas:true},cola:[],seq:0,desde:hoy()};
   APLICANDO=1;try{if(typeof cargarDemo==='function')cargarDemo();VQ.finca=S.config.finca||VQ.finca;lsSave();}finally{APLICANDO=0;}guardarVQ();ver++;
@@ -194,30 +202,98 @@ const T=N.timbre(async()=>{const base=servidor();if(!base||VQ.demo||!VQ.yo||!VQ.
 setInterval(()=>{if(!document.hidden&&!(T.vivo()&&Date.now()-(VQ.ult||0)<5*60e3))sincronizar();},VQ.estado==='pendiente'?20000:60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sincronizar();});
 addEventListener('online',()=>sincronizar());
-ACTS.vqSinc=async()=>{if(!servidor()){toast('Sin servidor: manda tus registros a tu jefe por archivo.',4000);return;}toast('Sincronizando…');const n=await sincronizar();
-  toast(VQ.err?'No se pudo conectar. Se envía sola cuando haya internet.':n?'Listo: datos nuevos de tu jefe':'Todo al día',3200);};
+ACTS.vqSinc=async()=>{if(!servidor()){FORMS.vqReporte();return;}toast('Sincronizando…');const n=await sincronizar();
+  toast(VQ.err?'No se pudo conectar. Se envía sola cuando haya internet.':n?'Listo: tu finca está al día':'Todo al día',3200);};
+const miNombre=()=>String(VQ.nombre||'personal').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// pendiente: la solicitud de acceso; activo: el reporte del día
 ACTS.vqEnviarArchivo=async()=>{
-  const L=[];if(VQ.estado==='pendiente'&&VQ.alta)L.push(VQ.alta);const s=await sobreOps();if(s)L.push(s);
-  if(!L.length){toast('No tienes nada por mandar.',3000);return;}
-  const nm=String(VQ.nombre||'vaquero').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  N.compartirArchivo(N.nombreArchivo(`${nm}-${hoy()}`),await N.armarArchivo(L,VQ.vid),aUnidad('Mis registros para el jefe'));
+  if(activo()){FORMS.vqReporte();return;}
+  if(VQ.estado!=='pendiente'||!VQ.alta)return;
+  N.compartirArchivo(N.nombreArchivo(`solicitud-${miNombre()}`),await N.armarArchivo([VQ.alta],VQ.vid),aUnidad('Solicitud de acceso'));
 };
+
+/* ---------- reporte del día ----------
+   Al terminar la jornada (a la hora que fija la administración) el colaborador envía su reporte: lo que registró, las
+   tareas del día hechas y pendientes, cómo van las de la semana y sus novedades. Va cifrado en un archivo .rumentis por
+   WhatsApp o correo; la administración lo revisa en Rumentis y lo registra en su finca. Lo que la administración
+   todavía no registra vuelve a ir en el siguiente reporte (sin duplicarse: cada registro lleva su número). */
+const horaRep=()=>{const h=+VQ.horaRep;return VQ.horaRep!=null&&h>=0&&h<=23?h:17;};
+const repHoy=()=>{const r=VQ.ultRep;return r&&r.fecha===hoy()?r:null;};
+const nuevosDesdeReporte=()=>{const s=(VQ.ultRep&&VQ.ultRep.seq)||0;return (VQ.cola||[]).filter(o=>o.seq>s).length;};
+const hhmm=ts=>new Date(ts).toTimeString().slice(0,5);
+function resumenDia(H){
+  const hechas=(VQ.hechosLog||[]).filter(x=>x.f===H).map(x=>({t:x.t,ok:1}));
+  const pend=misTareas().filter(t=>t.f<=H).map(t=>({t:t.t,ok:0}));
+  const regs={};for(const i of misRegistros(H))regs[i.tipo]=(regs[i.tipo]||0)+1;
+  const sem=(S.config.tareas||[]).filter(t=>/^s\d$/.test(t.rep||'')).map(t=>{const p=Agenda.progreso(t,H);return {t:t.t,n:p.n,meta:p.meta};});
+  return {fecha:H,tareas:hechas.concat(pend),regs,sem};
+}
+async function sobreReporte(nota){
+  const res=resumenDia(hoy());
+  return N.sellar('reporte',{e:VQ.e,de:VQ.vid,para:'jefe',carga:{rid:N.b64u(N.azar(9)),ts:Date.now(),res,nota:String(nota||'').slice(0,1500),ops:VQ.cola||[]},
+    clave:VQ.clave,g:VQ.gen,firmaSec:VQ.yo.firma.sec});
+}
+const filaRT=t=>`<div class="row vq-rt"><span class="vq-ck${t.ok?' ok':''}" aria-hidden="true">${t.ok?ico('check',2.6):''}</span><div class="tx"><b>${esc(t.t)}</b><span>${t.ok?'Hecha':'Pendiente'}</span></div></div>`;
+FORMS.vqReporte=()=>{
+  if(VQ.demo){toast('En el modo de prueba el reporte no sale de este teléfono.',3500);return;}
+  if(!activo())return;
+  const H=hoy(),r=resumenDia(H),hechas=r.tareas.filter(t=>t.ok).length,tot=r.tareas.length,nregs=Object.values(r.regs).reduce((a,b)=>a+b,0),n=(VQ.cola||[]).length;
+  const body=`<div class="kpis vq-k"><div class="kpi"><b>${nregs}</b><span>registros hoy</span></div><div class="kpi"><b>${hechas} de ${tot}</b><span>tareas de hoy</span></div>${r.sem.length?`<div class="kpi"><b>${r.sem.filter(x=>x.n>=x.meta).length} de ${r.sem.length}</b><span>semanales cumplidas</span></div>`:''}</div>
+    ${tot?`<p class="rh">Tareas de hoy</p><div class="card rows">${r.tareas.map(filaRT).join('')}</div>`:''}
+    ${r.sem.length?`<p class="rh">Tareas de la semana</p><div class="card rows">${r.sem.map(x=>`<div class="row vq-rt"><span class="vq-ck${x.n>=x.meta?' ok':''}" aria-hidden="true">${x.n>=x.meta?ico('check',2.6):''}</span><div class="tx"><b>${esc(x.t)}</b><span>${x.n} de ${x.meta} esta semana</span></div></div>`).join('')}</div>`:''}
+    ${q('Novedades del día',`<textarea class="in" name="nota" rows="3" placeholder="Opcional: un animal enfermo, un bebedero dañado, algo que haga falta…"></textarea>`)}
+    <p class="hint">${n?`El archivo lleva ${pl(n,'registro','registros')} para registrar en la finca.`:'Hoy no hay registros nuevos: el reporte lleva tus tareas y novedades.'} Envíalo por WhatsApp o correo; la administración lo abre con Rumentis.</p>`;
+  openSheet(shHead('Reporte del día',ffc(H))+formWrap('vqReporte',body,foot('Enviar reporte')));
+};
+SAVE.vqReporte=async f=>{
+  const nota=String((f.elements.nota||{}).value||'').trim();
+  const u=await N.armarArchivo([await sobreReporte(nota)],VQ.vid);
+  N.compartirArchivo(N.nombreArchivo(`reporte-${miNombre()}-${hoy()}`),u,aUnidad('Reporte del día'));
+  VQ.ultRep={fecha:hoy(),ts:Date.now(),seq:+VQ.seq||0,n:(VQ.cola||[]).length};VQ.reportes=[VQ.ultRep].concat(VQ.reportes||[]).slice(0,30);guardarVQ();ver++;
+  closeSheet();render();toast('Elige WhatsApp o correo y envíalo a la administración.',4000);
+};
+// el aviso en el teléfono a la hora del reporte (los próximos 7 días, por si no abre la app)
+function ajustarAviso(){
+  const A=window.Android;if(!A||!A.avisosActivar||VQ.demo||!activo())return;
+  const h=horaRep();if(VQ.avisoHora===h)return;
+  try{A.avisosActivar(true,h);VQ.avisoHora=h;guardarVQ();}catch(e){}
+}
+window.colaAvisosPropia=()=>{
+  if(!activo()||VQ.demo)return [];const H=hoy(),L=[];
+  for(let i=0;i<7;i++){const d=addDias(H,i);if(i===0&&repHoy()&&!nuevosDesdeReporte())continue;
+    L.push({id:'rep:'+d,f:d,hasta:d,t:'Es hora de tu reporte del día',x:'Ábrelo en Rumentis Campo y envíalo a la administración por WhatsApp o correo.',p:1,ir:'#hoy'});}
+  return L;
+};
+function tarjetaReporte(){
+  if(VQ.demo)return '';
+  const H=hoy(),r=repHoy(),hr=horaRep(),tarde=new Date().getHours()>=hr,nuevos=nuevosDesdeReporte();
+  const res=resumenDia(H),hechas=res.tareas.filter(t=>t.ok).length,tot=res.tareas.length,nregs=Object.values(res.regs).reduce((a,b)=>a+b,0);
+  let tono='a',tit='Reporte del día',sub=`Envíalo al terminar la jornada, a las ${hr}:00`,btn='Preparar reporte';
+  if(r&&!nuevos){tono='v';tit='Reporte enviado';sub=`Hoy a las ${hhmm(r.ts)}`;btn='';}
+  else if(r){tono='y';tit='Tienes registros nuevos';sub=`${pl(nuevos,'registro','registros')} después de tu reporte`;btn='Enviar reporte actualizado';}
+  else if(tarde){tono='r';tit='Es hora de tu reporte';sub=`La administración lo espera a las ${hr}:00`;}
+  const rv=VQ.rev&&VQ.rev.fecha>=addDias(H,-3)?VQ.rev:null;
+  return `<section class="sec"><div class="card pad vq-rep vq-rep-${tono}"><div class="vq-rep-h"><span class="mas-ic t-${tono}">${icono('recibo','i3')}</span><div><b>${tit}</b><span>${sub}</span></div></div>
+    <p class="vq-rep-p"><span>Tareas de hoy: ${hechas} de ${tot}</span><span>${pl(nregs,'registro','registros')}</span></p>
+    ${btn?`<button type="button" class="btn${tono==='a'?'':' pri'} full" data-act="f" data-f="vqReporte">${btn}</button>`:''}
+    ${rv?`<p class="vq-conf">${ico('check',2.4)}<span><span>La administración registró tu reporte del ${ffc(rv.fecha)}.</span> <span>${pl(rv.reg,'cambio registrado','cambios registrados')}</span>${rv.omit?` · <span>${pl(rv.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</span></p>`:''}</div></section>`;
+}
 async function alRecibir(o){
-  if(!(await adoptarFicha(o))){toast('Ese archivo no es de tu jefe.',4000);return false;}
-  const n=await procesarVarios(o.sobres);toast(n?'Listo: datos de tu jefe al día':'Nada nuevo para ti en ese archivo',3500);render();return true;}
+  if(!(await adoptarFicha(o))){toast('Ese archivo no es de tu finca.',4000);return false;}
+  const n=await procesarVarios(o.sobres);toast(n?'Listo: tu finca está al día':'Nada nuevo para ti en ese archivo',3500);render();return true;}
 ACTS.vqRecibirArchivo=async()=>{const u=await N.elegirArchivo();if(u)await N.recibirArchivo(u,alRecibir);};
-// al tocar el archivo .rumentis del jefe en WhatsApp se abre la app y llega aquí
+// al tocar el archivo .campo de la administración en WhatsApp se abre la app y llega aquí
 N.escucharArchivos(alRecibir);
-ACTS.vqBorrar=()=>confirmar('¿Borrar los datos de este teléfono?','Se borran tu licencia y los datos de la finca. Lo que ya le llegó a tu jefe se queda con él.','Borrar',()=>{
+ACTS.vqBorrar=()=>confirmar('¿Borrar los datos de este teléfono?','Se borran tu licencia y los datos de la finca. Lo que ya reportaste se queda en la finca.','Borrar',()=>{
   try{localStorage.removeItem(LSV);localStorage.removeItem(LS_KEY);}catch(e){}location.hash='#hoy';location.reload();});
 
 /* ---------- lo que se ve: la sincronización ---------- */
 syncTxt=function(){
   if(VQ.demo)return 'Modo de prueba';
-  const p=(VQ.cola||[]).length;
-  if(!servidor())return p?`${pl(p,'registro','registros')} por mandar`:'Guardado en este teléfono';
-  if(p)return VQ.err?`${pl(p,'registro','registros')} por enviar`:'Enviando al jefe';
-  if(T.vivo())return 'En vivo con tu jefe';
+  const p=nuevosDesdeReporte();
+  if(!servidor())return p?`${pl(p,'registro','registros')} para tu reporte`:repHoy()?'Reporte enviado':'Guardado en este teléfono';
+  if(p)return VQ.err?`${pl(p,'registro','registros')} por enviar`:'Enviando';
+  if(T.vivo())return 'En línea';
   return VQ.ult?'Todo enviado':'Guardado en este teléfono';
 };
 
@@ -225,9 +301,9 @@ syncTxt=function(){
 const PERMITIDAS=new Set(['hoy','lotes','lote','registrar','tareas','mas']);
 const hdV=(t,sub,back)=>`<header class="hd">${back?hdBack(back[0],back[1],'<span class="sync"></span>'):hdTop('<span class="sync"></span>')}<div class="ttl"${back?' style="margin-top:-6px"':''}>${!back?`<span class="eyebrow">${esc(VQ.finca||S.config.finca||'')}</span>`:''}<h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div></header>`;
 const REG=[['alimento','ic-y','Alimento','Entrega a cada lote','alimento'],['pesaje','ic-a','Pesaje','Peso del lote o de cada animal','pesaje'],['sanidad','ic-v','Sanidad','Vacuna, desparasitante, tratamiento','sanidad'],['baja','ic-r','Muerte','Cabezas y causa','bajas']];
-const tilesReg=(lote)=>{const T=REG.filter(r=>P()[r[4]]);if(!T.length)return `<p class="hint">Tu jefe todavía no te da permiso para registrar. Pídeselo.</p>`;
+const tilesReg=(lote)=>{const T=REG.filter(r=>P()[r[4]]);if(!T.length)return `<p class="hint">Todavía no tienes permiso para registrar. Pídelo a la administración.</p>`;
   return `<div class="tiles">${T.map(([k,c,t,s])=>`<button type="button" class="tile" data-act="f" data-f="${k}"${lote?` data-lote="${esc(lote)}"`:''}><span class="ic ${c}">${ico(k)}</span><div><b>${t}</b><span>${s}</span></div></button>`).join('')}</div>`;};
-// tareas para el vaquero: las de su trabajo y las que le asignó el jefe
+// tareas del colaborador: las de su trabajo y las que le asignó la administración
 function misTareas(){
   const T=window.Agenda?Agenda.tareas():[];const p=P();
   return T.filter(t=>{const k=t.key||'';
@@ -237,36 +313,36 @@ function misTareas(){
 function filaTarea(t,H){
   const hacer=t.act&&t.act.t==='form'&&P()[{alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad'}[t.act.k]]?`<button type="button" class="btn sm" data-act="f" data-f="${t.act.k}"${t.act.p&&t.act.p.lote?` data-lote="${esc(t.act.p.lote)}"`:''}${t.act.n?` data-n="${t.act.n}"`:''}>Hacer</button>`:'';
   const ok=P().tareas?`<button type="button" class="ag-ok" data-act="agHecha" data-k="${esc(t.key)}" data-p="${esc(t.propia||'')}" aria-label="Marcar como hecha">${ico('check',2.4)}</button>`:'';
-  return `<div class="row ag-row"><span class="mas-ic t-${t.tono||'a'}">${icono(t.ic==='alimento'?'alimento':t.ic==='pesaje'?'pesaje':t.ic==='sanidad'?'jeringa':t.ic==='nota'?'nota':'ojo','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span>${t.propia?'Te la pidió tu jefe':esc(t.s)}${t.f>H?` · ${ffc(t.f)}`:t.f<H?' · atrasada':''}</span></div><div class="ag-acts">${hacer}${ok}</div></div>`;
+  return `<div class="row ag-row"><span class="mas-ic t-${t.tono||'a'}">${icono(t.ic==='alimento'?'alimento':t.ic==='pesaje'?'pesaje':t.ic==='sanidad'?'jeringa':t.ic==='nota'?'nota':'ojo','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span>${t.propia&&(t.rep||'una')==='una'?'Asignada por la administración':esc(t.s)}${t.f>H?` · ${ffc(t.f)}`:t.f<H?' · atrasada':''}</span></div><div class="ag-acts">${hacer}${ok}</div></div>`;
 }
 const RTX={alimento:i=>`${nf(i.kg)} kg de alimento a ${nomL(i.lote)}`,pesaje:i=>i.prom?`Pesaje de ${nomL(i.lote)}: ${wtxt(i.prom)}`:`Pesaje de animales de ${nomL(i.lote)}`,sanidad:i=>`${i.producto||i.clase} en ${nomL(i.lote)}`,baja:i=>`${pl(+i.cab||1,'muerte','muertes')} en ${nomL(i.lote)}`};
 const nomL=id=>S.lotes[id]?S.lotes[id].nombre:'un lote';
 function misRegistros(dia){const mios=new Set((VQ.cola||[]).filter(o=>o.k==='item+').map(o=>o.it.id));
   return allItems().filter(i=>(!dia||i.f===dia)&&((i.por&&i.por.v===VQ.vid)||mios.has(i.id))).reverse();}
 function filaReg(i){const pend=(VQ.cola||[]).some(o=>o.k==='item+'&&o.it.id===i.id);
-  return `<div class="row"><span class="mas-ic t-${i.tipo==='baja'?'r':i.tipo==='alimento'?'y':i.tipo==='sanidad'?'v':'a'}">${icono(i.tipo==='baja'?'alerta':i.tipo==='sanidad'?'jeringa':i.tipo,'i3')}</span><div class="tx"><b>${esc((RTX[i.tipo]||(()=>i.tipo))(i))}</b><span><span>${cuando(i.f)}</span> · <span>${pend?'por enviar':'enviado'}</span></span></div>${pend?`<button type="button" class="del" data-act="delItems" data-ids="${i.id}" aria-label="Borrar">${ico('papelera')}</button>`:''}</div>`;}
+  return `<div class="row"><span class="mas-ic t-${i.tipo==='baja'?'r':i.tipo==='alimento'?'y':i.tipo==='sanidad'?'v':'a'}">${icono(i.tipo==='baja'?'alerta':i.tipo==='sanidad'?'jeringa':i.tipo,'i3')}</span><div class="tx"><b>${esc((RTX[i.tipo]||(()=>i.tipo))(i))}</b><span><span>${cuando(i.f)}</span> · <span>${pend?'va en tu reporte':'reportado'}</span></span></div>${pend?`<button type="button" class="del" data-act="delItems" data-ids="${i.id}" aria-label="Borrar">${ico('papelera')}</button>`:''}</div>`;}
 
 function pantallaActivar(){
   const e=VQ.estado;
-  const logo=`<div class="vq-logo">${typeof LOGO_HD!=='undefined'?LOGO_HD:''}<span>Vaquero</span></div>`;
+  const logo=`<div class="vq-logo">${typeof LOGO_HD!=='undefined'?LOGO_HD:''}<span>Campo</span></div>`;
   if(e==='pendiente')return `<main class="vq-act">${logo}<div class="card pad vq-card">
     <div class="vq-espera" aria-hidden="true"><i></i><i></i><i></i></div>
-    <h1>Esperando a tu jefe</h1><p>${VQ.finca?`Tu licencia ${N.fmtLic(VQ.lic)} es de ${esc(VQ.finca)}.`:`Tu licencia es ${N.fmtLic(VQ.lic)}.`}${servidor()&&VQ.ficha?' En cuanto tu jefe abra Rumentis, entras al equipo.':''}</p>
-    ${servidor()&&VQ.ficha?`<button type="button" class="btn pri full" data-act="vqRevisar">Revisar ahora</button>`:`<p class="hint">Sin internet del equipo: manda tu alta a tu jefe por WhatsApp y abre el archivo que él te devuelva.</p>
-    <button type="button" class="btn pri full" data-act="vqEnviarArchivo">Mandar mi alta al jefe</button><button type="button" class="btn full" data-act="vqRecibirArchivo">Abrir archivo del jefe</button>`}
+    <h1>Esperando confirmación</h1><p>${VQ.finca?`Tu licencia ${N.fmtLic(VQ.lic)} es de ${esc(VQ.finca)}.`:`Tu licencia es ${N.fmtLic(VQ.lic)}.`}</p>
+    ${servidor()&&VQ.ficha?`<button type="button" class="btn pri full" data-act="vqRevisar">Revisar ahora</button>`:`<ol class="vq-pasos"><li>Envía tu solicitud de acceso a la administración por WhatsApp o correo.</li><li>Te devuelven un archivo de acceso: tócalo y elige Rumentis Campo.</li></ol>
+    <button type="button" class="btn pri full" data-act="vqEnviarArchivo">Enviar solicitud de acceso</button><button type="button" class="btn full" data-act="vqRecibirArchivo">Abrir archivo de acceso</button>`}
     <button type="button" class="lnk" data-act="vqOtra">Usar otra licencia</button></div></main>`;
-  if(e==='rechazada')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>No se pudo activar</h1><p>${esc(VQ.motivo||'Tu jefe no aceptó la licencia.')}</p>
+  if(e==='rechazada')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>No se pudo activar</h1><p>${esc(VQ.motivo||'La administración no aceptó la licencia.')}</p>
     <button type="button" class="btn pri full" data-act="vqOtra">Intentar con otra licencia</button></div></main>`;
-  if(e==='baja')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>Ya no estás en el equipo</h1><p>Tu jefe dio de baja tu licencia. Lo que registraste se queda con él.</p>
+  if(e==='baja')return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>Ya no estás en el equipo</h1><p>La administración dio de baja tu licencia. Lo que registraste se queda en la finca.</p>
     <button type="button" class="btn danger full" data-act="vqBorrar">Borrar los datos de este teléfono</button><button type="button" class="lnk" data-act="vqOtra">Tengo otra licencia</button></div></main>`;
   const pre=VQ.enlace?N.leerEnlace(VQ.enlace):null;
-  return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>Bienvenido al equipo</h1><p>Tu jefe te dio una licencia. Con ella anotas desde aquí la comida, los pesajes y la sanidad, y a él le llega todo.</p>
+  return `<main class="vq-act">${logo}<div class="card pad vq-card"><h1>Bienvenido al equipo</h1><p>Con la licencia que te dio la administración anotas aquí la comida, los pesajes y la sanidad, y al terminar el día envías tu reporte.</p>
     <form id="vqForm" onsubmit="return false" novalidate>
-    ${q('Tu nombre completo',`<input class="in" name="nombre" autocomplete="name" autocapitalize="words" placeholder="Nombre y apellido" value="${esc(VQ.nombre||'')}">`,'Como te conoce tu jefe.')}
+    ${q('Tu nombre completo',`<input class="in" name="nombre" autocomplete="name" autocapitalize="words" placeholder="Nombre y apellido" value="${esc(VQ.nombre||'')}">`,'Como aparece en tus documentos.')}
     ${q('Licencia',`<input class="in vq-lic" name="lic" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="RV-XXXX-XXXX-XXXX-XXXX-XXXX" data-no-tr value="${pre?N.fmtLic(pre.lic):''}">`)}
     <div class="vq-bt"><button type="button" class="btn" data-act="vqEscanear">${icono('ojo','i3')}Escanear QR</button><button type="button" class="btn" data-act="vqPegar">Pegar</button></div>
     <p class="err"></p><button type="button" class="btn pri full" data-act="vqActivar">Activar</button></form>
-    ${CFG.prueba?`<p class="hint vq-prueba">App de prueba: con la licencia <b data-no-tr>${N.LIC_PRUEBA}</b> entras a una finca de muestra sin jefe.</p>`:''}</div></main>`;
+    ${CFG.prueba?`<p class="hint vq-prueba">App de prueba: con la licencia <b data-no-tr>${N.LIC_PRUEBA}</b> entras a una finca de muestra.</p>`:''}</div></main>`;
 }
 
 PAGES.hoy=()=>{
@@ -275,22 +351,23 @@ PAGES.hoy=()=>{
   return `<header class="hd">${hdTop(fechaLarga())}<div class="ttl"><span class="eyebrow">${esc(VQ.finca||S.config.finca||'')}</span><h1>Hola, ${esc(primerNombre())}</h1><p class="sub">${hoyT.length?pl(hoyT.length,'tarea para hoy','tareas para hoy'):'Todo al día por ahora'}${C.act.length?`, ${pl(C.act.length,'lote','lotes')} con ${pl(C.cabT,'cabeza','cabezas')}`:''}.</p></div></header>
   <main class="bd">
    ${VQ.demo?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Modo de prueba.</b> Estás en una finca de muestra; lo que anotes se queda en este teléfono.</p></div>`:''}
-   <section class="sec">${secH('Tareas de hoy',hoyT.length,hoyT.length?lnk('#tareas','Ver todas'):'')}${hoyT.length?`<div class="card rows">${hoyT.slice(0,6).map(t=>filaTarea(t,H)).join('')}</div>`:`<p class="hint">Nada pendiente. Si tu jefe te asigna algo, aparece aquí.</p>`}</section>
+   ${tarjetaReporte()}
+   <section class="sec">${secH('Tareas de hoy',hoyT.length,hoyT.length?lnk('#tareas','Ver todas'):'')}${hoyT.length?`<div class="card rows">${hoyT.slice(0,6).map(t=>filaTarea(t,H)).join('')}</div>`:`<p class="hint">Nada pendiente. Lo que te asignen aparece aquí.</p>`}</section>
    <section class="sec">${secH('Anotar')}${tilesReg()}</section>
    <section class="sec">${secH('Lo que anotaste hoy',regs.length)}${regs.length?`<div class="card rows">${regs.slice(0,10).map(filaReg).join('')}</div>`:`<p class="hint">Todavía nada hoy.</p>`}</section>
   </main>`;
 };
 PAGES.registrar=()=>{const regs=misRegistros().slice(0,12);
-  return hdV('Registrar','Toca lo que quieres anotar. Le llega a tu jefe con tu nombre.')+`<main class="bd"><section class="sec">${secH('Anotar')}${tilesReg()}</section>
+  return hdV('Registrar','Toca lo que quieres anotar. Va en tu reporte del día, con tu nombre.')+`<main class="bd"><section class="sec">${secH('Anotar')}${tilesReg()}</section>
    <section class="sec">${secH('Lo último que anotaste')}${regs.length?`<div class="card rows">${regs.map(filaReg).join('')}</div>`:`<p class="hint">Todavía no anotas nada.</p>`}</section></main>`;};
 PAGES.tareas=()=>{const H=hoy(),T=misTareas();const hoyT=T.filter(t=>t.f<=H),sem=T.filter(t=>t.f>H&&t.f<=addDias(H,7)),mas=T.filter(t=>t.f>addDias(H,7));
   const sec=(t,L,v)=>`<section class="sec">${secH(t,L.length)}${L.length?`<div class="card rows">${L.map(x=>filaTarea(x,H)).join('')}</div>`:`<p class="hint">${v}</p>`}</section>`;
-  return hdV('Tareas','Lo que toca hacer: lo que te pide tu jefe y lo del manejo de los lotes.')+`<main class="bd">${sec('Hoy',hoyT,'Nada pendiente para hoy.')}${sec('Próximos 7 días',sem,'Nada en los próximos días.')}${mas.length?sec('Más adelante',mas,''):''}</main>`;};
+  return hdV('Tareas','Lo que toca hacer: lo asignado por la administración y el manejo de los lotes.')+`<main class="bd">${sec('Hoy',hoyT,'Nada pendiente para hoy.')}${sec('Próximos 7 días',sem,'Nada en los próximos días.')}${mas.length?sec('Más adelante',mas,''):''}</main>`;};
 PAGES.lotes=()=>{const C=calc();
   const card=x=>`<a class="card lote vq-lote" href="#lote/${encodeURIComponent(x.id)}"><div class="l1"><div><span class="nm">${esc(x.l.nombre)}</span><span class="sm">${pl(x.cab,'cabeza','cabezas')}</span></div>${ico('chev')}</div>
     <div class="l2"><b>${nf(x.pesoHoy)} kg</b><span class="sm">${x.estimado?'estimado, ':'promedio, '}día ${x.dec} de engorde</span></div>
     <div class="vq-l3"><span>${x.racion&&S.raciones[x.racion]?esc(S.raciones[x.racion].nombre):'Sin ración asignada'}</span><span>Último pesaje: <span>${cuando(x.ult.f)}</span></span></div></a>`;
-  return hdV('Lotes',C.act.length?`${pl(C.act.length,'lote','lotes')} con ${pl(C.cabT,'cabeza','cabezas')}.`:'')+`<main class="bd">${C.act.length?C.act.map(card).join(''):`<div class="card"><p class="empty">Tu jefe todavía no tiene lotes en engorde.</p></div>`}</main>`;};
+  return hdV('Lotes',C.act.length?`${pl(C.act.length,'lote','lotes')} con ${pl(C.cabT,'cabeza','cabezas')}.`:'')+`<main class="bd">${C.act.length?C.act.map(card).join(''):`<div class="card"><p class="empty">La finca todavía no tiene lotes en engorde.</p></div>`}</main>`;};
 PAGES.lote=id=>{const C=calc(),x=C.L[id];if(!x)return hdV('Lote no encontrado','',['#lotes','Lotes'])+`<main class="bd"><p class="hint">Puede que ya se haya cerrado.</p></main>`;
   const regs=allItems().filter(i=>i.lote===x.id&&RTX[i.tipo]).slice(-10).reverse();
   const an=(x.l.animales||[]).filter(a=>!a.baja&&!a.vendido).slice(0,300);
@@ -302,21 +379,24 @@ PAGES.lote=id=>{const C=calc(),x=C.L[id];if(!x)return hdV('Lote no encontrado','
   </main>`;};
 PAGES.mas=sub=>{
   if(sub==='apariencia'&&MAS_SUB.apariencia)return MAS_SUB.apariencia();
-  if(sub==='acerca')return hdV('Acerca de Rumentis Vaquero','',['#mas','Más'])+`<main class="bd"><section class="sec"><div class="card pad acerca">${typeof FIRMA!=='undefined'?FIRMA:''}<p><b>Versión ${VERSION_APP}</b></p>
-    <p>Lo que anotas se guarda en tu teléfono y se le manda cifrado a tu jefe: nadie más puede leerlo.</p><p>Tu licencia es solo tuya; no la compartas.</p></div></section></main>`;
+  if(sub==='acerca')return hdV('Acerca de Rumentis Campo','',['#mas','Más'])+`<main class="bd"><section class="sec"><div class="card pad acerca">${typeof FIRMA!=='undefined'?FIRMA:''}<p><b>Versión ${VERSION_APP}</b></p>
+    <p>Lo que anotas se guarda en tu teléfono y viaja cifrado en tu reporte: solo la administración de tu finca puede leerlo.</p><p>Tu licencia es solo tuya; no la compartas.</p></div></section></main>`;
   if(sub==='idioma')return hdV('Idioma','',['#mas','Más'])+`<main class="bd"><section class="sec"><div class="card rows">${(window.I18N?I18N.IDIOMAS:[]).map(([k,t])=>`<button type="button" class="row" data-act="vqIdioma" data-l="${k}"><div class="tx"><b data-no-tr>${esc(t)}</b></div>${(window.I18N&&I18N.lang()===k)?ico('check',2.4):''}</button>`).join('')}</div></section></main>`;
-  const srv=servidor(),pend=(VQ.cola||[]).length;
-  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(VQ.finca||'')}</span><h1>Más</h1><p class="sub">Tu cuenta, el envío a tu jefe y ajustes.</p></div></header>
+  const reps=(VQ.reportes||[]).slice(0,7);
+  return `<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(VQ.finca||'')}</span><h1>Más</h1><p class="sub">Tu cuenta, tus reportes y ajustes.</p></div></header>
   <main class="bd">
    <section class="sec">${secH('Tu cuenta')}<div class="card pad vq-yo"><span class="eq-av xl" aria-hidden="true" data-no-tr>${esc(N.iniciales(VQ.nombre))}</span><div><b>${esc(VQ.nombre||'')}</b><span>Licencia <span data-no-tr>${VQ.demo?N.LIC_PRUEBA:N.fmtLic(VQ.lic||'')}</span></span><span>En el equipo de ${esc(VQ.finca||'')}${VQ.desde?` desde el ${ffc(VQ.desde)}`:''}</span></div></div></section>
-   <section class="sec">${secH('Envío a tu jefe')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic ${srv?'t-v':'t-y'}">${icono(srv?'rayo':'datos','i3')}</span><div><b>${VQ.demo?'Modo de prueba':srv?'Automático por internet':'Por archivo (WhatsApp)'}</b><span><span>${VQ.demo?'Nada sale de este teléfono':pend?pl(pend,'registro por enviar','registros por enviar'):'Todo enviado'}</span>${srv&&VQ.ult&&!VQ.demo?` · <span>${N.haceCuanto(VQ.ult)}</span>`:''}</span></div></div>
-    ${VQ.demo?'':`<div class="acts">${srv?`<button type="button" class="btn" data-act="vqSinc">Enviar ahora</button>`:''}<button type="button" class="btn" data-act="vqEnviarArchivo">Mandar por archivo</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo del jefe</button></div><p class="hint">Lo que mandas a tu jefe termina en .rumentis. Lo que él te manda termina en .vaquero: en WhatsApp tócalo y elige Rumentis Vaquero. Cada archivo se abre una sola vez.</p>`}</div></section>
+   ${VQ.demo?'':`<section class="sec">${secH('Reportes')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Reporte diario a las ${horaRep()}:00</b><span>${repHoy()?`Hoy lo enviaste a las ${hhmm(repHoy().ts)}`:'Hoy todavía no lo envías'}</span></div></div>
+    <div class="acts"><button type="button" class="btn pri" data-act="f" data-f="vqReporte">Preparar reporte</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo de la administración</button></div>
+    ${reps.length?`<div class="rows vq-reps">${reps.map(r=>`<div class="row"><div class="tx"><b>${ffc(r.fecha)}, ${hhmm(r.ts)}</b><span>${pl(r.n||0,'registro','registros')}</span></div></div>`).join('')}</div>`:''}
+    <p class="hint">Tu reporte sale como archivo .rumentis y la administración lo abre con Rumentis. Lo que te mandan termina en .campo: en WhatsApp tócalo y elige Rumentis Campo. Cada archivo se abre una sola vez.</p></div></section>`}
+
    <section class="sec">${secH('Ajustes')}<div class="card rows">
     ${masFila(mico('paleta'),'Apariencia','Modo claro u oscuro y colores','href="#mas/apariencia"','t-v')}
     ${masFila(mico('ayuda'),'Idioma',window.I18N?(I18N.IDIOMAS.find(x=>x[0]===I18N.lang())||['',''])[1]:'','href="#mas/idioma"','t-a')}
     ${masFila(mico('info'),'Acerca de','Versión y privacidad','href="#mas/acerca"','t-a')}
     ${masFila(mico('aviso'),'Borrar datos de este teléfono','Si dejas el equipo o cambias de teléfono','data-act="vqBorrar"','t-r')}</div></section>
-   <div class="firma">${typeof FIRMA!=='undefined'?FIRMA:''}<span>Vaquero · versión ${VERSION_APP}</span></div></main>`;
+   <div class="firma">${typeof FIRMA!=='undefined'?FIRMA:''}<span>Rumentis Campo · versión ${VERSION_APP}</span></div></main>`;
 };
 ACTS.vqIdioma=el=>{if(window.I18N)I18N.cambiar(el.dataset.l);};
 // fuera de lo permitido: a Hoy. Sin activar: la pantalla de activación
@@ -330,9 +410,9 @@ render=window.render=function(){
 // ni Rumi, ni recorridos, ni opciones del dueño
 for(const k of ['rumi','tour','demo','borrarTodo','respaldo','importar','tutPagina'])ACTS[k]=()=>{};
 if(typeof mostrarPaso==='function')mostrarPaso=function(){};   // el "siguiente paso" es de Rumi
-// alimento: el mismo formulario, sin precios ni horarios (los pone el jefe)
+// alimento: el mismo formulario, sin precios ni horarios (los pone la administración)
 FORMS.alimento=({n}={})=>{
-  const C=calc();if(!C.act.length){toast('Tu jefe todavía no tiene lotes.');return;}
+  const C=calc();if(!C.act.length){toast('La finca todavía no tiene lotes.');return;}
   const Ne=nEntregas();n=+n||C.sigEnt||1;const R=Object.entries(S.raciones).sort((a,b)=>byName(a[1],b[1]));
   const racSel=R.length?q('Ración',opts('racion',[{v:'_lote',t:'La de cada lote',s:'la que tiene asignada'}].concat(R.map(([k,r])=>({v:k,t:r.nombre}))),'_lote',{lo:true})):'';
   const blocks=C.act.map(x=>{const p=programado(x,n);return `<div data-l="${esc(x.id)}"><div class="fh"><b>${esc(x.l.nombre)}</b><span class="sm">${pl(x.cab,'cabeza','cabezas')}${x.racion&&S.raciones[x.racion]?', '+esc(S.raciones[x.racion].nombre):''}</span></div>
@@ -349,8 +429,8 @@ FORMS.alimento=({n}={})=>{
 // solo sus propios registros que todavía no se mandan se pueden borrar
 const _delItems=ACTS.delItems;
 ACTS.delItems=el=>{const ids=(el.dataset.ids||'').split(',');const mios=new Set((VQ.cola||[]).filter(o=>o.k==='item+').map(o=>o.it.id));
-  if(!ids.every(i=>mios.has(i))){toast('Eso ya le llegó a tu jefe: pídele que lo corrija.',3500);return;}
-  // se quita de la cola: al jefe nunca le llega
+  if(!ids.every(i=>mios.has(i))){toast('Eso ya está registrado en la finca: pide a la administración que lo corrija.',3500);return;}
+  // se quita de la cola: nunca sale en un reporte
   VQ.cola=(VQ.cola||[]).filter(o=>!(o.k==='item+'&&ids.includes(o.it.id)));guardarVQ();APLICANDO=1;try{for(const i of ids)removeItem(i);}finally{APLICANDO=0;}render();};
 
 /* ---------- barra de abajo del vaquero ---------- */
@@ -360,7 +440,7 @@ function barra(){const nav=$('nav.bottom .in');if(!nav||nav.dataset.vq)return;na
 barra();
 document.addEventListener('rumentis-pintado',()=>{const r=route();const cur=r.p==='lote'?'lotes':r.p;$$('nav.bottom [data-nav]').forEach(a=>{if(a.dataset.nav===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});});
 
-window.Vaquero={VQ:()=>VQ,alRecibir,vivo:()=>T.vivo(),sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
+window.Vaquero={VQ:()=>VQ,yo:()=>({v:VQ.vid,n:VQ.nombre}),alRecibir,sobreReporte,resumenDia,vivo:()=>T.vivo(),sincronizar,procesar,procesarVarios,aplicarEstado,activar,activarSinFicha,adoptarFicha,modoPrueba,sobreOps,sobreAlta};
 if(!Object.keys(S.lotes).length&&activo()&&!VQ.demo)S.config.finca=VQ.finca||S.config.finca;
 document.documentElement.classList.add('vq-listo');
 render();

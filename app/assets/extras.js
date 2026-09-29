@@ -124,10 +124,30 @@ function tareas(){
   if(window.tareasFin)for(const t of window.tareasFin())add(t.key,t.f,t.t,t.s,t.ic,t.act,t.tono);
   let ult=null;try{ult=localStorage.getItem('rumentis-ult-respaldo');}catch(e){}
   if(Object.keys(S.lotes).length&&(!ult||ult<addDias(H,-7)))add('resp:'+H,H,'Descargar respaldo',ult?`El último fue ${cuando(ult)}`:'Aún no has descargado ninguno','datos',{t:'go',go:'#mas/datos'},'a');
-  for(const t of (cfg().tareas||[]))if(!t.hecho)T.push({key:'propia:'+t.id,f:t.f,t:t.t,s:'Recordatorio tuyo',ic:'nota',propia:t.id,tono:'a'});
+  // recordatorios propios y tareas del equipo. En la app de la administración, las del equipo (con "para") se ven en
+  // Equipo; en Rumentis Campo solo llegan las de esa persona.
+  const campo=window.RUMENTIS&&RUMENTIS.app==='vaquero';
+  for(const t of (cfg().tareas||[])){
+    if(t.para&&!campo)continue;
+    const r=t.rep||'una',base={ic:'nota',propia:t.id,tono:'a',rep:r};
+    if(r==='una'){if(!t.hecho)T.push({...base,key:'propia:'+t.id,f:t.f,t:t.t,s:t.para?'Tarea asignada':'Recordatorio tuyo'});continue;}
+    const pr=progreso(t,H);if(pr.hoy||pr.completa)continue;
+    T.push({...base,key:'propia:'+t.id+':'+H,f:t.f>H?t.f:H,t:t.t,s:r==='dia'?'Todos los días':`${pr.n} de ${pr.meta} esta semana`});
+  }
   return T.sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0);
 }
-window.Agenda={tareas};
+/* Tareas que se repiten: rep 'dia' (todos los días) o 's1'…'s7' (tantas veces por semana, de lunes a domingo).
+   Cada vez que se hace queda en hechos: [{f, v (quién), n (nombre)}]. */
+const lunesDe=f=>{const d=new Date(f+'T12:00:00');return addDias(f,-((d.getDay()+6)%7));};
+function progreso(t,H){
+  H=H||hoy();const r=t.rep||'una',hs=t.hechos||[];
+  if(r==='una')return {n:t.hecho?1:0,meta:1,hoy:!!t.hecho,completa:!!t.hecho};
+  if(r==='dia'){const h=hs.some(x=>x.f===H);return {n:h?1:0,meta:1,hoy:h,completa:h};}
+  const L=lunesDe(H),meta=Math.max(1,+String(r).slice(1)||1),n=hs.filter(x=>x.f>=L&&x.f<=addDias(L,6)).length;
+  return {n,meta,hoy:hs.some(x=>x.f===H),completa:n>=meta};
+}
+const REP={una:'Una vez',dia:'Todos los días',s1:'1 vez por semana',s2:'2 veces por semana',s3:'3 veces por semana',s4:'4 veces por semana',s5:'5 veces por semana'};
+window.Agenda={tareas,progreso,lunesDe,REP};
 const accion=a=>{if(!a)return '';RUMI.acts=RUMI.acts||{};const id='ag'+(++RUMI.n);RUMI.acts[id]=a;return id;};
 function filaT(t,H){
   const aid=accion(t.act);
@@ -145,7 +165,9 @@ PAGES.agenda=()=>{
 FORMS.tarea=()=>{const body=`${q('¿Qué hay que hacer?',`<input class="in" name="t" placeholder="Comprar vacunas, llamar al veterinario…" required autocomplete="off">`)}${q('¿Cuándo?',`<input class="in" type="date" name="f" value="${hoy()}" min="${hoy()}">`)}`;
   openSheet(shHead('Nuevo recordatorio','Agenda')+formWrap('tarea',body,foot('Guardar')));};
 SAVE.tarea=f=>{const t=fv(f,'t').trim();if(!t)return ferr(f,'Escribe qué hay que hacer.');guardarCfg('tareas',(cfg().tareas||[]).concat({id:uid('t'),t,f:fv(f,'f')||hoy(),hecho:false}));closeSheet();toast('Recordatorio guardado');};
-ACTS.agHecha=el=>{const H=calc().H;if(el.dataset.p){guardarCfg('tareas',(cfg().tareas||[]).map(t=>t.id===el.dataset.p?{...t,hecho:true}:t));}
+ACTS.agHecha=el=>{const H=calc().H;if(el.dataset.p){const yo=window.Vaquero?Vaquero.yo():null;
+    guardarCfg('tareas',(cfg().tareas||[]).map(t=>t.id!==el.dataset.p?t:(t.rep||'una')==='una'?{...t,hecho:true}
+      :{...t,hechos:(t.hechos||[]).filter(x=>x.f>=addDias(H,-70)).concat({f:H,...(yo||{})})}));}
   else{const h={...hechas()};for(const k of Object.keys(h))if(h[k]<addDias(H,-60))delete h[k];h[el.dataset.k]=H;guardarCfg('hechas',h);}toast('Hecho');};
 // recordar la fecha del último respaldo
 const _resp=ACTS.respaldo;ACTS.respaldo=(...a)=>{try{localStorage.setItem('rumentis-ult-respaldo',hoy());}catch(e){}return _resp(...a);};

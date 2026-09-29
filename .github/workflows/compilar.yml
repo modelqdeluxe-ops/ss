@@ -1,4 +1,4 @@
-# Compila Rumentis y Rumentis Vaquero (scripts/variantes.sh) y las publica en un solo Release de GitHub.
+# Compila Rumentis y Rumentis Campo (scripts/variantes.sh) y las publica en un solo Release de GitHub.
 # La app del dueño se arma con Gradle para llevar Google Play Billing y sus dependencias (scripts/pagos.sh).
 #
 # Firma: agrega en Settings > Secrets and variables > Actions los secretos
@@ -27,7 +27,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-      - name: Compilar Rumentis y Rumentis Vaquero (APK y AAB)
+      - name: Compilar Rumentis y Rumentis Campo (APK y AAB)
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
@@ -51,4 +51,4 @@ jobs:
           gh release create "$TAG" dist/*-$VN.apk dist/*-$VN.aab \
             --target "$GITHUB_SHA" --latest \
             --title "Rumentis $VN" \
-            --notes "Instala en tu teléfono Rumentis-$VN.apk (la tuya) y, en el de cada vaquero, RumentisVaquero-$VN.apk. Los .aab son para subir a Google Play. Rama: $GITHUB_REF_NAME, compilación $GITHUB_RUN_NUMBER."
+            --notes "Instala Rumentis-$VN.apk en el teléfono de la administración y RumentisCampo-$VN.apk en el de cada colaborador. Los .aab son para subir a Google Play. Rama: $GITHUB_REF_NAME, compilación $GITHUB_RUN_NUMBER."

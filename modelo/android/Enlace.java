@@ -22,7 +22,7 @@ import java.security.spec.X509EncodedKeySpec;
      para que la app del vaquero sepa que su licencia salió de una compra real.
    - "Recibido": el archivo .rumentis que abrió el usuario (tocándolo en WhatsApp o compartiéndolo a la app). deIntent
      lo lee del Intent (onCreate y onNewIntent) y avisa a la página, que lo toma con Recibido.tomar(). Si el archivo
-     es para la otra app (un .vaquero que llegó a Rumentis, o al revés), Recibido.pasar() se lo entrega a esa app. */
+     es para la otra app (un .campo que llegó a Rumentis, o al revés), Recibido.pasar() se lo entrega a esa app. */
 public class Enlace {
     public static void registrar(Activity a, WebView w) {
         try {
@@ -101,8 +101,8 @@ public class Enlace {
             try {
                 String otra = otraApp(a.getPackageName());
                 if (otra == null) return false;
-                boolean aVaquero = otra.contains(".vaquero");
-                String n = Archivos.escribir(a, aVaquero ? "equipo.vaquero" : "equipo.rumentis", b64);
+                boolean aCampo = otra.contains(".vaquero");
+                String n = Archivos.escribir(a, aCampo ? "equipo.campo" : "equipo.rumentis", b64);
                 if (n == null) return false;
                 Uri u = Uri.parse("content://" + a.getPackageName() + ".archivos/" + Uri.encode(n));
                 Intent i = new Intent(Intent.ACTION_VIEW);

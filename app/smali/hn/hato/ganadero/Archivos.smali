@@ -428,7 +428,7 @@
 
     move-result-object v0
 
-    const-string v1, ".vaquero"
+    const-string v1, ".campo"
 
     invoke-virtual {v0, v1}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
 
@@ -436,7 +436,7 @@
 
     if-eqz v0, :cond_27
 
-    const-string p1, "application/vnd.rumentis.vaquero"
+    const-string p1, "application/vnd.rumentis.campo"
 
     goto :goto_8
 

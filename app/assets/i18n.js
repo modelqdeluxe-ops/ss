@@ -36,6 +36,8 @@ function datos(){
     const persona=n=>{add(n);add(String(n||'').trim().split(/\s+/)[0]);};
     const e=c.equipo||{};for(const v of Object.values(e.vaqueros||{}))persona(v.nombre);for(const x of Object.values(e.solicitudes||{})){persona(x.nombre);lic(x.lic);}
     for(const k of Object.keys(e.licencias||{}))lic(k);
+    // reportes por registrar: las novedades y los productos que todavía no están en la finca
+    for(const r of Object.values(e.reportes||{})){add(r.nota);for(const o of (r.ops||[]))if(o&&o.it){add(o.it.producto);add(o.it.desc);add(o.it.nota);}}
     const vq=window.Vaquero&&Vaquero.VQ?Vaquero.VQ():null;if(vq){persona(vq.nombre);add(vq.finca);lic(vq.lic);for(const n of (vq.nombres||[]))persona(n);}
     add('RV-PRUEBA-2026');
   }catch(e){}

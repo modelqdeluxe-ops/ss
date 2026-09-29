@@ -36,14 +36,14 @@ if app == 'vaquero':
     for el in list(ap):
         if el.tag == 'receiver' and el.get(A + 'name', '').endswith('RumiWidget'):
             ap.remove(el)
-    # archivos del equipo: Rumentis abre los .rumentis (los que manda el vaquero); Rumentis Vaquero, los .vaquero
-    # (los que manda el jefe)
+    # archivos del equipo: Rumentis abre los .rumentis (los reportes del personal); Rumentis Campo, los .campo
+    # (las actualizaciones de la administración)
     for el in m.iter('data'):
         if el.get(A + 'mimeType') == 'application/vnd.rumentis':
-            el.set(A + 'mimeType', 'application/vnd.rumentis.vaquero')
+            el.set(A + 'mimeType', 'application/vnd.rumentis.campo')
         pp = el.get(A + 'pathPattern')
         if pp and pp.endswith('.rumentis'):
-            el.set(A + 'pathPattern', pp[:-len('rumentis')] + 'vaquero')
+            el.set(A + 'pathPattern', pp[:-len('rumentis')] + 'campo')
 if pagos:
     lib = ET.parse(pagos).getroot()
     ya = {(e.tag, e.get(A + 'name')) for e in m}

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Compila las apps de Rumentis desde app/ (las dos de Google Play; las de prueba con PRUEBA=1):
 #   Rumentis              hn.hato.ganadero                 la del dueño (de pago en Google Play), con compras de licencias
-#   Rumentis Vaquero      hn.hato.ganadero.vaquero         la del equipo (gratis), se activa con una licencia
+#   Rumentis Campo        hn.hato.ganadero.vaquero         la del personal de campo (gratis), se activa con una licencia
 #   Rumentis Prueba       hn.hato.ganadero.prueba          la del dueño con todo abierto: las licencias se crean sin cobrar
-#   Vaquero Prueba        hn.hato.ganadero.vaquero.prueba  la del equipo para probar (acepta la licencia RV-PRUEBA-2026)
+#   Campo Prueba          hn.hato.ganadero.vaquero.prueba  la del personal para probar (acepta la licencia RV-PRUEBA-2026)
 # Se instalan juntas en el mismo teléfono. Salen en dist/ (APK) y, las de Google Play, también en AAB.
 # La del dueño lleva Google Play Billing y se arma con Gradle (scripts/pagos.sh); si no hay Gradle, sale sin pagos
 # (salvo con PAGOS_OBLIGATORIO=1, como en GitHub Actions). Las demás, con apktool (build.sh y build_aab.sh).
@@ -34,10 +34,10 @@ variante() {
 }
 
 variante Rumentis              hn.hato.ganadero                "Rumentis"         jefe    0 "#ff22384d"
-variante RumentisVaquero       hn.hato.ganadero.vaquero        "Rumentis Vaquero" vaquero 0 "#ff12594a"
-# las de prueba solo si se piden (PRUEBA=1): para el día a día basta el código de dueño en la app de verdad
+variante RumentisCampo         hn.hato.ganadero.vaquero        "Rumentis Campo"   vaquero 0 "#ff12594a"
+# las de prueba solo si se piden (PRUEBA=1): para el día a día basta el código maestro en la app de verdad
 if [ "${PRUEBA:-0}" = 1 ]; then
 variante RumentisPrueba        hn.hato.ganadero.prueba         "Rumentis Prueba"  jefe    1 "#ffa0432a"
-variante RumentisVaqueroPrueba hn.hato.ganadero.vaquero.prueba "Vaquero Prueba"   vaquero 1 "#ff7a5a12"
+variante RumentisCampoPrueba   hn.hato.ganadero.vaquero.prueba "Campo Prueba"     vaquero 1 "#ff7a5a12"
 fi
 ls -la "$RAIZ"/dist/

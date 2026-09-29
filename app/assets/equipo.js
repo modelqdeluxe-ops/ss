@@ -26,6 +26,7 @@ const PERM=[['alimento','Entregar alimento'],['pesaje','Pesar'],['sanidad','Sani
 const PERM_DEF={alimento:true,pesaje:true,sanidad:true,bajas:true,tareas:true};
 const PERM_TIPO={alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad',baja:'bajas'};
 const servidor=()=>N.urlOk((EQ()&&EQ().servidor)||CFG.servidorEquipo);
+const horaRep=()=>{const h=(EQ()||{}).horaReporte;return h!=null&&+h>=0&&+h<=23?+h:17;};
 const firmaJ=()=>{const f=S.config.firma;return f&&f.pub&&f.sec?{pub:f.pub,sec:f.sec}:null;};
 const conEquipo=()=>{const e=EQ();return !!(e&&e.id&&Object.keys(e.licencias||{}).length);};
 const activos=()=>Object.values((EQ()||{}).vaqueros||{}).filter(v=>v.estado==='activo');
@@ -64,7 +65,7 @@ async function fichaEq(){
 }
 const cuentaOfuscada=()=>N.sha('RUMENTIS-CUENTA|'+(EQ()||{}).id).slice(0,40);
 function textoLicencia(c,url){
-  return tr(`Hola, te doy una licencia de Rumentis Vaquero para trabajar con el equipo de ${S.config.finca||'la finca'}.`)+'\n\n'+
+  return tr(`Hola, te doy una licencia de Rumentis Campo para trabajar con el equipo de ${S.config.finca||'la finca'}.`)+'\n\n'+
     tr('1. Descarga la app (gratis):')+' '+CFG.tiendaVaquero+'\n'+tr('2. Ábrela, escribe tu nombre y esta licencia:')+' '+N.fmtLic(c)+'\n\n'+
     tr('O abre este enlace desde tu teléfono:')+' '+url;
 }
@@ -73,7 +74,7 @@ function textoLicencia(c,url){
 ACTS.eqComprar=async()=>{
   await asegurarEquipo();
   if(esDueno()&&!CFG.prueba){
-    openSheet(shHead('Licencia de dueño',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p><b>Modo dueño:</b> la licencia se crea al instante, sin cobrar, y sirve en Rumentis Vaquero como cualquier otra.</p></div></div>
+    openSheet(shHead('Licencia sin costo',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p><b>Código maestro:</b> la licencia se crea al instante, sin costo, y sirve en Rumentis Campo como cualquier otra.</p></div></div>
       <div class="sh-foot"><button type="button" class="btn" data-act="cerrar" style="flex:1">Cancelar</button><button type="button" class="btn pri" data-act="eqCompraPrueba" style="flex:1">Crear licencia</button></div>`);return;}
   if(CFG.prueba){
     openSheet(shHead('Compra de prueba',EQT())+`<div class="sh-body"><div class="eq-prueba">${ico('check',2.2)}<p>Esta es la <b>app de prueba</b>: la licencia se crea al instante y no se cobra nada. En la app de Google Play el pago lo hace Google Play.</p></div></div>
@@ -96,7 +97,7 @@ N.pagosEscuchar(async o=>{
     const real=N.compraReal(o.json,o.firma);if(real===false){toast('Esta compra no pasó la verificación de Google Play.',5000);return;}
     let c=N.normLic(o.perfil||'');if(!N.licValida(c))c=(SY.pend&&SY.pend.c)||N.nuevaLicencia();
     crearLicencia(c,{orden:o.orden||'',token:o.token,json:o.json,firma:o.firma,ts:Date.now()});
-    SY.pend=null;guardarSY();toast('¡Licencia lista! Compártela con tu vaquero.',4000);
+    SY.pend=null;guardarSY();toast('¡Licencia lista! Compártela con la persona que la va a usar.',4000);
     if(!location.hash.startsWith('#equipo'))location.hash='#equipo';setTimeout(()=>abrirLicencia(c),450);
   }
   // consumida: así se puede comprar otra (la licencia ya quedó guardada)
@@ -106,11 +107,11 @@ N.pagosEscuchar(async o=>{
 /* ---------- licencia: QR, copiar y compartir ---------- */
 async function abrirLicencia(c){
   const fi=await fichaEq(),url=N.enlace(fi,c);let svg='';try{svg=await N.qrSvg(url);}catch(e){}
-  openSheet(shHead('Licencia para tu vaquero',EQT())+`<div class="sh-body eq-lic">
+  openSheet(shHead('Licencia de acceso',EQT())+`<div class="sh-body eq-lic">
     ${svg?`<div class="eq-qr">${svg}</div>`:''}
     <div class="eq-cod"><span>Licencia</span><b data-no-tr>${N.fmtLic(c)}</b></div>
-    <ol class="eq-pasos"><li>Tu vaquero escanea este código con la cámara de su teléfono y descarga <b>Rumentis Vaquero</b>, gratis en Google Play.</li>
-    <li>Al abrirla escribe su nombre y la licencia, o toca <b>Escanear QR</b>.</li><li>Listo: aparece en Equipo y te llega lo que registra.</li></ol>
+    <ol class="eq-pasos"><li>La persona escanea este código con la cámara de su teléfono y descarga <b>Rumentis Campo</b>, gratis en Google Play.</li>
+    <li>Al abrirla escribe su nombre y la licencia, o toca <b>Escanear QR</b>.</li><li>Te envía su solicitud de acceso; la abres aquí y le devuelves la actualización. Desde ahí te envía su reporte cada día.</li></ol>
     <p class="hint">Cada licencia es para una sola persona. No la publiques.</p></div>
     <div class="sh-foot"><button type="button" class="btn" data-act="eqCopiar" data-c="${c}" style="flex:1">Copiar</button><button type="button" class="btn pri" data-act="eqCompartir" data-c="${c}" style="flex:1.4">Enviar por WhatsApp</button></div>`);
 }
@@ -133,13 +134,13 @@ async function procesarAlta(s){
   if(s.x==='plano'){try{if(await N.verificar(s,s.f,s.j))carga=JSON.parse(s.c);}catch(err){carga=null;}}
   else carga=await N.abrir(s,{caja:{pub:s.k,sec:e.caja.sec},firmaPub:s.j});
   if(!carga||N.idDe(s.j)!==s.de)return;
-  const c=N.normLic(carga.lic),L=(e.licencias||{})[c],vid=N.idDe(s.j),nombre=String(carga.nombre||'').trim().slice(0,60)||'Vaquero';
+  const c=N.normLic(carga.lic),L=(e.licencias||{})[c],vid=N.idDe(s.j),nombre=String(carga.nombre||'').trim().slice(0,60)||'Colaborador';
   const rechazar=async m=>{const f=firmaJ();encolar(await N.sellar('rechazo',{e:e.id,de:'jefe',para:vid,carga:{ok:false,motivo:m,lic:c},caja:{pub:s.k,sec:e.caja.sec},firmaSec:f.sec}));};
   if(!L)return rechazar('Esa licencia no es de este equipo.');
   if(L.estado==='baja')return rechazar('Esa licencia fue dada de baja.');
   if(L.estado==='activa'){if(L.vid===vid)return bienvenida(vid);return rechazar('Esa licencia ya la usa otra persona.');}
   const sol={vid,nombre,lic:c,firma:s.j,caja:s.k,disp:String(carga.disp||'').slice(0,60),ts:Date.now()};
-  if(e.auto===false){if(!(e.solicitudes||{})[vid]){guardarEQ({solicitudes:{...(e.solicitudes||{}),[vid]:sol},act:actividad({ic:'alta',v:vid,n:nombre,txt:`${nombre} quiere entrar con la licencia ${N.fmtLic(c)}`})});toast(`${nombre} quiere entrar al equipo`,4000);}return;}
+  if(e.auto===false){if(!(e.solicitudes||{})[vid]){guardarEQ({solicitudes:{...(e.solicitudes||{}),[vid]:sol},act:actividad({ic:'alta',v:vid,n:nombre,txt:`${nombre} solicita acceso con la licencia ${N.fmtLic(c)}`})});toast(`${nombre} solicita acceso al equipo`,4000);}return;}
   await aceptar(sol);
 }
 async function aceptar(sol){
@@ -148,18 +149,18 @@ async function aceptar(sol){
   const v={id:sol.vid,nombre:sol.nombre,lic:sol.lic,firma:sol.firma,caja:sol.caja,disp:sol.disp,alta:hoy(),ts:Date.now(),permisos:{...PERM_DEF},estado:'activo',seq:0};
   guardarEQ({vaqueros:{...e.vaqueros,[v.id]:v},licencias:{...e.licencias,[sol.lic]:{...L,estado:'activa',vid:v.id,nombre:v.nombre,activada:hoy()}},solicitudes:sols,
     act:actividad({ic:'alta',v:v.id,n:v.nombre,txt:`${v.nombre} entró al equipo con la licencia ${N.fmtLic(sol.lic)}`})});
-  toast(`${v.nombre} entró al equipo`,3500);
+  toast(`${v.nombre} entró al equipo. Envíale la actualización para que empiece.`,4500);
   await bienvenida(v.id);await publicarEstado(true);
 }
 async function bienvenida(vid){
   const e=EQ(),v=e.vaqueros[vid],L=e.licencias[v.lic],f=firmaJ();
   const real=L.compra&&!L.compra.prueba&&L.compra.json?{json:L.compra.json,firma:L.compra.firma}:null;
-  const carga={ok:true,vid,nombre:v.nombre,lic:v.lic,clave:e.clave,gen:e.gen,permisos:v.permisos,finca:S.config.finca||'',compra:real,prueba:!!(L.compra&&L.compra.prueba)};
+  const carga={ok:true,vid,nombre:v.nombre,lic:v.lic,clave:e.clave,gen:e.gen,permisos:v.permisos,finca:S.config.finca||'',compra:real,prueba:!!(L.compra&&L.compra.prueba),horaReporte:horaRep()};
   encolar(await N.sellar('bienvenida',{e:e.id,de:'jefe',para:vid,carga,caja:{pub:v.caja,sec:e.caja.sec},firmaSec:f.sec}));
 }
 ACTS.eqAceptar=async el=>{const s=(EQ().solicitudes||{})[el.dataset.v];if(s){await aceptar(s);closeSheet();}};
 ACTS.eqRechazar=async el=>{const e=EQ(),s=(e.solicitudes||{})[el.dataset.v];if(!s)return;const f=firmaJ();
-  encolar(await N.sellar('rechazo',{e:e.id,de:'jefe',para:s.vid,carga:{ok:false,motivo:'Tu jefe no aceptó la solicitud.',lic:s.lic},caja:{pub:s.caja,sec:e.caja.sec},firmaSec:f.sec}));
+  encolar(await N.sellar('rechazo',{e:e.id,de:'jefe',para:s.vid,carga:{ok:false,motivo:'La administración no aceptó la solicitud.',lic:s.lic},caja:{pub:s.caja,sec:e.caja.sec},firmaSec:f.sec}));
   const sols={...e.solicitudes};delete sols[s.vid];guardarEQ({solicitudes:sols});closeSheet();toast('Solicitud rechazada');};
 
 /* ---------- lo que registran los vaqueros ---------- */
@@ -175,11 +176,12 @@ function textoItem(v,it){
   if(it.tipo==='baja')return `${n} anotó ${pl(+it.cab||1,'muerte','muertes')} en ${l}`;
   return `${n} anotó un registro en ${l}`;
 }
-function aplicarOps(v,ops){
+function aplicarOps(v,ops,omitir){
   const e=EQ();let seq=+v.seq||0,cambios=0;const act=[];const P=v.permisos||{};
   const cfgNueva={...S.config};let cfgCambio=false;
   for(const op of [...ops].sort((a,b)=>a.seq-b.seq)){
     if(!(op.seq>seq))continue;seq=op.seq;
+    if(omitir&&omitir.has(op.seq))continue;   // la administración no lo quiso registrar
     try{
       if(op.k==='item+'){const it={...op.it};const p=PERM_TIPO[it.tipo];if(!p||!P[p]||!S.lotes[it.lote]||!it.id||!/^\d{4}-\d\d-\d\d$/.test(it.f||''))continue;if(buscarItem(it.id))continue;
         it.por={v:v.id,n:v.nombre};it.t=it.t||Date.now();if(it.tipo==='alimento')it.costoKg=costoAlimento(it);if(it.tipo==='sanidad')it.costo=+it.costo||0;
@@ -193,14 +195,16 @@ function aplicarOps(v,ops){
         if(c.estado==='cerrado'&&P.bajas){d.estado='cerrado';d.fechaCierre=c.fechaCierre||hoy();}
         if(Object.keys(d).length){put('lotes',op.id,{...l,...d});cambios++;}}
       else if(op.k==='hecha'&&P.tareas){cfgNueva.hechas={...(cfgNueva.hechas||{}),[op.key]:op.f||hoy()};cfgCambio=true;act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} marcó hecha: ${op.txt||'una tarea'}`});}
-      else if(op.k==='tarea'&&P.tareas){cfgNueva.tareas=(cfgNueva.tareas||[]).map(t=>t.id===op.id?{...t,hecho:true,hechoPor:v.nombre,hechoF:hoy()}:t);cfgCambio=true;
-        const t=(S.config.tareas||[]).find(z=>z.id===op.id);act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} marcó hecha: ${t?t.t:'una tarea'}`});}
+      else if(op.k==='tarea'){const t=(cfgNueva.tareas||[]).find(z=>z.id===op.id);if(!t||(t.para!=='todos'&&t.para!==v.id))continue;const f=/^\d{4}-\d\d-\d\d$/.test(op.f||'')?op.f:hoy();
+        cfgNueva.tareas=cfgNueva.tareas.map(z=>z.id!==t.id?z:(z.rep||'una')==='una'?{...z,hecho:true,hechoPor:v.nombre,hechoF:f}
+          :(z.hechos||[]).some(x=>x.f===f&&x.v===v.id)?z:{...z,hechos:(z.hechos||[]).filter(x=>x.f>=addDias(hoy(),-70)).concat({f,v:v.id,n:v.nombre})});
+        cfgCambio=true;cambios++;act.push({ic:'tarea',v:v.id,n:v.nombre,txt:`${v.nombre} hizo: ${t.t}`});}
     }catch(err){}
   }
   const vs={...EQ().vaqueros,[v.id]:{...v,seq,ts:Date.now()}};
   let a=(cfgCambio?cfgNueva:S.config).equipo.act||[];for(const x of act)a=[{ts:Date.now(),...x}].concat(a);
   put('ajustes','finca',{...(cfgCambio?cfgNueva:S.config),equipo:{...EQ(),vaqueros:vs,act:a.slice(0,250)}});
-  if(act.length)toast(act.length===1?act[0].txt:`${v.nombre}: ${pl(act.length,'registro nuevo','registros nuevos')}`,3500);
+  if(act.length&&!omitir)toast(act.length===1?act[0].txt:`${v.nombre}: ${pl(act.length,'registro nuevo','registros nuevos')}`,3500);
   return cambios;
 }
 async function procesarOps(s){
@@ -214,8 +218,44 @@ async function procesar(s){
   // el alta sin cifrar (el vaquero se activó solo con el código, sin servidor) todavía no sabe el número del equipo
   if(s.e!==e.id&&!(s.t==='alta'&&s.x==='plano'&&!s.e))return 0;
   const vis=SY.vistos||[];if(vis.includes(s.id))return 0;SY.vistos=vis.concat(s.id).slice(-600);guardarSY();
-  if(s.t==='alta')await procesarAlta(s);else if(s.t==='ops')await procesarOps(s);else return 0;
+  if(s.t==='alta')await procesarAlta(s);else if(s.t==='ops')await procesarOps(s);else if(s.t==='reporte')return await procesarReporte(s);else return 0;
   return 1;
+}
+
+/* ---------- reportes del día ----------
+   Cada colaborador envía al final de su jornada un reporte (archivo .rumentis): sus registros, las tareas del día hechas
+   y pendientes, cómo van las de la semana y sus novedades. Aquí se guarda sin tocar la finca; la administración lo
+   revisa, puede dejar fuera algún registro y toca Registrar. La confirmación le llega al colaborador con la siguiente
+   actualización (.campo). */
+let ultimosRep=[];
+async function procesarReporte(s){
+  const e=EQ(),v=(e.vaqueros||{})[s.de];if(!v||v.estado!=='activo')return 0;
+  const clave=s.g===e.gen?e.clave:(e.claves||{})[s.g];if(!clave)return 0;
+  const c=await N.abrir(s,{clave,firmaPub:v.firma});if(!c||!c.rid)return 0;
+  const R={...(e.reportes||{})};if(R[c.rid])return 0;
+  const fecha=/^\d{4}-\d\d-\d\d$/.test((c.res||{}).fecha||'')?c.res.fecha:hoy();
+  // uno anterior de la misma persona que siga sin registrar queda dentro de este (lleva todo lo que falta)
+  for(const x of Object.values(R))if(x.vid===v.id&&x.estado==='nuevo'&&x.ts<c.ts)R[x.rid]={...x,estado:'incluido',en:c.rid};
+  R[c.rid]={rid:c.rid,vid:v.id,n:v.nombre,ts:+c.ts||s.ts,rec:Date.now(),fecha,res:c.res||{},nota:String(c.nota||'').slice(0,1500),
+    ops:(Array.isArray(c.ops)?c.ops:[]).slice(0,3000),estado:'nuevo'};
+  const orden=Object.values(R).sort((a,b)=>b.ts-a.ts);for(const x of orden.slice(120))if(x.estado!=='nuevo')delete R[x.rid];
+  guardarEQ({reportes:R,vaqueros:{...e.vaqueros,[v.id]:{...v,ts:Date.now()}},act:actividad({ic:'reporte',v:v.id,n:v.nombre,txt:`${v.nombre} envió su reporte del ${ffc(fecha)}`})});
+  ultimosRep.push(c.rid);return 1;
+}
+const REP=()=>Object.values((EQ()||{}).reportes||{}).sort((a,b)=>b.ts-a.ts);
+const porRegistrar=()=>REP().filter(r=>r.estado==='nuevo');
+// los registros de un reporte que todavía no están en la finca
+const opsNuevas=r=>{const v=(EQ().vaqueros||{})[r.vid];const s0=v?+v.seq||0:Infinity;return (r.ops||[]).filter(o=>o.seq>s0);};
+function registrarReporte(rid,omitir){
+  const e=EQ(),r=(e.reportes||{})[rid],v=r&&(e.vaqueros||{})[r.vid];if(!r||!v||r.estado!=='nuevo')return null;
+  const ops=opsNuevas(r),om=new Set(omitir||[]);
+  const hechos=aplicarOps(v,ops,om),omit=ops.filter(o=>om.has(o.seq)).length;
+  const e2=EQ(),R={...(e2.reportes||{})};
+  R[rid]={...R[rid],estado:'registrado',reg:hechos,omit,regTs:Date.now()};
+  guardarEQ({reportes:R,rev:{...(e2.rev||{}),[v.id]:{rid,fecha:r.fecha,reg:hechos,omit,ts:Date.now()}},
+    act:actividad({ic:'alta',v:v.id,n:v.nombre,txt:`Registraste el reporte de ${v.nombre} del ${ffc(r.fecha)}`})});
+  publicarEstado(true);
+  return {reg:hechos,omit};
 }
 
 /* ---------- estado para el equipo (sin dinero) ---------- */
@@ -230,8 +270,8 @@ function estadoEquipo(){
   const vaqs={},acks={};for(const v of Object.values(e.vaqueros||{})){vaqs[v.id]={n:v.nombre,permisos:v.permisos,estado:v.estado};acks[v.id]=+v.seq||0;}
   const cfg={finca:S.config.finca,ubicacion:S.config.ubicacion,pais:S.config.pais,unidad:S.config.unidad,unidadPrecio:S.config.unidadPrecio,horas:S.config.horas,
     diasSinPesar:S.config.diasSinPesar,metaKg:S.config.metaKg,gdpEsperada:S.config.gdpEsperada,desbaste:S.config.desbaste,
-    hechas:S.config.hechas||{},tareas:(S.config.tareas||[]).filter(t=>t.para&&!t.hecho)};
-  return {v:1,gen:e.gen,lotes,raciones,items,cfg,vaqueros:vaqs,acks};
+    hechas:S.config.hechas||{},tareas:(S.config.tareas||[]).filter(t=>t.para&&!t.hecho),horaReporte:horaRep()};
+  return {v:1,gen:e.gen,lotes,raciones,items,cfg,vaqueros:vaqs,acks,rev:e.rev||{}};
 }
 async function publicarEstado(forzar){
   const e=EQ();if(!e||!e.id||!activos().length)return null;
@@ -300,15 +340,20 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&conEquipo
 ACTS.eqEnviarArchivo=async()=>{
   const e=EQ();if(!e)return;const est=await publicarEstado(true);
   const sobres=(SY.archivo||[]).filter(s=>s.ts>Date.now()-30*864e5).concat(est?[est]:[]);
-  if(!sobres.length){toast('Todavía no hay nada que mandar: primero activa a un vaquero.',4000);return;}
-  N.compartirArchivo(N.nombreArchivo(`equipo-${S.config.finca||'finca'}-${hoy()}`),await N.armarArchivo(sobres,'jefe',{ficha:await fichaEq()}),tr('Datos para el equipo'));
+  if(!sobres.length){toast('Todavía no hay nada que enviar: primero suma a un colaborador.',4000);return;}
+  closeSheet();
+  N.compartirArchivo(N.nombreArchivo(`actualizacion-${S.config.finca||'finca'}-${hoy()}`),await N.armarArchivo(sobres,'jefe',{ficha:await fichaEq()}),tr('Actualización para el equipo'));
 };
 async function alRecibir(o){
-  await asegurarEquipo();let n=0;for(const s of o.sobres)n+=await procesar(s);
-  toast(n?`Listo: ${pl(n,'mensaje leído','mensajes leídos')}`:'Nada nuevo en ese archivo',3500);scheduleRender();return true;
+  await asegurarEquipo();ultimosRep=[];let n=0;for(const s of o.sobres)n+=await procesar(s);
+  const reps=ultimosRep.slice();
+  if(reps.length===1){const r=EQ().reportes[reps[0]];toast(`Reporte de ${r.n}: revísalo y regístralo`,3500);location.hash='#equipo/reporte/'+encodeURIComponent(reps[0]);}
+  else if(reps.length){toast(`${pl(reps.length,'reporte nuevo','reportes nuevos')} por registrar`,3500);location.hash='#equipo';}
+  else toast(n?`Listo: ${pl(n,'mensaje leído','mensajes leídos')}`:'Nada nuevo en ese archivo',3500);
+  scheduleRender();return true;
 }
 ACTS.eqRecibirArchivo=async()=>{const u=await N.elegirArchivo();if(u)await N.recibirArchivo(u,alRecibir);};
-// al tocar un archivo .rumentis en WhatsApp se abre la app y llega aquí
+// al tocar un reporte .rumentis en WhatsApp o en el correo se abre la app y llega aquí
 N.escucharArchivos(alRecibir);
 
 /* ---------- permisos, tareas y ajustes ---------- */
@@ -317,18 +362,21 @@ ACTS.eqPermiso=el=>{const e=EQ(),v=e.vaqueros[el.dataset.v];if(!v)return;const k
 ACTS.eqAuto=el=>{const on=!(EQ().auto!==false);guardarEQ({auto:on});el.setAttribute('aria-checked',String(on));};
 ACTS.eqVaquero=el=>abrirVaquero(el.dataset.v);
 ACTS.eqSolicitud=el=>{const s=(EQ().solicitudes||{})[el.dataset.v];if(!s)return;
-  openSheet(shHead(esc(s.nombre),'Quiere entrar al equipo')+`<div class="sh-body"><p>Licencia <b data-no-tr>${N.fmtLic(s.lic)}</b>${s.disp?` · ${esc(s.disp)}`:''}</p><p class="hint">Huella de su teléfono: <span data-no-tr>${N.huella(s.firma)}</span></p></div>
+  openSheet(shHead(esc(s.nombre),'Solicita acceso')+`<div class="sh-body"><p>Licencia <b data-no-tr>${N.fmtLic(s.lic)}</b>${s.disp?` · ${esc(s.disp)}`:''}</p><p class="hint">Huella de su teléfono: <span data-no-tr>${N.huella(s.firma)}</span></p></div>
     <div class="sh-foot"><button type="button" class="btn" data-act="eqRechazar" data-v="${s.vid}" style="flex:1">Rechazar</button><button type="button" class="btn pri" data-act="eqAceptar" data-v="${s.vid}" style="flex:1">Aceptar</button></div>`);};
 FORMS.eqTarea=({id}={})=>{
   const vs=activos();
   const body=`${q('¿Qué hay que hacer?',`<input class="in" name="t" placeholder="Revisar bebederos del corral 3…" required autocomplete="off">`)}
    ${q('¿Para quién?',opts('para',[{v:'todos',t:'Todo el equipo'}].concat(vs.map(v=>({v:v.id,t:v.nombre}))),id||'todos'))}
-   ${q('¿Cuándo?',`<input class="in" type="date" name="f" value="${hoy()}" min="${hoy()}">`)}`;
+   ${q('¿Cada cuánto?',`<select class="in" name="rep">${['una','dia','s1','s2','s3','s4','s5'].map(k=>`<option value="${k}">${Agenda.REP[k]}</option>`).join('')}</select>`,'Las diarias y semanales se repiten solas; el avance sale en cada reporte.')}
+   ${q('¿Desde cuándo?',`<input class="in" type="date" name="f" value="${hoy()}" min="${hoy()}">`)}`;
   openSheet(shHead('Asignar una tarea',EQT())+formWrap('eqTarea',body,foot('Asignar')));
 };
 SAVE.eqTarea=f=>{const t=fv(f,'t').trim();if(!t)return ferr(f,'Escribe qué hay que hacer.');const para=fv(f,'para')||'todos';
   const quien=para==='todos'?'todo el equipo':((EQ().vaqueros||{})[para]||{}).nombre||'';
-  put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).concat({id:uid('t'),t,f:fv(f,'f')||hoy(),hecho:false,para})});closeSheet();toast(`Tarea para ${quien}`);publicarEstado();};
+  const rep=Agenda.REP[fv(f,'rep')]?fv(f,'rep'):'una';
+  put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).concat({id:uid('t'),t,f:fv(f,'f')||hoy(),hecho:false,para,rep,hechos:[]})});closeSheet();
+  toast(`Tarea para ${quien}. Les llega con la próxima actualización.`,4000);publicarEstado();};
 ACTS.eqTareaBorrar=el=>{put('ajustes','finca',{...S.config,tareas:(S.config.tareas||[]).filter(t=>t.id!==el.dataset.id)});publicarEstado();};
 ACTS.eqServidor=()=>{const e=EQ()||{};
   openSheet(shHead('Servidor del equipo',EQT())+formWrap('eqServidor',`${q('Dirección del servidor',`<input class="in" name="s" value="${esc(e.servidor||'')}" placeholder="${esc(CFG.servidorEquipo||'192.168.1.10:8790')}" autocomplete="off" inputmode="url" data-no-tr>`,'La dirección que muestra el servidor de la finca al encenderlo. Sin servidor, el equipo se pasa los datos por archivo.')}`,foot('Guardar')));};
@@ -337,64 +385,139 @@ SAVE.eqServidor=f=>{const s=fv(f,'s').trim();if(s&&!N.urlOk(s))return ferr(f,'Es
 
 /* ---------- pantalla ---------- */
 const avatar=(n,cls='')=>`<span class="eq-av ${cls}" aria-hidden="true" data-no-tr>${esc(N.iniciales(n))}</span>`;
+const hhmm=ts=>new Date(ts).toTimeString().slice(0,5);
 const hoyDe=vid=>allItems().filter(i=>i.f===hoy()&&i.por&&i.por.v===vid).length;
+const repDe=(vid,f)=>REP().find(r=>r.vid===vid&&r.fecha===f&&r.estado!=='incluido')||REP().find(r=>r.vid===vid&&r.fecha===f);
+const semanaDe=f=>{const L=Agenda.lunesDe(f);return [L,addDias(L,6)];};
+const diasConReporte=(vid,f)=>{const [a,b]=semanaDe(f);return new Set(REP().filter(r=>r.vid===vid&&r.fecha>=a&&r.fecha<=b).map(r=>r.fecha)).size;};
+const tareasDe=vid=>(S.config.tareas||[]).filter(t=>t.para==='todos'||t.para===vid);
+const repTxt=t=>Agenda.REP[t.rep||'una']||'Una vez';
+// cómo va su reporte de hoy
+function estadoHoy(v){
+  const r=repDe(v.id,hoy());
+  if(r)return {tono:r.estado==='nuevo'?'y':'v',txt:r.estado==='nuevo'?`Reporte de hoy por registrar, ${hhmm(r.rec)}`:`Reporte de hoy registrado`};
+  if(new Date().getHours()>=horaRep())return {tono:'r',txt:'Reporte de hoy pendiente'};
+  return {tono:'a',txt:`Reporte de hoy a las ${horaRep()}:00`};
+}
+// cada registro del reporte, en palabras, y si se puede registrar
+function descOp(v,op){
+  const L=id=>nombreLote(id),P=v.permisos||{};
+  if(op.k==='item+'){const it=op.it||{};const t0=textoItem(v,it).replace(v.nombre+' ',''),t=t0.charAt(0).toUpperCase()+t0.slice(1);const p=PERM_TIPO[it.tipo];
+    if(buscarItem(it.id))return {t,no:'Ya está registrado'};if(!p||!P[p])return {t,no:'Sin permiso para registrarlo'};if(!S.lotes[it.lote])return {t,no:'El lote ya no existe'};
+    return {t,f:it.f};}
+  if(op.k==='item-')return {t:`Borró un registro${(buscarItem(op.id)||{}).it?' de '+L(buscarItem(op.id).it.lote):''}`};
+  if(op.k==='item~')return {t:`Corrigió un registro de ${L((op.it||{}).lote)}`};
+  if(op.k==='lote~'){const c=op.campos||{};return {t:c.estado==='cerrado'?`Cerró ${L(op.id)}`:'animales' in c?`Actualizó los animales de ${L(op.id)}`:`Cambió la ración de ${L(op.id)}`};}
+  if(op.k==='hecha')return {t:`Hizo: ${op.txt||'una tarea de la agenda'}`,f:op.f};
+  if(op.k==='tarea'){const t=(S.config.tareas||[]).find(z=>z.id===op.id);return {t:`Hizo: ${t?t.t:'una tarea asignada'}`,f:op.f,no:t?'':'La tarea ya no existe'};}
+  return {t:'Un cambio'};
+}
+function paginaReporte(rid){
+  const e=EQ()||{},r=(e.reportes||{})[rid];
+  const back=`<header class="hd">${hdBack('#equipo',EQT(),'<span class="sync"></span>')}`;
+  if(!r)return back+`<div class="ttl" style="margin-top:-6px"><h1>Reporte no encontrado</h1></div></header><main class="bd"><p class="hint">Puede que se haya borrado.</p></main>`;
+  const v=(e.vaqueros||{})[r.vid]||{id:r.vid,nombre:r.n,permisos:{}},res=r.res||{},nuevo=r.estado==='nuevo';
+  const ops=nuevo?opsNuevas(r):[],om=(UI.eqOmit&&UI.eqOmit[rid])||{};
+  const filas=ops.map(o=>({o,d:descOp(v,o)})),validas=filas.filter(x=>!x.d.no),aReg=validas.filter(x=>!om[x.o.seq]).length;
+  const regs=filas.filter(x=>x.o.k==='item+').length;
+  const T=res.tareas||[],hechas=T.filter(t=>t.ok).length;
+  // semanales: lo que ya está en la finca más lo de este reporte
+  const [lu,do_]=semanaDe(r.fecha);
+  const sem=tareasDe(v.id).filter(t=>/^s\d$/.test(t.rep||'')).map(t=>{const p=Agenda.progreso(t,r.fecha);
+    const extra=nuevo?ops.filter(o=>o.k==='tarea'&&o.id===t.id&&o.f>=lu&&o.f<=do_&&!(t.hechos||[]).some(x=>x.f===o.f&&x.v===v.id)).length:0;
+    return {t:t.t,n:p.n+extra,meta:p.meta};});
+  const ck=ok=>`<span class="vq-ck${ok?' ok':''}" aria-hidden="true">${ok?ico('check',2.6):''}</span>`;
+  const estado=nuevo?'':r.estado==='incluido'?`<div class="eq-prueba">${ico('check',2.2)}<p>Sus registros van en un reporte más reciente de ${esc(r.n)}.</p></div>`
+    :`<div class="eq-prueba eq-ok">${ico('check',2.2)}<p><b>Registrado.</b> <span>${pl(r.reg||0,'cambio en tu finca','cambios en tu finca')}</span>${r.omit?` · <span>${pl(r.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</p></div>`;
+  return back+`<div class="ttl" style="margin-top:-6px"><span class="eyebrow">Reporte del día</span><h1>${esc(r.n)}</h1><p class="sub">${ffl(r.fecha)} · enviado a las ${hhmm(r.ts)}</p>
+    <div class="kpis"><div class="kpi"><b>${nuevo?regs:(r.reg||0)}</b><span>${nuevo?'registros nuevos':'cambios registrados'}</span></div><div class="kpi"><b>${hechas} de ${T.length}</b><span>tareas del día</span></div><div class="kpi"><b>${diasConReporte(v.id,r.fecha)} de 7</b><span>días reportados esta semana</span></div></div></div></header>
+  <main class="bd">${estado}
+   ${r.nota?`<section class="sec">${secH('Novedades')}<div class="card pad eq-nota"><p>${esc(r.nota)}</p></div></section>`:''}
+   <section class="sec">${secH('Tareas del día',T.length)}${T.length?`<div class="card rows">${T.map(t=>`<div class="row vq-rt">${ck(t.ok)}<div class="tx"><b>${esc(t.t)}</b><span>${t.ok?'Hecha':'Pendiente'}</span></div></div>`).join('')}</div>`:`<p class="hint">No tenía tareas para ese día.</p>`}</section>
+   ${sem.length?`<section class="sec">${secH('Tareas de la semana')}<div class="card rows">${sem.map(x=>`<div class="row vq-rt">${ck(x.n>=x.meta)}<div class="tx"><b>${esc(x.t)}</b><span>${x.n} de ${x.meta} esta semana</span></div><div class="eq-barra" aria-hidden="true"><i style="width:${Math.min(100,Math.round(x.n/x.meta*100))}%"></i></div></div>`).join('')}</div></section>`:''}
+   ${nuevo?`<section class="sec">${secH('Para registrar en tu finca',validas.length)}${filas.length?`<p class="hint" style="margin-top:-4px">Quita la marca de lo que no quieras registrar.</p><div class="card rows">${filas.map(({o,d})=>d.no
+      ?`<div class="row eq-op off">${ck(false)}<div class="tx"><b>${esc(d.t)}</b><span>${d.no}</span></div></div>`
+      :`<button type="button" class="row eq-op" data-act="eqOpTog" data-r="${esc(rid)}" data-s="${o.seq}" aria-pressed="${!om[o.seq]}">${ck(!om[o.seq])}<div class="tx"><b>${esc(d.t)}</b><span>${d.f?ffc(d.f):''}</span></div></button>`).join('')}</div>`
+      :`<p class="hint">Este reporte no trae registros nuevos.</p>`}</section>
+   <div class="eq-regbar"><button type="button" class="btn" data-act="eqRepLuego">Ahora no</button><button type="button" class="btn pri" data-act="eqRegistrar" data-r="${esc(rid)}">${aReg?`Registrar ${pl(aReg,'cambio','cambios')}`:'Marcar como revisado'}</button></div>`:''}
+  </main>`;
+}
+ACTS.eqOpTog=el=>{const r=el.dataset.r,sq=el.dataset.s;UI.eqOmit=UI.eqOmit||{};const m={...(UI.eqOmit[r]||{})};if(m[sq])delete m[sq];else m[sq]=1;UI.eqOmit[r]=m;render();};
+ACTS.eqRepLuego=()=>{location.hash='#equipo';};
+ACTS.eqRegistrar=el=>{const rid=el.dataset.r,om=Object.keys((UI.eqOmit||{})[rid]||{}).map(Number);
+  const x=registrarReporte(rid,om);if(!x)return;if(UI.eqOmit)delete UI.eqOmit[rid];
+  const r=EQ().reportes[rid],quedan=porRegistrar().length;
+  openSheet(shHead('Reporte registrado',EQT())+`<div class="sh-body"><div class="eq-prueba eq-ok">${ico('check',2.2)}<p><b data-no-tr>${esc(r.n)}</b><br><span>${pl(x.reg,'cambio en tu finca','cambios en tu finca')}</span>${x.omit?` · <span>${pl(x.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</p></div>
+    <p>Envía la actualización al equipo: les llega la confirmación, sus tareas y los lotes al día.</p>${quedan?`<p class="hint">Te ${quedan===1?'queda':'quedan'} ${pl(quedan,'reporte','reportes')} por registrar.</p>`:''}</div>
+    <div class="sh-foot"><button type="button" class="btn" data-act="eqCerrarReg" style="flex:1">Luego</button><button type="button" class="btn pri" data-act="eqEnviarArchivo" style="flex:1.6">Enviar actualización</button></div>`);};
+ACTS.eqCerrarReg=()=>closeSheet();
+ACTS.eqReporteVer=el=>{location.hash='#equipo/reporte/'+encodeURIComponent(el.dataset.r);};
+document.addEventListener('change',ev=>{const t=ev.target;if(!t||!t.matches||!t.matches('[data-eqhora]'))return;
+  guardarEQ({horaReporte:+t.value});publicarEstado(true);toast(`Reporte a las ${t.value}:00. Envía la actualización para que le llegue a tu equipo.`,4500);});
 function abrirVaquero(vid){
   const e=EQ(),v=(e.vaqueros||{})[vid];if(!v)return;
-  const regs=allItems().filter(i=>i.por&&i.por.v===vid).slice(-12).reverse();
-  const tareas=(S.config.tareas||[]).filter(t=>!t.hecho&&(t.para===vid||t.para==='todos'));
-  openSheet(shHead(esc(v.nombre),'Vaquero')+`<div class="sh-body eq-vq">
-    <div class="eq-vq-h">${avatar(v.nombre,'xl')}<div><b data-no-tr>${N.fmtLic(v.lic)}</b><span>${v.estado==='activo'?`En el equipo desde el ${ffc(v.alta)}`:`Dado de baja el ${ffc(v.baja||hoy())}`}</span><span>Última conexión: <span>${N.haceCuanto(v.ts)}</span></span></div></div>
+  const reps=REP().filter(r=>r.vid===vid).slice(0,7);
+  const tareas=tareasDe(vid).filter(t=>(t.rep||'una')!=='una'||!t.hecho);
+  openSheet(shHead(esc(v.nombre),'Colaborador')+`<div class="sh-body eq-vq">
+    <div class="eq-vq-h">${avatar(v.nombre,'xl')}<div><b data-no-tr>${N.fmtLic(v.lic)}</b><span>${v.estado==='activo'?`En el equipo desde el ${ffc(v.alta)}`:`Dado de baja el ${ffc(v.baja||hoy())}`}</span><span>Esta semana: ${diasConReporte(vid,hoy())} de 7 días con reporte</span></div></div>
+    <p class="rh">Reportes</p>${reps.length?`<div class="card rows">${reps.map(r=>`<button type="button" class="row" data-act="eqReporteVer" data-r="${esc(r.rid)}"><div class="tx"><b>${ffc(r.fecha)}, ${hhmm(r.ts)}</b><span>${r.estado==='nuevo'?'Por registrar':r.estado==='incluido'?'Incluido en uno más reciente':'Registrado'}</span></div>${ico('chev')}</button>`).join('')}</div>`:`<p class="hint">Todavía no envía reportes.</p>`}
     ${v.estado==='activo'?`<p class="rh">Qué puede registrar</p><div class="card rows eq-perm">${PERM.map(([k,t])=>`<div class="row"><div class="tx"><b>${t}</b></div><button type="button" class="tog" role="switch" aria-checked="${!!(v.permisos||{})[k]}" aria-label="${t}" data-act="eqPermiso" data-v="${vid}" data-k="${k}"><span></span></button></div>`).join('')}</div>`:''}
-    <p class="rh">Tareas asignadas</p>${tareas.length?`<div class="card rows">${tareas.map(t=>`<div class="row"><div class="tx"><b>${esc(t.t)}</b><span>${t.para==='todos'?'Para todo el equipo':'Solo para '+esc(v.nombre)} · ${ffc(t.f)}</span></div></div>`).join('')}</div>`:`<p class="hint">Sin tareas pendientes.</p>`}
+    <p class="rh">Tareas asignadas</p>${tareas.length?`<div class="card rows">${tareas.map(t=>{const p=Agenda.progreso(t);return `<div class="row"><div class="tx"><b>${esc(t.t)}</b><span><span>${t.para==='todos'?'Todo el equipo':'Solo para '+esc(v.nombre)}</span> · <span>${repTxt(t)}</span>${/^s\d$/.test(t.rep||'')?` · <span>${p.n} de ${p.meta} esta semana</span>`:''}</span></div></div>`;}).join('')}</div>`:`<p class="hint">Sin tareas asignadas.</p>`}
     ${v.estado==='activo'?`<button type="button" class="btn full" data-act="f" data-f="eqTarea" data-id="${vid}">${ico('nuevo')}Asignarle una tarea</button>`:''}
-    <p class="rh">Lo último que registró</p>${regs.length?`<div class="card rows">${regs.map(it=>`<div class="row"><div class="tx"><b>${esc(textoItem(v,it).replace(v.nombre+' ',''))}</b><span>${ffc(it.f)}</span></div></div>`).join('')}</div>`:`<p class="hint">Todavía no registra nada.</p>`}
     <p class="hint">Huella de su teléfono: <span data-no-tr>${N.huella(v.firma)}</span>${v.disp?` · ${esc(v.disp)}`:''}</p></div>
     ${v.estado==='activo'?`<div class="sh-foot"><button type="button" class="btn danger" data-act="eqBaja" data-v="${vid}" style="flex:1">Dar de baja</button></div>`:''}`);
 }
-const ICA={alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad',baja:'alerta',lic:'recibo',alta:'estrella',tarea:'lista',borrar:'nota'};
+const ICA={alimento:'alimento',pesaje:'pesaje',sanidad:'sanidad',baja:'alerta',lic:'recibo',alta:'estrella',tarea:'lista',borrar:'nota',reporte:'recibo'};
 function filaAct(a){return `<div class="row eq-act"><span class="mas-ic t-${a.ic==='baja'||a.ic==='borrar'?'r':a.ic==='alimento'?'y':a.ic==='lic'||a.ic==='alta'?'v':'a'}">${icono(ICA[a.ic]||'info','i3')}</span><div class="tx"><b>${esc(a.txt)}</b><span>${N.haceCuanto(a.ts)}</span></div></div>`;}
 function botonComprar(txt){const p=gratis()?'':precioLic();return `<button type="button" class="btn pri full eq-comprar" data-act="eqComprar">${ico('nuevo')}<span>${txt}</span>${p?`<span data-no-tr> · ${esc(p)}</span>`:''}</button>`;}
-PAGES.equipo=()=>{
+function filaRep(r){const T=(r.res||{}).tareas||[],n=(r.ops||[]).filter(o=>o.k==='item+').length;
+  return `<a class="row eq-v" href="#equipo/reporte/${encodeURIComponent(r.rid)}">${avatar(r.n,r.estado==='nuevo'?'c':'')}<div class="tx"><b>${esc(r.n)}</b><span><span>${ffc(r.fecha)}, ${hhmm(r.ts)}</span> · <span>${pl(n,'registro','registros')}</span>${T.length?` · <span>${T.filter(t=>t.ok).length} de ${T.length} tareas</span>`:''}${r.estado==='nuevo'?'':r.estado==='incluido'?' · <span>incluido</span>':' · <span>registrado</span>'}</span></div>${ico('chev')}</a>`;}
+PAGES.equipo=(sub,id)=>{
+  if(sub==='reporte')return paginaReporte(id);
   const e=EQ()||{},L=Object.values(e.licencias||{}),V=Object.values(e.vaqueros||{}),act=V.filter(v=>v.estado==='activo'),libres=L.filter(l=>l.estado==='libre');
-  const sols=Object.values(e.solicitudes||{});const srv=servidor();
-  const hd=`<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(S.config.finca||'Mi engorde')}</span><h1>${EQT()}</h1><p class="sub">Tus vaqueros registran desde su teléfono y tú lo ves aquí, en tus lotes.</p>
-    ${L.length?`<div class="kpis"><div class="kpi"><b>${act.length}</b><span>${act.length===1?'vaquero':'vaqueros'}</span></div><div class="kpi"><b>${libres.length}</b><span>${libres.length===1?'licencia libre':'licencias libres'}</span></div><div class="kpi"><b>${allItems().filter(i=>i.f===hoy()&&i.por).length}</b><span>registros hoy</span></div></div>`:''}</div></header>`;
-  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> Las licencias se crean sin cobrar. Para el vaquero usa <b>Rumentis Vaquero Prueba</b>.</p></div>`
-    :esDueno()?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Modo dueño.</b> Tus licencias se crean sin cobrar y sirven en Rumentis Vaquero.</p></div>`:'';
+  const sols=Object.values(e.solicitudes||{}),pend=porRegistrar(),hist=REP().filter(r=>r.estado!=='nuevo').slice(0,UI.eqHist?40:8);
+  const hd=`<header class="hd">${hdTop('<span class="sync"></span>')}<div class="ttl"><span class="eyebrow">${esc(S.config.finca||'Mi engorde')}</span><h1>${EQT()}</h1><p class="sub">Tu personal registra en Rumentis Campo y te envía su reporte del día.</p>
+    ${L.length?`<div class="kpis"><div class="kpi"><b>${act.length}</b><span>${act.length===1?'colaborador':'colaboradores'}</span></div><div class="kpi"><b>${pend.length}</b><span>por registrar</span></div><div class="kpi"><b>${libres.length}</b><span>${libres.length===1?'licencia libre':'licencias libres'}</span></div></div>`:''}</div></header>`;
+  const aviso=CFG.prueba?`<div class="eq-prueba">${ico('check',2.2)}<p><b>App de prueba.</b> Las licencias se crean sin costo. Tu personal usa <b>Campo Prueba</b>.</p></div>`
+    :esDueno()?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Código maestro activo.</b> Tus licencias se crean sin costo y sirven en Rumentis Campo.</p></div>`:'';
   if(!L.length)return hd+`<main class="bd">${aviso}<section class="sec"><div class="card pad eq-intro">
     <div class="eq-ilus" aria-hidden="true">${avatar('Juan Pérez')}${avatar('María López','b')}${avatar('Pedro Díaz','c')}</div>
-    <h2>Suma a tus vaqueros</h2>
-    <ul class="eq-lista"><li>${ico('check',2.4)}<span>Cada uno usa <b>Rumentis Vaquero</b> en su teléfono: gratis en Google Play.</span></li>
-     <li>${ico('check',2.4)}<span>Anotan entregas de alimento, pesajes, sanidad y muertes; tú lo ves al momento en tus lotes, con su nombre.</span></li>
-     <li>${ico('check',2.4)}<span>Les asignas tareas y decides qué puede registrar cada uno.</span></li>
-     <li>${ico('check',2.4)}<span>Ellos no ven tus finanzas, precios ni a Rumi.</span></li></ul>
+    <h2>Suma a tu personal</h2>
+    <ul class="eq-lista"><li>${ico('check',2.4)}<span>Cada colaborador usa <b>Rumentis Campo</b> en su teléfono: gratis en Google Play.</span></li>
+     <li>${ico('check',2.4)}<span>Anota entregas de alimento, pesajes, sanidad y muertes, y marca sus tareas.</span></li>
+     <li>${ico('check',2.4)}<span>Al terminar el día te envía su reporte por WhatsApp o correo; lo revisas y con un toque queda registrado en tu finca.</span></li>
+     <li>${ico('check',2.4)}<span>No ve tus finanzas, precios ni a Rumi.</span></li></ul>
     <p class="hint">Cada licencia se paga una sola vez y es para una persona. Compras las que necesites.</p>
     ${botonComprar(gratis()?'Crear mi primera licencia':'Comprar mi primera licencia')}</div></section>
-    ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código de dueño</button></p>`:''}</main>`;
-  const filaV=v=>`<button type="button" class="row eq-v" data-act="eqVaquero" data-v="${v.id}">${avatar(v.nombre)}<div class="tx"><b>${esc(v.nombre)}</b><span>${!v.ts?'Sin conectarse':`Activo <span>${N.haceCuanto(v.ts)}</span>`}${hoyDe(v.id)?` · <span>${pl(hoyDe(v.id),'registro hoy','registros hoy')}</span>`:''}</span></div>${ico('chev')}</button>`;
-  const tareas=(S.config.tareas||[]).filter(t=>t.para&&!t.hecho);
+    ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código maestro</button></p>`:''}</main>`;
+  const filaV=v=>{const s=estadoHoy(v);return `<button type="button" class="row eq-v" data-act="eqVaquero" data-v="${v.id}">${avatar(v.nombre)}<div class="tx"><b>${esc(v.nombre)}</b><span class="eq-est t-${s.tono}"><i></i>${s.txt}</span></div>${ico('chev')}</button>`;};
+  const tareas=(S.config.tareas||[]).filter(t=>t.para&&((t.rep||'una')!=='una'||!t.hecho));
   const nombreDe=id=>id==='todos'?'Todo el equipo':((e.vaqueros||{})[id]||{}).nombre||'';
+  const hr=horaRep();
   return hd+`<main class="bd">${aviso}
-   ${sols.length?`<section class="sec">${secH('Quieren entrar',sols.length)}<div class="card rows">${sols.map(s=>`<button type="button" class="row eq-v" data-act="eqSolicitud" data-v="${s.vid}">${avatar(s.nombre,'c')}<div class="tx"><b>${esc(s.nombre)}</b><span>Licencia <span data-no-tr>${N.fmtLic(s.lic)}</span></span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
-   <section class="sec">${secH('Vaqueros',act.length)}${act.length?`<div class="card rows">${act.map(filaV).join('')}</div>`:`<p class="hint">Todavía nadie activa su licencia. Compártela y aparecerá aquí.</p>`}</section>
+   ${pend.length?`<section class="sec">${secH('Reportes por registrar',pend.length)}<div class="card rows eq-pend">${pend.map(filaRep).join('')}</div></section>`:''}
+   ${sols.length?`<section class="sec">${secH('Solicitudes de acceso',sols.length)}<div class="card rows">${sols.map(s=>`<button type="button" class="row eq-v" data-act="eqSolicitud" data-v="${s.vid}">${avatar(s.nombre,'c')}<div class="tx"><b>${esc(s.nombre)}</b><span>Licencia <span data-no-tr>${N.fmtLic(s.lic)}</span></span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
+   <section class="sec">${secH('Colaboradores',act.length)}${act.length?`<div class="card rows">${act.map(filaV).join('')}</div>`:`<p class="hint">Todavía nadie activa su licencia. Compártela y aparecerá aquí.</p>`}</section>
+   <section class="sec">${secH('Reporte diario')}<div class="card pad eq-sinc">
+    <div class="q"><label for="eqHora">Hora del reporte</label><select class="in" id="eqHora" data-eqhora>${[12,13,14,15,16,17,18,19,20,21].map(x=>`<option value="${x}"${x===hr?' selected':''}>${x}:00</option>`).join('')}</select></div>
+    <p class="hint" style="margin:0">A esa hora a tu personal le llega un aviso para enviarte su reporte.</p>
+    <div class="acts"><button type="button" class="btn" data-act="eqRecibirArchivo">Abrir un reporte</button><button type="button" class="btn pri" data-act="eqEnviarArchivo">Enviar actualización</button></div>
+    <p class="hint eq-arch">Los reportes llegan como archivo .rumentis: en WhatsApp o en el correo tócalo y elige Rumentis. La actualización que envías lleva las tareas, los lotes y la confirmación de lo registrado; termina en .campo y se abre en Rumentis Campo. Cada archivo se abre una sola vez.</p>
+    <div class="row eq-tg"><div class="tx"><b>Aceptar solicitudes de acceso solas</b><span>Si lo apagas, te pregunto antes de dejar entrar a alguien.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.auto!==false}" aria-label="Aceptar solas" data-act="eqAuto"><span></span></button></div></div></section>
+   <section class="sec">${secH('Tareas del equipo',tareas.length,lnkB('f','Asignar','data-f="eqTarea"'))}${tareas.length?`<div class="card rows">${tareas.map(t=>{const p=Agenda.progreso(t);return `<div class="row"><span class="mas-ic t-a">${icono('lista','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span><span>${esc(nombreDe(t.para))}</span> · <span>${(t.rep||'una')==='una'?ffc(t.f):repTxt(t)}</span>${/^s\d$/.test(t.rep||'')?` · <span>${p.n} de ${p.meta} esta semana</span>`:''}${t.rep==='dia'&&p.hoy?' · <span>hecha hoy</span>':''}</span></div><button type="button" class="del" data-act="eqTareaBorrar" data-id="${t.id}" aria-label="Quitar tarea">${ico('papelera')}</button></div>`;}).join('')}</div>`:`<p class="hint">Asigna tareas de una vez, diarias o semanales. Salen en el reporte de cada colaborador.</p>`}</section>
    ${libres.length?`<section class="sec">${secH('Licencias sin usar',libres.length)}<div class="card rows">${libres.map(l=>`<button type="button" class="row eq-l" data-act="eqLicencia" data-c="${l.c}"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div class="tx"><b data-no-tr>${N.fmtLic(l.c)}</b><span>Toca para ver el QR y enviarla</span></div>${ico('chev')}</button>`).join('')}</div></section>`:''}
    <section class="sec">${botonComprar(gratis()?(libres.length?'Crear otra licencia':'Crear una licencia'):(libres.length?'Comprar otra licencia':'Comprar una licencia'))}</section>
-   <section class="sec">${secH('Tareas del equipo',tareas.length,lnkB('f','Asignar','data-f="eqTarea"'))}${tareas.length?`<div class="card rows">${tareas.map(t=>`<div class="row"><span class="mas-ic t-a">${icono('lista','i3')}</span><div class="tx"><b>${esc(t.t)}</b><span>${esc(nombreDe(t.para))} · ${ffc(t.f)}</span></div><button type="button" class="del" data-act="eqTareaBorrar" data-id="${t.id}" aria-label="Quitar tarea">${ico('papelera')}</button></div>`).join('')}</div>`:`<p class="hint">Asigna tareas a un vaquero o a todos: les aparecen en su app.</p>`}</section>
-   <section class="sec">${secH('Actividad')}${(e.act||[]).length?`<div class="card rows">${(e.act||[]).slice(0,UI.eqAct?60:12).map(filaAct).join('')}</div>${(e.act||[]).length>12&&!UI.eqAct?`<button type="button" class="lnk" data-act="eqActMas">Ver más</button>`:''}`:`<p class="hint">Aquí verás lo que registra tu equipo.</p>`}</section>
-   <section class="sec">${secH('Sincronización')}<div class="card pad eq-sinc">
-    <div class="eq-sinc-h"><span class="mas-ic ${srv?'t-v':'t-y'}">${icono(srv?'rayo':'datos','i3')}</span><div><b>${srv?(T.vivo()?'En vivo':'Automática por el servidor'):'Por archivo (WhatsApp)'}</b><span>${srv?(T.vivo()?'Lo que registra tu equipo te llega al instante':SY.err?'No se pudo conectar: se reintenta sola':SY.ult?`Última vez: <span>${N.haceCuanto(SY.ult)}</span>`:'Todavía no se conecta'):'Sin servidor: manda los datos a tu equipo como archivo.'}</span></div></div>
-    <div class="acts">${srv?`<button type="button" class="btn" data-act="eqSinc">Sincronizar ahora</button>`:''}<button type="button" class="btn" data-act="eqEnviarArchivo">Enviar al equipo</button><button type="button" class="btn" data-act="eqRecibirArchivo">Recibir archivo</button></div>
-    <p class="hint eq-arch">Lo que mandas a tu equipo termina en .vaquero y se abre en Rumentis Vaquero. Lo que te mandan tus vaqueros termina en .rumentis: en WhatsApp tócalo y elige Rumentis. Cada archivo se abre una sola vez.</p>
-    <div class="row eq-tg"><div class="tx"><b>Aceptar vaqueros nuevos solos</b><span>Si lo apagas, te pregunto antes de dejar entrar a alguien.</span></div><button type="button" class="tog" role="switch" aria-checked="${e.auto!==false}" aria-label="Aceptar solos" data-act="eqAuto"><span></span></button></div>
-    <button type="button" class="lnk" data-act="eqServidor">Servidor del equipo</button></div></section>
-   ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código de dueño</button></p>`:''}
+   ${hist.length?`<section class="sec">${secH('Reportes anteriores')}<div class="card rows">${hist.map(filaRep).join('')}</div>${!UI.eqHist&&REP().filter(r=>r.estado!=='nuevo').length>8?`<button type="button" class="lnk" data-act="eqHistMas">Ver más</button>`:''}</section>`:''}
+   <section class="sec">${secH('Actividad')}${(e.act||[]).length?`<div class="card rows">${(e.act||[]).slice(0,UI.eqAct?60:10).map(filaAct).join('')}</div>${(e.act||[]).length>10&&!UI.eqAct?`<button type="button" class="lnk" data-act="eqActMas">Ver más</button>`:''}`:`<p class="hint">Aquí verás lo que pasa en tu equipo.</p>`}</section>
+   ${!gratis()?`<p class="hint eq-dueno"><button type="button" class="lnk" data-act="f" data-f="eqDueno">Tengo un código maestro</button></p>`:''}
   </main>`;
 };
 ACTS.eqActMas=()=>{UI.eqAct=1;render();};
-FORMS.eqDueno=()=>{openSheet(shHead('Código de dueño',EQT())+formWrap('eqDueno',`${q('Código',`<input class="in vq-lic" name="c" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="RD-XXXX-XXXX-XXXX-XXXX-XXXX" data-no-tr>`,'Solo para el dueño de Rumentis: con él creas licencias sin cobrar.')}`,foot('Activar')));};
+ACTS.eqHistMas=()=>{UI.eqHist=1;render();};
+FORMS.eqDueno=()=>{openSheet(shHead('Código maestro',EQT())+formWrap('eqDueno',`${q('Código',`<input class="in vq-lic" name="c" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="RD-XXXX-XXXX-XXXX-XXXX-XXXX" data-no-tr>`,'Solo para el titular de Rumentis: con él las licencias se crean sin costo.')}`,foot('Activar')));};
 SAVE.eqDueno=async f=>{const c=String(fv(f,'c')||'').toUpperCase().replace(/[OÓ]/g,'0').replace(/[IÍL]/g,'1').replace(/[^0-9A-Z]/g,'').replace(/^RD/,'');
   if(N.sha('RUMENTIS-DUENO|'+c)!==HUELLA_DUENO)return ferr(f,'Ese código no es válido.');
-  await asegurarEquipo();guardarEQ({dueno:true,act:actividad({ic:'alta',txt:'Activaste el modo dueño'})});closeSheet();toast('Modo dueño activado: tus licencias no se cobran.',4000);};
+  await asegurarEquipo();guardarEQ({dueno:true,act:actividad({ic:'alta',txt:'Activaste el código maestro'})});closeSheet();toast('Código maestro activado: tus licencias no se cobran.',4000);};
 
 /* ---------- pestaña en la barra y fila en Más ---------- */
 function pestana(){
@@ -408,12 +531,13 @@ document.addEventListener('rumentis-pintado',pestana);
 const _mas=PAGES.mas;
 PAGES.mas=(sub,...r)=>{const h=_mas(sub,...r);if(sub)return h;
   const e=EQ()||{},n=Object.values(e.vaqueros||{}).filter(v=>v.estado==='activo').length;
-  const fila=`<section class="sec">${secH(EQT())}<div class="card rows">${masFila(ico('equipo'),'Equipo de trabajo',n?pl(n,'vaquero activo','vaqueros activos'):'Suma a tus vaqueros con su propia app','href="#equipo"','t-v')}</div></section>`;
+  const pend=porRegistrar().length;
+  const fila=`<section class="sec">${secH(EQT())}<div class="card rows">${masFila(ico('equipo'),'Equipo de trabajo',pend?pl(pend,'reporte por registrar','reportes por registrar'):n?pl(n,'colaborador activo','colaboradores activos'):'Suma a tu personal con su propia app','href="#equipo"','t-v')}</div></section>`;
   const i=h.indexOf('<section class="sec"><div class="sec-h"><div><h2>Datos y personalización');return i>0?h.slice(0,i)+fila+h.slice(i):h+fila;};
 
 /* ---------- arranque ---------- */
 if(N.pagosHay()){try{Pagos.iniciar(CFG.productoLicencia);}catch(e){}}
 if(conEquipo()&&servidor())setTimeout(()=>sincronizar(),2500);
-window.Equipo={alRecibir,vivo:()=>T.vivo(),sincronizar,publicarEstado,estadoEquipo,procesar,aplicarOps,crearLicencia,asegurarEquipo,fichaEq,abrirLicencia,darDeBaja,SY:()=>SY};
+window.Equipo={alRecibir,registrarReporte,porRegistrar,REP,vivo:()=>T.vivo(),sincronizar,publicarEstado,estadoEquipo,procesar,aplicarOps,crearLicencia,asegurarEquipo,fichaEq,abrirLicencia,darDeBaja,SY:()=>SY};
 pestana();if(route().p==='equipo'||route().p==='mas')render();
 })();

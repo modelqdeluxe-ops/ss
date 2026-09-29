@@ -76,7 +76,7 @@
 
     if-eqz v1, :cond_76
 
-    const-string v1, "equipo.vaquero"
+    const-string v1, "equipo.campo"
 
     :goto_1a
     invoke-static {v3, v1, p1}, Lhn/hato/ganadero/Archivos;->escribir(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;

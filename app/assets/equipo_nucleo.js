@@ -163,10 +163,11 @@ function timbre(obtener,alSonar,alCambiar){
 // de Rumentis. Los sobres de adentro ya van cifrados y firmados con las llaves del equipo; esta capa hace que el archivo
 // no se pueda abrir ni leer con otra cosa que no sea Rumentis. Cada archivo lleva un número único (fid): la app no
 // abre dos veces el mismo archivo ni uno que hizo ella misma.
-// Cada app hace archivos para la otra: el vaquero manda .rumentis (los abre Rumentis, la del jefe) y el jefe manda
-// .vaquero (los abre Rumentis Vaquero). Si uno llega a la app equivocada, esta se lo pasa a la otra.
+// Cada app hace archivos para la otra: el personal manda su reporte en .rumentis (lo abre Rumentis, la de la
+// administración) y la administración manda .campo (los abre Rumentis Campo). Si uno llega a la app equivocada, esta se
+// lo pasa a la otra.
 const MAGIA=enc('RUMENTIS'),LSA='rumentis-archivos';
-const TIPOS={jefe:{ext:'.rumentis',mime:'application/vnd.rumentis',app:'Rumentis'},vaquero:{ext:'.vaquero',mime:'application/vnd.rumentis.vaquero',app:'Rumentis Vaquero'}};
+const TIPOS={jefe:{ext:'.rumentis',mime:'application/vnd.rumentis',app:'Rumentis'},vaquero:{ext:'.campo',mime:'application/vnd.rumentis.campo',app:'Rumentis Campo'}};
 const OTRA=CFG.app==='vaquero'?'jefe':'vaquero',PARA=TIPOS[OTRA];
 const paraDe=o=>o.para||(o.de==='jefe'?'vaquero':'jefe');
 let LLAVE_A=null;
@@ -206,16 +207,16 @@ async function recibirArchivo(u,fn){
   const para=paraDe(o);
   if(para!==CFG.app){
     let ok=false;try{ok=!!(window.Recibido&&Recibido.pasar&&Recibido.pasar(b64(u)));}catch(e){}
-    toast(para==='vaquero'?(ok?'Ese archivo es para Rumentis Vaquero: se abre ahí.':'Ese archivo es para la app Rumentis Vaquero. Ábrelo en esa app.')
-      :(ok?'Ese archivo es para Rumentis, la app del jefe: se abre ahí.':'Ese archivo es para Rumentis, la app del jefe. Ábrelo en esa app.'),4500);return false;
+    toast(para==='vaquero'?(ok?'Ese archivo es para Rumentis Campo: se abre ahí.':'Ese archivo es para la app Rumentis Campo. Ábrelo en esa app.')
+      :(ok?'Ese archivo es para Rumentis, la app de la administración: se abre ahí.':'Ese archivo es para Rumentis, la app de la administración. Ábrelo en esa app.'),4500);return false;
   }
   const v=visto(o.fid);
-  if(v==='m'){toast('Ese archivo lo hiciste tú: mándaselo a tu equipo por WhatsApp.',4500);return false;}
+  if(v==='m'){toast('Ese archivo lo hiciste tú: compártelo por WhatsApp o correo.',4500);return false;}
   if(v){toast('Ese archivo ya lo abriste. Cada archivo se abre una sola vez: pide uno nuevo.',5000);return false;}
   const ok=await fn(o);if(ok!==false)marcarVisto(o.fid,'r');return ok!==false;
 }
 // nombre legible y distinto cada vez (fecha + hora), con la extensión .rumentis
-const nombreArchivo=base=>String(base||'rumentis').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)+'-'+new Date().toTimeString().slice(0,5).replace(':','')+PARA.ext;
+const nombreArchivo=base=>String(base||'rumentis').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)+'-'+new Date().toTimeString().slice(0,5).replace(':','')+PARA.ext;
 function compartirArchivo(nombre,u,titulo){
   const A=window.Android;
   if(A&&A.compartirArchivo){try{if(A.compartirArchivo(nombre,b64(u),PARA.mime,titulo||nombre))return true;}catch(e){}}
@@ -223,7 +224,7 @@ function compartirArchivo(nombre,u,titulo){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:PARA.mime}));a.download=nombre;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);return true;
 }
-function elegirArchivo(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.rumentis,.vaquero,.json,'+TIPOS.jefe.mime+','+TIPOS.vaquero.mime+',application/octet-stream,*/*';
+function elegirArchivo(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.rumentis,.campo,.json,'+TIPOS.jefe.mime+','+TIPOS.vaquero.mime+',application/octet-stream,*/*';
   i.onchange=()=>{const f=i.files&&i.files[0];if(!f){ok(null);return;}const rd=new FileReader();rd.onload=()=>ok(new Uint8Array(rd.result));rd.onerror=()=>ok(null);rd.readAsArrayBuffer(f);};i.click();});}
 // Android: al tocar un archivo .rumentis en WhatsApp (o compartirlo a Rumentis) la app se abre y lo recibe
 let alRecibir=null;
