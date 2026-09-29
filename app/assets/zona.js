@@ -8,7 +8,7 @@
    - SERVIDOR queda vacío hasta que el dueño de la app publique el servidor; mientras tanto se compara con la referencia. */
 (function(){
 'use strict';
-const SERVIDOR='';                       // p. ej. 'https://rumentis-zona.tu-cuenta.workers.dev'
+const SERVIDOR='https://rumentis-zona.modelqdeluxe.workers.dev';                       // p. ej. 'https://rumentis-zona.tu-cuenta.workers.dev'
 const LSZ='rumentis-zona',CACHE_H=24,CADA_D=7;
 const Z=()=>S.config.zona||{};
 const guardarZ=o=>put('ajustes','finca',{...S.config,zona:{...Z(),...o}});

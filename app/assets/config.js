@@ -4,7 +4,7 @@
    Lo demás lo llena el dueño de la app una vez: */
 window.RUMENTIS={app:'jefe',prueba:false,
   // servidor de relevo del equipo (servidor/equipo). Vacío: el equipo se pasa los datos por archivo (WhatsApp).
-  servidorEquipo:'',
+  servidorEquipo:'https://rumentis-equipo.modelqdeluxe.workers.dev',
   // llave pública RSA de Rumentis en Google Play (Play Console > Monetización > Configuración de la monetización).
   // Con ella, Rumentis Campo comprueba que la licencia salió de una compra real. Vacía: no se comprueba.
   playLlave:'',
