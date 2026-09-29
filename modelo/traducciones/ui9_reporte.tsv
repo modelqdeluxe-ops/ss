@@ -213,3 +213,62 @@ Peso, ganancia, consumo, costos y margen	Weight, gain, intake, costs and margin	
 En Hoy toca Gráficos, debajo de la agenda. También está en Más.	On Today, tap Charts, below the schedule. It's also in More.	Em Hoje toque em Gráficos, abaixo da agenda. Também está em Mais.
 Aquí sumas a tu personal: cada colaborador anota desde Rumentis Campo y al final del día te envía su reporte para que lo registres.	Here you add your staff: each team member records from Rumentis Campo and at the end of the day sends you their report for you to record.	Aqui você adiciona sua equipe: cada colaborador registra pelo Rumentis Campo e no fim do dia envia o relatório para você registrar.
 Aquí están los gráficos, el análisis de Rumi, la configuración, la agenda de tareas, tus raciones, los gastos y la copia de tus datos.	Here you'll find the charts, Rumi's analysis, settings, the task schedule, your rations, expenses and your data backup.	Aqui estão os gráficos, a análise do Rumi, a configuração, a agenda de tarefas, suas rações, os gastos e a cópia dos seus dados.
+reportes de hoy	reports today	relatórios de hoje
+hora del reporte	report time	horário do relatório
+Abrir reporte	Open report	Abrir relatório
+Ajustes del equipo	Team settings	Ajustes da equipe
+Tu equipo hoy	Your team today	Sua equipe hoje
+Reporta a las {0}:{1}	Reports at {0}:{1}	Relata às {0}:{1}
+Reportó · {0}:{1}	Reported · {0}:{1}	Relatou · {0}:{1}
+Por revisar · {0}:{1}	To review · {0}:{1}	Para revisar · {0}:{1}
+Reporte de hoy por revisar, {0}:{1}	Today's report to review, {0}:{1}	Relatório de hoje para revisar, {0}:{1}
+Sin reporte	No report	Sem relatório
+Por revisar	To review	Para revisar
+Sumar a alguien	Add someone	Adicionar alguém
+{0} licencia sin usar	{0} unused license	{0} licença sem usar
+{0} licencias sin usar	{0} unused licenses	{0} licenças sem usar
+No tienes licencias libres.	You have no free licenses.	Você não tem licenças livres.
+Asigna la primera tarea	Assign the first task	Atribua a primeira tarefa
+De una vez, diaria o semanal. Las de alimento, pesaje y sanidad se cumplen solas.	One-time, daily or weekly. Feed, weighing and health tasks complete themselves.	Única, diária ou semanal. As de ração, pesagem e sanidade se cumprem sozinhas.
+A esa hora a tu personal le llega un aviso con el reporte listo para enviar.	At that time your staff gets a reminder with the report ready to send.	Nesse horário sua equipe recebe um aviso com o relatório pronto para enviar.
+Registrar los reportes al abrirlos	Record reports when opened	Registrar os relatórios ao abrir
+Si lo apagas, cada reporte espera a que lo revises y toques Registrar.	If you turn it off, each report waits for you to review it and tap Record.	Se desligar, cada relatório espera você revisar e tocar em Registrar.
+Registrar al abrir	Record when opened	Registrar ao abrir
+.rumentis	.rumentis	.rumentis
+.campo	.campo	.campo
+Reportes de tu personal: en WhatsApp o en el correo tócalo y elige Rumentis.	Reports from your staff: in WhatsApp or email, tap it and choose Rumentis.	Relatórios da sua equipe: no WhatsApp ou no e-mail, toque e escolha Rumentis.
+Tu actualización para el equipo: tareas, lotes y la confirmación de lo registrado. Se abre en Rumentis Campo.	Your update for the team: tasks, lots and the confirmation of what was recorded. It opens in Rumentis Campo.	Sua atualização para a equipe: tarefas, lotes e a confirmação do que foi registrado. Abre no Rumentis Campo.
+Cada archivo se abre una sola vez.	Each file opens only once.	Cada arquivo abre uma vez só.
+¿Qué tipo de tarea?	What kind of task?	Que tipo de tarefa?
+se cumple al anotarla	done when it's recorded	cumprida ao registrar
+se cumple al anotarlo	done when it's recorded	cumprida ao registrar
+se marca a mano	checked by hand	marcada à mão
+Otra	Other	Outra
+¿En qué lote?	Which lot?	Em qual lote?
+Cualquier lote	Any lot	Qualquer lote
+Para alimento, pesaje y sanidad.	For feed, weighing and health.	Para ração, pesagem e sanidade.
+En alimento, pesaje y sanidad puedes dejarlo vacío: se escribe solo.	For feed, weighing and health you can leave it empty: it writes itself.	Em ração, pesagem e sanidade pode deixar vazio: escreve-se sozinho.
+Entregar alimento	Deliver feed	Entregar ração
+Entregar alimento a {0}	Deliver feed to {0}	Entregar ração para {0}
+Pesar un lote	Weigh a lot	Pesar um lote
+Sanidad en {0}	Health in {0}	Sanidade em {0}
+Aplicar sanidad	Apply health treatment	Aplicar sanidade
+Hoy pendiente	Pending today	Pendente hoje
+Hecha hoy	Done today	Feita hoje
+Se cumple sola	Completes itself	Cumpre-se sozinha
+Lo que se registró	What was recorded	O que foi registrado
+Quedó fuera	Left out	Ficou de fora
+Reporte de {0} registrado en tu finca	Report from {0} recorded on your farm	Relatório de {0} registrado na sua fazenda
+{0} reporte registrado en tu finca	{0} report recorded on your farm	{0} relatório registrado na sua fazenda
+{0} reportes registrados en tu finca	{0} reports recorded on your farm	{0} relatórios registrados na sua fazenda
+Registrado al abrirlo	Recorded when opened	Registrado ao abrir
+Se arma solo. Envíalo al terminar la jornada, a las {0}:{1}	It builds itself. Send it at the end of the workday, at {0}:{1}	Monta-se sozinho. Envie no fim da jornada, às {0}:{1}
+Ver el resumen o agregar novedades	See the summary or add notes	Ver o resumo ou adicionar novidades
+Tarea cumplida: {0}	Task done: {0}	Tarefa cumprida: {0}
+{0} tarea cumplida	{0} task done	{0} tarefa cumprida
+{0} tareas cumplidas	{0} tasks done	{0} tarefas cumpridas
+Tu reporte del día está listo	Your daily report is ready	Seu relatório do dia está pronto
+Toca aquí y elige WhatsApp o correo para enviarlo a la administración.	Tap here and choose WhatsApp or email to send it to the farm management.	Toque aqui e escolha WhatsApp ou e-mail para enviar à administração.
+Ver todos	See all	Ver todos
+Anota entregas de alimento, pesajes, sanidad y muertes; sus tareas se cumplen solas al anotarlas.	They record feed deliveries, weighings, health and deaths; their tasks complete themselves as they record.	Registra entregas de ração, pesagens, sanidade e mortes; as tarefas se cumprem sozinhas ao registrar.
+Al terminar el día te envía su reporte por WhatsApp o correo y, al abrirlo, queda registrado en tu finca.	At the end of the day they send you their report by WhatsApp or email and, when you open it, it's recorded on your farm.	No fim do dia envia o relatório pelo WhatsApp ou e-mail e, ao abrir, fica registrado na sua fazenda.

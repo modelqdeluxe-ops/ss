@@ -137,23 +137,26 @@ colaboradores y personal.
 1. El colaborador se activa en **Rumentis Campo** con su nombre y la licencia, y envía su *solicitud de acceso*.
    La administración la abre en Rumentis (se acepta sola, o se pregunta) y le devuelve la *actualización*.
 2. La administración asigna tareas **de una vez, diarias o semanales** (1 a 5 veces por semana) y fija la **hora
-   del reporte** (12:00 a 21:00). Le llega al colaborador con la siguiente actualización.
+   del reporte** (12:00 a 21:00). Una tarea puede ir **ligada a una acción** (entregar alimento, pesar o sanidad, en
+   un lote o en cualquiera): se cumple sola cuando el colaborador anota esa acción. Le llega con la siguiente
+   actualización.
 3. El colaborador anota alimento, pesajes, sanidad y muertes y marca sus tareas. A la hora del reporte le llega un
-   aviso en el teléfono (Android; quedan programados 7 días aunque no abra la app) y la tarjeta de Hoy lo recuerda.
-4. **Reporte del día**: sus registros, tareas del día hechas y pendientes, avance de las semanales y sus novedades
-   (texto libre). Sale como archivo `.rumentis`.
-5. La administración lo abre con Rumentis y ve la página del reporte: novedades, tareas del día, semanales, días
-   reportados en la semana y cada registro con su marca. Nada toca la finca hasta tocar **Registrar**; lo desmarcado
-   queda fuera.
+   aviso en el teléfono (Android; quedan programados 7 días aunque no abra la app): al tocarlo, la app abre el
+   reporte ya armado para elegir WhatsApp o correo. La tarjeta de Hoy también lo envía con un toque.
+4. **Reporte del día** (se arma solo): sus registros, tareas del día hechas y pendientes, avance de las semanales y,
+   si quiere, sus novedades. Sale como archivo `.rumentis`.
+5. La administración lo abre con Rumentis y **queda registrado al abrirlo** (en Ajustes del equipo se puede pedir
+   revisarlo antes: cada registro con su marca y el botón **Registrar**). La página del reporte muestra novedades,
+   tareas del día, semanales, días reportados en la semana y lo que se registró.
 6. La administración envía la actualización (`.campo`): lotes al día, tareas y la confirmación de lo registrado,
    que el colaborador ve en la tarjeta de su reporte.
 
 Lo que la administración todavía no registra vuelve a ir en el siguiente reporte (cada registro lleva su número, así
 nunca se duplica); el reporte anterior queda como *incluido*. Cada archivo se abre una sola vez.
 
-- **Administración** (`app/assets/equipo.js`): pestaña **Equipo** con reportes por registrar, colaboradores y su
-  reporte de hoy, reporte diario (hora y archivos), tareas del equipo, licencias con QR y enlace, reportes
-  anteriores y actividad; la hoja de cada colaborador con sus reportes, permisos y tareas; dar de baja (la licencia
+- **Administración** (`app/assets/equipo.js`): pestaña **Equipo** con Enviar actualización / Abrir reporte /
+  Ajustes del equipo arriba, reportes por revisar, «Tu equipo hoy» (una tarjeta por colaborador con el estado de su
+  reporte de hoy y sus tareas), tareas con su frecuencia y avance, reportes y actividad; licencias en una hoja; la hoja de cada colaborador con sus reportes, permisos y tareas; dar de baja (la licencia
   queda anulada y la clave del equipo cambia).
 - **Colaborador** (`app/assets/vaquero.js`, app **Rumentis Campo**, gratis): la bienvenida de Rumentis y luego su
   nombre y la licencia (escrita, pegada o escaneada del QR con BarcodeDetector o `lib/jsQR.js`). Solo Hoy, Lotes,

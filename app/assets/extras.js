@@ -129,7 +129,10 @@ function tareas(){
   const campo=window.RUMENTIS&&RUMENTIS.app==='vaquero';
   for(const t of (cfg().tareas||[])){
     if(t.para&&!campo)continue;
-    const r=t.rep||'una',base={ic:'nota',propia:t.id,tono:'a',rep:r};
+    // ligada a una acción (alimento, pesaje, sanidad): el botón Hacer abre ese formulario y al anotarlo se cumple sola
+    const a=t.acc&&t.acc.k?t.acc:null;
+    const r=t.rep||'una',base={ic:a?a.k:'nota',propia:t.id,tono:a?({alimento:'y',pesaje:'a',sanidad:'v'})[a.k]||'a':'a',rep:r,
+      act:a?{t:'form',k:a.k,p:a.lote?{lote:a.lote}:{}}:null};
     if(r==='una'){if(!t.hecho)T.push({...base,key:'propia:'+t.id,f:t.f,t:t.t,s:t.para?'Tarea asignada':'Recordatorio tuyo'});continue;}
     const pr=progreso(t,H);if(pr.hoy||pr.completa)continue;
     T.push({...base,key:'propia:'+t.id+':'+H,f:t.f>H?t.f:H,t:t.t,s:r==='dia'?'Todos los días':`${pr.n} de ${pr.meta} esta semana`});

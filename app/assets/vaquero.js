@@ -30,8 +30,10 @@ const iguales=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 function registrarOps(col,id,data){
   if(col==='diario'){
     const antes=new Map(((S.diario[id]||{}).items||[]).map(i=>[i.id,i])),despues=new Map(((data||{}).items||[]).map(i=>[i.id,i]));
-    for(const [k,it] of despues){if(!antes.has(k))nuevaOp({k:'item+',it});else if(!iguales(antes.get(k),it))nuevaOp({k:'item~',it});}
+    const nuevos=[];
+    for(const [k,it] of despues){if(!antes.has(k)){nuevaOp({k:'item+',it});nuevos.push(it);}else if(!iguales(antes.get(k),it))nuevaOp({k:'item~',it});}
     for(const k of antes.keys())if(!despues.has(k))nuevaOp({k:'item-',id:k});
+    if(nuevos.length)setTimeout(()=>autoTareas(nuevos),0);
   }else if(col==='lotes'){
     const l=S.lotes[id];if(!l||!data)return;const campos={};
     for(const k of ['racion','animales','estado','fechaCierre'])if(!iguales(l[k],data[k]))campos[k]=data[k];
@@ -45,6 +47,21 @@ function registrarOps(col,id,data){
       if((t.rep||'una')==='una'){if(t.hecho&&!a.hecho){nuevaOp({k:'tarea',id:t.id,f:hoy()});logHecho(t.t);}}
       else{const ya=new Set((a.hechos||[]).map(x=>x.f));for(const h of t.hechos||[])if(!ya.has(h.f)){nuevaOp({k:'tarea',id:t.id,f:h.f});logHecho(t.t,h.f);}}}
   }
+}
+/* Tareas que se cumplen solas: si la administración ligó la tarea a una acción (entregar alimento, pesar, sanidad;
+   en un lote o en cualquiera), al anotar esa acción la tarea queda hecha, igual que si la marcara a mano. */
+function autoTareas(items){
+  if(!activo())return;const hechas=[];
+  const L=(S.config.tareas||[]).map(t=>{
+    const a=t.acc;if(!a||!a.k)return t;
+    const it=items.find(i=>i.tipo===a.k&&(!a.lote||a.lote===i.lote)&&(!t.f||i.f>=t.f));if(!it)return t;
+    if((t.rep||'una')==='una'){if(t.hecho)return t;hechas.push(t.t);return {...t,hecho:true};}
+    const p=Agenda.progreso(t,it.f);if(p.hoy||(/^s\d$/.test(t.rep)&&p.completa))return t;
+    hechas.push(t.t);return {...t,hechos:(t.hechos||[]).concat({f:it.f,v:VQ.vid,n:VQ.nombre})};
+  });
+  if(!hechas.length)return;
+  put('ajustes','finca',{...S.config,tareas:L});   // pasa por registrarOps: queda la operación y va en el reporte
+  toast(hechas.length===1?`Tarea cumplida: ${hechas[0]}`:`${pl(hechas.length,'tarea cumplida','tareas cumplidas')}`,3500);
 }
 // lo que hizo cada día (para el resumen del reporte)
 function logHecho(t,f){f=f||hoy();VQ.hechosLog=(VQ.hechosLog||[]).filter(x=>x.f>=addDias(hoy(),-14)).concat({f,t:String(t||'Una tarea')});}
@@ -245,13 +262,20 @@ FORMS.vqReporte=()=>{
     <p class="hint">${n?`El archivo lleva ${pl(n,'registro','registros')} para registrar en la finca.`:'Hoy no hay registros nuevos: el reporte lleva tus tareas y novedades.'} Envíalo por WhatsApp o correo; la administración lo abre con Rumentis.</p>`;
   openSheet(shHead('Reporte del día',ffc(H))+formWrap('vqReporte',body,foot('Enviar reporte')));
 };
-SAVE.vqReporte=async f=>{
-  const nota=String((f.elements.nota||{}).value||'').trim();
-  const u=await N.armarArchivo([await sobreReporte(nota)],VQ.vid);
+// el reporte se arma solo con lo del día: enviarlo es un toque (las novedades son opcionales)
+async function enviarReporte(nota){
+  if(VQ.demo){toast('En el modo de prueba el reporte no sale de este teléfono.',3500);return;}
+  if(!activo())return;
+  const u=await N.armarArchivo([await sobreReporte(nota||'')],VQ.vid);
   N.compartirArchivo(N.nombreArchivo(`reporte-${miNombre()}-${hoy()}`),u,aUnidad('Reporte del día'));
   VQ.ultRep={fecha:hoy(),ts:Date.now(),seq:+VQ.seq||0,n:(VQ.cola||[]).length};VQ.reportes=[VQ.ultRep].concat(VQ.reportes||[]).slice(0,30);guardarVQ();ver++;
   closeSheet();render();toast('Elige WhatsApp o correo y envíalo a la administración.',4000);
-};
+}
+ACTS.vqEnviarRep=()=>enviarReporte('');
+SAVE.vqReporte=async f=>enviarReporte(String((f.elements.nota||{}).value||'').trim());
+// al tocar el aviso de la hora del reporte, la app se abre y lo deja listo para enviar
+function desdeAviso(){if(location.hash==='#hoy/enviar'){history.replaceState(null,'','#hoy');render();setTimeout(()=>enviarReporte(''),500);}}
+addEventListener('hashchange',desdeAviso);setTimeout(desdeAviso,900);
 // el aviso en el teléfono a la hora del reporte (los próximos 7 días, por si no abre la app)
 function ajustarAviso(){
   const A=window.Android;if(!A||!A.avisosActivar||VQ.demo||!activo())return;
@@ -261,21 +285,21 @@ function ajustarAviso(){
 window.colaAvisosPropia=()=>{
   if(!activo()||VQ.demo)return [];const H=hoy(),L=[];
   for(let i=0;i<7;i++){const d=addDias(H,i);if(i===0&&repHoy()&&!nuevosDesdeReporte())continue;
-    L.push({id:'rep:'+d,f:d,hasta:d,t:'Es hora de tu reporte del día',x:'Ábrelo en Rumentis Campo y envíalo a la administración por WhatsApp o correo.',p:1,ir:'#hoy'});}
+    L.push({id:'rep:'+d,f:d,hasta:d,t:'Tu reporte del día está listo',x:'Toca aquí y elige WhatsApp o correo para enviarlo a la administración.',p:1,ir:'#hoy/enviar'});}
   return L;
 };
 function tarjetaReporte(){
   if(VQ.demo)return '';
   const H=hoy(),r=repHoy(),hr=horaRep(),tarde=new Date().getHours()>=hr,nuevos=nuevosDesdeReporte();
   const res=resumenDia(H),hechas=res.tareas.filter(t=>t.ok).length,tot=res.tareas.length,nregs=Object.values(res.regs).reduce((a,b)=>a+b,0);
-  let tono='a',tit='Reporte del día',sub=`Envíalo al terminar la jornada, a las ${hr}:00`,btn='Preparar reporte';
+  let tono='a',tit='Reporte del día',sub=`Se arma solo. Envíalo al terminar la jornada, a las ${hr}:00`,btn='Enviar reporte';
   if(r&&!nuevos){tono='v';tit='Reporte enviado';sub=`Hoy a las ${hhmm(r.ts)}`;btn='';}
   else if(r){tono='y';tit='Tienes registros nuevos';sub=`${pl(nuevos,'registro','registros')} después de tu reporte`;btn='Enviar reporte actualizado';}
   else if(tarde){tono='r';tit='Es hora de tu reporte';sub=`La administración lo espera a las ${hr}:00`;}
   const rv=VQ.rev&&VQ.rev.fecha>=addDias(H,-3)?VQ.rev:null;
   return `<section class="sec"><div class="card pad vq-rep vq-rep-${tono}"><div class="vq-rep-h"><span class="mas-ic t-${tono}">${icono('recibo','i3')}</span><div><b>${tit}</b><span>${sub}</span></div></div>
     <p class="vq-rep-p"><span>Tareas de hoy: ${hechas} de ${tot}</span><span>${pl(nregs,'registro','registros')}</span></p>
-    ${btn?`<button type="button" class="btn${tono==='a'?'':' pri'} full" data-act="f" data-f="vqReporte">${btn}</button>`:''}
+    ${btn?`<button type="button" class="btn${tono==='a'?'':' pri'} full" data-act="vqEnviarRep">${btn}</button><button type="button" class="lnk vq-rep-l" data-act="f" data-f="vqReporte">Ver el resumen o agregar novedades</button>`:''}
     ${rv?`<p class="vq-conf">${ico('check',2.4)}<span><span>La administración registró tu reporte del ${ffc(rv.fecha)}.</span> <span>${pl(rv.reg,'cambio registrado','cambios registrados')}</span>${rv.omit?` · <span>${pl(rv.omit,'registro dejado fuera','registros dejados fuera')}</span>`:''}</span></p>`:''}</div></section>`;
 }
 async function alRecibir(o){
@@ -387,7 +411,7 @@ PAGES.mas=sub=>{
   <main class="bd">
    <section class="sec">${secH('Tu cuenta')}<div class="card pad vq-yo"><span class="eq-av xl" aria-hidden="true" data-no-tr>${esc(N.iniciales(VQ.nombre))}</span><div><b>${esc(VQ.nombre||'')}</b><span>Licencia <span data-no-tr>${VQ.demo?N.LIC_PRUEBA:N.fmtLic(VQ.lic||'')}</span></span><span>En el equipo de ${esc(VQ.finca||'')}${VQ.desde?` desde el ${ffc(VQ.desde)}`:''}</span></div></div></section>
    ${VQ.demo?'':`<section class="sec">${secH('Reportes')}<div class="card pad eq-sinc"><div class="eq-sinc-h"><span class="mas-ic t-v">${icono('recibo','i3')}</span><div><b>Reporte diario a las ${horaRep()}:00</b><span>${repHoy()?`Hoy lo enviaste a las ${hhmm(repHoy().ts)}`:'Hoy todavía no lo envías'}</span></div></div>
-    <div class="acts"><button type="button" class="btn pri" data-act="f" data-f="vqReporte">Preparar reporte</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo de la administración</button></div>
+    <div class="acts"><button type="button" class="btn pri" data-act="vqEnviarRep">Enviar reporte</button><button type="button" class="btn" data-act="vqRecibirArchivo">Abrir archivo de la administración</button></div>
     ${reps.length?`<div class="rows vq-reps">${reps.map(r=>`<div class="row"><div class="tx"><b>${ffc(r.fecha)}, ${hhmm(r.ts)}</b><span>${pl(r.n||0,'registro','registros')}</span></div></div>`).join('')}</div>`:''}
     <p class="hint">Tu reporte sale como archivo .rumentis y la administración lo abre con Rumentis. Lo que te mandan termina en .campo: en WhatsApp tócalo y elige Rumentis Campo. Cada archivo se abre una sola vez.</p></div></section>`}
 
