@@ -1,56 +1,65 @@
 #!/usr/bin/env bash
-# Google Play Billing para la app del jefe: baja la biblioteca oficial de Google Maven, compila
-# modelo/android/Pagos.java contra ella y deja en <salida>:
-#   classes2.dex     la biblioteca y Pagos (se agrega tal cual al APK y al AAB)
-#   manifiesto.xml   permisos, consultas y actividades que la biblioteca pide (scripts/variante.py los agrega)
-# Uso: scripts/pagos.sh <salida>
-# Sin acceso a dl.google.com (p. ej. compilando en tu computadora sin internet) sale sin hacer nada; la app funciona
-# igual, solo que sin compras. En GitHub Actions se usa PAGOS_OBLIGATORIO=1 para que un error no pase en silencio.
+# La app del dueño para Google Play, con Google Play Billing:
+#   1. Gradle (proyecto de scripts/donante) arma el APK y el AAB con los recursos, assets y manifiesto de la
+#      variante y con la biblioteca de pagos y todas sus dependencias (AndroidX, Play Services), más Pagos.java;
+#   2. nuestro código (smali, compilado con apktool) entra como un dex más, sin su clase R (la trae Gradle con los
+#      mismos números de recursos);
+#   3. se alinea y se firma igual que en build.sh.
+# Uso: scripts/pagos.sh <carpeta de la app (variante)> <salida.apk> [salida.aab]
+# Sin Gradle o sin acceso a Google Maven (p. ej. en tu computadora sin internet) sale con 3 y variantes.sh arma la
+# app sin pagos; en GitHub Actions se usa PAGOS_OBLIGATORIO=1 para que un error no pase en silencio.
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="${1:?falta la carpeta de salida}"
+APP="${1:?falta la carpeta de la app}"; APK="${2:?falta la salida .apk}"; AAB="${3:-}"
+TOOLS="${TOOLS_DIR:-$HOME/.cache/rumentis-tools}"
 VER="${BILLING_VER:-7.1.1}"
-SDK="${ANDROID_SDK:-$HOME/sdk}"
-BT="$SDK/build-tools"
-AJAR="$SDK/android-36/android.jar"
-mkdir -p "$OUT"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-nada() { echo "pagos: $1"; if [ "${PAGOS_OBLIGATORIO:-0}" = 1 ]; then exit 1; fi; exit 0; }
+nada() { echo "pagos: $1"; if [ "${PAGOS_OBLIGATORIO:-0}" = 1 ]; then exit 1; fi; exit 3; }
+command -v gradle >/dev/null || nada "no hay Gradle"
+mkdir -p "$TOOLS"
+[ -s "$TOOLS/apktool.jar" ] || curl -fsSL -o "$TOOLS/apktool.jar" "https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar"
+leer() { grep -E "^\s*$1:" "$APP/apktool.yml" | awk '{print $2}'; }
 
-if [ ! -x "$BT/aapt2" ] || [ ! -s "$AJAR" ]; then
-  mkdir -p "$SDK"
-  curl -fsSL -o "$SDK/bt.zip" https://dl.google.com/android/repository/build-tools_r36.1_linux.zip || nada "sin build-tools"
-  curl -fsSL -o "$SDK/pl.zip" https://dl.google.com/android/repository/platform-36_r02.zip || nada "sin android.jar"
-  (cd "$SDK" && unzip -q -o bt.zip && unzip -q -o pl.zip && rm -rf build-tools && mv android-16 build-tools && rm bt.zip pl.zip)
-fi
+# 1. nuestro código en un dex aparte (sin la clase R) y los números de todos los recursos tal como los pone apktool
+S="$TMP/smali_app"; cp -r "$APP" "$S"
+rm -f "$S"/smali/hn/hato/ganadero/R.smali "$S"/smali/hn/hato/ganadero/R\$*.smali
+java -jar "$TOOLS/apktool.jar" b "$S" -o "$TMP/smali.apk" >/dev/null
+unzip -q -o "$TMP/smali.apk" classes.dex -d "$TMP/nuestro"
+java -jar "$TOOLS/apktool.jar" d -s -f "$TMP/smali.apk" -o "$TMP/dec" >/dev/null
 
-M="https://dl.google.com/android/maven2/com/android/billingclient/billing/$VER/billing-$VER"
-curl -fsSL -o "$TMP/billing.aar" "$M.aar" || nada "no se pudo bajar la biblioteca de pagos $VER"
-curl -fsSL -o "$TMP/billing.pom" "$M.pom" || true
-# si Google publica la suma SHA-1, se comprueba
-if curl -fsSL -o "$TMP/billing.aar.sha1" "$M.aar.sha1" 2>/dev/null; then
-  echo "$(head -c 40 "$TMP/billing.aar.sha1")  $TMP/billing.aar" | sha1sum -c - >/dev/null || nada "la suma SHA-1 de la biblioteca no coincide"
-fi
-echo "pagos: billing $VER ($(wc -c < "$TMP/billing.aar") bytes)"
-if [ -s "$TMP/billing.pom" ]; then
-  echo "pagos: dependencias del pom:"; grep -A3 "<dependency>" "$TMP/billing.pom" | grep -E "groupId|artifactId|version|scope" | sed 's/^ */    /' || true
-fi
-(cd "$TMP" && unzip -q -o billing.aar -d aar)
-ls "$TMP/aar"
-[ -s "$TMP/aar/classes.jar" ] || nada "la biblioteca no trae classes.jar"
+# 2. Gradle
+D="$TMP/donante"; mkdir -p "$D/java/hn/hato/ganadero"
+cp "$RAIZ"/scripts/donante/*.kts "$RAIZ/scripts/donante/gradle.properties" "$D/"
+cp "$RAIZ/modelo/android/Pagos.java" "$D/java/hn/hato/ganadero/"
+python3 "$RAIZ/scripts/donante/preparar.py" "$APP" "$D" "$TMP/dec/res/values/public.xml"
+PAQ=$(python3 -c "import xml.etree.ElementTree as E,sys;print(E.parse(sys.argv[1]).getroot().get('package'))" "$APP/AndroidManifest.xml")
+TAREAS=(assembleRelease); [ -n "$AAB" ] && TAREAS+=(bundleRelease)
+(cd "$D" && gradle --no-daemon --console=plain -q "${TAREAS[@]}" \
+   -Ppaquete="$PAQ" -Pvc="$(leer versionCode)" -Pvn="$(leer versionName)" -Ptarget="$(leer targetSdkVersion)" \
+   -Pbilling="$VER" -Passets="$APP/assets") || nada "Gradle no pudo armar la app"
+U=$(ls "$D"/build/outputs/apk/release/*.apk | head -1)
+[ -s "$U" ] || nada "Gradle no dejó el APK"
 
-# Pagos.java (usa Enlace.verificarRsa: Enlace ya va en el dex principal, aquí solo se compila contra ella)
-mkdir -p "$TMP/cls"
-javac --release 8 -nowarn -cp "$AJAR:$TMP/aar/classes.jar" -sourcepath "$RAIZ/modelo/android" -d "$TMP/cls" \
-  "$RAIZ/modelo/android/Pagos.java" 2>&1 | grep -v "^Note:" || true
-[ -s "$TMP/cls/hn/hato/ganadero/Pagos.class" ] || nada "Pagos.java no compiló"
-mkdir -p "$TMP/dex"
-java -cp "$BT/lib/d8.jar" com.android.tools.r8.D8 --release --min-api 21 --lib "$AJAR" --output "$TMP/dex" \
-  "$TMP/aar/classes.jar" "$TMP"/cls/hn/hato/ganadero/Pagos*.class
-[ -s "$TMP/dex/classes.dex" ] || nada "d8 no produjo el dex"
-[ ! -e "$TMP/dex/classes2.dex" ] || nada "la biblioteca no cabe en un solo dex"
-cp "$TMP/dex/classes.dex" "$OUT/classes2.dex"
-cp "$TMP/aar/AndroidManifest.xml" "$OUT/manifiesto.xml"
-echo "pagos: listo ($(wc -c < "$OUT/classes2.dex") bytes de dex)"
+# 3. se agrega nuestro dex
+N=$(unzip -Z1 "$U" | grep -cE '^classes[0-9]*\.dex$')
+DEX="classes$((N+1)).dex"; mkdir -p "$TMP/z"; cp "$TMP/nuestro/classes.dex" "$TMP/z/$DEX"
+cp "$U" "$TMP/sin-firmar.apk"; (cd "$TMP/z" && zip -q -0 "$TMP/sin-firmar.apk" "$DEX")
+echo "pagos: APK con $(unzip -Z1 "$TMP/sin-firmar.apk" | grep -cE '^classes[0-9]*\.dex$') dex (el nuestro es $DEX)"
+
+# 4. firma (build.sh sabe firmar un APK ya armado)
+APK_LISTO="$TMP/sin-firmar.apk" SALIDA="$APK" bash "$RAIZ/scripts/build.sh"
+
+if [ -n "$AAB" ]; then
+  B=$(ls "$D"/build/outputs/bundle/release/*.aab | head -1)
+  [ -s "$B" ] || nada "Gradle no dejó el AAB"
+  N=$(unzip -Z1 "$B" | grep -cE '^base/dex/classes[0-9]*\.dex$')
+  mkdir -p "$TMP/b/base/dex"; cp "$TMP/nuestro/classes.dex" "$TMP/b/base/dex/classes$((N+1)).dex"
+  cp "$B" "$AAB"; (cd "$TMP/b" && zip -q "$AAB" "base/dex/classes$((N+1)).dex")
+  if [ -n "${KEYSTORE_B64:-}" ] && [ -z "${KEYSTORE:-}" ]; then KEYSTORE="$TMP/llave.keystore"; echo "$KEYSTORE_B64" | base64 -d > "$KEYSTORE"; fi
+  if [ -n "${KEYSTORE:-}" ]; then
+    jarsigner -keystore "$KEYSTORE" -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" -sigalg SHA256withRSA -digestalg SHA-256 "$AAB" "$KEY_ALIAS" >/dev/null
+    echo "Listo (firmado): $AAB"
+  else echo "Listo (SIN FIRMAR, falta la llave): $AAB"; fi
+fi

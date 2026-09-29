@@ -1,5 +1,5 @@
 # Compila las cuatro apps de Rumentis (scripts/variantes.sh) y las publica como Release de GitHub.
-# La biblioteca de Google Play Billing se baja aquí (scripts/pagos.sh) y va en la app del dueño.
+# La app del dueño se arma con Gradle para llevar Google Play Billing y sus dependencias (scripts/pagos.sh).
 #
 # Firma: agrega en Settings > Secrets and variables > Actions los secretos
 #   KEYSTORE_B64 (el .keystore en base64), KEYSTORE_PASS, KEY_ALIAS (hato) y KEY_PASS.
@@ -24,6 +24,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
       - name: Compilar las cuatro apps (APK) y las dos de Google Play (AAB)
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}

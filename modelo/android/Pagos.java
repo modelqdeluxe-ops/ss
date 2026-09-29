@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/* Puente "Pagos" de Google Play Billing (7.x) para la WebView. Lo registra Enlace si la biblioteca está en la app
-   (se agrega al compilar en GitHub Actions, scripts/pagos.sh).
+/* Puente "Pagos" de Google Play Billing (7.x) para la WebView. Lo registra Enlace si la clase está en la app:
+   la app del dueño para Google Play se arma con Gradle (scripts/pagos.sh), que trae la biblioteca y sus dependencias.
    JS -> iniciar(producto), comprar(producto, cuenta, licencia), consumir(token), verificar(llave, json, firma)
    Java -> window.pagosEvento({tipo:'precio'|'compra'|'consumida'|'error', ...})
    La licencia viaja dentro de la compra (obfuscatedProfileId): así la compra de Google queda atada a esa licencia. */
@@ -200,8 +200,19 @@ public class Pagos implements PurchasesUpdatedListener {
         });
     }
 
+    // la firma RSA de Google Play (SHA1withRSA) con la llave pública de la app; igual que Enlace, pero sin
+    // depender de ella: Pagos se compila aparte, con Gradle
     @JavascriptInterface
     public boolean verificar(String llave, String json, String firma) {
-        return Enlace.verificarRsa(llave, json, firma);
+        try {
+            byte[] k = android.util.Base64.decode(llave, android.util.Base64.DEFAULT);
+            java.security.PublicKey pub = java.security.KeyFactory.getInstance("RSA").generatePublic(new java.security.spec.X509EncodedKeySpec(k));
+            java.security.Signature s = java.security.Signature.getInstance("SHA1withRSA");
+            s.initVerify(pub);
+            s.update(json.getBytes("UTF-8"));
+            return s.verify(android.util.Base64.decode(firma, android.util.Base64.DEFAULT));
+        } catch (Throwable e) {
+            return false;
+        }
     }
 }

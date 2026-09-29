@@ -24,7 +24,9 @@ trap 'rm -rf "$TMP"' EXIT
 
 APP_DIR="${APP_DIR:-$RAIZ/app}"
 SALIDA="${SALIDA:-$RAIZ/dist/Rumentis.apk}"
-java -jar "$TOOLS/apktool.jar" b "$APP_DIR" -o "$TMP/sin-firmar.apk"
+# APK_LISTO: un APK ya armado (scripts/pagos.sh) que solo hay que alinear y firmar
+if [ -n "${APK_LISTO:-}" ]; then cp "$APK_LISTO" "$TMP/sin-firmar.apk"
+else java -jar "$TOOLS/apktool.jar" b "$APP_DIR" -o "$TMP/sin-firmar.apk"; fi
 if [ -n "${DEX_EXTRA:-}" ]; then cp "$DEX_EXTRA" "$TMP/classes2.dex"; (cd "$TMP" && zip -q -0 sin-firmar.apk classes2.dex); fi
 
 if [ -n "${KEYSTORE_B64:-}" ] && [ -z "${KEYSTORE:-}" ]; then

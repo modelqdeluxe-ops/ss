@@ -5,6 +5,8 @@
 #   Rumentis Prueba       hn.hato.ganadero.prueba          la del dueño con todo abierto: las licencias se crean sin cobrar
 #   Vaquero Prueba        hn.hato.ganadero.vaquero.prueba  la del equipo para probar (acepta la licencia RV-PRUEBA-2026)
 # Las cuatro se instalan juntas en el mismo teléfono. Salen en dist/ (APK) y, las de Google Play, también en AAB.
+# La del dueño lleva Google Play Billing y se arma con Gradle (scripts/pagos.sh); si no hay Gradle, sale sin pagos
+# (salvo con PAGOS_OBLIGATORIO=1, como en GitHub Actions). Las demás, con apktool (build.sh y build_aab.sh).
 # Uso: scripts/variantes.sh [apk|todo]     (todo = APK de las cuatro + AAB de las dos de Google Play)
 set -euo pipefail
 
@@ -14,21 +16,21 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$RAIZ/dist"
 
-bash "$RAIZ/scripts/pagos.sh" "$TMP/pagos"
-PAGOS_DEX=""; PAGOS_MAN=""
-if [ -s "$TMP/pagos/classes2.dex" ]; then PAGOS_DEX="$TMP/pagos/classes2.dex"; PAGOS_MAN="$TMP/pagos/manifiesto.xml"; fi
-
 variante() {
   local archivo="$1" paquete="$2" nombre="$3" app="$4" prueba="$5" color="$6"
-  local D="$TMP/$archivo" dex="" man=""
+  local D="$TMP/$archivo" aab=""
   cp -r "$RAIZ/app" "$D"
   rm -rf "$D/build" "$D/dist"
-  if [ "$app" = jefe ] && [ "$prueba" = 0 ]; then dex="$PAGOS_DEX"; man="$PAGOS_MAN"; fi
-  python3 "$RAIZ/scripts/variante.py" "$D" "$paquete" "$nombre" "$app" "$prueba" "$color" $man
-  APP_DIR="$D" SALIDA="$RAIZ/dist/$archivo.apk" DEX_EXTRA="$dex" bash "$RAIZ/scripts/build.sh"
-  if [ "$QUE" = todo ] && [ "$prueba" = 0 ]; then
-    APP_DIR="$D" SALIDA="$RAIZ/dist/$archivo.aab" DEX_EXTRA="$dex" bash "$RAIZ/scripts/build_aab.sh"
+  python3 "$RAIZ/scripts/variante.py" "$D" "$paquete" "$nombre" "$app" "$prueba" "$color"
+  [ "$QUE" = todo ] && [ "$prueba" = 0 ] && aab="$RAIZ/dist/$archivo.aab"
+  if [ "$app" = jefe ] && [ "$prueba" = 0 ]; then
+    local r=0; bash "$RAIZ/scripts/pagos.sh" "$D" "$RAIZ/dist/$archivo.apk" $aab || r=$?
+    if [ "$r" = 0 ]; then return; fi
+    if [ "$r" != 3 ]; then exit "$r"; fi
+    echo "variantes: $archivo sin Google Play Billing"
   fi
+  APP_DIR="$D" SALIDA="$RAIZ/dist/$archivo.apk" bash "$RAIZ/scripts/build.sh"
+  if [ -n "$aab" ]; then APP_DIR="$D" SALIDA="$aab" bash "$RAIZ/scripts/build_aab.sh"; fi
 }
 
 variante Rumentis              hn.hato.ganadero                "Rumentis"         jefe    0 "#ff22384d"
