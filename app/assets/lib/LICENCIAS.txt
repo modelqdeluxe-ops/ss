@@ -25,6 +25,10 @@ EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+jsQR 1.4.0 — lib/jsQR.js (leer el QR de la licencia del vaquero cuando el teléfono no trae lector)
+  https://github.com/cozmo/jsQR
+  Copyright Cosmo Wolfe. Licencia Apache 2.0: texto completo en lib/LICENCIA-jsQR.txt.
+
 TweetNaCl.js 1.0.3 — lib/nacl-fast.min.js (firma digital Ed25519 de los documentos)
   https://github.com/dchest/tweetnacl-js
   Dominio público (The Unlicense).

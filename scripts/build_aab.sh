@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Compila app/ en dist/Rumentis.aab para Google Play.
+# Variantes (scripts/variantes.sh): APP_DIR, SALIDA y DEX_EXTRA, como en build.sh.
 #
 # Un solo módulo base: Rumi funciona por menús y no lleva modelo de lenguaje.
 #
@@ -26,20 +27,21 @@ if [ ! -x "$BT/aapt2" ] || [ ! -s "$AJAR" ]; then
   (cd "$SDK" && unzip -q -o bt.zip && unzip -q -o pl.zip && rm -rf build-tools && mv android-16 build-tools && rm bt.zip pl.zip)
 fi
 
-leer() { grep -E "^\s*$1:" "$RAIZ/app/apktool.yml" | awk '{print $2}'; }
+APP_DIR="${APP_DIR:-$RAIZ/app}"
+leer() { grep -E "^\s*$1:" "$APP_DIR/apktool.yml" | awk '{print $2}'; }
 VC=$(leer versionCode); VN=$(leer versionName); MIN=$(leer minSdkVersion); TGT=$(leer targetSdkVersion)
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 # 1. classes.dex desde smali (apktool)
-java -jar "$TOOLS/apktool.jar" b "$RAIZ/app" -o "$TMP/apktool.apk" >/dev/null
+java -jar "$TOOLS/apktool.jar" b "$APP_DIR" -o "$TMP/apktool.apk" >/dev/null
 unzip -q -o "$TMP/apktool.apk" classes.dex -d "$TMP"
 
 # 2. recursos en formato proto
-"$BT/aapt2" compile --dir "$RAIZ/app/res" -o "$TMP/res.zip"
+"$BT/aapt2" compile --dir "$APP_DIR/res" -o "$TMP/res.zip"
 "$BT/aapt2" link --proto-format -o "$TMP/base.apk" -I "$AJAR" \
-  --manifest "$RAIZ/app/AndroidManifest.xml" --min-sdk-version "$MIN" --target-sdk-version "$TGT" \
+  --manifest "$APP_DIR/AndroidManifest.xml" --min-sdk-version "$MIN" --target-sdk-version "$TGT" \
   --version-code "$VC" --version-name "$VN" -R "$TMP/res.zip" --auto-add-overlay
 
 # 3. módulo base
@@ -47,11 +49,12 @@ B="$TMP/base"; mkdir -p "$B/manifest" "$B/dex"
 unzip -q "$TMP/base.apk" -d "$B"
 mv "$B/AndroidManifest.xml" "$B/manifest/"
 cp "$TMP/classes.dex" "$B/dex/"
-cp -r "$RAIZ/app/assets" "$B/assets"
+if [ -n "${DEX_EXTRA:-}" ]; then cp "$DEX_EXTRA" "$B/dex/classes2.dex"; fi
+cp -r "$APP_DIR/assets" "$B/assets"
 (cd "$B" && zip -q -r -D "$TMP/base.zip" manifest dex res resources.pb assets)
 
 # 4. bundle
-AAB="$RAIZ/dist/Rumentis.aab"
+AAB="${SALIDA:-$RAIZ/dist/Rumentis.aab}"
 rm -f "$AAB"
 java -jar "$TOOLS/bundletool.jar" build-bundle --modules="$TMP/base.zip" --output="$AAB"
 

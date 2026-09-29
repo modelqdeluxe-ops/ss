@@ -102,11 +102,50 @@ App Android de engorde de ganado (paquete `hn.hato.ganadero`) con el ayudante Ru
 - `verificar/` — página pública de verificación de documentos (un solo HTML + `nacl-fast.min.js`): abre el enlace
   del QR o recibe el PDF y comprueba la firma en el navegador, sin servidor. La publica `.github/workflows/pages.yml`
   en https://modelqdeluxe-ops.github.io/ss/verificar/ desde `main` (una vez: Settings → Pages → Source: GitHub Actions).
+- `vaquero/` — página pública de la licencia del vaquero (el QR del jefe lleva aquí): muestra la licencia y el
+  botón de Google Play. La publica el mismo `pages.yml` en https://modelqdeluxe-ops.github.io/ss/vaquero/.
 - `servidor/zona/` — servidor de la comparación con la zona (Cloudflare Workers + D1), con pruebas; ver su `LEEME.md`.
+- `servidor/equipo/` — servidor de relevo del equipo (Cloudflare Workers + D1): guarda y entrega los sobres
+  cifrados entre el jefe y sus vaqueros; `npm test` lo prueba y `npm run local` lo levanta en tu computadora.
 - `scripts/mercado/actualizar.js` — junta los precios del mercado; lo corre `.github/workflows/mercado.yml`
   (cada 12 horas desde la rama principal, o a mano) y los publica en la Release `mercado`.
-- `scripts/build.sh` — APK: `dist/Rumentis.apk`.
-- `scripts/build_aab.sh` — AAB para Google Play: `dist/Rumentis.aab`.
+- `scripts/variantes.sh` — las cuatro apps (ver «Equipo»): `dist/Rumentis.apk`, `RumentisVaquero.apk`,
+  `RumentisPrueba.apk`, `RumentisVaqueroPrueba.apk` y, con `todo`, los AAB de las dos de Google Play.
+  `scripts/variante.py` cambia paquete, nombre, color del ícono, `config.js` y la autoridad de archivos.
+- `scripts/pagos.sh` — baja Google Play Billing de Google Maven, compila `modelo/android/Pagos.java` contra ella
+  y la deja como segundo dex (`classes2.dex`) para la app del jefe. Sin acceso a dl.google.com no hace nada.
+- `scripts/build.sh` — APK: `dist/Rumentis.apk` (acepta `APP_DIR`, `SALIDA` y `DEX_EXTRA`).
+- `scripts/build_aab.sh` — AAB para Google Play: `dist/Rumentis.aab` (mismas variables).
+
+## Equipo
+
+La app del dueño (**Rumentis**, de pago en Google Play) vende licencias para su equipo: un producto
+consumible (`licencia_vaquero`) por cada vaquero. Cada licencia es un código al azar de 95 bits
+(`RV-XXXX-XXXX-XXXX-XXXX-XXXX`, con letra de control) para una sola persona, y va dentro de la compra de
+Google (`obfuscatedProfileId`), así la compra queda atada a esa licencia.
+
+- **Jefe** (`app/assets/equipo.js`): con la primera licencia aparece la pestaña **Equipo**: licencias con QR,
+  enlace y botón de WhatsApp; vaqueros con sus permisos (alimento, pesaje, sanidad, muertes, tareas); tareas
+  asignadas; lo que registró cada uno; dar de baja (la licencia queda anulada y la clave del equipo cambia).
+- **Vaquero** (`app/assets/vaquero.js`, app **Rumentis Vaquero**, gratis): la bienvenida de Rumentis y luego su
+  nombre y la licencia (escrita, pegada o escaneada del QR con BarcodeDetector o `lib/jsQR.js`). Solo Hoy, Lotes,
+  Registrar, Tareas y Más: sin Rumi, sin dinero, sin documentos. Lo que anota va en una cola de operaciones
+  numeradas que el jefe confirma; al llegar el estado del jefe se vuelven a aplicar las que faltan.
+- **Núcleo** (`app/assets/equipo_nucleo.js`): llaves Ed25519 y X25519 por teléfono (tweetnacl); sobres firmados y
+  cifrados (alta y bienvenida con `nacl.box`, lo demás con la clave del equipo, `nacl.secretbox`); transporte por
+  el servidor de relevo y, siempre, por archivo para WhatsApp.
+- **Configuración** (`app/assets/config.js`): qué app es y si es de prueba (lo escribe `variante.py`), el servidor
+  del equipo, la llave RSA de Google Play (para que el vaquero compruebe la compra), el producto y los enlaces.
+- **Android**: `modelo/android/Enlace.java` registra los puentes `Pagos` (si la biblioteca está) y `Cripto`
+  (firma RSA de Google); `modelo/android/Pagos.java` es Google Play Billing 7.
+
+Las apps **de prueba** (paquetes `.prueba`) se instalan junto a las de Google Play: en la del jefe las licencias
+se crean sin cobrar; en la del vaquero, la licencia **`RV-PRUEBA-2026`** entra para siempre a una finca de
+muestra sin jefe. Una app de Google Play no acepta licencias de prueba.
+
+Para vender en Google Play: publica **Rumentis** como app de pago y crea en ella el producto integrado
+`licencia_vaquero` (consumible, con su precio); publica **Rumentis Vaquero** gratis. Copia la llave pública RSA
+de Rumentis en `playLlave` y la dirección del servidor en `servidorEquipo` (`app/assets/config.js`).
 
 ## Rumi
 
@@ -130,8 +169,10 @@ Cada animal guarda su `costo`; la compra del lote es la suma más el flete.
 ## Compilar
 
 ```sh
-scripts/build.sh       # dist/Rumentis.apk
-scripts/build_aab.sh   # dist/Rumentis.aab
+scripts/build.sh            # dist/Rumentis.apk
+scripts/build_aab.sh        # dist/Rumentis.aab
+scripts/variantes.sh        # las cuatro apps (APK)
+scripts/variantes.sh todo   # y los AAB de Rumentis y Rumentis Vaquero
 ```
 
 Necesita Java; descarga apktool, uber-apk-signer, bundletool y las herramientas de Android la

@@ -31,6 +31,13 @@ function datos(){
     const b=c.bodega||{};for(const it of (b.items||[]))add(it.n);
     const f=c.fin||{};for(const k of ['insumos','equipos','creditos'])for(const it of (f[k]||[]))add(it.n);
     for(const t of (c.tareas||[]))add(t.t);
+    // equipo: nombres de los vaqueros (y su nombre de pila, para "Hola, Juan"), la finca y las licencias
+    const lic=x=>{x=String(x||'').replace(/[^0-9A-Z]/g,'');if(x.length===20)add('RV-'+x.match(/.{1,4}/g).join('-'));};
+    const persona=n=>{add(n);add(String(n||'').trim().split(/\s+/)[0]);};
+    const e=c.equipo||{};for(const v of Object.values(e.vaqueros||{}))persona(v.nombre);for(const x of Object.values(e.solicitudes||{})){persona(x.nombre);lic(x.lic);}
+    for(const k of Object.keys(e.licencias||{}))lic(k);
+    const vq=window.Vaquero&&Vaquero.VQ?Vaquero.VQ():null;if(vq){persona(vq.nombre);add(vq.finca);lic(vq.lic);for(const n of (vq.nombres||[]))persona(n);}
+    add('RV-PRUEBA-2026');
   }catch(e){}
   const L=[...D].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
   _dre=L.length?new RegExp('(^|[^A-Za-zÀ-ÿ])('+L.join('|')+')(?=$|[^A-Za-zÀ-ÿ])','g'):null;_dv=v;return _dre;

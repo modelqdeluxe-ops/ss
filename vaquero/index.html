@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rumentis Vaquero · Tu licencia</title>
+<meta name="description" content="Tu jefe te dio una licencia de Rumentis Vaquero: descarga la app y actívala.">
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#F1EDE5;--card:#fff;--ink:#1A2B3A;--ink2:#56645E;--line:#E2DCCF;--head:#22384D;--arete:#F0BF33;--pri:#22384D}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1A25;--card:#17232F;--ink:#E8EEF2;--ink2:#A6B3BE;--line:#2A3846}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--head);color:#fff;padding:28px 16px 40px;text-align:center;border-radius:0 0 28px 28px}
+header small{letter-spacing:.24em;font-weight:800;font-size:12px;color:var(--arete)}
+header h1{margin:6px 0 4px;font-size:27px;line-height:1.15}
+header p{margin:0;opacity:.9;font-size:15px}
+main{max-width:520px;margin:-24px auto 40px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px}
+.cod{text-align:center}
+.cod span{display:block;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.cod b{display:block;margin:6px 0 10px;font:700 clamp(15px,4.6vw,21px)/1.3 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.02em;white-space:nowrap}
+.btn{display:flex;align-items:center;justify-content:center;text-align:center;gap:8px;width:100%;min-height:52px;padding:10px 16px;border-radius:14px;border:0;background:var(--pri);color:#fff;font:700 16px system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.btn.sec{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn+.btn{margin-top:10px}
+ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+li b{color:var(--ink)}
+.nota{font-size:13.5px;color:var(--ink2);margin:10px 0 0;text-align:center}
+.mal{background:#FBEAE6;color:#8A2A1C;border-color:#F0C9C0}
+footer{text-align:center;font-size:12.5px;color:var(--ink2);padding:0 16px 30px}
+</style>
+</head>
+<body>
+<header><small>RUMENTIS VAQUERO</small><h1 data-t="titulo">Tu licencia</h1><p id="finca" data-t="sub">Tu jefe te invitó a su equipo.</p></header>
+<main>
+ <section class="card cod" id="licencia" hidden><span data-t="lic">Licencia</span><b id="codigo"></b>
+  <button class="btn sec" id="copiarCod" type="button" data-t="copiarCod">Copiar la licencia</button></section>
+ <section class="card"><a class="btn" id="tienda" href="https://play.google.com/store/apps/details?id=hn.hato.ganadero.vaquero" data-t="descargar">Descargar Rumentis Vaquero (gratis)</a>
+  <p class="nota" data-t="android">Para teléfonos Android, en Google Play.</p></section>
+ <section class="card"><ol>
+  <li data-t="p1">Descarga e instala <b>Rumentis Vaquero</b>.</li>
+  <li data-t="p2">Ábrela y escribe tu nombre completo, como te conoce tu jefe.</li>
+  <li data-t="p3">Escribe la licencia de arriba, o toca <b>Pegar</b> después de copiar el enlace.</li>
+  <li data-t="p4">Listo: cuando tu jefe abra Rumentis, entras al equipo.</li></ol>
+  <button class="btn sec" id="copiarEnl" type="button" style="margin-top:14px" data-t="copiarEnl">Copiar el enlace (sin internet)</button>
+  <p class="nota" data-t="nota">La licencia es solo para ti. No la compartas.</p></section>
+ <section class="card mal" id="error" hidden data-t="error">Este enlace no trae una licencia. Pídele a tu jefe que te la mande otra vez.</section>
+</main>
+<footer>Rumentis</footer>
+<script>
+(function(){
+var L=(navigator.language||'es').slice(0,2),T={
+ en:{titulo:'Your license',sub:'Your boss invited you to their team.',lic:'License',copiarCod:'Copy the license',descargar:'Get Rumentis Vaquero (free)',android:'For Android phones, on Google Play.',
+  p1:'Download and install <b>Rumentis Vaquero</b>.',p2:'Open it and type your full name, as your boss knows you.',p3:'Type the license above, or tap <b>Paste</b> after copying the link.',p4:'Done: when your boss opens Rumentis, you join the team.',
+  copiarEnl:'Copy the link (works offline)',nota:'This license is only for you. Don’t share it.',error:'This link has no license. Ask your boss to send it again.',finca:'The team of ',copiado:'Copied'},
+ pt:{titulo:'Sua licença',sub:'Seu patrão convidou você para a equipe.',lic:'Licença',copiarCod:'Copiar a licença',descargar:'Baixar Rumentis Vaquero (grátis)',android:'Para celulares Android, no Google Play.',
+  p1:'Baixe e instale o <b>Rumentis Vaquero</b>.',p2:'Abra e escreva seu nome completo, como seu patrão conhece você.',p3:'Escreva a licença acima, ou toque em <b>Colar</b> depois de copiar o link.',p4:'Pronto: quando seu patrão abrir o Rumentis, você entra na equipe.',
+  copiarEnl:'Copiar o link (sem internet)',nota:'A licença é só para você. Não compartilhe.',error:'Este link não traz uma licença. Peça ao seu patrão para mandar de novo.',finca:'A equipe de ',copiado:'Copiado'},
+ es:{finca:'El equipo de ',copiado:'Copiado'}}[L]||{finca:'El equipo de ',copiado:'Copiado'};
+if(L==='en'||L==='pt'){document.documentElement.lang=L;[].forEach.call(document.querySelectorAll('[data-t]'),function(e){var k=e.getAttribute('data-t');if(T[k])e.innerHTML=T[k];});}
+function deB64u(t){t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';var s=atob(t),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new TextDecoder().decode(u);}
+var o=null;try{var h=location.hash.slice(1);if(h.length>40)o=JSON.parse(deB64u(h));}catch(e){o=null;}
+function copiar(t,b){var ok=function(){var v=b.textContent;b.textContent=T.copiado+' ✓';setTimeout(function(){b.textContent=v;},1800);};
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(ok,function(){prompt('',t);});else prompt('',t);}
+if(!o||!o.c){document.getElementById('error').hidden=false;document.getElementById('copiarEnl').hidden=true;return;}
+var c=String(o.c).toUpperCase().replace(/[^0-9A-Z]/g,''),f='RV-'+c.match(/.{1,4}/g).join('-');
+document.getElementById('codigo').textContent=f;document.getElementById('licencia').hidden=false;
+if(o.fn)document.getElementById('finca').textContent=T.finca+o.fn;
+// licencia de la app de prueba: la app de prueba no está en Google Play, sale en las compilaciones de GitHub
+if(o.p)document.getElementById('tienda').href='https://github.com/modelqdeluxe-ops/ss/releases';
+document.getElementById('copiarCod').onclick=function(){copiar(f,this);};
+document.getElementById('copiarEnl').onclick=function(){copiar(location.href,this);};
+})();
+</script>
+</body>
+</html>

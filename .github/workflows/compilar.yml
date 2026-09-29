@@ -1,5 +1,5 @@
-# Compila Rumentis y publica el APK y el AAB como Release de GitHub.
-# El APK y el AAB se publican en un Release para descargarlos.
+# Compila las cuatro apps de Rumentis (scripts/variantes.sh) y las publica como Release de GitHub.
+# La biblioteca de Google Play Billing se baja aquí (scripts/pagos.sh) y va en la app del dueño.
 #
 # Firma: agrega en Settings > Secrets and variables > Actions los secretos
 #   KEYSTORE_B64 (el .keystore en base64), KEYSTORE_PASS, KEY_ALIAS (hato) y KEY_PASS.
@@ -9,7 +9,7 @@ name: Compilar Rumentis
 on:
   push:
     branches: [main, 'claude/**']
-    paths: ['app/**', 'scripts/**', '.github/workflows/compilar.yml']
+    paths: ['app/**', 'scripts/**', 'modelo/android/**', '.github/workflows/compilar.yml']
   workflow_dispatch:
 
 permissions:
@@ -24,25 +24,24 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Compilar APK y AAB
+      - name: Compilar las cuatro apps (APK) y las dos de Google Play (AAB)
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASS: ${{ secrets.KEY_PASS }}
+          PAGOS_OBLIGATORIO: '1'
         run: |
-          scripts/build.sh
-          scripts/build_aab.sh
+          scripts/variantes.sh todo
           VN=$(grep -E '^\s*versionName:' app/apktool.yml | awk '{print $2}')
           echo "VN=$VN" >> "$GITHUB_ENV"
-          mv dist/Rumentis.apk "dist/Rumentis-$VN.apk"
-          mv dist/Rumentis.aab "dist/Rumentis-$VN.aab"
+          cd dist && for f in *.apk *.aab; do mv "$f" "${f%.*}-$VN.${f##*.}"; done && ls -la
       - name: Publicar Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="v$VN-${GITHUB_RUN_NUMBER}"
-          gh release create "$TAG" dist/Rumentis-$VN.apk dist/Rumentis-$VN.aab \
+          gh release create "$TAG" dist/*-$VN.apk dist/*-$VN.aab \
             --target "$GITHUB_SHA" --prerelease \
             --title "Rumentis $VN (compilación $GITHUB_RUN_NUMBER)" \
-            --notes "APK para instalar en el teléfono y AAB para Google Play. Rama: $GITHUB_REF_NAME."
+            --notes "Rumentis (dueño) y Rumentis Vaquero: APK para instalar y AAB para Google Play. Rumentis Prueba y Vaquero Prueba: para probar el equipo sin cobrar (licencia de prueba del vaquero: RV-PRUEBA-2026). Rama: $GITHUB_REF_NAME."

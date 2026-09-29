@@ -1,11 +1,12 @@
-# Publica la página pública de verificación de documentos (verificar/) en GitHub Pages:
-#   https://modelqdeluxe-ops.github.io/ss/verificar/
+# Publica en GitHub Pages las páginas públicas de Rumentis:
+#   https://modelqdeluxe-ops.github.io/ss/verificar/   verificación de documentos
+#   https://modelqdeluxe-ops.github.io/ss/vaquero/     la licencia del vaquero (el QR del jefe lleva aquí)
 # Una sola vez: Settings → Pages → Build and deployment → Source: GitHub Actions.
-name: Página de verificación
+name: Páginas públicas
 on:
   push:
     branches: [main]
-    paths: ['verificar/**', '.github/workflows/pages.yml']
+    paths: ['verificar/**', 'vaquero/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,8 +23,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Armar el sitio
         run: |
-          mkdir -p _sitio/verificar
+          mkdir -p _sitio/verificar _sitio/vaquero
           cp verificar/* _sitio/verificar/
+          cp vaquero/* _sitio/vaquero/
           printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=verificar/"><title>Rumentis</title><a href="verificar/">Verificar un documento</a>\n' > _sitio/index.html
           touch _sitio/.nojekyll
       - uses: actions/configure-pages@v5

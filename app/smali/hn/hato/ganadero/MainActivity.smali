@@ -730,6 +730,8 @@
 
     invoke-virtual {v0, v1, v2}, Landroid/webkit/WebView;->addJavascriptInterface(Ljava/lang/Object;Ljava/lang/String;)V
 
+    invoke-static {p0, v0}, Lhn/hato/ganadero/Enlace;->registrar(Landroid/app/Activity;Landroid/webkit/WebView;)V
+
     .line 61
     iget-object v0, p0, Lhn/hato/ganadero/MainActivity;->web:Landroid/webkit/WebView;
 

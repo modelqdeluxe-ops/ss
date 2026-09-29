@@ -280,7 +280,10 @@ function bienvenida(){
   const cl=w.querySelector('.sp-clima');
   if(cl)cl.innerHTML=`${icono(iconoClima(),'ci')}<span>${vigente()?`${esc(textoClima())}${CLIMA.lugar?` · ${esc(CLIMA.lugar)}`:''}`:EPOCA_TXT[epoca()]}</span>`;
   const dur=primeraVez?6200:5200,t0=window.SPLASH_T0||performance.now();
-  const cerrar=()=>{if(w.classList.contains('fin'))return;w.classList.add('fin');setTimeout(()=>{w.remove();if(primeraVez)saludoRumi();},800);};
+  // en la app del vaquero no hay Rumi: después de la bienvenida sigue la activación
+  const vaquero=window.RUMENTIS&&RUMENTIS.app==='vaquero';
+  const cerrar=()=>{if(w.classList.contains('fin'))return;w.classList.add('fin');setTimeout(()=>{w.remove();
+    if(primeraVez){if(vaquero){ls.set('rumentis-bienvenida','1');document.dispatchEvent(new Event('rumentis-listo'));}else saludoRumi();}},800);};
   w.addEventListener('click',()=>{if(performance.now()-t0>1500)cerrar();});
   setTimeout(cerrar,Math.max(600,dur-(performance.now()-t0)));
 }

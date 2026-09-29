@@ -1,0 +1,13 @@
+{
+  "name": "rumentis-equipo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node prueba.mjs",
+    "deploy": "wrangler deploy",
+    "local": "node local.mjs"
+  },
+  "devDependencies": {
+    "miniflare": "3.20250718.3"
+  }
+}

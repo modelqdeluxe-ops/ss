@@ -1,0 +1,12 @@
+# Rumentis: servidor de relevo del equipo (el jefe y sus vaqueros se pasan sobres cifrados)
+# 1. npx wrangler d1 create rumentis-equipo   (copia el database_id que te da)
+# 2. npx wrangler d1 execute rumentis-equipo --remote --file=schema.sql
+# 3. npx wrangler deploy
+name = "rumentis-equipo"
+main = "worker.js"
+compatibility_date = "2025-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rumentis-equipo"
+database_id = "PON-AQUI-EL-ID-DE-TU-BASE"

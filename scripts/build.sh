@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Compila app/ (proyecto apktool) en dist/Rumentis.apk, alineado y firmado.
+# Variantes (scripts/variantes.sh): APP_DIR (carpeta del proyecto), SALIDA (el .apk) y DEX_EXTRA (un classes2.dex
+# que se agrega tal cual, p. ej. Google Play Billing).
 #
 # Firma:
 #   - Si existen KEYSTORE (o KEYSTORE_B64), KEYSTORE_PASS, KEY_ALIAS y KEY_PASS, firma con esa llave.
@@ -20,7 +22,10 @@ bajar "https://github.com/patrickfav/uber-apk-signer/releases/download/v$SIGNER_
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-java -jar "$TOOLS/apktool.jar" b "$RAIZ/app" -o "$TMP/sin-firmar.apk"
+APP_DIR="${APP_DIR:-$RAIZ/app}"
+SALIDA="${SALIDA:-$RAIZ/dist/Rumentis.apk}"
+java -jar "$TOOLS/apktool.jar" b "$APP_DIR" -o "$TMP/sin-firmar.apk"
+if [ -n "${DEX_EXTRA:-}" ]; then cp "$DEX_EXTRA" "$TMP/classes2.dex"; (cd "$TMP" && zip -q -0 sin-firmar.apk classes2.dex); fi
 
 if [ -n "${KEYSTORE_B64:-}" ] && [ -z "${KEYSTORE:-}" ]; then
   KEYSTORE="$TMP/llave.keystore"; echo "$KEYSTORE_B64" | base64 -d > "$KEYSTORE"
@@ -31,5 +36,5 @@ if [ -n "${KEYSTORE:-}" ]; then
 fi
 java -jar "$TOOLS/uber-apk-signer.jar" -a "$TMP/sin-firmar.apk" -o "$TMP/firmado" "${FIRMA[@]}"
 
-cp "$TMP"/firmado/*.apk "$RAIZ/dist/Rumentis.apk"
-echo "Listo: $RAIZ/dist/Rumentis.apk"
+cp "$TMP"/firmado/*.apk "$SALIDA"
+echo "Listo: $SALIDA"
