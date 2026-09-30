@@ -2,7 +2,7 @@
 // de COCO: una persona lejos (debe pedir "Acércate"), de frente y de costado; y una vaca de costado y de espaldas con
 // una persona al lado como referencia. Comprueba que las fotos se tomen solas, que las medidas en cm salgan cerca de
 // las de la escena y que la calibración con báscula ajuste el peso.
-// Usa 8112 con los modelos (silueta, silueta_p, seg, cuerpo, animal_m), ort.bundle.js, el .wasm y las fotos: frente.jpg
+// Usa 8112 con los modelos (silueta, silueta_p, seg, cuerpo, cuerpo_v, animal_m), ort.bundle.js, el .wasm y las fotos: frente.jpg
 // (COCO 000000223959), lejos.jpg (000000295478), perfil.jpg (000000438907, de perfil), lado.jpg (000000090062) y
 // atras.jpg (000000467776). SIN_WORKER=1 prueba sin Web Worker;
 // NUCLEOS=8 simula un teléfono con 8 núcleos (dos workers del modelo rápido).
@@ -87,7 +87,7 @@ const DOS=/2 de 2|2 of 2/;
  const vols=[];
  for(const [dx,k] of [[-.06,.66],[.04,.74],[0,.8]]){const F2={...PF,x:PF.x+dx,h:k*960};await esc('v',[F2]);await p.click('[data-act="pcVivo"]');await paso2();
    await esc('v',[{...PC,x:F2.x,h:F2.h}]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});await p.waitForTimeout(300);
-   vols.push(await p.evaluate(()=>PesoCam.REG().slice(-1)[0].pred));await p.click('#sheet [data-act="cerrar"]');await p.waitForTimeout(300);}
+   const U2=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,giro:r.giro,inc:r.incompleta,dims:r.dims,topes:r.topes};});if(process.env.DEP)console.log('toma',JSON.stringify(U2));vols.push(U2.pred);await p.click('#sheet [data-act="cerrar"]');await p.waitForTimeout(300);}
  const vm=vols.reduce((a,b)=>a+b,0)/vols.length,dv=Math.max(...vols.map(x=>Math.abs(x/vm-1)));
  console.log('repetibilidad',vols.map(v=>v.toFixed(1)).join(' / '),'kg · variación máx',(dv*100).toFixed(1),'%');assert.ok(dv<.06,'medición estable');
  // laboratorio: registro, estadísticas, detalle, peso de báscula desde el registro y CSV

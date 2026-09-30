@@ -154,11 +154,16 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   recorte no tiemble).
 - **Puntos del cuerpo** (como un traje de captura de movimiento): sobre la silueta, en vivo y en las fotos, puntos
   blancos que brillan y líneas finas: 133 en personas (cuerpo, pies, cara, manos y **dedos**; RTMW) y 17 en ganado
-  (AP-10K). En el video corren en su propio worker sobre un recorte alrededor de la silueta y, entre un resultado y el
-  siguiente, siguen la caja de la silueta (se mueven con el cuerpo a 60 cuadros/s). Con ellos:
-  - **la silueta se limpia**: se quita lo que queda lejos del esqueleto (suelo, cama, muebles pegados al cuerpo): cada
-    punto de la silueta debe quedar a menos de 13 % de la estatura del tronco, 9 % de la cabeza, 6.5 % de brazos y
-    piernas o 4 % de manos y pies (`limpiarSil` en camvivo.js);
+  (AP-10K). En el video, el modelo rápido (DWPose-t) corre en su propio worker (dos en teléfonos de 8 núcleos, a
+  turnos) sobre un recorte alrededor de la silueta; al llegar, cada punto se suaviza (si casi no se movió, se promedia
+  con el anterior) y entre un resultado y el siguiente siguen la caja de la silueta (60 cuadros/s). En las fotos, el
+  preciso (RTMW-m) mide la foto y su espejo y promedia. Con ellos:
+  - **la silueta del video se limpia**: se quita lo que queda lejos del esqueleto (suelo, cama, muebles pegados al
+    cuerpo), con holgura (`limpiarSil` en camvivo.js). La foto que se mide **no** se limpia: contra siluetas a mano el
+    modelo preciso sale mejor sin tocar (limpiarla cortaba cabeza, pies o brazos);
+  - si la silueta de la foto no llega de la cabeza a los pies (los puntos de oreja a pies dan > 1.08 veces su alto),
+    la escala sale de los puntos;
+  - el giro de la toma de perfil (separación de hombros y caderas de perfil contra la de frente) corrige los fondos;
   - de perfil, los hombros deben verse casi uno sobre otro (separación ≤ 0.3 del largo del tronco);
   - al medir, se sabe dónde están los brazos y las manos para no contarlos como tronco.
 - **Visión en el teléfono** (`app/assets/vision.js`), modelos en **Web Workers** armados desde un Blob (la página
@@ -170,7 +175,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   - **preciso** `seg.onnx` (33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo mide las fotos capturadas, en
     segundo plano mientras la persona se gira, sobre un **recorte alrededor del sujeto** (ve el cuerpo con más
     detalle). Si no encuentra al sujeto, queda la medida del rápido y la app lo avisa.
-  - **pose** `cuerpo.onnx` (31 MB; RTMW de OpenMMLab, Apache 2.0, 133 puntos, entrada 192×256, ~170 ms en una PC) y
+  - **pose** `cuerpo_v.onnx` (11 MB; DWPose-t, 133 puntos, ~66 ms en una PC: el del video), `cuerpo.onnx` (31 MB;
+    RTMW-m de OpenMMLab, Apache 2.0, 133 puntos, entrada 192×256, ~180 ms en una PC: el de las fotos) y
     `animal_m.onnx` (27 MB; RTMPose AP-10K, 17 puntos, 256×256).
   Los pesos de los modelos rápidos y de pose van en 16 bits (`modelo/vision/pesos16.py`: la mitad de tamaño, mismo
   resultado) y se pasan a 32 al cargar.

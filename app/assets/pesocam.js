@@ -49,7 +49,7 @@ function registrar(r,stats){
   const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),q=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
     alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,pred:q(r.pred),dims:r.dims?Object.fromEntries(Object.entries(r.dims).map(([a,b])=>[a,q(b)])):null,
-    puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
+    puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),giro:q(r.giro),incompleta:r.modo==='persona'?!!r.incompleta:null,topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
     partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
     fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
   guardarPC({reg:REG().concat(rec).slice(-300)});return id;
@@ -164,51 +164,89 @@ function xEn(K,a,b,y){if(!kOk(K,a)||!kOk(K,b))return null;const A=K[a],B=K[b],lo
 const medio=(K,i,j)=>kOk(K,i)&&kOk(K,j)?[(K[i][0]+K[j][0])/2,(K[i][1]+K[j][1])/2]:kOk(K,i)?K[i]:kOk(K,j)?K[j]:null;
 // el centro del cuerpo a la altura y: del medio de los hombros al de las caderas
 function centroEn(K,y){const h=medio(K,5,6),c=medio(K,11,12);if(!h||!c)return null;if(y<=h[1])return h[0];if(y>=c[1])return c[0];return h[0]+(y-h[1])/(c[1]-h[1])*(c[0]-h[0]);}
-// brazos: hombro, codo, muñeca y punta del dedo medio; medio ancho de cada tramo (fracción de la estatura)
-const BRAZOS=[[5,7,9,103],[6,8,10,124]],MEDIO_ANCHO=[.029,.025,.02];
-// el tramo del cuerpo que tiene el centro (o el más cercano); si hay brazos o manos pegados, se cortan donde van
+// brazos y manos: tramos del esqueleto (hombro–codo, codo–muñeca, muñeca–punta del dedo medio) y su medio ancho
+// (fracción de la estatura)
+const BRAZOS=[[5,7,.029],[7,9,.025],[9,103,.02],[6,8,.029],[8,10,.025],[10,124,.02]],MANOS=BRAZOS.filter(z=>z[2]===.02);
+// el tramo de la fila que tiene el centro del cuerpo (o el más cercano; sin puntos, el más ancho)
 function tramoCentro(fila,c){if(!fila.length)return null;if(c==null)return fila.reduce((m,z)=>!m||z[1]-z[0]>m[1]-m[0]?z:m,null);
   let m=null,md=1e9;for(const z of fila){if(z[0]<=c&&c<=z[1])return z;const d=Math.min(Math.abs(z[0]-c),Math.abs(z[1]-c));if(d<md){md=d;m=z;}}return m;}
-function sinBrazos(z,K,y,c,cw,alto){let a=z[0]*cw,b=z[1]*cw;if(!K||c==null)return b-a;const cc=c*cw;
-  for(const cad of BRAZOS)for(let j=0;j<cad.length-1;j++){const x=xEn(K,cad[j],cad[j+1],y);if(x==null)continue;const xc=x*cw,hw=MEDIO_ANCHO[j]*alto;
-    if(xc>a&&xc<b){if(xc<cc)a=Math.max(a,Math.min(cc-1,xc+hw));else b=Math.min(b,Math.max(cc+1,xc-hw));}}
-  return Math.max(0,b-a);}
-// valores por fila en una banda de alturas (fracciones de la estatura)
-function banda(T,f0,f1,fn){const n=T.filas.length,v=[];for(let i=Math.max(0,Math.floor(f0*n));i<=Math.min(n-1,Math.ceil(f1*n));i++){const r=fn(T.filas[i],i+.5);if(r>0)v.push(r);}return v;}
+/* quita de [a,b] (cm) un brazo o una mano pegados al borde del tramo z. Solo si el centro del brazo cae dentro del
+   tramo y cerca del borde (a menos de 1.6 medios anchos: el brazo es parte del tramo); si junto al brazo hay otro
+   tramo, el brazo va separado y no se corta; si va por delante del cuerpo (lejos del borde), tampoco. */
+function cortar(a,b,fila,z,K,y,cw,alto,segs){
+  if(!K)return [a,b];
+  for(const [i,j,f] of segs){const x=xEn(K,i,j,y);if(x==null)continue;const xc=x*cw,hw=f*alto;if(xc<=a||xc>=b)continue;
+    if(fila.some(t=>t!==z&&Math.abs((t[0]+t[1])/2*cw-xc)<2.5*hw))continue;
+    if(xc-a<1.6*hw)a=Math.max(a,xc+hw);else if(b-xc<1.6*hw)b=Math.min(b,xc-hw);}
+  return [a,b];}
+/* dónde está la estatura en la silueta: la coronilla (celda `top`) y la estatura en celdas (H). Sin puntos, la silueta
+   entera (menos suela y pelo). Con puntos, si de la oreja a los pies el cuerpo es bastante más largo que la silueta (la silueta
+   no llegó a los pies o a la cabeza), manda el de los puntos y la escala se corrige (`k`): así una silueta incompleta
+   no agranda todas las medidas. ANSUR II: la oreja está a 7.6 % de la estatura bajo la coronilla; el tobillo, a 4.1 %
+   del suelo; el talón y los dedos, a ~0.5 %. */
+function marco(T,K,alto,ref){
+  const n=T.filas.length,Hs=n*alto/ref,base={top:0,H:Hs,k:1,incompleta:false};if(!K)return base;
+  const orejas=[3,4].filter(i=>kOk(K,i)).map(i=>K[i][1]);if(!orejas.length)return base;
+  const yo=orejas.reduce((a,b)=>a+b,0)/orejas.length;
+  const pies=[[19,.005],[22,.005],[17,.005],[20,.005],[15,.0406],[16,.0406]].filter(([i])=>kOk(K,i)).map(([i,f])=>(K[i][1]-yo)/(1-.0756-f));
+  if(!pies.length)return base;const Hk=Math.max(...pies);
+  // (los puntos suelen dar un poco menos que la estatura real: 95 % de las veces menos de 1.03 veces; por eso solo si
+  // pasan de 1.08 veces la silueta, que entonces sí está incompleta)
+  if(Hk>Hs*1.08)return {top:yo-.0756*Hk,H:Hk,k:Hs/Hk,incompleta:true};
+  return base;}
+// valores por fila entre dos alturas (fracciones de la estatura, desde la coronilla)
+function banda(T,M,h0,h1,fn){const n=T.filas.length,v=[],y0=M.top+h0*M.H,y1=M.top+h1*M.H;
+  for(let i=Math.max(0,Math.floor(y0));i<=Math.min(n-1,Math.ceil(y1));i++){const r=fn(T.filas[i],i+.5);if(r>0)v.push(r);}return v;}
 const pctl=(v,p)=>{const s=v.slice().sort((a,b)=>a-b);return s.length?s[Math.min(s.length-1,Math.floor(p*(s.length-1)+.5))]:0;};
 // muslos de frente: el tramo de cada pierna (de la cadera a la rodilla), sin la mano; si las piernas están juntas, se
-// parte a la mitad entre las dos
+// parte a la mitad entre las dos. Devuelve [ancho de un muslo, distancia entre los centros de los dos]
 function muslos(fila,y,K,cw,alto){
-  const l=xEn(K,11,13,y),r=xEn(K,12,14,y);
-  if(l==null||r==null){const t=fila.map(([a,b])=>(b-a)*cw).sort((a,b)=>b-a);return t.length>=2?(t[0]+t[1])/2:t.length?t[0]/2:0;}
+  const l=K?xEn(K,11,13,y):null,r=K?xEn(K,12,14,y):null;
+  if(l==null||r==null){const t=fila.map(([a,b])=>(b-a)*cw).sort((a,b)=>b-a);return [t.length>=2?(t[0]+t[1])/2:t.length?t[0]/2:0,0];}
   const ws=[];for(const [c,o] of [[l,r],[r,l]]){const z=tramoCentro(fila,c);if(!z)continue;let a=z[0]*cw,b=z[1]*cw;const cc=c*cw,oc=o*cw;
     if(z[0]<=o&&o<=z[1]){const m=(cc+oc)/2;if(cc<oc)b=Math.min(b,m);else a=Math.max(a,m);}
-    for(const cad of BRAZOS){const x=xEn(K,cad[2],cad[3],y);if(x==null)continue;const xc=x*cw,hw=MEDIO_ANCHO[2]*alto;if(xc>a&&xc<b){if(xc<cc)a=Math.max(a,Math.min(cc-1,xc+hw));else b=Math.min(b,Math.max(cc+1,xc-hw));}}
-    ws.push(b-a);}
-  return ws.length?ws.reduce((x,y)=>x+y,0)/ws.length:0;}
+    [a,b]=cortar(a,b,fila,z,K,y,cw,alto,MANOS);ws.push(b-a);}
+  return [ws.length?ws.reduce((x,y)=>x+y,0)/ws.length:0,Math.abs(l-r)*cw];}
 // contorno de una elipse con ejes a y b (Ramanujan)
 const elipse=(a,b)=>{a/=2;b/=2;return Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)));};
+/* giro de la toma de perfil (seno del ángulo): la separación de los hombros y de las caderas de perfil contra la de
+   frente. De perfil exacto es 0; girado θ, se ve sen θ de la separación. null sin puntos. */
+function giroPerfil(KF,KS,cwF,cwS){
+  if(!KF||!KS)return null;const r=[];
+  for(const [i,j] of [[5,6],[11,12]])if(kOk(KF,i)&&kOk(KF,j)&&kOk(KS,i)&&kOk(KS,j)){const f=Math.abs(KF[i][0]-KF[j][0])*cwF,s=Math.abs(KS[i][0]-KS[j][0])*cwS;if(f>5)r.push(s/f);}
+  return r.length?Math.min(.6,med(r)):null;}
 /* las medidas en cm de un par de tomas (frente F y perfil S, con sus puntos KF y KS), sin la ropa, y el peso del
-   modelo. `alto`: la estatura (cm), `ref`: estatura + suela y pelo (el alto de la silueta). */
+   modelo. `alto`: la estatura (cm), `ref`: estatura + suela y pelo (el alto de la silueta).
+   - Brazos y manos: se quitan solo si van pegados al borde del tronco (con los puntos).
+   - Perfil girado: un corte ovalado de ancho w y fondo d, girado θ, se ve de sqrt(d² cos² θ + w² sen² θ); con el ancho
+     de frente y θ (de los puntos) se recupera el fondo. Las piernas de perfil se ven separadas por sen θ veces la
+     distancia entre ellas: se descuenta, y el fondo del muslo no pasa de 1.3 veces su ancho. */
 function medidasPersona(F,S,KF,KS,alto,ref,ropa){
-  const N=ANSUR.niveles,med5=v=>v.length?med(v):0,cwF=F.cw,cwS=S.cw,menos=v=>Math.max(0,v-2*ropa);
-  // las alturas de ANSUR son sobre la estatura; la silueta mide `ref` (con suela y pelo): se pasan a su escala
-  const f=h=>h*alto/ref;
+  const N=ANSUR.niveles,med5=v=>v.length?med(v):0,menos=v=>Math.max(0,v-2*ropa);
+  const MF=marco(F,KF,alto,ref),MS=marco(S,KS,alto,ref),cwF=F.cw*MF.k,cwS=S.cw*MS.k;
   const cF=y=>KF?centroEn(KF,y):null,cS=y=>KS?centroEn(KS,y):null;
-  const anchoT=(fila,y)=>{const c=cF(y),z=tramoCentro(fila,c);return z?sinBrazos(z,KF,y,c,cwF,ref):0;};
-  const fondoT=(fila,y)=>{const c=cS(y),z=tramoCentro(fila,c);return z?(z[1]-z[0])*cwS:0;};
+  const anchoT=(fila,y)=>{const c=cF(y),z=tramoCentro(fila,c);if(!z)return 0;const [a,b]=cortar(z[0]*cwF,z[1]*cwF,fila,z,KF,y,cwF,alto,BRAZOS);return b-a;};
+  const fondoT=(fila,y)=>{const c=cS(y),z=tramoCentro(fila,c);if(!z)return 0;const [a,b]=cortar(z[0]*cwS,z[1]*cwS,fila,z,KS,y,cwS,alto,BRAZOS);return b-a;};
+  const B=(T,M,h0,h1,fn)=>banda(T,M,h0,h1,fn);
   const d={
-    bid:pctl(banda(F,f(N.hombro),f(N.hombro+.04),(fila,y)=>{const z=tramoCentro(fila,cF(y));return z?(z[1]-z[0])*cwF:0;}),.9),
-    cb:med5(banda(F,f(N.pecho-.012),f(N.pecho+.012),anchoT)),cd:med5(banda(S,f(N.pecho-.012),f(N.pecho+.012),fondoT)),
-    wb:med5(banda(F,f(N.cintura-.012),f(N.cintura+.012),anchoT)),wd:med5(banda(S,f(N.cintura-.012),f(N.cintura+.012),fondoT)),
-    hb:pctl(banda(F,f(N.cadera-.03),f(N.cadera+.03),anchoT),.9),bd:pctl(banda(S,f(N.cadera-.03),f(N.cadera+.03),fondoT),.9)};
-  const mw=med5(banda(F,f(N.entrepierna+.015),f(N.entrepierna+.04),(fila,y)=>muslos(fila,y,KF,cwF,ref)));
-  const md=med5(banda(S,f(N.entrepierna+.015),f(N.entrepierna+.04),(fila,y)=>{const l=KS?xEn(KS,11,13,y)??xEn(KS,12,14,y):null,z=tramoCentro(fila,l);return z?(z[1]-z[0])*cwS:0;}));
+    bid:pctl(B(F,MF,N.hombro,N.hombro+.04,(fila,y)=>{const z=tramoCentro(fila,cF(y));return z?(z[1]-z[0])*cwF:0;}),.9),
+    cb:med5(B(F,MF,N.pecho-.012,N.pecho+.012,anchoT)),cd:med5(B(S,MS,N.pecho-.012,N.pecho+.012,fondoT)),
+    wb:med5(B(F,MF,N.cintura-.012,N.cintura+.012,anchoT)),wd:med5(B(S,MS,N.cintura-.012,N.cintura+.012,fondoT)),
+    hb:pctl(B(F,MF,N.cadera-.03,N.cadera+.03,anchoT),.9),bd:pctl(B(S,MS,N.cadera-.03,N.cadera+.03,fondoT),.9)};
+  const MU=[];B(F,MF,N.entrepierna+.015,N.entrepierna+.04,(fila,y)=>{const m=muslos(fila,y,KF,cwF,alto);if(m[0]>0)MU.push(m);return 0;});
+  const mw=med5(MU.map(m=>m[0])),sep=med5(MU.map(m=>m[1]));
+  let md=med5(B(S,MS,N.entrepierna+.015,N.entrepierna+.04,(fila,y)=>{const l=KS?xEn(KS,11,13,y)??xEn(KS,12,14,y):null,z=tramoCentro(fila,l);if(!z)return 0;const [a,b]=cortar(z[0]*cwS,z[1]*cwS,fila,z,KS,y,cwS,alto,MANOS);return b-a;}));
+  // el giro del perfil: se recuperan los fondos
+  const sg=giroPerfil(KF,KS,cwF,cwS),giro=sg==null?0:sg,cg=Math.sqrt(1-giro*giro);
+  const fondo=(D,w)=>giro>.05&&w>0?Math.sqrt(Math.max(D*D-w*w*giro*giro,(.5*D)**2))/cg:D;
+  d.cd=fondo(d.cd,d.cb);d.wd=fondo(d.wd,d.wb);d.bd=fondo(d.bd,d.hb);
+  if(giro>.05)md=Math.max(.5*md,md-sep*giro);
+  if(mw>0)md=Math.min(md,1.3*mw);
   for(const k in d)d[k]=menos(d[k]);d.th=elipse(menos(mw),menos(md));
   // fuera de lo que tiene una persona (percentiles 0.1 y 99.9 de ANSUR II, con holgura): se lleva al límite y se avisa
   const topes=[];for(const k in d){const [lo,hi]=ANSUR.limites[k];const v=d[k]/alto;if(!(v>=lo)){d[k]=lo*alto;topes.push(k);}else if(v>hi){d[k]=hi*alto;topes.push(k);}}
   const x={S:alto,...d};let ln=ANSUR.coef[0];ANSUR.claves.forEach((k,i)=>{ln+=ANSUR.coef[i+1]*Math.log(x[k]*10);});
-  return {d,pred:Math.exp(ln),topes};
+  return {d,pred:Math.exp(ln),topes,giro:Math.asin(giro)*180/Math.PI,incompleta:MF.incompleta||MS.incompleta};
 }
 
 /* dos ángulos (cada uno con 1 o 2 fotos) → centímetros con la estatura conocida → volumen → peso.
@@ -238,6 +276,7 @@ function combinar(modo,caps,alto,ropaK){
     // las medidas del modelo (promedio de los pares), el ancho de hombros y el fondo del pecho para la pantalla
     r.pred=base;r.dims={};for(const k of Object.keys(pares[0].M.d))r.dims[k]=prom(x=>x.M.d[k]);
     r.topes=[...new Set(pares.flatMap(x=>x.M.topes))];r.puntos=pares.every(x=>x.a.K&&x.b.K);
+    r.giro=prom(x=>x.M.giro);r.incompleta=pares.some(x=>x.M.incompleta);
     r.limpia=prom(x=>Math.max(x.a.t.sil.limpia||0,x.b.t.sil.limpia||0));
     r.prof=r.dims.cd;r.anchoF=r.dims.bid;r.imc=r.kg/((alto/100)**2);
     // fondo del pecho contra su ancho: en una persona va de ~0.55 a ~0.95 (ANSUR II); si pasa de 1.1, la toma de
@@ -351,7 +390,7 @@ function explicarV3(r,mm,pct){
   const D=r.dims,c=ANSUR.coef,ex=(v,d=2)=>`<sup data-no-tr>${nf(v,d)}</sup>`;
   const pasos=[
     ['Escala','Tu estatura más 2.5 cm de suela y pelo, dividida entre el alto de tu silueta en cada foto: así cada píxel tiene su medida en centímetros.'],
-    ['Puntos del cuerpo','Un modelo de pose ubica 133 puntos (cuerpo, pies, manos y dedos). Con ellos se quita de la silueta lo que no es tu cuerpo (suelo, cama, muebles) y, al medir el tronco, los brazos y las manos.'],
+    ['Puntos del cuerpo',`Un modelo de pose ubica 133 puntos (cuerpo, pies, manos y dedos). Con ellos se quitan los brazos y las manos pegados al medir el tronco, se corrige el giro de la toma de perfil (${nf(r.giro||0,1)}°) y se revisa que la silueta llegue de la cabeza a los pies.`],
     ['Medidas',`A la altura de cada una según ANSUR II, sin ${nf(ROPA[r.ropa||'normal'].cm,1)} cm de ropa por lado: hombros ${cm(D.bid)} · pecho ${cm(D.cb)} de ancho y ${cm(D.cd)} de fondo · cintura ${cm(D.wb)} y ${cm(D.wd)} · cadera ${cm(D.hb)} · glúteos ${cm(D.bd)} de fondo · contorno del muslo ${cm(D.th)}.`],
     ['Modelo',`Ajustado con ${nf(ANSUR.n,0)} personas pesadas en báscula y medidas a mano (ANSUR II). Con tus medidas da ${wtxt(r.pred,1)}. Error medio de validación: ±${nf(ANSUR.mape*100,1)} % con medidas de foto.`],
     ['Peso',`k × P^b = ${nf(r.k,3)} × ${nf(r.pred,1)}^${nf(r.b,2)} = ${wtxt(r.kg,1)}. ${mm.n?`k y b ajustados con ${pl(mm.n,'medición','mediciones')} de tu báscula: corrigen lo propio de tu cuerpo y tu cámara.`:'De fábrica k = 1 y b = 1; con tu báscula se ajustan a ti.'}`],

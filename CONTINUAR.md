@@ -180,7 +180,7 @@ modelo infla la silueta en COCO (RF-DETR −0.5 % de área), así que el exceso 
   ×2, más prueba `ev/casa.json` (144 personas de cuerpo completo junto a muebles). Ver `modelo/vision/LEEME.md`.
 - "Cómo hacerlo": pared lisa detrás y perfil completo (hombro hacia la cámara).
 
-**5.0.0-beta.8** (esta rama). CSV de beta.7 (11 mediciones, 180 cm, sin báscula): 89–109 L; la app decía ±10 %
+**5.0.0-beta.8**. CSV de beta.7 (11 mediciones, 180 cm, sin báscula): 89–109 L; la app decía ±10 %
 (el error de fábrica). Diagnóstico: `brazos_pegados` = 1 en todas (el tramo más ancho del pecho incluía los brazos y
 se le restaban ~19 cm), `filas_recortadas` 50–87 % (los topes decidían el volumen), hombros 18–44 cm (fila fija al 22 %).
 El dueño pidió 1 % de error, más entrenamiento y puntos blancos en el cuerpo "tipo traje de captura", hasta en los dedos.
@@ -203,11 +203,25 @@ Cambios:
 no se ve en la silueta: grasa, músculo, hueso); con su báscula (k y b por persona) el error que queda es la
 repetibilidad de la medición (en las pruebas, < 1 % entre tomas de la misma escena).
 
+**5.0.0-beta.9** (esta rama). CSV de beta.8 (5 mediciones, 180 cm): 118–141 kg, cv entre fotos 0–1 %. Contra hombres
+de ANSUR II de 175–185 cm e IMC 30–40 (mediana 104 kg): hombros bien (53 vs 55 cm), pero pecho de frente 22 cm (se
+cortaban "brazos" ya separados), cintura de frente 42–49 (brazos sin cortar) y todo lo de perfil 20–40 % alto. El dueño:
+puntos lentos (~1 por segundo) y "al final del shape no cuenta toda mi figura". Medido en COCO: la limpieza con los
+puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, error de alto 3 → 7 %). Cambios:
+
+- Puntos en vivo con **DWPose-t** (`cuerpo_v.onnx`, ~3 veces más rápido), dos workers a turnos en 8 núcleos,
+  suavizado al llegar; fotos con RTMW-m y su espejo promediados.
+- La foto que se mide ya no se limpia; el video sí, con 1.5 veces de holgura.
+- `cortar` (pesocam.js): brazo o mano se quitan solo si están pegados al borde del tramo (y no hay otro tramo junto).
+- `marco`: si la silueta es > 8 % más corta que el cuerpo según los puntos, la escala y las alturas salen de los puntos.
+- `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
+  del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
+
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.8.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.9.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

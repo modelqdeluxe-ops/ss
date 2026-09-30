@@ -104,21 +104,23 @@ function revisar(s,p,W,H,paso,prev,ref,conRef,kp){
   else if(!E.quieto)msg='Quieto…';
   return {E,msg,caja:c,pos};
 }
-/* la silueta, limpia con los puntos del cuerpo: se quita lo que queda lejos del esqueleto (suelo, cama, muebles u otra
-   cosa pegada al cuerpo). Cada celda debe quedar cerca de algún tramo del esqueleto: del tronco (el cuadrilátero de
-   hombros y caderas) a 13 % de la estatura (cabe el fondo de un cuerpo robusto de perfil), de la cabeza a 9 %, de
-   brazos y piernas a 6.5 %, de manos y pies a 4 %. La estatura sale de los mismos puntos (nariz a talones). Solo
-   personas con los puntos confiables; si no, la silueta queda igual. P: x, y en fracciones del cuadro W×H. */
+/* la silueta del video (modelo rápido), limpia con los puntos del cuerpo: se quita lo que queda lejos del esqueleto
+   (suelo, cama, muebles pegados al cuerpo). Cada celda debe quedar cerca de algún tramo del esqueleto, con holgura
+   (1.5 veces): del tronco (el cuadrilátero de hombros y caderas) a 24 % del alto de la silueta, de la cabeza a 13 %,
+   de brazos y piernas a 10 %, de manos (hasta la punta de cada dedo) y pies a 5–6 %. Medido contra siluetas a mano
+   (COCO): con el modelo rápido baja el error de área (casa 19 → 16 %) sin perder IoU; más ajustado cortaba cabeza y
+   pies. Solo en el video: la foto que se mide queda como la da el modelo preciso. P: x, y en fracciones del cuadro. */
 const TRAMOS_LIMPIA=[[5,7,.065],[7,9,.065],[6,8,.065],[8,10,.065],[11,13,.065],[13,15,.065],[12,14,.065],[14,16,.065],[0,0,.09],[3,4,.08],[0,3,.08],[0,4,.08],[3,3,.08],[4,4,.08],
-  [15,19,.04],[15,17,.04],[16,22,.04],[16,20,.04],[9,91,.04],[10,112,.04],[91,100,.04],[112,121,.04],[91,92,.035],[112,113,.035]];
+  [15,19,.04],[15,17,.04],[16,22,.04],[16,20,.04],[9,91,.04],[10,112,.04],
+  [91,95,.035],[91,99,.035],[91,103,.035],[91,107,.035],[91,111,.035],[112,116,.035],[112,120,.035],[112,124,.035],[112,128,.035],[112,132,.035]];
 function limpiarSil(s,P,W,H){
   if(!s||!s.ok||!P||P.length<23*3)return s;const c=i=>P[3*i+2]>=.3;
-  if(![0,5,6,11,12].every(c)||!(c(15)||c(16)))return s;
-  const G=s.G,Z=s.Z,gx=i=>(P[3*i]*W-Z.x)/s.cx,gy=i=>(P[3*i+1]*H-Z.y)/s.cy,escY=s.cy;
-  // estatura en celdas (en y): de la nariz (6.5 % bajo la coronilla) a los talones o tobillos
-  const pie=[19,22,15,16].filter(c).map(gy),alto=(Math.max(...pie)-gy(0))/.925;if(!(alto>G*.1))return s;
+  if(![5,6,11,12].every(c))return s;
+  const G=s.G,Z=s.Z,gx=i=>(P[3*i]*W-Z.x)/s.cx,gy=i=>(P[3*i+1]*H-Z.y)/s.cy,escY=s.cy,HOLGURA=1.5;
+  // (el alto de la silueta en celdas; los puntos suelen dar una estatura menor que la real y cortarían de más)
+  const alto=(s.caja[3]-s.caja[1])*HOLGURA;if(!(alto>G*.1))return s;
   const tr=TRAMOS_LIMPIA.filter(([a,b])=>c(a)&&c(b)).map(([a,b,m])=>[gx(a),gy(a),gx(b),gy(b),m*alto*escY]);
-  const quad=[5,6,12,11].map(i=>[gx(i),gy(i)]),mT=.13*alto*escY;
+  const quad=[5,6,12,11].map(i=>[gx(i),gy(i)]),mT=.16*alto*escY;
   const dSeg=(x,y,[ax,ay,bx,by])=>{const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0;return Math.hypot((x-ax-t*dx)*s.cx,(y-ay-t*dy)*escY);};
   const enQuad=(x,y)=>{let d=0;for(let i=0;i<4;i++){const [ax,ay]=quad[i],[bx,by]=quad[(i+1)%4],cr=(bx-ax)*(y-ay)-(by-ay)*(x-ax);if(cr!==0){if(d&&Math.sign(cr)!==d)return false;d=Math.sign(cr);}}return true;};
   const bordes=[0,1,2,3].map(i=>[...quad[i],...quad[(i+1)%4]]);
@@ -195,8 +197,10 @@ function abrir(o){
     // el preciso se carga mientras tanto: lo necesita la primera foto; después, los de pose (video y fotos)
     const persona=o.clase===Vision.PERSONA,esq=Vision.ESQUELETO[persona?'persona':'animal'];
     const preP=Vision.motor('preciso');preP.catch(()=>{});
-    // (el mismo modelo de pose en el video y en las fotos)
-    let poseV=null;const poseFP=Vision.motor(persona?'cuerpo':'animal');poseFP.then(m=>{poseV=m;}).catch(()=>{});
+    // pose: en personas el rápido en el video y el preciso en las fotos (se carga después del rápido); en ganado el mismo
+    let poseV=null;const poseVP=Vision.motor(persona?'cuerpoV':'animal');poseVP.then(m=>{poseV=m;}).catch(()=>{});
+    const poseFP=persona?poseVP.catch(()=>{}).then(()=>Vision.motor('cuerpo')):poseVP;poseFP.catch(()=>{});
+    const espejo=persona?Vision.ESPEJO:Vision.ESPEJO_ANIMAL;
     if(!activo)return;w.classList.remove('carga');
     const R=rap.R,cr=document.createElement('canvas');cr.width=cr.height=R;const xr=cr.getContext('2d',{willReadFrequently:true});
     let W=0,H=0,hist=[],prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
@@ -259,8 +263,9 @@ function abrir(o){
         if(Zr&&((r.s&&r.s.cortada)||(r.p&&r.p.cortada)||!(r.s&&r.s.ok)))r=await una(todo);
         tPre.push(performance.now()-t0);
         if(!r.s||!r.s.ok||(conRef&&!refOk(r.p,fc.width,fc.height)))return null;
+        // (la silueta de la foto no se limpia con los puntos: medido contra siluetas a mano, el modelo preciso sale
+        // mejor sin tocar, también en escenas de casa; limpiarla le quitaba cabeza, pies o brazos)
         r.kp=await posePx(fc,r.s.n);
-        if(r.kp&&persona){const P=r.kp.slice();for(let i=0;i<P.length;i+=3){P[i]/=fc.width;P[i+1]/=fc.height;}r.s=limpiarSil(r.s,P,fc.width,fc.height);}
         return r;}catch(e){console.warn(e);return null;}}
     /* los puntos del cuerpo en una foto (con el modelo de pose de fotos): recorte alrededor de la caja n (fracciones),
        con 25 % de margen y la proporción del modelo; devuelve x, y en píxeles de la foto y la confianza */
@@ -268,7 +273,11 @@ function abrir(o){
     async function posePx(fc,n){
       try{const m=await poseFP,t0=performance.now(),Z=recortePose(n,fc.width,fc.height,m),c=document.createElement('canvas');c.width=m.W;c.height=m.H;
         const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#000';x.fillRect(0,0,m.W,m.H);x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,m.W,m.H);
-        const r=await m.correr({px:x.getImageData(0,0,m.W,m.H).data},[]),P=r.kp;
+        const P=(await m.correr({px:x.getImageData(0,0,m.W,m.H).data},[])).kp;
+        // la misma foto en espejo: cada punto se promedia con su par del otro lado (izquierda ↔ derecha)
+        x.setTransform(-1,0,0,1,m.W,0);x.fillRect(0,0,m.W,m.H);x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,m.W,m.H);x.setTransform(1,0,0,1,0,0);
+        const Q=(await m.correr({px:x.getImageData(0,0,m.W,m.H).data},[])).kp;
+        if(Q&&Q.length===P.length)for(let i=0;i<P.length/3;i++){const j=espejo[i]??i;P[3*i]=(P[3*i]+1-Q[3*j])/2;P[3*i+1]=(P[3*i+1]+Q[3*j+1])/2;P[3*i+2]=(P[3*i+2]+Q[3*j+2])/2;}
         for(let i=0;i<P.length;i+=3){P[i]=Z.x+P[i]*Z.w;P[i+1]=Z.y+P[i+1]*Z.h;}
         tPose.push(performance.now()-t0);return P;}catch(e){console.warn(e);return null;}}
     // las fotos de un ángulo se toman todas antes de avisar (el pitido hace que la persona se mueva)
@@ -363,19 +372,25 @@ function abrir(o){
     /* ---------- los puntos del cuerpo en el video ----------
        Un cuadro a la vez, recortado alrededor de la última silueta. En teléfonos con pocos núcleos (o con el modelo de
        animales, más pesado) se deja un respiro entre uno y otro para no quitarle cuadros a la silueta. */
-    let poseVuelo=false,poseT=0;const poseRespiro=persona?(NUCLEOS()>=6?0:150):250;
+    // (con dos workers, los cuadros se reparten parejo: uno cada medio tiempo del modelo)
+    let poseVuelo=0,poseT=0,poseSeq=0,poseHecho=0,poseMs=0;const poseRespiro=persona?(NUCLEOS()>=6?0:120):250;
+    /* suavizado de los puntos al llegar (como un filtro One Euro): si un punto casi no se movió (menos de 1.5 % del alto
+       del cuerpo) se promedia con el anterior y deja de temblar; si se movió más, lo sigue de inmediato */
+    function suavizar(P,A,alto){if(!A||A.length!==P.length)return P;
+      for(let i=0;i<P.length;i+=3){if(A[i+2]<.3||P[i+2]<.3)continue;const dd=Math.hypot((P[i]-A[i])*W,(P[i+1]-A[i+1])*H)/Math.max(1e-6,alto*H),a=Math.min(1,.35+dd/.015*.65);
+        P[i]=A[i]+(P[i]-A[i])*a;P[i+1]=A[i+1]+(P[i+1]-A[i+1])*a;}return P;}
     async function bombearPose(){
-      if(!activo||!poseV||poseVuelo||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<poseRespiro)return;
-      poseVuelo=true;const n=vis.s.n.slice(),paso=ip;
+      if(!activo||!poseV||poseVuelo>=poseV.n||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<Math.max(poseRespiro,poseMs/poseV.n))return;
+      poseVuelo++;poseT=performance.now();const n=vis.s.n.slice(),paso=ip,mi=++poseSeq;
       try{const Z=recortePose(n,W,H,poseV),k=v.videoWidth/W;let e;
         try{e={bmp:await createImageBitmap(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,{resizeWidth:poseV.W,resizeHeight:poseV.H,resizeQuality:'medium'})};}
         catch(er){const c=document.createElement('canvas');c.width=poseV.W;c.height=poseV.H;const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);
           x.drawImage(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,0,0,c.width,c.height);e={px:x.getImageData(0,0,c.width,c.height).data};}
-        const r=await poseV.correr(e,[]),P=r.kp;
+        const r=await poseV.correr(e,[]),P=r.kp;poseMs=poseMs?poseMs*.8+r.ms*.2:r.ms;w.dataset.msPose=Math.round(poseMs);
         for(let i=0;i<P.length;i+=3){P[i]=(Z.x+P[i]*Z.w)/W;P[i+1]=(Z.y+P[i+1]*Z.h)/H;}
-        if(activo&&paso===ip&&performance.now()>=pausa){vis.kp={p:P,t:performance.now(),n};let c=0;for(let i=2;i<P.length;i+=3)if(P[i]>=.3)c++;w.dataset.puntos=c;}
+        if(activo&&paso===ip&&performance.now()>=pausa&&mi>poseHecho){poseHecho=mi;suavizar(P,vis.kp&&performance.now()-vis.kp.t<500?vis.kp.p:null,n[3]-n[1]);vis.kp={p:P,t:performance.now(),n};let c=0;for(let i=2;i<P.length;i+=3)if(P[i]>=.3)c++;w.dataset.puntos=c;}
       }catch(e){console.warn(e);}
-      poseVuelo=false;poseT=performance.now();if(poseRespiro)setTimeout(bombearPose,poseRespiro);else bombearPose();
+      poseVuelo--;if(poseRespiro)setTimeout(bombearPose,poseRespiro);else bombearPose();
     }
     tick=setInterval(()=>{bombear();bombearPose();},60);bombear();
   });

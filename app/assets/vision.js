@@ -6,8 +6,8 @@
              vez si el teléfono tiene núcleos de sobra (el doble de cuadros por segundo).
    - preciso (seg.onnx, 33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo en las fotos que se capturan,
              en segundo plano, para la medida final.
-   - pose    (cuerpo.onnx, animal_m.onnx): RTMW y RTMPose (OpenMMLab, Apache 2.0). Los puntos del cuerpo (hasta los
-             dedos), en el video y en las fotos, para ver y medir cada parte donde va.
+   - pose    (cuerpo_v.onnx, cuerpo.onnx, animal_m.onnx): DWPose, RTMW y RTMPose (OpenMMLab, Apache 2.0). Los puntos
+             del cuerpo (hasta los dedos): el rápido en el video, el preciso en las fotos (con su espejo, promediados).
    Los pesos de los modelos van guardados en 16 bits (la mitad de tamaño) y se pasan a 32 al cargar: el cálculo es el
    mismo (modelo/vision/pesos16.py).
    Vision.motor(nombre) → {modo, R, W, H, G, n, correr(entrada, clases)}. La entrada es {bmp} (un ImageBitmap
@@ -24,12 +24,14 @@ const NUC=(navigator.hardwareConcurrency||4);
 // copias del modelo rápido en paralelo: 3 en teléfonos de 8 núcleos, 2 con 6, 1 con menos (la cámara da ~30 cuadros/s)
 // rapidoP: el de personas (v2, con refinamiento a 1/4: bordes más finos); rapido: el de ganado (v1, mejor en vacas)
 /* pose (puntos del cuerpo, como un traje de captura de movimiento), de OpenMMLab (Apache 2.0):
-   cuerpo: RTMW (cuerpo completo, 133 puntos: cuerpo, pies, cara, manos y dedos), en el video y en las fotos;
+   cuerpoV: DWPose-t (cuerpo completo, 133 puntos: cuerpo, pies, cara, manos y dedos; ~3 veces más rápido), en el
+            video, en dos workers en teléfonos de 8 núcleos;
+   cuerpo: RTMW-m (los mismos 133 puntos, más preciso), en las fotos;
    animal: RTMPose de animales (AP-10K, 17 puntos). La entrada es un recorte alrededor del sujeto de W×H; devuelve los
    puntos en fracciones del recorte. */
 const MODELOS={rapido:{archivo:'silueta.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},
   rapidoP:{archivo:'silueta_p.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1},
-  cuerpo:{archivo:'cuerpo.onnx',W:192,H:256,tipo:'pose',n:1},
+  cuerpo:{archivo:'cuerpo.onnx',W:192,H:256,tipo:'pose',n:1},cuerpoV:{archivo:'cuerpo_v.onnx',W:192,H:256,tipo:'pose',n:NUC>=8?2:1},
   animal:{archivo:'animal_m.onnx',W:256,H:256,tipo:'pose',n:1}};
 for(const k in MODELOS){const m=MODELOS[k];m.W=m.W||m.R;m.H=m.H||m.R;m.R=m.R||m.W;}
 /* los puntos y cómo se unen. Personas (COCO-WholeBody): 0 nariz, 1-2 ojos, 3-4 orejas, 5-6 hombros, 7-8 codos,
@@ -38,6 +40,15 @@ for(const k in MODELOS){const m=MODELOS[k];m.W=m.W||m.R;m.H=m.H||m.R;m.R=m.R||m.
    pulgar al meñique). Animales (AP-10K): 0-1 ojos, 2 nariz, 3 cuello, 4 base de la cola, 5-7 hombro, codo y pata
    delantera izquierdos, 8-10 los derechos, 11-13 cadera, rodilla y pata trasera izquierdas, 14-16 las derechas. */
 const mano=r=>[0,1,2,3,4].flatMap(d=>[[r,r+1+4*d],[r+1+4*d,r+2+4*d],[r+2+4*d,r+3+4*d],[r+3+4*d,r+4+4*d]]);
+/* izquierda ↔ derecha de cada punto (para medir una foto también en espejo y promediar) */
+const ESPEJO=(()=>{const P=[[1,2],[3,4],[5,6],[7,8],[9,10],[11,12],[13,14],[15,16],[17,20],[18,21],[19,22]];
+  for(let i=0;i<8;i++)P.push([23+i,39-i]);                    // mandíbula 0–16
+  for(let i=0;i<5;i++)P.push([40+i,49-i]);                    // cejas 17–21 ↔ 26–22
+  P.push([54,58],[55,57]);                                    // nariz 31–35
+  for(const [a,b] of [[36,45],[37,44],[38,43],[39,42],[40,47],[41,46],[48,54],[49,53],[50,52],[55,59],[56,58],[60,64],[61,63],[65,67]])P.push([23+a,23+b]);
+  for(let i=0;i<21;i++)P.push([91+i,112+i]);                  // manos
+  const m=[...Array(133).keys()];for(const [a,b] of P){m[a]=b;m[b]=a;}return m;})();
+const ESPEJO_ANIMAL=(()=>{const m=[...Array(17).keys()];for(const [a,b] of [[0,1],[5,8],[6,9],[7,10],[11,14],[12,15],[13,16]]){m[a]=b;m[b]=a;}return m;})();
 const ESQUELETO={persona:[[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16],[0,5],[0,6],
     [15,17],[15,18],[15,19],[16,20],[16,21],[16,22],...mano(91),...mano(112)],
   animal:[[0,2],[1,2],[2,3],[3,4],[3,5],[5,6],[6,7],[3,8],[8,9],[9,10],[4,11],[11,12],[12,13],[4,14],[14,15],[15,16]]};
@@ -194,7 +205,7 @@ function motor(nombre='rapido'){
   motores[nombre]=p;p.catch(()=>{delete motores[nombre];});
   return p;
 }
-window.Vision={motor,BASE,MODELOS,ESQUELETO,silueta:N.silueta,contorno:N.contorno,puntos:N.puntos,
+window.Vision={motor,BASE,MODELOS,ESQUELETO,ESPEJO,ESPEJO_ANIMAL,silueta:N.silueta,contorno:N.contorno,puntos:N.puntos,
   // clases COCO que usa la app
   PERSONA:1,VACA:21};
 })();

@@ -104,7 +104,7 @@ if beta:
     V = pathlib.Path(__file__).resolve().parents[1] / 'modelo' / 'vision'
     dv = D / 'assets' / 'vision'
     dv.mkdir(parents=True, exist_ok=True)
-    for f in ('silueta.onnx', 'silueta_p.onnx', 'seg.onnx', 'cuerpo.onnx', 'animal_m.onnx', 'ort.bundle.js', 'ort-wasm-simd-threaded.wasm'):
+    for f in ('silueta.onnx', 'silueta_p.onnx', 'seg.onnx', 'cuerpo.onnx', 'cuerpo_v.onnx', 'animal_m.onnx', 'ort.bundle.js', 'ort-wasm-simd-threaded.wasm'):
         shutil.copy(V / f, dv / f)
     lic = D / 'assets' / 'lib' / 'LICENCIAS.txt'
     extra = '\n\n'.join((V / f).read_text(encoding='utf-8') for f in ('LICENCIA-rf-detr.txt', 'LICENCIA-onnxruntime.txt', 'LICENCIA-torchvision.txt', 'LICENCIA-mmpose.txt'))
