@@ -1,0 +1,23 @@
+Con tu estatura la cámara sabe cuánto mide cada parte de tu cuerpo. Escríbela una vez, sin zapatos. El sexo y la edad afinan el cálculo del peso.	With your height the camera knows how long each part of your body is. Enter it once, without shoes. Sex and age refine the weight calculation.	Com sua altura a câmera sabe quanto mede cada parte do seu corpo. Escreva uma vez, sem sapatos. O sexo e a idade afinam o cálculo do peso.
+Sexo	Sex	Sexo
+Elige	Choose	Escolha
+Hombre	Male	Homem
+Mujer	Female	Mulher
+Edad (opcional)	Age (optional)	Idade (opcional)
+Edad	Age	Idade
+Elige el sexo: el cálculo del peso lo usa.	Choose the sex: the weight calculation uses it.	Escolha o sexo: o cálculo do peso usa essa informação.
+Escribe la edad en años (15 a 90) o déjala vacía.	Enter the age in years (15 to 90) or leave it empty.	Escreva a idade em anos (15 a 90) ou deixe em branco.
+{0} años	{0} years	{0} anos
+años	years	anos
+En la fórmula, x vale uno en hombres y cero en mujeres, y {0} es la edad en años.	In the formula, x is one for men and zero for women, and {0} is the age in years.	Na fórmula, x vale um para homens e zero para mulheres, e {0} é a idade em anos.
+S: estatura. A: hombros. B y C: ancho y fondo del pecho. D y E: ancho y fondo de la cintura. F: ancho de la cadera. G: fondo de los glúteos. M: contorno del muslo. H: contorno de la pantorrilla. N: contorno del cuello. K: contorno del muslo sobre la rodilla. Todo en milímetros.	S: height. A: shoulders. B and C: chest width and depth. D and E: waist width and depth. F: hip width. G: buttock depth. M: thigh circumference. H: calf circumference. N: neck circumference. K: circumference of the thigh above the knee. All in millimeters.	S: altura. A: ombros. B e C: largura e profundidade do peito. D e E: largura e profundidade da cintura. F: largura do quadril. G: profundidade dos glúteos. M: circunferência da coxa. H: circunferência da panturrilha. N: circunferência do pescoço. K: circunferência da coxa acima do joelho. Tudo em milímetros.
+Piernas y cuello	Legs and neck	Pernas e pescoço
+Contorno de la pantorrilla {0} {3} · del muslo sobre la rodilla {1} {4} · del cuello {2} {5}.	Calf circumference {0} {3} · thigh above the knee {1} {4} · neck {2} {5}.	Circunferência da panturrilha {0} {3} · da coxa acima do joelho {1} {4} · do pescoço {2} {5}.
+Estimado con las demás medidas (no se pudo tomar bien en la foto):	Estimated from the other measurements (it could not be taken well in the photo):	Estimado com as demais medidas (não foi possível medir bem na foto):
+pantorrilla	calf	panturrilha
+cuello	neck	pescoço
+muslo sobre la rodilla	thigh above the knee	coxa acima do joelho
+Ajustado con {0} personas pesadas en báscula y medidas a mano (ANSUR II), con tu sexo y tu edad. Con tus medidas da {1} {3}. Error medio de validación: ±{2} {4} con medidas de foto.	Fitted with {0} people weighed on a scale and measured by hand (ANSUR II), with your sex and age. With your measurements it gives {1} {3}. Mean validation error: ±{2} {4} with photo measurements.	Ajustado com {0} pessoas pesadas na balança e medidas à mão (ANSUR II), com seu sexo e sua idade. Com suas medidas dá {1} {3}. Erro médio de validação: ±{2} {4} com medidas de foto.
+Ajustado con {0} personas pesadas en báscula y medidas a mano (ANSUR II), con tu sexo. Con tus medidas da {1} {3}. Error medio de validación: ±{2} {4} con medidas de foto.	Fitted with {0} people weighed on a scale and measured by hand (ANSUR II), with your sex. With your measurements it gives {1} {3}. Mean validation error: ±{2} {4} with photo measurements.	Ajustado com {0} pessoas pesadas na balança e medidas à mão (ANSUR II), com seu sexo. Com suas medidas dá {1} {3}. Erro médio de validação: ±{2} {4} com medidas de foto.
+Pantorrilla · muslo sobre la rodilla · cuello	Calf · thigh above the knee · neck	Panturrilha · coxa acima do joelho · pescoço
+Estimadas con las demás medidas	Estimated from the other measurements	Estimadas com as demais medidas

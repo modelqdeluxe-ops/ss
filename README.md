@@ -183,11 +183,14 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   resultado) y se pasan a 32 al cargar.
   Cada silueta se queda con la mancha más grande (no suma otra persona ni pedazos sueltos). Todo en el teléfono, sin
   internet. Tabla de velocidad y precisión en `modelo/vision/LEEME.md`.
-- **Peso de personas** (`pesocam.js`, modelo v3): una ley de potencias ajustada con **ANSUR II** (6,068 personas
+- **Peso de personas** (`pesocam.js`, modelo v4): una ley de potencias ajustada con **ANSUR II** (6,068 personas
   pesadas en báscula y medidas a mano, dominio público; `modelo/peso/ajustar_peso.py`): ln peso = c0 + Σ ci · ln medida
-  con la estatura, el ancho de hombros (deltoides), el ancho y fondo del pecho y de la cintura, el ancho de la cadera,
-  el fondo de los glúteos y el contorno del muslo (elipse con el ancho de frente y el fondo de perfil). Validación
-  cruzada: error medio 2.5 % con medidas exactas y 3.1 % con 3 % de ruido por medida (el de una foto), sin sesgo. Cada
+  + sexo + edad, con la estatura, el ancho de hombros (deltoides), el ancho y fondo del pecho y de la cintura, el ancho
+  de la cadera, el fondo de los glúteos y los contornos del muslo, del muslo sobre la rodilla, de la pantorrilla y del
+  cuello (elipses con el ancho de frente y el fondo de perfil). El sexo (obligatorio) y la edad (opcional) se escriben
+  con la estatura. Validación cruzada: error medio 1.6 % con medidas exactas y 2.2 % con 3 % de ruido por medida (el de
+  una foto), sin sesgo (v3: 2.5 y 3.1 %). Si pantorrilla, cuello o muslo bajo no se pueden tomar, se estiman con las
+  demás medidas (ANSUR II). Cada
   medida se toma a su altura en ANSUR II (fracción de la estatura) y los puntos del cuerpo quitan brazos y manos; una
   medida fuera de lo humano (percentiles 0.1–99.9 con holgura) se lleva al límite y se avisa. peso = k · P^b con k = 1
   y b = 1 de fábrica; la báscula los ajusta a la persona. El volumen (abajo) queda como comprobación.

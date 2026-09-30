@@ -16,15 +16,25 @@ Solo usa lo que se puede medir con dos siluetas (de frente y de perfil) y la est
 | cadera | hipbreadth | ancho del tronco sin manos, percentil 90 entre 45.6 % y 51.6 % |
 | glúteos | buttockdepth | fondo de perfil, percentil 90 en la misma banda |
 | muslo | thighcircumference | contorno de la elipse con el ancho de un muslo (de frente) y el fondo (de perfil) bajo la entrepierna |
+| muslo sobre la rodilla | lowerthighcircumference | lo mismo entre 65.5 % y 69 % de la estatura |
+| pantorrilla | calfcircumference | lo mismo, lo más ancho entre 74.5 % y 81 % (entre la rodilla y el tobillo) |
+| cuello | neckcircumference | elipse con lo más angosto de frente y de perfil entre 13.5 % y 18 % (sin descontar ropa) |
+| sexo, edad | Gender, Age | se escriben con la estatura (sin edad: la mediana, 28 años) |
 
 Modelo: `ln peso = c0 + Σ ci · ln medida` (medidas en mm), por mínimos cuadrados con 3 % de ruido en las medidas de la
 foto (así ningún coeficiente depende de más de una medida sola). Validación cruzada de 10 partes:
 
-| Medidas | Error medio | RMS | 95 % de las personas dentro de | Sesgo |
-|---|---|---|---|---|
-| exactas (cinta y calibrador) | 2.5 % | 3.2 % | 6.4 % | +0.1 % |
-| con 3 % de ruido (foto) | 3.1 % | 3.9 % | 7.8 % | +0.1 % |
-| con 5 % de ruido | 3.9 % | 5.0 % | 9.9 % | 0.0 % |
+Modelo v4 (el de la app; v3 no tenía pantorrilla, cuello, muslo bajo, sexo ni edad):
+
+| Medidas | Error medio v4 | RMS v4 | Error medio v3 |
+|---|---|---|---|
+| exactas (cinta y calibrador) | 1.6 % | 2.1 % | 2.5 % |
+| con 3 % de ruido (foto) | 2.2 % | 2.8 % | 3.1 % |
+| con 5 % de ruido | 3.0 % | 3.7 % | 3.9 % |
+
+Si una medida nueva no se puede tomar, se estima con las demás (`imputar` en `ajuste.json`): sin cuello 2.4 %, sin
+pantorrilla 2.4 %, sin muslo bajo 2.4 %, sin las tres 2.9 %. Probado y descartado: gradient boosting (igual que el
+lineal) y el antebrazo (en ANSUR baja el error, pero de la foto solo sale su ancho).
 
 Solo con la estatura el error medio es 11.7 %; con el pecho, 5.7 %; con pecho y cintura, 4.4 %; con cadera y glúteos,
 3.7 %; con hombros, 2.9 %; con el muslo, 2.4 %. Lo que queda (~2–3 %) es lo que el cuerpo tiene por dentro (grasa,
