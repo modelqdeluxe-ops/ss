@@ -109,3 +109,74 @@ volumen	volume	volume
 hombros	shoulders	ombros
 pecho de fondo	chest depth	profundidade do peito
 IMC	BMI	IMC
+Ropa	Clothing	Roupa
+Ajustada	Tight	Justa
+Holgada	Loose	Folgada
+Laboratorio	Lab	Laboratório
+Datos de desarrollador: cada medición queda registrada aquí. Anota el peso de báscula en las que puedas para medir el error del modelo.	Developer data: every measurement is logged here. Enter the scale weight whenever you can to measure the model's error.	Dados de desenvolvedor: cada medição fica registrada aqui. Anote o peso da balança sempre que puder para medir o erro do modelo.
+Todavía no hay mediciones.	No measurements yet.	Ainda não há medições.
+mediciones	measurements	medições
+con báscula	with scale	com balança
+error esperado (validación cruzada)	expected error (cross-validation)	erro esperado (validação cruzada)
+error medio al medir	mean error when measured	erro médio ao medir
+sesgo	bias	viés
+RMSE	RMSE	RMSE
+error sin calibrar	uncalibrated error	erro sem calibrar
+repetibilidad (CV)	repeatability (CV)	repetibilidade (CV)
+dispersión entre fotos	spread between photos	dispersão entre fotos
+cuadros/s	frames/s	quadros/s
+modelo preciso	precise model	modelo preciso
+Exportar CSV	Export CSV	Exportar CSV
+Borrar registro	Clear log	Apagar registro
+Medición	Measurement	Medição
+Volumen	Volume	Volume
+Por partes	By part	Por partes
+Hombros	Shoulders	Ombros
+Pecho de fondo	Chest depth	Profundidade do peito
+Modelo	Model	Modelo
+Dispersión entre fotos	Spread between photos	Dispersão entre fotos
+Fuente	Source	Fonte
+Toma manual	Manual shot	Foto manual
+Cuadros/s	Frames/s	Quadros/s
+Modelo rápido	Fast model	Modelo rápido
+Modelo preciso	Precise model	Modelo preciso
+Motor	Engine	Motor
+Error	Error	Erro
+Largo	Length	Comprimento
+Ancho	Width	Largura
+sí	yes	sim
+no	no	não
+Anotar peso de báscula	Enter scale weight	Anotar peso da balança
+Cambiar peso de báscula	Change scale weight	Alterar peso da balança
+La cámara estimó	The camera estimated	A câmera estimou
+. Escribe lo que marcó la báscula ese día; también sirve para calibrar.	. Enter what the scale showed that day; it also calibrates.	. Digite o que a balança marcou naquele dia; também serve para calibrar.
+Peso de báscula guardado	Scale weight saved	Peso da balança salvo
+¿Borrar esta medición?	Delete this measurement?	Apagar esta medição?
+Sale del registro y de la calibración.	It is removed from the log and from the calibration.	Sai do registro e da calibração.
+Medición borrada	Measurement deleted	Medição apagada
+¿Borrar el registro?	Clear the log?	Apagar o registro?
+Se borran todas las mediciones de este modo, también su peso de báscula (la calibración).	All measurements in this mode are deleted, including their scale weights (the calibration).	Todas as medições deste modo são apagadas, inclusive o peso da balança (a calibração).
+Mediciones	Measurements	Medições
+Midiendo… {0}/{1}	Measuring… {0}/{1}	Medindo… {0}/{1}
+peso = k · V	weight = k · V	peso = k · V
+Escala	Scale	Escala
+Rebanadas	Slices	Fatias
+Tu estatura más {0} {1} de suela y pelo, dividida entre el alto de tu silueta en cada foto: así cada píxel tiene su medida en centímetros.	Your height plus {0} {1} for soles and hair, divided by the height of your outline in each photo: that gives every pixel its size in centimeters.	Sua altura mais {0} {1} de sola e cabelo, dividida pela altura da sua silhueta em cada foto: assim cada pixel tem sua medida em centímetros.
+La silueta de frente da el ancho a cada altura del cuerpo y la de costado el fondo. Cada rebanada es un corte ovalado: área = f × ancho × fondo (f = {0} en el tronco y {1} en cabeza, brazos y piernas). Se descuentan {2} {3} de ropa por lado.	The front outline gives the width at each height of the body and the side outline gives the depth. Each slice is an oval cross-section: area = f × width × depth (f = {0} for the torso and {1} for head, arms and legs). {2} {3} of clothing is subtracted per side.	A silhueta de frente dá a largura em cada altura do corpo e a de lado a profundidade. Cada fatia é um corte oval: área = f × largura × profundidade (f = {0} no tronco e {1} na cabeça, braços e pernas). Descontam-se {2} {3} de roupa por lado.
+La suma de las rebanadas: {0} L. Cabeza {1} L · tronco {2} L · brazos {3} L · piernas {4} L.	The sum of the slices: {0} L. Head {1} L · torso {2} L · arms {3} L · legs {4} L.	A soma das fatias: {0} L. Cabeça {1} L · tronco {2} L · braços {3} L · pernas {4} L.
+La suma de las rebanadas: {0} L.	The sum of the slices: {0} L.	A soma das fatias: {0} L.
+k × volumen^b = {0} × {1}^{2} = {3} {5}. k es la densidad del cuerpo: peso por litro. De fábrica k = {4} {6}/L; con la báscula se ajusta.	k × volume^b = {0} × {1}^{2} = {3} {5}. k is the body's density: weight per liter. Default k = {4} {6}/L; the scale adjusts it.	k × volume^b = {0} × {1}^{2} = {3} {5}. k é a densidade do corpo: peso por litro. De fábrica k = {4} {6}/L; a balança ajusta.
+k × volumen^b = {0} × {1}^{2} = {3} {5}. k es la densidad del cuerpo: peso por litro. Ajustado con {4} medición de báscula.	k × volume^b = {0} × {1}^{2} = {3} {5}. k is the body's density: weight per liter. Adjusted with {4} scale measurement.	k × volume^b = {0} × {1}^{2} = {3} {5}. k é a densidade do corpo: peso por litro. Ajustado com {4} medição da balança.
+k × volumen^b = {0} × {1}^{2} = {3} {5}. k es la densidad del cuerpo: peso por litro. Ajustado con {4} mediciones de báscula.	k × volume^b = {0} × {1}^{2} = {3} {5}. k is the body's density: weight per liter. Adjusted with {4} scale measurements.	k × volume^b = {0} × {1}^{2} = {3} {5}. k é a densidade do corpo: peso por litro. Ajustado com {4} medições da balança.
+k × volumen^b = {0} × {1}^{2} = {3} {5}. k es mayor que la densidad del cuerpo porque las patas no entran en el volumen. De fábrica k = {4} {6}/L; con la báscula se ajusta.	k × volume^b = {0} × {1}^{2} = {3} {5}. k is higher than the body's density because the legs are not in the volume. Default k = {4} {6}/L; the scale adjusts it.	k × volume^b = {0} × {1}^{2} = {3} {5}. k é maior que a densidade do corpo porque as patas não entram no volume. De fábrica k = {4} {6}/L; a balança ajusta.
+k × volumen^b = {0} × {1}^{2} = {3} {5}. k es mayor que la densidad del cuerpo porque las patas no entran en el volumen. Ajustado con {4} medición de báscula.	k × volume^b = {0} × {1}^{2} = {3} {5}. k is higher than the body's density because the legs are not in the volume. Adjusted with {4} scale measurement.	k × volume^b = {0} × {1}^{2} = {3} {5}. k é maior que a densidade do corpo porque as patas não entram no volume. Ajustado com {4} medição da balança.
+k × volumen^b = {0} × {1}^{2} = {3} {5}. k es mayor que la densidad del cuerpo porque las patas no entran en el volumen. Ajustado con {4} mediciones de báscula.	k × volume^b = {0} × {1}^{2} = {3} {5}. k is higher than the body's density because the legs are not in the volume. Adjusted with {4} scale measurements.	k × volume^b = {0} × {1}^{2} = {3} {5}. k é maior que a densidade do corpo porque as patas não entram no volume. Ajustado com {4} medições da balança.
+±{0} {4}: el error del modelo (±{1} {5}) y el desacuerdo entre las {2} combinaciones de fotos (±{3} {6}).	±{0} {4}: the model's error (±{1} {5}) and the disagreement between the {2} photo combinations (±{3} {6}).	±{0} {4}: o erro do modelo (±{1} {5}) e a divergência entre as {2} combinações de fotos (±{3} {6}).
+La estatura de la persona de referencia más {0} {1}, dividida entre su alto en cada foto: así cada píxel tiene su medida en centímetros.	The reference person's height plus {0} {1}, divided by their height in each photo: that gives every pixel its size in centimeters.	A altura da pessoa de referência mais {0} {1}, dividida pela altura dela em cada foto: assim cada pixel tem sua medida em centímetros.
+De costado, cada columna del cuerpo (sin las patas) es una rebanada a lo largo del animal; su corte tiene la forma que se ve por detrás, agrandada o achicada según el grueso del cuerpo en esa columna.	From the side, each column of the body (without the legs) is a slice along the animal; its cross-section has the shape seen from behind, scaled to the thickness of the body at that column.	De lado, cada coluna do corpo (sem as patas) é uma fatia ao longo do animal; seu corte tem a forma vista por trás, ampliada ou reduzida conforme a espessura do corpo nessa coluna.
+k = {0} {2}/L · b = {1}. Cada medición con peso de báscula está en el laboratorio, abajo.	k = {0} {2}/L · b = {1}. Each measurement with a scale weight is in the lab, below.	k = {0} {2}/L · b = {1}. Cada medição com peso da balança está no laboratório, abaixo.
+Estimado contra báscula	Estimate vs. scale	Estimado vs. balança
+Estimado (vertical) contra báscula (horizontal), en {1}. La franja es ±{0} {2}.	Estimate (vertical) vs. scale (horizontal), in {1}. The band is ±{0} {2}.	Estimado (vertical) vs. balança (horizontal), em {1}. A faixa é ±{0} {2}.
+Últimas mediciones	Latest measurements	Últimas medições
+Últimas {0} mediciones: estimado (línea) y báscula (anillos).	Last {0} measurements: estimate (line) and scale (rings).	Últimas {0} medições: estimado (linha) e balança (anéis).
+Las fotos de cada ángulo no coincidieron del todo: quédate más quieto o mejora la luz.	The photos of each angle did not fully agree: hold stiller or improve the lighting.	As fotos de cada ângulo não coincidiram totalmente: fique mais parado ou melhore a luz.

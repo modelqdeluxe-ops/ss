@@ -228,8 +228,9 @@ function pdf(meta){
 function b64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);}
 function bajar(blob,nombre){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=nombre;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);}
 /* modo: abrir, compartir o guardar. Devuelve false si no se pudo (el usuario ya vio el aviso) */
-async function enviar(nombre,buf,modo,titulo){
-  const A=window.Android,mime='application/pdf';
+// tipo: el tipo del archivo (de fábrica PDF; el laboratorio del peso con cámara manda CSV)
+async function enviar(nombre,buf,modo,titulo,tipo){
+  const A=window.Android,mime=tipo||'application/pdf';
   if(A&&A.compartirArchivo){const x=b64(buf);let ok=false;
     try{ok=modo==='abrir'?A.abrirArchivo(nombre,x,mime):modo==='guardar'?A.guardarArchivo(nombre,x,mime):A.compartirArchivo(nombre,x,mime,T(titulo||nombre));}catch(e){ok=false;}
     if(!ok)toast('No pude preparar el archivo. Revisa el espacio del teléfono.');return !!ok;}

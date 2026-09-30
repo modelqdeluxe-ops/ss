@@ -60,6 +60,7 @@ const DOS=/2 de 2|2 of 2/;
  assert.equal(await p.$eval('.cv-chip[data-k="ang"]',e=>e.dataset.s),'no','de frente no sirve como costado');
  await esc('v',[PC]);
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});console.log('medición completa',Date.now()-t0,'ms');
+ assert.ok(await p.$('#sheet details.pc-exp'),'explica el modelo');assert.ok(await p.$('.cv-firma')===null,'la cámara se cerró');
  let txt=await leer();await p.screenshot({path:'vivo_res.png'});
  assert.ok(!await p.$('dialog.cv'),'la cámara se cierra');assert.equal(await p.$$eval('#sheet .pc-caps img',e=>e.length),2,'dos fotos');
  const litros=num(txt,/([\d.,]+) L\s*(volumen|volume)/),kgP=await p.evaluate(()=>PesoCam.modeloV('persona'));
@@ -72,7 +73,7 @@ const DOS=/2 de 2|2 of 2/;
    kgs.push(await p.evaluate(()=>PesoCam.modeloV('persona')));console.log('modelo',JSON.stringify(kgs[i]));
    if(i===0){await esc('v',[PF]);await p.click('[data-act="pcVivo"]');await paso2();await esc('v',[PC]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});}}
  assert.equal(kgs[1].n,2);
- const V=await p.evaluate(()=>S.config.pesoCam.cal.filter(c=>c.modo==='persona').map(c=>c.L));
+ const V=await p.evaluate(()=>PesoCam.REG().filter(c=>c.modo==='persona'&&c.real>0).map(c=>c.L));
  const k2=await p.evaluate(V=>{const m=PesoCam.modeloV('persona');return m.k*Math.pow(V,m.b);},V[1]);console.log('calibrado',k2);assert.ok(Math.abs(k2-72)<4,'se ajusta a la báscula');
  await p.screenshot({path:'vivo_cal.png',fullPage:true});
  // repetibilidad: la misma persona un poco movida y a otra distancia cada vez; el volumen casi no debe cambiar
@@ -82,6 +83,15 @@ const DOS=/2 de 2|2 of 2/;
    vols.push(num(await p.$eval('#sheet',e=>e.textContent.replace(/\s+/g,' ')),/([\d.,]+) L\s*(volumen|volume)/));await p.click('#sheet [data-act="cerrar"]');await p.waitForTimeout(300);}
  const vm=vols.reduce((a,b)=>a+b,0)/vols.length,dv=Math.max(...vols.map(x=>Math.abs(x/vm-1)));
  console.log('repetibilidad',vols.join(' / '),'L · variación máx',(dv*100).toFixed(1),'%');assert.ok(dv<.06,'medición estable');
+ // laboratorio: registro, estadísticas, detalle, peso de báscula desde el registro y CSV
+ await p.waitForSelector('.pc-lab .pc-tiles');const E=await p.evaluate(()=>{const e=PcLab.estad('persona');return {n:e.n,nReal:e.nReal,loo:e.loo,mape:e.mape,rep:e.rep,cvInt:e.cvInt,fps:e.fps,msP:e.msP};});
+ console.log('laboratorio',JSON.stringify(E));assert.ok(E.n>=5&&E.nReal===2,'registro con báscula');assert.ok(E.rep<.05,'repetibilidad en el laboratorio');assert.ok(E.fps>0&&E.msP>0,'rendimiento registrado');
+ await p.click('.pc-lab .pc-reg');await p.waitForSelector('#sheet .pc-det');await p.screenshot({path:'vivo_detalle.png'});
+ await p.click('#sheet [data-act="pcRegReal"]');await p.fill('#sheet [name=kg]',String(Math.round(71*2.20462)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);
+ assert.equal(await p.evaluate(()=>PcLab.estad('persona').nReal),3,'peso de báscula desde el laboratorio');
+ const csv=await p.evaluate(async()=>{let t='';Documentos.enviar=async(n,b,m,ti,tipo)=>{t=tipo+'|'+n+'|'+new TextDecoder().decode(b);return true;};await ACTS.pcRegCsv();return t;});
+ const lineas=csv.split('\n').filter(Boolean);console.log('csv',lineas[0].slice(0,60),'…',lineas.length-1,'filas');assert.ok(csv.startsWith('text/csv|')&&lineas.length-1===E.n,'CSV');
+ await p.screenshot({path:'vivo_lab.png',fullPage:true});
 
  /* ---------- ganado: la vaca mide 200 cm de largo y 150 de alto; la persona de referencia 175 cm ---------- */
  await p.click('[data-act="pcModo"][data-m="ganado"]');await p.waitForTimeout(300);assert.equal(await p.evaluate(()=>localStorage.getItem('rumentis-pc-modo')),'ganado');

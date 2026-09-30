@@ -57,6 +57,7 @@ app/assets/fondo.js       Fondo animado (curvas de nivel + degradado)
 app/assets/vision.js      BETA: dos modelos en Web Workers: Vision.motor('rapido') para el video, ('preciso') para la foto
 app/assets/pesocam.js     BETA: página #pesocam "Peso con cámara" (solo si config.beta): modos, fórmulas, calibración
 app/assets/camvivo.js     BETA: cámara en vivo (CamVivo.abrir): silueta en color, indicadores, seguimiento y captura sola
+app/assets/pclab.js       BETA: laboratorio del peso con cámara (registro, estadísticas, gráficas, CSV)
 app/assets/i18n*.js       Traducción en pantalla (catálogos generados, no editar a mano)
 modelo/traducciones/*.tsv Frases: clave<TAB>inglés<TAB>portugués  →  python3 modelo/armar_i18n.py
 modelo/vision/            BETA: silueta.onnx (13 MB, rápido), seg.onnx (33 MB, preciso), ort.bundle.js, el .wasm,
@@ -110,7 +111,7 @@ calibración con báscula.
 - Probado en Chromium con escenas de COCO: personas, medición completa ~7.5 s (antes ~22 s), de verde a foto 0.25 s;
   ganado: largo 202 cm (real 200) y alto 149 cm (real 150) solo con la estatura de la persona de referencia.
 
-**5.0.0-beta.4** (esta rama). El dueño probó beta.3 en su teléfono: iba a 4 cuadros/s, la silueta gruesa, y la medida
+**5.0.0-beta.4**. El dueño probó beta.3 en su teléfono: iba a 4 cuadros/s, la silueta gruesa, y la medida
 "súper imprecisa y variable". Cambios:
 
 - **Fluidez**: modelo rápido a 256 px (59 ms en PC, antes 83); el cuadro se recorta y reduce con `createImageBitmap` y va
@@ -129,13 +130,28 @@ calibración con báscula.
 - Un segundo afinado del modelo rápido (16,100 fotos, 256 px) no mejoró: se quedó el de la época 5.
 - Prueba `vivo_t.js`: repetibilidad (3 mediciones con la persona movida y a otra distancia: 63 / 63 / 63 L).
 
+**5.0.0-beta.5** (esta rama). El dueño probó beta.4: ~20 cuadros/s ("super mejor"). Pidió más precisión, datos de
+desarrollador, mejor modelo matemático, letras más chicas en la cámara, explicar el modelo y la firma de su empresa:
+
+- `camvivo.js`: **2 fotos por ángulo** para el modelo preciso, tomadas antes del pitido (la primera versión las tomaba
+  después y mezclaba ángulos); "Midiendo… n/m"; métricas de rendimiento en `caps.stats`; texto de la cámara más chico;
+  firma "Powered by Rumentis Labs" en la cámara y "Rumentis Labs" en las fotos.
+- `pesocam.js`, **modelo v2**: promedio de las 4 combinaciones de fotos y su CV; ropa (selector); forma por parte del
+  cuerpo (tronco 0.81, resto π/4); fondo con mediana de 5 filas; volumen por partes; k de fábrica 1.0 kg/L (personas).
+  Hoja del resultado con "Cómo se calcula". Registro de mediciones `S.config.pesoCam.reg`; la calibración sale del
+  registro (mediciones con `real`) y de las calibraciones viejas `cal` con `L`.
+- `pclab.js` (nuevo): laboratorio con estadísticas (validación cruzada, MAPE, MAE, sesgo, RMSE, R², repetibilidad del
+  volumen, dispersión entre fotos, rendimiento), gráficas SVG, detalle por medición, anotar peso de báscula, CSV.
+- `documentos.js`: `Documentos.enviar` acepta el tipo de archivo (para el CSV).
+- Prueba `vivo_t.js`: además del laboratorio (registro, estadísticas, detalle, báscula desde el registro, CSV).
+
 **No probado aún en un teléfono real.**
 
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.4.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.5.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado). Pedirle: cuadros/s que muestra, cuánto tarda "Midiendo…", peso estimado vs. báscula (y calibrar).
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
    rápido a 256 px (`MODELOS.rapido.R` en vision.js; el modelo es convolucional y se exporta a 256 sin reentrenar).

@@ -15,7 +15,9 @@
 const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)return;
 
 /* reglas generales (las de distancia y ángulo vienen en cada paso) */
-const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6}};
+// tomas: fotos por ángulo para el modelo preciso (se promedian: menos ruido); separadas `entre` ms
+const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6},tomas:2,entre:160};
+const MARCA='Rumentis Labs';
 const CHIPS=[['det','Detectado'],['comp','Completo'],['dist','Distancia'],['ang','Ángulo'],['ref','Referencia'],['quieto','Quieto']];
 const COLOR={verde:'46,204,113',ambar:'240,191,51',rojo:'231,76,60'};
 
@@ -105,7 +107,7 @@ function abrir(o){
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
       <div class="cam-v cv-v"><video playsinline autoplay muted></video><canvas class="cv-lz"></canvas>
         <div class="cv-ind"><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
-        <img class="cv-th" alt="" hidden></div>
+        <img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span></div>
       <div class="cam-bar cv-bar"><span class="cv-fps"></span><button type="button" class="cam-disp cv-man" aria-label="Tomar la foto ahora" disabled><i></i></button><button type="button" class="cam-lente cv-gira">Girar cámara</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
     const $w=s=>w.querySelector(s),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
@@ -161,23 +163,34 @@ function abrir(o){
       const c=document.createElement('canvas'),k=Math.min(1,720/Math.max(Z.w,Z.h));c.width=Math.round(Z.w*k);c.height=Math.round(Z.h*k);
       const x=c.getContext('2d');x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,c.width,c.height);const X=-Z.x*k,Y=-Z.y*k,Wd=fc.width*k,Hd=fc.height*k,lw=Math.max(2,c.width/260);
       if(ref&&ref.ok)trazar(x,ref,'255,255,255',X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.08,linea:lw*.75});
-      trazar(x,s,COLOR.verde,X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.22,linea:lw});return c.toDataURL('image/jpeg',.85);}
+      trazar(x,s,COLOR.verde,X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.22,linea:lw});
+      const fs=Math.max(10,Math.round(c.width/34));x.font=`700 ${fs}px sans-serif`;x.textAlign='right';x.textBaseline='bottom';x.shadowColor='rgba(0,0,0,.6)';x.shadowBlur=4;x.fillStyle='rgba(255,255,255,.85)';x.fillText(MARCA,c.width-fs*.6,c.height-fs*.5);
+      return c.toDataURL('image/jpeg',.85);}
     /* medida precisa de una foto capturada (en segundo plano), sobre un recorte alrededor del sujeto (y de la persona
        de referencia): el modelo ve el cuerpo con más detalle. Si el recorte lo corta, se mide la foto completa. Si no
        sale, se queda la del modelo rápido. */
+    const tPre=[];
     async function precisa(fc,cajas){
-      try{const pre=await preP,c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
+      try{const pre=await preP,t0=performance.now(),c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
         const una=async Z=>{x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);const r=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},clases);
           return {s:aCuadro(r.suj[o.clase],r.G,Z,fc.width,fc.height),p:conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,fc.width,fc.height):null};};
         const Zr=zonaDe(cajas,fc.width,fc.height,{margen:.1,min:.3,amin:.5,amax:2}),todo={x:0,y:0,w:fc.width,h:fc.height};
         let r=await una(Zr||todo);
         if(Zr&&((r.s&&r.s.cortada)||(r.p&&r.p.cortada)||!(r.s&&r.s.ok)))r=await una(todo);
+        tPre.push(performance.now()-t0);
         if(!r.s||!r.s.ok||(conRef&&!refOk(r.p,fc.width,fc.height)))return null;
         return r;}catch(e){console.warn(e);return null;}}
-    function capturar(lista,manual){
-      const p=pasos[ip],u=lista[lista.length-1],fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);
+    // las fotos de un ángulo se toman todas antes de avisar (el pitido hace que la persona se mueva)
+    let capturando=false;
+    async function capturar(lista,manual){
+      if(capturando)return;capturando=true;pausa=Infinity;
+      const p=pasos[ip],u=lista[lista.length-1],cajas=[u.s.n,u.p&&u.p.ok?u.p.n:null];
+      const cuadro=()=>{const fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);return fc;};
       const med={};for(const k of ['alto','ancho','area','banda','ratio','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
-      caps.push({id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,pend:precisa(fc,[u.s.n,u.p&&u.p.ok?u.p.n:null])});
+      const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
+      // las demás tomas, unos milisegundos después (todavía quieto): el modelo preciso las mide todas y se promedian
+      for(let t=1;t<REGLAS.tomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
+      caps.push(cap);capturando=false;
       try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}beep();
       w.classList.add('flash');setTimeout(()=>w.classList.remove('flash'),260);
       th.src=foto(fc,u.s,u.p);th.hidden=false;buenos=[];prev=null;ult=null;tiempos=[];prog.hidden=true;zona=null;vis.s=vis.p=null;
@@ -185,21 +198,32 @@ function abrir(o){
       ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});w.dataset.estado='';pausa=performance.now()+1500;
     }
     async function terminar(){
-      pausa=Infinity;man.disabled=true;chips({});w.dataset.estado='';msg.textContent='Midiendo…';sub.textContent='';w.classList.add('carga');
+      pausa=Infinity;man.disabled=true;chips({});w.dataset.estado='';sub.textContent='';w.classList.add('carga');
+      const todas=caps.flatMap(c=>c.tomas);let listas=0;
+      const avance=()=>{msg.textContent=`Midiendo… ${listas}/${todas.length}`;};avance();
+      todas.forEach(t=>t.pend.then(()=>{listas++;if(activo&&listas<todas.length)avance();}));
       const out=[];
-      for(const c of caps){const r=await c.pend;if(!activo)return;
-        let med=c.rapido,fuente='rapido',sil=c.s,ref=c.pr||null;
-        if(r){sil=r.s;ref=r.p;med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;fuente='preciso';}
-        out.push({id:c.id,nombre:c.nombre,manual:c.manual,med,sil,ref,W:c.fc.width,H:c.fc.height,fuente,img:foto(c.fc,sil,ref)});}
+      for(const c of caps){const tomas=[];let img=null;
+        for(const t of c.tomas){const r=await t.pend;if(!activo)return;if(!r)continue;
+          const med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;tomas.push({med,sil:r.s,ref:r.p,W:t.fc.width,H:t.fc.height});
+          if(!img)img=foto(t.fc,r.s,r.p);}
+        const fuente=tomas.length?'preciso':'rapido';
+        if(!tomas.length)tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});
+        out.push({id:c.id,nombre:c.nombre,manual:c.manual,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,img:img||foto(c.fc,c.s,c.pr)});}
+      // rendimiento de esta medición (para el laboratorio)
+      out.stats={fps:fpsL.length?fpsL.reduce((a,b)=>a+b,0)/fpsL.length:0,cuadros:procesados,msRapido:msR.length?msR.reduce((a,b)=>a+b,0)/msR.length:0,
+        msPreciso:tPre.length?tPre.reduce((a,b)=>a+b,0)/tPre.length:0,seg:(performance.now()-tIni)/1000,motor:rap.modo+'×'+rap.n,tomas:todas.length};
       fin(out);
     }
     man.onclick=()=>{if(!ult)return toast('Que se vea completo para tomar la foto.');const l=buenos.length?buenos:[ult];capturar(l.slice(-REGLAS.seguidos),true);};
 
     /* ---------- un resultado del modelo rápido ---------- */
+    const tIni=performance.now(),msR=[],fpsL=[];let procesados=0;
     function procesar(r,Z){
+      procesados++;if(msR.length<400)msR.push(r.ms);
       const p=pasos[ip],s=aCuadro(r.suj[o.clase],r.G,Z,W,H),pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
       const now=performance.now();tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
-      if(tiempos.length>2)fps.textContent=`${((tiempos.length-1)/((now-tiempos[0])/1000)).toFixed(1)} cuadros/s`;
+      if(tiempos.length>2){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
       // (ms y motor quedan en el diálogo para las pruebas)
       w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo+'×'+rap.n;
       // el cuadro siguiente mira solo la zona del sujeto; si la zona lo cortó (o en ganado falta la persona), completo

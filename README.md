@@ -161,17 +161,29 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
     detalle). Si no encuentra al sujeto, queda la medida del rápido y la app lo avisa.
   Cada silueta se queda con la mancha más grande (no suma otra persona ni pedazos sueltos). Todo en el teléfono, sin
   internet. Tabla de velocidad y precisión en `modelo/vision/LEEME.md`.
-- **Peso por volumen** (`pesocam.js`): la escala en cm sale de la estatura (+2.5 cm de suela y pelo). El cuerpo se
-  corta en rebanadas y cada corte se toma como una elipse:
-  - personas: cada fila de la silueta de frente, con la profundidad de costado a la misma altura relativa; los brazos
-    (tramos fuera del tronco) se toman redondos;
+- **Peso por volumen** (`pesocam.js`, modelo v2): la escala en cm sale de la estatura (+2.5 cm de suela y pelo). Cada
+  ángulo se captura con **2 fotos** (tomadas antes del pitido, aún quieto) y el modelo preciso mide todas; el volumen se
+  calcula con cada par frente × costado (4 combinaciones) y se promedia; su dispersión (CV) entra en el rango. El
+  cuerpo se corta en rebanadas:
+  - personas: cada fila de la silueta de frente, con el fondo de costado a la misma altura relativa (mediana de 5
+    filas); se descuenta la **ropa** (ajustada 0.4, normal 0.8, holgada 1.5 cm por lado); área del corte = f · ancho ·
+    fondo con f = 0.81 en el tronco (superelipse de exponente ~2.2) y π/4 en cabeza, brazos y piernas; los brazos
+    (tramos fuera del tronco) se toman redondos. Da el volumen por partes (cabeza, tronco, brazos, piernas);
   - ganado: cada columna del cuerpo de costado (sin las patas: debajo de donde la silueta se parte en tramos solo
     cuenta la panza), con la forma que se ve por detrás escalada al grueso de esa columna.
-  kg = k · litros^b; de fábrica k = 0.98 (personas, ~ densidad del cuerpo) y 1.1 (ganado: las patas no entran en el
-  volumen), b = 1. Probado con cuerpos sintéticos de volumen conocido (cilindro y elipsoide: error ≤ 3 %).
-  Calibración por modo con báscula (`S.config.pesoCam.cal`, `{modo, L, kg}`): con 1 a 5 mediciones se ajusta k
-  (mediana de kg/L); con 6 o más, también el exponente; la app muestra el error típico. Estaturas en
-  `S.config.pesoCam.estatura` y `.refAlto`.
+  peso = k · litros^b; de fábrica k = 1.0 kg/L en personas (la densidad del cuerpo) y 1.1 en ganado (las patas no
+  entran en el volumen), b = 1. Validado con cuerpos sintéticos de volumen conocido (exacto en personas; ≤ 3 % en
+  ganado). Rango = √(error del modelo² + CV entre fotos²). La hoja del resultado explica el cálculo con sus números
+  ("Cómo se calcula").
+- **Laboratorio** (`pclab.js`, en la misma página): cada medición queda en `S.config.pesoCam.reg` (las últimas 300:
+  volumen, peso, medidas, partes, k y b usados, dispersión entre fotos, seguridad, fuente, cuadros/s, ms de cada
+  modelo, duración). Se le puede anotar el peso de báscula (`real`), que también calibra: con 1 a 5 se ajusta k
+  (mediana de kg/L); con 6 o más, también b. Estadísticas: error esperado con **validación cruzada dejando una fuera**,
+  error medio al medir (MAPE y MAE), sesgo, RMSE, R² (solo si los pesos de báscula varían ≥ 5 %), error del modelo de
+  fábrica, **repetibilidad** (CV del volumen en mediciones seguidas, < 15 min), dispersión entre fotos, cuadros/s y
+  tiempo del modelo preciso. Gráficas de estimado contra báscula (franja ±5 %) y de las últimas 30 mediciones.
+  Detalle de cada medición y exportación a **CSV**.
+- La cámara lleva la firma **Powered by Rumentis Labs** (y las fotos, "Rumentis Labs").
 - Las fotos de un lote se juntan en un **pesaje** (promedio y, si se indica, el peso de cada arete) que se guarda como
   cualquier otro, marcado `metodo:'camara'`.
 - Cómo se generó el modelo y sus licencias: `modelo/vision/LEEME.md`.
