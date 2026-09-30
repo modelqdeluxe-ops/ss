@@ -32,6 +32,19 @@ Modelo v4 (el de la app; v3 no tenía pantorrilla, cuello, muslo bajo, sexo ni e
 | con 3 % de ruido (foto) | 2.2 % | 2.8 % | 3.1 % |
 | con 5 % de ruido | 3.0 % | 3.7 % | 3.9 % |
 
+**El límite sin báscula.** Con las 93 medidas de ANSUR II tomadas a mano (muchas más de las que ve una cámara), sexo y
+edad, el error medio es 1.1 % (RMS 1.4 %; solo 54 % de las personas quedan bajo 1 % y 30 % bajo 0.5 %): es lo que la
+forma del cuerpo no dice (agua, músculo, grasa, hueso). Ningún método con fotos baja de ahí sin báscula. Búsqueda voraz
+de más medidas visibles (tobillo, pie, cabeza, largos del esqueleto…): las que más bajan el error son contornos con
+cinta (pecho, cintura, glúteos), que la foto no ve (de la foto salen del mismo ancho y fondo que ya se usan); las que sí
+se ven, apenas (2.2 → ~2.1 %). Lo que queda por ganar es el ruido de cada medida en la foto (3 % → 2.2 %; 2 % → ~1.9 %;
+exactas → 1.6 %): por eso la app toma 3 fotos por ángulo y usa la mediana de las 9 combinaciones.
+
+Otras bases revisadas: NHANES (CDC, dominio público, ~45,000 civiles con peso, cintura, muslo, pantorrilla, brazo y
+cadera) tiene medidas definidas en otros lugares del cuerpo (cintura en la cresta ilíaca, muslo a media altura) y sin
+anchos ni fondos: no se puede mezclar con el modelo de la foto sin sesgo. BodyM (Amazon; 2,505 personas con fotos de
+frente y de perfil, peso y medidas) es la más parecida a la app, pero su licencia es no comercial (CC BY-NC 4.0).
+
 Si una medida nueva no se puede tomar, se estima con las demás (`imputar` en `ajuste.json`): sin cuello 2.4 %, sin
 pantorrilla 2.4 %, sin muslo bajo 2.4 %, sin las tres 2.9 %. Probado y descartado: gradient boosting (igual que el
 lineal) y el antebrazo (en ANSUR baja el error, pero de la foto solo sale su ancho).

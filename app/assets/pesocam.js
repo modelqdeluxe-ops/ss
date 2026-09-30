@@ -303,7 +303,8 @@ function combinar(modo,caps,alto,ropaK,per={}){
     const x={P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b};if(modo==='persona')x.M=medidasPersona(a.T,b.T,a.K,b.K,alto,ref,ropa,per);pares.push(x);}
   const Ls=pares.map(x=>x.L),L=Ls.reduce((x,y)=>x+y,0)/Ls.length;
   // personas: la base del peso es el modelo de ANSUR II; ganado: el volumen. Su dispersión entre pares de fotos (cv)
-  const B=modo==='persona'?pares.map(x=>x.M.pred):Ls,base=B.reduce((x,y)=>x+y,0)/B.length,sd=B.length>1?Math.sqrt(B.reduce((x,y)=>x+(y-base)**2,0)/(B.length-1)):0,cv=base>0?sd/base:0;
+  // (personas: la mediana de las combinaciones, así una foto mala no mueve el resultado)
+  const B=modo==='persona'?pares.map(x=>x.M.pred):Ls,base=modo==='persona'?med(B):B.reduce((x,y)=>x+y,0)/B.length,sd=B.length>1?Math.sqrt(B.reduce((x,y)=>x+(y-base)**2,0)/(B.length-1)):0,cv=base>0?sd/base:0;
   const partes={};for(const x of pares)for(const k in x.P)partes[k]=(partes[k]||0)+x.P[k]/pares.length;
   // el rango: el error del modelo (calibración) y el desacuerdo entre fotos, sumados en cuadratura
   const err=Math.min(.3,Math.sqrt(m.err**2+cv**2));

@@ -17,7 +17,7 @@ const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)ret
 
 /* reglas generales (las de distancia y ángulo vienen en cada paso) */
 // tomas: fotos por ángulo para el modelo preciso (se promedian: menos ruido); separadas `entre` ms
-const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6},tomas:2,entre:160};
+const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6},tomas:3,entre:140};
 const MARCA='Rumentis Labs';
 const CHIPS=[['det','Detectado'],['comp','Completo'],['dist','Distancia'],['ang','Ángulo'],['ref','Referencia'],['quieto','Quieto']];
 const COLOR={verde:'46,204,113',ambar:'240,191,51',rojo:'231,76,60'};
@@ -256,9 +256,9 @@ function abrir(o){
     /* medida precisa de una foto capturada (en segundo plano), sobre un recorte alrededor del sujeto (y de la persona
        de referencia): el modelo ve el cuerpo con más detalle. Si el recorte lo corta, se mide la foto completa. Si no
        sale, se queda la del modelo rápido. */
-    // dos fotos por ángulo (se promedian: menos ruido); una sola solo en teléfonos muy lentos (el modelo preciso tardó
-    // más de 4 s la vez pasada)
-    let nTomas=REGLAS.tomas;try{if(+localStorage.getItem('rumentis-pc-msp')>4000)nTomas=1;}catch(e){}
+    // tres fotos por ángulo (se promedian las 9 combinaciones: menos ruido en cada medida); dos en teléfonos muy lentos
+    // (el modelo preciso tardó más de 4 s la vez pasada)
+    let nTomas=REGLAS.tomas;try{if(+localStorage.getItem('rumentis-pc-msp')>4000)nTomas=2;}catch(e){}
     const tPre=[];
     async function precisa(fc,cajas){
       try{const pre=await preP,t0=performance.now(),c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});

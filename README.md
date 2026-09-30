@@ -190,7 +190,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   cuello (elipses con el ancho de frente y el fondo de perfil). El sexo (obligatorio) y la edad (opcional) se escriben
   con la estatura. Validación cruzada: error medio 1.6 % con medidas exactas y 2.2 % con 3 % de ruido por medida (el de
   una foto), sin sesgo (v3: 2.5 y 3.1 %). Si pantorrilla, cuello o muslo bajo no se pueden tomar, se estiman con las
-  demás medidas (ANSUR II). Cada
+  demás medidas (ANSUR II). Cada ángulo se toma con 3 fotos y el peso es la mediana de las 9 combinaciones. El límite
+  sin báscula, aun con las 93 medidas de ANSUR II tomadas a mano, es 1.1 % de error medio. Cada
   medida se toma a su altura en ANSUR II (fracción de la estatura) y los puntos del cuerpo quitan brazos y manos; una
   medida fuera de lo humano (percentiles 0.1–99.9 con holgura) se lleva al límite y se avisa. peso = k · P^b con k = 1
   y b = 1 de fábrica; la báscula los ajusta a la persona. El volumen (abajo) queda como comprobación.

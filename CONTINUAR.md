@@ -217,7 +217,11 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.12** (esta rama). El dueño pidió bajar al máximo el error de fábrica (sin báscula). Modelo de peso v4
+**5.0.0-beta.13** (esta rama): 3 fotos por ángulo y la mediana de las 9 combinaciones (menos ruido por medida). El
+dueño pidió 0.5–1 % sin báscula: el límite con las 93 medidas a mano de ANSUR II es 1.1 % (ver `modelo/peso/LEEME.md`);
+bases revisadas: NHANES (otras definiciones de medidas) y BodyM (no comercial).
+
+**5.0.0-beta.12**. El dueño pidió bajar al máximo el error de fábrica (sin báscula). Modelo de peso v4
 (`VERSION_MODELO` 4): ANSUR II con pantorrilla, cuello, muslo sobre la rodilla, sexo y edad: error de validación 2.2 %
 con el ruido de una foto (antes 3.1 %), 1.6 % con medidas exactas. Probado: modelo no lineal (gradient boosting) no
 mejora al lineal; el antebrazo mejora en ANSUR pero de la foto solo sale su ancho (sesgo): descartado. Sexo obligatorio
@@ -244,7 +248,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.12.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.13.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
