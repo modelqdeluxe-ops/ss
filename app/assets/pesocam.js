@@ -48,7 +48,7 @@ const REG=()=>PC().reg||[];
 function registrar(r,stats){
   const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),q=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
-    alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
+    alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
     partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
     fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
   guardarPC({reg:REG().concat(rec).slice(-300)});return id;
@@ -95,6 +95,9 @@ const suma=t=>t.reduce((s,[a,b])=>s+b-a,0);
    resta del tramo central y se cuenta redondo, como brazo. Si no, contarían como tronco (con su fondo) y el volumen
    saldría alto. */
 const BRAZO=.052,H_HOMBRO=.18,H_CADERA=.52;
+// topes del fondo de costado: veces el ancho de frente (piernas: por pierna) y fracción de la estatura. Son holgados
+// (una persona muy robusta cabe): solo recortan lo que ningún cuerpo tiene.
+const TOPE={cabeza:1.4,tronco:1.05,piernas:1.5},TOPE_ALTO={cabeza:.14,tronco:.24,piernas:.13};
 function volPersona(F,S,ropa=0){
   const nF=F.filas.length,nS=S.filas.length,alto=nF*F.ch;let tx0=1e9,tx1=-1e9;
   for(let i=Math.floor(nF*.28);i<Math.floor(nF*.45);i++){const t=F.filas[i].reduce((m,z)=>!m||z[1]-z[0]>m[1]-m[0]?z:m,null);if(t){tx0=Math.min(tx0,t[0]);tx1=Math.max(tx1,t[1]);}}
@@ -102,14 +105,21 @@ function volPersona(F,S,ropa=0){
   // ¿se ven los brazos aparte? (filas entre hombros y caderas con algún tramo fuera del tronco)
   let sep=0,tot=0;for(let i=Math.floor(nF*H_HOMBRO);i<Math.floor(nF*H_CADERA);i++){tot++;if(F.filas[i].some(([a,b])=>!(b>tx0-hol&&a<tx1+hol)))sep++;}
   const pegados=tot>0&&sep/tot<.15,bw=BRAZO*alto;
-  for(let i=0;i<nF;i++){const h=(i+.5)/nF,js=Math.min(nS-1,Math.floor(h*nS)),ds=[];
-    for(let j=Math.max(0,js-2);j<=Math.min(nS-1,js+2);j++)ds.push(suma(S.filas[j]));
+  let filasT=0,topadas=0;
+  for(let i=0;i<nF;i++){const h=(i+.5)/nF,js=Math.min(nS-1,Math.floor(h*nS)),ds=[],pierna=h>=H_CADERA;
+    // de costado: en el tronco cuenta todo (el brazo pegado queda encima); en las piernas, solo el tramo más grande
+    // (si una pierna va un poco adelante, de costado se ven dos y no hay que sumarlas)
+    for(let j=Math.max(0,js-2);j<=Math.min(nS-1,js+2);j++)ds.push(pierna?Math.max(0,...S.filas[j].map(([a,b])=>b-a)):suma(S.filas[j]));
     const d=menos(med(ds)*S.cw);
     for(const [a,b] of F.filas[i]){let wd=menos((b-a)*F.cw);const central=b>tx0-hol&&a<tx1+hol;
       const parte=!central?'brazos':h<.13?'cabeza':h<H_CADERA?'tronco':'piernas';
       if(central&&pegados&&h>=H_HOMBRO&&h<H_CADERA){const quita=Math.min(2*bw,wd*.4);wd-=quita;P.brazos+=2*FORMA.brazos*(quita/2)**2*F.ch;}
-      P[parte]+=FORMA[parte]*wd*(central?d:wd)*F.ch;}}
-  for(const k in P)P[k]/=1000;P.pegados=pegados;return P;
+      // tope anatómico: el fondo no pasa de TOPE[parte] veces el ancho de frente ni de una fracción de la estatura;
+      // si pasa, la silueta de costado se pegó a algo (cama, suelo, mueble) y se recorta
+      let dd=central?d:wd;
+      if(central){filasT++;const t=Math.min(TOPE[parte]*wd,TOPE_ALTO[parte]*alto);if(dd>t){dd=t;topadas++;}}
+      P[parte]+=FORMA[parte]*wd*dd*F.ch;}}
+  for(const k in P)P[k]/=1000;P.pegados=pegados;P.topadas=filasT?topadas/filasT:0;return P;
 }
 /* Ganado: de costado, cada columna del cuerpo (sin las patas) es una rebanada a lo largo del animal; su corte tiene
    la forma que se ve por detrás, agrandada o achicada según el grueso del cuerpo en esa columna. */
@@ -137,13 +147,13 @@ function combinar(modo,caps,alto,ropaK){
   const cmpx=t=>ref/(modo==='persona'?t.med.alto:t.med.refAlto);
   const TP=tomas(p).map(t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t))})),TS=tomas(s).map(t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t))}));
   const pares=[];
-  let pegados=false;
-  for(const a of TP)for(const b of TS){const P=modo==='persona'?volPersona(a.T,b.T,ropa):volGanado(a.T,b.T);if(P.pegados)pegados=true;delete P.pegados;pares.push({P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b});}
+  let pegados=false;const topes=[];
+  for(const a of TP)for(const b of TS){const P=modo==='persona'?volPersona(a.T,b.T,ropa):volGanado(a.T,b.T);if(P.pegados)pegados=true;delete P.pegados;topes.push(P.topadas||0);delete P.topadas;pares.push({P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b});}
   const Ls=pares.map(x=>x.L),L=Ls.reduce((x,y)=>x+y,0)/Ls.length,sd=Ls.length>1?Math.sqrt(Ls.reduce((x,y)=>x+(y-L)**2,0)/(Ls.length-1)):0,cv=L>0?sd/L:0;
   const partes={};for(const x of pares)for(const k in x.P)partes[k]=(partes[k]||0)+x.P[k]/pares.length;
   // el rango: el error del modelo (calibración) y el desacuerdo entre fotos, sumados en cuadratura
   const err=Math.min(.3,Math.sqrt(m.err**2+cv**2));
-  const r={modo,L,partes,cv,comb:pares.length,brazosPegados:pegados,kg:m.k*Math.pow(L,m.b),k:m.k,b:m.b,err,n:m.n,alto,ropa:modo==='persona'?(ropaK||'normal'):null,
+  const r={modo,L,partes,cv,comb:pares.length,brazosPegados:pegados,topadas:topes.length?topes.reduce((x,y)=>x+y,0)/topes.length:0,kg:m.k*Math.pow(L,m.b),k:m.k,b:m.b,err,n:m.n,alto,ropa:modo==='persona'?(ropaK||'normal'):null,
     score:Math.min(p.med.score,s.med.score),manual:caps.some(c=>c.manual),fuente:caps.every(c=>c.fuente==='preciso')?'preciso':'rapido'};
   const prom=f=>{const v=pares.map(f).filter(isFinite);return v.length?v.reduce((x,y)=>x+y,0)/v.length:NaN;};
   if(modo==='persona'){
@@ -153,7 +163,8 @@ function combinar(modo,caps,alto,ropaK){
     // fondo del pecho contra el ancho del tronco (el tramo más ancho a la misma altura): en una persona va de ~0.5 a
     // ~0.8; si pasa de 0.9, la toma de costado no era de perfil y el volumen sale alto
     r.fondoAncho=r.prof/prom(x=>Math.max(1,...fila(x.a.T,.3).map(([a,b])=>b-a))*x.a.T.cw);
-    if(r.fondoAncho>.9)r.aviso='La toma de costado no parece de perfil completo (el pecho se ve muy ancho de lado): el peso puede salir alto. Repite girando bien de costado.';
+    if(r.topadas>.25)r.aviso='La silueta de costado incluía cosas que no son tu cuerpo (cama, suelo o muebles): se recortaron. Para medir mejor, párate frente a una pared lisa.';
+    else if(r.fondoAncho>.9)r.aviso='La toma de costado no parece de perfil completo (el pecho se ve muy ancho de lado): el peso puede salir alto. Repite girando bien de costado.';
     else if(r.imc>40||r.imc<15)r.aviso='El resultado sale fuera de lo normal para tu estatura: revisa que las dos tomas sean de frente y de perfil completo, con el cuerpo entero a la vista.';
   }else{r.largo=prom(x=>x.a.t.med.ancho*x.a.k);r.altoAnimal=prom(x=>x.a.t.med.alto*x.a.k);r.ancho=prom(x=>x.b.t.med.banda*x.b.k);
     // de costado y por detrás el animal tiene la misma altura: si no, la persona no estaba a la par
@@ -194,7 +205,7 @@ PAGES.pesocam=()=>{
      <div class="rows">${it.map((r,i)=>`<div class="row"><img class="pc-th" src="${r.img}" alt=""><div class="tx"><b>${wtxt(r.kg)}</b><span>${r.arete?`<span>Arete</span> <span data-no-tr>${esc(r.arete)}</span>`:'<span>Sin arete</span>'} · <span>±${Math.round(r.err*100)} %</span></span></div><button type="button" class="del" data-act="pcQuitar" data-i="${i}" aria-label="Quitar">${ico('x')}</button></div>`).join('')}</div>
      <div class="pc-acts"><button type="button" class="btn" data-act="pcVivo">${icono('camara','i3')}Otro animal</button><button type="button" class="btn pri" data-act="pcGuardar">Guardar pesaje</button></div></div></section>`:''}
    <section class="sec">${secH('Cómo hacerlo')}<div class="card pad pc-como">
-     <ol class="pc-pasos">${per?`<li>Apoya el teléfono a la altura de la cintura, a unos 3 metros (o que alguien lo sostenga), y usa la cámara frontal si estás solo.</li><li>Párate derecho con el cuerpo completo a la vista: primero de frente, con los brazos un poco separados; después de costado, con los brazos pegados.</li><li>Quédate quieto cuando la silueta esté verde: la foto se toma sola.</li>`
+     <ol class="pc-pasos">${per?`<li>Apoya el teléfono a la altura de la cintura, a unos 3 metros (o que alguien lo sostenga), y usa la cámara frontal si estás solo.</li><li>Detrás de ti, mejor una pared lisa: sin cama, sillón ni muebles pegados a tu cuerpo.</li><li>Párate derecho con el cuerpo completo a la vista: primero de frente, con los brazos un poco separados; después de perfil completo (hombro hacia la cámara), con los brazos pegados.</li><li>Quédate quieto cuando la silueta esté verde: la foto se toma sola.</li>`
        :`<li>Una persona se para derecha a la par del animal, sin taparlo. Su estatura es la medida de referencia.</li><li>Primero con el animal de costado; después por detrás. Aléjate hasta que el animal y la persona se vean completos.</li><li>Sostén el teléfono firme: cuando la silueta esté verde, la foto se toma sola.</li>`}</ol></div></section>
    ${tarjetaCal(modo)}
    ${window.PcLab?PcLab.html(modo):''}
@@ -217,6 +228,13 @@ ACTS.pcAlto=()=>formAlto(null);
 SAVE.pcAlto=f=>{const v=num(fv(f,'alto'));if(!(v>=100&&v<=230))return ferr(f,'Escribe la estatura en centímetros (por ejemplo, 170).');
   guardarPC({[MODOS[UI.pc.modo].alto]:Math.round(v)});closeSheet();const t=TRAS;TRAS=null;if(t)setTimeout(t,60);else toast('Estatura guardada');};
 
+/* las fotos de cada medición (con su silueta) quedan en el teléfono para el laboratorio: las de las últimas 40 */
+const FOTOS_MAX=40;
+async function guardarFotos(id,caps){
+  if(!window.Fotos)return;
+  try{for(let i=0;i<caps.length;i++){const b=await (await fetch(caps[i].img)).blob();await Fotos.guardar(`pc-${id}-${i}`,b);}
+    const viejos=REG().slice(0,-FOTOS_MAX);for(const x of viejos)for(let i=0;i<2;i++)Fotos.borrar(`pc-${x.id}-${i}`);}catch(e){console.warn(e);}
+}
 /* ---------- medir ---------- */
 let ULT=null;
 async function medirVivo(){
@@ -224,7 +242,7 @@ async function medirVivo(){
   if(!window.CamVivo){toast('La cámara en vivo no está disponible.');return null;}
   const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,buscar:M.buscar,pasos:M.pasos});
   if(!caps||caps.length<M.pasos.length)return null;
-  const r={...combinar(modo,caps,alto,ropaSel()),caps,stats:caps.stats||{}};r.id=registrar(r,r.stats);return r;
+  const r={...combinar(modo,caps,alto,ropaSel()),caps,stats:caps.stats||{}};r.id=registrar(r,r.stats);guardarFotos(r.id,caps);return r;
 }
 // antes de medir hace falta la estatura de referencia
 function conAlto(fn){const M=MODOS[UI.pc.modo];if(PC()[M.alto])return fn();formAlto(fn);}

@@ -49,7 +49,8 @@ const DOS=/2 de 2|2 of 2/;
  await p.waitForFunction(()=>document.querySelector('.cv-chip[data-k="det"]')?.dataset.s==='ok',null,{timeout:120000});
  console.log('primer cuadro',Date.now()-t0,'ms');await p.waitForTimeout(600);
  const m1=await p.$eval('.cv-msg',e=>e.textContent);console.log('lejos:',m1);assert.ok(/Acércate|Come closer|Aproxime/.test(m1),'pide acercarse');
- assert.equal(await p.$eval('.cv-chip[data-k="dist"]',e=>e.dataset.s),'no');assert.ok(!await p.$('.cv-chip[data-k="ref"]'),'sin referencia en personas');
+ assert.equal(await p.$eval('.cv-chip[data-k="dist"]',e=>e.dataset.s),'no');
+ const pos1=await p.$eval('.cv-pos',e=>({v:!e.hidden,t:e.lastChild.textContent}));console.log('posición lejos',pos1.t);assert.ok(pos1.v&&parseInt(pos1.t)<90,'indicador de posición');assert.ok(!await p.$('.cv-chip[data-k="ref"]'),'sin referencia en personas');
  await p.screenshot({path:'vivo_lejos.png'});
  await esc('v',[PF]);
  await p.waitForFunction(()=>document.querySelector('.cv')?.dataset.estado==='verde',null,{timeout:60000});await p.screenshot({path:'vivo_frente.png'});
@@ -86,7 +87,7 @@ const DOS=/2 de 2|2 of 2/;
  // laboratorio: registro, estadísticas, detalle, peso de báscula desde el registro y CSV
  await p.waitForSelector('.pc-lab .pc-tiles');const E=await p.evaluate(()=>{const e=PcLab.estad('persona');return {n:e.n,nReal:e.nReal,loo:e.loo,mape:e.mape,rep:e.rep,cvInt:e.cvInt,fps:e.fps,msP:e.msP};});
  console.log('laboratorio',JSON.stringify(E));assert.ok(E.n>=5&&E.nReal===2,'registro con báscula');assert.ok(E.rep<.05,'repetibilidad en el laboratorio');assert.ok(E.fps>0&&E.msP>0,'rendimiento registrado');
- await p.click('.pc-lab .pc-reg');await p.waitForSelector('#sheet .pc-det');await p.screenshot({path:'vivo_detalle.png'});
+ await p.click('.pc-lab .pc-reg');await p.waitForSelector('#sheet .pc-det');await p.waitForFunction(()=>[...document.querySelectorAll('#sheet .pc-det-fotos img')].some(i=>!i.hidden&&i.src),null,{timeout:5000});await p.screenshot({path:'vivo_detalle.png'});
  await p.click('#sheet [data-act="pcRegReal"]');await p.fill('#sheet [name=kg]',String(Math.round(71*2.20462)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);
  assert.equal(await p.evaluate(()=>PcLab.estad('persona').nReal),3,'peso de báscula desde el laboratorio');
  const csv=await p.evaluate(async()=>{let t='';Documentos.enviar=async(n,b,m,ti,tipo)=>{t=tipo+'|'+n+'|'+new TextDecoder().decode(b);return true;};await ACTS.pcRegCsv();return t;});

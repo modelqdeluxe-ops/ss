@@ -146,7 +146,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   distancia por alto (personas 55–88 % del cuadro, ganado por detrás 45–85 %) o por ancho (ganado de costado
   50–88 %); ángulo por la proporción ancho/alto (persona de frente ≥ 0.24, de costado ≤ 0.3 y ≤ 75 % de la de
   frente, y el tronco a la altura del pecho ≤ 65 % de su ancho de frente: de perfil de verdad); ganado de costado ≥ 1.15, por detrás ≤ 0.9); referencia completa, de pie y ≥ 25 % del alto; quieto si la
-  caja casi no se mueve (IoU ≥ 0.9).
+  caja casi no se mueve (IoU ≥ 0.9 contra la mediana de las últimas 3). Un indicador pequeño ("Posición 82 %") dice qué
+  tan cerca está de la foto: el producto de qué tanto se cumple cada regla.
 - **Fluidez**: el cuadro se recorta y reduce con `createImageBitmap` (en la GPU) y va directo al worker, que lo lee con
   `OffscreenCanvas`; hay un cuadro en vuelo por worker del modelo rápido (tres workers en teléfonos con 8 núcleos, dos
   con 6); la cámara se pide a 30 cuadros/s (el techo real); y cuando ya encontró al sujeto el modelo mira solo esa zona (**seguimiento**, con histéresis para que el
@@ -172,6 +173,10 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
     (tramos fuera del tronco) se toman redondos; si van pegados al tronco se estiman (5.2 % de la estatura de ancho
     cada uno) y se restan del tronco. Da el volumen por partes (cabeza, tronco, brazos, piernas). Avisa si el fondo del
     pecho pasa de 0.9 veces su ancho (la toma no era de perfil) o si el IMC sale fuera de 15–40;
+    **topes anatómicos**: el fondo de costado no pasa de 1.05 veces el ancho del tronco (cabeza 1.4, cada pierna 1.5) ni
+    de 24 % de la estatura en el tronco (cabeza 14 %, pierna 13 %): lo que pase es cama, suelo o muebles pegados a la
+    silueta y se recorta (si pasa en más de 25 % de las filas, se avisa); en las piernas, de costado se toma el tramo
+    más grande (una sola pierna) y no la suma;
   - ganado: cada columna del cuerpo de costado (sin las patas: debajo de donde la silueta se parte en tramos solo
     cuenta la panza), con la forma que se ve por detrás escalada al grueso de esa columna.
   peso = k · litros^b; de fábrica k = 1.0 kg/L en personas (la densidad del cuerpo) y 1.1 en ganado (las patas no

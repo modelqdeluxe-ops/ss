@@ -78,16 +78,24 @@ function revisar(s,p,W,H,paso,prev,ref,conRef){
   const v=d.eje==='alto'?c[3]-c[1]:c[2]-c[0];E.dist=v>=d.min&&v<=d.max;
   const ratio=((c[2]-c[0])*W)/((c[3]-c[1])*H);
   // (ref: las medidas de la primera toma; perfil: el tronco debe verse a lo más esa fracción de ancho que de frente)
-  const perfil=!a.perfil||!ref||!ref.torsoN||torsoN(s)<=a.perfil*ref.torsoN;
+  const tn=a.perfil&&ref&&ref.torsoN?torsoN(s):0,perfil=!a.perfil||!ref||!ref.torsoN||tn<=a.perfil*ref.torsoN;
   E.ang=(a.min==null||ratio>=a.min)&&(a.max==null||ratio<=a.max)&&(!a.rel||!ref||ratio<=a.rel*ref.ratio)&&perfil;
-  E.quieto=iou(c,prev)>=REGLAS.quieto;
+  const q=iou(c,prev);E.quieto=q>=REGLAS.quieto;
+  /* qué tan cerca está de la posición ideal (0 a 1): cada regla da 1 si se cumple y baja según lo lejos que esté */
+  const cerca=x=>Math.max(0,Math.min(1,x));
+  const fuera=Math.max(0,REGLAS.margen-c[0],REGLAS.margen-c[1],c[2]-(1-REGLAS.margen),c[3]-(1-REGLAS.margen));
+  const kComp=E.comp?1:cerca(1-fuera/.1-(s.cortada?.3:0)),kDist=E.dist?1:cerca(1-(v<d.min?d.min-v:v-d.max)/.3);
+  const viol=[a.min!=null&&ratio<a.min?(a.min-ratio)/a.min:0,a.max!=null&&ratio>a.max?(ratio-a.max)/a.max:0,
+    a.rel&&ref&&ratio>a.rel*ref.ratio?(ratio-a.rel*ref.ratio)/(a.rel*ref.ratio):0,!perfil?(tn-a.perfil*ref.torsoN)/(a.perfil*ref.torsoN):0];
+  const kAng=E.ang?1:cerca(1-Math.max(...viol)/.5),kRef=conRef?(E.ref?1:.4):1,kQ=cerca((q-.6)/(REGLAS.quieto-.6));
+  const pos=kComp*kDist*kAng*kRef*(.8+.2*kQ);
   let msg='';
   if(!E.comp)msg=v>d.max*.95?'Aléjate un poco':'Que se vea el cuerpo completo';
   else if(!E.dist)msg=v<d.min?'Acércate':'Aléjate';
   else if(!E.ang)msg=!perfil&&paso.girarMas?paso.girarMas:paso.girar;
   else if(conRef&&!E.ref)msg=p&&p.ok?'Que la persona de referencia se vea completa y derecha':'Falta la persona de referencia junto al animal';
   else if(!E.quieto)msg='Quieto…';
-  return {E,msg,caja:c};
+  return {E,msg,caja:c,pos};
 }
 function beep(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const a=beep.a||(beep.a=new A()),o=a.createOscillator(),g=a.createGain();
   o.frequency.value=1046;g.gain.setValueAtTime(.18,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.18);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.2);}catch(e){}}
@@ -113,11 +121,11 @@ function abrir(o){
     w.innerHTML=`<div class="cam-top"><div class="cv-tit"><b class="cv-paso"></b><span class="cv-sub"></span></div><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
       <div class="cam-v cv-v"><video playsinline autoplay muted></video><canvas class="cv-lz"></canvas>
-        <div class="cv-ind"><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
+        <div class="cv-ind"><span class="cv-pos" hidden><em>Posición</em><span class="cv-pos-b"><i></i></span><b data-no-tr>0 %</b></span><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
         <img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span></div>
       <div class="cam-bar cv-bar"><span class="cv-fps"></span><button type="button" class="cam-disp cv-man" aria-label="Tomar la foto ahora" disabled><i></i></button><button type="button" class="cam-lente cv-gira">Girar cámara</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
-    const $w=s=>w.querySelector(s),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
+    const $w=s=>w.querySelector(s),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
     const parar=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;};
     const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
@@ -138,7 +146,7 @@ function abrir(o){
     const preP=Vision.motor('preciso');preP.catch(()=>{});
     if(!activo)return;w.classList.remove('carga');
     const R=rap.R,cr=document.createElement('canvas');cr.width=cr.height=R;const xr=cr.getContext('2d',{willReadFrequently:true});
-    let W=0,H=0,prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
+    let W=0,H=0,hist=[],prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
     // el tamaño de trabajo del cuadro (hasta 960 px de lado)
     const medidas=()=>{const vw=v.videoWidth,vh=v.videoHeight,k=Math.min(1,REGLAS.lienzo/Math.max(vw,vh)),w2=Math.round(vw*k),h2=Math.round(vh*k);if(w2!==W||h2!==H){W=w2;H=h2;zona=null;}};
 
@@ -176,6 +184,9 @@ function abrir(o){
     /* medida precisa de una foto capturada (en segundo plano), sobre un recorte alrededor del sujeto (y de la persona
        de referencia): el modelo ve el cuerpo con más detalle. Si el recorte lo corta, se mide la foto completa. Si no
        sale, se queda la del modelo rápido. */
+    // en teléfonos donde el modelo preciso tarda (> 1.5 s la vez pasada) basta una foto por ángulo: la segunda casi no
+    // cambiaba el resultado (1–2 %) y alargaba la espera
+    let nTomas=REGLAS.tomas;try{if(+localStorage.getItem('rumentis-pc-msp')>1500)nTomas=1;}catch(e){}
     const tPre=[];
     async function precisa(fc,cajas){
       try{const pre=await preP,t0=performance.now(),c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
@@ -196,13 +207,13 @@ function abrir(o){
       const med={};for(const k of ['alto','ancho','area','banda','ratio','torsoN','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
       const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
       // las demás tomas, unos milisegundos después (todavía quieto): el modelo preciso las mide todas y se promedian
-      for(let t=1;t<REGLAS.tomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
+      for(let t=1;t<nTomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
       caps.push(cap);capturando=false;
       try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}beep();
       w.classList.add('flash');setTimeout(()=>w.classList.remove('flash'),260);
       th.src=foto(fc,u.s,u.p);th.hidden=false;buenos=[];prev=null;ult=null;tiempos=[];prog.hidden=true;zona=null;vis.s=vis.p=null;
       if(ip+1>=pasos.length){terminar();return;}
-      ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});w.dataset.estado='';pausa=performance.now()+1500;
+      ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});hist=[];posEl.hidden=true;w.dataset.estado='';pausa=performance.now()+1500;
     }
     async function terminar(){
       pausa=Infinity;man.disabled=true;chips({});w.dataset.estado='';sub.textContent='';w.classList.add('carga');
@@ -217,6 +228,7 @@ function abrir(o){
         const fuente=tomas.length?'preciso':'rapido';
         if(!tomas.length)tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});
         out.push({id:c.id,nombre:c.nombre,manual:c.manual,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,img:img||foto(c.fc,c.s,c.pr)});}
+      try{if(tPre.length)localStorage.setItem('rumentis-pc-msp',String(Math.round(mediana(tPre))));}catch(e){}
       // rendimiento de esta medición (para el laboratorio)
       out.stats={fps:fpsL.length?fpsL.reduce((a,b)=>a+b,0)/fpsL.length:0,cuadros:procesados,msRapido:msR.length?msR.reduce((a,b)=>a+b,0)/msR.length:0,
         msPreciso:tPre.length?tPre.reduce((a,b)=>a+b,0)/tPre.length:0,seg:(performance.now()-tIni)/1000,motor:rap.modo+'×'+rap.n,tomas:todas.length};
@@ -230,12 +242,16 @@ function abrir(o){
       procesados++;if(msR.length<400)msR.push(r.ms);
       const p=pasos[ip],s=aCuadro(r.suj[o.clase],r.G,Z,W,H),pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
       const now=performance.now();tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
-      if(tiempos.length>2){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
+      // (sobre al menos 0.8 s: con varios workers los resultados llegan en ráfagas y una ventana corta exagera)
+      if(tiempos.length>2&&now-tiempos[0]>=800){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
       // (ms y motor quedan en el diálogo para las pruebas)
       w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo+'×'+rap.n;
       // el cuadro siguiente mira solo la zona del sujeto; si la zona lo cortó (o en ganado falta la persona), completo
       zona=(s&&s.cortada)||(pr&&pr.cortada)||(conRef&&!(pr&&pr.ok))?null:zonaSig([s&&s.ok?s.n:null,pr&&pr.ok?pr.n:null],W,H,zona);
-      const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido:null,conRef);prev=ev.caja||null;
+      const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido:null,conRef);
+      // "quieto" se compara con la mediana de las últimas cajas: un cuadro raro no reinicia la cuenta
+      if(ev.caja){hist.push(ev.caja);if(hist.length>3)hist.shift();prev=[0,1,2,3].map(i=>mediana(hist.map(z=>z[i])));}else{hist=[];prev=null;}
+      posEl.hidden=ev.pos==null;const pp=Math.round((ev.pos||0)*100);posEl.style.setProperty('--p',(ev.pos||0));posEl.lastChild.textContent=`${pp} %`;
       const E=ev.E,listo=E.det&&E.comp&&E.dist&&E.ang&&E.quieto&&(!conRef||E.ref);
       const color=!E.det?'rojo':listo?'verde':(E.comp&&E.dist?'ambar':'rojo');
       const med=E.det?medir(s,W,H,p.banda):null;if(med&&conRef&&E.ref)med.refAlto=medir(pr,W,H).alto;

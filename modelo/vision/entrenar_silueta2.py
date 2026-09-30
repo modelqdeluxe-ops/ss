@@ -8,7 +8,8 @@ torch.set_num_threads(4);R=int(os.environ.get('RES','320'));EP=int(os.environ.ge
 LR=float(os.environ.get('LR','6e-4'));NOM=os.environ.get('NOMBRE','sil');SUJ=float(os.environ.get('SUJETO','.7'))
 MEAN=np.array([.485,.456,.406],np.float32);STD=np.array([.229,.224,.225],np.float32)
 L=[x for x in json.load(open('td/lista.json')) if os.path.exists(f'td/msk/{x[0]}.png')]
-items=[i for i,k in L for _ in range(3 if k=='v' else 1)]
+# vacas ×3 (son pocas); escenas de casa (personas con camas, sillones, sillas…) ×2: el fondo que más confunde
+items=[i for i,k in L for _ in range(3 if k=='v' else 2 if k=='c' else 1)]
 print('fotos',len(L),'muestras por época',len(items),flush=True)
 class DS(torch.utils.data.Dataset):
     def __len__(s):return len(items)
@@ -55,6 +56,8 @@ class SilV2(nn.Module):
         o4=F.interpolate(o,size=f['f4'].shape[-2:],mode='bilinear',align_corners=False)
         return o4+s.ref(torch.cat([f['f4'],o4],1))   # a 1/4 de la entrada
 net=SilV2(base)
+# seguir desde un v2 ya entrenado
+if os.environ.get('DESDE2'):net.load_state_dict(torch.load(os.environ['DESDE2']))
 dl=torch.utils.data.DataLoader(DS(),batch_size=BS,shuffle=True,num_workers=3,drop_last=True,persistent_workers=True)
 # el refinamiento aprende más rápido que lo ya entrenado
 nuevos=list(net.ref.parameters());ids={id(p) for p in nuevos};viejos=[p for p in net.parameters() if id(p) not in ids]

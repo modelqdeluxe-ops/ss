@@ -145,7 +145,7 @@ desarrollador, mejor modelo matemático, letras más chicas en la cámara, expli
 - `documentos.js`: `Documentos.enviar` acepta el tipo de archivo (para el CSV).
 - Prueba `vivo_t.js`: además del laboratorio (registro, estadísticas, detalle, báscula desde el registro, CSV).
 
-**5.0.0-beta.6** (esta rama). El dueño pidió más cuadros ("romper los 20"), más precisión, más entrenamiento (+4,000
+**5.0.0-beta.6**. El dueño pidió más cuadros ("romper los 20"), más precisión, más entrenamiento (+4,000
 fotos) y mandó un CSV del laboratorio de beta.5 (15 mediciones, 180 cm, sin báscula): 147–189 L, IMC 45–58, pecho de
 fondo 36–48 cm, brazos 0 L. Diagnóstico: tomas "de costado" giradas a ~45° (el fondo sale (ancho+fondo)/√2 y las dos
 piernas no se tapan) y brazos pegados contados como tronco. Cambios:
@@ -165,13 +165,28 @@ piernas no se tapan) y brazos pegados contados como tronco. Cambios:
   (más lento en WASM), entradas de 224/192 px (pierden precisión). WebGPU: en este entorno solo hay GPU por software
   (no carga el modelo en 90 s), no se pudo medir: pendiente para probar en el teléfono.
 
+**5.0.0-beta.7** (esta rama). CSV de beta.6 (5 mediciones, 180 cm): 118–136 L (mejor que 147–189 pero alto), pecho de
+fondo 34–44 cm, piernas 50–54 L, 28–53 s por medición, preciso 2.8–4.4 s por foto. El dueño vio que la silueta en vivo
+tomaba suelo, cama y cosas, y que tardaba en ponerse en verde; pidió un indicador de qué tan cerca está. Medido: ningún
+modelo infla la silueta en COCO (RF-DETR −0.5 % de área), así que el exceso viene de la escena. Cambios:
+
+- **Topes anatómicos** en `volPersona` (`TOPE`, `TOPE_ALTO`) y en las piernas de costado el tramo más grande (una
+  pierna). Campo `topadas` (filas recortadas) en el registro y el CSV; aviso si pasa de 25 %.
+- **Indicador de posición** en la cámara (producto de qué tanto se cumple cada regla), "quieto" contra la mediana de
+  las últimas 3 cajas, 1 foto por ángulo si el preciso tardó > 1.5 s la vez anterior (`rumentis-pc-msp`).
+- **Fotos de cada medición** en el teléfono (`Fotos`, claves `pc-<id>-0/1`, las últimas 40) y en el detalle del
+  laboratorio; `Fotos.limpiar` ya no borra las `pc-`.
+- **Entrenamiento con escenas de casa**: 4,000 fotos de COCO con personas y muebles (cama, sillón, silla, mesa, tv…)
+  ×2, más prueba `ev/casa.json` (144 personas de cuerpo completo junto a muebles). Ver `modelo/vision/LEEME.md`.
+- "Cómo hacerlo": pared lisa detrás y perfil completo (hombro hacia la cámara).
+
 **No probado aún en un teléfono real.**
 
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.6.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.7.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado). Pedirle: cuadros/s que muestra, cuánto tarda "Midiendo…", peso estimado vs. báscula (y calibrar).
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
    rápido a 256 px (`MODELOS.rapido.R` en vision.js; el modelo es convolucional y se exporta a 256 sin reentrenar).
