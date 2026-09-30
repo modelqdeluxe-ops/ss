@@ -203,7 +203,7 @@ Cambios:
 no se ve en la silueta: grasa, músculo, hueso); con su báscula (k y b por persona) el error que queda es la
 repetibilidad de la medición (en las pruebas, < 1 % entre tomas de la misma escena).
 
-**5.0.0-beta.9** (esta rama). CSV de beta.8 (5 mediciones, 180 cm): 118–141 kg, cv entre fotos 0–1 %. Contra hombres
+**5.0.0-beta.9**. CSV de beta.8 (5 mediciones, 180 cm): 118–141 kg, cv entre fotos 0–1 %. Contra hombres
 de ANSUR II de 175–185 cm e IMC 30–40 (mediana 104 kg): hombros bien (53 vs 55 cm), pero pecho de frente 22 cm (se
 cortaban "brazos" ya separados), cintura de frente 42–49 (brazos sin cortar) y todo lo de perfil 20–40 % alto. El dueño:
 puntos lentos (~1 por segundo) y "al final del shape no cuenta toda mi figura". Medido en COCO: la limpieza con los
@@ -217,11 +217,24 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
+**5.0.0-beta.10** (esta rama). CSV de beta.9 (7 mediciones, 180 cm, 91–106 kg): hombros siempre al mínimo (37.9) y
+pecho de frente al máximo (40.1): las alturas caían corridas hacia arriba (la silueta sin limpiar tenía algo sobre la
+cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cambios:
+
+- En curso: destilar el modelo de puntos del video (DWPose-t) con RTMW-l como maestro (28,108 personas de COCO).
+- **Seguimiento con los puntos** (`cajaPuntos`): el recorte del modelo de pose sale de los puntos del cuadro anterior;
+  los puntos ya no siguen la caja de la silueta (los arrastraba fuera del cuerpo).
+- **Alturas ancladas a los puntos** (`nivel` en pesocam.js): hombros 22 %, caderas 51.5 %, rodillas 71.4 % (COCO, de
+  pie); si la silueta y los puntos difieren más de 4 % de la estatura, mandan los puntos. Hombros medidos entre 19 % y
+  26 % y nunca menos de 1.1 veces la distancia entre las articulaciones.
+- **Exportar para análisis** (laboratorio): las últimas 10 mediciones con sus fotos originales (`pcr-<id>-<ángulo>-<toma>`)
+  en un JSON, para repetir la medición fuera del teléfono.
+
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.9.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.10.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

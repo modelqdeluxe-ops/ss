@@ -133,6 +133,11 @@ function limpiarSil(s,P,W,H){
   const n=Vision.silueta(M,G,G,G);if(!n.ok)return s;
   n.score=s.score;n.conf=s.conf;n.limpia=quita/s.area;return aCuadro(n,G,Z,W,H);
 }
+/* la caja del cuerpo según los puntos (fracciones del cuadro): de la cabeza (sobre los ojos, con la coronilla) a los
+   pies, de lado a lado con manos; null si faltan hombros o caderas */
+function cajaPuntos(P){const ok=i=>P[3*i+2]>=.3;if(![5,6,11,12].every(ok))return null;let x0=1,y0=1,x1=0,y1=0;
+  for(let i=0;i<P.length/3;i++)if(ok(i)&&(i<23||i>=91)){x0=Math.min(x0,P[3*i]);x1=Math.max(x1,P[3*i]);y0=Math.min(y0,P[3*i+1]);y1=Math.max(y1,P[3*i+1]);}
+  const h=y1-y0;return [x0-.04*h,y0-.1*h,x1+.04*h,y1+.03*h];}
 // recorte para el modelo de pose: la caja n (fracciones del cuadro W×H) con 25 % de margen y la proporción m.W:m.H
 function recortePose(n,W,H,m){let w=(n[2]-n[0])*W*1.25,h=(n[3]-n[1])*H*1.25;const a=m.W/m.H;if(w/h>a)h=w/a;else w=h*a;
   return {x:(n[0]+n[2])/2*W-w/2,y:(n[1]+n[3])/2*H-h/2,w,h};}
@@ -223,11 +228,9 @@ function abrir(o){
       if(!caja)caja=s.n.slice();else for(let i=0;i<4;i++)caja[i]+=(s.n[i]-caja[i])*.35;
       trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.24:.16,linea:2});
       // los puntos del cuerpo se deslizan hacia el último resultado (y se quitan si ya es viejo)
-      // (entre un resultado de pose y el siguiente, los puntos siguen a la caja de la silueta: se mueven con el cuerpo
-      // a 60 cuadros por segundo aunque el modelo de pose tarde más)
-      let kp=vis.kp&&performance.now()-vis.kp.t<1500?vis.kp.p:null;
-      if(kp&&vis.kp.n){const n=vis.kp.n,sx=(caja[2]-caja[0])/Math.max(1e-6,n[2]-n[0]),sy=(caja[3]-caja[1])/Math.max(1e-6,n[3]-n[1]);
-        if(sx>.8&&sx<1.25&&sy>.8&&sy<1.25){const q=kp.slice();for(let i=0;i<q.length;i+=3){q[i]=caja[0]+(q[i]-n[0])*sx;q[i+1]=caja[1]+(q[i+1]-n[1])*sy;}kp=q;}}
+      // (se deslizan hacia el último resultado; ya no siguen la caja de la silueta: si la silueta se pegaba a algo,
+      // los arrastraba fuera del cuerpo)
+      const kp=vis.kp&&performance.now()-vis.kp.t<1500?vis.kp.p:null;
       if(kp){if(!kpV||kpV.length!==kp.length)kpV=kp.slice();else for(let i=0;i<kp.length;i++)kpV[i]+=(kp[i]-kpV[i])*(i%3===2?1:.5);
         puntos(x,kpV,esq,Rr.x,Rr.y,Rr.w,Rr.h,Math.max(2.5,Math.min(4,Rr.w/110)));}else kpV=null;
       // esquinas finas
@@ -306,7 +309,7 @@ function abrir(o){
       const out=[];
       for(const c of caps){const tomas=[];let img=null;
         for(const t of c.tomas){const r=await t.pend;if(!activo)return;if(!r)continue;
-          const med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;tomas.push({med,sil:r.s,ref:r.p,kp:r.kp||null,W:t.fc.width,H:t.fc.height});
+          const med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;tomas.push({med,sil:r.s,ref:r.p,kp:r.kp||null,W:t.fc.width,H:t.fc.height,fc:t.fc});
           if(!img)img=foto(t.fc,r.s,r.p,r.kp);}
         const fuente=tomas.length?'preciso':'rapido';
         if(!tomas.length)tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});
@@ -381,7 +384,10 @@ function abrir(o){
         P[i]=A[i]+(P[i]-A[i])*a;P[i+1]=A[i+1]+(P[i+1]-A[i+1])*a;}return P;}
     async function bombearPose(){
       if(!activo||!poseV||poseVuelo>=poseV.n||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<Math.max(poseRespiro,poseMs/poseV.n))return;
-      poseVuelo++;poseT=performance.now();const n=vis.s.n.slice(),paso=ip,mi=++poseSeq;
+      poseVuelo++;poseT=performance.now();const paso=ip,mi=++poseSeq;
+      // el recorte sale de los puntos del cuadro anterior (seguimiento, como en los trajes de captura); si no hay o son
+      // viejos, de la silueta. Así, si la silueta se pega a algo, los puntos no se van con ella.
+      const kb=vis.kp&&performance.now()-vis.kp.t<400?cajaPuntos(vis.kp.p):null,n=kb&&iou(kb,vis.s.n)>.3?kb:vis.s.n.slice();
       try{const Z=recortePose(n,W,H,poseV),k=v.videoWidth/W;let e;
         try{e={bmp:await createImageBitmap(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,{resizeWidth:poseV.W,resizeHeight:poseV.H,resizeQuality:'medium'})};}
         catch(er){const c=document.createElement('canvas');c.width=poseV.W;c.height=poseV.H;const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);
@@ -395,5 +401,5 @@ function abrir(o){
     tick=setInterval(()=>{bombear();bombearPose();},60);bombear();
   });
 }
-window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro};
+window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
 })();

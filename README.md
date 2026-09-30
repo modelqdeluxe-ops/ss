@@ -154,8 +154,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   recorte no tiemble).
 - **Puntos del cuerpo** (como un traje de captura de movimiento): sobre la silueta, en vivo y en las fotos, puntos
   blancos que brillan y líneas finas: 133 en personas (cuerpo, pies, cara, manos y **dedos**; RTMW) y 17 en ganado
-  (AP-10K). En el video, el modelo rápido (DWPose-t) corre en su propio worker (dos en teléfonos de 8 núcleos, a
-  turnos) sobre un recorte alrededor de la silueta; al llegar, cada punto se suaviza (si casi no se movió, se promedia
+  (AP-10K). En el video, el modelo rápido (DWPose-t) corre en su propio worker (dos en teléfonos de 8 núcleos, a turnos) sobre un recorte que sale de los puntos del cuadro
+  anterior (seguimiento; si no hay, de la silueta); al llegar, cada punto se suaviza (si casi no se movió, se promedia
   con el anterior) y entre un resultado y el siguiente siguen la caja de la silueta (60 cuadros/s). En las fotos, el
   preciso (RTMW-m) mide la foto y su espejo y promedia. Con ellos:
   - **la silueta del video se limpia**: se quita lo que queda lejos del esqueleto (suelo, cama, muebles pegados al
@@ -218,7 +218,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   error medio al medir (MAPE y MAE), sesgo, RMSE, R² (solo si los pesos de báscula varían ≥ 5 %), error del modelo de
   fábrica, **repetibilidad** (CV del peso del modelo sin calibrar —o del volumen en ganado— en mediciones seguidas, < 15 min), dispersión entre fotos, cuadros/s y
   tiempo del modelo preciso. Gráficas de estimado contra báscula (franja ±5 %) y de las últimas 30 mediciones.
-  Detalle de cada medición y exportación a **CSV**.
+  Detalle de cada medición y exportación a **CSV** y **para análisis** (JSON con las últimas 10 mediciones y sus fotos
+  originales, sin dibujos: con ellas se repite la medición fuera del teléfono).
 - La cámara lleva la firma **Powered by Rumentis Labs** (y las fotos, "Rumentis Labs").
 - Las fotos de un lote se juntan en un **pesaje** (promedio y, si se indica, el peso de cada arete) que se guarda como
   cualquier otro, marcado `metodo:'camara'`.

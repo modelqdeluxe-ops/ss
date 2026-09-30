@@ -79,7 +79,7 @@ function html(modo){
       ${dispersion(E.con)}${serie(E.R)}
       <p class="pc-lab-mod" data-no-tr>v${P.VERSION_MODELO} · k = ${per?nf(m.k,3):`${nf(W(m.k),3)} ${UW()}/L`} · b = ${nf(m.b,2)}${per?` · ANSUR II n = ${P.ANSUR.n}`:''}</p>
       <div class="rows">${filas}</div>
-      <div class="pc-acts"><button type="button" class="btn" data-act="pcRegCsv">Exportar CSV</button><button type="button" class="btn" data-act="pcRegLimpiar">Borrar registro</button></div>`
+      <div class="pc-acts"><button type="button" class="btn" data-act="pcRegCsv">Exportar CSV</button><button type="button" class="btn" data-act="pcRegAnalisis">Exportar para análisis</button><button type="button" class="btn" data-act="pcRegLimpiar">Borrar registro</button></div>`
     :`<p class="empty">Todavía no hay mediciones.</p>`}</div></section>`;
 }
 
@@ -107,7 +107,7 @@ ACTS.pcRegReal=el=>{const x=buscar(el.dataset.id);if(!x)return;REAL=x.id;
 SAVE.pcReg=f=>{const x=buscar(REAL);if(!x)return closeSheet();const v=toKg(num(fv(f,'kg')));
   const [lo,hi]=x.modo==='persona'?[15,250]:[40,1300];if(!(v>=lo&&v<=hi))return ferr(f,'Escribe el peso de la báscula.');
   P.actualizarReg(x.id,{real:Math.round(v*10)/10});REAL=null;closeSheet();toast('Peso de báscula guardado');};
-ACTS.pcRegBorrar=el=>{const id=el.dataset.id;confirmar('¿Borrar esta medición?','Sale del registro y de la calibración.','Borrar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.id!==id)});if(window.Fotos)for(let i=0;i<2;i++)Fotos.borrar(`pc-${id}-${i}`);toast('Medición borrada');});};
+ACTS.pcRegBorrar=el=>{const id=el.dataset.id;confirmar('¿Borrar esta medición?','Sale del registro y de la calibración.','Borrar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.id!==id)});if(window.Fotos)for(let i=0;i<2;i++){Fotos.borrar(`pc-${id}-${i}`);for(let j=0;j<3;j++)Fotos.borrar(`pcr-${id}-${i}-${j}`);}toast('Medición borrada');});};
 ACTS.pcRegLimpiar=()=>{const modo=UI.pc.modo;confirmar('¿Borrar el registro?','Se borran todas las mediciones de este modo, también su peso de báscula (la calibración).','Borrar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.modo!==modo)});toast('Registro borrado');});};
 // todo el registro en CSV (una fila por medición; el peso en kg)
 const COLS=['id','fecha','hora','modo','version','litros','kg_estimado','kg_bascula','error_pct','rango_pct','cv_fotos_pct','combinaciones','k','b','calibraciones',
@@ -122,5 +122,16 @@ function csv(){
   return [COLS.join(',')].concat(L).join('\n')+'\n';
 }
 ACTS.pcRegCsv=async()=>{const b=new TextEncoder().encode(csv());await Documentos.enviar(`rumentis-labs-mediciones-${hoy()}.csv`,b.buffer,'compartir','Mediciones',  'text/csv');};
-window.PcLab={html,estad,csv};
+/* para el análisis de Rumentis Labs: las últimas mediciones con sus fotos originales (sin dibujos), en un solo archivo
+   JSON. Con las fotos se puede repetir la medición paso a paso fuera del teléfono. */
+async function analisis(modo){
+  const R=P.REG().filter(x=>x.modo===modo).slice(-10),fotos={};
+  const aURL=b=>new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ok(null);r.readAsDataURL(b);});
+  if(window.Fotos)for(const x of R)for(let i=0;i<2;i++)for(let j=0;j<3;j++){const k=`pcr-${x.id}-${i}-${j}`;try{const u=await Fotos.url(k);if(!u)continue;const b=await (await fetch(u)).blob();const d=await aURL(b);if(d)fotos[k]=d;}catch(e){}}
+  return {tipo:'rumentis-labs-analisis',v:1,version:P.VERSION_MODELO,fecha:hoy(),modo,registros:R,fotos};
+}
+ACTS.pcRegAnalisis=async()=>{const modo=UI.pc.modo;toast('Preparando el archivo…');const a=await analisis(modo);
+  if(!Object.keys(a.fotos).length)toast('Todavía no hay fotos originales: se guardan desde esta versión.',3500);
+  const b=new TextEncoder().encode(JSON.stringify(a));await Documentos.enviar(`rumentis-labs-analisis-${hoy()}.json`,b.buffer,'compartir','Análisis','application/json');};
+window.PcLab={html,estad,csv,analisis};
 })();

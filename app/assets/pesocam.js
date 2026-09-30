@@ -185,17 +185,29 @@ function cortar(a,b,fila,z,K,y,cw,alto,segs){
    no agranda todas las medidas. ANSUR II: la oreja está a 7.6 % de la estatura bajo la coronilla; el tobillo, a 4.1 %
    del suelo; el talón y los dedos, a ~0.5 %. */
 function marco(T,K,alto,ref){
-  const n=T.filas.length,Hs=n*alto/ref,base={top:0,H:Hs,k:1,incompleta:false};if(!K)return base;
+  const n=T.filas.length,Hs=n*alto/ref,base={top:0,H:Hs,k:1,incompleta:false,K};if(!K)return base;
   const orejas=[3,4].filter(i=>kOk(K,i)).map(i=>K[i][1]);if(!orejas.length)return base;
   const yo=orejas.reduce((a,b)=>a+b,0)/orejas.length;
   const pies=[[19,.005],[22,.005],[17,.005],[20,.005],[15,.0406],[16,.0406]].filter(([i])=>kOk(K,i)).map(([i,f])=>(K[i][1]-yo)/(1-.0756-f));
   if(!pies.length)return base;const Hk=Math.max(...pies);
   // (los puntos suelen dar un poco menos que la estatura real: 95 % de las veces menos de 1.03 veces; por eso solo si
   // pasan de 1.08 veces la silueta, que entonces sí está incompleta)
-  if(Hk>Hs*1.08)return {top:yo-.0756*Hk,H:Hk,k:Hs/Hk,incompleta:true};
+  if(Hk>Hs*1.08)return {top:yo-.0756*Hk,H:Hk,k:Hs/Hk,incompleta:true,K};
   return base;}
+/* la fila (celda) de una altura del cuerpo (fracción de la estatura desde la coronilla). Por la silueta: coronilla +
+   h · estatura. Por los puntos: entre los hombros (a 22 % en personas de pie, COCO), las caderas (51.5 %) y las
+   rodillas (71.4 %). Si las dos dicen casi lo mismo (menos de 4 % de la estatura), el promedio; si no, la silueta tiene
+   algo pegado arriba o abajo (o la persona no está derecha) y mandan los puntos. */
+const ANCLAS=[[.22,5,6],[.515,11,12],[.714,13,14]];
+function nivel(M,h){
+  const ys=M.top+h*M.H,K=M.K;if(!K)return ys;
+  const A=ANCLAS.map(([f,i,j])=>{const m=medio(K,i,j);return m&&kOk(K,i)&&kOk(K,j)?[f,m[1]]:null;}).filter(Boolean);
+  if(A.length<2||A[0][0]!==.22||A[1][0]!==.515)return ys;
+  let a=A[0],b=A[1];if(h>b[0]&&A[2]){a=A[1];b=A[2];}
+  const yk=a[1]+(h-a[0])/(b[0]-a[0])*(b[1]-a[1]);if(!(b[1]>a[1]))return ys;
+  return Math.abs(yk-ys)>.04*M.H?yk:(yk+ys)/2;}
 // valores por fila entre dos alturas (fracciones de la estatura, desde la coronilla)
-function banda(T,M,h0,h1,fn){const n=T.filas.length,v=[],y0=M.top+h0*M.H,y1=M.top+h1*M.H;
+function banda(T,M,h0,h1,fn){const n=T.filas.length,v=[],y0=nivel(M,h0),y1=nivel(M,h1);
   for(let i=Math.max(0,Math.floor(y0));i<=Math.min(n-1,Math.ceil(y1));i++){const r=fn(T.filas[i],i+.5);if(r>0)v.push(r);}return v;}
 const pctl=(v,p)=>{const s=v.slice().sort((a,b)=>a-b);return s.length?s[Math.min(s.length-1,Math.floor(p*(s.length-1)+.5))]:0;};
 // muslos de frente: el tramo de cada pierna (de la cadera a la rodilla), sin la mano; si las piernas están juntas, se
@@ -229,10 +241,13 @@ function medidasPersona(F,S,KF,KS,alto,ref,ropa){
   const fondoT=(fila,y)=>{const c=cS(y),z=tramoCentro(fila,c);if(!z)return 0;const [a,b]=cortar(z[0]*cwS,z[1]*cwS,fila,z,KS,y,cwS,alto,BRAZOS);return b-a;};
   const B=(T,M,h0,h1,fn)=>banda(T,M,h0,h1,fn);
   const d={
-    bid:pctl(B(F,MF,N.hombro,N.hombro+.04,(fila,y)=>{const z=tramoCentro(fila,cF(y));return z?(z[1]-z[0])*cwF:0;}),.9),
+    bid:pctl(B(F,MF,N.hombro+.01,N.hombro+.08,(fila,y)=>{const z=tramoCentro(fila,cF(y));return z?(z[1]-z[0])*cwF:0;}),.9),
     cb:med5(B(F,MF,N.pecho-.012,N.pecho+.012,anchoT)),cd:med5(B(S,MS,N.pecho-.012,N.pecho+.012,fondoT)),
     wb:med5(B(F,MF,N.cintura-.012,N.cintura+.012,anchoT)),wd:med5(B(S,MS,N.cintura-.012,N.cintura+.012,fondoT)),
     hb:pctl(B(F,MF,N.cadera-.03,N.cadera+.03,anchoT),.9),bd:pctl(B(S,MS,N.cadera-.03,N.cadera+.03,fondoT),.9)};
+  // (los hombros de frente no pueden ser más angostos que la distancia entre las articulaciones de los hombros, con
+  // los deltoides: si la silueta da menos, la banda cayó fuera de los hombros y se toma 1.4 veces esa distancia)
+  if(KF&&kOk(KF,5)&&kOk(KF,6)){const sd=Math.abs(KF[5][0]-KF[6][0])*cwF;if(sd>10&&d.bid<1.1*sd)d.bid=1.4*sd;}
   const MU=[];B(F,MF,N.entrepierna+.015,N.entrepierna+.04,(fila,y)=>{const m=muslos(fila,y,KF,cwF,alto);if(m[0]>0)MU.push(m);return 0;});
   const mw=med5(MU.map(m=>m[0])),sep=med5(MU.map(m=>m[1]));
   let md=med5(B(S,MS,N.entrepierna+.015,N.entrepierna+.04,(fila,y)=>{const l=KS?xEn(KS,11,13,y)??xEn(KS,12,14,y):null,z=tramoCentro(fila,l);if(!z)return 0;const [a,b]=cortar(z[0]*cwS,z[1]*cwS,fila,z,KS,y,cwS,alto,MANOS);return b-a;}));
@@ -348,12 +363,17 @@ ACTS.pcAlto=()=>formAlto(null);
 SAVE.pcAlto=f=>{const v=num(fv(f,'alto'));if(!(v>=100&&v<=230))return ferr(f,'Escribe la estatura en centímetros (por ejemplo, 170).');
   guardarPC({[MODOS[UI.pc.modo].alto]:Math.round(v)});closeSheet();const t=TRAS;TRAS=null;if(t)setTimeout(t,60);else toast('Estatura guardada');};
 
-/* las fotos de cada medición (con su silueta) quedan en el teléfono para el laboratorio: las de las últimas 40 */
-const FOTOS_MAX=40;
+/* las fotos de cada medición (con su silueta) quedan en el teléfono para el laboratorio: las de las últimas 40. Y las
+   fotos originales de cada toma (sin dibujos, para el análisis que se exporta desde el laboratorio): las de las
+   últimas 10 (pcr-<id>-<ángulo>-<toma>) */
+const FOTOS_MAX=40,ORIG_MAX=10;
+const aBlob=c=>new Promise(ok=>c.toBlob(ok,'image/jpeg',.92));
 async function guardarFotos(id,caps){
   if(!window.Fotos)return;
-  try{for(let i=0;i<caps.length;i++){const b=await (await fetch(caps[i].img)).blob();await Fotos.guardar(`pc-${id}-${i}`,b);}
-    const viejos=REG().slice(0,-FOTOS_MAX);for(const x of viejos)for(let i=0;i<2;i++)Fotos.borrar(`pc-${x.id}-${i}`);}catch(e){console.warn(e);}
+  try{for(let i=0;i<caps.length;i++){const b=await (await fetch(caps[i].img)).blob();await Fotos.guardar(`pc-${id}-${i}`,b);
+      const T=caps[i].tomas||[];for(let j=0;j<T.length;j++)if(T[j].fc){const o=await aBlob(T[j].fc);if(o)await Fotos.guardar(`pcr-${id}-${i}-${j}`,o);}}
+    const R=REG();for(const x of R.slice(0,-FOTOS_MAX))for(let i=0;i<2;i++)Fotos.borrar(`pc-${x.id}-${i}`);
+    for(const x of R.slice(0,-ORIG_MAX))for(let i=0;i<2;i++)for(let j=0;j<3;j++)Fotos.borrar(`pcr-${x.id}-${i}-${j}`);}catch(e){console.warn(e);}
 }
 /* ---------- medir ---------- */
 let ULT=null;

@@ -98,6 +98,9 @@ const DOS=/2 de 2|2 of 2/;
  assert.equal(await p.evaluate(()=>PcLab.estad('persona').nReal),3,'peso de báscula desde el laboratorio');
  const csv=await p.evaluate(async()=>{let t='';Documentos.enviar=async(n,b,m,ti,tipo)=>{t=tipo+'|'+n+'|'+new TextDecoder().decode(b);return true;};await ACTS.pcRegCsv();return t;});
  const lineas=csv.split('\n').filter(Boolean);console.log('csv',lineas[0].slice(0,60),'…',lineas.length-1,'filas');assert.ok(csv.startsWith('text/csv|')&&lineas.length-1===E.n,'CSV');
+ // análisis: las últimas mediciones con sus fotos originales
+ const AN=await p.evaluate(async()=>{const a=await PcLab.analisis('persona');return {n:a.registros.length,f:Object.keys(a.fotos).length,t:(Object.values(a.fotos)[0]||'').slice(0,23)};});
+ console.log('análisis',JSON.stringify(AN));assert.ok(AN.n>=5&&AN.f>=8&&AN.t==='data:image/jpeg;base64,','exportar para análisis con fotos originales');
  await p.screenshot({path:'vivo_lab.png',fullPage:true});
 
  /* ---------- ganado: la vaca mide 200 cm de largo y 150 de alto; la persona de referencia 175 cm ---------- */
