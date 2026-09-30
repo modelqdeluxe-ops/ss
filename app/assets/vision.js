@@ -24,7 +24,7 @@ const NUC=(navigator.hardwareConcurrency||4);
 // copias del modelo rápido en paralelo: 3 en teléfonos de 8 núcleos, 2 con 6, 1 con menos (la cámara da ~30 cuadros/s)
 // rapidoP: el de personas (v2, con refinamiento a 1/4: bordes más finos); rapido: el de ganado (v1, mejor en vacas)
 /* pose (puntos del cuerpo, como un traje de captura de movimiento), de OpenMMLab (Apache 2.0):
-   cuerpoV: DWPose-t (cuerpo completo, 133 puntos: cuerpo, pies, cara, manos y dedos; ~3 veces más rápido), en el
+   cuerpoV: DWPose-s (cuerpo completo, 133 puntos: cuerpo, pies, cara, manos y dedos; ~2 veces más rápido), en el
             video, en dos workers en teléfonos de 8 núcleos;
    cuerpo: RTMW-m (los mismos 133 puntos, más preciso), en las fotos;
    animal: RTMPose de animales (AP-10K, 17 puntos). La entrada es un recorte alrededor del sujeto de W×H; devuelve los

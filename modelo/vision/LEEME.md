@@ -8,7 +8,7 @@ variante es beta). Todo corre en el teléfono, sin internet.
 | `silueta.onnx` | Modelo **rápido**, para cada cuadro del video. LR-ASPP MobileNetV3-Large de torchvision (preentrenado en COCO con clases VOC) afinado para 3 clases: 0 fondo, 1 persona, 2 vaca. Entrada 256×256, salida `logits` [1,3,32,32] (1/8; la app la agranda y traza el contorno). 6.5 MB (pesos en 16 bits). | BSD-3 (`LICENCIA-torchvision.txt`); fotos de entrenamiento: COCO (CC BY 4.0) |
 | `silueta_p.onnx` | Modelo **rápido de personas** (v3): el mismo más un refinamiento a 1/4 de la entrada con los rasgos de esa resolución (bordes más finos); salida `logits` [1,3,64,64]. Afinado con 24,135 fotos de COCO, entre ellas 4,000 escenas de casa (personas con cama, sillón, silla, mesa, tv…) al doble de peso (`entrenar_silueta2.py`, `datos_casa.py`). 6.5 MB (pesos en 16 bits). | BSD-3; COCO (CC BY 4.0) |
 | `cuerpo.onnx` | **Puntos del cuerpo** de personas: RTMW (`rtmw-dw-m-s_simcc-cocktail14_270e-256x192`, OpenMMLab), 133 puntos de COCO-WholeBody (cuerpo, pies, cara, manos y dedos). Entrada `input` [1,3,256,192] (un recorte alrededor de la persona con 25 % de margen), salidas SimCC `simcc_x` [1,133,384] y `simcc_y` [1,133,512] (el máximo de cada una, a medio píxel, con una parábola alrededor). 31 MB (pesos en 16 bits). | Apache 2.0 (`LICENCIA-mmpose.txt`) |
-| `cuerpo_v.onnx` | **Puntos del cuerpo en el video**: DWPose-t (`rtmpose-t_simcc-ucoco_dw-ucoco_270e-256x192`, OpenMMLab), los mismos 133 puntos, ~3 veces más rápido que RTMW-m. 11 MB (pesos en 16 bits). | Apache 2.0 (`LICENCIA-mmpose.txt`) |
+| `cuerpo_v.onnx` | **Puntos del cuerpo en el video**: DWPose-s (`rtmpose-s_simcc-ucoco_dw-ucoco_270e-256x192`, OpenMMLab), los mismos 133 puntos, ~2 veces más rápido que RTMW-m. 17 MB (pesos en 16 bits). | Apache 2.0 (`LICENCIA-mmpose.txt`) |
 | `animal_m.onnx` | **Puntos del cuerpo** de animales: RTMPose-m AP-10K (OpenMMLab), 17 puntos (ojos, nariz, cuello, base de la cola y hombro/codo/pata y cadera/rodilla/pata de cada lado). Entrada [1,3,256,256], salidas SimCC [1,17,512]. 27 MB (pesos en 16 bits). | Apache 2.0 (`LICENCIA-mmpose.txt`) |
 | `seg.onnx` | Modelo **preciso**, solo para las fotos capturadas. RF-DETR Seg Nano (Roboflow), preentrenado en COCO, exportado a ONNX (opset 17, entrada 312×312) y cuantizado a int8 (pesos) con `onnxruntime.quantization.quantize_dynamic`. 33 MB. Máscaras casi idénticas al original (IoU ≈ 0.99). | Apache 2.0 (`LICENCIA-rf-detr.txt`) |
 | `ort.bundle.js`, `ort-wasm-simd-threaded.wasm` | onnxruntime-web 1.30.0 (solo WebAssembly), `ort.wasm.bundle.min.mjs` con otro nombre para que el WebView lo entregue como JavaScript. | MIT (`LICENCIA-onnxruntime.txt`) |
@@ -60,12 +60,24 @@ la persona; 17 puntos del cuerpo):
 |---|---|---|---|---|
 | RTMPose-t (17 puntos) | 9 ms | 3.0 % | 1.6 % | 87 % |
 | RTMPose-m (17 puntos) | 35 ms | 2.2 % | 1.3 % | 92 % |
-| DWPose-t, 133 puntos (`cuerpo_v.onnx`, el del video) | 13 ms (66 ms en WASM) | 3.9 % | 1.9 % | — |
-| DWPose-s, 133 puntos | 18 ms (94 ms en WASM) | 3.4 % | 1.7 % | — |
+| DWPose-t, 133 puntos (el del video en beta.9–10) | 13 ms (66 ms en WASM) | 3.9 % | 1.9 % | — |
+| **DWPose-s, 133 puntos (`cuerpo_v.onnx`, el del video)** | 18 ms (94 ms en WASM) | 3.4 % | 1.7 % | — |
 | **RTMW-m, 133 puntos (`cuerpo.onnx`, el de las fotos)** | 39 ms (180 ms en WASM) | 2.8 % | 1.4 % | — |
 | RTMW-l, 133 puntos | 133 ms | 2.1 % | 1.2 % | — |
 
-En el video, DWPose-t (con manos y dedos, lo más rápido); en las fotos, RTMW-m con la foto y su espejo promediados (el l
+Con la caja movida como en el video (centro ±8 %/6 %, escala 0.85–1.3): DWPose-t 4.6 %, DWPose-s 3.6 %, RTMW-m 3.0 %;
+manos contra el maestro RTMW-l: 5.1 %, 4.1 % y 3.3 %. En el video, DWPose-s (el mejor que va rápido); en la pantalla
+solo se dibujan los puntos con confianza ≥ 0.4 (cuerpo) o ≥ 0.5 (pies, cara, manos): los muy fuera de lugar (> 10 % de
+la estatura) bajan de ~3.7 % a 1–2 %.
+
+**Reentrenar el del video** (`destilar/`, sin GPU): DWPose-t pasado a PyTorch (`a_torch.py`, onnx2torch), etiquetas del
+maestro RTMW-l en 28,108 personas de COCO train2017 más sus puntos a mano (`etiquetar.py`), recortes con la caja movida,
+girada, en espejo, con color, desenfoque y baja resolución (`entrenar.py`, pérdida SimCC como RTMPose), de vuelta a
+ONNX (`exportar.py`) y `evaluar.py`. No mejoró: con aprendizaje 2e-4 empeora (cuerpo 3.9 → 5.4 %: olvida), con 1e-5
+queda igual (4.0 %; caja movida 4.6 %). Superar el entrenamiento original (270 épocas en GPU) necesita GPU y más datos
+de manos. Descartado; se usa DWPose-s.
+
+En el video, DWPose-s (con manos y dedos); en las fotos, RTMW-m con la foto y su espejo promediados (el l
 pesa 229 MB: no cabe en el teléfono).
 
 **Limpiar la silueta con los puntos** (quitar lo que queda lejos del esqueleto), medido contra COCO (176 personas de

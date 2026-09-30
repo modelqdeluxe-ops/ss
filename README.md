@@ -154,7 +154,7 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   recorte no tiemble).
 - **Puntos del cuerpo** (como un traje de captura de movimiento): sobre la silueta, en vivo y en las fotos, puntos
   blancos que brillan y líneas finas: 133 en personas (cuerpo, pies, cara, manos y **dedos**; RTMW) y 17 en ganado
-  (AP-10K). En el video, el modelo rápido (DWPose-t) corre en su propio worker (dos en teléfonos de 8 núcleos, a turnos) sobre un recorte que sale de los puntos del cuadro
+  (AP-10K). En el video, el modelo rápido (DWPose-s) corre en su propio worker (dos en teléfonos de 8 núcleos, a turnos) sobre un recorte que sale de los puntos del cuadro
   anterior (seguimiento; si no hay, de la silueta); al llegar, cada punto se suaviza (si casi no se movió, se promedia
   con el anterior) y entre un resultado y el siguiente siguen la caja de la silueta (60 cuadros/s). En las fotos, el
   preciso (RTMW-m) mide la foto y su espejo y promedia. Con ellos:
@@ -175,7 +175,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   - **preciso** `seg.onnx` (33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo mide las fotos capturadas, en
     segundo plano mientras la persona se gira, sobre un **recorte alrededor del sujeto** (ve el cuerpo con más
     detalle). Si no encuentra al sujeto, queda la medida del rápido y la app lo avisa.
-  - **pose** `cuerpo_v.onnx` (11 MB; DWPose-t, 133 puntos, ~66 ms en una PC: el del video), `cuerpo.onnx` (31 MB;
+  - **pose** `cuerpo_v.onnx` (17 MB; DWPose-s, 133 puntos, ~94 ms en una PC: el del video; se dibujan los puntos con
+    confianza ≥ 0.4 en el cuerpo y ≥ 0.5 en pies, cara y manos), `cuerpo.onnx` (31 MB;
     RTMW-m de OpenMMLab, Apache 2.0, 133 puntos, entrada 192×256, ~180 ms en una PC: el de las fotos) y
     `animal_m.onnx` (27 MB; RTMPose AP-10K, 17 puntos, 256×256).
   Los pesos de los modelos rápidos y de pose van en 16 bits (`modelo/vision/pesos16.py`: la mitad de tamaño, mismo

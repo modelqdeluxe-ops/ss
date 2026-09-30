@@ -217,11 +217,14 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.10** (esta rama). CSV de beta.9 (7 mediciones, 180 cm, 91–106 kg): hombros siempre al mínimo (37.9) y
+**5.0.0-beta.10 y beta.11** (esta rama; beta.11: DWPose-s en el video y solo puntos confiables en pantalla). CSV de beta.9 (7 mediciones, 180 cm, 91–106 kg): hombros siempre al mínimo (37.9) y
 pecho de frente al máximo (40.1): las alturas caían corridas hacia arriba (la silueta sin limpiar tenía algo sobre la
 cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cambios:
 
-- En curso: destilar el modelo de puntos del video (DWPose-t) con RTMW-l como maestro (28,108 personas de COCO).
+- Puntos del video con **DWPose-s** (cuerpo 3.4 % contra 3.9 % de DWPose-t; con la caja movida 3.6 contra 4.6 %) y
+  solo los confiables en pantalla (≥ 0.4 cuerpo, ≥ 0.5 pies/cara/manos).
+- Probado y descartado: reentrenar DWPose-t con RTMW-l de maestro (`modelo/vision/destilar/`): sin GPU no mejora
+  (2e-4 olvida: 5.4 %; 1e-5 igual: 4.0 %).
 - **Seguimiento con los puntos** (`cajaPuntos`): el recorte del modelo de pose sale de los puntos del cuadro anterior;
   los puntos ya no siguen la caja de la silueta (los arrastraba fuera del cuerpo).
 - **Alturas ancladas a los puntos** (`nivel` en pesocam.js): hombros 22 %, caderas 51.5 %, rodillas 71.4 % (COCO, de
@@ -234,7 +237,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.10.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.11.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

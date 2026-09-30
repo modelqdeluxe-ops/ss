@@ -135,7 +135,7 @@ function limpiarSil(s,P,W,H){
 }
 /* la caja del cuerpo según los puntos (fracciones del cuadro): de la cabeza (sobre los ojos, con la coronilla) a los
    pies, de lado a lado con manos; null si faltan hombros o caderas */
-function cajaPuntos(P){const ok=i=>P[3*i+2]>=.3;if(![5,6,11,12].every(ok))return null;let x0=1,y0=1,x1=0,y1=0;
+function cajaPuntos(P){const ok=i=>P[3*i+2]>=.4;if(![5,6,11,12].every(ok))return null;let x0=1,y0=1,x1=0,y1=0;
   for(let i=0;i<P.length/3;i++)if(ok(i)&&(i<23||i>=91)){x0=Math.min(x0,P[3*i]);x1=Math.max(x1,P[3*i]);y0=Math.min(y0,P[3*i+1]);y1=Math.max(y1,P[3*i+1]);}
   const h=y1-y0;return [x0-.04*h,y0-.1*h,x1+.04*h,y1+.03*h];}
 // recorte para el modelo de pose: la caja n (fracciones del cuadro W×H) con 25 % de margen y la proporción m.W:m.H
@@ -157,8 +157,11 @@ function camino(x,s,X,Y,Wd,Hd,W,H,a){
    ellos. P: x, y (fracciones del cuadro), confianza; se dibujan en el lienzo que muestra el cuadro en (X,Y,Wd,Hd). */
 // tamaño de cada punto (personas de 133 puntos: la cara y los dedos más chicos, para que no tapen)
 const tamPunto=(i,n)=>n<=17?1:i<17?1:i<23?.75:i<91?.38:i===91||i===112?.7:.5;
+/* confianza mínima para dibujar un punto: 0.4 en el cuerpo y 0.5 en pies, cara y manos. Medido en COCO (DWPose-s): los
+   puntos muy fuera de lugar (a más de 10 % de la estatura) bajan de ~3.7 % a 1–2 %; los dudosos no se muestran */
+const verPunto=(P,i,n)=>P[3*i+2]>=(n<=17||i<17?.4:.5);
 function puntos(x,P,esq,X,Y,Wd,Hd,r=3){
-  if(!P)return;const n=P.length/3,ok=i=>P[3*i+2]>=.3,px=i=>X+P[3*i]*Wd,py=i=>Y+P[3*i+1]*Hd;
+  if(!P)return;const n=P.length/3,ok=i=>verPunto(P,i,n),px=i=>X+P[3*i]*Wd,py=i=>Y+P[3*i+1]*Hd;
   x.save();x.lineCap='round';x.lineJoin='round';
   for(const grueso of [1,0]){x.strokeStyle=grueso?'rgba(255,255,255,.6)':'rgba(255,255,255,.5)';x.lineWidth=Math.max(.7,r*(grueso?.4:.22));x.beginPath();
     for(const [a,b] of esq)if((a<91)===!!grueso&&ok(a)&&ok(b)){x.moveTo(px(a),py(a));x.lineTo(px(b),py(b));}x.stroke();}
