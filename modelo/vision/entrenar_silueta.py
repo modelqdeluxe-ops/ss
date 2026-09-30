@@ -1,0 +1,65 @@
+# Afina LR-ASPP MobileNetV3 (torchvision, BSD-3; preentrenado en COCO con clases VOC) para 3 clases:
+# 0 fondo, 1 persona, 2 vaca. Recortes como los del video en vivo (el sujeto grande, cuadro estirado a cuadrado).
+import json,os,random,sys,time,math,numpy as np,torch,torch.nn as nn,torch.nn.functional as F
+from PIL import Image,ImageEnhance,ImageFilter
+from torchvision.models.segmentation import lraspp_mobilenet_v3_large,LRASPP_MobileNet_V3_Large_Weights as LW
+torch.set_num_threads(4);R=int(os.environ.get('RES','320'));EP=int(os.environ.get('EPOCAS','6'));BS=16
+MEAN=np.array([.485,.456,.406],np.float32);STD=np.array([.229,.224,.225],np.float32)
+L=[x for x in json.load(open('td/lista.json')) if os.path.exists(f'td/msk/{x[0]}.png')]
+items=[i for i,k in L for _ in range(3 if k=='v' else 1)]
+print('fotos',len(L),'muestras por época',len(items),flush=True)
+class DS(torch.utils.data.Dataset):
+    def __len__(s):return len(items)
+    def __getitem__(s,j):
+        iid=items[j];img=Image.open(f'td/img/{iid}.jpg').convert('RGB');m=Image.open(f'td/msk/{iid}.png');W,H=img.size;r=random.random
+        a=np.array(m);ys,xs=np.where((a==1)|(a==2))
+        asp=math.exp(random.uniform(math.log(.6),math.log(1.6)))   # ancho/alto del recorte
+        if len(xs) and r()<.7:   # alrededor del sujeto, con margen al azar
+            x0,x1,y0,y1=xs.min(),xs.max(),ys.min(),ys.max();bw,bh=x1-x0+1,y1-y0+1;g=random.uniform(.05,.45)
+            cw,ch=bw*(1+2*g),bh*(1+2*g)
+            if cw/ch<asp:cw=ch*asp
+            else:ch=cw/asp
+            cx=(x0+x1)/2+random.uniform(-.1,.1)*cw;cy=(y0+y1)/2+random.uniform(-.1,.1)*ch
+        else:
+            s_=random.uniform(.55,1);ch=min(H,math.sqrt(W*H*s_/asp));cw=min(W,ch*asp);cx=random.uniform(cw/2,W-cw/2);cy=random.uniform(ch/2,H-ch/2)
+        box=(cx-cw/2,cy-ch/2,cx+cw/2,cy+ch/2)
+        img=img.transform((R,R),Image.EXTENT,box,Image.BILINEAR,fillcolor=(124,116,104))
+        m=m.transform((R,R),Image.EXTENT,box,Image.NEAREST,fillcolor=0)
+        if r()<.5:img=img.transpose(Image.FLIP_LEFT_RIGHT);m=m.transpose(Image.FLIP_LEFT_RIGHT)
+        for E in (ImageEnhance.Brightness,ImageEnhance.Contrast,ImageEnhance.Color):
+            if r()<.8:img=E(img).enhance(random.uniform(.7,1.3))
+        if r()<.15:img=img.filter(ImageFilter.GaussianBlur(random.uniform(.5,1.5)))
+        x=((np.asarray(img,np.float32)/255-MEAN)/STD).transpose(2,0,1)
+        return torch.from_numpy(x.copy()),torch.from_numpy(np.array(m,np.int64))
+m=lraspp_mobilenet_v3_large(weights=LW.DEFAULT)
+# de 21 clases a 3, empezando con los pesos que ya tenía para fondo, persona y vaca
+for nm in ('low_classifier','high_classifier'):
+    c=getattr(m.classifier,nm);n=nn.Conv2d(c.in_channels,3,1)
+    with torch.no_grad():n.weight.copy_(c.weight[[0,15,10]]);n.bias.copy_(c.bias[[0,15,10]])
+    setattr(m.classifier,nm,n)
+class Env(nn.Module):
+    def __init__(s,m):super().__init__();s.m=m
+    def forward(s,x):return s.m.classifier(s.m.backbone(x))   # a 1/8 de la entrada
+net=Env(m)
+if os.environ.get('DESDE'):net.load_state_dict(torch.load(os.environ['DESDE']))
+dl=torch.utils.data.DataLoader(DS(),batch_size=BS,shuffle=True,num_workers=3,drop_last=True,persistent_workers=True)
+opt=torch.optim.AdamW(net.parameters(),lr=6e-4,weight_decay=1e-4);N=EP*len(dl)
+sch=torch.optim.lr_scheduler.OneCycleLR(opt,max_lr=6e-4,total_steps=N,pct_start=.06)
+wce=torch.tensor([1.,1.,1.5])
+def perdida(o,y):
+    o=F.interpolate(o,size=y.shape[-2:],mode='bilinear',align_corners=False)
+    ce=F.cross_entropy(o,y,weight=wce,ignore_index=255)
+    # dice de persona y vaca: cuida el área de la silueta
+    v=(y!=255).float()[:,None];p=o.softmax(1)*v;t=F.one_hot(y.clamp(max=2),3).permute(0,3,1,2).float()*v
+    i=(p*t).sum((0,2,3));d=1-(2*i+1)/(p.sum((0,2,3))+t.sum((0,2,3))+1)
+    return ce+.5*d[1:].mean()
+t0=time.time();k=0
+for ep in range(EP):
+    net.train();acc=0
+    for x,y in dl:
+        l=perdida(net(x),y);opt.zero_grad();l.backward();opt.step();sch.step();k+=1;acc+=l.item()
+        if k%50==0:print(f'época {ep+1} paso {k}/{N} pérdida {acc/50:.3f} {time.time()-t0:.0f}s',flush=True);acc=0
+    torch.save(net.state_dict(),f'sil_{R}_e{ep+1}.pt')
+    net.eval()
+    for RR in (256,320):torch.onnx.export(net,torch.randn(1,3,RR,RR),f'm/sil{ep+1}_{RR}.onnx',input_names=['input'],output_names=['logits'],opset_version=17,dynamo=False)
+    print('guardada época',ep+1,flush=True)

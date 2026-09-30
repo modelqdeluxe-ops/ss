@@ -99,15 +99,15 @@ s2 = re.sub(r"window\.RUMENTIS=\{app:'[a-z]+',prueba:(true|false),beta:(true|fal
 assert s2 != s or ("app:'%s'" % app in s), 'no se pudo marcar config.js'
 cj.write_text(s2, encoding='utf-8')
 
-# ---- la beta lleva la visión (modelo, onnxruntime-web y el detector de la marca) ----
+# ---- la beta lleva la visión (los dos modelos y onnxruntime-web) ----
 if beta:
     V = pathlib.Path(__file__).resolve().parents[1] / 'modelo' / 'vision'
     dv = D / 'assets' / 'vision'
     dv.mkdir(parents=True, exist_ok=True)
-    for f in ('seg.onnx', 'ort.bundle.js', 'ort-wasm-simd-threaded.wasm', 'cv.js', 'aruco.js'):
+    for f in ('silueta.onnx', 'seg.onnx', 'ort.bundle.js', 'ort-wasm-simd-threaded.wasm'):
         shutil.copy(V / f, dv / f)
     lic = D / 'assets' / 'lib' / 'LICENCIAS.txt'
-    extra = '\n\n'.join((V / f).read_text(encoding='utf-8') for f in ('LICENCIA-rf-detr.txt', 'LICENCIA-onnxruntime.txt', 'LICENCIA-js-aruco2.txt'))
+    extra = '\n\n'.join((V / f).read_text(encoding='utf-8') for f in ('LICENCIA-rf-detr.txt', 'LICENCIA-onnxruntime.txt', 'LICENCIA-torchvision.txt'))
     lic.write_text(lic.read_text(encoding='utf-8') + '\n\n' + extra, encoding='utf-8')
     # su propia versión (modelo/vision/VERSION): la beta avanza aparte de la app publicada
     vb = (V / 'VERSION').read_text(encoding='utf-8').strip()

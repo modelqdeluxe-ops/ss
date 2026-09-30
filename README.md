@@ -130,34 +130,38 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
 `modelo/vision/VERSION`): se instala junto a Rumentis sin tocar sus datos. `scripts/variantes.sh` la arma con
 `beta:true` en `config.js` y le copia `modelo/vision/` a `assets/vision/` (solo a ella). La app publicada sigue igual.
 
-- **Peso con cámara** (`app/assets/pesocam.js`, página `#pesocam`, tarjeta en Hoy y botón en el pesaje), junto a la
-  **marca de medida** (cuadro negro de 16 cm, ArUco MIP 36h12 id 7; la app da el PDF para imprimir con una regla de
-  10 cm para revisar la escala). Dos modos:
-  - **Personas** (de fábrica, para probar sin estar en la finca): de frente y de costado; da estatura y peso.
-  - **Ganado**: de costado y por detrás; da el peso y se junta en un pesaje del lote. También queda la medición con
-    **una sola foto de costado** (`kg = a · área^b`), para teléfonos lentos.
+- **Peso con cámara** (`app/assets/pesocam.js`, página `#pesocam`, tarjeta en Hoy y botón en el pesaje), **sin nada
+  que imprimir**: la escala en centímetros sale de una estatura conocida. Dos modos:
+  - **Personas** (de fábrica, para probar sin estar en la finca): tu estatura (se escribe una vez); de frente y de
+    costado.
+  - **Ganado**: una persona de estatura conocida se para derecha a la par del animal; de costado y por detrás. El
+    peso se junta en un pesaje del lote.
 - **Cámara en vivo** (`app/assets/camvivo.js`): video a pantalla completa con la silueta pintada en rojo, ámbar o
-  verde, la marca encuadrada, el paso ("Paso 1 de 2 · De frente") y seis indicadores: **Detectado · Completo ·
-  Distancia · Marca · Ángulo · Quieto**. Al centro, la indicación que toca ("Acércate", "Aléjate", "Falta la marca de
-  medida", "Gírate de costado…", "Quieto…"). Con todo en verde **3 cuadros seguidos** la foto se toma sola (mediana de
-  las medidas de esos cuadros, vibración y sonido) y pide el siguiente ángulo; hay botón para tomarla a mano y para
-  cambiar a la cámara frontal. Muestra los cuadros por segundo reales. Reglas (en `CamVivo.REGLAS` y en
-  `PesoCam.MODOS`): seguridad ≥ 0.5; la silueta no toca los bordes (2 %); distancia por alto de la silueta (personas y
-  ganado por detrás, 55–85 % del cuadro) o por ancho (ganado de costado, 55–88 %); marca con lado ≥ 36 px; ángulo por
-  la proporción ancho/alto (persona de frente ≥ 0.24, de costado ≤ 0.3 y ≤ 75 % de la de frente; ganado de costado
-  ≥ 1.15, por detrás ≤ 0.9); quieto si la caja se mueve poco entre cuadros (IoU ≥ 0.93).
-- **Visión en el teléfono** (`app/assets/vision.js`): RF-DETR Seg Nano (Roboflow, Apache 2.0) en ONNX int8 (33 MB)
-  con onnxruntime-web (WebAssembly). Recorta la silueta (clase persona o vaca de COCO) sin internet; la foto no sale
-  del teléfono. En vivo el modelo corre en un **Web Worker** armado desde un Blob (la página es `file://`), que recibe
-  de la página el código de onnxruntime, el `.wasm` y el modelo ya descargados; si el worker no arranca, corre en la
-  página. `js-aruco2` (MIT) encuentra la marca y da los píxeles por centímetro. En una CPU de escritorio: ~1.4 s por
-  cuadro (WASM de un hilo; en `file://` no hay SharedArrayBuffer). A futuro: WebGPU o parte nativa (TFLite/NNAPI).
-- **Cálculo en vivo**: `kg = c · V^b` con `V = área principal (cm²) × ancho del otro ángulo (cm) / 1000`. Personas: área
-  de frente × profundidad de costado (c de fábrica 0.58); ganado: área de costado × ancho por detrás (c 0.72). El ancho
-  del segundo ángulo se mide en una franja de alturas del cuerpo (percentil 90 del ancho por fila). Calibración por modo
-  con báscula (`S.config.pesoCam.cal` con `modo`): con 1 a 5 mediciones se ajusta c (mediana de kg/V); con 6 o más,
-  también el exponente; la app muestra el error típico. Las calibraciones de ganado guardan también el área de
-  costado, que ajusta la fórmula de una sola foto (`kg = a · área^b`, de fábrica ±15 %).
+  verde, el paso ("Paso 1 de 2 · De frente") e indicadores **Detectado · Completo · Distancia · Ángulo · Quieto** (y
+  **Referencia** en ganado). Al centro, la indicación que toca ("Acércate", "Aléjate", "Gírate de costado…",
+  "Falta la persona de referencia junto al animal", "Quieto…"). Con todo en verde **3 cuadros seguidos** la foto se
+  toma sola (vibración y sonido) y pide el siguiente ángulo; hay botón para tomarla a mano y para cambiar a la cámara
+  frontal. Reglas en `CamVivo.REGLAS` y `PesoCam.MODOS`: seguridad ≥ 0.5; la silueta no toca los bordes (2 %);
+  distancia por alto (personas 55–88 % del cuadro, ganado por detrás 45–85 %) o por ancho (ganado de costado
+  50–88 %); ángulo por la proporción ancho/alto (persona de frente ≥ 0.24, de costado ≤ 0.3 y ≤ 75 % de la de
+  frente; ganado de costado ≥ 1.15, por detrás ≤ 0.9); referencia completa, de pie y ≥ 25 % del alto; quieto si la
+  caja casi no se mueve (IoU ≥ 0.93).
+- **Visión en el teléfono** (`app/assets/vision.js`), dos modelos, cada uno en su **Web Worker** armado desde un Blob
+  (la página es `file://`; el worker recibe de la página onnxruntime-web, el `.wasm` y el modelo ya descargados):
+  - **rápido** `silueta.onnx` (13 MB): LR-ASPP MobileNetV3 (torchvision, BSD-3) **afinado por Rumentis** para fondo /
+    persona / vaca con ~9,100 fotos de COCO (`modelo/vision/entrenar_silueta.py`). Corre en cada cuadro: ~85 ms en una
+    PC (antes 1.4 s), unos 9 cuadros por segundo; cuando ya encontró al sujeto mira solo esa zona (más detalle). Contra
+    la silueta real de COCO, con el sujeto grande: IoU 0.80 persona y 0.73 vaca (sin afinar: 0.78 y 0.69).
+  - **preciso** `seg.onnx` (33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo mide las fotos capturadas, en
+    segundo plano mientras la persona se gira (~1.4 s por foto en una PC). Si no encuentra al sujeto, queda la medida
+    del rápido y la app lo avisa.
+  Cada silueta se queda con la mancha más grande (no suma otra persona ni pedazos sueltos). Todo en el teléfono, sin
+  internet.
+- **Cálculo**: `kg = c · V^b` con `V = área principal (cm²) × ancho del otro ángulo (cm) / 1000`. Personas: área de
+  frente × profundidad de costado (c de fábrica 0.58); ganado: área de costado × ancho por detrás (c 0.72). El ancho
+  del segundo ángulo es el percentil 90 del ancho por fila en una franja del cuerpo. Calibración por modo con báscula
+  (`S.config.pesoCam.cal`): con 1 a 5 mediciones se ajusta c (mediana de kg/V); con 6 o más, también el exponente; la
+  app muestra el error típico. Estaturas en `S.config.pesoCam.estatura` y `.refAlto`.
 - Las fotos de un lote se juntan en un **pesaje** (promedio y, si se indica, el peso de cada arete) que se guarda como
   cualquier otro, marcado `metodo:'camara'`.
 - Cómo se generó el modelo y sus licencias: `modelo/vision/LEEME.md`.
