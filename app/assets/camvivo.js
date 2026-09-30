@@ -20,7 +20,8 @@ const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)ret
 const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6},tomas:3,entre:140};
 const MARCA='Rumentis Labs';
 const CHIPS=[['det','Detectado'],['comp','Completo'],['dist','Distancia'],['ang','Ángulo'],['ref','Referencia'],['quieto','Quieto']];
-const COLOR={verde:'46,204,113',ambar:'240,191,51',rojo:'231,76,60'};
+// colores de estado (esmeralda, ámbar y coral, un poco más suaves que los primarios: se ven más finos sobre el video)
+const COLOR={verde:'52,211,153',ambar:'251,191,36',rojo:'248,113,113'};
 
 const iou=(a,b)=>{if(!a||!b)return 0;const x0=Math.max(a[0],b[0]),y0=Math.max(a[1],b[1]),x1=Math.min(a[2],b[2]),y1=Math.min(a[3],b[3]);
   const i=Math.max(0,x1-x0)*Math.max(0,y1-y0),u=(a[2]-a[0])*(a[3]-a[1])+(b[2]-b[0])*(b[3]-b[1])-i;return u>0?i/u:0;};
@@ -149,8 +150,10 @@ function beep(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A
 function camino(x,s,X,Y,Wd,Hd,W,H,a){
   const c=s.cont;if(!c||c.length<6)return false;const Z=s.Z,n=s.n,b=a||n;
   const sx=(b[2]-b[0])/Math.max(1e-6,n[2]-n[0]),sy=(b[3]-b[1])/Math.max(1e-6,n[3]-n[1]);
-  x.beginPath();
-  for(let i=0;i<c.length;i+=2){const fx=(Z.x+c[i]*s.cx)/W,fy=(Z.y+c[i+1]*s.cy)/H,px=X+(b[0]+(fx-n[0])*sx)*Wd,py=Y+(b[1]+(fy-n[1])*sy)*Hd;i?x.lineTo(px,py):x.moveTo(px,py);}
+  const P=[];for(let i=0;i<c.length;i+=2){const fx=(Z.x+c[i]*s.cx)/W,fy=(Z.y+c[i+1]*s.cy)/H;P.push(X+(b[0]+(fx-n[0])*sx)*Wd,Y+(b[1]+(fy-n[1])*sy)*Hd);}
+  // el contorno con curvas (por los puntos medios de cada tramo): sin escalones
+  const m=P.length/2,mx=i=>(P[2*(i%m)]+P[2*((i+1)%m)])/2,my=i=>(P[2*(i%m)+1]+P[2*((i+1)%m)+1])/2;
+  x.beginPath();x.moveTo(mx(0),my(0));for(let i=1;i<=m;i++)x.quadraticCurveTo(P[2*(i%m)],P[2*(i%m)+1],mx(i),my(i));
   x.closePath();return true;
 }
 /* los puntos del cuerpo, como un traje de captura de movimiento: puntos blancos que brillan y líneas finas entre
@@ -168,9 +171,29 @@ function puntos(x,P,esq,X,Y,Wd,Hd,r=3){
   x.shadowColor='rgba(255,255,255,.95)';x.fillStyle='#fff';
   for(let i=0;i<n;i++)if(ok(i)){const ri=r*tamPunto(i,n);x.shadowBlur=ri*3;x.beginPath();x.arc(px(i),py(i),ri,0,2*Math.PI);x.fill();}
   x.restore();}
+/* la silueta: relleno en degradado muy suave (más arriba que abajo), línea fina con un brillo del mismo color y un filo
+   blanco casi transparente por dentro (se lee sobre fondos claros y oscuros) */
 function trazar(x,s,col,X,Y,Wd,Hd,W,H,a,{relleno=.2,linea=2}={}){
   if(!s||!s.ok||!camino(x,s,X,Y,Wd,Hd,W,H,a))return;
-  x.fillStyle=`rgba(${col},${relleno})`;x.fill();x.strokeStyle=`rgb(${col})`;x.lineWidth=linea;x.lineJoin='round';x.stroke();
+  const b=a||s.n,y0=Y+b[1]*Hd,y1=Y+b[3]*Hd,gr=x.createLinearGradient(0,y0,0,y1);
+  gr.addColorStop(0,`rgba(${col},${relleno})`);gr.addColorStop(1,`rgba(${col},${relleno*.3})`);
+  x.save();x.fillStyle=gr;x.fill();x.lineJoin='round';x.lineCap='round';
+  x.shadowColor=`rgba(${col},.75)`;x.shadowBlur=linea*5;x.strokeStyle=`rgba(${col},.95)`;x.lineWidth=linea;x.stroke();
+  x.shadowBlur=0;x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=Math.max(.6,linea*.35);x.stroke();x.restore();
+}
+/* el recuadro: esquinas redondeadas con brillo, unidas por un marco finito; mientras analiza, una línea de escaneo
+   recorre el cuerpo de arriba abajo */
+function recuadro(x,X0,Y0,X1,Y1,col,escanea){
+  const w=X1-X0,h=Y1-Y0,L=Math.max(10,Math.min(26,w*.22,h*.12)),r=Math.min(8,L*.45);
+  x.save();x.lineCap='round';x.lineJoin='round';
+  x.strokeStyle=`rgba(${col},.22)`;x.lineWidth=1;x.beginPath();x.roundRect?x.roundRect(X0,Y0,w,h,r):x.rect(X0,Y0,w,h);x.stroke();
+  x.shadowColor=`rgba(${col},.8)`;x.shadowBlur=8;x.strokeStyle=`rgb(${col})`;x.lineWidth=2.5;x.beginPath();
+  for(const [px,py,sx,sy] of [[X0,Y0,1,1],[X1,Y0,-1,1],[X0,Y1,1,-1],[X1,Y1,-1,-1]]){x.moveTo(px,py+sy*L);x.arcTo(px,py,px+sx*L,py,r);x.lineTo(px+sx*L,py);}
+  x.stroke();
+  if(escanea){const t=(performance.now()%1800)/1800,ys=Y0+t*h,g=x.createLinearGradient(0,ys-h*.08,0,ys);
+    g.addColorStop(0,`rgba(${col},0)`);g.addColorStop(1,`rgba(${col},.28)`);x.shadowBlur=0;x.fillStyle=g;x.fillRect(X0+2,ys-h*.08,w-4,h*.08);
+    x.strokeStyle=`rgba(${col},.85)`;x.lineWidth=1;x.beginPath();x.moveTo(X0+4,ys);x.lineTo(X1-4,ys);x.stroke();}
+  x.restore();
 }
 
 function abrir(o){
@@ -182,10 +205,10 @@ function abrir(o){
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
       <div class="cam-v cv-v"><video playsinline autoplay muted></video><canvas class="cv-lz"></canvas>
         <div class="cv-ind"><span class="cv-pos" hidden><em>Posición</em><span class="cv-pos-b"><i></i></span><b data-no-tr>0 %</b></span><b class="cv-msg">Abriendo la cámara…</b><span class="cv-prog" hidden><i></i></span></div>
-        <img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span></div>
+        <span class="cv-tag" hidden><i></i><b data-c="rojo">Ajusta</b><b data-c="ambar">Casi</b><b data-c="verde">Listo</b></span><img class="cv-th" alt="" hidden><span class="cv-firma" data-no-tr>Powered by <b>Rumentis Labs</b></span></div>
       <div class="cam-bar cv-bar"><span class="cv-fps"></span><button type="button" class="cam-disp cv-man" aria-label="Tomar la foto ahora" disabled><i></i></button><button type="button" class="cam-lente cv-gira">Girar cámara</button></div>`;
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
-    const $w=s=>w.querySelector(s),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
+    const $w=s=>w.querySelector(s),tag=w.querySelector('.cv-tag'),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
     const parar=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;};
     const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
@@ -226,20 +249,21 @@ function abrir(o){
       const x=lz.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,bw,bh);const Rr=rect();if(!Rr||!W)return;
       const s=vis.s,p=vis.p,col=COLOR[vis.color];
       if(p&&p.ok)trazar(x,p,'255,255,255',Rr.x,Rr.y,Rr.w,Rr.h,W,H,null,{relleno:.08,linea:1.5});
-      if(!s||!s.ok){caja=null;return;}
+      if(!s||!s.ok){caja=null;tag.hidden=true;return;}
       // la caja que se ve se acerca a la del último resultado: el movimiento se ve continuo
       if(!caja)caja=s.n.slice();else for(let i=0;i<4;i++)caja[i]+=(s.n[i]-caja[i])*.35;
-      trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.24:.16,linea:2});
+      trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.2:.12,linea:1.6});
       // los puntos del cuerpo se deslizan hacia el último resultado (y se quitan si ya es viejo)
       // (se deslizan hacia el último resultado; ya no siguen la caja de la silueta: si la silueta se pegaba a algo,
       // los arrastraba fuera del cuerpo)
       const kp=vis.kp&&performance.now()-vis.kp.t<1500?vis.kp.p:null;
       if(kp){if(!kpV||kpV.length!==kp.length)kpV=kp.slice();else for(let i=0;i<kp.length;i++)kpV[i]+=(kp[i]-kpV[i])*(i%3===2?1:.5);
         puntos(x,kpV,esq,Rr.x,Rr.y,Rr.w,Rr.h,Math.max(2.5,Math.min(4,Rr.w/110)));}else kpV=null;
-      // esquinas finas
-      const X0=Rr.x+caja[0]*Rr.w,Y0=Rr.y+caja[1]*Rr.h,X1=Rr.x+caja[2]*Rr.w,Y1=Rr.y+caja[3]*Rr.h,L=Math.min(16,(X1-X0)/5,(Y1-Y0)/5),g=6;
-      x.strokeStyle=`rgba(${col},.95)`;x.lineWidth=1.5;x.lineCap='round';x.beginPath();
-      for(const [px,py,sx,sy] of [[X0-g,Y0-g,1,1],[X1+g,Y0-g,-1,1],[X0-g,Y1+g,1,-1],[X1+g,Y1+g,-1,-1]]){x.moveTo(px,py+sy*L);x.lineTo(px,py);x.lineTo(px+sx*L,py);}x.stroke();
+      // el recuadro (con 8 px de aire alrededor del cuerpo) y la etiqueta de estado encima
+      const g=8,X0=Rr.x+caja[0]*Rr.w-g,Y0=Rr.y+caja[1]*Rr.h-g,X1=Rr.x+caja[2]*Rr.w+g,Y1=Rr.y+caja[3]*Rr.h+g;
+      recuadro(x,X0,Y0,X1,Y1,col,vis.color!=='verde');
+      tag.hidden=false;tag.dataset.c=vis.color;// (con la cámara frontal el lienzo va en espejo y la etiqueta no: se pone sobre la esquina que se ve a la izquierda)
+      const tx=w.classList.contains('espejo')?bw-X1:X0;tag.style.transform=`translate(${Math.round(Math.max(4,tx))}px,${Math.round(Math.max(4,Y0-26))}px)`;
     }
     requestAnimationFrame(dibujar);
     function chips(E){for(const el of w.querySelectorAll('.cv-chip')){const s=E[el.dataset.k];el.dataset.s=s==null?'':s?'ok':'no';}}

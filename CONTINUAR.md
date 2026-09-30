@@ -217,7 +217,12 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.14** (esta rama): modelo v5 sin datos demográficos (el dueño no los quiere): 2.3 % con el ruido de una
+**5.0.0-beta.15** (esta rama): diseño de la cámara más profesional: contorno con curvas (sin escalones), línea fina con
+brillo y filo blanco, relleno en degradado; recuadro con esquinas redondeadas con brillo y marco fino; línea de escaneo
+mientras no está en verde; etiqueta de estado (Ajusta / Casi / Listo) sobre el recuadro (en el DOM: se traduce; en
+espejo con la cámara frontal); colores esmeralda, ámbar y coral.
+
+**5.0.0-beta.14**: modelo v5 sin datos demográficos (el dueño no los quiere): 2.3 % con el ruido de una
 foto (con sexo y edad era 2.23 %), 1.65 % exacto. Se quitaron sexo y edad del formulario. Más medidas visibles en la
 foto (tobillo, pie, cabeza, largos) bajan a lo más ~0.05 puntos; el brazo ayudaría (→ ~2.0 %) pero de perfil queda
 tapado. Lo que falta para bajar de verdad son datos reales con báscula (ver `modelo/peso/LEEME.md`).
@@ -253,7 +258,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.14.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.15.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
