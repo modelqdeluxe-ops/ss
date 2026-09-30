@@ -21,7 +21,7 @@ const MODOS={
   persona:{clase:Vision.PERSONA,k:1.0,err:.10,alto:'estatura',
     buscar:'Párate frente a la cámara, de cuerpo completo',
     pasos:[{id:'frente',nombre:'De frente',instr:'De pie y derecho, con los brazos un poco separados del cuerpo.',girar:'Ponte de frente, con los brazos un poco separados',ang:{min:.24},dist:{eje:'alto',min:.55,max:.88}},
-      {id:'costado',nombre:'De costado',instr:'De pie y derecho, con los brazos pegados al cuerpo.',girar:'Gírate de costado, con los brazos pegados',ang:{max:.3,rel:.75},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
+      {id:'costado',nombre:'De costado',instr:'De pie y derecho, con los brazos pegados al cuerpo.',girar:'Gírate de costado, con los brazos pegados',girarMas:'Gírate un poco más: de perfil completo',ang:{max:.3,rel:.75,perfil:.65},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
   ganado:{clase:Vision.VACA,k:1.1,err:.15,alto:'refAlto',ref:true,
     buscar:'Apunta al animal, que se vea completo',
     pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado; la persona de referencia de pie, a la par del animal.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88}},
@@ -48,7 +48,7 @@ const REG=()=>PC().reg||[];
 function registrar(r,stats){
   const id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),q=v=>v==null||!isFinite(v)?null:Math.round(v*100)/100;
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
-    alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
+    alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
     partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
     fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
   guardarPC({reg:REG().concat(rec).slice(-300)});return id;
@@ -56,17 +56,20 @@ function registrar(r,stats){
 const actualizarReg=(id,cambios)=>guardarPC({reg:REG().map(x=>x.id===id?{...x,...cambios}:x)});
 
 /* ---------- calibración con la báscula ----------
-   kg = k · litros^b. Con 1 a 5 mediciones se ajusta k (mediana de kg/L); con 6 o más, también el exponente.
+   kg = k · litros^b, ajuste robusto (una medición mala no arrastra el resultado):
+   - 1 a 5 mediciones, o volúmenes muy parecidos (una sola persona): b = 1 y k = mediana de kg/L;
+   - 6 o más con volúmenes variados (≥ 15 % de rango): Theil–Sen en logaritmos: b = mediana de las pendientes entre
+     cada par (0.85–1.15) y ln k = mediana de ln kg − b · ln L.
    Los datos: mediciones del registro con peso de báscula (y las calibraciones de antes del registro, si las hay). */
+const med=v=>{const s=v.slice().sort((a,b)=>a-b),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):0;};
 const calModo=modo=>REG().filter(x=>x.modo===modo&&x.real>0&&x.L>0).map(x=>({L:x.L,kg:x.real,id:x.id}))
   .concat((PC().cal||[]).filter(c=>c.modo===modo&&c.L>0&&c.kg>0));
 function ajustar(C,modo){
   const n=C.length,M=MODOS[modo];if(!n)return {k:M.k,b:1,n:0};
-  const X=C.map(z=>Math.log(z.L)),Y=C.map(z=>Math.log(z.kg));let k,b=1;
-  if(n<6){const r=C.map(z=>z.kg/z.L).sort((a,b)=>a-b);k=n%2?r[(n-1)/2]:(r[n/2-1]+r[n/2])/2;}
-  else{const mx=X.reduce((s,v)=>s+v,0)/n,my=Y.reduce((s,v)=>s+v,0)/n;let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(X[i]-mx)*(Y[i]-my);sxx+=(X[i]-mx)**2;}
-    b=sxx>0?Math.min(1.15,Math.max(.85,sxy/sxx)):1;k=Math.exp(my-b*mx);}
-  return {k,b,n};
+  const X=C.map(z=>Math.log(z.L)),Y=C.map(z=>Math.log(z.kg)),rango=Math.max(...X)-Math.min(...X);let b=1;
+  if(n>=6&&rango>=Math.log(1.15)){const P=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const dx=X[j]-X[i];if(Math.abs(dx)>.02)P.push((Y[j]-Y[i])/dx);}
+    if(P.length)b=Math.min(1.15,Math.max(.85,med(P)));}
+  return {k:Math.exp(med(Y.map((y,i)=>y-b*X[i]))),b,n};
 }
 function modeloV(modo){
   const C=calModo(modo),a=ajustar(C,modo),n=C.length;
@@ -83,22 +86,30 @@ function tramos(sil,cmpx){
   return {filas,cw:sil.cx*cmpx,ch:sil.cy*cmpx,cols:x1-x0};
 }
 const suma=t=>t.reduce((s,[a,b])=>s+b-a,0);
-const med=v=>{const s=v.slice().sort((a,b)=>a-b),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):0;};
 /* Persona: cada fila del cuerpo de frente es una rebanada; su corte tiene el ancho de frente y el fondo de costado a la
    misma altura (relativa a la estatura; mediana de 5 filas, así una fila mal recortada no pesa). Se descuenta la ropa
    (`ropa` cm por lado) y el área del corte es f · ancho · fondo según la parte del cuerpo (FORMA). Los tramos fuera del
    tronco y las piernas (los brazos) se toman redondos: su fondo es su propio ancho. Devuelve litros por parte. */
+/* brazos pegados: si de frente casi no se ven separados del tronco (menos de 15 % de las filas entre hombros y
+   caderas con brazo aparte), cada brazo se estima con la anatomía: ancho ≈ 5.2 % de la estatura; en esas filas se
+   resta del tramo central y se cuenta redondo, como brazo. Si no, contarían como tronco (con su fondo) y el volumen
+   saldría alto. */
+const BRAZO=.052,H_HOMBRO=.18,H_CADERA=.52;
 function volPersona(F,S,ropa=0){
-  const nF=F.filas.length,nS=S.filas.length;let tx0=1e9,tx1=-1e9;
+  const nF=F.filas.length,nS=S.filas.length,alto=nF*F.ch;let tx0=1e9,tx1=-1e9;
   for(let i=Math.floor(nF*.28);i<Math.floor(nF*.45);i++){const t=F.filas[i].reduce((m,z)=>!m||z[1]-z[0]>m[1]-m[0]?z:m,null);if(t){tx0=Math.min(tx0,t[0]);tx1=Math.max(tx1,t[1]);}}
   const hol=(tx1-tx0)*.12,P={cabeza:0,tronco:0,brazos:0,piernas:0},menos=v=>Math.max(0,v-2*ropa);
+  // ¿se ven los brazos aparte? (filas entre hombros y caderas con algún tramo fuera del tronco)
+  let sep=0,tot=0;for(let i=Math.floor(nF*H_HOMBRO);i<Math.floor(nF*H_CADERA);i++){tot++;if(F.filas[i].some(([a,b])=>!(b>tx0-hol&&a<tx1+hol)))sep++;}
+  const pegados=tot>0&&sep/tot<.15,bw=BRAZO*alto;
   for(let i=0;i<nF;i++){const h=(i+.5)/nF,js=Math.min(nS-1,Math.floor(h*nS)),ds=[];
     for(let j=Math.max(0,js-2);j<=Math.min(nS-1,js+2);j++)ds.push(suma(S.filas[j]));
     const d=menos(med(ds)*S.cw);
-    for(const [a,b] of F.filas[i]){const wd=menos((b-a)*F.cw),central=b>tx0-hol&&a<tx1+hol;
-      const parte=!central?'brazos':h<.13?'cabeza':h<.52?'tronco':'piernas';
+    for(const [a,b] of F.filas[i]){let wd=menos((b-a)*F.cw);const central=b>tx0-hol&&a<tx1+hol;
+      const parte=!central?'brazos':h<.13?'cabeza':h<H_CADERA?'tronco':'piernas';
+      if(central&&pegados&&h>=H_HOMBRO&&h<H_CADERA){const quita=Math.min(2*bw,wd*.4);wd-=quita;P.brazos+=2*FORMA.brazos*(quita/2)**2*F.ch;}
       P[parte]+=FORMA[parte]*wd*(central?d:wd)*F.ch;}}
-  for(const k in P)P[k]/=1000;return P;
+  for(const k in P)P[k]/=1000;P.pegados=pegados;return P;
 }
 /* Ganado: de costado, cada columna del cuerpo (sin las patas) es una rebanada a lo largo del animal; su corte tiene
    la forma que se ve por detrás, agrandada o achicada según el grueso del cuerpo en esa columna. */
@@ -126,18 +137,24 @@ function combinar(modo,caps,alto,ropaK){
   const cmpx=t=>ref/(modo==='persona'?t.med.alto:t.med.refAlto);
   const TP=tomas(p).map(t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t))})),TS=tomas(s).map(t=>({t,k:cmpx(t),T:tramos(t.sil,cmpx(t))}));
   const pares=[];
-  for(const a of TP)for(const b of TS){const P=modo==='persona'?volPersona(a.T,b.T,ropa):volGanado(a.T,b.T);pares.push({P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b});}
+  let pegados=false;
+  for(const a of TP)for(const b of TS){const P=modo==='persona'?volPersona(a.T,b.T,ropa):volGanado(a.T,b.T);if(P.pegados)pegados=true;delete P.pegados;pares.push({P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b});}
   const Ls=pares.map(x=>x.L),L=Ls.reduce((x,y)=>x+y,0)/Ls.length,sd=Ls.length>1?Math.sqrt(Ls.reduce((x,y)=>x+(y-L)**2,0)/(Ls.length-1)):0,cv=L>0?sd/L:0;
   const partes={};for(const x of pares)for(const k in x.P)partes[k]=(partes[k]||0)+x.P[k]/pares.length;
   // el rango: el error del modelo (calibración) y el desacuerdo entre fotos, sumados en cuadratura
   const err=Math.min(.3,Math.sqrt(m.err**2+cv**2));
-  const r={modo,L,partes,cv,comb:pares.length,kg:m.k*Math.pow(L,m.b),k:m.k,b:m.b,err,n:m.n,alto,ropa:modo==='persona'?(ropaK||'normal'):null,
+  const r={modo,L,partes,cv,comb:pares.length,brazosPegados:pegados,kg:m.k*Math.pow(L,m.b),k:m.k,b:m.b,err,n:m.n,alto,ropa:modo==='persona'?(ropaK||'normal'):null,
     score:Math.min(p.med.score,s.med.score),manual:caps.some(c=>c.manual),fuente:caps.every(c=>c.fuente==='preciso')?'preciso':'rapido'};
   const prom=f=>{const v=pares.map(f).filter(isFinite);return v.length?v.reduce((x,y)=>x+y,0)/v.length:NaN;};
   if(modo==='persona'){
     // fondo del pecho (a un 30 % de la estatura desde arriba) y ancho de hombros (a un 22 %)
     const fila=(T,h)=>T.filas[Math.min(T.filas.length-1,Math.floor(h*T.filas.length))]||[];
     r.prof=prom(x=>suma(fila(x.b.T,.3))*x.b.T.cw);r.anchoF=prom(x=>Math.max(0,...fila(x.a.T,.22).map(([a,b])=>b-a))*x.a.T.cw);r.imc=r.kg/((alto/100)**2);
+    // fondo del pecho contra el ancho del tronco (el tramo más ancho a la misma altura): en una persona va de ~0.5 a
+    // ~0.8; si pasa de 0.9, la toma de costado no era de perfil y el volumen sale alto
+    r.fondoAncho=r.prof/prom(x=>Math.max(1,...fila(x.a.T,.3).map(([a,b])=>b-a))*x.a.T.cw);
+    if(r.fondoAncho>.9)r.aviso='La toma de costado no parece de perfil completo (el pecho se ve muy ancho de lado): el peso puede salir alto. Repite girando bien de costado.';
+    else if(r.imc>40||r.imc<15)r.aviso='El resultado sale fuera de lo normal para tu estatura: revisa que las dos tomas sean de frente y de perfil completo, con el cuerpo entero a la vista.';
   }else{r.largo=prom(x=>x.a.t.med.ancho*x.a.k);r.altoAnimal=prom(x=>x.a.t.med.alto*x.a.k);r.ancho=prom(x=>x.b.t.med.banda*x.b.k);
     // de costado y por detrás el animal tiene la misma altura: si no, la persona no estaba a la par
     const a2=prom(x=>x.b.t.med.alto*x.b.k);if(Math.abs(r.altoAnimal-a2)/((r.altoAnimal+a2)/2)>.12)r.aviso='Las dos tomas dieron alturas distintas del animal: que la persona de referencia se pare a la par del animal, ni adelante ni atrás.';}

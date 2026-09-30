@@ -132,7 +132,7 @@ function tomar(titulo,o={}){
 /* la cámara para video en vivo (peso con cámara): la trasera principal (la que se eligió al tomar fotos) o la frontal */
 async function camara(frontal){
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))throw new Error('sin cámara');
-  const tam={width:{ideal:1280},height:{ideal:960}};
+  const tam={width:{ideal:1280},height:{ideal:960},frameRate:{ideal:30}};
   if(frontal)return navigator.mediaDevices.getUserMedia({video:{...tam,facingMode:'user'},audio:false});
   let s=await abrirCam(null,tam);
   const lista=await traseras();let g=null;try{g=localStorage.getItem(CAM_KEY);}catch(e){}

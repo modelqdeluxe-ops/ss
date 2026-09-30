@@ -1,7 +1,8 @@
 /* Rumentis Beta: visión en el teléfono. Todo se calcula aquí: el video no sale del teléfono.
    Dos modelos con onnxruntime-web (MIT) en WebAssembly, en Web Workers (el video no se traba):
-   - rápido  (silueta.onnx, 13 MB): LR-ASPP MobileNetV3 (torchvision, BSD-3) afinado para fondo / persona / vaca
-             (modelo/vision/entrenar_silueta.py). Entrada 256×256. Corre en cada cuadro del video, en dos workers a la
+   - rápido  (silueta.onnx, 13 MB, ganado; silueta_p.onnx, personas): LR-ASPP MobileNetV3 (torchvision, BSD-3) afinado
+             para fondo / persona / vaca (modelo/vision/entrenar_silueta.py; el de personas con un refinamiento a 1/4,
+             entrenar_silueta2.py). Entrada 256×256. Corre en cada cuadro del video, en dos workers a la
              vez si el teléfono tiene núcleos de sobra (el doble de cuadros por segundo).
    - preciso (seg.onnx, 33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo en las fotos que se capturan,
              en segundo plano, para la medida final.
@@ -15,7 +16,10 @@
 const BASE=window.VISION_BASE||(location.protocol==='file:'?'https://rumentis.local/vision/':'vision/');
 const abs=f=>new URL(f,new URL(BASE,location.href)).href;
 const NUC=(navigator.hardwareConcurrency||4);
-const MODELOS={rapido:{archivo:'silueta.onnx',R:256,G:128,tipo:'sem',n:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1}};
+// copias del modelo rápido en paralelo: 3 en teléfonos de 8 núcleos, 2 con 6, 1 con menos (la cámara da ~30 cuadros/s)
+// rapidoP: el de personas (v2, con refinamiento a 1/4: bordes más finos); rapido: el de ganado (v1, mejor en vacas)
+const MODELOS={rapido:{archivo:'silueta.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},
+  rapidoP:{archivo:'silueta_p.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1}};
 
 /* El núcleo: preparar el cuadro y leer lo que devuelve el modelo. Se usa igual en la página y dentro del worker
    (se pasa como texto), así que no puede tocar nada de afuera. */

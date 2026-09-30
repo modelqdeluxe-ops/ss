@@ -9,7 +9,8 @@
    CamVivo.abrir({titulo, clase, ref, buscar, pasos:[{id, nombre, instr, girar, ang:{min,max,rel}, dist:{eje,min,max}, banda}]})
    devuelve una captura por paso ({id, nombre, med, sil, ref, W, H, img, manual, fuente}) o null si se cierra antes.
    Las medidas van en píxeles del cuadro (W×H); la escala en centímetros la pone pesocam.js con una estatura conocida.
-   (ang.rel: la proporción ancho/alto debe bajar a esa fracción de la de la primera toma; p. ej. de frente a costado) */
+   (ang.rel: la proporción ancho/alto debe bajar a esa fracción de la de la primera toma; ang.perfil: lo mismo con el
+   ancho del tronco a la altura del pecho, que no se deja engañar por los pies ni los brazos; p. ej. de frente a costado) */
 (function(){
 'use strict';
 const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)return;
@@ -36,10 +37,14 @@ function aCuadro(s,G,Z,W,H){
   s.cortada=(x0<=0&&Z.x>1)||(y0<=0&&Z.y>1)||(x1>=G&&Z.x+Z.w<W-1)||(y1>=G&&Z.y+Z.h<H-1);return s;
 }
 /* medidas de una silueta en píxeles del cuadro */
+// ancho del tronco (mediana de las filas entre 25 % y 45 % de la altura) sobre la altura de la silueta: de frente es
+// ~2 veces el de perfil; a 45° queda en medio. Sirve para saber si la toma de costado es de perfil de verdad.
+function torsoN(s){const [,y0,,y1]=s.caja,h=y1-y0,fs=[];for(let y=Math.floor(y0+.25*h);y<Math.ceil(y0+.45*h);y++)fs.push(s.filas[y]);
+  return pct(fs,.5)*s.cx/(h*s.cy);}
 function medir(s,W,H,banda){
   const [x0,y0,x1,y1]=s.caja,cx=s.cx,cy=s.cy,h=y1-y0,b=banda||[.2,.6],fs=[];
   for(let y=Math.floor(y0+b[0]*h);y<Math.ceil(y0+b[1]*h);y++)fs.push(s.filas[y]);
-  return {W,H,alto:h*cy,ancho:(x1-x0)*cx,area:s.area*cx*cy,banda:pct(fs,.9)*cx,ratio:((x1-x0)*cx)/(h*cy),score:s.score};
+  return {W,H,alto:h*cy,ancho:(x1-x0)*cx,area:s.area*cx*cy,banda:pct(fs,.9)*cx,ratio:((x1-x0)*cx)/(h*cy),torsoN:torsoN(s),score:s.score};
 }
 /* una zona alrededor de las cajas (fracciones del cuadro): con margen, de proporción entre `amin` y `amax` y de al
    menos `min` del cuadro. Para seguir al sujeto con el modelo rápido y para recortar la foto del preciso. */
@@ -72,12 +77,14 @@ function revisar(s,p,W,H,paso,prev,ref,conRef){
   E.comp=dentro(c,REGLAS.margen)&&!s.cortada;
   const v=d.eje==='alto'?c[3]-c[1]:c[2]-c[0];E.dist=v>=d.min&&v<=d.max;
   const ratio=((c[2]-c[0])*W)/((c[3]-c[1])*H);
-  E.ang=(a.min==null||ratio>=a.min)&&(a.max==null||ratio<=a.max)&&(!a.rel||!ref||ratio<=a.rel*ref);
+  // (ref: las medidas de la primera toma; perfil: el tronco debe verse a lo más esa fracción de ancho que de frente)
+  const perfil=!a.perfil||!ref||!ref.torsoN||torsoN(s)<=a.perfil*ref.torsoN;
+  E.ang=(a.min==null||ratio>=a.min)&&(a.max==null||ratio<=a.max)&&(!a.rel||!ref||ratio<=a.rel*ref.ratio)&&perfil;
   E.quieto=iou(c,prev)>=REGLAS.quieto;
   let msg='';
   if(!E.comp)msg=v>d.max*.95?'Aléjate un poco':'Que se vea el cuerpo completo';
   else if(!E.dist)msg=v<d.min?'Acércate':'Aléjate';
-  else if(!E.ang)msg=paso.girar;
+  else if(!E.ang)msg=!perfil&&paso.girarMas?paso.girarMas:paso.girar;
   else if(conRef&&!E.ref)msg=p&&p.ok?'Que la persona de referencia se vea completa y derecha':'Falta la persona de referencia junto al animal';
   else if(!E.quieto)msg='Quieto…';
   return {E,msg,caja:c};
@@ -126,7 +133,7 @@ function abrir(o){
     if(!activo)return;
     try{if(navigator.wakeLock)wl=await navigator.wakeLock.request('screen');}catch(e){}
     msg.textContent='Cargando el modelo de visión…';w.classList.add('carga');
-    let rap=null;try{rap=await Vision.motor('rapido');}catch(e){if(activo){msg.textContent='No se pudo cargar el modelo de visión en este teléfono.';w.classList.remove('carga');}return;}
+    let rap=null;try{rap=await Vision.motor(o.clase===Vision.PERSONA?'rapidoP':'rapido');}catch(e){if(activo){msg.textContent='No se pudo cargar el modelo de visión en este teléfono.';w.classList.remove('carga');}return;}
     // el preciso se carga mientras tanto: lo necesita la primera foto
     const preP=Vision.motor('preciso');preP.catch(()=>{});
     if(!activo)return;w.classList.remove('carga');
@@ -186,7 +193,7 @@ function abrir(o){
       if(capturando)return;capturando=true;pausa=Infinity;
       const p=pasos[ip],u=lista[lista.length-1],cajas=[u.s.n,u.p&&u.p.ok?u.p.n:null];
       const cuadro=()=>{const fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);return fc;};
-      const med={};for(const k of ['alto','ancho','area','banda','ratio','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
+      const med={};for(const k of ['alto','ancho','area','banda','ratio','torsoN','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
       const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
       // las demás tomas, unos milisegundos después (todavía quieto): el modelo preciso las mide todas y se promedian
       for(let t=1;t<REGLAS.tomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
@@ -228,7 +235,7 @@ function abrir(o){
       w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo+'×'+rap.n;
       // el cuadro siguiente mira solo la zona del sujeto; si la zona lo cortó (o en ganado falta la persona), completo
       zona=(s&&s.cortada)||(pr&&pr.cortada)||(conRef&&!(pr&&pr.ok))?null:zonaSig([s&&s.ok?s.n:null,pr&&pr.ok?pr.n:null],W,H,zona);
-      const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido.ratio:null,conRef);prev=ev.caja||null;
+      const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido:null,conRef);prev=ev.caja||null;
       const E=ev.E,listo=E.det&&E.comp&&E.dist&&E.ang&&E.quieto&&(!conRef||E.ref);
       const color=!E.det?'rojo':listo?'verde':(E.comp&&E.dist?'ambar':'rojo');
       const med=E.det?medir(s,W,H,p.banda):null;if(med&&conRef&&E.ref)med.refAlto=medir(pr,W,H).alto;
@@ -264,5 +271,5 @@ function abrir(o){
     tick=setInterval(bombear,60);bombear();
   });
 }
-window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe};
+window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN};
 })();

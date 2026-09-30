@@ -130,7 +130,7 @@ calibración con báscula.
 - Un segundo afinado del modelo rápido (16,100 fotos, 256 px) no mejoró: se quedó el de la época 5.
 - Prueba `vivo_t.js`: repetibilidad (3 mediciones con la persona movida y a otra distancia: 63 / 63 / 63 L).
 
-**5.0.0-beta.5** (esta rama). El dueño probó beta.4: ~20 cuadros/s ("super mejor"). Pidió más precisión, datos de
+**5.0.0-beta.5**. El dueño probó beta.4: ~20 cuadros/s ("super mejor"). Pidió más precisión, datos de
 desarrollador, mejor modelo matemático, letras más chicas en la cámara, explicar el modelo y la firma de su empresa:
 
 - `camvivo.js`: **2 fotos por ángulo** para el modelo preciso, tomadas antes del pitido (la primera versión las tomaba
@@ -145,13 +145,33 @@ desarrollador, mejor modelo matemático, letras más chicas en la cámara, expli
 - `documentos.js`: `Documentos.enviar` acepta el tipo de archivo (para el CSV).
 - Prueba `vivo_t.js`: además del laboratorio (registro, estadísticas, detalle, báscula desde el registro, CSV).
 
+**5.0.0-beta.6** (esta rama). El dueño pidió más cuadros ("romper los 20"), más precisión, más entrenamiento (+4,000
+fotos) y mandó un CSV del laboratorio de beta.5 (15 mediciones, 180 cm, sin báscula): 147–189 L, IMC 45–58, pecho de
+fondo 36–48 cm, brazos 0 L. Diagnóstico: tomas "de costado" giradas a ~45° (el fondo sale (ancho+fondo)/√2 y las dos
+piernas no se tapan) y brazos pegados contados como tronco. Cambios:
+
+- **Chequeo de perfil real** (`ang.perfil` .65): el ancho del tronco a la altura del pecho (mediana de filas 25–45 %,
+  sobre la altura) de costado debe ser ≤ 65 % del de frente; si no, "Gírate un poco más: de perfil completo".
+- **Brazos pegados** (`volPersona`): si de frente casi no se ven separados (< 15 % de filas entre hombros y caderas),
+  cada brazo se estima de 5.2 % de la estatura de ancho: se resta del tramo central y se cuenta redondo. (Exigir brazos
+  separados en vivo no sirve: ni el modelo rápido ni el preciso ven bien el hueco.)
+- **Plausibilidad**: fondo/ancho del pecho > 0.9 o IMC fuera de 15–40 → aviso en el resultado. Nuevos campos en el
+  registro y el CSV: `fondo_ancho`, `brazos_pegados`.
+- **Calibración robusta**: Theil–Sen en logaritmos (solo con 6+ y volúmenes ≥ 15 % de rango; si no, b = 1 y k = mediana).
+- **Modelo rápido de personas v2** (`silueta_p.onnx`, `entrenar_silueta2.py`): refinamiento a 1/4 empezando en cero,
+  20,135 fotos (4,000 más: 3,000 personas y 1,000 otros animales), 3 épocas. Personas mejor; vacas no → ganado sigue
+  con `silueta.onnx`.
+- **Cuadros/s**: 3 workers en teléfonos de 8 núcleos; la cámara se pide a 30 cuadros/s. Probado y descartado: int8
+  (más lento en WASM), entradas de 224/192 px (pierden precisión). WebGPU: en este entorno solo hay GPU por software
+  (no carga el modelo en 90 s), no se pudo medir: pendiente para probar en el teléfono.
+
 **No probado aún en un teléfono real.**
 
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.5.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.6.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado). Pedirle: cuadros/s que muestra, cuánto tarda "Midiendo…", peso estimado vs. báscula (y calibrar).
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
    rápido a 256 px (`MODELOS.rapido.R` en vision.js; el modelo es convolucional y se exporta a 256 sin reentrenar).

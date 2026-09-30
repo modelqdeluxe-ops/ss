@@ -145,16 +145,17 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   frontal. Reglas en `CamVivo.REGLAS` y `PesoCam.MODOS`: seguridad ≥ 0.5; la silueta no toca los bordes (2 %);
   distancia por alto (personas 55–88 % del cuadro, ganado por detrás 45–85 %) o por ancho (ganado de costado
   50–88 %); ángulo por la proporción ancho/alto (persona de frente ≥ 0.24, de costado ≤ 0.3 y ≤ 75 % de la de
-  frente; ganado de costado ≥ 1.15, por detrás ≤ 0.9); referencia completa, de pie y ≥ 25 % del alto; quieto si la
+  frente, y el tronco a la altura del pecho ≤ 65 % de su ancho de frente: de perfil de verdad); ganado de costado ≥ 1.15, por detrás ≤ 0.9); referencia completa, de pie y ≥ 25 % del alto; quieto si la
   caja casi no se mueve (IoU ≥ 0.9).
 - **Fluidez**: el cuadro se recorta y reduce con `createImageBitmap` (en la GPU) y va directo al worker, que lo lee con
-  `OffscreenCanvas`; hay un cuadro en vuelo por worker del modelo rápido (dos workers en teléfonos con 6 núcleos o
-  más); y cuando ya encontró al sujeto el modelo mira solo esa zona (**seguimiento**, con histéresis para que el
+  `OffscreenCanvas`; hay un cuadro en vuelo por worker del modelo rápido (tres workers en teléfonos con 8 núcleos, dos
+  con 6); la cámara se pide a 30 cuadros/s (el techo real); y cuando ya encontró al sujeto el modelo mira solo esa zona (**seguimiento**, con histéresis para que el
   recorte no tiemble).
 - **Visión en el teléfono** (`app/assets/vision.js`), dos modelos en **Web Workers** armados desde un Blob (la página
   es `file://`; el worker recibe de la página onnxruntime-web, el `.wasm` y el modelo ya descargados):
-  - **rápido** `silueta.onnx` (13 MB, entrada 256×256): LR-ASPP MobileNetV3 (torchvision, BSD-3) **afinado por
-    Rumentis** para fondo / persona / vaca con fotos de COCO (`modelo/vision/entrenar_silueta.py`). ~60 ms por cuadro
+  - **rápido** `silueta.onnx` (ganado) y `silueta_p.onnx` (personas, v2 con refinamiento de bordes a 1/4), 13 MB cada
+    uno, entrada 256×256: LR-ASPP MobileNetV3 (torchvision, BSD-3) **afinado por Rumentis** para fondo / persona / vaca
+    con fotos de COCO (`modelo/vision/entrenar_silueta.py` y `entrenar_silueta2.py`, 20,135 fotos). ~60 ms por cuadro
     en una PC. Da la silueta y su contorno (se traza el borde y se suaviza).
   - **preciso** `seg.onnx` (33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo mide las fotos capturadas, en
     segundo plano mientras la persona se gira, sobre un **recorte alrededor del sujeto** (ve el cuerpo con más
@@ -168,7 +169,9 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   - personas: cada fila de la silueta de frente, con el fondo de costado a la misma altura relativa (mediana de 5
     filas); se descuenta la **ropa** (ajustada 0.4, normal 0.8, holgada 1.5 cm por lado); área del corte = f · ancho ·
     fondo con f = 0.81 en el tronco (superelipse de exponente ~2.2) y π/4 en cabeza, brazos y piernas; los brazos
-    (tramos fuera del tronco) se toman redondos. Da el volumen por partes (cabeza, tronco, brazos, piernas);
+    (tramos fuera del tronco) se toman redondos; si van pegados al tronco se estiman (5.2 % de la estatura de ancho
+    cada uno) y se restan del tronco. Da el volumen por partes (cabeza, tronco, brazos, piernas). Avisa si el fondo del
+    pecho pasa de 0.9 veces su ancho (la toma no era de perfil) o si el IMC sale fuera de 15–40;
   - ganado: cada columna del cuerpo de costado (sin las patas: debajo de donde la silueta se parte en tramos solo
     cuenta la panza), con la forma que se ve por detrás escalada al grueso de esa columna.
   peso = k · litros^b; de fábrica k = 1.0 kg/L en personas (la densidad del cuerpo) y 1.1 en ganado (las patas no
@@ -178,7 +181,8 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
 - **Laboratorio** (`pclab.js`, en la misma página): cada medición queda en `S.config.pesoCam.reg` (las últimas 300:
   volumen, peso, medidas, partes, k y b usados, dispersión entre fotos, seguridad, fuente, cuadros/s, ms de cada
   modelo, duración). Se le puede anotar el peso de báscula (`real`), que también calibra: con 1 a 5 se ajusta k
-  (mediana de kg/L); con 6 o más, también b. Estadísticas: error esperado con **validación cruzada dejando una fuera**,
+  (mediana de kg/L); con 6 o más y volúmenes variados (≥ 15 %), también b, con Theil–Sen (robusto: una medición mala no
+  arrastra el ajuste). Estadísticas: error esperado con **validación cruzada dejando una fuera**,
   error medio al medir (MAPE y MAE), sesgo, RMSE, R² (solo si los pesos de báscula varían ≥ 5 %), error del modelo de
   fábrica, **repetibilidad** (CV del volumen en mediciones seguidas, < 15 min), dispersión entre fotos, cuadros/s y
   tiempo del modelo preciso. Gráficas de estimado contra báscula (franja ±5 %) y de las últimas 30 mediciones.
