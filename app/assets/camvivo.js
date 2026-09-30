@@ -260,7 +260,7 @@ function abrir(o){
       // (se deslizan hacia el último resultado; ya no siguen la caja de la silueta: si la silueta se pegaba a algo,
       // los arrastraba fuera del cuerpo)
       const kp=vis.kp&&performance.now()-vis.kp.t<1500?vis.kp.p:null;
-      if(kp){if(!kpV||kpV.length!==kp.length)kpV=kp.slice();else for(let i=0;i<kp.length;i++)kpV[i]+=(kp[i]-kpV[i])*(i%3===2?1:.5);
+      if(kp){if(!kpV||kpV.length!==kp.length)kpV=kp.slice();else for(let i=0;i<kp.length;i++)kpV[i]+=(kp[i]-kpV[i])*(i%3===2?1:.7);
         puntos(x,kpV,esq,Rr.x,Rr.y,Rr.w,Rr.h,Math.max(2.5,Math.min(4,Rr.w/110)));}else kpV=null;
       // el recuadro (con 8 px de aire alrededor del cuerpo) y la etiqueta de estado encima
       const g=12,X0=Rr.x+caja[0]*Rr.w-g,Y0=Rr.y+caja[1]*Rr.h-g,X1=Rr.x+caja[2]*Rr.w+g,Y1=Rr.y+caja[3]*Rr.h+g;
@@ -406,11 +406,11 @@ function abrir(o){
        Un cuadro a la vez, recortado alrededor de la última silueta. En teléfonos con pocos núcleos (o con el modelo de
        animales, más pesado) se deja un respiro entre uno y otro para no quitarle cuadros a la silueta. */
     // (con dos workers, los cuadros se reparten parejo: uno cada medio tiempo del modelo)
-    let poseVuelo=0,poseT=0,poseSeq=0,poseHecho=0,poseMs=0;const poseRespiro=persona?(NUCLEOS()>=6?0:120):250;
-    /* suavizado de los puntos al llegar (como un filtro One Euro): si un punto casi no se movió (menos de 1.5 % del alto
-       del cuerpo) se promedia con el anterior y deja de temblar; si se movió más, lo sigue de inmediato */
+    let poseVuelo=0,poseT=0,poseSeq=0,poseHecho=0,poseMs=0;const poseRespiro=persona?(NUCLEOS()>=6?0:60):250;
+    /* suavizado de los puntos al llegar (como un filtro One Euro): si un punto casi no se movió (menos de 1.2 % del alto
+       del cuerpo) se mezcla con el anterior (55 % lo nuevo) y deja de temblar; si se movió más, lo sigue de inmediato */
     function suavizar(P,A,alto){if(!A||A.length!==P.length)return P;
-      for(let i=0;i<P.length;i+=3){if(A[i+2]<.3||P[i+2]<.3)continue;const dd=Math.hypot((P[i]-A[i])*W,(P[i+1]-A[i+1])*H)/Math.max(1e-6,alto*H),a=Math.min(1,.35+dd/.015*.65);
+      for(let i=0;i<P.length;i+=3){if(A[i+2]<.3||P[i+2]<.3)continue;const dd=Math.hypot((P[i]-A[i])*W,(P[i+1]-A[i+1])*H)/Math.max(1e-6,alto*H),a=Math.min(1,.55+dd/.012*.45);
         P[i]=A[i]+(P[i]-A[i])*a;P[i+1]=A[i+1]+(P[i+1]-A[i+1])*a;}return P;}
     async function bombearPose(){
       if(!activo||!poseV||poseVuelo>=poseV.n||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<Math.max(poseRespiro,poseMs/poseV.n))return;

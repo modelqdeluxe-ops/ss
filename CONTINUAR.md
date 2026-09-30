@@ -217,7 +217,11 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.16** (esta rama): el dueño no quiso el escáner ni el recuadro de beta.15. Contorno con halo suave del
+**5.0.0-beta.17** (esta rama): puntos en vivo más rápidos: DWPose-s en tres workers a turnos con 8 núcleos (dos con
+6), respiro de 60 ms (antes 120) con menos de 6 núcleos, suavizado más ligero (55 % lo nuevo si se movió < 1.2 % del
+alto; antes 35 % y 1.5 %) y el dibujo se desliza 70 % por cuadro hacia el último resultado (antes 50 %).
+
+**5.0.0-beta.16**: el dueño no quiso el escáner ni el recuadro de beta.15. Contorno con halo suave del
 color de estado, línea limpia y relleno apenas visible; recuadro solo con cuatro esquinas finas redondeadas (blancas;
 de color al estar listo); sin línea de escaneo. Puntos: solo si describen un cuerpo (`poseBuena`: hombros y caderas y
 ≥ 10 de 17 puntos confiables; con la mano de cerca el modelo inventaba un cuerpo) y dedos solo con muñeca confiable y
@@ -265,7 +269,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.16.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.17.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
