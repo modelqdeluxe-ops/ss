@@ -183,13 +183,12 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   resultado) y se pasan a 32 al cargar.
   Cada silueta se queda con la mancha más grande (no suma otra persona ni pedazos sueltos). Todo en el teléfono, sin
   internet. Tabla de velocidad y precisión en `modelo/vision/LEEME.md`.
-- **Peso de personas** (`pesocam.js`, modelo v4): una ley de potencias ajustada con **ANSUR II** (6,068 personas
-  pesadas en báscula y medidas a mano, dominio público; `modelo/peso/ajustar_peso.py`): ln peso = c0 + Σ ci · ln medida
-  + sexo + edad, con la estatura, el ancho de hombros (deltoides), el ancho y fondo del pecho y de la cintura, el ancho
+- **Peso de personas** (`pesocam.js`, modelo v5): una ley de potencias ajustada con **ANSUR II** (6,068 personas
+  pesadas en báscula y medidas a mano, dominio público; `modelo/peso/ajustar_peso.py`), solo con la forma del cuerpo
+  (sin datos demográficos): ln peso = c0 + Σ ci · ln medida, con la estatura, el ancho de hombros (deltoides), el ancho y fondo del pecho y de la cintura, el ancho
   de la cadera, el fondo de los glúteos y los contornos del muslo, del muslo sobre la rodilla, de la pantorrilla y del
-  cuello (elipses con el ancho de frente y el fondo de perfil). El sexo (obligatorio) y la edad (opcional) se escriben
-  con la estatura. Validación cruzada: error medio 1.6 % con medidas exactas y 2.2 % con 3 % de ruido por medida (el de
-  una foto), sin sesgo (v3: 2.5 y 3.1 %). Si pantorrilla, cuello o muslo bajo no se pueden tomar, se estiman con las
+  cuello (elipses con el ancho de frente y el fondo de perfil). Validación cruzada: error medio 1.65 % con medidas exactas
+  y 2.3 % con 3 % de ruido por medida (el de una foto), sin sesgo (v3: 2.5 y 3.1 %; con sexo y edad sería 2.23 %). Si pantorrilla, cuello o muslo bajo no se pueden tomar, se estiman con las
   demás medidas (ANSUR II). Cada ángulo se toma con 3 fotos y el peso es la mediana de las 9 combinaciones. El límite
   sin báscula, aun con las 93 medidas de ANSUR II tomadas a mano, es 1.1 % de error medio. Cada
   medida se toma a su altura en ANSUR II (fracción de la estatura) y los puntos del cuerpo quitan brazos y manos; una

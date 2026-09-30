@@ -46,9 +46,7 @@ const DOS=/2 de 2|2 of 2/;
  await esc('v',[{f:'lejos',x:.45,y:.7,h:.38*960}]);
  const t0=Date.now();await p.click('[data-act="pcVivo"]');
  await p.waitForSelector('#sheet form[data-form="pcAlto"]');await p.fill('#sheet [name=alto]','170');
- // sin sexo no deja seguir (el cálculo del peso lo usa)
- await p.click('#sheet button[type=submit]');await p.waitForTimeout(300);assert.ok(await p.$('#sheet form[data-form="pcAlto"]'),'pide el sexo');
- await p.selectOption('#sheet [name=sexo]','h');await p.fill('#sheet [name=edad]','35');await p.click('#sheet button[type=submit]');
+assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'sin datos demográficos');await p.click('#sheet button[type=submit]');
  await p.waitForSelector('dialog.cv');
  await p.waitForFunction(()=>document.querySelector('.cv-chip[data-k="det"]')?.dataset.s==='ok',null,{timeout:120000});
  console.log('primer cuadro',Date.now()-t0,'ms');await p.waitForTimeout(600);
@@ -69,11 +67,11 @@ const DOS=/2 de 2|2 of 2/;
  assert.ok(await p.$('#sheet details.pc-exp'),'explica el modelo');assert.ok(await p.$('.cv-firma')===null,'la cámara se cerró');
  let txt=await leer();await p.screenshot({path:'vivo_res.png'});
  assert.ok(!await p.$('dialog.cv'),'la cámara se cierra');assert.equal(await p.$$eval('#sheet .pc-caps img',e=>e.length),2,'dos fotos');
- const U=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,L:r.L,dims:r.dims,puntos:r.puntos,topes:r.topes,estimadas:r.estimadas,sexo:r.sexo,edad:r.edad,v:r.v};});
- console.log('modelo v4',JSON.stringify(U));assert.ok(U.puntos,'puntos del cuerpo en las dos fotos');
+ const U=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,L:r.L,dims:r.dims,puntos:r.puntos,topes:r.topes,estimadas:r.estimadas,v:r.v};});
+ console.log('modelo v5',JSON.stringify(U));assert.ok(U.puntos,'puntos del cuerpo en las dos fotos');
  assert.ok(U.pred>35&&U.pred<130,'peso del modelo de una persona');assert.ok(U.L>35&&U.L<130,'volumen de una persona');
  assert.ok(U.dims.bid>30&&U.dims.bid<60&&U.dims.th>35&&U.dims.th<80,'medidas de una persona');
- assert.ok(U.dims.cf>20&&U.dims.cf<60&&U.dims.ne>25&&U.dims.ne<60&&U.dims.lt>25&&U.dims.lt<70,'pantorrilla, cuello y muslo bajo');assert.equal(U.sexo,'h');assert.equal(U.v,4);
+ assert.ok(U.dims.cf>20&&U.dims.cf<60&&U.dims.ne>25&&U.dims.ne<60&&U.dims.lt>25&&U.dims.lt<70,'pantorrilla, cuello y muslo bajo');assert.equal(U.v,5);
  assert.ok(!/modelo rápido|fast model|modelo rápido/.test(txt),'medida con el modelo preciso');
  // calibración: "la báscula dice 72 kg" dos veces → el estimado se ajusta
  // (el peso se escribe en la unidad de la app: libras o kilos según el idioma)

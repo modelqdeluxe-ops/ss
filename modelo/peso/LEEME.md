@@ -1,4 +1,4 @@
-# Modelo de peso de personas (Rumentis Beta, peso con cámara, modelo v3)
+# Modelo de peso de personas (Rumentis Beta, peso con cámara, modelo v5)
 
 `ajustar_peso.py` ajusta la fórmula del peso con **ANSUR II** (2012 U.S. Army Anthropometric Survey, dominio público):
 6,068 personas (4,082 hombres y 1,986 mujeres) pesadas en báscula y con 93 medidas tomadas a mano. Baja los CSV de un
@@ -24,13 +24,19 @@ Solo usa lo que se puede medir con dos siluetas (de frente y de perfil) y la est
 Modelo: `ln peso = c0 + Σ ci · ln medida` (medidas en mm), por mínimos cuadrados con 3 % de ruido en las medidas de la
 foto (así ningún coeficiente depende de más de una medida sola). Validación cruzada de 10 partes:
 
-Modelo v4 (el de la app; v3 no tenía pantorrilla, cuello, muslo bajo, sexo ni edad):
+Modelo v5 (el de la app: sin datos demográficos; v4 usaba además sexo y edad; v3 no tenía pantorrilla, cuello ni
+muslo bajo):
 
-| Medidas | Error medio v4 | RMS v4 | Error medio v3 |
+| Medidas | Error medio v5 | Error medio v4 | Error medio v3 |
 |---|---|---|---|
-| exactas (cinta y calibrador) | 1.6 % | 2.1 % | 2.5 % |
-| con 3 % de ruido (foto) | 2.2 % | 2.8 % | 3.1 % |
-| con 5 % de ruido | 3.0 % | 3.7 % | 3.9 % |
+| exactas (cinta y calibrador) | 1.65 % | 1.6 % | 2.5 % |
+| con 3 % de ruido (foto) | 2.3 % | 2.2 % | 3.1 % |
+| con 5 % de ruido | 3.1 % | 3.0 % | 3.9 % |
+
+**Cómo bajar más.** El modelo ya usa a todas las personas de ANSUR II y está validado: entrenarlo más no cambia el
+error, porque lo que falta no está en la foto. Lo que sí baja el error real: (1) la báscula de cada persona (k y b); (2)
+un ajuste de fábrica aprendido con 20–50 personas medidas con la app y pesadas en báscula (corrige lo que la foto mide
+distinto de la cinta: ropa, bordes de la silueta, alturas), que se exporta con "Exportar para análisis".
 
 **El límite sin báscula.** Con las 93 medidas de ANSUR II tomadas a mano (muchas más de las que ve una cámara), sexo y
 edad, el error medio es 1.1 % (RMS 1.4 %; solo 54 % de las personas quedan bajo 1 % y 30 % bajo 0.5 %): es lo que la
