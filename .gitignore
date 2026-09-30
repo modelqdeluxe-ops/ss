@@ -4,3 +4,4 @@ build/
 dist/
 # ANSUR II: los baja modelo/peso/ajustar_peso.py
 modelo/peso/ANSUR_II_*.csv
+__pycache__/
