@@ -221,6 +221,8 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 fotos (`modelo/vision/maestro_silueta.py` → `td/msk_t`) y el rápido se afinó 2 épocas con ellas
 (`SOLO_MAESTRO=1 DESDE2=v3_256_e2.pt RES=256 EPOCAS=2 LR=2e-4 entrenar_silueta2.py`). Error de área con el sujeto
 grande: casa 19.7 → 12.8 %, COCO 13.4 → 9.9 %; IoU casa 0.769 → 0.794 (tabla en `modelo/vision/LEEME.md`).
+Dos épocas más (LR 1e-4) no mejoraron: IoU igual, error de área con sujeto grande peor (casa 12.8 → 13.6 %,
+COCO 9.9 → 10.4 %); solo el cuadro completo en casa mejoró un poco. Descartado: v4 llegó a su techo con este maestro.
 
 **5.0.0-beta.17**: puntos en vivo más rápidos: DWPose-s en tres workers a turnos con 8 núcleos (dos con
 6), respiro de 60 ms (antes 120) con menos de 6 núcleos, suavizado más ligero (55 % lo nuevo si se movió < 1.2 % del
