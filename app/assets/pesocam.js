@@ -3,8 +3,10 @@
    centímetros sale de una estatura conocida:
    - Personas (para probar la beta sin estar en la finca): tu estatura, que se escribe una vez. De frente y de costado.
    - Ganado: una persona de estatura conocida parada junto al animal. De costado y por detrás.
-   Peso: kg = c · V^b, con V = área principal (cm²) × ancho del otro ángulo (cm) / 1000. Personas: área de frente ×
-   profundidad de costado; ganado: área de costado × ancho por detrás. Se ajusta con la báscula (S.config.pesoCam.cal).
+   Peso por volumen: el cuerpo se corta en rebanadas y cada corte se toma como una elipse (personas: ancho de frente ×
+   profundidad de costado a la misma altura; ganado: a lo largo del animal de costado, con la forma que se ve por
+   detrás). kg = k · litros^b; de fábrica k es la densidad del cuerpo y b = 1; se ajusta con la báscula
+   (S.config.pesoCam.cal).
    Los animales medidos de un lote se juntan en un pesaje (promedio y, si se indica, el peso de cada arete) que se guarda
    como cualquier otro, marcado como hecho con cámara.
    Solo se activa en Rumentis Beta (config.js: beta:true). */
@@ -12,17 +14,21 @@
 'use strict';
 const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)return;
 
-/* ---------- los dos modos ---------- */
+/* ---------- los dos modos ----------
+   k: kilos por litro de volumen medido (de fábrica ~ la densidad del cuerpo; se ajusta con la báscula). En ganado es
+   algo más que 1 porque las patas no entran en el volumen. */
 const MODOS={
-  persona:{clase:Vision.PERSONA,c:.58,alto:'estatura',   // 70 kg: unos 5,000 cm² de frente × 24 cm de profundidad
+  persona:{clase:Vision.PERSONA,k:.98,err:.10,alto:'estatura',
     buscar:'Párate frente a la cámara, de cuerpo completo',
     pasos:[{id:'frente',nombre:'De frente',instr:'De pie y derecho, con los brazos un poco separados del cuerpo.',girar:'Ponte de frente, con los brazos un poco separados',ang:{min:.24},dist:{eje:'alto',min:.55,max:.88}},
       {id:'costado',nombre:'De costado',instr:'De pie y derecho, con los brazos pegados al cuerpo.',girar:'Gírate de costado, con los brazos pegados',ang:{max:.3,rel:.75},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
-  ganado:{clase:Vision.VACA,c:.72,alto:'refAlto',ref:true,  // novillo de 450 kg: unos 12,500 cm² de costado × 50 cm de ancho
+  ganado:{clase:Vision.VACA,k:1.1,err:.15,alto:'refAlto',ref:true,
     buscar:'Apunta al animal, que se vea completo',
     pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado; la persona de referencia de pie, a la par del animal.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88}},
       {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara; la persona de referencia a su lado.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:.9},dist:{eje:'alto',min:.45,max:.85},banda:[.05,.55]}]}
 };
+// la silueta mide un poco más que la estatura escrita (sin zapatos): suela y pelo
+const EXTRA_CM=2.5;
 const MKEY='rumentis-pc-modo';
 UI.pc=UI.pc||{lote:'',items:[]};
 if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=MODOS[m]?m:'persona';}
@@ -30,24 +36,68 @@ const PC=()=>S.config.pesoCam||{};
 const guardarPC=cambios=>put('ajustes','finca',{...S.config,pesoCam:{...PC(),...cambios}});
 
 /* ---------- calibración con la báscula ----------
-   Con 1 a 5 mediciones se ajusta c (mediana de kg/V); con 6 o más, también el exponente. */
-const calModo=modo=>(PC().cal||[]).filter(c=>c.modo===modo&&c.V>0&&c.kg>0);
+   kg = k · litros^b. Con 1 a 5 mediciones se ajusta k (mediana de kg/L); con 6 o más, también el exponente. */
+const calModo=modo=>(PC().cal||[]).filter(c=>c.modo===modo&&c.L>0&&c.kg>0);
 function modeloV(modo){
-  const C=calModo(modo),n=C.length,c0=MODOS[modo].c;
-  if(!n)return {c:c0,b:1,n:0,err:.15};
-  const X=C.map(z=>Math.log(z.V)),Y=C.map(z=>Math.log(z.kg));let c,b=1;
-  if(n<6){const r=C.map(z=>z.kg/z.V).sort((a,b)=>a-b);c=n%2?r[(n-1)/2]:(r[n/2-1]+r[n/2])/2;}
+  const C=calModo(modo),n=C.length,M=MODOS[modo];
+  if(!n)return {k:M.k,b:1,n:0,err:M.err};
+  const X=C.map(z=>Math.log(z.L)),Y=C.map(z=>Math.log(z.kg));let k,b=1;
+  if(n<6){const r=C.map(z=>z.kg/z.L).sort((a,b)=>a-b);k=n%2?r[(n-1)/2]:(r[n/2-1]+r[n/2])/2;}
   else{const mx=X.reduce((s,v)=>s+v,0)/n,my=Y.reduce((s,v)=>s+v,0)/n;let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(X[i]-mx)*(Y[i]-my);sxx+=(X[i]-mx)**2;}
-    b=sxx>0?Math.min(1.3,Math.max(.7,sxy/sxx)):1;c=Math.exp(my-b*mx);}
-  const res=C.map((z,i)=>Y[i]-Math.log(c)-b*X[i]),sd=n>1?Math.sqrt(res.reduce((s,r)=>s+r*r,0)/(n-1)):.1;
-  return {c,b,n,err:Math.max(.04,Math.min(.25,n<6?Math.max(sd,.06):sd))};
+    b=sxx>0?Math.min(1.15,Math.max(.85,sxy/sxx)):1;k=Math.exp(my-b*mx);}
+  const res=C.map((z,i)=>Y[i]-Math.log(k)-b*X[i]),sd=n>1?Math.sqrt(res.reduce((s,r)=>s+r*r,0)/(n-1)):.08;
+  return {k,b,n,err:Math.max(.03,Math.min(.2,n<6?Math.max(sd,.05):sd))};
 }
-/* dos capturas (medidas en píxeles) → centímetros con la estatura conocida → peso */
+
+/* ---------- el volumen ----------
+   La silueta (máscara G×G sobre la zona Z de la foto) en tramos por fila, en centímetros. */
+function tramos(sil,cmpx){
+  const G=sil.G,[x0,y0,x1,y1]=sil.caja,filas=[];
+  for(let y=y0;y<y1;y++){const t=[];let a=-1;for(let x=x0;x<=x1;x++){const on=x<x1&&sil.mask[y*G+x]===1;if(on&&a<0)a=x;else if(!on&&a>=0){t.push([a-x0,x-x0]);a=-1;}}filas.push(t);}
+  return {filas,cw:sil.cx*cmpx,ch:sil.cy*cmpx,cols:x1-x0};
+}
+const suma=t=>t.reduce((s,[a,b])=>s+b-a,0);
+/* Persona: cada fila del cuerpo de frente es una rebanada; su corte es una elipse con el ancho de frente y la
+   profundidad de costado a la misma altura (relativa a la estatura). Los tramos que quedan fuera del tronco y las
+   piernas (los brazos) se toman redondos: su profundidad es su propio ancho. */
+function volPersona(F,S){
+  const nF=F.filas.length,nS=S.filas.length;let tx0=1e9,tx1=-1e9;
+  for(let i=Math.floor(nF*.28);i<Math.floor(nF*.45);i++){const t=F.filas[i].reduce((m,z)=>!m||z[1]-z[0]>m[1]-m[0]?z:m,null);if(t){tx0=Math.min(tx0,t[0]);tx1=Math.max(tx1,t[1]);}}
+  const hol=(tx1-tx0)*.12;let V=0;
+  for(let i=0;i<nF;i++){const js=Math.min(nS-1,Math.floor((i+.5)/nF*nS));let d=0,c=0;
+    for(let j=Math.max(0,js-1);j<=Math.min(nS-1,js+1);j++){d+=suma(S.filas[j]);c++;}d=d/c*S.cw;
+    for(const [a,b] of F.filas[i]){const wd=(b-a)*F.cw,tronco=b>tx0-hol&&a<tx1+hol;V+=Math.PI/4*wd*(tronco?d:wd)*F.ch;}}
+  return V/1000;
+}
+/* Ganado: de costado, cada columna del cuerpo (sin las patas) es una rebanada a lo largo del animal; su corte tiene
+   la forma que se ve por detrás, agrandada o achicada según el grueso del cuerpo en esa columna. */
+// el cuerpo sin las patas, fila por fila: debajo de la fila más ancha las patas empiezan donde la silueta se parte en
+// dos o más tramos (y sigue partida); de ahí para abajo solo cuentan los tramos anchos (la panza), no las patas
+function cuerpo(T){
+  const c=T.filas.map(suma),n=c.length,m=Math.max(...c),iw=c.indexOf(m);let fin=n;
+  for(let i=iw;i<n;i++){let ok=true;for(let j=i;j<Math.min(n,i+4);j++)if(T.filas[j].length<2){ok=false;break;}if(ok){fin=i;break;}}
+  return T.filas.map((t,i)=>i<fin?t:t.filter(([a,b])=>b-a>=.25*m));
+}
+function volGanado(L,A){
+  let SA=0,TA=0;cuerpo(A).forEach(t=>{const v=suma(t);if(v){SA+=v*A.cw*A.ch;TA+=A.ch;}});
+  const col=new Float32Array(L.cols+1);
+  cuerpo(L).forEach(t=>{for(const [a,b] of t)for(let x=a;x<b;x++)col[x]+=L.ch;});
+  let V=0;for(let x=0;x<col.length;x++)if(col[x]>0)V+=SA*(col[x]/TA)**2*L.cw;
+  return V/1000;
+}
+/* dos capturas → centímetros con la estatura conocida → volumen → peso */
 function combinar(modo,caps,alto){
-  const [p,s]=caps,cm=m=>alto/(modo==='persona'?m.alto:m.refAlto);   // cm por píxel de cada foto
-  const kp=cm(p.med),ks=cm(s.med),A=p.med.area*kp*kp,anc=s.med.banda*ks,V=A*anc/1000,m=modeloV(modo);
-  const r={modo,V,kg:m.c*Math.pow(V,m.b),err:m.err,n:m.n,A,prof:anc,alto,score:Math.min(p.med.score,s.med.score),manual:caps.some(c=>c.manual)};
-  if(modo==='ganado'){r.largo=p.med.ancho*kp;r.altoAnimal=p.med.alto*kp;r.ancho=anc;
+  const [p,s]=caps,M=MODOS[modo],m=modeloV(modo),ref=alto+EXTRA_CM;
+  // cm por píxel de cada foto: la persona medida (personas) o la de referencia (ganado)
+  const cm=c=>ref/(modo==='persona'?c.med.alto:c.med.refAlto);
+  const kp=cm(p),ks=cm(s),Tp=tramos(p.sil,kp),Ts=tramos(s.sil,ks);
+  const L=modo==='persona'?volPersona(Tp,Ts):volGanado(Tp,Ts);
+  const r={modo,L,kg:m.k*Math.pow(L,m.b),err:m.err,n:m.n,alto,score:Math.min(p.med.score,s.med.score),manual:caps.some(c=>c.manual)};
+  if(modo==='persona'){
+    // profundidad del pecho (a un 30 % de la estatura desde arriba) y ancho de hombros
+    const fila=(T,h)=>T.filas[Math.min(T.filas.length-1,Math.floor(h*T.filas.length))]||[];
+    r.prof=suma(fila(Ts,.3))*Ts.cw;r.anchoF=Math.max(0,...fila(Tp,.22).map(([a,b])=>b-a))*Tp.cw;r.imc=r.kg/((alto/100)**2);
+  }else{r.largo=p.med.ancho*kp;r.altoAnimal=p.med.alto*kp;r.ancho=s.med.banda*ks;
     // de costado y por detrás el animal tiene la misma altura: si no, la persona no estaba a la par
     const a2=s.med.alto*ks;if(Math.abs(r.altoAnimal-a2)/((r.altoAnimal+a2)/2)>.12)r.aviso='Las dos tomas dieron alturas distintas del animal: que la persona de referencia se pare a la par del animal, ni adelante ni atrás.';}
   if(!r.aviso&&caps.some(c=>c.fuente!=='preciso'))r.aviso='Una foto se midió solo con el modelo rápido: el peso puede ser menos exacto.';
@@ -65,7 +115,7 @@ function tarjetaCal(modo){
     <p>${!cal.length?(per?'Sin calibrar: el peso es un estimado general. Pésate en una báscula, mídete con la cámara y escribe tu peso: la app aprende.':'Sin calibrar: el peso es un estimado general. Mide animales recién pesados en la báscula y escribe su peso real: la app aprende de tus animales.')
       :`Calibrada con ${pl(cal.length,'medición','mediciones')}. Error típico: ±${Math.round(m.err*100)} %.`}</p>
     <button type="button" class="btn full" data-act="pcCalibrar">${icono('pesaje','i3')}${per?'Calibrar con mi peso':'Calibrar con un animal pesado'}</button>
-    ${cal.length?`<div class="rows">${cal.slice(-6).reverse().map(c=>`<div class="row"><div class="tx"><b>${wtxt(c.kg)}</b><span><span>báscula</span> · <span>${ffc(c.f)}</span> · <span>cámara sin calibrar: ${wtxt(MODOS[modo].c*c.V)}</span></span></div></div>`).join('')}</div>
+    ${cal.length?`<div class="rows">${cal.slice(-6).reverse().map(c=>`<div class="row"><div class="tx"><b>${wtxt(c.kg)}</b><span><span>báscula</span> · <span>${ffc(c.f)}</span> · <span>cámara sin calibrar: ${wtxt(MODOS[modo].k*c.L)}</span></span></div></div>`).join('')}</div>
       <button type="button" class="lnk" data-act="pcBorrarCal">Borrar la calibración</button>`:''}</div></section>`;
 }
 const filaAlto=(per,a)=>`<div class="pc-alto"><span>${per?'Tu estatura':'Estatura de la persona de referencia'}</span><b>${a?cm(a):'—'}</b><button type="button" class="lnk" data-act="pcAlto">${a?'Cambiar':'Escribir'}</button></div>`;
@@ -117,8 +167,8 @@ async function medirVivo(){
 // antes de medir hace falta la estatura de referencia
 function conAlto(fn){const M=MODOS[UI.pc.modo];if(PC()[M.alto])return fn();formAlto(fn);}
 const medHTML=r=>r.modo==='persona'
-  ?`<div class="pc-med"><div><b>${cm(r.alto)}</b><span>estatura</span></div><div><b>${nf(r.A/1e4,2)} m²</b><span>de frente</span></div><div><b>${cm(r.prof)}</b><span>de fondo</span></div><div><b>${Math.round(r.score*100)} %</b><span>seguridad</span></div></div>`
-  :`<div class="pc-med"><div><b>${cm(r.largo)}</b><span>largo</span></div><div><b>${cm(r.altoAnimal)}</b><span>alto</span></div><div><b>${cm(r.ancho)}</b><span>ancho</span></div><div><b>${Math.round(r.score*100)} %</b><span>seguridad</span></div></div>`;
+  ?`<div class="pc-med"><div><b>${nf(r.L)} <span data-no-tr>L</span></b><span>volumen</span></div><div><b>${cm(r.anchoF)}</b><span>hombros</span></div><div><b>${cm(r.prof)}</b><span>pecho de fondo</span></div><div><b>${nf(r.imc,1)}</b><span>IMC</span></div></div>`
+  :`<div class="pc-med"><div><b>${cm(r.largo)}</b><span>largo</span></div><div><b>${cm(r.altoAnimal)}</b><span>alto</span></div><div><b>${cm(r.ancho)}</b><span>ancho</span></div><div><b>${nf(r.L)} <span data-no-tr>L</span></b><span>volumen</span></div></div>`;
 const capsHTML=r=>`<div class="pc-caps">${r.caps.map(c=>`<figure><img src="${c.img}" alt=""><figcaption>${c.nombre}</figcaption></figure>`).join('')}</div>`;
 function resultado(r){
   const x=loteSel(),an=r.modo==='ganado'&&x?(x.animAct||[]):[];ULT=r;
@@ -146,7 +196,7 @@ ACTS.pcCalRes=()=>{if(ULT)formCal(ULT);};
 ACTS.pcCalibrar=()=>{if(UI.pc.modo==='ganado'&&!loteSel()){toast('Primero crea un lote.');return;}closeSheet();conAlto(async()=>{const r=await medirVivo();if(r){ULT=r;formCal(r);}});};
 SAVE.pcCal=f=>{const r=ULT;if(!r)return;const v=toKg(num(fv(f,'kg')));
   const [lo,hi]=r.modo==='persona'?[15,250]:[40,1300];if(!(v>=lo&&v<=hi))return ferr(f,'Escribe el peso de la báscula.');
-  guardarPC({cal:(PC().cal||[]).concat({modo:r.modo,V:Math.round(r.V*10)/10,kg:Math.round(v*10)/10,f:hoy(),ts:Date.now()}).slice(-200)});
+  guardarPC({cal:(PC().cal||[]).concat({modo:r.modo,L:Math.round(r.L*10)/10,kg:Math.round(v*10)/10,f:hoy(),ts:Date.now()}).slice(-200)});
   ULT=null;closeSheet();const m=modeloV(r.modo);toast(`Calibración guardada: error típico ±${Math.round(m.err*100)} %.`,4000);};
 ACTS.pcBorrarCal=()=>confirmar('¿Borrar la calibración?','El peso vuelve a calcularse con el estimado general.','Borrar',()=>{const modo=UI.pc.modo;
   guardarPC({cal:(PC().cal||[]).filter(c=>c.modo!==modo)});toast('Calibración borrada');});
@@ -166,6 +216,6 @@ PAGES.hoy=(...a)=>{const h=_hoy(...a),i=h.indexOf('<main class="bd">');if(i<0)re
 const _pes=FORMS.pesaje;
 if(_pes)FORMS.pesaje=(...a)=>{_pes(...a);const b=$('#sheet .sh-body');if(b&&!b.querySelector('.pc-f'))b.insertAdjacentHTML('afterbegin',`<button type="button" class="btn full pc-f" data-act="pcIr">${icono('camara','i3')}Estimar con cámara (beta)</button>`);};
 ACTS.pcIr=()=>{closeSheet();UI.pc.modo='ganado';try{localStorage.setItem(MKEY,'ganado');}catch(e){}location.hash='#pesocam';};
-window.PesoCam={modeloV,combinar,MODOS};
+window.PesoCam={modeloV,combinar,volPersona,volGanado,tramos,MODOS,EXTRA_CM};
 if(route().p==='pesocam'||route().p==='hoy')render();
 })();

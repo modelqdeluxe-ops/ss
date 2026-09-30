@@ -18,7 +18,8 @@ for iid,an in A.items():
     elif p and max(a['area'] for a in p)>=.05*T:pers.append(iid)
     elif o and max(a['area'] for a in o)>=.03*T:otro.append(iid)
 R=random.Random(3);R.shuffle(pers);R.shuffle(otro)
-sel=[(i,'v') for i in vaca]+[(i,'p') for i in pers[:6000]]+[(i,'o') for i in otro[:1500]]
+NP=int(os.environ.get('PERSONAS','6000'));NO=int(os.environ.get('OTROS','1500'))
+sel=[(i,'v') for i in vaca]+[(i,'p') for i in pers[:NP]]+[(i,'o') for i in otro[:NO]]
 print('vacas',len(vaca),'personas',len(pers),'otros',len(otro),'total',len(sel))
 os.makedirs('td/img',exist_ok=True);os.makedirs('td/msk',exist_ok=True)
 def uno(t):

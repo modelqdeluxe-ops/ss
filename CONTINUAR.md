@@ -88,7 +88,7 @@ calibración con báscula.
 
 **5.0.0-beta.2**: cámara en vivo con captura automática (con marca impresa).
 
-**5.0.0-beta.3** (esta rama), lo que pidió el dueño después de probar: **sin marca** ("no me pidas eso") y
+**5.0.0-beta.3**, lo que pidió el dueño después de probar: **sin marca** ("no me pidas eso") y
 **mucho más rápido**:
 
 - **Sin marca de medida.** La escala sale de una estatura conocida: en Personas, la del usuario (se escribe una vez,
@@ -110,13 +110,32 @@ calibración con báscula.
 - Probado en Chromium con escenas de COCO: personas, medición completa ~7.5 s (antes ~22 s), de verde a foto 0.25 s;
   ganado: largo 202 cm (real 200) y alto 149 cm (real 150) solo con la estatura de la persona de referencia.
 
+**5.0.0-beta.4** (esta rama). El dueño probó beta.3 en su teléfono: iba a 4 cuadros/s, la silueta gruesa, y la medida
+"súper imprecisa y variable". Cambios:
+
+- **Fluidez**: modelo rápido a 256 px (59 ms en PC, antes 83); el cuadro se recorta y reduce con `createImageBitmap` y va
+  directo al worker (`OffscreenCanvas`); un cuadro en vuelo por worker y **dos workers** del rápido en teléfonos con 6+
+  núcleos; el dibujo va aparte a 60 cuadros/s con `requestAnimationFrame` (la caja se desliza entre resultados). En PC:
+  12.8 cuadros/s con un worker, 20 con dos (antes 5–9).
+- **Silueta fina**: el worker traza el contorno exterior (vecinos de Moore) y lo suaviza; se dibuja una línea de 2 px
+  con relleno suave y esquinas de 1.5 px (antes una mancha y un rectángulo de 4 px). Seguimiento con histéresis (el
+  recorte se queda quieto mientras el sujeto esté cómodo dentro: si no, la silueta temblaba y "Quieto" no se cumplía).
+- **Medida precisa**: RF-DETR mide cada foto sobre un **recorte alrededor del sujeto** (+ persona de referencia).
+- **Modelo matemático por volumen** (antes área × ancho × constante): rebanadas elípticas. Personas: cada fila de
+  frente con la profundidad de costado a la misma altura relativa; brazos (tramos fuera del tronco) redondos. Ganado:
+  cada columna de costado sin patas, con la forma de atrás escalada. kg = k·L^b (k 0.98 personas, 1.1 ganado; b = 1).
+  Validado con cuerpos sintéticos (≤ 3 %). Escala: estatura + 2.5 cm (suela y pelo). Calibraciones nuevas `{modo, L, kg}`
+  (las de beta.2/3 con `V` ya no se usan).
+- Un segundo afinado del modelo rápido (16,100 fotos, 256 px) no mejoró: se quedó el de la época 5.
+- Prueba `vivo_t.js`: repetibilidad (3 mediciones con la persona movida y a otra distancia: 63 / 63 / 63 L).
+
 **No probado aún en un teléfono real.**
 
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.3.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.4.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado). Pedirle: cuadros/s que muestra, cuánto tarda "Midiendo…", peso estimado vs. báscula (y calibrar).
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
    rápido a 256 px (`MODELOS.rapido.R` en vision.js; el modelo es convolucional y se exporta a 256 sin reentrenar).

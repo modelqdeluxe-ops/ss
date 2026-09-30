@@ -4,6 +4,7 @@ import json,os,random,sys,time,math,numpy as np,torch,torch.nn as nn,torch.nn.fu
 from PIL import Image,ImageEnhance,ImageFilter
 from torchvision.models.segmentation import lraspp_mobilenet_v3_large,LRASPP_MobileNet_V3_Large_Weights as LW
 torch.set_num_threads(4);R=int(os.environ.get('RES','320'));EP=int(os.environ.get('EPOCAS','6'));BS=16
+LR=float(os.environ.get('LR','6e-4'));NOM=os.environ.get('NOMBRE','sil');SUJ=float(os.environ.get('SUJETO','.7'))
 MEAN=np.array([.485,.456,.406],np.float32);STD=np.array([.229,.224,.225],np.float32)
 L=[x for x in json.load(open('td/lista.json')) if os.path.exists(f'td/msk/{x[0]}.png')]
 items=[i for i,k in L for _ in range(3 if k=='v' else 1)]
@@ -14,7 +15,7 @@ class DS(torch.utils.data.Dataset):
         iid=items[j];img=Image.open(f'td/img/{iid}.jpg').convert('RGB');m=Image.open(f'td/msk/{iid}.png');W,H=img.size;r=random.random
         a=np.array(m);ys,xs=np.where((a==1)|(a==2))
         asp=math.exp(random.uniform(math.log(.6),math.log(1.6)))   # ancho/alto del recorte
-        if len(xs) and r()<.7:   # alrededor del sujeto, con margen al azar
+        if len(xs) and r()<SUJ:   # alrededor del sujeto, con margen al azar
             x0,x1,y0,y1=xs.min(),xs.max(),ys.min(),ys.max();bw,bh=x1-x0+1,y1-y0+1;g=random.uniform(.05,.45)
             cw,ch=bw*(1+2*g),bh*(1+2*g)
             if cw/ch<asp:cw=ch*asp
@@ -43,8 +44,8 @@ class Env(nn.Module):
 net=Env(m)
 if os.environ.get('DESDE'):net.load_state_dict(torch.load(os.environ['DESDE']))
 dl=torch.utils.data.DataLoader(DS(),batch_size=BS,shuffle=True,num_workers=3,drop_last=True,persistent_workers=True)
-opt=torch.optim.AdamW(net.parameters(),lr=6e-4,weight_decay=1e-4);N=EP*len(dl)
-sch=torch.optim.lr_scheduler.OneCycleLR(opt,max_lr=6e-4,total_steps=N,pct_start=.06)
+opt=torch.optim.AdamW(net.parameters(),lr=LR,weight_decay=1e-4);N=EP*len(dl)
+sch=torch.optim.lr_scheduler.OneCycleLR(opt,max_lr=LR,total_steps=N,pct_start=.06)
 wce=torch.tensor([1.,1.,1.5])
 def perdida(o,y):
     o=F.interpolate(o,size=y.shape[-2:],mode='bilinear',align_corners=False)
@@ -59,7 +60,7 @@ for ep in range(EP):
     for x,y in dl:
         l=perdida(net(x),y);opt.zero_grad();l.backward();opt.step();sch.step();k+=1;acc+=l.item()
         if k%50==0:print(f'época {ep+1} paso {k}/{N} pérdida {acc/50:.3f} {time.time()-t0:.0f}s',flush=True);acc=0
-    torch.save(net.state_dict(),f'sil_{R}_e{ep+1}.pt')
+    torch.save(net.state_dict(),f'{NOM}_{R}_e{ep+1}.pt')
     net.eval()
-    for RR in (256,320):torch.onnx.export(net,torch.randn(1,3,RR,RR),f'm/sil{ep+1}_{RR}.onnx',input_names=['input'],output_names=['logits'],opset_version=17,dynamo=False)
+    for RR in (256,320):torch.onnx.export(net,torch.randn(1,3,RR,RR),f'm/{NOM}{ep+1}_{RR}.onnx',input_names=['input'],output_names=['logits'],opset_version=17,dynamo=False)
     print('guardada época',ep+1,flush=True)

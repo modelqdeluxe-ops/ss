@@ -1,20 +1,23 @@
 /* Rumentis Beta: cámara en vivo para el peso con cámara.
-   Pantalla completa con el video. El modelo rápido (vision.js) marca la silueta en cada cuadro, roja, ámbar o verde,
-   y revisa si está todo listo para medir: se ve completo, a buena distancia, en el ángulo que toca, quieto y (en
-   ganado) con la persona de referencia al lado. Con todo en verde unos cuadros seguidos, la foto se toma sola y pide
-   el siguiente ángulo; mientras tanto el modelo preciso mide esa foto en segundo plano.
+   Pantalla completa con el video. El modelo rápido (vision.js) busca la silueta en cada cuadro y revisa si está todo
+   listo para medir: se ve completo, a buena distancia, en el ángulo que toca, quieto y (en ganado) con la persona de
+   referencia al lado. Con todo en verde unos cuadros seguidos, la foto se toma sola y pide el siguiente ángulo;
+   mientras tanto el modelo preciso mide esa foto en segundo plano, sobre un recorte alrededor del sujeto.
+   Fluidez: los cuadros se recortan y reducen con createImageBitmap y van directo al worker; hay tantos cuadros en vuelo
+   como workers del modelo rápido; y la silueta se dibuja a 60 cuadros por segundo (contorno fino, la caja se desliza
+   entre un resultado y el siguiente).
    CamVivo.abrir({titulo, clase, ref, buscar, pasos:[{id, nombre, instr, girar, ang:{min,max,rel}, dist:{eje,min,max}, banda}]})
-   devuelve una captura por paso ({id, nombre, med, img, manual, fuente}) o null si se cierra antes. Las medidas van en
-   píxeles del cuadro: la escala en centímetros la pone pesocam.js con una estatura conocida.
+   devuelve una captura por paso ({id, nombre, med, sil, ref, W, H, img, manual, fuente}) o null si se cierra antes.
+   Las medidas van en píxeles del cuadro (W×H); la escala en centímetros la pone pesocam.js con una estatura conocida.
    (ang.rel: la proporción ancho/alto debe bajar a esa fracción de la de la primera toma; p. ej. de frente a costado) */
 (function(){
 'use strict';
 const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)return;
 
 /* reglas generales (las de distancia y ángulo vienen en cada paso) */
-const REGLAS={score:.5,margen:.02,quieto:.93,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6}};
+const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6}};
 const CHIPS=[['det','Detectado'],['comp','Completo'],['dist','Distancia'],['ang','Ángulo'],['ref','Referencia'],['quieto','Quieto']];
-const COLOR={verde:[46,204,113],ambar:[240,191,51],rojo:[231,76,60]};
+const COLOR={verde:'46,204,113',ambar:'240,191,51',rojo:'231,76,60'};
 
 const iou=(a,b)=>{if(!a||!b)return 0;const x0=Math.max(a[0],b[0]),y0=Math.max(a[1],b[1]),x1=Math.min(a[2],b[2]),y1=Math.min(a[3],b[3]);
   const i=Math.max(0,x1-x0)*Math.max(0,y1-y0),u=(a[2]-a[0])*(a[3]-a[1])+(b[2]-b[0])*(b[3]-b[1])-i;return u>0?i/u:0;};
@@ -22,9 +25,9 @@ const mediana=v=>{const s=v.filter(x=>isFinite(x)).sort((a,b)=>a-b),n=s.length;r
 const pct=(v,p)=>{const s=v.filter(x=>x>0).sort((a,b)=>a-b);return s.length?s[Math.min(s.length-1,Math.floor(p*(s.length-1)+.5))]:0;};
 const dentro=(c,mg)=>c[0]>mg&&c[1]>mg&&c[2]<1-mg&&c[3]<1-mg;
 
-/* la rejilla G×G de una silueta cubre una zona Z del cuadro W×H (todo el cuadro o la zona que se sigue): se anota
-   su caja en fracciones del cuadro (n), cuántos píxeles mide cada celda (cx, cy) y si toca un borde de la zona que no
-   es borde del cuadro (entonces la zona la cortó) */
+/* la rejilla G×G de una silueta cubre una zona Z del cuadro W×H (todo el cuadro o un recorte): se anota su caja en
+   fracciones del cuadro (n), cuántos píxeles mide cada celda (cx, cy) y si toca un borde de la zona que no es borde
+   del cuadro (entonces la zona la cortó) */
 function aCuadro(s,G,Z,W,H){
   if(!s||!s.ok)return s;const [x0,y0,x1,y1]=s.caja;s.G=G;s.Z=Z;s.cx=Z.w/G;s.cy=Z.h/G;
   s.n=[(Z.x+x0*s.cx)/W,(Z.y+y0*s.cy)/H,(Z.x+x1*s.cx)/W,(Z.y+y1*s.cy)/H];
@@ -36,16 +39,24 @@ function medir(s,W,H,banda){
   for(let y=Math.floor(y0+b[0]*h);y<Math.ceil(y0+b[1]*h);y++)fs.push(s.filas[y]);
   return {W,H,alto:h*cy,ancho:(x1-x0)*cx,area:s.area*cx*cy,banda:pct(fs,.9)*cx,ratio:((x1-x0)*cx)/(h*cy),score:s.score};
 }
-/* la zona que se sigue en el cuadro siguiente: las cajas encontradas con un margen, de proporción parecida a la del
-   entrenamiento (0.6–1.6) y de al menos la mitad del cuadro; así el modelo rápido ve al sujeto con más detalle */
-function zonaSig(cajas,W,H){
+/* una zona alrededor de las cajas (fracciones del cuadro): con margen, de proporción entre `amin` y `amax` y de al
+   menos `min` del cuadro. Para seguir al sujeto con el modelo rápido y para recortar la foto del preciso. */
+function zonaDe(cajas,W,H,{margen=.25,min=.5,amin=.6,amax=1.6}={}){
   const c=cajas.filter(Boolean);if(!c.length)return null;
-  let x0=Math.min(...c.map(z=>z[0]))*W,y0=Math.min(...c.map(z=>z[1]))*H,x1=Math.max(...c.map(z=>z[2]))*W,y1=Math.max(...c.map(z=>z[3]))*H;
-  let w=Math.max((x1-x0)*1.5,W*.5),h=Math.max((y1-y0)*1.5,H*.5);
-  if(w/h<.6)w=h*.6;else if(w/h>1.6)h=w/1.6;
+  const x0=Math.min(...c.map(z=>z[0]))*W,y0=Math.min(...c.map(z=>z[1]))*H,x1=Math.max(...c.map(z=>z[2]))*W,y1=Math.max(...c.map(z=>z[3]))*H;
+  let w=Math.max((x1-x0)*(1+2*margen),W*min),h=Math.max((y1-y0)*(1+2*margen),H*min);
+  if(w/h<amin)w=h*amin;else if(w/h>amax)h=w/amax;
   w=Math.min(w,W);h=Math.min(h,H);if(w>W*.92&&h>H*.92)return null;
   const x=Math.min(W-w,Math.max(0,(x0+x1)/2-w/2)),y=Math.min(H-h,Math.max(0,(y0+y1)/2-h/2));
   return {x,y,w,h};
+}
+/* la zona que se sigue: se queda quieta mientras las cajas estén cómodas dentro (así el modelo ve siempre el mismo
+   recorte y la silueta no tiembla); se mueve cuando el sujeto se acerca a un borde o se ve muy chico en ella */
+function zonaSig(cajas,W,H,act){
+  const nueva=zonaDe(cajas,W,H);if(!act||!nueva)return nueva;const c=cajas.filter(Boolean),m=.06;
+  const comoda=c.every(z=>{const x0=z[0]*W,y0=z[1]*H,x1=z[2]*W,y1=z[3]*H;
+    return (x0>=act.x+m*act.w||act.x<1)&&(y0>=act.y+m*act.h||act.y<1)&&(x1<=act.x+act.w*(1-m)||act.x+act.w>W-1)&&(y1<=act.y+act.h*(1-m)||act.y+act.h>H-1)&&(y1-y0)>=.35*act.h;});
+  return comoda?act:nueva;
 }
 // la persona de referencia: completa, de pie y de buen tamaño en el cuadro
 function refOk(p,W,H){if(!p||!p.ok||p.score<REGLAS.score||p.cortada)return false;const c=p.n;
@@ -71,18 +82,24 @@ function revisar(s,p,W,H,paso,prev,ref,conRef){
 }
 function beep(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const a=beep.a||(beep.a=new A()),o=a.createOscillator(),g=a.createGain();
   o.frequency.value=1046;g.gain.setValueAtTime(.18,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.18);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.2);}catch(e){}}
-// la silueta (máscara G×G) pintada sobre un lienzo que muestra el cuadro W×H en (X,Y,Wd,Hd), agrandada con suavizado
-function pintarMask(x,s,color,alfa,X,Y,Wd,Hd,W,H){
-  const G=s.G,Z=s.Z,kx=Wd/W,ky=Hd/H;X+=Z.x*kx;Y+=Z.y*ky;Wd=Z.w*kx;Hd=Z.h*ky;
-  const m=document.createElement('canvas');m.width=m.height=G;const xm=m.getContext('2d'),d=xm.createImageData(G,G),[r,g,b]=COLOR[color];
-  for(let i=0;i<G*G;i++)if(s.mask[i]){d.data[i*4]=r;d.data[i*4+1]=g;d.data[i*4+2]=b;d.data[i*4+3]=alfa;}
-  xm.putImageData(d,0,0);x.imageSmoothingEnabled=true;x.drawImage(m,X,Y,Wd,Hd);
+/* el contorno de una silueta como camino en un lienzo que muestra el cuadro W×H en (X,Y,Wd,Hd). `a` (opcional) es la
+   caja [x0,y0,x1,y1] donde se quiere ver: el contorno se lleva de su caja real a esa (así se desliza suave) */
+function camino(x,s,X,Y,Wd,Hd,W,H,a){
+  const c=s.cont;if(!c||c.length<6)return false;const Z=s.Z,n=s.n,b=a||n;
+  const sx=(b[2]-b[0])/Math.max(1e-6,n[2]-n[0]),sy=(b[3]-b[1])/Math.max(1e-6,n[3]-n[1]);
+  x.beginPath();
+  for(let i=0;i<c.length;i+=2){const fx=(Z.x+c[i]*s.cx)/W,fy=(Z.y+c[i+1]*s.cy)/H,px=X+(b[0]+(fx-n[0])*sx)*Wd,py=Y+(b[1]+(fy-n[1])*sy)*Hd;i?x.lineTo(px,py):x.moveTo(px,py);}
+  x.closePath();return true;
+}
+function trazar(x,s,col,X,Y,Wd,Hd,W,H,a,{relleno=.2,linea=2}={}){
+  if(!s||!s.ok||!camino(x,s,X,Y,Wd,Hd,W,H,a))return;
+  x.fillStyle=`rgba(${col},${relleno})`;x.fill();x.strokeStyle=`rgb(${col})`;x.lineWidth=linea;x.lineJoin='round';x.stroke();
 }
 
 function abrir(o){
   return new Promise(async fin0=>{
     const pasos=o.pasos,conRef=!!o.ref,clases=conRef?[o.clase,Vision.PERSONA]:[o.clase],caps=[];
-    let ip=0,activo=true,stream=null,frontal=false,wl=null;
+    let ip=0,activo=true,stream=null,frontal=false,wl=null,tick=0;
     const w=document.createElement('dialog');w.className='cam cv';w.setAttribute('aria-label',o.titulo||'Peso con cámara');
     w.innerHTML=`<div class="cam-top"><div class="cv-tit"><b class="cv-paso"></b><span class="cv-sub"></span></div><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
@@ -93,14 +110,15 @@ function abrir(o){
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
     const $w=s=>w.querySelector(s),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
     const parar=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;};
-    const fin=r=>{if(!activo)return;activo=false;parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
+    const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
     $w('.cam-x').onclick=()=>fin(null);
     const pintarPaso=()=>{const p=pasos[ip];$w('.cv-paso').textContent=pasos.length>1?`Paso ${ip+1} de ${pasos.length} · ${p.nombre}`:p.nombre;sub.textContent=p.instr;};
     pintarPaso();
     async function abrirCam(){parar();const s=await Fotos.camara(frontal);
       if(!activo){s.getTracks().forEach(t=>t.stop());return;}   // se cerró mientras abría
-      stream=s;v.srcObject=s;try{await v.play();}catch(e){}w.classList.toggle('espejo',frontal);}
+      stream=s;v.srcObject=s;try{await v.play();}catch(e){}w.classList.toggle('espejo',frontal);zona=null;}
+    let zona=null;
     $w('.cv-gira').onclick=async()=>{frontal=!frontal;try{await abrirCam();}catch(e){frontal=!frontal;toast('No se pudo abrir esa cámara.');try{await abrirCam();}catch(e2){}}};
     try{await abrirCam();}catch(e){msg.textContent='No se pudo abrir la cámara. Da permiso de cámara a la app en los ajustes del teléfono.';sub.textContent='';w.classList.add('sin');return;}
     if(!activo)return;
@@ -110,85 +128,117 @@ function abrir(o){
     // el preciso se carga mientras tanto: lo necesita la primera foto
     const preP=Vision.motor('preciso');preP.catch(()=>{});
     if(!activo)return;w.classList.remove('carga');
-    const cd=document.createElement('canvas'),xd=cd.getContext('2d',{willReadFrequently:true});
-    const cr=document.createElement('canvas');cr.width=cr.height=rap.R;const xr=cr.getContext('2d',{willReadFrequently:true});
-    let prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,zona=null;
-    // dónde se ve el video en pantalla (object-fit: contain)
+    const R=rap.R,cr=document.createElement('canvas');cr.width=cr.height=R;const xr=cr.getContext('2d',{willReadFrequently:true});
+    let W=0,H=0,prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
+    // el tamaño de trabajo del cuadro (hasta 960 px de lado)
+    const medidas=()=>{const vw=v.videoWidth,vh=v.videoHeight,k=Math.min(1,REGLAS.lienzo/Math.max(vw,vh)),w2=Math.round(vw*k),h2=Math.round(vh*k);if(w2!==W||h2!==H){W=w2;H=h2;zona=null;}};
+
+    /* ---------- dibujo: 60 cuadros por segundo ---------- */
+    const vis={s:null,p:null,color:'rojo'};let caja=null;
     const rect=()=>{const bw=v.clientWidth,bh=v.clientHeight,vw=v.videoWidth,vh=v.videoHeight;if(!vw||!bw)return null;const k=Math.min(bw/vw,bh/vh);
       return {x:(bw-vw*k)/2,y:(bh-vh*k)/2,w:vw*k,h:vh*k};};
-    function dibujar(s,p,color){
-      const bw=v.clientWidth,bh=v.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1);if(lz.width!==Math.round(bw*dpr)||lz.height!==Math.round(bh*dpr)){lz.width=Math.round(bw*dpr);lz.height=Math.round(bh*dpr);}
-      const x=lz.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,bw,bh);const R=rect();if(!R)return;
-      if(p&&p.ok)pintarMask(x,p,'verde',60,R.x,R.y,R.w,R.h,cd.width,cd.height);
-      if(s&&s.ok){pintarMask(x,s,color,125,R.x,R.y,R.w,R.h,cd.width,cd.height);
-        // esquinas de la caja
-        const [a0,b0,a1,b1]=s.n,X0=R.x+a0*R.w,Y0=R.y+b0*R.h,X1=R.x+a1*R.w,Y1=R.y+b1*R.h,L=Math.min(28,(X1-X0)/4,(Y1-Y0)/4),[cr_,cg,cb]=COLOR[color];
-        x.strokeStyle=`rgb(${cr_},${cg},${cb})`;x.lineWidth=4;x.lineCap='round';x.beginPath();
-        for(const [px,py,sx,sy] of [[X0,Y0,1,1],[X1,Y0,-1,1],[X0,Y1,1,-1],[X1,Y1,-1,-1]]){x.moveTo(px,py+sy*L);x.lineTo(px,py);x.lineTo(px+sx*L,py);}x.stroke();}
+    function dibujar(){
+      if(!activo)return;requestAnimationFrame(dibujar);
+      const bw=v.clientWidth,bh=v.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+      if(lz.width!==Math.round(bw*dpr)||lz.height!==Math.round(bh*dpr)){lz.width=Math.round(bw*dpr);lz.height=Math.round(bh*dpr);}
+      const x=lz.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,bw,bh);const Rr=rect();if(!Rr||!W)return;
+      const s=vis.s,p=vis.p,col=COLOR[vis.color];
+      if(p&&p.ok)trazar(x,p,'255,255,255',Rr.x,Rr.y,Rr.w,Rr.h,W,H,null,{relleno:.08,linea:1.5});
+      if(!s||!s.ok){caja=null;return;}
+      // la caja que se ve se acerca a la del último resultado: el movimiento se ve continuo
+      if(!caja)caja=s.n.slice();else for(let i=0;i<4;i++)caja[i]+=(s.n[i]-caja[i])*.35;
+      trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.24:.16,linea:2});
+      // esquinas finas
+      const X0=Rr.x+caja[0]*Rr.w,Y0=Rr.y+caja[1]*Rr.h,X1=Rr.x+caja[2]*Rr.w,Y1=Rr.y+caja[3]*Rr.h,L=Math.min(16,(X1-X0)/5,(Y1-Y0)/5),g=6;
+      x.strokeStyle=`rgba(${col},.95)`;x.lineWidth=1.5;x.lineCap='round';x.beginPath();
+      for(const [px,py,sx,sy] of [[X0-g,Y0-g,1,1],[X1+g,Y0-g,-1,1],[X0-g,Y1+g,1,-1],[X1+g,Y1+g,-1,-1]]){x.moveTo(px,py+sy*L);x.lineTo(px,py);x.lineTo(px+sx*L,py);}x.stroke();
     }
+    requestAnimationFrame(dibujar);
     function chips(E){for(const el of w.querySelectorAll('.cv-chip')){const s=E[el.dataset.k];el.dataset.s=s==null?'':s?'ok':'no';}}
-    // la foto que se guarda: el cuadro con la silueta pintada
-    function foto(fc,s){const c=document.createElement('canvas'),k=Math.min(1,720/Math.max(fc.width,fc.height));c.width=Math.round(fc.width*k);c.height=Math.round(fc.height*k);
-      const x=c.getContext('2d');x.drawImage(fc,0,0,c.width,c.height);if(s&&s.ok)pintarMask(x,s,'verde',105,0,0,c.width,c.height,fc.width,fc.height);return c.toDataURL('image/jpeg',.82);}
-    // medida precisa de una foto capturada (en segundo plano); si no sale, se queda la del modelo rápido
-    async function precisa(fc){
-      try{const pre=await preP,c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(fc,0,0,pre.R,pre.R);
-        const r=await pre.correr(x.getImageData(0,0,pre.R,pre.R).data,clases),Z={x:0,y:0,w:fc.width,h:fc.height};
-        const s=aCuadro(r.suj[o.clase],r.G,Z,fc.width,fc.height),p=aCuadro(r.suj[Vision.PERSONA],r.G,Z,fc.width,fc.height);
-        if(!s||!s.ok||(conRef&&!refOk(p,fc.width,fc.height)))return null;
-        return {s,p:conRef?p:null};}catch(e){console.warn(e);return null;}}
+    // la foto que se guarda: el cuadro con el contorno de la silueta
+    // (recortada alrededor del sujeto, para que se vea grande)
+    function foto(fc,s,ref){const Z=(s&&s.ok&&zonaDe([s.n,ref&&ref.ok?ref.n:null],fc.width,fc.height,{margen:.12,min:.3,amin:.6,amax:1.6}))||{x:0,y:0,w:fc.width,h:fc.height};
+      const c=document.createElement('canvas'),k=Math.min(1,720/Math.max(Z.w,Z.h));c.width=Math.round(Z.w*k);c.height=Math.round(Z.h*k);
+      const x=c.getContext('2d');x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,c.width,c.height);const X=-Z.x*k,Y=-Z.y*k,Wd=fc.width*k,Hd=fc.height*k,lw=Math.max(2,c.width/260);
+      if(ref&&ref.ok)trazar(x,ref,'255,255,255',X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.08,linea:lw*.75});
+      trazar(x,s,COLOR.verde,X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.22,linea:lw});return c.toDataURL('image/jpeg',.85);}
+    /* medida precisa de una foto capturada (en segundo plano), sobre un recorte alrededor del sujeto (y de la persona
+       de referencia): el modelo ve el cuerpo con más detalle. Si el recorte lo corta, se mide la foto completa. Si no
+       sale, se queda la del modelo rápido. */
+    async function precisa(fc,cajas){
+      try{const pre=await preP,c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
+        const una=async Z=>{x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,pre.R,pre.R);const r=await pre.correr({px:x.getImageData(0,0,pre.R,pre.R).data},clases);
+          return {s:aCuadro(r.suj[o.clase],r.G,Z,fc.width,fc.height),p:conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,fc.width,fc.height):null};};
+        const Zr=zonaDe(cajas,fc.width,fc.height,{margen:.1,min:.3,amin:.5,amax:2}),todo={x:0,y:0,w:fc.width,h:fc.height};
+        let r=await una(Zr||todo);
+        if(Zr&&((r.s&&r.s.cortada)||(r.p&&r.p.cortada)||!(r.s&&r.s.ok)))r=await una(todo);
+        if(!r.s||!r.s.ok||(conRef&&!refOk(r.p,fc.width,fc.height)))return null;
+        return r;}catch(e){console.warn(e);return null;}}
     function capturar(lista,manual){
-      const p=pasos[ip],u=lista[lista.length-1],fc=document.createElement('canvas');fc.width=cd.width;fc.height=cd.height;fc.getContext('2d').drawImage(cd,0,0);
-      const med={};for(const k of ['alto','ancho','area','banda','ratio','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=cd.width;med.H=cd.height;
-      caps.push({id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,banda:p.banda,pend:precisa(fc)});
+      const p=pasos[ip],u=lista[lista.length-1],fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);
+      const med={};for(const k of ['alto','ancho','area','banda','ratio','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
+      caps.push({id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,pend:precisa(fc,[u.s.n,u.p&&u.p.ok?u.p.n:null])});
       try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}beep();
       w.classList.add('flash');setTimeout(()=>w.classList.remove('flash'),260);
-      th.src=foto(fc,u.s);th.hidden=false;buenos=[];prev=null;ult=null;tiempos=[];prog.hidden=true;zona=null;
+      th.src=foto(fc,u.s,u.p);th.hidden=false;buenos=[];prev=null;ult=null;tiempos=[];prog.hidden=true;zona=null;vis.s=vis.p=null;
       if(ip+1>=pasos.length){terminar();return;}
-      ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});dibujar(null,null,'rojo');w.dataset.estado='';pausa=performance.now()+1500;
+      ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});w.dataset.estado='';pausa=performance.now()+1500;
     }
     async function terminar(){
-      pausa=Infinity;man.disabled=true;chips({});dibujar(null,null,'rojo');w.dataset.estado='';msg.textContent='Midiendo…';sub.textContent='';w.classList.add('carga');
+      pausa=Infinity;man.disabled=true;chips({});w.dataset.estado='';msg.textContent='Midiendo…';sub.textContent='';w.classList.add('carga');
       const out=[];
       for(const c of caps){const r=await c.pend;if(!activo)return;
-        let med=c.rapido,fuente='rapido',img=null;
-        if(r){med=medir(r.s,c.fc.width,c.fc.height,c.banda);if(r.p)med.refAlto=medir(r.p,c.fc.width,c.fc.height).alto;fuente='preciso';img=foto(c.fc,r.s);}
-        out.push({id:c.id,nombre:c.nombre,manual:c.manual,med,fuente,img:img||foto(c.fc,c.s)});}
+        let med=c.rapido,fuente='rapido',sil=c.s,ref=c.pr||null;
+        if(r){sil=r.s;ref=r.p;med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;fuente='preciso';}
+        out.push({id:c.id,nombre:c.nombre,manual:c.manual,med,sil,ref,W:c.fc.width,H:c.fc.height,fuente,img:foto(c.fc,sil,ref)});}
       fin(out);
     }
     man.onclick=()=>{if(!ult)return toast('Que se vea completo para tomar la foto.');const l=buenos.length?buenos:[ult];capturar(l.slice(-REGLAS.seguidos),true);};
-    // el ciclo: un cuadro a la vez, lo más rápido que dé el teléfono
-    while(activo){
-      if(!v.videoWidth||v.readyState<2||performance.now()<pausa){await new Promise(r=>setTimeout(r,80));continue;}
-      const p=pasos[ip],vw=v.videoWidth,vh=v.videoHeight,kd=Math.min(1,REGLAS.lienzo/Math.max(vw,vh));
-      if(cd.width!==Math.round(vw*kd)||cd.height!==Math.round(vh*kd)){cd.width=Math.round(vw*kd);cd.height=Math.round(vh*kd);}
-      xd.drawImage(v,0,0,cd.width,cd.height);const Z=zona||{x:0,y:0,w:cd.width,h:cd.height};xr.drawImage(cd,Z.x,Z.y,Z.w,Z.h,0,0,rap.R,rap.R);
-      const t0=performance.now();let r;
-      try{r=await rap.correr(xr.getImageData(0,0,rap.R,rap.R).data,clases);fallas=0;}catch(e){console.warn(e);
-        if(++fallas>=3){msg.textContent='No se pudo cargar el modelo de visión en este teléfono.';w.dataset.estado='';man.disabled=true;break;}
-        await new Promise(z=>setTimeout(z,400));continue;}
-      if(!activo)break;
-      // (ms y motor quedan en el diálogo para las pruebas)
-      w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo;
-      const now=performance.now();tiempos.push(now);tiempos=tiempos.filter(t=>now-t<3000);
+
+    /* ---------- un resultado del modelo rápido ---------- */
+    function procesar(r,Z){
+      const p=pasos[ip],s=aCuadro(r.suj[o.clase],r.G,Z,W,H),pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
+      const now=performance.now();tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
       if(tiempos.length>2)fps.textContent=`${((tiempos.length-1)/((now-tiempos[0])/1000)).toFixed(1)} cuadros/s`;
-      if(now<pausa)continue;
-      const W=cd.width,H=cd.height,s=aCuadro(r.suj[o.clase],r.G,Z,W,H),pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
-      // si la zona cortó al sujeto, el cuadro siguiente se mira completo
-      // (en ganado, mientras no aparezca la persona de referencia, también se mira completo)
-      zona=(s&&s.cortada)||(pr&&pr.cortada)||(conRef&&!(pr&&pr.ok))?null:zonaSig([s&&s.ok?s.n:null,pr&&pr.ok?pr.n:null],W,H);
+      // (ms y motor quedan en el diálogo para las pruebas)
+      w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo+'×'+rap.n;
+      // el cuadro siguiente mira solo la zona del sujeto; si la zona lo cortó (o en ganado falta la persona), completo
+      zona=(s&&s.cortada)||(pr&&pr.cortada)||(conRef&&!(pr&&pr.ok))?null:zonaSig([s&&s.ok?s.n:null,pr&&pr.ok?pr.n:null],W,H,zona);
       const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido.ratio:null,conRef);prev=ev.caja||null;
       const E=ev.E,listo=E.det&&E.comp&&E.dist&&E.ang&&E.quieto&&(!conRef||E.ref);
       const color=!E.det?'rojo':listo?'verde':(E.comp&&E.dist?'ambar':'rojo');
       const med=E.det?medir(s,W,H,p.banda):null;if(med&&conRef&&E.ref)med.refAlto=medir(pr,W,H).alto;
-      ult=E.det&&E.comp&&(!conRef||E.ref)?{s,med}:null;man.disabled=!ult;
-      dibujar(E.det?s:null,pr,color);chips(E);w.dataset.estado=color;w.dataset.zona=zona?'si':'no';
-      if(listo){buenos.push({s,med});prog.hidden=false;prog.style.setProperty('--p',buenos.length/REGLAS.seguidos);msg.textContent='Quieto…';
+      ult=E.det&&E.comp&&(!conRef||E.ref)?{s,p:pr,med}:null;man.disabled=!ult;
+      vis.s=E.det?s:null;vis.p=pr;vis.color=color;chips(E);w.dataset.estado=color;w.dataset.zona=zona?'si':'no';
+      if(listo){buenos.push({s,p:pr,med});prog.hidden=false;prog.style.setProperty('--p',buenos.length/REGLAS.seguidos);msg.textContent='Quieto…';
         if(buenos.length>=REGLAS.seguidos)capturar(buenos,false);}
       else{buenos=[];prog.hidden=true;msg.textContent=ev.msg;}
-      if(rap.modo!=='worker')await new Promise(z=>setTimeout(z,Math.min(200,(performance.now()-t0)*.3)));
     }
+    /* ---------- cuadros en vuelo: uno por worker del modelo rápido ---------- */
+    async function tomar(Z){
+      const k=v.videoWidth/W;
+      // (si createImageBitmap falla varias veces seguidas, se usa un lienzo en la página)
+      if(bmpOk>0)try{const b=await createImageBitmap(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,{resizeWidth:R,resizeHeight:R,resizeQuality:'low'});bmpOk=3;return {bmp:b};}catch(e){bmpOk--;}
+      xr.drawImage(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,0,0,R,R);return {px:xr.getImageData(0,0,R,R).data};
+    }
+    async function lanzar(){
+      vuelo++;const mi=++seq,paso=ip;medidas();const Z=zona||{x:0,y:0,w:W,h:H};let r=null;
+      try{r=await rap.correr(await tomar(Z),clases);fallas=0;}catch(e){console.warn(e);fallas++;}
+      vuelo--;
+      if(!activo)return;
+      if(fallas>=3){msg.textContent='No se pudo cargar el modelo de visión en este teléfono.';w.dataset.estado='';man.disabled=true;clearInterval(tick);return;}
+      // un resultado viejo (llegó después de uno más nuevo, o de antes de cambiar de paso) no se usa
+      if(r&&mi>hecho&&paso===ip&&performance.now()>=pausa){hecho=mi;procesar(r,Z);}
+      // sin worker el modelo corre en la página: se le da un respiro para que la pantalla responda
+      if(rap.modo!=='worker')await new Promise(z=>setTimeout(z,Math.max(20,Math.min(200,(r&&r.ms||60)*.3))));
+      bombear();
+    }
+    function bombear(){
+      if(!activo||fallas>=3)return;
+      while(vuelo<rap.n&&v.videoWidth&&v.readyState>=2&&performance.now()>=pausa)lanzar();
+    }
+    tick=setInterval(bombear,60);bombear();
   });
 }
-window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig};
+window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe};
 })();

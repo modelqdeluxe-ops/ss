@@ -3,16 +3,17 @@
 // una persona al lado como referencia. Comprueba que las fotos se tomen solas, que las medidas en cm salgan cerca de
 // las de la escena y que la calibración con báscula ajuste el peso.
 // Usa 8112 con silueta.onnx, seg.onnx, ort.bundle.js, el .wasm y las fotos: frente.jpg (COCO 000000223959),
-// lejos.jpg (000000295478), lado.jpg (000000090062) y atras.jpg (000000467776). SIN_WORKER=1 prueba sin Web Worker.
+// lejos.jpg (000000295478), lado.jpg (000000090062) y atras.jpg (000000467776). SIN_WORKER=1 prueba sin Web Worker;
+// NUCLEOS=8 simula un teléfono con 8 núcleos (dos workers del modelo rápido).
 const {chromium}=require('playwright');const fs=require('fs');const assert=require('assert');
 const CFG0=fs.readFileSync('/home/user/ss/app/assets/config.js','utf8');
 const IDI=process.env.IDIOMA||'es';const cfg=CFG0.replace("prueba:false,beta:false,","prueba:false,beta:true,");
 const DOS=/2 de 2|2 of 2/;
 (async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});const errs=[];
- const ctx=await b.newContext({viewport:{width:393,height:852},deviceScaleFactor:1.5});const p=await ctx.newPage();global.__p=p;
+ const ctx=await b.newContext({viewport:{width:393,height:852},deviceScaleFactor:1.5});const p=await ctx.newPage();global.__p=p;global.__errs=errs;
  p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{const t=m.text();if(m.type()==='error'&&!/favicon|ERR_|net::|Failed to load resource/.test(t))errs.push(t);if(m.type()==='warning'&&/Visión/.test(t))console.log('aviso:',t);});
  await p.route('**/config.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:cfg}));
- await p.addInitScript(([i,sw])=>{window.VISION_BASE='http://127.0.0.1:8112/';window.__I=i;if(sw)window.Worker=undefined;},[IDI,!!process.env.SIN_WORKER]);
+ await p.addInitScript(([i,sw,nu])=>{window.VISION_BASE='http://127.0.0.1:8112/';window.__I=i;if(sw)window.Worker=undefined;if(nu)Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>nu});},[IDI,!!process.env.SIN_WORKER,+process.env.NUCLEOS||0]);
  await p.goto('http://127.0.0.1:8111/index.html#hoy');await p.evaluate(()=>{localStorage.clear();localStorage.setItem('rumentis-bienvenida','1');localStorage.setItem('rumentis-idioma',window.__I);});await p.reload();await p.waitForTimeout(900);
  await p.evaluate(()=>cargarDemo());await p.waitForTimeout(400);
  // la "cámara": un lienzo vertical (personas) y uno horizontal (ganado) con la escena que pida la prueba.
@@ -61,8 +62,8 @@ const DOS=/2 de 2|2 of 2/;
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});console.log('medición completa',Date.now()-t0,'ms');
  let txt=await leer();await p.screenshot({path:'vivo_res.png'});
  assert.ok(!await p.$('dialog.cv'),'la cámara se cierra');assert.equal(await p.$$eval('#sheet .pc-caps img',e=>e.length),2,'dos fotos');
- const fondo=num(txt,/([\d.,]+) cm\s*(de fondo|depth|profundidade)/);
- console.log('de fondo',fondo);assert.ok(fondo>12&&fondo<45,'profundidad razonable');
+ const litros=num(txt,/([\d.,]+) L\s*(volumen|volume)/),kgP=await p.evaluate(()=>PesoCam.modeloV('persona'));
+ console.log('volumen',litros,'L');assert.ok(litros>35&&litros<130,'volumen de una persona');
  assert.ok(!/modelo rápido|fast model|modelo rápido/.test(txt),'medida con el modelo preciso');
  // calibración: "la báscula dice 72 kg" dos veces → el estimado se ajusta
  const kgs=[];
@@ -71,9 +72,16 @@ const DOS=/2 de 2|2 of 2/;
    kgs.push(await p.evaluate(()=>PesoCam.modeloV('persona')));console.log('modelo',JSON.stringify(kgs[i]));
    if(i===0){await esc('v',[PF]);await p.click('[data-act="pcVivo"]');await paso2();await esc('v',[PC]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});}}
  assert.equal(kgs[1].n,2);
- const V=await p.evaluate(()=>S.config.pesoCam.cal.filter(c=>c.modo==='persona').map(c=>c.V));
- const k2=await p.evaluate(V=>{const m=PesoCam.modeloV('persona');return m.c*Math.pow(V,m.b);},V[1]);console.log('calibrado',k2);assert.ok(Math.abs(k2-72)<4,'se ajusta a la báscula');
+ const V=await p.evaluate(()=>S.config.pesoCam.cal.filter(c=>c.modo==='persona').map(c=>c.L));
+ const k2=await p.evaluate(V=>{const m=PesoCam.modeloV('persona');return m.k*Math.pow(V,m.b);},V[1]);console.log('calibrado',k2);assert.ok(Math.abs(k2-72)<4,'se ajusta a la báscula');
  await p.screenshot({path:'vivo_cal.png',fullPage:true});
+ // repetibilidad: la misma persona un poco movida y a otra distancia cada vez; el volumen casi no debe cambiar
+ const vols=[];
+ for(const [dx,k] of [[-.06,.66],[.04,.74],[0,.8]]){const F2={...PF,x:PF.x+dx,h:k*960};await esc('v',[F2]);await p.click('[data-act="pcVivo"]');await paso2();
+   await esc('v',[{...F2,sx:.55}]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});await p.waitForTimeout(300);
+   vols.push(num(await p.$eval('#sheet',e=>e.textContent.replace(/\s+/g,' ')),/([\d.,]+) L\s*(volumen|volume)/));await p.click('#sheet [data-act="cerrar"]');await p.waitForTimeout(300);}
+ const vm=vols.reduce((a,b)=>a+b,0)/vols.length,dv=Math.max(...vols.map(x=>Math.abs(x/vm-1)));
+ console.log('repetibilidad',vols.join(' / '),'L · variación máx',(dv*100).toFixed(1),'%');assert.ok(dv<.06,'medición estable');
 
  /* ---------- ganado: la vaca mide 200 cm de largo y 150 de alto; la persona de referencia 175 cm ---------- */
  await p.click('[data-act="pcModo"][data-m="ganado"]');await p.waitForTimeout(300);assert.equal(await p.evaluate(()=>localStorage.getItem('rumentis-pc-modo')),'ganado');
@@ -97,5 +105,6 @@ const DOS=/2 de 2|2 of 2/;
  if(IDI==='xx'){const K=[...await p.evaluate(()=>[...I18N_REC.keys()])];fs.writeFileSync('claves_vivo.json',JSON.stringify(K.map(k=>[k,1])));console.log('claves',K.length);}
  console.log(errs.length?'ERRORES:\n'+errs.join('\n'):'errores ninguno');await b.close();if(errs.length)process.exit(1);
 })().catch(async e=>{console.error('FALLA',e.message);
+ if(global.__errs&&global.__errs.length)console.error('errores:',global.__errs.join('\n'));
  try{const p=global.__p;if(p)console.error('estado:',await p.evaluate(()=>{const c=document.querySelector('.cv');return c?JSON.stringify({...c.dataset,msg:c.querySelector('.cv-msg').textContent,paso:c.querySelector('.cv-paso').textContent,chips:[...c.querySelectorAll('.cv-chip')].map(x=>x.dataset.k+':'+x.dataset.s).join(' ')}):'sin cámara abierta';}));if(p)await p.screenshot({path:'vivo_falla.png'});}catch(e2){}
  process.exit(1);});
