@@ -217,7 +217,14 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.15** (esta rama): diseño de la cámara más profesional: contorno con curvas (sin escalones), línea fina con
+**5.0.0-beta.16** (esta rama): el dueño no quiso el escáner ni el recuadro de beta.15. Contorno con halo suave del
+color de estado, línea limpia y relleno apenas visible; recuadro solo con cuatro esquinas finas redondeadas (blancas;
+de color al estar listo); sin línea de escaneo. Puntos: solo si describen un cuerpo (`poseBuena`: hombros y caderas y
+≥ 10 de 17 puntos confiables; con la mano de cerca el modelo inventaba un cuerpo) y dedos solo con muñeca confiable y
+mano de tamaño lógico (`manoBuena`). Probado y descartado para la silueta en vivo: espejo promediado (0.811 → 0.814,
+ruido), filtro guiado (igual) y MediaPipe Selfie (peor: IoU casa 0.73 contra 0.77).
+
+**5.0.0-beta.15**: diseño de la cámara más profesional: contorno con curvas (sin escalones), línea fina con
 brillo y filo blanco, relleno en degradado; recuadro con esquinas redondeadas con brillo y marco fino; línea de escaneo
 mientras no está en verde; etiqueta de estado (Ajusta / Casi / Listo) sobre el recuadro (en el DOM: se traduce; en
 espejo con la cámara frontal); colores esmeralda, ámbar y coral.
@@ -258,7 +265,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.15.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.16.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

@@ -163,37 +163,40 @@ const tamPunto=(i,n)=>n<=17?1:i<17?1:i<23?.75:i<91?.38:i===91||i===112?.7:.5;
 /* confianza mínima para dibujar un punto: 0.4 en el cuerpo y 0.5 en pies, cara y manos. Medido en COCO (DWPose-s): los
    puntos muy fuera de lugar (a más de 10 % de la estatura) bajan de ~3.7 % a 1–2 %; los dudosos no se muestran */
 const verPunto=(P,i,n)=>P[3*i+2]>=(n<=17||i<17?.4:.5);
+/* ¿los puntos describen un cuerpo? Si la cámara ve solo una parte (una mano de cerca, la cara), el modelo inventa un
+   cuerpo entero con puntos sin sentido: se exige hombros y caderas confiables y al menos 10 de los 17 puntos del cuerpo
+   (en animales, 8 de 17) */
+function poseBuena(P){const n=P.length/3,c=i=>P[3*i+2]>=.4;if(n<=17)return [...Array(17).keys()].filter(c).length>=8;
+  return [5,6,11,12].every(c)&&[...Array(17).keys()].filter(c).length>=10;}
+/* una mano (raíz r) se dibuja solo si su muñeca es confiable y su tamaño tiene sentido para el cuerpo (a lo más 1/4
+   del largo del tronco): así no aparecen dedos sueltos */
+function manoBuena(P,r,mu){const c=i=>P[3*i+2]>=.4;if(!c(mu))return false;const t=Math.hypot(P[15]-P[33],P[16]-P[34])||1;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(let i=r;i<r+21;i++)if(P[3*i+2]>=.5){x0=Math.min(x0,P[3*i]);x1=Math.max(x1,P[3*i]);y0=Math.min(y0,P[3*i+1]);y1=Math.max(y1,P[3*i+1]);}
+  return x1<x0||Math.hypot(x1-x0,y1-y0)<=.6*t;}
 function puntos(x,P,esq,X,Y,Wd,Hd,r=3){
-  if(!P)return;const n=P.length/3,ok=i=>verPunto(P,i,n),px=i=>X+P[3*i]*Wd,py=i=>Y+P[3*i+1]*Hd;
+  if(!P||!poseBuena(P))return;const n=P.length/3,mL=n>91&&manoBuena(P,91,9),mR=n>91&&manoBuena(P,112,10);
+  const ok=i=>verPunto(P,i,n)&&(i<91||(i<112?mL:mR)),px=i=>X+P[3*i]*Wd,py=i=>Y+P[3*i+1]*Hd;
   x.save();x.lineCap='round';x.lineJoin='round';
   for(const grueso of [1,0]){x.strokeStyle=grueso?'rgba(255,255,255,.6)':'rgba(255,255,255,.5)';x.lineWidth=Math.max(.7,r*(grueso?.4:.22));x.beginPath();
     for(const [a,b] of esq)if((a<91)===!!grueso&&ok(a)&&ok(b)){x.moveTo(px(a),py(a));x.lineTo(px(b),py(b));}x.stroke();}
   x.shadowColor='rgba(255,255,255,.95)';x.fillStyle='#fff';
   for(let i=0;i<n;i++)if(ok(i)){const ri=r*tamPunto(i,n);x.shadowBlur=ri*3;x.beginPath();x.arc(px(i),py(i),ri,0,2*Math.PI);x.fill();}
   x.restore();}
-/* la silueta: relleno en degradado muy suave (más arriba que abajo), línea fina con un brillo del mismo color y un filo
-   blanco casi transparente por dentro (se lee sobre fondos claros y oscuros) */
+/* la silueta: un halo suave del color de estado alrededor del cuerpo, una línea limpia encima y un relleno apenas
+   visible. Sin escalones (el contorno va en curvas) */
 function trazar(x,s,col,X,Y,Wd,Hd,W,H,a,{relleno=.2,linea=2}={}){
   if(!s||!s.ok||!camino(x,s,X,Y,Wd,Hd,W,H,a))return;
-  const b=a||s.n,y0=Y+b[1]*Hd,y1=Y+b[3]*Hd,gr=x.createLinearGradient(0,y0,0,y1);
-  gr.addColorStop(0,`rgba(${col},${relleno})`);gr.addColorStop(1,`rgba(${col},${relleno*.3})`);
-  x.save();x.fillStyle=gr;x.fill();x.lineJoin='round';x.lineCap='round';
-  x.shadowColor=`rgba(${col},.75)`;x.shadowBlur=linea*5;x.strokeStyle=`rgba(${col},.95)`;x.lineWidth=linea;x.stroke();
-  x.shadowBlur=0;x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=Math.max(.6,linea*.35);x.stroke();x.restore();
+  x.save();x.lineJoin='round';x.lineCap='round';
+  x.fillStyle=`rgba(${col},${relleno*.45})`;x.fill();
+  x.strokeStyle=`rgba(${col},.22)`;x.lineWidth=linea*4.5;x.shadowColor=`rgba(${col},.55)`;x.shadowBlur=linea*8;x.stroke();
+  x.shadowBlur=0;x.strokeStyle=`rgba(${col},.98)`;x.lineWidth=linea;x.stroke();x.restore();
 }
-/* el recuadro: esquinas redondeadas con brillo, unidas por un marco finito; mientras analiza, una línea de escaneo
-   recorre el cuerpo de arriba abajo */
-function recuadro(x,X0,Y0,X1,Y1,col,escanea){
-  const w=X1-X0,h=Y1-Y0,L=Math.max(10,Math.min(26,w*.22,h*.12)),r=Math.min(8,L*.45);
-  x.save();x.lineCap='round';x.lineJoin='round';
-  x.strokeStyle=`rgba(${col},.22)`;x.lineWidth=1;x.beginPath();x.roundRect?x.roundRect(X0,Y0,w,h,r):x.rect(X0,Y0,w,h);x.stroke();
-  x.shadowColor=`rgba(${col},.8)`;x.shadowBlur=8;x.strokeStyle=`rgb(${col})`;x.lineWidth=2.5;x.beginPath();
+/* el recuadro: solo cuatro esquinas redondeadas, finas y translúcidas (blancas; del color de estado cuando está listo) */
+function recuadro(x,X0,Y0,X1,Y1,col,listo){
+  const w=X1-X0,h=Y1-Y0,L=Math.max(12,Math.min(22,w*.2,h*.1)),r=Math.min(12,L*.7);
+  x.save();x.lineCap='round';x.lineJoin='round';x.strokeStyle=listo?`rgba(${col},.95)`:'rgba(255,255,255,.7)';x.lineWidth=1.75;x.beginPath();
   for(const [px,py,sx,sy] of [[X0,Y0,1,1],[X1,Y0,-1,1],[X0,Y1,1,-1],[X1,Y1,-1,-1]]){x.moveTo(px,py+sy*L);x.arcTo(px,py,px+sx*L,py,r);x.lineTo(px+sx*L,py);}
-  x.stroke();
-  if(escanea){const t=(performance.now()%1800)/1800,ys=Y0+t*h,g=x.createLinearGradient(0,ys-h*.08,0,ys);
-    g.addColorStop(0,`rgba(${col},0)`);g.addColorStop(1,`rgba(${col},.28)`);x.shadowBlur=0;x.fillStyle=g;x.fillRect(X0+2,ys-h*.08,w-4,h*.08);
-    x.strokeStyle=`rgba(${col},.85)`;x.lineWidth=1;x.beginPath();x.moveTo(X0+4,ys);x.lineTo(X1-4,ys);x.stroke();}
-  x.restore();
+  x.stroke();x.restore();
 }
 
 function abrir(o){
@@ -252,7 +255,7 @@ function abrir(o){
       if(!s||!s.ok){caja=null;tag.hidden=true;return;}
       // la caja que se ve se acerca a la del último resultado: el movimiento se ve continuo
       if(!caja)caja=s.n.slice();else for(let i=0;i<4;i++)caja[i]+=(s.n[i]-caja[i])*.35;
-      trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.2:.12,linea:1.6});
+      trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.2:.14,linea:1.75});
       // los puntos del cuerpo se deslizan hacia el último resultado (y se quitan si ya es viejo)
       // (se deslizan hacia el último resultado; ya no siguen la caja de la silueta: si la silueta se pegaba a algo,
       // los arrastraba fuera del cuerpo)
@@ -260,8 +263,8 @@ function abrir(o){
       if(kp){if(!kpV||kpV.length!==kp.length)kpV=kp.slice();else for(let i=0;i<kp.length;i++)kpV[i]+=(kp[i]-kpV[i])*(i%3===2?1:.5);
         puntos(x,kpV,esq,Rr.x,Rr.y,Rr.w,Rr.h,Math.max(2.5,Math.min(4,Rr.w/110)));}else kpV=null;
       // el recuadro (con 8 px de aire alrededor del cuerpo) y la etiqueta de estado encima
-      const g=8,X0=Rr.x+caja[0]*Rr.w-g,Y0=Rr.y+caja[1]*Rr.h-g,X1=Rr.x+caja[2]*Rr.w+g,Y1=Rr.y+caja[3]*Rr.h+g;
-      recuadro(x,X0,Y0,X1,Y1,col,vis.color!=='verde');
+      const g=12,X0=Rr.x+caja[0]*Rr.w-g,Y0=Rr.y+caja[1]*Rr.h-g,X1=Rr.x+caja[2]*Rr.w+g,Y1=Rr.y+caja[3]*Rr.h+g;
+      recuadro(x,X0,Y0,X1,Y1,col,vis.color==='verde');
       tag.hidden=false;tag.dataset.c=vis.color;// (con la cámara frontal el lienzo va en espejo y la etiqueta no: se pone sobre la esquina que se ve a la izquierda)
       const tx=w.classList.contains('espejo')?bw-X1:X0;tag.style.transform=`translate(${Math.round(Math.max(4,tx))}px,${Math.round(Math.max(4,Y0-26))}px)`;
     }
@@ -355,7 +358,7 @@ function abrir(o){
       procesados++;if(msR.length<400)msR.push(r.ms);
       const p=pasos[ip];let s=aCuadro(r.suj[o.clase],r.G,Z,W,H);const pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
       const now=performance.now();
-      if(persona&&s&&s.ok&&vis.kp&&now-vis.kp.t<600&&iou(vis.kp.n,s.n)>=.85)s=limpiarSil(s,vis.kp.p,W,H);
+      if(persona&&s&&s.ok&&vis.kp&&now-vis.kp.t<600&&iou(vis.kp.n,s.n)>=.85&&poseBuena(vis.kp.p))s=limpiarSil(s,vis.kp.p,W,H);
       tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
       // (sobre al menos 0.8 s: con varios workers los resultados llegan en ráfagas y una ventana corta exagera)
       if(tiempos.length>2&&now-tiempos[0]>=800){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
@@ -414,19 +417,19 @@ function abrir(o){
       poseVuelo++;poseT=performance.now();const paso=ip,mi=++poseSeq;
       // el recorte sale de los puntos del cuadro anterior (seguimiento, como en los trajes de captura); si no hay o son
       // viejos, de la silueta. Así, si la silueta se pega a algo, los puntos no se van con ella.
-      const kb=vis.kp&&performance.now()-vis.kp.t<400?cajaPuntos(vis.kp.p):null,n=kb&&iou(kb,vis.s.n)>.3?kb:vis.s.n.slice();
+      const kb=vis.kp&&performance.now()-vis.kp.t<400&&poseBuena(vis.kp.p)?cajaPuntos(vis.kp.p):null,n=kb&&iou(kb,vis.s.n)>.3?kb:vis.s.n.slice();
       try{const Z=recortePose(n,W,H,poseV),k=v.videoWidth/W;let e;
         try{e={bmp:await createImageBitmap(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,{resizeWidth:poseV.W,resizeHeight:poseV.H,resizeQuality:'medium'})};}
         catch(er){const c=document.createElement('canvas');c.width=poseV.W;c.height=poseV.H;const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);
           x.drawImage(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,0,0,c.width,c.height);e={px:x.getImageData(0,0,c.width,c.height).data};}
         const r=await poseV.correr(e,[]),P=r.kp;poseMs=poseMs?poseMs*.8+r.ms*.2:r.ms;w.dataset.msPose=Math.round(poseMs);
         for(let i=0;i<P.length;i+=3){P[i]=(Z.x+P[i]*Z.w)/W;P[i+1]=(Z.y+P[i+1]*Z.h)/H;}
-        if(activo&&paso===ip&&performance.now()>=pausa&&mi>poseHecho){poseHecho=mi;suavizar(P,vis.kp&&performance.now()-vis.kp.t<500?vis.kp.p:null,n[3]-n[1]);vis.kp={p:P,t:performance.now(),n};let c=0;for(let i=2;i<P.length;i+=3)if(P[i]>=.3)c++;w.dataset.puntos=c;}
+        if(activo&&paso===ip&&performance.now()>=pausa&&mi>poseHecho){poseHecho=mi;suavizar(P,vis.kp&&performance.now()-vis.kp.t<500&&poseBuena(vis.kp.p)?vis.kp.p:null,n[3]-n[1]);vis.kp={p:P,t:performance.now(),n};let c=0;for(let i=2;i<P.length;i+=3)if(P[i]>=.3)c++;w.dataset.puntos=c;}
       }catch(e){console.warn(e);}
       poseVuelo--;if(poseRespiro)setTimeout(bombearPose,poseRespiro);else bombearPose();
     }
     tick=setInterval(()=>{bombear();bombearPose();},60);bombear();
   });
 }
-window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
+window.CamVivo={poseBuena,manoBuena,abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro,cajaPuntos};
 })();

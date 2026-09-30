@@ -137,8 +137,7 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   - **Ganado**: una persona de estatura conocida se para derecha a la par del animal; de costado y por detrás. El
     peso se junta en un pesaje del lote.
 - **Cámara en vivo** (`app/assets/camvivo.js`): video a pantalla completa con el **contorno fino** de la silueta
-  (curvas suaves, brillo y relleno en degradado; recuadro con esquinas redondeadas, línea de escaneo mientras analiza y
-  etiqueta Ajusta / Casi / Listo) en coral, ámbar o esmeralda (dibujado a 60 cuadros por segundo: la caja se desliza entre un resultado del modelo y el
+  (curvas suaves con un halo del color de estado; cuatro esquinas finas redondeadas y etiqueta Ajusta / Casi / Listo) en coral, ámbar o esmeralda (dibujado a 60 cuadros por segundo: la caja se desliza entre un resultado del modelo y el
   siguiente), el paso ("Paso 1 de 2 · De frente") e indicadores **Detectado · Completo · Distancia · Ángulo · Quieto**
   (y **Referencia** en ganado). Al centro, la indicación que toca ("Acércate", "Aléjate", "Gírate de costado…",
   "Falta la persona de referencia junto al animal", "Quieto…"). Con todo en verde **3 cuadros seguidos** la foto se
