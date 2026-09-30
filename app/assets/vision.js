@@ -1,13 +1,18 @@
 /* Rumentis Beta: visión en el teléfono. Todo se calcula aquí: el video no sale del teléfono.
-   Dos modelos con onnxruntime-web (MIT) en WebAssembly, en Web Workers (el video no se traba):
+   Modelos con onnxruntime-web (MIT) en WebAssembly, en Web Workers (el video no se traba):
    - rápido  (silueta.onnx, 13 MB, ganado; silueta_p.onnx, personas): LR-ASPP MobileNetV3 (torchvision, BSD-3) afinado
              para fondo / persona / vaca (modelo/vision/entrenar_silueta.py; el de personas con un refinamiento a 1/4,
              entrenar_silueta2.py). Entrada 256×256. Corre en cada cuadro del video, en dos workers a la
              vez si el teléfono tiene núcleos de sobra (el doble de cuadros por segundo).
    - preciso (seg.onnx, 33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo en las fotos que se capturan,
              en segundo plano, para la medida final.
-   Vision.motor('rapido'|'preciso') → {modo, R, G, n, correr(entrada, clases)}. La entrada es {bmp} (un ImageBitmap
-   del cuadro ya recortado y reducido a R×R: el worker lo lee sin pasar por la página) o {px} (píxeles RGBA de R×R).
+   - pose    (cuerpo.onnx, animal_m.onnx): RTMW y RTMPose (OpenMMLab, Apache 2.0). Los puntos del cuerpo (hasta los
+             dedos), en el video y en las fotos, para ver y medir cada parte donde va.
+   Los pesos de los modelos van guardados en 16 bits (la mitad de tamaño) y se pasan a 32 al cargar: el cálculo es el
+   mismo (modelo/vision/pesos16.py).
+   Vision.motor(nombre) → {modo, R, W, H, G, n, correr(entrada, clases)}. La entrada es {bmp} (un ImageBitmap
+   del cuadro ya recortado y reducido a W×H: el worker lo lee sin pasar por la página) o {px} (píxeles RGBA de W×H).
+   Los de pose devuelven {kp}: x, y, confianza por punto (x, y en fracciones de la entrada).
    Devuelve por clase COCO (1 persona, 21 vaca) la silueta en una rejilla G×G que cubre la entrada:
    {ok, score, area, caja:[x0,y0,x1,y1], filas (ancho por fila), mask (Uint8 G×G), cont (contorno: x,y,x,y… en celdas)}.
    Los archivos están en assets/vision/ (solo en la app beta); en Android se sirven desde https://rumentis.local/. */
@@ -18,8 +23,24 @@ const abs=f=>new URL(f,new URL(BASE,location.href)).href;
 const NUC=(navigator.hardwareConcurrency||4);
 // copias del modelo rápido en paralelo: 3 en teléfonos de 8 núcleos, 2 con 6, 1 con menos (la cámara da ~30 cuadros/s)
 // rapidoP: el de personas (v2, con refinamiento a 1/4: bordes más finos); rapido: el de ganado (v1, mejor en vacas)
+/* pose (puntos del cuerpo, como un traje de captura de movimiento), de OpenMMLab (Apache 2.0):
+   cuerpo: RTMW (cuerpo completo, 133 puntos: cuerpo, pies, cara, manos y dedos), en el video y en las fotos;
+   animal: RTMPose de animales (AP-10K, 17 puntos). La entrada es un recorte alrededor del sujeto de W×H; devuelve los
+   puntos en fracciones del recorte. */
 const MODELOS={rapido:{archivo:'silueta.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},
-  rapidoP:{archivo:'silueta_p.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1}};
+  rapidoP:{archivo:'silueta_p.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1},
+  cuerpo:{archivo:'cuerpo.onnx',W:192,H:256,tipo:'pose',n:1},
+  animal:{archivo:'animal_m.onnx',W:256,H:256,tipo:'pose',n:1}};
+for(const k in MODELOS){const m=MODELOS[k];m.W=m.W||m.R;m.H=m.H||m.R;m.R=m.R||m.W;}
+/* los puntos y cómo se unen. Personas (COCO-WholeBody): 0 nariz, 1-2 ojos, 3-4 orejas, 5-6 hombros, 7-8 codos,
+   9-10 muñecas, 11-12 caderas, 13-14 rodillas, 15-16 tobillos (izquierda, derecha); 17-22 pies (dedo gordo, dedo
+   chico y talón de cada uno); 23-90 cara; 91-111 mano izquierda y 112-132 derecha (raíz y 4 puntos por dedo, del
+   pulgar al meñique). Animales (AP-10K): 0-1 ojos, 2 nariz, 3 cuello, 4 base de la cola, 5-7 hombro, codo y pata
+   delantera izquierdos, 8-10 los derechos, 11-13 cadera, rodilla y pata trasera izquierdas, 14-16 las derechas. */
+const mano=r=>[0,1,2,3,4].flatMap(d=>[[r,r+1+4*d],[r+1+4*d,r+2+4*d],[r+2+4*d,r+3+4*d],[r+3+4*d,r+4+4*d]]);
+const ESQUELETO={persona:[[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16],[0,5],[0,6],
+    [15,17],[15,18],[15,19],[16,20],[16,21],[16,22],...mano(91),...mano(112)],
+  animal:[[0,2],[1,2],[2,3],[3,4],[3,5],[5,6],[6,7],[3,8],[8,9],[9,10],[4,11],[11,12],[12,13],[4,14],[14,15],[15,16]]};
 
 /* El núcleo: preparar el cuadro y leer lo que devuelve el modelo. Se usa igual en la página y dentro del worker
    (se pasa como texto), así que no puede tocar nada de afuera. */
@@ -28,7 +49,7 @@ function NUCLEO(){
   // RF-DETR: si no hay vaca, otros animales grandes con forma parecida (a veces confunde un bovino con caballo u oveja)
   const PARECIDOS={21:[19,20,22,23,24,25]},SEM={1:1,21:2};   // clase COCO → canal del modelo rápido
   const sig=x=>1/(1+Math.exp(-x));
-  function prep(d,R){const n=R*R,f=new Float32Array(3*n);
+  function prep(d,n){const f=new Float32Array(3*n);
     for(let i=0;i<n;i++){const p=i*4;f[i]=(d[p]/255-MEAN[0])/STD[0];f[n+i]=(d[p+1]/255-MEAN[1])/STD[1];f[2*n+i]=(d[p+2]/255-MEAN[2])/STD[2];}
     return f;}
   /* el borde de la silueta como una línea: se recorre el contorno exterior (vecinos de Moore, en sentido horario) y se
@@ -69,8 +90,16 @@ function NUCLEO(){
     return {ok:mejorN>G*G*.004,area:mejorN,caja:[x0,y0,x1+1,y1+1],filas,mask,conf:s/mejorN,cont:contorno(mask,G)};
   }
   // un cuadro: la silueta de cada clase pedida
+  /* pose (SimCC): por punto, dos curvas (x e y, a medio píxel de la entrada); el máximo de cada una con una parábola
+     alrededor (fracción de píxel). Puntos en fracciones de la entrada y su confianza (la menor de las dos). */
+  function pico(v,o,n){let j=0,m=-1e9;for(let i=0;i<n;i++)if(v[o+i]>m){m=v[o+i];j=i;}let x=j;
+    if(j>0&&j<n-1){const a=v[o+j-1],c=v[o+j+1],d=a-2*m+c;if(d<0)x+=.5*(a-c)/d;}return [x,m];}
+  function puntos(out){const X=out.simcc_x,Y=out.simcc_y,K=X.dims[1],nx=X.dims[2],ny=Y.dims[2],kp=new Float32Array(K*3);
+    for(let k=0;k<K;k++){const [x,cx]=pico(X.data,k*nx,nx),[y,cy]=pico(Y.data,k*ny,ny);kp[3*k]=(x+.5)/nx;kp[3*k+1]=(y+.5)/ny;kp[3*k+2]=Math.min(cx,cy);}
+    return kp;}
   function cuadro(out,tipo,clases,G){
     const r={G,suj:{}};
+    if(tipo==='pose'){r.kp=puntos(out);return r;}
     if(tipo==='sem'){
       const o=out.logits,[,C,h,w]=o.dims,L=o.data,n=h*w;
       for(const cl of clases){const k=SEM[cl],M=new Float32Array(n);
@@ -86,8 +115,8 @@ function NUCLEO(){
     }
     return r;
   }
-  const transferir=r=>{const t=[];for(const k in r.suj){const x=r.suj[k];if(x.mask)t.push(x.mask.buffer,x.filas.buffer,x.cont.buffer);}return t;};
-  return {prep,silueta,contorno,cuadro,sig,transferir};
+  const transferir=r=>{const t=r.kp?[r.kp.buffer]:[];for(const k in r.suj){const x=r.suj[k];if(x.mask)t.push(x.mask.buffer,x.filas.buffer,x.cont.buffer);}return t;};
+  return {prep,silueta,contorno,cuadro,sig,transferir,puntos};
 }
 const N=NUCLEO();
 
@@ -106,9 +135,9 @@ self.onmessage=async e=>{const m=e.data;
       self.postMessage({t:'listo',bmp:typeof OffscreenCanvas!=='undefined'});
     }else if(m.t==='run'){
       const t0=performance.now();let px=m.px?new Uint8ClampedArray(m.px):null;
-      if(m.bmp){if(!oc){oc=new OffscreenCanvas(cfg.R,cfg.R);ox=oc.getContext('2d',{willReadFrequently:true});}
-        ox.drawImage(m.bmp,0,0,cfg.R,cfg.R);m.bmp.close();px=ox.getImageData(0,0,cfg.R,cfg.R).data;}
-      const out=await s.run({input:new o.Tensor('float32',N.prep(px,cfg.R),[1,3,cfg.R,cfg.R])});
+      if(m.bmp){if(!oc){oc=new OffscreenCanvas(cfg.W,cfg.H);ox=oc.getContext('2d',{willReadFrequently:true});}
+        ox.drawImage(m.bmp,0,0,cfg.W,cfg.H);m.bmp.close();px=ox.getImageData(0,0,cfg.W,cfg.H).data;}
+      const out=await s.run({input:new o.Tensor('float32',N.prep(px,cfg.W*cfg.H),[1,3,cfg.H,cfg.W])});
       const r=N.cuadro(out,cfg.tipo,m.clases,cfg.G);r.t='res';r.id=m.id;r.ms=performance.now()-t0;
       self.postMessage(r,N.transferir(r));
     }
@@ -148,24 +177,24 @@ function motor(nombre='rapido'){
     }catch(e){console.warn('Visión en la página (sin worker):',e&&e.message);}
     if(!ws.length){const o=await ort();ses=await o.InferenceSession.create(new Uint8Array(await bajar(cfg.archivo)),{executionProviders:['wasm'],graphOptimizationLevel:'all'});}
     else if(cfg.n===1)delete bytesP[cfg.archivo];   // el modelo ya vive en el worker
-    let id=0;const cv=document.createElement('canvas');cv.width=cv.height=cfg.R;const cx=cv.getContext('2d',{willReadFrequently:true});
+    let id=0;const cv=document.createElement('canvas');cv.width=cfg.W;cv.height=cfg.H;const cx=cv.getContext('2d',{willReadFrequently:true});
     // en la página: el ImageBitmap se pasa a píxeles aquí
-    const pixeles=e=>{if(e.px)return e.px;cx.drawImage(e.bmp,0,0,cfg.R,cfg.R);e.bmp.close&&e.bmp.close();return cx.getImageData(0,0,cfg.R,cfg.R).data;};
+    const pixeles=e=>{if(e.px)return e.px;cx.drawImage(e.bmp,0,0,cfg.W,cfg.H);e.bmp.close&&e.bmp.close();return cx.getImageData(0,0,cfg.W,cfg.H).data;};
     function correr(e,clases){
       if(ws.length){const x=ws.reduce((a,b)=>b.esperan.size<a.esperan.size?b:a);
         if(e.bmp&&!x.bmp)e={px:pixeles(e)};
         return new Promise((ok,mal)=>{const k=++id;x.esperan.set(k,{ok,mal});
           if(e.bmp)x.w.postMessage({t:'run',id:k,bmp:e.bmp,clases},[e.bmp]);else x.w.postMessage({t:'run',id:k,px:e.px.buffer,clases},[e.px.buffer]);});}
       return (async()=>{const o=await ort(),t0=performance.now(),px=pixeles(e);
-        const out=await ses.run({input:new o.Tensor('float32',N.prep(px,cfg.R),[1,3,cfg.R,cfg.R])});
+        const out=await ses.run({input:new o.Tensor('float32',N.prep(px,cfg.W*cfg.H),[1,3,cfg.H,cfg.W])});
         const r=N.cuadro(out,cfg.tipo,clases,cfg.G);r.ms=performance.now()-t0;return r;})();
     }
-    return {modo,R:cfg.R,G:cfg.G,get n(){return Math.max(1,ws.length);},correr};
+    return {modo,R:cfg.R,W:cfg.W,H:cfg.H,G:cfg.G,get n(){return Math.max(1,ws.length);},correr};
   })();
   motores[nombre]=p;p.catch(()=>{delete motores[nombre];});
   return p;
 }
-window.Vision={motor,BASE,MODELOS,silueta:N.silueta,contorno:N.contorno,
+window.Vision={motor,BASE,MODELOS,ESQUELETO,silueta:N.silueta,contorno:N.contorno,puntos:N.puntos,
   // clases COCO que usa la app
   PERSONA:1,VACA:21};
 })();

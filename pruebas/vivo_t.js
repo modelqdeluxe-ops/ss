@@ -2,8 +2,9 @@
 // de COCO: una persona lejos (debe pedir "Acércate"), de frente y de costado; y una vaca de costado y de espaldas con
 // una persona al lado como referencia. Comprueba que las fotos se tomen solas, que las medidas en cm salgan cerca de
 // las de la escena y que la calibración con báscula ajuste el peso.
-// Usa 8112 con silueta.onnx, seg.onnx, ort.bundle.js, el .wasm y las fotos: frente.jpg (COCO 000000223959),
-// lejos.jpg (000000295478), lado.jpg (000000090062) y atras.jpg (000000467776). SIN_WORKER=1 prueba sin Web Worker;
+// Usa 8112 con los modelos (silueta, silueta_p, seg, cuerpo, animal_m), ort.bundle.js, el .wasm y las fotos: frente.jpg
+// (COCO 000000223959), lejos.jpg (000000295478), perfil.jpg (000000438907, de perfil), lado.jpg (000000090062) y
+// atras.jpg (000000467776). SIN_WORKER=1 prueba sin Web Worker;
 // NUCLEOS=8 simula un teléfono con 8 núcleos (dos workers del modelo rápido).
 const {chromium}=require('playwright');const fs=require('fs');const assert=require('assert');
 const CFG0=fs.readFileSync('/home/user/ss/app/assets/config.js','utf8');
@@ -21,7 +22,7 @@ const DOS=/2 de 2|2 of 2/;
  await p.evaluate(async()=>{
    const carga=async f=>{const im=new Image();im.crossOrigin='anonymous';im.src='http://127.0.0.1:8112/'+f;await im.decode();return im;};
    const F={frente:{im:await carga('frente.jpg'),bb:[142,29,175,590]},lejos:{im:await carga('lejos.jpg'),bb:[152,36,196,579]},
-     lado:{im:await carga('lado.jpg'),bb:[60,127,359,269]},atras:{im:await carga('atras.jpg'),bb:[269,81,169,299]}};
+     lado:{im:await carga('lado.jpg'),bb:[60,127,359,269]},perfil:{im:await carga('perfil.jpg'),bb:[49,164,80,327]},atras:{im:await carga('atras.jpg'),bb:[269,81,169,299]}};
    const V=document.createElement('canvas');V.width=720;V.height=960;const Hz=document.createElement('canvas');Hz.width=960;Hz.height=720;
    window.__esc={c:'v',cosas:[]};
    function pintar(){const e=window.__esc,c=e.c==='v'?V:Hz,x=c.getContext('2d');x.fillStyle='#c9c3b8';x.fillRect(0,0,c.width,c.height);
@@ -41,7 +42,7 @@ const DOS=/2 de 2|2 of 2/;
  await p.screenshot({path:'vivo_pag.png',fullPage:true});
 
  /* ---------- personas: 170 cm; en la escena la persona mide 0.7 del alto ---------- */
- const PF={f:'frente',x:.45,y:.85,h:.7*960},PC={...PF,sx:.55};
+ const PF={f:'frente',x:.45,y:.85,h:.7*960},PC={f:'perfil',x:.45,y:.85,h:.7*960,sx:.85};
  await esc('v',[{f:'lejos',x:.45,y:.7,h:.38*960}]);
  const t0=Date.now();await p.click('[data-act="pcVivo"]');
  await p.waitForSelector('#sheet form[data-form="pcAlto"]');await p.fill('#sheet [name=alto]','170');await p.click('#sheet button[type=submit]');
@@ -53,7 +54,8 @@ const DOS=/2 de 2|2 of 2/;
  const pos1=await p.$eval('.cv-pos',e=>({v:!e.hidden,t:e.lastChild.textContent}));console.log('posición lejos',pos1.t);assert.ok(pos1.v&&parseInt(pos1.t)<90,'indicador de posición');assert.ok(!await p.$('.cv-chip[data-k="ref"]'),'sin referencia en personas');
  await p.screenshot({path:'vivo_lejos.png'});
  await esc('v',[PF]);
- await p.waitForFunction(()=>document.querySelector('.cv')?.dataset.estado==='verde',null,{timeout:60000});await p.screenshot({path:'vivo_frente.png'});
+ await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.puntos||0)>=100,null,{timeout:60000});
+ console.log('puntos del cuerpo en vivo',await p.$eval('.cv',e=>e.dataset.puntos));await p.screenshot({path:'vivo_frente.png'});
  const t1=Date.now();await paso2();
  console.log('frente capturada',Date.now()-t0,'ms · de verde a foto',Date.now()-t1,'ms');
  await p.waitForFunction(()=>!!document.querySelector('.cv-chip[data-k="ang"]')?.dataset.s,null,{timeout:30000});
@@ -64,31 +66,35 @@ const DOS=/2 de 2|2 of 2/;
  assert.ok(await p.$('#sheet details.pc-exp'),'explica el modelo');assert.ok(await p.$('.cv-firma')===null,'la cámara se cerró');
  let txt=await leer();await p.screenshot({path:'vivo_res.png'});
  assert.ok(!await p.$('dialog.cv'),'la cámara se cierra');assert.equal(await p.$$eval('#sheet .pc-caps img',e=>e.length),2,'dos fotos');
- const litros=num(txt,/([\d.,]+) L\s*(volumen|volume)/),kgP=await p.evaluate(()=>PesoCam.modeloV('persona'));
- console.log('volumen',litros,'L');assert.ok(litros>35&&litros<130,'volumen de una persona');
+ const U=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,L:r.L,dims:r.dims,puntos:r.puntos,limpia:r.limpia,topes:r.topes,v:r.v};});
+ console.log('modelo v3',JSON.stringify(U));assert.equal(U.v,3);assert.ok(U.puntos,'puntos del cuerpo en las dos fotos');
+ assert.ok(U.pred>35&&U.pred<130,'peso del modelo de una persona');assert.ok(U.L>35&&U.L<130,'volumen de una persona');
+ assert.ok(U.dims.bid>30&&U.dims.bid<60&&U.dims.th>35&&U.dims.th<80,'medidas de una persona');
  assert.ok(!/modelo rápido|fast model|modelo rápido/.test(txt),'medida con el modelo preciso');
  // calibración: "la báscula dice 72 kg" dos veces → el estimado se ajusta
+ // (el peso se escribe en la unidad de la app: libras o kilos según el idioma)
+ const LB=await p.evaluate(()=>UW()==='lb'?2.20462:1);
  const kgs=[];
  for(let i=0;i<2;i++){await p.click('#sheet [data-act="pcCalRes"]');await p.waitForSelector('#sheet form[data-form="pcCal"]');
-   await p.fill('#sheet [name=kg]',String(Math.round(72*2.20462)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);
+   await p.fill('#sheet [name=kg]',String(Math.round(72*LB)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);
    kgs.push(await p.evaluate(()=>PesoCam.modeloV('persona')));console.log('modelo',JSON.stringify(kgs[i]));
    if(i===0){await esc('v',[PF]);await p.click('[data-act="pcVivo"]');await paso2();await esc('v',[PC]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});}}
  assert.equal(kgs[1].n,2);
- const V=await p.evaluate(()=>PesoCam.REG().filter(c=>c.modo==='persona'&&c.real>0).map(c=>c.L));
+ const V=await p.evaluate(()=>PesoCam.REG().filter(c=>c.modo==='persona'&&c.real>0).map(c=>c.pred));
  const k2=await p.evaluate(V=>{const m=PesoCam.modeloV('persona');return m.k*Math.pow(V,m.b);},V[1]);console.log('calibrado',k2);assert.ok(Math.abs(k2-72)<4,'se ajusta a la báscula');
  await p.screenshot({path:'vivo_cal.png',fullPage:true});
  // repetibilidad: la misma persona un poco movida y a otra distancia cada vez; el volumen casi no debe cambiar
  const vols=[];
  for(const [dx,k] of [[-.06,.66],[.04,.74],[0,.8]]){const F2={...PF,x:PF.x+dx,h:k*960};await esc('v',[F2]);await p.click('[data-act="pcVivo"]');await paso2();
-   await esc('v',[{...F2,sx:.55}]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});await p.waitForTimeout(300);
-   vols.push(num(await p.$eval('#sheet',e=>e.textContent.replace(/\s+/g,' ')),/([\d.,]+) L\s*(volumen|volume)/));await p.click('#sheet [data-act="cerrar"]');await p.waitForTimeout(300);}
+   await esc('v',[{...PC,x:F2.x,h:F2.h}]);await p.waitForSelector('#sheet .pc-kg',{timeout:90000});await p.waitForTimeout(300);
+   vols.push(await p.evaluate(()=>PesoCam.REG().slice(-1)[0].pred));await p.click('#sheet [data-act="cerrar"]');await p.waitForTimeout(300);}
  const vm=vols.reduce((a,b)=>a+b,0)/vols.length,dv=Math.max(...vols.map(x=>Math.abs(x/vm-1)));
- console.log('repetibilidad',vols.join(' / '),'L · variación máx',(dv*100).toFixed(1),'%');assert.ok(dv<.06,'medición estable');
+ console.log('repetibilidad',vols.map(v=>v.toFixed(1)).join(' / '),'kg · variación máx',(dv*100).toFixed(1),'%');assert.ok(dv<.06,'medición estable');
  // laboratorio: registro, estadísticas, detalle, peso de báscula desde el registro y CSV
  await p.waitForSelector('.pc-lab .pc-tiles');const E=await p.evaluate(()=>{const e=PcLab.estad('persona');return {n:e.n,nReal:e.nReal,loo:e.loo,mape:e.mape,rep:e.rep,cvInt:e.cvInt,fps:e.fps,msP:e.msP};});
  console.log('laboratorio',JSON.stringify(E));assert.ok(E.n>=5&&E.nReal===2,'registro con báscula');assert.ok(E.rep<.05,'repetibilidad en el laboratorio');assert.ok(E.fps>0&&E.msP>0,'rendimiento registrado');
  await p.click('.pc-lab .pc-reg');await p.waitForSelector('#sheet .pc-det');await p.waitForFunction(()=>[...document.querySelectorAll('#sheet .pc-det-fotos img')].some(i=>!i.hidden&&i.src),null,{timeout:5000});await p.screenshot({path:'vivo_detalle.png'});
- await p.click('#sheet [data-act="pcRegReal"]');await p.fill('#sheet [name=kg]',String(Math.round(71*2.20462)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);
+ await p.click('#sheet [data-act="pcRegReal"]');await p.fill('#sheet [name=kg]',String(Math.round(71*LB)));await p.click('#sheet button[type=submit]');await p.waitForTimeout(400);
  assert.equal(await p.evaluate(()=>PcLab.estad('persona').nReal),3,'peso de báscula desde el laboratorio');
  const csv=await p.evaluate(async()=>{let t='';Documentos.enviar=async(n,b,m,ti,tipo)=>{t=tipo+'|'+n+'|'+new TextDecoder().decode(b);return true;};await ACTS.pcRegCsv();return t;});
  const lineas=csv.split('\n').filter(Boolean);console.log('csv',lineas[0].slice(0,60),'…',lineas.length-1,'filas');assert.ok(csv.startsWith('text/csv|')&&lineas.length-1===E.n,'CSV');
@@ -106,6 +112,7 @@ const DOS=/2 de 2|2 of 2/;
  const m2=await p.$eval('.cv-msg',e=>e.textContent);console.log('sin referencia:',m2);assert.ok(/referencia|reference|referência/.test(m2),'pide la persona de referencia');
  await esc('h',[LADO,REF1]);
  await p.waitForFunction(()=>document.querySelector('.cv')?.dataset.estado==='verde',null,{timeout:60000});await p.screenshot({path:'vivo_vaca.png'});
+ await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.puntos||0)>=8,null,{timeout:60000});console.log('puntos de la vaca',await p.$eval('.cv',e=>e.dataset.puntos));
  await paso2();await esc('h',[ATR,REF2]);
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});txt=await leer();await p.screenshot({path:'vivo_vaca_res.png'});
  const largo=num(txt,/([\d.,]+) cm\s*(largo|length|comprimento)/),altoV=num(txt,/([\d.,]+) cm\s*(alto|height|altura)(?=[\d\s]|$)/);

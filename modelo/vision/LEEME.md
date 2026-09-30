@@ -5,8 +5,10 @@ variante es beta). Todo corre en el teléfono, sin internet.
 
 | Archivo | Qué es | Licencia |
 |---|---|---|
-| `silueta.onnx` | Modelo **rápido**, para cada cuadro del video. LR-ASPP MobileNetV3-Large de torchvision (preentrenado en COCO con clases VOC) afinado para 3 clases: 0 fondo, 1 persona, 2 vaca. Entrada 256×256, salida `logits` [1,3,32,32] (1/8; la app la agranda y traza el contorno). 13 MB, fp32. | BSD-3 (`LICENCIA-torchvision.txt`); fotos de entrenamiento: COCO (CC BY 4.0) |
-| `silueta_p.onnx` | Modelo **rápido de personas** (v3): el mismo más un refinamiento a 1/4 de la entrada con los rasgos de esa resolución (bordes más finos); salida `logits` [1,3,64,64]. Afinado con 24,135 fotos de COCO, entre ellas 4,000 escenas de casa (personas con cama, sillón, silla, mesa, tv…) al doble de peso (`entrenar_silueta2.py`, `datos_casa.py`). 13 MB. | BSD-3; COCO (CC BY 4.0) |
+| `silueta.onnx` | Modelo **rápido**, para cada cuadro del video. LR-ASPP MobileNetV3-Large de torchvision (preentrenado en COCO con clases VOC) afinado para 3 clases: 0 fondo, 1 persona, 2 vaca. Entrada 256×256, salida `logits` [1,3,32,32] (1/8; la app la agranda y traza el contorno). 6.5 MB (pesos en 16 bits). | BSD-3 (`LICENCIA-torchvision.txt`); fotos de entrenamiento: COCO (CC BY 4.0) |
+| `silueta_p.onnx` | Modelo **rápido de personas** (v3): el mismo más un refinamiento a 1/4 de la entrada con los rasgos de esa resolución (bordes más finos); salida `logits` [1,3,64,64]. Afinado con 24,135 fotos de COCO, entre ellas 4,000 escenas de casa (personas con cama, sillón, silla, mesa, tv…) al doble de peso (`entrenar_silueta2.py`, `datos_casa.py`). 6.5 MB (pesos en 16 bits). | BSD-3; COCO (CC BY 4.0) |
+| `cuerpo.onnx` | **Puntos del cuerpo** de personas: RTMW (`rtmw-dw-m-s_simcc-cocktail14_270e-256x192`, OpenMMLab), 133 puntos de COCO-WholeBody (cuerpo, pies, cara, manos y dedos). Entrada `input` [1,3,256,192] (un recorte alrededor de la persona con 25 % de margen), salidas SimCC `simcc_x` [1,133,384] y `simcc_y` [1,133,512] (el máximo de cada una, a medio píxel, con una parábola alrededor). 31 MB (pesos en 16 bits). | Apache 2.0 (`LICENCIA-mmpose.txt`) |
+| `animal_m.onnx` | **Puntos del cuerpo** de animales: RTMPose-m AP-10K (OpenMMLab), 17 puntos (ojos, nariz, cuello, base de la cola y hombro/codo/pata y cadera/rodilla/pata de cada lado). Entrada [1,3,256,256], salidas SimCC [1,17,512]. 27 MB (pesos en 16 bits). | Apache 2.0 (`LICENCIA-mmpose.txt`) |
 | `seg.onnx` | Modelo **preciso**, solo para las fotos capturadas. RF-DETR Seg Nano (Roboflow), preentrenado en COCO, exportado a ONNX (opset 17, entrada 312×312) y cuantizado a int8 (pesos) con `onnxruntime.quantization.quantize_dynamic`. 33 MB. Máscaras casi idénticas al original (IoU ≈ 0.99). | Apache 2.0 (`LICENCIA-rf-detr.txt`) |
 | `ort.bundle.js`, `ort-wasm-simd-threaded.wasm` | onnxruntime-web 1.30.0 (solo WebAssembly), `ort.wasm.bundle.min.mjs` con otro nombre para que el WebView lo entregue como JavaScript. | MIT (`LICENCIA-onnxruntime.txt`) |
 
@@ -47,6 +49,30 @@ val2017; `casa.py val`): el fondo que más confunde al modelo rápido. Error de 
 completo: v2 19 % / 38 %; **v3 17 % / 31 %**; RF-DETR 9 % (sujeto grande). IoU con el sujeto grande: v2 0.77, v3 0.78,
 RF-DETR 0.87. Sesgo de tamaño (mediana, COCO): RF-DETR −0.5 % de área en personas; los rápidos 0 %: los modelos no
 inflan la silueta. Subir el umbral de la silueta del rápido no ayuda (0 es el mejor en COCO).
+
+## Puntos del cuerpo (pose)
+
+Medido contra los puntos marcados a mano de COCO val2017 (233 personas grandes de `ev/`, error en fracción del alto de
+la persona; 17 puntos del cuerpo):
+
+| Modelo | Tiempo (CPU, 1 hilo) | Error medio | Error mediano | Puntos a < 5 % |
+|---|---|---|---|---|
+| RTMPose-t (17 puntos) | 9 ms | 3.0 % | 1.6 % | 87 % |
+| RTMPose-m (17 puntos) | 35 ms | 2.2 % | 1.3 % | 92 % |
+| **RTMW-m, 133 puntos (`cuerpo.onnx`, el de la app)** | 39 ms (170 ms en WASM) | 2.8 % | 1.4 % | — |
+| RTMW-l, 133 puntos | 133 ms | 2.1 % | 1.2 % | — |
+
+La app usa RTMW-m: es el único con manos y dedos que cabe en el teléfono (el l pesa 229 MB). Cuantizar a int8 los
+estropea (error de 40–55 %): los pesos van en 16 bits con `pesos16.py` (mismo resultado, la mitad de tamaño). Afinar el
+borde de la silueta del preciso (medirla en dos mitades a más resolución, o un filtro guiado con la imagen) no mejoró
+contra COCO: IoU 0.881 → 0.869 y 0.880.
+
+```
+curl -O https://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-m-s_simcc-cocktail14_270e-256x192_20231122.zip
+curl -O https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/rtmpose-m_simcc-ap10k_pt-aic-coco_210e-256x256-7a041aa1_20230206.zip
+python3 pesos16.py <rtmw>/end2end.onnx cuerpo.onnx && python3 pesos16.py <ap10k>/end2end.onnx animal_m.onnx
+python3 pesos16.py silueta_fp32.onnx silueta.onnx      # (igual con silueta_p)
+```
 
 ## Volver a entrenar el modelo rápido
 

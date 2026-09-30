@@ -27,8 +27,10 @@ function estad(modo){
   let r2=NaN;if(con.length>=3){const y=con.map(x=>x.real),m=prom(y),sst=y.reduce((s,v)=>s+(v-m)**2,0);if(desv(y)/m>=.05)r2=1-con.reduce((s,x)=>s+(x.kg-x.real)**2,0)/sst;}
   // repetibilidad: grupos de mediciones seguidas
   const ses=[];let cur=[];for(const x of R){if(cur.length&&x.ts-cur[cur.length-1].ts>15*60e3){ses.push(cur);cur=[];}cur.push(x);}if(cur.length)ses.push(cur);
-  // (con el volumen: no cambia al calibrar, así se ve solo cuánto varía la medición)
-  const cvs=ses.filter(g=>g.length>=2).map(g=>desv(g.map(x=>x.L))/prom(g.map(x=>x.L))),sds=ses.filter(g=>g.length>=2).map(g=>desv(g.map(x=>x.L)));
+  // (con la base del peso antes de calibrar: el modelo de ANSUR II en personas v3, el volumen en lo demás; no cambia
+  // al calibrar, así se ve solo cuánto varía la medición)
+  const bs=x=>x.modo==='persona'&&x.pred>0?x.pred:x.L;
+  const cvs=ses.filter(g=>g.length>=2).map(g=>desv(g.map(bs))/prom(g.map(bs))),sds=ses.filter(g=>g.length>=2).map(g=>desv(g.map(bs)));
   return {R,con,n:R.length,nReal:con.length,nCal:C.length,mape:prom(e.map(Math.abs)),mae:prom(con.map(x=>Math.abs(x.kg-x.real))),sesgo:prom(e),sdErr:desv(e),
     rmse:con.length?Math.sqrt(prom(con.map(x=>(x.kg-x.real)**2))):NaN,r2,loo:prom(loo.map(Math.abs)),looSesgo:prom(loo),fab:prom(fab.map(Math.abs)),
     rep:prom(cvs),repL:prom(sds),nSes:cvs.length,cvInt:prom(R.map(x=>x.cv).filter(esNum)),fps:prom(R.map(x=>x.fps).filter(v=>v>0)),
@@ -75,7 +77,7 @@ function html(modo){
     <p class="pc-lab-sub">Datos de desarrollador: cada medición queda registrada aquí. Anota el peso de báscula en las que puedas para medir el error del modelo.</p>
     ${E.n?`<div class="pc-tiles">${tiles.map(([v,t])=>`<div><b data-no-tr>${v}</b><span>${t}</span></div>`).join('')}</div>
       ${dispersion(E.con)}${serie(E.R)}
-      <p class="pc-lab-mod" data-no-tr>v${P.VERSION_MODELO} · k = ${nf(W(m.k),3)} ${UW()}/L · b = ${nf(m.b,2)}${per?` · f ${nf(P.FORMA.tronco,2)} / ${nf(P.FORMA.cabeza,3)}`:''}</p>
+      <p class="pc-lab-mod" data-no-tr>v${P.VERSION_MODELO} · k = ${per?nf(m.k,3):`${nf(W(m.k),3)} ${UW()}/L`} · b = ${nf(m.b,2)}${per?` · ANSUR II n = ${P.ANSUR.n}`:''}</p>
       <div class="rows">${filas}</div>
       <div class="pc-acts"><button type="button" class="btn" data-act="pcRegCsv">Exportar CSV</button><button type="button" class="btn" data-act="pcRegLimpiar">Borrar registro</button></div>`
     :`<p class="empty">Todavía no hay mediciones.</p>`}</div></section>`;
@@ -90,11 +92,12 @@ ACTS.pcRegVer=el=>{
     <div class="pc-caps pc-det-fotos">${[0,1].map(i=>`<figure><img data-foto="pc-${x.id}-${i}" alt="" hidden></figure>`).join('')}</div>
     ${fila('Peso estimado',wtxt(x.kg,1))}${fila('Peso de báscula',x.real>0?wtxt(x.real,1):'—')}${er!=null?fila('Error',pcs(er)):''}${fila('Rango',esNum(x.err)?'±'+pc(x.err):'')}
     ${fila('Volumen',`${n2(x.L,1)} L`)}${x.modo==='persona'?fila('Por partes',`${n2(pa.cabeza,1)} / ${n2(pa.tronco,1)} / ${n2(pa.brazos,1)} / ${n2(pa.piernas,1)} L`):''}
-    ${x.modo==='persona'?fila('Estatura',`${x.alto} cm`)+fila('Hombros',`${n2(x.anchoF,1)} cm`)+fila('Pecho de fondo',`${n2(x.prof,1)} cm`)+fila('Fondo / ancho del pecho',n2(x.fondoAncho,2))+fila('Brazos',x.brazosPegados?'pegados (estimados)':'separados')+fila('Filas recortadas (tope anatómico)',esNum(x.topadas)?pc(x.topadas):'')+fila('IMC',n2(x.imc,1))+fila('Ropa',x.ropa&&P.ROPA[x.ropa]?P.ROPA[x.ropa].t:'')
+    ${x.modo==='persona'&&x.dims?fila('Estatura',`${x.alto} cm`)+fila('Peso del modelo (sin calibrar)',wtxt(x.pred,1))+fila('Hombros',`${n2(x.dims.bid,1)} cm`)+fila('Pecho (ancho × fondo)',`${n2(x.dims.cb,1)} × ${n2(x.dims.cd,1)} cm`)+fila('Cintura (ancho × fondo)',`${n2(x.dims.wb,1)} × ${n2(x.dims.wd,1)} cm`)+fila('Cadera · glúteos',`${n2(x.dims.hb,1)} · ${n2(x.dims.bd,1)} cm`)+fila('Contorno del muslo',`${n2(x.dims.th,1)} cm`)+fila('Puntos del cuerpo',x.puntos?'sí':'no')+fila('Silueta limpiada',esNum(x.limpia)?pc(x.limpia):'')+fila('Medidas ajustadas al límite',x.topes&&x.topes.length?x.topes.join(', '):'ninguna')+fila('IMC',n2(x.imc,1))+fila('Ropa',x.ropa&&P.ROPA[x.ropa]?P.ROPA[x.ropa].t:'')
+      :x.modo==='persona'?fila('Estatura',`${x.alto} cm`)+fila('Hombros',`${n2(x.anchoF,1)} cm`)+fila('Pecho de fondo',`${n2(x.prof,1)} cm`)+fila('Fondo / ancho del pecho',n2(x.fondoAncho,2))+fila('Brazos',x.brazosPegados?'pegados (estimados)':'separados')+fila('Filas recortadas (tope anatómico)',esNum(x.topadas)?pc(x.topadas):'')+fila('IMC',n2(x.imc,1))+fila('Ropa',x.ropa&&P.ROPA[x.ropa]?P.ROPA[x.ropa].t:'')
       :fila('Largo',`${n2(x.largo,1)} cm`)+fila('Alto',`${n2(x.altoAnimal,1)} cm`)+fila('Ancho',`${n2(x.ancho,1)} cm`)+fila('Persona de referencia',`${x.alto} cm`)}
-    ${fila('Modelo',`v${x.v} · k ${n2(W(x.k),3)} ${UW()}/L · b ${n2(x.b,2)} · ${x.ncal||0} cal.`)}${fila('Dispersión entre fotos',`${pc(x.cv)} · ${x.comb||1} comb.`)}
+    ${fila('Modelo',`v${x.v} · k ${x.modo==='persona'&&x.v>=3?n2(x.k,3):`${n2(W(x.k),3)} ${UW()}/L`} · b ${n2(x.b,2)} · ${x.ncal||0} cal.`)}${fila('Dispersión entre fotos',`${pc(x.cv)} · ${x.comb||1} comb.`)}
     ${fila('Seguridad',esNum(x.score)?`${Math.round(x.score*100)} %`:'')}${fila('Fuente',x.fuente==='preciso'?'RF-DETR':'LR-ASPP')}${fila('Toma manual',x.manual?'sí':'no')}
-    ${fila('Cuadros/s',n2(x.fps,1))}${fila('Modelo rápido',esNum(x.msR)?`${nf(x.msR)} ms`:'')}${fila('Modelo preciso',esNum(x.msP)?`${nf(x.msP)} ms`:'')}${fila('Duración',esNum(x.seg)?`${nf(x.seg,1)} s`:'')}${fila('Motor',x.motor)}
+    ${fila('Cuadros/s',n2(x.fps,1))}${fila('Modelo rápido',esNum(x.msR)?`${nf(x.msR)} ms`:'')}${fila('Modelo preciso',esNum(x.msP)?`${nf(x.msP)} ms`:'')}${fila('Modelo de pose',esNum(x.msPose)?`${nf(x.msPose)} ms`:'')}${fila('Duración',esNum(x.seg)?`${nf(x.seg,1)} s`:'')}${fila('Motor',x.motor)}
     </div><div class="sh-foot"><button type="button" class="btn danger" data-act="pcRegBorrar" data-id="${x.id}" style="flex:1">Borrar</button><button type="button" class="btn pri" data-act="pcRegReal" data-id="${x.id}" style="flex:1.6">${x.real>0?'Cambiar peso de báscula':'Anotar peso de báscula'}</button></div>`);
 };
 let REAL=null;
@@ -108,11 +111,13 @@ ACTS.pcRegBorrar=el=>{const id=el.dataset.id;confirmar('¿Borrar esta medición?
 ACTS.pcRegLimpiar=()=>{const modo=UI.pc.modo;confirmar('¿Borrar el registro?','Se borran todas las mediciones de este modo, también su peso de báscula (la calibración).','Borrar',()=>{P.guardarPC({reg:P.REG().filter(x=>x.modo!==modo)});toast('Registro borrado');});};
 // todo el registro en CSV (una fila por medición; el peso en kg)
 const COLS=['id','fecha','hora','modo','version','litros','kg_estimado','kg_bascula','error_pct','rango_pct','cv_fotos_pct','combinaciones','k','b','calibraciones',
-  'estatura_ref_cm','ropa','hombros_cm','pecho_fondo_cm','fondo_ancho','brazos_pegados','filas_recortadas_pct','imc','largo_cm','alto_cm','ancho_cm','cabeza_l','tronco_l','brazos_l','piernas_l','seguridad','fuente','manual','fps','ms_rapido','ms_preciso','segundos','motor'];
+  'estatura_ref_cm','ropa','kg_modelo','hombros_cm','pecho_ancho_cm','pecho_fondo_cm','cintura_ancho_cm','cintura_fondo_cm','cadera_ancho_cm','gluteos_fondo_cm','muslo_contorno_cm',
+  'puntos','silueta_limpiada_pct','medidas_al_limite','fondo_ancho','brazos_pegados','filas_recortadas_pct','imc','largo_cm','alto_cm','ancho_cm','cabeza_l','tronco_l','brazos_l','piernas_l','seguridad','fuente','manual','fps','ms_rapido','ms_preciso','segundos','motor'];
 function csv(){
   const q=v=>v==null||(typeof v==='number'&&!isFinite(v))?'':typeof v==='number'?String(Math.round(v*1000)/1000):/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
-  const L=P.REG().map(x=>{const pa=x.partes||{},er=x.real>0?(x.kg-x.real)/x.real*100:null;
-    return [x.id,x.f,hora(x.ts),x.modo,x.v,x.L,x.kg,x.real,er,esNum(x.err)?x.err*100:null,esNum(x.cv)?x.cv*100:null,x.comb,x.k,x.b,x.ncal,x.alto,x.ropa,x.anchoF,x.prof,x.fondoAncho,x.modo==='persona'?(x.brazosPegados?1:0):null,esNum(x.topadas)?x.topadas*100:null,x.imc,
+  const L=P.REG().map(x=>{const pa=x.partes||{},er=x.real>0?(x.kg-x.real)/x.real*100:null,d=x.dims||{};
+    return [x.id,x.f,hora(x.ts),x.modo,x.v,x.L,x.kg,x.real,er,esNum(x.err)?x.err*100:null,esNum(x.cv)?x.cv*100:null,x.comb,x.k,x.b,x.ncal,x.alto,x.ropa,x.pred,
+      x.dims?d.bid:x.anchoF,d.cb,x.dims?d.cd:x.prof,d.wb,d.wd,d.hb,d.bd,d.th,x.puntos==null?null:x.puntos?1:0,esNum(x.limpia)?x.limpia*100:null,x.topes?x.topes.join(' '):null,x.fondoAncho,x.modo==='persona'?(x.brazosPegados?1:0):null,esNum(x.topadas)?x.topadas*100:null,x.imc,
       x.largo,x.altoAnimal,x.ancho,pa.cabeza,pa.tronco,pa.brazos,pa.piernas,x.score,x.fuente,x.manual?1:0,x.fps,x.msR,x.msP,x.seg,x.motor].map(q).join(',');});
   return [COLS.join(',')].concat(L).join('\n')+'\n';
 }

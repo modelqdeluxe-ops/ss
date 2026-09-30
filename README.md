@@ -152,18 +152,39 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   `OffscreenCanvas`; hay un cuadro en vuelo por worker del modelo rápido (tres workers en teléfonos con 8 núcleos, dos
   con 6); la cámara se pide a 30 cuadros/s (el techo real); y cuando ya encontró al sujeto el modelo mira solo esa zona (**seguimiento**, con histéresis para que el
   recorte no tiemble).
-- **Visión en el teléfono** (`app/assets/vision.js`), dos modelos en **Web Workers** armados desde un Blob (la página
+- **Puntos del cuerpo** (como un traje de captura de movimiento): sobre la silueta, en vivo y en las fotos, puntos
+  blancos que brillan y líneas finas: 133 en personas (cuerpo, pies, cara, manos y **dedos**; RTMW) y 17 en ganado
+  (AP-10K). En el video corren en su propio worker sobre un recorte alrededor de la silueta y, entre un resultado y el
+  siguiente, siguen la caja de la silueta (se mueven con el cuerpo a 60 cuadros/s). Con ellos:
+  - **la silueta se limpia**: se quita lo que queda lejos del esqueleto (suelo, cama, muebles pegados al cuerpo): cada
+    punto de la silueta debe quedar a menos de 13 % de la estatura del tronco, 9 % de la cabeza, 6.5 % de brazos y
+    piernas o 4 % de manos y pies (`limpiarSil` en camvivo.js);
+  - de perfil, los hombros deben verse casi uno sobre otro (separación ≤ 0.3 del largo del tronco);
+  - al medir, se sabe dónde están los brazos y las manos para no contarlos como tronco.
+- **Visión en el teléfono** (`app/assets/vision.js`), modelos en **Web Workers** armados desde un Blob (la página
   es `file://`; el worker recibe de la página onnxruntime-web, el `.wasm` y el modelo ya descargados):
-  - **rápido** `silueta.onnx` (ganado) y `silueta_p.onnx` (personas, v2 con refinamiento de bordes a 1/4), 13 MB cada
+  - **rápido** `silueta.onnx` (ganado) y `silueta_p.onnx` (personas, v3 con refinamiento de bordes a 1/4), 6.5 MB cada
     uno, entrada 256×256: LR-ASPP MobileNetV3 (torchvision, BSD-3) **afinado por Rumentis** para fondo / persona / vaca
     con fotos de COCO (`modelo/vision/entrenar_silueta.py` y `entrenar_silueta2.py`, 20,135 fotos). ~60 ms por cuadro
     en una PC. Da la silueta y su contorno (se traza el borde y se suaviza).
   - **preciso** `seg.onnx` (33 MB): RF-DETR Seg Nano (Roboflow, Apache 2.0), int8. Solo mide las fotos capturadas, en
     segundo plano mientras la persona se gira, sobre un **recorte alrededor del sujeto** (ve el cuerpo con más
     detalle). Si no encuentra al sujeto, queda la medida del rápido y la app lo avisa.
+  - **pose** `cuerpo.onnx` (31 MB; RTMW de OpenMMLab, Apache 2.0, 133 puntos, entrada 192×256, ~170 ms en una PC) y
+    `animal_m.onnx` (27 MB; RTMPose AP-10K, 17 puntos, 256×256).
+  Los pesos de los modelos rápidos y de pose van en 16 bits (`modelo/vision/pesos16.py`: la mitad de tamaño, mismo
+  resultado) y se pasan a 32 al cargar.
   Cada silueta se queda con la mancha más grande (no suma otra persona ni pedazos sueltos). Todo en el teléfono, sin
   internet. Tabla de velocidad y precisión en `modelo/vision/LEEME.md`.
-- **Peso por volumen** (`pesocam.js`, modelo v2): la escala en cm sale de la estatura (+2.5 cm de suela y pelo). Cada
+- **Peso de personas** (`pesocam.js`, modelo v3): una ley de potencias ajustada con **ANSUR II** (6,068 personas
+  pesadas en báscula y medidas a mano, dominio público; `modelo/peso/ajustar_peso.py`): ln peso = c0 + Σ ci · ln medida
+  con la estatura, el ancho de hombros (deltoides), el ancho y fondo del pecho y de la cintura, el ancho de la cadera,
+  el fondo de los glúteos y el contorno del muslo (elipse con el ancho de frente y el fondo de perfil). Validación
+  cruzada: error medio 2.5 % con medidas exactas y 3.1 % con 3 % de ruido por medida (el de una foto), sin sesgo. Cada
+  medida se toma a su altura en ANSUR II (fracción de la estatura) y los puntos del cuerpo quitan brazos y manos; una
+  medida fuera de lo humano (percentiles 0.1–99.9 con holgura) se lleva al límite y se avisa. peso = k · P^b con k = 1
+  y b = 1 de fábrica; la báscula los ajusta a la persona. El volumen (abajo) queda como comprobación.
+- **Peso por volumen** (`pesocam.js`; ganado, y en personas como comprobación): la escala en cm sale de la estatura (+2.5 cm de suela y pelo). Cada
   ángulo se captura con **2 fotos** (tomadas antes del pitido, aún quieto) y el modelo preciso mide todas; el volumen se
   calcula con cada par frente × costado (4 combinaciones) y se promedia; su dispersión (CV) entra en el rango. El
   cuerpo se corta en rebanadas:
@@ -189,13 +210,13 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   (mediana de kg/L); con 6 o más y volúmenes variados (≥ 15 %), también b, con Theil–Sen (robusto: una medición mala no
   arrastra el ajuste). Estadísticas: error esperado con **validación cruzada dejando una fuera**,
   error medio al medir (MAPE y MAE), sesgo, RMSE, R² (solo si los pesos de báscula varían ≥ 5 %), error del modelo de
-  fábrica, **repetibilidad** (CV del volumen en mediciones seguidas, < 15 min), dispersión entre fotos, cuadros/s y
+  fábrica, **repetibilidad** (CV del peso del modelo sin calibrar —o del volumen en ganado— en mediciones seguidas, < 15 min), dispersión entre fotos, cuadros/s y
   tiempo del modelo preciso. Gráficas de estimado contra báscula (franja ±5 %) y de las últimas 30 mediciones.
   Detalle de cada medición y exportación a **CSV**.
 - La cámara lleva la firma **Powered by Rumentis Labs** (y las fotos, "Rumentis Labs").
 - Las fotos de un lote se juntan en un **pesaje** (promedio y, si se indica, el peso de cada arete) que se guarda como
   cualquier otro, marcado `metodo:'camara'`.
-- Cómo se generó el modelo y sus licencias: `modelo/vision/LEEME.md`.
+- Cómo se generaron los modelos y sus licencias: `modelo/vision/LEEME.md`; el de peso de personas: `modelo/peso/`.
 
 ## Equipo
 

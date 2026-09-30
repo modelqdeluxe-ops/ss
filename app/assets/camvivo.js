@@ -68,7 +68,12 @@ function zonaSig(cajas,W,H,act){
 // la persona de referencia: completa, de pie y de buen tamaño en el cuadro
 function refOk(p,W,H){if(!p||!p.ok||p.score<REGLAS.score||p.cortada)return false;const c=p.n;
   return dentro(c,REGLAS.margen)&&c[3]-c[1]>=REGLAS.ref.alto&&((c[3]-c[1])*H)/((c[2]-c[0])*W)>=REGLAS.ref.forma;}
-function revisar(s,p,W,H,paso,prev,ref,conRef){
+/* hombros de perfil (con los puntos del cuerpo): separación de los dos hombros entre el largo del tronco (hombros a
+   caderas). De frente ~0.8; a 45° ~0.5; de perfil casi 0. null si los puntos no son confiables. */
+function hombrosN(kp,W,H){if(!kp)return null;const P=kp.p,c=i=>P[3*i+2]>=.3;if(!(c(5)&&c(6)&&(c(11)||c(12))))return null;
+  const ys=(P[16]+P[19])/2,yh=c(11)&&c(12)?(P[34]+P[37])/2:c(11)?P[34]:P[37],t=Math.abs(yh-ys)*H;
+  return t>1?Math.abs(P[15]-P[18])*W/t:null;}
+function revisar(s,p,W,H,paso,prev,ref,conRef,kp){
   const E={det:false,comp:null,dist:null,ang:null,ref:conRef?false:undefined,quieto:null};
   E.det=!!(s&&s.ok&&s.score>=REGLAS.score);
   if(conRef)E.ref=refOk(p,W,H);
@@ -78,7 +83,8 @@ function revisar(s,p,W,H,paso,prev,ref,conRef){
   const v=d.eje==='alto'?c[3]-c[1]:c[2]-c[0];E.dist=v>=d.min&&v<=d.max;
   const ratio=((c[2]-c[0])*W)/((c[3]-c[1])*H);
   // (ref: las medidas de la primera toma; perfil: el tronco debe verse a lo más esa fracción de ancho que de frente)
-  const tn=a.perfil&&ref&&ref.torsoN?torsoN(s):0,perfil=!a.perfil||!ref||!ref.torsoN||tn<=a.perfil*ref.torsoN;
+  const hn=a.hombros?hombrosN(kp,W,H):null;
+  const tn=a.perfil&&ref&&ref.torsoN?torsoN(s):0,perfil=(!a.perfil||!ref||!ref.torsoN||tn<=a.perfil*ref.torsoN)&&(hn==null||hn<=a.hombros);
   E.ang=(a.min==null||ratio>=a.min)&&(a.max==null||ratio<=a.max)&&(!a.rel||!ref||ratio<=a.rel*ref.ratio)&&perfil;
   const q=iou(c,prev);E.quieto=q>=REGLAS.quieto;
   /* qué tan cerca está de la posición ideal (0 a 1): cada regla da 1 si se cumple y baja según lo lejos que esté */
@@ -86,7 +92,8 @@ function revisar(s,p,W,H,paso,prev,ref,conRef){
   const fuera=Math.max(0,REGLAS.margen-c[0],REGLAS.margen-c[1],c[2]-(1-REGLAS.margen),c[3]-(1-REGLAS.margen));
   const kComp=E.comp?1:cerca(1-fuera/.1-(s.cortada?.3:0)),kDist=E.dist?1:cerca(1-(v<d.min?d.min-v:v-d.max)/.3);
   const viol=[a.min!=null&&ratio<a.min?(a.min-ratio)/a.min:0,a.max!=null&&ratio>a.max?(ratio-a.max)/a.max:0,
-    a.rel&&ref&&ratio>a.rel*ref.ratio?(ratio-a.rel*ref.ratio)/(a.rel*ref.ratio):0,!perfil?(tn-a.perfil*ref.torsoN)/(a.perfil*ref.torsoN):0];
+    a.rel&&ref&&ratio>a.rel*ref.ratio?(ratio-a.rel*ref.ratio)/(a.rel*ref.ratio):0,!perfil&&tn?Math.max(0,(tn-a.perfil*ref.torsoN)/(a.perfil*ref.torsoN)):0,
+    hn!=null&&hn>a.hombros?(hn-a.hombros)/.6:0];
   const kAng=E.ang?1:cerca(1-Math.max(...viol)/.5),kRef=conRef?(E.ref?1:.4):1,kQ=cerca((q-.6)/(REGLAS.quieto-.6));
   const pos=kComp*kDist*kAng*kRef*(.8+.2*kQ);
   let msg='';
@@ -97,6 +104,37 @@ function revisar(s,p,W,H,paso,prev,ref,conRef){
   else if(!E.quieto)msg='Quieto…';
   return {E,msg,caja:c,pos};
 }
+/* la silueta, limpia con los puntos del cuerpo: se quita lo que queda lejos del esqueleto (suelo, cama, muebles u otra
+   cosa pegada al cuerpo). Cada celda debe quedar cerca de algún tramo del esqueleto: del tronco (el cuadrilátero de
+   hombros y caderas) a 13 % de la estatura (cabe el fondo de un cuerpo robusto de perfil), de la cabeza a 9 %, de
+   brazos y piernas a 6.5 %, de manos y pies a 4 %. La estatura sale de los mismos puntos (nariz a talones). Solo
+   personas con los puntos confiables; si no, la silueta queda igual. P: x, y en fracciones del cuadro W×H. */
+const TRAMOS_LIMPIA=[[5,7,.065],[7,9,.065],[6,8,.065],[8,10,.065],[11,13,.065],[13,15,.065],[12,14,.065],[14,16,.065],[0,0,.09],[3,4,.08],[0,3,.08],[0,4,.08],[3,3,.08],[4,4,.08],
+  [15,19,.04],[15,17,.04],[16,22,.04],[16,20,.04],[9,91,.04],[10,112,.04],[91,100,.04],[112,121,.04],[91,92,.035],[112,113,.035]];
+function limpiarSil(s,P,W,H){
+  if(!s||!s.ok||!P||P.length<23*3)return s;const c=i=>P[3*i+2]>=.3;
+  if(![0,5,6,11,12].every(c)||!(c(15)||c(16)))return s;
+  const G=s.G,Z=s.Z,gx=i=>(P[3*i]*W-Z.x)/s.cx,gy=i=>(P[3*i+1]*H-Z.y)/s.cy,escY=s.cy;
+  // estatura en celdas (en y): de la nariz (6.5 % bajo la coronilla) a los talones o tobillos
+  const pie=[19,22,15,16].filter(c).map(gy),alto=(Math.max(...pie)-gy(0))/.925;if(!(alto>G*.1))return s;
+  const tr=TRAMOS_LIMPIA.filter(([a,b])=>c(a)&&c(b)).map(([a,b,m])=>[gx(a),gy(a),gx(b),gy(b),m*alto*escY]);
+  const quad=[5,6,12,11].map(i=>[gx(i),gy(i)]),mT=.13*alto*escY;
+  const dSeg=(x,y,[ax,ay,bx,by])=>{const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0;return Math.hypot((x-ax-t*dx)*s.cx,(y-ay-t*dy)*escY);};
+  const enQuad=(x,y)=>{let d=0;for(let i=0;i<4;i++){const [ax,ay]=quad[i],[bx,by]=quad[(i+1)%4],cr=(bx-ax)*(y-ay)-(by-ay)*(x-ax);if(cr!==0){if(d&&Math.sign(cr)!==d)return false;d=Math.sign(cr);}}return true;};
+  const bordes=[0,1,2,3].map(i=>[...quad[i],...quad[(i+1)%4]]);
+  const M=new Float32Array(G*G);let quita=0;
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++){const i=y*G+x;if(!s.mask[i]){M[i]=-1;continue;}const X=x+.5,Y=y+.5;
+    let ok=enQuad(X,Y);if(!ok)for(const b of bordes)if(dSeg(X,Y,b)<=mT){ok=true;break;}
+    if(!ok)for(const t of tr)if(dSeg(X,Y,t)<=t[4]){ok=true;break;}
+    M[i]=ok?1:-1;if(!ok)quita++;}
+  if(!quita)return s;
+  const n=Vision.silueta(M,G,G,G);if(!n.ok)return s;
+  n.score=s.score;n.conf=s.conf;n.limpia=quita/s.area;return aCuadro(n,G,Z,W,H);
+}
+// recorte para el modelo de pose: la caja n (fracciones del cuadro W×H) con 25 % de margen y la proporción m.W:m.H
+function recortePose(n,W,H,m){let w=(n[2]-n[0])*W*1.25,h=(n[3]-n[1])*H*1.25;const a=m.W/m.H;if(w/h>a)h=w/a;else w=h*a;
+  return {x:(n[0]+n[2])/2*W-w/2,y:(n[1]+n[3])/2*H-h/2,w,h};}
+const NUCLEOS=()=>navigator.hardwareConcurrency||4;
 function beep(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const a=beep.a||(beep.a=new A()),o=a.createOscillator(),g=a.createGain();
   o.frequency.value=1046;g.gain.setValueAtTime(.18,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.18);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.2);}catch(e){}}
 /* el contorno de una silueta como camino en un lienzo que muestra el cuadro W×H en (X,Y,Wd,Hd). `a` (opcional) es la
@@ -108,6 +146,18 @@ function camino(x,s,X,Y,Wd,Hd,W,H,a){
   for(let i=0;i<c.length;i+=2){const fx=(Z.x+c[i]*s.cx)/W,fy=(Z.y+c[i+1]*s.cy)/H,px=X+(b[0]+(fx-n[0])*sx)*Wd,py=Y+(b[1]+(fy-n[1])*sy)*Hd;i?x.lineTo(px,py):x.moveTo(px,py);}
   x.closePath();return true;
 }
+/* los puntos del cuerpo, como un traje de captura de movimiento: puntos blancos que brillan y líneas finas entre
+   ellos. P: x, y (fracciones del cuadro), confianza; se dibujan en el lienzo que muestra el cuadro en (X,Y,Wd,Hd). */
+// tamaño de cada punto (personas de 133 puntos: la cara y los dedos más chicos, para que no tapen)
+const tamPunto=(i,n)=>n<=17?1:i<17?1:i<23?.75:i<91?.38:i===91||i===112?.7:.5;
+function puntos(x,P,esq,X,Y,Wd,Hd,r=3){
+  if(!P)return;const n=P.length/3,ok=i=>P[3*i+2]>=.3,px=i=>X+P[3*i]*Wd,py=i=>Y+P[3*i+1]*Hd;
+  x.save();x.lineCap='round';x.lineJoin='round';
+  for(const grueso of [1,0]){x.strokeStyle=grueso?'rgba(255,255,255,.6)':'rgba(255,255,255,.5)';x.lineWidth=Math.max(.7,r*(grueso?.4:.22));x.beginPath();
+    for(const [a,b] of esq)if((a<91)===!!grueso&&ok(a)&&ok(b)){x.moveTo(px(a),py(a));x.lineTo(px(b),py(b));}x.stroke();}
+  x.shadowColor='rgba(255,255,255,.95)';x.fillStyle='#fff';
+  for(let i=0;i<n;i++)if(ok(i)){const ri=r*tamPunto(i,n);x.shadowBlur=ri*3;x.beginPath();x.arc(px(i),py(i),ri,0,2*Math.PI);x.fill();}
+  x.restore();}
 function trazar(x,s,col,X,Y,Wd,Hd,W,H,a,{relleno=.2,linea=2}={}){
   if(!s||!s.ok||!camino(x,s,X,Y,Wd,Hd,W,H,a))return;
   x.fillStyle=`rgba(${col},${relleno})`;x.fill();x.strokeStyle=`rgb(${col})`;x.lineWidth=linea;x.lineJoin='round';x.stroke();
@@ -142,8 +192,11 @@ function abrir(o){
     try{if(navigator.wakeLock)wl=await navigator.wakeLock.request('screen');}catch(e){}
     msg.textContent='Cargando el modelo de visión…';w.classList.add('carga');
     let rap=null;try{rap=await Vision.motor(o.clase===Vision.PERSONA?'rapidoP':'rapido');}catch(e){if(activo){msg.textContent='No se pudo cargar el modelo de visión en este teléfono.';w.classList.remove('carga');}return;}
-    // el preciso se carga mientras tanto: lo necesita la primera foto
+    // el preciso se carga mientras tanto: lo necesita la primera foto; después, los de pose (video y fotos)
+    const persona=o.clase===Vision.PERSONA,esq=Vision.ESQUELETO[persona?'persona':'animal'];
     const preP=Vision.motor('preciso');preP.catch(()=>{});
+    // (el mismo modelo de pose en el video y en las fotos)
+    let poseV=null;const poseFP=Vision.motor(persona?'cuerpo':'animal');poseFP.then(m=>{poseV=m;}).catch(()=>{});
     if(!activo)return;w.classList.remove('carga');
     const R=rap.R,cr=document.createElement('canvas');cr.width=cr.height=R;const xr=cr.getContext('2d',{willReadFrequently:true});
     let W=0,H=0,hist=[],prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
@@ -151,7 +204,7 @@ function abrir(o){
     const medidas=()=>{const vw=v.videoWidth,vh=v.videoHeight,k=Math.min(1,REGLAS.lienzo/Math.max(vw,vh)),w2=Math.round(vw*k),h2=Math.round(vh*k);if(w2!==W||h2!==H){W=w2;H=h2;zona=null;}};
 
     /* ---------- dibujo: 60 cuadros por segundo ---------- */
-    const vis={s:null,p:null,color:'rojo'};let caja=null;
+    const vis={s:null,p:null,color:'rojo',kp:null};let caja=null,kpV=null;
     const rect=()=>{const bw=v.clientWidth,bh=v.clientHeight,vw=v.videoWidth,vh=v.videoHeight;if(!vw||!bw)return null;const k=Math.min(bw/vw,bh/vh);
       return {x:(bw-vw*k)/2,y:(bh-vh*k)/2,w:vw*k,h:vh*k};};
     function dibujar(){
@@ -165,6 +218,14 @@ function abrir(o){
       // la caja que se ve se acerca a la del último resultado: el movimiento se ve continuo
       if(!caja)caja=s.n.slice();else for(let i=0;i<4;i++)caja[i]+=(s.n[i]-caja[i])*.35;
       trazar(x,s,col,Rr.x,Rr.y,Rr.w,Rr.h,W,H,caja,{relleno:vis.color==='verde'?.24:.16,linea:2});
+      // los puntos del cuerpo se deslizan hacia el último resultado (y se quitan si ya es viejo)
+      // (entre un resultado de pose y el siguiente, los puntos siguen a la caja de la silueta: se mueven con el cuerpo
+      // a 60 cuadros por segundo aunque el modelo de pose tarde más)
+      let kp=vis.kp&&performance.now()-vis.kp.t<1500?vis.kp.p:null;
+      if(kp&&vis.kp.n){const n=vis.kp.n,sx=(caja[2]-caja[0])/Math.max(1e-6,n[2]-n[0]),sy=(caja[3]-caja[1])/Math.max(1e-6,n[3]-n[1]);
+        if(sx>.8&&sx<1.25&&sy>.8&&sy<1.25){const q=kp.slice();for(let i=0;i<q.length;i+=3){q[i]=caja[0]+(q[i]-n[0])*sx;q[i+1]=caja[1]+(q[i+1]-n[1])*sy;}kp=q;}}
+      if(kp){if(!kpV||kpV.length!==kp.length)kpV=kp.slice();else for(let i=0;i<kp.length;i++)kpV[i]+=(kp[i]-kpV[i])*(i%3===2?1:.5);
+        puntos(x,kpV,esq,Rr.x,Rr.y,Rr.w,Rr.h,Math.max(2.5,Math.min(4,Rr.w/110)));}else kpV=null;
       // esquinas finas
       const X0=Rr.x+caja[0]*Rr.w,Y0=Rr.y+caja[1]*Rr.h,X1=Rr.x+caja[2]*Rr.w,Y1=Rr.y+caja[3]*Rr.h,L=Math.min(16,(X1-X0)/5,(Y1-Y0)/5),g=6;
       x.strokeStyle=`rgba(${col},.95)`;x.lineWidth=1.5;x.lineCap='round';x.beginPath();
@@ -174,19 +235,20 @@ function abrir(o){
     function chips(E){for(const el of w.querySelectorAll('.cv-chip')){const s=E[el.dataset.k];el.dataset.s=s==null?'':s?'ok':'no';}}
     // la foto que se guarda: el cuadro con el contorno de la silueta
     // (recortada alrededor del sujeto, para que se vea grande)
-    function foto(fc,s,ref){const Z=(s&&s.ok&&zonaDe([s.n,ref&&ref.ok?ref.n:null],fc.width,fc.height,{margen:.12,min:.3,amin:.6,amax:1.6}))||{x:0,y:0,w:fc.width,h:fc.height};
+    function foto(fc,s,ref,kp){const Z=(s&&s.ok&&zonaDe([s.n,ref&&ref.ok?ref.n:null],fc.width,fc.height,{margen:.12,min:.3,amin:.6,amax:1.6}))||{x:0,y:0,w:fc.width,h:fc.height};
       const c=document.createElement('canvas'),k=Math.min(1,720/Math.max(Z.w,Z.h));c.width=Math.round(Z.w*k);c.height=Math.round(Z.h*k);
       const x=c.getContext('2d');x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,c.width,c.height);const X=-Z.x*k,Y=-Z.y*k,Wd=fc.width*k,Hd=fc.height*k,lw=Math.max(2,c.width/260);
       if(ref&&ref.ok)trazar(x,ref,'255,255,255',X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.08,linea:lw*.75});
       trazar(x,s,COLOR.verde,X,Y,Wd,Hd,fc.width,fc.height,null,{relleno:.22,linea:lw});
+      if(kp){const P=kp.slice();for(let i=0;i<P.length;i+=3){P[i]/=fc.width;P[i+1]/=fc.height;}puntos(x,P,esq,X,Y,Wd,Hd,lw*1.4);}
       const fs=Math.max(10,Math.round(c.width/34));x.font=`700 ${fs}px sans-serif`;x.textAlign='right';x.textBaseline='bottom';x.shadowColor='rgba(0,0,0,.6)';x.shadowBlur=4;x.fillStyle='rgba(255,255,255,.85)';x.fillText(MARCA,c.width-fs*.6,c.height-fs*.5);
       return c.toDataURL('image/jpeg',.85);}
     /* medida precisa de una foto capturada (en segundo plano), sobre un recorte alrededor del sujeto (y de la persona
        de referencia): el modelo ve el cuerpo con más detalle. Si el recorte lo corta, se mide la foto completa. Si no
        sale, se queda la del modelo rápido. */
-    // en teléfonos donde el modelo preciso tarda (> 1.5 s la vez pasada) basta una foto por ángulo: la segunda casi no
-    // cambiaba el resultado (1–2 %) y alargaba la espera
-    let nTomas=REGLAS.tomas;try{if(+localStorage.getItem('rumentis-pc-msp')>1500)nTomas=1;}catch(e){}
+    // dos fotos por ángulo (se promedian: menos ruido); una sola solo en teléfonos muy lentos (el modelo preciso tardó
+    // más de 4 s la vez pasada)
+    let nTomas=REGLAS.tomas;try{if(+localStorage.getItem('rumentis-pc-msp')>4000)nTomas=1;}catch(e){}
     const tPre=[];
     async function precisa(fc,cajas){
       try{const pre=await preP,t0=performance.now(),c=document.createElement('canvas');c.width=c.height=pre.R;const x=c.getContext('2d',{willReadFrequently:true});
@@ -197,7 +259,18 @@ function abrir(o){
         if(Zr&&((r.s&&r.s.cortada)||(r.p&&r.p.cortada)||!(r.s&&r.s.ok)))r=await una(todo);
         tPre.push(performance.now()-t0);
         if(!r.s||!r.s.ok||(conRef&&!refOk(r.p,fc.width,fc.height)))return null;
+        r.kp=await posePx(fc,r.s.n);
+        if(r.kp&&persona){const P=r.kp.slice();for(let i=0;i<P.length;i+=3){P[i]/=fc.width;P[i+1]/=fc.height;}r.s=limpiarSil(r.s,P,fc.width,fc.height);}
         return r;}catch(e){console.warn(e);return null;}}
+    /* los puntos del cuerpo en una foto (con el modelo de pose de fotos): recorte alrededor de la caja n (fracciones),
+       con 25 % de margen y la proporción del modelo; devuelve x, y en píxeles de la foto y la confianza */
+    const tPose=[];
+    async function posePx(fc,n){
+      try{const m=await poseFP,t0=performance.now(),Z=recortePose(n,fc.width,fc.height,m),c=document.createElement('canvas');c.width=m.W;c.height=m.H;
+        const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#000';x.fillRect(0,0,m.W,m.H);x.drawImage(fc,Z.x,Z.y,Z.w,Z.h,0,0,m.W,m.H);
+        const r=await m.correr({px:x.getImageData(0,0,m.W,m.H).data},[]),P=r.kp;
+        for(let i=0;i<P.length;i+=3){P[i]=Z.x+P[i]*Z.w;P[i+1]=Z.y+P[i+1]*Z.h;}
+        tPose.push(performance.now()-t0);return P;}catch(e){console.warn(e);return null;}}
     // las fotos de un ángulo se toman todas antes de avisar (el pitido hace que la persona se mueva)
     let capturando=false;
     async function capturar(lista,manual){
@@ -211,7 +284,8 @@ function abrir(o){
       caps.push(cap);capturando=false;
       try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}beep();
       w.classList.add('flash');setTimeout(()=>w.classList.remove('flash'),260);
-      th.src=foto(fc,u.s,u.p);th.hidden=false;buenos=[];prev=null;ult=null;tiempos=[];prog.hidden=true;zona=null;vis.s=vis.p=null;
+      const kv=vis.kp&&performance.now()-vis.kp.t<800?vis.kp.p.slice():null;if(kv)for(let i=0;i<kv.length;i+=3){kv[i]*=W;kv[i+1]*=H;}
+      th.src=foto(fc,u.s,u.p,kv);th.hidden=false;buenos=[];prev=null;ult=null;tiempos=[];prog.hidden=true;zona=null;vis.s=vis.p=vis.kp=null;
       if(ip+1>=pasos.length){terminar();return;}
       ip++;pintarPaso();msg.textContent=pasos[ip].girar;chips({});hist=[];posEl.hidden=true;w.dataset.estado='';pausa=performance.now()+1500;
     }
@@ -223,15 +297,15 @@ function abrir(o){
       const out=[];
       for(const c of caps){const tomas=[];let img=null;
         for(const t of c.tomas){const r=await t.pend;if(!activo)return;if(!r)continue;
-          const med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;tomas.push({med,sil:r.s,ref:r.p,W:t.fc.width,H:t.fc.height});
-          if(!img)img=foto(t.fc,r.s,r.p);}
+          const med=medir(r.s,W,H,c.banda);if(r.p)med.refAlto=medir(r.p,W,H).alto;tomas.push({med,sil:r.s,ref:r.p,kp:r.kp||null,W:t.fc.width,H:t.fc.height});
+          if(!img)img=foto(t.fc,r.s,r.p,r.kp);}
         const fuente=tomas.length?'preciso':'rapido';
         if(!tomas.length)tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});
         out.push({id:c.id,nombre:c.nombre,manual:c.manual,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,img:img||foto(c.fc,c.s,c.pr)});}
       try{if(tPre.length)localStorage.setItem('rumentis-pc-msp',String(Math.round(mediana(tPre))));}catch(e){}
       // rendimiento de esta medición (para el laboratorio)
       out.stats={fps:fpsL.length?fpsL.reduce((a,b)=>a+b,0)/fpsL.length:0,cuadros:procesados,msRapido:msR.length?msR.reduce((a,b)=>a+b,0)/msR.length:0,
-        msPreciso:tPre.length?tPre.reduce((a,b)=>a+b,0)/tPre.length:0,seg:(performance.now()-tIni)/1000,motor:rap.modo+'×'+rap.n,tomas:todas.length};
+        msPreciso:tPre.length?tPre.reduce((a,b)=>a+b,0)/tPre.length:0,msPose:tPose.length?tPose.reduce((a,b)=>a+b,0)/tPose.length:0,seg:(performance.now()-tIni)/1000,motor:rap.modo+'×'+rap.n,tomas:todas.length};
       fin(out);
     }
     man.onclick=()=>{if(!ult)return toast('Que se vea completo para tomar la foto.');const l=buenos.length?buenos:[ult];capturar(l.slice(-REGLAS.seguidos),true);};
@@ -240,15 +314,17 @@ function abrir(o){
     const tIni=performance.now(),msR=[],fpsL=[];let procesados=0;
     function procesar(r,Z){
       procesados++;if(msR.length<400)msR.push(r.ms);
-      const p=pasos[ip],s=aCuadro(r.suj[o.clase],r.G,Z,W,H),pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
-      const now=performance.now();tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
+      const p=pasos[ip];let s=aCuadro(r.suj[o.clase],r.G,Z,W,H);const pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
+      const now=performance.now();
+      if(persona&&s&&s.ok&&vis.kp&&now-vis.kp.t<600&&iou(vis.kp.n,s.n)>=.85)s=limpiarSil(s,vis.kp.p,W,H);
+      tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
       // (sobre al menos 0.8 s: con varios workers los resultados llegan en ráfagas y una ventana corta exagera)
       if(tiempos.length>2&&now-tiempos[0]>=800){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
       // (ms y motor quedan en el diálogo para las pruebas)
       w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo+'×'+rap.n;
       // el cuadro siguiente mira solo la zona del sujeto; si la zona lo cortó (o en ganado falta la persona), completo
       zona=(s&&s.cortada)||(pr&&pr.cortada)||(conRef&&!(pr&&pr.ok))?null:zonaSig([s&&s.ok?s.n:null,pr&&pr.ok?pr.n:null],W,H,zona);
-      const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido:null,conRef);
+      const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido:null,conRef,vis.kp&&now-vis.kp.t<700?vis.kp:null);
       // "quieto" se compara con la mediana de las últimas cajas: un cuadro raro no reinicia la cuenta
       if(ev.caja){hist.push(ev.caja);if(hist.length>3)hist.shift();prev=[0,1,2,3].map(i=>mediana(hist.map(z=>z[i])));}else{hist=[];prev=null;}
       posEl.hidden=ev.pos==null;const pp=Math.round((ev.pos||0)*100);posEl.style.setProperty('--p',(ev.pos||0));posEl.lastChild.textContent=`${pp} %`;
@@ -284,8 +360,25 @@ function abrir(o){
       if(!activo||fallas>=3)return;
       while(vuelo<rap.n&&v.videoWidth&&v.readyState>=2&&performance.now()>=pausa)lanzar();
     }
-    tick=setInterval(bombear,60);bombear();
+    /* ---------- los puntos del cuerpo en el video ----------
+       Un cuadro a la vez, recortado alrededor de la última silueta. En teléfonos con pocos núcleos (o con el modelo de
+       animales, más pesado) se deja un respiro entre uno y otro para no quitarle cuadros a la silueta. */
+    let poseVuelo=false,poseT=0;const poseRespiro=persona?(NUCLEOS()>=6?0:150):250;
+    async function bombearPose(){
+      if(!activo||!poseV||poseVuelo||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<poseRespiro)return;
+      poseVuelo=true;const n=vis.s.n.slice(),paso=ip;
+      try{const Z=recortePose(n,W,H,poseV),k=v.videoWidth/W;let e;
+        try{e={bmp:await createImageBitmap(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,{resizeWidth:poseV.W,resizeHeight:poseV.H,resizeQuality:'medium'})};}
+        catch(er){const c=document.createElement('canvas');c.width=poseV.W;c.height=poseV.H;const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);
+          x.drawImage(v,Z.x*k,Z.y*k,Z.w*k,Z.h*k,0,0,c.width,c.height);e={px:x.getImageData(0,0,c.width,c.height).data};}
+        const r=await poseV.correr(e,[]),P=r.kp;
+        for(let i=0;i<P.length;i+=3){P[i]=(Z.x+P[i]*Z.w)/W;P[i+1]=(Z.y+P[i+1]*Z.h)/H;}
+        if(activo&&paso===ip&&performance.now()>=pausa){vis.kp={p:P,t:performance.now(),n};let c=0;for(let i=2;i<P.length;i+=3)if(P[i]>=.3)c++;w.dataset.puntos=c;}
+      }catch(e){console.warn(e);}
+      poseVuelo=false;poseT=performance.now();if(poseRespiro)setTimeout(bombearPose,poseRespiro);else bombearPose();
+    }
+    tick=setInterval(()=>{bombear();bombearPose();},60);bombear();
   });
 }
-window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN};
+window.CamVivo={abrir,REGLAS,medir,revisar,zonaSig,zonaDe,torsoN,hombrosN,recortePose,limpiarSil,aCuadro};
 })();

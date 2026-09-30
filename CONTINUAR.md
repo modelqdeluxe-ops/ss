@@ -165,7 +165,7 @@ piernas no se tapan) y brazos pegados contados como tronco. Cambios:
   (más lento en WASM), entradas de 224/192 px (pierden precisión). WebGPU: en este entorno solo hay GPU por software
   (no carga el modelo en 90 s), no se pudo medir: pendiente para probar en el teléfono.
 
-**5.0.0-beta.7** (esta rama). CSV de beta.6 (5 mediciones, 180 cm): 118–136 L (mejor que 147–189 pero alto), pecho de
+**5.0.0-beta.7**. CSV de beta.6 (5 mediciones, 180 cm): 118–136 L (mejor que 147–189 pero alto), pecho de
 fondo 34–44 cm, piernas 50–54 L, 28–53 s por medición, preciso 2.8–4.4 s por foto. El dueño vio que la silueta en vivo
 tomaba suelo, cama y cosas, y que tardaba en ponerse en verde; pidió un indicador de qué tan cerca está. Medido: ningún
 modelo infla la silueta en COCO (RF-DETR −0.5 % de área), así que el exceso viene de la escena. Cambios:
@@ -180,14 +180,36 @@ modelo infla la silueta en COCO (RF-DETR −0.5 % de área), así que el exceso 
   ×2, más prueba `ev/casa.json` (144 personas de cuerpo completo junto a muebles). Ver `modelo/vision/LEEME.md`.
 - "Cómo hacerlo": pared lisa detrás y perfil completo (hombro hacia la cámara).
 
-**No probado aún en un teléfono real.**
+**5.0.0-beta.8** (esta rama). CSV de beta.7 (11 mediciones, 180 cm, sin báscula): 89–109 L; la app decía ±10 %
+(el error de fábrica). Diagnóstico: `brazos_pegados` = 1 en todas (el tramo más ancho del pecho incluía los brazos y
+se le restaban ~19 cm), `filas_recortadas` 50–87 % (los topes decidían el volumen), hombros 18–44 cm (fila fija al 22 %).
+El dueño pidió 1 % de error, más entrenamiento y puntos blancos en el cuerpo "tipo traje de captura", hasta en los dedos.
+Cambios:
+
+- **Puntos del cuerpo** (`cuerpo.onnx`, RTMW 133 puntos; `animal_m.onnx`, AP-10K 17 puntos; OpenMMLab, Apache 2.0):
+  en vivo (worker propio, recorte alrededor de la silueta; entre resultados siguen la caja de la silueta) y en las
+  fotos del resultado y del laboratorio. `w.dataset.puntos` = puntos confiables (para las pruebas).
+- **Silueta limpia con el esqueleto** (`limpiarSil`): en vivo (con puntos de < 600 ms y la caja casi igual) y en las
+  fotos (con los puntos de la misma foto). Campo `limpia` (fracción quitada).
+- **Perfil con los hombros** (`ang.hombros` .3, `hombrosN`): además del ancho del tronco.
+- **Modelo de peso v3** (`VERSION_MODELO` 3): fórmula ajustada con ANSUR II (`modelo/peso/`), medidas a las alturas de
+  ANSUR con los brazos y manos quitados por los puntos; `pred` (kg sin calibrar), `dims`, `topes`, `puntos` en el
+  registro y el CSV. La calibración de personas usa `pred` (solo mediciones v3); error de fábrica 4 %.
+- Dos fotos por ángulo siempre (una sola si el preciso tardó > 4 s). Instrucciones: de frente con las manos un poco
+  separadas de las piernas; de perfil con los brazos a los lados; ropa ajustada, sin zapatos ni gorra.
+- Modelos rápidos y de pose con pesos en 16 bits (`pesos16.py`): la APK crece ~45 MB en vez de ~90.
+
+**No probado aún en un teléfono real.** El 1 % que pidió el dueño: sin calibrar, el límite del modelo es ~3 % (lo que
+no se ve en la silueta: grasa, músculo, hueso); con su báscula (k y b por persona) el error que queda es la
+repetibilidad de la medición (en las pruebas, < 1 % entre tomas de la misma escena).
 
 ---
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.7.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
-   y de costado). Pedirle: cuadros/s que muestra, cuánto tarda "Midiendo…", peso estimado vs. báscula (y calibrar).
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.8.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+   y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
+   3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el
    rápido a 256 px (`MODELOS.rapido.R` en vision.js; el modelo es convolucional y se exporta a 256 sin reentrenar).
 3. Mejor modelo rápido: más fotos de ganado propias (con permiso) y reentrenar; o WebGPU / parte nativa (TFLite).
