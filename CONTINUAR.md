@@ -217,7 +217,12 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.17** (esta rama): puntos en vivo más rápidos: DWPose-s en tres workers a turnos con 8 núcleos (dos con
+**5.0.0-beta.18** (esta rama): silueta rápida de personas v4, destilada del modelo preciso: RF-DETR marcó 5,866
+fotos (`modelo/vision/maestro_silueta.py` → `td/msk_t`) y el rápido se afinó 2 épocas con ellas
+(`SOLO_MAESTRO=1 DESDE2=v3_256_e2.pt RES=256 EPOCAS=2 LR=2e-4 entrenar_silueta2.py`). Error de área con el sujeto
+grande: casa 19.7 → 12.8 %, COCO 13.4 → 9.9 %; IoU casa 0.769 → 0.794 (tabla en `modelo/vision/LEEME.md`).
+
+**5.0.0-beta.17**: puntos en vivo más rápidos: DWPose-s en tres workers a turnos con 8 núcleos (dos con
 6), respiro de 60 ms (antes 120) con menos de 6 núcleos, suavizado más ligero (55 % lo nuevo si se movió < 1.2 % del
 alto; antes 35 % y 1.5 %) y el dibujo se desliza 70 % por cuadro hacia el último resultado (antes 50 %).
 
@@ -269,7 +274,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.17.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.18.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

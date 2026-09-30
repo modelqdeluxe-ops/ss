@@ -1,6 +1,8 @@
 # Silueta v2: el LR-ASPP afinado (sil_320_e5.pt) más un refinamiento a 1/4 de la entrada con los rasgos de esa
 # resolución (capa 3 de MobileNetV3, 24 canales): bordes más finos. La última capa del refinamiento empieza en cero,
 # así que al arrancar da exactamente lo mismo que el modelo anterior. 3 clases: 0 fondo, 1 persona, 2 vaca.
+# v4 (destilado): usa td/msk_t (siluetas del modelo preciso, maestro_silueta.py) donde las hay; SOLO_MAESTRO=1 deja
+# esas fotos y un 25 % de las demás. SOLO_MAESTRO=1 DESDE2=v3_256_e2.pt RES=256 EPOCAS=2 LR=2e-4
 import json,os,random,sys,time,math,numpy as np,torch,torch.nn as nn,torch.nn.functional as F
 from PIL import Image,ImageEnhance,ImageFilter
 from torchvision.models.segmentation import lraspp_mobilenet_v3_large,LRASPP_MobileNet_V3_Large_Weights as LW
@@ -10,11 +12,14 @@ MEAN=np.array([.485,.456,.406],np.float32);STD=np.array([.229,.224,.225],np.floa
 L=[x for x in json.load(open('td/lista.json')) if os.path.exists(f'td/msk/{x[0]}.png')]
 # vacas ×3 (son pocas); escenas de casa (personas con camas, sillones, sillas…) ×2: el fondo que más confunde
 items=[i for i,k in L for _ in range(3 if k=='v' else 2 if k=='c' else 1)]
+if os.environ.get('SOLO_MAESTRO'):items=[i for i in items if os.path.exists(f'td/msk_t/{i}.png') or random.random()<.25]
 print('fotos',len(L),'muestras por época',len(items),flush=True)
 class DS(torch.utils.data.Dataset):
     def __len__(s):return len(items)
     def __getitem__(s,j):
-        iid=items[j];img=Image.open(f'td/img/{iid}.jpg').convert('RGB');m=Image.open(f'td/msk/{iid}.png');W,H=img.size;r=random.random
+        iid=items[j];img=Image.open(f'td/img/{iid}.jpg').convert('RGB');W,H=img.size;r=random.random
+        # (la silueta del maestro donde la hay; si no, la de COCO)
+        m=Image.open(f'td/msk_t/{iid}.png' if os.path.exists(f'td/msk_t/{iid}.png') else f'td/msk/{iid}.png')
         a=np.array(m);ys,xs=np.where((a==1)|(a==2))
         asp=math.exp(random.uniform(math.log(.6),math.log(1.6)))   # ancho/alto del recorte
         if len(xs) and r()<SUJ:   # alrededor del sujeto, con margen al azar
