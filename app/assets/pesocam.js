@@ -15,14 +15,14 @@
 const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)return;
 
 /* ---------- los dos modos ----------
-   k: kilos por litro del volumen medido. En personas es la densidad del cuerpo (~1.0 kg/L: el volumen ya descuenta la
-   ropa); en ganado algo más que 1 porque las patas no entran en el volumen. Se ajusta con la báscula. */
+   k: el factor de calibración sobre el peso del modelo de medidas (1 de fábrica; se ajusta con la báscula). err: el error
+   de fábrica (ganado: el de otra raza sin calibrar, ~12 % en Hereford con el modelo de Horqin). */
 const MODOS={
   persona:{clase:Vision.PERSONA,k:1.0,err:.03,alto:'estatura',
     buscar:'Párate frente a la cámara, de cuerpo completo',
     pasos:[{id:'frente',nombre:'De frente',instr:'De pie y derecho, con los brazos relajados y las manos un poco separadas de las piernas.',girar:'Ponte de frente, con las manos un poco separadas de las piernas',ang:{min:.24},dist:{eje:'alto',min:.55,max:.88}},
       {id:'costado',nombre:'De costado',instr:'De perfil completo, con los brazos relajados a los lados.',girar:'Gírate de costado, con los brazos a los lados',girarMas:'Gírate un poco más: de perfil completo',ang:{max:.32,rel:.8,perfil:.7,hombros:.36},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
-  ganado:{clase:Vision.VACA,k:1.1,err:.15,alto:'refAlto',ref:true,
+  ganado:{clase:Vision.VACA,k:1,err:.15,alto:'refAlto',ref:true,
     buscar:'Apunta al animal, que se vea completo',
     pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado; la persona de referencia de pie, a la par del animal.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88}},
       {id:'atras',nombre:'Por detrás',instr:'El animal de espaldas a la cámara; la persona de referencia a su lado.',girar:'Que el animal quede de espaldas a la cámara',ang:{max:.9},dist:{eje:'alto',min:.45,max:.85},banda:[.05,.55]}]}
@@ -34,7 +34,7 @@ const ROPA={ajustada:{cm:.4,t:'Ajustada'},normal:{cm:.8,t:'Normal'},holgada:{cm:
 /* forma de cada corte: área = f · ancho · fondo. Una elipse da π/4 ≈ 0.785; el tronco es más cuadrado (superelipse
    de exponente ~2.2: 0.81). Cabeza, brazos y piernas se toman elípticos. */
 const FORMA={cabeza:Math.PI/4,tronco:.81,brazos:Math.PI/4,piernas:Math.PI/4};
-const MKEY='rumentis-pc-modo',VERSION_MODELO=5;
+const MKEY='rumentis-pc-modo',VERSION_MODELO=6;
 UI.pc=UI.pc||{lote:'',items:[]};
 if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=MODOS[m]?m:'persona';}
 const PC=()=>S.config.pesoCam||{};
@@ -63,11 +63,10 @@ const actualizarReg=(id,cambios)=>guardarPC({reg:REG().map(x=>x.id===id?{...x,..
      cada par (0.85–1.15) y ln k = mediana de ln kg − b · ln L.
    Los datos: mediciones del registro con peso de báscula (y las calibraciones de antes del registro, si las hay). */
 const med=v=>{const s=v.slice().sort((a,b)=>a-b),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):0;};
-// (personas: la base es el peso que da el modelo de ANSUR II, `pred` (v5); las mediciones de modelos anteriores no cuentan.
-// Ganado: el volumen. En los dos, `L` es esa base.)
-const baseDe=x=>x.modo==='persona'?(x.v>=5&&x.pred>0?x.pred:0):x.L;
-const calModo=modo=>REG().filter(x=>x.modo===modo&&x.real>0&&baseDe(x)>0).map(x=>({L:baseDe(x),kg:x.real,id:x.id}))
-  .concat(modo==='persona'?[]:(PC().cal||[]).filter(c=>c.modo===modo&&c.L>0&&c.kg>0));
+// (la base es el peso que da el modelo de medidas, `pred`: personas, ANSUR II (v5+); ganado, alzada y fondo de pecho
+// (v6+). Las mediciones de modelos anteriores (volumen) no cuentan: estaban en litros. `L` es esa base.)
+const baseDe=x=>x.v>=(x.modo==='persona'?5:6)&&x.pred>0?x.pred:0;
+const calModo=modo=>REG().filter(x=>x.modo===modo&&x.real>0&&baseDe(x)>0).map(x=>({L:baseDe(x),kg:x.real,id:x.id}));
 function ajustar(C,modo){
   const n=C.length,M=MODOS[modo];if(!n)return {k:M.k,b:1,n:0};
   const X=C.map(z=>Math.log(z.L)),Y=C.map(z=>Math.log(z.kg)),rango=Math.max(...X)-Math.min(...X);let b=1;
@@ -141,6 +140,51 @@ function volGanado(L,A){
   let V=0;for(let x=0;x<col.length;x++)if(col[x]>0)V+=SA*(col[x]/TA)**2*L.cw;
   return {cuerpo:V/1000};
 }
+/* ---------- ganado: medidas de la foto de costado y de la de atrás ----------
+   Con la silueta del modelo preciso (rejilla G×G sobre la zona Z de la foto) y los puntos AP-10K de la foto (0–1 ojos,
+   2 nariz, 3 cuello, 4 base de la cola, 5/8 hombros, 6/9 codos, 7/10 manos, 11/14 caderas, 12/15 rodillas, 13/16
+   patas; x, y en píxeles). Las mismas definiciones que se validaron con las bases de datos (modelo/peso/ganado/):
+   - alzada a la cruz: de lo más alto del lomo sobre las manos (del hombro a 15 % del largo hacia atrás) al suelo;
+   - fondo de pecho: el menor alto del tronco detrás del codo (de 10 a 30 % del largo), sin contar la pata;
+   - largo: del hombro a la base de la cola; fondo medio: el alto medio del tronco a todo lo largo.
+   De atrás (sin escala): el ancho mayor de la silueta en la mitad de arriba entre su alto. cmx/cmy: cm por celda. */
+/* Modelo de peso de ganado (v6), ajustado con 71 animales Horqin pesados en báscula, con sus fotos de costado
+   (Mendeley Data h2s22wr5py, CC BY 4.0; modelo/peso/ganado/): ln peso = c0 + c1 ln alzada + c2 ln fondo de pecho (cm).
+   Validación: 8.2 % dentro de la raza (Horqin y Hereford); en otras razas, calibrado con 5 animales del lote, 6–10 %.
+   El método anterior (volumen de dos siluetas × 1.1) daba 30–39 %. De atrás, el alto del animal (alzada de la grupa,
+   ~1.03 veces la de la cruz) es una segunda medida con su propia escala: se promedia con la de costado. */
+const GANADO={coef:[-4.3002,1.811,0.4362],n:71,mape:.082,cdwh:[.42,.65],grupa:1.03};
+function primerTramo(s,x){const G=s.G;let y0=-1;for(let y=0;y<G;y++){const on=s.mask[y*G+x]===1;if(on&&y0<0)y0=y;else if(!on&&y0>=0)return [y0,y];}return y0>=0?[y0,G]:null;}
+/* el peso del modelo con un par de fotos: a, de costado (con su escala k en cm/px); b, de atrás */
+function pesoGanado(a,b){
+  const t=a.t,s=t.sil;if(!s||!s.cx)return null;const M=medidasGanado(t,a.k*s.cx,a.k*s.cy);if(!M||!(M.WH>0)||!(M.CD>0))return null;
+  // la alzada de atrás (la de la grupa entre 1.03), si se puede, y si las dos dicen casi lo mismo (12 %) se promedian
+  const sb=b&&b.t&&b.t.sil,WHr=sb&&sb.caja&&sb.cy?(sb.caja[3]-sb.caja[1])*sb.cy*b.k/GANADO.grupa:NaN,R=atrasGanado(sb);
+  const WH=isFinite(WHr)&&Math.abs(WHr-M.WH)/M.WH<.12?(M.WH+WHr)/2:M.WH;
+  // fondo de pecho fuera de lo normal para la alzada: se lleva al límite y se avisa
+  const [lo,hi]=GANADO.cdwh,q=M.CD/WH,CD=Math.min(hi,Math.max(lo,q))*WH,c=GANADO.coef;
+  return {pred:Math.exp(c[0]+c[1]*Math.log(WH)+c[2]*Math.log(CD)),WH,WHs:M.WH,WHr,CD,L:M.L,FM:M.FM,RWH:R?R.RWH:NaN,tope:q<lo||q>hi};
+}
+function medidasGanado(t,cmx,cmy){
+  const s=t.sil,P=t.kp;if(!s||!s.mask||!P||!s.Z)return null;const G=s.G,ok=i=>P[3*i+2]>=.3;
+  const g=i=>[(P[3*i]-s.Z.x)/s.cx,(P[3*i+1]-s.Z.y)/s.cy],media=ids=>{const v=ids.filter(ok).map(g);return v.length?[v.reduce((a,b)=>a+b[0],0)/v.length,v.reduce((a,b)=>a+b[1],0)/v.length]:null;};
+  const sh=media([5,8]),el=media([6,9]),pf=media([7,10]),tr=ok(4)?g(4):null;if(!sh||!el||!pf||!tr)return null;
+  const sg=tr[0]>sh[0]?1:-1,L=Math.abs(tr[0]-sh[0]);if(L<5)return null;
+  const suelo=s.caja[3]-1,lim=el[1]+.35*(pf[1]-el[1]),lin=(a,b,n)=>Array.from({length:n},(_,i)=>a+(b-a)*i/(n-1));
+  const tramo=x=>{x=Math.round(x);if(x<0||x>=G)return null;const t=primerTramo(s,x);return t&&t[1]<lim?t:null;};
+  const tops=lin(-.05,.15,9).map(f=>{const x=Math.round(sh[0]+sg*f*L);return x>=0&&x<G?primerTramo(s,x):null;}).filter(Boolean).map(t=>t[0]);
+  if(!tops.length)return null;
+  const cd=lin(.1,.3,21).map(f=>tramo(el[0]+sg*f*L)).filter(Boolean).map(t=>t[1]-t[0]),fm=lin(-.05,1,43).map(f=>tramo(sh[0]+sg*f*L)).filter(Boolean).map(t=>t[1]-t[0]);
+  if(cd.length<3||fm.length<10)return null;
+  const FM=fm.reduce((a,b)=>a+b,0)/fm.length;
+  return {WH:(suelo-Math.min(...tops))*cmy,CD:Math.min(...cd)*cmy,L:L*cmx,FM:FM*cmy,A:FM*cmy*L*cmx};
+}
+function atrasGanado(s){
+  if(!s||!s.mask)return null;const G=s.G,[,y0,,y1]=s.caja,h=y1-y0;if(h<10)return null;let w=0;
+  for(let i=0;i<20;i++){const y=Math.round(y0+(.05+.65*i/26)*h);let a=-1,m=0;for(let x=0;x<=G;x++){const on=x<G&&s.mask[y*G+x]===1;if(on&&a<0)a=x;else if(!on&&a>=0){m=Math.max(m,x-a);a=-1;}}w=Math.max(w,m);}
+  return {RWH:(w*s.cx)/(h*s.cy)};
+}
+
 /* ---------- personas: modelo v5, entrenado con ANSUR II ----------
    ANSUR II (encuesta antropométrica del ejército de EE. UU., 2012; dominio público): 6,068 personas pesadas en báscula
    y medidas a mano. Solo con la forma del cuerpo (las medidas que salen de las dos siluetas) y la estatura, sin datos
@@ -316,11 +360,12 @@ function combinar(modo,caps,alto,ropaK){
   const pares=[];
   let pegados=false;const topes=[];
   for(const a of TP)for(const b of TS){const P=modo==='persona'?volPersona(a.T,b.T,ropa):volGanado(a.T,b.T);if(P.pegados)pegados=true;delete P.pegados;topes.push(P.topadas||0);delete P.topadas;
-    const x={P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b};if(modo==='persona')x.M=medidasPersona(a.T,b.T,a.K,b.K,alto,ref,ropa);pares.push(x);}
+    const x={P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b};if(modo==='persona')x.M=medidasPersona(a.T,b.T,a.K,b.K,alto,ref,ropa);else x.G=pesoGanado(a,b);pares.push(x);}
   const Ls=pares.map(x=>x.L),L=Ls.reduce((x,y)=>x+y,0)/Ls.length;
   // personas: la base del peso es el modelo de ANSUR II; ganado: el volumen. Su dispersión entre pares de fotos (cv)
   // (personas: la mediana de las combinaciones, así una foto mala no mueve el resultado)
-  const B=modo==='persona'?pares.map(x=>x.M.pred):Ls,base=modo==='persona'?med(B):B.reduce((x,y)=>x+y,0)/B.length,sd=B.length>1?Math.sqrt(B.reduce((x,y)=>x+(y-base)**2,0)/(B.length-1)):0,cv=base>0?sd/base:0;
+  const conG=modo==='ganado'&&pares.some(x=>x.G);
+  const B=modo==='persona'?pares.map(x=>x.M.pred):conG?pares.filter(x=>x.G).map(x=>x.G.pred):Ls,base=modo==='persona'||conG?med(B):B.reduce((x,y)=>x+y,0)/B.length,sd=B.length>1?Math.sqrt(B.reduce((x,y)=>x+(y-base)**2,0)/(B.length-1)):0,cv=base>0?sd/base:0;
   const partes={};for(const x of pares)for(const k in x.P)partes[k]=(partes[k]||0)+x.P[k]/pares.length;
   // el rango: el error del modelo (calibración) y el desacuerdo entre fotos, sumados en cuadratura
   const err=Math.min(.3,Math.sqrt(m.err**2+cv**2));
@@ -346,8 +391,14 @@ function combinar(modo,caps,alto,ropaK){
     else if(r.fondoAncho>1.1)r.aviso='La toma de costado no parece de perfil completo (el pecho se ve muy ancho de lado): el peso puede salir alto. Repite girando bien de costado.';
     else if(r.imc>40||r.imc<15)r.aviso='El resultado sale fuera de lo normal para tu estatura: revisa que las dos tomas sean de frente y de perfil completo, con el cuerpo entero a la vista.';
   }else{r.largo=prom(x=>x.a.t.med.ancho*x.a.k);r.altoAnimal=prom(x=>x.a.t.med.alto*x.a.k);r.ancho=prom(x=>x.b.t.med.banda*x.b.k);
+    if(conG){const pg=pares.filter(x=>x.G);r.pred=base;r.dims={};for(const k of ['WH','WHs','WHr','CD','L','FM','RWH'])r.dims[k]=med(pg.map(x=>x.G[k]).filter(isFinite));
+      r.topes=pg.filter(x=>x.G.tope).length>=pg.length/2?['cd']:[];r.puntos=true;}
+    // (sin los puntos del animal no hay fondo de pecho: queda el método anterior, volumen × 1.1 de fábrica, con ±30 %)
+    else{r.puntos=false;r.pred=null;r.kg=1.1*r.L;r.err=Math.max(r.err,.3);}
     // de costado y por detrás el animal tiene la misma altura: si no, la persona no estaba a la par
-    const a2=prom(x=>x.b.t.med.alto*x.b.k);if(Math.abs(r.altoAnimal-a2)/((r.altoAnimal+a2)/2)>.12)r.aviso='Las dos tomas dieron alturas distintas del animal: que la persona de referencia se pare a la par del animal, ni adelante ni atrás.';}
+    const a2=prom(x=>x.b.t.med.alto*x.b.k);if(Math.abs(r.altoAnimal-a2)/((r.altoAnimal+a2)/2)>.12)r.aviso='Las dos tomas dieron alturas distintas del animal: que la persona de referencia se pare a la par del animal, ni adelante ni atrás.';
+    else if(!r.puntos)r.aviso='No se vieron bien los puntos del animal en la foto de costado: el peso sale del volumen, menos exacto. Repite con el animal entero a la vista, de costado.';
+    else if(r.topes.length)r.aviso='El fondo del pecho salió fuera de lo normal para su alzada y se ajustó: revisa que la toma de costado sea de perfil, con el animal entero y sin nada pegado.';}
   if(!r.aviso&&cv>.06)r.aviso='Las fotos de cada ángulo no coincidieron del todo: quédate más quieto o mejora la luz.';
   if(!r.aviso&&r.fuente!=='preciso')r.aviso='Una foto se midió solo con el modelo rápido: el peso puede ser menos exacto.';
   if(!r.aviso&&r.manual)r.aviso='Una foto se tomó a mano: revisa que la silueta cubra bien el cuerpo.';
@@ -364,7 +415,7 @@ function tarjetaCal(modo){
     <p>${!cal.length?(per?'Sin calibrar: el peso es un estimado general. Pésate en una báscula, mídete con la cámara y escribe tu peso: la app aprende.':'Sin calibrar: el peso es un estimado general. Mide animales recién pesados en la báscula y escribe su peso real: la app aprende de tus animales.')
       :`Calibrada con ${pl(cal.length,'medición','mediciones')}. Error típico: ±${Math.round(m.err*100)} %.`}</p>
     <button type="button" class="btn full" data-act="pcCalibrar">${icono('pesaje','i3')}${per?'Calibrar con mi peso':'Calibrar con un animal pesado'}</button>
-    ${cal.length?`<p class="hint" style="margin:0">k = ${per?nf(m.k,3):`${nf(W(m.k),3)} ${UW()}/L`} · b = ${nf(m.b,2)}. Cada medición con peso de báscula está en el laboratorio, abajo.</p>
+    ${cal.length?`<p class="hint" style="margin:0">k = ${nf(m.k,3)} · b = ${nf(m.b,2)}. Cada medición con peso de báscula está en el laboratorio, abajo.</p>
       <button type="button" class="lnk" data-act="pcBorrarCal">Borrar la calibración</button>`:''}</div></section>`;
 }
 const filaAlto=(per,a)=>`<div class="pc-alto"><span>${per?'Tu estatura':'Estatura de la persona de referencia'}</span><b>${a?cm(a):'—'}</b><button type="button" class="lnk" data-act="pcAlto">${a?'Cambiar':'Escribir'}</button></div>`;
@@ -433,11 +484,13 @@ function conAlto(fn){const M=MODOS[UI.pc.modo];if(PC()[M.alto])return fn();formA
 const medHTML=r=>r.modo==='persona'&&r.dims
   ?`<div class="pc-med"><div><b>${cm(r.dims.bid)}</b><span>hombros</span></div><div><b>${cm(r.dims.wb)}</b><span>cintura</span></div><div><b>${cm(r.dims.th)}</b><span>muslo</span></div><div><b>${nf(r.imc,1)}</b><span>IMC</span></div></div>`
   :r.modo==='persona'?`<div class="pc-med"><div><b>${nf(r.L)} <span data-no-tr>L</span></b><span>volumen</span></div><div><b>${cm(r.anchoF)}</b><span>hombros</span></div><div><b>${cm(r.prof)}</b><span>pecho de fondo</span></div><div><b>${nf(r.imc,1)}</b><span>IMC</span></div></div>`
+  :r.dims&&r.dims.WH?`<div class="pc-med"><div><b>${cm(r.dims.WH)}</b><span>alzada</span></div><div><b>${cm(r.dims.CD)}</b><span>fondo de pecho</span></div><div><b>${cm(r.dims.L)}</b><span>largo</span></div><div><b>${cm(r.ancho)}</b><span>ancho</span></div></div>`
   :`<div class="pc-med"><div><b>${cm(r.largo)}</b><span>largo</span></div><div><b>${cm(r.altoAnimal)}</b><span>alto</span></div><div><b>${cm(r.ancho)}</b><span>ancho</span></div><div><b>${nf(r.L)} <span data-no-tr>L</span></b><span>volumen</span></div></div>`;
 /* cómo se calculó este peso, con sus números */
 function explicar(r){
   const per=r.modo==='persona',P=r.partes||{},pct=v=>`±${nf(v*100,1)} %`,ml=r.modo==='persona'?MODOS.persona:MODOS.ganado,mm=modeloV(r.modo);
   if(per&&r.dims)return explicarV3(r,mm,pct);
+  if(!per&&r.dims&&r.dims.WH)return explicarGanado(r,mm,pct);
   const pasos=per?[
     ['Escala','Tu estatura más 2.5 cm de suela y pelo, dividida entre el alto de tu silueta en cada foto: así cada píxel tiene su medida en centímetros.'],
     ['Rebanadas',`La silueta de frente da el ancho a cada altura del cuerpo y la de costado el fondo. Cada rebanada es un corte ovalado: área = f × ancho × fondo (f = ${nf(FORMA.tronco,2)} en el tronco y ${nf(FORMA.cabeza,3)} en cabeza, brazos y piernas). Se descuentan ${nf(ROPA[r.ropa||'normal'].cm,1)} cm de ropa por lado.`],
@@ -448,6 +501,19 @@ function explicar(r){
   pasos.push(['Peso',`k × volumen^b = ${nf(W(r.k),3)} × ${nf(r.L,1)}^${nf(r.b,2)} = ${wtxt(r.kg,1)}. ${per?'k es la densidad del cuerpo: peso por litro.':'k es mayor que la densidad del cuerpo porque las patas no entran en el volumen.'} ${mm.n?`Ajustado con ${pl(mm.n,'medición','mediciones')} de báscula.`:`De fábrica k = ${nf(W(ml.k),2)} ${UW()}/L; con la báscula se ajusta.`}`]);
   pasos.push(['Rango',`${pct(r.err)}: el error del modelo (${pct(mm.err)}) y el desacuerdo entre las ${r.comb} combinaciones de fotos (${pct(r.cv)}).`]);
   return `<details class="pc-exp"><summary>Cómo se calcula</summary><p class="pc-exp-f">peso = k · V<sup>b</sup></p><ol>${pasos.map(([t,x])=>`<li><b>${t}</b><span>${x}</span></li>`).join('')}</ol></details>`;
+}
+// ganado (v6): alzada y fondo de pecho, la fórmula ajustada con básculas y la calibración del lote
+function explicarGanado(r,mm,pct){
+  const D=r.dims,c=GANADO.coef,ex=(v,d=2)=>`<sup data-no-tr>${nf(v,d)}</sup>`,dos=isFinite(D.WHr)&&Math.abs(D.WHr-D.WHs)/D.WHs<.12;
+  const pasos=[
+    ['Escala','La estatura de la persona de referencia más 2.5 cm, dividida entre su alto en cada foto: así cada píxel tiene su medida en centímetros.'],
+    ['Puntos del animal','Un modelo de pose ubica hombros, codos, manos, cadera y la base de la cola. Con ellos se sabe dónde medir la alzada y el pecho, sin la cabeza ni las patas.'],
+    ['Medidas',`Alzada a la cruz: ${cm(D.WHs)} de costado${dos?` y ${cm(D.WHr)} por detrás; se usa el promedio, ${cm(D.WH)}`:''}. Fondo de pecho detrás del codo: ${cm(D.CD)}. Largo del hombro a la base de la cola: ${cm(D.L)}.`],
+    ['Modelo',`Ajustado con ${nf(GANADO.n,0)} animales pesados en báscula con sus fotos (base de Horqin: Bai, Mendeley Data, CC BY 4.0). Con estas medidas da ${wtxt(r.pred,1)}. Error medio de validación: ±${nf(GANADO.mape*100,1)} % en la misma raza; en otras razas, calibrando con 5 animales del lote, 6 a 10 %.`],
+    ['Peso',`k × P^b = ${nf(r.k,3)} × ${nf(r.pred,1)}^${nf(r.b,2)} = ${wtxt(r.kg,1)}. ${mm.n?`k y b ajustados con ${pl(mm.n,'medición','mediciones')} de báscula: corrigen lo propio de tu ganado (raza, condición) y tu cámara.`:'De fábrica k = 1 y b = 1; con la báscula se ajustan a tus animales (la raza cambia mucho el peso a igual alzada).'}`],
+    ['Rango',`${pct(r.err)}: el error del modelo (${pct(mm.err)}) y el desacuerdo entre las ${r.comb} combinaciones de fotos (${pct(r.cv)}).`]];
+  return `<details class="pc-exp"><summary>Cómo se calcula</summary><p class="pc-exp-f" data-no-tr>P = e${ex(c[0],2)} · A${ex(c[1])} · F${ex(c[2])}</p>
+    <p class="hint pc-exp-l">A: alzada a la cruz. F: fondo de pecho. En centímetros.</p><p class="pc-exp-f" data-no-tr>peso = k · P<sup>b</sup></p><ol>${pasos.map(([t,x])=>`<li><b>${t}</b><span>${x}</span></li>`).join('')}</ol></details>`;
 }
 // personas (v4): las medidas, la fórmula de ANSUR II y la calibración
 const NOM_EST={cf:'pantorrilla',ne:'cuello',lt:'muslo sobre la rodilla'};

@@ -117,6 +117,19 @@ Lecciones:
 - **Para el ganado**: el animal no obedece. Hará falta tomar fotos en ráfaga cuando esté de costado y quedarse con
   las mejores, más que esperar a que se quede quieto.
 
+## 6b. Lo que salió con ganado (modelo v6, beta.23)
+
+- Bases con peso: Horqin (72, CC BY 4.0, se ajusta con ella), Hereford y Angus de Ruchay (sin licencia: solo para
+  validar), Kaggle BMGF (4,500 fotos de costado y 4,500 de atrás con silueta y puntos a mano; CC BY 4.0). No existe un
+  "ANSUR de vacas": las bases con báscula son de decenas a cientos de animales.
+- Con cinta: perímetro torácico + largo + alzada da 4.7–4.9 %; solo lo de costado (alzada, fondo, largo) 7 %.
+- Con fotos de celular: alzada + fondo de pecho 8.2 % dentro de la raza; el resto (largo, área, perfil del tronco,
+  anchos de atrás) no agregó nada. El volumen de dos siluetas × 1.1 que usaba la app daba 30–39 %.
+- Kaggle no sirvió para el peso: su calcomanía de escala tiene 7 % de ruido (el peso va con el cubo de la escala) y
+  sus proporciones empeoraron otras razas. Sí sirve para la silueta: miles de siluetas de campo a mano.
+- Entre razas el sesgo es grande sin calibrar (Angus +23 %): la calibración con 5 animales del lote lo corrige.
+- Pendiente: calibración por animal (arete) y datos propios del engorde.
+
 ## 7. Herramientas
 
 - `maestro_silueta.py` (en el repo): siluetas del maestro para entrenar el rápido.

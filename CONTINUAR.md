@@ -217,7 +217,15 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.22** (esta rama): el dueño vio 9 cuadros/s con beta.21 (con beta.4 tenía ~20). Seis modelos a la vez en
+**5.0.0-beta.23** (esta rama): ganado con modelo de peso v6 (alzada y fondo de pecho de la foto de costado, con la
+silueta del modelo preciso y los puntos AP-10K; `GANADO`, `medidasGanado`, `pesoGanado` en pesocam.js). Ajustado con
+Horqin (Mendeley Data h2s22wr5py, Bai 2025, CC BY 4.0): 8.2 % dentro de la raza; Hereford/Angus calibrando con 5
+animales 9.6/6.3 % (el volumen × 1.1 anterior daba 30–39 %). La calibración de ganado ahora es sobre el peso del
+modelo (como personas): las calibraciones viejas en litros ya no cuentan. Todo en `modelo/peso/ganado/LEEME.md`;
+atribución CC BY: Horqin (Bai, Mendeley Data, doi 10.17632/h2s22wr5py.3) y Kaggle BMGF (Acme AI, bhalo y mPower, doi
+10.34740/KAGGLE/DSV/8858637).
+
+**5.0.0-beta.22**: el dueño vio 9 cuadros/s con beta.21 (con beta.4 tenía ~20). Seis modelos a la vez en
 un teléfono de 8 núcleos: 3 workers de silueta + 3 de puntos, y la silueta a 320 px. Arreglo: silueta otra vez a 256
 px (320 mejoraba poco), puntos en 2 workers (6 núcleos o más) y, si la silueta baja de 15 cuadros/s, los puntos
 esperan entre uno y otro (hasta 150 ms; el dibujo los desliza igual). Regla: **la velocidad del video manda**; medir
@@ -299,7 +307,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.22.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.23.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

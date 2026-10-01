@@ -71,7 +71,7 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  console.log('modelo v5',JSON.stringify(U));assert.ok(U.puntos,'puntos del cuerpo en las dos fotos');
  assert.ok(U.pred>35&&U.pred<130,'peso del modelo de una persona');assert.ok(U.L>35&&U.L<130,'volumen de una persona');
  assert.ok(U.dims.bid>30&&U.dims.bid<60&&U.dims.th>35&&U.dims.th<80,'medidas de una persona');
- assert.ok(U.dims.cf>20&&U.dims.cf<60&&U.dims.ne>25&&U.dims.ne<60&&U.dims.lt>25&&U.dims.lt<70,'pantorrilla, cuello y muslo bajo');assert.equal(U.v,5);
+ assert.ok(U.dims.cf>20&&U.dims.cf<60&&U.dims.ne>25&&U.dims.ne<60&&U.dims.lt>25&&U.dims.lt<70,'pantorrilla, cuello y muslo bajo');assert.equal(U.v,6);
  assert.ok(!/modelo rápido|fast model|modelo rápido/.test(txt),'medida con el modelo preciso');
  // calibración: "la báscula dice 72 kg" dos veces → el estimado se ajusta
  // (el peso se escribe en la unidad de la app: libras o kilos según el idioma)
@@ -120,8 +120,12 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.puntos||0)>=8,null,{timeout:60000});console.log('puntos de la vaca',await p.$eval('.cv',e=>e.dataset.puntos));
  await paso2();await esc('h',[ATR,REF2]);
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});txt=await leer();await p.screenshot({path:'vivo_vaca_res.png'});
- const largo=num(txt,/([\d.,]+) cm\s*(largo|length|comprimento)/),altoV=num(txt,/([\d.,]+) cm\s*(alto|height|altura)(?=[\d\s]|$)/);
- console.log('largo',largo,'alto',altoV);assert.ok(largo>170&&largo<230,'largo cerca de 200 cm');assert.ok(altoV>125&&altoV<175,'alto cerca de 150 cm');
+ // (modelo v6: alzada y fondo de pecho con los puntos del animal; el largo y el alto de la silueta quedan en el registro)
+ const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,kg:r.kg,dims:r.dims,largo:r.largo,alto:r.altoAnimal,v:r.v,aviso:null};});
+ console.log('ganado v6',JSON.stringify(G));assert.equal(G.v,6);
+ assert.ok(G.largo>170&&G.largo<230,'largo cerca de 200 cm');assert.ok(G.alto>125&&G.alto<175,'alto cerca de 150 cm');
+ assert.ok(G.dims&&G.dims.WH>100&&G.dims.WH<160&&G.dims.CD>40&&G.dims.CD<100,'alzada y fondo de pecho de un bovino');
+ assert.ok(G.pred>150&&G.pred<900,'peso del modelo de un bovino');assert.ok(/alzada|withers|cernelha/i.test(txt),'muestra la alzada');
  await p.click('#sheet [data-act="pcAgregar"]');await p.waitForTimeout(300);assert.equal(await p.$$eval('.pc-sesion .row',e=>e.length),1,'agregado al pesaje');
  const n0=await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length);await p.click('[data-act="pcGuardar"]');await p.waitForTimeout(300);
  assert.equal(await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length),n0+1,'pesaje guardado');
