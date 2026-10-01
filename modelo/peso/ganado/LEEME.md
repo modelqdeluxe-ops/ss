@@ -2,16 +2,22 @@
 
 ## El modelo
 
-    ln peso (kg) = a(tipo) [− 0.40 si tiene menos de 1 año] + 2.0 · ln alzada + 0.54 · ln(fondo de pecho / (0.52 · alzada))
+    ln peso (kg) = a(tipo) + etapa + 2.0 · ln alzada + 0.54 · ln(fondo de pecho / (0.52 · alzada))
 
 (cm, medidos en la foto de costado; la razón fondo/alzada se limita a 0.42–0.65 y se avisa si se sale)
 
 | Tipo de animal | a | De dónde sale |
 |---|---|---|
-| Europeo de carne | −3.392 | Horqin (71 animales con fotos y báscula) |
-| Cebú o criollo | −3.876 | promedio de Bororo (292), Indonesia adultos (29) y Curraleiro adultos (437) |
-| Cruce de cebú y europeo | −3.634 | en medio de los dos |
-| Lechero | −3.392 | sin base abierta con báscula: usa el de europeo (calibrar) |
+| Europeo de carne | −3.45 | Horqin −3.39 (71 con fotos y báscula), Hereford −3.49, Angus −3.26 y −3.52, JXcow −3.43, Angus 3D −3.51 |
+| Cebú o criollo | −3.876 | Bororo (292), Indonesia adultos (29), Curraleiro adultos (437); Brahman −3.86 |
+| Cruce de cebú y europeo | −3.66 | en medio; Girolando y Holstein × cebú en crecimiento −3.70 a −3.72 (con su etapa) |
+| Lechero | −3.53 | Holstein vacas −3.52, Pardo Suizo de 24 meses −3.56, toros Holstein −3.59 |
+
+| Etapa | suma | De dónde sale |
+|---|---|---|
+| Ternero (menos de 1 año) | −0.40 | destetados de Curraleiro, jóvenes de Indonesia, terneros Simmental, novillos Japanese Black |
+| En crecimiento (1 a 2 años) | −0.20 | Sussex 12–15 meses, Pardo Suizo 15 meses, Holstein 15 meses, Kalmyk 18 meses |
+| Adulto o terminado | 0 | |
 
 - **Alzada a la cruz**: de lo más alto del lomo sobre las manos (del hombro a 15 % del largo hacia atrás) al suelo
   (lo más bajo de la silueta). La foto de atrás da una segunda alzada (la de la grupa, ~1.03 veces la de la cruz) con
@@ -21,13 +27,52 @@
 - Silueta del modelo preciso (RF-DETR) y puntos AP-10K de la foto (con el espejo promediado). Mismas definiciones en
   Python (`medir_bov.py`, `rasgos_final.py`) y en la app (`medidasGanado`, `pesoGanado` en `app/assets/pesocam.js`).
 - Escala: en la app, la persona de referencia junto al animal; en el ajuste, la alzada de cinta.
-- Tipo y edad: se eligen por lote en la pantalla de la cámara; de inicio salen de la raza escrita en el lote
+- Tipo y etapa: se eligen por lote en la pantalla de la cámara; de inicio salen de la raza escrita en el lote
   (`tipoDeRaza`: Brangus, Braford, F1… → cruce; Brahman, Nelore, Gyr, criollos… → cebú; Angus, Hereford, Charolais,
   Simmental… → europeo; Holstein, Jersey… → lechero). Sin raza: cruce, y la app pide elegir.
 - Después, la calibración de la app con la báscula (k · P^b, b entre 0.4 y 1.15) corrige lo propio de cada lote.
 - Ajuste: `python3 ajustar_ganado.py` (con `VALIDAR=<carpeta>` valida además con CowDatabase, sin licencia comercial).
 
-### Por qué un punto de partida por tipo y edad
+### Las razas que más se usan, contra el modelo
+
+`tablas/promedios_razas.csv`: promedios publicados de peso y alzada por raza y etapa (artículos de acceso abierto,
+con la fuente en cada fila); `ajustar_ganado.py` compara cada uno con el punto de partida de su tipo en la app:
+
+| Raza (etapa) | diferencia con la app |
+|---|---|
+| Brahman, Indonesia (2 años, 57) | +2 % |
+| Munshiganj, cebú de Bangladesh | 0 % |
+| Madura (cebú) | −8 % |
+| Girolando 3/4 (novillas) | −6 % |
+| Holstein × cebú (novillas) | −4 % |
+| Pardo Suizo (15 y 24 meses) | −7 % y −3 % |
+| Holstein (vacas, toros, novillas) | +1 %, −6 %, −12 % |
+| Angus (toros de engorde, 96) | −5 % |
+| Sussex, Japanese Black | 0 % |
+| Kalmyk (novillas) | −12 % |
+| Bali (Bos javanicus, otra especie) | −18 % |
+| Criollo altoandino (vacas) | +16 % |
+
+Con solo el tipo y la etapa, la mayoría queda a ±8 %. Lo demás lo corrige la calibración con la báscula.
+
+### Lo que de verdad separa las razas: el ancho
+
+Con cinta, en 8 bases (Horqin, Bororo, Curraleiro, Indonesia, Hereford, dos de Angus y búfalas), una sola fórmula
+para todas:
+
+| Medidas | sesgo en una base que la fórmula no vio | error |
+|---|---|---|
+| solo alzada | 0.70 a 1.57 | 10 a 57 % |
+| alzada + perímetro torácico | 0.91 a 1.17 | 6 a 17 % (mediana 8.7 %) |
+
+El perímetro (la forma del pecho: fondo y ancho) explica casi toda la diferencia entre razas. El fondo se ve de
+costado; el ancho, de arriba o de atrás. Pero medido en fotos todavía no alcanza: en Hereford, el fondo de pecho de la
+foto contra el de cinta da r = 0.59 y el ancho visto desde arriba (cámara fija del corral) contra el de cinta,
+r = 0.30. Con medidas de cinta el perímetro como elipse (fondo × ancho) daría 6.0 % y con la cinta 4.8 %; con fotos,
+7.9–8.2 %. Por eso las cámaras enlazadas: varias vistas y varias fotos del mismo instante bajan el ruido de cada
+medida; y la vista de arriba se guarda en el laboratorio para ajustar el ancho con básculas reales.
+
+### Por qué un punto de partida por tipo y etapa
 
 | Base | peso / alzada² (kg/m²) | fondo / alzada | perímetro / alzada |
 |---|---|---|---|
@@ -105,8 +150,23 @@ Níger (Zenodo, doi 10.5281/zenodo.22911607); Curraleiro Pé-Duro (Zenodo, recor
 jameswisnuaryatama); Simmental con LiDAR (Zenodo 11277007, Sci Data doi 10.1038/s41597-025-04783-6); Kaggle BMGF
 (Acme AI, bhalo y mPower). Ver también `CONTINUAR.md`.
 
+### Segunda búsqueda, por raza (1 oct 2026)
+
+388 consultas por raza (Brahman, Angus, Pardo Suizo/Braunvieh, Girolando, Gyr, Holstein, Nelore, Jersey, Hereford,
+Charolais, Simmental, Limousin, Sahiwal, Brangus, criollos, Hanwoo, Wagyu, razas africanas e indonesias…) × medidas
+(peso vivo, perímetro, alzada) en Zenodo, figshare, Mendeley, DataCite, Dryad, Kaggle y Harvard Dataverse (≈ 40,000
+resultados), más 496 artículos de acceso abierto de Europe PMC con alzada y peso, de los que se leyeron 295 tablas.
+- Bases con cada animal (peso + alzada) y licencia abierta para estas razas: **no hay** fuera de las ya usadas. Las de
+  Angus con cada animal son las de Ruchay (sin licencia: solo validan). Los artículos de Girolando, Gyr, Brahman,
+  Pardo Suizo y Holstein publican promedios y ecuaciones, no los animales.
+- Con los promedios publicados se armó `tablas/promedios_razas.csv` (arriba) para revisar los puntos de partida.
+- Revisadas y sin peso por animal: RGB-D de vacas lecheras de Rusia (Zenodo 20290988, 1,025 animales, solo condición
+  corporal), SideViewCows2026 (Zenodo 21605650, 80,260 fotos de costado de 110 Holstein, sin peso), M-Vet (Uganda).
+
 ## Para bajar del 8 %
 
+0. **Teléfonos enlazados** (beta.26): hasta tres teléfonos toman al animal en el mismo instante (costado, por
+   detrás y el otro costado o desde arriba). El otro costado da una segunda medida del fondo de pecho; arriba, el ancho.
 1. **Calibrar con la báscula** (la app lo hace por modo; b libre de 0.4 a 1.15).
 2. **Calibración por animal** (pendiente): cada animal tiene su peso de entrada; si se mide con la cámara ese día, su
    factor queda guardado y lo propio del animal se cancela.

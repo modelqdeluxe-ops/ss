@@ -64,6 +64,11 @@ for k,d in {**B,**J}.items():
     g=tipo[k];otras=[a[x] for x in B if tipo[x]==g and x!=k and x!='Horqin'] if g=='cebu' else [A['euro']]
     ag=np.mean(otras) if otras else A[g];fila(k,d,ag,JOVEN if k in J else 0)
 print('* con el punto de partida de su tipo calculado SIN esa base (cebú) y con la corrección de jóvenes donde corresponde')
+# 5) promedios publicados por raza (tablas/promedios_razas.csv): el punto de partida que da cada uno con su etapa
+ET={'adulto':0,'crec':-.2,'ternero':-.4};AP={'euro':-3.45,'cruce':-3.66,'cebu':-3.876,'leche':-3.53}
+pr=T('tablas/promedios_razas.csv');pr['a']=np.log(pr.peso_kg)-BETA*np.log(pr.alzada_cm)-pr.etapa.map(ET)
+print('\npromedios por raza (a = ln peso − 2 ln alzada − etapa; el de la app por tipo)')
+for _,x in pr.iterrows():print(f'   {x.raza:34s} {x.tipo:6s} a {x.a:6.3f}  app {AP[x.tipo]:6.3f}  diferencia {np.exp(x.a-AP[x.tipo])-1:+.0%}')
 V=os.environ.get('VALIDAR')
 if V:
     x=pd.read_excel(os.path.join(V,'CowDatabase/Measurements.xlsx'))

@@ -1,0 +1,86 @@
+Etapa	Stage	Fase
+Ternero	Calf	Bezerro
+En crecimiento	Growing	Em crescimento
+Adulto o terminado	Adult or finished	Adulto ou terminado
+Ternero: menos de {0} año. En crecimiento: de {1} a {2} años (toretes, novillos, novillas).	Calf: under {0} year. Growing: {1} to {2} years (young bulls, steers, heifers).	Bezerro: menos de {0} ano. Em crescimento: de {1} a {2} anos (garrotes, novilhos, novilhas).
+Cebú o criollo · Ternero	Zebu or criollo · Calf	Zebu ou crioulo · Bezerro
+Cebú o criollo · En crecimiento	Zebu or criollo · Growing	Zebu ou crioulo · Em crescimento
+Cruce de cebú y europeo · Ternero	Zebu × European cross · Calf	Cruzamento zebu × europeu · Bezerro
+Cruce de cebú y europeo · En crecimiento	Zebu × European cross · Growing	Cruzamento zebu × europeu · Em crescimento
+Europeo de carne · Ternero	European beef breed · Calf	Europeu de corte · Bezerro
+Europeo de carne · En crecimiento	European beef breed · Growing	Europeu de corte · Em crescimento
+Lechero · Ternero	Dairy · Calf	Leiteiro · Bezerro
+Lechero · En crecimiento	Dairy · Growing	Leiteiro · Em crescimento
+A igual alzada y fondo, un cebú o criollo pesa cerca de {0} veces lo que un europeo de carne; un ternero, unas {1} veces lo de un adulto, y uno en crecimiento, unas {2}.	At the same height and chest depth, a zebu or criollo weighs about {0} times as much as a European beef animal; a calf, about {1} times as much as an adult, and a growing animal, about {2}.	Com a mesma altura e profundidade do peito, um zebu ou crioulo pesa cerca de {0} vezes o que pesa um europeu de corte; um bezerro, cerca de {1} vezes o de um adulto, e um em crescimento, cerca de {2}.
+Teléfonos enlazados	Linked phones	Telefones conectados
+Hasta dos teléfonos más toman al animal al mismo tiempo que este: por detrás y del otro costado (o desde arriba). Se conectan por el mismo Wi-Fi o por el punto de acceso de un teléfono, sin internet.	Up to two more phones photograph the animal at the same moment as this one: from behind and from the other side (or from above). They connect over the same Wi-Fi or a phone's hotspot, without internet.	Até dois telefones a mais fotografam o animal no mesmo instante que este: por trás e do outro lado (ou de cima). Eles se conectam pelo mesmo Wi-Fi ou pelo ponto de acesso de um telefone, sem internet.
+Sin enlazar	Not linked	Não conectado
+Enlazar	Link	Conectar
+Quitar	Remove	Remover
+Por detrás	From behind	Por trás
+Otro costado	Other side	Outro lado
+Desde arriba	From above	De cima
+Usar este teléfono como cámara de otro	Use this phone as another phone's camera	Usar este telefone como câmera de outro
+Con el servidor del equipo también puedes invitar a un colaborador sin leer códigos.	With the team server you can also invite a staff member without scanning codes.	Com o servidor da equipe você também pode convidar um colaborador sem ler códigos.
+Esperando el otro teléfono	Waiting for the other phone	Esperando o outro telefone
+Conectada	Connected	Conectada
+Lista	Ready	Pronta
+Se perdió la conexión	Connection lost	A conexão caiu
+Cerrada	Closed	Fechada
+Enlazar un teléfono	Link a phone	Conectar um telefone
+En el otro teléfono abre Rumentis Equipo (o Rumentis Beta), toca Cámara para pesaje y lee este código.	On the other phone open Rumentis Team (or Rumentis Beta), tap Weighing camera and scan this code.	No outro telefone abra o Rumentis Equipe (ou o Rumentis Beta), toque em Câmera para pesagem e leia este código.
+Después el otro teléfono muestra su código: léelo con este.	Then the other phone shows its code: scan it with this one.	Depois o outro telefone mostra o código dele: leia com este.
+Leer el código del otro teléfono	Scan the other phone's code	Ler o código do outro telefone
+O invita a un colaborador por el equipo:	Or invite a staff member through the team:	Ou convide um colaborador pela equipe:
+Invitar	Invite	Convidar
+Listo	Done	Pronto
+No se pudo preparar el enlace en este teléfono.	The link could not be prepared on this phone.	Não foi possível preparar a conexão neste telefone.
+Apunta al código QR del otro teléfono	Point at the other phone's QR code	Aponte para o código QR do outro telefone
+Conectando…	Connecting…	Conectando…
+Invitación enviada. Espera a que el colaborador la acepte.	Invitation sent. Wait for the staff member to accept it.	Convite enviado. Espere o colaborador aceitar.
+Sin servidor del equipo: enlaza con el código QR.	No team server: link with the QR code.	Sem servidor da equipe: conecte com o código QR.
+No se pudo enviar la invitación. Enlaza con el código QR.	The invitation could not be sent. Link with the QR code.	Não foi possível enviar o convite. Conecte com o código QR.
+Ese código no es la respuesta de una cámara enlazada.	That code is not a linked camera's answer.	Esse código não é a resposta de uma câmera conectada.
+Ese código es de otro enlace. Vuelve a empezar en el otro teléfono.	That code belongs to another link. Start again on the other phone.	Esse código é de outra conexão. Comece de novo no outro telefone.
+Ese enlace ya no está abierto.	That link is no longer open.	Essa conexão não está mais aberta.
+No se pudo enlazar con ese código.	Could not link with that code.	Não foi possível conectar com esse código.
+Ese código no es de una cámara enlazada.	That code is not from a linked camera.	Esse código não é de uma câmera conectada.
+Ese código es de una versión más nueva de Rumentis.	That code is from a newer version of Rumentis.	Esse código é de uma versão mais nova do Rumentis.
+Cámara enlazada	Linked camera	Câmera conectada
+Que la administración lea este código con su teléfono.	Have the administration scan this code with their phone.	Peça para a administração ler este código com o telefone dela.
+Esperando la conexión…	Waiting for the connection…	Esperando a conexão…
+Cancelar	Cancel	Cancelar
+No se pudieron conectar. Que los dos teléfonos estén en el mismo Wi-Fi o en el punto de acceso de uno de ellos.	They could not connect. Make sure both phones are on the same Wi-Fi or on one of them's hotspot.	Não foi possível conectar. Os dois telefones devem estar no mesmo Wi-Fi ou no ponto de acesso de um deles.
+Este teléfono no tiene la cámara con visión: instala la versión beta.	This phone does not have the vision camera: install the beta version.	Este telefone não tem a câmera com visão: instale a versão beta.
+No se pudo responder. Enlaza con el código QR.	Could not reply. Link with the QR code.	Não foi possível responder. Conecte com o código QR.
+Conectando con la administración…	Connecting with the administration…	Conectando com a administração…
+Apunta al animal, que se vea completo	Point at the animal so it is fully visible	Aponte para o animal, que apareça inteiro
+El animal de espaldas a la cámara, con la persona de referencia a su lado.	The animal with its back to the camera, with the reference person beside it.	O animal de costas para a câmera, com a pessoa de referência ao lado.
+El animal de costado, del lado contrario al de la administración.	The animal from the side, on the side opposite the administration.	O animal de lado, do lado oposto ao da administração.
+El teléfono arriba del animal (desde la pasarela o la cerca de la manga), mirando hacia abajo.	The phone above the animal (from the catwalk or the chute fence), looking down.	O telefone acima do animal (da passarela ou da cerca do brete), olhando para baixo.
+Que el animal quede de espaldas a la cámara	Have the animal turn its back to the camera	Que o animal fique de costas para a câmera
+Que el animal quede de costado	Have the animal stand sideways	Que o animal fique de lado
+Que el animal se vea completo desde arriba	Make the whole animal visible from above	Que o animal apareça inteiro de cima
+Enlazada con	Linked with	Conectada com
+Lista: esperando la señal de la administración	Ready: waiting for the administration's signal	Pronta: esperando o sinal da administração
+Se perdió la conexión con la administración.	The connection with the administration was lost.	A conexão com a administração caiu.
+Recibiendo las fotos de los otros teléfonos…	Receiving the photos from the other phones…	Recebendo as fotos dos outros telefones…
+No llegaron las fotos de: {0}	Photos did not arrive from: {0}	Não chegaram as fotos de: {0}
+Esperando a: {0}	Waiting for: {0}	Esperando: {0}
+Cámaras	Cameras	Câmeras
+De costado	From the side	De lado
+Del otro costado, el fondo de pecho entre la alzada:	From the other side, chest depth divided by height:	Do outro lado, a profundidade do peito dividida pela altura:
+; se promedia con el de este costado.	; it is averaged with this side's.	; é feita a média com a deste lado.
+Desde arriba, el ancho del tronco entre su largo:	From above, trunk width divided by its length:	De cima, a largura do tronco dividida pelo comprimento:
+; se guarda para el laboratorio.	; it is saved for the laboratory.	; é guardado para o laboratório.
+Fondo / alzada del otro costado	Depth / height, other side	Profundidade / altura do outro lado
+Ancho / largo desde arriba	Width / length from above	Largura / comprimento de cima
+Etapa del animal	Animal stage	Fase do animal
+Cámara para pesaje	Weighing camera	Câmera para pesagem
+Este teléfono toma al animal al mismo tiempo que el de la administración. Conéctense al mismo Wi-Fi o al punto de acceso de uno de los teléfonos.	This phone photographs the animal at the same moment as the administration's. Connect to the same Wi-Fi or to one of the phones' hotspot.	Este telefone fotografa o animal no mesmo instante que o da administração. Conectem-se ao mesmo Wi-Fi ou ao ponto de acesso de um dos telefones.
+Leer el código de la administración	Scan the administration's code	Ler o código da administração
+Unirme: {0}	Join: {0}	Entrar: {0}
+Unirme: Por detrás	Join: From behind	Entrar: Por trás
+Unirme: Otro costado	Join: Other side	Entrar: Outro lado
+Unirme: Desde arriba	Join: From above	Entrar: De cima
+La administración te invita a la cámara para pesaje.	The administration invites you to the weighing camera.	A administração convida você para a câmera de pesagem.

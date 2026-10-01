@@ -11,3 +11,9 @@ fotos de COCO val2017 `frente.jpg` = 000000223959, `lejos.jpg` = 000000295478, `
 `atras.jpg` = 000000467776). `SIN_WORKER=1` prueba el camino sin Web Worker. Comprueba también los puntos del cuerpo en vivo
 (≥ 100 de 133 en la persona, ≥ 8 de 17 en la vaca), el modelo de peso v3 (medidas, `pred`, puntos en las dos fotos) y
 que el peso casi no cambie entre tomas de la misma escena (< 6 %).
+
+`enlace_t.js` prueba los teléfonos enlazados: tres páginas (la administración de costado, una cámara por detrás con
+Rumentis Beta y una del otro costado con Equipo Beta) conectadas por WebRTC real con los códigos de enlace. Comprueba
+que la administración espere a las otras cámaras, que un disparo tome las tres vistas (sin pedir el paso por detrás),
+que el peso use el otro costado, que el resultado llegue a las cámaras y que si un teléfono se cae se siga sin él.
+Mismos servidores y fotos que `vivo_t.js`.

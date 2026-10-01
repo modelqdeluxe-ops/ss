@@ -253,18 +253,18 @@ function compartirTexto(t){
 }
 
 /* ---------- QR ---------- */
-async function qrSvg(texto,{color='#1A2B3A'}={}){
-  const Q=await qrLib();const q=Q(0,'M');q.addData(texto,'Byte');q.make();const n=q.getModuleCount(),m=2;
+async function qrSvg(texto,{color='#1A2B3A',ecc='M'}={}){
+  const Q=await qrLib();const q=Q(0,ecc);q.addData(texto,'Byte');q.make();const n=q.getModuleCount(),m=2;
   let p='';for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(q.isDark(y,x))p+=`M${x+m} ${y+m}h1v1h-1z`;
   return `<svg class="qr" viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges" role="img" aria-label="Código QR"><rect width="100%" height="100%" fill="#fff"/><path d="${p}" fill="${color}"/></svg>`;
 }
 /* lector de QR con la cámara: BarcodeDetector si el teléfono lo tiene; si no, jsQR (Apache 2.0, lib/jsQR.js) */
 let lector=null;
 function cerrarLector(){if(!lector)return;try{lector.stream.getTracks().forEach(t=>t.stop());}catch(e){}cancelAnimationFrame(lector.raf);const w=lector.w;lector=null;if(w)w.remove();}
-async function escanearQR(){
+async function escanearQR(texto){
   cerrarLector();
   return new Promise(async ok=>{
-    const w=document.createElement('div');w.className='eq-lector';w.innerHTML=`<video playsinline muted></video><div class="eq-marco"><i></i></div><p>Apunta al código QR que te dio tu jefe</p><button type="button" class="btn">Cancelar</button>`;
+    const w=document.createElement('div');w.className='eq-lector';w.innerHTML=`<video playsinline muted></video><div class="eq-marco"><i></i></div><p>${texto||'Apunta al código QR que te dio tu jefe'}</p><button type="button" class="btn">Cancelar</button>`;
     document.body.appendChild(w);const v=w.querySelector('video');let fin=false;const listo=t=>{if(fin)return;fin=true;cerrarLector();ok(t);};
     w.querySelector('button').onclick=()=>listo(null);
     let stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false});}

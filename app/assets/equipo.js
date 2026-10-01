@@ -239,10 +239,16 @@ async function procesar(s){
   if(s.e!==e.id&&!(s.t==='alta'&&s.x==='plano'&&!s.e))return 0;
   const vis=SY.vistos||[];if(vis.includes(s.id))return 0;SY.vistos=vis.concat(s.id).slice(-600);guardarSY();
   if(s.t==='alta')await procesarAlta(s);else if(s.t==='ops')await procesarOps(s);else if(s.t==='reporte')return await procesarReporte(s);
-  else if(s.t==='foto')await procesarFoto(s);else if(s.t==='perfil')await procesarPerfil(s);else return 0;
+  else if(s.t==='foto')await procesarFoto(s);else if(s.t==='perfil')await procesarPerfil(s);else if(s.t==='camr')await procesarCam(s);else return 0;
   return 1;
 }
 
+/* ---------- cámaras enlazadas (beta): la invitación va con la caja del colaborador; su respuesta la abre enlace.js ---------- */
+async function enviarCam(vid,carga){const e=EQ(),v=e&&(e.vaqueros||{})[vid],f=firmaJ();if(!v||!f||v.estado!=='activo')return false;
+  encolar(await N.sellar('cam',{e:e.id,de:'jefe',para:vid,carga,caja:{pub:v.caja,sec:e.caja.sec},firmaSec:f.sec}));await sincronizar();return true;}
+async function procesarCam(s){const e=EQ(),v=(e.vaqueros||{})[s.de];if(!v||v.estado!=='activo')return;
+  const c=await N.abrir(s,{caja:{pub:v.caja,sec:e.caja.sec},firmaPub:v.firma});if(c&&Date.now()-(+c.ts||0)<10*60e3&&window.alCamEquipo)await window.alCamEquipo(c);}
+window.EquipoJefe={hayServidor:()=>!!(EQ()&&servidor()),activos:()=>activos().map(v=>({id:v.id,nombre:v.nombre})),enviarCam};
 /* ---------- fotos del equipo: evidencias de tareas y fotos de perfil ---------- */
 async function abrirDe(s){
   const e=EQ(),v=(e.vaqueros||{})[s.de];if(!v)return null;

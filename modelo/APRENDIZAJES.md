@@ -151,6 +151,18 @@ Lecciones:
 - Bases que no traen licencia comercial (CowDatabase, JXcow) se usan solo para validar; claves de traducción con
   nombres de razas dependen de los datos del usuario (se vuelven {n}): mejor nombres de tipo sin ejemplos.
 
+## 6d. Razas y teléfonos enlazados (beta.26)
+
+- No existen bases abiertas con cada animal de Brahman, Pardo Suizo o Girolando: los artículos publican promedios y
+  ecuaciones. Los promedios bastan para revisar el punto de partida de cada tipo (±8 % en la mayoría).
+- La etapa importa tanto como la raza: a igual alzada, un ternero pesa ~0.67 veces y uno de 1–2 años ~0.82 veces lo de
+  un adulto.
+- Con cinta, el perímetro hace que una sola fórmula sirva para todas las razas (6–17 %): lo que falta es el ancho. En
+  foto todavía es ruidoso (fondo de pecho r = 0.59 con la cinta; ancho desde arriba r = 0.30): más vistas a la vez.
+- WebRTC entre teléfonos sin internet: se necesita intercambiar la oferta y la respuesta una vez (QR o sobres del
+  equipo). Con la cámara abierta el navegador da las IP locales (sin ella, nombres .local que algunos anclajes no
+  resuelven). El código cabe en un QR de corrección L (~580 caracteres comprimidos).
+
 ## 7. Herramientas
 
 - `maestro_silueta.py` (en el repo): siluetas del maestro para entrenar el rápido.

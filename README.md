@@ -197,11 +197,18 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
 - **Ganado: modelo v7** (`pesocam.js`, `modelo/peso/ganado/`): peso = e^a · alzada^2.0 · (fondo de pecho / 0.52 alzada)^0.54
   (cm, de la foto de costado con la silueta del modelo preciso y los puntos AP-10K; la escala, de la persona de
   referencia; la alzada de atrás se promedia con la de costado si coinciden). `a` según el tipo de animal (cebú o
-  criollo, cruce, europeo de carne, lechero; −0.40 si tiene menos de 1 año), elegido por lote en la cámara o sacado de
+  criollo, cruce, europeo de carne, lechero) y su etapa (ternero −0.40, en crecimiento −0.20), elegido por lote en la cámara o sacado de
   la raza del lote. Ajustado con 1,526 animales pesados en báscula (Horqin con fotos, cebú Bororo, criollos
   Curraleiro, Indonesia y terneros Simmental; todas CC BY 4.0): igual que v6 dentro de la raza (7.9 %) y, sin
   calibrar, 8–17 % en otras razas del mismo tipo (v6 daba 50–120 % en cebú y criollos). La calibración de ganado deja
   b entre 0.4 y 1.15. Detalle, bases revisadas y lo que no funcionó: `modelo/peso/ganado/LEEME.md`.
+- **Teléfonos enlazados** (`enlace.js`, beta.26): hasta tres teléfonos toman al animal en el mismo instante: el de la
+  administración (de costado, con la persona de referencia) y uno o dos del personal con **Equipo Beta** (por detrás,
+  del otro costado o desde arriba). Conexión directa entre teléfonos (WebRTC, cifrada) por el mismo Wi-Fi o el punto de
+  acceso de un teléfono, sin internet. Se enlazan una vez con un código QR (cada teléfono lee el del otro) o, con el
+  servidor del equipo, con una invitación al colaborador. La administración espera a que todas las cámaras estén
+  listas y dispara a todas; las fotos le llegan y las mide su modelo preciso. El otro costado aporta una segunda medida
+  del fondo de pecho; desde arriba se guarda el ancho para el laboratorio.
 - **Peso por volumen** (`pesocam.js`; en personas como comprobación, y en ganado si no hay puntos del animal): la escala en cm sale de la estatura (+2.5 cm de suela y pelo). Cada
   ángulo se captura con **2 fotos** (tomadas antes del pitido, aún quieto) y el modelo preciso mide todas; el volumen se
   calcula con cada par frente × costado (4 combinaciones) y se promedia; su dispersión (CV) entra en el rango. El

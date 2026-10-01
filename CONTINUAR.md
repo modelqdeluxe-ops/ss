@@ -18,7 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.25) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Rumentis Beta** (5.0.0-beta.26) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.26) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -217,7 +218,29 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.25** (esta rama): ganado con modelo de peso **v7**. Una hora de búsqueda masiva (Kaggle, Hugging Face,
+**5.0.0-beta.26** (esta rama): **teléfonos enlazados** y razas.
+- `enlace.js`: hasta tres teléfonos toman al animal en el mismo instante: la administración (de costado, con la persona
+  de referencia) y uno o dos más (por detrás, otro costado o desde arriba). Conexión directa WebRTC (canal de datos
+  cifrado) por el mismo Wi-Fi o el punto de acceso de un teléfono, **sin internet**. Enlace: con QR (la administración
+  muestra el suyo, el otro teléfono lo lee y muestra el suyo, la administración lo lee) o, si hay servidor del equipo,
+  por sobres cifrados (`cam` de la administración al colaborador, `camr` de vuelta; `EquipoJefe` en equipo.js,
+  `tarjetaCam` en vaquero.js). Con internet usa STUN de Cloudflare; sin internet, las direcciones de la red local
+  (se abre la cámara un instante para que el teléfono las dé, no nombres .local).
+- `camvivo.js`: modo `enlace` (la administración espera a que todas las cámaras estén en verde y un disparo las hace
+  tomar a la vez; las fotos llegan por el canal y las mide el modelo preciso de este teléfono; si llega la de atrás, no
+  se pide ese paso) y modo `personal` (la cámara del otro teléfono sigue al animal, avisa si está lista, toma sus fotos
+  al disparo y muestra el resultado). Si un teléfono se cae, la administración sigue sola.
+- `pesocam.js`: el otro costado (sin persona de referencia) da el fondo de pecho entre la alzada y se promedia; desde
+  arriba se guarda el ancho entre el largo (laboratorio). Etapa del animal (ternero −0.40, en crecimiento −0.20,
+  adulto 0) y puntos de partida revisados con promedios publicados por raza (`modelo/peso/ganado/tablas/promedios_razas.csv`).
+- Nueva app **Equipo Beta** (`scripts/variantes.sh`, `compilar.yml`).
+- Búsqueda por raza (388 consultas en 7 repositorios + 496 artículos): no hay bases abiertas con cada animal de
+  Brahman, Pardo Suizo o Girolando; con los promedios publicados, el modelo queda a ±8 % para la mayoría de las razas.
+  Lo que separa razas es el ancho (con perímetro, una sola fórmula para todas: 6–17 %); medido en fotos todavía es
+  ruidoso (r = 0.30 desde arriba en Hereford): ver `modelo/peso/ganado/LEEME.md`.
+- Prueba: `pruebas/enlace_t.js` (tres teléfonos en tres páginas, WebRTC real).
+
+**5.0.0-beta.25**: ganado con modelo de peso **v7**. Una hora de búsqueda masiva (Kaggle, Hugging Face,
 Zenodo, figshare, Mendeley, DataCite, Dryad, Dataverse, Embrapa, ScienceDB, GitHub; registro en
 `modelo/peso/ganado/LEEME.md`) y ajuste con 1,526 animales pesados (CC BY 4.0): Horqin (fotos), cebú Bororo de Níger,
 criollos Curraleiro Pé-Duro, bovinos de Indonesia y terneros Simmental (tablas en `modelo/peso/ganado/tablas/`).
@@ -362,6 +385,7 @@ Pruebas en `pruebas/` (se corren desde una carpeta de trabajo; escriben capturas
 - `equipo_t.js` todo el equipo (necesita `DUENO=<código maestro>` en el entorno; el dueño lo tiene, no está en el repo).
 - `red_t.js` equipo por internet (servidor local 8790), revocar licencia, cuenta solicitudes.
 - `v2_t.js` recorrido visual del equipo 4.9.0.
+- `enlace_t.js` tres teléfonos enlazados (WebRTC en tres páginas; mismos servidores que vivo_t.js).
 - `vivo_t.js` peso con cámara en vivo, personas y ganado (8112 con `silueta.onnx`, `seg.onnx`, `ort.bundle.js`,
   `ort-wasm-simd-threaded.wasm` y las fotos `frente.jpg` = COCO 000000223959, `lejos.jpg` = 000000295478,
   `lado.jpg` = 000000090062, `atras.jpg` = 000000467776; se bajan de

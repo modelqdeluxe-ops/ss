@@ -163,6 +163,8 @@ async function procesar(s){
   else if(s.t==='rechazo'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;if(VQ.estado!=='activo'){VQ.estado='rechazada';VQ.motivo=c.motivo||'La administración no aceptó la licencia.';}}
   else if(s.t==='clave'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;VQ.claves={...(VQ.claves||{}),[c.gen]:c.clave};if(c.gen>(+VQ.gen||0)){VQ.gen=c.gen;VQ.clave=c.clave;}}
   else if(s.t==='baja'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;darmeDeBaja();}
+  // invitación a la cámara enlazada (beta): vale 10 minutos
+  else if(s.t==='cam'){const c=await N.abrir(s,{caja,firmaPub:jefe});if(!c)return 0;if(Date.now()-(+c.ts||0)<10*60e3&&window.Enlace){VQ.camInv={t:c.t,rol:c.rol,ts:+c.ts};toast('La administración te invita a la cámara para pesaje.',4500);}}
   else if(s.t==='estado'){if(!activo())return 0;const k=(VQ.claves||{})[s.g];if(!k){VQ.estadoEspera=s;guardarVQ();return 0;}
     const c=await N.abrir(s,{clave:k,firmaPub:jefe});if(!c)return 0;if((c.ts||0)>=(VQ.estadoTs||0))aplicarEstado(c);}
   else hecho=0;
@@ -271,6 +273,7 @@ async function pendientes(){
     const s=await sobreFoto(fid);const marca=()=>{VQ.fotos={...VQ.fotos,[fid]:{...VQ.fotos[fid],env:1}};};
     if(!s){marca();continue;}L.push({s,marca});n++;}
   if(VQ.perfil&&!VQ.perfil.env){const s=await sobrePerfil();if(s)L.push({s,marca:()=>{VQ.perfil={...VQ.perfil,env:1};}});}
+  for(const x of (VQ.salidaCam||[]))L.push({s:x,marca:()=>{VQ.salidaCam=(VQ.salidaCam||[]).filter(z=>z.id!==x.id);}});
   return L;
 }
 async function sincronizar(){
@@ -521,6 +524,16 @@ function pantallaActivar(){
     ${CFG.prueba?`<p class="hint vq-prueba">App de prueba: con la licencia <b data-no-tr>${N.LIC_PRUEBA}</b> entras a una finca de muestra.</p>`:''}</div></main>`;
 }
 
+/* cámara para pesaje (beta): este teléfono como cámara enlazada al de la administración */
+const camInv=()=>VQ.camInv&&Date.now()-VQ.camInv.ts<10*60e3&&window.Enlace&&Enlace.ROLES[VQ.camInv.rol]?VQ.camInv:null;
+function tarjetaCam(){if(!CFG.beta||!window.Enlace||VQ.demo)return '';const inv=camInv();
+  return `<section class="sec">${secH('Cámara para pesaje')}<div class="card pad vq-cam"><p class="hint" style="margin:0">Este teléfono toma al animal al mismo tiempo que el de la administración. Conéctense al mismo Wi-Fi o al punto de acceso de uno de los teléfonos.</p>
+    ${inv?`<button type="button" class="btn pri full" data-act="vqCamUnir">Unirme: ${Enlace.ROLES[inv.rol].nombre}</button>`:''}
+    <button type="button" class="btn${inv?'':' pri'} full" data-act="enUnirme">Leer el código de la administración</button></div></section>`;}
+ACTS.vqCamUnir=async()=>{const inv=camInv();if(!inv)return;VQ.camInv=null;guardarVQ();
+  await Enlace.aceptarInvitacion(inv,async carga=>{if(!servidor()||!VQ.ficha)return false;
+    const s=await N.sellar('camr',{e:VQ.e,de:VQ.vid,para:'jefe',carga,caja:{pub:VQ.ficha.k,sec:VQ.yo.caja.sec},firmaSec:VQ.yo.firma.sec});
+    VQ.salidaCam=(VQ.salidaCam||[]).concat(s);guardarVQ();await sincronizar();return true;});render();};
 /* Hoy: el día de trabajo. Arriba lo asignado por la administración (con su avance), después anotar, los pendientes
    que Rumentis calcula para los lotes, el reporte del día y lo anotado. */
 PAGES.hoy=()=>{
@@ -533,6 +546,7 @@ PAGES.hoy=()=>{
    ${VQ.demo?`<div class="eq-prueba">${ico('check',2.2)}<p><b>Modo de prueba.</b> Estás en una finca de muestra; lo que anotes se queda en este teléfono.</p></div>`:''}
    <section class="sec">${secH('Asignadas por la administración',asig.length)}${asig.length?`<div class="vq-tcs">${asig.map(t=>tarjetaTarea(t,H)).join('')}</div>`:`<p class="hint">No tienes tareas asignadas para hoy.</p>`}</section>
    ${terminadasHoy(H)}
+   ${tarjetaCam()}
    <section class="sec">${secH('Anotar')}${tilesReg()}</section>
    ${lotesT.length?`<section class="sec">${secH('Pendientes de los lotes',lotesT.length,lnk('#tareas','Ver todo'))}<p class="hint vq-sub">Los calcula Rumentis con los datos de cada lote.</p><div class="card rows">${lotesT.slice(0,5).map(t=>filaTarea(t,H)).join('')}</div></section>`:''}
    ${tarjetaReporte()}

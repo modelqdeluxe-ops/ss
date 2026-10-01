@@ -72,7 +72,7 @@ s = re.sub(r'(<string name="app_name">)[^<]*(</string>)', lambda x: x.group(1) +
 sp.write_text(s, encoding='utf-8')
 # la app del personal lleva su nombre en el idioma del teléfono: Rumentis Equipo, Team o Equipe
 if app == 'vaquero':
-    otros = {'en': 'Team Test', 'pt': 'Equipe Teste'} if prueba == '1' else {'en': 'Rumentis Team', 'pt': 'Rumentis Equipe'}
+    otros = {'en': 'Team Test', 'pt': 'Equipe Teste'} if prueba == '1' else {'en': 'Team Beta', 'pt': 'Equipe Beta'} if os.environ.get('BETA') == '1' else {'en': 'Rumentis Team', 'pt': 'Rumentis Equipe'}
     for q, n in otros.items():
         dq = D / ('res/values-' + q)
         dq.mkdir(exist_ok=True)
