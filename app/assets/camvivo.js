@@ -17,7 +17,7 @@ const CFG=window.RUMENTIS||{};if(!CFG.beta||CFG.app!=='jefe'||!window.Vision)ret
 
 /* reglas generales (las de distancia y ángulo vienen en cada paso) */
 // tomas: fotos por ángulo para el modelo preciso (se promedian: menos ruido); separadas `entre` ms
-const REGLAS={score:.5,margen:.02,quieto:.9,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6},tomas:3,entre:140};
+const REGLAS={score:.5,margen:.02,quieto:.86,seguidos:3,lienzo:960,ref:{alto:.25,forma:1.6},tomas:3,entre:140};
 const MARCA='Rumentis Labs';
 const CHIPS=[['det','Detectado'],['comp','Completo'],['dist','Distancia'],['ang','Ángulo'],['ref','Referencia'],['quieto','Quieto']];
 // colores de estado (esmeralda, ámbar y coral, un poco más suaves que los primarios: se ven más finos sobre el video)
@@ -237,7 +237,7 @@ function abrir(o){
     const espejo=persona?Vision.ESPEJO:Vision.ESPEJO_ANIMAL;
     if(!activo)return;w.classList.remove('carga');
     const R=rap.R,cr=document.createElement('canvas');cr.width=cr.height=R;const xr=cr.getContext('2d',{willReadFrequently:true});
-    let W=0,H=0,hist=[],prev=null,buenos=[],ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
+    let W=0,H=0,hist=[],prev=null,buenos=[],malos=0,ult=null,tiempos=[],pausa=0,fallas=0,vuelo=0,seq=0,hecho=0,bmpOk=typeof createImageBitmap==='function'?3:0;
     // el tamaño de trabajo del cuadro (hasta 960 px de lado)
     const medidas=()=>{const vw=v.videoWidth,vh=v.videoHeight,k=Math.min(1,REGLAS.lienzo/Math.max(vw,vh)),w2=Math.round(vw*k),h2=Math.round(vh*k);if(w2!==W||h2!==H){W=w2;H=h2;zona=null;}};
 
@@ -375,9 +375,13 @@ function abrir(o){
       const med=E.det?medir(s,W,H,p.banda):null;if(med&&conRef&&E.ref)med.refAlto=medir(pr,W,H).alto;
       ult=E.det&&E.comp&&(!conRef||E.ref)?{s,p:pr,med}:null;man.disabled=!ult;
       vis.s=E.det?s:null;vis.p=pr;vis.color=color;chips(E);w.dataset.estado=color;w.dataset.zona=zona?'si':'no';
-      if(listo){buenos.push({s,p:pr,med});prog.hidden=false;prog.style.setProperty('--p',buenos.length/REGLAS.seguidos);msg.textContent='Quieto…';
+      /* un cuadro que falla no reinicia la cuenta si el anterior estaba bien y lo que falló es poco (un temblor de la
+         silueta o del ángulo): solo dos seguidos la reinician. Así no cuesta tanto que se tome la foto */
+      const casi=!listo&&E.det&&E.comp&&E.dist&&(!conRef||E.ref)&&(ev.pos||0)>=.85;
+      if(listo){malos=0;buenos.push({s,p:pr,med});prog.hidden=false;prog.style.setProperty('--p',buenos.length/REGLAS.seguidos);msg.textContent='Quieto…';
         if(buenos.length>=REGLAS.seguidos)capturar(buenos,false);}
-      else{buenos=[];prog.hidden=true;msg.textContent=ev.msg;}
+      else if(buenos.length&&casi&&malos<1){malos++;}
+      else{buenos=[];malos=0;prog.hidden=true;msg.textContent=ev.msg;}
     }
     /* ---------- cuadros en vuelo: uno por worker del modelo rápido ---------- */
     async function tomar(Z){

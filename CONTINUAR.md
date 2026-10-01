@@ -217,7 +217,16 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.18** (esta rama): silueta rápida de personas v4, destilada del modelo preciso: RF-DETR marcó 5,866
+**5.0.0-beta.19** (esta rama): el dueño veía siempre "una medida salió fuera". Causas: de frente, `cortar` suponía un
+brazo de medio ancho fijo (4.9 cm) y con manga no lo reconocía (pecho con brazos: 55 cm en vez de 28); ahora mide el
+medio brazo (del borde a la línea de sus puntos, hasta 1.8 medios anchos) y lo quita entero. De perfil el brazo
+relajado queda encima del tronco y se cortaba (fondo del pecho y del glúteo 3–7 cm cortos): ya no se corta. El aviso
+sale solo si la medida se salió en la mitad o más de las combinaciones de fotos. Captura: un cuadro que falla por poco
+(posición ≥ 85 %) no reinicia la cuenta (dos seguidos sí); quieto 0.9 → 0.86; perfil algo más holgado (hombros
+0.36, tronco 0.7, proporción 0.8 de la de frente, máx 0.32). Repetibilidad de la prueba 3.0 → 1.8 %. Todo lo
+aprendido para llevarlo al ganado: `modelo/APRENDIZAJES.md`.
+
+**5.0.0-beta.18**: silueta rápida de personas v4, destilada del modelo preciso: RF-DETR marcó 5,866
 fotos (`modelo/vision/maestro_silueta.py` → `td/msk_t`) y el rápido se afinó 2 épocas con ellas
 (`SOLO_MAESTRO=1 DESDE2=v3_256_e2.pt RES=256 EPOCAS=2 LR=2e-4 entrenar_silueta2.py`). Error de área con el sujeto
 grande: casa 19.7 → 12.8 %, COCO 13.4 → 9.9 %; IoU casa 0.769 → 0.794 (tabla en `modelo/vision/LEEME.md`).
@@ -276,7 +285,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.18.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.19.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

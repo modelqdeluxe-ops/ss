@@ -21,7 +21,7 @@ const MODOS={
   persona:{clase:Vision.PERSONA,k:1.0,err:.03,alto:'estatura',
     buscar:'Párate frente a la cámara, de cuerpo completo',
     pasos:[{id:'frente',nombre:'De frente',instr:'De pie y derecho, con los brazos relajados y las manos un poco separadas de las piernas.',girar:'Ponte de frente, con las manos un poco separadas de las piernas',ang:{min:.24},dist:{eje:'alto',min:.55,max:.88}},
-      {id:'costado',nombre:'De costado',instr:'De perfil completo, con los brazos relajados a los lados.',girar:'Gírate de costado, con los brazos a los lados',girarMas:'Gírate un poco más: de perfil completo',ang:{max:.3,rel:.75,perfil:.65,hombros:.3},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
+      {id:'costado',nombre:'De costado',instr:'De perfil completo, con los brazos relajados a los lados.',girar:'Gírate de costado, con los brazos a los lados',girarMas:'Gírate un poco más: de perfil completo',ang:{max:.32,rel:.8,perfil:.7,hombros:.36},dist:{eje:'alto',min:.55,max:.88},banda:[.18,.55]}]},
   ganado:{clase:Vision.VACA,k:1.1,err:.15,alto:'refAlto',ref:true,
     buscar:'Apunta al animal, que se vea completo',
     pasos:[{id:'costado',nombre:'De costado',instr:'El animal de costado; la persona de referencia de pie, a la par del animal.',girar:'Que el animal quede de costado',ang:{min:1.15},dist:{eje:'ancho',min:.5,max:.88}},
@@ -178,14 +178,17 @@ const BRAZOS=[[5,7,.029],[7,9,.025],[9,103,.02],[6,8,.029],[8,10,.025],[10,124,.
 // el tramo de la fila que tiene el centro del cuerpo (o el más cercano; sin puntos, el más ancho)
 function tramoCentro(fila,c){if(!fila.length)return null;if(c==null)return fila.reduce((m,z)=>!m||z[1]-z[0]>m[1]-m[0]?z:m,null);
   let m=null,md=1e9;for(const z of fila){if(z[0]<=c&&c<=z[1])return z;const d=Math.min(Math.abs(z[0]-c),Math.abs(z[1]-c));if(d<md){md=d;m=z;}}return m;}
-/* quita de [a,b] (cm) un brazo o una mano pegados al borde del tramo z. Solo si el centro del brazo cae dentro del
-   tramo y cerca del borde (a menos de 1.6 medios anchos: el brazo es parte del tramo); si junto al brazo hay otro
-   tramo, el brazo va separado y no se corta; si va por delante del cuerpo (lejos del borde), tampoco. */
+/* quita de [a,b] (cm) un brazo o una mano pegados al borde del tramo z. Solo si el centro del brazo (la línea de sus
+   puntos) cae dentro del tramo y cerca del borde: el brazo es parte del tramo. Su ancho se mide, no se supone: del
+   borde a la línea del brazo hay medio brazo (con manga, más que el brazo desnudo), y el tronco empieza al otro lado,
+   a la misma distancia de la línea (al menos 0.8 medios anchos de un brazo desnudo). Hasta 1.8 medios anchos: más
+   lejos, el brazo va por delante del cuerpo y no se corta. Si junto al brazo hay otro tramo, va separado. */
 function cortar(a,b,fila,z,K,y,cw,alto,segs){
   if(!K)return [a,b];
   for(const [i,j,f] of segs){const x=xEn(K,i,j,y);if(x==null)continue;const xc=x*cw,hw=f*alto;if(xc<=a||xc>=b)continue;
     if(fila.some(t=>t!==z&&Math.abs((t[0]+t[1])/2*cw-xc)<2.5*hw))continue;
-    if(xc-a<1.6*hw)a=Math.max(a,xc+hw);else if(b-xc<1.6*hw)b=Math.min(b,xc-hw);}
+    const dl=xc-a,dr=b-xc;
+    if(dl<=dr&&dl<1.8*hw)a=Math.max(a,xc+Math.max(dl,.8*hw));else if(dr<dl&&dr<1.8*hw)b=Math.min(b,xc-Math.max(dr,.8*hw));}
   return [a,b];}
 /* dónde está la estatura en la silueta: la coronilla (celda `top`) y la estatura en celdas (H). Sin puntos, la silueta
    entera (menos suela y pelo). Con puntos, si de la oreja a los pies el cuerpo es bastante más largo que la silueta (la silueta
@@ -250,7 +253,9 @@ function medidasPersona(F,S,KF,KS,alto,ref,ropa){
   const MF=marco(F,KF,alto,ref),MS=marco(S,KS,alto,ref),cwF=F.cw*MF.k,cwS=S.cw*MS.k;
   const cF=y=>KF?centroEn(KF,y):null,cS=y=>KS?centroEn(KS,y):null;
   const anchoT=(fila,y)=>{const c=cF(y),z=tramoCentro(fila,c);if(!z)return 0;const [a,b]=cortar(z[0]*cwF,z[1]*cwF,fila,z,KF,y,cwF,alto,BRAZOS);return b-a;};
-  const fondoT=(fila,y)=>{const c=cS(y),z=tramoCentro(fila,c);if(!z)return 0;const [a,b]=cortar(z[0]*cwS,z[1]*cwS,fila,z,KS,y,cwS,alto,BRAZOS);return b-a;};
+  // (de perfil el brazo relajado queda encima del tronco, dentro de su fondo: no se corta. Cortarlo quitaba hasta la
+  // mitad del fondo del pecho)
+  const fondoT=(fila,y)=>{const c=cS(y),z=tramoCentro(fila,c);return z?(z[1]-z[0])*cwS:0;};
   const B=(T,M,h0,h1,fn)=>banda(T,M,h0,h1,fn);
   const d={
     bid:pctl(B(F,MF,N.hombro+.01,N.hombro+.08,(fila,y)=>{const z=tramoCentro(fila,cF(y));return z?(z[1]-z[0])*cwF:0;}),.9),
@@ -313,7 +318,10 @@ function combinar(modo,caps,alto,ropaK){
   if(modo==='persona'){
     // las medidas del modelo (promedio de los pares), el ancho de hombros y el fondo del pecho para la pantalla
     r.pred=base;r.dims={};for(const k of Object.keys(pares[0].M.d))r.dims[k]=prom(x=>x.M.d[k]);
-    r.topes=[...new Set(pares.flatMap(x=>x.M.topes))];r.puntos=pares.every(x=>x.a.K&&x.b.K);
+    // (una medida cuenta como fuera si se salió en la mitad o más de las combinaciones: el peso es su mediana, y una
+    // foto mala sola no lo mueve)
+    const nT={};for(const x of pares)for(const k of x.M.topes)nT[k]=(nT[k]||0)+1;
+    r.topes=Object.keys(nT).filter(k=>nT[k]>=pares.length/2);r.puntos=pares.every(x=>x.a.K&&x.b.K);
     r.giro=prom(x=>x.M.giro);r.incompleta=pares.some(x=>x.M.incompleta);r.estimadas=[...new Set(pares.flatMap(x=>x.M.estimadas))];
 
     r.limpia=prom(x=>Math.max(x.a.t.sil.limpia||0,x.b.t.sil.limpia||0));
