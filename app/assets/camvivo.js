@@ -353,7 +353,7 @@ function abrir(o){
     man.onclick=()=>{if(!ult)return toast('Que se vea completo para tomar la foto.');const l=buenos.length?buenos:[ult];capturar(l.slice(-REGLAS.seguidos),true);};
 
     /* ---------- un resultado del modelo rápido ---------- */
-    const tIni=performance.now(),msR=[],fpsL=[];let procesados=0;
+    const tIni=performance.now(),msR=[],fpsL=[];let procesados=0,fpsAct=0;
     function procesar(r,Z){
       procesados++;if(msR.length<400)msR.push(r.ms);
       const p=pasos[ip];let s=aCuadro(r.suj[o.clase],r.G,Z,W,H);const pr=conRef?aCuadro(r.suj[Vision.PERSONA],r.G,Z,W,H):null;
@@ -361,7 +361,7 @@ function abrir(o){
       if(persona&&s&&s.ok&&vis.kp&&now-vis.kp.t<600&&iou(vis.kp.n,s.n)>=.85&&poseBuena(vis.kp.p))s=limpiarSil(s,vis.kp.p,W,H);
       tiempos.push(now);tiempos=tiempos.filter(t=>now-t<2000);
       // (sobre al menos 0.8 s: con varios workers los resultados llegan en ráfagas y una ventana corta exagera)
-      if(tiempos.length>2&&now-tiempos[0]>=800){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
+      if(tiempos.length>2&&now-tiempos[0]>=800){const f=(tiempos.length-1)/((now-tiempos[0])/1000);fpsAct=f;fps.textContent=`${f.toFixed(1)} cuadros/s`;if(fpsL.length<400)fpsL.push(f);}
       // (ms y motor quedan en el diálogo para las pruebas)
       w.dataset.ms=Math.round(r.ms);w.dataset.motor=rap.modo+'×'+rap.n;
       // el cuadro siguiente mira solo la zona del sujeto; si la zona lo cortó (o en ganado falta la persona), completo
@@ -416,8 +416,11 @@ function abrir(o){
     function suavizar(P,A,alto){if(!A||A.length!==P.length)return P;
       for(let i=0;i<P.length;i+=3){if(A[i+2]<.3||P[i+2]<.3)continue;const dd=Math.hypot((P[i]-A[i])*W,(P[i+1]-A[i+1])*H)/Math.max(1e-6,alto*H),a=Math.min(1,.55+dd/.012*.45);
         P[i]=A[i]+(P[i]-A[i])*a;P[i+1]=A[i+1]+(P[i+1]-A[i+1])*a;}return P;}
+    /* la silueta manda: si su video baja de 15 cuadros/s (el teléfono no da para todo), los puntos esperan más entre uno
+       y otro (hasta 150 ms); el dibujo los desliza igual, así que se siguen viendo fluidos */
+    const esperaPose=()=>fpsAct>0&&fpsAct<15?Math.min(150,(15-fpsAct)*25):0;
     async function bombearPose(){
-      if(!activo||!poseV||poseVuelo>=poseV.n||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<Math.max(poseRespiro,poseMs/poseV.n))return;
+      if(!activo||!poseV||poseVuelo>=poseV.n||!vis.s||!vis.s.ok||!v.videoWidth||performance.now()<pausa||performance.now()-poseT<Math.max(poseRespiro,poseMs/poseV.n,esperaPose()))return;
       poseVuelo++;poseT=performance.now();const paso=ip,mi=++poseSeq;
       // el recorte sale de los puntos del cuadro anterior (seguimiento, como en los trajes de captura); si no hay o son
       // viejos, de la silueta. Así, si la silueta se pega a algo, los puntos no se van con ella.

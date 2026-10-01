@@ -38,8 +38,8 @@ Lo que funcionó:
 Lo que no funcionó (no repetir):
 - Más épocas con los mismos datos cuando ya se estancó (dos veces: v2 y v4).
 - Más datos del maestro (19,373 fotos en vez de 5,866, 3 épocas): mejor ancho, peor área e IoU. Techo del modelo.
-- Entrada de 384 px (peor que 320). **320 px sí ayuda** con los mismos pesos (IoU +0.008 casa, +0.007 calle):
-  exportar el modelo con tamaño de entrada libre y elegir el tamaño según el teléfono.
+- Entrada de 384 px (peor que 320). 320 px ayuda poco con los mismos pesos (IoU +0.008 casa, +0.007 calle) y cuesta
+  +35 % de tiempo: en el teléfono no valió la pena (beta.22 volvió a 256).
 - Espejo promediado, filtro guiado, cortar en mosaicos, MediaPipe Selfie (peor: 0.73 contra 0.77 en casa).
 - Entrada de 224 o 192 px (más rápido, −2 a −6 puntos de IoU); int8 estático (más lento en WASM).
 - RF-DETR Seg **Large** como maestro: no es mejor que el Nano contra las siluetas a mano de COCO (IoU casa 0.862
@@ -104,6 +104,10 @@ Lecciones:
   corral con báscula (el laboratorio de la app ya guarda medidas, fotos y peso real, y exporta para análisis).
 
 ## 6. La captura (que la foto se tome sola sin pelear)
+
+- **La velocidad del video manda.** Cada modelo en vivo le quita procesador a los demás: con 3 workers de silueta, 3 de
+  puntos y la silueta a 320 px el teléfono del dueño bajó a 9 cuadros/s (con beta.4 tenía ~20). Antes de agregar
+  carga, medir los cuadros/s en un teléfono real; los puntos ceden su turno si la silueta baja de 15 cuadros/s.
 
 - Reglas: completo (2 % de margen), distancia (55–88 % del alto del cuadro), ángulo, quieto (cajas que casi no se
   mueven) y 3 cuadros buenos.

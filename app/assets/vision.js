@@ -23,17 +23,17 @@ const abs=f=>new URL(f,new URL(BASE,location.href)).href;
 const NUC=(navigator.hardwareConcurrency||4);
 // copias del modelo rápido en paralelo: 3 en teléfonos de 8 núcleos, 2 con 6, 1 con menos (la cámara da ~30 cuadros/s)
 // rapidoP: el de personas (v4, con refinamiento a 1/4 y destilado del preciso); rapido: el de ganado (v1, mejor en vacas).
-// rapidoP acepta cualquier tamaño de entrada: 320 px en teléfonos de 6 núcleos o más (IoU casa 0.794 → 0.802, calle
-// 0.819 → 0.826, +35 % de tiempo) y 256 en los demás; a 384 empeora
+// rapidoP acepta cualquier tamaño de entrada. A 320 px la silueta mejora poco (IoU casa 0.794 → 0.802, calle
+// 0.819 → 0.826) y cuesta +35 % de tiempo: en el teléfono del dueño (beta.21) el video bajó a 9 cuadros/s. Se usa 256
 /* pose (puntos del cuerpo, como un traje de captura de movimiento), de OpenMMLab (Apache 2.0):
    cuerpoV: DWPose-s (cuerpo completo, 133 puntos: cuerpo, pies, cara, manos y dedos; ~2 veces más rápido), en el
-            video, en tres workers a turnos en teléfonos de 8 núcleos (dos con 6);
+            video, en dos workers a turnos en teléfonos de 6 núcleos o más (con tres le quitaba cuadros a la silueta);
    cuerpo: RTMW-m (los mismos 133 puntos, más preciso), en las fotos;
    animal: RTMPose de animales (AP-10K, 17 puntos). La entrada es un recorte alrededor del sujeto de W×H; devuelve los
    puntos en fracciones del recorte. */
 const MODELOS={rapido:{archivo:'silueta.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},
-  rapidoP:{archivo:'silueta_p.onnx',R:NUC>=6?320:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1},
-  cuerpo:{archivo:'cuerpo.onnx',W:192,H:256,tipo:'pose',n:1},cuerpoV:{archivo:'cuerpo_v.onnx',W:192,H:256,tipo:'pose',n:NUC>=8?3:NUC>=6?2:1},
+  rapidoP:{archivo:'silueta_p.onnx',R:256,G:128,tipo:'sem',n:NUC>=8?3:NUC>=6?2:1},preciso:{archivo:'seg.onnx',R:312,G:312,tipo:'detr',n:1},
+  cuerpo:{archivo:'cuerpo.onnx',W:192,H:256,tipo:'pose',n:1},cuerpoV:{archivo:'cuerpo_v.onnx',W:192,H:256,tipo:'pose',n:NUC>=6?2:1},
   animal:{archivo:'animal_m.onnx',W:256,H:256,tipo:'pose',n:1}};
 for(const k in MODELOS){const m=MODELOS[k];m.W=m.W||m.R;m.H=m.H||m.R;m.R=m.R||m.W;}
 /* los puntos y cómo se unen. Personas (COCO-WholeBody): 0 nariz, 1-2 ojos, 3-4 orejas, 5-6 hombros, 7-8 codos,
