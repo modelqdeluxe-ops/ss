@@ -37,6 +37,9 @@ Lo que funcionó:
 
 Lo que no funcionó (no repetir):
 - Más épocas con los mismos datos cuando ya se estancó (dos veces: v2 y v4).
+- Más datos del maestro (19,373 fotos en vez de 5,866, 3 épocas): mejor ancho, peor área e IoU. Techo del modelo.
+- Entrada de 384 px (peor que 320). **320 px sí ayuda** con los mismos pesos (IoU +0.008 casa, +0.007 calle):
+  exportar el modelo con tamaño de entrada libre y elegir el tamaño según el teléfono.
 - Espejo promediado, filtro guiado, cortar en mosaicos, MediaPipe Selfie (peor: 0.73 contra 0.77 en casa).
 - Entrada de 224 o 192 px (más rápido, −2 a −6 puntos de IoU); int8 estático (más lento en WASM).
 - RF-DETR Seg **Large** como maestro: no es mejor que el Nano contra las siluetas a mano de COCO (IoU casa 0.862

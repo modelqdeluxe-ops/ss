@@ -217,7 +217,11 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.20** (esta rama): pecho, cintura y cadera de frente se miden de tres maneras (sin cortar, brazo de
+**5.0.0-beta.21** (esta rama): `silueta_p.onnx` con tamaño de entrada libre (mismos pesos v4); 320 px en teléfonos
+de 6 núcleos o más (IoU casa 0.794 → 0.802, calle 0.819 → 0.826; +35 % de tiempo), 256 en los demás. Probado y
+descartado: 384 px (peor) y 3 épocas más con el maestro en 19,373 fotos (`td/msk_t` completo; mejor ancho, peor área).
+
+**5.0.0-beta.20**: pecho, cintura y cadera de frente se miden de tres maneras (sin cortar, brazo de
 tabla, brazo medido) y se queda la que cuadra con los hombros (`PRIOR` en pesocam.js, de ANSUR II). Banco de 33
 adultos de pie de COCO (`pruebas/banco_medidas/`): fuera de rango pecho 18 → 6 %, cintura 12 → 6 %, cadera 15 → 3 %.
 
@@ -289,7 +293,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.20.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.21.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

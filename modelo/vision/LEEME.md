@@ -63,6 +63,11 @@ de área / error de alto / error de ancho entre 20 y 60 % del alto):
 | Casa, cuadro completo | 0.724 / 29.8 % / 9.2 % / 25.2 % | **0.747 / 19.6 % / 8.6 % / 23.4 %** |
 | COCO, cuadro completo | 0.775 / 21.8 % / 9.0 % / 21.2 % | **0.779 / 17.1 % / 8.5 % / 16.2 %** |
 
+Desde beta.21 `silueta_p.onnx` acepta cualquier tamaño de entrada (los mismos pesos): con 320 px (teléfonos de 6
+núcleos o más) IoU con el sujeto grande casa 0.794 → 0.802 y calle 0.819 → 0.826, error de alto 6.5 → 6.2 % y
+5.1 → 4.7 %, con +35 % de tiempo; a 384 px empeora (casa 0.790). Tres épocas más con las siluetas del maestro en
+19,373 fotos (todas las de personas) no mejoraron: mejor ancho, peor área e IoU. El modelo llegó a su techo.
+
 ## Puntos del cuerpo (pose)
 
 Medido contra los puntos marcados a mano de COCO val2017 (233 personas grandes de `ev/`, error en fracción del alto de
