@@ -63,7 +63,7 @@ equivalente a "casa" para personas).
 
 ## 4. De la silueta a las medidas (lo que más error mete)
 
-Cómo se mide: `diag/banco.js` en el scratchpad (copia en este documento, sección 7) corre el camino de la app (modelo
+Cómo se mide: `pruebas/banco_medidas/` corre el camino de la app (modelo
 preciso + puntos de fotos) sobre fotos reales de personas de pie (COCO, 286 de cuerpo completo) y compara cada medida
 (en fracción de la estatura) con la distribución de ANSUR II. Una medida sesgada o que se sale seguido del rango
 humano es un error de la medición, no de la persona.
@@ -74,6 +74,11 @@ Lecciones:
   (55 cm en vez de 28). Se mide el medio brazo (del borde a la línea de sus puntos) y se quita el brazo entero.
 - **De perfil el brazo queda encima del tronco**: no se corta. Cortarlo quitaba hasta la mitad del fondo del pecho y
   del glúteo (el aviso "una medida salió fuera" salía siempre).
+- Aun así, con el brazo pegado la silueta es ambigua. Se mide de tres maneras (sin cortar, brazo de tabla, brazo
+  medido) y se queda la que cuadra con los hombros (ANSUR II: pecho = f(hombros, estatura) con 4.2 % de error típico;
+  cintura 7.2 %, cadera 6.5 %; un brazo de más o de menos cambia el ancho 20–50 %). Banco de 33 adultos de pie (COCO):
+  fuera de rango pecho 18 → 6 %, cintura 12 → 6 %, cadera 15 → 3 %; mediana del pecho 0.164 de la estatura (ANSUR
+  0.165). Herramienta: `pruebas/banco_medidas/`.
 - Las alturas de medida se anclan a los puntos (hombros 22 %, caderas 51.5 %, rodillas 71.4 %): la silueta puede
   tener algo pegado arriba o abajo.
 - Si la silueta no llega a la cabeza o los pies, la estatura y la escala salen de los puntos (`marco`).
@@ -105,13 +110,13 @@ Lecciones:
 - **Para el ganado**: el animal no obedece. Hará falta tomar fotos en ráfaga cuando esté de costado y quedarse con
   las mejores, más que esperar a que se quede quieto.
 
-## 7. Herramientas (en el scratchpad de las sesiones; copiar al repo si se reusan)
+## 7. Herramientas
 
 - `maestro_silueta.py` (en el repo): siluetas del maestro para entrenar el rápido.
 - `entrenar_silueta2.py` (en el repo): `SOLO_MAESTRO=1` para destilar.
-- Banco de medidas: una página de Playwright que carga `Vision.motor('preciso')` y `Vision.motor('cuerpo')`, corre
-  cada foto como la app y guarda silueta y puntos; un script de Node extrae de `pesocam.js` las funciones de medida
-  (de `const med=` a `function combinar`) y compara contra los percentiles de la base de datos.
+- `pruebas/banco_medidas/`: una página de Playwright que carga `Vision.motor('preciso')` y `Vision.motor('cuerpo')`,
+  corre cada foto como la app y guarda silueta y puntos; un script de Node extrae de `pesocam.js` las funciones de
+  medida (de `const med=` a `function combinar`) y compara contra los percentiles de la base de datos.
 
 ## 8. Licencias (producto comercial)
 

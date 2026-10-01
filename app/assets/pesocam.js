@@ -182,14 +182,21 @@ function tramoCentro(fila,c){if(!fila.length)return null;if(c==null)return fila.
    puntos) cae dentro del tramo y cerca del borde: el brazo es parte del tramo. Su ancho se mide, no se supone: del
    borde a la línea del brazo hay medio brazo (con manga, más que el brazo desnudo), y el tronco empieza al otro lado,
    a la misma distancia de la línea (al menos 0.8 medios anchos de un brazo desnudo). Hasta 1.8 medios anchos: más
-   lejos, el brazo va por delante del cuerpo y no se corta. Si junto al brazo hay otro tramo, va separado. */
-function cortar(a,b,fila,z,K,y,cw,alto,segs){
+   lejos, el brazo va por delante del cuerpo y no se corta. Si junto al brazo hay otro tramo, va separado.
+   `modo` 'fijo': el brazo con su medio ancho de tabla (si su línea está a menos de 1.6 medios anchos del borde). */
+function cortar(a,b,fila,z,K,y,cw,alto,segs,modo){
   if(!K)return [a,b];
   for(const [i,j,f] of segs){const x=xEn(K,i,j,y);if(x==null)continue;const xc=x*cw,hw=f*alto;if(xc<=a||xc>=b)continue;
     if(fila.some(t=>t!==z&&Math.abs((t[0]+t[1])/2*cw-xc)<2.5*hw))continue;
     const dl=xc-a,dr=b-xc;
+    if(modo==='fijo'){if(dl<1.6*hw)a=Math.max(a,xc+hw);else if(dr<1.6*hw)b=Math.min(b,xc-hw);continue;}
     if(dl<=dr&&dl<1.8*hw)a=Math.max(a,xc+Math.max(dl,.8*hw));else if(dr<dl&&dr<1.8*hw)b=Math.min(b,xc-Math.max(dr,.8*hw));}
   return [a,b];}
+/* anchos de frente esperados por los hombros (bideltoide) y la estatura, de ANSUR II (ln ancho = a + b ln bid + c ln S,
+   en mm; error típico: pecho 4.2 %, cintura 7.2 %, cadera 6.5 %). Con los brazos pegados al tronco la silueta es
+   ambigua (¿cuánto es brazo?): se mide de tres maneras (sin cortar, brazo de tabla, brazo medido) y se queda la que
+   mejor cuadra con los hombros. Un brazo de más o de menos cambia el ancho 20–50 %: mucho más que ese error. */
+const PRIOR={cb:[1.1367,0.673,0.0454],wb:[0.8232,1.1221,-0.2709],hb:[4.6358,0.4237,-0.1892]};
 /* dónde está la estatura en la silueta: la coronilla (celda `top`) y la estatura en celdas (H). Sin puntos, la silueta
    entera (menos suela y pelo). Con puntos, si de la oreja a los pies el cuerpo es bastante más largo que la silueta (la silueta
    no llegó a los pies o a la cabeza), manda el de los puntos y la escala se corrige (`k`): así una silueta incompleta
@@ -252,19 +259,24 @@ function medidasPersona(F,S,KF,KS,alto,ref,ropa){
   const N=ANSUR.niveles,med5=v=>v.length?med(v):0,menos=v=>Math.max(0,v-2*ropa);
   const MF=marco(F,KF,alto,ref),MS=marco(S,KS,alto,ref),cwF=F.cw*MF.k,cwS=S.cw*MS.k;
   const cF=y=>KF?centroEn(KF,y):null,cS=y=>KS?centroEn(KS,y):null;
-  const anchoT=(fila,y)=>{const c=cF(y),z=tramoCentro(fila,c);if(!z)return 0;const [a,b]=cortar(z[0]*cwF,z[1]*cwF,fila,z,KF,y,cwF,alto,BRAZOS);return b-a;};
+  const anchoT=(fila,y,modo)=>{const c=cF(y),z=tramoCentro(fila,c);if(!z)return 0;if(modo==='no')return (z[1]-z[0])*cwF;const [a,b]=cortar(z[0]*cwF,z[1]*cwF,fila,z,KF,y,cwF,alto,BRAZOS,modo);return b-a;};
   // (de perfil el brazo relajado queda encima del tronco, dentro de su fondo: no se corta. Cortarlo quitaba hasta la
   // mitad del fondo del pecho)
   const fondoT=(fila,y)=>{const c=cS(y),z=tramoCentro(fila,c);return z?(z[1]-z[0])*cwS:0;};
   const B=(T,M,h0,h1,fn)=>banda(T,M,h0,h1,fn);
   const d={
     bid:pctl(B(F,MF,N.hombro+.01,N.hombro+.08,(fila,y)=>{const z=tramoCentro(fila,cF(y));return z?(z[1]-z[0])*cwF:0;}),.9),
-    cb:med5(B(F,MF,N.pecho-.012,N.pecho+.012,anchoT)),cd:med5(B(S,MS,N.pecho-.012,N.pecho+.012,fondoT)),
-    wb:med5(B(F,MF,N.cintura-.012,N.cintura+.012,anchoT)),wd:med5(B(S,MS,N.cintura-.012,N.cintura+.012,fondoT)),
-    hb:pctl(B(F,MF,N.cadera-.03,N.cadera+.03,anchoT),.9),bd:pctl(B(S,MS,N.cadera-.03,N.cadera+.03,fondoT),.9)};
+    cd:med5(B(S,MS,N.pecho-.012,N.pecho+.012,fondoT)),wd:med5(B(S,MS,N.cintura-.012,N.cintura+.012,fondoT)),
+    bd:pctl(B(S,MS,N.cadera-.03,N.cadera+.03,fondoT),.9)};
   // (los hombros de frente no pueden ser más angostos que la distancia entre las articulaciones de los hombros, con
   // los deltoides: si la silueta da menos, la banda cayó fuera de los hombros y se toma 1.4 veces esa distancia)
   if(KF&&kOk(KF,5)&&kOk(KF,6)){const sd=Math.abs(KF[5][0]-KF[6][0])*cwF;if(sd>10&&d.bid<1.1*sd)d.bid=1.4*sd;}
+  // pecho, cintura y cadera de frente: la lectura (sin cortar, brazo de tabla, brazo medido) que cuadra con los hombros
+  const anchos={cb:[N.pecho-.012,N.pecho+.012,0],wb:[N.cintura-.012,N.cintura+.012,0],hb:[N.cadera-.03,N.cadera+.03,.9]};
+  for(const k in anchos){const [h0,h1,p]=anchos[k],lee=m=>{const v=B(F,MF,h0,h1,(f,y)=>anchoT(f,y,m));return p?pctl(v,p):med5(v);};
+    const c=['medido','fijo','no'].map(lee).filter(v=>v>0);if(!c.length){d[k]=0;continue;}
+    if(!(d.bid>0)){d[k]=c[0];continue;}const [a0,a1,a2]=PRIOR[k],e=Math.exp(a0+a1*Math.log(d.bid*10)+a2*Math.log(alto*10))/10;
+    d[k]=c.reduce((m,v)=>Math.abs(Math.log(v/e))<Math.abs(Math.log(m/e))?v:m);}
   // el giro del perfil: se recuperan los fondos
   const sg=giroPerfil(KF,KS,cwF,cwS),giro=sg==null?0:sg,cg=Math.sqrt(1-giro*giro);
   const fondo=(D,w)=>giro>.05&&w>0?Math.sqrt(Math.max(D*D-w*w*giro*giro,(.5*D)**2))/cg:D;
