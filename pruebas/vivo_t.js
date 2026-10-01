@@ -71,7 +71,7 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  console.log('modelo v5',JSON.stringify(U));assert.ok(U.puntos,'puntos del cuerpo en las dos fotos');
  assert.ok(U.pred>35&&U.pred<130,'peso del modelo de una persona');assert.ok(U.L>35&&U.L<130,'volumen de una persona');
  assert.ok(U.dims.bid>30&&U.dims.bid<60&&U.dims.th>35&&U.dims.th<80,'medidas de una persona');
- assert.ok(U.dims.cf>20&&U.dims.cf<60&&U.dims.ne>25&&U.dims.ne<60&&U.dims.lt>25&&U.dims.lt<70,'pantorrilla, cuello y muslo bajo');assert.equal(U.v,6);
+ assert.ok(U.dims.cf>20&&U.dims.cf<60&&U.dims.ne>25&&U.dims.ne<60&&U.dims.lt>25&&U.dims.lt<70,'pantorrilla, cuello y muslo bajo');assert.equal(U.v,7);
  assert.ok(!/modelo rápido|fast model|modelo rápido/.test(txt),'medida con el modelo preciso');
  // calibración: "la báscula dice 72 kg" dos veces → el estimado se ajusta
  // (el peso se escribe en la unidad de la app: libras o kilos según el idioma)
@@ -107,6 +107,11 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
 
  /* ---------- ganado: la vaca mide 200 cm de largo y 150 de alto; la persona de referencia 175 cm ---------- */
  await p.click('[data-act="pcModo"][data-m="ganado"]');await p.waitForTimeout(300);assert.equal(await p.evaluate(()=>localStorage.getItem('rumentis-pc-modo')),'ganado');
+ // el tipo de animal: por la raza del lote, o elegido (cambia el punto de partida del modelo v7)
+ assert.deepEqual(await p.evaluate(()=>['Brangus','Brahman x','Angus','Holstein','criollo','',null].map(PesoCam.tipoDeRaza)),['cruce','cebu','euro','leche','cebu','',''],'tipo por la raza');
+ assert.ok(await p.$('#pcTipo'),'elige el tipo de animal');assert.ok(await p.$('[data-act="pcJoven"]'),'elige la edad');
+ await p.selectOption('#pcTipo','euro');await p.waitForTimeout(300);
+ assert.equal(await p.evaluate(()=>{const t=S.config.pesoCam.tipos||{};const k=Object.keys(t)[0];return k&&t[k].g;}),'euro','tipo guardado en el lote');
  await p.screenshot({path:'vivo_ganado.png',fullPage:true});
  const pxL=.6*960/359*359/200,LADO={f:'lado',x:.38,y:.9,h:269*(.6*960/359)},REF1={f:'frente',x:.83,y:.93,h:175*pxL};
  const pxA=.6*720/150,ATR={f:'atras',x:.4,y:.85,h:.6*720},REF2={f:'frente',x:.72,y:.9,h:175*pxA};
@@ -120,9 +125,12 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.waitForFunction(()=>+(document.querySelector('.cv')?.dataset.puntos||0)>=8,null,{timeout:60000});console.log('puntos de la vaca',await p.$eval('.cv',e=>e.dataset.puntos));
  await paso2();await esc('h',[ATR,REF2]);
  await p.waitForSelector('#sheet .pc-kg',{timeout:90000});txt=await leer();await p.screenshot({path:'vivo_vaca_res.png'});
- // (modelo v6: alzada y fondo de pecho con los puntos del animal; el largo y el alto de la silueta quedan en el registro)
- const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,kg:r.kg,dims:r.dims,largo:r.largo,alto:r.altoAnimal,v:r.v,aviso:null};});
- console.log('ganado v6',JSON.stringify(G));assert.equal(G.v,6);
+ // (modelo v7: alzada y fondo de pecho con los puntos del animal y el tipo de animal; el largo y el alto de la silueta
+ // quedan en el registro)
+ const G=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {pred:r.pred,kg:r.kg,dims:r.dims,largo:r.largo,alto:r.altoAnimal,v:r.v,tipo:r.tipo,joven:r.joven};});
+ console.log('ganado v7',JSON.stringify(G));assert.equal(G.v,7);assert.equal(G.tipo,'euro','usa el tipo elegido');assert.equal(G.joven,false);
+ // el mismo animal como cebú pesa e^(a cebú − a europeo) ≈ 0.62 veces
+ const rc=await p.evaluate(()=>{const g=PesoCam.GANADO;return Math.exp(g.a.cebu-g.a.euro);});assert.ok(rc>.55&&rc<.7,'cebú más liviano a igual alzada');
  assert.ok(G.largo>170&&G.largo<230,'largo cerca de 200 cm');assert.ok(G.alto>125&&G.alto<175,'alto cerca de 150 cm');
  assert.ok(G.dims&&G.dims.WH>100&&G.dims.WH<160&&G.dims.CD>40&&G.dims.CD<100,'alzada y fondo de pecho de un bovino');
  assert.ok(G.pred>150&&G.pred<900,'peso del modelo de un bovino');assert.ok(/alzada|withers|cernelha/i.test(txt),'muestra la alzada');

@@ -34,7 +34,7 @@ const ROPA={ajustada:{cm:.4,t:'Ajustada'},normal:{cm:.8,t:'Normal'},holgada:{cm:
 /* forma de cada corte: área = f · ancho · fondo. Una elipse da π/4 ≈ 0.785; el tronco es más cuadrado (superelipse
    de exponente ~2.2: 0.81). Cabeza, brazos y piernas se toman elípticos. */
 const FORMA={cabeza:Math.PI/4,tronco:.81,brazos:Math.PI/4,piernas:Math.PI/4};
-const MKEY='rumentis-pc-modo',VERSION_MODELO=6;
+const MKEY='rumentis-pc-modo',VERSION_MODELO=7;
 UI.pc=UI.pc||{lote:'',items:[]};
 if(!UI.pc.modo){let m=null;try{m=localStorage.getItem(MKEY);}catch(e){}UI.pc.modo=MODOS[m]?m:'persona';}
 const PC=()=>S.config.pesoCam||{};
@@ -50,7 +50,7 @@ function registrar(r,stats){
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
     alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,pred:q(r.pred),dims:r.dims?Object.fromEntries(Object.entries(r.dims).map(([a,b])=>[a,q(b)])):null,
     puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),giro:q(r.giro),incompleta:r.modo==='persona'?!!r.incompleta:null,estimadas:r.estimadas||null,topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
-    partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
+    tipo:r.tipo||null,joven:r.modo==='ganado'?!!r.joven:null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
     fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
   guardarPC({reg:REG().concat(rec).slice(-300)});return id;
 }
@@ -60,18 +60,20 @@ const actualizarReg=(id,cambios)=>guardarPC({reg:REG().map(x=>x.id===id?{...x,..
    kg = k · litros^b, ajuste robusto (una medición mala no arrastra el resultado):
    - 1 a 5 mediciones, o volúmenes muy parecidos (una sola persona): b = 1 y k = mediana de kg/L;
    - 6 o más con volúmenes variados (≥ 15 % de rango): Theil–Sen en logaritmos: b = mediana de las pendientes entre
-     cada par (0.85–1.15) y ln k = mediana de ln kg − b · ln L.
+     cada par (0.85–1.15; ganado 0.4–1.15: si las fotos de tu corral miden con ruido, b baja y el peso se acerca al
+     promedio del lote, que es lo que mejor predice; validado en JXcow, 13 → 10 % con 10 animales) y
+     ln k = mediana de ln kg − b · ln L.
    Los datos: mediciones del registro con peso de báscula (y las calibraciones de antes del registro, si las hay). */
 const med=v=>{const s=v.slice().sort((a,b)=>a-b),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):0;};
 // (la base es el peso que da el modelo de medidas, `pred`: personas, ANSUR II (v5+); ganado, alzada y fondo de pecho
-// (v6+). Las mediciones de modelos anteriores (volumen) no cuentan: estaban en litros. `L` es esa base.)
-const baseDe=x=>x.v>=(x.modo==='persona'?5:6)&&x.pred>0?x.pred:0;
+// con el tipo de animal (v7+). Las mediciones de modelos anteriores no cuentan: otra escala. `L` es esa base.)
+const baseDe=x=>x.v>=(x.modo==='persona'?5:7)&&x.pred>0?x.pred:0;
 const calModo=modo=>REG().filter(x=>x.modo===modo&&x.real>0&&baseDe(x)>0).map(x=>({L:baseDe(x),kg:x.real,id:x.id}));
 function ajustar(C,modo){
   const n=C.length,M=MODOS[modo];if(!n)return {k:M.k,b:1,n:0};
   const X=C.map(z=>Math.log(z.L)),Y=C.map(z=>Math.log(z.kg)),rango=Math.max(...X)-Math.min(...X);let b=1;
   if(n>=6&&rango>=Math.log(1.15)){const P=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const dx=X[j]-X[i];if(Math.abs(dx)>.02)P.push((Y[j]-Y[i])/dx);}
-    if(P.length)b=Math.min(1.15,Math.max(.85,med(P)));}
+    if(P.length)b=Math.min(1.15,Math.max(modo==='ganado'?.4:.85,med(P)));}
   return {k:Math.exp(med(Y.map((y,i)=>y-b*X[i]))),b,n};
 }
 function modeloV(modo){
@@ -148,22 +150,48 @@ function volGanado(L,A){
    - fondo de pecho: el menor alto del tronco detrás del codo (de 10 a 30 % del largo), sin contar la pata;
    - largo: del hombro a la base de la cola; fondo medio: el alto medio del tronco a todo lo largo.
    De atrás (sin escala): el ancho mayor de la silueta en la mitad de arriba entre su alto. cmx/cmy: cm por celda. */
-/* Modelo de peso de ganado (v6), ajustado con 71 animales Horqin pesados en báscula, con sus fotos de costado
-   (Mendeley Data h2s22wr5py, CC BY 4.0; modelo/peso/ganado/): ln peso = c0 + c1 ln alzada + c2 ln fondo de pecho (cm).
-   Validación: 8.2 % dentro de la raza (Horqin y Hereford); en otras razas, calibrado con 5 animales del lote, 6–10 %.
-   El método anterior (volumen de dos siluetas × 1.1) daba 30–39 %. De atrás, el alto del animal (alzada de la grupa,
-   ~1.03 veces la de la cruz) es una segunda medida con su propia escala: se promedia con la de costado. */
-const GANADO={coef:[-4.3002,1.811,0.4362],n:71,mape:.082,cdwh:[.42,.65],grupa:1.03};
+/* Modelo de peso de ganado (v7): ln peso = a(tipo) [+ joven] + 2.0 ln alzada + 0.54 ln(fondo de pecho / (0.52 · alzada))
+   (cm; la razón fondo/alzada se limita a 0.42–0.65). modelo/peso/ganado/ajustar_ganado.py, con básculas y licencias
+   CC BY 4.0: 71 Horqin con sus fotos (Mendeley Data h2s22wr5py), 292 cebú Bororo de Níger (Zenodo 22911607), 1,023
+   criollos Curraleiro Pé-Duro (Zenodo 8364889), 95 bovinos de Indonesia (Kaggle) y 45 terneros Simmental (Zenodo 11277007).
+   - a = el punto de partida del tipo de animal. A igual alzada y fondo, un cebú o criollo pesa ~0.6 veces lo que un
+     europeo de carne (Bororo, Indonesia y Curraleiro contra Horqin); el cruce va en medio. Lechero: sin base abierta con
+     báscula, usa el de europeo. Sin calibrar, en otra base del mismo tipo: 8 a 17 % (v6, con un solo punto de partida
+     europeo, daba 50 a 120 % en cebú y criollos).
+   - joven (menos de un año): −0.40 (destetados de Curraleiro, jóvenes de Indonesia y terneros Simmental pesan ~0.67
+     veces lo de un adulto con la misma alzada: el esqueleto crece antes que la masa).
+   - Exponente de la alzada 2.0: con el ruido de la foto (~4 %) es lo mejor dentro de cada base; iguala a v6 en Horqin
+     (7.9 %) y en Hereford (8.4 %). La calibración con la báscula (k · P^b) corrige lo propio de cada lote.
+   De atrás, el alto del animal (alzada de la grupa, ~1.03 veces la de la cruz) es una segunda medida con su propia
+   escala: se promedia con la de costado. */
+const GANADO={beta:2.0,gamma:.54,r0:.52,cdwh:[.42,.65],grupa:1.03,joven:-.4,mape:.079,n:1526,
+  a:{euro:-3.392,cruce:-3.634,cebu:-3.876,leche:-3.392}};
+const TIPOS_G=[['cebu','Cebú o criollo'],['cruce','Cruce de cebú y europeo'],['euro','Europeo de carne'],['leche','Lechero']];
+// el tipo por la raza escrita en el lote (Brangus antes que Angus: es cruce)
+function tipoDeRaza(raza){
+  const t=String(raza||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(!t.trim())return '';
+  if(/holstein|holando|jersey|pardo|brown swiss|lecher|normand|ayrshire|girolando|guernsey/.test(t))return 'leche';
+  if(/brangus|braford|simbrah|charbray|beefmaster|santa gertrudis|bonsmara|f1|cruce|cruza|cruzad|mestiz|encaste|comercial/.test(t))return 'cruce';
+  if(/brahman|nelore|nellore|gyr|\bgir\b|guzera|indubrasil|cebu|zebu|sardo|criollo|curraleiro|bororo|sahiwal|ongole|kankrej|tabapua|romosinuano|orejinegro|costeno|harton|sanmartinero|casanare|caracu/.test(t))return 'cebu';
+  if(/angus|hereford|charol|limous|simmental|simental|fleckvieh|wagyu|shorthorn|blonde|belga|belgian|chianina|marchigiana|piemont|senepol|horqin|devon|galloway|salers|gelbvieh|normando/.test(t))return 'euro';
+  return '';
+}
+// el nombre del tipo de una medición (con la edad, si es menor de un año)
+const tipoTxt=x=>(TIPOS_G.find(t=>t[0]===x.tipo)||TIPOS_G[1])[1]+(x.joven?' · menos de 1 año':'');
+// el tipo y la edad de un lote: lo elegido en la cámara o, si no, lo que diga su raza (sin raza: cruce)
+const tipoLote=x=>{const g=x&&(PC().tipos||{})[x.id];if(g&&GANADO.a[g.g])return {g:g.g,joven:!!g.joven,auto:false};
+  const r=tipoDeRaza(x&&x.l&&x.l.raza);return {g:r||'cruce',joven:false,auto:true,raza:!!r};};
 function primerTramo(s,x){const G=s.G;let y0=-1;for(let y=0;y<G;y++){const on=s.mask[y*G+x]===1;if(on&&y0<0)y0=y;else if(!on&&y0>=0)return [y0,y];}return y0>=0?[y0,G]:null;}
-/* el peso del modelo con un par de fotos: a, de costado (con su escala k en cm/px); b, de atrás */
-function pesoGanado(a,b){
+/* el peso del modelo con un par de fotos: a, de costado (con su escala k en cm/px); b, de atrás; tipo: {g, joven} */
+function pesoGanado(a,b,tipo){
   const t=a.t,s=t.sil;if(!s||!s.cx)return null;const M=medidasGanado(t,a.k*s.cx,a.k*s.cy);if(!M||!(M.WH>0)||!(M.CD>0))return null;
   // la alzada de atrás (la de la grupa entre 1.03), si se puede, y si las dos dicen casi lo mismo (12 %) se promedian
   const sb=b&&b.t&&b.t.sil,WHr=sb&&sb.caja&&sb.cy?(sb.caja[3]-sb.caja[1])*sb.cy*b.k/GANADO.grupa:NaN,R=atrasGanado(sb);
   const WH=isFinite(WHr)&&Math.abs(WHr-M.WH)/M.WH<.12?(M.WH+WHr)/2:M.WH;
   // fondo de pecho fuera de lo normal para la alzada: se lleva al límite y se avisa
-  const [lo,hi]=GANADO.cdwh,q=M.CD/WH,CD=Math.min(hi,Math.max(lo,q))*WH,c=GANADO.coef;
-  return {pred:Math.exp(c[0]+c[1]*Math.log(WH)+c[2]*Math.log(CD)),WH,WHs:M.WH,WHr,CD,L:M.L,FM:M.FM,RWH:R?R.RWH:NaN,tope:q<lo||q>hi};
+  const [lo,hi]=GANADO.cdwh,q=M.CD/WH,qq=Math.min(hi,Math.max(lo,q)),T=tipo&&GANADO.a[tipo.g]?tipo:{g:'cruce',joven:false};
+  const a0=GANADO.a[T.g]+(T.joven?GANADO.joven:0);
+  return {pred:Math.exp(a0+GANADO.beta*Math.log(WH)+GANADO.gamma*Math.log(qq/GANADO.r0)),WH,WHs:M.WH,WHr,CD:qq*WH,L:M.L,FM:M.FM,RWH:R?R.RWH:NaN,tope:q<lo||q>hi,g:T.g,joven:!!T.joven,a0};
 }
 function medidasGanado(t,cmx,cmy){
   const s=t.sil,P=t.kp;if(!s||!s.mask||!P||!s.Z)return null;const G=s.G,ok=i=>P[3*i+2]>=.3;
@@ -350,7 +378,7 @@ function medidasPersona(F,S,KF,KS,alto,ref,ropa){
 /* dos ángulos (cada uno con 1 o 2 fotos) → centímetros con la estatura conocida → volumen → peso.
    Se calcula el volumen con cada par de fotos (frente × costado) y se promedia; su dispersión (cv) dice qué tan de
    acuerdo estuvieron las fotos entre sí. */
-function combinar(modo,caps,alto,ropaK){
+function combinar(modo,caps,alto,ropaK,tipo){
   const [p,s]=caps,m=modeloV(modo),ref=alto+EXTRA_CM,ropa=modo==='persona'?ROPA[ropaK||'normal'].cm:0;
   const tomas=c=>c.tomas&&c.tomas.length?c.tomas:[{med:c.med,sil:c.sil}];
   // cm por píxel de cada foto: la persona medida (personas) o la de referencia (ganado)
@@ -360,7 +388,7 @@ function combinar(modo,caps,alto,ropaK){
   const pares=[];
   let pegados=false;const topes=[];
   for(const a of TP)for(const b of TS){const P=modo==='persona'?volPersona(a.T,b.T,ropa):volGanado(a.T,b.T);if(P.pegados)pegados=true;delete P.pegados;topes.push(P.topadas||0);delete P.topadas;
-    const x={P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b};if(modo==='persona')x.M=medidasPersona(a.T,b.T,a.K,b.K,alto,ref,ropa);else x.G=pesoGanado(a,b);pares.push(x);}
+    const x={P,L:Object.values(P).reduce((x,y)=>x+y,0),a,b};if(modo==='persona')x.M=medidasPersona(a.T,b.T,a.K,b.K,alto,ref,ropa);else x.G=pesoGanado(a,b,tipo);pares.push(x);}
   const Ls=pares.map(x=>x.L),L=Ls.reduce((x,y)=>x+y,0)/Ls.length;
   // personas: la base del peso es el modelo de ANSUR II; ganado: el volumen. Su dispersión entre pares de fotos (cv)
   // (personas: la mediana de las combinaciones, así una foto mala no mueve el resultado)
@@ -392,7 +420,10 @@ function combinar(modo,caps,alto,ropaK){
     else if(r.imc>40||r.imc<15)r.aviso='El resultado sale fuera de lo normal para tu estatura: revisa que las dos tomas sean de frente y de perfil completo, con el cuerpo entero a la vista.';
   }else{r.largo=prom(x=>x.a.t.med.ancho*x.a.k);r.altoAnimal=prom(x=>x.a.t.med.alto*x.a.k);r.ancho=prom(x=>x.b.t.med.banda*x.b.k);
     if(conG){const pg=pares.filter(x=>x.G);r.pred=base;r.dims={};for(const k of ['WH','WHs','WHr','CD','L','FM','RWH'])r.dims[k]=med(pg.map(x=>x.G[k]).filter(isFinite));
-      r.topes=pg.filter(x=>x.G.tope).length>=pg.length/2?['cd']:[];r.puntos=true;}
+      r.topes=pg.filter(x=>x.G.tope).length>=pg.length/2?['cd']:[];r.puntos=true;
+      // el tipo de animal usado; sin calibrar, un ternero (o un tipo que no se eligió ni sale de la raza) tiene más rango
+      r.tipo=pg[0].G.g;r.joven=pg[0].G.joven;r.a0=pg[0].G.a0;r.tipoAuto=!!(tipo&&tipo.auto&&!tipo.raza);
+      if(!m.n)r.err=Math.min(.3,Math.max(r.err,r.joven?.25:r.tipoAuto?.2:0));}
     // (sin los puntos del animal no hay fondo de pecho: queda el método anterior, volumen × 1.1 de fábrica, con ±30 %)
     else{r.puntos=false;r.pred=null;r.kg=1.1*r.L;r.err=Math.max(r.err,.3);}
     // de costado y por detrás el animal tiene la misma altura: si no, la persona no estaba a la par
@@ -418,6 +449,12 @@ function tarjetaCal(modo){
     ${cal.length?`<p class="hint" style="margin:0">k = ${nf(m.k,3)} · b = ${nf(m.b,2)}. Cada medición con peso de báscula está en el laboratorio, abajo.</p>
       <button type="button" class="lnk" data-act="pcBorrarCal">Borrar la calibración</button>`:''}</div></section>`;
 }
+/* el tipo de animal y la edad del lote (cambian mucho el peso a igual alzada; sin elegir, sale de la raza del lote) */
+const filaTipo=x=>{const t=tipoLote(x);return `<div class="pc-tipo"><label class="pc-tl" for="pcTipo">Tipo de animal</label><select class="in" id="pcTipo" data-pctipo>${TIPOS_G.map(([k,n])=>`<option value="${k}"${k===t.g?' selected':''}>${n}</option>`).join('')}</select>
+  ${t.auto?`<p class="hint" style="margin:0">${t.raza?'Según la raza del lote. Cámbialo si no es así.':'El lote no dice la raza: elige el tipo, cambia mucho el peso.'}</p>`:''}
+  <div class="pc-ropa"><span>Edad</span><div class="seg" role="group" aria-label="Edad">${[[0,'Adulto o en engorde'],[1,'Menos de 1 año']].map(([v,n])=>`<button type="button" data-act="pcJoven" data-v="${v}" aria-pressed="${+t.joven===v}">${n}</button>`).join('')}</div></div></div>`;};
+const guardarTipo=cambio=>{const x=loteSel();if(!x)return;const t=tipoLote(x);guardarPC({tipos:{...(PC().tipos||{}),[x.id]:{g:t.g,joven:t.joven,...cambio}}});};
+ACTS.pcJoven=el=>guardarTipo({joven:el.dataset.v==='1'});
 const filaAlto=(per,a)=>`<div class="pc-alto"><span>${per?'Tu estatura':'Estatura de la persona de referencia'}</span><b>${a?cm(a):'—'}</b><button type="button" class="lnk" data-act="pcAlto">${a?'Cambiar':'Escribir'}</button></div>`;
 PAGES.pesocam=()=>{
   const modo=UI.pc.modo,per=modo==='persona',x=loteSel(),it=UI.pc.items,a=PC()[MODOS[modo].alto];
@@ -429,7 +466,7 @@ PAGES.pesocam=()=>{
        <div class="pc-ropa"><span>Ropa</span><div class="seg" role="group" aria-label="Ropa">${Object.entries(ROPA).map(([v,o])=>`<button type="button" data-act="pcRopa" data-v="${v}" aria-pressed="${ropaSel()===v}">${o.t}</button>`).join('')}</div></div><p>Dos tomas: de frente y de costado. Cuando la silueta se pone verde, la foto se toma sola.</p>
        <button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
      :lotesAct().length?`<section class="sec">${secH('Lote')}<div class="card pad pc-vivo"><select class="in" id="pcLote" data-pclote>${lotesAct().map(l=>`<option value="${esc(l.id)}"${l.id===UI.pc.lote?' selected':''}>${esc(l.l.nombre)} · ${pl(l.cab,'cabeza','cabezas')}</option>`).join('')}</select>
-       ${filaAlto(false,a)}<button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
+       ${filaTipo(x)}${filaAlto(false,a)}<button type="button" class="btn pri full pc-foto" data-act="pcVivo">${icono('camara','i3')}Medir con la cámara</button></div></section>`
      :`<div class="card pad"><p class="empty">Primero crea un lote.</p></div>`}
    ${!per&&it.length?`<section class="sec">${secH('Pesaje en curso',it.length)}<div class="card pad pc-sesion"><div class="pc-prom"><b>${wtxt(prom)}</b><span>promedio de ${pl(it.length,'animal','animales')} en ${esc(x?x.l.nombre:'')}</span></div>
      <div class="rows">${it.map((r,i)=>`<div class="row"><img class="pc-th" src="${r.img}" alt=""><div class="tx"><b>${wtxt(r.kg)}</b><span>${r.arete?`<span>Arete</span> <span data-no-tr>${esc(r.arete)}</span>`:'<span>Sin arete</span>'} · <span>±${Math.round(r.err*100)} %</span></span></div><button type="button" class="del" data-act="pcQuitar" data-i="${i}" aria-label="Quitar">${ico('x')}</button></div>`).join('')}</div>
@@ -442,7 +479,7 @@ PAGES.pesocam=()=>{
    <p class="hint pc-nota">${per?'Beta: sirve para probar la medición. El peso de una persona con cámara es un estimado.':'Beta: compara con la báscula antes de decidir ventas o raciones con este peso.'}</p>
   </main>`;
 };
-document.addEventListener('change',e=>{const t=e.target;if(t&&t.matches&&t.matches('[data-pclote]')){if(UI.pc.items.length&&t.value!==UI.pc.lote){UI.pc.items=[];toast('Pesaje en curso descartado: era de otro lote.',3500);}UI.pc.lote=t.value;render();}});
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.matches&&t.matches('[data-pctipo]')&&GANADO.a[t.value]){guardarTipo({g:t.value});return;}if(t&&t.matches&&t.matches('[data-pclote]')){if(UI.pc.items.length&&t.value!==UI.pc.lote){UI.pc.items=[];toast('Pesaje en curso descartado: era de otro lote.',3500);}UI.pc.lote=t.value;render();}});
 ACTS.pcRopa=el=>{if(ROPA[el.dataset.v]){guardarPC({ropa:el.dataset.v});}};
 ACTS.pcModo=el=>{const m=el.dataset.m;if(!MODOS[m]||m===UI.pc.modo)return;UI.pc.modo=m;try{localStorage.setItem(MKEY,m);}catch(e){}render();};
 
@@ -477,7 +514,7 @@ async function medirVivo(){
   if(!window.CamVivo){toast('La cámara en vivo no está disponible.');return null;}
   const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,buscar:M.buscar,pasos:M.pasos});
   if(!caps||caps.length<M.pasos.length)return null;
-  const r={...combinar(modo,caps,alto,ropaSel()),caps,stats:caps.stats||{}};r.id=registrar(r,r.stats);guardarFotos(r.id,caps);return r;
+  const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};r.id=registrar(r,r.stats);guardarFotos(r.id,caps);return r;
 }
 // antes de medir hace falta la estatura de referencia
 function conAlto(fn){const M=MODOS[UI.pc.modo];if(PC()[M.alto])return fn();formAlto(fn);}
@@ -502,18 +539,20 @@ function explicar(r){
   pasos.push(['Rango',`${pct(r.err)}: el error del modelo (${pct(mm.err)}) y el desacuerdo entre las ${r.comb} combinaciones de fotos (${pct(r.cv)}).`]);
   return `<details class="pc-exp"><summary>Cómo se calcula</summary><p class="pc-exp-f">peso = k · V<sup>b</sup></p><ol>${pasos.map(([t,x])=>`<li><b>${t}</b><span>${x}</span></li>`).join('')}</ol></details>`;
 }
-// ganado (v6): alzada y fondo de pecho, la fórmula ajustada con básculas y la calibración del lote
+// ganado (v7): alzada y fondo de pecho, el tipo de animal, la fórmula ajustada con básculas y la calibración del lote
 function explicarGanado(r,mm,pct){
-  const D=r.dims,c=GANADO.coef,ex=(v,d=2)=>`<sup data-no-tr>${nf(v,d)}</sup>`,dos=isFinite(D.WHr)&&Math.abs(D.WHr-D.WHs)/D.WHs<.12;
+  const D=r.dims,G=GANADO,ex=(v,d=2)=>`<sup data-no-tr>${nf(v,d)}</sup>`,dos=isFinite(D.WHr)&&Math.abs(D.WHr-D.WHs)/D.WHs<.12;
+  const a0=isFinite(r.a0)?r.a0:G.a[r.tipo||'cruce'];
   const pasos=[
     ['Escala','La estatura de la persona de referencia más 2.5 cm, dividida entre su alto en cada foto: así cada píxel tiene su medida en centímetros.'],
     ['Puntos del animal','Un modelo de pose ubica hombros, codos, manos, cadera y la base de la cola. Con ellos se sabe dónde medir la alzada y el pecho, sin la cabeza ni las patas.'],
     ['Medidas',`Alzada a la cruz: ${cm(D.WHs)} de costado${dos?` y ${cm(D.WHr)} por detrás; se usa el promedio, ${cm(D.WH)}`:''}. Fondo de pecho detrás del codo: ${cm(D.CD)}. Largo del hombro a la base de la cola: ${cm(D.L)}.`],
-    ['Modelo',`Ajustado con ${nf(GANADO.n,0)} animales pesados en báscula con sus fotos (base de Horqin: Bai, Mendeley Data, CC BY 4.0). Con estas medidas da ${wtxt(r.pred,1)}. Error medio de validación: ±${nf(GANADO.mape*100,1)} % en la misma raza; en otras razas, calibrando con 5 animales del lote, 6 a 10 %.`],
-    ['Peso',`k × P^b = ${nf(r.k,3)} × ${nf(r.pred,1)}^${nf(r.b,2)} = ${wtxt(r.kg,1)}. ${mm.n?`k y b ajustados con ${pl(mm.n,'medición','mediciones')} de báscula: corrigen lo propio de tu ganado (raza, condición) y tu cámara.`:'De fábrica k = 1 y b = 1; con la báscula se ajustan a tus animales (la raza cambia mucho el peso a igual alzada).'}`],
+    ['Tipo de animal',`<span>${tipoTxt(r)}</span><span data-no-tr>: a = ${nf(a0,3)}.</span> <span>A igual alzada y fondo, un cebú o criollo pesa cerca de 0.6 veces lo que un europeo de carne, y un animal de menos de un año unas 0.67 veces lo de un adulto.</span>`],
+    ['Modelo',`Ajustado con ${nf(G.n,0)} animales pesados en báscula: Horqin con sus fotos (Bai, Mendeley Data), cebú Bororo de Níger (Zenodo), criollos Curraleiro Pé-Duro (Zenodo), bovinos de Indonesia (Kaggle) y terneros Simmental (Zenodo), todos CC BY 4.0. Con estas medidas da ${wtxt(r.pred,1)}. Error medio de validación: ±${nf(G.mape*100,1)} % en la misma raza; sin calibrar, en otra raza del mismo tipo, 8 a 17 %.`],
+    ['Peso',`k × P^b = ${nf(r.k,3)} × ${nf(r.pred,1)}^${nf(r.b,2)} = ${wtxt(r.kg,1)}. ${mm.n?`k y b ajustados con ${pl(mm.n,'medición','mediciones')} de báscula: corrigen lo propio de tu ganado (raza, condición) y tu cámara.`:'De fábrica k = 1 y b = 1; con la báscula se ajustan a tus animales.'}`],
     ['Rango',`${pct(r.err)}: el error del modelo (${pct(mm.err)}) y el desacuerdo entre las ${r.comb} combinaciones de fotos (${pct(r.cv)}).`]];
-  return `<details class="pc-exp"><summary>Cómo se calcula</summary><p class="pc-exp-f" data-no-tr>P = e${ex(c[0],2)} · A${ex(c[1])} · F${ex(c[2])}</p>
-    <p class="hint pc-exp-l">A: alzada a la cruz. F: fondo de pecho. En centímetros.</p><p class="pc-exp-f" data-no-tr>peso = k · P<sup>b</sup></p><ol>${pasos.map(([t,x])=>`<li><b>${t}</b><span>${x}</span></li>`).join('')}</ol></details>`;
+  return `<details class="pc-exp"><summary>Cómo se calcula</summary><p class="pc-exp-f" data-no-tr>P = e<sup>a</sup> · A${ex(G.beta,1)} · (F / ${nf(G.r0,2)} A)${ex(G.gamma)}</p>
+    <p class="hint pc-exp-l">A: alzada a la cruz. F: fondo de pecho. En centímetros. a: según el tipo de animal.</p><p class="pc-exp-f" data-no-tr>peso = k · P<sup>b</sup></p><ol>${pasos.map(([t,x])=>`<li><b>${t}</b><span>${x}</span></li>`).join('')}</ol></details>`;
 }
 // personas (v4): las medidas, la fórmula de ANSUR II y la calibración
 const NOM_EST={cf:'pantorrilla',ne:'cuello',lt:'muslo sobre la rodilla'};
@@ -540,6 +579,7 @@ function resultado(r){
     <div class="pc-kg"><b>${wtxt(r.kg)}</b><span>entre ${wtxt(r.kg*(1-r.err))} y ${wtxt(r.kg*(1+r.err))}</span></div>
     ${r.aviso?`<p class="pc-aviso">${ico('aviso',2)}<span>${r.aviso}</span></p>`:''}
     ${medHTML(r)}
+    ${r.modo==='ganado'&&r.tipo?`<p class="hint"><span>Calculado como:</span> <b>${tipoTxt(r)}</b>. <span>Si no es así, cámbialo en la pantalla de la cámara y vuelve a medir.</span></p>`:''}
     ${an.length?q('Arete (opcional)',`<select class="in" id="pcArete"><option value="">Sin arete</option>${an.map(a=>`<option value="${esc(a.id)}">${esc(a.arete)}</option>`).join('')}</select>`):''}
     <p class="hint">${r.n?`Calibrado con ${pl(r.n,'medición','mediciones')} de tu báscula.`:'Sin calibrar: estimado general.'}</p>
     ${explicar(r)}
@@ -582,6 +622,6 @@ PAGES.hoy=(...a)=>{const h=_hoy(...a),i=h.indexOf('<main class="bd">');if(i<0)re
 const _pes=FORMS.pesaje;
 if(_pes)FORMS.pesaje=(...a)=>{_pes(...a);const b=$('#sheet .sh-body');if(b&&!b.querySelector('.pc-f'))b.insertAdjacentHTML('afterbegin',`<button type="button" class="btn full pc-f" data-act="pcIr">${icono('camara','i3')}Estimar con cámara (beta)</button>`);};
 ACTS.pcIr=()=>{closeSheet();UI.pc.modo='ganado';try{localStorage.setItem(MKEY,'ganado');}catch(e){}location.hash='#pesocam';};
-window.PesoCam={modeloV,ajustar,calModo,combinar,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
+window.PesoCam={modeloV,ajustar,calModo,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
 if(route().p==='pesocam'||route().p==='hoy')render();
 })();

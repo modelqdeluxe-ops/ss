@@ -18,7 +18,7 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.1) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Rumentis Beta** (5.0.0-beta.25) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -217,7 +217,20 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.24** (esta rama): silueta rápida de ganado v2 (`silueta.onnx`): afinada con las vacas de COCO (maestro) y
+**5.0.0-beta.25** (esta rama): ganado con modelo de peso **v7**. Una hora de búsqueda masiva (Kaggle, Hugging Face,
+Zenodo, figshare, Mendeley, DataCite, Dryad, Dataverse, Embrapa, ScienceDB, GitHub; registro en
+`modelo/peso/ganado/LEEME.md`) y ajuste con 1,526 animales pesados (CC BY 4.0): Horqin (fotos), cebú Bororo de Níger,
+criollos Curraleiro Pé-Duro, bovinos de Indonesia y terneros Simmental (tablas en `modelo/peso/ganado/tablas/`).
+Lo que se aprendió: a igual alzada y fondo de pecho, un cebú o criollo pesa ~0.6 veces lo de un europeo de carne y un
+animal de menos de un año ~0.67 veces lo de un adulto; v6 (un solo punto de partida europeo) daba 50–120 % de error en
+cebú y criollos. v7: `ln peso = a(tipo) [−0.40 joven] + 2.0 ln alzada + 0.54 ln(fondo/0.52 alzada)`; el tipo de animal
+(cebú o criollo, cruce, europeo de carne, lechero) y la edad se eligen por lote en la cámara (de inicio, por la raza
+del lote; `tipoDeRaza`). Sin calibrar, en otra base del mismo tipo: 8–17 % (Bororo 16.7, Indonesia 7.9, Curraleiro
+14.2, JXcow 14.2, Hereford 12.0); dentro de la raza igual que v6 (Horqin 7.9 %). Calibración de ganado: b de 0.4 a 1.15
+(con fotos ruidosas el peso se acerca al promedio del lote: JXcow 13 → 10 % con 10 animales). VERSION_MODELO 7: las
+calibraciones de ganado de v6 no cuentan. Campos `tipo` y `joven` en el registro y el CSV del laboratorio.
+
+**5.0.0-beta.24**: silueta rápida de ganado v2 (`silueta.onnx`): afinada con las vacas de COCO (maestro) y
 5,926 fotos de campo de Kaggle BMGF con silueta a mano (costado y atrás). Campo: IoU de costado 0.83 → 0.93, por detrás
 0.68 → 0.92; COCO 0.81 → 0.84; personas (la de referencia) también mejor. Tabla en `modelo/vision/LEEME.md`; scripts
 `maestro_vacas.py`, `datos_campo.py`, `entrenar_silueta2.py` (PESO_VACA, PESO_CAMPO, FRAC_OTROS). Captura: con los

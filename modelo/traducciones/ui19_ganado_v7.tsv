@@ -1,0 +1,19 @@
+Tipo de animal	Type of animal	Tipo de animal
+Cebú o criollo	Zebu or criollo	Zebu ou crioulo
+Cruce de cebú y europeo	Zebu × European cross	Cruzamento zebu × europeu
+Europeo de carne	European beef breed	Europeu de corte
+Lechero	Dairy	Leiteiro
+Cebú o criollo · menos de {0} año	Zebu or criollo · under {0} year	Zebu ou crioulo · menos de {0} ano
+Cruce de cebú y europeo · menos de {0} año	Zebu × European cross · under {0} year	Cruzamento zebu × europeu · menos de {0} ano
+Europeo de carne · menos de {0} año	European beef breed · under {0} year	Europeu de corte · menos de {0} ano
+Lechero · menos de {0} año	Dairy · under {0} year	Leiteiro · menos de {0} ano
+Según la raza del lote. Cámbialo si no es así.	Based on the lot's breed. Change it if that's not right.	Pela raça do lote. Mude se não for assim.
+El lote no dice la raza: elige el tipo, cambia mucho el peso.	The lot has no breed: choose the type, it changes the weight a lot.	O lote não diz a raça: escolha o tipo, ele muda muito o peso.
+Adulto o en engorde	Adult or finishing	Adulto ou em engorda
+Menos de {0} año	Under {0} year	Menos de {0} ano
+Calculado como:	Calculated as:	Calculado como:
+Si no es así, cámbialo en la pantalla de la cámara y vuelve a medir.	If that's not right, change it on the camera screen and measure again.	Se não for assim, mude na tela da câmera e meça de novo.
+A: alzada a la cruz. F: fondo de pecho. En centímetros. a: según el tipo de animal.	A: height at the withers. F: chest depth. In centimeters. a: by type of animal.	A: altura de cernelha. F: profundidade do peito. Em centímetros. a: conforme o tipo de animal.
+A igual alzada y fondo, un cebú o criollo pesa cerca de {0} veces lo que un europeo de carne, y un animal de menos de un año unas {1} veces lo de un adulto.	At the same height and chest depth, a zebu or criollo weighs about {0} times as much as a European beef animal, and an animal under one year about {1} times as much as an adult.	Com a mesma altura e profundidade do peito, um zebu ou crioulo pesa cerca de {0} vezes o que pesa um europeu de corte, e um animal com menos de um ano cerca de {1} vezes o de um adulto.
+Ajustado con {0} animales pesados en báscula: Horqin con sus fotos (Bai, Mendeley Data), cebú Bororo de Níger (Zenodo), criollos Curraleiro Pé-Duro (Zenodo), bovinos de Indonesia (Kaggle) y terneros Simmental (Zenodo), todos CC BY {1}. Con estas medidas da {2} {6}. Error medio de validación: ±{3} {7} en la misma raza; sin calibrar, en otra raza del mismo tipo, {4} a {5} {8}.	Fitted with {0} animals weighed on a scale: Horqin with their photos (Bai, Mendeley Data), Bororo zebu from Niger (Zenodo), Curraleiro Pé-Duro criollos (Zenodo), cattle from Indonesia (Kaggle) and Simmental calves (Zenodo), all CC BY {1}. With these measurements it gives {2} {6}. Mean validation error: ±{3} {7} within the same breed; uncalibrated, in another breed of the same type, {4} to {5} {8}.	Ajustado com {0} animais pesados em balança: Horqin com suas fotos (Bai, Mendeley Data), zebu Bororo do Níger (Zenodo), crioulos Curraleiro Pé-Duro (Zenodo), bovinos da Indonésia (Kaggle) e bezerros Simental (Zenodo), todos CC BY {1}. Com estas medidas dá {2} {6}. Erro médio de validação: ±{3} {7} na mesma raça; sem calibrar, em outra raça do mesmo tipo, {4} a {5} {8}.
+k × P^b = {0} × {1}^{2} = {3} {6}. De fábrica k = {4} y b = {5}; con la báscula se ajustan a tus animales.	k × P^b = {0} × {1}^{2} = {3} {6}. Out of the box k = {4} and b = {5}; with the scale they adjust to your animals.	k × P^b = {0} × {1}^{2} = {3} {6}. De fábrica k = {4} e b = {5}; com a balança se ajustam aos seus animais.

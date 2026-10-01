@@ -1,21 +1,70 @@
-# Modelo de peso de ganado (v6): ln peso = c0 + c1 ln alzada + c2 ln fondo de pecho (cm, medidos en la foto de costado).
-# Ajuste con horqin_medidas.csv (72 Horqin pesados en báscula; Mendeley Data h2s22wr5py, CC BY 4.0). Las medidas de foto
-# salen de medir_bov.py + rasgos_final.py (modelo preciso RF-DETR y puntos AP-10K, como en la app), con la alzada de cinta
-# como escala (en la app la escala es la persona de referencia).
-#   python3 ajustar_ganado.py            → coeficientes y validación dejando uno fuera
-# Validación en otras razas (opcional; sus datos no tienen licencia comercial, solo se usan para medir): ver LEEME.md.
+# Modelo de peso de ganado (v7): ln peso = a(tipo) [+ joven] + β ln alzada + γ ln(fondo de pecho / (0.52 · alzada))
+# (cm; la razón fondo/alzada se limita a 0.42–0.65). Mismas definiciones que la app (pesocam.js, medidasGanado).
+#   python3 ajustar_ganado.py            → β, γ, puntos de partida por tipo y la validación
+# Datos (todos con licencia CC BY 4.0, ver LEEME.md):
+#   horqin_medidas.csv           71 animales con fotos (fondo de pecho medido en la foto) y báscula — Bai, Mendeley Data
+#   tablas/bororo_niger.csv      292 cebú Bororo adultos, cinta y báscula — Zenodo 10.5281/zenodo.22911607
+#   tablas/curraleiro_pe_duro.csv 1,023 criollos Curraleiro Pé-Duro (terneros a toros), cinta y báscula — Zenodo 8364889
+#   tablas/indonesia.csv         95 bovinos de Indonesia con fondo de pecho, cinta y báscula — Kaggle (jameswisnuaryatama)
+#   tablas/simmental_lidar.csv   45 terneros Simmental, alzada de LiDAR y báscula — Zenodo 11277007
+# Validación opcional con bases sin licencia comercial (solo para medir): VALIDAR=carpeta con CowDatabase/Measurements.xlsx
 import os,numpy as np,pandas as pd
-AQUI=os.path.dirname(os.path.abspath(__file__))
-H=pd.read_csv(os.path.join(AQUI,'horqin_medidas.csv')).dropna()
-ks=['alzada_cm','fondo_pecho_foto_cm']
-X=np.c_[np.ones(len(H)),np.log(H[ks].values)];y=np.log(H.peso_kg.values)
-b=np.linalg.lstsq(X,y,rcond=None)[0]
-e=[]
-for i in range(len(H)):
-    m=np.arange(len(H))!=i;bi=np.linalg.lstsq(X[m],y[m],rcond=None)[0];e.append(abs(np.exp(X[i]@bi)/H.peso_kg.values[i]-1))
-print('animales',len(H),'coef',[round(float(v),4) for v in b],'error medio dejando uno fuera %.1f%%'%(np.mean(e)*100))
-for kk in [['alzada_cm'],['alzada_cm','perimetro_toracico_cm','largo_oblicuo_cm']]:
-    Xk=np.c_[np.ones(len(H)),np.log(H[kk].values)];ek=[]
-    for i in range(len(H)):
-        m=np.arange(len(H))!=i;bi=np.linalg.lstsq(Xk[m],y[m],rcond=None)[0];ek.append(abs(np.exp(Xk[i]@bi)/H.peso_kg.values[i]-1))
-    print('referencia',kk,'%.1f%%'%(np.mean(ek)*100))
+AQUI=os.path.dirname(os.path.abspath(__file__));T=lambda f:pd.read_csv(os.path.join(AQUI,f))
+R0,LO,HI=.52,.42,.65
+rng=np.random.default_rng(0)
+def base(nom,W,WH,CD=None):
+    d=pd.DataFrame({'W':np.asarray(W,float),'WH':np.asarray(WH,float)});d['r']=0.0 if CD is None else np.log(np.clip(np.asarray(CD,float)/d.WH,LO,HI)/R0)
+    d['hasCD']=CD is not None;d=d[(d.W>0)&(d.WH>0)].dropna(subset=['r']);d['base']=nom;return d
+h=T('horqin_medidas.csv').dropna();bo=T('tablas/bororo_niger.csv');cu=T('tablas/curraleiro_pe_duro.csv').dropna(subset=['alzada_cm'])
+ind=T('tablas/indonesia.csv');si=T('tablas/simmental_lidar.csv')
+cu['categoria']=cu.categoria.str.strip();cuA=cu[cu.categoria.isin(['Cow','Bull'])];cuJ=cu[cu.categoria=='Posweaned']
+B={'Horqin':base('Horqin',h.peso_kg,h.alzada_cm,h.fondo_pecho_foto_cm),
+   'Bororo':base('Bororo',bo.peso_kg,bo.alzada_cm),
+   'Indonesia adultos':base('Indonesia adultos',ind[ind.edad=='Adult'].peso_kg,ind[ind.edad=='Adult'].alzada_cm,ind[ind.edad=='Adult'].fondo_pecho_cm),
+   'Curraleiro adultos':base('Curraleiro adultos',cuA.peso_kg,cuA.alzada_cm)}
+J={'Indonesia jóvenes':base('Indonesia jóvenes',ind[ind.edad=='Young'].peso_kg,ind[ind.edad=='Young'].alzada_cm,ind[ind.edad=='Young'].fondo_pecho_cm),
+   'Curraleiro destetados':base('Curraleiro destetados',cuJ.peso_kg,cuJ.alzada_cm),
+   'Simmental terneros (LiDAR)':base('Simmental terneros (LiDAR)',si.peso_kg,si.alzada_cm)}
+# 1) β: en la app la alzada sale de la foto (escala de la persona de referencia y silueta: ~4 % de ruido). Con ese ruido
+#    simulado, error dejando uno fuera con el punto de partida propio de cada base (= un lote calibrado), promedio de bases
+def loo(y,q):return np.mean([abs(np.exp(q[i]+np.median(np.delete(y-q,i))-y[i])-1) for i in range(len(y))])
+print('β   error medio dentro de cada base (alzada con 4 % de ruido de foto)')
+grilla={}
+for beta in (1.8,2.0,2.2,2.5,2.8):
+    e=[]
+    for d in list(B.values())+list(J.values()):
+        y=np.log(d.W.values);e.append(np.mean([loo(y,beta*(np.log(d.WH.values)+rng.normal(0,.04,len(d)))+.8*d.r.values) for _ in range(5)]))
+    grilla[beta]=np.mean(e);print(f'{beta:.1f}  {grilla[beta]*100:.1f} %   ({" · ".join(f"{x*100:.1f}" for x in e)})')
+BETA=float(os.environ.get('BETA','2.0'))   # 1.8–2.0 es lo mejor dentro de cada base con el ruido de la foto; entre edades (terneros a
+           # toros) el peso crece como alzada^2.8–3: 2.0 iguala a v6 en Horqin y deja la corrección de jóvenes a JOVEN y a la calibración
+# 2) γ (fondo de pecho): con β fijo, en las bases que tienen fondo de pecho (Horqin de foto, Indonesia de cinta)
+F=pd.concat([B['Horqin'],B['Indonesia adultos'],J['Indonesia jóvenes']]);y=np.log(F.W.values)-BETA*np.log(F.WH.values)
+X=np.c_[[(F.base==b).values for b in F.base.unique()]].T.astype(float);X=np.c_[X,F.r.values];GAM=round(float(np.linalg.lstsq(X,y,rcond=None)[0][-1]),2)
+# 3) puntos de partida (a) de cada base
+a={k:float(np.median(np.log(d.W.values)-BETA*np.log(d.WH.values)-GAM*d.r.values)) for k,d in {**B,**J}.items()}
+A={'euro':a['Horqin'],'cebu':float(np.mean([a['Bororo'],a['Indonesia adultos'],a['Curraleiro adultos']]))};A['cruce']=(A['euro']+A['cebu'])/2;A['leche']=A['euro']
+JOVEN=round(float(np.median([a['Indonesia jóvenes']-a['Indonesia adultos'],a['Curraleiro destetados']-a['Curraleiro adultos'],a['Simmental terneros (LiDAR)']-a['Horqin']])),2)
+print(f'\nβ = {BETA}  γ = {GAM}  joven = {JOVEN}');print('a por base:',{k:round(v,3) for k,v in a.items()})
+print('a por tipo:',{k:round(v,3) for k,v in A.items()},'(lechero: sin base abierta con báscula; usa el de europeo)')
+# 4) validación
+c6=[-4.3002,1.811,0.4362]
+def v6(d):return c6[0]+c6[1]*np.log(d.WH.values)+c6[2]*np.log(np.exp(d.r.values)*R0*d.WH.values)
+def err(y,p):return np.mean(np.abs(np.exp(p-y)-1))*100
+def cal5(y,p):
+    e=[]
+    for _ in range(300):
+        i=rng.choice(len(y),5,replace=False);m=np.ones(len(y),bool);m[i]=False;e.append(err(y[m],p[m]+np.median(y[i]-p[i])))
+    return np.median(e)
+tipo={'Horqin':'euro','Bororo':'cebu','Indonesia adultos':'cebu','Curraleiro adultos':'cebu','Indonesia jóvenes':'cebu','Curraleiro destetados':'cebu','Simmental terneros (LiDAR)':'euro'}
+print(f'\n{"base":28s}   n | v6 sin calibrar | v7 sin calibrar* | v7 calibrado con 5 | v7 dentro de la base')
+def fila(k,d,ag,jov=0):
+    y=np.log(d.W.values);q=BETA*np.log(d.WH.values)+GAM*d.r.values
+    print(f'{k:28s} {len(d):4d} | {err(y,v6(d)):13.1f} % | {err(y,q+ag+jov):14.1f} % | {cal5(y,q):16.1f} % | {loo(y,q)*100:8.1f} %')
+for k,d in {**B,**J}.items():
+    g=tipo[k];otras=[a[x] for x in B if tipo[x]==g and x!=k and x!='Horqin'] if g=='cebu' else [A['euro']]
+    ag=np.mean(otras) if otras else A[g];fila(k,d,ag,JOVEN if k in J else 0)
+print('* con el punto de partida de su tipo calculado SIN esa base (cebú) y con la corrección de jóvenes donde corresponde')
+V=os.environ.get('VALIDAR')
+if V:
+    x=pd.read_excel(os.path.join(V,'CowDatabase/Measurements.xlsx'))
+    fila('Hereford (cinta, validación)',base('Hereford',x['live weithg'],x['withers height'],x['chest depth']),A['euro'])

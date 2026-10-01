@@ -133,6 +133,24 @@ Lecciones:
   las de campo fueron las que más ayudaron. Evaluar siempre con fotos de campo apartadas.
 - Pendiente: calibración por animal (arete) y datos propios del engorde.
 
+## 6c. Ganado v7 (beta.25): el tipo de animal pesa más que la foto
+
+- Una hora de búsqueda masiva (Kaggle, Hugging Face, Zenodo, figshare, Mendeley, Dryad, Dataverse, Embrapa, ScienceDB,
+  GitHub): no existe una base grande de fotos de costado con escala y báscula; sí tablas de cinta y báscula con
+  licencia CC BY (Bororo 292, Curraleiro 1,023, Indonesia 95, Simmental 45). Con ellas se ajustó lo que la foto no ve.
+- A igual alzada y fondo de pecho, el peso cambia 2 veces entre razas (peso/alzada² de 179 en Indonesia a 384 en Angus de
+  engorde): es el ancho (perímetro), invisible de costado. Un punto de partida por tipo (cebú o criollo ~0.6 veces el
+  europeo) y por edad (menos de un año ~0.67) baja el error sin calibrar de 50–120 % a 8–17 %.
+- El exponente de la alzada: entre edades el peso va como alzada^2.8–3, pero con el ruido de la foto (~4 %) lo mejor
+  dentro de un lote es 1.8–2.0. Errores en las variables: simular el ruido de la foto al elegir exponentes.
+- La calibración debe poder acercar el peso al promedio del lote (b bajo) cuando las fotos miden con ruido: en JXcow
+  (fotos detrás de barandas) la foto daba 15 % y el promedio 10.7 %; con b desde 0.4, 10 %.
+- No sirvieron: el largo de la foto (ruido de 10 % contra la cinta), la razón ancho/alto de atrás (solo separa jóvenes de
+  adultos), las razones de forma de Kaggle (no pasan a otras razas). Sí serviría el ancho visto desde arriba (búfalas,
+  medido en foto: de ~10 a 4.5 %).
+- Bases que no traen licencia comercial (CowDatabase, JXcow) se usan solo para validar; claves de traducción con
+  nombres de razas dependen de los datos del usuario (se vuelven {n}): mejor nombres de tipo sin ejemplos.
+
 ## 7. Herramientas
 
 - `maestro_silueta.py` (en el repo): siluetas del maestro para entrenar el rápido.

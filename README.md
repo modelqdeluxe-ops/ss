@@ -194,12 +194,14 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   medida se toma a su altura en ANSUR II (fracción de la estatura) y los puntos del cuerpo quitan brazos y manos; una
   medida fuera de lo humano (percentiles 0.1–99.9 con holgura) se lleva al límite y se avisa. peso = k · P^b con k = 1
   y b = 1 de fábrica; la báscula los ajusta a la persona. El volumen (abajo) queda como comprobación.
-- **Ganado: modelo v6** (`pesocam.js`, `modelo/peso/ganado/`): peso = e^−4.3002 · alzada^1.811 · fondo de pecho^0.4362
+- **Ganado: modelo v7** (`pesocam.js`, `modelo/peso/ganado/`): peso = e^a · alzada^2.0 · (fondo de pecho / 0.52 alzada)^0.54
   (cm, de la foto de costado con la silueta del modelo preciso y los puntos AP-10K; la escala, de la persona de
-  referencia; la alzada de atrás se promedia con la de costado si coinciden). Ajustado con 71 animales Horqin pesados
-  en báscula (Mendeley Data, CC BY 4.0): 8.2 % dentro de la raza; en Hereford y Angus calibrando con 5 animales,
-  9.6 y 6.3 %. El volumen × 1.1 de antes daba 30–39 %; queda solo si no se ven los puntos del animal (±30 %).
-  Detalle, bases revisadas y lo que no funcionó: `modelo/peso/ganado/LEEME.md`.
+  referencia; la alzada de atrás se promedia con la de costado si coinciden). `a` según el tipo de animal (cebú o
+  criollo, cruce, europeo de carne, lechero; −0.40 si tiene menos de 1 año), elegido por lote en la cámara o sacado de
+  la raza del lote. Ajustado con 1,526 animales pesados en báscula (Horqin con fotos, cebú Bororo, criollos
+  Curraleiro, Indonesia y terneros Simmental; todas CC BY 4.0): igual que v6 dentro de la raza (7.9 %) y, sin
+  calibrar, 8–17 % en otras razas del mismo tipo (v6 daba 50–120 % en cebú y criollos). La calibración de ganado deja
+  b entre 0.4 y 1.15. Detalle, bases revisadas y lo que no funcionó: `modelo/peso/ganado/LEEME.md`.
 - **Peso por volumen** (`pesocam.js`; en personas como comprobación, y en ganado si no hay puntos del animal): la escala en cm sale de la estatura (+2.5 cm de suela y pelo). Cada
   ángulo se captura con **2 fotos** (tomadas antes del pitido, aún quieto) y el modelo preciso mide todas; el volumen se
   calcula con cada par frente × costado (4 combinaciones) y se promedia; su dispersión (CV) entra en el rango. El
