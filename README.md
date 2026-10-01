@@ -168,7 +168,7 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   - al medir, se sabe dónde están los brazos y las manos para no contarlos como tronco.
 - **Visión en el teléfono** (`app/assets/vision.js`), modelos en **Web Workers** armados desde un Blob (la página
   es `file://`; el worker recibe de la página onnxruntime-web, el `.wasm` y el modelo ya descargados):
-  - **rápido** `silueta.onnx` (ganado) y `silueta_p.onnx` (personas, v4 con refinamiento de bordes a 1/4, destilado del modelo preciso), 6.5 MB cada
+  - **rápido** `silueta.onnx` (ganado, v2: afinado con 5,926 fotos de campo de Kaggle BMGF; IoU de costado 0.93 y por detrás 0.92) y `silueta_p.onnx` (personas, v4 con refinamiento de bordes a 1/4, destilado del modelo preciso), 6.5 MB cada
     uno, entrada 256×256: LR-ASPP MobileNetV3 (torchvision, BSD-3) **afinado por Rumentis** para fondo / persona / vaca
     con fotos de COCO (`modelo/vision/entrenar_silueta.py` y `entrenar_silueta2.py`, 20,135 fotos). ~60 ms por cuadro
     en una PC. Da la silueta y su contorno (se traza el borde y se suaviza).

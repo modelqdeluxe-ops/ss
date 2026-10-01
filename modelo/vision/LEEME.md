@@ -68,6 +68,19 @@ el video del teléfono bajó a 9 cuadros/s). Con 320 px IoU con el sujeto grande
 5.1 → 4.7 %, con +35 % de tiempo; a 384 px empeora (casa 0.790). Tres épocas más con las siluetas del maestro en
 19,373 fotos (todas las de personas) no mejoraron: mejor ancho, peor área e IoU. El modelo llegó a su techo.
 
+**Ganado v2 (`silueta.onnx`, beta.24)**: la arquitectura de personas (refinamiento a 1/4), afinada desde la v4 de
+personas con las vacas de COCO (siluetas del maestro, `maestro_vacas.py`, ×3), 5,926 fotos de campo de Kaggle BMGF
+(costado y atrás, siluetas a mano, CC BY 4.0; personas del modelo preciso; `datos_campo.py`) y 30 % de las demás
+fotos (para que siga viendo bien a la persona de referencia); 3 épocas, se usa la 2. Evaluación con fotos que no
+entraron al entrenamiento (IoU / error de área):
+
+| Conjunto | v1 | v2 | preciso (RF-DETR) |
+|---|---|---|---|
+| Campo, de costado (210 fotos, Kaggle) | 0.831 / 10.5 % | **0.927 / 2.5 %** | 0.940 / 3.0 % |
+| Campo, por detrás (90 fotos, Kaggle) | 0.681 / 28.2 % | **0.917 / 4.6 %** | 0.938 / 3.6 % |
+| Vacas de COCO (238, sujeto grande) | 0.806 / 14.3 % | **0.841 / 9.1 %** | 0.882 / 6.1 % |
+| Personas, casa / calle (la persona de referencia) | 0.734 / 0.785 | **0.792 / 0.825** | — |
+
 ## Puntos del cuerpo (pose)
 
 Medido contra los puntos marcados a mano de COCO val2017 (233 personas grandes de `ev/`, error en fracción del alto de

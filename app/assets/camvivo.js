@@ -85,15 +85,17 @@ function revisar(s,p,W,H,paso,prev,ref,conRef,kp){
   const ratio=((c[2]-c[0])*W)/((c[3]-c[1])*H);
   // (ref: las medidas de la primera toma; perfil: el tronco debe verse a lo más esa fracción de ancho que de frente)
   const hn=a.hombros?hombrosN(kp,W,H):null;
-  const tn=a.perfil&&ref&&ref.torsoN?torsoN(s):0,perfil=(!a.perfil||!ref||!ref.torsoN||tn<=a.perfil*ref.torsoN)&&(hn==null||hn<=a.hombros);
-  E.ang=(a.min==null||ratio>=a.min)&&(a.max==null||ratio<=a.max)&&(!a.rel||!ref||ratio<=a.rel*ref.ratio)&&perfil;
+  // (con los puntos del cuerpo, los hombros dicen directo si está de perfil; las reglas de la silueta contra la toma de
+  // frente (proporción y tronco) solo cuentan sin puntos: con el cuerpo de perfil de verdad a veces fallaban por poco)
+  const conKP=hn!=null,tn=!conKP&&a.perfil&&ref&&ref.torsoN?torsoN(s):0,perfil=conKP?hn<=a.hombros:(!a.perfil||!ref||!ref.torsoN||tn<=a.perfil*ref.torsoN);
+  E.ang=(a.min==null||ratio>=a.min)&&(a.max==null||ratio<=a.max)&&(conKP||!a.rel||!ref||ratio<=a.rel*ref.ratio)&&perfil;
   const q=iou(c,prev);E.quieto=q>=REGLAS.quieto;
   /* qué tan cerca está de la posición ideal (0 a 1): cada regla da 1 si se cumple y baja según lo lejos que esté */
   const cerca=x=>Math.max(0,Math.min(1,x));
   const fuera=Math.max(0,REGLAS.margen-c[0],REGLAS.margen-c[1],c[2]-(1-REGLAS.margen),c[3]-(1-REGLAS.margen));
   const kComp=E.comp?1:cerca(1-fuera/.1-(s.cortada?.3:0)),kDist=E.dist?1:cerca(1-(v<d.min?d.min-v:v-d.max)/.3);
   const viol=[a.min!=null&&ratio<a.min?(a.min-ratio)/a.min:0,a.max!=null&&ratio>a.max?(ratio-a.max)/a.max:0,
-    a.rel&&ref&&ratio>a.rel*ref.ratio?(ratio-a.rel*ref.ratio)/(a.rel*ref.ratio):0,!perfil&&tn?Math.max(0,(tn-a.perfil*ref.torsoN)/(a.perfil*ref.torsoN)):0,
+    !conKP&&a.rel&&ref&&ratio>a.rel*ref.ratio?(ratio-a.rel*ref.ratio)/(a.rel*ref.ratio):0,!perfil&&tn?Math.max(0,(tn-a.perfil*ref.torsoN)/(a.perfil*ref.torsoN)):0,
     hn!=null&&hn>a.hombros?(hn-a.hombros)/.6:0];
   const kAng=E.ang?1:cerca(1-Math.max(...viol)/.5),kRef=conRef?(E.ref?1:.4):1,kQ=cerca((q-.6)/(REGLAS.quieto-.6));
   const pos=kComp*kDist*kAng*kRef*(.8+.2*kQ);
@@ -103,7 +105,7 @@ function revisar(s,p,W,H,paso,prev,ref,conRef,kp){
   else if(!E.ang)msg=!perfil&&paso.girarMas?paso.girarMas:paso.girar;
   else if(conRef&&!E.ref)msg=p&&p.ok?'Que la persona de referencia se vea completa y derecha':'Falta la persona de referencia junto al animal';
   else if(!E.quieto)msg='Quieto…';
-  return {E,msg,caja:c,pos};
+  return {E,msg,caja:c,pos,dbg:{ratio:+ratio.toFixed(3),hn:hn==null?null:+hn.toFixed(3),tn:+(tn||0).toFixed(3),ref:ref&&ref.ratio?+ref.ratio.toFixed(3):null}};
 }
 /* la silueta del video (modelo rápido), limpia con los puntos del cuerpo: se quita lo que queda lejos del esqueleto
    (suelo, cama, muebles pegados al cuerpo). Cada celda debe quedar cerca de algún tramo del esqueleto, con holgura
@@ -369,6 +371,7 @@ function abrir(o){
       const ev=revisar(s,pr,W,H,{...p,buscar:o.buscar},prev,caps.length?caps[0].rapido:null,conRef,vis.kp&&now-vis.kp.t<700?vis.kp:null);
       // "quieto" se compara con la mediana de las últimas cajas: un cuadro raro no reinicia la cuenta
       if(ev.caja){hist.push(ev.caja);if(hist.length>3)hist.shift();prev=[0,1,2,3].map(i=>mediana(hist.map(z=>z[i])));}else{hist=[];prev=null;}
+      if(ev.dbg)w.dataset.ang=JSON.stringify(ev.dbg);
       posEl.hidden=ev.pos==null;const pp=Math.round((ev.pos||0)*100);posEl.style.setProperty('--p',(ev.pos||0));posEl.lastChild.textContent=`${pp} %`;
       const E=ev.E,listo=E.det&&E.comp&&E.dist&&E.ang&&E.quieto&&(!conRef||E.ref);
       const color=!E.det?'rojo':listo?'verde':(E.comp&&E.dist?'ambar':'rojo');

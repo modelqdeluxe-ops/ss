@@ -217,7 +217,14 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.23** (esta rama): ganado con modelo de peso v6 (alzada y fondo de pecho de la foto de costado, con la
+**5.0.0-beta.24** (esta rama): silueta rápida de ganado v2 (`silueta.onnx`): afinada con las vacas de COCO (maestro) y
+5,926 fotos de campo de Kaggle BMGF con silueta a mano (costado y atrás). Campo: IoU de costado 0.83 → 0.93, por detrás
+0.68 → 0.92; COCO 0.81 → 0.84; personas (la de referencia) también mejor. Tabla en `modelo/vision/LEEME.md`; scripts
+`maestro_vacas.py`, `datos_campo.py`, `entrenar_silueta2.py` (PESO_VACA, PESO_CAMPO, FRAC_OTROS). Captura: con los
+puntos del cuerpo, el perfil se decide con los hombros (las reglas de la silueta contra la toma de frente solo sin
+puntos); sin worker la prueba se quedaba en "Gírate de costado" (fallaba desde beta.18 por una milésima).
+
+**5.0.0-beta.23**: ganado con modelo de peso v6 (alzada y fondo de pecho de la foto de costado, con la
 silueta del modelo preciso y los puntos AP-10K; `GANADO`, `medidasGanado`, `pesoGanado` en pesocam.js). Ajustado con
 Horqin (Mendeley Data h2s22wr5py, Bai 2025, CC BY 4.0): 8.2 % dentro de la raza; Hereford/Angus calibrando con 5
 animales 9.6/6.3 % (el volumen × 1.1 anterior daba 30–39 %). La calibración de ganado ahora es sobre el peso del
@@ -307,7 +314,7 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-1. Que el dueño instale `RumentisBeta-5.0.0-beta.23.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
+1. Que el dueño instale `RumentisBeta-5.0.0-beta.24.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
 2. Ajustar reglas (`CamVivo.REGLAS`, `PesoCam.MODOS`) con lo que reporte. Si el video va lento en su teléfono: bajar el

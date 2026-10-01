@@ -3,6 +3,10 @@
 # así que al arrancar da exactamente lo mismo que el modelo anterior. 3 clases: 0 fondo, 1 persona, 2 vaca.
 # v4 (destilado): usa td/msk_t (siluetas del modelo preciso, maestro_silueta.py) donde las hay; SOLO_MAESTRO=1 deja
 # esas fotos y un 25 % de las demás. SOLO_MAESTRO=1 DESDE2=v3_256_e2.pt RES=256 EPOCAS=2 LR=2e-4
+# ganado (beta.24): PESO_VACA (vacas de COCO, ×3), PESO_CAMPO (fotos de campo de Kaggle BMGF, tipo 'g', ver
+# datos_campo.py), FRAC_OTROS (fracción de las demás fotos que entra; .3: que no olvide a la persona de referencia) y
+# td/fuera_vacas.json (vacas apartadas para evaluar). El modelo de ganado: SOLO_MAESTRO=1 FRAC_OTROS=.3 PESO_VACA=3
+# PESO_CAMPO=1 DESDE2=d1_256_e2.pt RES=256 EPOCAS=3 LR=2e-4 (época 2).
 import json,os,random,sys,time,math,numpy as np,torch,torch.nn as nn,torch.nn.functional as F
 from PIL import Image,ImageEnhance,ImageFilter
 from torchvision.models.segmentation import lraspp_mobilenet_v3_large,LRASPP_MobileNet_V3_Large_Weights as LW
@@ -11,8 +15,15 @@ LR=float(os.environ.get('LR','6e-4'));NOM=os.environ.get('NOMBRE','sil');SUJ=flo
 MEAN=np.array([.485,.456,.406],np.float32);STD=np.array([.229,.224,.225],np.float32)
 L=[x for x in json.load(open('td/lista.json')) if os.path.exists(f'td/msk/{x[0]}.png')]
 # vacas ×3 (son pocas); escenas de casa (personas con camas, sillones, sillas…) ×2: el fondo que más confunde
-items=[i for i,k in L for _ in range(3 if k=='v' else 2 if k=='c' else 1)]
-if os.environ.get('SOLO_MAESTRO'):items=[i for i in items if os.path.exists(f'td/msk_t/{i}.png') or random.random()<.25]
+PV=int(os.environ.get('PESO_VACA','3'));PG=int(os.environ.get('PESO_CAMPO','1'))
+fuera=set(json.load(open('td/fuera_vacas.json'))) if os.path.exists('td/fuera_vacas.json') else set()
+L=[x for x in L if x[0] not in fuera]          # (las vacas apartadas para evaluar)
+KIND={i:k for i,k in L}
+items=[i for i,k in L for _ in range(PV if k=='v' else PG if k=='g' else 2 if k=='c' else 1)]
+if os.environ.get('SOLO_MAESTRO'):items=[i for i in items if KIND[i]=='g' or os.path.exists(f'td/msk_t/{i}.png') or random.random()<.25]
+FO=float(os.environ.get('FRAC_OTROS','1'))
+if FO<1:
+    vacas={i for i,k in L if k in('v','g')};items=[i for i in items if i in vacas or random.random()<FO]
 print('fotos',len(L),'muestras por época',len(items),flush=True)
 class DS(torch.utils.data.Dataset):
     def __len__(s):return len(items)

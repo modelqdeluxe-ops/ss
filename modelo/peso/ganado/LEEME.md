@@ -43,7 +43,7 @@ perímetro en Horqin: las fotos son de cerca y la grupa sale agrandada).
 | CowDatabase2 (GitHub ruchaya) | 119 Black Angus (96 con peso), fotos, peso, alzada, perímetro | sin licencia declarada | solo validación |
 | Kaggle BMGF (Acme AI, doi 10.34740/KAGGLE/DSV/8858637) | 4,500 fotos de costado y 4,500 de atrás con silueta y 9 puntos a mano, peso en el nombre, calcomanía de escala | CC BY 4.0 | siluetas (entrenamiento del modelo rápido de ganado); para el peso no sirvió: la calcomanía (~100 px sobre el flanco) da una escala con 7 % de ruido entre fotos del mismo animal y las proporciones aprendidas ahí empeoraron Horqin (16.8 %) |
 | CID / Bengal Cattle (GitHub bhuiyanmobasshir94) | ~17,900 fotos con peso de un vendedor en línea | código Apache; fotos y pesos del vendedor (piden permiso) | no se usa |
-| Mendeley vf7pxfs7dx (Bangladesh) | 360 fotos de 72 vacas con peso | CC BY 4.0 | sin bajar (el servidor no respondió) |
+| Mendeley vf7pxfs7dx (Bangladesh, 2026) | 360 fotos de 72 vacas desde 5 ángulos, con peso | CC BY 4.0 | no sirve: establos con varios animales y terneros, sin escala ni medidas de cinta, pesos de 40 a 1,300 kg con la mitad redondeados a 25 kg (estimados) |
 
 Licencias: Horqin y Kaggle BMGF piden atribución (CC BY 4.0): ver arriba y `CONTINUAR.md`.
 

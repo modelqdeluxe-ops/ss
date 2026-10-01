@@ -128,6 +128,9 @@ Lecciones:
 - Kaggle no sirvió para el peso: su calcomanía de escala tiene 7 % de ruido (el peso va con el cubo de la escala) y
   sus proporciones empeoraron otras razas. Sí sirve para la silueta: miles de siluetas de campo a mano.
 - Entre razas el sesgo es grande sin calibrar (Angus +23 %): la calibración con 5 animales del lote lo corrige.
+- Silueta rápida de ganado (beta.24): con fotos de campo a mano (Kaggle BMGF, costado y atrás) la IoU por detrás pasó
+  de 0.68 a 0.92 y de costado de 0.83 a 0.93 (casi el modelo preciso). Las fotos de COCO no se parecen a un corral:
+  las de campo fueron las que más ayudaron. Evaluar siempre con fotos de campo apartadas.
 - Pendiente: calibración por animal (arete) y datos propios del engorde.
 
 ## 7. Herramientas
