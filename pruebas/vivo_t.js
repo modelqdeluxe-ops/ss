@@ -134,6 +134,12 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  assert.ok(G.largo>170&&G.largo<230,'largo cerca de 200 cm');assert.ok(G.alto>125&&G.alto<175,'alto cerca de 150 cm');
  assert.ok(G.dims&&G.dims.WH>100&&G.dims.WH<160&&G.dims.CD>40&&G.dims.CD<100,'alzada y fondo de pecho de un bovino');
  assert.ok(G.pred>150&&G.pred<900,'peso del modelo de un bovino');assert.ok(/alzada|withers|cernelha/i.test(txt),'muestra la alzada');
+ // sin báscula: el perímetro con cinta; y el arete del animal (la app aprende de cada uno)
+ await p.fill('#sheet [name=hg]','200');await p.click('#sheet [data-act="pcCinta"]');await p.waitForTimeout(500);
+ const Gc=await p.evaluate(()=>{const r=PesoCam.REG().slice(-1)[0];return {HG:r.HG,pred:r.pred,predFoto:r.predFoto,kg:r.kg};});console.log('con cinta',JSON.stringify(Gc));
+ assert.equal(Gc.HG,200,'guarda el perímetro');assert.ok(Gc.pred>300&&Gc.pred<1000&&Gc.predFoto>0&&Gc.pred!==Gc.predFoto,'peso con cinta');
+ if(await p.$('#pcArete')){const v=await p.$eval('#pcArete option:nth-child(2)',o=>o.value);await p.selectOption('#pcArete',v);await p.waitForTimeout(300);
+   assert.equal(await p.evaluate(()=>PesoCam.REG().slice(-1)[0].aid),v,'guarda el arete');}
  await p.click('#sheet [data-act="pcAgregar"]');await p.waitForTimeout(300);assert.equal(await p.$$eval('.pc-sesion .row',e=>e.length),1,'agregado al pesaje');
  const n0=await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length);await p.click('[data-act="pcGuardar"]');await p.waitForTimeout(300);
  assert.equal(await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length),n0+1,'pesaje guardado');

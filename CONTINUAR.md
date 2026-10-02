@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.26) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.26) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.27) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.27) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -218,7 +218,17 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.26** (esta rama): **teléfonos enlazados** y razas.
+**5.0.0-beta.27** (esta rama): **la app aprende sola** y **cinta para quien no tiene báscula** (el dueño: "8 % es
+intolerable", "debe entrenarse sola", "¿y los que no tienen báscula?").
+- `etiquetas()` en pesocam.js: toma como pesos reales la báscula, el peso de entrada de cada animal (medido a ≤ 3 días
+  de su ingreso), los pesajes a mano (del animal o del lote) y las ventas (peso del comprador/matadero contra la cámara
+  de los 7 días antes); ajusta k y b (b por el crecimiento de cada animal), el factor propio de cada animal
+  (`factorAnimal`) y su peso con sus mediciones anteriores (`historialAnimal`, Kalman). El registro guarda lote y arete.
+- Cinta: perímetro del pecho en el resultado → `pesoCinta` (5.4 % en Hereford sin calibrar); aprende aparte.
+- Prueba `pruebas/aprende_t.js`; vivo_t.js usa la cinta y el arete.
+- Lo siguiente: el modelo global con lo que aprende cada finca (capas 1 y 2: solo sumas, sin fotos, con permiso).
+
+**5.0.0-beta.26**: **teléfonos enlazados** y razas.
 - `enlace.js`: hasta tres teléfonos toman al animal en el mismo instante: la administración (de costado, con la persona
   de referencia) y uno o dos más (por detrás, otro costado o desde arriba). Conexión directa WebRTC (canal de datos
   cifrado) por el mismo Wi-Fi o el punto de acceso de un teléfono, **sin internet**. Enlace: con QR (la administración
@@ -385,6 +395,7 @@ Pruebas en `pruebas/` (se corren desde una carpeta de trabajo; escriben capturas
 - `equipo_t.js` todo el equipo (necesita `DUENO=<código maestro>` en el entorno; el dueño lo tiene, no está en el repo).
 - `red_t.js` equipo por internet (servidor local 8790), revocar licencia, cuenta solicitudes.
 - `v2_t.js` recorrido visual del equipo 4.9.0.
+- `aprende_t.js` la app aprende sola (peso de entrada, pesajes, ventas; factor de cada animal), sin cámara.
 - `enlace_t.js` tres teléfonos enlazados (WebRTC en tres páginas; mismos servidores que vivo_t.js).
 - `vivo_t.js` peso con cámara en vivo, personas y ganado (8112 con `silueta.onnx`, `seg.onnx`, `ort.bundle.js`,
   `ort-wasm-simd-threaded.wasm` y las fotos `frente.jpg` = COCO 000000223959, `lejos.jpg` = 000000295478,

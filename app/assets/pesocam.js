@@ -50,7 +50,7 @@ function registrar(r,stats){
   const rec={id,ts:Date.now(),f:hoy(),modo:r.modo,v:VERSION_MODELO,L:q(r.L),kg:q(r.kg),err:q(r.err),cv:q(r.cv),comb:r.comb,k:q(r.k),b:q(r.b),ncal:r.n,
     alto:r.alto,ropa:r.modo==='persona'?r.ropa:null,pred:q(r.pred),dims:r.dims?Object.fromEntries(Object.entries(r.dims).map(([a,b])=>[a,q(b)])):null,
     puntos:r.modo==='persona'?!!r.puntos:null,limpia:q(r.limpia),giro:q(r.giro),incompleta:r.modo==='persona'?!!r.incompleta:null,estimadas:r.estimadas||null,topes:r.topes||null,prof:q(r.prof),anchoF:q(r.anchoF),imc:q(r.imc),fondoAncho:q(r.fondoAncho),brazosPegados:!!r.brazosPegados,topadas:q(r.topadas),largo:q(r.largo),altoAnimal:q(r.altoAnimal),ancho:q(r.ancho),
-    tipo:r.tipo||null,etapa:r.modo==='ganado'?r.etapa||null:null,camaras:r.camaras||null,remotas:r.remotas||null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
+    tipo:r.tipo||null,etapa:r.modo==='ganado'?r.etapa||null:null,lote:r.lote||null,aid:r.aid||null,HG:q(r.HG),predFoto:q(r.predFoto),camaras:r.camaras||null,remotas:r.remotas||null,partes:r.partes?Object.fromEntries(Object.entries(r.partes).map(([a,b])=>[a,q(b)])):null,fuente:r.fuente,manual:r.manual,score:q(r.score),
     fps:q(stats&&stats.fps),msR:q(stats&&stats.msRapido),msP:q(stats&&stats.msPreciso),msPose:q(stats&&stats.msPose),seg:q(stats&&stats.seg),motor:stats&&stats.motor||'',real:null};
   guardarPC({reg:REG().concat(rec).slice(-300)});return id;
 }
@@ -68,21 +68,84 @@ const med=v=>{const s=v.slice().sort((a,b)=>a-b),n=s.length;return n?(n%2?s[(n-1
 // (la base es el peso que da el modelo de medidas, `pred`: personas, ANSUR II (v5+); ganado, alzada y fondo de pecho
 // con el tipo de animal (v7+). Las mediciones de modelos anteriores no cuentan: otra escala. `L` es esa base.)
 const baseDe=x=>x.v>=(x.modo==='persona'?5:7)&&x.pred>0?x.pred:0;
-const calModo=modo=>REG().filter(x=>x.modo===modo&&x.real>0&&baseDe(x)>0).map(x=>({L:baseDe(x),kg:x.real,id:x.id}));
+/* ---------- aprendizaje automático (ganado) ----------
+   La app aprende sola con cada peso de verdad que pase por ella, sin que nadie tenga que "calibrar":
+   - la báscula propia (el peso que se anota en una medición);
+   - el peso de entrada de cada animal (de la compra, en la báscula del vendedor o de la subasta) si se le midió con la
+     cámara a 3 días o menos de su ingreso;
+   - los pesajes anotados a mano (no los de cámara), del animal (por arete) o del lote (promedio), a 3 días o menos;
+   - las ventas: el peso del comprador o del matadero (kilos entre cabezas), contra las mediciones de cámara de esos
+     animales (o del lote) en los 7 días anteriores.
+   Cada peso se lleva a la fecha de la medición con la ganancia diaria del lote. Los del animal enseñan de a uno; los
+   del lote enseñan en grupo (el promedio de la cámara contra el promedio real) y pesan según cuántos animales se
+   midieron. Con eso se ajusta k y b del modelo (como la calibración) y, además, el factor propio de cada animal: lo que
+   el modelo se equivoca siempre con ese animal (su forma, su gordura) se encoge hacia 0 según cuántas veces se le ha
+   pesado (n / (n + 0.2): el error de una báscula, ~3 %, contra lo que varían los animales, ~7 %). */
+const DIAS=(a,b)=>Math.round((Date.parse(a)-Date.parse(b))/864e5);
+const canalDe=x=>x.modo==='ganado'&&x.HG>0?'cinta':'foto';
+function etiquetas(modo,canal){
+  const R=REG().filter(x=>x.modo===modo&&baseDe(x)>0&&canalDe(x)===canal),E=[];
+  if(modo!=='ganado'){for(const x of R)if(x.real>0)E.push({L:baseDe(x),kg:x.real,w:1,id:x.id,src:'bascula'});return E;}
+  let C=null;try{C=calc();}catch(e){}
+  const L=id=>C&&C.L&&C.L[id],gan=id=>{const x=L(id);return x&&x.gdpUse>0&&x.gdpUse<3?x.gdpUse:1.1;};
+  const items=C&&C.items?C.items:(typeof allItems==='function'?allItems():[]);
+  const manual=items.filter(i=>i.tipo==='pesaje'&&i.metodo!=='camara'),ventas=items.filter(i=>i.tipo==='venta'&&+i.kg>0&&+i.cab>0);
+  const usadas=new Set();
+  for(const x of R){
+    if(x.real>0){E.push({L:baseDe(x),kg:x.real,w:1,id:x.id,aid:x.aid,src:'bascula'});usadas.add(x.id);continue;}
+    const lo=L(x.lote);if(!lo||!x.aid)continue;const g=gan(x.lote);
+    const p=manual.filter(i=>i.lote===x.lote&&i.pesos&&+i.pesos[x.aid]>0&&Math.abs(DIAS(x.f,i.f))<=3).sort((a,b)=>Math.abs(DIAS(x.f,a.f))-Math.abs(DIAS(x.f,b.f)))[0];
+    if(p){E.push({L:baseDe(x),kg:+p.pesos[x.aid]+g*DIAS(x.f,p.f),w:1,id:x.id,aid:x.aid,src:'pesaje'});usadas.add(x.id);continue;}
+    const a=(lo.l.animales||[]).find(z=>z.id===x.aid),fi=a&&(a.fIng||lo.l.fechaIngreso);
+    if(a&&+a.p0>0&&fi&&Math.abs(DIAS(x.f,fi))<=3){E.push({L:baseDe(x),kg:+a.p0+g*DIAS(x.f,fi),w:1,id:x.id,aid:x.aid,src:'entrada'});usadas.add(x.id);}
+  }
+  // en grupo: el promedio de la cámara contra el promedio real (pesaje del lote, venta o entrada del lote)
+  const grupo=(lote,f,real,ventana,src,ids)=>{const g=gan(lote);
+    const M=R.filter(x=>x.lote===lote&&!usadas.has(x.id)&&DIAS(f,x.f)>=-ventana[0]&&DIAS(f,x.f)<=ventana[1]&&(!ids||(x.aid&&ids.has(x.aid))));
+    if(M.length<2)return;const m=M.reduce((s,x)=>s+baseDe(x)*Math.exp(0),0)/M.length,adj=M.reduce((s,x)=>s+g*DIAS(f,x.f),0)/M.length;
+    E.push({L:m,kg:real-adj,w:Math.min(1,M.length/8)*(ids?1:.6),src,n:M.length,grupo:true});M.forEach(x=>usadas.add(x.id));};
+  for(const i of manual)if(+i.prom>0&&!i.pesos)grupo(i.lote,i.f,+i.prom,[3,3],'pesaje del lote');
+  for(const v of ventas)grupo(v.lote,v.f,+v.kg/+v.cab,[0,7],'venta',Array.isArray(v.animales)&&v.animales.length?new Set(v.animales):null);
+  if(C&&C.L)for(const x of Object.values(C.L))if(+x.l.pesoIngreso>0&&x.l.fechaIngreso)grupo(x.id,x.l.fechaIngreso,+x.l.pesoIngreso,[3,3],'entrada del lote');
+  return E;
+}
+const calModo=(modo,canal='foto')=>etiquetas(modo,canal);
+const wmed=(v,w)=>{const o=v.map((x,i)=>[x,w[i]]).sort((a,b)=>a[0]-b[0]),t=w.reduce((a,b)=>a+b,0);let s=0;for(const [x,ww] of o){s+=ww;if(s>=t/2)return x;}return o.length?o[o.length-1][0]:0;};
 function ajustar(C,modo){
   const n=C.length,M=MODOS[modo];if(!n)return {k:M.k,b:1,n:0};
-  const X=C.map(z=>Math.log(z.L)),Y=C.map(z=>Math.log(z.kg)),rango=Math.max(...X)-Math.min(...X);let b=1;
-  if(n>=6&&rango>=Math.log(1.15)){const P=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const dx=X[j]-X[i];if(Math.abs(dx)>.02)P.push((Y[j]-Y[i])/dx);}
+  // b solo con los pesos de cada animal (los de grupo mezclan animales); k con todos, por su peso
+  const I=C.filter(z=>!z.grupo),X=I.map(z=>Math.log(z.L)),Y=I.map(z=>Math.log(z.kg)),rango=X.length?Math.max(...X)-Math.min(...X):0;let b=1;
+  // con varios pesos del mismo animal, b sale de cómo crece cada uno (su error propio no la tuerce); si no, de comparar
+  // animales distintos
+  const Pw=[];for(let i=0;i<I.length;i++)for(let j=i+1;j<I.length;j++){if(!I[i].aid||I[i].aid!==I[j].aid)continue;const dx=X[j]-X[i];if(Math.abs(dx)>.05)Pw.push((Y[j]-Y[i])/dx);}
+  if(Pw.length>=3)b=Math.min(1.15,Math.max(.85,med(Pw)));
+  else if(I.length>=6&&rango>=Math.log(1.15)){const P=[];for(let i=0;i<I.length;i++)for(let j=i+1;j<I.length;j++){const dx=X[j]-X[i];if(Math.abs(dx)>.02)P.push((Y[j]-Y[i])/dx);}
     if(P.length)b=Math.min(1.15,Math.max(modo==='ganado'?.4:.85,med(P)));}
-  return {k:Math.exp(med(Y.map((y,i)=>y-b*X[i]))),b,n};
+  const k=Math.exp(wmed(C.map(z=>Math.log(z.kg)-b*Math.log(z.L)),C.map(z=>z.w||1)));
+  return {k,b,n,ni:I.length,ng:n-I.length};
 }
-function modeloV(modo){
-  const C=calModo(modo),a=ajustar(C,modo),n=C.length;
-  if(!n)return {...a,err:MODOS[modo].err};
-  const res=C.map(z=>Math.log(z.kg)-Math.log(a.k)-a.b*Math.log(z.L)),sd=n>1?Math.sqrt(res.reduce((s,r)=>s+r*r,0)/(n-1)):.08;
-  return {...a,err:Math.max(.03,Math.min(.2,n<6?Math.max(sd,.05):sd))};
+function modeloV(modo,canal='foto'){
+  const C=calModo(modo,canal),a=ajustar(C,modo),n=C.length;
+  if(!n)return {...a,err:canal==='cinta'?GANADO.cinta.err:MODOS[modo].err};
+  const I=C.filter(z=>!z.grupo).length?C.filter(z=>!z.grupo):C;
+  const res=I.map(z=>Math.log(z.kg)-Math.log(a.k)-a.b*Math.log(z.L)),sd=res.length>1?Math.sqrt(res.reduce((s,r)=>s+r*r,0)/(res.length-1)):.08;
+  return {...a,err:Math.max(.03,Math.min(.2,res.length<6?Math.max(sd,.05):sd))};
 }
-
+/* el factor propio de un animal (por arete): lo que el modelo calibrado se equivoca con él, encogido según cuántas veces
+   se le ha pesado; y su peso de hoy con sus mediciones anteriores (filtro de Kalman: entre medición y medición crece
+   con la ganancia del lote, ±0.3 kg por día; cada medición pesa según su error) */
+function factorAnimal(aid,canal='foto'){
+  if(!aid)return {f:1,n:0};const m=modeloV('ganado',canal),E=calModo('ganado',canal).filter(z=>!z.grupo&&z.aid===aid);if(!E.length)return {f:1,n:0};
+  const r=E.reduce((s,z)=>s+Math.log(z.kg)-Math.log(m.k)-m.b*Math.log(z.L),0)/E.length,n=E.length;return {f:Math.exp(r*n/(n+.2)),n};
+}
+function historialAnimal(aid,lote){
+  const R=REG().filter(x=>x.modo==='ganado'&&x.aid===aid&&baseDe(x)>0).sort((a,b)=>a.ts-b.ts);if(!R.length)return null;
+  let C=null;try{C=calc();}catch(e){}const x=C&&C.L&&C.L[lote],g=x&&x.gdpUse>0&&x.gdpUse<3?x.gdpUse:1.1;
+  let w=0,P=0,f0=null;
+  for(const r of R){const c=canalDe(r),m=modeloV('ganado',c),fa=factorAnimal(aid,c),z=r.real>0?r.real:m.k*Math.pow(baseDe(r),m.b)*fa.f,sr=r.real>0?.03:Math.max(.03,m.err*(fa.n?.6:1));
+    const R2=(sr*z)**2;if(f0==null){w=z;P=R2;}else{const dt=Math.max(0,DIAS(r.f,f0));w+=g*dt;P+=(.3*dt)**2;const K=P/(P+R2);w+=K*(z-w);P=(1-K)*P;}f0=r.f;}
+  const dt=Math.max(0,DIAS(hoy(),f0));return {kg:w+g*dt,err:Math.sqrt(P+(.3*dt)**2)/(w+g*dt),n:R.length,f:f0};
+}
 /* ---------- el volumen ----------
    La silueta (máscara G×G sobre la zona Z de la foto) en tramos por fila, en centímetros. */
 function tramos(sil,cmpx){
@@ -168,6 +231,13 @@ function volGanado(L,A){
    medida del fondo de pecho relativo a la alzada, que se promedia con la de este costado. */
 const GANADO={beta:2.0,gamma:.54,r0:.52,cdwh:[.42,.65],grupa:1.03,mape:.079,n:1526,
   a:{euro:-3.45,cruce:-3.66,cebu:-3.876,leche:-3.53},etapas:{adulto:0,crec:-.2,ternero:-.4}};
+/* con cinta (opcional; para quien no tiene báscula): el perímetro del pecho medido con cinta y la alzada de la foto.
+   ln peso = −8.4644 + tipo + etapa + 0.5378 ln alzada + 2.2806 ln perímetro (cm); ajustado con Horqin, Bororo,
+   Curraleiro e Indonesia (CC BY 4.0, con su etapa): 4.6–7.7 % en cada base; en Hereford, que no entró, 5.4 % (sesgo
+   0.97) sin calibrar. modelo/peso/ganado/LEEME.md. */
+GANADO.cinta={a:-8.4644,tipo:{euro:.1541,leche:.1541,cruce:.077,cebu:0},etapa:{adulto:0,crec:-.1016,ternero:-.2182},wh:.5378,hg:2.2806,err:.06,rango:[.9,1.75]};
+function pesoCinta(WH,HG,tipo){const c=GANADO.cinta,T=tipo&&c.tipo[tipo.g]!=null?tipo:{g:'cruce',etapa:'adulto'};
+  return Math.exp(c.a+c.tipo[T.g]+(c.etapa[etapaDe(T)]||0)+c.wh*Math.log(WH)+c.hg*Math.log(HG));}
 const TIPOS_G=[['cebu','Cebú o criollo'],['cruce','Cruce de cebú y europeo'],['euro','Europeo de carne'],['leche','Lechero']];
 // las razas de cada tipo (nombres propios: no se traducen)
 const RAZAS_TIPO={cebu:'Brahman, Nelore, Gyr, Guzerá, Indubrasil, Sardo Negro, criollos',cruce:'Brangus, Braford, Simbrah, Beefmaster, Girolando, F1',euro:'Angus, Hereford, Charolais, Simmental, Limousin',leche:'Holstein, Pardo Suizo, Jersey'};
@@ -475,12 +545,18 @@ const loteSel=()=>{const L=lotesAct();if(!L.find(x=>x.id===UI.pc.lote))UI.pc.lot
 const cm=v=>`${nf(v)} cm`;
 function tarjetaCal(modo){
   const cal=calModo(modo),m=modeloV(modo),per=modo==='persona';
-  return `<section class="sec">${secH(per?'Calibración con tu báscula':'Calibración con la báscula',cal.length||'')}<div class="card pad pc-cal">
-    <p>${!cal.length?(per?'Sin calibrar: el peso es un estimado general. Pésate en una báscula, mídete con la cámara y escribe tu peso: la app aprende.':'Sin calibrar: el peso es un estimado general. Mide animales recién pesados en la báscula y escribe su peso real: la app aprende de tus animales.')
-      :`Calibrada con ${pl(cal.length,'medición','mediciones')}. Error típico: ±${Math.round(m.err*100)} %.`}</p>
-    <button type="button" class="btn full" data-act="pcCalibrar">${icono('pesaje','i3')}${per?'Calibrar con mi peso':'Calibrar con un animal pesado'}</button>
-    ${cal.length?`<p class="hint" style="margin:0">k = ${nf(m.k,3)} · b = ${nf(m.b,2)}. Cada medición con peso de báscula está en el laboratorio, abajo.</p>
-      <button type="button" class="lnk" data-act="pcBorrarCal">Borrar la calibración</button>`:''}</div></section>`;
+  if(per)return `<section class="sec">${secH('Calibración con tu báscula',cal.length||'')}<div class="card pad pc-cal">
+    <p>${!cal.length?'Sin calibrar: el peso es un estimado general. Pésate en una báscula, mídete con la cámara y escribe tu peso: la app aprende.':`Calibrada con ${pl(cal.length,'medición','mediciones')}. Error típico: ±${Math.round(m.err*100)} %.`}</p>
+    <button type="button" class="btn full" data-act="pcCalibrar">${icono('pesaje','i3')}Calibrar con mi peso</button>
+    ${cal.length?`<p class="hint" style="margin:0">k = ${nf(m.k,3)} · b = ${nf(m.b,2)}.</p><button type="button" class="lnk" data-act="pcBorrarCal">Borrar la calibración</button>`:''}</div></section>`;
+  const cc=calModo(modo,'cinta'),todas=cal.concat(cc),cnt={};for(const z of todas)cnt[z.src]=(cnt[z.src]||0)+1;
+  const NOM={bascula:'báscula',entrada:'peso de entrada','entrada del lote':'entrada del lote',pesaje:'pesajes','pesaje del lote':'pesajes del lote',venta:'ventas'};
+  return `<section class="sec">${secH('La app aprende sola',todas.length||'')}<div class="card pad pc-cal">
+    <p>${todas.length?`<span>Aprendió con ${pl(todas.length,'peso real','pesos reales')}:</span> ${Object.entries(cnt).map(([k,n])=>`<span>${NOM[k]||k}</span> <span data-no-tr>${n}</span>`).join(' · ')}<span data-no-tr>.</span> <span>Error típico: ±${Math.round(m.err*100)} %.</span>`
+      :'Todavía no hay pesos reales. La app aprende sola con cada uno que pase por ella: el peso de entrada de los animales que midas en los 3 días de su ingreso, los pesajes, las ventas (el peso del comprador o del matadero) y la báscula, si tienes.'}</p>
+    <p class="hint" style="margin:0">Sin báscula: mide el perímetro del pecho con una cinta y escríbelo en el resultado; el peso sale cerca de 5 %. Elige el arete de cada animal: la app aprende de cada uno.</p>
+    <button type="button" class="btn full" data-act="pcCalibrar">${icono('pesaje','i3')}Calibrar con un animal pesado</button>
+    ${cal.length?`<p class="hint" style="margin:0">k = ${nf(m.k,3)} · b = ${nf(m.b,2)}.</p><button type="button" class="lnk" data-act="pcBorrarCal">Borrar lo anotado en báscula</button>`:''}</div></section>`;
 }
 /* el tipo de animal y la etapa del lote (cambian mucho el peso a igual alzada; sin elegir, el tipo sale de la raza) */
 const filaTipo=x=>{const t=tipoLote(x);return `<div class="pc-tipo"><label class="pc-tl" for="pcTipo">Tipo de animal</label><select class="in" id="pcTipo" data-pctipo>${TIPOS_G.map(([k,n])=>`<option value="${k}"${k===t.g?' selected':''}>${n}</option>`).join('')}</select>
@@ -549,7 +625,7 @@ async function medirVivo(){
   if(!window.CamVivo){toast('La cámara en vivo no está disponible.');return null;}
   const caps=await CamVivo.abrir({titulo:'Peso con cámara',clase:M.clase,ref:!!M.ref,buscar:M.buscar,pasos:M.pasos,enlace:modo==='ganado'&&window.Enlace?{disparar:()=>Enlace.disparar()}:null});
   if(!caps||caps.length<M.pasos.length)return null;
-  const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};r.id=registrar(r,r.stats);guardarFotos(r.id,caps);
+  const r={...combinar(modo,caps,alto,ropaSel(),modo==='ganado'?tipoLote(loteSel()):null),caps,stats:caps.stats||{}};if(modo==='ganado'){const x=loteSel();r.lote=x?x.id:null;}r.id=registrar(r,r.stats);guardarFotos(r.id,caps);
   if(modo==='ganado'&&window.Enlace&&Enlace.conectados().length)Enlace.avisarResultado(wtxt(r.kg));return r;
 }
 // antes de medir hace falta la estatura de referencia
@@ -617,13 +693,29 @@ function resultado(r){
     ${r.aviso?`<p class="pc-aviso">${ico('aviso',2)}<span>${r.aviso}</span></p>`:''}
     ${medHTML(r)}
     ${r.modo==='ganado'&&r.tipo?`<p class="hint"><span>Calculado como:</span> <b>${tipoTxt(r)}</b>. <span>Si no es así, cámbialo en la pantalla de la cámara y vuelve a medir.</span></p>`:''}
-    ${an.length?q('Arete (opcional)',`<select class="in" id="pcArete"><option value="">Sin arete</option>${an.map(a=>`<option value="${esc(a.id)}">${esc(a.arete)}</option>`).join('')}</select>`):''}
-    <p class="hint">${r.n?`Calibrado con ${pl(r.n,'medición','mediciones')} de tu báscula.`:'Sin calibrar: estimado general.'}</p>
+    ${an.length?q('Arete (opcional)',`<select class="in" id="pcArete" data-pcarete><option value="">Sin arete</option>${an.map(a=>`<option value="${esc(a.id)}"${a.id===r.aid?' selected':''}>${esc(a.arete)}</option>`).join('')}</select>`)+`<p class="hint pc-animal"></p>`:''}
+    ${r.modo==='ganado'&&r.dims&&r.dims.WH?`<div class="pc-cinta">${q('Perímetro del pecho con cinta (opcional)',`<div class="pc-cinta-f">${inp('hg',r.HG?String(Math.round(r.HG)):'',{unit:'cm',ph:'180'})}<button type="button" class="btn" data-act="pcCinta">Usar</button></div>`)}<p class="hint" style="margin:0">Con la cinta el peso sale más exacto (cerca de 5 %), aunque no tengas báscula.</p></div>`:''}
+    <p class="hint">${r.n?`La app aprendió con ${pl(r.n,'peso real','pesos reales')} de tus animales.`:'Estimado general: la app aprende sola con cada peso real que anotes (báscula, entrada, pesajes o ventas).'}</p>
     ${explicar(r)}
     <button type="button" class="lnk" data-act="pcCalRes">${r.modo==='persona'?'¿Sabes tu peso? Calibra con tu báscula':'¿Lo pesaste en báscula? Calibra con su peso'}</button></div>
     <div class="sh-foot">${r.modo==='persona'?`<button type="button" class="btn" data-act="cerrar" style="flex:1">Cerrar</button><button type="button" class="btn pri" data-act="pcVivo" style="flex:1.4">Medir otra vez</button>`
       :`<button type="button" class="btn" data-act="cerrar" style="flex:1">Descartar</button><button type="button" class="btn pri" data-act="pcAgregar" style="flex:1.6">Agregar al pesaje</button>`}</div>`);
+  if(r.aid)pintarAnimal(r);
 }
+/* el peso de este animal: el del modelo con su factor propio y sus mediciones anteriores (si se eligió su arete) */
+function pesoAnimal(r,aid){
+  const x=loteSel();if(!aid||!r.id){r.aid=null;if(r.id)actualizarReg(r.id,{aid:null});return null;}
+  r.aid=aid;actualizarReg(r.id,{aid,lote:x?x.id:null});const h=historialAnimal(aid,x&&x.id),fa=factorAnimal(aid,r.canal||'foto');
+  return h?{kg:h.kg,err:h.err,n:h.n,cal:fa.n}:null;}
+function pintarAnimal(r){const el=$('#sheet .pc-animal');if(!el)return;const p=r.aid?pesoAnimal(r,r.aid):null;r.kgAnimal=p&&p.n>1||p&&p.cal?p.kg:null;
+  el.innerHTML=p&&(p.n>1||p.cal)?`<b>${wtxt(p.kg)}</b> <span>(±${Math.round(p.err*100)} %)</span> · <span>${p.cal?'con sus pesos reales':'con sus mediciones anteriores'}</span><span data-no-tr> (${p.n})</span>`:'';}
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.matches&&t.matches('[data-pcarete]')&&ULT){pesoAnimal(ULT,t.value);pintarAnimal(ULT);}});
+ACTS.pcCinta=()=>{const r=ULT;if(!r||!r.dims||!r.dims.WH)return;const el=$('#sheet [name=hg]'),v=num(el&&el.value);
+  if(!(v>=r.dims.WH*GANADO.cinta.rango[0]&&v<=r.dims.WH*GANADO.cinta.rango[1])){toast('Ese perímetro no cuadra con la alzada del animal. Revisa la medida (en cm).',4000);return;}
+  if(r.predFoto==null)r.predFoto=r.pred;r.HG=v;r.canal='cinta';r.pred=pesoCinta(r.dims.WH,v,{g:r.tipo,etapa:r.etapa});
+  const m=modeloV('ganado','cinta');r.k=m.k;r.b=m.b;r.n=m.n;r.kg=m.k*Math.pow(r.pred,m.b);r.err=Math.min(.3,Math.sqrt(m.err**2+(r.cv||0)**2));
+  if(r.id)actualizarReg(r.id,{HG:Math.round(v*10)/10,pred:Math.round(r.pred*100)/100,predFoto:Math.round(r.predFoto*100)/100,kg:Math.round(r.kg*100)/100,err:Math.round(r.err*100)/100,k:m.k,b:m.b,ncal:m.n});
+  resultado(r);};
 ACTS.pcVivo=()=>{
   if(UI.pc.modo==='ganado'&&!loteSel()){toast('Primero crea un lote.');return;}
   closeSheet();conAlto(async()=>{const r=await medirVivo();if(r)resultado(r);});
@@ -644,8 +736,9 @@ SAVE.pcCal=f=>{const r=ULT;if(!r)return;const v=toKg(num(fv(f,'kg')));
 ACTS.pcBorrarCal=()=>confirmar('¿Borrar la calibración?','El peso vuelve a calcularse con el estimado general.','Borrar',()=>{const modo=UI.pc.modo;
   guardarPC({cal:(PC().cal||[]).filter(c=>c.modo!==modo),reg:REG().map(x=>x.modo===modo?{...x,real:null}:x)});toast('Calibración borrada');});
 ACTS.pcAgregar=()=>{const r=ULT;if(!r)return;const x=loteSel();if(!x)return;const sel=$('#pcArete'),aid=sel?sel.value:'';const a=aid&&(x.animAct||[]).find(z=>z.id===aid);
-  UI.pc.items=UI.pc.items.filter(z=>!aid||z.aid!==aid).concat({kg:r.kg,err:r.err,aid:aid||'',arete:a?a.arete:'',img:r.caps[0].img});ULT=null;closeSheet();render();
-  toast(`${wtxt(r.kg)} agregado. Mide otro animal o guarda el pesaje.`,3000);};
+  if(aid!==(r.aid||''))pesoAnimal(r,aid);const kg=aid&&r.kgAnimal?r.kgAnimal:r.kg;
+  UI.pc.items=UI.pc.items.filter(z=>!aid||z.aid!==aid).concat({kg,err:r.err,aid:aid||'',arete:a?a.arete:'',img:r.caps[0].img});ULT=null;closeSheet();render();
+  toast(`${wtxt(kg)} agregado. Mide otro animal o guarda el pesaje.`,3000);};
 ACTS.pcQuitar=el=>{UI.pc.items.splice(+el.dataset.i,1);render();};
 ACTS.pcGuardar=()=>{const x=loteSel(),it=UI.pc.items;if(!x||!it.length)return;
   const prom=it.reduce((s,r)=>s+r.kg,0)/it.length,pesos={};for(const r of it)if(r.aid)pesos[r.aid]=Math.round(r.kg*10)/10;
@@ -659,6 +752,6 @@ PAGES.hoy=(...a)=>{const h=_hoy(...a),i=h.indexOf('<main class="bd">');if(i<0)re
 const _pes=FORMS.pesaje;
 if(_pes)FORMS.pesaje=(...a)=>{_pes(...a);const b=$('#sheet .sh-body');if(b&&!b.querySelector('.pc-f'))b.insertAdjacentHTML('afterbegin',`<button type="button" class="btn full pc-f" data-act="pcIr">${icono('camara','i3')}Estimar con cámara (beta)</button>`);};
 ACTS.pcIr=()=>{closeSheet();UI.pc.modo='ganado';try{localStorage.setItem(MKEY,'ganado');}catch(e){}location.hash='#pesocam';};
-window.PesoCam={modeloV,ajustar,calModo,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
+window.PesoCam={modeloV,ajustar,calModo,etiquetas,factorAnimal,historialAnimal,pesoCinta,combinar,GANADO,TIPOS_G,tipoTxt,tipoDeRaza,tipoLote,volPersona,volGanado,tramos,medidasPersona,kpT,registrar,actualizarReg,REG,guardarPC,MODOS,ROPA,FORMA,ANSUR,EXTRA_CM,VERSION_MODELO};
 if(route().p==='pesocam'||route().p==='hoy')render();
 })();

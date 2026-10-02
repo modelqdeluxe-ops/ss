@@ -202,6 +202,10 @@ La beta de la próxima versión es una app aparte (**Rumentis Beta**, paquete `h
   Curraleiro, Indonesia y terneros Simmental; todas CC BY 4.0): igual que v6 dentro de la raza (7.9 %) y, sin
   calibrar, 8–17 % en otras razas del mismo tipo (v6 daba 50–120 % en cebú y criollos). La calibración de ganado deja
   b entre 0.4 y 1.15. Detalle, bases revisadas y lo que no funcionó: `modelo/peso/ganado/LEEME.md`.
+- **La app aprende sola** (beta.27): cada peso real que pasa por la app (báscula, peso de entrada de cada animal,
+  pesajes y ventas con el peso del comprador o del matadero) ajusta el modelo, el factor propio de cada animal (por
+  arete) y su peso con sus mediciones anteriores. **Sin báscula**: el perímetro del pecho con cinta en el resultado
+  (~5 % sin calibrar). Detalle en `modelo/peso/ganado/LEEME.md`.
 - **Teléfonos enlazados** (`enlace.js`, beta.26): hasta tres teléfonos toman al animal en el mismo instante: el de la
   administración (de costado, con la persona de referencia) y uno o dos del personal con **Equipo Beta** (por detrás,
   del otro costado o desde arriba). Conexión directa entre teléfonos (WebRTC, cifrada) por el mismo Wi-Fi o el punto de

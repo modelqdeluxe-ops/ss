@@ -1,0 +1,21 @@
+Estimado general: la app aprende sola con cada peso real que anotes (báscula, entrada, pesajes o ventas).	General estimate: the app learns on its own from every real weight you record (scale, arrival, weighings or sales).	Estimativa geral: o app aprende sozinho com cada peso real que você anotar (balança, entrada, pesagens ou vendas).
+La app aprendió con {0} peso real de tus animales.	The app learned from {0} real weight of your animals.	O app aprendeu com {0} peso real dos seus animais.
+La app aprendió con {0} pesos reales de tus animales.	The app learned from {0} real weights of your animals.	O app aprendeu com {0} pesos reais dos seus animais.
+La app aprende sola	The app learns on its own	O app aprende sozinho
+Todavía no hay pesos reales. La app aprende sola con cada uno que pase por ella: el peso de entrada de los animales que midas en los {0} días de su ingreso, los pesajes, las ventas (el peso del comprador o del matadero) y la báscula, si tienes.	No real weights yet. The app learns on its own from each one that goes through it: the arrival weight of animals you measure within {0} days of their arrival, weighings, sales (the buyer's or slaughterhouse's weight) and the scale, if you have one.	Ainda não há pesos reais. O app aprende sozinho com cada um que passar por ele: o peso de entrada dos animais que você medir nos {0} dias da chegada, as pesagens, as vendas (o peso do comprador ou do frigorífico) e a balança, se você tiver.
+Sin báscula: mide el perímetro del pecho con una cinta y escríbelo en el resultado; el peso sale cerca de {0} {1}. Elige el arete de cada animal: la app aprende de cada uno.	Without a scale: measure the heart girth with a tape and enter it in the result; the weight comes out within about {0} {1}. Choose each animal's ear tag: the app learns from each one.	Sem balança: meça o perímetro torácico com uma fita e anote no resultado; o peso sai com cerca de {0} {1}. Escolha o brinco de cada animal: o app aprende com cada um.
+Perímetro del pecho con cinta (opcional)	Heart girth with tape (optional)	Perímetro torácico com fita (opcional)
+Usar	Use	Usar
+Con la cinta el peso sale más exacto (cerca de {0} {1}), aunque no tengas báscula.	With the tape the weight is more accurate (about {0} {1}), even without a scale.	Com a fita o peso sai mais exato (cerca de {0} {1}), mesmo sem balança.
+Aprendió con {0} pesos reales:	Learned from {0} real weights:	Aprendeu com {0} pesos reais:
+Aprendió con {0} peso real:	Learned from {0} real weight:	Aprendeu com {0} peso real:
+Error típico: ±{0} {1}.	Typical error: ±{0} {1}.	Erro típico: ±{0} {1}.
+pesajes	weighings	pesagens
+ventas	sales	vendas
+báscula	scale	balança
+entrada del lote	lot arrival	entrada do lote
+pesajes del lote	lot weighings	pesagens do lote
+Borrar lo anotado en báscula	Delete the scale entries	Apagar o que foi anotado na balança
+con sus pesos reales	with its real weights	com seus pesos reais
+con sus mediciones anteriores	with its previous measurements	com suas medições anteriores
+Ese perímetro no cuadra con la alzada del animal. Revisa la medida (en cm).	That girth doesn't match the animal's height. Check the measurement (in cm).	Esse perímetro não combina com a altura do animal. Confira a medida (em cm).

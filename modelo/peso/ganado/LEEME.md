@@ -33,6 +33,32 @@
 - Después, la calibración de la app con la báscula (k · P^b, b entre 0.4 y 1.15) corrige lo propio de cada lote.
 - Ajuste: `python3 ajustar_ganado.py` (con `VALIDAR=<carpeta>` valida además con CowDatabase, sin licencia comercial).
 
+### La app aprende sola (beta.27)
+
+Cada peso de verdad que pase por la app enseña, sin que nadie tenga que calibrar:
+- la báscula propia, si hay (el peso que se anota en una medición);
+- el **peso de entrada** de cada animal (de la compra: báscula del vendedor, de la subasta o del camión) si se le midió
+  con la cámara a 3 días o menos de su ingreso;
+- los **pesajes** anotados a mano (no los de cámara), del animal por su arete o el promedio del lote, a 3 días o menos;
+- las **ventas**: el peso del comprador o del matadero (kilos entre cabezas) contra las mediciones de cámara de esos
+  animales en los 7 días anteriores.
+Cada peso se lleva a la fecha de la medición con la ganancia diaria del lote. Con eso se ajusta el modelo (k y b; b
+sale de cómo crece cada animal cuando hay varios pesos del mismo) y el **factor propio de cada animal** (lo que el
+modelo se equivoca siempre con él: forma, gordura, pelo), que se encoge según cuántas veces se le ha pesado
+(n / (n + 0.2)). El peso de cada animal se sigue con sus mediciones anteriores (filtro de Kalman con la ganancia del
+lote). En la prueba (`pruebas/aprende_t.js`), con un modelo que se equivoca +15 % parejo y ±6 % por animal: sin
+aprender 13.6 %, con el modelo ajustado 3.2 %, con el factor de cada animal 1.2 %. En la finca el piso es la báscula
+misma: el peso cambia 3–5 % según lo que el animal comió o bebió.
+
+### Sin báscula: la cinta
+
+    ln peso = −8.4644 + 0.1541 (europeo) − 0.1016 (en crecimiento) − 0.2182 (ternero) + 0.5378 ln alzada + 2.2806 ln perímetro
+
+El perímetro del pecho con cinta (se escribe en el resultado) y la alzada de la foto. Ajustado con Horqin, Bororo,
+Curraleiro e Indonesia, con su etapa: 4.6–7.7 % en cada base (terneros 10 %); en Hereford, que no entró, **5.4 %**
+(sesgo 0.97) sin calibrar. Cruce: la mitad del europeo; lechero: como europeo. Con cinta la app aprende por su lado
+(otro k y b) de los mismos pesos reales.
+
 ### Las razas que más se usan, contra el modelo
 
 `tablas/promedios_razas.csv`: promedios publicados de peso y alzada por raza y etapa (artículos de acceso abierto,

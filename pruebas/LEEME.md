@@ -17,3 +17,8 @@ Rumentis Beta y una del otro costado con Equipo Beta) conectadas por WebRTC real
 que la administración espere a las otras cámaras, que un disparo tome las tres vistas (sin pedir el paso por detrás),
 que el peso use el otro costado, que el resultado llegue a las cámaras y que si un teléfono se cae se siga sin él.
 Mismos servidores y fotos que `vivo_t.js`.
+
+`aprende_t.js` (solo 8111, sin cámara) arma mediciones en el registro sobre la finca de muestra y comprueba que la app
+aprenda sola del peso de entrada de cada animal, de los pesajes a mano y de las ventas; que el error baje (sin
+aprender ~14 %, con el modelo ajustado < 5 %, con el factor de cada animal < 2 %); el peso de cada animal con su
+historial; el modelo con cinta y la tarjeta "La app aprende sola".

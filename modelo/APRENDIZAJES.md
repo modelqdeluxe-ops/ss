@@ -163,6 +163,15 @@ Lecciones:
   equipo). Con la cámara abierta el navegador da las IP locales (sin ella, nombres .local que algunos anclajes no
   resuelven). El código cabe en un QR de corrección L (~580 caracteres comprimidos).
 
+## 6e. Aprender sola y sin báscula (beta.27)
+
+- Casi todo el error de la cámara es propio de cada animal (forma, gordura): no lo arregla una foto mejor, lo arregla
+  conocer al animal. Cualquier peso real sirve para eso, aunque no sea de báscula propia: entrada (compra), pesajes,
+  ventas (peso del comprador o del matadero). Con varios pesos del mismo animal, la pendiente b se saca del crecimiento
+  de cada uno (comparar animales distintos la tuerce por el error propio de cada uno).
+- Sin báscula, la cinta es la báscula barata: con el perímetro, una fórmula para todas las razas da ~5 %.
+- El piso de cualquier sistema es la báscula misma (3–5 % según lo que comió o bebió el animal).
+
 ## 7. Herramientas
 
 - `maestro_silueta.py` (en el repo): siluetas del maestro para entrenar el rápido.

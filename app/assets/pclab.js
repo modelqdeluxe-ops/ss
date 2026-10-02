@@ -53,7 +53,7 @@ function dispersion(con){
 }
 function serie(R){
   const v=R.slice(-30);if(v.length<2)return '';
-  const Wd=300,Hd=120,m=8,ys=v.flatMap(x=>[x.kg,x.real].filter(z=>z>0)).map(W),lo=Math.min(...ys)*.97,hi=Math.max(...ys)*1.03;
+  const Wd=300,Hd=120,m=8,ys=v.flatMap(x=>[x.kg,x.real].filter(z=>z>0)).map(W);if(!ys.length||v.some(x=>!(x.kg>0)))return '';const lo=Math.min(...ys)*.97,hi=Math.max(...ys)*1.03;
   const X=i=>m+i/(v.length-1)*(Wd-2*m),Y=y=>Hd-m-(W(y)-lo)/(hi-lo||1)*(Hd-2*m);
   return `<figure class="pc-graf"><svg viewBox="0 0 ${Wd} ${Hd}" role="img" aria-label="Últimas mediciones">
     <polyline points="${v.map((x,i)=>`${X(i).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(' ')}" class="g-l"/>

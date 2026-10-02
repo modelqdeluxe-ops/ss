@@ -69,7 +69,22 @@ ET={'adulto':0,'crec':-.2,'ternero':-.4};AP={'euro':-3.45,'cruce':-3.66,'cebu':-
 pr=T('tablas/promedios_razas.csv');pr['a']=np.log(pr.peso_kg)-BETA*np.log(pr.alzada_cm)-pr.etapa.map(ET)
 print('\npromedios por raza (a = ln peso − 2 ln alzada − etapa; el de la app por tipo)')
 for _,x in pr.iterrows():print(f'   {x.raza:34s} {x.tipo:6s} a {x.a:6.3f}  app {AP[x.tipo]:6.3f}  diferencia {np.exp(x.a-AP[x.tipo])-1:+.0%}')
+# 6) con cinta (para quien no tiene báscula): ln peso = a + tipo (europeo) + etapa + c1 ln alzada + c2 ln perímetro
+def cin(nom,tipo,et,d):
+    hg=d['perimetro_cm'] if 'perimetro_cm' in d else d['perimetro_toracico_cm']
+    x=pd.DataFrame({'W':d.peso_kg.values,'WH':d.alzada_cm.values,'HG':hg.values}).astype(float).dropna();x=x[(x.W>0)&(x.WH>0)&(x.HG>0)];x['b']=nom;x['t']=tipo;x['e']=et;return x
+cu2=cu.copy();cu2['categoria']=cu2.categoria.str.strip()
+Q=pd.concat([cin('Horqin','euro','adulto',h),cin('Bororo','cebu','adulto',bo),cin('Curraleiro','cebu','adulto',cu2[cu2.categoria.isin(['Cow','Bull'])]),
+  cin('Curraleiro destetados','cebu','crec',cu2[cu2.categoria=='Posweaned']),cin('Curraleiro terneros','cebu','ternero',cu2[cu2.categoria=='Calves']),
+  cin('Indonesia','cebu','adulto',ind[ind.edad=='Adult']),cin('Indonesia jóvenes','cebu','crec',ind[ind.edad=='Young'])])
+XQ=lambda d:np.c_[np.ones(len(d)),(d.t=='euro').values,(d.e=='crec').values,(d.e=='ternero').values,np.log(d.WH),np.log(d.HG)]
+sq=np.sqrt(1/Q.groupby('b').W.transform('size').values);cq=np.linalg.lstsq(XQ(Q)*sq[:,None],np.log(Q.W.values)*sq,rcond=None)[0]
+print('\ncon cinta [a, europeo, crecimiento, ternero, ln alzada, ln perímetro]:',np.round(cq,4))
+rq=np.log(Q.W.values)-XQ(Q)@cq
+for bb in Q.b.unique():mm=(Q.b==bb).values;print(f'   {bb:24s} {np.mean(np.abs(np.exp(rq[mm])-1))*100:5.1f} %')
 V=os.environ.get('VALIDAR')
 if V:
     x=pd.read_excel(os.path.join(V,'CowDatabase/Measurements.xlsx'))
     fila('Hereford (cinta, validación)',base('Hereford',x['live weithg'],x['withers height'],x['chest depth']),A['euro'])
+    H=pd.DataFrame({'W':x['live weithg'],'WH':x['withers height'],'HG':x['heart girth'],'t':'euro','e':'adulto'});rh=np.log(H.W)-XQ(H)@cq
+    print(f'con cinta, Hereford (no entró): sesgo {np.exp(np.median(rh)):.2f}, error {np.mean(np.abs(np.exp(rh)-1))*100:.1f} %')
