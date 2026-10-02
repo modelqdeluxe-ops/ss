@@ -360,6 +360,13 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
+**Pendiente del dueño (oct 2026):** va a probar en su finca (beta.27, con Equipo Beta en los teléfonos del personal) y
+traerá los datos. Con ellos se ajusta el modelo de ganado: pedirle el CSV del laboratorio (Peso con cámara → Laboratorio →
+exportar CSV) y el archivo de análisis con las fotos, con el peso de báscula anotado en cada medición (o los pesajes y
+ventas registrados en la app). Con eso: error real por animal y por lote, reajuste de la fórmula (`ajustar_ganado.py`
+con sus datos), del factor por animal y de la cinta. Meta del dueño: ≤ 5 % por animal. No adelantar el modelo global
+ni nada nuevo hasta tener sus datos.
+
 1. Que el dueño instale `RumentisBeta-5.0.0-beta.24.apk` y pruebe **Personas** (escribir su estatura, medirse de frente
    y de costado, pared lisa, ropa ajustada). Pedirle: cuadros/s, cuánto tarda "Midiendo…", **su peso de báscula** en
    3–5 mediciones (calibra y da el error real) y el CSV del laboratorio.
