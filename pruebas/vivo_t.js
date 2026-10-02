@@ -143,6 +143,17 @@ assert.ok(!await p.$('#sheet [name=sexo]')&&!await p.$('#sheet [name=edad]'),'si
  await p.click('#sheet [data-act="pcAgregar"]');await p.waitForTimeout(300);assert.equal(await p.$$eval('.pc-sesion .row',e=>e.length),1,'agregado al pesaje');
  const n0=await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length);await p.click('[data-act="pcGuardar"]');await p.waitForTimeout(300);
  assert.equal(await p.evaluate(()=>allItems().filter(i=>i.metodo==='camara').length),n0+1,'pesaje guardado');
+ /* ---------- laboratorio: lo de cada foto (depuración) con una medición real ---------- */
+ const DB=await p.evaluate(async()=>{const r=PesoCam.REG().filter(x=>x.modo==='ganado').slice(-1)[0],D=await PcLab.leerDbg(r.id);if(!D)return null;const c=D.angs.find(a=>a.rol==='costado'),t=c&&c.tomas[0];
+   return {id:r.id,dq:r.dq,angs:D.angs.map(a=>a.rol+':'+a.tomas.length),pares:D.pares.length,geo:!!(t&&t.M&&t.M.geo),kp:t&&t.kp?t.kp.length:0,cont:t&&t.sil&&t.sil.cont?t.sil.cont.length:0,ref:!!(t&&t.ref&&t.ref.cont),luz:t&&t.luz,cmpx:t&&t.cmpx};});
+ console.log('depuración',JSON.stringify(DB));
+ assert.ok(DB&&DB.geo&&DB.kp===51&&DB.cont>20&&DB.ref&&DB.luz&&DB.luz.nitidez>0&&DB.cmpx>0,'lo de cada foto queda guardado (silueta, persona, puntos, medidas, luz)');
+ assert.ok(DB.angs.length===2&&DB.pares>=1&&DB.dq&&DB.dq.tamRef>0&&DB.dq.nitidez>0&&DB.dq.kp>0,'resumen de la toma en el registro');
+ await p.evaluate(()=>{location.hash='#pclab/registro';});await p.waitForSelector('.lab-tabs');await p.waitForTimeout(300);
+ await p.click(`[data-act="pcRegVer"][data-id="${DB.id}"]`);await p.waitForSelector('#sheet .lab-cv');
+ await p.waitForFunction(()=>{const c=document.querySelector('#sheet .lab-cv');if(!c||c.width<100)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=400)if(d[i]+d[i+1]+d[i+2]>120)n++;return n>50;},null,{timeout:10000});
+ await p.screenshot({path:'vivo_lab_dbg.png',fullPage:true});
+ const nT=await p.$$eval('#sheet .lab-tomas .chip',e=>e.length);assert.ok(nT>=2,'elegir cada foto');await p.click('#sheet .lab-tomas .chip:last-child');await p.waitForTimeout(400);
  if(IDI==='xx'){const K=[...await p.evaluate(()=>[...I18N_REC.keys()])];fs.writeFileSync('claves_vivo.json',JSON.stringify(K.map(k=>[k,1])));console.log('claves',K.length);}
  console.log(errs.length?'ERRORES:\n'+errs.join('\n'):'errores ninguno');await b.close();if(errs.length)process.exit(1);
 })().catch(async e=>{console.error('FALLA',e.message);

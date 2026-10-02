@@ -210,6 +210,12 @@ function abrir(o){
        administración con cámaras enlazadas (dispara a todas a la vez) */
     const PER=o.personal||null,ENL=o.enlace&&window.Enlace?o.enlace:null,enl=()=>ENL&&ip===0&&Enlace.conectados().length>0;
     let ip=0,activo=true,stream=null,frontal=false,wl=null,tick=0;
+    /* la inclinación del teléfono en cada toma (para el laboratorio), con el acelerómetro: elev, hacia dónde apunta la
+       cámara (0 = horizontal; negativo = hacia abajo) y horiz, cuánto se ladea la imagen respecto del horizonte (grados) */
+    let GRAV=null;const onMot=e=>{const a=e.accelerationIncludingGravity;if(a&&a.x!=null)GRAV=[a.x,a.y,a.z];};try{window.addEventListener('devicemotion',onMot);}catch(e){}
+    const telOri=()=>{if(!GRAV)return null;const [x,y,z]=GRAV,n=Math.hypot(x,y,z);if(!(n>3))return null;
+      const th=((screen.orientation&&screen.orientation.angle)||+window.orientation||0)*Math.PI/180,up=x*Math.sin(th)+y*Math.cos(th),der=x*Math.cos(th)-y*Math.sin(th);
+      const el=Math.asin(Math.max(-1,Math.min(1,-z/n)))*180/Math.PI;return {elev:Math.round((frontal?-el:el)*10)/10,horiz:Math.round(Math.atan2(der,up)*1800/Math.PI)/10};};
     const w=document.createElement('dialog');w.className='cam cv';w.setAttribute('aria-label',o.titulo||'Peso con cámara');
     w.innerHTML=`<div class="cam-top"><div class="cv-tit"><b class="cv-paso"></b><span class="cv-sub"></span></div><button type="button" class="cam-x" aria-label="Cerrar">${ico('x',2.4)}</button></div>
       <div class="cv-chips">${CHIPS.filter(([k])=>k!=='ref'||conRef).map(([k,t])=>`<span class="cv-chip" data-k="${k}"><i></i>${t}</span>`).join('')}</div>
@@ -220,7 +226,7 @@ function abrir(o){
     document.body.appendChild(w);try{w.showModal();}catch(e){w.setAttribute('open','');}
     const $w=s=>w.querySelector(s),tag=w.querySelector('.cv-tag'),posEl=w.querySelector('.cv-pos'),v=$w('video'),lz=$w('.cv-lz'),msg=$w('.cv-msg'),sub=$w('.cv-sub'),prog=$w('.cv-prog'),fps=$w('.cv-fps'),man=$w('.cv-man'),th=$w('.cv-th');
     const parar=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;};
-    const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
+    const fin=r=>{if(!activo)return;activo=false;clearInterval(tick);try{window.removeEventListener('devicemotion',onMot);}catch(e){}parar();try{wl&&wl.release();}catch(e){}try{w.close();}catch(e){}w.remove();fin0(r);};
     w.addEventListener('cancel',e=>{e.preventDefault();fin(null);});
     $w('.cam-x').onclick=()=>fin(null);
     const pintarPaso=()=>{const p=pasos[ip];$w('.cv-paso').textContent=pasos.length>1?`Paso ${ip+1} de ${pasos.length} · ${p.nombre}`:p.nombre;sub.textContent=p.instr;};
@@ -330,7 +336,7 @@ function abrir(o){
       const disp=enl()?ENL.disparar():null;
       const cuadro=()=>{const fc=document.createElement('canvas');fc.width=W;fc.height=H;fc.getContext('2d').drawImage(v,0,0,W,H);return fc;};
       const med={};for(const k of ['alto','ancho','area','banda','ratio','torsoN','score','refAlto'])med[k]=mediana(lista.map(z=>z.med[k]));med.W=W;med.H=H;
-      const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
+      const fc=cuadro(),cap={id:p.id,nombre:p.nombre,manual:!!manual,ori:telOri(),ts:Date.now(),rapido:med,fc,s:u.s,pr:u.p,banda:p.banda,tomas:[{fc,pend:precisa(fc,cajas)}]};
       // las demás tomas, unos milisegundos después (todavía quieto): el modelo preciso las mide todas y se promedian
       for(let t=1;t<nTomas;t++){await new Promise(z=>setTimeout(z,REGLAS.entre));if(!activo)return;const f2=cuadro();cap.tomas.push({fc:f2,pend:precisa(f2,cajas)});}
       caps.push(cap);capturando=false;
@@ -364,7 +370,7 @@ function abrir(o){
           if(!img)img=foto(t.fc,r.s,r.p,r.kp);}
         const fuente=tomas.length?'preciso':'rapido';
         if(!tomas.length){if(c.remoto)continue;tomas.push({med:c.rapido,sil:c.s,ref:c.pr||null,W:c.fc.width,H:c.fc.height});}
-        out.push({id:c.id,nombre:c.nombre,manual:c.manual,remoto:!!c.remoto,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,img:img||foto(c.fc,c.s,c.pr)});}
+        out.push({id:c.id,nombre:c.nombre,manual:c.manual,remoto:!!c.remoto,ori:c.ori||null,ts:c.ts||null,tomas,med:tomas[0].med,sil:tomas[0].sil,ref:tomas[0].ref,W:tomas[0].W,H:tomas[0].H,fuente,img:img||foto(c.fc,c.s,c.pr)});}
       try{if(tPre.length)localStorage.setItem('rumentis-pc-msp',String(Math.round(mediana(tPre))));}catch(e){}
       // rendimiento de esta medición (para el laboratorio)
       out.stats={fps:fpsL.length?fpsL.reduce((a,b)=>a+b,0)/fpsL.length:0,cuadros:procesados,msRapido:msR.length?msR.reduce((a,b)=>a+b,0)/msR.length:0,

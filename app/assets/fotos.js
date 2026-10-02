@@ -144,9 +144,9 @@ async function camara(frontal){
 async function limpiar(){
   const vivos=new Set();for(const l of Object.values(S.lotes||{}))for(const a of (l.animales||[]))vivos.add(a.id);
   if(!vivos.size)return;
-  // las del equipo (evidencias de tareas y fotos de perfil, 'eq-…') y las del peso con cámara ('pc-…') no son de
-  // animales: no se tocan
-  for(const k of await ids())if(!/^(eq|pc)-/.test(k)&&!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
+  // las del equipo (evidencias de tareas y fotos de perfil, 'eq-…') y las del peso con cámara ('pc-…', las originales
+  // 'pcr-…' y la depuración 'pcd-…') no son de animales: no se tocan
+  for(const k of await ids())if(!/^(eq|pc|pcr|pcd)-/.test(k)&&!vivos.has(k)&&!(window.FOTOS_TEMP&&FOTOS_TEMP.has(k)))await borrar(k);
 }
 setTimeout(limpiar,15000);
 window.Fotos={guardar,borrar,url,tiene,tomar,camara,pintar,ids,limpiar,NATIVO};

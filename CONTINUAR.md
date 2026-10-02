@@ -18,8 +18,8 @@ Hay varias apps que salen del mismo código (`scripts/variantes.sh` + `scripts/v
 |---|---|---|
 | **Rumentis** (4.9.0) | `hn.hato.ganadero` | La app del dueño/administración. De pago. Vende licencias para el personal (US$1.99 c/u). |
 | **Rumentis Equipo** (Team / Equipe según idioma) | `hn.hato.ganadero.vaquero` | App gratis del colaborador. Se activa con una licencia. |
-| **Rumentis Beta** (5.0.0-beta.27) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
-| **Equipo Beta** (5.0.0-beta.27) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
+| **Rumentis Beta** (5.0.0-beta.28) | `hn.hato.ganadero.beta` | **Beta de la próxima versión**: peso por cámara con visión en el teléfono. Se instala aparte. |
+| **Equipo Beta** (5.0.0-beta.28) | `hn.hato.ganadero.vaquero.beta` | La del personal para la beta (con la visión): su teléfono es una **cámara enlazada** del peso con cámara. |
 | Rumentis Prueba / Equipo Prueba | `.prueba` | Solo con `PRUEBA=1`, para probar sin cobrar. |
 
 `config.js` dice qué app es: `window.RUMENTIS={app:'jefe'|'vaquero',prueba:bool,beta:bool,...}` (variante.py lo reescribe).
@@ -218,7 +218,30 @@ puntos de beta.8 le quitaba cuerpo a la silueta precisa (IoU 0.88 → 0.82, erro
 - `giroPerfil`: el giro de la toma de perfil corrige los fondos (corte ovalado) y la separación de las piernas; el fondo
   del muslo no pasa de 1.3 veces su ancho. Campos `giro` e `incompleta` en el registro y el CSV.
 
-**5.0.0-beta.27** (esta rama): **la app aprende sola** y **cinta para quien no tiene báscula** (el dueño: "8 % es
+**5.0.0-beta.28** (esta rama): **laboratorio completo** del peso con cámara (el dueño: "un laboratorio completo, no solo
+calculando el error", "una app debug completa"). Para que su prueba en la finca traiga todo lo necesario para ajustar.
+- Depuración por medición (`depurar` en pesocam.js): de cada foto, tamaño, cm/px, silueta (caja, área, confianza,
+  contorno reducido) y la de la persona de referencia, los puntos con su confianza, las medidas y dónde se tomaron
+  (`medidasGanado` devuelve `geo`: cruz, suelo, pecho, hombro, cola), luz (brillo, contraste, nitidez = varianza del
+  laplaciano, quemado, oscuro) e inclinación del teléfono (acelerómetro en camvivo.js: `elev`, `horiz`); de cada par,
+  alzada, fondo, F/A y peso. Va aparte (`pcd-<id>` en el almacén de fotos, últimas 60) y un resumen al registro (`dq`).
+- Datos del animal por medición (`cond`): sexo, condición corporal, llenado, preñez, pelo, postura, suelo, fondo, edad,
+  distancia, cinta de referencia, notas; y el peso de báscula. Desde el detalle o desde el resultado.
+- Página `#pclab` (pclab.js) en pestañas: Resumen (estado, diagnóstico automático, sesión de prueba, "repetir el mismo
+  animal"), Errores (fábrica / hoy / validación cruzada / animal conocido / curva de aprendizaje en orden; por fuente,
+  tipo, etapa, cámaras, condiciones, rango de peso; foto vs. cinta vs. báscula), Medidas (histogramas con los límites
+  del modelo, coincidencia entre cámaras, error contra alzada y F/A), Calidad (cada dato de la toma y el error por
+  tercio; repetibilidad; rendimiento), Animales (trayectoria, factor, repetibilidad), Modelo (constantes, calibración,
+  ajuste sugerido de β y γ con los datos de la finca y validación cruzada, calculadora con sensibilidad), Registro
+  (filtros; exportes). El detalle de cada medición dibuja sobre la foto original la silueta, la persona, los puntos y
+  las medidas, y muestra cada foto y cada par.
+- Exportes: CSV con columnas nuevas (toma_*, animal_*, arete, sesión, kg_real y su fuente, kg_modelo_hoy); "laboratorio
+  completo" (JSON: registros, depuración, pesos reales con su fuente, constantes, calibración, lotes, animales y
+  movimientos); una medición sola; análisis con fotos y depuración.
+- Arreglo: fotos.js ya no borra las fotos originales (`pcr-`) ni la depuración (`pcd-`) al limpiar.
+- Prueba nueva `pruebas/lab_t.js`; vivo_t.js comprueba la depuración real y el dibujo sobre la foto.
+
+**5.0.0-beta.27**: **la app aprende sola** y **cinta para quien no tiene báscula** (el dueño: "8 % es
 intolerable", "debe entrenarse sola", "¿y los que no tienen báscula?").
 - `etiquetas()` en pesocam.js: toma como pesos reales la báscula, el peso de entrada de cada animal (medido a ≤ 3 días
   de su ingreso), los pesajes a mano (del animal o del lote) y las ventas (peso del comprador/matadero contra la cámara
@@ -360,9 +383,9 @@ cabeza, o la escala). El dueño: los puntos en vivo "se salen, no se pegan". Cam
 
 ## 5. SIGUIENTE TAREA
 
-**Pendiente del dueño (oct 2026):** va a probar en su finca (beta.27, con Equipo Beta en los teléfonos del personal) y
-traerá los datos. Con ellos se ajusta el modelo de ganado: pedirle el CSV del laboratorio (Peso con cámara → Laboratorio →
-exportar CSV) y el archivo de análisis con las fotos, con el peso de báscula anotado en cada medición (o los pesajes y
+**Pendiente del dueño (oct 2026):** va a probar en su finca (beta.28, con Equipo Beta en los teléfonos del personal) y
+traerá los datos. Con ellos se ajusta el modelo de ganado: pedirle el archivo "laboratorio completo" (Peso con cámara →
+Laboratorio → Registro → Exportar el laboratorio completo), el CSV y el archivo de análisis con las fotos, con el peso de báscula anotado en cada medición (o los pesajes y
 ventas registrados en la app). Con eso: error real por animal y por lote, reajuste de la fórmula (`ajustar_ganado.py`
 con sus datos), del factor por animal y de la cinta. Meta del dueño: ≤ 5 % por animal. No adelantar el modelo global
 ni nada nuevo hasta tener sus datos.
@@ -404,6 +427,7 @@ Pruebas en `pruebas/` (se corren desde una carpeta de trabajo; escriben capturas
 - `v2_t.js` recorrido visual del equipo 4.9.0.
 - `aprende_t.js` la app aprende sola (peso de entrada, pesajes, ventas; factor de cada animal), sin cámara.
 - `enlace_t.js` tres teléfonos enlazados (WebRTC en tres páginas; mismos servidores que vivo_t.js).
+- `lab_t.js` el laboratorio completo (#pclab) con mediciones sintéticas: pestañas, diagnóstico, ajuste sugerido, datos del animal, exportes. Solo 8111.
 - `vivo_t.js` peso con cámara en vivo, personas y ganado (8112 con `silueta.onnx`, `seg.onnx`, `ort.bundle.js`,
   `ort-wasm-simd-threaded.wasm` y las fotos `frente.jpg` = COCO 000000223959, `lejos.jpg` = 000000295478,
   `lado.jpg` = 000000090062, `atras.jpg` = 000000467776; se bajan de

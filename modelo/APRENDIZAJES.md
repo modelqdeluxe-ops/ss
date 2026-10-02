@@ -172,6 +172,18 @@ Lecciones:
 - Sin báscula, la cinta es la báscula barata: con el perímetro, una fórmula para todas las razas da ~5 %.
 - El piso de cualquier sistema es la báscula misma (3–5 % según lo que comió o bebió el animal).
 
+## 6f. El laboratorio (beta.28)
+
+- El error solo no dice qué arreglar. Para ajustar hace falta, de cada medición, lo que vio el modelo en cada foto
+  (silueta, puntos, dónde midió) y en qué condiciones (luz, nitidez, tamaño de la persona en la foto, inclinación del
+  teléfono, postura, llenado del animal). Con eso se separa lo que es de la toma (repetibilidad, calidad) de lo que es
+  de la fórmula (el error sube o baja con la alzada o con el fondo / alzada: β o γ mal).
+- El error honesto es el de validación cruzada (ajustar sin ese peso y predecirlo) y el de aprender en orden (solo con
+  los pesos anteriores); el del modelo con ese peso adentro siempre se ve mejor de lo que es.
+- Nitidez (varianza del laplaciano en un recorte de 128 px del sujeto): nítida ~2,000–9,000; con 1 px de desenfoque a
+  esa escala baja de ~300.
+- La confianza de los puntos (SimCC) pasa de 1: no es un porcentaje.
+
 ## 7. Herramientas
 
 - `maestro_silueta.py` (en el repo): siluetas del maestro para entrenar el rápido.

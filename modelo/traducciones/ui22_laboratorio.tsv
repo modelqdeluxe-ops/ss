@@ -1,0 +1,312 @@
+(contra	(vs.	(contra
+(mediana): la persona de referencia no está a la par del animal en alguna de las dos tomas.	(median): the reference person is not level with the animal in one of the two shots.	(mediana): a pessoa de referência não está alinhada com o animal em uma das duas tomadas.
+) se calcula aquí la alzada (β) y el fondo de pecho (γ) que mejor van con tu ganado, con su error.	), the withers height (β) and chest depth (γ) that best fit your cattle are calculated here, with their error.	), aqui se calculam a altura da cernelha (β) e a profundidade do peito (γ) que melhor se ajustam ao seu gado, com seu erro.
+* fuera de los límites del modelo: se ajustó.	* outside the model limits: it was adjusted.	* fora dos limites do modelo: foi ajustado.
+. La calibración lo corrige; si es más de {0} {1}, revisar el tipo de animal, la etapa o la estatura de referencia.	. Calibration corrects it; if it is more than {0} {1}, check the animal type, the stage or the reference height.	. A calibração corrige isso; se for mais de {0} {1}, revise o tipo de animal, a fase ou a altura de referência.
+. Se calcularon con el volumen (±{0} {1}): repetirlas con el animal entero a la vista.	. They were calculated from the volume (±{0} {1}): repeat them with the whole animal in view.	. Foram calculadas com o volume (±{0} {1}): repita-as com o animal inteiro à vista.
+: dentro de la meta de {0} {1}.	: within the {0} {1} goal.	: dentro da meta de {0} {1}.
+: la toma es estable.	: the shot is stable.	: a tomada é estável.
+: la toma misma aporta buena parte del error. Ver Calidad.	: the shot itself accounts for much of the error. See Quality.	: a própria tomada responde por boa parte do erro. Veja Qualidade.
+: más que la meta de {0} {1}.	: more than the {0} {1} goal.	: mais que a meta de {0} {1}.
+Abrir el laboratorio completo	Open the full lab	Abrir o laboratório completo
+Ajuste con tus datos	Fit with your data	Ajuste com seus dados
+Alguna medida estimada	Some measurement estimated	Alguma medida estimada
+Alto de la persona de referencia en la foto	Height of the reference person in the photo	Altura da pessoa de referência na foto
+Alto de la persona de referencia en la foto. Menos de {0} {1}: muy lejos.	Height of the reference person in the photo. Less than {0} {1}: too far away.	Altura da pessoa de referência na foto. Menos de {0} {1}: longe demais.
+Alto del sujeto en la foto	Height of the subject in the photo	Altura do sujeito na foto
+Alzada	Withers height	Altura da cernelha
+Alzada a la cruz.	Height at the withers.	Altura da cernelha.
+Alzada de atrás (grupa / cruz)	Rear height (rump / withers)	Altura por trás (garupa / cernelha)
+Alzada de atrás contra la de costado. Dentro de ±{0} {1} se promedian; fuera, se usa solo la de costado.	Rear height against side height. Within ±{0} {1} they are averaged; outside that, only the side one is used.	Altura por trás contra a de lado. Dentro de ±{0} {1} são promediadas; fora disso, usa-se só a de lado.
+Alzada y fondo de pecho	Withers height and chest depth	Altura da cernelha e profundidade do peito
+Ancho de la cadera	Hip width	Largura do quadril
+Ancho de la cintura	Waist width	Largura da cintura
+Ancho del pecho	Chest width	Largura do peito
+Animales del ajuste	Animals in the fit	Animais do ajuste
+Anotar los datos del animal	Enter the animal's data	Anotar os dados do animal
+Barro o pasto alto (tapa las patas)	Mud or tall grass (hides the legs)	Barro ou capim alto (cobre as patas)
+Base de la cola	Tail base	Base da cauda
+Bien parado	Standing square	Bem posicionado
+Brillo	Brightness	Brilho
+Brillo del sujeto. Entre {0} y {1} {2} está bien.	Subject brightness. Between {0} and {1} {2} is fine.	Brilho do sujeito. Entre {0} e {1} {2} está bom.
+Brillo:	Brightness:	Brilho:
+CSV: una fila por medición, con las medidas, la calidad de las tomas, las condiciones del animal y el peso real. Laboratorio completo: todo el registro, lo de cada foto (siluetas, puntos, medidas), los pesos reales con su fuente y el estado del modelo, para ajustarlo fuera del teléfono. Para análisis: además las fotos originales de las últimas {0}.	CSV: one row per measurement, with the measurements, shot quality, animal conditions and real weight. Full lab: the whole log, the data of each photo (silhouettes, points, measurements), the real weights with their source and the model state, to adjust it outside the phone. For analysis: also the original photos of the last {0}.	CSV: uma linha por medição, com as medidas, a qualidade das tomadas, as condições do animal e o peso real. Laboratório completo: todo o registro, os dados de cada foto (silhuetas, pontos, medidas), os pesos reais com sua fonte e o estado do modelo, para ajustá-lo fora do celular. Para análise: também as fotos originais das últimas {0}.
+Cabeza baja o girada	Head down or turned	Cabeça baixa ou virada
+Cada foto	Each photo	Cada foto
+Cada par de fotos	Each pair of photos	Cada par de fotos
+Cada peso real	Each real weight	Cada peso real
+Cadera derecha	Right hip	Quadril direito
+Cadera izquierda	Left hip	Quadril esquerdo
+Calibración con cinta	Tape calibration	Calibração com fita
+Calibrado	Calibrated	Calibrado
+Calidad de la toma	Shot quality	Qualidade da tomada
+Calidad de las tomas	Shot quality	Qualidade das tomadas
+Cambiar los datos del animal	Change the animal's data	Alterar os dados do animal
+Castrado	Steer	Castrado
+Cerca o corral	Fence or pen	Cerca ou curral
+Cinta (sin calibrar)	Tape (uncalibrated)	Fita (sem calibrar)
+Codo derecho	Right elbow	Cotovelo direito
+Codo izquierdo	Left elbow	Cotovelo esquerdo
+Comió hace menos de {0} h	Ate less than {0} h ago	Comeu há menos de {0} h
+Con arete	With tag	Com brinco
+Con cinta (calibrado)	With tape (calibrated)	Com fita (calibrado)
+Con cinta. C: perímetro del pecho.	With tape. C: heart girth.	Com fita. C: perímetro torácico.
+Con datos del animal	With animal data	Com dados do animal
+Con el modelo de hoy	With today's model	Com o modelo de hoje
+Con peso real	With real weight	Com peso real
+Con {0} pesos reales de animales medidos (hay	With {0} real weights of measured animals (there are	Com {0} pesos reais de animais medidos (há
+Condición corporal ({0} a {1})	Body condition ({0} to {1})	Condição corporal ({0} a {1})
+Confianza de los puntos	Point confidence	Confiança dos pontos
+Constantes del modelo	Model constants	Constantes do modelo
+Contorno de la pantorrilla	Calf circumference	Circunferência da panturrilha
+Contorno del cuello	Neck circumference	Circunferência do pescoço
+Contra el ancho / largo desde arriba (no entra en el modelo): si hay tendencia, el ancho ayudaría.	Against width / length from above (not in the model): if there is a trend, the width would help.	Contra largura / comprimento de cima (não entra no modelo): se houver tendência, a largura ajudaria.
+Contra el fondo / alzada. Si el error sube con la razón, γ es alta; si baja, es baja.	Against depth / height. If the error rises with the ratio, γ is high; if it falls, it is low.	Contra profundidade / altura. Se o erro sobe com a razão, γ está alta; se desce, está baixa.
+Contra la alzada. Si el error sube con la alzada, β es alta; si baja, es baja.	Against withers height. If the error rises with height, β is high; if it falls, it is low.	Contra a altura da cernelha. Se o erro sobe com a altura, β está alta; se desce, está baixa.
+Corto	Short	Curto
+Cuadros por segundo	Frames per second	Quadros por segundo
+Cuello	Neck	Pescoço
+Curva de aprendizaje	Learning curve	Curva de aprendizado
+Curva de aprendizaje: el error de cada peso real con lo que la app había aprendido antes de él (puntos) y su promedio de {0} (línea). Línea roja: la meta de {1} {2}.	Learning curve: the error of each real weight with what the app had learned before it (dots) and its average of {0} (line). Red line: the {1} {2} goal.	Curva de aprendizado: o erro de cada peso real com o que o app tinha aprendido antes dele (pontos) e sua média de {0} (linha). Linha vermelha: a meta de {1} {2}.
+Datos de desarrollador: cada medición queda registrada aquí con todo lo que hizo el modelo. Anota el peso de báscula en las que puedas para medir el error del modelo.	Developer data: every measurement is logged here with everything the model did. Enter the scale weight where you can to measure the model's error.	Dados de desenvolvedor: cada medição fica registrada aqui com tudo o que o modelo fez. Anote o peso da balança nas que puder para medir o erro do modelo.
+Datos del animal	Animal data	Dados do animal
+Datos del laboratorio (báscula, condición, ayuno…)	Lab data (scale, condition, fasting…)	Dados do laboratório (balança, condição, jejum…)
+Datos guardados	Data saved	Dados salvos
+De costado {0}	Side {0}	De lado {0}
+De frente {0}	Front {0}	De frente {0}
+De {0} a {1} h sin comer	{0} to {1} h without eating	De {0} a {1} h sem comer
+Desacuerdo entre fotos	Disagreement between photos	Desacordo entre fotos
+Diagnóstico	Diagnosis	Diagnóstico
+Distancia al animal	Distance to the animal	Distância ao animal
+Distancia del teléfono al animal	Distance from the phone to the animal	Distância do celular ao animal
+Duración (s)	Duration (s)	Duração (s)
+Edad (años)	Age (years)	Idade (anos)
+Edad (meses)	Age (months)	Idade (meses)
+El de la báscula, ese mismo día.	The scale reading, that same day.	O da balança, no mesmo dia.
+El modelo de fábrica sobreestima en promedio	The factory model overestimates on average by	O modelo de fábrica superestima em média
+El modelo de fábrica subestima en promedio	The factory model underestimates on average by	O modelo de fábrica subestima em média
+El teléfono apunta	The phone points	O celular aponta
+Empezar	Start	Começar
+Empezar una sesión de prueba	Start a test session	Começar uma sessão de teste
+En ayuno (más de {0} h)	Fasted (more than {0} h)	Em jejum (mais de {0} h)
+En curso:	In progress:	Em andamento:
+Entrada del lote	Lot entry	Entrada do lote
+Error con validación cruzada	Cross-validated error	Erro com validação cruzada
+Error con validación cruzada contra el peso real ({0}). Si sube o baja con el peso, la potencia b no cuadra con tu ganado.	Cross-validated error against the real weight ({0}). If it rises or falls with weight, the power b does not fit your cattle.	Erro com validação cruzada contra o peso real ({0}). Se sobe ou desce com o peso, a potência b não se ajusta ao seu gado.
+Error con validación cruzada de cada peso real. Líneas: {0} {3}, {1} y +{2} {4}.	Cross-validated error of each real weight. Lines: {0} {3}, {1} and +{2} {4}.	Erro com validação cruzada de cada peso real. Linhas: {0} {3}, {1} e +{2} {4}.
+Error contra cada medida	Error against each measurement	Erro contra cada medida
+Error contra el peso	Error against weight	Erro contra o peso
+Error de validación	Validation error	Erro de validação
+Error esperado	Expected error	Erro esperado
+Error por tercio	Error by third	Erro por terço
+Errores	Errors	Erros
+Escribe un nombre.	Enter a name.	Escreva um nome.
+Esta sesión	This session	Esta sessão
+Estado del modelo	Model status	Estado do modelo
+Estatura de referencia	Reference height	Altura de referência
+Estimado sin calibrar contra el peso real ({0}): foto (puntos) y cinta (anillos).	Uncalibrated estimate against the real weight ({0}): photo (dots) and tape (rings).	Estimativa sem calibrar contra o peso real ({0}): foto (pontos) e fita (anéis).
+Estimados (puntos) y pesos reales (anillos), en {0}, por día desde la primera medición.	Estimates (dots) and real weights (rings), in {0}, by day since the first measurement.	Estimativas (pontos) e pesos reais (anéis), em {0}, por dia desde a primeira medição.
+Exportar	Export	Exportar
+Exportar el laboratorio completo	Export the full lab	Exportar o laboratório completo
+Exportar esta medición	Export this measurement	Exportar esta medição
+Factor propio	Own factor	Fator próprio
+Fondo	Background	Fundo
+Fondo / alzada	Depth / height	Profundidade / altura
+Fondo / alzada (límites)	Depth / height (limits)	Profundidade / altura (limites)
+Fondo / alzada del otro costado (cámara enlazada) contra el de este costado.	Depth / height of the other side (linked camera) against this side.	Profundidade / altura do outro lado (câmera vinculada) contra a deste lado.
+Fondo de la cintura	Waist depth	Profundidade da cintura
+Fondo de los glúteos	Buttock depth	Profundidade dos glúteos
+Fondo de pecho entre alzada. Líneas: los límites del modelo ({0} y {1}) y el valor medio ({2}). Fuera de los límites se ajusta: si muchas caen ahí, la toma de costado no es de perfil.	Chest depth over withers height. Lines: the model limits ({0} and {1}) and the mean value ({2}). Outside the limits it is adjusted: if many fall there, the side shot is not a true profile.	Profundidade do peito sobre altura da cernelha. Linhas: os limites do modelo ({0} e {1}) e o valor médio ({2}). Fora dos limites é ajustada: se muitas caem ali, a tomada de lado não é de perfil.
+Fondo del pecho	Chest depth	Profundidade do peito
+Foto, cinta y báscula	Photo, tape and scale	Foto, fita e balança
+Fotos medidas	Photos measured	Fotos medidas
+Fotos poco nítidas (movidas o desenfocadas): más luz o quedarse quieto antes del disparo.	Blurry photos (moved or out of focus): more light or hold still before the shot.	Fotos pouco nítidas (tremidas ou desfocadas): mais luz ou ficar parado antes do disparo.
+Ganancia según la cámara	Gain according to the camera	Ganho segundo a câmera
+Giro de la imagen	Image tilt	Giro da imagem
+Giro de la toma de perfil.	Rotation of the profile shot.	Giro da tomada de perfil.
+Hacen falta al menos {0} pesos reales.	At least {0} real weights are needed.	São necessários pelo menos {0} pesos reais.
+Hacia dónde apunta la cámara: {0} es horizontal, negativo es hacia abajo. Entre {1}° y {2}° está bien.	Where the camera points: {0} is level, negative is downward. Between {1}° and {2}° is fine.	Para onde a câmera aponta: {0} é horizontal, negativo é para baixo. Entre {1}° e {2}° está bom.
+Hembra	Female	Fêmea
+Hombro derecho	Right shoulder	Ombro direito
+Hombro izquierdo	Left shoulder	Ombro esquerdo
+Inclinación del teléfono	Phone tilt	Inclinação do celular
+Inclinado	Sloped	Inclinado
+La alzada de costado y la de atrás difieren	The side and rear heights differ by	A altura de lado e a de trás diferem
+La misma medición repetida varía	The same measurement repeated varies by	A mesma medição repetida varia
+La persona de referencia ocupa	The reference person takes up	A pessoa de referência ocupa
+Largo (del hombro a la base de la cola) entre alzada. Si una medición queda muy por debajo de las demás, el animal estaba girado hacia la cámara.	Length (shoulder to tail base) over withers height. If one measurement is far below the rest, the animal was turned toward the camera.	Comprimento (do ombro à base da cauda) sobre altura da cernelha. Se uma medição fica muito abaixo das demais, o animal estava virado para a câmera.
+Largo / alzada	Length / height	Comprimento / altura
+Las mediciones de antes de esta versión no tienen los datos de cada toma.	Measurements from before this version do not have the data of each shot.	As medições de antes desta versão não têm os dados de cada tomada.
+Las mediciones nuevas toman el arete de la anterior ({0} minutos). Para medir la repetibilidad: mide {1} a {2} veces cada animal.	New measurements take the tag of the previous one ({0} minutes). To measure repeatability: measure each animal {1} to {2} times.	As novas medições usam o brinco da anterior ({0} minutos). Para medir a repetibilidade: meça cada animal {1} a {2} vezes.
+Las mediciones que hagas quedan marcadas con este nombre hasta que termines la sesión.	The measurements you take are tagged with this name until you end the session.	As medições que você fizer ficam marcadas com este nome até você terminar a sessão.
+Livianos	Light	Leves
+Llenado	Gut fill	Enchimento
+Los pesos reales se ordenan por cada dato y se parten en tres; si un tercio tiene mucho más error, ese dato importa. Hacen falta {0} pesos reales o más.	The real weights are sorted by each value and split into thirds; if one third has much more error, that value matters. {0} or more real weights are needed.	Os pesos reais são ordenados por cada dado e divididos em três; se um terço tem muito mais erro, esse dado importa. São necessários {0} pesos reais ou mais.
+Luz, nitidez y teléfono	Light, sharpness and phone	Luz, nitidez e celular
+Macho	Male	Macho
+Mano derecha	Right front hoof	Casco dianteiro direito
+Mano izquierda	Left front hoof	Casco dianteiro esquerdo
+Medianos	Medium	Médios
+Mediciones seguidas (menos de {0} minutos) del mismo animal: cuánto varía el peso del modelo antes de calibrar. Es el piso del error que da la toma misma.	Back-to-back measurements (less than {0} minutes apart) of the same animal: how much the model weight varies before calibration. It is the error floor from the shot itself.	Medições seguidas (menos de {0} minutos) do mesmo animal: quanto varia o peso do modelo antes de calibrar. É o piso do erro que a própria tomada dá.
+Mediciones sin los puntos del animal:	Measurements without the animal's points:	Medições sem os pontos do animal:
+Medidas del cuerpo	Body measurements	Medidas do corpo
+Mide el mismo animal {0} a {1} veces seguidas (con el mismo arete) para ver cuánto varía la toma.	Measure the same animal {0} to {1} times in a row (with the same tag) to see how much the shot varies.	Meça o mesmo animal {0} a {1} vezes seguidas (com o mesmo brinco) para ver quanto a tomada varia.
+Modelo de ANSUR II con	ANSUR II model with	Modelo do ANSUR II com
+Modelo de hoy (calibrado)	Today's model (calibrated)	Modelo de hoje (calibrado)
+Modelo de puntos (ms)	Point model (ms)	Modelo de pontos (ms)
+Modelo preciso (ms)	Precise model (ms)	Modelo preciso (ms)
+Modelo rápido (ms)	Fast model (ms)	Modelo rápido (ms)
+Mojado	Wet	Molhado
+Nada que revisar por ahora.	Nothing to check for now.	Nada para revisar por enquanto.
+Nariz	Nose	Focinho
+Ninguna medición con este filtro.	No measurements with this filter.	Nenhuma medição com este filtro.
+Ninguna medición tiene alzada y fondo de pecho (faltaron los puntos del animal).	No measurement has withers height and chest depth (the animal's points were missing).	Nenhuma medição tem altura da cernelha e profundidade do peito (faltaram os pontos do animal).
+Ninguna medición tiene arete. En el resultado de cada medición elige el arete del animal: así la app sigue a cada uno y aprende de él.	No measurement has a tag. In each measurement's result, choose the animal's tag: that way the app follows each one and learns from it.	Nenhuma medição tem brinco. No resultado de cada medição escolha o brinco do animal: assim o app acompanha cada um e aprende com ele.
+Nitidez	Sharpness	Nitidez
+Nitidez del sujeto (varianza del laplaciano). Una foto movida o desenfocada queda por debajo de {0}.	Subject sharpness (variance of the Laplacian). A moved or out-of-focus photo falls below {0}.	Nitidez do sujeito (variância do laplaciano). Uma foto tremida ou desfocada fica abaixo de {0}.
+Nitidez:	Sharpness:	Nitidez:
+No se aplica solo: exporta el laboratorio y envíalo para ajustar el modelo con estos datos.	It is not applied automatically: export the lab and send it to adjust the model with this data.	Não se aplica sozinho: exporte o laboratório e envie-o para ajustar o modelo com estes dados.
+No se pudo calcular esta parte.	This part could not be calculated.	Não foi possível calcular esta parte.
+Notas	Notes	Notas
+Ojo derecho	Right eye	Olho direito
+Ojo izquierdo	Left eye	Olho esquerdo
+Ordenados del peor al mejor.	Sorted from worst to best.	Ordenados do pior ao melhor.
+Otros animales	Other animals	Outros animais
+Partes del laboratorio	Lab sections	Partes do laboratório
+Pata trasera derecha	Right hind hoof	Casco traseiro direito
+Pata trasera izquierda	Left hind hoof	Casco traseiro esquerdo
+Patas abiertas o juntas	Legs spread or together	Patas abertas ou juntas
+Pelo	Coat	Pelagem
+Perímetro con cinta	Tape girth	Perímetro com fita
+Perímetro con cinta (referencia)	Tape girth (reference)	Perímetro com fita (referência)
+Pesados	Heavy	Pesados
+Pesaje del animal	Animal weighing	Pesagem do animal
+Pesaje del lote	Lot weighing	Pesagem do lote
+Peso del modelo	Model weight	Peso do modelo
+Peso hoy con su historial	Weight today with its history	Peso hoje com seu histórico
+Peso real	Real weight	Peso real
+Peso solo con foto (sin calibrar)	Weight from photo only (uncalibrated)	Peso só com foto (sem calibrar)
+Pesos de grupo	Group weights	Pesos de grupo
+Pesos reales usados	Real weights used	Pesos reais usados
+Plano	Flat	Plano
+Por canal	By channel	Por canal
+Por cámaras	By cameras	Por câmeras
+Por detrás {0}	Rear {0}	Por trás {0}
+Por etapa	By stage	Por fase
+Por fuente del peso real	By real weight source	Por fonte do peso real
+Por grupos	By groups	Por grupos
+Por modelo de la silueta	By silhouette model	Por modelo da silhueta
+Por sesión de prueba	By test session	Por sessão de teste
+Por tipo de animal	By animal type	Por tipo de animal
+Postura	Stance	Postura
+Preciso	Precise	Preciso
+Preñez	Pregnancy	Prenhez
+Punto menos confiable	Least confident point	Ponto menos confiável
+Puntos del animal (de costado)	Animal points (side)	Pontos do animal (de lado)
+Queda un sesgo de	There remains a bias of	Resta um viés de
+Registro	Log	Registro
+Repetibilidad	Repeatability	Repetibilidade
+Repetir el mismo animal	Repeat the same animal	Repetir o mesmo animal
+Rodilla derecha	Right stifle	Joelho direito
+Rodilla izquierda	Left stifle	Joelho esquerdo
+Rápido	Fast	Rápido
+Se movió	It moved	Se moveu
+Seguridad de la silueta	Silhouette confidence	Confiança da silhueta
+Sensibilidad ({0} {1} de error)	Sensitivity ({0} {1} of error)	Sensibilidade ({0} {1} de erro)
+Sesión de prueba	Test session	Sessão de teste
+Sesión de prueba en curso	Test session in progress	Sessão de teste em andamento
+Sesión de prueba:	Test session:	Sessão de teste:
+Sesión terminada	Session ended	Sessão terminada
+Silueta incompleta	Incomplete silhouette	Silhueta incompleta
+Sin alzadas de atrás todavía.	No rear heights yet.	Ainda sem alturas por trás.
+Sin calibrar, con cinta el error es	Uncalibrated, the error with tape is	Sem calibrar, com fita o erro é
+Sin datos de inclinación: este teléfono no da el acelerómetro a la app.	No tilt data: this phone does not give the accelerometer to the app.	Sem dados de inclinação: este celular não fornece o acelerômetro ao app.
+Sin datos del acelerómetro.	No accelerometer data.	Sem dados do acelerômetro.
+Sin datos todavía.	No data yet.	Ainda sem dados.
+Sin grupos todavía.	No groups yet.	Ainda sem grupos.
+Sin los datos de cada foto: se guardan para las últimas {0} mediciones, desde esta versión.	Without the data of each photo: it is kept for the last {0} measurements, from this version on.	Sem os dados de cada foto: são guardados para as últimas {0} medições, a partir desta versão.
+Sin mediciones repetidas todavía: mide el mismo animal {0} a {1} veces seguidas para saber cuánto varía la toma.	No repeated measurements yet: measure the same animal {0} to {1} times in a row to know how much the shot varies.	Ainda sem medições repetidas: meça o mesmo animal {0} a {1} vezes seguidas para saber quanto a tomada varia.
+Sin medidas del cuerpo todavía.	No body measurements yet.	Ainda sem medidas do corpo.
+Solo foto	Photo only	Só foto
+Solo foto (sin calibrar)	Photo only (uncalibrated)	Só foto (sem calibrar)
+Solo para comparar en el laboratorio: no cambia este peso.	Only for comparison in the lab: it does not change this weight.	Só para comparar no laboratório: não muda este peso.
+Suelo	Ground	Chão
+Terminar la sesión	End the session	Terminar a sessão
+Todas	All	Todas
+Todavía no hay mediciones. Mide con la cámara y vuelve aquí.	No measurements yet. Measure with the camera and come back here.	Ainda não há medições. Meça com a câmera e volte aqui.
+Todavía no hay pesos de báscula: anota tu peso en una medición.	No scale weights yet: enter your weight in a measurement.	Ainda não há pesos de balança: anote seu peso em uma medição.
+Todavía no hay pesos reales. Anota el peso de báscula en una medición, elige el arete de cada animal medido o registra los pesajes, entradas y ventas: la app los une solos.	No real weights yet. Enter the scale weight in a measurement, choose the tag of each measured animal or record weighings, entries and sales: the app links them on its own.	Ainda não há pesos reais. Anote o peso da balança em uma medição, escolha o brinco de cada animal medido ou registre as pesagens, entradas e vendas: o app os une sozinho.
+Todo es opcional. Con estos datos el laboratorio ve qué condiciones cambian el error del modelo.	Everything is optional. With this data the lab sees which conditions change the model's error.	Tudo é opcional. Com estes dados o laboratório vê quais condições mudam o erro do modelo.
+Todo lo que mide y calcula el modelo de peso con cámara, para revisarlo y ajustarlo.	Everything the camera weight model measures and calculates, to review and adjust it.	Tudo o que o modelo de peso com câmera mede e calcula, para revisá-lo e ajustá-lo.
+Una sesión agrupa las mediciones de una prueba (por ejemplo, el día que pesas en la finca) para analizarlas y exportarlas juntas.	A session groups the measurements of a test (for example, the day you weigh on the farm) to analyze and export them together.	Uma sessão agrupa as medições de um teste (por exemplo, o dia em que você pesa na fazenda) para analisá-las e exportá-las juntas.
+Validación cruzada: el modelo se ajusta sin ese peso y luego lo predice (el error que tendrás con un animal nuevo). Animal conocido: además con el factor propio del animal, de sus otros pesos.	Cross-validation: the model is fitted without that weight and then predicts it (the error you will have with a new animal). Known animal: also with the animal's own factor, from its other weights.	Validação cruzada: o modelo é ajustado sem esse peso e depois o prevê (o erro que você terá com um animal novo). Animal conhecido: também com o fator próprio do animal, de seus outros pesos.
+Variación de la alzada entre fotos	Withers height variation between photos	Variação da altura entre fotos
+Variación del fondo de pecho entre fotos	Chest depth variation between photos	Variação da profundidade do peito entre fotos
+Zonas negras	Black areas	Áreas pretas
+Zonas quemadas	Blown-out areas	Áreas estouradas
+ajustadas al límite	clamped to the limit	ajustadas ao limite
+alzada (mediana)	withers height (median)	altura da cernelha (mediana)
+animal conocido	known animal	animal conhecido
+bajo	low	baixo
+base	base	base
+brillo	brightness	brilho
+cinta	tape	fita
+con datos	with data	com dados
+con validación cruzada: los pesos reales tienen fechas o fuentes que no coinciden, o el modelo se tuerce con el tamaño (ver Medidas).	with cross-validation: the real weights have dates or sources that do not match, or the model drifts with size (see Measurements).	com validação cruzada: os pesos reais têm datas ou fontes que não coincidem, ou o modelo se desvia com o tamanho (veja Medidas).
+cámara	camera	câmera
+de grupo	group	de grupo
+de las mediciones el fondo de pecho salió del rango del modelo y se ajustó: revisar que la toma de costado sea de perfil y sin nada que tape el pecho.	of the measurements, the chest depth fell outside the model range and was adjusted: check that the side shot is a true profile with nothing covering the chest.	das medições a profundidade do peito saiu da faixa do modelo e foi ajustada: verifique se a tomada de lado é de perfil e sem nada cobrindo o peito.
+de un animal	of one animal	de um animal
+del alto de la foto: acercarse. Un error de {0} {2} en su alto cambia el peso cerca de {1} {3}.	of the photo's height: move closer. An error of {0} {2} in their height changes the weight by about {1} {3}.	da altura da foto: aproxime-se. Um erro de {0} {2} na altura dela muda o peso em cerca de {1} {3}.
+dentro de ±{0} {1}	within ±{0} {1}	dentro de ±{0} {1}
+el error sube a	the error rises to	o erro sobe para
+en el tercio bajo	in the low third	no terço baixo
+en el tercio alto	in the high third	no terço alto
+error	error	erro
+error (validación cruzada)	error (cross-validation)	erro (validação cruzada)
+error medio	mean error	erro médio
+error típico	typical error	erro típico
+factor	factor	fator
+fecha	date	data
+fondo	depth	profundidade
+fondo / alzada	depth / height	profundidade / altura
+giro	rotation	giro
+hacia arriba o hacia abajo (mediana): sostenerlo derecho, a la altura del pecho del animal. La inclinación cambia la alzada.	up or down (median): hold it straight, at the height of the animal's chest. Tilt changes the withers height.	para cima ou para baixo (mediana): segure-o reto, na altura do peito do animal. A inclinação muda a altura da cernelha.
+largo / alzada	length / height	comprimento / altura
+mediana	median	mediana
+medida	measurement	medida
+medidas	measurements	medidas
+medio	medium	médio
+modelo de hoy (con ese peso)	today's model (with that weight)	modelo de hoje (com esse peso)
+nitidez	sharpness	nitidez
+persona de referencia	reference person	pessoa de referência
+personas; error de validación	people; validation error	pessoas; erro de validação
+pesos reales	real weights	pesos reais
+pesos reales de animales con arete. Con menos de {0} los números todavía no son confiables: la meta es {1} o más, de animales distintos.	real weights of tagged animals. With fewer than {0} the numbers are not reliable yet: the goal is {1} or more, from different animals.	pesos reais de animais com brinco. Com menos de {0} os números ainda não são confiáveis: a meta é {1} ou mais, de animais diferentes.
+pesos reales de un animal	real weights of one animal	pesos reais de um animal
+puntos	points	pontos
+puntos (verde: seguro; rojo: dudoso)	points (green: confident; red: doubtful)	pontos (verde: confiável; vermelho: duvidoso)
+real	real	real
+sin calibrar	uncalibrated	sem calibrar
+validación	validation	validação
+validación cruzada	cross-validation	validação cruzada
+variación	variation	variação
+y solo con foto	and with photo only	e só com foto
+{0} a {1} meses	{0} to {1} months	{0} a {1} meses
+{0} cámaras	{0} cameras	{0} câmeras
+{0} mediciones	{0} measurements	{0} medições
+{0} medición	{0} measurement	{0} medição
+{0} peso real	{0} real weight	{0} peso real
+{0} pesos reales	{0} real weights	{0} pesos reais
+{0} tomas, {1} teléfono	{0} shots, {1} phone	{0} tomadas, {1} celular
+{0} {1} más de alzada	{0} {1} more withers height	{0} {1} a mais de altura
+{0} {1} más de fondo de pecho	{0} {1} more chest depth	{0} {1} a mais de profundidade do peito
+{0}/px	{0}/px	{0}/px
+¿Coinciden las cámaras?	Do the cameras agree?	As câmeras coincidem?
+β fijo, γ de tu finca	β fixed, γ from your farm	β fixo, γ da sua fazenda
+β y γ de tu finca	β and γ from your farm	β e γ da sua fazenda
+Otro costado {0}	Other side {0}	Outro lado {0}
+Desde arriba {0}	From above {0}	De cima {0}
+tercio bajo	low third	terço baixo
+tercio medio	middle third	terço médio
+tercio alto	high third	terço alto
