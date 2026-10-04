@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.util.Mth;
+import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.mixin.LoadingOverlayAccessor;
 
 /**
@@ -20,6 +21,7 @@ public class TFLoadingOverlay extends LoadingOverlay {
     private long firstFrame = -1L;
     private long doneAt = -1L;
     private float progress;
+    private boolean broken;
 
     public TFLoadingOverlay(LoadingOverlay delegate) {
         this(delegate, ((LoadingOverlayAccessor) delegate).tfclient$getReload(), ((LoadingOverlayAccessor) delegate).tfclient$isFadeIn());
@@ -36,6 +38,18 @@ public class TFLoadingOverlay extends LoadingOverlay {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         // La pantalla original sigue mandando: termina la carga y se retira sola al acabar.
         delegate.render(g, mouseX, mouseY, partialTick);
+        if (broken) return;
+        try {
+            renderTF(g);
+        } catch (Throwable t) {
+            // Si algo falla al dibujar, se queda la pantalla de carga normal: el juego nunca se cierra por esto.
+            broken = true;
+            TFClient.LOGGER.error("TF Client: error en la pantalla de carga, se usa la normal", t);
+        }
+    }
+
+    private void renderTF(GuiGraphics g) {
+        if (Minecraft.getInstance().level == null) TFMusic.play();
 
         long now = Util.getMillis();
         if (firstFrame < 0L) firstFrame = now;

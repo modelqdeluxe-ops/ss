@@ -3,6 +3,7 @@ package net.tierrasfantasticas.tfclient.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.Overlay;
+import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.client.TFLoadingOverlay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +17,11 @@ public abstract class MinecraftMixin {
     @ModifyVariable(method = "setOverlay", at = @At("HEAD"), argsOnly = true)
     private Overlay tfclient$wrapLoadingOverlay(Overlay overlay) {
         if (overlay instanceof LoadingOverlay loading && !(overlay instanceof TFLoadingOverlay)) {
-            return new TFLoadingOverlay(loading);
+            try {
+                return new TFLoadingOverlay(loading);
+            } catch (Throwable t) {
+                TFClient.LOGGER.error("TF Client: no se pudo crear la pantalla de carga, se usa la normal", t);
+            }
         }
         return overlay;
     }

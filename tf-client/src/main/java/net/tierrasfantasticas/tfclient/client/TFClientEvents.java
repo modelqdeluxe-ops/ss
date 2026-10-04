@@ -20,8 +20,12 @@ public final class TFClientEvents {
         Minecraft mc = Minecraft.getInstance();
         Screen screen = event.getScreen();
         if (mc.level != null || screen instanceof TitleScreen) return;
-        if (TFDraw.cover(event.getGuiGraphics(), TFTextures.MENU, screen.width, screen.height, 1f)) {
-            event.getGuiGraphics().fill(0, 0, screen.width, screen.height, TFDraw.argb(0.45f, 0x000000));
+        try {
+            if (TFDraw.cover(event.getGuiGraphics(), TFTextures.MENU, screen.width, screen.height, 1f)) {
+                event.getGuiGraphics().fill(0, 0, screen.width, screen.height, TFDraw.argb(0.45f, 0x000000));
+            }
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Client: error al dibujar el fondo", t);
         }
     }
 

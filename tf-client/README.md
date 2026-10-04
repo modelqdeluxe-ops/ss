@@ -20,7 +20,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.0.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.1.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 
@@ -57,7 +57,11 @@ ejecución (`tfclient-jar`).
 
 ## Notas
 
-- Antes de la pantalla de carga, Forge muestra unos segundos su propia ventana de arranque (barras de progreso sobre
-  fondo oscuro). Esa ventana sale antes de que se cargue ningún mod, así que no se puede personalizar desde un mod.
+- **Ventana de arranque de Forge**: Forge lee `config/fml.toml` antes de cargar ningún mod. El TF Client pone ahí
+  `earlyWindowControl = false`, así que desde el **segundo arranque** ya no sale la ventana de Forge y se ve la pantalla
+  de carga de TF desde el principio. Para que no salga ni en el primero, incluye en el modpack un `config/fml.toml`
+  con esa línea.
+- Si algo del mod fallara al dibujar o con la música, el juego no se cierra: se usa la pantalla normal y el error queda
+  en `logs/latest.log` con el prefijo `TF Client`.
 - La pantalla de carga envuelve la original sin cambiar su lógica: la carga, los errores y el paso al menú siguen
   funcionando igual que en Forge.

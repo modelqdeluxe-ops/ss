@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.TFConfig;
 import net.tierrasfantasticas.tfclient.client.TFDraw;
 import net.tierrasfantasticas.tfclient.client.TFServer;
@@ -44,8 +45,12 @@ public abstract class TitleScreenMixin extends Screen {
     /** Fondo: el paisaje de Tierras Fantásticas. */
     @Inject(method = "render", at = @At("HEAD"))
     private void tfclient$drawBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        g.fill(0, 0, this.width, this.height, 0xFF000000);
-        TFDraw.cover(g, TFTextures.MENU, this.width, this.height, 1f);
+        try {
+            g.fill(0, 0, this.width, this.height, 0xFF000000);
+            TFDraw.cover(g, TFTextures.MENU, this.width, this.height, 1f);
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Client: error al dibujar el fondo del menú", t);
+        }
     }
 
     /** Sin panorama giratorio. */
@@ -60,11 +65,24 @@ public abstract class TitleScreenMixin extends Screen {
         int buttonsTop = this.tfclient$buttonsTop > 0 ? this.tfclient$buttonsTop : this.height / 4 + 48;
         int top = 6;
         int logoHeight = Math.min(150, buttonsTop - top - 6);
-        if (logoHeight > 16) TFDraw.image(g, TFTextures.LOGO, screenWidth / 2, top, logoHeight, alpha);
+        try {
+            if (logoHeight > 16) TFDraw.image(g, TFTextures.LOGO, screenWidth / 2, top, logoHeight, alpha);
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Client: error al dibujar el emblema", t);
+        }
     }
 
     @Inject(method = "init", at = @At("RETURN"))
     private void tfclient$customizeButtons(CallbackInfo ci) {
+        try {
+            this.tfclient$replaceButtons();
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Client: error al cambiar los botones del menú", t);
+        }
+    }
+
+    @Unique
+    private void tfclient$replaceButtons() {
         this.splash = null; // sin frase amarilla: taparía el emblema
 
         Button singleplayer = null;

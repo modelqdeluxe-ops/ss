@@ -51,4 +51,32 @@ public final class TFConfig {
             }
         }
     }
+
+    /**
+     * Desactiva la ventana de arranque de Forge (config/fml.toml, earlyWindowControl) para que desde el siguiente
+     * arranque se vea la pantalla de carga de TF desde el principio. Forge lee ese archivo antes de cargar los mods,
+     * así que el cambio se nota a partir del segundo arranque.
+     */
+    public static void disableForgeEarlyWindow() {
+        Path file = FMLPaths.CONFIGDIR.get().resolve("fml.toml");
+        try {
+            if (!Files.exists(file)) {
+                Files.writeString(file, "earlyWindowControl = false\n", StandardCharsets.UTF_8);
+                return;
+            }
+            String text = Files.readString(file, StandardCharsets.UTF_8);
+            String updated;
+            if (text.matches("(?s).*earlyWindowControl\\s*=.*")) {
+                updated = text.replaceAll("earlyWindowControl\\s*=\\s*true", "earlyWindowControl = false");
+            } else {
+                updated = text + (text.endsWith("\n") ? "" : "\n") + "earlyWindowControl = false\n";
+            }
+            if (!updated.equals(text)) {
+                Files.writeString(file, updated, StandardCharsets.UTF_8);
+                TFClient.LOGGER.info("TF Client: ventana de arranque de Forge desactivada para el siguiente arranque");
+            }
+        } catch (IOException e) {
+            TFClient.LOGGER.warn("TF Client: no se pudo cambiar {}: {}", file, e.getMessage());
+        }
+    }
 }

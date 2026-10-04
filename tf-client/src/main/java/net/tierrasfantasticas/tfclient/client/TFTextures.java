@@ -48,14 +48,14 @@ public enum TFTextures {
         if (loaded) return true;
         if (failed) return false;
         try (InputStream in = TFResources.open("assets/" + TFClient.MOD_ID + "/textures/gui/" + file)) {
-            NativeImage image = NativeImage.read(in);
+            NativeImage image = NativeImage.read(NativeImage.Format.RGBA, in);
             width = image.getWidth();
             height = image.getHeight();
             DynamicTexture texture = new DynamicTexture(image);
             Minecraft.getInstance().getTextureManager().register(id, texture);
             texture.setFilter(true, false);
             loaded = true;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             failed = true;
             TFClient.LOGGER.error("TF Client: no se pudo cargar {}", file, e);
         }
