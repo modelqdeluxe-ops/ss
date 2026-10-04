@@ -3,7 +3,10 @@ package net.tierrasfantasticas.tfclient.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.io.InputStream;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import com.mojang.blaze3d.platform.TextureUtil;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MipmapGenerator;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.resources.ResourceLocation;
 import net.tierrasfantasticas.tfclient.TFClient;
 
@@ -17,9 +20,16 @@ public enum TFTextures {
     /** Menú principal y resto de menús: el paisaje sin letras. */
     MENU("menu_background.png"),
     /** Emblema TF que va encima de los botones. */
-    LOGO("logo.png");
+    LOGO("logo.png"),
+    /** Botones del menú (pixel art; 3 estados apilados: normal, ratón encima, desactivado). */
+    BUTTON_PRIMARY("button_primary.png", true),
+    BUTTON_WIDE("button_wide.png", true),
+    BUTTON_HALF("button_half.png", true);
+
+    private static final int MIP_LEVELS = 4;
 
     private final String file;
+    private final boolean pixelArt;
     private final ResourceLocation id;
     private int width = 1;
     private int height = 1;
@@ -27,7 +37,12 @@ public enum TFTextures {
     private boolean failed;
 
     TFTextures(String file) {
+        this(file, false);
+    }
+
+    TFTextures(String file, boolean pixelArt) {
         this.file = file;
+        this.pixelArt = pixelArt;
         this.id = new ResourceLocation(TFClient.MOD_ID, "dynamic/" + name().toLowerCase(java.util.Locale.ROOT));
     }
 
@@ -51,14 +66,33 @@ public enum TFTextures {
             NativeImage image = NativeImage.read(NativeImage.Format.RGBA, in);
             width = image.getWidth();
             height = image.getHeight();
-            DynamicTexture texture = new DynamicTexture(image);
+            StaticTexture texture = new StaticTexture();
             Minecraft.getInstance().getTextureManager().register(id, texture);
-            texture.setFilter(true, false);
+            if (pixelArt) {
+                // Pixel art: sin suavizado para que los píxeles queden nítidos.
+                TextureUtil.prepareImage(texture.getId(), 0, width, height);
+                image.upload(0, 0, 0, 0, 0, width, height, false, true, false, true);
+            } else {
+                // Con mipmaps la imagen se ve nítida también cuando se dibuja más pequeña que su tamaño real.
+                NativeImage[] levels = MipmapGenerator.generateMipLevels(new NativeImage[] {image}, MIP_LEVELS);
+                TextureUtil.prepareImage(texture.getId(), MIP_LEVELS, width, height);
+                for (int level = 0; level < levels.length; level++) {
+                    NativeImage mip = levels[level];
+                    mip.upload(level, 0, 0, 0, 0, mip.getWidth(), mip.getHeight(), true, true, true, true);
+                }
+            }
             loaded = true;
         } catch (Throwable e) {
             failed = true;
             TFClient.LOGGER.error("TF Client: no se pudo cargar {}", file, e);
         }
         return loaded;
+    }
+
+    /** Textura ya subida a la tarjeta gráfica por nosotros; no se carga de los resource packs. */
+    private static final class StaticTexture extends AbstractTexture {
+        @Override
+        public void load(ResourceManager resourceManager) {
+        }
     }
 }

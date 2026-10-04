@@ -10,8 +10,13 @@ import net.tierrasfantasticas.tfclient.TFConfig;
 public final class TFServer {
     private TFServer() {}
 
-    /** Conecta directamente al servidor y acepta su paquete de recursos (modelos animados) sin preguntar. */
+    /** Botón del menú: primero comprueba los mods del servidor y después conecta. */
     public static void join(Screen parent) {
+        Minecraft.getInstance().setScreen(new TFServerCheckScreen(parent));
+    }
+
+    /** Conecta directamente al servidor y acepta su paquete de recursos (modelos animados) sin preguntar. */
+    public static void connect(Screen parent) {
         String address = TFConfig.serverAddress();
         ServerData data = new ServerData(TFConfig.serverName(), address, false);
         data.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);

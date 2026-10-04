@@ -8,7 +8,9 @@
     "LoadingOverlayAccessor",
     "MinecraftMixin",
     "MusicManagerMixin",
-    "TitleScreenMixin"
+    "TitleScreenMixin",
+    "BrandingControlMixin",
+    "ForgeHooksClientMixin"
   ],
   "injectors": {
     "defaultRequire": 0

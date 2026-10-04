@@ -2,10 +2,11 @@ package net.tierrasfantasticas.tfclient.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.LogoRenderer;
+import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.SplashRenderer;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,9 +15,8 @@ import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.tierrasfantasticas.tfclient.TFClient;
-import net.tierrasfantasticas.tfclient.TFConfig;
 import net.tierrasfantasticas.tfclient.client.TFDraw;
-import net.tierrasfantasticas.tfclient.client.TFServer;
+import net.tierrasfantasticas.tfclient.client.TFMenuButton;
 import net.tierrasfantasticas.tfclient.client.TFTextures;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,11 +25,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Menú principal de Minecraft con la imagen de TF: el paisaje de fondo en lugar del panorama, el emblema TF encima de
- * los botones en lugar del logo de Minecraft, y los botones "Tierras Fantásticas" (conexión directa) y "Mundo local"
- * en lugar de Un jugador, Multijugador y Realms. El resto (Mods, Opciones, Salir, idioma...) queda como siempre.
+ * Menú principal de TF: el paisaje de fondo en lugar del panorama, el emblema TF encima de los botones y los botones
+ * con el diseño de TF (TIERRAS FANTÁSTICAS, Mundo local, Mods, Opciones, Salir). Sin textos de Mojang, versión,
+ * Realms, idioma ni accesibilidad (idioma y accesibilidad siguen en Opciones).
+ *
+ * Importante: sin lambdas ni referencias a métodos aquí (van en TFMenuButton); en un mixin pueden generar métodos que
+ * nombran la clase del mixin y Forge no deja cargarla.
  */
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin extends Screen {
@@ -65,12 +69,18 @@ public abstract class TitleScreenMixin extends Screen {
     private void tfclient$drawLogo(LogoRenderer logoRenderer, GuiGraphics g, int screenWidth, float alpha) {
         int buttonsTop = this.tfclient$buttonsTop > 0 ? this.tfclient$buttonsTop : this.height / 4 + 48;
         int top = 6;
-        int logoHeight = Math.min(150, buttonsTop - top - 6);
+        int logoHeight = Math.min(150, buttonsTop - top - 8);
         try {
             if (logoHeight > 16) TFDraw.image(g, TFTextures.LOGO, screenWidth / 2, top, logoHeight, alpha);
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Client: error al dibujar el emblema", t);
         }
+    }
+
+    /** Sin avisos de Realms. */
+    @Inject(method = "realmsNotificationsEnabled", at = @At("HEAD"), cancellable = true)
+    private void tfclient$noRealms(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(false);
     }
 
     @Inject(method = "init", at = @At("RETURN"))
@@ -88,14 +98,22 @@ public abstract class TitleScreenMixin extends Screen {
 
         Button singleplayer = null;
         Button mods = null;
-        List<Button> remove = new ArrayList<>();
+        Button options = null;
+        Button quit = null;
+        List<GuiEventListener> remove = new ArrayList<>();
         for (GuiEventListener child : this.children()) {
+            if (child instanceof PlainTextButton || child instanceof ImageButton) {
+                remove.add(child); // copyright de Mojang, idioma y accesibilidad
+                continue;
+            }
             if (!(child instanceof Button button)) continue;
             if (!(button.getMessage().getContents() instanceof TranslatableContents contents)) continue;
             switch (contents.getKey()) {
                 case "menu.singleplayer" -> singleplayer = button;
                 case "menu.multiplayer", "menu.online" -> remove.add(button);
                 case "fml.menu.mods" -> mods = button;
+                case "menu.options" -> options = button;
+                case "menu.quit" -> quit = button;
                 default -> {
                 }
             }
@@ -105,22 +123,20 @@ public abstract class TitleScreenMixin extends Screen {
         int x = this.width / 2 - 100;
         int top = singleplayer.getY();
         this.tfclient$buttonsTop = top;
-        // Bucles normales y sin referencias a métodos: en un mixin, `this::metodo` genera un método auxiliar que
-        // nombra la clase del mixin y Forge no deja cargarla (crash "TitleScreenMixin is invalid").
-        for (Button button : remove) {
-            this.removeWidget(button);
+        for (GuiEventListener child : remove) {
+            this.removeWidget(child);
         }
 
-        Button server = Button.builder(Component.literal(TFConfig.serverName().toUpperCase(java.util.Locale.ROOT)),
-                b -> TFServer.join(Minecraft.getInstance().screen)).bounds(x, top, 200, 20).build();
-        this.addRenderableWidget(server);
+        this.addRenderableWidget(TFMenuButton.server(x, top, 200));
+        this.tfclient$swap(singleplayer, x, top + 24, 200, "Mundo local");
+        if (mods != null) this.tfclient$swap(mods, x, top + 48, 200, "Mods");
+        if (options != null) this.tfclient$swap(options, options.getX(), options.getY(), options.getWidth(), "Opciones");
+        if (quit != null) this.tfclient$swap(quit, quit.getX(), quit.getY(), quit.getWidth(), "Salir");
+    }
 
-        singleplayer.setMessage(Component.literal("Mundo local"));
-        singleplayer.setY(top + 24);
-        if (mods != null) {
-            mods.setX(x);
-            mods.setWidth(200);
-            mods.setY(top + 48);
-        }
+    @Unique
+    private void tfclient$swap(Button original, int x, int y, int width, String text) {
+        this.removeWidget(original);
+        this.addRenderableWidget(TFMenuButton.wrapping(original, x, y, width, text));
     }
 }

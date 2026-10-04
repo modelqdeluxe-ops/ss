@@ -4,12 +4,12 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
 
 - **Pantalla de carga de TF**: el banner de Tierras Fantásticas (con las letras) a pantalla completa y la barra de
   progreso de Minecraft. Sustituye a la pantalla de Mojang/Forge, al abrir el juego y al recargar recursos (F3+T).
-- **Menú principal de TF**, como en TierrasMon: el menú normal de Minecraft con el paisaje de TF de fondo (sin letras)
-  y el emblema TF encima de los botones. Cambia *Un jugador*, *Multijugador* y *Realms* por:
-  - **TIERRAS FANTÁSTICAS**: conecta directamente al servidor y acepta su paquete de recursos sin preguntar, para que
-    se vean los modelos animados.
-  - **Mundo local**: abre la lista de mundos para crear o jugar uno en local.
-  - *Mods*, *Opciones*, *Salir* e idioma quedan como siempre.
+- **Menú principal de TF**, como en TierrasMon: el paisaje de TF de fondo (sin letras), el emblema TF encima de los
+  botones y botones propios (placa de piedra de templo con marco dorado y medallones con gema) con la fuente Cinzel:
+  - **TIERRAS FANTÁSTICAS**: antes de conectar pregunta al servidor qué mods usa. Si te falta alguno, enseña la lista
+    (con *Volver* o *Entrar igual*); si no falta nada, conecta directamente y acepta su paquete de recursos.
+  - **Mundo local**, **Mods**, **Opciones** y **Salir**.
+  - Sin textos de Mojang, versión, Forge ni Realms. Idioma y accesibilidad siguen en *Opciones*.
 - **Música de TF** en la pantalla de carga y el menú: empieza en cuanto arranca el juego, suena en bucle con fundidos
   y respeta los volúmenes *General* y *Música* de las opciones. Se apaga con un fundido al entrar a un mundo o al
   servidor (ahí vuelve la música normal de Minecraft) y vuelve a sonar al regresar al menú.
@@ -20,7 +20,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.2.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.3.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 
@@ -40,6 +40,10 @@ server.address=216.163.187.40\:19001
 - Fondo del menú: `src/main/resources/assets/tfclient/textures/gui/menu_background.png` (16:9).
 - Emblema: `src/main/resources/assets/tfclient/textures/gui/logo.png` (PNG con transparencia).
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
+- Botones: `tools/gen_buttons.py` genera `button_primary.png`, `button_wide.png` y `button_half.png` (3 estados
+  apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
+- Fuente: `src/main/resources/assets/tfclient/font/cinzel.ttf` (Cinzel, licencia SIL Open Font License, incluida en
+  `OFL-Cinzel.txt`).
 - Música: `src/main/resources/assets/tfclient/music/menu.ogg` (OGG Vorbis; para convertir un MP3:
   `ffmpeg -i musica.mp3 -vn -ac 2 -ar 44100 -c:a libvorbis -q:a 4 menu.ogg`).
 
