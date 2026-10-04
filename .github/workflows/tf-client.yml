@@ -1,0 +1,99 @@
+name: TF Client
+
+on:
+  push:
+    paths:
+      - 'tf-client/**'
+      - '.github/workflows/tf-client.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar el mod
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tf-client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar
+        run: chmod +x gradlew && ./gradlew build --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfclient-jar
+          path: tf-client/build/libs/*.jar
+
+  preview:
+    name: Arrancar el juego y capturar pantallas
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: tf-client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Instalar pantalla virtual y OpenGL por software
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb xdotool imagemagick mesa-utils libgl1-mesa-dri > /dev/null
+      - name: Preparar el cliente
+        run: chmod +x gradlew && ./gradlew prepareRunClient --no-daemon
+      - name: Arrancar y capturar
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          DISPLAY: ':99'
+        run: |
+          Xvfb :99 -screen 0 1280x720x24 &
+          sleep 2
+          ./gradlew runClient --no-daemon > run.log 2>&1 &
+          mkdir -p shots
+          i=0
+          for t in $(seq 1 150); do
+            sleep 2
+            i=$((i+1))
+            import -window root "shots/frame-$(printf %03d $i).png" 2>/dev/null || true
+            if grep -q "TF Client: menu principal listo" run.log; then break; fi
+            if grep -q "BUILD FAILED" run.log; then break; fi
+          done
+          sleep 5
+          import -window root shots/title.png || true
+          xdotool mousemove 640 300; sleep 2
+          import -window root shots/title-hover.png || true
+          xdotool mousemove 450 580 click 1; sleep 4
+          import -window root shots/worlds.png || true
+          pkill -f 'net.minecraftforge' || true
+          pkill java || true
+      - name: Registro del juego
+        if: always()
+        run: |
+          grep -iE "tfclient|TF Client|mixin|exception|error" run.log | grep -v "DEBUG" | tail -n 80 || true
+          echo "-----"; tail -n 40 run.log || true
+      - name: Imágenes (base64 en el log)
+        if: always()
+        run: |
+          cd shots
+          ls -1 | tail -n 5
+          frames=$(ls frame-*.png 2>/dev/null | awk 'NR % 2 == 0')
+          if [ -n "$frames" ]; then montage $frames -tile 6x -geometry 256x144+2+2 -background '#111' sheet.jpg; fi
+          for f in title.png worlds.png; do [ -f "$f" ] && convert "$f" -resize 960x540 -quality 72 "${f%.png}.jpg"; done
+          for f in sheet.jpg title.jpg worlds.jpg; do
+            [ -f "$f" ] || continue
+            echo "===IMG $f==="
+            base64 -w 0 "$f" | fold -w 4000
+            echo
+            echo "===END==="
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tfclient-capturas
+          path: tf-client/shots/
