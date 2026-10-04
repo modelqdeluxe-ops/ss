@@ -9,8 +9,9 @@ import net.minecraft.util.Mth;
 import net.tierrasfantasticas.tfclient.mixin.LoadingOverlayAccessor;
 
 /**
- * Pantalla de carga de TF. Envuelve la pantalla de carga original (la de Mojang o la de Forge): la deja hacer
- * todo su trabajo (terminar la carga, abrir el menú, quitarse) y dibuja encima el fondo, el emblema y la barra.
+ * Pantalla de carga de TF: el banner de Tierras Fantásticas a pantalla completa con la barra de progreso de Minecraft.
+ * Envuelve la pantalla de carga original (la de Mojang o la de Forge): la deja hacer todo su trabajo (terminar la
+ * carga, abrir el menú y quitarse) y dibuja encima la de TF.
  */
 public class TFLoadingOverlay extends LoadingOverlay {
     private final LoadingOverlay delegate;
@@ -49,20 +50,13 @@ public class TFLoadingOverlay extends LoadingOverlay {
 
         int width = g.guiWidth();
         int height = g.guiHeight();
-        g.fill(0, 0, width, height, TFDraw.argb(alpha, TFDraw.NIGHT));
-        TFDraw.background(g, width, height, alpha, now, -1, -1, 0.5f);
-        // Viñeta inferior para que la barra destaque
-        g.fillGradient(0, height / 2, width, height, TFDraw.argb(0f, TFDraw.NIGHT), TFDraw.argb(alpha * 0.85f, TFDraw.NIGHT));
+        g.fill(0, 0, width, height, TFDraw.argb(alpha, 0x000000));
+        TFDraw.cover(g, TFTextures.LOADING, width, height, alpha);
 
-        float logoHeight = Math.min(height * 0.5f, width * 0.42f);
-        float bob = (float) Math.sin(now / 700.0) * 3f;
-        float logoY = height * 0.44f + bob;
-        TFDraw.logo(g, width / 2f, logoY, logoHeight, alpha);
-
-        int barWidth = Math.min(width * 3 / 5, 280);
-        int barY = Math.min((int) (height * 0.44f + logoHeight / 2f) + 16, height - 24);
-        float shown = doneAt >= 0L ? 1f : progress;
-        TFDraw.progressBar(g, (width - barWidth) / 2, barY, barWidth, 5, shown, alpha, now);
+        int barHalfWidth = (int) (Math.min(width * 0.75, height) * 0.5);
+        int barCenterY = (int) (height * 0.8325);
+        TFDraw.progressBar(g, width / 2 - barHalfWidth, barCenterY - 5, width / 2 + barHalfWidth, barCenterY + 5,
+                doneAt >= 0L ? 1f : progress, alpha);
     }
 
     @Override
