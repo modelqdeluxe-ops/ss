@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/server-ping.yml'
       - '.github/scripts/server_ping.py'
+      - '.github/scripts/server_login_probe.py'
   workflow_dispatch:
 
 jobs:
@@ -17,3 +18,5 @@ jobs:
         run: timeout 10 bash -c '</dev/tcp/216.163.187.40/19001' && echo "Puerto 19001 abierto" || echo "Puerto 19001 NO responde"
       - name: Ping de Minecraft
         run: python3 .github/scripts/server_ping.py 216.163.187.40 19001 || true
+      - name: Prueba de inicio de sesión
+        run: python3 .github/scripts/server_login_probe.py 216.163.187.40 19001 || true
