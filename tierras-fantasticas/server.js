@@ -12,7 +12,7 @@ const { createSession, parseCookies, serializeCookie } = require('./lib/session'
 const {
   PORT = 3000,
   SERVER_NAME = 'Tierras Fantásticas',
-  SERVER_IP = 'play.tierrasfantasticas.net',
+  SERVER_IP = '216.163.187.40:19001',
   DISCORD_URL = 'https://discord.gg/tRrunHBZE',
   PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET,

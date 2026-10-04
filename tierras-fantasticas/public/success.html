@@ -2,16 +2,20 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Compra completada — Tierras Fantásticas</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tu compra — Tierras Fantásticas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+  <link rel="icon" type="image/webp" href="img/logo.webp">
 </head>
 <body>
+  <canvas id="sky" aria-hidden="true"></canvas>
   <main class="result">
-    <div class="result-card">
-      <div class="result-icon" id="icon">⏳</div>
+    <div class="result-card pixel">
+      <img src="img/logo.webp" alt="Tierras Fantásticas" width="120" height="132">
+      <span class="state wait pixel" id="state">Comprobando</span>
       <h1 id="title">Comprobando tu pago…</h1>
       <p class="muted" id="message">Un momento, estamos confirmando la transacción con PayPal.</p>
       <dl id="details" hidden>
@@ -22,30 +26,36 @@
         <dt>En el juego</dt><dd id="d-delivery"></dd>
         <dt id="d-discord-label" hidden>Discord</dt><dd id="d-discord" hidden></dd>
       </dl>
-      <a href="/" class="btn btn-primary">Volver al inicio</a>
+      <a href="/" class="btn btn-primary pixel">Volver al inicio</a>
     </div>
   </main>
 
+  <script src="fx.js"></script>
   <script>
     (async () => {
       const $ = (id) => document.getElementById(id);
       const orderId = new URLSearchParams(location.search).get('order');
       const deliveryText = {
-        delivered: '✅ Entregado en el servidor',
-        delivering: '⏳ Entregando…',
-        pending: '⏳ Procesando…',
-        manual: '🛠️ El staff lo entregará en breve',
-        delivery_failed: '🛠️ El staff lo entregará en breve',
-        awaiting_payment: '⏳ Esperando confirmación de PayPal',
-        failed: '❌ Pago no completado',
-        error: '⚠️ Revisión manual',
+        delivered: 'Entregado en el servidor',
+        delivering: 'Entregando…',
+        pending: 'Procesando…',
+        manual: 'El staff lo entregará en breve',
+        delivery_failed: 'El staff lo entregará en breve',
+        awaiting_payment: 'Esperando confirmación de PayPal',
+        failed: 'Pago no completado',
+        error: 'En revisión',
       };
       const PAID = ['delivered', 'delivering', 'manual', 'delivery_failed'];
 
+      function show(kind, label, title, message) {
+        $('state').className = `state pixel ${kind}`;
+        $('state').textContent = label;
+        $('title').textContent = title;
+        $('message').textContent = message;
+      }
+
       if (!orderId) {
-        $('icon').textContent = '❓';
-        $('title').textContent = 'Pedido no encontrado';
-        $('message').textContent = 'No hemos encontrado ningún pedido asociado a esta página.';
+        show('bad', 'Sin pedido', 'Pedido no encontrado', 'No hemos encontrado ningún pedido asociado a esta página.');
         return;
       }
       $('d-order').textContent = orderId;
@@ -58,14 +68,12 @@
           order = await res.json();
           if (!res.ok) throw new Error(order.error);
         } catch {
-          $('icon').textContent = '⚠️';
-          $('title').textContent = 'No pudimos comprobar el pedido';
-          $('message').textContent = 'Si se realizó el cargo, recibirás tu compra igualmente. Contáctanos por Discord con tu número de pedido.';
+          show('bad', 'Sin datos', 'No pudimos comprobar el pedido',
+            'Si se realizó el cargo, recibirás tu compra igualmente. Escríbenos por Discord con tu número de pedido.');
           return;
         }
 
-        const total = new Intl.NumberFormat('es', { style: 'currency', currency: order.currency })
-          .format(order.amount / 100);
+        const total = new Intl.NumberFormat('es', { style: 'currency', currency: order.currency }).format(order.amount / 100);
         $('d-user').textContent = order.username;
         $('d-product').textContent = order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product;
         $('d-total').textContent = total;
@@ -73,37 +81,29 @@
         $('details').hidden = false;
         if (order.discord) {
           const discordText = {
-            granted: `✅ Rol dado a ${order.discord.username}`,
-            joined: `✅ ${order.discord.username} añadido al Discord con su rol`,
-            failed: '🛠️ El staff te dará el rol en breve',
+            granted: `Rol dado a ${order.discord.username}`,
+            joined: `${order.discord.username} añadido al Discord con su rol`,
+            failed: 'El staff te dará el rol en breve',
           };
           $('d-discord').textContent = discordText[order.discord.status] || `Vinculado: ${order.discord.username}`;
           $('d-discord').hidden = $('d-discord-label').hidden = false;
         }
 
         if (PAID.includes(order.status)) {
-          $('icon').textContent = '🎉';
-          $('title').textContent = '¡Gracias por tu compra!';
-          $('message').textContent = order.status === 'delivered'
+          show('ok', 'Pagado', '¡Gracias por tu compra!', order.status === 'delivered'
             ? 'Tu pago se ha completado y la compra ya está en el servidor. ¡Disfrútala!'
-            : 'Tu pago se ha completado. El staff entregará tu compra en breve.';
+            : 'Tu pago se ha completado. El staff entregará tu compra en breve.');
           return;
         }
         if (order.status === 'failed') {
-          $('icon').textContent = '❌';
-          $('title').textContent = 'El pago no se completó';
-          $('message').textContent = 'No se ha realizado ningún cargo. Puedes volver a la tienda e intentarlo de nuevo.';
+          show('bad', 'No completado', 'El pago no se completó', 'No se ha realizado ningún cargo. Puedes volver a la tienda e intentarlo de nuevo.');
           return;
         }
         if (order.status === 'error') {
-          $('icon').textContent = '⚠️';
-          $('title').textContent = 'Pedido en revisión';
-          $('message').textContent = 'Hubo un problema al verificar el pago. Contáctanos por Discord con tu número de pedido.';
+          show('bad', 'En revisión', 'Pedido en revisión', 'Hubo un problema al verificar el pago. Escríbenos por Discord con tu número de pedido.');
           return;
         }
-        $('icon').textContent = '⏳';
-        $('title').textContent = 'Pago en proceso';
-        $('message').textContent = 'PayPal aún está confirmando el pago. Te entregaremos la compra en cuanto se complete; puedes cerrar esta página.';
+        show('wait', 'Pendiente', 'Pago en proceso', 'PayPal aún está confirmando el pago. Te entregaremos la compra en cuanto se complete; puedes cerrar esta página.');
         await new Promise((r) => setTimeout(r, 4000));
       }
     })();

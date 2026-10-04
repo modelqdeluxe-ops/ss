@@ -6,7 +6,6 @@
     "description": "Prefijo dorado, /kit aventurero cada 24h, 3 homes y acceso al mundo de recursos.",
     "price": 499,
     "maxQuantity": 1,
-    "image": "⚔️",
     "discordRoles": [
       "ID_ROL_AVENTURERO"
     ],
@@ -22,7 +21,6 @@
     "description": "Todo lo de Aventurero + /fly en el lobby, 8 homes, /hat y partículas mágicas.",
     "price": 999,
     "maxQuantity": 1,
-    "image": "🔮",
     "featured": true,
     "discordRoles": [
       "ID_ROL_HECHICERO"
@@ -39,7 +37,6 @@
     "description": "Todo lo de Hechicero + mascota dragón, 20 homes, /nick, /ec y cola prioritaria.",
     "price": 1999,
     "maxQuantity": 1,
-    "image": "🐉",
     "discordRoles": [
       "ID_ROL_DRAGON"
     ],
@@ -54,7 +51,6 @@
     "name": "5 Llaves Épicas",
     "description": "Abre el cofre épico del spawn: encantamientos, armaduras y objetos raros.",
     "price": 299,
-    "image": "🗝️",
     "commands": [
       "crate key give {player} epica 5"
     ]
@@ -65,7 +61,6 @@
     "name": "3 Llaves Legendarias",
     "description": "El cofre legendario contiene las mejores recompensas del reino.",
     "price": 599,
-    "image": "👑",
     "commands": [
       "crate key give {player} legendaria 3"
     ]
@@ -76,7 +71,6 @@
     "name": "10.000 Monedas de Oro",
     "description": "Dinero para la economía del servidor: compra terrenos, objetos y más.",
     "price": 199,
-    "image": "🪙",
     "commands": [
       "eco give {player} 10000"
     ]
@@ -87,7 +81,6 @@
     "name": "60.000 Monedas de Oro",
     "description": "El paquete más rentable: 20% más monedas que comprando por separado.",
     "price": 999,
-    "image": "💰",
     "commands": [
       "eco give {player} 60000"
     ]

@@ -2,38 +2,46 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tierras Fantásticas — Servidor de Minecraft</title>
-  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura, magia y dragones. Únete gratis y apoya el servidor en nuestra tienda oficial.">
+  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura, castillos y magia. Únete gratis y apoya el servidor en la tienda oficial.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+  <link rel="icon" type="image/webp" href="img/logo.webp">
 </head>
 <body>
+  <canvas id="sky" aria-hidden="true"></canvas>
+
   <header class="nav">
-    <a href="#" class="brand">🏰 <span data-server-name>Tierras Fantásticas</span></a>
+    <a href="#inicio" class="brand"><img src="img/logo.webp" alt="" width="42" height="46"><span data-server-name>Tierras Fantásticas</span></a>
     <nav>
-      <a href="#inicio">Inicio</a>
       <a href="#mundo">El mundo</a>
       <a href="#tienda">Tienda</a>
       <a href="#faq">Ayuda</a>
-      <a href="#" class="discord-link" hidden target="_blank" rel="noopener">Discord</a>
+      <a href="#" class="discord-link pixel" hidden target="_blank" rel="noopener">Discord</a>
     </nav>
   </header>
 
   <main>
     <section id="inicio" class="hero">
-      <div class="stars" aria-hidden="true"></div>
       <div class="hero-inner">
-        <p class="eyebrow">Servidor de Minecraft · Java &amp; Bedrock</p>
-        <h1 data-server-name>Tierras Fantásticas</h1>
-        <p class="tagline">Un reino de magia, dragones y aventuras sin fin. Construye tu castillo, forja alianzas y conquista mazmorras legendarias.</p>
+        <div class="logo-stage">
+          <div class="logo-float">
+            <img id="hero-logo" src="img/logo.webp" alt="Logo de Tierras Fantásticas" width="743" height="820">
+            <div class="logo-shine" id="logo-shine"></div>
+          </div>
+          <div class="logo-shadow"></div>
+        </div>
 
-        <button class="ip-box" id="copy-ip" type="button" aria-label="Copiar IP del servidor">
+        <p class="eyebrow">Servidor de Minecraft · Supervivencia y aventura</p>
+        <h1 id="hero-title" data-server-name>Tierras Fantásticas</h1>
+        <p class="tagline">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
+
+        <button class="ip-box pixel" id="copy-ip" type="button" aria-label="Copiar IP del servidor">
           <span class="ip-label">IP del servidor</span>
-          <span class="ip" data-server-ip>play.tierrasfantasticas.net</span>
+          <span class="ip" data-server-ip>216.163.187.40:19001</span>
           <span class="ip-hint" id="copy-hint">Clic para copiar</span>
         </button>
 
@@ -43,51 +51,59 @@
         </div>
 
         <div class="hero-cta">
-          <a href="#tienda" class="btn btn-primary">Visitar la tienda</a>
-          <a href="#mundo" class="btn btn-ghost">Descubrir el mundo</a>
+          <a href="#tienda" class="btn btn-primary pixel">Visitar la tienda</a>
+          <a href="#mundo" class="btn btn-ghost pixel">Descubrir el mundo</a>
         </div>
       </div>
     </section>
 
+    <div class="grass" aria-hidden="true"></div>
+
     <section id="mundo" class="section">
-      <h2>El mundo te espera</h2>
+      <div class="section-head reveal">
+        <p class="kicker">El reino</p>
+        <h2>El mundo te espera</h2>
+      </div>
       <div class="features">
-        <article class="feature">
-          <div class="feature-icon">🗺️</div>
+        <article class="feature mat-grass pixel">
+          <span class="material">Bloque de hierba</span>
           <h3>Supervivencia épica</h3>
-          <p>Mundo personalizado con biomas mágicos, protecciones de terreno y economía equilibrada.</p>
+          <p>Mundo personalizado con biomas únicos, protección de terrenos y una economía equilibrada.</p>
         </article>
-        <article class="feature">
-          <div class="feature-icon">🐉</div>
-          <h3>Jefes y mazmorras</h3>
-          <p>Enfréntate a dragones y criaturas únicas en eventos semanales con recompensas exclusivas.</p>
+        <article class="feature mat-stone pixel">
+          <span class="material">Piedra de castillo</span>
+          <h3>Castillos y mazmorras</h3>
+          <p>Asalta fortalezas y derrota jefes en eventos semanales con recompensas exclusivas.</p>
         </article>
-        <article class="feature">
-          <div class="feature-icon">🏰</div>
+        <article class="feature mat-sapphire pixel">
+          <span class="material">Zafiro</span>
           <h3>Reinos y clanes</h3>
           <p>Funda tu reino, recluta aliados y compite por el control de las tierras fantásticas.</p>
         </article>
-        <article class="feature">
-          <div class="feature-icon">✨</div>
+        <article class="feature mat-dirt pixel">
+          <span class="material">Tierra</span>
           <h3>Comunidad activa</h3>
-          <p>Staff atento, sin pay-to-win: la tienda solo ofrece ventajas cosméticas y de comodidad.</p>
+          <p>Staff atento y sin pay-to-win: la tienda solo ofrece ventajas cosméticas y de comodidad.</p>
         </article>
       </div>
     </section>
 
     <section id="tienda" class="section">
-      <h2>Tienda oficial</h2>
-      <p class="section-sub">Tus compras se entregan automáticamente en el juego en cuanto se confirma el pago. Pago seguro con PayPal o con tarjeta.</p>
+      <div class="section-head reveal">
+        <p class="kicker">Tienda oficial</p>
+        <h2>Apoya el reino</h2>
+        <p class="section-sub">Tu compra llega sola al juego y a tu Discord en cuanto se confirma el pago. Paga con PayPal o con tarjeta.</p>
+      </div>
 
-      <div class="notice" id="payments-off" hidden>
+      <div class="notice pixel" id="payments-off" hidden>
         La tienda está en mantenimiento: los pagos no están disponibles en este momento.
       </div>
 
       <div class="tabs" role="tablist">
-        <button class="tab active" data-category="all" role="tab">Todo</button>
-        <button class="tab" data-category="rangos" role="tab">Rangos</button>
-        <button class="tab" data-category="llaves" role="tab">Llaves</button>
-        <button class="tab" data-category="monedas" role="tab">Monedas</button>
+        <button class="tab pixel active" data-category="all" role="tab">Todo</button>
+        <button class="tab pixel" data-category="rangos" role="tab">Rangos</button>
+        <button class="tab pixel" data-category="llaves" role="tab">Llaves</button>
+        <button class="tab pixel" data-category="monedas" role="tab">Monedas</button>
       </div>
 
       <div class="products" id="products">
@@ -96,49 +112,60 @@
     </section>
 
     <section id="faq" class="section">
-      <h2>Preguntas frecuentes</h2>
-      <div class="faq">
+      <div class="section-head reveal">
+        <p class="kicker">Ayuda</p>
+        <h2>Preguntas frecuentes</h2>
+      </div>
+      <div class="faq reveal">
         <details>
           <summary>¿Cuánto tarda en llegar mi compra?</summary>
-          <p>Normalmente es instantáneo. Si no estás conectado, el rango o los objetos quedarán guardados en tu cuenta.</p>
+          <p>Normalmente es instantáneo. Si no estás conectado, el rango o los objetos quedan guardados en tu cuenta.</p>
         </details>
         <details>
           <summary>¿Qué nombre de usuario debo poner?</summary>
-          <p>Tu nombre exacto de Minecraft (el que ves en el juego). Revisa mayúsculas y minúsculas antes de pagar.</p>
+          <p>Tu nombre exacto de Minecraft, el que ves en el juego. Revisa mayúsculas y minúsculas antes de pagar.</p>
         </details>
         <details>
           <summary>¿Qué métodos de pago aceptan?</summary>
-          <p>PayPal (con tu saldo o las tarjetas guardadas en tu cuenta) y tarjetas de crédito o débito sin necesidad de cuenta PayPal. El pago se procesa en PayPal; nunca vemos tus datos bancarios.</p>
+          <p>PayPal (con tu saldo o las tarjetas de tu cuenta) y tarjetas de crédito o débito sin necesidad de cuenta PayPal. Nunca vemos tus datos bancarios.</p>
+        </details>
+        <details>
+          <summary>¿Cómo recibo el rol en Discord?</summary>
+          <p>Al comprar, pulsa «Vincular mi Discord». Cuando se confirme el pago, el bot te dará el rol de tu rango, y si aún no estás en nuestro Discord te añadirá.</p>
         </details>
         <details>
           <summary>No he recibido mi compra, ¿qué hago?</summary>
-          <p>Escríbenos por Discord con el número de pedido (aparece al terminar la compra y en el recibo de PayPal) y tu nombre de usuario, y lo solucionaremos.</p>
+          <p>Escríbenos por Discord con el número de pedido (aparece al terminar la compra y en el recibo de PayPal) y tu nombre de usuario.</p>
         </details>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>© <span id="year"></span> <span data-server-name>Tierras Fantásticas</span>. No afiliado a Mojang AB ni Microsoft.</p>
-    <p class="muted">Todas las compras son donaciones voluntarias para mantener el servidor.</p>
-  </footer>
+  <div class="footer-wrap">
+    <div class="grass" aria-hidden="true"></div>
+    <footer class="footer">
+      <img src="img/logo.webp" alt="" width="64" height="71">
+      <p>© <span id="year"></span> <span data-server-name>Tierras Fantásticas</span>. No afiliado a Mojang AB ni Microsoft.</p>
+      <p class="muted">Todas las compras son donaciones voluntarias para mantener el servidor.</p>
+    </footer>
+  </div>
 
-  <dialog id="checkout-dialog" class="dialog">
+  <dialog id="checkout-dialog" class="dialog pixel">
     <form id="checkout-form" method="dialog">
-      <button type="button" class="dialog-close" id="dialog-close" aria-label="Cerrar">×</button>
-      <div class="dialog-icon" id="dialog-icon"></div>
+      <button type="button" class="dialog-close" id="dialog-close">Cerrar</button>
+      <div class="cat" id="dialog-cat"></div>
       <h3 id="dialog-title">Producto</h3>
       <p class="dialog-desc" id="dialog-desc"></p>
 
       <label for="username">Tu nombre de Minecraft</label>
-      <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="Ej: Steve_123">
+      <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="Steve_123">
 
       <label for="quantity" id="quantity-label">Cantidad</label>
       <input id="quantity" name="quantity" type="number" min="1" max="10" value="1">
 
-      <div class="discord-box" id="discord-box" hidden>
+      <div class="discord-box pixel" id="discord-box" hidden>
         <div class="discord-linked" id="discord-linked" hidden>
-          <img id="discord-avatar" alt="" width="32" height="32">
+          <img id="discord-avatar" alt="" width="36" height="36">
           <div>
             <div class="discord-name">Discord: <strong id="discord-name"></strong></div>
             <div class="discord-hint" id="discord-linked-hint"></div>
@@ -146,7 +173,7 @@
           <button type="button" class="link-btn" id="discord-logout">Cambiar</button>
         </div>
         <div id="discord-unlinked" hidden>
-          <a class="btn btn-discord btn-block" id="discord-login" href="/auth/discord">Vincular mi Discord</a>
+          <a class="btn btn-discord btn-block pixel" id="discord-login" href="/auth/discord">Vincular mi Discord</a>
           <div class="discord-hint" id="discord-unlinked-hint"></div>
         </div>
       </div>
@@ -160,6 +187,7 @@
     </form>
   </dialog>
 
+  <script src="fx.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

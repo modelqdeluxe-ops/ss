@@ -22,6 +22,7 @@
     document.querySelectorAll('[data-server-name]').forEach((el) => (el.textContent = config.serverName));
     document.querySelectorAll('[data-server-ip]').forEach((el) => (el.textContent = config.serverIp));
     document.title = `${config.serverName} — Servidor de Minecraft`;
+    window.tfSplitTitle?.();
     if (config.discordUrl) {
       const link = $('.discord-link');
       link.href = config.discordUrl;
@@ -52,15 +53,26 @@
 
   // --- Copiar IP ---
   $('#copy-ip').addEventListener('click', async () => {
+    const box = $('#copy-ip');
     const hint = $('#copy-hint');
     try {
       await navigator.clipboard.writeText(config.serverIp || $('[data-server-ip]').textContent);
-      hint.textContent = '¡Copiada! Nos vemos dentro ✨';
+      hint.textContent = '¡Copiada! Nos vemos dentro';
+      box.classList.remove('copied');
+      void box.offsetWidth; // reinicia la animación
+      box.classList.add('copied');
     } catch {
-      hint.textContent = 'Copia la IP manualmente';
+      // Sin portapapeles: seleccionamos la IP para copiarla a mano.
+      const range = document.createRange();
+      range.selectNodeContents($('[data-server-ip]'));
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+      hint.textContent = 'Pulsa Ctrl+C para copiarla';
     }
     setTimeout(() => (hint.textContent = 'Clic para copiar'), 2500);
   });
+
+  const CATEGORY_LABEL = { rangos: 'Rango', llaves: 'Llaves de cofre', monedas: 'Monedas de oro' };
 
   // --- Productos ---
   async function loadProducts() {
@@ -77,15 +89,16 @@
     const list = category === 'all' ? products : products.filter((p) => p.category === category);
     $('#products').innerHTML = list
       .map(
-        (p) => `
-        <article class="product${p.featured ? ' featured' : ''}">
-          ${p.featured ? '<span class="badge">Más popular</span>' : ''}
-          <div class="product-icon">${escapeHtml(p.image || '🎁')}</div>
+        (p, i) => `
+        <article class="product pixel cat-${escapeHtml(p.category)}${p.featured ? ' featured' : ''}" style="--i:${i}">
+          ${p.featured ? '<span class="badge pixel">Más popular</span>' : ''}
+          <span class="cat">${escapeHtml(CATEGORY_LABEL[p.category] || p.category)}</span>
           <h3>${escapeHtml(p.name)}</h3>
           <p>${escapeHtml(p.description)}</p>
+          <span class="lore">${p.discordRole ? 'Entrega en el juego y en Discord' : 'Entrega instantánea en el juego'}</span>
           <div class="product-footer">
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn btn-primary" data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}>Comprar</button>
+            <button class="btn btn-primary pixel" data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}>Comprar</button>
           </div>
         </article>`,
       )
@@ -119,7 +132,7 @@
     if (!selected || !config.paymentsEnabled) return;
 
     const maxQty = selected.maxQuantity || 10;
-    $('#dialog-icon').textContent = selected.image || '🎁';
+    $('#dialog-cat').textContent = CATEGORY_LABEL[selected.category] || selected.category;
     $('#dialog-title').textContent = selected.name;
     $('#dialog-desc').textContent = selected.description;
     qtyInput.value = 1;
