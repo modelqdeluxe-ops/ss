@@ -393,6 +393,13 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
   .tabs { display: grid; grid-template-columns: repeat(2, 1fr); }
 }
 
+/* "Reducir movimiento": se mantiene la ambientación (logo, brillos, cielo) más lenta y se quitan
+   los saltos, entradas al hacer scroll e inclinaciones. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  html { scroll-behavior: auto; }
+  .logo-float, .logo-shadow, .logo-stage::before { animation-duration: 10s; }
+  .logo-shine { animation-duration: 8s; }
+  .hero h1 .ch, .badge, .brand img, .footer img { animation: none; }
+  .reveal { animation: none !important; }
+  .feature, .product { --rx: 0deg !important; --ry: 0deg !important; }
 }

@@ -1,7 +1,9 @@
 // Efectos visuales: cielo animado con bloques flotantes y luciérnagas, destello del logo,
 // letras del título que saltan e inclinación 3D de las tarjetas.
 (() => {
+  // Con "reducir movimiento" la página sigue animada, pero más lenta y sin parallax ni inclinaciones.
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pace = reduceMotion ? 0.4 : 1;
 
   // ---------- Cielo animado ----------
   const canvas = document.getElementById('sky');
@@ -88,12 +90,12 @@
 
     let last = performance.now();
     function frame(now) {
-      const dt = Math.min(3, (now - last) / 16.67);
+      const dt = Math.min(3, (now - last) / 16.67) * pace;
       last = now;
-      const t = now / 1000;
+      const t = (now / 1000) * pace;
       mouseX += (targetX - mouseX) * 0.05;
       mouseY += (targetY - mouseY) * 0.05;
-      const scroll = window.scrollY;
+      const scroll = reduceMotion ? 0 : window.scrollY;
 
       ctx.clearRect(0, 0, w, h);
 
@@ -129,7 +131,7 @@
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
 
-      if (!reduceMotion && !document.hidden) requestAnimationFrame(frame);
+      if (!document.hidden) requestAnimationFrame(frame);
       else running = false;
     }
 
@@ -144,11 +146,12 @@
     resize();
     window.addEventListener('resize', resize);
     window.addEventListener('pointermove', (e) => {
+      if (reduceMotion) return;
       targetX = (e.clientX / w) * 2 - 1;
       targetY = (e.clientY / h) * 2 - 1;
     });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && !reduceMotion) start();
+      if (!document.hidden) start();
     });
     start();
   }
