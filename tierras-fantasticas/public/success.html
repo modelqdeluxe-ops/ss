@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compra completada — Tierras Fantásticas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+</head>
+<body>
+  <main class="result">
+    <div class="result-card">
+      <div class="result-icon" id="icon">⏳</div>
+      <h1 id="title">Comprobando tu pago…</h1>
+      <p class="muted" id="message">Un momento, estamos confirmando la transacción con la pasarela de pago.</p>
+      <dl id="details" hidden>
+        <dt>Jugador</dt><dd id="d-user"></dd>
+        <dt>Producto</dt><dd id="d-product"></dd>
+        <dt>Total</dt><dd id="d-total"></dd>
+        <dt>Entrega</dt><dd id="d-delivery"></dd>
+      </dl>
+      <a href="/" class="btn btn-primary">Volver al inicio</a>
+    </div>
+  </main>
+
+  <script>
+    (async () => {
+      const $ = (id) => document.getElementById(id);
+      const sessionId = new URLSearchParams(location.search).get('session_id');
+      const deliveryText = {
+        delivered: '✅ Entregado en el servidor',
+        delivering: '⏳ Entregando…',
+        pending: '⏳ Procesando…',
+        manual: '🛠️ El staff lo entregará en breve',
+        delivery_failed: '🛠️ El staff lo entregará en breve',
+        awaiting_payment: '⏳ Esperando confirmación del banco',
+      };
+
+      if (!sessionId) {
+        $('icon').textContent = '❓';
+        $('title').textContent = 'Pedido no encontrado';
+        $('message').textContent = 'No hemos encontrado ningún pedido asociado a esta página.';
+        return;
+      }
+
+      // Consultamos varias veces mientras el webhook entrega la compra.
+      for (let attempt = 0; attempt < 10; attempt++) {
+        try {
+          const res = await fetch(`/api/order/${encodeURIComponent(sessionId)}`);
+          const order = await res.json();
+          if (!res.ok) throw new Error(order.error);
+
+          const total = new Intl.NumberFormat('es', { style: 'currency', currency: order.currency.toUpperCase() })
+            .format(order.amount / 100);
+          $('d-user').textContent = order.username;
+          $('d-product').textContent = order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product;
+          $('d-total').textContent = total;
+          $('d-delivery').textContent = deliveryText[order.deliveryStatus] || order.deliveryStatus;
+          $('details').hidden = false;
+
+          if (order.paymentStatus === 'paid') {
+            $('icon').textContent = '🎉';
+            $('title').textContent = '¡Gracias por tu compra!';
+            $('message').textContent = 'Tu pago se ha completado. Si estás conectado, verás tu recompensa en el juego.';
+          } else {
+            $('icon').textContent = '⏳';
+            $('title').textContent = 'Pago en proceso';
+            $('message').textContent = 'Tu banco aún está confirmando el pago. Te entregaremos la compra en cuanto se complete.';
+          }
+          if (['delivered', 'manual', 'delivery_failed'].includes(order.deliveryStatus)) return;
+        } catch {
+          $('icon').textContent = '⚠️';
+          $('title').textContent = 'No pudimos comprobar el pedido';
+          $('message').textContent = 'Si se realizó el cargo, recibirás tu compra igualmente. Contáctanos por Discord si tienes dudas.';
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    })();
+  </script>
+</body>
+</html>

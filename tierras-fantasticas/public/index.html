@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tierras Fantásticas — Servidor de Minecraft</title>
+  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura, magia y dragones. Únete gratis y apoya el servidor en nuestra tienda oficial.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+</head>
+<body>
+  <header class="nav">
+    <a href="#" class="brand">🏰 <span data-server-name>Tierras Fantásticas</span></a>
+    <nav>
+      <a href="#inicio">Inicio</a>
+      <a href="#mundo">El mundo</a>
+      <a href="#tienda">Tienda</a>
+      <a href="#faq">Ayuda</a>
+      <a href="#" class="discord-link" hidden target="_blank" rel="noopener">Discord</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="inicio" class="hero">
+      <div class="stars" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">Servidor de Minecraft · Java &amp; Bedrock</p>
+        <h1 data-server-name>Tierras Fantásticas</h1>
+        <p class="tagline">Un reino de magia, dragones y aventuras sin fin. Construye tu castillo, forja alianzas y conquista mazmorras legendarias.</p>
+
+        <button class="ip-box" id="copy-ip" type="button" aria-label="Copiar IP del servidor">
+          <span class="ip-label">IP del servidor</span>
+          <span class="ip" data-server-ip>play.tierrasfantasticas.net</span>
+          <span class="ip-hint" id="copy-hint">Clic para copiar</span>
+        </button>
+
+        <div class="status" id="status">
+          <span class="dot"></span>
+          <span id="status-text">Comprobando estado…</span>
+        </div>
+
+        <div class="hero-cta">
+          <a href="#tienda" class="btn btn-primary">Visitar la tienda</a>
+          <a href="#mundo" class="btn btn-ghost">Descubrir el mundo</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="mundo" class="section">
+      <h2>El mundo te espera</h2>
+      <div class="features">
+        <article class="feature">
+          <div class="feature-icon">🗺️</div>
+          <h3>Supervivencia épica</h3>
+          <p>Mundo personalizado con biomas mágicos, protecciones de terreno y economía equilibrada.</p>
+        </article>
+        <article class="feature">
+          <div class="feature-icon">🐉</div>
+          <h3>Jefes y mazmorras</h3>
+          <p>Enfréntate a dragones y criaturas únicas en eventos semanales con recompensas exclusivas.</p>
+        </article>
+        <article class="feature">
+          <div class="feature-icon">🏰</div>
+          <h3>Reinos y clanes</h3>
+          <p>Funda tu reino, recluta aliados y compite por el control de las tierras fantásticas.</p>
+        </article>
+        <article class="feature">
+          <div class="feature-icon">✨</div>
+          <h3>Comunidad activa</h3>
+          <p>Staff atento, sin pay-to-win: la tienda solo ofrece ventajas cosméticas y de comodidad.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="tienda" class="section">
+      <h2>Tienda oficial</h2>
+      <p class="section-sub">Tus compras se entregan automáticamente en el juego en cuanto se confirma el pago. Pago seguro con tarjeta a través de Stripe.</p>
+
+      <div class="notice" id="payments-off" hidden>
+        La tienda está en mantenimiento: los pagos no están disponibles en este momento.
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-category="all" role="tab">Todo</button>
+        <button class="tab" data-category="rangos" role="tab">Rangos</button>
+        <button class="tab" data-category="llaves" role="tab">Llaves</button>
+        <button class="tab" data-category="monedas" role="tab">Monedas</button>
+      </div>
+
+      <div class="products" id="products">
+        <p class="loading">Cargando productos…</p>
+      </div>
+    </section>
+
+    <section id="faq" class="section">
+      <h2>Preguntas frecuentes</h2>
+      <div class="faq">
+        <details>
+          <summary>¿Cuánto tarda en llegar mi compra?</summary>
+          <p>Normalmente es instantáneo. Si no estás conectado, el rango o los objetos quedarán guardados en tu cuenta.</p>
+        </details>
+        <details>
+          <summary>¿Qué nombre de usuario debo poner?</summary>
+          <p>Tu nombre exacto de Minecraft (el que ves en el juego). Revisa mayúsculas y minúsculas antes de pagar.</p>
+        </details>
+        <details>
+          <summary>¿Qué métodos de pago aceptan?</summary>
+          <p>Tarjetas de crédito y débito (Visa, Mastercard, American Express) y, según tu país, Google Pay o Apple Pay. El pago se procesa en Stripe; nunca vemos los datos de tu tarjeta.</p>
+        </details>
+        <details>
+          <summary>No he recibido mi compra, ¿qué hago?</summary>
+          <p>Escríbenos por Discord con el correo del recibo y tu nombre de usuario y lo solucionaremos.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> <span data-server-name>Tierras Fantásticas</span>. No afiliado a Mojang AB ni Microsoft.</p>
+    <p class="muted">Todas las compras son donaciones voluntarias para mantener el servidor.</p>
+  </footer>
+
+  <dialog id="checkout-dialog" class="dialog">
+    <form id="checkout-form" method="dialog">
+      <button type="button" class="dialog-close" id="dialog-close" aria-label="Cerrar">×</button>
+      <div class="dialog-icon" id="dialog-icon"></div>
+      <h3 id="dialog-title">Producto</h3>
+      <p class="dialog-desc" id="dialog-desc"></p>
+
+      <label for="username">Tu nombre de Minecraft</label>
+      <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="Ej: Steve_123">
+
+      <label for="quantity" id="quantity-label">Cantidad</label>
+      <input id="quantity" name="quantity" type="number" min="1" max="10" value="1">
+
+      <div class="dialog-total">Total: <strong id="dialog-total"></strong></div>
+      <p class="error" id="checkout-error" role="alert"></p>
+
+      <button type="submit" class="btn btn-primary btn-block" id="pay-btn">Pagar de forma segura</button>
+      <p class="muted small">Serás redirigido a Stripe para completar el pago.</p>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
