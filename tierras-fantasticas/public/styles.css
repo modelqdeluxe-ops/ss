@@ -370,7 +370,7 @@ main { view-transition-name: page; }
 .crate-card .rays { inset: -30% -10% 20%; opacity: 0.6; }
 .crate-card figure { flex: 1; display: grid; place-items: center; margin: 4px 0 16px; min-height: 210px; }
 .crate-card figure img {
-  width: 100%; max-height: 240px; object-fit: contain; image-rendering: pixelated;
+  width: 100%; max-height: 240px; object-fit: contain; image-rendering: auto;
   filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.55));
   animation: float 6s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -1.3s);
   transition: scale 0.4s var(--ease-spring);
@@ -459,7 +459,7 @@ main { view-transition-name: page; }
 .product.cat-crates { --rarity: var(--c3); --edge-a: var(--c1); --edge-b: color-mix(in srgb, var(--c1) 50%, black); }
 .product.featured { animation: card-in 0.5s var(--ease-out) both, glow 2.8s ease-in-out 0.5s infinite; animation-delay: calc(var(--i, 0) * 0.06s), 0.6s; }
 .product .thumb { display: grid; place-items: center; height: 150px; margin: -6px -6px 4px; background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c1) 35%, transparent), transparent 70%); }
-.product .thumb img { max-height: 100%; width: auto; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5)); animation: float 6s ease-in-out infinite; }
+.product .thumb img { max-height: 100%; width: auto; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5)); animation: float 6s ease-in-out infinite; }
 .product .cat { font-family: var(--font-label); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 .product h3 { font-size: 1.55rem; color: var(--rarity); text-shadow: var(--mc-shadow); }
 .product p { color: var(--muted); margin: 0; flex: 1; font-size: 0.95rem; }
@@ -506,7 +506,7 @@ main { view-transition-name: page; }
   background: linear-gradient(90deg, var(--c1), var(--c3), var(--c1)); background-size: 200% 100%;
   animation: thread 3s linear infinite;
 }
-.crate-pick img { width: 64px; height: 52px; object-fit: contain; image-rendering: pixelated; flex-shrink: 0; }
+.crate-pick img { width: 64px; height: 52px; object-fit: contain; image-rendering: auto; flex-shrink: 0; }
 .crate-pick b { display: block; font-family: var(--font-display); font-size: 1.15rem; line-height: 1.1; }
 .crate-pick small { font-family: var(--font-label); font-size: 0.62rem; text-transform: uppercase; color: var(--c3); letter-spacing: 0.06em; }
 
@@ -534,7 +534,7 @@ main { view-transition-name: page; }
 .stage-visual canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .stage-img {
   position: relative; z-index: 2;
-  width: 100%; max-height: 460px; object-fit: contain; image-rendering: pixelated;
+  width: 100%; max-height: 460px; object-fit: contain; image-rendering: auto;
   filter: drop-shadow(0 26px 30px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px color-mix(in srgb, var(--c1) 35%, transparent));
   animation: float 7s ease-in-out infinite;
 }
@@ -710,7 +710,7 @@ main { view-transition-name: page; }
   font-family: var(--font-label); font-size: 0.75rem; text-transform: uppercase; padding: 6px;
 }
 .dialog-close:hover { color: var(--gold-light); }
-.dialog-img { display: block; margin: 0 auto 4px; max-height: 130px; max-width: 100%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.5)); animation: float 6s ease-in-out infinite; }
+.dialog-img { display: block; margin: 0 auto 4px; max-height: 130px; max-width: 100%; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.5)); animation: float 6s ease-in-out infinite; }
 .dialog .cat { font-family: var(--font-label); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); text-align: center; }
 .dialog h3 { text-align: center; font-size: 1.8rem; color: var(--gold-light); text-shadow: var(--mc-shadow); }
 .dialog-desc { text-align: center; color: var(--muted); margin: 0 0 8px; font-size: 0.95rem; }
