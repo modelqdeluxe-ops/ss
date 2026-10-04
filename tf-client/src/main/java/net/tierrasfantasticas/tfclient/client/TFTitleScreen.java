@@ -25,7 +25,6 @@ public class TFTitleScreen extends Screen {
 
     @Override
     protected void init() {
-        TFClient.LOGGER.info("TF Client: menu principal listo");
         int buttonWidth = Math.min(240, this.width - 40);
         int left = (this.width - buttonWidth) / 2;
         int top = Math.min((int) (this.height * 0.64f), this.height - 84);

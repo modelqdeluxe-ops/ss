@@ -52,8 +52,7 @@ Requiere Java 17.
 ```
 
 GitHub Actions (`.github/workflows/tf-client.yml`) lo compila en cada cambio y deja el `.jar` en los artefactos de la
-ejecución (`tfclient-jar`). También arranca el juego en una pantalla virtual y guarda capturas de la pantalla de carga y
-del menú (`tfclient-capturas`).
+ejecución (`tfclient-jar`).
 
 ## Notas
 
