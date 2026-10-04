@@ -62,8 +62,15 @@ public class TFMenuButton extends Button {
         g.setColor(1f, 1f, 1f, 1f);
 
         Font font = Minecraft.getInstance().font;
-        int color = !this.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xFFF3DC;
         int alpha = Mth.ceil(Mth.clamp(this.alpha, 0.02f, 1f) * 255f) << 24;
-        g.drawCenteredString(font, getMessage(), getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2, color | alpha);
+        int textX = getX() + (getWidth() - font.width(getMessage())) / 2;
+        int textY = getY() + (getHeight() - 8) / 2;
+        if (primary && this.active) {
+            // Placa de oro: letras oscuras, sin sombra
+            g.drawString(font, getMessage(), textX, textY, (hot ? 0x241404 : 0x34200A) | alpha, false);
+        } else {
+            int color = !this.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
+            g.drawString(font, getMessage(), textX, textY, color | alpha, true);
+        }
     }
 }

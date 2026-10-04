@@ -22,6 +22,12 @@ public class TFLoadingOverlay extends LoadingOverlay {
     private long doneAt = -1L;
     private float progress;
     private boolean broken;
+    /** La pantalla original ya terminó y pidió quitarse: a partir de aquí la de TF se funde sola sobre el menú. */
+    private long delegateDoneAt = -1L;
+    private boolean finished;
+
+    private static final long HOLD_MS = 500L;
+    private static final long FADE_MS = 700L;
 
     public TFLoadingOverlay(LoadingOverlay delegate) {
         this(delegate, ((LoadingOverlayAccessor) delegate).tfclient$getReload(), ((LoadingOverlayAccessor) delegate).tfclient$isFadeIn());
@@ -36,10 +42,20 @@ public class TFLoadingOverlay extends LoadingOverlay {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // La pantalla original sigue mandando: termina la carga y se retira sola al acabar.
-        delegate.render(g, mouseX, mouseY, partialTick);
-        if (broken) return;
+        // La pantalla original sigue mandando: termina la carga y pide quitarse al acabar (ver holdAfterDelegate).
+        if (delegateDoneAt < 0L || broken) {
+            delegate.render(g, mouseX, mouseY, partialTick);
+        }
+        if (broken) {
+            if (delegateDoneAt >= 0L) finish();
+            return;
+        }
         try {
+            if (delegateDoneAt >= 0L) {
+                // Ya cargó: se ve el menú debajo y la pantalla de TF se desvanece (sin pasar por el rótulo de Mojang).
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.screen != null) mc.screen.render(g, mouseX, mouseY, partialTick);
+            }
             renderTF(g);
         } catch (Throwable t) {
             // Si algo falla al dibujar, se queda la pantalla de carga normal: el juego nunca se cierra por esto.
@@ -56,10 +72,17 @@ public class TFLoadingOverlay extends LoadingOverlay {
         progress = Mth.clamp(progress * 0.95f + reload.getActualProgress() * 0.05f, 0f, 1f);
         if (doneAt < 0L && reload.isDone() && (!fadeIn || now - firstFrame >= 1000L)) doneAt = now;
 
-        // Mismos tiempos que la pantalla original: 1 s fija al terminar y 1 s de fundido hacia el menú.
-        float in = fadeIn ? Mth.clamp((now - firstFrame) / 500f, 0f, 1f) : 1f;
-        float out = doneAt < 0L ? 1f : 1f - Mth.clamp((now - doneAt) / 1000f - 1f, 0f, 1f);
+        // Opaca mientras la original se desvanece (así nunca se ve su rótulo rojo); después, medio segundo más y fundido.
+        float in = fadeIn ? Mth.clamp((now - firstFrame) / 300f, 0f, 1f) : 1f;
+        float out = 1f;
+        if (delegateDoneAt >= 0L) {
+            out = 1f - Mth.clamp((now - delegateDoneAt - HOLD_MS) / (float) FADE_MS, 0f, 1f);
+        }
         float alpha = in * out;
+        if (delegateDoneAt >= 0L && out <= 0f) {
+            finish();
+            return;
+        }
         if (alpha <= 0.01f) return;
 
         int width = g.guiWidth();
@@ -71,6 +94,21 @@ public class TFLoadingOverlay extends LoadingOverlay {
         int barCenterY = (int) (height * 0.8325);
         TFDraw.progressBar(g, width / 2 - barHalfWidth, barCenterY - 5, width / 2 + barHalfWidth, barCenterY + 5,
                 doneAt >= 0L ? 1f : progress, alpha);
+    }
+
+    /**
+     * Lo llama MinecraftMixin cuando la pantalla original pide quitarse (setOverlay(null)). Devuelve true para que la
+     * de TF siga en pantalla hasta terminar su fundido.
+     */
+    public boolean holdAfterDelegate() {
+        if (finished) return false;
+        if (delegateDoneAt < 0L) delegateDoneAt = Util.getMillis();
+        return true;
+    }
+
+    private void finish() {
+        finished = true;
+        Minecraft.getInstance().setOverlay(null);
     }
 
     @Override

@@ -4,8 +4,10 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
 
 - **Pantalla de carga de TF**: el banner de Tierras Fantásticas (con las letras) a pantalla completa y la barra de
   progreso de Minecraft. Sustituye a la pantalla de Mojang/Forge, al abrir el juego y al recargar recursos (F3+T).
+  Se queda opaca hasta que la original termina y después se funde sola sobre el menú, así nunca asoma el rótulo rojo.
 - **Menú principal de TF**, como en TierrasMon: el paisaje de TF de fondo (sin letras), el emblema TF encima de los
-  botones y botones propios (placa de piedra de templo con marco dorado y medallones con gema) con la fuente Cinzel:
+  botones y botones propios con la fuente Cinzel: placa con las puntas en ángulo, azul noche (como el zafiro de la
+  corona del logo) con doble filete dorado y rombos en los extremos; el botón del servidor, en oro con letras oscuras:
   - **TIERRAS FANTÁSTICAS**: antes de conectar pregunta al servidor qué mods usa. Si te falta alguno, enseña la lista
     (con *Volver* o *Entrar igual*); si no falta nada, conecta directamente y acepta su paquete de recursos.
   - **Mundo local**, **Mods**, **Opciones** y **Salir**.
@@ -20,7 +22,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.3.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.4.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 

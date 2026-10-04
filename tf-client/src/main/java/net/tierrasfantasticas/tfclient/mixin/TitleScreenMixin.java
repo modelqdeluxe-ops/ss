@@ -2,6 +2,7 @@ package net.tierrasfantasticas.tfclient.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.mojang.realmsclient.gui.screens.RealmsNotificationsScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
@@ -25,7 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Menú principal de TF: el paisaje de fondo en lugar del panorama, el emblema TF encima de los botones y los botones
@@ -77,10 +77,13 @@ public abstract class TitleScreenMixin extends Screen {
         }
     }
 
-    /** Sin avisos de Realms. */
-    @Inject(method = "realmsNotificationsEnabled", at = @At("HEAD"), cancellable = true)
-    private void tfclient$noRealms(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(false);
+    /**
+     * Sin el aviso de Realms. Solo se deja de dibujar: si se apaga realmsNotificationsEnabled(), Minecraft crea igual la
+     * pantalla de avisos sin iniciarla y crashea al volver al menú (RealmsNotificationsScreen.added con minecraft nulo).
+     */
+    @Redirect(method = "render", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/realmsclient/gui/screens/RealmsNotificationsScreen;render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))
+    private void tfclient$hideRealmsNotifications(RealmsNotificationsScreen screen, GuiGraphics g, int mouseX, int mouseY, float partialTick) {
     }
 
     @Inject(method = "init", at = @At("RETURN"))

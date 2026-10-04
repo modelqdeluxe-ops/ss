@@ -1,168 +1,149 @@
-"""Genera las texturas de los botones del menú: placa de piedra de templo con marco dorado redondeado,
-medallones con gema en los extremos y unas ramitas de hojas discretas en las esquinas.
+"""Genera las texturas de los botones del menú de TF.
 
-Cada PNG lleva tres estados apilados (normal, ratón encima, desactivado). Resolución: 4 píxeles de textura por
-píxel de interfaz de Minecraft (botón de 200x20 -> 800x80), así a 1080p se ve 1:1 y nítido.
-Se dibuja a 4x más y se reduce con Lanczos para que los bordes queden suaves.
+Diseño: placa con las puntas en ángulo (forma hexagonal alargada), fondo azul noche como el zafiro de la corona del
+logo, doble filete dorado metálico y pequeños rombos dorados con líneas finas en los extremos. El botón principal es de
+oro con letras oscuras. Al pasar el ratón el marco brilla y aparece un halo dorado.
+
+Cada PNG lleva tres estados apilados (normal, ratón encima, desactivado). Resolución: 4 píxeles de textura por píxel
+de interfaz (botón de 200x20 -> 800x80), así a 1080p (escala 4) se ve 1:1. Se dibuja a 4x más y se reduce con Lanczos
+para que los bordes queden suaves.
 Uso: python3 tools/gen_buttons.py
 """
-import math
 import os
-import random
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "tfclient", "textures", "gui")
-SS = 4          # supermuestreo
-SCALE = 4       # texels por píxel de interfaz
+SS = 4            # supermuestreo
+TEX = 4           # texels por píxel de interfaz
 GUI_H = 20
+U = TEX * SS      # tamaño de un píxel de interfaz en el lienzo de trabajo
 
 
-def rounded(draw, box, r, fill):
-    draw.rounded_rectangle(box, radius=r, fill=fill)
+def hexagon(x0, y0, x1, y1, tip):
+    ym = (y0 + y1) / 2
+    return [(x0 + tip, y0), (x1 - tip, y0), (x1, ym), (x1 - tip, y1), (x0 + tip, y1), (x0, ym)]
 
 
-def vertical_gradient(w, h, top, bottom):
-    g = Image.new("RGBA", (1, h))
+def mask_of(size, poly):
+    m = Image.new("L", size, 0)
+    ImageDraw.Draw(m).polygon(poly, fill=255)
+    return m
+
+
+def gradient(size, stops):
+    """Degradado vertical con varias paradas: [(posición 0..1, (r, g, b))]."""
+    w, h = size
+    col = Image.new("RGB", (1, h))
     for y in range(h):
         t = y / max(1, h - 1)
-        g.putpixel((0, y), tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3)) + (255,))
-    return g.resize((w, h))
+        for (p0, c0), (p1, c1) in zip(stops, stops[1:]):
+            if p0 <= t <= p1:
+                k = (t - p0) / max(1e-6, p1 - p0)
+                col.putpixel((0, y), tuple(int(c0[i] + (c1[i] - c0[i]) * k) for i in range(3)))
+                break
+    return col.resize((w, h)).convert("RGBA")
 
 
-def stone_texture(w, h, seed, warm):
-    rng = random.Random(seed)
-    tex = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d = ImageDraw.Draw(tex)
-    # Bloques tallados sutiles y motas
-    block_w = h * 1.6
-    row_h = h / 2
-    for row in range(2):
-        offset = 0 if row == 0 else block_w / 2
-        x = -offset
-        while x < w:
-            y0, y1 = row * row_h, (row + 1) * row_h
-            d.line([(x, y0), (x, y1)], fill=(20, 16, 10, 70), width=max(1, SS * 2))
-            x += block_w
-        d.line([(0, row_h), (w, row_h)], fill=(20, 16, 10, 60), width=max(1, SS * 2))
-    for _ in range(w * h // (SS * SS * 40)):
-        x, y = rng.randrange(w), rng.randrange(h)
-        r = rng.randint(SS, SS * 3)
-        c = rng.choice([(255, 240, 210, 18), (0, 0, 0, 26), (255, 230, 190, 12)])
-        d.ellipse([x - r, y - r, x + r, y + r], fill=c)
-    return tex.filter(ImageFilter.GaussianBlur(SS * 0.6))
+def paste_masked(base, layer, mask):
+    base.paste(layer, (0, 0), mask)
 
 
-def leaf(d, x, y, angle, size, color, vein):
-    pts = []
-    for t in range(0, 21):
-        a = t / 20 * math.pi
-        rx = size * math.sin(a) * 0.42
-        ry = size * (t / 20)
-        pts.append((rx, ry))
-    pts += [(-px, py) for px, py in reversed(pts)]
-    ca, sa = math.cos(angle), math.sin(angle)
-    poly = [(x + px * ca - py * sa, y + px * sa + py * ca) for px, py in pts]
-    d.polygon(poly, fill=color)
-    d.line([(x, y), (x - size * sa * 0.9, y + size * ca * 0.9)], fill=vein, width=max(1, SS))
+def inset_poly(W, H, inset, tip_ratio):
+    """Hexágono con margen `inset` (en unidades del lienzo) y puntas proporcionales a la altura."""
+    x0, y0, x1, y1 = inset, inset, W - inset, H - inset
+    tip = (y1 - y0) / 2 * tip_ratio
+    return hexagon(x0, y0, x1, y1, tip)
 
 
-def sprig(d, x, y, direction, rng, scale):
-    """Ramita de hojas que sale de una esquina hacia el centro, apagada para no dominar."""
-    stem = (58, 74, 40, 255)
-    leaf_colors = [(78, 104, 52, 255), (96, 122, 62, 255), (66, 90, 46, 255)]
-    pts = [(x, y)]
-    cx, cy = x, y
-    for i in range(6):
-        cx += direction * scale * 9
-        cy += math.sin(i * 0.9) * scale * 3 + scale * 1.2
-        pts.append((cx, cy))
-    d.line(pts, fill=stem, width=int(scale * 1.6), joint="curve")
-    for i, (px, py) in enumerate(pts[1:], 1):
-        side = 1 if i % 2 else -1
-        ang = (0.9 if direction > 0 else -0.9) + side * 0.8
-        leaf(d, px, py, ang, scale * (11 - i), rng.choice(leaf_colors), (48, 64, 34, 255))
+GOLD = [(0.0, (255, 236, 170)), (0.35, (232, 186, 82)), (0.55, (176, 120, 32)), (0.8, (226, 172, 70)), (1.0, (140, 92, 22))]
+GOLD_HOT = [(0.0, (255, 248, 210)), (0.35, (255, 214, 110)), (0.55, (206, 146, 44)), (0.8, (250, 202, 96)), (1.0, (170, 112, 30))]
+NAVY = [(0.0, (44, 56, 98)), (0.5, (26, 34, 64)), (1.0, (14, 18, 36))]
+NAVY_HOT = [(0.0, (62, 78, 132)), (0.5, (36, 48, 88)), (1.0, (20, 26, 52))]
+GOLD_FILL = [(0.0, (255, 230, 150)), (0.45, (236, 184, 76)), (1.0, (178, 118, 30))]
+GOLD_FILL_HOT = [(0.0, (255, 242, 190)), (0.45, (250, 206, 102)), (1.0, (200, 138, 40))]
+TIP = 0.62
 
 
-def medallion(img, cx, cy, r, gem, hover):
-    d = ImageDraw.Draw(img)
-    d.ellipse([cx - r - SS * 3, cy - r - SS * 3, cx + r + SS * 3, cy + r + SS * 3], fill=(22, 16, 8, 255))
-    ring = vertical_gradient(2 * r + 2 * SS * 2, 2 * r + 2 * SS * 2, (255, 226, 140), (150, 98, 26))
-    mask = Image.new("L", ring.size, 0)
-    ImageDraw.Draw(mask).ellipse([0, 0, ring.size[0] - 1, ring.size[1] - 1], fill=255)
-    img.paste(ring, (cx - r - SS * 2, cy - r - SS * 2), mask)
-    # Gema con brillo
-    gr = int(r * 0.66)
-    gem_img = vertical_gradient(2 * gr, 2 * gr, gem[2] if hover else gem[1], gem[0])
-    gmask = Image.new("L", gem_img.size, 0)
-    ImageDraw.Draw(gmask).ellipse([0, 0, 2 * gr - 1, 2 * gr - 1], fill=255)
-    img.paste(gem_img, (cx - gr, cy - gr), gmask)
-    d.ellipse([cx - gr * 0.55, cy - gr * 0.7, cx - gr * 0.05, cy - gr * 0.25], fill=(255, 255, 255, 150 if hover else 110))
+def diamond(d, cx, cy, r, fill, outline):
+    pts = [(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)]
+    d.polygon(pts, fill=fill, outline=outline)
 
 
-def make_state(w_gui, primary, state, seed):
-    W, H = w_gui * SCALE * SS, GUI_H * SCALE * SS
+def make_state(w_gui, primary, state):
+    W, H = w_gui * U, GUI_H * U
     hover, disabled = state == 1, state == 2
-    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    pad = SS * 6
-    r_out = (H - 2 * pad) // 2 - SS * 6
-    # Brillo exterior al pasar el ratón
+    size = (W, H)
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    m = int(U * 1.0)  # margen para el halo y la sombra
+
+    outer = inset_poly(W, H, m, TIP)
+    # Sombra suave debajo
+    shadow = Image.new("RGBA", size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).polygon([(x, y + U * 0.6) for x, y in outer], fill=(0, 0, 0, 150))
+    img = Image.alpha_composite(img, shadow.filter(ImageFilter.GaussianBlur(U * 0.6)))
+    # Halo dorado al pasar el ratón
     if hover:
-        glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        rounded(ImageDraw.Draw(glow), [pad - SS * 3, pad - SS * 3, W - pad + SS * 3, H - pad + SS * 3], r_out + SS * 3,
-                (255, 200, 90, 150))
-        img = Image.alpha_composite(img, glow.filter(ImageFilter.GaussianBlur(SS * 4)))
-    d = ImageDraw.Draw(img)
-    # Contorno oscuro + marco dorado degradado + filo claro interior
-    rounded(d, [pad, pad, W - pad, H - pad], r_out, (24, 17, 8, 255))
-    frame_top, frame_bottom = ((255, 232, 150), (176, 118, 30)) if hover else ((236, 196, 104), (132, 86, 22))
-    frame = vertical_gradient(W, H, frame_top, frame_bottom)
-    fmask = Image.new("L", (W, H), 0)
-    rounded(ImageDraw.Draw(fmask), [pad + SS * 3, pad + SS * 3, W - pad - SS * 3, H - pad - SS * 3], r_out - SS * 3, 255)
-    img.paste(frame, (0, 0), fmask)
-    # Placa de piedra interior (tono cálido, poco verde)
-    inset = pad + SS * 9
-    if hover:
-        stone_top, stone_bottom = (120, 108, 86), (78, 68, 52)
+        glow = Image.new("RGBA", size, (0, 0, 0, 0))
+        ImageDraw.Draw(glow).polygon(outer, fill=(255, 196, 80, 190))
+        img = Image.alpha_composite(img, glow.filter(ImageFilter.GaussianBlur(U * 0.9)))
+
+    # 1) Contorno oscuro
+    ImageDraw.Draw(img).polygon(outer, fill=(10, 8, 6, 255))
+    # 2) Filete dorado metálico exterior
+    paste_masked(img, gradient(size, GOLD_HOT if hover else GOLD), mask_of(size, inset_poly(W, H, m + U * 0.35, TIP)))
+    # 3) Línea oscura de separación
+    ImageDraw.Draw(img).polygon(inset_poly(W, H, m + U * 1.25, TIP), fill=(26, 18, 8, 255))
+    # 4) Relleno
+    fill_poly = inset_poly(W, H, m + U * 1.55, TIP)
+    fill_mask = mask_of(size, fill_poly)
+    if primary:
+        fill = gradient(size, GOLD_FILL_HOT if hover else GOLD_FILL)
     else:
-        stone_top, stone_bottom = (100, 90, 72), (62, 54, 41)
-    if primary:
-        stone_top, stone_bottom = (tuple(min(255, c + 10) for c in stone_top), stone_bottom)
-    stone = vertical_gradient(W, H, stone_top, stone_bottom)
-    stone = Image.alpha_composite(stone, stone_texture(W, H, seed, True))
-    smask = Image.new("L", (W, H), 0)
-    rounded(ImageDraw.Draw(smask), [inset, inset, W - inset, H - inset], r_out - SS * 9, 255)
-    img.paste(stone, (0, 0), smask)
+        fill = gradient(size, NAVY_HOT if hover else NAVY)
+    paste_masked(img, fill, fill_mask)
+    # Brillo superior (vidrio) recortado al relleno
+    gloss = Image.new("RGBA", size, (0, 0, 0, 0))
+    top_poly = inset_poly(W, H, m + U * 1.55, TIP)
+    ImageDraw.Draw(gloss).rectangle([0, 0, W, H * 0.48], fill=(255, 255, 255, 34 if not primary else 60))
+    gloss_mask = ImageChops.multiply(mask_of(size, top_poly), gloss.split()[3])
+    gloss.putalpha(gloss_mask)
+    img = Image.alpha_composite(img, gloss.filter(ImageFilter.GaussianBlur(U * 0.15)))
+    # 5) Filete dorado interior fino (doble marco)
     d = ImageDraw.Draw(img)
-    # Filo interior: luz arriba, sombra abajo
-    d.rounded_rectangle([inset, inset, W - inset, H - inset], radius=r_out - SS * 9, outline=(30, 22, 12, 255), width=SS * 2)
-    d.line([(inset + r_out, inset + SS * 3), (W - inset - r_out, inset + SS * 3)], fill=(255, 240, 200, 60), width=SS * 2)
-    # Línea grabada dorada fina a lo largo
-    if primary:
-        y1, y2 = inset + SS * 8, H - inset - SS * 8
-        for y in (y1, y2):
-            d.line([(inset + r_out * 1.6, y), (W - inset - r_out * 1.6, y)], fill=(214, 168, 72, 150), width=SS * 2)
-    # Medallones con gema en los extremos
-    gem = ((150, 82, 8), (232, 150, 30), (255, 214, 110)) if primary else ((18, 52, 140), (52, 104, 214), (130, 176, 255))
-    mr = int((H - 2 * pad) * 0.30)
-    medallion(img, pad + r_out, H // 2, mr, gem, hover)
-    medallion(img, W - pad - r_out, H // 2, mr, gem, hover)
-    # Ramitas discretas en las esquinas superiores
-    rng = random.Random(seed + state)
-    d = ImageDraw.Draw(img)
-    s = SS * 1.1
-    sprig(d, pad + r_out + mr, pad + SS * 2, 1, rng, s)
-    sprig(d, W - pad - r_out - mr, pad + SS * 2, -1, rng, s)
+    inner = inset_poly(W, H, m + U * 2.6, TIP)
+    line_color = (120, 76, 16, 220) if primary else ((255, 214, 120, 230) if hover else (212, 166, 74, 200))
+    d.line(inner + [inner[0]], fill=line_color, width=max(1, int(U * 0.28)), joint="curve")
+
+    # 6) Adornos: rombo dorado en cada punta interior con una línea fina hacia el centro que se desvanece
+    cy = H / 2
+    tip_px = (H - 2 * (m + U * 2.6)) / 2 * TIP
+    for side in (-1, 1):
+        cx = (m + U * 2.6 + tip_px + U * 1.6) if side < 0 else (W - m - U * 2.6 - tip_px - U * 1.6)
+        orn = (120, 76, 16, 255) if primary else ((255, 224, 140, 255) if hover else (226, 180, 86, 255))
+        line = Image.new("RGBA", size, (0, 0, 0, 0))
+        ld = ImageDraw.Draw(line)
+        length = U * (14 if w_gui >= 150 else 5)
+        steps = 24
+        for i in range(steps):
+            a = int(orn[3] * (1 - i / steps) * 0.85)
+            x_a = cx - side * (U * 1.2 + length * i / steps)
+            x_b = cx - side * (U * 1.2 + length * (i + 1) / steps)
+            ld.line([(x_a, cy), (x_b, cy)], fill=orn[:3] + (a,), width=max(1, int(U * 0.22)))
+        img = Image.alpha_composite(img, line)
+        d = ImageDraw.Draw(img)
+        diamond(d, cx, cy, U * 1.05, orn, (40, 26, 8, 255))
+        diamond(d, cx, cy, U * 0.45, (255, 246, 210, 255) if not primary else (255, 236, 170, 255), None)
+
     if disabled:
-        gray = img.convert("LA").convert("RGBA")
-        r, g, b, a = gray.split()
-        dim = Image.eval(r, lambda v: int(v * 0.6))
-        img = Image.merge("RGBA", (dim, dim, dim, img.split()[3]))
+        r, g, b, a = img.split()
+        lum = Image.merge("RGB", (r, g, b)).convert("L").point(lambda v: int(v * 0.55))
+        img = Image.merge("RGBA", (lum, lum, lum, a))
     return img.resize((W // SS, H // SS), Image.LANCZOS)
 
 
-def make(name, w_gui, primary, seed):
-    states = [make_state(w_gui, primary, i, seed) for i in range(3)]
+def make(name, w_gui, primary):
+    states = [make_state(w_gui, primary, i) for i in range(3)]
     w, h = states[0].size
     sheet = Image.new("RGBA", (w, h * 3), (0, 0, 0, 0))
     for i, st in enumerate(states):
@@ -171,6 +152,6 @@ def make(name, w_gui, primary, seed):
     print(name, sheet.size)
 
 
-make("button_primary.png", 200, True, 11)
-make("button_wide.png", 200, False, 7)
-make("button_half.png", 98, False, 23)
+make("button_primary.png", 200, True)
+make("button_wide.png", 200, False)
+make("button_half.png", 98, False)

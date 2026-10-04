@@ -16,6 +16,10 @@ public abstract class MinecraftMixin {
     /** Toda pantalla de carga (la de Mojang o la de Forge) se muestra con el diseño de TF. */
     @ModifyVariable(method = "setOverlay", at = @At("HEAD"), argsOnly = true)
     private Overlay tfclient$wrapLoadingOverlay(Overlay overlay) {
+        if (overlay == null && ((Minecraft) (Object) this).getOverlay() instanceof TFLoadingOverlay current
+                && current.holdAfterDelegate()) {
+            return current; // la pantalla de TF se queda hasta terminar su fundido
+        }
         if (overlay instanceof LoadingOverlay loading && !(overlay instanceof TFLoadingOverlay)) {
             try {
                 return new TFLoadingOverlay(loading);
