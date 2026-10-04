@@ -25,6 +25,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar
         run: chmod +x gradlew && ./gradlew build --no-daemon --stacktrace
+      # Un método de un mixin que recibe la propia clase del mixin (p. ej. por `this::metodo`) hace que Forge
+      # intente cargar esa clase y el juego crashee al arrancar ("... is invalid"). Se para la compilación.
+      - name: Revisar mixins
+        run: |
+          rm -rf /tmp/chk && mkdir -p /tmp/chk && cd /tmp/chk
+          unzip -q -o "$(ls $GITHUB_WORKSPACE/tf-client/build/libs/*.jar | head -n1)" 'net/tierrasfantasticas/tfclient/mixin/*'
+          bad=$(for c in net/tierrasfantasticas/tfclient/mixin/*.class; do javap -p "$c" | grep -E "\(.*net\.tierrasfantasticas\.tfclient\.mixin\." || true; done)
+          if [ -n "$bad" ]; then echo "::error::Mixin con referencia a su propia clase:"; echo "$bad"; exit 1; fi
+          echo "Mixins correctos"
       - uses: actions/upload-artifact@v4
         with:
           name: tfclient-jar

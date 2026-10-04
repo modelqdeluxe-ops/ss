@@ -20,7 +20,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.1.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.2.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 

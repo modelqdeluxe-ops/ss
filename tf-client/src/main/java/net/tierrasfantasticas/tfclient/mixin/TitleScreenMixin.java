@@ -2,6 +2,7 @@ package net.tierrasfantasticas.tfclient.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LogoRenderer;
@@ -104,10 +105,14 @@ public abstract class TitleScreenMixin extends Screen {
         int x = this.width / 2 - 100;
         int top = singleplayer.getY();
         this.tfclient$buttonsTop = top;
-        remove.forEach(this::removeWidget);
+        // Bucles normales y sin referencias a métodos: en un mixin, `this::metodo` genera un método auxiliar que
+        // nombra la clase del mixin y Forge no deja cargarla (crash "TitleScreenMixin is invalid").
+        for (Button button : remove) {
+            this.removeWidget(button);
+        }
 
         Button server = Button.builder(Component.literal(TFConfig.serverName().toUpperCase(java.util.Locale.ROOT)),
-                b -> TFServer.join(this)).bounds(x, top, 200, 20).build();
+                b -> TFServer.join(Minecraft.getInstance().screen)).bounds(x, top, 200, 20).build();
         this.addRenderableWidget(server);
 
         singleplayer.setMessage(Component.literal("Mundo local"));
