@@ -1,7 +1,7 @@
 """Genera las texturas del efecto del emblema TF en el menú (como en la web):
 
 - logo_glow.png: halo difuminado dorado (arriba) y azul zafiro (abajo) que late detrás del emblema.
-- logo_shine.png: hoja de fotogramas (5x4) del destello diagonal que cruza el emblema, recortado a su silueta.
+- logo_shine.png: hoja de fotogramas (8x5) del destello diagonal que cruza el emblema, recortado a su silueta.
 - sparkle.png: chispa de cuatro puntas que brilla en la gema de la corona.
 Uso: python3 tools/gen_logo_fx.py
 """
@@ -34,7 +34,7 @@ glow.save(os.path.join(GUI, "logo_glow.png"), optimize=True)
 print("logo_glow.png", glow.size, "margen", pad)
 
 # --- Destello: banda diagonal (110 grados, como en la web) recortada a la silueta ---
-COLS, ROWS = 5, 4
+COLS, ROWS = 8, 5
 FRAMES = COLS * ROWS
 fw, fh = W // 2, H // 2
 mask = alpha.resize((fw, fh), Image.LANCZOS)

@@ -42,6 +42,9 @@ public abstract class TitleScreenMixin extends Screen {
     private SplashRenderer splash;
 
     @Unique
+    private static final int BUTTON_SHIFT = 12;
+
+    @Unique
     private int tfclient$buttonsTop = -1;
 
     protected TitleScreenMixin(Component title) {
@@ -69,8 +72,8 @@ public abstract class TitleScreenMixin extends Screen {
             target = "Lnet/minecraft/client/gui/components/LogoRenderer;renderLogo(Lnet/minecraft/client/gui/GuiGraphics;IF)V"))
     private void tfclient$drawLogo(LogoRenderer logoRenderer, GuiGraphics g, int screenWidth, float alpha) {
         int buttonsTop = this.tfclient$buttonsTop > 0 ? this.tfclient$buttonsTop : this.height / 4 + 48;
-        int top = 8;
-        int logoHeight = Math.min(150, buttonsTop - top - 10); // margen para que flote sin tocar los botones
+        int top = 4;
+        int logoHeight = Math.min(170, buttonsTop - top - 8); // margen para que flote sin tocar los botones
         try {
             if (logoHeight > 16) TFLogoRenderer.render(g, screenWidth / 2, top, logoHeight, alpha);
         } catch (Throwable t) {
@@ -124,8 +127,10 @@ public abstract class TitleScreenMixin extends Screen {
         }
         if (singleplayer == null) return; // modo demo: se deja el menú normal
 
+        // Botones un poco más abajo para dejar sitio a un emblema más grande
+        int shift = Math.max(0, Math.min(BUTTON_SHIFT, this.height - (singleplayer.getY() + 108)));
         int x = this.width / 2 - 100;
-        int top = singleplayer.getY();
+        int top = singleplayer.getY() + shift;
         this.tfclient$buttonsTop = top;
         for (GuiEventListener child : remove) {
             this.removeWidget(child);
@@ -134,8 +139,8 @@ public abstract class TitleScreenMixin extends Screen {
         this.addRenderableWidget(TFMenuButton.server(x, top, 200));
         this.tfclient$swap(singleplayer, x, top + 24, 200, "Mundo local");
         if (mods != null) this.tfclient$swap(mods, x, top + 48, 200, "Mods");
-        if (options != null) this.tfclient$swap(options, options.getX(), options.getY(), options.getWidth(), "Opciones");
-        if (quit != null) this.tfclient$swap(quit, quit.getX(), quit.getY(), quit.getWidth(), "Salir");
+        if (options != null) this.tfclient$swap(options, options.getX(), options.getY() + shift, options.getWidth(), "Opciones");
+        if (quit != null) this.tfclient$swap(quit, quit.getX(), quit.getY() + shift, quit.getWidth(), "Salir");
     }
 
     @Unique

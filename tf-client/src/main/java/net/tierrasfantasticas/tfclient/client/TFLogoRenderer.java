@@ -8,16 +8,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.Mth;
 
 /**
- * Emblema TF del menú, animado como en la web: flota subiendo y bajando con un leve balanceo, tiene un halo dorado y
- * azul que late detrás, y cada pocos segundos lo cruza un destello de luz y brilla la gema de la corona.
+ * Emblema TF del menú, animado como en la web: flota subiendo y bajando (solo en vertical), tiene un halo dorado y
+ * azul que late detrás, y cada pocos segundos lo cruza despacio un destello de luz y brilla la gema de la corona.
  * Las texturas del efecto las genera tools/gen_logo_fx.py.
  */
 public final class TFLogoRenderer {
     private static final long FLOAT_MS = 6000L;      // un vaivén completo
-    private static final long SHINE_CYCLE_MS = 5000L; // cada cuánto pasa el destello
-    private static final long SHINE_MS = 1300L;       // lo que tarda en cruzar
-    private static final int SHINE_COLS = 5;
-    private static final int SHINE_ROWS = 4;
+    private static final long SHINE_CYCLE_MS = 7000L; // cada cuánto pasa el destello
+    private static final long SHINE_MS = 3300L;       // lo que tarda en cruzar
+    private static final int SHINE_COLS = 8;
+    private static final int SHINE_ROWS = 5;
     private static final float GLOW_PAD = 0.25f;      // margen del halo (ver gen_logo_fx.py)
     private static final float GEM_X = 0.499f;        // posición de la gema de la corona en el emblema
     private static final float GEM_Y = 0.303f;
@@ -33,13 +33,11 @@ public final class TFLogoRenderer {
 
         double phase = (now % FLOAT_MS) / (double) FLOAT_MS * Math.PI * 2;
         float bob = (float) Math.sin(phase) * Math.max(2f, h * 0.035f);
-        float tilt = (float) Math.sin(phase) * 1.0f;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         g.pose().pushPose();
         g.pose().translate(cx, top + h / 2f + bob, 0f);
-        g.pose().mulPose(Axis.ZP.rotationDegrees(tilt));
 
         // Halo detrás, latiendo despacio
         if (TFTextures.LOGO_GLOW.ready()) {
@@ -57,18 +55,24 @@ public final class TFLogoRenderer {
         // Destello que cruza el emblema (suma de luz)
         if (cycle < SHINE_MS && TFTextures.LOGO_SHINE.ready()) {
             int frames = SHINE_COLS * SHINE_ROWS;
-            int frame = Mth.clamp((int) (cycle / (float) SHINE_MS * frames), 0, frames - 1);
+            // Posición continua entre fotogramas: se funden los dos vecinos para que el destello avance suave
+            float position = cycle / (float) SHINE_MS * (frames - 1);
+            int frame = Mth.clamp((int) position, 0, frames - 1);
+            int next = Math.min(frame + 1, frames - 1);
+            float blend = position - frame;
             int fw = TFTextures.LOGO_SHINE.width() / SHINE_COLS;
             int fh = TFTextures.LOGO_SHINE.height() / SHINE_ROWS;
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
             blit(g, TFTextures.LOGO_SHINE, -w / 2f, -h / 2f, w, h, (frame % SHINE_COLS) * fw, (frame / SHINE_COLS) * fh,
-                    fw, fh, alpha * 0.9f);
+                    fw, fh, alpha * 0.9f * (1f - blend));
+            blit(g, TFTextures.LOGO_SHINE, -w / 2f, -h / 2f, w, h, (next % SHINE_COLS) * fw, (next / SHINE_COLS) * fh,
+                    fw, fh, alpha * 0.9f * blend);
             RenderSystem.defaultBlendFunc();
         }
 
         // Chispa en la gema justo cuando el destello pasa por el centro
-        long sparkStart = SHINE_MS / 2;
-        long sparkLength = 900L;
+        long sparkStart = SHINE_MS / 2 - 200L;
+        long sparkLength = 1400L;
         if (cycle >= sparkStart && cycle < sparkStart + sparkLength && TFTextures.SPARKLE.ready()) {
             float t = (cycle - sparkStart) / (float) sparkLength;
             float strength = (float) Math.sin(t * Math.PI);
