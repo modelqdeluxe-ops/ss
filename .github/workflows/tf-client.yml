@@ -11,6 +11,8 @@ jobs:
   build:
     name: Compilar el mod
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: tf-client
@@ -27,4 +29,14 @@ jobs:
         with:
           name: tfclient-jar
           path: tf-client/build/libs/*.jar
-
+      # Copia del .jar en una referencia oculta del repo (no es una rama) para poder bajarlo con git.
+      - name: Publicar el .jar en refs/tf-client/jar
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          mkdir -p /tmp/tfjar && cp build/libs/*.jar /tmp/tfjar/
+          cd /tmp/tfjar
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898281+github-actions[bot]@users.noreply.github.com"
+          git add . && git commit -q -m "TF Client ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/tf-client/jar
