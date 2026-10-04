@@ -1,0 +1,19 @@
+name: Ping del servidor
+
+on:
+  push:
+    paths:
+      - '.github/workflows/server-ping.yml'
+      - '.github/scripts/server_ping.py'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Estado de 216.163.187.40:19001
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conexión TCP
+        run: timeout 10 bash -c '</dev/tcp/216.163.187.40/19001' && echo "Puerto 19001 abierto" || echo "Puerto 19001 NO responde"
+      - name: Ping de Minecraft
+        run: python3 .github/scripts/server_ping.py 216.163.187.40 19001 || true
