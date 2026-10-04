@@ -6,7 +6,8 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
   progreso de Minecraft. Sustituye a la pantalla de Mojang/Forge, al abrir el juego y al recargar recursos (F3+T).
   Se queda opaca hasta que la original termina y después se funde sola sobre el menú, así nunca asoma el rótulo rojo.
 - **Menú principal de TF**, como en TierrasMon: el paisaje de TF de fondo (sin letras), el emblema TF encima de los
-  botones y botones propios con la fuente Cinzel: placa con las puntas en ángulo, azul noche (como el zafiro de la
+  botones (animado como en la web: flota con un leve balanceo, tiene un halo dorado y azul que late, y cada 5 segundos
+  lo cruza un destello y brilla la gema de la corona), y botones propios con la fuente Cinzel: placa con las puntas en ángulo, azul noche (como el zafiro de la
   corona del logo) con doble filete dorado y rombos en los extremos; el botón del servidor, en oro con letras oscuras:
   - **TIERRAS FANTÁSTICAS**: antes de conectar pregunta al servidor qué mods usa. Si te falta alguno, enseña la lista
     (con *Volver* o *Entrar igual*); si no falta nada, conecta directamente y acepta su paquete de recursos.
@@ -22,7 +23,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.4.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.5.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 
@@ -42,6 +43,8 @@ server.address=216.163.187.40\:19001
 - Fondo del menú: `src/main/resources/assets/tfclient/textures/gui/menu_background.png` (16:9).
 - Emblema: `src/main/resources/assets/tfclient/textures/gui/logo.png` (PNG con transparencia).
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
+- Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png` y `sparkle.png` a partir de
+  `logo.png` (vuelve a ejecutarlo si cambias el emblema).
 - Botones: `tools/gen_buttons.py` genera `button_primary.png`, `button_wide.png` y `button_half.png` (3 estados
   apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
 - Fuente: `src/main/resources/assets/tfclient/font/cinzel.ttf` (Cinzel, licencia SIL Open Font License, incluida en

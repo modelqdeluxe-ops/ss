@@ -21,15 +21,24 @@ public enum TFTextures {
     MENU("menu_background.png"),
     /** Emblema TF que va encima de los botones. */
     LOGO("logo.png"),
-    /** Botones del menú (pixel art; 3 estados apilados: normal, ratón encima, desactivado). */
-    BUTTON_PRIMARY("button_primary.png", true),
-    BUTTON_WIDE("button_wide.png", true),
-    BUTTON_HALF("button_half.png", true);
+    /** Halo que late detrás del emblema. */
+    LOGO_GLOW("logo_glow.png"),
+    /** Fotogramas (5x4) del destello que cruza el emblema; sin mipmaps para no mezclar fotogramas vecinos. */
+    LOGO_SHINE("logo_shine.png", Mode.NO_MIPMAPS),
+    /** Chispa de la gema de la corona. */
+    SPARKLE("sparkle.png"),
+    /** Botones del menú (3 estados apilados: normal, ratón encima, desactivado). */
+    BUTTON_PRIMARY("button_primary.png"),
+    BUTTON_WIDE("button_wide.png"),
+    BUTTON_HALF("button_half.png");
+
+    /** Cómo se sube la imagen: suavizada con mipmaps, suavizada sin mipmaps, o pixel art sin suavizar. */
+    public enum Mode { MIPMAPS, NO_MIPMAPS, PIXEL_ART }
 
     private static final int MIP_LEVELS = 4;
 
     private final String file;
-    private final boolean pixelArt;
+    private final Mode mode;
     private final ResourceLocation id;
     private int width = 1;
     private int height = 1;
@@ -37,12 +46,12 @@ public enum TFTextures {
     private boolean failed;
 
     TFTextures(String file) {
-        this(file, false);
+        this(file, Mode.MIPMAPS);
     }
 
-    TFTextures(String file, boolean pixelArt) {
+    TFTextures(String file, Mode mode) {
         this.file = file;
-        this.pixelArt = pixelArt;
+        this.mode = mode;
         this.id = new ResourceLocation(TFClient.MOD_ID, "dynamic/" + name().toLowerCase(java.util.Locale.ROOT));
     }
 
@@ -68,10 +77,10 @@ public enum TFTextures {
             height = image.getHeight();
             StaticTexture texture = new StaticTexture();
             Minecraft.getInstance().getTextureManager().register(id, texture);
-            if (pixelArt) {
-                // Pixel art: sin suavizado para que los píxeles queden nítidos.
+            if (mode != Mode.MIPMAPS) {
+                // Pixel art: sin suavizado para que los píxeles queden nítidos. Sin mipmaps: suavizado de un solo nivel.
                 TextureUtil.prepareImage(texture.getId(), 0, width, height);
-                image.upload(0, 0, 0, 0, 0, width, height, false, true, false, true);
+                image.upload(0, 0, 0, 0, 0, width, height, mode == Mode.NO_MIPMAPS, true, false, true);
             } else {
                 // Con mipmaps la imagen se ve nítida también cuando se dibuja más pequeña que su tamaño real.
                 NativeImage[] levels = MipmapGenerator.generateMipLevels(new NativeImage[] {image}, MIP_LEVELS);

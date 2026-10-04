@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.client.TFDraw;
+import net.tierrasfantasticas.tfclient.client.TFLogoRenderer;
 import net.tierrasfantasticas.tfclient.client.TFMenuButton;
 import net.tierrasfantasticas.tfclient.client.TFTextures;
 import org.spongepowered.asm.mixin.Mixin;
@@ -68,10 +69,10 @@ public abstract class TitleScreenMixin extends Screen {
             target = "Lnet/minecraft/client/gui/components/LogoRenderer;renderLogo(Lnet/minecraft/client/gui/GuiGraphics;IF)V"))
     private void tfclient$drawLogo(LogoRenderer logoRenderer, GuiGraphics g, int screenWidth, float alpha) {
         int buttonsTop = this.tfclient$buttonsTop > 0 ? this.tfclient$buttonsTop : this.height / 4 + 48;
-        int top = 6;
-        int logoHeight = Math.min(150, buttonsTop - top - 8);
+        int top = 8;
+        int logoHeight = Math.min(150, buttonsTop - top - 10); // margen para que flote sin tocar los botones
         try {
-            if (logoHeight > 16) TFDraw.image(g, TFTextures.LOGO, screenWidth / 2, top, logoHeight, alpha);
+            if (logoHeight > 16) TFLogoRenderer.render(g, screenWidth / 2, top, logoHeight, alpha);
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Client: error al dibujar el emblema", t);
         }
