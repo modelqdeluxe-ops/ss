@@ -11,6 +11,9 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
   - **Mundo local**: abre la lista de mundos para crear o jugar uno en local (si no hay ninguno, abre directamente
     la creación de mundo).
   - **Opciones** y **Salir del juego**.
+- **Música de TF** en la pantalla de carga y el menú: empieza en cuanto arranca el juego, suena en bucle con fundidos
+  y respeta los volúmenes *General* y *Música* de las opciones. Se apaga con un fundido al entrar a un mundo o al
+  servidor (ahí vuelve la música normal de Minecraft) y vuelve a sonar al regresar al menú.
 - Fuera de una partida, el resto de menús (opciones, mundos, conexión) usan el banner oscurecido en vez del fondo de tierra.
 
 No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta instalarlo en el servidor.
@@ -36,6 +39,8 @@ server.address=216.163.187.40\:19001
 - Fondo: `src/main/resources/assets/tfclient/textures/gui/background.png` (16:9; se recorta para cubrir la pantalla).
 - Emblema: `src/main/resources/assets/tfclient/textures/gui/logo.png` (PNG con transparencia).
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
+- Música: `src/main/resources/assets/tfclient/music/menu.ogg` (OGG Vorbis; para convertir un MP3:
+  `ffmpeg -i musica.mp3 -vn -ac 2 -ar 44100 -c:a libvorbis -q:a 4 menu.ogg`).
 
 ## Compilar
 

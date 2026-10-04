@@ -16,6 +16,8 @@ public final class TFClient {
     public TFClient() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             TFConfig.load();
+            // La música empieza ya, durante la pantalla de carga
+            net.tierrasfantasticas.tfclient.client.TFMusic.play();
         }
     }
 }

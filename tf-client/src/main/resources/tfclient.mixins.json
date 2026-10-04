@@ -6,7 +6,8 @@
   "refmap": "tfclient.refmap.json",
   "client": [
     "LoadingOverlayAccessor",
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "MusicManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

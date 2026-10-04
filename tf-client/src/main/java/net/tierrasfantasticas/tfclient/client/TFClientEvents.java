@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
@@ -31,5 +32,13 @@ public final class TFClientEvents {
         if (mc.level != null || screen instanceof TFTitleScreen) return;
         GuiGraphics g = event.getGuiGraphics();
         TFDraw.background(g, screen.width, screen.height, 1f, Util.getMillis(), -1, -1, 0.62f);
+    }
+
+    /** La música de TF suena fuera de partida (carga, menús, conexión) y se apaga al entrar a un mundo. */
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (Minecraft.getInstance().level == null) TFMusic.play();
+        else TFMusic.stop();
     }
 }
