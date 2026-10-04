@@ -77,7 +77,7 @@
 
     <section id="tienda" class="section">
       <h2>Tienda oficial</h2>
-      <p class="section-sub">Tus compras se entregan automáticamente en el juego en cuanto se confirma el pago. Pago seguro con tarjeta a través de Stripe.</p>
+      <p class="section-sub">Tus compras se entregan automáticamente en el juego en cuanto se confirma el pago. Pago seguro con PayPal o con tarjeta.</p>
 
       <div class="notice" id="payments-off" hidden>
         La tienda está en mantenimiento: los pagos no están disponibles en este momento.
@@ -108,11 +108,11 @@
         </details>
         <details>
           <summary>¿Qué métodos de pago aceptan?</summary>
-          <p>Tarjetas de crédito y débito (Visa, Mastercard, American Express) y, según tu país, Google Pay o Apple Pay. El pago se procesa en Stripe; nunca vemos los datos de tu tarjeta.</p>
+          <p>PayPal (con tu saldo o las tarjetas guardadas en tu cuenta) y tarjetas de crédito o débito sin necesidad de cuenta PayPal. El pago se procesa en PayPal; nunca vemos tus datos bancarios.</p>
         </details>
         <details>
           <summary>No he recibido mi compra, ¿qué hago?</summary>
-          <p>Escríbenos por Discord con el correo del recibo y tu nombre de usuario y lo solucionaremos.</p>
+          <p>Escríbenos por Discord con el número de pedido (aparece al terminar la compra y en el recibo de PayPal) y tu nombre de usuario, y lo solucionaremos.</p>
         </details>
       </div>
     </section>
@@ -139,8 +139,9 @@
       <div class="dialog-total">Total: <strong id="dialog-total"></strong></div>
       <p class="error" id="checkout-error" role="alert"></p>
 
-      <button type="submit" class="btn btn-primary btn-block" id="pay-btn">Pagar de forma segura</button>
-      <p class="muted small">Serás redirigido a Stripe para completar el pago.</p>
+      <div id="paypal-buttons" class="paypal-buttons"></div>
+      <p class="processing" id="processing" hidden>Procesando tu pago…</p>
+      <p class="muted small">Pago seguro con PayPal. Puedes pagar con tu cuenta o con tarjeta.</p>
     </form>
   </dialog>
 

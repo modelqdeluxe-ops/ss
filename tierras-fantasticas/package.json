@@ -1,7 +1,7 @@
 {
   "name": "tierras-fantasticas",
   "version": "1.0.0",
-  "description": "Web y tienda del servidor Tierras Fantásticas con pasarela de pago Stripe y entrega automática por RCON",
+  "description": "Web y tienda del servidor Tierras Fantásticas con pasarela de pago PayPal y entrega automática por RCON",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -16,7 +16,6 @@
   "private": true,
   "dependencies": {
     "dotenv": "^18.0.5",
-    "express": "^5.2.1",
-    "stripe": "^23.0.0"
+    "express": "^5.2.1"
   }
 }

@@ -125,7 +125,10 @@
     $('#checkout-error').textContent = '';
     $('#username').value = localStorageGet('tf-username');
     updateTotal();
+    $('#processing').hidden = true;
+    $('#paypal-buttons').classList.remove('disabled');
     dialog.showModal();
+    renderPayPalButtons();
   });
 
   qtyInput.addEventListener('input', updateTotal);
@@ -133,38 +136,128 @@
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) dialog.close();
   });
+  // Enter en un campo no debe cerrar la ventana.
+  $('#checkout-form').addEventListener('submit', (e) => e.preventDefault());
 
-  $('#checkout-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = $('#username').value.trim();
-    const quantity = Number.parseInt(qtyInput.value, 10) || 1;
-    const error = $('#checkout-error');
-    const btn = $('#pay-btn');
+  // --- PayPal ---
+  const showError = (msg) => ($('#checkout-error').textContent = msg);
 
+  function readForm() {
+    return {
+      username: $('#username').value.trim(),
+      quantity: Number.parseInt(qtyInput.value, 10) || 1,
+    };
+  }
+
+  function validateForm() {
+    const { username, quantity } = readForm();
     if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) {
-      error.textContent = 'Introduce un nombre de Minecraft válido (3-16 letras, números o _).';
+      showError('Introduce un nombre de Minecraft válido (3-16 letras, números o _).');
+      return false;
+    }
+    const max = selected.maxQuantity || 10;
+    if (quantity < 1 || quantity > max) {
+      showError(`La cantidad debe estar entre 1 y ${max}.`);
+      return false;
+    }
+    showError('');
+    return true;
+  }
+
+  let paypalReady = null;
+  function loadPayPalSdk() {
+    if (!paypalReady) {
+      paypalReady = new Promise((resolve, reject) => {
+        const params = new URLSearchParams({
+          'client-id': config.paypalClientId,
+          currency: config.currency,
+          intent: 'capture',
+          components: 'buttons',
+        });
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?${params}`;
+        script.onload = () => resolve(window.paypal);
+        script.onerror = () => {
+          paypalReady = null;
+          reject(new Error('No se pudo cargar PayPal. Revisa tu conexión o desactiva el bloqueador de anuncios.'));
+        };
+        document.head.appendChild(script);
+      });
+    }
+    return paypalReady;
+  }
+
+  let buttonsRendered = false;
+  async function renderPayPalButtons() {
+    if (buttonsRendered) return;
+    let paypal;
+    try {
+      paypal = await loadPayPalSdk();
+    } catch (err) {
+      showError(err.message);
       return;
     }
+    buttonsRendered = true;
 
-    btn.disabled = true;
-    btn.textContent = 'Redirigiendo a la pasarela…';
-    error.textContent = '';
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: selected.id, username, quantity }),
+    paypal
+      .Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay', height: 45 },
+
+        onClick: (data, actions) => (validateForm() ? actions.resolve() : actions.reject()),
+
+        // El servidor crea el pedido con el precio del catálogo.
+        createOrder: async () => {
+          const { username, quantity } = readForm();
+          const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: selected.id, username, quantity }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.id) {
+            showError(data.error || 'No se pudo iniciar el pago.');
+            throw new Error(data.error);
+          }
+          localStorageSet('tf-username', username);
+          return data.id;
+        },
+
+        // El comprador aprobó: el servidor cobra y entrega la compra.
+        onApprove: async (data, actions) => {
+          $('#processing').hidden = false;
+          $('#paypal-buttons').classList.add('disabled');
+          const res = await fetch(`/api/orders/${encodeURIComponent(data.orderID)}/capture`, { method: 'POST' });
+          const result = await res.json().catch(() => ({}));
+
+          if (result.retry) {
+            // Tarjeta rechazada: PayPal deja elegir otro método de pago.
+            $('#processing').hidden = true;
+            $('#paypal-buttons').classList.remove('disabled');
+            return actions.restart();
+          }
+          if (!res.ok) {
+            $('#processing').hidden = true;
+            $('#paypal-buttons').classList.remove('disabled');
+            showError(result.error || 'No se pudo completar el pago.');
+            return;
+          }
+          window.location.href = `/success.html?order=${encodeURIComponent(data.orderID)}`;
+        },
+
+        onCancel: () => showError('Pago cancelado. No se ha realizado ningún cargo.'),
+
+        onError: (err) => {
+          console.error(err);
+          if (!$('#checkout-error').textContent) showError('Hubo un problema con PayPal. Inténtalo de nuevo.');
+        },
+      })
+      .render('#paypal-buttons')
+      .catch((err) => {
+        buttonsRendered = false;
+        console.error(err);
+        showError('No se pudieron mostrar los botones de PayPal.');
       });
-      const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || 'No se pudo iniciar el pago.');
-      localStorageSet('tf-username', username);
-      window.location.href = data.url;
-    } catch (err) {
-      error.textContent = err.message;
-      btn.disabled = false;
-      btn.textContent = 'Pagar de forma segura';
-    }
-  });
+  }
 
   function localStorageGet(key) {
     try {

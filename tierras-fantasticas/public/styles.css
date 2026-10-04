@@ -182,6 +182,9 @@ h1, h2, h3 { font-family: 'Cinzel', serif; line-height: 1.2; }
 .dialog input:focus { outline: 2px solid var(--purple); border-color: transparent; }
 .dialog-total { margin: 12px 0 4px; font-size: 1.1rem; text-align: center; }
 .dialog-total strong { color: var(--gold); }
+.paypal-buttons { min-height: 50px; margin-top: 4px; }
+.paypal-buttons.disabled { opacity: 0.5; pointer-events: none; }
+.processing { text-align: center; color: var(--gold); margin: 0; font-weight: 700; }
 .error { color: var(--red); min-height: 1.2em; margin: 0; font-size: 0.9rem; text-align: center; }
 
 /* Página de resultado */

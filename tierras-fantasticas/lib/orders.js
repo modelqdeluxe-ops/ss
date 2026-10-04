@@ -35,13 +35,19 @@ async function upsert(id, fields) {
   return orders[id];
 }
 
+// Estados en los que el pedido ya se pagó y se intentó entregar.
+const CLAIMED = ['delivering', 'delivered', 'manual', 'delivery_failed'];
+
+function isClaimed(id) {
+  return CLAIMED.includes(orders[id]?.status);
+}
+
 // Marca el pedido como "en entrega" solo si nadie lo ha reclamado antes (idempotencia
-// frente a reintentos del webhook de Stripe).
+// frente a capturas repetidas y reintentos del webhook de PayPal).
 async function claimForDelivery(id, fields) {
-  const current = orders[id];
-  if (current && ['delivering', 'delivered'].includes(current.status)) return false;
+  if (isClaimed(id)) return false;
   await upsert(id, { ...fields, status: 'delivering' });
   return true;
 }
 
-module.exports = { get, upsert, claimForDelivery };
+module.exports = { get, upsert, claimForDelivery, isClaimed };
