@@ -86,14 +86,65 @@ function startFakePayPal() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
 }
 
+// --- API de Discord simulada ---
+const discordCalls = [];
+const announcements = [];
+let memberExists = true;
+let failRoles = false;
+
+function startFakeDiscord() {
+  const server = http.createServer(async (req, res) => {
+    let raw = '';
+    for await (const chunk of req) raw += chunk;
+    const send = (status, data) => {
+      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.end(data === undefined ? '' : JSON.stringify(data));
+    };
+    discordCalls.push({ method: req.method, url: req.url, auth: req.headers.authorization, body: raw });
+
+    if (req.url === '/oauth2/token') {
+      const form = new URLSearchParams(raw);
+      if (form.get('code') !== 'good-code') return send(400, { error: 'invalid_grant' });
+      return send(200, { access_token: 'user-token', expires_in: 604800 });
+    }
+    if (req.url === '/users/@me') return send(200, { id: '111111111111111111', username: 'alex', global_name: 'Alex', avatar: null });
+    if (req.url === '/webhook') {
+      announcements.push(JSON.parse(raw));
+      return send(204);
+    }
+    if (req.headers.authorization !== 'Bot bot-token') return send(401, { message: '401: Unauthorized' });
+    if (/^\/guilds\/\d+\/members\/\d+$/.test(req.url) && req.method === 'PUT') {
+      return memberExists ? send(204) : send(201, { user: {} });
+    }
+    if (/^\/guilds\/\d+\/members\/\d+\/roles\/\d+$/.test(req.url) && req.method === 'PUT') {
+      return failRoles ? send(403, { message: 'Missing Permissions' }) : send(204);
+    }
+    send(404, { message: 'Unknown' });
+  });
+  servers.push(server);
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
+}
+
+const ROLE_ID = '222222222222222222';
+
 before(async () => {
-  const [rconPort, paypalPort] = await Promise.all([startFakeRcon(), startFakePayPal()]);
+  const [rconPort, paypalPort, discordPort] = await Promise.all([startFakeRcon(), startFakePayPal(), startFakeDiscord()]);
+  // Rol de Discord real (formato snowflake) para el rango de pruebas.
+  require('../config/products.json').find((p) => p.id === 'rango-hechicero').discordRoles = [ROLE_ID];
   Object.assign(process.env, {
     PAYPAL_CLIENT_ID: 'client',
     PAYPAL_CLIENT_SECRET: 'secret',
     PAYPAL_WEBHOOK_ID: 'WH-1',
     PAYPAL_API_BASE: `http://127.0.0.1:${paypalPort}`,
     CURRENCY: 'USD',
+    PUBLIC_URL: 'http://tienda.test',
+    SESSION_SECRET: 'test-secret',
+    DISCORD_CLIENT_ID: 'discord-client',
+    DISCORD_CLIENT_SECRET: 'discord-secret',
+    DISCORD_BOT_TOKEN: 'bot-token',
+    DISCORD_GUILD_ID: '333333333333333333',
+    DISCORD_API_BASE: `http://127.0.0.1:${discordPort}`,
+    DISCORD_WEBHOOK_URL: `http://127.0.0.1:${discordPort}/webhook`,
     RCON_HOST: '127.0.0.1',
     RCON_PORT: String(rconPort),
     RCON_PASSWORD,
@@ -109,15 +160,15 @@ before(async () => {
 
 after(() => servers.forEach((s) => s.close()));
 
-const post = (url, body) =>
+const post = (url, body, cookie) =>
   fetch(`${baseUrl}${url}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
 
-async function createOrder(body) {
-  const res = await post('/api/orders', body);
+async function createOrder(body, cookie) {
+  const res = await post('/api/orders', body, cookie);
   assert.strictEqual(res.status, 200);
   return (await res.json()).id;
 }
@@ -240,4 +291,108 @@ test('pago pendiente se entrega cuando llega el webhook de PayPal', async () => 
 
 test('capturar un pedido que no creó la tienda devuelve 404', async () => {
   assert.strictEqual((await post('/api/orders/FAKEORDER123/capture')).status, 404);
+});
+
+// --- Discord ---
+const cookieValue = (res, name) =>
+  res.headers.getSetCookie().map((c) => c.split(';')[0]).find((c) => c.startsWith(`${name}=`));
+
+// Recorre el login de Discord y devuelve la cookie de sesión.
+async function loginDiscord() {
+  const start = await fetch(`${baseUrl}/auth/discord?return=${encodeURIComponent('/?buy=rango-hechicero')}`, { redirect: 'manual' });
+  assert.strictEqual(start.status, 302);
+  const authorize = new URL(start.headers.get('location'));
+  assert.strictEqual(authorize.origin, 'https://discord.com');
+  assert.strictEqual(authorize.searchParams.get('redirect_uri'), 'http://tienda.test/auth/discord/callback');
+  const state = authorize.searchParams.get('state');
+  const stateCookie = cookieValue(start, 'tf_oauth_state');
+
+  const cb = await fetch(`${baseUrl}/auth/discord/callback?code=good-code&state=${state}`, {
+    redirect: 'manual',
+    headers: { Cookie: stateCookie },
+  });
+  assert.strictEqual(cb.headers.get('location'), '/?buy=rango-hechicero&discord=ok');
+  return cookieValue(cb, 'tf_discord');
+}
+
+test('login de Discord rechaza un state falso y no permite redirigir fuera de la web', async () => {
+  const start = await fetch(`${baseUrl}/auth/discord?return=${encodeURIComponent('//evil.com')}`, { redirect: 'manual' });
+  const stateCookie = cookieValue(start, 'tf_oauth_state');
+  const cb = await fetch(`${baseUrl}/auth/discord/callback?code=good-code&state=falso`, {
+    redirect: 'manual',
+    headers: { Cookie: stateCookie },
+  });
+  assert.strictEqual(cb.headers.get('location'), '/?discord=error');
+  assert.strictEqual(cookieValue(cb, 'tf_discord'), undefined);
+
+  // Una cookie de sesión manipulada no sirve.
+  const me = await (await fetch(`${baseUrl}/api/me`, { headers: { Cookie: 'tf_discord=eyJpZCI6IjEifQ.firma' } })).json();
+  assert.strictEqual(me.discord, null);
+});
+
+test('comprar con Discord vinculado da el rol en Discord y anuncia la compra', async () => {
+  received.length = 0;
+  discordCalls.length = 0;
+  announcements.length = 0;
+  memberExists = true;
+
+  const cookie = await loginDiscord();
+  const me = await (await fetch(`${baseUrl}/api/me`, { headers: { Cookie: cookie } })).json();
+  assert.deepStrictEqual(me.discord, { id: '111111111111111111', username: 'Alex', avatar: null });
+
+  const products = await (await fetch(`${baseUrl}/api/products`)).json();
+  assert.strictEqual(products.find((p) => p.id === 'rango-hechicero').discordRole, true);
+  assert.ok(products.every((p) => !('discordRoles' in p)));
+
+  const id = await createOrder({ productId: 'rango-hechicero', username: 'Alex_MC' }, cookie);
+  const res = await post(`/api/orders/${id}/capture`);
+  assert.strictEqual((await res.json()).status, 'delivered');
+
+  // En el juego…
+  assert.strictEqual(received[0], 'lp user Alex_MC parent add hechicero');
+  // …y en Discord: ya era miembro (204), así que se le da el rol aparte.
+  const roleCall = discordCalls.find((c) => c.url.endsWith(`/roles/${ROLE_ID}`));
+  assert.ok(roleCall, 'debe dar el rol');
+  assert.strictEqual(roleCall.url, `/guilds/333333333333333333/members/111111111111111111/roles/${ROLE_ID}`);
+  assert.strictEqual(announcements.length, 1);
+  assert.match(announcements[0].embeds[0].description, /<@111111111111111111>.*Rango Hechicero/);
+
+  const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+  assert.deepStrictEqual(order.discord, { username: 'Alex', status: 'granted' });
+  // El token de Discord del comprador no se queda guardado.
+  const stored = JSON.parse(fs.readFileSync(process.env.ORDERS_FILE, 'utf8'))[id];
+  assert.ok(!JSON.stringify(stored).includes('user-token'));
+});
+
+test('si el comprador no está en el Discord, el bot lo añade con el rol', async () => {
+  discordCalls.length = 0;
+  memberExists = false;
+  try {
+    const cookie = await loginDiscord();
+    const id = await createOrder({ productId: 'rango-hechicero', username: 'Alex_MC' }, cookie);
+    await post(`/api/orders/${id}/capture`);
+    const join = discordCalls.find((c) => c.url === '/guilds/333333333333333333/members/111111111111111111');
+    assert.deepStrictEqual(JSON.parse(join.body), { access_token: 'user-token', roles: [ROLE_ID] });
+    assert.ok(!discordCalls.some((c) => c.url.includes('/roles/')));
+    const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+    assert.strictEqual(order.discord.status, 'joined');
+  } finally {
+    memberExists = true;
+  }
+});
+
+test('un fallo en Discord no impide la entrega en el juego', async () => {
+  received.length = 0;
+  failRoles = true;
+  try {
+    const cookie = await loginDiscord();
+    const id = await createOrder({ productId: 'rango-hechicero', username: 'Alex_MC' }, cookie);
+    const res = await post(`/api/orders/${id}/capture`);
+    assert.strictEqual((await res.json()).status, 'delivered');
+    assert.strictEqual(received.length, 2);
+    const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+    assert.strictEqual(order.discord.status, 'failed');
+  } finally {
+    failRoles = false;
+  }
 });

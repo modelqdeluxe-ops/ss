@@ -19,7 +19,8 @@
         <dt>Jugador</dt><dd id="d-user"></dd>
         <dt>Producto</dt><dd id="d-product"></dd>
         <dt>Total</dt><dd id="d-total"></dd>
-        <dt>Entrega</dt><dd id="d-delivery"></dd>
+        <dt>En el juego</dt><dd id="d-delivery"></dd>
+        <dt id="d-discord-label" hidden>Discord</dt><dd id="d-discord" hidden></dd>
       </dl>
       <a href="/" class="btn btn-primary">Volver al inicio</a>
     </div>
@@ -70,6 +71,15 @@
         $('d-total').textContent = total;
         $('d-delivery').textContent = deliveryText[order.status] || order.status;
         $('details').hidden = false;
+        if (order.discord) {
+          const discordText = {
+            granted: `✅ Rol dado a ${order.discord.username}`,
+            joined: `✅ ${order.discord.username} añadido al Discord con su rol`,
+            failed: '🛠️ El staff te dará el rol en breve',
+          };
+          $('d-discord').textContent = discordText[order.discord.status] || `Vinculado: ${order.discord.username}`;
+          $('d-discord').hidden = $('d-discord-label').hidden = false;
+        }
 
         if (PAID.includes(order.status)) {
           $('icon').textContent = '🎉';

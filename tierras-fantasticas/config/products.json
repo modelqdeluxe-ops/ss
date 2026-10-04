@@ -7,6 +7,9 @@
     "price": 499,
     "maxQuantity": 1,
     "image": "⚔️",
+    "discordRoles": [
+      "ID_ROL_AVENTURERO"
+    ],
     "commands": [
       "lp user {player} parent add aventurero",
       "broadcast &6{player} &eahora es &6Aventurero&e. ¡Gracias por apoyar Tierras Fantásticas!"
@@ -21,6 +24,9 @@
     "maxQuantity": 1,
     "image": "🔮",
     "featured": true,
+    "discordRoles": [
+      "ID_ROL_HECHICERO"
+    ],
     "commands": [
       "lp user {player} parent add hechicero",
       "broadcast &5{player} &dahora es &5Hechicero&d. ¡Gracias por apoyar Tierras Fantásticas!"
@@ -34,6 +40,9 @@
     "price": 1999,
     "maxQuantity": 1,
     "image": "🐉",
+    "discordRoles": [
+      "ID_ROL_DRAGON"
+    ],
     "commands": [
       "lp user {player} parent add dragon",
       "broadcast &c{player} &6ahora es &cDragón&6. ¡Gracias por apoyar Tierras Fantásticas!"

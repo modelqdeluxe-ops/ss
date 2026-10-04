@@ -111,9 +111,12 @@
 
   $('#products').addEventListener('click', (e) => {
     const id = e.target.closest('[data-buy]')?.dataset.buy;
-    if (!id) return;
+    if (id) openCheckout(id);
+  });
+
+  function openCheckout(id) {
     selected = products.find((p) => p.id === id);
-    if (!selected) return;
+    if (!selected || !config.paymentsEnabled) return;
 
     const maxQty = selected.maxQuantity || 10;
     $('#dialog-icon').textContent = selected.image || '🎁';
@@ -127,9 +130,65 @@
     updateTotal();
     $('#processing').hidden = true;
     $('#paypal-buttons').classList.remove('disabled');
+    renderDiscordBox();
     dialog.showModal();
     renderPayPalButtons();
+  }
+
+  // --- Vincular Discord ---
+  let discordAccount = null;
+
+  async function loadMe() {
+    if (!config.discordLogin) return;
+    try {
+      discordAccount = (await (await fetch('/api/me')).json()).discord;
+    } catch {
+      discordAccount = null;
+    }
+  }
+
+  function renderDiscordBox() {
+    $('#discord-box').hidden = !config.discordLogin;
+    if (!config.discordLogin) return;
+    const roleText = selected.discordRole
+      ? 'Recibirás el rol en nuestro Discord automáticamente.'
+      : 'Anunciaremos tu compra en nuestro Discord.';
+
+    $('#discord-linked').hidden = !discordAccount;
+    $('#discord-unlinked').hidden = Boolean(discordAccount);
+    if (discordAccount) {
+      $('#discord-name').textContent = discordAccount.username;
+      $('#discord-avatar').src =
+        discordAccount.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+      $('#discord-linked-hint').textContent = roleText;
+    } else {
+      // Al volver de Discord reabrimos este mismo producto.
+      $('#discord-login').href = `/auth/discord?return=${encodeURIComponent(`/?buy=${selected.id}`)}`;
+      $('#discord-unlinked-hint').textContent = selected.discordRole
+        ? 'Opcional: vincúlalo para recibir también el rango en Discord.'
+        : 'Opcional: vincúlalo para que te mencionemos en el anuncio.';
+    }
+  }
+
+  $('#discord-logout').addEventListener('click', async () => {
+    await fetch('/auth/logout', { method: 'POST' }).catch(() => {});
+    discordAccount = null;
+    renderDiscordBox();
   });
+
+  // Volver de Discord: reabrir la compra y avisar del resultado.
+  function handleReturnParams() {
+    const params = new URLSearchParams(location.search);
+    const buy = params.get('buy');
+    const result = params.get('discord');
+    if (!buy && !result) return;
+    history.replaceState(null, '', `${location.pathname}#tienda`);
+    if (buy) {
+      openCheckout(buy);
+      if (result === 'cancel') showError('No se vinculó Discord. Puedes comprar igualmente.');
+      if (result === 'error') showError('No se pudo vincular Discord. Inténtalo de nuevo o compra sin vincular.');
+    }
+  }
 
   qtyInput.addEventListener('input', updateTotal);
   $('#dialog-close').addEventListener('click', () => dialog.close());
@@ -274,5 +333,7 @@
     }
   }
 
-  loadConfig().then(loadProducts);
+  loadConfig()
+    .then(() => Promise.all([loadProducts(), loadMe()]))
+    .then(handleReturnParams);
 })();

@@ -136,6 +136,21 @@
       <label for="quantity" id="quantity-label">Cantidad</label>
       <input id="quantity" name="quantity" type="number" min="1" max="10" value="1">
 
+      <div class="discord-box" id="discord-box" hidden>
+        <div class="discord-linked" id="discord-linked" hidden>
+          <img id="discord-avatar" alt="" width="32" height="32">
+          <div>
+            <div class="discord-name">Discord: <strong id="discord-name"></strong></div>
+            <div class="discord-hint" id="discord-linked-hint"></div>
+          </div>
+          <button type="button" class="link-btn" id="discord-logout">Cambiar</button>
+        </div>
+        <div id="discord-unlinked" hidden>
+          <a class="btn btn-discord btn-block" id="discord-login" href="/auth/discord">Vincular mi Discord</a>
+          <div class="discord-hint" id="discord-unlinked-hint"></div>
+        </div>
+      </div>
+
       <div class="dialog-total">Total: <strong id="dialog-total"></strong></div>
       <p class="error" id="checkout-error" role="alert"></p>
 
