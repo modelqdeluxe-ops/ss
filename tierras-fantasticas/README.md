@@ -3,10 +3,14 @@
 Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasarela de pago real. Funciona en
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
-- Web por secciones con pestañas horizontales, una página para cada una y transiciones animadas entre ellas:
+- Web por secciones con pestañas horizontales y una página para cada una. Diseño oscuro con oro (fuentes Cinzel e
+  Inter), pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
+  (solo animaciones de `transform`/`opacity`, que se apagan con «reducir movimiento»):
   - **Inicio** (`/`): IP (clic para copiar), estado del servidor en vivo y los crates destacados.
   - **Tienda** (`/tienda`): rangos, crates, llaves y monedas en pestañas (`/tienda#crates` abre la pestaña directamente).
   - **Crates** (`/crates`): escaparate de cada crate con su modelo, la armadura y todo lo que contiene (`/crates#necros`).
+    La **Forja de Nazgul** (`/crates#nazgul`) enseña sus diez armas renderizadas a partir de los modelos 3D del pack.
+  - Rangos con escudos animados y una tabla para comparar sus ventajas (`/tienda#rangos`).
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con PayPal**: botones oficiales de PayPal; el comprador paga con su cuenta o con tarjeta de crédito/débito
   sin necesidad de cuenta. Los datos bancarios nunca pasan por tu servidor y el dinero llega a tu cuenta PayPal.
@@ -136,6 +140,9 @@ Edita `config/products.json`. Cada producto tiene:
 | `featured`    | Opcional. Lo destaca como "Más popular"                          |
 | `discordRoles`| Opcional. IDs de los roles de Discord que se dan al comprar      |
 | `commands`    | Comandos que ejecuta el servidor; `{player}` es el nombre del jugador |
+| `image`       | Opcional. Imagen de la tarjeta (`img/ranks/…`, `img/keys/…`, `img/crates/…`)     |
+| `perks`       | Opcional. Lista corta de ventajas que se ve en la tarjeta                        |
+| `tier`, `specs` | Rangos: orden y filas de la tabla comparativa (`true`/`false` o un texto)      |
 
 #### Crates
 
@@ -149,6 +156,8 @@ Los crates (`"category": "crates"`) llevan además estos campos, que se muestran
 | `image`       | Imagen del set en `public/img/crates/`                                            |
 | `armor`       | Piezas de armadura: `{ "name": "Casco", "icon": "img/crates/necros-helmet.png" }` |
 | `items`       | Lista de armas, herramientas y cosméticos que puede tocar                          |
+| `gallery`     | Opcional. Armas con imagen: `{ "name": "Hoja Abisal", "icon": "img/crates/nazgul/abyssal_blade.webp" }` |
+| `keyImage`    | Imagen de la llave (selector de crates y ventana de compra)                        |
 
 Cada compra da una llave por unidad con `crate key give {player} <crate> 1` (sintaxis de ExcellentCrates/CrazyCrates).
 Crea en tu plugin de crates un crate con ese mismo nombre (`valentine`, `necros`, `luminite`) cuyas recompensas sean

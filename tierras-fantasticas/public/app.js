@@ -1,40 +1,82 @@
+// Tierras Fantásticas: menú, estado del servidor, tienda, crates y compra con PayPal.
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const page = document.body.dataset.page;
-  let config = { currency: 'usd', paymentsEnabled: false };
+  const escapeHtml = (s) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const asset = (path) => (/^(https?:)?\//.test(path) ? path : `/${path}`);
+  const ICON_ARROW =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+  let config = { serverIp: '216.163.187.40:19001', currency: 'USD', paymentsEnabled: false };
   let products = [];
   let selected = null;
 
   const formatPrice = (cents) =>
-    new Intl.NumberFormat('es', { style: 'currency', currency: config.currency.toUpperCase() }).format(cents / 100);
-
-  const escapeHtml = (s) =>
-    String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-
-  // Rutas de imagen del catálogo: solo archivos de esta web.
-  const asset = (p) => (typeof p === 'string' && /^[\w\-./]+$/.test(p) && !p.includes('..') ? `/${p.replace(/^\//, '')}` : '');
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: config.currency || 'USD' }).format(cents / 100);
 
   $$('[data-year]').forEach((el) => (el.textContent = new Date().getFullYear()));
 
-  // En móvil la fila de pestañas tiene scroll: dejamos visible la pestaña activa.
-  const activeTab = $('.tabs-nav [aria-current="page"]');
-  if (activeTab) {
-    const bar = activeTab.parentElement;
-    bar.scrollLeft = activeTab.offsetLeft - (bar.clientWidth - activeTab.offsetWidth) / 2;
+  // --- Cabecera: transparente sobre la portada y sólida al bajar ---
+  const header = $('#header');
+  if (document.body.hasAttribute('data-hero') && 'IntersectionObserver' in window) {
+    const sentinel = document.createElement('div');
+    sentinel.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:80px;pointer-events:none';
+    document.body.prepend(sentinel);
+    new IntersectionObserver(([e]) => header.classList.toggle('solid', !e.isIntersecting)).observe(sentinel);
   }
 
-  // --- Configuración del servidor ---
-  async function loadConfig() {
-    try {
-      config = await (await fetch('/api/config')).json();
-    } catch {
+  // --- Menú del móvil ---
+  const sheet = $('#sheet');
+  const openBtn = $('[data-menu-open]');
+  function setMenu(open) {
+    sheet.classList.toggle('open', open);
+    sheet.setAttribute('aria-hidden', String(!open));
+    openBtn.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('lock', open);
+    if (open) $('[data-menu-close]').focus();
+    else openBtn.focus({ preventScroll: true });
+  }
+  openBtn?.addEventListener('click', () => setMenu(true));
+  $('[data-menu-close]')?.addEventListener('click', () => setMenu(false));
+  sheet?.addEventListener('click', (e) => {
+    if (e.target.closest('nav a')) setMenu(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sheet.classList.contains('open')) setMenu(false);
+  });
+
+  // --- Aparición al entrar en pantalla (una sola vez) ---
+  function observeReveal(root = document) {
+    const items = $$('.reveal:not(.in)', root);
+    if (!('IntersectionObserver' in window)) {
+      items.forEach((el) => el.classList.add('in'));
       return;
     }
-    $$('[data-server-name]').forEach((el) => (el.textContent = config.serverName));
+    revealObserver ||= new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('in');
+          revealObserver.unobserve(e.target);
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    );
+    items.forEach((el) => revealObserver.observe(el));
+  }
+  let revealObserver = null;
+  observeReveal();
+
+  // --- Configuración pública ---
+  async function loadConfig() {
+    try {
+      config = { ...config, ...(await (await fetch('/api/config')).json()) };
+    } catch {
+      /* usamos los valores por defecto */
+    }
     $$('[data-server-ip]').forEach((el) => (el.textContent = config.serverIp));
-    document.title = document.title.replace('Tierras Fantásticas', config.serverName);
-    window.tfSplitTitle?.();
     if (config.discordUrl) {
       $$('.discord-link').forEach((link) => {
         link.href = config.discordUrl;
@@ -71,25 +113,25 @@
 
   async function loadStatus() {
     const texts = $$('[data-status-text]');
-    const marks = [...$$('[data-status]'), ...$$('.nav-ip')];
+    const dots = $$('[data-status-dot]');
     try {
       const data = await fetchStatus();
-      marks.forEach((el) => el.classList.add(data.online ? 'online' : 'offline'));
-      const text = data.online
-        ? `En línea · ${data.players?.online ?? 0}/${data.players?.max ?? '?'} jugadores`
-        : 'Servidor desconectado';
-      texts.forEach((el) => (el.textContent = text));
-      $$('[data-players]').forEach((el) => (el.textContent = data.online ? data.players?.online ?? 0 : 'Off'));
+      const online = Boolean(data.online);
+      const count = data.players?.online ?? 0;
+      dots.forEach((el) => el.classList.add(online ? 'online' : 'offline'));
+      const word = count === 1 ? 'jugador' : 'jugadores';
+      texts.forEach((el) => (el.textContent = online ? `En línea · ${count} ${word} conectados` : 'Servidor desconectado'));
+      $$('[data-players]').forEach((el) => (el.textContent = online ? count : 'Off'));
     } catch {
       texts.forEach((el) => (el.textContent = 'Estado no disponible'));
     }
   }
 
-  // --- Copiar IP (cualquier botón con data-copy-ip) ---
+  // --- Copiar IP ---
   function toast(msg) {
     $('.toast')?.remove();
     const el = document.createElement('div');
-    el.className = 'toast pixel';
+    el.className = 'toast';
     el.setAttribute('role', 'status');
     el.textContent = msg;
     document.body.append(el);
@@ -99,112 +141,143 @@
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-ip]');
     if (!btn) return;
-    const ipEl = $('[data-server-ip]', btn) || $('[data-server-ip]');
-    const hint = $('[data-copy-hint]', btn) || $('.copy-tag', btn);
+    const hint = $('[data-copy-hint]', btn);
     try {
-      await navigator.clipboard.writeText(config.serverIp || ipEl.textContent);
-      toast('¡IP copiada! Nos vemos dentro');
-      btn.classList.remove('copied');
-      void btn.offsetWidth; // reinicia la animación
+      await navigator.clipboard.writeText(config.serverIp);
+      toast('IP copiada. ¡Nos vemos dentro!');
       btn.classList.add('copied');
       if (hint) {
         const original = hint.dataset.original || (hint.dataset.original = hint.textContent);
-        hint.textContent = '¡Copiada!';
-        setTimeout(() => (hint.textContent = original), 2500);
+        hint.textContent = 'Copiada';
+        setTimeout(() => {
+          hint.textContent = original;
+          btn.classList.remove('copied');
+        }, 2200);
       }
     } catch {
-      // Sin portapapeles: seleccionamos la IP para copiarla a mano.
-      const range = document.createRange();
-      range.selectNodeContents(ipEl);
-      getSelection().removeAllRanges();
-      getSelection().addRange(range);
-      toast('Pulsa Ctrl+C para copiar la IP');
+      toast(`IP: ${config.serverIp}`);
     }
   });
 
+  // --- Productos ---
   const CATEGORY_LABEL = { rangos: 'Rango', crates: 'Llave de crate', llaves: 'Llaves de cofre', monedas: 'Monedas de oro' };
   const crates = () => products.filter((p) => p.category === 'crates');
+  const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
   const themeAttr = (p) => (p.theme && /^[\w-]+$/.test(p.theme) ? ` data-theme="${p.theme}"` : '');
   const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
+  const isPixel = (src) => /\/ranks\//.test(src || '');
+  const img = (src, alt, cls = '', extra = '') =>
+    `<img src="${asset(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"${
+      isPixel(src) || cls ? ` class="${[cls, isPixel(src) ? 'pixel-img' : ''].filter(Boolean).join(' ')}"` : ''
+    }${extra}>`;
 
-  // --- Productos ---
   async function loadProducts() {
     try {
       products = await (await fetch('/api/products')).json();
     } catch {
       $$('#products, #crate-spotlight, #stage-info').forEach(
-        (el) => (el.innerHTML = '<p class="muted small">No se pudieron cargar los productos. Recarga la página.</p>'),
+        (el) => (el.innerHTML = '<p class="muted">No se pudieron cargar los productos. Recarga la página.</p>'),
       );
       return;
     }
-    if (page === 'inicio') renderSpotlight();
+    if (page === 'inicio') renderHome();
     if (page === 'tienda') initShop();
     if (page === 'crates') initCrates();
   }
 
-  // Inicio: tarjetas de los crates destacados
-  function renderSpotlight() {
+  // Inicio: crates destacados y rangos
+  function renderHome() {
     const list = crates();
     $$('[data-crate-count]').forEach((el) => (el.textContent = list.length));
     const box = $('#crate-spotlight');
-    if (!list.length) {
-      box.closest('section').hidden = true;
-      return;
-    }
-    const minPrice = (p) => formatPrice(p.price);
     box.innerHTML = list
       .map(
-        (p, i) => `
-        <a class="crate-card pixel" href="/crates#${escapeHtml(p.theme || p.id)}"${themeAttr(p)} style="--i:${i}">
-          <div class="rays" aria-hidden="true"></div>
-          ${p.rarity ? `<span class="rarity">${escapeHtml(p.rarity)}</span>` : ''}
-          <figure><img src="${asset(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy"></figure>
-          <h3 class="theme-text">${escapeHtml(p.name)}</h3>
-          <p>${escapeHtml(p.tagline || p.description)}</p>
-          <div class="card-foot">
-            <div><span class="from">Llave</span><span class="price">${minPrice(p)}</span></div>
-            <span class="btn btn-theme btn-sm pixel">Ver crate</span>
+        (p) => `
+        <a class="panel crate-card reveal" href="/crates#${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
+          <figure>${img(p.image, p.name)}</figure>
+          <div class="body">
+            ${p.rarity ? `<span class="rarity">${escapeHtml(p.rarity)}</span>` : ''}
+            <h3>${escapeHtml(p.name)}</h3>
+            <p>${escapeHtml(p.tagline || p.description)}</p>
+            <div class="card-foot">
+              <span class="price"><small>Llave desde</small>${formatPrice(p.price)}</span>
+              <span class="btn btn-ghost btn-sm">Ver crate ${ICON_ARROW}</span>
+            </div>
           </div>
         </a>`,
       )
       .join('');
+    const strip = $('#rank-strip');
+    strip.innerHTML = ranks()
+      .map(
+        (p) => `
+        <a class="panel rank-mini reveal" href="/tienda#rangos">
+          ${p.image ? img(p.image, '', '', ' width="88" height="88"') : ''}
+          <b>${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</b>
+          <span>${formatPrice(p.price)}</span>
+        </a>`,
+      )
+      .join('');
+    observeReveal();
   }
 
-  // Tienda: pestañas por categoría con indicador deslizante
-  function productCard(p, i) {
+  // Tienda: pestañas por categoría
+  function productCard(p) {
     const isCrate = p.category === 'crates';
-    const lore = isCrate
-      ? `<a href="/crates#${escapeHtml(p.theme || p.id)}">Ver todo lo que contiene →</a>`
-      : p.discordRole
-        ? 'Entrega en el juego y en Discord'
-        : 'Entrega instantánea en el juego';
+    const perks = Array.isArray(p.perks) ? p.perks.slice(0, 5) : [];
+    const thumb = isCrate ? p.image : p.image || p.keyImage;
     return `
-      <article class="product pixel cat-${escapeHtml(p.category)}${p.featured ? ' featured' : ''}"${themeAttr(p)} style="--i:${i}">
-        ${p.featured ? '<span class="badge pixel">Más popular</span>' : ''}
-        ${p.image ? `<div class="thumb"><img src="${asset(p.image)}" alt="" loading="lazy"></div>` : ''}
-        <span class="cat">${escapeHtml(p.rarity || CATEGORY_LABEL[p.category] || p.category)}</span>
-        <h3>${escapeHtml(p.name)}</h3>
-        <p>${escapeHtml(p.description)}</p>
-        <span class="lore">${lore}</span>
-        <div class="product-footer">
-          <span class="price">${formatPrice(p.price)}</span>
-          <button class="btn btn-primary btn-sm pixel" ${buyAttrs(p)}>${isCrate ? 'Comprar llave' : 'Comprar'}</button>
+      <article class="panel product${p.featured ? ' featured' : ''}"${themeAttr(p)}>
+        ${p.featured ? '<span class="badge">Más popular</span>' : ''}
+        ${thumb ? `<div class="thumb">${img(thumb, '')}</div>` : ''}
+        <div class="body">
+          <span class="cat">${escapeHtml(p.rarity || CATEGORY_LABEL[p.category] || p.category)}</span>
+          <h3>${escapeHtml(p.name)}</h3>
+          <p>${escapeHtml(isCrate ? p.tagline || p.description : p.description)}</p>
+          ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
+          ${isCrate ? `<p class="small"><a class="theme-text" href="/crates#${escapeHtml(p.theme || p.id)}">Ver todo lo que contiene →</a></p>` : ''}
+          <div class="card-foot">
+            <span class="price">${formatPrice(p.price)}</span>
+            <button class="btn ${isCrate ? 'btn-theme' : 'btn-gold'} btn-sm" type="button" ${buyAttrs(p)}>${isCrate ? 'Comprar llave' : 'Comprar'}</button>
+          </div>
         </div>
       </article>`;
   }
 
+  function renderCompare() {
+    const box = $('#compare');
+    const list = ranks().filter((p) => p.specs);
+    if (!list.length) {
+      box.hidden = true;
+      return;
+    }
+    const rows = [...new Set(list.flatMap((p) => Object.keys(p.specs)))];
+    const cell = (v) =>
+      v === true ? '<span class="yes" aria-label="Sí">✓</span>' : v === false || v == null ? '<span class="no" aria-label="No">—</span>' : escapeHtml(v);
+    box.innerHTML = `
+      <table>
+        <caption class="sr-only">Comparativa de rangos</caption>
+        <thead><tr><th scope="col">Ventaja</th>${list
+          .map((p) => `<th scope="col">${p.image ? img(p.image, '', '', ' width="44" height="44"') : ''}${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</th>`)
+          .join('')}</tr></thead>
+        <tbody>${rows
+          .map((r) => `<tr><th scope="row">${escapeHtml(r)}</th>${list.map((p) => `<td>${cell(p.specs[r])}</td>`).join('')}</tr>`)
+          .join('')}
+          <tr><th scope="row">Precio</th>${list.map((p) => `<td><b>${formatPrice(p.price)}</b></td>`).join('')}</tr>
+        </tbody>
+      </table>`;
+  }
+
   let currentCategory = null;
   function initShop() {
-    const bar = $('#shop-tabs');
-    const tabs = $$('[role="tab"]', bar);
+    const tabs = $$('#shop-tabs [role="tab"]');
     for (const tab of tabs) {
       const count = products.filter((p) => p.category === tab.dataset.category).length;
       tab.hidden = count === 0;
-      tab.insertAdjacentHTML('beforeend', ` <span class="count">${count}</span>`);
+      tab.insertAdjacentHTML('beforeend', `<span class="count">${count}</span>`);
       tab.addEventListener('click', () => selectCategory(tab.dataset.category, true));
     }
-    // Flechas del teclado entre pestañas
-    bar.addEventListener('keydown', (e) => {
+    $('#shop-tabs').addEventListener('keydown', (e) => {
       if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
       const visible = tabs.filter((t) => !t.hidden);
       const idx = visible.findIndex((t) => t.dataset.category === currentCategory);
@@ -218,10 +291,6 @@
     };
     selectCategory(fromHash() || tabs.find((t) => !t.hidden)?.dataset.category || 'rangos', false);
     window.addEventListener('hashchange', () => fromHash() && selectCategory(fromHash(), false));
-    window.addEventListener('resize', moveIndicator);
-    document.fonts?.ready.then(moveIndicator);
-    // Activamos la animación del indicador después de colocarlo
-    requestAnimationFrame(() => bar.classList.add('ready'));
   }
 
   function selectCategory(category, updateUrl) {
@@ -230,23 +299,17 @@
       const active = tab.dataset.category === category;
       tab.setAttribute('aria-selected', String(active));
       tab.tabIndex = active ? 0 : -1;
+      if (active) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
     const list = products.filter((p) => p.category === category);
+    if (category === 'rangos') list.sort((a, b) => (a.tier || 0) - (b.tier || 0));
     $('#products').innerHTML = list.map(productCard).join('') || '<p class="loading">No hay productos en esta categoría</p>';
-    moveIndicator();
+    $('#compare').hidden = category !== 'rangos';
+    if (category === 'rangos') renderCompare();
     if (updateUrl) history.replaceState(null, '', `#${category}`);
   }
 
-  function moveIndicator() {
-    const bar = $('#shop-tabs');
-    const active = bar && $('[aria-selected="true"]', bar);
-    if (!active) return;
-    const ind = $('.indicator', bar);
-    ind.style.width = `${active.offsetWidth}px`;
-    ind.style.transform = `translateX(${active.offsetLeft}px)`;
-  }
-
-  // Crates: selector horizontal y escenario con el set elegido
+  // Crates: selector y escenario con el set elegido
   function initCrates() {
     const list = crates();
     const picker = $('#crate-picker');
@@ -257,8 +320,8 @@
     picker.innerHTML = list
       .map(
         (p) => `
-        <button type="button" class="crate-pick pixel" role="tab" data-crate="${escapeHtml(p.id)}"${themeAttr(p)} aria-selected="false" aria-controls="crate-stage">
-          <img src="${asset(p.image)}" alt="" width="64" height="52">
+        <button type="button" class="crate-pick" role="tab" data-crate="${escapeHtml(p.id)}"${themeAttr(p)} aria-selected="false" aria-controls="crate-stage">
+          ${img(p.keyImage || p.image, '', '', ' width="48" height="40"')}
           <span><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.rarity || 'Crate')} · ${formatPrice(p.price)}</small></span>
         </button>`,
       )
@@ -287,17 +350,21 @@
     const p = products.find((x) => x.id === id);
     if (!p || id === selectedCrate) return;
     selectedCrate = id;
-    if (p.theme) document.body.dataset.theme = p.theme;
+    const stage = $('#crate-stage');
+    if (p.theme) stage.dataset.theme = p.theme;
     for (const btn of $$('#crate-picker [data-crate]')) {
       const active = btn.dataset.crate === id;
       btn.setAttribute('aria-selected', String(active));
       btn.tabIndex = active ? 0 : -1;
+      if (active && updateUrl) btn.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
     }
 
-    const img = $('#stage-img');
-    img.src = asset(p.image);
-    img.alt = `${p.name}: armas, herramientas y armadura del set`;
-    img.hidden = false;
+    const art = $('#stage-img');
+    const fresh = art.cloneNode();
+    fresh.src = asset(p.image);
+    fresh.alt = `${p.name}: armas, herramientas y armadura del set`;
+    fresh.hidden = false;
+    art.replaceWith(fresh); // reinicia la animación de entrada
 
     const armor = Array.isArray(p.armor) ? p.armor : [];
     const items = Array.isArray(p.items) ? p.items : [];
@@ -310,64 +377,64 @@
         armor.length
           ? `<h4>Armadura animada</h4>
              <div class="armor-row">${armor
-               .map(
-                 (a, i) => `<div class="armor-slot pixel" style="--i:${i}">
-                   <img src="${asset(a.icon)}" alt="" width="48" height="48"><span>${escapeHtml(a.name)}</span></div>`,
-               )
+               .map((a) => `<div class="armor-slot">${img(a.icon, '', 'pixel-img', ' width="40" height="40"')}<span>${escapeHtml(a.name)}</span></div>`)
                .join('')}</div>`
           : ''
       }
       ${
-        items.length
-          ? `<h4>Armas, herramientas y cosméticos</h4>
-             <ul class="item-chips">${items.map((it, i) => `<li style="--i:${i}">${escapeHtml(it)}</li>`).join('')}</ul>`
+        Array.isArray(p.gallery) && p.gallery.length
+          ? `<h4>El arsenal</h4>
+             <div class="gallery">${p.gallery
+               .map((g) => `<figure>${img(g.icon, '', '', ' width="96" height="96"')}<figcaption>${escapeHtml(g.name)}</figcaption></figure>`)
+               .join('')}</div>`
           : ''
       }
+      ${items.length ? `<h4>Armas, herramientas y cosméticos</h4><ul class="chips">${items.map((it) => `<li>${escapeHtml(it)}</li>`).join('')}</ul>` : ''}
       <div class="buy-bar">
-        <div><span class="price">${formatPrice(p.price)}</span><span class="per">por llave · entrega instantánea</span></div>
-        <button class="btn btn-theme btn-lg pixel" ${buyAttrs(p)}>Comprar llave</button>
+        <span class="price"><small>Por llave</small>${formatPrice(p.price)}</span>
+        <button class="btn btn-theme btn-lg" type="button" ${buyAttrs(p)}>Comprar llave</button>
       </div>`;
-
-    const stage = $('#crate-stage');
-    stage.classList.remove('swap');
-    void stage.offsetWidth; // reinicia la animación de cambio
-    stage.classList.add('swap');
-    window.tfEmbers?.burst();
     if (updateUrl) history.replaceState(null, '', `#${p.theme || p.id}`);
   }
 
-  // --- Ventana de compra (se crea solo en las páginas que venden) ---
+  // --- Ventana de compra (solo en las páginas que venden) ---
   const DIALOG_HTML = `
-  <dialog id="checkout-dialog" class="dialog pixel">
+  <dialog id="checkout-dialog" class="dialog" aria-labelledby="dialog-title">
     <form id="checkout-form" method="dialog">
-      <button type="button" class="dialog-close" id="dialog-close">Cerrar</button>
-      <img class="dialog-img" id="dialog-img" alt="" hidden>
-      <div class="cat" id="dialog-cat"></div>
-      <h3 id="dialog-title">Producto</h3>
+      <button type="button" class="dialog-close" id="dialog-close" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="dialog-head">
+        <img class="dialog-img" id="dialog-img" alt="" hidden>
+        <div><div class="cat" id="dialog-cat"></div><h3 id="dialog-title">Producto</h3></div>
+      </div>
       <p class="dialog-desc" id="dialog-desc"></p>
 
-      <label for="username">Tu nombre de Minecraft</label>
-      <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="Steve_123">
+      <div class="field">
+        <label for="username">Tu nombre de Minecraft</label>
+        <input id="username" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="Steve_123">
+      </div>
+      <div class="field" id="quantity-field">
+        <label for="quantity" id="quantity-label">Cantidad</label>
+        <input id="quantity" name="quantity" type="number" inputmode="numeric" min="1" max="10" value="1">
+      </div>
 
-      <label for="quantity" id="quantity-label">Cantidad</label>
-      <input id="quantity" name="quantity" type="number" min="1" max="10" value="1">
-
-      <div class="discord-box pixel" id="discord-box" hidden>
+      <div class="discord-box" id="discord-box" hidden>
         <div class="discord-linked" id="discord-linked" hidden>
           <img id="discord-avatar" alt="" width="36" height="36">
           <div>
-            <div class="discord-name">Discord: <strong id="discord-name"></strong></div>
+            <div>Discord: <strong id="discord-name"></strong></div>
             <div class="discord-hint" id="discord-linked-hint"></div>
           </div>
           <button type="button" class="link-btn" id="discord-logout">Cambiar</button>
         </div>
         <div id="discord-unlinked" hidden>
-          <a class="btn btn-discord btn-block pixel" id="discord-login" href="/auth/discord">Vincular mi Discord</a>
+          <a class="btn btn-discord btn-block" id="discord-login" href="/auth/discord">Vincular mi Discord</a>
           <div class="discord-hint" id="discord-unlinked-hint"></div>
         </div>
       </div>
 
-      <div class="dialog-total">Total: <strong id="dialog-total"></strong></div>
+      <div class="dialog-total">Total <strong id="dialog-total"></strong></div>
       <p class="error" id="checkout-error" role="alert"></p>
 
       <div id="paypal-buttons" class="paypal-buttons"></div>
@@ -402,18 +469,22 @@
     const isCrate = selected.category === 'crates';
     if (selected.theme) dialog.dataset.theme = selected.theme;
     else delete dialog.dataset.theme;
-    const img = $('#dialog-img');
-    img.hidden = !selected.image;
-    if (selected.image) img.src = asset(selected.image);
+    const pic = $('#dialog-img');
+    const src = isCrate ? selected.keyImage || selected.image : selected.image;
+    pic.hidden = !src;
+    if (src) {
+      pic.src = asset(src);
+      pic.classList.toggle('pixel-img', isPixel(src));
+    }
     $('#dialog-cat').textContent = isCrate ? 'Llave de crate' : CATEGORY_LABEL[selected.category] || selected.category;
     $('#dialog-title').textContent = selected.name;
     $('#dialog-desc').textContent = isCrate ? selected.tagline || selected.description : selected.description;
     $('#quantity-label').textContent = isCrate ? 'Número de llaves' : 'Cantidad';
     qtyInput.value = 1;
     qtyInput.max = maxQty;
-    qtyInput.hidden = $('#quantity-label').hidden = maxQty === 1;
+    $('#quantity-field').hidden = maxQty === 1;
     $('#checkout-error').textContent = '';
-    $('#username').value = localStorageGet('tf-username');
+    $('#username').value = storageGet('tf-username');
     updateTotal();
     $('#processing').hidden = true;
     $('#paypal-buttons').classList.remove('disabled');
@@ -556,7 +627,7 @@
 
     paypal
       .Buttons({
-        style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay', height: 45 },
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 48 },
 
         onClick: (data, actions) => (validateForm() ? actions.resolve() : actions.reject()),
 
@@ -569,15 +640,15 @@
             body: JSON.stringify({ productId: selected.id, username, quantity }),
           });
           const data = await res.json();
-          if (!res.ok || !data.id) {
+          if (!res.ok) {
             showError(data.error || 'No se pudo iniciar el pago.');
             throw new Error(data.error);
           }
-          localStorageSet('tf-username', username);
+          storageSet('tf-username', username);
           return data.id;
         },
 
-        // El comprador aprobó: el servidor cobra y entrega la compra.
+        // El comprador aprobó: el servidor cobra y deja la compra lista para entregar.
         onApprove: async (data, actions) => {
           $('#processing').hidden = false;
           $('#paypal-buttons').classList.add('disabled');
@@ -614,14 +685,14 @@
       });
   }
 
-  function localStorageGet(key) {
+  function storageGet(key) {
     try {
       return localStorage.getItem(key) || '';
     } catch {
       return '';
     }
   }
-  function localStorageSet(key, value) {
+  function storageSet(key, value) {
     try {
       localStorage.setItem(key, value);
     } catch {
