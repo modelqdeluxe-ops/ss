@@ -1,21 +1,19 @@
 package net.tierrasfantasticas.tfclient.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.TFConfig;
 
 /**
- * Botón del menú con aspecto de placa de piedra de templo con marco dorado y medallones, y texto en la fuente Cinzel.
- * Las texturas las genera tools/gen_buttons.py.
+ * Botón del menú principal con el tema de TF. Los principales (servidor y web) son de oro con letras oscuras;
+ * el resto, azul noche con filete dorado. Las texturas las genera tools/gen_buttons.py.
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
@@ -37,6 +35,20 @@ public class TFMenuButton extends Button {
                 button -> TFServer.join(Minecraft.getInstance().screen), true);
     }
 
+    /** Botón de la web del servidor. */
+    public static TFMenuButton web(int x, int y, int width) {
+        return new TFMenuButton(x, y, width, 20, label("Web"), button -> openWeb(), true);
+    }
+
+    private static void openWeb() {
+        String url = TFConfig.webUrl();
+        if (url.startsWith("https://") || url.startsWith("http://")) {
+            Util.getPlatform().openUri(url);
+        } else {
+            TFClient.LOGGER.warn("TF Client: web.url no válida en config/tfclient.properties: {}", url);
+        }
+    }
+
     /** Copia un botón del menú normal con el diseño de TF y el mismo efecto al pulsarlo. */
     public static TFMenuButton wrapping(Button original, int x, int y, int width, String text) {
         TFMenuButton button = new TFMenuButton(x, y, width, 20, label(text), pressed -> original.onPress(), false);
@@ -46,31 +58,20 @@ public class TFMenuButton extends Button {
 
     @Override
     public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        TFTextures texture = primary ? TFTextures.BUTTON_PRIMARY : getWidth() >= 150 ? TFTextures.BUTTON_WIDE : TFTextures.BUTTON_HALF;
+        TFTextures texture = primary ? TFTextures.BUTTON_SLICE_PRIMARY : TFTextures.BUTTON_SLICE;
         if (!texture.ready()) {
             super.renderWidget(g, mouseX, mouseY, partialTick);
             return;
         }
         boolean hot = this.active && this.isHoveredOrFocused();
         int state = !this.active ? 2 : hot ? 1 : 0;
-        int artHeight = texture.height() / 3;
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        g.setColor(1f, 1f, 1f, this.alpha);
-        g.blit(texture.id(), getX(), getY(), getWidth(), getHeight(), 0f, state * artHeight,
-                texture.width(), artHeight, texture.width(), texture.height());
-        g.setColor(1f, 1f, 1f, 1f);
-
-        Font font = Minecraft.getInstance().font;
-        int alpha = Mth.ceil(Mth.clamp(this.alpha, 0.02f, 1f) * 255f) << 24;
-        int textX = getX() + (getWidth() - font.width(getMessage())) / 2;
-        int textY = getY() + (getHeight() - 8) / 2;
+        TFButtonTheme.drawPlate(g, texture, getX(), getY(), getWidth(), getHeight(), state, this.alpha);
         if (primary && this.active) {
             // Placa de oro: letras oscuras, sin sombra
-            g.drawString(font, getMessage(), textX, textY, (hot ? 0x241404 : 0x34200A) | alpha, false);
+            TFButtonTheme.drawLabel(g, getMessage(), getX(), getY(), getWidth(), getHeight(), hot ? 0x241404 : 0x34200A, this.alpha, false);
         } else {
             int color = !this.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
-            g.drawString(font, getMessage(), textX, textY, color | alpha, true);
+            TFButtonTheme.drawLabel(g, getMessage(), getX(), getY(), getWidth(), getHeight(), color, this.alpha, true);
         }
     }
 }

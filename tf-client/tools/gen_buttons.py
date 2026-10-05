@@ -4,9 +4,11 @@ Diseño: placa con las puntas en ángulo (forma hexagonal alargada), fondo azul 
 logo, doble filete dorado metálico y pequeños rombos dorados con líneas finas en los extremos. El botón principal es de
 oro con letras oscuras. Al pasar el ratón el marco brilla y aparece un halo dorado.
 
-Cada PNG lleva tres estados apilados (normal, ratón encima, desactivado). Resolución: 4 píxeles de textura por píxel
-de interfaz (botón de 200x20 -> 800x80), así a 1080p (escala 4) se ve 1:1. Se dibuja a 4x más y se reduce con Lanczos
-para que los bordes queden suaves.
+Cada PNG mide 64x20 píxeles de interfaz (256x80 de textura por estado) y lleva tres estados apilados (normal, ratón
+encima, desactivado). Se dibuja "en tres piezas": las puntas (CAP = 16 píxeles de interfaz a cada lado) van a tamaño fijo
+y el centro, que es uniforme, se estira al ancho de cada botón; así sirve para botones de cualquier ancho.
+Resolución: 4 píxeles de textura por píxel de interfaz, así a 1080p (escala 4) se ve 1:1. Se dibuja a 4x más y se
+reduce con Lanczos para que los bordes queden suaves.
 Uso: python3 tools/gen_buttons.py
 """
 import os
@@ -123,7 +125,7 @@ def make_state(w_gui, primary, state):
         orn = (120, 76, 16, 255) if primary else ((255, 224, 140, 255) if hover else (226, 180, 86, 255))
         line = Image.new("RGBA", size, (0, 0, 0, 0))
         ld = ImageDraw.Draw(line)
-        length = U * (14 if w_gui >= 150 else 5)
+        length = U * 4  # cabe dentro de la punta (CAP)
         steps = 24
         for i in range(steps):
             a = int(orn[3] * (1 - i / steps) * 0.85)
@@ -152,6 +154,5 @@ def make(name, w_gui, primary):
     print(name, sheet.size)
 
 
-make("button_primary.png", 200, True)
-make("button_wide.png", 200, False)
-make("button_half.png", 98, False)
+make("button_slice_primary.png", 64, True)
+make("button_slice.png", 64, False)

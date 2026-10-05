@@ -128,7 +128,7 @@ public abstract class TitleScreenMixin extends Screen {
         if (singleplayer == null) return; // modo demo: se deja el menú normal
 
         // Botones un poco más abajo para dejar sitio a un emblema más grande
-        int shift = Math.max(0, Math.min(BUTTON_SHIFT, this.height - (singleplayer.getY() + 108)));
+        int shift = Math.max(0, Math.min(BUTTON_SHIFT, this.height - (singleplayer.getY() + 132)));
         int x = this.width / 2 - 100;
         int top = singleplayer.getY() + shift;
         this.tfclient$buttonsTop = top;
@@ -141,6 +141,9 @@ public abstract class TitleScreenMixin extends Screen {
         if (mods != null) this.tfclient$swap(mods, x, top + 48, 200, "Mods");
         if (options != null) this.tfclient$swap(options, options.getX(), options.getY() + shift, options.getWidth(), "Opciones");
         if (quit != null) this.tfclient$swap(quit, quit.getX(), quit.getY() + shift, quit.getWidth(), "Salir");
+        // Botón WEB centrado debajo de Opciones y Salir
+        int webY = (options != null ? options.getY() : top + 84) + shift + 24;
+        this.addRenderableWidget(TFMenuButton.web(this.width / 2 - 49, webY, 98));
     }
 
     @Unique

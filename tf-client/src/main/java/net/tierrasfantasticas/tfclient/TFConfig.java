@@ -13,9 +13,11 @@ import net.minecraftforge.fml.loading.FMLPaths;
 public final class TFConfig {
     private static final String DEFAULT_NAME = "Tierras Fantásticas";
     private static final String DEFAULT_ADDRESS = "216.163.187.40:19001";
+    private static final String DEFAULT_WEB = "https://tienda.tierrasfantasticas.net";
 
     private static String serverName = DEFAULT_NAME;
     private static String serverAddress = DEFAULT_ADDRESS;
+    private static String webUrl = DEFAULT_WEB;
 
     private TFConfig() {}
 
@@ -25,6 +27,10 @@ public final class TFConfig {
 
     public static String serverAddress() {
         return serverAddress;
+    }
+
+    public static String webUrl() {
+        return webUrl;
     }
 
     public static void load() {
@@ -40,12 +46,15 @@ public final class TFConfig {
         serverName = props.getProperty("server.name", DEFAULT_NAME).trim();
         serverAddress = props.getProperty("server.address", DEFAULT_ADDRESS).trim();
         if (serverAddress.isEmpty()) serverAddress = DEFAULT_ADDRESS;
+        webUrl = props.getProperty("web.url", DEFAULT_WEB).trim();
 
-        if (!Files.exists(file)) {
+        // Se reescribe si falta alguna clave (por ejemplo web.url al actualizar desde una versión anterior)
+        if (!Files.exists(file) || !props.containsKey("web.url")) {
             props.setProperty("server.name", serverName);
             props.setProperty("server.address", serverAddress);
+            props.setProperty("web.url", webUrl);
             try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
-                props.store(writer, "TF Client - servidor al que conecta el boton Jugar");
+                props.store(writer, "TF Client - servidor del boton principal y web del boton WEB");
             } catch (IOException e) {
                 TFClient.LOGGER.warn("No se pudo crear {}: {}", file, e.getMessage());
             }

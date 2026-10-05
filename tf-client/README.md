@@ -12,18 +12,22 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
   - **TIERRAS FANTÁSTICAS**: antes de conectar pregunta al servidor qué mods usa. Si te falta alguno, enseña la lista
     (con *Volver* o *Entrar igual*); si no falta nada, conecta directamente y acepta su paquete de recursos.
   - **Mundo local**, **Mods**, **Opciones** y **Salir**.
+  - **WEB** (de oro, debajo de Opciones y Salir): abre la web del servidor (`web.url` en la configuración).
   - Sin textos de Mojang, versión, Forge ni Realms. Idioma y accesibilidad siguen en *Opciones*.
 - **Música de TF** en la pantalla de carga y el menú: empieza en cuanto arranca el juego, suena en bucle con fundidos
   y respeta los volúmenes *General* y *Música* de las opciones. Se apaga con un fundido al entrar a un mundo o al
   servidor (ahí vuelve la música normal de Minecraft) y vuelve a sonar al regresar al menú.
-- Fuera de una partida, el resto de menús (opciones, mundos, conexión) usan el paisaje oscurecido en vez del fondo de tierra.
+- **Tema de TF en todos los menús fuera de una partida** (mundos, opciones, conexión...): botones, botones de opciones
+  y deslizadores con la placa azul noche y oro y la letra Cinzel; fondo con el paisaje oscurecido y listas
+  transparentes en vez de la tierra. **Dentro de una partida no se toca nada**, así cada jugador ve sus paquetes de
+  recursos.
 
 No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta instalarlo en el servidor.
 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.6.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.7.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 
@@ -32,9 +36,11 @@ La primera vez que se abre el juego se crea `config/tfclient.properties`:
 ```properties
 server.name=Tierras Fantásticas
 server.address=216.163.187.40\:19001
+web.url=https\://tienda.tierrasfantasticas.net
 ```
 
-`server.name` es el texto del botón y `server.address` la IP (con puerto) a la que conecta.
+`server.name` es el texto del botón principal, `server.address` la IP (con puerto) a la que conecta y `web.url` la
+dirección que abre el botón WEB.
 
 ## Cambiar las imágenes
 
@@ -45,8 +51,9 @@ server.address=216.163.187.40\:19001
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
 - Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png` y `sparkle.png` a partir de
   `logo.png` (vuelve a ejecutarlo si cambias el emblema).
-- Botones: `tools/gen_buttons.py` genera `button_primary.png`, `button_wide.png` y `button_half.png` (3 estados
-  apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
+- Botones: `tools/gen_buttons.py` genera `button_slice.png` (azul noche) y `button_slice_primary.png` (oro), en tres
+  piezas: puntas de 16 píxeles de interfaz a tamaño fijo y centro uniforme que se estira al ancho de cada botón
+  (3 estados apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
 - Fuente: `src/main/resources/assets/tfclient/font/cinzel.ttf` (Cinzel, licencia SIL Open Font License, incluida en
   `OFL-Cinzel.txt`).
 - Música: `src/main/resources/assets/tfclient/music/menu.ogg` (OGG Vorbis; para convertir un MP3:

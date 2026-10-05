@@ -10,7 +10,10 @@
     "MusicManagerMixin",
     "TitleScreenMixin",
     "BrandingControlMixin",
-    "ForgeHooksClientMixin"
+    "ForgeHooksClientMixin",
+    "AbstractButtonMixin",
+    "AbstractSliderButtonMixin",
+    "AbstractSelectionListMixin"
   ],
   "injectors": {
     "defaultRequire": 0
