@@ -545,34 +545,60 @@ body.lock {
   aspect-ratio: 743 / 820;
   margin-bottom: 8px;
   animation: float 6s ease-in-out infinite;
-  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.6));
 }
 
 .logo-mark img {
+  position: relative;
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
 }
 
-/* Destello que cruza el emblema (recortado a su silueta) */
+/* Halo dorado y azul que late detrás (el mismo del TF Client) */
+.logo-mark .glow {
+  position: absolute;
+  inset: -25% -25%;
+  background: url('/img/logo-glow.webp') center / 100% 100% no-repeat;
+  animation: glow 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Destello que cruza el emblema, recortado a su silueta: 3,3 s cada 7 s, como en el mod */
 .logo-mark .shine {
   position: absolute;
   inset: 0;
   -webkit-mask: url('/img/logo.webp') center / contain no-repeat;
   mask: url('/img/logo.webp') center / contain no-repeat;
   overflow: hidden;
+  mix-blend-mode: plus-lighter;
   pointer-events: none;
 }
 
 .logo-mark .shine::before {
   content: '';
   position: absolute;
-  top: -10%;
-  bottom: -10%;
-  left: -60%;
-  width: 45%;
-  background: linear-gradient(105deg, transparent 20%, rgba(255, 248, 220, 0.75) 50%, transparent 80%);
-  transform: translateX(-30%) skewX(-12deg);
-  animation: sweep 7s var(--ease) infinite;
+  top: -15%;
+  bottom: -15%;
+  left: -70%;
+  width: 55%;
+  background: linear-gradient(105deg, transparent 15%, rgba(255, 244, 205, 0.15) 35%, rgba(255, 250, 230, 0.85) 50%, rgba(255, 244, 205, 0.15) 65%, transparent 85%);
+  transform: translateX(0) skewX(-14deg);
+  animation: sweep 7s linear infinite;
+}
+
+/* Chispa en la gema de la corona cuando pasa el destello */
+.logo-mark .spark {
+  position: absolute;
+  left: 49.9%;
+  top: 30.3%;
+  width: 24%;
+  aspect-ratio: 1;
+  margin: -12% 0 0 -12%;
+  background: url('/img/sparkle.webp') center / contain no-repeat;
+  mix-blend-mode: plus-lighter;
+  opacity: 0;
+  animation: spark 7s linear infinite;
+  pointer-events: none;
 }
 
 @keyframes float {
@@ -581,18 +607,52 @@ body.lock {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-3.5%);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
   }
 }
 
 @keyframes sweep {
-  0%,
-  55% {
-    transform: translateX(-30%) skewX(-12deg);
+  0% {
+    transform: translateX(0) skewX(-14deg);
+    opacity: 0;
   }
-  95%,
+  4% {
+    opacity: 1;
+  }
+  43% {
+    opacity: 1;
+  }
+  47%,
   100% {
-    transform: translateX(420%) skewX(-12deg);
+    transform: translateX(330%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
+@keyframes spark {
+  0%,
+  20.7% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  30.7% {
+    opacity: 1;
+    transform: scale(1) rotate(22deg);
+  }
+  40.7%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(45deg);
   }
 }
 
@@ -808,30 +868,6 @@ body.lock {
 
 /* ---------- Crates ---------- */
 
-[data-theme='valentine'] {
-  --t1: #ff8fb8;
-  --t2: #ff4f8b;
-  --t3: rgba(255, 79, 139, 0.28);
-}
-
-[data-theme='necros'] {
-  --t1: #6ff0c3;
-  --t2: #19c38d;
-  --t3: rgba(25, 195, 141, 0.26);
-}
-
-[data-theme='nazgul'] {
-  --t1: #c9a8ff;
-  --t2: #9061f9;
-  --t3: rgba(144, 97, 249, 0.3);
-}
-
-[data-theme='luminite'] {
-  --t1: #9ad8ff;
-  --t2: #4aa8ff;
-  --t3: rgba(74, 168, 255, 0.28);
-}
-
 .crate-card {
   position: relative;
   display: flex;
@@ -858,8 +894,8 @@ body.lock {
 }
 
 .crate-card figure img {
-  width: 82%;
-  height: 82%;
+  width: 94%;
+  height: 90%;
   object-fit: contain;
 }
 
@@ -926,6 +962,10 @@ body.lock {
   scrollbar-width: none;
 }
 
+.crate-pick span {
+  white-space: nowrap;
+}
+
 .crate-picker::-webkit-scrollbar {
   display: none;
 }
@@ -968,7 +1008,7 @@ body.lock {
 
 .stage {
   display: grid;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .stage-art {
@@ -1043,31 +1083,158 @@ body.lock {
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: 8px;
 }
 
-.gallery figure {
+.gallery-item {
   display: grid;
   justify-items: center;
+  align-content: start;
   gap: 6px;
-  margin: 0;
-  padding: 10px 6px;
+  padding: 10px 6px 10px;
   border-radius: 10px;
-  background: radial-gradient(circle at 50% 40%, var(--t3, rgba(227, 183, 76, 0.16)), transparent 70%), rgba(255, 255, 255, 0.02);
   border: 1px solid var(--line);
+  background: radial-gradient(circle at 50% 38%, var(--t3, rgba(227, 183, 76, 0.16)), transparent 70%), rgba(255, 255, 255, 0.02);
   text-align: center;
+  transition:
+    border-color 0.2s,
+    transform 0.2s var(--ease);
 }
 
-.gallery img {
+.gallery-item:hover {
+  border-color: var(--t2, var(--gold));
+  transform: translateY(-2px);
+}
+
+.gallery-item.loading {
+  opacity: 0.6;
+}
+
+.gallery-item img {
   width: 72px;
   height: 72px;
+  object-fit: contain;
 }
 
-.gallery figcaption {
+.gallery-item span {
   font-size: 12px;
   line-height: 1.3;
   color: #d5d1c8;
+}
+
+.hint3d {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: var(--t1, var(--gold));
+}
+
+/* Visor 3D */
+.viewer {
+  width: min(720px, 100%);
+  max-height: 100%;
+  margin: auto 0 0;
+  padding: 18px 18px calc(16px + env(safe-area-inset-bottom));
+  border: 1px solid var(--line-2);
+  border-radius: 20px 20px 0 0;
+  background: var(--panel);
+  color: var(--text);
+}
+
+.viewer::backdrop {
+  background: rgba(3, 4, 8, 0.8);
+}
+
+.viewer[open] {
+  animation: sheet-up 0.3s var(--ease);
+}
+
+.viewer-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-right: 48px;
+}
+
+.viewer .cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.viewer h3 {
+  margin-top: 4px;
+  font: 700 22px/1.2 var(--font-display);
+}
+
+.viewer-stage {
+  position: relative;
+  margin-top: 14px;
+  height: min(62vh, 480px);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(60% 60% at 50% 50%, rgba(227, 183, 76, 0.12), transparent 70%),
+    linear-gradient(180deg, #121624, #0a0c14);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.viewer-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.viewer-stage canvas:active {
+  cursor: grabbing;
+}
+
+.viewer-status {
+  position: absolute;
+  inset: auto 0 16px;
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.viewer-nav {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: rgba(7, 8, 13, 0.7);
+}
+
+.viewer-nav svg {
+  width: 20px;
+  height: 20px;
+}
+
+.viewer-nav.prev {
+  left: 10px;
+}
+
+.viewer-nav.next {
+  right: 10px;
+}
+
+.viewer-hint {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .chips {
@@ -1251,7 +1418,8 @@ body.lock {
 
 .product .thumb img {
   width: auto;
-  height: 70%;
+  max-width: 92%;
+  height: 78%;
   object-fit: contain;
 }
 
@@ -1998,7 +2166,8 @@ body.lock {
     justify-content: space-between;
   }
 
-  .dialog {
+  .dialog,
+  .viewer {
     margin: auto;
     border-radius: 20px;
   }
@@ -2073,15 +2242,26 @@ body.lock {
   }
 
   .stage-art {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+    align-self: start;
     aspect-ratio: auto;
+    height: min(560px, calc(100vh - var(--header-h) - 32px));
     max-height: none;
-    min-height: 560px;
     border-bottom: 0;
-    border-right: 1px solid var(--line);
+  }
+
+  .stage-info {
+    border-left: 1px solid var(--line);
   }
 
   .stage-info {
     padding: 36px;
+  }
+
+  .crate-picker {
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
   .split {
@@ -2115,9 +2295,13 @@ body.lock {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .stage-art img,
+  .dialog[open],
+  .toast {
+    animation: none !important;
   }
 
   .js .reveal {

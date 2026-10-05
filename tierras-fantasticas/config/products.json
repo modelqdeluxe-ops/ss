@@ -13,7 +13,7 @@
       "lp user {player} parent add aventurero",
       "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Aventurero\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
     ],
-    "image": "img/ranks/sword.webp",
+    "image": "img/ranks/sword.png",
     "tier": 1,
     "perks": [
       "Prefijo dorado en el chat",
@@ -49,7 +49,7 @@
       "lp user {player} parent add hechicero",
       "tellraw @a [{\"text\":\"{player}\",\"color\":\"dark_purple\"},{\"text\":\" ahora es \",\"color\":\"light_purple\"},{\"text\":\"Hechicero\",\"color\":\"dark_purple\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"light_purple\"}]"
     ],
-    "image": "img/ranks/enchanter.webp",
+    "image": "img/ranks/enchanter.png",
     "tier": 2,
     "perks": [
       "Todo lo de Aventurero",
@@ -84,7 +84,7 @@
       "lp user {player} parent add dragon",
       "tellraw @a [{\"text\":\"{player}\",\"color\":\"red\"},{\"text\":\" ahora es \",\"color\":\"gold\"},{\"text\":\"Dragón\",\"color\":\"red\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"gold\"}]"
     ],
-    "image": "img/ranks/dragon.webp",
+    "image": "img/ranks/dragon.png",
     "tier": 3,
     "perks": [
       "Todo lo de Hechicero",
@@ -113,7 +113,7 @@
     "description": "La corona del reino: todo lo de Dragón, hogares ilimitados, /kit rey semanal y título exclusivo.",
     "price": 2999,
     "maxQuantity": 1,
-    "image": "img/ranks/royal.webp",
+    "image": "img/ranks/royal.png",
     "tier": 4,
     "perks": [
       "Todo lo de Dragón",
@@ -147,212 +147,2780 @@
     "category": "crates",
     "name": "Crate Valentine",
     "theme": "valentine",
+    "colors": [
+      "#ff9cc2",
+      "#ff4f8b"
+    ],
     "rarity": "Edición limitada",
     "tagline": "Oro rosa forjado con corazones",
-    "description": "Armas y herramientas animadas de oro rosa con corazones y pétalos. Incluye armadura completa, alas y sombrero a juego.",
+    "description": "Armas y herramientas animadas de oro rosa con corazones y pétalos. Incluye armadura completa, alas y casco a juego.",
     "image": "img/crates/valentine.webp",
+    "keyImage": "img/keys/pink.webp",
     "price": 299,
-    "items": [
-      "Espada",
-      "Hacha",
-      "Pico",
-      "Pala",
-      "Azada",
-      "Martillo",
-      "Maza",
-      "Guadaña",
-      "Lanza",
-      "Bastón mágico",
-      "Arco",
-      "Ballesta",
-      "Caña de pescar",
-      "Escudo",
-      "Alas de cupido",
-      "Sombrero cosmético"
-    ],
-    "armor": [
+    "set": "valentine",
+    "models": [
       {
-        "name": "Casco",
-        "icon": "img/crates/valentine-helmet.png"
+        "id": "sword",
+        "name": "Espada"
       },
       {
-        "name": "Peto",
-        "icon": "img/crates/valentine-chestplate.png"
+        "id": "axe",
+        "name": "Hacha"
       },
       {
-        "name": "Grebas",
-        "icon": "img/crates/valentine-leggings.png"
+        "id": "pickaxe",
+        "name": "Pico"
       },
       {
-        "name": "Botas",
-        "icon": "img/crates/valentine-boots.png"
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
       }
     ],
     "commands": [
       "crate key give {player} valentine 1"
-    ],
-    "keyImage": "img/keys/pink.webp"
+    ]
   },
   {
     "id": "crate-necros",
     "category": "crates",
     "name": "Crate Necros",
     "theme": "necros",
+    "colors": [
+      "#d59cff",
+      "#a855f7"
+    ],
     "rarity": "Legendario",
-    "featured": true,
     "tagline": "Acero maldito y fuego del vacío",
     "description": "El set del nigromante: acero oscuro envuelto en llamas violetas animadas. Incluye armadura completa, tridente, alas y casco.",
     "image": "img/crates/necros.webp",
+    "keyImage": "img/keys/demon.webp",
     "price": 399,
-    "items": [
-      "Espada",
-      "Hacha",
-      "Pico",
-      "Pala",
-      "Azada",
-      "Martillo",
-      "Maza",
-      "Guadaña",
-      "Lanza",
-      "Bastón mágico",
-      "Arco",
-      "Ballesta",
-      "Caña de pescar",
-      "Escudo",
-      "Tridente",
-      "Alas sombrías",
-      "Yelmo cosmético"
-    ],
-    "armor": [
+    "set": "necros",
+    "models": [
       {
-        "name": "Casco",
-        "icon": "img/crates/necros-helmet.png"
+        "id": "sword",
+        "name": "Espada"
       },
       {
-        "name": "Peto",
-        "icon": "img/crates/necros-chestplate.png"
+        "id": "axe",
+        "name": "Hacha"
       },
       {
-        "name": "Grebas",
-        "icon": "img/crates/necros-leggings.png"
+        "id": "pickaxe",
+        "name": "Pico"
       },
       {
-        "name": "Botas",
-        "icon": "img/crates/necros-boots.png"
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
       }
     ],
     "commands": [
       "crate key give {player} necros 1"
     ],
-    "keyImage": "img/keys/demon.webp"
+    "featured": true
   },
   {
     "id": "crate-luminite",
     "category": "crates",
     "name": "Crate Luminite",
     "theme": "luminite",
+    "colors": [
+      "#9ad8ff",
+      "#4aa8ff"
+    ],
     "rarity": "Mítico",
     "tagline": "Cristal de luz y energía arcana",
-    "description": "Obsidiana y cristal luminite que brillan en azul y violeta con animaciones de energía. Incluye armadura completa, tridente y alas.",
+    "description": "Cristal azul que brilla con energía arcana: armas, herramientas, armadura, alas y casco con destellos animados.",
     "image": "img/crates/luminite.webp",
+    "keyImage": "img/keys/ice.webp",
     "price": 499,
-    "items": [
-      "Espada",
-      "Hacha",
-      "Pico",
-      "Pala",
-      "Azada",
-      "Martillo",
-      "Maza",
-      "Guadaña",
-      "Lanza",
-      "Bastón mágico",
-      "Arco",
-      "Ballesta",
-      "Caña de pescar",
-      "Escudo",
-      "Tridente",
-      "Alas de cristal",
-      "Yelmo cosmético"
-    ],
-    "armor": [
+    "set": "luminite",
+    "models": [
       {
-        "name": "Casco",
-        "icon": "img/crates/luminite-helmet.png"
+        "id": "sword",
+        "name": "Espada"
       },
       {
-        "name": "Peto",
-        "icon": "img/crates/luminite-chestplate.png"
+        "id": "axe",
+        "name": "Hacha"
       },
       {
-        "name": "Grebas",
-        "icon": "img/crates/luminite-leggings.png"
+        "id": "pickaxe",
+        "name": "Pico"
       },
       {
-        "name": "Botas",
-        "icon": "img/crates/luminite-boots.png"
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
       }
     ],
     "commands": [
       "crate key give {player} luminite 1"
+    ]
+  },
+  {
+    "id": "crate-mecha",
+    "category": "crates",
+    "name": "Crate Dragón Mecha",
+    "theme": "mecha",
+    "colors": [
+      "#d8ff6a",
+      "#a3e635"
     ],
-    "keyImage": "img/keys/ice.webp"
+    "rarity": "Mítico",
+    "tagline": "Acero de dragón y núcleos de energía",
+    "description": "El arsenal del Dragón Mecha Overlord: placas negras con núcleos verde ácido, armadura mecánica, alas y sombrero a juego.",
+    "image": "img/crates/mecha.webp",
+    "keyImage": "img/keys/slime.webp",
+    "price": 499,
+    "set": "mecha",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "great_sword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} mecha 1"
+    ]
   },
   {
     "id": "crate-nazgul",
     "category": "crates",
-    "name": "Crate Forja de Nazgul",
+    "name": "Crate Arsenal de Nazgul",
     "theme": "nazgul",
-    "rarity": "Nuevo · Arsenal",
-    "tagline": "Diez armas legendarias forjadas en la oscuridad",
-    "description": "El arsenal de la forja de Nazgul: espadas rúnicas, mazas de fuego, guadañas y arcos con modelos 3D y brillos animados. Cada llave te da una de sus diez armas.",
+    "colors": [
+      "#c9a8ff",
+      "#9061f9"
+    ],
+    "rarity": "Legendario",
+    "tagline": "Treinta armas legendarias de la forja de Nazgul",
+    "description": "Los tres volúmenes de la forja de Nazgul: espadas rúnicas, mazas de fuego, guadañas, lanzas y arcos con brillos animados. Cada llave te da una de sus treinta armas.",
     "image": "img/crates/nazgul.webp",
     "keyImage": "img/keys/amethyst.webp",
     "price": 449,
-    "gallery": [
+    "set": "nazgul",
+    "models": [
       {
-        "name": "Hoja Abisal",
-        "icon": "img/crates/nazgul/abyssal_blade.webp"
+        "id": "necromancer_sword",
+        "name": "Espada del Nigromante"
       },
       {
-        "name": "Gran Espada Rúnica",
-        "icon": "img/crates/nazgul/great_sword.webp"
+        "id": "ocean_sword",
+        "name": "Espada del Océano"
       },
       {
-        "name": "Bastón del Mago de Guerra",
-        "icon": "img/crates/nazgul/battle_mage_staff.webp"
+        "id": "aspectr_of_eather_sword",
+        "name": "Espada del Éter"
       },
       {
-        "name": "Maza de Fuego",
-        "icon": "img/crates/nazgul/fire_mace.webp"
+        "id": "beecomb_sword",
+        "name": "Espada Panal"
       },
       {
-        "name": "Hacha Gárgola",
-        "icon": "img/crates/nazgul/gargoyle_axe.webp"
+        "id": "last_rose",
+        "name": "Última Rosa"
       },
       {
-        "name": "Guadaña de la Bruja",
-        "icon": "img/crates/nazgul/witch_scythe.webp"
+        "id": "death_grip",
+        "name": "Garra de la Muerte"
       },
       {
-        "name": "Locura Floreciente",
-        "icon": "img/crates/nazgul/flowering_madness.webp"
+        "id": "dark_moon_axe",
+        "name": "Hacha de Luna Oscura"
       },
       {
-        "name": "Estandarte de Guerra",
-        "icon": "img/crates/nazgul/battle_standart.webp"
+        "id": "hellspawn_axe",
+        "name": "Hacha Infernal"
       },
       {
-        "name": "Arco Pesado",
-        "icon": "img/crates/nazgul/heavy_bow.webp"
+        "id": "forge_hammer",
+        "name": "Martillo de Forja"
       },
       {
-        "name": "Daga del Pícaro",
-        "icon": "img/crates/nazgul/rogue_dagger.webp"
+        "id": "spider_bow",
+        "name": "Arco Arácnido"
+      },
+      {
+        "id": "abyssal_blade",
+        "name": "Hoja Abisal"
+      },
+      {
+        "id": "great_sword",
+        "name": "Gran Espada Rúnica"
+      },
+      {
+        "id": "battle_mage_staff",
+        "name": "Bastón del Mago de Guerra"
+      },
+      {
+        "id": "fire_mace",
+        "name": "Maza de Fuego"
+      },
+      {
+        "id": "gargoyle_axe",
+        "name": "Hacha Gárgola"
+      },
+      {
+        "id": "witch_scythe",
+        "name": "Guadaña de la Bruja"
+      },
+      {
+        "id": "flowering_madness",
+        "name": "Locura Floreciente"
+      },
+      {
+        "id": "battle_standart",
+        "name": "Estandarte de Guerra"
+      },
+      {
+        "id": "heavy_bow",
+        "name": "Arco Pesado"
+      },
+      {
+        "id": "rogue_dagger",
+        "name": "Daga del Pícaro"
+      },
+      {
+        "id": "demonic_blade",
+        "name": "Hoja Demoníaca"
+      },
+      {
+        "id": "cursed_sword",
+        "name": "Espada Maldita"
+      },
+      {
+        "id": "dark_sword",
+        "name": "Espada Oscura"
+      },
+      {
+        "id": "magnetic_blade",
+        "name": "Hoja Magnética"
+      },
+      {
+        "id": "kaz_sc",
+        "name": "Guadaña de Kaz"
+      },
+      {
+        "id": "mana_axe",
+        "name": "Hacha de Maná"
+      },
+      {
+        "id": "red_hammer",
+        "name": "Martillo Carmesí"
+      },
+      {
+        "id": "holy_spear",
+        "name": "Lanza Sagrada"
+      },
+      {
+        "id": "pox_spreader",
+        "name": "Portador de la Plaga"
+      },
+      {
+        "id": "obsidian_bow",
+        "name": "Arco de Obsidiana"
       }
     ],
     "commands": [
       "crate key give {player} nazgul 1"
+    ]
+  },
+  {
+    "id": "crate-shadow",
+    "category": "crates",
+    "name": "Crate Cazador de Sombras",
+    "theme": "shadow",
+    "colors": [
+      "#d7cbff",
+      "#8b6cf6"
+    ],
+    "rarity": "Épico",
+    "tagline": "Plata, oro y sombra",
+    "description": "El set del Shadow Slayer: hojas plateadas con filos de oro y núcleos oscuros, armadura completa, alas y sombrero.",
+    "image": "img/crates/shadow.webp",
+    "keyImage": "img/keys/royalty2.webp",
+    "price": 399,
+    "set": "shadow",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} shadow 1"
+    ]
+  },
+  {
+    "id": "crate-aether",
+    "category": "crates",
+    "name": "Crate Aetherburn",
+    "theme": "aether",
+    "colors": [
+      "#7ff0e0",
+      "#14b8a6"
+    ],
+    "rarity": "Mítico",
+    "tagline": "El éter que arde",
+    "description": "Metal turquesa con runas incandescentes: hacha de batalla, hoz, lanza, bastón, armadura y alas del Aetherburn.",
+    "image": "img/crates/aether.webp",
+    "keyImage": "img/keys/water.webp",
+    "price": 449,
+    "set": "aether",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} aether 1"
+    ]
+  },
+  {
+    "id": "crate-conqueror",
+    "category": "crates",
+    "name": "Crate Legado del Conquistador",
+    "theme": "conqueror",
+    "colors": [
+      "#ffd77a",
+      "#e2a72e"
+    ],
+    "rarity": "Legendario",
+    "tagline": "La herencia de los reyes guerreros",
+    "description": "Oro, jade y acero de los antiguos conquistadores: espadas, estoques, guadaña, armadura completa, alas y sombrero.",
+    "image": "img/crates/conqueror.webp",
+    "keyImage": "img/keys/royalty1.webp",
+    "price": 449,
+    "set": "conqueror",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} conqueror 1"
+    ]
+  },
+  {
+    "id": "crate-ender",
+    "category": "crates",
+    "name": "Crate Dragón del End",
+    "theme": "ender",
+    "colors": [
+      "#e3a6ff",
+      "#c026d3"
+    ],
+    "rarity": "Mítico",
+    "tagline": "Escamas y fuego del End",
+    "description": "Forjado con escamas del dragón del End: armas, herramientas, guantelete, armadura, alas y casco con energía violeta.",
+    "image": "img/crates/ender.webp",
+    "keyImage": "img/keys/endportal.webp",
+    "price": 499,
+    "set": "ender",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "gauntlet",
+        "name": "Guantelete"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} ender 1"
+    ]
+  },
+  {
+    "id": "crate-unicorn",
+    "category": "crates",
+    "name": "Crate Pequeño Unicornio",
+    "theme": "unicorn",
+    "colors": [
+      "#ffc4f2",
+      "#e879f9"
+    ],
+    "rarity": "Edición limitada",
+    "tagline": "Magia de arcoíris y estrellas",
+    "description": "Pastel, brillos y cuernos de unicornio: un set adorable con armas, herramientas, armadura, alas y casco animados.",
+    "image": "img/crates/unicorn.webp",
+    "keyImage": "img/keys/rainbow1.webp",
+    "price": 349,
+    "set": "unicorn",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "knife",
+        "name": "Cuchillo"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} unicorn 1"
+    ]
+  },
+  {
+    "id": "crate-cosmo",
+    "category": "crates",
+    "name": "Crate Cosmos",
+    "theme": "cosmo",
+    "colors": [
+      "#a8c8ff",
+      "#3b82f6"
+    ],
+    "rarity": "Épico",
+    "tagline": "Galaxias en tus manos",
+    "description": "Armas con el cielo estrellado dentro: hoja, alabarda, hoz, daga, armadura y alas del pack Cosmo.",
+    "image": "img/crates/cosmo.webp",
+    "keyImage": "img/keys/celestial.webp",
+    "price": 399,
+    "set": "cosmo",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} cosmo 1"
+    ]
+  },
+  {
+    "id": "crate-dracula",
+    "category": "crates",
+    "name": "Crate Drácula",
+    "theme": "dracula",
+    "colors": [
+      "#ff8a8a",
+      "#dc2626"
+    ],
+    "rarity": "Legendario",
+    "tagline": "La sangre del conde",
+    "description": "El arsenal del conde vampiro: hojas carmesí, alabarda, hoz, armadura gótica y alas de murciélago.",
+    "image": "img/crates/dracula.webp",
+    "keyImage": "img/keys/redcracked.webp",
+    "price": 449,
+    "set": "dracula",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "battleaxe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "fishing",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} dracula 1"
+    ]
+  },
+  {
+    "id": "crate-lightning",
+    "category": "crates",
+    "name": "Crate Poder del Rayo",
+    "theme": "lightning",
+    "colors": [
+      "#fff07a",
+      "#eab308"
+    ],
+    "rarity": "Mítico",
+    "tagline": "La tormenta hecha acero",
+    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas y casco.",
+    "image": "img/crates/lightning.webp",
+    "keyImage": "img/keys/lightning.webp",
+    "price": 499,
+    "set": "lightning",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "knife",
+        "name": "Cuchillo"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} lightning 1"
+    ]
+  },
+  {
+    "id": "crate-wither",
+    "category": "crates",
+    "name": "Crate Wither Oscuro",
+    "theme": "wither",
+    "colors": [
+      "#d5dbe6",
+      "#7c8799"
+    ],
+    "rarity": "Legendario",
+    "tagline": "La maldición del Wither",
+    "description": "Hueso negro y almas en pena: gran espada, guadaña, tridente, armadura, capa y casco del Dark Wither.",
+    "image": "img/crates/wither.webp",
+    "keyImage": "img/keys/blackstone.webp",
+    "price": 449,
+    "set": "wither",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "cape",
+        "name": "Capa"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} wither 1"
+    ]
+  },
+  {
+    "id": "crate-pink",
+    "category": "crates",
+    "name": "Crate Legado Rosa",
+    "theme": "pink",
+    "colors": [
+      "#ffb8da",
+      "#f472b6"
+    ],
+    "rarity": "Épico",
+    "tagline": "Elegancia en rosa y oro",
+    "description": "El set Pink Legacy: alabarda, hacha de batalla, martillo, armadura y alas en rosa y oro.",
+    "image": "img/crates/pink.webp",
+    "keyImage": "img/keys/rainbow2.webp",
+    "price": 349,
+    "set": "pink",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} pink 1"
+    ]
+  },
+  {
+    "id": "crate-skeleton",
+    "category": "crates",
+    "name": "Crate Señor Esqueleto",
+    "theme": "skeleton",
+    "colors": [
+      "#ecebe4",
+      "#a8a29e"
+    ],
+    "rarity": "Legendario",
+    "tagline": "El ejército de los huesos",
+    "description": "El arsenal del Skeleton Overlord: gran espada, guantelete, maza, alabarda, armadura y alas de hueso.",
+    "image": "img/crates/skeleton.webp",
+    "keyImage": "img/keys/herobrine.webp",
+    "price": 449,
+    "set": "skeleton",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "big_sword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "gauntlet",
+        "name": "Guantelete"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} skeleton 1"
+    ]
+  },
+  {
+    "id": "crate-lunar",
+    "category": "crates",
+    "name": "Crate Dragón Lunar",
+    "theme": "lunar",
+    "colors": [
+      "#c7d2fe",
+      "#818cf8"
+    ],
+    "rarity": "Mítico",
+    "tagline": "La luz plateada de la luna",
+    "description": "El dragón lunar de 2024: gran espada, guadaña, tridente, armadura completa, alas y cola animadas.",
+    "image": "img/crates/lunar.webp",
+    "keyImage": "img/keys/nightsky.webp",
+    "price": 499,
+    "set": "lunar",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "tail",
+        "name": "Cola"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} lunar 1"
+    ]
+  },
+  {
+    "id": "crate-beats",
+    "category": "crates",
+    "name": "Crate Beats",
+    "theme": "beats",
+    "colors": [
+      "#b9b4ff",
+      "#7c6cff"
+    ],
+    "rarity": "Épico",
+    "tagline": "Armas al ritmo del neón",
+    "description": "Neón violeta y azul que late como un altavoz: gran espada, guadaña, tridente, armadura, alas y casco animados.",
+    "image": "img/crates/beats.webp",
+    "keyImage": "img/keys/purple.webp",
+    "price": 399,
+    "set": "beats",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} beats 1"
+    ]
+  },
+  {
+    "id": "crate-azure",
+    "category": "crates",
+    "name": "Crate Azure",
+    "theme": "azure",
+    "colors": [
+      "#9fd8ff",
+      "#38bdf8"
+    ],
+    "rarity": "Legendario",
+    "tagline": "Acero azul de las profundidades",
+    "description": "Hojas de cristal azul con núcleos dorados: gran espada, hacha, guadaña, tridente, armadura, alas y casco.",
+    "image": "img/crates/azure.webp",
+    "keyImage": "img/keys/blue.webp",
+    "price": 449,
+    "set": "azure",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} azure 1"
+    ]
+  },
+  {
+    "id": "crate-littledragon",
+    "category": "crates",
+    "name": "Crate Pequeño Dragón",
+    "theme": "littledragon",
+    "colors": [
+      "#ffb36b",
+      "#f97316"
+    ],
+    "rarity": "Mítico",
+    "tagline": "Fuego y escamas de dragón",
+    "description": "Armas de lava y escamas rojas: gran espada, guadaña, tridente, armadura completa, alas y casco.",
+    "image": "img/crates/littledragon.webp",
+    "keyImage": "img/keys/lava.webp",
+    "price": 499,
+    "set": "littledragon",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} littledragon 1"
+    ]
+  },
+  {
+    "id": "crate-bahamut",
+    "category": "crates",
+    "name": "Crate Bahamut",
+    "theme": "bahamut",
+    "colors": [
+      "#d6dbe4",
+      "#8f9bb3"
+    ],
+    "rarity": "Mítico",
+    "tagline": "El rey de los dragones",
+    "description": "Acero oscuro y escamas de dragón: gran espada, garrote, guantelete, maza, alabarda, armadura completa, alas y casco.",
+    "image": "img/crates/bahamut.webp",
+    "keyImage": "img/keys/netherite.webp",
+    "price": 499,
+    "set": "bahamut",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "big_sword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "club",
+        "name": "Garrote"
+      },
+      {
+        "id": "gauntlet",
+        "name": "Guantelete"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} bahamut 1"
+    ]
+  },
+  {
+    "id": "crate-fairy",
+    "category": "crates",
+    "name": "Crate Hada",
+    "theme": "fairy",
+    "colors": [
+      "#fff1b8",
+      "#facc15"
+    ],
+    "rarity": "Edición limitada",
+    "tagline": "Plata, oro y alas de hada",
+    "description": "Blanco perla con filos de oro y alitas: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/fairy.webp",
+    "keyImage": "img/keys/wings.webp",
+    "price": 449,
+    "set": "fairy",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} fairy 1"
+    ]
+  },
+  {
+    "id": "crate-bonita",
+    "category": "crates",
+    "name": "Crate Bonita",
+    "theme": "bonita",
+    "colors": [
+      "#ffc2d6",
+      "#f472b6"
+    ],
+    "rarity": "Épico",
+    "tagline": "Rosa pastel con un toque turquesa",
+    "description": "Rosa pastel con detalles turquesa: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/bonita.webp",
+    "keyImage": "img/keys/crystal.webp",
+    "price": 399,
+    "set": "bonita",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} bonita 1"
+    ]
+  },
+  {
+    "id": "crate-chronicles",
+    "category": "crates",
+    "name": "Crate Crónicas",
+    "theme": "chronicles",
+    "colors": [
+      "#9fe3ff",
+      "#22a6e6"
+    ],
+    "rarity": "Legendario",
+    "tagline": "Reliquias de oro y zafiro",
+    "description": "Las armas de las Crónicas: oro antiguo con núcleos de zafiro. Hacha de batalla, hoja, alabarda, armadura completa, alas y casco.",
+    "image": "img/crates/chronicles.webp",
+    "keyImage": "img/keys/diamonds.webp",
+    "price": 449,
+    "set": "chronicles",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} chronicles 1"
+    ]
+  },
+  {
+    "id": "crate-protocal",
+    "category": "crates",
+    "name": "Crate Protocolo",
+    "theme": "protocal",
+    "colors": [
+      "#ff9b9b",
+      "#ef4444"
+    ],
+    "rarity": "Mítico",
+    "tagline": "Tecnología de combate",
+    "description": "Acero gris y energía roja de tecnología militar: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/protocal.webp",
+    "keyImage": "img/keys/red.webp",
+    "price": 499,
+    "set": "protocal",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} protocal 1"
+    ]
+  },
+  {
+    "id": "crate-berserker",
+    "category": "crates",
+    "name": "Crate Berserker",
+    "theme": "berserker",
+    "colors": [
+      "#ffab8a",
+      "#e5483b"
+    ],
+    "rarity": "Legendario",
+    "tagline": "La furia del guerrero",
+    "description": "Acero negro con ojos de fuego: hacha de batalla, hoja, alabarda, martillo, armadura completa y alas del Berserker.",
+    "image": "img/crates/berserker.webp",
+    "keyImage": "img/keys/magma.webp",
+    "price": 449,
+    "set": "berserker",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} berserker 1"
     ]
   },
   {
@@ -386,7 +2954,7 @@
     "commands": [
       "eco give {player} 10000"
     ],
-    "image": "img/ranks/coins.webp"
+    "image": "img/coins-small.png"
   },
   {
     "id": "monedas-60000",
@@ -397,6 +2965,6 @@
     "commands": [
       "eco give {player} 60000"
     ],
-    "image": "img/keys/coins.webp"
+    "image": "img/coins-big.png"
   }
 ]

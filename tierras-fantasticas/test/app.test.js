@@ -261,7 +261,7 @@ test('comprar llaves de un crate las entrega y el catálogo trae su contenido', 
   const list = await (await get('/api/products')).json();
   const crate = list.find((p) => p.id === 'crate-necros');
   assert.strictEqual(crate.category, 'crates');
-  assert.ok(crate.image && crate.items.length > 0 && crate.armor.length === 4);
+  assert.ok(crate.image && crate.models.length > 0 && crate.models.some((m) => m.id === 'armor_helmet'));
 
   received.length = 0;
   const id = await createOrder({ productId: 'crate-necros', username: 'Alex', quantity: 2 });

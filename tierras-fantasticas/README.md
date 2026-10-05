@@ -167,6 +167,22 @@ uno de los bloques `[data-theme='...']` del principio de `public/styles.css` con
 Los comandos de ejemplo usan LuckPerms (`lp`), EssentialsX (`eco`, `broadcast`) y un plugin de cofres (`crate`).
 Ajústalos a los plugins de tu servidor. Los precios siempre se leen del servidor, así que nadie puede cambiarlos desde el navegador.
 
+## Crates y visor 3D
+
+Cada crate enseña todos sus objetos (armas, herramientas, cofre, llave, alas, cascos y las 4 piezas de armadura).
+Al tocar uno se abre un visor 3D (`public/viewer.js`, con three.js en `public/vendor/`) que gira el modelo real del
+pack con sus texturas animadas. Los datos salen de los packs con tres scripts (necesitan Pillow y numpy):
+
+```bash
+python3 tools/build_items.py <carpeta con los packs descomprimidos> [set ...]   # modelos y miniaturas
+python3 tools/compose_cover.py <carpeta con los packs> [set ...]                 # portada igual para todos
+python3 tools/crates.py                                                          # escribe los crates en products.json
+```
+
+Para añadir un pack nuevo: súmalo a `SETS` en `tools/build_items.py` (ruta a su carpeta `assets` y espacio de
+nombres), añade su línea en `tools/crates.py` (nombre, rareza, frase, descripción, llave, precio y colores) y ejecuta
+los tres scripts. Las páginas comunes (cabecera, pie…) se generan con `python3 tools/pages.py`.
+
 ## Pruebas
 
 ```bash
