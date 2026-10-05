@@ -1,0 +1,53 @@
+# Despliegue de la web de Tierras Fantásticas en Render (plan gratuito).
+# Render lee este archivo al crear el "Blueprint" y se actualiza solo con cada cambio en main.
+services:
+  - type: web
+    name: tierras-fantasticas
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: tierras-fantasticas
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PUBLIC_URL
+        value: https://tierrasfantasticas.store
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SERVER_NAME
+        value: Tierras Fantásticas
+      - key: SERVER_IP
+        value: 216.163.187.40:19001
+      - key: DISCORD_URL
+        value: https://discord.gg/tRrunHBZE
+      - key: CURRENCY
+        value: USD
+      - key: PAYPAL_ENV
+        value: sandbox
+      # Claves que se rellenan a mano en Render (Environment) cuando toque cobrar y entregar.
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: RCON_HOST
+        sync: false
+      - key: RCON_PORT
+        sync: false
+      - key: RCON_PASSWORD
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_GUILD_ID
+        sync: false
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
