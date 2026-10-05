@@ -284,7 +284,7 @@ def index():
 
 
 def tienda():
-    tabs = [('rangos', 'Rangos', '/img/ranks/royal.png'), ('crates', 'Crates', '/img/keys/celestial.webp'),
+    tabs = [('gratis', 'Gratis', '/img/keys/gold.webp'), ('rangos', 'Rangos', '/img/ranks/royal.png'), ('crates', 'Crates', '/img/keys/celestial.webp'),
             ('llaves', 'Llaves', '/img/keys/mystic.webp'), ('monedas', 'Monedas', '/img/coins-small.png')]
     pix = ' class="pixel-img"'
     tab_html = '\n'.join(

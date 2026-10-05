@@ -720,3 +720,37 @@ test('el /tf vincular del mod antiguo ya no vincula nada', async () => {
   const res = await (await poll(['Viejo_Mod'], [], { links: [{ code: 'ABCDEF', name: 'Viejo_Mod', uuid: uuidOf('Viejo_Mod') }] })).json();
   assert.deepStrictEqual(res.linkResults, [{ uuid: uuidOf('Viejo_Mod'), ok: false, account: null }]);
 });
+
+// --- Regalos gratis ---
+test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se anuncian como una compra', async () => {
+  received.length = 0;
+  announcements.length = 0;
+  // Sin sesión no se puede.
+  assert.strictEqual((await post('/api/claim', { productId: 'regalo-diamantes' })).status, 401);
+  // Y no se pueden pagar con Stripe.
+  await seen('Regalo_MC');
+  assert.strictEqual((await post('/api/checkout', { productId: 'regalo-diamantes', username: 'Regalo_MC' })).status, 400);
+
+  const cookie = await register('Regalo_MC');
+  // Un producto de pago no se reclama gratis.
+  assert.strictEqual((await post('/api/claim', { productId: 'rango-rey' }, cookie)).status, 400);
+
+  const res = await post('/api/claim', { productId: 'regalo-diamantes' }, cookie);
+  assert.strictEqual(res.status, 200);
+  const { id, status } = await res.json();
+  assert.strictEqual(status, 'queued');
+  assert.match(id, /^GIFT[0-9A-Z]{2}[0-9A-F]{32}$/);
+  assert.strictEqual(announcements.length, 1);
+
+  // Una sola vez por jugador.
+  assert.strictEqual((await post('/api/claim', { productId: 'regalo-diamantes' }, cookie)).status, 409);
+
+  const [delivery] = await serverDelivers('Regalo_MC');
+  assert.strictEqual(delivery.uuid, uuidOf('Regalo_MC'));
+  assert.deepStrictEqual(received, ['give Regalo_MC minecraft:diamond 5']);
+  const order = await (await get(`/api/order/${id}`)).json();
+  assert.strictEqual(order.status, 'delivered');
+  assert.strictEqual(order.amount, 0);
+  const { orders } = await (await get('/api/account/orders', { Cookie: cookie })).json();
+  assert.ok(orders.some((o) => o.id === id));
+});

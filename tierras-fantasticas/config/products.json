@@ -1,5 +1,57 @@
 [
   {
+    "id": "regalo-bienvenida",
+    "category": "gratis",
+    "name": "Regalo de Bienvenida",
+    "description": "3 manzanas doradas y 16 panes para empezar tu aventura. Gratis, una vez por jugador.",
+    "price": 0,
+    "maxQuantity": 1,
+    "free": true,
+    "commands": [
+      "give {player} minecraft:golden_apple 3",
+      "give {player} minecraft:bread 16"
+    ],
+    "image": "img/keys/gold.webp",
+    "colors": [
+      "#f8dd8e",
+      "#e3b74c"
+    ]
+  },
+  {
+    "id": "regalo-diamantes",
+    "category": "gratis",
+    "name": "Bolsa de Diamantes",
+    "description": "5 diamantes de regalo. Gratis, una vez por jugador.",
+    "price": 0,
+    "maxQuantity": 1,
+    "free": true,
+    "commands": [
+      "give {player} minecraft:diamond 5"
+    ],
+    "image": "img/keys/diamonds.webp",
+    "colors": [
+      "#a5f3fc",
+      "#38bdf8"
+    ]
+  },
+  {
+    "id": "regalo-espada-valentine",
+    "category": "gratis",
+    "name": "Espada Valentine de Regalo",
+    "description": "La espada animada del set Valentine. Gratis, una vez por jugador.",
+    "price": 0,
+    "maxQuantity": 1,
+    "free": true,
+    "commands": [
+      "tf web sets give {player} valentine sword"
+    ],
+    "image": "img/crates/valentine.webp",
+    "colors": [
+      "#ff9cc2",
+      "#ff4f8b"
+    ]
+  },
+  {
     "id": "rango-aventurero",
     "category": "rangos",
     "name": "Rango Aventurero",
