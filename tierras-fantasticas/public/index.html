@@ -4,162 +4,235 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tierras Fantásticas — Servidor de Minecraft</title>
-  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura, castillos y magia. Únete gratis, descubre los nuevos crates animados y apoya el servidor en la tienda oficial.">
-  <meta name="theme-color" content="#070b18">
+  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, crates animados y una comunidad activa.">
+  <meta name="theme-color" content="#07080d">
+  <meta property="og:title" content="Tierras Fantásticas — Servidor de Minecraft">
+  <meta property="og:description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, crates animados y una comunidad activa.">
+  <meta property="og:image" content="/img/og.jpg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/img/hero-1920.webp" imagesrcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" imagesizes="100vw">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
+  <script>document.documentElement.classList.add('js')</script>
 </head>
-<body data-page="inicio">
-  <canvas id="sky" aria-hidden="true"></canvas>
-
-  <header class="nav">
-    <div class="nav-inner">
-      <a href="/" class="brand"><img src="/img/logo.webp" alt="" width="40" height="44"><span data-server-name>Tierras Fantásticas</span></a>
-      <nav class="tabs-nav" aria-label="Secciones">
-        <a href="/" aria-current="page"><span class="nav-pill pixel" aria-hidden="true"></span>Inicio</a>
+<body data-page="inicio" data-hero>
+  <a class="sr-only" href="#main">Saltar al contenido</a>
+  <header class="header" id="header">
+    <div class="wrap header-inner">
+      <a href="/" class="brand" aria-label="Tierras Fantásticas, inicio">
+        <img src="/img/logo.webp" alt="" width="34" height="38">
+        <span>Tierras Fantásticas</span>
+      </a>
+      <nav class="nav" aria-label="Secciones">
+        <a href="/" aria-current="page">Inicio</a>
         <a href="/tienda">Tienda</a>
-        <a href="/crates">Crates <em class="new pixel">Nuevo</em></a>
+        <a href="/crates">Crates<span class="tag">Nuevo</span></a>
         <a href="/mundo">El mundo</a>
         <a href="/ayuda">Ayuda</a>
       </nav>
-      <div class="nav-actions">
-        <button class="nav-ip pixel" type="button" data-copy-ip aria-label="Copiar IP del servidor"><span class="dot"></span><span data-server-ip>216.163.187.40:19001</span><span class="copy-tag">Copiar</span></button>
-        <a href="#" class="btn btn-discord btn-sm pixel discord-link" hidden target="_blank" rel="noopener">Discord</a>
+      <div class="header-actions">
+        <button class="ip-chip" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+          <span class="dot" data-status-dot></span><span data-server-ip>216.163.187.40:19001</span><span class="hint" data-copy-hint>Copiar</span>
+        </button>
+        <a href="/tienda" class="btn btn-gold btn-sm">Tienda</a>
+        <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
     </div>
   </header>
 
-  <main>
-    <section class="hero wrap">
-      <div class="hero-inner">
-        <div class="logo-stage">
-          <div class="rays" aria-hidden="true"></div>
-          <div class="logo-float">
-            <img id="hero-logo" src="/img/logo.webp" alt="Logo de Tierras Fantásticas" width="743" height="820">
-            <div class="logo-shine" id="logo-shine"></div>
-          </div>
-          <div class="logo-shadow"></div>
+  <div class="sheet" id="sheet" aria-label="Menú" aria-hidden="true">
+    <div class="sheet-top">
+      <a href="/" class="brand"><img src="/img/logo.webp" alt="" width="34" height="38"><span>Tierras Fantásticas</span></a>
+      <button class="menu-btn" type="button" data-menu-close aria-label="Cerrar menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <nav aria-label="Secciones">
+      <a href="/" aria-current="page">Inicio<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="/tienda">Tienda<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="/crates">Crates<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="/mundo">El mundo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="/ayuda">Ayuda<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </nav>
+    <div class="sheet-foot">
+      <button class="btn btn-ghost btn-lg ip-button" type="button" data-copy-ip>
+        <span class="ip" data-server-ip>216.163.187.40:19001</span><span class="copy" data-copy-hint>Copiar IP</span>
+      </button>
+      <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Únete al Discord</a>
+    </div>
+  </div>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-art" aria-hidden="true">
+        <img src="/img/hero-1920.webp" srcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high">
+      </div>
+      <div class="wrap hero-inner">
+        <div class="logo-mark">
+          <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
+          <span class="shine" aria-hidden="true"></span>
         </div>
-
-        <span class="chip pixel">Servidor de Minecraft · Supervivencia y aventura</span>
-        <h1 id="hero-title" data-server-name>Tierras Fantásticas</h1>
-        <p class="tagline">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
-
-        <button class="ip-box pixel" type="button" data-copy-ip aria-label="Copiar IP del servidor">
-          <span class="ip-text">
-            <span class="ip-label">IP del servidor</span>
-            <span class="ip" data-server-ip>216.163.187.40:19001</span>
-          </span>
-          <span class="ip-action pixel" data-copy-hint>Copiar IP</span>
-        </button>
-
-        <div class="status" data-status>
-          <span class="dot"></span>
-          <span data-status-text>Comprobando estado…</span>
-        </div>
-
+        <span class="eyebrow">Minecraft Java · Forge 1.20.1</span>
+        <h1 style="margin-top:14px" data-server-name>Tierras Fantásticas</h1>
+        <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
         <div class="hero-cta">
-          <a href="/crates" class="btn btn-primary btn-lg pixel">Ver los crates nuevos</a>
-          <a href="/tienda" class="btn btn-ghost btn-lg pixel">Ir a la tienda</a>
+          <button class="btn btn-lg ip-button" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+            <span class="ip" data-server-ip>216.163.187.40:19001</span><span class="copy" data-copy-hint>Copiar IP</span>
+          </button>
+          <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
+        <span class="status-line" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
       </div>
     </section>
 
-    <section class="wrap">
-      <div class="stats pixel reveal">
+    <div class="wrap">
+      <div class="panel stats reveal">
         <div class="stat"><strong data-players>—</strong><span>Jugadores conectados</span></div>
-        <div class="stat"><strong data-crate-count>3</strong><span>Crates animados nuevos</span></div>
-        <div class="stat"><strong>Al instante</strong><span>Entrega de tus compras</span></div>
+        <div class="stat"><strong>200+</strong><span>Mods en el modpack</span></div>
+        <div class="stat"><strong data-crate-count>3</strong><span>Crates animados</span></div>
         <div class="stat"><strong>0%</strong><span>Pay-to-win</span></div>
       </div>
+    </div>
+
+    <section class="wrap section">
+      <div class="section-head">
+        <span class="eyebrow">Cómo jugar</span>
+        <h2>Dentro en tres pasos</h2>
+        <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>
+      </div>
+      <div class="grid grid-3 steps">
+        <article class="panel step reveal">
+          <h3>Prepara el modpack</h3>
+          <p>Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas, que incluye el TF Client. Lo tienes en nuestro Discord.</p>
+        </article>
+        <article class="panel step reveal">
+          <h3>Pulsa «Tierras Fantásticas»</h3>
+          <p>Desde el menú del TF Client entras con un clic. Antes de conectar revisa tus mods y te dice si te falta alguno.</p>
+        </article>
+        <article class="panel step reveal">
+          <h3>Empieza tu aventura</h3>
+          <p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es 216.163.187.40:19001.</p>
+        </article>
+      </div>
     </section>
 
-    <section class="section wrap">
-      <div class="section-head reveal">
-        <p class="kicker">Nuevo en la tienda</p>
-        <h2>Sets animados <span class="gold-text">legendarios</span></h2>
-        <p class="section-sub">Tres crates con armas, herramientas, armaduras y alas animadas. Consigue una llave, ábrelo en el spawn y llévate una pieza del set.</p>
+    <section class="wrap section">
+      <div class="section-head">
+        <span class="eyebrow">El reino</span>
+        <h2>Mucho más que supervivencia</h2>
       </div>
-      <div class="crate-cards" id="crate-spotlight">
-        <p class="loading">Cargando crates</p>
+      <div class="grid grid-3">
+        <article class="panel feature reveal">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l2-1V5h2v2h2V5h2v2h2V5h2v3l2 1v12"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span>
+          <h3>Castillos y reinos</h3>
+          <p>Funda tu reino, levanta murallas y compite con otros clanes por el control de las tierras.</p>
+        </article>
+        <article class="panel feature reveal">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M14.5 6.5L18 3h3v3l-3.5 3.5"/><path d="M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></span>
+          <h3>Mazmorras y jefes</h3>
+          <p>Asalta fortalezas y derrota jefes en eventos semanales con recompensas exclusivas.</p>
+        </article>
+        <article class="panel feature reveal">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span>
+          <h3>Más de 200 mods</h3>
+          <p>Magia, criaturas, biomas y tecnología: un modpack pensado para la aventura, no para el grindeo.</p>
+        </article>
+        <article class="panel feature reveal">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/></svg></span>
+          <h3>Economía justa</h3>
+          <p>Comercia con otros jugadores, abre tu tienda y gana monedas explorando y construyendo.</p>
+        </article>
+        <article class="panel feature reveal">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <h3>Terrenos protegidos</h3>
+          <p>Reclama tu territorio y protege tu base. Nadie toca lo que es tuyo.</p>
+        </article>
+        <article class="panel feature reveal">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <h3>Comunidad activa</h3>
+          <p>Staff atento, eventos y sorteos. La tienda solo da ventajas de estilo y comodidad.</p>
+        </article>
       </div>
     </section>
 
-    <section class="section wrap">
-      <div class="section-head reveal">
-        <p class="kicker">Explora</p>
-        <h2>Todo el reino, a un clic</h2>
+    <section class="wrap section">
+      <div class="section-head">
+        <span class="eyebrow">Nuevo en la tienda</span>
+        <h2>Sets <span class="gold-text">legendarios</span></h2>
+        <p>Armas, herramientas, armaduras y alas con animaciones propias. Consigue una llave y abre el crate en el spawn.</p>
       </div>
-      <div class="tiles">
-        <a class="tile panel pixel reveal" href="/tienda">
-          <span class="icon pixel" aria-hidden="true">$</span>
-          <h3>Tienda</h3>
-          <p>Rangos, llaves y monedas con entrega automática en el juego y en Discord.</p>
-          <span class="go">Abrir la tienda →</span>
-        </a>
-        <a class="tile panel pixel reveal" href="/crates">
-          <span class="icon pixel" aria-hidden="true">✦</span>
-          <h3>Crates</h3>
-          <p>Valentine, Necros y Luminite: mira cada pieza antes de comprar tu llave.</p>
-          <span class="go">Ver los crates →</span>
-        </a>
-        <a class="tile panel pixel reveal" href="/mundo">
-          <span class="icon pixel" aria-hidden="true">⌂</span>
-          <h3>El mundo</h3>
-          <p>Supervivencia, castillos, mazmorras y reinos. Así es Tierras Fantásticas.</p>
-          <span class="go">Descubrir el mundo →</span>
-        </a>
-        <a class="tile panel pixel reveal" href="/ayuda">
-          <span class="icon pixel" aria-hidden="true">?</span>
-          <h3>Ayuda</h3>
-          <p>Preguntas frecuentes sobre pagos, entregas, Discord y crates.</p>
-          <span class="go">Resolver dudas →</span>
-        </a>
+      <div class="grid grid-2 grid-4" id="crate-spotlight">
+        <p class="loading">Cargando crates…</p>
+      </div>
+    </section>
+
+    <section class="wrap section">
+      <div class="section-head">
+        <span class="eyebrow">Rangos</span>
+        <h2>Lleva tu nombre con estilo</h2>
+        <p>Prefijos, kits, hogares extra y ventajas de comodidad. Sin romper el equilibrio del juego.</p>
+      </div>
+      <div class="rank-strip" id="rank-strip"></div>
+      <p style="margin-top:24px"><a class="btn btn-ghost" href="/tienda#rangos">Comparar rangos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+    </section>
+
+    <section class="wrap section">
+      <div class="panel cta-band reveal">
+        <span class="eyebrow">Comunidad</span>
+        <h2 style="margin-top:14px">Únete al Discord del reino</h2>
+        <p>Novedades, eventos, sorteos, el modpack y soporte del staff. Aquí empieza todo.</p>
+        <div class="actions">
+          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Entrar al Discord</a>
+          <a href="/ayuda" class="btn btn-ghost btn-lg">Ver ayuda</a>
+        </div>
       </div>
     </section>
   </main>
 
-  <div class="footer-wrap">
-    <div class="grass" aria-hidden="true"></div>
-    <footer class="footer">
-      <div class="wrap footer-inner">
-        <div class="footer-brand">
-          <img src="/img/logo.webp" alt="" width="56" height="62">
-          <div>
-            <b data-server-name>Tierras Fantásticas</b>
-            <p class="muted">Servidor de Minecraft de aventura, castillos y magia.</p>
-            <p class="muted">IP: <span data-server-ip>216.163.187.40:19001</span></p>
-          </div>
-        </div>
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-brand">
+        <img src="/img/logo.webp" alt="" width="48" height="53" loading="lazy">
         <div>
-          <h4>Secciones</h4>
+          <b data-server-name>Tierras Fantásticas</b>
+          <p>Servidor de Minecraft de aventura, castillos y magia.</p>
+          <p>IP: <span data-server-ip>216.163.187.40:19001</span></p>
+        </div>
+      </div>
+      <div class="footer-cols">
+        <div>
+          <h4>Servidor</h4>
           <ul>
             <li><a href="/">Inicio</a></li>
-            <li><a href="/tienda">Tienda</a></li>
-            <li><a href="/crates">Crates</a></li>
             <li><a href="/mundo">El mundo</a></li>
-            <li><a href="/ayuda">Ayuda</a></li>
+            <li><a href="/mundo#normas">Normas</a></li>
           </ul>
         </div>
         <div>
-          <h4>Comunidad</h4>
+          <h4>Tienda</h4>
           <ul>
-            <li><a href="#" class="discord-link" hidden target="_blank" rel="noopener">Discord</a></li>
-            <li><a href="/ayuda">Soporte de compras</a></li>
+            <li><a href="/tienda#rangos">Rangos</a></li>
+            <li><a href="/crates">Crates</a></li>
+            <li><a href="/tienda#llaves">Llaves</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Ayuda</h4>
+          <ul>
+            <li><a href="/ayuda">Preguntas frecuentes</a></li>
+            <li><a href="#" class="discord-link" target="_blank" rel="noopener" hidden>Discord</a></li>
           </ul>
         </div>
       </div>
-      <div class="wrap footer-legal">
-        <p>© <span data-year></span> <span data-server-name>Tierras Fantásticas</span>. No afiliado a Mojang AB ni Microsoft.</p>
-        <p class="muted">Todas las compras son donaciones voluntarias para mantener el servidor.</p>
-      </div>
-    </footer>
-  </div>
+    </div>
+    <div class="wrap legal">
+      <span>© <span data-year></span> Tierras Fantásticas. No afiliado a Mojang AB ni a Microsoft.</span>
+      <span>Las compras son donaciones voluntarias para mantener el servidor.</span>
+    </div>
+  </footer>
 
-  <script src="/fx.js"></script>
-  <script src="/app.js"></script>
+  <script src="/app.js" defer></script>
 </body>
 </html>

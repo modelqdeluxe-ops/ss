@@ -12,7 +12,27 @@
     "commands": [
       "lp user {player} parent add aventurero",
       "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Aventurero\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
-    ]
+    ],
+    "image": "img/ranks/sword.webp",
+    "tier": 1,
+    "perks": [
+      "Prefijo dorado en el chat",
+      "/kit aventurero cada 24 h",
+      "3 hogares (/home)",
+      "Acceso al mundo de recursos"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Aventurero",
+      "Hogares (/home)": "3",
+      "Kit": "Cada 24 h",
+      "Mundo de recursos": true,
+      "/fly en el lobby": false,
+      "/hat y partículas": false,
+      "Mascota dragón": false,
+      "/nick y /ec": false,
+      "Cola prioritaria": false,
+      "Rol en Discord": true
+    }
   },
   {
     "id": "rango-hechicero",
@@ -28,7 +48,27 @@
     "commands": [
       "lp user {player} parent add hechicero",
       "tellraw @a [{\"text\":\"{player}\",\"color\":\"dark_purple\"},{\"text\":\" ahora es \",\"color\":\"light_purple\"},{\"text\":\"Hechicero\",\"color\":\"dark_purple\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"light_purple\"}]"
-    ]
+    ],
+    "image": "img/ranks/enchanter.webp",
+    "tier": 2,
+    "perks": [
+      "Todo lo de Aventurero",
+      "/fly en el lobby",
+      "8 hogares",
+      "/hat y partículas mágicas"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Hechicero",
+      "Hogares (/home)": "8",
+      "Kit": "Cada 24 h",
+      "Mundo de recursos": true,
+      "/fly en el lobby": true,
+      "/hat y partículas": true,
+      "Mascota dragón": false,
+      "/nick y /ec": false,
+      "Cola prioritaria": false,
+      "Rol en Discord": true
+    }
   },
   {
     "id": "rango-dragon",
@@ -43,7 +83,64 @@
     "commands": [
       "lp user {player} parent add dragon",
       "tellraw @a [{\"text\":\"{player}\",\"color\":\"red\"},{\"text\":\" ahora es \",\"color\":\"gold\"},{\"text\":\"Dragón\",\"color\":\"red\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"gold\"}]"
-    ]
+    ],
+    "image": "img/ranks/dragon.webp",
+    "tier": 3,
+    "perks": [
+      "Todo lo de Hechicero",
+      "Mascota dragón",
+      "20 hogares",
+      "/nick y /ec",
+      "Cola prioritaria"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Dragón",
+      "Hogares (/home)": "20",
+      "Kit": "Cada 24 h",
+      "Mundo de recursos": true,
+      "/fly en el lobby": true,
+      "/hat y partículas": true,
+      "Mascota dragón": true,
+      "/nick y /ec": true,
+      "Cola prioritaria": true,
+      "Rol en Discord": true
+    }
+  },
+  {
+    "id": "rango-rey",
+    "category": "rangos",
+    "name": "Rango Rey",
+    "description": "La corona del reino: todo lo de Dragón, hogares ilimitados, /kit rey semanal y título exclusivo.",
+    "price": 2999,
+    "maxQuantity": 1,
+    "image": "img/ranks/royal.webp",
+    "tier": 4,
+    "perks": [
+      "Todo lo de Dragón",
+      "Hogares ilimitados",
+      "/kit rey cada semana",
+      "Título «Rey» y color propio",
+      "Rol Rey en Discord"
+    ],
+    "discordRoles": [
+      "ID_ROL_REY"
+    ],
+    "commands": [
+      "lp user {player} parent add rey",
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Rey\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Rey",
+      "Hogares (/home)": "Ilimitados",
+      "Kit": "Diario + semanal",
+      "Mundo de recursos": true,
+      "/fly en el lobby": true,
+      "/hat y partículas": true,
+      "Mascota dragón": true,
+      "/nick y /ec": true,
+      "Cola prioritaria": true,
+      "Rol en Discord": true
+    }
   },
   {
     "id": "crate-valentine",
@@ -93,7 +190,8 @@
     ],
     "commands": [
       "crate key give {player} valentine 1"
-    ]
+    ],
+    "keyImage": "img/keys/pink.webp"
   },
   {
     "id": "crate-necros",
@@ -145,7 +243,8 @@
     ],
     "commands": [
       "crate key give {player} necros 1"
-    ]
+    ],
+    "keyImage": "img/keys/demon.webp"
   },
   {
     "id": "crate-luminite",
@@ -196,6 +295,64 @@
     ],
     "commands": [
       "crate key give {player} luminite 1"
+    ],
+    "keyImage": "img/keys/ice.webp"
+  },
+  {
+    "id": "crate-nazgul",
+    "category": "crates",
+    "name": "Crate Forja de Nazgul",
+    "theme": "nazgul",
+    "rarity": "Nuevo · Arsenal",
+    "tagline": "Diez armas legendarias forjadas en la oscuridad",
+    "description": "El arsenal de la forja de Nazgul: espadas rúnicas, mazas de fuego, guadañas y arcos con modelos 3D y brillos animados. Cada llave te da una de sus diez armas.",
+    "image": "img/crates/nazgul.webp",
+    "keyImage": "img/keys/amethyst.webp",
+    "price": 449,
+    "gallery": [
+      {
+        "name": "Hoja Abisal",
+        "icon": "img/crates/nazgul/abyssal_blade.webp"
+      },
+      {
+        "name": "Gran Espada Rúnica",
+        "icon": "img/crates/nazgul/great_sword.webp"
+      },
+      {
+        "name": "Bastón del Mago de Guerra",
+        "icon": "img/crates/nazgul/battle_mage_staff.webp"
+      },
+      {
+        "name": "Maza de Fuego",
+        "icon": "img/crates/nazgul/fire_mace.webp"
+      },
+      {
+        "name": "Hacha Gárgola",
+        "icon": "img/crates/nazgul/gargoyle_axe.webp"
+      },
+      {
+        "name": "Guadaña de la Bruja",
+        "icon": "img/crates/nazgul/witch_scythe.webp"
+      },
+      {
+        "name": "Locura Floreciente",
+        "icon": "img/crates/nazgul/flowering_madness.webp"
+      },
+      {
+        "name": "Estandarte de Guerra",
+        "icon": "img/crates/nazgul/battle_standart.webp"
+      },
+      {
+        "name": "Arco Pesado",
+        "icon": "img/crates/nazgul/heavy_bow.webp"
+      },
+      {
+        "name": "Daga del Pícaro",
+        "icon": "img/crates/nazgul/rogue_dagger.webp"
+      }
+    ],
+    "commands": [
+      "crate key give {player} nazgul 1"
     ]
   },
   {
@@ -206,7 +363,8 @@
     "price": 299,
     "commands": [
       "crate key give {player} epica 5"
-    ]
+    ],
+    "image": "img/keys/mystic.webp"
   },
   {
     "id": "llaves-legendarias-3",
@@ -216,7 +374,8 @@
     "price": 599,
     "commands": [
       "crate key give {player} legendaria 3"
-    ]
+    ],
+    "image": "img/keys/gold.webp"
   },
   {
     "id": "monedas-10000",
@@ -226,7 +385,8 @@
     "price": 199,
     "commands": [
       "eco give {player} 10000"
-    ]
+    ],
+    "image": "img/ranks/coins.webp"
   },
   {
     "id": "monedas-60000",
@@ -236,6 +396,7 @@
     "price": 999,
     "commands": [
       "eco give {player} 60000"
-    ]
+    ],
+    "image": "img/keys/coins.webp"
   }
 ]
