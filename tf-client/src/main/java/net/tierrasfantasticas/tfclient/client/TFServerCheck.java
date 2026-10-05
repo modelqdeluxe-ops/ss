@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -21,10 +22,16 @@ import net.minecraftforge.fml.ModList;
 /**
  * Antes de conectar, pregunta al servidor (con el ping de la lista de servidores) qué mods usa y los compara con los
  * instalados. Así se avisa de los que faltan en vez de quedarse esperando en "Conectando".
+ *
+ * Solo cuentan los mods que el cliente necesita de verdad: los que tienen algún canal de red obligatorio (es lo mismo
+ * que comprueba Forge al entrar). Los del servidor (Mohist, plugins, mods solo de servidor) no se piden.
  */
 public final class TFServerCheck {
     /** Mods que no cuentan: los trae cualquier cliente de Forge. */
     private static final Set<String> IGNORED = Set.of("minecraft", "forge", "mcp");
+    /** Partes del servidor híbrido (Mohist y similares): nunca van en el cliente. */
+    private static final Set<String> SERVER_PLATFORMS = Set.of("mohist", "bukkit", "craftbukkit", "spigot", "paper",
+            "arclight", "magma", "ketting", "youer", "banner", "catserver", "crucible", "spongeforge", "sponge");
 
     public record MissingMod(String id, String version) {}
 
@@ -43,7 +50,9 @@ public final class TFServerCheck {
             for (String[] mod : serverMods) {
                 String id = mod[0];
                 boolean serverOnly = mod[2] != null;
-                if (serverOnly || IGNORED.contains(id) || ModList.get().isLoaded(id)) continue;
+                boolean clientNeeds = mod[3] != null;
+                if (serverOnly || !clientNeeds || IGNORED.contains(id) || isServerPlatform(id)
+                        || ModList.get().isLoaded(id)) continue;
                 missing.add(new MissingMod(id, mod[1]));
             }
             missing.sort((a, b) -> a.id().compareToIgnoreCase(b.id()));
@@ -51,6 +60,10 @@ public final class TFServerCheck {
         } catch (Exception e) {
             return new Result(false, false, List.of(), e.getMessage());
         }
+    }
+
+    private static boolean isServerPlatform(String id) {
+        return SERVER_PLATFORMS.contains(id.toLowerCase(Locale.ROOT));
     }
 
     private static JsonObject ping(String host, int port) throws IOException {
@@ -81,18 +94,31 @@ public final class TFServerCheck {
         }
     }
 
-    /** Lista de mods del servidor: {id, versión, marcador de "solo servidor" o null}. */
+    /**
+     * Lista de mods del servidor: {id, versión, marcador de "solo servidor" o null, marcador de "el cliente lo
+     * necesita" (tiene un canal obligatorio) o null}.
+     */
     private static List<String[]> readMods(JsonObject forgeData) {
         List<String[]> mods = new ArrayList<>();
         if (forgeData.has("d")) {
             decodeOptimized(forgeData.get("d").getAsString(), mods);
         } else if (forgeData.has("mods")) {
+            Set<String> required = new HashSet<>();
+            if (forgeData.has("channels")) {
+                for (JsonElement element : forgeData.getAsJsonArray("channels")) {
+                    JsonObject channel = element.getAsJsonObject();
+                    if (!channel.has("res") || !channel.has("required") || !channel.get("required").getAsBoolean()) continue;
+                    String res = channel.get("res").getAsString();
+                    required.add(res.contains(":") ? res.substring(0, res.indexOf(':')) : "minecraft");
+                }
+            }
             JsonArray array = forgeData.getAsJsonArray("mods");
             for (JsonElement element : array) {
                 JsonObject mod = element.getAsJsonObject();
+                String id = mod.get("modId").getAsString();
                 String marker = mod.has("modmarker") ? mod.get("modmarker").getAsString() : "";
-                mods.add(new String[] {mod.get("modId").getAsString(), marker,
-                        marker.toUpperCase(Locale.ROOT).contains("IGNORE") ? marker : null});
+                mods.add(new String[] {id, marker, marker.toUpperCase(Locale.ROOT).contains("IGNORE") ? marker : null,
+                        required.contains(id) ? "required" : null});
             }
         }
         return mods;
@@ -128,12 +154,13 @@ public final class TFServerCheck {
             boolean ignoreServerOnly = (flag & 1) != 0;
             String id = reader.readUtf();
             String version = ignoreServerOnly ? "" : reader.readUtf();
+            boolean required = false;
             for (int c = 0; c < channels; c++) {
-                reader.readUtf();
-                reader.readUtf();
-                reader.readByte();
+                reader.readUtf(); // canal
+                reader.readUtf(); // versión del canal
+                required |= reader.readByte() != 0; // el cliente debe tenerlo
             }
-            mods.add(new String[] {id, version, ignoreServerOnly ? "server-only" : null});
+            mods.add(new String[] {id, version, ignoreServerOnly ? "server-only" : null, required ? "required" : null});
         }
     }
 

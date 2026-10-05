@@ -6,11 +6,11 @@ license="All Rights Reserved"
 modId="tfclient"
 version="${mod_version}"
 displayName="TF Client"
-description='''Cliente oficial de Tierras Fantásticas: pantalla de carga y menú principal propios, conexión directa al servidor y mundo local. En el servidor hace de puente con la web: entrega las compras de la tienda y manda los jugadores conectados.'''
+description='''Cliente oficial de Tierras Fantásticas: pantalla de carga y menú principal propios, conexión directa al servidor y mundo local. Añade los objetos de los sets de Tierras Fantásticas (armas, herramientas, armaduras y cosméticos animados) y el comando /tf. En el servidor hace de puente con la web: entrega las compras de la tienda y manda los jugadores conectados.'''
 logoFile="tfclient_logo.png"
 authors="Tierras Fantásticas"
-# Opcional en los dos lados: en el servidor hace de puente con la web y no obliga a los jugadores a tenerlo.
-displayTest="IGNORE_ALL_VERSION"
+# Registra los objetos de los sets: hace falta la misma versión en el servidor y en los jugadores.
+displayTest="MATCH_VERSION"
 
 [[dependencies.tfclient]]
     modId="forge"

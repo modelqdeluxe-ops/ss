@@ -60,10 +60,10 @@ def inset_poly(W, H, inset, tip_ratio):
 
 GOLD = [(0.0, (255, 236, 170)), (0.35, (232, 186, 82)), (0.55, (176, 120, 32)), (0.8, (226, 172, 70)), (1.0, (140, 92, 22))]
 GOLD_HOT = [(0.0, (255, 248, 210)), (0.35, (255, 214, 110)), (0.55, (206, 146, 44)), (0.8, (250, 202, 96)), (1.0, (170, 112, 30))]
-NAVY = [(0.0, (44, 56, 98)), (0.5, (26, 34, 64)), (1.0, (14, 18, 36))]
-NAVY_HOT = [(0.0, (62, 78, 132)), (0.5, (36, 48, 88)), (1.0, (20, 26, 52))]
-GOLD_FILL = [(0.0, (255, 230, 150)), (0.45, (236, 184, 76)), (1.0, (178, 118, 30))]
-GOLD_FILL_HOT = [(0.0, (255, 242, 190)), (0.45, (250, 206, 102)), (1.0, (200, 138, 40))]
+NAVY = [(0.0, (31, 40, 72)), (0.5, (18, 24, 46)), (1.0, (9, 12, 25))]
+NAVY_HOT = [(0.0, (46, 58, 102)), (0.5, (27, 36, 68)), (1.0, (14, 19, 40))]
+GOLD_FILL = [(0.0, (232, 200, 120)), (0.45, (206, 156, 58)), (1.0, (150, 96, 22))]
+GOLD_FILL_HOT = [(0.0, (250, 222, 156)), (0.45, (230, 182, 82)), (1.0, (176, 118, 32))]
 TIP = 0.62
 
 
@@ -107,7 +107,7 @@ def make_state(w_gui, primary, state):
     # Brillo superior (vidrio) recortado al relleno
     gloss = Image.new("RGBA", size, (0, 0, 0, 0))
     top_poly = inset_poly(W, H, m + U * 1.55, TIP)
-    ImageDraw.Draw(gloss).rectangle([0, 0, W, H * 0.48], fill=(255, 255, 255, 34 if not primary else 60))
+    ImageDraw.Draw(gloss).rectangle([0, 0, W, H * 0.48], fill=(255, 255, 255, 26 if not primary else 48))
     gloss_mask = ImageChops.multiply(mask_of(size, top_poly), gloss.split()[3])
     gloss.putalpha(gloss_mask)
     img = Image.alpha_composite(img, gloss.filter(ImageFilter.GaussianBlur(U * 0.15)))

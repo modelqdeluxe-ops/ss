@@ -12,7 +12,9 @@ import net.minecraftforge.fml.loading.FMLPaths;
 /** Ajustes en config/tfclient.properties (se crea con los valores por defecto la primera vez). */
 public final class TFConfig {
     private static final String DEFAULT_NAME = "Tierras Fantásticas";
-    private static final String DEFAULT_ADDRESS = "216.163.187.40:19001";
+    /** Servidor de pruebas por ahora. El de siempre es 216.163.187.40:19001. */
+    private static final String DEFAULT_ADDRESS = "216.163.187.40:19229";
+    private static final String OLD_DEFAULT_ADDRESS = "216.163.187.40:19001";
     /** tierrasfantásticas.store escrito en ASCII (punycode), como lo usa internet. */
     private static final String DEFAULT_WEB = "https://xn--tierrasfantsticas-hpb.store";
     private static final String OLD_DEFAULT_WEB = "https://tienda.tierrasfantasticas.net";
@@ -61,7 +63,9 @@ public final class TFConfig {
         }
         serverName = props.getProperty("server.name", DEFAULT_NAME).trim();
         serverAddress = props.getProperty("server.address", DEFAULT_ADDRESS).trim();
-        if (serverAddress.isEmpty()) serverAddress = DEFAULT_ADDRESS;
+        // Quien tenía la IP por defecto anterior pasa a la nueva (si la cambió a mano, se respeta).
+        boolean oldAddress = serverAddress.isEmpty() || serverAddress.equals(OLD_DEFAULT_ADDRESS);
+        if (oldAddress) serverAddress = DEFAULT_ADDRESS;
         webUrl = props.getProperty("web.url", DEFAULT_WEB).trim();
         // La dirección provisional de versiones anteriores pasa a ser el dominio de verdad.
         boolean oldWeb = webUrl.isEmpty() || webUrl.equals(OLD_DEFAULT_WEB);
@@ -70,7 +74,7 @@ public final class TFConfig {
         discordUrl = props.getProperty("discord.url", DEFAULT_DISCORD_URL).trim();
 
         // Se reescribe si falta alguna clave (por ejemplo al actualizar desde una versión anterior)
-        boolean missing = oldWeb || !props.containsKey("web.url") || !props.containsKey("discord.guild.id") || !props.containsKey("discord.url");
+        boolean missing = oldWeb || oldAddress || !props.containsKey("web.url") || !props.containsKey("discord.guild.id") || !props.containsKey("discord.url");
         if (!Files.exists(file) || missing) {
             props.setProperty("server.name", serverName);
             props.setProperty("server.address", serverAddress);
