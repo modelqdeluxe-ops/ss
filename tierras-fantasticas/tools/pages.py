@@ -9,6 +9,8 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public')
 IP = '216.163.187.40:19001'
 NAV = [('inicio', '/', 'Inicio'), ('tienda', '/tienda', 'Tienda'), ('crates', '/crates', 'Crates'),
        ('mundo', '/mundo', 'El mundo'), ('ayuda', '/ayuda', 'Ayuda')]
+# Solo en el menú del móvil (en escritorio está el botón de la cuenta en la cabecera).
+SHEET_EXTRA = [('cuenta', '/cuenta', 'Mi cuenta')]
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
          '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
@@ -50,7 +52,7 @@ def header(page):
     arrow = I['arrow']
     sheet_links = '\n'.join(
         f'      <a href="{href}"{cur if key == page else ""}>{label}{arrow}</a>'
-        for key, href, label in NAV)
+        for key, href, label in NAV + SHEET_EXTRA)
     return f'''  <a class="sr-only" href="#main">Saltar al contenido</a>
   <header class="header" id="header">
     <div class="wrap header-inner">
@@ -66,6 +68,7 @@ def header(page):
           <span class="dot" data-status-dot></span><span data-server-ip>{IP}</span><span class="hint" data-copy-hint>Copiar</span>
         </button>
         <a href="/tienda" class="btn btn-gold btn-sm">Tienda</a>
+        <a href="/auth/discord" class="account-chip" data-account-chip aria-label="Iniciar sesión con Discord" hidden>{I['discord']}<span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet">{I['menu']}</button>
       </div>
     </div>
@@ -288,10 +291,10 @@ def tienda():
         f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false"><img src="{img}" alt="" width="22" height="22"{pix if ("ranks" in img or "coins" in img) else ""}>{label}</button>'
         for k, label, img in tabs)
     return head('Tienda — Tierras Fantásticas',
-                'Tienda oficial de Tierras Fantásticas: rangos, crates, llaves y monedas. Pago seguro con PayPal o tarjeta y entrega automática en el juego.',
+                'Tienda oficial de Tierras Fantásticas: rangos, crates, llaves y monedas. Pago seguro con tarjeta (Stripe) y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
-{page_hero('Tienda oficial', 'Apoya el reino', 'Tu compra llega sola al juego en cuanto entras al servidor. Paga con PayPal o con tarjeta, sin crear cuenta.')}
+{page_hero('Tienda oficial', 'Apoya el reino', 'Tu compra llega sola al juego en cuanto entras al servidor. Paga con tarjeta, Apple Pay o Google Pay, sin crear cuenta.')}
     <section class="wrap" style="padding-bottom:40px">
       <div class="shop-bar">
         <div class="tabs" role="tablist" aria-label="Categorías" id="shop-tabs">
@@ -304,9 +307,9 @@ def tienda():
       </div>
       <div class="panel compare" id="compare" hidden></div>
       <div class="trust">
-        <div class="panel item reveal"><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>PayPal o tarjeta. Nunca vemos tus datos bancarios.</span></div></div>
+        <div class="panel item reveal"><span class="icon">{I['lock']}</span><div><b>Pago seguro con Stripe</b><span>Tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></div></div>
         <div class="panel item reveal"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
-        <div class="panel item reveal"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Vincula tu cuenta al comprar y recibe el rol de tu rango.</span></div></div>
+        <div class="panel item reveal"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Inicia sesión con Discord y recibe el rol de tu rango.</span></div></div>
       </div>
     </section>
   </main>
@@ -334,7 +337,7 @@ def crates():
         <h2>De la tienda a tu inventario</h2>
       </div>
       <div class="grid grid-3 steps">
-{step('Consigue tu llave', 'Elige el crate, escribe tu nombre de Minecraft y paga con PayPal o tarjeta.')}
+{step('Consigue tu llave', 'Elige el crate, escribe tu nombre de Minecraft (lo comprobamos con el servidor) y paga con tarjeta.')}
 {step('Entra al servidor', 'La llave llega sola en cuanto estás dentro. Si no estabas conectado, te espera.')}
 {step('Abre el crate', 'Usa la llave sobre el crate del spawn y llévate una pieza animada del set.')}
       </div>
@@ -427,11 +430,12 @@ def ayuda():
 {faq('¿Cómo entro al servidor?', f'Necesitas Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas (lo tienes en nuestro Discord). Con el TF Client pulsa «Tierras Fantásticas» en el menú; si entras a mano, la IP es {IP}.')}
 {faq('Se queda en «Conectando» o me dice que faltan mods', 'El servidor usa más de 200 mods y necesitas los mismos. El TF Client revisa tus mods antes de conectar y te dice cuáles faltan. Instala el modpack completo desde nuestro Discord.')}
 {faq('¿Cuánto tarda en llegar mi compra?', 'Al confirmarse el pago, el servidor te la entrega en segundos si estás conectado. Si no lo estás, te espera y la recibes al entrar, con un aviso en pantalla.')}
-{faq('¿Qué nombre de usuario debo poner?', 'Tu nombre exacto de Minecraft, el que ves en el juego. Revísalo bien antes de pagar.')}
-{faq('¿Qué métodos de pago aceptan?', 'PayPal (con tu saldo o las tarjetas de tu cuenta) y tarjetas de crédito o débito sin necesidad de cuenta PayPal. Nunca vemos tus datos bancarios.')}
+{faq('¿Qué nombre de usuario debo poner?', 'Tu nombre de Minecraft. La tienda lo comprueba con el servidor al escribirlo: tienes que haber entrado al menos una vez. La compra se entrega a tu cuenta (UUID), así que nunca llega a otro jugador.')}
+{faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios.')}
+{faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
 {faq('¿Qué me toca al abrir un crate?', 'Una pieza del set de ese crate: un arma, una herramienta, una pieza de armadura o un cosmético animado. En la página de Crates puedes ver todo lo que contiene cada uno.')}
-{faq('¿Cómo recibo el rol en Discord?', 'Al comprar, pulsa «Vincular mi Discord». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
-{faq('No he recibido mi compra, ¿qué hago?', 'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos por Discord con el número de pedido (aparece al terminar la compra y en el recibo de PayPal) y tu nombre de usuario.')}
+{faq('¿Cómo recibo el rol en Discord?', 'Inicia sesión con Discord (botón «Entrar» arriba) antes de comprar, o vincula tu jugador en «Mi cuenta» escribiendo /tf vincular CÓDIGO en el juego. Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
+{faq('No he recibido mi compra, ¿qué hago?', 'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de usuario.')}
       </div>
     </section>
 
@@ -442,7 +446,7 @@ def ayuda():
 def success():
     return head('Tu compra — Tierras Fantásticas', 'Estado de tu compra en Tierras Fantásticas.', 'compra') + header('') + f'''
   <main id="main">
-{page_hero('Tu compra', '<span id="title">Comprobando tu pago…</span>', '<span id="message">Un momento, estamos confirmando la transacción con PayPal.</span>')}
+{page_hero('Tu compra', '<span id="title">Comprobando tu pago…</span>', '<span id="message">Un momento, estamos confirmando el pago con Stripe.</span>')}
     <section class="wrap section" style="padding-top:32px">
       <div class="panel" style="max-width:560px;padding:24px">
         <span class="eyebrow" id="state">Comprobando</span>
@@ -464,7 +468,20 @@ def success():
 ''' + footer().replace('  <script src="/app.js" defer></script>\n', '  <script src="/app.js" defer></script>\n  <script src="/success.js" defer></script>\n')
 
 
-for name, fn in [('index', index), ('tienda', tienda), ('crates', crates), ('mundo', mundo), ('ayuda', ayuda), ('success', success)]:
+def cuenta():
+    return head('Mi cuenta — Tierras Fantásticas',
+                'Tu cuenta de Tierras Fantásticas: inicia sesión con Discord, vincula tu jugador de Minecraft y mira tus compras.',
+                'cuenta') + header('cuenta') + f'''
+  <main id="main">
+{page_hero('Mi cuenta', 'Tu cuenta del reino', 'Inicia sesión con Discord, vincula tu jugador de Minecraft y sigue tus compras.')}
+    <section class="wrap section" style="padding-top:32px">
+      <div id="account"><p class="loading">Cargando tu cuenta…</p></div>
+    </section>
+  </main>
+''' + footer()
+
+
+for name, fn in [('index', index), ('tienda', tienda), ('crates', crates), ('mundo', mundo), ('ayuda', ayuda), ('success', success), ('cuenta', cuenta)]:
     with open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8') as f:
         f.write(fn())
 print('ok')

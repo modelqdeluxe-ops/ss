@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 @Mod(TFClient.MOD_ID)
 public final class TFClient {
     public static final String MOD_ID = "tfclient";
-    public static final String VERSION = "1.2.7";
+    public static final String VERSION = "1.2.8";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TFClient() {

@@ -12,27 +12,39 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     La **Forja de Nazgul** (`/crates#nazgul`) enseña sus diez armas renderizadas a partir de los modelos 3D del pack.
   - Rangos con escudos animados y una tabla para comparar sus ventajas (`/tienda#rangos`).
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
-- **Pago con PayPal**: botones oficiales de PayPal; el comprador paga con su cuenta o con tarjeta de crédito/débito
-  sin necesidad de cuenta. Los datos bancarios nunca pasan por tu servidor y el dinero llega a tu cuenta PayPal.
+- **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
+  nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.
+- **Nombre comprobado antes de cobrar**: al escribir el nombre, la tienda lo busca en la lista de jugadores que manda
+  el servidor y enseña su cabeza, si está conectado y su rango. Solo se vende a jugadores que han entrado alguna vez, y
+  la compra se guarda con su **UUID**: llega al que pagó aunque se cambie el nombre.
+- **Rangos con mejora**: si el jugador ya tiene un rango, al comprar uno superior paga solo la diferencia; el mismo
+  rango o uno inferior no se pueden comprar. Al entregar se quitan los grupos de los rangos inferiores.
+- **Cuenta con Discord** (`/cuenta`): botón «Entrar» en la cabecera. Desde la cuenta se vincula el jugador de
+  Minecraft escribiendo `/tf vincular CÓDIGO` en el juego, y se ven todas las compras y su estado.
 - **Entrega automática con el puente del TF Client**: el mod TF Client instalado en el servidor de Minecraft pregunta a
   la web cada 10 segundos si hay compras y ejecuta sus comandos (`lp`, `eco`, `crate`...) en cuanto el comprador está
-  conectado. Sin RCON ni puertos abiertos: es el servidor el que llama a la web.
+  conectado, con un **anuncio para todo el servidor** (mensaje enmarcado, sonido y fuegos artificiales del color de la
+  compra) y el **prefijo del rango en el nametag**, la lista de jugadores y el chat. Sin RCON ni puertos abiertos: es
+  el servidor el que llama a la web.
 - **Jugadores en vivo**: el puente manda los jugadores conectados y la web los muestra al momento.
-- **Discord conectado**: el comprador vincula su cuenta de Discord al comprar. Al confirmarse el pago, un bot le da el rol
-  de su rango (y lo mete en el servidor de Discord si aún no estaba) y se anuncia la compra en un canal.
+- **Discord conectado**: el comprador inicia sesión con Discord (o tiene su jugador vinculado). Al confirmarse el pago, un
+  bot le da el rol de su rango (y lo mete en el servidor de Discord si aún no estaba) y se anuncia la compra en un canal.
 - Página de confirmación que muestra el estado del pago y de la entrega en el juego y en Discord.
 - Pedidos y entregas guardados en la base de datos D1. Si el comprador no está conectado, la compra espera y se le
   entrega al entrar. Si un comando falla, el pedido queda como `delivery_failed` con el error para que el staff lo revise.
+  Los reembolsos y disputas de Stripe quedan apuntados en el pedido (`refunded`); el rango se quita con `/tf rango <jugador> ninguno`.
 
 ## Cómo está todo conectado
 
 ```
- Jugador ──► Web (tienda) ──► PayPal (paga) ──► Web confirma el cobro
-                 │                                   │
-                 └─ "Vincular Discord" (opcional)     ├─► Cola de entregas ◄── puente del servidor (TF Client)
-                                                     │        cada 10 s:  lp user Steve parent add hechicero
-                                                     ├─► Discord (bot): rol "Hechicero" al usuario vinculado
-                                                     └─► Discord (webhook): "🎉 Steve ha conseguido Rango Hechicero"
+ Servidor (TF Client) ──► Web: jugadores (nombre + UUID), entregas hechas, /tf vincular
+ Jugador ──► Web: escribe "steve" ──► ✓ Steve (UUID del servidor) ──► Stripe (paga) ──► webhook firmado
+                                                                                          │
+      ┌───────────────────────────────────────────────────────────────────────────────────┤
+      ├─► Cola de entregas por UUID ◄── puente cada 10 s: lp user {player} parent add hechicero
+      │        └─► anuncio en el chat para todos + fuegos artificiales + [HECHICERO] en el nametag
+      ├─► Discord (bot): rol "Hechicero" a su cuenta (sesión iniciada o jugador vinculado)
+      └─► Discord (webhook): "👑 ¡Steve ahora es Hechicero!"
 ```
 
 Todo pasa en segundos y sin intervención del staff. Si una parte falla (el servidor está apagado, el bot no tiene
@@ -49,8 +61,9 @@ permisos…), el pago queda registrado en la base de datos con lo que falta por 
    La base de datos D1 se crea sola en el primer despliegue. Cada cambio en `main` se publica solo.
 3. **Settings → Domains & Routes → Add → Custom domain**: `tierrasfantásticas.store` (y `www.` si quieres).
    Cloudflare crea el registro DNS y el certificado HTTPS.
-4. **Settings → Variables and Secrets**: añade como *Secret* las claves de PayPal, Discord y `BRIDGE_SECRET`
-   (ver abajo). Las variables públicas (nombre, IP, moneda, `PAYPAL_ENV`) están en `wrangler.jsonc` (raíz del repositorio).
+4. **Settings → Variables and Secrets**: añade como *Secret* las claves de Stripe, Discord y `BRIDGE_SECRET`
+   (ver abajo). Las variables públicas (nombre, IP, moneda) están en `wrangler.jsonc` (raíz del repositorio).
+   Las claves **nunca** van en el repositorio ni se comparten por chat.
 
 Para probarla en tu PC (Node.js 22.13 o superior):
 
@@ -61,29 +74,31 @@ cp .dev.vars.example .dev.vars   # y rellena los valores
 npm run dev                      # http://localhost:8787
 ```
 
-### 1. PayPal
+### 1. Stripe
 
-1. Entra en <https://developer.paypal.com/dashboard/applications> con tu cuenta PayPal (mejor una cuenta **Business**,
-   que es gratuita) y crea una app en **Sandbox**. Copia el *Client ID* en `PAYPAL_CLIENT_ID` y el *Secret* en
-   `PAYPAL_CLIENT_SECRET`, con `PAYPAL_ENV=sandbox`.
-2. Prueba una compra con una de las cuentas de comprador de prueba (*Testing Tools → Sandbox Accounts*).
-   No se cobra dinero real.
-3. **Webhook (recomendado)**: dentro de la app, en *Webhooks*, añade `https://TU-DOMINIO/webhook/paypal` con los eventos
-   `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `PAYMENT.CAPTURE.REFUNDED` y `PAYMENT.CAPTURE.REVERSED`.
-   Copia el *Webhook ID* en `PAYPAL_WEBHOOK_ID`. Sirve para entregar los pagos que PayPal confirma más tarde
-   (por ejemplo, pagos con cuenta bancaria) y para avisarte en el log de reembolsos y contracargos.
-4. Elige la moneda en `CURRENCY`. PayPal admite USD, EUR, MXN, BRL, GBP, CAD y otras, pero **no** COP, CLP, PEN ni ARS;
-   en esos países usa USD.
-5. Cuando todo funcione, cambia a la pestaña **Live** del panel de desarrolladores, crea la app ahí, pon sus claves y
-   `PAYPAL_ENV=live`, y crea también el webhook en Live.
+1. Crea tu cuenta en <https://dashboard.stripe.com> y activa el **modo de prueba** (interruptor *Test mode*).
+2. **Developers → API keys**: copia la *Secret key* (`sk_test_…`) en Cloudflare como *Secret* `STRIPE_SECRET_KEY`.
+   La *Publishable key* no hace falta: el pago se hace en la página de Stripe.
+3. **Developers → Webhooks → Add endpoint**: `https://xn--tierrasfantsticas-hpb.store/webhook/stripe` con los eventos
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`,
+   `checkout.session.expired`, `charge.refunded` y `charge.dispute.created`. Copia su *Signing secret* (`whsec_…`) en
+   Cloudflare como *Secret* `STRIPE_WEBHOOK_SECRET`. El webhook es lo que confirma los pagos: sin él, la página de
+   confirmación pregunta a Stripe como respaldo, pero no te enterarás de reembolsos ni disputas.
+4. Prueba una compra con la tarjeta `4242 4242 4242 4242` (cualquier fecha futura y CVC). No se cobra dinero real.
+5. Elige la moneda en `CURRENCY` (`USD`, `EUR`, `MXN`, `COP`, `CLP`, `PEN`, `ARS`…: Stripe las admite casi todas; los
+   precios de `products.json` están en céntimos y la web los convierte para las monedas sin decimales como `CLP`).
+6. Cuando todo funcione, desactiva el modo de prueba, completa los datos de tu negocio en Stripe y repite los pasos 2 y
+   3 en **Live** (`sk_live_…` y un webhook nuevo en Live con su propio `whsec_…`).
 
 #### Cómo funciona el pago
 
-1. El jugador elige producto, escribe su nombre de Minecraft y pulsa el botón de PayPal.
-2. El servidor crea el pedido en PayPal con el precio del catálogo (nadie puede cambiarlo desde el navegador).
-3. El jugador aprueba el pago en la ventana de PayPal.
-4. El servidor cobra el pedido, comprueba que el importe y la moneda cobrados coinciden y entrega la compra por RCON.
-   Si el pago queda pendiente, la entrega se hace cuando llega el webhook `PAYMENT.CAPTURE.COMPLETED`.
+1. El jugador elige producto y escribe su nombre. La web lo busca en los jugadores que ha mandado el servidor
+   (`GET /api/player/<nombre>`) y enseña su cabeza, su rango y el precio (el de mejora si ya tiene un rango).
+2. Al pulsar *Pagar*, la web crea la sesión de pago en Stripe con el precio del catálogo (nadie puede cambiarlo desde el
+   navegador) y guarda el pedido con el UUID del jugador. El comprador paga en la página de Stripe.
+3. Stripe avisa con el webhook firmado. La web comprueba la firma, que el importe y la moneda coinciden, y deja la
+   compra en la cola del puente. Si el webhook se retrasa, la página de confirmación (`/success`) le pregunta a Stripe.
+4. Un pago avisado dos veces (webhook repetido, página recargada) nunca se entrega dos veces.
 
 ### 2. Puente con el servidor de Minecraft (TF Client)
 
@@ -94,13 +109,18 @@ npm run dev                      # http://localhost:8787
 3. Copia esa clave en Cloudflare como *Secret* `BRIDGE_SECRET` y reinicia el servidor. En la consola verás
    `TF Bridge: conectado con la web`.
 
-Cada 10 segundos el servidor manda a `POST /bridge/poll` sus jugadores conectados y las entregas que ya hizo, y recibe
-las compras pendientes de los jugadores que están dentro. Si no confirma una entrega en 2 minutos, se le vuelve a
-enviar (el mod recuerda las que ya ejecutó, así que nunca entrega dos veces).
+Cada 10 segundos el servidor manda a `POST /bridge/poll` sus jugadores conectados, los que han entrado alguna vez (de
+`usercache.json`, para que la tienda pueda comprobar nombres), las entregas que ya hizo, los `/tf vincular` y los
+cambios de rango del staff (`/tf rango`). Recibe las compras pendientes de los jugadores que están dentro y el rango de
+cada uno para su nametag. Si no confirma una entrega en 2 minutos, se le vuelve a enviar (el mod recuerda las que ya
+ejecutó, así que nunca entrega dos veces).
+
+> Con el TF Client 1.2.7 o anterior en el servidor, la web sigue entregando (les manda los comandos con el nombre ya
+> puesto), pero sin anuncio, sin nametag ni vinculación. Actualiza el mod del servidor a la 1.2.8.
 
 ### 3. Discord
 
-Discord es opcional: si no lo configuras, la tienda funciona igual, solo que sin roles ni anuncios.
+Discord es opcional: si no lo configuras, la tienda funciona igual, solo que sin «Entrar», roles ni anuncios.
 
 1. **Crea la aplicación**: en <https://discord.com/developers/applications> → *New Application* (p. ej. "Tierras Fantásticas").
 2. **OAuth2** (pestaña *OAuth2*): copia el *Client ID* y el *Client Secret* en `DISCORD_CLIENT_ID` y
@@ -139,10 +159,11 @@ Edita `config/products.json`. Cada producto tiene:
 | `maxQuantity` | Opcional. Cantidad máxima por compra (por defecto 10; rangos = 1)|
 | `featured`    | Opcional. Lo destaca como "Más popular"                          |
 | `discordRoles`| Opcional. IDs de los roles de Discord que se dan al comprar      |
-| `commands`    | Comandos que ejecuta el servidor; `{player}` es el nombre del jugador |
+| `commands`    | Comandos que ejecuta el servidor; `{player}` es el nombre actual del jugador y `{uuid}` su UUID |
 | `image`       | Opcional. Imagen de la tarjeta (`img/ranks/…`, `img/keys/…`, `img/crates/…`)     |
 | `perks`       | Opcional. Lista corta de ventajas que se ve en la tarjeta                        |
 | `tier`, `specs` | Rangos: orden y filas de la tabla comparativa (`true`/`false` o un texto)      |
+| `rank`        | Rangos: `group` (grupo de LuckPerms), `prefix` (texto del nametag), `color` (color de Minecraft) y `hex` (el de la web y el anuncio) |
 
 #### Crates
 
@@ -189,9 +210,11 @@ los tres scripts. Las páginas comunes (cabecera, pie…) se generan con `python
 npm test
 ```
 
-Las pruebas usan una API de PayPal simulada, una base de datos D1 de prueba (SQLite) y un puente simulado. Comprueban la
-validación de compras, que el precio sale del catálogo, que un pago cobrado se entrega una sola vez aunque se repita la
-captura o el webhook, que solo se entrega con el jugador conectado y se reenvía si el servidor no confirma, que no se entrega si
-el importe cobrado no coincide o la tarjeta es rechazada, y que se rechazan los webhooks con firma no válida. Con una
-API de Discord simulada comprueban también el login, que se da el rol (o se añade al servidor), el anuncio, y que un
-fallo de Discord no impide la entrega en el juego.
+Las pruebas usan una API de Stripe simulada (con webhooks firmados como los de Stripe), una base de datos D1 de prueba
+(SQLite) y un puente simulado. Comprueban el registro de jugadores y los cambios de nombre, que solo se vende a jugadores
+conocidos, que el precio sale del catálogo, que un pago se entrega una sola vez y solo al UUID que pagó (no a otro con el
+mismo nombre), que se reenvía si el servidor no confirma, que no se entrega si el importe no coincide, el pago caduca o
+falla, que se rechazan firmas falsas o viejas, los pagos que tardan, reembolsos y disputas, las mejoras de rango (precio
+de la diferencia, rango repetido bloqueado, grupos inferiores quitados) y los cambios de rango del staff. Con una API de
+Discord simulada comprueban el login, la vinculación con `/tf vincular`, «mis compras», que se da el rol (o se añade al
+servidor) también sin sesión si el jugador está vinculado, el anuncio, y que un fallo de Discord no impide la entrega.

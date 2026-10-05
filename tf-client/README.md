@@ -28,9 +28,18 @@ Mod de Tierras Fantásticas. En el **cliente** hace esto:
 
 Y en el **servidor** (opcional) hace de **puente con la web**:
 
-- Cada 10 segundos manda a la web los jugadores conectados (la web los muestra en vivo) y recibe las compras de la
-  tienda de los jugadores que están dentro. Ejecuta sus comandos en la consola del servidor, le pone al jugador un
-  título de *¡Gracias!* con lo que recibió y confirma a la web que está entregado.
+- Cada 10 segundos manda a la web los jugadores conectados (la web los muestra en vivo) y los que han entrado alguna
+  vez (nombre + UUID, de `usercache.json` y los datos del mundo). Así la tienda comprueba el nombre **antes de cobrar**
+  y solo vende a jugadores que existen en el servidor.
+- Recibe las compras de los jugadores que están dentro **por UUID**: aunque alguien se cambie el nombre o use uno
+  parecido, la compra llega al que pagó. Los comandos de la tienda llevan `{player}` y `{uuid}`, que se rellenan al
+  entregar con el nombre actual del jugador.
+- Al entregar, **todo el servidor se entera**: un anuncio enmarcado en el chat con el color del producto (y el rango
+  nuevo si lo es), un sonido para todos, fuegos artificiales del mismo color alrededor del comprador (solo si tiene el
+  cielo encima, para que no hagan daño) y un título de *¡GRACIAS!* en su pantalla. El enlace a la tienda se puede pulsar.
+- **Rangos en el nametag**: el prefijo del rango (`[DRAGÓN]`, `[REY]`...) con su color delante del nombre, encima de la
+  cabeza, en la lista de jugadores (Tab, los rangos altos primero) y en el chat. Usa equipos del marcador vanilla, así
+  que funciona sin plugins; a un jugador que ya está en el equipo de otro sistema no se le toca.
 - Si el comprador no está conectado, la compra espera en la web y se le da en cuanto entra.
 - Es el servidor el que llama a la web: no hace falta RCON ni abrir puertos. Cada entrega tiene un número y el puente
   apunta las que ya ejecutó (`config/tfclient-bridge-entregas.txt`), así que nunca entrega dos veces.
@@ -61,6 +70,15 @@ Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libr
 /tf web sets give <jugadores> <set> <objeto>   da un objeto del set (p. ej. /tf web sets give Steve necros sword)
 ```
 
+Con el puente activo, además:
+
+```
+/tf vincular <código>              (todos) une tu jugador con tu cuenta de la web; el código sale en «Mi cuenta»
+/tf rango <jugador>                (staff, nivel 3) muestra su rango
+/tf rango <jugador> <rango>        (staff, nivel 3) pone el rango: grupo de LuckPerms, nametag y web
+/tf rango <jugador> ninguno        (staff, nivel 3) se lo quita (p. ej. tras un reembolso)
+```
+
 Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos son `tfclient:<set>_<objeto>`
 (por ejemplo `tfclient:valentine_sword`), por si los usa un plugin de crates.
 
@@ -73,7 +91,7 @@ web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.2.7.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.2.8.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
@@ -84,8 +102,13 @@ web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft
    bridge.url=https\://xn--tierrasfantsticas-hpb.store
    bridge.secret=(clave aleatoria)
    bridge.interval=10
+   broadcast.enabled=true
+   broadcast.fireworks=true
+   ranks.nametag=true
    ```
-   `bridge.url` es `tierrasfantásticas.store` escrito como lo usa internet.
+   `bridge.url` es `tierrasfantásticas.store` escrito como lo usa internet. `broadcast.enabled=false` quita el anuncio
+   a todos (el comprador sigue recibiendo su mensaje), `broadcast.fireworks=false` los fuegos artificiales y
+   `ranks.nametag=false` el prefijo del rango (por si ya lo pone otro plugin, como TAB).
 3. Copia `bridge.secret` en Cloudflare (*Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets*)
    como *Secret* `BRIDGE_SECRET`. En la consola del servidor saldrá `TF Bridge: conectado con la web`.
 

@@ -27,11 +27,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.server.TFBridgeCommands;
 
 /**
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo)
  * Hace falta ser operador (nivel 2). Funciona también en servidores Mohist.
+ * /tf vincular y /tf rango están en {@link TFBridgeCommands}.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFCommands {
@@ -64,9 +66,12 @@ public final class TFCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // /tf no pide permisos: cada subcomando pone los suyos (/tf vincular es para todos los jugadores).
         dispatcher.register(Commands.literal("tf")
-                .requires(source -> source.hasPermission(2))
+                .then(TFBridgeCommands.vincular())
+                .then(TFBridgeCommands.rango())
                 .then(Commands.literal("web")
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("sets")
                                 .then(Commands.literal("list").executes(TFCommands::list))
                                 .then(Commands.literal("give")
