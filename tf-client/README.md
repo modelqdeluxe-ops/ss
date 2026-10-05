@@ -22,8 +22,8 @@ Mod de Tierras Fantásticas. En el **cliente** hace esto:
   y respeta los volúmenes *General* y *Música* de las opciones. Se apaga con un fundido al entrar a un mundo o al
   servidor (ahí vuelve la música normal de Minecraft) y vuelve a sonar al regresar al menú.
 - **Tema de TF en todos los menús fuera de una partida** (mundos, opciones, conexión...): botones, botones de opciones
-  y deslizadores con la placa azul noche y oro y la letra Cinzel; fondo con el paisaje oscurecido y listas
-  transparentes en vez de la tierra. **Dentro de una partida no se toca nada**, así cada jugador ve sus paquetes de
+  y deslizadores con la placa azul noche y oro y la letra Cinzel; fondo con el paisaje oscurecido y las listas
+  (mundos, paquetes...) en un panel azul noche con filetes dorados, en vez de la tierra. **Dentro de una partida no se toca nada**, así cada jugador ve sus paquetes de
   recursos.
 
 Y en el **servidor** (opcional) hace de **puente con la web**:
@@ -41,7 +41,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.1.0.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.1.1.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

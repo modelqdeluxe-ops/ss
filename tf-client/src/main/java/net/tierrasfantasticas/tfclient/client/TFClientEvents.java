@@ -1,6 +1,7 @@
 package net.tierrasfantasticas.tfclient.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,16 +15,46 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class TFClientEvents {
     private TFClientEvents() {}
 
+    /** Si el fondo de TF ya se dibujó en este fotograma (algunas pantallas, como la de mundos, no piden fondo). */
+    private static boolean backgroundDrawn;
+
+    @SubscribeEvent
+    public static void onRenderPre(ScreenEvent.Render.Pre event) {
+        backgroundDrawn = false;
+    }
+
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) backgroundDrawn = false;
+    }
+
     /** Fuera de una partida, los menús (opciones, mundos, conexión...) usan el paisaje de TF en vez de la tierra. */
     @SubscribeEvent
     public static void onBackground(ScreenEvent.BackgroundRendered event) {
-        Minecraft mc = Minecraft.getInstance();
         Screen screen = event.getScreen();
-        if (mc.level != null || screen instanceof TitleScreen) return;
+        if (Minecraft.getInstance().level != null || screen instanceof TitleScreen) return;
+        drawMenuBackground(event.getGuiGraphics(), screen);
+    }
+
+    /**
+     * Dibuja el fondo de TF si la pantalla actual no lo ha hecho todavía en este fotograma. Lo usan las listas, porque
+     * pantallas como Seleccionar mundo confían en el fondo de tierra de la lista y no dibujan nada detrás.
+     */
+    public static void ensureMenuBackground(GuiGraphics g) {
+        Minecraft mc = Minecraft.getInstance();
+        Screen screen = mc.screen;
+        if (backgroundDrawn || mc.level != null || screen == null || screen instanceof TitleScreen) return;
+        drawMenuBackground(g, screen);
+    }
+
+    private static void drawMenuBackground(GuiGraphics g, Screen screen) {
         try {
-            if (TFDraw.cover(event.getGuiGraphics(), TFTextures.MENU, screen.width, screen.height, 1f)) {
-                event.getGuiGraphics().fill(0, 0, screen.width, screen.height, TFDraw.argb(0.45f, 0x000000));
+            if (TFDraw.cover(g, TFTextures.MENU, screen.width, screen.height, 1f)) {
+                g.fill(0, 0, screen.width, screen.height, TFDraw.argb(0.45f, 0x000000));
+            } else {
+                g.fill(0, 0, screen.width, screen.height, 0xFF0B1020);
             }
+            backgroundDrawn = true;
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Client: error al dibujar el fondo", t);
         }
