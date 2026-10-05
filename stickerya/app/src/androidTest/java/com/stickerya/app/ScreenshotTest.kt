@@ -74,5 +74,7 @@ class ScreenshotTest {
         rule.waitForIdle()
         Thread.sleep(1500)
         shot("09_paquete_listo")
+        rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
+        shot("10_inicio_final")
     }
 }
