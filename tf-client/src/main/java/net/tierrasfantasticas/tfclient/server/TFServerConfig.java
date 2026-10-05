@@ -25,6 +25,9 @@ public final class TFServerConfig {
     private static String url = DEFAULT_URL;
     private static String secret = "";
     private static int interval = DEFAULT_INTERVAL;
+    private static boolean broadcast = true;
+    private static boolean fireworks = true;
+    private static boolean nametag = true;
 
     private TFServerConfig() {}
 
@@ -44,6 +47,25 @@ public final class TFServerConfig {
         return interval;
     }
 
+    /** Anuncio a todo el servidor cuando llega una compra. */
+    public static boolean broadcast() {
+        return broadcast;
+    }
+
+    /** Fuegos artificiales sobre el comprador (solo si tiene cielo abierto encima). */
+    public static boolean fireworks() {
+        return fireworks;
+    }
+
+    /** Prefijo del rango en el nametag, la lista de jugadores y el chat (equipos del marcador). */
+    public static boolean nametag() {
+        return nametag;
+    }
+
+    private static boolean flag(Properties props, String key, boolean def) {
+        return !Boolean.toString(!def).equalsIgnoreCase(props.getProperty(key, Boolean.toString(def)).trim());
+    }
+
     public static Path file() {
         return FMLPaths.CONFIGDIR.get().resolve("tfclient-server.properties");
     }
@@ -58,7 +80,10 @@ public final class TFServerConfig {
                 TFClient.LOGGER.warn("TF Bridge: no se pudo leer {}: {}", file, e.getMessage());
             }
         }
-        enabled = !"false".equalsIgnoreCase(props.getProperty("bridge.enabled", "true").trim());
+        enabled = flag(props, "bridge.enabled", true);
+        broadcast = flag(props, "broadcast.enabled", true);
+        fireworks = flag(props, "broadcast.fireworks", true);
+        nametag = flag(props, "ranks.nametag", true);
         url = props.getProperty("bridge.url", DEFAULT_URL).trim().replaceAll("/+$", "");
         secret = props.getProperty("bridge.secret", "").trim();
         try {
@@ -73,8 +98,15 @@ public final class TFServerConfig {
             new SecureRandom().nextBytes(bytes);
             secret = HexFormat.of().formatHex(bytes);
         }
-        if (created || !props.containsKey("bridge.url") || !props.containsKey("bridge.interval") || !props.containsKey("bridge.enabled")) {
+        boolean missing = false;
+        for (String key : new String[] {"bridge.enabled", "bridge.url", "bridge.interval", "broadcast.enabled", "broadcast.fireworks", "ranks.nametag"}) {
+            missing |= !props.containsKey(key);
+        }
+        if (created || missing) {
             props.setProperty("bridge.enabled", Boolean.toString(enabled));
+            props.setProperty("broadcast.enabled", Boolean.toString(broadcast));
+            props.setProperty("broadcast.fireworks", Boolean.toString(fireworks));
+            props.setProperty("ranks.nametag", Boolean.toString(nametag));
             props.setProperty("bridge.url", url);
             props.setProperty("bridge.secret", secret);
             props.setProperty("bridge.interval", Integer.toString(interval));

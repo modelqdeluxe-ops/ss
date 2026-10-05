@@ -10,8 +10,7 @@
       "ID_ROL_AVENTURERO"
     ],
     "commands": [
-      "lp user {player} parent add aventurero",
-      "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Aventurero\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
+      "lp user {player} parent add aventurero"
     ],
     "image": "img/ranks/sword.png",
     "tier": 1,
@@ -32,6 +31,12 @@
       "/nick y /ec": false,
       "Cola prioritaria": false,
       "Rol en Discord": true
+    },
+    "rank": {
+      "group": "aventurero",
+      "prefix": "Aventurero",
+      "color": "gold",
+      "hex": "#f4c95d"
     }
   },
   {
@@ -46,8 +51,7 @@
       "ID_ROL_HECHICERO"
     ],
     "commands": [
-      "lp user {player} parent add hechicero",
-      "tellraw @a [{\"text\":\"{player}\",\"color\":\"dark_purple\"},{\"text\":\" ahora es \",\"color\":\"light_purple\"},{\"text\":\"Hechicero\",\"color\":\"dark_purple\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"light_purple\"}]"
+      "lp user {player} parent add hechicero"
     ],
     "image": "img/ranks/enchanter.png",
     "tier": 2,
@@ -68,6 +72,12 @@
       "/nick y /ec": false,
       "Cola prioritaria": false,
       "Rol en Discord": true
+    },
+    "rank": {
+      "group": "hechicero",
+      "prefix": "Hechicero",
+      "color": "light_purple",
+      "hex": "#c77dff"
     }
   },
   {
@@ -81,8 +91,7 @@
       "ID_ROL_DRAGON"
     ],
     "commands": [
-      "lp user {player} parent add dragon",
-      "tellraw @a [{\"text\":\"{player}\",\"color\":\"red\"},{\"text\":\" ahora es \",\"color\":\"gold\"},{\"text\":\"Dragón\",\"color\":\"red\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"gold\"}]"
+      "lp user {player} parent add dragon"
     ],
     "image": "img/ranks/dragon.png",
     "tier": 3,
@@ -104,6 +113,12 @@
       "/nick y /ec": true,
       "Cola prioritaria": true,
       "Rol en Discord": true
+    },
+    "rank": {
+      "group": "dragon",
+      "prefix": "Dragón",
+      "color": "red",
+      "hex": "#ff5a4f"
     }
   },
   {
@@ -126,8 +141,7 @@
       "ID_ROL_REY"
     ],
     "commands": [
-      "lp user {player} parent add rey",
-      "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Rey\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
+      "lp user {player} parent add rey"
     ],
     "specs": {
       "Prefijo en el chat": "Rey",
@@ -140,6 +154,12 @@
       "/nick y /ec": true,
       "Cola prioritaria": true,
       "Rol en Discord": true
+    },
+    "rank": {
+      "group": "rey",
+      "prefix": "Rey",
+      "color": "yellow",
+      "hex": "#ffe14d"
     }
   },
   {

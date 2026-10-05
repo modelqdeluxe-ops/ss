@@ -2020,19 +2020,364 @@ body.lock {
   font-size: 14px;
 }
 
-.paypal-buttons {
+.pay-btn {
   margin-top: 8px;
-  min-height: 50px;
 }
 
-.paypal-buttons.disabled {
-  opacity: 0.5;
-  pointer-events: none;
+.pay-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: saturate(0.6);
 }
 
-.processing {
+.pay-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pay-note svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
   color: var(--gold);
+}
+
+/* Jugador comprobado contra el servidor */
+.player-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.player-card img {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+.player-card.found {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.player-card.missing,
+.player-card.invalid,
+.player-card.error,
+.player-card.blocked {
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.06);
+  color: #f3c1c1;
+}
+
+.player-name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.player-ok {
+  display: block;
+  color: var(--ok);
+}
+
+.player-ok .on {
   font-weight: 600;
+}
+
+.player-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--gold-hi);
+}
+
+.player-note.bad {
+  color: var(--bad);
+}
+
+.rank-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rank, var(--gold));
+  border: 1px solid color-mix(in srgb, var(--rank, var(--gold)) 50%, transparent);
+  background: color-mix(in srgb, var(--rank, var(--gold)) 12%, transparent);
+}
+
+.spinner {
+  flex: none;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  border-top-color: var(--gold);
+  vertical-align: -3px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dialog-total small {
+  font-size: 12px;
+  color: var(--gold-hi);
+}
+
+.price.owned {
+  font-size: 15px;
+  color: var(--ok);
+}
+
+/* ---------- Cuenta ---------- */
+
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  max-width: 180px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(88, 101, 242, 0.5);
+  background: rgba(88, 101, 242, 0.14);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-chip:hover {
+  background: rgba(88, 101, 242, 0.24);
+}
+
+.account-chip svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.account-chip img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.account-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-chip.signed {
+  padding-left: 7px;
+  border-color: var(--line-2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* En el móvil solo el icono o el avatar */
+@media (max-width: 599px) {
+  .account-chip span {
+    display: none;
+  }
+
+  .account-chip {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+.account-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.account-card {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 22px;
+}
+
+.account-card .cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.account-card p {
+  margin: 0;
+}
+
+.account-card > .btn {
+  justify-self: start;
+}
+
+.account-login {
+  max-width: 560px;
+  justify-items: start;
+}
+
+.account-login h2 {
+  margin: 0;
+  font: 700 26px/1.2 var(--font-display);
+}
+
+.account-who {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+}
+
+.account-who img {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+}
+
+.account-who img.round {
+  border-radius: 50%;
+}
+
+.account-who > div {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  min-width: 0;
+}
+
+.account-who b {
+  font-size: 18px;
+}
+
+.account-who .uuid {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-code {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--gold-line);
+  background: rgba(227, 183, 76, 0.06);
+  font: 600 18px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: left;
+}
+
+.link-code b {
+  color: var(--gold-hi);
+  letter-spacing: 0.12em;
+}
+
+.link-code span {
+  margin-left: auto;
+  font: 600 13px var(--font-body);
+  color: var(--gold);
+}
+
+.account-orders {
+  margin-top: 16px;
+}
+
+.orders-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.orders {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orders li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.order-img {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.order-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.order-main .small {
+  overflow-wrap: anywhere;
+}
+
+.order-side {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  text-align: right;
+  flex: none;
+}
+
+.order-side .state {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.order-side .state[data-kind='ok'] {
+  color: var(--ok);
+}
+
+.order-side .state[data-kind='bad'] {
+  color: var(--bad);
+}
+
+@media (min-width: 760px) {
+  .account-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* ---------- Aviso flotante ---------- */

@@ -590,6 +590,57 @@ def overrides(kind, refs):
     return o
 
 
+# Better Combat: cada arma usa una de sus plantillas (combos, alcance, animaciones). Se busca por el nombre del objeto
+# (en orden) y si no, por el tipo. Arcos, ballestas, cañas y escudos se quedan como en Minecraft.
+BC_BY_NAME = [
+    (('great_sword', 'greatsword', 'big_sword'), 'claymore'),
+    (('rapier',), 'rapier'),
+    (('dagger', 'knife'), 'dagger'),
+    (('sickle',), 'sickle'),
+    (('scythe', 'death_grip', 'kaz_sc', 'pox_spreader'), 'scythe'),
+    (('spear', 'last_rose'), 'spear'),
+    (('halberd', 'battle_standart', 'flag'), 'glaive'),
+    (('staff', 'flowering_madness'), 'battlestaff'),
+    (('battle_axe', 'battleaxe'), 'double_axe'),
+    (('pickaxe',), 'pickaxe'),
+    (('gauntlet',), 'fist'),
+    (('hammer',), 'hammer'),
+    (('mace', 'club'), 'mace'),
+    (('trident',), 'trident'),
+]
+BC_BY_TYPE = {'sword': 'sword', 'axe': 'axe', 'heavy': 'hammer', 'pickaxe': 'pickaxe', 'trident': 'trident'}
+BC_HEAVY_AXES = ('dark_moon_axe', 'gargoyle_axe', 'hellspawn_axe', 'mana_axe')  # hachas de guerra (Nazgul)
+
+
+def better_combat_preset(item_type, slug):
+    if item_type in ('bow', 'crossbow', 'fishing_rod', 'shield', 'armor', 'head', 'back', 'shovel', 'hoe'):
+        return None
+    if slug in BC_HEAVY_AXES:
+        return 'heavy_axe'
+    for keys, preset in BC_BY_NAME:
+        if any(k in slug for k in keys):
+            return preset
+    return BC_BY_TYPE.get(item_type)
+
+
+def write_weapon_attributes(sets_out):
+    """data/tfclient/weapon_attributes/<objeto>.json → {"parent": "bettercombat:<plantilla>"}. Sin Better Combat no
+    hace nada; con él, las armas hacen sus combos."""
+    folder = os.path.join(ASSETS, '..', '..', 'data', 'tfclient', 'weapon_attributes')
+    shutil.rmtree(folder, ignore_errors=True)
+    os.makedirs(folder)
+    count = {}
+    for s in sets_out:
+        for i in s['items']:
+            preset = better_combat_preset(i['type'], i['id'][len(s['id']) + 1:])
+            if not preset:
+                continue
+            with open(os.path.join(folder, i['id'] + '.json'), 'w') as fh:
+                json.dump({'parent': f'bettercombat:{preset}'}, fh)
+            count[preset] = count.get(preset, 0) + 1
+    print('Better Combat:', sum(count.values()), 'armas', dict(sorted(count.items(), key=lambda kv: -kv[1])))
+
+
 def write_accessory_tags(sets_out):
     """Huecos de accesorios para los cosméticos de espalda, así el pecho queda libre para la pechera:
     - Accessories (wispforest): etiquetas accessories:back (y accessories:cape para las capas).
@@ -712,6 +763,7 @@ def main(packs):
     with open(os.path.join(ASSETS, 'tf_sets.json'), 'w') as fh:
         json.dump({'sets': sets_out}, fh, ensure_ascii=False, indent=1)
     write_accessory_tags(sets_out)
+    write_weapon_attributes(sets_out)
     os.makedirs(os.path.join(ASSETS, 'lang'), exist_ok=True)
     for lang_file in ('es_es.json', 'en_us.json'):
         path = os.path.join(ASSETS, 'lang', lang_file)

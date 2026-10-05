@@ -7,11 +7,11 @@ BRIDGE_SECRET=
 # Dirección pública de la web (opcional: si falta se usa la de cada petición)
 # PUBLIC_URL=https://xn--tierrasfantsticas-hpb.store
 
-# --- PayPal (https://developer.paypal.com/dashboard/applications) ---
-PAYPAL_CLIENT_ID=
-PAYPAL_CLIENT_SECRET=
-# ID del webhook que creas en la misma app de PayPal (opcional pero recomendado)
-PAYPAL_WEBHOOK_ID=
+# --- Stripe (https://dashboard.stripe.com → Developers). En Cloudflare van como Secrets, nunca en el repositorio ---
+# Secret key (sk_test_... en pruebas, sk_live_... en real)
+STRIPE_SECRET_KEY=
+# Signing secret del webhook https://TU-DOMINIO/webhook/stripe (whsec_...)
+STRIPE_WEBHOOK_SECRET=
 
 # --- Discord (https://discord.com/developers/applications) ---
 DISCORD_CLIENT_ID=

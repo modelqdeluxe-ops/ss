@@ -1,7 +1,7 @@
 {
   "name": "tierras-fantasticas",
   "version": "1.0.0",
-  "description": "Web y tienda del servidor Tierras Fantásticas en Cloudflare Workers: pagos con PayPal, Discord y puente con el servidor de Minecraft",
+  "description": "Web y tienda del servidor Tierras Fantásticas en Cloudflare Workers: pagos con Stripe, Discord y puente con el servidor de Minecraft",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
