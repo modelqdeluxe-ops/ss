@@ -1,5 +1,5 @@
 // Datos de la tienda en Cloudflare D1 (SQLite): pedidos, entregas para el puente del servidor de Minecraft,
-// jugadores conocidos (nombre + UUID), cuentas de Discord, rangos y ajustes internos.
+// jugadores conocidos (nombre + UUID), cuentas de la web con su Discord, rangos y ajustes internos.
 import { randomHex } from './session.js';
 
 const SCHEMA = [
@@ -48,21 +48,25 @@ const SCHEMA = [
     last_seen INTEGER NOT NULL
   )`,
   'CREATE INDEX IF NOT EXISTS players_name ON players (name_lower)',
-  // Cuentas de la web (inicio de sesión con Discord) y su cuenta de Minecraft vinculada.
-  `CREATE TABLE IF NOT EXISTS accounts (
-    discord_id TEXT PRIMARY KEY,
-    username TEXT NOT NULL,
-    avatar TEXT,
-    mc_uuid TEXT,
-    mc_name TEXT,
+  // Cuentas de la web: una por jugador (UUID del servidor), con contraseña y su Discord conectado.
+  `CREATE TABLE IF NOT EXISTS users (
+    uuid TEXT PRIMARY KEY,
+    password TEXT NOT NULL,
+    discord_id TEXT UNIQUE,
+    discord_username TEXT,
+    discord_name TEXT,
+    discord_avatar TEXT,
+    discord_member INTEGER NOT NULL DEFAULT 0,
+    discord_checked_at TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )`,
-  // Códigos de un solo uso para vincular Minecraft con /tf vincular <código> dentro del juego.
-  `CREATE TABLE IF NOT EXISTS link_codes (
-    code TEXT PRIMARY KEY,
-    discord_id TEXT NOT NULL,
-    expires_at INTEGER NOT NULL
+  // Intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.
+  `CREATE TABLE IF NOT EXISTS login_attempts (
+    key TEXT PRIMARY KEY,
+    failures INTEGER NOT NULL,
+    locked_until INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL
   )`,
   // Rango comprado de cada jugador (el de nivel más alto).
   `CREATE TABLE IF NOT EXISTS player_ranks (
@@ -92,8 +96,9 @@ export const CLAIMED = ['queued', 'delivered', 'delivery_failed'];
 // Si el servidor no confirma una entrega enviada en este tiempo, se vuelve a enviar.
 const RESEND_MS = 2 * 60 * 1000;
 const MAX_BATCH = 20;
-const LINK_CODE_MS = 10 * 60 * 1000;
-const LINK_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+// Tras tantos fallos seguidos, la cuenta no deja probar más contraseñas durante un rato.
+const MAX_FAILURES = 8;
+const LOCK_MS = 15 * 60 * 1000;
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -138,10 +143,27 @@ function rowToOrder(row) {
   };
 }
 
-function linkCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(6));
-  return [...bytes].map((b) => LINK_ALPHABET[b % LINK_ALPHABET.length]).join('');
+function rowToUser(row) {
+  if (!row) return null;
+  return {
+    uuid: row.uuid,
+    name: row.name,
+    password: row.password,
+    discord: row.discord_id
+      ? {
+          id: row.discord_id,
+          username: row.discord_username,
+          name: row.discord_name,
+          avatar: row.discord_avatar,
+          member: row.discord_member === 1,
+          checkedAt: row.discord_checked_at,
+        }
+      : null,
+    createdAt: row.created_at,
+  };
 }
+
+const USER_SELECT = 'SELECT u.*, p.name FROM users u LEFT JOIN players p ON p.uuid = u.uuid';
 
 export function createStore(db) {
   let ready = null;
@@ -326,81 +348,102 @@ export function createStore(db) {
       .run();
   }
 
-  // --- Cuentas (Discord) ---
+  // --- Cuentas de la web ---
 
-  async function upsertAccount({ id, username, avatar }) {
+  // Crea la cuenta del jugador. Devuelve false si ese jugador ya tiene cuenta.
+  async function createUser({ uuid, password }) {
     await init();
+    const at = now();
+    const res = await db
+      .prepare('INSERT OR IGNORE INTO users (uuid, password, created_at, updated_at) VALUES (?, ?, ?, ?)')
+      .bind(String(uuid).toLowerCase(), password, at, at)
+      .run();
+    return res.meta.changes === 1;
+  }
+
+  async function getUser(uuid) {
+    await init();
+    return rowToUser(await db.prepare(`${USER_SELECT} WHERE u.uuid = ?`).bind(String(uuid).toLowerCase()).first());
+  }
+
+  async function userByDiscord(discordId) {
+    await init();
+    return rowToUser(await db.prepare(`${USER_SELECT} WHERE u.discord_id = ?`).bind(String(discordId)).first());
+  }
+
+  // Conecta (o actualiza) la cuenta de Discord. Devuelve false si ese Discord ya es de otro jugador.
+  async function setUserDiscord(uuid, { id, username, name, avatar, member }) {
+    await init();
+    const other = await db.prepare('SELECT uuid FROM users WHERE discord_id = ? AND uuid <> ?').bind(id, String(uuid).toLowerCase()).first();
+    if (other) return false;
     const at = now();
     await db
       .prepare(
-        `INSERT INTO accounts (discord_id, username, avatar, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT (discord_id) DO UPDATE SET username = excluded.username, avatar = excluded.avatar, updated_at = excluded.updated_at`,
+        `UPDATE users SET discord_id = ?, discord_username = ?, discord_name = ?, discord_avatar = ?, discord_member = ?,
+           discord_checked_at = ?, updated_at = ? WHERE uuid = ?`,
       )
-      .bind(id, username, avatar || null, at, at)
+      .bind(id, username || null, name || null, avatar || null, member ? 1 : 0, at, at, String(uuid).toLowerCase())
+      .run();
+    return true;
+  }
+
+  async function setDiscordMember(uuid, member) {
+    await init();
+    const at = now();
+    await db
+      .prepare('UPDATE users SET discord_member = ?, discord_checked_at = ?, updated_at = ? WHERE uuid = ?')
+      .bind(member ? 1 : 0, at, at, String(uuid).toLowerCase())
       .run();
   }
 
-  async function getAccount(discordId) {
+  async function unlinkDiscord(uuid) {
     await init();
-    const row = await db.prepare('SELECT * FROM accounts WHERE discord_id = ?').bind(discordId).first();
-    if (!row) return null;
-    return {
-      discordId: row.discord_id,
-      username: row.username,
-      avatar: row.avatar,
-      minecraft: row.mc_uuid ? { uuid: row.mc_uuid, name: row.mc_name } : null,
-    };
+    await db
+      .prepare(
+        `UPDATE users SET discord_id = NULL, discord_username = NULL, discord_name = NULL, discord_avatar = NULL,
+           discord_member = 0, discord_checked_at = NULL, updated_at = ? WHERE uuid = ?`,
+      )
+      .bind(now(), String(uuid).toLowerCase())
+      .run();
   }
 
-  // La cuenta de Discord vinculada a un jugador (para darle el rol aunque compre sin iniciar sesión).
+  async function setPassword(uuid, password) {
+    await init();
+    await db.prepare('UPDATE users SET password = ?, updated_at = ? WHERE uuid = ?').bind(password, now(), String(uuid).toLowerCase()).run();
+  }
+
+  // La cuenta de Discord del jugador (para darle el rol aunque compre sin iniciar sesión).
   async function accountByUuid(uuid) {
-    await init();
-    const row = await db.prepare('SELECT discord_id FROM accounts WHERE lower(mc_uuid) = lower(?)').bind(String(uuid)).first();
-    return row ? getAccount(row.discord_id) : null;
+    const user = await getUser(uuid);
+    return user?.discord ? { discordId: user.discord.id, username: user.discord.username } : null;
   }
 
-  async function unlinkMinecraft(discordId) {
+  // --- Freno a quien prueba contraseñas ---
+
+  async function loginLocked(key) {
     await init();
-    await db.prepare('UPDATE accounts SET mc_uuid = NULL, mc_name = NULL, updated_at = ? WHERE discord_id = ?').bind(now(), discordId).run();
+    const row = await db.prepare('SELECT locked_until FROM login_attempts WHERE key = ?').bind(key).first();
+    return row && row.locked_until > Date.now() ? row.locked_until : 0;
   }
 
-  // Código para escribir en el juego (/tf vincular CÓDIGO). Uno por cuenta: pedir otro anula el anterior.
-  async function createLinkCode(discordId) {
+  async function loginFailed(key) {
     await init();
-    const code = linkCode();
-    const expires = Date.now() + LINK_CODE_MS;
-    await db.batch([
-      db.prepare('DELETE FROM link_codes WHERE discord_id = ? OR expires_at < ?').bind(discordId, Date.now()),
-      db.prepare('INSERT INTO link_codes (code, discord_id, expires_at) VALUES (?, ?, ?)').bind(code, discordId, expires),
-    ]);
-    return { code, expiresAt: expires };
+    const ms = Date.now();
+    await db
+      .prepare(
+        `INSERT INTO login_attempts (key, failures, locked_until, updated_at) VALUES (?, 1, 0, ?)
+         ON CONFLICT (key) DO UPDATE SET
+           failures = CASE WHEN login_attempts.updated_at < ? THEN 1 ELSE login_attempts.failures + 1 END,
+           locked_until = CASE WHEN login_attempts.updated_at >= ? AND login_attempts.failures + 1 >= ? THEN ? ELSE 0 END,
+           updated_at = excluded.updated_at`,
+      )
+      .bind(key, ms, ms - LOCK_MS, ms - LOCK_MS, MAX_FAILURES, ms + LOCK_MS)
+      .run();
   }
 
-  async function pendingLinkCode(discordId) {
+  async function loginSucceeded(key) {
     await init();
-    const row = await db
-      .prepare('SELECT code, expires_at FROM link_codes WHERE discord_id = ? AND expires_at > ?')
-      .bind(discordId, Date.now())
-      .first();
-    return row ? { code: row.code, expiresAt: row.expires_at } : null;
-  }
-
-  // Un jugador escribió /tf vincular CÓDIGO en el juego: une su UUID a la cuenta de Discord del código.
-  async function useLinkCode(code, { uuid, name }) {
-    await init();
-    const row = await db
-      .prepare('SELECT discord_id FROM link_codes WHERE code = ? AND expires_at > ?')
-      .bind(String(code).toUpperCase(), Date.now())
-      .first();
-    if (!row) return null;
-    const at = now();
-    await db.batch([
-      db.prepare('DELETE FROM link_codes WHERE code = ?').bind(String(code).toUpperCase()),
-      // Un jugador solo puede estar vinculado a una cuenta.
-      db.prepare('UPDATE accounts SET mc_uuid = NULL, mc_name = NULL WHERE lower(mc_uuid) = lower(?) AND discord_id <> ?').bind(uuid, row.discord_id),
-      db.prepare('UPDATE accounts SET mc_uuid = ?, mc_name = ?, updated_at = ? WHERE discord_id = ?').bind(uuid.toLowerCase(), name, at, row.discord_id),
-    ]);
-    return getAccount(row.discord_id);
+    await db.prepare('DELETE FROM login_attempts WHERE key = ?').bind(key).run();
   }
 
   // --- Puente ---
@@ -515,13 +558,17 @@ export function createStore(db) {
     getRank,
     ranksFor,
     setRank,
-    upsertAccount,
-    getAccount,
+    createUser,
+    getUser,
+    userByDiscord,
+    setUserDiscord,
+    setDiscordMember,
+    unlinkDiscord,
+    setPassword,
     accountByUuid,
-    unlinkMinecraft,
-    createLinkCode,
-    pendingLinkCode,
-    useLinkCode,
+    loginLocked,
+    loginFailed,
+    loginSucceeded,
     bridgePoll,
     serverStatus,
     pendingDeliveries,

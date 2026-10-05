@@ -1,18 +1,23 @@
 // API de la tienda de Tierras Fantásticas para Cloudflare Workers.
-// Pagos con Stripe, cuentas con Discord y el puente con el servidor de Minecraft (mod TF Client).
+// Pagos con Stripe, cuentas de jugador (nombre de Minecraft + contraseña) con su Discord conectado,
+// y el puente con el servidor de Minecraft (mod TF Client).
 import products from '../config/products.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
 import { Discord, isSnowflake } from './discord.js';
 import { createStore, CLAIMED, UUID_RE } from './store.js';
 import { createSession, parseCookies, serializeCookie, randomHex, safeEqual } from './session.js';
+import { hashPassword, verifyPassword } from './password.js';
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 const ORDER_ID_RE = /^[A-Z0-9]{5,40}$/;
-const LINK_CODE_RE = /^[A-Z0-9]{6}$/;
+const PASSWORD_MIN = 8;
+const PASSWORD_MAX = 128;
+// La sesión dura 60 días desde la última visita.
+const SESSION_DAYS = 60;
 const MAX_QUANTITY = 10;
 // Stripe no cobra menos de 0,50 (en USD/EUR); una mejora de rango nunca baja de aquí.
 const MIN_CHARGE = 50;
-const DISCORD_COOKIE = 'tf_discord';
+const SESSION_COOKIE = 'tf_session';
 const STATE_COOKIE = 'tf_oauth_state';
 // Si el puente no ha llamado en este tiempo, damos el servidor por desconectado.
 const BRIDGE_FRESH_MS = 45 * 1000;
@@ -95,17 +100,40 @@ export function createApp(env) {
     });
   }
 
-  async function discordUser(request) {
-    const data = await (await session()).decode(parseCookies(request.headers.get('Cookie'))[DISCORD_COOKIE]);
-    return data?.id ? data : null;
+  // La cuenta con la sesión iniciada (o null). La cookie guarda solo el UUID, firmado.
+  async function currentUser(request) {
+    const data = await (await session()).decode(parseCookies(request.headers.get('Cookie'))[SESSION_COOKIE]);
+    if (!data?.uuid) return null;
+    const user = await store.getUser(data.uuid);
+    // Si cambió la contraseña después de iniciar sesión, las sesiones viejas dejan de valer.
+    if (!user || (data.v && data.v !== user.password.slice(-12))) return null;
+    return user;
   }
 
-  // Cuenta de la web con su Minecraft vinculado (o null si no ha iniciado sesión).
-  async function accountOf(request) {
-    const user = await discordUser(request);
-    if (!user) return null;
-    const account = await store.getAccount(user.id);
-    return { user, minecraft: account?.minecraft || null };
+  async function sessionCookie(user, secure) {
+    const exp = Date.now() + SESSION_DAYS * 24 * 3600 * 1000;
+    const value = await (await session()).encode({ uuid: user.uuid, v: user.password.slice(-12), exp });
+    return serializeCookie(SESSION_COOKIE, value, { maxAge: SESSION_DAYS * 24 * 3600, secure });
+  }
+
+  // Lo que la web enseña de la cuenta (nunca la contraseña).
+  async function userView(user) {
+    const rank = await store.getRank(user.uuid);
+    const player = await store.playerByUuid(user.uuid);
+    const name = player?.name || user.name;
+    return {
+      name,
+      uuid: user.uuid,
+      head: head(name),
+      rank: rankInfo(rankById.get(rank?.rankId)),
+      discord: user.discord,
+    };
+  }
+
+  function checkPassword(password) {
+    if (typeof password !== 'string' || password.length < PASSWORD_MIN) return `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`;
+    if (password.length > PASSWORD_MAX) return 'La contraseña es demasiado larga.';
+    return null;
   }
 
   // Precio de un producto para un jugador: los rangos se mejoran pagando solo la diferencia.
@@ -150,6 +178,7 @@ export function createApp(env) {
         discordLogin: discord.loginEnabled,
         currency: CURRENCY,
         paymentsEnabled: Boolean(stripe),
+        discordInvite: DISCORD_URL,
         // Solo se puede comprar a jugadores que el puente ya conoce.
         bridge: Boolean(env.BRIDGE_SECRET),
       }),
@@ -163,15 +192,11 @@ export function createApp(env) {
         })),
       ),
 
-    'GET /api/me': async (req) => {
-      const account = await accountOf(req);
-      if (!account) return json({ discord: null, minecraft: null });
-      const { user, minecraft } = account;
-      const rank = minecraft ? await store.getRank(minecraft.uuid) : null;
-      return json({
-        discord: { id: user.id, username: user.username, avatar: user.avatar },
-        minecraft: minecraft ? { ...minecraft, head: head(minecraft.name), rank: rankInfo(rankById.get(rank?.rankId)) } : null,
-      });
+    // Cada visita renueva la sesión: quien entra a menudo no tiene que volver a iniciar sesión.
+    'GET /api/me': async (req, { secure }) => {
+      const user = await currentUser(req);
+      if (!user) return json({ user: null });
+      return json({ user: await userView(user) }, 200, { 'Set-Cookie': await sessionCookie(user, secure) });
     },
 
     // ¿Existe este jugador en el servidor? La tienda solo vende a nombres que el servidor ha visto entrar.
@@ -204,14 +229,76 @@ export function createApp(env) {
       });
     },
 
-    // --- Iniciar sesión con Discord (OAuth2) ---
+    // --- Cuentas: crear cuenta y entrar con el nombre de Minecraft y una contraseña ---
+    // El nombre tiene que ser el de un jugador que ha entrado al servidor (lo sabe el puente): la cuenta queda
+    // unida a su UUID. Cada jugador solo puede tener una cuenta.
+    'POST /api/auth/register': async (req, { secure }) => {
+      const body = (await readJson(req)) || {};
+      if (typeof body.name !== 'string' || !USERNAME_RE.test(body.name)) {
+        return json({ error: 'Nombre de Minecraft no válido (3-16 letras, números o _).' }, 400);
+      }
+      const bad = checkPassword(body.password);
+      if (bad) return json({ error: bad }, 400);
+      const player = await store.findPlayer(body.name);
+      if (!player) {
+        return json({ error: `${body.name} nunca ha entrado a ${SERVER_NAME}. Entra al servidor una vez con ese nombre y vuelve.`, code: 'unknown_player' }, 404);
+      }
+      if (!(await store.createUser({ uuid: player.uuid, password: await hashPassword(body.password) }))) {
+        return json({ error: `${player.name} ya tiene cuenta. Inicia sesión.`, code: 'exists' }, 409);
+      }
+      const user = await store.getUser(player.uuid);
+      log.log(`Cuenta nueva: ${player.name} (${player.uuid})`);
+      return json({ user: await userView(user) }, 200, { 'Set-Cookie': await sessionCookie(user, secure) });
+    },
+
+    'POST /api/auth/login': async (req, { secure }) => {
+      const body = (await readJson(req)) || {};
+      const wrong = () => json({ error: 'Nombre o contraseña incorrectos.' }, 401);
+      if (typeof body.name !== 'string' || !USERNAME_RE.test(body.name) || typeof body.password !== 'string') return wrong();
+      const key = `login:${body.name.toLowerCase()}`;
+      const locked = await store.loginLocked(key);
+      if (locked) {
+        const minutes = Math.max(1, Math.ceil((locked - Date.now()) / 60000));
+        return json({ error: `Demasiados intentos. Vuelve a probar en ${minutes} min.` }, 429);
+      }
+      const player = await store.findPlayer(body.name);
+      const user = player ? await store.getUser(player.uuid) : null;
+      if (!user || !(await verifyPassword(body.password.slice(0, PASSWORD_MAX), user.password))) {
+        await store.loginFailed(key);
+        return wrong();
+      }
+      await store.loginSucceeded(key);
+      return json({ user: await userView(user) }, 200, { 'Set-Cookie': await sessionCookie(user, secure) });
+    },
+
+    'POST /auth/logout': async (req, { secure }) =>
+      json({ ok: true }, 200, { 'Set-Cookie': serializeCookie(SESSION_COOKIE, '', { maxAge: 0, secure }) }),
+
+    'POST /api/account/password': async (req, { secure }) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
+      const body = (await readJson(req)) || {};
+      if (typeof body.current !== 'string' || !(await verifyPassword(body.current.slice(0, PASSWORD_MAX), user.password))) {
+        return json({ error: 'La contraseña actual no es correcta.' }, 401);
+      }
+      const bad = checkPassword(body.password);
+      if (bad) return json({ error: bad }, 400);
+      await store.setPassword(user.uuid, await hashPassword(body.password));
+      const fresh = await store.getUser(user.uuid);
+      return json({ ok: true }, 200, { 'Set-Cookie': await sessionCookie(fresh, secure) });
+    },
+
+    // --- Discord (OAuth2) ---
+    // Con la sesión iniciada: conecta su Discord a la cuenta. Sin sesión: entra con el Discord ya conectado.
+    // Discord nos dice su @ (no se puede escribir a mano) y si está en el servidor de Discord de Tierras Fantásticas.
     'GET /auth/discord': async (req, { url, discord, secure }) => {
-      if (!discord.loginEnabled) return redirect('/');
+      if (!discord.loginEnabled) return redirect('/cuenta?discord=off');
+      const user = await currentUser(req);
       const state = randomHex(16);
-      const ret = safeReturn(url.searchParams.get('return'));
+      const ret = safeReturn(url.searchParams.get('return') || '/cuenta');
       const cookie = serializeCookie(
         STATE_COOKIE,
-        await (await session()).encode({ state, ret, exp: Date.now() + 10 * 60 * 1000 }),
+        await (await session()).encode({ state, ret, link: user?.uuid || null, exp: Date.now() + 10 * 60 * 1000 }),
         { maxAge: 600, secure },
       );
       return redirect(discord.authorizeUrl(state), [cookie]);
@@ -221,7 +308,7 @@ export function createApp(env) {
       const s = await session();
       const saved = await s.decode(parseCookies(req.headers.get('Cookie'))[STATE_COOKIE]);
       const clearState = serializeCookie(STATE_COOKIE, '', { maxAge: 0, secure });
-      const ret = saved?.ret || '/';
+      const ret = saved?.ret || '/cuenta';
       const back = (flag) => `${ret}${ret.includes('?') ? '&' : '?'}discord=${flag}`;
       const state = url.searchParams.get('state');
       const code = url.searchParams.get('code');
@@ -229,53 +316,64 @@ export function createApp(env) {
       if (!saved || !state || state !== saved.state) return redirect(back('error'), [clearState]);
       if (url.searchParams.get('error') || !code) return redirect(back('cancel'), [clearState]);
 
+      let profile;
+      let member = false;
       try {
-        const user = await discord.exchangeCode(code);
-        await store.upsertAccount(user);
-        const exp = Math.min(user.expiresAt, Date.now() + 7 * 24 * 3600 * 1000);
-        const cookie = serializeCookie(DISCORD_COOKIE, await s.encode({ ...user, exp }), {
-          maxAge: Math.floor((exp - Date.now()) / 1000),
-          secure,
-        });
-        return redirect(back('ok'), [clearState, cookie]);
+        profile = await discord.exchangeCode(code);
+        member = await discord.isMember(profile.accessToken);
+        // Si no está en el servidor de Discord y tenemos bot, lo metemos.
+        if (!member && discord.botEnabled) {
+          try {
+            member = await discord.addMember(profile.id, profile.accessToken);
+          } catch (err) {
+            log.warn(`No se pudo añadir a ${profile.username} al Discord:`, err.message);
+          }
+        }
       } catch (err) {
         log.error('Error en el login de Discord:', err.message);
         return redirect(back('error'), [clearState]);
       }
+
+      // Conectar Discord a la cuenta con la sesión iniciada.
+      if (saved.link) {
+        const ok = await store.setUserDiscord(saved.link, { ...profile, member });
+        if (!ok) return redirect(back('taken'), [clearState]);
+        return redirect(back(member ? 'ok' : 'notmember'), [clearState]);
+      }
+      // Entrar con Discord: solo si ya está conectado a una cuenta.
+      const user = await store.userByDiscord(profile.id);
+      if (!user) return redirect(back('noaccount'), [clearState]);
+      await store.setUserDiscord(user.uuid, { ...profile, member });
+      return redirect(back(member ? 'ok' : 'notmember'), [clearState, await sessionCookie(user, secure)]);
     },
 
-    'POST /auth/logout': async (req, { secure }) =>
-      json({ ok: true }, 200, { 'Set-Cookie': serializeCookie(DISCORD_COOKIE, '', { maxAge: 0, secure }) }),
-
-    // --- Cuenta ---
-    // Código para escribir en el juego (/tf vincular CÓDIGO) y unir la cuenta con el jugador.
-    'POST /api/account/link': async (req) => {
-      const user = await discordUser(req);
-      if (!user) return json({ error: 'Inicia sesión con Discord primero.' }, 401);
-      await store.upsertAccount(user);
-      const { code, expiresAt } = await store.createLinkCode(user.id);
-      return json({ code, expiresAt, command: `/tf vincular ${code}` });
+    // Vuelve a mirar si ya se unió al servidor de Discord (con el bot; sin bot, hay que reconectar).
+    'POST /api/account/discord/check': async (req, { discord }) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
+      if (!user.discord) return json({ error: 'Conecta tu Discord primero.' }, 400);
+      if (!discord.botEnabled) return json({ reconnect: true });
+      try {
+        const member = await discord.isMemberByBot(user.discord.id);
+        await store.setDiscordMember(user.uuid, member);
+        return json({ member });
+      } catch (err) {
+        log.warn('No se pudo comprobar el Discord:', err.message);
+        return json({ error: 'No se pudo comprobar ahora. Inténtalo en un momento.' }, 502);
+      }
     },
 
-    // La página de la cuenta consulta si el código ya se usó en el juego.
-    'GET /api/account/link': async (req) => {
-      const account = await accountOf(req);
-      if (!account) return json({ error: 'Inicia sesión con Discord primero.' }, 401);
-      const pending = await store.pendingLinkCode(account.user.id);
-      return json({ minecraft: account.minecraft, pending: pending ? { code: pending.code, expiresAt: pending.expiresAt } : null });
-    },
-
-    'POST /api/account/unlink': async (req) => {
-      const user = await discordUser(req);
-      if (!user) return json({ error: 'Inicia sesión con Discord primero.' }, 401);
-      await store.unlinkMinecraft(user.id);
+    'POST /api/account/discord/unlink': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
+      await store.unlinkDiscord(user.uuid);
       return json({ ok: true });
     },
 
     'GET /api/account/orders': async (req) => {
-      const account = await accountOf(req);
-      if (!account) return json({ error: 'Inicia sesión con Discord primero.' }, 401);
-      const orders = await store.ordersFor({ discordId: account.user.id, uuid: account.minecraft?.uuid });
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
+      const orders = await store.ordersFor({ discordId: user.discord?.id, uuid: user.uuid });
       return json({ orders: orders.map(orderView) });
     },
 
@@ -315,7 +413,9 @@ export function createApp(env) {
       const id = orderId();
       const base = PUBLIC_URL || url.origin;
       const amount = q.unit * quantity;
-      const account = await discordUser(req);
+      // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord.
+      const buyer = await currentUser(req);
+      const account = buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
       const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
       try {
         const checkout = await stripe.createCheckoutSession({
@@ -340,7 +440,7 @@ export function createApp(env) {
           amount,
           currency: CURRENCY,
           // El token de Discord sirve para meter al comprador en el servidor de Discord con su rol.
-          discord: account ? { id: account.id, username: account.username, accessToken: account.accessToken } : null,
+          discord: account,
           discordId: account?.id,
           sessionId: checkout.id,
           rankFrom: q.from?.id,
@@ -437,14 +537,10 @@ export function createApp(env) {
       ];
       await store.upsertPlayers(seen);
 
-      // /tf vincular CÓDIGO escrito dentro del juego.
-      const linkResults = [];
-      for (const link of list(body.links, 20)) {
-        if (!link || !validPlayer(link) || typeof link.code !== 'string') continue;
-        const code = link.code.trim().toUpperCase();
-        const account = LINK_CODE_RE.test(code) ? await store.useLinkCode(code, link) : null;
-        linkResults.push({ uuid: link.uuid.toLowerCase(), ok: Boolean(account), account: account?.username || null });
-      }
+      // /tf vincular del mod 1.2.8 ya no hace falta: las cuentas se crean en la web. Se responde que no vale.
+      const linkResults = list(body.links, 20)
+        .filter((link) => link && validPlayer(link))
+        .map((link) => ({ uuid: link.uuid.toLowerCase(), ok: false, account: null }));
 
       // Rangos puestos o quitados por el staff con /tf rango (sustituyen al comprado).
       for (const change of list(body.ranks, 50)) {

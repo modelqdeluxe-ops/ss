@@ -68,7 +68,7 @@ def header(page):
           <span class="dot" data-status-dot></span><span data-server-ip>{IP}</span><span class="hint" data-copy-hint>Copiar</span>
         </button>
         <a href="/tienda" class="btn btn-gold btn-sm">Tienda</a>
-        <a href="/auth/discord" class="account-chip" data-account-chip aria-label="Iniciar sesión con Discord" hidden>{I['discord']}<span>Entrar</span></a>
+        <a href="/cuenta" class="account-chip" data-account-chip aria-label="Entrar o crear cuenta">{I['users']}<span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet">{I['menu']}</button>
       </div>
     </div>
@@ -309,7 +309,7 @@ def tienda():
       <div class="trust">
         <div class="panel item reveal"><span class="icon">{I['lock']}</span><div><b>Pago seguro con Stripe</b><span>Tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></div></div>
         <div class="panel item reveal"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
-        <div class="panel item reveal"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Inicia sesión con Discord y recibe el rol de tu rango.</span></div></div>
+        <div class="panel item reveal"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
       </div>
     </section>
   </main>
@@ -434,7 +434,7 @@ def ayuda():
 {faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios.')}
 {faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
 {faq('¿Qué me toca al abrir un crate?', 'Una pieza del set de ese crate: un arma, una herramienta, una pieza de armadura o un cosmético animado. En la página de Crates puedes ver todo lo que contiene cada uno.')}
-{faq('¿Cómo recibo el rol en Discord?', 'Inicia sesión con Discord (botón «Entrar» arriba) antes de comprar, o vincula tu jugador en «Mi cuenta» escribiendo /tf vincular CÓDIGO en el juego. Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
+{faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
 {faq('No he recibido mi compra, ¿qué hago?', 'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de usuario.')}
       </div>
     </section>
@@ -470,10 +470,10 @@ def success():
 
 def cuenta():
     return head('Mi cuenta — Tierras Fantásticas',
-                'Tu cuenta de Tierras Fantásticas: inicia sesión con Discord, vincula tu jugador de Minecraft y mira tus compras.',
+                'Tu cuenta de Tierras Fantásticas: entra con tu nombre de Minecraft, conecta tu Discord y mira tus compras.',
                 'cuenta') + header('cuenta') + f'''
   <main id="main">
-{page_hero('Mi cuenta', 'Tu cuenta del reino', 'Inicia sesión con Discord, vincula tu jugador de Minecraft y sigue tus compras.')}
+{page_hero('Mi cuenta', 'Tu cuenta del reino', 'Entra con tu nombre de Minecraft, conecta tu Discord y sigue tus compras.')}
     <section class="wrap section" style="padding-top:32px">
       <div id="account"><p class="loading">Cargando tu cuenta…</p></div>
     </section>
