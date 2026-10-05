@@ -590,6 +590,28 @@ def overrides(kind, refs):
     return o
 
 
+def write_accessory_tags(sets_out):
+    """Huecos de accesorios para los cosméticos de espalda, así el pecho queda libre para la pechera:
+    - Accessories (wispforest): etiquetas accessories:back (y accessories:cape para las capas).
+    - Curios (lo usa Artifacts en 1.20.1): etiqueta curios:back y el hueco «back» activado para los jugadores.
+    Si esos mods no están, estos datos no hacen nada."""
+    data = os.path.join(ASSETS, '..', '..', 'data')
+    back = [f'tfclient:{i["id"]}' for s in sets_out for i in s['items'] if i['type'] == 'back']
+    capes = [f'tfclient:{i["id"]}' for s in sets_out for i in s['items'] if i['type'] == 'back' and i['id'].endswith('_cape')]
+    files = {
+        'accessories/tags/items/back.json': {'replace': False, 'values': back},
+        'accessories/tags/items/cape.json': {'replace': False, 'values': capes},
+        'curios/tags/items/back.json': {'replace': False, 'values': back},
+        'tfclient/curios/entities/tf_back.json': {'entities': ['minecraft:player'], 'slots': ['back']},
+    }
+    for rel, content in files.items():
+        path = os.path.join(data, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w') as fh:
+            json.dump(content, fh, indent=1)
+    print(f'Accesorios: {len(back)} cosméticos de espalda ({len(capes)} capas) en accessories:back / curios:back')
+
+
 def main(packs):
     for sub in ('models/item', 'textures/item/sets', 'textures/models/armor'):
         path = os.path.join(ASSETS, sub)
@@ -686,6 +708,7 @@ def main(packs):
               + (f', {w.zfight_fixed} caras superpuestas separadas' if w.zfight_fixed else ''))
     with open(os.path.join(ASSETS, 'tf_sets.json'), 'w') as fh:
         json.dump({'sets': sets_out}, fh, ensure_ascii=False, indent=1)
+    write_accessory_tags(sets_out)
     os.makedirs(os.path.join(ASSETS, 'lang'), exist_ok=True)
     for lang_file in ('es_es.json', 'en_us.json'):
         path = os.path.join(ASSETS, 'lang', lang_file)

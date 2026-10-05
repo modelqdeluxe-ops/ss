@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
@@ -91,6 +92,7 @@ public final class TFItemsClient {
         for (RegistryObject<Item> o : ofType("trident")) {
             ItemProperties.register(o.get(), THROWING, (stack, level, entity, seed) -> using(entity, stack) ? 1.0F : 0.0F);
         }
+        TFAccessorySlots.disableAccessoriesDefaultRender(ofType("back").stream().map(RegistryObject::get).toList());
     }
 
     /** Los modelos de alas, mochilas, capas y colas puestas no son de ningún objeto: hay que cargarlos aparte. */
@@ -111,7 +113,10 @@ public final class TFItemsClient {
         }
     }
 
-    /** Dibuja en la espalda el cosmético que el jugador lleva en el hueco del pecho (como hacen los plugins). */
+    /**
+     * Dibuja en la espalda los cosméticos que lleva el jugador: en el hueco del pecho (como hacen los plugins) o en el
+     * de la espalda de Accessories / Curios, que deja el pecho libre para la pechera.
+     */
     public static final class BackLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
         public BackLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
             super(parent);
@@ -120,14 +125,27 @@ public final class TFItemsClient {
         @Override
         public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing,
                            float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-            ItemStack stack = player.getItemBySlot(EquipmentSlot.CHEST);
-            if (!(stack.getItem() instanceof TFItemTypes.Cosmetic cosmetic) || cosmetic.wornModel() == null) return;
             if (player.isInvisible()) return;
+            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+            if (chest.getItem() instanceof TFItemTypes.Cosmetic cosmetic && cosmetic.wornModel() != null) {
+                renderOne(pose, buffers, light, chest, cosmetic, false);
+            }
+            // Con pechera, lo de la espalda va un píxel más atrás para no atravesarla.
+            boolean armored = chest.getItem() instanceof ArmorItem;
+            for (ItemStack stack : TFAccessorySlots.backCosmetics(player)) {
+                if (stack != chest && stack.getItem() instanceof TFItemTypes.Cosmetic cosmetic) {
+                    renderOne(pose, buffers, light, stack, cosmetic, armored);
+                }
+            }
+        }
+
+        private void renderOne(PoseStack pose, MultiBufferSource buffers, int light, ItemStack stack,
+                               TFItemTypes.Cosmetic cosmetic, boolean armored) {
             BakedModel model = Minecraft.getInstance().getModelManager().getModel(cosmetic.wornModel());
             pose.pushPose();
             getParentModel().body.translateAndRotate(pose);
             // Igual que un objeto puesto en la cabeza (así los colocan los plugins de cosméticos), pero siguiendo el cuerpo.
-            pose.translate(0.0F, -0.25F, 0.0F);
+            pose.translate(0.0F, -0.25F, armored ? 0.0625F : 0.0F);
             pose.mulPose(Axis.YP.rotationDegrees(180.0F));
             pose.scale(0.625F, -0.625F, -0.625F);
             Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.HEAD, false, pose, buffers, light,

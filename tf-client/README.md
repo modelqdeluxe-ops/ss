@@ -42,7 +42,8 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
 El mod añade los **26 sets** de la tienda (556 objetos, los mismos que enseña la web) con sus modelos 3D y texturas
 animadas: armas, herramientas, arcos y ballestas (se tensan con sus propias animaciones), cañas, escudos, tridentes,
 armaduras completas (la de Pequeño Unicornio, animada también puesta), cascos y sombreros que se ponen en la cabeza, y
-alas, mochilas, capas y colas que se ven en la espalda (van en el hueco del pecho).
+alas, mochilas, capas y colas que se ven en la espalda. Van en el hueco del pecho o, con los mods Accessories o
+Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libre para la pechera.
 
 - No tienen receta: se sacan del **modo creativo** (pestaña *Tierras Fantásticas · Sets*) o con el comando.
 - Valores de netherita (daño, durabilidad, armadura) y no se queman en lava.
@@ -69,7 +70,7 @@ web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.2.3.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.2.4.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
