@@ -67,6 +67,35 @@ CRATES = [
      'Acero gris y energía roja de tecnología militar: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'red', 499, ('#ff9b9b', '#ef4444')),
     ('berserker', 'Crate Berserker', 'Legendario', 'La furia del guerrero',
      'Acero negro con ojos de fuego: hacha de batalla, hoja, alabarda, martillo, armadura completa y alas del Berserker.', 'magma', 449, ('#ffab8a', '#e5483b')),
+    # La llave de estos crates es la del propio pack (img/items/<set>/key.webp).
+    ('pirate', 'Crate Tesoro Pirata', 'Legendario', 'El botín de los siete mares',
+     'Oro, calaveras y plumas del capitán: espada, estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero pirata.', 'items/pirate/key', 449, ('#ffd36b', '#d9822b')),
+    ('cupido', 'Crate Cupido', 'Edición limitada', 'Flechazos en rosa y negro',
+     'El lado oscuro del amor: rosa y negro con corazones y lazos. Estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero.', 'items/cupido/key', 349, ('#ffb3cf', '#e0457b')),
+    ('patrick', 'Crate San Patricio', 'Edición limitada', 'La suerte del trébol',
+     'Esmeralda y oro de los duendes: gran espada, guadaña, tridente, ballesta, armadura completa, alas de trébol y sombrero.', 'items/patrick/key', 349, ('#86efac', '#16a34a')),
+    ('thunderbolt', 'Crate Thunderbolt', 'Mítico', 'Rayos de plata y zafiro',
+     'Plata y zafiro cargados de electricidad: espada, martillo, guadaña, lanza, bastón, armadura, alas y casco.', 'items/thunderbolt/key', 499, ('#bae6fd', '#38bdf8')),
+    ('cyber', 'Crate Cyber', 'Mítico', 'Neón rojo del futuro',
+     'Acero negro con neón rojo de otro siglo: espada, cuchillo, hoz, lanza, bastón, armadura completa, alas y casco.', 'items/cyber/key', 499, ('#fda4af', '#e11d48')),
+    ('bat', 'Crate Murciélago Sombrío', 'Legendario', 'Alas de la noche',
+     'Acero negro y ojos carmesí de la colonia de murciélagos: espada, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/bat/key', 449, ('#d4d4d8', '#9f1239')),
+    ('fox', 'Crate Zorro de Nueve Colas', 'Mítico', 'La tribu del kitsune',
+     'Oro y rojo de la tribu del zorro de nueve colas: espada, estoque, guadaña, tridente, ballesta, armadura, alas y sombrero.', 'items/fox/key', 499, ('#fde68a', '#f59e0b')),
+    ('nanoedge', 'Crate Nano Edge', 'Épico', 'Filo de nanotecnología',
+     'Blanco y verde ácido de alta tecnología: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/nanoedge/key', 399, ('#bbf7d0', '#22c55e')),
+    ('blueflame', 'Crate Llama Azul', 'Legendario', 'Fuego azul que no se apaga',
+     'Metal oscuro envuelto en llamas azules: hoja, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/blueflame/key', 449, ('#93c5fd', '#2563eb')),
+    ('wild', 'Crate Salvaje', 'Épico', 'La fuerza de la selva',
+     'Madera, hojas y jade de la naturaleza salvaje: gran espada, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/wild/key', 399, ('#99f6e4', '#0d9488')),
+    ('starlight', 'Crate Luz de Estrella', 'Mítico', 'El brillo de las constelaciones',
+     'Oro y cristal estelar: hoja, hacha de batalla, daga, hoz, lanza, bastón, armadura completa y alas con destellos.', 'items/starlight/key', 499, ('#fef08a', '#eab308')),
+    ('frostbite', 'Crate Congelación', 'Legendario', 'El frío que corta',
+     'Hielo eterno y acero escarchado: martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/frostbite/key', 449, ('#cffafe', '#06b6d4')),
+    ('darkloyal', 'Crate Lealtad Oscura', 'Legendario', 'Juramento de sombra',
+     'Acero negro y brasas de los caballeros leales a la oscuridad: guadaña doble, hacha de batalla, tridente, ballesta, armadura completa, alas y casco.', 'items/darkloyal/key', 449, ('#fdba74', '#ea580c')),
+    ('easter', 'Crate Conejo de Pascua', 'Edición limitada', 'Huevos, zanahorias y conejos',
+     'El arsenal del Conejo de Pascua: gran espada, garrote, maza, guadaña, ballesta, armadura, alas y sombrero de conejo.', 'items/easter/key', 349, ('#f5d0fe', '#d946ef')),
 ]
 
 
@@ -98,16 +127,17 @@ def main():
         crate = {
             'id': pid, 'category': 'crates', 'name': name, 'theme': set_id, 'colors': [c1, c2], 'rarity': rarity,
             'tagline': tagline, 'description': desc, 'image': f'img/crates/{set_id}.webp',
-            'keyImage': f'img/keys/{key}.webp', 'price': prev.get('price', price), 'set': set_id,
+            'keyImage': f'img/{key}.webp' if '/' in key else f'img/keys/{key}.webp', 'price': prev.get('price', price), 'set': set_id,
             'models': listing(set_id), 'commands': prev.get('commands', [f'crate key give {{player}} {set_id} 1']),
         }
         if prev.get('featured'):
             crate['featured'] = True
         crates.append(crate)
     ranks = [x for x in data if x['category'] == 'rangos']
-    rest = [x for x in data if x['category'] not in ('rangos', 'crates')]
+    gifts = [x for x in data if x['category'] == 'gratis']
+    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis')]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
-        json.dump(ranks + crates + rest, fh, ensure_ascii=False, indent=2)
+        json.dump(gifts + ranks + crates + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
     print(len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos')
 

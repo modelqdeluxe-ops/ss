@@ -48,7 +48,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
 
 ## Sets de Tierras Fantásticas (objetos del juego)
 
-El mod añade los **26 sets** de la tienda (556 objetos, los mismos que enseña la web) con sus modelos 3D y texturas
+El mod añade los **40 sets** de la tienda (839 objetos, los mismos que enseña la web) con sus modelos 3D y texturas
 animadas: armas, herramientas, arcos y ballestas (se tensan con sus propias animaciones), cañas, escudos, tridentes,
 armaduras completas (la de Pequeño Unicornio, animada también puesta), cascos y sombreros que se ponen en la cabeza, y
 alas, mochilas, capas y colas que se ven en la espalda. Van en el hueco del pecho o, con los mods Accessories o
@@ -91,7 +91,7 @@ web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.2.8.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.2.9.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

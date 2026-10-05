@@ -462,8 +462,9 @@ export function createApp(env) {
       if (!product || product.price !== 0) return json({ error: 'Ese regalo no existe.' }, 400);
       const player = await store.playerByUuid(user.uuid);
       // El número de pedido sale del jugador y del regalo: el mismo jugador nunca puede reclamarlo dos veces.
-      const index = products.indexOf(product).toString(36).toUpperCase().padStart(2, '0');
-      const id = `GIFT${index}${user.uuid.replaceAll('-', '').toUpperCase()}`;
+      // giftCode fijo en products.json: no cambia aunque se reordene el catálogo.
+      const code = String(product.giftCode || product.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+      const id = `GIFT${code}${user.uuid.replaceAll('-', '').toUpperCase()}`.slice(0, 40);
       if (await store.getOrder(id)) return json({ error: 'Ya reclamaste este regalo.', code: 'claimed', id }, 409);
       try {
         await store.createOrder({

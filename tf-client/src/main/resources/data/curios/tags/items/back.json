@@ -29,6 +29,21 @@
   "tfclient:bonita_wings",
   "tfclient:chronicles_wings",
   "tfclient:protocal_wings",
-  "tfclient:berserker_wings"
+  "tfclient:berserker_wings",
+  "tfclient:pirate_wing",
+  "tfclient:cupido_wing",
+  "tfclient:patrick_wings",
+  "tfclient:thunderbolt_wings",
+  "tfclient:cyber_wings",
+  "tfclient:bat_wings",
+  "tfclient:fox_wing",
+  "tfclient:nanoedge_wings",
+  "tfclient:blueflame_wings",
+  "tfclient:wild_backpack",
+  "tfclient:wild_wings",
+  "tfclient:starlight_wings",
+  "tfclient:frostbite_wings",
+  "tfclient:darkloyal_wing",
+  "tfclient:easter_wing"
  ]
 }
