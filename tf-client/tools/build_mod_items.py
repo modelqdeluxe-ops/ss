@@ -33,7 +33,7 @@ ASSETS = os.path.join(RES, 'assets', 'tfclient')
 
 SWORDS = {'sword', 'great_sword', 'greatsword', 'big_sword', 'rapier_sword', 'dagger', 'knife', 'blade', 'scythe',
           'sickle', 'spear', 'staff', 'halberd', 'hammer', 'mace', 'club', 'gauntlet', 'flag'}
-AXES = {'axe', 'battle_axe', 'battleaxe'}
+AXES = {'axe', 'battle_axe', 'battleaxe', 'battleaxes'}
 HEAD = {'helmet', 'hat'}
 BACK = {'wings', 'wing', 'backpack', 'cape', 'tail'}
 ARMOR = {'armor_helmet': 'helmet', 'armor_chestplate': 'chestplate', 'armor_leggings': 'leggings', 'armor_boots': 'boots'}
@@ -325,15 +325,19 @@ class SetWriter:
         """Texturas de la armadura puesta. Si vienen animadas (tira de fotogramas), se guarda cada fotograma
         y el mod va cambiando de textura con el tiempo. Devuelve (capas, fotogramas, ticks por fotograma)."""
         best = {}
+        fallback = {}
+        within = self.prefix.strip('/')
         for dirpath, _dirs, files in os.walk(self.root):
-            if 'trims' in dirpath:
+            if 'trims' in dirpath or (within and within not in dirpath):
                 continue
             for f in files:
                 low = f.lower()
                 if not low.endswith('.png') or low.endswith('_e.png') or 'overlay' in low:
                     continue
                 layer = 1 if ('layer_1' in low or low == 'armor_main.png') else 2 if ('layer_2' in low or low == 'armor_leggings.png') else None
-                if not layer:
+                # Otros packs las llaman <set>_chestplate.png / <set>_leggings.png (capa de 64×32 o más).
+                by_piece = 1 if low.endswith('_chestplate.png') else 2 if low.endswith('_leggings.png') else None
+                if not layer and not by_piece:
                     continue
                 path = os.path.join(dirpath, f)
                 try:
@@ -342,7 +346,13 @@ class SetWriter:
                     continue
                 if w % 2 or h % (w // 2):
                     continue
-                best.setdefault(layer, path)
+                if layer:
+                    best.setdefault(layer, path)
+                elif w >= 64 and w == 2 * h:
+                    fallback.setdefault(by_piece, path)
+        # Los nombres layer_1/layer_2 mandan; los de pieza solo cubren lo que falte.
+        for layer, path in fallback.items():
+            best.setdefault(layer, path)
         out_dir = os.path.join(ASSETS, 'textures', 'models', 'armor')
         os.makedirs(out_dir, exist_ok=True)
         frames, frametime = 1, 2

@@ -395,8 +395,10 @@
       .map(
         (p) => `
         <button type="button" class="crate-pick" role="tab" data-crate="${escapeHtml(p.id)}"${themeAttr(p)} aria-selected="false" aria-controls="crate-stage">
-          ${img(p.keyImage || p.image, '', '', ' width="48" height="40"')}
-          <span><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.rarity || 'Crate')} · ${formatPrice(p.price)}</small></span>
+          ${img(p.keyImage || p.image, '', '', ' width="56" height="56"')}
+          <b>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</b>
+          <small>${escapeHtml(p.rarity || 'Crate')}</small>
+          <span class="pick-price">${formatPrice(p.price)}</span>
         </button>`,
       )
       .join('');
@@ -406,17 +408,74 @@
     });
     picker.addEventListener('keydown', (e) => {
       if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-      const idx = list.findIndex((p) => p.id === selectedCrate);
-      const next = list[(idx + (e.key === 'ArrowRight' ? 1 : -1) + list.length) % list.length];
+      const visible = list.filter((p) => !$(`[data-crate="${p.id}"]`, picker).hidden);
+      if (!visible.length) return;
+      const idx = visible.findIndex((p) => p.id === selectedCrate);
+      const next = visible[(idx + (e.key === 'ArrowRight' ? 1 : -1) + visible.length) % visible.length];
       showCrate(next.id, true);
       $(`[data-crate="${next.id}"]`, picker).focus();
     });
+
+    // Filtros por rareza y buscador
+    const rarities = [...new Set(list.map((p) => p.rarity).filter(Boolean))];
+    let rarity = '';
+    const filters = $('#crate-filters');
+    filters.innerHTML = [['', 'Todos', list.length], ...rarities.map((r) => [r, r, list.filter((p) => p.rarity === r).length])]
+      .map(([value, label, n]) => `<button type="button" class="chip" data-rarity="${escapeHtml(value)}" aria-pressed="${value === ''}">${escapeHtml(label)} <span>${n}</span></button>`)
+      .join('');
+    const search = $('#crate-search');
+    const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    function applyFilter() {
+      const q = norm(search.value.trim());
+      let shown = 0;
+      for (const p of list) {
+        const ok = (!rarity || p.rarity === rarity) && (!q || norm(`${p.name} ${p.tagline} ${p.rarity}`).includes(q));
+        $(`[data-crate="${p.id}"]`, picker).hidden = !ok;
+        shown += ok;
+      }
+      $('#crate-empty').hidden = shown > 0;
+      picker.scrollLeft = 0;
+      updateRail();
+    }
+    filters.addEventListener('click', (e) => {
+      const chip = e.target.closest('[data-rarity]');
+      if (!chip) return;
+      rarity = chip.dataset.rarity;
+      $$('[data-rarity]', filters).forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+      applyFilter();
+    });
+    search.addEventListener('input', applyFilter);
+
+    // Flechas de la tira (en el móvil se desliza con el dedo)
+    const railBtns = $$('[data-rail]');
+    function updateRail() {
+      const max = picker.scrollWidth - picker.clientWidth - 2;
+      railBtns[0].disabled = picker.scrollLeft <= 2;
+      railBtns[1].disabled = picker.scrollLeft >= max;
+    }
+    railBtns.forEach((b) =>
+      b.addEventListener('click', () => picker.scrollBy({ left: Number(b.dataset.rail) * picker.clientWidth * 0.8, behavior: 'smooth' })),
+    );
+    picker.addEventListener('scroll', updateRail, { passive: true });
+    window.addEventListener('resize', updateRail);
+
     const fromHash = () => {
       const h = decodeURIComponent(location.hash.slice(1));
       return list.find((p) => p.theme === h || p.id === h);
     };
     showCrate((fromHash() || list.find((p) => p.featured) || list[0]).id, false);
+    centerPick();
+    updateRail();
     window.addEventListener('hashchange', () => fromHash() && showCrate(fromHash().id, false));
+  }
+
+  // Deja el crate elegido a la vista dentro de la tira, sin mover la página.
+  function centerPick(smooth) {
+    const picker = $('#crate-picker');
+    const btn = $(`[data-crate="${selectedCrate}"]`, picker);
+    if (!btn || btn.hidden) return;
+    const left = btn.offsetLeft - (picker.clientWidth - btn.offsetWidth) / 2;
+    picker.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
   }
 
   let selectedCrate = null;
@@ -430,8 +489,8 @@
       const active = btn.dataset.crate === id;
       btn.setAttribute('aria-selected', String(active));
       btn.tabIndex = active ? 0 : -1;
-      if (active && updateUrl) btn.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
     }
+    if (updateUrl) centerPick(true);
 
     const art = $('#stage-img');
     const fresh = art.cloneNode();

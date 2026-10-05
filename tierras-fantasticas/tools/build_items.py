@@ -84,6 +84,23 @@ SETS = {
     'berserker': ('elitecreatures-berserker_animated_weapon_set/ItemsAdder/data/resourcepack/assets', 'elitecreatures', COMMON,
                   'berserker_animated_weapon_set/'),
     'conqueror': ('conqueror_legacy/ItemsAdder Setup/contents/conqueror_legacy/resourcepack/assets', 'conqueror_legacy', COMMON),
+    'pirate': ('Pirate_Treasure_Set/ItemsAdder Setup/contents/pirate_reasure_set/resourcepack/assets', 'pirate_reasure_set', COMMON),
+    'cupido': ('Valentine_pack/ItemsAdder Setup/contents/valentine/resourcepack/assets', 'valentine', COMMON),
+    'patrick': ('SaintPatrickSet/polygony_sanpatric/resourcepack/assets', 'saintpatricksset', COMMON),
+    'thunderbolt': ('ThunderboltSet/ItemAdder/data/resource_pack', 'thunderboltset', COMMON),
+    'bat': ('shadow_bat_pack/ItemsAdder Setup/ItemsAdder/contents/shadow_bat_pack/resourcepack/assets', 'shadow_bat_pack', COMMON),
+    'fox': ('Nine_tailed_fox_tribe/ItemsAdder Setup/contents/nine_tailed_fox_tribe/resourcepack/assets', 'nine_tailed_fox_tribe', COMMON),
+    'nanoedge': ('Nano_Edge_Weapons_and_Tools_Set/ItemsAdder Setup/ItemsAdder/contents/nanoedge_set/resourcepack/assets', 'nanoedge_set', COMMON),
+    'blueflame': ('Blueflame_Weapons_And_Tools_Set/ItemsAdder Setup/ItemsAdder/contents/blueflame/resourcepack/assets', 'blueflame', COMMON),
+    'wild': ('The_Wild_Animated_Weapons_And_Tools_Set/ItemsAdder Setup/ItemsAdder/contents/thewildset/resourcepack/assets', 'thewildset', COMMON),
+    'easter': ('elitecreatures-easterbunny_animated_weapon_set_v3/Weapon/ItemsAdder/contents/elitecreatures/resourcepack/assets',
+               'elitecreatures', COMMON, 'easterbunny_animated_weapon_set_v3/'),
+    'starlight': ('Star_Light_Tools_And_Weapons_Set_v3/Itemsadder Setup/ItemsAdder/contents/starlight/resourcepack/assets', 'starlight', COMMON),
+    'frostbite': ('Frostbite_Animated_Weapons_And_Tools_Set/ItemsAdder Setup/ItemsAdder/contents/frostbite_set/resourcepack/assets', 'frostbite_set', COMMON),
+    'darkloyal': ('Dark_Loyal_Setup/ItemsAdder/contents/gearforge_dark_loyal/resourcepack/assets', 'gearforge_dark_loyal',
+                  COMMON + [('battleaxes', 'Hacha de batalla'), ('doublescythe', 'Guadaña doble')]),
+    # El Cyber Set trae 7 colores; el crate usa el original (cyan).
+    'cyber': ('CyberSet-EliteCreatures/- Cyber Set/RSS/assets', 'cyber_set', COMMON + [('rod', 'Caña de pescar')], 'cyber_original_set/'),
 }
 
 THUMB = 256
@@ -343,11 +360,14 @@ def build_set(packs, set_id):
 ARMOR = [('helmet', 'Casco de armadura'), ('chestplate', 'Peto'), ('leggings', 'Grebas'), ('boots', 'Botas')]
 
 
-def find_armor_icon(root, piece):
-    """Icono de inventario de una pieza de armadura (16 o 32 px), no la capa que se ve puesta."""
+def find_armor_icon(root, piece, within=''):
+    """Icono de inventario de una pieza de armadura (16 o 32 px), no la capa que se ve puesta.
+    `within`: en packs con varias variantes de color, solo se busca en la carpeta de la elegida."""
     best = None
     for dirpath, _dirs, files in os.walk(root):
         if os.sep + 'textures' not in dirpath or 'animation' in dirpath:
+            continue
+        if within and within not in dirpath:
             continue
         for f in files:
             name = f.lower()
@@ -367,11 +387,12 @@ def find_armor_icon(root, piece):
 
 
 def build_armor(packs, set_id, out_models, out_thumbs):
-    rel_root = SETS[set_id][0]
+    rel_root, _ns, _items, *rest = SETS[set_id]
     root = os.path.join(packs, rel_root)
+    within = rest[0].strip('/') if rest else ''
     listing = []
     for piece, label in ARMOR:
-        icon = find_armor_icon(root, piece)
+        icon = find_armor_icon(root, piece, within)
         if not icon:
             continue
         slug = f'armor_{piece}'

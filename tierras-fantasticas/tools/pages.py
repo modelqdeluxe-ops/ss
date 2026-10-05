@@ -318,13 +318,28 @@ def tienda():
 
 def crates():
     return head('Crates — Tierras Fantásticas',
-                'Crates de Tierras Fantásticas: más de 20 sets con armas, herramientas, armaduras y alas animadas. Mira cada pieza en 3D y consigue tu llave.',
+                'Crates de Tierras Fantásticas: más de 35 sets con armas, herramientas, armaduras y alas animadas. Mira cada pieza en 3D y consigue tu llave.',
                 'crates') + header('crates') + f'''
   <main id="main">
 {page_hero('Crates animados', 'Crates legendarios', 'Elige un crate y toca cualquier objeto para verlo en 3D. Cada llave abre el crate una vez en el spawn y te da una pieza del set.')}
     <section class="wrap" style="padding-top:32px">
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
-      <div class="crate-picker" id="crate-picker" role="tablist" aria-label="Crates"></div>
+      <div class="crate-browser">
+        <div class="crate-tools">
+          <div class="crate-filters" id="crate-filters" role="group" aria-label="Filtrar por rareza"></div>
+          <label class="crate-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <span class="sr-only">Buscar crate</span>
+            <input id="crate-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
+          </label>
+        </div>
+        <div class="crate-rail">
+          <button class="rail-btn" type="button" data-rail="-1" aria-label="Ver crates anteriores">{I['arrow']}</button>
+          <div class="crate-picker" id="crate-picker" role="tablist" aria-label="Crates"></div>
+          <button class="rail-btn" type="button" data-rail="1" aria-label="Ver más crates">{I['arrow']}</button>
+        </div>
+        <p class="crate-empty muted" id="crate-empty" hidden>Ningún crate coincide con la búsqueda.</p>
+      </div>
       <div class="panel stage" id="crate-stage">
         <div class="stage-art"><img id="stage-img" alt="" hidden></div>
         <div class="stage-info" id="stage-info"><p class="loading">Cargando crates…</p></div>
