@@ -34,14 +34,42 @@ Y en el **servidor** (opcional) hace de **puente con la web**:
 - Si el comprador no está conectado, la compra espera en la web y se le da en cuanto entra.
 - Es el servidor el que llama a la web: no hace falta RCON ni abrir puertos. Cada entrega tiene un número y el puente
   apunta las que ya ejecutó (`config/tfclient-bridge-entregas.txt`), así que nunca entrega dos veces.
-- No obliga a los jugadores a tener el TF Client: quien entre sin él juega y recibe sus compras igual.
 
 No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
+
+## Sets de Tierras Fantásticas (objetos del juego)
+
+El mod añade los **26 sets** de la tienda (556 objetos, los mismos que enseña la web) con sus modelos 3D y texturas
+animadas: armas, herramientas, arcos y ballestas (se tensan con sus propias animaciones), cañas, escudos, tridentes,
+armaduras completas (la de Pequeño Unicornio, animada también puesta), cascos y sombreros que se ponen en la cabeza, y
+alas, mochilas, capas y colas que se ven en la espalda (van en el hueco del pecho).
+
+- No tienen receta: se sacan del **modo creativo** (pestaña *Tierras Fantásticas · Sets*) o con el comando.
+- Valores de netherita (daño, durabilidad, armadura) y no se queman en lava.
+- Hace falta el TF Client **en el servidor y en todos los jugadores**, con la misma versión (Forge lo comprueba al
+  conectar). Funciona en servidores Forge y Mohist.
+
+### Comando `/tf` (operadores, nivel 2)
+
+```
+/tf web sets list                              lista los sets
+/tf web sets give <jugadores> <set>            da el set entero
+/tf web sets give <jugadores> <set> <objeto>   da un objeto del set (p. ej. /tf web sets give Steve necros sword)
+```
+
+Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos son `tfclient:<set>_<objeto>`
+(por ejemplo `tfclient:valentine_sword`), por si los usa un plugin de crates.
+
+### Regenerar los objetos
+
+`tools/build_mod_items.py <carpeta con los packs descomprimidos>` copia modelos, texturas, animaciones y armaduras de
+los packs (los sets y sus nombres salen de `tierras-fantasticas/tools/build_items.py` y `crates.py`, igual que en la
+web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft 1.20.1.
 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.1.1.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.2.0.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

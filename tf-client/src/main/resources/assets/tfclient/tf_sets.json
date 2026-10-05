@@ -1,0 +1,2541 @@
+{
+ "sets": [
+  {
+   "id": "valentine",
+   "name": "Valentine",
+   "color": "#ff4f8b",
+   "items": [
+    {
+     "id": "valentine_sword",
+     "type": "sword"
+    },
+    {
+     "id": "valentine_axe",
+     "type": "axe"
+    },
+    {
+     "id": "valentine_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "valentine_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "valentine_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "valentine_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "valentine_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "valentine_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "valentine_spear",
+     "type": "sword"
+    },
+    {
+     "id": "valentine_trident",
+     "type": "trident"
+    },
+    {
+     "id": "valentine_staff",
+     "type": "sword"
+    },
+    {
+     "id": "valentine_bow",
+     "type": "bow"
+    },
+    {
+     "id": "valentine_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "valentine_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "valentine_shield",
+     "type": "shield"
+    },
+    {
+     "id": "valentine_helmet",
+     "type": "head"
+    },
+    {
+     "id": "valentine_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/valentine/wings_worn"
+    },
+    {
+     "id": "valentine_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "valentine_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "valentine_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "valentine_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "necros",
+   "name": "Necros",
+   "color": "#a855f7",
+   "items": [
+    {
+     "id": "necros_sword",
+     "type": "sword"
+    },
+    {
+     "id": "necros_axe",
+     "type": "axe"
+    },
+    {
+     "id": "necros_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "necros_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "necros_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "necros_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "necros_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "necros_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "necros_spear",
+     "type": "sword"
+    },
+    {
+     "id": "necros_trident",
+     "type": "trident"
+    },
+    {
+     "id": "necros_staff",
+     "type": "sword"
+    },
+    {
+     "id": "necros_bow",
+     "type": "bow"
+    },
+    {
+     "id": "necros_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "necros_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "necros_shield",
+     "type": "shield"
+    },
+    {
+     "id": "necros_helmet",
+     "type": "head"
+    },
+    {
+     "id": "necros_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/necros/wings_worn"
+    },
+    {
+     "id": "necros_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "necros_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "necros_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "necros_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "luminite",
+   "name": "Luminite",
+   "color": "#4aa8ff",
+   "items": [
+    {
+     "id": "luminite_sword",
+     "type": "sword"
+    },
+    {
+     "id": "luminite_axe",
+     "type": "axe"
+    },
+    {
+     "id": "luminite_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "luminite_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "luminite_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "luminite_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "luminite_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "luminite_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "luminite_spear",
+     "type": "sword"
+    },
+    {
+     "id": "luminite_trident",
+     "type": "trident"
+    },
+    {
+     "id": "luminite_staff",
+     "type": "sword"
+    },
+    {
+     "id": "luminite_bow",
+     "type": "bow"
+    },
+    {
+     "id": "luminite_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "luminite_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "luminite_shield",
+     "type": "shield"
+    },
+    {
+     "id": "luminite_helmet",
+     "type": "head"
+    },
+    {
+     "id": "luminite_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/luminite/wings_worn"
+    },
+    {
+     "id": "luminite_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "luminite_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "luminite_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "luminite_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "mecha",
+   "name": "Dragón Mecha",
+   "color": "#a3e635",
+   "items": [
+    {
+     "id": "mecha_sword",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_great_sword",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_axe",
+     "type": "axe"
+    },
+    {
+     "id": "mecha_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "mecha_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "mecha_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "mecha_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "mecha_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_spear",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_trident",
+     "type": "trident"
+    },
+    {
+     "id": "mecha_staff",
+     "type": "sword"
+    },
+    {
+     "id": "mecha_bow",
+     "type": "bow"
+    },
+    {
+     "id": "mecha_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "mecha_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "mecha_shield",
+     "type": "shield"
+    },
+    {
+     "id": "mecha_hat",
+     "type": "head"
+    },
+    {
+     "id": "mecha_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/mecha/wing_worn"
+    },
+    {
+     "id": "mecha_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "mecha_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "mecha_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "mecha_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "nazgul",
+   "name": "Arsenal de Nazgul",
+   "color": "#9061f9",
+   "items": [
+    {
+     "id": "nazgul_necromancer_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_ocean_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_aspectr_of_eather_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_beecomb_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_last_rose",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_death_grip",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_dark_moon_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_hellspawn_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_forge_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "nazgul_spider_bow",
+     "type": "bow"
+    },
+    {
+     "id": "nazgul_abyssal_blade",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_great_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_battle_mage_staff",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_fire_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "nazgul_gargoyle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_witch_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_flowering_madness",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_battle_standart",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_heavy_bow",
+     "type": "bow"
+    },
+    {
+     "id": "nazgul_rogue_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_demonic_blade",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_cursed_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_dark_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_magnetic_blade",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_kaz_sc",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_mana_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_red_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "nazgul_holy_spear",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_pox_spreader",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_obsidian_bow",
+     "type": "bow"
+    }
+   ]
+  },
+  {
+   "id": "shadow",
+   "name": "Cazador de Sombras",
+   "color": "#8b6cf6",
+   "items": [
+    {
+     "id": "shadow_sword",
+     "type": "sword"
+    },
+    {
+     "id": "shadow_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "shadow_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "shadow_axe",
+     "type": "axe"
+    },
+    {
+     "id": "shadow_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "shadow_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "shadow_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "shadow_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "shadow_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "shadow_spear",
+     "type": "sword"
+    },
+    {
+     "id": "shadow_trident",
+     "type": "trident"
+    },
+    {
+     "id": "shadow_staff",
+     "type": "sword"
+    },
+    {
+     "id": "shadow_bow",
+     "type": "bow"
+    },
+    {
+     "id": "shadow_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "shadow_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "shadow_shield",
+     "type": "shield"
+    },
+    {
+     "id": "shadow_hat",
+     "type": "head"
+    },
+    {
+     "id": "shadow_wing",
+     "type": "back",
+     "worn": "tfclient:item/shadow_wing"
+    },
+    {
+     "id": "shadow_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "shadow_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "shadow_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "shadow_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "aether",
+   "name": "Aetherburn",
+   "color": "#14b8a6",
+   "items": [
+    {
+     "id": "aether_sword",
+     "type": "sword"
+    },
+    {
+     "id": "aether_axe",
+     "type": "axe"
+    },
+    {
+     "id": "aether_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "aether_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "aether_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "aether_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "aether_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "aether_spear",
+     "type": "sword"
+    },
+    {
+     "id": "aether_staff",
+     "type": "sword"
+    },
+    {
+     "id": "aether_bow",
+     "type": "bow"
+    },
+    {
+     "id": "aether_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "aether_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "aether_shield",
+     "type": "shield"
+    },
+    {
+     "id": "aether_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/aether/wings_worn"
+    },
+    {
+     "id": "aether_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "aether_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "aether_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "aether_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "conqueror",
+   "name": "Legado del Conquistador",
+   "color": "#e2a72e",
+   "items": [
+    {
+     "id": "conqueror_sword",
+     "type": "sword"
+    },
+    {
+     "id": "conqueror_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "conqueror_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "conqueror_axe",
+     "type": "axe"
+    },
+    {
+     "id": "conqueror_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "conqueror_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "conqueror_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "conqueror_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "conqueror_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "conqueror_spear",
+     "type": "sword"
+    },
+    {
+     "id": "conqueror_trident",
+     "type": "trident"
+    },
+    {
+     "id": "conqueror_staff",
+     "type": "sword"
+    },
+    {
+     "id": "conqueror_bow",
+     "type": "bow"
+    },
+    {
+     "id": "conqueror_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "conqueror_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "conqueror_shield",
+     "type": "shield"
+    },
+    {
+     "id": "conqueror_hat",
+     "type": "head"
+    },
+    {
+     "id": "conqueror_wing",
+     "type": "back",
+     "worn": "tfclient:item/conqueror_wing"
+    },
+    {
+     "id": "conqueror_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "conqueror_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "conqueror_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "conqueror_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "ender",
+   "name": "Dragón del End",
+   "color": "#c026d3",
+   "items": [
+    {
+     "id": "ender_sword",
+     "type": "sword"
+    },
+    {
+     "id": "ender_gauntlet",
+     "type": "heavy"
+    },
+    {
+     "id": "ender_axe",
+     "type": "axe"
+    },
+    {
+     "id": "ender_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "ender_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "ender_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "ender_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "ender_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "ender_spear",
+     "type": "sword"
+    },
+    {
+     "id": "ender_trident",
+     "type": "trident"
+    },
+    {
+     "id": "ender_staff",
+     "type": "sword"
+    },
+    {
+     "id": "ender_bow",
+     "type": "bow"
+    },
+    {
+     "id": "ender_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "ender_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "ender_shield",
+     "type": "shield"
+    },
+    {
+     "id": "ender_helmet",
+     "type": "head"
+    },
+    {
+     "id": "ender_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/ender/wings_worn"
+    },
+    {
+     "id": "ender_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "ender_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "ender_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "ender_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "unicorn",
+   "name": "Pequeño Unicornio",
+   "color": "#e879f9",
+   "items": [
+    {
+     "id": "unicorn_sword",
+     "type": "sword"
+    },
+    {
+     "id": "unicorn_knife",
+     "type": "sword"
+    },
+    {
+     "id": "unicorn_axe",
+     "type": "axe"
+    },
+    {
+     "id": "unicorn_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "unicorn_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "unicorn_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "unicorn_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "unicorn_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "unicorn_spear",
+     "type": "sword"
+    },
+    {
+     "id": "unicorn_trident",
+     "type": "trident"
+    },
+    {
+     "id": "unicorn_staff",
+     "type": "sword"
+    },
+    {
+     "id": "unicorn_bow",
+     "type": "bow"
+    },
+    {
+     "id": "unicorn_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "unicorn_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "unicorn_shield",
+     "type": "shield"
+    },
+    {
+     "id": "unicorn_helmet",
+     "type": "head"
+    },
+    {
+     "id": "unicorn_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/unicorn/wings_worn"
+    },
+    {
+     "id": "unicorn_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "unicorn_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "unicorn_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "unicorn_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ],
+   "armorFrames": 9,
+   "armorFrametime": 2
+  },
+  {
+   "id": "cosmo",
+   "name": "Cosmos",
+   "color": "#3b82f6",
+   "items": [
+    {
+     "id": "cosmo_sword",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_blade",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_axe",
+     "type": "axe"
+    },
+    {
+     "id": "cosmo_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "cosmo_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "cosmo_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "cosmo_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "cosmo_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_spear",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_staff",
+     "type": "sword"
+    },
+    {
+     "id": "cosmo_bow",
+     "type": "bow"
+    },
+    {
+     "id": "cosmo_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "cosmo_shield",
+     "type": "shield"
+    },
+    {
+     "id": "cosmo_wings",
+     "type": "back",
+     "worn": "tfclient:item/cosmo_wings"
+    },
+    {
+     "id": "cosmo_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "cosmo_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "cosmo_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "cosmo_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "dracula",
+   "name": "Drácula",
+   "color": "#dc2626",
+   "items": [
+    {
+     "id": "dracula_sword",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_blade",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_battleaxe",
+     "type": "axe"
+    },
+    {
+     "id": "dracula_fishing",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "dracula_axe",
+     "type": "axe"
+    },
+    {
+     "id": "dracula_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "dracula_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "dracula_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "dracula_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_spear",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_staff",
+     "type": "sword"
+    },
+    {
+     "id": "dracula_bow",
+     "type": "bow"
+    },
+    {
+     "id": "dracula_shield",
+     "type": "shield"
+    },
+    {
+     "id": "dracula_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/dracula/wings_worn"
+    },
+    {
+     "id": "dracula_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "dracula_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "dracula_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "dracula_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "lightning",
+   "name": "Poder del Rayo",
+   "color": "#eab308",
+   "items": [
+    {
+     "id": "lightning_sword",
+     "type": "sword"
+    },
+    {
+     "id": "lightning_knife",
+     "type": "sword"
+    },
+    {
+     "id": "lightning_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/lightning/backpack_worn"
+    },
+    {
+     "id": "lightning_axe",
+     "type": "axe"
+    },
+    {
+     "id": "lightning_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "lightning_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "lightning_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "lightning_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "lightning_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "lightning_spear",
+     "type": "sword"
+    },
+    {
+     "id": "lightning_trident",
+     "type": "trident"
+    },
+    {
+     "id": "lightning_staff",
+     "type": "sword"
+    },
+    {
+     "id": "lightning_bow",
+     "type": "bow"
+    },
+    {
+     "id": "lightning_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "lightning_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "lightning_shield",
+     "type": "shield"
+    },
+    {
+     "id": "lightning_helmet",
+     "type": "head"
+    },
+    {
+     "id": "lightning_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/lightning/wings_worn"
+    },
+    {
+     "id": "lightning_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "lightning_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "lightning_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "lightning_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "wither",
+   "name": "Wither Oscuro",
+   "color": "#7c8799",
+   "items": [
+    {
+     "id": "wither_sword",
+     "type": "sword"
+    },
+    {
+     "id": "wither_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "wither_cape",
+     "type": "back",
+     "worn": "tfclient:item/sets/wither/cape_worn"
+    },
+    {
+     "id": "wither_axe",
+     "type": "axe"
+    },
+    {
+     "id": "wither_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "wither_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "wither_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "wither_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "wither_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "wither_spear",
+     "type": "sword"
+    },
+    {
+     "id": "wither_trident",
+     "type": "trident"
+    },
+    {
+     "id": "wither_staff",
+     "type": "sword"
+    },
+    {
+     "id": "wither_bow",
+     "type": "bow"
+    },
+    {
+     "id": "wither_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "wither_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "wither_shield",
+     "type": "shield"
+    },
+    {
+     "id": "wither_helmet",
+     "type": "head"
+    },
+    {
+     "id": "wither_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "wither_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "wither_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "wither_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "pink",
+   "name": "Legado Rosa",
+   "color": "#f472b6",
+   "items": [
+    {
+     "id": "pink_sword",
+     "type": "sword"
+    },
+    {
+     "id": "pink_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "pink_axe",
+     "type": "axe"
+    },
+    {
+     "id": "pink_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "pink_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "pink_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "pink_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "pink_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "pink_spear",
+     "type": "sword"
+    },
+    {
+     "id": "pink_staff",
+     "type": "sword"
+    },
+    {
+     "id": "pink_bow",
+     "type": "bow"
+    },
+    {
+     "id": "pink_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "pink_shield",
+     "type": "shield"
+    },
+    {
+     "id": "pink_wings",
+     "type": "back",
+     "worn": "tfclient:item/pink_wings"
+    },
+    {
+     "id": "pink_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "pink_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "pink_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "pink_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "skeleton",
+   "name": "Señor Esqueleto",
+   "color": "#a8a29e",
+   "items": [
+    {
+     "id": "skeleton_sword",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_big_sword",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_gauntlet",
+     "type": "heavy"
+    },
+    {
+     "id": "skeleton_axe",
+     "type": "axe"
+    },
+    {
+     "id": "skeleton_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "skeleton_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "skeleton_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "skeleton_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "skeleton_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "skeleton_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_spear",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_staff",
+     "type": "sword"
+    },
+    {
+     "id": "skeleton_bow",
+     "type": "bow"
+    },
+    {
+     "id": "skeleton_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "skeleton_shield",
+     "type": "shield"
+    },
+    {
+     "id": "skeleton_wing",
+     "type": "back",
+     "worn": "tfclient:item/skeleton_wing"
+    },
+    {
+     "id": "skeleton_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "skeleton_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "skeleton_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "skeleton_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "lunar",
+   "name": "Dragón Lunar",
+   "color": "#818cf8",
+   "items": [
+    {
+     "id": "lunar_sword",
+     "type": "sword"
+    },
+    {
+     "id": "lunar_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "lunar_tail",
+     "type": "back",
+     "worn": "tfclient:item/sets/lunar/tail_worn"
+    },
+    {
+     "id": "lunar_axe",
+     "type": "axe"
+    },
+    {
+     "id": "lunar_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "lunar_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "lunar_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "lunar_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "lunar_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "lunar_spear",
+     "type": "sword"
+    },
+    {
+     "id": "lunar_trident",
+     "type": "trident"
+    },
+    {
+     "id": "lunar_staff",
+     "type": "sword"
+    },
+    {
+     "id": "lunar_bow",
+     "type": "bow"
+    },
+    {
+     "id": "lunar_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "lunar_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "lunar_shield",
+     "type": "shield"
+    },
+    {
+     "id": "lunar_helmet",
+     "type": "head"
+    },
+    {
+     "id": "lunar_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/lunar/wings_worn"
+    },
+    {
+     "id": "lunar_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "lunar_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "lunar_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "lunar_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "beats",
+   "name": "Beats",
+   "color": "#7c6cff",
+   "items": [
+    {
+     "id": "beats_sword",
+     "type": "sword"
+    },
+    {
+     "id": "beats_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "beats_axe",
+     "type": "axe"
+    },
+    {
+     "id": "beats_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "beats_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "beats_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "beats_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "beats_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "beats_spear",
+     "type": "sword"
+    },
+    {
+     "id": "beats_trident",
+     "type": "trident"
+    },
+    {
+     "id": "beats_staff",
+     "type": "sword"
+    },
+    {
+     "id": "beats_bow",
+     "type": "bow"
+    },
+    {
+     "id": "beats_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "beats_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "beats_shield",
+     "type": "shield"
+    },
+    {
+     "id": "beats_helmet",
+     "type": "head"
+    },
+    {
+     "id": "beats_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/beats/wings_worn"
+    },
+    {
+     "id": "beats_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "beats_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "beats_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "beats_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "azure",
+   "name": "Azure",
+   "color": "#38bdf8",
+   "items": [
+    {
+     "id": "azure_sword",
+     "type": "sword"
+    },
+    {
+     "id": "azure_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "azure_axe",
+     "type": "axe"
+    },
+    {
+     "id": "azure_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "azure_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "azure_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "azure_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "azure_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "azure_spear",
+     "type": "sword"
+    },
+    {
+     "id": "azure_trident",
+     "type": "trident"
+    },
+    {
+     "id": "azure_staff",
+     "type": "sword"
+    },
+    {
+     "id": "azure_bow",
+     "type": "bow"
+    },
+    {
+     "id": "azure_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "azure_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "azure_shield",
+     "type": "shield"
+    },
+    {
+     "id": "azure_helmet",
+     "type": "head"
+    },
+    {
+     "id": "azure_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/azure/wings_worn"
+    },
+    {
+     "id": "azure_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "azure_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "azure_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "azure_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "littledragon",
+   "name": "Pequeño Dragón",
+   "color": "#f97316",
+   "items": [
+    {
+     "id": "littledragon_sword",
+     "type": "sword"
+    },
+    {
+     "id": "littledragon_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "littledragon_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/littledragon/backpack_worn"
+    },
+    {
+     "id": "littledragon_flag",
+     "type": "sword"
+    },
+    {
+     "id": "littledragon_axe",
+     "type": "axe"
+    },
+    {
+     "id": "littledragon_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "littledragon_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "littledragon_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "littledragon_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "littledragon_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "littledragon_spear",
+     "type": "sword"
+    },
+    {
+     "id": "littledragon_trident",
+     "type": "trident"
+    },
+    {
+     "id": "littledragon_staff",
+     "type": "sword"
+    },
+    {
+     "id": "littledragon_bow",
+     "type": "bow"
+    },
+    {
+     "id": "littledragon_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "littledragon_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "littledragon_shield",
+     "type": "shield"
+    },
+    {
+     "id": "littledragon_helmet",
+     "type": "head"
+    },
+    {
+     "id": "littledragon_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/littledragon/wings_worn"
+    },
+    {
+     "id": "littledragon_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "littledragon_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "littledragon_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "littledragon_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "bahamut",
+   "name": "Bahamut",
+   "color": "#8f9bb3",
+   "items": [
+    {
+     "id": "bahamut_sword",
+     "type": "sword"
+    },
+    {
+     "id": "bahamut_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "bahamut_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "bahamut_big_sword",
+     "type": "sword"
+    },
+    {
+     "id": "bahamut_club",
+     "type": "heavy"
+    },
+    {
+     "id": "bahamut_gauntlet",
+     "type": "heavy"
+    },
+    {
+     "id": "bahamut_axe",
+     "type": "axe"
+    },
+    {
+     "id": "bahamut_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "bahamut_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "bahamut_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "bahamut_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "bahamut_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "bahamut_spear",
+     "type": "sword"
+    },
+    {
+     "id": "bahamut_staff",
+     "type": "sword"
+    },
+    {
+     "id": "bahamut_bow",
+     "type": "bow"
+    },
+    {
+     "id": "bahamut_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "bahamut_shield",
+     "type": "shield"
+    },
+    {
+     "id": "bahamut_helmet",
+     "type": "head"
+    },
+    {
+     "id": "bahamut_hat",
+     "type": "head"
+    },
+    {
+     "id": "bahamut_wing",
+     "type": "back",
+     "worn": "tfclient:item/bahamut_wing"
+    },
+    {
+     "id": "bahamut_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "bahamut_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "bahamut_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "bahamut_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "fairy",
+   "name": "Hada",
+   "color": "#facc15",
+   "items": [
+    {
+     "id": "fairy_sword",
+     "type": "sword"
+    },
+    {
+     "id": "fairy_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "fairy_axe",
+     "type": "axe"
+    },
+    {
+     "id": "fairy_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "fairy_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "fairy_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "fairy_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "fairy_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "fairy_spear",
+     "type": "sword"
+    },
+    {
+     "id": "fairy_trident",
+     "type": "trident"
+    },
+    {
+     "id": "fairy_staff",
+     "type": "sword"
+    },
+    {
+     "id": "fairy_bow",
+     "type": "bow"
+    },
+    {
+     "id": "fairy_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "fairy_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "fairy_shield",
+     "type": "shield"
+    },
+    {
+     "id": "fairy_helmet",
+     "type": "head"
+    },
+    {
+     "id": "fairy_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/fairy/wings_worn"
+    },
+    {
+     "id": "fairy_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "fairy_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "fairy_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "fairy_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "bonita",
+   "name": "Bonita",
+   "color": "#f472b6",
+   "items": [
+    {
+     "id": "bonita_sword",
+     "type": "sword"
+    },
+    {
+     "id": "bonita_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "bonita_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/bonita/backpack_worn"
+    },
+    {
+     "id": "bonita_axe",
+     "type": "axe"
+    },
+    {
+     "id": "bonita_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "bonita_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "bonita_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "bonita_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "bonita_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "bonita_spear",
+     "type": "sword"
+    },
+    {
+     "id": "bonita_trident",
+     "type": "trident"
+    },
+    {
+     "id": "bonita_staff",
+     "type": "sword"
+    },
+    {
+     "id": "bonita_bow",
+     "type": "bow"
+    },
+    {
+     "id": "bonita_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "bonita_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "bonita_shield",
+     "type": "shield"
+    },
+    {
+     "id": "bonita_helmet",
+     "type": "head"
+    },
+    {
+     "id": "bonita_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/bonita/wings_worn"
+    },
+    {
+     "id": "bonita_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "bonita_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "bonita_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "bonita_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "chronicles",
+   "name": "Crónicas",
+   "color": "#22a6e6",
+   "items": [
+    {
+     "id": "chronicles_sword",
+     "type": "sword"
+    },
+    {
+     "id": "chronicles_blade",
+     "type": "sword"
+    },
+    {
+     "id": "chronicles_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "chronicles_axe",
+     "type": "axe"
+    },
+    {
+     "id": "chronicles_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "chronicles_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "chronicles_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "chronicles_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "chronicles_spear",
+     "type": "sword"
+    },
+    {
+     "id": "chronicles_staff",
+     "type": "sword"
+    },
+    {
+     "id": "chronicles_bow",
+     "type": "bow"
+    },
+    {
+     "id": "chronicles_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "chronicles_shield",
+     "type": "shield"
+    },
+    {
+     "id": "chronicles_helmet",
+     "type": "head"
+    },
+    {
+     "id": "chronicles_wings",
+     "type": "back",
+     "worn": "tfclient:item/chronicles_wings"
+    },
+    {
+     "id": "chronicles_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "chronicles_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "chronicles_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "chronicles_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "protocal",
+   "name": "Protocolo",
+   "color": "#ef4444",
+   "items": [
+    {
+     "id": "protocal_sword",
+     "type": "sword"
+    },
+    {
+     "id": "protocal_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "protocal_axe",
+     "type": "axe"
+    },
+    {
+     "id": "protocal_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "protocal_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "protocal_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "protocal_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "protocal_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "protocal_spear",
+     "type": "sword"
+    },
+    {
+     "id": "protocal_trident",
+     "type": "trident"
+    },
+    {
+     "id": "protocal_staff",
+     "type": "sword"
+    },
+    {
+     "id": "protocal_bow",
+     "type": "bow"
+    },
+    {
+     "id": "protocal_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "protocal_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "protocal_shield",
+     "type": "shield"
+    },
+    {
+     "id": "protocal_helmet",
+     "type": "head"
+    },
+    {
+     "id": "protocal_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/protocal/wings_worn"
+    },
+    {
+     "id": "protocal_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "protocal_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "protocal_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "protocal_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "berserker",
+   "name": "Berserker",
+   "color": "#e5483b",
+   "items": [
+    {
+     "id": "berserker_sword",
+     "type": "sword"
+    },
+    {
+     "id": "berserker_blade",
+     "type": "sword"
+    },
+    {
+     "id": "berserker_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "berserker_axe",
+     "type": "axe"
+    },
+    {
+     "id": "berserker_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "berserker_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "berserker_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "berserker_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "berserker_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "berserker_spear",
+     "type": "sword"
+    },
+    {
+     "id": "berserker_staff",
+     "type": "sword"
+    },
+    {
+     "id": "berserker_bow",
+     "type": "bow"
+    },
+    {
+     "id": "berserker_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "berserker_shield",
+     "type": "shield"
+    },
+    {
+     "id": "berserker_wings",
+     "type": "back",
+     "worn": "tfclient:item/berserker_wings"
+    },
+    {
+     "id": "berserker_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "berserker_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "berserker_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "berserker_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  }
+ ]
+}
