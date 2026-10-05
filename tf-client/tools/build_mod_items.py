@@ -602,6 +602,9 @@ def write_accessory_tags(sets_out):
         'accessories/tags/items/back.json': {'replace': False, 'values': back},
         'accessories/tags/items/cape.json': {'replace': False, 'values': capes},
         'curios/tags/items/back.json': {'replace': False, 'values': back},
+        # El hueco «back» es uno de los predefinidos de Curios (icono y orden suyos); se declara aquí por si ningún otro
+        # mod lo hace. Curios junta los archivos del mismo hueco y se queda con el tamaño mayor: no le quita a nadie.
+        'tfclient/curios/slots/back.json': {'size': 1},
         'tfclient/curios/entities/tf_back.json': {'entities': ['minecraft:player'], 'slots': ['back']},
     }
     for rel, content in files.items():
