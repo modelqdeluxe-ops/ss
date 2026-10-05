@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="tfclient"
+version="${mod_version}"
+displayName="TF Client"
+description='''Cliente oficial de Tierras Fantásticas: pantalla de carga y menú principal propios, conexión directa al servidor y mundo local. En el servidor hace de puente con la web: entrega las compras de la tienda y manda los jugadores conectados.'''
+logoFile="tfclient_logo.png"
+authors="Tierras Fantásticas"
+# Opcional en los dos lados: en el servidor hace de puente con la web y no obliga a los jugadores a tenerlo.
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.tfclient]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.tfclient]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.20.2)"
+    ordering="NONE"
+    side="BOTH"

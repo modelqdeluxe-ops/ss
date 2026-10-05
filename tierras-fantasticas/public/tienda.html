@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tienda — Tierras Fantásticas</title>
+  <meta name="description" content="Tienda oficial de Tierras Fantásticas: rangos, crates, llaves y monedas con entrega automática. Paga con PayPal o tarjeta.">
+  <meta name="theme-color" content="#070b18">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/webp" href="/img/logo.webp">
+</head>
+<body data-page="tienda">
+  <canvas id="sky" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand"><img src="/img/logo.webp" alt="" width="40" height="44"><span data-server-name>Tierras Fantásticas</span></a>
+      <nav class="tabs-nav" aria-label="Secciones">
+        <a href="/">Inicio</a>
+        <a href="/tienda" aria-current="page"><span class="nav-pill pixel" aria-hidden="true"></span>Tienda</a>
+        <a href="/crates">Crates <em class="new pixel">Nuevo</em></a>
+        <a href="/mundo">El mundo</a>
+        <a href="/ayuda">Ayuda</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="nav-ip pixel" type="button" data-copy-ip aria-label="Copiar IP del servidor"><span class="dot"></span><span data-server-ip>216.163.187.40:19001</span><span class="copy-tag">Copiar</span></button>
+        <a href="#" class="btn btn-discord btn-sm pixel discord-link" hidden target="_blank" rel="noopener">Discord</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <header class="page-hero wrap">
+      <div class="glyph" aria-hidden="true"></div>
+      <p class="kicker">Tienda oficial</p>
+      <h1><span class="gold-text">Apoya el reino</span></h1>
+      <p>Tu compra llega sola al juego y a tu Discord en cuanto se confirma el pago. Paga con PayPal o con tarjeta, sin crear cuenta.</p>
+    </header>
+
+    <section class="wrap">
+      <div class="notice pixel" data-payments-off hidden>
+        La tienda está en mantenimiento: los pagos no están disponibles en este momento.
+      </div>
+
+      <div class="segmented panel pixel" role="tablist" aria-label="Categorías de la tienda" id="shop-tabs">
+        <span class="indicator pixel" aria-hidden="true"></span>
+        <button type="button" role="tab" data-category="rangos" aria-selected="true">Rangos</button>
+        <button type="button" role="tab" data-category="crates" aria-selected="false">Crates</button>
+        <button type="button" role="tab" data-category="llaves" aria-selected="false">Llaves</button>
+        <button type="button" role="tab" data-category="monedas" aria-selected="false">Monedas</button>
+      </div>
+
+      <div class="products" id="products" role="tabpanel" aria-live="polite">
+        <p class="loading">Cargando productos</p>
+      </div>
+
+      <div class="trust">
+        <div class="panel pixel reveal"><i class="pixel" aria-hidden="true">✓</i><p><b>Pago seguro</b><span>PayPal o tarjeta. Nunca vemos tus datos bancarios.</span></p></div>
+        <div class="panel pixel reveal"><i class="pixel" aria-hidden="true">⚡</i><p><b>Entrega al instante</b><span>Al confirmarse el pago, el servidor te lo da solo en cuanto estés dentro.</span></p></div>
+        <div class="panel pixel reveal"><i class="pixel" aria-hidden="true">#</i><p><b>Rol en Discord</b><span>Vincula tu cuenta al comprar y el bot te da el rol de tu rango.</span></p></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer-wrap">
+    <div class="grass" aria-hidden="true"></div>
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <div class="footer-brand">
+          <img src="/img/logo.webp" alt="" width="56" height="62">
+          <div>
+            <b data-server-name>Tierras Fantásticas</b>
+            <p class="muted">Servidor de Minecraft de aventura, castillos y magia.</p>
+            <p class="muted">IP: <span data-server-ip>216.163.187.40:19001</span></p>
+          </div>
+        </div>
+        <div>
+          <h4>Secciones</h4>
+          <ul>
+            <li><a href="/">Inicio</a></li>
+            <li><a href="/tienda">Tienda</a></li>
+            <li><a href="/crates">Crates</a></li>
+            <li><a href="/mundo">El mundo</a></li>
+            <li><a href="/ayuda">Ayuda</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Comunidad</h4>
+          <ul>
+            <li><a href="#" class="discord-link" hidden target="_blank" rel="noopener">Discord</a></li>
+            <li><a href="/ayuda">Soporte de compras</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="wrap footer-legal">
+        <p>© <span data-year></span> <span data-server-name>Tierras Fantásticas</span>. No afiliado a Mojang AB ni Microsoft.</p>
+        <p class="muted">Todas las compras son donaciones voluntarias para mantener el servidor.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/fx.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

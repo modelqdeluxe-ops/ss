@@ -1,0 +1,51 @@
+name: TF Client
+
+on:
+  push:
+    paths:
+      - 'tf-client/**'
+      - '.github/workflows/tf-client.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar el mod
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: tf-client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar
+        run: chmod +x gradlew && ./gradlew build --no-daemon --stacktrace
+      # Un método de un mixin que recibe la propia clase del mixin (p. ej. por `this::metodo`) hace que Forge
+      # intente cargar esa clase y el juego crashee al arrancar ("... is invalid"). Se para la compilación.
+      - name: Revisar mixins
+        run: |
+          rm -rf /tmp/chk && mkdir -p /tmp/chk && cd /tmp/chk
+          unzip -q -o "$(ls $GITHUB_WORKSPACE/tf-client/build/libs/*.jar | head -n1)" 'net/tierrasfantasticas/tfclient/mixin/*'
+          bad=$(for c in net/tierrasfantasticas/tfclient/mixin/*.class; do javap -p "$c" | grep -E "\(.*net\.tierrasfantasticas\.tfclient\.mixin\." || true; done)
+          if [ -n "$bad" ]; then echo "::error::Mixin con referencia a su propia clase:"; echo "$bad"; exit 1; fi
+          echo "Mixins correctos"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfclient-jar
+          path: tf-client/build/libs/*.jar
+      # Copia del .jar en una referencia oculta del repo (no es una rama) para poder bajarlo con git.
+      - name: Publicar el .jar en refs/tf-client/jar
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          mkdir -p /tmp/tfjar && cp build/libs/*.jar /tmp/tfjar/
+          cd /tmp/tfjar
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898281+github-actions[bot]@users.noreply.github.com"
+          git add . && git commit -q -m "TF Client ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/tf-client/jar

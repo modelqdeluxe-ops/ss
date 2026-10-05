@@ -1,0 +1,20 @@
+{
+  "name": "tierras-fantasticas",
+  "version": "1.0.0",
+  "description": "Web y tienda del servidor Tierras Fantásticas en Cloudflare Workers: pagos con PayPal, Discord y puente con el servidor de Minecraft",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "wrangler": "^4.147.0"
+  }
+}

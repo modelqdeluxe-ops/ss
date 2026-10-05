@@ -1,0 +1,241 @@
+[
+  {
+    "id": "rango-aventurero",
+    "category": "rangos",
+    "name": "Rango Aventurero",
+    "description": "Prefijo dorado, /kit aventurero cada 24h, 3 homes y acceso al mundo de recursos.",
+    "price": 499,
+    "maxQuantity": 1,
+    "discordRoles": [
+      "ID_ROL_AVENTURERO"
+    ],
+    "commands": [
+      "lp user {player} parent add aventurero",
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Aventurero\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
+    ]
+  },
+  {
+    "id": "rango-hechicero",
+    "category": "rangos",
+    "name": "Rango Hechicero",
+    "description": "Todo lo de Aventurero + /fly en el lobby, 8 homes, /hat y partículas mágicas.",
+    "price": 999,
+    "maxQuantity": 1,
+    "featured": true,
+    "discordRoles": [
+      "ID_ROL_HECHICERO"
+    ],
+    "commands": [
+      "lp user {player} parent add hechicero",
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"dark_purple\"},{\"text\":\" ahora es \",\"color\":\"light_purple\"},{\"text\":\"Hechicero\",\"color\":\"dark_purple\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"light_purple\"}]"
+    ]
+  },
+  {
+    "id": "rango-dragon",
+    "category": "rangos",
+    "name": "Rango Dragón",
+    "description": "Todo lo de Hechicero + mascota dragón, 20 homes, /nick, /ec y cola prioritaria.",
+    "price": 1999,
+    "maxQuantity": 1,
+    "discordRoles": [
+      "ID_ROL_DRAGON"
+    ],
+    "commands": [
+      "lp user {player} parent add dragon",
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"red\"},{\"text\":\" ahora es \",\"color\":\"gold\"},{\"text\":\"Dragón\",\"color\":\"red\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"gold\"}]"
+    ]
+  },
+  {
+    "id": "crate-valentine",
+    "category": "crates",
+    "name": "Crate Valentine",
+    "theme": "valentine",
+    "rarity": "Edición limitada",
+    "tagline": "Oro rosa forjado con corazones",
+    "description": "Armas y herramientas animadas de oro rosa con corazones y pétalos. Incluye armadura completa, alas y sombrero a juego.",
+    "image": "img/crates/valentine.webp",
+    "price": 299,
+    "items": [
+      "Espada",
+      "Hacha",
+      "Pico",
+      "Pala",
+      "Azada",
+      "Martillo",
+      "Maza",
+      "Guadaña",
+      "Lanza",
+      "Bastón mágico",
+      "Arco",
+      "Ballesta",
+      "Caña de pescar",
+      "Escudo",
+      "Alas de cupido",
+      "Sombrero cosmético"
+    ],
+    "armor": [
+      {
+        "name": "Casco",
+        "icon": "img/crates/valentine-helmet.png"
+      },
+      {
+        "name": "Peto",
+        "icon": "img/crates/valentine-chestplate.png"
+      },
+      {
+        "name": "Grebas",
+        "icon": "img/crates/valentine-leggings.png"
+      },
+      {
+        "name": "Botas",
+        "icon": "img/crates/valentine-boots.png"
+      }
+    ],
+    "commands": [
+      "crate key give {player} valentine 1"
+    ]
+  },
+  {
+    "id": "crate-necros",
+    "category": "crates",
+    "name": "Crate Necros",
+    "theme": "necros",
+    "rarity": "Legendario",
+    "featured": true,
+    "tagline": "Acero maldito y fuego del vacío",
+    "description": "El set del nigromante: acero oscuro envuelto en llamas violetas animadas. Incluye armadura completa, tridente, alas y casco.",
+    "image": "img/crates/necros.webp",
+    "price": 399,
+    "items": [
+      "Espada",
+      "Hacha",
+      "Pico",
+      "Pala",
+      "Azada",
+      "Martillo",
+      "Maza",
+      "Guadaña",
+      "Lanza",
+      "Bastón mágico",
+      "Arco",
+      "Ballesta",
+      "Caña de pescar",
+      "Escudo",
+      "Tridente",
+      "Alas sombrías",
+      "Yelmo cosmético"
+    ],
+    "armor": [
+      {
+        "name": "Casco",
+        "icon": "img/crates/necros-helmet.png"
+      },
+      {
+        "name": "Peto",
+        "icon": "img/crates/necros-chestplate.png"
+      },
+      {
+        "name": "Grebas",
+        "icon": "img/crates/necros-leggings.png"
+      },
+      {
+        "name": "Botas",
+        "icon": "img/crates/necros-boots.png"
+      }
+    ],
+    "commands": [
+      "crate key give {player} necros 1"
+    ]
+  },
+  {
+    "id": "crate-luminite",
+    "category": "crates",
+    "name": "Crate Luminite",
+    "theme": "luminite",
+    "rarity": "Mítico",
+    "tagline": "Cristal de luz y energía arcana",
+    "description": "Obsidiana y cristal luminite que brillan en azul y violeta con animaciones de energía. Incluye armadura completa, tridente y alas.",
+    "image": "img/crates/luminite.webp",
+    "price": 499,
+    "items": [
+      "Espada",
+      "Hacha",
+      "Pico",
+      "Pala",
+      "Azada",
+      "Martillo",
+      "Maza",
+      "Guadaña",
+      "Lanza",
+      "Bastón mágico",
+      "Arco",
+      "Ballesta",
+      "Caña de pescar",
+      "Escudo",
+      "Tridente",
+      "Alas de cristal",
+      "Yelmo cosmético"
+    ],
+    "armor": [
+      {
+        "name": "Casco",
+        "icon": "img/crates/luminite-helmet.png"
+      },
+      {
+        "name": "Peto",
+        "icon": "img/crates/luminite-chestplate.png"
+      },
+      {
+        "name": "Grebas",
+        "icon": "img/crates/luminite-leggings.png"
+      },
+      {
+        "name": "Botas",
+        "icon": "img/crates/luminite-boots.png"
+      }
+    ],
+    "commands": [
+      "crate key give {player} luminite 1"
+    ]
+  },
+  {
+    "id": "llaves-epicas-5",
+    "category": "llaves",
+    "name": "5 Llaves Épicas",
+    "description": "Abre el cofre épico del spawn: encantamientos, armaduras y objetos raros.",
+    "price": 299,
+    "commands": [
+      "crate key give {player} epica 5"
+    ]
+  },
+  {
+    "id": "llaves-legendarias-3",
+    "category": "llaves",
+    "name": "3 Llaves Legendarias",
+    "description": "El cofre legendario contiene las mejores recompensas del reino.",
+    "price": 599,
+    "commands": [
+      "crate key give {player} legendaria 3"
+    ]
+  },
+  {
+    "id": "monedas-10000",
+    "category": "monedas",
+    "name": "10.000 Monedas de Oro",
+    "description": "Dinero para la economía del servidor: compra terrenos, objetos y más.",
+    "price": 199,
+    "commands": [
+      "eco give {player} 10000"
+    ]
+  },
+  {
+    "id": "monedas-60000",
+    "category": "monedas",
+    "name": "60.000 Monedas de Oro",
+    "description": "El paquete más rentable: 20% más monedas que comprando por separado.",
+    "price": 999,
+    "commands": [
+      "eco give {player} 60000"
+    ]
+  }
+]

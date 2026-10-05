@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.tierrasfantasticas.tfclient.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "tfclient.refmap.json",
+  "client": [
+    "LoadingOverlayAccessor",
+    "MinecraftMixin",
+    "MusicManagerMixin",
+    "TitleScreenMixin",
+    "BrandingControlMixin",
+    "ForgeHooksClientMixin",
+    "AbstractButtonMixin",
+    "AbstractSliderButtonMixin",
+    "AbstractSelectionListMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

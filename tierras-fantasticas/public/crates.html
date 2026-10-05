@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Crates — Tierras Fantásticas</title>
+  <meta name="description" content="Crates animados de Tierras Fantásticas: Valentine, Necros y Luminite. Mira cada arma, herramienta y armadura antes de comprar tu llave.">
+  <meta name="theme-color" content="#070b18">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/webp" href="/img/logo.webp">
+</head>
+<body data-page="crates">
+  <canvas id="sky" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand"><img src="/img/logo.webp" alt="" width="40" height="44"><span data-server-name>Tierras Fantásticas</span></a>
+      <nav class="tabs-nav" aria-label="Secciones">
+        <a href="/">Inicio</a>
+        <a href="/tienda">Tienda</a>
+        <a href="/crates" aria-current="page"><span class="nav-pill pixel" aria-hidden="true"></span>Crates <em class="new pixel">Nuevo</em></a>
+        <a href="/mundo">El mundo</a>
+        <a href="/ayuda">Ayuda</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="nav-ip pixel" type="button" data-copy-ip aria-label="Copiar IP del servidor"><span class="dot"></span><span data-server-ip>216.163.187.40:19001</span><span class="copy-tag">Copiar</span></button>
+        <a href="#" class="btn btn-discord btn-sm pixel discord-link" hidden target="_blank" rel="noopener">Discord</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <header class="page-hero wrap">
+      <div class="glyph" aria-hidden="true"></div>
+      <p class="kicker">Crates animados</p>
+      <h1><span class="theme-text">Crates legendarios</span></h1>
+      <p>Elige un crate, mira todo lo que contiene y consigue tu llave. Cada llave abre el crate una vez en el spawn y te da una pieza aleatoria del set.</p>
+    </header>
+
+    <section class="wrap">
+      <div class="notice pixel" data-payments-off hidden>
+        La tienda está en mantenimiento: los pagos no están disponibles en este momento.
+      </div>
+
+      <div class="crate-picker" role="tablist" aria-label="Elige un crate" id="crate-picker"></div>
+
+      <div class="crate-stage pixel" id="crate-stage" role="tabpanel">
+        <div class="stage-visual">
+          <div class="rays" aria-hidden="true"></div>
+          <canvas id="embers" aria-hidden="true"></canvas>
+          <div class="pedestal" aria-hidden="true"></div>
+          <img class="stage-img" id="stage-img" alt="" hidden>
+        </div>
+        <div class="stage-info" id="stage-info">
+          <p class="loading">Cargando crates</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <div class="section-head reveal">
+        <p class="kicker">Cómo funciona</p>
+        <h2>De la tienda a tu inventario</h2>
+      </div>
+      <div class="steps">
+        <div class="step panel pixel reveal">
+          <h3>Consigue tu llave</h3>
+          <p>Elige el crate, escribe tu nombre de Minecraft y paga con PayPal o tarjeta. La llave llega sola a tu cuenta.</p>
+        </div>
+        <div class="step panel pixel reveal">
+          <h3>Ve al spawn</h3>
+          <p>Entra al servidor y busca el crate en el spawn. Si no estabas conectado, la llave te espera igualmente.</p>
+        </div>
+        <div class="step panel pixel reveal">
+          <h3>Ábrelo y presume</h3>
+          <p>Usa la llave sobre el crate y llévate una pieza animada del set: arma, herramienta, armadura o cosmético.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer-wrap">
+    <div class="grass" aria-hidden="true"></div>
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <div class="footer-brand">
+          <img src="/img/logo.webp" alt="" width="56" height="62">
+          <div>
+            <b data-server-name>Tierras Fantásticas</b>
+            <p class="muted">Servidor de Minecraft de aventura, castillos y magia.</p>
+            <p class="muted">IP: <span data-server-ip>216.163.187.40:19001</span></p>
+          </div>
+        </div>
+        <div>
+          <h4>Secciones</h4>
+          <ul>
+            <li><a href="/">Inicio</a></li>
+            <li><a href="/tienda">Tienda</a></li>
+            <li><a href="/crates">Crates</a></li>
+            <li><a href="/mundo">El mundo</a></li>
+            <li><a href="/ayuda">Ayuda</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Comunidad</h4>
+          <ul>
+            <li><a href="#" class="discord-link" hidden target="_blank" rel="noopener">Discord</a></li>
+            <li><a href="/ayuda">Soporte de compras</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="wrap footer-legal">
+        <p>© <span data-year></span> <span data-server-name>Tierras Fantásticas</span>. No afiliado a Mojang AB ni Microsoft.</p>
+        <p class="muted">Todas las compras son donaciones voluntarias para mantener el servidor.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/fx.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
