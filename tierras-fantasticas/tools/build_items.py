@@ -25,7 +25,7 @@ PUBLIC = os.path.join(HERE, '..', 'public')
 COMMON = [
     ('sword', 'Espada'), ('great_sword', 'Gran espada'), ('rapier_sword', 'Estoque'), ('dagger', 'Daga'), ('knife', 'Cuchillo'), ('blade', 'Hoja'), ('halberd', 'Alabarda'), ('battleaxe', 'Hacha de batalla'), ('greatsword', 'Gran espada'), ('fishing', 'Caña de pescar'),
     ('backpack', 'Mochila'), ('cape', 'Capa'), ('big_sword', 'Gran espada'), ('tail', 'Cola'),
-    ('flag', 'Bandera'), ('little_dragon', 'Dragoncito'), ('gauntlet', 'Guantelete'),
+    ('flag', 'Bandera'), ('little_dragon', 'Dragoncito'), ('club', 'Garrote'), ('gauntlet', 'Guantelete'),
     ('axe', 'Hacha'), ('pickaxe', 'Pico'), ('shovel', 'Pala'), ('hoe', 'Azada'), ('hammer', 'Martillo'),
     ('battle_axe', 'Hacha de batalla'), ('mace', 'Maza'), ('scythe', 'Guadaña'), ('sickle', 'Hoz'), ('spear', 'Lanza'), ('trident', 'Tridente'), ('staff', 'Bastón'),
     ('bow', 'Arco'), ('crossbow', 'Ballesta'), ('fishing_rod', 'Caña de pescar'), ('shield', 'Escudo'),
@@ -75,6 +75,10 @@ SETS = {
     'beats': ('Beats-Animated-Weapons-Tools-Set/Beats Animated Weapons & Tools Set/Itemsadder Setup/contents/beatsset/resourcepack/assets', 'beatsset', COMMON),
     'azure': ('Azure-Animated-Weapons-Tools-Set/Azure Animated Weapons & Tools Set/Itemsadder Setup/contents/azureset/resourcepack/assets', 'azureset', COMMON),
     'littledragon': ('Little-Dragon-Weapons-Tools-Set/Itemsadder Setup/contents/littledragonset/resourcepack/assets', 'littledragonset', COMMON),
+    'bahamut': ('elitecreatures-bahamut_animated_weapon_set/ItemsAdder/data/resource_pack/assets', 'elitecreatures', COMMON,
+                'bahamut_animated_weapon_set/'),
+    'fairy': ('Fairy_Animated_Weapons__Tools_Set/Itemsadder Setup/contents/fairyset/resourcepack/assets', 'fairyset', COMMON),
+    'bonita': ('Bonita-Animated-Weapons-Tools-Set/Bonita Animated Weapons & Tools Set/Itemsadder Setup/contents/bonitaset/resourcepack/assets', 'bonitaset', COMMON),
     'conqueror': ('conqueror_legacy/ItemsAdder Setup/contents/conqueror_legacy/resourcepack/assets', 'conqueror_legacy', COMMON),
 }
 

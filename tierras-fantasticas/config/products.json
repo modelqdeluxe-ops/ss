@@ -228,14 +228,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -340,14 +332,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -455,14 +439,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -577,14 +553,6 @@
       {
         "id": "wing",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -839,14 +807,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -939,14 +899,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -1059,14 +1011,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -1171,14 +1115,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -1287,14 +1223,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -1395,14 +1323,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -1507,14 +1427,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -1546,7 +1458,7 @@
     ],
     "rarity": "Mítico",
     "tagline": "La tormenta hecha acero",
-    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas y mochila.",
+    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas y casco.",
     "image": "img/crates/lightning.webp",
     "keyImage": "img/keys/lightning.webp",
     "price": 499,
@@ -1559,10 +1471,6 @@
       {
         "id": "knife",
         "name": "Cuchillo"
-      },
-      {
-        "id": "backpack",
-        "name": "Mochila"
       },
       {
         "id": "axe",
@@ -1623,14 +1531,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -1739,14 +1639,6 @@
         "name": "Casco cosmético"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -1839,14 +1731,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -1959,14 +1843,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -2077,14 +1953,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -2189,14 +2057,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
       },
       {
         "id": "armor_helmet",
@@ -2305,14 +2165,6 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
-      },
-      {
-        "id": "chest",
-        "name": "Cofre"
-      },
-      {
         "id": "armor_helmet",
         "name": "Casco de armadura"
       },
@@ -2344,7 +2196,7 @@
     ],
     "rarity": "Mítico",
     "tagline": "Fuego y escamas de dragón",
-    "description": "Armas de lava y escamas rojas, con bandera, mochila y un dragoncito de compañía, además de armadura, alas y casco.",
+    "description": "Armas de lava y escamas rojas: gran espada, guadaña, tridente, armadura completa, alas y casco.",
     "image": "img/crates/littledragon.webp",
     "keyImage": "img/keys/lava.webp",
     "price": 499,
@@ -2357,18 +2209,6 @@
       {
         "id": "greatsword",
         "name": "Gran espada"
-      },
-      {
-        "id": "backpack",
-        "name": "Mochila"
-      },
-      {
-        "id": "flag",
-        "name": "Bandera"
-      },
-      {
-        "id": "little_dragon",
-        "name": "Dragoncito"
       },
       {
         "id": "axe",
@@ -2431,12 +2271,122 @@
         "name": "Alas"
       },
       {
-        "id": "key",
-        "name": "Llave"
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
       },
       {
-        "id": "chest",
-        "name": "Cofre"
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} littledragon 1"
+    ]
+  },
+  {
+    "id": "crate-bahamut",
+    "category": "crates",
+    "name": "Crate Bahamut",
+    "theme": "bahamut",
+    "colors": [
+      "#d6dbe4",
+      "#8f9bb3"
+    ],
+    "rarity": "Mítico",
+    "tagline": "El rey de los dragones",
+    "description": "Acero oscuro y escamas de dragón: gran espada, garrote, guantelete, maza, alabarda, armadura completa, alas y casco.",
+    "image": "img/crates/bahamut.webp",
+    "keyImage": "img/keys/netherite.webp",
+    "price": 499,
+    "set": "bahamut",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "big_sword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "club",
+        "name": "Garrote"
+      },
+      {
+        "id": "gauntlet",
+        "name": "Guantelete"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
       },
       {
         "id": "armor_helmet",
@@ -2456,7 +2406,219 @@
       }
     ],
     "commands": [
-      "crate key give {player} littledragon 1"
+      "crate key give {player} bahamut 1"
+    ]
+  },
+  {
+    "id": "crate-fairy",
+    "category": "crates",
+    "name": "Crate Hada",
+    "theme": "fairy",
+    "colors": [
+      "#fff1b8",
+      "#facc15"
+    ],
+    "rarity": "Edición limitada",
+    "tagline": "Plata, oro y alas de hada",
+    "description": "Blanco perla con filos de oro y alitas: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/fairy.webp",
+    "keyImage": "img/keys/wings.webp",
+    "price": 449,
+    "set": "fairy",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} fairy 1"
+    ]
+  },
+  {
+    "id": "crate-bonita",
+    "category": "crates",
+    "name": "Crate Bonita",
+    "theme": "bonita",
+    "colors": [
+      "#ffc2d6",
+      "#f472b6"
+    ],
+    "rarity": "Épico",
+    "tagline": "Rosa pastel con un toque turquesa",
+    "description": "Rosa pastel con detalles turquesa: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/bonita.webp",
+    "keyImage": "img/keys/crystal.webp",
+    "price": 399,
+    "set": "bonita",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} bonita 1"
     ]
   },
   {

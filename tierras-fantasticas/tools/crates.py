@@ -40,7 +40,7 @@ CRATES = [
     ('dracula', 'Crate Drácula', 'Legendario', 'La sangre del conde',
      'El arsenal del conde vampiro: hojas carmesí, alabarda, hoz, armadura gótica y alas de murciélago.', 'redcracked', 449, ('#ff8a8a', '#dc2626')),
     ('lightning', 'Crate Poder del Rayo', 'Mítico', 'La tormenta hecha acero',
-     'Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas y mochila.', 'lightning', 499, ('#fff07a', '#eab308')),
+     'Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas y casco.', 'lightning', 499, ('#fff07a', '#eab308')),
     ('wither', 'Crate Wither Oscuro', 'Legendario', 'La maldición del Wither',
      'Hueso negro y almas en pena: gran espada, guadaña, tridente, armadura, capa y casco del Dark Wither.', 'blackstone', 449, ('#d5dbe6', '#7c8799')),
     ('pink', 'Crate Legado Rosa', 'Épico', 'Elegancia en rosa y oro',
@@ -54,8 +54,18 @@ CRATES = [
     ('azure', 'Crate Azure', 'Legendario', 'Acero azul de las profundidades',
      'Hojas de cristal azul con núcleos dorados: gran espada, hacha, guadaña, tridente, armadura, alas y casco.', 'blue', 449, ('#9fd8ff', '#38bdf8')),
     ('littledragon', 'Crate Pequeño Dragón', 'Mítico', 'Fuego y escamas de dragón',
-     'Armas de lava y escamas rojas, con bandera, mochila y un dragoncito de compañía, además de armadura, alas y casco.', 'lava', 499, ('#ffb36b', '#f97316')),
+     'Armas de lava y escamas rojas: gran espada, guadaña, tridente, armadura completa, alas y casco.', 'lava', 499, ('#ffb36b', '#f97316')),
+    ('bahamut', 'Crate Bahamut', 'Mítico', 'El rey de los dragones',
+     'Acero oscuro y escamas de dragón: gran espada, garrote, guantelete, maza, alabarda, armadura completa, alas y casco.', 'netherite', 499, ('#d6dbe4', '#8f9bb3')),
+    ('fairy', 'Crate Hada', 'Edición limitada', 'Plata, oro y alas de hada',
+     'Blanco perla con filos de oro y alitas: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'wings', 449, ('#fff1b8', '#facc15')),
+    ('bonita', 'Crate Bonita', 'Épico', 'Rosa pastel con un toque turquesa',
+     'Rosa pastel con detalles turquesa: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'crystal', 399, ('#ffc2d6', '#f472b6')),
 ]
+
+
+# Lo que no es una recompensa: el cofre y la llave del propio crate, mascotas y decoración.
+NOT_REWARDS = {'chest', 'key', 'little_dragon', 'backpack', 'flag'}
 
 
 def listing(set_id):
@@ -66,7 +76,7 @@ def listing(set_id):
     have = {f[:-5] for f in os.listdir(folder) if f.endswith('.json')}
     out, seen = [], set()
     for slug in order:
-        if slug in have and slug not in seen:
+        if slug in have and slug not in seen and slug not in NOT_REWARDS:
             seen.add(slug)
             out.append({'id': slug, 'name': labels[slug]})
     return out

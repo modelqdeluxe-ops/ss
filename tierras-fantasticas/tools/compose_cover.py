@@ -15,7 +15,7 @@ import build_items as B  # noqa: E402
 
 PUBLIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public')
 ORDER = ['bow', 'scythe', 'hammer', 'axe', 'great_sword', 'greatsword', 'big_sword', 'battle_axe', 'battleaxe', 'sword', 'spear', 'staff', 'trident',
-         'mace', 'halberd', 'sickle', 'blade', 'rapier_sword', 'knife', 'pickaxe', 'crossbow', 'dagger', 'shovel', 'hoe']
+         'mace', 'club', 'halberd', 'sickle', 'blade', 'rapier_sword', 'knife', 'pickaxe', 'crossbow', 'dagger', 'shovel', 'hoe']
 NAZGUL = ['spider_bow', 'witch_scythe', 'gargoyle_axe', 'red_hammer', 'demonic_blade', 'ocean_sword', 'holy_spear',
           'abyssal_blade', 'great_sword', 'fire_mace', 'mana_axe', 'flowering_madness', 'obsidian_bow']
 MAX_WEAPONS = 9
