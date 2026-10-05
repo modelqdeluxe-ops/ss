@@ -1,0 +1,21 @@
+# Claves para probar la web en local con `npm run dev`. En Cloudflare se ponen como Secrets
+# (Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets).
+
+# Clave compartida con el puente del servidor (bridge.secret en config/tfclient-server.properties)
+BRIDGE_SECRET=
+
+# Dirección pública de la web (opcional: si falta se usa la de cada petición)
+# PUBLIC_URL=https://xn--tierrasfantsticas-hpb.store
+
+# --- PayPal (https://developer.paypal.com/dashboard/applications) ---
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+# ID del webhook que creas en la misma app de PayPal (opcional pero recomendado)
+PAYPAL_WEBHOOK_ID=
+
+# --- Discord (https://discord.com/developers/applications) ---
+DISCORD_CLIENT_ID=
+DISCORD_CLIENT_SECRET=
+DISCORD_BOT_TOKEN=
+DISCORD_GUILD_ID=
+DISCORD_WEBHOOK_URL=

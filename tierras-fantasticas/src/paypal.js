@@ -10,12 +10,12 @@ const API_BASES = {
 const ZERO_DECIMAL = new Set(['JPY', 'HUF', 'TWD']);
 
 // Convierte céntimos a la cadena que espera PayPal ("4.99", o "499" en JPY).
-function formatAmount(cents, currency) {
+export function formatAmount(cents, currency) {
   if (ZERO_DECIMAL.has(currency.toUpperCase())) return String(Math.round(cents / 100));
   return (cents / 100).toFixed(2);
 }
 
-class PayPal {
+export class PayPal {
   constructor({ clientId, clientSecret, env = 'sandbox', apiBase }) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
@@ -26,7 +26,7 @@ class PayPal {
 
   async accessToken() {
     if (this.token && Date.now() < this.tokenExpires) return this.token;
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+    const auth = btoa(`${this.clientId}:${this.clientSecret}`);
     const res = await fetch(`${this.base}/v1/oauth2/token`, {
       method: 'POST',
       headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -119,4 +119,3 @@ class PayPal {
   }
 }
 
-module.exports = { PayPal, formatAmount };

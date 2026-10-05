@@ -1,21 +1,20 @@
 {
   "name": "tierras-fantasticas",
   "version": "1.0.0",
-  "description": "Web y tienda del servidor Tierras Fantásticas con pasarela de pago PayPal y entrega automática por RCON",
-  "main": "server.js",
-  "type": "commonjs",
+  "description": "Web y tienda del servidor Tierras Fantásticas en Cloudflare Workers: pagos con PayPal, Discord y puente con el servidor de Minecraft",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "test": "node --test"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test test/*.test.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.13"
   },
   "license": "UNLICENSED",
   "private": true,
-  "dependencies": {
-    "dotenv": "^18.0.5",
-    "express": "^5.2.1"
+  "devDependencies": {
+    "wrangler": "^4.147.0"
   }
 }

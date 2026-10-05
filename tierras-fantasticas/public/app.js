@@ -45,8 +45,14 @@
     loadStatus();
   }
 
-  // --- Estado en vivo (API pública mcsrvstat.us, con caché corta entre páginas) ---
+  // --- Estado en vivo: primero el puente del servidor (mod TF Client), si no la API pública mcsrvstat.us ---
   async function fetchStatus() {
+    try {
+      const bridge = await (await fetch('/api/status')).json();
+      if (bridge.bridge) return bridge;
+    } catch {
+      /* puente no disponible */
+    }
     const key = `tf-status:${config.serverIp}`;
     try {
       const cached = JSON.parse(sessionStorage.getItem(key) || 'null');

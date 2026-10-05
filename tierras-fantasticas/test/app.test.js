@@ -1,40 +1,15 @@
-const { test, before, after } = require('node:test');
-const assert = require('node:assert');
-const http = require('node:http');
-const net = require('node:net');
-const os = require('node:os');
-const path = require('node:path');
-const fs = require('node:fs');
-const { encode } = require('../lib/rcon');
+import { test, before, after } from 'node:test';
+import assert from 'node:assert';
+import http from 'node:http';
+import products from '../config/products.json' with { type: 'json' };
+import worker from '../src/index.js';
+import { createD1 } from './d1.js';
 
-const RCON_PASSWORD = 'secreto';
-const received = [];
 const servers = [];
-let baseUrl;
-
-// --- Servidor RCON falso que imita a Minecraft ---
-function startFakeRcon() {
-  const server = net.createServer((socket) => {
-    let buf = Buffer.alloc(0);
-    socket.on('data', (chunk) => {
-      buf = Buffer.concat([buf, chunk]);
-      while (buf.length >= 4 && buf.length >= 4 + buf.readInt32LE(0)) {
-        const len = buf.readInt32LE(0);
-        const id = buf.readInt32LE(4);
-        const type = buf.readInt32LE(8);
-        const body = buf.toString('utf8', 12, 4 + len - 2);
-        buf = buf.subarray(4 + len);
-        if (type === 3) socket.write(encode(body === RCON_PASSWORD ? id : -1, 2, ''));
-        else {
-          received.push(body);
-          socket.write(encode(id, 0, `ok: ${body}`));
-        }
-      }
-    });
-  });
-  servers.push(server);
-  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
-}
+let env;
+// Lo que el servidor de Minecraft (puente) ha ejecutado.
+const received = [];
+const BRIDGE_SECRET = 'clave-del-puente';
 
 // --- API de PayPal simulada ---
 const paypalOrders = new Map();
@@ -126,42 +101,41 @@ function startFakeDiscord() {
 }
 
 const ROLE_ID = '222222222222222222';
+const quietLog = { log() {}, warn() {}, error() {} };
+
+// Archivos estáticos simulados (en Cloudflare los sirve el propio Workers).
+const ASSETS = { fetch: async (req) => new Response(`estático ${new URL(req.url).pathname}`) };
 
 before(async () => {
-  const [rconPort, paypalPort, discordPort] = await Promise.all([startFakeRcon(), startFakePayPal(), startFakeDiscord()]);
+  const [paypalPort, discordPort] = await Promise.all([startFakePayPal(), startFakeDiscord()]);
   // Rol de Discord real (formato snowflake) para el rango de pruebas.
-  require('../config/products.json').find((p) => p.id === 'rango-hechicero').discordRoles = [ROLE_ID];
-  Object.assign(process.env, {
+  products.find((p) => p.id === 'rango-hechicero').discordRoles = [ROLE_ID];
+  env = {
+    DB: createD1(),
+    ASSETS,
+    LOGGER: quietLog,
     PAYPAL_CLIENT_ID: 'client',
     PAYPAL_CLIENT_SECRET: 'secret',
     PAYPAL_WEBHOOK_ID: 'WH-1',
     PAYPAL_API_BASE: `http://127.0.0.1:${paypalPort}`,
     CURRENCY: 'USD',
     PUBLIC_URL: 'http://tienda.test',
-    SESSION_SECRET: 'test-secret',
     DISCORD_CLIENT_ID: 'discord-client',
     DISCORD_CLIENT_SECRET: 'discord-secret',
     DISCORD_BOT_TOKEN: 'bot-token',
     DISCORD_GUILD_ID: '333333333333333333',
     DISCORD_API_BASE: `http://127.0.0.1:${discordPort}`,
     DISCORD_WEBHOOK_URL: `http://127.0.0.1:${discordPort}/webhook`,
-    RCON_HOST: '127.0.0.1',
-    RCON_PORT: String(rconPort),
-    RCON_PASSWORD,
-    ORDERS_FILE: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-')), 'orders.json'),
-  });
-  const { app } = require('../server');
-  const httpServer = await new Promise((resolve) => {
-    const s = app.listen(0, () => resolve(s));
-  });
-  servers.push(httpServer);
-  baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
+    BRIDGE_SECRET,
+  };
 });
 
 after(() => servers.forEach((s) => s.close()));
 
-const post = (url, body, cookie) =>
-  fetch(`${baseUrl}${url}`, {
+const call = (path, init = {}) => worker.fetch(new Request(`http://tienda.test${path}`, { redirect: 'manual', ...init }), env);
+const get = (path, headers = {}) => call(path, { headers });
+const post = (path, body, cookie) =>
+  call(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) },
     body: body ? JSON.stringify(body) : undefined,
@@ -173,14 +147,35 @@ async function createOrder(body, cookie) {
   return (await res.json()).id;
 }
 
+// El mod en el servidor: manda los jugadores conectados y las entregas hechas, recibe las nuevas.
+async function poll(players, done = [], secret = BRIDGE_SECRET) {
+  return call('/bridge/poll', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
+    body: JSON.stringify({ players: players.map((name) => ({ name, uuid: null })), max: 50, done }),
+  });
+}
+
+// Simula al servidor: conecta a los jugadores, ejecuta lo recibido y lo confirma.
+async function serverDelivers(...players) {
+  const { deliveries } = await (await poll(players)).json();
+  for (const d of deliveries) received.push(...d.commands);
+  await poll(players, deliveries.map((d) => ({ id: d.id, ok: true })));
+  return deliveries;
+}
+
 test('la API de productos no expone los comandos y config incluye el client-id', async () => {
-  const products = await (await fetch(`${baseUrl}/api/products`)).json();
-  assert.ok(products.length > 0);
-  assert.ok(products.every((p) => !('commands' in p)));
-  const config = await (await fetch(`${baseUrl}/api/config`)).json();
+  const list = await (await get('/api/products')).json();
+  assert.ok(list.length > 0);
+  assert.ok(list.every((p) => !('commands' in p)));
+  const config = await (await get('/api/config')).json();
   assert.strictEqual(config.paypalClientId, 'client');
   assert.strictEqual(config.paymentsEnabled, true);
   assert.ok(!JSON.stringify(config).includes('secret'));
+});
+
+test('las rutas que no son de la API las sirve la web estática', async () => {
+  assert.strictEqual(await (await get('/tienda')).text(), 'estático /tienda');
 });
 
 test('crear pedido rechaza usuarios, productos y cantidades no válidos', async () => {
@@ -198,27 +193,70 @@ test('el pedido en PayPal usa el precio del catálogo', async () => {
   assert.strictEqual(unit.items[0].quantity, '3');
 });
 
-test('pago capturado entrega la compra por RCON una sola vez', async () => {
+test('el puente rechaza una clave incorrecta', async () => {
+  assert.strictEqual((await poll(['Steve'], [], 'otra')).status, 401);
+  const saved = env.BRIDGE_SECRET;
+  env.BRIDGE_SECRET = '';
+  try {
+    assert.strictEqual((await poll(['Steve'])).status, 503);
+  } finally {
+    env.BRIDGE_SECRET = saved;
+  }
+});
+
+test('pago capturado queda en cola y el servidor lo entrega una sola vez cuando el jugador entra', async () => {
   received.length = 0;
   const id = await createOrder({ productId: 'monedas-10000', username: 'Steve_123', quantity: 2 });
 
   const res = await post(`/api/orders/${id}/capture`);
   assert.strictEqual(res.status, 200);
-  assert.strictEqual((await res.json()).status, 'delivered');
-  assert.deepStrictEqual(received, ['eco give Steve_123 10000', 'eco give Steve_123 10000']);
+  assert.strictEqual((await res.json()).status, 'queued');
 
-  // Captura repetida (doble clic, recarga): no se entrega otra vez.
-  await post(`/api/orders/${id}/capture`);
+  // Captura repetida (doble clic, recarga): no se encola otra vez.
+  assert.strictEqual((await (await post(`/api/orders/${id}/capture`)).json()).status, 'queued');
+
+  // El jugador no está conectado: no se le entrega nada todavía.
+  assert.deepStrictEqual(await serverDelivers('Otro'), []);
+  assert.strictEqual(received.length, 0);
+
+  // Entra (sin importar mayúsculas): se entrega y se confirma.
+  await serverDelivers('steve_123');
+  assert.deepStrictEqual(received, ['eco give Steve_123 10000', 'eco give Steve_123 10000']);
+  assert.deepStrictEqual(await serverDelivers('Steve_123'), []);
   assert.strictEqual(received.length, 2);
 
-  const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+  const order = await (await get(`/api/order/${id}`)).json();
   assert.strictEqual(order.status, 'delivered');
   assert.strictEqual(order.username, 'Steve_123');
 });
 
-test('comprar llaves de un crate entrega la llave por RCON y el catálogo trae su contenido', async () => {
-  const products = await (await fetch(`${baseUrl}/api/products`)).json();
-  const crate = products.find((p) => p.id === 'crate-necros');
+test('si el servidor no confirma una entrega, se reenvía pasado un rato', async () => {
+  const id = await createOrder({ productId: 'monedas-10000', username: 'Lento' });
+  await post(`/api/orders/${id}/capture`);
+  const first = (await (await poll(['Lento'])).json()).deliveries;
+  assert.strictEqual(first.length, 1);
+  // Enseguida no se repite…
+  assert.deepStrictEqual((await (await poll(['Lento'])).json()).deliveries, []);
+  // …pero si pasan más de 2 minutos sin confirmar, sí.
+  env.DB.raw.prepare('UPDATE deliveries SET sent_at = sent_at - 200000 WHERE id = ?').run(first[0].id);
+  const again = (await (await poll(['Lento'])).json()).deliveries;
+  assert.strictEqual(again[0].id, first[0].id);
+  // Un fallo del comando queda marcado para el staff.
+  await poll(['Lento'], [{ id: first[0].id, ok: false, error: 'Comando desconocido' }]);
+  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'delivery_failed');
+});
+
+test('el estado del servidor sale del puente', async () => {
+  await poll(['Steve', 'Alex']);
+  const status = await (await get('/api/status')).json();
+  assert.deepStrictEqual(status, { bridge: true, online: true, players: { online: 2, max: 50, list: ['Steve', 'Alex'] } });
+  env.DB.raw.prepare("UPDATE settings SET updated_at = updated_at - 60000 WHERE key = 'server_status'").run();
+  assert.deepStrictEqual(await (await get('/api/status')).json(), { bridge: false });
+});
+
+test('comprar llaves de un crate las entrega y el catálogo trae su contenido', async () => {
+  const list = await (await get('/api/products')).json();
+  const crate = list.find((p) => p.id === 'crate-necros');
   assert.strictEqual(crate.category, 'crates');
   assert.ok(crate.image && crate.items.length > 0 && crate.armor.length === 4);
 
@@ -226,20 +264,12 @@ test('comprar llaves de un crate entrega la llave por RCON y el catálogo trae s
   const id = await createOrder({ productId: 'crate-necros', username: 'Alex', quantity: 2 });
   assert.strictEqual(paypalOrders.get(id).purchase_units[0].amount.value, '7.98');
   const res = await post(`/api/orders/${id}/capture`);
-  assert.strictEqual((await res.json()).status, 'delivered');
+  assert.strictEqual((await res.json()).status, 'queued');
+  await serverDelivers('Alex');
   assert.deepStrictEqual(received, ['crate key give Alex necros 1', 'crate key give Alex necros 1']);
 });
 
-test('las páginas de cada sección se sirven sin .html', async () => {
-  for (const page of ['/', '/tienda', '/crates', '/mundo', '/ayuda']) {
-    const res = await fetch(`${baseUrl}${page}`);
-    assert.strictEqual(res.status, 200, page);
-    assert.match(await res.text(), /<nav class="tabs-nav"/);
-  }
-});
-
 test('no se entrega si el importe cobrado no coincide', async () => {
-  received.length = 0;
   const id = await createOrder({ productId: 'rango-dragon', username: 'Tramposo' });
   captureOverride = (order, send) =>
     send(201, {
@@ -250,22 +280,20 @@ test('no se entrega si el importe cobrado no coincide', async () => {
   try {
     const res = await post(`/api/orders/${id}/capture`);
     assert.strictEqual((await res.json()).status, 'error');
-    assert.strictEqual(received.length, 0);
+    assert.deepStrictEqual(await serverDelivers('Tramposo'), []);
   } finally {
     captureOverride = null;
   }
 });
 
 test('tarjeta rechazada permite reintentar sin entregar', async () => {
-  received.length = 0;
-  const id = await createOrder({ productId: 'llaves-epicas-5', username: 'Alex' });
-  captureOverride = (order, send) =>
-    send(422, { name: 'UNPROCESSABLE_ENTITY', details: [{ issue: 'INSTRUMENT_DECLINED' }] });
+  const id = await createOrder({ productId: 'llaves-epicas-5', username: 'Rechazado' });
+  captureOverride = (order, send) => send(422, { name: 'UNPROCESSABLE_ENTITY', details: [{ issue: 'INSTRUMENT_DECLINED' }] });
   try {
     const res = await post(`/api/orders/${id}/capture`);
     assert.strictEqual(res.status, 402);
     assert.strictEqual((await res.json()).retry, true);
-    assert.strictEqual(received.length, 0);
+    assert.deepStrictEqual(await serverDelivers('Rechazado'), []);
   } finally {
     captureOverride = null;
   }
@@ -273,17 +301,16 @@ test('tarjeta rechazada permite reintentar sin entregar', async () => {
 
 test('pago pendiente se entrega cuando llega el webhook de PayPal', async () => {
   received.length = 0;
-  const id = await createOrder({ productId: 'llaves-legendarias-3', username: 'Alex' });
+  const id = await createOrder({ productId: 'llaves-legendarias-3', username: 'Paciente' });
   captureOverride = (order, send) =>
     send(201, {
       id: order.id,
       status: 'COMPLETED',
-      purchase_units: [{ payments: { captures: [{ id: 'CAP-P', status: 'PENDING', amount: order.purchase_units[0].amount } ] } }],
+      purchase_units: [{ payments: { captures: [{ id: 'CAP-P', status: 'PENDING', amount: order.purchase_units[0].amount }] } }],
     });
   try {
     const res = await post(`/api/orders/${id}/capture`);
     assert.strictEqual((await res.json()).status, 'awaiting_payment');
-    assert.strictEqual(received.length, 0);
   } finally {
     captureOverride = null;
   }
@@ -300,15 +327,14 @@ test('pago pendiente se entrega cuando llega el webhook de PayPal', async () => 
 
   webhookValid = false;
   assert.strictEqual((await post('/webhook/paypal', event)).status, 400);
-  assert.strictEqual(received.length, 0);
+  assert.deepStrictEqual(await serverDelivers('Paciente'), []);
 
   webhookValid = true;
   assert.strictEqual((await post('/webhook/paypal', event)).status, 200);
-  assert.deepStrictEqual(received, ['crate key give Alex legendaria 3']);
-
   // PayPal reenvía el evento: sin entrega doble.
   assert.strictEqual((await post('/webhook/paypal', event)).status, 200);
-  assert.strictEqual(received.length, 1);
+  await serverDelivers('Paciente');
+  assert.deepStrictEqual(received, ['crate key give Paciente legendaria 3']);
 });
 
 test('capturar un pedido que no creó la tienda devuelve 404', async () => {
@@ -321,7 +347,7 @@ const cookieValue = (res, name) =>
 
 // Recorre el login de Discord y devuelve la cookie de sesión.
 async function loginDiscord() {
-  const start = await fetch(`${baseUrl}/auth/discord?return=${encodeURIComponent('/?buy=rango-hechicero')}`, { redirect: 'manual' });
+  const start = await get(`/auth/discord?return=${encodeURIComponent('/?buy=rango-hechicero')}`);
   assert.strictEqual(start.status, 302);
   const authorize = new URL(start.headers.get('location'));
   assert.strictEqual(authorize.origin, 'https://discord.com');
@@ -329,27 +355,29 @@ async function loginDiscord() {
   const state = authorize.searchParams.get('state');
   const stateCookie = cookieValue(start, 'tf_oauth_state');
 
-  const cb = await fetch(`${baseUrl}/auth/discord/callback?code=good-code&state=${state}`, {
-    redirect: 'manual',
-    headers: { Cookie: stateCookie },
-  });
+  const cb = await get(`/auth/discord/callback?code=good-code&state=${state}`, { Cookie: stateCookie });
   assert.strictEqual(cb.headers.get('location'), '/?buy=rango-hechicero&discord=ok');
   return cookieValue(cb, 'tf_discord');
 }
 
 test('login de Discord rechaza un state falso y no permite redirigir fuera de la web', async () => {
-  const start = await fetch(`${baseUrl}/auth/discord?return=${encodeURIComponent('//evil.com')}`, { redirect: 'manual' });
+  const start = await get(`/auth/discord?return=${encodeURIComponent('//evil.com')}`);
   const stateCookie = cookieValue(start, 'tf_oauth_state');
-  const cb = await fetch(`${baseUrl}/auth/discord/callback?code=good-code&state=falso`, {
-    redirect: 'manual',
-    headers: { Cookie: stateCookie },
-  });
+  const cb = await get('/auth/discord/callback?code=good-code&state=falso', { Cookie: stateCookie });
   assert.strictEqual(cb.headers.get('location'), '/?discord=error');
   assert.strictEqual(cookieValue(cb, 'tf_discord'), undefined);
 
   // Una cookie de sesión manipulada no sirve.
-  const me = await (await fetch(`${baseUrl}/api/me`, { headers: { Cookie: 'tf_discord=eyJpZCI6IjEifQ.firma' } })).json();
+  const me = await (await get('/api/me', { Cookie: 'tf_discord=eyJpZCI6IjEifQ.firma' })).json();
   assert.strictEqual(me.discord, null);
+});
+
+test('sin SESSION_SECRET la web crea y guarda su propia clave de sesión', async () => {
+  const other = { ...env, SESSION_SECRET: undefined };
+  const a = await worker.fetch(new Request('http://tienda.test/auth/discord', { redirect: 'manual' }), other);
+  assert.strictEqual(a.status, 302);
+  const row = env.DB.raw.prepare("SELECT value FROM settings WHERE key = 'secret:session'").get();
+  assert.match(row.value, /^[0-9a-f]{64}$/);
 });
 
 test('comprar con Discord vinculado da el rol en Discord y anuncia la compra', async () => {
@@ -359,18 +387,19 @@ test('comprar con Discord vinculado da el rol en Discord y anuncia la compra', a
   memberExists = true;
 
   const cookie = await loginDiscord();
-  const me = await (await fetch(`${baseUrl}/api/me`, { headers: { Cookie: cookie } })).json();
+  const me = await (await get('/api/me', { Cookie: cookie })).json();
   assert.deepStrictEqual(me.discord, { id: '111111111111111111', username: 'Alex', avatar: null });
 
-  const products = await (await fetch(`${baseUrl}/api/products`)).json();
-  assert.strictEqual(products.find((p) => p.id === 'rango-hechicero').discordRole, true);
-  assert.ok(products.every((p) => !('discordRoles' in p)));
+  const list = await (await get('/api/products')).json();
+  assert.strictEqual(list.find((p) => p.id === 'rango-hechicero').discordRole, true);
+  assert.ok(list.every((p) => !('discordRoles' in p)));
 
   const id = await createOrder({ productId: 'rango-hechicero', username: 'Alex_MC' }, cookie);
   const res = await post(`/api/orders/${id}/capture`);
-  assert.strictEqual((await res.json()).status, 'delivered');
+  assert.strictEqual((await res.json()).status, 'queued');
 
   // En el juego…
+  await serverDelivers('Alex_MC');
   assert.strictEqual(received[0], 'lp user Alex_MC parent add hechicero');
   // …y en Discord: ya era miembro (204), así que se le da el rol aparte.
   const roleCall = discordCalls.find((c) => c.url.endsWith(`/roles/${ROLE_ID}`));
@@ -379,10 +408,10 @@ test('comprar con Discord vinculado da el rol en Discord y anuncia la compra', a
   assert.strictEqual(announcements.length, 1);
   assert.match(announcements[0].embeds[0].description, /<@111111111111111111>.*Rango Hechicero/);
 
-  const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+  const order = await (await get(`/api/order/${id}`)).json();
   assert.deepStrictEqual(order.discord, { username: 'Alex', status: 'granted' });
   // El token de Discord del comprador no se queda guardado.
-  const stored = JSON.parse(fs.readFileSync(process.env.ORDERS_FILE, 'utf8'))[id];
+  const stored = env.DB.raw.prepare('SELECT * FROM orders WHERE id = ?').get(id);
   assert.ok(!JSON.stringify(stored).includes('user-token'));
 });
 
@@ -396,7 +425,7 @@ test('si el comprador no está en el Discord, el bot lo añade con el rol', asyn
     const join = discordCalls.find((c) => c.url === '/guilds/333333333333333333/members/111111111111111111');
     assert.deepStrictEqual(JSON.parse(join.body), { access_token: 'user-token', roles: [ROLE_ID] });
     assert.ok(!discordCalls.some((c) => c.url.includes('/roles/')));
-    const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+    const order = await (await get(`/api/order/${id}`)).json();
     assert.strictEqual(order.discord.status, 'joined');
   } finally {
     memberExists = true;
@@ -408,11 +437,13 @@ test('un fallo en Discord no impide la entrega en el juego', async () => {
   failRoles = true;
   try {
     const cookie = await loginDiscord();
-    const id = await createOrder({ productId: 'rango-hechicero', username: 'Alex_MC' }, cookie);
+    const id = await createOrder({ productId: 'rango-hechicero', username: 'Fallo_MC' }, cookie);
     const res = await post(`/api/orders/${id}/capture`);
-    assert.strictEqual((await res.json()).status, 'delivered');
+    assert.strictEqual((await res.json()).status, 'queued');
+    await serverDelivers('Fallo_MC');
     assert.strictEqual(received.length, 2);
-    const order = await (await fetch(`${baseUrl}/api/order/${id}`)).json();
+    const order = await (await get(`/api/order/${id}`)).json();
+    assert.strictEqual(order.status, 'delivered');
     assert.strictEqual(order.discord.status, 'failed');
   } finally {
     failRoles = false;

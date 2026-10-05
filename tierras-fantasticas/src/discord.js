@@ -1,13 +1,14 @@
 // Integración con Discord: inicio de sesión (OAuth2), roles con el bot y anuncios por webhook.
 // Documentación: https://discord.com/developers/docs
 
-const API = process.env.DISCORD_API_BASE || 'https://discord.com/api/v10';
+const DEFAULT_API = 'https://discord.com/api/v10';
 const SNOWFLAKE_RE = /^\d{17,20}$/;
 
-const isSnowflake = (id) => SNOWFLAKE_RE.test(String(id));
+export const isSnowflake = (id) => SNOWFLAKE_RE.test(String(id));
 
-class Discord {
-  constructor({ clientId, clientSecret, botToken, guildId, webhookUrl, redirectUri }) {
+export class Discord {
+  constructor({ clientId, clientSecret, botToken, guildId, webhookUrl, redirectUri, apiBase }) {
+    this.api = apiBase || DEFAULT_API;
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.botToken = botToken;
@@ -49,7 +50,7 @@ class Discord {
       headers['Content-Type'] = 'application/json';
       payload = JSON.stringify(body);
     }
-    const res = await fetch(`${API}${path}`, { method, headers, body: payload });
+    const res = await fetch(`${this.api}${path}`, { method, headers, body: payload });
     const data = res.status === 204 ? null : await res.json().catch(() => null);
     if (!res.ok) {
       const err = new Error(`Discord ${method} ${path}: ${data?.message || data?.error_description || res.status}`);
@@ -61,7 +62,7 @@ class Discord {
 
   // Intercambia el código del OAuth por el token del usuario y lee su perfil.
   async exchangeCode(code) {
-    const basic = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+    const basic = btoa(`${this.clientId}:${this.clientSecret}`);
     const { data: token } = await this.request('POST', '/oauth2/token', {
       auth: `Basic ${basic}`,
       form: { grant_type: 'authorization_code', code, redirect_uri: this.redirectUri },
@@ -114,4 +115,3 @@ class Discord {
   }
 }
 
-module.exports = { Discord, isSnowflake };

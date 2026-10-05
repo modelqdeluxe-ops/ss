@@ -37,6 +37,7 @@
       const orderId = new URLSearchParams(location.search).get('order');
       const deliveryText = {
         delivered: 'Entregado en el servidor',
+        queued: 'Se entrega al entrar al servidor',
         delivering: 'Entregando…',
         pending: 'Procesando…',
         manual: 'El staff lo entregará en breve',
@@ -45,7 +46,7 @@
         failed: 'Pago no completado',
         error: 'En revisión',
       };
-      const PAID = ['delivered', 'delivering', 'manual', 'delivery_failed'];
+      const PAID = ['delivered', 'queued', 'delivering', 'manual', 'delivery_failed'];
 
       function show(kind, label, title, message) {
         $('state').className = `state pixel ${kind}`;
@@ -90,9 +91,11 @@
         }
 
         if (PAID.includes(order.status)) {
-          show('ok', 'Pagado', '¡Gracias por tu compra!', order.status === 'delivered'
-            ? 'Tu pago se ha completado y la compra ya está en el servidor. ¡Disfrútala!'
-            : 'Tu pago se ha completado. El staff entregará tu compra en breve.');
+          const paidText = {
+            delivered: 'Tu pago se ha completado y la compra ya está en el servidor. ¡Disfrútala!',
+            queued: `Tu pago se ha completado. La compra llegará a ${order.username} en cuanto entre al servidor (si ya está dentro, en unos segundos).`,
+          };
+          show('ok', 'Pagado', '¡Gracias por tu compra!', paidText[order.status] || 'Tu pago se ha completado. El staff entregará tu compra en breve.');
           return;
         }
         if (order.status === 'failed') {

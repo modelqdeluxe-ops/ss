@@ -1,0 +1,24 @@
+// Configuración de Cloudflare Workers para la web de Tierras Fantásticas.
+// Las claves (PayPal, Discord, BRIDGE_SECRET...) se ponen como "Secrets" en el panel de Cloudflare,
+// nunca aquí: Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tierras-fantasticas",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash"
+  },
+  // La base de datos se crea sola en el primer despliegue.
+  "d1_databases": [{ "binding": "DB", "database_name": "tierras-fantasticas" }],
+  "observability": { "enabled": true },
+  "vars": {
+    "SERVER_NAME": "Tierras Fantásticas",
+    "SERVER_IP": "216.163.187.40:19001",
+    "DISCORD_URL": "https://discord.gg/tRrunHBZE",
+    "CURRENCY": "USD",
+    "PAYPAL_ENV": "sandbox"
+  }
+}
