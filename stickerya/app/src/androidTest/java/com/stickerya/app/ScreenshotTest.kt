@@ -34,6 +34,8 @@ class ScreenshotTest {
     private fun shot(name: String) {
         rule.waitForIdle()
         Thread.sleep(900)
+        // Lo que se cargó en segundo plano durante la espera necesita otro fotograma para verse.
+        rule.waitForIdle()
         val bmp: Bitmap = inst.uiAutomation.takeScreenshot() ?: return
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
