@@ -1,6 +1,6 @@
 # TF Client — Tierras Fantásticas (Forge 1.20.1)
 
-Mod de cliente de Tierras Fantásticas. Hace solo esto:
+Mod de Tierras Fantásticas. En el **cliente** hace esto:
 
 - **Pantalla de carga de TF**: el banner de Tierras Fantásticas (con las letras) a pantalla completa y la barra de
   progreso de Minecraft. Sustituye a la pantalla de Mojang/Forge, al abrir el juego y al recargar recursos (F3+T).
@@ -26,12 +26,36 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
   transparentes en vez de la tierra. **Dentro de una partida no se toca nada**, así cada jugador ve sus paquetes de
   recursos.
 
-No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta instalarlo en el servidor.
+Y en el **servidor** (opcional) hace de **puente con la web**:
+
+- Cada 10 segundos manda a la web los jugadores conectados (la web los muestra en vivo) y recibe las compras de la
+  tienda de los jugadores que están dentro. Ejecuta sus comandos en la consola del servidor, le pone al jugador un
+  título de *¡Gracias!* con lo que recibió y confirma a la web que está entregado.
+- Si el comprador no está conectado, la compra espera en la web y se le da en cuanto entra.
+- Es el servidor el que llama a la web: no hace falta RCON ni abrir puertos. Cada entrega tiene un número y el puente
+  apunta las que ya ejecutó (`config/tfclient-bridge-entregas.txt`), así que nunca entrega dos veces.
+- No obliga a los jugadores a tener el TF Client: quien entre sin él juega y recibe sus compras igual.
+
+No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.9.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.1.0.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+
+### Puente en el servidor
+
+1. Sube el jar a la carpeta `mods` del servidor y reinícialo.
+2. Se crea `config/tfclient-server.properties`:
+   ```properties
+   bridge.enabled=true
+   bridge.url=https\://xn--tierrasfantsticas-hpb.store
+   bridge.secret=(clave aleatoria)
+   bridge.interval=10
+   ```
+   `bridge.url` es `tierrasfantásticas.store` escrito como lo usa internet.
+3. Copia `bridge.secret` en Cloudflare (*Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets*)
+   como *Secret* `BRIDGE_SECRET`. En la consola del servidor saldrá `TF Bridge: conectado con la web`.
 
 ## Cambiar el servidor
 
@@ -40,7 +64,7 @@ La primera vez que se abre el juego se crea `config/tfclient.properties`:
 ```properties
 server.name=Tierras Fantásticas
 server.address=216.163.187.40\:19001
-web.url=https\://tienda.tierrasfantasticas.net
+web.url=https\://xn--tierrasfantsticas-hpb.store
 discord.guild.id=1439703812368765082
 discord.url=https\://discord.gg/tRrunHBZE
 ```

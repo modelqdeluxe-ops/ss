@@ -220,7 +220,10 @@ test('pago capturado queda en cola y el servidor lo entrega una sola vez cuando 
   assert.strictEqual(received.length, 0);
 
   // Entra (sin importar mayúsculas): se entrega y se confirma.
-  await serverDelivers('steve_123');
+  const [delivery] = await serverDelivers('steve_123');
+  assert.strictEqual(delivery.product, '10.000 Monedas de Oro');
+  assert.strictEqual(delivery.quantity, 2);
+  assert.strictEqual(delivery.player, 'Steve_123');
   assert.deepStrictEqual(received, ['eco give Steve_123 10000', 'eco give Steve_123 10000']);
   assert.deepStrictEqual(await serverDelivers('Steve_123'), []);
   assert.strictEqual(received.length, 2);

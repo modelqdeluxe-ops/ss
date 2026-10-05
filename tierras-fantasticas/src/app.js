@@ -300,7 +300,10 @@ export function createApp(env) {
         .filter((d) => d && Number.isInteger(d.id))
         .slice(0, 100);
 
-      const deliveries = await store.bridgePoll({ players, max, done });
+      const deliveries = (await store.bridgePoll({ players, max, done })).map(({ productId, ...d }) => ({
+        ...d,
+        product: productById.get(productId)?.name || productId,
+      }));
       return json({ deliveries, interval: BRIDGE_INTERVAL_S });
     },
   };

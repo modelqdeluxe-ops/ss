@@ -11,7 +11,7 @@
     ],
     "commands": [
       "lp user {player} parent add aventurero",
-      "broadcast &6{player} &eahora es &6Aventurero&e. ¡Gracias por apoyar Tierras Fantásticas!"
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"gold\"},{\"text\":\" ahora es \",\"color\":\"yellow\"},{\"text\":\"Aventurero\",\"color\":\"gold\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"yellow\"}]"
     ]
   },
   {
@@ -27,7 +27,7 @@
     ],
     "commands": [
       "lp user {player} parent add hechicero",
-      "broadcast &5{player} &dahora es &5Hechicero&d. ¡Gracias por apoyar Tierras Fantásticas!"
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"dark_purple\"},{\"text\":\" ahora es \",\"color\":\"light_purple\"},{\"text\":\"Hechicero\",\"color\":\"dark_purple\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"light_purple\"}]"
     ]
   },
   {
@@ -42,7 +42,7 @@
     ],
     "commands": [
       "lp user {player} parent add dragon",
-      "broadcast &c{player} &6ahora es &cDragón&6. ¡Gracias por apoyar Tierras Fantásticas!"
+      "tellraw @a [{\"text\":\"{player}\",\"color\":\"red\"},{\"text\":\" ahora es \",\"color\":\"gold\"},{\"text\":\"Dragón\",\"color\":\"red\",\"bold\":true},{\"text\":\". ¡Gracias por apoyar Tierras Fantásticas!\",\"color\":\"gold\"}]"
     ]
   },
   {

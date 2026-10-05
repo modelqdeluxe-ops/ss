@@ -194,10 +194,11 @@ export function createStore(db) {
     const names = JSON.stringify(players.map((p) => p.name.toLowerCase()));
     const { results } = await db
       .prepare(
-        `SELECT id, username, commands FROM deliveries
-         WHERE (status = 'pending' OR (status = 'sent' AND sent_at < ?))
-           AND lower(username) IN (SELECT value FROM json_each(?))
-         ORDER BY id LIMIT ${MAX_BATCH}`,
+        `SELECT d.id, d.username, d.commands, o.product_id, o.quantity FROM deliveries d
+         JOIN orders o ON o.id = d.order_id
+         WHERE (d.status = 'pending' OR (d.status = 'sent' AND d.sent_at < ?))
+           AND lower(d.username) IN (SELECT value FROM json_each(?))
+         ORDER BY d.id LIMIT ${MAX_BATCH}`,
       )
       .bind(ms - RESEND_MS, names)
       .all();
@@ -211,7 +212,13 @@ export function createStore(db) {
         .bind(ms, JSON.stringify(results.map((r) => r.id)))
         .run();
     }
-    return results.map((r) => ({ id: r.id, player: r.username, commands: JSON.parse(r.commands) }));
+    return results.map((r) => ({
+      id: r.id,
+      player: r.username,
+      productId: r.product_id,
+      quantity: r.quantity,
+      commands: JSON.parse(r.commands),
+    }));
   }
 
   async function serverStatus() {
