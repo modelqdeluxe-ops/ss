@@ -15,8 +15,8 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
   - **Web** y **Discord** (de oro, debajo de Opciones y Salir). *Web* abre `web.url`. *Discord* pide al widget de
     Discord del servidor una invitación del propio servidor (no de una persona, y siempre vigente); si no responde,
     usa `discord.url`. Hace falta tener activado el widget en *Ajustes del servidor → Widget*.
-  - Los botones de oro tienen su propio brillo (distinto al del emblema): el oro late suave y aparecen chispitas en
-    el borde.
+  - Los botones de oro tienen la misma línea luminosa del emblema, pero más suave: justo después de que el destello
+    cruza el emblema, pasa en cascada por el botón del servidor, Web y Discord.
   - Sin textos de Mojang, versión, Forge ni Realms. Idioma y accesibilidad siguen en *Opciones*.
 - **Música de TF** en la pantalla de carga y el menú: empieza en cuanto arranca el juego, suena en bucle con fundidos
   y respeta los volúmenes *General* y *Música* de las opciones. Se apaga con un fundido al entrar a un mundo o al
@@ -31,7 +31,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.8.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.9.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 
@@ -56,8 +56,8 @@ y `discord.url` el enlace de reserva si el widget no responde.
 - Fondo del menú: `src/main/resources/assets/tfclient/textures/gui/menu_background.png` (16:9).
 - Emblema: `src/main/resources/assets/tfclient/textures/gui/logo.png` (PNG con transparencia).
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
-- Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png` y `sparkle.png` a partir de
-  `logo.png` (vuelve a ejecutarlo si cambias el emblema).
+- Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png`, `sparkle.png` y
+  `button_shine.png` (la línea luminosa de los botones de oro) a partir de `logo.png` (vuelve a ejecutarlo si cambias el emblema).
 - Botones: `tools/gen_buttons.py` genera `button_slice.png` (azul noche) y `button_slice_primary.png` (oro), en tres
   piezas: puntas de 16 píxeles de interfaz a tamaño fijo y centro uniforme que se estira al ancho de cada botón
   (3 estados apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).

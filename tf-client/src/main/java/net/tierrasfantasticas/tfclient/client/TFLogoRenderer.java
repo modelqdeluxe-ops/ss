@@ -14,8 +14,8 @@ import net.minecraft.util.Mth;
  */
 public final class TFLogoRenderer {
     private static final long FLOAT_MS = 6000L;      // un vaivén completo
-    private static final long SHINE_CYCLE_MS = 7000L; // cada cuánto pasa el destello
-    private static final long SHINE_MS = 3300L;       // lo que tarda en cruzar
+    static final long SHINE_CYCLE_MS = 7000L; // cada cuánto pasa el destello
+    static final long SHINE_MS = 3300L;       // lo que tarda en cruzar
     private static final int SHINE_COLS = 8;
     private static final int SHINE_ROWS = 5;
     private static final float GLOW_PAD = 0.25f;      // margen del halo (ver gen_logo_fx.py)

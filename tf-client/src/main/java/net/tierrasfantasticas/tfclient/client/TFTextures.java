@@ -27,6 +27,8 @@ public enum TFTextures {
     LOGO_SHINE("logo_shine.png", Mode.NO_MIPMAPS),
     /** Chispa de la gema de la corona. */
     SPARKLE("sparkle.png"),
+    /** Línea luminosa de los botones de oro (la del emblema, más suave). */
+    BUTTON_SHINE("button_shine.png", Mode.NO_MIPMAPS),
     /** Botones en tres piezas (puntas fijas y centro estirable; 3 estados apilados). Ver TFButtonTheme. */
     BUTTON_SLICE("button_slice.png"),
     BUTTON_SLICE_PRIMARY("button_slice_primary.png");

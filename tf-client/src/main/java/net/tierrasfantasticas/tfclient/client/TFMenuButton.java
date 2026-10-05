@@ -17,10 +17,17 @@ import net.tierrasfantasticas.tfclient.TFConfig;
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
     private final boolean primary;
+    /** Orden en que le pasa la línea luminosa (0 = primero). */
+    private int shineOrder;
 
     public TFMenuButton(int x, int y, int width, int height, Component message, OnPress onPress, boolean primary) {
         super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
         this.primary = primary;
+    }
+
+    private TFMenuButton shineOrder(int order) {
+        this.shineOrder = order;
+        return this;
     }
 
     /** Texto con la fuente de TF. */
@@ -31,17 +38,17 @@ public class TFMenuButton extends Button {
     /** Botón principal: conexión directa a Tierras Fantásticas. */
     public static TFMenuButton server(int x, int y, int width) {
         return new TFMenuButton(x, y, width, 20, label(TFConfig.serverName()),
-                button -> TFServer.join(Minecraft.getInstance().screen), true);
+                button -> TFServer.join(Minecraft.getInstance().screen), true).shineOrder(0);
     }
 
     /** Botón de la web del servidor. */
     public static TFMenuButton web(int x, int y, int width) {
-        return new TFMenuButton(x, y, width, 20, label("Web"), button -> openWeb(), true);
+        return new TFMenuButton(x, y, width, 20, label("Web"), button -> openWeb(), true).shineOrder(1);
     }
 
     /** Botón del Discord del servidor (invitación del servidor, no de una persona). */
     public static TFMenuButton discord(int x, int y, int width) {
-        return new TFMenuButton(x, y, width, 20, label("Discord"), button -> TFDiscord.open(), true);
+        return new TFMenuButton(x, y, width, 20, label("Discord"), button -> TFDiscord.open(), true).shineOrder(2);
     }
 
     private static void openWeb() {
@@ -66,9 +73,9 @@ public class TFMenuButton extends Button {
         int state = !this.active ? 2 : hot ? 1 : 0;
         TFButtonTheme.drawPlate(g, texture, getX(), getY(), getWidth(), getHeight(), state, this.alpha);
         if (primary && this.active) {
-            TFButtonTheme.drawGoldShimmer(g, getX(), getY(), getWidth(), getHeight(), state, this.alpha, getX() * 31 + getY());
-            // Placa de oro: letras oscuras, sin sombra
+            // Placa de oro: letras oscuras, sin sombra, y la línea luminosa del emblema (más suave) por encima
             TFButtonTheme.drawLabel(g, getMessage(), getX(), getY(), getWidth(), getHeight(), hot ? 0x241404 : 0x34200A, this.alpha, false);
+            TFButtonTheme.drawGoldSweep(g, getX(), getY(), getWidth(), getHeight(), this.alpha, shineOrder);
         } else {
             int color = !this.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
             TFButtonTheme.drawLabel(g, getMessage(), getX(), getY(), getWidth(), getHeight(), color, this.alpha, true);

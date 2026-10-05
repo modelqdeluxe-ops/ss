@@ -3,6 +3,7 @@
 - logo_glow.png: halo difuminado dorado (arriba) y azul zafiro (abajo) que late detrás del emblema.
 - logo_shine.png: hoja de fotogramas (8x5) del destello diagonal que cruza el emblema, recortado a su silueta.
 - sparkle.png: chispa de cuatro puntas que brilla en la gema de la corona.
+- button_shine.png: la misma línea luminosa del emblema, más suave, para los botones de oro.
 Uso: python3 tools/gen_logo_fx.py
 """
 import math
@@ -72,3 +73,19 @@ spark = Image.alpha_composite(halo.filter(ImageFilter.GaussianBlur(S * 0.06)), s
 spark = spark.resize((128, 128), Image.LANCZOS)
 spark.save(os.path.join(GUI, "sparkle.png"), optimize=True)
 print("sparkle.png", spark.size)
+
+# --- Línea luminosa de los botones de oro: mismo perfil que la del emblema, más suave ---
+BW, BH = 256, 64
+band = Image.new("L", (BW, BH), 0)
+px = band.load()
+for y in range(BH):
+    for x in range(BW):
+        # misma inclinación que en el emblema (20 grados): la textura se dibuja 2.4 veces más ancha que alta
+        u = x / BW + (y / BH - 0.5) * math.tan(angle) / 2.4
+        d = u - 0.5
+        v = math.exp(-(d / 0.07) ** 2) * 0.85 + math.exp(-((d + 0.09) / 0.14) ** 2) * 0.35
+        px[x, y] = int(min(1.0, v) * 255)
+shine = Image.new("RGBA", (BW, BH), (255, 244, 214, 0))
+shine.putalpha(band)
+shine.save(os.path.join(GUI, "button_shine.png"), optimize=True)
+print("button_shine.png", shine.size)
