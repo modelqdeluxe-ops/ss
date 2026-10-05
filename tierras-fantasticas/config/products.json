@@ -1458,7 +1458,7 @@
     ],
     "rarity": "Mítico",
     "tagline": "La tormenta hecha acero",
-    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas y casco.",
+    "description": "Armas cargadas de electricidad con rayos animados: cuchillo, guadaña, tridente, armadura, alas, mochila y casco.",
     "image": "img/crates/lightning.webp",
     "keyImage": "img/keys/lightning.webp",
     "price": 499,
@@ -1471,6 +1471,10 @@
       {
         "id": "knife",
         "name": "Cuchillo"
+      },
+      {
+        "id": "backpack",
+        "name": "Mochila"
       },
       {
         "id": "axe",
@@ -2196,7 +2200,7 @@
     ],
     "rarity": "Mítico",
     "tagline": "Fuego y escamas de dragón",
-    "description": "Armas de lava y escamas rojas: gran espada, guadaña, tridente, armadura completa, alas y casco.",
+    "description": "Armas de lava y escamas rojas: gran espada, guadaña, tridente, bandera, mochila, armadura completa, alas y casco.",
     "image": "img/crates/littledragon.webp",
     "keyImage": "img/keys/lava.webp",
     "price": 499,
@@ -2209,6 +2213,14 @@
       {
         "id": "greatsword",
         "name": "Gran espada"
+      },
+      {
+        "id": "backpack",
+        "name": "Mochila"
+      },
+      {
+        "id": "flag",
+        "name": "Bandera"
       },
       {
         "id": "axe",
@@ -2539,6 +2551,10 @@
       {
         "id": "greatsword",
         "name": "Gran espada"
+      },
+      {
+        "id": "backpack",
+        "name": "Mochila"
       },
       {
         "id": "axe",
