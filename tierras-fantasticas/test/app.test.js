@@ -81,8 +81,11 @@ async function pay(orderId, changes = {}, type = 'checkout.session.completed') {
 // --- API de Discord simulada ---
 const discordCalls = [];
 const announcements = [];
+// ¿Está el usuario de Discord en el servidor de Discord de Tierras Fantásticas?
 let memberExists = true;
 let failRoles = false;
+// El usuario que devuelve Discord al iniciar sesión.
+let discordProfile = { id: '111111111111111111', username: 'alex', global_name: 'Alex', avatar: null };
 
 function startFakeDiscord() {
   const server = http.createServer(async (req, res) => {
@@ -99,14 +102,23 @@ function startFakeDiscord() {
       if (form.get('code') !== 'good-code') return send(400, { error: 'invalid_grant' });
       return send(200, { access_token: 'user-token', expires_in: 604800 });
     }
-    if (req.url === '/users/@me') return send(200, { id: '111111111111111111', username: 'alex', global_name: 'Alex', avatar: null });
+    if (req.url === '/users/@me') return send(200, discordProfile);
+    if (/^\/users\/@me\/guilds\/\d+\/member$/.test(req.url)) {
+      if (req.headers.authorization !== 'Bearer user-token') return send(401, { message: '401: Unauthorized' });
+      return memberExists ? send(200, { roles: [] }) : send(404, { message: 'Unknown Guild' });
+    }
     if (req.url === '/webhook') {
       announcements.push(JSON.parse(raw));
       return send(204);
     }
     if (req.headers.authorization !== 'Bot bot-token') return send(401, { message: '401: Unauthorized' });
     if (/^\/guilds\/\d+\/members\/\d+$/.test(req.url) && req.method === 'PUT') {
-      return memberExists ? send(204) : send(201, { user: {} });
+      if (memberExists) return send(204);
+      memberExists = true;
+      return send(201, { user: {} });
+    }
+    if (/^\/guilds\/\d+\/members\/\d+$/.test(req.url) && req.method === 'GET') {
+      return memberExists ? send(200, { roles: [] }) : send(404, { message: 'Unknown Member' });
     }
     if (/^\/guilds\/\d+\/members\/\d+\/roles\/\d+$/.test(req.url) && req.method === 'PUT') {
       return failRoles ? send(403, { message: 'Missing Permissions' }) : send(204);
@@ -468,36 +480,104 @@ test('el staff puede cambiar o quitar un rango desde el juego', async () => {
   assert.strictEqual((await (await get('/api/player/Staff_Rank')).json()).rank, null);
 });
 
-// --- Discord y cuentas ---
+// --- Cuentas y Discord ---
 const cookieValue = (res, name) =>
   res.headers.getSetCookie().map((c) => c.split(';')[0]).find((c) => c.startsWith(`${name}=`));
 
-// Recorre el login de Discord y devuelve la cookie de sesión.
-async function loginDiscord() {
-  const start = await get(`/auth/discord?return=${encodeURIComponent('/cuenta')}`);
+// Crea la cuenta de un jugador (que el servidor ya conoce) y devuelve su cookie de sesión.
+async function register(name, password = 'contraseña-segura') {
+  await seen(name);
+  const res = await post('/api/auth/register', { name, password });
+  assert.strictEqual(res.status, 200, (await res.clone().json()).error);
+  return cookieValue(res, 'tf_session');
+}
+
+// Pasa por Discord (con o sin sesión) y devuelve la respuesta final de la web.
+async function viaDiscord(cookie) {
+  const start = await get(`/auth/discord?return=${encodeURIComponent('/cuenta')}`, cookie ? { Cookie: cookie } : {});
   assert.strictEqual(start.status, 302);
   const authorize = new URL(start.headers.get('location'));
   assert.strictEqual(authorize.origin, 'https://discord.com');
   assert.strictEqual(authorize.searchParams.get('redirect_uri'), 'http://tienda.test/auth/discord/callback');
+  assert.match(authorize.searchParams.get('scope'), /guilds\.members\.read/);
   const state = authorize.searchParams.get('state');
   const stateCookie = cookieValue(start, 'tf_oauth_state');
-
-  const cb = await get(`/auth/discord/callback?code=good-code&state=${state}`, { Cookie: stateCookie });
-  assert.strictEqual(cb.headers.get('location'), '/cuenta?discord=ok');
-  return cookieValue(cb, 'tf_discord');
+  return get(`/auth/discord/callback?code=good-code&state=${state}`, { Cookie: [stateCookie, cookie].filter(Boolean).join('; ') });
 }
 
-test('login de Discord rechaza un state falso y no permite redirigir fuera de la web', async () => {
+test('crear cuenta: solo con un jugador que el servidor conoce, una por jugador y contraseña segura', async () => {
+  assert.strictEqual((await post('/api/auth/register', { name: 'Nadie_Aqui', password: 'contraseña-segura' })).status, 404);
+  await seen('Cuenta_MC');
+  assert.strictEqual((await post('/api/auth/register', { name: 'Cuenta_MC', password: 'corta' })).status, 400);
+  assert.strictEqual((await post('/api/auth/register', { name: 'a b', password: 'contraseña-segura' })).status, 400);
+
+  const res = await post('/api/auth/register', { name: 'cuenta_mc', password: 'contraseña-segura' });
+  assert.strictEqual(res.status, 200);
+  const { user } = await res.json();
+  assert.strictEqual(user.name, 'Cuenta_MC');
+  assert.strictEqual(user.uuid, uuidOf('Cuenta_MC'));
+  assert.strictEqual(user.discord, null);
+  const cookie = cookieValue(res, 'tf_session');
+  assert.ok(cookie);
+  assert.ok(res.headers.getSetCookie()[0].includes('HttpOnly'));
+
+  // La contraseña nunca se guarda tal cual.
+  const row = env.DB.raw.prepare('SELECT password FROM users WHERE uuid = ?').get(uuidOf('Cuenta_MC'));
+  assert.match(row.password, /^pbkdf2\$100000\$/);
+  assert.ok(!row.password.includes('contraseña-segura'));
+
+  // El mismo jugador no puede tener otra cuenta.
+  assert.strictEqual((await post('/api/auth/register', { name: 'Cuenta_MC', password: 'otra-contraseña' })).status, 409);
+
+  const me = await (await get('/api/me', { Cookie: cookie })).json();
+  assert.strictEqual(me.user.name, 'Cuenta_MC');
+});
+
+test('entrar con nombre y contraseña, la sesión se renueva y cerrar sesión', async () => {
+  await register('Entrar_MC', 'mi-clave-123');
+  assert.strictEqual((await post('/api/auth/login', { name: 'Entrar_MC', password: 'mala-clave' })).status, 401);
+  assert.strictEqual((await post('/api/auth/login', { name: 'Fantasma', password: 'mi-clave-123' })).status, 401);
+
+  const res = await post('/api/auth/login', { name: 'entrar_mc', password: 'mi-clave-123' });
+  assert.strictEqual(res.status, 200);
+  const cookie = cookieValue(res, 'tf_session');
+  assert.match(res.headers.getSetCookie()[0], /Max-Age=5184000/);
+
+  // Cada visita alarga la sesión.
+  const me = await get('/api/me', { Cookie: cookie });
+  assert.strictEqual((await me.json()).user.name, 'Entrar_MC');
+  assert.ok(cookieValue(me, 'tf_session'));
+
+  const out = await post('/auth/logout', null, cookie);
+  assert.match(out.headers.getSetCookie()[0], /Max-Age=0/);
+  // Una cookie manipulada no sirve.
+  assert.strictEqual((await (await get('/api/me', { Cookie: 'tf_session=eyJ1dWlkIjoiMSJ9.firma' })).json()).user, null);
+});
+
+test('tras muchos intentos fallidos la cuenta se bloquea un rato', async () => {
+  await register('Bloqueo_MC', 'clave-buena-1');
+  for (let i = 0; i < 8; i++) await post('/api/auth/login', { name: 'Bloqueo_MC', password: `mala-${i}-xxxx` });
+  const locked = await post('/api/auth/login', { name: 'Bloqueo_MC', password: 'clave-buena-1' });
+  assert.strictEqual(locked.status, 429);
+});
+
+test('cambiar la contraseña cierra las sesiones viejas', async () => {
+  const cookie = await register('Cambio_MC', 'clave-vieja-1');
+  assert.strictEqual((await post('/api/account/password', { current: 'mala', password: 'clave-nueva-1' }, cookie)).status, 401);
+  const res = await post('/api/account/password', { current: 'clave-vieja-1', password: 'clave-nueva-1' }, cookie);
+  assert.strictEqual(res.status, 200);
+  const fresh = cookieValue(res, 'tf_session');
+  assert.strictEqual((await (await get('/api/me', { Cookie: cookie })).json()).user, null);
+  assert.strictEqual((await (await get('/api/me', { Cookie: fresh })).json()).user.name, 'Cambio_MC');
+  assert.strictEqual((await post('/api/auth/login', { name: 'Cambio_MC', password: 'clave-nueva-1' })).status, 200);
+});
+
+test('Discord: rechaza un state falso y no permite redirigir fuera de la web', async () => {
   const start = await get(`/auth/discord?return=${encodeURIComponent('//evil.com')}`);
   const stateCookie = cookieValue(start, 'tf_oauth_state');
   const cb = await get('/auth/discord/callback?code=good-code&state=falso', { Cookie: stateCookie });
   assert.strictEqual(cb.headers.get('location'), '/?discord=error');
-  assert.strictEqual(cookieValue(cb, 'tf_discord'), undefined);
-
-  // Una cookie de sesión manipulada no sirve.
-  const me = await (await get('/api/me', { Cookie: 'tf_discord=eyJpZCI6IjEifQ.firma' })).json();
-  assert.strictEqual(me.discord, null);
-  assert.strictEqual((await post('/api/account/link')).status, 401);
+  assert.strictEqual(cookieValue(cb, 'tf_session'), undefined);
 });
 
 test('sin SESSION_SECRET la web crea y guarda su propia clave de sesión', async () => {
@@ -508,40 +588,80 @@ test('sin SESSION_SECRET la web crea y guarda su propia clave de sesión', async
   assert.match(row.value, /^[0-9a-f]{64}$/);
 });
 
-test('la cuenta se vincula con Minecraft escribiendo el código en el juego', async () => {
-  const cookie = await loginDiscord();
-  let me = await (await get('/api/me', { Cookie: cookie })).json();
-  assert.deepStrictEqual(me.discord, { id: '111111111111111111', username: 'Alex', avatar: null });
-  assert.strictEqual(me.minecraft, null);
+test('conectar Discord guarda su @ y comprueba que está en el servidor de Tierras Fantásticas', async () => {
+  memberExists = true;
+  const cookie = await register('Alex_MC');
+  const cb = await viaDiscord(cookie);
+  assert.strictEqual(cb.headers.get('location'), '/cuenta?discord=ok');
+  const { user } = await (await get('/api/me', { Cookie: cookie })).json();
+  assert.strictEqual(user.discord.id, '111111111111111111');
+  assert.strictEqual(user.discord.username, 'alex');
+  assert.strictEqual(user.discord.name, 'Alex');
+  assert.strictEqual(user.discord.member, true);
 
-  const { code, command } = await (await post('/api/account/link', null, cookie)).json();
-  assert.match(code, /^[A-Z2-9]{6}$/);
-  assert.strictEqual(command, `/tf vincular ${code}`);
-  assert.strictEqual((await (await get('/api/account/link', { Cookie: cookie })).json()).pending.code, code);
+  // Ya puede entrar con Discord sin contraseña.
+  const login = await viaDiscord(null);
+  assert.strictEqual(login.headers.get('location'), '/cuenta?discord=ok');
+  const session = cookieValue(login, 'tf_session');
+  assert.strictEqual((await (await get('/api/me', { Cookie: session })).json()).user.name, 'Alex_MC');
 
-  // Un código falso no vincula nada.
-  const bad = await (await poll(['Alex_MC'], [], { links: [{ code: 'ZZZZZZ', name: 'Alex_MC', uuid: uuidOf('Alex_MC') }] })).json();
-  assert.deepStrictEqual(bad.linkResults, [{ uuid: uuidOf('Alex_MC'), ok: false, account: null }]);
-
-  const ok = await (await poll(['Alex_MC'], [], { links: [{ code: code.toLowerCase(), name: 'Alex_MC', uuid: uuidOf('Alex_MC') }] })).json();
-  assert.deepStrictEqual(ok.linkResults, [{ uuid: uuidOf('Alex_MC'), ok: true, account: 'Alex' }]);
-  // El código es de un solo uso.
-  const reuse = await (await poll(['Alex_MC'], [], { links: [{ code, name: 'Alex_MC', uuid: uuidOf('Alex_MC') }] })).json();
-  assert.strictEqual(reuse.linkResults[0].ok, false);
-
-  me = await (await get('/api/me', { Cookie: cookie })).json();
-  assert.strictEqual(me.minecraft.name, 'Alex_MC');
-  assert.strictEqual(me.minecraft.uuid, uuidOf('Alex_MC'));
-  assert.strictEqual((await (await get('/api/account/link', { Cookie: cookie })).json()).pending, null);
+  // Ese Discord no se puede conectar a otro jugador.
+  const other = await register('Otro_Jugador');
+  assert.strictEqual((await viaDiscord(other)).headers.get('location'), '/cuenta?discord=taken');
 });
 
-test('comprar con Discord da el rol, anuncia la compra y sale en "mis compras"', async () => {
+test('entrar con un Discord que no tiene cuenta pide crearla primero', async () => {
+  const saved = discordProfile;
+  discordProfile = { id: '444444444444444444', username: 'nuevo', global_name: null, avatar: null };
+  try {
+    const res = await viaDiscord(null);
+    assert.strictEqual(res.headers.get('location'), '/cuenta?discord=noaccount');
+    assert.strictEqual(cookieValue(res, 'tf_session'), undefined);
+  } finally {
+    discordProfile = saved;
+  }
+});
+
+test('si no está en el servidor de Discord, el bot lo mete; sin bot se avisa y se puede volver a comprobar', async () => {
+  const saved = discordProfile;
+  discordProfile = { id: '555555555555555555', username: 'fuera', global_name: 'Fuera', avatar: null };
+  try {
+    memberExists = false;
+    const a = await register('Fuera_MC');
+    assert.strictEqual((await viaDiscord(a)).headers.get('location'), '/cuenta?discord=ok');
+    assert.ok(discordCalls.some((c) => c.method === 'PUT' && c.url === '/guilds/333333333333333333/members/555555555555555555'));
+
+    // Sin bot: no se le puede meter, queda como "no está en el servidor".
+    memberExists = false;
+    const noBot = { ...env, DISCORD_BOT_TOKEN: undefined };
+    const callNoBot = (path, headers = {}) => worker.fetch(new Request(`http://tienda.test${path}`, { redirect: 'manual', headers }), noBot);
+    await post('/api/account/discord/unlink', null, a);
+    const start = await callNoBot('/auth/discord', { Cookie: a });
+    assert.doesNotMatch(new URL(start.headers.get('location')).searchParams.get('scope'), /guilds\.join/);
+    const state = new URL(start.headers.get('location')).searchParams.get('state');
+    const cb = await callNoBot(`/auth/discord/callback?code=good-code&state=${state}`, { Cookie: `${cookieValue(start, 'tf_oauth_state')}; ${a}` });
+    assert.strictEqual(cb.headers.get('location'), '/cuenta?discord=notmember');
+    assert.strictEqual((await (await get('/api/me', { Cookie: a })).json()).user.discord.member, false);
+
+    // Se une por su cuenta y lo vuelve a comprobar (con el bot).
+    memberExists = true;
+    const check = await (await post('/api/account/discord/check', null, a)).json();
+    assert.strictEqual(check.member, true);
+    assert.strictEqual((await (await get('/api/me', { Cookie: a })).json()).user.discord.member, true);
+  } finally {
+    discordProfile = saved;
+    memberExists = true;
+  }
+});
+
+test('comprar con la sesión iniciada da el rol, anuncia la compra y sale en "mis compras"', async () => {
   received.length = 0;
   discordCalls.length = 0;
   announcements.length = 0;
   memberExists = true;
 
-  const cookie = await loginDiscord();
+  const res = await post('/api/auth/login', { name: 'Alex_MC', password: 'contraseña-segura' });
+  const cookie = cookieValue(res, 'tf_session');
   const list = await (await get('/api/products')).json();
   assert.strictEqual(list.find((p) => p.id === 'rango-hechicero').discordRole, true);
 
@@ -557,21 +677,17 @@ test('comprar con Discord da el rol, anuncia la compra y sale en "mis compras"',
   assert.match(announcements[0].embeds[0].description, /<@111111111111111111>.*Rango Hechicero/);
 
   const order = await (await get(`/api/order/${id}`)).json();
-  assert.deepStrictEqual(order.discord, { username: 'Alex', status: 'granted' });
-  const stored = env.DB.raw.prepare('SELECT * FROM orders WHERE id = ?').get(id);
-  assert.ok(!JSON.stringify(stored).includes('user-token'));
+  assert.deepStrictEqual(order.discord, { username: 'alex', status: 'granted' });
 
   const { orders } = await (await get('/api/account/orders', { Cookie: cookie })).json();
   assert.ok(orders.some((o) => o.id === id && o.status === 'delivered'));
-  // El rango sale en la cuenta.
   const me = await (await get('/api/me', { Cookie: cookie })).json();
-  assert.strictEqual(me.minecraft.rank.id, 'rango-hechicero');
+  assert.strictEqual(me.user.rank.id, 'rango-hechicero');
 });
 
-test('sin iniciar sesión, el rol va a la cuenta de Discord vinculada al jugador', async () => {
+test('sin iniciar sesión, el rol va al Discord conectado a la cuenta del jugador', async () => {
   discordCalls.length = 0;
   await seen('Alex_MC');
-  // Alex_MC ya tiene Hechicero (prueba anterior): mejora a Rey.
   products.find((p) => p.id === 'rango-rey').discordRoles = [ROLE_ID];
   try {
     const id = await checkout({ productId: 'rango-rey', username: 'Alex_MC' });
@@ -582,28 +698,11 @@ test('sin iniciar sesión, el rol va a la cuenta de Discord vinculada al jugador
   }
 });
 
-test('si el comprador no está en el Discord, el bot lo añade con el rol', async () => {
-  discordCalls.length = 0;
-  memberExists = false;
-  try {
-    const cookie = await loginDiscord();
-    await seen('Nuevo_MC');
-    const id = await checkout({ productId: 'rango-hechicero', username: 'Nuevo_MC' }, cookie);
-    await pay(id);
-    const join = discordCalls.find((c) => c.url === '/guilds/333333333333333333/members/111111111111111111');
-    assert.deepStrictEqual(JSON.parse(join.body), { access_token: 'user-token', roles: [ROLE_ID] });
-    assert.ok(!discordCalls.some((c) => c.url.includes('/roles/')));
-    assert.strictEqual((await (await get(`/api/order/${id}`)).json()).discord.status, 'joined');
-  } finally {
-    memberExists = true;
-  }
-});
-
 test('un fallo en Discord no impide la entrega en el juego', async () => {
   received.length = 0;
   failRoles = true;
   try {
-    const cookie = await loginDiscord();
+    const cookie = cookieValue(await post('/api/auth/login', { name: 'Alex_MC', password: 'contraseña-segura' }), 'tf_session');
     await seen('Fallo_MC');
     const id = await checkout({ productId: 'rango-hechicero', username: 'Fallo_MC' }, cookie);
     assert.strictEqual((await pay(id)).status, 'queued');
@@ -615,4 +714,9 @@ test('un fallo en Discord no impide la entrega en el juego', async () => {
   } finally {
     failRoles = false;
   }
+});
+
+test('el /tf vincular del mod antiguo ya no vincula nada', async () => {
+  const res = await (await poll(['Viejo_Mod'], [], { links: [{ code: 'ABCDEF', name: 'Viejo_Mod', uuid: uuidOf('Viejo_Mod') }] })).json();
+  assert.deepStrictEqual(res.linkResults, [{ uuid: uuidOf('Viejo_Mod'), ok: false, account: null }]);
 });

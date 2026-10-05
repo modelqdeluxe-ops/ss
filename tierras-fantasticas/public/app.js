@@ -1,4 +1,4 @@
-// Tierras Fantásticas: menú, estado del servidor, tienda, crates, cuenta de Discord y compra con Stripe.
+// Tierras Fantásticas: menú, estado del servidor, tienda, crates, cuentas de jugador con Discord y compra con Stripe.
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -6,6 +6,8 @@
   const escapeHtml = (s) =>
     String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const asset = (path) => (/^(https?:)?\//.test(path) ? path : `/${path}`);
+  const ICON_DISCORD =
+    '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.9-9.7-3.6-13.7zM8.3 15.3c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7.4 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>';
   const ICON_LOCK =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
   const ICON_ARROW =
@@ -271,14 +273,14 @@
     const q = ownedQuote(p);
     if (!q) return '';
     if (q.owned) {
-      const mine = me.minecraft.rank.id === p.id;
+      const mine = me.user.rank.id === p.id;
       return `<span class="price owned">${mine ? 'Tu rango' : 'Incluido'}</span><button class="btn btn-ghost btn-sm" type="button" disabled>${mine ? '✓ Lo tienes' : 'Ya incluido'}</button>`;
     }
     return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><button class="btn btn-gold btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>`;
   }
 
   function rerenderRanks() {
-    if (page === 'tienda' && currentCategory === 'rangos' && me.minecraft?.rank) selectCategory('rangos', false);
+    if (page === 'tienda' && currentCategory === 'rangos' && me.user?.rank) selectCategory('rangos', false);
   }
 
   function renderCompare() {
@@ -489,17 +491,17 @@
         <input id="quantity" name="quantity" type="number" inputmode="numeric" min="1" max="10" value="1">
       </div>
 
-      <div class="discord-box" id="discord-box" hidden>
+      <div class="discord-box" id="discord-box">
         <div class="discord-linked" id="discord-linked" hidden>
-          <img id="discord-avatar" alt="" width="36" height="36">
+          <img id="discord-avatar" alt="" width="36" height="36" class="pixel-img">
           <div>
-            <div>Discord: <strong id="discord-name"></strong></div>
+            <div>Tu cuenta: <strong id="discord-name"></strong></div>
             <div class="discord-hint" id="discord-linked-hint"></div>
           </div>
-          <button type="button" class="link-btn" id="discord-logout">Cambiar</button>
+          <a class="link-btn" href="/cuenta">Mi cuenta</a>
         </div>
         <div id="discord-unlinked" hidden>
-          <a class="btn btn-discord btn-block" id="discord-login" href="/auth/discord">Iniciar sesión con Discord</a>
+          <a class="btn btn-ghost btn-block" id="discord-login" href="/cuenta">Entrar o crear cuenta</a>
           <div class="discord-hint" id="discord-unlinked-hint"></div>
         </div>
       </div>
@@ -569,7 +571,7 @@
     paying = false;
     $('#pay-btn').textContent = 'Pagar con tarjeta';
     // Con la cuenta vinculada, el jugador ya se sabe.
-    $('#username').value = me.minecraft?.name || storageGet('tf-username');
+    $('#username').value = me.user?.name || storageGet('tf-username');
     player = null;
     renderPlayer();
     updateTotal();
@@ -640,38 +642,37 @@
     }
   }
 
-  // --- Cuenta (Discord) ---
-  let me = { discord: null, minecraft: null };
+  // --- Cuenta del jugador ---
+  let me = { user: null };
+  const discordAvatar = (d) => d?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
 
   async function loadMe() {
-    if (!config.discordLogin) return renderAccountChip();
     try {
       me = await (await fetch('/api/me')).json();
     } catch {
-      me = { discord: null, minecraft: null };
+      me = { user: null };
     }
     renderAccountChip();
   }
 
-  // Chip de la cabecera: "Entrar" o el avatar de la cuenta.
+  // Botón de la cabecera: "Entrar" o la cabeza y el nombre del jugador.
   function renderAccountChip() {
     $$('[data-account-chip]').forEach((chip) => {
-      chip.hidden = !config.discordLogin;
-      if (!config.discordLogin) return;
-      if (me.discord) {
-        chip.href = '/cuenta';
-        chip.classList.add('signed');
-        chip.innerHTML = `<img src="${escapeHtml(me.discord.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png')}" alt="" width="26" height="26"><span>${escapeHtml(me.discord.username)}</span>`;
-        chip.setAttribute('aria-label', `Mi cuenta (${me.discord.username})`);
-      } else {
-        chip.href = `/auth/discord?return=${encodeURIComponent(page === 'cuenta' ? '/cuenta' : location.pathname)}`;
+      chip.hidden = false;
+      chip.href = '/cuenta';
+      chip.classList.toggle('signed', Boolean(me.user));
+      if (me.user) {
+        chip.innerHTML = `<img src="${escapeHtml(me.user.head)}" alt="" width="26" height="26" class="pixel-img"><span>${escapeHtml(me.user.name)}</span>`;
+        chip.setAttribute('aria-label', `Mi cuenta (${me.user.name})`);
+      } else if (page !== 'cuenta') {
+        chip.href = `/cuenta?return=${encodeURIComponent(location.pathname + location.hash)}`;
       }
     });
   }
 
-  // Precio de mejora que ve el jugador vinculado en las tarjetas de rangos (el real lo calcula el servidor).
+  // Precio de mejora que ve el jugador con sesión en las tarjetas de rangos (el real lo calcula el servidor).
   function ownedQuote(p) {
-    const owned = me.minecraft?.rank;
+    const owned = me.user?.rank;
     if (!owned || p?.category !== 'rangos' || !p.tier) return null;
     if (owned.tier >= p.tier) return { owned: true };
     const from = products.find((x) => x.id === owned.id);
@@ -679,24 +680,20 @@
   }
 
   function renderDiscordBox() {
-    $('#discord-box').hidden = !config.discordLogin;
-    if (!config.discordLogin) return;
-    const roleText = selected.discordRole
-      ? 'Recibirás el rol en nuestro Discord automáticamente.'
-      : 'Te mencionaremos en el anuncio de Discord.';
-
-    $('#discord-linked').hidden = !me.discord;
-    $('#discord-unlinked').hidden = Boolean(me.discord);
-    if (me.discord) {
-      $('#discord-name').textContent = me.discord.username;
-      $('#discord-avatar').src = me.discord.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-      $('#discord-linked-hint').textContent = roleText;
+    const user = me.user;
+    $('#discord-linked').hidden = !user;
+    $('#discord-unlinked').hidden = Boolean(user);
+    if (user) {
+      $('#discord-name').textContent = user.name;
+      $('#discord-avatar').src = user.head;
+      $('#discord-linked-hint').textContent = user.discord
+        ? selected.discordRole
+          ? `Recibirás el rol en Discord (@${user.discord.username}).`
+          : `Te mencionaremos en Discord (@${user.discord.username}).`
+        : 'Conecta tu Discord en «Mi cuenta» para recibir el rol.';
     } else {
-      // Al volver de Discord reabrimos este mismo producto en esta misma página.
-      $('#discord-login').href = `/auth/discord?return=${encodeURIComponent(`${location.pathname}?buy=${selected.id}`)}`;
-      $('#discord-unlinked-hint').textContent = selected.discordRole
-        ? 'Opcional: inicia sesión para recibir también el rango en Discord y ver tus compras.'
-        : 'Opcional: inicia sesión para que te mencionemos en el anuncio y ver tus compras.';
+      $('#discord-login').href = `/cuenta?return=${encodeURIComponent(`${location.pathname}?buy=${selected.id}`)}`;
+      $('#discord-unlinked-hint').textContent = 'Opcional: con tu cuenta se rellena tu nombre, ves tus compras y recibes el rol de Discord.';
     }
   }
 
@@ -718,13 +715,8 @@
     }
     history.replaceState(null, '', `${location.pathname}${hash}`);
     if (cancelled) toast('Pago cancelado. No se ha realizado ningún cargo.');
-    if (buy) {
-      openCheckout(buy);
-      if (result === 'cancel') showError('No iniciaste sesión con Discord. Puedes comprar igualmente.');
-      if (result === 'error') showError('No se pudo iniciar sesión con Discord. Inténtalo de nuevo o compra sin ella.');
-    } else if (result === 'ok') {
-      toast('Sesión iniciada con Discord');
-    }
+    if (buy) openCheckout(buy);
+    else if (result === 'ok') toast('Sesión iniciada');
   }
 
   // --- Pago con Stripe ---
@@ -732,12 +724,6 @@
   let paying = false;
 
   if (sells) {
-    $('#discord-logout').addEventListener('click', async () => {
-      await fetch('/auth/logout', { method: 'POST' }).catch(() => {});
-      me = { discord: null, minecraft: null };
-      renderDiscordBox();
-      renderAccountChip();
-    });
     $('#username').addEventListener('input', scheduleLookup);
     qtyInput.addEventListener('input', updateTotal);
     $('#dialog-close').addEventListener('click', () => dialog.close());
@@ -788,115 +774,265 @@
     error: ['En revisión', 'bad'],
   };
 
-  async function initAccount() {
-    const root = $('#account');
-    if (!config.discordLogin) {
-      root.innerHTML = '<div class="panel account-card"><p class="muted">El inicio de sesión con Discord no está disponible ahora mismo.</p></div>';
-      return;
-    }
-    const params = new URLSearchParams(location.search);
-    if (params.get('discord')) {
-      if (params.get('discord') === 'error') toast('No se pudo iniciar sesión con Discord.');
-      history.replaceState(null, '', location.pathname);
-    }
-    if (!me.discord) {
-      root.innerHTML = `
-        <div class="panel account-card account-login reveal in">
-          <h2>Entra con tu Discord</h2>
-          <p class="muted">Vincula tu jugador de Minecraft, mira tus compras y recibe los roles de Discord de tus rangos.</p>
-          <a class="btn btn-discord btn-lg" href="/auth/discord?return=%2Fcuenta">Iniciar sesión con Discord</a>
-        </div>`;
-      return;
-    }
-    renderAccount();
+  const DISCORD_RESULT = {
+    ok: 'Discord conectado ✓',
+    notmember: 'Discord conectado, pero aún no estás en el servidor de Discord de Tierras Fantásticas.',
+    taken: 'Ese Discord ya está conectado a otro jugador.',
+    noaccount: 'Ese Discord no tiene cuenta todavía: crea tu cuenta con tu nombre de Minecraft y conéctalo después.',
+    cancel: 'Cancelaste el inicio de sesión en Discord.',
+    error: 'No se pudo conectar con Discord. Inténtalo de nuevo.',
+    off: 'Discord aún no está disponible en la web.',
+  };
+
+  // A dónde volver después de entrar (solo rutas de esta web).
+  function accountReturn() {
+    const ret = new URLSearchParams(location.search).get('return');
+    return ret && /^\/(?!\/)/.test(ret) ? ret : null;
   }
 
-  function renderAccount(code) {
-    const d = me.discord;
-    const mc = me.minecraft;
-    const rank = mc?.rank
-      ? `<span class="rank-pill" style="--rank:${escapeHtml(mc.rank.hex || '#e3b74c')}">${escapeHtml(mc.rank.prefix)}</span>`
+  async function initAccount() {
+    const params = new URLSearchParams(location.search);
+    const result = params.get('discord');
+    if (result && DISCORD_RESULT[result]) toast(DISCORD_RESULT[result]);
+    if (result) {
+      params.delete('discord');
+      history.replaceState(null, '', `${location.pathname}${params.toString() ? `?${params}` : ''}`);
+    }
+    if (me.user) renderAccount();
+    else renderAuth(result === 'noaccount' ? 'register' : 'login');
+  }
+
+  // --- Entrar / crear cuenta ---
+  function renderAuth(tab) {
+    const discordBtn = config.discordLogin
+      ? `<div class="auth-or"><span>o</span></div>
+         <a class="btn btn-discord btn-block" href="/auth/discord?return=${encodeURIComponent(accountReturn() || '/cuenta')}">${ICON_DISCORD} Entrar con Discord</a>
+         <p class="muted small center">Solo si ya conectaste tu Discord a tu cuenta.</p>`
+      : '';
+    $('#account').innerHTML = `
+      <div class="panel account-card auth-card">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" role="tab" data-tab="login" aria-selected="${tab === 'login'}">Entrar</button>
+          <button type="button" role="tab" data-tab="register" aria-selected="${tab === 'register'}">Crear cuenta</button>
+        </div>
+        <form id="auth-form" novalidate>
+          <div class="field">
+            <label for="auth-name">Tu nombre de Minecraft</label>
+            <input id="auth-name" autocomplete="username" autocapitalize="off" spellcheck="false" required minlength="3" maxlength="16" placeholder="Steve_123">
+            <div class="player-card" id="auth-player" aria-live="polite" hidden></div>
+          </div>
+          <div class="field">
+            <label for="auth-pass">Contraseña</label>
+            <input id="auth-pass" type="password" required minlength="8" maxlength="128">
+          </div>
+          <div class="field" id="auth-pass2-field">
+            <label for="auth-pass2">Repite la contraseña</label>
+            <input id="auth-pass2" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+          </div>
+          <p class="muted small" id="auth-note"></p>
+          <p class="error" id="auth-error" role="alert"></p>
+          <button class="btn btn-gold btn-lg btn-block" type="submit" id="auth-submit"></button>
+        </form>
+        ${discordBtn}
+      </div>`;
+    setAuthTab(tab);
+    $$('.auth-tabs [data-tab]').forEach((b) => b.addEventListener('click', () => setAuthTab(b.dataset.tab)));
+    $('#auth-name').addEventListener('input', () => authTab === 'register' && scheduleAuthLookup());
+    $('#auth-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitAuth();
+    });
+  }
+
+  let authTab = 'login';
+  let authLookupTimer = null;
+  let authSeq = 0;
+
+  function setAuthTab(tab) {
+    authTab = tab;
+    $$('.auth-tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    const register = tab === 'register';
+    $('#auth-pass2-field').hidden = !register;
+    $('#auth-pass').autocomplete = register ? 'new-password' : 'current-password';
+    $('#auth-submit').textContent = register ? 'Crear mi cuenta' : 'Entrar';
+    $('#auth-note').textContent = register
+      ? 'Usa tu nombre exacto de Minecraft: tienes que haber entrado al servidor al menos una vez. Contraseña de 8 caracteres o más.'
+      : '';
+    $('#auth-error').textContent = '';
+    $('#auth-player').hidden = true;
+    if (register && $('#auth-name').value) scheduleAuthLookup();
+  }
+
+  function scheduleAuthLookup() {
+    clearTimeout(authLookupTimer);
+    authLookupTimer = setTimeout(async () => {
+      const name = $('#auth-name').value.trim();
+      const box = $('#auth-player');
+      const seq = ++authSeq;
+      if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) {
+        box.hidden = !name;
+        box.className = 'player-card invalid';
+        box.innerHTML = '<span>Solo letras, números y _ (de 3 a 16).</span>';
+        return;
+      }
+      try {
+        const data = await (await fetch(`/api/player/${encodeURIComponent(name)}`)).json();
+        if (seq !== authSeq || authTab !== 'register') return;
+        box.hidden = false;
+        if (data.found) {
+          box.className = 'player-card found';
+          box.innerHTML = `<img src="${escapeHtml(data.head)}" alt="" width="40" height="40" class="pixel-img">
+            <div><div class="player-name"><b>${escapeHtml(data.name)}</b></div><span class="player-ok">✓ Jugador del servidor</span></div>`;
+        } else {
+          box.className = 'player-card missing';
+          box.innerHTML = `<span><b>${escapeHtml(name)}</b> nunca ha entrado al servidor. Entra una vez con ese nombre y vuelve.</span>`;
+        }
+      } catch {
+        /* sin conexión: lo dirá el servidor al enviar */
+      }
+    }, 350);
+  }
+
+  async function submitAuth() {
+    const name = $('#auth-name').value.trim();
+    const password = $('#auth-pass').value;
+    const error = (msg) => ($('#auth-error').textContent = msg);
+    if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return error('Escribe tu nombre de Minecraft (3-16 letras, números o _).');
+    if (authTab === 'register') {
+      if (password.length < 8) return error('La contraseña debe tener al menos 8 caracteres.');
+      if (password !== $('#auth-pass2').value) return error('Las contraseñas no coinciden.');
+    } else if (!password) {
+      return error('Escribe tu contraseña.');
+    }
+    error('');
+    const btn = $('#auth-submit');
+    btn.disabled = true;
+    try {
+      const res = await fetch(authTab === 'register' ? '/api/auth/register' : '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'No se pudo entrar.');
+      me = { user: data.user };
+      storageSet('tf-username', data.user.name);
+      const ret = accountReturn();
+      if (ret) {
+        location.href = ret;
+        return;
+      }
+      renderAccountChip();
+      renderAccount();
+      toast(authTab === 'register' ? `¡Bienvenido, ${data.user.name}! Conecta ahora tu Discord.` : `Hola, ${data.user.name}`);
+    } catch (err) {
+      error(err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // --- Mi cuenta ---
+  function renderAccount() {
+    const u = me.user;
+    const d = u.discord;
+    const rank = u.rank
+      ? `<span class="rank-pill" style="--rank:${escapeHtml(u.rank.hex || '#e3b74c')}">${escapeHtml(u.rank.prefix)}</span>`
       : '<span class="muted small">Sin rango</span>';
+    const invite = config.discordInvite || config.discordUrl;
+    let discordHtml;
+    if (d) {
+      discordHtml = `
+        <div class="account-who">
+          <img src="${escapeHtml(discordAvatar(d))}" alt="" width="56" height="56" class="round">
+          <div><b>${escapeHtml(d.name || d.username)}</b><span class="muted small">@${escapeHtml(d.username)}</span></div>
+        </div>
+        ${
+          d.member
+            ? '<p class="member-ok">✓ Miembro del Discord de Tierras Fantásticas</p>'
+            : `<p class="member-bad">✖ Aún no estás en el Discord de Tierras Fantásticas</p>
+               <div class="account-actions">
+                 <a class="btn btn-discord btn-sm" href="${escapeHtml(invite)}" target="_blank" rel="noopener">Unirme al Discord</a>
+                 <button class="btn btn-ghost btn-sm" type="button" id="discord-check">Ya me uní, comprobar</button>
+               </div>`
+        }
+        <button class="link-btn left" type="button" id="discord-unlink">Desconectar Discord</button>`;
+    } else if (config.discordLogin) {
+      discordHtml = `
+        <p class="muted">Conecta tu Discord para recibir los roles de tus rangos, que te mencionemos en los anuncios y poder entrar con Discord.</p>
+        <a class="btn btn-discord btn-sm" href="/auth/discord?return=%2Fcuenta">${ICON_DISCORD} Conectar Discord</a>`;
+    } else {
+      discordHtml = '<p class="muted">La conexión con Discord estará disponible muy pronto.</p>';
+    }
+
     $('#account').innerHTML = `
       <div class="account-grid">
         <section class="panel account-card">
-          <span class="cat">Discord</span>
+          <span class="cat">Minecraft</span>
           <div class="account-who">
-            <img src="${escapeHtml(d.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png')}" alt="" width="56" height="56" class="round">
-            <div><b>${escapeHtml(d.username)}</b><span class="muted small">Sesión iniciada</span></div>
+            <img src="${escapeHtml(u.head)}" alt="" width="56" height="56" class="pixel-img">
+            <div><b>${escapeHtml(u.name)}</b>${rank}<span class="muted small uuid">${escapeHtml(u.uuid)}</span></div>
           </div>
-          <button class="btn btn-ghost btn-sm" type="button" id="logout">Cerrar sesión</button>
+          <div class="account-actions">
+            <button class="btn btn-ghost btn-sm" type="button" id="logout">Cerrar sesión</button>
+            <button class="link-btn" type="button" id="show-password">Cambiar contraseña</button>
+          </div>
+          <form id="password-form" class="password-form" hidden novalidate>
+            <div class="field"><label for="pw-current">Contraseña actual</label><input id="pw-current" type="password" autocomplete="current-password"></div>
+            <div class="field"><label for="pw-new">Nueva contraseña</label><input id="pw-new" type="password" autocomplete="new-password" minlength="8"></div>
+            <p class="error" id="pw-error" role="alert"></p>
+            <button class="btn btn-gold btn-sm" type="submit">Guardar</button>
+          </form>
         </section>
         <section class="panel account-card">
-          <span class="cat">Minecraft</span>
-          ${
-            mc
-              ? `<div class="account-who">
-                  <img src="${escapeHtml(mc.head)}" alt="" width="56" height="56" class="pixel-img">
-                  <div><b>${escapeHtml(mc.name)}</b>${rank}<span class="muted small uuid">${escapeHtml(mc.uuid)}</span></div>
-                </div>
-                <button class="btn btn-ghost btn-sm" type="button" id="unlink">Desvincular</button>`
-              : code
-                ? `<p>Entra al servidor y escribe en el chat:</p>
-                  <button class="link-code" type="button" id="copy-code" aria-label="Copiar el comando">/tf vincular <b>${escapeHtml(code.code)}</b><span>Copiar</span></button>
-                  <p class="muted small" id="link-wait"><span class="spinner" aria-hidden="true"></span> Esperando a que lo escribas… (caduca en 10 minutos)</p>`
-                : `<p class="muted">Vincula tu jugador para que la tienda lo rellene sola, ver tu rango y recibir el rol de Discord aunque compres sin sesión.</p>
-                  <button class="btn btn-gold btn-sm" type="button" id="link">Vincular mi Minecraft</button>`
-          }
+          <span class="cat">Discord</span>
+          ${discordHtml}
         </section>
       </div>
       <section class="panel account-card account-orders">
         <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-gold btn-sm" href="/tienda">Ir a la tienda</a></div>
         <div id="orders"><p class="muted">Cargando…</p></div>
       </section>`;
+
     $('#logout').addEventListener('click', async () => {
       await fetch('/auth/logout', { method: 'POST' }).catch(() => {});
       location.href = '/';
     });
-    $('#unlink')?.addEventListener('click', async () => {
-      if (!confirm(`¿Desvincular a ${mc.name} de tu cuenta?`)) return;
-      await fetch('/api/account/unlink', { method: 'POST' });
-      me.minecraft = null;
+    $('#show-password').addEventListener('click', () => ($('#password-form').hidden = !$('#password-form').hidden));
+    $('#password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/account/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current: $('#pw-current').value, password: $('#pw-new').value }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return ($('#pw-error').textContent = data.error || 'No se pudo cambiar.');
+      $('#password-form').hidden = true;
+      $('#password-form').reset();
+      toast('Contraseña cambiada');
+    });
+    $('#discord-unlink')?.addEventListener('click', async () => {
+      if (!confirm('¿Desconectar tu Discord de la cuenta?')) return;
+      await fetch('/api/account/discord/unlink', { method: 'POST' });
+      me.user.discord = null;
       renderAccount();
     });
-    $('#link')?.addEventListener('click', startLink);
-    loadOrders();
-    $('#copy-code')?.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(`/tf vincular ${code.code}`);
-        toast('Comando copiado. Pégalo en el chat del juego.');
-      } catch {
-        toast(`/tf vincular ${code.code}`);
+    $('#discord-check')?.addEventListener('click', async () => {
+      const data = await (await fetch('/api/account/discord/check', { method: 'POST' })).json().catch(() => ({}));
+      if (data.reconnect) {
+        location.href = '/auth/discord?return=%2Fcuenta';
+        return;
+      }
+      if (data.member) {
+        me.user.discord.member = true;
+        renderAccount();
+        toast('✓ Ya eres miembro del Discord');
+      } else {
+        toast(data.error || 'Todavía no apareces en el servidor de Discord.');
       }
     });
-  }
-
-  let linkTimer = null;
-  async function startLink() {
-    const res = await fetch('/api/account/link', { method: 'POST' });
-    const code = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(code.error || 'No se pudo crear el código.');
-    renderAccount(code);
-    clearInterval(linkTimer);
-    // Comprobamos cada pocos segundos si ya lo escribió en el juego.
-    linkTimer = setInterval(async () => {
-      if (Date.now() > code.expiresAt) {
-        clearInterval(linkTimer);
-        renderAccount();
-        return toast('El código caducó. Pide otro.');
-      }
-      try {
-        const data = await (await fetch('/api/account/link')).json();
-        if (data.minecraft) {
-          clearInterval(linkTimer);
-          me = await (await fetch('/api/me')).json();
-          renderAccount();
-          toast(`¡${data.minecraft.name} vinculado!`);
-        }
-      } catch {
-        /* lo intentamos en la siguiente vuelta */
-      }
-    }, 4000);
+    loadOrders();
   }
 
   async function loadOrders() {

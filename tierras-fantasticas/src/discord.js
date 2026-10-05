@@ -1,4 +1,5 @@
-// Integración con Discord: inicio de sesión (OAuth2), roles con el bot y anuncios por webhook.
+// Integración con Discord: conectar la cuenta (OAuth2) y comprobar que está en el servidor de Discord,
+// roles con el bot y anuncios por webhook.
 // Documentación: https://discord.com/developers/docs
 
 const DEFAULT_API = 'https://discord.com/api/v10';
@@ -17,9 +18,13 @@ export class Discord {
     this.redirectUri = redirectUri;
   }
 
-  // ¿Se puede vincular la cuenta y dar roles?
+  // ¿Se puede conectar la cuenta? (y comprobar que está en el servidor de Discord, si hay servidor)
   get loginEnabled() {
     return Boolean(this.clientId && this.clientSecret && this.redirectUri);
+  }
+
+  get botEnabled() {
+    return Boolean(this.botToken && this.guildId);
   }
 
   get rolesEnabled() {
@@ -31,8 +36,9 @@ export class Discord {
       client_id: this.clientId,
       redirect_uri: this.redirectUri,
       response_type: 'code',
-      // guilds.join permite al bot meter al comprador en el Discord si aún no está.
-      scope: 'identify guilds.join',
+      // guilds.members.read: ver si está en el servidor de Discord de Tierras Fantásticas.
+      // guilds.join: que el bot lo meta si aún no está (solo con bot).
+      scope: this.botEnabled ? 'identify guilds.members.read guilds.join' : 'identify guilds.members.read',
       state,
       prompt: 'none',
     });
@@ -70,11 +76,45 @@ export class Discord {
     const { data: user } = await this.request('GET', '/users/@me', { auth: `Bearer ${token.access_token}` });
     return {
       id: user.id,
-      username: user.global_name || user.username,
+      // El @ de Discord y el nombre que se ve.
+      username: user.username,
+      name: user.global_name || user.username,
       avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64` : null,
       accessToken: token.access_token,
       expiresAt: Date.now() + token.expires_in * 1000,
     };
+  }
+
+  // ¿Está en el servidor de Discord? Con el token del propio usuario (no hace falta bot).
+  async isMember(accessToken) {
+    if (!this.guildId) return false;
+    try {
+      await this.request('GET', `/users/@me/guilds/${this.guildId}/member`, { auth: `Bearer ${accessToken}` });
+      return true;
+    } catch (err) {
+      if (err.status === 404) return false;
+      throw err;
+    }
+  }
+
+  // Lo mismo con el bot, para volver a comprobarlo sin que el usuario pase otra vez por Discord.
+  async isMemberByBot(userId) {
+    try {
+      await this.request('GET', `/guilds/${this.guildId}/members/${userId}`, { auth: `Bot ${this.botToken}` });
+      return true;
+    } catch (err) {
+      if (err.status === 404) return false;
+      throw err;
+    }
+  }
+
+  // Mete al usuario en el servidor de Discord (necesita el bot y el permiso guilds.join del usuario).
+  async addMember(userId, accessToken) {
+    const res = await this.request('PUT', `/guilds/${this.guildId}/members/${userId}`, {
+      auth: `Bot ${this.botToken}`,
+      body: { access_token: accessToken },
+    });
+    return res.status === 201 || res.status === 204;
   }
 
   // Da los roles al usuario. Si no está en el servidor de Discord, lo añade con esos roles.

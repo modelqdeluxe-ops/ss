@@ -19,8 +19,13 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   la compra se guarda con su **UUID**: llega al que pagó aunque se cambie el nombre.
 - **Rangos con mejora**: si el jugador ya tiene un rango, al comprar uno superior paga solo la diferencia; el mismo
   rango o uno inferior no se pueden comprar. Al entregar se quitan los grupos de los rangos inferiores.
-- **Cuenta con Discord** (`/cuenta`): botón «Entrar» en la cabecera. Desde la cuenta se vincula el jugador de
-  Minecraft escribiendo `/tf vincular CÓDIGO` en el juego, y se ven todas las compras y su estado.
+- **Cuentas de jugador** (`/cuenta`, botón «Entrar» de la cabecera): cada jugador crea su cuenta en la web con su
+  **nombre de Minecraft y una contraseña**. El nombre se comprueba con el puente (tiene que haber entrado al servidor)
+  y la cuenta queda unida a su UUID; un jugador, una cuenta. Dentro del juego no hay que hacer nada. La sesión dura 60
+  días y se renueva en cada visita. Contraseñas con PBKDF2 y freno tras 8 intentos fallidos.
+- **Discord conectado a la cuenta**: botón «Conectar Discord» → Discord le dice a la web su @ (no se escribe a mano, así
+  nadie puede poner el de otro) y si está en el servidor de Discord de Tierras Fantásticas. Si no está y hay bot, lo
+  mete; si no, le ofrece unirse y volver a comprobar. Después puede entrar a la web con Discord sin contraseña.
 - **Entrega automática con el puente del TF Client**: el mod TF Client instalado en el servidor de Minecraft pregunta a
   la web cada 10 segundos si hay compras y ejecuta sus comandos (`lp`, `eco`, `crate`...) en cuanto el comprador está
   conectado, con un **anuncio para todo el servidor** (mensaje enmarcado, sonido y fuegos artificiales del color de la
@@ -115,26 +120,31 @@ cambios de rango del staff (`/tf rango`). Recibe las compras pendientes de los j
 cada uno para su nametag. Si no confirma una entrega en 2 minutos, se le vuelve a enviar (el mod recuerda las que ya
 ejecutó, así que nunca entrega dos veces).
 
+> El comando `/tf vincular` del TF Client 1.2.8 ya no hace falta: las cuentas se crean en la web.
+>
 > Con el TF Client 1.2.7 o anterior en el servidor, la web sigue entregando (les manda los comandos con el nombre ya
 > puesto), pero sin anuncio, sin nametag ni vinculación. Actualiza el mod del servidor a la 1.2.8.
 
 ### 3. Discord
 
-Discord es opcional: si no lo configuras, la tienda funciona igual, solo que sin «Entrar», roles ni anuncios.
+Discord es opcional: si no lo configuras, la tienda y las cuentas funcionan igual, solo que sin «Conectar Discord»,
+roles ni anuncios. Para que los jugadores conecten su Discord y se compruebe que están en tu servidor bastan los pasos
+1, 2 y `DISCORD_GUILD_ID` (ya puesto en `wrangler.jsonc`); el bot (pasos 3-5) sirve para meterlos al servidor si no
+están, darles los roles y volver a comprobarlo sin pasar por Discord.
 
 1. **Crea la aplicación**: en <https://discord.com/developers/applications> → *New Application* (p. ej. "Tierras Fantásticas").
-2. **OAuth2** (pestaña *OAuth2*): copia el *Client ID* y el *Client Secret* en `DISCORD_CLIENT_ID` y
-   `DISCORD_CLIENT_SECRET`. En *Redirects* añade exactamente la dirección de la web + `/auth/discord/callback`:
+2. **OAuth2** (pestaña *OAuth2*): copia el *Client ID* y el *Client Secret* en Cloudflare como *Secrets*
+   `DISCORD_CLIENT_ID` y `DISCORD_CLIENT_SECRET`. En *Redirects* añade exactamente la dirección de la web + `/auth/discord/callback`:
    `https://xn--tierrasfantsticas-hpb.store/auth/discord/callback` (es `tierrasfantásticas.store` escrito como lo
    guarda internet; si usas `PUBLIC_URL`, la misma con ese dominio).
-3. **Bot** (pestaña *Bot*): pulsa *Reset Token* y copia el token en `DISCORD_BOT_TOKEN`. No compartas nunca este token.
+3. **Bot** (pestaña *Bot*): pulsa *Reset Token* y copia el token en Cloudflare como *Secret* `DISCORD_BOT_TOKEN`. No compartas nunca este token.
 4. **Invita el bot a tu servidor** abriendo esta URL (cambia `TU_CLIENT_ID`):
    `https://discord.com/oauth2/authorize?client_id=TU_CLIENT_ID&scope=bot&permissions=268435457`
-   (permisos *Gestionar roles* y *Crear invitación*, necesarios para dar roles y añadir compradores al servidor).
+   (permisos *Gestionar roles* y *Crear invitación*, necesarios para dar roles y añadir jugadores al servidor).
 5. **Orden de roles**: en *Ajustes del servidor → Roles*, arrastra el rol del bot **por encima** de los roles de rango
    (Aventurero, Hechicero, Dragón). Discord no deja a un bot dar roles que estén por encima del suyo.
-6. **IDs**: activa *Ajustes de usuario → Avanzado → Modo desarrollador*. Clic derecho en tu servidor → *Copiar ID* para
-   `DISCORD_GUILD_ID`, y clic derecho en cada rol → *Copiar ID* para ponerlo en `config/products.json`:
+6. **IDs**: activa *Ajustes de usuario → Avanzado → Modo desarrollador*. El ID del servidor ya está en `wrangler.jsonc`
+   (`DISCORD_GUILD_ID`, el mismo que usa el TF Client); si cambias de servidor, clic derecho en él → *Copiar ID*. Clic derecho en cada rol → *Copiar ID* para ponerlo en `config/products.json`:
    ```json
    "discordRoles": ["123456789012345678"]
    ```
