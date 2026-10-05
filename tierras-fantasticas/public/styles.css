@@ -2145,6 +2145,10 @@ body.lock {
   color: var(--gold-hi);
 }
 
+.price.free {
+  color: var(--ok);
+}
+
 .price.owned {
   font-size: 15px;
   color: var(--ok);

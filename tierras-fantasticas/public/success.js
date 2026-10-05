@@ -42,7 +42,7 @@
       return;
     }
 
-    const total = new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
+    const total = order.amount === 0 ? 'Gratis' : new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
     $('d-user').textContent = order.username;
     $('d-product').textContent = (order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product) + (order.upgradeFrom ? ` (mejora desde ${order.upgradeFrom})` : '');
     $('d-total').textContent = total;

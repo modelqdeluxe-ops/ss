@@ -387,6 +387,7 @@ export function createApp(env) {
       const product = productById.get(body.productId);
       const quantity = Number.parseInt(body.quantity ?? 1, 10);
       if (!product) return json({ error: 'Producto no válido.' }, 400);
+      if (product.price === 0) return json({ error: 'Este regalo es gratis: reclámalo con tu cuenta.', code: 'free' }, 400);
       if (typeof body.username !== 'string' || !USERNAME_RE.test(body.username)) {
         return json({ error: 'Nombre de usuario de Minecraft no válido (3-16 letras, números o _).' }, 400);
       }
@@ -450,6 +451,38 @@ export function createApp(env) {
         log.error('Error creando el pago en Stripe:', err.message);
         return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
       }
+    },
+
+    // Regalos gratis (precio 0): sin Stripe, con la cuenta iniciada y una sola vez por jugador.
+    'POST /api/claim': async (req, ctx) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para reclamar el regalo.', code: 'login' }, 401);
+      const body = (await readJson(req)) || {};
+      const product = productById.get(body.productId);
+      if (!product || product.price !== 0) return json({ error: 'Ese regalo no existe.' }, 400);
+      const player = await store.playerByUuid(user.uuid);
+      // El número de pedido sale del jugador y del regalo: el mismo jugador nunca puede reclamarlo dos veces.
+      const index = products.indexOf(product).toString(36).toUpperCase().padStart(2, '0');
+      const id = `GIFT${index}${user.uuid.replaceAll('-', '').toUpperCase()}`;
+      if (await store.getOrder(id)) return json({ error: 'Ya reclamaste este regalo.', code: 'claimed', id }, 409);
+      try {
+        await store.createOrder({
+          id,
+          status: 'pending',
+          username: player?.name || user.name,
+          uuid: user.uuid,
+          productId: product.id,
+          quantity: 1,
+          amount: 0,
+          currency: CURRENCY,
+          discord: user.discord ? { id: user.discord.id, username: user.discord.username } : null,
+          discordId: user.discord?.id,
+        });
+      } catch {
+        return json({ error: 'Ya reclamaste este regalo.', code: 'claimed', id }, 409);
+      }
+      const status = await fulfill(await store.getOrder(id), ctx, null);
+      return json({ id, status });
     },
 
     'GET /api/order/:id': async (req, { params }) => {
@@ -609,6 +642,12 @@ export function createApp(env) {
       return 'error';
     }
 
+    return fulfill(local, ctx, paymentIntent);
+  }
+
+  // Pedido pagado (o regalo reclamado): a la cola del puente, rango, rol y anuncio en Discord.
+  async function fulfill(local, ctx, paymentIntent) {
+    const id = local.id;
     const product = productById.get(local.productId);
     const rank = rankById.get(product.id);
     // Los comandos se guardan con {player}/{uuid}: el mod los rellena al entregar con el nombre actual del UUID.
@@ -628,7 +667,7 @@ export function createApp(env) {
     const queued = await store.queueDelivery(id, { username: local.username, uuid: local.uuid, commands, extra, paymentIntent });
     if (!queued) return (await store.getOrder(id)).status;
     if (rank && local.uuid) await store.setRank(local.uuid, rank.id, rank.tier);
-    log.log(`Pedido ${id} pagado: ${product.name} x${local.quantity} para ${local.username} (${local.uuid}), en cola del puente`);
+    log.log(`Pedido ${id} ${product.price === 0 ? 'reclamado (gratis)' : 'pagado'}: ${product.name} x${local.quantity} para ${local.username} (${local.uuid}), en cola del puente`);
 
     // En Discord: rol y anuncio. Un fallo aquí no afecta a la entrega en el juego.
     await deliverDiscord(id, product, ctx.discord);

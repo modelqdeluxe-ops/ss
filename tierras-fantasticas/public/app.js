@@ -164,7 +164,7 @@
   });
 
   // --- Productos ---
-  const CATEGORY_LABEL = { rangos: 'Rango', crates: 'Llave de crate', llaves: 'Llaves de cofre', monedas: 'Monedas de oro' };
+  const CATEGORY_LABEL = { gratis: 'Regalo gratis', rangos: 'Rango', crates: 'Llave de crate', llaves: 'Llaves de cofre', monedas: 'Monedas de oro' };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
   // Colores propios de cada crate (config/products.json → colors)
@@ -260,13 +260,46 @@
           <p>${escapeHtml(isCrate ? p.tagline || p.description : p.description)}</p>
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
           ${isCrate ? `<p class="small"><a class="theme-text" href="/crates#${escapeHtml(p.theme || p.id)}">Ver sus ${(p.models || []).length || ''} objetos en 3D →</a></p>` : ''}
-          <div class="card-foot">${rankFoot(p) || `
+          <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
             <button class="btn ${isCrate ? 'btn-theme' : 'btn-gold'} btn-sm" type="button" ${buyAttrs(p)}>${isCrate ? 'Comprar llave' : 'Comprar'}</button>`}
           </div>
         </div>
       </article>`;
   }
+
+  // Regalos gratis: se reclaman con la cuenta, sin pagar.
+  function giftFoot(p) {
+    if (p.price !== 0) return '';
+    return `<span class="price free">Gratis</span><button class="btn btn-gold btn-sm" type="button" data-claim="${escapeHtml(p.id)}">Reclamar</button>`;
+  }
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-claim]');
+    if (!btn) return;
+    if (!me.user) {
+      toast('Entra con tu cuenta para reclamar el regalo');
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(location.pathname + location.hash)}`), 900);
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: btn.dataset.claim }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        location.href = `/success?order=${encodeURIComponent(data.id)}`;
+        return;
+      }
+      toast(data.error || 'No se pudo reclamar el regalo.');
+    } catch {
+      toast('No se pudo reclamar el regalo.');
+    }
+    btn.disabled = false;
+  });
 
   // Con Minecraft vinculado: su rango actual no se vuelve a vender y los superiores salen a precio de mejora.
   function rankFoot(p) {
@@ -328,7 +361,9 @@
       const cat = location.hash.slice(1);
       return tabs.some((t) => t.dataset.category === cat && !t.hidden) ? cat : null;
     };
-    selectCategory(fromHash() || tabs.find((t) => !t.hidden)?.dataset.category || 'rangos', false);
+    // Por defecto, los rangos (la pestaña de regalos se abre con /tienda#gratis).
+    const preferred = tabs.find((t) => t.dataset.category === 'rangos' && !t.hidden) || tabs.find((t) => !t.hidden);
+    selectCategory(fromHash() || preferred?.dataset.category || 'rangos', false);
     window.addEventListener('hashchange', () => fromHash() && selectCategory(fromHash(), false));
   }
 
