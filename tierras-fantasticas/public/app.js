@@ -163,9 +163,27 @@
   const CATEGORY_LABEL = { rangos: 'Rango', crates: 'Llave de crate', llaves: 'Llaves de cofre', monedas: 'Monedas de oro' };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
-  const themeAttr = (p) => (p.theme && /^[\w-]+$/.test(p.theme) ? ` data-theme="${p.theme}"` : '');
+  // Colores propios de cada crate (config/products.json → colors)
+  const HEX = /^#[0-9a-f]{6}$/i;
+  function themeVars(p) {
+    const [c1, c2] = Array.isArray(p.colors) ? p.colors : [];
+    if (!HEX.test(c1 || '') || !HEX.test(c2 || '')) return null;
+    const n = Number.parseInt(c2.slice(1), 16);
+    return { '--t1': c1, '--t2': c2, '--t3': `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, 0.26)` };
+  }
+  const themeAttr = (p) => {
+    const vars = themeVars(p);
+    return vars ? ` style="${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';')}"` : '';
+  };
+  function applyTheme(el, p) {
+    const vars = themeVars(p) || {};
+    for (const k of ['--t1', '--t2', '--t3']) {
+      if (vars[k]) el.style.setProperty(k, vars[k]);
+      else el.style.removeProperty(k);
+    }
+  }
   const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
-  const isPixel = (src) => /\/ranks\//.test(src || '');
+  const isPixel = (src) => /\/ranks\/|coins-/.test(src || '');
   const img = (src, alt, cls = '', extra = '') =>
     `<img src="${asset(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"${
       isPixel(src) || cls ? ` class="${[cls, isPixel(src) ? 'pixel-img' : ''].filter(Boolean).join(' ')}"` : ''
@@ -190,7 +208,9 @@
     const list = crates();
     $$('[data-crate-count]').forEach((el) => (el.textContent = list.length));
     const box = $('#crate-spotlight');
+    $$('[data-crates-all]').forEach((el) => (el.textContent = `Ver los ${list.length} crates`));
     box.innerHTML = list
+      .slice(0, 8)
       .map(
         (p) => `
         <a class="panel crate-card reveal" href="/crates#${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
@@ -235,7 +255,7 @@
           <h3>${escapeHtml(p.name)}</h3>
           <p>${escapeHtml(isCrate ? p.tagline || p.description : p.description)}</p>
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
-          ${isCrate ? `<p class="small"><a class="theme-text" href="/crates#${escapeHtml(p.theme || p.id)}">Ver todo lo que contiene →</a></p>` : ''}
+          ${isCrate ? `<p class="small"><a class="theme-text" href="/crates#${escapeHtml(p.theme || p.id)}">Ver sus ${(p.models || []).length || ''} objetos en 3D →</a></p>` : ''}
           <div class="card-foot">
             <span class="price">${formatPrice(p.price)}</span>
             <button class="btn ${isCrate ? 'btn-theme' : 'btn-gold'} btn-sm" type="button" ${buyAttrs(p)}>${isCrate ? 'Comprar llave' : 'Comprar'}</button>
@@ -351,7 +371,7 @@
     if (!p || id === selectedCrate) return;
     selectedCrate = id;
     const stage = $('#crate-stage');
-    if (p.theme) stage.dataset.theme = p.theme;
+    applyTheme(stage, p);
     for (const btn of $$('#crate-picker [data-crate]')) {
       const active = btn.dataset.crate === id;
       btn.setAttribute('aria-selected', String(active));
@@ -382,20 +402,50 @@
           : ''
       }
       ${
-        Array.isArray(p.gallery) && p.gallery.length
-          ? `<h4>El arsenal</h4>
-             <div class="gallery">${p.gallery
-               .map((g) => `<figure>${img(g.icon, '', '', ' width="96" height="96"')}<figcaption>${escapeHtml(g.name)}</figcaption></figure>`)
+        modelItems(p).length
+          ? `<h4>Objetos del set <span class="hint3d">· toca uno para verlo en 3D</span></h4>
+             <div class="gallery">${modelItems(p)
+               .map(
+                 (m, i) => `<button type="button" class="gallery-item" data-view="${i}" aria-label="Ver ${escapeHtml(m.name)} en 3D">
+                   ${img(m.thumb, '', '', ' width="72" height="72"')}<span>${escapeHtml(m.name)}</span></button>`,
+               )
                .join('')}</div>`
           : ''
       }
-      ${items.length ? `<h4>Armas, herramientas y cosméticos</h4><ul class="chips">${items.map((it) => `<li>${escapeHtml(it)}</li>`).join('')}</ul>` : ''}
       <div class="buy-bar">
         <span class="price"><small>Por llave</small>${formatPrice(p.price)}</span>
         <button class="btn btn-theme btn-lg" type="button" ${buyAttrs(p)}>Comprar llave</button>
       </div>`;
     if (updateUrl) history.replaceState(null, '', `#${p.theme || p.id}`);
   }
+
+  // --- Visor 3D (se carga solo al abrir un objeto) ---
+  function modelItems(p) {
+    if (!p || !p.set || !Array.isArray(p.models)) return [];
+    return p.models.map((m) => ({
+      name: m.name,
+      thumb: `img/items/${p.set}/${m.id}.webp`,
+      model: `/models/${p.set}/${m.id}.json`,
+    }));
+  }
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-view]');
+    if (!btn) return;
+    const p = products.find((x) => x.id === selectedCrate);
+    const items = modelItems(p);
+    if (!items.length) return;
+    btn.classList.add('loading');
+    try {
+      const { openViewer } = await import('/viewer.js');
+      openViewer(items, Number(btn.dataset.view), p.name);
+    } catch (err) {
+      console.error(err);
+      toast('No se pudo abrir el visor 3D en este navegador.');
+    } finally {
+      btn.classList.remove('loading');
+    }
+  });
 
   // --- Ventana de compra (solo en las páginas que venden) ---
   const DIALOG_HTML = `
@@ -467,8 +517,7 @@
 
     const maxQty = selected.maxQuantity || 10;
     const isCrate = selected.category === 'crates';
-    if (selected.theme) dialog.dataset.theme = selected.theme;
-    else delete dialog.dataset.theme;
+    applyTheme(dialog, selected);
     const pic = $('#dialog-img');
     const src = isCrate ? selected.keyImage || selected.image : selected.image;
     pic.hidden = !src;

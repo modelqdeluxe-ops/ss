@@ -201,8 +201,10 @@ def index():
       {hero_art()}
       <div class="wrap hero-inner">
         <div class="logo-mark">
+          <span class="glow" aria-hidden="true"></span>
           <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
           <span class="shine" aria-hidden="true"></span>
+          <span class="spark" aria-hidden="true"></span>
         </div>
         <span class="eyebrow">Minecraft Java · Forge 1.20.1</span>
         <h1 style="margin-top:14px" data-server-name>Tierras Fantásticas</h1>
@@ -261,6 +263,7 @@ def index():
       <div class="grid grid-2 grid-4" id="crate-spotlight">
         <p class="loading">Cargando crates…</p>
       </div>
+      <p style="margin-top:24px"><a class="btn btn-ghost" href="/crates" data-crates-all>Ver todos los crates {I['arrow']}</a></p>
     </section>
 
     <section class="wrap section">
@@ -278,11 +281,11 @@ def index():
 
 
 def tienda():
-    tabs = [('rangos', 'Rangos', '/img/ranks/royal.webp'), ('crates', 'Crates', '/img/keys/celestial.webp'),
-            ('llaves', 'Llaves', '/img/keys/mystic.webp'), ('monedas', 'Monedas', '/img/ranks/coins.webp')]
+    tabs = [('rangos', 'Rangos', '/img/ranks/royal.png'), ('crates', 'Crates', '/img/keys/celestial.webp'),
+            ('llaves', 'Llaves', '/img/keys/mystic.webp'), ('monedas', 'Monedas', '/img/coins-small.png')]
     pix = ' class="pixel-img"'
     tab_html = '\n'.join(
-        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false"><img src="{img}" alt="" width="22" height="22"{pix if "ranks" in img else ""}>{label}</button>'
+        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false"><img src="{img}" alt="" width="22" height="22"{pix if ("ranks" in img or "coins" in img) else ""}>{label}</button>'
         for k, label, img in tabs)
     return head('Tienda — Tierras Fantásticas',
                 'Tienda oficial de Tierras Fantásticas: rangos, crates, llaves y monedas. Pago seguro con PayPal o tarjeta y entrega automática en el juego.',
@@ -312,10 +315,10 @@ def tienda():
 
 def crates():
     return head('Crates — Tierras Fantásticas',
-                'Crates animados de Tierras Fantásticas: Valentine, Necros, Luminite y Forja de Nazgul. Mira cada pieza del set y consigue tu llave.',
+                'Crates de Tierras Fantásticas: más de 20 sets con armas, herramientas, armaduras y alas animadas. Mira cada pieza en 3D y consigue tu llave.',
                 'crates') + header('crates') + f'''
   <main id="main">
-{page_hero('Crates animados', 'Crates legendarios', 'Elige un crate, mira todo lo que contiene y consigue tu llave. Cada llave abre el crate una vez en el spawn y te da una pieza del set.')}
+{page_hero('Crates animados', 'Crates legendarios', 'Elige un crate y toca cualquier objeto para verlo en 3D. Cada llave abre el crate una vez en el spawn y te da una pieza del set.')}
     <section class="wrap" style="padding-top:32px">
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
       <div class="crate-picker" id="crate-picker" role="tablist" aria-label="Crates"></div>
