@@ -14,10 +14,14 @@ public final class TFConfig {
     private static final String DEFAULT_NAME = "Tierras Fantásticas";
     private static final String DEFAULT_ADDRESS = "216.163.187.40:19001";
     private static final String DEFAULT_WEB = "https://tienda.tierrasfantasticas.net";
+    private static final String DEFAULT_DISCORD_GUILD = "1439703812368765082";
+    private static final String DEFAULT_DISCORD_URL = "https://discord.gg/tRrunHBZE";
 
     private static String serverName = DEFAULT_NAME;
     private static String serverAddress = DEFAULT_ADDRESS;
     private static String webUrl = DEFAULT_WEB;
+    private static String discordGuildId = DEFAULT_DISCORD_GUILD;
+    private static String discordUrl = DEFAULT_DISCORD_URL;
 
     private TFConfig() {}
 
@@ -31,6 +35,16 @@ public final class TFConfig {
 
     public static String webUrl() {
         return webUrl;
+    }
+
+    /** ID del servidor de Discord: el botón pide a su widget una invitación del servidor (no de una persona). */
+    public static String discordGuildId() {
+        return discordGuildId;
+    }
+
+    /** Enlace de reserva si el widget de Discord no responde. */
+    public static String discordUrl() {
+        return discordUrl;
     }
 
     public static void load() {
@@ -47,14 +61,19 @@ public final class TFConfig {
         serverAddress = props.getProperty("server.address", DEFAULT_ADDRESS).trim();
         if (serverAddress.isEmpty()) serverAddress = DEFAULT_ADDRESS;
         webUrl = props.getProperty("web.url", DEFAULT_WEB).trim();
+        discordGuildId = props.getProperty("discord.guild.id", DEFAULT_DISCORD_GUILD).trim();
+        discordUrl = props.getProperty("discord.url", DEFAULT_DISCORD_URL).trim();
 
-        // Se reescribe si falta alguna clave (por ejemplo web.url al actualizar desde una versión anterior)
-        if (!Files.exists(file) || !props.containsKey("web.url")) {
+        // Se reescribe si falta alguna clave (por ejemplo al actualizar desde una versión anterior)
+        boolean missing = !props.containsKey("web.url") || !props.containsKey("discord.guild.id") || !props.containsKey("discord.url");
+        if (!Files.exists(file) || missing) {
             props.setProperty("server.name", serverName);
             props.setProperty("server.address", serverAddress);
             props.setProperty("web.url", webUrl);
+            props.setProperty("discord.guild.id", discordGuildId);
+            props.setProperty("discord.url", discordUrl);
             try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
-                props.store(writer, "TF Client - servidor del boton principal y web del boton WEB");
+                props.store(writer, "TF Client - servidor del boton principal, web del boton WEB y Discord");
             } catch (IOException e) {
                 TFClient.LOGGER.warn("No se pudo crear {}: {}", file, e.getMessage());
             }

@@ -12,7 +12,11 @@ Mod de cliente de Tierras Fantásticas. Hace solo esto:
   - **TIERRAS FANTÁSTICAS**: antes de conectar pregunta al servidor qué mods usa. Si te falta alguno, enseña la lista
     (con *Volver* o *Entrar igual*); si no falta nada, conecta directamente y acepta su paquete de recursos.
   - **Mundo local**, **Mods**, **Opciones** y **Salir**.
-  - **WEB** (de oro, debajo de Opciones y Salir): abre la web del servidor (`web.url` en la configuración).
+  - **Web** y **Discord** (de oro, debajo de Opciones y Salir). *Web* abre `web.url`. *Discord* pide al widget de
+    Discord del servidor una invitación del propio servidor (no de una persona, y siempre vigente); si no responde,
+    usa `discord.url`. Hace falta tener activado el widget en *Ajustes del servidor → Widget*.
+  - Los botones de oro tienen su propio brillo (distinto al del emblema): el oro late suave y aparecen chispitas en
+    el borde.
   - Sin textos de Mojang, versión, Forge ni Realms. Idioma y accesibilidad siguen en *Opciones*.
 - **Música de TF** en la pantalla de carga y el menú: empieza en cuanto arranca el juego, suena en bucle con fundidos
   y respeta los volúmenes *General* y *Música* de las opciones. Se apaga con un fundido al entrar a un mundo o al
@@ -27,7 +31,7 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge. No hace falta 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.0.7.jar` en la carpeta `mods`.
+2. Copia `tfclient-1.20.1-1.0.8.jar` en la carpeta `mods`.
 
 ## Cambiar el servidor
 
@@ -37,10 +41,13 @@ La primera vez que se abre el juego se crea `config/tfclient.properties`:
 server.name=Tierras Fantásticas
 server.address=216.163.187.40\:19001
 web.url=https\://tienda.tierrasfantasticas.net
+discord.guild.id=1439703812368765082
+discord.url=https\://discord.gg/tRrunHBZE
 ```
 
-`server.name` es el texto del botón principal, `server.address` la IP (con puerto) a la que conecta y `web.url` la
-dirección que abre el botón WEB.
+`server.name` es el texto del botón principal, `server.address` la IP (con puerto) a la que conecta, `web.url` la
+dirección que abre el botón Web, `discord.guild.id` el ID del servidor de Discord (para pedir la invitación a su widget)
+y `discord.url` el enlace de reserva si el widget no responde.
 
 ## Cambiar las imágenes
 

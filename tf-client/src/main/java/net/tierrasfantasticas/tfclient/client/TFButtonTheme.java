@@ -1,6 +1,9 @@
 package net.tierrasfantasticas.tfclient.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Axis;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -65,6 +68,10 @@ public final class TFButtonTheme {
 
     /** Placa en tres piezas: puntas a tamaño fijo y centro estirado al ancho del botón. */
     public static void drawPlate(GuiGraphics g, TFTextures texture, int x, int y, int w, int h, int state, float alpha) {
+        drawPlate(g, texture, x, y, w, h, state, alpha, false);
+    }
+
+    private static void drawPlate(GuiGraphics g, TFTextures texture, int x, int y, int w, int h, int state, float alpha, boolean additive) {
         int texW = texture.width();
         int texH = texture.height();
         int stateH = texH / 3;
@@ -72,7 +79,11 @@ public final class TFButtonTheme {
         int cap = Math.min(Math.round(CAP * h / 20f), w / 2);
         float v = state * stateH;
         RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        if (additive) {
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        } else {
+            RenderSystem.defaultBlendFunc();
+        }
         g.setColor(1f, 1f, 1f, alpha);
         g.blit(texture.id(), x, y, cap, h, 0f, v, capTex, stateH, texW, texH);
         g.blit(texture.id(), x + w - cap, y, cap, h, texW - capTex, v, capTex, stateH, texW, texH);
@@ -80,6 +91,47 @@ public final class TFButtonTheme {
             g.blit(texture.id(), x + cap, y, w - 2 * cap, h, capTex, v, texW - 2 * capTex, stateH, texW, texH);
         }
         g.setColor(1f, 1f, 1f, 1f);
+        if (additive) RenderSystem.defaultBlendFunc();
+    }
+
+    /**
+     * Brillo de los botones de oro (distinto al del emblema, que es una franja que lo cruza): el oro "respira" con un
+     * latido cálido muy suave y aparecen chispitas que se encienden y apagan en distintos puntos del borde, como luz
+     * que rebota en el metal.
+     */
+    public static void drawGoldShimmer(GuiGraphics g, int x, int y, int w, int h, int state, float alpha, int seed) {
+        long now = Util.getMillis();
+        // Latido: se suma la propia placa con muy poca opacidad
+        float breath = 0.5f + 0.5f * (float) Math.sin((now + seed * 977L) / 1700.0 * Math.PI);
+        drawPlate(g, TFTextures.BUTTON_SLICE_PRIMARY, x, y, w, h, state, alpha * (0.06f + 0.12f * breath), true);
+
+        if (!TFTextures.SPARKLE.ready()) return;
+        // Dos series de chispas desfasadas; cada una ocupa una ranura de tiempo y sale en un punto al azar del borde
+        for (int series = 0; series < 2; series++) {
+            long slotMs = 1150L + series * 370L;
+            long t = now + seed * 331L + series * 523L;
+            long slot = t / slotMs;
+            float life = (t % slotMs) / (float) (slotMs * 0.7f);
+            if (life >= 1f) continue;
+            java.util.Random random = new java.util.Random(slot * 31L + seed * 7L + series);
+            float px = x + Math.max(6, h / 2) + random.nextFloat() * Math.max(1, w - 2 * Math.max(6, h / 2));
+            float py = random.nextBoolean() ? y + 2.5f : y + h - 2.5f;
+            float strength = (float) Math.sin(life * Math.PI);
+            float size = h * (0.55f + 0.35f * random.nextFloat()) * (0.5f + 0.5f * strength);
+            g.pose().pushPose();
+            g.pose().translate(px, py, 0f);
+            g.pose().mulPose(Axis.ZP.rotationDegrees(45f * life));
+            g.pose().scale(size / TFTextures.SPARKLE.width(), size / TFTextures.SPARKLE.height(), 1f);
+            RenderSystem.enableBlend();
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+            g.setColor(1f, 0.93f, 0.72f, alpha * strength);
+            int sw = TFTextures.SPARKLE.width();
+            int sh = TFTextures.SPARKLE.height();
+            g.blit(TFTextures.SPARKLE.id(), -sw / 2, -sh / 2, 0f, 0f, sw, sh, sw, sh);
+            g.setColor(1f, 1f, 1f, 1f);
+            RenderSystem.defaultBlendFunc();
+            g.pose().popPose();
+        }
     }
 
     /** Texto centrado con la letra de TF; si no cabe, se reduce un poco. */

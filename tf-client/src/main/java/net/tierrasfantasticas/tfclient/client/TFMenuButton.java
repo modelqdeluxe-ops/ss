@@ -1,6 +1,5 @@
 package net.tierrasfantasticas.tfclient.client;
 
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -40,13 +39,13 @@ public class TFMenuButton extends Button {
         return new TFMenuButton(x, y, width, 20, label("Web"), button -> openWeb(), true);
     }
 
+    /** Botón del Discord del servidor (invitación del servidor, no de una persona). */
+    public static TFMenuButton discord(int x, int y, int width) {
+        return new TFMenuButton(x, y, width, 20, label("Discord"), button -> TFDiscord.open(), true);
+    }
+
     private static void openWeb() {
-        String url = TFConfig.webUrl();
-        if (url.startsWith("https://") || url.startsWith("http://")) {
-            Util.getPlatform().openUri(url);
-        } else {
-            TFClient.LOGGER.warn("TF Client: web.url no válida en config/tfclient.properties: {}", url);
-        }
+        TFDiscord.openUrl(TFConfig.webUrl());
     }
 
     /** Copia un botón del menú normal con el diseño de TF y el mismo efecto al pulsarlo. */
@@ -67,6 +66,7 @@ public class TFMenuButton extends Button {
         int state = !this.active ? 2 : hot ? 1 : 0;
         TFButtonTheme.drawPlate(g, texture, getX(), getY(), getWidth(), getHeight(), state, this.alpha);
         if (primary && this.active) {
+            TFButtonTheme.drawGoldShimmer(g, getX(), getY(), getWidth(), getHeight(), state, this.alpha, getX() * 31 + getY());
             // Placa de oro: letras oscuras, sin sombra
             TFButtonTheme.drawLabel(g, getMessage(), getX(), getY(), getWidth(), getHeight(), hot ? 0x241404 : 0x34200A, this.alpha, false);
         } else {
