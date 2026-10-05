@@ -1,13 +1,14 @@
-// Configuración de Cloudflare Workers para la web de Tierras Fantásticas.
+// Configuración de Cloudflare Workers para la web de Tierras Fantásticas (carpeta tierras-fantasticas/).
+// Está en la raíz del repositorio para que Cloudflare la encuentre con el comando por defecto `npx wrangler deploy`.
 // Las claves (PayPal, Discord, BRIDGE_SECRET...) se ponen como "Secrets" en el panel de Cloudflare,
 // nunca aquí: Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets.
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "tierras-fantasticas/node_modules/wrangler/config-schema.json",
   "name": "tierras-fantasticas",
-  "main": "src/index.js",
+  "main": "tierras-fantasticas/src/index.js",
   "compatibility_date": "2025-09-01",
   "assets": {
-    "directory": "./public",
+    "directory": "./tierras-fantasticas/public",
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash"
   },

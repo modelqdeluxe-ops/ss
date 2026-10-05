@@ -40,13 +40,13 @@ permisos…), el pago queda registrado en la base de datos con lo que falta por 
    *nameservers* del dominio por los dos que te da Cloudflare.
 2. En Cloudflare: **Workers & Pages → Create → Import a repository** → conecta GitHub y elige este repositorio.
    - *Project name*: `tierras-fantasticas`
-   - *Root directory* (en *Advanced settings*): `tierras-fantasticas`
-   - *Build command*: vacío. *Deploy command*: `npx wrangler deploy`
+   - *Build command*: vacío. *Deploy command*: `npx wrangler deploy` (lo que viene por defecto: la configuración
+     `wrangler.jsonc` está en la raíz del repositorio y apunta a esta carpeta)
    La base de datos D1 se crea sola en el primer despliegue. Cada cambio en `main` se publica solo.
 3. **Settings → Domains & Routes → Add → Custom domain**: `tierrasfantásticas.store` (y `www.` si quieres).
    Cloudflare crea el registro DNS y el certificado HTTPS.
 4. **Settings → Variables and Secrets**: añade como *Secret* las claves de PayPal, Discord y `BRIDGE_SECRET`
-   (ver abajo). Las variables públicas (nombre, IP, moneda, `PAYPAL_ENV`) están en `wrangler.jsonc`.
+   (ver abajo). Las variables públicas (nombre, IP, moneda, `PAYPAL_ENV`) están en `wrangler.jsonc` (raíz del repositorio).
 
 Para probarla en tu PC (Node.js 22.13 o superior):
 

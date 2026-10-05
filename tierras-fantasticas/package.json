@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev -c ../wrangler.jsonc",
+    "deploy": "wrangler deploy -c ../wrangler.jsonc",
     "test": "node --test test/*.test.js"
   },
   "engines": {
