@@ -1,0 +1,10 @@
+
+com.stickerya.app.EditorOpsTest:.....
+com.stickerya.app.ScreenshotTest:.
+com.stickerya.app.WhatsAppContractTest:.
+
+Time: 34.466
+
+OK (7 tests)
+
+
