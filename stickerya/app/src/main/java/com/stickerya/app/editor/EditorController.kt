@@ -51,6 +51,8 @@ class EditorController(initial: EditorState = EditorState()) {
     var resetViewTick by mutableStateOf(0)
 
     var onChange: (() -> Unit)? = null
+    /** Mientras se escribe un texto el lienzo no responde a los dedos. */
+    var inputLocked = false
 
     private val undoStack = ArrayDeque<EditorState>()
     private val redoStack = ArrayDeque<EditorState>()

@@ -144,6 +144,7 @@ fun EditorScreen(vm: AppViewModel, session: EditSession) {
         c.tool = Tool.MOVE
         textIsNew = true
         textId = l.id
+        c.inputLocked = true
     }
 
     fun editText(l: TextLayer) {
@@ -152,6 +153,7 @@ fun EditorScreen(vm: AppViewModel, session: EditSession) {
         c.tool = Tool.MOVE
         textIsNew = false
         textId = l.id
+        c.inputLocked = true
     }
 
     fun finishText() {
@@ -163,6 +165,7 @@ fun EditorScreen(vm: AppViewModel, session: EditSession) {
             c.end()
         }
         textId = null
+        c.inputLocked = false
     }
 
     val addImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->

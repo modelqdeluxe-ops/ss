@@ -253,7 +253,7 @@ class EditorView(context: Context, private val controller: EditorController) : V
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(e: MotionEvent): Boolean {
-        if (controller.busy != null) return true
+        if (controller.busy != null || controller.inputLocked) return true
         when (e.actionMasked) {
             MotionEvent.ACTION_DOWN -> down(e)
             MotionEvent.ACTION_POINTER_DOWN -> secondFinger(e)
@@ -302,7 +302,10 @@ class EditorView(context: Context, private val controller: EditorController) : V
                 val hitLayer = controller.state.layers.lastOrNull { hit(it, x, y) }
                 if (hitLayer != null) {
                     if (hitLayer is TextLayer && hitLayer.id == lastTapId && e.eventTime - lastTapTime < 350) {
+                        lastTapId = -1L
+                        gesture = Gesture.IGNORE
                         onEditText?.invoke(hitLayer)
+                        return
                     }
                     lastTapId = hitLayer.id
                     lastTapTime = e.eventTime
