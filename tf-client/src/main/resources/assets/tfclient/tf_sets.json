@@ -595,7 +595,7 @@
     {
      "id": "shadow_wing",
      "type": "back",
-     "worn": "tfclient:item/shadow_wing"
+     "worn": "tfclient:item/sets/shadow/wing_worn"
     },
     {
      "id": "shadow_armor_helmet",
@@ -779,7 +779,7 @@
     {
      "id": "conqueror_wing",
      "type": "back",
-     "worn": "tfclient:item/conqueror_wing"
+     "worn": "tfclient:item/sets/conqueror/wing_worn"
     },
     {
      "id": "conqueror_armor_helmet",
@@ -1065,7 +1065,7 @@
     {
      "id": "cosmo_wings",
      "type": "back",
-     "worn": "tfclient:item/cosmo_wings"
+     "worn": "tfclient:item/sets/cosmo/wings_worn"
     },
     {
      "id": "cosmo_armor_helmet",
@@ -1438,7 +1438,7 @@
     {
      "id": "pink_wings",
      "type": "back",
-     "worn": "tfclient:item/pink_wings"
+     "worn": "tfclient:item/sets/pink/wings_worn"
     },
     {
      "id": "pink_armor_helmet",
@@ -1538,7 +1538,7 @@
     {
      "id": "skeleton_wing",
      "type": "back",
-     "worn": "tfclient:item/skeleton_wing"
+     "worn": "tfclient:item/sets/skeleton/wing_worn"
     },
     {
      "id": "skeleton_armor_helmet",
@@ -2044,7 +2044,7 @@
     {
      "id": "bahamut_wing",
      "type": "back",
-     "worn": "tfclient:item/bahamut_wing"
+     "worn": "tfclient:item/sets/bahamut/wing_worn"
     },
     {
      "id": "bahamut_armor_helmet",
@@ -2329,7 +2329,7 @@
     {
      "id": "chronicles_wings",
      "type": "back",
-     "worn": "tfclient:item/chronicles_wings"
+     "worn": "tfclient:item/sets/chronicles/wings_worn"
     },
     {
      "id": "chronicles_armor_helmet",
@@ -2513,7 +2513,7 @@
     {
      "id": "berserker_wings",
      "type": "back",
-     "worn": "tfclient:item/berserker_wings"
+     "worn": "tfclient:item/sets/berserker/wings_worn"
     },
     {
      "id": "berserker_armor_helmet",

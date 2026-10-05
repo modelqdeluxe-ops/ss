@@ -14,6 +14,7 @@ texturas que existen) para que ningún objeto salga como el cubo morado y negro.
 Uso: python3 tools/build_mod_items.py <carpeta con los packs descomprimidos>
 """
 import json
+import math
 import os
 import re
 import shutil
@@ -290,6 +291,90 @@ def armor_icon_model(writer, slug):
     return {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'tfclient:item/sets/{writer.set_id}/{clean}'}}
 
 
+def _rot(axis, deg):
+    a = math.radians(deg)
+    c, s_ = math.cos(a), math.sin(a)
+    if axis == 'x':
+        return [[1, 0, 0], [0, c, -s_], [0, s_, c]]
+    if axis == 'y':
+        return [[c, 0, s_], [0, 1, 0], [-s_, 0, c]]
+    return [[c, -s_, 0], [s_, c, 0], [0, 0, 1]]
+
+
+def _mul(a, b):
+    return [[sum(a[i][k] * b[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+
+
+def _apply(m, v):
+    return [sum(m[i][k] * v[k] for k in range(3)) for i in range(3)]
+
+
+# Dónde va cada cosmético en la espalda, en bloques desde el cuello hacia abajo (centro, o borde de arriba).
+BACK_PLACE = {'wings': ('center', 0.30), 'wing': ('center', 0.30), 'backpack': ('center', 0.38),
+              'cape': ('top', 0.02), 'tail': ('top', 0.60)}
+
+
+def place_on_back(model, slug, tag):
+    """Coloca el modelo en la espalda del jugador.
+
+    El mod lo dibuja como un objeto puesto en la cabeza (como CustomHeadLayer) pero siguiendo el cuerpo. Los packs
+    traen la posición pensada para los plugins de cosméticos (un soporte de armadura montado encima del jugador), que
+    aquí lo dejaba a la altura de los pies. Se conserva el giro y el tamaño del pack y se calcula el desplazamiento
+    con la forma real del modelo para que quede pegado a la espalda.
+    """
+    head = dict(model.get('display', {}).get('head', {}))
+    rot = head.get('rotation', [0, 0, 0])
+    scale = head.get('scale', [1, 1, 1])
+    pts = []
+    for el in model.get('elements', []):
+        f, t = el['from'], el['to']
+        corners = [[x, y, z] for x in (f[0], t[0]) for y in (f[1], t[1]) for z in (f[2], t[2])]
+        r = el.get('rotation')
+        if r and r.get('angle'):
+            m = _rot(r['axis'], float(r['angle']))
+            o = r['origin']
+            corners = [[a + b for a, b in zip(_apply(m, [c[0] - o[0], c[1] - o[1], c[2] - o[2]]), o)] for c in corners]
+        pts += corners
+    if not pts:
+        return
+    rot = list(rot)
+
+    def oriented(scl):
+        R = _mul(_mul(_rot('x', rot[0]), _rot('y', rot[1])), _rot('z', rot[2]))
+        return [_apply(R, [scl[0] * (p[0] / 16 - 0.5), scl[1] * (p[1] / 16 - 0.5), scl[2] * (p[2] / 16 - 0.5)]) for p in pts]
+
+    def extent(vs, i):
+        return max(v[i] for v in vs) - min(v[i] for v in vs)
+
+    # Algunos packs tienen las alas de lado (la envergadura en z): se giran 90 grados para que se abran a los lados.
+    unit = oriented([1, 1, 1])
+    if slug in ('wings', 'wing') and extent(unit, 2) > 1.5 * extent(unit, 0):
+        rot[1] = (rot[1] + 90) % 360
+        unit = oriented([1, 1, 1])
+    if not any(scale):
+        # Algunos packs esconden el modelo en la cabeza (escala 0): se le da un tamaño razonable.
+        target = 1.8 if slug in ('wings', 'wing') else 0.7
+        k = target / 0.625 / max(extent(unit, 0), 0.05)
+        scale = [k, k, k]
+    scale = [max(-4.0, min(4.0, float(v))) for v in scale]
+    q = oriented(scale)
+    lo = [min(v[i] for v in q) for i in range(3)]
+    hi = [max(v[i] for v in q) for i in range(3)]
+    mode, y_neck = BACK_PLACE.get(slug, ('center', 0.35))
+    # En el marco del objeto «en la cabeza»: +y arriba, +z hacia la espalda, 1 unidad = 1/0.625 bloques.
+    # Altura en el cuerpo: y_cuerpo = -0.25 - 0.625 * qy (hacia abajo desde el cuello).
+    qy_target = -(y_neck + 0.25) / 0.625
+    ty = qy_target - ((lo[1] + hi[1]) / 2 if mode == 'center' else hi[1])
+    tx = -(lo[0] + hi[0]) / 2
+    tz = 0.15 / 0.625 - lo[2]  # justo detrás de la espalda (que está a 2 píxeles del centro)
+    trans = [round(v * 16, 3) for v in (tx, ty, tz)]
+    if any(abs(v) > 80 for v in trans):
+        problems.append(f'{tag}: el cosmético queda demasiado lejos ({trans})')
+        trans = [max(-80, min(80, v)) for v in trans]
+    head.update({'rotation': rot, 'translation': trans, 'scale': scale})
+    model.setdefault('display', {})['head'] = head
+
+
 def overrides(kind, refs):
     o = []
     if kind == 'bow':
@@ -361,15 +446,18 @@ def main(packs):
                     if ov:
                         model['overrides'] = ov
                 if kind == 'back':
-                    cos = None
+                    worn = None
                     for suffix in ('_cosmetic', '_cosmetics', '_cosmeticscore', '_1'):
                         m = w.model(full + suffix)
                         if m:
-                            rel = f'sets/{set_id}/{slug}_worn'
-                            w.write_model(rel, w.convert(m, tag + suffix))
-                            cos = f'tfclient:item/{rel}'
+                            worn = w.convert(m, tag + suffix)
                             break
-                    info['worn'] = cos or f'tfclient:item/{item_id}'
+                    worn = worn or json.loads(json.dumps(model))
+                    worn.pop('overrides', None)
+                    place_on_back(worn, slug, tag)
+                    rel = f'sets/{set_id}/{slug}_worn'
+                    w.write_model(rel, worn)
+                    info['worn'] = f'tfclient:item/{rel}'
             if not model:
                 problems.append(f'{tag}: sin modelo')
                 continue
