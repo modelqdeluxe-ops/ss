@@ -2622,6 +2622,308 @@
     ]
   },
   {
+    "id": "crate-chronicles",
+    "category": "crates",
+    "name": "Crate Crónicas",
+    "theme": "chronicles",
+    "colors": [
+      "#9fe3ff",
+      "#22a6e6"
+    ],
+    "rarity": "Legendario",
+    "tagline": "Reliquias de oro y zafiro",
+    "description": "Las armas de las Crónicas: oro antiguo con núcleos de zafiro. Hacha de batalla, hoja, alabarda, armadura completa, alas y casco.",
+    "image": "img/crates/chronicles.webp",
+    "keyImage": "img/keys/diamonds.webp",
+    "price": 449,
+    "set": "chronicles",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} chronicles 1"
+    ]
+  },
+  {
+    "id": "crate-protocal",
+    "category": "crates",
+    "name": "Crate Protocolo",
+    "theme": "protocal",
+    "colors": [
+      "#ff9b9b",
+      "#ef4444"
+    ],
+    "rarity": "Mítico",
+    "tagline": "Tecnología de combate",
+    "description": "Acero gris y energía roja de tecnología militar: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/protocal.webp",
+    "keyImage": "img/keys/red.webp",
+    "price": 499,
+    "set": "protocal",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} protocal 1"
+    ]
+  },
+  {
+    "id": "crate-berserker",
+    "category": "crates",
+    "name": "Crate Berserker",
+    "theme": "berserker",
+    "colors": [
+      "#ffab8a",
+      "#e5483b"
+    ],
+    "rarity": "Legendario",
+    "tagline": "La furia del guerrero",
+    "description": "Acero negro con ojos de fuego: hacha de batalla, hoja, alabarda, martillo, armadura completa y alas del Berserker.",
+    "image": "img/crates/berserker.webp",
+    "keyImage": "img/keys/magma.webp",
+    "price": 449,
+    "set": "berserker",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "crate key give {player} berserker 1"
+    ]
+  },
+  {
     "id": "llaves-epicas-5",
     "category": "llaves",
     "name": "5 Llaves Épicas",

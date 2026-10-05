@@ -61,6 +61,12 @@ CRATES = [
      'Blanco perla con filos de oro y alitas: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'wings', 449, ('#fff1b8', '#facc15')),
     ('bonita', 'Crate Bonita', 'Épico', 'Rosa pastel con un toque turquesa',
      'Rosa pastel con detalles turquesa: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'crystal', 399, ('#ffc2d6', '#f472b6')),
+    ('chronicles', 'Crate Crónicas', 'Legendario', 'Reliquias de oro y zafiro',
+     'Las armas de las Crónicas: oro antiguo con núcleos de zafiro. Hacha de batalla, hoja, alabarda, armadura completa, alas y casco.', 'diamonds', 449, ('#9fe3ff', '#22a6e6')),
+    ('protocal', 'Crate Protocolo', 'Mítico', 'Tecnología de combate',
+     'Acero gris y energía roja de tecnología militar: gran espada, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'red', 499, ('#ff9b9b', '#ef4444')),
+    ('berserker', 'Crate Berserker', 'Legendario', 'La furia del guerrero',
+     'Acero negro con ojos de fuego: hacha de batalla, hoja, alabarda, martillo, armadura completa y alas del Berserker.', 'magma', 449, ('#ffab8a', '#e5483b')),
 ]
 
 

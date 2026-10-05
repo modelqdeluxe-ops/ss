@@ -79,6 +79,10 @@ SETS = {
                 'bahamut_animated_weapon_set/'),
     'fairy': ('Fairy_Animated_Weapons__Tools_Set/Itemsadder Setup/contents/fairyset/resourcepack/assets', 'fairyset', COMMON),
     'bonita': ('Bonita-Animated-Weapons-Tools-Set/Bonita Animated Weapons & Tools Set/Itemsadder Setup/contents/bonitaset/resourcepack/assets', 'bonitaset', COMMON),
+    'chronicles': ('ChroniclesWeapons/elitecreatures_chronicles/resourcepack/assets', 'chronicles_animated_weapon_set', COMMON),
+    'protocal': ('Protocal_Animated_Weapons_Tools_Set/Protocal Animated Weapons Tools Set/Itemsadder Setup/contents/protocalset/resourcepack/assets', 'protocalset', COMMON),
+    'berserker': ('elitecreatures-berserker_animated_weapon_set/ItemsAdder/data/resourcepack/assets', 'elitecreatures', COMMON,
+                  'berserker_animated_weapon_set/'),
     'conqueror': ('conqueror_legacy/ItemsAdder Setup/contents/conqueror_legacy/resourcepack/assets', 'conqueror_legacy', COMMON),
 }
 
