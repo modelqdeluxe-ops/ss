@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #120c1c;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #120c1c;
+      }
+      /* Todo lo que va pegado a la imagen vive en #world: la cámara mueve el mundo entero. */
+      #world {
+        position: absolute;
+        inset: 0;
+        transform-origin: 960px 540px;
+        will-change: transform;
+      }
+      .full {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+      }
+      #base {
+        display: block;
+      }
+      .masked {
+        -webkit-mask-size: 1920px 1080px;
+        mask-size: 1920px 1080px;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+      }
+      /* Agua que corre: dos texturas de franjas que bajan a distinta velocidad, solo dentro de las cascadas. */
+      .water {
+        -webkit-mask-image: url("assets/mask_water.png");
+        mask-image: url("assets/mask_water.png");
+        background-image:
+          repeating-linear-gradient(180deg, rgba(255, 255, 255, 0) 0px, rgba(235, 250, 255, 0.85) 14px, rgba(255, 255, 255, 0) 34px, rgba(255, 255, 255, 0) 60px),
+          repeating-linear-gradient(180deg, rgba(160, 225, 255, 0) 0px, rgba(200, 240, 255, 0.6) 22px, rgba(160, 225, 255, 0) 48px, rgba(160, 225, 255, 0) 80px),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.0) 0px, rgba(255, 255, 255, 0.35) 3px, rgba(255, 255, 255, 0) 7px, rgba(255, 255, 255, 0) 11px);
+        background-size: 1920px 240px, 1920px 240px, 11px 1080px;
+        mix-blend-mode: screen;
+        opacity: 0.55;
+      }
+      /* Rayos del sol: abanico que gira muy despacio, por detrás de islas y dragón. */
+      #rays-clip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 640px;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 62%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 0%, #000 62%, transparent 100%);
+      }
+      #rays {
+        position: absolute;
+        left: 595px;
+        top: -450px;
+        width: 1600px;
+        height: 1600px;
+        border-radius: 50%;
+        background: repeating-conic-gradient(from 0deg, rgba(255, 228, 170, 0) 0deg, rgba(255, 232, 178, 0.55) 3deg, rgba(255, 228, 170, 0) 7deg, rgba(255, 228, 170, 0) 15deg);
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.55) 18%, rgba(0, 0, 0, 0) 52%);
+        mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.55) 18%, rgba(0, 0, 0, 0) 52%);
+        mix-blend-mode: screen;
+        opacity: 0.32;
+        will-change: transform, opacity;
+      }
+      #sun-glow {
+        position: absolute;
+        left: 1095px;
+        top: 50px;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 246, 214, 0.95) 0%, rgba(255, 214, 140, 0.55) 14%, rgba(255, 170, 90, 0.18) 38%, rgba(255, 150, 80, 0) 64%);
+        mix-blend-mode: screen;
+        will-change: transform, opacity;
+      }
+      /* Islas y dragón: una copia de la imagen en su zona, con bordes muy suaves, que flota unos píxeles. */
+      .float {
+        position: absolute;
+        background-image: url("assets/loading_background.png");
+        background-size: 1920px 1080px;
+        background-repeat: no-repeat;
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+        will-change: transform;
+      }
+      .float .water {
+        position: absolute;
+        width: 1920px;
+        height: 1080px;
+      }
+      .eye {
+        position: absolute;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 200, 255, 0.95) 0%, rgba(214, 90, 255, 0.6) 30%, rgba(160, 40, 255, 0) 70%);
+        mix-blend-mode: screen;
+      }
+      /* Luces cálidas: la capa nítida titila y una copia desenfocada hace el halo. */
+      #lights,
+      #lights-bloom {
+        background-image: url("assets/lights.png");
+        background-size: 1920px 1080px;
+        mix-blend-mode: screen;
+      }
+      #lights-bloom {
+        filter: blur(7px) saturate(1.3);
+      }
+      .lantern {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 220, 140, 0.85) 0%, rgba(255, 170, 70, 0.35) 35%, rgba(255, 140, 50, 0) 70%);
+        mix-blend-mode: screen;
+        will-change: opacity, transform;
+      }
+      /* Portal del Nether: remolino morado y halo. */
+      #portal-swirl {
+        position: absolute;
+        left: 1748px;
+        top: 572px;
+        width: 86px;
+        height: 136px;
+        overflow: hidden;
+        mix-blend-mode: screen;
+        -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 55%, transparent 100%);
+        mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 55%, transparent 100%);
+      }
+      #portal-swirl-inner {
+        position: absolute;
+        left: -57px;
+        top: -32px;
+        width: 200px;
+        height: 200px;
+        background: repeating-conic-gradient(from 0deg, rgba(220, 120, 255, 0) 0deg, rgba(230, 150, 255, 0.75) 10deg, rgba(150, 60, 255, 0) 22deg, rgba(150, 60, 255, 0) 36deg);
+        will-change: transform;
+      }
+      #portal-glow {
+        position: absolute;
+        left: 1640px;
+        top: 490px;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(200, 110, 255, 0.55) 0%, rgba(150, 60, 255, 0.22) 35%, rgba(120, 40, 255, 0) 68%);
+        mix-blend-mode: screen;
+        will-change: opacity, transform;
+      }
+      /* Título: halo dorado que respira y un reflejo que lo cruza cada 15 s. */
+      #title-glow {
+        -webkit-mask-image: url("assets/mask_title_glow.png");
+        mask-image: url("assets/mask_title_glow.png");
+        background: radial-gradient(ellipse 30% 22% at 50% 47%, rgba(255, 214, 110, 0.9), rgba(255, 170, 60, 0.55) 70%, rgba(255, 150, 50, 0.3));
+        mix-blend-mode: screen;
+        opacity: 0.3;
+      }
+      #title-sheen {
+        -webkit-mask-image: url("assets/mask_title.png");
+        mask-image: url("assets/mask_title.png");
+        overflow: hidden;
+      }
+      #sheen-band {
+        position: absolute;
+        top: 360px;
+        left: 0;
+        width: 260px;
+        height: 320px;
+        background: linear-gradient(100deg, rgba(255, 210, 110, 0) 0%, rgba(255, 205, 100, 0.55) 34%, rgba(255, 252, 235, 0.95) 50%, rgba(255, 205, 100, 0.55) 66%, rgba(255, 210, 110, 0) 100%);
+        will-change: transform, opacity;
+      }
+      .glint {
+        position: absolute;
+        height: 3px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, rgba(255, 245, 220, 0), rgba(255, 248, 230, 0.95), rgba(255, 245, 220, 0));
+        mix-blend-mode: screen;
+        will-change: opacity;
+      }
+      .mote {
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-radius: 50%;
+        will-change: transform, opacity;
+      }
+      .mote.warm {
+        background: radial-gradient(circle, rgba(255, 250, 215, 1) 0%, rgba(255, 210, 110, 0.9) 35%, rgba(255, 170, 60, 0) 72%);
+      }
+      .mote.violet {
+        background: radial-gradient(circle, rgba(250, 220, 255, 1) 0%, rgba(205, 110, 255, 0.9) 35%, rgba(150, 50, 255, 0) 72%);
+      }
+      /* Fuera del mundo: luz cálida que respira y viñeta fija. */
+      #warmth {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 55% 60% at 72% 34%, rgba(255, 190, 110, 0.55), rgba(255, 150, 90, 0) 70%);
+        mix-blend-mode: soft-light;
+        will-change: opacity;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 75% 70% at 50% 48%, rgba(18, 10, 28, 0) 62%, rgba(18, 10, 28, 0.42) 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-plbr" id="root" data-composition-id="main" data-start="0" data-duration="180" data-width="1920" data-height="1080">
+      <!-- Una sola escena que dura todo el video: capas fijas (sin data-start), movidas por el reloj de la línea de tiempo. -->
+        <div data-hf-id="hf-j427" id="world">
+          <img data-hf-id="hf-puoo" id="base" class="full" src="assets/loading_background.png" alt="Tierras Fantásticas">
+          <div data-hf-id="hf-jyya" id="water" class="full masked water"></div>
+          <div data-hf-id="hf-1omt" id="rays-clip"><div data-hf-id="hf-e4eq" id="rays"></div></div>
+          <div data-hf-id="hf-vfcx" id="sun-glow"></div>
+          <div data-hf-id="hf-4d6o" id="floats"></div>
+          <div data-hf-id="hf-ph5g" id="lights-bloom" class="full"></div>
+          <div data-hf-id="hf-r5bi" id="lights" class="full"></div>
+          <div data-hf-id="hf-jpe2" id="lanterns"></div>
+          <div data-hf-id="hf-6riz" id="portal-glow"></div>
+          <div data-hf-id="hf-0iil" id="portal-swirl"><div data-hf-id="hf-h8iq" id="portal-swirl-inner"></div></div>
+          <div data-hf-id="hf-r4y4" id="title-glow" class="full masked"></div>
+          <div data-hf-id="hf-pjpm" id="title-sheen" class="full masked"><div data-hf-id="hf-71r8" id="sheen-band"></div></div>
+          <div data-hf-id="hf-97pq" id="glints"></div>
+          <div data-hf-id="hf-lfoz" id="motes"></div>
+        </div>
+        <div data-hf-id="hf-dpea" id="warmth"></div>
+        <div data-hf-id="hf-h7i3" id="vignette"></div>
+    </div>
+    <script>
+      // Loop de 180 s: todo movimiento es periódico con un número entero de ciclos en 180 s,
+      // así el último fotograma empalma con el primero. Todo se calcula a partir del tiempo (sin azar ni reloj).
+      const LOOP = 180;
+      const TAU = Math.PI * 2;
+      const wave = (t, cycles, phase = 0) => Math.sin((TAU * cycles * t) / LOOP + phase);
+      const prand = (n) => {
+        const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+        return x - Math.floor(x);
+      };
+      const LAYERS = {"size":[1920,1080],"objects":{"island_0":{"x":621,"y":0,"w":298,"h":297},"island_1":{"x":854,"y":0,"w":492,"h":478},"island_2":{"x":733,"y":211,"w":210,"h":218},"island_3":{"x":1460,"y":0,"w":274,"h":277},"dragon":{"x":1440,"y":0,"w":480,"h":560}},"glints":[[1265,1034],[1084,978],[1249,1035],[1250,946],[1267,1039],[1176,937],[1354,1055],[1265,1045],[1282,1069],[1174,887],[1207,972],[1290,1042],[1235,942],[1391,1037],[1205,1058],[1249,948],[1361,1069],[1257,983],[1071,974],[1258,976],[1394,1014],[1180,929],[1244,994],[966,946],[1086,987],[1233,1006],[1274,1062],[1200,969],[1224,938],[1269,1051],[1223,1010],[1178,907],[980,924],[1256,1040],[1221,954],[1212,977],[1288,1070],[1404,987],[1117,921],[1216,954],[1118,949],[1354,992],[1274,1048],[1230,972],[1398,994],[1242,1030]]};
+      const $ = (id) => document.getElementById(id);
+
+      // ---- Islas y dragón ----
+      const FLOATS = [
+        { id: "island_0", amp: 5, cycles: 20, phase: 0.0, sway: 1.2 },
+        { id: "island_1", amp: 6, cycles: 18, phase: 1.7, sway: 1.5 },
+        { id: "island_2", amp: 4, cycles: 24, phase: 3.1, sway: 1.0 },
+        { id: "island_3", amp: 5, cycles: 22, phase: 4.4, sway: 1.2 },
+        { id: "dragon", amp: 7, cycles: 15, phase: 0.9, sway: 2.0, rot: 0.7 },
+      ];
+      const floatsEl = $("floats");
+      for (const f of FLOATS) {
+        const o = LAYERS.objects[f.id];
+        const el = document.createElement("div");
+        el.className = "float";
+        el.id = "float-" + f.id;
+        el.style.left = o.x + "px";
+        el.style.top = o.y + "px";
+        el.style.width = o.w + "px";
+        el.style.height = o.h + "px";
+        el.style.backgroundPosition = `${-o.x}px ${-o.y}px`;
+        const mask = `url("assets/mask_${f.id}.png")`;
+        el.style.webkitMaskImage = mask;
+        el.style.maskImage = mask;
+        if (f.id === "dragon") {
+          el.style.transformOrigin = `${1770 - o.x}px ${330 - o.y}px`;
+          for (const [ex, ey] of [[1688, 355], [1727, 350]]) {
+            const eye = document.createElement("div");
+            eye.className = "eye";
+            eye.style.left = ex - o.x - 23 + "px";
+            eye.style.top = ey - o.y - 23 + "px";
+            el.appendChild(eye);
+          }
+        } else {
+          // el agua de las cascadas de la isla viaja con la isla
+          const w = document.createElement("div");
+          w.className = "water masked";
+          w.style.left = -o.x + "px";
+          w.style.top = -o.y + "px";
+          el.appendChild(w);
+        }
+        floatsEl.appendChild(el);
+        f.el = el;
+        f.eyes = el.querySelectorAll(".eye");
+      }
+      const waters = document.querySelectorAll(".water");
+
+      // ---- Linternas: halos que titilan cada uno a su ritmo ----
+      const LANTERNS = [
+        [26, 622, 90], [256, 488, 70], [399, 702, 64], [108, 290, 48], [126, 296, 40], [1525, 966, 110], [1670, 707, 80],
+        [1895, 676, 84], [1700, 628, 50], [1872, 594, 60], [258, 1012, 56], [1428, 1048, 50],
+      ];
+      const lanternsEl = $("lanterns");
+      const lanterns = LANTERNS.map(([x, y, s], i) => {
+        const el = document.createElement("div");
+        el.className = "lantern";
+        el.style.left = x - s / 2 + "px";
+        el.style.top = y - s / 2 + "px";
+        el.style.width = s + "px";
+        el.style.height = s + "px";
+        lanternsEl.appendChild(el);
+        return { el, i };
+      });
+
+      // ---- Destellos del río ----
+      const glintsEl = $("glints");
+      const glints = LAYERS.glints.map(([x, y], i) => {
+        const el = document.createElement("div");
+        el.className = "glint";
+        const w = 10 + prand(i * 5 + 1) * 22;
+        el.style.width = w + "px";
+        el.style.left = x - w / 2 + "px";
+        el.style.top = y - 1 + "px";
+        glintsEl.appendChild(el);
+        return { el, cycles: 40 + Math.floor(prand(i * 7 + 3) * 50), phase: prand(i * 11 + 2) * TAU };
+      });
+
+      // ---- Partículas: luciérnagas cálidas y chispas moradas ----
+      // Cada partícula vive LIFE segundos y renace en otro sitio; la semilla depende del ciclo módulo (LOOP/LIFE),
+      // así en t = 180 vuelven exactamente al estado de t = 0.
+      const motesEl = $("motes");
+      const ZONES = {
+        warm: [
+          { x: 0, y: 260, w: 760, h: 820, n: 22 },        // castillo y bosque de la izquierda
+          { x: 760, y: 640, w: 760, h: 440, n: 10 },      // valle y río
+          { x: 1500, y: 560, w: 420, h: 520, n: 8 },      // derecha
+        ],
+        violet: [
+          { x: 1690, y: 560, w: 200, h: 180, n: 12, rise: 110 },  // portal
+          { x: 1600, y: 160, w: 320, h: 360, n: 14, rise: 70 },   // dragón
+        ],
+      };
+      const motes = [];
+      let seed = 1;
+      for (const kind of ["warm", "violet"]) {
+        for (const z of ZONES[kind]) {
+          for (let k = 0; k < z.n; k++, seed++) {
+            const el = document.createElement("div");
+            el.className = "mote " + kind;
+            const size = kind === "warm" ? 7 + prand(seed * 3) * 9 : 6 + prand(seed * 3) * 8;
+            el.style.width = size + "px";
+            el.style.height = size + "px";
+            motesEl.appendChild(el);
+            const life = kind === "warm" ? [9, 10, 12, 15][seed % 4] : [6, 9, 10][seed % 3];
+            motes.push({ el, kind, z, seed, size, life, offset: prand(seed * 13) * life });
+          }
+        }
+      }
+
+      function render(t) {
+        // Cámara: deriva lenta (Lissajous) que vuelve al inicio a los 180 s; escala siempre > 1.08 para no ver bordes.
+        const s = 1.11 + 0.025 * wave(t, 2, -Math.PI / 2);
+        const cx = 52 * wave(t, 1);
+        const cy = 26 * wave(t, 2, 1.2);
+        $("world").style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px) scale(${s.toFixed(5)})`;
+
+        // Agua: franjas que bajan (160 y 240 px/s; 180 s = número entero de baldosas de 240 px)
+        const y1 = (t * 160) % 240;
+        const y2 = (t * 240) % 240;
+        for (const w of waters) w.style.backgroundPosition = `0px ${y1.toFixed(1)}px, 0px ${y2.toFixed(1)}px, 0px 0px`;
+
+        // Sol
+        $("rays").style.transform = `rotate(${((t / LOOP) * 30).toFixed(3)}deg)`;
+        $("rays").style.opacity = (0.3 + 0.06 * wave(t, 12)).toFixed(3);
+        $("sun-glow").style.opacity = (0.62 + 0.1 * wave(t, 15)).toFixed(3);
+        $("sun-glow").style.transform = `scale(${(1 + 0.04 * wave(t, 15, 0.6)).toFixed(4)})`;
+
+        // Islas y dragón flotando
+        for (const f of FLOATS) {
+          const y = f.amp * wave(t, f.cycles, f.phase);
+          const x = f.sway * wave(t, f.cycles / 2, f.phase + 1.3);
+          const r = f.rot ? f.rot * wave(t, f.cycles, f.phase + 0.9) : 0;
+          f.el.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${r.toFixed(3)}deg)`;
+          for (const eye of f.eyes) eye.style.opacity = (0.55 + 0.4 * wave(t, 30, f.phase)).toFixed(3);
+        }
+
+        // Luces: titileo irregular (suma de senos con ciclos enteros)
+        const flick = 0.5 + 0.18 * wave(t, 131) + 0.12 * wave(t, 57, 1.1) + 0.08 * wave(t, 23, 2.3);
+        $("lights").style.opacity = (0.35 + 0.35 * flick).toFixed(3);
+        $("lights-bloom").style.opacity = (0.45 + 0.35 * (0.5 + 0.25 * wave(t, 97, 0.4) + 0.2 * wave(t, 41, 2.0))).toFixed(3);
+        for (const l of lanterns) {
+          const v = 0.55 + 0.2 * wave(t, 83 + l.i * 7, l.i) + 0.12 * wave(t, 37 + l.i * 3, l.i * 2.1);
+          l.el.style.opacity = v.toFixed(3);
+          l.el.style.transform = `scale(${(1 + 0.06 * wave(t, 61 + l.i * 5, l.i)).toFixed(4)})`;
+        }
+
+        // Portal
+        $("portal-swirl-inner").style.transform = `rotate(${((t / LOOP) * 360 * 6).toFixed(2)}deg)`;
+        $("portal-swirl").style.opacity = (0.55 + 0.2 * wave(t, 45)).toFixed(3);
+        $("portal-glow").style.opacity = (0.65 + 0.25 * wave(t, 30, 0.7)).toFixed(3);
+        $("portal-glow").style.transform = `scale(${(1 + 0.06 * wave(t, 30, 1.4)).toFixed(4)})`;
+
+        // Título: halo que respira y reflejo cada 15 s (12 por loop)
+        $("title-glow").style.opacity = (0.26 + 0.1 * wave(t, 18)).toFixed(3);
+        const cyc = t % 15;
+        const SWEEP = 1.9;
+        const band = $("sheen-band");
+        if (cyc < SWEEP) {
+          const p = cyc / SWEEP;
+          const e = p * p * (3 - 2 * p);
+          band.style.transform = `translateX(${(380 + e * 1180).toFixed(1)}px) skewX(-14deg)`;
+          band.style.opacity = Math.sin(Math.PI * p).toFixed(3);
+        } else {
+          band.style.opacity = "0";
+        }
+
+        // Río
+        for (const g of glints) {
+          const v = wave(t, g.cycles, g.phase);
+          g.el.style.opacity = Math.max(0, v * v * v).toFixed(3);
+        }
+
+        // Partículas
+        for (const m of motes) {
+          const local = t + m.offset;
+          const cycleIdx = Math.floor(local / m.life);
+          const k = ((cycleIdx % (LOOP / m.life)) + LOOP / m.life) % (LOOP / m.life);
+          const u = (local - cycleIdx * m.life) / m.life; // 0..1 dentro de su vida
+          const sd = m.seed * 97 + k * 13;
+          const x0 = m.z.x + prand(sd + 1) * m.z.w;
+          const y0 = m.z.y + prand(sd + 2) * m.z.h;
+          let x, y, a;
+          if (m.kind === "warm") {
+            x = x0 + 26 * Math.sin(u * TAU + prand(sd + 3) * TAU) + 30 * (prand(sd + 4) - 0.5) * u;
+            y = y0 - 70 * u + 10 * Math.sin(u * TAU * 2 + prand(sd + 5) * TAU);
+            const blink = 0.55 + 0.45 * Math.sin(u * TAU * (2 + (m.seed % 3)) + prand(sd + 6) * TAU);
+            a = Math.sin(Math.PI * u) * blink;
+          } else {
+            x = x0 + 18 * Math.sin(u * TAU + prand(sd + 3) * TAU);
+            y = y0 - m.z.rise * u;
+            a = Math.sin(Math.PI * u) * (0.75 + 0.25 * Math.sin(u * TAU * 3));
+          }
+          m.el.style.transform = `translate(${(x - m.size / 2).toFixed(1)}px, ${(y - m.size / 2).toFixed(1)}px)`;
+          m.el.style.opacity = Math.max(0, a).toFixed(3);
+        }
+
+        // Luz cálida general
+        $("warmth").style.opacity = (0.45 + 0.15 * wave(t, 6)).toFixed(3);
+      }
+
+      const tl = gsap.timeline({ paused: true });
+      const clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: LOOP, duration: LOOP, ease: "none", onUpdate: () => render(clock.t), immediateRender: true }, 0);
+      render(0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
