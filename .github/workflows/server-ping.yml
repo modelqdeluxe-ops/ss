@@ -20,3 +20,22 @@ jobs:
         run: python3 .github/scripts/server_ping.py 216.163.187.40 19001 || true
       - name: Prueba de inicio de sesión
         run: python3 .github/scripts/server_login_probe.py 216.163.187.40 19001 || true
+      - name: Invitación de Discord
+        run: |
+          curl -sS "https://discord.com/api/v10/invites/tRrunHBZE?with_counts=true" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          g = d.get('guild') or {}
+          i = d.get('inviter') or {}
+          print('codigo:', d.get('code'), '| caduca:', d.get('expires_at'))
+          print('servidor:', g.get('name'), '| id:', g.get('id'), '| url personalizada:', g.get('vanity_url_code'))
+          print('invitado por:', i.get('username'), '| miembros:', d.get('approximate_member_count'))
+          print('canal:', (d.get('channel') or {}).get('name'))
+          gid = g.get('id')
+          open('guild_id.txt', 'w').write(gid or '')
+          " || true
+          GID=$(cat guild_id.txt 2>/dev/null)
+          if [ -n "$GID" ]; then
+            echo "Widget del servidor:"
+            curl -sS "https://discord.com/api/guilds/$GID/widget.json" | head -c 400; echo
+          fi
