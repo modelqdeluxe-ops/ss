@@ -424,6 +424,8 @@
     if (!p || !p.set || !Array.isArray(p.models)) return [];
     return p.models.map((m) => ({
       name: m.name,
+      // Solo las armas se ponen de pie; cofres, alas, cascos o armaduras se ven tal cual.
+      upright: !/^(chest|wings?|helmet|hat|shield|armor_|backpack|little_dragon|cape|tail)/.test(m.id),
       thumb: `img/items/${p.set}/${m.id}.webp`,
       model: `/models/${p.set}/${m.id}.json`,
     }));

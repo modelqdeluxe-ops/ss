@@ -315,7 +315,7 @@ function createUi() {
       guiGroup.rotation.set(...gui.map((d) => THREE.MathUtils.degToRad(d)), 'XYZ');
       const upright = new THREE.Group();
       upright.add(guiGroup);
-      upright.rotation.z = uprightAngle(guiGroup);
+      upright.rotation.z = item.upright === false ? 0 : uprightAngle(guiGroup);
       pivot.add(upright);
       const sphere = new THREE.Box3().setFromObject(upright).getBoundingSphere(new THREE.Sphere());
       const dist = (sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))) * 1.05;
