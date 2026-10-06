@@ -3,30 +3,35 @@
 Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasarela de pago real. Funciona en
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
-- Web por secciones con una página para cada una. Estilo de juego de fantasía: fondo azul noche con un grano muy
-  suave, oro, títulos en Cinzel con un ornamento debajo y todo (tarjetas, botones, campos y ventanas) con las esquinas
-  biseladas y un filo dorado. Portada ligera: el emblema, la IP, la barra de datos del servidor, tres pilares y cuatro
-  crates. Las crates tienen un brillo de su color que late. Pensado primero para el móvil: menú a pantalla completa en
-  el teléfono, nada se sale de la pantalla, sin partículas, desenfoques ni efectos pesados (solo animaciones de
-  `transform`/`opacity`, que se apagan con «reducir movimiento»):
-  - **Inicio** (`/`): el emblema animado, la IP (clic para copiar), el estado del servidor en vivo y cuatro crates.
-  - **Tienda** (`/tienda`), con buscador y pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**,
-    **Rangos**, **Crates**, **Ruleta**, **Monedas** y **Tienda de monedas**.
-    - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) y se compra entera, sin
-      llaves. Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
-      puesto, tal como lo coloca el TF Client en el juego; al tocar una pieza se ve suelta en 3D y se puede
-      **equipar** o quitar.
-    - **Ruleta**: 1, 5 o 10 giros. Cada giro da un premio al azar con su probabilidad a la vista (monedas, diamantes,
-      netherita, tótems… y un 5% de que sea un arma legendaria de Nazgul). La tienda lo elige al confirmarse el pago y
-      la página de la compra dice qué tocó. Los premios y probabilidades están en `ROULETTE_POOL` de `tools/crates.py`.
-      También se gira con las monedas del servidor (`ROULETTE_COIN_PRICE` por giro): con la cuenta iniciada, la web
-      manda la tirada al juego, el TF Client cobra las monedas y devuelve los premios, que salen en la página de la
-      tirada (`tf web ruleta girar`).
-    - **Tienda de monedas**: objetos del servidor que se compran en la web con las monedas del juego. La llena el
-      staff desde el juego (`/tf web tienda add <precio>`) y la web se actualiza sola. Al comprar, la web manda
+- Web por secciones con una página para cada una. Concepto «Minecraft moderno»: noche profunda con luz esmeralda y
+  amatista, titulares en Unbounded y texto en Figtree, botones con volumen de bloque (se elevan al pasar el ratón y se
+  hunden al pulsar), tarjetas con profundidad, pantalla de carga en la primera visita, esqueletos mientras carga la
+  tienda y transiciones suaves entre páginas. Pensado primero para el móvil: nada se sale de la pantalla, sin
+  partículas, desenfoques ni capas fijas (solo animaciones de `transform`/`opacity`, que se apagan con «reducir
+  movimiento»):
+  - **Inicio** (`/`): el emblema, el estado del servidor en vivo, la IP (clic para copiar), las cifras del servidor,
+    tres pilares y cuatro crates.
+  - **Tienda** (`/tienda`), con pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**, **Rangos**,
+    **Crates** y **Tienda de monedas**.
+    - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) con contenido fijo y a la
+      vista, sin nada al azar. Son de aspecto: en el TF Client (1.3.4) las armas y armaduras tienen los valores del
+      hierro. Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
+      puesto; al tocar una pieza se ve suelta en 3D y se puede **equipar** o quitar.
+    - **Tienda de monedas**: objetos del servidor que se compran en la web con las monedas que se ganan jugando. La
+      llena el staff desde el juego (`/tf web tienda add <precio>`) y la web se actualiza sola. Al comprar, la web manda
       `tf web tienda comprar <jugador> <id>`: el TF Client cobra las monedas y da el objeto.
+    - **Retirado por las normas de Mojang** (octubre de 2026): la **ruleta** (premios al azar: se parece al juego de
+      azar y daba objetos con ventaja) y la venta de **monedas con dinero**. Su código sigue en la web y en los tests
+      (con productos de ejemplo en `test/retired-products.json`) por si algún día vuelven de forma permitida; en
+      `tools/crates.py` están `ROULETTE_ENABLED = False` y `RETIRED`.
+  - **Páginas legales**: `/legal` (aviso legal, no afiliación con Mojang/Microsoft y cómo cumple la tienda sus normas),
+    `/terminos` (términos de uso y de compra: precios, entrega, 5 días hábiles para cancelar, reembolsos) y
+    `/privacidad` (aviso de privacidad según la ley mexicana de 2025, con cookies). Los textos están en
+    `tools/legal.py`. El aviso de no afiliación sale en el pie de todas las páginas, en la tienda y en la ventana de
+    compra. Contacto público: tierrasfantasticasmc@gmail.com.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).
-  - Rangos con escudos animados y una tabla para comparar sus ventajas (`/tienda#rangos`).
+  - Rangos con su color y una tabla para comparar sus ventajas (`/tienda#rangos`): solo prefijos, cosméticos y
+    comodidades que no dan ventaja (sin kits de objetos, sin zonas de pago, sin /ec).
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.
@@ -180,7 +185,7 @@ Edita `config/products.json`. Cada producto tiene:
 | Campo         | Descripción                                                      |
 |---------------|------------------------------------------------------------------|
 | `id`          | Identificador único                                              |
-| `category`    | `gratis`, `rangos`, `crates`, `ruleta` o `monedas` (las pestañas de la tienda) |
+| `category`    | `gratis`, `rangos` o `crates` (las pestañas de la tienda; `ruleta` y `monedas` están retiradas) |
 | `price`       | Precio en **céntimos** (`499` = 4,99)                            |
 | `maxQuantity` | Opcional. Cantidad máxima por compra (por defecto 10; rangos = 1)|
 | `discordRoles`| Opcional. IDs de los roles de Discord que se dan al comprar      |

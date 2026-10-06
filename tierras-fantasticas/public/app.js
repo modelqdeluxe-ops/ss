@@ -22,6 +22,32 @@
 
   $$('[data-year]').forEach((el) => (el.textContent = new Date().getFullYear()));
 
+  // Cifras que suben desde 0 (portada). Sin animación si el usuario pidió reducir el movimiento.
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function countTo(el, to, prefix = '') {
+    if (calm || !Number.isFinite(to) || to <= 0) {
+      el.textContent = `${prefix}${to}`;
+      return;
+    }
+    const t0 = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / 1100);
+      el.textContent = `${prefix}${Math.round(to * (1 - (1 - k) ** 3))}`;
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        io.unobserve(e.target);
+        countTo(e.target, Number(e.target.dataset.count), e.target.dataset.prefix || '');
+      }
+    });
+    $$('[data-count]').forEach((el) => io.observe(el));
+  }
+
   // --- Cabecera: transparente sobre la portada y sólida al bajar ---
   const header = $('#header');
   if (document.body.hasAttribute('data-hero') && 'IntersectionObserver' in window) {
@@ -124,8 +150,8 @@
       const count = data.players?.online ?? 0;
       dots.forEach((el) => el.classList.add(online ? 'online' : 'offline'));
       const word = count === 1 ? 'jugador' : 'jugadores';
-      texts.forEach((el) => (el.textContent = online ? `En línea · ${count} ${word} conectados` : 'Servidor desconectado'));
-      $$('[data-players]').forEach((el) => (el.textContent = online ? count : 'Off'));
+      texts.forEach((el) => (el.textContent = online ? `En línea · ${count} ${word} ${count === 1 ? "conectado" : "conectados"}` : 'Servidor desconectado'));
+      $$('[data-players]').forEach((el) => (online ? countTo(el, count) : (el.textContent = 'Off')));
     } catch {
       texts.forEach((el) => (el.textContent = 'Estado no disponible'));
     }
@@ -190,10 +216,11 @@
   }
   const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
   const isPixel = (src) => /\/ranks\/|coins-|\/gifts\//.test(src || '');
+  // Las imágenes aparecen con un fundido cuando terminan de cargar (clase «ok», ver .fx en styles.css).
   const img = (src, alt, cls = '', extra = '') =>
-    `<img src="${asset(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"${
-      isPixel(src) || cls ? ` class="${[cls, isPixel(src) ? 'pixel-img' : ''].filter(Boolean).join(' ')}"` : ''
-    }${extra}>`;
+    `<img src="${asset(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async" class="${[cls, 'fx', isPixel(src) ? 'pixel-img' : '']
+      .filter(Boolean)
+      .join(' ')}" onload="this.classList.add('ok')" onerror="this.classList.add('ok')"${extra}>`;
   const thumbOf = (set, id) => `/img/items/${set}/${id}.webp`;
   const piecesText = (p) => {
     const n = (p.models || []).length;
@@ -220,7 +247,7 @@
   // Inicio: solo unas pocas crates (lo demás está en la tienda)
   function renderHome() {
     const list = crates();
-    $$('[data-crate-count]').forEach((el) => (el.textContent = list.length));
+    $$('[data-crate-count]').forEach((el) => countTo(el, list.length));
     $$('[data-crates-all]').forEach((el) => (el.innerHTML = `Ver las ${list.length} crates ${ICON_ARROW}`));
     const box = $('#crate-spotlight');
     box.innerHTML = list
@@ -241,11 +268,19 @@
     observeReveal();
   }
 
-  // Tienda: tarjetas de regalos, rangos y monedas
+  // Los rangos usan el color de su prefijo
+  function rankAttr(p) {
+    const hex = p.rank?.hex;
+    if (!HEX.test(hex || '')) return '';
+    const n = Number.parseInt(hex.slice(1), 16);
+    return ` style="--t1:${hex};--t2:${hex};--t3:rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, 0.28)"`;
+  }
+
+  // Tienda: tarjetas de regalos y rangos
   function productCard(p) {
     const perks = Array.isArray(p.perks) ? p.perks.slice(0, 5) : [];
     return `
-      <article class="panel product"${themeAttr(p)}>
+      <article class="panel product"${themeAttr(p) || rankAttr(p)}>
         ${p.image ? `<div class="thumb">${img(p.image, '')}</div>` : ''}
         <div class="body">
           <span class="cat">${escapeHtml(CATEGORY_LABEL[p.category] || p.category)}</span>
@@ -254,7 +289,7 @@
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
           <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn btn-gold btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>`}
+            <button class="btn btn-primary btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>`}
           </div>
         </div>
       </article>`;
@@ -282,7 +317,7 @@
 
   function giftFoot(p) {
     if (p.price !== 0) return '';
-    return `<span class="price free">Gratis</span><button class="btn btn-gold btn-sm" type="button" data-claim="${escapeHtml(p.id)}">Reclamar</button>`;
+    return `<span class="price free">Gratis</span><button class="btn btn-primary btn-sm" type="button" data-claim="${escapeHtml(p.id)}">Reclamar</button>`;
   }
 
   document.addEventListener('click', async (e) => {
@@ -294,6 +329,7 @@
       return;
     }
     btn.disabled = true;
+    btn.classList.add('is-loading');
     try {
       const res = await fetch('/api/claim', {
         method: 'POST',
@@ -310,6 +346,7 @@
       toast('No se pudo reclamar la recompensa.');
     }
     btn.disabled = false;
+    btn.classList.remove('is-loading');
   });
 
   // Con Minecraft vinculado: su rango actual no se vuelve a vender y los superiores salen a precio de mejora.
@@ -320,7 +357,7 @@
       const mine = me.user.rank.id === p.id;
       return `<span class="price owned">${mine ? 'Tu rango' : 'Incluido'}</span><button class="btn btn-ghost btn-sm" type="button" disabled>${mine ? '✓ Lo tienes' : 'Ya incluido'}</button>`;
     }
-    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><button class="btn btn-gold btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>`;
+    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><button class="btn btn-primary btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>`;
   }
 
   function rerenderRanks() {
@@ -353,8 +390,8 @@
 
   const INTRO = {
     gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
-    rangos: 'Prefijo con color en el nombre, kits, hogares y ventajas de comodidad. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
-    crates: 'Cada crate es un set completo: armas, herramientas, armadura y cosméticos animados. Toca una para probártela en tu personaje.',
+    rangos: 'Prefijo con color en tu nombre, cosméticos y comodidades que no dan ventaja sobre nadie. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
+    crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Son de aspecto: las armas y armaduras tienen los mismos valores que las de hierro. Toca una para probártela en tu personaje.',
     ruleta: '',
     monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
     tiendamonedas: '',
@@ -466,7 +503,7 @@
           <p>Cada giro te da un premio al azar para el servidor: monedas, diamantes, netherita, tótems… y, con un ${weaponChance}% de probabilidad, un arma legendaria de la forja de Nazgul. La tienda elige el premio al confirmarse el pago y te llega al juego.</p>
           <div class="spin-buttons">${spins
             .map(
-              (p, i) => `<button type="button" class="btn ${i === 0 ? 'btn-gold' : 'btn-ghost'} btn-lg" ${buyAttrs(p)}>
+              (p, i) => `<button type="button" class="btn ${i === 0 ? 'btn-primary' : 'btn-ghost'} btn-lg" ${buyAttrs(p)}>
                 ${p.spins} ${p.spins === 1 ? 'giro' : 'giros'} · ${formatPrice(p.price)}</button>`,
             )
             .join('')}</div>
@@ -528,6 +565,7 @@
     }
     const failed = spin ? 'No se pudo girar ahora mismo.' : 'No se pudo comprar ahora mismo.';
     btn.disabled = true;
+    btn.classList.add('is-loading');
     try {
       const res = await fetch(spin ? '/api/roulette/coins' : '/api/coinshop/buy', {
         method: 'POST',
@@ -544,6 +582,7 @@
       toast(failed);
     }
     btn.disabled = false;
+    btn.classList.remove('is-loading');
   });
 
   document.addEventListener('click', async (e) => {
@@ -595,7 +634,7 @@
                   <h3>${escapeHtml(it.name)}</h3>
                   <span class="muted small">× ${it.count}</span>
                   <span class="coin-price"><img src="/img/coins-small.png" alt="" width="20" height="20" class="pixel-img">${fmt.format(it.price)}</span>
-                  <button type="button" class="btn btn-gold btn-sm" data-coin-buy="${escapeHtml(it.id)}">Comprar</button>
+                  <button type="button" class="btn btn-coin btn-sm" data-coin-buy="${escapeHtml(it.id)}">Comprar</button>
                 </article>`,
               )
               .join('')}</div>`
@@ -832,8 +871,11 @@
       <div class="dialog-total"><span>Total <small id="dialog-upgrade"></small></span><strong id="dialog-total"></strong></div>
       <p class="error" id="checkout-error" role="alert"></p>
 
-      <button type="submit" class="btn btn-gold btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
+      <button type="submit" class="btn btn-primary btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
       <p class="pay-note">${ICON_LOCK}<span>Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
+      <p class="pay-legal">Precio final en USD. Al pagar aceptas los <a href="/terminos" target="_blank">Términos y condiciones</a> y el
+        <a href="/privacidad" target="_blank">Aviso de privacidad</a>. Tienes 5 días hábiles para cancelar la compra.
+        Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
   </dialog>`;
 
@@ -892,6 +934,7 @@
     showError('');
     paying = false;
     $('#pay-btn').textContent = 'Pagar con tarjeta';
+    $('#pay-btn').classList.remove('is-loading');
     // Con la cuenta vinculada, el jugador ya se sabe.
     $('#username').value = me.user?.name || storageGet('tf-username');
     player = null;
@@ -1065,6 +1108,7 @@
     paying = true;
     setPayable();
     $('#pay-btn').textContent = 'Abriendo el pago seguro…';
+    $('#pay-btn').classList.add('is-loading');
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -1078,6 +1122,7 @@
     } catch (err) {
       paying = false;
       $('#pay-btn').textContent = 'Pagar con tarjeta';
+      $('#pay-btn').classList.remove('is-loading');
       showError(err.message);
       setPayable();
     }
@@ -1150,7 +1195,7 @@
           </div>
           <p class="muted small" id="auth-note"></p>
           <p class="error" id="auth-error" role="alert"></p>
-          <button class="btn btn-gold btn-lg btn-block" type="submit" id="auth-submit"></button>
+          <button class="btn btn-primary btn-lg btn-block" type="submit" id="auth-submit"></button>
         </form>
         ${discordBtn}
       </div>`;
@@ -1226,6 +1271,7 @@
     error('');
     const btn = $('#auth-submit');
     btn.disabled = true;
+    btn.classList.add('is-loading');
     try {
       const res = await fetch(authTab === 'register' ? '/api/auth/register' : '/api/auth/login', {
         method: 'POST',
@@ -1248,6 +1294,7 @@
       error(err.message);
     } finally {
       btn.disabled = false;
+      btn.classList.remove('is-loading');
     }
   }
 
@@ -1300,7 +1347,7 @@
             <div class="field"><label for="pw-current">Contraseña actual</label><input id="pw-current" type="password" autocomplete="current-password"></div>
             <div class="field"><label for="pw-new">Nueva contraseña</label><input id="pw-new" type="password" autocomplete="new-password" minlength="8"></div>
             <p class="error" id="pw-error" role="alert"></p>
-            <button class="btn btn-gold btn-sm" type="submit">Guardar</button>
+            <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
           </form>
         </section>
         <section class="panel account-card">
@@ -1309,7 +1356,7 @@
         </section>
       </div>
       <section class="panel account-card account-orders">
-        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-gold btn-sm" href="/tienda">Ir a la tienda</a></div>
+        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-primary btn-sm" href="/tienda">Ir a la tienda</a></div>
         <div id="orders"><p class="muted">Cargando…</p></div>
       </section>`;
 
@@ -1354,6 +1401,13 @@
     loadOrders();
   }
 
+  // Lo que se pagó: dinero, monedas del servidor o nada (recompensas gratis)
+  function orderTotal(o) {
+    if (o.coins) return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always' }).format(o.coins)} monedas`;
+    if (!o.amount) return 'Gratis';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: o.currency }).format(o.amount / 100);
+  }
+
   async function loadOrders() {
     const box = $('#orders');
     try {
@@ -1373,7 +1427,7 @@
               <span class="muted small">${escapeHtml(o.username)} · ${escapeHtml(date)} · ${escapeHtml(o.id)}${o.upgradeFrom ? ` · mejora desde ${escapeHtml(o.upgradeFrom)}` : ''}</span>
             </div>
             <div class="order-side">
-              <b>${new Intl.NumberFormat('en-US', { style: 'currency', currency: o.currency }).format(o.amount / 100)}</b>
+              <b>${orderTotal(o)}</b>
               <span class="state" data-kind="${o.refunded ? 'bad' : kind}">${o.refunded ? escapeHtml(o.refunded) : text}</span>
             </div>
           </li>`;

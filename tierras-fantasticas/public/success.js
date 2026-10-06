@@ -105,6 +105,13 @@
       continue;
     }
 
+    // Recompensa gratis: no hubo pago
+    if (PAID.includes(order.status) && !order.amount) {
+      show('ok', 'Reclamada', '¡Recompensa reclamada!', order.status === 'delivered'
+        ? 'Tu recompensa ya está en el servidor. ¡Disfrútala!'
+        : `Tu recompensa llegará a ${order.username} en cuanto entre al servidor (si ya está dentro, en unos segundos).`);
+      return;
+    }
     if (PAID.includes(order.status)) {
       const paidText = {
         delivered: 'Tu pago se ha completado y la compra ya está en el servidor. ¡Disfrútala!',
@@ -118,7 +125,7 @@
       return;
     }
     if (order.status === 'error') {
-      show('bad', 'En revisión', 'Pedido en revisión', 'Hubo un problema al verificar el pago. Escríbenos por Discord con tu número de pedido.');
+      show('bad', 'En revisión', 'Pedido en revisión', 'Hubo un problema al verificar el pago. Escríbenos a tierrasfantasticasmc@gmail.com o por Discord con tu número de pedido.');
       return;
     }
     const waitText = order.status === 'awaiting_payment'

@@ -3,10 +3,16 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from icons import I
+import legal
 
 # Genera las páginas HTML de public/ (cabecera, pie y secciones comunes). Uso: python3 tools/pages.py
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public')
 IP = '216.163.187.40:19001'
+EMAIL = 'tierrasfantasticasmc@gmail.com'
+LEGAL_DATE = '6 de octubre de 2026'
+# Aviso obligatorio de las normas de Mojang (en español y en inglés, que es como lo piden).
+DISCLAIMER_ES = 'No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos.'
+DISCLAIMER_EN = 'NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.'
 NAV = [('inicio', '/', 'Inicio'), ('tienda', '/tienda', 'Tienda'),
        ('mundo', '/mundo', 'El mundo'), ('ayuda', '/ayuda', 'Ayuda')]
 # Solo en el menú del móvil (en escritorio está el botón de la cuenta en la cabecera).
@@ -14,7 +20,35 @@ SHEET_EXTRA = [('cuenta', '/cuenta', 'Mi cuenta')]
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
          '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-         '  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">')
+         '  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">')
+
+# Pantalla de carga: solo la primera página de la visita (sessionStorage). Se quita al cargar la página (mínimo 0,7 s
+# para que no parpadee, máximo 3 s). En las páginas siguientes, la clase «ready» llega en cuanto el HTML está listo
+# y la página entra con una transición suave (CSS @view-transition).
+BOOT = ("<script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');"
+        "try{s=sessionStorage.getItem('tf-seen')}catch(e){}"
+        "function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}"
+        "if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}"
+        "else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}"
+        "})(document)</script>")
+
+LOADER = '''  <div class="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <img src="/img/logo.webp" alt="" width="104" height="115">
+      <div class="loader-bar"><i></i></div>
+      <span>Cargando el reino…</span>
+    </div>
+  </div>
+'''
+
+
+def skeletons(n, kind='card'):
+    one = ('<div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div>'
+           '<div class="skel skel-line"></div><div class="skel skel-line short"></div></div>')
+    if kind == 'account':
+        one = ('<div class="skel-card skel-account" aria-hidden="true"><div class="skel skel-line"></div>'
+               '<div class="skel skel-line"></div><div class="skel skel-line short"></div></div>')
+    return f'<div class="skel-grid skel-{kind}"><span class="sr-only">Cargando…</span>' + one * n + '</div>'
 
 
 def head(title, desc, page, hero=False, preload_hero=False):
@@ -28,7 +62,7 @@ def head(title, desc, page, hero=False, preload_hero=False):
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{title}</title>
   <meta name="description" content="{desc}">
-  <meta name="theme-color" content="#07080d">
+  <meta name="theme-color" content="#0a0d14">
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{desc}">
   <meta property="og:image" content="/img/og.jpg">
@@ -37,10 +71,10 @@ def head(title, desc, page, hero=False, preload_hero=False):
   {FONTS}{preload}
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
-  <script>document.documentElement.classList.add('js')</script>
+  {BOOT}
 </head>
 <body data-page="{page}"{' data-hero' if hero else ''}>
-'''
+{LOADER}'''
 
 
 def header(page):
@@ -65,9 +99,9 @@ def header(page):
       </nav>
       <div class="header-actions">
         <button class="ip-chip" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-          <span class="dot" data-status-dot></span><span data-server-ip>{IP}</span><span class="hint" data-copy-hint>Copiar</span>
+          <span class="dot" data-status-dot></span><span data-server-ip>{IP}</span><span class="hint">{I['copy']}<span data-copy-hint>Copiar</span></span>
         </button>
-        <a href="/tienda" class="btn btn-gold btn-sm">Tienda</a>
+        <a href="/tienda" class="btn btn-primary btn-sm">Tienda</a>
         <a href="/cuenta" class="account-chip" data-account-chip aria-label="Entrar o crear cuenta">{I['users']}<span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet">{I['menu']}</button>
       </div>
@@ -83,8 +117,9 @@ def header(page):
 {sheet_links}
     </nav>
     <div class="sheet-foot">
-      <button class="btn btn-ghost btn-lg ip-button" type="button" data-copy-ip>
-        <span class="ip" data-server-ip>{IP}</span><span class="copy" data-copy-hint>Copiar IP</span>
+      <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+        <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
+        <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
       </button>
       <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Únete al Discord</a>
     </div>
@@ -118,22 +153,29 @@ def footer():
           <ul>
             <li><a href="/tienda#rangos">Rangos</a></li>
             <li><a href="/tienda#crates">Crates</a></li>
-            <li><a href="/tienda#ruleta">Ruleta</a></li>
             <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
+            <li><a href="/ayuda">Preguntas frecuentes</a></li>
           </ul>
         </div>
         <div>
-          <h4>Ayuda</h4>
+          <h4>Legal y contacto</h4>
           <ul>
-            <li><a href="/ayuda">Preguntas frecuentes</a></li>
+            <li><a href="/legal">Aviso legal</a></li>
+            <li><a href="/terminos">Términos y condiciones</a></li>
+            <li><a href="/privacidad">Aviso de privacidad</a></li>
+            <li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
             <li><a href="#" class="discord-link" target="_blank" rel="noopener" hidden>Discord</a></li>
           </ul>
         </div>
       </div>
     </div>
+    <div class="wrap">
+      <p class="disclaimer"><b>Servidor independiente.</b> {DISCLAIMER_ES} Minecraft es una marca de Mojang AB.
+        <span lang="en">{DISCLAIMER_EN}</span></p>
+    </div>
     <div class="wrap legal">
-      <span>© <span data-year></span> Tierras Fantásticas. No afiliado a Mojang AB ni a Microsoft.</span>
-      <span>Las compras son donaciones voluntarias para mantener el servidor.</span>
+      <span>© <span data-year></span> Equipo de Tierras Fantásticas · México</span>
+      <span>Lo que se compra en la tienda ayuda a mantener el servidor. Precios en dólares estadounidenses (USD).</span>
     </div>
   </footer>
 
@@ -179,7 +221,7 @@ def step(title, text):
 DISCORD_BAND = f'''    <section class="wrap section">
       <div class="panel cta-band reveal">
         <span class="eyebrow">Comunidad</span>
-        <h2 style="margin-top:14px">Únete al Discord del reino</h2>
+        <h2>Únete al Discord del reino</h2>
         <p>Novedades, eventos, sorteos, el modpack y soporte del staff. Aquí empieza todo.</p>
         <div class="actions">
           <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
@@ -208,73 +250,73 @@ def index():
         <div class="logo-mark">
           <span class="glow" aria-hidden="true"></span>
           <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
-          <span class="shine" aria-hidden="true"></span>
-          <span class="spark" aria-hidden="true"></span>
         </div>
-        <span class="eyebrow">Minecraft Java · Forge 1.20.1</span>
-        <h1 style="margin-top:14px"><span class="title-sheen" data-server-name>Tierras Fantásticas</span></h1>
+        <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+        <h1 class="hero-title" data-server-name>Tierras Fantásticas</h1>
         <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
         <div class="hero-cta">
-          <button class="btn btn-lg ip-button" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-            <span class="ip" data-server-ip>{IP}</span><span class="copy" data-copy-hint>Copiar IP</span>
+          <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+            <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
+            <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
           </button>
-          <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda {I['arrow']}</a>
+          <a href="/tienda" class="btn btn-primary btn-lg">Visitar la tienda {I['arrow']}</a>
         </div>
-        <span class="status-line" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+        <span class="hero-meta">Minecraft Java 1.20.1 · Forge · Gratis</span>
       </div>
+      <a class="scroll-cue" href="#reino" aria-label="Bajar"><span></span></a>
     </section>
 
     <div class="wrap stats-wrap">
-      <ul class="stats frame" aria-label="El servidor en cifras">
-        <li><b data-players>—</b><span>Jugadores en línea</span></li>
-        <li><b>1.20.1</b><span>Minecraft Java</span></li>
-        <li><b>+200</b><span>Mods</span></li>
-        <li><b data-crate-count>40</b><span>Crates</span></li>
+      <ul class="stats" aria-label="El servidor en cifras">
+        <li class="stat" style="--c:#4ade80"><span class="stat-icon">{I['users']}</span><span class="stat-text"><b data-players>—</b><span>Jugadores en línea</span></span></li>
+        <li class="stat" style="--c:#67e8f9"><span class="stat-icon">{I['box']}</span><span class="stat-text"><b>1.20.1</b><span>Minecraft Java</span></span></li>
+        <li class="stat" style="--c:#b197fc"><span class="stat-icon">{I['sparkles']}</span><span class="stat-text"><b data-count="200" data-prefix="+">+200</b><span>Mods</span></span></li>
+        <li class="stat" style="--c:#fcc94a"><span class="stat-icon">{I['gift']}</span><span class="stat-text"><b data-crate-count>40</b><span>Crates</span></span></li>
       </ul>
     </div>
 
-    <section class="wrap section">
+    <section class="wrap section" id="reino">
       <div class="section-head center">
         <span class="eyebrow">El reino</span>
-        <h2>Una aventura sin final</h2>
-        <p>Supervivencia con alma de RPG: funda tu reino, forja armas legendarias y haz fortuna con tu oficio.</p>
+        <h2>Una aventura <span class="text-grad">sin final</span></h2>
+        <p>Supervivencia con alma de RPG: funda tu reino, vive tu propia leyenda y haz fortuna con tu oficio.</p>
       </div>
       <div class="pillars">
         <article class="pillar frame reveal">
           <div class="pillar-art"><img src="/img/hero-768.webp" alt="Castillos de Tierras Fantásticas" width="768" height="432" loading="lazy" style="object-position:22% 40%"></div>
-          <div class="pillar-body"><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
+          <div class="pillar-body"><span class="pillar-icon">{I['castle']}</span><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
         </article>
-        <article class="pillar frame reveal">
-          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" loading="lazy"></div>
-          <div class="pillar-body"><h3>Armas legendarias</h3><p>Sets completos con armas animadas, armadura y cosméticos (alas, mochilas, cascos) que se ven en el juego.</p></div>
+        <article class="pillar frame reveal" style="--c:#b197fc">
+          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" width="1200" height="800" loading="lazy"></div>
+          <div class="pillar-body"><span class="pillar-icon">{I['swords']}</span><h3>Sets con estilo</h3><p>Armas animadas, armaduras y cosméticos (alas, mochilas, cascos) que cambian tu aspecto en el juego. Son de aspecto: no dan ventaja.</p></div>
         </article>
-        <article class="pillar frame reveal">
+        <article class="pillar frame reveal" style="--c:#fcc94a">
           <div class="pillar-art"><img src="/img/home/oficio-miner.webp" alt="El minero, uno de los oficios" width="590" height="190" loading="lazy" class="pixel-img"></div>
-          <div class="pillar-body"><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
+          <div class="pillar-body"><span class="pillar-icon">{I['coins']}</span><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
         </article>
       </div>
     </section>
 
-    <section class="wrap section featured" style="padding-top:0">
+    <section class="wrap section pt-0">
       <div class="section-head split-head">
         <div>
           <span class="eyebrow">Nuevo en la tienda</span>
-          <h2>Crates <span class="gold-text">legendarias</span></h2>
+          <h2>Crates <span class="text-grad">del reino</span></h2>
         </div>
         <a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates {I['arrow']}</a>
       </div>
       <div class="crate-row" id="crate-spotlight">
-        <p class="loading">Cargando crates…</p>
+        {skeletons(4)}
       </div>
     </section>
 
-    <section class="wrap section" style="padding-top:0">
+    <section class="wrap section pt-0">
       <div class="panel cta-band reveal">
         <span class="eyebrow">Únete</span>
         <h2>Tu aventura empieza hoy</h2>
         <p>Es gratis: Minecraft Java 1.20.1 con el modpack del servidor. Copia la IP, entra y funda tu reino.</p>
         <div class="actions">
-          <button class="btn btn-gold btn-lg" type="button" data-copy-ip><span data-copy-hint>Copiar IP</span></button>
+          <button class="btn btn-primary btn-lg" type="button" data-copy-ip>{I['copy']}<span data-copy-hint>Copiar IP</span></button>
           <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
           <a href="/ayuda" class="btn btn-ghost btn-lg">Cómo entrar</a>
         </div>
@@ -285,13 +327,13 @@ def index():
 
 
 def tienda():
-    tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('crates', 'Crates'), ('ruleta', 'Ruleta'),
-            ('monedas', 'Monedas'), ('tiendamonedas', 'Tienda de monedas')]
+    tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('crates', 'Crates'),
+            ('tiendamonedas', 'Tienda de monedas')]
     tab_html = '\n'.join(
         f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
         for k, label in tabs)
     return head('Tienda — Tierras Fantásticas',
-                'Tienda oficial de Tierras Fantásticas: crates con sets completos, rangos, ruleta y monedas. Pago seguro con tarjeta y entrega automática en el juego.',
+                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, crates con sets de aspecto y recompensas gratis. Pago seguro y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
     <section class="shop-head">
@@ -309,14 +351,14 @@ def tienda():
         </label>
       </div>
     </section>
-    <section class="wrap" style="padding-bottom:56px">
+    <section class="wrap shop-body">
       <div class="tabs shop-tabs frame" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
 {tab_html}
       </div>
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
       <p class="shop-intro muted" id="shop-intro"></p>
       <div class="products" id="products" role="tabpanel">
-        <p class="loading">Cargando la tienda…</p>
+        {skeletons(8)}
       </div>
       <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda.</p>
       <div class="panel compare" id="compare" hidden></div>
@@ -325,6 +367,10 @@ def tienda():
         <div class="panel item"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
         <div class="panel item"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
       </div>
+      <p class="shop-legal">Tierras Fantásticas es un servidor independiente. {DISCLAIMER_ES} Nada de la tienda da ventaja
+        sobre quien no paga, no hay nada al azar y las monedas del servidor solo se ganan jugando. Precios en USD, finales.
+        Tienes 5 días hábiles para cancelar una compra. Al comprar aceptas los <a href="/terminos">Términos y
+        condiciones</a> y el <a href="/privacidad">Aviso de privacidad</a>.</p>
     </section>
   </main>
 ''' + footer()
@@ -359,7 +405,7 @@ def mundo():
         <div class="media frame reveal"><img src="/img/hero-1280.webp" alt="Castillo y dragón en Tierras Fantásticas" width="1280" height="720" loading="lazy"></div>
         <div class="reveal">
           <span class="eyebrow">Supervivencia de aventura</span>
-          <h2 class="display" style="font-size:clamp(28px,5vw,40px);margin-top:14px">Un mundo hecho para explorar</h2>
+          <h2 class="h2">Un mundo hecho para explorar</h2>
           <p class="muted">Biomas nuevos, estructuras que no verás en otro sitio y criaturas que hacen que cada salida sea una aventura. Juega solo, con amigos o al frente de tu propio reino.</p>
           <ul class="list-check">
             <li>Más de 200 mods de magia, criaturas, biomas y tecnología</li>
@@ -414,6 +460,63 @@ def mundo():
 ''' + footer()
 
 
+LEGAL_DOCS = [('legal', 'Aviso legal'), ('terminos', 'Términos y condiciones'), ('privacidad', 'Aviso de privacidad')]
+
+
+def legal_page(key, title, desc, intro, sections):
+    tabs = '\n'.join(
+        f'          <a href="/{k}"{" aria-current=\"page\"" if k == key else ""}>{label}</a>' for k, label in LEGAL_DOCS)
+    toc = '\n'.join(f'            <li><a href="#{sid}">{head_}</a></li>' for sid, head_, _ in sections)
+    body = '\n'.join(
+        f'''        <section class="legal-section" id="{sid}">
+          <h2><span>{i:02d}</span>{head_}</h2>{html}
+        </section>''' for i, (sid, head_, html) in enumerate(sections, 1))
+    return head(f'{title} — Tierras Fantásticas', desc, key) + header(key) + f'''
+  <main id="main">
+{page_hero('Legal', title, intro)}
+    <section class="wrap section pt-sm">
+      <nav class="legal-tabs" aria-label="Documentos legales">
+{tabs}
+      </nav>
+      <div class="legal-layout">
+        <aside class="legal-toc" aria-label="En esta página">
+          <b>En esta página</b>
+          <ol>
+{toc}
+          </ol>
+          <p class="legal-date">Última actualización: {LEGAL_DATE}</p>
+        </aside>
+        <article class="legal-doc">
+{body}
+          <p class="legal-contact">¿Dudas? Escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a>. Respondemos sin que tengas que crear ninguna cuenta.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+''' + footer()
+
+
+def aviso_legal():
+    return legal_page('legal', 'Aviso legal',
+                      'Aviso legal de Tierras Fantásticas: servidor de Minecraft independiente, sin relación con Mojang ni Microsoft.',
+                      'Quiénes somos, qué relación tenemos con Minecraft (ninguna oficial) y cómo cumplimos las normas de Mojang.',
+                      legal.AVISO)
+
+
+def terminos():
+    return legal_page('terminos', 'Términos y condiciones',
+                      'Términos y condiciones de uso y de compra de Tierras Fantásticas: cuentas, precios, entrega, cancelaciones y reembolsos.',
+                      'Las reglas de la web, las cuentas y la tienda: qué compras, cómo se entrega y cómo cancelar.',
+                      legal.TERMINOS)
+
+
+def privacidad():
+    return legal_page('privacidad', 'Aviso de privacidad',
+                      'Aviso de privacidad de Tierras Fantásticas: qué datos tratamos, para qué, con quién y cómo ejercer tus derechos.',
+                      'Qué datos usamos, para qué, con quién se comparten y cómo ejercer tus derechos.',
+                      legal.PRIVACIDAD)
+
+
 def faq(q, a):
     return f'''        <details>
           <summary>{q}</summary>
@@ -439,19 +542,20 @@ def ayuda():
         <li><span class="num">3</span><h3>Empieza tu aventura</h3><p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es {IP}.</p></li>
       </ol>
     </section>
-    <section class="wrap section" style="padding-top:0">
+    <section class="wrap section pt-0">
       <div class="faq">
 {faq('¿Cómo entro al servidor?', f'Necesitas Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas (lo tienes en nuestro Discord). Con el TF Client pulsa «Tierras Fantásticas» en el menú; si entras a mano, la IP es {IP}.')}
 {faq('Se queda en «Conectando» o me dice que faltan mods', 'El servidor usa más de 200 mods y necesitas los mismos. El TF Client revisa tus mods antes de conectar y te dice cuáles faltan. Instala el modpack completo desde nuestro Discord.')}
 {faq('¿Cuánto tarda en llegar mi compra?', 'Al confirmarse el pago, el servidor te la entrega en segundos si estás conectado. Si no lo estás, te espera y la recibes al entrar, con un aviso en pantalla.')}
 {faq('¿Qué nombre de usuario debo poner?', 'Tu nombre de Minecraft. La tienda lo comprueba con el servidor al escribirlo: tienes que haber entrado al menos una vez. La compra se entrega a tu cuenta (UUID), así que nunca llega a otro jugador.')}
-{faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios.')}
+{faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios. Los precios están en dólares estadounidenses (USD) y el precio que ves es el total.')}
 {faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
-{faq('¿Qué recibo al comprar una crate?', 'El set completo: todas sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Llegan a tu inventario en cuanto estás conectado. En la tienda puedes ver cada pieza en 3D y probártela en tu personaje.')}
-{faq('¿Cómo funciona la ruleta?', 'Cada giro te da un premio al azar para el servidor: monedas, diamantes, netherita, tótems o, con poca probabilidad, un arma legendaria de la forja de Nazgul. Las probabilidades están en la pestaña de la ruleta. La tienda elige el premio al confirmarse el pago y te lo entrega en el juego; en la página de tu compra verás qué te tocó.')}
-{faq('¿Qué es la tienda de monedas?', 'Objetos del servidor (minerales, objetos raros…) que se pagan con las monedas que ganas jugando. El staff la actualiza desde el juego y la web la muestra al momento.')}
+{faq('¿Qué recibo al comprar una crate?', 'El set completo, siempre el mismo y sin nada al azar: sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Son de aspecto: las armas y armaduras tienen los mismos valores que las de hierro, así que no dan ventaja a nadie. Llegan a tu inventario en cuanto estás conectado y en la tienda puedes ver cada pieza en 3D y probártela antes.')}
+{faq('¿Qué es la tienda de monedas?', 'Objetos del servidor que se pagan con las monedas que ganas jugando. Las monedas no se venden con dinero, no tienen valor real y no se pueden cambiar por dinero. El staff la actualiza desde el juego y la web la muestra al momento.')}
+{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
+{faq('¿Tierras Fantásticas es oficial de Minecraft?', 'No. Es un servidor independiente: no es un producto oficial de Minecraft y no está aprobado por Mojang ni Microsoft ni asociado con ellos. Lo que se compra en la tienda ayuda a mantener el servidor. Más información en el <a href="/legal">Aviso legal</a>.')}
 {faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
-{faq('No he recibido mi compra, ¿qué hago?', 'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de usuario.')}
+{faq('No he recibido mi compra, ¿qué hago?', f'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> o por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de jugador.')}
       </div>
     </section>
 
@@ -463,8 +567,8 @@ def success():
     return head('Tu compra — Tierras Fantásticas', 'Estado de tu compra en Tierras Fantásticas.', 'compra') + header('') + f'''
   <main id="main">
 {page_hero('Tu compra', '<span id="title">Comprobando tu pago…</span>', '<span id="message">Un momento, estamos confirmando el pago con Stripe.</span>')}
-    <section class="wrap section" style="padding-top:32px">
-      <div class="panel" style="max-width:560px;padding:24px">
+    <section class="wrap section pt-sm">
+      <div class="panel receipt-card">
         <span class="eyebrow" id="state">Comprobando</span>
         <dl class="receipt" id="details" hidden>
           <dt>Pedido</dt><dd id="d-order"></dd>
@@ -478,8 +582,8 @@ def success():
           <h3>Te tocó</h3>
           <ul id="prize-list"></ul>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px">
-          <a href="/" class="btn btn-gold">Volver al inicio</a>
+        <div class="receipt-actions">
+          <a href="/" class="btn btn-primary">Volver al inicio</a>
           <a href="/tienda" class="btn btn-ghost">Seguir comprando</a>
         </div>
       </div>
@@ -494,14 +598,15 @@ def cuenta():
                 'cuenta') + header('cuenta') + f'''
   <main id="main">
 {page_hero('Mi cuenta', 'Tu cuenta del reino', 'Entra con tu nombre de Minecraft, conecta tu Discord y sigue tus compras.')}
-    <section class="wrap section" style="padding-top:32px">
-      <div id="account"><p class="loading">Cargando tu cuenta…</p></div>
+    <section class="wrap section pt-sm">
+      <div id="account">{skeletons(2, 'account')}</div>
     </section>
   </main>
 ''' + footer()
 
 
-for name, fn in [('index', index), ('tienda', tienda), ('crates', crates), ('mundo', mundo), ('ayuda', ayuda), ('success', success), ('cuenta', cuenta)]:
+for name, fn in [('index', index), ('tienda', tienda), ('crates', crates), ('mundo', mundo), ('ayuda', ayuda), ('success', success),
+                 ('cuenta', cuenta), ('legal', aviso_legal), ('terminos', terminos), ('privacidad', privacidad)]:
     with open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8') as f:
         f.write(fn())
 print('ok')

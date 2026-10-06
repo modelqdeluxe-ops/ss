@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **6 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **6 de octubre de 2026** (tarde). Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -9,95 +9,67 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-**Prioridades actuales (palabras del dueño):** *«lo de Stripe está en stand by, ahora estamos rediseñando la web y
-corrigiendo y agregando cosas al mod».* O sea:
-1. **Rediseño de la web** (en curso, detalle abajo).
-2. **Mod TF Client**: correcciones y cosas nuevas que vaya pidiendo (cada cambio → subir versión y mandarle el jar).
-3. **Stripe: en pausa.** No toques la configuración de pagos ni le pidas claves salvo que él lo retome.
+**Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
+pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-**Petición actual del dueño (literal):** *«rediseña la web, tómatelo en serio, mira como están diseñadas de bonitas
-en internet.»* Después pidió guardar el avance en git y documentarlo todo (este archivo).
+### Última entrega (octubre de 2026): rediseño completo + cumplimiento de Mojang + páginas legales + TF Client 1.3.4
+El dueño rechazó el estilo «fantasía» (dorado, Cinzel, biseles): *«no veo un rediseño completo… todo está crudo…
+rediseña todo con otro concepto… es minecraft, la tipografía cámbiala pero no a una de píxeles… animaciones en los
+botones, transiciones, loading»*. Y después: *«revisa que nuestros productos no incumplan los términos de Mojang…
+aclarar que no estamos afiliados… todo el tema legal, políticas de privacidad… nada debe estar con cabos sueltos»*.
 
-**Estado:** rediseño **terminado y publicado** (PR https://github.com/modelqdeluxe-ops/ss/pull/17, fusionado con
-*squash* en `main`). Se revisaron con capturas de escritorio (1440 px) y móvil (390 px) todas las pantallas: portada,
-tienda (gratis, rangos, crates, ruleta, monedas, tienda de monedas, con y sin sesión), mundo, ayuda, cuenta con y sin
-sesión, página del pedido (regalo y ruleta con monedas), ventana de compra, visor 3D de las armas y probador de crates.
-Ninguna se sale de la pantalla en el móvil. Lo que se hizo en la última vuelta (además de lo de abajo):
+**Diseño nuevo («Minecraft moderno»)** — `public/styles.css` reescrito desde cero (orden: tokens → base → carga →
+botones → cabecera → portada → bloques comunes → páginas legales → pie → tienda → ventanas → cuenta → probador →
+animaciones → tamaños de pantalla). Edita la sección que toque; no añadas parches al final.
+- Paleta: noche `--bg #0a0d14`, superficies `--s1/--s2/--s3`, **esmeralda** (`--g-*`, acción principal),
+  **amatista** (`--violet`), oro solo para monedas. Tipografías **Unbounded** (titulares, botones, precios) y
+  **Figtree** (texto), de Google Fonts.
+- Botones `.btn` con volumen de bloque: labio inferior (`--lip`, `--lift`), se elevan al pasar el ratón con un
+  destello que los cruza y se hunden al pulsar. Variantes: `btn-primary` (verde), `btn-ghost`, `btn-discord`,
+  `btn-coin` (tienda de monedas), `btn-theme` (color de cada crate, `--t1/--t2/--t3`), tamaños `btn-sm`/`btn-lg`.
+  `.is-loading` pone una rueda delante del texto (se usa al reclamar, pagar, entrar y comprar con monedas).
+- Tarjetas `.panel`/`.frame` con borde suave, sombra y una franja de color arriba (crates y productos); se elevan
+  al pasar el ratón. Los rangos usan el color de su prefijo (`rankAttr` en app.js).
+- **Pantalla de carga** solo en la primera página de la visita (script `BOOT` en `pages.py`, `sessionStorage`
+  `tf-seen`, mínimo 0,7 s y máximo 3 s); en las siguientes, **transición entre páginas** con `@view-transition`.
+  El héroe y las cabeceras entran escalonados cuando la página está lista (clase `ready` en `<html>`).
+- **Esqueletos** con brillo mientras carga la tienda, la portada y la cuenta (`skeletons()` en pages.py); las
+  imágenes aparecen con un fundido al cargar (clase `fx` + `ok`, en `img()` de app.js); las cifras de la portada
+  suben desde 0; las barras, pestañas, preguntas frecuentes (se abren con transición de altura) y el menú del móvil
+  están animados. Todo con transform/opacity y apagado con «reducir movimiento». Sin backdrop-filter ni capas fijas.
+- Se quitó el grano fijo de fondo. El brillo de color de las crates se mantiene (el dueño lo quiere).
 
-- **Fallo de base arreglado**: `--chamfer` estaba en `:root`, así que el bisel medía siempre 12 px y los `--cut` de
-  cada elemento (botones 9 px, pequeños 7, grandes 11, pestañas 8…) no hacían nada. Ahora `--chamfer` se declara en
-  `*` (cada elemento usa su propio `--cut`). **Ojo**: `--cut` se hereda; un elemento biselado dentro de otro con
-  `--cut` grande debe poner el suyo.
-- **Marco dibujado en el fondo** (sección «Marco» de `styles.css`, lista de selectores con `--edge`, `--fill` y
-  `--cut`): el filo va en capas de fondo, también en las esquinas cortadas, sin `::before`. Sirve para campos de texto
-  (`.field input`), ventanas que se desplazan por dentro y cajas pequeñas. Para añadir un elemento: súmalo a esa
-  lista y ponle `--edge`/`--fill` en su propia regla. `--fill` puede ser semitransparente o un degradado.
-- **Ventanas** (`.dialog`, `.viewer`, `.crate-view`, sección «Ventanas»): biseladas con filo dorado. En el móvil
-  flotan con 8 px de margen (antes la de compra salía pegada a la izquierda por el `max-width` del navegador); desde
-  640 px van centradas. Botón de cerrar, campos, casillas del probador, interruptor «Mi personaje / Objeto», skin,
-  flechas del visor, aviso flotante, tarjeta del jugador, etiqueta del rango: todo biselado, sin esquinas redondas.
-- Cabecera: botones de cuenta y menú biselados; cabezas de Minecraft cuadradas (pixeladas), no en círculo.
-- Tienda: las imágenes de regalos/rangos/monedas miden todas lo mismo (antes la espada de regalo salía más baja);
-  **tabla de rangos** con los 4 rangos visibles en el móvil (antes había que desplazarla de lado y solo se veían 2);
-  ruleta con los botones de giros del mismo ancho; caja de «gira con monedas», filas de premios, iconos de la tienda
-  de monedas y «Actualizado en vivo» biselados.
-- Mundo: la imagen respeta su proporción 16:10 (salía altísima por el atributo `height`).
-- Cuenta: pestañas «Entrar / Crear cuenta» como las de la tienda; en «Mis compras» del móvil el precio y el estado
-  van debajo del nombre (antes el número de pedido se partía letra a letra).
-- Banda final (portada, mundo, ayuda): en el móvil los botones van uno debajo de otro y del mismo ancho.
-- Se quitó el bloque de parche del final («Ventanas con el mismo marco» y un `.toast` repetido).
+**Normas de Mojang** (EULA + *Minecraft Usage Guidelines*; resumen en `/legal#normas-mojang`). Revisado producto por
+producto y corregido con el visto bueno del dueño:
+- **Ruleta retirada** de la web (lo que se parezca al juego de azar está prohibido, y daba objetos con ventaja). El
+  dueño preguntó si con monedas ganadas jugando estaría permitida: Mojang prohíbe en general «anything meant to
+  resemble gambling mechanics», así que se dejó fuera; el código sigue (ver README) por si se rehace de forma permitida.
+- **Monedas con dinero retiradas** (las monedas solo se ganan jugando; con dinero comprarían diamantes, netherita o
+  élitros en la tienda de monedas = ventaja). La tienda de monedas sigue, pagada con monedas del juego.
+- **Rangos sin ventajas**: fuera kits de objetos, el «acceso al mundo de recursos» (no se puede cobrar por partes del
+  servidor) y /ec. Quedan prefijo, hogares, /fly en el lobby, /hat y partículas, mascota cosmética, /nick, cola
+  prioritaria, título y color, rol de Discord. **El dueño tiene que quitar en LuckPerms/EssentialsX los kits y /ec de
+  los rangos y abrir el mundo de recursos a todos** (se le dijo). Quiere que los rangos den **un set de armadura**: se
+  puede si es de aspecto (valores de hierro, como las crates). **Pendiente: que diga qué set lleva cada rango.**
+- **Crates de aspecto**: TF Client **1.3.4** pone a todos los objetos de los sets exactamente los valores del hierro
+  (antes netherita) y ya no resisten la lava. Su contenido es fijo y se ve entero antes de comprar (no son cajas al azar).
+- «Donaciones» → «compras» (Mojang exige llamar a las cosas por su nombre).
 
-Pendiente que se vio al revisar y **no se tocó** (no lo pidió): en «Mis compras» los pedidos gratis y los de monedas
-salen como `$0.00` (la página del pedido sí dice «Gratis» o «15.000 monedas del servidor»).
-
-Lo que ya estaba hecho del rediseño antes de esta vuelta:
-
-1. **Hoja de estilos reescrita desde cero**: `tierras-fantasticas/public/styles.css` (~3.700 líneas). Antes era un
-   archivo con capas de parches que se pisaban (por eso el diseño se veía remendado). Ahora tiene un orden claro:
-   tokens → base → tipografía → marco → botones → cabecera → héroe → barra de datos → pilares → páginas interiores →
-   bloques comunes → pie → tienda (pestañas, rangos, crates, ruleta, tienda de monedas) → componentes que ya
-   funcionaban y se conservaron (visor 3D, ventana de compra, cuenta, probador de crates) → móvil y escritorio.
-   **No vuelvas a añadir capas de parches al final**: edita la sección que toque.
-2. **Lenguaje visual nuevo** (inspirado en webs de juegos de fantasía: Hytale, Wynncraft, Origin Realms):
-   - Fondo azul noche `--bg: #0a0c13`. **Grano** muy suave en una capa fija (`body::after`, opacidad 0.6 de un SVG
-     de ruido): se pinta una vez, no cuesta al desplazar.
-   - **Esquinas biseladas** con `clip-path: var(--chamfer)` y un **filo dorado de 1 px**. Clases `.frame` y `.panel`:
-     el filo es el fondo del propio elemento (`--frame-line`) y el relleno va en `::before` (`--frame-bg`).
-     El tamaño del bisel es `--cut`. Para resaltar al pasar el ratón se cambia `--frame-line`.
-   - **Botones biselados**: `.btn-gold` (placa dorada con bisel inferior), `.btn-ghost` (marco), `.btn-discord`,
-     `.btn-theme` (colores de cada crate: `--t1`, `--t2`, `--t3`, que pone `themeAttr()` en `public/app.js`).
-     Texto en mayúsculas, Manrope 800.
-   - Títulos en **Cinzel**; bajo los títulos centrados, un **ornamento** (línea–rombo–línea, variable `--ornament`).
-     Rombos dorados en vez de puntos (listas, normas con números romanos, pasos).
-   - Cabecera sólida con un filo dorado degradado debajo; la página actual se marca con un rombo dorado.
-   - **Pestañas de la tienda**: barra con marco; la elegida es una placa dorada (2 columnas en móvil, 3 en tablet,
-     una fila en escritorio). El dueño quiere ver todas las pestañas en el móvil (sin desplazamiento lateral).
-3. **Portada nueva** (`tierras-fantasticas/tools/pages.py` → `index()`), ligera como pidió el dueño:
-   héroe con el **emblema** (logo, que no se puede quitar) + IP + «Visitar la tienda» → **barra de datos** montada
-   sobre el borde del héroe (jugadores en línea `[data-players]`, Minecraft 1.20.1, +200 mods, nº de crates
-   `[data-crate-count]`) → **tres pilares** (Reinos y castillos / Armas legendarias / Oficios y monedas) →
-   4 crates → banda final «Tu aventura empieza hoy» (copiar IP, Discord, cómo entrar).
-   El arte de los oficios son recortes del pack Medieval Jobs: `public/img/home/oficio-{miner,farmer,blacksmith}.webp`
-   (escalados ×5, se ven con la clase `pixel-img`).
-4. **Tienda** (`tienda()` en `pages.py`): cabecera con el arte del reino detrás (`.shop-head` + `hero_art()`).
-5. En `public/app.js` solo cambió el marcado: las crates de la portada llevan `frame` y la ruleta `frame roulette`.
-6. **Animaciones** (todas solo transform/opacity y se apagan con «reducir movimiento»): brillo del color de cada crate
-   (solo opacidad), el emblema flota y su halo late. **Solo en escritorio**: el destello del emblema (usa
-   `mix-blend-mode`, caro en móvil) y un acercamiento muy lento del arte del héroe (`@keyframes drift`).
-7. Comprobado con capturas: portada y tienda (crates, rangos, ruleta) en 1440 px y 390 px, sin desbordes; tests 39/39.
-
-### Cómo revisar el diseño con capturas
-Además de `tools/screenshots.cjs` (sección 3), para las pantallas que necesitan sesión o un clic (cuenta con sesión,
-página de un pedido, ventana de compra, probador, visor 3D) se usó un script de Playwright que: lee la cookie de
-Notch (`COOKIE_FILE`), reclama un regalo con `POST /api/claim` y gira la ruleta con `POST /api/roulette/coins` para
-tener pedidos de ejemplo, y abre las ventanas con `click('[data-buy="rango-hechicero"]')`, `/tienda#crates-necros` y
-`click('.reel-item')`. En las capturas de página completa se ve una raya horizontal a 900 px: es el grano fijo, que
-solo cubre la primera pantalla de la captura (en el navegador no existe).
-
-Si el grano se nota lento en algún móvil, se puede quitar en `@media (max-width: 959px)` (`body::after`). Nada de
-`backdrop-filter` ni capas grandes animadas.
-
----
+**Páginas legales** (textos en `tools/legal.py`, generadas por `pages.py`; fecha en `LEGAL_DATE`):
+- `/legal` — quiénes somos, **no afiliación** (frase obligatoria en español e inglés), cumplimiento de Mojang,
+  propiedad intelectual. `/terminos` — cuentas, menores, qué se compra, precios en USD finales, entrega, **5 días
+  hábiles para cancelar** (art. 56 LFPC) y reembolsos, cambios del servidor, PROFECO. `/privacidad` — aviso de
+  privacidad según la **LFPDPPP de 2025** (datos, finalidades necesarias y voluntaria, terceros, derechos ARCO en 20
+  días hábiles, SABG como autoridad, cookies y almacenamiento).
+- Responsable: **Equipo de Tierras Fantásticas**, México. Contacto público (sin registro, lo exige Mojang):
+  **tierrasfantasticasmc@gmail.com**. **Pendiente del dueño**: la ley pide un domicilio en el aviso de privacidad;
+  ahora pone «con domicilio en México». Si da uno (puede ser un domicilio para notificaciones), añadirlo en
+  `PRIVACIDAD['responsable']` de `tools/legal.py`.
+- Si cambia lo que hace la web (datos que guarda, servicios externos como mc-heads.net, mcsrvstat.us, Google Fonts,
+  Stripe, Discord, Cloudflare) hay que actualizar `tools/legal.py` y `LEGAL_DATE`.
+- Aviso de no afiliación en el pie de todas las páginas, bajo la tienda y en la ventana de compra (con la aceptación
+  de los términos). En «Mis compras» y en la página del pedido, lo gratis sale como «Gratis» y lo de monedas como
+  monedas (antes «$0.00»).
 
 ## 1. Qué es el proyecto
 
@@ -107,7 +79,7 @@ IP `216.163.187.40:19001`) con +200 mods. Este repo tiene:
 | Carpeta | Qué es |
 | --- | --- |
 | `tierras-fantasticas/` | La web/tienda. Cloudflare Workers + D1 + archivos estáticos (`public/`). Dominio `tierrasfantásticas.store` = `https://xn--tierrasfantsticas-hpb.store`. |
-| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta. Versión actual **1.3.3**. |
+| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.4**. |
 | `wrangler.jsonc` | Configuración del Worker de Cloudflare (en la raíz a propósito). |
 | `.github/workflows/` | `tf-client.yml` compila el mod en cada push que toque `tf-client/` (artefacto `tfclient-jar`); `server-ping.yml` comprueba el servidor. |
 
@@ -126,7 +98,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.4**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.5**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
@@ -142,8 +114,12 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   - Portada ligera (no meter todo en la primera página) y con el **emblema**.
   - Crates, no «llaves»: se compra el pack (la crate), nunca se habla de llaves; sin etiquetas de rareza ni
     «edición limitada», «más popular», etc.
-  - La ruleta se paga con dinero **y** con monedas del servidor, y no debe ser descaradamente pay-to-win (las armas
-    legendarias son un 5% por giro).
+  - Diseño actual: concepto «Minecraft moderno» (sección 0). Tipografías Unbounded + Figtree, **nunca** una de píxeles.
+  - **Normas de Mojang (obligatorio para cualquier producto nuevo):** nada que dé ventaja sobre quien no paga (armas y
+    armaduras siempre con valores de hierro o menos; kits de objetos no), nada al azar ni parecido al juego de azar
+    (sin ruletas, llaves ni cajas sorpresa), no vender monedas del juego con dinero, no cobrar por zonas del servidor,
+    ni desbaneos ni herramientas del staff, contenido para todas las edades, llamar «compras» a las compras.
+  - Aviso de no afiliación con Mojang/Microsoft siempre visible y páginas legales al día (`tools/legal.py`).
 
 ### Historial de quejas (para no repetirlas)
 - 1.3.1: «rediseño horrible», portada sobrecargada, quitaste el logo → se volvió a poner el emblema y se aligeró.
@@ -151,7 +127,9 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   animada y desenfoques (1.3.3).
 - «arruinaste la textura de los jobs» → se volvió al arte de la 1.3.0 sobre el cofre, con botones abajo (1.3.3).
 - Alas/cascos de las crates mal colocados → se arregló leyendo la configuración de HMCCosmetics de cada pack.
-- «rediséñala en serio, mira cómo están de bonitas en internet» → rediseño terminado y publicado (sección 0).
+- «rediséñala en serio, mira cómo están de bonitas en internet» → estilo fantasía (dorado, Cinzel, biseles): lo
+  rechazó: «todo está crudo… rediseña todo con otro concepto… es minecraft» → concepto «Minecraft moderno» (sección 0).
+- «revisa que nuestros productos no incumplan los términos de Mojang… todo el tema legal» → sección 0.
 
 ## 3. Cómo ver y probar la web en local
 
@@ -230,10 +208,13 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.3)
+## 5. El mod (TF Client 1.3.4)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.3.jar`. Va en `mods/` del juego **y** del servidor, misma versión.
+  → `build/libs/tfclient-1.20.1-1.3.4.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
+- Objetos de los sets (`items/TFItems.java`, `TFItemTypes.Material`): **valores del hierro** desde la 1.3.4 (normas de
+  Mojang); no los subas.
 - Comandos (todos en `items/TFCommands.java`):
   - `/tf jobs` (todos; staff: `recargar`, `nivel`, `xp`, `reiniciar`; `ver <oficio>` lo usan los avisos del chat).
   - `/tf web sets list|give`, `/tf web tienda add|precio|quitar|lista|vaciar` (staff) y los que usa la web:

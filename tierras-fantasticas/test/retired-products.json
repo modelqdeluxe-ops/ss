@@ -1,0 +1,684 @@
+[
+  {
+    "id": "ruleta-1",
+    "category": "ruleta",
+    "name": "1 giro de la ruleta",
+    "spins": 1,
+    "price": 99,
+    "maxQuantity": 1,
+    "coinPrice": 3000,
+    "set": "nazgul",
+    "colors": [
+      "#c9a8ff",
+      "#9061f9"
+    ],
+    "description": "1 premio al azar: monedas, recursos o, con suerte, un arma legendaria.",
+    "image": "img/crates/nazgul.webp",
+    "models": [
+      {
+        "id": "necromancer_sword",
+        "name": "Espada del Nigromante"
+      },
+      {
+        "id": "ocean_sword",
+        "name": "Espada del Océano"
+      },
+      {
+        "id": "aspectr_of_eather_sword",
+        "name": "Espada del Éter"
+      },
+      {
+        "id": "beecomb_sword",
+        "name": "Espada Panal"
+      },
+      {
+        "id": "last_rose",
+        "name": "Última Rosa"
+      },
+      {
+        "id": "death_grip",
+        "name": "Garra de la Muerte"
+      },
+      {
+        "id": "dark_moon_axe",
+        "name": "Hacha de Luna Oscura"
+      },
+      {
+        "id": "hellspawn_axe",
+        "name": "Hacha Infernal"
+      },
+      {
+        "id": "forge_hammer",
+        "name": "Martillo de Forja"
+      },
+      {
+        "id": "spider_bow",
+        "name": "Arco Arácnido"
+      },
+      {
+        "id": "abyssal_blade",
+        "name": "Hoja Abisal"
+      },
+      {
+        "id": "great_sword",
+        "name": "Gran Espada Rúnica"
+      },
+      {
+        "id": "battle_mage_staff",
+        "name": "Bastón del Mago de Guerra"
+      },
+      {
+        "id": "fire_mace",
+        "name": "Maza de Fuego"
+      },
+      {
+        "id": "gargoyle_axe",
+        "name": "Hacha Gárgola"
+      },
+      {
+        "id": "witch_scythe",
+        "name": "Guadaña de la Bruja"
+      },
+      {
+        "id": "flowering_madness",
+        "name": "Locura Floreciente"
+      },
+      {
+        "id": "battle_standart",
+        "name": "Estandarte de Guerra"
+      },
+      {
+        "id": "heavy_bow",
+        "name": "Arco Pesado"
+      },
+      {
+        "id": "rogue_dagger",
+        "name": "Daga del Pícaro"
+      },
+      {
+        "id": "demonic_blade",
+        "name": "Hoja Demoníaca"
+      },
+      {
+        "id": "cursed_sword",
+        "name": "Espada Maldita"
+      },
+      {
+        "id": "dark_sword",
+        "name": "Espada Oscura"
+      },
+      {
+        "id": "magnetic_blade",
+        "name": "Hoja Magnética"
+      },
+      {
+        "id": "kaz_sc",
+        "name": "Guadaña de Kaz"
+      },
+      {
+        "id": "mana_axe",
+        "name": "Hacha de Maná"
+      },
+      {
+        "id": "red_hammer",
+        "name": "Martillo Carmesí"
+      },
+      {
+        "id": "holy_spear",
+        "name": "Lanza Sagrada"
+      },
+      {
+        "id": "pox_spreader",
+        "name": "Portador de la Plaga"
+      },
+      {
+        "id": "obsidian_bow",
+        "name": "Arco de Obsidiana"
+      }
+    ],
+    "pool": [
+      {
+        "id": "monedas-2000",
+        "name": "2.000 monedas",
+        "chance": 26,
+        "icon": "/img/coins-small.png",
+        "give": [
+          "tf web monedas dar {player} 2000"
+        ]
+      },
+      {
+        "id": "monedas-5000",
+        "name": "5.000 monedas",
+        "chance": 16,
+        "icon": "/img/coins-big.png",
+        "give": [
+          "tf web monedas dar {player} 5000"
+        ]
+      },
+      {
+        "id": "experiencia",
+        "name": "32 botellas de experiencia",
+        "chance": 14,
+        "icon": "/api/itemicon/experience_bottle",
+        "give": [
+          "give {player} minecraft:experience_bottle 32"
+        ]
+      },
+      {
+        "id": "manzanas",
+        "name": "4 manzanas doradas",
+        "chance": 12,
+        "icon": "/api/itemicon/golden_apple",
+        "give": [
+          "give {player} minecraft:golden_apple 4"
+        ]
+      },
+      {
+        "id": "diamantes",
+        "name": "5 diamantes",
+        "chance": 10,
+        "icon": "/api/itemicon/diamond",
+        "give": [
+          "give {player} minecraft:diamond 5"
+        ]
+      },
+      {
+        "id": "esmeraldas",
+        "name": "16 esmeraldas",
+        "chance": 8,
+        "icon": "/api/itemicon/emerald",
+        "give": [
+          "give {player} minecraft:emerald 16"
+        ]
+      },
+      {
+        "id": "netherita",
+        "name": "1 lingote de netherita",
+        "chance": 5,
+        "icon": "/api/itemicon/netherite_ingot",
+        "give": [
+          "give {player} minecraft:netherite_ingot 1"
+        ]
+      },
+      {
+        "id": "totem",
+        "name": "Tótem de la inmortalidad",
+        "chance": 4,
+        "icon": "/api/itemicon/totem_of_undying",
+        "give": [
+          "give {player} minecraft:totem_of_undying 1"
+        ]
+      },
+      {
+        "id": "arma",
+        "name": "Arma legendaria de Nazgul",
+        "chance": 5,
+        "icon": "/img/items/nazgul/great_sword.webp",
+        "weapon": true
+      }
+    ],
+    "commands": []
+  },
+  {
+    "id": "ruleta-5",
+    "category": "ruleta",
+    "name": "5 giros de la ruleta",
+    "spins": 5,
+    "price": 399,
+    "maxQuantity": 1,
+    "coinPrice": 15000,
+    "set": "nazgul",
+    "colors": [
+      "#c9a8ff",
+      "#9061f9"
+    ],
+    "description": "5 premios al azar: monedas, recursos o, con suerte, un arma legendaria.",
+    "image": "img/crates/nazgul.webp",
+    "models": [
+      {
+        "id": "necromancer_sword",
+        "name": "Espada del Nigromante"
+      },
+      {
+        "id": "ocean_sword",
+        "name": "Espada del Océano"
+      },
+      {
+        "id": "aspectr_of_eather_sword",
+        "name": "Espada del Éter"
+      },
+      {
+        "id": "beecomb_sword",
+        "name": "Espada Panal"
+      },
+      {
+        "id": "last_rose",
+        "name": "Última Rosa"
+      },
+      {
+        "id": "death_grip",
+        "name": "Garra de la Muerte"
+      },
+      {
+        "id": "dark_moon_axe",
+        "name": "Hacha de Luna Oscura"
+      },
+      {
+        "id": "hellspawn_axe",
+        "name": "Hacha Infernal"
+      },
+      {
+        "id": "forge_hammer",
+        "name": "Martillo de Forja"
+      },
+      {
+        "id": "spider_bow",
+        "name": "Arco Arácnido"
+      },
+      {
+        "id": "abyssal_blade",
+        "name": "Hoja Abisal"
+      },
+      {
+        "id": "great_sword",
+        "name": "Gran Espada Rúnica"
+      },
+      {
+        "id": "battle_mage_staff",
+        "name": "Bastón del Mago de Guerra"
+      },
+      {
+        "id": "fire_mace",
+        "name": "Maza de Fuego"
+      },
+      {
+        "id": "gargoyle_axe",
+        "name": "Hacha Gárgola"
+      },
+      {
+        "id": "witch_scythe",
+        "name": "Guadaña de la Bruja"
+      },
+      {
+        "id": "flowering_madness",
+        "name": "Locura Floreciente"
+      },
+      {
+        "id": "battle_standart",
+        "name": "Estandarte de Guerra"
+      },
+      {
+        "id": "heavy_bow",
+        "name": "Arco Pesado"
+      },
+      {
+        "id": "rogue_dagger",
+        "name": "Daga del Pícaro"
+      },
+      {
+        "id": "demonic_blade",
+        "name": "Hoja Demoníaca"
+      },
+      {
+        "id": "cursed_sword",
+        "name": "Espada Maldita"
+      },
+      {
+        "id": "dark_sword",
+        "name": "Espada Oscura"
+      },
+      {
+        "id": "magnetic_blade",
+        "name": "Hoja Magnética"
+      },
+      {
+        "id": "kaz_sc",
+        "name": "Guadaña de Kaz"
+      },
+      {
+        "id": "mana_axe",
+        "name": "Hacha de Maná"
+      },
+      {
+        "id": "red_hammer",
+        "name": "Martillo Carmesí"
+      },
+      {
+        "id": "holy_spear",
+        "name": "Lanza Sagrada"
+      },
+      {
+        "id": "pox_spreader",
+        "name": "Portador de la Plaga"
+      },
+      {
+        "id": "obsidian_bow",
+        "name": "Arco de Obsidiana"
+      }
+    ],
+    "pool": [
+      {
+        "id": "monedas-2000",
+        "name": "2.000 monedas",
+        "chance": 26,
+        "icon": "/img/coins-small.png",
+        "give": [
+          "tf web monedas dar {player} 2000"
+        ]
+      },
+      {
+        "id": "monedas-5000",
+        "name": "5.000 monedas",
+        "chance": 16,
+        "icon": "/img/coins-big.png",
+        "give": [
+          "tf web monedas dar {player} 5000"
+        ]
+      },
+      {
+        "id": "experiencia",
+        "name": "32 botellas de experiencia",
+        "chance": 14,
+        "icon": "/api/itemicon/experience_bottle",
+        "give": [
+          "give {player} minecraft:experience_bottle 32"
+        ]
+      },
+      {
+        "id": "manzanas",
+        "name": "4 manzanas doradas",
+        "chance": 12,
+        "icon": "/api/itemicon/golden_apple",
+        "give": [
+          "give {player} minecraft:golden_apple 4"
+        ]
+      },
+      {
+        "id": "diamantes",
+        "name": "5 diamantes",
+        "chance": 10,
+        "icon": "/api/itemicon/diamond",
+        "give": [
+          "give {player} minecraft:diamond 5"
+        ]
+      },
+      {
+        "id": "esmeraldas",
+        "name": "16 esmeraldas",
+        "chance": 8,
+        "icon": "/api/itemicon/emerald",
+        "give": [
+          "give {player} minecraft:emerald 16"
+        ]
+      },
+      {
+        "id": "netherita",
+        "name": "1 lingote de netherita",
+        "chance": 5,
+        "icon": "/api/itemicon/netherite_ingot",
+        "give": [
+          "give {player} minecraft:netherite_ingot 1"
+        ]
+      },
+      {
+        "id": "totem",
+        "name": "Tótem de la inmortalidad",
+        "chance": 4,
+        "icon": "/api/itemicon/totem_of_undying",
+        "give": [
+          "give {player} minecraft:totem_of_undying 1"
+        ]
+      },
+      {
+        "id": "arma",
+        "name": "Arma legendaria de Nazgul",
+        "chance": 5,
+        "icon": "/img/items/nazgul/great_sword.webp",
+        "weapon": true
+      }
+    ],
+    "commands": []
+  },
+  {
+    "id": "ruleta-10",
+    "category": "ruleta",
+    "name": "10 giros de la ruleta",
+    "spins": 10,
+    "price": 699,
+    "maxQuantity": 1,
+    "coinPrice": 30000,
+    "set": "nazgul",
+    "colors": [
+      "#c9a8ff",
+      "#9061f9"
+    ],
+    "description": "10 premios al azar: monedas, recursos o, con suerte, un arma legendaria.",
+    "image": "img/crates/nazgul.webp",
+    "models": [
+      {
+        "id": "necromancer_sword",
+        "name": "Espada del Nigromante"
+      },
+      {
+        "id": "ocean_sword",
+        "name": "Espada del Océano"
+      },
+      {
+        "id": "aspectr_of_eather_sword",
+        "name": "Espada del Éter"
+      },
+      {
+        "id": "beecomb_sword",
+        "name": "Espada Panal"
+      },
+      {
+        "id": "last_rose",
+        "name": "Última Rosa"
+      },
+      {
+        "id": "death_grip",
+        "name": "Garra de la Muerte"
+      },
+      {
+        "id": "dark_moon_axe",
+        "name": "Hacha de Luna Oscura"
+      },
+      {
+        "id": "hellspawn_axe",
+        "name": "Hacha Infernal"
+      },
+      {
+        "id": "forge_hammer",
+        "name": "Martillo de Forja"
+      },
+      {
+        "id": "spider_bow",
+        "name": "Arco Arácnido"
+      },
+      {
+        "id": "abyssal_blade",
+        "name": "Hoja Abisal"
+      },
+      {
+        "id": "great_sword",
+        "name": "Gran Espada Rúnica"
+      },
+      {
+        "id": "battle_mage_staff",
+        "name": "Bastón del Mago de Guerra"
+      },
+      {
+        "id": "fire_mace",
+        "name": "Maza de Fuego"
+      },
+      {
+        "id": "gargoyle_axe",
+        "name": "Hacha Gárgola"
+      },
+      {
+        "id": "witch_scythe",
+        "name": "Guadaña de la Bruja"
+      },
+      {
+        "id": "flowering_madness",
+        "name": "Locura Floreciente"
+      },
+      {
+        "id": "battle_standart",
+        "name": "Estandarte de Guerra"
+      },
+      {
+        "id": "heavy_bow",
+        "name": "Arco Pesado"
+      },
+      {
+        "id": "rogue_dagger",
+        "name": "Daga del Pícaro"
+      },
+      {
+        "id": "demonic_blade",
+        "name": "Hoja Demoníaca"
+      },
+      {
+        "id": "cursed_sword",
+        "name": "Espada Maldita"
+      },
+      {
+        "id": "dark_sword",
+        "name": "Espada Oscura"
+      },
+      {
+        "id": "magnetic_blade",
+        "name": "Hoja Magnética"
+      },
+      {
+        "id": "kaz_sc",
+        "name": "Guadaña de Kaz"
+      },
+      {
+        "id": "mana_axe",
+        "name": "Hacha de Maná"
+      },
+      {
+        "id": "red_hammer",
+        "name": "Martillo Carmesí"
+      },
+      {
+        "id": "holy_spear",
+        "name": "Lanza Sagrada"
+      },
+      {
+        "id": "pox_spreader",
+        "name": "Portador de la Plaga"
+      },
+      {
+        "id": "obsidian_bow",
+        "name": "Arco de Obsidiana"
+      }
+    ],
+    "pool": [
+      {
+        "id": "monedas-2000",
+        "name": "2.000 monedas",
+        "chance": 26,
+        "icon": "/img/coins-small.png",
+        "give": [
+          "tf web monedas dar {player} 2000"
+        ]
+      },
+      {
+        "id": "monedas-5000",
+        "name": "5.000 monedas",
+        "chance": 16,
+        "icon": "/img/coins-big.png",
+        "give": [
+          "tf web monedas dar {player} 5000"
+        ]
+      },
+      {
+        "id": "experiencia",
+        "name": "32 botellas de experiencia",
+        "chance": 14,
+        "icon": "/api/itemicon/experience_bottle",
+        "give": [
+          "give {player} minecraft:experience_bottle 32"
+        ]
+      },
+      {
+        "id": "manzanas",
+        "name": "4 manzanas doradas",
+        "chance": 12,
+        "icon": "/api/itemicon/golden_apple",
+        "give": [
+          "give {player} minecraft:golden_apple 4"
+        ]
+      },
+      {
+        "id": "diamantes",
+        "name": "5 diamantes",
+        "chance": 10,
+        "icon": "/api/itemicon/diamond",
+        "give": [
+          "give {player} minecraft:diamond 5"
+        ]
+      },
+      {
+        "id": "esmeraldas",
+        "name": "16 esmeraldas",
+        "chance": 8,
+        "icon": "/api/itemicon/emerald",
+        "give": [
+          "give {player} minecraft:emerald 16"
+        ]
+      },
+      {
+        "id": "netherita",
+        "name": "1 lingote de netherita",
+        "chance": 5,
+        "icon": "/api/itemicon/netherite_ingot",
+        "give": [
+          "give {player} minecraft:netherite_ingot 1"
+        ]
+      },
+      {
+        "id": "totem",
+        "name": "Tótem de la inmortalidad",
+        "chance": 4,
+        "icon": "/api/itemicon/totem_of_undying",
+        "give": [
+          "give {player} minecraft:totem_of_undying 1"
+        ]
+      },
+      {
+        "id": "arma",
+        "name": "Arma legendaria de Nazgul",
+        "chance": 5,
+        "icon": "/img/items/nazgul/great_sword.webp",
+        "weapon": true
+      }
+    ],
+    "commands": []
+  },
+  {
+    "id": "monedas-10000",
+    "category": "monedas",
+    "name": "10.000 Monedas de Oro",
+    "description": "Dinero para la economía del servidor: compra terrenos, objetos y más.",
+    "price": 199,
+    "commands": [
+      "eco give {player} 10000"
+    ],
+    "image": "img/coins-small.png"
+  },
+  {
+    "id": "monedas-60000",
+    "category": "monedas",
+    "name": "60.000 Monedas de Oro",
+    "description": "El paquete más rentable: 20% más monedas que comprando por separado.",
+    "price": 999,
+    "commands": [
+      "eco give {player} 60000"
+    ],
+    "image": "img/coins-big.png"
+  }
+]

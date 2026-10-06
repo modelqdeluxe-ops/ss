@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tierras Fantásticas — Servidor de Minecraft</title>
   <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.">
-  <meta name="theme-color" content="#07080d">
+  <meta name="theme-color" content="#0a0d14">
   <meta property="og:title" content="Tierras Fantásticas — Servidor de Minecraft">
   <meta property="og:description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.">
   <meta property="og:image" content="/img/og.jpg">
@@ -13,13 +13,20 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/hero-1920.webp" imagesrcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" imagesizes="100vw">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
-  <script>document.documentElement.classList.add('js')</script>
+  <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
 </head>
 <body data-page="inicio" data-hero>
+  <div class="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <img src="/img/logo.webp" alt="" width="104" height="115">
+      <div class="loader-bar"><i></i></div>
+      <span>Cargando el reino…</span>
+    </div>
+  </div>
   <a class="sr-only" href="#main">Saltar al contenido</a>
   <header class="header" id="header">
     <div class="wrap header-inner">
@@ -35,9 +42,9 @@
       </nav>
       <div class="header-actions">
         <button class="ip-chip" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-          <span class="dot" data-status-dot></span><span data-server-ip>216.163.187.40:19001</span><span class="hint" data-copy-hint>Copiar</span>
+          <span class="dot" data-status-dot></span><span data-server-ip>216.163.187.40:19001</span><span class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-copy-hint>Copiar</span></span>
         </button>
-        <a href="/tienda" class="btn btn-gold btn-sm">Tienda</a>
+        <a href="/tienda" class="btn btn-primary btn-sm">Tienda</a>
         <a href="/cuenta" class="account-chip" data-account-chip aria-label="Entrar o crear cuenta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
@@ -57,8 +64,9 @@
       <a href="/cuenta">Mi cuenta<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </nav>
     <div class="sheet-foot">
-      <button class="btn btn-ghost btn-lg ip-button" type="button" data-copy-ip>
-        <span class="ip" data-server-ip>216.163.187.40:19001</span><span class="copy" data-copy-hint>Copiar IP</span>
+      <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+        <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>216.163.187.40:19001</span></span>
+        <span class="ip-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-copy-hint>Copiar</span></span>
       </button>
       <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Únete al Discord</a>
     </div>
@@ -73,73 +81,73 @@
         <div class="logo-mark">
           <span class="glow" aria-hidden="true"></span>
           <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
-          <span class="shine" aria-hidden="true"></span>
-          <span class="spark" aria-hidden="true"></span>
         </div>
-        <span class="eyebrow">Minecraft Java · Forge 1.20.1</span>
-        <h1 style="margin-top:14px"><span class="title-sheen" data-server-name>Tierras Fantásticas</span></h1>
+        <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+        <h1 class="hero-title" data-server-name>Tierras Fantásticas</h1>
         <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
         <div class="hero-cta">
-          <button class="btn btn-lg ip-button" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-            <span class="ip" data-server-ip>216.163.187.40:19001</span><span class="copy" data-copy-hint>Copiar IP</span>
+          <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+            <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>216.163.187.40:19001</span></span>
+            <span class="ip-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-copy-hint>Copiar</span></span>
           </button>
-          <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a href="/tienda" class="btn btn-primary btn-lg">Visitar la tienda <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
-        <span class="status-line" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+        <span class="hero-meta">Minecraft Java 1.20.1 · Forge · Gratis</span>
       </div>
+      <a class="scroll-cue" href="#reino" aria-label="Bajar"><span></span></a>
     </section>
 
     <div class="wrap stats-wrap">
-      <ul class="stats frame" aria-label="El servidor en cifras">
-        <li><b data-players>—</b><span>Jugadores en línea</span></li>
-        <li><b>1.20.1</b><span>Minecraft Java</span></li>
-        <li><b>+200</b><span>Mods</span></li>
-        <li><b data-crate-count>40</b><span>Crates</span></li>
+      <ul class="stats" aria-label="El servidor en cifras">
+        <li class="stat" style="--c:#4ade80"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="stat-text"><b data-players>—</b><span>Jugadores en línea</span></span></li>
+        <li class="stat" style="--c:#67e8f9"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><span class="stat-text"><b>1.20.1</b><span>Minecraft Java</span></span></li>
+        <li class="stat" style="--c:#b197fc"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span><span class="stat-text"><b data-count="200" data-prefix="+">+200</b><span>Mods</span></span></li>
+        <li class="stat" style="--c:#fcc94a"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><span class="stat-text"><b data-crate-count>40</b><span>Crates</span></span></li>
       </ul>
     </div>
 
-    <section class="wrap section">
+    <section class="wrap section" id="reino">
       <div class="section-head center">
         <span class="eyebrow">El reino</span>
-        <h2>Una aventura sin final</h2>
-        <p>Supervivencia con alma de RPG: funda tu reino, forja armas legendarias y haz fortuna con tu oficio.</p>
+        <h2>Una aventura <span class="text-grad">sin final</span></h2>
+        <p>Supervivencia con alma de RPG: funda tu reino, vive tu propia leyenda y haz fortuna con tu oficio.</p>
       </div>
       <div class="pillars">
         <article class="pillar frame reveal">
           <div class="pillar-art"><img src="/img/hero-768.webp" alt="Castillos de Tierras Fantásticas" width="768" height="432" loading="lazy" style="object-position:22% 40%"></div>
-          <div class="pillar-body"><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
+          <div class="pillar-body"><span class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l2-1V5h2v2h2V5h2v2h2V5h2v3l2 1v12"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
         </article>
-        <article class="pillar frame reveal">
-          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" loading="lazy"></div>
-          <div class="pillar-body"><h3>Armas legendarias</h3><p>Sets completos con armas animadas, armadura y cosméticos (alas, mochilas, cascos) que se ven en el juego.</p></div>
+        <article class="pillar frame reveal" style="--c:#b197fc">
+          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" width="1200" height="800" loading="lazy"></div>
+          <div class="pillar-body"><span class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M14.5 6.5L18 3h3v3l-3.5 3.5"/><path d="M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></span><h3>Sets con estilo</h3><p>Armas animadas, armaduras y cosméticos (alas, mochilas, cascos) que cambian tu aspecto en el juego. Son de aspecto: no dan ventaja.</p></div>
         </article>
-        <article class="pillar frame reveal">
+        <article class="pillar frame reveal" style="--c:#fcc94a">
           <div class="pillar-art"><img src="/img/home/oficio-miner.webp" alt="El minero, uno de los oficios" width="590" height="190" loading="lazy" class="pixel-img"></div>
-          <div class="pillar-body"><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
+          <div class="pillar-body"><span class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/></svg></span><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
         </article>
       </div>
     </section>
 
-    <section class="wrap section featured" style="padding-top:0">
+    <section class="wrap section pt-0">
       <div class="section-head split-head">
         <div>
           <span class="eyebrow">Nuevo en la tienda</span>
-          <h2>Crates <span class="gold-text">legendarias</span></h2>
+          <h2>Crates <span class="text-grad">del reino</span></h2>
         </div>
         <a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
       <div class="crate-row" id="crate-spotlight">
-        <p class="loading">Cargando crates…</p>
+        <div class="skel-grid skel-card"><span class="sr-only">Cargando…</span><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div></div>
       </div>
     </section>
 
-    <section class="wrap section" style="padding-top:0">
+    <section class="wrap section pt-0">
       <div class="panel cta-band reveal">
         <span class="eyebrow">Únete</span>
         <h2>Tu aventura empieza hoy</h2>
         <p>Es gratis: Minecraft Java 1.20.1 con el modpack del servidor. Copia la IP, entra y funda tu reino.</p>
         <div class="actions">
-          <button class="btn btn-gold btn-lg" type="button" data-copy-ip><span data-copy-hint>Copiar IP</span></button>
+          <button class="btn btn-primary btn-lg" type="button" data-copy-ip><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-copy-hint>Copiar IP</span></button>
           <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Entrar al Discord</a>
           <a href="/ayuda" class="btn btn-ghost btn-lg">Cómo entrar</a>
         </div>
@@ -171,22 +179,29 @@
           <ul>
             <li><a href="/tienda#rangos">Rangos</a></li>
             <li><a href="/tienda#crates">Crates</a></li>
-            <li><a href="/tienda#ruleta">Ruleta</a></li>
             <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
+            <li><a href="/ayuda">Preguntas frecuentes</a></li>
           </ul>
         </div>
         <div>
-          <h4>Ayuda</h4>
+          <h4>Legal y contacto</h4>
           <ul>
-            <li><a href="/ayuda">Preguntas frecuentes</a></li>
+            <li><a href="/legal">Aviso legal</a></li>
+            <li><a href="/terminos">Términos y condiciones</a></li>
+            <li><a href="/privacidad">Aviso de privacidad</a></li>
+            <li><a href="mailto:tierrasfantasticasmc@gmail.com">tierrasfantasticasmc@gmail.com</a></li>
             <li><a href="#" class="discord-link" target="_blank" rel="noopener" hidden>Discord</a></li>
           </ul>
         </div>
       </div>
     </div>
+    <div class="wrap">
+      <p class="disclaimer"><b>Servidor independiente.</b> No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos. Minecraft es una marca de Mojang AB.
+        <span lang="en">NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</span></p>
+    </div>
     <div class="wrap legal">
-      <span>© <span data-year></span> Tierras Fantásticas. No afiliado a Mojang AB ni a Microsoft.</span>
-      <span>Las compras son donaciones voluntarias para mantener el servidor.</span>
+      <span>© <span data-year></span> Equipo de Tierras Fantásticas · México</span>
+      <span>Lo que se compra en la tienda ayuda a mantener el servidor. Precios en dólares estadounidenses (USD).</span>
     </div>
   </footer>
 

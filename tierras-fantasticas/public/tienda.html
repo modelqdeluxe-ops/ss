@@ -4,21 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tienda — Tierras Fantásticas</title>
-  <meta name="description" content="Tienda oficial de Tierras Fantásticas: crates con sets completos, rangos, ruleta y monedas. Pago seguro con tarjeta y entrega automática en el juego.">
-  <meta name="theme-color" content="#07080d">
+  <meta name="description" content="Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, crates con sets de aspecto y recompensas gratis. Pago seguro y entrega automática en el juego.">
+  <meta name="theme-color" content="#0a0d14">
   <meta property="og:title" content="Tienda — Tierras Fantásticas">
-  <meta property="og:description" content="Tienda oficial de Tierras Fantásticas: crates con sets completos, rangos, ruleta y monedas. Pago seguro con tarjeta y entrega automática en el juego.">
+  <meta property="og:description" content="Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, crates con sets de aspecto y recompensas gratis. Pago seguro y entrega automática en el juego.">
   <meta property="og:image" content="/img/og.jpg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
-  <script>document.documentElement.classList.add('js')</script>
+  <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
 </head>
 <body data-page="tienda">
+  <div class="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <img src="/img/logo.webp" alt="" width="104" height="115">
+      <div class="loader-bar"><i></i></div>
+      <span>Cargando el reino…</span>
+    </div>
+  </div>
   <a class="sr-only" href="#main">Saltar al contenido</a>
   <header class="header" id="header">
     <div class="wrap header-inner">
@@ -34,9 +41,9 @@
       </nav>
       <div class="header-actions">
         <button class="ip-chip" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-          <span class="dot" data-status-dot></span><span data-server-ip>216.163.187.40:19001</span><span class="hint" data-copy-hint>Copiar</span>
+          <span class="dot" data-status-dot></span><span data-server-ip>216.163.187.40:19001</span><span class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-copy-hint>Copiar</span></span>
         </button>
-        <a href="/tienda" class="btn btn-gold btn-sm">Tienda</a>
+        <a href="/tienda" class="btn btn-primary btn-sm">Tienda</a>
         <a href="/cuenta" class="account-chip" data-account-chip aria-label="Entrar o crear cuenta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
@@ -56,8 +63,9 @@
       <a href="/cuenta">Mi cuenta<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </nav>
     <div class="sheet-foot">
-      <button class="btn btn-ghost btn-lg ip-button" type="button" data-copy-ip>
-        <span class="ip" data-server-ip>216.163.187.40:19001</span><span class="copy" data-copy-hint>Copiar IP</span>
+      <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+        <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>216.163.187.40:19001</span></span>
+        <span class="ip-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-copy-hint>Copiar</span></span>
       </button>
       <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Únete al Discord</a>
     </div>
@@ -81,19 +89,17 @@
         </label>
       </div>
     </section>
-    <section class="wrap" style="padding-bottom:56px">
+    <section class="wrap shop-body">
       <div class="tabs shop-tabs frame" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
           <button class="tab" type="button" role="tab" data-category="gratis" aria-selected="false">Recompensas gratis</button>
           <button class="tab" type="button" role="tab" data-category="rangos" aria-selected="false">Rangos</button>
           <button class="tab" type="button" role="tab" data-category="crates" aria-selected="false">Crates</button>
-          <button class="tab" type="button" role="tab" data-category="ruleta" aria-selected="false">Ruleta</button>
-          <button class="tab" type="button" role="tab" data-category="monedas" aria-selected="false">Monedas</button>
           <button class="tab" type="button" role="tab" data-category="tiendamonedas" aria-selected="false">Tienda de monedas</button>
       </div>
       <div class="notice" data-payments-off hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
       <p class="shop-intro muted" id="shop-intro"></p>
       <div class="products" id="products" role="tabpanel">
-        <p class="loading">Cargando la tienda…</p>
+        <div class="skel-grid skel-card"><span class="sr-only">Cargando…</span><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div><div class="skel-card" aria-hidden="true"><div class="skel skel-art"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div></div></div>
       </div>
       <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda.</p>
       <div class="panel compare" id="compare" hidden></div>
@@ -102,6 +108,10 @@
         <div class="panel item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg></span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
         <div class="panel item"><span class="icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg></span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
       </div>
+      <p class="shop-legal">Tierras Fantásticas es un servidor independiente. No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos. Nada de la tienda da ventaja
+        sobre quien no paga, no hay nada al azar y las monedas del servidor solo se ganan jugando. Precios en USD, finales.
+        Tienes 5 días hábiles para cancelar una compra. Al comprar aceptas los <a href="/terminos">Términos y
+        condiciones</a> y el <a href="/privacidad">Aviso de privacidad</a>.</p>
     </section>
   </main>
 
@@ -129,22 +139,29 @@
           <ul>
             <li><a href="/tienda#rangos">Rangos</a></li>
             <li><a href="/tienda#crates">Crates</a></li>
-            <li><a href="/tienda#ruleta">Ruleta</a></li>
             <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
+            <li><a href="/ayuda">Preguntas frecuentes</a></li>
           </ul>
         </div>
         <div>
-          <h4>Ayuda</h4>
+          <h4>Legal y contacto</h4>
           <ul>
-            <li><a href="/ayuda">Preguntas frecuentes</a></li>
+            <li><a href="/legal">Aviso legal</a></li>
+            <li><a href="/terminos">Términos y condiciones</a></li>
+            <li><a href="/privacidad">Aviso de privacidad</a></li>
+            <li><a href="mailto:tierrasfantasticasmc@gmail.com">tierrasfantasticasmc@gmail.com</a></li>
             <li><a href="#" class="discord-link" target="_blank" rel="noopener" hidden>Discord</a></li>
           </ul>
         </div>
       </div>
     </div>
+    <div class="wrap">
+      <p class="disclaimer"><b>Servidor independiente.</b> No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos. Minecraft es una marca de Mojang AB.
+        <span lang="en">NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</span></p>
+    </div>
     <div class="wrap legal">
-      <span>© <span data-year></span> Tierras Fantásticas. No afiliado a Mojang AB ni a Microsoft.</span>
-      <span>Las compras son donaciones voluntarias para mantener el servidor.</span>
+      <span>© <span data-year></span> Equipo de Tierras Fantásticas · México</span>
+      <span>Lo que se compra en la tienda ayuda a mantener el servidor. Precios en dólares estadounidenses (USD).</span>
     </div>
   </footer>
 
