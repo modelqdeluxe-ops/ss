@@ -18,7 +18,7 @@ corrigiendo y agregando cosas al mod».* O sea:
 **Petición actual del dueño (literal):** *«rediseña la web, tómatelo en serio, mira como están diseñadas de bonitas
 en internet.»* Después pidió guardar el avance en git y documentarlo todo (este archivo).
 
-**Estado:** rediseño **a medias**, subido a la rama `claude/amazing-wozniak-gtw9ll` (PR en borrador, **sin
+**Estado:** rediseño **a medias**, subido a la rama `claude/amazing-wozniak-gtw9ll` (PR en borrador https://github.com/modelqdeluxe-ops/ss/pull/17, **sin
 fusionar**: la web en vivo todavía tiene el diseño anterior). Lo que ya está hecho del rediseño:
 
 1. **Hoja de estilos reescrita desde cero**: `tierras-fantasticas/public/styles.css` (~3.700 líneas). Antes era un
