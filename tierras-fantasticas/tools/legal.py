@@ -9,7 +9,7 @@ EMAIL = 'tierrasfantasticasmc@gmail.com'
 MAIL = f'<a href="mailto:{EMAIL}">{EMAIL}</a>'
 OWNER = 'el Equipo de Tierras Fantásticas'
 
-# --- Aviso legal: quiénes somos, no afiliación y cumplimiento de las normas de Mojang ---
+# --- Aviso legal: quiénes somos, no afiliación y cómo funciona la tienda ---
 AVISO = [
     ('quienes', 'Quiénes somos', f'''
 <p>Tierras Fantásticas es un <b>servidor de Minecraft independiente</b> gestionado por {OWNER}, desde México. Esta
@@ -28,13 +28,8 @@ con qué juego es compatible el servidor; no usamos su logotipo y nuestro nombre
 <p>Para jugar en el servidor necesitas tu propia copia original de <i>Minecraft: Java Edition</i>, comprada a
 Mojang. Mojang y Microsoft no atienden consultas, pagos ni reclamaciones de este servidor: escríbenos a nosotros.</p>'''),
 
-    ('normas-mojang', 'Cumplimos las normas de Mojang', f'''
-<p>Los servidores de Minecraft tienen que seguir el Acuerdo de Licencia (EULA) y las Normas de Uso de Minecraft
-(<i>Minecraft Usage Guidelines</i>) de Mojang. Por eso la tienda funciona así:</p>
+    ('tienda', 'Cómo funciona la tienda', f'''
 <ul>
-  <li><b>Nada que dé ventaja sobre quien no paga.</b> Los rangos dan prefijos, colores, cosméticos y comodidades que no
-    perjudican a nadie. Las armas y armaduras de las crates son de aspecto: tienen exactamente los mismos valores que
-    las de hierro, que cualquier jugador fabrica jugando.</li>
   <li><b>Sin cajas sorpresa ni juegos de azar.</b> Cada crate tiene un contenido fijo que se ve completo antes de
     comprar (puedes probártelo en 3D). No vendemos llaves, ruletas ni premios al azar.</li>
   <li><b>Las monedas del servidor se ganan jugando.</b> No se venden con dinero, no tienen valor real y no se pueden
@@ -43,7 +38,7 @@ Mojang. Mojang y Microsoft no atienden consultas, pagos ni reclamaciones de este
     zonas son para todos por igual. Entrar al servidor es gratis.</li>
   <li><b>Contenido para todas las edades.</b></li>
 </ul>
-<p>Si crees que algo de la tienda no cumple estas normas, escríbenos a {MAIL} y lo revisamos.</p>'''),
+<p>Si tienes dudas sobre algo de la tienda, escríbenos a {MAIL}.</p>'''),
 
     ('propiedad', 'Propiedad intelectual', f'''
 <p>El nombre, el emblema, los textos y el diseño de Tierras Fantásticas son del equipo del servidor. Las marcas y
@@ -89,14 +84,13 @@ cuenta por ti. Si un menor compró sin permiso, escríbenos y lo resolvemos (ver
 
     ('que-compras', 'Qué compras', '''
 <p>Lo que se vende en la tienda es <b>contenido digital para usar dentro de Tierras Fantásticas</b>: rangos (prefijo,
-colores, cosméticos y comodidades) y crates (sets de aspecto con armas, herramientas, armadura y cosméticos). Al
+colores, cosméticos y comodidades) y crates (sets completos con armas, herramientas, armadura y cosméticos). Al
 comprar recibes un permiso de uso personal dentro del servidor:</p>
 <ul>
   <li>No es dinero, no tiene valor fuera del servidor y no se puede cambiar por dinero, revender ni pasar a otro
     jugador ni a otro servidor.</li>
   <li>Cada producto dice antes de pagar qué incluye exactamente. Las crates tienen un contenido fijo, sin nada al azar,
     y lo puedes ver completo (y probártelo en 3D) antes de comprar.</li>
-  <li>Las armas y armaduras de las crates son de aspecto: tienen los mismos valores que las de hierro y no dan ventaja.</li>
   <li>Las <b>monedas del servidor</b> solo se ganan jugando. La «Tienda de monedas» de la web se paga con esas monedas,
     nunca con dinero.</li>
   <li>Las <b>recompensas gratis</b> se pueden reclamar una vez por jugador, con la cuenta iniciada.</li>

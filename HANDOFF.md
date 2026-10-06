@@ -12,7 +12,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (octubre de 2026): rediseño completo + cumplimiento de Mojang + páginas legales + TF Client 1.3.4
+### Última entrega (octubre de 2026): rediseño completo + cumplimiento de Mojang + páginas legales + TF Client 1.3.4 → 1.3.5
 El dueño rechazó el estilo «fantasía» (dorado, Cinzel, biseles): *«no veo un rediseño completo… todo está crudo…
 rediseña todo con otro concepto… es minecraft, la tipografía cámbiala pero no a una de píxeles… animaciones en los
 botones, transiciones, loading»*. Y después: *«revisa que nuestros productos no incumplan los términos de Mojang…
@@ -39,8 +39,8 @@ animaciones → tamaños de pantalla). Edita la sección que toque; no añadas p
   están animados. Todo con transform/opacity y apagado con «reducir movimiento». Sin backdrop-filter ni capas fijas.
 - Se quitó el grano fijo de fondo. El brillo de color de las crates se mantiene (el dueño lo quiere).
 
-**Normas de Mojang** (EULA + *Minecraft Usage Guidelines*; resumen en `/legal#normas-mojang`). Revisado producto por
-producto y corregido con el visto bueno del dueño:
+**Normas de Mojang** (EULA + *Minecraft Usage Guidelines*). Revisado producto por producto y corregido con el visto
+bueno del dueño, **salvo los atributos de las crates** (ver abajo):
 - **Ruleta retirada** de la web (lo que se parezca al juego de azar está prohibido, y daba objetos con ventaja). El
   dueño preguntó si con monedas ganadas jugando estaría permitida: Mojang prohíbe en general «anything meant to
   resemble gambling mechanics», así que se dejó fuera; el código sigue (ver README) por si se rehace de forma permitida.
@@ -51,13 +51,20 @@ producto y corregido con el visto bueno del dueño:
   prioritaria, título y color, rol de Discord. **El dueño tiene que quitar en LuckPerms/EssentialsX los kits y /ec de
   los rangos y abrir el mundo de recursos a todos** (se le dijo). Quiere que los rangos den **un set de armadura**: se
   puede si es de aspecto (valores de hierro, como las crates). **Pendiente: que diga qué set lleva cada rango.**
-- **Crates de aspecto**: TF Client **1.3.4** pone a todos los objetos de los sets exactamente los valores del hierro
-  (antes netherita) y ya no resisten la lava. Su contenido es fijo y se ve entero antes de comprar (no son cajas al azar).
+- **Atributos de las crates — DECISIÓN DEL DUEÑO (contra la recomendación):** la 1.3.4 los bajó a hierro para
+  cumplir; el dueño pidió (*«ponles atributos 1 punto mayor a la netherita… no vamos a decir qué atributos tiene…
+  mojang no se va a meter»*) y la **1.3.5** les pone la netherita +1 (+1 de daño; armadura 4/9/7/4, dureza 4,
+  empuje 0,2; no se queman en lava) y oculta los atributos en la descripción del objeto (la barra de armadura del
+  juego sí los refleja). Se le explicó que eso es la ventaja pagada que prohíbe Mojang y que puede acabar en bloqueo
+  del servidor; es su decisión y su riesgo. **La web no puede decir nada falso**: se quitaron «valores de hierro»,
+  «no dan ventaja» y «cumplimos las normas de Mojang»; la web simplemente no habla de atributos. No vuelvas a poner
+  esas frases mientras los atributos sean estos. El contenido de las crates sigue siendo fijo y visible (no son cajas
+  al azar).
 - «Donaciones» → «compras» (Mojang exige llamar a las cosas por su nombre).
 
 **Páginas legales** (textos en `tools/legal.py`, generadas por `pages.py`; fecha en `LEGAL_DATE`):
-- `/legal` — quiénes somos, **no afiliación** (frase obligatoria en español e inglés), cumplimiento de Mojang,
-  propiedad intelectual. `/terminos` — cuentas, menores, qué se compra, precios en USD finales, entrega, **5 días
+- `/legal` — quiénes somos, **no afiliación** (frase obligatoria en español e inglés), cómo funciona la tienda
+  (sin azar, monedas solo jugando, sin desbaneos), propiedad intelectual. `/terminos` — cuentas, menores, qué se compra, precios en USD finales, entrega, **5 días
   hábiles para cancelar** (art. 56 LFPC) y reembolsos, cambios del servidor, PROFECO. `/privacidad` — aviso de
   privacidad según la **LFPDPPP de 2025** (datos, finalidades necesarias y voluntaria, terceros, derechos ARCO en 20
   días hábiles, SABG como autoridad, cookies y almacenamiento).
@@ -79,7 +86,7 @@ IP `216.163.187.40:19001`) con +200 mods. Este repo tiene:
 | Carpeta | Qué es |
 | --- | --- |
 | `tierras-fantasticas/` | La web/tienda. Cloudflare Workers + D1 + archivos estáticos (`public/`). Dominio `tierrasfantásticas.store` = `https://xn--tierrasfantsticas-hpb.store`. |
-| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.4**. |
+| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.5**. |
 | `wrangler.jsonc` | Configuración del Worker de Cloudflare (en la raíz a propósito). |
 | `.github/workflows/` | `tf-client.yml` compila el mod en cada push que toque `tf-client/` (artefacto `tfclient-jar`); `server-ping.yml` comprueba el servidor. |
 
@@ -98,7 +105,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.5**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.6**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
@@ -115,8 +122,8 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   - Crates, no «llaves»: se compra el pack (la crate), nunca se habla de llaves; sin etiquetas de rareza ni
     «edición limitada», «más popular», etc.
   - Diseño actual: concepto «Minecraft moderno» (sección 0). Tipografías Unbounded + Figtree, **nunca** una de píxeles.
-  - **Normas de Mojang (obligatorio para cualquier producto nuevo):** nada que dé ventaja sobre quien no paga (armas y
-    armaduras siempre con valores de hierro o menos; kits de objetos no), nada al azar ni parecido al juego de azar
+  - **Normas de Mojang (para productos nuevos):** nada que dé ventaja sobre quien no paga (kits de objetos no; los sets
+    de las crates son la excepción que decidió el dueño, ver sección 0), nada al azar ni parecido al juego de azar
     (sin ruletas, llaves ni cajas sorpresa), no vender monedas del juego con dinero, no cobrar por zonas del servidor,
     ni desbaneos ni herramientas del staff, contenido para todas las edades, llamar «compras» a las compras.
   - Aviso de no afiliación con Mojang/Microsoft siempre visible y páginas legales al día (`tools/legal.py`).
@@ -208,13 +215,13 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.4)
+## 5. El mod (TF Client 1.3.5)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.4.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  → `build/libs/tfclient-1.20.1-1.3.5.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
-- Objetos de los sets (`items/TFItems.java`, `TFItemTypes.Material`): **valores del hierro** desde la 1.3.4 (normas de
-  Mojang); no los subas.
+- Objetos de los sets (`items/TFItems.java` → `SET_TIER`, `TFItemTypes.Material`): netherita **+1** desde la 1.3.5
+  (decisión del dueño, ver sección 0), con los atributos ocultos en la descripción (`HIDE_ATTRIBUTES`).
 - Comandos (todos en `items/TFCommands.java`):
   - `/tf jobs` (todos; staff: `recargar`, `nivel`, `xp`, `reiniciar`; `ver <oficio>` lo usan los avisos del chat).
   - `/tf web sets list|give`, `/tf web tienda add|precio|quitar|lista|vaciar` (staff) y los que usa la web:
