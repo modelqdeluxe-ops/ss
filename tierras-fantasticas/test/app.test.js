@@ -328,7 +328,7 @@ test('las versiones antiguas del mod reciben los comandos con el nombre ya puest
 
 test('el webhook rechaza firmas falsas o viejas', async () => {
   await seen('Paciente');
-  const id = await checkout({ productId: 'llaves-legendarias-3', username: 'Paciente' });
+  const id = await checkout({ productId: 'monedas-10000', username: 'Paciente' });
   const session = sessionOf(id);
   const event = { type: 'checkout.session.completed', data: { object: { ...session, status: 'complete', payment_status: 'paid' } } };
   assert.strictEqual((await signedEvent(event, { secret: 'whsec_otro' })).status, 400);
@@ -340,12 +340,12 @@ test('el webhook rechaza firmas falsas o viejas', async () => {
 test('si el webhook tarda, la página de confirmación consulta el pago a Stripe', async () => {
   received.length = 0;
   await seen('Prisa');
-  const id = await checkout({ productId: 'llaves-epicas-5', username: 'Prisa' });
+  const id = await checkout({ productId: 'crate-necros', username: 'Prisa' });
   assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'pending');
   Object.assign(sessionOf(id), { status: 'complete', payment_status: 'paid', payment_intent: 'pi_prisa' });
   assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'queued');
   await serverDelivers('Prisa');
-  assert.deepStrictEqual(received, ['crate key give Prisa epica 5']);
+  assert.deepStrictEqual(received, ['tf web sets give Prisa necros']);
 });
 
 test('no se entrega si el importe cobrado no coincide', async () => {
@@ -358,12 +358,12 @@ test('no se entrega si el importe cobrado no coincide', async () => {
 test('pagos que tardan (transferencia) se entregan cuando Stripe confirma el cobro', async () => {
   received.length = 0;
   await seen('Lento_Pago');
-  const id = await checkout({ productId: 'llaves-legendarias-3', username: 'Lento_Pago' });
+  const id = await checkout({ productId: 'crate-valentine', username: 'Lento_Pago' });
   assert.strictEqual((await pay(id, { payment_status: 'unpaid' })).status, 'awaiting_payment');
   assert.deepStrictEqual(await serverDelivers('Lento_Pago'), []);
   assert.strictEqual((await pay(id, {}, 'checkout.session.async_payment_succeeded')).status, 'queued');
   await serverDelivers('Lento_Pago');
-  assert.deepStrictEqual(received, ['crate key give Lento_Pago legendaria 3']);
+  assert.deepStrictEqual(received, ['tf web sets give Lento_Pago valentine']);
 });
 
 test('un pago caducado o fallido no entrega nada', async () => {
@@ -409,20 +409,85 @@ test('el estado del servidor sale del puente', async () => {
   assert.deepStrictEqual(await (await get('/api/status')).json(), { bridge: false });
 });
 
-test('comprar llaves de un crate las entrega y el catálogo trae su contenido', async () => {
+test('una crate es el set completo: se compra una vez y llega entero al juego', async () => {
   const list = await (await get('/api/products')).json();
+  assert.ok(!list.some((p) => p.category === 'llaves'), 'ya no se venden llaves');
+  assert.ok(list.every((p) => !('rarity' in p) && !('featured' in p) && !('keyImage' in p)));
   const crate = list.find((p) => p.id === 'crate-necros');
   assert.strictEqual(crate.category, 'crates');
+  assert.strictEqual(crate.maxQuantity, 1);
   assert.ok(crate.image && crate.models.length > 0 && crate.models.some((m) => m.id === 'armor_helmet'));
+  assert.ok(list.some((p) => p.id === 'crate-ifrit') && !list.some((p) => p.id === 'crate-nazgul'));
 
   received.length = 0;
   await seen('Alex');
-  const id = await checkout({ productId: 'crate-necros', username: 'Alex', quantity: 2 });
-  assert.strictEqual(sessionOf(id).amount_total, 798);
+  const res = await post('/api/checkout', { productId: 'crate-necros', username: 'Alex', quantity: 2 });
+  assert.strictEqual(res.status, 400);
+  const id = await checkout({ productId: 'crate-necros', username: 'Alex' });
+  assert.strictEqual(sessionOf(id).amount_total, crate.price);
   await pay(id);
   const [delivery] = await serverDelivers('Alex');
   assert.strictEqual(delivery.color, crate.colors[1]);
-  assert.deepStrictEqual(received, ['crate key give Alex necros 1', 'crate key give Alex necros 1']);
+  assert.deepStrictEqual(received, ['tf web sets give Alex necros']);
+});
+
+test('la ruleta de armas elige las armas al pagar y la compra dice cuáles tocaron', async () => {
+  const list = await (await get('/api/products')).json();
+  const spin = list.find((p) => p.id === 'ruleta-5');
+  assert.strictEqual(spin.category, 'ruleta');
+  assert.strictEqual(spin.spins, 5);
+  const weapons = new Map(spin.models.map((m) => [m.id, m.name]));
+  assert.strictEqual(weapons.size, 30);
+
+  received.length = 0;
+  await seen('Ruleta_MC');
+  const id = await checkout({ productId: 'ruleta-5', username: 'Ruleta_MC' });
+  await pay(id);
+  const order = await (await get(`/api/order/${id}`)).json();
+  assert.strictEqual(order.prizes.length, 5);
+  for (const prize of order.prizes) {
+    assert.strictEqual(weapons.get(prize.id), prize.name);
+    assert.strictEqual(prize.thumb, `/img/items/nazgul/${prize.id}.webp`);
+  }
+  await serverDelivers('Ruleta_MC');
+  assert.deepStrictEqual(received, order.prizes.map((p) => `tf web sets give Ruleta_MC nazgul ${p.id}`));
+});
+
+// --- Tienda de monedas ---
+test('el staff llena la tienda de monedas desde el juego y la web la muestra', async () => {
+  const empty = await (await get('/api/coinshop')).json();
+  const ops = [
+    { op: 'add', id: 'diamantes', item: 'minecraft:diamond', name: 'Diamante', count: 16, price: 2400, by: 'Admin' },
+    { op: 'add', id: 'espada', item: 'tfclient:necros_sword', name: 'Espada Necros', count: 1, price: 50000, nbt: '{Damage:0}', by: 'Admin' },
+    { op: 'add', id: 'MAL id', item: 'minecraft:dirt', name: 'Tierra', count: 1, price: 1 },
+    { op: 'add', id: 'gratis', item: 'minecraft:dirt', name: 'Tierra', count: 1, price: 0 },
+  ];
+  const res = await (await poll([], [], { shop: ops })).json();
+  assert.deepStrictEqual(res.coinShop.map((i) => i.id).sort(), ['diamantes', 'espada']);
+
+  const shop = await (await get('/api/coinshop')).json();
+  assert.notStrictEqual(shop.version, empty.version);
+  const diamond = shop.items.find((i) => i.id === 'diamantes');
+  assert.deepStrictEqual(diamond, { id: 'diamantes', item: 'minecraft:diamond', name: 'Diamante', count: 16, price: 2400, icon: '/api/itemicon/diamond' });
+  assert.strictEqual(shop.items.find((i) => i.id === 'espada').icon, '/img/items/necros/sword.webp');
+  assert.ok(!JSON.stringify(shop).includes('Damage'), 'el NBT se queda en el servidor');
+
+  // Cambiar el precio, quitar y vaciar
+  await poll([], [], { shop: [{ op: 'add', id: 'diamantes', item: 'minecraft:diamond', name: 'Diamante', count: 16, price: 2000 }, { op: 'remove', id: 'espada' }] });
+  const after = await (await get('/api/coinshop')).json();
+  assert.deepStrictEqual(after.items.map((i) => [i.id, i.price]), [['diamantes', 2000]]);
+  const cleared = await (await poll([], [], { shop: [{ op: 'clear' }] })).json();
+  assert.deepStrictEqual(cleared.coinShop, []);
+
+  // Sin la clave del puente no se toca nada
+  const bad = await poll([], [], { secret: 'otra', shop: [{ op: 'add', id: 'x', item: 'minecraft:dirt', name: 'X', count: 1, price: 5 }] });
+  assert.strictEqual(bad.status, 401);
+  assert.deepStrictEqual((await (await get('/api/coinshop')).json()).items, []);
+});
+
+test('los iconos de objetos solo aceptan nombres válidos', async () => {
+  assert.strictEqual((await get('/api/itemicon/..%2F..%2Fsecret')).status, 400);
+  assert.strictEqual((await get('/api/itemicon/Diamond')).status, 400);
 });
 
 // --- Rangos ---

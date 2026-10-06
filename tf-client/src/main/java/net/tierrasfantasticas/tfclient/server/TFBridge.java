@@ -109,6 +109,9 @@ public final class TFBridge {
     private static final Map<UUID, Long> lastLink = new HashMap<>();
     /** Cambios de rango hechos con /tf rango, pendientes de mandar. */
     private static final Deque<JsonObject> rankChanges = new ArrayDeque<>();
+    /** Cambios de la tienda de monedas para la web, en orden. */
+    private static final Deque<JsonObject> shopOps = new ArrayDeque<>();
+    private static final int SHOP_PER_POLL = 50;
     /** Efectos programados (fuegos artificiales escalonados). */
     private static final List<Scheduled> effects = new ArrayList<>();
     private static long clock;
@@ -189,6 +192,12 @@ public final class TFBridge {
         soon();
     }
 
+    /** /tf tienda: un cambio de la tienda de monedas para la web. */
+    public static void queueShop(JsonObject op) {
+        shopOps.addLast(op);
+        soon();
+    }
+
     /** Ejecuta un comando como la consola y devuelve los errores (vacío si fue bien). */
     public static List<String> run(MinecraftServer srv, String command) {
         ErrorCollector collector = new ErrorCollector();
@@ -249,14 +258,18 @@ public final class TFBridge {
         links.clear();
         List<JsonObject> sendingRanks = new ArrayList<>(rankChanges);
         rankChanges.clear();
+        List<JsonObject> sendingShop = new ArrayList<>();
+        for (JsonObject op; sendingShop.size() < SHOP_PER_POLL && (op = shopOps.pollFirst()) != null; ) sendingShop.add(op);
         body.add("seen", array(sendingSeen));
         body.add("links", array(sendingLinks));
         body.add("ranks", array(sendingRanks));
+        if (!sendingShop.isEmpty()) body.add("shop", array(sendingShop));
         // Si la consulta falla, todo vuelve a la cola para la siguiente.
         Runnable requeue = () -> {
             sending.forEach(done::addLast);
             sendingSeen.forEach(seen::addLast);
             sendingRanks.forEach(rankChanges::addLast);
+            for (int i = sendingShop.size() - 1; i >= 0; i--) shopOps.addFirst(sendingShop.get(i));
             for (JsonObject link : sendingLinks) {
                 ServerPlayer player = srv.getPlayerList().getPlayer(UUID.fromString(link.get("uuid").getAsString()));
                 if (player != null) {
@@ -343,6 +356,10 @@ public final class TFBridge {
             connected = true;
             lastError = "";
             TFClient.LOGGER.info("TF Bridge: conectado con la web {}", TFServerConfig.url());
+            // La tienda de monedas de la web es la del servidor: se manda entera al conectar.
+            shopOps.clear();
+            net.tierrasfantasticas.tfclient.shop.TFCoinShop.snapshot().forEach(shopOps::addLast);
+            soon();
         }
 
         JsonObject json = JsonParser.parseString(text).getAsJsonObject();

@@ -393,133 +393,6 @@
    ]
   },
   {
-   "id": "nazgul",
-   "name": "Arsenal de Nazgul",
-   "color": "#9061f9",
-   "items": [
-    {
-     "id": "nazgul_necromancer_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_ocean_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_aspectr_of_eather_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_beecomb_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_last_rose",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_death_grip",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_dark_moon_axe",
-     "type": "axe"
-    },
-    {
-     "id": "nazgul_hellspawn_axe",
-     "type": "axe"
-    },
-    {
-     "id": "nazgul_forge_hammer",
-     "type": "heavy"
-    },
-    {
-     "id": "nazgul_spider_bow",
-     "type": "bow"
-    },
-    {
-     "id": "nazgul_abyssal_blade",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_great_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_battle_mage_staff",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_fire_mace",
-     "type": "heavy"
-    },
-    {
-     "id": "nazgul_gargoyle_axe",
-     "type": "axe"
-    },
-    {
-     "id": "nazgul_witch_scythe",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_flowering_madness",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_battle_standart",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_heavy_bow",
-     "type": "bow"
-    },
-    {
-     "id": "nazgul_rogue_dagger",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_demonic_blade",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_cursed_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_dark_sword",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_magnetic_blade",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_kaz_sc",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_mana_axe",
-     "type": "axe"
-    },
-    {
-     "id": "nazgul_red_hammer",
-     "type": "heavy"
-    },
-    {
-     "id": "nazgul_holy_spear",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_pox_spreader",
-     "type": "sword"
-    },
-    {
-     "id": "nazgul_obsidian_bow",
-     "type": "bow"
-    }
-   ]
-  },
-  {
    "id": "shadow",
    "name": "Cazador de Sombras",
    "color": "#8b6cf6",
@@ -3737,6 +3610,99 @@
    ]
   },
   {
+   "id": "ifrit",
+   "name": "Ifrit",
+   "color": "#be123c",
+   "items": [
+    {
+     "id": "ifrit_sword",
+     "type": "sword"
+    },
+    {
+     "id": "ifrit_axe",
+     "type": "axe"
+    },
+    {
+     "id": "ifrit_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "ifrit_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "ifrit_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "ifrit_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "ifrit_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "ifrit_spear",
+     "type": "sword"
+    },
+    {
+     "id": "ifrit_staff",
+     "type": "sword"
+    },
+    {
+     "id": "ifrit_bow",
+     "type": "bow"
+    },
+    {
+     "id": "ifrit_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "ifrit_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "ifrit_shield",
+     "type": "shield"
+    },
+    {
+     "id": "ifrit_helmet",
+     "type": "head"
+    },
+    {
+     "id": "ifrit_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/ifrit/wings_worn"
+    },
+    {
+     "id": "ifrit_quiver",
+     "type": "back",
+     "worn": "tfclient:item/sets/ifrit/quiver_worn"
+    },
+    {
+     "id": "ifrit_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "ifrit_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "ifrit_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "ifrit_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
    "id": "easter",
    "name": "Conejo de Pascua",
    "color": "#d946ef",
@@ -3832,6 +3798,133 @@
      "id": "easter_armor_boots",
      "type": "armor",
      "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "nazgul",
+   "name": "Arsenal de Nazgul",
+   "color": "#9061f9",
+   "items": [
+    {
+     "id": "nazgul_necromancer_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_ocean_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_aspectr_of_eather_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_beecomb_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_last_rose",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_death_grip",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_dark_moon_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_hellspawn_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_forge_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "nazgul_spider_bow",
+     "type": "bow"
+    },
+    {
+     "id": "nazgul_abyssal_blade",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_great_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_battle_mage_staff",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_fire_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "nazgul_gargoyle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_witch_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_flowering_madness",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_battle_standart",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_heavy_bow",
+     "type": "bow"
+    },
+    {
+     "id": "nazgul_rogue_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_demonic_blade",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_cursed_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_dark_sword",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_magnetic_blade",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_kaz_sc",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_mana_axe",
+     "type": "axe"
+    },
+    {
+     "id": "nazgul_red_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "nazgul_holy_spear",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_pox_spreader",
+     "type": "sword"
+    },
+    {
+     "id": "nazgul_obsidian_bow",
+     "type": "bow"
     }
    ]
   }

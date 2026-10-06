@@ -23,8 +23,6 @@ CRATES = [
      'Cristal azul que brilla con energía arcana: armas, herramientas, armadura, alas y casco con destellos animados.', 'ice', 499, ('#9ad8ff', '#4aa8ff')),
     ('mecha', 'Crate Dragón Mecha', 'Mítico', 'Acero de dragón y núcleos de energía',
      'El arsenal del Dragón Mecha Overlord: placas negras con núcleos verde ácido, armadura mecánica, alas y sombrero a juego.', 'slime', 499, ('#d8ff6a', '#a3e635')),
-    ('nazgul', 'Crate Arsenal de Nazgul', 'Legendario', 'Treinta armas legendarias de la forja de Nazgul',
-     'Los tres volúmenes de la forja de Nazgul: espadas rúnicas, mazas de fuego, guadañas, lanzas y arcos con brillos animados. Cada llave te da una de sus treinta armas.', 'amethyst', 449, ('#c9a8ff', '#9061f9')),
     ('shadow', 'Crate Cazador de Sombras', 'Épico', 'Plata, oro y sombra',
      'El set del Shadow Slayer: hojas plateadas con filos de oro y núcleos oscuros, armadura completa, alas y sombrero.', 'royalty2', 399, ('#d7cbff', '#8b6cf6')),
     ('aether', 'Crate Aetherburn', 'Mítico', 'El éter que arde',
@@ -94,6 +92,8 @@ CRATES = [
      'Hielo eterno y acero escarchado: martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/frostbite/key', 449, ('#cffafe', '#06b6d4')),
     ('darkloyal', 'Crate Lealtad Oscura', 'Legendario', 'Juramento de sombra',
      'Acero negro y brasas de los caballeros leales a la oscuridad: guadaña doble, hacha de batalla, tridente, ballesta, armadura completa, alas y casco.', 'items/darkloyal/key', 449, ('#fdba74', '#ea580c')),
+    ('ifrit', 'Crate Ifrit', '', 'Obsidiana y fuego carmesí',
+     'El arsenal del genio Ifrit: obsidiana verde con llamas carmesí. Espada, martillo, hoz, lanza, bastón, ballesta, armadura completa, alas, carcaj y casco.', '', 449, ('#fda4af', '#be123c')),
     ('easter', 'Crate Conejo de Pascua', 'Edición limitada', 'Huevos, zanahorias y conejos',
      'El arsenal del Conejo de Pascua: gran espada, garrote, maza, guadaña, ballesta, armadura, alas y sombrero de conejo.', 'items/easter/key', 349, ('#f5d0fe', '#d946ef')),
 ]
@@ -117,29 +117,54 @@ def listing(set_id):
     return out
 
 
+# Ruleta de armas: cada giro da al azar una de las armas de este set (la tienda elige al confirmarse el pago).
+ROULETTE_SET = 'nazgul'
+# Fila del set de la ruleta con el formato de CRATES, para que el TF Client siga creando sus armas.
+ROULETTE_ROW = ('nazgul', 'Arsenal de Nazgul', '', 'Treinta armas legendarias de la forja de Nazgul', '', '', 0,
+                ('#c9a8ff', '#9061f9'))
+ROULETTE = [
+    ('ruleta-1', '1 giro de la ruleta', 1, 199),
+    ('ruleta-5', '5 giros de la ruleta', 5, 799),
+    ('ruleta-10', '10 giros de la ruleta', 10, 1399),
+]
+
+
 def main():
     data = json.load(open(PRODUCTS, encoding='utf-8'))
-    old = {x['id']: x for x in data if x['category'] == 'crates'}
+    old = {x['id']: x for x in data}
     crates = []
-    for set_id, name, rarity, tagline, desc, key, price, (c1, c2) in CRATES:
+    for set_id, name, _rarity, tagline, desc, _key, price, (c1, c2) in CRATES:
         pid = f'crate-{set_id}'
         prev = old.get(pid, {})
+        models = listing(set_id)
         crate = {
-            'id': pid, 'category': 'crates', 'name': name, 'theme': set_id, 'colors': [c1, c2], 'rarity': rarity,
+            'id': pid, 'category': 'crates', 'name': name, 'theme': set_id, 'colors': [c1, c2],
             'tagline': tagline, 'description': desc, 'image': f'img/crates/{set_id}.webp',
-            'keyImage': f'img/{key}.webp' if '/' in key else f'img/keys/{key}.webp', 'price': prev.get('price', price), 'set': set_id,
-            'models': listing(set_id), 'commands': prev.get('commands', [f'crate key give {{player}} {set_id} 1']),
+            'price': prev.get('price', price), 'maxQuantity': 1, 'set': set_id, 'models': models,
+            # La crate es el set completo: se entrega entero con el comando del TF Client.
+            'commands': [f'tf web sets give {{player}} {set_id}'],
         }
-        if prev.get('featured'):
-            crate['featured'] = True
         crates.append(crate)
-    ranks = [x for x in data if x['category'] == 'rangos']
+    weapons = listing(ROULETTE_SET)
+    roulette = []
+    for pid, name, spins, price in ROULETTE:
+        prev = old.get(pid, {})
+        roulette.append({
+            'id': pid, 'category': 'ruleta', 'name': name, 'spins': spins, 'price': prev.get('price', price),
+            'maxQuantity': 1, 'set': ROULETTE_SET, 'colors': ['#c9a8ff', '#9061f9'],
+            'description': f'{spins} arma{"s" if spins > 1 else ""} al azar de la forja de Nazgul.',
+            'image': f'img/crates/{ROULETTE_SET}.webp', 'models': weapons,
+            # Los comandos de cada giro los pone la tienda al confirmarse el pago (arma al azar).
+            'commands': [],
+        })
     gifts = [x for x in data if x['category'] == 'gratis']
-    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis')]
+    ranks = [{k: v for k, v in x.items() if k != 'featured'} for x in data if x['category'] == 'rangos']
+    # Las llaves ya no se venden: las crates son el set completo.
+    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'llaves')]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
-        json.dump(gifts + ranks + crates + rest, fh, ensure_ascii=False, indent=2)
+        json.dump(gifts + ranks + crates + roulette + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
-    print(len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos')
+    print(len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;', len(weapons), 'armas en la ruleta')
 
 
 if __name__ == '__main__':

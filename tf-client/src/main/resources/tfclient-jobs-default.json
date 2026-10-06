@@ -1,0 +1,1424 @@
+{
+  "_ayuda": [
+    "Oficios de Tierras Fantásticas (/tf jobs). Cambia lo que quieras y usa /tf jobs recargar (no hace falta reiniciar).",
+    "tipos de acción y misión: romper, cosechar (solo cultivos maduros), colocar (solo sitios nuevos), matar, pescar, fabricar, fundir, preparar (pociones), encantar, reparar (yunque), criar.",
+    "objetivo: un id (minecraft:wheat), una etiqueta (#minecraft:logs), * para todo; en matar también hostil o animal.",
+    "repetir: diaria (vuelve cada día), siempre (vuelve al cobrarla) o nunca.",
+    "icono del oficio: farmer, miner, wood_cutter, digger, fisherman, hunter, alchemist, blacksmith, builder, enchanter o un objeto (minecraft:wheat). fondo: uno de esos diez.",
+    "recompensa: monedas, xp (del oficio), objetos (\"minecraft:bread 16\") y comandos ({player} = el jugador).",
+    "Las monedas salen de la economía de config/tfclient-server.properties (economy.mode)."
+  ],
+  "activado": true,
+  "maxOficios": 1,
+  "esperaCambioMinutos": 5,
+  "pagoCadaSegundos": 15,
+  "avisoActionBar": true,
+  "bloquesColocadosNoCuentan": true,
+  "generadoresCuentan": false,
+  "niveles": {
+    "maximo": 50,
+    "xpBase": 100,
+    "multiplicador": 1.15,
+    "bonusMonedasPorNivel": 0.03,
+    "anunciarCada": 10,
+    "recompensa": {
+      "monedas": 150,
+      "monedasPorNivel": 50,
+      "comandos": []
+    },
+    "hitos": {
+      "10": {
+        "objetos": [
+          "minecraft:diamond 2"
+        ]
+      },
+      "25": {
+        "objetos": [
+          "minecraft:diamond 5"
+        ]
+      },
+      "50": {
+        "objetos": [
+          "minecraft:netherite_ingot 1"
+        ],
+        "monedas": 25000
+      }
+    }
+  },
+  "oficios": [
+    {
+      "id": "granjero",
+      "nombre": "Granjero",
+      "icono": "farmer",
+      "fondo": "farmer",
+      "color": "#4ade80",
+      "descripcion": "Siembra, cosecha y cría animales. Solo cuentan los cultivos maduros.",
+      "acciones": [
+        {
+          "tipo": "cosechar",
+          "objetivo": "#minecraft:crops",
+          "xp": 3,
+          "monedas": 2
+        },
+        {
+          "tipo": "cosechar",
+          "objetivo": "minecraft:melon",
+          "xp": 2,
+          "monedas": 1
+        },
+        {
+          "tipo": "cosechar",
+          "objetivo": "minecraft:pumpkin",
+          "xp": 2,
+          "monedas": 1
+        },
+        {
+          "tipo": "cosechar",
+          "objetivo": "minecraft:sugar_cane",
+          "xp": 1,
+          "monedas": 0.5
+        },
+        {
+          "tipo": "cosechar",
+          "objetivo": "minecraft:nether_wart",
+          "xp": 3,
+          "monedas": 2
+        },
+        {
+          "tipo": "criar",
+          "objetivo": "*",
+          "xp": 5,
+          "monedas": 3
+        }
+      ],
+      "misiones": [
+        {
+          "id": "trigo",
+          "nombre": "Cosecha de trigo",
+          "icono": "minecraft:wheat",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:wheat",
+          "cantidad": 64,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "criar",
+          "nombre": "Mano con los animales",
+          "icono": "minecraft:wheat_seeds",
+          "tipo": "criar",
+          "objetivo": "*",
+          "cantidad": 10,
+          "nivel": 2,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "zanahorias",
+          "nombre": "Huerto de zanahorias",
+          "icono": "minecraft:carrot",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:carrots",
+          "cantidad": 64,
+          "nivel": 3,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "patatas",
+          "nombre": "Saco de patatas",
+          "icono": "minecraft:potato",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:potatoes",
+          "cantidad": 64,
+          "nivel": 5,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "melones",
+          "nombre": "Temporada de melones",
+          "icono": "minecraft:melon_slice",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:melon",
+          "cantidad": 32,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 400,
+            "xp": 110
+          }
+        },
+        {
+          "id": "calabazas",
+          "nombre": "Calabazas para la feria",
+          "icono": "minecraft:pumpkin",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:pumpkin",
+          "cantidad": 32,
+          "nivel": 10,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 120
+          }
+        },
+        {
+          "id": "remolacha",
+          "nombre": "Remolachas rojas",
+          "icono": "minecraft:beetroot",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:beetroots",
+          "cantidad": 64,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 500,
+            "xp": 130
+          }
+        },
+        {
+          "id": "verruga",
+          "nombre": "Verruga del Nether",
+          "icono": "minecraft:nether_wart",
+          "tipo": "cosechar",
+          "objetivo": "minecraft:nether_wart",
+          "cantidad": 64,
+          "nivel": 15,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 650,
+            "xp": 160
+          }
+        },
+        {
+          "id": "maestro",
+          "nombre": "Maestro de la cosecha",
+          "icono": "minecraft:hay_block",
+          "tipo": "cosechar",
+          "objetivo": "#minecraft:crops",
+          "cantidad": 1000,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 5000,
+            "xp": 1000,
+            "objetos": [
+              "minecraft:golden_hoe 1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "minero",
+      "nombre": "Minero",
+      "icono": "miner",
+      "fondo": "miner",
+      "color": "#a8a29e",
+      "descripcion": "Pica piedra y busca minerales en las profundidades.",
+      "acciones": [
+        {
+          "tipo": "romper",
+          "objetivo": "#forge:ores",
+          "xp": 6,
+          "monedas": 4
+        },
+        {
+          "tipo": "romper",
+          "objetivo": "#minecraft:base_stone_overworld",
+          "xp": 0.5,
+          "monedas": 0.2
+        },
+        {
+          "tipo": "romper",
+          "objetivo": "#minecraft:base_stone_nether",
+          "xp": 0.5,
+          "monedas": 0.2
+        }
+      ],
+      "misiones": [
+        {
+          "id": "piedra",
+          "nombre": "Cantera",
+          "icono": "minecraft:cobblestone",
+          "tipo": "romper",
+          "objetivo": "#minecraft:base_stone_overworld",
+          "cantidad": 256,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 200,
+            "xp": 50
+          }
+        },
+        {
+          "id": "carbon",
+          "nombre": "Carbón para la forja",
+          "icono": "minecraft:coal",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/coal",
+          "cantidad": 32,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "hierro",
+          "nombre": "Vetas de hierro",
+          "icono": "minecraft:raw_iron",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/iron",
+          "cantidad": 24,
+          "nivel": 3,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "oro",
+          "nombre": "Fiebre del oro",
+          "icono": "minecraft:raw_gold",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/gold",
+          "cantidad": 16,
+          "nivel": 6,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "redstone",
+          "nombre": "Polvo de redstone",
+          "icono": "minecraft:redstone",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/redstone",
+          "cantidad": 24,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "lapis",
+          "nombre": "Lapislázuli",
+          "icono": "minecraft:lapis_lazuli",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/lapis",
+          "cantidad": 16,
+          "nivel": 10,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 500,
+            "xp": 130
+          }
+        },
+        {
+          "id": "diamantes",
+          "nombre": "Diamantes",
+          "icono": "minecraft:diamond",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/diamond",
+          "cantidad": 5,
+          "nivel": 15,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 900,
+            "xp": 220
+          }
+        },
+        {
+          "id": "esmeraldas",
+          "nombre": "Esmeraldas de la montaña",
+          "icono": "minecraft:emerald",
+          "tipo": "romper",
+          "objetivo": "#forge:ores/emerald",
+          "cantidad": 3,
+          "nivel": 20,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 1000,
+            "xp": 250
+          }
+        },
+        {
+          "id": "escombros",
+          "nombre": "Escombros ancestrales",
+          "icono": "minecraft:ancient_debris",
+          "tipo": "romper",
+          "objetivo": "minecraft:ancient_debris",
+          "cantidad": 2,
+          "nivel": 25,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 1500,
+            "xp": 350
+          }
+        },
+        {
+          "id": "leyenda",
+          "nombre": "Leyenda de la mina",
+          "icono": "minecraft:diamond_pickaxe",
+          "tipo": "romper",
+          "objetivo": "#forge:ores",
+          "cantidad": 1000,
+          "nivel": 30,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 8000,
+            "xp": 1500,
+            "objetos": [
+              "minecraft:diamond 5"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "lenador",
+      "nombre": "Leñador",
+      "icono": "wood_cutter",
+      "fondo": "wood_cutter",
+      "color": "#b45309",
+      "descripcion": "Tala árboles y planta brotes para que el bosque no se acabe.",
+      "acciones": [
+        {
+          "tipo": "romper",
+          "objetivo": "#minecraft:logs",
+          "xp": 2,
+          "monedas": 1.5
+        },
+        {
+          "tipo": "colocar",
+          "objetivo": "#minecraft:saplings",
+          "xp": 1,
+          "monedas": 0.5
+        }
+      ],
+      "misiones": [
+        {
+          "id": "roble",
+          "nombre": "Troncos de roble",
+          "icono": "minecraft:oak_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:oak_log",
+          "cantidad": 64,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "plantar",
+          "nombre": "Reforestar",
+          "icono": "minecraft:oak_sapling",
+          "tipo": "colocar",
+          "objetivo": "#minecraft:saplings",
+          "cantidad": 32,
+          "nivel": 2,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "abedul",
+          "nombre": "Bosque de abedules",
+          "icono": "minecraft:birch_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:birch_log",
+          "cantidad": 64,
+          "nivel": 3,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "abeto",
+          "nombre": "Abetos de la taiga",
+          "icono": "minecraft:spruce_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:spruce_log",
+          "cantidad": 64,
+          "nivel": 5,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "jungla",
+          "nombre": "Selva espesa",
+          "icono": "minecraft:jungle_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:jungle_log",
+          "cantidad": 64,
+          "nivel": 7,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 400,
+            "xp": 100
+          }
+        },
+        {
+          "id": "acacia",
+          "nombre": "Acacias de la sabana",
+          "icono": "minecraft:acacia_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:acacia_log",
+          "cantidad": 64,
+          "nivel": 9,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "oscuro",
+          "nombre": "Roble oscuro",
+          "icono": "minecraft:dark_oak_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:dark_oak_log",
+          "cantidad": 64,
+          "nivel": 11,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 500,
+            "xp": 120
+          }
+        },
+        {
+          "id": "cerezo",
+          "nombre": "Flor de cerezo",
+          "icono": "minecraft:cherry_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:cherry_log",
+          "cantidad": 64,
+          "nivel": 13,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 550,
+            "xp": 130
+          }
+        },
+        {
+          "id": "mangle",
+          "nombre": "Manglar",
+          "icono": "minecraft:mangrove_log",
+          "tipo": "romper",
+          "objetivo": "minecraft:mangrove_log",
+          "cantidad": 64,
+          "nivel": 15,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 600,
+            "xp": 140
+          }
+        },
+        {
+          "id": "hacha",
+          "nombre": "Hacha legendaria",
+          "icono": "minecraft:diamond_axe",
+          "tipo": "romper",
+          "objetivo": "#minecraft:logs",
+          "cantidad": 2000,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 6000,
+            "xp": 1200,
+            "objetos": [
+              "minecraft:diamond_axe 1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "excavador",
+      "nombre": "Excavador",
+      "icono": "digger",
+      "fondo": "digger",
+      "color": "#ca8a04",
+      "descripcion": "Excava tierra, arena, grava y arcilla con la pala.",
+      "acciones": [
+        {
+          "tipo": "romper",
+          "objetivo": "#minecraft:mineable/shovel",
+          "xp": 1,
+          "monedas": 0.6
+        }
+      ],
+      "misiones": [
+        {
+          "id": "tierra",
+          "nombre": "Mover tierra",
+          "icono": "minecraft:dirt",
+          "tipo": "romper",
+          "objetivo": "minecraft:dirt",
+          "cantidad": 256,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 200,
+            "xp": 50
+          }
+        },
+        {
+          "id": "arena",
+          "nombre": "Arena de la playa",
+          "icono": "minecraft:sand",
+          "tipo": "romper",
+          "objetivo": "#minecraft:sand",
+          "cantidad": 128,
+          "nivel": 2,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "grava",
+          "nombre": "Grava suelta",
+          "icono": "minecraft:gravel",
+          "tipo": "romper",
+          "objetivo": "minecraft:gravel",
+          "cantidad": 128,
+          "nivel": 4,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "arcilla",
+          "nombre": "Arcilla del río",
+          "icono": "minecraft:clay_ball",
+          "tipo": "romper",
+          "objetivo": "minecraft:clay",
+          "cantidad": 64,
+          "nivel": 6,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "nieve",
+          "nombre": "Quitanieves",
+          "icono": "minecraft:snowball",
+          "tipo": "romper",
+          "objetivo": "minecraft:snow_block",
+          "cantidad": 64,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 400,
+            "xp": 100
+          }
+        },
+        {
+          "id": "almas",
+          "nombre": "Arena de almas",
+          "icono": "minecraft:soul_sand",
+          "tipo": "romper",
+          "objetivo": "#minecraft:soul_fire_base_blocks",
+          "cantidad": 64,
+          "nivel": 10,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "barro",
+          "nombre": "Barro del pantano",
+          "icono": "minecraft:mud",
+          "tipo": "romper",
+          "objetivo": "minecraft:mud",
+          "cantidad": 64,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 500,
+            "xp": 120
+          }
+        },
+        {
+          "id": "topo",
+          "nombre": "El gran topo",
+          "icono": "minecraft:diamond_shovel",
+          "tipo": "romper",
+          "objetivo": "#minecraft:mineable/shovel",
+          "cantidad": 3000,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 6000,
+            "xp": 1200,
+            "objetos": [
+              "minecraft:diamond_shovel 1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pescador",
+      "nombre": "Pescador",
+      "icono": "fisherman",
+      "fondo": "fisherman",
+      "color": "#38bdf8",
+      "descripcion": "Pesca en ríos y océanos: peces, tesoros y alguna sorpresa.",
+      "acciones": [
+        {
+          "tipo": "pescar",
+          "objetivo": "*",
+          "xp": 8,
+          "monedas": 6
+        }
+      ],
+      "misiones": [
+        {
+          "id": "peces",
+          "nombre": "Pesca del día",
+          "icono": "minecraft:cod",
+          "tipo": "pescar",
+          "objetivo": "#minecraft:fishes",
+          "cantidad": 16,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "salmon",
+          "nombre": "Salmón fresco",
+          "icono": "minecraft:salmon",
+          "tipo": "pescar",
+          "objetivo": "minecraft:salmon",
+          "cantidad": 8,
+          "nivel": 3,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "globo",
+          "nombre": "Pez globo",
+          "icono": "minecraft:pufferfish",
+          "tipo": "pescar",
+          "objetivo": "minecraft:pufferfish",
+          "cantidad": 3,
+          "nivel": 6,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 400,
+            "xp": 110
+          }
+        },
+        {
+          "id": "tropical",
+          "nombre": "Peces tropicales",
+          "icono": "minecraft:tropical_fish",
+          "tipo": "pescar",
+          "objetivo": "minecraft:tropical_fish",
+          "cantidad": 3,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 120
+          }
+        },
+        {
+          "id": "cien",
+          "nombre": "Cien capturas",
+          "icono": "minecraft:fishing_rod",
+          "tipo": "pescar",
+          "objetivo": "*",
+          "cantidad": 100,
+          "nivel": 10,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 2000,
+            "xp": 500
+          }
+        },
+        {
+          "id": "nautilo",
+          "nombre": "Concha de nautilo",
+          "icono": "minecraft:nautilus_shell",
+          "tipo": "pescar",
+          "objetivo": "minecraft:nautilus_shell",
+          "cantidad": 1,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 800,
+            "xp": 200
+          }
+        },
+        {
+          "id": "lobo",
+          "nombre": "Lobo de mar",
+          "icono": "minecraft:heart_of_the_sea",
+          "tipo": "pescar",
+          "objetivo": "*",
+          "cantidad": 1000,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 7000,
+            "xp": 1400,
+            "objetos": [
+              "minecraft:fishing_rod 1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "cazador",
+      "nombre": "Cazador",
+      "icono": "hunter",
+      "fondo": "hunter",
+      "color": "#ef4444",
+      "descripcion": "Caza monstruos para proteger el reino. Los de generadores no cuentan.",
+      "acciones": [
+        {
+          "tipo": "matar",
+          "objetivo": "hostil",
+          "xp": 6,
+          "monedas": 5
+        },
+        {
+          "tipo": "matar",
+          "objetivo": "animal",
+          "xp": 1,
+          "monedas": 0.5
+        }
+      ],
+      "misiones": [
+        {
+          "id": "zombis",
+          "nombre": "Plaga de zombis",
+          "icono": "minecraft:rotten_flesh",
+          "tipo": "matar",
+          "objetivo": "minecraft:zombie",
+          "cantidad": 20,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "esqueletos",
+          "nombre": "Huesos sueltos",
+          "icono": "minecraft:bone",
+          "tipo": "matar",
+          "objetivo": "minecraft:skeleton",
+          "cantidad": 20,
+          "nivel": 2,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "aranas",
+          "nombre": "Telarañas",
+          "icono": "minecraft:string",
+          "tipo": "matar",
+          "objetivo": "#tfclient:aranas",
+          "cantidad": 15,
+          "nivel": 3,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "creepers",
+          "nombre": "Sin explosiones",
+          "icono": "minecraft:gunpowder",
+          "tipo": "matar",
+          "objetivo": "minecraft:creeper",
+          "cantidad": 10,
+          "nivel": 5,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "endermans",
+          "nombre": "Ojos de Ender",
+          "icono": "minecraft:ender_pearl",
+          "tipo": "matar",
+          "objetivo": "minecraft:enderman",
+          "cantidad": 10,
+          "nivel": 10,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 600,
+            "xp": 150
+          }
+        },
+        {
+          "id": "brujas",
+          "nombre": "Caza de brujas",
+          "icono": "minecraft:glass_bottle",
+          "tipo": "matar",
+          "objetivo": "minecraft:witch",
+          "cantidad": 5,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 650,
+            "xp": 160
+          }
+        },
+        {
+          "id": "blazes",
+          "nombre": "Varas de blaze",
+          "icono": "minecraft:blaze_rod",
+          "tipo": "matar",
+          "objetivo": "minecraft:blaze",
+          "cantidad": 10,
+          "nivel": 15,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 800,
+            "xp": 200
+          }
+        },
+        {
+          "id": "wither",
+          "nombre": "Esqueletos del Wither",
+          "icono": "minecraft:wither_skeleton_skull",
+          "tipo": "matar",
+          "objetivo": "minecraft:wither_skeleton",
+          "cantidad": 10,
+          "nivel": 20,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 1000,
+            "xp": 250
+          }
+        },
+        {
+          "id": "heroe",
+          "nombre": "Héroe del reino",
+          "icono": "minecraft:diamond_sword",
+          "tipo": "matar",
+          "objetivo": "hostil",
+          "cantidad": 1000,
+          "nivel": 25,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 8000,
+            "xp": 1500,
+            "objetos": [
+              "minecraft:diamond_sword 1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "alquimista",
+      "nombre": "Alquimista",
+      "icono": "alchemist",
+      "fondo": "alchemist",
+      "color": "#a855f7",
+      "descripcion": "Prepara pociones en el soporte para pociones.",
+      "acciones": [
+        {
+          "tipo": "preparar",
+          "objetivo": "*",
+          "xp": 6,
+          "monedas": 4
+        }
+      ],
+      "misiones": [
+        {
+          "id": "pociones",
+          "nombre": "Pociones del día",
+          "icono": "minecraft:potion",
+          "tipo": "preparar",
+          "objetivo": "minecraft:potion",
+          "cantidad": 9,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "soportes",
+          "nombre": "Laboratorio",
+          "icono": "minecraft:brewing_stand",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:brewing_stand",
+          "cantidad": 1,
+          "nivel": 2,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "arrojadizas",
+          "nombre": "Pociones arrojadizas",
+          "icono": "minecraft:splash_potion",
+          "tipo": "preparar",
+          "objetivo": "minecraft:splash_potion",
+          "cantidad": 9,
+          "nivel": 5,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 120
+          }
+        },
+        {
+          "id": "persistentes",
+          "nombre": "Pociones persistentes",
+          "icono": "minecraft:lingering_potion",
+          "tipo": "preparar",
+          "objetivo": "minecraft:lingering_potion",
+          "cantidad": 6,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 650,
+            "xp": 160
+          }
+        },
+        {
+          "id": "maestro",
+          "nombre": "Gran alquimista",
+          "icono": "minecraft:dragon_breath",
+          "tipo": "preparar",
+          "objetivo": "*",
+          "cantidad": 500,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 6000,
+            "xp": 1200,
+            "objetos": [
+              "minecraft:blaze_rod 8"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "herrero",
+      "nombre": "Herrero",
+      "icono": "blacksmith",
+      "fondo": "blacksmith",
+      "color": "#f97316",
+      "descripcion": "Funde metales y forja herramientas y armaduras.",
+      "acciones": [
+        {
+          "tipo": "fundir",
+          "objetivo": "#forge:ingots",
+          "xp": 2,
+          "monedas": 1
+        },
+        {
+          "tipo": "fabricar",
+          "objetivo": "#forge:tools",
+          "xp": 8,
+          "monedas": 6
+        },
+        {
+          "tipo": "fabricar",
+          "objetivo": "#forge:armors",
+          "xp": 10,
+          "monedas": 8
+        },
+        {
+          "tipo": "reparar",
+          "objetivo": "*",
+          "xp": 4,
+          "monedas": 3
+        }
+      ],
+      "misiones": [
+        {
+          "id": "lingotes",
+          "nombre": "Lingotes de hierro",
+          "icono": "minecraft:iron_ingot",
+          "tipo": "fundir",
+          "objetivo": "minecraft:iron_ingot",
+          "cantidad": 64,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "espadas",
+          "nombre": "Espadas de hierro",
+          "icono": "minecraft:iron_sword",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:iron_sword",
+          "cantidad": 3,
+          "nivel": 2,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "picos",
+          "nombre": "Picos para los mineros",
+          "icono": "minecraft:iron_pickaxe",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:iron_pickaxe",
+          "cantidad": 3,
+          "nivel": 4,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "armadura",
+          "nombre": "Armadura de hierro",
+          "icono": "minecraft:iron_chestplate",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:iron_chestplate",
+          "cantidad": 2,
+          "nivel": 6,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "yunque",
+          "nombre": "Al yunque",
+          "icono": "minecraft:anvil",
+          "tipo": "reparar",
+          "objetivo": "*",
+          "cantidad": 10,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 450,
+            "xp": 110
+          }
+        },
+        {
+          "id": "oro",
+          "nombre": "Lingotes de oro",
+          "icono": "minecraft:gold_ingot",
+          "tipo": "fundir",
+          "objetivo": "minecraft:gold_ingot",
+          "cantidad": 32,
+          "nivel": 10,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 500,
+            "xp": 120
+          }
+        },
+        {
+          "id": "diamante",
+          "nombre": "Herramientas de diamante",
+          "icono": "minecraft:diamond_pickaxe",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:diamond_pickaxe",
+          "cantidad": 1,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 800,
+            "xp": 200
+          }
+        },
+        {
+          "id": "maestro",
+          "nombre": "Maestro herrero",
+          "icono": "minecraft:smithing_table",
+          "tipo": "fabricar",
+          "objetivo": "#forge:tools",
+          "cantidad": 200,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 6000,
+            "xp": 1200,
+            "objetos": [
+              "minecraft:netherite_scrap 2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "constructor",
+      "nombre": "Constructor",
+      "icono": "builder",
+      "fondo": "builder",
+      "color": "#60a5fa",
+      "descripcion": "Construye: cada bloque nuevo que colocas cuenta.",
+      "acciones": [
+        {
+          "tipo": "colocar",
+          "objetivo": "*",
+          "xp": 0.4,
+          "monedas": 0.25
+        }
+      ],
+      "misiones": [
+        {
+          "id": "bloques",
+          "nombre": "Obra del día",
+          "icono": "minecraft:bricks",
+          "tipo": "colocar",
+          "objetivo": "*",
+          "cantidad": 256,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "tablones",
+          "nombre": "Suelos de madera",
+          "icono": "minecraft:oak_planks",
+          "tipo": "colocar",
+          "objetivo": "#minecraft:planks",
+          "cantidad": 128,
+          "nivel": 2,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 250,
+            "xp": 60
+          }
+        },
+        {
+          "id": "ladrillos",
+          "nombre": "Muros de ladrillo",
+          "icono": "minecraft:brick",
+          "tipo": "colocar",
+          "objetivo": "minecraft:bricks",
+          "cantidad": 64,
+          "nivel": 3,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "cristal",
+          "nombre": "Ventanales",
+          "icono": "minecraft:glass",
+          "tipo": "colocar",
+          "objetivo": "#forge:glass",
+          "cantidad": 64,
+          "nivel": 5,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 350,
+            "xp": 90
+          }
+        },
+        {
+          "id": "piedra",
+          "nombre": "Piedra labrada",
+          "icono": "minecraft:stone_bricks",
+          "tipo": "colocar",
+          "objetivo": "minecraft:stone_bricks",
+          "cantidad": 128,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 400,
+            "xp": 100
+          }
+        },
+        {
+          "id": "cuarzo",
+          "nombre": "Palacio de cuarzo",
+          "icono": "minecraft:quartz_block",
+          "tipo": "colocar",
+          "objetivo": "minecraft:quartz_block",
+          "cantidad": 64,
+          "nivel": 12,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 550,
+            "xp": 130
+          }
+        },
+        {
+          "id": "arquitecto",
+          "nombre": "Gran arquitecto",
+          "icono": "minecraft:scaffolding",
+          "tipo": "colocar",
+          "objetivo": "*",
+          "cantidad": 5000,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 7000,
+            "xp": 1400,
+            "objetos": [
+              "minecraft:diamond 3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "encantador",
+      "nombre": "Encantador",
+      "icono": "enchanter",
+      "fondo": "enchanter",
+      "color": "#c084fc",
+      "descripcion": "Encanta objetos en la mesa de encantamientos.",
+      "acciones": [
+        {
+          "tipo": "encantar",
+          "objetivo": "*",
+          "xp": 15,
+          "monedas": 10
+        }
+      ],
+      "misiones": [
+        {
+          "id": "mesa",
+          "nombre": "Tu propia mesa",
+          "icono": "minecraft:enchanting_table",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:enchanting_table",
+          "cantidad": 1,
+          "nivel": 1,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 300,
+            "xp": 80
+          }
+        },
+        {
+          "id": "encantos",
+          "nombre": "Encantamientos del día",
+          "icono": "minecraft:enchanted_book",
+          "tipo": "encantar",
+          "objetivo": "*",
+          "cantidad": 5,
+          "nivel": 1,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 400,
+            "xp": 100
+          }
+        },
+        {
+          "id": "libreria",
+          "nombre": "Biblioteca",
+          "icono": "minecraft:bookshelf",
+          "tipo": "fabricar",
+          "objetivo": "minecraft:bookshelf",
+          "cantidad": 15,
+          "nivel": 3,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 500,
+            "xp": 120
+          }
+        },
+        {
+          "id": "veinte",
+          "nombre": "Veinte encantos",
+          "icono": "minecraft:experience_bottle",
+          "tipo": "encantar",
+          "objetivo": "*",
+          "cantidad": 20,
+          "nivel": 8,
+          "repetir": "diaria",
+          "recompensa": {
+            "monedas": 900,
+            "xp": 220
+          }
+        },
+        {
+          "id": "archimago",
+          "nombre": "Archimago",
+          "icono": "minecraft:nether_star",
+          "tipo": "encantar",
+          "objetivo": "*",
+          "cantidad": 500,
+          "nivel": 20,
+          "repetir": "nunca",
+          "recompensa": {
+            "monedas": 8000,
+            "xp": 1500,
+            "objetos": [
+              "minecraft:experience_bottle 32"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

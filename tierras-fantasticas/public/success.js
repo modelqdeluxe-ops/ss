@@ -58,6 +58,28 @@
       $('d-discord').hidden = $('d-discord-label').hidden = false;
     }
 
+    // Ruleta: las armas que salieron al confirmarse el pago
+    if (order.prizes?.length) {
+      const list = $('prize-list');
+      list.replaceChildren(
+        ...order.prizes.map((p) => {
+          const li = document.createElement('li');
+          if (p.thumb) {
+            const img = document.createElement('img');
+            img.src = p.thumb;
+            img.alt = '';
+            img.width = img.height = 56;
+            li.append(img);
+          }
+          const span = document.createElement('span');
+          span.textContent = p.name;
+          li.append(span);
+          return li;
+        }),
+      );
+      $('prizes').hidden = false;
+    }
+
     if (PAID.includes(order.status)) {
       const paidText = {
         delivered: 'Tu pago se ha completado y la compra ya está en el servidor. ¡Disfrútala!',

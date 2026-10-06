@@ -164,7 +164,9 @@
   });
 
   // --- Productos ---
-  const CATEGORY_LABEL = { gratis: 'Regalo gratis', rangos: 'Rango', crates: 'Llave de crate', llaves: 'Llaves de cofre', monedas: 'Monedas de oro' };
+  const CATEGORY_LABEL = {
+    gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta de armas', monedas: 'Monedas de oro',
+  };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
   // Colores propios de cada crate (config/products.json → colors)
@@ -187,44 +189,49 @@
     }
   }
   const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
-  const isPixel = (src) => /\/ranks\/|coins-/.test(src || '');
+  const isPixel = (src) => /\/ranks\/|coins-|\/gifts\//.test(src || '');
   const img = (src, alt, cls = '', extra = '') =>
     `<img src="${asset(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"${
       isPixel(src) || cls ? ` class="${[cls, isPixel(src) ? 'pixel-img' : ''].filter(Boolean).join(' ')}"` : ''
     }${extra}>`;
+  const thumbOf = (set, id) => `/img/items/${set}/${id}.webp`;
+  const piecesText = (p) => {
+    const n = (p.models || []).length;
+    const armor = (p.models || []).some((m) => m.id.startsWith('armor_'));
+    return `${n} objetos${armor ? ' · armadura completa' : ''}`;
+  };
 
   async function loadProducts() {
     try {
       products = await (await fetch('/api/products')).json();
     } catch {
-      $$('#products, #crate-spotlight, #stage-info').forEach(
+      $$('#products, #crate-spotlight').forEach(
         (el) => (el.innerHTML = '<p class="muted">No se pudieron cargar los productos. Recarga la página.</p>'),
       );
       return;
     }
     if (page === 'inicio') renderHome();
     if (page === 'tienda') initShop();
-    if (page === 'crates') initCrates();
   }
 
-  // Inicio: crates destacados y rangos
+  // Inicio: crates destacadas y rangos
   function renderHome() {
     const list = crates();
     $$('[data-crate-count]').forEach((el) => (el.textContent = list.length));
     const box = $('#crate-spotlight');
-    $$('[data-crates-all]').forEach((el) => (el.textContent = `Ver los ${list.length} crates`));
+    $$('[data-crates-all]').forEach((el) => (el.innerHTML = `Ver las ${list.length} crates ${ICON_ARROW}`));
     box.innerHTML = list
-      .slice(0, 8)
+      .slice(-8)
+      .reverse()
       .map(
         (p) => `
-        <a class="panel crate-card reveal" href="/crates#${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
+        <a class="panel crate-card reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
           <figure>${img(p.image, p.name)}</figure>
           <div class="body">
-            ${p.rarity ? `<span class="rarity">${escapeHtml(p.rarity)}</span>` : ''}
-            <h3>${escapeHtml(p.name)}</h3>
+            <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
             <p>${escapeHtml(p.tagline || p.description)}</p>
             <div class="card-foot">
-              <span class="price"><small>Llave desde</small>${formatPrice(p.price)}</span>
+              <span class="price">${formatPrice(p.price)}</span>
               <span class="btn btn-ghost btn-sm">Ver crate ${ICON_ARROW}</span>
             </div>
           </div>
@@ -245,30 +252,45 @@
     observeReveal();
   }
 
-  // Tienda: pestañas por categoría
+  // Tienda: tarjetas de regalos, rangos y monedas
   function productCard(p) {
-    const isCrate = p.category === 'crates';
     const perks = Array.isArray(p.perks) ? p.perks.slice(0, 5) : [];
-    const thumb = isCrate ? p.image : p.image || p.keyImage;
     return `
-      <article class="panel product${p.featured ? ' featured' : ''}"${themeAttr(p)}>
-        ${p.featured ? '<span class="badge">Más popular</span>' : ''}
-        ${thumb ? `<div class="thumb">${img(thumb, '')}</div>` : ''}
+      <article class="panel product"${themeAttr(p)}>
+        ${p.image ? `<div class="thumb">${img(p.image, '')}</div>` : ''}
         <div class="body">
-          <span class="cat">${escapeHtml(p.rarity || CATEGORY_LABEL[p.category] || p.category)}</span>
+          <span class="cat">${escapeHtml(CATEGORY_LABEL[p.category] || p.category)}</span>
           <h3>${escapeHtml(p.name)}</h3>
-          <p>${escapeHtml(isCrate ? p.tagline || p.description : p.description)}</p>
+          <p>${escapeHtml(p.description)}</p>
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
-          ${isCrate ? `<p class="small"><a class="theme-text" href="/crates#${escapeHtml(p.theme || p.id)}">Ver sus ${(p.models || []).length || ''} objetos en 3D →</a></p>` : ''}
           <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn ${isCrate ? 'btn-theme' : 'btn-gold'} btn-sm" type="button" ${buyAttrs(p)}>${isCrate ? 'Comprar llave' : 'Comprar'}</button>`}
+            <button class="btn btn-gold btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>`}
           </div>
         </div>
       </article>`;
   }
 
-  // Regalos gratis: se reclaman con la cuenta, sin pagar.
+  // Crates: cada una es el set completo
+  function crateCard(p) {
+    return `
+      <article class="panel crate-tile" data-crate="${escapeHtml(p.id)}"${themeAttr(p)}>
+        <button type="button" class="crate-tile-art" data-open-crate="${escapeHtml(p.id)}" aria-label="Ver ${escapeHtml(p.name)} y probártelo">
+          ${img(p.image, '')}
+          <span class="try-on">Pruébatelo en 3D</span>
+        </button>
+        <div class="body">
+          <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
+          <p>${escapeHtml(p.tagline || '')}</p>
+          <span class="pieces">${escapeHtml(piecesText(p))}</span>
+          <div class="card-foot">
+            <span class="price">${formatPrice(p.price)}</span>
+            <button class="btn btn-theme btn-sm" type="button" ${buyAttrs(p)}>Comprar crate</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
   function giftFoot(p) {
     if (p.price !== 0) return '';
     return `<span class="price free">Gratis</span><button class="btn btn-gold btn-sm" type="button" data-claim="${escapeHtml(p.id)}">Reclamar</button>`;
@@ -278,7 +300,7 @@
     const btn = e.target.closest('[data-claim]');
     if (!btn) return;
     if (!me.user) {
-      toast('Entra con tu cuenta para reclamar el regalo');
+      toast('Entra con tu cuenta para reclamar la recompensa');
       setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(location.pathname + location.hash)}`), 900);
       return;
     }
@@ -294,9 +316,9 @@
         location.href = `/success?order=${encodeURIComponent(data.id)}`;
         return;
       }
-      toast(data.error || 'No se pudo reclamar el regalo.');
+      toast(data.error || 'No se pudo reclamar la recompensa.');
     } catch {
-      toast('No se pudo reclamar el regalo.');
+      toast('No se pudo reclamar la recompensa.');
     }
     btn.disabled = false;
   });
@@ -340,14 +362,25 @@
       </table>`;
   }
 
+  const INTRO = {
+    gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
+    rangos: 'Prefijo con color en el nombre, kits, hogares y ventajas de comodidad. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
+    crates: 'Cada crate es un set completo: armas, herramientas, armadura y cosméticos animados. Toca una para probártela en tu personaje.',
+    ruleta: '',
+    monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
+    tiendamonedas: '',
+  };
+
   let currentCategory = null;
+  let coinShopTimer = null;
   function initShop() {
     const tabs = $$('#shop-tabs [role="tab"]');
     for (const tab of tabs) {
-      const count = products.filter((p) => p.category === tab.dataset.category).length;
+      const cat = tab.dataset.category;
+      const count = cat === 'tiendamonedas' ? null : products.filter((p) => p.category === cat).length;
       tab.hidden = count === 0;
-      tab.insertAdjacentHTML('beforeend', `<span class="count">${count}</span>`);
-      tab.addEventListener('click', () => selectCategory(tab.dataset.category, true));
+      if (count) tab.insertAdjacentHTML('beforeend', `<span class="count">${cat === 'ruleta' ? '' : count}</span>`);
+      tab.addEventListener('click', () => selectCategory(cat, true));
     }
     $('#shop-tabs').addEventListener('keydown', (e) => {
       if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
@@ -357,14 +390,22 @@
       selectCategory(next.dataset.category, true);
       next.focus();
     });
+    $('#shop-search').addEventListener('input', filterCrates);
+    // #crates-<set> abre la pestaña de crates con esa crate
     const fromHash = () => {
-      const cat = location.hash.slice(1);
-      return tabs.some((t) => t.dataset.category === cat && !t.hidden) ? cat : null;
+      const h = decodeURIComponent(location.hash.slice(1));
+      if (h.startsWith('crates-')) return { cat: 'crates', crate: h.slice(7) };
+      return tabs.some((t) => t.dataset.category === h && !t.hidden) ? { cat: h } : null;
     };
-    // Por defecto, los rangos (la pestaña de regalos se abre con /tienda#gratis).
-    const preferred = tabs.find((t) => t.dataset.category === 'rangos' && !t.hidden) || tabs.find((t) => !t.hidden);
-    selectCategory(fromHash() || preferred?.dataset.category || 'rangos', false);
-    window.addEventListener('hashchange', () => fromHash() && selectCategory(fromHash(), false));
+    const start = fromHash() || { cat: 'crates' };
+    selectCategory(start.cat, false);
+    if (start.crate) openCrateView(start.crate);
+    window.addEventListener('hashchange', () => {
+      const h = fromHash();
+      if (!h) return;
+      if (h.cat !== currentCategory) selectCategory(h.cat, false);
+      if (h.crate) openCrateView(h.crate);
+    });
   }
 
   function selectCategory(category, updateUrl) {
@@ -375,191 +416,320 @@
       tab.tabIndex = active ? 0 : -1;
       if (active) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
-    const list = products.filter((p) => p.category === category);
-    if (category === 'rangos') list.sort((a, b) => (a.tier || 0) - (b.tier || 0));
-    $('#products').innerHTML = list.map(productCard).join('') || '<p class="loading">No hay productos en esta categoría</p>';
+    clearInterval(coinShopTimer);
+    const box = $('#products');
+    box.className = 'products';
+    $('#shop-intro').textContent = INTRO[category] || '';
+    $('#shop-intro').hidden = !INTRO[category];
+    $('#shop-search-wrap').hidden = category !== 'crates';
+    $('#crate-empty').hidden = true;
     $('#compare').hidden = category !== 'rangos';
-    if (category === 'rangos') renderCompare();
+    if (category === 'crates') {
+      box.classList.add('crate-grid');
+      box.innerHTML = crates().map(crateCard).join('');
+      filterCrates();
+    } else if (category === 'ruleta') {
+      renderRoulette(box);
+    } else if (category === 'tiendamonedas') {
+      renderCoinShop(box);
+      coinShopTimer = setInterval(() => renderCoinShop(box, true), 15000);
+    } else {
+      box.classList.add('grid', 'grid-3');
+      const list = products.filter((p) => p.category === category);
+      if (category === 'rangos') list.sort((a, b) => (a.tier || 0) - (b.tier || 0));
+      box.innerHTML = list.map(productCard).join('') || '<p class="loading">No hay productos en esta sección</p>';
+      if (category === 'rangos') renderCompare();
+    }
     if (updateUrl) history.replaceState(null, '', `#${category}`);
   }
 
-  // Crates: selector y escenario con el set elegido
-  function initCrates() {
-    const list = crates();
-    const picker = $('#crate-picker');
-    if (!list.length) {
-      $('#stage-info').innerHTML = '<p class="muted">No hay crates disponibles ahora mismo. ¡Vuelve pronto!</p>';
+  const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  function filterCrates() {
+    if (currentCategory !== 'crates') return;
+    const q = norm($('#shop-search').value.trim());
+    let shown = 0;
+    for (const p of crates()) {
+      const ok = !q || norm(`${p.name} ${p.tagline} ${p.description}`).includes(q);
+      const el = $(`.crate-tile[data-crate="${p.id}"]`);
+      if (el) el.hidden = !ok;
+      shown += ok;
+    }
+    $('#crate-empty').hidden = shown > 0;
+  }
+
+  // --- Ruleta de armas ---
+  function renderRoulette(box) {
+    const spins = products.filter((p) => p.category === 'ruleta').sort((a, b) => a.spins - b.spins);
+    const ref = spins[0];
+    if (!ref) {
+      box.innerHTML = '<p class="loading">La ruleta no está disponible ahora mismo.</p>';
       return;
     }
-    picker.innerHTML = list
-      .map(
-        (p) => `
-        <button type="button" class="crate-pick" role="tab" data-crate="${escapeHtml(p.id)}"${themeAttr(p)} aria-selected="false" aria-controls="crate-stage">
-          ${img(p.keyImage || p.image, '', '', ' width="56" height="56"')}
-          <b>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</b>
-          <small>${escapeHtml(p.rarity || 'Crate')}</small>
-          <span class="pick-price">${formatPrice(p.price)}</span>
-        </button>`,
-      )
-      .join('');
-    picker.addEventListener('click', (e) => {
-      const id = e.target.closest('[data-crate]')?.dataset.crate;
-      if (id) showCrate(id, true);
-    });
-    picker.addEventListener('keydown', (e) => {
-      if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-      const visible = list.filter((p) => !$(`[data-crate="${p.id}"]`, picker).hidden);
-      if (!visible.length) return;
-      const idx = visible.findIndex((p) => p.id === selectedCrate);
-      const next = visible[(idx + (e.key === 'ArrowRight' ? 1 : -1) + visible.length) % visible.length];
-      showCrate(next.id, true);
-      $(`[data-crate="${next.id}"]`, picker).focus();
-    });
-
-    // Filtros por rareza y buscador
-    const rarities = [...new Set(list.map((p) => p.rarity).filter(Boolean))];
-    let rarity = '';
-    const filters = $('#crate-filters');
-    filters.innerHTML = [['', 'Todos', list.length], ...rarities.map((r) => [r, r, list.filter((p) => p.rarity === r).length])]
-      .map(([value, label, n]) => `<button type="button" class="chip" data-rarity="${escapeHtml(value)}" aria-pressed="${value === ''}">${escapeHtml(label)} <span>${n}</span></button>`)
-      .join('');
-    const search = $('#crate-search');
-    const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-    function applyFilter() {
-      const q = norm(search.value.trim());
-      let shown = 0;
-      for (const p of list) {
-        const ok = (!rarity || p.rarity === rarity) && (!q || norm(`${p.name} ${p.tagline} ${p.rarity}`).includes(q));
-        $(`[data-crate="${p.id}"]`, picker).hidden = !ok;
-        shown += ok;
-      }
-      $('#crate-empty').hidden = shown > 0;
-      picker.scrollLeft = 0;
-      updateRail();
-    }
-    filters.addEventListener('click', (e) => {
-      const chip = e.target.closest('[data-rarity]');
-      if (!chip) return;
-      rarity = chip.dataset.rarity;
-      $$('[data-rarity]', filters).forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
-      applyFilter();
-    });
-    search.addEventListener('input', applyFilter);
-
-    // Flechas de la tira (en el móvil se desliza con el dedo)
-    const railBtns = $$('[data-rail]');
-    function updateRail() {
-      const max = picker.scrollWidth - picker.clientWidth - 2;
-      railBtns[0].disabled = picker.scrollLeft <= 2;
-      railBtns[1].disabled = picker.scrollLeft >= max;
-    }
-    railBtns.forEach((b) =>
-      b.addEventListener('click', () => picker.scrollBy({ left: Number(b.dataset.rail) * picker.clientWidth * 0.8, behavior: 'smooth' })),
-    );
-    picker.addEventListener('scroll', updateRail, { passive: true });
-    window.addEventListener('resize', updateRail);
-
-    const fromHash = () => {
-      const h = decodeURIComponent(location.hash.slice(1));
-      return list.find((p) => p.theme === h || p.id === h);
-    };
-    showCrate((fromHash() || list.find((p) => p.featured) || list[0]).id, false);
-    centerPick();
-    updateRail();
-    window.addEventListener('hashchange', () => fromHash() && showCrate(fromHash().id, false));
-  }
-
-  // Deja el crate elegido a la vista dentro de la tira, sin mover la página.
-  function centerPick(smooth) {
-    const picker = $('#crate-picker');
-    const btn = $(`[data-crate="${selectedCrate}"]`, picker);
-    if (!btn || btn.hidden) return;
-    const left = btn.offsetLeft - (picker.clientWidth - btn.offsetWidth) / 2;
-    picker.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
-  }
-
-  let selectedCrate = null;
-  function showCrate(id, updateUrl) {
-    const p = products.find((x) => x.id === id);
-    if (!p || id === selectedCrate) return;
-    selectedCrate = id;
-    const stage = $('#crate-stage');
-    applyTheme(stage, p);
-    for (const btn of $$('#crate-picker [data-crate]')) {
-      const active = btn.dataset.crate === id;
-      btn.setAttribute('aria-selected', String(active));
-      btn.tabIndex = active ? 0 : -1;
-    }
-    if (updateUrl) centerPick(true);
-
-    const art = $('#stage-img');
-    const fresh = art.cloneNode();
-    fresh.src = asset(p.image);
-    fresh.alt = `${p.name}: armas, herramientas y armadura del set`;
-    fresh.hidden = false;
-    art.replaceWith(fresh); // reinicia la animación de entrada
-
-    const armor = Array.isArray(p.armor) ? p.armor : [];
-    const items = Array.isArray(p.items) ? p.items : [];
-    $('#stage-info').innerHTML = `
-      ${p.rarity ? `<span class="rarity">${escapeHtml(p.rarity)}</span>` : ''}
-      <h2 class="theme-text">${escapeHtml(p.name)}</h2>
-      ${p.tagline ? `<p class="tag">${escapeHtml(p.tagline)}</p>` : ''}
-      <p class="desc">${escapeHtml(p.description)}</p>
-      ${
-        armor.length
-          ? `<h4>Armadura animada</h4>
-             <div class="armor-row">${armor
-               .map((a) => `<div class="armor-slot">${img(a.icon, '', 'pixel-img', ' width="40" height="40"')}<span>${escapeHtml(a.name)}</span></div>`)
-               .join('')}</div>`
-          : ''
-      }
-      ${
-        modelItems(p).length
-          ? `<h4>Objetos del set <span class="hint3d">· toca uno para verlo en 3D</span></h4>
-             <div class="gallery">${modelItems(p)
-               .map(
-                 (m, i) => `<button type="button" class="gallery-item" data-view="${i}" aria-label="Ver ${escapeHtml(m.name)} en 3D">
-                   ${img(m.thumb, '', '', ' width="72" height="72"')}<span>${escapeHtml(m.name)}</span></button>`,
-               )
-               .join('')}</div>`
-          : ''
-      }
-      <div class="buy-bar">
-        <span class="price"><small>Por llave</small>${formatPrice(p.price)}</span>
-        <button class="btn btn-theme btn-lg" type="button" ${buyAttrs(p)}>Comprar llave</button>
-      </div>`;
-    if (updateUrl) history.replaceState(null, '', `#${p.theme || p.id}`);
-  }
-
-  // --- Visor 3D (se carga solo al abrir un objeto) ---
-  function modelItems(p) {
-    if (!p || !p.set || !Array.isArray(p.models)) return [];
-    return p.models.map((m) => ({
-      name: m.name,
-      // Solo las armas se ponen de pie; cofres, alas, cascos o armaduras se ven tal cual.
-      upright: !/^(chest|wings?|helmet|hat|shield|armor_|backpack|little_dragon|cape|tail)/.test(m.id),
-      thumb: `img/items/${p.set}/${m.id}.webp`,
-      model: `/models/${p.set}/${m.id}.json`,
-    }));
+    const weapons = ref.models || [];
+    box.innerHTML = `
+      <section class="panel roulette"${themeAttr(ref)}>
+        <div class="roulette-info">
+          <span class="eyebrow">Ruleta de armas</span>
+          <h2>Gira y llévate un arma legendaria</h2>
+          <p>Cada giro te da al azar una de las ${weapons.length} armas de la forja de Nazgul. La tienda la elige al confirmarse el pago y te llega al juego; en la página de tu compra verás cuál te tocó.</p>
+          <div class="spin-buttons">${spins
+            .map(
+              (p, i) => `<button type="button" class="btn ${i === 0 ? 'btn-gold' : 'btn-ghost'} btn-lg" ${buyAttrs(p)}>
+                ${p.spins} ${p.spins === 1 ? 'giro' : 'giros'} · ${formatPrice(p.price)}</button>`,
+            )
+            .join('')}</div>
+        </div>
+        <div class="roulette-reel" aria-label="Armas que pueden tocar">${weapons
+          .map(
+            (w, i) => `<button type="button" class="reel-item" data-roulette-view="${i}" aria-label="Ver ${escapeHtml(w.name)} en 3D">
+              ${img(thumbOf(ref.set, w.id), '', '', ' width="72" height="72"')}<span>${escapeHtml(w.name)}</span></button>`,
+          )
+          .join('')}</div>
+      </section>`;
   }
 
   document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-view]');
+    const btn = e.target.closest('[data-roulette-view]');
     if (!btn) return;
-    const p = products.find((x) => x.id === selectedCrate);
-    const items = modelItems(p);
-    if (!items.length) return;
-    btn.classList.add('loading');
+    const ref = products.find((p) => p.category === 'ruleta');
+    const items = (ref?.models || []).map((m) => ({
+      name: m.name,
+      thumb: thumbOf(ref.set, m.id),
+      model: `/models/${ref.set}/${m.id}.json`,
+    }));
     try {
       const { openViewer } = await import('/viewer.js');
-      openViewer(items, Number(btn.dataset.view), p.name);
+      openViewer(items, Number(btn.dataset.rouletteView), 'Ruleta de armas');
     } catch (err) {
       console.error(err);
       toast('No se pudo abrir el visor 3D en este navegador.');
-    } finally {
-      btn.classList.remove('loading');
     }
+  });
+
+  // --- Tienda de monedas (la actualiza el staff desde el juego) ---
+  let coinShopVersion = null;
+  async function renderCoinShop(box, refresh) {
+    let data;
+    try {
+      data = await (await fetch('/api/coinshop')).json();
+    } catch {
+      if (!refresh) box.innerHTML = '<p class="muted">No se pudo cargar la tienda de monedas.</p>';
+      return;
+    }
+    if (currentCategory !== 'tiendamonedas' || (refresh && data.version === coinShopVersion)) return;
+    coinShopVersion = data.version;
+    const items = data.items || [];
+    const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always' });
+    box.innerHTML = `
+      <div class="coin-head">
+        <div>
+          <h2>Tienda de monedas</h2>
+          <p class="muted">Objetos del servidor que se pagan con las monedas que ganas jugando.</p>
+        </div>
+        <span class="live-badge"><span class="dot online"></span>Actualizado en vivo desde el servidor</span>
+      </div>
+      ${
+        items.length
+          ? `<div class="coin-grid">${items
+              .map(
+                (it) => `<article class="panel coin-item">
+                  <div class="coin-icon" data-letter="${escapeHtml(it.name.slice(0, 1).toUpperCase())}">${it.icon ? img(it.icon, '') : ''}</div>
+                  <h3>${escapeHtml(it.name)}</h3>
+                  <span class="muted small">× ${it.count}</span>
+                  <span class="coin-price"><img src="/img/coins-small.png" alt="" width="20" height="20" class="pixel-img">${fmt.format(it.price)}</span>
+                </article>`,
+              )
+              .join('')}</div>`
+          : '<div class="panel coin-empty"><p>Todavía no hay objetos. El staff los añade desde el juego con <code>/tf tienda add &lt;precio&gt;</code>.</p></div>'
+      }
+      <p class="muted small coin-note">Se compran dentro del juego con tus monedas. Pronto también desde aquí.</p>`;
+    // Sin icono (o si no carga), la inicial del objeto.
+    for (const icon of $$('.coin-icon', box)) {
+      const letter = () => icon.replaceChildren(Object.assign(document.createElement('span'), { textContent: icon.dataset.letter }));
+      const pic = $('img', icon);
+      if (!pic) letter();
+      else pic.addEventListener('error', letter, { once: true });
+    }
+  }
+
+  // --- Ver una crate: el probador con el personaje y el set puesto ---
+  const CV_HTML = `
+  <dialog id="crate-view" class="crate-view" aria-labelledby="cv-title">
+    <div class="cv-head">
+      <div><span class="cat">Crate</span><h2 id="cv-title"></h2><p class="muted" id="cv-tag"></p></div>
+      <button type="button" class="dialog-close" data-cv-close aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="cv-body">
+      <div class="cv-stage">
+        <canvas aria-label="Tu personaje con el set puesto"></canvas>
+        <p class="viewer-status" id="cv-status">Cargando…</p>
+        <div class="cv-modes" role="group" aria-label="Vista">
+          <button type="button" data-cv-mode="player" aria-pressed="true">Mi personaje</button>
+          <button type="button" data-cv-mode="item" aria-pressed="false" disabled>Objeto</button>
+        </div>
+        <div class="cv-actions">
+          <span class="cv-selected" id="cv-selected"></span>
+          <button type="button" class="btn btn-theme btn-sm" id="cv-equip" hidden>Equipar</button>
+        </div>
+        <label class="cv-skin"><span>Skin de</span><input id="cv-skin" maxlength="16" spellcheck="false" autocomplete="off" placeholder="Tu skin"></label>
+      </div>
+      <div class="cv-side">
+        <p class="cv-desc" id="cv-desc"></p>
+        <h4>Incluye <span id="cv-count"></span> <span class="hint3d">· toca uno para verlo y equipártelo</span></h4>
+        <div class="cv-items" id="cv-items"></div>
+        <div class="cv-buy">
+          <span class="price"><small>Set completo</small><span id="cv-price"></span></span>
+          <button class="btn btn-theme btn-lg" type="button" id="cv-buy">Comprar crate</button>
+        </div>
+      </div>
+    </div>
+  </dialog>`;
+
+  const wearCache = {};
+  let cv = null;
+  async function openCrateView(id) {
+    const p = products.find((x) => x.id === id || x.theme === id);
+    if (!p || !p.set) return;
+    if (!cv) {
+      document.body.insertAdjacentHTML('beforeend', CV_HTML);
+      const dialog = $('#crate-view');
+      cv = { dialog, wardrobe: null, set: null, crate: null, outfit: {}, selected: null, mode: 'player', lib: null };
+      $('[data-cv-close]', dialog).addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) dialog.close();
+      });
+      dialog.addEventListener('close', () => {
+        cv.wardrobe?.destroy();
+        cv.wardrobe = null;
+        if (location.hash.startsWith('#crates-')) history.replaceState(null, '', '#crates');
+      });
+      $('#cv-items', dialog).addEventListener('click', (e) => {
+        const b = e.target.closest('[data-cv-item]');
+        if (b) selectWearItem(b.dataset.cvItem);
+      });
+      $$('[data-cv-mode]', dialog).forEach((b) => b.addEventListener('click', () => (b.dataset.cvMode === 'player' ? showOutfit() : selectWearItem(cv.selected))));
+      $('#cv-equip', dialog).addEventListener('click', toggleEquip);
+      $('#cv-buy', dialog).addEventListener('click', () => {
+        dialog.close();
+        openCheckout(cv.crate.id);
+      });
+      let t = null;
+      $('#cv-skin', dialog).addEventListener('input', (e) => {
+        clearTimeout(t);
+        const v = e.target.value.trim();
+        t = setTimeout(() => {
+          if (!v || /^[A-Za-z0-9_]{3,16}$/.test(v)) {
+            storageSet('tf-skin', v);
+            showOutfit();
+          }
+        }, 600);
+      });
+    }
+    const dialog = cv.dialog;
+    cv.crate = p;
+    applyTheme(dialog, p);
+    $('#cv-title').textContent = p.name;
+    $('#cv-tag').textContent = p.tagline || '';
+    $('#cv-desc').textContent = p.description || '';
+    $('#cv-price').textContent = formatPrice(p.price);
+    $('#cv-buy').disabled = !config.paymentsEnabled;
+    $('#cv-skin').value = storageGet('tf-skin') || me.user?.name || storageGet('tf-username') || '';
+    $('#cv-status').hidden = false;
+    $('#cv-status').textContent = 'Cargando el set…';
+    if (!dialog.open) dialog.showModal();
+    history.replaceState(null, '', `#crates-${p.theme || p.id}`);
+    try {
+      cv.lib ||= await import('/wardrobe.js');
+      cv.set = wearCache[p.set] ||= await (await fetch(`/wear/${p.set}.json`)).json();
+    } catch (err) {
+      console.error(err);
+      $('#cv-status').textContent = 'No se pudo cargar el probador 3D en este navegador.';
+      return;
+    }
+    cv.outfit = cv.lib.defaultOutfit(cv.set);
+    cv.selected = null;
+    const models = (p.models || []).filter((m) => cv.set.items[m.id]);
+    $('#cv-count').textContent = `(${models.length})`;
+    $('#cv-items').innerHTML = models
+      .map(
+        (m) => `<button type="button" class="cv-item" data-cv-item="${escapeHtml(m.id)}" aria-pressed="false">
+          ${img(thumbOf(p.set, m.id), '', '', ' width="64" height="64"')}<span>${escapeHtml(m.name)}</span><i class="worn-dot" aria-hidden="true"></i></button>`,
+      )
+      .join('');
+    if (!cv.wardrobe) cv.wardrobe = cv.lib.createWardrobe($('.cv-stage canvas', dialog));
+    showOutfit();
+  }
+
+  function wearSlot(slug) {
+    const it = cv.set.items[slug];
+    if (!it) return null;
+    return it.type === 'armor' ? it.slot : cv.lib.slotOf(it);
+  }
+
+  function refreshCv() {
+    const worn = new Set(Object.values(cv.outfit));
+    for (const b of $$('[data-cv-item]', cv.dialog)) {
+      b.setAttribute('aria-pressed', String(b.dataset.cvItem === cv.selected));
+      b.classList.toggle('worn', worn.has(b.dataset.cvItem));
+    }
+    $$('[data-cv-mode]', cv.dialog).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cvMode === cv.mode)));
+    $('[data-cv-mode="item"]', cv.dialog).disabled = !cv.selected || !cv.set.items[cv.selected]?.model;
+    const sel = cv.selected && cv.crate.models.find((m) => m.id === cv.selected);
+    $('#cv-selected').textContent = sel ? sel.name : 'Toca una pieza para verla';
+    const slot = cv.selected && wearSlot(cv.selected);
+    const equip = $('#cv-equip');
+    equip.hidden = !slot || slot === 'offhand';
+    equip.textContent = slot && cv.outfit[slot] === cv.selected ? 'Quitar' : 'Equipar';
+  }
+
+  async function showOutfit() {
+    if (!cv?.wardrobe) return;
+    cv.mode = 'player';
+    refreshCv();
+    const skin = $('#cv-skin').value.trim();
+    try {
+      await cv.wardrobe.showPlayer(cv.set, cv.outfit, /^[A-Za-z0-9_]{3,16}$/.test(skin) ? skin : 'MHF_Steve');
+      $('#cv-status').hidden = true;
+    } catch (err) {
+      console.error(err);
+      $('#cv-status').hidden = false;
+      $('#cv-status').textContent = 'No se pudo mostrar el personaje.';
+    }
+  }
+
+  async function selectWearItem(slug) {
+    if (!slug || !cv) return;
+    cv.selected = slug;
+    const it = cv.set.items[slug];
+    // La armadura no tiene modelo suelto: se ve directamente puesta.
+    if (!it?.model) {
+      const slot = wearSlot(slug);
+      if (slot) cv.outfit[slot] = slug;
+      return showOutfit();
+    }
+    cv.mode = 'item';
+    refreshCv();
+    try {
+      await cv.wardrobe.showItem(it.model);
+      $('#cv-status').hidden = true;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function toggleEquip() {
+    const slot = wearSlot(cv.selected);
+    if (!slot) return;
+    if (cv.outfit[slot] === cv.selected) delete cv.outfit[slot];
+    else cv.outfit[slot] = cv.selected;
+    showOutfit();
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-open-crate]');
+    if (btn) openCrateView(btn.dataset.openCrate);
   });
 
   // --- Ventana de compra (solo en las páginas que venden) ---
@@ -648,16 +818,15 @@
     const isCrate = selected.category === 'crates';
     applyTheme(dialog, selected);
     const pic = $('#dialog-img');
-    const src = isCrate ? selected.keyImage || selected.image : selected.image;
+    const src = selected.image;
     pic.hidden = !src;
     if (src) {
       pic.src = asset(src);
       pic.classList.toggle('pixel-img', isPixel(src));
     }
-    $('#dialog-cat').textContent = isCrate ? 'Llave de crate' : CATEGORY_LABEL[selected.category] || selected.category;
+    $('#dialog-cat').textContent = isCrate ? 'Crate · set completo' : CATEGORY_LABEL[selected.category] || selected.category;
     $('#dialog-title').textContent = selected.name;
     $('#dialog-desc').textContent = isCrate ? selected.tagline || selected.description : selected.description;
-    $('#quantity-label').textContent = isCrate ? 'Número de llaves' : 'Cantidad';
     qtyInput.value = 1;
     qtyInput.max = maxQty;
     $('#quantity-field').hidden = maxQty === 1;
@@ -800,10 +969,7 @@
     if (!buy && !result && !cancelled) return;
     const product = products.find((p) => p.id === buy);
     let hash = location.hash;
-    if (product && page === 'crates' && product.category === 'crates') {
-      hash = `#${product.theme || product.id}`;
-      showCrate(product.id, false);
-    } else if (product && page === 'tienda') {
+    if (product && page === 'tienda') {
       hash = `#${product.category}`;
       selectCategory(product.category, false);
     }

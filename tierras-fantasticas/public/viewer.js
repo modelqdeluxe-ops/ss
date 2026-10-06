@@ -38,7 +38,7 @@ function shadeFor(n) {
 }
 
 // Texturas (con animación de fotogramas como los .mcmeta del juego)
-async function loadTextures(model) {
+export async function loadTextures(model) {
   const out = {};
   await Promise.all(
     Object.entries(model.textures).map(async ([key, info]) => {
@@ -68,7 +68,7 @@ async function loadTextures(model) {
   return out;
 }
 
-function buildElements(model, textures) {
+export function buildElements(model, textures) {
   const buckets = {};
   const bucket = (key) => (buckets[key] ||= { pos: [], uv: [], col: [] });
   for (const el of model.elements) {
@@ -107,7 +107,7 @@ function buildElements(model, textures) {
 }
 
 // Objetos planos (item/generated): la textura se extruye 1 píxel de grosor, igual que en el juego.
-function buildGenerated(model, textures) {
+export function buildGenerated(model, textures) {
   const key = model.generated;
   const t = textures[key];
   const { fw, fh } = t.info;
@@ -153,7 +153,7 @@ function buildGenerated(model, textures) {
   return { [key]: b };
 }
 
-function toMesh(buckets, textures) {
+export function toMesh(buckets, textures) {
   const group = new THREE.Group();
   for (const [key, b] of Object.entries(buckets)) {
     if (!b.pos.length) continue;
@@ -173,7 +173,7 @@ function toMesh(buckets, textures) {
 }
 
 // Pone de pie los objetos alargados (espadas, lanzas...) para que el giro se vea natural.
-function uprightAngle(object) {
+export function uprightAngle(object) {
   const pts = [];
   object.updateMatrixWorld(true);
   const v = new THREE.Vector3();

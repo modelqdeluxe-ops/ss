@@ -27,13 +27,17 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.economy.TFEconomyCommands;
+import net.tierrasfantasticas.tfclient.jobs.TFJobsCommands;
 import net.tierrasfantasticas.tfclient.server.TFBridgeCommands;
+import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 
 /**
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo)
  * Hace falta ser operador (nivel 2). Funciona también en servidores Mohist.
- * /tf vincular y /tf rango están en {@link TFBridgeCommands}.
+ * /tf vincular y /tf rango están en {@link TFBridgeCommands}; /tf tienda en {@link TFCoinShop};
+ * /tf monedas en {@link TFEconomyCommands}; /tf jobs (o /tf oficios) en {@link TFJobsCommands}.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFCommands {
@@ -67,9 +71,13 @@ public final class TFCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         // /tf no pide permisos: cada subcomando pone los suyos (/tf vincular es para todos los jugadores).
-        dispatcher.register(Commands.literal("tf")
+        var tf = Commands.literal("tf")
                 .then(TFBridgeCommands.vincular())
                 .then(TFBridgeCommands.rango())
+                .then(TFCoinShop.command())
+                .then(TFEconomyCommands.command());
+        for (var jobs : TFJobsCommands.commands()) tf = tf.then(jobs);
+        dispatcher.register(tf
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("sets")

@@ -61,6 +61,18 @@ const SCHEMA = [
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )`,
+  // Tienda de monedas: objetos del servidor que el staff añade desde el juego (/tf tienda add).
+  `CREATE TABLE IF NOT EXISTS coin_shop (
+    id TEXT PRIMARY KEY,
+    item TEXT NOT NULL,
+    name TEXT NOT NULL,
+    count INTEGER NOT NULL,
+    price INTEGER NOT NULL,
+    nbt TEXT,
+    added_by TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
   // Intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.
   `CREATE TABLE IF NOT EXISTS login_attempts (
     key TEXT PRIMARY KEY,
@@ -88,6 +100,7 @@ const MIGRATIONS = [
   'CREATE INDEX IF NOT EXISTS orders_capture ON orders (capture_id)',
   'CREATE INDEX IF NOT EXISTS orders_discord ON orders (discord_id)',
   'CREATE INDEX IF NOT EXISTS orders_uuid ON orders (uuid)',
+  'ALTER TABLE orders ADD COLUMN prizes TEXT',
 ];
 
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
@@ -116,6 +129,7 @@ const ORDER_FIELDS = {
   refunded: 'refunded',
   paidAt: 'paid_at',
   deliveredAt: 'delivered_at',
+  prizes: 'prizes',
 };
 
 function rowToOrder(row) {
@@ -134,6 +148,7 @@ function rowToOrder(row) {
     sessionId: row.session_id || null,
     paymentIntent: row.capture_id || null,
     rankFrom: row.rank_from || null,
+    prizes: row.prizes ? JSON.parse(row.prizes) : null,
     error: row.error,
     refunded: row.refunded,
     createdAt: row.created_at,
@@ -234,7 +249,7 @@ export function createStore(db) {
       if (!(key in fields)) continue;
       sets.push(`${column} = ?`);
       const value = fields[key];
-      values.push(key === 'discord' && value ? JSON.stringify(value) : value ?? null);
+      values.push((key === 'discord' || key === 'prizes') && value ? JSON.stringify(value) : value ?? null);
     }
     sets.push('updated_at = ?');
     values.push(now(), id);
@@ -446,6 +461,56 @@ export function createStore(db) {
     await db.prepare('DELETE FROM login_attempts WHERE key = ?').bind(key).run();
   }
 
+  // --- Tienda de monedas ---
+
+  async function coinShop() {
+    await init();
+    const { results } = await db.prepare('SELECT * FROM coin_shop ORDER BY created_at').all();
+    return results.map((r) => ({
+      id: r.id, item: r.item, name: r.name, count: r.count, price: r.price, nbt: r.nbt || null,
+      addedBy: r.added_by || null, createdAt: r.created_at, updatedAt: r.updated_at,
+    }));
+  }
+
+  // Cambios que manda el servidor: { op: 'add', id, item, name, count, price, nbt, by } | { op: 'remove', id } | { op: 'clear' }
+  async function applyCoinShop(ops) {
+    await init();
+    const at = now();
+    const statements = [];
+    for (const op of ops) {
+      if (op.op === 'clear') statements.push(db.prepare('DELETE FROM coin_shop'));
+      else if (op.op === 'remove') statements.push(db.prepare('DELETE FROM coin_shop WHERE id = ?').bind(op.id));
+      else if (op.op === 'add') {
+        statements.push(
+          db
+            .prepare(
+              `INSERT INTO coin_shop (id, item, name, count, price, nbt, added_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT (id) DO UPDATE SET item = excluded.item, name = excluded.name, count = excluded.count,
+                 price = excluded.price, nbt = excluded.nbt, updated_at = excluded.updated_at`,
+            )
+            .bind(op.id, op.item, op.name, op.count, op.price, op.nbt || null, op.by || null, at, at),
+        );
+      }
+    }
+    if (statements.length) {
+      await db.batch(statements);
+      await db
+        .prepare(
+          `INSERT INTO settings (key, value, updated_at) VALUES ('coin_shop_version', ?, ?)
+           ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+        )
+        .bind(at, Date.now())
+        .run();
+    }
+    return statements.length;
+  }
+
+  async function coinShopVersion() {
+    await init();
+    const row = await db.prepare("SELECT value FROM settings WHERE key = 'coin_shop_version'").first();
+    return row?.value || null;
+  }
+
   // --- Puente ---
 
   // Confirma las entregas hechas, guarda el estado del servidor y recoge las entregas pendientes
@@ -570,6 +635,9 @@ export function createStore(db) {
     loginFailed,
     loginSucceeded,
     bridgePoll,
+    coinShop,
+    applyCoinShop,
+    coinShopVersion,
     serverStatus,
     pendingDeliveries,
     secret,
