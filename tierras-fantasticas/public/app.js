@@ -228,7 +228,7 @@
       .reverse()
       .map(
         (p, i) => `
-        <a class="crate-tile home-tile reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
+        <a class="frame crate-tile home-tile reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
           <span class="crate-tile-art">${glow(i)}${img(p.image, p.name)}</span>
           <span class="body">
             <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
@@ -459,7 +459,7 @@
     const weaponChance = pool.filter((p) => p.weapon).reduce((s, p) => s + p.chance, 0);
     const max = Math.max(...pool.map((p) => p.chance), 1);
     box.innerHTML = `
-      <section class="roulette"${themeAttr(ref)}>
+      <section class="frame roulette"${themeAttr(ref)}>
         <div class="roulette-info">
           <span class="eyebrow">Ruleta</span>
           <h2>Prueba tu suerte</h2>

@@ -40,7 +40,6 @@ def head(title, desc, page, hero=False, preload_hero=False):
   <script>document.documentElement.classList.add('js')</script>
 </head>
 <body data-page="{page}"{' data-hero' if hero else ''}>
-  <div class="aurora" aria-hidden="true"></div>
 '''
 
 
@@ -225,7 +224,38 @@ def index():
       </div>
     </section>
 
-    <section class="wrap section featured">
+    <div class="wrap stats-wrap">
+      <ul class="stats frame" aria-label="El servidor en cifras">
+        <li><b data-players>—</b><span>Jugadores en línea</span></li>
+        <li><b>1.20.1</b><span>Minecraft Java</span></li>
+        <li><b>+200</b><span>Mods</span></li>
+        <li><b data-crate-count>40</b><span>Crates</span></li>
+      </ul>
+    </div>
+
+    <section class="wrap section">
+      <div class="section-head center">
+        <span class="eyebrow">El reino</span>
+        <h2>Una aventura sin final</h2>
+        <p>Supervivencia con alma de RPG: funda tu reino, forja armas legendarias y haz fortuna con tu oficio.</p>
+      </div>
+      <div class="pillars">
+        <article class="pillar frame reveal">
+          <div class="pillar-art"><img src="/img/hero-768.webp" alt="Castillos de Tierras Fantásticas" width="768" height="432" loading="lazy" style="object-position:22% 40%"></div>
+          <div class="pillar-body"><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
+        </article>
+        <article class="pillar frame reveal">
+          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" loading="lazy"></div>
+          <div class="pillar-body"><h3>Armas legendarias</h3><p>Sets completos con armas animadas, armadura y cosméticos (alas, mochilas, cascos) que se ven en el juego.</p></div>
+        </article>
+        <article class="pillar frame reveal">
+          <div class="pillar-art"><img src="/img/home/oficio-miner.webp" alt="El minero, uno de los oficios" width="590" height="190" loading="lazy" class="pixel-img"></div>
+          <div class="pillar-body"><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section featured" style="padding-top:0">
       <div class="section-head split-head">
         <div>
           <span class="eyebrow">Nuevo en la tienda</span>
@@ -235,6 +265,19 @@ def index():
       </div>
       <div class="crate-row" id="crate-spotlight">
         <p class="loading">Cargando crates…</p>
+      </div>
+    </section>
+
+    <section class="wrap section" style="padding-top:0">
+      <div class="panel cta-band reveal">
+        <span class="eyebrow">Únete</span>
+        <h2>Tu aventura empieza hoy</h2>
+        <p>Es gratis: Minecraft Java 1.20.1 con el modpack del servidor. Copia la IP, entra y funda tu reino.</p>
+        <div class="actions">
+          <button class="btn btn-gold btn-lg" type="button" data-copy-ip><span data-copy-hint>Copiar IP</span></button>
+          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
+          <a href="/ayuda" class="btn btn-ghost btn-lg">Cómo entrar</a>
+        </div>
       </div>
     </section>
   </main>
@@ -251,20 +294,23 @@ def tienda():
                 'Tienda oficial de Tierras Fantásticas: crates con sets completos, rangos, ruleta y monedas. Pago seguro con tarjeta y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
-    <section class="wrap shop-head">
-      <div>
-        <span class="eyebrow">Tienda oficial</span>
-        <h1>Tienda</h1>
-        <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar. Pago seguro con tarjeta.</p>
+    <section class="shop-head">
+      {hero_art()}
+      <div class="wrap shop-head-inner">
+        <div>
+          <span class="eyebrow">Tienda oficial</span>
+          <h1>Tienda</h1>
+          <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar. Pago seguro con tarjeta.</p>
+        </div>
+        <label class="shop-search" id="shop-search-wrap" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span class="sr-only">Buscar crate</span>
+          <input id="shop-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
+        </label>
       </div>
-      <label class="shop-search" id="shop-search-wrap" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <span class="sr-only">Buscar crate</span>
-        <input id="shop-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
-      </label>
     </section>
     <section class="wrap" style="padding-bottom:56px">
-      <div class="tabs shop-tabs" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
+      <div class="tabs shop-tabs frame" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
 {tab_html}
       </div>
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
@@ -310,7 +356,7 @@ def mundo():
 {page_hero('El reino', 'El mundo te espera', 'Supervivencia con alma de aventura: castillos que asaltar, reinos que fundar y una comunidad que te recibe con los brazos abiertos.')}
     <section class="wrap section">
       <div class="split">
-        <div class="media reveal"><img src="/img/hero-1280.webp" alt="Castillo y dragón en Tierras Fantásticas" width="1280" height="720" loading="lazy"></div>
+        <div class="media frame reveal"><img src="/img/hero-1280.webp" alt="Castillo y dragón en Tierras Fantásticas" width="1280" height="720" loading="lazy"></div>
         <div class="reveal">
           <span class="eyebrow">Supervivencia de aventura</span>
           <h2 class="display" style="font-size:clamp(28px,5vw,40px);margin-top:14px">Un mundo hecho para explorar</h2>
