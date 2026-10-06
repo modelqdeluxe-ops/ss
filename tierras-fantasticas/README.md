@@ -29,8 +29,11 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     `tools/legal.py`. El aviso de no afiliación sale en el pie de todas las páginas, en la tienda y en la ventana de
     compra. Contacto público: tierrasfantasticasmc@gmail.com.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).
-  - Rangos con su color y una tabla para comparar sus ventajas (`/tienda#rangos`): solo prefijos, cosméticos y
-    comodidades que no dan ventaja (sin kits de objetos, sin zonas de pago, sin /ec).
+  - **Rangos** (`/tienda#rangos`), de menor a mayor: Mortal (set San Patricio), Inmortal (Beats), Mágico (Dark World),
+    Eterno (Malika), Cósmico (Oni), Celestial (Luz de Estrella) y Fantástico (Eagle Ascendant). Cada uno da su grupo
+    de LuckPerms, su prefijo con color, el rol de Discord y su set completo (`tf web sets give`). La tabla `RANKS` de
+    `tools/crates.py` los define (con el nivel de atributos de su set); al tocar la imagen se abre el mismo probador
+    que en las crates (`/tienda#rangos-mortal`). Tabla para comparar debajo.
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.
@@ -226,12 +229,13 @@ pack con sus texturas animadas. Los datos salen de los packs con tres scripts (n
 ```bash
 python3 tools/build_items.py <carpeta con los packs descomprimidos> [set ...]   # modelos y miniaturas
 python3 tools/compose_cover.py <carpeta con los packs> [set ...]                 # portada igual para todos
-python3 tools/crates.py                                                          # escribe los crates en products.json
+python3 tools/crates.py                                                          # escribe rangos y crates en products.json
 ```
 
 Para añadir un pack nuevo: súmalo a `SETS` en `tools/build_items.py` (ruta a su carpeta `assets` y espacio de
 nombres), añade su línea en `tools/crates.py` (nombre, frase, descripción, precio y colores) y ejecuta
-los tres scripts (y `wear_export.py` tras regenerar el mod). Las páginas comunes (cabecera, pie…) se generan con `python3 tools/pages.py`.
+los tres scripts (y `wear_export.py` tras regenerar el mod). Para el mod basta con rehacer los sets nuevos:
+`python3 tf-client/tools/build_mod_items.py <packs> <set> [set ...]` deja los demás como están. Las páginas comunes (cabecera, pie…) se generan con `python3 tools/pages.py`.
 
 ## Pruebas
 

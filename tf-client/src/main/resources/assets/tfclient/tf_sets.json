@@ -94,7 +94,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "necros",
@@ -190,7 +191,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "luminite",
@@ -286,7 +288,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "mecha",
@@ -390,7 +393,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "shadow",
@@ -490,7 +494,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "aether",
@@ -574,7 +579,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "conqueror",
@@ -674,7 +680,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "ender",
@@ -770,7 +777,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "unicorn",
@@ -868,7 +876,8 @@
     }
    ],
    "armorFrames": 9,
-   "armorFrametime": 2
+   "armorFrametime": 2,
+   "tier": "netherite+1"
   },
   {
    "id": "cosmo",
@@ -960,7 +969,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "dracula",
@@ -1052,7 +1062,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "lightning",
@@ -1153,7 +1164,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "wither",
@@ -1249,7 +1261,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "pink",
@@ -1333,7 +1346,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "skeleton",
@@ -1433,7 +1447,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "lunar",
@@ -1534,99 +1549,101 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
-   "id": "beats",
-   "name": "Beats",
-   "color": "#7c6cff",
+   "id": "cardael",
+   "name": "Cardael",
+   "color": "#dc2626",
+   "tier": "netherite+1",
    "items": [
     {
-     "id": "beats_sword",
+     "id": "cardael_sword",
      "type": "sword"
     },
     {
-     "id": "beats_greatsword",
-     "type": "sword"
-    },
-    {
-     "id": "beats_axe",
+     "id": "cardael_axe",
      "type": "axe"
     },
     {
-     "id": "beats_pickaxe",
+     "id": "cardael_pickaxe",
      "type": "pickaxe"
     },
     {
-     "id": "beats_shovel",
+     "id": "cardael_shovel",
      "type": "shovel"
     },
     {
-     "id": "beats_hoe",
+     "id": "cardael_hoe",
      "type": "hoe"
     },
     {
-     "id": "beats_hammer",
+     "id": "cardael_hammer",
      "type": "heavy"
     },
     {
-     "id": "beats_scythe",
+     "id": "cardael_mace",
+     "type": "heavy"
+    },
+    {
+     "id": "cardael_scythe",
      "type": "sword"
     },
     {
-     "id": "beats_spear",
+     "id": "cardael_spear",
      "type": "sword"
     },
     {
-     "id": "beats_trident",
+     "id": "cardael_trident",
      "type": "trident"
     },
     {
-     "id": "beats_staff",
+     "id": "cardael_staff",
      "type": "sword"
     },
     {
-     "id": "beats_bow",
+     "id": "cardael_bow",
      "type": "bow"
     },
     {
-     "id": "beats_crossbow",
+     "id": "cardael_crossbow",
      "type": "crossbow"
     },
     {
-     "id": "beats_fishing_rod",
+     "id": "cardael_fishing_rod",
      "type": "fishing_rod"
     },
     {
-     "id": "beats_shield",
+     "id": "cardael_shield",
      "type": "shield"
     },
     {
-     "id": "beats_helmet",
+     "id": "cardael_helmet",
      "type": "head"
     },
     {
-     "id": "beats_wings",
+     "id": "cardael_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/beats/wings_worn"
+     "worn": "tfclient:item/sets/cardael/wings_worn"
     },
     {
-     "id": "beats_armor_helmet",
+     "id": "cardael_armor_helmet",
      "type": "armor",
      "slot": "helmet"
     },
     {
-     "id": "beats_armor_chestplate",
+     "id": "cardael_armor_chestplate",
      "type": "armor",
      "slot": "chestplate"
     },
     {
-     "id": "beats_armor_leggings",
+     "id": "cardael_armor_leggings",
      "type": "armor",
      "slot": "leggings"
     },
     {
-     "id": "beats_armor_boots",
+     "id": "cardael_armor_boots",
      "type": "armor",
      "slot": "boots"
     }
@@ -1726,7 +1743,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "littledragon",
@@ -1831,7 +1849,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "bahamut",
@@ -1939,7 +1958,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "fairy",
@@ -2035,7 +2055,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "bonita",
@@ -2136,7 +2157,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "chronicles",
@@ -2224,7 +2246,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "protocal",
@@ -2320,7 +2343,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "berserker",
@@ -2408,7 +2432,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "pirate",
@@ -2508,7 +2533,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "cupido",
@@ -2608,99 +2634,96 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
-   "id": "patrick",
-   "name": "San Patricio",
-   "color": "#16a34a",
+   "id": "evergreen",
+   "name": "Evergreen",
+   "color": "#22c55e",
+   "tier": "netherite+1",
    "items": [
     {
-     "id": "patrick_sword",
+     "id": "evergreen_sword",
      "type": "sword"
     },
     {
-     "id": "patrick_greatsword",
+     "id": "evergreen_greatsword",
      "type": "sword"
     },
     {
-     "id": "patrick_axe",
+     "id": "evergreen_axe",
      "type": "axe"
     },
     {
-     "id": "patrick_pickaxe",
+     "id": "evergreen_pickaxe",
      "type": "pickaxe"
     },
     {
-     "id": "patrick_shovel",
+     "id": "evergreen_shovel",
      "type": "shovel"
     },
     {
-     "id": "patrick_hoe",
+     "id": "evergreen_hoe",
      "type": "hoe"
     },
     {
-     "id": "patrick_hammer",
+     "id": "evergreen_hammer",
      "type": "heavy"
     },
     {
-     "id": "patrick_scythe",
+     "id": "evergreen_scythe",
      "type": "sword"
     },
     {
-     "id": "patrick_spear",
+     "id": "evergreen_spear",
      "type": "sword"
     },
     {
-     "id": "patrick_trident",
+     "id": "evergreen_trident",
      "type": "trident"
     },
     {
-     "id": "patrick_staff",
+     "id": "evergreen_staff",
      "type": "sword"
     },
     {
-     "id": "patrick_bow",
+     "id": "evergreen_bow",
      "type": "bow"
     },
     {
-     "id": "patrick_crossbow",
+     "id": "evergreen_crossbow",
      "type": "crossbow"
     },
     {
-     "id": "patrick_fishing_rod",
+     "id": "evergreen_fishing_rod",
      "type": "fishing_rod"
     },
     {
-     "id": "patrick_shield",
+     "id": "evergreen_shield",
      "type": "shield"
     },
     {
-     "id": "patrick_helmet",
+     "id": "evergreen_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/evergreen/wings_worn"
+    },
+    {
+     "id": "evergreen_crown",
      "type": "head"
     },
     {
-     "id": "patrick_wings",
-     "type": "back",
-     "worn": "tfclient:item/sets/patrick/wings_worn"
-    },
-    {
-     "id": "patrick_armor_helmet",
-     "type": "armor",
-     "slot": "helmet"
-    },
-    {
-     "id": "patrick_armor_chestplate",
+     "id": "evergreen_armor_chestplate",
      "type": "armor",
      "slot": "chestplate"
     },
     {
-     "id": "patrick_armor_leggings",
+     "id": "evergreen_armor_leggings",
      "type": "armor",
      "slot": "leggings"
     },
     {
-     "id": "patrick_armor_boots",
+     "id": "evergreen_armor_boots",
      "type": "armor",
      "slot": "boots"
     }
@@ -2783,7 +2806,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "cyber",
@@ -2871,7 +2895,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "bat",
@@ -2951,7 +2976,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "fox",
@@ -3042,7 +3068,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "nanoedge",
@@ -3138,7 +3165,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "blueflame",
@@ -3226,7 +3254,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "wild",
@@ -3327,87 +3356,84 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
-   "id": "starlight",
-   "name": "Luz de Estrella",
-   "color": "#eab308",
+   "id": "akira",
+   "name": "Akira",
+   "color": "#f97316",
+   "tier": "netherite+1",
    "items": [
     {
-     "id": "starlight_sword",
+     "id": "akira_sword",
      "type": "sword"
     },
     {
-     "id": "starlight_dagger",
+     "id": "akira_greatsword",
      "type": "sword"
     },
     {
-     "id": "starlight_blade",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_axe",
+     "id": "akira_axe",
      "type": "axe"
     },
     {
-     "id": "starlight_pickaxe",
+     "id": "akira_pickaxe",
      "type": "pickaxe"
     },
     {
-     "id": "starlight_shovel",
+     "id": "akira_shovel",
      "type": "shovel"
     },
     {
-     "id": "starlight_hoe",
+     "id": "akira_hoe",
      "type": "hoe"
     },
     {
-     "id": "starlight_battle_axe",
-     "type": "axe"
-    },
-    {
-     "id": "starlight_sickle",
+     "id": "akira_scythe",
      "type": "sword"
     },
     {
-     "id": "starlight_spear",
+     "id": "akira_spear",
      "type": "sword"
     },
     {
-     "id": "starlight_staff",
+     "id": "akira_staff",
      "type": "sword"
     },
     {
-     "id": "starlight_bow",
+     "id": "akira_bow",
      "type": "bow"
     },
     {
-     "id": "starlight_shield",
+     "id": "akira_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "akira_shield",
      "type": "shield"
     },
     {
-     "id": "starlight_wings",
+     "id": "akira_helmet",
+     "type": "head"
+    },
+    {
+     "id": "akira_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/starlight/wings_worn"
+     "worn": "tfclient:item/sets/akira/wings_worn"
     },
     {
-     "id": "starlight_armor_helmet",
-     "type": "armor",
-     "slot": "helmet"
-    },
-    {
-     "id": "starlight_armor_chestplate",
+     "id": "akira_armor_chestplate",
      "type": "armor",
      "slot": "chestplate"
     },
     {
-     "id": "starlight_armor_leggings",
+     "id": "akira_armor_leggings",
      "type": "armor",
      "slot": "leggings"
     },
     {
-     "id": "starlight_armor_boots",
+     "id": "akira_armor_boots",
      "type": "armor",
      "slot": "boots"
     }
@@ -3507,7 +3533,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "darkloyal",
@@ -3607,7 +3634,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "ifrit",
@@ -3700,7 +3728,8 @@
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   },
   {
    "id": "easter",
@@ -3796,6 +3825,753 @@
     },
     {
      "id": "easter_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ],
+   "tier": "netherite+1"
+  },
+  {
+   "id": "soulskull",
+   "name": "Soul Skull",
+   "color": "#14b8a6",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "soulskull_sword",
+     "type": "sword"
+    },
+    {
+     "id": "soulskull_axe",
+     "type": "axe"
+    },
+    {
+     "id": "soulskull_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "soulskull_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "soulskull_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "soulskull_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "soulskull_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "soulskull_spear",
+     "type": "sword"
+    },
+    {
+     "id": "soulskull_staff",
+     "type": "sword"
+    },
+    {
+     "id": "soulskull_bow",
+     "type": "bow"
+    },
+    {
+     "id": "soulskull_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "soulskull_shield",
+     "type": "shield"
+    },
+    {
+     "id": "soulskull_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/soulskull/wings_worn"
+    },
+    {
+     "id": "soulskull_fishingrod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "soulskull_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "soulskull_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "soulskull_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "soulskull_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "patrick",
+   "name": "San Patricio",
+   "color": "#16a34a",
+   "items": [
+    {
+     "id": "patrick_sword",
+     "type": "sword"
+    },
+    {
+     "id": "patrick_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "patrick_axe",
+     "type": "axe"
+    },
+    {
+     "id": "patrick_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "patrick_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "patrick_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "patrick_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "patrick_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "patrick_spear",
+     "type": "sword"
+    },
+    {
+     "id": "patrick_trident",
+     "type": "trident"
+    },
+    {
+     "id": "patrick_staff",
+     "type": "sword"
+    },
+    {
+     "id": "patrick_bow",
+     "type": "bow"
+    },
+    {
+     "id": "patrick_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "patrick_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "patrick_shield",
+     "type": "shield"
+    },
+    {
+     "id": "patrick_helmet",
+     "type": "head"
+    },
+    {
+     "id": "patrick_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/patrick/wings_worn"
+    },
+    {
+     "id": "patrick_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "patrick_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "patrick_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "patrick_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ],
+   "tier": "iron"
+  },
+  {
+   "id": "beats",
+   "name": "Beats",
+   "color": "#7c6cff",
+   "items": [
+    {
+     "id": "beats_sword",
+     "type": "sword"
+    },
+    {
+     "id": "beats_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "beats_axe",
+     "type": "axe"
+    },
+    {
+     "id": "beats_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "beats_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "beats_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "beats_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "beats_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "beats_spear",
+     "type": "sword"
+    },
+    {
+     "id": "beats_trident",
+     "type": "trident"
+    },
+    {
+     "id": "beats_staff",
+     "type": "sword"
+    },
+    {
+     "id": "beats_bow",
+     "type": "bow"
+    },
+    {
+     "id": "beats_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "beats_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "beats_shield",
+     "type": "shield"
+    },
+    {
+     "id": "beats_helmet",
+     "type": "head"
+    },
+    {
+     "id": "beats_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/beats/wings_worn"
+    },
+    {
+     "id": "beats_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "beats_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "beats_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "beats_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ],
+   "tier": "diamond"
+  },
+  {
+   "id": "darkworld",
+   "name": "Dark World",
+   "color": "#c026d3",
+   "tier": "netherite",
+   "items": [
+    {
+     "id": "darkworld_sword",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_halberd",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_axe",
+     "type": "axe"
+    },
+    {
+     "id": "darkworld_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "darkworld_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "darkworld_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "darkworld_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_spear",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_staff",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_bow",
+     "type": "bow"
+    },
+    {
+     "id": "darkworld_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "darkworld_shield",
+     "type": "shield"
+    },
+    {
+     "id": "darkworld_helmet",
+     "type": "head"
+    },
+    {
+     "id": "darkworld_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/darkworld/wings_worn"
+    },
+    {
+     "id": "darkworld_katana",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_bigsword",
+     "type": "sword"
+    },
+    {
+     "id": "darkworld_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "darkworld_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "darkworld_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "malika",
+   "name": "Malika",
+   "color": "#ef4444",
+   "tier": "netherite+1",
+   "items": [
+    {
+     "id": "malika_sword",
+     "type": "sword"
+    },
+    {
+     "id": "malika_greatsword",
+     "type": "sword"
+    },
+    {
+     "id": "malika_axe",
+     "type": "axe"
+    },
+    {
+     "id": "malika_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "malika_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "malika_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "malika_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "malika_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "malika_spear",
+     "type": "sword"
+    },
+    {
+     "id": "malika_trident",
+     "type": "trident"
+    },
+    {
+     "id": "malika_staff",
+     "type": "sword"
+    },
+    {
+     "id": "malika_bow",
+     "type": "bow"
+    },
+    {
+     "id": "malika_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "malika_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "malika_shield",
+     "type": "shield"
+    },
+    {
+     "id": "malika_helmet",
+     "type": "head"
+    },
+    {
+     "id": "malika_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/malika/wings_worn"
+    },
+    {
+     "id": "malika_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "malika_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "malika_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "oni",
+   "name": "Oni",
+   "color": "#22d3ee",
+   "tier": "netherite+1.5",
+   "items": [
+    {
+     "id": "oni_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_big_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_axe",
+     "type": "axe"
+    },
+    {
+     "id": "oni_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "oni_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "oni_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "oni_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "oni_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "oni_spear",
+     "type": "sword"
+    },
+    {
+     "id": "oni_bow",
+     "type": "bow"
+    },
+    {
+     "id": "oni_shield",
+     "type": "shield"
+    },
+    {
+     "id": "oni_helmet",
+     "type": "head"
+    },
+    {
+     "id": "oni_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/oni/wings_worn"
+    },
+    {
+     "id": "oni_left_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_right_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_left_spear",
+     "type": "sword"
+    },
+    {
+     "id": "oni_right_spear",
+     "type": "sword"
+    },
+    {
+     "id": "oni_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "oni_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "oni_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "oni_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ]
+  },
+  {
+   "id": "starlight",
+   "name": "Luz de Estrella",
+   "color": "#eab308",
+   "items": [
+    {
+     "id": "starlight_sword",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_blade",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_axe",
+     "type": "axe"
+    },
+    {
+     "id": "starlight_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "starlight_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "starlight_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "starlight_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "starlight_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_spear",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_staff",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_bow",
+     "type": "bow"
+    },
+    {
+     "id": "starlight_shield",
+     "type": "shield"
+    },
+    {
+     "id": "starlight_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/starlight/wings_worn"
+    },
+    {
+     "id": "starlight_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "starlight_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "starlight_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "starlight_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ],
+   "tier": "netherite+2"
+  },
+  {
+   "id": "eagle",
+   "name": "Eagle Ascendant",
+   "color": "#f59e0b",
+   "tier": "netherite+3",
+   "items": [
+    {
+     "id": "eagle_sword",
+     "type": "sword"
+    },
+    {
+     "id": "eagle_rapier_sword",
+     "type": "sword"
+    },
+    {
+     "id": "eagle_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "eagle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "eagle_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "eagle_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "eagle_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "eagle_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "eagle_scythe",
+     "type": "sword"
+    },
+    {
+     "id": "eagle_spear",
+     "type": "sword"
+    },
+    {
+     "id": "eagle_trident",
+     "type": "trident"
+    },
+    {
+     "id": "eagle_staff",
+     "type": "sword"
+    },
+    {
+     "id": "eagle_bow",
+     "type": "bow"
+    },
+    {
+     "id": "eagle_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "eagle_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "eagle_shield",
+     "type": "shield"
+    },
+    {
+     "id": "eagle_hat",
+     "type": "head"
+    },
+    {
+     "id": "eagle_wing",
+     "type": "back",
+     "worn": "tfclient:item/sets/eagle/wing_worn"
+    },
+    {
+     "id": "eagle_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "eagle_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "eagle_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "eagle_armor_boots",
      "type": "armor",
      "slot": "boots"
     }
@@ -3926,7 +4702,8 @@
      "id": "nazgul_obsidian_bow",
      "type": "bow"
     }
-   ]
+   ],
+   "tier": "netherite+1"
   }
  ]
 }

@@ -59,9 +59,11 @@ Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libr
 - Con el mod **Better Combat**, cada arma usa la plantilla que le toca por su forma (espada, mandoble, daga, lanza,
   guadaña, bastón, alabarda, hacha, martillo, maza, puño...) y hace sus combos encadenando clics. Arcos, ballestas,
   cañas, escudos, palas y azadas se quedan como en Minecraft.
-- Valores de la netherita con **1 punto más** (desde la 1.3.5): +1 de daño en armas y herramientas; armaduras con +1
-  de armadura en cada pieza, dureza 4 y +1 de resistencia al empuje. No se queman en lava. Sus atributos **no salen en
-  la descripción del objeto** (decisión del dueño). La 1.3.4 los había bajado a hierro.
+- Cada set tiene su nivel de atributos (`tier` en `tf_sets.json`, ver `items/TFTier.java`): los de las crates, la
+  netherita con **1 punto más** (desde la 1.3.5: +1 de daño; armadura +1 en cada pieza, dureza 4 y 0,2 de resistencia
+  al empuje). Los de los rangos (1.3.6), de menor a mayor: Mortal hierro, Inmortal diamante, Mágico netherita,
+  Eterno +1, Cósmico +1,5, Celestial +2 y Fantástico +3. No se queman en lava. Sus atributos **no salen en la
+  descripción del objeto** (decisión del dueño).
 - Hace falta el TF Client **en el servidor y en todos los jugadores**, con la misma versión (Forge lo comprueba al
   conectar). Funciona en servidores Forge y Mohist.
 
@@ -162,7 +164,7 @@ abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cance
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.5.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.6.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

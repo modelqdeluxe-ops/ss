@@ -25,7 +25,8 @@ public final class TFSets {
      *  trident, head (cosmético en la cabeza), back (cosmético en la espalda) o armor. */
     public record ItemDef(String id, String type, String slot, String worn) {}
 
-    public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime) {}
+    /** tier: nivel de atributos del set (ver TFTier). */
+    public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime, TFTier tier) {}
 
     private static final Map<String, SetDef> SETS = new LinkedHashMap<>();
 
@@ -61,7 +62,8 @@ public final class TFSets {
                     SETS.put(s.get("id").getAsString(), new SetDef(
                             s.get("id").getAsString(), s.get("name").getAsString(), color, List.copyOf(items),
                             s.has("armorFrames") ? s.get("armorFrames").getAsInt() : 1,
-                            s.has("armorFrametime") ? Math.max(1, s.get("armorFrametime").getAsInt()) : 2));
+                            s.has("armorFrametime") ? Math.max(1, s.get("armorFrametime").getAsInt()) : 2,
+                            TFTier.parse(s.has("tier") ? s.get("tier").getAsString() : null)));
                 }
             }
             TFClient.LOGGER.info("TF Client: {} sets cargados", SETS.size());

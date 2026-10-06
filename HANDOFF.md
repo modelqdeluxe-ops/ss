@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **6 de octubre de 2026** (tarde). Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **6 de octubre de 2026** (noche). Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,7 +12,34 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (octubre de 2026): rediseño completo + cumplimiento de Mojang + páginas legales + TF Client 1.3.4 → 1.3.5
+### Última entrega (6 de octubre de 2026, noche): 7 rangos con su set, crates cambiadas y TF Client 1.3.6
+El dueño (textual, *«no lo repetiré 2 veces»*): rangos de mayor a menor **Fantástico** (kit Eagle Ascendant),
+**Celestial** (Luz de Estrella, sacado de las crates), **Cósmico** (Oni), **Eterno** (Malika), **Mágico** (Dark World),
+**Inmortal** (Beats, sacado de las crates) y **Mortal** (San Patricio, sacado de las crates). Los huecos de las crates
+los llenan **Akira** (donde estaba Luz de Estrella), **Cardael** (Beats) y **Evergreen** (San Patricio), y los kits
+subidos que no nombró van a crates: **Soul Skull** → hay **41 crates** (no 40) y 7 rangos. **Happy New Year 2026 NO
+se sube hasta que el dueño lo diga** (el zip se subió, pero no está en `SETS`).
+- Atributos de menor a mayor (pedido: *«el mínimo son atributos de hierro, diamante, netherita y los últimos 2 a más
+  2 o 3 puntos más que la netherita»*): Mortal **hierro**, Inmortal **diamante**, Mágico **netherita**, Eterno
+  **netherita +1**, Cósmico **+1,5**, Celestial **+2**, Fantástico **+3** (+N = N más de daño, de armadura por pieza y
+  de dureza). Eterno y Cósmico no los fijó el dueño: se eligieron para que suba en orden. Las crates siguen en +1.
+  Definidos en `RANKS` de `tools/crates.py` → `tier` en `tf_sets.json` → `items/TFTier.java`. Siguen ocultos.
+- **Precios de los rangos provisionales** (el dueño no los dio; Stripe en pausa): 4,99 / 7,99 / 11,99 / 15,99 /
+  19,99 / 24,99 / 29,99 USD, en `RANKS`. Cada rango da `lp user {player} parent add <grupo>` (grupos `mortal`,
+  `inmortal`, `magico`, `eterno`, `cosmico`, `celestial`, `fantastico`; **el dueño tiene que crearlos en LuckPerms**
+  con su prefijo) y `tf web sets give {player} <set>`. Al mejorar se quitan los grupos inferiores (ya existía).
+- La tarjeta del rango lleva la portada de su set y abre el probador (`/tienda#rangos-<clave>`). Los textos que
+  decían que los rangos «no dan ventaja» se quitaron (ahora dan un set con atributos).
+- Mod: `build_mod_items.py <packs> <set ...>` rehace **solo** esos sets y deja el resto (los packs originales de los
+  otros 40 no están en el contenedor). Se rehicieron eagle, akira, oni, malika, evergreen, darkworld, cardael y
+  soulskull; `check_mod_items.py` sin errores; cada set se revisó en el probador (frente, lado y espalda: las alas
+  quedan en la espalda) y cada objeto suelto. Dark World traía una animación que pedía un fotograma que no existe:
+  el script la corrige. Las alas de Eagle (a la altura de la cintura) y de Oni (algo bajas) se subieron con
+  `Y50_BY_TAG` en `build_mod_items.py`. Nuevos tipos: `crown` (cabeza) y `fishingrod` (caña).
+- Probador: en la vista «Objeto» solo se ponen de pie las armas y herramientas; cascos, alas y escudos se ven como en
+  el inventario (antes el casco de Dark World salía tumbado y las alas de Akira en vertical).
+
+### Entrega anterior (octubre de 2026): rediseño completo + cumplimiento de Mojang + páginas legales + TF Client 1.3.4 → 1.3.5
 El dueño rechazó el estilo «fantasía» (dorado, Cinzel, biseles): *«no veo un rediseño completo… todo está crudo…
 rediseña todo con otro concepto… es minecraft, la tipografía cámbiala pero no a una de píxeles… animaciones en los
 botones, transiciones, loading»*. Y después: *«revisa que nuestros productos no incumplan los términos de Mojang…
@@ -49,8 +76,8 @@ bueno del dueño, **salvo los atributos de las crates** (ver abajo):
 - **Rangos sin ventajas**: fuera kits de objetos, el «acceso al mundo de recursos» (no se puede cobrar por partes del
   servidor) y /ec. Quedan prefijo, hogares, /fly en el lobby, /hat y partículas, mascota cosmética, /nick, cola
   prioritaria, título y color, rol de Discord. **El dueño tiene que quitar en LuckPerms/EssentialsX los kits y /ec de
-  los rangos y abrir el mundo de recursos a todos** (se le dijo). Quiere que los rangos den **un set de armadura**: se
-  puede si es de aspecto (valores de hierro, como las crates). **Pendiente: que diga qué set lleva cada rango.**
+  los rangos y abrir el mundo de recursos a todos** (se le dijo). Después decidió que cada rango da un set completo
+  con atributos (ver «Última entrega»): los rangos actuales son los 7 de arriba.
 - **Atributos de las crates — DECISIÓN DEL DUEÑO (contra la recomendación):** la 1.3.4 los bajó a hierro para
   cumplir; el dueño pidió (*«ponles atributos 1 punto mayor a la netherita… no vamos a decir qué atributos tiene…
   mojang no se va a meter»*) y la **1.3.5** les pone la netherita +1 (+1 de daño; armadura 4/9/7/4, dureza 4,
@@ -215,13 +242,14 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.5)
+## 5. El mod (TF Client 1.3.6)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.5.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  → `build/libs/tfclient-1.20.1-1.3.6.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
-- Objetos de los sets (`items/TFItems.java` → `SET_TIER`, `TFItemTypes.Material`): netherita **+1** desde la 1.3.5
-  (decisión del dueño, ver sección 0), con los atributos ocultos en la descripción (`HIDE_ATTRIBUTES`).
+- Objetos de los sets (`items/TFTier.java`, `TFItems.create`, `TFItemTypes.Material`/`Armor`): cada set tiene su nivel
+  (`tier` en `tf_sets.json`: `iron`, `diamond`, `netherite` o `netherite+N`). Crates +1 (desde la 1.3.5, decisión del
+  dueño); rangos de hierro a +3 (1.3.6). Atributos ocultos en la descripción (`HIDE_ATTRIBUTES`).
 - Comandos (todos en `items/TFCommands.java`):
   - `/tf jobs` (todos; staff: `recargar`, `nivel`, `xp`, `reiniciar`; `ver <oficio>` lo usan los avisos del chat).
   - `/tf web sets list|give`, `/tf web tienda add|precio|quitar|lista|vaciar` (staff) y los que usa la web:
@@ -230,7 +258,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   reflexión en Mohist, monedas propias o comandos), `jobs/` (oficios, config `config/tfclient-jobs.json`),
   `menu/TFPanelMenu.java` + `client/TFPanelScreen.java` (ventana de oficios: 10 huecos de la rejilla en los huecos
   29-33/38-42 del cofre y 36 botones abajo; nunca el inventario del jugador).
-- Herramientas: `tools/build_mod_items.py <packs>` (modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
+- Herramientas: `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
   la espalda/cabeza según HMCCosmetics), `tools/check_mod_items.py`, `tools/build_jobs_gui.py <packs>` (arte de oficios
   sin los textos en inglés). Los packs descomprimidos no están en el repo (los subió el dueño en zips).
 
