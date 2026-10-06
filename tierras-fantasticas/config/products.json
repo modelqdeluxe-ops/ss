@@ -58,7 +58,8 @@
     "id": "rango-mortal",
     "category": "rangos",
     "name": "Rango Mortal",
-    "description": "Prefijo «Mortal» en tu nombre y el set San Patricio completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "Tu leyenda empieza aquí",
+    "description": "El primer paso del reino: tu nombre con color y un equipo completo para salir a la aventura desde el primer día.",
     "price": 499,
     "maxQuantity": 1,
     "discordRoles": [
@@ -162,14 +163,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Mortal» en el chat y sobre tu nombre",
-      "Set San Patricio completo (21 objetos)",
+      "Prefijo «Mortal» con color en el chat y sobre tu nombre",
+      "Set completo de 21 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Mortal en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Mortal",
-      "Set incluido": "San Patricio",
-      "Objetos del set": "21",
+      "Piezas del set": "21",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -183,7 +185,8 @@
     "id": "rango-inmortal",
     "category": "rangos",
     "name": "Rango Inmortal",
-    "description": "Prefijo «Inmortal» en tu nombre y el set Beats completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "Más fuerte que la muerte",
+    "description": "Un equipo de neón que late al ritmo de la batalla y un prefijo que todo el servidor va a reconocer.",
     "price": 799,
     "maxQuantity": 1,
     "discordRoles": [
@@ -287,14 +290,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Inmortal» en el chat y sobre tu nombre",
-      "Set Beats completo (21 objetos)",
+      "Prefijo «Inmortal» con color en el chat y sobre tu nombre",
+      "Set completo de 21 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Inmortal en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Inmortal",
-      "Set incluido": "Beats",
-      "Objetos del set": "21",
+      "Piezas del set": "21",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -308,7 +312,8 @@
     "id": "rango-magico",
     "category": "rangos",
     "name": "Rango Mágico",
-    "description": "Prefijo «Mágico» en tu nombre y el set Dark World completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "Domina la magia oscura",
+    "description": "Armas envueltas en energía arcana, armadura sombría y alas violetas que se ven desde lejos.",
     "price": 1199,
     "maxQuantity": 1,
     "discordRoles": [
@@ -408,14 +413,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Mágico» en el chat y sobre tu nombre",
-      "Set Dark World completo (20 objetos)",
+      "Prefijo «Mágico» con color en el chat y sobre tu nombre",
+      "Set completo de 20 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Mágico en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Mágico",
-      "Set incluido": "Dark World",
-      "Objetos del set": "20",
+      "Piezas del set": "20",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -429,7 +435,8 @@
     "id": "rango-eterno",
     "category": "rangos",
     "name": "Rango Eterno",
-    "description": "Prefijo «Eterno» en tu nombre y el set Malika completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "Forjado en fuego eterno",
+    "description": "Acero, fuego y alas en llamas: el equipo de quienes no piensan rendirse nunca.",
     "price": 1599,
     "maxQuantity": 1,
     "discordRoles": [
@@ -529,14 +536,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Eterno» en el chat y sobre tu nombre",
-      "Set Malika completo (20 objetos)",
+      "Prefijo «Eterno» con color en el chat y sobre tu nombre",
+      "Set completo de 20 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Eterno en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Eterno",
-      "Set incluido": "Malika",
-      "Objetos del set": "20",
+      "Piezas del set": "20",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -550,7 +558,8 @@
     "id": "rango-cosmico",
     "category": "rangos",
     "name": "Rango Cósmico",
-    "description": "Prefijo «Cósmico» en tu nombre y el set Oni completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "Más allá de las estrellas",
+    "description": "Armadura de guerrero demonio, armas de otro mundo y unas alas oscuras coronadas por un aro carmesí.",
     "price": 1999,
     "maxQuantity": 1,
     "discordRoles": [
@@ -654,14 +663,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Cósmico» en el chat y sobre tu nombre",
-      "Set Oni completo (21 objetos)",
+      "Prefijo «Cósmico» con color en el chat y sobre tu nombre",
+      "Set completo de 21 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Cósmico en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Cósmico",
-      "Set incluido": "Oni",
-      "Objetos del set": "21",
+      "Piezas del set": "21",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -675,7 +685,8 @@
     "id": "rango-celestial",
     "category": "rangos",
     "name": "Rango Celestial",
-    "description": "Prefijo «Celestial» en tu nombre y el set Luz de Estrella completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "Bendecido por los cielos",
+    "description": "Oro y luz de las constelaciones: el equipo de los elegidos, con alas blancas que brillan de verdad.",
     "price": 2499,
     "maxQuantity": 1,
     "discordRoles": [
@@ -767,14 +778,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Celestial» en el chat y sobre tu nombre",
-      "Set Luz de Estrella completo (18 objetos)",
+      "Prefijo «Celestial» con color en el chat y sobre tu nombre",
+      "Set completo de 18 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Celestial en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Celestial",
-      "Set incluido": "Luz de Estrella",
-      "Objetos del set": "18",
+      "Piezas del set": "18",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -788,7 +800,8 @@
     "id": "rango-fantastico",
     "category": "rangos",
     "name": "Rango Fantástico",
-    "description": "Prefijo «Fantástico» en tu nombre y el set Eagle Ascendant completo: armas, herramientas, armadura y cosméticos.",
+    "tagline": "La cima de Tierras Fantásticas",
+    "description": "El rango más alto del reino. Oro y sombra, alas majestuosas y el equipo más espectacular del servidor.",
     "price": 2999,
     "maxQuantity": 1,
     "discordRoles": [
@@ -896,14 +909,15 @@
       }
     ],
     "perks": [
-      "Prefijo «Fantástico» en el chat y sobre tu nombre",
-      "Set Eagle Ascendant completo (22 objetos)",
+      "Prefijo «Fantástico» con color en el chat y sobre tu nombre",
+      "Set completo de 22 piezas: armas, herramientas, armadura y alas animadas",
       "Rol Fantástico en Discord"
     ],
     "specs": {
       "Prefijo en el chat": "Fantástico",
-      "Set incluido": "Eagle Ascendant",
-      "Objetos del set": "22",
+      "Piezas del set": "22",
+      "Armadura completa": true,
+      "Alas animadas": true,
       "Rol en Discord": true
     },
     "rank": {
@@ -5152,6 +5166,951 @@
     ],
     "commands": [
       "tf web sets give {player} soulskull"
+    ]
+  },
+  {
+    "id": "cos-halloween23-pumpkin-warlock-hat",
+    "category": "cosmeticos",
+    "name": "Sombrero del Brujo Calabaza",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Brujo Calabaza. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Brujo Calabaza",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "pumpkin_warlock_hat",
+    "image": "img/items/halloween23/pumpkin_warlock_hat.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 pumpkin_warlock_hat"
+    ]
+  },
+  {
+    "id": "cos-halloween23-pumpkin-warlock-backpack",
+    "category": "cosmeticos",
+    "name": "Mochila del Brujo Calabaza",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Brujo Calabaza. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Brujo Calabaza",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "pumpkin_warlock_backpack",
+    "image": "img/items/halloween23/pumpkin_warlock_backpack.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 pumpkin_warlock_backpack"
+    ]
+  },
+  {
+    "id": "cos-halloween23-pumpkin-warlock-staff",
+    "category": "cosmeticos",
+    "name": "Bastón del Brujo Calabaza",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Brujo Calabaza. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Brujo Calabaza",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "pumpkin_warlock_staff",
+    "image": "img/items/halloween23/pumpkin_warlock_staff.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 pumpkin_warlock_staff"
+    ]
+  },
+  {
+    "id": "cos-halloween23-pumpkin-warlock-balloon",
+    "category": "cosmeticos",
+    "name": "Globo del Brujo Calabaza",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Brujo Calabaza. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Brujo Calabaza",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "pumpkin_warlock_balloon",
+    "image": "img/items/halloween23/pumpkin_warlock_balloon.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 pumpkin_warlock_balloon"
+    ]
+  },
+  {
+    "id": "cos-halloween23-spider-hat",
+    "category": "cosmeticos",
+    "name": "Sombrero de Araña",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Araña. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Araña",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "spider_hat",
+    "image": "img/items/halloween23/spider_hat.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 spider_hat"
+    ]
+  },
+  {
+    "id": "cos-halloween23-spider-legs-backpack",
+    "category": "cosmeticos",
+    "name": "Patas de Araña",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Araña. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Araña",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "spider_legs_backpack",
+    "image": "img/items/halloween23/spider_legs_backpack.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 spider_legs_backpack"
+    ]
+  },
+  {
+    "id": "cos-halloween23-spider-scythe",
+    "category": "cosmeticos",
+    "name": "Guadaña de Araña",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Araña. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Araña",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "spider_scythe",
+    "image": "img/items/halloween23/spider_scythe.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 spider_scythe"
+    ]
+  },
+  {
+    "id": "cos-halloween23-spider-balloon",
+    "category": "cosmeticos",
+    "name": "Globo de Araña",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Araña. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Araña",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "spider_balloon",
+    "image": "img/items/halloween23/spider_balloon.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 spider_balloon"
+    ]
+  },
+  {
+    "id": "cos-halloween23-undertaker-hat",
+    "category": "cosmeticos",
+    "name": "Sombrero del Sepulturero",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Sepulturero. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Sepulturero",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "undertaker_hat",
+    "image": "img/items/halloween23/undertaker_hat.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 undertaker_hat"
+    ]
+  },
+  {
+    "id": "cos-halloween23-undertaker-backpack",
+    "category": "cosmeticos",
+    "name": "Ataúd del Sepulturero",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Sepulturero. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Sepulturero",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "undertaker_backpack",
+    "image": "img/items/halloween23/undertaker_backpack.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 undertaker_backpack"
+    ]
+  },
+  {
+    "id": "cos-halloween23-undertaker-shovel",
+    "category": "cosmeticos",
+    "name": "Pala del Sepulturero",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Sepulturero. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Sepulturero",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "undertaker_shovel",
+    "image": "img/items/halloween23/undertaker_shovel.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 undertaker_shovel"
+    ]
+  },
+  {
+    "id": "cos-halloween23-undertaker-balloon",
+    "category": "cosmeticos",
+    "name": "Globo Zombi",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Sepulturero. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Sepulturero",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#fdba74",
+      "#f97316"
+    ],
+    "set": "halloween23",
+    "item": "undertaker_balloon",
+    "image": "img/items/halloween23/undertaker_balloon.webp",
+    "commands": [
+      "tf web sets give {player} halloween23 undertaker_balloon"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-halloween-witch-hat",
+    "category": "cosmeticos",
+    "name": "Sombrero de Bruja",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Bruja. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Bruja",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "halloween_witch_hat",
+    "image": "img/items/halloweenbundle/halloween_witch_hat.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle halloween_witch_hat"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-halloween-witch-cauldron",
+    "category": "cosmeticos",
+    "name": "Caldero de Bruja",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Bruja. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Bruja",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "halloween_witch_cauldron",
+    "image": "img/items/halloweenbundle/halloween_witch_cauldron.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle halloween_witch_cauldron"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-halloween-witch-broom",
+    "category": "cosmeticos",
+    "name": "Escoba de Bruja",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Bruja. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Bruja",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "halloween_witch_broom",
+    "image": "img/items/halloweenbundle/halloween_witch_broom.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle halloween_witch_broom"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-halloween-ghost-balloon",
+    "category": "cosmeticos",
+    "name": "Globo Fantasma",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Bruja. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Bruja",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "halloween_ghost_balloon",
+    "image": "img/items/halloweenbundle/halloween_ghost_balloon.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle halloween_ghost_balloon"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-spooky-pumpkin-hat",
+    "category": "cosmeticos",
+    "name": "Calabaza Tenebrosa",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Calabaza Tenebrosa. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Calabaza Tenebrosa",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "spooky_pumpkin_hat",
+    "image": "img/items/halloweenbundle/spooky_pumpkin_hat.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle spooky_pumpkin_hat"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-spooky-pumpkin-wings",
+    "category": "cosmeticos",
+    "name": "Alas de Calabaza",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Calabaza Tenebrosa. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Calabaza Tenebrosa",
+    "slot": "back",
+    "price": 299,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "spooky_pumpkin_wings",
+    "image": "img/items/halloweenbundle/spooky_pumpkin_wings.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle spooky_pumpkin_wings"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-spooky-pumpkin-staff",
+    "category": "cosmeticos",
+    "name": "Bastón de Calabaza",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Calabaza Tenebrosa. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Calabaza Tenebrosa",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "spooky_pumpkin_staff",
+    "image": "img/items/halloweenbundle/spooky_pumpkin_staff.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle spooky_pumpkin_staff"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-spooky-pumpkin-balloon",
+    "category": "cosmeticos",
+    "name": "Globo de Calabaza",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Calabaza Tenebrosa. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Calabaza Tenebrosa",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "spooky_pumpkin_balloon",
+    "image": "img/items/halloweenbundle/spooky_pumpkin_balloon.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle spooky_pumpkin_balloon"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-candy-pumpkin-beret",
+    "category": "cosmeticos",
+    "name": "Boina de Caramelo",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Caramelo. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Caramelo",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "candy_pumpkin_beret",
+    "image": "img/items/halloweenbundle/candy_pumpkin_beret.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle candy_pumpkin_beret"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-candy-pumpkin-backpack",
+    "category": "cosmeticos",
+    "name": "Mochila de Caramelo",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Caramelo. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Caramelo",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "candy_pumpkin_backpack",
+    "image": "img/items/halloweenbundle/candy_pumpkin_backpack.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle candy_pumpkin_backpack"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-candy-pumpkin-basket",
+    "category": "cosmeticos",
+    "name": "Cesta de Dulces",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Caramelo. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Caramelo",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "candy_pumpkin_basket",
+    "image": "img/items/halloweenbundle/candy_pumpkin_basket.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle candy_pumpkin_basket"
+    ]
+  },
+  {
+    "id": "cos-halloweenbundle-candy-pumpkin-balloon",
+    "category": "cosmeticos",
+    "name": "Globo de Caramelo",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Caramelo. Solo cambia tu aspecto.",
+    "collection": "Halloween",
+    "theme": "Caramelo",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#c4b5fd",
+      "#8b5cf6"
+    ],
+    "set": "halloweenbundle",
+    "item": "candy_pumpkin_balloon",
+    "image": "img/items/halloweenbundle/candy_pumpkin_balloon.webp",
+    "commands": [
+      "tf web sets give {player} halloweenbundle candy_pumpkin_balloon"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-knight-hat",
+    "category": "cosmeticos",
+    "name": "Yelmo de Caballero",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Caballero. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Caballero",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "knight_hat",
+    "image": "img/items/cosmeticsv1/knight_hat.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 knight_hat"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-knight-backpack",
+    "category": "cosmeticos",
+    "name": "Estandarte de Caballero",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Caballero. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Caballero",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "knight_backpack",
+    "image": "img/items/cosmeticsv1/knight_backpack.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 knight_backpack"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-knight-hand",
+    "category": "cosmeticos",
+    "name": "Espada de Caballero",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Caballero. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Caballero",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "knight_hand",
+    "image": "img/items/cosmeticsv1/knight_hand.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 knight_hand"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-wizard-hat",
+    "category": "cosmeticos",
+    "name": "Sombrero de Mago",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Mago. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Mago",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "wizard_hat",
+    "image": "img/items/cosmeticsv1/wizard_hat.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 wizard_hat"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-wizard-backpack",
+    "category": "cosmeticos",
+    "name": "Caldero de Mago",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Mago. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Mago",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "wizard_backpack",
+    "image": "img/items/cosmeticsv1/wizard_backpack.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 wizard_backpack"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-wizard-hand",
+    "category": "cosmeticos",
+    "name": "Libro de Hechizos",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Mago. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Mago",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "wizard_hand",
+    "image": "img/items/cosmeticsv1/wizard_hand.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 wizard_hand"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-ninja-hat",
+    "category": "cosmeticos",
+    "name": "Capucha Ninja",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Ninja. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Ninja",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "ninja_hat",
+    "image": "img/items/cosmeticsv1/ninja_hat.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 ninja_hat"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-ninja-backpack",
+    "category": "cosmeticos",
+    "name": "Mochila Ninja",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Ninja. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Ninja",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "ninja_backpack",
+    "image": "img/items/cosmeticsv1/ninja_backpack.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 ninja_backpack"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-ninja-hand",
+    "category": "cosmeticos",
+    "name": "Katanas Ninja",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Ninja. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Ninja",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "ninja_hand",
+    "image": "img/items/cosmeticsv1/ninja_hand.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 ninja_hand"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-frozen-hat",
+    "category": "cosmeticos",
+    "name": "Corona de Hielo",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Hielo. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Hielo",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "frozen_hat",
+    "image": "img/items/cosmeticsv1/frozen_hat.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 frozen_hat"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-frozen-backpack",
+    "category": "cosmeticos",
+    "name": "Mochila de Hielo",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Hielo. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Hielo",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "frozen_backpack",
+    "image": "img/items/cosmeticsv1/frozen_backpack.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 frozen_backpack"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-frozen-hand",
+    "category": "cosmeticos",
+    "name": "Espada de Hielo",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Hielo. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "Hielo",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "frozen_hand",
+    "image": "img/items/cosmeticsv1/frozen_hand.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 frozen_hand"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-ender-hat",
+    "category": "cosmeticos",
+    "name": "Sombrero del End",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección End. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "End",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "ender_hat",
+    "image": "img/items/cosmeticsv1/ender_hat.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 ender_hat"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-ender-backpack",
+    "category": "cosmeticos",
+    "name": "Mochila del End",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección End. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "End",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "ender_backpack",
+    "image": "img/items/cosmeticsv1/ender_backpack.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 ender_backpack"
+    ]
+  },
+  {
+    "id": "cos-cosmeticsv1-ender-hand",
+    "category": "cosmeticos",
+    "name": "Orbe del End",
+    "description": "Cosmético animado que se lleva en la mano, de la colección End. Solo cambia tu aspecto.",
+    "collection": "Aventura",
+    "theme": "End",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#93c5fd",
+      "#3b82f6"
+    ],
+    "set": "cosmeticsv1",
+    "item": "ender_hand",
+    "image": "img/items/cosmeticsv1/ender_hand.webp",
+    "commands": [
+      "tf web sets give {player} cosmeticsv1 ender_hand"
+    ]
+  },
+  {
+    "id": "cos-unicorncos-unicorn-hat",
+    "category": "cosmeticos",
+    "name": "Gorro de Unicornio",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Unicornio. Solo cambia tu aspecto.",
+    "collection": "Unicornio",
+    "theme": "Unicornio",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#fbcfe8",
+      "#ec4899"
+    ],
+    "set": "unicorncos",
+    "item": "unicorn_hat",
+    "image": "img/items/unicorncos/unicorn_hat.webp",
+    "commands": [
+      "tf web sets give {player} unicorncos unicorn_hat"
+    ]
+  },
+  {
+    "id": "cos-unicorncos-unicorn-backpack",
+    "category": "cosmeticos",
+    "name": "Mochila de Unicornio",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Unicornio. Solo cambia tu aspecto.",
+    "collection": "Unicornio",
+    "theme": "Unicornio",
+    "slot": "back",
+    "price": 249,
+    "maxQuantity": 1,
+    "colors": [
+      "#fbcfe8",
+      "#ec4899"
+    ],
+    "set": "unicorncos",
+    "item": "unicorn_backpack",
+    "image": "img/items/unicorncos/unicorn_backpack.webp",
+    "commands": [
+      "tf web sets give {player} unicorncos unicorn_backpack"
+    ]
+  },
+  {
+    "id": "cos-unicorncos-unicorn-staff",
+    "category": "cosmeticos",
+    "name": "Varita de Unicornio",
+    "description": "Cosmético animado que se lleva en la mano, de la colección Unicornio. Solo cambia tu aspecto.",
+    "collection": "Unicornio",
+    "theme": "Unicornio",
+    "slot": "held",
+    "price": 149,
+    "maxQuantity": 1,
+    "colors": [
+      "#fbcfe8",
+      "#ec4899"
+    ],
+    "set": "unicorncos",
+    "item": "unicorn_staff",
+    "image": "img/items/unicorncos/unicorn_staff.webp",
+    "commands": [
+      "tf web sets give {player} unicorncos unicorn_staff"
+    ]
+  },
+  {
+    "id": "cos-unicorncos-unicorn-balloon",
+    "category": "cosmeticos",
+    "name": "Globo de Unicornio",
+    "description": "Cosmético animado que se lleva flotando sobre ti (lo llevas en la mano), de la colección Unicornio. Solo cambia tu aspecto.",
+    "collection": "Unicornio",
+    "theme": "Unicornio",
+    "slot": "balloon",
+    "price": 99,
+    "maxQuantity": 1,
+    "colors": [
+      "#fbcfe8",
+      "#ec4899"
+    ],
+    "set": "unicorncos",
+    "item": "unicorn_balloon",
+    "image": "img/items/unicorncos/unicorn_balloon.webp",
+    "commands": [
+      "tf web sets give {player} unicorncos unicorn_balloon"
+    ]
+  },
+  {
+    "id": "cos-springcos-helmet",
+    "category": "cosmeticos",
+    "name": "Corona de Primavera",
+    "description": "Cosmético animado que se lleva en la cabeza, de la colección Primavera. Solo cambia tu aspecto.",
+    "collection": "Primavera",
+    "theme": "Primavera",
+    "slot": "head",
+    "price": 199,
+    "maxQuantity": 1,
+    "colors": [
+      "#fda4af",
+      "#f43f5e"
+    ],
+    "set": "springcos",
+    "item": "helmet",
+    "image": "img/items/springcos/helmet.webp",
+    "commands": [
+      "tf web sets give {player} springcos helmet"
+    ]
+  },
+  {
+    "id": "cos-springcos-wings",
+    "category": "cosmeticos",
+    "name": "Alas de Primavera",
+    "description": "Cosmético animado que se lleva en la espalda, de la colección Primavera. Solo cambia tu aspecto.",
+    "collection": "Primavera",
+    "theme": "Primavera",
+    "slot": "back",
+    "price": 299,
+    "maxQuantity": 1,
+    "colors": [
+      "#fda4af",
+      "#f43f5e"
+    ],
+    "set": "springcos",
+    "item": "wings",
+    "image": "img/items/springcos/wings.webp",
+    "commands": [
+      "tf web sets give {player} springcos wings"
     ]
   }
 ]

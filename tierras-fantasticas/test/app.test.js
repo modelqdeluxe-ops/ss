@@ -432,6 +432,22 @@ test('una crate es el set completo: se compra una vez y llega entero al juego', 
   assert.deepStrictEqual(received, ['tf web sets give Alex necros']);
 });
 
+test('un cosmético se compra por pieza y llega solo esa pieza al juego', async () => {
+  const list = await (await get('/api/products')).json();
+  const cos = list.filter((p) => p.category === 'cosmeticos');
+  assert.ok(cos.length > 0 && cos.every((p) => p.set && p.item && p.slot && p.theme && p.collection && p.description));
+  const balloon = cos.find((p) => p.id === 'cos-halloween23-spider-balloon');
+  assert.strictEqual(balloon.slot, 'balloon');
+
+  received.length = 0;
+  await seen('Globos_MC');
+  const id = await checkout({ productId: balloon.id, username: 'Globos_MC' });
+  assert.strictEqual(sessionOf(id).amount_total, balloon.price);
+  await pay(id);
+  await serverDelivers('Globos_MC');
+  assert.deepStrictEqual(received, ['tf web sets give Globos_MC halloween23 spider_balloon']);
+});
+
 test('la ruleta da premios por su probabilidad (armas solo de vez en cuando) y la compra dice cuáles tocaron', async () => {
   const list = await (await get('/api/products')).json();
   const spin = list.find((p) => p.id === 'ruleta-10');

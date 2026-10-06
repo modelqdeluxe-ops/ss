@@ -29,11 +29,15 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     `tools/legal.py`. El aviso de no afiliación sale en el pie de todas las páginas, en la tienda y en la ventana de
     compra. Contacto público: tierrasfantasticasmc@gmail.com.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).
-  - **Rangos** (`/tienda#rangos`), de menor a mayor: Mortal (set San Patricio), Inmortal (Beats), Mágico (Dark World),
+  - **Cosméticos** (`/tienda#cosmeticos`): piezas sueltas de aspecto (sombreros, mochilas, alas, globos y objetos de
+    mano) de varias colecciones, en `COSMETICS` de `tools/crates.py`. Un escenario 3D con el personaje y lo que te
+    pruebas (se pueden combinar colecciones) y la compra de cada pieza (`tf web sets give {player} <set> <pieza>`).
+  - **Rangos** (`/tienda#rangos`): escalera de rangos y un escaparate con el personaje (tu skin) y el set del rango
+    puesto, el nombre con su prefijo flotando encima y el texto de venta (`RANK_PITCH`; nunca el nombre del kit). De menor a mayor: Mortal (set San Patricio), Inmortal (Beats), Mágico (Dark World),
     Eterno (Malika), Cósmico (Oni), Celestial (Luz de Estrella) y Fantástico (Eagle Ascendant). Cada uno da su grupo
     de LuckPerms, su prefijo con color, el rol de Discord y su set completo (`tf web sets give`). La tabla `RANKS` de
-    `tools/crates.py` los define (con el nivel de atributos de su set); al tocar la imagen se abre el mismo probador
-    que en las crates (`/tienda#rangos-mortal`). Tabla para comparar debajo.
+    `tools/crates.py` los define (con el nivel de atributos de su set); `/tienda#rangos-mortal` abre uno. Tabla para
+    comparar debajo.
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.

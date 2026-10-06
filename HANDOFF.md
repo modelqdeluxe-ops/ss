@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **6 de octubre de 2026** (noche). Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **7 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,7 +12,32 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (6 de octubre de 2026, noche): 7 rangos con su set, crates cambiadas y TF Client 1.3.6
+### Última entrega (7 de octubre de 2026): pestaña de rangos nueva, pestaña de cosméticos y TF Client 1.3.7
+El dueño: *«no me gusta esa pestaña de rangos… no quiero que se vea como la pestaña de crates… sus beneficios no digas
+el nombre del kit, tampoco en la tienda de monedas digas actualizado en tiempo real… presenta el set completo animado
+como si lo tuviera equipado y la foto de mi skin… vende mejor los rangos… y agrega una pestaña de cosméticos… véndelos
+bonito, con sus animaciones»*.
+- **Rangos** (`renderRanks`/`showRank` en app.js, estilos «Rangos: la escalera y el escaparate»): escalera de los 7
+  rangos arriba y un escaparate con UN solo lienzo 3D: el personaje con la skin del jugador (la de su cuenta o la que
+  escriba en «Skin de») y el set del rango puesto, girando; el nombre `[Prefijo] Jugador` flota sobre la cabeza y la
+  sombra sigue los pies (`onAnchors` de wardrobe.js). Al lado: «Rango N de 7», nombre en su color, frase, texto de
+  venta (`RANK_PITCH` en crates.py), cómo se ve en el chat, ventajas, piezas y comprar/mejorar. **Nunca se nombra el
+  kit** (ni en ventajas ni en la tabla). `/tienda#rangos-<clave>` elige un rango.
+- **Tienda de monedas**: quitado «Actualizado en vivo desde el servidor».
+- **Cosméticos** (pestaña nueva, `renderCosmetics`): 45 piezas de 5 packs (Halloween 2023, Halloween Bundle,
+  Cosmetics Expansion Vol. 1, Unicornio y las alas + corona del Spring Season), en `COSMETICS` de crates.py (colección,
+  tema, tipo y precio por pieza, **precios provisionales**: cabeza 1,99, espalda 2,49/2,99, mano 1,49, globo 0,99).
+  Escenario 3D con lo que te pruebas (se combinan piezas de distintas colecciones), filtros por colección, «Probar
+  conjunto» y compra por pieza (`tf web sets give {player} <set> <pieza>`). Solo aspecto, sin atributos.
+- Del pack **Spring Season** solo se usan las alas y la corona (sus cosméticos); sus armas y armadura no están en la
+  web: si el dueño lo quiere, puede ser una crate más.
+- Mod 1.3.7: tipos nuevos `held` (cosmético en la mano, `TFItemTypes.Held`) y `balloon` (globo: va en la mano y
+  flota por encima con su cuerda; `balloon_display` en build_mod_items.py encoge el modelo para que quepa en los
+  límites de Minecraft e inclina la cuerda hacia fuera). `hmc_worn.py` ahora resuelve los cosméticos que HMCCosmetics
+  pide por número (material + model-data) con la config de ItemsAdder. Revisado cada conjunto puesto en el probador.
+- Probador: ya dibuja lo de la mano izquierda (globos y escudos), como Minecraft (reflejado).
+
+### Entrega anterior (6 de octubre de 2026, noche): 7 rangos con su set, crates cambiadas y TF Client 1.3.6
 El dueño (textual, *«no lo repetiré 2 veces»*): rangos de mayor a menor **Fantástico** (kit Eagle Ascendant),
 **Celestial** (Luz de Estrella, sacado de las crates), **Cósmico** (Oni), **Eterno** (Malika), **Mágico** (Dark World),
 **Inmortal** (Beats, sacado de las crates) y **Mortal** (San Patricio, sacado de las crates). Los huecos de las crates
@@ -242,10 +267,10 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.6)
+## 5. El mod (TF Client 1.3.7)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.6.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  → `build/libs/tfclient-1.20.1-1.3.7.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
 - Objetos de los sets (`items/TFTier.java`, `TFItems.create`, `TFItemTypes.Material`/`Armor`): cada set tiene su nivel
   (`tier` en `tf_sets.json`: `iron`, `diamond`, `netherite` o `netherite+N`). Crates +1 (desde la 1.3.5, decisión del

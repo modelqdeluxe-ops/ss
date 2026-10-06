@@ -22,7 +22,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  */
 public final class TFSets {
     /** Un objeto de un set. type: sword, heavy, axe, pickaxe, shovel, hoe, bow, crossbow, fishing_rod, shield,
-     *  trident, head (cosmético en la cabeza), back (cosmético en la espalda) o armor. */
+     *  trident, head (cosmético en la cabeza), back (cosmético en la espalda), held (cosmético en la mano), balloon
+     *  (globo en la mano) o armor. */
     public record ItemDef(String id, String type, String slot, String worn) {}
 
     /** tier: nivel de atributos del set (ver TFTier). */

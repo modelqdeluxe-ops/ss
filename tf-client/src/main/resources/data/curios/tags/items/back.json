@@ -54,6 +54,19 @@
   "tfclient:malika_wings",
   "tfclient:oni_wings",
   "tfclient:starlight_wings",
-  "tfclient:eagle_wing"
+  "tfclient:eagle_wing",
+  "tfclient:halloween23_pumpkin_warlock_backpack",
+  "tfclient:halloween23_spider_legs_backpack",
+  "tfclient:halloween23_undertaker_backpack",
+  "tfclient:halloweenbundle_halloween_witch_cauldron",
+  "tfclient:halloweenbundle_spooky_pumpkin_wings",
+  "tfclient:halloweenbundle_candy_pumpkin_backpack",
+  "tfclient:cosmeticsv1_knight_backpack",
+  "tfclient:cosmeticsv1_wizard_backpack",
+  "tfclient:cosmeticsv1_ninja_backpack",
+  "tfclient:cosmeticsv1_frozen_backpack",
+  "tfclient:cosmeticsv1_ender_backpack",
+  "tfclient:unicorncos_unicorn_backpack",
+  "tfclient:springcos_wings"
  ]
 }

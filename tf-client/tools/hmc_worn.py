@@ -36,7 +36,8 @@ def _overrides(pack_dir):
 
 
 def _itemsadder(pack_dir):
-    """id de ItemsAdder → modelo."""
+    """id de ItemsAdder → modelo. También (material, model_id) → modelo, para los packs cuyo HMCCosmetics los pide
+    por número (material + model-data) sin traer los JSON de Minecraft que los enlazan."""
     out = {}
     for f in glob.glob(os.path.join(pack_dir, '**', 'configs', '**', '*.yml'), recursive=True):
         try:
@@ -51,6 +52,8 @@ def _itemsadder(pack_dir):
             path = res.get('model_path')
             if ns and path:
                 out[f'{ns}:{key}'] = f'{ns}:{path}'
+                if res.get('material') and res.get('model_id') is not None:
+                    out.setdefault((str(res['material']).lower(), int(res['model_id'])), f'{ns}:{path}')
     return out
 
 
@@ -81,6 +84,9 @@ def worn_models(pack_dir):
             elif item.get('model-data') is not None:
                 overrides = overrides if overrides is not None else _overrides(pack_dir)
                 ref = overrides.get((mat.lower(), int(item['model-data'])))
+                if not ref:
+                    ia = ia if ia is not None else _itemsadder(pack_dir)
+                    ref = ia.get((mat.lower(), int(item['model-data'])))
             if ref and (entry['slot'], ref) not in seen:
                 seen.add((entry['slot'], ref))
                 result[entry['slot']].append(ref)

@@ -2631,14 +2631,588 @@ body:not([data-hero]) .header::before {
   font-size: 14px;
 }
 
-/* Comparativa de rangos: los cuatro caben también en el móvil */
+/* ---------- Rangos: la escalera y el escaparate con el personaje (un solo lienzo 3D) ---------- */
+/* Una sola columna (la regla general de .products pone varias desde 960px) */
+.products.rank-shop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* La escalera de rangos, de menor a mayor; en el móvil se desliza de lado */
+.rk-ladder {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 92px;
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.rk-ladder::-webkit-scrollbar {
+  display: none;
+}
+
+.rk-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 12px 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  scroll-snap-align: center;
+  transition:
+    background-color 0.3s,
+    border-color 0.3s,
+    transform 0.3s var(--ease);
+}
+
+.rk-step:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rk-step[aria-pressed='true'] {
+  border-color: color-mix(in srgb, var(--rk) 55%, transparent);
+  background: linear-gradient(180deg, var(--rk3), transparent 90%);
+}
+
+.rk-gem {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--rk2, var(--t1)), var(--rk, var(--t2)));
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+  transform: rotate(45deg);
+  transition:
+    transform 0.4s var(--spring),
+    box-shadow 0.4s;
+}
+
+.rk-step[aria-pressed='true'] .rk-gem {
+  transform: rotate(45deg) scale(1.3);
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.35),
+    0 0 18px var(--rk);
+}
+
+.rk-step-name {
+  font: 700 11px/1.1 var(--font-display);
+  color: var(--rk2);
+  white-space: nowrap;
+}
+
+.rk-step-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.rk-step[aria-pressed='true'] .rk-step-price {
+  color: var(--text);
+}
+
+.rk-show {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  border: 1px solid color-mix(in srgb, var(--rk) 35%, var(--bd));
+  background:
+    radial-gradient(90% 60% at 30% 35%, var(--rk3), transparent 70%),
+    linear-gradient(180deg, var(--s1), var(--bg-2));
+  box-shadow: 0 30px 60px -36px var(--rk);
+  transition:
+    border-color 0.5s,
+    box-shadow 0.6s;
+}
+
+/* El escenario del personaje: brillo del color del rango y una sombra en el suelo */
+.rk-stage,
+.cos-stage {
+  position: relative;
+  isolation: isolate;
+  height: 440px;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.rk-stage:active,
+.cos-stage:active {
+  cursor: grabbing;
+}
+
+.rk-stage canvas,
+.cos-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.rk-aura {
+  position: absolute;
+  inset: 8% 14% 16%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--rk, var(--t2, var(--g-400))), transparent 75%);
+  opacity: 0.45;
+  animation: crate-pulse 4s ease-in-out infinite;
+}
+
+.rk-floor {
+  position: absolute;
+  top: var(--feet-y, 93%);
+  left: var(--feet-x, 50%);
+  z-index: -1;
+  width: 190px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
+  box-shadow: 0 0 40px -6px var(--rk3, var(--t3, transparent));
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.4s;
+}
+
+.anchored .rk-floor,
+.anchored .rk-nametag {
+  opacity: 1;
+}
+
+.rk-stage .viewer-status,
+.cos-stage .viewer-status {
+  inset: 50% 0 auto;
+}
+
+/* Nombre sobre la cabeza, como en el juego: sigue a la cabeza al girar */
+.rk-nametag {
+  position: absolute;
+  top: var(--head-y, 16px);
+  left: var(--head-x, 50%);
+  max-width: calc(100% - 24px);
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  font: 700 14px/1.3 var(--font-body);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.rk-tag-prefix {
+  margin-right: 6px;
+  color: var(--rk);
+}
+
+.rk-stage .rk-skin,
+.cos-stage .rk-skin {
+  top: auto;
+  right: auto;
+  bottom: 12px;
+  left: 12px;
+}
+
+.rk-drag {
+  position: absolute;
+  right: 14px;
+  bottom: 24px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+.rk-info {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px 22px;
+  border-top: 1px solid var(--bd);
+}
+
+/* Al cambiar de rango, el texto entra de nuevo */
+.rk-anim {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  animation: rise 0.55s var(--ease) both;
+}
+
+.rk-tier {
+  font: 800 11.5px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rk2);
+}
+
+.rk-name {
+  margin: 10px 0 0;
+  font: 800 clamp(38px, 9vw, 64px) / 1 var(--font-display);
+  color: var(--rk);
+  text-shadow: 0 0 44px var(--rk3);
+  overflow-wrap: anywhere;
+}
+
+.rk-tagline {
+  margin: 10px 0 0;
+  font: 700 17px/1.35 var(--font-display);
+  color: var(--text);
+}
+
+.rk-pitch {
+  margin: 10px 0 0;
+  color: var(--text-2);
+  font-size: 15px;
+}
+
+/* Así se ve el nombre en el chat del juego */
+.rk-chat {
+  align-self: flex-start;
+  max-width: 100%;
+  margin-top: 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rk-chat-prefix {
+  color: var(--rk);
+  font-weight: 800;
+}
+
+.rk-chat-msg {
+  color: var(--text-2);
+}
+
+.rk-perks {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rk-perks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14.5px;
+}
+
+.rk-perks svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 4px;
+  border-radius: 7px;
+  background: var(--rk3);
+  color: var(--rk2);
+}
+
+/* Las piezas del set, sin cajas: solo los objetos */
+.rk-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin-top: 18px;
+}
+
+.rk-piece img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  transition: transform 0.3s var(--spring);
+}
+
+.rk-piece:hover img {
+  transform: translateY(-3px) scale(1.15);
+}
+
+.rk-more {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.rk-buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.rk-price small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rk-price-main {
+  font: 800 30px/1.1 var(--font-display);
+}
+
+.btn-rank {
+  --a: var(--rk2);
+  --b: var(--rk);
+  --lip: color-mix(in srgb, var(--rk) 50%, #000);
+  --fg: #0b0b10;
+  --glow: var(--rk3);
+}
+
+/* ---------- Cosméticos: el personaje con lo que te pruebas y las colecciones al lado ---------- */
+.cos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+/* En el móvil el escenario se queda arriba mientras bajas por la lista */
+.cos-stage-col {
+  position: sticky;
+  top: calc(var(--header-h) + 6px);
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding-bottom: 6px;
+  background: var(--bg);
+}
+
+.cos-stage {
+  height: 270px;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  border: 1px solid color-mix(in srgb, var(--t2, var(--g-400)) 30%, var(--bd));
+  background:
+    radial-gradient(80% 60% at 50% 40%, var(--t3, rgba(74, 222, 128, 0.2)), transparent 70%),
+    linear-gradient(180deg, var(--s1), var(--bg-2));
+}
+
+.cos-stage .rk-drag {
+  display: none;
+}
+
+.cos-buy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 8px 8px 8px 10px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+}
+
+.cos-buy-art img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.cos-buy-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cos-buy-text small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.cos-buy-text b {
+  display: block;
+  overflow: hidden;
+  font-size: 14.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cos-buy .btn {
+  flex: none;
+  padding: 0 14px;
+}
+
+.cos-head h2 {
+  margin: 0;
+}
+
+.cos-head p {
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+.cos-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chip {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--bd-2);
+  background: var(--s1);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background-color 0.25s,
+    border-color 0.25s,
+    color 0.25s;
+}
+
+.chip:hover {
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--g-400);
+  background: rgba(74, 222, 128, 0.14);
+  color: var(--g-200);
+}
+
+.cos-themes {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.cos-theme {
+  padding: 14px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--bd);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--t2, var(--g-400)) 9%, transparent), transparent 120px),
+    var(--s1);
+  animation: rise 0.5s var(--ease) both;
+}
+
+.cos-theme header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cos-theme h3 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--t1, var(--text));
+}
+
+.cos-pieces {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cos-piece {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px 8px 9px;
+  border-radius: 14px;
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.35s var(--ease),
+    border-color 0.25s,
+    background-color 0.25s,
+    box-shadow 0.35s;
+}
+
+.cos-piece:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--t2, var(--g-400)) 60%, transparent);
+}
+
+.cos-piece[aria-pressed='true'] {
+  border-color: var(--t2, var(--g-400));
+  background: color-mix(in srgb, var(--t2, var(--g-400)) 14%, var(--s2));
+  box-shadow: 0 14px 30px -18px var(--t2, var(--g-400));
+}
+
+.cos-art img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.45));
+  transition: transform 0.35s var(--spring);
+}
+
+.cos-piece:hover .cos-art img {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.cos-name {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.cos-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.cos-meta b {
+  color: var(--text);
+}
+
+/* Comparativa de rangos: en el móvil se desliza de lado dentro de su caja */
 .compare {
   margin-top: 36px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .compare table {
   width: 100%;
+  min-width: 600px;
   table-layout: fixed;
   border-collapse: collapse;
   font-size: 12px;
@@ -2676,15 +3250,14 @@ body:not([data-hero]) .header::before {
 
 .compare thead th {
   padding-top: 18px;
+  color: var(--t1, var(--text));
   font: 700 9.5px/1.2 var(--font-display);
   letter-spacing: 0;
   vertical-align: bottom;
 }
 
-.compare thead img {
-  width: 34px;
-  height: 34px;
-  margin: 0 auto 8px;
+.compare thead .rk-gem {
+  margin: 0 auto 10px;
 }
 
 .compare .yes {
@@ -3072,22 +3645,6 @@ body:not([data-hero]) .header::before {
 .coin-head p {
   margin: 8px 0 0;
   font-size: 15px;
-}
-
-.live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 13px;
-  border-radius: 999px;
-  border: 1px solid rgba(74, 222, 128, 0.3);
-  background: rgba(74, 222, 128, 0.08);
-  color: var(--g-300);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .coin-grid {
@@ -4268,7 +4825,8 @@ body:not([data-hero]) .header::before {
     transform 0.35s var(--spring);
 }
 
-.cv-item.worn .worn-dot {
+.cv-item.worn .worn-dot,
+.cos-piece.worn .worn-dot {
   opacity: 1;
   transform: none;
 }
@@ -4511,6 +5069,22 @@ body:not([data-hero]) .header::before {
     --gutter: 28px;
   }
 
+  .rk-stage {
+    height: 520px;
+  }
+
+  .rk-info {
+    padding: 30px 30px 26px;
+  }
+
+  .cos-stage {
+    height: 340px;
+  }
+
+  .cos-pieces {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .section {
     padding-block: 88px;
   }
@@ -4681,6 +5255,46 @@ body:not([data-hero]) .header::before {
 /* ---------- Escritorio ---------- */
 
 @media (min-width: 960px) {
+  .rk-ladder {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .rk-show {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+
+  .rk-stage {
+    height: auto;
+    min-height: 620px;
+  }
+
+  .rk-info {
+    padding: 42px 42px 36px;
+    border-top: 0;
+    border-left: 1px solid var(--bd);
+  }
+
+  .cos-layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+    gap: 26px;
+  }
+
+  .cos-stage-col {
+    top: calc(var(--header-h) + 16px);
+    padding: 0;
+    background: none;
+  }
+
+  .cos-stage {
+    height: min(66vh, 600px);
+  }
+
+  .cos-pieces {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
   :root {
     --header-h: 78px;
   }
