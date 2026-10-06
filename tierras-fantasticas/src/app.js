@@ -162,7 +162,7 @@ export function createApp(env) {
       currency: order.currency,
       upgradeFrom: order.rankFrom ? productById.get(order.rankFrom)?.name || null : null,
       prizes: order.prizes
-        ? order.prizes.map((p) => ({ ...p, thumb: product?.set ? `/img/items/${product.set}/${p.id}.webp` : null }))
+        ? order.prizes.map((p) => ({ ...p, thumb: p.icon || (product?.set ? `/img/items/${product.set}/${p.id}.webp` : null) }))
         : null,
       refunded: order.refunded || null,
       createdAt: order.createdAt,
@@ -219,6 +219,7 @@ export function createApp(env) {
       json(
         products.map(({ commands, discordRoles, ...p }) => ({
           ...p,
+          ...(p.pool ? { pool: p.pool.map(({ give, ...entry }) => entry) } : {}),
           discordRole: discord.rolesEnabled && productRoles({ discordRoles }).length > 0,
         })),
       ),
@@ -724,6 +725,28 @@ export function createApp(env) {
     return fulfill(local, ctx, paymentIntent);
   }
 
+  const random = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
+
+  /** Premios de la ruleta: cada giro sale de product.pool por su probabilidad; el premio «arma» es una al azar. */
+  function spinRoulette(product, spins) {
+    const pool = product.pool || [];
+    const weapons = product.models || [];
+    const total = pool.reduce((sum, p) => sum + p.chance, 0);
+    const out = [];
+    for (let i = 0; i < spins && total > 0; i++) {
+      let r = random() * total;
+      const entry = pool.find((p) => (r -= p.chance) < 0) || pool[pool.length - 1];
+      if (entry.weapon && weapons.length) {
+        const w = weapons[Math.floor(random() * weapons.length)];
+        out.push({ id: w.id, name: w.name, weapon: true, icon: `/img/items/${product.set}/${w.id}.webp`,
+          commands: [`tf web sets give {player} ${product.set} ${w.id}`] });
+      } else if (!entry.weapon) {
+        out.push({ id: entry.id, name: entry.name, icon: entry.icon, commands: entry.give || [] });
+      }
+    }
+    return out;
+  }
+
   // Pedido pagado (o regalo reclamado): a la cola del puente, rango, rol y anuncio en Discord.
   async function fulfill(local, ctx, paymentIntent) {
     const id = local.id;
@@ -732,17 +755,12 @@ export function createApp(env) {
     // Los comandos se guardan con {player}/{uuid}: el mod los rellena al entregar con el nombre actual del UUID.
     const commands = [];
     for (let i = 0; i < local.quantity; i++) commands.push(...product.commands);
-    // Ruleta de armas: cada giro es un arma al azar del set, elegida aquí (no en el navegador).
+    // Ruleta: cada giro es un premio al azar según su probabilidad, elegido aquí (no en el navegador).
     let prizes = null;
     if (product.category === 'ruleta') {
-      const pool = product.models || [];
-      const spins = (product.spins || 1) * local.quantity;
-      prizes = [];
-      for (let i = 0; i < spins && pool.length; i++) {
-        const pick = pool[crypto.getRandomValues(new Uint32Array(1))[0] % pool.length];
-        prizes.push({ id: pick.id, name: pick.name });
-        commands.push(`tf web sets give {player} ${product.set} ${pick.id}`);
-      }
+      prizes = spinRoulette(product, (product.spins || 1) * local.quantity);
+      for (const prize of prizes) commands.push(...prize.commands);
+      prizes = prizes.map(({ commands: _c, ...p }) => p);
       await store.updateOrder(id, { prizes });
     }
     if (rank) {

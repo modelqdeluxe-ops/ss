@@ -19,8 +19,7 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Menú de cofre del servidor que sirve de botonera: los objetos no se pueden coger ni mover, y cada hueco puede tener
- * una acción al hacer clic. Funciona con el cofre normal de Minecraft; con el TF Client instalado, los menús con
- * {@link TFMenuStyle} se dibujan además con su fondo propio.
+ * una acción al hacer clic. Es el cofre normal de Minecraft (la tienda de monedas); los oficios usan {@link TFPanelMenu}.
  */
 public final class TFMenu extends ChestMenu {
     /** Lo que pasa al hacer clic en un hueco. */

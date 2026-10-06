@@ -431,26 +431,40 @@ test('una crate es el set completo: se compra una vez y llega entero al juego', 
   assert.deepStrictEqual(received, ['tf web sets give Alex necros']);
 });
 
-test('la ruleta de armas elige las armas al pagar y la compra dice cuáles tocaron', async () => {
+test('la ruleta da premios por su probabilidad (armas solo de vez en cuando) y la compra dice cuáles tocaron', async () => {
   const list = await (await get('/api/products')).json();
-  const spin = list.find((p) => p.id === 'ruleta-5');
+  const spin = list.find((p) => p.id === 'ruleta-10');
   assert.strictEqual(spin.category, 'ruleta');
-  assert.strictEqual(spin.spins, 5);
+  assert.strictEqual(spin.spins, 10);
+  assert.strictEqual(spin.pool.reduce((s, p) => s + p.chance, 0), 100);
+  assert.ok(spin.pool.every((p) => !('give' in p)), 'los comandos de los premios no salen en la API');
+  const weaponChance = spin.pool.filter((p) => p.weapon).reduce((s, p) => s + p.chance, 0);
+  assert.ok(weaponChance > 0 && weaponChance <= 10, 'las armas son el premio raro');
   const weapons = new Map(spin.models.map((m) => [m.id, m.name]));
-  assert.strictEqual(weapons.size, 30);
+  const pool = new Map(spin.pool.map((p) => [p.id, p]));
 
   received.length = 0;
   await seen('Ruleta_MC');
-  const id = await checkout({ productId: 'ruleta-5', username: 'Ruleta_MC' });
+  const id = await checkout({ productId: 'ruleta-10', username: 'Ruleta_MC' });
+  assert.strictEqual(sessionOf(id).amount_total, spin.price);
   await pay(id);
   const order = await (await get(`/api/order/${id}`)).json();
-  assert.strictEqual(order.prizes.length, 5);
+  assert.strictEqual(order.prizes.length, 10);
   for (const prize of order.prizes) {
-    assert.strictEqual(weapons.get(prize.id), prize.name);
-    assert.strictEqual(prize.thumb, `/img/items/nazgul/${prize.id}.webp`);
+    if (prize.weapon) {
+      assert.strictEqual(weapons.get(prize.id), prize.name);
+      assert.strictEqual(prize.thumb, `/img/items/nazgul/${prize.id}.webp`);
+    } else {
+      assert.strictEqual(pool.get(prize.id).name, prize.name);
+      assert.strictEqual(prize.thumb, pool.get(prize.id).icon);
+    }
   }
   await serverDelivers('Ruleta_MC');
-  assert.deepStrictEqual(received, order.prizes.map((p) => `tf web sets give Ruleta_MC nazgul ${p.id}`));
+  const full = products.find((p) => p.id === 'ruleta-10');
+  const expected = order.prizes.flatMap((p) =>
+    p.weapon ? [`tf web sets give Ruleta_MC nazgul ${p.id}`] : full.pool.find((e) => e.id === p.id).give.map((c) => c.replaceAll('{player}', 'Ruleta_MC')),
+  );
+  assert.deepStrictEqual(received, expected);
 });
 
 // --- Tienda de monedas ---

@@ -89,7 +89,7 @@ Tienda de monedas, monedas y oficios (más abajo):
 /tf tienda quitar <id> | lista | vaciar
 /tf monedas                        (todos) tus monedas
 /tf monedas dar|quitar|poner <jugador> <cantidad>   (staff, nivel 3)
-/tf jobs   (o /tf oficios)         (todos) menú de oficios
+/tf jobs                           (todos) menú de oficios
 /tf jobs ver|unirse <oficio>, /tf jobs abandonar
 /tf jobs recargar                  (staff) vuelve a leer config/tfclient-jobs.json
 /tf jobs nivel|xp <jugador> <oficio> <n>, /tf jobs reiniciar <jugador> [oficio]   (staff)
@@ -103,8 +103,13 @@ Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos 
 `tools/build_mod_items.py <carpeta con los packs descomprimidos>` copia modelos, texturas, animaciones y armaduras de
 los packs (los sets y sus nombres salen de `tierras-fantasticas/tools/build_items.py` y `crates.py`, igual que en la
 web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft 1.20.1.
-`tools/build_jobs_gui.py <carpeta>` prepara los fondos y los iconos de los oficios (pack *Medieval Jobs*): quita los
-textos en inglés del cartel y de la cinta, que el mod escribe en español.
+`tools/build_jobs_gui.py <carpeta>` prepara los fondos, la barra de botones y los iconos de los oficios (pack *Medieval
+Jobs*): quita los textos en inglés del cartel y de la cinta, que el mod escribe en español.
+
+Lo que va puesto en la espalda sale del modelo que el propio pack usa en HMCCosmetics (`tools/hmc_worn.py`), que puede
+no ser el del inventario, y se coloca por su forma: alas a la altura de los hombros, mochilas y carcaj sin tapar la
+cabeza (el carcaj en diagonal), todo pegado a la espalda. Los planos sin grosor se recortan a lo que se ve para que no
+salgan rayas sueltas en los bordes.
 
 ## Monedas
 
@@ -131,8 +136,10 @@ unos segundos (al conectar se le manda la tienda entera: el servidor es el que m
 ## Oficios (`/tf jobs`)
 
 Diez oficios con el arte del pack *Medieval Jobs*: granjero, minero, leñador, excavador, pescador, cazador, alquimista,
-herrero, constructor y encantador. El menú es un cofre normal (5 filas) con el marco de madera dibujado por el TF
-Client: el cartel con el oficio arriba y la rejilla de 5×2 con los oficios (menú principal) o con sus misiones.
+herrero, constructor y encantador. La ventana es propia del TF Client y no enseña el inventario del jugador: arriba el
+marco de madera con el dibujo del oficio y su rejilla de 5×2 (los oficios en el menú principal, las misiones en el de
+cada oficio), con el nombre en español en la cinta; debajo, aparte, una barra de 9 botones (volver, nivel, páginas,
+cómo se gana, monedas, recompensas, unirse o abandonar y cerrar). Nada va encima del dibujo.
 
 - Se elige un oficio y se gana experiencia del oficio y monedas haciendo su trabajo (las monedas se pagan juntas cada
   `pagoCadaSegundos`, con un aviso en la barra de acción). Cada nivel paga más (`bonusMonedasPorNivel`).
@@ -150,7 +157,7 @@ Client: el cartel con el oficio arriba y la rejilla de 5×2 con los oficios (men
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.0.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.1.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

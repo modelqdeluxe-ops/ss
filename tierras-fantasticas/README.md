@@ -3,18 +3,20 @@
 Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasarela de pago real. Funciona en
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
-- Web por secciones con pestañas horizontales y una página para cada una. Diseño oscuro con oro (fuentes Cinzel y
-  Manrope), pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
+- Web por secciones con una página para cada una. Diseño oscuro con oro (fuentes Cinzel y Manrope) sobre un fondo de
+  aurora animada, cabecera de cristal flotante, portada en dos columnas con un escaparate de crates que va cambiando, y
+  un brillo animado del color de cada crate. Pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
   (solo animaciones de `transform`/`opacity`, que se apagan con «reducir movimiento»):
   - **Inicio** (`/`): IP (clic para copiar), estado del servidor en vivo y los crates destacados.
   - **Tienda** (`/tienda`), con buscador y pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**,
-    **Rangos**, **Crates**, **Ruleta de armas**, **Monedas** y **Tienda de monedas**.
+    **Rangos**, **Crates**, **Ruleta**, **Monedas** y **Tienda de monedas**.
     - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) y se compra entera, sin
       llaves. Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
       puesto, tal como lo coloca el TF Client en el juego; al tocar una pieza se ve suelta en 3D y se puede
       **equipar** o quitar.
-    - **Ruleta de armas**: 1, 5 o 10 giros; cada giro da al azar una de las 30 armas de la forja de Nazgul. La tienda
-      la elige al confirmarse el pago y la página de la compra dice cuáles tocaron.
+    - **Ruleta**: 1, 5 o 10 giros. Cada giro da un premio al azar con su probabilidad a la vista (monedas, diamantes,
+      netherita, tótems… y un 5% de que sea un arma legendaria de Nazgul). La tienda lo elige al confirmarse el pago y
+      la página de la compra dice qué tocó. Los premios y probabilidades están en `ROULETTE_POOL` de `tools/crates.py`.
     - **Tienda de monedas**: objetos del servidor que se compran con monedas del juego. La llena el staff desde el
       juego (`/tf tienda add <precio>`) y la web se actualiza sola.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).
@@ -195,8 +197,9 @@ Las crates (`"category": "crates"`) las escribe `tools/crates.py` y llevan adem�
 | `models`      | Todas las piezas del set (`id`, `name`): miniaturas, visor 3D y probador           |
 
 Cada crate se compra una vez (`maxQuantity: 1`) y entrega el set entero con `tf web sets give {player} <set>` (TF
-Client). La ruleta (`"category": "ruleta"`, campo `spins`) no lleva comandos: al pagar, la tienda elige las armas y
-manda un `tf web sets give {player} nazgul <arma>` por giro.
+Client). La ruleta (`"category": "ruleta"`, campos `spins` y `pool`) no lleva comandos: al pagar, la tienda elige un
+premio por giro según su `chance` y manda sus comandos (`give`, `tf monedas dar`, o `tf web sets give {player} nazgul
+<arma>` si toca un arma).
 
 Los comandos de ejemplo usan LuckPerms (`lp`) y EssentialsX (`eco`). Ajústalos a los plugins de tu servidor.
 Ajústalos a los plugins de tu servidor. Los precios siempre se leen del servidor, así que nadie puede cambiarlos desde el navegador.
@@ -234,5 +237,5 @@ falla, que se rechazan firmas falsas o viejas, los pagos que tardan, reembolsos 
 de la diferencia, rango repetido bloqueado, grupos inferiores quitados) y los cambios de rango del staff. Con una API de
 Discord simulada comprueban el login, la vinculación con `/tf vincular`, «mis compras», que se da el rol (o se añade al
 servidor) también sin sesión si el jugador está vinculado, el anuncio, y que un fallo de Discord no impide la entrega.
-También que una crate entrega el set entero, que la ruleta elige armas válidas y las guarda en la compra, y que la
+También que una crate entrega el set entero, que la ruleta da premios de su lista (con las armas como premio raro) y los guarda en la compra, y que la
 tienda de monedas se llena, cambia y vacía solo desde el puente.

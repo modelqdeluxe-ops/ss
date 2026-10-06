@@ -21,7 +21,7 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsData.PlayerJobs;
 
 /**
  * <pre>
- * /tf jobs                                abre el menú de oficios (también /tf oficios)
+ * /tf jobs                                abre el menú de oficios
  * /tf jobs ver &lt;oficio&gt;                   abre un oficio
  * /tf jobs unirse &lt;oficio&gt; | abandonar     sin menú
  * /tf jobs recargar                       vuelve a leer config/tfclient-jobs.json (staff, nivel 3)
@@ -37,7 +37,7 @@ public final class TFJobsCommands {
     private TFJobsCommands() {}
 
     public static List<LiteralArgumentBuilder<CommandSourceStack>> commands() {
-        return List.of(build("jobs"), build("oficios"));
+        return List.of(build("jobs"));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> build(String name) {

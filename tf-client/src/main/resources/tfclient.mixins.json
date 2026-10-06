@@ -13,8 +13,7 @@
     "ForgeHooksClientMixin",
     "AbstractButtonMixin",
     "AbstractSliderButtonMixin",
-    "AbstractSelectionListMixin",
-    "AbstractContainerScreenAccessor"
+    "AbstractSelectionListMixin"
   ],
   "injectors": {
     "defaultRequire": 0
