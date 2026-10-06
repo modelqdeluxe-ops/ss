@@ -75,6 +75,7 @@ public final class TFCommands {
                 .then(TFBridgeCommands.vincular())
                 .then(TFBridgeCommands.rango())
                 .then(TFCoinShop.command())
+                .then(net.tierrasfantasticas.tfclient.shop.TFRoulette.command())
                 .then(TFEconomyCommands.command());
         for (var jobs : TFJobsCommands.commands()) tf = tf.then(jobs);
         dispatcher.register(tf

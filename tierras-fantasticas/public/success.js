@@ -30,7 +30,7 @@
   $('d-order').textContent = orderId;
 
   // Si Stripe aún no nos ha avisado del pago, se lo preguntamos y volvemos a mirar durante un rato.
-  for (let attempt = 0; attempt < 15; attempt++) {
+  for (let attempt = 0, coinWaits = 0; attempt < 15 && coinWaits < 150; attempt++, coinWaits++) {
     let order;
     try {
       const res = await fetch(`/api/order/${encodeURIComponent(orderId)}/sync`, { method: 'POST' });
@@ -42,7 +42,11 @@
       return;
     }
 
-    const total = order.amount === 0 ? 'Gratis' : new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
+    const total = order.coins
+      ? `${new Intl.NumberFormat('es-ES', { useGrouping: 'always' }).format(order.coins)} monedas del servidor`
+      : order.amount === 0
+        ? 'Gratis'
+        : new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
     $('d-user').textContent = order.username;
     $('d-product').textContent = (order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product) + (order.upgradeFrom ? ` (mejora desde ${order.upgradeFrom})` : '');
     $('d-total').textContent = total;
@@ -78,6 +82,22 @@
         }),
       );
       $('prizes').hidden = false;
+    }
+
+    // Ruleta con monedas: se cobra y se gira en el juego; esperamos a que el servidor diga qué tocó.
+    if (order.coins) {
+      if (order.status === 'delivered') {
+        show('ok', 'Hecho', '¡La ruleta ha girado!', 'Se cobraron tus monedas en el servidor y los premios ya están en tu inventario.');
+        return;
+      }
+      if (order.status === 'delivery_failed') {
+        show('bad', 'Sin girar', 'No se pudo girar', order.error || 'No tenías bastantes monedas en el servidor. No se ha cobrado nada.');
+        return;
+      }
+      show('wait', 'En cola', 'Esperando al servidor', `La ruleta girará en el juego en cuanto ${order.username} esté conectado. Puedes dejar esta página abierta para ver qué te toca.`);
+      await new Promise((r) => setTimeout(r, 4000));
+      attempt = Math.min(attempt, 10);
+      continue;
     }
 
     if (PAID.includes(order.status)) {

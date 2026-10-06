@@ -766,38 +766,6 @@ body.lock {
   gap: 16px;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  margin-top: -28px;
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
-}
-
-.stat {
-  padding: 20px 18px;
-  border-bottom: 1px solid var(--line);
-}
-
-.stat:nth-child(odd) {
-  border-right: 1px solid var(--line);
-}
-
-.stat strong {
-  display: block;
-  font: 700 26px/1.1 var(--font-display);
-  color: var(--gold-hi);
-  font-variant-numeric: tabular-nums;
-}
-
-.stat span {
-  display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
 /* Pasos */
 .steps {
   counter-reset: step;
@@ -862,57 +830,6 @@ body.lock {
 
 .feature p {
   margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-/* ---------- Crates ---------- */
-
-.crate-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition:
-    transform 0.3s var(--ease),
-    border-color 0.3s;
-}
-
-.crate-card:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--t2, var(--gold)) 45%, transparent);
-}
-
-.crate-card figure {
-  position: relative;
-  margin: 0;
-  aspect-ratio: 4 / 3;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(70% 70% at 50% 55%, var(--t3, rgba(227, 183, 76, 0.2)), transparent 75%);
-  border-bottom: 1px solid var(--line);
-}
-
-.crate-card figure img {
-  width: 94%;
-  height: 90%;
-  object-fit: contain;
-}
-
-.crate-card .body {
-  padding: 18px 20px 20px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.crate-card h3 {
-  margin-top: 8px;
-  font: 700 22px/1.2 var(--font-display);
-}
-
-.crate-card p {
-  margin: 8px 0 0;
   color: var(--muted);
   font-size: 15px;
 }
@@ -1070,48 +987,8 @@ body.lock {
   }
 }
 
-/* ---------- Rangos ---------- */
-
-.rank-strip {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.rank-mini {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  padding: 20px 12px 18px;
-  text-align: center;
-  transition:
-    transform 0.3s var(--ease),
-    border-color 0.3s;
-}
-
-.rank-mini:hover {
-  transform: translateY(-3px);
-  border-color: var(--gold-line);
-}
-
-.rank-mini img,
 .pixel-img {
   image-rendering: pixelated;
-}
-
-.rank-mini img {
-  width: 88px;
-  height: 88px;
-}
-
-.rank-mini b {
-  margin-top: 8px;
-  font: 700 17px/1.2 var(--font-display);
-}
-
-.rank-mini span {
-  font-size: 13px;
-  color: var(--muted);
 }
 
 /* ---------- Tienda ---------- */
@@ -3018,23 +2895,6 @@ body.lock {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .stats {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .stat {
-    border-bottom: 0;
-    border-right: 1px solid var(--line);
-  }
-
-  .stat:last-child {
-    border-right: 0;
-  }
-
-  .rank-strip {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
   .trust {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -3173,11 +3033,9 @@ body.lock {
     transform: none;
   }
 
-  .crate-card:hover,
   .crate-tile:hover,
-  .reel-item:hover,
-  .product:hover,
-  .rank-mini:hover {
+.reel-item:hover,
+.product:hover {
     transform: none;
   }
 }
@@ -3335,59 +3193,6 @@ body:not([data-hero]) .header {
   display: none;
 }
 
-/* ---------- Portada ---------- */
-
-.home-hero {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: min(100svh, 900px);
-  padding: calc(var(--header-h) + 40px) 0 64px;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.home-hero-art {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-.home-hero-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.32;
-  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 92%);
-  mask-image: linear-gradient(180deg, #000 30%, transparent 92%);
-}
-
-.home-hero-grid {
-  display: grid;
-  gap: 40px;
-  align-items: center;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-line);
-  background: rgba(9, 11, 17, 0.6);
-  font-size: 13px;
-  font-weight: 600;
-  color: #cfcbd6;
-}
-
-.home-hero-copy h1 {
-  margin-top: 18px;
-  font: 700 clamp(44px, 8vw, 86px) / 1.02 var(--font-display);
-  letter-spacing: 0.01em;
-}
-
 .title-sheen {
   background: linear-gradient(100deg, #fff4d6 0%, #f8dd8e 25%, #e3b74c 45%, #fff4d6 60%, #f8dd8e 80%, #e3b74c 100%);
   background-size: 220% 100%;
@@ -3401,198 +3206,6 @@ body:not([data-hero]) .header {
   to {
     background-position: -220% 0;
   }
-}
-
-.home-hero-copy .lead {
-  max-width: 560px;
-  margin: 18px 0 0;
-  font-size: 17px;
-  line-height: 1.65;
-  color: #b9b6c2;
-}
-
-.home-hero-cta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.ip-card {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 16px;
-  min-height: 54px;
-  padding: 8px 8px 8px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--glass-line);
-  background: rgba(9, 11, 17, 0.7);
-  text-align: left;
-}
-
-.ip-card .ip-label {
-  grid-column: 1;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
-
-.ip-card .ip {
-  grid-column: 1;
-  font: 700 16px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  color: var(--text);
-}
-
-.ip-card .ip-copy {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(227, 183, 76, 0.14);
-  color: var(--gold-hi);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.ip-card.copied .ip-copy {
-  background: rgba(74, 222, 128, 0.16);
-  color: #86efac;
-}
-
-.hero-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 32px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.hero-facts li {
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--glass-line);
-  background: rgba(9, 11, 17, 0.5);
-}
-
-.hero-facts strong {
-  display: block;
-  font: 700 22px/1.1 var(--font-display);
-  color: var(--gold-hi);
-}
-
-.hero-facts span {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-/* Escaparate de crates: cambia cada pocos segundos, con el brillo de su color */
-.showcase {
-  position: relative;
-  display: block;
-  aspect-ratio: 5 / 4;
-  border-radius: 28px;
-  border: 1px solid var(--glass-line);
-  background:
-    radial-gradient(70% 60% at 50% 45%, var(--t3, rgba(227, 183, 76, 0.2)), transparent 75%),
-    linear-gradient(180deg, rgba(20, 24, 36, 0.85), rgba(10, 12, 18, 0.9));
-  overflow: hidden;
-  isolation: isolate;
-  box-shadow: 0 40px 90px -40px var(--t2, rgba(227, 183, 76, 0.6));
-  transition: box-shadow 0.8s;
-}
-
-.showcase-glow {
-  position: absolute;
-  inset: 8% 10% 22%;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--t2, var(--gold)), transparent 72%);
-  opacity: 0.5;
-  animation: glow-pulse 4s ease-in-out infinite;
-  transition: background 0.8s;
-}
-
-.showcase-ring {
-  position: absolute;
-  inset: -30%;
-  z-index: -1;
-  background: conic-gradient(from 0deg, transparent 0 62%, var(--t1, var(--gold-hi)) 72%, transparent 82%, transparent);
-  opacity: 0.18;
-  animation: spin 16s linear infinite;
-}
-
-.showcase-img {
-  position: absolute;
-  inset: 6% 5% 24%;
-  width: 90%;
-  height: 70%;
-  object-fit: contain;
-  opacity: 0;
-  transform: translateY(10px) scale(0.97);
-  transition:
-    opacity 0.7s var(--ease),
-    transform 0.7s var(--ease);
-}
-
-.showcase-img.in {
-  opacity: 1;
-  transform: none;
-  animation: floaty 6s ease-in-out 0.7s infinite;
-}
-
-.showcase-info {
-  position: absolute;
-  left: 22px;
-  right: 90px;
-  bottom: 20px;
-  display: grid;
-  gap: 4px;
-}
-
-.showcase-kicker {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--t1, var(--gold));
-}
-
-.showcase-name {
-  font: 700 clamp(24px, 3vw, 32px) / 1.1 var(--font-display);
-  color: var(--text);
-}
-
-.showcase-meta {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.showcase-dots {
-  position: absolute;
-  right: 22px;
-  bottom: 26px;
-  display: flex;
-  gap: 6px;
-}
-
-.showcase-dots i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  transition:
-    background-color 0.3s,
-    transform 0.3s;
-}
-
-.showcase-dots i.on {
-  background: var(--t1, var(--gold));
-  transform: scale(1.3);
 }
 
 @keyframes glow-pulse {
@@ -3637,11 +3250,6 @@ body:not([data-hero]) .header {
   max-width: 560px;
 }
 
-.center-cta {
-  margin: 28px 0 0;
-  text-align: center;
-}
-
 .timeline {
   display: grid;
   gap: 16px;
@@ -3680,83 +3288,6 @@ body:not([data-hero]) .header {
   margin: 8px 0 0;
   color: var(--muted);
   font-size: 15px;
-}
-
-.bento {
-  display: grid;
-  gap: 16px;
-  margin-top: 32px;
-}
-
-.bento .feature {
-  border-radius: 20px;
-}
-
-.bento-card {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  min-height: 300px;
-  border-radius: 20px;
-  border: 1px solid var(--glass-line);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.bento-card img {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 1.2s var(--ease);
-}
-
-.bento-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(5, 6, 10, 0.05) 20%, rgba(5, 6, 10, 0.92) 100%);
-}
-
-.bento-card:hover img {
-  transform: scale(1.04);
-}
-
-.bento-card > div {
-  padding: 26px;
-}
-
-.bento-card .icon {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 14px;
-  border-radius: 12px;
-  background: rgba(227, 183, 76, 0.16);
-  color: var(--gold-hi);
-}
-
-.bento-card .icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.bento-card h3 {
-  font: 700 26px/1.15 var(--font-display);
-}
-
-.bento-card p {
-  margin: 8px 0 0;
-  max-width: 460px;
-  color: #c9c6d0;
-}
-
-.crates-band {
-  position: relative;
 }
 
 .crate-row {
@@ -3875,16 +3406,6 @@ body:not([data-hero]) .header {
 .home-tile .card-foot {
   margin-top: auto;
   padding-top: 12px;
-}
-
-/* ---------- Rangos ---------- */
-
-.rank-mini {
-  border-radius: 18px;
-  border: 1px solid var(--glass-line);
-  background:
-    radial-gradient(80% 70% at 50% 25%, rgba(227, 183, 76, 0.12), transparent 70%),
-    linear-gradient(180deg, var(--glass-2), var(--glass));
 }
 
 /* ---------- Banda de Discord con borde animado ---------- */
@@ -4064,9 +3585,6 @@ body:not([data-hero]) .header {
 /* ---------- Tamaños de pantalla ---------- */
 
 @media (min-width: 640px) {
-  .hero-facts {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 
   .crate-row {
     grid-auto-columns: minmax(240px, 42%);
@@ -4075,37 +3593,14 @@ body:not([data-hero]) .header {
   .timeline {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .bento {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .bento-card.big {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (min-width: 960px) {
-  .home-hero-grid {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 56px;
-  }
 
   .crate-row {
     grid-auto-flow: row;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow: visible;
-  }
-
-  .bento {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-rows: minmax(180px, auto);
-  }
-
-  .bento-card.big {
-    grid-column: span 2;
-    grid-row: span 2;
-    min-height: 0;
   }
 
   .roulette {
@@ -4117,14 +3612,11 @@ body:not([data-hero]) .header {
 
 @media (prefers-reduced-motion: reduce) {
   .aurora span,
-  .title-sheen,
-  .showcase-glow,
-  .showcase-ring,
-  .showcase-img.in,
-  .crate-glow,
-  .crate-glow::after,
-  .crate-tile-art img,
-  .cta-band {
+.title-sheen,
+.crate-glow,
+.crate-glow::after,
+.crate-tile-art img,
+.cta-band {
     animation: none !important;
   }
 }
@@ -4139,10 +3631,6 @@ body:not([data-hero]) .header {
 
 .brand {
   flex: none;
-}
-
-.home-hero {
-  min-height: min(100svh, 780px);
 }
 
 @media (min-width: 960px) {
@@ -4209,39 +3697,6 @@ body:not([data-hero]) .header {
 
 /* Móvil: el escaparate deja sitio al texto y las crates van de dos en dos */
 @media (max-width: 639px) {
-  .showcase {
-    aspect-ratio: auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .showcase-img {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 3 / 2;
-    padding: 16px 16px 0;
-  }
-
-  .showcase-glow {
-    inset: 4% 8% 30%;
-  }
-
-  .showcase-info {
-    position: relative;
-    left: auto;
-    right: auto;
-    bottom: auto;
-    padding: 6px 20px 22px;
-  }
-
-  .showcase-dots {
-    top: 16px;
-    right: 16px;
-    bottom: auto;
-  }
 
   .crate-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4298,5 +3753,194 @@ body:not([data-hero]) .header {
   .coin-icon img {
     width: 48%;
     height: 48%;
+  }
+}
+
+/* ---------- Brillitos de las crates: destellos de su color que parpadean alrededor ---------- */
+
+.sparkles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sparkles i {
+  position: absolute;
+  width: calc(16px * var(--s, 1));
+  height: calc(16px * var(--s, 1));
+  margin: calc(-8px * var(--s, 1)) 0 0 calc(-8px * var(--s, 1));
+  opacity: 0;
+  transform: scale(0);
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+.sparkles i::before,
+.sparkles i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* Estrella de cuatro puntas con el centro blanco */
+.sparkles i::after {
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  background: radial-gradient(circle, #fff 0 18%, var(--t1, var(--gold-hi)) 45%, var(--t2, var(--gold)) 100%);
+}
+
+/* Halo del destello */
+.sparkles i::before {
+  inset: -60%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--t1, var(--gold-hi)), transparent 70%);
+  opacity: 0.55;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+  26% {
+    opacity: 0;
+    transform: scale(0) rotate(90deg);
+  }
+}
+
+.crate-glow {
+  opacity: 0.55;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+
+/* Portada: solo el emblema y cuatro crates */
+.featured .crate-row {
+  margin-top: 8px;
+}
+
+.hero h1 {
+  font-size: clamp(42px, 8vw, 76px);
+}
+
+@media (min-width: 960px) {
+  .featured .crate-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .hero {
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkles i {
+    animation: none !important;
+    opacity: 0.8;
+    transform: scale(0.7);
+  }
+}
+
+/* Brillitos más visibles; sin el giro cónico (dejaba un disco gris) */
+.crate-glow::after {
+  display: none;
+}
+
+.crate-glow {
+  inset: 0 4% -6%;
+  background: radial-gradient(closest-side, var(--t2, var(--gold)), var(--t3, transparent) 55%, transparent 78%);
+}
+
+.sparkles i {
+  width: calc(22px * var(--s, 1));
+  height: calc(22px * var(--s, 1));
+  margin: calc(-11px * var(--s, 1)) 0 0 calc(-11px * var(--s, 1));
+  animation-duration: 2.6s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  16% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+  36% {
+    opacity: 0;
+    transform: scale(0.2) rotate(90deg);
+  }
+}
+
+/* Ruleta: girar con las monedas del servidor */
+.coin-spins {
+  margin-top: 22px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(227, 183, 76, 0.35);
+  background: rgba(227, 183, 76, 0.05);
+}
+
+.coin-spins-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-hi);
+}
+
+.coin-spins .spin-buttons {
+  margin-top: 12px;
+}
+
+.coin-spins .small {
+  margin: 10px 0 0;
+}
+
+@media (max-width: 959px) {
+  .featured .crate-row {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    gap: 10px;
+  }
+
+  .featured .home-tile .body {
+    padding: 12px;
+  }
+
+  .featured .home-tile h3 {
+    font-size: 15px;
+  }
+
+  .featured .tile-tag {
+    display: none;
+  }
+
+  .featured .home-tile .card-foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .featured .home-tile .card-foot .btn {
+    width: 100%;
   }
 }

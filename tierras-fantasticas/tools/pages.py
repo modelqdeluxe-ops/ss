@@ -198,104 +198,46 @@ JOIN_STEPS = '\n'.join([
 
 
 def index():
+    # Portada ligera: el emblema, la IP y unas pocas crates. El resto está en sus páginas (tienda, el mundo, ayuda).
     return head('Tierras Fantásticas — Servidor de Minecraft',
                 'Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.',
                 'inicio', hero=True, preload_hero=True) + header('inicio') + f'''
   <main id="main">
-    <section class="home-hero">
-      {hero_art('home-hero-art')}
-      <div class="wrap home-hero-grid">
-        <div class="home-hero-copy">
-          <span class="pill"><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
-          <h1><span class="title-sheen" data-server-name>Tierras Fantásticas</span></h1>
-          <p class="lead">Un reino de castillos, magia y mazmorras en Minecraft Java 1.20.1. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
-          <div class="home-hero-cta">
-            <button class="ip-card" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-              <span class="ip-label">IP del servidor</span>
-              <span class="ip" data-server-ip>{IP}</span>
-              <span class="ip-copy" data-copy-hint>Copiar</span>
-            </button>
-            <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda {I['arrow']}</a>
-          </div>
-          <ul class="hero-facts">
-            <li><strong data-players>—</strong><span>jugando ahora</span></li>
-            <li><strong>200+</strong><span>mods</span></li>
-            <li><strong data-crate-count>40</strong><span>sets animados</span></li>
-            <li><strong>0%</strong><span>pay-to-win</span></li>
-          </ul>
+    <section class="hero">
+      {hero_art()}
+      <div class="wrap hero-inner">
+        <div class="logo-mark">
+          <span class="glow" aria-hidden="true"></span>
+          <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
+          <span class="shine" aria-hidden="true"></span>
+          <span class="spark" aria-hidden="true"></span>
         </div>
-        <a class="showcase" id="showcase" href="/tienda#crates" aria-label="Ver las crates">
-          <span class="showcase-glow" aria-hidden="true"></span>
-          <span class="showcase-ring" aria-hidden="true"></span>
-          <img class="showcase-img" src="/img/crates/ifrit.webp" alt="" width="600" height="400">
-          <span class="showcase-info">
-            <span class="showcase-kicker">Crate destacada</span>
-            <b class="showcase-name">Ifrit</b>
-            <span class="showcase-meta"></span>
-          </span>
-          <span class="showcase-dots" aria-hidden="true"></span>
-        </a>
-      </div>
-    </section>
-
-    <section class="wrap section">
-      <div class="section-head center">
-        <span class="eyebrow">Cómo jugar</span>
-        <h2>Dentro en tres pasos</h2>
-        <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>
-      </div>
-      <ol class="timeline">
-        <li class="reveal"><span class="num">1</span><h3>Prepara el modpack</h3><p>Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas, que incluye el TF Client. Lo tienes en nuestro Discord.</p></li>
-        <li class="reveal"><span class="num">2</span><h3>Pulsa «Tierras Fantásticas»</h3><p>Desde el menú del TF Client entras con un clic. Antes de conectar revisa tus mods y te dice si te falta alguno.</p></li>
-        <li class="reveal"><span class="num">3</span><h3>Empieza tu aventura</h3><p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es {IP}.</p></li>
-      </ol>
-    </section>
-
-    <section class="wrap section">
-      <div class="section-head">
-        <span class="eyebrow">El reino</span>
-        <h2>Mucho más que supervivencia</h2>
-      </div>
-      <div class="bento">
-        <article class="bento-card big reveal">
-          <img src="/img/hero-1280.webp" alt="" loading="lazy" width="1280" height="720">
-          <div><span class="icon">{I['castle']}</span><h3>Castillos y reinos</h3><p>Funda tu reino, levanta murallas y compite con otros clanes por el control de las tierras.</p></div>
-        </article>
-{feature('swords', 'Mazmorras y jefes', 'Asalta fortalezas y derrota jefes en eventos semanales con recompensas exclusivas.')}
-{feature('sparkles', 'Más de 200 mods', 'Magia, criaturas, biomas y tecnología: un modpack pensado para la aventura, no para el grindeo.')}
-{feature('coins', 'Oficios y economía', 'Elige un oficio, sube de nivel, cumple misiones y gana monedas para la tienda del servidor.')}
-{feature('shield', 'Terrenos protegidos', 'Reclama tu territorio y protege tu base. Nadie toca lo que es tuyo.')}
-{feature('users', 'Comunidad activa', 'Staff atento, eventos y sorteos. La tienda solo da ventajas de estilo y comodidad.')}
-      </div>
-    </section>
-
-    <section class="section crates-band">
-      <div class="wrap">
-        <div class="section-head split-head">
-          <div>
-            <span class="eyebrow">Tienda</span>
-            <h2>Crates <span class="gold-text">legendarias</span></h2>
-            <p>Cada crate es un set completo con animaciones propias. Pruébatelo en tu personaje antes de comprarlo.</p>
-          </div>
-          <a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates {I['arrow']}</a>
+        <span class="eyebrow">Minecraft Java · Forge 1.20.1</span>
+        <h1 style="margin-top:14px"><span class="title-sheen" data-server-name>Tierras Fantásticas</span></h1>
+        <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
+        <div class="hero-cta">
+          <button class="btn btn-lg ip-button" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+            <span class="ip" data-server-ip>{IP}</span><span class="copy" data-copy-hint>Copiar IP</span>
+          </button>
+          <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda {I['arrow']}</a>
         </div>
-        <div class="crate-row" id="crate-spotlight">
-          <p class="loading">Cargando crates…</p>
+        <span class="status-line" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+      </div>
+    </section>
+
+    <section class="wrap section featured">
+      <div class="section-head split-head">
+        <div>
+          <span class="eyebrow">Nuevo en la tienda</span>
+          <h2>Crates <span class="gold-text">legendarias</span></h2>
         </div>
+        <a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates {I['arrow']}</a>
+      </div>
+      <div class="crate-row" id="crate-spotlight">
+        <p class="loading">Cargando crates…</p>
       </div>
     </section>
-
-    <section class="wrap section">
-      <div class="section-head center">
-        <span class="eyebrow">Rangos</span>
-        <h2>Lleva tu nombre con estilo</h2>
-        <p>Prefijos, kits, hogares extra y ventajas de comodidad. Sin romper el equilibrio del juego.</p>
-      </div>
-      <div class="rank-strip" id="rank-strip"></div>
-      <p class="center-cta"><a class="btn btn-ghost" href="/tienda#rangos">Comparar rangos {I['arrow']}</a></p>
-    </section>
-
-{DISCORD_BAND}  </main>
+  </main>
 ''' + footer()
 
 
@@ -440,6 +382,18 @@ def ayuda():
   <main id="main">
 {page_hero('Ayuda', 'Preguntas frecuentes', 'Todo lo que necesitas saber para entrar al servidor y sobre la tienda.')}
     <section class="wrap section">
+      <div class="section-head">
+        <span class="eyebrow">Cómo jugar</span>
+        <h2>Dentro en tres pasos</h2>
+        <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>
+      </div>
+      <ol class="timeline">
+        <li><span class="num">1</span><h3>Prepara el modpack</h3><p>Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas, que incluye el TF Client. Lo tienes en nuestro Discord.</p></li>
+        <li><span class="num">2</span><h3>Pulsa «Tierras Fantásticas»</h3><p>Desde el menú del TF Client entras con un clic. Antes de conectar revisa tus mods y te dice si te falta alguno.</p></li>
+        <li><span class="num">3</span><h3>Empieza tu aventura</h3><p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es {IP}.</p></li>
+      </ol>
+    </section>
+    <section class="wrap section" style="padding-top:0">
       <div class="faq">
 {faq('¿Cómo entro al servidor?', f'Necesitas Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas (lo tienes en nuestro Discord). Con el TF Client pulsa «Tierras Fantásticas» en el menú; si entras a mano, la IP es {IP}.')}
 {faq('Se queda en «Conectando» o me dice que faltan mods', 'El servidor usa más de 200 mods y necesitas los mismos. El TF Client revisa tus mods antes de conectar y te dice cuáles faltan. Instala el modpack completo desde nuestro Discord.')}

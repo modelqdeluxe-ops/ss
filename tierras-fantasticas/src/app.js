@@ -165,6 +165,8 @@ export function createApp(env) {
         ? order.prizes.map((p) => ({ ...p, thumb: p.icon || (product?.set ? `/img/items/${product.set}/${p.id}.webp` : null) }))
         : null,
       refunded: order.refunded || null,
+      coins: order.id.startsWith('COIN') ? product?.coinPrice || null : null,
+      error: order.id.startsWith('COIN') && order.status === 'delivery_failed' ? order.error || null : null,
       createdAt: order.createdAt,
       deliveredAt: order.deliveredAt,
       discord: order.discord ? { username: order.discord.username, status: order.discord.status || null } : null,
@@ -180,6 +182,39 @@ export function createApp(env) {
     if (!m) return null;
     const set = setIds.find((s) => m[1].startsWith(`${s}_`));
     return set ? `/img/items/${set}/${m[1].slice(set.length + 1)}.webp` : null;
+  }
+
+  // La ruleta para el servidor (/tf ruleta en el juego y los giros con monedas desde la web): premios, armas y precio.
+  function rouletteForServer() {
+    const ruleta = products.find((p) => p.category === 'ruleta' && p.spins === 1) || products.find((p) => p.category === 'ruleta');
+    if (!ruleta) return null;
+    return {
+      set: ruleta.set,
+      coinPrice: Math.round((ruleta.coinPrice || 0) / (ruleta.spins || 1)),
+      pool: (ruleta.pool || []).map(({ icon, ...p }) => p),
+      weapons: (ruleta.models || []).map((m) => ({ id: m.id, name: m.name })),
+    };
+  }
+
+  // Premios que manda el servidor (ruleta con monedas): solo id y nombre, cortos; el icono lo pone la web.
+  function cleanPrizes(prizes) {
+    if (!Array.isArray(prizes)) return null;
+    const ruleta = products.find((p) => p.category === 'ruleta');
+    const pool = new Map((ruleta?.pool || []).map((p) => [p.id, p]));
+    const weapons = new Set((ruleta?.models || []).map((m) => m.id));
+    const out = [];
+    for (const p of prizes.slice(0, 50)) {
+      if (!p || typeof p.id !== 'string' || typeof p.name !== 'string') continue;
+      const id = p.id.slice(0, 40);
+      const weapon = p.weapon === true && weapons.has(id);
+      if (!weapon && !pool.has(id)) continue;
+      out.push({
+        id,
+        name: p.name.slice(0, 64),
+        ...(weapon ? { weapon: true, icon: `/img/items/${ruleta.set}/${id}.webp` } : { icon: pool.get(id).icon }),
+      });
+    }
+    return out.length ? out : null;
   }
 
   function cleanShopOp(op) {
@@ -558,6 +593,37 @@ export function createApp(env) {
       return json({ id, status });
     },
 
+    // Ruleta con monedas del servidor: se cobra en el juego cuando el jugador está conectado (o al entrar).
+    // Si no tiene bastantes monedas, el servidor no cobra ni da nada y el pedido queda como no entregado.
+    'POST /api/roulette/coins': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para girar con tus monedas.', code: 'login' }, 401);
+      const body = (await readJson(req)) || {};
+      const product = products.find((p) => p.category === 'ruleta' && p.spins === Number(body.spins));
+      if (!product || !product.coinPrice) return json({ error: 'Esa tirada no existe.' }, 400);
+      const player = await store.playerByUuid(user.uuid);
+      const bytes = crypto.getRandomValues(new Uint8Array(12));
+      const id = `COIN${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+      await store.createOrder({
+        id,
+        status: 'pending',
+        username: player?.name || user.name,
+        uuid: user.uuid,
+        productId: product.id,
+        quantity: 1,
+        amount: 0,
+        currency: CURRENCY,
+      });
+      await store.queueDelivery(id, {
+        username: player?.name || user.name,
+        uuid: user.uuid,
+        commands: [`tf ruleta girar {player} ${product.spins}`],
+        extra: { kind: 'ruleta-monedas', color: product.colors?.[1] || '#9061f9' },
+      });
+      log.log(`Ruleta con monedas ${id}: ${product.spins} giro(s) para ${user.name} (${user.uuid}), en cola del puente`);
+      return json({ id, status: 'queued' });
+    },
+
     'GET /api/order/:id': async (req, { params }) => {
       const order = ORDER_ID_RE.test(params.id) ? await store.getOrder(params.id) : null;
       if (!order) return json({ error: 'Pedido no encontrado.' }, 404);
@@ -662,7 +728,9 @@ export function createApp(env) {
       if (shopOps.length) await store.applyCoinShop(shopOps);
 
       const max = Number.isInteger(body.max) ? body.max : null;
-      const done = list(body.done, 100).filter((d) => d && Number.isInteger(d.id));
+      const done = list(body.done, 100)
+        .filter((d) => d && Number.isInteger(d.id))
+        .map((d) => ({ ...d, prizes: cleanPrizes(d.prizes) }));
       const templates = Number(body.protocol) >= BRIDGE_TEMPLATES;
       const deliveries = (await store.bridgePoll({ players, max, done })).map(({ productId, commands, ...d }) => ({
         ...d,
@@ -681,6 +749,7 @@ export function createApp(env) {
         rankList: ranks.map(rankInfo),
         linkResults,
         coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
+        roulette: rouletteForServer(),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
       });
     },

@@ -87,6 +87,8 @@ Tienda de monedas, monedas y oficios (más abajo):
 /tf tienda add <precio> [nombre]   (staff, nivel 3) vende lo que tienes en la mano, con esa cantidad
 /tf tienda precio <id> <precio>    (staff) cambia el precio
 /tf tienda quitar <id> | lista | vaciar
+/tf ruleta                         (todos) la ruleta, con monedas del servidor (se ve girar)
+/tf ruleta girar <jugador> <n>     (staff, nivel 3) gira n veces cobrando monedas (lo usa la web)
 /tf monedas                        (todos) tus monedas
 /tf monedas dar|quitar|poner <jugador> <cantidad>   (staff, nivel 3)
 /tf jobs                           (todos) menú de oficios
@@ -133,6 +135,14 @@ encantamientos, nombre y NBT). Los jugadores compran con `/tf tienda` (clic y ot
 `config/tfclient-tienda.json` y, con el puente activo, la pestaña *Tienda de monedas* de la web se actualiza sola en
 unos segundos (al conectar se le manda la tienda entera: el servidor es el que manda).
 
+## Ruleta (`/tf ruleta`)
+
+Los mismos premios y probabilidades que la ruleta de la web (los manda la web por el puente; se guardan en
+`config/tfclient-ruleta.json` por si el servidor arranca sin conexión). En el juego se gira con monedas del servidor
+(`economy.mode`) en un menú con el carrete girando; si toca un arma legendaria se anuncia a todos. Desde la web, «girar
+con monedas» manda `tf ruleta girar <jugador> <n>`: si no tiene bastantes monedas no se cobra nada y la web lo dice;
+si gira, la web enseña los premios.
+
 ## Oficios (`/tf jobs`)
 
 Diez oficios con el arte del pack *Medieval Jobs*: granjero, minero, leñador, excavador, pescador, cazador, alquimista,
@@ -157,7 +167,7 @@ cómo se gana, monedas, recompensas, unirse o abandonar y cerrar). Nada va encim
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.1.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.2.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

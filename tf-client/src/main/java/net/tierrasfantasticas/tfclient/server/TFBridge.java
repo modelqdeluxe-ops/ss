@@ -365,6 +365,9 @@ public final class TFBridge {
         JsonObject json = JsonParser.parseString(text).getAsJsonObject();
         if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
         if (json.has("rankList")) TFRanks.setList(json.getAsJsonArray("rankList"));
+        if (json.has("roulette") && json.get("roulette").isJsonObject()) {
+            net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
+        }
         if (json.has("ranks")) TFRanks.update(srv, json.getAsJsonArray("ranks"));
         if (json.has("linkResults")) {
             for (JsonElement element : json.getAsJsonArray("linkResults")) linkResult(srv, element.getAsJsonObject());
@@ -425,12 +428,23 @@ public final class TFBridge {
 
         // Se apunta antes de ejecutar: si el servidor se cae a mitad, nunca se entrega dos veces.
         remember(id);
+        boolean coinSpin = delivery.has("kind") && "ruleta-monedas".equals(text(delivery, "kind", ""));
         List<String> errors = new ArrayList<>();
+        net.tierrasfantasticas.tfclient.shop.TFRoulette.startCapture();
         for (JsonElement cmd : delivery.getAsJsonArray("commands")) {
             String command = cmd.getAsString().replace("{player}", name).replace("{uuid}", uuid);
             List<String> failed = run(srv, command);
             // Quitar un grupo de rango que no tenía no es un error de la entrega.
-            if (!failed.isEmpty() && !command.contains(" parent remove ")) errors.add(command + " → " + String.join("; ", failed));
+            if (!failed.isEmpty() && !command.contains(" parent remove ")) {
+                // Ruleta con monedas: a la web le llega el motivo tal cual («no tienes bastantes monedas»)
+                errors.add(coinSpin ? String.join("; ", failed) : command + " → " + String.join("; ", failed));
+            }
+        }
+        JsonArray prizes = net.tierrasfantasticas.tfclient.shop.TFRoulette.stopCapture();
+        if (coinSpin) {
+            if (errors.isEmpty()) ack(id, true, null, prizes);
+            else ack(id, false, String.join(" | ", errors), null);
+            return;
         }
 
         String product = text(delivery, "product", "tu compra");
@@ -619,10 +633,16 @@ public final class TFBridge {
     }
 
     private static void ack(long id, boolean ok, String error) {
+        ack(id, ok, error, null);
+    }
+
+    /** Confirma una entrega a la web; prizes son los premios de la ruleta con monedas (la web los enseña). */
+    private static void ack(long id, boolean ok, String error, JsonArray prizes) {
         JsonObject item = new JsonObject();
         item.addProperty("id", id);
         item.addProperty("ok", ok);
         if (error != null) item.addProperty("error", error.length() > 480 ? error.substring(0, 480) : error);
+        if (prizes != null && !prizes.isEmpty()) item.add("prizes", prizes);
         done.addLast(item);
         // Confirmamos enseguida en vez de esperar al siguiente intervalo.
         soon();
