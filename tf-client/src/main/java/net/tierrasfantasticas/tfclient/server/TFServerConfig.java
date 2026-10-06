@@ -15,6 +15,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 /**
  * Ajustes del puente en el servidor: config/tfclient-server.properties.
  * La primera vez se crea con una clave aleatoria que hay que copiar en Cloudflare (BRIDGE_SECRET).
+ * También dice de dónde salen las monedas de la tienda de monedas y de los oficios (economy.*).
  */
 public final class TFServerConfig {
     /** tierrasfantásticas.store escrito en ASCII (punycode), como lo usa internet. */
@@ -28,6 +29,10 @@ public final class TFServerConfig {
     private static boolean broadcast = true;
     private static boolean fireworks = true;
     private static boolean nametag = true;
+    private static String economyMode = "auto";
+    private static String economyGive = "eco give {player} {amount}";
+    private static String economyTake = "eco take {player} {amount}";
+    private static String currency = "monedas";
 
     private TFServerConfig() {}
 
@@ -62,6 +67,26 @@ public final class TFServerConfig {
         return nametag;
     }
 
+    /** Monedas del servidor: auto (Vault si está, si no las del TF Client), vault, tf o comandos. */
+    public static String economyMode() {
+        return economyMode;
+    }
+
+    /** Comando para dar monedas en el modo «comandos» ({player} y {amount}). */
+    public static String economyGive() {
+        return economyGive;
+    }
+
+    /** Comando para quitar monedas en el modo «comandos»: tiene que fallar si el jugador no tiene bastantes. */
+    public static String economyTake() {
+        return economyTake;
+    }
+
+    /** Nombre de la moneda en los mensajes y menús. */
+    public static String currency() {
+        return currency;
+    }
+
     private static boolean flag(Properties props, String key, boolean def) {
         return !Boolean.toString(!def).equalsIgnoreCase(props.getProperty(key, Boolean.toString(def)).trim());
     }
@@ -84,6 +109,10 @@ public final class TFServerConfig {
         broadcast = flag(props, "broadcast.enabled", true);
         fireworks = flag(props, "broadcast.fireworks", true);
         nametag = flag(props, "ranks.nametag", true);
+        economyMode = props.getProperty("economy.mode", "auto").trim().toLowerCase(java.util.Locale.ROOT);
+        economyGive = props.getProperty("economy.give", economyGive).trim();
+        economyTake = props.getProperty("economy.take", economyTake).trim();
+        currency = props.getProperty("economy.currency", "monedas").trim();
         url = props.getProperty("bridge.url", DEFAULT_URL).trim().replaceAll("/+$", "");
         secret = props.getProperty("bridge.secret", "").trim();
         try {
@@ -99,7 +128,8 @@ public final class TFServerConfig {
             secret = HexFormat.of().formatHex(bytes);
         }
         boolean missing = false;
-        for (String key : new String[] {"bridge.enabled", "bridge.url", "bridge.interval", "broadcast.enabled", "broadcast.fireworks", "ranks.nametag"}) {
+        for (String key : new String[] {"bridge.enabled", "bridge.url", "bridge.interval", "broadcast.enabled", "broadcast.fireworks", "ranks.nametag",
+                "economy.mode", "economy.give", "economy.take", "economy.currency"}) {
             missing |= !props.containsKey(key);
         }
         if (created || missing) {
@@ -110,6 +140,10 @@ public final class TFServerConfig {
             props.setProperty("bridge.url", url);
             props.setProperty("bridge.secret", secret);
             props.setProperty("bridge.interval", Integer.toString(interval));
+            props.setProperty("economy.mode", economyMode);
+            props.setProperty("economy.give", economyGive);
+            props.setProperty("economy.take", economyTake);
+            props.setProperty("economy.currency", currency);
             try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
                 props.store(writer, "TF Client - puente con la web. Copia bridge.secret en Cloudflare como Secret BRIDGE_SECRET");
             } catch (IOException e) {

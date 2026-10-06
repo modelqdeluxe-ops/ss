@@ -7,14 +7,14 @@ from icons import I
 # Genera las páginas HTML de public/ (cabecera, pie y secciones comunes). Uso: python3 tools/pages.py
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public')
 IP = '216.163.187.40:19001'
-NAV = [('inicio', '/', 'Inicio'), ('tienda', '/tienda', 'Tienda'), ('crates', '/crates', 'Crates'),
+NAV = [('inicio', '/', 'Inicio'), ('tienda', '/tienda', 'Tienda'),
        ('mundo', '/mundo', 'El mundo'), ('ayuda', '/ayuda', 'Ayuda')]
 # Solo en el menú del móvil (en escritorio está el botón de la cuenta en la cabecera).
 SHEET_EXTRA = [('cuenta', '/cuenta', 'Mi cuenta')]
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
          '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-         '  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">')
+         '  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">')
 
 
 def head(title, desc, page, hero=False, preload_hero=False):
@@ -47,7 +47,7 @@ def header(page):
     cur = ' aria-current="page"'
     new = '<span class="tag">Nuevo</span>'
     links = '\n'.join(
-        f'        <a href="{href}"{cur if key == page else ""}>{label}{new if key == "crates" else ""}</a>'
+        f'        <a href="{href}"{cur if key == page else ""}>{label}</a>'
         for key, href, label in NAV)
     arrow = I['arrow']
     sheet_links = '\n'.join(
@@ -117,8 +117,9 @@ def footer():
           <h4>Tienda</h4>
           <ul>
             <li><a href="/tienda#rangos">Rangos</a></li>
-            <li><a href="/crates">Crates</a></li>
-            <li><a href="/tienda#llaves">Llaves</a></li>
+            <li><a href="/tienda#crates">Crates</a></li>
+            <li><a href="/tienda#ruleta">Ruleta de armas</a></li>
+            <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
           </ul>
         </div>
         <div>
@@ -197,7 +198,7 @@ JOIN_STEPS = '\n'.join([
 
 def index():
     return head('Tierras Fantásticas — Servidor de Minecraft',
-                'Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, crates animados y una comunidad activa.',
+                'Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.',
                 'inicio', hero=True, preload_hero=True) + header('inicio') + f'''
   <main id="main">
     <section class="hero">
@@ -226,7 +227,7 @@ def index():
       <div class="panel stats reveal">
         <div class="stat"><strong data-players>—</strong><span>Jugadores conectados</span></div>
         <div class="stat"><strong>200+</strong><span>Mods en el modpack</span></div>
-        <div class="stat"><strong data-crate-count>3</strong><span>Crates animados</span></div>
+        <div class="stat"><strong data-crate-count>40</strong><span>Sets animados</span></div>
         <div class="stat"><strong>0%</strong><span>Pay-to-win</span></div>
       </div>
     </div>
@@ -260,13 +261,13 @@ def index():
     <section class="wrap section">
       <div class="section-head">
         <span class="eyebrow">Nuevo en la tienda</span>
-        <h2>Sets <span class="gold-text">legendarios</span></h2>
-        <p>Armas, herramientas, armaduras y alas con animaciones propias. Consigue una llave y abre el crate en el spawn.</p>
+        <h2>Crates <span class="gold-text">legendarias</span></h2>
+        <p>Cada crate es un set completo: armas, herramientas, armadura y alas con animaciones propias. Pruébatelo en tu personaje antes de comprarlo.</p>
       </div>
       <div class="grid grid-2 grid-4" id="crate-spotlight">
         <p class="loading">Cargando crates…</p>
       </div>
-      <p style="margin-top:24px"><a class="btn btn-ghost" href="/crates" data-crates-all>Ver todos los crates {I['arrow']}</a></p>
+      <p style="margin-top:24px"><a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates {I['arrow']}</a></p>
     </section>
 
     <section class="wrap section">
@@ -284,32 +285,42 @@ def index():
 
 
 def tienda():
-    tabs = [('gratis', 'Gratis', '/img/keys/gold.webp'), ('rangos', 'Rangos', '/img/ranks/royal.png'), ('crates', 'Crates', '/img/keys/celestial.webp'),
-            ('llaves', 'Llaves', '/img/keys/mystic.webp'), ('monedas', 'Monedas', '/img/coins-small.png')]
-    pix = ' class="pixel-img"'
+    tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('crates', 'Crates'), ('ruleta', 'Ruleta de armas'),
+            ('monedas', 'Monedas'), ('tiendamonedas', 'Tienda de monedas')]
     tab_html = '\n'.join(
-        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false"><img src="{img}" alt="" width="22" height="22"{pix if ("ranks" in img or "coins" in img) else ""}>{label}</button>'
-        for k, label, img in tabs)
+        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
+        for k, label in tabs)
     return head('Tienda — Tierras Fantásticas',
-                'Tienda oficial de Tierras Fantásticas: rangos, crates, llaves y monedas. Pago seguro con tarjeta (Stripe) y entrega automática en el juego.',
+                'Tienda oficial de Tierras Fantásticas: crates con sets completos, rangos, ruleta de armas y monedas. Pago seguro con tarjeta y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
-{page_hero('Tienda oficial', 'Apoya el reino', 'Tu compra llega sola al juego en cuanto entras al servidor. Paga con tarjeta, Apple Pay o Google Pay, sin crear cuenta.')}
-    <section class="wrap" style="padding-bottom:40px">
-      <div class="shop-bar">
-        <div class="tabs" role="tablist" aria-label="Categorías" id="shop-tabs">
+    <section class="wrap shop-head">
+      <div>
+        <span class="eyebrow">Tienda oficial</span>
+        <h1>Tienda</h1>
+        <p class="lead">Todo llega solo a tu cuenta del servidor: en segundos si estás conectado y, si no, al entrar. Pago seguro con tarjeta.</p>
+      </div>
+      <label class="shop-search" id="shop-search-wrap" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="sr-only">Buscar crate</span>
+        <input id="shop-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
+      </label>
+    </section>
+    <section class="wrap" style="padding-bottom:56px">
+      <div class="tabs shop-tabs" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
 {tab_html}
-        </div>
       </div>
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
-      <div class="grid grid-3 products" id="products" role="tabpanel">
-        <p class="loading">Cargando productos…</p>
+      <p class="shop-intro muted" id="shop-intro"></p>
+      <div class="products" id="products" role="tabpanel">
+        <p class="loading">Cargando la tienda…</p>
       </div>
+      <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda.</p>
       <div class="panel compare" id="compare" hidden></div>
       <div class="trust">
-        <div class="panel item reveal"><span class="icon">{I['lock']}</span><div><b>Pago seguro con Stripe</b><span>Tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></div></div>
-        <div class="panel item reveal"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
-        <div class="panel item reveal"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
+        <div class="panel item"><span class="icon">{I['lock']}</span><div><b>Pago seguro con Stripe</b><span>Tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></div></div>
+        <div class="panel item"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
+        <div class="panel item"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
       </div>
     </section>
   </main>
@@ -317,48 +328,21 @@ def tienda():
 
 
 def crates():
-    return head('Crates — Tierras Fantásticas',
-                'Crates de Tierras Fantásticas: más de 35 sets con armas, herramientas, armaduras y alas animadas. Mira cada pieza en 3D y consigue tu llave.',
-                'crates') + header('crates') + f'''
-  <main id="main">
-{page_hero('Crates animados', 'Crates legendarios', 'Elige un crate y toca cualquier objeto para verlo en 3D. Cada llave abre el crate una vez en el spawn y te da una pieza del set.')}
-    <section class="wrap" style="padding-top:32px">
-      <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
-      <div class="crate-browser">
-        <div class="crate-tools">
-          <div class="crate-filters" id="crate-filters" role="group" aria-label="Filtrar por rareza"></div>
-          <label class="crate-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <span class="sr-only">Buscar crate</span>
-            <input id="crate-search" type="search" placeholder="Buscar crate…" autocomplete="off" spellcheck="false">
-          </label>
-        </div>
-        <div class="crate-rail">
-          <button class="rail-btn" type="button" data-rail="-1" aria-label="Ver crates anteriores">{I['arrow']}</button>
-          <div class="crate-picker" id="crate-picker" role="tablist" aria-label="Crates"></div>
-          <button class="rail-btn" type="button" data-rail="1" aria-label="Ver más crates">{I['arrow']}</button>
-        </div>
-        <p class="crate-empty muted" id="crate-empty" hidden>Ningún crate coincide con la búsqueda.</p>
-      </div>
-      <div class="panel stage" id="crate-stage">
-        <div class="stage-art"><img id="stage-img" alt="" hidden></div>
-        <div class="stage-info" id="stage-info"><p class="loading">Cargando crates…</p></div>
-      </div>
-    </section>
-
-    <section class="wrap section">
-      <div class="section-head">
-        <span class="eyebrow">Cómo funciona</span>
-        <h2>De la tienda a tu inventario</h2>
-      </div>
-      <div class="grid grid-3 steps">
-{step('Consigue tu llave', 'Elige el crate, escribe tu nombre de Minecraft (lo comprobamos con el servidor) y paga con tarjeta.')}
-{step('Entra al servidor', 'La llave llega sola en cuanto estás dentro. Si no estabas conectado, te espera.')}
-{step('Abre el crate', 'Usa la llave sobre el crate del spawn y llévate una pieza animada del set.')}
-      </div>
-    </section>
-  </main>
-''' + footer()
+    # Las crates están ahora dentro de la tienda: la dirección antigua lleva a su pestaña.
+    return '''<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crates — Tierras Fantásticas</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=/tienda#crates">
+  <script>location.replace('/tienda#' + (location.hash.slice(1) ? 'crates-' + location.hash.slice(1) : 'crates'))</script>
+  <style>body{margin:0;background:#07080d;color:#ece8df;font:16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#e3b74c}</style>
+</head>
+<body><p>Las crates están en la <a href="/tienda#crates">tienda</a>.</p></body>
+</html>
+'''
 
 
 def mundo():
@@ -448,7 +432,9 @@ def ayuda():
 {faq('¿Qué nombre de usuario debo poner?', 'Tu nombre de Minecraft. La tienda lo comprueba con el servidor al escribirlo: tienes que haber entrado al menos una vez. La compra se entrega a tu cuenta (UUID), así que nunca llega a otro jugador.')}
 {faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios.')}
 {faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
-{faq('¿Qué me toca al abrir un crate?', 'Una pieza del set de ese crate: un arma, una herramienta, una pieza de armadura o un cosmético animado. En la página de Crates puedes ver todo lo que contiene cada uno.')}
+{faq('¿Qué recibo al comprar una crate?', 'El set completo: todas sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Llegan a tu inventario en cuanto estás conectado. En la tienda puedes ver cada pieza en 3D y probártela en tu personaje.')}
+{faq('¿Cómo funciona la ruleta de armas?', 'Cada giro te da al azar una de las 30 armas de la forja de Nazgul. La tienda elige el arma al confirmarse el pago y te la entrega en el juego; en la página de tu compra verás cuál te tocó.')}
+{faq('¿Qué es la tienda de monedas?', 'Objetos del servidor (minerales, objetos raros…) que se pagan con las monedas que ganas jugando. El staff la actualiza desde el juego y la web la muestra al momento.')}
 {faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
 {faq('No he recibido mi compra, ¿qué hago?', 'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de usuario.')}
       </div>
@@ -473,6 +459,10 @@ def success():
           <dt>En el juego</dt><dd id="d-delivery"></dd>
           <dt id="d-discord-label" hidden>Discord</dt><dd id="d-discord" hidden></dd>
         </dl>
+        <div class="prizes" id="prizes" hidden>
+          <h3>Te tocó</h3>
+          <ul id="prize-list"></ul>
+        </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px">
           <a href="/" class="btn btn-gold">Volver al inicio</a>
           <a href="/tienda" class="btn btn-ghost">Seguir comprando</a>

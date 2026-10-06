@@ -44,6 +44,8 @@
   "tfclient:starlight_wings",
   "tfclient:frostbite_wings",
   "tfclient:darkloyal_wing",
+  "tfclient:ifrit_wings",
+  "tfclient:ifrit_quiver",
   "tfclient:easter_wing"
  ]
 }

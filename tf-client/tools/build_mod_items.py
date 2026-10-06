@@ -35,7 +35,7 @@ SWORDS = {'sword', 'great_sword', 'greatsword', 'big_sword', 'rapier_sword', 'da
           'sickle', 'spear', 'staff', 'halberd', 'hammer', 'mace', 'club', 'gauntlet', 'flag'}
 AXES = {'axe', 'battle_axe', 'battleaxe', 'battleaxes'}
 HEAD = {'helmet', 'hat'}
-BACK = {'wings', 'wing', 'backpack', 'cape', 'tail'}
+BACK = {'wings', 'wing', 'backpack', 'cape', 'tail', 'quiver'}
 ARMOR = {'armor_helmet': 'helmet', 'armor_chestplate': 'chestplate', 'armor_leggings': 'leggings', 'armor_boots': 'boots'}
 
 VARIANTS = {
@@ -281,6 +281,10 @@ class SetWriter:
                 rot = el.get('rotation')
                 if rot:
                     angle = float(rot.get('angle', 0))
+                    snapped = round(angle / 22.5) * 22.5
+                    if abs(angle - snapped) < 0.01:  # 22.499999… de algunos editores
+                        angle = snapped
+                        rot = {**rot, 'angle': snapped}
                     if angle not in ANGLES or rot.get('axis') not in ('x', 'y', 'z'):
                         problems.append(f'{label}: giro no válido {rot}')
                         continue
@@ -409,7 +413,7 @@ def _apply(m, v):
 
 # Dónde va cada cosmético en la espalda, en bloques desde el cuello hacia abajo (centro, o borde de arriba).
 BACK_PLACE = {'wings': ('center', 0.30), 'wing': ('center', 0.30), 'backpack': ('center', 0.38),
-              'cape': ('top', 0.02), 'tail': ('top', 0.60)}
+              'cape': ('top', 0.02), 'tail': ('top', 0.60), 'quiver': ('center', 0.38)}
 
 
 # Los packs colocan los cosméticos de espalda para los plugins de cosméticos, que ponen el objeto en la cabeza de un
@@ -419,8 +423,8 @@ BACK_PLACE = {'wings': ('center', 0.30), 'wing': ('center', 0.30), 'backpack': (
 STAND_OFFSET = 32.0
 # Altura de la mitad de lo que se ve (en bloques, desde el cuello, hacia arriba +) cuando el pack no trae posición.
 # Para las alas es la mediana de las alas que sí la traen (-0.24).
-TARGET_Y50 = {'wings': -0.24, 'wing': -0.24, 'backpack': -0.5, 'cape': -0.4, 'tail': -1.0}
-PACK_Y50_RANGE = {'wings': (-0.7, 0.1), 'wing': (-0.7, 0.1), 'backpack': (-0.8, -0.2)}
+TARGET_Y50 = {'wings': -0.24, 'wing': -0.24, 'backpack': -0.5, 'cape': -0.4, 'tail': -1.0, 'quiver': -0.5}
+PACK_Y50_RANGE = {'wings': (-0.7, 0.1), 'wing': (-0.7, 0.1), 'backpack': (-0.8, -0.2), 'quiver': (-0.8, -0.2)}
 MAX_WIDTH = 3.3        # ancho máximo de lo visible, en bloques
 BACK_SURFACE = 0.125   # la espalda del jugador, en bloques desde el centro del cuerpo
 BACK_GAP_MAX = 0.17    # si lo de delante del cosmético queda más lejos que esto, se acerca...
@@ -681,12 +685,13 @@ def main(packs):
         path = os.path.join(ASSETS, sub)
         if sub == 'models/item':
             for f in os.listdir(path) if os.path.isdir(path) else []:
-                if f != 'sets' and f.endswith('.json') and '_' in f:
+                if f != 'sets' and f.endswith('.json') and '_' in f and not f.startswith('job_'):
                     os.remove(os.path.join(path, f))
             shutil.rmtree(os.path.join(path, 'sets'), ignore_errors=True)
         else:
             shutil.rmtree(path, ignore_errors=True)
     crates = {row[0]: row for row in C.CRATES}
+    crates.setdefault(C.ROULETTE_SET, C.ROULETTE_ROW)
     sets_out, lang = [], {'itemGroup.tfclient.sets': 'Tierras Fantásticas · Sets'}
     total = 0
     for set_id, row in crates.items():
@@ -778,7 +783,8 @@ def main(packs):
     for lang_file in ('es_es.json', 'en_us.json'):
         path = os.path.join(ASSETS, 'lang', lang_file)
         old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
-        old = {k: v for k, v in old.items() if not k.startswith(('item.tfclient.', 'tfclient.set.', 'itemGroup.tfclient'))}
+        old = {k: v for k, v in old.items()
+               if k.startswith('item.tfclient.job_') or not k.startswith(('item.tfclient.', 'tfclient.set.', 'itemGroup.tfclient'))}
         with open(path, 'w', encoding='utf-8') as fh:
             json.dump({**old, **lang}, fh, ensure_ascii=False, indent=1)
     print(f'TOTAL {total} objetos en {len(sets_out)} sets; mipmap mínimo {mip_low[0]}px')

@@ -99,6 +99,7 @@ SETS = {
     'frostbite': ('Frostbite_Animated_Weapons_And_Tools_Set/ItemsAdder Setup/ItemsAdder/contents/frostbite_set/resourcepack/assets', 'frostbite_set', COMMON),
     'darkloyal': ('Dark_Loyal_Setup/ItemsAdder/contents/gearforge_dark_loyal/resourcepack/assets', 'gearforge_dark_loyal',
                   COMMON + [('battleaxes', 'Hacha de batalla'), ('doublescythe', 'Guadaña doble')]),
+    'ifrit': ('elitecreatures-ifrit_animated-weapon/RSS/assets', 'elitecreatures', COMMON + [('quiver', 'Carcaj')], 'ifrit_animated/'),
     # El Cyber Set trae 7 colores; el crate usa el original (cyan).
     'cyber': ('CyberSet-EliteCreatures/- Cyber Set/RSS/assets', 'cyber_set', COMMON + [('rod', 'Caña de pescar')], 'cyber_original_set/'),
 }
@@ -303,6 +304,33 @@ def model_for(packs, set_id, name):
     return root, ns, load_model(root, ns, name) or (load_model(root, ns, prefix + name) if prefix else None)
 
 
+def clean_for_viewer(out):
+    """Las mismas correcciones que el TF Client (tf-client/tools/build_mod_items.py), para que el visor 3D no muestre
+    rayas ni cuadritos: UV de ancho o alto cero → un solo texel, y caras superpuestas en el mismo plano separadas."""
+    for el in out.get('elements', []):
+        for face in el.get('faces', {}).values():
+            uv = face.get('uv')
+            if not uv or len(uv) != 4:
+                continue
+            uw, uh = abs(uv[2] - uv[0]), abs(uv[3] - uv[1])
+            if (uw < 1e-6) == (uh < 1e-6):
+                continue
+            tex = out['textures'].get(str(face.get('texture', '')).lstrip('#'), {})
+            fw, fh = tex.get('fw', 16), tex.get('fh', 16)
+
+            def snap(a, b, n):
+                i = min(n - 1, max(0, int((a + b) / 2 * n / 16)))
+                return round((i + 0.5) * 16 / n, 5)
+            u, v = snap(uv[0], uv[2], fw), snap(uv[1], uv[3], fh)
+            face['uv'] = [u, v, u, v]
+    try:
+        sys.path.insert(0, os.path.join(HERE, '..', '..', 'tf-client', 'tools'))
+        from build_mod_items import separate_coplanar  # noqa: E402
+    except Exception:
+        return
+    separate_coplanar(out)
+
+
 def build_set(packs, set_id):
     rel_root, ns, items, *_ = SETS[set_id]
     root = os.path.join(packs, rel_root)
@@ -339,8 +367,10 @@ def build_set(packs, set_id):
             }
         if model.get('elements'):
             out['elements'] = [
-                {k: el[k] for k in ('from', 'to', 'rotation', 'faces') if k in el} for el in model['elements']
+                {k: (json.loads(json.dumps(el[k])) if k == 'faces' else el[k]) for k in ('from', 'to', 'rotation', 'faces') if k in el}
+                for el in model['elements']
             ]
+            clean_for_viewer(out)
             img = render(model, textures, THUMB)
         else:
             # Objeto plano (item/generated): el visor lo extruye como Minecraft
@@ -371,7 +401,9 @@ def find_armor_icon(root, piece, within=''):
             continue
         for f in files:
             name = f.lower()
-            if not name.endswith('.png') or piece not in name or 'layer' in name or name.startswith('armor_'):
+            # Algún pack escribe «chestplace» en vez de «chestplate».
+            if not name.endswith('.png') or (piece not in name and not (piece == 'chestplate' and 'chestplace' in name)) \
+                    or 'layer' in name or name.startswith('armor_'):
                 continue
             path = os.path.join(dirpath, f)
             try:

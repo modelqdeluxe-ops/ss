@@ -3,13 +3,21 @@
 Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasarela de pago real. Funciona en
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
-- Web por secciones con pestañas horizontales y una página para cada una. Diseño oscuro con oro (fuentes Cinzel e
-  Inter), pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
+- Web por secciones con pestañas horizontales y una página para cada una. Diseño oscuro con oro (fuentes Cinzel y
+  Manrope), pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
   (solo animaciones de `transform`/`opacity`, que se apagan con «reducir movimiento»):
   - **Inicio** (`/`): IP (clic para copiar), estado del servidor en vivo y los crates destacados.
-  - **Tienda** (`/tienda`): rangos, crates, llaves y monedas en pestañas (`/tienda#crates` abre la pestaña directamente).
-  - **Crates** (`/crates`): escaparate de cada crate con su modelo, la armadura y todo lo que contiene (`/crates#necros`).
-    La **Forja de Nazgul** (`/crates#nazgul`) enseña sus diez armas renderizadas a partir de los modelos 3D del pack.
+  - **Tienda** (`/tienda`), con buscador y pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**,
+    **Rangos**, **Crates**, **Ruleta de armas**, **Monedas** y **Tienda de monedas**.
+    - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) y se compra entera, sin
+      llaves. Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
+      puesto, tal como lo coloca el TF Client en el juego; al tocar una pieza se ve suelta en 3D y se puede
+      **equipar** o quitar.
+    - **Ruleta de armas**: 1, 5 o 10 giros; cada giro da al azar una de las 30 armas de la forja de Nazgul. La tienda
+      la elige al confirmarse el pago y la página de la compra dice cuáles tocaron.
+    - **Tienda de monedas**: objetos del servidor que se compran con monedas del juego. La llena el staff desde el
+      juego (`/tf tienda add <precio>`) y la web se actualiza sola.
+  - `/crates` lleva a la pestaña de crates (enlaces antiguos).
   - Rangos con escudos animados y una tabla para comparar sus ventajas (`/tienda#rangos`).
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
@@ -164,44 +172,42 @@ Edita `config/products.json`. Cada producto tiene:
 | Campo         | Descripción                                                      |
 |---------------|------------------------------------------------------------------|
 | `id`          | Identificador único                                              |
-| `category`    | `rangos`, `llaves` o `monedas` (las pestañas de la tienda)       |
+| `category`    | `gratis`, `rangos`, `crates`, `ruleta` o `monedas` (las pestañas de la tienda) |
 | `price`       | Precio en **céntimos** (`499` = 4,99)                            |
 | `maxQuantity` | Opcional. Cantidad máxima por compra (por defecto 10; rangos = 1)|
-| `featured`    | Opcional. Lo destaca como "Más popular"                          |
 | `discordRoles`| Opcional. IDs de los roles de Discord que se dan al comprar      |
 | `commands`    | Comandos que ejecuta el servidor; `{player}` es el nombre actual del jugador y `{uuid}` su UUID |
-| `image`       | Opcional. Imagen de la tarjeta (`img/ranks/…`, `img/keys/…`, `img/crates/…`)     |
+| `image`       | Opcional. Imagen de la tarjeta (`img/ranks/…`, `img/gifts/…`, `img/crates/…`)     |
 | `perks`       | Opcional. Lista corta de ventajas que se ve en la tarjeta                        |
 | `tier`, `specs` | Rangos: orden y filas de la tabla comparativa (`true`/`false` o un texto)      |
 | `rank`        | Rangos: `group` (grupo de LuckPerms), `prefix` (texto del nametag), `color` (color de Minecraft) y `hex` (el de la web y el anuncio) |
 
 #### Crates
 
-Los crates (`"category": "crates"`) llevan además estos campos, que se muestran en la página `/crates`:
+Las crates (`"category": "crates"`) las escribe `tools/crates.py` y llevan además:
 
 | Campo         | Descripción                                                                      |
 |---------------|----------------------------------------------------------------------------------|
-| `theme`       | `valentine`, `necros` o `luminite`: colores del crate y ancla de la URL           |
-| `rarity`      | Etiqueta de rareza ("Legendario", "Mítico"...)                                   |
+| `theme`, `set`| Id del set (ancla de la URL: `/tienda#crates-necros`)                              |
+| `colors`      | Sus dos colores (claro, intenso)                                                   |
 | `tagline`     | Frase corta bajo el nombre                                                        |
-| `image`       | Imagen del set en `public/img/crates/`                                            |
-| `armor`       | Piezas de armadura: `{ "name": "Casco", "icon": "img/crates/necros-helmet.png" }` |
-| `items`       | Lista de armas, herramientas y cosméticos que puede tocar                          |
-| `gallery`     | Opcional. Armas con imagen: `{ "name": "Hoja Abisal", "icon": "img/crates/nazgul/abyssal_blade.webp" }` |
-| `keyImage`    | Imagen de la llave (selector de crates y ventana de compra)                        |
+| `image`       | Portada del set en `public/img/crates/`                                           |
+| `models`      | Todas las piezas del set (`id`, `name`): miniaturas, visor 3D y probador           |
 
-Cada compra da una llave por unidad con `crate key give {player} <crate> 1` (sintaxis de ExcellentCrates/CrazyCrates).
-Crea en tu plugin de crates un crate con ese mismo nombre (`valentine`, `necros`, `luminite`) cuyas recompensas sean
-las piezas del set (ItemsAdder/Nexo/Oraxen, según el pack instalado). Para añadir un crate nuevo con otro tema, copia
-uno de los bloques `[data-theme='...']` del principio de `public/styles.css` con sus tres colores.
+Cada crate se compra una vez (`maxQuantity: 1`) y entrega el set entero con `tf web sets give {player} <set>` (TF
+Client). La ruleta (`"category": "ruleta"`, campo `spins`) no lleva comandos: al pagar, la tienda elige las armas y
+manda un `tf web sets give {player} nazgul <arma>` por giro.
 
-Los comandos de ejemplo usan LuckPerms (`lp`), EssentialsX (`eco`, `broadcast`) y un plugin de cofres (`crate`).
+Los comandos de ejemplo usan LuckPerms (`lp`) y EssentialsX (`eco`). Ajústalos a los plugins de tu servidor.
 Ajústalos a los plugins de tu servidor. Los precios siempre se leen del servidor, así que nadie puede cambiarlos desde el navegador.
 
 ## Crates y visor 3D
 
-Cada crate enseña todos sus objetos (armas, herramientas, cofre, llave, alas, cascos y las 4 piezas de armadura).
-Al tocar uno se abre un visor 3D (`public/viewer.js`, con three.js en `public/vendor/`) que gira el modelo real del
+Cada crate enseña todos sus objetos (armas, herramientas, alas, cascos y las 4 piezas de armadura) en el probador
+(`public/wardrobe.js`), que pone al jugador (su skin sale de `/api/skin/<nombre>`) con las piezas en el mismo sitio que
+el TF Client: en la mano, en la cabeza y en la espalda. Los modelos del probador salen del mod ya convertidos con
+`python3 tools/wear_export.py` (después de `tf-client/tools/build_mod_items.py`), a `public/wear/`.
+En la ruleta, al tocar un arma se abre un visor 3D (`public/viewer.js`, con three.js en `public/vendor/`) que gira el modelo real del
 pack con sus texturas animadas. Los datos salen de los packs con tres scripts (necesitan Pillow y numpy):
 
 ```bash
@@ -211,8 +217,8 @@ python3 tools/crates.py                                                         
 ```
 
 Para añadir un pack nuevo: súmalo a `SETS` en `tools/build_items.py` (ruta a su carpeta `assets` y espacio de
-nombres), añade su línea en `tools/crates.py` (nombre, rareza, frase, descripción, llave, precio y colores) y ejecuta
-los tres scripts. Las páginas comunes (cabecera, pie…) se generan con `python3 tools/pages.py`.
+nombres), añade su línea en `tools/crates.py` (nombre, frase, descripción, precio y colores) y ejecuta
+los tres scripts (y `wear_export.py` tras regenerar el mod). Las páginas comunes (cabecera, pie…) se generan con `python3 tools/pages.py`.
 
 ## Pruebas
 
@@ -228,3 +234,5 @@ falla, que se rechazan firmas falsas o viejas, los pagos que tardan, reembolsos 
 de la diferencia, rango repetido bloqueado, grupos inferiores quitados) y los cambios de rango del staff. Con una API de
 Discord simulada comprueban el login, la vinculación con `/tf vincular`, «mis compras», que se da el rol (o se añade al
 servidor) también sin sesión si el jugador está vinculado, el anuncio, y que un fallo de Discord no impide la entrega.
+También que una crate entrega el set entero, que la ruleta elige armas válidas y las guarda en la compra, y que la
+tienda de monedas se llena, cambia y vacía solo desde el puente.

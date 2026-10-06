@@ -161,11 +161,42 @@ export function createApp(env) {
       amount: order.amount,
       currency: order.currency,
       upgradeFrom: order.rankFrom ? productById.get(order.rankFrom)?.name || null : null,
+      prizes: order.prizes
+        ? order.prizes.map((p) => ({ ...p, thumb: product?.set ? `/img/items/${product.set}/${p.id}.webp` : null }))
+        : null,
       refunded: order.refunded || null,
       createdAt: order.createdAt,
       deliveredAt: order.deliveredAt,
       discord: order.discord ? { username: order.discord.username, status: order.discord.status || null } : null,
     };
+  }
+
+  // Icono de un objeto de la tienda de monedas: los del TF Client tienen miniatura en la web.
+  const setIds = [...new Set(products.map((p) => p.set).filter(Boolean))].sort((a, b) => b.length - a.length);
+  function coinShopIcon(item) {
+    const vanilla = /^minecraft:([a-z0-9_]+)$/.exec(item || '');
+    if (vanilla) return `/api/itemicon/${vanilla[1]}`;
+    const m = /^tfclient:([a-z0-9_]+)$/.exec(item || '');
+    if (!m) return null;
+    const set = setIds.find((s) => m[1].startsWith(`${s}_`));
+    return set ? `/img/items/${set}/${m[1].slice(set.length + 1)}.webp` : null;
+  }
+
+  function cleanShopOp(op) {
+    if (!op || typeof op !== 'object') return null;
+    if (op.op === 'clear') return { op: 'clear' };
+    const id = typeof op.id === 'string' && /^[a-z0-9_-]{1,40}$/.test(op.id) ? op.id : null;
+    if (!id) return null;
+    if (op.op === 'remove') return { op: 'remove', id };
+    if (op.op !== 'add') return null;
+    const item = typeof op.item === 'string' && /^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(op.item) ? op.item : null;
+    const price = Number(op.price);
+    const count = Number(op.count);
+    if (!item || !Number.isInteger(price) || price < 1 || price > 1e9 || !Number.isInteger(count) || count < 1 || count > 6400) return null;
+    const name = String(op.name || item).replace(/[\u0000-\u001f]/g, '').slice(0, 64);
+    const nbt = typeof op.nbt === 'string' && op.nbt.length <= 8000 ? op.nbt : null;
+    const by = typeof op.by === 'string' && USERNAME_RE.test(op.by) ? op.by : null;
+    return { op: 'add', id, item, name, count, price, nbt, by };
   }
 
   // --- Rutas ---
@@ -216,6 +247,46 @@ export function createApp(env) {
         out.quote = q.blocked ? { blocked: q.blocked } : { unit: q.unit, upgradeFrom: q.from?.name || null };
       }
       return json(out);
+    },
+
+    // Skin del jugador para el probador (desde aquí, para que el navegador pueda usarla en 3D sin problemas de CORS).
+    'GET /api/skin/:name': async (req, { params }) => {
+      const name = USERNAME_RE.test(params.name) || params.name === 'MHF_Steve' ? params.name : 'MHF_Steve';
+      try {
+        const res = await fetch(`https://mc-heads.net/skin/${encodeURIComponent(name)}`, { cf: { cacheTtl: 3600 } });
+        if (!res.ok || !String(res.headers.get('content-type')).startsWith('image/')) throw new Error(String(res.status));
+        return new Response(res.body, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=3600' } });
+      } catch {
+        return new Response('Skin no disponible', { status: 404 });
+      }
+    },
+
+    // Icono de un objeto de Minecraft para la tienda de monedas (textura del objeto o, si es un bloque, de su cara).
+    'GET /api/itemicon/:name': async (req, { params }) => {
+      if (!/^[a-z0-9_]{1,64}$/.test(params.name)) return new Response('No válido', { status: 400 });
+      const base = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.1/assets/minecraft/textures';
+      const plain = params.name.replace(/^enchanted_/, '');
+      const names = [`item/${params.name}`, `item/${plain}`, `block/${params.name}`, `block/${params.name}_top`, `block/${params.name}_front`];
+      for (const path of names) {
+        try {
+          const res = await fetch(`${base}/${path}.png`, { cf: { cacheTtl: 86400 } });
+          if (res.ok) {
+            return new Response(res.body, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' } });
+          }
+        } catch {
+          break;
+        }
+      }
+      return new Response('Sin icono', { status: 404 });
+    },
+
+    // Tienda de monedas: lo que el staff ha puesto desde el juego. La web la consulta cada pocos segundos.
+    'GET /api/coinshop': async () => {
+      const items = await store.coinShop();
+      return json({
+        version: await store.coinShopVersion(),
+        items: items.map((it) => ({ id: it.id, item: it.item, name: it.name, count: it.count, price: it.price, icon: coinShopIcon(it.item) })),
+      });
     },
 
     // Estado del servidor según el puente (null si el puente no está conectado).
@@ -583,6 +654,12 @@ export function createApp(env) {
         else if (rankById.has(change.rank)) await store.setRank(change.uuid, change.rank, rankById.get(change.rank).tier, { force: true });
       }
 
+      // /tf tienda add|quitar|vaciar desde el juego
+      const shopOps = list(body.shop, 50)
+        .map((op) => cleanShopOp(op))
+        .filter(Boolean);
+      if (shopOps.length) await store.applyCoinShop(shopOps);
+
       const max = Number.isInteger(body.max) ? body.max : null;
       const done = list(body.done, 100).filter((d) => d && Number.isInteger(d.id));
       const templates = Number(body.protocol) >= BRIDGE_TEMPLATES;
@@ -602,6 +679,7 @@ export function createApp(env) {
         ranks: playerRanks,
         rankList: ranks.map(rankInfo),
         linkResults,
+        coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
       });
     },
@@ -654,6 +732,19 @@ export function createApp(env) {
     // Los comandos se guardan con {player}/{uuid}: el mod los rellena al entregar con el nombre actual del UUID.
     const commands = [];
     for (let i = 0; i < local.quantity; i++) commands.push(...product.commands);
+    // Ruleta de armas: cada giro es un arma al azar del set, elegida aquí (no en el navegador).
+    let prizes = null;
+    if (product.category === 'ruleta') {
+      const pool = product.models || [];
+      const spins = (product.spins || 1) * local.quantity;
+      prizes = [];
+      for (let i = 0; i < spins && pool.length; i++) {
+        const pick = pool[crypto.getRandomValues(new Uint32Array(1))[0] % pool.length];
+        prizes.push({ id: pick.id, name: pick.name });
+        commands.push(`tf web sets give {player} ${product.set} ${pick.id}`);
+      }
+      await store.updateOrder(id, { prizes });
+    }
     if (rank) {
       // Al mejorar se quitan los grupos de los rangos inferiores (si no los tiene, LuckPerms no hace nada).
       for (const lower of ranks) if (lower.tier < rank.tier) commands.push(`lp user {player} parent remove ${lower.rank.group}`);
@@ -663,6 +754,7 @@ export function createApp(env) {
       color: rank?.rank.hex || product.colors?.[1] || '#f4c95d',
       rank: rankInfo(rank),
       upgradeFrom: local.rankFrom ? productById.get(local.rankFrom)?.name || null : null,
+      prizes: prizes ? prizes.map((p) => p.name) : null,
     };
 
     const queued = await store.queueDelivery(id, { username: local.username, uuid: local.uuid, commands, extra, paymentIntent });
@@ -722,7 +814,9 @@ export function createApp(env) {
       await discord.announce({
         embed: {
           title: rank ? `👑 ¡${order.username} ahora es ${rank.rank.prefix}!` : '🎉 ¡Nueva compra en la tienda!',
-          description: `${who} ha conseguido **${product.name}**${order.quantity > 1 ? ` ×${order.quantity}` : ''}${upgrade ? ` (mejora desde ${upgrade})` : ''}. ¡Gracias por apoyar ${SERVER_NAME}!`,
+          description: `${who} ha conseguido **${product.name}**${order.quantity > 1 ? ` ×${order.quantity}` : ''}${upgrade ? ` (mejora desde ${upgrade})` : ''}${
+            order.prizes?.length ? `: ${order.prizes.map((p) => `**${p.name}**`).join(', ')}` : ''
+          }. ¡Gracias por apoyar ${SERVER_NAME}!`,
           color: Number.parseInt((rank?.rank.hex || product.colors?.[1] || '#f4c95d').slice(1), 16),
           thumbnail: { url: head(order.username) },
           timestamp: new Date().toISOString(),

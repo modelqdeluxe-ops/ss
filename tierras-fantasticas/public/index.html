@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tierras Fantásticas — Servidor de Minecraft</title>
-  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, crates animados y una comunidad activa.">
+  <meta name="description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.">
   <meta name="theme-color" content="#07080d">
   <meta property="og:title" content="Tierras Fantásticas — Servidor de Minecraft">
-  <meta property="og:description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, crates animados y una comunidad activa.">
+  <meta property="og:description" content="Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.">
   <meta property="og:image" content="/img/og.jpg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/img/hero-1920.webp" imagesrcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" imagesizes="100vw">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
@@ -30,7 +30,6 @@
       <nav class="nav" aria-label="Secciones">
         <a href="/" aria-current="page">Inicio</a>
         <a href="/tienda">Tienda</a>
-        <a href="/crates">Crates<span class="tag">Nuevo</span></a>
         <a href="/mundo">El mundo</a>
         <a href="/ayuda">Ayuda</a>
       </nav>
@@ -53,7 +52,6 @@
     <nav aria-label="Secciones">
       <a href="/" aria-current="page">Inicio<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="/tienda">Tienda<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      <a href="/crates">Crates<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="/mundo">El mundo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="/ayuda">Ayuda<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="/cuenta">Mi cuenta<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -95,7 +93,7 @@
       <div class="panel stats reveal">
         <div class="stat"><strong data-players>—</strong><span>Jugadores conectados</span></div>
         <div class="stat"><strong>200+</strong><span>Mods en el modpack</span></div>
-        <div class="stat"><strong data-crate-count>3</strong><span>Crates animados</span></div>
+        <div class="stat"><strong data-crate-count>40</strong><span>Sets animados</span></div>
         <div class="stat"><strong>0%</strong><span>Pay-to-win</span></div>
       </div>
     </div>
@@ -164,13 +162,13 @@
     <section class="wrap section">
       <div class="section-head">
         <span class="eyebrow">Nuevo en la tienda</span>
-        <h2>Sets <span class="gold-text">legendarios</span></h2>
-        <p>Armas, herramientas, armaduras y alas con animaciones propias. Consigue una llave y abre el crate en el spawn.</p>
+        <h2>Crates <span class="gold-text">legendarias</span></h2>
+        <p>Cada crate es un set completo: armas, herramientas, armadura y alas con animaciones propias. Pruébatelo en tu personaje antes de comprarlo.</p>
       </div>
       <div class="grid grid-2 grid-4" id="crate-spotlight">
         <p class="loading">Cargando crates…</p>
       </div>
-      <p style="margin-top:24px"><a class="btn btn-ghost" href="/crates" data-crates-all>Ver todos los crates <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+      <p style="margin-top:24px"><a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
     </section>
 
     <section class="wrap section">
@@ -219,8 +217,9 @@
           <h4>Tienda</h4>
           <ul>
             <li><a href="/tienda#rangos">Rangos</a></li>
-            <li><a href="/crates">Crates</a></li>
-            <li><a href="/tienda#llaves">Llaves</a></li>
+            <li><a href="/tienda#crates">Crates</a></li>
+            <li><a href="/tienda#ruleta">Ruleta de armas</a></li>
+            <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
           </ul>
         </div>
         <div>

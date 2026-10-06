@@ -48,7 +48,8 @@ No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
 
 ## Sets de Tierras Fantásticas (objetos del juego)
 
-El mod añade los **40 sets** de la tienda (839 objetos, los mismos que enseña la web) con sus modelos 3D y texturas
+El mod añade los **41 sets** de la tienda (859 objetos, los mismos que enseña la web: las 40 crates y las 30 armas de
+la ruleta de Nazgul) con sus modelos 3D y texturas
 animadas: armas, herramientas, arcos y ballestas (se tensan con sus propias animaciones), cañas, escudos, tridentes,
 armaduras completas (la de Pequeño Unicornio, animada también puesta), cascos y sombreros que se ponen en la cabeza, y
 alas, mochilas, capas y colas que se ven en la espalda. Van en el hueco del pecho o, con los mods Accessories o
@@ -79,6 +80,21 @@ Con el puente activo, además:
 /tf rango <jugador> ninguno        (staff, nivel 3) se lo quita (p. ej. tras un reembolso)
 ```
 
+Tienda de monedas, monedas y oficios (más abajo):
+
+```
+/tf tienda                         (todos) abre la tienda de monedas
+/tf tienda add <precio> [nombre]   (staff, nivel 3) vende lo que tienes en la mano, con esa cantidad
+/tf tienda precio <id> <precio>    (staff) cambia el precio
+/tf tienda quitar <id> | lista | vaciar
+/tf monedas                        (todos) tus monedas
+/tf monedas dar|quitar|poner <jugador> <cantidad>   (staff, nivel 3)
+/tf jobs   (o /tf oficios)         (todos) menú de oficios
+/tf jobs ver|unirse <oficio>, /tf jobs abandonar
+/tf jobs recargar                  (staff) vuelve a leer config/tfclient-jobs.json
+/tf jobs nivel|xp <jugador> <oficio> <n>, /tf jobs reiniciar <jugador> [oficio]   (staff)
+```
+
 Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos son `tfclient:<set>_<objeto>`
 (por ejemplo `tfclient:valentine_sword`), por si los usa un plugin de crates.
 
@@ -87,11 +103,54 @@ Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos 
 `tools/build_mod_items.py <carpeta con los packs descomprimidos>` copia modelos, texturas, animaciones y armaduras de
 los packs (los sets y sus nombres salen de `tierras-fantasticas/tools/build_items.py` y `crates.py`, igual que en la
 web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft 1.20.1.
+`tools/build_jobs_gui.py <carpeta>` prepara los fondos y los iconos de los oficios (pack *Medieval Jobs*): quita los
+textos en inglés del cartel y de la cinta, que el mod escribe en español.
+
+## Monedas
+
+La tienda de monedas y los oficios pagan y cobran con la economía que diga `economy.mode` en
+`config/tfclient-server.properties`:
+
+| `economy.mode` | De dónde salen las monedas |
+| -------------- | -------------------------- |
+| `auto` (por defecto) | Vault si está (servidor Mohist con EssentialsX, CMI…); si no, las del TF Client |
+| `vault`        | La economía del servidor a través de Vault |
+| `tf`           | Monedas propias del TF Client, guardadas en `<mundo>/tfclient/monedas.json`; se ven con `/tf monedas` |
+| `comandos`     | `economy.give` / `economy.take` (por defecto `eco give/take {player} {amount}`); el de quitar tiene que fallar si no hay bastantes |
+
+`economy.currency` es el nombre de la moneda en los mensajes (`monedas`). Si usas `tf`, los productos de monedas de la
+web tienen que dar con `tf monedas dar {player} <cantidad>` en vez de `eco give`.
+
+## Tienda de monedas
+
+El staff pone a la venta lo que tiene en la mano con `/tf tienda add <precio> [nombre]` (el objeto exacto: cantidad,
+encantamientos, nombre y NBT). Los jugadores compran con `/tf tienda` (clic y otro clic para confirmar). Se guarda en
+`config/tfclient-tienda.json` y, con el puente activo, la pestaña *Tienda de monedas* de la web se actualiza sola en
+unos segundos (al conectar se le manda la tienda entera: el servidor es el que manda).
+
+## Oficios (`/tf jobs`)
+
+Diez oficios con el arte del pack *Medieval Jobs*: granjero, minero, leñador, excavador, pescador, cazador, alquimista,
+herrero, constructor y encantador. El menú es un cofre normal (5 filas) con el marco de madera dibujado por el TF
+Client: el cartel con el oficio arriba y la rejilla de 5×2 con los oficios (menú principal) o con sus misiones.
+
+- Se elige un oficio y se gana experiencia del oficio y monedas haciendo su trabajo (las monedas se pagan juntas cada
+  `pagoCadaSegundos`, con un aviso en la barra de acción). Cada nivel paga más (`bonusMonedasPorNivel`).
+- Misiones por nivel (diarias, repetibles o de una vez) que se cobran con un clic: monedas, experiencia, objetos o
+  comandos. Subir de nivel también da monedas y, en los hitos, premios.
+- *Abandonar oficio* vuelve al menú de selección y **no pierde nada**: el nivel y las misiones se guardan por si vuelve.
+  `esperaCambioMinutos` evita cambiar de oficio a cada rato.
+- Antitrampas: romper lo que uno mismo ha colocado (o colocar en el mismo sitio otra vez) no cuenta, los cultivos solo
+  cuentan maduros, los monstruos de generadores no cuentan (`generadoresCuentan`) y en creativo no se gana nada.
+- Todo está en `config/tfclient-jobs.json` (se crea la primera vez, en español): oficios, nombres, colores, fondos,
+  acciones que pagan (`romper`, `cosechar`, `colocar`, `matar`, `pescar`, `fabricar`, `fundir`, `preparar`,
+  `encantar`, `reparar`, `criar`, con ids, etiquetas `#...` o `*`), misiones, niveles y recompensas. Se aplica sin
+  reiniciar con `/tf jobs recargar`. El progreso está en `<mundo>/tfclient/oficios.json`.
 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.2.9.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.0.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
@@ -105,6 +164,10 @@ web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft
    broadcast.enabled=true
    broadcast.fireworks=true
    ranks.nametag=true
+   economy.mode=auto
+   economy.give=eco give {player} {amount}
+   economy.take=eco take {player} {amount}
+   economy.currency=monedas
    ```
    `bridge.url` es `tierrasfantásticas.store` escrito como lo usa internet. `broadcast.enabled=false` quita el anuncio
    a todos (el comprador sigue recibiendo su mensaje), `broadcast.fireworks=false` los fuegos artificiales y
