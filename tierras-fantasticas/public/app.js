@@ -214,19 +214,30 @@
     if (page === 'tienda') initShop();
   }
 
-  // Brillo animado del color de la crate (detrás de la imagen) y su retraso, para que no laten todas a la vez.
-  const glow = (i) => `<span class="crate-glow" aria-hidden="true" style="--d:${(-i * 0.7).toFixed(1)}s"></span>`;
+  // Brillo de la crate: un aura de su color que late y destellos que parpadean alrededor (posiciones fijas por crate,
+  // con retrasos distintos para que no parpadeen todas a la vez).
+  const SPARKS = [
+    [14, 22, 1], [82, 18, 0.85], [26, 72, 0.75], [76, 66, 1], [50, 12, 0.7], [92, 46, 0.8], [6, 48, 0.7], [62, 86, 0.85],
+    [36, 30, 0.6], [66, 34, 0.65],
+  ];
+  const glow = (i) => {
+    const d = (-i * 0.7).toFixed(1);
+    const sparks = SPARKS.map(([x, y, s], k) => {
+      const delay = ((i * 0.37 + k * 0.29) % 2.6).toFixed(2);
+      return `<i style="left:${x}%;top:${y}%;--s:${s};animation-delay:${delay}s"></i>`;
+    }).join('');
+    return `<span class="crate-glow" aria-hidden="true" style="--d:${d}s"></span><span class="sparkles" aria-hidden="true">${sparks}</span>`;
+  };
 
-  // Inicio: escaparate que va cambiando de crate, fila de crates y rangos
+  // Inicio: solo unas pocas crates (lo demás está en la tienda)
   function renderHome() {
     const list = crates();
     $$('[data-crate-count]').forEach((el) => (el.textContent = list.length));
     $$('[data-crates-all]').forEach((el) => (el.innerHTML = `Ver las ${list.length} crates ${ICON_ARROW}`));
-    const featured = list.slice(-6).reverse();
-    startShowcase(featured);
     const box = $('#crate-spotlight');
-    box.innerHTML = featured
-      .concat(list.slice(-10, -6).reverse())
+    box.innerHTML = list
+      .slice(-4)
+      .reverse()
       .map(
         (p, i) => `
         <a class="crate-tile home-tile reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
@@ -239,48 +250,7 @@
         </a>`,
       )
       .join('');
-    const strip = $('#rank-strip');
-    strip.innerHTML = ranks()
-      .map(
-        (p) => `
-        <a class="rank-mini reveal" href="/tienda#rangos"${themeAttr(p)}>
-          ${p.image ? img(p.image, '', '', ' width="88" height="88"') : ''}
-          <b>${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</b>
-          <span>${formatPrice(p.price)}</span>
-        </a>`,
-      )
-      .join('');
     observeReveal();
-  }
-
-  let showcaseTimer = null;
-  function startShowcase(list) {
-    const card = $('#showcase');
-    if (!card || !list.length) return;
-    const dots = $('.showcase-dots', card);
-    dots.innerHTML = list.map(() => '<i></i>').join('');
-    let i = 0;
-    const show = () => {
-      const p = list[i % list.length];
-      applyTheme(card, p);
-      card.href = `/tienda#crates-${p.theme || p.id}`;
-      card.setAttribute('aria-label', `Ver la crate ${p.name}`);
-      const pic = $('.showcase-img', card);
-      pic.classList.remove('in');
-      const next = new Image();
-      next.onload = () => {
-        pic.src = next.src;
-        requestAnimationFrame(() => pic.classList.add('in'));
-      };
-      next.src = asset(p.image);
-      $('.showcase-name', card).textContent = p.name.replace(/^Crate\s+/i, '');
-      $('.showcase-meta', card).textContent = `${piecesText(p)} · ${formatPrice(p.price)}`;
-      $$('i', dots).forEach((d, j) => d.classList.toggle('on', j === i % list.length));
-      i++;
-    };
-    show();
-    clearInterval(showcaseTimer);
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) showcaseTimer = setInterval(show, 4500);
   }
 
   // Tienda: tarjetas de regalos, rangos y monedas
@@ -512,7 +482,18 @@
                 ${p.spins} ${p.spins === 1 ? 'giro' : 'giros'} · ${formatPrice(p.price)}</button>`,
             )
             .join('')}</div>
-          <p class="muted small">Las probabilidades son las mismas en cada giro. En la página de tu compra verás qué te tocó.</p>
+          <div class="coin-spins">
+            <span class="coin-spins-label"><img src="/img/coins-small.png" alt="" width="20" height="20" class="pixel-img">O gira con las monedas del servidor</span>
+            <div class="spin-buttons">${spins
+              .filter((p) => p.coinPrice)
+              .map(
+                (p) => `<button type="button" class="btn btn-ghost" data-coin-spin="${p.spins}">
+                  ${p.spins} ${p.spins === 1 ? 'giro' : 'giros'} · ${new Intl.NumberFormat('es-ES', { useGrouping: 'always' }).format(p.coinPrice)} monedas</button>`,
+              )
+              .join('')}</div>
+            <p class="muted small">Se cobra en el juego cuando estés conectado (o al entrar). Si no tienes bastantes monedas, no se cobra nada. En el juego también puedes girar con <code>/tf ruleta</code>.</p>
+          </div>
+          <p class="muted small">Las probabilidades son las mismas en cada giro, con dinero o con monedas. En la página de tu tirada verás qué te tocó.</p>
         </div>
         <div class="odds" aria-label="Premios y probabilidades">
           <h3>Premios y probabilidades</h3>
@@ -544,6 +525,34 @@
       </section>`;
     for (const pic of $$('.odds-icon img', box)) pic.classList.add('pixel-img');
   }
+
+  // Girar con monedas: hace falta la cuenta (su jugador es el que paga las monedas en el juego)
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-coin-spin]');
+    if (!btn) return;
+    if (!me.user) {
+      toast('Entra con tu cuenta para girar con tus monedas');
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent('/tienda#ruleta')}`), 900);
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/roulette/coins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ spins: Number(btn.dataset.coinSpin) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        location.href = `/success?order=${encodeURIComponent(data.id)}`;
+        return;
+      }
+      toast(data.error || 'No se pudo girar ahora mismo.');
+    } catch {
+      toast('No se pudo girar ahora mismo.');
+    }
+    btn.disabled = false;
+  });
 
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-roulette-view]');

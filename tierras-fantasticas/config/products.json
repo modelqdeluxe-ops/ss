@@ -4379,6 +4379,7 @@
     "spins": 1,
     "price": 99,
     "maxQuantity": 1,
+    "coinPrice": 3000,
     "set": "nazgul",
     "colors": [
       "#c9a8ff",
@@ -4598,6 +4599,7 @@
     "spins": 5,
     "price": 399,
     "maxQuantity": 1,
+    "coinPrice": 15000,
     "set": "nazgul",
     "colors": [
       "#c9a8ff",
@@ -4817,6 +4819,7 @@
     "spins": 10,
     "price": 699,
     "maxQuantity": 1,
+    "coinPrice": 30000,
     "set": "nazgul",
     "colors": [
       "#c9a8ff",

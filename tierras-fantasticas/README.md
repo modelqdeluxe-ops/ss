@@ -4,10 +4,10 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
 - Web por secciones con una página para cada una. Diseño oscuro con oro (fuentes Cinzel y Manrope) sobre un fondo de
-  aurora animada, cabecera de cristal flotante, portada en dos columnas con un escaparate de crates que va cambiando, y
-  un brillo animado del color de cada crate. Pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
+  aurora animada, cabecera de cristal flotante y una portada ligera (el emblema animado, la IP y cuatro crates). Las
+  crates tienen un aura de su color que late y destellos que parpadean alrededor. Pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
   (solo animaciones de `transform`/`opacity`, que se apagan con «reducir movimiento»):
-  - **Inicio** (`/`): IP (clic para copiar), estado del servidor en vivo y los crates destacados.
+  - **Inicio** (`/`): el emblema animado, la IP (clic para copiar), el estado del servidor en vivo y cuatro crates.
   - **Tienda** (`/tienda`), con buscador y pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**,
     **Rangos**, **Crates**, **Ruleta**, **Monedas** y **Tienda de monedas**.
     - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) y se compra entera, sin
@@ -17,6 +17,9 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     - **Ruleta**: 1, 5 o 10 giros. Cada giro da un premio al azar con su probabilidad a la vista (monedas, diamantes,
       netherita, tótems… y un 5% de que sea un arma legendaria de Nazgul). La tienda lo elige al confirmarse el pago y
       la página de la compra dice qué tocó. Los premios y probabilidades están en `ROULETTE_POOL` de `tools/crates.py`.
+      También se gira con las monedas del servidor (`ROULETTE_COIN_PRICE` por giro): con la cuenta iniciada, la web
+      manda la tirada al juego, el TF Client cobra las monedas y devuelve los premios, que salen en la página de la
+      tirada. En el juego es `/tf ruleta`.
     - **Tienda de monedas**: objetos del servidor que se compran con monedas del juego. La llena el staff desde el
       juego (`/tf tienda add <precio>`) y la web se actualiza sola.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).

@@ -467,6 +467,50 @@ test('la ruleta da premios por su probabilidad (armas solo de vez en cuando) y l
   assert.deepStrictEqual(received, expected);
 });
 
+test('la ruleta también se gira con las monedas del servidor: se cobra en el juego y la web enseña los premios', async () => {
+  // Sin cuenta no se puede
+  assert.strictEqual((await post('/api/roulette/coins', { spins: 5 })).status, 401);
+  await seen('Monedas_MC');
+  const cookie = await register('Monedas_MC');
+  assert.strictEqual((await post('/api/roulette/coins', { spins: 7 }, cookie)).status, 400);
+
+  // El servidor recibe la ruleta (premios con sus comandos, armas y precio en monedas)
+  const config = (await (await poll([])).json()).roulette;
+  assert.strictEqual(config.set, 'nazgul');
+  assert.ok(config.coinPrice > 0);
+  assert.ok(config.pool.some((p) => p.weapon) && config.pool.every((p) => p.weapon || p.give.length));
+  assert.strictEqual(config.weapons.length, 30);
+
+  const res = await post('/api/roulette/coins', { spins: 5 }, cookie);
+  assert.strictEqual(res.status, 200);
+  const { id } = await res.json();
+  assert.match(id, /^COIN[0-9A-F]{24}$/);
+  const [delivery] = (await (await poll(['Monedas_MC'])).json()).deliveries;
+  assert.deepStrictEqual(delivery.commands, ['tf ruleta girar {player} 5']);
+  assert.strictEqual(delivery.kind, 'ruleta-monedas');
+
+  // El servidor cobra, gira y manda los premios; la web solo acepta premios que existen
+  const weapon = config.weapons[0];
+  await poll(['Monedas_MC'], [{ id: delivery.id, ok: true, prizes: [
+    { id: 'diamantes', name: '5 diamantes' },
+    { id: weapon.id, name: weapon.name, weapon: true },
+    { id: 'trampa', name: 'Algo inventado' },
+  ] }]);
+  const order = await (await get(`/api/order/${id}`)).json();
+  assert.strictEqual(order.status, 'delivered');
+  assert.strictEqual(order.coins, config.coinPrice * 5);
+  assert.deepStrictEqual(order.prizes.map((p) => p.id), ['diamantes', weapon.id]);
+  assert.strictEqual(order.prizes[1].thumb, `/img/items/nazgul/${weapon.id}.webp`);
+
+  // Sin monedas suficientes: no se entrega y la web dice por qué
+  const again = await (await post('/api/roulette/coins', { spins: 1 }, cookie)).json();
+  const [second] = (await (await poll(['Monedas_MC'])).json()).deliveries;
+  await poll(['Monedas_MC'], [{ id: second.id, ok: false, error: 'No tenías bastantes monedas en el servidor. No se ha cobrado nada.' }]);
+  const failed = await (await get(`/api/order/${again.id}`)).json();
+  assert.strictEqual(failed.status, 'delivery_failed');
+  assert.match(failed.error, /bastantes monedas/);
+});
+
 // --- Tienda de monedas ---
 test('el staff llena la tienda de monedas desde el juego y la web la muestra', async () => {
   const empty = await (await get('/api/coinshop')).json();

@@ -538,6 +538,14 @@ export function createStore(db) {
           )
           .bind(ok ? 'delivered' : 'delivery_failed', ok ? at : null, error, at, item.id),
       );
+      // Ruleta con monedas: el servidor elige los premios y los manda con la confirmación
+      if (ok && Array.isArray(item.prizes) && item.prizes.length) {
+        statements.push(
+          db
+            .prepare(`UPDATE orders SET prizes = ? WHERE id = (SELECT order_id FROM deliveries WHERE id = ?)`)
+            .bind(JSON.stringify(item.prizes), item.id),
+        );
+      }
     }
 
     statements.push(

@@ -135,6 +135,8 @@ ROULETTE_POOL = [
     ('totem', 'Tótem de la inmortalidad', 4, ['give {player} minecraft:totem_of_undying 1'], 'mc:totem_of_undying'),
     ('arma', 'Arma legendaria de Nazgul', 5, None, f'img/items/{ROULETTE_SET}/great_sword.webp'),
 ]
+# Precio de un giro con las monedas del servidor (se cobra en el juego, con la economía del TF Client).
+ROULETTE_COIN_PRICE = 3000
 ROULETTE = [
     ('ruleta-1', '1 giro de la ruleta', 1, 99),
     ('ruleta-5', '5 giros de la ruleta', 5, 399),
@@ -177,7 +179,7 @@ def main():
     for pid, name, spins, price in ROULETTE:
         roulette.append({
             'id': pid, 'category': 'ruleta', 'name': name, 'spins': spins, 'price': price,
-            'maxQuantity': 1, 'set': ROULETTE_SET, 'colors': ['#c9a8ff', '#9061f9'],
+            'maxQuantity': 1, 'coinPrice': ROULETTE_COIN_PRICE * spins, 'set': ROULETTE_SET, 'colors': ['#c9a8ff', '#9061f9'],
             'description': f'{spins} premio{"s" if spins > 1 else ""} al azar: monedas, recursos o, con suerte, un arma legendaria.',
             'image': f'img/crates/{ROULETTE_SET}.webp', 'models': weapons, 'pool': roulette_pool(),
             # Los comandos de cada giro los pone la tienda al confirmarse el pago (premio al azar).
