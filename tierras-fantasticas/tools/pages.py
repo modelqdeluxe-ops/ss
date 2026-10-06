@@ -288,7 +288,7 @@ def index():
         </article>
         <article class="pillar frame reveal" style="--c:#b197fc">
           <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" width="1200" height="800" loading="lazy"></div>
-          <div class="pillar-body"><span class="pillar-icon">{I['swords']}</span><h3>Sets con estilo</h3><p>Armas animadas, armaduras y cosméticos (alas, mochilas, cascos) que cambian tu aspecto en el juego. Son de aspecto: no dan ventaja.</p></div>
+          <div class="pillar-body"><span class="pillar-icon">{I['swords']}</span><h3>Sets con estilo</h3><p>Armas animadas, armaduras y cosméticos (alas, mochilas, cascos) que se ven en el juego.</p></div>
         </article>
         <article class="pillar frame reveal" style="--c:#fcc94a">
           <div class="pillar-art"><img src="/img/home/oficio-miner.webp" alt="El minero, uno de los oficios" width="590" height="190" loading="lazy" class="pixel-img"></div>
@@ -333,7 +333,7 @@ def tienda():
         f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
         for k, label in tabs)
     return head('Tienda — Tierras Fantásticas',
-                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, crates con sets de aspecto y recompensas gratis. Pago seguro y entrega automática en el juego.',
+                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, crates con sets completos y recompensas gratis. Pago seguro y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
     <section class="shop-head">
@@ -367,8 +367,8 @@ def tienda():
         <div class="panel item"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
         <div class="panel item"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
       </div>
-      <p class="shop-legal">Tierras Fantásticas es un servidor independiente. {DISCLAIMER_ES} Nada de la tienda da ventaja
-        sobre quien no paga, no hay nada al azar y las monedas del servidor solo se ganan jugando. Precios en USD, finales.
+      <p class="shop-legal">Tierras Fantásticas es un servidor independiente. {DISCLAIMER_ES} En la tienda no hay nada al
+        azar y las monedas del servidor solo se ganan jugando. Precios en USD, finales.
         Tienes 5 días hábiles para cancelar una compra. Al comprar aceptas los <a href="/terminos">Términos y
         condiciones</a> y el <a href="/privacidad">Aviso de privacidad</a>.</p>
     </section>
@@ -499,7 +499,7 @@ def legal_page(key, title, desc, intro, sections):
 def aviso_legal():
     return legal_page('legal', 'Aviso legal',
                       'Aviso legal de Tierras Fantásticas: servidor de Minecraft independiente, sin relación con Mojang ni Microsoft.',
-                      'Quiénes somos, qué relación tenemos con Minecraft (ninguna oficial) y cómo cumplimos las normas de Mojang.',
+                      'Quiénes somos, qué relación tenemos con Minecraft (ninguna oficial) y cómo funciona la tienda.',
                       legal.AVISO)
 
 
@@ -550,7 +550,7 @@ def ayuda():
 {faq('¿Qué nombre de usuario debo poner?', 'Tu nombre de Minecraft. La tienda lo comprueba con el servidor al escribirlo: tienes que haber entrado al menos una vez. La compra se entrega a tu cuenta (UUID), así que nunca llega a otro jugador.')}
 {faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios. Los precios están en dólares estadounidenses (USD) y el precio que ves es el total.')}
 {faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
-{faq('¿Qué recibo al comprar una crate?', 'El set completo, siempre el mismo y sin nada al azar: sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Son de aspecto: las armas y armaduras tienen los mismos valores que las de hierro, así que no dan ventaja a nadie. Llegan a tu inventario en cuanto estás conectado y en la tienda puedes ver cada pieza en 3D y probártela antes.')}
+{faq('¿Qué recibo al comprar una crate?', 'El set completo, siempre el mismo y sin nada al azar: sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Llegan a tu inventario en cuanto estás conectado y en la tienda puedes ver cada pieza en 3D y probártela antes.')}
 {faq('¿Qué es la tienda de monedas?', 'Objetos del servidor que se pagan con las monedas que ganas jugando. Las monedas no se venden con dinero, no tienen valor real y no se pueden cambiar por dinero. El staff la actualiza desde el juego y la web la muestra al momento.')}
 {faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
 {faq('¿Tierras Fantásticas es oficial de Minecraft?', 'No. Es un servidor independiente: no es un producto oficial de Minecraft y no está aprobado por Mojang ni Microsoft ni asociado con ellos. Lo que se compra en la tienda ayuda a mantener el servidor. Más información en el <a href="/legal">Aviso legal</a>.')}

@@ -60,6 +60,9 @@ public final class TFItemTypes {
         return c.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(set.color())).withItalic(false));
     }
 
+    /** Los atributos (daño, velocidad, armadura…) de los objetos de los sets no salen en su descripción. */
+    static final int HIDE_ATTRIBUTES = ItemStack.TooltipPart.MODIFIERS.getMask();
+
     static void tooltip(Item item, List<Component> tooltip) {
         TFSets.SetDef set = SET_OF.get(item);
         if (set == null) return;
@@ -72,6 +75,11 @@ public final class TFItemTypes {
     public static class Sword extends SwordItem {
         public Sword(Tier tier, int damage, float speed, Properties p) {
             super(tier, damage, speed, p);
+        }
+
+        @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
         }
 
         @Override
@@ -91,6 +99,11 @@ public final class TFItemTypes {
         }
 
         @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
+        }
+
+        @Override
         public Component getName(ItemStack stack) {
             return name(this, super.getName(stack));
         }
@@ -104,6 +117,11 @@ public final class TFItemTypes {
     public static class Pickaxe extends PickaxeItem {
         public Pickaxe(Tier tier, int damage, float speed, Properties p) {
             super(tier, damage, speed, p);
+        }
+
+        @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
         }
 
         @Override
@@ -123,6 +141,11 @@ public final class TFItemTypes {
         }
 
         @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
+        }
+
+        @Override
         public Component getName(ItemStack stack) {
             return name(this, super.getName(stack));
         }
@@ -136,6 +159,11 @@ public final class TFItemTypes {
     public static class Hoe extends HoeItem {
         public Hoe(Tier tier, int damage, float speed, Properties p) {
             super(tier, damage, speed, p);
+        }
+
+        @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
         }
 
         @Override
@@ -220,6 +248,11 @@ public final class TFItemTypes {
         }
 
         @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
+        }
+
+        @Override
         public Component getName(ItemStack stack) {
             return name(this, super.getName(stack));
         }
@@ -279,15 +312,15 @@ public final class TFItemTypes {
 
     // --- Armaduras ---
 
-    /** Material de armadura de un set: los valores del hierro (es de aspecto, no da ventaja). El nombre da la
-     *  textura: tfclient:<set>_layer_N. */
+    /** Material de armadura de un set: la netherita con 1 punto más en cada atributo. El nombre da la textura:
+     *  tfclient:<set>_layer_N. */
     public record Material(String setId) implements ArmorMaterial {
         private static final int[] DURABILITY = {13, 15, 16, 11};
-        private static final int[] DEFENSE = {2, 5, 6, 2};
+        private static final int[] DEFENSE = {4, 7, 9, 4};
 
         @Override
         public int getDurabilityForType(ArmorItem.Type type) {
-            return DURABILITY[index(type)] * 15;
+            return DURABILITY[index(type)] * 37;
         }
 
         private static int index(ArmorItem.Type type) {
@@ -306,12 +339,12 @@ public final class TFItemTypes {
 
         @Override
         public int getEnchantmentValue() {
-            return 9;
+            return 15;
         }
 
         @Override
         public SoundEvent getEquipSound() {
-            return SoundEvents.ARMOR_EQUIP_IRON;
+            return SoundEvents.ARMOR_EQUIP_NETHERITE;
         }
 
         @Override
@@ -326,12 +359,12 @@ public final class TFItemTypes {
 
         @Override
         public float getToughness() {
-            return 0.0F;
+            return 4.0F;
         }
 
         @Override
         public float getKnockbackResistance() {
-            return 0.0F;
+            return 0.2F;
         }
     }
 
@@ -341,6 +374,11 @@ public final class TFItemTypes {
         public Armor(TFSets.SetDef set, ArmorItem.Type type, Properties p) {
             super(new Material(set.id()), type, p);
             this.set = set;
+        }
+
+        @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
         }
 
         @Override

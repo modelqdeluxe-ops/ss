@@ -14,8 +14,7 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   - **Tienda** (`/tienda`), con pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**, **Rangos**,
     **Crates** y **Tienda de monedas**.
     - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) con contenido fijo y a la
-      vista, sin nada al azar. Son de aspecto: en el TF Client (1.3.4) las armas y armaduras tienen los valores del
-      hierro. Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
+      vista, sin nada al azar. La web no habla de sus atributos (los define el TF Client). Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
       puesto; al tocar una pieza se ve suelta en 3D y se puede **equipar** o quitar.
     - **Tienda de monedas**: objetos del servidor que se compran en la web con las monedas que se ganan jugando. La
       llena el staff desde el juego (`/tf web tienda add <precio>`) y la web se actualiza sola. Al comprar, la web manda
@@ -24,7 +23,7 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
       azar y daba objetos con ventaja) y la venta de **monedas con dinero**. Su código sigue en la web y en los tests
       (con productos de ejemplo en `test/retired-products.json`) por si algún día vuelven de forma permitida; en
       `tools/crates.py` están `ROULETTE_ENABLED = False` y `RETIRED`.
-  - **Páginas legales**: `/legal` (aviso legal, no afiliación con Mojang/Microsoft y cómo cumple la tienda sus normas),
+  - **Páginas legales**: `/legal` (aviso legal, no afiliación con Mojang/Microsoft y cómo funciona la tienda),
     `/terminos` (términos de uso y de compra: precios, entrega, 5 días hábiles para cancelar, reembolsos) y
     `/privacidad` (aviso de privacidad según la ley mexicana de 2025, con cookies). Los textos están en
     `tools/legal.py`. El aviso de no afiliación sale en el pie de todas las páginas, en la tienda y en la ventana de

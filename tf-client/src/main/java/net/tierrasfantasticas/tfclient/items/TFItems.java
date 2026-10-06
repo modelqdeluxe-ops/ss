@@ -13,7 +13,9 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -69,26 +71,35 @@ public final class TFItems {
         TABS.register(modBus);
     }
 
-    // Los objetos de los sets son de aspecto: tienen exactamente los valores del hierro (lo que cualquier jugador
-    // fabrica jugando), así que comprarlos no da ventaja (normas de Mojang para servidores). Sin resistencia al fuego.
+    /** Nivel de las armas y herramientas de los sets: como la netherita, con 1 punto más de daño. */
+    static final Tier SET_TIER = new Tier() {
+        @Override public int getUses() { return Tiers.NETHERITE.getUses(); }
+        @Override public float getSpeed() { return Tiers.NETHERITE.getSpeed(); }
+        @Override public float getAttackDamageBonus() { return Tiers.NETHERITE.getAttackDamageBonus() + 1.0F; }
+        @Override public int getLevel() { return Tiers.NETHERITE.getLevel(); }
+        @Override public int getEnchantmentValue() { return Tiers.NETHERITE.getEnchantmentValue(); }
+        @Override public Ingredient getRepairIngredient() { return Tiers.NETHERITE.getRepairIngredient(); }
+    };
+
+    // Los atributos de los objetos de los sets no se enseñan en su descripción (ver TFItemTypes.HIDE_ATTRIBUTES).
     private static Item create(TFSets.SetDef set, TFSets.ItemDef def) {
-        Item.Properties p = new Item.Properties().rarity(Rarity.EPIC);
+        Item.Properties p = new Item.Properties().fireResistant().rarity(Rarity.EPIC);
         return switch (def.type()) {
-            case "heavy" -> new TFItemTypes.Sword(Tiers.IRON, 6, -3.1F, p);
-            case "axe" -> new TFItemTypes.Axe(Tiers.IRON, 6.0F, -3.1F, p);
-            case "pickaxe" -> new TFItemTypes.Pickaxe(Tiers.IRON, 1, -2.8F, p);
-            case "shovel" -> new TFItemTypes.Shovel(Tiers.IRON, 1.5F, -3.0F, p);
-            case "hoe" -> new TFItemTypes.Hoe(Tiers.IRON, -2, -1.0F, p);
-            case "bow" -> new TFItemTypes.Bow(p.durability(384));
-            case "crossbow" -> new TFItemTypes.Crossbow(p.durability(465));
-            case "fishing_rod" -> new TFItemTypes.FishingRod(p.durability(64));
-            case "shield" -> new TFItemTypes.Shield(p.durability(336));
-            case "trident" -> new TFItemTypes.Trident(p.durability(250));
+            case "heavy" -> new TFItemTypes.Sword(SET_TIER, 6, -3.1F, p);
+            case "axe" -> new TFItemTypes.Axe(SET_TIER, 5.0F, -3.0F, p);
+            case "pickaxe" -> new TFItemTypes.Pickaxe(SET_TIER, 1, -2.8F, p);
+            case "shovel" -> new TFItemTypes.Shovel(SET_TIER, 1.5F, -3.0F, p);
+            case "hoe" -> new TFItemTypes.Hoe(SET_TIER, -4, 0.0F, p);
+            case "bow" -> new TFItemTypes.Bow(p.durability(768));
+            case "crossbow" -> new TFItemTypes.Crossbow(p.durability(930));
+            case "fishing_rod" -> new TFItemTypes.FishingRod(p.durability(128));
+            case "shield" -> new TFItemTypes.Shield(p.durability(672));
+            case "trident" -> new TFItemTypes.Trident(p.durability(500));
             case "head" -> new TFItemTypes.Cosmetic(EquipmentSlot.HEAD, null, p.stacksTo(1));
             case "back" -> new TFItemTypes.Cosmetic(EquipmentSlot.CHEST,
                     def.worn() != null ? new ResourceLocation(def.worn()) : null, p.stacksTo(1));
             case "armor" -> new TFItemTypes.Armor(set, armorType(def.slot()), p);
-            default -> new TFItemTypes.Sword(Tiers.IRON, 3, -2.4F, p);
+            default -> new TFItemTypes.Sword(SET_TIER, 3, -2.4F, p);
         };
     }
 

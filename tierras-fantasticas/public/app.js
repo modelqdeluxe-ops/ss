@@ -391,7 +391,7 @@
   const INTRO = {
     gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
     rangos: 'Prefijo con color en tu nombre, cosméticos y comodidades que no dan ventaja sobre nadie. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
-    crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Son de aspecto: las armas y armaduras tienen los mismos valores que las de hierro. Toca una para probártela en tu personaje.',
+    crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Toca una para probártela en tu personaje.',
     ruleta: '',
     monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
     tiendamonedas: '',
