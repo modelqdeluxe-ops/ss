@@ -20,12 +20,13 @@ import re
 import shutil
 import sys
 
-from PIL import Image
+from PIL import Image, ImageChops
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB_TOOLS = os.path.join(HERE, '..', '..', 'tierras-fantasticas', 'tools')
 sys.path.insert(0, WEB_TOOLS)
-import build_items as B  # noqa: E402
+import build_items as B
+import hmc_worn  # noqa: E402
 import crates as C  # noqa: E402
 
 RES = os.path.join(HERE, '..', 'src', 'main', 'resources')
@@ -50,6 +51,7 @@ DISPLAY = {'thirdperson_righthand', 'thirdperson_lefthand', 'firstperson_rightha
            'ground', 'fixed'}
 problems = []
 back_report = []
+worn_from = {}
 mip_low = [1 << 30]
 
 
@@ -139,7 +141,10 @@ class SetWriter:
         self.frame_size = {}  # ref nuevo -> (ancho, alto) de un fotograma
         self.flat_uv_fixed = 0
         self.zfight_fixed = 0
+        self.planes_trimmed = 0
         self.alpha_cache = {}
+        # Lo que el pack se pone de verdad (HMCCosmetics): el modelo «puesto» puede no ser el del inventario.
+        self.hmc = hmc_worn.worn_models(os.path.join(packs, rel_root.replace('\\', '/').split('/')[0]))
 
     def model(self, name):
         m = B.load_model(self.root, self.ns, name)
@@ -249,6 +254,15 @@ class SetWriter:
         face['uv'] = [u, v, u, v]
         self.flat_uv_fixed += 1
 
+    def snap_uv(self, face, textures):
+        """Bordes de UV a 0,1-0,3 texels de un borde de píxel: el último píxel que se ve es el del dibujo de al lado
+        (rayas sueltas en los bordes de las alas). Se ajustan al borde de píxel, un pelo hacia dentro."""
+        ref = textures.get(str(face.get('texture', '')).lstrip('#'), '')
+        while ref.startswith('#'):
+            ref = textures.get(ref[1:], '')
+        fw, fh = self.frame_size.get(ref, (16, 16))
+        snap_face_uv(face, fw, fh)
+
     def convert(self, model, label):
         """Modelo del pack → modelo del mod (texturas renombradas, sin datos de Blockbench)."""
         out = {}
@@ -295,6 +309,7 @@ class SetWriter:
                         continue  # la textura no existe: la cara no se dibuja (en vez del morado)
                     faces[face] = {k: v for k, v in fd.items() if k in ('uv', 'texture', 'rotation', 'cullface', 'tintindex')}
                     self.fix_flat_uv(faces[face], textures)
+                    self.snap_uv(faces[face], textures)
                 if not faces:
                     continue
                 e = {'from': f, 'to': t, 'faces': faces}
@@ -309,7 +324,86 @@ class SetWriter:
             out['display'] = {k: v for k, v in model['display'].items() if k in DISPLAY}
         return out
 
+    def alpha_union(self, ref):
+        """Alfa de todos los fotogramas juntos (lo que se ve en algún momento), como imagen L de un fotograma."""
+        key = ('union', ref)
+        if key in self.alpha_cache:
+            return self.alpha_cache[key]
+        alpha = None
+        if ref.startswith('tfclient:'):
+            path = os.path.join(ASSETS, 'textures', ref.split(':', 1)[1] + '.png')
+            if os.path.exists(path):
+                img = Image.open(path).convert('RGBA')
+                fw, fh = self.frame_size.get(ref, img.size)
+                a = img.split()[3]
+                alpha = a.crop((0, 0, fw, fh))
+                for y in range(fh, img.size[1] - fh + 1, fh):
+                    alpha = ImageChops.lighter(alpha, a.crop((0, y, fw, y + fh)))
+        self.alpha_cache[key] = alpha
+        return alpha
+
+    def trim_planes(self, model):
+        """Planos sin grosor (alas, efectos) recortados a lo que se ve más un píxel. Así el borde del recorte nunca
+        cae pegado al dibujo de al lado en la textura (rayas sueltas en las puntas de las alas) y se dibuja menos."""
+        textures = model.get('textures', {})
+        trimmed = 0
+        for el in model.get('elements', []):
+            f, t = el['from'], el['to']
+            thin = [abs(t[k] - f[k]) < 0.01 for k in range(3)]
+            if thin != [False, False, True] or any('rotation' in fd for fd in el['faces'].values()):
+                continue
+            big = [el['faces'].get(n) for n in ('south', 'north')]
+            if not all(big) or any(not fd.get('uv') or len(fd['uv']) != 4 for fd in big):
+                continue
+            ref = textures.get(str(big[0].get('texture', '')).lstrip('#'), '')
+            if big[1].get('texture') != big[0].get('texture') or not ref.startswith('tfclient:'):
+                continue
+            alpha = self.alpha_union(ref)
+            if alpha is None:
+                continue
+            fw, fh = alpha.size
+            # Fracciones de la cara (sx desde from.x, ty desde arriba) donde hay algo visible, en las dos caras
+            box = None
+            for name, fd in (('south', big[0]), ('north', big[1])):
+                u0, v0, u1, v1 = fd['uv']
+                if abs(u1 - u0) < 1e-6 or abs(v1 - v0) < 1e-6:
+                    box = None
+                    break
+                px = [min(u0, u1) * fw / 16, max(u0, u1) * fw / 16, min(v0, v1) * fh / 16, max(v0, v1) * fh / 16]
+                region = alpha.crop((int(math.floor(px[0])), int(math.floor(px[2])), int(math.ceil(px[1])), int(math.ceil(px[3]))))
+                bb = region.point(lambda a: 255 if a > 8 else 0).getbbox()
+                if not bb:
+                    box = 'empty'
+                    break
+                # Texels visibles + 1 de margen, en coordenadas UV
+                ul = (math.floor(px[0]) + bb[0] - 1) * 16 / fw
+                ur = (math.floor(px[0]) + bb[2] + 1) * 16 / fw
+                vt = (math.floor(px[2]) + bb[1] - 1) * 16 / fh
+                vb = (math.floor(px[2]) + bb[3] + 1) * 16 / fh
+                su = sorted(((ul - u0) / (u1 - u0), (ur - u0) / (u1 - u0)))
+                if name == 'north':
+                    su = sorted((1 - su[0], 1 - su[1]))  # en la cara norte la u va de to.x a from.x
+                tv = sorted(((vt - v0) / (v1 - v0), (vb - v0) / (v1 - v0)))
+                cur = [max(0.0, su[0]), min(1.0, su[1]), max(0.0, tv[0]), min(1.0, tv[1])]
+                box = cur if box is None else [min(box[0], cur[0]), max(box[1], cur[1]), min(box[2], cur[2]), max(box[3], cur[3])]
+            if box in (None, 'empty') or (box[1] - box[0] > 0.97 and box[3] - box[2] > 0.97):
+                continue
+            s0, s1, t0, t1 = box
+            dx, dy = t[0] - f[0], t[1] - f[1]
+            x0, x1 = f[0] + s0 * dx, f[0] + s1 * dx
+            ytop, ybot = t[1] - t0 * dy, t[1] - t1 * dy
+            for name, fd in (('south', big[0]), ('north', big[1])):
+                u0, v0, u1, v1 = fd['uv']
+                a, b = (s0, s1) if name == 'south' else (1 - s1, 1 - s0)
+                fd['uv'] = [round(u0 + a * (u1 - u0), 5), round(v0 + t0 * (v1 - v0), 5),
+                            round(u0 + b * (u1 - u0), 5), round(v0 + t1 * (v1 - v0), 5)]
+            el['from'] = [round(min(x0, x1), 5), round(min(ytop, ybot), 5), f[2]]
+            el['to'] = [round(max(x0, x1), 5), round(max(ytop, ybot), 5), t[2]]
+            trimmed += 1
+        return trimmed
+
     def write_model(self, path_rel, data):
+        self.planes_trimmed += self.trim_planes(data)
         self.zfight_fixed += separate_coplanar(data)
         dst = os.path.join(ASSETS, 'models', 'item', path_rel + '.json')
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -423,12 +517,50 @@ BACK_PLACE = {'wings': ('center', 0.30), 'wing': ('center', 0.30), 'backpack': (
 STAND_OFFSET = 32.0
 # Altura de la mitad de lo que se ve (en bloques, desde el cuello, hacia arriba +) cuando el pack no trae posición.
 # Para las alas es la mediana de las alas que sí la traen (-0.24).
-TARGET_Y50 = {'wings': -0.24, 'wing': -0.24, 'backpack': -0.5, 'cape': -0.4, 'tail': -1.0, 'quiver': -0.5}
+TARGET_Y50 = {'wings': -0.24, 'wing': -0.24, 'backpack': -0.5, 'cape': -0.4, 'tail': -1.0, 'quiver': -0.4}
 PACK_Y50_RANGE = {'wings': (-0.7, 0.1), 'wing': (-0.7, 0.1), 'backpack': (-0.8, -0.2), 'quiver': (-0.8, -0.2)}
 MAX_WIDTH = 3.3        # ancho máximo de lo visible, en bloques
 BACK_SURFACE = 0.125   # la espalda del jugador, en bloques desde el centro del cuerpo
 BACK_GAP_MAX = 0.17    # si lo de delante del cosmético queda más lejos que esto, se acerca...
 BACK_GAP_TO = 0.15     # ...hasta aquí (pegado a la espalda, sin atravesarla)
+
+
+# Cosméticos que el pack llama «wing» pero que son otra cosa (el conejo de Pascua es un peluche-mochila).
+KIND_BY_TAG = {'easter/wing': 'backpack'}
+# Sets que ya estaban bien con el modelo del objeto (su modelo de HMCCosmetics trae una peana debajo).
+HMC_SKIP = {'shadow'}
+# Alto máximo de lo visible (bloques) y borde de arriba (desde el cuello) de lo que va como mochila: no tapa la cabeza.
+BACKPACK_MAX_HEIGHT = 0.85
+BACKPACK_TOP = 0.05
+QUIVER_TILT = 28.0  # grados respecto a la vertical
+
+
+def _euler_xyz(m):
+    """Ángulos (grados) de R = Rx·Ry·Rz, como los aplica Minecraft en «display»."""
+    b = math.asin(max(-1.0, min(1.0, m[0][2])))
+    if abs(math.cos(b)) > 1e-6:
+        a = math.atan2(-m[1][2], m[2][2])
+        c = math.atan2(-m[0][1], m[0][0])
+    else:
+        a = math.atan2(m[2][1], m[1][1])
+        c = 0.0
+    return [round(math.degrees(v), 2) for v in (a, b, c)]
+
+
+def upright_diagonal(pts, wts, tilt):
+    """Giro que pone lo largo del objeto en vertical y lo más fino hacia la espalda, inclinado tilt grados."""
+    centered = [[p[0] / 16 - 0.5, p[1] / 16 - 0.5, p[2] / 16 - 0.5] for p in pts]
+    best, best_score = None, None
+    for rx in (0, 90, 180, 270):
+        for ry in (0, 90, 180, 270):
+            for rz in (0, 90, 180, 270):
+                m = _mul(_mul(_rot('x', rx), _rot('y', ry)), _rot('z', rz))
+                vs = [_apply(m, p) for p in centered]
+                sp = [_wquantile([v[i] for v in vs], wts, 0.97) - _wquantile([v[i] for v in vs], wts, 0.03) for i in range(3)]
+                score = sp[1] - sp[2] - 0.2 * sp[0]
+                if best_score is None or score > best_score + 1e-6:
+                    best, best_score = m, score
+    return _euler_xyz(_mul(_rot('z', tilt), best))
 
 
 def _wquantile(vals, weights, q):
@@ -483,6 +615,23 @@ def visible_points(model, alpha_of, n=12):
     return pts, wts
 
 
+def snap_face_uv(face, fw, fh):
+    uv = face.get('uv')
+    if not uv or len(uv) != 4:
+        return
+    out = list(uv)
+    for i, n in ((0, fw), (2, fw), (1, fh), (3, fh)):
+        j = i + 2 if i < 2 else i - 2
+        a, b = uv[i] * n / 16, uv[j] * n / 16
+        if abs(a - b) < 1e-6:
+            continue  # un solo texel (ya arreglado)
+        r = round(a)
+        if 1e-4 < abs(a - r) <= 0.3:
+            inward = 0.02 if b > a else -0.02
+            out[i] = round((r + inward) * 16 / n, 5)
+    face['uv'] = out
+
+
 def drop_floor_plates(model):
     """Quita las «peanas»: planos horizontales grandes debajo de todo (el pack las pone para verlo en el inventario o
     como aura en el suelo). Puesto en la espalda quedaban a la altura de los pies."""
@@ -494,7 +643,7 @@ def drop_floor_plates(model):
     keep = []
     for e in els:
         d = [abs(e['to'][k] - e['from'][k]) for k in range(3)]
-        if d[1] < 0.05 and d[0] * d[2] > 150 and min(e['from'][1], e['to'][1]) <= lo + 0.15 * (hi - lo):
+        if d[1] < 0.05 and d[0] * d[2] > 60 and min(e['from'][1], e['to'][1]) <= lo + 0.15 * (hi - lo):
             continue
         keep.append(e)
     model['elements'] = keep
@@ -511,6 +660,7 @@ def place_on_back(model, slug, tag, designed, alpha_of):
       solo se acerca, nunca se aleja.
     - Centrado a lo ancho.
     """
+    kind = KIND_BY_TAG.get(tag, slug)
     head = dict(model.get('display', {}).get('head', {}))
     rot = list(head.get('rotation', [0, 0, 0]))
     scale = head.get('scale', [1, 1, 1])
@@ -535,26 +685,30 @@ def place_on_back(model, slug, tag, designed, alpha_of):
 
     # El modelo del objeto también puede traer la posición del plugin (muy por debajo: soporte de armadura). Se usa la
     # del pack solo si deja la mitad de lo visible a una altura creíble de la espalda; si no, se calcula.
-    designed = designed or (head.get('translation') or [0, 0])[1] < -20
+    designed = (designed or (head.get('translation') or [0, 0])[1] < -20) and kind != 'quiver'
     mode = 'forma'
     if designed and head.get('translation') and any(scale):
         trans = [float(v) for v in head['translation']]
         trans[1] += STAND_OFFSET
         y50 = 0.25 + 0.625 * (trans[1] / 16 + mid(oriented([float(v) for v in scale]), 1))
-        lo, hi = PACK_Y50_RANGE.get(slug, (-1.2, 0.2))
+        lo, hi = PACK_Y50_RANGE.get(kind, (-1.2, 0.2))
         if lo <= y50 <= hi:
             mode = 'pack'
             scale = [float(v) for v in scale]
     if mode == 'forma':
         trans = [0.0, 0.0, 0.0]
         unit = oriented([1, 1, 1])
+        # Carcaj: de pie y en diagonal sobre la espalda (del hombro a la cadera), con lo plano pegado a ella.
+        if kind == 'quiver':
+            rot = upright_diagonal(pts, wts, QUIVER_TILT)
+            unit = oriented([1, 1, 1])
         # Alas de lado (envergadura en z): se giran 90 grados para que se abran a los lados.
         if slug in ('wings', 'wing') and spread(unit, 2) > 1.5 * spread(unit, 0):
             rot[1] = (rot[1] + 90) % 360
             unit = oriented([1, 1, 1])
         if not any(scale):
             # Algunos packs esconden el modelo en la cabeza (escala 0): se le da un tamaño razonable.
-            k = (2.4 if slug in ('wings', 'wing') else 0.7) / 0.625 / max(spread(unit, 0), 0.05)
+            k = (2.4 if kind in ('wings', 'wing') else 0.7) / 0.625 / max(spread(unit, 0), 0.05)
             scale = [k, k, k]
         scale = [max(-4.0, min(4.0, float(v))) for v in scale]
     vs = oriented(scale)
@@ -570,7 +724,17 @@ def place_on_back(model, slug, tag, designed, alpha_of):
     body_z = lambda qq: 0.625 * (trans[2] / 16 + qq)
     if mode == 'forma':
         y50 = body_y(mid(vs, 1))
-        trans[1] += (TARGET_Y50.get(slug, -0.3) - y50) / 0.625 * 16
+        trans[1] += (TARGET_Y50.get(kind, -0.3) - y50) / 0.625 * 16
+    if kind in ('backpack', 'quiver'):
+        height = spread(vs, 1) * 0.625
+        if height > BACKPACK_MAX_HEIGHT and mode == 'forma':
+            k = BACKPACK_MAX_HEIGHT / height
+            scale = [v * k for v in scale]
+            vs = oriented(scale)
+            trans[1] += (TARGET_Y50.get(kind, -0.3) - body_y(mid(vs, 1))) / 0.625 * 16
+        top = body_y(q(vs, 1, 0.97))
+        if top > BACKPACK_TOP:
+            trans[1] -= (top - BACKPACK_TOP) / 0.625 * 16
     z_front = body_z(q(vs, 2, 0.05))
     if z_front > BACK_GAP_MAX or mode == 'forma':
         trans[2] -= (z_front - BACK_GAP_TO) / 0.625 * 16
@@ -736,11 +900,19 @@ def main(packs):
                 if kind == 'back':
                     worn = None
                     designed = False
-                    for suffix in ('_cosmetic', '_cosmetics', '_cosmeticscore', '_1'):
-                        m = w.model(full + suffix)
+                    base = full.split('/')[-1]
+                    candidates = []
+                    for ref in ([] if set_id in HMC_SKIP else w.hmc['BACKPACK']):
+                        ns, path = ref.split(':', 1) if ':' in ref else (w.ns, ref)
+                        if ns == w.ns and path.split('/')[-1].startswith(base):
+                            candidates.append((path, '_' + path.split('/')[-1][len(base):].lstrip('_')))
+                    candidates += [(full + sfx, sfx) for sfx in ('_cosmetic', '_cosmetics', '_cosmeticscore', '_thirdperson', '_1')]
+                    for name, suffix in candidates:
+                        m = w.model(name)
                         if m:
                             worn = w.convert(m, tag + suffix)
                             designed = suffix != '_1'
+                            worn_from[tag] = name
                             break
                     worn = worn or json.loads(json.dumps(model))
                     worn.pop('overrides', None)
@@ -790,7 +962,8 @@ def main(packs):
     print(f'TOTAL {total} objetos en {len(sets_out)} sets; mipmap mínimo {mip_low[0]}px')
     print('Espalda:')
     for tag, mode, rot, trans, scale in back_report:
-        print(f'  {tag:28s} {mode:5s} rot={rot} trans={trans} scale={[round(v, 3) for v in scale]}')
+        print(f'  {tag:28s} {mode:5s} rot={rot} trans={trans} scale={[round(v, 3) for v in scale]}'
+              f'  modelo={worn_from.get(tag, "el del objeto")}')
     print(f'{len(problems)} avisos')
     for p in problems:
         print('  -', p)

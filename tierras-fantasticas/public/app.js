@@ -165,7 +165,7 @@
 
   // --- Productos ---
   const CATEGORY_LABEL = {
-    gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta de armas', monedas: 'Monedas de oro',
+    gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro',
   };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
@@ -214,27 +214,28 @@
     if (page === 'tienda') initShop();
   }
 
-  // Inicio: crates destacadas y rangos
+  // Brillo animado del color de la crate (detrás de la imagen) y su retraso, para que no laten todas a la vez.
+  const glow = (i) => `<span class="crate-glow" aria-hidden="true" style="--d:${(-i * 0.7).toFixed(1)}s"></span>`;
+
+  // Inicio: escaparate que va cambiando de crate, fila de crates y rangos
   function renderHome() {
     const list = crates();
     $$('[data-crate-count]').forEach((el) => (el.textContent = list.length));
-    const box = $('#crate-spotlight');
     $$('[data-crates-all]').forEach((el) => (el.innerHTML = `Ver las ${list.length} crates ${ICON_ARROW}`));
-    box.innerHTML = list
-      .slice(-8)
-      .reverse()
+    const featured = list.slice(-6).reverse();
+    startShowcase(featured);
+    const box = $('#crate-spotlight');
+    box.innerHTML = featured
+      .concat(list.slice(-10, -6).reverse())
       .map(
-        (p) => `
-        <a class="panel crate-card reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
-          <figure>${img(p.image, p.name)}</figure>
-          <div class="body">
+        (p, i) => `
+        <a class="crate-tile home-tile reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
+          <span class="crate-tile-art">${glow(i)}${img(p.image, p.name)}</span>
+          <span class="body">
             <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
-            <p>${escapeHtml(p.tagline || p.description)}</p>
-            <div class="card-foot">
-              <span class="price">${formatPrice(p.price)}</span>
-              <span class="btn btn-ghost btn-sm">Ver crate ${ICON_ARROW}</span>
-            </div>
-          </div>
+            <span class="tile-tag">${escapeHtml(p.tagline || '')}</span>
+            <span class="card-foot"><span class="price">${formatPrice(p.price)}</span><span class="btn btn-theme btn-sm">Ver crate</span></span>
+          </span>
         </a>`,
       )
       .join('');
@@ -242,7 +243,7 @@
     strip.innerHTML = ranks()
       .map(
         (p) => `
-        <a class="panel rank-mini reveal" href="/tienda#rangos">
+        <a class="rank-mini reveal" href="/tienda#rangos"${themeAttr(p)}>
           ${p.image ? img(p.image, '', '', ' width="88" height="88"') : ''}
           <b>${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</b>
           <span>${formatPrice(p.price)}</span>
@@ -250,6 +251,36 @@
       )
       .join('');
     observeReveal();
+  }
+
+  let showcaseTimer = null;
+  function startShowcase(list) {
+    const card = $('#showcase');
+    if (!card || !list.length) return;
+    const dots = $('.showcase-dots', card);
+    dots.innerHTML = list.map(() => '<i></i>').join('');
+    let i = 0;
+    const show = () => {
+      const p = list[i % list.length];
+      applyTheme(card, p);
+      card.href = `/tienda#crates-${p.theme || p.id}`;
+      card.setAttribute('aria-label', `Ver la crate ${p.name}`);
+      const pic = $('.showcase-img', card);
+      pic.classList.remove('in');
+      const next = new Image();
+      next.onload = () => {
+        pic.src = next.src;
+        requestAnimationFrame(() => pic.classList.add('in'));
+      };
+      next.src = asset(p.image);
+      $('.showcase-name', card).textContent = p.name.replace(/^Crate\s+/i, '');
+      $('.showcase-meta', card).textContent = `${piecesText(p)} · ${formatPrice(p.price)}`;
+      $$('i', dots).forEach((d, j) => d.classList.toggle('on', j === i % list.length));
+      i++;
+    };
+    show();
+    clearInterval(showcaseTimer);
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) showcaseTimer = setInterval(show, 4500);
   }
 
   // Tienda: tarjetas de regalos, rangos y monedas
@@ -272,11 +303,11 @@
   }
 
   // Crates: cada una es el set completo
-  function crateCard(p) {
+  function crateCard(p, i = 0) {
     return `
       <article class="panel crate-tile" data-crate="${escapeHtml(p.id)}"${themeAttr(p)}>
         <button type="button" class="crate-tile-art" data-open-crate="${escapeHtml(p.id)}" aria-label="Ver ${escapeHtml(p.name)} y probártelo">
-          ${img(p.image, '')}
+          ${glow(i)}${img(p.image, '')}
           <span class="try-on">Pruébatelo en 3D</span>
         </button>
         <div class="body">
@@ -426,7 +457,7 @@
     $('#compare').hidden = category !== 'rangos';
     if (category === 'crates') {
       box.classList.add('crate-grid');
-      box.innerHTML = crates().map(crateCard).join('');
+      box.innerHTML = crates().map((p, i) => crateCard(p, i)).join('');
       filterCrates();
     } else if (category === 'ruleta') {
       renderRoulette(box);
@@ -457,7 +488,7 @@
     $('#crate-empty').hidden = shown > 0;
   }
 
-  // --- Ruleta de armas ---
+  // --- Ruleta: premios con su probabilidad a la vista; las armas legendarias son el premio raro ---
   function renderRoulette(box) {
     const spins = products.filter((p) => p.category === 'ruleta').sort((a, b) => a.spins - b.spins);
     const ref = spins[0];
@@ -466,26 +497,52 @@
       return;
     }
     const weapons = ref.models || [];
+    const pool = [...(ref.pool || [])].sort((a, b) => b.chance - a.chance);
+    const weaponChance = pool.filter((p) => p.weapon).reduce((s, p) => s + p.chance, 0);
+    const max = Math.max(...pool.map((p) => p.chance), 1);
     box.innerHTML = `
-      <section class="panel roulette"${themeAttr(ref)}>
+      <section class="roulette"${themeAttr(ref)}>
         <div class="roulette-info">
-          <span class="eyebrow">Ruleta de armas</span>
-          <h2>Gira y llévate un arma legendaria</h2>
-          <p>Cada giro te da al azar una de las ${weapons.length} armas de la forja de Nazgul. La tienda la elige al confirmarse el pago y te llega al juego; en la página de tu compra verás cuál te tocó.</p>
+          <span class="eyebrow">Ruleta</span>
+          <h2>Prueba tu suerte</h2>
+          <p>Cada giro te da un premio al azar para el servidor: monedas, diamantes, netherita, tótems… y, con un ${weaponChance}% de probabilidad, un arma legendaria de la forja de Nazgul. La tienda elige el premio al confirmarse el pago y te llega al juego.</p>
           <div class="spin-buttons">${spins
             .map(
               (p, i) => `<button type="button" class="btn ${i === 0 ? 'btn-gold' : 'btn-ghost'} btn-lg" ${buyAttrs(p)}>
                 ${p.spins} ${p.spins === 1 ? 'giro' : 'giros'} · ${formatPrice(p.price)}</button>`,
             )
             .join('')}</div>
+          <p class="muted small">Las probabilidades son las mismas en cada giro. En la página de tu compra verás qué te tocó.</p>
         </div>
-        <div class="roulette-reel" aria-label="Armas que pueden tocar">${weapons
+        <div class="odds" aria-label="Premios y probabilidades">
+          <h3>Premios y probabilidades</h3>
+          <ul>${pool
+            .map(
+              (p) => `<li class="${p.weapon ? 'rare' : ''}">
+                <span class="odds-icon">${img(p.icon, '', '', ' width="36" height="36"')}</span>
+                <span class="odds-name">${escapeHtml(p.name)}</span>
+                <span class="odds-bar"><i style="width:${Math.round((p.chance / max) * 100)}%"></i></span>
+                <b>${p.chance}%</b>
+              </li>`,
+            )
+            .join('')}</ul>
+        </div>
+      </section>
+      <section class="roulette-weapons">
+        <div class="section-head split-head">
+          <div>
+            <h3>Armas legendarias <span class="muted">· ${weaponChance}% por giro</span></h3>
+            <p class="muted">Si te toca el arma, es una de estas ${weapons.length}, al azar. Toca una para verla en 3D.</p>
+          </div>
+        </div>
+        <div class="roulette-reel">${weapons
           .map(
             (w, i) => `<button type="button" class="reel-item" data-roulette-view="${i}" aria-label="Ver ${escapeHtml(w.name)} en 3D">
-              ${img(thumbOf(ref.set, w.id), '', '', ' width="72" height="72"')}<span>${escapeHtml(w.name)}</span></button>`,
+              ${img(thumbOf(ref.set, w.id), '', '', ' width="64" height="64"')}<span>${escapeHtml(w.name)}</span></button>`,
           )
           .join('')}</div>
       </section>`;
+    for (const pic of $$('.odds-icon img', box)) pic.classList.add('pixel-img');
   }
 
   document.addEventListener('click', async (e) => {
@@ -499,7 +556,7 @@
     }));
     try {
       const { openViewer } = await import('/viewer.js');
-      openViewer(items, Number(btn.dataset.rouletteView), 'Ruleta de armas');
+      openViewer(items, Number(btn.dataset.rouletteView), 'Armas de la ruleta');
     } catch (err) {
       console.error(err);
       toast('No se pudo abrir el visor 3D en este navegador.');

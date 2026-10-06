@@ -117,16 +117,43 @@ def listing(set_id):
     return out
 
 
-# Ruleta de armas: cada giro da al azar una de las armas de este set (la tienda elige al confirmarse el pago).
+# Ruleta: cada giro da un premio al azar de esta lista (la tienda lo elige al confirmarse el pago). Casi todo son cosas
+# útiles del servidor; las armas legendarias de Nazgul son el premio raro. Las probabilidades se enseñan en la web.
 ROULETTE_SET = 'nazgul'
 # Fila del set de la ruleta con el formato de CRATES, para que el TF Client siga creando sus armas.
 ROULETTE_ROW = ('nazgul', 'Arsenal de Nazgul', '', 'Treinta armas legendarias de la forja de Nazgul', '', '', 0,
                 ('#c9a8ff', '#9061f9'))
-ROULETTE = [
-    ('ruleta-1', '1 giro de la ruleta', 1, 199),
-    ('ruleta-5', '5 giros de la ruleta', 5, 799),
-    ('ruleta-10', '10 giros de la ruleta', 10, 1399),
+# id, nombre, probabilidad (%), comandos, icono
+ROULETTE_POOL = [
+    ('monedas-2000', '2.000 monedas', 26, ['tf monedas dar {player} 2000'], 'img/coins-small.png'),
+    ('monedas-5000', '5.000 monedas', 16, ['tf monedas dar {player} 5000'], 'img/coins-big.png'),
+    ('experiencia', '32 botellas de experiencia', 14, ['give {player} minecraft:experience_bottle 32'], 'mc:experience_bottle'),
+    ('manzanas', '4 manzanas doradas', 12, ['give {player} minecraft:golden_apple 4'], 'mc:golden_apple'),
+    ('diamantes', '5 diamantes', 10, ['give {player} minecraft:diamond 5'], 'mc:diamond'),
+    ('esmeraldas', '16 esmeraldas', 8, ['give {player} minecraft:emerald 16'], 'mc:emerald'),
+    ('netherita', '1 lingote de netherita', 5, ['give {player} minecraft:netherite_ingot 1'], 'mc:netherite_ingot'),
+    ('totem', 'Tótem de la inmortalidad', 4, ['give {player} minecraft:totem_of_undying 1'], 'mc:totem_of_undying'),
+    ('arma', 'Arma legendaria de Nazgul', 5, None, f'img/items/{ROULETTE_SET}/great_sword.webp'),
 ]
+ROULETTE = [
+    ('ruleta-1', '1 giro de la ruleta', 1, 99),
+    ('ruleta-5', '5 giros de la ruleta', 5, 399),
+    ('ruleta-10', '10 giros de la ruleta', 10, 699),
+]
+
+
+def roulette_pool():
+    assert sum(p[2] for p in ROULETTE_POOL) == 100, 'las probabilidades de la ruleta tienen que sumar 100'
+    out = []
+    for pid, name, chance, commands, icon in ROULETTE_POOL:
+        entry = {'id': pid, 'name': name, 'chance': chance,
+                 'icon': '/api/itemicon/' + icon[3:] if icon.startswith('mc:') else '/' + icon}
+        if commands is None:
+            entry['weapon'] = True
+        else:
+            entry['give'] = commands
+        out.append(entry)
+    return out
 
 
 def main():
@@ -148,13 +175,12 @@ def main():
     weapons = listing(ROULETTE_SET)
     roulette = []
     for pid, name, spins, price in ROULETTE:
-        prev = old.get(pid, {})
         roulette.append({
-            'id': pid, 'category': 'ruleta', 'name': name, 'spins': spins, 'price': prev.get('price', price),
+            'id': pid, 'category': 'ruleta', 'name': name, 'spins': spins, 'price': price,
             'maxQuantity': 1, 'set': ROULETTE_SET, 'colors': ['#c9a8ff', '#9061f9'],
-            'description': f'{spins} arma{"s" if spins > 1 else ""} al azar de la forja de Nazgul.',
-            'image': f'img/crates/{ROULETTE_SET}.webp', 'models': weapons,
-            # Los comandos de cada giro los pone la tienda al confirmarse el pago (arma al azar).
+            'description': f'{spins} premio{"s" if spins > 1 else ""} al azar: monedas, recursos o, con suerte, un arma legendaria.',
+            'image': f'img/crates/{ROULETTE_SET}.webp', 'models': weapons, 'pool': roulette_pool(),
+            # Los comandos de cada giro los pone la tienda al confirmarse el pago (premio al azar).
             'commands': [],
         })
     gifts = [x for x in data if x['category'] == 'gratis']

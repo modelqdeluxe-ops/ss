@@ -430,6 +430,12 @@ export function createWardrobe(canvas) {
   return {
     showPlayer,
     showItem,
+    /** Mira desde un ángulo fijo (sin girar solo). */
+    setView(yaw, pitch = 0.08) {
+      state.yaw = yaw;
+      state.pitch = pitch;
+      state.idleAt = Infinity;
+    },
     get mode() {
       return state.mode;
     },

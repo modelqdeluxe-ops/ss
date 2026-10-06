@@ -325,9 +325,13 @@ def clean_for_viewer(out):
             face['uv'] = [u, v, u, v]
     try:
         sys.path.insert(0, os.path.join(HERE, '..', '..', 'tf-client', 'tools'))
-        from build_mod_items import separate_coplanar  # noqa: E402
+        from build_mod_items import separate_coplanar, snap_face_uv  # noqa: E402
     except Exception:
         return
+    for el in out.get('elements', []):
+        for face in el.get('faces', {}).values():
+            tex = out['textures'].get(str(face.get('texture', '')).lstrip('#'), {})
+            snap_face_uv(face, tex.get('fw', 16), tex.get('fh', 16))
     separate_coplanar(out)
 
 

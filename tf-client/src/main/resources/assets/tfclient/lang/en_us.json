@@ -1,4 +1,14 @@
 {
+ "item.tfclient.job_farmer": "Farmer",
+ "item.tfclient.job_miner": "Miner",
+ "item.tfclient.job_wood_cutter": "Woodcutter",
+ "item.tfclient.job_digger": "Digger",
+ "item.tfclient.job_fisherman": "Fisherman",
+ "item.tfclient.job_hunter": "Hunter",
+ "item.tfclient.job_alchemist": "Alchemist",
+ "item.tfclient.job_blacksmith": "Blacksmith",
+ "item.tfclient.job_builder": "Builder",
+ "item.tfclient.job_enchanter": "Enchanter",
  "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets",
  "item.tfclient.valentine_sword": "Espada Valentine",
  "item.tfclient.valentine_axe": "Hacha Valentine",
@@ -899,16 +909,5 @@
  "item.tfclient.nazgul_holy_spear": "Lanza Sagrada",
  "item.tfclient.nazgul_pox_spreader": "Portador de la Plaga",
  "item.tfclient.nazgul_obsidian_bow": "Arco de Obsidiana",
- "tfclient.set.nazgul": "Arsenal de Nazgul",
- "item.tfclient.job_farmer": "Farmer",
- "item.tfclient.job_miner": "Miner",
- "item.tfclient.job_wood_cutter": "Woodcutter",
- "item.tfclient.job_digger": "Digger",
- "item.tfclient.job_fisherman": "Fisherman",
- "item.tfclient.job_hunter": "Hunter",
- "item.tfclient.job_alchemist": "Alchemist",
- "item.tfclient.job_blacksmith": "Blacksmith",
- "item.tfclient.job_builder": "Builder",
- "item.tfclient.job_enchanter": "Enchanter",
- "tfclient.gui.menu": ""
+ "tfclient.set.nazgul": "Arsenal de Nazgul"
 }

@@ -49,6 +49,8 @@ public final class TFItemsClient {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(TFItemsClient::registerProperties);
+        event.enqueueWork(() -> net.minecraft.client.gui.screens.MenuScreens.register(
+                net.tierrasfantasticas.tfclient.menu.TFPanelMenu.TYPE.get(), net.tierrasfantasticas.tfclient.client.TFPanelScreen::new));
     }
 
     private static List<RegistryObject<Item>> ofType(String type) {

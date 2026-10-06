@@ -4377,14 +4377,14 @@
     "category": "ruleta",
     "name": "1 giro de la ruleta",
     "spins": 1,
-    "price": 199,
+    "price": 99,
     "maxQuantity": 1,
     "set": "nazgul",
     "colors": [
       "#c9a8ff",
       "#9061f9"
     ],
-    "description": "1 arma al azar de la forja de Nazgul.",
+    "description": "1 premio al azar: monedas, recursos o, con suerte, un arma legendaria.",
     "image": "img/crates/nazgul.webp",
     "models": [
       {
@@ -4506,6 +4506,87 @@
       {
         "id": "obsidian_bow",
         "name": "Arco de Obsidiana"
+      }
+    ],
+    "pool": [
+      {
+        "id": "monedas-2000",
+        "name": "2.000 monedas",
+        "chance": 26,
+        "icon": "/img/coins-small.png",
+        "give": [
+          "tf monedas dar {player} 2000"
+        ]
+      },
+      {
+        "id": "monedas-5000",
+        "name": "5.000 monedas",
+        "chance": 16,
+        "icon": "/img/coins-big.png",
+        "give": [
+          "tf monedas dar {player} 5000"
+        ]
+      },
+      {
+        "id": "experiencia",
+        "name": "32 botellas de experiencia",
+        "chance": 14,
+        "icon": "/api/itemicon/experience_bottle",
+        "give": [
+          "give {player} minecraft:experience_bottle 32"
+        ]
+      },
+      {
+        "id": "manzanas",
+        "name": "4 manzanas doradas",
+        "chance": 12,
+        "icon": "/api/itemicon/golden_apple",
+        "give": [
+          "give {player} minecraft:golden_apple 4"
+        ]
+      },
+      {
+        "id": "diamantes",
+        "name": "5 diamantes",
+        "chance": 10,
+        "icon": "/api/itemicon/diamond",
+        "give": [
+          "give {player} minecraft:diamond 5"
+        ]
+      },
+      {
+        "id": "esmeraldas",
+        "name": "16 esmeraldas",
+        "chance": 8,
+        "icon": "/api/itemicon/emerald",
+        "give": [
+          "give {player} minecraft:emerald 16"
+        ]
+      },
+      {
+        "id": "netherita",
+        "name": "1 lingote de netherita",
+        "chance": 5,
+        "icon": "/api/itemicon/netherite_ingot",
+        "give": [
+          "give {player} minecraft:netherite_ingot 1"
+        ]
+      },
+      {
+        "id": "totem",
+        "name": "Tótem de la inmortalidad",
+        "chance": 4,
+        "icon": "/api/itemicon/totem_of_undying",
+        "give": [
+          "give {player} minecraft:totem_of_undying 1"
+        ]
+      },
+      {
+        "id": "arma",
+        "name": "Arma legendaria de Nazgul",
+        "chance": 5,
+        "icon": "/img/items/nazgul/great_sword.webp",
+        "weapon": true
       }
     ],
     "commands": []
@@ -4515,14 +4596,14 @@
     "category": "ruleta",
     "name": "5 giros de la ruleta",
     "spins": 5,
-    "price": 799,
+    "price": 399,
     "maxQuantity": 1,
     "set": "nazgul",
     "colors": [
       "#c9a8ff",
       "#9061f9"
     ],
-    "description": "5 armas al azar de la forja de Nazgul.",
+    "description": "5 premios al azar: monedas, recursos o, con suerte, un arma legendaria.",
     "image": "img/crates/nazgul.webp",
     "models": [
       {
@@ -4646,6 +4727,87 @@
         "name": "Arco de Obsidiana"
       }
     ],
+    "pool": [
+      {
+        "id": "monedas-2000",
+        "name": "2.000 monedas",
+        "chance": 26,
+        "icon": "/img/coins-small.png",
+        "give": [
+          "tf monedas dar {player} 2000"
+        ]
+      },
+      {
+        "id": "monedas-5000",
+        "name": "5.000 monedas",
+        "chance": 16,
+        "icon": "/img/coins-big.png",
+        "give": [
+          "tf monedas dar {player} 5000"
+        ]
+      },
+      {
+        "id": "experiencia",
+        "name": "32 botellas de experiencia",
+        "chance": 14,
+        "icon": "/api/itemicon/experience_bottle",
+        "give": [
+          "give {player} minecraft:experience_bottle 32"
+        ]
+      },
+      {
+        "id": "manzanas",
+        "name": "4 manzanas doradas",
+        "chance": 12,
+        "icon": "/api/itemicon/golden_apple",
+        "give": [
+          "give {player} minecraft:golden_apple 4"
+        ]
+      },
+      {
+        "id": "diamantes",
+        "name": "5 diamantes",
+        "chance": 10,
+        "icon": "/api/itemicon/diamond",
+        "give": [
+          "give {player} minecraft:diamond 5"
+        ]
+      },
+      {
+        "id": "esmeraldas",
+        "name": "16 esmeraldas",
+        "chance": 8,
+        "icon": "/api/itemicon/emerald",
+        "give": [
+          "give {player} minecraft:emerald 16"
+        ]
+      },
+      {
+        "id": "netherita",
+        "name": "1 lingote de netherita",
+        "chance": 5,
+        "icon": "/api/itemicon/netherite_ingot",
+        "give": [
+          "give {player} minecraft:netherite_ingot 1"
+        ]
+      },
+      {
+        "id": "totem",
+        "name": "Tótem de la inmortalidad",
+        "chance": 4,
+        "icon": "/api/itemicon/totem_of_undying",
+        "give": [
+          "give {player} minecraft:totem_of_undying 1"
+        ]
+      },
+      {
+        "id": "arma",
+        "name": "Arma legendaria de Nazgul",
+        "chance": 5,
+        "icon": "/img/items/nazgul/great_sword.webp",
+        "weapon": true
+      }
+    ],
     "commands": []
   },
   {
@@ -4653,14 +4815,14 @@
     "category": "ruleta",
     "name": "10 giros de la ruleta",
     "spins": 10,
-    "price": 1399,
+    "price": 699,
     "maxQuantity": 1,
     "set": "nazgul",
     "colors": [
       "#c9a8ff",
       "#9061f9"
     ],
-    "description": "10 armas al azar de la forja de Nazgul.",
+    "description": "10 premios al azar: monedas, recursos o, con suerte, un arma legendaria.",
     "image": "img/crates/nazgul.webp",
     "models": [
       {
@@ -4782,6 +4944,87 @@
       {
         "id": "obsidian_bow",
         "name": "Arco de Obsidiana"
+      }
+    ],
+    "pool": [
+      {
+        "id": "monedas-2000",
+        "name": "2.000 monedas",
+        "chance": 26,
+        "icon": "/img/coins-small.png",
+        "give": [
+          "tf monedas dar {player} 2000"
+        ]
+      },
+      {
+        "id": "monedas-5000",
+        "name": "5.000 monedas",
+        "chance": 16,
+        "icon": "/img/coins-big.png",
+        "give": [
+          "tf monedas dar {player} 5000"
+        ]
+      },
+      {
+        "id": "experiencia",
+        "name": "32 botellas de experiencia",
+        "chance": 14,
+        "icon": "/api/itemicon/experience_bottle",
+        "give": [
+          "give {player} minecraft:experience_bottle 32"
+        ]
+      },
+      {
+        "id": "manzanas",
+        "name": "4 manzanas doradas",
+        "chance": 12,
+        "icon": "/api/itemicon/golden_apple",
+        "give": [
+          "give {player} minecraft:golden_apple 4"
+        ]
+      },
+      {
+        "id": "diamantes",
+        "name": "5 diamantes",
+        "chance": 10,
+        "icon": "/api/itemicon/diamond",
+        "give": [
+          "give {player} minecraft:diamond 5"
+        ]
+      },
+      {
+        "id": "esmeraldas",
+        "name": "16 esmeraldas",
+        "chance": 8,
+        "icon": "/api/itemicon/emerald",
+        "give": [
+          "give {player} minecraft:emerald 16"
+        ]
+      },
+      {
+        "id": "netherita",
+        "name": "1 lingote de netherita",
+        "chance": 5,
+        "icon": "/api/itemicon/netherite_ingot",
+        "give": [
+          "give {player} minecraft:netherite_ingot 1"
+        ]
+      },
+      {
+        "id": "totem",
+        "name": "Tótem de la inmortalidad",
+        "chance": 4,
+        "icon": "/api/itemicon/totem_of_undying",
+        "give": [
+          "give {player} minecraft:totem_of_undying 1"
+        ]
+      },
+      {
+        "id": "arma",
+        "name": "Arma legendaria de Nazgul",
+        "chance": 5,
+        "icon": "/img/items/nazgul/great_sword.webp",
+        "weapon": true
       }
     ],
     "commands": []

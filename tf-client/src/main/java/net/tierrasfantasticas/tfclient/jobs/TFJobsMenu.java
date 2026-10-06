@@ -21,22 +21,17 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsData.JobProgress;
 import net.tierrasfantasticas.tfclient.jobs.TFJobsData.MissionState;
 import net.tierrasfantasticas.tfclient.jobs.TFJobsData.PlayerJobs;
 import net.tierrasfantasticas.tfclient.menu.TFIcon;
-import net.tierrasfantasticas.tfclient.menu.TFMenu;
-import net.tierrasfantasticas.tfclient.menu.TFMenuStyle;
+import net.tierrasfantasticas.tfclient.menu.TFPanelMenu;
 import net.tierrasfantasticas.tfclient.server.TFServerConfig;
 
 /**
- * Menús de /tf jobs en un cofre de 5 filas con el marco del pack Medieval Jobs:
- * <pre>
- *  filas 0-2, columnas 1-7: el cartel con el dibujo del oficio (sin objetos encima)
- *  huecos 29-33 y 38-42:    la rejilla de 5×2 (oficios en el menú principal, misiones en el de cada oficio)
- *  huecos 27, 28, 34, 35, 36, 37, 43, 44: botones a los lados de la rejilla, sobre el pergamino
- * </pre>
+ * Menús de /tf jobs en la ventana {@link TFPanelMenu}: arriba el marco del pack Medieval Jobs con el dibujo del oficio
+ * y su rejilla de 5×2 (los oficios en el menú principal, las misiones en el de cada oficio); debajo, aparte, la barra
+ * de 9 botones (volver, nivel, páginas, monedas, recompensas, unirse o abandonar, cerrar). Nada encima del dibujo y
+ * sin el inventario del jugador.
  */
 public final class TFJobsMenu {
-    private static final int ROWS = 5;
-    private static final int[] GRID = {29, 30, 31, 32, 33, 38, 39, 40, 41, 42};
-    private static final int[] BANNER = {1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+    private static final int GRID = TFPanelMenu.GRID;
     private static final String SIGN = "Oficios";
 
     private TFJobsMenu() {}
@@ -55,41 +50,37 @@ public final class TFJobsMenu {
         PlayerJobs p = TFJobs.data().player(player.getUUID());
         Job current = p.active.isEmpty() ? null : TFJobsConfig.job(p.active.get(0));
         Job shown = current != null ? current : TFJobsConfig.jobs.values().iterator().next();
-        Component title = TFMenuStyle.title(shown.background(), current != null ? current.name() : "Elige tu oficio", SIGN);
-        TFMenu.open(player, ROWS, title, menu -> fillMain(menu, player, page));
+        TFPanelMenu.open(player, shown.background(), current != null ? current.name() : "Elige tu oficio", SIGN,
+                menu -> fillMain(menu, player, page));
     }
 
-    private static void fillMain(TFMenu menu, ServerPlayer player, int page) {
+    private static void fillMain(TFPanelMenu menu, ServerPlayer player, int page) {
         menu.clear();
         PlayerJobs p = TFJobs.data().player(player.getUUID());
         List<Job> jobs = new ArrayList<>(TFJobsConfig.jobs.values());
-        int pages = Math.max(1, (jobs.size() + GRID.length - 1) / GRID.length);
+        int pages = Math.max(1, (jobs.size() + GRID - 1) / GRID);
         int current = Math.max(0, Math.min(page, pages - 1));
-        for (int i = 0; i < GRID.length; i++) {
-            int index = current * GRID.length + i;
+        for (int i = 0; i < GRID; i++) {
+            int index = current * GRID + i;
             if (index >= jobs.size()) break;
             Job job = jobs.get(index);
-            menu.set(GRID[i], jobIcon(job, p), (pl, t, b) -> openJob(pl, job, 0));
+            menu.grid(i, jobIcon(job, p), (pl, t, b) -> openJob(pl, job, 0));
         }
-        // El cartel lleva al oficio actual
-        if (!p.active.isEmpty()) {
-            Job active = TFJobsConfig.job(p.active.get(0));
-            if (active != null) for (int slot : BANNER) menu.set(slot, ItemStack.EMPTY, (pl, t, b) -> openJob(pl, active, 0));
-        }
-        menu.set(27, TFIcon.of(Items.BOOK).name("¿Cómo funcionan?", ChatFormatting.GOLD)
+        // Barra: info · página anterior · monedas · página siguiente · tu oficio · cerrar
+        menu.nav(0, TFIcon.of(Items.BOOK).name("¿Cómo funcionan?", ChatFormatting.GOLD)
                 .text("Elige un oficio y gana experiencia y " + TFServerConfig.currency() + " haciendo su trabajo.")
                 .blank()
                 .text("Sube de nivel para cobrar más y desbloquear misiones con recompensa.")
                 .blank()
                 .text(TFJobsConfig.maxJobs == 1 ? "Puedes tener un oficio a la vez." : "Puedes tener " + TFJobsConfig.maxJobs + " oficios a la vez.")
-                .text("Si lo dejas, no pierdes tu nivel ni tus misiones.", ChatFormatting.GREEN).build());
-        menu.set(35, coins(player));
-        menu.set(44, TFIcon.of(Items.BARRIER).name("Cerrar", ChatFormatting.RED).build(), (pl, t, b) -> pl.closeContainer());
+                .text("Si lo dejas, no pierdes tu nivel ni tus misiones.", ChatFormatting.GREEN).build(), null);
+        menu.nav(4, coins(player), null);
+        menu.nav(8, close(), (pl, t, b) -> pl.closeContainer());
         if (!p.active.isEmpty()) {
             Job active = TFJobsConfig.job(p.active.get(0));
             if (active != null) {
                 JobProgress jp = p.job(active.id());
-                menu.set(36, TFIcon.of(icon(active)).name(Component.literal("Tu oficio: ").withStyle(ChatFormatting.GRAY)
+                menu.nav(7, TFIcon.of(icon(active)).name(Component.literal("Tu oficio: ").withStyle(ChatFormatting.GRAY)
                                 .append(Component.literal(active.name()).withStyle(color(active))))
                         .line("Nivel " + jp.level, ChatFormatting.YELLOW)
                         .blank()
@@ -97,8 +88,8 @@ public final class TFJobsMenu {
                         (pl, t, b) -> openJob(pl, active, 0));
             }
         }
-        if (current > 0) menu.set(28, arrow("◀ Más oficios"), (pl, t, b) -> fillMain(menu, pl, current - 1));
-        if (current < pages - 1) menu.set(34, arrow("Más oficios ▶"), (pl, t, b) -> fillMain(menu, pl, current + 1));
+        if (current > 0) menu.nav(2, arrow("◀ Más oficios"), (pl, t, b) -> fillMain(menu, pl, current - 1));
+        if (current < pages - 1) menu.nav(6, arrow("Más oficios ▶"), (pl, t, b) -> fillMain(menu, pl, current + 1));
         menu.update();
     }
 
@@ -128,41 +119,43 @@ public final class TFJobsMenu {
     // --- Menú de un oficio: nivel, misiones, recompensas y unirse / abandonar ---
 
     public static void openJob(ServerPlayer player, Job job, int page) {
-        Component title = TFMenuStyle.title(job.background(), job.name(), SIGN);
-        TFMenu.open(player, ROWS, title, menu -> fillJob(menu, player, job, page, false));
+        TFPanelMenu.open(player, job.background(), job.name(), SIGN, menu -> fillJob(menu, player, job, page, false));
     }
 
-    private static void fillJob(TFMenu menu, ServerPlayer player, Job job, int page, boolean confirmLeave) {
+    private static void fillJob(TFPanelMenu menu, ServerPlayer player, Job job, int page, boolean confirmLeave) {
         menu.clear();
         PlayerJobs p = TFJobs.data().player(player.getUUID());
         JobProgress jp = p.job(job.id());
         boolean active = p.active.contains(job.id());
 
         List<Mission> missions = job.missions();
-        int pages = Math.max(1, (missions.size() + GRID.length - 1) / GRID.length);
+        int pages = Math.max(1, (missions.size() + GRID - 1) / GRID);
         int current = Math.max(0, Math.min(page, pages - 1));
-        for (int i = 0; i < GRID.length; i++) {
-            int index = current * GRID.length + i;
+        for (int i = 0; i < GRID; i++) {
+            int index = current * GRID + i;
             if (index >= missions.size()) break;
             Mission mission = missions.get(index);
             MissionState ms = TFJobs.refresh(jp, mission);
             boolean claimable = active && ms.done && ms.claimedDay < 0;
-            menu.set(GRID[i], missionIcon(mission, ms, jp, active), claimable ? (pl, t, b) -> {
+            menu.grid(i, missionIcon(mission, ms, jp, active), claimable ? (pl, t, b) -> {
                 String error = TFJobs.claim(pl, job, mission);
                 if (error != null) pl.sendSystemMessage(Component.literal(error).withStyle(ChatFormatting.RED));
                 fillJob(menu, pl, job, current, false);
             } : null);
         }
 
-        menu.set(27, TFIcon.of(Items.ARROW).name("◀ Volver a los oficios", ChatFormatting.YELLOW).build(), (pl, t, b) -> openMain(pl));
-        menu.set(28, levelIcon(job, jp));
-        menu.set(34, actionsIcon(job, jp));
-        menu.set(35, coins(player));
-        menu.set(44, rewardsIcon(jp));
+        // Barra: volver · nivel · misiones anteriores · cómo se gana · monedas · recompensas · más misiones ·
+        // unirse/abandonar · cerrar
+        menu.nav(0, TFIcon.of(Items.ARROW).name("◀ Volver a los oficios", ChatFormatting.YELLOW).build(), (pl, t, b) -> openMain(pl));
+        menu.nav(1, levelIcon(job, jp), null);
+        menu.nav(3, actionsIcon(job, jp), null);
+        menu.nav(4, coins(player), null);
+        menu.nav(5, rewardsIcon(jp), null);
+        menu.nav(8, close(), (pl, t, b) -> pl.closeContainer());
 
         // Unirse, cambiar o abandonar
         if (active) {
-            menu.set(36, TFIcon.of(confirmLeave ? Items.TNT : Items.RED_DYE)
+            menu.nav(7, TFIcon.of(confirmLeave ? Items.TNT : Items.RED_DYE)
                     .name(confirmLeave ? "¿Seguro? Clic otra vez para dejarlo" : "Abandonar oficio", ChatFormatting.RED)
                     .text("Vuelves al menú de oficios. Tu nivel, tu experiencia y tus misiones se quedan guardados por si vuelves.")
                     .glow(confirmLeave).build(), (pl, t, b) -> {
@@ -185,7 +178,7 @@ public final class TFJobsMenu {
             if (TFJobsConfig.switchWaitMinutes > 0) {
                 join.line("Después hay que esperar " + TFJobsConfig.switchWaitMinutes + " min para cambiar.", ChatFormatting.DARK_GRAY);
             }
-            menu.set(36, join.build(), (pl, t, b) -> {
+            menu.nav(7, join.build(), (pl, t, b) -> {
                 String error = other ? TFJobs.switchTo(pl, job) : TFJobs.join(pl, job);
                 if (error != null) {
                     pl.sendSystemMessage(Component.literal(error).withStyle(ChatFormatting.RED));
@@ -195,8 +188,8 @@ public final class TFJobsMenu {
                 }
             });
         }
-        if (current > 0) menu.set(37, arrow("◀ Misiones anteriores"), (pl, t, b) -> fillJob(menu, pl, job, current - 1, false));
-        if (current < pages - 1) menu.set(43, arrow("Más misiones ▶"), (pl, t, b) -> fillJob(menu, pl, job, current + 1, false));
+        if (current > 0) menu.nav(2, arrow("◀ Misiones anteriores"), (pl, t, b) -> fillJob(menu, pl, job, current - 1, false));
+        if (current < pages - 1) menu.nav(6, arrow("Más misiones ▶"), (pl, t, b) -> fillJob(menu, pl, job, current + 1, false));
         menu.update();
     }
 
@@ -355,6 +348,10 @@ public final class TFJobsMenu {
         if (pendingCoins >= 1) icon.line("+" + TFEconomy.number((long) pendingCoins) + " en el próximo pago", ChatFormatting.GRAY);
         icon.blank().line("Gástalas en /tf tienda", ChatFormatting.DARK_GRAY);
         return icon.build();
+    }
+
+    private static ItemStack close() {
+        return TFIcon.of(Items.BARRIER).name("Cerrar", ChatFormatting.RED).build();
     }
 
     private static ItemStack arrow(String name) {

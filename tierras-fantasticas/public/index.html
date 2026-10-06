@@ -20,6 +20,7 @@
   <script>document.documentElement.classList.add('js')</script>
 </head>
 <body data-page="inicio" data-hero>
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
   <a class="sr-only" href="#main">Saltar al contenido</a>
   <header class="header" id="header">
     <div class="wrap header-inner">
@@ -65,59 +66,55 @@
   </div>
 
   <main id="main">
-    <section class="hero">
-      <div class="hero-art" aria-hidden="true">
+    <section class="home-hero">
+      <div class="home-hero-art" aria-hidden="true">
         <img src="/img/hero-1920.webp" srcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high">
       </div>
-      <div class="wrap hero-inner">
-        <div class="logo-mark">
-          <span class="glow" aria-hidden="true"></span>
-          <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
-          <span class="shine" aria-hidden="true"></span>
-          <span class="spark" aria-hidden="true"></span>
+      <div class="wrap home-hero-grid">
+        <div class="home-hero-copy">
+          <span class="pill"><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+          <h1><span class="title-sheen" data-server-name>Tierras Fantásticas</span></h1>
+          <p class="lead">Un reino de castillos, magia y mazmorras en Minecraft Java 1.20.1. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
+          <div class="home-hero-cta">
+            <button class="ip-card" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
+              <span class="ip-label">IP del servidor</span>
+              <span class="ip" data-server-ip>216.163.187.40:19001</span>
+              <span class="ip-copy" data-copy-hint>Copiar</span>
+            </button>
+            <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+          <ul class="hero-facts">
+            <li><strong data-players>—</strong><span>jugando ahora</span></li>
+            <li><strong>200+</strong><span>mods</span></li>
+            <li><strong data-crate-count>40</strong><span>sets animados</span></li>
+            <li><strong>0%</strong><span>pay-to-win</span></li>
+          </ul>
         </div>
-        <span class="eyebrow">Minecraft Java · Forge 1.20.1</span>
-        <h1 style="margin-top:14px" data-server-name>Tierras Fantásticas</h1>
-        <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
-        <div class="hero-cta">
-          <button class="btn btn-lg ip-button" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
-            <span class="ip" data-server-ip>216.163.187.40:19001</span><span class="copy" data-copy-hint>Copiar IP</span>
-          </button>
-          <a href="/tienda" class="btn btn-gold btn-lg">Visitar la tienda <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        </div>
-        <span class="status-line" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
+        <a class="showcase" id="showcase" href="/tienda#crates" aria-label="Ver las crates">
+          <span class="showcase-glow" aria-hidden="true"></span>
+          <span class="showcase-ring" aria-hidden="true"></span>
+          <img class="showcase-img" src="/img/crates/ifrit.webp" alt="" width="600" height="400">
+          <span class="showcase-info">
+            <span class="showcase-kicker">Crate destacada</span>
+            <b class="showcase-name">Ifrit</b>
+            <span class="showcase-meta"></span>
+          </span>
+          <span class="showcase-dots" aria-hidden="true"></span>
+        </a>
       </div>
     </section>
 
-    <div class="wrap">
-      <div class="panel stats reveal">
-        <div class="stat"><strong data-players>—</strong><span>Jugadores conectados</span></div>
-        <div class="stat"><strong>200+</strong><span>Mods en el modpack</span></div>
-        <div class="stat"><strong data-crate-count>40</strong><span>Sets animados</span></div>
-        <div class="stat"><strong>0%</strong><span>Pay-to-win</span></div>
-      </div>
-    </div>
-
     <section class="wrap section">
-      <div class="section-head">
+      <div class="section-head center">
         <span class="eyebrow">Cómo jugar</span>
         <h2>Dentro en tres pasos</h2>
         <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>
       </div>
-      <div class="grid grid-3 steps">
-        <article class="panel step reveal">
-          <h3>Prepara el modpack</h3>
-          <p>Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas, que incluye el TF Client. Lo tienes en nuestro Discord.</p>
-        </article>
-        <article class="panel step reveal">
-          <h3>Pulsa «Tierras Fantásticas»</h3>
-          <p>Desde el menú del TF Client entras con un clic. Antes de conectar revisa tus mods y te dice si te falta alguno.</p>
-        </article>
-        <article class="panel step reveal">
-          <h3>Empieza tu aventura</h3>
-          <p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es 216.163.187.40:19001.</p>
-        </article>
-      </div>
+      <ol class="timeline">
+        <li class="reveal"><span class="num">1</span><h3>Prepara el modpack</h3><p>Minecraft Java 1.20.1 con Forge y el modpack de Tierras Fantásticas, que incluye el TF Client. Lo tienes en nuestro Discord.</p></li>
+        <li class="reveal"><span class="num">2</span><h3>Pulsa «Tierras Fantásticas»</h3><p>Desde el menú del TF Client entras con un clic. Antes de conectar revisa tus mods y te dice si te falta alguno.</p></li>
+        <li class="reveal"><span class="num">3</span><h3>Empieza tu aventura</h3><p>Funda tu reino, explora mazmorras y forja alianzas. ¿Prefieres entrar a mano? La IP es 216.163.187.40:19001.</p></li>
+      </ol>
     </section>
 
     <section class="wrap section">
@@ -125,11 +122,10 @@
         <span class="eyebrow">El reino</span>
         <h2>Mucho más que supervivencia</h2>
       </div>
-      <div class="grid grid-3">
-        <article class="panel feature reveal">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l2-1V5h2v2h2V5h2v2h2V5h2v3l2 1v12"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span>
-          <h3>Castillos y reinos</h3>
-          <p>Funda tu reino, levanta murallas y compite con otros clanes por el control de las tierras.</p>
+      <div class="bento">
+        <article class="bento-card big reveal">
+          <img src="/img/hero-1280.webp" alt="" loading="lazy" width="1280" height="720">
+          <div><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l2-1V5h2v2h2V5h2v2h2V5h2v3l2 1v12"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span><h3>Castillos y reinos</h3><p>Funda tu reino, levanta murallas y compite con otros clanes por el control de las tierras.</p></div>
         </article>
         <article class="panel feature reveal">
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M14.5 6.5L18 3h3v3l-3.5 3.5"/><path d="M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></span>
@@ -143,8 +139,8 @@
         </article>
         <article class="panel feature reveal">
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/></svg></span>
-          <h3>Economía justa</h3>
-          <p>Comercia con otros jugadores, abre tu tienda y gana monedas explorando y construyendo.</p>
+          <h3>Oficios y economía</h3>
+          <p>Elige un oficio, sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p>
         </article>
         <article class="panel feature reveal">
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
@@ -159,26 +155,30 @@
       </div>
     </section>
 
-    <section class="wrap section">
-      <div class="section-head">
-        <span class="eyebrow">Nuevo en la tienda</span>
-        <h2>Crates <span class="gold-text">legendarias</span></h2>
-        <p>Cada crate es un set completo: armas, herramientas, armadura y alas con animaciones propias. Pruébatelo en tu personaje antes de comprarlo.</p>
+    <section class="section crates-band">
+      <div class="wrap">
+        <div class="section-head split-head">
+          <div>
+            <span class="eyebrow">Tienda</span>
+            <h2>Crates <span class="gold-text">legendarias</span></h2>
+            <p>Cada crate es un set completo con animaciones propias. Pruébatelo en tu personaje antes de comprarlo.</p>
+          </div>
+          <a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="crate-row" id="crate-spotlight">
+          <p class="loading">Cargando crates…</p>
+        </div>
       </div>
-      <div class="grid grid-2 grid-4" id="crate-spotlight">
-        <p class="loading">Cargando crates…</p>
-      </div>
-      <p style="margin-top:24px"><a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
     </section>
 
     <section class="wrap section">
-      <div class="section-head">
+      <div class="section-head center">
         <span class="eyebrow">Rangos</span>
         <h2>Lleva tu nombre con estilo</h2>
         <p>Prefijos, kits, hogares extra y ventajas de comodidad. Sin romper el equilibrio del juego.</p>
       </div>
       <div class="rank-strip" id="rank-strip"></div>
-      <p style="margin-top:24px"><a class="btn btn-ghost" href="/tienda#rangos">Comparar rangos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+      <p class="center-cta"><a class="btn btn-ghost" href="/tienda#rangos">Comparar rangos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
     </section>
 
     <section class="wrap section">
@@ -218,7 +218,7 @@
           <ul>
             <li><a href="/tienda#rangos">Rangos</a></li>
             <li><a href="/tienda#crates">Crates</a></li>
-            <li><a href="/tienda#ruleta">Ruleta de armas</a></li>
+            <li><a href="/tienda#ruleta">Ruleta</a></li>
             <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
           </ul>
         </div>
