@@ -279,14 +279,15 @@ public final class TFItemTypes {
 
     // --- Armaduras ---
 
-    /** Material de armadura de un set (valores de netherita). El nombre da la textura: tfclient:<set>_layer_N. */
+    /** Material de armadura de un set: los valores del hierro (es de aspecto, no da ventaja). El nombre da la
+     *  textura: tfclient:<set>_layer_N. */
     public record Material(String setId) implements ArmorMaterial {
         private static final int[] DURABILITY = {13, 15, 16, 11};
-        private static final int[] DEFENSE = {3, 6, 8, 3};
+        private static final int[] DEFENSE = {2, 5, 6, 2};
 
         @Override
         public int getDurabilityForType(ArmorItem.Type type) {
-            return DURABILITY[index(type)] * 37;
+            return DURABILITY[index(type)] * 15;
         }
 
         private static int index(ArmorItem.Type type) {
@@ -305,12 +306,12 @@ public final class TFItemTypes {
 
         @Override
         public int getEnchantmentValue() {
-            return 15;
+            return 9;
         }
 
         @Override
         public SoundEvent getEquipSound() {
-            return SoundEvents.ARMOR_EQUIP_NETHERITE;
+            return SoundEvents.ARMOR_EQUIP_IRON;
         }
 
         @Override
@@ -325,12 +326,12 @@ public final class TFItemTypes {
 
         @Override
         public float getToughness() {
-            return 3.0F;
+            return 0.0F;
         }
 
         @Override
         public float getKnockbackResistance() {
-            return 0.1F;
+            return 0.0F;
         }
     }
 

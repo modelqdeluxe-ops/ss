@@ -69,24 +69,26 @@ public final class TFItems {
         TABS.register(modBus);
     }
 
+    // Los objetos de los sets son de aspecto: tienen exactamente los valores del hierro (lo que cualquier jugador
+    // fabrica jugando), así que comprarlos no da ventaja (normas de Mojang para servidores). Sin resistencia al fuego.
     private static Item create(TFSets.SetDef set, TFSets.ItemDef def) {
-        Item.Properties p = new Item.Properties().fireResistant().rarity(Rarity.EPIC);
+        Item.Properties p = new Item.Properties().rarity(Rarity.EPIC);
         return switch (def.type()) {
-            case "heavy" -> new TFItemTypes.Sword(Tiers.NETHERITE, 6, -3.1F, p);
-            case "axe" -> new TFItemTypes.Axe(Tiers.NETHERITE, 5.0F, -3.0F, p);
-            case "pickaxe" -> new TFItemTypes.Pickaxe(Tiers.NETHERITE, 1, -2.8F, p);
-            case "shovel" -> new TFItemTypes.Shovel(Tiers.NETHERITE, 1.5F, -3.0F, p);
-            case "hoe" -> new TFItemTypes.Hoe(Tiers.NETHERITE, -4, 0.0F, p);
-            case "bow" -> new TFItemTypes.Bow(p.durability(768));
-            case "crossbow" -> new TFItemTypes.Crossbow(p.durability(930));
-            case "fishing_rod" -> new TFItemTypes.FishingRod(p.durability(128));
-            case "shield" -> new TFItemTypes.Shield(p.durability(672));
-            case "trident" -> new TFItemTypes.Trident(p.durability(500));
+            case "heavy" -> new TFItemTypes.Sword(Tiers.IRON, 6, -3.1F, p);
+            case "axe" -> new TFItemTypes.Axe(Tiers.IRON, 6.0F, -3.1F, p);
+            case "pickaxe" -> new TFItemTypes.Pickaxe(Tiers.IRON, 1, -2.8F, p);
+            case "shovel" -> new TFItemTypes.Shovel(Tiers.IRON, 1.5F, -3.0F, p);
+            case "hoe" -> new TFItemTypes.Hoe(Tiers.IRON, -2, -1.0F, p);
+            case "bow" -> new TFItemTypes.Bow(p.durability(384));
+            case "crossbow" -> new TFItemTypes.Crossbow(p.durability(465));
+            case "fishing_rod" -> new TFItemTypes.FishingRod(p.durability(64));
+            case "shield" -> new TFItemTypes.Shield(p.durability(336));
+            case "trident" -> new TFItemTypes.Trident(p.durability(250));
             case "head" -> new TFItemTypes.Cosmetic(EquipmentSlot.HEAD, null, p.stacksTo(1));
             case "back" -> new TFItemTypes.Cosmetic(EquipmentSlot.CHEST,
                     def.worn() != null ? new ResourceLocation(def.worn()) : null, p.stacksTo(1));
             case "armor" -> new TFItemTypes.Armor(set, armorType(def.slot()), p);
-            default -> new TFItemTypes.Sword(Tiers.NETHERITE, 3, -2.4F, p);
+            default -> new TFItemTypes.Sword(Tiers.IRON, 3, -2.4F, p);
         };
     }
 

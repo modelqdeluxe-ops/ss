@@ -137,6 +137,13 @@ ROULETTE_POOL = [
 ]
 # Precio de un giro con las monedas del servidor (se cobra en el juego, con la economía del TF Client).
 ROULETTE_COIN_PRICE = 3000
+# La ruleta está RETIRADA de la tienda: las normas de Mojang para servidores prohíben lo que se parezca al juego de
+# azar y las cajas al azar con premios que dan ventaja. Su código sigue en la web (y en los tests, con productos de
+# ejemplo) por si algún día se rehace de forma permitida. Con False no se escribe en products.json.
+ROULETTE_ENABLED = False
+# Categorías que ya no se venden: las llaves (las crates son el set completo) y las monedas con dinero (las monedas
+# se ganan jugando; venderlas con dinero para comprar objetos en la tienda de monedas daría ventaja).
+RETIRED = ('llaves', 'monedas')
 ROULETTE = [
     ('ruleta-1', '1 giro de la ruleta', 1, 99),
     ('ruleta-5', '5 giros de la ruleta', 5, 399),
@@ -176,7 +183,7 @@ def main():
         crates.append(crate)
     weapons = listing(ROULETTE_SET)
     roulette = []
-    for pid, name, spins, price in ROULETTE:
+    for pid, name, spins, price in ROULETTE if ROULETTE_ENABLED else []:
         roulette.append({
             'id': pid, 'category': 'ruleta', 'name': name, 'spins': spins, 'price': price,
             'maxQuantity': 1, 'coinPrice': ROULETTE_COIN_PRICE * spins, 'set': ROULETTE_SET, 'colors': ['#c9a8ff', '#9061f9'],
@@ -187,12 +194,12 @@ def main():
         })
     gifts = [x for x in data if x['category'] == 'gratis']
     ranks = [{k: v for k, v in x.items() if k != 'featured'} for x in data if x['category'] == 'rangos']
-    # Las llaves ya no se venden: las crates son el set completo.
-    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'llaves')]
+    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta') + RETIRED]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
         json.dump(gifts + ranks + crates + roulette + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
-    print(len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;', len(weapons), 'armas en la ruleta')
+    print(len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
+          f'ruleta con {len(weapons)} armas' if ROULETTE_ENABLED else 'ruleta retirada')
 
 
 if __name__ == '__main__':

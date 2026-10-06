@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import http from 'node:http';
 import { createHmac } from 'node:crypto';
 import products from '../config/products.json' with { type: 'json' };
+import './retired.js';
 import worker from '../src/index.js';
 import { createD1 } from './d1.js';
 

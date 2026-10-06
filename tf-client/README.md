@@ -59,7 +59,9 @@ Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libr
 - Con el mod **Better Combat**, cada arma usa la plantilla que le toca por su forma (espada, mandoble, daga, lanza,
   guadaña, bastón, alabarda, hacha, martillo, maza, puño...) y hace sus combos encadenando clics. Arcos, ballestas,
   cañas, escudos, palas y azadas se quedan como en Minecraft.
-- Valores de netherita (daño, durabilidad, armadura) y no se queman en lava.
+- **Son de aspecto**: tienen exactamente los valores del hierro (daño, velocidad, durabilidad y armadura) y se queman
+  en lava como cualquier objeto. Así comprarlos no da ventaja sobre quien no paga, como piden las normas de Mojang
+  para servidores (desde la 1.3.4; antes tenían valores de netherita).
 - Hace falta el TF Client **en el servidor y en todos los jugadores**, con la misma versión (Forge lo comprueba al
   conectar). Funciona en servidores Forge y Mohist.
 
@@ -160,7 +162,7 @@ abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cance
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.3.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.4.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
