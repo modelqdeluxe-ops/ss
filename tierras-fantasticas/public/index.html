@@ -20,7 +20,6 @@
   <script>document.documentElement.classList.add('js')</script>
 </head>
 <body data-page="inicio" data-hero>
-  <div class="aurora" aria-hidden="true"></div>
   <a class="sr-only" href="#main">Saltar al contenido</a>
   <header class="header" id="header">
     <div class="wrap header-inner">
@@ -90,7 +89,38 @@
       </div>
     </section>
 
-    <section class="wrap section featured">
+    <div class="wrap stats-wrap">
+      <ul class="stats frame" aria-label="El servidor en cifras">
+        <li><b data-players>—</b><span>Jugadores en línea</span></li>
+        <li><b>1.20.1</b><span>Minecraft Java</span></li>
+        <li><b>+200</b><span>Mods</span></li>
+        <li><b data-crate-count>40</b><span>Crates</span></li>
+      </ul>
+    </div>
+
+    <section class="wrap section">
+      <div class="section-head center">
+        <span class="eyebrow">El reino</span>
+        <h2>Una aventura sin final</h2>
+        <p>Supervivencia con alma de RPG: funda tu reino, forja armas legendarias y haz fortuna con tu oficio.</p>
+      </div>
+      <div class="pillars">
+        <article class="pillar frame reveal">
+          <div class="pillar-art"><img src="/img/hero-768.webp" alt="Castillos de Tierras Fantásticas" width="768" height="432" loading="lazy" style="object-position:22% 40%"></div>
+          <div class="pillar-body"><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
+        </article>
+        <article class="pillar frame reveal">
+          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" loading="lazy"></div>
+          <div class="pillar-body"><h3>Armas legendarias</h3><p>Sets completos con armas animadas, armadura y cosméticos (alas, mochilas, cascos) que se ven en el juego.</p></div>
+        </article>
+        <article class="pillar frame reveal">
+          <div class="pillar-art"><img src="/img/home/oficio-miner.webp" alt="El minero, uno de los oficios" width="590" height="190" loading="lazy" class="pixel-img"></div>
+          <div class="pillar-body"><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section featured" style="padding-top:0">
       <div class="section-head split-head">
         <div>
           <span class="eyebrow">Nuevo en la tienda</span>
@@ -100,6 +130,19 @@
       </div>
       <div class="crate-row" id="crate-spotlight">
         <p class="loading">Cargando crates…</p>
+      </div>
+    </section>
+
+    <section class="wrap section" style="padding-top:0">
+      <div class="panel cta-band reveal">
+        <span class="eyebrow">Únete</span>
+        <h2>Tu aventura empieza hoy</h2>
+        <p>Es gratis: Minecraft Java 1.20.1 con el modpack del servidor. Copia la IP, entra y funda tu reino.</p>
+        <div class="actions">
+          <button class="btn btn-gold btn-lg" type="button" data-copy-ip><span data-copy-hint>Copiar IP</span></button>
+          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Entrar al Discord</a>
+          <a href="/ayuda" class="btn btn-ghost btn-lg">Cómo entrar</a>
+        </div>
       </div>
     </section>
   </main>

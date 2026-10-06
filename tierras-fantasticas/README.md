@@ -3,10 +3,12 @@
 Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasarela de pago real. Funciona en
 **Cloudflare Workers** (gratis, siempre encendida) con su base de datos **D1**, en https://tierrasfantásticas.store:
 
-- Web por secciones con una página para cada una. Diseño oscuro con oro (fuentes Cinzel y Manrope) sobre un fondo de
-  aurora animada, cabecera de cristal flotante y una portada ligera (el emblema animado, la IP y cuatro crates). Las
-  crates tienen un aura de su color que late y destellos que parpadean alrededor. Pensado primero para el móvil: menú a pantalla completa en el teléfono, sin partículas ni efectos pesados
-  (solo animaciones de `transform`/`opacity`, que se apagan con «reducir movimiento»):
+- Web por secciones con una página para cada una. Estilo de juego de fantasía: fondo azul noche con un grano muy
+  suave, oro, títulos en Cinzel con un ornamento debajo y todo (tarjetas, botones, campos y ventanas) con las esquinas
+  biseladas y un filo dorado. Portada ligera: el emblema, la IP, la barra de datos del servidor, tres pilares y cuatro
+  crates. Las crates tienen un brillo de su color que late. Pensado primero para el móvil: menú a pantalla completa en
+  el teléfono, nada se sale de la pantalla, sin partículas, desenfoques ni efectos pesados (solo animaciones de
+  `transform`/`opacity`, que se apagan con «reducir movimiento»):
   - **Inicio** (`/`): el emblema animado, la IP (clic para copiar), el estado del servidor en vivo y cuatro crates.
   - **Tienda** (`/tienda`), con buscador y pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**,
     **Rangos**, **Crates**, **Ruleta**, **Monedas** y **Tienda de monedas**.
