@@ -18,8 +18,39 @@ corrigiendo y agregando cosas al mod».* O sea:
 **Petición actual del dueño (literal):** *«rediseña la web, tómatelo en serio, mira como están diseñadas de bonitas
 en internet.»* Después pidió guardar el avance en git y documentarlo todo (este archivo).
 
-**Estado:** rediseño **a medias**, subido a la rama `claude/amazing-wozniak-gtw9ll` (PR en borrador https://github.com/modelqdeluxe-ops/ss/pull/17, **sin
-fusionar**: la web en vivo todavía tiene el diseño anterior). Lo que ya está hecho del rediseño:
+**Estado:** rediseño **terminado y publicado** (PR https://github.com/modelqdeluxe-ops/ss/pull/17, fusionado con
+*squash* en `main`). Se revisaron con capturas de escritorio (1440 px) y móvil (390 px) todas las pantallas: portada,
+tienda (gratis, rangos, crates, ruleta, monedas, tienda de monedas, con y sin sesión), mundo, ayuda, cuenta con y sin
+sesión, página del pedido (regalo y ruleta con monedas), ventana de compra, visor 3D de las armas y probador de crates.
+Ninguna se sale de la pantalla en el móvil. Lo que se hizo en la última vuelta (además de lo de abajo):
+
+- **Fallo de base arreglado**: `--chamfer` estaba en `:root`, así que el bisel medía siempre 12 px y los `--cut` de
+  cada elemento (botones 9 px, pequeños 7, grandes 11, pestañas 8…) no hacían nada. Ahora `--chamfer` se declara en
+  `*` (cada elemento usa su propio `--cut`). **Ojo**: `--cut` se hereda; un elemento biselado dentro de otro con
+  `--cut` grande debe poner el suyo.
+- **Marco dibujado en el fondo** (sección «Marco» de `styles.css`, lista de selectores con `--edge`, `--fill` y
+  `--cut`): el filo va en capas de fondo, también en las esquinas cortadas, sin `::before`. Sirve para campos de texto
+  (`.field input`), ventanas que se desplazan por dentro y cajas pequeñas. Para añadir un elemento: súmalo a esa
+  lista y ponle `--edge`/`--fill` en su propia regla. `--fill` puede ser semitransparente o un degradado.
+- **Ventanas** (`.dialog`, `.viewer`, `.crate-view`, sección «Ventanas»): biseladas con filo dorado. En el móvil
+  flotan con 8 px de margen (antes la de compra salía pegada a la izquierda por el `max-width` del navegador); desde
+  640 px van centradas. Botón de cerrar, campos, casillas del probador, interruptor «Mi personaje / Objeto», skin,
+  flechas del visor, aviso flotante, tarjeta del jugador, etiqueta del rango: todo biselado, sin esquinas redondas.
+- Cabecera: botones de cuenta y menú biselados; cabezas de Minecraft cuadradas (pixeladas), no en círculo.
+- Tienda: las imágenes de regalos/rangos/monedas miden todas lo mismo (antes la espada de regalo salía más baja);
+  **tabla de rangos** con los 4 rangos visibles en el móvil (antes había que desplazarla de lado y solo se veían 2);
+  ruleta con los botones de giros del mismo ancho; caja de «gira con monedas», filas de premios, iconos de la tienda
+  de monedas y «Actualizado en vivo» biselados.
+- Mundo: la imagen respeta su proporción 16:10 (salía altísima por el atributo `height`).
+- Cuenta: pestañas «Entrar / Crear cuenta» como las de la tienda; en «Mis compras» del móvil el precio y el estado
+  van debajo del nombre (antes el número de pedido se partía letra a letra).
+- Banda final (portada, mundo, ayuda): en el móvil los botones van uno debajo de otro y del mismo ancho.
+- Se quitó el bloque de parche del final («Ventanas con el mismo marco» y un `.toast` repetido).
+
+Pendiente que se vio al revisar y **no se tocó** (no lo pidió): en «Mis compras» los pedidos gratis y los de monedas
+salen como `$0.00` (la página del pedido sí dice «Gratis» o «15.000 monedas del servidor»).
+
+Lo que ya estaba hecho del rediseño antes de esta vuelta:
 
 1. **Hoja de estilos reescrita desde cero**: `tierras-fantasticas/public/styles.css` (~3.700 líneas). Antes era un
    archivo con capas de parches que se pisaban (por eso el diseño se veía remendado). Ahora tiene un orden claro:
@@ -55,17 +86,16 @@ fusionar**: la web en vivo todavía tiene el diseño anterior). Lo que ya está 
    `mix-blend-mode`, caro en móvil) y un acercamiento muy lento del arte del héroe (`@keyframes drift`).
 7. Comprobado con capturas: portada y tienda (crates, rangos, ruleta) en 1440 px y 390 px, sin desbordes; tests 39/39.
 
-### Lo que falta para terminar el rediseño (en este orden)
-1. Revisar con capturas, con calma, las pantallas que aún no se han mirado con el estilo nuevo:
-   `/tienda#gratis`, `#monedas`, `#tiendamonedas`, `/mundo`, `/ayuda`, `/cuenta` (sin sesión y con sesión),
-   `/success?order=…`, la **ventana de compra** (botón «Comprar») y el **probador de crates** (clic en una crate).
-   Las ventanas (`.dialog`, `.viewer`, `.crate-view`) aún tienen esquinas redondeadas: probablemente biselarlas igual.
-2. Móvil: comprobar que el título del héroe no se corta (ahora `clamp(32px, 8.6vw, 82px)`), la barra de datos, los
-   pilares y las pestañas.
-3. Rendimiento en móvil: si el grano o algo se nota lento, quitarlo en `@media (max-width: 959px)`. Nada de
-   `backdrop-filter` ni capas grandes animadas.
-4. Cuando esté bien: `cd tierras-fantasticas && npm test`, marcar el PR como listo, fusionar (*squash*), esperar el
-   despliegue, comprobar la web en vivo (sección 5) y **enseñarle capturas al dueño**.
+### Cómo revisar el diseño con capturas
+Además de `tools/screenshots.cjs` (sección 3), para las pantallas que necesitan sesión o un clic (cuenta con sesión,
+página de un pedido, ventana de compra, probador, visor 3D) se usó un script de Playwright que: lee la cookie de
+Notch (`COOKIE_FILE`), reclama un regalo con `POST /api/claim` y gira la ruleta con `POST /api/roulette/coins` para
+tener pedidos de ejemplo, y abre las ventanas con `click('[data-buy="rango-hechicero"]')`, `/tienda#crates-necros` y
+`click('.reel-item')`. En las capturas de página completa se ve una raya horizontal a 900 px: es el grano fijo, que
+solo cubre la primera pantalla de la captura (en el navegador no existe).
+
+Si el grano se nota lento en algún móvil, se puede quitar en `@media (max-width: 959px)` (`body::after`). Nada de
+`backdrop-filter` ni capas grandes animadas.
 
 ---
 
@@ -121,7 +151,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   animada y desenfoques (1.3.3).
 - «arruinaste la textura de los jobs» → se volvió al arte de la 1.3.0 sobre el cofre, con botones abajo (1.3.3).
 - Alas/cascos de las crates mal colocados → se arregló leyendo la configuración de HMCCosmetics de cada pack.
-- Ahora: «rediséñala en serio, mira cómo están de bonitas en internet» → rediseño en curso (sección 0).
+- «rediséñala en serio, mira cómo están de bonitas en internet» → rediseño terminado y publicado (sección 0).
 
 ## 3. Cómo ver y probar la web en local
 

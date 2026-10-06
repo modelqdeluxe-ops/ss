@@ -30,9 +30,6 @@
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  /* Esquinas biseladas (clip-path) */
-  --chamfer: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)),
-      calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
   /* Ornamento: línea, rombo y línea */
   --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 14'%3E%3Cg fill='none' stroke='%23e6b956'%3E%3Cpath d='M0 7h62M98 7h62' stroke-opacity='.55'/%3E%3Cpath d='M80 1l6 6-6 6-6-6z' fill='%23e6b956' fill-opacity='.9'/%3E%3Cpath d='M68 7l4-4 4 4-4 4zM84 7l4-4 4 4-4 4z' stroke-opacity='.8'/%3E%3C/g%3E%3C/svg%3E");
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -43,6 +40,13 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* Esquinas biseladas (clip-path). Se declara en cada elemento para que use su propio --cut (en :root quedaría
+   fijo en 12px para todos). */
+* {
+  --chamfer: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
 }
 
 html {
@@ -247,6 +251,61 @@ h4 {
   background: var(--frame-bg, linear-gradient(180deg, var(--panel-2), var(--panel)));
 }
 
+/* El mismo marco dibujado en el fondo, sin ::before: para campos de texto, ventanas (que se desplazan por dentro) y
+   cajas pequeñas. El filo (--edge) sigue también por las esquinas cortadas; el relleno (--fill) puede ser un color
+   (también semitransparente) o un degradado. */
+.menu-btn,
+.account-chip,
+.dialog-close,
+.viewer-nav,
+.field input,
+.notice,
+.try-on,
+.live-badge,
+.coin-spins,
+.coin-icon,
+.odds li,
+.dialog,
+.viewer,
+.crate-view,
+.viewer-stage,
+.discord-box,
+.player-card,
+.rank-pill,
+.auth-tabs,
+.toast,
+.cv-modes,
+.cv-skin,
+.cv-actions,
+.cv-item,
+.prizes li {
+  --cut: 8px;
+  --edge: var(--line-2);
+  --fill: var(--panel);
+  border: 1px solid transparent;
+  clip-path: var(--chamfer);
+  background:
+    linear-gradient(135deg, transparent 50%, var(--edge) 0 calc(50% + 1px), transparent 0) left top / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(225deg, transparent 50%, var(--edge) 0 calc(50% + 1px), transparent 0) right top / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(315deg, transparent 50%, var(--edge) 0 calc(50% + 1px), transparent 0) right bottom / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(45deg, transparent 50%, var(--edge) 0 calc(50% + 1px), transparent 0) left bottom / var(--cut) var(--cut) no-repeat border-box,
+    linear-gradient(var(--edge), var(--edge)) top / 100% 1px no-repeat border-box,
+    linear-gradient(var(--edge), var(--edge)) bottom / 100% 1px no-repeat border-box,
+    linear-gradient(var(--edge), var(--edge)) left / 1px 100% no-repeat border-box,
+    linear-gradient(var(--edge), var(--edge)) right / 1px 100% no-repeat border-box,
+    var(--fill) padding-box;
+}
+
+/* Con el teclado, el foco se marca con el filo dorado (el anillo del navegador quedaría redondeado) */
+.menu-btn:focus-visible,
+.account-chip:focus-visible,
+.dialog-close:focus-visible,
+.viewer-nav:focus-visible,
+.cv-item:focus-visible {
+  outline: none;
+  --edge: var(--gold);
+}
+
 .grid {
   display: grid;
   gap: 16px;
@@ -318,7 +377,9 @@ h4 {
 
 .btn-ghost:hover,
 .ip-button:hover,
-.ip-chip:hover {
+.ip-chip:hover,
+.btn-ghost:focus-visible,
+.ip-button:focus-visible {
   background: var(--gold-line);
 }
 
@@ -514,9 +575,7 @@ body:not([data-hero]) .header::after {
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
-  border: 1px solid var(--line-2);
-  background: rgba(10, 12, 19, 0.7);
+  --fill: rgba(10, 12, 19, 0.7);
 }
 
 .menu-btn svg {
@@ -531,15 +590,14 @@ body:not([data-hero]) .header::after {
   height: 40px;
   max-width: 180px;
   padding: 0 12px;
-  border-radius: 10px;
-  border: 1px solid var(--line-2);
-  background: rgba(10, 12, 19, 0.7);
+  --fill: rgba(10, 12, 19, 0.7);
   font-size: 13px;
   font-weight: 700;
 }
 
-.account-chip:hover {
-  border-color: var(--gold-line);
+.account-chip:hover,
+.menu-btn:hover {
+  --edge: var(--gold-line);
 }
 
 .account-chip svg {
@@ -551,8 +609,8 @@ body:not([data-hero]) .header::after {
 .account-chip img {
   width: 26px;
   height: 26px;
-  border-radius: 50%;
   flex: none;
+  image-rendering: pixelated;
 }
 
 .account-chip span {
@@ -1120,6 +1178,7 @@ body.lock {
 
 .split .media img {
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 10;
   object-fit: cover;
   clip-path: var(--chamfer);
@@ -1325,12 +1384,12 @@ body.lock {
   color: #cfc8b8;
 }
 
+/* En el móvil, los botones uno debajo de otro y del mismo ancho */
 .cta-band .actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 26px;
+  display: grid;
+  gap: 10px;
+  max-width: 340px;
+  margin: 26px auto 0;
 }
 
 /* ---------- Pie ---------- */
@@ -1470,9 +1529,8 @@ body.lock {
   align-items: flex-start;
   margin: 20px 0 16px;
   padding: 14px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  background: rgba(248, 113, 113, 0.08);
+  --edge: rgba(248, 113, 113, 0.3);
+  --fill: rgba(248, 113, 113, 0.08);
   color: #fecaca;
   font-size: 14px;
 }
@@ -1654,10 +1712,13 @@ body.lock {
   transform: translateY(-4px);
 }
 
+/* min-height: 0 para que la proporción mande y todas las imágenes midan lo mismo, sea cual sea el dibujo */
 .product .thumb {
   display: grid;
   place-items: center;
   aspect-ratio: 2 / 1;
+  min-height: 0;
+  overflow: hidden;
   margin: 1px 1px 0;
   clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%, 0 var(--cut));
   background:
@@ -1667,9 +1728,9 @@ body.lock {
 }
 
 .product .thumb img {
-  width: auto;
-  max-width: 92%;
+  width: 92%;
   height: 76%;
+  min-height: 0;
   object-fit: contain;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
 }
@@ -1769,44 +1830,73 @@ body.lock {
   font-size: 14px;
 }
 
-/* Comparativa de rangos */
+/* Comparativa de rangos: los cuatro rangos caben también en el móvil, sin desplazar de lado */
 .compare {
   margin-top: 40px;
-  overflow-x: auto;
 }
 
 .compare table {
   width: 100%;
-  min-width: 560px;
+  table-layout: fixed;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 11.5px;
 }
 
 .compare th,
 .compare td {
-  padding: 14px 12px;
+  padding: 11px 2px;
   border-bottom: 1px solid var(--line);
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
-.compare th:first-child,
-.compare td:first-child {
-  position: sticky;
-  left: 0;
+.compare tr > :first-child {
+  width: 27%;
+  padding-left: 12px;
   text-align: left;
   color: #ddd6c6;
-  background: var(--panel);
+}
+
+.compare tbody tr:last-child > * {
+  border-bottom: 0;
 }
 
 .compare thead th {
-  font: 700 14px/1.2 var(--font-display);
+  font: 700 10px/1.2 var(--font-display);
+  letter-spacing: 0;
   vertical-align: bottom;
 }
 
 .compare thead img {
-  width: 44px;
-  height: 44px;
-  margin: 0 auto 8px;
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 6px;
+}
+
+@media (min-width: 640px) {
+  .compare table {
+    font-size: 14px;
+  }
+
+  .compare th,
+  .compare td {
+    padding: 14px 12px;
+  }
+
+  .compare tr > :first-child {
+    width: 24%;
+    padding-left: 18px;
+  }
+
+  .compare thead th {
+    font-size: 14px;
+  }
+
+  .compare thead img {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 8px;
+  }
 }
 
 .compare .yes {
@@ -1893,9 +1983,8 @@ body.lock {
   left: 12px;
   bottom: 12px;
   padding: 6px 10px;
-  border-radius: 4px;
-  background: rgba(10, 12, 19, 0.82);
-  border: 1px solid var(--line-2);
+  --cut: 6px;
+  --fill: rgba(10, 12, 19, 0.82);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1984,18 +2073,29 @@ body.lock {
   margin-top: 14px;
 }
 
+/* Botones de giros del mismo ancho: en columna; los de dinero, en fila desde 480px */
 .spin-buttons {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 10px;
   margin-top: 24px;
 }
 
+.spin-buttons .btn {
+  padding-inline: 12px;
+}
+
+@media (min-width: 480px) {
+  .roulette-info > .spin-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .coin-spins {
+  --cut: 12px;
   margin-top: 24px;
   padding: 18px;
-  border: 1px dashed var(--gold-line);
-  background: rgba(230, 185, 86, 0.04);
+  --edge: var(--gold-line);
+  --fill: #141722;
 }
 
 .coin-spins-label {
@@ -2037,20 +2137,22 @@ body.lock {
   align-items: center;
   gap: 12px;
   padding: 8px 12px 8px 8px;
-  border: 1px solid var(--line);
-  background: rgba(10, 12, 19, 0.55);
+  --edge: var(--line);
+  --fill: rgba(10, 12, 19, 0.55);
 }
 
 .odds li.rare {
-  border-color: rgba(201, 168, 255, 0.45);
-  background: linear-gradient(90deg, rgba(139, 108, 246, 0.16), rgba(10, 12, 19, 0.55));
+  --edge: rgba(201, 168, 255, 0.45);
+  --fill: linear-gradient(90deg, rgba(139, 108, 246, 0.16), rgba(10, 12, 19, 0.55));
 }
 
 .odds-icon {
+  --cut: 6px;
   display: grid;
   place-items: center;
   width: 40px;
   height: 40px;
+  clip-path: var(--chamfer);
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -2179,8 +2281,9 @@ body.lock {
   gap: 8px;
   height: 32px;
   padding: 0 12px;
-  border: 1px solid rgba(74, 222, 128, 0.3);
-  background: rgba(74, 222, 128, 0.08);
+  --cut: 7px;
+  --edge: rgba(74, 222, 128, 0.3);
+  --fill: rgba(74, 222, 128, 0.08);
   color: #7ff0ac;
   font-size: 12px;
   font-weight: 800;
@@ -2207,10 +2310,9 @@ body.lock {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  background:
-    radial-gradient(50% 50% at 50% 55%, rgba(230, 185, 86, 0.12), transparent 75%),
-    #0f121c;
-  border: 1px solid var(--line);
+  --cut: 10px;
+  --edge: var(--line);
+  --fill: radial-gradient(50% 50% at 50% 55%, #1d1c1e, #0f121c 75%);
 }
 
 .coin-icon img {
@@ -2276,25 +2378,100 @@ body.lock {
 }
 
 
-/* ---------- Visor 3D ---------- */
+/* ---------- Ventanas (compra, visor 3D y probador) ---------- */
 
-.viewer {
-  width: min(720px, 100%);
-  max-height: 100%;
-  margin: auto 0 0;
-  padding: 18px 18px calc(16px + env(safe-area-inset-bottom));
-  border: 1px solid var(--line-2);
-  border-radius: 20px 20px 0 0;
-  background: var(--panel);
+/* El marco de siempre: esquinas biseladas con filo dorado. En el móvil flotan con un margen alrededor (también
+   abajo, para que se vea el bisel) y desde 640px van centradas. */
+.dialog,
+.viewer,
+.crate-view {
+  --cut: 16px;
+  --edge: var(--gold-line);
+  --fill: linear-gradient(180deg, var(--panel-2), var(--panel));
+  width: calc(100% - 16px);
+  max-width: none;
+  max-height: calc(100% - 16px);
+  margin: auto 8px calc(8px + env(safe-area-inset-bottom));
+  padding: 0;
   color: var(--text);
 }
 
-.viewer::backdrop {
+.dialog[open],
+.viewer[open],
+.crate-view[open] {
+  animation: sheet-up 0.3s var(--ease);
+}
+
+.dialog::backdrop,
+.viewer::backdrop,
+.crate-view::backdrop {
   background: rgba(3, 4, 8, 0.8);
 }
 
-.viewer[open] {
-  animation: sheet-up 0.3s var(--ease);
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+/* El probador ocupa casi toda la pantalla del móvil */
+.crate-view {
+  height: calc(100% - 16px - env(safe-area-inset-bottom));
+  margin-top: 8px;
+}
+
+/* Botón de cerrar: un cuadro biselado */
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  --cut: 8px;
+  --fill: rgba(10, 12, 19, 0.6);
+  color: var(--text);
+}
+
+.dialog-close:hover {
+  --edge: var(--gold);
+}
+
+.dialog-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 640px) {
+  .dialog,
+  .viewer,
+  .crate-view {
+    --cut: 20px;
+    max-height: calc(100% - 48px);
+    margin: auto;
+  }
+
+  .dialog {
+    width: min(460px, 100% - 48px);
+  }
+
+  .viewer {
+    width: min(720px, 100% - 48px);
+  }
+
+  .crate-view {
+    width: min(1120px, 100% - 48px);
+    height: min(820px, 100% - 48px);
+  }
+}
+
+/* ---------- Visor 3D ---------- */
+
+.viewer {
+  padding: 18px 18px 16px;
+  overflow: hidden;
 }
 
 .viewer-top {
@@ -2322,11 +2499,9 @@ body.lock {
   position: relative;
   margin-top: 14px;
   height: min(62vh, 480px);
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background:
-    radial-gradient(60% 60% at 50% 50%, rgba(227, 183, 76, 0.12), transparent 70%),
-    linear-gradient(180deg, #121624, #0a0c14);
+  --cut: 12px;
+  --edge: var(--line);
+  --fill: radial-gradient(60% 60% at 50% 50%, #27241f, #0d1019 72%);
   overflow: hidden;
   touch-action: none;
 }
@@ -2359,9 +2534,11 @@ body.lock {
   width: 44px;
   height: 44px;
   margin-top: -22px;
-  border-radius: 50%;
-  border: 1px solid var(--line-2);
-  background: rgba(7, 8, 13, 0.7);
+  --fill: rgba(7, 8, 13, 0.7);
+}
+
+.viewer-nav:hover {
+  --edge: var(--gold-line);
 }
 
 .viewer-nav svg {
@@ -2395,35 +2572,12 @@ body.lock {
 /* ---------- Ventana de compra ---------- */
 
 .dialog {
-  width: min(460px, 100%);
-  max-height: 100%;
-  margin: auto 0 0;
-  padding: 0;
-  border: 1px solid var(--line-2);
-  border-radius: 20px 20px 0 0;
-  background: var(--panel);
-  color: var(--text);
   overflow: auto;
   overscroll-behavior: contain;
 }
 
-.dialog::backdrop {
-  background: rgba(3, 4, 8, 0.72);
-}
-
-.dialog[open] {
-  animation: sheet-up 0.3s var(--ease);
-}
-
-@keyframes sheet-up {
-  from {
-    transform: translateY(24px);
-    opacity: 0;
-  }
-}
-
 .dialog form {
-  padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+  padding: 22px 20px;
 }
 
 .dialog-head {
@@ -2438,7 +2592,6 @@ body.lock {
   height: 64px;
   object-fit: contain;
   flex: none;
-  border-radius: 12px;
   background: radial-gradient(circle, var(--t3, rgba(227, 183, 76, 0.2)), transparent 70%);
 }
 
@@ -2461,24 +2614,6 @@ body.lock {
   font-size: 14px;
 }
 
-.dialog-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid var(--line-2);
-  background: transparent;
-}
-
-.dialog-close svg {
-  width: 18px;
-  height: 18px;
-}
-
 .field {
   display: grid;
   gap: 6px;
@@ -2494,23 +2629,22 @@ body.lock {
 .field input {
   height: 48px;
   padding: 0 14px;
-  border-radius: 10px;
-  border: 1px solid var(--line-2);
-  background: var(--bg);
+  --edge: var(--line-2);
+  --fill: var(--bg);
   font-size: 16px;
 }
 
 .field input:focus {
   outline: none;
-  border-color: var(--gold);
+  --edge: var(--gold);
 }
 
 .discord-box {
   margin-top: 16px;
   padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(88, 101, 242, 0.35);
-  background: rgba(88, 101, 242, 0.08);
+  --cut: 10px;
+  --edge: rgba(88, 101, 242, 0.35);
+  --fill: rgba(88, 101, 242, 0.08);
 }
 
 .discord-linked {
@@ -2520,9 +2654,10 @@ body.lock {
 }
 
 .discord-linked img {
+  --cut: 7px;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  clip-path: var(--chamfer);
 }
 
 .discord-hint {
@@ -2596,9 +2731,7 @@ body.lock {
   gap: 12px;
   align-items: center;
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--line-2);
-  background: rgba(255, 255, 255, 0.03);
+  --fill: rgba(255, 255, 255, 0.03);
   font-size: 13px;
   color: var(--muted);
 }
@@ -2607,20 +2740,20 @@ body.lock {
   flex: none;
   width: 40px;
   height: 40px;
-  border-radius: 6px;
+  image-rendering: pixelated;
 }
 
 .player-card.found {
-  border-color: rgba(74, 222, 128, 0.35);
-  background: rgba(74, 222, 128, 0.06);
+  --edge: rgba(74, 222, 128, 0.35);
+  --fill: rgba(74, 222, 128, 0.06);
 }
 
 .player-card.missing,
 .player-card.invalid,
 .player-card.error,
 .player-card.blocked {
-  border-color: rgba(248, 113, 113, 0.4);
-  background: rgba(248, 113, 113, 0.06);
+  --edge: rgba(248, 113, 113, 0.4);
+  --fill: rgba(248, 113, 113, 0.06);
   color: #f3c1c1;
 }
 
@@ -2654,15 +2787,15 @@ body.lock {
 
 .rank-pill {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 3px 9px;
+  --cut: 5px;
+  --edge: color-mix(in srgb, var(--rank, var(--gold)) 50%, transparent);
+  --fill: color-mix(in srgb, var(--rank, var(--gold)) 12%, transparent);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--rank, var(--gold));
-  border: 1px solid color-mix(in srgb, var(--rank, var(--gold)) 50%, transparent);
-  background: color-mix(in srgb, var(--rank, var(--gold)) 12%, transparent);
 }
 
 .spinner {
@@ -2739,11 +2872,13 @@ body.lock {
   flex: none;
   width: 56px;
   height: 56px;
-  border-radius: 10px;
+  image-rendering: pixelated;
 }
 
 .account-who img.round {
-  border-radius: 50%;
+  --cut: 10px;
+  clip-path: var(--chamfer);
+  image-rendering: auto;
 }
 
 .account-who > div {
@@ -2784,9 +2919,11 @@ body.lock {
   list-style: none;
 }
 
+/* En el móvil, el precio y el estado van debajo del nombre; desde 640px, a la derecha */
 .orders li {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 6px 12px;
   align-items: center;
   padding: 12px 0;
   border-top: 1px solid var(--line);
@@ -2811,11 +2948,25 @@ body.lock {
 }
 
 .order-side {
-  display: grid;
-  gap: 4px;
-  justify-items: end;
-  text-align: right;
-  flex: none;
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+@media (min-width: 640px) {
+  .orders li {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+  }
+
+  .order-side {
+    grid-column: auto;
+    display: grid;
+    justify-items: end;
+    text-align: right;
+  }
 }
 
 .order-side .state {
@@ -2838,28 +2989,36 @@ body.lock {
   margin-inline: auto;
 }
 
+/* Igual que las pestañas de la tienda: barra con marco y la elegida en placa dorada */
 .auth-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
   padding: 4px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  --cut: 10px;
+  --fill: var(--bg);
 }
 
 .auth-tabs button {
+  --cut: 7px;
   height: 40px;
   border: 0;
-  border-radius: 9px;
+  clip-path: var(--chamfer);
   background: transparent;
   color: var(--muted);
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.auth-tabs button:hover {
+  color: var(--text);
 }
 
 .auth-tabs button[aria-selected='true'] {
-  color: #1b1204;
-  background: var(--gold);
+  color: #241703;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #c8912e);
 }
 
 .auth-card .field:first-child {
@@ -2947,9 +3106,8 @@ body.lock {
   bottom: calc(20px + env(safe-area-inset-bottom));
   z-index: 80;
   padding: 12px 18px;
-  border-radius: 12px;
-  background: #1b1f2b;
-  border: 1px solid var(--gold-line);
+  --edge: var(--gold-line);
+  --fill: #171c2c;
   font-size: 14px;
   font-weight: 600;
   transform: translateX(-50%);
@@ -3023,26 +3181,12 @@ body.lock {
 /* ---------- Probador de crates ---------- */
 
 .crate-view {
-  width: min(1120px, 100%);
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--line-2);
-  background: var(--panel);
-  color: var(--text);
   overflow: hidden;
 }
 
 .crate-view[open] {
   display: flex;
   flex-direction: column;
-  animation: sheet-up 0.3s var(--ease);
-}
-
-.crate-view::backdrop {
-  background: rgba(3, 4, 8, 0.82);
 }
 
 .cv-head {
@@ -3073,7 +3217,9 @@ body.lock {
 }
 
 .cv-head .dialog-close {
-  position: static;
+  position: relative;
+  top: auto;
+  right: auto;
   flex: none;
 }
 
@@ -3113,16 +3259,15 @@ body.lock {
   left: 12px;
   display: flex;
   padding: 3px;
-  border-radius: 10px;
-  background: rgba(7, 8, 13, 0.75);
-  border: 1px solid var(--line-2);
+  --fill: rgba(7, 8, 13, 0.75);
 }
 
 .cv-modes button {
+  --cut: 6px;
   height: 30px;
   padding: 0 12px;
   border: 0;
-  border-radius: 7px;
+  clip-path: var(--chamfer);
   background: transparent;
   font-size: 13px;
   font-weight: 700;
@@ -3147,20 +3292,23 @@ body.lock {
   align-items: center;
   gap: 8px;
   height: 36px;
-  padding: 0 4px 0 10px;
-  border-radius: 10px;
-  background: rgba(7, 8, 13, 0.75);
-  border: 1px solid var(--line-2);
+  padding: 0 3px 0 10px;
+  --fill: rgba(7, 8, 13, 0.75);
   font-size: 12px;
   color: var(--muted);
 }
 
+.cv-skin:focus-within {
+  --edge: var(--gold-line);
+}
+
 .cv-skin input {
+  --cut: 6px;
   width: 108px;
   height: 28px;
   padding: 0 8px;
   border: 0;
-  border-radius: 6px;
+  clip-path: var(--chamfer);
   background: var(--panel-2);
   color: var(--text);
   font-size: 13px;
@@ -3176,9 +3324,8 @@ body.lock {
   gap: 10px;
   max-width: calc(100% - 24px);
   padding: 6px 6px 6px 14px;
-  border-radius: 12px;
-  background: rgba(7, 8, 13, 0.8);
-  border: 1px solid var(--line-2);
+  --cut: 10px;
+  --fill: rgba(7, 8, 13, 0.8);
   transform: translateX(-50%);
 }
 
@@ -3233,19 +3380,18 @@ body.lock {
   gap: 4px;
   min-width: 0;
   padding: 8px 4px 8px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--panel-2);
-  transition: border-color 0.2s;
+  --edge: var(--line);
+  --fill: var(--panel-2);
+  color: var(--text);
 }
 
 .cv-item:hover {
-  border-color: var(--line-2);
+  --edge: var(--line-2);
 }
 
 .cv-item[aria-pressed='true'] {
-  border-color: var(--t1, var(--gold));
-  box-shadow: inset 0 0 0 1px var(--t1, var(--gold));
+  --edge: var(--t1, var(--gold));
+  --fill: color-mix(in srgb, var(--t1, var(--gold)) 12%, var(--panel-2));
 }
 
 .cv-item img {
@@ -3270,11 +3416,10 @@ body.lock {
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 7px;
+  height: 7px;
   background: var(--ok);
-  box-shadow: 0 0 0 2px var(--panel-2);
+  transform: rotate(45deg);
   opacity: 0;
 }
 
@@ -3321,9 +3466,8 @@ body.lock {
   align-items: center;
   gap: 6px;
   padding: 12px 6px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--panel-2);
+  --edge: var(--line);
+  --fill: var(--panel-2);
   font-size: 13px;
   text-align: center;
 }
@@ -3346,21 +3490,6 @@ body.lock {
   .cv-skin input {
     width: 92px;
   }
-}
-
-/* ---------- Ventanas con el mismo marco ---------- */
-
-.dialog,
-.viewer,
-.crate-view {
-  border-color: var(--line-2);
-  background: linear-gradient(180deg, var(--panel-2), var(--panel));
-  box-shadow: 0 -1px 0 var(--gold-line);
-}
-
-.toast {
-  border-radius: 4px;
-  background: #171c2c;
 }
 
 /* ---------- Móvil ---------- */
@@ -3497,20 +3626,8 @@ body.lock {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .dialog,
-  .viewer {
-    margin: auto;
-    border-radius: 16px;
-  }
-
   .dialog form {
     padding: 26px;
-  }
-
-  .crate-view {
-    height: min(820px, calc(100% - 48px));
-    margin: auto;
-    border-radius: 16px;
   }
 
   .cv-stage {
@@ -3519,6 +3636,14 @@ body.lock {
 
   .cta-band {
     padding: 64px 40px;
+  }
+
+  .cta-band .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    max-width: none;
   }
 }
 
@@ -3558,6 +3683,10 @@ body.lock {
 
   .products {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  .product .thumb {
+    aspect-ratio: 16 / 10;
   }
 
   .feature {
