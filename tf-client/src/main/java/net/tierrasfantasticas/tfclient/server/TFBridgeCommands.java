@@ -7,7 +7,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
@@ -20,11 +19,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * Comandos del puente con la web:
+ * Rangos de la tienda (dentro de /tf web):
  * <pre>
- * /tf vincular &lt;código&gt;              une tu jugador con tu cuenta de la web (el código sale en «Mi cuenta»)
- * /tf rango &lt;jugador&gt;                 muestra su rango (staff, nivel 3)
- * /tf rango &lt;jugador&gt; &lt;rango|ninguno&gt; pone o quita un rango: LuckPerms, nametag y web (staff, nivel 3)
+ * /tf web rango &lt;jugador&gt;                 muestra su rango (staff, nivel 3)
+ * /tf web rango &lt;jugador&gt; &lt;rango|ninguno&gt; pone o quita un rango: LuckPerms, nametag y web (staff, nivel 3)
  * </pre>
  */
 public final class TFBridgeCommands {
@@ -35,11 +33,6 @@ public final class TFBridgeCommands {
 
     private TFBridgeCommands() {}
 
-    public static LiteralArgumentBuilder<CommandSourceStack> vincular() {
-        return Commands.literal("vincular")
-                .then(Commands.argument("codigo", StringArgumentType.word()).executes(TFBridgeCommands::link));
-    }
-
     public static LiteralArgumentBuilder<CommandSourceStack> rango() {
         return Commands.literal("rango")
                 .requires(source -> source.hasPermission(3))
@@ -48,25 +41,6 @@ public final class TFBridgeCommands {
                         .then(Commands.argument("rango", StringArgumentType.word())
                                 .suggests(RANKS)
                                 .executes(TFBridgeCommands::setRank)));
-    }
-
-    private static int link(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        String code = StringArgumentType.getString(ctx, "codigo").trim().toUpperCase(Locale.ROOT);
-        if (!code.matches("[A-Z0-9]{6}")) {
-            ctx.getSource().sendFailure(Component.literal("El código tiene 6 letras y números. Lo ves en la web, en «Mi cuenta»."));
-            return 0;
-        }
-        if (!TFBridge.active()) {
-            ctx.getSource().sendFailure(Component.literal("La vinculación solo funciona en el servidor conectado a la web."));
-            return 0;
-        }
-        if (!TFBridge.queueLink(player, code)) {
-            ctx.getSource().sendFailure(Component.literal("Espera unos segundos antes de volver a intentarlo."));
-            return 0;
-        }
-        ctx.getSource().sendSuccess(() -> Component.literal("Comprobando el código con la web…").withStyle(ChatFormatting.GRAY), false);
-        return 1;
     }
 
     private static int showRank(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

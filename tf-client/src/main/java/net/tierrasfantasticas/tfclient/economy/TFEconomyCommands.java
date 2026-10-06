@@ -13,17 +13,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * /tf monedas                              tus monedas
- * /tf monedas ver &lt;jugador&gt;                las de otro (staff, nivel 2)
- * /tf monedas dar|quitar &lt;jugador&gt; &lt;n&gt;    dar o quitar (staff, nivel 3) — sirve también para los productos de la web
- * /tf monedas poner &lt;jugador&gt; &lt;n&gt;         saldo exacto (solo con las monedas del TF Client)
+ * Monedas (dentro de /tf web, solo staff):
+ * <pre>
+ * /tf web monedas ver &lt;jugador&gt;                las de un jugador (nivel 2)
+ * /tf web monedas dar|quitar &lt;jugador&gt; &lt;n&gt;    dar o quitar (nivel 3); lo usan los premios y productos de la web
+ * /tf web monedas poner &lt;jugador&gt; &lt;n&gt;         saldo exacto (solo con las monedas del TF Client)
+ * </pre>
  */
 public final class TFEconomyCommands {
     private TFEconomyCommands() {}
 
     public static LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("monedas")
-                .executes(ctx -> show(ctx, ctx.getSource().getPlayerOrException()))
                 .then(Commands.literal("ver").requires(s -> s.hasPermission(2))
                         .then(Commands.argument("jugador", EntityArgument.player())
                                 .executes(ctx -> show(ctx, EntityArgument.getPlayer(ctx, "jugador")))))
@@ -45,8 +46,7 @@ public final class TFEconomyCommands {
             ctx.getSource().sendFailure(Component.literal("Esta economía no deja ver el saldo desde el TF Client: usa el comando de economía del servidor."));
             return 0;
         }
-        boolean self = ctx.getSource().getEntity() == player;
-        ctx.getSource().sendSuccess(() -> Component.literal(self ? "Tienes " : player.getGameProfile().getName() + " tiene ")
+        ctx.getSource().sendSuccess(() -> Component.literal(player.getGameProfile().getName() + " tiene ")
                 .withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(TFEconomy.format(balance.getAsLong())).withStyle(ChatFormatting.GOLD)), false);
         return (int) Math.min(Integer.MAX_VALUE, balance.getAsLong());

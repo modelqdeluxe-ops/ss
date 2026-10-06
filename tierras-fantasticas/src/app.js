@@ -151,21 +151,24 @@ export function createApp(env) {
 
   function orderView(order) {
     const product = productById.get(order.productId);
+    // Tienda de monedas: el objeto comprado va guardado en el pedido (puede dejar de venderse después)
+    const shopItem = order.productId?.startsWith('tienda:') ? order.prizes?.[0] || null : null;
     return {
       id: order.id,
       status: order.status,
       username: order.username,
-      product: product?.name || order.productId,
-      image: product?.image || null,
+      kind: shopItem ? 'tienda' : order.id.startsWith('COIN') ? 'ruleta' : null,
+      product: shopItem ? `${shopItem.count > 1 ? `${shopItem.count}× ` : ''}${shopItem.name}` : product?.name || order.productId,
+      image: shopItem ? shopItem.icon || null : product?.image || null,
       quantity: order.quantity,
       amount: order.amount,
       currency: order.currency,
       upgradeFrom: order.rankFrom ? productById.get(order.rankFrom)?.name || null : null,
-      prizes: order.prizes
+      prizes: order.prizes && !shopItem
         ? order.prizes.map((p) => ({ ...p, thumb: p.icon || (product?.set ? `/img/items/${product.set}/${p.id}.webp` : null) }))
         : null,
       refunded: order.refunded || null,
-      coins: order.id.startsWith('COIN') ? product?.coinPrice || null : null,
+      coins: order.id.startsWith('COIN') ? (shopItem ? shopItem.price : product?.coinPrice) || null : null,
       error: order.id.startsWith('COIN') && order.status === 'delivery_failed' ? order.error || null : null,
       createdAt: order.createdAt,
       deliveredAt: order.deliveredAt,
@@ -184,7 +187,7 @@ export function createApp(env) {
     return set ? `/img/items/${set}/${m[1].slice(set.length + 1)}.webp` : null;
   }
 
-  // La ruleta para el servidor (/tf ruleta en el juego y los giros con monedas desde la web): premios, armas y precio.
+  // La ruleta para el servidor (los giros con monedas desde la web, /tf web ruleta girar): premios, armas y precio.
   function rouletteForServer() {
     const ruleta = products.find((p) => p.category === 'ruleta' && p.spins === 1) || products.find((p) => p.category === 'ruleta');
     if (!ruleta) return null;
@@ -617,10 +620,44 @@ export function createApp(env) {
       await store.queueDelivery(id, {
         username: player?.name || user.name,
         uuid: user.uuid,
-        commands: [`tf ruleta girar {player} ${product.spins}`],
+        commands: [`tf web ruleta girar {player} ${product.spins}`],
         extra: { kind: 'ruleta-monedas', color: product.colors?.[1] || '#9061f9' },
       });
       log.log(`Ruleta con monedas ${id}: ${product.spins} giro(s) para ${user.name} (${user.uuid}), en cola del puente`);
+      return json({ id, status: 'queued' });
+    },
+
+    // Tienda de monedas: se compra aquí y se cobra en el juego (/tf web tienda comprar) cuando el jugador está dentro.
+    'POST /api/coinshop/buy': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para comprar con tus monedas.', code: 'login' }, 401);
+      const body = (await readJson(req)) || {};
+      const item = (await store.coinShop()).find((it) => it.id === String(body.id || ''));
+      if (!item) return json({ error: 'Ese objeto ya no está a la venta.' }, 404);
+      const player = await store.playerByUuid(user.uuid);
+      const bytes = crypto.getRandomValues(new Uint8Array(12));
+      const id = `COIN${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+      const username = player?.name || user.name;
+      await store.createOrder({
+        id,
+        status: 'pending',
+        username,
+        uuid: user.uuid,
+        productId: `tienda:${item.id}`,
+        quantity: 1,
+        amount: 0,
+        currency: CURRENCY,
+      });
+      await store.updateOrder(id, {
+        prizes: [{ id: item.id, name: item.name, count: item.count, price: item.price, icon: coinShopIcon(item.item) }],
+      });
+      await store.queueDelivery(id, {
+        username,
+        uuid: user.uuid,
+        commands: [`tf web tienda comprar {player} ${item.id}`],
+        extra: { kind: 'tienda-monedas', color: '#f5b83d' },
+      });
+      log.log(`Tienda de monedas ${id}: ${item.name} (${item.price} monedas) para ${user.name} (${user.uuid}), en cola del puente`);
       return json({ id, status: 'queued' });
     },
 
@@ -714,14 +751,14 @@ export function createApp(env) {
         .filter((link) => link && validPlayer(link))
         .map((link) => ({ uuid: link.uuid.toLowerCase(), ok: false, account: null }));
 
-      // Rangos puestos o quitados por el staff con /tf rango (sustituyen al comprado).
+      // Rangos puestos o quitados por el staff con /tf web rango (sustituyen al comprado).
       for (const change of list(body.ranks, 50)) {
         if (!change || typeof change.uuid !== 'string' || !UUID_RE.test(change.uuid)) continue;
         if (change.rank === null) await store.setRank(change.uuid, null, 0, { force: true });
         else if (rankById.has(change.rank)) await store.setRank(change.uuid, change.rank, rankById.get(change.rank).tier, { force: true });
       }
 
-      // /tf tienda add|quitar|vaciar desde el juego
+      // /tf web tienda add|quitar|vaciar desde el juego
       const shopOps = list(body.shop, 50)
         .map((op) => cleanShopOp(op))
         .filter(Boolean);

@@ -26,9 +26,9 @@ import net.tierrasfantasticas.tfclient.server.TFServerConfig;
 
 /**
  * Menús de /tf jobs en la ventana {@link TFPanelMenu}: arriba el marco del pack Medieval Jobs con el dibujo del oficio
- * y su rejilla de 5×2 (los oficios en el menú principal, las misiones en el de cada oficio); debajo, aparte, la barra
- * de 9 botones (volver, nivel, páginas, monedas, recompensas, unirse o abandonar, cerrar). Nada encima del dibujo y
- * sin el inventario del jugador.
+ * y su rejilla de 5×2 (los oficios en el menú principal, las misiones en el de cada oficio). Abajo, en el sitio del
+ * inventario del jugador (cuyos objetos no salen), solo botones: la barra de abajo del todo (volver, nivel, páginas,
+ * monedas, recompensas, unirse o abandonar, cerrar) y, al abandonar o cambiar de oficio, Aceptar / Cancelar.
  */
 public final class TFJobsMenu {
     private static final int GRID = TFPanelMenu.GRID;
@@ -122,7 +122,18 @@ public final class TFJobsMenu {
         TFPanelMenu.open(player, job.background(), job.name(), SIGN, menu -> fillJob(menu, player, job, page, false));
     }
 
-    private static void fillJob(TFPanelMenu menu, ServerPlayer player, Job job, int page, boolean confirmLeave) {
+    private static void joinJob(TFPanelMenu menu, ServerPlayer player, Job job, int page, boolean switching) {
+        String error = switching ? TFJobs.switchTo(player, job) : TFJobs.join(player, job);
+        if (error != null) {
+            player.sendSystemMessage(Component.literal(error).withStyle(ChatFormatting.RED));
+            fillJob(menu, player, job, page, false);
+        } else {
+            openJob(player, job, page);
+        }
+    }
+
+    /** confirm: enseña Aceptar / Cancelar abajo para abandonar o cambiar de oficio. */
+    private static void fillJob(TFPanelMenu menu, ServerPlayer player, Job job, int page, boolean confirm) {
         menu.clear();
         PlayerJobs p = TFJobs.data().player(player.getUUID());
         JobProgress jp = p.job(job.id());
@@ -144,7 +155,7 @@ public final class TFJobsMenu {
             } : null);
         }
 
-        // Barra: volver · nivel · misiones anteriores · cómo se gana · monedas · recompensas · más misiones ·
+        // Barra de abajo: volver · nivel · misiones anteriores · cómo se gana · monedas · recompensas · más misiones ·
         // unirse/abandonar · cerrar
         menu.nav(0, TFIcon.of(Items.ARROW).name("◀ Volver a los oficios", ChatFormatting.YELLOW).build(), (pl, t, b) -> openMain(pl));
         menu.nav(1, levelIcon(job, jp), null);
@@ -153,22 +164,14 @@ public final class TFJobsMenu {
         menu.nav(5, rewardsIcon(jp), null);
         menu.nav(8, close(), (pl, t, b) -> pl.closeContainer());
 
-        // Unirse, cambiar o abandonar
+        // Unirse, cambiar o abandonar (abandonar y cambiar piden Aceptar abajo)
+        boolean other = !active && !p.active.isEmpty() && p.active.size() >= TFJobsConfig.maxJobs;
+        Job otherJob = other ? TFJobsConfig.job(p.active.get(0)) : null;
         if (active) {
-            menu.nav(7, TFIcon.of(confirmLeave ? Items.TNT : Items.RED_DYE)
-                    .name(confirmLeave ? "¿Seguro? Clic otra vez para dejarlo" : "Abandonar oficio", ChatFormatting.RED)
-                    .text("Vuelves al menú de oficios. Tu nivel, tu experiencia y tus misiones se quedan guardados por si vuelves.")
-                    .glow(confirmLeave).build(), (pl, t, b) -> {
-                        if (!confirmLeave) {
-                            fillJob(menu, pl, job, current, true);
-                            return;
-                        }
-                        TFJobs.leave(pl, job.id(), true);
-                        openMain(pl);
-                    });
+            menu.nav(7, TFIcon.of(Items.RED_DYE).name("Abandonar oficio", ChatFormatting.RED)
+                    .text("Tu nivel, tu experiencia y tus misiones se quedan guardados por si vuelves.")
+                    .glow(confirm).build(), (pl, t, b) -> fillJob(menu, pl, job, current, true));
         } else {
-            boolean other = !p.active.isEmpty() && p.active.size() >= TFJobsConfig.maxJobs;
-            Job otherJob = other ? TFJobsConfig.job(p.active.get(0)) : null;
             TFIcon join = TFIcon.of(Items.LIME_DYE).name(other ? "Cambiar a " + job.name() : "Trabajar de " + job.name(), ChatFormatting.GREEN);
             if (other && otherJob != null) {
                 join.text("Dejas " + otherJob.name() + " (sin perder su progreso) y empiezas de " + job.name() + ".");
@@ -178,15 +181,29 @@ public final class TFJobsMenu {
             if (TFJobsConfig.switchWaitMinutes > 0) {
                 join.line("Después hay que esperar " + TFJobsConfig.switchWaitMinutes + " min para cambiar.", ChatFormatting.DARK_GRAY);
             }
-            menu.nav(7, join.build(), (pl, t, b) -> {
-                String error = other ? TFJobs.switchTo(pl, job) : TFJobs.join(pl, job);
-                if (error != null) {
-                    pl.sendSystemMessage(Component.literal(error).withStyle(ChatFormatting.RED));
-                    fillJob(menu, pl, job, current, false);
+            menu.nav(7, join.glow(confirm).build(), (pl, t, b) -> {
+                if (other) {
+                    fillJob(menu, pl, job, current, true);
+                    return;
+                }
+                joinJob(menu, pl, job, current, false);
+            });
+        }
+        if (confirm && (active || other)) {
+            String question = active ? "¿Dejar " + job.name() + "?"
+                    : "¿Cambiar " + (otherJob != null ? otherJob.name() : "tu oficio") + " por " + job.name() + "?";
+            menu.bottom(1, 4, TFIcon.of(Items.PAPER).name(question, ChatFormatting.GOLD)
+                    .text("No pierdes tu nivel ni tus misiones: se quedan guardados por si vuelves.").build(), null);
+            menu.bottom(1, 2, TFIcon.of(Items.LIME_CONCRETE).name("✔ Aceptar", ChatFormatting.GREEN).build(), (pl, t, b) -> {
+                if (active) {
+                    TFJobs.leave(pl, job.id(), true);
+                    openMain(pl);
                 } else {
-                    openJob(pl, job, current);
+                    joinJob(menu, pl, job, current, true);
                 }
             });
+            menu.bottom(1, 6, TFIcon.of(Items.RED_CONCRETE).name("✖ Cancelar", ChatFormatting.RED).build(),
+                    (pl, t, b) -> fillJob(menu, pl, job, current, false));
         }
         if (current > 0) menu.nav(2, arrow("◀ Misiones anteriores"), (pl, t, b) -> fillJob(menu, pl, job, current - 1, false));
         if (current < pages - 1) menu.nav(6, arrow("Más misiones ▶"), (pl, t, b) -> fillJob(menu, pl, job, current + 1, false));
@@ -346,7 +363,7 @@ public final class TFJobsMenu {
         TFIcon icon = TFIcon.of(Items.SUNFLOWER).name("Tus " + TFServerConfig.currency(), ChatFormatting.GOLD);
         if (balance.isPresent()) icon.line(TFEconomy.format(balance.getAsLong()), ChatFormatting.YELLOW);
         if (pendingCoins >= 1) icon.line("+" + TFEconomy.number((long) pendingCoins) + " en el próximo pago", ChatFormatting.GRAY);
-        icon.blank().line("Gástalas en /tf tienda", ChatFormatting.DARK_GRAY);
+        icon.blank().text("Gástalas en la tienda de monedas y en la ruleta de la web.", ChatFormatting.DARK_GRAY);
         return icon.build();
     }
 

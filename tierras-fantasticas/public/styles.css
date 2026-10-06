@@ -3060,177 +3060,73 @@ body.lock {
 }
 
 /* =====================================================================================================
-   Rediseño 2026: fondo con aurora animada, cabecera de cristal, portada en dos columnas, escaparate de
-   crates y brillo animado del color de cada crate. Las animaciones solo usan transform y opacity.
+   Diseño 2026: fondo oscuro liso, cabecera sólida con el subrayado dorado, tarjetas sólidas y títulos en Cinzel.
+   Lo único que se mueve es el brillo del color de cada crate (solo opacidad) y, en escritorio, una luz muy suave en
+   el fondo: nada de desenfoques ni de animaciones que hagan ir lento el móvil.
    ===================================================================================================== */
 
 :root {
-  --bg: #05060a;
-  --glass: rgba(16, 19, 29, 0.66);
-  --glass-2: rgba(22, 26, 39, 0.72);
-  --glass-line: rgba(255, 255, 255, 0.09);
+  --bg: #08090e;
+  --card: #0f1219;
+  --card-art: #131722;
+  --card-line: rgba(255, 255, 255, 0.08);
   --violet: #8b6cf6;
-  --sky: #38bdf8;
-  --header-h: 84px;
 }
 
 body {
   background: var(--bg);
 }
 
-/* Aurora: luz de colores que se mueve despacio detrás de todo */
+/* Fondo: dos luces fijas, dorada y violeta; en escritorio otra que respira despacio */
 .aurora {
   position: fixed;
   inset: 0;
   z-index: -1;
-  overflow: hidden;
   pointer-events: none;
-}
-
-.aurora::after {
-  content: '';
-  position: absolute;
-  inset: 0;
   background:
-    radial-gradient(120% 80% at 50% -10%, transparent 40%, rgba(5, 6, 10, 0.7) 100%),
-    linear-gradient(180deg, rgba(5, 6, 10, 0) 0%, rgba(5, 6, 10, 0.55) 100%);
+    radial-gradient(55% 45% at 12% 0%, rgba(227, 183, 76, 0.08), transparent 70%),
+    radial-gradient(50% 45% at 92% 8%, rgba(139, 108, 246, 0.08), transparent 70%);
 }
 
-.aurora span {
-  position: absolute;
-  width: 80vmax;
-  height: 80vmax;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.aurora span:nth-child(1) {
-  top: -45vmax;
-  left: -25vmax;
-  background: radial-gradient(closest-side, rgba(227, 183, 76, 0.22), rgba(227, 183, 76, 0) 72%);
-  animation: aurora-a 26s ease-in-out infinite alternate;
-}
-
-.aurora span:nth-child(2) {
-  top: -30vmax;
-  right: -35vmax;
-  background: radial-gradient(closest-side, rgba(139, 108, 246, 0.22), rgba(139, 108, 246, 0) 72%);
-  animation: aurora-b 32s ease-in-out infinite alternate;
-}
-
-.aurora span:nth-child(3) {
-  bottom: -50vmax;
-  left: 10vmax;
-  background: radial-gradient(closest-side, rgba(56, 189, 248, 0.14), rgba(56, 189, 248, 0) 72%);
-  animation: aurora-c 38s ease-in-out infinite alternate;
-}
-
-@keyframes aurora-a {
-  to {
-    transform: translate3d(30vmax, 22vmax, 0) scale(1.15);
+@media (min-width: 960px) and (prefers-reduced-motion: no-preference) {
+  .aurora::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(45% 40% at 72% 88%, rgba(56, 189, 248, 0.06), transparent 70%),
+      radial-gradient(40% 35% at 22% 68%, rgba(227, 183, 76, 0.06), transparent 70%);
+    opacity: 0.2;
+    animation: breathe 14s ease-in-out infinite alternate;
+    will-change: opacity;
   }
 }
 
-@keyframes aurora-b {
+@keyframes breathe {
   to {
-    transform: translate3d(-28vmax, 30vmax, 0) scale(0.9);
+    opacity: 1;
   }
 }
 
-@keyframes aurora-c {
-  to {
-    transform: translate3d(20vmax, -30vmax, 0) scale(1.2);
-  }
-}
-
-/* Superficies de cristal en vez de paneles opacos */
 .panel {
-  background: linear-gradient(180deg, var(--glass-2), var(--glass));
-  border-color: var(--glass-line);
-  border-radius: 18px;
-}
-
-/* ---------- Cabecera flotante ---------- */
-
-.header,
-.header.solid,
-body:not([data-hero]) .header {
-  top: 12px;
-  height: 60px;
-  background: transparent;
-  border-bottom: 0;
-}
-
-.header-inner {
-  width: calc(100% - 2 * var(--gutter));
-  padding-inline: 14px;
+  background: var(--card);
+  border-color: var(--card-line);
   border-radius: 16px;
-  border: 1px solid var(--glass-line);
-  background: rgba(9, 11, 17, 0.72);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  backdrop-filter: blur(14px) saturate(140%);
-  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9);
 }
 
-.nav a {
-  padding: 8px 12px;
-  border-radius: 10px;
-  transition:
-    color 0.2s,
-    background-color 0.2s;
-}
-
-.nav a:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.nav a[aria-current='page'] {
-  background: rgba(227, 183, 76, 0.12);
-  color: var(--gold-hi);
-}
-
-.nav a[aria-current='page']::after {
-  display: none;
-}
-
+/* Título de la portada en dorado (sin animar) */
 .title-sheen {
-  background: linear-gradient(100deg, #fff4d6 0%, #f8dd8e 25%, #e3b74c 45%, #fff4d6 60%, #f8dd8e 80%, #e3b74c 100%);
-  background-size: 220% 100%;
+  background: linear-gradient(180deg, #fff4d6 0%, #f8dd8e 45%, #e3b74c 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: sheen 9s linear infinite;
 }
 
-@keyframes sheen {
-  to {
-    background-position: -220% 0;
-  }
+.hero h1 {
+  font-size: clamp(42px, 8vw, 76px);
 }
 
-@keyframes glow-pulse {
-  0%,
-  100% {
-    opacity: 0.36;
-    transform: scale(0.92);
-  }
-  50% {
-    opacity: 0.72;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes floaty {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-/* ---------- Secciones de la portada ---------- */
+/* ---------- Secciones ---------- */
 
 .section-head.center {
   text-align: center;
@@ -3256,28 +3152,25 @@ body:not([data-hero]) .header {
   margin: 32px 0 0;
   padding: 0;
   list-style: none;
-  counter-reset: none;
 }
 
 .timeline li {
-  position: relative;
-  padding: 26px 24px 24px;
-  border-radius: 20px;
-  border: 1px solid var(--glass-line);
-  background: linear-gradient(180deg, var(--glass-2), var(--glass));
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--card-line);
+  background: var(--card);
 }
 
 .timeline .num {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 16px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #c8902c);
+  width: 40px;
+  height: 40px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: var(--gold);
   color: #1b1204;
-  font: 800 20px var(--font-display);
-  box-shadow: 0 10px 26px -12px rgba(227, 183, 76, 0.8);
+  font: 800 18px var(--font-display);
 }
 
 .timeline h3 {
@@ -3290,73 +3183,48 @@ body:not([data-hero]) .header {
   font-size: 15px;
 }
 
-.crate-row {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(230px, 72%);
-  gap: 14px;
-  margin-top: 28px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding-bottom: 4px;
-}
-
-.crate-row::-webkit-scrollbar {
-  display: none;
-}
-
-.crate-row > * {
-  scroll-snap-align: start;
-}
-
-/* ---------- Tarjetas de crate con brillo animado de su color ---------- */
+/* ---------- Crates: tarjeta sólida y el brillo de su color que late ---------- */
 
 .crate-tile {
-  border-radius: 20px;
-  border: 1px solid var(--glass-line);
-  background: linear-gradient(180deg, var(--glass-2), var(--glass));
+  border-radius: 18px;
+  border: 1px solid var(--card-line);
+  background: var(--card);
 }
 
 .crate-tile:hover {
   border-color: var(--t2, var(--gold-line));
-  box-shadow: 0 24px 60px -32px var(--t2, var(--gold));
 }
 
 .crate-tile-art {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: radial-gradient(70% 60% at 50% 55%, rgba(255, 255, 255, 0.03), transparent 70%), rgba(8, 10, 16, 0.55);
-}
-
-.crate-glow {
-  position: absolute;
-  inset: 4% 8% 0;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--t2, var(--gold)), transparent 74%);
-  opacity: 0.4;
-  animation: glow-pulse 3.8s ease-in-out var(--d, 0s) infinite;
-}
-
-.crate-glow::after {
-  content: '';
-  position: absolute;
-  inset: 12%;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0 55%, var(--t1, var(--gold-hi)) 68%, transparent 80%);
-  opacity: 0.35;
-  animation: spin 9s linear var(--d, 0s) infinite;
+  background: var(--card-art);
 }
 
 .crate-tile-art img {
   position: relative;
-  animation: floaty 6s ease-in-out var(--d, 0s) infinite;
 }
 
-.crate-tile:hover .crate-glow {
-  opacity: 0.75;
+.crate-glow {
+  position: absolute;
+  inset: 2% 6% -8%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--t2, var(--gold)), var(--t3, transparent) 55%, transparent 78%);
+  opacity: 0.45;
+  animation: crate-pulse 3.6s ease-in-out var(--d, 0s) infinite;
+  will-change: opacity;
+}
+
+@keyframes crate-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.85;
+  }
 }
 
 .home-tile {
@@ -3364,14 +3232,7 @@ body:not([data-hero]) .header {
   flex-direction: column;
   overflow: hidden;
   color: inherit;
-  transition:
-    transform 0.3s var(--ease),
-    border-color 0.3s,
-    box-shadow 0.3s;
-}
-
-.home-tile:hover {
-  transform: translateY(-4px);
+  transition: border-color 0.2s;
 }
 
 .home-tile .crate-tile-art {
@@ -3408,36 +3269,25 @@ body:not([data-hero]) .header {
   padding-top: 12px;
 }
 
-/* ---------- Banda de Discord con borde animado ---------- */
+.crate-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
 
 .cta-band {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(180deg, rgba(16, 19, 29, 0.96), rgba(10, 12, 18, 0.96)) padding-box,
-    linear-gradient(120deg, var(--gold), var(--violet), var(--sky), var(--gold)) border-box;
-  background-size:
-    100% 100%,
-    300% 300%;
-  animation: border-flow 12s linear infinite;
-}
-
-@keyframes border-flow {
-  to {
-    background-position:
-      0 0,
-      300% 0;
-  }
-}
-
-/* ---------- Páginas interiores ---------- */
-
-.page-hero .hero-art img {
-  opacity: 0.28;
+  border: 1px solid var(--gold-line);
+  background: var(--card);
 }
 
 .footer {
-  background: rgba(5, 6, 10, 0.7);
-  border-top-color: var(--glass-line);
+  background: var(--bg);
+  border-top-color: var(--card-line);
+}
+
+.page-hero .hero-art img {
+  opacity: 0.28;
 }
 
 /* ---------- Ruleta ---------- */
@@ -3446,11 +3296,9 @@ body:not([data-hero]) .header {
   display: grid;
   gap: 28px;
   padding: clamp(20px, 4vw, 36px);
-  border-radius: 24px;
-  border: 1px solid var(--glass-line);
-  background:
-    radial-gradient(70% 90% at 100% 0%, rgba(139, 108, 246, 0.16), transparent 70%),
-    linear-gradient(180deg, var(--glass-2), var(--glass));
+  border-radius: 20px;
+  border: 1px solid var(--card-line);
+  background: var(--card);
 }
 
 .roulette .small {
@@ -3479,14 +3327,13 @@ body:not([data-hero]) .header {
   align-items: center;
   gap: 12px;
   padding: 8px 12px 8px 8px;
-  border-radius: 14px;
-  border: 1px solid var(--glass-line);
-  background: rgba(9, 11, 17, 0.5);
+  border-radius: 12px;
+  border: 1px solid var(--card-line);
+  background: var(--card-art);
 }
 
 .odds li.rare {
-  border-color: rgba(201, 168, 255, 0.45);
-  background: linear-gradient(90deg, rgba(139, 108, 246, 0.18), rgba(9, 11, 17, 0.5));
+  border-color: rgba(201, 168, 255, 0.4);
 }
 
 .odds-icon {
@@ -3506,11 +3353,9 @@ body:not([data-hero]) .header {
 
 .odds-name {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.3;
 }
 
 .odds-bar {
@@ -3524,11 +3369,11 @@ body:not([data-hero]) .header {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--gold), var(--gold-hi));
+  background: var(--gold);
 }
 
 .odds li.rare .odds-bar i {
-  background: linear-gradient(90deg, var(--violet), #c9a8ff);
+  background: #b394ff;
 }
 
 .odds li b {
@@ -3551,77 +3396,38 @@ body:not([data-hero]) .header {
   grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
 }
 
-@media (max-width: 479px) {
-  .odds li {
-    grid-template-columns: 36px minmax(0, 1fr) 40px;
-  }
-
-  .odds-bar {
-    display: none;
-  }
-}
-
-/* ---------- Tienda: cabecera y pestañas en cristal ---------- */
-
-.shop-tabs {
-  padding: 4px;
-  border: 1px solid var(--glass-line);
+.coin-spins {
+  margin-top: 22px;
+  padding: 16px;
   border-radius: 14px;
-  background: rgba(9, 11, 17, 0.6);
+  border: 1px solid var(--gold-line);
+  background: rgba(227, 183, 76, 0.04);
 }
 
-.shop-tabs .tab {
-  height: 42px;
-  border-radius: 10px;
-  border-bottom: 0;
-  margin-bottom: 0;
-}
-
-.shop-tabs .tab[aria-selected='true'] {
-  background: rgba(227, 183, 76, 0.14);
+.coin-spins-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--gold-hi);
 }
 
-/* ---------- Tamaños de pantalla ---------- */
-
-@media (min-width: 640px) {
-
-  .crate-row {
-    grid-auto-columns: minmax(240px, 42%);
-  }
-
-  .timeline {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.coin-spins .spin-buttons {
+  margin-top: 12px;
 }
 
-@media (min-width: 960px) {
-
-  .crate-row {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    overflow: visible;
-  }
-
-  .roulette {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-    gap: 44px;
-  }
+.coin-spins .small {
+  margin: 10px 0 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aurora span,
-.title-sheen,
-.crate-glow,
-.crate-glow::after,
-.crate-tile-art img,
-.cta-band {
-    animation: none !important;
-  }
+.coin-item .btn {
+  margin-top: 10px;
+  width: 100%;
 }
 
-/* Cabecera: nada se parte ni se corta */
+/* ---------- Cabecera: nada se parte ni se corta ---------- */
+
 .brand,
 .brand span,
 .nav a,
@@ -3633,57 +3439,19 @@ body:not([data-hero]) .header {
   flex: none;
 }
 
-@media (min-width: 960px) {
-  .nav {
-    gap: 2px;
-    margin-left: 8px;
+/* ---------- Tamaños de pantalla ---------- */
+
+@media (max-width: 479px) {
+  .odds li {
+    grid-template-columns: 36px minmax(0, 1fr) 40px;
   }
 
-  .section {
-    padding-block: 84px;
-  }
-}
-
-@media (min-width: 960px) and (max-width: 1180px) {
-  .ip-chip {
+  .odds-bar {
     display: none;
   }
 }
 
-/* Móvil: la cabecera cabe entera, los nombres de premios no se cortan y las pestañas se ven todas */
-.odds-name {
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  line-height: 1.3;
-}
-
-@media (max-width: 959px) {
-  .header-inner {
-    gap: 10px;
-  }
-
-  .header-actions {
-    gap: 8px;
-  }
-
-  .shop-tabs {
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-
-  .shop-tabs .tab {
-    flex: 1 1 auto;
-    justify-content: center;
-    padding: 0 12px;
-  }
-}
-
 @media (max-width: 420px) {
-  .header-inner {
-    padding-inline: 10px;
-  }
-
   .brand img {
     width: 28px;
     height: 32px;
@@ -3695,10 +3463,10 @@ body:not([data-hero]) .header {
   }
 }
 
-/* Móvil: el escaparate deja sitio al texto y las crates van de dos en dos */
+/* Móvil: crates y tienda de monedas de dos en dos, y las pestañas se ven todas */
 @media (max-width: 639px) {
-
-  .crate-grid {
+  .crate-grid,
+  .coin-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
@@ -3724,26 +3492,30 @@ body:not([data-hero]) .header {
     font-size: 11.5px;
   }
 
-  .crate-grid .card-foot {
+  .crate-grid .card-foot,
+  .crate-row .card-foot {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
   }
 
-  .crate-grid .card-foot .btn {
+  .crate-grid .card-foot .btn,
+  .crate-row .card-foot .btn {
     width: 100%;
     padding: 0 8px;
   }
 
-  .crate-grid .try-on {
+  .crate-grid .try-on,
+  .crate-row .tile-tag {
     display: none;
   }
-}
 
-@media (max-width: 639px) {
-  .coin-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+  .crate-row .home-tile .body {
+    padding: 12px;
+  }
+
+  .crate-row .home-tile h3 {
+    font-size: 15px;
   }
 
   .coin-item {
@@ -3756,191 +3528,69 @@ body:not([data-hero]) .header {
   }
 }
 
-/* ---------- Brillitos de las crates: destellos de su color que parpadean alrededor ---------- */
-
-.sparkles {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.sparkles i {
-  position: absolute;
-  width: calc(16px * var(--s, 1));
-  height: calc(16px * var(--s, 1));
-  margin: calc(-8px * var(--s, 1)) 0 0 calc(-8px * var(--s, 1));
-  opacity: 0;
-  transform: scale(0);
-  animation: twinkle 3.2s ease-in-out infinite;
-}
-
-.sparkles i::before,
-.sparkles i::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-}
-
-/* Estrella de cuatro puntas con el centro blanco */
-.sparkles i::after {
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-  background: radial-gradient(circle, #fff 0 18%, var(--t1, var(--gold-hi)) 45%, var(--t2, var(--gold)) 100%);
-}
-
-/* Halo del destello */
-.sparkles i::before {
-  inset: -60%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--t1, var(--gold-hi)), transparent 70%);
-  opacity: 0.55;
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(0) rotate(0deg);
-  }
-  12% {
-    opacity: 1;
-    transform: scale(1) rotate(45deg);
-  }
-  26% {
-    opacity: 0;
-    transform: scale(0) rotate(90deg);
+@media (min-width: 640px) {
+  .timeline {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-.crate-glow {
-  opacity: 0.55;
-}
-
-@keyframes glow-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(0.9);
+@media (max-width: 959px) {
+  .header-inner {
+    gap: 10px;
   }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.08);
+
+  .header-actions {
+    gap: 8px;
   }
-}
 
-/* Portada: solo el emblema y cuatro crates */
-.featured .crate-row {
-  margin-top: 8px;
-}
+  .shop-tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
 
-.hero h1 {
-  font-size: clamp(42px, 8vw, 76px);
+  .shop-tabs .tab {
+    flex: 1 1 auto;
+    justify-content: center;
+    height: 44px;
+    padding: 0 12px;
+  }
+
+  /* Emblema: en el móvil solo flota y late el halo (sin el destello con fusión de capas, que es caro) */
+  .logo-mark .shine,
+  .logo-mark .spark {
+    display: none;
+  }
 }
 
 @media (min-width: 960px) {
-  .featured .crate-row {
+  .crate-row {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .roulette {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 44px;
   }
 
   .hero {
     align-items: center;
   }
+
+  .section {
+    padding-block: 84px;
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1180px) {
+  .ip-chip {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sparkles i {
+  .crate-glow {
     animation: none !important;
-    opacity: 0.8;
-    transform: scale(0.7);
-  }
-}
-
-/* Brillitos más visibles; sin el giro cónico (dejaba un disco gris) */
-.crate-glow::after {
-  display: none;
-}
-
-.crate-glow {
-  inset: 0 4% -6%;
-  background: radial-gradient(closest-side, var(--t2, var(--gold)), var(--t3, transparent) 55%, transparent 78%);
-}
-
-.sparkles i {
-  width: calc(22px * var(--s, 1));
-  height: calc(22px * var(--s, 1));
-  margin: calc(-11px * var(--s, 1)) 0 0 calc(-11px * var(--s, 1));
-  animation-duration: 2.6s;
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(0) rotate(0deg);
-  }
-  16% {
-    opacity: 1;
-    transform: scale(1) rotate(45deg);
-  }
-  36% {
-    opacity: 0;
-    transform: scale(0.2) rotate(90deg);
-  }
-}
-
-/* Ruleta: girar con las monedas del servidor */
-.coin-spins {
-  margin-top: 22px;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px dashed rgba(227, 183, 76, 0.35);
-  background: rgba(227, 183, 76, 0.05);
-}
-
-.coin-spins-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--gold-hi);
-}
-
-.coin-spins .spin-buttons {
-  margin-top: 12px;
-}
-
-.coin-spins .small {
-  margin: 10px 0 0;
-}
-
-@media (max-width: 959px) {
-  .featured .crate-row {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    overflow: visible;
-    gap: 10px;
-  }
-
-  .featured .home-tile .body {
-    padding: 12px;
-  }
-
-  .featured .home-tile h3 {
-    font-size: 15px;
-  }
-
-  .featured .tile-tag {
-    display: none;
-  }
-
-  .featured .home-tile .card-foot {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .featured .home-tile .card-foot .btn {
-    width: 100%;
   }
 }

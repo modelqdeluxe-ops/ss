@@ -84,17 +84,22 @@
       $('prizes').hidden = false;
     }
 
-    // Ruleta con monedas: se cobra y se gira en el juego; esperamos a que el servidor diga qué tocó.
+    // Con monedas (ruleta o tienda de monedas): se cobra en el juego; esperamos a que el servidor responda.
     if (order.coins) {
+      const shop = order.kind === 'tienda';
       if (order.status === 'delivered') {
-        show('ok', 'Hecho', '¡La ruleta ha girado!', 'Se cobraron tus monedas en el servidor y los premios ya están en tu inventario.');
+        if (shop) show('ok', 'Hecho', '¡Compra hecha!', `Se cobraron tus monedas en el servidor y ${order.product} ya está en tu inventario.`);
+        else show('ok', 'Hecho', '¡La ruleta ha girado!', 'Se cobraron tus monedas en el servidor y los premios ya están en tu inventario.');
         return;
       }
       if (order.status === 'delivery_failed') {
-        show('bad', 'Sin girar', 'No se pudo girar', order.error || 'No tenías bastantes monedas en el servidor. No se ha cobrado nada.');
+        show('bad', shop ? 'Sin comprar' : 'Sin girar', shop ? 'No se pudo comprar' : 'No se pudo girar',
+          order.error || 'No tenías bastantes monedas en el servidor. No se ha cobrado nada.');
         return;
       }
-      show('wait', 'En cola', 'Esperando al servidor', `La ruleta girará en el juego en cuanto ${order.username} esté conectado. Puedes dejar esta página abierta para ver qué te toca.`);
+      show('wait', 'En cola', 'Esperando al servidor', shop
+        ? `Se cobrará y te llegará en el juego en cuanto ${order.username} esté conectado.`
+        : `La ruleta girará en el juego en cuanto ${order.username} esté conectado. Puedes dejar esta página abierta para ver qué te toca.`);
       await new Promise((r) => setTimeout(r, 4000));
       attempt = Math.min(attempt, 10);
       continue;

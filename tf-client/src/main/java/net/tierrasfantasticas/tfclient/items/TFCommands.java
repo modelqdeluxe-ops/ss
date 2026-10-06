@@ -31,13 +31,19 @@ import net.tierrasfantasticas.tfclient.economy.TFEconomyCommands;
 import net.tierrasfantasticas.tfclient.jobs.TFJobsCommands;
 import net.tierrasfantasticas.tfclient.server.TFBridgeCommands;
 import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
+import net.tierrasfantasticas.tfclient.shop.TFRoulette;
 
 /**
+ * Solo hay dos comandos: /tf web (staff) y /tf jobs (todos).
+ * <pre>
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo)
- * Hace falta ser operador (nivel 2). Funciona también en servidores Mohist.
- * /tf vincular y /tf rango están en {@link TFBridgeCommands}; /tf tienda en {@link TFCoinShop};
- * /tf monedas en {@link TFEconomyCommands}; /tf jobs (o /tf oficios) en {@link TFJobsCommands}.
+ * /tf web tienda ...                             la tienda de monedas de la web ({@link TFCoinShop})
+ * /tf web rango | monedas | ruleta ...           los usa la web al entregar (staff; {@link TFBridgeCommands},
+ *                                                {@link TFEconomyCommands}, {@link TFRoulette})
+ * /tf jobs                                       los oficios ({@link TFJobsCommands})
+ * </pre>
+ * /tf web pide ser operador (nivel 2). Funciona también en servidores Mohist.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFCommands {
@@ -70,17 +76,14 @@ public final class TFCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        // /tf no pide permisos: cada subcomando pone los suyos (/tf vincular es para todos los jugadores).
-        var tf = Commands.literal("tf")
-                .then(TFBridgeCommands.vincular())
-                .then(TFBridgeCommands.rango())
-                .then(TFCoinShop.command())
-                .then(net.tierrasfantasticas.tfclient.shop.TFRoulette.command())
-                .then(TFEconomyCommands.command());
-        for (var jobs : TFJobsCommands.commands()) tf = tf.then(jobs);
-        dispatcher.register(tf
+        dispatcher.register(Commands.literal("tf")
+                .then(TFJobsCommands.command())
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
+                        .then(TFCoinShop.command())
+                        .then(TFBridgeCommands.rango())
+                        .then(TFEconomyCommands.command())
+                        .then(TFRoulette.command())
                         .then(Commands.literal("sets")
                                 .then(Commands.literal("list").executes(TFCommands::list))
                                 .then(Commands.literal("give")
