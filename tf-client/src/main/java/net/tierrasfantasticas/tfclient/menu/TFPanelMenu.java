@@ -27,19 +27,21 @@ import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * Ventana de los oficios (/tf jobs): el marco con el dibujo del oficio y su rejilla de 5×2, y debajo una barra de 9
- * botones. No tiene el inventario del jugador: solo estos 19 huecos, que son botones (nada se coge ni se mueve).
- * El TF Client la dibuja con {@code TFPanelScreen}; el fondo y los textos (cinta y cartel) llegan al abrirla.
+ * Ventana de los oficios (/tf jobs), con la forma de un cofre de 5 filas: arriba el marco del pack Medieval Jobs con
+ * el dibujo del oficio y su rejilla de 5×2 (los huecos 29-33 y 38-42 del cofre); abajo, donde iría el inventario del
+ * jugador, 36 huecos que son solo botones (volver, monedas, abandonar, aceptar…). Los objetos del jugador no salen:
+ * esta ventana no tiene su inventario, y nada se coge ni se mueve. La dibuja {@code TFPanelScreen}; el fondo y los
+ * textos (cinta y cartel) llegan al abrirla.
  */
 public final class TFPanelMenu extends AbstractContainerMenu {
     public static final int GRID = 10;
-    public static final int NAV = 9;
-    public static final int SIZE = GRID + NAV;
-    /** Posiciones (píxeles de la ventana, como la dibuja TFPanelScreen) */
-    public static final int WIDTH = 192;
-    public static final int ART_HEIGHT = 144;
-    public static final int NAV_Y = 145;
-    public static final int HEIGHT = NAV_Y + 30;
+    /** Huecos de abajo: 3 filas y la barra (como el inventario y la barra rápida del jugador). */
+    public static final int BOTTOM = 36;
+    public static final int SIZE = GRID + BOTTOM;
+    /** Tamaño de un cofre de 5 filas, y dónde empieza su parte de abajo (el inventario) en la textura del cofre. */
+    public static final int WIDTH = 176;
+    public static final int HEIGHT = 114 + 5 * 18;
+    public static final int BOTTOM_TOP = 5 * 18 + 17;
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, TFClient.MOD_ID);
     public static final RegistryObject<MenuType<TFPanelMenu>> TYPE = MENUS.register("panel",
@@ -61,8 +63,13 @@ public final class TFPanelMenu extends AbstractContainerMenu {
         this.background = background;
         this.ribbon = ribbon;
         this.sign = sign;
-        for (int i = 0; i < GRID; i++) addSlot(new Button(box, i, 51 + (i % 5) * 18, 96 + (i / 5) * 18));
-        for (int i = 0; i < NAV; i++) addSlot(new Button(box, GRID + i, 15 + i * 18, NAV_Y + 6));
+        // La rejilla del marco, justo sobre los huecos 29-33 y 38-42 del cofre
+        for (int i = 0; i < GRID; i++) addSlot(new Button(box, i, 8 + (2 + i % 5) * 18, 18 + (3 + i / 5) * 18));
+        // Abajo, en el sitio del inventario (3 filas) y de la barra rápida
+        for (int i = 0; i < BOTTOM; i++) {
+            int row = i / 9;
+            addSlot(new Button(box, GRID + i, 8 + (i % 9) * 18, row < 3 ? 121 + row * 18 : 179));
+        }
     }
 
     /** Abre la ventana en el siguiente tick (seguro desde un clic en otra). */
@@ -88,9 +95,14 @@ public final class TFPanelMenu extends AbstractContainerMenu {
         set(i, stack, action);
     }
 
-    /** Botón i de la barra de abajo (0-8, de izquierda a derecha). */
+    /** Botón i de la barra de abajo del todo (0-8, de izquierda a derecha; donde va la barra rápida). */
     public void nav(int i, ItemStack stack, Action action) {
-        set(GRID + i, stack, action);
+        set(GRID + 27 + i, stack, action);
+    }
+
+    /** Botón de las 3 filas de abajo (fila 0-2, columna 0-8; donde va el inventario). */
+    public void bottom(int row, int col, ItemStack stack, Action action) {
+        set(GRID + row * 9 + col, stack, action);
     }
 
     private void set(int slot, ItemStack stack, Action action) {

@@ -63,38 +63,30 @@ Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libr
 - Hace falta el TF Client **en el servidor y en todos los jugadores**, con la misma versión (Forge lo comprueba al
   conectar). Funciona en servidores Forge y Mohist.
 
-### Comando `/tf` (operadores, nivel 2)
+### Comandos
+
+Solo hay dos: `/tf jobs` (todos los jugadores) y `/tf web` (staff, nivel 2).
 
 ```
-/tf web sets list                              lista los sets
-/tf web sets give <jugadores> <set>            da el set entero
-/tf web sets give <jugadores> <set> <objeto>   da un objeto del set (p. ej. /tf web sets give Steve necros sword)
+/tf jobs                                     (todos) los oficios: todo se hace desde su ventana
+/tf jobs recargar                            (staff, nivel 3) vuelve a leer config/tfclient-jobs.json
+/tf jobs nivel|xp <jugador> <oficio> <n>     (staff) pone el nivel o suma experiencia
+/tf jobs reiniciar <jugador> [oficio]        (staff) borra el progreso
+
+/tf web sets list                            lista los sets
+/tf web sets give <jugadores> <set> [objeto] da el set entero o un objeto (p. ej. /tf web sets give Steve necros sword)
+/tf web tienda add <precio> [nombre]         (nivel 3) pone a la venta en la web lo que tienes en la mano
+/tf web tienda precio <id> <precio>          (nivel 3) cambia el precio
+/tf web tienda quitar <id> | lista | vaciar  (nivel 3)
 ```
 
-Con el puente activo, además:
+Estos los manda la web al entregar (también los puede usar el staff a mano):
 
 ```
-/tf vincular <código>              (todos) une tu jugador con tu cuenta de la web; el código sale en «Mi cuenta»
-/tf rango <jugador>                (staff, nivel 3) muestra su rango
-/tf rango <jugador> <rango>        (staff, nivel 3) pone el rango: grupo de LuckPerms, nametag y web
-/tf rango <jugador> ninguno        (staff, nivel 3) se lo quita (p. ej. tras un reembolso)
-```
-
-Tienda de monedas, monedas y oficios (más abajo):
-
-```
-/tf tienda                         (todos) abre la tienda de monedas
-/tf tienda add <precio> [nombre]   (staff, nivel 3) vende lo que tienes en la mano, con esa cantidad
-/tf tienda precio <id> <precio>    (staff) cambia el precio
-/tf tienda quitar <id> | lista | vaciar
-/tf ruleta                         (todos) la ruleta, con monedas del servidor (se ve girar)
-/tf ruleta girar <jugador> <n>     (staff, nivel 3) gira n veces cobrando monedas (lo usa la web)
-/tf monedas                        (todos) tus monedas
-/tf monedas dar|quitar|poner <jugador> <cantidad>   (staff, nivel 3)
-/tf jobs                           (todos) menú de oficios
-/tf jobs ver|unirse <oficio>, /tf jobs abandonar
-/tf jobs recargar                  (staff) vuelve a leer config/tfclient-jobs.json
-/tf jobs nivel|xp <jugador> <oficio> <n>, /tf jobs reiniciar <jugador> [oficio]   (staff)
+/tf web rango <jugador> [rango|ninguno]      ver, poner o quitar el rango: LuckPerms, nametag y web
+/tf web monedas ver|dar|quitar|poner <jugador> [cantidad]
+/tf web ruleta girar <jugador> <n>           gira n veces cobrando sus monedas
+/tf web tienda comprar <jugador> <id>        cobra sus monedas y le da el objeto de la tienda
 ```
 
 Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos son `tfclient:<set>_<objeto>`
@@ -105,7 +97,7 @@ Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos 
 `tools/build_mod_items.py <carpeta con los packs descomprimidos>` copia modelos, texturas, animaciones y armaduras de
 los packs (los sets y sus nombres salen de `tierras-fantasticas/tools/build_items.py` y `crates.py`, igual que en la
 web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft 1.20.1.
-`tools/build_jobs_gui.py <carpeta>` prepara los fondos, la barra de botones y los iconos de los oficios (pack *Medieval
+`tools/build_jobs_gui.py <carpeta>` prepara los fondos y los iconos de los oficios (pack *Medieval
 Jobs*): quita los textos en inglés del cartel y de la cinta, que el mod escribe en español.
 
 Lo que va puesto en la espalda sale del modelo que el propio pack usa en HMCCosmetics (`tools/hmc_worn.py`), que puede
@@ -122,34 +114,35 @@ La tienda de monedas y los oficios pagan y cobran con la economía que diga `eco
 | -------------- | -------------------------- |
 | `auto` (por defecto) | Vault si está (servidor Mohist con EssentialsX, CMI…); si no, las del TF Client |
 | `vault`        | La economía del servidor a través de Vault |
-| `tf`           | Monedas propias del TF Client, guardadas en `<mundo>/tfclient/monedas.json`; se ven con `/tf monedas` |
+| `tf`           | Monedas propias del TF Client, guardadas en `<mundo>/tfclient/monedas.json`; se ven con `/tf web monedas ver` |
 | `comandos`     | `economy.give` / `economy.take` (por defecto `eco give/take {player} {amount}`); el de quitar tiene que fallar si no hay bastantes |
 
 `economy.currency` es el nombre de la moneda en los mensajes (`monedas`). Si usas `tf`, los productos de monedas de la
-web tienen que dar con `tf monedas dar {player} <cantidad>` en vez de `eco give`.
+web tienen que dar con `tf web monedas dar {player} <cantidad>` en vez de `eco give`.
 
 ## Tienda de monedas
 
-El staff pone a la venta lo que tiene en la mano con `/tf tienda add <precio> [nombre]` (el objeto exacto: cantidad,
-encantamientos, nombre y NBT). Los jugadores compran con `/tf tienda` (clic y otro clic para confirmar). Se guarda en
-`config/tfclient-tienda.json` y, con el puente activo, la pestaña *Tienda de monedas* de la web se actualiza sola en
-unos segundos (al conectar se le manda la tienda entera: el servidor es el que manda).
+El staff pone a la venta lo que tiene en la mano con `/tf web tienda add <precio> [nombre]` (el objeto exacto: cantidad,
+encantamientos, nombre y NBT). Se guarda en `config/tfclient-tienda.json` y, con el puente activo, la pestaña *Tienda
+de monedas* de la web se actualiza sola en unos segundos (al conectar se le manda la tienda entera: el servidor es el
+que manda). Los jugadores compran en la web con su cuenta: la web manda `tf web tienda comprar <jugador> <id>`, que
+cobra las monedas y da el objeto cuando está conectado; si no tiene bastantes, no se cobra nada y la web lo dice.
 
-## Ruleta (`/tf ruleta`)
+## Ruleta con monedas
 
 Los mismos premios y probabilidades que la ruleta de la web (los manda la web por el puente; se guardan en
-`config/tfclient-ruleta.json` por si el servidor arranca sin conexión). En el juego se gira con monedas del servidor
-(`economy.mode`) en un menú con el carrete girando; si toca un arma legendaria se anuncia a todos. Desde la web, «girar
-con monedas» manda `tf ruleta girar <jugador> <n>`: si no tiene bastantes monedas no se cobra nada y la web lo dice;
-si gira, la web enseña los premios.
+`config/tfclient-ruleta.json` por si el servidor arranca sin conexión). En la web, «girar con monedas» manda
+`tf web ruleta girar <jugador> <n>`: si no tiene bastantes monedas (`economy.mode`) no se cobra nada y la web lo dice;
+si gira, le salen los premios en pantalla, la web los enseña y, si toca un arma legendaria, se anuncia a todos.
 
 ## Oficios (`/tf jobs`)
 
 Diez oficios con el arte del pack *Medieval Jobs*: granjero, minero, leñador, excavador, pescador, cazador, alquimista,
-herrero, constructor y encantador. La ventana es propia del TF Client y no enseña el inventario del jugador: arriba el
-marco de madera con el dibujo del oficio y su rejilla de 5×2 (los oficios en el menú principal, las misiones en el de
-cada oficio), con el nombre en español en la cinta; debajo, aparte, una barra de 9 botones (volver, nivel, páginas,
-cómo se gana, monedas, recompensas, unirse o abandonar y cerrar). Nada va encima del dibujo.
+herrero, constructor y encantador. La ventana tiene la forma de un cofre de 5 filas: arriba el marco de madera del
+pack con el dibujo del oficio y su rejilla de 5×2 (los oficios en el menú principal, las misiones en el de cada
+oficio), con el nombre en español en la cinta. Abajo, donde iría el inventario, **no salen los objetos del jugador**:
+solo botones. En la fila de abajo del todo: volver, nivel, páginas, cómo se gana, monedas, recompensas, unirse o
+abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cancelar* encima.
 
 - Se elige un oficio y se gana experiencia del oficio y monedas haciendo su trabajo (las monedas se pagan juntas cada
   `pagoCadaSegundos`, con un aviso en la barra de acción). Cada nivel paga más (`bonusMonedasPorNivel`).
@@ -167,7 +160,7 @@ cómo se gana, monedas, recompensas, unirse o abandonar y cerrar). Nada va encim
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.2.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.3.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

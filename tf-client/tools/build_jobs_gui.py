@@ -61,39 +61,6 @@ def ribbon_text(rgb):
     return r > 180 and g > 200 and b > 200  # letras blancas sobre la cinta verde
 
 
-NAV_W, NAV_H = 192, 30
-NAV_CELLS_X, NAV_CELLS_Y = 15, 6
-
-
-def nav_bar(src, gui):
-    """Barra de botones de debajo del marco: madera como el marco y 9 huecos iguales a los de su rejilla."""
-    dark, wood, wood2, light = (55, 22, 33, 255), (107, 47, 37, 255), (120, 54, 40, 255), (197, 139, 85, 255)
-    bar = Image.new('RGBA', (NAV_W, NAV_H), (0, 0, 0, 0))
-    px = bar.load()
-    for y in range(NAV_H):
-        for x in range(NAV_W):
-            corner = (x in (0, NAV_W - 1)) and (y in (0, NAV_H - 1))
-            if corner:
-                continue
-            edge = x in (0, NAV_W - 1) or y in (0, NAV_H - 1)
-            if edge:
-                px[x, y] = dark
-            elif y == 1:
-                px[x, y] = light
-            elif y == NAV_H - 2:
-                px[x, y] = (77, 27, 34, 255)
-            else:
-                px[x, y] = wood2 if (y // 3 + (x // 23)) % 4 == 0 else wood
-    art = Image.open(os.path.join(src, 'farmer.png')).convert('RGBA')
-    cell = art.crop((102, 106, 120, 124))
-    # Marco oscuro alrededor de los huecos, como el de la rejilla
-    frame = Image.new('RGBA', (9 * 18 + 2, 20), dark)
-    bar.alpha_composite(frame, (NAV_CELLS_X - 1, NAV_CELLS_Y - 1))
-    for i in range(9):
-        bar.alpha_composite(cell, (NAV_CELLS_X + i * 18, NAV_CELLS_Y))
-    bar.save(os.path.join(gui, 'nav.png'), optimize=True)
-
-
 def main(packs):
     src = os.path.join(packs, PACK)
     gui = os.path.join(ASSETS, 'textures', 'gui', 'jobs')
@@ -118,8 +85,7 @@ def main(packs):
             data[f'item.tfclient.job_{job}'] = names[job]
         with open(path, 'w', encoding='utf-8') as fh:
             json.dump(data, fh, ensure_ascii=False, indent=1)
-    nav_bar(src, gui)
-    print(f'{len(JOBS)} oficios: fondos en textures/gui/jobs, iconos tfclient:job_<oficio>, barra nav.png')
+    print(f'{len(JOBS)} oficios: fondos en textures/gui/jobs, iconos tfclient:job_<oficio>')
 
 
 if __name__ == '__main__':

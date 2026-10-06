@@ -17,7 +17,7 @@ import net.tierrasfantasticas.tfclient.server.TFServerConfig;
  * Las monedas del servidor, para la tienda de monedas y los oficios. Según economy.mode (config/tfclient-server.properties):
  * <ul>
  *   <li>vault: la economía del servidor (EssentialsX, CMI…) a través de Vault, en servidores Mohist/Arclight.</li>
- *   <li>tf: monedas propias del TF Client, guardadas en el mundo ({@link TFWallet}); /tf monedas para verlas.</li>
+ *   <li>tf: monedas propias del TF Client, guardadas en el mundo ({@link TFWallet}); /tf web monedas ver para verlas.</li>
  *   <li>comandos: dar y quitar con economy.give / economy.take. No se puede ver el saldo: el comando de quitar
  *       tiene que fallar si no hay bastantes.</li>
  *   <li>auto (por defecto): Vault si lo hay; si no, las del TF Client.</li>

@@ -214,20 +214,8 @@
     if (page === 'tienda') initShop();
   }
 
-  // Brillo de la crate: un aura de su color que late y destellos que parpadean alrededor (posiciones fijas por crate,
-  // con retrasos distintos para que no parpadeen todas a la vez).
-  const SPARKS = [
-    [14, 22, 1], [82, 18, 0.85], [26, 72, 0.75], [76, 66, 1], [50, 12, 0.7], [92, 46, 0.8], [6, 48, 0.7], [62, 86, 0.85],
-    [36, 30, 0.6], [66, 34, 0.65],
-  ];
-  const glow = (i) => {
-    const d = (-i * 0.7).toFixed(1);
-    const sparks = SPARKS.map(([x, y, s], k) => {
-      const delay = ((i * 0.37 + k * 0.29) % 2.6).toFixed(2);
-      return `<i style="left:${x}%;top:${y}%;--s:${s};animation-delay:${delay}s"></i>`;
-    }).join('');
-    return `<span class="crate-glow" aria-hidden="true" style="--d:${d}s"></span><span class="sparkles" aria-hidden="true">${sparks}</span>`;
-  };
+  // Brillo de la crate: un aura de su color que late (con retrasos distintos para que no lata todo a la vez).
+  const glow = (i) => `<span class="crate-glow" aria-hidden="true" style="--d:${(-i * 0.7).toFixed(1)}s"></span>`;
 
   // Inicio: solo unas pocas crates (lo demás está en la tienda)
   function renderHome() {
@@ -491,7 +479,7 @@
                   ${p.spins} ${p.spins === 1 ? 'giro' : 'giros'} · ${new Intl.NumberFormat('es-ES', { useGrouping: 'always' }).format(p.coinPrice)} monedas</button>`,
               )
               .join('')}</div>
-            <p class="muted small">Se cobra en el juego cuando estés conectado (o al entrar). Si no tienes bastantes monedas, no se cobra nada. En el juego también puedes girar con <code>/tf ruleta</code>.</p>
+            <p class="muted small">Se cobra en el juego cuando estés conectado (o al entrar). Si no tienes bastantes monedas, no se cobra nada.</p>
           </div>
           <p class="muted small">Las probabilidades son las mismas en cada giro, con dinero o con monedas. En la página de tu tirada verás qué te tocó.</p>
         </div>
@@ -526,30 +514,34 @@
     for (const pic of $$('.odds-icon img', box)) pic.classList.add('pixel-img');
   }
 
-  // Girar con monedas: hace falta la cuenta (su jugador es el que paga las monedas en el juego)
+  // Pagar con monedas (girar la ruleta o comprar en la tienda de monedas): hace falta la cuenta, porque su jugador es
+  // el que paga las monedas en el juego.
   document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-coin-spin]');
+    const btn = e.target.closest('[data-coin-spin], [data-coin-buy]');
     if (!btn) return;
+    const spin = 'coinSpin' in btn.dataset;
     if (!me.user) {
-      toast('Entra con tu cuenta para girar con tus monedas');
-      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent('/tienda#ruleta')}`), 900);
+      toast(spin ? 'Entra con tu cuenta para girar con tus monedas' : 'Entra con tu cuenta para comprar con tus monedas');
+      const back = spin ? '/tienda#ruleta' : '/tienda#tiendamonedas';
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(back)}`), 900);
       return;
     }
+    const failed = spin ? 'No se pudo girar ahora mismo.' : 'No se pudo comprar ahora mismo.';
     btn.disabled = true;
     try {
-      const res = await fetch('/api/roulette/coins', {
+      const res = await fetch(spin ? '/api/roulette/coins' : '/api/coinshop/buy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spins: Number(btn.dataset.coinSpin) }),
+        body: JSON.stringify(spin ? { spins: Number(btn.dataset.coinSpin) } : { id: btn.dataset.coinBuy }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         location.href = `/success?order=${encodeURIComponent(data.id)}`;
         return;
       }
-      toast(data.error || 'No se pudo girar ahora mismo.');
+      toast(data.error || failed);
     } catch {
-      toast('No se pudo girar ahora mismo.');
+      toast(failed);
     }
     btn.disabled = false;
   });
@@ -603,12 +595,13 @@
                   <h3>${escapeHtml(it.name)}</h3>
                   <span class="muted small">× ${it.count}</span>
                   <span class="coin-price"><img src="/img/coins-small.png" alt="" width="20" height="20" class="pixel-img">${fmt.format(it.price)}</span>
+                  <button type="button" class="btn btn-gold btn-sm" data-coin-buy="${escapeHtml(it.id)}">Comprar</button>
                 </article>`,
               )
               .join('')}</div>`
-          : '<div class="panel coin-empty"><p>Todavía no hay objetos. El staff los añade desde el juego con <code>/tf tienda add &lt;precio&gt;</code>.</p></div>'
+          : '<div class="panel coin-empty"><p>Todavía no hay objetos. El staff los añade desde el juego con <code>/tf web tienda add &lt;precio&gt;</code>.</p></div>'
       }
-      <p class="muted small coin-note">Se compran dentro del juego con tus monedas. Pronto también desde aquí.</p>`;
+      <p class="muted small coin-note">Se pagan con tus monedas del servidor: se cobran y te llega el objeto en el juego cuando estés conectado. Si no tienes bastantes, no se cobra nada.</p>`;
     // Sin icono (o si no carga), la inicial del objeto.
     for (const icon of $$('.coin-icon', box)) {
       const letter = () => icon.replaceChildren(Object.assign(document.createElement('span'), { textContent: icon.dataset.letter }));

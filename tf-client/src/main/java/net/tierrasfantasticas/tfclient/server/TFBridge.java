@@ -18,11 +18,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -66,8 +64,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * Puente entre el servidor de Minecraft y la web de Tierras Fantásticas (solo en servidores dedicados).
  *
  * <p>Cada pocos segundos manda a la web los jugadores conectados (nombre + UUID), los que han entrado alguna vez
- * (para que la tienda compruebe el nombre antes de cobrar), las entregas ya hechas, los códigos de /tf vincular y
- * los cambios de rango del staff. Recibe las compras pendientes de los jugadores que están dentro y el rango de cada
+ * (para que la tienda compruebe el nombre antes de cobrar), las entregas ya hechas, los cambios de rango del staff
+ * y los de la tienda de monedas. Recibe las compras pendientes de los jugadores que están dentro y el rango de cada
  * uno para su nametag. Es el servidor el que llama a la web: no hace falta RCON ni abrir puertos.
  *
  * <p>Las entregas van al UUID del comprador, no a su nombre: los comandos traen {player} y {uuid} y se rellenan
@@ -80,7 +78,6 @@ public final class TFBridge {
     private static final int PROTOCOL = 2;
     private static final int MAX_REMEMBERED = 5000;
     private static final int SEEN_PER_POLL = 500;
-    private static final long LINK_COOLDOWN_MS = 5000;
     private static final long ERROR_LOG_EVERY_MS = 5 * 60 * 1000L;
 
     private static final int CONNECT_TIMEOUT_MS = 10_000;
@@ -104,10 +101,7 @@ public final class TFBridge {
     private static final Set<Long> executed = new LinkedHashSet<>();
     /** Jugadores que han entrado alguna vez y aún no se han mandado a la web. */
     private static final Deque<JsonObject> seen = new ConcurrentLinkedDeque<>();
-    /** /tf vincular pendientes de mandar y los que esperan respuesta. */
-    private static final Deque<JsonObject> links = new ArrayDeque<>();
-    private static final Map<UUID, Long> lastLink = new HashMap<>();
-    /** Cambios de rango hechos con /tf rango, pendientes de mandar. */
+    /** Cambios de rango hechos con /tf web rango, pendientes de mandar. */
     private static final Deque<JsonObject> rankChanges = new ArrayDeque<>();
     /** Cambios de la tienda de monedas para la web, en orden. */
     private static final Deque<JsonObject> shopOps = new ArrayDeque<>();
@@ -162,27 +156,7 @@ public final class TFBridge {
         TFRanks.forget(event.getEntity().getUUID());
     }
 
-    /** ¿Está el puente activo en este servidor? (/tf vincular solo funciona así). */
-    public static boolean active() {
-        return server != null && TFServerConfig.enabled();
-    }
-
-    /** /tf vincular CÓDIGO: se manda a la web en la siguiente consulta. Devuelve false si lo pide demasiado seguido. */
-    public static boolean queueLink(ServerPlayer player, String code) {
-        long now = System.currentTimeMillis();
-        Long last = lastLink.get(player.getUUID());
-        if (last != null && now - last < LINK_COOLDOWN_MS) return false;
-        lastLink.put(player.getUUID(), now);
-        JsonObject link = new JsonObject();
-        link.addProperty("code", code);
-        link.addProperty("name", player.getGameProfile().getName());
-        link.addProperty("uuid", player.getUUID().toString());
-        links.addLast(link);
-        soon();
-        return true;
-    }
-
-    /** /tf rango: la web guarda el nuevo rango del jugador (null = sin rango). */
+    /** /tf web rango: la web guarda el nuevo rango del jugador (null = sin rango). */
     public static void queueRankChange(UUID uuid, String rankId) {
         JsonObject change = new JsonObject();
         change.addProperty("uuid", uuid.toString());
@@ -192,7 +166,7 @@ public final class TFBridge {
         soon();
     }
 
-    /** /tf tienda: un cambio de la tienda de monedas para la web. */
+    /** /tf web tienda: un cambio de la tienda de monedas para la web. */
     public static void queueShop(JsonObject op) {
         shopOps.addLast(op);
         soon();
@@ -254,14 +228,11 @@ public final class TFBridge {
 
         List<JsonObject> sendingSeen = new ArrayList<>();
         for (JsonObject p; sendingSeen.size() < SEEN_PER_POLL && (p = seen.pollFirst()) != null; ) sendingSeen.add(p);
-        List<JsonObject> sendingLinks = new ArrayList<>(links);
-        links.clear();
         List<JsonObject> sendingRanks = new ArrayList<>(rankChanges);
         rankChanges.clear();
         List<JsonObject> sendingShop = new ArrayList<>();
         for (JsonObject op; sendingShop.size() < SHOP_PER_POLL && (op = shopOps.pollFirst()) != null; ) sendingShop.add(op);
         body.add("seen", array(sendingSeen));
-        body.add("links", array(sendingLinks));
         body.add("ranks", array(sendingRanks));
         if (!sendingShop.isEmpty()) body.add("shop", array(sendingShop));
         // Si la consulta falla, todo vuelve a la cola para la siguiente.
@@ -270,13 +241,6 @@ public final class TFBridge {
             sendingSeen.forEach(seen::addLast);
             sendingRanks.forEach(rankChanges::addLast);
             for (int i = sendingShop.size() - 1; i >= 0; i--) shopOps.addFirst(sendingShop.get(i));
-            for (JsonObject link : sendingLinks) {
-                ServerPlayer player = srv.getPlayerList().getPlayer(UUID.fromString(link.get("uuid").getAsString()));
-                if (player != null) {
-                    player.sendSystemMessage(Component.literal("✖ No se pudo conectar con la web. Inténtalo de nuevo en un momento.")
-                            .withStyle(ChatFormatting.RED));
-                }
-            }
         };
 
         String url = TFServerConfig.url() + "/bridge/poll";
@@ -369,33 +333,9 @@ public final class TFBridge {
             net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
         }
         if (json.has("ranks")) TFRanks.update(srv, json.getAsJsonArray("ranks"));
-        if (json.has("linkResults")) {
-            for (JsonElement element : json.getAsJsonArray("linkResults")) linkResult(srv, element.getAsJsonObject());
-        }
         JsonArray deliveries = json.has("deliveries") ? json.getAsJsonArray("deliveries") : new JsonArray();
         for (JsonElement element : deliveries) {
             deliver(srv, element.getAsJsonObject());
-        }
-    }
-
-    private static void linkResult(MinecraftServer srv, JsonObject result) {
-        ServerPlayer player;
-        try {
-            player = srv.getPlayerList().getPlayer(UUID.fromString(result.get("uuid").getAsString()));
-        } catch (IllegalArgumentException e) {
-            return;
-        }
-        if (player == null) return;
-        if (result.get("ok").getAsBoolean()) {
-            String account = result.has("account") && !result.get("account").isJsonNull() ? result.get("account").getAsString() : "tu cuenta";
-            player.sendSystemMessage(Component.literal("✔ ").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("Tu jugador quedó vinculado con la cuenta de Discord ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(account).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
-                    .append(Component.literal(". Ya puedes ver tus compras en la web.").withStyle(ChatFormatting.GRAY)));
-            player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6f, 1.4f);
-        } else {
-            player.sendSystemMessage(Component.literal("✖ Código no válido o caducado. Pide uno nuevo en la web, en «Mi cuenta».")
-                    .withStyle(ChatFormatting.RED));
         }
     }
 
@@ -428,7 +368,9 @@ public final class TFBridge {
 
         // Se apunta antes de ejecutar: si el servidor se cae a mitad, nunca se entrega dos veces.
         remember(id);
-        boolean coinSpin = delivery.has("kind") && "ruleta-monedas".equals(text(delivery, "kind", ""));
+        // Pedidos pagados con monedas desde la web (ruleta o tienda de monedas): se cobran aquí.
+        String kind = delivery.has("kind") ? text(delivery, "kind", "") : "";
+        boolean coinSpin = kind.equals("ruleta-monedas") || kind.equals("tienda-monedas");
         List<String> errors = new ArrayList<>();
         net.tierrasfantasticas.tfclient.shop.TFRoulette.startCapture();
         for (JsonElement cmd : delivery.getAsJsonArray("commands")) {
@@ -436,7 +378,7 @@ public final class TFBridge {
             List<String> failed = run(srv, command);
             // Quitar un grupo de rango que no tenía no es un error de la entrega.
             if (!failed.isEmpty() && !command.contains(" parent remove ")) {
-                // Ruleta con monedas: a la web le llega el motivo tal cual («no tienes bastantes monedas»)
+                // Con monedas: a la web le llega el motivo tal cual («no tienes bastantes monedas»)
                 errors.add(coinSpin ? String.join("; ", failed) : command + " → " + String.join("; ", failed));
             }
         }

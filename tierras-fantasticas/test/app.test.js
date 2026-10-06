@@ -486,7 +486,7 @@ test('la ruleta también se gira con las monedas del servidor: se cobra en el ju
   const { id } = await res.json();
   assert.match(id, /^COIN[0-9A-F]{24}$/);
   const [delivery] = (await (await poll(['Monedas_MC'])).json()).deliveries;
-  assert.deepStrictEqual(delivery.commands, ['tf ruleta girar {player} 5']);
+  assert.deepStrictEqual(delivery.commands, ['tf web ruleta girar {player} 5']);
   assert.strictEqual(delivery.kind, 'ruleta-monedas');
 
   // El servidor cobra, gira y manda los premios; la web solo acepta premios que existen
@@ -541,6 +541,29 @@ test('el staff llena la tienda de monedas desde el juego y la web la muestra', a
   const bad = await poll([], [], { secret: 'otra', shop: [{ op: 'add', id: 'x', item: 'minecraft:dirt', name: 'X', count: 1, price: 5 }] });
   assert.strictEqual(bad.status, 401);
   assert.deepStrictEqual((await (await get('/api/coinshop')).json()).items, []);
+});
+
+test('la tienda de monedas se compra en la web y se cobra en el juego', async () => {
+  await poll([], [], { shop: [{ op: 'add', id: 'diamantes', item: 'minecraft:diamond', name: 'Diamante', count: 16, price: 2400 }] });
+  assert.strictEqual((await post('/api/coinshop/buy', { id: 'diamantes' })).status, 401);
+  await seen('Tienda_MC');
+  const cookie = await register('Tienda_MC');
+  assert.strictEqual((await post('/api/coinshop/buy', { id: 'no-existe' }, cookie)).status, 404);
+
+  const { id } = await (await post('/api/coinshop/buy', { id: 'diamantes' }, cookie)).json();
+  assert.match(id, /^COIN[0-9A-F]{24}$/);
+  const [delivery] = (await (await poll(['Tienda_MC'])).json()).deliveries;
+  assert.deepStrictEqual(delivery.commands, ['tf web tienda comprar {player} diamantes']);
+  assert.strictEqual(delivery.kind, 'tienda-monedas');
+
+  // Aunque luego se deje de vender, el pedido recuerda qué se compró y por cuánto
+  await poll(['Tienda_MC'], [{ id: delivery.id, ok: true }], { shop: [{ op: 'clear' }] });
+  const order = await (await get(`/api/order/${id}`)).json();
+  assert.strictEqual(order.status, 'delivered');
+  assert.strictEqual(order.kind, 'tienda');
+  assert.strictEqual(order.product, '16× Diamante');
+  assert.strictEqual(order.coins, 2400);
+  assert.strictEqual(order.prizes, null);
 });
 
 test('los iconos de objetos solo aceptan nombres válidos', async () => {

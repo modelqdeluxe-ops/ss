@@ -19,9 +19,10 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
       la página de la compra dice qué tocó. Los premios y probabilidades están en `ROULETTE_POOL` de `tools/crates.py`.
       También se gira con las monedas del servidor (`ROULETTE_COIN_PRICE` por giro): con la cuenta iniciada, la web
       manda la tirada al juego, el TF Client cobra las monedas y devuelve los premios, que salen en la página de la
-      tirada. En el juego es `/tf ruleta`.
-    - **Tienda de monedas**: objetos del servidor que se compran con monedas del juego. La llena el staff desde el
-      juego (`/tf tienda add <precio>`) y la web se actualiza sola.
+      tirada (`tf web ruleta girar`).
+    - **Tienda de monedas**: objetos del servidor que se compran en la web con las monedas del juego. La llena el
+      staff desde el juego (`/tf web tienda add <precio>`) y la web se actualiza sola. Al comprar, la web manda
+      `tf web tienda comprar <jugador> <id>`: el TF Client cobra las monedas y da el objeto.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).
   - Rangos con escudos animados y una tabla para comparar sus ventajas (`/tienda#rangos`).
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
@@ -50,12 +51,12 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
 - Página de confirmación que muestra el estado del pago y de la entrega en el juego y en Discord.
 - Pedidos y entregas guardados en la base de datos D1. Si el comprador no está conectado, la compra espera y se le
   entrega al entrar. Si un comando falla, el pedido queda como `delivery_failed` con el error para que el staff lo revise.
-  Los reembolsos y disputas de Stripe quedan apuntados en el pedido (`refunded`); el rango se quita con `/tf rango <jugador> ninguno`.
+  Los reembolsos y disputas de Stripe quedan apuntados en el pedido (`refunded`); el rango se quita con `/tf web rango <jugador> ninguno`.
 
 ## Cómo está todo conectado
 
 ```
- Servidor (TF Client) ──► Web: jugadores (nombre + UUID), entregas hechas, /tf vincular
+ Servidor (TF Client) ──► Web: jugadores (nombre + UUID), entregas hechas, rangos del staff
  Jugador ──► Web: escribe "steve" ──► ✓ Steve (UUID del servidor) ──► Stripe (paga) ──► webhook firmado
                                                                                           │
       ┌───────────────────────────────────────────────────────────────────────────────────┤
@@ -128,12 +129,12 @@ npm run dev                      # http://localhost:8787
    `TF Bridge: conectado con la web`.
 
 Cada 10 segundos el servidor manda a `POST /bridge/poll` sus jugadores conectados, los que han entrado alguna vez (de
-`usercache.json`, para que la tienda pueda comprobar nombres), las entregas que ya hizo, los `/tf vincular` y los
-cambios de rango del staff (`/tf rango`). Recibe las compras pendientes de los jugadores que están dentro y el rango de
+`usercache.json`, para que la tienda pueda comprobar nombres), las entregas que ya hizo, los cambios de rango del
+staff (`/tf web rango`) y los de la tienda de monedas. Recibe las compras pendientes de los jugadores que están dentro y el rango de
 cada uno para su nametag. Si no confirma una entrega en 2 minutos, se le vuelve a enviar (el mod recuerda las que ya
 ejecutó, así que nunca entrega dos veces).
 
-> El comando `/tf vincular` del TF Client 1.2.8 ya no hace falta: las cuentas se crean en la web.
+> El comando `/tf vincular` del TF Client 1.2.8 ya no existe: las cuentas se crean en la web.
 >
 > Con el TF Client 1.2.7 o anterior en el servidor, la web sigue entregando (les manda los comandos con el nombre ya
 > puesto), pero sin anuncio, sin nametag ni vinculación. Actualiza el mod del servidor a la 1.2.8.
@@ -201,7 +202,7 @@ Las crates (`"category": "crates"`) las escribe `tools/crates.py` y llevan adem�
 
 Cada crate se compra una vez (`maxQuantity: 1`) y entrega el set entero con `tf web sets give {player} <set>` (TF
 Client). La ruleta (`"category": "ruleta"`, campos `spins` y `pool`) no lleva comandos: al pagar, la tienda elige un
-premio por giro según su `chance` y manda sus comandos (`give`, `tf monedas dar`, o `tf web sets give {player} nazgul
+premio por giro según su `chance` y manda sus comandos (`give`, `tf web monedas dar`, o `tf web sets give {player} nazgul
 <arma>` si toca un arma).
 
 Los comandos de ejemplo usan LuckPerms (`lp`) y EssentialsX (`eco`). Ajústalos a los plugins de tu servidor.
@@ -238,7 +239,7 @@ conocidos, que el precio sale del catálogo, que un pago se entrega una sola vez
 mismo nombre), que se reenvía si el servidor no confirma, que no se entrega si el importe no coincide, el pago caduca o
 falla, que se rechazan firmas falsas o viejas, los pagos que tardan, reembolsos y disputas, las mejoras de rango (precio
 de la diferencia, rango repetido bloqueado, grupos inferiores quitados) y los cambios de rango del staff. Con una API de
-Discord simulada comprueban el login, la vinculación con `/tf vincular`, «mis compras», que se da el rol (o se añade al
+Discord simulada comprueban el login, que el `/tf vincular` antiguo ya no vincula, «mis compras», que se da el rol (o se añade al
 servidor) también sin sesión si el jugador está vinculado, el anuncio, y que un fallo de Discord no impide la entrega.
 También que una crate entrega el set entero, que la ruleta da premios de su lista (con las armas como premio raro) y los guarda en la compra, y que la
-tienda de monedas se llena, cambia y vacía solo desde el puente.
+tienda de monedas se llena, cambia y vacía solo desde el puente y se compra con la cuenta.

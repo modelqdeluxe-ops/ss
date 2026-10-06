@@ -125,8 +125,8 @@ ROULETTE_ROW = ('nazgul', 'Arsenal de Nazgul', '', 'Treinta armas legendarias de
                 ('#c9a8ff', '#9061f9'))
 # id, nombre, probabilidad (%), comandos, icono
 ROULETTE_POOL = [
-    ('monedas-2000', '2.000 monedas', 26, ['tf monedas dar {player} 2000'], 'img/coins-small.png'),
-    ('monedas-5000', '5.000 monedas', 16, ['tf monedas dar {player} 5000'], 'img/coins-big.png'),
+    ('monedas-2000', '2.000 monedas', 26, ['tf web monedas dar {player} 2000'], 'img/coins-small.png'),
+    ('monedas-5000', '5.000 monedas', 16, ['tf web monedas dar {player} 5000'], 'img/coins-big.png'),
     ('experiencia', '32 botellas de experiencia', 14, ['give {player} minecraft:experience_bottle 32'], 'mc:experience_bottle'),
     ('manzanas', '4 manzanas doradas', 12, ['give {player} minecraft:golden_apple 4'], 'mc:golden_apple'),
     ('diamantes', '5 diamantes', 10, ['give {player} minecraft:diamond 5'], 'mc:diamond'),

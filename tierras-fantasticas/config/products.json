@@ -4516,7 +4516,7 @@
         "chance": 26,
         "icon": "/img/coins-small.png",
         "give": [
-          "tf monedas dar {player} 2000"
+          "tf web monedas dar {player} 2000"
         ]
       },
       {
@@ -4525,7 +4525,7 @@
         "chance": 16,
         "icon": "/img/coins-big.png",
         "give": [
-          "tf monedas dar {player} 5000"
+          "tf web monedas dar {player} 5000"
         ]
       },
       {
@@ -4736,7 +4736,7 @@
         "chance": 26,
         "icon": "/img/coins-small.png",
         "give": [
-          "tf monedas dar {player} 2000"
+          "tf web monedas dar {player} 2000"
         ]
       },
       {
@@ -4745,7 +4745,7 @@
         "chance": 16,
         "icon": "/img/coins-big.png",
         "give": [
-          "tf monedas dar {player} 5000"
+          "tf web monedas dar {player} 5000"
         ]
       },
       {
@@ -4956,7 +4956,7 @@
         "chance": 26,
         "icon": "/img/coins-small.png",
         "give": [
-          "tf monedas dar {player} 2000"
+          "tf web monedas dar {player} 2000"
         ]
       },
       {
@@ -4965,7 +4965,7 @@
         "chance": 16,
         "icon": "/img/coins-big.png",
         "give": [
-          "tf monedas dar {player} 5000"
+          "tf web monedas dar {player} 5000"
         ]
       },
       {

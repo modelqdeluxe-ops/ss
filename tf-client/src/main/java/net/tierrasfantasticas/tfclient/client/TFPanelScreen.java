@@ -11,14 +11,15 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.menu.TFPanelMenu;
 
 /**
- * Dibuja la ventana de los oficios: el marco del pack Medieval Jobs (con la rejilla de 5×2 justo debajo de los huecos)
- * y la barra de botones aparte, debajo. Los textos en español van en la cinta y en el cartel; si no caben, se encogen.
+ * Dibuja la ventana de los oficios como en la 1.3.0: la parte de abajo de un cofre de 5 filas (sus 36 huecos tienen
+ * los botones, nunca los objetos del jugador) y encima el marco del pack Medieval Jobs, con su rejilla de 5×2 sobre los
+ * huecos 29-33 y 38-42. Los textos en español van en la cinta y en el cartel; si no caben, se encogen.
  */
 public final class TFPanelScreen extends AbstractContainerScreen<TFPanelMenu> {
-    /** Esquina de la ventana dentro de la textura de 256×256 del marco. */
-    private static final int ART_X = 33;
-    private static final int ART_Y = 10;
-    private static final ResourceLocation NAV = new ResourceLocation(TFClient.MOD_ID, "textures/gui/jobs/nav.png");
+    /** Esquina del cofre dentro de la textura de 256×256 del marco. */
+    private static final int ART_X = 40;
+    private static final int ART_Y = 34;
+    private static final ResourceLocation CHEST = new ResourceLocation("textures/gui/container/generic_54.png");
 
     public TFPanelScreen(TFPanelMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -38,15 +39,17 @@ public final class TFPanelScreen extends AbstractContainerScreen<TFPanelMenu> {
         int x = leftPos;
         int y = topPos;
         String bg = menu.background.matches("[a-z0-9_]{1,40}") ? menu.background : "farmer";
+        // Abajo: la parte del inventario del cofre (126 = donde empieza en la textura del cofre de 6 filas)
+        g.blit(CHEST, x, y + TFPanelMenu.BOTTOM_TOP, 0, 126, TFPanelMenu.WIDTH, 96);
+        // Arriba, tapando la parte de los huecos del cofre: el marco del oficio
         g.blit(new ResourceLocation(TFClient.MOD_ID, "textures/gui/jobs/" + bg + ".png"), x - ART_X, y - ART_Y, 0, 0, 256, 256, 256, 256);
-        g.blit(NAV, x, y + TFPanelMenu.NAV_Y, 0, 0, TFPanelMenu.WIDTH, 30, TFPanelMenu.WIDTH, 30);
-        label(g, font, menu.ribbon, x + 95, y + 86, 58, 0xFFFFFFFF, 0xFF1F5E2A);
-        label(g, font, menu.sign, x + 96, y + 25, 54, 0xFFF8CFAD, 0xFF37161F);
+        label(g, font, menu.ribbon, x + 88, y + 62, 58, 0xFFFFFFFF, 0xFF1F5E2A);
+        label(g, font, menu.sign, x + 89, y + 1, 54, 0xFFF8CFAD, 0xFF37161F);
     }
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        // Sin títulos: los textos van dibujados en el marco.
+        // Sin títulos ni «Inventario»: los textos van dibujados en el marco.
     }
 
     /** Texto centrado en (cx, cy); si no cabe en el ancho, se encoge (nunca se sale del marco). */

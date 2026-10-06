@@ -40,7 +40,7 @@ def head(title, desc, page, hero=False, preload_hero=False):
   <script>document.documentElement.classList.add('js')</script>
 </head>
 <body data-page="{page}"{' data-hero' if hero else ''}>
-  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="aurora" aria-hidden="true"></div>
 '''
 
 

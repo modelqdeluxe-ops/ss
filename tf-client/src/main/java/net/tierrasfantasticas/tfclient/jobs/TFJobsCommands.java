@@ -21,9 +21,8 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsData.PlayerJobs;
 
 /**
  * <pre>
- * /tf jobs                                abre el menú de oficios
- * /tf jobs ver &lt;oficio&gt;                   abre un oficio
- * /tf jobs unirse &lt;oficio&gt; | abandonar     sin menú
+ * /tf jobs                                abre el menú de oficios (todo se hace desde ahí)
+ * /tf jobs ver &lt;oficio&gt;                   abre un oficio (lo usan los avisos del chat)
  * /tf jobs recargar                       vuelve a leer config/tfclient-jobs.json (staff, nivel 3)
  * /tf jobs nivel &lt;jugador&gt; &lt;oficio&gt; &lt;n&gt;    pone el nivel (staff)
  * /tf jobs xp &lt;jugador&gt; &lt;oficio&gt; &lt;n&gt;       suma experiencia (staff)
@@ -36,12 +35,8 @@ public final class TFJobsCommands {
 
     private TFJobsCommands() {}
 
-    public static List<LiteralArgumentBuilder<CommandSourceStack>> commands() {
-        return List.of(build("jobs"));
-    }
-
-    private static LiteralArgumentBuilder<CommandSourceStack> build(String name) {
-        return Commands.literal(name)
+    public static LiteralArgumentBuilder<CommandSourceStack> command() {
+        return Commands.literal("jobs")
                 .executes(ctx -> {
                     TFJobsMenu.openMain(ctx.getSource().getPlayerOrException());
                     return 1;
@@ -51,22 +46,6 @@ public final class TFJobsCommands {
                             TFJobsMenu.openJob(ctx.getSource().getPlayerOrException(), job(ctx), 0);
                             return 1;
                         })))
-                .then(Commands.literal("unirse").then(Commands.argument("oficio", StringArgumentType.word()).suggests(JOBS)
-                        .executes(ctx -> {
-                            String error = TFJobs.join(ctx.getSource().getPlayerOrException(), job(ctx));
-                            if (error != null) ctx.getSource().sendFailure(Component.literal(error));
-                            return error == null ? 1 : 0;
-                        })))
-                .then(Commands.literal("abandonar").executes(ctx -> {
-                    ServerPlayer player = ctx.getSource().getPlayerOrException();
-                    PlayerJobs p = TFJobs.data().player(player.getUUID());
-                    if (p.active.isEmpty()) {
-                        ctx.getSource().sendFailure(Component.literal("No tienes ningún oficio."));
-                        return 0;
-                    }
-                    for (String id : List.copyOf(p.active)) TFJobs.leave(player, id, true);
-                    return 1;
-                }))
                 .then(Commands.literal("recargar").requires(s -> s.hasPermission(3)).executes(ctx -> {
                     List<String> warnings = TFJobsConfig.load();
                     ctx.getSource().sendSuccess(() -> Component.literal("Oficios recargados: " + TFJobsConfig.jobs.size() + " oficios"
