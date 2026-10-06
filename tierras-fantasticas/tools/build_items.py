@@ -102,6 +102,19 @@ SETS = {
     'ifrit': ('elitecreatures-ifrit_animated-weapon/RSS/assets', 'elitecreatures', COMMON + [('quiver', 'Carcaj')], 'ifrit_animated/'),
     # El Cyber Set trae 7 colores; el crate usa el original (cyan).
     'cyber': ('CyberSet-EliteCreatures/- Cyber Set/RSS/assets', 'cyber_set', COMMON + [('rod', 'Caña de pescar')], 'cyber_original_set/'),
+    # Kits de los rangos (y los cuatro que pasaron a las crates: akira, cardael, evergreen y soulskull)
+    'eagle': ('Eagle/Nexo Setup (1.20-1.21.1)/pack/assets', 'eagle_ascendant', COMMON),
+    'akira': ('Akira/Akira Set/ItemsAdder/data/resource_pack/assets', 'akiraset', COMMON),
+    'oni': ('Oni/ItemsAdder/data/resource_pack/assets', 'elitecreatures',
+            COMMON + [('left_sword', 'Espada izquierda'), ('right_sword', 'Espada derecha'),
+                      ('left_spear', 'Lanza izquierda'), ('right_spear', 'Lanza derecha')], 'oni_weapon_set/'),
+    'malika': ('Malika/ItemAdder/data/resource_pack', 'malikaset', COMMON),
+    'evergreen': ('Evergreen/ItemAdder/data/resource_pack', 'evergreenset', COMMON + [('crown', 'Corona')]),
+    'darkworld': ('DarkWorld/Dark World Animated Weapon & Tool Pack/ItemsAdder/data/resource_pack/assets', 'darkworldpack',
+                  COMMON + [('katana', 'Katana'), ('bigsword', 'Gran espada')], 'normal/'),
+    'cardael': ('Cardael/Nexo Setup (TRIMS) 1.20-1.21.1/Nexo/pack/assets', 'plny_cardael_set', COMMON),
+    'soulskull': ('SoulSkull/Nexo Setup (TRIMS) 1.20-1.21.1/Nexo/pack/assets', '3b_soul_skull',
+                  COMMON + [('fishingrod', 'Caña de pescar')]),
 }
 
 THUMB = 256

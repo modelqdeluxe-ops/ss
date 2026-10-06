@@ -11,7 +11,8 @@ Lee los packs descomprimidos y escribe en src/main/resources:
 Comprueba además las reglas de Minecraft para los modelos (giros de 0/±22,5/±45 grados, coordenadas entre -16 y 32,
 texturas que existen) para que ningún objeto salga como el cubo morado y negro.
 
-Uso: python3 tools/build_mod_items.py <carpeta con los packs descomprimidos>
+Uso: python3 tools/build_mod_items.py <carpeta con los packs descomprimidos> [set ...]
+     Con sets, rehace solo esos y deja los demás como están (para añadir kits sin los packs de todos).
 """
 import json
 import math
@@ -35,7 +36,7 @@ ASSETS = os.path.join(RES, 'assets', 'tfclient')
 SWORDS = {'sword', 'great_sword', 'greatsword', 'big_sword', 'rapier_sword', 'dagger', 'knife', 'blade', 'scythe',
           'sickle', 'spear', 'staff', 'halberd', 'hammer', 'mace', 'club', 'gauntlet', 'flag'}
 AXES = {'axe', 'battle_axe', 'battleaxe', 'battleaxes'}
-HEAD = {'helmet', 'hat'}
+HEAD = {'helmet', 'hat', 'crown'}
 BACK = {'wings', 'wing', 'backpack', 'cape', 'tail', 'quiver'}
 ARMOR = {'armor_helmet': 'helmet', 'armor_chestplate': 'chestplate', 'armor_leggings': 'leggings', 'armor_boots': 'boots'}
 
@@ -62,7 +63,7 @@ def item_type(slug):
         return 'head'
     if slug in BACK:
         return 'back'
-    if slug == 'fishing' or 'fishing_rod' in slug:
+    if slug == 'fishing' or slug.startswith(('fishing_rod', 'fishingrod')):
         return 'fishing_rod'
     if slug.endswith('crossbow'):
         return 'crossbow'
@@ -527,6 +528,11 @@ BACK_GAP_TO = 0.15     # ...hasta aquí (pegado a la espalda, sin atravesarla)
 
 # Cosméticos que el pack llama «wing» pero que son otra cosa (el conejo de Pascua es un peluche-mochila).
 KIND_BY_TAG = {'easter/wing': 'backpack'}
+# Alas cuya posición del pack quedaba baja (o cuya mitad visible no es su raíz), revisadas en el probador: se calcula
+# por su forma con esta altura de la mitad de lo visible (bloques desde el cuello).
+# - eagle: el pack las pone a la altura de la cintura (su soporte de armadura está más alto que el de los demás).
+# - oni: el aro de arriba sube la mitad de lo visible; así la máscara del centro queda entre los omóplatos.
+Y50_BY_TAG = {'eagle/wing': -0.24, 'oni/wings': -0.02}
 # Sets que ya estaban bien con el modelo del objeto (su modelo de HMCCosmetics trae una peana debajo).
 HMC_SKIP = {'shadow'}
 # Alto máximo de lo visible (bloques) y borde de arriba (desde el cuello) de lo que va como mochila: no tapa la cabeza.
@@ -685,7 +691,7 @@ def place_on_back(model, slug, tag, designed, alpha_of):
 
     # El modelo del objeto también puede traer la posición del plugin (muy por debajo: soporte de armadura). Se usa la
     # del pack solo si deja la mitad de lo visible a una altura creíble de la espalda; si no, se calcula.
-    designed = (designed or (head.get('translation') or [0, 0])[1] < -20) and kind != 'quiver'
+    designed = (designed or (head.get('translation') or [0, 0])[1] < -20) and kind != 'quiver' and tag not in Y50_BY_TAG
     mode = 'forma'
     if designed and head.get('translation') and any(scale):
         trans = [float(v) for v in head['translation']]
@@ -724,7 +730,7 @@ def place_on_back(model, slug, tag, designed, alpha_of):
     body_z = lambda qq: 0.625 * (trans[2] / 16 + qq)
     if mode == 'forma':
         y50 = body_y(mid(vs, 1))
-        trans[1] += (TARGET_Y50.get(kind, -0.3) - y50) / 0.625 * 16
+        trans[1] += (Y50_BY_TAG.get(tag, TARGET_Y50.get(kind, -0.3)) - y50) / 0.625 * 16
     if kind in ('backpack', 'quiver'):
         height = spread(vs, 1) * 0.625
         if height > BACKPACK_MAX_HEIGHT and mode == 'forma':
@@ -844,23 +850,55 @@ def write_accessory_tags(sets_out):
     print(f'Accesorios: {len(back)} cosméticos de espalda ({len(capes)} capas) en accessories:back / curios:back')
 
 
-def main(packs):
-    for sub in ('models/item', 'textures/item/sets', 'textures/models/armor'):
-        path = os.path.join(ASSETS, sub)
-        if sub == 'models/item':
-            for f in os.listdir(path) if os.path.isdir(path) else []:
-                if f != 'sets' and f.endswith('.json') and '_' in f and not f.startswith('job_'):
-                    os.remove(os.path.join(path, f))
-            shutil.rmtree(os.path.join(path, 'sets'), ignore_errors=True)
-        else:
-            shutil.rmtree(path, ignore_errors=True)
-    crates = {row[0]: row for row in C.CRATES}
-    crates.setdefault(C.ROULETTE_SET, C.ROULETTE_ROW)
+def remove_set(set_id, old_entry):
+    """Borra lo que el mod tiene de un set (para rehacerlo sin tocar los demás)."""
+    for item in (old_entry or {}).get('items', []):
+        path = os.path.join(ASSETS, 'models', 'item', item['id'] + '.json')
+        if os.path.exists(path):
+            os.remove(path)
+    shutil.rmtree(os.path.join(ASSETS, 'models', 'item', 'sets', set_id), ignore_errors=True)
+    shutil.rmtree(os.path.join(ASSETS, 'textures', 'item', 'sets', set_id), ignore_errors=True)
+    armor = os.path.join(ASSETS, 'textures', 'models', 'armor')
+    for f in os.listdir(armor) if os.path.isdir(armor) else []:
+        if f.startswith(set_id + '_layer_'):
+            os.remove(os.path.join(armor, f))
+
+
+def main(packs, only=None):
+    """Sin `only` rehace todos los sets (hacen falta los packs de todos). Con `only` rehace solo esos y deja los demás
+    como están en tf_sets.json (así se puede añadir un kit nuevo sin tener a mano los packs de los otros)."""
+    registry = os.path.join(ASSETS, 'tf_sets.json')
+    previous = {s['id']: s for s in json.load(open(registry, encoding='utf-8'))['sets']} if os.path.exists(registry) else {}
+    old_lang = json.load(open(os.path.join(ASSETS, 'lang', 'es_es.json'), encoding='utf-8')) if only else {}
+    if only:
+        for set_id in only:
+            remove_set(set_id, previous.get(set_id))
+    else:
+        for sub in ('models/item', 'textures/item/sets', 'textures/models/armor'):
+            path = os.path.join(ASSETS, sub)
+            if sub == 'models/item':
+                for f in os.listdir(path) if os.path.isdir(path) else []:
+                    if f != 'sets' and f.endswith('.json') and '_' in f and not f.startswith('job_'):
+                        os.remove(os.path.join(path, f))
+                shutil.rmtree(os.path.join(path, 'sets'), ignore_errors=True)
+            else:
+                shutil.rmtree(path, ignore_errors=True)
     sets_out, lang = [], {'itemGroup.tfclient.sets': 'Tierras Fantásticas · Sets'}
     total = 0
-    for set_id, row in crates.items():
-        set_name = row[1].replace('Crate ', '')
-        color = row[7][1]
+    for spec in C.mod_sets():
+        set_id, set_name, color = spec['id'], spec['name'], spec['color']
+        if only and set_id not in only:
+            # Se queda como estaba; solo se actualiza su nivel de atributos
+            entry = previous.get(set_id)
+            if not entry:
+                problems.append(f'{set_id}: no está en tf_sets.json y no se ha pedido construirlo')
+                continue
+            entry = {**entry, 'tier': spec['tier']}
+            sets_out.append(entry)
+            lang.update({k: v for k, v in old_lang.items()
+                         if k == f'tfclient.set.{set_id}' or any(k == f'item.tfclient.{i["id"]}' for i in entry['items'])})
+            total += len(entry['items'])
+            continue
         w = SetWriter(packs, set_id)
         listing = C.listing(set_id)
         items = []
@@ -933,7 +971,7 @@ def main(packs):
                 label_full = f'{label} {set_name}'
             lang[f'item.tfclient.{item_id}'] = label_full
             items.append(info)
-        entry = {'id': set_id, 'name': set_name, 'color': color, 'items': items}
+        entry = {'id': set_id, 'name': set_name, 'color': color, 'tier': spec['tier'], 'items': items}
         if any(i['type'] == 'armor' for i in items):
             layers, frames, frametime = w.armor_layers()
             if layers != [1, 2]:
@@ -970,4 +1008,4 @@ def main(packs):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2:] or None)

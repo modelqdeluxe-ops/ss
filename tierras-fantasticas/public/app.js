@@ -281,7 +281,8 @@
     const perks = Array.isArray(p.perks) ? p.perks.slice(0, 5) : [];
     return `
       <article class="panel product"${themeAttr(p) || rankAttr(p)}>
-        ${p.image ? `<div class="thumb">${img(p.image, '')}</div>` : ''}
+        ${p.set ? `<button type="button" class="thumb thumb-try" data-open-crate="${escapeHtml(p.id)}" aria-label="Ver el set de ${escapeHtml(p.name)} y probártelo">
+          ${img(p.image, '')}<span class="try-on">Pruébatelo en 3D</span></button>` : p.image ? `<div class="thumb">${img(p.image, '')}</div>` : ''}
         <div class="body">
           <span class="cat">${escapeHtml(CATEGORY_LABEL[p.category] || p.category)}</span>
           <h3>${escapeHtml(p.name)}</h3>
@@ -390,7 +391,7 @@
 
   const INTRO = {
     gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
-    rangos: 'Prefijo con color en tu nombre, cosméticos y comodidades que no dan ventaja sobre nadie. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
+    rangos: 'Cada rango trae su prefijo con color y un set completo: armas, herramientas, armadura y cosméticos animados. Toca la imagen para probártelo. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
     crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Toca una para probártela en tu personaje.',
     ruleta: '',
     monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
@@ -421,6 +422,7 @@
     const fromHash = () => {
       const h = decodeURIComponent(location.hash.slice(1));
       if (h.startsWith('crates-')) return { cat: 'crates', crate: h.slice(7) };
+      if (h.startsWith('rangos-')) return { cat: 'rangos', crate: `rango-${h.slice(7)}` };
       return tabs.some((t) => t.dataset.category === h && !t.hidden) ? { cat: h } : null;
     };
     const start = fromHash() || { cat: 'crates' };
@@ -654,7 +656,7 @@
   const CV_HTML = `
   <dialog id="crate-view" class="crate-view" aria-labelledby="cv-title">
     <div class="cv-head">
-      <div><span class="cat">Crate</span><h2 id="cv-title"></h2><p class="muted" id="cv-tag"></p></div>
+      <div><span class="cat" id="cv-cat">Crate</span><h2 id="cv-title"></h2><p class="muted" id="cv-tag"></p></div>
       <button type="button" class="dialog-close" data-cv-close aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
@@ -701,7 +703,7 @@
       dialog.addEventListener('close', () => {
         cv.wardrobe?.destroy();
         cv.wardrobe = null;
-        if (location.hash.startsWith('#crates-')) history.replaceState(null, '', '#crates');
+        if (/^#(crates|rangos)-/.test(location.hash)) history.replaceState(null, '', location.hash.startsWith('#rangos-') ? '#rangos' : '#crates');
       });
       $('#cv-items', dialog).addEventListener('click', (e) => {
         const b = e.target.closest('[data-cv-item]');
@@ -731,13 +733,17 @@
     $('#cv-title').textContent = p.name;
     $('#cv-tag').textContent = p.tagline || '';
     $('#cv-desc').textContent = p.description || '';
+    const isRank = p.category === 'rangos';
+    $('#cv-cat').textContent = isRank ? 'Rango' : 'Crate';
     $('#cv-price').textContent = formatPrice(p.price);
+    $('#cv-price').previousElementSibling.textContent = isRank ? 'Rango con su set' : 'Set completo';
+    $('#cv-buy').textContent = isRank ? 'Comprar rango' : 'Comprar crate';
     $('#cv-buy').disabled = !config.paymentsEnabled;
     $('#cv-skin').value = storageGet('tf-skin') || me.user?.name || storageGet('tf-username') || '';
     $('#cv-status').hidden = false;
     $('#cv-status').textContent = 'Cargando el set…';
     if (!dialog.open) dialog.showModal();
-    history.replaceState(null, '', `#crates-${p.theme || p.id}`);
+    history.replaceState(null, '', isRank ? `#${p.id.replace(/^rango-/, 'rangos-')}` : `#crates-${p.theme || p.id}`);
     try {
       cv.lib ||= await import('/wardrobe.js');
       cv.set = wearCache[p.set] ||= await (await fetch(`/wear/${p.set}.json`)).json();
@@ -810,7 +816,7 @@
     cv.mode = 'item';
     refreshCv();
     try {
-      await cv.wardrobe.showItem(it.model);
+      await cv.wardrobe.showItem(it.model, { upright: !['head', 'back', 'shield'].includes(it.type) });
       $('#cv-status').hidden = true;
     } catch (err) {
       console.error(err);

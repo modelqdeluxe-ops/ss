@@ -2534,6 +2534,16 @@ body:not([data-hero]) .header::before {
   border-bottom: 1px solid var(--bd);
 }
 
+.product .thumb-try {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border-width: 0 0 1px;
+  border-style: solid;
+  color: inherit;
+  cursor: pointer;
+}
+
 .product .thumb img {
   width: 86%;
   height: 74%;
@@ -2784,7 +2794,9 @@ body:not([data-hero]) .header::before {
 }
 
 .crate-tile:hover .try-on,
-.crate-tile-art:focus-visible .try-on {
+.crate-tile-art:focus-visible .try-on,
+.product:hover .try-on,
+.thumb-try:focus-visible .try-on {
   opacity: 1;
   transform: translate(-50%, 0);
 }
@@ -4869,7 +4881,8 @@ body:not([data-hero]) .header::before {
     transform: none;
   }
 
-  .crate-grid .try-on {
+  .crate-grid .try-on,
+  .product .try-on {
     opacity: 1;
     transform: translate(-50%, 0);
   }

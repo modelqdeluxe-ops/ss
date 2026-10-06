@@ -55,159 +55,862 @@
     "giftCode": "02"
   },
   {
-    "id": "rango-aventurero",
+    "id": "rango-mortal",
     "category": "rangos",
-    "name": "Rango Aventurero",
-    "description": "Prefijo dorado en tu nombre, 3 hogares y el rol de Aventurero en Discord.",
+    "name": "Rango Mortal",
+    "description": "Prefijo «Mortal» en tu nombre y el set San Patricio completo: armas, herramientas, armadura y cosméticos.",
     "price": 499,
     "maxQuantity": 1,
     "discordRoles": [
-      "ID_ROL_AVENTURERO"
+      "ID_ROL_MORTAL"
     ],
     "commands": [
-      "lp user {player} parent add aventurero"
+      "lp user {player} parent add mortal",
+      "tf web sets give {player} patrick"
     ],
-    "image": "img/ranks/sword.png",
+    "image": "img/crates/patrick.webp",
     "tier": 1,
+    "colors": [
+      "#9bedb9",
+      "#4ade80"
+    ],
+    "set": "patrick",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
     "perks": [
-      "Prefijo «Aventurero» en el chat y sobre tu nombre",
-      "3 hogares (/home)",
-      "Rol Aventurero en Discord"
+      "Prefijo «Mortal» en el chat y sobre tu nombre",
+      "Set San Patricio completo (21 objetos)",
+      "Rol Mortal en Discord"
     ],
     "specs": {
-      "Prefijo en el chat": "Aventurero",
-      "Hogares (/home)": "3",
-      "/fly en el lobby": false,
-      "/hat y partículas": false,
-      "Mascota dragón (cosmética)": false,
-      "/nick": false,
-      "Cola prioritaria": false,
-      "Título y color propio": false,
+      "Prefijo en el chat": "Mortal",
+      "Set incluido": "San Patricio",
+      "Objetos del set": "21",
       "Rol en Discord": true
     },
     "rank": {
-      "group": "aventurero",
-      "prefix": "Aventurero",
-      "color": "gold",
-      "hex": "#f4c95d"
+      "group": "mortal",
+      "prefix": "Mortal",
+      "color": "green",
+      "hex": "#4ade80"
     }
   },
   {
-    "id": "rango-hechicero",
+    "id": "rango-inmortal",
     "category": "rangos",
-    "name": "Rango Hechicero",
-    "description": "Todo lo de Aventurero + /fly en el lobby, 8 hogares, /hat y partículas mágicas.",
-    "price": 999,
+    "name": "Rango Inmortal",
+    "description": "Prefijo «Inmortal» en tu nombre y el set Beats completo: armas, herramientas, armadura y cosméticos.",
+    "price": 799,
     "maxQuantity": 1,
     "discordRoles": [
-      "ID_ROL_HECHICERO"
+      "ID_ROL_INMORTAL"
     ],
     "commands": [
-      "lp user {player} parent add hechicero"
+      "lp user {player} parent add inmortal",
+      "tf web sets give {player} beats"
     ],
-    "image": "img/ranks/enchanter.png",
+    "image": "img/crates/beats.webp",
     "tier": 2,
+    "colors": [
+      "#b7aeff",
+      "#7c6cff"
+    ],
+    "set": "beats",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
     "perks": [
-      "Todo lo de Aventurero",
-      "/fly en el lobby",
-      "8 hogares",
-      "/hat y partículas mágicas"
+      "Prefijo «Inmortal» en el chat y sobre tu nombre",
+      "Set Beats completo (21 objetos)",
+      "Rol Inmortal en Discord"
     ],
     "specs": {
-      "Prefijo en el chat": "Hechicero",
-      "Hogares (/home)": "8",
-      "/fly en el lobby": true,
-      "/hat y partículas": true,
-      "Mascota dragón (cosmética)": false,
-      "/nick": false,
-      "Cola prioritaria": false,
-      "Título y color propio": false,
+      "Prefijo en el chat": "Inmortal",
+      "Set incluido": "Beats",
+      "Objetos del set": "21",
       "Rol en Discord": true
     },
     "rank": {
-      "group": "hechicero",
-      "prefix": "Hechicero",
-      "color": "light_purple",
-      "hex": "#c77dff"
+      "group": "inmortal",
+      "prefix": "Inmortal",
+      "color": "blue",
+      "hex": "#7c6cff"
     }
   },
   {
-    "id": "rango-dragon",
+    "id": "rango-magico",
     "category": "rangos",
-    "name": "Rango Dragón",
-    "description": "Todo lo de Hechicero + mascota dragón cosmética, 20 hogares, /nick y cola prioritaria.",
+    "name": "Rango Mágico",
+    "description": "Prefijo «Mágico» en tu nombre y el set Dark World completo: armas, herramientas, armadura y cosméticos.",
+    "price": 1199,
+    "maxQuantity": 1,
+    "discordRoles": [
+      "ID_ROL_MAGICO"
+    ],
+    "commands": [
+      "lp user {player} parent add magico",
+      "tf web sets give {player} darkworld"
+    ],
+    "image": "img/crates/darkworld.webp",
+    "tier": 3,
+    "colors": [
+      "#dc88e7",
+      "#c026d3"
+    ],
+    "set": "darkworld",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "halberd",
+        "name": "Alabarda"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "katana",
+        "name": "Katana"
+      },
+      {
+        "id": "bigsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "perks": [
+      "Prefijo «Mágico» en el chat y sobre tu nombre",
+      "Set Dark World completo (20 objetos)",
+      "Rol Mágico en Discord"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Mágico",
+      "Set incluido": "Dark World",
+      "Objetos del set": "20",
+      "Rol en Discord": true
+    },
+    "rank": {
+      "group": "magico",
+      "prefix": "Mágico",
+      "color": "dark_purple",
+      "hex": "#c026d3"
+    }
+  },
+  {
+    "id": "rango-eterno",
+    "category": "rangos",
+    "name": "Rango Eterno",
+    "description": "Prefijo «Eterno» en tu nombre y el set Malika completo: armas, herramientas, armadura y cosméticos.",
+    "price": 1599,
+    "maxQuantity": 1,
+    "discordRoles": [
+      "ID_ROL_ETERNO"
+    ],
+    "commands": [
+      "lp user {player} parent add eterno",
+      "tf web sets give {player} malika"
+    ],
+    "image": "img/crates/malika.webp",
+    "tier": 4,
+    "colors": [
+      "#f69898",
+      "#ef4444"
+    ],
+    "set": "malika",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "greatsword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "perks": [
+      "Prefijo «Eterno» en el chat y sobre tu nombre",
+      "Set Malika completo (20 objetos)",
+      "Rol Eterno en Discord"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Eterno",
+      "Set incluido": "Malika",
+      "Objetos del set": "20",
+      "Rol en Discord": true
+    },
+    "rank": {
+      "group": "eterno",
+      "prefix": "Eterno",
+      "color": "red",
+      "hex": "#ef4444"
+    }
+  },
+  {
+    "id": "rango-cosmico",
+    "category": "rangos",
+    "name": "Rango Cósmico",
+    "description": "Prefijo «Cósmico» en tu nombre y el set Oni completo: armas, herramientas, armadura y cosméticos.",
     "price": 1999,
     "maxQuantity": 1,
     "discordRoles": [
-      "ID_ROL_DRAGON"
+      "ID_ROL_COSMICO"
     ],
     "commands": [
-      "lp user {player} parent add dragon"
+      "lp user {player} parent add cosmico",
+      "tf web sets give {player} oni"
     ],
-    "image": "img/ranks/dragon.png",
-    "tier": 3,
+    "image": "img/crates/oni.webp",
+    "tier": 5,
+    "colors": [
+      "#85e7f6",
+      "#22d3ee"
+    ],
+    "set": "oni",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "big_sword",
+        "name": "Gran espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "helmet",
+        "name": "Casco cosmético"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "left_sword",
+        "name": "Espada izquierda"
+      },
+      {
+        "id": "right_sword",
+        "name": "Espada derecha"
+      },
+      {
+        "id": "left_spear",
+        "name": "Lanza izquierda"
+      },
+      {
+        "id": "right_spear",
+        "name": "Lanza derecha"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
     "perks": [
-      "Todo lo de Hechicero",
-      "Mascota dragón (cosmética)",
-      "20 hogares",
-      "/nick",
-      "Cola prioritaria"
+      "Prefijo «Cósmico» en el chat y sobre tu nombre",
+      "Set Oni completo (21 objetos)",
+      "Rol Cósmico en Discord"
     ],
     "specs": {
-      "Prefijo en el chat": "Dragón",
-      "Hogares (/home)": "20",
-      "/fly en el lobby": true,
-      "/hat y partículas": true,
-      "Mascota dragón (cosmética)": true,
-      "/nick": true,
-      "Cola prioritaria": true,
-      "Título y color propio": false,
+      "Prefijo en el chat": "Cósmico",
+      "Set incluido": "Oni",
+      "Objetos del set": "21",
       "Rol en Discord": true
     },
     "rank": {
-      "group": "dragon",
-      "prefix": "Dragón",
-      "color": "red",
-      "hex": "#ff5a4f"
+      "group": "cosmico",
+      "prefix": "Cósmico",
+      "color": "aqua",
+      "hex": "#22d3ee"
     }
   },
   {
-    "id": "rango-rey",
+    "id": "rango-celestial",
     "category": "rangos",
-    "name": "Rango Rey",
-    "description": "La corona del reino: todo lo de Dragón, hogares ilimitados y el título «Rey» con su color propio.",
-    "price": 2999,
+    "name": "Rango Celestial",
+    "description": "Prefijo «Celestial» en tu nombre y el set Luz de Estrella completo: armas, herramientas, armadura y cosméticos.",
+    "price": 2499,
     "maxQuantity": 1,
-    "image": "img/ranks/royal.png",
-    "tier": 4,
-    "perks": [
-      "Todo lo de Dragón",
-      "Hogares ilimitados",
-      "Título «Rey» y color propio",
-      "Rol Rey en Discord"
-    ],
     "discordRoles": [
-      "ID_ROL_REY"
+      "ID_ROL_CELESTIAL"
     ],
     "commands": [
-      "lp user {player} parent add rey"
+      "lp user {player} parent add celestial",
+      "tf web sets give {player} starlight"
+    ],
+    "image": "img/crates/starlight.webp",
+    "tier": 6,
+    "colors": [
+      "#feee9a",
+      "#fde047"
+    ],
+    "set": "starlight",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "perks": [
+      "Prefijo «Celestial» en el chat y sobre tu nombre",
+      "Set Luz de Estrella completo (18 objetos)",
+      "Rol Celestial en Discord"
     ],
     "specs": {
-      "Prefijo en el chat": "Rey",
-      "Hogares (/home)": "Ilimitados",
-      "/fly en el lobby": true,
-      "/hat y partículas": true,
-      "Mascota dragón (cosmética)": true,
-      "/nick": true,
-      "Cola prioritaria": true,
-      "Título y color propio": true,
+      "Prefijo en el chat": "Celestial",
+      "Set incluido": "Luz de Estrella",
+      "Objetos del set": "18",
       "Rol en Discord": true
     },
     "rank": {
-      "group": "rey",
-      "prefix": "Rey",
+      "group": "celestial",
+      "prefix": "Celestial",
       "color": "yellow",
-      "hex": "#ffe14d"
+      "hex": "#fde047"
+    }
+  },
+  {
+    "id": "rango-fantastico",
+    "category": "rangos",
+    "name": "Rango Fantástico",
+    "description": "Prefijo «Fantástico» en tu nombre y el set Eagle Ascendant completo: armas, herramientas, armadura y cosméticos.",
+    "price": 2999,
+    "maxQuantity": 1,
+    "discordRoles": [
+      "ID_ROL_FANTASTICO"
+    ],
+    "commands": [
+      "lp user {player} parent add fantastico",
+      "tf web sets give {player} eagle"
+    ],
+    "image": "img/crates/eagle.webp",
+    "tier": 7,
+    "colors": [
+      "#faca79",
+      "#f59e0b"
+    ],
+    "set": "eagle",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "rapier_sword",
+        "name": "Estoque"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "hammer",
+        "name": "Martillo"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "hat",
+        "name": "Sombrero"
+      },
+      {
+        "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "perks": [
+      "Prefijo «Fantástico» en el chat y sobre tu nombre",
+      "Set Eagle Ascendant completo (22 objetos)",
+      "Rol Fantástico en Discord"
+    ],
+    "specs": {
+      "Prefijo en el chat": "Fantástico",
+      "Set incluido": "Eagle Ascendant",
+      "Objetos del set": "22",
+      "Rol en Discord": true
+    },
+    "rank": {
+      "group": "fantastico",
+      "prefix": "Fantástico",
+      "color": "gold",
+      "hex": "#f59e0b"
     }
   },
   {
@@ -1887,28 +2590,24 @@
     ]
   },
   {
-    "id": "crate-beats",
+    "id": "crate-cardael",
     "category": "crates",
-    "name": "Crate Beats",
-    "theme": "beats",
+    "name": "Crate Cardael",
+    "theme": "cardael",
     "colors": [
-      "#b9b4ff",
-      "#7c6cff"
+      "#fca5a5",
+      "#dc2626"
     ],
-    "tagline": "Armas al ritmo del neón",
-    "description": "Neón violeta y azul que late como un altavoz: gran espada, guadaña, tridente, armadura, alas y casco animados.",
-    "image": "img/crates/beats.webp",
-    "price": 399,
+    "tagline": "Oro, rubí y naipes del rey",
+    "description": "El arsenal del rey de las cartas: oro y rubí con naipes. Martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.",
+    "image": "img/crates/cardael.webp",
+    "price": 449,
     "maxQuantity": 1,
-    "set": "beats",
+    "set": "cardael",
     "models": [
       {
         "id": "sword",
         "name": "Espada"
-      },
-      {
-        "id": "greatsword",
-        "name": "Gran espada"
       },
       {
         "id": "axe",
@@ -1929,6 +2628,10 @@
       {
         "id": "hammer",
         "name": "Martillo"
+      },
+      {
+        "id": "mace",
+        "name": "Maza"
       },
       {
         "id": "scythe",
@@ -1988,7 +2691,7 @@
       }
     ],
     "commands": [
-      "tf web sets give {player} beats"
+      "tf web sets give {player} cardael"
     ]
   },
   {
@@ -3058,20 +3761,20 @@
     ]
   },
   {
-    "id": "crate-patrick",
+    "id": "crate-evergreen",
     "category": "crates",
-    "name": "Crate San Patricio",
-    "theme": "patrick",
+    "name": "Crate Evergreen",
+    "theme": "evergreen",
     "colors": [
       "#86efac",
-      "#16a34a"
+      "#22c55e"
     ],
-    "tagline": "La suerte del trébol",
-    "description": "Esmeralda y oro de los duendes: gran espada, guadaña, tridente, ballesta, armadura completa, alas de trébol y sombrero.",
-    "image": "img/crates/patrick.webp",
-    "price": 349,
+    "tagline": "Piedra antigua y hojas eternas",
+    "description": "Piedra rúnica, cobre y hojas que nunca se marchitan: gran espada, martillo, guadaña, tridente, ballesta, armadura, alas y corona.",
+    "image": "img/crates/evergreen.webp",
+    "price": 399,
     "maxQuantity": 1,
-    "set": "patrick",
+    "set": "evergreen",
     "models": [
       {
         "id": "sword",
@@ -3134,16 +3837,12 @@
         "name": "Escudo"
       },
       {
-        "id": "helmet",
-        "name": "Casco cosmético"
-      },
-      {
         "id": "wings",
         "name": "Alas"
       },
       {
-        "id": "armor_helmet",
-        "name": "Casco de armadura"
+        "id": "crown",
+        "name": "Corona"
       },
       {
         "id": "armor_chestplate",
@@ -3159,7 +3858,7 @@
       }
     ],
     "commands": [
-      "tf web sets give {player} patrick"
+      "tf web sets give {player} evergreen"
     ]
   },
   {
@@ -3850,32 +4549,28 @@
     ]
   },
   {
-    "id": "crate-starlight",
+    "id": "crate-akira",
     "category": "crates",
-    "name": "Crate Luz de Estrella",
-    "theme": "starlight",
+    "name": "Crate Akira",
+    "theme": "akira",
     "colors": [
-      "#fef08a",
-      "#eab308"
+      "#fdba74",
+      "#f97316"
     ],
-    "tagline": "El brillo de las constelaciones",
-    "description": "Oro y cristal estelar: hoja, hacha de batalla, daga, hoz, lanza, bastón, armadura completa y alas con destellos.",
-    "image": "img/crates/starlight.webp",
+    "tagline": "Acero negro y fuego dorado",
+    "description": "Acero negro con filos de fuego y oro: gran espada, guadaña, lanza, bastón, escudo, armadura, alas y casco.",
+    "image": "img/crates/akira.webp",
     "price": 499,
     "maxQuantity": 1,
-    "set": "starlight",
+    "set": "akira",
     "models": [
       {
         "id": "sword",
         "name": "Espada"
       },
       {
-        "id": "dagger",
-        "name": "Daga"
-      },
-      {
-        "id": "blade",
-        "name": "Hoja"
+        "id": "greatsword",
+        "name": "Gran espada"
       },
       {
         "id": "axe",
@@ -3894,12 +4589,8 @@
         "name": "Azada"
       },
       {
-        "id": "battle_axe",
-        "name": "Hacha de batalla"
-      },
-      {
-        "id": "sickle",
-        "name": "Hoz"
+        "id": "scythe",
+        "name": "Guadaña"
       },
       {
         "id": "spear",
@@ -3914,16 +4605,20 @@
         "name": "Arco"
       },
       {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
+      },
+      {
         "id": "shield",
         "name": "Escudo"
       },
       {
-        "id": "wings",
-        "name": "Alas"
+        "id": "helmet",
+        "name": "Casco cosmético"
       },
       {
-        "id": "armor_helmet",
-        "name": "Casco de armadura"
+        "id": "wings",
+        "name": "Alas"
       },
       {
         "id": "armor_chestplate",
@@ -3939,7 +4634,7 @@
       }
     ],
     "commands": [
-      "tf web sets give {player} starlight"
+      "tf web sets give {player} akira"
     ]
   },
   {
@@ -4364,6 +5059,99 @@
     ],
     "commands": [
       "tf web sets give {player} easter"
+    ]
+  },
+  {
+    "id": "crate-soulskull",
+    "category": "crates",
+    "name": "Crate Soul Skull",
+    "theme": "soulskull",
+    "colors": [
+      "#99f6e4",
+      "#14b8a6"
+    ],
+    "tagline": "Calaveras y fuego de almas",
+    "description": "Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.",
+    "image": "img/crates/soulskull.webp",
+    "price": 449,
+    "maxQuantity": 1,
+    "set": "soulskull",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
+        "name": "Alas"
+      },
+      {
+        "id": "fishingrod",
+        "name": "Caña de pescar"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "commands": [
+      "tf web sets give {player} soulskull"
     ]
   }
 ]

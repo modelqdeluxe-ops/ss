@@ -396,8 +396,9 @@ export function createWardrobe(canvas) {
     frame();
   }
 
-  // Un objeto suelto, como en el visor
-  async function showItem(model) {
+  // Un objeto suelto, como en el visor. upright: poner de pie lo alargado (armas y herramientas); los cascos, alas y
+  // escudos se quedan como en el inventario.
+  async function showItem(model, { upright: stand = true } = {}) {
     const token = ++state.token;
     const textures = await loadTextures(model);
     const buckets = model.elements ? buildElements(model, textures) : buildGenerated(model, textures);
@@ -413,7 +414,7 @@ export function createWardrobe(canvas) {
     guiGroup.rotation.set(...gui.map((d) => d * DEG), 'XYZ');
     const upright = new THREE.Group();
     upright.add(guiGroup);
-    upright.rotation.z = uprightAngle(guiGroup);
+    upright.rotation.z = stand ? uprightAngle(guiGroup) : 0;
     upright.scale.setScalar(1 / 16);
     itemRoot.add(upright);
     state.anim = Object.values(textures);

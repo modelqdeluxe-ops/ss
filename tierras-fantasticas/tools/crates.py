@@ -1,4 +1,4 @@
-"""Escribe los crates en config/products.json a partir de esta tabla y de los modelos exportados.
+"""Escribe los rangos y los crates en config/products.json a partir de esta tabla y de los modelos exportados.
 
 Para añadir un pack: súmalo a SETS en build_items.py, ejecuta build_items.py y compose_cover.py,
 añade su línea aquí y ejecuta: python3 tools/crates.py
@@ -47,8 +47,8 @@ CRATES = [
      'El arsenal del Skeleton Overlord: gran espada, guantelete, maza, alabarda, armadura y alas de hueso.', 'herobrine', 449, ('#ecebe4', '#a8a29e')),
     ('lunar', 'Crate Dragón Lunar', 'Mítico', 'La luz plateada de la luna',
      'El dragón lunar de 2024: gran espada, guadaña, tridente, armadura completa, alas y cola animadas.', 'nightsky', 499, ('#c7d2fe', '#818cf8')),
-    ('beats', 'Crate Beats', 'Épico', 'Armas al ritmo del neón',
-     'Neón violeta y azul que late como un altavoz: gran espada, guadaña, tridente, armadura, alas y casco animados.', 'purple', 399, ('#b9b4ff', '#7c6cff')),
+    ('cardael', 'Crate Cardael', 'Legendario', 'Oro, rubí y naipes del rey',
+     'El arsenal del rey de las cartas: oro y rubí con naipes. Martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/cardael/key', 449, ('#fca5a5', '#dc2626')),
     ('azure', 'Crate Azure', 'Legendario', 'Acero azul de las profundidades',
      'Hojas de cristal azul con núcleos dorados: gran espada, hacha, guadaña, tridente, armadura, alas y casco.', 'blue', 449, ('#9fd8ff', '#38bdf8')),
     ('littledragon', 'Crate Pequeño Dragón', 'Mítico', 'Fuego y escamas de dragón',
@@ -70,8 +70,8 @@ CRATES = [
      'Oro, calaveras y plumas del capitán: espada, estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero pirata.', 'items/pirate/key', 449, ('#ffd36b', '#d9822b')),
     ('cupido', 'Crate Cupido', 'Edición limitada', 'Flechazos en rosa y negro',
      'El lado oscuro del amor: rosa y negro con corazones y lazos. Estoque, guadaña, tridente, ballesta, armadura completa, alas y sombrero.', 'items/cupido/key', 349, ('#ffb3cf', '#e0457b')),
-    ('patrick', 'Crate San Patricio', 'Edición limitada', 'La suerte del trébol',
-     'Esmeralda y oro de los duendes: gran espada, guadaña, tridente, ballesta, armadura completa, alas de trébol y sombrero.', 'items/patrick/key', 349, ('#86efac', '#16a34a')),
+    ('evergreen', 'Crate Evergreen', 'Épico', 'Piedra antigua y hojas eternas',
+     'Piedra rúnica, cobre y hojas que nunca se marchitan: gran espada, martillo, guadaña, tridente, ballesta, armadura, alas y corona.', 'items/evergreen/key', 399, ('#86efac', '#22c55e')),
     ('thunderbolt', 'Crate Thunderbolt', 'Mítico', 'Rayos de plata y zafiro',
      'Plata y zafiro cargados de electricidad: espada, martillo, guadaña, lanza, bastón, armadura, alas y casco.', 'items/thunderbolt/key', 499, ('#bae6fd', '#38bdf8')),
     ('cyber', 'Crate Cyber', 'Mítico', 'Neón rojo del futuro',
@@ -86,8 +86,8 @@ CRATES = [
      'Metal oscuro envuelto en llamas azules: hoja, hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/blueflame/key', 449, ('#93c5fd', '#2563eb')),
     ('wild', 'Crate Salvaje', 'Épico', 'La fuerza de la selva',
      'Madera, hojas y jade de la naturaleza salvaje: gran espada, guadaña, tridente, ballesta, mochila, armadura completa, alas y casco.', 'items/wild/key', 399, ('#99f6e4', '#0d9488')),
-    ('starlight', 'Crate Luz de Estrella', 'Mítico', 'El brillo de las constelaciones',
-     'Oro y cristal estelar: hoja, hacha de batalla, daga, hoz, lanza, bastón, armadura completa y alas con destellos.', 'items/starlight/key', 499, ('#fef08a', '#eab308')),
+    ('akira', 'Crate Akira', 'Mítico', 'Acero negro y fuego dorado',
+     'Acero negro con filos de fuego y oro: gran espada, guadaña, lanza, bastón, escudo, armadura, alas y casco.', 'items/akira/key', 499, ('#fdba74', '#f97316')),
     ('frostbite', 'Crate Congelación', 'Legendario', 'El frío que corta',
      'Hielo eterno y acero escarchado: martillo, maza, guadaña, tridente, ballesta, armadura completa, alas y casco.', 'items/frostbite/key', 449, ('#cffafe', '#06b6d4')),
     ('darkloyal', 'Crate Lealtad Oscura', 'Legendario', 'Juramento de sombra',
@@ -96,7 +96,59 @@ CRATES = [
      'El arsenal del genio Ifrit: obsidiana verde con llamas carmesí. Espada, martillo, hoz, lanza, bastón, ballesta, armadura completa, alas, carcaj y casco.', '', 449, ('#fda4af', '#be123c')),
     ('easter', 'Crate Conejo de Pascua', 'Edición limitada', 'Huevos, zanahorias y conejos',
      'El arsenal del Conejo de Pascua: gran espada, garrote, maza, guadaña, ballesta, armadura, alas y sombrero de conejo.', 'items/easter/key', 349, ('#f5d0fe', '#d946ef')),
+    ('soulskull', 'Crate Soul Skull', 'Legendario', 'Calaveras y fuego de almas',
+     'Calaveras y fuego de almas turquesa: hacha de batalla, hoz, lanza, bastón, ballesta, armadura completa y alas.', 'items/soulskull/key', 449, ('#99f6e4', '#14b8a6')),
 ]
+
+# Nivel de los atributos de los sets (lo usa el TF Client; la web no los enseña). «netherite+1» es la netherita con 1
+# punto más de daño, de armadura en cada pieza y de dureza.
+CRATE_TIER = 'netherite+1'
+
+# Rangos, de menor a mayor. Cada uno da su grupo de LuckPerms y su set completo (con el nivel de atributos del rango).
+# clave, nombre, set del rango, nombre del set, precio (céntimos), color del prefijo (Minecraft, hex), nivel
+RANKS = [
+    ('mortal', 'Mortal', 'patrick', 'San Patricio', 499, ('green', '#4ade80'), 'iron'),
+    ('inmortal', 'Inmortal', 'beats', 'Beats', 799, ('blue', '#7c6cff'), 'diamond'),
+    ('magico', 'Mágico', 'darkworld', 'Dark World', 1199, ('dark_purple', '#c026d3'), 'netherite'),
+    ('eterno', 'Eterno', 'malika', 'Malika', 1599, ('red', '#ef4444'), 'netherite+1'),
+    ('cosmico', 'Cósmico', 'oni', 'Oni', 1999, ('aqua', '#22d3ee'), 'netherite+1.5'),
+    ('celestial', 'Celestial', 'starlight', 'Luz de Estrella', 2499, ('yellow', '#fde047'), 'netherite+2'),
+    ('fantastico', 'Fantástico', 'eagle', 'Eagle Ascendant', 2999, ('gold', '#f59e0b'), 'netherite+3'),
+]
+
+
+def mod_sets():
+    """Sets que registra el TF Client: los de las crates, los de los rangos y el de la ruleta, con su nivel."""
+    out = [{'id': r[0], 'name': r[1].replace('Crate ', ''), 'color': r[7][1], 'tier': CRATE_TIER} for r in CRATES]
+    out += [{'id': set_id, 'name': set_name, 'color': hexc, 'tier': tier} for _k, _n, set_id, set_name, _p, (_c, hexc), tier in RANKS]
+    out.append({'id': ROULETTE_ROW[0], 'name': ROULETTE_ROW[1], 'color': ROULETTE_ROW[7][1], 'tier': CRATE_TIER})
+    return out
+
+
+def lighten(hexc, k=0.45):
+    n = int(hexc[1:], 16)
+    rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+    return '#' + ''.join(f'{round(c + (255 - c) * k):02x}' for c in rgb)
+
+
+def rank_products():
+    out = []
+    for tier, (key, name, set_id, set_name, price, (mc, hexc), _attrs) in enumerate(RANKS, 1):
+        models = listing(set_id)
+        out.append({
+            'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}',
+            'description': f'Prefijo «{name}» en tu nombre y el set {set_name} completo: armas, herramientas, armadura y cosméticos.',
+            'price': price, 'maxQuantity': 1, 'discordRoles': [f'ID_ROL_{key.upper()}'],
+            'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}'],
+            'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],
+            'set': set_id, 'models': models,
+            'perks': [f'Prefijo «{name}» en el chat y sobre tu nombre', f'Set {set_name} completo ({len(models)} objetos)',
+                      f'Rol {name} en Discord'],
+            'specs': {'Prefijo en el chat': name, 'Set incluido': set_name, 'Objetos del set': str(len(models)),
+                      'Rol en Discord': True},
+            'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc},
+        })
+    return out
 
 
 # Lo que no es una recompensa: el cofre y la llave del propio crate y las mascotas.
@@ -193,12 +245,12 @@ def main():
             'commands': [],
         })
     gifts = [x for x in data if x['category'] == 'gratis']
-    ranks = [{k: v for k, v in x.items() if k != 'featured'} for x in data if x['category'] == 'rangos']
+    ranks = rank_products()
     rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta') + RETIRED]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
         json.dump(gifts + ranks + crates + roulette + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
-    print(len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
+    print(len(ranks), 'rangos,', len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
           f'ruleta con {len(weapons)} armas' if ROULETTE_ENABLED else 'ruleta retirada')
 
 

@@ -139,7 +139,7 @@ const ASSETS = { fetch: async (req) => new Response(`estático ${new URL(req.url
 before(async () => {
   const [stripePort, discordPort] = await Promise.all([startFakeStripe(), startFakeDiscord()]);
   // Rol de Discord real (formato snowflake) para el rango de pruebas.
-  products.find((p) => p.id === 'rango-hechicero').discordRoles = [ROLE_ID];
+  products.find((p) => p.id === 'rango-inmortal').discordRoles = [ROLE_ID];
   env = {
     DB: createD1(),
     ASSETS,
@@ -261,7 +261,7 @@ test('comprar rechaza productos, cantidades y jugadores que el servidor no conoc
   assert.strictEqual((await post('/api/checkout', { productId: 'no-existe', username: 'Steve' })).status, 400);
   assert.strictEqual((await post('/api/checkout', { productId: 'monedas-10000', username: 'a; op yo' })).status, 400);
   assert.strictEqual((await post('/api/checkout', { productId: 'monedas-10000', username: 'Steve', quantity: 50 })).status, 400);
-  assert.strictEqual((await post('/api/checkout', { productId: 'rango-dragon', username: 'Steve', quantity: 2 })).status, 400);
+  assert.strictEqual((await post('/api/checkout', { productId: 'rango-magico', username: 'Steve', quantity: 2 })).status, 400);
   const unknown = await post('/api/checkout', { productId: 'monedas-10000', username: 'Fantasma' });
   assert.strictEqual(unknown.status, 404);
   assert.strictEqual((await unknown.json()).code, 'unknown_player');
@@ -351,7 +351,7 @@ test('si el webhook tarda, la página de confirmación consulta el pago a Stripe
 
 test('no se entrega si el importe cobrado no coincide', async () => {
   await seen('Tramposo');
-  const id = await checkout({ productId: 'rango-dragon', username: 'Tramposo' });
+  const id = await checkout({ productId: 'rango-magico', username: 'Tramposo' });
   assert.strictEqual((await pay(id, { amount_total: 1 })).status, 'error');
   assert.deepStrictEqual(await serverDelivers('Tramposo'), []);
 });
@@ -578,51 +578,52 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
   await seen('Rangos_MC');
   const rank = (id) => products.find((p) => p.id === id);
 
-  const a = await checkout({ productId: 'rango-aventurero', username: 'Rangos_MC' });
-  assert.strictEqual(sessionOf(a).amount_total, rank('rango-aventurero').price);
+  const a = await checkout({ productId: 'rango-mortal', username: 'Rangos_MC' });
+  assert.strictEqual(sessionOf(a).amount_total, rank('rango-mortal').price);
   await pay(a);
   const [first] = await serverDelivers('Rangos_MC');
-  assert.deepStrictEqual(first.rank, { id: 'rango-aventurero', name: 'Rango Aventurero', tier: 1, group: 'aventurero', prefix: 'Aventurero', color: 'gold', hex: '#f4c95d' });
-  assert.strictEqual(received[0], 'lp user Rangos_MC parent add aventurero');
+  assert.deepStrictEqual(first.rank, { id: 'rango-mortal', name: 'Rango Mortal', tier: 1, group: 'mortal', prefix: 'Mortal', color: 'green', hex: '#4ade80' });
+  assert.deepStrictEqual(received, ['lp user Rangos_MC parent add mortal', 'tf web sets give Rangos_MC patrick']);
 
   // El mismo rango o uno inferior: bloqueado.
-  const again = await post('/api/checkout', { productId: 'rango-aventurero', username: 'Rangos_MC' });
+  const again = await post('/api/checkout', { productId: 'rango-mortal', username: 'Rangos_MC' });
   assert.strictEqual(again.status, 409);
   assert.strictEqual((await again.json()).code, 'rank_owned');
 
   // La web muestra el precio de la mejora antes de pagar.
-  const look = await (await get('/api/player/Rangos_MC?product=rango-dragon')).json();
-  assert.strictEqual(look.rank.id, 'rango-aventurero');
-  const diff = rank('rango-dragon').price - rank('rango-aventurero').price;
-  assert.deepStrictEqual(look.quote, { unit: diff, upgradeFrom: 'Rango Aventurero' });
+  const look = await (await get('/api/player/Rangos_MC?product=rango-magico')).json();
+  assert.strictEqual(look.rank.id, 'rango-mortal');
+  const diff = rank('rango-magico').price - rank('rango-mortal').price;
+  assert.deepStrictEqual(look.quote, { unit: diff, upgradeFrom: 'Rango Mortal' });
 
   received.length = 0;
-  const b = await checkout({ productId: 'rango-dragon', username: 'Rangos_MC' });
+  const b = await checkout({ productId: 'rango-magico', username: 'Rangos_MC' });
   assert.strictEqual(sessionOf(b).amount_total, diff);
   const order = await pay(b);
-  assert.strictEqual(order.upgradeFrom, 'Rango Aventurero');
+  assert.strictEqual(order.upgradeFrom, 'Rango Mortal');
   const [second] = await serverDelivers('Rangos_MC');
-  assert.strictEqual(second.upgradeFrom, 'Rango Aventurero');
+  assert.strictEqual(second.upgradeFrom, 'Rango Mortal');
   assert.deepStrictEqual(received, [
-    'lp user Rangos_MC parent add dragon',
-    'lp user Rangos_MC parent remove aventurero',
-    'lp user Rangos_MC parent remove hechicero',
+    'lp user Rangos_MC parent add magico',
+    'tf web sets give Rangos_MC darkworld',
+    'lp user Rangos_MC parent remove mortal',
+    'lp user Rangos_MC parent remove inmortal',
   ]);
-  assert.strictEqual((await post('/api/checkout', { productId: 'rango-hechicero', username: 'Rangos_MC' })).status, 409);
+  assert.strictEqual((await post('/api/checkout', { productId: 'rango-inmortal', username: 'Rangos_MC' })).status, 409);
 
   // El servidor recibe el rango de los conectados para su nametag.
   const { ranks, rankList } = await (await poll(['Rangos_MC', 'Steve'])).json();
-  assert.deepStrictEqual(ranks.map((r) => [r.uuid, r.prefix]), [[uuidOf('Rangos_MC'), 'Dragón']]);
-  assert.strictEqual(rankList.length, 4);
+  assert.deepStrictEqual(ranks.map((r) => [r.uuid, r.prefix]), [[uuidOf('Rangos_MC'), 'Mágico']]);
+  assert.strictEqual(rankList.length, 7);
 });
 
 test('el staff puede cambiar o quitar un rango desde el juego', async () => {
   await seen('Staff_Rank');
   const uuid = uuidOf('Staff_Rank');
-  await poll([], [], { ranks: [{ uuid, rank: 'rango-rey' }] });
-  assert.strictEqual((await (await get('/api/player/Staff_Rank')).json()).rank.id, 'rango-rey');
-  await poll([], [], { ranks: [{ uuid, rank: 'rango-aventurero' }] });
-  assert.strictEqual((await (await get('/api/player/Staff_Rank')).json()).rank.id, 'rango-aventurero');
+  await poll([], [], { ranks: [{ uuid, rank: 'rango-fantastico' }] });
+  assert.strictEqual((await (await get('/api/player/Staff_Rank')).json()).rank.id, 'rango-fantastico');
+  await poll([], [], { ranks: [{ uuid, rank: 'rango-mortal' }] });
+  assert.strictEqual((await (await get('/api/player/Staff_Rank')).json()).rank.id, 'rango-mortal');
   await poll([], [], { ranks: [{ uuid, rank: null }, { uuid, rank: 'no-existe' }] });
   assert.strictEqual((await (await get('/api/player/Staff_Rank')).json()).rank, null);
 });
@@ -810,18 +811,18 @@ test('comprar con la sesión iniciada da el rol, anuncia la compra y sale en "mi
   const res = await post('/api/auth/login', { name: 'Alex_MC', password: 'contraseña-segura' });
   const cookie = cookieValue(res, 'tf_session');
   const list = await (await get('/api/products')).json();
-  assert.strictEqual(list.find((p) => p.id === 'rango-hechicero').discordRole, true);
+  assert.strictEqual(list.find((p) => p.id === 'rango-inmortal').discordRole, true);
 
-  const id = await checkout({ productId: 'rango-hechicero', username: 'Alex_MC' }, cookie);
+  const id = await checkout({ productId: 'rango-inmortal', username: 'Alex_MC' }, cookie);
   assert.strictEqual((await pay(id)).status, 'queued');
 
   await serverDelivers('Alex_MC');
-  assert.strictEqual(received[0], 'lp user Alex_MC parent add hechicero');
+  assert.strictEqual(received[0], 'lp user Alex_MC parent add inmortal');
   const roleCall = discordCalls.find((c) => c.url.endsWith(`/roles/${ROLE_ID}`));
   assert.ok(roleCall, 'debe dar el rol');
   assert.strictEqual(roleCall.url, `/guilds/333333333333333333/members/111111111111111111/roles/${ROLE_ID}`);
   assert.strictEqual(announcements.length, 1);
-  assert.match(announcements[0].embeds[0].description, /<@111111111111111111>.*Rango Hechicero/);
+  assert.match(announcements[0].embeds[0].description, /<@111111111111111111>.*Rango Inmortal/);
 
   const order = await (await get(`/api/order/${id}`)).json();
   assert.deepStrictEqual(order.discord, { username: 'alex', status: 'granted' });
@@ -829,19 +830,19 @@ test('comprar con la sesión iniciada da el rol, anuncia la compra y sale en "mi
   const { orders } = await (await get('/api/account/orders', { Cookie: cookie })).json();
   assert.ok(orders.some((o) => o.id === id && o.status === 'delivered'));
   const me = await (await get('/api/me', { Cookie: cookie })).json();
-  assert.strictEqual(me.user.rank.id, 'rango-hechicero');
+  assert.strictEqual(me.user.rank.id, 'rango-inmortal');
 });
 
 test('sin iniciar sesión, el rol va al Discord conectado a la cuenta del jugador', async () => {
   discordCalls.length = 0;
   await seen('Alex_MC');
-  products.find((p) => p.id === 'rango-rey').discordRoles = [ROLE_ID];
+  products.find((p) => p.id === 'rango-fantastico').discordRoles = [ROLE_ID];
   try {
-    const id = await checkout({ productId: 'rango-rey', username: 'Alex_MC' });
+    const id = await checkout({ productId: 'rango-fantastico', username: 'Alex_MC' });
     await pay(id);
     assert.ok(discordCalls.some((c) => c.url === `/guilds/333333333333333333/members/111111111111111111/roles/${ROLE_ID}`));
   } finally {
-    products.find((p) => p.id === 'rango-rey').discordRoles = ['ID_ROL_REY'];
+    products.find((p) => p.id === 'rango-fantastico').discordRoles = ['ID_ROL_FANTASTICO'];
   }
 });
 
@@ -851,10 +852,10 @@ test('un fallo en Discord no impide la entrega en el juego', async () => {
   try {
     const cookie = cookieValue(await post('/api/auth/login', { name: 'Alex_MC', password: 'contraseña-segura' }), 'tf_session');
     await seen('Fallo_MC');
-    const id = await checkout({ productId: 'rango-hechicero', username: 'Fallo_MC' }, cookie);
+    const id = await checkout({ productId: 'rango-inmortal', username: 'Fallo_MC' }, cookie);
     assert.strictEqual((await pay(id)).status, 'queued');
     await serverDelivers('Fallo_MC');
-    assert.strictEqual(received[0], 'lp user Fallo_MC parent add hechicero');
+    assert.strictEqual(received[0], 'lp user Fallo_MC parent add inmortal');
     const order = await (await get(`/api/order/${id}`)).json();
     assert.strictEqual(order.status, 'delivered');
     assert.strictEqual(order.discord.status, 'failed');
@@ -880,7 +881,7 @@ test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se an
 
   const cookie = await register('Regalo_MC');
   // Un producto de pago no se reclama gratis.
-  assert.strictEqual((await post('/api/claim', { productId: 'rango-rey' }, cookie)).status, 400);
+  assert.strictEqual((await post('/api/claim', { productId: 'rango-fantastico' }, cookie)).status, 400);
 
   const res = await post('/api/claim', { productId: 'regalo-diamantes' }, cookie);
   assert.strictEqual(res.status, 200);
