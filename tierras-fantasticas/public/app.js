@@ -191,6 +191,80 @@
     setTimeout(() => el.remove(), 2500);
   }
 
+  // --- Aceptar los Términos (casilla obligatoria: el servidor guarda versión, fecha, IP y navegador como prueba) ---
+  const termsLabel = (id) => `
+    <label class="terms-check" for="${id}">
+      <input type="checkbox" id="${id}">
+      <span class="terms-box" aria-hidden="true"></span>
+      <span>He leído y acepto los <a href="/terminos" target="_blank" rel="noopener">Términos y condiciones</a> y el
+        <a href="/privacidad" target="_blank" rel="noopener">Aviso de privacidad</a>.</span>
+    </label>`;
+
+  // Si la cuenta tiene una versión vieja de los Términos, los pide de nuevo. Devuelve true si los aceptó.
+  function askTerms() {
+    return new Promise((resolve) => {
+      $('#terms-dialog')?.remove();
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        `<dialog class="dialog terms-dialog" id="terms-dialog" aria-labelledby="terms-title">
+          <form method="dialog" class="dialog-body">
+            <h3 id="terms-title">Actualizamos los Términos</h3>
+            <p class="muted">Para seguir, revisa y acepta la versión vigente de los Términos y condiciones y del Aviso de
+              privacidad. Guardamos la fecha y la versión que aceptas; puedes verlas en «Mi cuenta».</p>
+            ${termsLabel('terms-again')}
+            <p class="error" id="terms-error" role="alert"></p>
+            <div class="dialog-actions">
+              <button class="btn btn-ghost" value="cancel" type="submit">Ahora no</button>
+              <button class="btn btn-primary" id="terms-accept" type="button" disabled>Aceptar y seguir</button>
+            </div>
+          </form>
+        </dialog>`,
+      );
+      const dlg = $('#terms-dialog');
+      const box = $('#terms-again');
+      const btn = $('#terms-accept');
+      box.addEventListener('change', () => (btn.disabled = !box.checked));
+      let done = false;
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.classList.add('is-loading');
+        const res = await fetch('/api/account/terms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ acceptTerms: true }),
+        }).catch(() => null);
+        const data = res ? await res.json().catch(() => ({})) : {};
+        btn.classList.remove('is-loading');
+        if (!res?.ok) {
+          btn.disabled = false;
+          $('#terms-error').textContent = data.error || 'No se pudo guardar. Inténtalo de nuevo.';
+          return;
+        }
+        if (data.user) me.user = data.user;
+        done = true;
+        dlg.close();
+      });
+      dlg.addEventListener('close', () => {
+        dlg.remove();
+        resolve(done);
+      });
+      dlg.showModal();
+    });
+  }
+
+  // Envía una petición de la cuenta; si el servidor pide aceptar los Términos actualizados, los pide y la repite.
+  async function postWithTerms(url, body) {
+    const send = () =>
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    let res = await send();
+    let data = await res.clone().json().catch(() => ({}));
+    if (res.status === 403 && data.code === 'terms' && (await askTerms())) {
+      res = await send();
+      data = await res.json().catch(() => ({}));
+    }
+    return { res, data };
+  }
+
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-ip]');
     if (!btn) return;
@@ -330,12 +404,7 @@
     btn.disabled = true;
     btn.classList.add('is-loading');
     try {
-      const res = await fetch('/api/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: btn.dataset.claim }),
-      });
-      const data = await res.json().catch(() => ({}));
+      const { res, data } = await postWithTerms('/api/claim', { productId: btn.dataset.claim });
       if (res.ok) {
         location.href = `/success?order=${encodeURIComponent(data.id)}`;
         return;
@@ -547,12 +616,10 @@
     btn.disabled = true;
     btn.classList.add('is-loading');
     try {
-      const res = await fetch(spin ? '/api/roulette/coins' : '/api/coinshop/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(spin ? { spins: Number(btn.dataset.coinSpin) } : { id: btn.dataset.coinBuy }),
-      });
-      const data = await res.json().catch(() => ({}));
+      const { res, data } = await postWithTerms(
+        spin ? '/api/roulette/coins' : '/api/coinshop/buy',
+        spin ? { spins: Number(btn.dataset.coinSpin) } : { id: btn.dataset.coinBuy },
+      );
       if (res.ok) {
         location.href = `/success?order=${encodeURIComponent(data.id)}`;
         return;
@@ -1210,10 +1277,10 @@
       <div class="dialog-total"><span>Total <small id="dialog-upgrade"></small></span><strong id="dialog-total"></strong></div>
       <p class="error" id="checkout-error" role="alert"></p>
 
+      ${termsLabel('pay-terms')}
       <button type="submit" class="btn btn-primary btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
       <p class="pay-note">${ICON_LOCK}<span>Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
-      <p class="pay-legal">Precio final en USD. Al pagar aceptas los <a href="/terminos" target="_blank">Términos y condiciones</a> y el
-        <a href="/privacidad" target="_blank">Aviso de privacidad</a>. Tienes 5 días hábiles para cancelar la compra.
+      <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
   </dialog>`;
@@ -1224,6 +1291,7 @@
     document.body.insertAdjacentHTML('beforeend', DIALOG_HTML);
     dialog = $('#checkout-dialog');
     qtyInput = $('#quantity');
+    $('#pay-terms').addEventListener('change', () => setPayable());
   }
 
   // Jugador comprobado contra el servidor: { name, uuid, quote, ... } o null.
@@ -1242,7 +1310,7 @@
 
   function setPayable() {
     const blocked = Boolean(player?.quote?.blocked);
-    $('#pay-btn').disabled = !player || blocked || paying;
+    $('#pay-btn').disabled = !player || blocked || paying || !$('#pay-terms').checked;
   }
 
   document.addEventListener('click', (e) => {
@@ -1272,6 +1340,7 @@
     $('#quantity-field').hidden = maxQty === 1;
     showError('');
     paying = false;
+    $('#pay-terms').checked = false;
     $('#pay-btn').textContent = 'Pagar con tarjeta';
     $('#pay-btn').classList.remove('is-loading');
     // Con la cuenta vinculada, el jugador ya se sabe.
@@ -1440,6 +1509,7 @@
   // El servidor crea el pago con el precio del catálogo y nos manda a la página segura de Stripe.
   async function pay() {
     if (paying || !player || player.quote?.blocked) return;
+    if (!$('#pay-terms').checked) return showError('Marca la casilla para aceptar los Términos y el Aviso de privacidad.');
     const quantity = Number.parseInt(qtyInput.value, 10) || 1;
     const max = selected.maxQuantity || 10;
     if (quantity < 1 || quantity > max) return showError(`La cantidad debe estar entre 1 y ${max}.`);
@@ -1452,7 +1522,7 @@
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: selected.id, username: player.name, uuid: player.uuid, quantity }),
+        body: JSON.stringify({ productId: selected.id, username: player.name, uuid: player.uuid, quantity, acceptTerms: true }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw new Error(data.error || 'No se pudo iniciar el pago.');
@@ -1533,6 +1603,7 @@
             <input id="auth-pass2" type="password" autocomplete="new-password" minlength="8" maxlength="128">
           </div>
           <p class="muted small" id="auth-note"></p>
+          <div id="auth-terms">${termsLabel('auth-terms-check')}</div>
           <p class="error" id="auth-error" role="alert"></p>
           <button class="btn btn-primary btn-lg btn-block" type="submit" id="auth-submit"></button>
         </form>
@@ -1556,6 +1627,7 @@
     $$('.auth-tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
     const register = tab === 'register';
     $('#auth-pass2-field').hidden = !register;
+    $('#auth-terms').hidden = !register;
     $('#auth-pass').autocomplete = register ? 'new-password' : 'current-password';
     $('#auth-submit').textContent = register ? 'Crear mi cuenta' : 'Entrar';
     $('#auth-note').textContent = register
@@ -1604,6 +1676,7 @@
     if (authTab === 'register') {
       if (password.length < 8) return error('La contraseña debe tener al menos 8 caracteres.');
       if (password !== $('#auth-pass2').value) return error('Las contraseñas no coinciden.');
+      if (!$('#auth-terms-check').checked) return error('Marca la casilla para aceptar los Términos y el Aviso de privacidad.');
     } else if (!password) {
       return error('Escribe tu contraseña.');
     }
@@ -1615,7 +1688,7 @@
       const res = await fetch(authTab === 'register' ? '/api/auth/register' : '/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ name, password, acceptTerms: authTab === 'register' && $('#auth-terms-check').checked }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo entrar.');
@@ -1682,6 +1755,7 @@
             <button class="btn btn-ghost btn-sm" type="button" id="logout">Cerrar sesión</button>
             <button class="link-btn" type="button" id="show-password">Cambiar contraseña</button>
           </div>
+          ${termsStatus(u)}
           <form id="password-form" class="password-form" hidden novalidate>
             <div class="field"><label for="pw-current">Contraseña actual</label><input id="pw-current" type="password" autocomplete="current-password"></div>
             <div class="field"><label for="pw-new">Nueva contraseña</label><input id="pw-new" type="password" autocomplete="new-password" minlength="8"></div>
@@ -1699,6 +1773,12 @@
         <div id="orders"><p class="muted">Cargando…</p></div>
       </section>`;
 
+    $('#terms-review')?.addEventListener('click', async () => {
+      if (await askTerms()) {
+        renderAccount();
+        toast('Términos aceptados');
+      }
+    });
     $('#logout').addEventListener('click', async () => {
       await fetch('/auth/logout', { method: 'POST' }).catch(() => {});
       location.href = '/';
@@ -1738,6 +1818,17 @@
       }
     });
     loadOrders();
+  }
+
+  // Qué versión de los Términos aceptó la cuenta y cuándo (o el aviso para aceptar la vigente).
+  function termsStatus(u) {
+    if (!u.termsOk) {
+      return `<div class="terms-status warn"><span>Actualizamos los Términos y condiciones. Acéptalos para reclamar
+        recompensas y comprar con tu cuenta.</span><button class="btn btn-primary btn-sm" type="button" id="terms-review">Revisar y aceptar</button></div>`;
+    }
+    const at = u.termsAt ? new Date(u.termsAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    return `<p class="terms-status ok">✓ Aceptaste los <a href="/terminos">Términos</a> y el <a href="/privacidad">Aviso de
+      privacidad</a>${at ? ` el ${escapeHtml(at)}` : ''}.</p>`;
   }
 
   // Lo que se pagó: dinero, monedas del servidor o nada (recompensas gratis)

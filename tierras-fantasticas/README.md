@@ -26,7 +26,13 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   - **Páginas legales**: `/legal` (aviso legal, no afiliación con Mojang/Microsoft y cómo funciona la tienda),
     `/terminos` (términos de uso y de compra: precios, entrega, 5 días hábiles para cancelar, reembolsos) y
     `/privacidad` (aviso de privacidad según la ley mexicana de 2025, con cookies). Los textos están en
-    `tools/legal.py`. El aviso de no afiliación sale en el pie de todas las páginas, en la tienda y en la ventana de
+    `tools/legal.py`. **Aceptación con casilla**: al crear la cuenta y al pagar hay que marcar «He leído y acepto los
+    Términos y condiciones y el Aviso de privacidad» (sin ella el servidor responde 400 `terms`). Cada aceptación se
+    guarda en la tabla `terms_acceptances` (cuenta/jugador, versión, fecha, pedido, IP y navegador) y la cuenta y el
+    pedido guardan la versión aceptada. La versión es `config/legal.json` (la usan `pages.py` y el Worker): al cambiar
+    los textos se sube allí y a las cuentas con una versión vieja se les vuelve a pedir antes de reclamar recompensas o
+    comprar con monedas (403 `terms` → ventana «Actualizamos los Términos»; `POST /api/account/terms`). «Mi cuenta»
+    muestra cuándo se aceptaron. El aviso de no afiliación sale en el pie de todas las páginas, en la tienda y en la ventana de
     compra. Contacto público: tierrasfantasticasmc@gmail.com.
   - `/crates` lleva a la pestaña de crates (enlaces antiguos).
   - **Cosméticos** (`/tienda#cosmeticos`): piezas sueltas de aspecto (sombreros, mochilas, alas, globos y objetos de
@@ -40,6 +46,12 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     del set se pueden poner y quitar en el personaje. Debajo del escaparate sale lo que trae el rango en el servidor con sus
     comandos (`RANK_SERVER_PERKS`: hogares, /hat, /fly en el lobby, /pp, /nick, colores, /ptime, /pweather…; cada rango
     suma lo del anterior). Esos permisos se dan en LuckPerms: la lista está en `HANDOFF.md` («Rangos: comandos»).
+  - **Portada** (`/`): solo el emblema, el título, la IP, «Visitar la tienda» (destello esmeralda → azul, `btn-shop`) y
+    debajo de «Minecraft Java 1.20.1 · Forge» los botones de Discord, WhatsApp y «Cómo entrar al server»
+    (`/ayuda#como-entrar`).
+  - **Enlaces fijos de la comunidad**: `/discord` y `/whatsapp` redirigen a la invitación vigente (`DISCORD_URL` y
+    `WHATSAPP_URL` en `wrangler.jsonc`). Si el enlace del grupo cambia, se cambia solo ahí y todos los botones siguen
+    funcionando.
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.

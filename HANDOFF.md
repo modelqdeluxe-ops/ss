@@ -12,7 +12,49 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (7 de octubre de 2026, mediodía): portada mínima, fondo vivo, destello en los botones y más vida en las crates (solo web)
+### Última entrega (7 de octubre de 2026, tarde): portada con Discord/WhatsApp, nebulosa que se nota, botón esmeralda y aceptación de los Términos (solo web)
+**Lo que pidió el dueño (textual):** *«quita eso de tu aventura comienza hoy, dejemos solo eso de tierras fantásticas
+con eso de ip, ver tienda, etc, mira la descripción no es un reino de castillos, es un servidor survival, aventura,
+fantasía y rol. Y no veo tan animada la nebulosa… y ahí abajo en forge 1.20.1 dice gratis, quita esa palabra, y debajo
+de esas letras de forge pon el entra a nuestro discord el botón, grupo de whatsapp (https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm)
+haz que ese link sea permanente… y pon el botón de cómo entrar al server, el botón de visitar la tienda ponlo en una
+paleta de esmeralda azulada, el mismo efecto que tiene… La tarjeta de la tienda de los botones el efecto del botón va
+de abajo hacia arriba, debe ir de izquierda a derecha, como los demás… Otra cosa, con lo legal, ¿es correcto hacer que
+lean y acepten los términos y condiciones? ¿en qué me ayuda eso? ¿cómo se guarda eso? ¿firma?… hazlo tú»*.
+
+- **Portada**: fuera «Tu aventura empieza hoy» (`#unete`) y la flecha de bajar. Queda el emblema, el título (ahora lo
+  arma `hero_title()` de pages.py), la descripción nueva («Servidor de Minecraft de survival, aventura, fantasía y
+  rol…»), la IP, «Visitar la tienda», «Minecraft Java 1.20.1 · Forge» (sin «Gratis») y debajo `.hero-links`: «Entra a
+  nuestro Discord», «Grupo de WhatsApp» y «Cómo entrar al server» (`/ayuda#como-entrar`).
+- **Enlaces permanentes**: los botones van a `/discord` y `/whatsapp` (rutas del Worker que redirigen con 302 a
+  `DISCORD_URL`/`WHATSAPP_URL` de `wrangler.jsonc`). El enlace de un grupo de WhatsApp no caduca solo: deja de valer
+  únicamente si un administrador lo «restablece» en WhatsApp; entonces basta con poner el nuevo en `WHATSAPP_URL` y la
+  web sigue funcionando sin tocar nada más.
+- **«Visitar la tienda»** (`.btn-shop`): el mismo destello deslizante y halo que respira del botón principal, con
+  `--shimmer-sea` (esmeralda vivo → turquesa → azul) y `btn-breathe-sea`.
+- **Relleno de izquierda a derecha**: las pestañas de la tienda (`.tab`) y los botones secundarios (`.btn-ghost`) ya
+  no se llenan de abajo arriba.
+- **Nebulosa que se nota**: la A tarda 24 s (antes 46) y se mueve más (desplazamiento, zoom y un giro leve), la B 15 s
+  (antes 29), y una capa nueva `.neb-glow` (manchas de luz rosa, cian y violeta que cruzan el cielo en 18 s). Medido:
+  en 6 segundos la portada cambia a simple vista. Sigue siendo solo transform/opacity y sigue con «reducir movimiento».
+- **Aceptación de los Términos** (no había nada hecho):
+  - Casilla obligatoria «He leído y acepto los Términos y condiciones y el Aviso de privacidad» al **crear la cuenta**
+    y en la **ventana de pago** (sin marcarla no se habilita «Pagar»; el servidor también lo exige: 400 `terms`).
+  - **Prueba guardada** en D1, tabla `terms_acceptances`: cuenta/UUID, nombre, dónde (`cuenta`, `compra`,
+    `actualizacion`), versión, pedido, IP (`CF-Connecting-IP`), navegador y fecha. La cuenta guarda `terms_version`
+    y `terms_at`; cada pedido, `terms_version`.
+  - **Versión** = `config/legal.json` (`version` y `date`; `pages.py` saca de ahí la fecha que muestran las páginas
+    legales). Si se cambian los textos legales, se sube la versión: las cuentas con una versión vieja ven en «Mi cuenta»
+    un aviso y, al reclamar recompensas o comprar con monedas, la ventana «Actualizamos los Términos»
+    (`POST /api/account/terms`). «Mi cuenta» muestra «✓ Aceptaste los Términos… el <fecha>».
+  - Términos («Aceptación» y «Cambios») y Aviso de privacidad (datos, finalidades y plazo) explican la casilla y el
+    registro (con IP, que antes decía que no se guardaba).
+  - Para el dueño: en México la casilla marcada es consentimiento expreso por medios electrónicos (Código de Comercio,
+    arts. 89 y siguientes; Código Civil Federal, art. 1803): no hace falta firma. Lo que da valor es poder demostrar qué
+    versión aceptó cada uno y cuándo, que es lo que guarda la tabla. Recomendable que un abogado revise los textos.
+- Pruebas: 41 (nueva: «los Términos se aceptan con una casilla…»). `tools/preview.mjs` registra a Notch aceptándolos.
+
+### Entrega anterior (7 de octubre de 2026, mediodía): portada mínima, fondo vivo, destello en los botones y más vida en las crates (solo web)
 **Lo que pidió el dueño (textual):** *«la landing page… te dije que no me la llenes de cosas… ni lo de crates, solo lo
 principal y lo de tu aventura comienza hoy. Me gustaría que la nebulosa y las estrellitas las animes, que sea vivo el
 fondo. La tarjeta de botones de la tienda se confunden, no hay armonía en los colores, me gusta el efecto que tiene

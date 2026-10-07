@@ -2,6 +2,7 @@
 // Pagos con Stripe, cuentas de jugador (nombre de Minecraft + contraseña) con su Discord conectado,
 // y el puente con el servidor de Minecraft (mod TF Client).
 import products from '../config/products.json' with { type: 'json' };
+import legal from '../config/legal.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
 import { Discord, isSnowflake } from './discord.js';
 import { createStore, CLAIMED, UUID_RE } from './store.js';
@@ -24,6 +25,10 @@ const BRIDGE_FRESH_MS = 45 * 1000;
 const BRIDGE_INTERVAL_S = 10;
 // Versión del protocolo del puente desde la que el mod pone él mismo {player}/{uuid} en los comandos.
 const BRIDGE_TEMPLATES = 2;
+
+// Versión vigente de los Términos y del Aviso de privacidad (la fecha de config/legal.json, la misma que muestran).
+const TERMS_VERSION = legal.version;
+const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y el Aviso de privacidad.';
 
 const productById = new Map(products.map((p) => [p.id, p]));
 const productRoles = (p) => (p.discordRoles || []).filter(isSnowflake);
@@ -71,6 +76,9 @@ export function createApp(env) {
   const SERVER_NAME = env.SERVER_NAME || 'Tierras Fantásticas';
   const SERVER_IP = env.SERVER_IP || '216.163.187.40:19001';
   const DISCORD_URL = env.DISCORD_URL || 'https://discord.gg/tRrunHBZE';
+  // Grupo de WhatsApp. La web siempre enlaza a /whatsapp: si algún día el enlace del grupo cambia, basta con poner el
+  // nuevo en la variable WHATSAPP_URL de Cloudflare (o aquí) y todos los botones siguen funcionando.
+  const WHATSAPP_URL = env.WHATSAPP_URL || 'https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm';
   const CURRENCY = (env.CURRENCY || 'USD').toUpperCase();
   const PUBLIC_URL = (env.PUBLIC_URL || '').replace(/\/$/, '');
   const log = env.LOGGER || console;
@@ -127,8 +135,29 @@ export function createApp(env) {
       head: head(name),
       rank: rankInfo(rankById.get(rank?.rankId)),
       discord: user.discord,
+      // Si aceptó la versión vigente de los Términos; si no, la web se los vuelve a pedir antes de comprar o reclamar.
+      termsOk: user.termsVersion === TERMS_VERSION,
+      termsVersion: user.termsVersion,
+      termsAt: user.termsAt,
     };
   }
+
+  // Prueba de la aceptación de los Términos: versión, fecha, quién, dónde y desde qué IP y navegador.
+  async function recordTerms(req, { uuid, username, context, orderId }) {
+    await store.acceptTerms({
+      uuid,
+      username,
+      context,
+      version: TERMS_VERSION,
+      orderId,
+      ip: req.headers.get('CF-Connecting-IP') || null,
+      userAgent: req.headers.get('User-Agent') || null,
+    });
+  }
+
+  // Lo que se hace con la cuenta (recompensas, tienda de monedas) necesita haber aceptado la versión vigente.
+  const termsMissing = (user) =>
+    user.termsVersion === TERMS_VERSION ? null : json({ error: 'Acepta los Términos y condiciones actualizados para seguir.', code: 'terms' }, 403);
 
   function checkPassword(password) {
     if (typeof password !== 'string' || password.length < PASSWORD_MIN) return `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`;
@@ -248,6 +277,7 @@ export function createApp(env) {
         currency: CURRENCY,
         paymentsEnabled: Boolean(stripe),
         discordInvite: DISCORD_URL,
+        termsVersion: TERMS_VERSION,
         // Solo se puede comprar a jugadores que el puente ya conoce.
         bridge: Boolean(env.BRIDGE_SECRET),
       }),
@@ -349,6 +379,7 @@ export function createApp(env) {
       }
       const bad = checkPassword(body.password);
       if (bad) return json({ error: bad }, 400);
+      if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
       const player = await store.findPlayer(body.name);
       if (!player) {
         return json({ error: `${body.name} nunca ha entrado a ${SERVER_NAME}. Entra al servidor una vez con ese nombre y vuelve.`, code: 'unknown_player' }, 404);
@@ -356,6 +387,7 @@ export function createApp(env) {
       if (!(await store.createUser({ uuid: player.uuid, password: await hashPassword(body.password) }))) {
         return json({ error: `${player.name} ya tiene cuenta. Inicia sesión.`, code: 'exists' }, 409);
       }
+      await recordTerms(req, { uuid: player.uuid, username: player.name, context: 'cuenta' });
       const user = await store.getUser(player.uuid);
       log.log(`Cuenta nueva: ${player.name} (${player.uuid})`);
       return json({ user: await userView(user) }, 200, { 'Set-Cookie': await sessionCookie(user, secure) });
@@ -401,6 +433,10 @@ export function createApp(env) {
     // --- Discord (OAuth2) ---
     // Con la sesión iniciada: conecta su Discord a la cuenta. Sin sesión: entra con el Discord ya conectado.
     // Discord nos dice su @ (no se puede escribir a mano) y si está en el servidor de Discord de Tierras Fantásticas.
+    // Enlaces fijos de la comunidad: la web enlaza aquí y esto lleva a la invitación vigente (302: nunca se queda en caché).
+    'GET /discord': async () => redirect(DISCORD_URL),
+    'GET /whatsapp': async () => redirect(WHATSAPP_URL),
+
     'GET /auth/discord': async (req, { url, discord, secure }) => {
       if (!discord.loginEnabled) return redirect('/cuenta?discord=off');
       const user = await currentUser(req);
@@ -480,6 +516,24 @@ export function createApp(env) {
       return json({ ok: true });
     },
 
+    // Aceptar la versión vigente de los Términos con la cuenta (cuando cambian, o si la cuenta es de antes).
+    'POST /api/account/terms': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión.', code: 'login' }, 401);
+      const body = (await readJson(req)) || {};
+      if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
+      const player = await store.playerByUuid(user.uuid);
+      await recordTerms(req, { uuid: user.uuid, username: player?.name || user.name, context: 'actualizacion' });
+      return json({ user: await userView(await store.getUser(user.uuid)) });
+    },
+
+    // Las aceptaciones guardadas de la cuenta (la prueba, para que el jugador la vea).
+    'GET /api/account/terms': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión.', code: 'login' }, 401);
+      return json({ version: TERMS_VERSION, acceptances: await store.termsAcceptances(user.uuid) });
+    },
+
     'GET /api/account/orders': async (req) => {
       const user = await currentUser(req);
       if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
@@ -505,6 +559,7 @@ export function createApp(env) {
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > maxQuantity) {
         return json({ error: `La cantidad debe estar entre 1 y ${maxQuantity}.` }, 400);
       }
+      if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
 
       const player = await store.findPlayer(body.username);
       if (!player) {
@@ -555,7 +610,9 @@ export function createApp(env) {
           discordId: account?.id,
           sessionId: checkout.id,
           rankFrom: q.from?.id,
+          termsVersion: TERMS_VERSION,
         });
+        await recordTerms(req, { uuid: player.uuid, username: player.name, context: 'compra', orderId: id });
         return json({ id, url: checkout.url });
       } catch (err) {
         log.error('Error creando el pago en Stripe:', err.message);
@@ -567,6 +624,8 @@ export function createApp(env) {
     'POST /api/claim': async (req, ctx) => {
       const user = await currentUser(req);
       if (!user) return json({ error: 'Inicia sesión para reclamar el regalo.', code: 'login' }, 401);
+      const terms = termsMissing(user);
+      if (terms) return terms;
       const body = (await readJson(req)) || {};
       const product = productById.get(body.productId);
       if (!product || product.price !== 0) return json({ error: 'Ese regalo no existe.' }, 400);
@@ -601,6 +660,8 @@ export function createApp(env) {
     'POST /api/roulette/coins': async (req) => {
       const user = await currentUser(req);
       if (!user) return json({ error: 'Inicia sesión para girar con tus monedas.', code: 'login' }, 401);
+      const terms = termsMissing(user);
+      if (terms) return terms;
       const body = (await readJson(req)) || {};
       const product = products.find((p) => p.category === 'ruleta' && p.spins === Number(body.spins));
       if (!product || !product.coinPrice) return json({ error: 'Esa tirada no existe.' }, 400);
@@ -631,6 +692,8 @@ export function createApp(env) {
     'POST /api/coinshop/buy': async (req) => {
       const user = await currentUser(req);
       if (!user) return json({ error: 'Inicia sesión para comprar con tus monedas.', code: 'login' }, 401);
+      const terms = termsMissing(user);
+      if (terms) return terms;
       const body = (await readJson(req)) || {};
       const item = (await store.coinShop()).find((it) => it.id === String(body.id || ''));
       if (!item) return json({ error: 'Ese objeto ya no está a la venta.' }, 404);

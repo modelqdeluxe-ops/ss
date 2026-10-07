@@ -198,7 +198,7 @@ async function serverDelivers(...players) {
 }
 
 async function checkout(body, cookie) {
-  const res = await post('/api/checkout', body, cookie);
+  const res = await post('/api/checkout', { acceptTerms: true, ...body }, cookie);
   const data = await res.json();
   assert.strictEqual(res.status, 200, data.error);
   assert.match(data.url, /^https:\/\/checkout\.stripe\.test\//);
@@ -258,15 +258,15 @@ test('si un jugador se cambia el nombre, la tienda usa el nuevo y el viejo deja 
 
 test('comprar rechaza productos, cantidades y jugadores que el servidor no conoce', async () => {
   await seen('Steve');
-  assert.strictEqual((await post('/api/checkout', { productId: 'no-existe', username: 'Steve' })).status, 400);
-  assert.strictEqual((await post('/api/checkout', { productId: 'monedas-10000', username: 'a; op yo' })).status, 400);
-  assert.strictEqual((await post('/api/checkout', { productId: 'monedas-10000', username: 'Steve', quantity: 50 })).status, 400);
-  assert.strictEqual((await post('/api/checkout', { productId: 'rango-magico', username: 'Steve', quantity: 2 })).status, 400);
-  const unknown = await post('/api/checkout', { productId: 'monedas-10000', username: 'Fantasma' });
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'no-existe', username: 'Steve' })).status, 400);
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'monedas-10000', username: 'a; op yo' })).status, 400);
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'monedas-10000', username: 'Steve', quantity: 50 })).status, 400);
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'rango-magico', username: 'Steve', quantity: 2 })).status, 400);
+  const unknown = await post('/api/checkout', { acceptTerms: true, productId: 'monedas-10000', username: 'Fantasma' });
   assert.strictEqual(unknown.status, 404);
   assert.strictEqual((await unknown.json()).code, 'unknown_player');
   // El UUID que vio el navegador tiene que ser el del servidor.
-  const other = await post('/api/checkout', { productId: 'monedas-10000', username: 'Steve', uuid: uuidOf('Otro') });
+  const other = await post('/api/checkout', { acceptTerms: true, productId: 'monedas-10000', username: 'Steve', uuid: uuidOf('Otro') });
   assert.strictEqual(other.status, 409);
 });
 
@@ -422,7 +422,7 @@ test('una crate es el set completo: se compra una vez y llega entero al juego', 
 
   received.length = 0;
   await seen('Alex');
-  const res = await post('/api/checkout', { productId: 'crate-oni', username: 'Alex', quantity: 2 });
+  const res = await post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: 'Alex', quantity: 2 });
   assert.strictEqual(res.status, 400);
   const id = await checkout({ productId: 'crate-oni', username: 'Alex' });
   assert.strictEqual(sessionOf(id).amount_total, crate.price);
@@ -602,7 +602,7 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
   assert.deepStrictEqual(received, ['lp user Rangos_MC parent add mortal', 'tf web sets give Rangos_MC patrick']);
 
   // El mismo rango o uno inferior: bloqueado.
-  const again = await post('/api/checkout', { productId: 'rango-mortal', username: 'Rangos_MC' });
+  const again = await post('/api/checkout', { acceptTerms: true, productId: 'rango-mortal', username: 'Rangos_MC' });
   assert.strictEqual(again.status, 409);
   assert.strictEqual((await again.json()).code, 'rank_owned');
 
@@ -625,7 +625,7 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
     'lp user Rangos_MC parent remove mortal',
     'lp user Rangos_MC parent remove inmortal',
   ]);
-  assert.strictEqual((await post('/api/checkout', { productId: 'rango-inmortal', username: 'Rangos_MC' })).status, 409);
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'rango-inmortal', username: 'Rangos_MC' })).status, 409);
 
   // El servidor recibe el rango de los conectados para su nametag.
   const { ranks, rankList } = await (await poll(['Rangos_MC', 'Steve'])).json();
@@ -651,7 +651,7 @@ const cookieValue = (res, name) =>
 // Crea la cuenta de un jugador (que el servidor ya conoce) y devuelve su cookie de sesión.
 async function register(name, password = 'contraseña-segura') {
   await seen(name);
-  const res = await post('/api/auth/register', { name, password });
+  const res = await post('/api/auth/register', { acceptTerms: true, name, password });
   assert.strictEqual(res.status, 200, (await res.clone().json()).error);
   return cookieValue(res, 'tf_session');
 }
@@ -670,12 +670,12 @@ async function viaDiscord(cookie) {
 }
 
 test('crear cuenta: solo con un jugador que el servidor conoce, una por jugador y contraseña segura', async () => {
-  assert.strictEqual((await post('/api/auth/register', { name: 'Nadie_Aqui', password: 'contraseña-segura' })).status, 404);
+  assert.strictEqual((await post('/api/auth/register', { acceptTerms: true, name: 'Nadie_Aqui', password: 'contraseña-segura' })).status, 404);
   await seen('Cuenta_MC');
-  assert.strictEqual((await post('/api/auth/register', { name: 'Cuenta_MC', password: 'corta' })).status, 400);
-  assert.strictEqual((await post('/api/auth/register', { name: 'a b', password: 'contraseña-segura' })).status, 400);
+  assert.strictEqual((await post('/api/auth/register', { acceptTerms: true, name: 'Cuenta_MC', password: 'corta' })).status, 400);
+  assert.strictEqual((await post('/api/auth/register', { acceptTerms: true, name: 'a b', password: 'contraseña-segura' })).status, 400);
 
-  const res = await post('/api/auth/register', { name: 'cuenta_mc', password: 'contraseña-segura' });
+  const res = await post('/api/auth/register', { acceptTerms: true, name: 'cuenta_mc', password: 'contraseña-segura' });
   assert.strictEqual(res.status, 200);
   const { user } = await res.json();
   assert.strictEqual(user.name, 'Cuenta_MC');
@@ -691,7 +691,7 @@ test('crear cuenta: solo con un jugador que el servidor conoce, una por jugador 
   assert.ok(!row.password.includes('contraseña-segura'));
 
   // El mismo jugador no puede tener otra cuenta.
-  assert.strictEqual((await post('/api/auth/register', { name: 'Cuenta_MC', password: 'otra-contraseña' })).status, 409);
+  assert.strictEqual((await post('/api/auth/register', { acceptTerms: true, name: 'Cuenta_MC', password: 'otra-contraseña' })).status, 409);
 
   const me = await (await get('/api/me', { Cookie: cookie })).json();
   assert.strictEqual(me.user.name, 'Cuenta_MC');
@@ -893,7 +893,7 @@ test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se an
   assert.strictEqual((await post('/api/claim', { productId: 'regalo-diamantes' })).status, 401);
   // Y no se pueden pagar con Stripe.
   await seen('Regalo_MC');
-  assert.strictEqual((await post('/api/checkout', { productId: 'regalo-diamantes', username: 'Regalo_MC' })).status, 400);
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'regalo-diamantes', username: 'Regalo_MC' })).status, 400);
 
   const cookie = await register('Regalo_MC');
   // Un producto de pago no se reclama gratis.
@@ -917,4 +917,45 @@ test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se an
   assert.strictEqual(order.amount, 0);
   const { orders } = await (await get('/api/account/orders', { Cookie: cookie })).json();
   assert.ok(orders.some((o) => o.id === id));
+});
+
+// --- Aceptación de los Términos ---
+test('los Términos se aceptan con una casilla al crear la cuenta y al pagar, y queda la prueba guardada', async () => {
+  const { version } = await import('../config/legal.json', { with: { type: 'json' } }).then((m) => m.default);
+  const config = await (await get('/api/config')).json();
+  assert.strictEqual(config.termsVersion, version);
+
+  // Sin marcar la casilla no se crea la cuenta ni se paga.
+  await seen('Terminos_MC');
+  const noTerms = await post('/api/auth/register', { name: 'Terminos_MC', password: 'contraseña-segura' });
+  assert.strictEqual(noTerms.status, 400);
+  assert.strictEqual((await noTerms.json()).code, 'terms');
+  const noTermsPay = await post('/api/checkout', { productId: 'monedas-10000', username: 'Terminos_MC' });
+  assert.strictEqual(noTermsPay.status, 400);
+  assert.strictEqual((await noTermsPay.json()).code, 'terms');
+
+  // Con la casilla: la cuenta guarda la versión aceptada y queda la fila de la prueba (con IP y navegador).
+  const res = await post('/api/auth/register', { acceptTerms: true, name: 'Terminos_MC', password: 'contraseña-segura' });
+  assert.strictEqual(res.status, 200);
+  const cookie = cookieValue(res, 'tf_session');
+  assert.strictEqual((await res.json()).user.termsOk, true);
+  const id = await checkout({ productId: 'monedas-10000', username: 'Terminos_MC' }, cookie);
+  const rows = env.DB.raw.prepare('SELECT * FROM terms_acceptances WHERE uuid = ? ORDER BY id').all(uuidOf('Terminos_MC'));
+  assert.deepStrictEqual(rows.map((r) => [r.context, r.version, r.order_id]), [['cuenta', version, null], ['compra', version, id]]);
+  const order = env.DB.raw.prepare('SELECT terms_version FROM orders WHERE id = ?').get(id);
+  assert.strictEqual(order.terms_version, version);
+  const mine = await (await get('/api/account/terms', { Cookie: cookie })).json();
+  assert.strictEqual(mine.acceptances.length, 2);
+
+  // Una cuenta con una versión vieja tiene que volver a aceptar antes de reclamar recompensas o comprar con monedas.
+  env.DB.raw.prepare("UPDATE users SET terms_version = '2000-01-01' WHERE uuid = ?").run(uuidOf('Terminos_MC'));
+  const me = await (await get('/api/me', { Cookie: cookie })).json();
+  assert.strictEqual(me.user.termsOk, false);
+  const blocked = await post('/api/claim', { productId: 'regalo-diamantes' }, cookie);
+  assert.strictEqual(blocked.status, 403);
+  assert.strictEqual((await blocked.json()).code, 'terms');
+  assert.strictEqual((await post('/api/account/terms', {}, cookie)).status, 400);
+  const accepted = await (await post('/api/account/terms', { acceptTerms: true }, cookie)).json();
+  assert.strictEqual(accepted.user.termsOk, true);
+  assert.strictEqual((await post('/api/claim', { productId: 'regalo-diamantes' }, cookie)).status, 200);
 });
