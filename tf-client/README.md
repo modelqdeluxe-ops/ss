@@ -102,7 +102,8 @@ Los nombres de set y de objeto se autocompletan con Tab. Los ids de los objetos 
 
 `tools/build_mod_items.py <carpeta con los packs descomprimidos>` copia modelos, texturas, animaciones y armaduras de
 los packs (los sets y sus nombres salen de `tierras-fantasticas/tools/build_items.py` y `crates.py`, igual que en la
-web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft 1.20.1.
+web) y `tools/check_mod_items.py` revisa que todo cumpla las reglas de Minecraft 1.20.1. `tools/check_backs.py`
+mide que lo de la espalda quede pegado a ella (`--fix` lo acerca).
 `tools/build_jobs_gui.py <carpeta>` prepara los fondos y los iconos de los oficios (pack *Medieval
 Jobs*): quita los textos en inglés del cartel y de la cinta, que el mod escribe en español.
 
@@ -166,7 +167,7 @@ abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cance
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.7.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.8.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

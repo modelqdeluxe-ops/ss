@@ -12,7 +12,30 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (7 de octubre de 2026): pestaña de rangos nueva, pestaña de cosméticos y TF Client 1.3.7
+### Última entrega (7 de octubre de 2026, tarde): paleta de neón, fondo animado, alas revisadas y TF Client 1.3.8
+El dueño: *«las alas del fantástico quedan un poco separadas… revisa todas hasta los cosméticos… un libro está mal
+puesto… en los rangos no quiero ver esa descripción debajo [la tabla], solo los beneficios, y no pongas cuántas piezas
+traen, y haz que pueda equipar las piezas para el preview… no me está gustando el fondo… no veo nada en mi PC
+animándose… pon un degradado bonito neón… dale rework a todo, paletas, todo»*.
+- **Paleta nueva «noche de neón»** (tokens en `:root` de styles.css): fondo índigo casi negro, superficies violeta
+  oscuro, acento rosa neón (`--a-*`, antes `--g-*` verde), violeta y cian; el verde solo queda para «en línea»
+  (`--ok`). Los colores con transparencia usan `rgb(var(--…-rgb) / x)`. Botón principal y pestaña activa con el
+  degradado `--pri-grad` (rosa → violeta → índigo). Tarjetas algo transparentes con un filo de neón arriba; cabecera
+  con línea de neón; título de la portada con brillo de neón; textos `.text-grad` con el degradado moviéndose.
+- **Fondo animado** (permitido por el dueño, que antes no quería animaciones de fondo): `body::before` es UNA capa
+  fija con una aurora rosa/violeta/cian/azul que se mueve muy despacio (`@keyframes aurora`, solo transform y
+  opacidad); `body::after`, la rejilla de bloques. **«Reducir movimiento»** (Windows con «efectos de animación»
+  apagados, probablemente el PC del dueño): antes apagaba TODO; ahora quita los desplazamientos pero deja la aurora
+  respirando (opacidad), el brillo de crates/rangos y las transiciones de color.
+- **Rangos**: fuera la tabla comparativa y el número de piezas; las piezas del set se tocan para ponérselas o
+  quitárselas en el personaje («Set completo» lo restablece).
+- **Cosméticos de espalda revisados uno a uno** (los 67): `tf-client/tools/check_backs.py` mide la separación de la
+  parte central con la espalda; 16 quedaban separados (Eagle/Fantástico, Necros, Luminite, Mecha, Wither, Frostbite,
+  Beats, Ifrit, el hielo de Aventura…) y se acercaron. La regla está en `build_mod_items.py` (`snap_to_back`), así
+  que no se pierde al regenerar. Los de mano (libro de mago, katanas ninja) usan en las dos manos la posición de la
+  izquierda, que es la que diseñó el pack (`held_display`).
+
+### Entrega anterior (7 de octubre de 2026): pestaña de rangos nueva, pestaña de cosméticos y TF Client 1.3.7
 El dueño: *«no me gusta esa pestaña de rangos… no quiero que se vea como la pestaña de crates… sus beneficios no digas
 el nombre del kit, tampoco en la tienda de monedas digas actualizado en tiempo real… presenta el set completo animado
 como si lo tuviera equipado y la foto de mi skin… vende mejor los rangos… y agrega una pestaña de cosméticos… véndelos
@@ -169,11 +192,15 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   botones** (nunca los objetos del jugador). Está como él quiere en la 1.3.3: no la cambies sin que lo pida.
 - Web:
   - Nada de «estrellitas», partículas ni figuritas animadas. El **brillo de color de cada crate** sí (solo opacidad).
+    Desde octubre de 2026 el dueño **pidió un fondo de degradado neón animado**: es una sola capa fija (aurora) que
+    solo mueve transform/opacidad; no añadas más capas animadas encima.
   - Que **no vaya lenta en el móvil**.
   - Portada ligera (no meter todo en la primera página) y con el **emblema**.
   - Crates, no «llaves»: se compra el pack (la crate), nunca se habla de llaves; sin etiquetas de rareza ni
     «edición limitada», «más popular», etc.
-  - Diseño actual: concepto «Minecraft moderno» (sección 0). Tipografías Unbounded + Figtree, **nunca** una de píxeles.
+  - Diseño actual: «noche de neón» (paleta rosa/violeta/cian, ver sección 0) sobre la base «Minecraft moderno».
+    Tipografías Unbounded + Figtree, **nunca** una de píxeles.
+  - Rangos: nunca el nombre del kit ni cuántas piezas trae; sin tabla comparativa.
   - **Normas de Mojang (para productos nuevos):** nada que dé ventaja sobre quien no paga (kits de objetos no; los sets
     de las crates son la excepción que decidió el dueño, ver sección 0), nada al azar ni parecido al juego de azar
     (sin ruletas, llaves ni cajas sorpresa), no vender monedas del juego con dinero, no cobrar por zonas del servidor,
@@ -184,6 +211,8 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
 - 1.3.1: «rediseño horrible», portada sobrecargada, quitaste el logo → se volvió a poner el emblema y se aligeró.
 - «no te pedí estrellitas», «el diseño es una mierda», «se laguea en el teléfono» → se quitaron partículas, aurora
   animada y desenfoques (1.3.3).
+- «no veo nada animándose en mi PC… pon un degradado neón… rework a todo» (oct. 2026) → paleta de neón y aurora
+  animada; «reducir movimiento» ya no apaga los brillos. «Las alas del fantástico quedan separadas» → check_backs.py.
 - «arruinaste la textura de los jobs» → se volvió al arte de la 1.3.0 sobre el cofre, con botones abajo (1.3.3).
 - Alas/cascos de las crates mal colocados → se arregló leyendo la configuración de HMCCosmetics de cada pack.
 - «rediséñala en serio, mira cómo están de bonitas en internet» → estilo fantasía (dorado, Cinzel, biseles): lo
@@ -267,10 +296,10 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.7)
+## 5. El mod (TF Client 1.3.8)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.7.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  → `build/libs/tfclient-1.20.1-1.3.8.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
 - Objetos de los sets (`items/TFTier.java`, `TFItems.create`, `TFItemTypes.Material`/`Armor`): cada set tiene su nivel
   (`tier` en `tf_sets.json`: `iron`, `diamond`, `netherite` o `netherite+N`). Crates +1 (desde la 1.3.5, decisión del
@@ -283,7 +312,8 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   reflexión en Mohist, monedas propias o comandos), `jobs/` (oficios, config `config/tfclient-jobs.json`),
   `menu/TFPanelMenu.java` + `client/TFPanelScreen.java` (ventana de oficios: 10 huecos de la rejilla en los huecos
   29-33/38-42 del cofre y 36 botones abajo; nunca el inventario del jugador).
-- Herramientas: `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
+- Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
+  `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
   la espalda/cabeza según HMCCosmetics), `tools/check_mod_items.py`, `tools/build_jobs_gui.py <packs>` (arte de oficios
   sin los textos en inglés). Los packs descomprimidos no están en el repo (los subió el dueño en zips).
 

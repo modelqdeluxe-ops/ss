@@ -225,8 +225,8 @@ def rank_products():
         has = lambda pred: any(pred(m['id']) for m in models)  # noqa: E731
         armor = has(lambda i: i.startswith('armor_'))
         wings = has(lambda i: i in ('wings', 'wing'))
-        pieces = f'Set completo de {len(models)} piezas: armas, herramientas' + (', armadura' if armor else '') + \
-            (' y alas animadas' if wings else ' animadas')
+        pieces = 'Set completo animado: armas, herramientas' + (', armadura' if armor else '') + \
+            (' y alas' if wings else '')
         out.append({
             'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}', 'tagline': tagline,
             'description': pitch,
@@ -235,8 +235,6 @@ def rank_products():
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],
             'set': set_id, 'models': models,
             'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces, f'Rol {name} en Discord'],
-            'specs': {'Prefijo en el chat': name, 'Piezas del set': str(len(models)), 'Armadura completa': armor,
-                      'Alas animadas': wings, 'Rol en Discord': True},
             'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc},
         })
     return out
