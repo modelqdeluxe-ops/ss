@@ -759,6 +759,12 @@
     const n = all.indexOf(p) + 1;
     show.setAttribute('style', rankVars(p));
     for (const b of $$('.rk-step')) b.setAttribute('aria-pressed', String(b.dataset.rank === p.id));
+    // En el móvil la escalera se desliza: el rango elegido queda a la vista (sin mover la página)
+    const ladder = $('.rk-ladder');
+    const step = $(`.rk-step[data-rank="${p.id}"]`);
+    if (ladder && step && ladder.scrollWidth > ladder.clientWidth) {
+      ladder.scrollTo({ left: step.offsetLeft - (ladder.clientWidth - step.offsetWidth) / 2, behavior: 'smooth' });
+    }
     const prefix = p.rank?.prefix || p.name.replace(/^Rango\s+/i, '');
     const who = skinName() || 'Tú';
     $('.rk-tag-prefix', show).textContent = `[${prefix}]`;
