@@ -365,30 +365,6 @@
     if (page === 'tienda' && currentCategory === 'rangos' && me.user?.rank) showRank(rankShow.current?.id);
   }
 
-  function renderCompare() {
-    const box = $('#compare');
-    const list = ranks().filter((p) => p.specs);
-    if (!list.length) {
-      box.hidden = true;
-      return;
-    }
-    const rows = [...new Set(list.flatMap((p) => Object.keys(p.specs)))];
-    const cell = (v) =>
-      v === true ? '<span class="yes" aria-label="Sí">✓</span>' : v === false || v == null ? '<span class="no" aria-label="No">—</span>' : escapeHtml(v);
-    box.innerHTML = `
-      <table>
-        <caption class="sr-only">Comparativa de rangos</caption>
-        <thead><tr><th scope="col">Ventaja</th>${list
-          .map((p) => `<th scope="col"${rankAttr(p)}><i class="rk-gem" aria-hidden="true"></i>${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</th>`)
-          .join('')}</tr></thead>
-        <tbody>${rows
-          .map((r) => `<tr><th scope="row">${escapeHtml(r)}</th>${list.map((p) => `<td>${cell(p.specs[r])}</td>`).join('')}</tr>`)
-          .join('')}
-          <tr><th scope="row">Precio</th>${list.map((p) => `<td><b>${formatPrice(p.price)}</b></td>`).join('')}</tr>
-        </tbody>
-      </table>`;
-  }
-
   const INTRO = {
     gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
     rangos: '',
@@ -454,7 +430,6 @@
     $('#shop-intro').hidden = !INTRO[category];
     $('#shop-search-wrap').hidden = category !== 'crates';
     $('#crate-empty').hidden = true;
-    $('#compare').hidden = category !== 'rangos';
     if (category === 'crates') {
       box.classList.add('crate-grid');
       box.innerHTML = crates().map((p, i) => crateCard(p, i)).join('');
@@ -466,15 +441,12 @@
       coinShopTimer = setInterval(() => renderCoinShop(box, true), 15000);
     } else if (category === 'rangos') {
       renderRanks(box, focus);
-      renderCompare();
     } else if (category === 'cosmeticos') {
       renderCosmetics(box);
     } else {
       box.classList.add('grid', 'grid-3');
       const list = products.filter((p) => p.category === category);
-      if (category === 'rangos') list.sort((a, b) => (a.tier || 0) - (b.tier || 0));
       box.innerHTML = list.map(productCard).join('') || '<p class="loading">No hay productos en esta sección</p>';
-      if (category === 'rangos') renderCompare();
     }
     if (updateUrl) history.replaceState(null, '', `#${category}`);
   }
@@ -706,7 +678,7 @@
   };
 
   // Rangos: la escalera de rangos arriba; el personaje con el set del rango puesto y lo que incluye al lado
-  const rankShow = { current: null, wardrobe: null, token: 0 };
+  const rankShow = { current: null, wardrobe: null, token: 0, outfit: null };
   function renderRanks(box, focus) {
     const list = ranks();
     if (!list.length) {
@@ -775,7 +747,6 @@
       ? `<div class="rk-price"><span class="rk-price-main">${mine ? 'Tu rango' : 'Incluido'}</span></div><button class="btn btn-ghost btn-lg" type="button" disabled>${mine ? ICON_CHECK + ' Ya lo tienes' : 'Ya tienes uno mayor'}</button>`
       : `<div class="rk-price">${q ? `<small>Mejora desde tu rango · antes ${formatPrice(p.price)}</small>` : '<small>Pago único · para siempre</small>'}<span class="rk-price-main">${formatPrice(q ? q.unit : p.price)}</span></div>
          <button class="btn btn-rank btn-lg" type="button" ${buyAttrs(p)}>${q ? 'Mejorar a ' : 'Conseguir '}${escapeHtml(prefix)}</button>`;
-    const pieces = (p.models || []).slice(0, 14);
     $('#rk-info').innerHTML = `
       <div class="rk-anim">
         <span class="rk-tier">Rango ${n} de ${all.length}${n === all.length ? ' · el más alto' : ''}</span>
@@ -785,12 +756,39 @@
         <div class="rk-chat" aria-label="Así se ve tu nombre en el chat"><span class="rk-chat-prefix">[${escapeHtml(prefix)}]</span> <span class="rk-chat-name">${escapeHtml(who)}</span><span class="rk-chat-msg">: ¡Hola, reino!</span></div>
         <ul class="rk-perks">${(p.perks || []).map((x) => `<li>${ICON_CHECK}<span>${escapeHtml(x)}</span></li>`).join('')}
           <li>${ICON_CHECK}<span>Llega al instante a tu cuenta del servidor</span></li></ul>
-        <div class="rk-pieces" aria-label="Piezas del set">${pieces
-          .map((m) => `<span class="rk-piece" title="${escapeHtml(m.name)}">${img(thumbOf(p.set, m.id), m.name, '', ' width="44" height="44"')}</span>`)
-          .join('')}${(p.models || []).length > pieces.length ? `<span class="rk-more">+${p.models.length - pieces.length}</span>` : ''}</div>
+        <div class="rk-try">
+          <div class="rk-try-head"><span>Pruébate las piezas</span><button type="button" class="rk-reset" data-rk-reset>Set completo</button></div>
+          <div class="rk-pieces" role="group" aria-label="Piezas del set: toca una para ponértela">${(p.models || [])
+            .map(
+              (m) => `<button type="button" class="rk-piece" data-rk-piece="${escapeHtml(m.id)}" aria-pressed="false" title="${escapeHtml(m.name)}">
+                ${img(thumbOf(p.set, m.id), m.name, '', ' width="44" height="44"')}<i class="worn-dot" aria-hidden="true"></i></button>`,
+            )
+            .join('')}</div>
+        </div>
         <div class="rk-buy">${buy}</div>
       </div>`;
     if (updateUrl) history.replaceState(null, '', `#${p.id.replace(/^rango-/, 'rangos-')}`);
+    rankShow.outfit = null;
+    $$('[data-rk-piece]').forEach((b) => b.addEventListener('click', () => equipRankPiece(b.dataset.rkPiece)));
+    $('[data-rk-reset]').addEventListener('click', () => {
+      rankShow.outfit = null;
+      drawRank();
+    });
+    drawRank();
+  }
+
+  // Tocar una pieza la pone en su hueco (o la quita si ya estaba puesta)
+  async function equipRankPiece(slug) {
+    const p = rankShow.current;
+    if (!p || !wardrobeLib) return;
+    const set = await loadWear(p.set);
+    const it = set.items[slug];
+    if (!it) return;
+    rankShow.outfit ||= wardrobeLib.defaultOutfit(set);
+    const slot = it.type === 'armor' ? it.slot : wardrobeLib.slotOf(it);
+    if (!slot) return;
+    if (rankShow.outfit[slot] === slug) delete rankShow.outfit[slot];
+    else rankShow.outfit[slot] = slug;
     drawRank();
   }
 
@@ -805,7 +803,13 @@
     try {
       const set = await loadWear(p.set);
       if (token !== rankShow.token) return;
-      await w.showPlayer(set, wardrobeLib.defaultOutfit(set), skinName());
+      const outfit = rankShow.outfit || wardrobeLib.defaultOutfit(set);
+      const worn = new Set(Object.values(outfit));
+      for (const b of $$('[data-rk-piece]')) {
+        b.classList.toggle('worn', worn.has(b.dataset.rkPiece));
+        b.setAttribute('aria-pressed', String(worn.has(b.dataset.rkPiece)));
+      }
+      await w.showPlayer(set, outfit, skinName());
       if (token === rankShow.token) status.hidden = true;
     } catch (err) {
       console.error(err);

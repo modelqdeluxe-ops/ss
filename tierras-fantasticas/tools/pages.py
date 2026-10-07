@@ -362,7 +362,6 @@ def tienda():
         {skeletons(8)}
       </div>
       <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda.</p>
-      <div class="panel compare" id="compare" hidden></div>
       <div class="trust">
         <div class="panel item"><span class="icon">{I['lock']}</span><div><b>Pago seguro con Stripe</b><span>Tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></div></div>
         <div class="panel item"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>

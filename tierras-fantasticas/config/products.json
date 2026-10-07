@@ -164,16 +164,9 @@
     ],
     "perks": [
       "Prefijo «Mortal» con color en el chat y sobre tu nombre",
-      "Set completo de 21 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Mortal en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Mortal",
-      "Piezas del set": "21",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "mortal",
       "prefix": "Mortal",
@@ -291,16 +284,9 @@
     ],
     "perks": [
       "Prefijo «Inmortal» con color en el chat y sobre tu nombre",
-      "Set completo de 21 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Inmortal en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Inmortal",
-      "Piezas del set": "21",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "inmortal",
       "prefix": "Inmortal",
@@ -414,16 +400,9 @@
     ],
     "perks": [
       "Prefijo «Mágico» con color en el chat y sobre tu nombre",
-      "Set completo de 20 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Mágico en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Mágico",
-      "Piezas del set": "20",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "magico",
       "prefix": "Mágico",
@@ -537,16 +516,9 @@
     ],
     "perks": [
       "Prefijo «Eterno» con color en el chat y sobre tu nombre",
-      "Set completo de 20 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Eterno en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Eterno",
-      "Piezas del set": "20",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "eterno",
       "prefix": "Eterno",
@@ -664,16 +636,9 @@
     ],
     "perks": [
       "Prefijo «Cósmico» con color en el chat y sobre tu nombre",
-      "Set completo de 21 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Cósmico en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Cósmico",
-      "Piezas del set": "21",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "cosmico",
       "prefix": "Cósmico",
@@ -779,16 +744,9 @@
     ],
     "perks": [
       "Prefijo «Celestial» con color en el chat y sobre tu nombre",
-      "Set completo de 18 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Celestial en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Celestial",
-      "Piezas del set": "18",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "celestial",
       "prefix": "Celestial",
@@ -910,16 +868,9 @@
     ],
     "perks": [
       "Prefijo «Fantástico» con color en el chat y sobre tu nombre",
-      "Set completo de 22 piezas: armas, herramientas, armadura y alas animadas",
+      "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Fantástico en Discord"
     ],
-    "specs": {
-      "Prefijo en el chat": "Fantástico",
-      "Piezas del set": "22",
-      "Armadura completa": true,
-      "Alas animadas": true,
-      "Rol en Discord": true
-    },
     "rank": {
       "group": "fantastico",
       "prefix": "Fantástico",

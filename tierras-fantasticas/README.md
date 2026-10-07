@@ -36,8 +36,8 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     puesto, el nombre con su prefijo flotando encima y el texto de venta (`RANK_PITCH`; nunca el nombre del kit). De menor a mayor: Mortal (set San Patricio), Inmortal (Beats), Mágico (Dark World),
     Eterno (Malika), Cósmico (Oni), Celestial (Luz de Estrella) y Fantástico (Eagle Ascendant). Cada uno da su grupo
     de LuckPerms, su prefijo con color, el rol de Discord y su set completo (`tf web sets give`). La tabla `RANKS` de
-    `tools/crates.py` los define (con el nivel de atributos de su set); `/tienda#rangos-mortal` abre uno. Tabla para
-    comparar debajo.
+    `tools/crates.py` los define (con el nivel de atributos de su set); `/tienda#rangos-mortal` abre uno. Las piezas
+    del set se pueden poner y quitar en el personaje.
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.

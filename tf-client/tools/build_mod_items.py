@@ -819,6 +819,55 @@ def balloon_display(model, writer, tag):
     back_report.append((tag, 'globo', hand['rotation'], hand['translation'], hand['scale']))
 
 
+# La parte central de lo que va en la espalda (la de la columna) tiene que quedar pegada: más de medio píxel por detrás
+# ya se ve separada. Las correas de las mochilas y las raíces de las alas pueden entrar por delante (a propósito).
+BACK_CENTER = 0.22      # bloques a cada lado del centro del cuerpo
+BACK_GAP_LIMIT = 0.03   # separación máxima (bloques)
+BACK_GAP_SNAP = 0.01    # al acercar, lo central queda a esta distancia
+
+
+def back_gap(model, alpha_of):
+    """Separación (bloques) entre la espalda del jugador y lo más adelantado de la parte central del cosmético."""
+    head = model.get('display', {}).get('head', {})
+    rot = head.get('rotation', [0, 0, 0])
+    scale = head.get('scale', [1, 1, 1])
+    trans = head.get('translation', [0, 0, 0])
+    pts, wts = visible_points(model, alpha_of)
+    if not pts:
+        return None
+    R = _mul(_mul(_rot('x', rot[0]), _rot('y', rot[1])), _rot('z', rot[2]))
+    vs = [_apply(R, [scale[0] * (p[0] / 16 - 0.5), scale[1] * (p[1] / 16 - 0.5), scale[2] * (p[2] / 16 - 0.5)]) for p in pts]
+    bx = [0.625 * (trans[0] / 16 + v[0]) for v in vs]
+    by = [0.25 + 0.625 * (trans[1] / 16 + v[1]) for v in vs]
+    bz = [0.625 * (trans[2] / 16 + v[2]) for v in vs]
+    central = [i for i in range(len(vs)) if abs(bx[i]) <= BACK_CENTER and -0.85 <= by[i] <= 0.1]
+    if len(central) < 12:
+        central = sorted(range(len(vs)), key=lambda i: abs(bx[i]))[:max(12, len(vs) // 10)]
+    front = _wquantile([bz[i] for i in central], [wts[i] for i in central], 0.08)
+    return {'gap': front - BACK_SURFACE, 'top': max(by), 'bottom': min(by)}
+
+
+def snap_to_back(model, alpha_of):
+    """Acerca a la espalda lo que quede separado. Devuelve el cambio en z (unidades de «display»), o 0."""
+    m = back_gap(model, alpha_of)
+    if not m or m['gap'] <= BACK_GAP_LIMIT:
+        return 0.0
+    dz = (BACK_GAP_SNAP - m['gap']) / 0.625 * 16
+    head = model['display']['head']
+    head['translation'] = [head['translation'][0], head['translation'][1], round(head['translation'][2] + dz, 3)]
+    return dz
+
+
+def held_display(model):
+    """Los cosméticos de mano vienen pensados para la mano izquierda (HMCCosmetics los pone ahí) y algunos no traen
+    posición para la derecha. Se usa la de la izquierda en las dos: Minecraft la refleja sola en la otra mano."""
+    display = model.setdefault('display', {})
+    for view in ('thirdperson', 'firstperson'):
+        left = display.get(f'{view}_lefthand')
+        if left:
+            display[f'{view}_righthand'] = json.loads(json.dumps(left))
+
+
 def overrides(kind, refs):
     o = []
     if kind == 'bow':
@@ -1003,6 +1052,8 @@ def main(packs, only=None):
                         model['overrides'] = ov
                 if kind == 'balloon':
                     balloon_display(model, w, tag)
+                if kind == 'held':
+                    held_display(model)
                 if kind == 'back':
                     worn = None
                     designed = False
@@ -1024,6 +1075,7 @@ def main(packs, only=None):
                     worn.pop('overrides', None)
                     drop_floor_plates(worn)
                     place_on_back(worn, slug, tag, designed, w.alpha_of)
+                    snap_to_back(worn, w.alpha_of)
                     rel = f'sets/{set_id}/{slug}_worn'
                     w.write_model(rel, worn)
                     info['worn'] = f'tfclient:item/{rel}'
