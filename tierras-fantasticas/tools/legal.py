@@ -97,6 +97,24 @@ comprar recibes un permiso de uso personal dentro del servidor:</p>
   <li>Las <b>recompensas gratis</b> se pueden reclamar una vez por jugador, con la cuenta iniciada.</li>
 </ul>'''),
 
+    ('vinculados', 'Objetos permanentes y vinculados a tu cuenta', '''
+<p>Los equipos de los rangos, las crates y las armas de la ruleta son <b>permanentes</b> y quedan <b>vinculados a la
+cuenta de Minecraft (UUID) del jugador que los recibe</b>:</p>
+<ul>
+  <li><b>Irrompibles:</b> no tienen durabilidad, no se gastan ni se rompen. En el suelo no desaparecen y no los destruyen
+    la lava, el fuego, los cactus ni las explosiones; si caen al vacío, vuelven a su dueño.</li>
+  <li><b>Solo para su dueño:</b> solo él puede cogerlos del suelo, llevarlos en el inventario, ponérselos y usarlos. Se
+    pueden guardar en cofres, pero si otro jugador los saca vuelven a su dueño (a su inventario o, si no está
+    conectado, al entrar).</li>
+  <li><b>No transferibles:</b> no se pueden regalar, prestar, vender ni intercambiar con otros jugadores, ni dentro ni
+    fuera del juego.</li>
+  <li>Los objetos de los sets que no tenían dueño (entregados antes de este sistema) quedan vinculados al primer
+    jugador que los lleve.</li>
+  <li><b>Excepción: los cosméticos y la ropa</b> (sombreros, alas, mochilas, capas, objetos de mano, globos y las
+    colecciones de cosméticos) no se vinculan y se pueden regalar e intercambiar dentro del juego. Las alas planean
+    como unas élitros y tampoco se gastan.</li>
+</ul>'''),
+
     ('precios', 'Precios y pago', '''
 <ul>
   <li>Los precios están en <b>dólares estadounidenses (USD)</b> y el precio que ves antes de pagar es el total que

@@ -643,8 +643,8 @@
     "id": "rango-cosmico",
     "category": "rangos",
     "name": "Rango Cósmico",
-    "tagline": "Más allá de las estrellas",
-    "description": "Armadura de guerrero demonio, armas de otro mundo y unas alas oscuras coronadas por un aro carmesí.",
+    "tagline": "Fuego del vacío",
+    "description": "Acero maldito envuelto en llamas violetas que nunca se apagan: armas de nigromante, armadura completa y alas del vacío.",
     "price": 1999,
     "maxQuantity": 1,
     "discordRoles": [
@@ -652,23 +652,19 @@
     ],
     "commands": [
       "lp user {player} parent add cosmico",
-      "tf web sets give {player} oni"
+      "tf web sets give {player} necros"
     ],
-    "image": "img/crates/oni.webp",
+    "image": "img/crates/necros.webp",
     "tier": 5,
     "colors": [
       "#85e7f6",
       "#22d3ee"
     ],
-    "set": "oni",
+    "set": "necros",
     "models": [
       {
         "id": "sword",
         "name": "Espada"
-      },
-      {
-        "id": "big_sword",
-        "name": "Gran espada"
       },
       {
         "id": "axe",
@@ -691,16 +687,36 @@
         "name": "Martillo"
       },
       {
-        "id": "battle_axe",
-        "name": "Hacha de batalla"
+        "id": "mace",
+        "name": "Maza"
+      },
+      {
+        "id": "scythe",
+        "name": "Guadaña"
       },
       {
         "id": "spear",
         "name": "Lanza"
       },
       {
+        "id": "trident",
+        "name": "Tridente"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
         "id": "bow",
         "name": "Arco"
+      },
+      {
+        "id": "crossbow",
+        "name": "Ballesta"
+      },
+      {
+        "id": "fishing_rod",
+        "name": "Caña de pescar"
       },
       {
         "id": "shield",
@@ -713,22 +729,6 @@
       {
         "id": "wings",
         "name": "Alas"
-      },
-      {
-        "id": "left_sword",
-        "name": "Espada izquierda"
-      },
-      {
-        "id": "right_sword",
-        "name": "Espada derecha"
-      },
-      {
-        "id": "left_spear",
-        "name": "Lanza izquierda"
-      },
-      {
-        "id": "right_spear",
-        "name": "Lanza derecha"
       },
       {
         "id": "armor_helmet",
@@ -1283,24 +1283,28 @@
     ]
   },
   {
-    "id": "crate-necros",
+    "id": "crate-oni",
     "category": "crates",
-    "name": "Crate Necros",
-    "theme": "necros",
+    "name": "Crate Oni",
+    "theme": "oni",
     "colors": [
-      "#d59cff",
-      "#a855f7"
+      "#fda4af",
+      "#e11d48"
     ],
-    "tagline": "Acero maldito y fuego del vacío",
-    "description": "El set del nigromante: acero oscuro envuelto en llamas violetas animadas. Incluye armadura completa, tridente, alas y casco.",
-    "image": "img/crates/necros.webp",
-    "price": 399,
+    "tagline": "La máscara del demonio",
+    "description": "El arsenal del guerrero oni: gran espada, hacha de batalla, martillo, lanza, espadas y lanzas dobles, armadura completa, alas con aro carmesí y casco.",
+    "image": "img/crates/oni.webp",
+    "price": 449,
     "maxQuantity": 1,
-    "set": "necros",
+    "set": "oni",
     "models": [
       {
         "id": "sword",
         "name": "Espada"
+      },
+      {
+        "id": "big_sword",
+        "name": "Gran espada"
       },
       {
         "id": "axe",
@@ -1323,36 +1327,16 @@
         "name": "Martillo"
       },
       {
-        "id": "mace",
-        "name": "Maza"
-      },
-      {
-        "id": "scythe",
-        "name": "Guadaña"
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
       },
       {
         "id": "spear",
         "name": "Lanza"
       },
       {
-        "id": "trident",
-        "name": "Tridente"
-      },
-      {
-        "id": "staff",
-        "name": "Bastón"
-      },
-      {
         "id": "bow",
         "name": "Arco"
-      },
-      {
-        "id": "crossbow",
-        "name": "Ballesta"
-      },
-      {
-        "id": "fishing_rod",
-        "name": "Caña de pescar"
       },
       {
         "id": "shield",
@@ -1365,6 +1349,22 @@
       {
         "id": "wings",
         "name": "Alas"
+      },
+      {
+        "id": "left_sword",
+        "name": "Espada izquierda"
+      },
+      {
+        "id": "right_sword",
+        "name": "Espada derecha"
+      },
+      {
+        "id": "left_spear",
+        "name": "Lanza izquierda"
+      },
+      {
+        "id": "right_spear",
+        "name": "Lanza derecha"
       },
       {
         "id": "armor_helmet",
@@ -1384,7 +1384,7 @@
       }
     ],
     "commands": [
-      "tf web sets give {player} necros"
+      "tf web sets give {player} oni"
     ]
   },
   {

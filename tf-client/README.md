@@ -58,6 +58,15 @@ su cuerda. Van en el hueco del pecho o, con los mods Accessories o
 Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libre para la pechera.
 
 - No tienen receta: se sacan del **modo creativo** (pestaña *Tierras Fantásticas · Sets*) o con el comando.
+- **Permanentes** (1.3.10, `items/TFItem.java`): sin durabilidad (no se gastan ni se rompen) y, tirados al suelo, no
+  desaparecen, no los rompe nada y si caen al vacío vuelven a su dueño.
+- **Vinculados a la UUID** (1.3.10, `items/TFBinding.java`): las armas, herramientas y armaduras de los rangos, las
+  crates y la ruleta llevan a su dueño en el NBT (`TFOwner`, `TFOwnerName`). Solo él puede cogerlas del suelo,
+  llevarlas, ponérselas y usarlas; si otro jugador las saca de un cofre vuelven a su dueño (o le esperan hasta que
+  entre). `/tf web sets give` las vincula al entregar; las que no tienen dueño se vinculan al primero que las lleve
+  fuera de creativo. Los cosméticos (cabeza, espalda, mano, globos y los sets de cosméticos) no se vinculan.
+- **Las alas planean como élitros** (1.3.10, solo las alas: `"glide"` en `tf_sets.json`), sin gastarse, puestas en
+  el pecho o en el hueco de la espalda (`items/TFWings.java` + `mixin/ItemStackMixin.java`).
 - Con el mod **Better Combat**, cada arma usa la plantilla que le toca por su forma (espada, mandoble, daga, lanza,
   guadaña, bastón, alabarda, hacha, martillo, maza, puño...) y hace sus combos encadenando clics. Arcos, ballestas,
   cañas, escudos, palas y azadas se quedan como en Minecraft.
@@ -80,7 +89,7 @@ Solo hay dos: `/tf jobs` (todos los jugadores) y `/tf web` (staff, nivel 2).
 /tf jobs reiniciar <jugador> [oficio]        (staff) borra el progreso
 
 /tf web sets list                            lista los sets
-/tf web sets give <jugadores> <set> [objeto] da el set entero o un objeto (p. ej. /tf web sets give Steve necros sword)
+/tf web sets give <jugadores> <set> [objeto] da el set entero o un objeto (p. ej. /tf web sets give Steve oni sword)
 /tf web tienda add <precio> [nombre]         (nivel 3) pone a la venta en la web lo que tienes en la mano
 /tf web tienda precio <id> <precio>          (nivel 3) cambia el precio
 /tf web tienda quitar <id> | lista | vaciar  (nivel 3)
@@ -167,7 +176,7 @@ abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cance
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.9.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.10.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

@@ -4,30 +4,20 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 
@@ -49,8 +39,6 @@ public final class TFAccessorySlots {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Predicate<ItemStack> IS_BACK = stack ->
             stack.getItem() instanceof TFItemTypes.Cosmetic cosmetic && cosmetic.wornModel() != null;
-    /** Métodos ya buscados (se usan en cada fotograma). */
-    private static final Map<String, Optional<Method>> METHODS = new ConcurrentHashMap<>();
 
     /** Dibuja un cosmético en la espalda de un modelo humanoide (lo implementa BackLayer). */
     public interface BackRenderer {
@@ -102,7 +90,7 @@ public final class TFAccessorySlots {
     private static boolean registerAccessories(List<Item> items, BackRenderer renderer) throws Exception {
         Class<?> registry = Class.forName("io.wispforest.accessories.api.client.AccessoriesRendererRegistry");
         Class<?> api = Class.forName("io.wispforest.accessories.api.client.AccessoryRenderer");
-        Method register = find(registry, "registerRenderer", Item.class, Supplier.class);
+        Method register = TFAccessoryLookup.find(registry, "registerRenderer", Item.class, Supplier.class);
         if (register == null) return false;
         Object proxy = proxy(api, (method, args) -> {
             if (!"render".equals(method.getName()) || args == null) return null;
@@ -130,7 +118,7 @@ public final class TFAccessorySlots {
     private static boolean registerCurios(List<Item> items, BackRenderer renderer) throws Exception {
         Class<?> registry = Class.forName("top.theillusivec4.curios.api.client.CuriosRendererRegistry");
         Class<?> api = Class.forName("top.theillusivec4.curios.api.client.ICurioRenderer");
-        Method register = find(registry, "register", Item.class, Supplier.class);
+        Method register = TFAccessoryLookup.find(registry, "register", Item.class, Supplier.class);
         if (register == null) return false;
         Object proxy = proxy(api, (method, args) -> {
             if (!"render".equals(method.getName()) || args == null) return null;
@@ -227,7 +215,7 @@ public final class TFAccessorySlots {
     private static LivingEntity entityOf(@Nullable Object slot) {
         if (slot == null) return null;
         try {
-            Method entity = find(slot.getClass(), "entity");
+            Method entity = TFAccessoryLookup.find(slot.getClass(), "entity");
             Object e = entity == null ? null : entity.invoke(slot);
             return e instanceof LivingEntity living ? living : null;
         } catch (Exception e) {
@@ -249,7 +237,7 @@ public final class TFAccessorySlots {
         ModList mods = ModList.get();
         if (!accessoriesDraws && !accessoriesFailed && mods.isLoaded("accessories")) {
             try {
-                fromAccessories(entity, out);
+                TFAccessoryLookup.fromAccessories(entity, IS_BACK, out);
                 if (!loggedAccessories && !out.isEmpty()) {
                     loggedAccessories = true;
                     LOGGER.info("TF Client: accesorios: encontrado en los huecos de Accessories {}", out);
@@ -261,7 +249,7 @@ public final class TFAccessorySlots {
         }
         if (out.isEmpty() && !accessoriesDraws && !curiosDraws && !curiosFailed && mods.isLoaded("curios")) {
             try {
-                fromCurios(entity, out);
+                TFAccessoryLookup.fromCurios(entity, IS_BACK, out, true);
                 if (!loggedCurios && !out.isEmpty()) {
                     loggedCurios = true;
                     LOGGER.info("TF Client: accesorios: encontrado en los huecos de Curios {}", out);
@@ -270,141 +258,6 @@ public final class TFAccessorySlots {
                 curiosFailed = true;
                 LOGGER.warn("TF Client: accesorios: no se pudieron leer los huecos de Curios", t);
             }
-        }
-        return out;
-    }
-
-    /**
-     * AccessoriesCapability (get / getOptionally, o AccessoriesAPI.getCapability en versiones viejas) → getEquipped /
-     * getAllEquipped / getFirstEquipped, o si no, sus contenedores (getContainers → getAccessories, un Container).
-     */
-    private static void fromAccessories(LivingEntity entity, List<ItemStack> out) throws Exception {
-        Object capability = null;
-        Class<?> api = Class.forName("io.wispforest.accessories.api.AccessoriesCapability");
-        for (String name : new String[] {"get", "getOptionally"}) {
-            Method m = find(api, name, LivingEntity.class);
-            if (m != null) capability = unwrap(m.invoke(null, entity));
-            if (capability != null) break;
-        }
-        if (capability == null) {
-            try {
-                Class<?> old = Class.forName("io.wispforest.accessories.api.AccessoriesAPI");
-                Method m = find(old, "getCapability", LivingEntity.class);
-                if (m != null) capability = unwrap(m.invoke(null, entity));
-            } catch (ClassNotFoundException ignored) {
-                // versión sin AccessoriesAPI
-            }
-        }
-        if (capability == null) return;
-        Method equipped = find(capability.getClass(), "getEquipped", Predicate.class);
-        if (equipped == null) equipped = find(capability.getClass(), "getAllEquipped");
-        if (equipped == null) equipped = find(capability.getClass(), "getFirstEquipped", Predicate.class);
-        if (equipped != null) {
-            Object result = equipped.getParameterCount() == 1 ? equipped.invoke(capability, IS_BACK) : equipped.invoke(capability);
-            collect(result, out, false);
-            if (!out.isEmpty()) return;
-        }
-        Method containers = find(capability.getClass(), "getContainers");
-        Object map = containers == null ? null : containers.invoke(capability);
-        if (map instanceof Map<?, ?> byName) {
-            for (Object container : byName.values()) {
-                Method accessories = container == null ? null : find(container.getClass(), "getAccessories");
-                collect(accessories == null ? null : accessories.invoke(container), out, false);
-            }
-        }
-    }
-
-    /** CuriosApi.getCuriosInventory(entity) (o el helper antiguo) → findCurios(predicado) → [SlotResult]. */
-    private static void fromCurios(LivingEntity entity, List<ItemStack> out) throws Exception {
-        Class<?> api = Class.forName("top.theillusivec4.curios.api.CuriosApi");
-        Object handler = null;
-        Method inventory = find(api, "getCuriosInventory", LivingEntity.class);
-        if (inventory != null) {
-            handler = unwrap(inventory.invoke(null, entity));
-        } else {
-            Method helper = find(api, "getCuriosHelper");
-            Object h = helper == null ? null : helper.invoke(null);
-            Method handlerOf = h == null ? null : find(h.getClass(), "getCuriosHandler", LivingEntity.class);
-            if (handlerOf != null) handler = unwrap(handlerOf.invoke(h, entity));
-        }
-        if (handler == null) return;
-        Method all = find(handler.getClass(), "findCurios", Predicate.class);
-        if (all == null) all = find(handler.getClass(), "findFirstCurio", Predicate.class);
-        if (all != null) collect(all.invoke(handler, IS_BACK), out, true);
-    }
-
-    /** Recoge los objetos de una lista, un Optional, un Container o un resultado (SlotEntryReference / SlotResult). */
-    private static void collect(@Nullable Object result, List<ItemStack> out, boolean curios) throws Exception {
-        result = unwrap(result);
-        if (result == null) return;
-        if (result instanceof Collection<?> list) {
-            for (Object entry : list) collect(entry, out, curios);
-            return;
-        }
-        if (result instanceof Container container) {
-            for (int i = 0; i < container.getContainerSize(); i++) collect(container.getItem(i), out, curios);
-            return;
-        }
-        if (result instanceof ItemStack stack) {
-            if (IS_BACK.test(stack) && !out.contains(stack)) out.add(stack);
-            return;
-        }
-        if (curios && !visible(result)) return; // el jugador apagó el dibujo de ese hueco
-        Method stackOf = find(result.getClass(), "stack");
-        if (stackOf != null) collect(stackOf.invoke(result), out, curios);
-    }
-
-    /** SlotResult.slotContext().visible(): el botón de Curios para ocultar lo que llevas puesto. */
-    private static boolean visible(Object slotResult) {
-        try {
-            Method context = find(slotResult.getClass(), "slotContext");
-            Object ctx = context == null ? null : context.invoke(slotResult);
-            Method visible = ctx == null ? null : find(ctx.getClass(), "visible");
-            return visible == null || !(visible.invoke(ctx) instanceof Boolean b) || b;
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
-    /** Optional / LazyOptional de Forge → su valor (o null). */
-    @Nullable
-    private static Object unwrap(@Nullable Object value) {
-        if (value instanceof Optional<?> optional) return optional.orElse(null);
-        if (value instanceof LazyOptional<?> lazy) return lazy.resolve().orElse(null);
-        return value;
-    }
-
-    /**
-     * Método por nombre y tipos de parámetros, buscado en una clase o interfaz pública (la implementación suele ser
-     * interna del otro mod y no se puede llamar desde fuera), o null.
-     */
-    @Nullable
-    private static Method find(Class<?> type, String name, Class<?>... params) {
-        String key = type.getName() + '#' + name + Arrays.toString(params);
-        return METHODS.computeIfAbsent(key, k -> {
-            for (Class<?> c : supertypes(type)) {
-                if (!Modifier.isPublic(c.getModifiers())) continue;
-                try {
-                    return Optional.of(c.getMethod(name, params));
-                } catch (NoSuchMethodException | SecurityException ignored) {
-                    // se prueba el siguiente
-                }
-            }
-            return Optional.empty();
-        }).orElse(null);
-    }
-
-    /** La clase, sus padres y todas sus interfaces. */
-    private static List<Class<?>> supertypes(Class<?> type) {
-        List<Class<?>> out = new ArrayList<>();
-        Deque<Class<?>> queue = new ArrayDeque<>();
-        queue.add(type);
-        while (!queue.isEmpty()) {
-            Class<?> c = queue.poll();
-            if (out.contains(c)) continue;
-            out.add(c);
-            if (c.getSuperclass() != null) queue.add(c.getSuperclass());
-            queue.addAll(List.of(c.getInterfaces()));
         }
         return out;
     }

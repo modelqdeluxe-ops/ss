@@ -341,12 +341,12 @@ test('el webhook rechaza firmas falsas o viejas', async () => {
 test('si el webhook tarda, la página de confirmación consulta el pago a Stripe', async () => {
   received.length = 0;
   await seen('Prisa');
-  const id = await checkout({ productId: 'crate-necros', username: 'Prisa' });
+  const id = await checkout({ productId: 'crate-oni', username: 'Prisa' });
   assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'pending');
   Object.assign(sessionOf(id), { status: 'complete', payment_status: 'paid', payment_intent: 'pi_prisa' });
   assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'queued');
   await serverDelivers('Prisa');
-  assert.deepStrictEqual(received, ['tf web sets give Prisa necros']);
+  assert.deepStrictEqual(received, ['tf web sets give Prisa oni']);
 });
 
 test('no se entrega si el importe cobrado no coincide', async () => {
@@ -414,7 +414,7 @@ test('una crate es el set completo: se compra una vez y llega entero al juego', 
   const list = await (await get('/api/products')).json();
   assert.ok(!list.some((p) => p.category === 'llaves'), 'ya no se venden llaves');
   assert.ok(list.every((p) => !('rarity' in p) && !('featured' in p) && !('keyImage' in p)));
-  const crate = list.find((p) => p.id === 'crate-necros');
+  const crate = list.find((p) => p.id === 'crate-oni');
   assert.strictEqual(crate.category, 'crates');
   assert.strictEqual(crate.maxQuantity, 1);
   assert.ok(crate.image && crate.models.length > 0 && crate.models.some((m) => m.id === 'armor_helmet'));
@@ -422,14 +422,14 @@ test('una crate es el set completo: se compra una vez y llega entero al juego', 
 
   received.length = 0;
   await seen('Alex');
-  const res = await post('/api/checkout', { productId: 'crate-necros', username: 'Alex', quantity: 2 });
+  const res = await post('/api/checkout', { productId: 'crate-oni', username: 'Alex', quantity: 2 });
   assert.strictEqual(res.status, 400);
-  const id = await checkout({ productId: 'crate-necros', username: 'Alex' });
+  const id = await checkout({ productId: 'crate-oni', username: 'Alex' });
   assert.strictEqual(sessionOf(id).amount_total, crate.price);
   await pay(id);
   const [delivery] = await serverDelivers('Alex');
   assert.strictEqual(delivery.color, crate.colors[1]);
-  assert.deepStrictEqual(received, ['tf web sets give Alex necros']);
+  assert.deepStrictEqual(received, ['tf web sets give Alex oni']);
 });
 
 test('un cosmético se compra por pieza y llega solo esa pieza al juego', async () => {
