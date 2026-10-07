@@ -63,7 +63,8 @@ def item_type(slug):
         return 'head'
     if slug in BACK:
         return 'back'
-    if slug == 'fishing' or slug.startswith(('fishing_rod', 'fishingrod')):
+    # «rod» a secas es la caña de pescar del set Cyber (antes salía como espada: no pescaba y tenía pose de espada)
+    if slug in ('fishing', 'rod') or slug.startswith(('fishing_rod', 'fishingrod')):
         return 'fishing_rod'
     if slug.endswith('crossbow'):
         return 'crossbow'
@@ -1002,6 +1003,34 @@ def held_display(model):
             display[f'{view}_righthand'] = json.loads(json.dumps(left))
 
 
+# Ballestas que el pack empuja tanto hacia delante en la mano que, en tercera persona, quedan colgando a la altura de
+# los pies (Eagle: 10 píxeles; Mecha: 5). Se dejan a la distancia de las demás ballestas, también en sus modelos de
+# carga (_0, _1, _2), para que no salten al tensarlas.
+HELD_MAX_FORWARD = 3
+
+
+def tame_held(model):
+    """Devuelve si cambió algo."""
+    changed = False
+    for view in ('thirdperson_righthand', 'thirdperson_lefthand'):
+        t = ((model.get('display') or {}).get(view) or {}).get('translation')
+        if t and abs(t[2]) > HELD_MAX_FORWARD:
+            t[2] = 0.5
+            changed = True
+    return changed
+
+
+def tame_held_refs(refs):
+    """Lo mismo en los modelos de las variantes ya escritos (tfclient:item/sets/<set>/<nombre>)."""
+    for ref in refs.values():
+        path = os.path.join(ASSETS, 'models', 'item', ref.split(':', 1)[1].replace('item/', '', 1) + '.json')
+        if os.path.exists(path):
+            m = json.load(open(path))
+            if tame_held(m):
+                with open(path, 'w') as fh:
+                    json.dump(m, fh, separators=(',', ':'))
+
+
 HAND_KINDS = {'sword', 'heavy', 'axe', 'pickaxe', 'shovel', 'hoe', 'bow', 'crossbow', 'fishing_rod', 'shield', 'trident'}
 
 
@@ -1042,7 +1071,7 @@ def overrides(kind, refs):
 # Better Combat: cada arma usa una de sus plantillas (combos, alcance, animaciones). Se busca por el nombre del objeto
 # (en orden) y si no, por el tipo. Arcos, ballestas, cañas y escudos se quedan como en Minecraft.
 BC_BY_NAME = [
-    (('great_sword', 'greatsword', 'big_sword'), 'claymore'),
+    (('great_sword', 'greatsword', 'big_sword', 'bigsword'), 'claymore'),
     (('rapier',), 'rapier'),
     (('dagger', 'knife'), 'dagger'),
     (('sickle',), 'sickle'),
@@ -1203,6 +1232,9 @@ def main(packs, only=None):
                     ov = overrides(kind, refs)
                     if ov:
                         model['overrides'] = ov
+                    if kind == 'crossbow':
+                        tame_held(model)
+                        tame_held_refs(refs)
                 if kind == 'balloon':
                     balloon_display(model, w, tag)
                 if kind == 'held':

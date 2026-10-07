@@ -2813,6 +2813,7 @@
    "id": "cyber",
    "name": "Cyber",
    "color": "#e11d48",
+   "tier": "netherite+1",
    "items": [
     {
      "id": "cyber_sword",
@@ -2873,7 +2874,7 @@
     },
     {
      "id": "cyber_rod",
-     "type": "sword"
+     "type": "fishing_rod"
     },
     {
      "id": "cyber_armor_helmet",
@@ -2895,8 +2896,7 @@
      "type": "armor",
      "slot": "boots"
     }
-   ],
-   "tier": "netherite+1"
+   ]
   },
   {
    "id": "bat",
@@ -4392,91 +4392,6 @@
    ]
   },
   {
-   "id": "starlight",
-   "name": "Luz de Estrella",
-   "color": "#eab308",
-   "items": [
-    {
-     "id": "starlight_sword",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_dagger",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_blade",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_axe",
-     "type": "axe"
-    },
-    {
-     "id": "starlight_pickaxe",
-     "type": "pickaxe"
-    },
-    {
-     "id": "starlight_shovel",
-     "type": "shovel"
-    },
-    {
-     "id": "starlight_hoe",
-     "type": "hoe"
-    },
-    {
-     "id": "starlight_battle_axe",
-     "type": "axe"
-    },
-    {
-     "id": "starlight_sickle",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_spear",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_staff",
-     "type": "sword"
-    },
-    {
-     "id": "starlight_bow",
-     "type": "bow"
-    },
-    {
-     "id": "starlight_shield",
-     "type": "shield"
-    },
-    {
-     "id": "starlight_wings",
-     "type": "back",
-     "worn": "tfclient:item/sets/starlight/wings_worn"
-    },
-    {
-     "id": "starlight_armor_helmet",
-     "type": "armor",
-     "slot": "helmet"
-    },
-    {
-     "id": "starlight_armor_chestplate",
-     "type": "armor",
-     "slot": "chestplate"
-    },
-    {
-     "id": "starlight_armor_leggings",
-     "type": "armor",
-     "slot": "leggings"
-    },
-    {
-     "id": "starlight_armor_boots",
-     "type": "armor",
-     "slot": "boots"
-    }
-   ],
-   "tier": "netherite+3"
-  },
-  {
    "id": "eagle",
    "name": "Eagle Ascendant",
    "color": "#f59e0b",
@@ -4576,6 +4491,91 @@
      "slot": "boots"
     }
    ]
+  },
+  {
+   "id": "starlight",
+   "name": "Luz de Estrella",
+   "color": "#eab308",
+   "items": [
+    {
+     "id": "starlight_sword",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_blade",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_axe",
+     "type": "axe"
+    },
+    {
+     "id": "starlight_pickaxe",
+     "type": "pickaxe"
+    },
+    {
+     "id": "starlight_shovel",
+     "type": "shovel"
+    },
+    {
+     "id": "starlight_hoe",
+     "type": "hoe"
+    },
+    {
+     "id": "starlight_battle_axe",
+     "type": "axe"
+    },
+    {
+     "id": "starlight_sickle",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_spear",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_staff",
+     "type": "sword"
+    },
+    {
+     "id": "starlight_bow",
+     "type": "bow"
+    },
+    {
+     "id": "starlight_shield",
+     "type": "shield"
+    },
+    {
+     "id": "starlight_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/starlight/wings_worn"
+    },
+    {
+     "id": "starlight_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "starlight_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "starlight_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "starlight_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    }
+   ],
+   "tier": "netherite+3"
   },
   {
    "id": "nazgul",
