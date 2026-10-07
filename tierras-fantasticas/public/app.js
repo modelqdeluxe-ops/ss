@@ -255,41 +255,16 @@
     try {
       products = await (await fetch('/api/products')).json();
     } catch {
-      $$('#products, #crate-spotlight').forEach(
+      $$('#products').forEach(
         (el) => (el.innerHTML = '<p class="muted">No se pudieron cargar los productos. Recarga la página.</p>'),
       );
       return;
     }
-    if (page === 'inicio') renderHome();
     if (page === 'tienda') initShop();
   }
 
   // Brillo de la crate: un aura de su color que late (con retrasos distintos para que no lata todo a la vez).
   const glow = (i) => `<span class="crate-glow" aria-hidden="true" style="--d:${(-i * 0.7).toFixed(1)}s"></span>`;
-
-  // Inicio: solo unas pocas crates (lo demás está en la tienda)
-  function renderHome() {
-    const list = crates();
-    $$('[data-crate-count]').forEach((el) => countTo(el, list.length));
-    $$('[data-crates-all]').forEach((el) => (el.innerHTML = `Ver las ${list.length} crates ${ICON_ARROW}`));
-    const box = $('#crate-spotlight');
-    box.innerHTML = list
-      .slice(-4)
-      .reverse()
-      .map(
-        (p, i) => `
-        <a class="frame crate-tile home-tile reveal" href="/tienda#crates-${escapeHtml(p.theme || p.id)}"${themeAttr(p)}>
-          <span class="crate-tile-art">${glow(i)}${img(p.image, p.name)}</span>
-          <span class="body">
-            <h3>${escapeHtml(p.name.replace(/^Crate\s+/i, ''))}</h3>
-            <span class="tile-tag">${escapeHtml(p.tagline || '')}</span>
-            <span class="card-foot"><span class="price">${formatPrice(p.price)}</span><span class="btn btn-theme btn-sm">Ver crate</span></span>
-          </span>
-        </a>`,
-      )
-      .join('');
-    observeReveal();
-  }
 
   // Los rangos usan el color de su prefijo
   function rankAttr(p) {
@@ -1243,7 +1218,7 @@
     </form>
   </dialog>`;
 
-  const sells = ['inicio', 'tienda', 'crates'].includes(page);
+  const sells = ['tienda', 'crates'].includes(page);
   let dialog, qtyInput;
   if (sells) {
     document.body.insertAdjacentHTML('beforeend', DIALOG_HTML);

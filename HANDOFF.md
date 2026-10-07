@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **7 de octubre de 2026 (mañana)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **7 de octubre de 2026 (mediodía)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,7 +12,37 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (7 de octubre de 2026, mañana): nebulosa de neón, Necros ⇄ Oni, objetos vinculados, alas que planean y TF Client 1.3.10
+### Última entrega (7 de octubre de 2026, mediodía): portada mínima, fondo vivo, destello en los botones y más vida en las crates (solo web)
+**Lo que pidió el dueño (textual):** *«la landing page… te dije que no me la llenes de cosas… ni lo de crates, solo lo
+principal y lo de tu aventura comienza hoy. Me gustaría que la nebulosa y las estrellitas las animes, que sea vivo el
+fondo. La tarjeta de botones de la tienda se confunden, no hay armonía en los colores, me gusta el efecto que tiene
+el botón ese tipo cambio de morado a azul destello, impleméntalo en más botones… donde dices que solo es para ti y
+permanente mencionas ruleta, no tenemos ruleta… quita lo que dice de «sin letra pequeña», no pongas textos
+redundantes o ambiguos… las crates u otras cositas les falta animación, detallitos visuales»*.
+
+- **Portada mínima**: solo el héroe (emblema, título, IP, «Visitar la tienda») y «Tu aventura empieza hoy» (`#unete`).
+  Fuera las cifras, los pilares «Una aventura sin final» y las crates (y su JS `renderHome` y su CSS). La portada ya no
+  carga los productos (`sells` = tienda y crates). **No volver a llenarla.**
+- **Fondo vivo** (`.sky` en cada página, `SKY` de pages.py; CSS «Fondo vivo»): la base fija sigue en
+  `body::before` (`nebula-*.webp`, ahora con la nebulosa suave); encima la nebulosa A (`nebula-a-*`) se desplaza y
+  respira (46 s), la B (`nebula-b-*`, nubes en otro sitio) aparece y se apaga (29 s), dos mosaicos de estrellas
+  (`stars-a/b.webp`, puntos pequeños, **sin destellos en cruz: el dueño no quiere «sparkles»**) bajan muy despacio y
+  titilan a destiempo, y en pantallas grandes cruza alguna estrella fugaz. Solo transform/opacity. En el móvil, solo
+  la nebulosa A y un mosaico. Todo sigue con «reducir movimiento» (exento). Lo genera `tools/nebula_bg.py`.
+- **Destello rosa → azul** (token `--shimmer`, el que le gustó del botón principal) también en: los botones
+  secundarios (`btn-ghost`, se llenan desde abajo con el destello que se desliza), las **pestañas de la tienda** (cada
+  una con fondo y filo propios; al pasar el ratón se llenan; la elegida lo lleva fluyendo, `shimmer-flow`), las
+  pestañas de entrar/registrarse, los botones «Mi personaje / Objeto» del probador, los filtros de cosméticos y los
+  «Copiar» de la IP.
+- **Crates y tarjetas**: en el ordenador cada crate flota despacio a su ritmo (`crate-float`; al pasar el ratón se
+  acerca con `scale`/`translate`, que no pisan la flotación); un destello cruza la tarjeta al pasar el ratón (crates,
+  productos, tienda de monedas, cosméticos); la entrada de las tarjetas ya no bloquea la elevación suave al pasar el
+  ratón (`animation-fill-mode: backwards`).
+- **Textos sin ruleta y sin relleno**: bloque «Tus compras son para siempre» (`#vinculados`), pregunta de Ayuda y
+  apartado de los Términos reescritos: hablan de «las armas, herramientas y armaduras de los rangos y de las crates».
+  **No hay ruleta en la web: no la menciones.**
+
+### Entrega anterior (7 de octubre de 2026, mañana): nebulosa de neón, Necros ⇄ Oni, objetos vinculados, alas que planean y TF Client 1.3.10
 **Lo que pidió el dueño (textual):** *«la crate Necros la vas a quitar de crates y la vas a intercambiar con el set del
 rango cósmico, el set de rango cósmico pasa a ser crate. Y con respecto al fondo, hazlo más opaco, haz más como
 nebulosa neón el fondo, las tarjetas de botones no se distinguen… no hay armonía con el diseño y colores, no hay
@@ -47,7 +77,7 @@ una crate (la 2.ª de la lista, 4,49 USD, netherita +1, colores `#fda4af`/`#e11d
   `.page-bar` corre arriba) y navega a los 280 ms; la página nueva entra subiendo (`page-in`). Están exentas en el
   bloque `prefers-reduced-motion`, igual que el halo de los botones y las apariciones al bajar.
 - **Filo de neón** bajo cada cabecera de sección (`.section-head::after`, se dibuja al aparecer).
-- **Transparencia**: bloque «Lo que compras es tuyo para siempre» (`#vinculados`, al final de la tienda), dos
+- **Transparencia** (textos rehechos en la entrega siguiente): bloque al final de la tienda (`#vinculados`), dos
   preguntas nuevas en Ayuda (regalar/intercambiar y alas), apartado **«Objetos permanentes y vinculados a tu
   cuenta»** en los Términos (`tools/legal.py`, `LEGAL_DATE` = 7 de octubre de 2026), una línea en el probador de
   crates y rangos y en la introducción de las crates.

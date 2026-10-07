@@ -21,6 +21,11 @@
   <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
 </head>
 <body data-page="tienda">
+  <div class="sky" aria-hidden="true">
+    <i class="neb-a"></i><i class="neb-b"></i>
+    <span class="sky-stars"><i class="stars-a"></i><i class="stars-b"></i></span>
+    <i class="shoot"></i><i class="shoot s2"></i>
+  </div>
   <div class="loader" aria-hidden="true">
     <div class="loader-inner">
       <img src="/img/logo.webp" alt="" width="104" height="115">
@@ -112,22 +117,19 @@
         <div class="owned-head">
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
           <div>
-            <h2 id="owned-title">Lo que compras es tuyo para siempre</h2>
-            <p>Los equipos de los rangos, las crates y las armas de la ruleta son permanentes y quedan vinculados a tu
-              cuenta de Minecraft (tu UUID). Así funciona, sin letra pequeña:</p>
+            <h2 id="owned-title">Tus compras son para siempre</h2>
+            <p>Las armas, herramientas y armaduras de los rangos y de las crates quedan vinculadas a tu cuenta de
+              Minecraft.</p>
           </div>
         </div>
         <ul class="owned-list">
-          <li><b>Irrompibles</b><span>No tienen durabilidad: nunca se gastan ni se rompen. Tirados al suelo no desaparecen
-            y no los destruyen la lava, el fuego, los cactus ni las explosiones; si caen al vacío, vuelven a ti.</span></li>
-          <li><b>Solo para ti</b><span>Solo tú puedes cogerlos, llevarlos, ponértelos y usarlos. Si los tiras o los guardas
-            en un cofre, nadie más podrá usarlos: si otro jugador los saca, vuelven a tu inventario (o te esperan hasta
-            que entres).</span></li>
-          <li><b>No transferibles</b><span>No se pueden regalar, prestar, vender ni intercambiar con otros jugadores, ni
-            dentro ni fuera del juego.</span></li>
-          <li><b>Los cosméticos, libres</b><span>Los cosméticos y la ropa (sombreros, alas, mochilas, objetos de mano y las
-            colecciones de cosméticos) no se vinculan: puedes regalarlos e intercambiarlos. Las alas planean como unas
-            élitros y tampoco se gastan nunca.</span></li>
+          <li><b>Irrompibles</b><span>No se gastan ni se rompen. En el suelo no desaparecen y, si caen al vacío, vuelven
+            a ti.</span></li>
+          <li><b>Solo para ti</b><span>Nadie más puede cogerlas, ponérselas ni usarlas. Si otro jugador las saca de un
+            cofre, vuelven a ti.</span></li>
+          <li><b>No transferibles</b><span>No se pueden regalar, vender ni intercambiar.</span></li>
+          <li><b>Cosméticos libres</b><span>Los cosméticos y la ropa (sombreros, alas, mochilas) no se vinculan: puedes
+            regalarlos e intercambiarlos. Las alas planean como unas élitros.</span></li>
         </ul>
       </section>
       <p class="shop-legal">Tierras Fantásticas es un servidor independiente. No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos. En la tienda no hay nada al
