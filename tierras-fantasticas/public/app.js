@@ -357,7 +357,8 @@
 
   async function loadProducts() {
     try {
-      products = await (await fetch('/api/products')).json();
+      const [list] = await Promise.all([fetch('/api/products').then((r) => r.json()), page === 'tienda' ? loadVfx() : null]);
+      products = list;
     } catch {
       $$('#products').forEach(
         (el) => (el.innerHTML = '<p class="muted">No se pudieron cargar los productos. Recarga la página.</p>'),
@@ -468,6 +469,7 @@
     cosmeticos: '',
     crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Es permanente, irrompible y queda vinculado a tu cuenta. Toca una para probártela en tu personaje.',
     ruleta: '',
+    vfx: '',
     monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
     tiendamonedas: '',
   };
@@ -478,7 +480,8 @@
     const tabs = $$('#shop-tabs [role="tab"]');
     for (const tab of tabs) {
       const cat = tab.dataset.category;
-      const count = cat === 'tiendamonedas' ? null : products.filter((p) => p.category === cat).length;
+      const count =
+        cat === 'tiendamonedas' ? null : cat === 'vfx' ? (vfxData ? vfxData.kills.length + vfxData.packs.length : 0) : products.filter((p) => p.category === cat).length;
       tab.hidden = count === 0;
       if (count) tab.insertAdjacentHTML('beforeend', `<span class="count">${cat === 'ruleta' ? '' : count}</span>`);
       tab.addEventListener('click', () => selectCategory(cat, true));
@@ -540,6 +543,8 @@
       renderRanks(box, focus);
     } else if (category === 'cosmeticos') {
       renderCosmetics(box);
+    } else if (category === 'vfx') {
+      renderVfx(box);
     } else {
       box.classList.add('grid', 'grid-3');
       const list = products.filter((p) => p.category === category);
@@ -561,6 +566,141 @@
     }
     $('#crate-empty').hidden = shown > 0;
   }
+
+  // --- VFX: efectos de kill sueltos y paquetes de skills. Por ahora gratis: se obtienen y se equipan con la cuenta y
+  // el servidor los pone solo. En el juego se activan solos y se ven en un indicador junto a la barra. ---
+  let vfxData = null;
+  let vfxVolume = 'todos';
+  async function loadVfx() {
+    try {
+      vfxData = await (await fetch('/api/vfx')).json();
+    } catch {
+      vfxData = null;
+    }
+  }
+
+  const TRIGGER = {
+    golpe: 'Al golpear',
+    golpe_critico: 'Golpe crítico',
+    golpe_corriendo: 'Golpe corriendo',
+    golpe_agachado: 'Golpe agachado',
+    dano: 'Al recibir daño',
+    combate: 'En combate',
+  };
+  const triggerText = (s) => {
+    let t = TRIGGER[s.trigger] || s.trigger;
+    if (s.vida && s.vida < 1) t = `Con menos del ${Math.round(s.vida * 100)} % de vida`;
+    if (s.chance && s.chance < 1) t += ` · ${Math.round(s.chance * 100)} %`;
+    return t;
+  };
+  const seconds = (n) => `${String(n).replace('.', ',')} s`;
+
+  function vfxFoot(kind, id) {
+    const mine = vfxData?.me;
+    const key = `${kind}:${id}`;
+    const attrs = `data-vfx-kind="${kind}" data-vfx-id="${escapeHtml(id)}"`;
+    if (!mine || !mine.owned.includes(key)) {
+      return `<span class="price free">Gratis</span><button class="btn btn-primary btn-sm" type="button" data-vfx-claim ${attrs}>Obtener</button>`;
+    }
+    if (mine[kind] === id) {
+      return `<span class="price owned">Equipado</span><button class="btn btn-ghost btn-sm" type="button" data-vfx-remove ${attrs}>Quitar</button>`;
+    }
+    return `<span class="price owned">Tuyo</span><button class="btn btn-primary btn-sm" type="button" data-vfx-equip ${attrs}>Equipar</button>`;
+  }
+
+  function renderVfx(box) {
+    if (!vfxData) {
+      box.innerHTML = '<p class="loading">No se pudieron cargar los efectos. Recarga la página.</p>';
+      return;
+    }
+    box.classList.add('vfx-shop');
+    const volumes = ['todos', ...new Set(vfxData.kills.map((k) => k.volume))];
+    const kills = vfxData.kills.filter((k) => vfxVolume === 'todos' || k.volume === vfxVolume);
+    box.innerHTML = `
+      <section class="vfx-how frame">
+        <div><b>Se activan solos</b><span>Los efectos de kill salen al derrotar a un enemigo; las skills, al pelear, cada una con su cooldown.</span></div>
+        <div><b>Uno de cada</b><span>Llevas un efecto de kill y un paquete de skills a la vez. Cámbialos aquí cuando quieras.</span></div>
+        <div><b>Indicador en el juego</b><span>Junto al último hueco de tu barra ves lo que llevas y el cooldown de las skills.</span></div>
+      </section>
+      <div class="section-head vfx-section-head"><h3>Paquetes de skills</h3><p class="muted">Cada paquete trae varias skills pasivas: se lanzan solas según cómo pelees.</p></div>
+      <div class="vfx-packs">${vfxData.packs
+        .map(
+          (p) => `
+        <article class="panel vfx-pack" style="--vfx:${HEX.test(p.color) ? p.color : '#b77dff'}">
+          <div class="vfx-art">${img(p.image, '')}</div>
+          <div class="body">
+            <span class="cat">Paquete de skills</span>
+            <h3>${escapeHtml(p.name)}</h3>
+            <p>${escapeHtml(p.desc)}</p>
+            <ul class="vfx-skills">${p.skills
+              .map(
+                (s) => `<li><div><b>${escapeHtml(s.name)}</b><span>${escapeHtml(s.desc)}</span></div>
+                  <span class="vfx-meta"><span class="vfx-trigger">${escapeHtml(triggerText(s))}</span><span class="cd">${seconds(s.cooldown)}</span></span></li>`,
+              )
+              .join('')}</ul>
+            <div class="card-foot">${vfxFoot('pack', p.id)}</div>
+          </div>
+        </article>`,
+        )
+        .join('')}</div>
+      <div class="section-head vfx-section-head split-head">
+        <div><h3>Efectos de kill</h3><p class="muted">${vfxData.kills.length} efectos, uno a uno. Se ven al derrotar a jugadores y mobs.</p></div>
+        <div class="vfx-filter" role="group" aria-label="Filtrar por volumen">${volumes
+          .map((v) => `<button type="button" class="chip" data-vfx-volume="${escapeHtml(v)}" aria-pressed="${v === vfxVolume}">${v === 'todos' ? 'Todos' : escapeHtml(v)}</button>`)
+          .join('')}</div>
+      </div>
+      <div class="vfx-kills">${kills
+        .map(
+          (k) => `
+        <article class="panel vfx-kill">
+          <div class="vfx-art">${img(k.image, '')}</div>
+          <div class="body">
+            <h3>${escapeHtml(k.name)}</h3>
+            <p>${escapeHtml(k.desc)}</p>
+            <div class="card-foot">${vfxFoot('kill', k.id)}</div>
+          </div>
+        </article>`,
+        )
+        .join('')}</div>`;
+  }
+
+  document.addEventListener('click', async (e) => {
+    const vol = e.target.closest('[data-vfx-volume]');
+    if (vol) {
+      vfxVolume = vol.dataset.vfxVolume;
+      if (currentCategory === 'vfx') renderVfx($('#products'));
+      return;
+    }
+    const btn = e.target.closest('[data-vfx-claim], [data-vfx-equip], [data-vfx-remove]');
+    if (!btn) return;
+    if (!me.user) {
+      toast('Entra con tu cuenta para obtener efectos');
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(location.pathname + location.hash)}`), 900);
+      return;
+    }
+    const kind = btn.dataset.vfxKind;
+    const id = btn.dataset.vfxId;
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    try {
+      const url = 'vfxClaim' in btn.dataset ? '/api/vfx/claim' : '/api/vfx/equip';
+      const body = { kind, id: 'vfxRemove' in btn.dataset ? null : id };
+      const { res, data } = await postWithTerms(url, body);
+      if (res.ok) {
+        vfxData.me = data.me;
+        const list = kind === 'kill' ? vfxData.kills : vfxData.packs;
+        const name = list.find((x) => x.id === id)?.name || '';
+        toast('vfxRemove' in btn.dataset ? `Quitaste ${name}` : `${name} equipado: en el juego se activa solo`);
+        if (currentCategory === 'vfx') renderVfx($('#products'));
+        return;
+      }
+      toast(data.error || 'No se pudo guardar el cambio.');
+    } catch {
+      toast('No se pudo guardar el cambio.');
+    }
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+  });
 
   // --- Ruleta: premios con su probabilidad a la vista; las armas legendarias son el premio raro ---
   function renderRoulette(box) {

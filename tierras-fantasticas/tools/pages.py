@@ -180,6 +180,7 @@ def footer():
             <li><a href="/tienda#rangos">Rangos</a></li>
             <li><a href="/tienda#cosmeticos">Cosméticos</a></li>
             <li><a href="/tienda#crates">Crates</a></li>
+            <li><a href="/tienda#vfx">VFX</a></li>
             <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
             <li><a href="/ayuda">Preguntas frecuentes</a></li>
           </ul>
@@ -325,12 +326,12 @@ def index():
 
 def tienda():
     tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'),
-            ('tiendamonedas', 'Tienda de monedas')]
+            ('vfx', 'VFX'), ('tiendamonedas', 'Tienda de monedas')]
     tab_html = '\n'.join(
         f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
         for k, label in tabs)
     return head('Tienda — Tierras Fantásticas',
-                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, cosméticos, crates con sets completos y recompensas gratis. Pago seguro y entrega automática en el juego.',
+                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, cosméticos, crates con sets completos, VFX y recompensas gratis. Pago seguro y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
     <section class="shop-head">

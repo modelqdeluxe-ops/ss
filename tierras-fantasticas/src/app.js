@@ -3,6 +3,7 @@
 // y el puente con el servidor de Minecraft (mod TF Client).
 import products from '../config/products.json' with { type: 'json' };
 import legal from '../config/legal.json' with { type: 'json' };
+import vfx from '../config/vfx.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
 import { PayPal, formatAmount } from './paypal.js';
 import { Discord, isSnowflake } from './discord.js';
@@ -32,6 +33,16 @@ const TERMS_VERSION = legal.version;
 const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y el Aviso de privacidad.';
 
 const productById = new Map(products.map((p) => [p.id, p]));
+// VFX (efectos de kill sueltos y paquetes de skills): por ahora todos gratis.
+const VFX_FREE = true;
+const vfxKills = new Set(vfx.kills.map((k) => k.id));
+const vfxPacks = new Set(vfx.packs.map((p) => p.id));
+function vfxItem(kind, id) {
+  if (typeof id !== 'string') return null;
+  if (kind === 'kill' && vfxKills.has(id)) return { kind, id, key: `kill:${id}` };
+  if (kind === 'pack' && vfxPacks.has(id)) return { kind, id, key: `pack:${id}` };
+  return null;
+}
 const productRoles = (p) => (p.discordRoles || []).filter(isSnowflake);
 const ranks = products.filter((p) => p.category === 'rangos' && p.rank && Number.isInteger(p.tier));
 const rankById = new Map(ranks.map((r) => [r.id, r]));
@@ -318,6 +329,43 @@ export function createApp(env) {
           discordRole: discord.rolesEnabled && productRoles({ discordRoles }).length > 0,
         })),
       ),
+
+    // VFX: el catálogo y, con la cuenta iniciada, lo que tiene y lleva equipado el jugador.
+    'GET /api/vfx': async (req) => {
+      const user = await currentUser(req);
+      return json({ free: VFX_FREE, kills: vfx.kills, packs: vfx.packs, me: user ? await store.vfxFor(user.uuid) : null });
+    },
+
+    // Obtener un VFX (gratis): queda en la cuenta y se equipa; el servidor lo pone en la siguiente consulta del puente.
+    'POST /api/vfx/claim': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para obtener efectos.', code: 'login' }, 401);
+      const terms = termsMissing(user);
+      if (terms) return terms;
+      const body = (await readJson(req)) || {};
+      const item = vfxItem(body.kind, body.id);
+      if (!item) return json({ error: 'Ese efecto no existe.' }, 400);
+      if (!VFX_FREE) return json({ error: 'Este efecto ya no es gratis.' }, 403);
+      await store.vfxGive(user.uuid, item.key);
+      await store.vfxEquip(user.uuid, item.kind, item.id);
+      return json({ me: await store.vfxFor(user.uuid) });
+    },
+
+    // Equipar uno que ya tiene, o quitarlo (id null).
+    'POST /api/vfx/equip': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para equipar efectos.', code: 'login' }, 401);
+      const body = (await readJson(req)) || {};
+      if (body.kind !== 'kill' && body.kind !== 'pack') return json({ error: 'Petición no válida.' }, 400);
+      if (body.id != null) {
+        const item = vfxItem(body.kind, body.id);
+        if (!item) return json({ error: 'Ese efecto no existe.' }, 400);
+        const mine = await store.vfxFor(user.uuid);
+        if (!mine.owned.includes(item.key)) return json({ error: 'Primero tienes que obtenerlo.', code: 'not_owned' }, 403);
+      }
+      await store.vfxEquip(user.uuid, body.kind, body.id || null);
+      return json({ me: await store.vfxFor(user.uuid) });
+    },
 
     // Cada visita renueva la sesión: quien entra a menudo no tiene que volver a iniciar sesión.
     'GET /api/me': async (req, { secure }) => {
@@ -968,6 +1016,7 @@ export function createApp(env) {
         rankList: ranks.map(rankInfo),
         linkResults,
         coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
+        vfx: await store.vfxEquipFor(online),
         roulette: rouletteForServer(),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
       });

@@ -1,0 +1,1777 @@
+{
+ "kills": [
+  {
+   "id": "bendicion_angelical",
+   "name": "Bendición Angelical",
+   "desc": "Unas alas de luz se llevan el cuerpo al cielo.",
+   "fx": "kill_bendicion_angelical",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "game_over",
+   "name": "Game Over",
+   "desc": "Un comecocos de recreativa se zampa al caído.",
+   "fx": "kill_game_over",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "fuego_infernal",
+   "name": "Fuego Infernal",
+   "desc": "Llamas de alma consumen el cuerpo hasta las cenizas.",
+   "fx": "kill_fuego_infernal",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "arenas_movedizas",
+   "name": "Arenas Movedizas",
+   "desc": "El suelo se abre y la arena se lo traga.",
+   "fx": "kill_arenas_movedizas",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "impostor",
+   "name": "Impostor",
+   "desc": "Alguien sospechoso aparece por detrás. Puñalada.",
+   "fx": "kill_impostor",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "tentaculos",
+   "name": "Tentáculos",
+   "desc": "Tentáculos surgen del suelo y lo arrastran abajo.",
+   "fx": "kill_tentaculos",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "ataque_tiburon",
+   "name": "Ataque de Tiburón",
+   "desc": "Un tiburón sale del suelo y se lo lleva de un bocado.",
+   "fx": "kill_ataque_tiburon",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "knockout",
+   "name": "K.O.",
+   "desc": "Golpe de cómic: K.O. y fuera del combate.",
+   "fx": "kill_knockout",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "planta_carnivora",
+   "name": "Planta Carnívora",
+   "desc": "Una planta gigante brota y lo devora.",
+   "fx": "kill_planta_carnivora",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "bloques_caen",
+   "name": "Bloques que Caen",
+   "desc": "Piezas de colores caen del cielo y lo aplastan.",
+   "fx": "kill_bloques_caen",
+   "volume": "Vol. 1"
+  },
+  {
+   "id": "holograma",
+   "name": "Holograma",
+   "desc": "El cuerpo parpadea como un holograma y se apaga.",
+   "fx": "kill_holograma",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "absorcion_sagrada",
+   "name": "Absorción Sagrada",
+   "desc": "Un haz de luz sagrada lo absorbe.",
+   "fx": "kill_absorcion_sagrada",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "derretido",
+   "name": "Derretido",
+   "desc": "Se derrite en un charco de agua.",
+   "fx": "kill_derretido",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "naturaleza",
+   "name": "Naturaleza",
+   "desc": "Las enredaderas brotan y lo cubren.",
+   "fx": "kill_naturaleza",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "oxido",
+   "name": "Óxido",
+   "desc": "Se oxida y se cae a trozos.",
+   "fx": "kill_oxido",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "onda_sonora",
+   "name": "Onda Sonora",
+   "desc": "Una onda de sonido lo deshace.",
+   "fx": "kill_onda_sonora",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "espectral",
+   "name": "Espectral",
+   "desc": "Su espíritu sale del cuerpo y se desvanece.",
+   "fx": "kill_espectral",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "piedra",
+   "name": "Piedra",
+   "desc": "Se vuelve de piedra y se desmorona.",
+   "fx": "kill_piedra",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "colapso_vacio",
+   "name": "Colapso del Vacío",
+   "desc": "Un agujero del vacío lo aplasta en un destello.",
+   "fx": "kill_colapso_vacio",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "evaporacion",
+   "name": "Evaporación",
+   "desc": "Se convierte en agua y se evapora.",
+   "fx": "kill_evaporacion",
+   "volume": "Vol. 2"
+  },
+  {
+   "id": "nebulosa",
+   "name": "Nebulosa",
+   "desc": "Se disuelve en una nube de colores.",
+   "fx": "kill_nebulosa",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "humo",
+   "name": "Humo",
+   "desc": "Desaparece en una nube de humo.",
+   "fx": "kill_humo",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "papel_quemado",
+   "name": "Papel Quemado",
+   "desc": "Arde como una hoja de papel.",
+   "fx": "kill_papel_quemado",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "sombras",
+   "name": "Sombras",
+   "desc": "Las sombras del suelo se lo tragan.",
+   "fx": "kill_sombras",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "mosaico",
+   "name": "Mosaico",
+   "desc": "Se rompe en teselas de colores.",
+   "fx": "kill_mosaico",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "espejo",
+   "name": "Espejo",
+   "desc": "Su reflejo se agrieta y se esfuma.",
+   "fx": "kill_espejo",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "floracion",
+   "name": "Floración",
+   "desc": "Una rosa brota donde cayó.",
+   "fx": "kill_floracion",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "chispas",
+   "name": "Chispas",
+   "desc": "Una descarga eléctrica lo hace chisporrotear.",
+   "fx": "kill_chispas",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "portal",
+   "name": "Portal",
+   "desc": "Un portal lo arrastra a otra dimensión.",
+   "fx": "kill_portal",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "reloj",
+   "name": "Reloj",
+   "desc": "El tiempo se rebobina y lo borra.",
+   "fx": "kill_reloj",
+   "volume": "Vol. 3"
+  },
+  {
+   "id": "acido",
+   "name": "Ácido",
+   "desc": "El ácido lo corroe hasta deshacerlo.",
+   "fx": "kill_acido",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "engranajes",
+   "name": "Engranajes",
+   "desc": "Se desmonta pieza a pieza como un reloj.",
+   "fx": "kill_engranajes",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "escarcha",
+   "name": "Escarcha",
+   "desc": "El hielo lo cubre y se hace añicos.",
+   "fx": "kill_escarcha",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "abstracto",
+   "name": "Abstracto",
+   "desc": "Se deforma en formas imposibles.",
+   "fx": "kill_abstracto",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "grafiti",
+   "name": "Grafiti",
+   "desc": "Un grafiti de cómic estalla en su lugar.",
+   "fx": "kill_grafiti",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "origami",
+   "name": "Origami",
+   "desc": "Se pliega como una figura de papel.",
+   "fx": "kill_origami",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "orbe_plasma",
+   "name": "Orbe de Plasma",
+   "desc": "Un orbe de plasma lo encierra y descarga rayos.",
+   "fx": "kill_orbe_plasma",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "magnetismo",
+   "name": "Magnetismo",
+   "desc": "Un campo magnético lo desarma.",
+   "fx": "kill_magnetismo",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "manchas_tinta",
+   "name": "Manchas de Tinta",
+   "desc": "Se disuelve en manchas de tinta.",
+   "fx": "kill_manchas_tinta",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "bioluminiscencia",
+   "name": "Bioluminiscencia",
+   "desc": "Brilla con luz dorada y se eleva.",
+   "fx": "kill_bioluminiscencia",
+   "volume": "Vol. 4"
+  },
+  {
+   "id": "miel",
+   "name": "Miel",
+   "desc": "Se convierte en bloques de miel.",
+   "fx": "kill_miel",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "contorno",
+   "name": "Contorno",
+   "desc": "Un lápiz repasa su silueta y la borra.",
+   "fx": "kill_contorno",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "pluma_tinta",
+   "name": "Pluma y Tinta",
+   "desc": "Una pluma lo borra trazo a trazo.",
+   "fx": "kill_pluma_tinta",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "constelacion",
+   "name": "Constelación",
+   "desc": "Planetas en órbita lo desintegran.",
+   "fx": "kill_constelacion",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "aurora",
+   "name": "Aurora",
+   "desc": "Una aurora boreal lo envuelve y se lo lleva.",
+   "fx": "kill_aurora",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "estrella_norte",
+   "name": "Estrella del Norte",
+   "desc": "Se vuelve dorado y se apaga como una estrella.",
+   "fx": "kill_estrella_norte",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "energia_cinetica",
+   "name": "Energía Cinética",
+   "desc": "La energía lo dispersa en todas direcciones.",
+   "fx": "kill_energia_cinetica",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "niebla",
+   "name": "Niebla",
+   "desc": "Una niebla mística lo envuelve y lo borra.",
+   "fx": "kill_niebla",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "jade",
+   "name": "Jade",
+   "desc": "Se cristaliza en jade y se rompe en pedazos.",
+   "fx": "kill_jade",
+   "volume": "Vol. 5"
+  },
+  {
+   "id": "prisma",
+   "name": "Prisma",
+   "desc": "Un prisma lo descompone en luz.",
+   "fx": "kill_prisma",
+   "volume": "Vol. 5"
+  }
+ ],
+ "packs": [
+  {
+   "id": "vendaval",
+   "name": "Filo del Vendaval",
+   "desc": "Skills de viento: tajos en combo, una danza de cuchillas, una lanza que levanta tornados y una furia final.",
+   "color": "#2fd3b0",
+   "skills": [
+    {
+     "id": "corte",
+     "name": "Corte del Vendaval",
+     "trigger": "golpe",
+     "cooldown": 1.2,
+     "desc": "Al golpear: tajo de arriba abajo, tajo de abajo arriba y estocada que atrae a los enemigos.",
+     "stages": [
+      {
+       "fx": "viento_corte_1",
+       "actions": [
+        {
+         "area": {
+          "fwd": 0.3,
+          "r": 4,
+          "vr": 2,
+          "limit": 5
+         },
+         "impacto": "viento_impacto",
+         "t": 1,
+         "dano": 3
+        }
+       ]
+      },
+      {
+       "fx": "viento_corte_2",
+       "actions": [
+        {
+         "area": {
+          "fwd": 0.3,
+          "r": 4,
+          "vr": 2,
+          "limit": 5
+         },
+         "impacto": "viento_impacto",
+         "t": 1,
+         "dano": 3
+        }
+       ]
+      },
+      {
+       "fx": "viento_corte_3",
+       "actions": [
+        {
+         "area": {
+          "fwd": 1.7,
+          "r": 4,
+          "vr": 2,
+          "limit": 5
+         },
+         "impacto": "viento_impacto",
+         "t": 1,
+         "dano": 4,
+         "atraer": 0.6
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "danza",
+     "name": "Danza de Cuchillas",
+     "trigger": "golpe_corriendo",
+     "cooldown": 7,
+     "desc": "Golpeando mientras corres: carga el viento, te lanzas hacia delante y levantas a los enemigos.",
+     "stages": [
+      {
+       "fx": "viento_danza",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:slowness",
+            "ticks": 14,
+            "nivel": 4
+           }
+          ]
+         }
+        },
+        {
+         "t": 16,
+         "self": {
+          "impulso": [
+           1.5,
+           0.2
+          ]
+         }
+        },
+        {
+         "t": 19,
+         "area": {
+          "fwd": 1,
+          "r": 4,
+          "vr": 2,
+          "limit": 3
+         },
+         "dano": 4,
+         "lanzar": 0.9,
+         "pociones": [
+          {
+           "id": "minecraft:slow_falling",
+           "ticks": 40,
+           "nivel": 0
+          }
+         ],
+         "impacto": "viento_danza_impacto"
+        },
+        {
+         "t": 21,
+         "area": {
+          "fwd": 1,
+          "r": 4,
+          "vr": 2,
+          "limit": 3
+         },
+         "dano": 2,
+         "lanzar": 0.6
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "perforanubes",
+     "name": "Perforanubes",
+     "trigger": "golpe_agachado",
+     "cooldown": 10,
+     "desc": "Golpeando agachado: lanzas una lanza de viento que frena a quien toca; al caer levanta un tornado que atrae y daña.",
+     "stages": [
+      {
+       "fx": "viento_lanza",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:slowness",
+            "ticks": 15,
+            "nivel": 3
+           }
+          ]
+         }
+        },
+        {
+         "t": 16,
+         "proyectil": {
+          "v": 1.25,
+          "ticks": 40,
+          "r": 1.2,
+          "grav": 0.005,
+          "up": 2.2,
+          "fwd": 0.3,
+          "apuntar": true,
+          "alFinal": {
+           "fx": "viento_tornado",
+           "zona": {
+            "r": 5,
+            "vr": 3,
+            "ticks": 140,
+            "cada": 20,
+            "limit": 8
+           },
+           "dano": 2,
+           "atraer": 0.35,
+           "impacto": "viento_impacto"
+          }
+         },
+         "dano": 5,
+         "pociones": [
+          {
+           "id": "minecraft:slowness",
+           "ticks": 60,
+           "nivel": 1
+          }
+         ],
+         "impacto": "viento_lanza_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "torrente",
+     "name": "Torrente",
+     "trigger": "combate",
+     "cooldown": 14,
+     "desc": "En combate: haces girar la guja sobre tu cabeza atrayendo a los enemigos y descargas un gran tajo que los aparta.",
+     "stages": [
+      {
+       "fx": "viento_torrente",
+       "actions": [
+        {
+         "t": 1,
+         "area": {
+          "r": 7,
+          "vr": 3,
+          "limit": 8
+         },
+         "atraer": 0.35,
+         "lanzar": 0.25
+        },
+        {
+         "t": 8,
+         "area": {
+          "r": 7,
+          "vr": 3,
+          "limit": 8
+         },
+         "atraer": 0.35,
+         "lanzar": 0.2
+        },
+        {
+         "t": 23,
+         "area": {
+          "fwd": 0.3,
+          "r": 6,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 5,
+         "empuje": 1.4,
+         "lanzar": 0.3,
+         "impacto": "viento_torrente_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "runa",
+     "name": "Runa del Viento",
+     "trigger": "combate",
+     "cooldown": 12,
+     "desc": "En combate: el viento te rodea, saltas más y tus golpes levantan a los enemigos un instante.",
+     "stages": [
+      {
+       "fx": "viento_runa",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:jump_boost",
+            "ticks": 45,
+            "nivel": 0
+           }
+          ],
+          "marca": {
+           "id": "runa",
+           "ticks": 45,
+           "pociones": [
+            {
+             "id": "minecraft:levitation",
+             "ticks": 8,
+             "nivel": 1
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "furia",
+     "name": "Furia del Vendaval",
+     "trigger": "dano",
+     "cooldown": 60,
+     "vida": 0.3,
+     "desc": "Con poca vida: un tornado te eleva casi intocable, atrae a todos los enemigos y caes sobre ellos con un tajo que agrieta el suelo.",
+     "stages": [
+      {
+       "fx": "viento_furia",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:levitation",
+            "ticks": 80,
+            "nivel": 1
+           },
+           {
+            "id": "minecraft:resistance",
+            "ticks": 100,
+            "nivel": 3
+           }
+          ]
+         }
+        },
+        {
+         "t": 2,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 6,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 10,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 14,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 18,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 22,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 26,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 30,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 34,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 38,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 42,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 46,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 50,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 54,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 58,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 62,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 66,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 70,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 74,
+         "area": {
+          "r": 15,
+          "vr": 8,
+          "limit": 12
+         },
+         "atraer": 0.3,
+         "lanzar": 0.12
+        },
+        {
+         "t": 80,
+         "area": {
+          "r": 7,
+          "vr": 4,
+          "limit": 10
+         },
+         "dano": 4,
+         "lanzar": -0.9,
+         "impacto": "viento_impacto"
+        },
+        {
+         "t": 85,
+         "self": {
+          "impulso": [
+           0,
+           -2.5
+          ]
+         }
+        },
+        {
+         "t": 90,
+         "area": {
+          "r": 10,
+          "vr": 4,
+          "limit": 12
+         },
+         "dano": 6,
+         "pociones": [
+          {
+           "id": "minecraft:slowness",
+           "ticks": 60,
+           "nivel": 3
+          }
+         ],
+         "impacto": "viento_furia_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "salto",
+     "name": "Salto del Viento",
+     "trigger": "dano",
+     "cooldown": 20,
+     "vida": 0.5,
+     "desc": "Si te quedas a media vida: saltas por los aires y caes despacio.",
+     "stages": [
+      {
+       "fx": "viento_salto",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "impulso": [
+           0.3,
+           1.1
+          ],
+          "pociones": [
+           {
+            "id": "minecraft:slow_falling",
+            "ticks": 60,
+            "nivel": 0
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trueno",
+   "name": "Ronin del Trueno",
+   "desc": "Skills de rayo: cortes en combo, esquivas relámpago, embestidas eléctricas y un dragón del trueno.",
+   "color": "#e8f06a",
+   "skills": [
+    {
+     "id": "corte",
+     "name": "Corte del Trueno",
+     "trigger": "golpe",
+     "cooldown": 1.2,
+     "desc": "Al golpear: tajo a la izquierda, tajo a la derecha y un salto que cae como un rayo y puede paralizar.",
+     "stages": [
+      {
+       "fx": "trueno_corte_1",
+       "actions": [
+        {
+         "area": {
+          "fwd": 0.6,
+          "r": 4,
+          "vr": 2,
+          "limit": 4
+         },
+         "impacto": "trueno_impacto",
+         "t": 1,
+         "dano": 3
+        }
+       ]
+      },
+      {
+       "fx": "trueno_corte_2",
+       "actions": [
+        {
+         "area": {
+          "fwd": 0.6,
+          "r": 4,
+          "vr": 2,
+          "limit": 4
+         },
+         "impacto": "trueno_impacto",
+         "t": 1,
+         "dano": 3
+        }
+       ]
+      },
+      {
+       "fx": "trueno_corte_3",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "impulso": [
+           0.5,
+           0.6
+          ]
+         }
+        },
+        {
+         "t": 6,
+         "self": {
+          "impulso": [
+           0.35,
+           -0.9
+          ]
+         }
+        },
+        {
+         "t": 10,
+         "area": {
+          "fwd": 0.6,
+          "r": 5,
+          "vr": 2.5,
+          "limit": 4
+         },
+         "dano": 5,
+         "impacto": "trueno_impacto_critico",
+         "aturdir": 40,
+         "probAturdir": 0.2,
+         "impactoAturdir": "trueno_aturdido"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "reflejo",
+     "name": "Reflejo Relámpago",
+     "trigger": "dano",
+     "cooldown": 3,
+     "chance": 0.22,
+     "desc": "Al recibir un golpe: 22 % de esquivarlo como un rayo y ganar velocidad un momento.",
+     "stages": [
+      {
+       "fx": "trueno_reflejo",
+       "actions": [
+        {
+         "esquivar": true,
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:speed",
+            "ticks": 40,
+            "nivel": 2
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "destello",
+     "name": "Trueno y Destello",
+     "trigger": "golpe_corriendo",
+     "cooldown": 6,
+     "desc": "Golpeando mientras corres: cargas un círculo de rayos y sales disparado cortando todo lo que hay delante.",
+     "stages": [
+      {
+       "fx": "trueno_destello",
+       "actions": [
+        {
+         "t": 10,
+         "linea": {
+          "len": 11,
+          "r": 1.6,
+          "limit": 6
+         },
+         "dano": 5,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 11,
+         "self": {
+          "impulso": [
+           2.2,
+           0.0
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "contraataque",
+     "name": "Contraataque Tormenta",
+     "trigger": "dano",
+     "cooldown": 8,
+     "desc": "Al recibir un golpe: das un paso atrás y respondes con dos tajos que paralizan.",
+     "stages": [
+      {
+       "fx": "trueno_contraataque",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "impulso": [
+           -1.1,
+           0.1
+          ]
+         }
+        },
+        {
+         "t": 5,
+         "area": {
+          "fwd": 0.6,
+          "r": 4,
+          "vr": 2,
+          "limit": 4
+         },
+         "dano": 3,
+         "aturdir": 40,
+         "impacto": "trueno_impacto",
+         "impactoAturdir": "trueno_aturdido"
+        },
+        {
+         "t": 9,
+         "area": {
+          "fwd": 0.6,
+          "r": 4,
+          "vr": 2,
+          "limit": 4
+         },
+         "dano": 3,
+         "impacto": "trueno_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "caida",
+     "name": "Caída Crepitante",
+     "trigger": "golpe_critico",
+     "cooldown": 12,
+     "desc": "Con un golpe crítico: te elevas cargando energía y caes como un rayo, golpeando todo a tu alrededor.",
+     "stages": [
+      {
+       "fx": "trueno_caida",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:levitation",
+            "ticks": 30,
+            "nivel": 4
+           }
+          ]
+         }
+        },
+        {
+         "t": 31,
+         "self": {
+          "impulso": [
+           0.6,
+           -2.2
+          ]
+         }
+        },
+        {
+         "t": 34,
+         "area": {
+          "r": 9,
+          "vr": 5,
+          "limit": 15
+         },
+         "dano": 5,
+         "empuje": 0.6,
+         "impacto": "trueno_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "andanada",
+     "name": "Andanada de Trueno",
+     "trigger": "golpe_agachado",
+     "cooldown": 9,
+     "desc": "Golpeando agachado: una ráfaga de estocadas eléctricas hacia delante durante dos segundos.",
+     "stages": [
+      {
+       "fx": "trueno_andanada",
+       "actions": [
+        {
+         "t": 8,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:slowness",
+            "ticks": 30,
+            "nivel": 2
+           }
+          ]
+         }
+        },
+        {
+         "t": 8,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 12,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 16,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 20,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 24,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 28,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 32,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 36,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 40,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        },
+        {
+         "t": 44,
+         "area": {
+          "fwd": 2.5,
+          "r": 3,
+          "vr": 2,
+          "limit": 5
+         },
+         "dano": 1.2,
+         "impacto": "trueno_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dios",
+     "name": "Dios del Trueno",
+     "trigger": "dano",
+     "cooldown": 90,
+     "vida": 0.4,
+     "desc": "Con poca vida: un dragón de rayos aparece a tu espalda y te da fuerza y velocidad durante diez segundos.",
+     "stages": [
+      {
+       "fx": "trueno_dios",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:strength",
+            "ticks": 210,
+            "nivel": 0
+           },
+           {
+            "id": "minecraft:speed",
+            "ticks": 210,
+            "nivel": 0
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hechizos",
+   "name": "Hechizos del Alma",
+   "desc": "Hechizos con cinemática: te conviertes en mago con tu propia cara para curarte o lanzar agua, estrellas, láseres y una espada de sol.",
+   "color": "#b77dff",
+   "skills": [
+    {
+     "id": "curacion",
+     "name": "Curación Mágica",
+     "trigger": "dano",
+     "cooldown": 40,
+     "vida": 0.35,
+     "desc": "Con poca vida: te conviertes en mago y te curas durante unos segundos, protegido.",
+     "stages": [
+      {
+       "fx": "hechizo_curacion",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:resistance",
+            "ticks": 129,
+            "nivel": 3
+           },
+           {
+            "id": "minecraft:speed",
+            "ticks": 129,
+            "nivel": 1
+           }
+          ]
+         }
+        },
+        {
+         "t": 50,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 55,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 60,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 65,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 70,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 75,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 80,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 85,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 90,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 95,
+         "self": {
+          "curar": 1
+         }
+        },
+        {
+         "t": 100,
+         "self": {
+          "curar": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "agua",
+     "name": "Disparo de Agua",
+     "trigger": "golpe_corriendo",
+     "cooldown": 50,
+     "desc": "Golpeando mientras corres: invocas una esfera de agua que sale disparada y atraviesa a los enemigos.",
+     "stages": [
+      {
+       "fx": "hechizo_agua",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:resistance",
+            "ticks": 91,
+            "nivel": 2
+           },
+           {
+            "id": "minecraft:speed",
+            "ticks": 91,
+            "nivel": 1
+           }
+          ]
+         }
+        },
+        {
+         "t": 85,
+         "proyectil": {
+          "v": 1.25,
+          "ticks": 40,
+          "r": 2.2,
+          "up": 1.3,
+          "fwd": 0.3,
+          "atraviesa": true
+         },
+         "dano": 6,
+         "impacto": "hechizo_agua_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "estrella",
+     "name": "Estrella Rebotante",
+     "trigger": "combate",
+     "cooldown": 80,
+     "desc": "En combate: una estrella de energía avanza arrollando enemigos y explota al final.",
+     "stages": [
+      {
+       "fx": "hechizo_estrella",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:resistance",
+            "ticks": 95,
+            "nivel": 2
+           },
+           {
+            "id": "minecraft:speed",
+            "ticks": 95,
+            "nivel": 1
+           }
+          ]
+         }
+        },
+        {
+         "t": 82,
+         "proyectil": {
+          "v": 1.25,
+          "ticks": 88,
+          "r": 1.5,
+          "up": 1.3,
+          "fwd": 0.3,
+          "atraviesa": true,
+          "vels": [
+           {
+            "t": 50,
+            "v": 1.0
+           },
+           {
+            "t": 100,
+            "v": 0.005
+           }
+          ],
+          "alFinal": {
+           "fx": "hechizo_explosion",
+           "area": {
+            "r": 6,
+            "vr": 3,
+            "limit": 10
+           },
+           "dano": 6
+          }
+         },
+         "dano": 5,
+         "impacto": "hechizo_impacto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "vacio",
+     "name": "Láser del Vacío",
+     "trigger": "golpe_agachado",
+     "cooldown": 80,
+     "desc": "Golpeando agachado: abres el vacío y disparas un láser que lo atraviesa todo y estalla delante de ti.",
+     "stages": [
+      {
+       "fx": "hechizo_vacio",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:resistance",
+            "ticks": 100,
+            "nivel": 2
+           },
+           {
+            "id": "minecraft:speed",
+            "ticks": 100,
+            "nivel": 1
+           }
+          ]
+         }
+        },
+        {
+         "t": 85,
+         "linea": {
+          "len": 15,
+          "r": 1.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 88,
+         "linea": {
+          "len": 15,
+          "r": 1.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 91,
+         "linea": {
+          "len": 15,
+          "r": 1.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 94,
+         "linea": {
+          "len": 15,
+          "r": 1.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 97,
+         "linea": {
+          "len": 15,
+          "r": 1.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 95,
+         "area": {
+          "fwd": 5,
+          "r": 5,
+          "vr": 3,
+          "limit": 10
+         },
+         "dano": 5,
+         "impacto": "hechizo_explosion"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sol",
+     "name": "Espada Solar",
+     "trigger": "golpe_critico",
+     "cooldown": 60,
+     "desc": "Con un golpe crítico: una espada de sol barre todo lo que tienes delante, lanzándolo y prendiéndole fuego.",
+     "stages": [
+      {
+       "fx": "hechizo_sol",
+       "actions": [
+        {
+         "t": 1,
+         "self": {
+          "pociones": [
+           {
+            "id": "minecraft:resistance",
+            "ticks": 70,
+            "nivel": 2
+           },
+           {
+            "id": "minecraft:speed",
+            "ticks": 70,
+            "nivel": 1
+           }
+          ]
+         }
+        },
+        {
+         "t": 60,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 64,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 68,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 72,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 76,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 80,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 84,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        },
+        {
+         "t": 88,
+         "area": {
+          "fwd": 3,
+          "r": 3.5,
+          "vr": 2.5,
+          "limit": 8
+         },
+         "dano": 1.5,
+         "lanzar": 0.5,
+         "empuje": 0.8,
+         "fuego": 3,
+         "impacto": "hechizo_impacto"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
