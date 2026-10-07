@@ -360,7 +360,7 @@ public final class TFJobsMenu {
     private static ItemStack coins(ServerPlayer player) {
         OptionalLong balance = TFEconomy.balance(player.getServer(), player.getUUID());
         double pendingCoins = TFJobs.pendingCoins(player.getUUID());
-        TFIcon icon = TFIcon.of(Items.SUNFLOWER).name("Tus " + TFServerConfig.currency(), ChatFormatting.GOLD);
+        TFIcon icon = TFIcon.of(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()).name("Tus " + TFServerConfig.currency(), ChatFormatting.GOLD);
         if (balance.isPresent()) icon.line(TFEconomy.format(balance.getAsLong()), ChatFormatting.YELLOW);
         if (pendingCoins >= 1) icon.line("+" + TFEconomy.number((long) pendingCoins) + " en el próximo pago", ChatFormatting.GRAY);
         icon.blank().text("Gástalas en la tienda de monedas y en la ruleta de la web.", ChatFormatting.DARK_GRAY);

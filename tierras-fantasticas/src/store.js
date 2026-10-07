@@ -125,6 +125,9 @@ const MIGRATIONS = [
   // de PayPal, y capture_id el pago (payment intent de Stripe o captura de PayPal).
   'ALTER TABLE orders ADD COLUMN method TEXT',
   'CREATE INDEX IF NOT EXISTS orders_session ON orders (session_id)',
+  // Saldo de monedas del jugador según el puente (se actualiza mientras está conectado) y cuándo se leyó.
+  'ALTER TABLE players ADD COLUMN coins INTEGER',
+  'ALTER TABLE players ADD COLUMN coins_at INTEGER',
 ];
 
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
@@ -379,8 +382,24 @@ export function createStore(db) {
 
   async function playerByUuid(uuid) {
     await init();
-    const row = await db.prepare('SELECT uuid, name, last_seen FROM players WHERE uuid = ?').bind(String(uuid).toLowerCase()).first();
-    return row ? { uuid: row.uuid, name: row.name, lastSeen: row.last_seen } : null;
+    const row = await db
+      .prepare('SELECT uuid, name, last_seen, coins, coins_at FROM players WHERE uuid = ?')
+      .bind(String(uuid).toLowerCase())
+      .first();
+    return row
+      ? { uuid: row.uuid, name: row.name, lastSeen: row.last_seen, coins: row.coins ?? null, coinsAt: row.coins_at ?? null }
+      : null;
+  }
+
+  // Saldos de monedas que manda el puente: [{ uuid, coins }].
+  async function setCoins(list) {
+    await init();
+    if (!list.length) return;
+    const at = Date.now();
+    const statements = list.map((p) =>
+      db.prepare('UPDATE players SET coins = ?, coins_at = ? WHERE uuid = ?').bind(p.coins, at, p.uuid.toLowerCase()),
+    );
+    for (let i = 0; i < statements.length; i += 100) await db.batch(statements.slice(i, i + 100));
   }
 
   // --- Rangos ---
@@ -714,6 +733,21 @@ export function createStore(db) {
     return row?.n || 0;
   }
 
+  // Ajustes sueltos guardados por la web (p. ej. la invitación de Discord): { value, at } o null.
+  async function getSetting(key) {
+    await init();
+    const row = await db.prepare('SELECT value, updated_at FROM settings WHERE key = ?').bind(key).first();
+    return row ? { value: row.value, at: row.updated_at } : null;
+  }
+
+  async function setSetting(key, value) {
+    await init();
+    await db
+      .prepare('INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at')
+      .bind(key, String(value), Date.now())
+      .run();
+  }
+
   // Secreto propio de la web (firma de cookies) guardado en la base de datos la primera vez.
   async function secret(name) {
     await init();
@@ -726,6 +760,8 @@ export function createStore(db) {
   }
 
   return {
+    getSetting,
+    setSetting,
     getOrder,
     findOrderByPaymentIntent,
     findOrderBySession,
@@ -735,6 +771,7 @@ export function createStore(db) {
     queueDelivery,
     queueRevocation,
     upsertPlayers,
+    setCoins,
     findPlayer,
     playerByUuid,
     getRank,

@@ -66,6 +66,36 @@ export class Discord {
     return { status: res.status, data };
   }
 
+  // Invitación al servidor sin «X te ha invitado»: la del widget del servidor (no lleva a nadie que invita; hay que
+  // activar el widget y elegir su canal de invitación en Ajustes del servidor → Widget). Si no hay widget, la crea el
+  // bot (sale el bot, no una persona) en el primer canal de texto, permanente. Devuelve el código o null.
+  async serverInvite() {
+    if (!this.guildId) return null;
+    try {
+      const { data } = await this.request('GET', `/guilds/${this.guildId}/widget.json`, {});
+      const code = String(data?.instant_invite || '').match(/(?:invite\/|gg\/)([\w-]+)$/)?.[1];
+      if (code) return code;
+    } catch {
+      // widget desactivado o sin canal de invitación
+    }
+    if (!this.botToken) return null;
+    const bot = `Bot ${this.botToken}`;
+    try {
+      const { data: channels } = await this.request('GET', `/guilds/${this.guildId}/channels`, { auth: bot });
+      const text = (Array.isArray(channels) ? channels : []).filter((c) => c.type === 0).sort((a, b) => a.position - b.position);
+      const preferred = text.find((c) => /bienvenid|welcome|reglas|rules|general|inicio/i.test(c.name)) || text[0];
+      if (!preferred) return null;
+      const { data: invite } = await this.request('POST', `/channels/${preferred.id}/invites`, {
+        auth: bot,
+        body: { max_age: 0, max_uses: 0, unique: false },
+        reason: 'Enlace permanente de la web',
+      });
+      return invite?.code || null;
+    } catch {
+      return null;
+    }
+  }
+
   // Intercambia el código del OAuth por el token del usuario y lee su perfil.
   async exchangeCode(code) {
     const basic = btoa(`${this.clientId}:${this.clientSecret}`);

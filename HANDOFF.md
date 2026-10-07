@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **7 de octubre de 2026 (mediodía)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **8 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,7 +12,55 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (7 de octubre de 2026, noche): reembolsos que retiran lo comprado, PayPal, efecto de relleno suave, 404 y TF Client 1.3.11
+### Última entrega (8 de octubre de 2026): /tf shop, techo de netherita, Fantastic Coin, móvil fluido, Discord sin invitador y TF Client 1.3.12
+**Lo que pidió el dueño (textual):** *«en teléfono la página va bugueada, parpadea, se traba, se pone lenta horrible…
+no me gusta el diseño de algunos botones de la tarjeta de tienda, el color esmeralda hazlo más oscuro… el botón de
+discord me manda a discord como si yo lo invite… haz que sea el link directo… armoniza colores, efectos… agrega soporte
+para pagar con paypal y dime cómo saco las keys… asegúrate que todo item al ser comprado vaya linkeado con nbt al uuid…
+al lado del nombre en la página pon un icono de monedas… saca las monedas de oro de mi mod, esa moneda será la de oro,
+la Fantastic Coin… quiero una tienda automatizada, el comando es tf shop, full configurable como el de los jobs»*. Y:
+*«debes hacer que tf client lea todos los mods del server… y ponga un límite a todas, el techo es a nivel netherita…
+para que tengamos un techo fijo y que las mejorcitas sean las de la tienda web»*. Y: *«no vas a meter el mod de
+fantastic currency, solo saca la textura y métela en tf client, tf client es nuestro mod nodriza a todo»*.
+
+**Mod 1.3.12:**
+- **`/tf shop`** (`shop/TFShop.java`, `TFShopConfig.java`, `TFShopMenu.java`): tienda automatizada de compra y venta
+  con las monedas del servidor (TFEconomy). Cofre de 6 filas (vanilla `GENERIC_9x6`, todo lo decide el servidor en
+  cada clic: nada se mueve): categorías → objetos por páginas → ventana de cantidad. Clic izq. comprar, clic der.
+  vender un lote, Mayús + der. vender todo, pulsar objetos del inventario los vende, botón «Vender todo». Solo acepta
+  objetos limpios y nunca los de los sets. Configuración completa en `config/tfclient-shop.json` (por defecto 7
+  categorías, 73 objetos; precios, lotes, NBT, comandos, límites diarios, nivel de permiso, textos con `&`):
+  detalle en `tf-client/README.md` («Tienda del servidor»). `/tf shop recargar` (nivel 3).
+- **Techo de netherita** (`items/TFLimits.java`, config `config/tfclient-limits.json`): ItemAttributeModifierEvent con
+  prioridad LOWEST recorta en **todos los objetos de todos los mods** daño (8; 10 si es lento como un hacha), armadura
+  por pieza (3/8/6/3), dureza 3 y empuje 0,1, y quita multiplicadores positivos; BreakSpeed recorta la velocidad de
+  minar a 9. Exentos: los objetos de los sets (`TFItem`) y las `excepciones`.
+- **Fantastic Coin** (`tfclient:fantastic_coin`): la textura de la moneda de oro del mod Fantastic Currency del dueño
+  (con «TF» grabado), solo como icono del saldo en `/tf shop` y `/tf jobs`. **El mod Fantastic Currency NO se usa.**
+- **Saldo a la web**: el puente manda `coins` de cada jugador conectado (`TFEconomy.balance`).
+- Vinculación: comprobado que todo lo que se compra (rangos, crates, recompensas con objetos de set) se entrega con
+  `tf web sets give`, que pone dueño (UUID) y pedido en el NBT. Los `give` normales solo son regalos gratis (manzanas,
+  pan, diamantes). Los cosméticos no se vinculan (lo decidió el dueño).
+
+**Web:**
+- **Móvil fluido**: en teléfonos y tabletas (`max-width: 760px` o `hover: none` + `pointer: coarse`, sección «Móvil»
+  de styles.css) no hay capas animadas detrás (`.sky` oculto) y el fondo es `img/nebula-mobile.webp` (vertical,
+  quieto, con la nebulosa y las estrellas dentro; lo hace `mobile()` de `tools/nebula_bg.py`). Las capas fijas miden
+  `100lvh` para que la barra del navegador no las obligue a redibujarse (eso era el parpadeo). Sin bucles en tarjetas ni
+  pestañas, la entrada de página solo con opacidad y el scroll con un `requestAnimationFrame`.
+- **Discord sin «X te ha invitado»**: `/discord` usa la invitación del **widget** del servidor (no lleva invitador) o,
+  si no hay widget, una invitación permanente creada por el **bot**; se guarda 6 h en `settings` (`discord_invite`).
+  Para el dueño: Discord → Ajustes del servidor → **Widget** → activar «Habilitar widget del servidor» y elegir el
+  canal de invitación. Sin eso se usa el bot (necesita el permiso «Crear invitación»), y si falla, `DISCORD_URL`.
+- **Monedas junto al nombre**: la cabecera enseña la Fantastic Coin (`img/coin.png`) y el saldo (columna
+  `players.coins`, que llega por el puente). Las monedas de la web usan la misma moneda.
+- **Diseño**: «Visitar la tienda» en esmeralda oscuro → azul (`--shimmer-sea`); las pestañas de la tienda al pasar el
+  ratón se llenan suave (el destello fuerte es solo de la elegida); botones de las tarjetas más grandes que se encienden
+  al pasar por la tarjeta; todos los botones deslizan su degradado (`--c3` por variante); pestañas que caben en el
+  móvil.
+- PayPal ya estaba (entrega anterior): ver ahí cómo sacar las claves.
+
+### Entrega anterior (7 de octubre de 2026, noche): reembolsos que retiran lo comprado, PayPal, efecto de relleno suave, 404 y TF Client 1.3.11
 **Lo que pidió el dueño (textual):** *«el efecto del botón de izquierda a derecha cuando desaparece se va bien feo
 como una línea fea… mejora ese efecto tanto de inicio como de final. Y revisa, ya tengo stripe conectado. También
 ¿cómo conecto paypal?? Y otra cosa, asegúrate que si alguien pide un reembolso todo lo que compró se le quite del
@@ -429,7 +477,7 @@ IP `216.163.187.40:19001`) con +200 mods. Este repo tiene:
 | Carpeta | Qué es |
 | --- | --- |
 | `tierras-fantasticas/` | La web/tienda. Cloudflare Workers + D1 + archivos estáticos (`public/`). Dominio `tierrasfantásticas.store` = `https://xn--tierrasfantsticas-hpb.store`. |
-| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.10**. |
+| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.12**. |
 | `wrangler.jsonc` | Configuración del Worker de Cloudflare (en la raíz a propósito). |
 | `.github/workflows/` | `tf-client.yml` compila el mod en cada push que toque `tf-client/` (artefacto `tfclient-jar`); `server-ping.yml` comprueba el servidor. |
 
@@ -448,14 +496,17 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.11**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.13**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
 - **Secretos** solo en Cloudflare (Secrets), **nunca** en el chat ni en git (lista en la sección 4).
   Stripe va en **modo real** (no quiere modo de prueba; ya se enfadó por eso).
-- Comandos del mod: **solo** `/tf web …` (staff) y `/tf jobs`. No añadas más raíces, alias ni comandos para
-  jugadores (se quejó dos veces de «un vergo de comandos» y de tener `jobs` y `oficios` a la vez).
+- Comandos del mod: **solo** `/tf web …` (staff), `/tf jobs` y `/tf shop` (este lo pidió él en 1.3.12). No añadas
+  más raíces, alias ni comandos para jugadores (se quejó dos veces de «un vergo de comandos» y de tener `jobs` y
+  `oficios` a la vez).
+- **TF Client es el mod «nodriza»**: todo va dentro de él (puente con todo). No metas otros mods como dependencia
+  (p. ej. Fantastic Currency: de ahí solo se sacó la textura de la moneda de oro, la Fantastic Coin).
 - Ventana de oficios: el arte del pack encima de un cofre de 5 filas; **abajo, en el sitio del inventario, solo
   botones** (nunca los objetos del jugador). Está como él quiere en la 1.3.3: no la cambies sin que lo pida.
 - Web:
@@ -574,6 +625,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   dueño); rangos de hierro a +3 (1.3.6). Atributos ocultos en la descripción (`HIDE_ATTRIBUTES`).
 - Comandos (todos en `items/TFCommands.java`):
   - `/tf jobs` (todos; staff: `recargar`, `nivel`, `xp`, `reiniciar`; `ver <oficio>` lo usan los avisos del chat).
+  - `/tf shop` (todos; staff: `recargar`): la tienda del servidor, `shop/TFShop*.java`, config `config/tfclient-shop.json`.
   - `/tf web sets list|give`, `/tf web tienda add|precio|quitar|lista|vaciar` (staff) y los que usa la web:
     `/tf web rango`, `/tf web monedas ver|dar|quitar|poner`, `/tf web ruleta girar`, `/tf web tienda comprar`.
 - Código: `server/TFBridge.java` (puente), `shop/TFCoinShop.java`, `shop/TFRoulette.java`, `economy/` (Vault por
