@@ -149,7 +149,7 @@ def footer():
         <img src="/img/logo.webp" alt="" width="48" height="53" loading="lazy">
         <div>
           <b data-server-name>Tierras Fantásticas</b>
-          <p>Servidor de Minecraft de aventura, castillos y magia.</p>
+          <p>Servidor de Minecraft de survival, aventura, fantasía y rol.</p>
           <p>IP: <span data-server-ip>{IP}</span></p>
         </div>
       </div>
@@ -179,7 +179,8 @@ def footer():
             <li><a href="/terminos">Términos y condiciones</a></li>
             <li><a href="/privacidad">Aviso de privacidad</a></li>
             <li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
-            <li><a href="#" class="discord-link" target="_blank" rel="noopener" hidden>Discord</a></li>
+            <li><a href="/discord" target="_blank" rel="noopener">Discord</a></li>
+            <li><a href="/whatsapp" target="_blank" rel="noopener">Grupo de WhatsApp</a></li>
           </ul>
         </div>
       </div>
