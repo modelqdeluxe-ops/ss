@@ -32,6 +32,15 @@ BOOT = ("<script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList
         "else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}"
         "})(document)</script>")
 
+# Fondo vivo: la nebulosa que se desplaza y respira, estrellas que titilan y alguna estrella fugaz (styles.css,
+# «Fondo vivo»). Detrás de todo, sin eventos del ratón.
+SKY = '''  <div class="sky" aria-hidden="true">
+    <i class="neb-a"></i><i class="neb-b"></i>
+    <span class="sky-stars"><i class="stars-a"></i><i class="stars-b"></i></span>
+    <i class="shoot"></i><i class="shoot s2"></i>
+  </div>
+'''
+
 LOADER = '''  <div class="loader" aria-hidden="true">
     <div class="loader-inner">
       <img src="/img/logo.webp" alt="" width="104" height="115">
@@ -74,7 +83,7 @@ def head(title, desc, page, hero=False, preload_hero=False):
   {BOOT}
 </head>
 <body data-page="{page}"{' data-hero' if hero else ''}>
-{LOADER}'''
+{SKY}{LOADER}'''
 
 
 def header(page):
@@ -243,7 +252,8 @@ JOIN_STEPS = '\n'.join([
 
 
 def index():
-    # Portada ligera: el emblema, la IP y unas pocas crates. El resto está en sus páginas (tienda, el mundo, ayuda).
+    # Portada ligera (lo pidió el dueño): solo el emblema con la IP y «Tu aventura empieza hoy». Lo demás está en sus
+    # páginas (tienda, el mundo, ayuda).
     return head('Tierras Fantásticas — Servidor de Minecraft',
                 'Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.',
                 'inicio', hero=True, preload_hero=True) + header('inicio') + f'''
@@ -268,54 +278,10 @@ def index():
         </div>
         <span class="hero-meta">Minecraft Java 1.20.1 · Forge · Gratis</span>
       </div>
-      <a class="scroll-cue" href="#reino" aria-label="Bajar"><span></span></a>
+      <a class="scroll-cue" href="#unete" aria-label="Bajar"><span></span></a>
     </section>
 
-    <div class="wrap stats-wrap">
-      <ul class="stats" aria-label="El servidor en cifras">
-        <li class="stat" style="--c:#4ade80"><span class="stat-icon">{I['users']}</span><span class="stat-text"><b data-players>—</b><span>Jugadores en línea</span></span></li>
-        <li class="stat" style="--c:#67e8f9"><span class="stat-icon">{I['box']}</span><span class="stat-text"><b>1.20.1</b><span>Minecraft Java</span></span></li>
-        <li class="stat" style="--c:#b197fc"><span class="stat-icon">{I['sparkles']}</span><span class="stat-text"><b data-count="200" data-prefix="+">+200</b><span>Mods</span></span></li>
-        <li class="stat" style="--c:#fcc94a"><span class="stat-icon">{I['gift']}</span><span class="stat-text"><b data-crate-count>40</b><span>Crates</span></span></li>
-      </ul>
-    </div>
-
-    <section class="wrap section" id="reino">
-      <div class="section-head center reveal">
-        <span class="eyebrow">El reino</span>
-        <h2>Una aventura <span class="text-grad">sin final</span></h2>
-        <p>Supervivencia con alma de RPG: funda tu reino, vive tu propia leyenda y haz fortuna con tu oficio.</p>
-      </div>
-      <div class="pillars">
-        <article class="pillar frame reveal">
-          <div class="pillar-art"><img src="/img/night-768.webp" alt="El castillo de Tierras Fantásticas de noche" width="768" height="432" loading="lazy" style="object-position:88% 30%"></div>
-          <div class="pillar-body"><span class="pillar-icon">{I['castle']}</span><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
-        </article>
-        <article class="pillar frame reveal" style="--c:#b197fc">
-          <div class="pillar-art contain"><img src="/img/crates/necros.webp" alt="Armas del set Necros" width="1200" height="800" loading="lazy"></div>
-          <div class="pillar-body"><span class="pillar-icon">{I['swords']}</span><h3>Sets con estilo</h3><p>Armas animadas, armaduras y cosméticos (alas, mochilas, cascos) que se ven en el juego.</p></div>
-        </article>
-        <article class="pillar frame reveal" style="--c:#fcc94a">
-          <div class="pillar-art"><img src="/img/home/oficio-miner.webp" alt="El minero, uno de los oficios" width="590" height="190" loading="lazy" class="pixel-img"></div>
-          <div class="pillar-body"><span class="pillar-icon">{I['coins']}</span><h3>Oficios y monedas</h3><p>Minero, herrero, cazador… Sube de nivel, cumple misiones y gana monedas para la tienda del servidor.</p></div>
-        </article>
-      </div>
-    </section>
-
-    <section class="wrap section pt-0">
-      <div class="section-head split-head reveal">
-        <div>
-          <span class="eyebrow">Nuevo en la tienda</span>
-          <h2>Crates <span class="text-grad">del reino</span></h2>
-        </div>
-        <a class="btn btn-ghost" href="/tienda#crates" data-crates-all>Ver todas las crates {I['arrow']}</a>
-      </div>
-      <div class="crate-row" id="crate-spotlight">
-        {skeletons(4)}
-      </div>
-    </section>
-
-    <section class="wrap section pt-0">
+    <section class="wrap section" id="unete">
       <div class="panel cta-band reveal">
         <span class="eyebrow">Únete</span>
         <h2>Tu aventura empieza hoy</h2>
@@ -375,22 +341,19 @@ def tienda():
         <div class="owned-head">
           <span class="icon">{I['shield']}</span>
           <div>
-            <h2 id="owned-title">Lo que compras es tuyo para siempre</h2>
-            <p>Los equipos de los rangos, las crates y las armas de la ruleta son permanentes y quedan vinculados a tu
-              cuenta de Minecraft (tu UUID). Así funciona, sin letra pequeña:</p>
+            <h2 id="owned-title">Tus compras son para siempre</h2>
+            <p>Las armas, herramientas y armaduras de los rangos y de las crates quedan vinculadas a tu cuenta de
+              Minecraft.</p>
           </div>
         </div>
         <ul class="owned-list">
-          <li><b>Irrompibles</b><span>No tienen durabilidad: nunca se gastan ni se rompen. Tirados al suelo no desaparecen
-            y no los destruyen la lava, el fuego, los cactus ni las explosiones; si caen al vacío, vuelven a ti.</span></li>
-          <li><b>Solo para ti</b><span>Solo tú puedes cogerlos, llevarlos, ponértelos y usarlos. Si los tiras o los guardas
-            en un cofre, nadie más podrá usarlos: si otro jugador los saca, vuelven a tu inventario (o te esperan hasta
-            que entres).</span></li>
-          <li><b>No transferibles</b><span>No se pueden regalar, prestar, vender ni intercambiar con otros jugadores, ni
-            dentro ni fuera del juego.</span></li>
-          <li><b>Los cosméticos, libres</b><span>Los cosméticos y la ropa (sombreros, alas, mochilas, objetos de mano y las
-            colecciones de cosméticos) no se vinculan: puedes regalarlos e intercambiarlos. Las alas planean como unas
-            élitros y tampoco se gastan nunca.</span></li>
+          <li><b>Irrompibles</b><span>No se gastan ni se rompen. En el suelo no desaparecen y, si caen al vacío, vuelven
+            a ti.</span></li>
+          <li><b>Solo para ti</b><span>Nadie más puede cogerlas, ponérselas ni usarlas. Si otro jugador las saca de un
+            cofre, vuelven a ti.</span></li>
+          <li><b>No transferibles</b><span>No se pueden regalar, vender ni intercambiar.</span></li>
+          <li><b>Cosméticos libres</b><span>Los cosméticos y la ropa (sombreros, alas, mochilas) no se vinculan: puedes
+            regalarlos e intercambiarlos. Las alas planean como unas élitros.</span></li>
         </ul>
       </section>
       <p class="shop-legal">Tierras Fantásticas es un servidor independiente. {DISCLAIMER_ES} En la tienda no hay nada al
@@ -577,7 +540,7 @@ def ayuda():
 {faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios. Los precios están en dólares estadounidenses (USD) y el precio que ves es el total.')}
 {faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
 {faq('¿Qué recibo al comprar una crate?', 'El set completo, siempre el mismo y sin nada al azar: sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Llegan a tu inventario en cuanto estás conectado, son permanentes y quedan vinculados a tu cuenta. En la tienda puedes ver cada pieza en 3D y probártela antes.')}
-{faq('¿Puedo regalar o intercambiar lo que compro?', 'Los equipos de los rangos, las crates y las armas de la ruleta no: son permanentes, irrompibles y van vinculados a tu cuenta (tu UUID). Solo tú puedes cogerlos, llevarlos, ponértelos y usarlos; si los tiras o los dejas en un cofre, nadie más puede usarlos y, si otro jugador los saca, vuelven a ti. Los cosméticos y la ropa (sombreros, alas, mochilas, objetos de mano) sí se pueden regalar e intercambiar. Todo explicado en la <a href="/tienda#vinculados">tienda</a>.')}
+{faq('¿Puedo regalar o intercambiar lo que compro?', 'Los cosméticos y la ropa, sí. Las armas, herramientas y armaduras de los rangos y de las crates, no: quedan vinculadas a tu cuenta y solo tú puedes usarlas. Lo tienes explicado en la <a href="/tienda#vinculados">tienda</a>.')}
 {faq('¿Las alas sirven para volar?', 'Sí: todas las alas de la tienda planean como unas élitros, en el pecho o en el hueco de la espalda (con la pechera puesta), y nunca se gastan. Las mochilas, capas y colas son solo de adorno.')}
 {faq('¿Qué es la tienda de monedas?', 'Objetos del servidor que se pagan con las monedas que ganas jugando. Las monedas no se venden con dinero, no tienen valor real y no se pueden cambiar por dinero. El staff la actualiza desde el juego y la web la muestra al momento.')}
 {faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}

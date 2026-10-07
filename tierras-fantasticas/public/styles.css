@@ -42,6 +42,8 @@
   --pri-b: #8f45f5;
   --pri-lip: #3e1478;
   --pri-grad: linear-gradient(135deg, #ff5ed5 0%, #b04cf2 52%, #6f5cff 100%);
+  /* El destello de los botones: rosa → violeta → azul → cian (el doble de ancho, se desliza al pasar el ratón) */
+  --shimmer: linear-gradient(110deg, #ff5ed5 0%, #b04cf2 30%, #6f5cff 55%, #3fc8ff 80%, #ff5ed5 100%);
   --violet: #a78bfa;
   --violet-2: #7c3aed;
   --v-rgb: 167 139 250;
@@ -120,6 +122,163 @@ body::before {
   transform-origin: 70% 30%;
   will-change: transform;
   animation: night-drift 60s ease-in-out infinite alternate;
+}
+
+/* ---------- Fondo vivo ---------- */
+
+/* Encima de la base fija (body::before) y debajo de la viñeta (body::after): la nebulosa A se desplaza y respira, la B
+   (con las nubes en otro sitio) aparece y se apaga, y así el color del cielo cambia despacio; dos mosaicos de
+   estrellas bajan muy despacio y titilan a destiempo, y de vez en cuando cruza una estrella fugaz. Solo transform y
+   opacity (lo mueve la tarjeta gráfica). En el móvil van la nebulosa A y un mosaico de estrellas. Lo genera
+   tools/nebula_bg.py. */
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky i {
+  position: absolute;
+  display: block;
+}
+
+.sky .neb-a,
+.sky .neb-b {
+  inset: -8%;
+  background: 62% 30% / cover no-repeat;
+}
+
+.sky .neb-a {
+  background-image: url('/img/nebula-a-1280.webp');
+  opacity: 0.8;
+  animation: neb-a 46s ease-in-out infinite alternate;
+}
+
+.sky .neb-b {
+  background-image: url('/img/nebula-b-1280.webp');
+  opacity: 0;
+  animation: neb-b 29s ease-in-out infinite alternate;
+}
+
+/* Las estrellas solo en el cielo: se apagan hacia el valle */
+.sky-stars {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 78%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 78%);
+}
+
+.sky .stars-a,
+.sky .stars-b {
+  inset: -512px 0 0;
+  background: url('/img/stars-a.webp') 0 0 / 512px 512px repeat;
+  animation:
+    stars-fall 260s linear infinite,
+    twinkle 4.2s ease-in-out infinite alternate;
+}
+
+.sky .stars-b {
+  background-image: url('/img/stars-b.webp');
+  background-position: 190px 140px;
+  animation:
+    stars-fall 170s linear infinite,
+    twinkle 3.1s ease-in-out -1.6s infinite alternate;
+}
+
+/* Estrella fugaz: una estela que cruza el cielo cada pocos segundos (solo en pantallas grandes) */
+.sky .shoot {
+  display: none;
+  top: 9%;
+  left: 68%;
+  width: 150px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgb(var(--a-rgb) / 0.6) 30%, transparent);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transform-origin: 0 50%;
+  animation: shoot 13s ease-in 4s infinite;
+}
+
+.sky .shoot.s2 {
+  top: 22%;
+  left: 34%;
+  width: 110px;
+  animation-duration: 17s;
+  animation-delay: 11s;
+}
+
+@keyframes neb-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: translate3d(-3%, 2%, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes neb-b {
+  0% {
+    transform: translate3d(2%, -1%, 0) scale(1.04);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(-2%, 1.5%, 0) scale(1.1);
+    opacity: 0.85;
+  }
+}
+
+@keyframes stars-fall {
+  to {
+    transform: translate3d(0, 512px, 0);
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shoot {
+  0%,
+  90% {
+    opacity: 0;
+    transform: rotate(-24deg) translate3d(0, 0, 0) scaleX(0.3);
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-24deg) translate3d(-520px, 0, 0) scaleX(1);
+  }
+}
+
+@media (min-width: 960px) {
+  .sky .shoot {
+    display: block;
+  }
+}
+
+/* Móvil: menos capas (la nebulosa A más pequeña y un solo mosaico de estrellas) */
+@media (max-width: 760px) {
+  .sky .neb-a {
+    background-image: url('/img/nebula-a-640.webp');
+    background-position: 72% 30%;
+  }
+
+  .sky .neb-b,
+  .sky .stars-b {
+    display: none;
+  }
 }
 
 /* Viñeta: oscurece los bordes de la pantalla para que el contenido mande */
@@ -673,7 +832,7 @@ h4 {
   --fg: var(--on-accent);
   --glow: rgb(var(--a2-rgb) / 0.75);
   /* El degradado es el doble de ancho: al pasar el ratón se desliza del rosa al violeta y el cian */
-  background: linear-gradient(110deg, #ff5ed5 0%, #b04cf2 30%, #6f5cff 55%, #3fc8ff 80%, #ff5ed5 100%) 0 0 / 220% 100%;
+  background: var(--shimmer) 0 0 / 220% 100%;
   text-shadow: 0 1px 2px rgba(40, 0, 60, 0.45);
   /* Neón: filo rosa claro y halo */
   box-shadow:
@@ -700,9 +859,9 @@ h4 {
   --a: #3a2f86;
   --b: #2a2166;
   --lip: #120d33;
-  /* Se llena de rosa y violeta desde abajo al pasar el ratón */
+  /* Al pasar el ratón se llena desde abajo con el destello rosa → azul, que se desliza mientras sube */
   background:
-    linear-gradient(180deg, rgb(var(--a-rgb) / 0.55), rgb(var(--v2-rgb) / 0.6)) 0 100% / 100% 0 no-repeat,
+    var(--shimmer) 0 100% / 220% 0 no-repeat,
     linear-gradient(180deg, var(--a), var(--b));
   box-shadow:
     inset 0 0 0 1px rgb(var(--line-rgb) / 0.42),
@@ -713,13 +872,18 @@ h4 {
     transform 0.25s var(--spring),
     box-shadow 0.25s var(--ease),
     background-size 0.35s var(--ease),
+    background-position 0.8s var(--ease),
     filter 0.2s;
 }
 
 .btn-ghost:hover {
+  color: #fff;
   background-size:
-    100% 100%,
+    220% 100%,
     auto;
+  background-position:
+    100% 100%,
+    0 0;
   box-shadow:
     inset 0 0 0 1px rgb(var(--a-rgb) / 0.85),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -953,6 +1117,11 @@ body:not([data-hero]) .header::before {
 
 .ip-chip:hover {
   border-color: rgb(var(--a-rgb) / 0.5);
+}
+
+.ip-chip:hover .hint {
+  color: #fff;
+  background: var(--shimmer) 100% 0 / 220% 100%;
 }
 
 .ip-chip .hint {
@@ -1249,6 +1418,7 @@ body:not([data-hero]) .header::before {
   text-transform: uppercase;
   transition:
     background-color 0.25s,
+    box-shadow 0.25s,
     color 0.25s;
 }
 
@@ -1258,7 +1428,9 @@ body:not([data-hero]) .header::before {
 }
 
 .ip-box:hover .ip-copy {
-  background: rgb(var(--a-rgb) / 0.22);
+  color: #fff;
+  background: var(--shimmer) 100% 0 / 220% 100%;
+  box-shadow: 0 0 22px -6px rgb(var(--a-rgb) / 0.7);
 }
 
 .ip-box.copied {
@@ -1521,67 +1693,6 @@ body:not([data-hero]) .header::before {
 
 /* ---------- Portada: cifras del servidor ---------- */
 
-.stats-wrap {
-  position: relative;
-  z-index: 2;
-  margin-top: -72px;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  padding: 14px;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--bd);
-  background: linear-gradient(180deg, var(--s2), var(--s1));
-  box-shadow: var(--card-shadow);
-}
-
-.stat-icon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  color: var(--c);
-  background: color-mix(in srgb, var(--c) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent);
-}
-
-.stat-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.stat-text {
-  display: grid;
-  min-width: 0;
-}
-
-.stat b {
-  font: 700 21px/1.1 var(--font-display);
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-text span {
-  color: var(--muted);
-  line-height: 1.3;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
 /* ---------- Tarjetas (superficie común) ---------- */
 
 /* Superficie opaca y más clara que el fondo, con un filo claro alrededor, una línea de neón arriba, una sombra que la
@@ -1599,107 +1710,6 @@ body:not([data-hero]) .header::before {
 }
 
 /* ---------- Portada: pilares ---------- */
-
-.pillars {
-  display: grid;
-  gap: 16px;
-}
-
-.pillar {
-  --c: var(--a-400);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition:
-    transform 0.4s var(--ease),
-    border-color 0.3s,
-    box-shadow 0.4s var(--ease);
-}
-
-.pillar:hover {
-  transform: translateY(-6px);
-  border-color: color-mix(in srgb, var(--c) 45%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent),
-    0 0 34px -10px color-mix(in srgb, var(--c) 80%, transparent),
-    0 26px 50px -26px color-mix(in srgb, var(--c) 70%, transparent);
-}
-
-.pillar-art {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: var(--s0);
-}
-
-.pillar-art::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 50%, rgb(var(--s1-rgb) / 0.95));
-}
-
-.pillar-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.7s var(--ease);
-}
-
-.pillar-art.contain {
-  background: radial-gradient(60% 70% at 50% 60%, rgb(var(--v2-rgb) / 0.35), transparent 75%), var(--s0);
-}
-
-.pillar-art.contain img {
-  object-fit: contain;
-  padding: 6%;
-}
-
-.pillar:hover .pillar-art img {
-  transform: scale(1.06);
-}
-
-.pillar-body {
-  position: relative;
-  padding: 0 22px 24px;
-}
-
-.pillar-icon {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  margin-top: -24px;
-  border-radius: 14px;
-  color: var(--c);
-  background: var(--s3);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent),
-    0 10px 20px -8px rgba(0, 0, 0, 0.8);
-  transition: transform 0.4s var(--spring);
-}
-
-.pillar:hover .pillar-icon {
-  transform: translateY(-4px) rotate(-6deg);
-}
-
-.pillar-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.pillar h3 {
-  margin-top: 16px;
-  font-size: 19px;
-  font-weight: 600;
-}
-
-.pillar p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-}
 
 /* ---------- Páginas interiores: cabecera con el arte ---------- */
 
@@ -1735,7 +1745,6 @@ body:not([data-hero]) .header::before {
   -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
   mask-image: linear-gradient(180deg, #000 55%, transparent);
 }
-
 
 .page-hero h1 {
   margin-top: 18px;
@@ -2589,7 +2598,8 @@ body:not([data-hero]) .header::before {
   padding-bottom: 64px;
 }
 
-/* Pestañas: un mando segmentado; la elegida es un botón verde con volumen */
+/* Pestañas: un mando segmentado; cada pestaña es un botón que se ve (fondo y filo propios), al pasar el ratón se llena
+   con el destello rosa → azul y la elegida lo lleva fluyendo despacio */
 .shop-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2610,21 +2620,34 @@ body:not([data-hero]) .header::before {
   padding: 0 12px;
   border: 0;
   border-radius: var(--r);
-  background: transparent;
+  background:
+    var(--shimmer) 0 100% / 220% 0 no-repeat,
+    rgb(var(--line-rgb) / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(var(--line-rgb) / 0.14);
   color: var(--text-2);
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   transition:
     color 0.25s,
-    background-color 0.25s,
+    background-size 0.35s var(--ease),
+    background-position 0.8s var(--ease),
     box-shadow 0.25s,
-    transform 0.2s var(--ease);
+    transform 0.25s var(--spring);
 }
 
 .tab:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  background-size:
+    220% 100%,
+    auto;
+  background-position:
+    100% 100%,
+    0 0;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 214 247 / 0.45),
+    0 0 22px -6px rgb(var(--a-rgb) / 0.6);
 }
 
 .tab:active {
@@ -2650,11 +2673,12 @@ body:not([data-hero]) .header::before {
 
 .tab[aria-selected='true'] {
   color: var(--on-accent);
-  background: var(--pri-grad);
+  background: var(--shimmer) 0 0 / 220% 100%;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 3px 0 var(--pri-lip),
-    0 10px 20px -10px rgb(var(--a2-rgb) / 0.7);
+    0 0 26px -6px rgb(var(--a-rgb) / 0.65);
+  animation: shimmer-flow 5s ease-in-out infinite alternate;
 }
 
 .tab[aria-selected='true'] .count {
@@ -2673,23 +2697,20 @@ body:not([data-hero]) .header::before {
 }
 
 /* Al cambiar de pestaña, el contenido entra escalonado */
-.products > *,
-.crate-row > * {
-  animation: rise 0.55s var(--ease) both;
+.products > * {
+  /* backwards: al terminar deja de aplicarse, así la tarjeta se eleva suave al pasar el ratón */
+  animation: rise 0.6s var(--ease) backwards;
 }
 
-.products > :nth-child(2),
-.crate-row > :nth-child(2) {
+.products > :nth-child(2) {
   animation-delay: 0.05s;
 }
 
-.products > :nth-child(3),
-.crate-row > :nth-child(3) {
+.products > :nth-child(3) {
   animation-delay: 0.1s;
 }
 
-.products > :nth-child(4),
-.crate-row > :nth-child(4) {
+.products > :nth-child(4) {
   animation-delay: 0.15s;
 }
 
@@ -3578,9 +3599,10 @@ body:not([data-hero]) .header::before {
 }
 
 .chip[aria-pressed='true'] {
-  border-color: var(--a-400);
-  background: rgb(var(--a-rgb) / 0.14);
-  color: var(--a-200);
+  border-color: transparent;
+  background: var(--shimmer) 0 0 / 220% 100%;
+  color: #fff;
+  animation: shimmer-flow 5s ease-in-out infinite alternate;
 }
 
 .cos-themes {
@@ -3683,8 +3705,7 @@ body:not([data-hero]) .header::before {
 
 /* ---------- Crates: la tarjeta con el brillo de su color ---------- */
 
-.crate-grid,
-.crate-row {
+.crate-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -3732,10 +3753,59 @@ body:not([data-hero]) .header::before {
   height: 100%;
   object-fit: contain;
   padding: 6%;
+  transition:
+    opacity 0.5s var(--ease),
+    scale 0.6s var(--spring),
+    translate 0.6s var(--ease);
 }
 
+/* Al pasar el ratón la crate se acerca y sube (scale/translate: no pisan la flotación, que usa transform) */
 .crate-tile:hover .crate-tile-art img.ok {
-  transform: scale(1.08) translateY(-4px);
+  scale: 1.1;
+  translate: 0 -6px;
+}
+
+/* Destello que cruza la tarjeta al pasar el ratón */
+.crate-tile::after,
+.product::after,
+.coin-item::after,
+.cos-piece::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 36%, rgba(255, 255, 255, 0.13) 47%, rgb(var(--c-rgb) / 0.12) 53%, transparent 64%);
+  transform: translateX(-115%);
+  transition: transform 0.9s var(--ease);
+  pointer-events: none;
+}
+
+.crate-tile:hover::after,
+.product:hover::after,
+.coin-item:hover::after,
+.cos-piece:hover::after {
+  transform: translateX(115%);
+}
+
+.coin-item,
+.cos-piece {
+  overflow: hidden;
+}
+
+/* En el ordenador las crates flotan despacio, cada una a su ritmo */
+@media (hover: hover) and (min-width: 960px) {
+  .crate-tile-art img.ok {
+    animation: crate-float 7s ease-in-out infinite;
+  }
+
+  .crate-tile:nth-child(3n + 2) .crate-tile-art img.ok {
+    animation-delay: -2.3s;
+  }
+
+  .crate-tile:nth-child(3n) .crate-tile-art img.ok {
+    animation-delay: -4.6s;
+  }
 }
 
 /* El brillo del color de la crate, que late (solo opacidad) */
@@ -4744,7 +4814,8 @@ body:not([data-hero]) .header::before {
 
 .auth-tabs button[aria-selected='true'] {
   color: var(--on-accent);
-  background: var(--pri-grad);
+  background: var(--shimmer) 0 0 / 220% 100%;
+  animation: shimmer-flow 5s ease-in-out infinite alternate;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 3px 0 var(--pri-lip);
@@ -4891,13 +4962,11 @@ body:not([data-hero]) .header::before {
   transform: none;
 }
 
-.pillars .reveal:nth-child(2),
 .grid .reveal:nth-child(2),
 .rules .reveal:nth-child(2) {
   transition-delay: 0.08s;
 }
 
-.pillars .reveal:nth-child(3),
 .grid .reveal:nth-child(3),
 .rules .reveal:nth-child(3) {
   transition-delay: 0.16s;
@@ -5104,8 +5173,9 @@ body:not([data-hero]) .header::before {
 }
 
 .cv-modes button[aria-pressed='true'] {
-  background: var(--t2, var(--a-400));
-  color: #0b0b10;
+  background: var(--shimmer) 0 0 / 220% 100%;
+  color: #fff;
+  animation: shimmer-flow 5s ease-in-out infinite alternate;
 }
 
 .cv-modes button:disabled {
@@ -5402,8 +5472,6 @@ body:not([data-hero]) .header::before {
   }
 }
 
-
-
 @keyframes logo-in {
   from {
     opacity: 0;
@@ -5434,6 +5502,13 @@ body:not([data-hero]) .header::before {
   }
 }
 
+/* El destello de las pestañas y opciones elegidas fluye despacio de un lado a otro */
+@keyframes shimmer-flow {
+  to {
+    background-position: 100% 0;
+  }
+}
+
 /* Halo de los botones principales mientras el ratón está encima */
 @keyframes btn-breathe {
   50% {
@@ -5452,6 +5527,16 @@ body:not([data-hero]) .header::before {
   }
   to {
     transform: scale(1.08) translate3d(-1.2%, 0.8%, 0);
+  }
+}
+
+@keyframes crate-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
   }
 }
 
@@ -5545,7 +5630,6 @@ body:not([data-hero]) .header::before {
     font-size: 12.5px;
   }
 
-  .crate-row .tile-tag,
   .crate-grid .try-on {
     display: none;
   }
@@ -5617,19 +5701,6 @@ body:not([data-hero]) .header::before {
     max-width: 640px;
   }
 
-  .stats {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  .stat {
-    padding: 18px;
-  }
-
-  .stat b {
-    font-size: 24px;
-  }
-
   .grid-2 {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -5675,7 +5746,6 @@ body:not([data-hero]) .header::before {
   }
 
   .crate-grid,
-  .crate-row,
   .skel-grid,
   .coin-grid {
     gap: 16px;
@@ -5837,34 +5907,6 @@ body:not([data-hero]) .header::before {
     display: block;
   }
 
-  .stats-wrap {
-    margin-top: -84px;
-  }
-
-  .stat {
-    gap: 16px;
-    padding: 22px;
-  }
-
-  .stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 14px;
-  }
-
-  .stat-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .stat b {
-    font-size: 28px;
-  }
-
-  .stat-text span {
-    font-size: 13.5px;
-  }
-
   .grid-3 {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -5883,16 +5925,6 @@ body:not([data-hero]) .header::before {
 
   .logo-mark {
     width: 230px;
-  }
-
-  .pillars {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px;
-  }
-
-  .crate-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 20px;
   }
 
   .crate-grid {
@@ -5977,13 +6009,11 @@ body:not([data-hero]) .header::before {
   }
 }
 
-
 /* En pantallas táctiles no hay «pasar el ratón»: nada se queda levantado */
 @media (hover: none) {
   .btn:hover,
   .crate-tile:hover,
   .product:hover,
-  .pillar:hover,
   .feature:hover,
   .step:hover,
   .rule:hover,
@@ -6030,6 +6060,51 @@ body:not([data-hero]) .header::before {
   .rk-aura {
     animation-duration: 3.6s !important;
     animation-iteration-count: infinite !important;
+  }
+
+  .tab[aria-selected='true'],
+  .auth-tabs button[aria-selected='true'],
+  .cv-modes button[aria-pressed='true'],
+  .chip[aria-pressed='true'] {
+    animation-duration: 5s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .crate-tile-art img.ok {
+    animation-duration: 7s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  /* El fondo vivo (movimientos muy lentos) se queda */
+  .sky i {
+    animation-iteration-count: infinite !important;
+  }
+
+  .sky .neb-a {
+    animation-duration: 46s !important;
+  }
+
+  .sky .neb-b {
+    animation-duration: 29s !important;
+  }
+
+  .sky .stars-a {
+    animation-duration: 260s, 4.2s !important;
+  }
+
+  .sky .stars-b {
+    animation-duration: 170s, 3.1s !important;
+    animation-delay: 0s, -1.6s !important;
+  }
+
+  .sky .shoot {
+    animation-duration: 13s !important;
+    animation-delay: 4s !important;
+  }
+
+  .sky .shoot.s2 {
+    animation-duration: 17s !important;
+    animation-delay: 11s !important;
   }
 
   /* La entrada de cada página (corta y suave) y el halo de los botones al pasar el ratón también se quedan */
