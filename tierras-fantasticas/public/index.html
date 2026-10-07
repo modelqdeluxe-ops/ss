@@ -14,7 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="/img/hero-1920.webp" imagesrcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" imagesizes="100vw">
+  <link rel="preload" as="image" href="/img/night-1672.webp" media="(min-width: 761px)">
+  <link rel="preload" as="image" href="/img/night-768.webp" media="(max-width: 760px)">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
   <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
@@ -74,16 +75,15 @@
 
   <main id="main">
     <section class="hero">
-      <div class="hero-art" aria-hidden="true">
-        <img src="/img/hero-1920.webp" srcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high">
-      </div>
+      
       <div class="wrap hero-inner">
         <div class="logo-mark">
           <span class="glow" aria-hidden="true"></span>
           <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
+          <span class="shine" aria-hidden="true"></span>
         </div>
         <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
-        <h1 class="hero-title" data-server-name>Tierras Fantásticas</h1>
+        <h1 class="hero-title" aria-label="Tierras Fantásticas"><span aria-hidden="true"><span class="w"><span class="ch" style="--i:0">T</span><span class="ch" style="--i:1">i</span><span class="ch" style="--i:2">e</span><span class="ch" style="--i:3">r</span><span class="ch" style="--i:4">r</span><span class="ch" style="--i:5">a</span><span class="ch" style="--i:6">s</span></span> <span class="w"><span class="ch" style="--i:8">F</span><span class="ch" style="--i:9">a</span><span class="ch" style="--i:10">n</span><span class="ch" style="--i:11">t</span><span class="ch" style="--i:12">á</span><span class="ch" style="--i:13">s</span><span class="ch" style="--i:14">t</span><span class="ch" style="--i:15">i</span><span class="ch" style="--i:16">c</span><span class="ch" style="--i:17">a</span><span class="ch" style="--i:18">s</span></span></span></h1>
         <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
         <div class="hero-cta">
           <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
@@ -107,14 +107,14 @@
     </div>
 
     <section class="wrap section" id="reino">
-      <div class="section-head center">
+      <div class="section-head center reveal">
         <span class="eyebrow">El reino</span>
         <h2>Una aventura <span class="text-grad">sin final</span></h2>
         <p>Supervivencia con alma de RPG: funda tu reino, vive tu propia leyenda y haz fortuna con tu oficio.</p>
       </div>
       <div class="pillars">
         <article class="pillar frame reveal">
-          <div class="pillar-art"><img src="/img/hero-768.webp" alt="Castillos de Tierras Fantásticas" width="768" height="432" loading="lazy" style="object-position:22% 40%"></div>
+          <div class="pillar-art"><img src="/img/night-768.webp" alt="El castillo de Tierras Fantásticas de noche" width="768" height="432" loading="lazy" style="object-position:88% 30%"></div>
           <div class="pillar-body"><span class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l2-1V5h2v2h2V5h2v2h2V5h2v3l2 1v12"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
         </article>
         <article class="pillar frame reveal" style="--c:#b197fc">
@@ -129,7 +129,7 @@
     </section>
 
     <section class="wrap section pt-0">
-      <div class="section-head split-head">
+      <div class="section-head split-head reveal">
         <div>
           <span class="eyebrow">Nuevo en la tienda</span>
           <h2>Crates <span class="text-grad">del reino</span></h2>
@@ -201,9 +201,12 @@
         <span lang="en">NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</span></p>
     </div>
     <div class="wrap legal">
-      <span>© <span data-year></span> Equipo de Tierras Fantásticas · México</span>
+      <p class="copyright">© <span data-year></span> Tierras Fantásticas. Todos los derechos reservados. Prohibida la copia,
+        reventa o distribución del contenido del servidor (sets, modelos, texturas, textos e imágenes) fuera de Tierras
+        Fantásticas. Las marcas y contenidos de terceros pertenecen a sus dueños.</p>
       <span>Lo que se compra en la tienda ayuda a mantener el servidor. Precios en dólares estadounidenses (USD).</span>
     </div>
+    <span class="credit">By Pewez777</span>
   </footer>
 
   <script src="/app.js" defer></script>

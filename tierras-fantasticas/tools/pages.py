@@ -52,9 +52,9 @@ def skeletons(n, kind='card'):
 
 
 def head(title, desc, page, hero=False, preload_hero=False):
-    preload = ('\n  <link rel="preload" as="image" href="/img/hero-1920.webp" '
-               'imagesrcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" imagesizes="100vw">'
-               if preload_hero else '')
+    preload = ('\n  <link rel="preload" as="image" href="/img/night-1672.webp" media="(min-width: 761px)">'
+               '\n  <link rel="preload" as="image" href="/img/night-768.webp" media="(max-width: 760px)">'
+               )
     return f'''<!doctype html>
 <html lang="es">
 <head>
@@ -175,9 +175,12 @@ def footer():
         <span lang="en">{DISCLAIMER_EN}</span></p>
     </div>
     <div class="wrap legal">
-      <span>© <span data-year></span> Equipo de Tierras Fantásticas · México</span>
+      <p class="copyright">© <span data-year></span> Tierras Fantásticas. Todos los derechos reservados. Prohibida la copia,
+        reventa o distribución del contenido del servidor (sets, modelos, texturas, textos e imágenes) fuera de Tierras
+        Fantásticas. Las marcas y contenidos de terceros pertenecen a sus dueños.</p>
       <span>Lo que se compra en la tienda ayuda a mantener el servidor. Precios en dólares estadounidenses (USD).</span>
     </div>
+    <span class="credit">By Pewez777</span>
   </footer>
 
   <script src="/app.js" defer></script>
@@ -187,9 +190,9 @@ def footer():
 
 
 def hero_art(cls='hero-art'):
-    return f'''<div class="{cls}" aria-hidden="true">
-        <img src="/img/hero-1920.webp" srcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high">
-      </div>'''
+    # El arte del reino (de noche) es el fondo fijo de toda la web (body::before en styles.css): las cabeceras ya no
+    # llevan imagen propia, dejan verlo detrás.
+    return ''
 
 
 def page_hero(eyebrow, title, text):
@@ -251,9 +254,10 @@ def index():
         <div class="logo-mark">
           <span class="glow" aria-hidden="true"></span>
           <img src="/img/logo.webp" alt="Emblema de Tierras Fantásticas" width="743" height="820">
+          <span class="shine" aria-hidden="true"></span>
         </div>
         <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
-        <h1 class="hero-title" data-server-name>Tierras Fantásticas</h1>
+        <h1 class="hero-title" aria-label="Tierras Fantásticas"><span aria-hidden="true"><span class="w"><span class="ch" style="--i:0">T</span><span class="ch" style="--i:1">i</span><span class="ch" style="--i:2">e</span><span class="ch" style="--i:3">r</span><span class="ch" style="--i:4">r</span><span class="ch" style="--i:5">a</span><span class="ch" style="--i:6">s</span></span> <span class="w"><span class="ch" style="--i:8">F</span><span class="ch" style="--i:9">a</span><span class="ch" style="--i:10">n</span><span class="ch" style="--i:11">t</span><span class="ch" style="--i:12">á</span><span class="ch" style="--i:13">s</span><span class="ch" style="--i:14">t</span><span class="ch" style="--i:15">i</span><span class="ch" style="--i:16">c</span><span class="ch" style="--i:17">a</span><span class="ch" style="--i:18">s</span></span></span></h1>
         <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
         <div class="hero-cta">
           <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
@@ -277,14 +281,14 @@ def index():
     </div>
 
     <section class="wrap section" id="reino">
-      <div class="section-head center">
+      <div class="section-head center reveal">
         <span class="eyebrow">El reino</span>
         <h2>Una aventura <span class="text-grad">sin final</span></h2>
         <p>Supervivencia con alma de RPG: funda tu reino, vive tu propia leyenda y haz fortuna con tu oficio.</p>
       </div>
       <div class="pillars">
         <article class="pillar frame reveal">
-          <div class="pillar-art"><img src="/img/hero-768.webp" alt="Castillos de Tierras Fantásticas" width="768" height="432" loading="lazy" style="object-position:22% 40%"></div>
+          <div class="pillar-art"><img src="/img/night-768.webp" alt="El castillo de Tierras Fantásticas de noche" width="768" height="432" loading="lazy" style="object-position:88% 30%"></div>
           <div class="pillar-body"><span class="pillar-icon">{I['castle']}</span><h3>Reinos y castillos</h3><p>Levanta tu fortaleza, protege tus tierras y forja alianzas con otros jugadores. O asalta las suyas.</p></div>
         </article>
         <article class="pillar frame reveal" style="--c:#b197fc">
@@ -299,7 +303,7 @@ def index():
     </section>
 
     <section class="wrap section pt-0">
-      <div class="section-head split-head">
+      <div class="section-head split-head reveal">
         <div>
           <span class="eyebrow">Nuevo en la tienda</span>
           <h2>Crates <span class="text-grad">del reino</span></h2>
@@ -418,7 +422,7 @@ def mundo():
     </section>
 
     <section class="wrap section">
-      <div class="section-head">
+      <div class="section-head reveal">
         <span class="eyebrow">TF Client</span>
         <h2>El cliente oficial del servidor</h2>
         <p>Viene en el modpack. Hace que entrar sea tan fácil como pulsar un botón.</p>
@@ -432,7 +436,7 @@ def mundo():
     </section>
 
     <section class="wrap section">
-      <div class="section-head">
+      <div class="section-head reveal">
         <span class="eyebrow">Cómo jugar</span>
         <h2>Únete en tres pasos</h2>
       </div>
@@ -442,7 +446,7 @@ def mundo():
     </section>
 
     <section class="wrap section" id="normas">
-      <div class="section-head">
+      <div class="section-head reveal">
         <span class="eyebrow">Normas</span>
         <h2>Las leyes del reino</h2>
         <p>Pocas y claras, para que todos disfrutemos. El staff puede sancionar lo que rompa el espíritu de estas normas.</p>
@@ -531,7 +535,7 @@ def ayuda():
   <main id="main">
 {page_hero('Ayuda', 'Preguntas frecuentes', 'Todo lo que necesitas saber para entrar al servidor y sobre la tienda.')}
     <section class="wrap section">
-      <div class="section-head">
+      <div class="section-head reveal">
         <span class="eyebrow">Cómo jugar</span>
         <h2>Dentro en tres pasos</h2>
         <p>Es gratis. Solo necesitas Minecraft Java y el modpack del servidor.</p>

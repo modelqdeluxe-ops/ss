@@ -707,7 +707,8 @@
           <span class="rk-drag">Arrastra para girar</span>
         </div>
         <div class="rk-info" id="rk-info"></div>
-      </article>`;
+      </article>
+      <section class="rk-cmds frame" id="rk-cmds" aria-live="polite"></section>`;
     $$('.rk-step', box).forEach((b) => b.addEventListener('click', () => showRank(b.dataset.rank, true)));
     makeStage($('.rk-stage canvas', box)).then((w) => {
       rankShow.wardrobe = w;
@@ -767,6 +768,25 @@
         </div>
         <div class="rk-buy">${buy}</div>
       </div>`;
+    // Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos (lo nuevo respecto al anterior, marcado)
+    const prev = all[n - 2];
+    const prevName = prev ? prev.rank?.prefix || prev.name.replace(/^Rango\s+/i, '') : '';
+    const cmds = $('#rk-cmds');
+    cmds.setAttribute('style', rankVars(p));
+    cmds.innerHTML = `
+      <div class="rk-cmds-head">
+        <h3>Lo que trae <span class="rk-cmds-name">${escapeHtml(prefix)}</span> en el servidor</h3>
+        <p>${prev ? `Todo lo de ${escapeHtml(prevName)} y lo marcado como <b>nuevo</b>.` : 'Tu primer rango del reino.'} Se activa solo al entrar al servidor.</p>
+      </div>
+      <ul class="rk-cmd-list">${[...(p.serverPerks || [])]
+        .sort((a, b) => Number(b.new) - Number(a.new))
+        .map(
+          (x) => `<li class="${x.new && prev ? 'is-new' : ''}">
+            ${x.cmd ? `<code>${escapeHtml(x.cmd)}</code>` : `<span class="rk-cmd-ico">${ICON_CHECK}</span>`}
+            <span class="rk-cmd-text">${escapeHtml(x.text)}</span>${x.new && prev ? '<b class="rk-new">Nuevo</b>' : ''}
+          </li>`,
+        )
+        .join('')}</ul>`;
     if (updateUrl) history.replaceState(null, '', `#${p.id.replace(/^rango-/, 'rangos-')}`);
     rankShow.outfit = null;
     $$('[data-rk-piece]').forEach((b) => b.addEventListener('click', () => equipRankPiece(b.dataset.rkPiece)));

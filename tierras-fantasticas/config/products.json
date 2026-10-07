@@ -167,6 +167,23 @@
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Mortal en Discord"
     ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hasta 2 hogares; vuelve a ellos con /home",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": true
+      }
+    ],
     "rank": {
       "group": "mortal",
       "prefix": "Mortal",
@@ -287,6 +304,28 @@
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Inmortal en Discord"
     ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hasta 3 hogares",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": false
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
+        "new": true
+      }
+    ],
     "rank": {
       "group": "inmortal",
       "prefix": "Inmortal",
@@ -403,6 +442,38 @@
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Mágico en Discord"
     ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hasta 5 hogares",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": false
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
+        "new": false
+      },
+      {
+        "cmd": "/fly",
+        "text": "Vuela en el lobby",
+        "new": true
+      },
+      {
+        "cmd": "/pp",
+        "text": "Partículas cosméticas a tu alrededor",
+        "new": true
+      }
+    ],
     "rank": {
       "group": "magico",
       "prefix": "Mágico",
@@ -518,6 +589,48 @@
       "Prefijo «Eterno» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Eterno en Discord"
+    ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hasta 8 hogares",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": false
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
+        "new": false
+      },
+      {
+        "cmd": "/fly",
+        "text": "Vuela en el lobby",
+        "new": false
+      },
+      {
+        "cmd": "/pp",
+        "text": "Partículas cosméticas a tu alrededor",
+        "new": false
+      },
+      {
+        "cmd": "/nick",
+        "text": "Apodo con colores",
+        "new": true
+      },
+      {
+        "cmd": "&a…&f",
+        "text": "Escribe en el chat con colores",
+        "new": true
+      }
     ],
     "rank": {
       "group": "eterno",
@@ -638,6 +751,58 @@
       "Prefijo «Cósmico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Cósmico en Discord"
+    ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hasta 12 hogares",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": false
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
+        "new": false
+      },
+      {
+        "cmd": "/fly",
+        "text": "Vuela en el lobby",
+        "new": false
+      },
+      {
+        "cmd": "/pp",
+        "text": "Partículas cosméticas a tu alrededor",
+        "new": false
+      },
+      {
+        "cmd": "/nick",
+        "text": "Apodo con colores",
+        "new": false
+      },
+      {
+        "cmd": "&a…&f",
+        "text": "Escribe en el chat con colores",
+        "new": false
+      },
+      {
+        "cmd": "/ptime",
+        "text": "Tu propia hora del día (solo la ves tú)",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Cola prioritaria: entras antes cuando el servidor está lleno",
+        "new": true
+      }
     ],
     "rank": {
       "group": "cosmico",
@@ -763,6 +928,68 @@
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Celestial en Discord"
     ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hasta 20 hogares",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": false
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
+        "new": false
+      },
+      {
+        "cmd": "/fly",
+        "text": "Vuela en el lobby",
+        "new": false
+      },
+      {
+        "cmd": "/pp",
+        "text": "Partículas cosméticas a tu alrededor",
+        "new": false
+      },
+      {
+        "cmd": "/nick",
+        "text": "Apodo con colores",
+        "new": false
+      },
+      {
+        "cmd": "&a…&f",
+        "text": "Escribe en el chat con colores",
+        "new": false
+      },
+      {
+        "cmd": "/ptime",
+        "text": "Tu propia hora del día (solo la ves tú)",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Cola prioritaria: entras antes cuando el servidor está lleno",
+        "new": false
+      },
+      {
+        "cmd": "/pweather",
+        "text": "Tu propio clima (solo lo ves tú)",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Aviso especial en el chat cuando entras al servidor",
+        "new": true
+      }
+    ],
     "rank": {
       "group": "celestial",
       "prefix": "Celestial",
@@ -870,6 +1097,78 @@
       "Prefijo «Fantástico» con color en el chat y sobre tu nombre",
       "Set completo animado: armas, herramientas, armadura y alas",
       "Rol Fantástico en Discord"
+    ],
+    "serverPerks": [
+      {
+        "cmd": "/sethome",
+        "text": "Hogares ilimitados",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Rol del rango en Discord",
+        "new": false
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
+        "new": false
+      },
+      {
+        "cmd": "/fly",
+        "text": "Vuela en el lobby",
+        "new": false
+      },
+      {
+        "cmd": "/pp",
+        "text": "Partículas cosméticas a tu alrededor",
+        "new": false
+      },
+      {
+        "cmd": "/nick",
+        "text": "Apodo con colores",
+        "new": false
+      },
+      {
+        "cmd": "&a…&f",
+        "text": "Escribe en el chat con colores",
+        "new": false
+      },
+      {
+        "cmd": "/ptime",
+        "text": "Tu propia hora del día (solo la ves tú)",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Cola prioritaria: entras antes cuando el servidor está lleno",
+        "new": false
+      },
+      {
+        "cmd": "/pweather",
+        "text": "Tu propio clima (solo lo ves tú)",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Aviso especial en el chat cuando entras al servidor",
+        "new": false
+      },
+      {
+        "cmd": null,
+        "text": "Título propio junto a tu nombre (te lo pone el staff)",
+        "new": true
+      },
+      {
+        "cmd": null,
+        "text": "Nombre con el color dorado de Fantástico",
+        "new": true
+      }
     ],
     "rank": {
       "group": "fantastico",
