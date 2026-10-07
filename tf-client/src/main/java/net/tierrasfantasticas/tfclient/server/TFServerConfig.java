@@ -29,6 +29,8 @@ public final class TFServerConfig {
     private static boolean broadcast = true;
     private static boolean fireworks = true;
     private static boolean nametag = true;
+    private static boolean rankPermissions = true;
+    private static String essentialsConfig = "plugins/Essentials/config.yml";
     private static String economyMode = "auto";
     private static String economyGive = "eco give {player} {amount}";
     private static String economyTake = "eco take {player} {amount}";
@@ -68,6 +70,16 @@ public final class TFServerConfig {
     }
 
     /** Monedas del servidor: auto (Vault si está, si no las del TF Client), vault, tf o comandos. */
+    /** Poner en LuckPerms y EssentialsX lo que trae cada rango (TFRankPerms). */
+    public static boolean rankPermissions() {
+        return rankPermissions;
+    }
+
+    /** config.yml de EssentialsX, desde la carpeta del servidor (para los hogares de cada rango). */
+    public static String essentialsConfig() {
+        return essentialsConfig;
+    }
+
     public static String economyMode() {
         return economyMode;
     }
@@ -109,6 +121,8 @@ public final class TFServerConfig {
         broadcast = flag(props, "broadcast.enabled", true);
         fireworks = flag(props, "broadcast.fireworks", true);
         nametag = flag(props, "ranks.nametag", true);
+        rankPermissions = flag(props, "ranks.permissions", true);
+        essentialsConfig = props.getProperty("ranks.essentials", essentialsConfig).trim();
         economyMode = props.getProperty("economy.mode", "auto").trim().toLowerCase(java.util.Locale.ROOT);
         economyGive = props.getProperty("economy.give", economyGive).trim();
         economyTake = props.getProperty("economy.take", economyTake).trim();
@@ -129,7 +143,7 @@ public final class TFServerConfig {
         }
         boolean missing = false;
         for (String key : new String[] {"bridge.enabled", "bridge.url", "bridge.interval", "broadcast.enabled", "broadcast.fireworks", "ranks.nametag",
-                "economy.mode", "economy.give", "economy.take", "economy.currency"}) {
+                "ranks.permissions", "ranks.essentials", "economy.mode", "economy.give", "economy.take", "economy.currency"}) {
             missing |= !props.containsKey(key);
         }
         if (created || missing) {
@@ -137,6 +151,8 @@ public final class TFServerConfig {
             props.setProperty("broadcast.enabled", Boolean.toString(broadcast));
             props.setProperty("broadcast.fireworks", Boolean.toString(fireworks));
             props.setProperty("ranks.nametag", Boolean.toString(nametag));
+            props.setProperty("ranks.permissions", Boolean.toString(rankPermissions));
+            props.setProperty("ranks.essentials", essentialsConfig);
             props.setProperty("bridge.url", url);
             props.setProperty("bridge.secret", secret);
             props.setProperty("bridge.interval", Integer.toString(interval));

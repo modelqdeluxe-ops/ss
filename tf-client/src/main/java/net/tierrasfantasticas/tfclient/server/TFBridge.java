@@ -181,7 +181,16 @@ public final class TFBridge {
         } catch (Throwable t) {
             collector.errors.add(t.toString());
         }
+        // LuckPerms (plugin en Mohist o mod) contesta por el mismo sitio que los errores, también cuando va bien, y
+        // hace el trabajo en su propio hilo: lo único que se puede comprobar aquí es que el comando exista.
+        if ((command.startsWith("lp ") || command.startsWith("luckperms ")) && hasLuckPerms(srv)) return List.of();
         return collector.errors;
+    }
+
+    /** ¿Está LuckPerms? (su comando /lp está registrado). */
+    public static boolean hasLuckPerms(MinecraftServer srv) {
+        var root = srv.getCommands().getDispatcher().getRoot();
+        return root.getChild("lp") != null || root.getChild("luckperms") != null;
     }
 
     /** Adelanta la siguiente consulta a la web (en un segundo). */
@@ -331,7 +340,11 @@ public final class TFBridge {
 
         JsonObject json = JsonParser.parseString(text).getAsJsonObject();
         if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
-        if (json.has("rankList")) TFRanks.setList(json.getAsJsonArray("rankList"));
+        if (json.has("rankList")) {
+            TFRanks.setList(json.getAsJsonArray("rankList"));
+            // Lo que trae cada rango (permisos de LuckPerms y hogares de EssentialsX), si cambió
+            TFRankPerms.onRankList(srv);
+        }
         if (json.has("roulette") && json.get("roulette").isJsonObject()) {
             net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
         }

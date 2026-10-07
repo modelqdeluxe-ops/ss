@@ -12,7 +12,43 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): el propio mob hace el efecto de kill, VFX ordenado en la web y TF Client 1.3.14
+### Última entrega (8 de octubre de 2026): ventajas de los rangos puestas solas en LuckPerms/EssentialsX y TF Client 1.3.15
+**Lo que pidió el dueño:** la lista exacta de lo que trae cada rango, añadida a la web y enlazada con el servidor
+(rangos con el plugin LuckPerms; el TF Client hace las llamadas y pone los permisos), «súper preciso, sin errores».
+
+| Rango | Hogares | Comandos |
+| --- | --- | --- |
+| Mortal | 5 | /craft (= /workbench), /anvil, /loom, /hat |
+| Inmortal | 7 | /craft, /anvil, /loom, /hat |
+| Mágico | 8 | + /enderchest |
+| Eterno | 10 | /craft, /anvil, /loom, /hat, /heal |
+| Cósmico | 12 | /craft, /anvil, /loom, /hat, /feed |
+| Celestial | 15 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /fly |
+| Fantástico | 20 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /heal, /feed, /fly |
+
+(«crafting» y «workbench» de la lista son el mismo comando de EssentialsX, `/workbench` con su alias `/craft`, y
+«Anvil» venía repetido: va una vez. Las listas no son acumulativas: Eterno no tiene /enderchest y Celestial no tiene
+/heal ni /feed, tal como las mandó el dueño.)
+
+- **Web**: `RANK_PERK_INFO`, `HOME_PERMS` y `RANK_SERVER_PERKS` en `tools/crates.py` → `serverPerks` (lo que se ve
+  debajo del escaparate, en el orden del dueño, con «Nuevo» en lo que no tenía el rango anterior) y
+  `rank.homes`/`rank.permissions` en products.json. El puente manda `rankList` con `homes` y `permissions`
+  (`rankSetup` en src/app.js; los datos públicos de un jugador no los llevan). Test en app.test.js.
+- **Mod** (`server/TFRankPerms.java`): al llegar `rankList`, si cambió desde lo último aplicado
+  (`<mundo>/tfclient/rank_perms.json`): `lp creategroup <rango>`, `lp group <rango> permission set <permiso> true`, y
+  `permission unset` de lo que puso el mod y ya no está (lo que ponga el staff a mano no se toca). Hogares en
+  `sethome-multiple` del `config.yml` de EssentialsX (`server/EssentialsHomes.java`: solo cambia/añade esas líneas;
+  copia `config.yml.antes-de-tfclient`) y `essentials reload`. `/tf web rango permisos` lo fuerza y dice qué hizo.
+  Ajustes `ranks.permissions` y `ranks.essentials` en `tfclient-server.properties`.
+- **Arreglo**: en Mohist, LuckPerms contesta por el mismo canal que el mod usaba para detectar errores (también cuando
+  va bien), así que un `lp user … parent add` podía contarse como entrega fallida. `TFBridge.run` ya solo comprueba
+  que exista `/lp` para los comandos de LuckPerms.
+- **Ojo Mojang**: /fly, /heal, /feed y /repair dan ventaja en el juego; las normas de uso de Minecraft no permiten
+  vender ventajas de juego. Lo decidió el dueño; queda avisado.
+- Lo de la tabla vieja de «Rangos: comandos y permisos» (más abajo: /nick, /ptime, /pweather, /pp, cola…) ya no se
+  anuncia; si el staff lo puso a mano en LuckPerms, sigue ahí hasta que lo quite.
+
+### Entrega anterior (8 de octubre de 2026): el propio mob hace el efecto de kill, VFX ordenado en la web y TF Client 1.3.14
 **Lo que pidió el dueño (textual):** *«haz que los mobs también sean afectados por la animación de kills, busca la
 forma, que no salga el muñequito obvio sino que el mismo mob haga la animación, todos sin excepción. Y ordena mejor esa
 parte de los VFX, ordénalas más bonitas por favor.»*
@@ -384,7 +420,7 @@ set celestial»* (hecho en el checkpoint).
   - **Espadón de Dark World** (`bigsword`): tenía los combos de espada normal; ahora los de espadón (`claymore`).
 - `check_mod_items.py`: 0 errores. Mixins correctos. Compilado con Java 21.
 
-**Rangos: comandos y permisos** (lo que hay que dar en LuckPerms/EssentialsX para que sea verdad lo que dice la web;
+**Rangos: comandos y permisos (ANTIGUO, sustituido en 1.3.15: ahora los pone el TF Client solo)** (lo que había que dar en LuckPerms/EssentialsX;
 si algo no se va a dar, quitarlo de `RANK_SERVER_PERKS` en crates.py y regenerar):
 | Rango | Nuevo en este rango | Permisos (además de los del rango anterior) |
 | --- | --- | --- |
@@ -575,7 +611,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.15**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.16**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
