@@ -19,6 +19,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -69,17 +70,24 @@ public final class TFItemTypes {
     /** Los atributos (daño, velocidad, armadura…) de los objetos de los sets no salen en su descripción. */
     static final int HIDE_ATTRIBUTES = ItemStack.TooltipPart.MODIFIERS.getMask();
 
-    static void tooltip(Item item, List<Component> tooltip) {
-        TFSets.SetDef set = SET_OF.get(item);
+    static void tooltip(ItemStack stack, List<Component> tooltip) {
+        TFSets.SetDef set = SET_OF.get(stack.getItem());
         if (set == null) return;
-        String label = set.name().startsWith("Cosméticos") ? set.name() : "Set " + set.name();
+        String label = set.cosmetic() ? set.name() : "Set " + set.name();
         tooltip.add(Component.literal(label).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(set.color()))));
+        if (TFBinding.bindable(stack)) {
+            String owner = TFBinding.ownerName(stack);
+            tooltip.add(owner != null
+                    ? Component.literal("Irrompible · vinculado a ").withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(owner).withStyle(ChatFormatting.WHITE))
+                    : Component.literal("Irrompible · se vincula a quien lo reciba").withStyle(ChatFormatting.GRAY));
+        }
         tooltip.add(Component.literal("Tierras Fantásticas").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     // --- Armas y herramientas ---
 
-    public static class Sword extends SwordItem {
+    public static class Sword extends SwordItem implements TFItem {
         public Sword(Tier tier, int damage, float speed, Properties p) {
             super(tier, damage, speed, p);
         }
@@ -96,11 +104,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Axe extends AxeItem {
+    public static class Axe extends AxeItem implements TFItem {
         public Axe(Tier tier, float damage, float speed, Properties p) {
             super(tier, damage, speed, p);
         }
@@ -117,11 +125,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Pickaxe extends PickaxeItem {
+    public static class Pickaxe extends PickaxeItem implements TFItem {
         public Pickaxe(Tier tier, int damage, float speed, Properties p) {
             super(tier, damage, speed, p);
         }
@@ -138,11 +146,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Shovel extends ShovelItem {
+    public static class Shovel extends ShovelItem implements TFItem {
         public Shovel(Tier tier, float damage, float speed, Properties p) {
             super(tier, damage, speed, p);
         }
@@ -159,11 +167,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Hoe extends HoeItem {
+    public static class Hoe extends HoeItem implements TFItem {
         public Hoe(Tier tier, int damage, float speed, Properties p) {
             super(tier, damage, speed, p);
         }
@@ -180,11 +188,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Bow extends BowItem {
+    public static class Bow extends BowItem implements TFItem {
         public Bow(Properties p) {
             super(p);
         }
@@ -196,11 +204,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Crossbow extends CrossbowItem {
+    public static class Crossbow extends CrossbowItem implements TFItem {
         public Crossbow(Properties p) {
             super(p);
         }
@@ -213,11 +221,11 @@ public final class TFItemTypes {
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
             super.appendHoverText(stack, level, tooltip, flag);
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class FishingRod extends FishingRodItem {
+    public static class FishingRod extends FishingRodItem implements TFItem {
         public FishingRod(Properties p) {
             super(p);
         }
@@ -229,11 +237,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Shield extends ShieldItem {
+    public static class Shield extends ShieldItem implements TFItem {
         public Shield(Properties p) {
             super(p);
         }
@@ -245,11 +253,11 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
-    public static class Trident extends TridentItem {
+    public static class Trident extends TridentItem implements TFItem {
         public Trident(Properties p) {
             super(p);
         }
@@ -266,21 +274,38 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
     // --- Cosméticos: cascos y sombreros en la cabeza; alas, mochilas, capas y colas en la espalda ---
 
-    public static class Cosmetic extends Item implements Equipable {
+    public static class Cosmetic extends Item implements Equipable, TFItem {
         private final EquipmentSlot slot;
         @Nullable
         private final ResourceLocation worn;
+        private final boolean glides;
 
-        public Cosmetic(EquipmentSlot slot, @Nullable ResourceLocation worn, Properties p) {
+        public Cosmetic(EquipmentSlot slot, @Nullable ResourceLocation worn, boolean glides, Properties p) {
             super(p);
             this.slot = slot;
             this.worn = worn;
+            this.glides = glides;
+        }
+
+        /** Son alas: planean como unas élitros, sin gastarse (en el pecho aquí; en la espalda, {@link TFWings}). */
+        public boolean glides() {
+            return glides;
+        }
+
+        @Override
+        public boolean canElytraFly(ItemStack stack, LivingEntity entity) {
+            return glides;
+        }
+
+        @Override
+        public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks) {
+            return glides;
         }
 
         /** Modelo que se dibuja en la espalda (null para los de la cabeza, que dibuja Minecraft). */
@@ -311,14 +336,15 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip.add(Component.literal(slot == EquipmentSlot.HEAD ? "Cosmético · cabeza" : "Cosmético · espalda")
+            tooltip.add(Component.literal(slot == EquipmentSlot.HEAD ? "Cosmético · cabeza"
+                    : glides ? "Alas · planean como unas élitros, sin gastarse" : "Cosmético · espalda")
                     .withStyle(ChatFormatting.GRAY));
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
     /** Cosmético que se lleva en la mano (bastones, cestas, globos...): no es un arma ni da atributos. */
-    public static class Held extends Item {
+    public static class Held extends Item implements TFItem {
         private final boolean balloon;
 
         public Held(boolean balloon, Properties p) {
@@ -335,7 +361,7 @@ public final class TFItemTypes {
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
             tooltip.add(Component.literal(balloon ? "Cosmético · globo (en la mano)" : "Cosmético · en la mano")
                     .withStyle(ChatFormatting.GRAY));
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
     }
 
@@ -393,7 +419,7 @@ public final class TFItemTypes {
             ArmorItem.Type.CHESTPLATE, UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"),
             ArmorItem.Type.HELMET, UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150"));
 
-    public static class Armor extends ArmorItem {
+    public static class Armor extends ArmorItem implements TFItem {
         private final TFSets.SetDef set;
         private final Multimap<Attribute, AttributeModifier> modifiers;
 
@@ -429,7 +455,7 @@ public final class TFItemTypes {
 
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-            tooltip(this, tooltip);
+            tooltip(stack, tooltip);
         }
 
         /** Armaduras animadas (varios fotogramas): cambia de textura con el tiempo. */

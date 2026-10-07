@@ -274,7 +274,10 @@ export function createWardrobe(canvas) {
   };
   const loop = (time) => {
     state.raf = requestAnimationFrame(loop);
-    if (!state.drag && time - state.idleAt > 2500) state.yaw += 0.006;
+    // Giro lento y por tiempo (igual en pantallas de 60 y de 144 Hz): una vuelta cada ~35 s
+    const dt = Math.min(0.1, (time - (state.lastTime || time)) / 1000);
+    state.lastTime = time;
+    if (!state.drag && time - state.idleAt > 2500) state.yaw += dt * 0.18;
     pivot.rotation.set(state.pitch, state.yaw, 0);
     if (anchors.cb && state.mode === 'player' && playerRoot.children.length) {
       pivot.updateMatrixWorld(true);

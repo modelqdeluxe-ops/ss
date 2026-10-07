@@ -85,9 +85,9 @@ public final class TFItems {
             case "fishing_rod" -> new TFItemTypes.FishingRod(p.durability(128));
             case "shield" -> new TFItemTypes.Shield(p.durability(672));
             case "trident" -> new TFItemTypes.Trident(p.durability(500));
-            case "head" -> new TFItemTypes.Cosmetic(EquipmentSlot.HEAD, null, p.stacksTo(1));
+            case "head" -> new TFItemTypes.Cosmetic(EquipmentSlot.HEAD, null, false, p.stacksTo(1));
             case "back" -> new TFItemTypes.Cosmetic(EquipmentSlot.CHEST,
-                    def.worn() != null ? new ResourceLocation(def.worn()) : null, p.stacksTo(1));
+                    def.worn() != null ? new ResourceLocation(def.worn()) : null, def.glide(), p.stacksTo(1));
             case "armor" -> new TFItemTypes.Armor(set, armorType(def.slot()), p);
             case "held" -> new TFItemTypes.Held(false, p.stacksTo(1));
             case "balloon" -> new TFItemTypes.Held(true, p.stacksTo(1));

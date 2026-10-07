@@ -23,11 +23,12 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class TFSets {
     /** Un objeto de un set. type: sword, heavy, axe, pickaxe, shovel, hoe, bow, crossbow, fishing_rod, shield,
      *  trident, head (cosmético en la cabeza), back (cosmético en la espalda), held (cosmético en la mano), balloon
-     *  (globo en la mano) o armor. */
-    public record ItemDef(String id, String type, String slot, String worn) {}
+     *  (globo en la mano) o armor. glide: unas alas, que planean (TFWings). */
+    public record ItemDef(String id, String type, String slot, String worn, boolean glide) {}
 
-    /** tier: nivel de atributos del set (ver TFTier). */
-    public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime, TFTier tier) {}
+    /** tier: nivel de atributos del set (ver TFTier). cosmetic: set de cosméticos (sus objetos no se vinculan, TFBinding). */
+    public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime, TFTier tier,
+                         boolean cosmetic) {}
 
     private static final Map<String, SetDef> SETS = new LinkedHashMap<>();
 
@@ -57,14 +58,16 @@ public final class TFSets {
                                 i.get("id").getAsString(),
                                 i.get("type").getAsString(),
                                 i.has("slot") ? i.get("slot").getAsString() : null,
-                                i.has("worn") ? i.get("worn").getAsString() : null));
+                                i.has("worn") ? i.get("worn").getAsString() : null,
+                                i.has("glide") && i.get("glide").getAsBoolean()));
                     }
                     int color = Integer.parseInt(s.get("color").getAsString().substring(1), 16);
                     SETS.put(s.get("id").getAsString(), new SetDef(
                             s.get("id").getAsString(), s.get("name").getAsString(), color, List.copyOf(items),
                             s.has("armorFrames") ? s.get("armorFrames").getAsInt() : 1,
                             s.has("armorFrametime") ? Math.max(1, s.get("armorFrametime").getAsInt()) : 2,
-                            TFTier.parse(s.has("tier") ? s.get("tier").getAsString() : null)));
+                            TFTier.parse(s.has("tier") ? s.get("tier").getAsString() : null),
+                            s.has("cosmetic") && s.get("cosmetic").getAsBoolean()));
                 }
             }
             TFClient.LOGGER.info("TF Client: {} sets cargados", SETS.size());

@@ -1,7 +1,8 @@
 /* Tierras Fantásticas — estilos de la web.
-   Concepto «Minecraft moderno»: noche profunda con luz esmeralda y amatista, tipografía Unbounded (titulares) y
-   Figtree (texto), botones con volumen de bloque (se elevan al pasar el ratón y se hunden al pulsar) y tarjetas con
-   profundidad. Pensado primero para el móvil: sin desenfoques ni capas fijas; lo que se anima solo usa transform y
+   Concepto «nebulosa de neón»: el reino de noche bajo una nebulosa rosa, violeta y cian (una sola imagen fija),
+   tipografía Unbounded (titulares) y Figtree (texto), tarjetas opacas con filo claro que se separan del fondo y botones
+   con volumen de bloque (se elevan, brillan y cambian de color al pasar el ratón y se hunden al pulsar). Una sola
+   paleta: rosa neón, violeta y cian sobre índigo. Pensado primero para el móvil: sin desenfoques ni capas fijas; lo que se anima solo usa transform y
    opacity, y todo se apaga con «reducir movimiento». Orden: tokens → base → carga → botones → cabecera → portada →
    bloques comunes → pie → tienda → ventanas → cuenta → probador → tamaños de pantalla. */
 
@@ -62,13 +63,16 @@
   --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 44px -24px rgba(0, 0, 0, 0.85);
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(4, 2, 16, 0.55), 0 22px 46px -20px rgba(0, 0, 0, 0.95);
+  /* Superficie de las tarjetas: opaca y más clara que el fondo, para que se distinga siempre */
+  --surface: linear-gradient(180deg, #241c55 0%, #1a1442 55%, #150f37 100%);
+  --surface-2: #2a2163;
   --neon-border: linear-gradient(135deg, rgb(var(--a-rgb) / 0.7), rgb(var(--v-rgb) / 0.35) 45%, rgb(var(--c-rgb) / 0.6));
   /* Neón de los bordes: un filo fino de luz y un halo suave alrededor (nunca en las letras) */
-  --edge: rgb(var(--v-rgb) / 0.26);
-  --edge-hot: rgb(var(--a-rgb) / 0.62);
-  --haze: 0 0 0 1px rgb(var(--a-rgb) / 0.05), 0 0 26px -12px rgb(var(--v2-rgb) / 0.7);
-  --haze-hot: 0 0 0 1px rgb(var(--a-rgb) / 0.18), 0 0 34px -8px rgb(var(--a-rgb) / 0.55), 0 0 60px -20px rgb(var(--c-rgb) / 0.45);
+  --edge: rgb(var(--line-rgb) / 0.3);
+  --edge-hot: rgb(var(--a-rgb) / 0.8);
+  --haze: 0 0 30px -14px rgb(var(--v2-rgb) / 0.85);
+  --haze-hot: 0 0 0 1px rgb(var(--a-rgb) / 0.3), 0 0 36px -6px rgb(var(--a-rgb) / 0.6), 0 0 70px -18px rgb(var(--c-rgb) / 0.5);
   --grid-lines:
     linear-gradient(rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px,
     linear-gradient(90deg, rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px;
@@ -101,8 +105,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Fondo: el reino de noche (luna, castillo y río), fijo detrás de todo con un velo oscuro para que se lea el texto.
-   Es una sola capa fija que solo se acerca muy despacio (transform: la mueve la tarjeta gráfica). */
+/* Fondo: la nebulosa de neón sobre el reino de noche (tools/nebula_bg.py la genera ya oscurecida), fija detrás de
+   todo. Es una sola capa fija que solo se acerca muy despacio (transform: la mueve la tarjeta gráfica). */
 body::before {
   content: '';
   position: fixed;
@@ -110,15 +114,15 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.42) 0%, rgb(var(--bg-rgb) / 0.62) 45%, rgb(var(--bg-rgb) / 0.82) 100%),
-    url('/img/night-1672.webp') 62% 30% / cover no-repeat,
+    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.08) 0%, rgb(var(--bg-rgb) / 0.3) 50%, rgb(var(--bg-rgb) / 0.62) 100%),
+    url('/img/nebula-1672.webp') 62% 30% / cover no-repeat,
     var(--bg);
   transform-origin: 70% 30%;
   will-change: transform;
   animation: night-drift 60s ease-in-out infinite alternate;
 }
 
-/* Brillo de neón muy suave en los bordes de la pantalla y viñeta */
+/* Viñeta: oscurece los bordes de la pantalla para que el contenido mande */
 body::after {
   content: '';
   position: fixed;
@@ -126,16 +130,15 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(70% 55% at 0% 100%, rgb(var(--a2-rgb) / 0.16), transparent 70%),
-    radial-gradient(60% 50% at 100% 100%, rgb(var(--v2-rgb) / 0.18), transparent 70%),
-    radial-gradient(130% 90% at 50% 40%, transparent 55%, rgb(var(--bg-rgb) / 0.65) 100%);
+    radial-gradient(60% 45% at 0% 100%, rgb(var(--a2-rgb) / 0.12), transparent 70%),
+    radial-gradient(130% 90% at 50% 40%, transparent 50%, rgb(var(--bg-rgb) / 0.7) 100%);
 }
 
 @media (max-width: 760px) {
   body::before {
     background:
-      linear-gradient(180deg, rgb(var(--bg-rgb) / 0.4) 0%, rgb(var(--bg-rgb) / 0.66) 45%, rgb(var(--bg-rgb) / 0.84) 100%),
-      url('/img/night-768.webp') 72% 30% / cover no-repeat,
+      linear-gradient(180deg, rgb(var(--bg-rgb) / 0.06) 0%, rgb(var(--bg-rgb) / 0.32) 50%, rgb(var(--bg-rgb) / 0.66) 100%),
+      url('/img/nebula-768.webp') 72% 30% / cover no-repeat,
       var(--bg);
   }
 }
@@ -329,6 +332,33 @@ h4 {
   text-align: center;
 }
 
+/* Filo de neón bajo cada cabecera de sección (se dibuja de izquierda a derecha al aparecer) */
+.section-head::after {
+  content: '';
+  display: block;
+  width: 84px;
+  height: 3px;
+  margin-top: 20px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--a-400), var(--violet), var(--cyan));
+  box-shadow: 0 0 14px rgb(var(--a-rgb) / 0.55);
+  transform-origin: 0 50%;
+  transition: transform 0.9s var(--ease) 0.25s;
+}
+
+.section-head.center::after {
+  margin-inline: auto;
+  transform-origin: 50% 50%;
+}
+
+.split-head::after {
+  display: none;
+}
+
+.js .section-head.reveal:not(.in)::after {
+  transform: scaleX(0);
+}
+
 .split-head {
   display: flex;
   flex-wrap: wrap;
@@ -490,31 +520,56 @@ h4 {
   }
 }
 
-/* ---------- Transiciones entre páginas (navegadores que lo admiten) ---------- */
+/* ---------- Transiciones entre páginas ---------- */
 
-@view-transition {
-  navigation: auto;
+/* En todos los navegadores: al pulsar un enlace de la web (app.js pone .leaving) el contenido se desvanece hacia
+   arriba con una barra de neón que corre por arriba; la página nueva entra subiendo y apareciendo. */
+.js:not(.ready) main,
+.js:not(.ready) .footer {
+  opacity: 0;
 }
 
-::view-transition-old(root) {
-  animation: vt-out 0.22s var(--ease) both;
+.ready main,
+.ready .footer {
+  animation: page-in 0.7s var(--ease) backwards;
 }
 
-::view-transition-new(root) {
-  animation: vt-in 0.42s var(--ease) both;
+.ready .footer {
+  animation-delay: 0.12s;
 }
 
-@keyframes vt-out {
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
+.leaving main,
+.leaving .footer {
+  opacity: 0;
+  transform: translateY(-18px) scale(0.99);
+  filter: saturate(1.4);
+  transition:
+    opacity 0.3s var(--ease),
+    transform 0.3s var(--ease),
+    filter 0.3s;
 }
 
-@keyframes vt-in {
+.page-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 200;
+  height: 3px;
+  background: linear-gradient(90deg, var(--a-400), var(--violet), var(--cyan));
+  box-shadow: 0 0 14px rgb(var(--a-rgb) / 0.8);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
+.leaving .page-bar {
+  transform: scaleX(0.85);
+  transition: transform 1.2s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+@keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(26px);
   }
 }
 
@@ -550,8 +605,10 @@ h4 {
     0 var(--lift) 0 var(--lip),
     0 12px 24px -12px var(--glow);
   transition:
-    transform 0.2s var(--ease),
-    box-shadow 0.2s var(--ease),
+    transform 0.25s var(--spring),
+    box-shadow 0.25s var(--ease),
+    background-position 0.6s var(--ease),
+    color 0.2s,
     filter 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
@@ -569,8 +626,8 @@ h4 {
 }
 
 .btn:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.07);
+  transform: translateY(-3px) scale(1.03);
+  filter: brightness(1.1) saturate(1.1);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     inset 0 -2px 0 rgba(0, 0, 0, 0.15),
@@ -583,7 +640,7 @@ h4 {
 }
 
 .btn:active {
-  transform: translateY(calc(var(--lift) - 1px));
+  transform: translateY(calc(var(--lift) - 1px)) scale(0.99);
   filter: brightness(0.97);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -601,16 +658,22 @@ h4 {
 }
 
 .btn:hover svg:last-child:not(:first-child) {
-  transform: translateX(4px);
+  transform: translateX(5px);
 }
 
-.btn-primary {
+.btn:hover svg:first-child:not(:last-child) {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+.btn-primary,
+.btn-theme {
   --a: var(--pri-a);
   --b: var(--pri-b);
   --lip: var(--pri-lip);
   --fg: var(--on-accent);
   --glow: rgb(var(--a2-rgb) / 0.75);
-  background: var(--pri-grad);
+  /* El degradado es el doble de ancho: al pasar el ratón se desliza del rosa al violeta y el cian */
+  background: linear-gradient(110deg, #ff5ed5 0%, #b04cf2 30%, #6f5cff 55%, #3fc8ff 80%, #ff5ed5 100%) 0 0 / 220% 100%;
   text-shadow: 0 1px 2px rgba(40, 0, 60, 0.45);
   /* Neón: filo rosa claro y halo */
   box-shadow:
@@ -621,32 +684,47 @@ h4 {
     0 12px 26px -12px var(--glow);
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-theme:hover {
+  background-position: 100% 0;
   box-shadow:
-    inset 0 0 0 1px rgb(255 214 247 / 0.55),
+    inset 0 0 0 1px rgb(255 214 247 / 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 calc(var(--lift) + 2px) 0 var(--lip),
     0 0 34px -2px rgb(var(--a-rgb) / 0.75),
-    0 0 60px -14px rgb(var(--c-rgb) / 0.5);
+    0 0 60px -14px rgb(var(--c-rgb) / 0.6);
+  animation: btn-breathe 1.8s ease-in-out 0.3s infinite;
 }
 
 .btn-ghost {
-  --a: var(--s3);
-  --b: var(--s2);
-  --lip: var(--bg);
+  --a: #3a2f86;
+  --b: #2a2166;
+  --lip: #120d33;
+  /* Se llena de rosa y violeta desde abajo al pasar el ratón */
+  background:
+    linear-gradient(180deg, rgb(var(--a-rgb) / 0.55), rgb(var(--v2-rgb) / 0.6)) 0 100% / 100% 0 no-repeat,
+    linear-gradient(180deg, var(--a), var(--b));
   box-shadow:
-    inset 0 0 0 1px rgb(var(--v-rgb) / 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgb(var(--line-rgb) / 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
     0 var(--lift) 0 var(--lip),
-    0 0 18px -8px rgb(var(--v2-rgb) / 0.7);
+    0 0 18px -8px rgb(var(--v2-rgb) / 0.8);
+  transition:
+    transform 0.25s var(--spring),
+    box-shadow 0.25s var(--ease),
+    background-size 0.35s var(--ease),
+    filter 0.2s;
 }
 
 .btn-ghost:hover {
+  background-size:
+    100% 100%,
+    auto;
   box-shadow:
-    inset 0 0 0 1px rgb(var(--a-rgb) / 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgb(var(--a-rgb) / 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 26px -6px rgb(var(--a-rgb) / 0.6);
+    0 0 30px -6px rgb(var(--a-rgb) / 0.7);
 }
 
 .btn-discord {
@@ -663,14 +741,6 @@ h4 {
   --lip: #9a5c08;
   --fg: #2b1a00;
   --glow: rgba(245, 179, 36, 0.55);
-}
-
-.btn-theme {
-  --a: var(--t1, var(--pri-a));
-  --b: var(--t2, var(--pri-b));
-  --lip: color-mix(in srgb, var(--t2, var(--pri-b)) 50%, #000);
-  --fg: #0b0b10;
-  --glow: var(--t3, rgb(var(--a2-rgb) / 0.5));
 }
 
 .btn-sm {
@@ -696,6 +766,7 @@ h4 {
 .btn:disabled,
 .btn[disabled] {
   cursor: not-allowed;
+  animation: none;
   filter: grayscale(0.75) brightness(0.7);
   transform: none;
   box-shadow:
@@ -772,9 +843,9 @@ body:not([data-hero]) .header {
   /* Sólida al bajar, con una línea de neón abajo */
   background:
     linear-gradient(90deg, transparent 4%, rgb(var(--a-rgb) / 0.55), rgb(var(--v-rgb) / 0.4), rgb(var(--c-rgb) / 0.5), transparent 96%) bottom / 100% 1px no-repeat,
-    rgb(var(--bg-rgb) / 0.93);
+    linear-gradient(180deg, #0d0a26, #09071c);
   border-bottom-color: transparent;
-  box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.9);
 }
 
 .header.solid::before,
@@ -835,7 +906,7 @@ body:not([data-hero]) .header::before {
   bottom: 2px;
   height: 2px;
   border-radius: 2px;
-  background: var(--a-400);
+  background: linear-gradient(90deg, var(--a-400), var(--violet), var(--cyan));
   box-shadow: 0 0 10px rgb(var(--a-rgb) / 0.7);
   transform: scaleX(0);
   transition: transform 0.35s var(--ease);
@@ -1513,15 +1584,17 @@ body:not([data-hero]) .header::before {
 
 /* ---------- Tarjetas (superficie común) ---------- */
 
-/* Superficie algo transparente (se intuye el fondo detrás) con un filo de neón fino y un halo suave */
+/* Superficie opaca y más clara que el fondo, con un filo claro alrededor, una línea de neón arriba, una sombra que la
+   despega del fondo y un halo violeta suave. Así cada tarjeta se distingue sobre la nebulosa. */
 .panel,
 .frame {
   position: relative;
   border-radius: var(--r-lg);
   border: 1px solid var(--edge);
   background:
-    linear-gradient(90deg, transparent 4%, rgb(var(--a-rgb) / 0.55), rgb(var(--c-rgb) / 0.45), transparent 96%) top / 100% 1px no-repeat,
-    linear-gradient(180deg, rgb(30 24 72 / 0.84), rgb(var(--s1-rgb) / 0.92));
+    linear-gradient(90deg, transparent 4%, rgb(var(--a-rgb) / 0.8), rgb(var(--c-rgb) / 0.65), transparent 96%) top / 100% 1px no-repeat,
+    radial-gradient(120% 70% at 50% 0%, rgb(var(--v-rgb) / 0.1), transparent 60%),
+    var(--surface);
   box-shadow: var(--card-shadow), var(--haze);
 }
 
@@ -1658,6 +1731,9 @@ body:not([data-hero]) .header::before {
     radial-gradient(60% 80% at 15% 75%, rgb(var(--a2-rgb) / 0.14), transparent 70%),
     radial-gradient(55% 80% at 90% 65%, rgb(var(--v2-rgb) / 0.16), transparent 70%),
     linear-gradient(180deg, rgb(var(--bg-rgb) / 0.3), transparent);
+  /* Se funde abajo con el fondo: sin corte al final de la cabecera */
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+  mask-image: linear-gradient(180deg, #000 55%, transparent);
 }
 
 
@@ -2011,7 +2087,7 @@ body:not([data-hero]) .header::before {
   z-index: -2;
   background:
     linear-gradient(180deg, rgb(var(--bg-rgb) / 0.78), rgb(var(--bg-rgb) / 0.92)),
-    url('/img/night-1280.webp') center 35% / cover no-repeat;
+    url('/img/nebula-1280.webp') center 35% / cover no-repeat;
 }
 
 .cta-band::after {
@@ -2773,6 +2849,87 @@ body:not([data-hero]) .header::before {
 }
 
 .trust span:not(.icon) {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Lo que compras es tuyo para siempre: permanentes, irrompibles y vinculados a la cuenta */
+.owned {
+  margin-top: 16px;
+  padding: 26px 22px;
+  scroll-margin-top: calc(var(--header-h) + 24px);
+}
+
+.owned-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.owned-head .icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: #fff;
+  background: var(--pri-grad);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 26px -6px rgb(var(--a-rgb) / 0.7);
+}
+
+.owned-head .icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.owned h2 {
+  margin: 2px 0 6px;
+  font-size: clamp(19px, 2.4vw, 24px);
+}
+
+.owned-head p {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.owned-list {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.owned-list li {
+  padding: 16px 18px 16px 46px;
+  border-radius: var(--r);
+  background:
+    var(--check) 16px 18px / 18px no-repeat,
+    rgb(var(--bg-rgb) / 0.45);
+  box-shadow: inset 0 0 0 1px rgb(var(--line-rgb) / 0.16);
+  transition:
+    box-shadow 0.3s var(--ease),
+    transform 0.3s var(--ease);
+}
+
+.owned-list li:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--a-rgb) / 0.5),
+    0 0 24px -10px rgb(var(--a-rgb) / 0.7);
+}
+
+.owned-list b {
+  display: block;
+  font: 600 15px/1.35 var(--font-display);
+}
+
+.owned-list span {
   display: block;
   margin-top: 4px;
   color: var(--muted);
@@ -5118,6 +5275,28 @@ body:not([data-hero]) .header::before {
   transform: none;
 }
 
+.cv-bound {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+  background: rgb(var(--a-rgb) / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(var(--a-rgb) / 0.22);
+}
+
+.cv-bound svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--a-300);
+}
+
 .cv-buy {
   position: sticky;
   bottom: 0;
@@ -5252,6 +5431,18 @@ body:not([data-hero]) .header::before {
   100% {
     transform: translateX(380%) skewX(-14deg);
     opacity: 0;
+  }
+}
+
+/* Halo de los botones principales mientras el ratón está encima */
+@keyframes btn-breathe {
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgb(255 214 247 / 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 calc(var(--lift) + 2px) 0 var(--lip),
+      0 0 46px 2px rgb(var(--a-rgb) / 0.6),
+      0 0 80px -10px rgb(var(--c-rgb) / 0.75);
   }
 }
 
@@ -5453,6 +5644,14 @@ body:not([data-hero]) .header::before {
 
   .trust {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .owned {
+    padding: 32px 32px 30px;
+  }
+
+  .owned-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .footer-cols {
@@ -5803,10 +6002,6 @@ body:not([data-hero]) .header::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  @view-transition {
-    navigation: none;
-  }
-
   /* Sin desplazamientos (entradas, flotar, deslizar); los cambios de color y de brillo se quedan */
   *,
   *::before,
@@ -5837,8 +6032,20 @@ body:not([data-hero]) .header::before {
     animation-iteration-count: infinite !important;
   }
 
-  .js .reveal {
-    opacity: 1;
-    transform: none;
+  /* La entrada de cada página (corta y suave) y el halo de los botones al pasar el ratón también se quedan */
+  .ready main,
+  .ready .footer {
+    animation-duration: 0.7s !important;
+  }
+
+  .ready .footer {
+    animation-delay: 0.12s !important;
+  }
+
+  .btn-primary:hover,
+  .btn-theme:hover {
+    animation-duration: 1.8s !important;
+    animation-iteration-count: infinite !important;
+    animation-delay: 0.3s !important;
   }
 }

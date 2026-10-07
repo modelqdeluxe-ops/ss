@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **7 de octubre de 2026 (madrugada)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **7 de octubre de 2026 (mañana)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,7 +12,75 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (7 de octubre de 2026, madrugada): fondo nocturno, neón en bordes, comandos de los rangos y TF Client 1.3.9
+### Última entrega (7 de octubre de 2026, mañana): nebulosa de neón, Necros ⇄ Oni, objetos vinculados, alas que planean y TF Client 1.3.10
+**Lo que pidió el dueño (textual):** *«la crate Necros la vas a quitar de crates y la vas a intercambiar con el set del
+rango cósmico, el set de rango cósmico pasa a ser crate. Y con respecto al fondo, hazlo más opaco, haz más como
+nebulosa neón el fondo, las tarjetas de botones no se distinguen… no hay armonía con el diseño y colores, no hay
+transiciones de página suaves, no veo nada de eso, los botones como que les falta animación al colocar mi ratón…
+Haz que todas las alas cosméticas sean como elytras, que nunca se gasten ni tengan durabilidad… estos kits de los
+rangos y los que compran son permanentes por lo tanto son indestructibles, no son transferibles… debes explicarlo
+con transparencia, estos trajes y todo lo que se compre en la tienda a excepción de cosméticos o ropa estarán
+vinculados a la uuid del jugador, es decir que al dropearlos o ponerlos en cofres ninguna persona podrá usarlos ni
+ponérselos que no sea su dueño… has más despacio la animación de girar al mostrar el modelo»*. Y después: *«ojo,
+solo alas, mochilas y otras cosas no, solo ALAS»*.
+
+**Necros ⇄ Oni** (`tools/crates.py`): el rango **Cósmico** da ahora el set **Necros** (netherita +1,5) y **Oni** es
+una crate (la 2.ª de la lista, 4,49 USD, netherita +1, colores `#fda4af`/`#e11d48`, portada `img/crates/oni.webp`).
+`RANK_PITCH['cosmico']` describe Necros sin nombrarlo. En el mod, `tf_sets.json` lleva los niveles y colores nuevos
+(sin rehacer modelos). Las pruebas usan `crate-oni`.
+
+**Web:**
+- **Fondo «nebulosa de neón»**: `tools/nebula_bg.py` (semilla fija, reproducible) oscurece la imagen nocturna y le
+  pone encima una nebulosa rosa, violeta y cian con estrellas → `public/img/nebula-{768,1280,1672}.webp` (12–45 KB).
+  Es la misma capa fija de antes (`body::before`, con el acercamiento lento); `body::after` ya solo es la viñeta. Las
+  `night-*.webp` siguen en el repo (el pilar «Reinos y castillos» usa `night-768`).
+- **Tarjetas que se distinguen**: `.panel`/`.frame` son opacas y más claras que el fondo (token `--surface`), con
+  filo claro (`--edge` 0,30), línea de neón arriba, sombra que las despega y halo violeta. La cabecera fija es opaca.
+- **Armonía**: una sola paleta (rosa neón, violeta, cian sobre índigo). Los botones de comprar de cada crate
+  (`btn-theme`) ya no son del color de la crate: son iguales que `btn-primary`; el color de cada crate queda en su
+  franja de arriba, su brillo y el texto de piezas.
+- **Botones**: al pasar el ratón se elevan y crecen (muelle), el degradado se desliza del rosa al cian y el halo
+  «respira» (`@keyframes btn-breathe`); `btn-ghost` se llena de rosa desde abajo; los iconos se mueven.
+- **Transiciones de página en todos los navegadores** (antes `@view-transition`, solo Chrome, y además apagada con
+  «reducir movimiento», que es como tiene el dueño Windows: por eso no las veía). Ahora `app.js` intercepta los
+  enlaces internos, pone `.leaving` en `<html>` (el contenido se desvanece hacia arriba y una barra de neón
+  `.page-bar` corre arriba) y navega a los 280 ms; la página nueva entra subiendo (`page-in`). Están exentas en el
+  bloque `prefers-reduced-motion`, igual que el halo de los botones y las apariciones al bajar.
+- **Filo de neón** bajo cada cabecera de sección (`.section-head::after`, se dibuja al aparecer).
+- **Transparencia**: bloque «Lo que compras es tuyo para siempre» (`#vinculados`, al final de la tienda), dos
+  preguntas nuevas en Ayuda (regalar/intercambiar y alas), apartado **«Objetos permanentes y vinculados a tu
+  cuenta»** en los Términos (`tools/legal.py`, `LEGAL_DATE` = 7 de octubre de 2026), una línea en el probador de
+  crates y rangos y en la introducción de las crates.
+- **Giro del modelo 3D más lento** y por tiempo (igual a 60 o 144 Hz): probador/rangos ~35 s por vuelta
+  (`wardrobe.js`), visor de objetos ~29 s (`viewer.js`).
+
+**Mod 1.3.10:**
+- **Objetos permanentes** (`items/TFItem.java`, interfaz que implementan todos los tipos de `TFItemTypes`): sin
+  durabilidad (`isDamageable` → false: no se gastan, no hay barra, Reparación no gasta XP en ellos) y, en el suelo,
+  invulnerables, sin desaparecer nunca y rescatados del vacío (`TFBinding.protect`).
+- **Vinculados a la UUID** (`items/TFBinding.java`): NBT `TFOwner` (UUID) y `TFOwnerName`. Se vinculan los objetos
+  de los sets que **no** son cosméticos: ni `Cosmetic` (cabeza/espalda) ni `Held` (de mano/globos) ni los sets de
+  cosméticos (`"cosmetic": true` en `tf_sets.json`). `/tf web sets give` vincula al entregar (la ruleta usa ese
+  comando). Cada tick: lo que no tiene dueño se vincula a quien lo lleva (fuera de creativo; así se migran los de
+  antes) y lo que es de otro se le quita y **vuelve a su dueño** (a su inventario o, si no está conectado, se guarda
+  en `data/tfclient_returns.dat` del mundo y se le da al entrar). Solo el dueño puede cogerlo del suelo
+  (`EntityItemPickupEvent` + `ItemEntity.setTarget`); atacar, usar y romper bloques con algo ajeno se cancela.
+  Creativo y espectador están exentos (staff). En la descripción: «Irrompible · vinculado a <nombre>».
+- **Alas que planean como élitros, solo las alas** (49): `"glide": true` en `tf_sets.json` (lo pone
+  `build_mod_items.py`: `glides()` = la clase de `KIND_BY_TAG` o el nombre termina en `wing`/`wings`; el «wing» de
+  Pascua es un peluche-mochila y no planea, la «frozen_backpack» son alas y sí). Mochilas, capas, colas, carcajes y el
+  caldero no planean. En el pecho lo hace el propio objeto (`Cosmetic.canElytraFly`/`elytraFlightTick` → sin gasto);
+  en el hueco de la espalda de Accessories/Curios (con la pechera puesta), `mixin/ItemStackMixin` (común, cliente y
+  servidor) declara en `ItemStack` los métodos de Forge `canElytraFly`/`elytraFlightTick` y, si el objeto del pecho no
+  planea, mira `TFWings.fromBackSlot` (lee los huecos con `TFAccessoryLookup`, la reflexión que antes estaba en
+  `TFAccessorySlots`, ahora común).
+- `build_mod_items.py`: `mark_flags()` pone `cosmetic`/`glide` también en los sets que no se rehacen, y en ese modo
+  actualiza el color además del nivel.
+- `check_mod_items.py`: 0 errores. Compilado (bytecode del mixin revisado: `getItem` remapeado a `m_41720_`).
+  **No se ha probado dentro del juego** (regla: no se lanza el juego): si el dueño ve algo raro al planear con las alas
+  en el hueco de la espalda, mirar el log por «TF Client: alas».
+
+### Entrega anterior (7 de octubre de 2026, madrugada): fondo nocturno, neón en bordes, comandos de los rangos y TF Client 1.3.9
 Termina el checkpoint de la otra IA (rama `claude/amazing-ritchie-68hm6n`, commit `b421e19`: trajes de espalda
 centrados en el cuerpo, alas de Eagle pegadas, armas dobles de Oni visibles e intercambio de sets Celestial ⇄
 Fantástico; detalle en el mensaje de ese commit y en «Herramientas de revisión» abajo).
@@ -141,7 +209,7 @@ bonito, con sus animaciones»*.
 
 ### Entrega anterior (6 de octubre de 2026, noche): 7 rangos con su set, crates cambiadas y TF Client 1.3.6
 El dueño (textual, *«no lo repetiré 2 veces»*): rangos de mayor a menor **Fantástico** (kit Eagle Ascendant),
-**Celestial** (Luz de Estrella, sacado de las crates), **Cósmico** (Oni), **Eterno** (Malika), **Mágico** (Dark World),
+**Celestial** (Luz de Estrella, sacado de las crates), **Cósmico** (Oni; desde 1.3.10 es **Necros** y Oni es crate), **Eterno** (Malika), **Mágico** (Dark World),
 **Inmortal** (Beats, sacado de las crates) y **Mortal** (San Patricio, sacado de las crates). Los huecos de las crates
 los llenan **Akira** (donde estaba Luz de Estrella), **Cardael** (Beats) y **Evergreen** (San Patricio), y los kits
 subidos que no nombró van a crates: **Soul Skull** → hay **41 crates** (no 40) y 7 rangos. **Happy New Year 2026 NO
@@ -240,7 +308,7 @@ IP `216.163.187.40:19001`) con +200 mods. Este repo tiene:
 | Carpeta | Qué es |
 | --- | --- |
 | `tierras-fantasticas/` | La web/tienda. Cloudflare Workers + D1 + archivos estáticos (`public/`). Dominio `tierrasfantásticas.store` = `https://xn--tierrasfantsticas-hpb.store`. |
-| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.9**. |
+| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.10**. |
 | `wrangler.jsonc` | Configuración del Worker de Cloudflare (en la raíz a propósito). |
 | `.github/workflows/` | `tf-client.yml` compila el mod en cada push que toque `tf-client/` (artefacto `tfclient-jar`); `server-ping.yml` comprueba el servidor. |
 
@@ -259,7 +327,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.10**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.11**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
@@ -375,10 +443,10 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.9)
+## 5. El mod (TF Client 1.3.10)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.9.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
 - Objetos de los sets (`items/TFTier.java`, `TFItems.create`, `TFItemTypes.Material`/`Armor`): cada set tiene su nivel
   (`tier` en `tf_sets.json`: `iron`, `diamond`, `netherite` o `netherite+N`). Crates +1 (desde la 1.3.5, decisión del

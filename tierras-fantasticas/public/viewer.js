@@ -243,7 +243,10 @@ function createUi() {
 
   const loop = (time) => {
     state.raf = requestAnimationFrame(loop);
-    if (!state.drag && time - state.idleAt > 1800) state.yaw += 0.008;
+    // Giro lento y por tiempo (igual en pantallas de 60 y de 144 Hz): una vuelta cada ~29 s
+    const dt = Math.min(0.1, (time - (state.lastTime || time)) / 1000);
+    state.lastTime = time;
+    if (!state.drag && time - state.idleAt > 1800) state.yaw += dt * 0.22;
     pivot.rotation.set(state.pitch, state.yaw, 0);
     for (const t of Object.values(state.textures)) {
       if (t.frames.length < 2) continue;

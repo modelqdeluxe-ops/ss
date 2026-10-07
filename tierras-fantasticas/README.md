@@ -14,7 +14,7 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   - **Tienda** (`/tienda`), con pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**, **Rangos**,
     **Crates** y **Tienda de monedas**.
     - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) con contenido fijo y a la
-      vista, sin nada al azar. La web no habla de sus atributos (los define el TF Client). Al tocarla se abre el **probador** (`/tienda#crates-necros`): tu personaje en 3D con tu skin y el set
+      vista, sin nada al azar. La web no habla de sus atributos (los define el TF Client). Al tocarla se abre el **probador** (`/tienda#crates-oni`): tu personaje en 3D con tu skin y el set
       puesto; al tocar una pieza se ve suelta en 3D y se puede **equipar** o quitar.
     - **Tienda de monedas**: objetos del servidor que se compran en la web con las monedas que se ganan jugando. La
       llena el staff desde el juego (`/tf web tienda add <precio>`) y la web se actualiza sola. Al comprar, la web manda
@@ -34,7 +34,7 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     pruebas (se pueden combinar colecciones) y la compra de cada pieza (`tf web sets give {player} <set> <pieza>`).
   - **Rangos** (`/tienda#rangos`): escalera de rangos y un escaparate con el personaje (tu skin) y el set del rango
     puesto, el nombre con su prefijo flotando encima y el texto de venta (`RANK_PITCH`; nunca el nombre del kit). De menor a mayor: Mortal (set San Patricio), Inmortal (Beats), Mágico (Dark World),
-    Eterno (Malika), Cósmico (Oni), Celestial (Eagle Ascendant) y Fantástico (Luz de Estrella). Cada uno da su grupo
+    Eterno (Malika), Cósmico (Necros), Celestial (Eagle Ascendant) y Fantástico (Luz de Estrella). Cada uno da su grupo
     de LuckPerms, su prefijo con color, el rol de Discord y su set completo (`tf web sets give`). La tabla `RANKS` de
     `tools/crates.py` los define (con el nivel de atributos de su set); `/tienda#rangos-mortal` abre uno. Las piezas
     del set se pueden poner y quitar en el personaje. Debajo del escaparate sale lo que trae el rango en el servidor con sus
@@ -209,7 +209,7 @@ Las crates (`"category": "crates"`) las escribe `tools/crates.py` y llevan adem�
 
 | Campo         | Descripción                                                                      |
 |---------------|----------------------------------------------------------------------------------|
-| `theme`, `set`| Id del set (ancla de la URL: `/tienda#crates-necros`)                              |
+| `theme`, `set`| Id del set (ancla de la URL: `/tienda#crates-oni`)                              |
 | `colors`      | Sus dos colores (claro, intenso)                                                   |
 | `tagline`     | Frase corta bajo el nombre                                                        |
 | `image`       | Portada del set en `public/img/crates/`                                           |

@@ -529,6 +529,33 @@ BACK_GAP_TO = 0.15     # ...hasta aquí (pegado a la espalda, sin atravesarla)
 
 # Cosméticos que el pack llama «wing» pero que son otra cosa (el conejo de Pascua es un peluche-mochila).
 KIND_BY_TAG = {'easter/wing': 'backpack', 'cosmeticsv1/frozen_backpack': 'wings'}
+
+
+def glides(set_id, slug):
+    """Las alas planean como unas élitros en el mod (TFWings); mochilas, capas, colas y carcajes no."""
+    kind = KIND_BY_TAG.get(f'{set_id}/{slug}')
+    return kind == 'wings' if kind else bool(re.search(r'(^|_)wings?$', slug))
+
+
+def mark_flags(entry):
+    """Marcas que lee el mod en un set que no se reconstruye: set de cosméticos (no se vincula) y alas que planean."""
+    set_id = entry['id']
+    if set_id in C.COSMETICS:
+        entry['cosmetic'] = True
+    else:
+        entry.pop('cosmetic', None)
+    for item in entry['items']:
+        if item['type'] != 'back':
+            continue
+        slug = item['id'][len(set_id) + 1:]
+        if set_id in C.COSMETICS and f'{set_id}/{slug}' not in KIND_BY_TAG:
+            KIND_BY_TAG[f'{set_id}/{slug}'] = 'wings' if 'wing' in slug else 'backpack'
+        if glides(set_id, slug):
+            item['glide'] = True
+        else:
+            item.pop('glide', None)
+
+
 # Alas cuya posición del pack quedaba baja (o cuya mitad visible no es su raíz), revisadas en el probador: se calcula
 # por su forma con esta altura de la mitad de lo visible (bloques desde el cuello).
 # - eagle: el pack las pone a la altura de la cintura (su soporte de armadura está más alto que el de los demás).
@@ -1187,7 +1214,8 @@ def main(packs, only=None):
             if not entry:
                 problems.append(f'{set_id}: no está en tf_sets.json y no se ha pedido construirlo')
                 continue
-            entry = {**entry, 'tier': spec['tier']}
+            entry = {**entry, 'color': color, 'tier': spec['tier']}
+            mark_flags(entry)
             sets_out.append(entry)
             lang.update({k: v for k, v in old_lang.items()
                          if k == f'tfclient.set.{set_id}' or any(k == f'item.tfclient.{i["id"]}' for i in entry['items'])})
@@ -1266,6 +1294,8 @@ def main(packs, only=None):
                     rel = f'sets/{set_id}/{slug}_worn'
                     w.write_model(rel, worn)
                     info['worn'] = f'tfclient:item/{rel}'
+                    if glides(set_id, slug):
+                        info['glide'] = True
             if not model:
                 problems.append(f'{tag}: sin modelo')
                 continue
@@ -1279,6 +1309,8 @@ def main(packs, only=None):
             lang[f'item.tfclient.{item_id}'] = label_full
             items.append(info)
         entry = {'id': set_id, 'name': set_name, 'color': color, 'tier': spec['tier'], 'items': items}
+        if set_id in C.COSMETICS:
+            entry['cosmetic'] = True
         if any(i['type'] == 'armor' for i in items):
             layers, frames, frametime = w.armor_layers()
             if layers != [1, 2]:

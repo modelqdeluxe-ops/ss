@@ -37,7 +37,7 @@ import net.tierrasfantasticas.tfclient.shop.TFRoulette;
  * Solo hay dos comandos: /tf web (staff) y /tf jobs (todos).
  * <pre>
  * /tf web sets list                              lista los sets
- * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo)
+ * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo), vinculado a cada jugador
  * /tf web tienda ...                             la tienda de monedas de la web ({@link TFCoinShop})
  * /tf web rango | monedas | ruleta ...           los usa la web al entregar (staff; {@link TFBridgeCommands},
  *                                                {@link TFEconomyCommands}, {@link TFRoulette})
@@ -121,6 +121,7 @@ public final class TFCommands {
         for (ServerPlayer player : players) {
             for (RegistryObject<Item> obj : items) {
                 ItemStack stack = new ItemStack(obj.get());
+                TFBinding.bind(stack, player); // los cosméticos no se vinculan (ver TFBinding)
                 boolean added = player.getInventory().add(stack);
                 if (!added || !stack.isEmpty()) {
                     ItemEntity drop = player.drop(stack, false);

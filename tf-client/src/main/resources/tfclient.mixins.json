@@ -4,6 +4,9 @@
   "package": "net.tierrasfantasticas.tfclient.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "tfclient.refmap.json",
+  "mixins": [
+    "ItemStackMixin"
+  ],
   "client": [
     "LoadingOverlayAccessor",
     "MinecraftMixin",

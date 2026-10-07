@@ -72,7 +72,8 @@
     {
      "id": "valentine_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/valentine/wings_worn"
+     "worn": "tfclient:item/sets/valentine/wings_worn",
+     "glide": true
     },
     {
      "id": "valentine_armor_helmet",
@@ -98,101 +99,102 @@
    "tier": "netherite+1"
   },
   {
-   "id": "necros",
-   "name": "Necros",
-   "color": "#a855f7",
+   "id": "oni",
+   "name": "Oni",
+   "color": "#e11d48",
+   "tier": "netherite+1",
    "items": [
     {
-     "id": "necros_sword",
+     "id": "oni_sword",
      "type": "sword"
     },
     {
-     "id": "necros_axe",
+     "id": "oni_big_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_axe",
      "type": "axe"
     },
     {
-     "id": "necros_pickaxe",
+     "id": "oni_pickaxe",
      "type": "pickaxe"
     },
     {
-     "id": "necros_shovel",
+     "id": "oni_shovel",
      "type": "shovel"
     },
     {
-     "id": "necros_hoe",
+     "id": "oni_hoe",
      "type": "hoe"
     },
     {
-     "id": "necros_hammer",
+     "id": "oni_hammer",
      "type": "heavy"
     },
     {
-     "id": "necros_mace",
-     "type": "heavy"
+     "id": "oni_battle_axe",
+     "type": "axe"
     },
     {
-     "id": "necros_scythe",
+     "id": "oni_spear",
      "type": "sword"
     },
     {
-     "id": "necros_spear",
-     "type": "sword"
-    },
-    {
-     "id": "necros_trident",
-     "type": "trident"
-    },
-    {
-     "id": "necros_staff",
-     "type": "sword"
-    },
-    {
-     "id": "necros_bow",
+     "id": "oni_bow",
      "type": "bow"
     },
     {
-     "id": "necros_crossbow",
-     "type": "crossbow"
-    },
-    {
-     "id": "necros_fishing_rod",
-     "type": "fishing_rod"
-    },
-    {
-     "id": "necros_shield",
+     "id": "oni_shield",
      "type": "shield"
     },
     {
-     "id": "necros_helmet",
+     "id": "oni_helmet",
      "type": "head"
     },
     {
-     "id": "necros_wings",
+     "id": "oni_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/necros/wings_worn"
+     "worn": "tfclient:item/sets/oni/wings_worn",
+     "glide": true
     },
     {
-     "id": "necros_armor_helmet",
+     "id": "oni_left_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_right_sword",
+     "type": "sword"
+    },
+    {
+     "id": "oni_left_spear",
+     "type": "sword"
+    },
+    {
+     "id": "oni_right_spear",
+     "type": "sword"
+    },
+    {
+     "id": "oni_armor_helmet",
      "type": "armor",
      "slot": "helmet"
     },
     {
-     "id": "necros_armor_chestplate",
+     "id": "oni_armor_chestplate",
      "type": "armor",
      "slot": "chestplate"
     },
     {
-     "id": "necros_armor_leggings",
+     "id": "oni_armor_leggings",
      "type": "armor",
      "slot": "leggings"
     },
     {
-     "id": "necros_armor_boots",
+     "id": "oni_armor_boots",
      "type": "armor",
      "slot": "boots"
     }
-   ],
-   "tier": "netherite+1"
+   ]
   },
   {
    "id": "luminite",
@@ -266,7 +268,8 @@
     {
      "id": "luminite_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/luminite/wings_worn"
+     "worn": "tfclient:item/sets/luminite/wings_worn",
+     "glide": true
     },
     {
      "id": "luminite_armor_helmet",
@@ -371,7 +374,8 @@
     {
      "id": "mecha_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/mecha/wing_worn"
+     "worn": "tfclient:item/sets/mecha/wing_worn",
+     "glide": true
     },
     {
      "id": "mecha_armor_helmet",
@@ -472,7 +476,8 @@
     {
      "id": "shadow_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/shadow/wing_worn"
+     "worn": "tfclient:item/sets/shadow/wing_worn",
+     "glide": true
     },
     {
      "id": "shadow_armor_helmet",
@@ -557,7 +562,8 @@
     {
      "id": "aether_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/aether/wings_worn"
+     "worn": "tfclient:item/sets/aether/wings_worn",
+     "glide": true
     },
     {
      "id": "aether_armor_helmet",
@@ -658,7 +664,8 @@
     {
      "id": "conqueror_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/conqueror/wing_worn"
+     "worn": "tfclient:item/sets/conqueror/wing_worn",
+     "glide": true
     },
     {
      "id": "conqueror_armor_helmet",
@@ -755,7 +762,8 @@
     {
      "id": "ender_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/ender/wings_worn"
+     "worn": "tfclient:item/sets/ender/wings_worn",
+     "glide": true
     },
     {
      "id": "ender_armor_helmet",
@@ -852,7 +860,8 @@
     {
      "id": "unicorn_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/unicorn/wings_worn"
+     "worn": "tfclient:item/sets/unicorn/wings_worn",
+     "glide": true
     },
     {
      "id": "unicorn_armor_helmet",
@@ -947,7 +956,8 @@
     {
      "id": "cosmo_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/cosmo/wings_worn"
+     "worn": "tfclient:item/sets/cosmo/wings_worn",
+     "glide": true
     },
     {
      "id": "cosmo_armor_helmet",
@@ -1040,7 +1050,8 @@
     {
      "id": "dracula_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/dracula/wings_worn"
+     "worn": "tfclient:item/sets/dracula/wings_worn",
+     "glide": true
     },
     {
      "id": "dracula_armor_helmet",
@@ -1142,7 +1153,8 @@
     {
      "id": "lightning_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/lightning/wings_worn"
+     "worn": "tfclient:item/sets/lightning/wings_worn",
+     "glide": true
     },
     {
      "id": "lightning_armor_helmet",
@@ -1324,7 +1336,8 @@
     {
      "id": "pink_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/pink/wings_worn"
+     "worn": "tfclient:item/sets/pink/wings_worn",
+     "glide": true
     },
     {
      "id": "pink_armor_helmet",
@@ -1425,7 +1438,8 @@
     {
      "id": "skeleton_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/skeleton/wing_worn"
+     "worn": "tfclient:item/sets/skeleton/wing_worn",
+     "glide": true
     },
     {
      "id": "skeleton_armor_helmet",
@@ -1527,7 +1541,8 @@
     {
      "id": "lunar_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/lunar/wings_worn"
+     "worn": "tfclient:item/sets/lunar/wings_worn",
+     "glide": true
     },
     {
      "id": "lunar_armor_helmet",
@@ -1625,7 +1640,8 @@
     {
      "id": "cardael_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/cardael/wings_worn"
+     "worn": "tfclient:item/sets/cardael/wings_worn",
+     "glide": true
     },
     {
      "id": "cardael_armor_helmet",
@@ -1721,7 +1737,8 @@
     {
      "id": "azure_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/azure/wings_worn"
+     "worn": "tfclient:item/sets/azure/wings_worn",
+     "glide": true
     },
     {
      "id": "azure_armor_helmet",
@@ -1827,7 +1844,8 @@
     {
      "id": "littledragon_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/littledragon/wings_worn"
+     "worn": "tfclient:item/sets/littledragon/wings_worn",
+     "glide": true
     },
     {
      "id": "littledragon_armor_helmet",
@@ -1936,7 +1954,8 @@
     {
      "id": "bahamut_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/bahamut/wing_worn"
+     "worn": "tfclient:item/sets/bahamut/wing_worn",
+     "glide": true
     },
     {
      "id": "bahamut_armor_helmet",
@@ -2033,7 +2052,8 @@
     {
      "id": "fairy_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/fairy/wings_worn"
+     "worn": "tfclient:item/sets/fairy/wings_worn",
+     "glide": true
     },
     {
      "id": "fairy_armor_helmet",
@@ -2135,7 +2155,8 @@
     {
      "id": "bonita_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/bonita/wings_worn"
+     "worn": "tfclient:item/sets/bonita/wings_worn",
+     "glide": true
     },
     {
      "id": "bonita_armor_helmet",
@@ -2224,7 +2245,8 @@
     {
      "id": "chronicles_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/chronicles/wings_worn"
+     "worn": "tfclient:item/sets/chronicles/wings_worn",
+     "glide": true
     },
     {
      "id": "chronicles_armor_helmet",
@@ -2321,7 +2343,8 @@
     {
      "id": "protocal_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/protocal/wings_worn"
+     "worn": "tfclient:item/sets/protocal/wings_worn",
+     "glide": true
     },
     {
      "id": "protocal_armor_helmet",
@@ -2410,7 +2433,8 @@
     {
      "id": "berserker_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/berserker/wings_worn"
+     "worn": "tfclient:item/sets/berserker/wings_worn",
+     "glide": true
     },
     {
      "id": "berserker_armor_helmet",
@@ -2511,7 +2535,8 @@
     {
      "id": "pirate_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/pirate/wing_worn"
+     "worn": "tfclient:item/sets/pirate/wing_worn",
+     "glide": true
     },
     {
      "id": "pirate_armor_helmet",
@@ -2612,7 +2637,8 @@
     {
      "id": "cupido_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/cupido/wing_worn"
+     "worn": "tfclient:item/sets/cupido/wing_worn",
+     "glide": true
     },
     {
      "id": "cupido_armor_helmet",
@@ -2706,7 +2732,8 @@
     {
      "id": "evergreen_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/evergreen/wings_worn"
+     "worn": "tfclient:item/sets/evergreen/wings_worn",
+     "glide": true
     },
     {
      "id": "evergreen_crown",
@@ -2789,7 +2816,8 @@
     {
      "id": "thunderbolt_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/thunderbolt/wings_worn"
+     "worn": "tfclient:item/sets/thunderbolt/wings_worn",
+     "glide": true
     },
     {
      "id": "thunderbolt_armor_chestplate",
@@ -2870,7 +2898,8 @@
     {
      "id": "cyber_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/cyber/wings_worn"
+     "worn": "tfclient:item/sets/cyber/wings_worn",
+     "glide": true
     },
     {
      "id": "cyber_rod",
@@ -2954,7 +2983,8 @@
     {
      "id": "bat_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/bat/wings_worn"
+     "worn": "tfclient:item/sets/bat/wings_worn",
+     "glide": true
     },
     {
      "id": "bat_armor_helmet",
@@ -3051,7 +3081,8 @@
     {
      "id": "fox_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/fox/wing_worn"
+     "worn": "tfclient:item/sets/fox/wing_worn",
+     "glide": true
     },
     {
      "id": "fox_armor_chestplate",
@@ -3143,7 +3174,8 @@
     {
      "id": "nanoedge_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/nanoedge/wings_worn"
+     "worn": "tfclient:item/sets/nanoedge/wings_worn",
+     "glide": true
     },
     {
      "id": "nanoedge_armor_helmet",
@@ -3232,7 +3264,8 @@
     {
      "id": "blueflame_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/blueflame/wings_worn"
+     "worn": "tfclient:item/sets/blueflame/wings_worn",
+     "glide": true
     },
     {
      "id": "blueflame_armor_helmet",
@@ -3334,7 +3367,8 @@
     {
      "id": "wild_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/wild/wings_worn"
+     "worn": "tfclient:item/sets/wild/wings_worn",
+     "glide": true
     },
     {
      "id": "wild_armor_helmet",
@@ -3420,7 +3454,8 @@
     {
      "id": "akira_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/akira/wings_worn"
+     "worn": "tfclient:item/sets/akira/wings_worn",
+     "glide": true
     },
     {
      "id": "akira_armor_chestplate",
@@ -3511,7 +3546,8 @@
     {
      "id": "frostbite_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/frostbite/wings_worn"
+     "worn": "tfclient:item/sets/frostbite/wings_worn",
+     "glide": true
     },
     {
      "id": "frostbite_armor_helmet",
@@ -3604,7 +3640,8 @@
     {
      "id": "darkloyal_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/darkloyal/wing_worn"
+     "worn": "tfclient:item/sets/darkloyal/wing_worn",
+     "glide": true
     },
     {
      "id": "darkloyal_battleaxes",
@@ -3701,7 +3738,8 @@
     {
      "id": "ifrit_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/ifrit/wings_worn"
+     "worn": "tfclient:item/sets/ifrit/wings_worn",
+     "glide": true
     },
     {
      "id": "ifrit_quiver",
@@ -3888,7 +3926,8 @@
     {
      "id": "soulskull_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/soulskull/wings_worn"
+     "worn": "tfclient:item/sets/soulskull/wings_worn",
+     "glide": true
     },
     {
      "id": "soulskull_fishingrod",
@@ -3919,7 +3958,7 @@
   {
    "id": "patrick",
    "name": "San Patricio",
-   "color": "#16a34a",
+   "color": "#4ade80",
    "items": [
     {
      "id": "patrick_sword",
@@ -3988,7 +4027,8 @@
     {
      "id": "patrick_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/patrick/wings_worn"
+     "worn": "tfclient:item/sets/patrick/wings_worn",
+     "glide": true
     },
     {
      "id": "patrick_armor_helmet",
@@ -4085,7 +4125,8 @@
     {
      "id": "beats_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/beats/wings_worn"
+     "worn": "tfclient:item/sets/beats/wings_worn",
+     "glide": true
     },
     {
      "id": "beats_armor_helmet",
@@ -4175,7 +4216,8 @@
     {
      "id": "darkworld_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/darkworld/wings_worn"
+     "worn": "tfclient:item/sets/darkworld/wings_worn",
+     "glide": true
     },
     {
      "id": "darkworld_katana",
@@ -4275,7 +4317,8 @@
     {
      "id": "malika_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/malika/wings_worn"
+     "worn": "tfclient:item/sets/malika/wings_worn",
+     "glide": true
     },
     {
      "id": "malika_armor_chestplate",
@@ -4295,106 +4338,107 @@
    ]
   },
   {
-   "id": "oni",
-   "name": "Oni",
+   "id": "necros",
+   "name": "Necros",
    "color": "#22d3ee",
-   "tier": "netherite+1.5",
    "items": [
     {
-     "id": "oni_sword",
+     "id": "necros_sword",
      "type": "sword"
     },
     {
-     "id": "oni_big_sword",
-     "type": "sword"
-    },
-    {
-     "id": "oni_axe",
+     "id": "necros_axe",
      "type": "axe"
     },
     {
-     "id": "oni_pickaxe",
+     "id": "necros_pickaxe",
      "type": "pickaxe"
     },
     {
-     "id": "oni_shovel",
+     "id": "necros_shovel",
      "type": "shovel"
     },
     {
-     "id": "oni_hoe",
+     "id": "necros_hoe",
      "type": "hoe"
     },
     {
-     "id": "oni_hammer",
+     "id": "necros_hammer",
      "type": "heavy"
     },
     {
-     "id": "oni_battle_axe",
-     "type": "axe"
+     "id": "necros_mace",
+     "type": "heavy"
     },
     {
-     "id": "oni_spear",
+     "id": "necros_scythe",
      "type": "sword"
     },
     {
-     "id": "oni_bow",
+     "id": "necros_spear",
+     "type": "sword"
+    },
+    {
+     "id": "necros_trident",
+     "type": "trident"
+    },
+    {
+     "id": "necros_staff",
+     "type": "sword"
+    },
+    {
+     "id": "necros_bow",
      "type": "bow"
     },
     {
-     "id": "oni_shield",
+     "id": "necros_crossbow",
+     "type": "crossbow"
+    },
+    {
+     "id": "necros_fishing_rod",
+     "type": "fishing_rod"
+    },
+    {
+     "id": "necros_shield",
      "type": "shield"
     },
     {
-     "id": "oni_helmet",
+     "id": "necros_helmet",
      "type": "head"
     },
     {
-     "id": "oni_wings",
+     "id": "necros_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/oni/wings_worn"
+     "worn": "tfclient:item/sets/necros/wings_worn",
+     "glide": true
     },
     {
-     "id": "oni_left_sword",
-     "type": "sword"
-    },
-    {
-     "id": "oni_right_sword",
-     "type": "sword"
-    },
-    {
-     "id": "oni_left_spear",
-     "type": "sword"
-    },
-    {
-     "id": "oni_right_spear",
-     "type": "sword"
-    },
-    {
-     "id": "oni_armor_helmet",
+     "id": "necros_armor_helmet",
      "type": "armor",
      "slot": "helmet"
     },
     {
-     "id": "oni_armor_chestplate",
+     "id": "necros_armor_chestplate",
      "type": "armor",
      "slot": "chestplate"
     },
     {
-     "id": "oni_armor_leggings",
+     "id": "necros_armor_leggings",
      "type": "armor",
      "slot": "leggings"
     },
     {
-     "id": "oni_armor_boots",
+     "id": "necros_armor_boots",
      "type": "armor",
      "slot": "boots"
     }
-   ]
+   ],
+   "tier": "netherite+1.5"
   },
   {
    "id": "eagle",
    "name": "Eagle Ascendant",
-   "color": "#f59e0b",
+   "color": "#fde047",
    "tier": "netherite+2",
    "items": [
     {
@@ -4468,7 +4512,8 @@
     {
      "id": "eagle_wing",
      "type": "back",
-     "worn": "tfclient:item/sets/eagle/wing_worn"
+     "worn": "tfclient:item/sets/eagle/wing_worn",
+     "glide": true
     },
     {
      "id": "eagle_armor_helmet",
@@ -4495,7 +4540,7 @@
   {
    "id": "starlight",
    "name": "Luz de Estrella",
-   "color": "#eab308",
+   "color": "#f59e0b",
    "items": [
     {
      "id": "starlight_sword",
@@ -4552,7 +4597,8 @@
     {
      "id": "starlight_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/starlight/wings_worn"
+     "worn": "tfclient:item/sets/starlight/wings_worn",
+     "glide": true
     },
     {
      "id": "starlight_armor_helmet",
@@ -4762,7 +4808,8 @@
      "id": "halloween23_undertaker_balloon",
      "type": "balloon"
     }
-   ]
+   ],
+   "cosmetic": true
   },
   {
    "id": "halloweenbundle",
@@ -4794,7 +4841,8 @@
     {
      "id": "halloweenbundle_spooky_pumpkin_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/halloweenbundle/spooky_pumpkin_wings_worn"
+     "worn": "tfclient:item/sets/halloweenbundle/spooky_pumpkin_wings_worn",
+     "glide": true
     },
     {
      "id": "halloweenbundle_spooky_pumpkin_staff",
@@ -4821,7 +4869,8 @@
      "id": "halloweenbundle_candy_pumpkin_balloon",
      "type": "balloon"
     }
-   ]
+   ],
+   "cosmetic": true
   },
   {
    "id": "cosmeticsv1",
@@ -4875,7 +4924,8 @@
     {
      "id": "cosmeticsv1_frozen_backpack",
      "type": "back",
-     "worn": "tfclient:item/sets/cosmeticsv1/frozen_backpack_worn"
+     "worn": "tfclient:item/sets/cosmeticsv1/frozen_backpack_worn",
+     "glide": true
     },
     {
      "id": "cosmeticsv1_frozen_hand",
@@ -4894,7 +4944,8 @@
      "id": "cosmeticsv1_ender_hand",
      "type": "held"
     }
-   ]
+   ],
+   "cosmetic": true
   },
   {
    "id": "unicorncos",
@@ -4919,7 +4970,8 @@
      "id": "unicorncos_unicorn_balloon",
      "type": "balloon"
     }
-   ]
+   ],
+   "cosmetic": true
   },
   {
    "id": "springcos",
@@ -4930,13 +4982,15 @@
     {
      "id": "springcos_wings",
      "type": "back",
-     "worn": "tfclient:item/sets/springcos/wings_worn"
+     "worn": "tfclient:item/sets/springcos/wings_worn",
+     "glide": true
     },
     {
      "id": "springcos_helmet",
      "type": "head"
     }
-   ]
+   ],
+   "cosmetic": true
   }
  ]
 }

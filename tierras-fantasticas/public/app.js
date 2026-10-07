@@ -77,6 +77,29 @@
     if (e.key === 'Escape' && sheet.classList.contains('open')) setMenu(false);
   });
 
+  // --- Transición al cambiar de página: el contenido se desvanece hacia arriba y una barra de neón corre por arriba
+  // (styles.css, «Transiciones entre páginas»). Solo en los enlaces a otras páginas de la web. ---
+  const pageBar = document.createElement('div');
+  pageBar.className = 'page-bar';
+  pageBar.setAttribute('aria-hidden', 'true');
+  document.body.append(pageBar);
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if ((a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
+    if (url.pathname === location.pathname && url.search === location.search) return; // misma página (#ancla)
+    if (/\.(?!html$)\w+$/.test(url.pathname)) return; // archivos (imágenes, el .jar...)
+    e.preventDefault();
+    document.documentElement.classList.add('leaving');
+    setTimeout(() => location.assign(url.href), 280);
+  });
+  // Al volver con el botón «atrás» la página sale de la caché tal como se fue: se quita el desvanecido
+  addEventListener('pageshow', (e) => {
+    if (e.persisted) document.documentElement.classList.remove('leaving');
+  });
+
   // --- Aparición al entrar en pantalla (una sola vez) ---
   function observeReveal(root = document) {
     const items = $$('.reveal:not(.in)', root);
@@ -369,7 +392,7 @@
     gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
     rangos: '',
     cosmeticos: '',
-    crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Toca una para probártela en tu personaje.',
+    crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Es permanente, irrompible y queda vinculado a tu cuenta. Toca una para probártela en tu personaje.',
     ruleta: '',
     monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
     tiendamonedas: '',
@@ -1013,6 +1036,7 @@
         <p class="cv-desc" id="cv-desc"></p>
         <h4>Incluye <span id="cv-count"></span> <span class="hint3d">· toca uno para verlo y equipártelo</span></h4>
         <div class="cv-items" id="cv-items"></div>
+        <p class="cv-bound">${ICON_LOCK}<span>Permanente e irrompible, vinculado a tu cuenta: solo tú puedes usarlo. Los cosméticos (alas, sombreros, mochilas) sí se pueden intercambiar.</span></p>
         <div class="cv-buy">
           <span class="price"><small>Set completo</small><span id="cv-price"></span></span>
           <button class="btn btn-theme btn-lg" type="button" id="cv-buy">Comprar crate</button>
