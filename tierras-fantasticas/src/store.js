@@ -80,6 +80,21 @@ const SCHEMA = [
     locked_until INTEGER NOT NULL DEFAULT 0,
     updated_at INTEGER NOT NULL
   )`,
+  // Aceptaciones de los Términos y del Aviso de privacidad (casilla al crear la cuenta, al pagar o cuando cambian):
+  // quién, qué versión, cuándo, dónde (crear cuenta, pagar…) y desde qué IP y navegador. Es la prueba de que se
+  // aceptaron; no se borra al cambiar los términos (cada versión aceptada queda en su fila).
+  `CREATE TABLE IF NOT EXISTS terms_acceptances (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    uuid TEXT,
+    username TEXT,
+    context TEXT NOT NULL,
+    version TEXT NOT NULL,
+    order_id TEXT,
+    ip TEXT,
+    user_agent TEXT,
+    created_at TEXT NOT NULL
+  )`,
+  'CREATE INDEX IF NOT EXISTS terms_uuid ON terms_acceptances (uuid)',
   // Rango comprado de cada jugador (el de nivel más alto).
   `CREATE TABLE IF NOT EXISTS player_ranks (
     uuid TEXT PRIMARY KEY,
@@ -101,6 +116,9 @@ const MIGRATIONS = [
   'CREATE INDEX IF NOT EXISTS orders_discord ON orders (discord_id)',
   'CREATE INDEX IF NOT EXISTS orders_uuid ON orders (uuid)',
   'ALTER TABLE orders ADD COLUMN prizes TEXT',
+  'ALTER TABLE users ADD COLUMN terms_version TEXT',
+  'ALTER TABLE users ADD COLUMN terms_at TEXT',
+  'ALTER TABLE orders ADD COLUMN terms_version TEXT',
 ];
 
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
@@ -148,6 +166,7 @@ function rowToOrder(row) {
     sessionId: row.session_id || null,
     paymentIntent: row.capture_id || null,
     rankFrom: row.rank_from || null,
+    termsVersion: row.terms_version || null,
     prizes: row.prizes ? JSON.parse(row.prizes) : null,
     error: row.error,
     refunded: row.refunded,
@@ -174,6 +193,8 @@ function rowToUser(row) {
           checkedAt: row.discord_checked_at,
         }
       : null,
+    termsVersion: row.terms_version || null,
+    termsAt: row.terms_at || null,
     createdAt: row.created_at,
   };
 }
@@ -219,8 +240,8 @@ export function createStore(db) {
     await db
       .prepare(
         `INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, discord, discord_id,
-           session_id, rank_from, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           session_id, rank_from, terms_version, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         order.id,
@@ -235,6 +256,7 @@ export function createStore(db) {
         order.discordId || null,
         order.sessionId || null,
         order.rankFrom || null,
+        order.termsVersion || null,
         at,
         at,
       )
@@ -425,6 +447,41 @@ export function createStore(db) {
   async function setPassword(uuid, password) {
     await init();
     await db.prepare('UPDATE users SET password = ?, updated_at = ? WHERE uuid = ?').bind(password, now(), String(uuid).toLowerCase()).run();
+  }
+
+  // --- Aceptación de los Términos ---
+
+  // Guarda la aceptación (siempre una fila nueva) y, si es de un jugador con cuenta, la versión aceptada en su cuenta.
+  async function acceptTerms({ uuid, username, context, version, orderId, ip, userAgent }) {
+    await init();
+    const at = now();
+    const id = uuid ? String(uuid).toLowerCase() : null;
+    const statements = [
+      db
+        .prepare(
+          `INSERT INTO terms_acceptances (uuid, username, context, version, order_id, ip, user_agent, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(id, username || null, context, version, orderId || null, ip || null, userAgent ? String(userAgent).slice(0, 300) : null, at),
+    ];
+    if (id) {
+      statements.push(db.prepare('UPDATE users SET terms_version = ?, terms_at = ? WHERE uuid = ?').bind(version, at, id));
+    }
+    await db.batch(statements);
+  }
+
+  async function termsAcceptances(uuid) {
+    await init();
+    const { results } = await db
+      .prepare('SELECT * FROM terms_acceptances WHERE uuid = ? ORDER BY id DESC LIMIT 50')
+      .bind(String(uuid).toLowerCase())
+      .all();
+    return results.map((r) => ({
+      context: r.context,
+      version: r.version,
+      orderId: r.order_id,
+      at: r.created_at,
+    }));
   }
 
   // La cuenta de Discord del jugador (para darle el rol aunque compre sin iniciar sesión).
@@ -639,6 +696,8 @@ export function createStore(db) {
     unlinkDiscord,
     setPassword,
     accountByUuid,
+    acceptTerms,
+    termsAcceptances,
     loginLocked,
     loginFailed,
     loginSucceeded,

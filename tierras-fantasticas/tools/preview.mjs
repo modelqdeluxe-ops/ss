@@ -35,7 +35,7 @@ await call('/bridge/poll', { method: 'POST', headers: { Authorization: 'Bearer x
   { op: 'add', id: 'espada', item: 'tfclient:necros_sword', name: 'Espada Necros', count: 1, price: 50000 },
   { op: 'add', id: 'raro', item: 'modx:cosa_rara', name: 'Objeto raro de un mod', count: 1, price: 999 },
 ] }) });
-const reg = await call('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Notch', password: 'contraseña-segura' }) });
+const reg = await call('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Notch', password: 'contraseña-segura', acceptTerms: true }) });
 const cookie = reg.headers.getSetCookie()[0].split(';')[0];
 env.DB.raw.prepare("UPDATE users SET discord_id='1', discord_username='notch_tf', discord_name='Notch', discord_member=0").run();
 // Cookie de sesión de Notch, por si hace falta ver «Mi cuenta» con la sesión iniciada

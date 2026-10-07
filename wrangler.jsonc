@@ -19,6 +19,8 @@
     "SERVER_NAME": "Tierras Fantásticas",
     "SERVER_IP": "216.163.187.40:19001",
     "DISCORD_URL": "https://discord.gg/tRrunHBZE",
+    // Grupo de WhatsApp: los botones de la web van a /whatsapp, que lleva aquí. Si el enlace cambia, se cambia solo aquí.
+    "WHATSAPP_URL": "https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm",
     "CURRENCY": "USD",
     // Servidor de Discord de Tierras Fantásticas (no es secreto): ahí se comprueba que el jugador es miembro.
     "DISCORD_GUILD_ID": "1439703812368765082"

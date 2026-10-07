@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -9,7 +10,11 @@ import legal
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public')
 IP = '216.163.187.40:19001'
 EMAIL = 'tierrasfantasticasmc@gmail.com'
-LEGAL_DATE = '7 de octubre de 2026'
+# Versión de los Términos y del Aviso de privacidad: config/legal.json (la lee también el Worker, que pide aceptarla al
+# crear la cuenta y al pagar). Si cambian los textos legales, sube allí «version» y «date»: a quien tenga una versión
+# vieja se le vuelve a pedir que acepte.
+LEGAL = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'config', 'legal.json'), encoding='utf-8'))
+LEGAL_DATE = LEGAL['date']
 # Aviso obligatorio de las normas de Mojang (en español y en inglés, que es como lo piden).
 DISCLAIMER_ES = 'No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos.'
 DISCLAIMER_EN = 'NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.'
@@ -35,7 +40,7 @@ BOOT = ("<script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList
 # Fondo vivo: la nebulosa que se desplaza y respira, estrellas que titilan y alguna estrella fugaz (styles.css,
 # «Fondo vivo»). Detrás de todo, sin eventos del ratón.
 SKY = '''  <div class="sky" aria-hidden="true">
-    <i class="neb-a"></i><i class="neb-b"></i>
+    <i class="neb-a"></i><i class="neb-b"></i><i class="neb-glow"></i>
     <span class="sky-stars"><i class="stars-a"></i><i class="stars-b"></i></span>
     <i class="shoot"></i><i class="shoot s2"></i>
   </div>
@@ -251,11 +256,25 @@ JOIN_STEPS = '\n'.join([
 ])
 
 
+def hero_title(text):
+    """Título de la portada: cada letra en su <span class="ch" style="--i:N"> (entran una a una) dentro de su palabra
+    (.w, que no se parte); los lectores de pantalla leen el aria-label."""
+    words, i = [], 0
+    for word in text.split(' '):
+        letters = ''
+        for ch in word:
+            letters += f'<span class="ch" style="--i:{i}">{ch}</span>'
+            i += 1
+        words.append(f'<span class="w">{letters}</span>')
+        i += 1
+    return f'<h1 class="hero-title" aria-label="{text}"><span aria-hidden="true">{" ".join(words)}</span></h1>'
+
+
 def index():
-    # Portada ligera (lo pidió el dueño): solo el emblema con la IP y «Tu aventura empieza hoy». Lo demás está en sus
-    # páginas (tienda, el mundo, ayuda).
+    # Portada mínima (lo pidió el dueño): solo el emblema, el título, la IP, la tienda y los enlaces para entrar
+    # (Discord, WhatsApp y cómo entrar). Lo demás está en sus páginas (tienda, el mundo, ayuda).
     return head('Tierras Fantásticas — Servidor de Minecraft',
-                'Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.',
+                'Tierras Fantásticas: servidor de Minecraft de survival, aventura, fantasía y rol. Más de 200 mods, sets animados y una comunidad activa.',
                 'inicio', hero=True, preload_hero=True) + header('inicio') + f'''
   <main id="main">
     <section class="hero">
@@ -267,30 +286,22 @@ def index():
           <span class="shine" aria-hidden="true"></span>
         </div>
         <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
-        <h1 class="hero-title" aria-label="Tierras Fantásticas"><span aria-hidden="true"><span class="w"><span class="ch" style="--i:0">T</span><span class="ch" style="--i:1">i</span><span class="ch" style="--i:2">e</span><span class="ch" style="--i:3">r</span><span class="ch" style="--i:4">r</span><span class="ch" style="--i:5">a</span><span class="ch" style="--i:6">s</span></span> <span class="w"><span class="ch" style="--i:8">F</span><span class="ch" style="--i:9">a</span><span class="ch" style="--i:10">n</span><span class="ch" style="--i:11">t</span><span class="ch" style="--i:12">á</span><span class="ch" style="--i:13">s</span><span class="ch" style="--i:14">t</span><span class="ch" style="--i:15">i</span><span class="ch" style="--i:16">c</span><span class="ch" style="--i:17">a</span><span class="ch" style="--i:18">s</span></span></span></h1>
-        <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
+        {hero_title('Tierras Fantásticas')}
+        <p class="lead">Servidor de Minecraft de <b>survival</b>, <b>aventura</b>, <b>fantasía</b> y <b>rol</b>. Crea tu
+          historia, explora, combate y forja alianzas con otros jugadores.</p>
         <div class="hero-cta">
           <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
             <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
             <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
           </button>
-          <a href="/tienda" class="btn btn-primary btn-lg">Visitar la tienda {I['arrow']}</a>
+          <a href="/tienda" class="btn btn-shop btn-lg">Visitar la tienda {I['arrow']}</a>
         </div>
-        <span class="hero-meta">Minecraft Java 1.20.1 · Forge · Gratis</span>
-      </div>
-      <a class="scroll-cue" href="#unete" aria-label="Bajar"><span></span></a>
-    </section>
-
-    <section class="wrap section" id="unete">
-      <div class="panel cta-band reveal">
-        <span class="eyebrow">Únete</span>
-        <h2>Tu aventura empieza hoy</h2>
-        <p>Es gratis: Minecraft Java 1.20.1 con el modpack del servidor. Copia la IP, entra y funda tu reino.</p>
-        <div class="actions">
-          <button class="btn btn-primary btn-lg" type="button" data-copy-ip>{I['copy']}<span data-copy-hint>Copiar IP</span></button>
-          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
-          <a href="/ayuda" class="btn btn-ghost btn-lg">Cómo entrar</a>
-        </div>
+        <span class="hero-meta">Minecraft Java 1.20.1 · Forge</span>
+        <nav class="hero-links" aria-label="Únete a la comunidad">
+          <a href="/discord" class="btn btn-discord" target="_blank" rel="noopener">{I['discord']}Entra a nuestro Discord</a>
+          <a href="/whatsapp" class="btn btn-whatsapp" target="_blank" rel="noopener">{I['whatsapp']}Grupo de WhatsApp</a>
+          <a href="/ayuda#como-entrar" class="btn btn-ghost">{I['help']}Cómo entrar al server</a>
+        </nav>
       </div>
     </section>
   </main>
@@ -519,7 +530,7 @@ def ayuda():
                 'ayuda') + header('ayuda') + f'''
   <main id="main">
 {page_hero('Ayuda', 'Preguntas frecuentes', 'Todo lo que necesitas saber para entrar al servidor y sobre la tienda.')}
-    <section class="wrap section">
+    <section class="wrap section" id="como-entrar">
       <div class="section-head reveal">
         <span class="eyebrow">Cómo jugar</span>
         <h2>Dentro en tres pasos</h2>

@@ -2,7 +2,8 @@
 
 Cada documento es una lista de secciones (id, título, HTML). tools/pages.py los convierte en /legal, /terminos y
 /privacidad. Si cambia algo de lo que hace la web (datos que guarda, servicios externos, productos), hay que
-actualizarlo aquí y cambiar LEGAL_DATE en pages.py.
+actualizarlo aquí y subir «version» y «date» en config/legal.json (a quien aceptó una versión vieja se le vuelve a
+pedir que acepte).
 """
 
 EMAIL = 'tierrasfantasticasmc@gmail.com'
@@ -62,8 +63,15 @@ privacidad</a>.</p>'''),
 TERMINOS = [
     ('aceptacion', 'Aceptación', f'''
 <p>Estos términos regulan el uso de esta web, de las cuentas y de la tienda de Tierras Fantásticas, un servidor de
-Minecraft independiente gestionado por {OWNER} (México, {MAIL}). Al crear una cuenta o comprar, los aceptas. Si no
-estás de acuerdo, no uses la tienda. Jugar en el servidor es gratis y no necesita cuenta en la web.</p>
+Minecraft independiente gestionado por {OWNER} (México, {MAIL}). Jugar en el servidor es gratis y no necesita cuenta
+en la web.</p>
+<p><b>Cómo los aceptas.</b> Al crear tu cuenta y en cada compra tienes que marcar la casilla «He leído y acepto los
+Términos y condiciones y el Aviso de privacidad»; sin marcarla no se puede seguir. Esa casilla es tu consentimiento
+expreso por medios electrónicos (no hace falta firmar nada). Si no estás de acuerdo, no crees la cuenta ni compres.</p>
+<p><b>Qué guardamos como prueba.</b> De cada aceptación guardamos la versión de los términos (su fecha), el día y la
+hora, tu jugador o tu cuenta, el pedido si estabas comprando, y la dirección IP y el navegador desde los que aceptaste.
+Así, si hay una duda o una reclamación, los dos podemos saber qué aceptaste y cuándo. Puedes ver tus aceptaciones en
+«Mi cuenta».</p>
 <p>Tierras Fantásticas no tiene relación con Mojang ni Microsoft. Más información en el <a href="/legal">Aviso
 legal</a>.</p>'''),
 
@@ -165,8 +173,9 @@ libres de fallos. No respondemos de problemas causados por tu conexión, tus mod
 terceros (Stripe, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>'''),
 
     ('cambios', 'Cambios en estos términos', '''
-<p>Si cambiamos estos términos, publicaremos la versión nueva aquí con su fecha. Las compras se rigen por los
-términos vigentes el día en que las hiciste.</p>'''),
+<p>Si cambiamos estos términos, publicaremos la versión nueva aquí con su fecha y te pediremos que la aceptes antes
+de tu siguiente compra o recompensa. Las compras se rigen por los términos vigentes el día en que las hiciste (los que
+aceptaste en ese momento).</p>'''),
 
     ('ley', 'Ley aplicable y reclamaciones', f'''
 <p>Estos términos se rigen por las leyes de los Estados Unidos Mexicanos, incluida la Ley Federal de Protección al
@@ -194,8 +203,11 @@ dirección ni teléfono.</p>
   <li><b>Jugadores del servidor:</b> el servidor nos envía el nombre y el UUID de quienes han entrado, con la primera y
     la última vez que se les vio, para comprobar los nombres antes de vender.</li>
   <li><b>Seguridad:</b> intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.</li>
+  <li><b>Aceptación de los términos:</b> cada vez que aceptas los Términos y este aviso (al crear la cuenta, al comprar
+    o cuando cambian), la versión aceptada, la fecha y la hora, tu jugador o tu cuenta, el pedido, y la dirección IP y el
+    navegador desde los que aceptaste, como prueba de esa aceptación.</li>
   <li><b>Técnicos:</b> nuestro proveedor de alojamiento (Cloudflare) procesa tu dirección IP y datos de navegación para
-    servir la web y protegerla de ataques. Nosotros no guardamos tu IP.</li>
+    servir la web y protegerla de ataques. Aparte del registro de aceptación, nosotros no guardamos tu IP.</li>
 </ul>'''),
 
     ('finalidades', 'Para qué los usamos', f'''
@@ -207,6 +219,7 @@ dirección ni teléfono.</p>
   <li>Atender tus mensajes, cancelaciones, reembolsos y reclamaciones.</li>
   <li>Proteger la web y las cuentas, y cumplir las obligaciones legales (por ejemplo, conservar los registros de las
     ventas).</li>
+  <li>Poder demostrar qué términos aceptaste y cuándo, si hay una duda o una reclamación.</li>
 </ul>
 <p><b>Finalidad voluntaria:</b> anunciar tu compra en el chat del juego y en nuestro Discord (con tu nombre de jugador
 y lo que compraste). Si no quieres, escríbenos a {MAIL} y dejaremos de anunciar tus compras.</p>
@@ -248,6 +261,7 @@ compras que la ley nos obliga a guardar (hasta 5 años), bloqueados y sin usarlo
   <li>Cuenta y Discord: mientras tengas la cuenta. Si pides borrarla, se borran.</li>
   <li>Sesión: la cookie de sesión dura 60 días y se renueva al usar la web.</li>
   <li>Compras: el tiempo que exige la ley (hasta 5 años).</li>
+  <li>Registro de aceptación de los términos: lo mismo que las compras (hasta 5 años desde tu última aceptación).</li>
   <li>Intentos fallidos de inicio de sesión: unos minutos.</li>
 </ul>'''),
 
