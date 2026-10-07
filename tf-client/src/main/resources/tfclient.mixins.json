@@ -16,7 +16,8 @@
     "ForgeHooksClientMixin",
     "AbstractButtonMixin",
     "AbstractSliderButtonMixin",
-    "AbstractSelectionListMixin"
+    "AbstractSelectionListMixin",
+    "LivingEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 0

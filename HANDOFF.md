@@ -12,7 +12,39 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): sección VFX (efectos de kill y paquetes de skills) y TF Client 1.3.13
+### Última entrega (8 de octubre de 2026): el propio mob hace el efecto de kill, VFX ordenado en la web y TF Client 1.3.14
+**Lo que pidió el dueño (textual):** *«haz que los mobs también sean afectados por la animación de kills, busca la
+forma, que no salga el muñequito obvio sino que el mismo mob haga la animación, todos sin excepción. Y ordena mejor esa
+parte de los VFX, ordénalas más bonitas por favor.»*
+
+**Mod 1.3.14 — la víctima hace la animación (`VfxActor` + `LivingEntityRendererMixin`):**
+- El muñeco gris de los packs ya no se dibuja: es la víctima de verdad (cualquier mob o jugador) la que se mueve.
+  `vfx_bb.py` saca las **figuras** del muñeco (`figures` en el modelo: rig = hueso raíz + cabeza, cuerpo, brazos y
+  piernas; y texturas). Todo el mob sigue al torso: matriz `vista·efecto·D·(giro·escala del efecto)⁻¹` con
+  `D = torso(t)·torso(reposo)⁻¹`, mirando hacia donde mira el efecto (`yBodyRot` = giro del efecto). El efecto se
+  escala a la altura del mob (`bbHeight/1.8`, entre 0,6 y 3).
+- Mobs humanoides (zombis, esqueletos, jugadores, piglins…): tras `setupAnim` (el mixin gana a los brazos del zombi o
+  al arco del esqueleto) cada pieza toma el giro ZYX y la escala de la pieza del muñeco (Blockbench → Minecraft: giro
+  (−x, −y, z)) y su pivote se mueve con el movimiento entero de esa pieza (`MOTION`), así da igual dónde tenga el
+  pivote el pack. Comprobado en Python con los 50 efectos: error mediano 0 px (máx. <2 px solo con escalas no
+  uniformes, que Minecraft no puede hacer). La segunda capa de la skin del jugador va con su pieza.
+- Materiales: si el cuerpo del efecto es de otro material (óxido, piedra, agua, jade) el mob se dibuja con esa
+  textura (rellenada para cualquier reparto de UV, `mob_texture`); si el muñeco tiene un doble (holograma, fantasma
+  espectral, estrella del norte, contorno, forma pura) es otra vez el mob con esa textura; las capas encima del
+  cuerpo (bendición angelical) son una segunda pasada. En esas pasadas solo se dibuja el cuerpo (ni armadura ni
+  objetos). Sin caída de lado ni rojo de muerte; sin sombra; tu propio cuerpo no se dibuja en primera persona.
+- Servidor: hasta 4 efectos cada 5 ticks por jugador (antes 1), para que en un barrido salgan todos.
+- Miniaturas de la web: un zombi (skin sacada del `client.jar`, nunca en el repo) haciendo el efecto, con los
+  materiales tal cual (caras `-3` con reparto de skin en los modelos solo para esto; el mod las ignora).
+
+**Web — VFX ordenado:** arriba lo que llevas puesto (efecto de kill y paquete, con su miniatura) y una línea de
+ayuda; pestañas **Efectos de kill (50) / Paquetes de skills (3)**; los efectos agrupados por categorías con su color
+y filtro (Elementos, Cielo y cosmos, Energía y tecnología, Naturaleza, Arte y papel, Divertidos: `KILL_CATS` en
+`build_vfx.py`, van en `config/vfx.json` → `cats` y cada kill con `cat`); tarjetas más compactas (descripción en 2
+líneas) y la equipada resaltada; paquetes en horizontal en escritorio (imagen a la izquierda, skills en 3 columnas).
+En el móvil los filtros se deslizan en una fila.
+
+### Entrega anterior (8 de octubre de 2026): sección VFX (efectos de kill y paquetes de skills) y TF Client 1.3.13
 **Lo que pidió el dueño (textual):** *«añadirás ahora una sección de VFX, estos efectos, algunas son skills… que todas
 las animaciones, sonidos, todo sea correcto dentro del juego sin errores… el icono se pondrá al ladito del último slot
 derecho, no donde pones el escudo, un indicador de que está activado… ponlos gratis de momento, son muchos así que
@@ -36,7 +68,7 @@ Dynamic Player VFX. De los packs solo se usan modelos, animaciones, texturas y s
   tiempo de `fx.json`: modelos animados (`VfxModel` + `VfxPose`, comprobado número a número contra Python), sonidos y
   partículas. Dibuja en `AFTER_TRANSLUCENT_BLOCKS` con `entityTranslucentCull` y luz máxima (como el brillo 15 de
   ModelEngine). Los huesos `phead` llevan la cabeza con la skin (la víctima en los kills, el jugador en los hechizos).
-- Efectos de kill: al matar (jugadores y mobs, `efectosDeKillConMobs`), en la víctima sale un cuerpo gris con su cabeza
+- Efectos de kill: al matar (jugadores y mobs, `efectosDeKillConMobs`), en la víctima salía un cuerpo gris con su cabeza (desde 1.3.14 lo hace el propio mob)
   que hace el efecto; el cuerpo de verdad no se dibuja esos 20 ticks.
 - Skills pasivas con cooldown (`VfxServer`, sin comandos ni teclas): disparadores `golpe` (golpe cargado),
   `golpe_critico`, `golpe_corriendo`, `golpe_agachado`, `dano` (con «vida»: solo con poca vida; o con probabilidad)
@@ -53,7 +85,7 @@ Dynamic Player VFX. De los packs solo se usan modelos, animaciones, texturas y s
   <id|ninguno>`, `/tf web vfx probar <id>` (un efecto de kill delante o `paquete/skill`).
 
 **Web:** pestaña **VFX** en la tienda (`renderVfx` en app.js, sección «VFX» de styles.css): los 3 paquetes con sus
-skills (disparador y cooldown) y los 50 efectos uno a uno con filtro por volumen. **Gratis**: «Obtener» lo guarda en
+skills (disparador y cooldown) y los 50 efectos uno a uno con filtro por volumen (desde 1.3.14, por categorías). **Gratis**: «Obtener» lo guarda en
 la cuenta y lo equipa; «Equipar» / «Quitar». Tablas `vfx_owned` y `vfx_equip`; rutas `GET /api/vfx`,
 `POST /api/vfx/claim`, `POST /api/vfx/equip`; el puente recibe `vfx: [{uuid, kill, pack, at}]` de los conectados y el
 mod solo aplica lo que tenga una hora más nueva (así un cambio del staff no se pisa). Para cobrarlos más adelante:
@@ -543,7 +575,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.14**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.15**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).

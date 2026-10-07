@@ -4440,46 +4440,193 @@ body:not([data-hero]) .header::before {
 
 /* ---------- VFX: paquetes de skills y efectos de kill ---------- */
 
-/* Cómo funcionan, en tres puntos */
-.vfx-how {
+/* Lo que llevas puesto: un hueco para el efecto de kill y otro para el paquete de skills */
+.vfx-top {
   display: grid;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 14px;
 }
 
-.vfx-how div {
+.vfx-top > p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.vfx-loadout {
   display: grid;
-  gap: 3px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.vfx-how b {
-  font: 700 14px/1.3 var(--font-display);
+.vfx-slot {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: rgb(var(--bg-rgb) / 0.4);
 }
 
-.vfx-how span {
+.vfx-slot.is-on {
+  border-color: rgb(var(--a-rgb) / 0.45);
+}
+
+.vfx-slot-art {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px dashed var(--bd-2);
+  background: radial-gradient(circle at 50% 60%, rgb(var(--a-rgb) / 0.22), transparent 70%);
   color: var(--muted);
+  font-size: 20px;
+}
+
+.vfx-slot.is-on .vfx-slot-art {
+  border-style: solid;
+  border-color: var(--bd);
+}
+
+.vfx-slot-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.vfx-slot span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vfx-slot b {
+  display: block;
+  overflow: hidden;
+  font: 700 14px/1.3 var(--font-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pestañas: efectos de kill o paquetes de skills */
+.vfx-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 22px;
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--bd-2);
+  background: var(--s1);
+}
+
+.vfx-tabs button {
+  display: inline-flex;
+  flex: 1;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+}
+
+.vfx-tabs button span {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgb(var(--line-rgb) / 0.12);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vfx-tabs button[aria-selected='true'] {
+  background: var(--shimmer) 0 0 / 220% 100%;
+  color: #fff;
+  animation: shimmer-flow 5s ease-in-out infinite alternate;
+}
+
+.vfx-tabs button[aria-selected='true'] span {
+  background: rgb(0 0 0 / 0.22);
+}
+
+.vfx-lead {
+  margin: 16px 0 0;
   font-size: 14px;
 }
 
-.vfx-section-head {
-  margin: 34px 0 0;
-}
-
-.vfx-section-head h3 {
-  font: 800 clamp(20px, 3vw, 26px) / 1.2 var(--font-display);
-  letter-spacing: -0.02em;
-}
-
-.vfx-section-head p {
-  margin: 6px 0 0;
-  font-size: 14px;
-}
-
+/* Categorías de los efectos de kill, cada una con su color (en el móvil, en una fila que se desliza) */
 .vfx-filter {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 14px;
+  margin: 16px calc(var(--gutter) * -1) 0;
+  padding: 0 var(--gutter) 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.vfx-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.vfx-filter .chip {
+  flex: none;
+}
+
+.vfx-filter .chip[style]::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--vfx);
+  vertical-align: 1px;
+}
+
+.vfx-group {
+  margin-top: 26px;
+}
+
+.vfx-group header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--vfx) 28%, var(--bd));
+}
+
+.vfx-group header::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--vfx);
+}
+
+.vfx-group h3 {
+  font: 800 18px/1.2 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.vfx-group header span {
+  color: var(--vfx);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 /* El efecto sobre un fondo oscuro con la luz de su color, como se ve en el juego por la noche */
@@ -4512,6 +4659,12 @@ body:not([data-hero]) .header::before {
     border-color 0.3s;
 }
 
+.vfx-pack.is-on,
+.vfx-kill.is-on {
+  border-color: var(--vfx, var(--violet));
+  box-shadow: inset 0 0 0 1px var(--vfx, var(--violet));
+}
+
 .vfx-pack .body,
 .vfx-kill .body {
   display: flex;
@@ -4521,38 +4674,50 @@ body:not([data-hero]) .header::before {
 }
 
 .vfx-kill .body {
-  padding: 14px;
+  padding: 12px;
 }
 
-.vfx-pack h3,
-.vfx-kill h3 {
+.vfx-pack h3 {
   margin: 4px 0 6px;
-  font: 700 18px/1.25 var(--font-display);
+  font: 700 20px/1.25 var(--font-display);
 }
 
-.vfx-kill h3 {
-  font-size: 15px;
+.vfx-kill h4 {
+  margin: 0 0 4px;
+  font: 700 14px/1.3 var(--font-display);
 }
 
-.vfx-pack p,
-.vfx-kill p {
+.vfx-pack p {
   margin: 0;
   color: var(--text-2);
   font-size: 14px;
 }
 
 .vfx-kill p {
-  font-size: 13px;
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
   color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .vfx-kill .card-foot .btn {
-  min-height: 36px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 12px;
 }
 
 .vfx-kill .price {
-  font-size: 16px;
+  font-size: 15px;
+}
+
+.vfx-kills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .vfx-packs {
@@ -4565,6 +4730,18 @@ body:not([data-hero]) .header::before {
   border-color: color-mix(in srgb, var(--vfx) 34%, var(--edge));
 }
 
+.vfx-pack .vfx-art {
+  min-height: 0;
+  aspect-ratio: 16 / 10;
+}
+
+.vfx-pack .vfx-art img {
+  position: absolute;
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+}
+
 .vfx-pack .cat {
   color: var(--vfx);
 }
@@ -4573,26 +4750,28 @@ body:not([data-hero]) .header::before {
 .vfx-skills {
   display: grid;
   gap: 8px;
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .vfx-skills li {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 10px 12px;
   border-radius: var(--r);
   border: 1px solid var(--bd);
+  border-left: 3px solid color-mix(in srgb, var(--vfx) 70%, transparent);
   background: rgb(var(--bg-rgb) / 0.35);
 }
 
 .vfx-skills b {
-  display: block;
   font-size: 14px;
 }
 
-.vfx-skills li span {
+.vfx-skills .vfx-desc {
+  flex: 1;
   color: var(--muted);
   font-size: 13px;
 }
@@ -4602,6 +4781,7 @@ body:not([data-hero]) .header::before {
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+  margin-top: 2px;
 }
 
 .vfx-skills .vfx-trigger {
@@ -4615,15 +4795,10 @@ body:not([data-hero]) .header::before {
 }
 
 .vfx-skills .cd {
+  color: var(--text-2);
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-}
-
-.vfx-kills {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
 }
 
 /* ---------- Ventanas (compra, visor 3D y probador) ---------- */
@@ -6324,12 +6499,34 @@ body:not([data-hero]) .header::before {
 }
 
 @media (min-width: 640px) {
-  .vfx-how {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .vfx-top {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: center;
+    padding: 12px 18px 12px 12px;
   }
 
   .vfx-kills {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .vfx-tabs button {
+    font-size: 14px;
+  }
+
+  .vfx-filter {
+    flex-wrap: wrap;
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .vfx-slot span {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .vfx-skills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   :root {
@@ -6500,12 +6697,36 @@ body:not([data-hero]) .header::before {
 /* ---------- Escritorio ---------- */
 
 @media (min-width: 960px) {
-  .vfx-packs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .vfx-kills {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  /* Paquetes en horizontal: la imagen a la izquierda y sus skills a la derecha */
+  .vfx-pack {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  }
+
+  .vfx-pack .vfx-art {
+    aspect-ratio: auto;
+    min-height: 100%;
+    border-right: 1px solid var(--bd);
+    border-bottom: 0;
+  }
+
+  .vfx-pack .vfx-art img {
+    position: static;
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+  }
+
+  .vfx-pack .body {
+    padding: 22px 24px;
+  }
+
+  .vfx-skills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .vfx-kill:hover,

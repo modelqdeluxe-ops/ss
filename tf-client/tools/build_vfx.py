@@ -57,6 +57,22 @@ VANILLA_PARTICLES = {
     'sonic_boom', 'scrape', 'wax_on', 'squid_ink', 'glow_squid_ink', 'sculk_soul', 'damage_indicator', 'poof',
 }
 
+# Categorías de los efectos de kill en la web: (id, nombre, color, efectos)
+KILL_CATS = [
+    ('elementos', 'Elementos', '#ff8a3d', ['fuego_infernal', 'escarcha', 'derretido', 'evaporacion', 'acido', 'oxido',
+                                           'piedra', 'jade', 'niebla', 'humo']),
+    ('cosmos', 'Cielo y cosmos', '#b77dff', ['bendicion_angelical', 'absorcion_sagrada', 'aurora', 'constelacion',
+                                             'estrella_norte', 'nebulosa', 'prisma', 'portal', 'colapso_vacio']),
+    ('energia', 'Energía y tecnología', '#4cc9f0', ['chispas', 'orbe_plasma', 'magnetismo', 'energia_cinetica', 'onda_sonora',
+                                                    'reloj', 'holograma', 'espejo', 'espectral', 'engranajes']),
+    ('naturaleza', 'Naturaleza', '#5fd47a', ['naturaleza', 'floracion', 'planta_carnivora', 'miel', 'bioluminiscencia',
+                                             'tentaculos', 'ataque_tiburon', 'arenas_movedizas']),
+    ('arte', 'Arte y papel', '#ffd166', ['papel_quemado', 'origami', 'pluma_tinta', 'manchas_tinta', 'grafiti', 'mosaico',
+                                         'abstracto', 'contorno', 'sombras']),
+    ('divertidos', 'Divertidos', '#ff6fae', ['game_over', 'knockout', 'bloques_caen', 'impostor']),
+]
+KILL_CAT = {kid: c[0] for c in KILL_CATS for kid in c[3]}
+
 # Efectos de kill: tipo de MythicMobs → (id, nombre, descripción). Volumen: (carpeta del pack, etiqueta)
 KILL_VOLUMES = [('v1_16x', 'Vol. 1'), ('v2', 'Vol. 2'), ('v3', 'Vol. 3'), ('v4', 'Vol. 4'), ('v5_16x', 'Vol. 5')]
 KILLS = {
@@ -271,11 +287,14 @@ def build_kills(b):
                 problems.append(f'{vol}/{kind}: sin modelo')
                 continue
             anim = 'spawn' if 'spawn' in m['anims'] else next(iter(m['anims']), None)
+            if not m.get('figures'):
+                problems.append(f'{vol}/{kind}: sin muñeco (el mob no puede hacer la animación)')
             life = life or 50
             fx_id = 'kill_' + kid
-            # El modelo hace de cuerpo: el de verdad no se dibuja mientras cae (20 ticks)
-            ev0 = [{'t': 0, 'model': model_name.lower(), 'anim': anim, 'life': life, 'skin': True, 'hop': 1.0},
-                   {'t': 0, 'hide': 'victim', 'ticks': 20}]
+            # actor: la víctima de verdad hace la animación del muñeco (si el cliente no la tiene, sale el muñeco)
+            ev0 = [{'t': 0, 'model': model_name.lower(), 'anim': anim, 'life': life, 'skin': True, 'hop': 1.0,
+                    'actor': True},
+                   {'t': 0, 'hide': 'victim', 'ticks': life + 1}]
             if sound:
                 s = b.sound(sound, 'kill.' + kid)
                 if s:
@@ -291,13 +310,13 @@ def build_kills(b):
     return kills
 
 
-def best_time(m, anim, tex):
+def best_time(m, anim, tex, actor=None):
     """Instante más vistoso de la animación (más superficie de color) para la miniatura."""
     ln = m['anims'][anim]['len'] if anim in m['anims'] else 1
     best, best_t = -1, ln / 2
     for k in range(1, 12):
         t = ln * k / 12
-        img = R.render(m, tex, anim, t, size=96, ss=1, tick=int(t * 20))
+        img = R.render(m, tex, anim, t, size=96, ss=1, tick=int(t * 20), actor=actor)
         a = np.asarray(img, np.float32) / 255
         rgb, al = a[..., :3], a[..., 3]
         sat = rgb.max(-1) - rgb.min(-1)
@@ -320,13 +339,41 @@ def grey_skin():
     return GREY_SKIN
 
 
-def thumbnail(m, anim, t, size, tex, yaw=-28, pitch=-14):
+ZOMBIE_SKIN = None
+# Caras de un brazo/pierna de 4×12×4 dentro de su recuadro de 16×16 (x, y, ancho, alto)
+LIMB_FACES = {'up': (4, 0, 4, 4), 'down': (8, 0, 4, 4), 'east': (0, 4, 4, 12), 'north': (4, 4, 4, 12),
+              'west': (8, 4, 4, 12), 'south': (12, 4, 4, 12)}
+
+
+def zombie_skin():
+    """Skin de zombi de Minecraft con el reparto moderno (brazo y pierna izquierdos = derechos en espejo), para que
+    las miniaturas de los efectos de kill enseñen un mob haciendo la animación, como en el juego."""
+    global ZOMBIE_SKIN
+    if ZOMBIE_SKIN is None:
+        import io
+        import zipfile
+        jars = glob.glob(os.path.expanduser('~/.gradle/caches/forge_gradle/**/downloadClient/client.jar'), recursive=True)
+        if not jars:
+            sys.exit('Falta el client.jar de Minecraft (compila el mod una vez con gradle)')
+        with zipfile.ZipFile(jars[0]) as z:
+            img = Image.open(io.BytesIO(z.read('assets/minecraft/textures/entity/zombie/zombie.png'))).convert('RGBA')
+        for (sx, sy), (dx, dy) in (((40, 16), (32, 48)), ((0, 16), (16, 48))):
+            for name, (fx, fy, w, h) in LIMB_FACES.items():
+                src = {'east': 'west', 'west': 'east'}.get(name, name)
+                ax, ay, _, _ = LIMB_FACES[src]
+                face = img.crop((sx + ax, sy + ay, sx + ax + w, sy + ay + h)).transpose(Image.FLIP_LEFT_RIGHT)
+                img.paste(face, (dx + fx, dy + fy))
+        ZOMBIE_SKIN = np.asarray(img, np.float32) / 255
+    return ZOMBIE_SKIN
+
+
+def thumbnail(m, anim, t, size, tex, yaw=-28, pitch=-14, actor=None):
     lo, hi = R.bounds(m, anim, [t])
     center = (lo + hi) / 2
     rad = max(np.linalg.norm(hi - lo) / 2, 8)
     dist = rad / np.tan(np.radians(20)) * 1.08
     return R.render(m, tex, anim, t, size=size, center=center, dist=dist, yaw=yaw, pitch=pitch, tick=int(t * 20),
-                    skin=grey_skin())
+                    skin=grey_skin(), actor=actor)
 
 
 def write_images(b, entries):
@@ -335,10 +382,11 @@ def write_images(b, entries):
     for e in entries:
         m = b.models[e['model']]
         tex = R.load_textures(m, TEX_OUT)
+        actor = zombie_skin() if m.get('figures') and e['image'].startswith('kill_') else None
         t = e.get('thumbTime')
         if t is None:
-            t = best_time(m, e['anim'], tex)
-        img = thumbnail(m, e['anim'], t, 512, tex, **e.get('view', {}))
+            t = best_time(m, e['anim'], tex, actor)
+        img = thumbnail(m, e['anim'], t, 512, tex, actor=actor, **e.get('view', {}))
         bg = Image.new('RGBA', img.size, (0, 0, 0, 0))
         bg.alpha_composite(img)
         bg.save(os.path.join(WEB_IMG, e['image'] + '.webp'), 'WEBP', quality=86, method=6)
@@ -386,9 +434,14 @@ def main(root):
     }
     with open(os.path.join(RES, 'vfx', 'catalog.json'), 'w') as f:
         json.dump(catalog, f, indent=1, ensure_ascii=False)
+    for k in kills:
+        if k['id'] not in KILL_CAT:
+            problems.append(f'{k["id"]}: sin categoría para la web')
+    order = {kid: i for i, kid in enumerate(KILL_CAT)}
     web = {
-        'kills': [{'id': k['id'], 'name': k['name'], 'desc': k['desc'], 'volume': k['volume'],
-                   'image': f'img/vfx/{k["image"]}.webp'} for k in kills],
+        'cats': [{'id': c[0], 'name': c[1], 'color': c[2]} for c in KILL_CATS],
+        'kills': [{'id': k['id'], 'name': k['name'], 'desc': k['desc'], 'cat': KILL_CAT.get(k['id'], 'elementos'),
+                   'image': f'img/vfx/{k["image"]}.webp'} for k in sorted(kills, key=lambda k: order.get(k['id'], 999))],
         'packs': [{'id': p['id'], 'name': p['name'], 'desc': p['desc'], 'color': p['color'],
                    'image': f'img/vfx/{p["image"]}.webp',
                    'skills': [{k: s[k] for k in ('name', 'desc', 'trigger', 'cooldown', 'vida', 'chance') if k in s}

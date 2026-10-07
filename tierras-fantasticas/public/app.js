@@ -570,7 +570,8 @@
   // --- VFX: efectos de kill sueltos y paquetes de skills. Por ahora gratis: se obtienen y se equipan con la cuenta y
   // el servidor los pone solo. En el juego se activan solos y se ven en un indicador junto a la barra. ---
   let vfxData = null;
-  let vfxVolume = 'todos';
+  let vfxTab = 'kills';
+  let vfxCat = 'todos';
   async function loadVfx() {
     try {
       vfxData = await (await fetch('/api/vfx')).json();
@@ -608,66 +609,101 @@
     return `<span class="price owned">Tuyo</span><button class="btn btn-primary btn-sm" type="button" data-vfx-equip ${attrs}>Equipar</button>`;
   }
 
+  // Lo que llevas puesto: el efecto de kill y el paquete de skills
+  function vfxSlot(kind, label) {
+    const id = vfxData.me?.[kind];
+    const item = id ? (kind === 'kill' ? vfxData.kills : vfxData.packs).find((x) => x.id === id) : null;
+    return `<div class="vfx-slot${item ? ' is-on' : ''}">
+        <div class="vfx-slot-art">${item ? img(item.image, '') : '<span aria-hidden="true">+</span>'}</div>
+        <div><span>${label}</span><b>${item ? escapeHtml(item.name) : 'Ninguno'}</b></div>
+      </div>`;
+  }
+
+  function vfxKillCard(k) {
+    const on = vfxData.me?.kill === k.id;
+    return `
+        <article class="panel vfx-kill${on ? ' is-on' : ''}">
+          <div class="vfx-art">${img(k.image, '')}</div>
+          <div class="body">
+            <h4>${escapeHtml(k.name)}</h4>
+            <p>${escapeHtml(k.desc)}</p>
+            <div class="card-foot">${vfxFoot('kill', k.id)}</div>
+          </div>
+        </article>`;
+  }
+
+  function vfxPackCard(p) {
+    const on = vfxData.me?.pack === p.id;
+    return `
+        <article class="panel vfx-pack${on ? ' is-on' : ''}" style="--vfx:${HEX.test(p.color) ? p.color : '#b77dff'}">
+          <div class="vfx-art">${img(p.image, '')}</div>
+          <div class="body">
+            <span class="cat">${p.skills.length} skills pasivas</span>
+            <h3>${escapeHtml(p.name)}</h3>
+            <p>${escapeHtml(p.desc)}</p>
+            <ul class="vfx-skills">${p.skills
+              .map(
+                (s) => `<li><b>${escapeHtml(s.name)}</b><span class="vfx-desc">${escapeHtml(s.desc)}</span>
+                  <span class="vfx-meta"><span class="vfx-trigger">${escapeHtml(triggerText(s))}</span><span class="cd">${seconds(s.cooldown)}</span></span></li>`,
+              )
+              .join('')}</ul>
+            <div class="card-foot">${vfxFoot('pack', p.id)}</div>
+          </div>
+        </article>`;
+  }
+
   function renderVfx(box) {
     if (!vfxData) {
       box.innerHTML = '<p class="loading">No se pudieron cargar los efectos. Recarga la página.</p>';
       return;
     }
     box.classList.add('vfx-shop');
-    const volumes = ['todos', ...new Set(vfxData.kills.map((k) => k.volume))];
-    const kills = vfxData.kills.filter((k) => vfxVolume === 'todos' || k.volume === vfxVolume);
-    box.innerHTML = `
-      <section class="vfx-how frame">
-        <div><b>Se activan solos</b><span>Los efectos de kill salen al derrotar a un enemigo; las skills, al pelear, cada una con su cooldown.</span></div>
-        <div><b>Uno de cada</b><span>Llevas un efecto de kill y un paquete de skills a la vez. Cámbialos aquí cuando quieras.</span></div>
-        <div><b>Indicador en el juego</b><span>Junto al último hueco de tu barra ves lo que llevas y el cooldown de las skills.</span></div>
-      </section>
-      <div class="section-head vfx-section-head"><h3>Paquetes de skills</h3><p class="muted">Cada paquete trae varias skills pasivas: se lanzan solas según cómo pelees.</p></div>
-      <div class="vfx-packs">${vfxData.packs
+    const cats = vfxData.cats || [];
+    const tab = (id, label, n) =>
+      `<button type="button" role="tab" data-vfx-tab="${id}" aria-selected="${vfxTab === id}">${label}<span>${n}</span></button>`;
+    let body;
+    if (vfxTab === 'packs') {
+      body = `<p class="vfx-lead muted">Cada paquete trae varias skills pasivas: saltan solas según cómo pelees, cada una con su cooldown.</p>
+      <div class="vfx-packs">${vfxData.packs.map(vfxPackCard).join('')}</div>`;
+    } else {
+      const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
+      body = `<div class="vfx-filter" role="group" aria-label="Categorías">${[{ id: 'todos', name: 'Todos' }, ...cats]
         .map(
-          (p) => `
-        <article class="panel vfx-pack" style="--vfx:${HEX.test(p.color) ? p.color : '#b77dff'}">
-          <div class="vfx-art">${img(p.image, '')}</div>
-          <div class="body">
-            <span class="cat">Paquete de skills</span>
-            <h3>${escapeHtml(p.name)}</h3>
-            <p>${escapeHtml(p.desc)}</p>
-            <ul class="vfx-skills">${p.skills
-              .map(
-                (s) => `<li><div><b>${escapeHtml(s.name)}</b><span>${escapeHtml(s.desc)}</span></div>
-                  <span class="vfx-meta"><span class="vfx-trigger">${escapeHtml(triggerText(s))}</span><span class="cd">${seconds(s.cooldown)}</span></span></li>`,
-              )
-              .join('')}</ul>
-            <div class="card-foot">${vfxFoot('pack', p.id)}</div>
-          </div>
-        </article>`,
+          (c) =>
+            `<button type="button" class="chip" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}"${
+              c.color && HEX.test(c.color) ? ` style="--vfx:${c.color}"` : ''
+            }>${escapeHtml(c.name)}</button>`,
         )
         .join('')}</div>
-      <div class="section-head vfx-section-head split-head">
-        <div><h3>Efectos de kill</h3><p class="muted">${vfxData.kills.length} efectos, uno a uno. Se ven al derrotar a jugadores y mobs.</p></div>
-        <div class="vfx-filter" role="group" aria-label="Filtrar por volumen">${volumes
-          .map((v) => `<button type="button" class="chip" data-vfx-volume="${escapeHtml(v)}" aria-pressed="${v === vfxVolume}">${v === 'todos' ? 'Todos' : escapeHtml(v)}</button>`)
-          .join('')}</div>
-      </div>
-      <div class="vfx-kills">${kills
-        .map(
-          (k) => `
-        <article class="panel vfx-kill">
-          <div class="vfx-art">${img(k.image, '')}</div>
-          <div class="body">
-            <h3>${escapeHtml(k.name)}</h3>
-            <p>${escapeHtml(k.desc)}</p>
-            <div class="card-foot">${vfxFoot('kill', k.id)}</div>
-          </div>
-        </article>`,
-        )
-        .join('')}</div>`;
+      ${shown
+        .map((c) => {
+          const list = vfxData.kills.filter((k) => k.cat === c.id);
+          if (!list.length) return '';
+          return `<section class="vfx-group" style="--vfx:${HEX.test(c.color) ? c.color : '#b77dff'}">
+          <header><h3>${escapeHtml(c.name)}</h3><span>${list.length}</span></header>
+          <div class="vfx-kills">${list.map(vfxKillCard).join('')}</div>
+        </section>`;
+        })
+        .join('')}`;
+    }
+    box.innerHTML = `
+      <section class="vfx-top frame">
+        <div class="vfx-loadout">${vfxSlot('kill', 'Efecto de kill')}${vfxSlot('pack', 'Paquete de skills')}</div>
+        <p class="muted">Todo gratis. En el juego se activan solos y los ves junto al último hueco de tu barra.</p>
+      </section>
+      <div class="vfx-tabs" role="tablist" aria-label="VFX">${tab('kills', 'Efectos de kill', vfxData.kills.length)}${tab(
+        'packs',
+        'Paquetes de skills',
+        vfxData.packs.length,
+      )}</div>
+      ${body}`;
   }
 
   document.addEventListener('click', async (e) => {
-    const vol = e.target.closest('[data-vfx-volume]');
-    if (vol) {
-      vfxVolume = vol.dataset.vfxVolume;
+    const vt = e.target.closest('[data-vfx-tab], [data-vfx-cat]');
+    if (vt) {
+      if (vt.dataset.vfxTab) vfxTab = vt.dataset.vfxTab;
+      else vfxCat = vt.dataset.vfxCat;
       if (currentCategory === 'vfx') renderVfx($('#products'));
       return;
     }

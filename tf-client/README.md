@@ -215,13 +215,14 @@ un cofre de 6 filas: las categorías, los objetos de cada una (por páginas) y u
   Se aplica sin reiniciar con `/tf shop recargar` (staff). Los límites del día van en `<mundo>/tfclient/tienda.json` y
   cada compra y venta en `<mundo>/tfclient/tienda-registro.log`.
 
-## VFX: efectos de kill y skills pasivas (1.3.13)
+## VFX: efectos de kill y skills pasivas (1.3.14)
 
 Todo sale de `tools/build_vfx.py` (lee los packs comprados, que no están en el repositorio) y va en
 `assets/tfclient/vfx/`. El jugador los equipa en la web (pestaña VFX de la tienda); el puente los manda al servidor.
 
-- **Efectos de kill** (50): al derrotar a un jugador o a un mob, en su sitio aparece un cuerpo con su cabeza que hace el
-  efecto (modelo animado, sonido y partículas). Lo ven todos a 96 bloques.
+- **Efectos de kill** (50): al derrotar a un jugador o a cualquier mob, la propia víctima hace la animación del efecto
+  (salta, gira, se encoge, sale volando; los humanoides mueven cabeza, brazos y piernas) con su sonido y partículas;
+  si el efecto la convierte en óxido, piedra, jade, agua o un holograma, toma esa textura. Lo ven todos a 96 bloques.
 - **Paquetes de skills** (3): skills pasivas que se lanzan solas según cómo pelees, cada una con su cooldown: al
   golpear (golpes cargados), con un golpe crítico, golpeando mientras corres o agachado, al recibir daño (algunas solo
   con poca vida) o en combate. Daño en zona, empujes, paralizar, curar, esquivar…
@@ -242,7 +243,7 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.13.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.14.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

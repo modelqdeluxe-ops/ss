@@ -333,7 +333,7 @@ export function createApp(env) {
     // VFX: el catálogo y, con la cuenta iniciada, lo que tiene y lleva equipado el jugador.
     'GET /api/vfx': async (req) => {
       const user = await currentUser(req);
-      return json({ free: VFX_FREE, kills: vfx.kills, packs: vfx.packs, me: user ? await store.vfxFor(user.uuid) : null });
+      return json({ free: VFX_FREE, cats: vfx.cats, kills: vfx.kills, packs: vfx.packs, me: user ? await store.vfxFor(user.uuid) : null });
     },
 
     // Obtener un VFX (gratis): queda en la cuenta y se equipa; el servidor lo pone en la siguiente consulta del puente.
