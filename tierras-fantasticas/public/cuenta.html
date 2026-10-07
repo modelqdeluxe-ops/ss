@@ -14,6 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/img/night-1672.webp" media="(min-width: 761px)">
+  <link rel="preload" as="image" href="/img/night-768.webp" media="(max-width: 760px)">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
   <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
@@ -73,9 +75,7 @@
 
   <main id="main">
     <section class="page-hero">
-      <div class="hero-art" aria-hidden="true">
-        <img src="/img/hero-1920.webp" srcset="/img/hero-768.webp 768w, /img/hero-1280.webp 1280w, /img/hero-1920.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high">
-      </div>
+      
       <div class="wrap">
         <span class="eyebrow">Mi cuenta</span>
         <h1>Tu cuenta del reino</h1>
@@ -134,9 +134,12 @@
         <span lang="en">NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</span></p>
     </div>
     <div class="wrap legal">
-      <span>© <span data-year></span> Equipo de Tierras Fantásticas · México</span>
+      <p class="copyright">© <span data-year></span> Tierras Fantásticas. Todos los derechos reservados. Prohibida la copia,
+        reventa o distribución del contenido del servidor (sets, modelos, texturas, textos e imágenes) fuera de Tierras
+        Fantásticas. Las marcas y contenidos de terceros pertenecen a sus dueños.</p>
       <span>Lo que se compra en la tienda ayuda a mantener el servidor. Precios en dólares estadounidenses (USD).</span>
     </div>
+    <span class="credit">By Pewez777</span>
   </footer>
 
   <script src="/app.js" defer></script>

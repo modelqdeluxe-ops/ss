@@ -34,10 +34,12 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
     pruebas (se pueden combinar colecciones) y la compra de cada pieza (`tf web sets give {player} <set> <pieza>`).
   - **Rangos** (`/tienda#rangos`): escalera de rangos y un escaparate con el personaje (tu skin) y el set del rango
     puesto, el nombre con su prefijo flotando encima y el texto de venta (`RANK_PITCH`; nunca el nombre del kit). De menor a mayor: Mortal (set San Patricio), Inmortal (Beats), Mágico (Dark World),
-    Eterno (Malika), Cósmico (Oni), Celestial (Luz de Estrella) y Fantástico (Eagle Ascendant). Cada uno da su grupo
+    Eterno (Malika), Cósmico (Oni), Celestial (Eagle Ascendant) y Fantástico (Luz de Estrella). Cada uno da su grupo
     de LuckPerms, su prefijo con color, el rol de Discord y su set completo (`tf web sets give`). La tabla `RANKS` de
     `tools/crates.py` los define (con el nivel de atributos de su set); `/tienda#rangos-mortal` abre uno. Las piezas
-    del set se pueden poner y quitar en el personaje.
+    del set se pueden poner y quitar en el personaje. Debajo del escaparate sale lo que trae el rango en el servidor con sus
+    comandos (`RANK_SERVER_PERKS`: hogares, /hat, /fly en el lobby, /pp, /nick, colores, /ptime, /pweather…; cada rango
+    suma lo del anterior). Esos permisos se dan en LuckPerms: la lista está en `HANDOFF.md` («Rangos: comandos»).
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.

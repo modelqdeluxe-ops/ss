@@ -112,8 +112,8 @@ RANKS = [
     ('magico', 'Mágico', 'darkworld', 'Dark World', 1199, ('dark_purple', '#c026d3'), 'netherite'),
     ('eterno', 'Eterno', 'malika', 'Malika', 1599, ('red', '#ef4444'), 'netherite+1'),
     ('cosmico', 'Cósmico', 'oni', 'Oni', 1999, ('aqua', '#22d3ee'), 'netherite+1.5'),
-    ('celestial', 'Celestial', 'starlight', 'Luz de Estrella', 2499, ('yellow', '#fde047'), 'netherite+2'),
-    ('fantastico', 'Fantástico', 'eagle', 'Eagle Ascendant', 2999, ('gold', '#f59e0b'), 'netherite+3'),
+    ('celestial', 'Celestial', 'eagle', 'Eagle Ascendant', 2499, ('yellow', '#fde047'), 'netherite+2'),
+    ('fantastico', 'Fantástico', 'starlight', 'Luz de Estrella', 2999, ('gold', '#f59e0b'), 'netherite+3'),
 ]
 
 
@@ -211,10 +211,48 @@ RANK_PITCH = {
     'cosmico': ('Más allá de las estrellas',
                 'Armadura de guerrero demonio, armas de otro mundo y unas alas oscuras coronadas por un aro carmesí.'),
     'celestial': ('Bendecido por los cielos',
-                  'Oro y luz de las constelaciones: el equipo de los elegidos, con alas blancas que brillan de verdad.'),
+                  'Oro y sombra para los que vuelan más alto: alas de águila majestuosas y armas dignas de los elegidos.'),
     'fantastico': ('La cima de Tierras Fantásticas',
-                   'El rango más alto del reino. Oro y sombra, alas majestuosas y el equipo más espectacular del servidor.'),
+                   'El rango más alto del reino. Oro y luz de las constelaciones, alas blancas que brillan de verdad y el equipo más espectacular del servidor.'),
 }
+
+
+# Lo que trae cada rango en el servidor, con su comando. Cada rango tiene todo lo del anterior más lo suyo (los
+# hogares se sustituyen por el número nuevo). Solo comodidad y aspecto, nada que dé ventaja (normas de Mojang). El
+# dueño lo configura en LuckPerms/EssentialsX: los permisos de cada línea están en HANDOFF.md («Rangos: comandos»).
+# (clave, comando o None, texto)
+RANK_SERVER_PERKS = {
+    'mortal': [('homes', '/sethome', 'Hasta 2 hogares; vuelve a ellos con /home'),
+               ('prefix', None, 'Prefijo con color en el chat y sobre tu nombre'),
+               ('discord', None, 'Rol del rango en Discord')],
+    'inmortal': [('homes', '/sethome', 'Hasta 3 hogares'),
+                 ('hat', '/hat', 'Ponte en la cabeza el bloque que tengas en la mano')],
+    'magico': [('homes', '/sethome', 'Hasta 5 hogares'),
+               ('fly', '/fly', 'Vuela en el lobby'),
+               ('particles', '/pp', 'Partículas cosméticas a tu alrededor')],
+    'eterno': [('homes', '/sethome', 'Hasta 8 hogares'),
+               ('nick', '/nick', 'Apodo con colores'),
+               ('chatcolor', '&a…&f', 'Escribe en el chat con colores')],
+    'cosmico': [('homes', '/sethome', 'Hasta 12 hogares'),
+                ('ptime', '/ptime', 'Tu propia hora del día (solo la ves tú)'),
+                ('queue', None, 'Cola prioritaria: entras antes cuando el servidor está lleno')],
+    'celestial': [('homes', '/sethome', 'Hasta 20 hogares'),
+                  ('pweather', '/pweather', 'Tu propio clima (solo lo ves tú)'),
+                  ('join', None, 'Aviso especial en el chat cuando entras al servidor')],
+    'fantastico': [('homes', '/sethome', 'Hogares ilimitados'),
+                   ('title', None, 'Título propio junto a tu nombre (te lo pone el staff)'),
+                   ('glow', None, 'Nombre con el color dorado de Fantástico')],
+}
+
+
+def rank_server_perks(key):
+    """Lo que trae el rango en el servidor (acumulado), marcando lo que es nuevo respecto al rango anterior."""
+    order = [r[0] for r in RANKS]
+    out = {}
+    for k in order[:order.index(key) + 1]:
+        for perk_id, cmd, text in RANK_SERVER_PERKS[k]:
+            out[perk_id] = {'cmd': cmd, 'text': text, 'new': k == key}
+    return list(out.values())
 
 
 def rank_products():
@@ -235,6 +273,7 @@ def rank_products():
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],
             'set': set_id, 'models': models,
             'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces, f'Rol {name} en Discord'],
+            'serverPerks': rank_server_perks(key),
             'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc},
         })
     return out

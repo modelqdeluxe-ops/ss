@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **7 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **7 de octubre de 2026 (madrugada)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -11,6 +11,85 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
+
+### Última entrega (7 de octubre de 2026, madrugada): fondo nocturno, neón en bordes, comandos de los rangos y TF Client 1.3.9
+Termina el checkpoint de la otra IA (rama `claude/amazing-ritchie-68hm6n`, commit `b421e19`: trajes de espalda
+centrados en el cuerpo, alas de Eagle pegadas, armas dobles de Oni visibles e intercambio de sets Celestial ⇄
+Fantástico; detalle en el mensaje de ese commit y en «Herramientas de revisión» abajo).
+
+**Lo que pidió el dueño (textual):** *«las alas del Fantástico siguen un poco separaditas… el diseño neón de las
+letras no me gusta, pon ese fondo [una imagen nocturna: luna, castillo, río, islas flotantes] y mejora el efecto de
+neón, algo muy profesional… revisa con seriedad todos los modelos… debajo del rango no me pusiste lo que trae el rango
+como comandos… algunas armas y poses se ponen mal, unas armas no aparecen… el logotipo no tiene animación en mi PC,
+mejora las animaciones, transiciones, transiciones de letras… en la leyenda abajo pon copyright, nadie puede
+distribuir esto fuera del server, y en una esquina abajo «By Pewez777», discreto»*. Y: *«cambia el set fantástico al
+set celestial»* (hecho en el checkpoint).
+
+**Web:**
+- **Fondo**: la imagen nocturna del dueño (`public/img/night-{768,1280,1672}.webp`) es el fondo fijo de toda la web
+  (`body::before`: imagen + velo oscuro, con un acercamiento muy lento, `@keyframes night-drift`; `body::after`: luz
+  de neón suave en las esquinas y viñeta). En el móvil usa la de 768 px. Las cabeceras (portada, tienda, páginas
+  interiores) ya no llevan imagen propia: `hero_art()` de `pages.py` devuelve vacío y dejan ver el fondo. La banda
+  final usa `night-1280`. El pilar «Reinos y castillos» usa un recorte del castillo de esa imagen. El arte de día
+  (`hero-*.webp`) solo queda en `/mundo`.
+- **Sin neón en las letras**: el título de la portada solo tiene una sombra oscura; `.text-grad` es un color liso
+  (`#e8cdfc`), sin degradado ni animación; el nombre del rango tampoco brilla.
+- **Neón profesional en bordes y botones**: tokens `--edge`, `--edge-hot`, `--haze`, `--haze-hot`. Las tarjetas
+  (`.panel`/`.frame`) tienen un filo violeta fino, una línea de luz arriba y un halo suave; al pasar el ratón se
+  encienden con su color (crates, rangos, pilares, productos, monedas). `.btn-primary` lleva filo rosa claro y halo;
+  `.btn-ghost`, filo violeta que se vuelve rosa. Todo son sombras estáticas (nada animado caro).
+- **Emblema**: entra con un salto (`logo-in`), flota, su halo late y un destello lo cruza recortado a su silueta
+  (`.logo-mark .shine`, máscara con `logo.webp`). Con «reducir movimiento» (Windows con animaciones apagadas, el PC
+  del dueño) **siguen** el emblema, su halo y el destello, el fondo que se acerca y los brillos: están exentos en el
+  bloque `prefers-reduced-motion` del final de `styles.css`.
+- **Letras**: el título de la portada entra letra a letra (`pages.py` parte «Tierras Fantásticas» en `<span
+  class="ch" style="--i:N">` dentro de `.w`, con `aria-label` para lectores de pantalla); los títulos de sección
+  (`.section-head.reveal`) se descubren de abajo arriba al aparecer y la etiqueta y el texto entran escalonados.
+- **Pie**: `.copyright` («© año Tierras Fantásticas. Todos los derechos reservados. Prohibida la copia, reventa o
+  distribución del contenido del servidor… fuera de Tierras Fantásticas. Las marcas y contenidos de terceros
+  pertenecen a sus dueños.») y `.credit` «By Pewez777» pequeño en la esquina inferior derecha.
+- **Rangos: comandos debajo del escaparate** (`#rk-cmds` en `renderRanks`/`showRank` de app.js; datos en
+  `RANK_SERVER_PERKS` de `tools/crates.py` → `serverPerks` en products.json). Acumulado: cada rango trae lo del
+  anterior y marca «Nuevo» lo suyo (sale primero). Solo comodidad y aspecto (normas de Mojang). Ver «Rangos: comandos
+  y permisos» abajo: **el dueño tiene que dar esos permisos en LuckPerms**.
+- `pages.py` necesita **Python 3.12** (usa barras invertidas dentro de f-strings): `python3.12 tools/pages.py`.
+
+**Mod 1.3.9** (además de lo del checkpoint):
+- Revisadas las **759 armas y objetos de mano** en el personaje (`tools/review/hands.cjs` + `hsheet.py`) y los **52
+  cascos y sombreros** de frente y de perfil (`tools/review/heads.cjs` + `headsheet.py`, nuevos). Los cascos están
+  todos bien colocados. En las armas, casi todo es como lo diseñó cada pack (las ballestas, por ejemplo, se llevan
+  verticales por la empuñadura), con estos fallos, ya corregidos:
+  - **Caña de pescar de Cyber** (`cyber_rod`): estaba registrada como espada (no pescaba y tenía pose de espada).
+    `item_type()` reconoce ahora `rod` como caña (con su modelo al lanzar, `rod_cast`). Se rehizo solo el set
+    `cyber` con `build_mod_items.py <packs> cyber`.
+  - **Ballestas de Eagle, Mecha y Pirata**: el pack las empujaba 10, 5 y 4,5 píxeles hacia delante y en tercera
+    persona colgaban a la altura de los pies. Regla nueva `tame_held()` (máximo 3 píxeles, `HELD_MAX_FORWARD`) para
+    las ballestas y sus modelos de carga; ya aplicada a los modelos actuales sin rehacer los sets.
+  - **Espadón de Dark World** (`bigsword`): tenía los combos de espada normal; ahora los de espadón (`claymore`).
+- `check_mod_items.py`: 0 errores. Mixins correctos. Compilado con Java 21.
+
+**Rangos: comandos y permisos** (lo que hay que dar en LuckPerms/EssentialsX para que sea verdad lo que dice la web;
+si algo no se va a dar, quitarlo de `RANK_SERVER_PERKS` en crates.py y regenerar):
+| Rango | Nuevo en este rango | Permisos (además de los del rango anterior) |
+| --- | --- | --- |
+| Mortal | 2 hogares, prefijo, rol de Discord | `essentials.sethome`, `essentials.home`, `essentials.sethome.multiple` + en `config.yml` de EssentialsX `sethome-multiple: {mortal: 2, inmortal: 3, magico: 5, eterno: 8, cosmico: 12, celestial: 20}` y `essentials.sethome.multiple.<grupo>` en cada grupo |
+| Inmortal | 3 hogares, `/hat` | `essentials.hat` |
+| Mágico | 5 hogares, `/fly` en el lobby, `/pp` | `essentials.fly` solo en el mundo del lobby (`lp group magico permission set essentials.fly true world=<lobby>`); plugin **PlayerParticles** con sus permisos |
+| Eterno | 8 hogares, `/nick` con colores, chat de colores | `essentials.nick`, `essentials.nick.color`, `essentials.chat.color` |
+| Cósmico | 12 hogares, `/ptime`, cola prioritaria | `essentials.ptime`; la cola depende del plugin de cola que use el servidor |
+| Celestial | 20 hogares, `/pweather`, aviso al entrar | `essentials.pweather`; el aviso de entrada necesita un plugin de mensajes por grupo |
+| Fantástico | hogares ilimitados, título propio, nombre dorado | `essentials.sethome.multiple.unlimited`; el título es un sufijo de LuckPerms que pone el staff (`lp user <jugador> meta setsuffix 100 "&6[Título]"`) |
+
+**Herramientas de revisión** (`tierras-fantasticas/tools/review/`; necesitan `node tools/preview.mjs` en el puerto
+8788 y se lanzan con `PW=$(npm root -g)/playwright node …`; no regeneres `public/wear/` mientras corren):
+- `backs.cjs <carpeta> backs.json` → perfil/espalda/3-4 de cada cosmético de espalda; `bsheet.py` → hojas.
+- `hands.cjs <carpeta> hands.json` → cada arma en la mano; `hsheet.py <carpeta> hands.json <prefijo> 6 5` → hojas.
+- `heads.cjs <carpeta> heads.json` → cada casco de frente y de perfil; `headsheet.py <carpeta> heads.json <prefijo>`.
+- `audit_hand.py` → auditoría de datos de los objetos de mano del mod.
+- `tf-client/tools/check_backs.py [--fix]` mide la separación de lo que va en la espalda.
+
+**Pendiente / ideas** (nada urgente): el dueño tiene que crear en LuckPerms los grupos de rango y los permisos de la
+tabla; Stripe sigue en pausa.
 
 ### Última entrega (7 de octubre de 2026, tarde): paleta de neón, fondo animado, alas revisadas y TF Client 1.3.8
 El dueño: *«las alas del fantástico quedan un poco separadas… revisa todas hasta los cosméticos… un libro está mal
@@ -161,7 +240,7 @@ IP `216.163.187.40:19001`) con +200 mods. Este repo tiene:
 | Carpeta | Qué es |
 | --- | --- |
 | `tierras-fantasticas/` | La web/tienda. Cloudflare Workers + D1 + archivos estáticos (`public/`). Dominio `tierrasfantásticas.store` = `https://xn--tierrasfantsticas-hpb.store`. |
-| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.5**. |
+| `tf-client/` | Mod Forge «TF Client» (va en el cliente y en el servidor): menú y pantalla de carga propios, puente con la web, objetos de los sets (crates), oficios (`/tf jobs`), tienda de monedas, ruleta (la de la web está retirada). Versión actual **1.3.9**. |
 | `wrangler.jsonc` | Configuración del Worker de Cloudflare (en la raíz a propósito). |
 | `.github/workflows/` | `tf-client.yml` compila el mod en cada push que toque `tf-client/` (artefacto `tfclient-jar`); `server-ping.yml` comprueba el servidor. |
 
@@ -180,7 +259,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.6**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.10**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
@@ -296,10 +375,10 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.8)
+## 5. El mod (TF Client 1.3.9)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
-  → `build/libs/tfclient-1.20.1-1.3.8.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
+  → `build/libs/tfclient-1.20.1-1.3.9.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`: Gradle descarga el JDK 17 solo.
 - Objetos de los sets (`items/TFTier.java`, `TFItems.create`, `TFItemTypes.Material`/`Armor`): cada set tiene su nivel
   (`tier` en `tf_sets.json`: `iron`, `diamond`, `netherite` o `netherite+N`). Crates +1 (desde la 1.3.5, decisión del
