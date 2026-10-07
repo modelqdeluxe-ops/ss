@@ -115,7 +115,36 @@ SETS = {
     'cardael': ('Cardael/Nexo Setup (TRIMS) 1.20-1.21.1/Nexo/pack/assets', 'plny_cardael_set', COMMON),
     'soulskull': ('SoulSkull/Nexo Setup (TRIMS) 1.20-1.21.1/Nexo/pack/assets', '3b_soul_skull',
                   COMMON + [('fishingrod', 'Caña de pescar')]),
+    # Cosméticos (pestaña «Cosméticos»: se venden por pieza; tipos y precios en tools/crates.py → COSMETICS)
+    'unicorncos': ('UnicornCos/ItemsAdder/contents/unicorn_cosmetics/resourcepack/assets', 'unicorn_cosmetics', [
+        ('unicorn_hat', 'Gorro de Unicornio'), ('unicorn_backpack', 'Mochila de Unicornio'),
+        ('unicorn_staff', 'Varita de Unicornio'), ('unicorn_balloon', 'Globo de Unicornio')], 'cosmetics/'),
+    'halloween23': ('Halloween23/Itemsadder Setup/ItemsAdder/contents/halloween23/resourcepack/assets', 'halloween23', [
+        ('pumpkin_warlock_hat', 'Sombrero del Brujo Calabaza'), ('pumpkin_warlock_backpack', 'Mochila del Brujo Calabaza'),
+        ('pumpkin_warlock_staff', 'Bastón del Brujo Calabaza'), ('pumpkin_warlock_balloon', 'Globo del Brujo Calabaza'),
+        ('spider_hat', 'Sombrero de Araña'), ('spider_legs_backpack', 'Patas de Araña'),
+        ('spider_scythe', 'Guadaña de Araña'), ('spider_balloon', 'Globo de Araña'),
+        ('undertaker_hat', 'Sombrero del Sepulturero'), ('undertaker_backpack', 'Ataúd del Sepulturero'),
+        ('undertaker_shovel', 'Pala del Sepulturero'), ('undertaker_balloon', 'Globo Zombi')]),
+    'cosmeticsv1': ('CosmeticsV1/ItemsAdder Configs/ItemsAdder/contents/cosmetic_packv1/resourcepack/assets', 'cosmetic_packv1', [
+        ('knight_hat', 'Yelmo de Caballero'), ('knight_backpack', 'Estandarte de Caballero'), ('knight_hand', 'Espada de Caballero'),
+        ('wizard_hat', 'Sombrero de Mago'), ('wizard_backpack', 'Caldero de Mago'), ('wizard_hand', 'Libro de Hechizos'),
+        ('ninja_hat', 'Capucha Ninja'), ('ninja_backpack', 'Mochila Ninja'), ('ninja_hand', 'Katanas Ninja'),
+        ('frozen_hat', 'Corona de Hielo'), ('frozen_backpack', 'Mochila de Hielo'), ('frozen_hand', 'Espada de Hielo'),
+        ('ender_hat', 'Sombrero del End'), ('ender_backpack', 'Mochila del End'), ('ender_hand', 'Orbe del End')]),
+    'halloweenbundle': ('HalloweenBundle/ItemsAdder/contents/lanshan_cos_halloween_1/resourcepack/assets', 'lanshan_cos_halloween_1', [
+        ('halloween_witch_hat', 'Sombrero de Bruja'), ('halloween_witch_cauldron', 'Caldero de Bruja'),
+        ('halloween_witch_broom', 'Escoba de Bruja'), ('halloween_ghost_balloon', 'Globo Fantasma'),
+        ('spooky_pumpkin_hat', 'Calabaza Tenebrosa'), ('spooky_pumpkin_wings', 'Alas de Calabaza'),
+        ('spooky_pumpkin_staff', 'Bastón de Calabaza'), ('spooky_pumpkin_balloon', 'Globo de Calabaza'),
+        ('candy_pumpkin_beret', 'Boina de Caramelo'), ('candy_pumpkin_backpack', 'Mochila de Caramelo'),
+        ('candy_pumpkin_basket', 'Cesta de Dulces'), ('candy_pumpkin_balloon', 'Globo de Caramelo')], 'item/'),
+    'springcos': ('Spring/Nexo Setup (TRIMS) 1.20-1.21.1/Nexo/pack/assets', 'plny_springset', [
+        ('wings', 'Alas de Primavera'), ('helmet', 'Corona de Primavera')]),
 }
+
+# Sets de cosméticos: solo las piezas de la lista (sin armadura aunque el pack la traiga)
+COSMETIC_SETS = ('unicorncos', 'halloween23', 'cosmeticsv1', 'halloweenbundle', 'springcos')
 
 THUMB = 256
 SS = 3
@@ -400,7 +429,8 @@ def build_set(packs, set_id):
             json.dump(out, fh, separators=(',', ':'))
         listing.append({'id': slug, 'name': label})
         print(f'  {set_id}/{slug}: {label}')
-    listing += build_armor(packs, set_id, out_models, out_thumbs)
+    if set_id not in COSMETIC_SETS:
+        listing += build_armor(packs, set_id, out_models, out_thumbs)
     return listing
 
 

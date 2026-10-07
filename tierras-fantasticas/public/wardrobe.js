@@ -124,12 +124,13 @@ function playerParts(slimLegacy) {
   };
 }
 
-// Brazo derecho levantado al sostener algo (ArmPose.ITEM)
+// Brazo levantado al sostener algo (ArmPose.ITEM); el izquierdo solo si lleva algo
 const POSE = { rightArm: [-18, 0, 0], leftArm: [0, 0, 0] };
+const POSE_HOLDING = { rightArm: [-18, 0, 0], leftArm: [-18, 0, 0] };
 
-function partPose(base, name, pivot) {
+function partPose(base, name, pivot, poses = POSE) {
   const p = base.clone().translate(pivot[0] / 16, pivot[1] / 16, pivot[2] / 16);
-  const r = POSE[name];
+  const r = poses[name];
   if (r) p.rotZ(r[2]).rotY(r[1]).rotX(r[0]);
   return p;
 }
@@ -155,14 +156,16 @@ const DEFAULT_HAND = {
   generated: { rotation: [0, 0, 0], translation: [0, 3, 1], scale: [0.55, 0.55, 0.55] },
   handheld: { rotation: [0, -90, 55], translation: [0, 4, 0.5], scale: [0.85, 0.85, 0.85] },
 };
-function applyDisplay(pose, t) {
+// left: mano izquierda (ItemTransform.apply la refleja: x, giro y y giro z cambian de signo)
+function applyDisplay(pose, t, left = false) {
   if (!t) return pose;
   const tr = t.translation || [0, 0, 0];
   const ro = t.rotation || [0, 0, 0];
   const sc = t.scale || [1, 1, 1];
   const clamp = (n) => Math.max(-80, Math.min(80, n)) / 16;
-  pose.translate(clamp(tr[0]), clamp(tr[1]), clamp(tr[2]));
-  pose.rotXYZ(ro[0], ro[1], ro[2]);
+  const m = left ? -1 : 1;
+  pose.translate(m * clamp(tr[0]), clamp(tr[1]), clamp(tr[2]));
+  pose.rotXYZ(ro[0], m * ro[1], m * ro[2]);
   pose.scale(sc[0], sc[1], sc[2]);
   return pose;
 }
@@ -178,7 +181,7 @@ async function itemMesh(model, pose, keep) {
   return mesh;
 }
 
-const HAND_TYPES = new Set(['sword', 'axe', 'heavy', 'pickaxe', 'shovel', 'hoe', 'bow', 'crossbow', 'fishing_rod', 'trident', 'shield']);
+const HAND_TYPES = new Set(['sword', 'axe', 'heavy', 'pickaxe', 'shovel', 'hoe', 'bow', 'crossbow', 'fishing_rod', 'trident', 'shield', 'held']);
 
 export function slotOf(item) {
   if (!item) return null;
@@ -186,7 +189,8 @@ export function slotOf(item) {
   // Los cascos cosméticos van en el hueco del casco, como en el juego: o uno o el otro.
   if (item.type === 'head') return 'helmet';
   if (item.type === 'back') return 'back';
-  if (item.type === 'shield') return 'offhand';
+  // Escudos y globos, en la mano izquierda
+  if (item.type === 'shield' || item.type === 'balloon') return 'offhand';
   if (HAND_TYPES.has(item.type)) return 'hand';
   return null;
 }
@@ -221,6 +225,13 @@ export function createWardrobe(canvas) {
   pivot.add(playerRoot, itemRoot);
 
   const state = { yaw: -0.45, pitch: 0.08, drag: null, idleAt: 0, raf: 0, anim: [], token: 0, mode: 'player', skin: null, skinTex: null };
+  // Puntos del personaje que se siguen en pantalla (nombre sobre la cabeza, sombra en los pies)
+  const anchors = { head: new THREE.Vector3(), feet: new THREE.Vector3(), cb: null, last: '' };
+  const project = (v) => {
+    const p = playerRoot.localToWorld(v.clone()).project(camera);
+    const r = canvas.getBoundingClientRect();
+    return { x: ((p.x + 1) / 2) * r.width, y: ((1 - p.y) / 2) * r.height };
+  };
 
   const resize = () => {
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -265,6 +276,16 @@ export function createWardrobe(canvas) {
     state.raf = requestAnimationFrame(loop);
     if (!state.drag && time - state.idleAt > 2500) state.yaw += 0.006;
     pivot.rotation.set(state.pitch, state.yaw, 0);
+    if (anchors.cb && state.mode === 'player' && playerRoot.children.length) {
+      pivot.updateMatrixWorld(true);
+      const head = project(anchors.head);
+      const feet = project(anchors.feet);
+      const key = `${head.x | 0},${head.y | 0},${feet.x | 0},${feet.y | 0}`;
+      if (key !== anchors.last) {
+        anchors.last = key;
+        anchors.cb({ head, feet });
+      }
+    }
     for (const t of state.anim) {
       if (!t.frames || t.frames.length < 2) continue;
       const i = Math.floor(time / t.frametime) % t.frames.length;
@@ -339,11 +360,16 @@ export function createWardrobe(canvas) {
     const base = new Pose().rotY(180).scale(-1, -1, 1).scale(0.9375, 0.9375, 0.9375).translate(0, -1.501, 0);
     const parts = playerParts(state.skin.legacy ? 'legacy' : 'wide');
     const poses = {};
+    const items0 = set.items;
+    const holding = outfit.offhand && items0[outfit.offhand]?.model ? POSE_HOLDING : POSE;
     for (const [name, part] of Object.entries(parts)) {
-      poses[name] = partPose(base, name, part.pivot);
+      poses[name] = partPose(base, name, part.pivot, holding);
       group.add(partMesh(part.cubes, state.skin.tex, poses[name].m, 64, state.skin.legacy ? 32 : 64));
     }
     const items = set.items;
+    // Encima de la cabeza (donde Minecraft pone el nombre) y entre los pies
+    anchors.head.setFromMatrixPosition(poses.head.clone().translate(0, -0.95, 0).m);
+    anchors.feet.setFromMatrixPosition(base.clone().translate(0, 1.5, 0).m);
     // Armadura
     for (const [slot, piece] of Object.entries(ARMOR_PIECES)) {
       if (!outfit[slot] || set.items[outfit[slot]]?.type !== 'armor' || !set.armor[piece.layer]) continue;
@@ -365,6 +391,14 @@ export function createWardrobe(canvas) {
       const p = poses.rightArm.clone().rotX(-90).rotY(180).translate(1 / 16, 0.125, -0.625);
       const t = model.display.thirdperson_righthand || (model.elements ? null : DEFAULT_HAND.handheld);
       group.add(await itemMesh(model, applyDisplay(p, t), keep));
+    }
+    // Mano izquierda: escudos y globos
+    const offSlug = outfit.offhand;
+    if (offSlug && items[offSlug]?.model) {
+      const model = items[offSlug].model;
+      const p = poses.leftArm.clone().rotX(-90).rotY(180).translate(-1 / 16, 0.125, -0.625);
+      const t = model.display.thirdperson_lefthand || model.display.thirdperson_righthand || (model.elements ? null : DEFAULT_HAND.handheld);
+      group.add(await itemMesh(model, applyDisplay(p, t, true), keep));
     }
     // Cabeza (CustomHeadLayer)
     const headSlug = items[outfit.helmet]?.type === 'head' ? outfit.helmet : null;
@@ -431,6 +465,11 @@ export function createWardrobe(canvas) {
   return {
     showPlayer,
     showItem,
+    /** Llama a cb({ head, feet }) con la posición en el lienzo (px) de esos puntos cuando cambian. */
+    onAnchors(cb) {
+      anchors.cb = cb;
+      anchors.last = '';
+    },
     /** Mira desde un ángulo fijo (sin girar solo). */
     setView(yaw, pitch = 0.08) {
       state.yaw = yaw;

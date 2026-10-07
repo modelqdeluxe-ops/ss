@@ -72,7 +72,8 @@ public final class TFItemTypes {
     static void tooltip(Item item, List<Component> tooltip) {
         TFSets.SetDef set = SET_OF.get(item);
         if (set == null) return;
-        tooltip.add(Component.literal("Set " + set.name()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(set.color()))));
+        String label = set.name().startsWith("Cosméticos") ? set.name() : "Set " + set.name();
+        tooltip.add(Component.literal(label).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(set.color()))));
         tooltip.add(Component.literal("Tierras Fantásticas").withStyle(ChatFormatting.DARK_GRAY));
     }
 
@@ -311,6 +312,28 @@ public final class TFItemTypes {
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
             tooltip.add(Component.literal(slot == EquipmentSlot.HEAD ? "Cosmético · cabeza" : "Cosmético · espalda")
+                    .withStyle(ChatFormatting.GRAY));
+            tooltip(this, tooltip);
+        }
+    }
+
+    /** Cosmético que se lleva en la mano (bastones, cestas, globos...): no es un arma ni da atributos. */
+    public static class Held extends Item {
+        private final boolean balloon;
+
+        public Held(boolean balloon, Properties p) {
+            super(p);
+            this.balloon = balloon;
+        }
+
+        @Override
+        public Component getName(ItemStack stack) {
+            return name(this, super.getName(stack));
+        }
+
+        @Override
+        public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+            tooltip.add(Component.literal(balloon ? "Cosmético · globo (en la mano)" : "Cosmético · en la mano")
                     .withStyle(ChatFormatting.GRAY));
             tooltip(this, tooltip);
         }

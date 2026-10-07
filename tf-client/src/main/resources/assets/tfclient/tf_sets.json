@@ -4704,6 +4704,239 @@
     }
    ],
    "tier": "netherite+1"
+  },
+  {
+   "id": "halloween23",
+   "name": "Cosméticos Halloween",
+   "color": "#f97316",
+   "tier": "netherite",
+   "items": [
+    {
+     "id": "halloween23_pumpkin_warlock_hat",
+     "type": "head"
+    },
+    {
+     "id": "halloween23_pumpkin_warlock_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/halloween23/pumpkin_warlock_backpack_worn"
+    },
+    {
+     "id": "halloween23_pumpkin_warlock_staff",
+     "type": "held"
+    },
+    {
+     "id": "halloween23_pumpkin_warlock_balloon",
+     "type": "balloon"
+    },
+    {
+     "id": "halloween23_spider_hat",
+     "type": "head"
+    },
+    {
+     "id": "halloween23_spider_legs_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/halloween23/spider_legs_backpack_worn"
+    },
+    {
+     "id": "halloween23_spider_scythe",
+     "type": "held"
+    },
+    {
+     "id": "halloween23_spider_balloon",
+     "type": "balloon"
+    },
+    {
+     "id": "halloween23_undertaker_hat",
+     "type": "head"
+    },
+    {
+     "id": "halloween23_undertaker_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/halloween23/undertaker_backpack_worn"
+    },
+    {
+     "id": "halloween23_undertaker_shovel",
+     "type": "held"
+    },
+    {
+     "id": "halloween23_undertaker_balloon",
+     "type": "balloon"
+    }
+   ]
+  },
+  {
+   "id": "halloweenbundle",
+   "name": "Cosméticos Halloween",
+   "color": "#8b5cf6",
+   "tier": "netherite",
+   "items": [
+    {
+     "id": "halloweenbundle_halloween_witch_hat",
+     "type": "head"
+    },
+    {
+     "id": "halloweenbundle_halloween_witch_cauldron",
+     "type": "back",
+     "worn": "tfclient:item/sets/halloweenbundle/halloween_witch_cauldron_worn"
+    },
+    {
+     "id": "halloweenbundle_halloween_witch_broom",
+     "type": "held"
+    },
+    {
+     "id": "halloweenbundle_halloween_ghost_balloon",
+     "type": "balloon"
+    },
+    {
+     "id": "halloweenbundle_spooky_pumpkin_hat",
+     "type": "head"
+    },
+    {
+     "id": "halloweenbundle_spooky_pumpkin_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/halloweenbundle/spooky_pumpkin_wings_worn"
+    },
+    {
+     "id": "halloweenbundle_spooky_pumpkin_staff",
+     "type": "held"
+    },
+    {
+     "id": "halloweenbundle_spooky_pumpkin_balloon",
+     "type": "balloon"
+    },
+    {
+     "id": "halloweenbundle_candy_pumpkin_beret",
+     "type": "head"
+    },
+    {
+     "id": "halloweenbundle_candy_pumpkin_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/halloweenbundle/candy_pumpkin_backpack_worn"
+    },
+    {
+     "id": "halloweenbundle_candy_pumpkin_basket",
+     "type": "held"
+    },
+    {
+     "id": "halloweenbundle_candy_pumpkin_balloon",
+     "type": "balloon"
+    }
+   ]
+  },
+  {
+   "id": "cosmeticsv1",
+   "name": "Cosméticos Aventura",
+   "color": "#3b82f6",
+   "tier": "netherite",
+   "items": [
+    {
+     "id": "cosmeticsv1_knight_hat",
+     "type": "head"
+    },
+    {
+     "id": "cosmeticsv1_knight_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/cosmeticsv1/knight_backpack_worn"
+    },
+    {
+     "id": "cosmeticsv1_knight_hand",
+     "type": "held"
+    },
+    {
+     "id": "cosmeticsv1_wizard_hat",
+     "type": "head"
+    },
+    {
+     "id": "cosmeticsv1_wizard_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/cosmeticsv1/wizard_backpack_worn"
+    },
+    {
+     "id": "cosmeticsv1_wizard_hand",
+     "type": "held"
+    },
+    {
+     "id": "cosmeticsv1_ninja_hat",
+     "type": "head"
+    },
+    {
+     "id": "cosmeticsv1_ninja_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/cosmeticsv1/ninja_backpack_worn"
+    },
+    {
+     "id": "cosmeticsv1_ninja_hand",
+     "type": "held"
+    },
+    {
+     "id": "cosmeticsv1_frozen_hat",
+     "type": "head"
+    },
+    {
+     "id": "cosmeticsv1_frozen_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/cosmeticsv1/frozen_backpack_worn"
+    },
+    {
+     "id": "cosmeticsv1_frozen_hand",
+     "type": "held"
+    },
+    {
+     "id": "cosmeticsv1_ender_hat",
+     "type": "head"
+    },
+    {
+     "id": "cosmeticsv1_ender_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/cosmeticsv1/ender_backpack_worn"
+    },
+    {
+     "id": "cosmeticsv1_ender_hand",
+     "type": "held"
+    }
+   ]
+  },
+  {
+   "id": "unicorncos",
+   "name": "Cosméticos Unicornio",
+   "color": "#ec4899",
+   "tier": "netherite",
+   "items": [
+    {
+     "id": "unicorncos_unicorn_hat",
+     "type": "head"
+    },
+    {
+     "id": "unicorncos_unicorn_backpack",
+     "type": "back",
+     "worn": "tfclient:item/sets/unicorncos/unicorn_backpack_worn"
+    },
+    {
+     "id": "unicorncos_unicorn_staff",
+     "type": "held"
+    },
+    {
+     "id": "unicorncos_unicorn_balloon",
+     "type": "balloon"
+    }
+   ]
+  },
+  {
+   "id": "springcos",
+   "name": "Cosméticos Primavera",
+   "color": "#f43f5e",
+   "tier": "netherite",
+   "items": [
+    {
+     "id": "springcos_wings",
+     "type": "back",
+     "worn": "tfclient:item/sets/springcos/wings_worn"
+    },
+    {
+     "id": "springcos_helmet",
+     "type": "head"
+    }
+   ]
   }
  ]
 }

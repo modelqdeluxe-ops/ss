@@ -84,7 +84,8 @@ cuenta por ti. Si un menor compró sin permiso, escríbenos y lo resolvemos (ver
 
     ('que-compras', 'Qué compras', '''
 <p>Lo que se vende en la tienda es <b>contenido digital para usar dentro de Tierras Fantásticas</b>: rangos (prefijo con
-color, rol de Discord y un set completo) y crates (sets completos con armas, herramientas, armadura y cosméticos). Al
+color, rol de Discord y un set completo), cosméticos (piezas de aspecto: sombreros, mochilas, alas, globos y objetos de
+mano, que no cambian nada más) y crates (sets completos con armas, herramientas, armadura y cosméticos). Al
 comprar recibes un permiso de uso personal dentro del servidor:</p>
 <ul>
   <li>No es dinero, no tiene valor fuera del servidor y no se puede cambiar por dinero, revender ni pasar a otro

@@ -117,11 +117,78 @@ RANKS = [
 ]
 
 
+# Cosméticos: se venden por pieza en la pestaña «Cosméticos» (no dan atributos). Por set: colección, colores y temas;
+# cada tema: (nombre, [(pieza, tipo, precio en céntimos)]). Tipos: head (cabeza), back (espalda), held (en la mano) y
+# balloon (globo en la mano).
+COSMETICS = {
+    'halloween23': ('Halloween', ('#fdba74', '#f97316'), [
+        ('Brujo Calabaza', [('pumpkin_warlock_hat', 'head', 199), ('pumpkin_warlock_backpack', 'back', 249),
+                            ('pumpkin_warlock_staff', 'held', 149), ('pumpkin_warlock_balloon', 'balloon', 99)]),
+        ('Araña', [('spider_hat', 'head', 199), ('spider_legs_backpack', 'back', 249),
+                   ('spider_scythe', 'held', 149), ('spider_balloon', 'balloon', 99)]),
+        ('Sepulturero', [('undertaker_hat', 'head', 199), ('undertaker_backpack', 'back', 249),
+                         ('undertaker_shovel', 'held', 149), ('undertaker_balloon', 'balloon', 99)]),
+    ]),
+    'halloweenbundle': ('Halloween', ('#c4b5fd', '#8b5cf6'), [
+        ('Bruja', [('halloween_witch_hat', 'head', 199), ('halloween_witch_cauldron', 'back', 249),
+                   ('halloween_witch_broom', 'held', 149), ('halloween_ghost_balloon', 'balloon', 99)]),
+        ('Calabaza Tenebrosa', [('spooky_pumpkin_hat', 'head', 199), ('spooky_pumpkin_wings', 'back', 299),
+                                ('spooky_pumpkin_staff', 'held', 149), ('spooky_pumpkin_balloon', 'balloon', 99)]),
+        ('Caramelo', [('candy_pumpkin_beret', 'head', 199), ('candy_pumpkin_backpack', 'back', 249),
+                      ('candy_pumpkin_basket', 'held', 149), ('candy_pumpkin_balloon', 'balloon', 99)]),
+    ]),
+    'cosmeticsv1': ('Aventura', ('#93c5fd', '#3b82f6'), [
+        ('Caballero', [('knight_hat', 'head', 199), ('knight_backpack', 'back', 249), ('knight_hand', 'held', 149)]),
+        ('Mago', [('wizard_hat', 'head', 199), ('wizard_backpack', 'back', 249), ('wizard_hand', 'held', 149)]),
+        ('Ninja', [('ninja_hat', 'head', 199), ('ninja_backpack', 'back', 249), ('ninja_hand', 'held', 149)]),
+        ('Hielo', [('frozen_hat', 'head', 199), ('frozen_backpack', 'back', 249), ('frozen_hand', 'held', 149)]),
+        ('End', [('ender_hat', 'head', 199), ('ender_backpack', 'back', 249), ('ender_hand', 'held', 149)]),
+    ]),
+    'unicorncos': ('Unicornio', ('#fbcfe8', '#ec4899'), [
+        ('Unicornio', [('unicorn_hat', 'head', 199), ('unicorn_backpack', 'back', 249),
+                       ('unicorn_staff', 'held', 149), ('unicorn_balloon', 'balloon', 99)]),
+    ]),
+    'springcos': ('Primavera', ('#fda4af', '#f43f5e'), [
+        ('Primavera', [('helmet', 'head', 199), ('wings', 'back', 299)]),
+    ]),
+}
+
+
+def cosmetic_type(set_id, slug):
+    for _theme, pieces in COSMETICS.get(set_id, ('', '', []))[2]:
+        for piece, kind, _price in pieces:
+            if piece == slug:
+                return kind
+    return None
+
+
+def cosmetic_products():
+    out = []
+    for set_id, (collection, (c1, c2), themes) in COSMETICS.items():
+        names = {m['id']: m['name'] for m in listing(set_id)}
+        for theme, pieces in themes:
+            for piece, kind, price in pieces:
+                if piece not in names:
+                    raise SystemExit(f'falta el cosmético {set_id}/{piece} (ejecuta build_items.py)')
+                where = {'head': 'en la cabeza', 'back': 'en la espalda', 'held': 'en la mano',
+                         'balloon': 'flotando sobre ti (lo llevas en la mano)'}[kind]
+                out.append({
+                    'id': f'cos-{set_id}-{piece}'.replace('_', '-'), 'category': 'cosmeticos', 'name': names[piece],
+                    'description': f'Cosmético animado que se lleva {where}, de la colección {theme}. Solo cambia tu aspecto.',
+                    'collection': collection, 'theme': theme, 'slot': kind, 'price': price, 'maxQuantity': 1,
+                    'colors': [c1, c2], 'set': set_id, 'item': piece, 'image': f'img/items/{set_id}/{piece}.webp',
+                    'commands': [f'tf web sets give {{player}} {set_id} {piece}'],
+                })
+    return out
+
+
 def mod_sets():
     """Sets que registra el TF Client: los de las crates, los de los rangos y el de la ruleta, con su nivel."""
     out = [{'id': r[0], 'name': r[1].replace('Crate ', ''), 'color': r[7][1], 'tier': CRATE_TIER} for r in CRATES]
     out += [{'id': set_id, 'name': set_name, 'color': hexc, 'tier': tier} for _k, _n, set_id, set_name, _p, (_c, hexc), tier in RANKS]
     out.append({'id': ROULETTE_ROW[0], 'name': ROULETTE_ROW[1], 'color': ROULETTE_ROW[7][1], 'tier': CRATE_TIER})
+    out += [{'id': set_id, 'name': f'Cosméticos {coll}', 'color': c2, 'tier': 'netherite'}
+            for set_id, (coll, (_c1, c2), _themes) in COSMETICS.items()]
     return out
 
 
@@ -131,21 +198,45 @@ def lighten(hexc, k=0.45):
     return '#' + ''.join(f'{round(c + (255 - c) * k):02x}' for c in rgb)
 
 
+# Lo que cuenta cada rango en la tienda (sin nombrar el set: el dueño no quiere que se vea el nombre del kit)
+RANK_PITCH = {
+    'mortal': ('Tu leyenda empieza aquí',
+               'El primer paso del reino: tu nombre con color y un equipo completo para salir a la aventura desde el primer día.'),
+    'inmortal': ('Más fuerte que la muerte',
+                 'Un equipo de neón que late al ritmo de la batalla y un prefijo que todo el servidor va a reconocer.'),
+    'magico': ('Domina la magia oscura',
+               'Armas envueltas en energía arcana, armadura sombría y alas violetas que se ven desde lejos.'),
+    'eterno': ('Forjado en fuego eterno',
+               'Acero, fuego y alas en llamas: el equipo de quienes no piensan rendirse nunca.'),
+    'cosmico': ('Más allá de las estrellas',
+                'Armadura de guerrero demonio, armas de otro mundo y unas alas oscuras coronadas por un aro carmesí.'),
+    'celestial': ('Bendecido por los cielos',
+                  'Oro y luz de las constelaciones: el equipo de los elegidos, con alas blancas que brillan de verdad.'),
+    'fantastico': ('La cima de Tierras Fantásticas',
+                   'El rango más alto del reino. Oro y sombra, alas majestuosas y el equipo más espectacular del servidor.'),
+}
+
+
 def rank_products():
     out = []
-    for tier, (key, name, set_id, set_name, price, (mc, hexc), _attrs) in enumerate(RANKS, 1):
+    for tier, (key, name, set_id, _set_name, price, (mc, hexc), _attrs) in enumerate(RANKS, 1):
         models = listing(set_id)
+        tagline, pitch = RANK_PITCH[key]
+        has = lambda pred: any(pred(m['id']) for m in models)  # noqa: E731
+        armor = has(lambda i: i.startswith('armor_'))
+        wings = has(lambda i: i in ('wings', 'wing'))
+        pieces = f'Set completo de {len(models)} piezas: armas, herramientas' + (', armadura' if armor else '') + \
+            (' y alas animadas' if wings else ' animadas')
         out.append({
-            'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}',
-            'description': f'Prefijo «{name}» en tu nombre y el set {set_name} completo: armas, herramientas, armadura y cosméticos.',
+            'id': f'rango-{key}', 'category': 'rangos', 'name': f'Rango {name}', 'tagline': tagline,
+            'description': pitch,
             'price': price, 'maxQuantity': 1, 'discordRoles': [f'ID_ROL_{key.upper()}'],
             'commands': [f'lp user {{player}} parent add {key}', f'tf web sets give {{player}} {set_id}'],
             'image': f'img/crates/{set_id}.webp', 'tier': tier, 'colors': [lighten(hexc), hexc],
             'set': set_id, 'models': models,
-            'perks': [f'Prefijo «{name}» en el chat y sobre tu nombre', f'Set {set_name} completo ({len(models)} objetos)',
-                      f'Rol {name} en Discord'],
-            'specs': {'Prefijo en el chat': name, 'Set incluido': set_name, 'Objetos del set': str(len(models)),
-                      'Rol en Discord': True},
+            'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces, f'Rol {name} en Discord'],
+            'specs': {'Prefijo en el chat': name, 'Piezas del set': str(len(models)), 'Armadura completa': armor,
+                      'Alas animadas': wings, 'Rol en Discord': True},
             'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc},
         })
     return out
@@ -245,12 +336,13 @@ def main():
             'commands': [],
         })
     gifts = [x for x in data if x['category'] == 'gratis']
+    cosmetics = cosmetic_products()
     ranks = rank_products()
-    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta') + RETIRED]
+    rest = [x for x in data if x['category'] not in ('rangos', 'crates', 'gratis', 'ruleta', 'cosmeticos') + RETIRED]
     with open(PRODUCTS, 'w', encoding='utf-8') as fh:
-        json.dump(gifts + ranks + crates + roulette + rest, fh, ensure_ascii=False, indent=2)
+        json.dump(gifts + ranks + crates + cosmetics + roulette + rest, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
-    print(len(ranks), 'rangos,', len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
+    print(len(ranks), 'rangos,', len(cosmetics), 'cosméticos,', len(crates), 'crates,', sum(len(c['models']) for c in crates), 'objetos;',
           f'ruleta con {len(weapons)} armas' if ROULETTE_ENABLED else 'ruleta retirada')
 
 

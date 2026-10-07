@@ -191,7 +191,7 @@
 
   // --- Productos ---
   const CATEGORY_LABEL = {
-    gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro',
+    gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro', cosmeticos: 'Cosmético',
   };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
@@ -362,7 +362,7 @@
   }
 
   function rerenderRanks() {
-    if (page === 'tienda' && currentCategory === 'rangos' && me.user?.rank) selectCategory('rangos', false);
+    if (page === 'tienda' && currentCategory === 'rangos' && me.user?.rank) showRank(rankShow.current?.id);
   }
 
   function renderCompare() {
@@ -379,7 +379,7 @@
       <table>
         <caption class="sr-only">Comparativa de rangos</caption>
         <thead><tr><th scope="col">Ventaja</th>${list
-          .map((p) => `<th scope="col">${p.image ? img(p.image, '', '', ' width="44" height="44"') : ''}${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</th>`)
+          .map((p) => `<th scope="col"${rankAttr(p)}><i class="rk-gem" aria-hidden="true"></i>${escapeHtml(p.name.replace(/^Rango\s+/i, ''))}</th>`)
           .join('')}</tr></thead>
         <tbody>${rows
           .map((r) => `<tr><th scope="row">${escapeHtml(r)}</th>${list.map((p) => `<td>${cell(p.specs[r])}</td>`).join('')}</tr>`)
@@ -391,7 +391,8 @@
 
   const INTRO = {
     gratis: 'Recompensas que puedes reclamar gratis con tu cuenta, una vez por jugador.',
-    rangos: 'Cada rango trae su prefijo con color y un set completo: armas, herramientas, armadura y cosméticos animados. Toca la imagen para probártelo. Si ya tienes un rango, mejorar cuesta solo la diferencia.',
+    rangos: '',
+    cosmeticos: '',
     crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Toca una para probártela en tu personaje.',
     ruleta: '',
     monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
@@ -422,21 +423,22 @@
     const fromHash = () => {
       const h = decodeURIComponent(location.hash.slice(1));
       if (h.startsWith('crates-')) return { cat: 'crates', crate: h.slice(7) };
-      if (h.startsWith('rangos-')) return { cat: 'rangos', crate: `rango-${h.slice(7)}` };
+      if (h.startsWith('rangos-')) return { cat: 'rangos', rank: `rango-${h.slice(7)}` };
       return tabs.some((t) => t.dataset.category === h && !t.hidden) ? { cat: h } : null;
     };
     const start = fromHash() || { cat: 'crates' };
-    selectCategory(start.cat, false);
+    selectCategory(start.cat, false, start.rank);
     if (start.crate) openCrateView(start.crate);
     window.addEventListener('hashchange', () => {
       const h = fromHash();
       if (!h) return;
-      if (h.cat !== currentCategory) selectCategory(h.cat, false);
+      if (h.cat !== currentCategory) selectCategory(h.cat, false, h.rank);
+      else if (h.rank) showRank(h.rank);
       if (h.crate) openCrateView(h.crate);
     });
   }
 
-  function selectCategory(category, updateUrl) {
+  function selectCategory(category, updateUrl, focus) {
     currentCategory = category;
     for (const tab of $$('#shop-tabs [role="tab"]')) {
       const active = tab.dataset.category === category;
@@ -445,6 +447,7 @@
       if (active) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
     clearInterval(coinShopTimer);
+    closeStages();
     const box = $('#products');
     box.className = 'products';
     $('#shop-intro').textContent = INTRO[category] || '';
@@ -461,6 +464,11 @@
     } else if (category === 'tiendamonedas') {
       renderCoinShop(box);
       coinShopTimer = setInterval(() => renderCoinShop(box, true), 15000);
+    } else if (category === 'rangos') {
+      renderRanks(box, focus);
+      renderCompare();
+    } else if (category === 'cosmeticos') {
+      renderCosmetics(box);
     } else {
       box.classList.add('grid', 'grid-3');
       const list = products.filter((p) => p.category === category);
@@ -625,7 +633,6 @@
           <h2>Tienda de monedas</h2>
           <p class="muted">Objetos del servidor que se pagan con las monedas que ganas jugando.</p>
         </div>
-        <span class="live-badge"><span class="dot online"></span>Actualizado en vivo desde el servidor</span>
       </div>
       ${
         items.length
@@ -649,6 +656,303 @@
       const pic = $('img', icon);
       if (!pic) letter();
       else pic.addEventListener('error', letter, { once: true });
+    }
+  }
+
+  // --- Escaparates 3D: el personaje con la skin del jugador y lo que se vende puesto (rangos y cosméticos) ---
+  const stages = [];
+  let wardrobeLib = null;
+  const loadWear = (set) => (wearCache[set] ||= fetch(`/wear/${set}.json`).then((r) => r.json()));
+  const skinName = () => storageGet('tf-skin') || me.user?.name || storageGet('tf-username') || '';
+  function closeStages() {
+    while (stages.length) stages.pop().destroy();
+  }
+  async function makeStage(canvas) {
+    wardrobeLib ||= await import('/wardrobe.js');
+    const w = wardrobeLib.createWardrobe(canvas);
+    stages.push(w);
+    return w;
+  }
+  // Campo «Skin de»: cambia la skin del escaparate al dejar de escribir
+  function bindSkin(input, redraw) {
+    let t = null;
+    input.value = skinName();
+    input.addEventListener('input', () => {
+      clearTimeout(t);
+      const v = input.value.trim();
+      t = setTimeout(() => {
+        if (!v || /^[A-Za-z0-9_]{3,16}$/.test(v)) {
+          storageSet('tf-skin', v);
+          redraw();
+        }
+      }, 600);
+    });
+  }
+  // El nombre sigue a la cabeza y la sombra a los pies (variables CSS del escenario)
+  function followAnchors(w, stage) {
+    w.onAnchors(({ head, feet }) => {
+      stage.style.setProperty('--head-x', `${head.x.toFixed(1)}px`);
+      stage.style.setProperty('--head-y', `${head.y.toFixed(1)}px`);
+      stage.style.setProperty('--feet-x', `${feet.x.toFixed(1)}px`);
+      stage.style.setProperty('--feet-y', `${feet.y.toFixed(1)}px`);
+      stage.classList.add('anchored');
+    });
+  }
+  const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+  const rankVars = (p) => {
+    const hex = p.rank?.hex || '#4ade80';
+    const n = Number.parseInt(hex.slice(1), 16);
+    return `--rk:${hex};--rk2:${p.colors?.[0] || hex};--rk3:rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, 0.3)`;
+  };
+
+  // Rangos: la escalera de rangos arriba; el personaje con el set del rango puesto y lo que incluye al lado
+  const rankShow = { current: null, wardrobe: null, token: 0 };
+  function renderRanks(box, focus) {
+    const list = ranks();
+    if (!list.length) {
+      box.innerHTML = '<p class="loading">No hay rangos ahora mismo.</p>';
+      return;
+    }
+    box.className = 'products rank-shop';
+    box.innerHTML = `
+      <nav class="rk-ladder" aria-label="Rangos, de menor a mayor">${list
+        .map(
+          (p) => `<button type="button" class="rk-step" data-rank="${escapeHtml(p.id)}" style="${rankVars(p)}" aria-pressed="false">
+            <i class="rk-gem" aria-hidden="true"></i>
+            <span class="rk-step-name">${escapeHtml(p.rank?.prefix || p.name)}</span>
+            <span class="rk-step-price">${formatPrice(p.price)}</span>
+          </button>`,
+        )
+        .join('')}</nav>
+      <article class="rk-show" id="rk-show">
+        <div class="rk-stage">
+          <span class="rk-aura" aria-hidden="true"></span>
+          <span class="rk-floor" aria-hidden="true"></span>
+          <canvas aria-label="Tu personaje con el set del rango puesto"></canvas>
+          <div class="rk-nametag" aria-hidden="true"><b class="rk-tag-prefix"></b><span class="rk-tag-name"></span></div>
+          <p class="viewer-status" id="rk-status">Cargando…</p>
+          <label class="cv-skin rk-skin"><span>Skin de</span><input id="rk-skin" maxlength="16" spellcheck="false" autocomplete="off" placeholder="Tu skin"></label>
+          <span class="rk-drag">Arrastra para girar</span>
+        </div>
+        <div class="rk-info" id="rk-info"></div>
+      </article>`;
+    $$('.rk-step', box).forEach((b) => b.addEventListener('click', () => showRank(b.dataset.rank, true)));
+    makeStage($('.rk-stage canvas', box)).then((w) => {
+      rankShow.wardrobe = w;
+      followAnchors(w, $('.rk-stage', box));
+      bindSkin($('#rk-skin', box), () => drawRank());
+      drawRank();
+    }).catch((err) => {
+      console.error(err);
+      $('#rk-status').textContent = 'No se pudo cargar el escaparate 3D en este navegador.';
+    });
+    const first = list.find((p) => p.id === focus) || list.find((p) => p.id === rankShow.current?.id) || list[list.length - 1];
+    showRank(first.id);
+  }
+
+  function showRank(id, updateUrl) {
+    const p = ranks().find((x) => x.id === id);
+    const show = $('#rk-show');
+    if (!p || !show) return;
+    rankShow.current = p;
+    const all = ranks();
+    const n = all.indexOf(p) + 1;
+    show.setAttribute('style', rankVars(p));
+    for (const b of $$('.rk-step')) b.setAttribute('aria-pressed', String(b.dataset.rank === p.id));
+    const prefix = p.rank?.prefix || p.name.replace(/^Rango\s+/i, '');
+    const who = skinName() || 'Tú';
+    $('.rk-tag-prefix', show).textContent = `[${prefix}]`;
+    $('.rk-tag-name', show).textContent = who;
+    const q = ownedQuote(p);
+    const mine = q?.owned && me.user?.rank?.id === p.id;
+    const buy = q?.owned
+      ? `<div class="rk-price"><span class="rk-price-main">${mine ? 'Tu rango' : 'Incluido'}</span></div><button class="btn btn-ghost btn-lg" type="button" disabled>${mine ? ICON_CHECK + ' Ya lo tienes' : 'Ya tienes uno mayor'}</button>`
+      : `<div class="rk-price">${q ? `<small>Mejora desde tu rango · antes ${formatPrice(p.price)}</small>` : '<small>Pago único · para siempre</small>'}<span class="rk-price-main">${formatPrice(q ? q.unit : p.price)}</span></div>
+         <button class="btn btn-rank btn-lg" type="button" ${buyAttrs(p)}>${q ? 'Mejorar a ' : 'Conseguir '}${escapeHtml(prefix)}</button>`;
+    const pieces = (p.models || []).slice(0, 14);
+    $('#rk-info').innerHTML = `
+      <div class="rk-anim">
+        <span class="rk-tier">Rango ${n} de ${all.length}${n === all.length ? ' · el más alto' : ''}</span>
+        <h2 class="rk-name">${escapeHtml(prefix)}</h2>
+        <p class="rk-tagline">${escapeHtml(p.tagline || '')}</p>
+        <p class="rk-pitch">${escapeHtml(p.description || '')}</p>
+        <div class="rk-chat" aria-label="Así se ve tu nombre en el chat"><span class="rk-chat-prefix">[${escapeHtml(prefix)}]</span> <span class="rk-chat-name">${escapeHtml(who)}</span><span class="rk-chat-msg">: ¡Hola, reino!</span></div>
+        <ul class="rk-perks">${(p.perks || []).map((x) => `<li>${ICON_CHECK}<span>${escapeHtml(x)}</span></li>`).join('')}
+          <li>${ICON_CHECK}<span>Llega al instante a tu cuenta del servidor</span></li></ul>
+        <div class="rk-pieces" aria-label="Piezas del set">${pieces
+          .map((m) => `<span class="rk-piece" title="${escapeHtml(m.name)}">${img(thumbOf(p.set, m.id), m.name, '', ' width="44" height="44"')}</span>`)
+          .join('')}${(p.models || []).length > pieces.length ? `<span class="rk-more">+${p.models.length - pieces.length}</span>` : ''}</div>
+        <div class="rk-buy">${buy}</div>
+      </div>`;
+    if (updateUrl) history.replaceState(null, '', `#${p.id.replace(/^rango-/, 'rangos-')}`);
+    drawRank();
+  }
+
+  async function drawRank() {
+    const p = rankShow.current;
+    const w = rankShow.wardrobe;
+    if (!p || !w) return;
+    const token = ++rankShow.token;
+    const status = $('#rk-status');
+    status.hidden = false;
+    status.textContent = 'Poniéndote el set…';
+    try {
+      const set = await loadWear(p.set);
+      if (token !== rankShow.token) return;
+      await w.showPlayer(set, wardrobeLib.defaultOutfit(set), skinName());
+      if (token === rankShow.token) status.hidden = true;
+    } catch (err) {
+      console.error(err);
+      if (token === rankShow.token) status.textContent = 'No se pudo cargar el set.';
+    }
+  }
+
+  // Cosméticos: el personaje con los cosméticos puestos; se combinan piezas de cualquier colección
+  const SLOT_OF = { head: 'helmet', back: 'back', held: 'hand', balloon: 'offhand' };
+  const SLOT_LABEL = { head: 'Cabeza', back: 'Espalda', held: 'En la mano', balloon: 'Globo' };
+  const cosShow = { wardrobe: null, outfit: {}, selected: null, filter: 'Todos', token: 0 };
+  const cosmetics = () => products.filter((p) => p.category === 'cosmeticos');
+  function renderCosmetics(box) {
+    const list = cosmetics();
+    if (!list.length) {
+      box.innerHTML = '<p class="loading">No hay cosméticos ahora mismo.</p>';
+      return;
+    }
+    const collections = ['Todos', ...new Set(list.map((p) => p.collection))];
+    const themes = [];
+    for (const p of list) {
+      const key = `${p.collection}·${p.theme}`;
+      let t = themes.find((x) => x.key === key);
+      if (!t) themes.push((t = { key, name: p.theme, collection: p.collection, items: [] }));
+      t.items.push(p);
+    }
+    box.className = 'products cos-shop';
+    box.innerHTML = `
+      <div class="cos-layout">
+        <div class="cos-stage-col">
+          <div class="cos-stage">
+            <span class="rk-aura" aria-hidden="true"></span>
+            <span class="rk-floor" aria-hidden="true"></span>
+            <canvas aria-label="Tu personaje con los cosméticos puestos"></canvas>
+            <p class="viewer-status" id="cos-status">Cargando…</p>
+            <label class="cv-skin rk-skin"><span>Skin de</span><input id="cos-skin" maxlength="16" spellcheck="false" autocomplete="off" placeholder="Tu skin"></label>
+            <span class="rk-drag">Arrastra para girar</span>
+          </div>
+          <div class="cos-buy" id="cos-buy"></div>
+        </div>
+        <div class="cos-side">
+          <div class="cos-head">
+            <h2>Cosméticos</h2>
+            <p class="muted">Sombreros, mochilas, alas, globos y objetos de mano con animación. Solo cambian tu aspecto. Toca una pieza para probártela y combina las que quieras.</p>
+            <div class="cos-filters" role="group" aria-label="Colecciones">${collections
+              .map((c) => `<button type="button" class="chip" data-cos-filter="${escapeHtml(c)}" aria-pressed="${c === 'Todos'}">${escapeHtml(c)}</button>`)
+              .join('')}</div>
+          </div>
+          <div class="cos-themes">${themes
+            .map(
+              (t) => `<section class="cos-theme" data-collection="${escapeHtml(t.collection)}" style="${themeVarsCss(t.items[0])}">
+                <header><div><h3>${escapeHtml(t.name)}</h3><span class="muted small">${escapeHtml(t.collection)} · ${t.items.length} piezas</span></div>
+                  <button type="button" class="btn btn-ghost btn-sm" data-cos-theme="${escapeHtml(t.key)}">Probar conjunto</button></header>
+                <div class="cos-pieces">${t.items
+                  .map(
+                    (p) => `<button type="button" class="cos-piece" data-cos="${escapeHtml(p.id)}" aria-pressed="false">
+                      <span class="cos-art">${img(p.image, '', '', ' width="72" height="72"')}<i class="worn-dot" aria-hidden="true"></i></span>
+                      <span class="cos-name">${escapeHtml(p.name)}</span>
+                      <span class="cos-meta"><span>${SLOT_LABEL[p.slot] || ''}</span><b>${formatPrice(p.price)}</b></span>
+                    </button>`,
+                  )
+                  .join('')}</div>
+              </section>`,
+            )
+            .join('')}</div>
+        </div>
+      </div>`;
+    cosShow.themes = themes;
+    $$('[data-cos-filter]', box).forEach((b) =>
+      b.addEventListener('click', () => {
+        cosShow.filter = b.dataset.cosFilter;
+        $$('[data-cos-filter]', box).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        $$('.cos-theme', box).forEach((t) => (t.hidden = cosShow.filter !== 'Todos' && t.dataset.collection !== cosShow.filter));
+      }),
+    );
+    $$('[data-cos]', box).forEach((b) => b.addEventListener('click', () => pickCosmetic(b.dataset.cos)));
+    $$('[data-cos-theme]', box).forEach((b) => b.addEventListener('click', () => wearTheme(b.dataset.cosTheme)));
+    makeStage($('.cos-stage canvas', box)).then((w) => {
+      cosShow.wardrobe = w;
+      followAnchors(w, $('.cos-stage', box));
+      bindSkin($('#cos-skin', box), () => drawCosmetics());
+      wearTheme(themes[0].key);
+    }).catch((err) => {
+      console.error(err);
+      $('#cos-status').textContent = 'No se pudo cargar el escaparate 3D en este navegador.';
+    });
+  }
+  const themeVarsCss = (p) => Object.entries(themeVars(p) || {}).map(([k, v]) => `${k}:${v}`).join(';');
+
+  function wearTheme(key) {
+    const t = cosShow.themes.find((x) => x.key === key);
+    if (!t) return;
+    cosShow.outfit = {};
+    for (const p of t.items) cosShow.outfit[SLOT_OF[p.slot]] = p.id;
+    cosShow.selected = t.items[0].id;
+    refreshCosmetics();
+    drawCosmetics();
+  }
+
+  function pickCosmetic(id) {
+    const p = products.find((x) => x.id === id);
+    if (!p) return;
+    const slot = SLOT_OF[p.slot];
+    // Tocar la pieza que ya está seleccionada y puesta la quita
+    if (cosShow.selected === id && cosShow.outfit[slot] === id) delete cosShow.outfit[slot];
+    else cosShow.outfit[slot] = id;
+    cosShow.selected = id;
+    refreshCosmetics();
+    drawCosmetics();
+  }
+
+  function refreshCosmetics() {
+    const worn = new Set(Object.values(cosShow.outfit));
+    for (const b of $$('[data-cos]')) {
+      b.setAttribute('aria-pressed', String(b.dataset.cos === cosShow.selected));
+      b.classList.toggle('worn', worn.has(b.dataset.cos));
+    }
+    const p = products.find((x) => x.id === cosShow.selected);
+    const box = $('#cos-buy');
+    if (!p || !box) return;
+    // El color del escenario y de la compra es el de la colección elegida
+    box.parentElement.setAttribute('style', themeVarsCss(p));
+    box.innerHTML = `
+      <span class="cos-buy-art">${img(p.image, '', '', ' width="52" height="52"')}</span>
+      <span class="cos-buy-text"><small>${escapeHtml(p.theme)} · ${SLOT_LABEL[p.slot] || ''}</small><b>${escapeHtml(p.name)}</b></span>
+      <button class="btn btn-theme" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button>`;
+  }
+
+  async function drawCosmetics() {
+    const w = cosShow.wardrobe;
+    if (!w) return;
+    const token = ++cosShow.token;
+    const status = $('#cos-status');
+    status.hidden = false;
+    status.textContent = 'Poniéndote los cosméticos…';
+    try {
+      // Un «set» con las piezas puestas, aunque sean de colecciones distintas
+      const items = {};
+      const outfit = {};
+      for (const [slot, id] of Object.entries(cosShow.outfit)) {
+        const p = products.find((x) => x.id === id);
+        if (!p) continue;
+        const set = await loadWear(p.set);
+        if (!set.items[p.item]) continue;
+        items[id] = set.items[p.item];
+        outfit[slot] = id;
+      }
+      if (token !== cosShow.token) return;
+      await w.showPlayer({ items, armor: {} }, outfit, skinName());
+      if (token === cosShow.token) status.hidden = true;
+    } catch (err) {
+      console.error(err);
+      if (token === cosShow.token) status.textContent = 'No se pudo cargar el cosmético.';
     }
   }
 

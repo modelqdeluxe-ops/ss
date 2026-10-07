@@ -527,12 +527,14 @@ BACK_GAP_TO = 0.15     # ...hasta aquí (pegado a la espalda, sin atravesarla)
 
 
 # Cosméticos que el pack llama «wing» pero que son otra cosa (el conejo de Pascua es un peluche-mochila).
-KIND_BY_TAG = {'easter/wing': 'backpack'}
+KIND_BY_TAG = {'easter/wing': 'backpack', 'cosmeticsv1/frozen_backpack': 'wings'}
 # Alas cuya posición del pack quedaba baja (o cuya mitad visible no es su raíz), revisadas en el probador: se calcula
 # por su forma con esta altura de la mitad de lo visible (bloques desde el cuello).
 # - eagle: el pack las pone a la altura de la cintura (su soporte de armadura está más alto que el de los demás).
 # - oni: el aro de arriba sube la mitad de lo visible; así la máscara del centro queda entre los omóplatos.
-Y50_BY_TAG = {'eagle/wing': -0.24, 'oni/wings': -0.02}
+# - cosméticos: la mochila de hielo son alas (colgaba hasta los pies) y las alas de calabaza quedaban en la cintura.
+Y50_BY_TAG = {'eagle/wing': -0.24, 'oni/wings': -0.02, 'cosmeticsv1/frozen_backpack': -0.2,
+              'halloweenbundle/spooky_pumpkin_wings': -0.12}
 # Sets que ya estaban bien con el modelo del objeto (su modelo de HMCCosmetics trae una peana debajo).
 HMC_SKIP = {'shadow'}
 # Alto máximo de lo visible (bloques) y borde de arriba (desde el cuello) de lo que va como mochila: no tapa la cabeza.
@@ -709,7 +711,7 @@ def place_on_back(model, slug, tag, designed, alpha_of):
             rot = upright_diagonal(pts, wts, QUIVER_TILT)
             unit = oriented([1, 1, 1])
         # Alas de lado (envergadura en z): se giran 90 grados para que se abran a los lados.
-        if slug in ('wings', 'wing') and spread(unit, 2) > 1.5 * spread(unit, 0):
+        if (slug in ('wings', 'wing') or kind in ('wings', 'wing')) and spread(unit, 2) > 1.5 * spread(unit, 0):
             rot[1] = (rot[1] + 90) % 360
             unit = oriented([1, 1, 1])
         if not any(scale):
@@ -756,6 +758,67 @@ def place_on_back(model, slug, tag, designed, alpha_of):
     back_report.append((tag, mode, rot, trans, scale))
 
 
+# Globos: van en la mano (mejor la izquierda), flotando por encima con su cuerda. Medidas en bloques.
+BALLOON_HEIGHT = 0.75  # alto de lo visible del globo
+BALLOON_TILT = -22.0   # grados hacia fuera (en la mano izquierda Minecraft lo refleja)
+BALLOON_LIFT = 1.85    # de la mano a la parte de abajo del globo (queda por encima de la cabeza)
+
+
+def balloon_display(model, writer, tag):
+    """Coloca el globo encima de la mano con una cuerda hasta ella (Minecraft no tiene «globos»: es un objeto en la
+    mano). Se encoge el propio modelo (no con la escala de «display») para que globo y cuerda quepan en los límites de
+    Minecraft (-16 a 32). En el marco de la mano en tercera persona +Z mira hacia arriba: girar 90 grados en X pone el
+    globo de pie."""
+    pts, _wts = visible_points(model, writer.alpha_of)
+    if not pts:
+        problems.append(f'{tag}: el globo no tiene nada visible')
+        return
+    ys = sorted(p[1] for p in pts)
+    y0, y1 = ys[int(len(ys) * 0.01)], ys[int(len(ys) * 0.99)]
+    xs = sorted(p[0] for p in pts)
+    zs = sorted(p[2] for p in pts)
+    cx, cz = xs[len(xs) // 2], zs[len(zs) // 2]
+    k = BALLOON_HEIGHT * 16 / max(1.0, y1 - y0)
+    bottom = -16 + BALLOON_LIFT * 16 + 1.6  # la mano queda en y = bottom - BALLOON_LIFT*16 (dentro de -16)
+    hand_y = bottom - BALLOON_LIFT * 16
+
+    def move(v):
+        return [round(8 + (v[0] - cx) * k, 4), round(bottom + (v[1] - y0) * k, 4), round(8 + (v[2] - cz) * k, 4)]
+    for el in model.get('elements', []):
+        el['from'], el['to'] = move(el['from']), move(el['to'])
+        if el.get('rotation') and 'origin' in el['rotation']:
+            el['rotation']['origin'] = move(el['rotation']['origin'])
+    top = bottom + (y1 - y0) * k
+    # Cuerda: un hilo fino del globo a la mano, con una textura de un solo color
+    string = os.path.join(ASSETS, 'textures', 'item', 'sets', writer.set_id, 'balloon_string.png')
+    os.makedirs(os.path.dirname(string), exist_ok=True)
+    Image.new('RGBA', (2, 2), (226, 226, 232, 255)).save(string)
+    model.setdefault('textures', {})['tf_string'] = f'tfclient:item/sets/{writer.set_id}/balloon_string'
+    w = 0.09
+    faces = {f: {'uv': [0, 0, 1, 1], 'texture': '#tf_string'} for f in ('north', 'south', 'east', 'west')}
+    model['elements'].append({'from': [8 - w, round(hand_y, 4), 8 - w], 'to': [8 + w, round(bottom + 0.5, 4), 8 + w],
+                              'faces': faces})
+    # Inclinado hacia fuera para que flote al lado de la cabeza; se gira alrededor de la mano (la cuerda no se mueve)
+    t = math.radians(BALLOON_TILT)
+    d = hand_y - 8
+    hand = {'rotation': [90, 0, BALLOON_TILT], 'translation': [round(d * math.sin(t), 3), 0, round(-d * math.cos(t), 3)],
+            'scale': [1, 1, 1]}
+    display = model.setdefault('display', {})
+    display['thirdperson_righthand'] = dict(hand)
+    display['thirdperson_lefthand'] = dict(hand)
+    # Inventario, suelo y marcos: el globo con su cuerda, centrado
+    g = round(min(4.0, 15.0 / max(1.0, top - hand_y)), 4)
+    mid = (top + hand_y) / 2
+    display['gui'] = {'rotation': [0, 0, 0], 'translation': [0, round((8 - mid) * g, 3), 0], 'scale': [g, g, g]}
+    display['fixed'] = dict(display['gui'])
+    display['ground'] = {'rotation': [0, 0, 0], 'translation': [0, round((8 - mid) * g * 0.5, 3), 0],
+                         'scale': [g * 0.5, g * 0.5, g * 0.5]}
+    # En primera persona, pequeño a un lado para no tapar la vista
+    display['firstperson_righthand'] = {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [0.4, 0.4, 0.4]}
+    display['firstperson_lefthand'] = dict(display['firstperson_righthand'])
+    back_report.append((tag, 'globo', hand['rotation'], hand['translation'], hand['scale']))
+
+
 def overrides(kind, refs):
     o = []
     if kind == 'bow':
@@ -797,7 +860,7 @@ BC_HEAVY_AXES = ('dark_moon_axe', 'gargoyle_axe', 'hellspawn_axe', 'mana_axe')  
 
 
 def better_combat_preset(item_type, slug):
-    if item_type in ('bow', 'crossbow', 'fishing_rod', 'shield', 'armor', 'head', 'back', 'shovel', 'hoe'):
+    if item_type in ('bow', 'crossbow', 'fishing_rod', 'shield', 'armor', 'head', 'back', 'shovel', 'hoe', 'held', 'balloon'):
         return None
     if slug in BC_HEAVY_AXES:
         return 'heavy_axe'
@@ -904,9 +967,12 @@ def main(packs, only=None):
         items = []
         for entry in listing:
             slug, label = entry['id'], entry['name']
-            kind = item_type(slug)
+            # Los cosméticos traen su tipo en crates.py (COSMETICS); el resto se deduce del nombre
+            kind = C.cosmetic_type(set_id, slug) or item_type(slug)
             item_id = f'{set_id}_{slug}'
             tag = f'{set_id}/{slug}'
+            if kind == 'back' and set_id in C.COSMETICS and tag not in KIND_BY_TAG:
+                KIND_BY_TAG[tag] = 'wings' if 'wing' in slug else 'backpack'
             info = {'id': item_id, 'type': kind}
             if kind == 'armor':
                 model = armor_icon_model(w, slug)
@@ -935,6 +1001,8 @@ def main(packs, only=None):
                     ov = overrides(kind, refs)
                     if ov:
                         model['overrides'] = ov
+                if kind == 'balloon':
+                    balloon_display(model, w, tag)
                 if kind == 'back':
                     worn = None
                     designed = False
@@ -965,7 +1033,7 @@ def main(packs, only=None):
             w.write_model(item_id, model)
             if kind == 'armor':
                 label_full = f'{label} {set_name}'
-            elif set_id == 'nazgul':
+            elif set_id == 'nazgul' or set_id in C.COSMETICS:
                 label_full = label
             else:
                 label_full = f'{label} {set_name}'

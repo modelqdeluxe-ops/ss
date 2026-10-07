@@ -19,7 +19,7 @@ PUBLIC = os.path.join(HERE, '..', 'public')
 MOD = os.path.join(HERE, '..', '..', 'tf-client', 'src', 'main', 'resources', 'assets', 'tfclient')
 OUT = os.path.join(PUBLIC, 'wear')
 
-DISPLAY = ('thirdperson_righthand', 'head', 'gui')
+DISPLAY = ('thirdperson_righthand', 'thirdperson_lefthand', 'head', 'gui')
 
 
 def mod_path(ref, kind):

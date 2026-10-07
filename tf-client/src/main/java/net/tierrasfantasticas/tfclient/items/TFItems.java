@@ -89,6 +89,8 @@ public final class TFItems {
             case "back" -> new TFItemTypes.Cosmetic(EquipmentSlot.CHEST,
                     def.worn() != null ? new ResourceLocation(def.worn()) : null, p.stacksTo(1));
             case "armor" -> new TFItemTypes.Armor(set, armorType(def.slot()), p);
+            case "held" -> new TFItemTypes.Held(false, p.stacksTo(1));
+            case "balloon" -> new TFItemTypes.Held(true, p.stacksTo(1));
             default -> new TFItemTypes.Sword(tier, 3, -2.4F, p);
         };
     }
