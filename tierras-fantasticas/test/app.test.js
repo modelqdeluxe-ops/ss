@@ -992,6 +992,49 @@ test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se an
   assert.ok(orders.some((o) => o.id === id));
 });
 
+// --- VFX: efectos de kill y paquetes de skills (gratis) ---
+test('los VFX se obtienen gratis con la cuenta, se equipan y el puente los manda al servidor', async () => {
+  const catalog = await (await get('/api/vfx')).json();
+  assert.strictEqual(catalog.free, true);
+  assert.ok(catalog.kills.length >= 50 && catalog.packs.length >= 3);
+  assert.strictEqual(catalog.me, null);
+  const kill = catalog.kills[0].id;
+  const pack = catalog.packs[0].id;
+  // Sin sesión no se puede; con un id que no existe tampoco.
+  assert.strictEqual((await post('/api/vfx/claim', { kind: 'kill', id: kill })).status, 401);
+  await seen('Efectos_MC');
+  const cookie = await register('Efectos_MC');
+  assert.strictEqual((await post('/api/vfx/claim', { kind: 'kill', id: 'no-existe' }, cookie)).status, 400);
+  assert.strictEqual((await post('/api/vfx/claim', { kind: 'skin', id: kill }, cookie)).status, 400);
+  // Equipar uno que no tiene, no.
+  assert.strictEqual((await post('/api/vfx/equip', { kind: 'pack', id: pack }, cookie)).status, 403);
+
+  // Obtenerlo lo deja en la cuenta y equipado.
+  let { me } = await (await post('/api/vfx/claim', { kind: 'kill', id: kill }, cookie)).json();
+  assert.deepStrictEqual(me.owned, [`kill:${kill}`]);
+  assert.strictEqual(me.kill, kill);
+  ({ me } = await (await post('/api/vfx/claim', { kind: 'pack', id: pack }, cookie)).json());
+  assert.strictEqual(me.pack, pack);
+  const first = me.at;
+
+  // El servidor recibe lo equipado de los conectados (con la hora del cambio).
+  let { vfx } = await (await poll(['Efectos_MC'])).json();
+  assert.deepStrictEqual(vfx, [{ uuid: uuidOf('Efectos_MC'), kill, pack, at: first }]);
+  ({ vfx } = await (await poll(['Otro_MC'])).json());
+  assert.deepStrictEqual(vfx, []);
+
+  // Quitar el efecto de kill deja el paquete y cambia la hora.
+  ({ me } = await (await post('/api/vfx/equip', { kind: 'kill', id: null }, cookie)).json());
+  assert.strictEqual(me.kill, null);
+  assert.strictEqual(me.pack, pack);
+  assert.ok(me.at > first);
+  // Volver a equipar uno que ya tiene.
+  ({ me } = await (await post('/api/vfx/equip', { kind: 'kill', id: kill }, cookie)).json());
+  assert.strictEqual(me.kill, kill);
+  const mine = await (await get('/api/vfx', { Cookie: cookie })).json();
+  assert.deepStrictEqual(mine.me.owned.sort(), [`kill:${kill}`, `pack:${pack}`].sort());
+});
+
 // --- Aceptación de los Términos ---
 test('los Términos se aceptan con una casilla al crear la cuenta y al pagar, y queda la prueba guardada', async () => {
   const { version } = await import('../config/legal.json', { with: { type: 'json' } }).then((m) => m.default);

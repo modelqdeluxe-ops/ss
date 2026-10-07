@@ -4438,6 +4438,194 @@ body:not([data-hero]) .header::before {
   color: var(--t1, var(--a-300));
 }
 
+/* ---------- VFX: paquetes de skills y efectos de kill ---------- */
+
+/* Cómo funcionan, en tres puntos */
+.vfx-how {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.vfx-how div {
+  display: grid;
+  gap: 3px;
+}
+
+.vfx-how b {
+  font: 700 14px/1.3 var(--font-display);
+}
+
+.vfx-how span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.vfx-section-head {
+  margin: 34px 0 0;
+}
+
+.vfx-section-head h3 {
+  font: 800 clamp(20px, 3vw, 26px) / 1.2 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.vfx-section-head p {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+.vfx-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* El efecto sobre un fondo oscuro con la luz de su color, como se ve en el juego por la noche */
+.vfx-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background:
+    radial-gradient(60% 55% at 50% 58%, color-mix(in srgb, var(--vfx, var(--violet)) 26%, transparent), transparent 72%),
+    radial-gradient(120% 90% at 50% 100%, rgb(var(--bg-rgb) / 0.2), rgb(var(--bg-rgb) / 0.75));
+  border-bottom: 1px solid var(--bd);
+}
+
+.vfx-art img {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 22px rgb(0 0 0 / 0.55));
+  transition: transform 0.5s var(--ease);
+}
+
+.vfx-pack,
+.vfx-kill {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    transform 0.4s var(--ease),
+    border-color 0.3s;
+}
+
+.vfx-pack .body,
+.vfx-kill .body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.vfx-kill .body {
+  padding: 14px;
+}
+
+.vfx-pack h3,
+.vfx-kill h3 {
+  margin: 4px 0 6px;
+  font: 700 18px/1.25 var(--font-display);
+}
+
+.vfx-kill h3 {
+  font-size: 15px;
+}
+
+.vfx-pack p,
+.vfx-kill p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.vfx-kill p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.vfx-kill .card-foot .btn {
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.vfx-kill .price {
+  font-size: 16px;
+}
+
+.vfx-packs {
+  display: grid;
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.vfx-pack {
+  border-color: color-mix(in srgb, var(--vfx) 34%, var(--edge));
+}
+
+.vfx-pack .cat {
+  color: var(--vfx);
+}
+
+/* Las skills del paquete: qué hace, cuándo salta y su cooldown */
+.vfx-skills {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vfx-skills li {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: rgb(var(--bg-rgb) / 0.35);
+}
+
+.vfx-skills b {
+  display: block;
+  font-size: 14px;
+}
+
+.vfx-skills li span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.vfx-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.vfx-skills .vfx-trigger {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--vfx) 45%, transparent);
+  background: color-mix(in srgb, var(--vfx) 14%, transparent);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vfx-skills .cd {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.vfx-kills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
 /* ---------- Ventanas (compra, visor 3D y probador) ---------- */
 
 /* En el móvil son hojas que suben desde abajo; desde 640px, ventanas centradas */
@@ -6136,6 +6324,14 @@ body:not([data-hero]) .header::before {
 }
 
 @media (min-width: 640px) {
+  .vfx-how {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .vfx-kills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   :root {
     --gutter: 28px;
   }
@@ -6304,6 +6500,25 @@ body:not([data-hero]) .header::before {
 /* ---------- Escritorio ---------- */
 
 @media (min-width: 960px) {
+  .vfx-packs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .vfx-kills {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .vfx-kill:hover,
+  .vfx-pack:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--vfx, var(--a-400)) 55%, transparent);
+  }
+
+  .vfx-kill:hover .vfx-art img,
+  .vfx-pack:hover .vfx-art img {
+    transform: scale(1.06);
+  }
+
   .rk-ladder {
     grid-auto-flow: row;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -6484,6 +6699,10 @@ body:not([data-hero]) .header::before {
   .reel-item:hover,
   .coin-item:hover,
   .odds li:hover,
+  .vfx-kill:hover,
+  .vfx-pack:hover,
+  .vfx-kill:hover .vfx-art img,
+  .vfx-pack:hover .vfx-art img,
   .ip-box:hover {
     transform: none;
   }

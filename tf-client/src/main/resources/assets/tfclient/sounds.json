@@ -1,0 +1,408 @@
+{
+ "vfx.kill.absorcion_sagrada": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/absorcion_sagrada"
+   }
+  ]
+ },
+ "vfx.kill.abstracto": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/abstracto"
+   }
+  ]
+ },
+ "vfx.kill.acido": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/acido"
+   }
+  ]
+ },
+ "vfx.kill.arenas_movedizas": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/arenas_movedizas"
+   }
+  ]
+ },
+ "vfx.kill.ataque_tiburon": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/ataque_tiburon"
+   }
+  ]
+ },
+ "vfx.kill.aurora": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/aurora"
+   }
+  ]
+ },
+ "vfx.kill.bendicion_angelical": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/bendicion_angelical"
+   }
+  ]
+ },
+ "vfx.kill.bioluminiscencia": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/bioluminiscencia"
+   }
+  ]
+ },
+ "vfx.kill.bloques_caen": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/bloques_caen"
+   }
+  ]
+ },
+ "vfx.kill.chispas": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/chispas"
+   }
+  ]
+ },
+ "vfx.kill.colapso_vacio": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/colapso_vacio"
+   }
+  ]
+ },
+ "vfx.kill.constelacion": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/constelacion"
+   }
+  ]
+ },
+ "vfx.kill.contorno": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/contorno"
+   }
+  ]
+ },
+ "vfx.kill.derretido": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/derretido"
+   }
+  ]
+ },
+ "vfx.kill.energia_cinetica": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/energia_cinetica"
+   }
+  ]
+ },
+ "vfx.kill.engranajes": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/engranajes"
+   }
+  ]
+ },
+ "vfx.kill.escarcha": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/escarcha"
+   }
+  ]
+ },
+ "vfx.kill.espectral": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/espectral"
+   }
+  ]
+ },
+ "vfx.kill.espejo": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/espejo"
+   }
+  ]
+ },
+ "vfx.kill.estrella_norte": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/estrella_norte"
+   }
+  ]
+ },
+ "vfx.kill.evaporacion": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/evaporacion"
+   }
+  ]
+ },
+ "vfx.kill.floracion": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/floracion"
+   }
+  ]
+ },
+ "vfx.kill.fuego_infernal": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/fuego_infernal"
+   }
+  ]
+ },
+ "vfx.kill.game_over": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/game_over"
+   }
+  ]
+ },
+ "vfx.kill.grafiti": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/grafiti"
+   }
+  ]
+ },
+ "vfx.kill.holograma": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/holograma"
+   }
+  ]
+ },
+ "vfx.kill.humo": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/humo"
+   }
+  ]
+ },
+ "vfx.kill.impostor": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/impostor"
+   }
+  ]
+ },
+ "vfx.kill.jade": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/jade"
+   }
+  ]
+ },
+ "vfx.kill.knockout": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/knockout"
+   }
+  ]
+ },
+ "vfx.kill.magnetismo": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/magnetismo"
+   }
+  ]
+ },
+ "vfx.kill.manchas_tinta": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/manchas_tinta"
+   }
+  ]
+ },
+ "vfx.kill.miel": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/miel"
+   }
+  ]
+ },
+ "vfx.kill.mosaico": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/mosaico"
+   }
+  ]
+ },
+ "vfx.kill.naturaleza": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/naturaleza"
+   }
+  ]
+ },
+ "vfx.kill.nebulosa": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/nebulosa"
+   }
+  ]
+ },
+ "vfx.kill.niebla": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/niebla"
+   }
+  ]
+ },
+ "vfx.kill.onda_sonora": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/onda_sonora"
+   }
+  ]
+ },
+ "vfx.kill.orbe_plasma": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/orbe_plasma"
+   }
+  ]
+ },
+ "vfx.kill.origami": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/origami"
+   }
+  ]
+ },
+ "vfx.kill.oxido": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/oxido"
+   }
+  ]
+ },
+ "vfx.kill.papel_quemado": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/papel_quemado"
+   }
+  ]
+ },
+ "vfx.kill.piedra": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/piedra"
+   }
+  ]
+ },
+ "vfx.kill.planta_carnivora": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/planta_carnivora"
+   }
+  ]
+ },
+ "vfx.kill.pluma_tinta": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/pluma_tinta"
+   }
+  ]
+ },
+ "vfx.kill.portal": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/portal"
+   }
+  ]
+ },
+ "vfx.kill.prisma": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/prisma"
+   }
+  ]
+ },
+ "vfx.kill.reloj": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/reloj"
+   }
+  ]
+ },
+ "vfx.kill.sombras": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/sombras"
+   }
+  ]
+ },
+ "vfx.kill.tentaculos": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/kill/tentaculos"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_barrage": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_barrage"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_charge": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_charge"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_circle_charge": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_circle_charge"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_dash": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_dash"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_dragon_summon": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_dragon_summon"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_slash": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_slash"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_slash_ult": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_slash_ult"
+   }
+  ]
+ },
+ "vfx.ronin.thunder_strike": {
+  "sounds": [
+   {
+    "name": "tfclient:vfx/ronin/thunder_strike"
+   }
+  ]
+ }
+}

@@ -102,6 +102,20 @@ const SCHEMA = [
     tier INTEGER NOT NULL,
     updated_at TEXT NOT NULL
   )`,
+  // VFX que tiene cada jugador (item = kill:<id> o pack:<id>) y los que lleva equipados. updated_at (ms) le dice al
+  // servidor si el cambio es nuevo.
+  `CREATE TABLE IF NOT EXISTS vfx_owned (
+    uuid TEXT NOT NULL,
+    item TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (uuid, item)
+  )`,
+  `CREATE TABLE IF NOT EXISTS vfx_equip (
+    uuid TEXT PRIMARY KEY,
+    kill TEXT,
+    pack TEXT,
+    updated_at INTEGER NOT NULL
+  )`,
 ];
 
 // Columnas nuevas en tablas que ya existen en la base de datos publicada.
@@ -437,6 +451,55 @@ export function createStore(db) {
       )
       .bind(id, rankId, tier, now(), force ? 1 : 0)
       .run();
+  }
+
+  // --- VFX ---
+
+  // Lo que tiene y lleva equipado un jugador.
+  async function vfxFor(uuid) {
+    await init();
+    const id = String(uuid).toLowerCase();
+    const { results } = await db.prepare('SELECT item FROM vfx_owned WHERE uuid = ? ORDER BY created_at').bind(id).all();
+    const eq = await db.prepare('SELECT kill, pack, updated_at FROM vfx_equip WHERE uuid = ?').bind(id).first();
+    return { owned: results.map((r) => r.item), kill: eq?.kill || null, pack: eq?.pack || null, at: eq?.updated_at || 0 };
+  }
+
+  async function vfxGive(uuid, item) {
+    await init();
+    await db
+      .prepare('INSERT OR IGNORE INTO vfx_owned (uuid, item, created_at) VALUES (?, ?, ?)')
+      .bind(String(uuid).toLowerCase(), item, now())
+      .run();
+  }
+
+  // Equipa (o quita, con null) el efecto de kill o el paquete de skills. Siempre con una hora nueva: el servidor solo
+  // aplica lo que es más reciente que lo que ya tiene.
+  async function vfxEquip(uuid, kind, id) {
+    await init();
+    const key = String(uuid).toLowerCase();
+    const cur = await db.prepare('SELECT kill, pack, updated_at FROM vfx_equip WHERE uuid = ?').bind(key).first();
+    const next = { kill: cur?.kill || null, pack: cur?.pack || null };
+    next[kind] = id || null;
+    const at = Math.max(Date.now(), (cur?.updated_at || 0) + 1);
+    await db
+      .prepare(
+        `INSERT INTO vfx_equip (uuid, kill, pack, updated_at) VALUES (?, ?, ?, ?)
+         ON CONFLICT (uuid) DO UPDATE SET kill = excluded.kill, pack = excluded.pack, updated_at = excluded.updated_at`,
+      )
+      .bind(key, next.kill, next.pack, at)
+      .run();
+    return { ...next, at };
+  }
+
+  // Lo equipado de varios jugadores (los conectados), para el puente.
+  async function vfxEquipFor(uuids) {
+    await init();
+    if (!uuids.length) return [];
+    const { results } = await db
+      .prepare('SELECT uuid, kill, pack, updated_at FROM vfx_equip WHERE uuid IN (SELECT lower(value) FROM json_each(?))')
+      .bind(JSON.stringify(uuids))
+      .all();
+    return results.map((r) => ({ uuid: r.uuid, kill: r.kill, pack: r.pack, at: r.updated_at }));
   }
 
   // --- Cuentas de la web ---
@@ -777,6 +840,10 @@ export function createStore(db) {
     getRank,
     ranksFor,
     setRank,
+    vfxFor,
+    vfxGive,
+    vfxEquip,
+    vfxEquipFor,
     createUser,
     getUser,
     userByDiscord,

@@ -336,6 +336,10 @@ public final class TFBridge {
             net.tierrasfantasticas.tfclient.shop.TFRoulette.setConfig(json.getAsJsonObject("roulette"));
         }
         if (json.has("ranks")) TFRanks.update(srv, json.getAsJsonArray("ranks"));
+        // VFX equipados en la web (efecto de kill y paquete de skills) de los conectados
+        if (json.has("vfx") && json.get("vfx").isJsonArray()) {
+            net.tierrasfantasticas.tfclient.vfx.VfxServer.applyWeb(srv, json.getAsJsonArray("vfx"));
+        }
         JsonArray deliveries = json.has("deliveries") ? json.getAsJsonArray("deliveries") : new JsonArray();
         for (JsonElement element : deliveries) {
             deliver(srv, element.getAsJsonObject());

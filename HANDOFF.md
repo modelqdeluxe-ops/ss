@@ -12,7 +12,54 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): /tf shop, techo de netherita, Fantastic Coin, móvil fluido, Discord sin invitador y TF Client 1.3.12
+### Última entrega (8 de octubre de 2026): sección VFX (efectos de kill y paquetes de skills) y TF Client 1.3.13
+**Lo que pidió el dueño (textual):** *«añadirás ahora una sección de VFX, estos efectos, algunas son skills… que todas
+las animaciones, sonidos, todo sea correcto dentro del juego sin errores… el icono se pondrá al ladito del último slot
+derecho, no donde pones el escudo, un indicador de que está activado… ponlos gratis de momento, son muchos así que
+serán presentados por individual, no por pack, solo las skills vienen en paquete… solo quiero las animaciones,
+efectos, nada de armas o ítems, deben ser pasivas, y las skills deben tener cooldown»*. Packs que mandó (comprados, **no
+se suben al repo**): EC Kill Effects vol. 1–5 (50 efectos), samus2002 Gale Glaive y Heroes Thunder Ronin, NeiCore
+Dynamic Player VFX. De los packs solo se usan modelos, animaciones, texturas y sonidos (nada de armas ni objetos).
+
+**Cómo está hecho (mod 1.3.13, paquete `vfx/`):**
+- `tools/build_vfx.py <carpeta con los packs descomprimidos>` lo genera todo: convierte los `.bbmodel` de ModelEngine
+  (`tools/vfx_bb.py`: huesos, cubos ya horneados, animaciones con las reglas exactas de Blockbench: giros ZYX, la
+  animación suma (−x, −y, +z) al giro y (−x, y, z) a la posición, catmullrom uniforme con vecinos, lineal y escalón;
+  frente del modelo = −Z), compila el aspecto de las skills desde los YAML de MythicMobs (`tools/vfx_compile.py`:
+  summon de mobs de VFX, state, changepart y auras que iteran fotogramas, partvis, tint, partículas en huesos,
+  temporizadores, proyectiles, órbitas, sonidos con los de 1.21 cambiados por otros de 1.20.1 —
+  `tools/sounds_1201.txt`) y la jugabilidad está escrita a mano en `tools/vfx_skills.py`. Escribe
+  `assets/tfclient/vfx/{models/*,fx.json,catalog.json}`, `textures/vfx/` (sin repetir), `textures/gui/vfx/` (iconos),
+  `sounds/vfx/` + `sounds.json`, `tierras-fantasticas/config/vfx.json` y las miniaturas `public/img/vfx/*.webp`
+  (sacadas del propio modelo con `tools/vfx_render.py`, el mismo cálculo de pose que el mod).
+- Cliente (`VfxClient`): recibe `VfxNet.Play` (efecto, posición, giro, quién lanza, víctima, skin) y sigue la línea de
+  tiempo de `fx.json`: modelos animados (`VfxModel` + `VfxPose`, comprobado número a número contra Python), sonidos y
+  partículas. Dibuja en `AFTER_TRANSLUCENT_BLOCKS` con `entityTranslucentCull` y luz máxima (como el brillo 15 de
+  ModelEngine). Los huesos `phead` llevan la cabeza con la skin (la víctima en los kills, el jugador en los hechizos).
+- Efectos de kill: al matar (jugadores y mobs, `efectosDeKillConMobs`), en la víctima sale un cuerpo gris con su cabeza
+  que hace el efecto; el cuerpo de verdad no se dibuja esos 20 ticks.
+- Skills pasivas con cooldown (`VfxServer`, sin comandos ni teclas): disparadores `golpe` (golpe cargado),
+  `golpe_critico`, `golpe_corriendo`, `golpe_agachado`, `dano` (con «vida»: solo con poca vida; o con probabilidad)
+  y `combate`. Combos de 3 fases, daño en zona/línea/proyectil/zona que dura, empujes, pociones, paralizar, fuego,
+  curar, esquivar. Solo dañan monstruos, al que golpeas y jugadores si hay PvP; nunca tus mascotas. Daño pensado para
+  survival (config `config/tfclient-vfx.json`: activado, efectosDeKillConMobs, skills, skillsEnPvP,
+  multiplicadorDanoSkills). Datos por jugador en `<mundo>/tfclient/vfx.json`.
+- Paquetes: **Filo del Vendaval** (7 skills de viento), **Ronin del Trueno** (7 de rayo), **Hechizos del Alma** (5
+  hechizos con cinemática: el jugador se convierte en mago con su cara y no se ve mientras dura).
+- Indicador (`VfxHud`): a la derecha de la barra, con el marco del slot de la mano secundaria (si eres zurdo y llevas
+  algo en esa mano, o tienes el indicador de ataque en la barra, se aparta). Hueco con el paquete (y su cooldown, como
+  el de los objetos) y otro con el efecto de kill.
+- Staff: `/tf web vfx lista`, `/tf web vfx kill <jugadores> <id|ninguno>`, `/tf web vfx skills <jugadores>
+  <id|ninguno>`, `/tf web vfx probar <id>` (un efecto de kill delante o `paquete/skill`).
+
+**Web:** pestaña **VFX** en la tienda (`renderVfx` en app.js, sección «VFX» de styles.css): los 3 paquetes con sus
+skills (disparador y cooldown) y los 50 efectos uno a uno con filtro por volumen. **Gratis**: «Obtener» lo guarda en
+la cuenta y lo equipa; «Equipar» / «Quitar». Tablas `vfx_owned` y `vfx_equip`; rutas `GET /api/vfx`,
+`POST /api/vfx/claim`, `POST /api/vfx/equip`; el puente recibe `vfx: [{uuid, kill, pack, at}]` de los conectados y el
+mod solo aplica lo que tenga una hora más nueva (así un cambio del staff no se pisa). Para cobrarlos más adelante:
+`VFX_FREE` en `src/app.js`.
+
+### Entrega anterior (8 de octubre de 2026): /tf shop, techo de netherita, Fantastic Coin, móvil fluido, Discord sin invitador y TF Client 1.3.12
 **Lo que pidió el dueño (textual):** *«en teléfono la página va bugueada, parpadea, se traba, se pone lenta horrible…
 no me gusta el diseño de algunos botones de la tarjeta de tienda, el color esmeralda hazlo más oscuro… el botón de
 discord me manda a discord como si yo lo invite… haz que sea el link directo… armoniza colores, efectos… agrega soporte
@@ -496,13 +543,14 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.13**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.14**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
 - **Secretos** solo en Cloudflare (Secrets), **nunca** en el chat ni en git (lista en la sección 4).
   Stripe va en **modo real** (no quiere modo de prueba; ya se enfadó por eso).
-- Comandos del mod: **solo** `/tf web …` (staff), `/tf jobs` y `/tf shop` (este lo pidió él en 1.3.12). No añadas
+- Comandos del mod: **solo** `/tf web …` (staff), `/tf jobs` y `/tf shop` (este lo pidió él en 1.3.12). Los VFX
+  no tienen comandos para jugadores: se equipan en la web y en el juego se activan solos. No añadas
   más raíces, alias ni comandos para jugadores (se quejó dos veces de «un vergo de comandos» y de tener `jobs` y
   `oficios` a la vez).
 - **TF Client es el mod «nodriza»**: todo va dentro de él (puente con todo). No metas otros mods como dependencia

@@ -89,6 +89,7 @@ public final class TFCommands {
                         .then(TFBridgeCommands.rango())
                         .then(TFEconomyCommands.command())
                         .then(TFRoulette.command())
+                        .then(net.tierrasfantasticas.tfclient.vfx.VfxServer.command())
                         .then(Commands.literal("sets")
                                 .then(Commands.literal("list").executes(TFCommands::list))
                                 .then(Commands.literal("give")
