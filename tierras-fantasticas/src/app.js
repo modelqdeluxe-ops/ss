@@ -71,6 +71,9 @@ export function createApp(env) {
   const SERVER_NAME = env.SERVER_NAME || 'Tierras Fantásticas';
   const SERVER_IP = env.SERVER_IP || '216.163.187.40:19001';
   const DISCORD_URL = env.DISCORD_URL || 'https://discord.gg/tRrunHBZE';
+  // Grupo de WhatsApp. La web enlaza siempre a /whatsapp (y /discord), que redirige aquí: si la invitación cambia,
+  // se cambia la variable WHATSAPP_URL en Cloudflare y los enlaces ya compartidos siguen funcionando.
+  const WHATSAPP_URL = env.WHATSAPP_URL || 'https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm';
   const CURRENCY = (env.CURRENCY || 'USD').toUpperCase();
   const PUBLIC_URL = (env.PUBLIC_URL || '').replace(/\/$/, '');
   const log = env.LOGGER || console;
@@ -239,6 +242,10 @@ export function createApp(env) {
 
   // --- Rutas ---
   const routes = {
+    // Enlaces permanentes de la comunidad
+    'GET /discord': async () => redirect(DISCORD_URL),
+    'GET /whatsapp': async () => redirect(WHATSAPP_URL),
+
     'GET /api/config': async (req, { discord }) =>
       json({
         serverName: SERVER_NAME,
@@ -248,6 +255,7 @@ export function createApp(env) {
         currency: CURRENCY,
         paymentsEnabled: Boolean(stripe),
         discordInvite: DISCORD_URL,
+        whatsappUrl: WHATSAPP_URL,
         // Solo se puede comprar a jugadores que el puente ya conoce.
         bridge: Boolean(env.BRIDGE_SECRET),
       }),

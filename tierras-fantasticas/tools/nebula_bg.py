@@ -100,7 +100,7 @@ def to_rgba(neb):
 
 
 def base(width=1672):
-    """El reino oscurecido con la nebulosa A muy suave (lo que se ve si las capas animadas no cargan)."""
+    """El reino oscurecido con un velo muy suave de la nebulosa A: el color lo ponen las capas animadas."""
     rng = np.random.default_rng(SEED)
     img = Image.open(os.path.join(IMG, 'night-1672.webp')).convert('RGB')
     h = round(img.height * width / img.width)
@@ -111,7 +111,7 @@ def base(width=1672):
     dark = (img * 0.5 + lum * indigo * 1.0) * 0.40
     small = nebula(420, round(420 * h / width), rng, CLOUDS_A)
     neb = np.asarray(Image.fromarray((small * 255).astype(np.uint8)).resize((width, h), Image.BICUBIC)
-                     .filter(ImageFilter.GaussianBlur(width / 900)), np.float32) / 255.0 * 0.35
+                     .filter(ImageFilter.GaussianBlur(width / 900)), np.float32) / 255.0 * 0.15
     out = 1 - (1 - dark) * (1 - neb)
     yy, xx = np.mgrid[0:h, 0:width].astype(np.float32)
     u, v = xx / width, yy / h

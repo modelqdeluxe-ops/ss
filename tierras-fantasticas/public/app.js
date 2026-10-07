@@ -130,12 +130,6 @@
       /* usamos los valores por defecto */
     }
     $$('[data-server-ip]').forEach((el) => (el.textContent = config.serverIp));
-    if (config.discordUrl) {
-      $$('.discord-link').forEach((link) => {
-        link.href = config.discordUrl;
-        link.hidden = false;
-      });
-    }
     $$('[data-payments-off]').forEach((el) => (el.hidden = config.paymentsEnabled));
     loadStatus();
   }

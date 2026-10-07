@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **7 de octubre de 2026 (mediodía)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+Última actualización: **7 de octubre de 2026 (tarde)**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
 `claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,7 +12,27 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
-### Última entrega (7 de octubre de 2026, mediodía): portada mínima, fondo vivo, destello en los botones y más vida en las crates (solo web)
+### Última entrega (7 de octubre de 2026, tarde): portada solo con lo principal, Discord/WhatsApp, botón esmeralda y nebulosa más viva (solo web)
+**Lo que pidió el dueño:** quitar «Tu aventura empieza hoy» (la portada es solo el héroe), descripción nueva
+(*«no es un reino de castillos, es un servidor survival, aventura, fantasía y rol»*), quitar «Gratis» de la línea de
+la versión, debajo los botones **Discord**, **grupo de WhatsApp** (enlace que no caduque) y **Cómo entrar**, «Visitar
+la tienda» en **esmeralda → azul** con el mismo destello, la nebulosa más animada y el relleno de las pestañas de
+**izquierda a derecha** como los demás botones.
+
+- **Portada**: emblema, estado, título, «Servidor survival de aventura, fantasía y rol. Explora, construye y vive tu
+  propia historia.», IP + «Visitar la tienda» (`btn-emerald`, token `--shimmer-emerald`), «Minecraft Java 1.20.1 ·
+  Forge» y `.hero-links` (Discord, WhatsApp, Cómo entrar → `/ayuda#como-entrar`). **Nada más.**
+- **Enlaces permanentes** (Worker, `src/app.js`): `/discord` y `/whatsapp` redirigen (302) a `DISCORD_URL` y
+  `WHATSAPP_URL` (variables en `wrangler.jsonc`; WhatsApp: `https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm`). La
+  web y el pie usan siempre esas rutas: si una invitación cambia, se cambia la variable y nada más. Una invitación
+  de grupo de WhatsApp **no caduca sola**; solo deja de valer si un admin del grupo pulsa «Restablecer enlace».
+- **Botones**: todos llevan su degradado al doble de ancho y se desliza al pasar el ratón (`--c3` = tercer color de
+  cada variante: Discord, WhatsApp, monedas). `btn-ghost` y las pestañas se llenan de **izquierda a derecha** con el
+  destello (`::before` que crece con `scaleX`).
+- **Nebulosa más viva**: capas más grandes (`inset: -14%`), recorridos y giros mayores, A en 22 s y B en 14 s; la base
+  fija lleva menos nebulosa (0,15) para que el cambio se note. Medido: 3,5× más movimiento que antes.
+
+### Entrega anterior (7 de octubre de 2026, mediodía): portada mínima, fondo vivo, destello en los botones y más vida en las crates (solo web)
 **Lo que pidió el dueño (textual):** *«la landing page… te dije que no me la llenes de cosas… ni lo de crates, solo lo
 principal y lo de tu aventura comienza hoy. Me gustaría que la nebulosa y las estrellitas las animes, que sea vivo el
 fondo. La tarjeta de botones de la tienda se confunden, no hay armonía en los colores, me gusta el efecto que tiene

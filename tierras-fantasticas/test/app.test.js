@@ -218,6 +218,15 @@ test('las rutas que no son de la API las sirve la web estática', async () => {
   assert.strictEqual(await (await get('/tienda')).text(), 'estático /tienda');
 });
 
+test('/discord y /whatsapp son enlaces permanentes que redirigen a la invitación', async () => {
+  const wa = await get('/whatsapp');
+  assert.strictEqual(wa.status, 302);
+  assert.strictEqual(wa.headers.get('location'), 'https://chat.whatsapp.com/CqULG1UFixUJFuN3xwtXrm');
+  const dc = await get('/discord');
+  assert.strictEqual(dc.status, 302);
+  assert.match(dc.headers.get('location'), /^https:\/\/discord\.gg\//);
+});
+
 test('el puente rechaza una clave incorrecta', async () => {
   assert.strictEqual((await poll(['Steve'], [], { secret: 'otra' })).status, 401);
   const saved = env.BRIDGE_SECRET;

@@ -44,6 +44,8 @@
   --pri-grad: linear-gradient(135deg, #ff5ed5 0%, #b04cf2 52%, #6f5cff 100%);
   /* El destello de los botones: rosa → violeta → azul → cian (el doble de ancho, se desliza al pasar el ratón) */
   --shimmer: linear-gradient(110deg, #ff5ed5 0%, #b04cf2 30%, #6f5cff 55%, #3fc8ff 80%, #ff5ed5 100%);
+  /* El mismo destello en esmeralda vivo → azul (botón «Visitar la tienda» de la portada) */
+  --shimmer-emerald: linear-gradient(110deg, #19e6a1 0%, #10b981 28%, #14b8a6 50%, #0ea5e9 75%, #19e6a1 100%);
   --violet: #a78bfa;
   --violet-2: #7c3aed;
   --v-rgb: 167 139 250;
@@ -146,20 +148,20 @@ body::before {
 
 .sky .neb-a,
 .sky .neb-b {
-  inset: -8%;
+  inset: -14%;
   background: 62% 30% / cover no-repeat;
 }
 
 .sky .neb-a {
   background-image: url('/img/nebula-a-1280.webp');
   opacity: 0.8;
-  animation: neb-a 46s ease-in-out infinite alternate;
+  animation: neb-a 22s ease-in-out infinite alternate;
 }
 
 .sky .neb-b {
   background-image: url('/img/nebula-b-1280.webp');
   opacity: 0;
-  animation: neb-b 29s ease-in-out infinite alternate;
+  animation: neb-b 14s ease-in-out infinite alternate;
 }
 
 /* Las estrellas solo en el cielo: se apagan hacia el valle */
@@ -211,24 +213,31 @@ body::before {
 }
 
 @keyframes neb-a {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.7;
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 0.55;
   }
-  to {
-    transform: translate3d(-3%, 2%, 0) scale(1.08);
+  50% {
+    transform: translate3d(-5%, 3%, 0) scale(1.14) rotate(-2deg);
     opacity: 1;
+  }
+  100% {
+    transform: translate3d(4%, -2%, 0) scale(1.08) rotate(1.5deg);
+    opacity: 0.75;
   }
 }
 
 @keyframes neb-b {
   0% {
-    transform: translate3d(2%, -1%, 0) scale(1.04);
+    transform: translate3d(5%, -3%, 0) scale(1.05) rotate(2deg);
     opacity: 0;
   }
+  45% {
+    opacity: 1;
+  }
   100% {
-    transform: translate3d(-2%, 1.5%, 0) scale(1.1);
-    opacity: 0.85;
+    transform: translate3d(-5%, 3%, 0) scale(1.18) rotate(-2deg);
+    opacity: 0.2;
   }
 }
 
@@ -757,7 +766,8 @@ h4 {
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--fg);
-  background: linear-gradient(180deg, var(--a), var(--b));
+  /* Todos los botones llevan su degradado al doble de ancho: al pasar el ratón se desliza (el destello de color) */
+  background: linear-gradient(110deg, var(--a) 0%, var(--b) 45%, var(--c3, var(--a)) 80%, var(--a) 100%) 0 0 / 220% 100%;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     inset 0 -2px 0 rgba(0, 0, 0, 0.15),
@@ -785,6 +795,7 @@ h4 {
 }
 
 .btn:hover {
+  background-position: 100% 0;
   transform: translateY(-3px) scale(1.03);
   filter: brightness(1.1) saturate(1.1);
   box-shadow:
@@ -859,10 +870,7 @@ h4 {
   --a: #3a2f86;
   --b: #2a2166;
   --lip: #120d33;
-  /* Al pasar el ratón se llena desde abajo con el destello rosa → azul, que se desliza mientras sube */
-  background:
-    var(--shimmer) 0 100% / 220% 0 no-repeat,
-    linear-gradient(180deg, var(--a), var(--b));
+  background: linear-gradient(180deg, var(--a), var(--b));
   box-shadow:
     inset 0 0 0 1px rgb(var(--line-rgb) / 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -871,19 +879,34 @@ h4 {
   transition:
     transform 0.25s var(--spring),
     box-shadow 0.25s var(--ease),
-    background-size 0.35s var(--ease),
-    background-position 0.8s var(--ease),
     filter 0.2s;
+}
+
+/* Al pasar el ratón se llena de izquierda a derecha con el destello rosa → azul, que se desliza mientras crece */
+.btn-ghost:not(.is-loading)::before,
+.tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--shimmer) 0 0 / 220% 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition:
+    transform 0.45s var(--ease),
+    background-position 0.9s var(--ease);
+  pointer-events: none;
+}
+
+.btn-ghost:hover::before,
+.tab:hover::before {
+  transform: scaleX(1);
+  background-position: 100% 0;
 }
 
 .btn-ghost:hover {
   color: #fff;
-  background-size:
-    220% 100%,
-    auto;
-  background-position:
-    100% 100%,
-    0 0;
   box-shadow:
     inset 0 0 0 1px rgb(var(--a-rgb) / 0.85),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -891,9 +914,46 @@ h4 {
     0 0 30px -6px rgb(var(--a-rgb) / 0.7);
 }
 
+.btn-emerald {
+  --a: #19e6a1;
+  --b: #0ea5e9;
+  --lip: #065f53;
+  --fg: #fff;
+  --glow: rgb(16 185 129 / 0.7);
+  background: var(--shimmer-emerald) 0 0 / 220% 100%;
+  text-shadow: 0 1px 2px rgba(0, 40, 35, 0.5);
+  box-shadow:
+    inset 0 0 0 1px rgb(200 255 238 / 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 var(--lift) 0 var(--lip),
+    0 0 22px -4px rgb(25 230 161 / 0.55),
+    0 12px 26px -12px var(--glow);
+}
+
+.btn-emerald:hover {
+  background-position: 100% 0;
+  box-shadow:
+    inset 0 0 0 1px rgb(200 255 238 / 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 calc(var(--lift) + 2px) 0 var(--lip),
+    0 0 34px -2px rgb(25 230 161 / 0.7),
+    0 0 60px -14px rgb(14 165 233 / 0.7);
+  animation: btn-breathe-emerald 1.8s ease-in-out 0.3s infinite;
+}
+
+.btn-whatsapp {
+  --a: #4be38a;
+  --b: #1faa59;
+  --c3: #2dd4bf;
+  --lip: #0f6b37;
+  --fg: #fff;
+  --glow: rgba(37, 211, 102, 0.6);
+}
+
 .btn-discord {
   --a: #7d87ff;
   --b: #5865f2;
+  --c3: #a78bfa;
   --lip: #343db0;
   --fg: #fff;
   --glow: rgba(88, 101, 242, 0.65);
@@ -902,6 +962,7 @@ h4 {
 .btn-coin {
   --a: #ffe08a;
   --b: #f5b324;
+  --c3: #fff1b8;
   --lip: #9a5c08;
   --fg: #2b1a00;
   --glow: rgba(245, 179, 36, 0.55);
@@ -1626,6 +1687,24 @@ body:not([data-hero]) .header::before {
   text-transform: uppercase;
 }
 
+/* Comunidad: Discord, WhatsApp y cómo entrar, debajo de la versión */
+.hero-links {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
+  margin-top: 18px;
+}
+
+@media (min-width: 640px) {
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: none;
+  }
+}
+
 /* Entrada escalonada del héroe cuando termina la carga */
 .hero-inner > *,
 .page-hero .wrap > *,
@@ -1662,36 +1741,9 @@ body:not([data-hero]) .header::before {
   animation-delay: 0.4s;
 }
 
-.scroll-cue {
-  position: absolute;
-  left: 50%;
-  bottom: 92px;
-  display: none;
-  width: 26px;
-  height: 42px;
-  margin-left: -13px;
-  border-radius: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  transition: border-color 0.2s;
+.hero-inner > :nth-child(7) {
+  animation-delay: 0.48s;
 }
-
-.scroll-cue:hover {
-  border-color: var(--a-300);
-}
-
-.scroll-cue span {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  width: 4px;
-  height: 8px;
-  margin-left: -2px;
-  border-radius: 2px;
-  background: var(--a-300);
-  animation: cue 1.8s var(--ease) infinite;
-}
-
-/* ---------- Portada: cifras del servidor ---------- */
 
 /* ---------- Tarjetas (superficie común) ---------- */
 
@@ -1708,8 +1760,6 @@ body:not([data-hero]) .header::before {
     var(--surface);
   box-shadow: var(--card-shadow), var(--haze);
 }
-
-/* ---------- Portada: pilares ---------- */
 
 /* ---------- Páginas interiores: cabecera con el arte ---------- */
 
@@ -2620,9 +2670,9 @@ body:not([data-hero]) .header::before {
   padding: 0 12px;
   border: 0;
   border-radius: var(--r);
-  background:
-    var(--shimmer) 0 100% / 220% 0 no-repeat,
-    rgb(var(--line-rgb) / 0.06);
+  isolation: isolate;
+  overflow: hidden;
+  background: rgb(var(--line-rgb) / 0.06);
   box-shadow: inset 0 0 0 1px rgb(var(--line-rgb) / 0.14);
   color: var(--text-2);
   font-size: 14px;
@@ -2630,8 +2680,6 @@ body:not([data-hero]) .header::before {
   white-space: nowrap;
   transition:
     color 0.25s,
-    background-size 0.35s var(--ease),
-    background-position 0.8s var(--ease),
     box-shadow 0.25s,
     transform 0.25s var(--spring);
 }
@@ -2639,12 +2687,6 @@ body:not([data-hero]) .header::before {
 .tab:hover {
   color: #fff;
   transform: translateY(-2px);
-  background-size:
-    220% 100%,
-    auto;
-  background-position:
-    100% 100%,
-    0 0;
   box-shadow:
     inset 0 0 0 1px rgb(255 214 247 / 0.45),
     0 0 22px -6px rgb(var(--a-rgb) / 0.6);
@@ -5451,21 +5493,6 @@ body:not([data-hero]) .header::before {
   }
 }
 
-@keyframes cue {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  30% {
-    opacity: 1;
-  }
-  80%,
-  100% {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-}
-
 @keyframes bar-grow {
   from {
     transform: scaleX(0);
@@ -5518,6 +5545,17 @@ body:not([data-hero]) .header::before {
       0 calc(var(--lift) + 2px) 0 var(--lip),
       0 0 46px 2px rgb(var(--a-rgb) / 0.6),
       0 0 80px -10px rgb(var(--c-rgb) / 0.75);
+  }
+}
+
+@keyframes btn-breathe-emerald {
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgb(200 255 238 / 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 calc(var(--lift) + 2px) 0 var(--lip),
+      0 0 46px 2px rgb(25 230 161 / 0.55),
+      0 0 80px -10px rgb(14 165 233 / 0.8);
   }
 }
 
@@ -5903,9 +5941,6 @@ body:not([data-hero]) .header::before {
     padding-top: 0;
   }
 
-  .scroll-cue {
-    display: block;
-  }
 
   .grid-3 {
     grid-template-columns: repeat(3, 1fr);
@@ -6081,11 +6116,11 @@ body:not([data-hero]) .header::before {
   }
 
   .sky .neb-a {
-    animation-duration: 46s !important;
+    animation-duration: 22s !important;
   }
 
   .sky .neb-b {
-    animation-duration: 29s !important;
+    animation-duration: 14s !important;
   }
 
   .sky .stars-a {
@@ -6118,7 +6153,8 @@ body:not([data-hero]) .header::before {
   }
 
   .btn-primary:hover,
-  .btn-theme:hover {
+  .btn-theme:hover,
+  .btn-emerald:hover {
     animation-duration: 1.8s !important;
     animation-iteration-count: infinite !important;
     animation-delay: 0.3s !important;

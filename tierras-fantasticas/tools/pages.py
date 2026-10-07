@@ -130,7 +130,7 @@ def header(page):
         <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
         <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
       </button>
-      <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Únete al Discord</a>
+      <a href="/discord" class="btn btn-discord btn-lg" target="_blank" rel="noopener">{I['discord']}Únete al Discord</a>
     </div>
   </div>
 '''
@@ -174,7 +174,8 @@ def footer():
             <li><a href="/terminos">Términos y condiciones</a></li>
             <li><a href="/privacidad">Aviso de privacidad</a></li>
             <li><a href="mailto:{EMAIL}">{EMAIL}</a></li>
-            <li><a href="#" class="discord-link" target="_blank" rel="noopener" hidden>Discord</a></li>
+            <li><a href="/discord" target="_blank" rel="noopener">Discord</a></li>
+            <li><a href="/whatsapp" target="_blank" rel="noopener">Grupo de WhatsApp</a></li>
           </ul>
         </div>
       </div>
@@ -237,7 +238,7 @@ DISCORD_BAND = f'''    <section class="wrap section">
         <h2>Únete al Discord del reino</h2>
         <p>Novedades, eventos, sorteos, el modpack y soporte del staff. Aquí empieza todo.</p>
         <div class="actions">
-          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
+          <a href="/discord" class="btn btn-discord btn-lg" target="_blank" rel="noopener">{I['discord']}Entrar al Discord</a>
           <a href="/ayuda" class="btn btn-ghost btn-lg">Ver ayuda</a>
         </div>
       </div>
@@ -252,10 +253,10 @@ JOIN_STEPS = '\n'.join([
 
 
 def index():
-    # Portada ligera (lo pidió el dueño): solo el emblema con la IP y «Tu aventura empieza hoy». Lo demás está en sus
-    # páginas (tienda, el mundo, ayuda).
+    # Portada ligera (lo pidió el dueño): solo el emblema con la IP, la tienda y los enlaces de la comunidad. Lo demás
+    # está en sus páginas (tienda, el mundo, ayuda).
     return head('Tierras Fantásticas — Servidor de Minecraft',
-                'Tierras Fantásticas: servidor de Minecraft de aventura con castillos, reinos y mazmorras. Más de 200 mods, sets animados y una comunidad activa.',
+                'Tierras Fantásticas: servidor survival de Minecraft de aventura, fantasía y rol. Más de 200 mods, sets animados y una comunidad activa.',
                 'inicio', hero=True, preload_hero=True) + header('inicio') + f'''
   <main id="main">
     <section class="hero">
@@ -268,31 +269,23 @@ def index():
         </div>
         <span class="live-pill" data-status><span class="dot" data-status-dot></span><span data-status-text>Comprobando el servidor…</span></span>
         <h1 class="hero-title" aria-label="Tierras Fantásticas"><span aria-hidden="true"><span class="w"><span class="ch" style="--i:0">T</span><span class="ch" style="--i:1">i</span><span class="ch" style="--i:2">e</span><span class="ch" style="--i:3">r</span><span class="ch" style="--i:4">r</span><span class="ch" style="--i:5">a</span><span class="ch" style="--i:6">s</span></span> <span class="w"><span class="ch" style="--i:8">F</span><span class="ch" style="--i:9">a</span><span class="ch" style="--i:10">n</span><span class="ch" style="--i:11">t</span><span class="ch" style="--i:12">á</span><span class="ch" style="--i:13">s</span><span class="ch" style="--i:14">t</span><span class="ch" style="--i:15">i</span><span class="ch" style="--i:16">c</span><span class="ch" style="--i:17">a</span><span class="ch" style="--i:18">s</span></span></span></h1>
-        <p class="lead">Un reino de castillos, magia y mazmorras. Construye tu fortaleza, forja alianzas y conquista tierras que nadie ha pisado.</p>
+        <p class="lead">Servidor survival de aventura, fantasía y rol. Explora, construye y vive tu propia historia.</p>
         <div class="hero-cta">
           <button class="ip-box" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
             <span class="ip-text"><small>IP del servidor</small><span class="ip" data-server-ip>{IP}</span></span>
             <span class="ip-copy">{I['copy']}<span data-copy-hint>Copiar</span></span>
           </button>
-          <a href="/tienda" class="btn btn-primary btn-lg">Visitar la tienda {I['arrow']}</a>
+          <a href="/tienda" class="btn btn-emerald btn-lg">Visitar la tienda {I['arrow']}</a>
         </div>
-        <span class="hero-meta">Minecraft Java 1.20.1 · Forge · Gratis</span>
+        <span class="hero-meta">Minecraft Java 1.20.1 · Forge</span>
+        <div class="hero-links">
+          <a href="/discord" class="btn btn-discord" target="_blank" rel="noopener">{I['discord']}Entra a nuestro Discord</a>
+          <a href="/whatsapp" class="btn btn-whatsapp" target="_blank" rel="noopener">{I['whatsapp']}Grupo de WhatsApp</a>
+          <a href="/ayuda#como-entrar" class="btn btn-ghost">{I['plug']}Cómo entrar</a>
+        </div>
       </div>
-      <a class="scroll-cue" href="#unete" aria-label="Bajar"><span></span></a>
     </section>
 
-    <section class="wrap section" id="unete">
-      <div class="panel cta-band reveal">
-        <span class="eyebrow">Únete</span>
-        <h2>Tu aventura empieza hoy</h2>
-        <p>Es gratis: Minecraft Java 1.20.1 con el modpack del servidor. Copia la IP, entra y funda tu reino.</p>
-        <div class="actions">
-          <button class="btn btn-primary btn-lg" type="button" data-copy-ip>{I['copy']}<span data-copy-hint>Copiar IP</span></button>
-          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
-          <a href="/ayuda" class="btn btn-ghost btn-lg">Cómo entrar</a>
-        </div>
-      </div>
-    </section>
   </main>
 ''' + footer()
 
@@ -519,7 +512,7 @@ def ayuda():
                 'ayuda') + header('ayuda') + f'''
   <main id="main">
 {page_hero('Ayuda', 'Preguntas frecuentes', 'Todo lo que necesitas saber para entrar al servidor y sobre la tienda.')}
-    <section class="wrap section">
+    <section class="wrap section" id="como-entrar">
       <div class="section-head reveal">
         <span class="eyebrow">Cómo jugar</span>
         <h2>Dentro en tres pasos</h2>
