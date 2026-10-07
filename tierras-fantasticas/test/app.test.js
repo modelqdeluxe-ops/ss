@@ -130,6 +130,65 @@ function startFakeDiscord() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
 }
 
+// --- API de PayPal simulada ---
+const paypalOrders = new Map();
+const paypalCaptures = new Map();
+let nextPaypal = 1;
+
+function startFakePaypal() {
+  const server = http.createServer(async (req, res) => {
+    let raw = '';
+    for await (const chunk of req) raw += chunk;
+    const send = (status, data) => {
+      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(data));
+    };
+    if (req.url === '/v1/oauth2/token') {
+      const ok = req.headers.authorization === `Basic ${btoa('pp-client:pp-secret')}`;
+      return ok ? send(200, { access_token: 'pp-token', expires_in: 3600 }) : send(401, { error_description: 'bad' });
+    }
+    if (req.headers.authorization !== 'Bearer pp-token') return send(401, { name: 'AUTHENTICATION_FAILURE' });
+    const body = raw ? JSON.parse(raw) : {};
+    if (req.url === '/v2/checkout/orders' && req.method === 'POST') {
+      const id = `PPORDER${nextPaypal++}`;
+      const order = { id, status: 'CREATED', approved: false, purchase_units: body.purchase_units, context: body.application_context,
+        links: [{ rel: 'approve', href: `https://www.paypal.test/checkoutnow?token=${id}` }] };
+      paypalOrders.set(id, order);
+      return send(201, order);
+    }
+    const capture = req.url.match(/^\/v2\/checkout\/orders\/(\w+)\/capture$/);
+    if (capture) {
+      const order = paypalOrders.get(capture[1]);
+      if (!order) return send(404, { name: 'RESOURCE_NOT_FOUND' });
+      if (order.status === 'COMPLETED') return send(422, { details: [{ issue: 'ORDER_ALREADY_CAPTURED' }] });
+      if (!order.approved) return send(422, { details: [{ issue: 'ORDER_NOT_APPROVED' }] });
+      const unit = order.purchase_units[0];
+      const cap = { id: `CAP${order.id}`, status: 'COMPLETED', amount: unit.amount, custom_id: unit.custom_id };
+      paypalCaptures.set(cap.id, cap);
+      order.status = 'COMPLETED';
+      unit.payments = { captures: [cap] };
+      return send(201, order);
+    }
+    const one = req.url.match(/^\/v2\/checkout\/orders\/(\w+)$/);
+    if (one) return paypalOrders.has(one[1]) ? send(200, paypalOrders.get(one[1])) : send(404, { name: 'RESOURCE_NOT_FOUND' });
+    const cap = req.url.match(/^\/v2\/payments\/captures\/(\w+)$/);
+    if (cap) return paypalCaptures.has(cap[1]) ? send(200, paypalCaptures.get(cap[1])) : send(404, { name: 'RESOURCE_NOT_FOUND' });
+    if (req.url === '/v1/notifications/verify-webhook-signature') {
+      return send(200, { verification_status: body.transmission_sig === 'firma-buena' && body.webhook_id === 'WH-1' ? 'SUCCESS' : 'FAILURE' });
+    }
+    send(404, { name: 'NOT_FOUND' });
+  });
+  servers.push(server);
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server.address().port)));
+}
+
+const paypalWebhook = (event, sig = 'firma-buena') =>
+  call('/webhook/paypal', {
+    method: 'POST',
+    headers: { 'PayPal-Transmission-Sig': sig, 'PayPal-Transmission-Id': 't1', 'PayPal-Auth-Algo': 'SHA256withRSA' },
+    body: JSON.stringify(event),
+  });
+
 const ROLE_ID = '222222222222222222';
 const quietLog = { log() {}, warn() {}, error() {} };
 
@@ -137,7 +196,7 @@ const quietLog = { log() {}, warn() {}, error() {} };
 const ASSETS = { fetch: async (req) => new Response(`estático ${new URL(req.url).pathname}`) };
 
 before(async () => {
-  const [stripePort, discordPort] = await Promise.all([startFakeStripe(), startFakeDiscord()]);
+  const [stripePort, discordPort, paypalPort] = await Promise.all([startFakeStripe(), startFakeDiscord(), startFakePaypal()]);
   // Rol de Discord real (formato snowflake) para el rango de pruebas.
   products.find((p) => p.id === 'rango-inmortal').discordRoles = [ROLE_ID];
   env = {
@@ -156,6 +215,10 @@ before(async () => {
     DISCORD_API_BASE: `http://127.0.0.1:${discordPort}`,
     DISCORD_WEBHOOK_URL: `http://127.0.0.1:${discordPort}/webhook`,
     BRIDGE_SECRET,
+    PAYPAL_CLIENT_ID: 'pp-client',
+    PAYPAL_CLIENT_SECRET: 'pp-secret',
+    PAYPAL_API_BASE: `http://127.0.0.1:${paypalPort}`,
+    PAYPAL_WEBHOOK_ID: 'WH-1',
   };
 });
 
@@ -958,4 +1021,104 @@ test('los Términos se aceptan con una casilla al crear la cuenta y al pagar, y 
   const accepted = await (await post('/api/account/terms', { acceptTerms: true }, cookie)).json();
   assert.strictEqual(accepted.user.termsOk, true);
   assert.strictEqual((await post('/api/claim', { productId: 'regalo-diamantes' }, cookie)).status, 200);
+});
+
+// --- Reembolsos: se retira del servidor lo comprado ---
+test('un reembolso completo retira del servidor lo comprado, aunque el jugador no esté conectado', async () => {
+  received.length = 0;
+  await seen('Devuelve_MC');
+  const uuid = uuidOf('Devuelve_MC');
+  const refund = (id) =>
+    signedEvent({ type: 'charge.refunded', data: { object: { id: `ch_${id}`, payment_intent: sessionOf(id).payment_intent, refunded: true } } });
+
+  // Una crate entregada y una mejora de rango (Mortal → Mágico) entregada.
+  const crate = await checkout({ productId: 'crate-valentine', username: 'Devuelve_MC' });
+  await pay(crate);
+  const mortal = await checkout({ productId: 'rango-mortal', username: 'Devuelve_MC' });
+  await pay(mortal);
+  const magico = await checkout({ productId: 'rango-magico', username: 'Devuelve_MC' });
+  await pay(magico);
+  const delivered = await serverDelivers('Devuelve_MC');
+  assert.ok(delivered.every((d) => typeof d.order === 'string' && d.order.length > 0), 'cada entrega lleva su pedido');
+  received.length = 0;
+
+  // Un reembolso parcial solo se apunta.
+  await signedEvent({ type: 'charge.refunded', data: { object: { id: 'ch_p', payment_intent: sessionOf(crate).payment_intent, refunded: false } } });
+  assert.strictEqual((await (await get(`/api/order/${crate}`)).json()).refunded, 'reembolso parcial');
+  assert.deepStrictEqual((await (await poll([])).json()).deliveries, []);
+
+  // Reembolso completo de la crate y de la mejora: la retirada llega aunque el jugador no esté conectado.
+  await refund(crate);
+  await refund(magico);
+  const { deliveries } = await (await poll([])).json();
+  assert.deepStrictEqual(
+    deliveries.map((d) => [d.kind, d.order, d.uuid, d.commands]),
+    [
+      ['revocacion', crate, uuid, [`tf web sets revoke {uuid} ${crate} valentine`]],
+      ['revocacion', magico, uuid, ['lp user {uuid} parent remove magico', `tf web sets revoke {uuid} ${magico} darkworld`, 'lp user {uuid} parent add mortal']],
+    ],
+  );
+  // Vuelve a su rango anterior en la web.
+  assert.strictEqual((await (await get('/api/player/Devuelve_MC')).json()).rank.id, 'rango-mortal');
+  // Un segundo aviso del mismo reembolso no la duplica.
+  await refund(crate);
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+  assert.deepStrictEqual((await (await poll([])).json()).deliveries, []);
+  assert.strictEqual((await (await get(`/api/order/${crate}`)).json()).refunded, 'reembolsado · retirado del servidor');
+
+  // Si se reembolsa antes de entregarse, la entrega se cancela.
+  const late = await checkout({ productId: 'crate-oni', username: 'Devuelve_MC' });
+  await pay(late);
+  await refund(late);
+  const pending = (await (await poll(['Devuelve_MC'])).json()).deliveries;
+  assert.deepStrictEqual(pending.map((d) => d.kind), ['revocacion']);
+});
+
+// --- PayPal ---
+test('pagar con PayPal: se aprueba en PayPal, se cobra al volver y un reembolso lo retira del servidor', async () => {
+  received.length = 0;
+  await seen('Paypal_MC');
+  const config = await (await get('/api/config')).json();
+  assert.strictEqual(config.paypalEnabled, true);
+
+  const res = await post('/api/checkout', { acceptTerms: true, method: 'paypal', productId: 'crate-valentine', username: 'Paypal_MC' });
+  const { id, url } = await res.json();
+  assert.strictEqual(res.status, 200);
+  assert.match(url, /^https:\/\/www\.paypal\.test\/checkoutnow\?token=PPORDER/);
+  const ppOrder = [...paypalOrders.values()].find((o) => o.purchase_units[0].custom_id === id);
+  const price = products.find((p) => p.id === 'crate-valentine').price;
+  assert.strictEqual(ppOrder.purchase_units[0].amount.value, (price / 100).toFixed(2));
+  assert.strictEqual(ppOrder.context.return_url, `http://tienda.test/success?order=${id}`);
+
+  // Sin aprobar en PayPal no se cobra ni se entrega.
+  assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'pending');
+  // Aprobado: al volver a /success se cobra y se entrega.
+  ppOrder.approved = true;
+  assert.strictEqual((await (await post(`/api/order/${id}/sync`)).json()).status, 'queued');
+  // El webhook del mismo cobro no lo entrega dos veces.
+  const cap = ppOrder.purchase_units[0].payments.captures[0];
+  assert.strictEqual((await paypalWebhook({ event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: cap })).status, 200);
+  await serverDelivers('Paypal_MC');
+  assert.deepStrictEqual(received, ['tf web sets give Paypal_MC valentine']);
+
+  // Un aviso sin firma válida se rechaza.
+  assert.strictEqual((await paypalWebhook({ event_type: 'PAYMENT.CAPTURE.REFUNDED', resource: {} }, 'falsa')).status, 400);
+  // Reembolso completo desde PayPal: se retira del servidor.
+  cap.status = 'REFUNDED';
+  const refund = { id: 'REF1', links: [{ rel: 'up', href: `https://api.paypal.test/v2/payments/captures/${cap.id}` }] };
+  assert.strictEqual((await paypalWebhook({ event_type: 'PAYMENT.CAPTURE.REFUNDED', resource: refund })).status, 200);
+  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).refunded, 'reembolsado');
+  const { deliveries } = await (await poll([])).json();
+  assert.deepStrictEqual(deliveries.map((d) => [d.kind, d.commands]), [['revocacion', [`tf web sets revoke {uuid} ${id} valentine`]]]);
+  await poll([], deliveries.map((d) => ({ id: d.id, ok: true })));
+});
+
+test('PayPal: un pedido aprobado se cobra también si el comprador no vuelve a la web (webhook)', async () => {
+  await seen('Paypal_Web');
+  const { id } = await (await post('/api/checkout', { acceptTerms: true, method: 'paypal', productId: 'crate-oni', username: 'Paypal_Web' })).json();
+  const ppOrder = [...paypalOrders.values()].find((o) => o.purchase_units[0].custom_id === id);
+  ppOrder.approved = true;
+  assert.strictEqual((await paypalWebhook({ event_type: 'CHECKOUT.ORDER.APPROVED', resource: { id: ppOrder.id } })).status, 200);
+  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'queued');
+  await serverDelivers('Paypal_Web');
 });

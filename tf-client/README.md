@@ -65,6 +65,15 @@ Curios (el que usa Artifacts), en el hueco de la espalda, que deja el pecho libr
   llevarlas, ponérselas y usarlas; si otro jugador las saca de un cofre vuelven a su dueño (o le esperan hasta que
   entre). `/tf web sets give` las vincula al entregar; las que no tienen dueño se vinculan al primero que las lleve
   fuera de creativo. Los cosméticos (cabeza, espalda, mano, globos y los sets de cosméticos) no se vinculan.
+- **Reembolsos** (1.3.11, `items/TFRevocations.java`): al entregar una compra, el puente marca cada objeto con su
+  pedido (`TFOrder`). Si la compra se reembolsa o hay una disputa, la web manda `/tf web sets revoke <uuid> <pedido>
+  <set> [objeto]` (aunque el jugador no esté conectado) y se retira todo lo de ese pedido esté donde esté: inventario,
+  cofre de ender, huecos de Accessories/Curios, objeto en el cursor, cofres y demás contenedores (también los de otros
+  mods con su inventario de Forge, y dentro de cajas de shulker y sacos), marcos, soportes, cofres con ruedas y el
+  suelo. Lo que no está cargado se retira al cargarse (chunks, entidades), al abrir un contenedor, al entrar el
+  jugador y cada segundo de su inventario. Lo apuntado se guarda en `data/tfclient_revocations.dat`. Los objetos de
+  antes de 1.3.11 (sin pedido) se reconocen por su dueño y su set. Para usar un objeto hay que llevarlo encima, así que
+  aunque quede guardado en un sistema de almacenamiento de otro mod, se retira en cuanto lo saca.
 - **Las alas planean como élitros** (1.3.10, solo las alas: `"glide"` en `tf_sets.json`), sin gastarse, puestas en
   el pecho o en el hueco de la espalda (`items/TFWings.java` + `mixin/ItemStackMixin.java`).
 - Con el mod **Better Combat**, cada arma usa la plantilla que le toca por su forma (espada, mandoble, daga, lanza,
@@ -90,6 +99,7 @@ Solo hay dos: `/tf jobs` (todos los jugadores) y `/tf web` (staff, nivel 2).
 
 /tf web sets list                            lista los sets
 /tf web sets give <jugadores> <set> [objeto] da el set entero o un objeto (p. ej. /tf web sets give Steve oni sword)
+/tf web sets revoke <uuid> <pedido> <set> [objeto]  retira lo de una compra reembolsada (lo manda la web)
 /tf web tienda add <precio> [nombre]         (nivel 3) pone a la venta en la web lo que tienes en la mano
 /tf web tienda precio <id> <precio>          (nivel 3) cambia el precio
 /tf web tienda quitar <id> | lista | vaciar  (nivel 3)

@@ -350,6 +350,11 @@ public final class TFBridge {
             ack(id, true, null);
             return;
         }
+        // Reembolso: se retira lo de ese pedido aunque el jugador no esté conectado.
+        if ("revocacion".equals(text(delivery, "kind", ""))) {
+            revoke(srv, id, delivery);
+            return;
+        }
         // Por UUID: aunque el jugador se cambie el nombre o alguien use uno parecido, llega al que pagó.
         String uuidText = text(delivery, "uuid", null);
         ServerPlayer player = null;
@@ -373,14 +378,20 @@ public final class TFBridge {
         boolean coinSpin = kind.equals("ruleta-monedas") || kind.equals("tienda-monedas");
         List<String> errors = new ArrayList<>();
         net.tierrasfantasticas.tfclient.shop.TFRoulette.startCapture();
-        for (JsonElement cmd : delivery.getAsJsonArray("commands")) {
-            String command = cmd.getAsString().replace("{player}", name).replace("{uuid}", uuid);
-            List<String> failed = run(srv, command);
-            // Quitar un grupo de rango que no tenía no es un error de la entrega.
-            if (!failed.isEmpty() && !command.contains(" parent remove ")) {
-                // Con monedas: a la web le llega el motivo tal cual («no tienes bastantes monedas»)
-                errors.add(coinSpin ? String.join("; ", failed) : command + " → " + String.join("; ", failed));
+        // Lo que se entregue lleva la marca del pedido: si se reembolsa, se sabe qué quitar.
+        net.tierrasfantasticas.tfclient.items.TFRevocations.setCurrentOrder(text(delivery, "order", null));
+        try {
+            for (JsonElement cmd : delivery.getAsJsonArray("commands")) {
+                String command = cmd.getAsString().replace("{player}", name).replace("{uuid}", uuid);
+                List<String> failed = run(srv, command);
+                // Quitar un grupo de rango que no tenía no es un error de la entrega.
+                if (!failed.isEmpty() && !command.contains(" parent remove ")) {
+                    // Con monedas: a la web le llega el motivo tal cual («no tienes bastantes monedas»)
+                    errors.add(coinSpin ? String.join("; ", failed) : command + " → " + String.join("; ", failed));
+                }
             }
+        } finally {
+            net.tierrasfantasticas.tfclient.items.TFRevocations.setCurrentOrder(null);
         }
         JsonArray prizes = net.tierrasfantasticas.tfclient.shop.TFRoulette.stopCapture();
         if (coinSpin) {
@@ -404,6 +415,27 @@ public final class TFBridge {
             TFRanks.set(srv, player, rank);
         }
         celebrate(srv, player, delivery, product, quantity, rank);
+    }
+
+    /** Retirada de una compra reembolsada: los comandos van por UUID (sirven con el jugador desconectado). */
+    private static void revoke(MinecraftServer srv, long id, JsonObject delivery) {
+        String uuid = text(delivery, "uuid", "");
+        String name = text(delivery, "player", uuid);
+        remember(id);
+        List<String> errors = new ArrayList<>();
+        for (JsonElement cmd : delivery.getAsJsonArray("commands")) {
+            String command = cmd.getAsString().replace("{player}", name).replace("{uuid}", uuid);
+            List<String> failed = run(srv, command);
+            // Quitar o devolver un grupo de LuckPerms que ya estaba así no es un error.
+            if (!failed.isEmpty() && !command.startsWith("lp ")) errors.add(command + " → " + String.join("; ", failed));
+        }
+        if (errors.isEmpty()) {
+            TFClient.LOGGER.warn("TF Bridge: retirada la compra reembolsada {} de {} ({}) (entrega {})", text(delivery, "order", "?"), name, uuid, id);
+            ack(id, true, null);
+        } else {
+            TFClient.LOGGER.error("TF Bridge: fallo al retirar la compra {} de {} (entrega {}): {}", text(delivery, "order", "?"), name, id, errors);
+            ack(id, false, String.join(" | ", errors));
+        }
     }
 
     // --- El anuncio: todo el servidor se entera de la compra ---

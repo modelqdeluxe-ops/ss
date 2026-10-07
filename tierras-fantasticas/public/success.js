@@ -29,7 +29,7 @@
   }
   $('d-order').textContent = orderId;
 
-  // Si Stripe aún no nos ha avisado del pago, se lo preguntamos y volvemos a mirar durante un rato.
+  // Si Stripe o PayPal aún no nos han avisado del pago (o hay que cobrar el de PayPal), se lo preguntamos y volvemos a mirar durante un rato.
   for (let attempt = 0, coinWaits = 0; attempt < 15 && coinWaits < 150; attempt++, coinWaits++) {
     let order;
     try {
@@ -130,7 +130,7 @@
     }
     const waitText = order.status === 'awaiting_payment'
       ? 'Tu banco aún está confirmando el cobro. Te entregaremos la compra en cuanto se complete; puedes cerrar esta página.'
-      : 'Estamos confirmando el pago con Stripe. Si ya pagaste, tu compra llegará igualmente; puedes cerrar esta página.';
+      : 'Estamos confirmando el pago. Si ya pagaste, tu compra llegará igualmente; puedes cerrar esta página.';
     show('wait', 'Pendiente', 'Pago en proceso', waitText);
     await new Promise((r) => setTimeout(r, 4000));
   }

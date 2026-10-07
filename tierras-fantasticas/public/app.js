@@ -1,4 +1,4 @@
-// Tierras Fantásticas: menú, estado del servidor, tienda, crates, cuentas de jugador con Discord y compra con Stripe.
+// Tierras Fantásticas: menú, estado del servidor, tienda, crates, cuentas de jugador con Discord y compra con Stripe o PayPal.
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -122,6 +122,18 @@
   let revealObserver = null;
   observeReveal();
 
+  // --- Volver arriba: aparece al bajar más de una pantalla ---
+  const toTop = $('[data-to-top]');
+  if (toTop) {
+    const update = () => toTop.classList.toggle('show', window.scrollY > window.innerHeight * 0.9);
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+    toTop.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  }
+
   // --- Configuración pública ---
   async function loadConfig() {
     try {
@@ -137,6 +149,8 @@
       });
     }
     $$('[data-payments-off]').forEach((el) => (el.hidden = config.paymentsEnabled));
+    // Lo que menciona PayPal solo se ve si PayPal está conectado.
+    $$('[data-paypal]').forEach((el) => (el.hidden = !config.paypalEnabled));
     loadStatus();
   }
 
@@ -1278,8 +1292,11 @@
       <p class="error" id="checkout-error" role="alert"></p>
 
       ${termsLabel('pay-terms')}
-      <button type="submit" class="btn btn-primary btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
-      <p class="pay-note">${ICON_LOCK}<span>Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
+      <div class="pay-actions">
+        <button type="submit" class="btn btn-primary btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
+        <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
+      </div>
+      <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
       <p class="pay-legal">Precio final en USD. Tienes 5 días hábiles para cancelar la compra.
         Tierras Fantásticas es un servidor independiente: no es un producto oficial de Minecraft ni está asociado con Mojang o Microsoft.</p>
     </form>
@@ -1310,7 +1327,22 @@
 
   function setPayable() {
     const blocked = Boolean(player?.quote?.blocked);
-    $('#pay-btn').disabled = !player || blocked || paying || !$('#pay-terms').checked;
+    const off = !player || blocked || paying || !$('#pay-terms').checked;
+    $('#pay-btn').disabled = off;
+    $('#pay-paypal').disabled = off;
+  }
+
+  // Botones de pago según lo que esté conectado en el servidor (tarjeta con Stripe y/o PayPal).
+  function renderPayMethods() {
+    const card = config.cardEnabled !== false;
+    const pp = Boolean(config.paypalEnabled);
+    $('#pay-btn').hidden = !card;
+    $('#pay-paypal').hidden = !pp;
+    $('#pay-note-text').innerHTML = card && pp
+      ? 'Pago seguro con <b>Stripe</b> (tarjeta, Apple Pay o Google Pay) o con <b>PayPal</b>. Nunca vemos tus datos bancarios.'
+      : pp
+        ? 'Pago seguro con <b>PayPal</b> (tu cuenta o tarjeta). Nunca vemos tus datos bancarios.'
+        : 'Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.';
   }
 
   document.addEventListener('click', (e) => {
@@ -1343,6 +1375,8 @@
     $('#pay-terms').checked = false;
     $('#pay-btn').textContent = 'Pagar con tarjeta';
     $('#pay-btn').classList.remove('is-loading');
+    $('#pay-paypal').classList.remove('is-loading');
+    renderPayMethods();
     // Con la cuenta vinculada, el jugador ya se sabe.
     $('#username').value = me.user?.name || storageGet('tf-username');
     player = null;
@@ -1502,12 +1536,13 @@
     });
     $('#checkout-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      pay();
+      pay('stripe');
     });
+    $('#pay-paypal').addEventListener('click', () => pay('paypal'));
   }
 
-  // El servidor crea el pago con el precio del catálogo y nos manda a la página segura de Stripe.
-  async function pay() {
+  // El servidor crea el pago con el precio del catálogo y nos manda a la página segura de Stripe o de PayPal.
+  async function pay(method) {
     if (paying || !player || player.quote?.blocked) return;
     if (!$('#pay-terms').checked) return showError('Marca la casilla para aceptar los Términos y el Aviso de privacidad.');
     const quantity = Number.parseInt(qtyInput.value, 10) || 1;
@@ -1516,13 +1551,15 @@
     showError('');
     paying = true;
     setPayable();
-    $('#pay-btn').textContent = 'Abriendo el pago seguro…';
-    $('#pay-btn').classList.add('is-loading');
+    const btn = method === 'paypal' ? $('#pay-paypal') : $('#pay-btn');
+    const label = btn.innerHTML;
+    btn.textContent = method === 'paypal' ? 'Abriendo PayPal…' : 'Abriendo el pago seguro…';
+    btn.classList.add('is-loading');
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: selected.id, username: player.name, uuid: player.uuid, quantity, acceptTerms: true }),
+        body: JSON.stringify({ productId: selected.id, username: player.name, uuid: player.uuid, quantity, acceptTerms: true, method }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw new Error(data.error || 'No se pudo iniciar el pago.');
@@ -1530,8 +1567,8 @@
       window.location.href = data.url;
     } catch (err) {
       paying = false;
-      $('#pay-btn').textContent = 'Pagar con tarjeta';
-      $('#pay-btn').classList.remove('is-loading');
+      btn.innerHTML = label;
+      btn.classList.remove('is-loading');
       showError(err.message);
       setPayable();
     }

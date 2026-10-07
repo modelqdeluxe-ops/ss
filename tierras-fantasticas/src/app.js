@@ -4,6 +4,7 @@
 import products from '../config/products.json' with { type: 'json' };
 import legal from '../config/legal.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
+import { PayPal, formatAmount } from './paypal.js';
 import { Discord, isSnowflake } from './discord.js';
 import { createStore, CLAIMED, UUID_RE } from './store.js';
 import { createSession, parseCookies, serializeCookie, randomHex, safeEqual } from './session.js';
@@ -85,6 +86,12 @@ export function createApp(env) {
 
   const store = createStore(env.DB);
   const stripe = env.STRIPE_SECRET_KEY ? new Stripe({ secretKey: env.STRIPE_SECRET_KEY, apiBase: env.STRIPE_API_BASE }) : null;
+  // PayPal (opcional): con PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET en Cloudflare aparece el botón «Pagar con PayPal».
+  // PAYPAL_ENV = 'sandbox' para pruebas (por defecto, live).
+  const paypal =
+    env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET
+      ? new PayPal({ clientId: env.PAYPAL_CLIENT_ID, clientSecret: env.PAYPAL_CLIENT_SECRET, env: env.PAYPAL_ENV || 'live', apiBase: env.PAYPAL_API_BASE })
+      : null;
 
   let sessionPromise = null;
   const session = () =>
@@ -275,7 +282,9 @@ export function createApp(env) {
         discordUrl: DISCORD_URL,
         discordLogin: discord.loginEnabled,
         currency: CURRENCY,
-        paymentsEnabled: Boolean(stripe),
+        paymentsEnabled: Boolean(stripe || paypal),
+        cardEnabled: Boolean(stripe),
+        paypalEnabled: Boolean(paypal),
         discordInvite: DISCORD_URL,
         termsVersion: TERMS_VERSION,
         // Solo se puede comprar a jugadores que el puente ya conoce.
@@ -545,9 +554,12 @@ export function createApp(env) {
     // 1) Crea el pago en Stripe y devuelve su página. El precio sale del catálogo, nunca del navegador,
     //    y el jugador tiene que existir en el servidor: la entrega va a su UUID, sin errores de nombre.
     'POST /api/checkout': async (req, { url }) => {
-      if (!stripe) return json({ error: 'Los pagos no están configurados todavía.' }, 503);
-
       const body = (await readJson(req)) || {};
+      const method = body.method === 'paypal' ? 'paypal' : 'stripe';
+      if (method === 'stripe' && !stripe) {
+        return json({ error: paypal ? 'El pago con tarjeta no está disponible ahora mismo. Usa PayPal.' : 'Los pagos no están configurados todavía.' }, 503);
+      }
+      if (method === 'paypal' && !paypal) return json({ error: 'El pago con PayPal no está disponible ahora mismo.' }, 503);
       const product = productById.get(body.productId);
       const quantity = Number.parseInt(body.quantity ?? 1, 10);
       if (!product) return json({ error: 'Producto no válido.' }, 400);
@@ -584,18 +596,35 @@ export function createApp(env) {
       const account = buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
       const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
       try {
-        const checkout = await stripe.createCheckoutSession({
-          orderId: id,
-          currency: CURRENCY,
-          unitAmount: q.unit,
-          quantity,
-          name,
-          description: `Para ${player.name} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
-          image: base.startsWith('https://') && product.image ? `${base}/${product.image.replace(/^\//, '')}` : undefined,
-          successUrl: `${base}/success?order=${id}`,
-          cancelUrl: `${base}/tienda?cancel=${id}`,
-          metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid },
-        });
+        let checkout;
+        if (method === 'paypal') {
+          const created = await paypal.createOrder({
+            amount,
+            currency: CURRENCY,
+            description: `Para ${player.name} en ${SERVER_NAME}`.slice(0, 127),
+            customId: id,
+            item: { name, quantity, unitAmount: q.unit },
+            brandName: SERVER_NAME,
+            returnUrl: `${base}/success?order=${id}`,
+            cancelUrl: `${base}/tienda?cancel=${id}`,
+            requestId: `create-${id}`,
+          });
+          checkout = { id: created.id, url: PayPal.approveUrl(created) };
+          if (!checkout.url) throw new Error('PayPal no devolvió el enlace de pago');
+        } else {
+          checkout = await stripe.createCheckoutSession({
+            orderId: id,
+            currency: CURRENCY,
+            unitAmount: q.unit,
+            quantity,
+            name,
+            description: `Para ${player.name} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
+            image: base.startsWith('https://') && product.image ? `${base}/${product.image.replace(/^\//, '')}` : undefined,
+            successUrl: `${base}/success?order=${id}`,
+            cancelUrl: `${base}/tienda?cancel=${id}`,
+            metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid },
+          });
+        }
         await store.createOrder({
           id,
           status: 'pending',
@@ -611,11 +640,12 @@ export function createApp(env) {
           sessionId: checkout.id,
           rankFrom: q.from?.id,
           termsVersion: TERMS_VERSION,
+          method,
         });
         await recordTerms(req, { uuid: player.uuid, username: player.name, context: 'compra', orderId: id });
         return json({ id, url: checkout.url });
       } catch (err) {
-        log.error('Error creando el pago en Stripe:', err.message);
+        log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : 'Stripe'}:`, err.message);
         return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
       }
     },
@@ -755,9 +785,12 @@ export function createApp(env) {
             await handleSession(object, ctx, event.type);
             break;
           case 'charge.refunded':
-          case 'charge.dispute.created':
-            await handleReversal(object, event.type);
+          case 'charge.dispute.created': {
+            const dispute = event.type === 'charge.dispute.created';
+            const paymentIntent = typeof object.payment_intent === 'string' ? object.payment_intent : object.payment_intent?.id;
+            await handleReversal({ paymentIntent, full: dispute || object.refunded === true, dispute }, ctx);
             break;
+          }
           default:
             break;
         }
@@ -769,11 +802,73 @@ export function createApp(env) {
       return json({ received: true });
     },
 
+    // Webhook de PayPal: pago aprobado o cobrado (por si el comprador cierra la página antes de volver), reembolsos y
+    // disputas. PayPal no firma con una clave compartida: se le pregunta a su API si el aviso es auténtico.
+    'POST /webhook/paypal': async (req, ctx) => {
+      if (!paypal || !env.PAYPAL_WEBHOOK_ID) return new Response('Webhook no configurado', { status: 503 });
+      let event;
+      try {
+        event = JSON.parse(await req.text());
+      } catch {
+        return new Response('JSON no válido', { status: 400 });
+      }
+      const headers = Object.fromEntries([...req.headers].map(([k, v]) => [k.toLowerCase(), v]));
+      try {
+        if (!(await paypal.verifyWebhook({ headers, event, webhookId: env.PAYPAL_WEBHOOK_ID }))) {
+          return new Response('Firma no válida', { status: 400 });
+        }
+        const r = event.resource || {};
+        switch (event.event_type) {
+          case 'CHECKOUT.ORDER.APPROVED': {
+            const local = r.id ? await store.findOrderBySession(r.id) : null;
+            if (local) await capturePayPal(local, ctx);
+            break;
+          }
+          case 'PAYMENT.CAPTURE.COMPLETED':
+          case 'PAYMENT.CAPTURE.DENIED': {
+            const local = r.custom_id && ORDER_ID_RE.test(r.custom_id) ? await store.getOrder(r.custom_id) : null;
+            if (local) await handlePayPalCapture(local, r, ctx);
+            break;
+          }
+          case 'PAYMENT.CAPTURE.REFUNDED': {
+            // El recurso es el reembolso; el cobro es su enlace «up». Completo si el cobro quedó REFUNDED.
+            const captureId = (r.links || []).find((l) => l.rel === 'up')?.href?.split('/').pop();
+            if (captureId) {
+              const capture = await paypal.getCapture(captureId);
+              await handleReversal({ paymentIntent: captureId, full: capture.status === 'REFUNDED', dispute: false }, ctx);
+            }
+            break;
+          }
+          case 'PAYMENT.CAPTURE.REVERSED':
+            await handleReversal({ paymentIntent: r.id, full: true, dispute: true }, ctx);
+            break;
+          case 'CUSTOMER.DISPUTE.CREATED':
+            for (const t of r.disputed_transactions || []) {
+              await handleReversal({ paymentIntent: t.seller_transaction_id, full: true, dispute: true }, ctx);
+            }
+            break;
+          default:
+            break;
+        }
+      } catch (err) {
+        // 500 para que PayPal reintente más tarde.
+        log.error('Error procesando el webhook de PayPal:', err);
+        return new Response('Error interno', { status: 500 });
+      }
+      return json({ received: true });
+    },
+
     // 3) Respaldo: la página de confirmación pide a Stripe el estado del pago por si el webhook tarda.
     'POST /api/order/:id/sync': async (req, ctx) => {
       const order = ORDER_ID_RE.test(ctx.params.id) ? await store.getOrder(ctx.params.id) : null;
       if (!order) return json({ error: 'Pedido no encontrado.' }, 404);
-      if (stripe && order.sessionId && ['pending', 'awaiting_payment'].includes(order.status)) {
+      if (order.method === 'paypal' && paypal && order.sessionId && ['pending', 'awaiting_payment'].includes(order.status)) {
+        try {
+          await capturePayPal(order, ctx);
+        } catch (err) {
+          log.warn(`No se pudo cobrar el pago de PayPal de ${order.id}:`, err.message);
+        }
+      } else if (stripe && order.sessionId && ['pending', 'awaiting_payment'].includes(order.status)) {
         try {
           await handleSession(await stripe.retrieveCheckoutSession(order.sessionId), ctx, 'sync');
         } catch (err) {
@@ -894,6 +989,48 @@ export function createApp(env) {
     return fulfill(local, ctx, paymentIntent);
   }
 
+  // PayPal: el comprador aprobó el pago en PayPal (vuelve a /success o avisa el webhook): se cobra y se entrega.
+  async function capturePayPal(local, ctx) {
+    if (!['pending', 'awaiting_payment'].includes(local.status)) return local.status;
+    let order;
+    try {
+      order = await paypal.captureOrder(local.sessionId);
+    } catch (err) {
+      if (err.issue === 'ORDER_NOT_APPROVED') return local.status; // Aún no lo aprobó en PayPal
+      if (err.issue !== 'ORDER_ALREADY_CAPTURED') throw err;
+      order = await paypal.getOrder(local.sessionId);
+    }
+    const unit = order.purchase_units?.[0];
+    const capture = unit?.payments?.captures?.[0];
+    if (!capture) return local.status;
+    return handlePayPalCapture(local, { ...capture, custom_id: capture.custom_id || unit.custom_id }, ctx);
+  }
+
+  async function handlePayPalCapture(local, capture, ctx) {
+    if (CLAIMED.includes(local.status)) return local.status; // Ya pagado y procesado.
+    if (local.method !== 'paypal' || (capture.custom_id && capture.custom_id !== local.id)) {
+      log.error(`El cobro de PayPal ${capture.id} no es del pedido ${local.id}`);
+      return local.status;
+    }
+    if (capture.status === 'DECLINED' || capture.status === 'FAILED') {
+      await store.updateOrder(local.id, { status: 'failed' });
+      return 'failed';
+    }
+    if (capture.status === 'PENDING') {
+      // PayPal lo está revisando: avisará con PAYMENT.CAPTURE.COMPLETED.
+      await store.updateOrder(local.id, { status: 'awaiting_payment', paymentIntent: capture.id });
+      return 'awaiting_payment';
+    }
+    if (capture.status !== 'COMPLETED') return local.status;
+    const expected = formatAmount(local.amount, local.currency);
+    if (capture.amount?.value !== expected || String(capture.amount?.currency_code).toUpperCase() !== local.currency) {
+      log.error(`Importe incorrecto en ${local.id}: esperado ${expected} ${local.currency}, cobrado ${capture.amount?.value} ${capture.amount?.currency_code}`);
+      await store.updateOrder(local.id, { status: 'error', error: 'Importe no coincide', paymentIntent: capture.id });
+      return 'error';
+    }
+    return fulfill(local, ctx, capture.id);
+  }
+
   const random = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
 
   /** Premios de la ruleta: cada giro sale de product.pool por su probabilidad; el premio «arma» es una al azar. */
@@ -954,14 +1091,50 @@ export function createApp(env) {
     return 'queued';
   }
 
-  // Reembolsos y disputas: se apuntan en el pedido para que el staff retire lo entregado si procede.
-  async function handleReversal(object, type) {
-    const paymentIntent = typeof object.payment_intent === 'string' ? object.payment_intent : object.payment_intent?.id;
+  // Reembolsos y disputas. Con el reembolso completo (o una disputa) se retira del servidor todo lo de ese pedido: el mod
+  // quita los objetos marcados con el pedido estén donde estén (inventario, cofres, cofre de ender, suelo…), se quita
+  // el grupo del rango (volviendo al anterior si fue una mejora) y sus roles de Discord. Un reembolso parcial solo se
+  // apunta en el pedido.
+  async function handleReversal({ paymentIntent, full, dispute }, ctx) {
     const order = paymentIntent ? await store.findOrderByPaymentIntent(paymentIntent) : null;
     if (!order) return;
-    const what = type === 'charge.dispute.created' ? 'disputa' : object.refunded ? 'reembolsado' : 'reembolso parcial';
+    const what = dispute ? 'disputa' : full ? 'reembolsado' : 'reembolso parcial';
     log.warn(`Pedido ${order.id} (${order.username}): ${what}`);
-    await store.updateOrder(order.id, { refunded: what });
+    if (!order.refunded || !order.refunded.includes('retirado')) await store.updateOrder(order.id, { refunded: what });
+    if (full && CLAIMED.includes(order.status)) await revoke(order, ctx);
+  }
+
+  // Lo que hay que deshacer de un pedido: los sets que dio y el grupo de su rango (si sigue siendo su rango actual).
+  async function revoke(order, ctx) {
+    const product = productById.get(order.productId);
+    if (!product) return;
+    const rank = rankById.get(product.id);
+    const current = rank && order.uuid ? await store.getRank(order.uuid) : null;
+    const rankStillCurrent = Boolean(rank && current?.rankId === rank.id);
+    const from = order.rankFrom ? rankById.get(order.rankFrom) : null;
+    const commands = [];
+    for (const command of product.commands || []) {
+      const set = command.match(/^tf web sets give \{player\} (\S+)(?: (\S+))?$/);
+      if (set) commands.push(`tf web sets revoke {uuid} ${order.id} ${set[1]}${set[2] ? ` ${set[2]}` : ''}`);
+      const group = command.match(/^lp user \{player\} parent add (\S+)$/);
+      if (group && (!rank || rankStillCurrent)) commands.push(`lp user {uuid} parent remove ${group[1]}`);
+    }
+    if (rankStillCurrent && from) commands.push(`lp user {uuid} parent add ${from.rank.group}`);
+    const queued = commands.length ? await store.queueRevocation(order, [...new Set(commands)]) : false;
+    if (rankStillCurrent) await store.setRank(order.uuid, from?.id || null, from?.tier, { force: true });
+    if (queued) log.warn(`Pedido ${order.id}: retirada del servidor en cola (${commands.length} comandos)`);
+
+    // Roles de Discord del producto (y los del rango anterior, si era una mejora)
+    const account = order.discordId ? { discordId: order.discordId } : order.uuid ? await store.accountByUuid(order.uuid) : null;
+    const discord = ctx?.discord;
+    if (queued && account?.discordId && discord?.rolesEnabled && (!rank || rankStillCurrent)) {
+      try {
+        await discord.removeRoles({ userId: account.discordId, roleIds: productRoles(product), reason: `Reembolso del pedido ${order.id}` });
+        if (from) await discord.grantRoles({ userId: account.discordId, roleIds: productRoles(from), reason: `Reembolso del pedido ${order.id}` });
+      } catch (err) {
+        log.error(`No se pudieron quitar los roles de Discord del pedido ${order.id}:`, err.message);
+      }
+    }
   }
 
   async function deliverDiscord(orderId, product, discord) {

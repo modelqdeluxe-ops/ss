@@ -9,6 +9,8 @@ import legal
 # Genera las páginas HTML de public/ (cabecera, pie y secciones comunes). Uso: python3 tools/pages.py
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public')
 IP = '216.163.187.40:19001'
+# Dirección pública (en punycode, como la piden los buscadores y las vistas previas de WhatsApp/Discord)
+SITE = 'https://xn--tierrasfantsticas-hpb.store'
 EMAIL = 'tierrasfantasticasmc@gmail.com'
 # Versión de los Términos y del Aviso de privacidad: config/legal.json (la lee también el Worker, que pide aceptarla al
 # crear la cuenta y al pagar). Si cambian los textos legales, sube allí «version» y «date»: a quien tenga una versión
@@ -65,6 +67,11 @@ def skeletons(n, kind='card'):
     return f'<div class="skel-grid skel-{kind}"><span class="sr-only">Cargando…</span>' + one * n + '</div>'
 
 
+# Dirección de cada página (para og:url y el mapa del sitio)
+PATHS = {'inicio': '/', 'tienda': '/tienda', 'mundo': '/mundo', 'ayuda': '/ayuda', 'cuenta': '/cuenta', 'legal': '/legal',
+         'terminos': '/terminos', 'privacidad': '/privacidad'}
+
+
 def head(title, desc, page, hero=False, preload_hero=False):
     preload = ('\n  <link rel="preload" as="image" href="/img/nebula-1672.webp" media="(min-width: 761px)">'
                '\n  <link rel="preload" as="image" href="/img/nebula-768.webp" media="(max-width: 760px)">'
@@ -79,12 +86,17 @@ def head(title, desc, page, hero=False, preload_hero=False):
   <meta name="theme-color" content="#0a0d14">
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{desc}">
-  <meta property="og:image" content="/img/og.jpg">
+  <meta property="og:image" content="{SITE}/img/og.jpg">
+  <meta property="og:url" content="{SITE}{PATHS.get(page, '/')}">
+  <meta property="og:site_name" content="Tierras Fantásticas">
+  <meta property="og:locale" content="es_MX">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   {FONTS}{preload}
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
+  <link rel="apple-touch-icon" href="/img/icon-180.png">
   {BOOT}
 </head>
 <body data-page="{page}"{' data-hero' if hero else ''}>
@@ -197,6 +209,7 @@ def footer():
     </div>
     <span class="credit">By Pewez777</span>
   </footer>
+  <a href="#main" class="to-top" data-to-top aria-label="Volver arriba">{I['arrow']}</a>
 
   <script src="/app.js" defer></script>
 </body>
@@ -241,9 +254,10 @@ DISCORD_BAND = f'''    <section class="wrap section">
       <div class="panel cta-band reveal">
         <span class="eyebrow">Comunidad</span>
         <h2>Únete al Discord del reino</h2>
-        <p>Novedades, eventos, sorteos, el modpack y soporte del staff. Aquí empieza todo.</p>
+        <p>Novedades, eventos, sorteos, el modpack y soporte del staff en Discord, y avisos rápidos en el grupo de WhatsApp.</p>
         <div class="actions">
-          <a href="#" class="btn btn-discord btn-lg discord-link" target="_blank" rel="noopener" hidden>{I['discord']}Entrar al Discord</a>
+          <a href="/discord" class="btn btn-discord btn-lg" target="_blank" rel="noopener">{I['discord']}Entrar al Discord</a>
+          <a href="/whatsapp" class="btn btn-whatsapp btn-lg" target="_blank" rel="noopener">{I['whatsapp']}Grupo de WhatsApp</a>
           <a href="/ayuda" class="btn btn-ghost btn-lg">Ver ayuda</a>
         </div>
       </div>
@@ -345,7 +359,7 @@ def tienda():
       </div>
       <p class="crate-empty muted" id="crate-empty" hidden>Ninguna crate coincide con la búsqueda.</p>
       <div class="trust">
-        <div class="panel item"><span class="icon">{I['lock']}</span><div><b>Pago seguro con Stripe</b><span>Tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></div></div>
+        <div class="panel item"><span class="icon">{I['lock']}</span><div><b>Pago seguro</b><span>Tarjeta, Apple Pay o Google Pay con Stripe<span data-paypal hidden>, o PayPal</span>. Nunca vemos tus datos bancarios.</span></div></div>
         <div class="panel item"><span class="icon">{I['zap']}</span><div><b>Entrega automática</b><span>El servidor te lo da solo; si no estás conectado, te espera.</span></div></div>
         <div class="panel item"><span class="icon">{I['discord']}</span><div><b>Rol en Discord</b><span>Conecta tu Discord en tu cuenta y recibe el rol de tu rango.</span></div></div>
       </div>
@@ -549,13 +563,13 @@ def ayuda():
 {faq('Se queda en «Conectando» o me dice que faltan mods', 'El servidor usa más de 200 mods y necesitas los mismos. El TF Client revisa tus mods antes de conectar y te dice cuáles faltan. Instala el modpack completo desde nuestro Discord.')}
 {faq('¿Cuánto tarda en llegar mi compra?', 'Al confirmarse el pago, el servidor te la entrega en segundos si estás conectado. Si no lo estás, te espera y la recibes al entrar, con un aviso en pantalla.')}
 {faq('¿Qué nombre de usuario debo poner?', 'Tu nombre de Minecraft. La tienda lo comprueba con el servidor al escribirlo: tienes que haber entrado al menos una vez. La compra se entrega a tu cuenta (UUID), así que nunca llega a otro jugador.')}
-{faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe. Nunca vemos tus datos bancarios. Los precios están en dólares estadounidenses (USD) y el precio que ves es el total.')}
+{faq('¿Qué métodos de pago aceptan?', 'Tarjetas de crédito o débito, Apple Pay, Google Pay y Link, con la página de pago segura de Stripe<span data-paypal hidden>, y PayPal (tu cuenta de PayPal o una tarjeta en su página)</span>. Nunca vemos tus datos bancarios. Los precios están en dólares estadounidenses (USD) y el precio que ves es el total.')}
 {faq('¿Puedo mejorar mi rango?', 'Sí. Si ya tienes un rango, al comprar uno superior solo pagas la diferencia. No se puede comprar un rango que ya tienes o uno inferior.')}
 {faq('¿Qué recibo al comprar una crate?', 'El set completo, siempre el mismo y sin nada al azar: sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Llegan a tu inventario en cuanto estás conectado, son permanentes y quedan vinculados a tu cuenta. En la tienda puedes ver cada pieza en 3D y probártela antes.')}
 {faq('¿Puedo regalar o intercambiar lo que compro?', 'Los cosméticos y la ropa, sí. Las armas, herramientas y armaduras de los rangos y de las crates, no: quedan vinculadas a tu cuenta y solo tú puedes usarlas. Lo tienes explicado en la <a href="/tienda#vinculados">tienda</a>.')}
 {faq('¿Las alas sirven para volar?', 'Sí: todas las alas de la tienda planean como unas élitros, en el pecho o en el hueco de la espalda (con la pechera puesta), y nunca se gastan. Las mochilas, capas y colas son solo de adorno.')}
 {faq('¿Qué es la tienda de monedas?', 'Objetos del servidor que se pagan con las monedas que ganas jugando. Las monedas no se venden con dinero, no tienen valor real y no se pueden cambiar por dinero. El staff la actualiza desde el juego y la web la muestra al momento.')}
-{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
+{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Al reembolsarla, el servidor retira todo lo que se entregó con esa compra, esté donde esté (también en cofres), y el rango si lo era. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
 {faq('¿Tierras Fantásticas es oficial de Minecraft?', 'No. Es un servidor independiente: no es un producto oficial de Minecraft y no está aprobado por Mojang ni Microsoft ni asociado con ellos. Lo que se compra en la tienda ayuda a mantener el servidor. Más información en el <a href="/legal">Aviso legal</a>.')}
 {faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
 {faq('No he recibido mi compra, ¿qué hago?', f'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> o por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de jugador.')}
@@ -569,7 +583,7 @@ def ayuda():
 def success():
     return head('Tu compra — Tierras Fantásticas', 'Estado de tu compra en Tierras Fantásticas.', 'compra') + header('') + f'''
   <main id="main">
-{page_hero('Tu compra', '<span id="title">Comprobando tu pago…</span>', '<span id="message">Un momento, estamos confirmando el pago con Stripe.</span>')}
+{page_hero('Tu compra', '<span id="title">Comprobando tu pago…</span>', '<span id="message">Un momento, estamos confirmando el pago.</span>')}
     <section class="wrap section pt-sm">
       <div class="panel receipt-card">
         <span class="eyebrow" id="state">Comprobando</span>
@@ -608,7 +622,36 @@ def cuenta():
 ''' + footer()
 
 
-for name, fn in [('index', index), ('tienda', tienda), ('crates', crates), ('mundo', mundo), ('ayuda', ayuda), ('success', success),
+def notfound():
+    # Página 404 (la sirve Cloudflare para cualquier dirección que no existe: not_found_handling en wrangler.jsonc)
+    return head('Página no encontrada — Tierras Fantásticas', 'Esta página no existe en Tierras Fantásticas.', '404') + header('') + f'''
+  <main id="main">
+    <section class="page-hero lost">
+      {hero_art()}
+      <div class="wrap">
+        <span class="lost-code" aria-hidden="true">404</span>
+        <span class="eyebrow">Fuera del mapa</span>
+        <h1>Esta tierra aún no existe</h1>
+        <p>La página que buscas no está en el reino: puede que el enlace esté mal escrito o que la hayamos movido.</p>
+        <div class="actions">
+          <a href="/" class="btn btn-primary btn-lg">Volver al inicio {I['arrow']}</a>
+          <a href="/tienda" class="btn btn-ghost btn-lg">Ir a la tienda</a>
+          <a href="/ayuda" class="btn btn-ghost btn-lg">Ayuda</a>
+        </div>
+      </div>
+    </section>
+  </main>
+''' + footer()
+
+
+def sitemap():
+    urls = '\n'.join(f'  <url><loc>{SITE}{path}</loc></url>' for path in PATHS.values())
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}\n</urlset>\n'
+
+
+with open(os.path.join(OUT, 'sitemap.xml'), 'w', encoding='utf-8') as f:
+    f.write(sitemap())
+for name, fn in [('404', notfound), ('index', index), ('tienda', tienda), ('crates', crates), ('mundo', mundo), ('ayuda', ayuda), ('success', success),
                  ('cuenta', cuenta), ('legal', aviso_legal), ('terminos', terminos), ('privacidad', privacidad)]:
     with open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8') as f:
         f.write(fn())

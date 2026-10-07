@@ -119,6 +119,12 @@ const MIGRATIONS = [
   'ALTER TABLE users ADD COLUMN terms_version TEXT',
   'ALTER TABLE users ADD COLUMN terms_at TEXT',
   'ALTER TABLE orders ADD COLUMN terms_version TEXT',
+  // Retiradas por reembolso: una entrega «al revés» del pedido reembolsado (order_id = R + pedido).
+  'ALTER TABLE deliveries ADD COLUMN revoke_of TEXT',
+  // Con qué se pagó: 'stripe' (o vacío, los de antes) o 'paypal'. session_id guarda la sesión de Stripe o el pedido
+  // de PayPal, y capture_id el pago (payment intent de Stripe o captura de PayPal).
+  'ALTER TABLE orders ADD COLUMN method TEXT',
+  'CREATE INDEX IF NOT EXISTS orders_session ON orders (session_id)',
 ];
 
 // Estados en los que el pedido ya se pagó y quedó en manos del puente.
@@ -167,6 +173,7 @@ function rowToOrder(row) {
     paymentIntent: row.capture_id || null,
     rankFrom: row.rank_from || null,
     termsVersion: row.terms_version || null,
+    method: row.method || (row.session_id ? 'stripe' : null),
     prizes: row.prizes ? JSON.parse(row.prizes) : null,
     error: row.error,
     refunded: row.refunded,
@@ -229,6 +236,11 @@ export function createStore(db) {
     return rowToOrder(await db.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first());
   }
 
+  async function findOrderBySession(sessionId) {
+    await init();
+    return rowToOrder(await db.prepare('SELECT * FROM orders WHERE session_id = ?').bind(sessionId).first());
+  }
+
   async function findOrderByPaymentIntent(paymentIntent) {
     await init();
     return rowToOrder(await db.prepare('SELECT * FROM orders WHERE capture_id = ?').bind(paymentIntent).first());
@@ -240,8 +252,8 @@ export function createStore(db) {
     await db
       .prepare(
         `INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, discord, discord_id,
-           session_id, rank_from, terms_version, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           session_id, rank_from, terms_version, method, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         order.id,
@@ -257,6 +269,7 @@ export function createStore(db) {
         order.sessionId || null,
         order.rankFrom || null,
         order.termsVersion || null,
+        order.method || null,
         at,
         at,
       )
@@ -308,6 +321,28 @@ export function createStore(db) {
            WHERE id = ? AND status NOT IN (${CLAIMED.map(() => '?').join(', ')})`,
         )
         .bind(paymentIntent || null, at, at, orderId, ...CLAIMED),
+    ]);
+    return insert.meta.changes === 1;
+  }
+
+  // Reembolso o disputa: lo que aún no se había entregado ya no se entrega y se encola la retirada del servidor (con
+  // el jugador conectado o no: el mod quita lo de ese pedido esté donde esté). Devuelve false si ya estaba encolada.
+  async function queueRevocation(order, commands) {
+    await init();
+    const at = now();
+    const [, insert] = await db.batch([
+      db
+        .prepare(
+          `UPDATE deliveries SET status = 'cancelled', error = 'Reembolsado antes de entregarse', done_at = ?
+           WHERE order_id = ? AND status = 'pending'`,
+        )
+        .bind(at, order.id),
+      db
+        .prepare(
+          `INSERT OR IGNORE INTO deliveries (order_id, revoke_of, username, uuid, commands, extra, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(`R${order.id}`, order.id, order.username, order.uuid || null, JSON.stringify(commands), JSON.stringify({ kind: 'revocacion' }), at),
     ]);
     return insert.meta.changes === 1;
   }
@@ -595,6 +630,17 @@ export function createStore(db) {
           )
           .bind(ok ? 'delivered' : 'delivery_failed', ok ? at : null, error, at, item.id),
       );
+      // Retirada por reembolso hecha: se apunta en el pedido reembolsado
+      if (ok) {
+        statements.push(
+          db
+            .prepare(
+              `UPDATE orders SET refunded = COALESCE(refunded, 'reembolsado') || ' · retirado del servidor', updated_at = ?
+               WHERE id = (SELECT revoke_of FROM deliveries WHERE id = ?) AND COALESCE(refunded, '') NOT LIKE '%retirado%'`,
+            )
+            .bind(at, item.id),
+        );
+      }
       // Ruleta con monedas: el servidor elige los premios y los manda con la confirmación
       if (ok && Array.isArray(item.prizes) && item.prizes.length) {
         statements.push(
@@ -619,10 +665,12 @@ export function createStore(db) {
     const uuids = JSON.stringify(players.filter((p) => p.uuid).map((p) => p.uuid.toLowerCase()));
     const { results } = await db
       .prepare(
-        `SELECT d.id, d.username, d.uuid, d.commands, d.extra, o.product_id, o.quantity FROM deliveries d
-         JOIN orders o ON o.id = d.order_id
+        `SELECT d.id, d.username, d.uuid, d.commands, d.extra, COALESCE(d.revoke_of, d.order_id) AS order_ref,
+           o.product_id, o.quantity FROM deliveries d
+         JOIN orders o ON o.id = COALESCE(d.revoke_of, d.order_id)
          WHERE (d.status = 'pending' OR (d.status = 'sent' AND d.sent_at < ?))
-           AND ((d.uuid IS NOT NULL AND lower(d.uuid) IN (SELECT value FROM json_each(?)))
+           AND (d.revoke_of IS NOT NULL
+             OR (d.uuid IS NOT NULL AND lower(d.uuid) IN (SELECT value FROM json_each(?)))
              OR (d.uuid IS NULL AND lower(d.username) IN (SELECT value FROM json_each(?))))
          ORDER BY d.id LIMIT ${MAX_BATCH}`,
       )
@@ -642,6 +690,8 @@ export function createStore(db) {
       id: r.id,
       player: r.username,
       uuid: r.uuid || null,
+      // El pedido: el mod lo marca en lo que entrega (y así sabe qué quitar si se reembolsa).
+      order: r.order_ref,
       productId: r.product_id,
       quantity: r.quantity,
       commands: JSON.parse(r.commands),
@@ -658,7 +708,7 @@ export function createStore(db) {
   async function pendingDeliveries(username) {
     await init();
     const row = await db
-      .prepare("SELECT COUNT(*) AS n FROM deliveries WHERE lower(username) = lower(?) AND status IN ('pending', 'sent')")
+      .prepare("SELECT COUNT(*) AS n FROM deliveries WHERE lower(username) = lower(?) AND status IN ('pending', 'sent') AND revoke_of IS NULL")
       .bind(username)
       .first();
     return row?.n || 0;
@@ -678,10 +728,12 @@ export function createStore(db) {
   return {
     getOrder,
     findOrderByPaymentIntent,
+    findOrderBySession,
     createOrder,
     updateOrder,
     ordersFor,
     queueDelivery,
+    queueRevocation,
     upsertPlayers,
     findPlayer,
     playerByUuid,

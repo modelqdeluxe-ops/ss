@@ -38,6 +38,8 @@ import net.tierrasfantasticas.tfclient.shop.TFRoulette;
  * <pre>
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo), vinculado a cada jugador
+ * /tf web sets revoke &lt;uuid&gt; &lt;pedido&gt; &lt;set&gt; [objeto]
+ *                                                retira lo de una compra reembolsada, esté donde esté ({@link TFRevocations})
  * /tf web tienda ...                             la tienda de monedas de la web ({@link TFCoinShop})
  * /tf web rango | monedas | ruleta ...           los usa la web al entregar (staff; {@link TFBridgeCommands},
  *                                                {@link TFEconomyCommands}, {@link TFRoulette})
@@ -93,7 +95,16 @@ public final class TFCommands {
                                                         .executes(ctx -> give(ctx, null))
                                                         .then(Commands.argument("item", StringArgumentType.word())
                                                                 .suggests(ITEMS)
-                                                                .executes(ctx -> give(ctx, StringArgumentType.getString(ctx, "item"))))))))));
+                                                                .executes(ctx -> give(ctx, StringArgumentType.getString(ctx, "item")))))))
+                                .then(Commands.literal("revoke")
+                                        .then(Commands.argument("uuid", StringArgumentType.word())
+                                                .then(Commands.argument("order", StringArgumentType.word())
+                                                        .then(Commands.argument("set", StringArgumentType.word())
+                                                                .suggests(SETS)
+                                                                .executes(ctx -> revoke(ctx, null))
+                                                                .then(Commands.argument("item", StringArgumentType.word())
+                                                                        .suggests(ITEMS)
+                                                                        .executes(ctx -> revoke(ctx, StringArgumentType.getString(ctx, "item")))))))))));
     }
 
     private static int list(CommandContext<CommandSourceStack> ctx) {
@@ -105,6 +116,26 @@ public final class TFCommands {
             source.sendSuccess(() -> line, false);
         }
         return TFSets.all().size();
+    }
+
+    private static final DynamicCommandExceptionType BAD_UUID =
+            new DynamicCommandExceptionType(id -> Component.literal("UUID no válido: " + id));
+
+    /** Compra reembolsada: se apunta y se quita al momento lo que esté cargado; lo demás, cuando se cargue. */
+    private static int revoke(CommandContext<CommandSourceStack> ctx, String itemId) throws CommandSyntaxException {
+        String uuidText = StringArgumentType.getString(ctx, "uuid");
+        java.util.UUID owner;
+        try {
+            owner = java.util.UUID.fromString(uuidText);
+        } catch (IllegalArgumentException e) {
+            throw BAD_UUID.create(uuidText);
+        }
+        String order = StringArgumentType.getString(ctx, "order");
+        String setId = StringArgumentType.getString(ctx, "set");
+        int removed = TFRevocations.revoke(ctx.getSource().getServer(), new TFRevocations.Entry(owner, order, setId, itemId));
+        ctx.getSource().sendSuccess(() -> Component.literal("Retirada la compra " + order + " (" + setId + (itemId != null ? " " + itemId : "")
+                + "): " + removed + " objetos quitados ya; el resto se quita en cuanto se cargue").withStyle(ChatFormatting.RED), true);
+        return Math.max(1, removed);
     }
 
     private static int give(CommandContext<CommandSourceStack> ctx, String itemId) throws CommandSyntaxException {
@@ -122,6 +153,7 @@ public final class TFCommands {
             for (RegistryObject<Item> obj : items) {
                 ItemStack stack = new ItemStack(obj.get());
                 TFBinding.bind(stack, player); // los cosméticos no se vinculan (ver TFBinding)
+                TFRevocations.stamp(stack); // el pedido de la web, si lo entrega el puente
                 boolean added = player.getInventory().add(stack);
                 if (!added || !stack.isEmpty()) {
                     ItemEntity drop = player.drop(stack, false);

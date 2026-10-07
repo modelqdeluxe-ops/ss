@@ -10,9 +10,58 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
-pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
+pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (7 de octubre de 2026, tarde): portada con Discord/WhatsApp, nebulosa que se nota, botón esmeralda y aceptación de los Términos (solo web)
+### Última entrega (7 de octubre de 2026, noche): reembolsos que retiran lo comprado, PayPal, efecto de relleno suave, 404 y TF Client 1.3.11
+**Lo que pidió el dueño (textual):** *«el efecto del botón de izquierda a derecha cuando desaparece se va bien feo
+como una línea fea… mejora ese efecto tanto de inicio como de final. Y revisa, ya tengo stripe conectado. También
+¿cómo conecto paypal?? Y otra cosa, asegúrate que si alguien pide un reembolso todo lo que compró se le quite del
+server incluso si lo guarda en cofres, ya que están vinculados a su uuid. Y en temas de la página me gustaría que la
+auditaras y si falta algo ponlo, diseños…»*
+
+- **Stripe ya NO está en pausa**: el dueño lo conectó. Comprobado en producción: `paymentsEnabled: true` y el webhook
+  `/webhook/stripe` tiene su secreto (rechaza avisos sin firma con 400). En Stripe (Desarrolladores → Webhooks) el
+  endpoint `https://xn--tierrasfantsticas-hpb.store/webhook/stripe` debe tener estos eventos:
+  `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`,
+  `checkout.session.expired`, `charge.refunded` y `charge.dispute.created` (los dos últimos activan la retirada).
+- **Relleno de izquierda a derecha** (botones secundarios y pestañas de la tienda): ya no se anima el tamaño del fondo
+  (dejaba una línea al salir). Ahora es una capa `::before` («Relleno de neón» en styles.css) que entra desde la
+  izquierda con un fundido rápido y al salir se recoge hacia la derecha mientras se desvanece.
+- **Reembolsos** (web + mod 1.3.11): reembolso completo o disputa (Stripe o PayPal) → `revoke()` en `src/app.js`:
+  cancela la entrega si no se había hecho y encola una retirada (`deliveries.revoke_of`, `order_id = R<pedido>`) que
+  el puente recibe aunque el jugador esté desconectado: `tf web sets revoke {uuid} <pedido> <set> [pieza]`,
+  `lp user {uuid} parent remove <grupo>` y, si era una mejora, `parent add <grupo anterior>`; en la web el rango
+  vuelve al anterior y se quitan sus roles de Discord (`discord.removeRoles`). Si el jugador ya tiene un rango más
+  alto, el rango no se toca (solo se retiran los objetos del set). En el mod, `items/TFRevocations.java`: cada objeto
+  entregado por el puente lleva `TFOrder` (el pedido); la retirada se guarda en `data/tfclient_revocations.dat` y
+  quita esos objetos de jugadores conectados, suelo, marcos, soportes, cofres con ruedas y contenedores de los chunks
+  cargados; lo demás al cargarse, al abrir un contenedor, al entrar y cada segundo del inventario (también dentro de
+  shulkers y sacos, y en inventarios de otros mods). Los objetos de antes (sin `TFOrder`) se reconocen por dueño y set.
+  Los cosméticos de antes de 1.3.11 no tienen dueño ni pedido: esos no se pueden retirar (los nuevos sí).
+  Términos («Cancelaciones y reembolsos») actualizados; `config/legal.json` sube a la versión `2026-10-07.2`, así
+  que se vuelve a pedir aceptar a quien ya los aceptó.
+- **PayPal** (`src/paypal.js`, Orders v2): botón «Pagar con PayPal» en la ventana de compra cuando están los Secrets.
+  Flujo: la web crea el pedido de PayPal → el comprador lo aprueba → vuelve a `/success`, que llama a
+  `/api/order/:id/sync` y la web lo cobra (`capturePayPal`) y entrega. Webhook `/webhook/paypal` (verificado con la
+  API de PayPal): `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`/`DENIED`, `PAYMENT.CAPTURE.REFUNDED`,
+  `PAYMENT.CAPTURE.REVERSED`, `CUSTOMER.DISPUTE.CREATED`. **Para conectarlo (lo hace el dueño):**
+  1. Cuenta PayPal **Business** (México) → https://developer.paypal.com → Apps & Credentials → modo **Live** →
+     «Create App» → copiar **Client ID** y **Secret**.
+  2. En esa app, «Add Webhook»: URL `https://xn--tierrasfantsticas-hpb.store/webhook/paypal` con los 6 eventos de
+     arriba → copiar el **Webhook ID**.
+  3. Cloudflare → Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets: Secrets
+     `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` (y, solo para probar con el sandbox,
+     la variable `PAYPAL_ENV = sandbox`). Al guardar, el botón aparece solo.
+  Stripe no ofrece PayPal a cuentas de México (solo Europa), por eso va aparte.
+- **Auditoría**: página **404** propia (`public/404.html`; la sirve `src/index.js`: NO usar `not_found_handling` de
+  Cloudflare, que dejaría de llamar al Worker en las navegaciones y rompería `/discord`, `/whatsapp` y el login con
+  Discord), botón **volver arriba**, el bloque de Discord con **WhatsApp**, iconos para el móvil
+  (`img/icon-180.png`, `img/icon-32.png`), `og:image`/`og:url` con la dirección completa (las vistas previas de
+  WhatsApp y Discord no aceptan rutas relativas), `og:site_name`/`og:locale` y `sitemap.xml`. Pregunta de Ayuda
+  sobre cancelar con lo de la retirada. `tools/preview.mjs`: `PREVIEW_PAYPAL=1` enseña el botón de PayPal.
+- Pruebas: 44 (nuevas: retirada por reembolso, PayPal con webhook y API simulados). Mod 1.3.11 compilado.
+
+### Entrega anterior (7 de octubre de 2026, tarde): portada con Discord/WhatsApp, nebulosa que se nota, botón esmeralda y aceptación de los Términos (solo web)
 **Lo que pidió el dueño (textual):** *«quita eso de tu aventura comienza hoy, dejemos solo eso de tierras fantásticas
 con eso de ip, ver tienda, etc, mira la descripción no es un reino de castillos, es un servidor survival, aventura,
 fantasía y rol. Y no veo tan animada la nebulosa… y ahí abajo en forge 1.20.1 dice gratis, quita esa palabra, y debajo

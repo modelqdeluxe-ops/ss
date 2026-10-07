@@ -890,10 +890,8 @@ h4 {
   --a: #3a2f86;
   --b: #2a2166;
   --lip: #120d33;
-  /* Al pasar el ratón se llena de izquierda a derecha con el destello rosa → azul, que se desliza mientras avanza */
-  background:
-    var(--shimmer) 0 0 / 0 100% no-repeat,
-    linear-gradient(180deg, var(--a), var(--b));
+  /* Al pasar el ratón una capa (::before, en «Relleno de neón») lo llena de izquierda a derecha */
+  background: linear-gradient(180deg, var(--a), var(--b));
   box-shadow:
     inset 0 0 0 1px rgb(var(--line-rgb) / 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -902,24 +900,53 @@ h4 {
   transition:
     transform 0.25s var(--spring),
     box-shadow 0.25s var(--ease),
-    background-size 0.45s var(--ease),
-    background-position 0.8s var(--ease),
     filter 0.2s;
 }
 
 .btn-ghost:hover {
   color: #fff;
-  background-size:
-    220% 100%,
-    auto;
-  background-position:
-    100% 0,
-    0 0;
   box-shadow:
     inset 0 0 0 1px rgb(var(--a-rgb) / 0.85),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 calc(var(--lift) + 2px) 0 var(--lip),
     0 0 30px -6px rgb(var(--a-rgb) / 0.7);
+}
+
+/* Relleno de neón (botones secundarios y pestañas): una capa con el destello rosa → azul que entra desde la izquierda
+   con un fundido rápido y, al quitar el ratón, se recoge hacia la derecha mientras se desvanece (sin dejar una línea).
+   El destello se sigue deslizando por dentro mientras está lleno. */
+.btn-ghost:not(.is-loading)::before,
+.tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--shimmer) 0 0 / 220% 100%;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition:
+    transform 0.5s cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 0.32s ease 0.06s,
+    background-position 0.9s var(--ease);
+  pointer-events: none;
+}
+
+.btn-ghost:hover::before,
+.tab:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
+  transform-origin: left center;
+  background-position: 100% 0;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.16s ease,
+    background-position 0.9s var(--ease);
+}
+
+.tab[aria-selected='true']::before {
+  display: none;
 }
 
 .btn-discord {
@@ -963,6 +990,27 @@ h4 {
     0 0 34px -2px rgb(16 220 170 / 0.75),
     0 0 60px -14px rgb(60 140 255 / 0.65);
   animation: btn-breathe-sea 1.8s ease-in-out 0.3s infinite;
+}
+
+/* PayPal: su amarillo y su azul (como pide su guía de marca) */
+.btn-paypal {
+  --a: #ffd55e;
+  --b: #ffc439;
+  --lip: #c08a00;
+  --fg: #142c8e;
+  --glow: rgba(255, 196, 57, 0.55);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 15px;
+}
+
+.pp-word {
+  font: italic 800 17px/1 var(--font-body);
+  color: #003087;
+}
+
+.pp-word i {
+  color: #0079c1;
 }
 
 .btn-coin {
@@ -1786,6 +1834,36 @@ body:not([data-hero]) .header::before {
 .page-hero {
   padding: calc(var(--header-h) + 64px) 0 56px;
   text-align: center;
+}
+
+/* Página 404: el número enorme con el degradado de neón detrás del título */
+.page-hero.lost {
+  display: grid;
+  align-items: center;
+  min-height: min(88svh, 820px);
+}
+
+.lost-code {
+  display: block;
+  margin-bottom: 4px;
+  font: 800 clamp(96px, 22vw, 220px) / 0.9 var(--font-display);
+  letter-spacing: -0.06em;
+  background: var(--shimmer) 0 0 / 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 12px 40px rgb(var(--a-rgb) / 0.35));
+  animation:
+    shimmer-flow 6s ease-in-out infinite alternate,
+    float 6s ease-in-out infinite;
+}
+
+.page-hero.lost .actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
 }
 
 .page-hero .hero-art img,
@@ -2683,9 +2761,9 @@ body:not([data-hero]) .header::before {
   padding: 0 12px;
   border: 0;
   border-radius: var(--r);
-  background:
-    var(--shimmer) 0 0 / 0 100% no-repeat,
-    rgb(var(--line-rgb) / 0.06);
+  isolation: isolate;
+  overflow: hidden;
+  background: rgb(var(--line-rgb) / 0.06);
   box-shadow: inset 0 0 0 1px rgb(var(--line-rgb) / 0.14);
   color: var(--text-2);
   font-size: 14px;
@@ -2693,8 +2771,6 @@ body:not([data-hero]) .header::before {
   white-space: nowrap;
   transition:
     color 0.25s,
-    background-size 0.45s var(--ease),
-    background-position 0.8s var(--ease),
     box-shadow 0.25s,
     transform 0.25s var(--spring);
 }
@@ -2702,12 +2778,6 @@ body:not([data-hero]) .header::before {
 .tab:hover {
   color: #fff;
   transform: translateY(-2px);
-  background-size:
-    220% 100%,
-    auto;
-  background-position:
-    100% 0,
-    0 0;
   box-shadow:
     inset 0 0 0 1px rgb(255 214 247 / 0.45),
     0 0 22px -6px rgb(var(--a-rgb) / 0.6);
@@ -4596,6 +4666,16 @@ body:not([data-hero]) .header::before {
   font-size: 14px;
 }
 
+.pay-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.pay-actions .pay-btn {
+  margin-top: 0;
+}
+
 .pay-btn {
   margin-top: 8px;
 }
@@ -5066,6 +5146,58 @@ body:not([data-hero]) .header::before {
 .password-form .btn {
   justify-self: start;
   margin-top: 8px;
+}
+
+/* ---------- Volver arriba (aparece al bajar en las páginas largas) ---------- */
+
+.to-top {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--s4), var(--s2));
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--line-rgb) / 0.4),
+    0 10px 24px -10px rgb(0 0 0 / 0.7),
+    0 0 18px -6px rgb(var(--a-rgb) / 0.6);
+  opacity: 0;
+  transform: translateY(14px) scale(0.9);
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s var(--spring),
+    box-shadow 0.25s ease;
+}
+
+.to-top.show {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.to-top:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--a-rgb) / 0.7),
+    0 14px 28px -10px rgb(0 0 0 / 0.7),
+    0 0 26px -4px rgb(var(--a-rgb) / 0.8);
+}
+
+.to-top svg {
+  width: 20px;
+  height: 20px;
+  transform: rotate(-90deg);
+  transition: transform 0.3s var(--ease);
+}
+
+.to-top:hover svg {
+  transform: rotate(-90deg) translateX(3px);
 }
 
 /* ---------- Aviso flotante ---------- */

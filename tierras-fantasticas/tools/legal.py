@@ -128,14 +128,14 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
     pagas: no se añade nada después. Tu banco puede cobrarte por convertir la moneda; eso depende de tu banco.</li>
   <li>Si ya tienes un rango y compras uno superior, pagas solo la diferencia. No se puede comprar un rango que ya
     tienes o uno inferior.</li>
-  <li>El pago se hace en la página segura de <b>Stripe</b> (tarjeta, Apple Pay, Google Pay o Link). Nosotros nunca vemos
-    ni guardamos los datos de tu tarjeta.</li>
+  <li>El pago se hace en la página segura de <b>Stripe</b> (tarjeta, Apple Pay, Google Pay o Link) o, si está disponible,
+    en la de <b>PayPal</b>. Nosotros nunca vemos ni guardamos los datos de tu tarjeta ni de tu cuenta de PayPal.</li>
   <li>Antes de cobrar, la tienda comprueba que el nombre de jugador existe en el servidor y guarda la compra con su
     UUID, para que llegue al jugador que eliges. Revisa bien el nombre: si te equivocas de jugador, escríbenos.</li>
 </ul>'''),
 
     ('entrega', 'Entrega', '''
-<p>Cuando Stripe confirma el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
+<p>Cuando Stripe o PayPal confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
 conectado y, si no, en cuanto entres. Verás un aviso en el juego y el estado en la página de tu compra y en «Mi
 cuenta». Si algo falla, el staff la entrega a mano. Si en 48 horas no la has recibido, escríbenos con tu número de
 pedido.</p>'''),
@@ -144,13 +144,19 @@ pedido.</p>'''),
 <ul>
   <li><b>5 días hábiles para cancelar.</b> Puedes cancelar cualquier compra y pedir que te devolvamos el dinero dentro de
     los 5 días hábiles siguientes a la entrega, sin dar explicaciones. Escríbenos a {MAIL} con tu número de pedido y tu
-    nombre de jugador. Al cancelarla, retiramos del juego lo que se te entregó.</li>
+    nombre de jugador.</li>
+  <li><b>Al reembolsar se retira todo lo de esa compra.</b> Cada objeto que se entrega queda marcado con su número de
+    pedido. Cuando una compra se reembolsa, el servidor retira automáticamente todo lo que se entregó con ella esté
+    donde esté: inventario, cofre de ender, huecos de accesorios, cofres y demás contenedores (también dentro de cajas
+    de shulker), marcos, soportes y el suelo; lo que esté en zonas sin cargar se retira en cuanto se cargan. Si la
+    compra era un rango, se quita el rango (o vuelves al que tenías si era una mejora) y sus roles de Discord.</li>
   <li><b>En cualquier momento</b> te devolvemos el dinero si no recibimos la compra en el servidor, si se cobró dos veces
     o por error, o si un menor compró sin permiso de su madre, padre o tutor.</li>
-  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe al mismo medio de pago; tu banco puede
+  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe o PayPal al mismo medio de pago; tu banco puede
     tardar de 5 a 10 días hábiles en mostrarlo.</li>
-  <li>Si abres una disputa o contracargo con tu banco en lugar de escribirnos, lo entregado se suspende mientras se
-    resuelve. Escríbenos primero: casi siempre es más rápido.</li>
+  <li>Si abres una disputa o contracargo con tu banco en lugar de escribirnos, se retira lo entregado de la misma forma
+    que con un reembolso. Si la disputa se resuelve a nuestro favor, te lo devolvemos. Escríbenos primero: casi siempre
+    es más rápido.</li>
   <li>Las recompensas gratis y lo comprado con monedas del servidor no tienen reembolso en dinero, porque no se pagaron
     con dinero.</li>
 </ul>'''),
@@ -170,7 +176,7 @@ protecciones de la tienda.</p>'''),
     ('responsabilidad', 'Responsabilidad', '''
 <p>Prestamos el servicio con cuidado, pero no podemos garantizar que el servidor o la web estén siempre disponibles ni
 libres de fallos. No respondemos de problemas causados por tu conexión, tus mods o tu equipo, ni por servicios de
-terceros (Stripe, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>'''),
+terceros (Stripe, PayPal, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>'''),
 
     ('cambios', 'Cambios en estos términos', '''
 <p>Si cambiamos estos términos, publicaremos la versión nueva aquí con su fecha y te pediremos que la aceptes antes
@@ -198,8 +204,8 @@ dirección ni teléfono.</p>
   <li><b>Discord, solo si lo conectas:</b> tu ID, nombre de usuario, nombre visible, avatar y si estás en nuestro servidor
     de Discord.</li>
   <li><b>Compras:</b> número de pedido, producto, cantidad, importe, moneda, fechas, estado del pago y de la entrega, y el
-    identificador del pago en Stripe. Los datos de tu tarjeta y el correo que te pide Stripe los trata Stripe; nosotros
-    no los vemos ni los guardamos.</li>
+    identificador del pago en Stripe o PayPal y con cuál pagaste. Los datos de tu tarjeta, tu cuenta de PayPal y el correo
+    que te piden los tratan Stripe o PayPal; nosotros no los vemos ni los guardamos.</li>
   <li><b>Jugadores del servidor:</b> el servidor nos envía el nombre y el UUID de quienes han entrado, con la primera y
     la última vez que se les vio, para comprobar los nombres antes de vender.</li>
   <li><b>Seguridad:</b> intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.</li>
@@ -231,6 +237,8 @@ prestar su servicio (algunos están fuera de México, sobre todo en Estados Unid
 <ul>
   <li><b>Cloudflare:</b> alojamiento de la web y de su base de datos.</li>
   <li><b>Stripe:</b> pagos. Ve tu tarjeta y el correo que le das, según su propia política de privacidad.</li>
+  <li><b>PayPal:</b> pagos, solo si pagas con PayPal. Ve tu cuenta o tarjeta y tu correo, según su propia política de
+    privacidad.</li>
   <li><b>Discord:</b> solo si conectas tu cuenta, para iniciar sesión y darte roles.</li>
   <li><b>mc-heads.net:</b> recibe tu nombre de jugador para mostrar tu cabeza y tu skin.</li>
   <li><b>api.mcsrvstat.us:</b> tu navegador le pregunta si el servidor está en línea cuando nuestro servidor no lo
@@ -287,7 +295,7 @@ entrar.</p>'''),
 
     ('seguridad', 'Seguridad', '''
 <p>La web va siempre cifrada (HTTPS), las contraseñas se guardan cifradas, la sesión usa una cookie protegida y los
-pagos se hacen en Stripe. Ningún sistema es infalible: si notas algo raro en tu cuenta, cambia la contraseña y
+pagos se hacen en Stripe o PayPal. Ningún sistema es infalible: si notas algo raro en tu cuenta, cambia la contraseña y
 escríbenos.</p>'''),
 
     ('cambios', 'Cambios en este aviso', '''

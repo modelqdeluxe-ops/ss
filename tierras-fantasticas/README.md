@@ -55,6 +55,19 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   - **El mundo** (`/mundo`) y **Ayuda** (`/ayuda`).
 - **Pago con Stripe**: la página de pago segura de Stripe (tarjeta, Apple Pay, Google Pay, Link). Los datos bancarios
   nunca pasan por la web y el dinero llega a tu cuenta de Stripe. Stripe avisa de cada pago con un webhook firmado.
+- **PayPal (opcional)**: con los Secrets `PAYPAL_CLIENT_ID` y `PAYPAL_CLIENT_SECRET` (y `PAYPAL_WEBHOOK_ID`) aparece el
+  botón «Pagar con PayPal» en la ventana de compra. El comprador aprueba en PayPal, vuelve a `/success` y la web cobra
+  el pedido (`capturePayPal`); el webhook `/webhook/paypal` cubre a quien no vuelve, los reembolsos y las disputas.
+  `PAYPAL_ENV=sandbox` para pruebas. Sin esos Secrets no se ve nada de PayPal (los textos que lo nombran llevan
+  `data-paypal` y se ocultan).
+- **Reembolsos que retiran lo comprado**: con un reembolso completo (o una disputa) en Stripe o PayPal, la web cancela
+  lo que no se hubiera entregado y encola una «retirada» (`deliveries.revoke_of`) que el puente recibe aunque el
+  jugador no esté conectado: `tf web sets revoke {uuid} <pedido> <set>`, quitar el grupo del rango (volviendo al
+  anterior si fue una mejora) y sus roles de Discord. El mod (1.3.11) quita lo de ese pedido esté donde esté. El
+  pedido queda «reembolsado · retirado del servidor». Un reembolso parcial solo se apunta.
+- **Página 404** (`public/404.html`, la sirve el Worker en `src/index.js`), botón «volver arriba», iconos para el
+  móvil (`img/icon-180.png`, `img/icon-32.png`), vistas previas con dirección completa (`og:image`, `og:url`) y
+  `sitemap.xml` (lo genera `pages.py`).
 - **Nombre comprobado antes de cobrar**: al escribir el nombre, la tienda lo busca en la lista de jugadores que manda
   el servidor y enseña su cabeza, si está conectado y su rango. Solo se vende a jugadores que han entrado alguna vez, y
   la compra se guarda con su **UUID**: llega al que pagó aunque se cambie el nombre.

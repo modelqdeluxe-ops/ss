@@ -8,7 +8,10 @@
   <meta name="theme-color" content="#0a0d14">
   <meta property="og:title" content="Aviso de privacidad — Tierras Fantásticas">
   <meta property="og:description" content="Aviso de privacidad de Tierras Fantásticas: qué datos tratamos, para qué, con quién y cómo ejercer tus derechos.">
-  <meta property="og:image" content="/img/og.jpg">
+  <meta property="og:image" content="https://xn--tierrasfantsticas-hpb.store/img/og.jpg">
+  <meta property="og:url" content="https://xn--tierrasfantsticas-hpb.store/privacidad">
+  <meta property="og:site_name" content="Tierras Fantásticas">
+  <meta property="og:locale" content="es_MX">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +20,9 @@
   <link rel="preload" as="image" href="/img/nebula-1672.webp" media="(min-width: 761px)">
   <link rel="preload" as="image" href="/img/nebula-768.webp" media="(max-width: 760px)">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
+  <link rel="apple-touch-icon" href="/img/icon-180.png">
   <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
 </head>
 <body data-page="privacidad">
@@ -127,8 +132,8 @@ dirección ni teléfono.</p>
   <li><b>Discord, solo si lo conectas:</b> tu ID, nombre de usuario, nombre visible, avatar y si estás en nuestro servidor
     de Discord.</li>
   <li><b>Compras:</b> número de pedido, producto, cantidad, importe, moneda, fechas, estado del pago y de la entrega, y el
-    identificador del pago en Stripe. Los datos de tu tarjeta y el correo que te pide Stripe los trata Stripe; nosotros
-    no los vemos ni los guardamos.</li>
+    identificador del pago en Stripe o PayPal y con cuál pagaste. Los datos de tu tarjeta, tu cuenta de PayPal y el correo
+    que te piden los tratan Stripe o PayPal; nosotros no los vemos ni los guardamos.</li>
   <li><b>Jugadores del servidor:</b> el servidor nos envía el nombre y el UUID de quienes han entrado, con la primera y
     la última vez que se les vio, para comprobar los nombres antes de vender.</li>
   <li><b>Seguridad:</b> intentos fallidos de inicio de sesión, para frenar a quien prueba contraseñas.</li>
@@ -162,6 +167,8 @@ prestar su servicio (algunos están fuera de México, sobre todo en Estados Unid
 <ul>
   <li><b>Cloudflare:</b> alojamiento de la web y de su base de datos.</li>
   <li><b>Stripe:</b> pagos. Ve tu tarjeta y el correo que le das, según su propia política de privacidad.</li>
+  <li><b>PayPal:</b> pagos, solo si pagas con PayPal. Ve tu cuenta o tarjeta y tu correo, según su propia política de
+    privacidad.</li>
   <li><b>Discord:</b> solo si conectas tu cuenta, para iniciar sesión y darte roles.</li>
   <li><b>mc-heads.net:</b> recibe tu nombre de jugador para mostrar tu cabeza y tu skin.</li>
   <li><b>api.mcsrvstat.us:</b> tu navegador le pregunta si el servidor está en línea cuando nuestro servidor no lo
@@ -223,7 +230,7 @@ entrar.</p>
         <section class="legal-section" id="seguridad">
           <h2><span>09</span>Seguridad</h2>
 <p>La web va siempre cifrada (HTTPS), las contraseñas se guardan cifradas, la sesión usa una cookie protegida y los
-pagos se hacen en Stripe. Ningún sistema es infalible: si notas algo raro en tu cuenta, cambia la contraseña y
+pagos se hacen en Stripe o PayPal. Ningún sistema es infalible: si notas algo raro en tu cuenta, cambia la contraseña y
 escríbenos.</p>
         </section>
         <section class="legal-section" id="cambios">
@@ -291,6 +298,7 @@ afecta a finalidades que necesitan tu consentimiento, te lo pediremos.</p>
     </div>
     <span class="credit">By Pewez777</span>
   </footer>
+  <a href="#main" class="to-top" data-to-top aria-label="Volver arriba"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
 
   <script src="/app.js" defer></script>
 </body>
