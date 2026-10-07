@@ -24,6 +24,86 @@ import os
 from PIL import Image
 
 SPECIAL_BONES = {'hitbox', 'shadow', 'mount'}
+# Piezas del «muñeco» de los efectos de kill (en el juego las hace el propio mob)
+BODY_PARTS = {'head', 'body', 'left_arm', 'right_arm', 'left_leg', 'right_leg'}
+# Pieza del muñeco → parte del modelo humanoide de Minecraft (left_arm del muñeco está en -X, como leftArm)
+RIG_PARTS = {'head': 'head', 'body': 'body', 'right_arm': 'rightArm', 'left_arm': 'leftArm', 'right_leg': 'rightLeg',
+             'left_leg': 'leftLeg'}
+
+
+def chain(bones, i):
+    """El hueso y sus antepasados, del hueso a la raíz."""
+    out = []
+    while i >= 0:
+        out.append(i)
+        i = bones[i]['parent']
+    return out
+
+
+def rig_of(bones, pick):
+    """Hueso raíz de una figura (el ancestro común de sus piezas, o el del cuerpo) y el hueso de cada pieza."""
+    common = None
+    for bi in pick.values():
+        c = chain(bones, bi)
+        common = c if common is None else [x for x in common if x in c]
+    root = common[0] if common else pick.get('body', next(iter(pick.values())))
+    rig = {'root': root}
+    for part, key in RIG_PARTS.items():
+        rig[key] = pick.get(part, -1)
+    return rig
+
+
+def make_figures(bones, actor_cubes, tex_out):
+    """Las figuras del muñeco, que en el juego son el propio mob. Las piezas se agrupan por textura: con la del cuerpo
+    gris es el mob tal cual; con otra, el mob hecho de ese material (óxido, piedra...) o, si comparte huesos con el
+    cuerpo, una capa de ese material encima. Cada figura: su rig y sus texturas (-1 = la del mob)."""
+    groups, loose = {}, []
+    for part, bi, texs in actor_cubes:
+        if not texs:
+            loose.append((part, bi))  # pieza sin exportar: el mob sí la tiene
+        for t in texs:
+            groups.setdefault(t, {}).setdefault(part, bi)
+    figures = {}
+    for t, pick in groups.items():
+        rig = rig_of(bones, pick)
+        for part, bi in loose:
+            if part not in pick and rig['root'] in chain(bones, bi):
+                rig[RIG_PARTS[part]] = bi
+        fig = figures.setdefault(tuple(sorted(rig.items())), {'rig': rig, 'tex': []})
+        fig['tex'].append(-1 if tex_out[t]['body'] else t)
+    out = []
+    for fig in figures.values():
+        fig['tex'].sort()  # el mob tal cual primero; las capas de material, después
+        out.append(fig)
+    out.sort(key=lambda f: f['tex'][0] != -1)
+    return out
+
+
+def first_frame(img, frames):
+    return img if frames <= 1 else img.crop((0, 0, img.width, img.height // frames))
+
+
+def mob_texture(img):
+    """La textura de un material lista para ponérsela a un mob: los trozos vacíos (zonas que una skin no usa) se rellenan
+    con el material del pecho, para que los mobs con otro reparto de textura no salgan con agujeros."""
+    img = img.copy()
+    k = max(1, img.width // 64)
+    tile = img.crop((20 * k, 20 * k, 28 * k, 32 * k))
+    if not tile.getbbox():
+        return img
+    px, tp = img.load(), tile.load()
+    b = 4 * k
+    for by in range(0, img.height, b):
+        for bx in range(0, img.width, b):
+            box = img.crop((bx, by, min(bx + b, img.width), min(by + b, img.height)))
+            if box.getbbox():
+                continue
+            for y in range(by, min(by + b, img.height)):
+                for x in range(bx, min(bx + b, img.width)):
+                    px[x, y] = tp[x % tile.width, y % tile.height]
+    return img
+
+
 INTERP = {'linear': 0, 'catmullrom': 1, 'step': 2, 'bezier': 0}
 
 # Esquinas de cada cara (arriba-izquierda, abajo-izquierda, abajo-derecha, arriba-derecha vista desde fuera),
@@ -41,6 +121,18 @@ FACE_NORMAL = {'north': (0, 0, -1), 'south': (0, 0, 1), 'west': (-1, 0, 0), 'eas
 # Cabeza de una skin de 64×64 (u1, v1, u2, v2 en píxeles), con las mismas orientaciones que las caras de arriba
 HEAD_UV = {'north': (8, 8, 16, 16), 'east': (0, 8, 8, 16), 'south': (24, 8, 32, 16), 'west': (16, 8, 24, 16),
            'up': (16, 8, 8, 0), 'down': (24, 0, 16, 8)}
+# Dónde está cada pieza en una skin de 64×64 (reparto moderno)
+SKIN_OFFSET = {'head': (0, 0), 'body': (16, 16), 'right_arm': (40, 16), 'left_arm': (32, 48), 'right_leg': (0, 16),
+               'left_leg': (16, 48)}
+
+
+def box_uv(u, v, w, h, d):
+    """UV de cada cara de una caja con el reparto de las skins (igual que HEAD_UV para 8×8×8 en 0,0)."""
+    return {'north': (u + d, v + d, u + d + w, v + d + h), 'east': (u, v + d, u + d, v + d + h),
+            'south': (u + 2 * d + w, v + d, u + 2 * d + 2 * w, v + d + h), 'west': (u + d + w, v + d, u + 2 * d + w, v + d + h),
+            'up': (u + d + w, v + d, u + d, v), 'down': (u + d + 2 * w, v, u + d + w, v + d)}
+
+
 # Ejes que forman cada cara (para saber si tiene superficie)
 FACE_AXES = {'north': (0, 1), 'south': (0, 1), 'west': (2, 1), 'east': (2, 1), 'up': (0, 2), 'down': (0, 2)}
 
@@ -127,7 +219,7 @@ def convert(bb_path, store, problems):
         for face in (el.get('faces') or {}).values():
             if isinstance(face.get('texture'), int):
                 used.add(face['texture'])
-    tex_out, tex_map, tex_uv = [], {}, {}
+    tex_out, tex_map, tex_uv, tex_img = [], {}, {}, []
     for i, t in enumerate(raw_tex):
         if i not in used:
             continue
@@ -143,6 +235,7 @@ def convert(bb_path, store, problems):
             frames = 1  # no es una tira de fotogramas: la imagen entera
         tex_map[i] = len(tex_out)
         tex_uv[i] = (uw, uh)
+        tex_img.append(img)
         tname = (t.get('name') or '').lower()
         tex_out.append({
             'path': store.put(img),
@@ -156,8 +249,12 @@ def convert(bb_path, store, problems):
     bones = []
     uuid_to_bone = {}
 
-    def bake_cube(el, pivot, phead, quads):
-        if el.get('export') is False or el.get('visibility') is False:
+    actor_cubes = []  # (nombre de la pieza, índice del hueso, texturas) para las figuras
+
+    def bake_cube(el, pivot, phead, quads, bone_idx=None):
+        # Una pieza del muñeco sin exportar (fallo del pack) sí cuenta para el mob, que la tiene: solo la versión -3
+        only_skin = el.get('export') is False or el.get('visibility') is False
+        if only_skin and str(el.get('name', '')).lower() not in BODY_PARTS:
             return
         if el.get('type', 'cube') != 'cube':
             problems.append(f'{name}: elemento {el.get("type")} no soportado ({el.get("name")})')
@@ -170,6 +267,13 @@ def convert(bb_path, store, problems):
         origin = [num(v) for v in el.get('origin', [0, 0, 0])]
         rm = rot_matrix(el.get('rotation', [0, 0, 0]))
         light = num(el.get('light_emission', 0))
+        part = str(el.get('name', '')).lower()
+        actor = phead or part in BODY_PARTS
+        if part in BODY_PARTS and bone_idx is not None:
+            texs = set() if only_skin else {tex_map[fc['texture']] for fc in (el.get('faces') or {}).values()
+                                            if fc.get('texture') in tex_map}
+            actor_cubes.append((part, bone_idx, texs))
+        flags = (1 if light > 0 else 0) | (2 if actor else 0)
 
         def corners(dname, ff, tt):
             out = []
@@ -179,6 +283,26 @@ def convert(bb_path, store, problems):
                 out.append([p[i] + origin[i] - pivot[i] for i in range(3)])
             return out
 
+        if part in BODY_PARTS:
+            # La misma pieza con el reparto de una skin (-3): para enseñar un mob en las miniaturas de la web.
+            # Marca 4: pieza principal (con la textura del cuerpo); si no hay, el cuerpo es de otro material.
+            texs0 = {fc.get('texture') for fc in (el.get('faces') or {}).values() if isinstance(fc.get('texture'), int)}
+            main = any(x in tex_map and tex_out[tex_map[x]]['body'] for x in texs0)
+            dims = [abs(num(el['to'][i]) - num(el['from'][i])) for i in range(3)]
+            ou, ov = SKIN_OFFSET[part]
+            for dname, (u1, v1, u2, v2) in box_uv(ou, ov, round(dims[0]), round(dims[1]), round(dims[2])).items():
+                a, b = FACE_AXES[dname]
+                if hi[a] - lo[a] < 1e-6 or hi[b] - lo[b] < 1e-6:
+                    continue
+                cuv = [(u1, v1), (u1, v2), (u2, v2), (u2, v1)]
+                verts = []
+                for k, p in enumerate(corners(dname, f, t)):
+                    verts += [round(p[0], 4), round(p[1], 4), round(p[2], 4), cuv[k][0] / 64, cuv[k][1] / 64]
+                n = apply(rm, FACE_NORMAL[dname])
+                quads.append([-3, round(n[0], 4), round(n[1], 4), round(n[2], 4)] + verts + [2 | (4 if main else 0)])
+
+        if only_skin:
+            return
         if phead:
             # Cabeza de jugador (ModelEngine pone ahí la cabeza con la skin): caras con el reparto de una skin
             # (-1 = cabeza, -2 = capa del sombrero, un poco más grande). Sin skin se usan las caras normales.
@@ -191,7 +315,7 @@ def convert(bb_path, store, problems):
                     for k, p in enumerate(corners(dname, ff, tt)):
                         verts += [round(p[0], 4), round(p[1], 4), round(p[2], 4), cuv[k][0] / 64, cuv[k][1] / 64]
                     n = apply(rm, FACE_NORMAL[dname])
-                    quads.append([layer, round(n[0], 4), round(n[1], 4), round(n[2], 4)] + verts)
+                    quads.append([layer, round(n[0], 4), round(n[1], 4), round(n[2], 4)] + verts + [2])
         for dname, face in (el.get('faces') or {}).items():
             if dname not in FACE_CORNERS:
                 continue
@@ -214,7 +338,7 @@ def convert(bb_path, store, problems):
                 verts += [round(p[0], 4), round(p[1], 4), round(p[2], 4), round(cu / uw, 6), round(cv / uh, 6)]
             n = apply(rm, FACE_NORMAL[dname])
             quads.append([tex_map[ti], round(n[0], 4), round(n[1], 4), round(n[2], 4)] + verts
-                         + ([1] if light > 0 else []))
+                         + ([flags] if flags else []))
 
     def walk(children, parent):
         for c in children:
@@ -242,7 +366,7 @@ def convert(bb_path, store, problems):
             uuid_to_bone[c['uuid']] = idx
             for ch in c.get('children', []):
                 if isinstance(ch, str) and ch in elements:
-                    bake_cube(elements[ch], pivot, phead, bone['quads'])
+                    bake_cube(elements[ch], pivot, phead, bone['quads'], idx)
             walk(c.get('children', []), idx)
 
     walk(d.get('outliner', []), -1)
@@ -280,7 +404,15 @@ def convert(bb_path, store, problems):
             'loop': a.get('loop', 'once') if a.get('loop') in ('once', 'hold', 'loop') else 'once',
             'tracks': tracks,
         }
-    return {'name': name, 'tex': tex_out, 'bones': bones, 'anims': anims}
+    out = {'name': name, 'tex': tex_out, 'bones': bones, 'anims': anims}
+    figures = make_figures(bones, actor_cubes, tex_out)
+    if figures:
+        for fig in figures:
+            # El material, relleno para cualquier mob
+            fig['tex'] = [None if t < 0 else store.put(mob_texture(first_frame(tex_img[t], tex_out[t]['frames'])))
+                          for t in fig['tex']]
+        out['figures'] = figures
+    return out
 
 
 # ---------------------------------------------------------------------------------------------------------------

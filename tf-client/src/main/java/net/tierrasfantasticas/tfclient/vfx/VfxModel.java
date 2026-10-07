@@ -49,8 +49,24 @@ public final class VfxModel {
         public Track[] tracks;
     }
 
+    /** Huesos del «muñeco» de los efectos de kill: raíz y cabeza, cuerpo, brazo der., brazo izq., pierna der., pierna izq. */
+    public static final int RIG_ROOT = 0, RIG_HEAD = 1, RIG_BODY = 2, RIG_RIGHT_ARM = 3, RIG_LEFT_ARM = 4, RIG_RIGHT_LEG = 5,
+            RIG_LEFT_LEG = 6;
+    /** Marca de las caras que son el muñeco (en el juego las hace el mob de verdad). */
+    public static final int FLAG_ACTOR = 2;
+
     public final String name;
     public final Tex[] tex;
+    /**
+     * Una figura del muñeco, que en el juego es el propio mob: los huesos que sigue (rig) y con qué texturas se dibuja
+     * (null = la suya; si no, el material del efecto: óxido, piedra, holograma...). Puede haber varias (el cuerpo y su
+     * fantasma, por ejemplo).
+     */
+    public record Figure(int[] rig, String[] tex) {}
+
+    /** Figuras del muñeco de los efectos de kill (null si el modelo no tiene). */
+    public Figure[] figures;
+    private org.joml.Matrix4f[] rest;
     public final Bone[] bones;
     public final Map<String, Anim> anims = new HashMap<>();
     private final Map<String, Integer> boneIndex = new HashMap<>();
@@ -63,6 +79,17 @@ public final class VfxModel {
             boneIndex.putIfAbsent(bones[i].id, i);
             boneIndex.putIfAbsent(bones[i].id.toLowerCase(java.util.Locale.ROOT), i);
         }
+    }
+
+    /** Pose de reposo (sin animación) de cada hueso, para saber cuánto se ha movido el muñeco. */
+    public org.joml.Matrix4f[] rest() {
+        if (rest == null) {
+            org.joml.Matrix4f[] r = new org.joml.Matrix4f[bones.length];
+            for (int i = 0; i < r.length; i++) r[i] = new org.joml.Matrix4f();
+            VfxPose.compute(this, null, 0F, 0F, r);
+            rest = r;
+        }
+        return rest;
     }
 
     /** Índice del hueso por su id de ModelEngine (sin h_), o -1. */
@@ -107,6 +134,21 @@ public final class VfxModel {
             bones[i] = bone;
         }
         VfxModel model = new VfxModel(o.has("name") ? o.get("name").getAsString() : "", tex, bones);
+        if (o.has("figures")) {
+            JsonArray fa = o.getAsJsonArray("figures");
+            String[] keys = {"root", "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"};
+            model.figures = new Figure[fa.size()];
+            for (int f = 0; f < fa.size(); f++) {
+                JsonObject fo = fa.get(f).getAsJsonObject();
+                JsonObject r = fo.getAsJsonObject("rig");
+                int[] rig = new int[keys.length];
+                for (int i = 0; i < keys.length; i++) rig[i] = r.has(keys[i]) ? r.get(keys[i]).getAsInt() : -1;
+                JsonArray ta2 = fo.getAsJsonArray("tex");
+                String[] ft = new String[ta2.size()];
+                for (int i = 0; i < ft.length; i++) ft[i] = ta2.get(i).isJsonNull() ? null : ta2.get(i).getAsString();
+                model.figures[f] = new Figure(rig, ft);
+            }
+        }
         JsonObject anims = o.getAsJsonObject("anims");
         for (Map.Entry<String, JsonElement> e : anims.entrySet()) {
             JsonObject a = e.getValue().getAsJsonObject();

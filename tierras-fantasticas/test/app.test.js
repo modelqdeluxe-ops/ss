@@ -997,6 +997,9 @@ test('los VFX se obtienen gratis con la cuenta, se equipan y el puente los manda
   const catalog = await (await get('/api/vfx')).json();
   assert.strictEqual(catalog.free, true);
   assert.ok(catalog.kills.length >= 50 && catalog.packs.length >= 3);
+  // Cada efecto de kill está en una de las categorías de la web
+  const cats = new Set(catalog.cats.map((c) => c.id));
+  assert.ok(cats.size >= 5 && catalog.kills.every((k) => cats.has(k.cat)));
   assert.strictEqual(catalog.me, null);
   const kill = catalog.kills[0].id;
   const pack = catalog.packs[0].id;

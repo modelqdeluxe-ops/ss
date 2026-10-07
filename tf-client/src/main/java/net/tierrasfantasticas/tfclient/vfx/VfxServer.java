@@ -80,7 +80,7 @@ public final class VfxServer {
     private static final Map<UUID, int[]> COMBO = new HashMap<>();
     private static final Map<UUID, Long> COMBAT = new HashMap<>();
     private static final Map<UUID, Long> NO_FALL = new HashMap<>();
-    private static final Map<UUID, Long> LAST_KILL_FX = new HashMap<>();
+    private static final Map<UUID, long[]> LAST_KILL_FX = new HashMap<>();
     private static final Map<UUID, Integer> LAST_SKILL = new HashMap<>();
     /** Marcas activas (Runa del Viento...): hasta qué tick y qué pociones dan a los enemigos que golpeas. */
     private static final Map<UUID, List<Mark>> MARKS = new HashMap<>();
@@ -281,11 +281,14 @@ public final class VfxServer {
         if (kill == null) return;
         boolean isPlayer = victim instanceof Player;
         if (!isPlayer && !killsWithMobs) return;
-        // Con muchas muertes seguidas (barridos, granjas) no se amontonan: uno cada 5 ticks por jugador
-        Long last = LAST_KILL_FX.get(killer.getUUID());
-        if (last != null && clock - last < 5) return;
-        LAST_KILL_FX.put(killer.getUUID(), clock);
-        VfxNet.broadcast(level, new VfxNet.Play(kill.fx(), victim.getX(), victim.getY(), victim.getZ(), victim.getYRot(), 0F,
+        // Con muchas muertes seguidas (barridos, granjas) no se amontonan: como mucho 4 cada 5 ticks por jugador
+        long[] last = LAST_KILL_FX.computeIfAbsent(killer.getUUID(), k -> new long[]{-100, 0});
+        if (clock - last[0] >= 5) {
+            last[0] = clock;
+            last[1] = 0;
+        }
+        if (++last[1] > 4) return;
+        VfxNet.broadcast(level, new VfxNet.Play(kill.fx(), victim.getX(), victim.getY(), victim.getZ(), victim.yBodyRot, 0F,
                 killer.getId(), victim.getId(), isPlayer ? victim.getUUID() : null, victim.getRandom().nextInt()));
     }
 

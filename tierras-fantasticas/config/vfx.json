@@ -1,354 +1,386 @@
 {
- "kills": [
+ "cats": [
   {
-   "id": "bendicion_angelical",
-   "name": "Bendición Angelical",
-   "desc": "Unas alas de luz se llevan el cuerpo al cielo.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_bendicion_angelical.webp"
+   "id": "elementos",
+   "name": "Elementos",
+   "color": "#ff8a3d"
   },
   {
-   "id": "game_over",
-   "name": "Game Over",
-   "desc": "Un comecocos de recreativa se zampa al caído.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_game_over.webp"
+   "id": "cosmos",
+   "name": "Cielo y cosmos",
+   "color": "#b77dff"
   },
   {
-   "id": "fuego_infernal",
-   "name": "Fuego Infernal",
-   "desc": "Llamas de alma consumen el cuerpo hasta las cenizas.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_fuego_infernal.webp"
-  },
-  {
-   "id": "arenas_movedizas",
-   "name": "Arenas Movedizas",
-   "desc": "El suelo se abre y la arena se lo traga.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_arenas_movedizas.webp"
-  },
-  {
-   "id": "impostor",
-   "name": "Impostor",
-   "desc": "Alguien sospechoso aparece por detrás. Puñalada.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_impostor.webp"
-  },
-  {
-   "id": "tentaculos",
-   "name": "Tentáculos",
-   "desc": "Tentáculos surgen del suelo y lo arrastran abajo.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_tentaculos.webp"
-  },
-  {
-   "id": "ataque_tiburon",
-   "name": "Ataque de Tiburón",
-   "desc": "Un tiburón sale del suelo y se lo lleva de un bocado.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_ataque_tiburon.webp"
-  },
-  {
-   "id": "knockout",
-   "name": "K.O.",
-   "desc": "Golpe de cómic: K.O. y fuera del combate.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_knockout.webp"
-  },
-  {
-   "id": "planta_carnivora",
-   "name": "Planta Carnívora",
-   "desc": "Una planta gigante brota y lo devora.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_planta_carnivora.webp"
-  },
-  {
-   "id": "bloques_caen",
-   "name": "Bloques que Caen",
-   "desc": "Piezas de colores caen del cielo y lo aplastan.",
-   "volume": "Vol. 1",
-   "image": "img/vfx/kill_bloques_caen.webp"
-  },
-  {
-   "id": "holograma",
-   "name": "Holograma",
-   "desc": "El cuerpo parpadea como un holograma y se apaga.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_holograma.webp"
-  },
-  {
-   "id": "absorcion_sagrada",
-   "name": "Absorción Sagrada",
-   "desc": "Un haz de luz sagrada lo absorbe.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_absorcion_sagrada.webp"
-  },
-  {
-   "id": "derretido",
-   "name": "Derretido",
-   "desc": "Se derrite en un charco de agua.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_derretido.webp"
+   "id": "energia",
+   "name": "Energía y tecnología",
+   "color": "#4cc9f0"
   },
   {
    "id": "naturaleza",
    "name": "Naturaleza",
-   "desc": "Las enredaderas brotan y lo cubren.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_naturaleza.webp"
+   "color": "#5fd47a"
   },
   {
-   "id": "oxido",
-   "name": "Óxido",
-   "desc": "Se oxida y se cae a trozos.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_oxido.webp"
+   "id": "arte",
+   "name": "Arte y papel",
+   "color": "#ffd166"
   },
   {
-   "id": "onda_sonora",
-   "name": "Onda Sonora",
-   "desc": "Una onda de sonido lo deshace.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_onda_sonora.webp"
-  },
+   "id": "divertidos",
+   "name": "Divertidos",
+   "color": "#ff6fae"
+  }
+ ],
+ "kills": [
   {
-   "id": "espectral",
-   "name": "Espectral",
-   "desc": "Su espíritu sale del cuerpo y se desvanece.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_espectral.webp"
-  },
-  {
-   "id": "piedra",
-   "name": "Piedra",
-   "desc": "Se vuelve de piedra y se desmorona.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_piedra.webp"
-  },
-  {
-   "id": "colapso_vacio",
-   "name": "Colapso del Vacío",
-   "desc": "Un agujero del vacío lo aplasta en un destello.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_colapso_vacio.webp"
-  },
-  {
-   "id": "evaporacion",
-   "name": "Evaporación",
-   "desc": "Se convierte en agua y se evapora.",
-   "volume": "Vol. 2",
-   "image": "img/vfx/kill_evaporacion.webp"
-  },
-  {
-   "id": "nebulosa",
-   "name": "Nebulosa",
-   "desc": "Se disuelve en una nube de colores.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_nebulosa.webp"
-  },
-  {
-   "id": "humo",
-   "name": "Humo",
-   "desc": "Desaparece en una nube de humo.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_humo.webp"
-  },
-  {
-   "id": "papel_quemado",
-   "name": "Papel Quemado",
-   "desc": "Arde como una hoja de papel.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_papel_quemado.webp"
-  },
-  {
-   "id": "sombras",
-   "name": "Sombras",
-   "desc": "Las sombras del suelo se lo tragan.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_sombras.webp"
-  },
-  {
-   "id": "mosaico",
-   "name": "Mosaico",
-   "desc": "Se rompe en teselas de colores.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_mosaico.webp"
-  },
-  {
-   "id": "espejo",
-   "name": "Espejo",
-   "desc": "Su reflejo se agrieta y se esfuma.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_espejo.webp"
-  },
-  {
-   "id": "floracion",
-   "name": "Floración",
-   "desc": "Una rosa brota donde cayó.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_floracion.webp"
-  },
-  {
-   "id": "chispas",
-   "name": "Chispas",
-   "desc": "Una descarga eléctrica lo hace chisporrotear.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_chispas.webp"
-  },
-  {
-   "id": "portal",
-   "name": "Portal",
-   "desc": "Un portal lo arrastra a otra dimensión.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_portal.webp"
-  },
-  {
-   "id": "reloj",
-   "name": "Reloj",
-   "desc": "El tiempo se rebobina y lo borra.",
-   "volume": "Vol. 3",
-   "image": "img/vfx/kill_reloj.webp"
-  },
-  {
-   "id": "acido",
-   "name": "Ácido",
-   "desc": "El ácido lo corroe hasta deshacerlo.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_acido.webp"
-  },
-  {
-   "id": "engranajes",
-   "name": "Engranajes",
-   "desc": "Se desmonta pieza a pieza como un reloj.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_engranajes.webp"
+   "id": "fuego_infernal",
+   "name": "Fuego Infernal",
+   "desc": "Llamas de alma consumen el cuerpo hasta las cenizas.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_fuego_infernal.webp"
   },
   {
    "id": "escarcha",
    "name": "Escarcha",
    "desc": "El hielo lo cubre y se hace añicos.",
-   "volume": "Vol. 4",
+   "cat": "elementos",
    "image": "img/vfx/kill_escarcha.webp"
   },
   {
-   "id": "abstracto",
-   "name": "Abstracto",
-   "desc": "Se deforma en formas imposibles.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_abstracto.webp"
+   "id": "derretido",
+   "name": "Derretido",
+   "desc": "Se derrite en un charco de agua.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_derretido.webp"
   },
   {
-   "id": "grafiti",
-   "name": "Grafiti",
-   "desc": "Un grafiti de cómic estalla en su lugar.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_grafiti.webp"
+   "id": "evaporacion",
+   "name": "Evaporación",
+   "desc": "Se convierte en agua y se evapora.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_evaporacion.webp"
   },
   {
-   "id": "origami",
-   "name": "Origami",
-   "desc": "Se pliega como una figura de papel.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_origami.webp"
+   "id": "acido",
+   "name": "Ácido",
+   "desc": "El ácido lo corroe hasta deshacerlo.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_acido.webp"
+  },
+  {
+   "id": "oxido",
+   "name": "Óxido",
+   "desc": "Se oxida y se cae a trozos.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_oxido.webp"
+  },
+  {
+   "id": "piedra",
+   "name": "Piedra",
+   "desc": "Se vuelve de piedra y se desmorona.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_piedra.webp"
+  },
+  {
+   "id": "jade",
+   "name": "Jade",
+   "desc": "Se cristaliza en jade y se rompe en pedazos.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_jade.webp"
+  },
+  {
+   "id": "niebla",
+   "name": "Niebla",
+   "desc": "Una niebla mística lo envuelve y lo borra.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_niebla.webp"
+  },
+  {
+   "id": "humo",
+   "name": "Humo",
+   "desc": "Desaparece en una nube de humo.",
+   "cat": "elementos",
+   "image": "img/vfx/kill_humo.webp"
+  },
+  {
+   "id": "bendicion_angelical",
+   "name": "Bendición Angelical",
+   "desc": "Unas alas de luz se llevan el cuerpo al cielo.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_bendicion_angelical.webp"
+  },
+  {
+   "id": "absorcion_sagrada",
+   "name": "Absorción Sagrada",
+   "desc": "Un haz de luz sagrada lo absorbe.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_absorcion_sagrada.webp"
+  },
+  {
+   "id": "aurora",
+   "name": "Aurora",
+   "desc": "Una aurora boreal lo envuelve y se lo lleva.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_aurora.webp"
+  },
+  {
+   "id": "constelacion",
+   "name": "Constelación",
+   "desc": "Planetas en órbita lo desintegran.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_constelacion.webp"
+  },
+  {
+   "id": "estrella_norte",
+   "name": "Estrella del Norte",
+   "desc": "Se vuelve dorado y se apaga como una estrella.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_estrella_norte.webp"
+  },
+  {
+   "id": "nebulosa",
+   "name": "Nebulosa",
+   "desc": "Se disuelve en una nube de colores.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_nebulosa.webp"
+  },
+  {
+   "id": "prisma",
+   "name": "Prisma",
+   "desc": "Un prisma lo descompone en luz.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_prisma.webp"
+  },
+  {
+   "id": "portal",
+   "name": "Portal",
+   "desc": "Un portal lo arrastra a otra dimensión.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_portal.webp"
+  },
+  {
+   "id": "colapso_vacio",
+   "name": "Colapso del Vacío",
+   "desc": "Un agujero del vacío lo aplasta en un destello.",
+   "cat": "cosmos",
+   "image": "img/vfx/kill_colapso_vacio.webp"
+  },
+  {
+   "id": "chispas",
+   "name": "Chispas",
+   "desc": "Una descarga eléctrica lo hace chisporrotear.",
+   "cat": "energia",
+   "image": "img/vfx/kill_chispas.webp"
   },
   {
    "id": "orbe_plasma",
    "name": "Orbe de Plasma",
    "desc": "Un orbe de plasma lo encierra y descarga rayos.",
-   "volume": "Vol. 4",
+   "cat": "energia",
    "image": "img/vfx/kill_orbe_plasma.webp"
   },
   {
    "id": "magnetismo",
    "name": "Magnetismo",
    "desc": "Un campo magnético lo desarma.",
-   "volume": "Vol. 4",
+   "cat": "energia",
    "image": "img/vfx/kill_magnetismo.webp"
-  },
-  {
-   "id": "manchas_tinta",
-   "name": "Manchas de Tinta",
-   "desc": "Se disuelve en manchas de tinta.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_manchas_tinta.webp"
-  },
-  {
-   "id": "bioluminiscencia",
-   "name": "Bioluminiscencia",
-   "desc": "Brilla con luz dorada y se eleva.",
-   "volume": "Vol. 4",
-   "image": "img/vfx/kill_bioluminiscencia.webp"
-  },
-  {
-   "id": "miel",
-   "name": "Miel",
-   "desc": "Se convierte en bloques de miel.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_miel.webp"
-  },
-  {
-   "id": "contorno",
-   "name": "Contorno",
-   "desc": "Un lápiz repasa su silueta y la borra.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_contorno.webp"
-  },
-  {
-   "id": "pluma_tinta",
-   "name": "Pluma y Tinta",
-   "desc": "Una pluma lo borra trazo a trazo.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_pluma_tinta.webp"
-  },
-  {
-   "id": "constelacion",
-   "name": "Constelación",
-   "desc": "Planetas en órbita lo desintegran.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_constelacion.webp"
-  },
-  {
-   "id": "aurora",
-   "name": "Aurora",
-   "desc": "Una aurora boreal lo envuelve y se lo lleva.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_aurora.webp"
-  },
-  {
-   "id": "estrella_norte",
-   "name": "Estrella del Norte",
-   "desc": "Se vuelve dorado y se apaga como una estrella.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_estrella_norte.webp"
   },
   {
    "id": "energia_cinetica",
    "name": "Energía Cinética",
    "desc": "La energía lo dispersa en todas direcciones.",
-   "volume": "Vol. 5",
+   "cat": "energia",
    "image": "img/vfx/kill_energia_cinetica.webp"
   },
   {
-   "id": "niebla",
-   "name": "Niebla",
-   "desc": "Una niebla mística lo envuelve y lo borra.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_niebla.webp"
+   "id": "onda_sonora",
+   "name": "Onda Sonora",
+   "desc": "Una onda de sonido lo deshace.",
+   "cat": "energia",
+   "image": "img/vfx/kill_onda_sonora.webp"
   },
   {
-   "id": "jade",
-   "name": "Jade",
-   "desc": "Se cristaliza en jade y se rompe en pedazos.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_jade.webp"
+   "id": "reloj",
+   "name": "Reloj",
+   "desc": "El tiempo se rebobina y lo borra.",
+   "cat": "energia",
+   "image": "img/vfx/kill_reloj.webp"
   },
   {
-   "id": "prisma",
-   "name": "Prisma",
-   "desc": "Un prisma lo descompone en luz.",
-   "volume": "Vol. 5",
-   "image": "img/vfx/kill_prisma.webp"
+   "id": "holograma",
+   "name": "Holograma",
+   "desc": "El cuerpo parpadea como un holograma y se apaga.",
+   "cat": "energia",
+   "image": "img/vfx/kill_holograma.webp"
+  },
+  {
+   "id": "espejo",
+   "name": "Espejo",
+   "desc": "Su reflejo se agrieta y se esfuma.",
+   "cat": "energia",
+   "image": "img/vfx/kill_espejo.webp"
+  },
+  {
+   "id": "espectral",
+   "name": "Espectral",
+   "desc": "Su espíritu sale del cuerpo y se desvanece.",
+   "cat": "energia",
+   "image": "img/vfx/kill_espectral.webp"
+  },
+  {
+   "id": "engranajes",
+   "name": "Engranajes",
+   "desc": "Se desmonta pieza a pieza como un reloj.",
+   "cat": "energia",
+   "image": "img/vfx/kill_engranajes.webp"
+  },
+  {
+   "id": "naturaleza",
+   "name": "Naturaleza",
+   "desc": "Las enredaderas brotan y lo cubren.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_naturaleza.webp"
+  },
+  {
+   "id": "floracion",
+   "name": "Floración",
+   "desc": "Una rosa brota donde cayó.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_floracion.webp"
+  },
+  {
+   "id": "planta_carnivora",
+   "name": "Planta Carnívora",
+   "desc": "Una planta gigante brota y lo devora.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_planta_carnivora.webp"
+  },
+  {
+   "id": "miel",
+   "name": "Miel",
+   "desc": "Se convierte en bloques de miel.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_miel.webp"
+  },
+  {
+   "id": "bioluminiscencia",
+   "name": "Bioluminiscencia",
+   "desc": "Brilla con luz dorada y se eleva.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_bioluminiscencia.webp"
+  },
+  {
+   "id": "tentaculos",
+   "name": "Tentáculos",
+   "desc": "Tentáculos surgen del suelo y lo arrastran abajo.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_tentaculos.webp"
+  },
+  {
+   "id": "ataque_tiburon",
+   "name": "Ataque de Tiburón",
+   "desc": "Un tiburón sale del suelo y se lo lleva de un bocado.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_ataque_tiburon.webp"
+  },
+  {
+   "id": "arenas_movedizas",
+   "name": "Arenas Movedizas",
+   "desc": "El suelo se abre y la arena se lo traga.",
+   "cat": "naturaleza",
+   "image": "img/vfx/kill_arenas_movedizas.webp"
+  },
+  {
+   "id": "papel_quemado",
+   "name": "Papel Quemado",
+   "desc": "Arde como una hoja de papel.",
+   "cat": "arte",
+   "image": "img/vfx/kill_papel_quemado.webp"
+  },
+  {
+   "id": "origami",
+   "name": "Origami",
+   "desc": "Se pliega como una figura de papel.",
+   "cat": "arte",
+   "image": "img/vfx/kill_origami.webp"
+  },
+  {
+   "id": "pluma_tinta",
+   "name": "Pluma y Tinta",
+   "desc": "Una pluma lo borra trazo a trazo.",
+   "cat": "arte",
+   "image": "img/vfx/kill_pluma_tinta.webp"
+  },
+  {
+   "id": "manchas_tinta",
+   "name": "Manchas de Tinta",
+   "desc": "Se disuelve en manchas de tinta.",
+   "cat": "arte",
+   "image": "img/vfx/kill_manchas_tinta.webp"
+  },
+  {
+   "id": "grafiti",
+   "name": "Grafiti",
+   "desc": "Un grafiti de cómic estalla en su lugar.",
+   "cat": "arte",
+   "image": "img/vfx/kill_grafiti.webp"
+  },
+  {
+   "id": "mosaico",
+   "name": "Mosaico",
+   "desc": "Se rompe en teselas de colores.",
+   "cat": "arte",
+   "image": "img/vfx/kill_mosaico.webp"
+  },
+  {
+   "id": "abstracto",
+   "name": "Abstracto",
+   "desc": "Se deforma en formas imposibles.",
+   "cat": "arte",
+   "image": "img/vfx/kill_abstracto.webp"
+  },
+  {
+   "id": "contorno",
+   "name": "Contorno",
+   "desc": "Un lápiz repasa su silueta y la borra.",
+   "cat": "arte",
+   "image": "img/vfx/kill_contorno.webp"
+  },
+  {
+   "id": "sombras",
+   "name": "Sombras",
+   "desc": "Las sombras del suelo se lo tragan.",
+   "cat": "arte",
+   "image": "img/vfx/kill_sombras.webp"
+  },
+  {
+   "id": "game_over",
+   "name": "Game Over",
+   "desc": "Un comecocos de recreativa se zampa al caído.",
+   "cat": "divertidos",
+   "image": "img/vfx/kill_game_over.webp"
+  },
+  {
+   "id": "knockout",
+   "name": "K.O.",
+   "desc": "Golpe de cómic: K.O. y fuera del combate.",
+   "cat": "divertidos",
+   "image": "img/vfx/kill_knockout.webp"
+  },
+  {
+   "id": "bloques_caen",
+   "name": "Bloques que Caen",
+   "desc": "Piezas de colores caen del cielo y lo aplastan.",
+   "cat": "divertidos",
+   "image": "img/vfx/kill_bloques_caen.webp"
+  },
+  {
+   "id": "impostor",
+   "name": "Impostor",
+   "desc": "Alguien sospechoso aparece por detrás. Puñalada.",
+   "cat": "divertidos",
+   "image": "img/vfx/kill_impostor.webp"
   }
  ],
  "packs": [

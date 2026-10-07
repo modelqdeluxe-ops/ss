@@ -185,6 +185,7 @@ public final class VfxClient {
 
     @SubscribeEvent
     public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event) {
+        if (event.getEntity() == VfxActor.rendering) return; // es el efecto de kill dibujándola
         if (!HIDDEN.isEmpty() && HIDDEN.containsKey(event.getEntity().getId())) event.setCanceled(true);
     }
 
@@ -224,6 +225,8 @@ public final class VfxClient {
         final List<Repeater> repeaters = new ArrayList<>();
         final RandomSource random;
         final ResourceLocation skin;
+        /** La víctima (si el cliente la tiene): en los efectos de kill hace ella la animación. */
+        final net.minecraft.world.entity.LivingEntity actor;
         int age = -1;
         int next;
 
@@ -233,6 +236,9 @@ public final class VfxClient {
             this.duration = def.has("dur") ? def.get("dur").getAsInt() : 40;
             this.random = RandomSource.create(msg.seed());
             this.skin = skinOf(msg.skin());
+            ClientLevel level = Minecraft.getInstance().level;
+            Entity victim = msg.victim() >= 0 && level != null ? level.getEntity(msg.victim()) : null;
+            this.actor = victim instanceof net.minecraft.world.entity.LivingEntity living ? living : null;
         }
 
         /** Avanza un tick. false = terminó. */
@@ -432,6 +438,8 @@ public final class VfxClient {
         final boolean followYaw;
         final boolean usePitch;
         final float scale;
+        /** El mob de verdad hace de muñeco (efectos de kill). */
+        final boolean actorMode;
         final JsonObject ev;
         final boolean[] visible;
         final VfxModel[] source;
@@ -472,7 +480,14 @@ public final class VfxClient {
             this.follow = f.equals("caster") ? 1 : f.equals("victim") ? 2 : 0;
             this.followYaw = ev.has("followYaw") && ev.get("followYaw").getAsBoolean();
             this.usePitch = ev.has("pitch") && ev.get("pitch").getAsBoolean();
-            this.scale = (float) num(ev, "scale", 1);
+            boolean wantsActor = ev.has("actor") && ev.get("actor").getAsBoolean();
+            this.actorMode = wantsActor && model.figures != null && r.actor != null;
+            float s = (float) num(ev, "scale", 1);
+            if (actorMode) {
+                // El efecto a la medida del mob: más pequeño con una gallina, más grande con un ghast
+                s *= Math.max(0.6F, Math.min(3.0F, r.actor.getBbHeight() / 1.8F));
+            }
+            this.scale = s;
             this.ev = ev;
             this.visible = new boolean[model.bones.length];
             this.source = new VfxModel[model.bones.length];
@@ -616,6 +631,12 @@ public final class VfxClient {
             Matrix3f normalView = new Matrix3f(pose.last().normal());
             Matrix3f normalBase = new Matrix3f(normalView).mul(new Matrix3f(inst));
             ResourceLocation skin = useSkin ? r.skin : null;
+            if (actorMode) {
+                float yy = prevYaw + (yaw - prevYaw) * partial;
+                Matrix4f rotScale = new Matrix4f().rotate(Axis.YP.rotationDegrees(180F - yy)).scale(scale / 16F);
+                VfxActor.render(r.actor, model, pose.last().pose(), pose.last().normal(), inst, rotScale, bones, visible, yy, partial,
+                        buffers);
+            }
             Matrix4f full = new Matrix4f();
             Matrix3f normal = new Matrix3f();
             Vector3f n = new Vector3f();
@@ -632,6 +653,9 @@ public final class VfxClient {
                 for (int q = 0; q < bone.quadCount; q++) if (bone.quads[q * VfxModel.QUAD] >= 0) hasOwn = true;
                 for (int q = 0; q < bone.quadCount; q++) {
                     int ti = (int) bone.quads[q * VfxModel.QUAD];
+                    if (ti == -3) continue; // el muñeco con reparto de skin: solo para las miniaturas de la web
+                    // Con el mob de verdad haciendo la animación, el muñeco no se dibuja
+                    if (actorMode && (((int) bone.quads[q * VfxModel.QUAD + 24]) & VfxModel.FLAG_ACTOR) != 0) continue;
                     ResourceLocation tex;
                     if (ti >= 0) {
                         if (skinHead) continue; // con skin, la cabeza va con la skin

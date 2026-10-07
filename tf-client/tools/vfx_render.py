@@ -30,17 +30,28 @@ def look_matrix(yaw_deg, pitch_deg):
 
 
 def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, center=None, fov=40, tick=0,
-           hidden=None, ss=2, skin=None):
-    """Imagen RGBA del modelo en el instante t (s). La cámara mira la cara delantera (-Z) del modelo."""
+           hidden=None, ss=2, skin=None, actor=None):
+    """Imagen RGBA del modelo en el instante t (s). La cámara mira la cara delantera (-Z) del modelo.
+    actor: skin de 64×64 de un mob que hace la animación en lugar del muñeco (como en el juego)."""
     mats = B.pose(model, anim, t)
     tris = []  # (z, pts3 (3x3), uvs (3x2), tex, normal)
+    flag = lambda q: int(q[24]) if len(q) > 24 else 0
     for bi, b in enumerate(model['bones']):
         if b['hidden'] or (hidden and b['id'] in hidden):
             continue
         m = np.array(mats[bi])
         for q in b['quads']:
             ti = q[0]
-            if ti < 0 and (skin is None or ti == -2 or any(qq[0] >= 0 for qq in b['quads'])):
+            if actor is not None:
+                # El muñeco gris lo hace el mob (con su skin); las piezas de material se quedan como en el juego
+                if ti == -3:
+                    if not flag(q) & 4:
+                        continue
+                elif flag(q) & 2 and (ti < 0 or model['tex'][ti]['body']):
+                    continue
+            elif ti == -3:
+                continue
+            if ti < 0 and ti != -3 and (skin is None or ti == -2 or any(qq[0] >= 0 for qq in b['quads'])):
                 continue  # cabeza con skin: en las miniaturas va la cabeza del modelo (o una gris si no tiene)
             n = m[:3, :3] @ np.array(q[1:4])
             vs = np.array(q[4:24]).reshape(4, 5)
@@ -102,7 +113,7 @@ def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, ce
         iz = w0 / z[0] + w1 / z[1] + w2 / z[2]
         u = (w0 * uv[0, 0] / z[0] + w1 * uv[1, 0] / z[1] + w2 * uv[2, 0] / z[2]) / iz
         v = (w0 * uv[0, 1] / z[0] + w1 * uv[1, 1] / z[1] + w2 * uv[2, 1] / z[2]) / iz
-        tex = textures[ti] if ti >= 0 else skin
+        tex = textures[ti] if ti >= 0 else actor if ti == -3 else skin
         th, tw = tex.shape[:2]
         tu = np.clip((u * tw).astype(int), 0, tw - 1)
         tv = np.clip((v * th).astype(int), 0, th - 1)
