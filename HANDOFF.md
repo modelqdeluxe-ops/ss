@@ -12,6 +12,86 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe en pausa**: no lo toques.
 
+### ⚠️ CHECKPOINT EN CURSO (7 de octubre de 2026, noche) — trabajo A MEDIAS, sin fusionar en main
+Rama del checkpoint: **`claude/amazing-ritchie-68hm6n`** (sale de `claude/amazing-wozniak-gtw9ll` = main + estos
+cambios). Nada de esto está en main ni publicado todavía. Siguiente versión del mod: **1.3.9** (aún NO subida en
+`tf-client/gradle.properties` ni en `TFClient.VERSION`).
+
+**Lo que pidió el dueño (textual, último mensaje grande):** *«las alas del Fantastico siguen un poco separaditas del
+cuerpo. Y el diseño neon de las letras no me gustan, pon ese fondo [una imagen nocturna de Minecraft: luna, castillo,
+río, islas flotantes] y por favor, mejora el efecto de neon bro, algo muy profesional. Necesito que revises con
+seriedad todos los modelos… [el Conquistador] separado todo del cuerpo las alas.. Y cuando las pongo en el juego se
+ponen en las patas y no en la espalda… debajo del rango no me pusiste lo que trae el rango como comandos y eso, eso
+debe ir debajo del rango. Y algunas armas y poses se ponen mal, unas armas no aparecen… revisa de pies a cabeza todos
+[los assets]. El logotipo no tiene animación en mi pc, mejora las animaciones, transiciones, transiciones de letras,
+todo… hazlo profesional… Y en la leyenda abajo en los datos pon copyright nadie puede distribuir esto fuera del
+server, y también pon en una esquina abajo que diga By Pewez777, así discreto.»* Y después: *«cambia el set
+fantástico al set celestial, o sea el set celestial será ahora del set fantástico y el fantástico del celestial»*.
+
+**HECHO en este checkpoint (en la rama, sin publicar):**
+1. **Intercambio de sets de rango**: Celestial = Eagle Ascendant (netherite+2), Fantástico = Luz de Estrella
+   (`starlight`, netherite+3). Cambiado en `tools/crates.py` (`RANKS` y textos de `RANK_PITCH`), regenerados
+   `config/products.json` y `public/tienda.html`, y el nivel de atributos de los dos sets en `tf_sets.json` del mod.
+   Falta: actualizar README de la web (línea «Celestial (Luz de Estrella) y Fantástico (Eagle Ascendant)») y la
+   sección de rangos de este HANDOFF; revisar que la portada/crate de cada rango muestre su set nuevo.
+2. **Cosméticos de espalda, revisados los 67 de perfil, espalda y 3/4** (hojas en el probador). Causa real de «alas
+   separadas / en las patas»: varios packs son **TRAJES** que rodean el cuerpo (Conquistador: collar + falda egipcia;
+   Zorro: abrigo de pelo; Cupido: chaleco; Pirata: casaca con cinturón; Shadow: armadura + túnica) y la colocación los
+   ponía detrás de la espalda, así que las alas quedaban a medio bloque y la falda/casaca parecía estar en las piernas.
+   Nuevo en `tf-client/tools/build_mod_items.py` (se aplica al construir y con `check_backs.py --fix`, repetible sin
+   cambiar nada):
+   - `OUTFIT_TAGS` + `wrap_body()`: centra en el cuerpo lo que rodea el torso.
+   - `FEET_TAGS` + `to_feet()`: Shadow estaba medio bloque bajo (la túnica pasaba de los pies); lo más bajo va a los pies.
+   - `FRONT_GAP_TAGS` + `close_front_gap()`: Eagle tenía cadenas/plumas sueltas delante de la raíz de las alas que
+     mantenían las alas 0,09 bloques separadas; se acercan a las alas y todo se pega a la espalda.
+   - `finish_back(model, tag, alpha_of)` = último ajuste (lo de arriba o `snap_to_back`). `check_backs.py --fix` lo usa.
+   - Además, con la medida nueva de «capa de contacto» se pegaron ~15 más (azure, bahamut, beats, cardael, frostbite,
+     ifrit carcaj, easter, skeleton, mochilas de cosmeticsv1/halloween, unicornio…). Revisado visualmente: bien.
+   - Beats y alas de calabaza NO son trajes (probado: al centrarlos tapaban pecho/cara). Wither, patas de araña,
+     ataúd y hielo quedan «fuera de rango» a propósito (sus correas/patas ya abrazan el cuerpo).
+   - El juego dibuja la espalda EXACTAMENTE igual que la web (BackLayer y puentes de Curios/Accessories usan la misma
+     transformación que `wardrobe.js`), así que lo que se ve bien en el probador está bien en el juego.
+   - Exportado al probador: `python3 tierras-fantasticas/tools/wear_export.py` (ya hecho, `public/wear/` actualizado).
+3. **Armas (empezado)**: auditoría de datos de los 759 objetos de mano (modelo, padres, overrides, texturas, escala):
+   solo fallaban las **espadas y lanzas dobles de Oni** (la otra mano con escala 0 → invisibles = «unas armas no
+   aparecen»). Nuevo `show_both_hands()` en build_mod_items.py (`HAND_KINDS`): la mano escondida usa la posición de
+   la otra. Aplicado a `oni_left_sword/left_spear/right_sword/right_spear`. **OJO**: no aplicarlo a los modelos de
+   inventario de alas/mochilas (se probó y se revirtió).
+
+**PENDIENTE (en este orden):**
+- **#17 Armas, revisión visual**: se estaba renderizando cada objeto de mano en el personaje
+  (`scratchpad/hands.cjs` → `hd/`, luego `hsheet.py hd hands.json hs 6 5` hace hojas de 30). Mirar las hojas y
+  corregir armas mal colocadas o con pose rara (en la web: `POSE_HOLDING`/`applyDisplay` de wardrobe.js; en el juego
+  la pose de ataque la da Better Combat con `weapon_attributes` que escribe build_mod_items.py según el tipo).
+- **#18 Cascos y sombreros**: igual, todos puestos en la cabeza (perfil y frente).
+- **#19 Web**:
+  - Fondo = la imagen nocturna que mandó el dueño (está en el chat, no en el repo: pedírsela de nuevo si no la tienes;
+    optimizar a webp en `public/img/`, con un velo oscuro para que se lea el texto).
+  - Quitar el neón de las LETRAS (brillo del título de la portada y el degradado moviéndose de `.text-grad`) y hacer
+    un neón profesional en bordes, botones y brillos.
+  - Logo animado también en PC (el «reducir movimiento» de Windows lo apaga: dejar un flotado/brillo suave).
+  - Mejores transiciones y aparición de textos.
+  - Pie: aviso de copyright (nadie puede distribuir el contenido fuera del servidor) y en una esquina, discreto,
+    «By Pewez777».
+  - Todo en `tools/pages.py` (nunca editar los .html a mano) y en su sección de `styles.css` (sin parches al final).
+- **#20 Rangos**: debajo del escaparate, «lo que trae el rango» con comandos. Propuesta progresiva (el dueño la
+  configura en LuckPerms/EssentialsX; documentar los permisos aquí): Mortal prefijo, 2 homes, rol de Discord y set;
+  Inmortal +3 homes y /hat; Mágico 5 homes, partículas y /fly en el lobby; Eterno 8 homes, /nick y chat de colores;
+  Cósmico 12 homes y cola prioritaria; Celestial 20 homes y mascota cosmética; Fantástico homes ilimitados, título y
+  color propio. Sin /ec ni kits. Nunca el nombre del kit ni el número de piezas.
+- **#21 Publicar**: subir el mod a **1.3.9** (`gradle.properties` + `TFClient.VERSION`), compilar
+  (`cd tf-client && JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew build --no-daemon -q`), `npm test` en la
+  web (40 tests), `check_mod_items.py`, PR a main, esperar «Compilar el mod», fusionar (squash, sin pedir permiso),
+  esperar el despliegue de Cloudflare, capturas en vivo de https://xn--tierrasfantsticas-hpb.store, mandar el .jar y
+  actualizar este HANDOFF y los README.
+
+**Herramientas del checkpoint** (copiadas en `tierras-fantasticas/tools/review/`; necesitan el probador local
+`node tierras-fantasticas/tools/preview.mjs` en el puerto 8788 y se lanzan con `PW=$(npm root -g)/playwright node …`):
+- `backs.cjs <carpeta> backs.json` → perfil/espalda/3-4 de cada cosmético de espalda (`YAWS='[0, [2.4, 0.9]]'` para
+  otros ángulos, [giro, inclinación]); `bsheet.py <carpeta> backs.json <prefijo> 4` → hojas con recorte automático.
+- `hands.cjs <carpeta> hands.json` → cada arma en la mano; `hsheet.py <carpeta> hands.json <prefijo> 6 5` → hojas.
+- `audit_hand.py` → auditoría de datos de los objetos de mano del mod (padres, overrides, texturas, escala 0).
+
 ### Última entrega (7 de octubre de 2026, tarde): paleta de neón, fondo animado, alas revisadas y TF Client 1.3.8
 El dueño: *«las alas del fantástico quedan un poco separadas… revisa todas hasta los cosméticos… un libro está mal
 puesto… en los rangos no quiero ver esa descripción debajo [la tabla], solo los beneficios, y no pongas cuántas piezas

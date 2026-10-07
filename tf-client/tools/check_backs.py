@@ -2,8 +2,9 @@
 
 Lee los modelos ya convertidos del mod (no hacen falta los packs), calcula lo que se ve (píxeles no transparentes)
 con la posición de «display.head» y mide la parte central (la que va pegada a la columna): debe quedar justo detrás
-de la espalda del jugador (build_mod_items.back_gap). Si queda separada, --fix corrige solo la translación en z
-(lo mismo que hace build_mod_items.py al generar).
+de la espalda del jugador (build_mod_items.back_gap). Con --fix aplica el mismo último ajuste que build_mod_items.py
+al generar (finish_back): pega a la espalda lo separado, centra en el cuerpo los trajes y acerca a las alas las piezas
+sueltas de delante. Se puede repetir: lo que ya está bien no cambia.
 
 Uso: python3 tools/check_backs.py [--fix] [set ...]
 """
@@ -62,16 +63,18 @@ def main(args):
                 print(f'{item["id"]:40s} SIN NADA VISIBLE')
                 bad += 1
                 continue
-            ok = m['gap'] <= M.BACK_GAP_LIMIT
-            note = 'ok' if ok else 'SEPARADO'
-            print(f'{item["id"]:40s} separación {m["gap"]:+.3f}  arriba {m["top"]:+.2f}  abajo {m["bottom"]:+.2f}  {note}')
+            tag = f"{s['id']}/{item['id'][len(s['id']) + 1:]}"
+            ok = m['gap'] <= M.BACK_GAP_LIMIT or tag in M.OUTFIT_TAGS
+            note = ('traje' if tag in M.OUTFIT_TAGS else 'ok') if ok else 'SEPARADO'
+            print(f'{item["id"]:40s} contacto {m["gap"]:+.3f}  más cerca {m["near"]:+.3f}  arriba {m["top"]:+.2f}  abajo {m["bottom"]:+.2f}  {note}')
             if not ok:
                 bad += 1
-                if fix:
-                    dz = M.snap_to_back(model, alpha_of)
+            if fix:
+                done = M.finish_back(model, tag, alpha_of)
+                if done:
                     with open(path, 'w') as fh:
                         json.dump(model, fh, separators=(',', ':'))
-                    print(f'{"":40s} → corregido (z {dz:+.2f})')
+                    print(f'{"":40s} → {", ".join(done)}')
     print(f'{bad} fuera de rango' + (' (corregidos)' if fix and bad else ''))
 
 

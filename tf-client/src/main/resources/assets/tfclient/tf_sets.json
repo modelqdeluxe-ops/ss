@@ -4474,13 +4474,13 @@
      "slot": "boots"
     }
    ],
-   "tier": "netherite+2"
+   "tier": "netherite+3"
   },
   {
    "id": "eagle",
    "name": "Eagle Ascendant",
    "color": "#f59e0b",
-   "tier": "netherite+3",
+   "tier": "netherite+2",
    "items": [
     {
      "id": "eagle_sword",

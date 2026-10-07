@@ -112,8 +112,8 @@ RANKS = [
     ('magico', 'Mágico', 'darkworld', 'Dark World', 1199, ('dark_purple', '#c026d3'), 'netherite'),
     ('eterno', 'Eterno', 'malika', 'Malika', 1599, ('red', '#ef4444'), 'netherite+1'),
     ('cosmico', 'Cósmico', 'oni', 'Oni', 1999, ('aqua', '#22d3ee'), 'netherite+1.5'),
-    ('celestial', 'Celestial', 'starlight', 'Luz de Estrella', 2499, ('yellow', '#fde047'), 'netherite+2'),
-    ('fantastico', 'Fantástico', 'eagle', 'Eagle Ascendant', 2999, ('gold', '#f59e0b'), 'netherite+3'),
+    ('celestial', 'Celestial', 'eagle', 'Eagle Ascendant', 2499, ('yellow', '#fde047'), 'netherite+2'),
+    ('fantastico', 'Fantástico', 'starlight', 'Luz de Estrella', 2999, ('gold', '#f59e0b'), 'netherite+3'),
 ]
 
 
@@ -211,9 +211,9 @@ RANK_PITCH = {
     'cosmico': ('Más allá de las estrellas',
                 'Armadura de guerrero demonio, armas de otro mundo y unas alas oscuras coronadas por un aro carmesí.'),
     'celestial': ('Bendecido por los cielos',
-                  'Oro y luz de las constelaciones: el equipo de los elegidos, con alas blancas que brillan de verdad.'),
+                  'Oro y sombra para los que vuelan más alto: alas de águila majestuosas y armas dignas de los elegidos.'),
     'fantastico': ('La cima de Tierras Fantásticas',
-                   'El rango más alto del reino. Oro y sombra, alas majestuosas y el equipo más espectacular del servidor.'),
+                   'El rango más alto del reino. Oro y luz de las constelaciones, alas blancas que brillan de verdad y el equipo más espectacular del servidor.'),
 }
 
 

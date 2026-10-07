@@ -819,32 +819,46 @@ def balloon_display(model, writer, tag):
     back_report.append((tag, 'globo', hand['rotation'], hand['translation'], hand['scale']))
 
 
-# La parte central de lo que va en la espalda (la de la columna) tiene que quedar pegada: más de medio píxel por detrás
-# ya se ve separada. Las correas de las mochilas y las raíces de las alas pueden entrar por delante (a propósito).
-BACK_CENTER = 0.22      # bloques a cada lado del centro del cuerpo
+# Lo que va en la espalda tiene que quedar pegado a ella. Se mide la «capa de contacto»: lo más adelantado del 15 % de
+# la superficie visible que cae delante del torso (no un punto suelto: una varilla fina que toca la espalda no cuenta
+# si las alas quedan medio bloque por detrás). Al acercarlo, nada puede salir por el pecho (el cuerpo mide 0,25 de
+# fondo): las correas de las mochilas, que ya abrazan el cuerpo, frenan el movimiento.
+BACK_CENTER = 0.3       # bloques a cada lado del centro del cuerpo (el torso y un poco de los hombros)
+BACK_CONTACT_Q = 0.15   # parte de la superficie que forma la capa de contacto
 BACK_GAP_LIMIT = 0.03   # separación máxima (bloques)
-BACK_GAP_SNAP = 0.01    # al acercar, lo central queda a esta distancia
+BACK_GAP_SNAP = 0.0     # al acercar, la capa de contacto queda justo en la espalda
+BACK_MAX_DEPTH = -0.27  # lo más adelantado del cosmético no pasa de aquí (el pecho está a -0,25)
 
 
-def back_gap(model, alpha_of):
-    """Separación (bloques) entre la espalda del jugador y lo más adelantado de la parte central del cosmético."""
+def back_points(model, alpha_of):
+    """Puntos visibles del cosmético en el cuerpo (bloques: x a la izquierda, y desde el cuello, z hacia atrás)."""
     head = model.get('display', {}).get('head', {})
     rot = head.get('rotation', [0, 0, 0])
     scale = head.get('scale', [1, 1, 1])
     trans = head.get('translation', [0, 0, 0])
     pts, wts = visible_points(model, alpha_of)
     if not pts:
-        return None
+        return [], []
     R = _mul(_mul(_rot('x', rot[0]), _rot('y', rot[1])), _rot('z', rot[2]))
-    vs = [_apply(R, [scale[0] * (p[0] / 16 - 0.5), scale[1] * (p[1] / 16 - 0.5), scale[2] * (p[2] / 16 - 0.5)]) for p in pts]
-    bx = [0.625 * (trans[0] / 16 + v[0]) for v in vs]
-    by = [0.25 + 0.625 * (trans[1] / 16 + v[1]) for v in vs]
-    bz = [0.625 * (trans[2] / 16 + v[2]) for v in vs]
-    central = [i for i in range(len(vs)) if abs(bx[i]) <= BACK_CENTER and -0.85 <= by[i] <= 0.1]
-    if len(central) < 12:
-        central = sorted(range(len(vs)), key=lambda i: abs(bx[i]))[:max(12, len(vs) // 10)]
-    front = _wquantile([bz[i] for i in central], [wts[i] for i in central], 0.08)
-    return {'gap': front - BACK_SURFACE, 'top': max(by), 'bottom': min(by)}
+    out = []
+    for p in pts:
+        v = _apply(R, [scale[0] * (p[0] / 16 - 0.5), scale[1] * (p[1] / 16 - 0.5), scale[2] * (p[2] / 16 - 0.5)])
+        out.append((0.625 * (trans[0] / 16 + v[0]), 0.25 + 0.625 * (trans[1] / 16 + v[1]), 0.625 * (trans[2] / 16 + v[2])))
+    return out, wts
+
+
+def back_gap(model, alpha_of):
+    """Separación (bloques) de la capa de contacto con la espalda, y de lo más adelantado (near)."""
+    pts, wts = back_points(model, alpha_of)
+    if not pts:
+        return None
+    zs = [p[2] - BACK_SURFACE for p in pts]
+    torso = [i for i, p in enumerate(pts) if abs(p[0]) <= BACK_CENTER and -0.85 <= p[1] <= 0.15]
+    if len(torso) < 12:
+        torso = sorted(range(len(pts)), key=lambda i: abs(pts[i][0]))[:max(12, len(pts) // 10)]
+    contact = _wquantile([zs[i] for i in torso], [wts[i] for i in torso], BACK_CONTACT_Q)
+    near = _wquantile(zs, wts, 0.01)
+    return {'gap': contact, 'near': near, 'top': max(p[1] for p in pts), 'bottom': min(p[1] for p in pts)}
 
 
 def snap_to_back(model, alpha_of):
@@ -852,10 +866,130 @@ def snap_to_back(model, alpha_of):
     m = back_gap(model, alpha_of)
     if not m or m['gap'] <= BACK_GAP_LIMIT:
         return 0.0
-    dz = (BACK_GAP_SNAP - m['gap']) / 0.625 * 16
+    shift = min(m['gap'] - BACK_GAP_SNAP, m['near'] - BACK_MAX_DEPTH)
+    if shift <= 0.005:
+        return 0.0
+    dz = -shift / 0.625 * 16
     head = model['display']['head']
     head['translation'] = [head['translation'][0], head['translation'][1], round(head['translation'][2] + dz, 3)]
     return dz
+
+
+# Trajes: el pack los hace para rodear el cuerpo (falda y collar, abrigo, chaleco, túnica...) con las alas detrás. No
+# van detrás de la espalda: lo que rodea el torso queda centrado en el cuerpo y así las alas quedan pegadas a ella.
+OUTFIT_TAGS = {'conqueror/wing', 'cupido/wing', 'fox/wing', 'pirate/wing', 'shadow/wing'}
+# Trajes hasta los pies (túnica): lo más bajo queda a la altura de los pies (el pack los dejaba medio bloque más abajo).
+FEET_TAGS = {'shadow/wing'}
+FEET_Y = -1.5           # los pies, en bloques desde el cuello
+# Alas con piezas sueltas delante de su raíz (cadenas, plumas que cuelgan): esas piezas se acercan a las alas, sin
+# perder su orden, y después todo se pega a la espalda (si no, las alas quedaban un poco separadas).
+FRONT_GAP_TAGS = {'eagle/wing'}
+FRONT_GAP_KEEP = 0.25   # parte de la distancia a las alas que conserva cada pieza (para que no se solapen)
+FRONT_GAP_MIN = 0.035   # más cerca que esto ya no se mueve (así repetir el ajuste no cambia nada)
+
+
+def _element_corners(model, el):
+    """Esquinas del elemento en el cuerpo (bloques: x a la izquierda, y desde el cuello, z hacia atrás)."""
+    head = model.get('display', {}).get('head', {})
+    rot, scale, trans = head.get('rotation', [0, 0, 0]), head.get('scale', [1, 1, 1]), head.get('translation', [0, 0, 0])
+    R = _mul(_mul(_rot('x', rot[0]), _rot('y', rot[1])), _rot('z', rot[2]))
+    r = el.get('rotation')
+    m = _rot(r['axis'], float(r['angle'])) if r and r.get('angle') else None
+    out = []
+    for x in (el['from'][0], el['to'][0]):
+        for y in (el['from'][1], el['to'][1]):
+            for z in (el['from'][2], el['to'][2]):
+                p = [x, y, z]
+                if m is not None:
+                    o = r['origin']
+                    p = [a + b for a, b in zip(_apply(m, [p[0] - o[0], p[1] - o[1], p[2] - o[2]]), o)]
+                v = _apply(R, [scale[i] * (p[i] / 16 - 0.5) for i in range(3)])
+                out.append((0.625 * (trans[0] / 16 + v[0]), 0.25 + 0.625 * (trans[1] / 16 + v[1]),
+                            0.625 * (trans[2] / 16 + v[2])))
+    return out
+
+
+def _move_element(model, el, dz):
+    """Mueve un elemento dz bloques hacia atrás en el cuerpo (deshaciendo la posición de «display.head»)."""
+    head = model['display']['head']
+    rot, scale = head.get('rotation', [0, 0, 0]), head.get('scale', [1, 1, 1])
+    R = _mul(_mul(_rot('x', rot[0]), _rot('y', rot[1])), _rot('z', rot[2]))
+    back = [R[2][k] * dz for k in range(3)]  # R traspuesta · (0, 0, dz)
+    d = [round(back[i] / 0.625 * 16 / scale[i], 4) for i in range(3)]
+    el['from'] = [round(a + b, 4) for a, b in zip(el['from'], d)]
+    el['to'] = [round(a + b, 4) for a, b in zip(el['to'], d)]
+    if el.get('rotation') and 'origin' in el['rotation']:
+        el['rotation']['origin'] = [round(a + b, 4) for a, b in zip(el['rotation']['origin'], d)]
+
+
+def close_front_gap(model):
+    """Acerca a la raíz de las alas las piezas que quedan delante de ella (la raíz es lo más adelantado de los
+    elementos grandes: las alas). Devuelve cuántas se movieron."""
+    els = model.get('elements', [])
+    boxes = [_element_corners(model, el) for el in els]
+    areas = []
+    for c in boxes:
+        d = sorted(max(p[k] for p in c) - min(p[k] for p in c) for k in range(3))
+        areas.append(d[1] * d[2])
+    big = max(areas, default=0)
+    root = min((min(p[2] for p in c) for c, a in zip(boxes, areas) if a >= 0.6 * big), default=None)
+    if root is None:
+        return 0
+    moved = 0
+    for el, c in zip(els, boxes):
+        front = min(p[2] for p in c)
+        if front < root - FRONT_GAP_MIN:
+            _move_element(model, el, (root - front) * (1 - FRONT_GAP_KEEP))
+            moved += 1
+    return moved
+
+
+def wrap_body(model):
+    """Traje: centra en el cuerpo lo que rodea el torso: los elementos de la zona del cuerpo que tienen fondo (cajas, o
+    los lados de una caja hecha con planos). Los planos de delante y de detrás y las alas no cuentan."""
+    zs = []
+    for el in model.get('elements', []):
+        c = _element_corners(model, el)
+        lo = [min(p[k] for p in c) for k in range(3)]
+        hi = [max(p[k] for p in c) for k in range(3)]
+        if hi[2] - lo[2] >= 0.2 and hi[1] - lo[1] >= 0.15 and abs((lo[0] + hi[0]) / 2) < 0.5 \
+                and -1.6 < (lo[1] + hi[1]) / 2 < 0.1:
+            zs += [lo[2], hi[2]]
+    if not zs:
+        return 0.0
+    dz = -(min(zs) + max(zs)) / 2 / 0.625 * 16
+    head = model['display']['head']
+    head['translation'] = [head['translation'][0], head['translation'][1], round(head['translation'][2] + dz, 3)]
+    return dz
+
+
+def to_feet(model, alpha_of):
+    """Túnica: lo más bajo de lo visible queda a la altura de los pies."""
+    pts, wts = back_points(model, alpha_of)
+    if not pts:
+        return 0.0
+    low = _wquantile([p[1] for p in pts], wts, 0.003)
+    dy = (FEET_Y - low) / 0.625 * 16
+    head = model['display']['head']
+    head['translation'] = [head['translation'][0], round(head['translation'][1] + dy, 3), head['translation'][2]]
+    return dy
+
+
+def finish_back(model, tag, alpha_of):
+    """Último ajuste de lo que va en la espalda (al construir y en check_backs.py --fix). Devuelve qué se hizo."""
+    done = []
+    if tag in FRONT_GAP_TAGS and close_front_gap(model):
+        done.append('piezas sueltas junto a las alas')
+    if tag in OUTFIT_TAGS:
+        if tag in FEET_TAGS and abs(to_feet(model, alpha_of)) > 0.05:
+            done.append('a la altura de los pies')
+        if abs(wrap_body(model)) > 0.05:
+            done.append('traje centrado en el cuerpo')
+        return done
+    dz = snap_to_back(model, alpha_of)
+    if dz:
+        done.append(f'pegado a la espalda (z {dz:+.2f})')
+    return done
 
 
 def held_display(model):
@@ -866,6 +1000,25 @@ def held_display(model):
         left = display.get(f'{view}_lefthand')
         if left:
             display[f'{view}_righthand'] = json.loads(json.dumps(left))
+
+
+HAND_KINDS = {'sword', 'heavy', 'axe', 'pickaxe', 'shovel', 'hoe', 'bow', 'crossbow', 'fishing_rod', 'shield', 'trident'}
+
+
+def show_both_hands(model):
+    """Algunos packs hacen armas «de la mano izquierda» y «de la derecha» escondiendo la otra mano con escala 0 (por
+    ejemplo las espadas y lanzas dobles de Oni). Aquí se pueden llevar en cualquier mano: la mano escondida usa la
+    posición de la otra (Minecraft la refleja sola). Devuelve si cambió algo."""
+    display = model.get('display') or {}
+    changed = False
+    for view in ('thirdperson', 'firstperson'):
+        for hidden, shown in (('righthand', 'lefthand'), ('lefthand', 'righthand')):
+            a, b = display.get(f'{view}_{hidden}'), display.get(f'{view}_{shown}')
+            if a and b and any(abs(v) < 0.05 for v in a.get('scale', [1, 1, 1])) \
+                    and all(abs(v) >= 0.05 for v in b.get('scale', [1, 1, 1])):
+                display[f'{view}_{hidden}'] = json.loads(json.dumps(b))
+                changed = True
+    return changed
 
 
 def overrides(kind, refs):
@@ -1054,6 +1207,8 @@ def main(packs, only=None):
                     balloon_display(model, w, tag)
                 if kind == 'held':
                     held_display(model)
+                if kind in HAND_KINDS:
+                    show_both_hands(model)
                 if kind == 'back':
                     worn = None
                     designed = False
@@ -1075,7 +1230,7 @@ def main(packs, only=None):
                     worn.pop('overrides', None)
                     drop_floor_plates(worn)
                     place_on_back(worn, slug, tag, designed, w.alpha_of)
-                    snap_to_back(worn, w.alpha_of)
+                    finish_back(worn, tag, w.alpha_of)
                     rel = f'sets/{set_id}/{slug}_worn'
                     w.write_model(rel, worn)
                     info['worn'] = f'tfclient:item/{rel}'

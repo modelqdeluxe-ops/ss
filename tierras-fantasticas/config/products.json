@@ -651,7 +651,7 @@
     "category": "rangos",
     "name": "Rango Celestial",
     "tagline": "Bendecido por los cielos",
-    "description": "Oro y luz de las constelaciones: el equipo de los elegidos, con alas blancas que brillan de verdad.",
+    "description": "Oro y sombra para los que vuelan más alto: alas de águila majestuosas y armas dignas de los elegidos.",
     "price": 2499,
     "maxQuantity": 1,
     "discordRoles": [
@@ -659,121 +659,13 @@
     ],
     "commands": [
       "lp user {player} parent add celestial",
-      "tf web sets give {player} starlight"
+      "tf web sets give {player} eagle"
     ],
-    "image": "img/crates/starlight.webp",
+    "image": "img/crates/eagle.webp",
     "tier": 6,
     "colors": [
       "#feee9a",
       "#fde047"
-    ],
-    "set": "starlight",
-    "models": [
-      {
-        "id": "sword",
-        "name": "Espada"
-      },
-      {
-        "id": "dagger",
-        "name": "Daga"
-      },
-      {
-        "id": "blade",
-        "name": "Hoja"
-      },
-      {
-        "id": "axe",
-        "name": "Hacha"
-      },
-      {
-        "id": "pickaxe",
-        "name": "Pico"
-      },
-      {
-        "id": "shovel",
-        "name": "Pala"
-      },
-      {
-        "id": "hoe",
-        "name": "Azada"
-      },
-      {
-        "id": "battle_axe",
-        "name": "Hacha de batalla"
-      },
-      {
-        "id": "sickle",
-        "name": "Hoz"
-      },
-      {
-        "id": "spear",
-        "name": "Lanza"
-      },
-      {
-        "id": "staff",
-        "name": "Bastón"
-      },
-      {
-        "id": "bow",
-        "name": "Arco"
-      },
-      {
-        "id": "shield",
-        "name": "Escudo"
-      },
-      {
-        "id": "wings",
-        "name": "Alas"
-      },
-      {
-        "id": "armor_helmet",
-        "name": "Casco de armadura"
-      },
-      {
-        "id": "armor_chestplate",
-        "name": "Peto"
-      },
-      {
-        "id": "armor_leggings",
-        "name": "Grebas"
-      },
-      {
-        "id": "armor_boots",
-        "name": "Botas"
-      }
-    ],
-    "perks": [
-      "Prefijo «Celestial» con color en el chat y sobre tu nombre",
-      "Set completo animado: armas, herramientas, armadura y alas",
-      "Rol Celestial en Discord"
-    ],
-    "rank": {
-      "group": "celestial",
-      "prefix": "Celestial",
-      "color": "yellow",
-      "hex": "#fde047"
-    }
-  },
-  {
-    "id": "rango-fantastico",
-    "category": "rangos",
-    "name": "Rango Fantástico",
-    "tagline": "La cima de Tierras Fantásticas",
-    "description": "El rango más alto del reino. Oro y sombra, alas majestuosas y el equipo más espectacular del servidor.",
-    "price": 2999,
-    "maxQuantity": 1,
-    "discordRoles": [
-      "ID_ROL_FANTASTICO"
-    ],
-    "commands": [
-      "lp user {player} parent add fantastico",
-      "tf web sets give {player} eagle"
-    ],
-    "image": "img/crates/eagle.webp",
-    "tier": 7,
-    "colors": [
-      "#faca79",
-      "#f59e0b"
     ],
     "set": "eagle",
     "models": [
@@ -847,6 +739,114 @@
       },
       {
         "id": "wing",
+        "name": "Alas"
+      },
+      {
+        "id": "armor_helmet",
+        "name": "Casco de armadura"
+      },
+      {
+        "id": "armor_chestplate",
+        "name": "Peto"
+      },
+      {
+        "id": "armor_leggings",
+        "name": "Grebas"
+      },
+      {
+        "id": "armor_boots",
+        "name": "Botas"
+      }
+    ],
+    "perks": [
+      "Prefijo «Celestial» con color en el chat y sobre tu nombre",
+      "Set completo animado: armas, herramientas, armadura y alas",
+      "Rol Celestial en Discord"
+    ],
+    "rank": {
+      "group": "celestial",
+      "prefix": "Celestial",
+      "color": "yellow",
+      "hex": "#fde047"
+    }
+  },
+  {
+    "id": "rango-fantastico",
+    "category": "rangos",
+    "name": "Rango Fantástico",
+    "tagline": "La cima de Tierras Fantásticas",
+    "description": "El rango más alto del reino. Oro y luz de las constelaciones, alas blancas que brillan de verdad y el equipo más espectacular del servidor.",
+    "price": 2999,
+    "maxQuantity": 1,
+    "discordRoles": [
+      "ID_ROL_FANTASTICO"
+    ],
+    "commands": [
+      "lp user {player} parent add fantastico",
+      "tf web sets give {player} starlight"
+    ],
+    "image": "img/crates/starlight.webp",
+    "tier": 7,
+    "colors": [
+      "#faca79",
+      "#f59e0b"
+    ],
+    "set": "starlight",
+    "models": [
+      {
+        "id": "sword",
+        "name": "Espada"
+      },
+      {
+        "id": "dagger",
+        "name": "Daga"
+      },
+      {
+        "id": "blade",
+        "name": "Hoja"
+      },
+      {
+        "id": "axe",
+        "name": "Hacha"
+      },
+      {
+        "id": "pickaxe",
+        "name": "Pico"
+      },
+      {
+        "id": "shovel",
+        "name": "Pala"
+      },
+      {
+        "id": "hoe",
+        "name": "Azada"
+      },
+      {
+        "id": "battle_axe",
+        "name": "Hacha de batalla"
+      },
+      {
+        "id": "sickle",
+        "name": "Hoz"
+      },
+      {
+        "id": "spear",
+        "name": "Lanza"
+      },
+      {
+        "id": "staff",
+        "name": "Bastón"
+      },
+      {
+        "id": "bow",
+        "name": "Arco"
+      },
+      {
+        "id": "shield",
+        "name": "Escudo"
+      },
+      {
+        "id": "wings",
         "name": "Alas"
       },
       {
