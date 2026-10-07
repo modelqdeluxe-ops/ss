@@ -170,17 +170,27 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 2 hogares; vuelve a ellos con /home",
+        "text": "Hasta 5 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": true
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
+        "new": true
+      },
+      {
+        "cmd": "/hat",
+        "text": "Ponte en la cabeza el bloque que tengas en la mano",
         "new": true
       }
     ],
@@ -188,7 +198,19 @@
       "group": "mortal",
       "prefix": "Mortal",
       "color": "green",
-      "hex": "#4ade80"
+      "hex": "#4ade80",
+      "homes": 5,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.mortal",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat"
+      ]
     }
   },
   {
@@ -307,30 +329,47 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 3 hogares",
+        "text": "Hasta 7 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": false
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
         "new": false
       },
       {
         "cmd": "/hat",
         "text": "Ponte en la cabeza el bloque que tengas en la mano",
-        "new": true
+        "new": false
       }
     ],
     "rank": {
       "group": "inmortal",
       "prefix": "Inmortal",
       "color": "blue",
-      "hex": "#7c6cff"
+      "hex": "#7c6cff",
+      "homes": 7,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.inmortal",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat"
+      ]
     }
   },
   {
@@ -445,17 +484,22 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 5 hogares",
+        "text": "Hasta 8 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": false
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
         "new": false
       },
       {
@@ -464,13 +508,8 @@
         "new": false
       },
       {
-        "cmd": "/fly",
-        "text": "Vuela en el lobby",
-        "new": true
-      },
-      {
-        "cmd": "/pp",
-        "text": "Partículas cosméticas a tu alrededor",
+        "cmd": "/enderchest",
+        "text": "Tu cofre de ender donde estés",
         "new": true
       }
     ],
@@ -478,7 +517,20 @@
       "group": "magico",
       "prefix": "Mágico",
       "color": "dark_purple",
-      "hex": "#c026d3"
+      "hex": "#c026d3",
+      "homes": 8,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.magico",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat",
+        "essentials.enderchest"
+      ]
     }
   },
   {
@@ -593,17 +645,22 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 8 hogares",
+        "text": "Hasta 10 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": false
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
         "new": false
       },
       {
@@ -612,23 +669,8 @@
         "new": false
       },
       {
-        "cmd": "/fly",
-        "text": "Vuela en el lobby",
-        "new": false
-      },
-      {
-        "cmd": "/pp",
-        "text": "Partículas cosméticas a tu alrededor",
-        "new": false
-      },
-      {
-        "cmd": "/nick",
-        "text": "Apodo con colores",
-        "new": true
-      },
-      {
-        "cmd": "&a…&f",
-        "text": "Escribe en el chat con colores",
+        "cmd": "/heal",
+        "text": "Recupera toda la vida",
         "new": true
       }
     ],
@@ -636,7 +678,20 @@
       "group": "eterno",
       "prefix": "Eterno",
       "color": "red",
-      "hex": "#ef4444"
+      "hex": "#ef4444",
+      "homes": 10,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.eterno",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat",
+        "essentials.heal"
+      ]
     }
   },
   {
@@ -755,17 +810,22 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 12 hogares",
+        "text": "Hasta 12 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": false
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
         "new": false
       },
       {
@@ -774,33 +834,8 @@
         "new": false
       },
       {
-        "cmd": "/fly",
-        "text": "Vuela en el lobby",
-        "new": false
-      },
-      {
-        "cmd": "/pp",
-        "text": "Partículas cosméticas a tu alrededor",
-        "new": false
-      },
-      {
-        "cmd": "/nick",
-        "text": "Apodo con colores",
-        "new": false
-      },
-      {
-        "cmd": "&a…&f",
-        "text": "Escribe en el chat con colores",
-        "new": false
-      },
-      {
-        "cmd": "/ptime",
-        "text": "Tu propia hora del día (solo la ves tú)",
-        "new": true
-      },
-      {
-        "cmd": null,
-        "text": "Cola prioritaria: entras antes cuando el servidor está lleno",
+        "cmd": "/feed",
+        "text": "Quita el hambre",
         "new": true
       }
     ],
@@ -808,7 +843,20 @@
       "group": "cosmico",
       "prefix": "Cósmico",
       "color": "aqua",
-      "hex": "#22d3ee"
+      "hex": "#22d3ee",
+      "homes": 12,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.cosmico",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat",
+        "essentials.feed"
+      ]
     }
   },
   {
@@ -931,17 +979,22 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hasta 20 hogares",
+        "text": "Hasta 15 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": false
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
         "new": false
       },
       {
@@ -950,43 +1003,18 @@
         "new": false
       },
       {
-        "cmd": "/fly",
-        "text": "Vuela en el lobby",
-        "new": false
-      },
-      {
-        "cmd": "/pp",
-        "text": "Partículas cosméticas a tu alrededor",
-        "new": false
-      },
-      {
-        "cmd": "/nick",
-        "text": "Apodo con colores",
-        "new": false
-      },
-      {
-        "cmd": "&a…&f",
-        "text": "Escribe en el chat con colores",
-        "new": false
-      },
-      {
-        "cmd": "/ptime",
-        "text": "Tu propia hora del día (solo la ves tú)",
-        "new": false
-      },
-      {
-        "cmd": null,
-        "text": "Cola prioritaria: entras antes cuando el servidor está lleno",
-        "new": false
-      },
-      {
-        "cmd": "/pweather",
-        "text": "Tu propio clima (solo lo ves tú)",
+        "cmd": "/enderchest",
+        "text": "Tu cofre de ender donde estés",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Aviso especial en el chat cuando entras al servidor",
+        "cmd": "/repair",
+        "text": "Repara el objeto que llevas en la mano",
+        "new": true
+      },
+      {
+        "cmd": "/fly",
+        "text": "Vuela",
         "new": true
       }
     ],
@@ -994,7 +1022,22 @@
       "group": "celestial",
       "prefix": "Celestial",
       "color": "yellow",
-      "hex": "#fde047"
+      "hex": "#fde047",
+      "homes": 15,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.celestial",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat",
+        "essentials.enderchest",
+        "essentials.repair",
+        "essentials.fly"
+      ]
     }
   },
   {
@@ -1101,17 +1144,22 @@
     "serverPerks": [
       {
         "cmd": "/sethome",
-        "text": "Hogares ilimitados",
+        "text": "Hasta 20 hogares; vuelve a ellos con /home",
         "new": true
       },
       {
-        "cmd": null,
-        "text": "Prefijo con color en el chat y sobre tu nombre",
+        "cmd": "/craft",
+        "text": "Mesa de crafteo donde estés (también /workbench)",
         "new": false
       },
       {
-        "cmd": null,
-        "text": "Rol del rango en Discord",
+        "cmd": "/anvil",
+        "text": "Yunque donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/loom",
+        "text": "Telar donde estés",
         "new": false
       },
       {
@@ -1120,61 +1168,53 @@
         "new": false
       },
       {
+        "cmd": "/enderchest",
+        "text": "Tu cofre de ender donde estés",
+        "new": false
+      },
+      {
+        "cmd": "/repair",
+        "text": "Repara el objeto que llevas en la mano",
+        "new": false
+      },
+      {
+        "cmd": "/heal",
+        "text": "Recupera toda la vida",
+        "new": true
+      },
+      {
+        "cmd": "/feed",
+        "text": "Quita el hambre",
+        "new": true
+      },
+      {
         "cmd": "/fly",
-        "text": "Vuela en el lobby",
+        "text": "Vuela",
         "new": false
-      },
-      {
-        "cmd": "/pp",
-        "text": "Partículas cosméticas a tu alrededor",
-        "new": false
-      },
-      {
-        "cmd": "/nick",
-        "text": "Apodo con colores",
-        "new": false
-      },
-      {
-        "cmd": "&a…&f",
-        "text": "Escribe en el chat con colores",
-        "new": false
-      },
-      {
-        "cmd": "/ptime",
-        "text": "Tu propia hora del día (solo la ves tú)",
-        "new": false
-      },
-      {
-        "cmd": null,
-        "text": "Cola prioritaria: entras antes cuando el servidor está lleno",
-        "new": false
-      },
-      {
-        "cmd": "/pweather",
-        "text": "Tu propio clima (solo lo ves tú)",
-        "new": false
-      },
-      {
-        "cmd": null,
-        "text": "Aviso especial en el chat cuando entras al servidor",
-        "new": false
-      },
-      {
-        "cmd": null,
-        "text": "Título propio junto a tu nombre (te lo pone el staff)",
-        "new": true
-      },
-      {
-        "cmd": null,
-        "text": "Nombre con el color dorado de Fantástico",
-        "new": true
       }
     ],
     "rank": {
       "group": "fantastico",
       "prefix": "Fantástico",
       "color": "gold",
-      "hex": "#f59e0b"
+      "hex": "#f59e0b",
+      "homes": 20,
+      "permissions": [
+        "essentials.sethome",
+        "essentials.home",
+        "essentials.delhome",
+        "essentials.sethome.multiple",
+        "essentials.sethome.multiple.fantastico",
+        "essentials.workbench",
+        "essentials.anvil",
+        "essentials.loom",
+        "essentials.hat",
+        "essentials.enderchest",
+        "essentials.repair",
+        "essentials.heal",
+        "essentials.feed",
+        "essentials.fly"
+      ]
     }
   },
   {

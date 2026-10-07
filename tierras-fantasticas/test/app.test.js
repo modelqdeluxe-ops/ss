@@ -704,6 +704,24 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
   const { ranks, rankList } = await (await poll(['Rangos_MC', 'Steve'])).json();
   assert.deepStrictEqual(ranks.map((r) => [r.uuid, r.prefix]), [[uuidOf('Rangos_MC'), 'Mágico']]);
   assert.strictEqual(rankList.length, 7);
+  // Y lo que el TF Client pone en el grupo de LuckPerms de cada rango: lo que pidió el dueño, tal cual
+  const setup = Object.fromEntries(rankList.map((r) => [r.group, r]));
+  const perks = {
+    mortal: [5, []],
+    inmortal: [7, []],
+    magico: [8, ['enderchest']],
+    eterno: [10, ['heal']],
+    cosmico: [12, ['feed']],
+    celestial: [15, ['enderchest', 'repair', 'fly']],
+    fantastico: [20, ['enderchest', 'repair', 'heal', 'feed', 'fly']],
+  };
+  for (const [group, [homes, extra]] of Object.entries(perks)) {
+    assert.strictEqual(setup[group].homes, homes);
+    const base = ['sethome', 'home', 'delhome', 'sethome.multiple', `sethome.multiple.${group}`, 'workbench', 'anvil', 'loom', 'hat'];
+    assert.deepStrictEqual([...setup[group].permissions].sort(), [...base, ...extra].map((n) => `essentials.${n}`).sort(), group);
+  }
+  // Los datos de un jugador no llevan los permisos (solo el puente)
+  assert.strictEqual(ranks[0].permissions, undefined);
 });
 
 test('el staff puede cambiar o quitar un rango desde el juego', async () => {

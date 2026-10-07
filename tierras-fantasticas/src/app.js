@@ -84,6 +84,11 @@ function rankInfo(rank) {
   return { id: rank.id, name: rank.name, tier: rank.tier, group: rank.rank.group, prefix: rank.rank.prefix, color: rank.rank.color, hex: rank.rank.hex };
 }
 
+// Para el puente: además, lo que el TF Client pone en el grupo de LuckPerms del rango (permisos de EssentialsX y hogares).
+function rankSetup(rank) {
+  return { ...rankInfo(rank), homes: rank.rank.homes, permissions: rank.rank.permissions };
+}
+
 export function createApp(env) {
   const SERVER_NAME = env.SERVER_NAME || 'Tierras Fantásticas';
   const SERVER_IP = env.SERVER_IP || '216.163.187.40:19001';
@@ -1013,7 +1018,7 @@ export function createApp(env) {
         deliveries,
         interval: BRIDGE_INTERVAL_S,
         ranks: playerRanks,
-        rankList: ranks.map(rankInfo),
+        rankList: ranks.map(rankSetup),
         linkResults,
         coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
         vfx: await store.vfxEquipFor(online),

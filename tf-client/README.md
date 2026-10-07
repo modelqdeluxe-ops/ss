@@ -109,6 +109,7 @@ Estos los manda la web al entregar (también los puede usar el staff a mano):
 
 ```
 /tf web rango <jugador> [rango|ninguno]      ver, poner o quitar el rango: LuckPerms, nametag y web
+/tf web rango permisos                       vuelve a poner en LuckPerms y EssentialsX lo que trae cada rango
 /tf web monedas ver|dar|quitar|poner <jugador> [cantidad]
 /tf web ruleta girar <jugador> <n>           gira n veces cobrando sus monedas
 /tf web tienda comprar <jugador> <id>        cobra sus monedas y le da el objeto de la tienda
@@ -231,6 +232,31 @@ Todo sale de `tools/build_vfx.py` (lee los packs comprados, que no están en el 
 - `config/tfclient-vfx.json`: `activado`, `efectosDeKillConMobs`, `skills`, `skillsEnPvP`, `multiplicadorDanoSkills`.
 - Staff: `/tf web vfx lista | kill <jugadores> <id|ninguno> | skills <jugadores> <id|ninguno> | probar <id>`.
 
+## Rangos en LuckPerms (1.3.15)
+
+La web manda en cada consulta del puente los rangos con sus permisos de EssentialsX y sus hogares, y el mod los deja
+así (solo cuando cambian; lo último aplicado va en `<mundo>/tfclient/rank_perms.json`):
+
+- **LuckPerms**: `lp creategroup <rango>` y `lp group <rango> permission set <permiso> true` para cada permiso. Si un
+  permiso que puso el mod deja de estar en la web, `permission unset`. Lo que el staff ponga a mano no se toca.
+- **EssentialsX**: los hogares de cada rango en `sethome-multiple` de su `config.yml` (el resto del archivo queda
+  igual; copia del original en `config.yml.antes-de-tfclient`) y `essentials reload`.
+
+| Rango | Hogares | Comandos |
+| --- | --- | --- |
+| Mortal | 5 | /craft (/workbench), /anvil, /loom, /hat |
+| Inmortal | 7 | /craft, /anvil, /loom, /hat |
+| Mágico | 8 | /craft, /anvil, /loom, /hat, /enderchest |
+| Eterno | 10 | /craft, /anvil, /loom, /hat, /heal |
+| Cósmico | 12 | /craft, /anvil, /loom, /hat, /feed |
+| Celestial | 15 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /fly |
+| Fantástico | 20 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /heal, /feed, /fly |
+
+Permisos: hogares `essentials.sethome`, `essentials.home`, `essentials.delhome`, `essentials.sethome.multiple` y
+`essentials.sethome.multiple.<rango>`; `essentials.workbench`, `essentials.anvil`, `essentials.loom`,
+`essentials.hat`, `essentials.enderchest`, `essentials.heal`, `essentials.feed`, `essentials.repair`,
+`essentials.fly`. Se cambian en `RANK_SERVER_PERKS` de `tierras-fantasticas/tools/crates.py`.
+
 ## Techo de atributos (nivel netherita)
 
 Ninguna arma, herramienta ni armadura de **ningún mod** pasa de la netherita: al leer los atributos de cualquier
@@ -243,7 +269,7 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.14.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.15.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
@@ -257,6 +283,8 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
    broadcast.enabled=true
    broadcast.fireworks=true
    ranks.nametag=true
+   ranks.permissions=true
+   ranks.essentials=plugins/Essentials/config.yml
    economy.mode=auto
    economy.give=eco give {player} {amount}
    economy.take=eco take {player} {amount}
@@ -264,7 +292,9 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
    ```
    `bridge.url` es `tierrasfantásticas.store` escrito como lo usa internet. `broadcast.enabled=false` quita el anuncio
    a todos (el comprador sigue recibiendo su mensaje), `broadcast.fireworks=false` los fuegos artificiales y
-   `ranks.nametag=false` el prefijo del rango (por si ya lo pone otro plugin, como TAB).
+   `ranks.nametag=false` el prefijo del rango (por si ya lo pone otro plugin, como TAB). Con `ranks.permissions=true`
+   el mod pone solo lo que trae cada rango (ver «Rangos en LuckPerms» abajo); `ranks.essentials` es dónde está el
+   `config.yml` de EssentialsX, desde la carpeta del servidor.
 3. Copia `bridge.secret` en Cloudflare (*Workers & Pages → tierras-fantasticas → Settings → Variables and Secrets*)
    como *Secret* `BRIDGE_SECRET`. En la consola del servidor saldrá `TF Bridge: conectado con la web`.
 

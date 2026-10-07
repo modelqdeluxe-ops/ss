@@ -221,38 +221,54 @@ RANK_PITCH = {
 # hogares se sustituyen por el número nuevo). Solo comodidad y aspecto, nada que dé ventaja (normas de Mojang). El
 # dueño lo configura en LuckPerms/EssentialsX: los permisos de cada línea están en HANDOFF.md («Rangos: comandos»).
 # (clave, comando o None, texto)
+# Lo que trae cada rango en el servidor (lo que pidió el dueño, tal cual). El TF Client lo pone en LuckPerms: crea el
+# grupo de cada rango con estos permisos de EssentialsX y los hogares en su config.yml (sethome-multiple).
+# Cada ventaja: (comando que se ve en la web, texto, permisos de EssentialsX).
+RANK_PERK_INFO = {
+    'craft': ('/craft', 'Mesa de crafteo donde estés (también /workbench)', ['essentials.workbench']),
+    'anvil': ('/anvil', 'Yunque donde estés', ['essentials.anvil']),
+    'loom': ('/loom', 'Telar donde estés', ['essentials.loom']),
+    'hat': ('/hat', 'Ponte en la cabeza el bloque que tengas en la mano', ['essentials.hat']),
+    'enderchest': ('/enderchest', 'Tu cofre de ender donde estés', ['essentials.enderchest']),
+    'heal': ('/heal', 'Recupera toda la vida', ['essentials.heal']),
+    'feed': ('/feed', 'Quita el hambre', ['essentials.feed']),
+    'repair': ('/repair', 'Repara el objeto que llevas en la mano', ['essentials.repair']),
+    'fly': ('/fly', 'Vuela', ['essentials.fly']),
+}
+# Hogares: /sethome, /home y /delhome, con el máximo de cada rango
+HOME_PERMS = ['essentials.sethome', 'essentials.home', 'essentials.delhome', 'essentials.sethome.multiple']
+# Rango → (hogares, ventajas en el orden en que se enseñan)
 RANK_SERVER_PERKS = {
-    'mortal': [('homes', '/sethome', 'Hasta 2 hogares; vuelve a ellos con /home'),
-               ('prefix', None, 'Prefijo con color en el chat y sobre tu nombre'),
-               ('discord', None, 'Rol del rango en Discord')],
-    'inmortal': [('homes', '/sethome', 'Hasta 3 hogares'),
-                 ('hat', '/hat', 'Ponte en la cabeza el bloque que tengas en la mano')],
-    'magico': [('homes', '/sethome', 'Hasta 5 hogares'),
-               ('fly', '/fly', 'Vuela en el lobby'),
-               ('particles', '/pp', 'Partículas cosméticas a tu alrededor')],
-    'eterno': [('homes', '/sethome', 'Hasta 8 hogares'),
-               ('nick', '/nick', 'Apodo con colores'),
-               ('chatcolor', '&a…&f', 'Escribe en el chat con colores')],
-    'cosmico': [('homes', '/sethome', 'Hasta 12 hogares'),
-                ('ptime', '/ptime', 'Tu propia hora del día (solo la ves tú)'),
-                ('queue', None, 'Cola prioritaria: entras antes cuando el servidor está lleno')],
-    'celestial': [('homes', '/sethome', 'Hasta 20 hogares'),
-                  ('pweather', '/pweather', 'Tu propio clima (solo lo ves tú)'),
-                  ('join', None, 'Aviso especial en el chat cuando entras al servidor')],
-    'fantastico': [('homes', '/sethome', 'Hogares ilimitados'),
-                   ('title', None, 'Título propio junto a tu nombre (te lo pone el staff)'),
-                   ('glow', None, 'Nombre con el color dorado de Fantástico')],
+    'mortal': (5, ['craft', 'anvil', 'loom', 'hat']),
+    'inmortal': (7, ['craft', 'anvil', 'loom', 'hat']),
+    'magico': (8, ['craft', 'anvil', 'loom', 'hat', 'enderchest']),
+    'eterno': (10, ['craft', 'anvil', 'loom', 'hat', 'heal']),
+    'cosmico': (12, ['craft', 'anvil', 'loom', 'hat', 'feed']),
+    'celestial': (15, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'repair', 'fly']),
+    'fantastico': (20, ['craft', 'anvil', 'loom', 'hat', 'enderchest', 'repair', 'heal', 'feed', 'fly']),
 }
 
 
 def rank_server_perks(key):
-    """Lo que trae el rango en el servidor (acumulado), marcando lo que es nuevo respecto al rango anterior."""
+    """Lo que trae el rango en el servidor, marcando lo que no tenía el rango anterior."""
     order = [r[0] for r in RANKS]
-    out = {}
-    for k in order[:order.index(key) + 1]:
-        for perk_id, cmd, text in RANK_SERVER_PERKS[k]:
-            out[perk_id] = {'cmd': cmd, 'text': text, 'new': k == key}
-    return list(out.values())
+    i = order.index(key)
+    homes, perks = RANK_SERVER_PERKS[key]
+    prev = RANK_SERVER_PERKS[order[i - 1]] if i > 0 else (0, [])
+    out = [{'cmd': '/sethome', 'text': f'Hasta {homes} hogares; vuelve a ellos con /home', 'new': homes > prev[0]}]
+    for perk in perks:
+        cmd, text, _ = RANK_PERK_INFO[perk]
+        out.append({'cmd': cmd, 'text': text, 'new': perk not in prev[1]})
+    return out
+
+
+def rank_permissions(key):
+    """Permisos de EssentialsX del grupo de LuckPerms del rango (sin repetir, en orden)."""
+    homes, perks = RANK_SERVER_PERKS[key]
+    out = HOME_PERMS + [f'essentials.sethome.multiple.{key}']
+    for perk in perks:
+        out += [n for n in RANK_PERK_INFO[perk][2] if n not in out]
+    return out
 
 
 def rank_products():
@@ -274,7 +290,8 @@ def rank_products():
             'set': set_id, 'models': models,
             'perks': [f'Prefijo «{name}» con color en el chat y sobre tu nombre', pieces, f'Rol {name} en Discord'],
             'serverPerks': rank_server_perks(key),
-            'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc},
+            'rank': {'group': key, 'prefix': name, 'color': mc, 'hex': hexc, 'homes': RANK_SERVER_PERKS[key][0],
+                     'permissions': rank_permissions(key)},
         })
     return out
 

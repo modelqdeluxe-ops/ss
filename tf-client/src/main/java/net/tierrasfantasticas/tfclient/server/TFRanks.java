@@ -34,14 +34,26 @@ public final class TFRanks {
     public static final String TEAM_PREFIX = "tf_rank_";
 
     /** Un rango tal como lo describe la web (config/products.json → rank). */
-    public record Rank(String id, String name, int tier, String group, String prefix, String color, int hex) {
+    /**
+     * homes y permissions: lo que el rango trae en el servidor (hogares de EssentialsX y permisos de su grupo de
+     * LuckPerms); solo vienen en la lista de rangos (rankList), -1 y vacío en el resto.
+     */
+    public record Rank(String id, String name, int tier, String group, String prefix, String color, int hex, int homes,
+                       List<String> permissions) {
         static Rank parse(JsonObject o) {
             if (o == null || !o.has("id") || o.get("id").isJsonNull()) return null;
             String hexText = str(o, "hex", "");
             int hex = -1;
             if (hexText.matches("#[0-9a-fA-F]{6}")) hex = Integer.parseInt(hexText.substring(1), 16);
+            int homes = o.has("homes") && o.get("homes").isJsonPrimitive() ? o.get("homes").getAsInt() : -1;
+            List<String> permissions = new ArrayList<>();
+            if (o.has("permissions") && o.get("permissions").isJsonArray()) {
+                for (JsonElement p : o.getAsJsonArray("permissions")) {
+                    if (p.isJsonPrimitive()) permissions.add(p.getAsString());
+                }
+            }
             return new Rank(str(o, "id", ""), str(o, "name", ""), o.has("tier") ? o.get("tier").getAsInt() : 0,
-                    str(o, "group", ""), str(o, "prefix", ""), str(o, "color", ""), hex);
+                    str(o, "group", ""), str(o, "prefix", ""), str(o, "color", ""), hex, homes, List.copyOf(permissions));
         }
 
         /** Nombre corto para comandos y sugerencias: «rey», «dragon»… */

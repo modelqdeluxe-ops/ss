@@ -1039,7 +1039,7 @@
         </div>
         <div class="rk-buy">${buy}</div>
       </div>`;
-    // Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos (lo nuevo respecto al anterior, marcado)
+    // Debajo del escaparate: lo que trae el rango en el servidor, con sus comandos (lo que no tenía el anterior, marcado)
     const prev = all[n - 2];
     const prevName = prev ? prev.rank?.prefix || prev.name.replace(/^Rango\s+/i, '') : '';
     const cmds = $('#rk-cmds');
@@ -1047,10 +1047,9 @@
     cmds.innerHTML = `
       <div class="rk-cmds-head">
         <h3>Lo que trae <span class="rk-cmds-name">${escapeHtml(prefix)}</span> en el servidor</h3>
-        <p>${prev ? `Todo lo de ${escapeHtml(prevName)} y lo marcado como <b>nuevo</b>.` : 'Tu primer rango del reino.'} Se activa solo al entrar al servidor.</p>
+        <p>${prev ? `Lo marcado como <b>nuevo</b> no lo tiene ${escapeHtml(prevName)}.` : 'Tu primer rango del reino.'} Se activa solo al entrar al servidor.</p>
       </div>
-      <ul class="rk-cmd-list">${[...(p.serverPerks || [])]
-        .sort((a, b) => Number(b.new) - Number(a.new))
+      <ul class="rk-cmd-list">${(p.serverPerks || [])
         .map(
           (x) => `<li class="${x.new && prev ? 'is-new' : ''}">
             ${x.cmd ? `<code>${escapeHtml(x.cmd)}</code>` : `<span class="rk-cmd-ico">${ICON_CHECK}</span>`}

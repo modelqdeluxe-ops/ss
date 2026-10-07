@@ -23,6 +23,7 @@ import net.minecraft.server.level.ServerPlayer;
  * <pre>
  * /tf web rango &lt;jugador&gt;                 muestra su rango (staff, nivel 3)
  * /tf web rango &lt;jugador&gt; &lt;rango|ninguno&gt; pone o quita un rango: LuckPerms, nametag y web (staff, nivel 3)
+ * /tf web rango permisos                  vuelve a poner en LuckPerms y EssentialsX lo que trae cada rango
  * </pre>
  */
 public final class TFBridgeCommands {
@@ -36,11 +37,20 @@ public final class TFBridgeCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> rango() {
         return Commands.literal("rango")
                 .requires(source -> source.hasPermission(3))
+                .then(Commands.literal("permisos").executes(TFBridgeCommands::permissions))
                 .then(Commands.argument("jugador", EntityArgument.player())
                         .executes(TFBridgeCommands::showRank)
                         .then(Commands.argument("rango", StringArgumentType.word())
                                 .suggests(RANKS)
                                 .executes(TFBridgeCommands::setRank)));
+    }
+
+    private static int permissions(CommandContext<CommandSourceStack> ctx) {
+        List<String> report = TFRankPerms.force(ctx.getSource().getServer());
+        for (String line : report) {
+            ctx.getSource().sendSuccess(() -> Component.literal(line).withStyle(ChatFormatting.YELLOW), true);
+        }
+        return report.size();
     }
 
     private static int showRank(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -89,7 +99,7 @@ public final class TFBridgeCommands {
                 ? Component.literal("Quitado el rango de " + name).withStyle(ChatFormatting.YELLOW)
                 : Component.literal("Ahora " + name + " es ").withStyle(ChatFormatting.YELLOW).append(finalRank.tag()), true);
         if (!failed.isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("LuckPerms no respondió a «" + failed.get(0) + "»: revisa el grupo a mano."));
+            ctx.getSource().sendFailure(Component.literal("No está LuckPerms (/lp): no se ha podido poner el grupo «" + failed.get(0) + "»."));
         }
         return 1;
     }
