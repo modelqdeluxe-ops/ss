@@ -710,8 +710,8 @@ test('los rangos se mejoran pagando la diferencia y no se puede comprar uno igua
     mortal: [5, []],
     inmortal: [7, []],
     magico: [8, ['enderchest']],
-    eterno: [10, ['heal']],
-    cosmico: [12, ['feed']],
+    eterno: [10, ['enderchest', 'heal']],
+    cosmico: [12, ['enderchest', 'feed']],
     celestial: [15, ['enderchest', 'repair', 'fly']],
     fantastico: [20, ['enderchest', 'repair', 'heal', 'feed', 'fly']],
   };

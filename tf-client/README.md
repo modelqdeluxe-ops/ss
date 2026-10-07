@@ -247,8 +247,8 @@ así (solo cuando cambian; lo último aplicado va en `<mundo>/tfclient/rank_perm
 | Mortal | 5 | /craft (/workbench), /anvil, /loom, /hat |
 | Inmortal | 7 | /craft, /anvil, /loom, /hat |
 | Mágico | 8 | /craft, /anvil, /loom, /hat, /enderchest |
-| Eterno | 10 | /craft, /anvil, /loom, /hat, /heal |
-| Cósmico | 12 | /craft, /anvil, /loom, /hat, /feed |
+| Eterno | 10 | /craft, /anvil, /loom, /hat, /enderchest, /heal |
+| Cósmico | 12 | /craft, /anvil, /loom, /hat, /enderchest, /feed |
 | Celestial | 15 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /fly |
 | Fantástico | 20 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /heal, /feed, /fly |
 

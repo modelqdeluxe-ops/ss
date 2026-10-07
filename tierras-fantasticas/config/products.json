@@ -669,6 +669,11 @@
         "new": false
       },
       {
+        "cmd": "/enderchest",
+        "text": "Tu cofre de ender donde estés",
+        "new": false
+      },
+      {
         "cmd": "/heal",
         "text": "Recupera toda la vida",
         "new": true
@@ -690,6 +695,7 @@
         "essentials.anvil",
         "essentials.loom",
         "essentials.hat",
+        "essentials.enderchest",
         "essentials.heal"
       ]
     }
@@ -834,6 +840,11 @@
         "new": false
       },
       {
+        "cmd": "/enderchest",
+        "text": "Tu cofre de ender donde estés",
+        "new": false
+      },
+      {
         "cmd": "/feed",
         "text": "Quita el hambre",
         "new": true
@@ -855,6 +866,7 @@
         "essentials.anvil",
         "essentials.loom",
         "essentials.hat",
+        "essentials.enderchest",
         "essentials.feed"
       ]
     }
@@ -1005,7 +1017,7 @@
       {
         "cmd": "/enderchest",
         "text": "Tu cofre de ender donde estés",
-        "new": true
+        "new": false
       },
       {
         "cmd": "/repair",
