@@ -215,6 +215,9 @@ public final class TFBridge {
             JsonObject p = new JsonObject();
             p.addProperty("name", player.getGameProfile().getName());
             p.addProperty("uuid", player.getUUID().toString());
+            // Saldo de monedas, para enseñarlo en la web junto al nombre (si la economía deja verlo)
+            java.util.OptionalLong coins = net.tierrasfantasticas.tfclient.economy.TFEconomy.balance(srv, player.getUUID());
+            if (coins.isPresent()) p.addProperty("coins", coins.getAsLong());
             players.add(p);
         }
         body.addProperty("protocol", PROTOCOL);

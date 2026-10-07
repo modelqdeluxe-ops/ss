@@ -112,6 +112,7 @@ function startFakeDiscord() {
       announcements.push(JSON.parse(raw));
       return send(204);
     }
+    if (/^\/guilds\/\d+\/widget\.json$/.test(req.url)) return send(200, { instant_invite: 'https://discord.com/invite/tfWidget' });
     if (req.headers.authorization !== 'Bot bot-token') return send(401, { message: '401: Unauthorized' });
     if (/^\/guilds\/\d+\/members\/\d+$/.test(req.url) && req.method === 'PUT') {
       if (memberExists) return send(204);
@@ -279,6 +280,15 @@ test('la API de productos no expone los comandos y la configuración no tiene se
 
 test('las rutas que no son de la API las sirve la web estática', async () => {
   assert.strictEqual(await (await get('/tienda')).text(), 'estático /tienda');
+});
+
+test('/discord lleva al servidor con la invitación del widget (sin «X te ha invitado») y /whatsapp al grupo', async () => {
+  const dc = await get('/discord');
+  assert.strictEqual(dc.status, 302);
+  assert.strictEqual(dc.headers.get('location'), 'https://discord.gg/tfWidget');
+  const wa = await get('/whatsapp');
+  assert.strictEqual(wa.status, 302);
+  assert.match(wa.headers.get('location'), /^https:\/\/chat\.whatsapp\.com\//);
 });
 
 test('el puente rechaza una clave incorrecta', async () => {

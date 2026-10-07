@@ -1,0 +1,553 @@
+{
+  "activada": true,
+  "titulo": "&6&lTienda del servidor",
+  "relleno": "minecraft:black_stained_glass_pane",
+  "sonidos": true,
+  "botonVenderTodo": true,
+  "venderDesdeInventario": true,
+  "registro": true,
+  "pasos": [
+    1,
+    8,
+    64
+  ],
+  "maximoPorCompra": 64,
+  "mensajes": {
+    "compra": "&a✔ Compraste &f{cantidad}× {objeto} &apor &6{precio}&a.",
+    "venta": "&a✔ Vendiste &f{cantidad}× {objeto} &apor &6{precio}&a.",
+    "ventaTodo": "&a✔ Vendiste {lineas} objetos por &6{precio}&a.",
+    "sinDinero": "&cNo tienes bastantes monedas: cuesta &6{precio}&c.",
+    "sinObjetos": "&cNo tienes {objeto} para vender (sin nombre, encantamientos ni daño).",
+    "nadaQueVender": "&cNo tienes nada que se pueda vender aquí.",
+    "limiteCompra": "&cHoy ya no puedes comprar más {objeto} (límite diario: {limite}).",
+    "limiteVenta": "&cHoy ya no puedes vender más {objeto} (límite diario: {limite}).",
+    "sinPermiso": "&cNo tienes permiso para esto.",
+    "desactivada": "&cLa tienda está cerrada ahora mismo."
+  },
+  "categorias": [
+    {
+      "id": "bloques",
+      "nombre": "Bloques",
+      "descripcion": [
+        "Madera, piedra y bloques para construir."
+      ],
+      "icono": "minecraft:grass_block",
+      "color": "#4ade80",
+      "hueco": 11,
+      "objetos": [
+        {
+          "objeto": "minecraft:oak_log",
+          "cantidad": 16,
+          "comprar": 32,
+          "vender": 8
+        },
+        {
+          "objeto": "minecraft:spruce_log",
+          "cantidad": 16,
+          "comprar": 32,
+          "vender": 8
+        },
+        {
+          "objeto": "minecraft:birch_log",
+          "cantidad": 16,
+          "comprar": 32,
+          "vender": 8
+        },
+        {
+          "objeto": "minecraft:dark_oak_log",
+          "cantidad": 16,
+          "comprar": 40,
+          "vender": 10
+        },
+        {
+          "objeto": "minecraft:stone",
+          "cantidad": 64,
+          "comprar": 24,
+          "vender": 4
+        },
+        {
+          "objeto": "minecraft:cobblestone",
+          "cantidad": 64,
+          "comprar": 12,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:deepslate",
+          "cantidad": 64,
+          "comprar": 32,
+          "vender": 6
+        },
+        {
+          "objeto": "minecraft:sand",
+          "cantidad": 64,
+          "comprar": 20,
+          "vender": 4
+        },
+        {
+          "objeto": "minecraft:gravel",
+          "cantidad": 64,
+          "comprar": 20,
+          "vender": 3
+        },
+        {
+          "objeto": "minecraft:glass",
+          "cantidad": 64,
+          "comprar": 48,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:bricks",
+          "cantidad": 64,
+          "comprar": 64,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:quartz_block",
+          "cantidad": 16,
+          "comprar": 96,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:dirt",
+          "cantidad": 64,
+          "comprar": 8,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:obsidian",
+          "cantidad": 4,
+          "comprar": 40,
+          "vender": 10
+        }
+      ]
+    },
+    {
+      "id": "minerales",
+      "nombre": "Minerales",
+      "descripcion": [
+        "Lo que sacas de la mina vale dinero."
+      ],
+      "icono": "minecraft:diamond",
+      "color": "#67e8f9",
+      "hueco": 13,
+      "objetos": [
+        {
+          "objeto": "minecraft:coal",
+          "cantidad": 1,
+          "comprar": 4,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:copper_ingot",
+          "cantidad": 1,
+          "comprar": 6,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:iron_ingot",
+          "cantidad": 1,
+          "comprar": 12,
+          "vender": 4
+        },
+        {
+          "objeto": "minecraft:gold_ingot",
+          "cantidad": 1,
+          "comprar": 20,
+          "vender": 6
+        },
+        {
+          "objeto": "minecraft:redstone",
+          "cantidad": 1,
+          "comprar": 3,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:lapis_lazuli",
+          "cantidad": 1,
+          "comprar": 4,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:quartz",
+          "cantidad": 1,
+          "comprar": 6,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:amethyst_shard",
+          "cantidad": 1,
+          "comprar": 8,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:emerald",
+          "cantidad": 1,
+          "comprar": 40,
+          "vender": 12
+        },
+        {
+          "objeto": "minecraft:diamond",
+          "cantidad": 1,
+          "comprar": 150,
+          "vender": 40,
+          "limiteVentaDiario": 64
+        },
+        {
+          "objeto": "minecraft:netherite_scrap",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 180,
+          "limiteVentaDiario": 16
+        }
+      ]
+    },
+    {
+      "id": "granja",
+      "nombre": "Granja",
+      "descripcion": [
+        "Cultivos y semillas."
+      ],
+      "icono": "minecraft:wheat",
+      "color": "#fcc94a",
+      "hueco": 15,
+      "objetos": [
+        {
+          "objeto": "minecraft:wheat_seeds",
+          "cantidad": 8,
+          "comprar": 2,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:wheat",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:carrot",
+          "cantidad": 1,
+          "comprar": 3,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:potato",
+          "cantidad": 1,
+          "comprar": 3,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:beetroot",
+          "cantidad": 1,
+          "comprar": 3,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:pumpkin",
+          "cantidad": 1,
+          "comprar": 12,
+          "vender": 3
+        },
+        {
+          "objeto": "minecraft:melon_slice",
+          "cantidad": 1,
+          "comprar": 2,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:sugar_cane",
+          "cantidad": 1,
+          "comprar": 4,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:bamboo",
+          "cantidad": 4,
+          "comprar": 2,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:cactus",
+          "cantidad": 1,
+          "comprar": 4,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:cocoa_beans",
+          "cantidad": 1,
+          "comprar": 4,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:nether_wart",
+          "cantidad": 1,
+          "comprar": 8,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:egg",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:bone_meal",
+          "cantidad": 8,
+          "comprar": 2,
+          "vender": 0
+        }
+      ]
+    },
+    {
+      "id": "comida",
+      "nombre": "Comida",
+      "descripcion": [
+        "Para no pasar hambre en la aventura."
+      ],
+      "icono": "minecraft:cooked_beef",
+      "color": "#fb923c",
+      "hueco": 29,
+      "objetos": [
+        {
+          "objeto": "minecraft:bread",
+          "cantidad": 8,
+          "comprar": 10,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:cooked_beef",
+          "cantidad": 8,
+          "comprar": 20,
+          "vender": 4
+        },
+        {
+          "objeto": "minecraft:cooked_porkchop",
+          "cantidad": 8,
+          "comprar": 20,
+          "vender": 4
+        },
+        {
+          "objeto": "minecraft:cooked_chicken",
+          "cantidad": 8,
+          "comprar": 16,
+          "vender": 3
+        },
+        {
+          "objeto": "minecraft:baked_potato",
+          "cantidad": 8,
+          "comprar": 10,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:apple",
+          "cantidad": 4,
+          "comprar": 12,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:golden_carrot",
+          "cantidad": 4,
+          "comprar": 40,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:cake",
+          "cantidad": 1,
+          "comprar": 30,
+          "vender": 0
+        }
+      ]
+    },
+    {
+      "id": "botin",
+      "nombre": "Botín de criaturas",
+      "descripcion": [
+        "Vende lo que sueltan los monstruos."
+      ],
+      "icono": "minecraft:bone",
+      "color": "#c4b5fd",
+      "hueco": 31,
+      "objetos": [
+        {
+          "objeto": "minecraft:rotten_flesh",
+          "cantidad": 4,
+          "comprar": 0,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:bone",
+          "cantidad": 2,
+          "comprar": 0,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:string",
+          "cantidad": 2,
+          "comprar": 0,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:spider_eye",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:gunpowder",
+          "cantidad": 1,
+          "comprar": 12,
+          "vender": 3
+        },
+        {
+          "objeto": "minecraft:ender_pearl",
+          "cantidad": 1,
+          "comprar": 40,
+          "vender": 12
+        },
+        {
+          "objeto": "minecraft:blaze_rod",
+          "cantidad": 1,
+          "comprar": 40,
+          "vender": 12
+        },
+        {
+          "objeto": "minecraft:slime_ball",
+          "cantidad": 1,
+          "comprar": 16,
+          "vender": 5
+        },
+        {
+          "objeto": "minecraft:leather",
+          "cantidad": 1,
+          "comprar": 10,
+          "vender": 3
+        },
+        {
+          "objeto": "minecraft:feather",
+          "cantidad": 2,
+          "comprar": 0,
+          "vender": 1
+        },
+        {
+          "objeto": "minecraft:ghast_tear",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 40
+        },
+        {
+          "objeto": "minecraft:phantom_membrane",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 15
+        }
+      ]
+    },
+    {
+      "id": "pesca",
+      "nombre": "Pesca",
+      "descripcion": [
+        "Lo que pescas en el río y el mar."
+      ],
+      "icono": "minecraft:cod",
+      "color": "#60a5fa",
+      "hueco": 33,
+      "objetos": [
+        {
+          "objeto": "minecraft:cod",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:salmon",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 3
+        },
+        {
+          "objeto": "minecraft:tropical_fish",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 4
+        },
+        {
+          "objeto": "minecraft:pufferfish",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 5
+        },
+        {
+          "objeto": "minecraft:ink_sac",
+          "cantidad": 1,
+          "comprar": 6,
+          "vender": 2
+        },
+        {
+          "objeto": "minecraft:nautilus_shell",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 60
+        },
+        {
+          "objeto": "minecraft:prismarine_shard",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 2
+        }
+      ]
+    },
+    {
+      "id": "varios",
+      "nombre": "Varios",
+      "descripcion": [
+        "Objetos útiles que no se fabrican."
+      ],
+      "icono": "minecraft:name_tag",
+      "color": "#f472b6",
+      "hueco": 22,
+      "objetos": [
+        {
+          "objeto": "minecraft:name_tag",
+          "cantidad": 1,
+          "comprar": 120,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:saddle",
+          "cantidad": 1,
+          "comprar": 150,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:lead",
+          "cantidad": 1,
+          "comprar": 30,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:experience_bottle",
+          "cantidad": 4,
+          "comprar": 30,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:map",
+          "cantidad": 1,
+          "comprar": 20,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:compass",
+          "cantidad": 1,
+          "comprar": 30,
+          "vender": 0
+        },
+        {
+          "objeto": "minecraft:shulker_shell",
+          "cantidad": 1,
+          "comprar": 0,
+          "vender": 120
+        }
+      ]
+    }
+  ]
+}

@@ -32,9 +32,10 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsCommands;
 import net.tierrasfantasticas.tfclient.server.TFBridgeCommands;
 import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 import net.tierrasfantasticas.tfclient.shop.TFRoulette;
+import net.tierrasfantasticas.tfclient.shop.TFShop;
 
 /**
- * Solo hay dos comandos: /tf web (staff) y /tf jobs (todos).
+ * Solo hay tres comandos: /tf web (staff), /tf jobs y /tf shop (todos).
  * <pre>
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo), vinculado a cada jugador
@@ -44,6 +45,7 @@ import net.tierrasfantasticas.tfclient.shop.TFRoulette;
  * /tf web rango | monedas | ruleta ...           los usa la web al entregar (staff; {@link TFBridgeCommands},
  *                                                {@link TFEconomyCommands}, {@link TFRoulette})
  * /tf jobs                                       los oficios ({@link TFJobsCommands})
+ * /tf shop                                       la tienda del servidor ({@link TFShop})
  * </pre>
  * /tf web pide ser operador (nivel 2). Funciona también en servidores Mohist.
  */
@@ -80,6 +82,7 @@ public final class TFCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("tf")
                 .then(TFJobsCommands.command())
+                .then(TFShop.command())
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(TFCoinShop.command())

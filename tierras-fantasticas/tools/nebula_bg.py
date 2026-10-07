@@ -6,6 +6,7 @@ Lee public/img/night-1672.webp y escribe en public/img/:
   nebula-a-{640,1280}.webp      la nebulosa (con transparencia): se desplaza y respira muy despacio
   nebula-b-{640,1280}.webp      otra nebulosa con las nubes en otro sitio: aparece y se apaga, así cambia de color
   stars-a.webp, stars-b.webp    dos mosaicos de estrellas (con transparencia) que titilan a destiempo
+  nebula-mobile.webp            el fondo de los teléfonos: vertical y quieto, con todo lo anterior dentro
 La web los pone en capas fijas que solo se animan con transform y opacity (las mueve la tarjeta gráfica; en el móvil
 van menos capas). Todo sale de ruido fractal con semillas fijas: el resultado es siempre el mismo.
 """
@@ -159,6 +160,30 @@ def save(img, name, **kw):
     print(path, img.size, os.path.getsize(path) // 1024, 'KB')
 
 
+def mobile(width=720, height=1440):
+    """Fondo de los teléfonos: una sola imagen vertical, quieta, con todo dentro (la base, las dos nebulosas y las
+    estrellas). En el móvil no hay capas animadas detrás: así no parpadea ni se traba al hacer scroll."""
+    big = base(1672).convert('RGBA')
+    for clouds, seed, k in ((CLOUDS_A, SEED, 0.85), (CLOUDS_B, SEED + 1, 0.45)):
+        layer = nebula_layer(clouds, seed, width=big.width, strength=0.85)
+        alpha = layer.getchannel('A').point(lambda v, k=k: int(v * k))
+        layer.putalpha(alpha)
+        big.alpha_composite(layer)
+    tile = stars(11)
+    sky = Image.new('RGBA', big.size, (0, 0, 0, 0))
+    for y in range(0, big.height, tile.height):
+        for x in range(0, big.width, tile.width):
+            sky.alpha_composite(tile, (x, y))
+    fade = Image.linear_gradient('L').resize(big.size).point(lambda v: max(0, 255 - int(v * 1.7)))
+    sky.putalpha(Image.composite(sky.getchannel('A'), Image.new('L', big.size, 0), fade))
+    big.alpha_composite(sky)
+    # Recorte vertical centrado en el castillo (72 % del ancho), ampliado al tamaño del teléfono
+    crop_w = round(big.height * width / height)
+    cx = round(big.width * 0.70)
+    left = max(0, min(big.width - crop_w, cx - crop_w // 2))
+    return big.crop((left, 0, left + crop_w, big.height)).resize((width, height), Image.LANCZOS).convert('RGB')
+
+
 def main():
     big = base(1672)
     for w in SIZES:
@@ -171,6 +196,7 @@ def main():
             save(img, f'nebula-{name}-{w}.webp', quality=78)
     save(stars(11), 'stars-a.webp', quality=85)
     save(stars(12, count=70), 'stars-b.webp', quality=85)
+    save(mobile(), 'nebula-mobile.webp', quality=78)
 
 
 if __name__ == '__main__':

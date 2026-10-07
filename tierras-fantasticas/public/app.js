@@ -125,8 +125,24 @@
   // --- Volver arriba: aparece al bajar más de una pantalla ---
   const toTop = $('[data-to-top]');
   if (toTop) {
-    const update = () => toTop.classList.toggle('show', window.scrollY > window.innerHeight * 0.9);
-    window.addEventListener('scroll', update, { passive: true });
+    // Una comprobación por fotograma como mucho, y solo se toca la clase si cambia (scroll fluido en el móvil)
+    let shown = null;
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const show = window.scrollY > window.innerHeight * 0.9;
+      if (show !== shown) toTop.classList.toggle('show', (shown = show));
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
     update();
     toTop.addEventListener('click', (e) => {
       e.preventDefault();
@@ -571,7 +587,7 @@
             )
             .join('')}</div>
           <div class="coin-spins">
-            <span class="coin-spins-label"><img src="/img/coins-small.png" alt="" width="20" height="20" class="pixel-img">O gira con las monedas del servidor</span>
+            <span class="coin-spins-label"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">O gira con las monedas del servidor</span>
             <div class="spin-buttons">${spins
               .filter((p) => p.coinPrice)
               .map(
@@ -693,7 +709,7 @@
                   <div class="coin-icon" data-letter="${escapeHtml(it.name.slice(0, 1).toUpperCase())}">${it.icon ? img(it.icon, '') : ''}</div>
                   <h3>${escapeHtml(it.name)}</h3>
                   <span class="muted small">× ${it.count}</span>
-                  <span class="coin-price"><img src="/img/coins-small.png" alt="" width="20" height="20" class="pixel-img">${fmt.format(it.price)}</span>
+                  <span class="coin-price"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">${fmt.format(it.price)}</span>
                   <button type="button" class="btn btn-coin btn-sm" data-coin-buy="${escapeHtml(it.id)}">Comprar</button>
                 </article>`,
               )
@@ -1469,8 +1485,13 @@
       chip.href = '/cuenta';
       chip.classList.toggle('signed', Boolean(me.user));
       if (me.user) {
-        chip.innerHTML = `<img src="${escapeHtml(me.user.head)}" alt="" width="26" height="26" class="pixel-img"><span>${escapeHtml(me.user.name)}</span>`;
-        chip.setAttribute('aria-label', `Mi cuenta (${me.user.name})`);
+        const coins = Number.isFinite(me.user.coins) ? me.user.coins : null;
+        chip.innerHTML = `<img src="${escapeHtml(me.user.head)}" alt="" width="26" height="26" class="pixel-img"><span>${escapeHtml(me.user.name)}</span>${
+          coins === null
+            ? ''
+            : `<span class="chip-coins" title="Tus monedas del servidor"><img src="/img/coin.png" alt="" width="18" height="18" class="coin-img">${new Intl.NumberFormat('es-ES').format(coins)}</span>`
+        }`;
+        chip.setAttribute('aria-label', `Mi cuenta (${me.user.name}${coins === null ? '' : `, ${coins} monedas`})`);
       } else if (page !== 'cuenta') {
         chip.href = `/cuenta?return=${encodeURIComponent(location.pathname + location.hash)}`;
       }

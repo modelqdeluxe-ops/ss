@@ -33,6 +33,9 @@ public final class TFItems {
     /** Objetos por tipo, para darles en el cliente sus animaciones (tensar el arco, lanzar la caña...). */
     public static final Map<String, List<RegistryObject<Item>>> BY_TYPE = new LinkedHashMap<>();
     /** Iconos de los oficios (/tf jobs): tfclient:job_&lt;icono&gt;, solo para los menús (no salen en el creativo). */
+    /** La Fantastic Coin: la moneda de oro de Tierras Fantásticas. Solo es el icono de las monedas en los menús (la
+     *  tienda /tf shop, los oficios): el saldo es el de la economía del servidor (TFEconomy), no un objeto. */
+    public static RegistryObject<Item> COIN;
     public static final List<String> JOB_ICONS = List.of("farmer", "miner", "wood_cutter", "digger", "fisherman", "hunter",
             "alchemist", "blacksmith", "builder", "enchanter");
 
@@ -65,6 +68,7 @@ public final class TFItems {
             BY_SET.put(set.id(), list);
         }
         for (String icon : JOB_ICONS) ITEMS.register("job_" + icon, () -> new Item(new Item.Properties().stacksTo(1)));
+        COIN = ITEMS.register("fantastic_coin", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
         ITEMS.register(modBus);
         TABS.register(modBus);
     }

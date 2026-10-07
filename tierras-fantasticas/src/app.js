@@ -141,6 +141,9 @@ export function createApp(env) {
       uuid: user.uuid,
       head: head(name),
       rank: rankInfo(rankById.get(rank?.rankId)),
+      // Monedas del servidor (último saldo que mandó el puente; null si nunca lo mandó)
+      coins: player?.coins ?? null,
+      coinsAt: player?.coinsAt ?? null,
       discord: user.discord,
       // Si aceptó la versión vigente de los Términos; si no, la web se los vuelve a pedir antes de comprar o reclamar.
       termsOk: user.termsVersion === TERMS_VERSION,
@@ -271,6 +274,21 @@ export function createApp(env) {
     const nbt = typeof op.nbt === 'string' && op.nbt.length <= 8000 ? op.nbt : null;
     const by = typeof op.by === 'string' && USERNAME_RE.test(op.by) ? op.by : null;
     return { op: 'add', id, item, name, count, price, nbt, by };
+  }
+
+  // Enlace al Discord sin invitador (widget o bot, ver Discord.serverInvite); se guarda 6 horas en settings. Si no se
+  // puede, el DISCORD_URL de siempre.
+  async function discordInvite(discord) {
+    try {
+      const cached = await store.getSetting('discord_invite');
+      if (cached && Date.now() - cached.at < 6 * 3600_000) return cached.value ? `https://discord.gg/${cached.value}` : DISCORD_URL;
+      const code = await discord.serverInvite();
+      await store.setSetting('discord_invite', code || '');
+      return code ? `https://discord.gg/${code}` : DISCORD_URL;
+    } catch (err) {
+      log.warn('No se pudo sacar la invitación de Discord:', err.message);
+      return DISCORD_URL;
+    }
   }
 
   // --- Rutas ---
@@ -443,7 +461,7 @@ export function createApp(env) {
     // Con la sesión iniciada: conecta su Discord a la cuenta. Sin sesión: entra con el Discord ya conectado.
     // Discord nos dice su @ (no se puede escribir a mano) y si está en el servidor de Discord de Tierras Fantásticas.
     // Enlaces fijos de la comunidad: la web enlaza aquí y esto lleva a la invitación vigente (302: nunca se queda en caché).
-    'GET /discord': async () => redirect(DISCORD_URL),
+    'GET /discord': async (req, { discord }) => redirect(await discordInvite(discord)),
     'GET /whatsapp': async () => redirect(WHATSAPP_URL),
 
     'GET /auth/discord': async (req, { url, discord, secure }) => {
@@ -903,6 +921,12 @@ export function createApp(env) {
         ...players.filter((p) => p.uuid).map((p) => ({ ...p, at: ms })),
       ];
       await store.upsertPlayers(seen);
+      // Saldo de monedas de los conectados (para enseñarlo en la web junto al nombre)
+      await store.setCoins(
+        list(body.players, 500)
+          .filter((p) => validPlayer(p) && Number.isSafeInteger(p.coins) && p.coins >= 0)
+          .map((p) => ({ uuid: p.uuid, coins: p.coins })),
+      );
 
       // /tf vincular del mod 1.2.8 ya no hace falta: las cuentas se crean en la web. Se responde que no vale.
       const linkResults = list(body.links, 20)

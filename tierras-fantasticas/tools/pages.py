@@ -74,7 +74,7 @@ PATHS = {'inicio': '/', 'tienda': '/tienda', 'mundo': '/mundo', 'ayuda': '/ayuda
 
 def head(title, desc, page, hero=False, preload_hero=False):
     preload = ('\n  <link rel="preload" as="image" href="/img/nebula-1672.webp" media="(min-width: 761px)">'
-               '\n  <link rel="preload" as="image" href="/img/nebula-768.webp" media="(max-width: 760px)">'
+               '\n  <link rel="preload" as="image" href="/img/nebula-mobile.webp" media="(max-width: 760px)">'
                )
     return f'''<!doctype html>
 <html lang="es">

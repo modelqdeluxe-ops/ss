@@ -183,6 +183,47 @@ abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cance
   `encantar`, `reparar`, `criar`, con ids, etiquetas `#...` o `*`), misiones, niveles y recompensas. Se aplica sin
   reiniciar con `/tf jobs recargar`. El progreso está en `<mundo>/tfclient/oficios.json`.
 
+## Tienda del servidor (`/tf shop`)
+
+Tienda automatizada para comprar y vender con las monedas del servidor (`economy.mode`, ver *Monedas*). La ventana es
+un cofre de 6 filas: las categorías, los objetos de cada una (por páginas) y una ventana para elegir la cantidad
+(−/+ con los pasos de `pasos` y el total). Abajo se ve el inventario del jugador.
+
+- **Clic izquierdo** en un objeto: elegir cantidad y comprar. **Clic derecho**: vender un lote; **Mayús + clic
+  derecho**: vender todos. Con `venderDesdeInventario`, pulsar un objeto del propio inventario lo vende, y el botón
+  *Vender todo* (`botonVenderTodo`) vende de una vez todo lo vendible.
+- Solo se compran objetos «limpios» (sin nombre, encantamientos ni daño, o con el `nbt` exacto que pide la tienda) y
+  nunca los objetos de los sets (están vinculados a su dueño).
+- El icono del saldo es la **Fantastic Coin** (`tfclient:fantastic_coin`, la moneda de oro de Tierras Fantásticas;
+  solo es un icono, el saldo es el de la economía del servidor). También sale en `/tf jobs`.
+- Todo en `config/tfclient-shop.json` (se crea la primera vez con 7 categorías y 73 objetos, en español): `titulo`
+  (con colores `&`), `relleno`, `sonidos`, `pasos`, `maximoPorCompra`, `registro` y los `mensajes` (`{cantidad}`,
+  `{objeto}`, `{precio}`, `{limite}`, `{lineas}`). Cada categoría: `id`, `nombre`, `descripcion`, `icono`, `color`,
+  `hueco` (0-44; si no, se colocan solas) y `nivelPermiso`. Cada objeto:
+
+  | Campo | Qué es |
+  | ----- | ------ |
+  | `objeto` | id del objeto (de cualquier mod) |
+  | `cantidad` | unidades por lote (por defecto 1) |
+  | `comprar` / `vender` | precio de un lote; 0 o sin poner = no se puede |
+  | `nombre`, `descripcion` | nombre y líneas que se enseñan (con colores `&`) |
+  | `nbt` | NBT del objeto (SNBT), para dar y para aceptar en la venta |
+  | `comandos` | se ejecutan al comprar (`{player}`, `{uuid}`, `{cantidad}`, `{lotes}`); con comandos no se da el objeto salvo `darObjeto: true` |
+  | `limiteCompraDiario` / `limiteVentaDiario` | unidades por jugador y día (0 = sin límite) |
+  | `nivelPermiso` | nivel de operador mínimo (0 = todos) |
+
+  Se aplica sin reiniciar con `/tf shop recargar` (staff). Los límites del día van en `<mundo>/tfclient/tienda.json` y
+  cada compra y venta en `<mundo>/tfclient/tienda-registro.log`.
+
+## Techo de atributos (nivel netherita)
+
+Ninguna arma, herramienta ni armadura de **ningún mod** pasa de la netherita: al leer los atributos de cualquier
+objeto, el daño de ataque se recorta a 8 (10 las armas lentas, como el hacha de netherita), la armadura de cada pieza a
+3/8/6/3, la dureza a 3 y la resistencia al empuje a 0,1 por pieza, y se quitan los multiplicadores que suban; la
+velocidad de minar no pasa de la de un pico de netherita. Lo que ya está por debajo no cambia. Los únicos por encima
+son los objetos de los sets de Tierras Fantásticas (rangos, crates y los que se reparten en eventos), vinculados a su
+dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los topes y `excepciones` (ids o `mod:*`).
+
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
