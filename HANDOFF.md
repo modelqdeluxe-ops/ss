@@ -21,14 +21,14 @@ pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado
 | Mortal | 5 | /craft (= /workbench), /anvil, /loom, /hat |
 | Inmortal | 7 | /craft, /anvil, /loom, /hat |
 | Mágico | 8 | + /enderchest |
-| Eterno | 10 | /craft, /anvil, /loom, /hat, /heal |
-| Cósmico | 12 | /craft, /anvil, /loom, /hat, /feed |
+| Eterno | 10 | /craft, /anvil, /loom, /hat, /enderchest, /heal |
+| Cósmico | 12 | /craft, /anvil, /loom, /hat, /enderchest, /feed |
 | Celestial | 15 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /fly |
 | Fantástico | 20 | /craft, /anvil, /loom, /hat, /enderchest, /repair, /heal, /feed, /fly |
 
 («crafting» y «workbench» de la lista son el mismo comando de EssentialsX, `/workbench` con su alias `/craft`, y
-«Anvil» venía repetido: va una vez. Las listas no son acumulativas: Eterno no tiene /enderchest y Celestial no tiene
-/heal ni /feed, tal como las mandó el dueño.)
+«Anvil» venía repetido: va una vez. El dueño corrigió después: de Mágico en adelante todos tienen /enderchest. Celestial
+no tiene /heal ni /feed, tal como lo mandó.)
 
 - **Web**: `RANK_PERK_INFO`, `HOME_PERMS` y `RANK_SERVER_PERKS` en `tools/crates.py` → `serverPerks` (lo que se ve
   debajo del escaparate, en el orden del dueño, con «Nuevo» en lo que no tenía el rango anterior) y
