@@ -143,6 +143,17 @@ export class Discord {
     return { joined: false, roles };
   }
 
+  // Quita roles (reembolsos). Si ya no está en el servidor de Discord o no tenía el rol, no pasa nada.
+  async removeRoles({ userId, roleIds, reason }) {
+    for (const roleId of roleIds.filter(isSnowflake)) {
+      try {
+        await this.request('DELETE', `/guilds/${this.guildId}/members/${userId}/roles/${roleId}`, { auth: `Bot ${this.botToken}`, reason });
+      } catch (err) {
+        if (err.status !== 404) throw err;
+      }
+    }
+  }
+
   // Mensaje en el canal de anuncios mediante un webhook de Discord.
   async announce({ content, embed }) {
     if (!this.webhookUrl) return;

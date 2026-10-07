@@ -17,11 +17,14 @@ const ASSETS = {
     if (p === '/') p = '/index.html';
     if (!path.extname(p)) p += '.html';
     const f = path.join(PUB, p);
-    if (!fs.existsSync(f)) return new Response('404', { status: 404 });
+    // Como Cloudflare con not_found_handling: «404-page»
+    if (!fs.existsSync(f)) return new Response(fs.readFileSync(path.join(PUB, '404.html')), { status: 404, headers: { 'Content-Type': 'text/html' } });
     return new Response(fs.readFileSync(f), { headers: { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' } });
   },
 };
 const env = { DB: createD1(), ASSETS, BRIDGE_SECRET: 'x', STRIPE_SECRET_KEY: 'sk', SESSION_SECRET: 's', DISCORD_CLIENT_ID: 'c', DISCORD_CLIENT_SECRET: 'd', LOGGER: { log() {}, warn() {}, error() {} } };
+// Con PREVIEW_PAYPAL=1 aparece también el botón de PayPal (sin PayPal real: solo para ver la ventana de compra).
+if (process.env.PREVIEW_PAYPAL) Object.assign(env, { PAYPAL_CLIENT_ID: 'p', PAYPAL_CLIENT_SECRET: 'p' });
 const call = (p, init) => worker.fetch(new Request(`http://localhost${p}`, init), env);
 await call('/bridge/poll', { method: 'POST', headers: { Authorization: 'Bearer x' }, body: JSON.stringify({ protocol: 2, players: [{ name: 'Steve', uuid: '11111111-2222-3333-4444-555555555555' }], seen: [{ name: 'Notch', uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5', at: Date.now() - 1e6 }] }) });
 await call('/bridge/poll', { method: 'POST', headers: { Authorization: 'Bearer x' }, body: JSON.stringify({ protocol: 2, ranks: [{ uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5', rank: 'rango-mortal' }] }) });

@@ -8,7 +8,10 @@
   <meta name="theme-color" content="#0a0d14">
   <meta property="og:title" content="Términos y condiciones — Tierras Fantásticas">
   <meta property="og:description" content="Términos y condiciones de uso y de compra de Tierras Fantásticas: cuentas, precios, entrega, cancelaciones y reembolsos.">
-  <meta property="og:image" content="/img/og.jpg">
+  <meta property="og:image" content="https://xn--tierrasfantsticas-hpb.store/img/og.jpg">
+  <meta property="og:url" content="https://xn--tierrasfantsticas-hpb.store/terminos">
+  <meta property="og:site_name" content="Tierras Fantásticas">
+  <meta property="og:locale" content="es_MX">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +20,9 @@
   <link rel="preload" as="image" href="/img/nebula-1672.webp" media="(min-width: 761px)">
   <link rel="preload" as="image" href="/img/nebula-768.webp" media="(max-width: 760px)">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png">
   <link rel="icon" type="image/webp" href="/img/logo.webp">
+  <link rel="apple-touch-icon" href="/img/icon-180.png">
   <script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList.add('js');try{s=sessionStorage.getItem('tf-seen')}catch(e){}function done(){h.classList.add('ready');try{sessionStorage.setItem('tf-seen','1')}catch(e){}}if(s){h.classList.add('seen');d.addEventListener('DOMContentLoaded',done)}else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}})(document)</script>
 </head>
 <body data-page="terminos">
@@ -188,15 +193,15 @@ la cuenta de Minecraft (UUID) del jugador que las recibe</b>:</p>
     pagas: no se añade nada después. Tu banco puede cobrarte por convertir la moneda; eso depende de tu banco.</li>
   <li>Si ya tienes un rango y compras uno superior, pagas solo la diferencia. No se puede comprar un rango que ya
     tienes o uno inferior.</li>
-  <li>El pago se hace en la página segura de <b>Stripe</b> (tarjeta, Apple Pay, Google Pay o Link). Nosotros nunca vemos
-    ni guardamos los datos de tu tarjeta.</li>
+  <li>El pago se hace en la página segura de <b>Stripe</b> (tarjeta, Apple Pay, Google Pay o Link) o, si está disponible,
+    en la de <b>PayPal</b>. Nosotros nunca vemos ni guardamos los datos de tu tarjeta ni de tu cuenta de PayPal.</li>
   <li>Antes de cobrar, la tienda comprueba que el nombre de jugador existe en el servidor y guarda la compra con su
     UUID, para que llegue al jugador que eliges. Revisa bien el nombre: si te equivocas de jugador, escríbenos.</li>
 </ul>
         </section>
         <section class="legal-section" id="entrega">
           <h2><span>07</span>Entrega</h2>
-<p>Cuando Stripe confirma el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
+<p>Cuando Stripe o PayPal confirman el pago, el servidor te entrega la compra automáticamente: en unos segundos si estás
 conectado y, si no, en cuanto entres. Verás un aviso en el juego y el estado en la página de tu compra y en «Mi
 cuenta». Si algo falla, el staff la entrega a mano. Si en 48 horas no la has recibido, escríbenos con tu número de
 pedido.</p>
@@ -206,13 +211,19 @@ pedido.</p>
 <ul>
   <li><b>5 días hábiles para cancelar.</b> Puedes cancelar cualquier compra y pedir que te devolvamos el dinero dentro de
     los 5 días hábiles siguientes a la entrega, sin dar explicaciones. Escríbenos a <a href="mailto:tierrasfantasticasmc@gmail.com">tierrasfantasticasmc@gmail.com</a> con tu número de pedido y tu
-    nombre de jugador. Al cancelarla, retiramos del juego lo que se te entregó.</li>
+    nombre de jugador.</li>
+  <li><b>Al reembolsar se retira todo lo de esa compra.</b> Cada objeto que se entrega queda marcado con su número de
+    pedido. Cuando una compra se reembolsa, el servidor retira automáticamente todo lo que se entregó con ella esté
+    donde esté: inventario, cofre de ender, huecos de accesorios, cofres y demás contenedores (también dentro de cajas
+    de shulker), marcos, soportes y el suelo; lo que esté en zonas sin cargar se retira en cuanto se cargan. Si la
+    compra era un rango, se quita el rango (o vuelves al que tenías si era una mejora) y sus roles de Discord.</li>
   <li><b>En cualquier momento</b> te devolvemos el dinero si no recibimos la compra en el servidor, si se cobró dos veces
     o por error, o si un menor compró sin permiso de su madre, padre o tutor.</li>
-  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe al mismo medio de pago; tu banco puede
+  <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe o PayPal al mismo medio de pago; tu banco puede
     tardar de 5 a 10 días hábiles en mostrarlo.</li>
-  <li>Si abres una disputa o contracargo con tu banco en lugar de escribirnos, lo entregado se suspende mientras se
-    resuelve. Escríbenos primero: casi siempre es más rápido.</li>
+  <li>Si abres una disputa o contracargo con tu banco en lugar de escribirnos, se retira lo entregado de la misma forma
+    que con un reembolso. Si la disputa se resuelve a nuestro favor, te lo devolvemos. Escríbenos primero: casi siempre
+    es más rápido.</li>
   <li>Las recompensas gratis y lo comprado con monedas del servidor no tienen reembolso en dinero, porque no se pagaron
     con dinero.</li>
 </ul>
@@ -235,7 +246,7 @@ protecciones de la tienda.</p>
           <h2><span>11</span>Responsabilidad</h2>
 <p>Prestamos el servicio con cuidado, pero no podemos garantizar que el servidor o la web estén siempre disponibles ni
 libres de fallos. No respondemos de problemas causados por tu conexión, tus mods o tu equipo, ni por servicios de
-terceros (Stripe, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>
+terceros (Stripe, PayPal, Discord, tu banco). Nada de esto limita los derechos que te da la ley como consumidor.</p>
         </section>
         <section class="legal-section" id="cambios">
           <h2><span>12</span>Cambios en estos términos</h2>
@@ -309,6 +320,7 @@ Procuraduría Federal del Consumidor (PROFECO), por ejemplo por Concilianet.</p>
     </div>
     <span class="credit">By Pewez777</span>
   </footer>
+  <a href="#main" class="to-top" data-to-top aria-label="Volver arriba"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
 
   <script src="/app.js" defer></script>
 </body>
