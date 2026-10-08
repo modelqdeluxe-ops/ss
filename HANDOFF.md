@@ -9,10 +9,9 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **Estado al cierre (8 oct 2026, noche):** todo fusionado en `main` y desplegado; **nada a medias**. Última versión
-> publicada del mod: **TF Client 1.3.19** (la siguiente es **1.3.20**). Lo último que pidió el dueño y quedó hecho:
-> 1) TF Claims dentro del mod (1.3.18), 2) el menú de inicio **como antes** (botones Cinzel azul noche/oro de la 1.3.16)
-> con el **paisaje de noche de la web** de fondo (1.3.19). No hay peticiones pendientes.
+> **Estado al cierre (8 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
+> **TF Client 1.3.20** (la siguiente es **1.3.21**). Lo último que pidió el dueño y quedó hecho: el **TF Pad** (su
+> marco, 9 apps dibujadas a mano y el **GTS**, mercado entre jugadores). Ver «TF Pad y GTS — 1.3.20».
 >
 > **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
 > inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
@@ -25,7 +24,29 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): menú de inicio como antes, con el paisaje de noche — TF Client 1.3.19
+### Última entrega (8 de octubre de 2026): TF Pad y GTS — TF Client 1.3.20
+Pidió un pad como el PokePad de Diosesmon con **su marco** (imagen suya) y **todo conectado**. Iconos: los quiere
+**pixel perfect, claros (nada oscuros), bonitos y dibujados a mano**; rechazó prompts de IA, un pack CC0 («horribles»)
+y un pico flojo: el pico se rehízo **estudiando picos de Minecraft, Terraria y Stardew** (brazos gruesos en media luna,
+casquillo con gema, mango de 4 px). **Antes de dibujar algo, busca referencias buenas y compáralo con ellas.**
+- **Abrir:** tecla **O** (`key.tfclient.pad`, se cambia en Controles). Solo funciona en un servidor con el canal del pad.
+- **Apps (9):** Oficios, Protecciones, Tienda y GTS las abre el servidor (mismas ventanas que `/tf jobs`, `/tf claims
+  menu` —la zona donde estás si es tuya, si no tu primera zona— y `/tf shop`). Monedero (saldo + atajos), Mi rango
+  (rango y hogares), Comunidad (Discord, WhatsApp, web), Armario y Efectos (se eligen **en la web**, que es la que sabe qué
+  tiene comprado cada uno: `/cuenta` y `/tienda#vfx`) son páginas del pad. Arriba: hora del mundo y monedas.
+- **GTS** (`market/TFMarket*.java`, `<mundo>/tfclient/gts.json` + `gts-registro.log`): publicar lo de la mano y
+  escribir el precio en el chat (va por `ChatPromptRouter`, como las preguntas de TF Claims; vale en Mohist), comprar,
+  retirar, 7 días y vuelve a «Recoger», máx. 10 por jugador. Cobra al momento (si la economía no puede pagarle
+  desconectado, cobra al entrar). **No** se publican piezas de sets ligadas, lo comprado en la web (`TFOrder`, para que
+  los reembolsos sigan funcionando) ni contenedores llenos. Sin comandos nuevos: solo se abre desde el pad.
+- **La tienda normal ya compraba a los jugadores** (clic derecho, «Vender todo», pulsar tus objetos): 58 de los 73
+  objetos por defecto se pueden vender. Lo demás, en el GTS.
+- **Texturas:** `python3 tools/pad/build_pad.py [--preview]` → `textures/gui/pad/` (dibujos en `tools/pad/`:
+  `iconos.py`, `pico.py`, fuente pixel `fuente4.py`; `marco.png` es su imagen limpia). El marco son 392x251 «píxeles de
+  pad» (1 = 4 px de `marco.png`); `TFPadScreen` lo escala a un entero de píxeles de pantalla. Si mueves algo en
+  `build_pad.py`, cambia las mismas posiciones en `TFPadScreen.java`.
+
+### Entrega anterior (8 de octubre de 2026): menú de inicio como antes, con el paisaje de noche — TF Client 1.3.19
 No le gustó el menú de 1.3.17 (el cielo animado salía como un óvalo pixelado: la viñeta y las capas estiradas, y los
 botones nuevos): *«regresa al formato anterior, botones… pon el fondo de oscuridad que tiene la página»*, y luego
 **sin nebulosa**: el **paisaje de noche que la web tiene detrás de la nebulosa** (`img/night-1672.webp`). Se restauraron de la 1.3.16 `TFMenuButton`, `TFButtonTheme`, `TitleScreenMixin`, `TFClientEvents`,
@@ -831,7 +852,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.19)
+## 5. El mod (TF Client 1.3.20)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -850,9 +871,10 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   29-33/38-42 del cofre y 36 botones abajo; nunca el inventario del jugador).
 - Módulos nuevos: `claims/` (TF Claims, protecciones; `/tf claims`, `/tf web claims`; ver entrega 1.3.18),
   `items/TFWardrobe.java` + `mixin/HumanoidArmorLayerMixin`/`CustomHeadLayerMixin` (armario de la web, 1.3.17),
-  `vfx/` (efectos de kill y skills). Menú: `mixin/TitleScreenMixin.java`, `client/TFMenuButton.java`,
+  `vfx/` (efectos de kill y skills), `pad/` (TF Pad: `TFPadClient` tecla O, `TFPadScreen`, `TFPadNet` canal
+  `tfclient:pad`) y `market/` (GTS, 1.3.20). Menú: `mixin/TitleScreenMixin.java`, `client/TFMenuButton.java`,
   `client/TFButtonTheme.java`; fondo `textures/gui/menu_background.png` (paisaje de noche de la web).
-- Generadores: `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
+- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
   menú), `tools/build_vfx.py` (VFX).
 - Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
   `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en

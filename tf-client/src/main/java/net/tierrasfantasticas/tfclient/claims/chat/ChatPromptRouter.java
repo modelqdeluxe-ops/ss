@@ -3,6 +3,7 @@ package net.tierrasfantasticas.tfclient.claims.chat;
 import net.tierrasfantasticas.tfclient.claims.TFClaims;
 import net.tierrasfantasticas.tfclient.claims.gui.AdminClaimSubMenuHandler;
 import net.tierrasfantasticas.tfclient.claims.gui.ClaimMenuHandler;
+import net.tierrasfantasticas.tfclient.market.TFMarket;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +23,8 @@ public final class ChatPromptRouter {
     }
 
     public static boolean hasPending(UUID uuid) {
-        return uuid != null && (ClaimMenuHandler.hasPrompt(uuid) || AdminClaimSubMenuHandler.hasPendingTransfer(uuid));
+        return uuid != null && (ClaimMenuHandler.hasPrompt(uuid) || AdminClaimSubMenuHandler.hasPendingTransfer(uuid)
+                || TFMarket.hasPrompt(uuid));
     }
 
     public static boolean consume(ServerPlayer serverplayer, String s) {
@@ -44,6 +46,13 @@ public final class ChatPromptRouter {
                 String s1 = ChatPromptRouter.stripControlChars(s);
                 ChatPromptRouter.markSuppressed(uuid, s);
                 minecraftserver.execute(() -> ClaimMenuHandler.dispatchPrompt(serverplayer, claimmenuhandler$pendingchat, s1));
+                return true;
+            }
+            // El precio de una venta del GTS (TF Pad)
+            if (TFMarket.hasPrompt(uuid)) {
+                String s3 = ChatPromptRouter.stripControlChars(s);
+                ChatPromptRouter.markSuppressed(uuid, s);
+                minecraftserver.execute(() -> TFMarket.answer(serverplayer, s3));
                 return true;
             }
             return false;
