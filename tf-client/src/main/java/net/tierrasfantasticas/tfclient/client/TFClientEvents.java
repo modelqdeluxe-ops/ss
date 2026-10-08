@@ -49,8 +49,11 @@ public final class TFClientEvents {
 
     private static void drawMenuBackground(GuiGraphics g, Screen screen) {
         try {
-            // El mismo cielo animado que el menú principal, algo más oscuro para que se lean las opciones
-            TFSky.render(g, screen.width, screen.height, 0.3f);
+            if (TFDraw.cover(g, TFTextures.MENU, screen.width, screen.height, 1f)) {
+                g.fill(0, 0, screen.width, screen.height, TFDraw.argb(0.45f, 0x000000));
+            } else {
+                g.fill(0, 0, screen.width, screen.height, 0xFF0B1020);
+            }
             backgroundDrawn = true;
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Client: error al dibujar el fondo", t);

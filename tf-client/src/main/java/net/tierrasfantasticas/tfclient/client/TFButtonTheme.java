@@ -17,8 +17,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 
 /**
- * Tema de TF para los botones fuera de una partida (menú principal, mundos, opciones, conexión...): el de los botones
- * de la web (pizarra con filo cian, labio abajo) y letra Unbounded. Dentro de una partida no se toca nada, para que cada jugador vea sus
+ * Tema de TF para los botones fuera de una partida (menú principal, mundos, opciones, conexión...): placa azul noche
+ * con doble filete dorado y letra Cinzel. Dentro de una partida no se toca nada, para que cada jugador vea sus
  * paquetes de recursos.
  */
 public final class TFButtonTheme {
@@ -41,8 +41,8 @@ public final class TFButtonTheme {
         boolean hot = button.active && button.isHoveredOrFocused();
         int state = !button.active ? 2 : hot ? 1 : 0;
         drawPlate(g, TFTextures.BUTTON_SLICE, button.getX(), button.getY(), button.getWidth(), button.getHeight(), state, 1f);
-        int color = !button.active ? 0xA0A0A0 : hot ? 0xFFFFFF : 0xE8FBFF;
-        drawLabel(g, button.getMessage(), button.getX(), button.getY() - 1, button.getWidth(), button.getHeight(), color, 1f, true);
+        int color = !button.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
+        drawLabel(g, button.getMessage(), button.getX(), button.getY(), button.getWidth(), button.getHeight(), color, 1f, true);
         return true;
     }
 
@@ -56,13 +56,12 @@ public final class TFButtonTheme {
         int h = slider.getHeight();
         drawPlate(g, TFTextures.BUTTON_SLICE, x, y, w, h, slider.active ? 0 : 2, 1f);
         int handleX = x + (int) (Mth.clamp(value, 0.0, 1.0) * (w - 8));
-        // Tirador cian (el de los botones secundarios de la web)
-        g.fill(handleX, y + 1, handleX + 8, y + h - 1, 0xFF06202A);
-        g.fill(handleX + 1, y + 2, handleX + 7, y + h - 2, hot ? 0xFF9FF6FF : 0xFF45E9FF);
-        g.fill(handleX + 1, y + 2, handleX + 7, y + 3, 0xFFE6FDFF);
-        g.fill(handleX + 1, y + h - 3, handleX + 7, y + h - 2, 0xFF1A9FBD);
-        int color = !slider.active ? 0xA0A0A0 : hot ? 0xFFFFFF : 0xE8FBFF;
-        drawLabel(g, slider.getMessage(), x, y - 1, w, h, color, 1f, true);
+        g.fill(handleX, y + 1, handleX + 8, y + h - 1, 0xFF1A1206);
+        g.fill(handleX + 1, y + 2, handleX + 7, y + h - 2, hot ? 0xFFFFD667 : 0xFFE2B04A);
+        g.fill(handleX + 1, y + 2, handleX + 7, y + 3, 0xFFFFF3C4);
+        g.fill(handleX + 1, y + h - 3, handleX + 7, y + h - 2, 0xFF9A6A1C);
+        int color = !slider.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
+        drawLabel(g, slider.getMessage(), x, y, w, h, color, 1f, true);
         return true;
     }
 
@@ -106,34 +105,6 @@ public final class TFButtonTheme {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         g.setColor(1f, 1f, 1f, Mth.clamp(alpha * strength, 0f, 1f));
-        g.pose().pushPose();
-        g.pose().translate(bandX, y, 0f);
-        int tw = TFTextures.BUTTON_SHINE.width();
-        int th = TFTextures.BUTTON_SHINE.height();
-        g.pose().scale(bandW / tw, h / (float) th, 1f);
-        g.blit(TFTextures.BUTTON_SHINE.id(), 0, 0, 0f, 0f, tw, th, tw, th);
-        g.pose().popPose();
-        g.setColor(1f, 1f, 1f, 1f);
-        RenderSystem.defaultBlendFunc();
-        g.disableScissor();
-    }
-
-    /**
-     * Destello al pasar el ratón (como el de los botones de la web): una banda de luz cruza el botón de izquierda a
-     * derecha en 0,75 s y vuelve a pasar cada 1,6 s mientras sigue el ratón encima.
-     */
-    public static void drawHoverSweep(GuiGraphics g, int x, int y, int w, int h, float alpha, long sinceMs) {
-        if (!TFTextures.BUTTON_SHINE.ready() || w < 20) return;
-        long cycle = sinceMs % 1600L;
-        if (cycle > 750L) return;
-        float t = cycle / 750f;
-        float eased = 1f - (1f - t) * (1f - t);
-        float bandW = h * 2.2f;
-        float bandX = x - bandW + eased * (w + bandW);
-        g.enableScissor(x + 2, y + 1, x + w - 2, y + h - 1);
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        g.setColor(1f, 1f, 1f, Mth.clamp(alpha * 0.35f * (float) Math.sin(t * Math.PI), 0f, 1f));
         g.pose().pushPose();
         g.pose().translate(bandX, y, 0f);
         int tw = TFTextures.BUTTON_SHINE.width();
