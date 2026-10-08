@@ -513,7 +513,10 @@ public final class VfxServer {
     }
 
     private static void affect(ServerPlayer player, ServerLevel level, LivingEntity e, JsonObject a, Vec3 center) {
-        double damage = TFJson.dec(a, "dano", 0) * damageScale;
+        // El daño de la skill crece con el arma: base × (2 + ataque del jugador / 4). Con una espada de netherita (8)
+        // es ×4; con las armas de los sets, más. Así se nota en survival aunque el enemigo lleve armadura.
+        double attack = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        double damage = TFJson.dec(a, "dano", 0) * damageScale * (2.0 + Math.max(0, attack) / 4.0);
         if (damage > 0) {
             e.invulnerableTime = 0;
             inSkill = true;

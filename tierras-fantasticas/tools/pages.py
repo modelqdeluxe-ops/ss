@@ -127,7 +127,7 @@ def header(page):
         <button class="ip-chip" type="button" data-copy-ip aria-label="Copiar la IP del servidor">
           <span class="dot" data-status-dot></span><span data-server-ip>{IP}</span><span class="hint">{I['copy']}<span data-copy-hint>Copiar</span></span>
         </button>
-        <a href="/tienda" class="btn btn-primary btn-sm">Tienda</a>
+        <a href="/tienda" class="btn btn-buy btn-sm">Tienda</a>
         <a href="/cuenta" class="account-chip" data-account-chip aria-label="Entrar o crear cuenta">{I['users']}<span>Entrar</span></a>
         <button class="menu-btn" type="button" data-menu-open aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet">{I['menu']}</button>
       </div>

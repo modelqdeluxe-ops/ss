@@ -367,5 +367,6 @@ def hechizos(b, problems):
 
 
 def build(b, problems):
-    packs = [gale(b, problems), ronin(b, problems), hechizos(b, problems)]
+    # Hechizos del Alma (hechizos()) se quitó por decisión del dueño: solo los dos paquetes de cuerpo a cuerpo
+    packs = [gale(b, problems), ronin(b, problems)]
     return packs
