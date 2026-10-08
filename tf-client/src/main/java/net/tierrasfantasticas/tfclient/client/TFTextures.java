@@ -17,8 +17,6 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public enum TFTextures {
     /** Pantalla de carga: el banner con las letras de Tierras Fantásticas. */
     LOADING("loading_background.png"),
-    /** Menú principal y resto de menús: el paisaje sin letras. */
-    MENU("menu_background.png"),
     /** Emblema TF que va encima de los botones. */
     LOGO("logo.png"),
     /** Halo que late detrás del emblema. */
@@ -31,7 +29,16 @@ public enum TFTextures {
     BUTTON_SHINE("button_shine.png", Mode.NO_MIPMAPS),
     /** Botones en tres piezas (puntas fijas y centro estirable; 3 estados apilados). Ver TFButtonTheme. */
     BUTTON_SLICE("button_slice.png"),
-    BUTTON_SLICE_PRIMARY("button_slice_primary.png");
+    BUTTON_SLICE_PRIMARY("button_slice_primary.png"),
+    BUTTON_SLICE_DISCORD("button_slice_discord.png"),
+    /** El cielo animado de la web (TFSky): nebulosa base, nebulosas A y B, estrellas, luz de las auroras y viñeta. */
+    SKY_NEBULA("sky/nebula.png"),
+    SKY_NEBULA_A("sky/nebula_a.png"),
+    SKY_NEBULA_B("sky/nebula_b.png"),
+    SKY_STARS_A("sky/stars_a.png", Mode.NO_MIPMAPS),
+    SKY_STARS_B("sky/stars_b.png", Mode.NO_MIPMAPS),
+    SKY_GLOW("sky/glow.png"),
+    SKY_VIGNETTE("sky/vignette.png");
 
     /** Cómo se sube la imagen: suavizada con mipmaps, suavizada sin mipmaps, o pixel art sin suavizar. */
     public enum Mode { MIPMAPS, NO_MIPMAPS, PIXEL_ART }

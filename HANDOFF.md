@@ -12,13 +12,33 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): skills más fuertes, kills completas, planeo de 10 s, paleta nueva, página VFX con vistas previas y TF Client 1.3.16
+### Última entrega (8 de octubre de 2026): menú de inicio con el cielo de la web y armario del perfil — TF Client 1.3.17
+Lo que faltaba de la petición de 1.3.16 («el mismo fondo animado que hay en la web en el menú de inicio, con las mismas
+letras, auroras, botones con efectos bonitos» y «en el perfil una especie de armario para equipar y desequipar todo lo
+comprado»):
+
+- **Menú de inicio** (`TFSky`, `TitleScreenMixin`, `TFClientEvents.drawMenuBackground`): el fondo de la web capa a
+  capa con sus tiempos (nebulosa base 60 s, A 24 s, B 15 s, auroras 18 s sumando luz, estrellas que bajan y titilan
+  solo en el cielo, estrellas fugaces, oscurecido hacia abajo y viñeta). Imágenes en `textures/gui/sky` (sacadas de las
+  de la web); `menu_background.png` borrado. Letra **Unbounded** (`font/unbounded.ttf`, OFL, recortada a latín) en
+  botones y textos del menú. Botones (`tools/gen_buttons.py`, `TFMenuButton.Style`): oro (servidor, Web), Discord,
+  pizarra con filo cian (el resto, también los de Minecraft fuera de partida vía `TFButtonTheme`); al pasar el ratón
+  suben 1 px y los cruza un destello (`drawHoverSweep`).
+- **Armario** — web: tabla `wardrobe` (uuid → `{hueco: "set/pieza"}`), `GET/POST /api/account/wardrobe` (solo piezas
+  que tiene: pedidos pagados sin reembolso + el set de su rango; `productPieces`/`wardrobeSlot` en `src/app.js`), sección
+  «Armario» en «Mi cuenta» (personaje 3D con lo puesto mezclando sets —`wardrobe.js` acepta `armorLayers` por pieza—,
+  5 huecos y las piezas de cada uno; tocar otra vez o «Quitar» la quita). Puente: `wardrobe: [{uuid, items, at}]` de los
+  conectados. Mod: `TFWardrobe` valida (`tfclient:<set>_<pieza>` del tipo del hueco), guarda en
+  `<mundo>/tfclient/wardrobe.json` y sincroniza a todos; los mixins `HumanoidArmorLayerMixin`/`CustomHeadLayerMixin` y
+  `BackLayer` lo dibujan encima de lo puesto. Solo apariencia (sin defensa ni planeo).
+- Test nuevo en `test/app.test.js` (armario: 401 sin sesión, 403 si no es tuyo o va en otro hueco, poner/quitar, puente).
+
+### Entrega anterior (8 de octubre de 2026): skills más fuertes, kills completas, planeo de 10 s, paleta nueva, página VFX con vistas previas y TF Client 1.3.16
 **Lo que pidió el dueño (resumen):** quitar el paquete de mago y dejar los 2 de cuerpo a cuerpo con mucho más daño;
 revisar los efectos de kill («algunos no hacían bien la kill»); quitar el icono de la barra; planeo de alas con
 cronómetro de 10 s y contador junto al último hueco; rework serio de la página VFX con una animación de lo que se
-compra; rework de colores de toda la web (todo se veía igual). **Pendiente de esa misma petición (siguiente entrega):**
-el menú de inicio de Minecraft con el fondo animado de la web (mismas letras, auroras, botones con efectos) y el
-**armario** del perfil para equipar/desequipar todo lo comprado.
+compra; rework de colores de toda la web (todo se veía igual). **Lo que quedaba de esa petición** (menú de
+inicio y armario) salió en 1.3.17, abajo.
 
 - **Skills** (`vfx_skills.py`, `VfxServer.affect`): fuera *Hechizos del Alma*; el daño es base × (2 + ataque del jugador
   / 4) × `multiplicadorDanoSkills` (×4 con espada de netherita, más con las armas de los sets).
@@ -642,7 +662,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.17**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.18**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).

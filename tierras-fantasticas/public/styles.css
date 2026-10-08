@@ -5700,6 +5700,220 @@ body:not([data-hero]) .header::before {
   margin-top: 16px;
 }
 
+/* Armario: el personaje con lo puesto y, al lado, los huecos y las piezas de cada uno */
+.wd {
+  margin-top: 16px;
+}
+
+.wd .orders-head {
+  flex-wrap: wrap;
+}
+
+.wd-empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.wd-empty p {
+  margin: 0;
+}
+
+.wd-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.wd-stage {
+  position: relative;
+  isolation: isolate;
+  height: 300px;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  border: 1px solid color-mix(in srgb, rgb(var(--sec-rgb)) 28%, var(--bd));
+  background:
+    radial-gradient(70% 55% at 50% 42%, rgb(var(--sec-rgb) / 0.16), transparent 70%),
+    linear-gradient(180deg, var(--s1), var(--bg-2));
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.wd-stage:active {
+  cursor: grabbing;
+}
+
+.wd-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wd-side {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Los cinco huecos: en el móvil se deslizan en una fila */
+.wd-slots {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wd-slot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 14px;
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    background-color 0.25s;
+}
+
+.wd-slot:hover:not(:disabled) {
+  border-color: color-mix(in srgb, rgb(var(--sec-rgb)) 55%, transparent);
+}
+
+.wd-slot.active {
+  border-color: rgb(var(--sec-rgb));
+  background: color-mix(in srgb, rgb(var(--sec-rgb)) 12%, var(--s2));
+}
+
+.wd-slot:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.wd-slot-art {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px dashed var(--bd-2);
+  background: var(--s0);
+}
+
+.wd-slot.filled .wd-slot-art {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--a-400) 45%, transparent);
+}
+
+.wd-slot-art img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.wd-slot-text {
+  display: grid;
+  min-width: 0;
+}
+
+.wd-slot-text small {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--sec-rgb));
+}
+
+.wd-slot-text b {
+  overflow: hidden;
+  font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wd-pick {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  transition: opacity 0.2s;
+}
+
+.wd-pick.is-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.wd-pieces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wd-piece {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px 8px 8px;
+  border-radius: 14px;
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.35s var(--ease),
+    border-color 0.25s,
+    background-color 0.25s;
+}
+
+.wd-piece:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--a-400) 55%, transparent);
+}
+
+.wd-piece.worn {
+  border-color: var(--a-400);
+  background: color-mix(in srgb, var(--a-400) 12%, var(--s2));
+}
+
+.wd-piece img {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.wd-piece span {
+  display: grid;
+  min-width: 0;
+}
+
+.wd-piece b {
+  font-size: 14px;
+}
+
+.wd-piece small {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .orders-head {
   display: flex;
   justify-content: space-between;
@@ -6414,6 +6628,7 @@ body:not([data-hero]) .header::before {
 
 .cv-item.worn .worn-dot,
 .cos-piece.worn .worn-dot,
+.wd-piece.worn .worn-dot,
 .rk-piece.worn .worn-dot {
   opacity: 1;
   transform: none;
@@ -6964,6 +7179,23 @@ body:not([data-hero]) .header::before {
 
   .account-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .wd-grid {
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  }
+
+  .wd-stage {
+    height: 380px;
+  }
+
+  .wd-slots {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .wd-slot {
+    min-width: 0;
   }
 
   /* Ventanas centradas */

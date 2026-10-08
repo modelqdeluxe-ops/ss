@@ -1198,3 +1198,48 @@ test('PayPal: un pedido aprobado se cobra también si el comprador no vuelve a l
   assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'queued');
   await serverDelivers('Paypal_Web');
 });
+
+test('el armario: lo comprado se pone y se quita desde la cuenta, y el puente lo manda al servidor', async () => {
+  assert.strictEqual((await get('/api/account/wardrobe')).status, 401);
+  const cookie = await register('Armario_MC');
+  let view = await (await get('/api/account/wardrobe', { Cookie: cookie })).json();
+  assert.deepStrictEqual(view.slots, ['head', 'chest', 'legs', 'feet', 'back']);
+  assert.deepStrictEqual(view.owned, []);
+  assert.deepStrictEqual(view.equipped, {});
+  // Lo que no tiene no se puede poner.
+  const chest = { slot: 'chest', set: 'oni', id: 'armor_chestplate' };
+  assert.strictEqual((await post('/api/account/wardrobe', chest, cookie)).status, 403);
+
+  // Compra la crate de Oni: su armadura, su casco y sus alas pasan al armario (las armas no).
+  const id = await checkout({ productId: 'crate-oni', username: 'Armario_MC' }, cookie);
+  await pay(id);
+  view = await (await get('/api/account/wardrobe', { Cookie: cookie })).json();
+  const keys = view.owned.map((x) => `${x.slot}:${x.set}/${x.id}`).sort();
+  assert.deepStrictEqual(keys, [
+    'back:oni/wings', 'chest:oni/armor_chestplate', 'feet:oni/armor_boots', 'head:oni/armor_helmet', 'head:oni/helmet', 'legs:oni/armor_leggings',
+  ]);
+  // Una pieza en un hueco que no es el suyo, no.
+  assert.strictEqual((await post('/api/account/wardrobe', { slot: 'head', set: 'oni', id: 'armor_chestplate' }, cookie)).status, 403);
+  assert.strictEqual((await post('/api/account/wardrobe', { slot: 'manos', set: 'oni', id: 'sword' }, cookie)).status, 400);
+
+  view = await (await post('/api/account/wardrobe', chest, cookie)).json();
+  assert.deepStrictEqual(view.equipped, { chest: { set: 'oni', id: 'armor_chestplate' } });
+  view = await (await post('/api/account/wardrobe', { slot: 'back', set: 'oni', id: 'wings' }, cookie)).json();
+  assert.deepStrictEqual(Object.keys(view.equipped).sort(), ['back', 'chest']);
+
+  // El servidor recibe lo puesto de los conectados.
+  let { wardrobe } = await (await poll(['Armario_MC'])).json();
+  assert.strictEqual(wardrobe.length, 1);
+  assert.strictEqual(wardrobe[0].uuid, uuidOf('Armario_MC'));
+  assert.deepStrictEqual(wardrobe[0].items, { chest: 'oni/armor_chestplate', back: 'oni/wings' });
+  const first = wardrobe[0].at;
+  ({ wardrobe } = await (await poll(['Otro_MC'])).json());
+  assert.deepStrictEqual(wardrobe, []);
+
+  // Quitar una pieza cambia la hora.
+  view = await (await post('/api/account/wardrobe', { slot: 'back', id: null }, cookie)).json();
+  assert.deepStrictEqual(view.equipped, { chest: { set: 'oni', id: 'armor_chestplate' } });
+  ({ wardrobe } = await (await poll(['Armario_MC'])).json());
+  assert.deepStrictEqual(wardrobe[0].items, { chest: 'oni/armor_chestplate' });
+  assert.ok(wardrobe[0].at > first);
+});

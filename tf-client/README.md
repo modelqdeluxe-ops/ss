@@ -5,10 +5,12 @@ Mod de Tierras Fantásticas. En el **cliente** hace esto:
 - **Pantalla de carga de TF**: el banner de Tierras Fantásticas (con las letras) a pantalla completa y la barra de
   progreso de Minecraft. Sustituye a la pantalla de Mojang/Forge, al abrir el juego y al recargar recursos (F3+T).
   Se queda opaca hasta que la original termina y después se funde sola sobre el menú, así nunca asoma el rótulo rojo.
-- **Menú principal de TF**, como en TierrasMon: el paisaje de TF de fondo (sin letras), el emblema TF encima de los
-  botones (animado como en la web: flota subiendo y bajando, tiene un halo dorado y azul que late, y cada 7 segundos
-  lo cruza despacio un destello y brilla la gema de la corona), y botones propios con la fuente Cinzel: placa con las puntas en ángulo, azul noche (como el zafiro de la
-  corona del logo) con doble filete dorado y rombos en los extremos; el botón del servidor, en oro con letras oscuras:
+- **Menú principal de TF** con el **mismo cielo animado que la web** (`TFSky`, imágenes en `textures/gui/sky`): la
+  nebulosa de neón que se acerca y respira, auroras rosa/cian/magenta que cruzan el cielo, dos capas de estrellas que
+  bajan y titilan, alguna estrella fugaz y la viñeta; también de fondo en los menús de fuera de partida. Encima, el
+  emblema TF (flota, halo que late y destello cada 7 s) y botones como los de la web con la letra **Unbounded**:
+  bloque redondeado con labio abajo; el del servidor y *Web* en oro con letras oscuras, *Discord* en su azul y el resto
+  en pizarra con filo cian. Al pasar el ratón el botón sube un píxel y lo cruza un destello:
   - **TIERRAS FANTÁSTICAS**: antes de conectar pregunta al servidor qué mods usa. Si te falta alguno, enseña la lista
     (con *Volver* o *Entrar igual*); si no falta nada, conecta directamente y acepta su paquete de recursos.
   - **Mundo local**, **Mods**, **Opciones** y **Salir**.
@@ -238,6 +240,15 @@ Las alas de los sets planean como unas élitros hasta 10 s seguidos; luego se pl
 el suelo o el agua (en el suelo nunca se planea). Mientras planeas, a la derecha del último hueco de la barra sale un
 contador con los segundos que quedan y una barrita (verde → ámbar → rojo). `TFWings.canGlide`, `TFGlideHud`.
 
+## Armario de la web (1.3.17)
+
+En «Mi cuenta» de la web cada jugador elige qué se ve en cada hueco (cabeza, pecho, piernas, pies y espalda) entre lo
+que compró (armaduras, cascos y alas de sus crates y su rango, y los cosméticos de cabeza y espalda). La web lo manda
+por el puente (`wardrobe` en `/bridge/poll`, solo lo que sigue teniendo), el servidor lo guarda en
+`<mundo>/tfclient/wardrobe.json` y lo pasa a todos los jugadores (canal `tfclient:wardrobe`). Cada cliente lo dibuja
+encima de lo que lleve puesto: mixins de `HumanoidArmorLayer` y `CustomHeadLayer`, y la espalda en `BackLayer`. **Solo es
+apariencia**: no da defensa ni planeo (las alas del armario no planean). `TFWardrobe`.
+
 ## Rangos en LuckPerms (1.3.15)
 
 La web manda en cada consulta del puente los rangos con sus permisos de EssentialsX y sus hogares, y el mod los deja
@@ -275,7 +286,7 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.16.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.17.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
@@ -324,16 +335,18 @@ y `discord.url` el enlace de reserva si el widget no responde.
 
 - Pantalla de carga: `src/main/resources/assets/tfclient/textures/gui/loading_background.png` (16:9; se recorta para
   cubrir la pantalla).
-- Fondo del menú: `src/main/resources/assets/tfclient/textures/gui/menu_background.png` (16:9).
+- Cielo del menú (`TFSky`): `textures/gui/sky/` — `nebula.png` (base), `nebula_a.png` y `nebula_b.png` (las capas que
+  se mueven y aparecen), `stars_a.png`/`stars_b.png` (mosaicos de estrellas de 512 px), `glow.png` (mancha de luz de
+  las auroras y la estrella fugaz) y `vignette.png`. Son las mismas imágenes y tiempos que el fondo de la web.
 - Emblema: `src/main/resources/assets/tfclient/textures/gui/logo.png` (PNG con transparencia).
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
 - Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png`, `sparkle.png` y
   `button_shine.png` (la línea luminosa de los botones de oro) a partir de `logo.png` (vuelve a ejecutarlo si cambias el emblema).
-- Botones: `tools/gen_buttons.py` genera `button_slice.png` (azul noche) y `button_slice_primary.png` (oro), en tres
-  piezas: puntas de 16 píxeles de interfaz a tamaño fijo y centro uniforme que se estira al ancho de cada botón
-  (3 estados apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
-- Fuente: `src/main/resources/assets/tfclient/font/cinzel.ttf` (Cinzel, licencia SIL Open Font License, incluida en
-  `OFL-Cinzel.txt`).
+- Botones: `tools/gen_buttons.py` genera `button_slice_primary.png` (oro), `button_slice.png` (pizarra con filo cian)
+  y `button_slice_discord.png`, en tres piezas: puntas de 16 píxeles de interfaz a tamaño fijo y centro uniforme que se
+  estira al ancho de cada botón (3 estados apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
+- Fuentes: `font/unbounded.ttf` (Unbounded, la de los títulos de la web; menú y botones) y `font/cinzel.ttf` (Cinzel),
+  las dos con licencia SIL Open Font License (`OFL-Unbounded.txt`, `OFL-Cinzel.txt`).
 - Música: `src/main/resources/assets/tfclient/music/menu.ogg` (OGG Vorbis; para convertir un MP3:
   `ffmpeg -i musica.mp3 -vn -ac 2 -ar 44100 -c:a libvorbis -q:a 4 menu.ogg`).
 

@@ -353,6 +353,10 @@ public final class TFBridge {
         if (json.has("vfx") && json.get("vfx").isJsonArray()) {
             net.tierrasfantasticas.tfclient.vfx.VfxServer.applyWeb(srv, json.getAsJsonArray("vfx"));
         }
+        // Armario de la web (lo que se ve en cada hueco) de los conectados
+        if (json.has("wardrobe") && json.get("wardrobe").isJsonArray()) {
+            net.tierrasfantasticas.tfclient.items.TFWardrobe.applyWeb(srv, json.getAsJsonArray("wardrobe"));
+        }
         JsonArray deliveries = json.has("deliveries") ? json.getAsJsonArray("deliveries") : new JsonArray();
         for (JsonElement element : deliveries) {
             deliver(srv, element.getAsJsonObject());

@@ -375,8 +375,10 @@ export function createWardrobe(canvas) {
     anchors.feet.setFromMatrixPosition(base.clone().translate(0, 1.5, 0).m);
     // Armadura
     for (const [slot, piece] of Object.entries(ARMOR_PIECES)) {
-      if (!outfit[slot] || set.items[outfit[slot]]?.type !== 'armor' || !set.armor[piece.layer]) continue;
-      const layer = set.armor[piece.layer];
+      const worn = set.items[outfit[slot]];
+      // Cada pieza puede traer las capas de su set (el armario mezcla piezas de sets distintos)
+      const layer = worn?.type === 'armor' ? (worn.armorLayers || set.armor)?.[piece.layer] : null;
+      if (!layer) continue;
       const [loaded] = Object.values(await loadTextures({ textures: { a: layer } }));
       keep.push(loaded);
       for (const partName of piece.parts) {
