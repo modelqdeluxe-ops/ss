@@ -48,8 +48,8 @@ public final class PadClans {
     private static final Map<UUID, Set<String>> INVITES = new HashMap<>();
     /** Nombre elegido mientras se pide la etiqueta. */
     private static final Map<UUID, String> CREATING = new HashMap<>();
-    /** Doble clic para disolver o salir. */
-    private static final Map<UUID, Long> CONFIRM = new HashMap<>();
+    /** Doble clic para disolver, salir o pasar el clan: guarda qué acción espera confirmación y desde cuándo. */
+    private static final Map<UUID, Map.Entry<String, Long>> CONFIRM = new HashMap<>();
 
     private PadClans() {}
 
@@ -216,7 +216,7 @@ public final class PadClans {
                 b.row(new PadView.Row(new ItemStack(Items.IRON_SWORD), "Fuego amigo", 0x18265C,
                         List.of(ff ? "Los del clan se pueden hacer daño." : "Los del clan no se hacen daño entre ellos."), -1, "",
                         PadView.Btn.of(ff ? "SÍ" : "NO", "fuego", ff ? PadView.RED : PadView.GREEN), null));
-                boolean sure = confirming(me);
+                boolean sure = confirming(me, "disolver");
                 b.footer(PadView.Btn.of(sure ? "¿SEGURO? DISOLVER" : "DISOLVER CLAN", "disolver", PadView.RED));
                 return b.build();
             }
@@ -230,7 +230,7 @@ public final class PadClans {
                 if (!u.equals(me)) {
                     if (boss && r.equals("oficial")) {
                         // a un oficial se le puede pasar el clan (doble clic) o bajarlo a miembro
-                        b1 = PadView.Btn.of(confirming(me) ? "¿SEGURO?" : "LÍDER", "lider:" + u, PadView.GOLD);
+                        b1 = PadView.Btn.of(confirming(me, "lider:" + u) ? "¿SEGURO?" : "LÍDER", "lider:" + u, PadView.GOLD);
                         b2 = PadView.Btn.of("BAJAR", "bajar:" + u, PadView.BLUE);
                     } else if (r.equals("miembro")) {
                         if (boss) b1 = PadView.Btn.of("ASCENDER", "subir:" + u, PadView.BLUE);
@@ -240,11 +240,8 @@ public final class PadClans {
                 b.row(new PadView.Row(head(u, name), name, online ? 0x1E7C2C : 0x18265C,
                         List.of(roleName(r) + (online ? " · conectado" : "")), -1, "", b1, b2));
             }
-            if (officer) {
-                b.input("invitar", "Nombre del jugador para invitar", 16, "INVITAR");
-            } else {
-                b.footer(PadView.Btn.of(confirming(me) ? "¿SEGURO? SALIR" : "SALIR DEL CLAN", "salir", PadView.RED));
-            }
+            if (officer) b.input("invitar", "Nombre para invitar", 16, "INVITAR");
+            if (!boss) b.footer(PadView.Btn.of(confirming(me, "salir") ? "¿SEGURO?" : "SALIR", "salir", PadView.RED));
             return b.build();
         }
 
@@ -313,7 +310,7 @@ public final class PadClans {
                 }
                 case "lider" -> {
                     if (!boss || target == null || !list.contains(target) || !role(c, target).equals("oficial")) return null;
-                    if (!confirm(me)) return null;
+                    if (!confirm(me, action)) return null;
                     c.addProperty("lider", target.toString());
                     setOfficer(c, target, false);
                     setOfficer(c, me, true);
@@ -334,7 +331,7 @@ public final class PadClans {
                 }
                 case "disolver" -> {
                     if (!boss) return null;
-                    if (!confirm(me)) return null;
+                    if (!confirm(me, "disolver")) return null;
                     tellClan(c, "El clan " + TFJson.str(c, "nombre", "?") + " se disolvió.");
                     for (UUID u : list) {
                         leave(u);
@@ -349,7 +346,7 @@ public final class PadClans {
                         TFPadNet.notice(player, "Eres el líder: asciende a otro y pásale el clan, o disuélvelo en Ajustes.");
                         return null;
                     }
-                    if (!confirm(me)) return null;
+                    if (!confirm(me, "salir")) return null;
                     list.remove(me);
                     setMembers(c, list);
                     setOfficer(c, me, false);
@@ -393,6 +390,11 @@ public final class PadClans {
                     for (JsonElement e : clans().entrySet().stream().map(Map.Entry::getValue).toList()) {
                         if (TFJson.str(e.getAsJsonObject(), "etiqueta", "").equals(tag)) {
                             TFPadNet.notice(player, "Ya hay un clan con la etiqueta " + tag + ".");
+                            return null;
+                        }
+                        if (TFJson.str(e.getAsJsonObject(), "nombre", "").equalsIgnoreCase(name)) {
+                            CREATING.remove(me);
+                            TFPadNet.notice(player, "Alguien acaba de fundar un clan con ese nombre. Elige otro.");
                             return null;
                         }
                     }
@@ -441,18 +443,18 @@ public final class PadClans {
         }
     }
 
-    private static boolean confirming(UUID uuid) {
-        Long at = CONFIRM.get(uuid);
-        return at != null && System.currentTimeMillis() - at < 6000;
+    private static boolean confirming(UUID uuid, String action) {
+        Map.Entry<String, Long> at = CONFIRM.get(uuid);
+        return at != null && at.getKey().equals(action) && System.currentTimeMillis() - at.getValue() < 6000;
     }
 
-    /** Primer clic: pide confirmar; segundo (en 6 s): sí. */
-    private static boolean confirm(UUID uuid) {
-        if (confirming(uuid)) {
+    /** Primer clic: pide confirmar; segundo clic en la misma acción (en 6 s): sí. */
+    private static boolean confirm(UUID uuid, String action) {
+        if (confirming(uuid, action)) {
             CONFIRM.remove(uuid);
             return true;
         }
-        CONFIRM.put(uuid, System.currentTimeMillis());
+        CONFIRM.put(uuid, Map.entry(action, System.currentTimeMillis()));
         return false;
     }
 

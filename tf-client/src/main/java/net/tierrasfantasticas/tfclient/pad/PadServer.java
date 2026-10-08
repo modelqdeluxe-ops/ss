@@ -9,6 +9,7 @@ import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -84,7 +85,7 @@ public final class PadServer {
 
     static void open(ServerPlayer player, String app) {
         App a = APPS.get(app);
-        if (a != null) send(player, a, "");
+        if (a != null && allowed(player)) send(player, a, "");
     }
 
     static void action(ServerPlayer player, String app, String tab, String action, String text) {
@@ -157,9 +158,16 @@ public final class PadServer {
     }
 
     @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        RATE.remove(event.getEntity().getUUID());
+        PadCommunityServer.logout(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || server == null) return;
         if (++ticks % 200 != 0) return;
+        PadCommunityServer.dropStaleUploads();
         for (Store s : STORES) {
             if (!s.dirty()) continue;
             try {

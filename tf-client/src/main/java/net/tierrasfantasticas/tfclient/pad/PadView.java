@@ -119,10 +119,10 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         buf.writeUtf(app, 32);
         buf.writeVarInt(tabs.size());
         for (Tab t : tabs) {
-            buf.writeUtf(t.key, 32);
-            buf.writeUtf(t.label, 32);
+            buf.writeUtf(t.key, 64);
+            buf.writeUtf(cut(t.label, 24), 48);
         }
-        buf.writeUtf(tab, 32);
+        buf.writeUtf(tab, 64);
         buf.writeVarInt(Math.min(header.size(), 4));
         for (int i = 0; i < Math.min(header.size(), 4); i++) buf.writeUtf(cut(header.get(i), 200), 256);
         int n = Math.min(rows.size(), MAX_ROWS);
@@ -154,8 +154,8 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     public static PadView read(FriendlyByteBuf buf) {
         String app = buf.readUtf(32);
         List<Tab> tabs = new ArrayList<>();
-        for (int i = buf.readVarInt(); i > 0; i--) tabs.add(new Tab(buf.readUtf(32), buf.readUtf(32)));
-        String tab = buf.readUtf(32);
+        for (int i = buf.readVarInt(); i > 0; i--) tabs.add(new Tab(buf.readUtf(64), buf.readUtf(48)));
+        String tab = buf.readUtf(64);
         List<String> header = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) header.add(buf.readUtf(256));
         List<Row> rows = new ArrayList<>();

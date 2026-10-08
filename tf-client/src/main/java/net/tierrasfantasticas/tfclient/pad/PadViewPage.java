@@ -108,10 +108,22 @@ final class PadViewPage extends PadPage {
         }
         // abajo: campo de texto o botones
         int fy = Y + H - 16;
+        // los botones de abajo van a la derecha; si hay campo de texto, ocupa lo que queda a la izquierda
+        int footerW = 0;
+        for (PadView.Btn b : view.footer()) footerW += PadUi.buttonWidth(b.label()) + 4;
+        {
+            int x = X + W - footerW + 4;
+            for (PadView.Btn b : view.footer()) {
+                int bw = PadUi.buttonWidth(b.label());
+                button(g, x, fy, bw, b, mx, my);
+                x += bw + 4;
+            }
+        }
         if (view.input() != null) {
             PadView.Input in = view.input();
             int bw = PadUi.buttonWidth(in.button());
-            int fw = W - bw - 4;
+            int right = X + W - footerW;
+            int fw = right - X - bw - 4;
             PadUi.box(g, X, fy, fw, 15, PadUi.NAVY);
             PadUi.box(g, X + 1, fy + 1, fw - 2, 13, 0xFFFFFFFF);
             String shown = input.isEmpty() ? in.hint() : input;
@@ -124,16 +136,7 @@ final class PadViewPage extends PadPage {
                 g.fill(X + 5, fy + 3, X + 6, fy + 12, PadUi.TEXT);
             }
             PadView.Btn send = new PadView.Btn(in.button(), "§input", PadView.GREEN, !input.isBlank());
-            button(g, X + W - bw, fy, bw, send, mx, my);
-        } else if (!view.footer().isEmpty()) {
-            int total = 0;
-            for (PadView.Btn b : view.footer()) total += PadUi.buttonWidth(b.label()) + 4;
-            int x = X + W - total + 4;
-            for (PadView.Btn b : view.footer()) {
-                int bw = PadUi.buttonWidth(b.label());
-                button(g, x, fy, bw, b, mx, my);
-                x += bw + 4;
-            }
+            button(g, right - bw, fy, bw, send, mx, my);
         }
         if (waiting) {
             PadFont.draw(g, "...", X + W - 14, Y - 13, 0xFFE680, true);

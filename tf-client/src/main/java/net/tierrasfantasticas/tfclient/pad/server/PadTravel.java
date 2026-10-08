@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -34,6 +35,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
@@ -102,6 +105,19 @@ public final class PadTravel {
         PENDING.put(player.getUUID(), new Pending(go, player.position(), player.getHealth(), tick, what));
         TFPadNet.close(player);
         player.displayClientMessage(Component.literal(what + " en 3… no te muevas").withStyle(ChatFormatting.AQUA), true);
+    }
+
+    /** Cualquier daño cancela la cuenta atrás (aunque lo tape la absorción o la regeneración). */
+    @SubscribeEvent
+    public static void onHurt(LivingHurtEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && PENDING.remove(player.getUUID()) != null) {
+            player.displayClientMessage(Component.literal("Viaje cancelado: te hicieron daño.").withStyle(ChatFormatting.RED), true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onStopped(ServerStoppedEvent event) {
+        PENDING.clear();
     }
 
     @SubscribeEvent
@@ -180,9 +196,9 @@ public final class PadTravel {
                 ServerLevel level = server.getLevel(player.getRespawnDimension());
                 if (bed == null || level == null) return null;
                 warmup(player, "Viajando a tu cama", () -> {
-                    // false: no gastar la carga de un ancla de reaparición
+                    // true: no gastar la carga de un ancla de reaparición (solo se gasta al reaparecer de verdad)
                     var spot = net.minecraft.world.entity.player.Player.findRespawnPositionAndUseSpawnBlock(level, bed,
-                            player.getRespawnAngle(), player.isRespawnForced(), false);
+                            player.getRespawnAngle(), player.isRespawnForced(), true);
                     if (spot.isEmpty()) {
                         player.displayClientMessage(Component.literal("Tu cama no está o está tapada.").withStyle(ChatFormatting.RED), true);
                         return;
@@ -242,6 +258,9 @@ public final class PadTravel {
                 ServerLevel level = player.getServer().overworld();
                 BlockPos spot = findSpot(level);
                 if (spot == null) {
+                    // un minuto de espera para no buscar sin parar (cada búsqueda genera terreno)
+                    STORE_IMPL.player(player.getUUID()).addProperty("explorar", System.currentTimeMillis() - (EXPLORE_COOLDOWN - 60) * 1000);
+                    STORE_IMPL.changed();
                     player.displayClientMessage(Component.literal("No encontré un sitio seguro esta vez. Vuelve a probar.").withStyle(ChatFormatting.RED), true);
                     return;
                 }
@@ -254,16 +273,19 @@ public final class PadTravel {
         }
     }
 
-    /** Un sitio seco y firme al azar (hasta 16 intentos). */
+    /** Un sitio seco y firme al azar (hasta 6 intentos; los mares y ríos se descartan sin generar terreno). */
     static BlockPos findSpot(ServerLevel level) {
         Random r = new Random();
         BlockPos spawn = level.getSharedSpawnPos();
         var border = level.getWorldBorder();
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0, generated = 0; i < 24 && generated < 6; i++) {
             double a = r.nextDouble() * Math.PI * 2;
             int d = EXPLORE_MIN + r.nextInt(EXPLORE_MAX - EXPLORE_MIN);
             int x = spawn.getX() + (int) (Math.cos(a) * d), z = spawn.getZ() + (int) (Math.sin(a) * d);
             if (!border.isWithinBounds(x, z)) continue;
+            var biome = level.getBiome(new BlockPos(x, 64, z)); // sale del generador, sin generar el chunk
+            if (biome.is(BiomeTags.IS_OCEAN) || biome.is(BiomeTags.IS_RIVER) || biome.is(BiomeTags.IS_DEEP_OCEAN)) continue;
+            generated++;
             level.getChunk(x >> 4, z >> 4); // la genera si hace falta
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             BlockPos feet = new BlockPos(x, y, z);

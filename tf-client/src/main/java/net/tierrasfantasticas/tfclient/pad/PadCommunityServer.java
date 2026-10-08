@@ -62,6 +62,9 @@ public final class PadCommunityServer {
 
     private static final Map<UUID, Up> UPLOADS = new HashMap<>();
     private static final Map<UUID, long[]> IMG_RATE = new HashMap<>();
+    private static final Map<UUID, long[]> RATE = new HashMap<>();
+    /** «liker:foto» a los que ya se avisó al autor (para que quitar y dar like no llene su pantalla). */
+    private static final Set<String> LIKE_TOLD = new HashSet<>();
     private static final Map<UUID, Long> LAST_POST = new HashMap<>();
     private static JsonObject root = new JsonObject();
     private static boolean dirty;
@@ -71,9 +74,21 @@ public final class PadCommunityServer {
         @Override
         public void load(MinecraftServer s) {
             server = s;
-            JsonObject r = TFJson.read(TFJson.worldFile(s, "comunidad.json"));
+            Path file = TFJson.worldFile(s, "comunidad.json");
+            JsonObject r = TFJson.read(file);
+            if (r == null && Files.exists(file)) {
+                // ilegible: se copia aparte antes de empezar de cero (nunca se pisa sin copia)
+                try {
+                    Files.copy(file, file.resolveSibling("comunidad-roto-" + System.currentTimeMillis() + ".json"));
+                } catch (Exception e) {
+                    TFClient.LOGGER.error("Comunidad: comunidad.json no se pudo leer ni copiar", e);
+                }
+            }
             root = r == null ? new JsonObject() : r;
-            if (!root.has("publicaciones")) root.add("publicaciones", new JsonArray());
+            if (!root.has("publicaciones") || !root.get("publicaciones").isJsonArray()) root.add("publicaciones", new JsonArray());
+            UPLOADS.clear();
+            RATE.clear();
+            LIKE_TOLD.clear();
             dirty = false;
         }
 
@@ -90,6 +105,30 @@ public final class PadCommunityServer {
     };
 
     private PadCommunityServer() {}
+
+    /** Como mucho 6 peticiones de lista o acciones por segundo y jugador. */
+    private static boolean rate(ServerPlayer player) {
+        long now = System.currentTimeMillis();
+        long[] r = RATE.computeIfAbsent(player.getUUID(), k -> new long[] {now, 0});
+        if (now - r[0] > 1000) {
+            r[0] = now;
+            r[1] = 0;
+        }
+        return ++r[1] <= 6;
+    }
+
+    /** Las subidas que llevan más de 2 minutos a medias se tiran. */
+    static void dropStaleUploads() {
+        long now = System.currentTimeMillis();
+        UPLOADS.values().removeIf(up -> now - up.started > 120_000);
+    }
+
+    /** Al salir se olvida lo que tuviera a medias. */
+    static void logout(UUID uuid) {
+        UPLOADS.remove(uuid);
+        RATE.remove(uuid);
+        IMG_RATE.remove(uuid);
+    }
 
     private static JsonArray posts() {
         return root.getAsJsonArray("publicaciones");
@@ -142,6 +181,11 @@ public final class PadCommunityServer {
         if (System.currentTimeMillis() - up.started > 120_000) {
             UPLOADS.remove(me);
             fail(player, "La subida tardó demasiado. Vuelve a probar.");
+            return;
+        }
+        if (m.total() != up.total) {
+            UPLOADS.remove(me);
+            fail(player, "La subida llegó mal. Vuelve a probar.");
             return;
         }
         if (up.parts[m.index()] == null) {
@@ -217,6 +261,10 @@ public final class PadCommunityServer {
     // Ver
     // ---------------------------------------------------------------------------------------------------------------
 
+    static void requestFeed(ServerPlayer player, String tab, int page) {
+        if (rate(player)) sendFeed(player, tab, page);
+    }
+
     static void sendFeed(ServerPlayer player, String tab, int page) {
         boolean staff = player.hasPermissions(2);
         String me = player.getUUID().toString();
@@ -232,7 +280,9 @@ public final class PadCommunityServer {
         }
         Comparator<JsonObject> newest = Comparator.comparingLong((JsonObject p) -> TFJson.num(p, "fecha", 0)).reversed();
         if (tab.equals("populares")) {
-            list.sort(Comparator.comparingInt((JsonObject p) -> set(p, "likes").size()).reversed().thenComparing(newest));
+            Map<JsonObject, Integer> likes = new java.util.IdentityHashMap<>();
+            for (JsonObject p : list) likes.put(p, p.has("likes") && p.get("likes").isJsonArray() ? p.getAsJsonArray("likes").size() : 0);
+            list.sort(Comparator.comparingInt((JsonObject p) -> likes.get(p)).reversed().thenComparing(newest));
         } else {
             list.sort(newest);
         }
@@ -282,6 +332,7 @@ public final class PadCommunityServer {
     // ---------------------------------------------------------------------------------------------------------------
 
     static void act(ServerPlayer player, PadCommunityNet.Act m) {
+        if (!rate(player)) return;
         JsonObject p = find(m.id());
         if (p != null) {
             String me = player.getUUID().toString();
@@ -304,7 +355,7 @@ public final class PadCommunityServer {
                             ServerPlayer a = server.getPlayerList().getPlayer(au);
                             if (a != null) {
                                 PadStats.add(a, PadStats.LIKES, 1);
-                                a.displayClientMessage(Component.literal("❤ A " + player.getGameProfile().getName() + " le gustó tu foto")
+                                if (LIKE_TOLD.add(me + ":" + m.id())) a.displayClientMessage(Component.literal("❤ A " + player.getGameProfile().getName() + " le gustó tu foto")
                                         .withStyle(ChatFormatting.LIGHT_PURPLE), true);
                             } else {
                                 PadStats.add(au, PadStats.LIKES, 1);

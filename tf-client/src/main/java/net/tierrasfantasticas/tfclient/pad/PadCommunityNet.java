@@ -85,7 +85,7 @@ public final class PadCommunityNet {
 
         static void handle(FeedReq m, Supplier<NetworkEvent.Context> ctx) {
             ServerPlayer p = ctx.get().getSender();
-            if (p != null) PadCommunityServer.sendFeed(p, m.tab, m.page);
+            if (p != null) PadCommunityServer.requestFeed(p, m.tab, m.page);
             ctx.get().setPacketHandled(true);
         }
     }

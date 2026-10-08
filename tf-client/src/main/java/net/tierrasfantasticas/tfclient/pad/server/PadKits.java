@@ -118,11 +118,15 @@ public final class PadKits {
             String id = action.substring(9);
             for (Kit k : KITS) {
                 if (!k.id.equals(id) || left(player, k) != 0) continue;
+                // primero las monedas: si la economía no puede pagar, el kit sigue sin reclamar
+                if (k.coins > 0 && !TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), k.coins)) {
+                    TFPadNet.notice(player, "No se pudieron dar las monedas del kit. Inténtalo en un rato.");
+                    return null;
+                }
                 JsonObject p = STORE_IMPL.player(player.getUUID());
                 p.addProperty(k.id, System.currentTimeMillis());
                 STORE_IMPL.changed();
                 for (ItemStack s : k.items) give(player, s.copy());
-                if (k.coins > 0) TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), k.coins);
                 PadStats.add(player, PadStats.KITS, 1);
                 player.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.MASTER, 0.8F, 0.8F);
                 TFPadNet.notice(player, "Reclamaste el kit " + k.name + ".");
@@ -131,8 +135,13 @@ public final class PadKits {
         }
     }
 
-    /** Da el objeto; lo que no cabe cae a sus pies. */
+    /** Da el objeto en montones normales; lo que no cabe cae a sus pies. */
     static void give(ServerPlayer player, ItemStack stack) {
+        while (stack.getCount() > stack.getMaxStackSize()) giveOne(player, stack.split(stack.getMaxStackSize()));
+        giveOne(player, stack);
+    }
+
+    private static void giveOne(ServerPlayer player, ItemStack stack) {
         boolean fits = player.getInventory().getSlotWithRemainingSpace(stack) != -1 || player.getInventory().getFreeSlot() != -1;
         if (!fits || !player.getInventory().add(stack) || !stack.isEmpty()) {
             if (!stack.isEmpty()) {
@@ -168,7 +177,9 @@ public final class PadKits {
                     List<ItemStack> items = new ArrayList<>();
                     for (JsonElement it : k.getAsJsonArray("objetos")) items.add(stack(it));
                     items.removeIf(ItemStack::isEmpty);
-                    KITS.add(new Kit(TFJson.str(k, "id", "kit" + KITS.size()), TFJson.str(k, "nombre", "Kit"), TFJson.str(k, "descripcion", ""),
+                    String id = TFJson.str(k, "id", "");
+                    if (id.isEmpty() || id.length() > 32) id = "kit" + KITS.size();
+                    KITS.add(new Kit(id, TFJson.str(k, "nombre", "Kit"), TFJson.str(k, "descripcion", ""),
                             TFJson.str(k, "icono", "minecraft:bundle"), TFJson.num(k, "esperaSegundos", 86400), TFJson.num(k, "monedas", 0), items));
                 } catch (Exception ex) {
                     TFClient.LOGGER.warn("TF Pad: un kit no se pudo leer: {}", ex.getMessage());
@@ -253,6 +264,10 @@ public final class PadKits {
 
     private static int save(CommandSourceStack source, String id, int hours, String name) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
+        if (id.length() > 32) {
+            source.sendFailure(Component.literal("El id del kit es muy largo (máx. 32)."));
+            return 0;
+        }
         JsonArray items = new JsonArray();
         String icon = "minecraft:bundle";
         for (int i = 0; i < 9; i++) {

@@ -119,13 +119,13 @@ public final class TFPadNet {
     public record Action(String app, String tab, String action, String text) {
         static void write(Action m, FriendlyByteBuf buf) {
             buf.writeUtf(m.app, 32);
-            buf.writeUtf(m.tab, 32);
+            buf.writeUtf(m.tab, 64);
             buf.writeUtf(m.action, 128);
             buf.writeUtf(m.text, 256);
         }
 
         static Action read(FriendlyByteBuf buf) {
-            return new Action(buf.readUtf(32), buf.readUtf(32), buf.readUtf(128), buf.readUtf(256));
+            return new Action(buf.readUtf(32), buf.readUtf(64), buf.readUtf(128), buf.readUtf(256));
         }
 
         static void handle(Action m, Supplier<NetworkEvent.Context> ctx) {

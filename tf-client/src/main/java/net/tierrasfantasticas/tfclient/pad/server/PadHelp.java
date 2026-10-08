@@ -75,7 +75,9 @@ public final class PadHelp {
                 JsonObject q = p.getAsJsonObject();
                 blocks.add(new String[] {TFJson.str(q, "titulo", ""), TFJson.str(q, "texto", "")});
             }
-            SECTIONS.add(new Section(TFJson.str(s, "id", "s" + SECTIONS.size()), TFJson.str(s, "titulo", "?"), blocks));
+            String id = TFJson.str(s, "id", "");
+            if (id.isEmpty() || id.length() > 32) id = "s" + SECTIONS.size();
+            SECTIONS.add(new Section(id, TFJson.str(s, "titulo", "?"), blocks));
         }
     }
 

@@ -93,7 +93,7 @@ public final class PadMissions {
         List<Def> base = pick(DAILY, week() * 7_919L ^ uuid.getLeastSignificantBits(), 3);
         List<Def> out = new ArrayList<>();
         for (Def d : base) {
-            out.add(new Def(d.id, d.name, d.desc.replace(Integer.toString(d.amount), Integer.toString(d.amount * weeklyTimes)),
+            out.add(new Def(d.id, d.name, d.desc.replaceFirst("\\b" + d.amount + "\\b", Integer.toString(d.amount * weeklyTimes)),
                     d.type, d.target, d.amount * weeklyTimes, d.coins * weeklyPay, d.icon));
         }
         return out;
@@ -109,11 +109,16 @@ public final class PadMissions {
 
     /** Llama TFJobs con cada cosa que hace un jugador. */
     public static void record(ServerPlayer player, String type, Predicate<TFJobsConfig.Target> match, int amount) {
-        if (DAILY.isEmpty() && HUNT.isEmpty()) return;
+        if (DAILY.isEmpty() && HUNT.isEmpty() || player instanceof net.minecraftforge.common.util.FakePlayer) return;
         UUID uuid = player.getUUID();
-        progress(player, "d", daily(uuid), type, match, amount);
-        progress(player, "s", weekly(uuid), type, match, amount);
-        progress(player, "c", hunts(), type, match, amount);
+        try {
+            progress(player, "d", daily(uuid), type, match, amount);
+            progress(player, "s", weekly(uuid), type, match, amount);
+            progress(player, "c", hunts(), type, match, amount);
+        } catch (RuntimeException ex) {
+            // una misión mal escrita en la configuración nunca debe tumbar el servidor
+            TFClient.LOGGER.warn("TF Pad: no se pudo contar una misión: {}", ex.toString());
+        }
     }
 
     private static void progress(ServerPlayer player, String kind, List<Def> defs, String type,
@@ -140,9 +145,13 @@ public final class PadMissions {
         JsonObject slot = STORE_IMPL.slot(player.getUUID(), kind);
         long[] st = STORE_IMPL.state(slot, d.id);
         if (st[0] < d.amount || st[1] != 0) return false;
+        // primero se paga: si la economía falla, la recompensa sigue pendiente
+        if (d.coins > 0 && !TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), d.coins)) {
+            TFPadNet.notice(player, "No se pudo pagar la recompensa. Inténtalo en un rato.");
+            return false;
+        }
         st[1] = 1;
         STORE_IMPL.put(slot, d.id, st);
-        TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), d.coins);
         PadStats.add(player, kind.equals("c") ? PadStats.HUNTS : PadStats.MISSIONS, 1);
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.0F);
         return true;
@@ -328,6 +337,8 @@ public final class PadMissions {
         for (JsonElement e : o.getAsJsonArray(key)) {
             try {
                 JsonObject m = e.getAsJsonObject();
+                String target = TFJson.str(m, "objetivo", "*");
+                if (target.startsWith("#")) new ResourceLocation(target.substring(1)); // etiqueta mal escrita: se avisa y se salta
                 out.add(new Def(TFJson.str(m, "id", "m" + out.size()), TFJson.str(m, "nombre", "?"), TFJson.str(m, "descripcion", ""),
                         TFJson.str(m, "tipo", "romper"), TFJson.str(m, "objetivo", "*"), (int) Math.max(1, TFJson.num(m, "cantidad", 1)),
                         Math.max(0, TFJson.num(m, "monedas", 0)), TFJson.str(m, "icono", "minecraft:paper")));
