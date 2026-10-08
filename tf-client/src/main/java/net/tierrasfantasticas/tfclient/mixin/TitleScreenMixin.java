@@ -16,9 +16,10 @@ import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.client.TFDraw;
 import net.tierrasfantasticas.tfclient.client.TFLogoRenderer;
 import net.tierrasfantasticas.tfclient.client.TFMenuButton;
-import net.tierrasfantasticas.tfclient.client.TFSky;
+import net.tierrasfantasticas.tfclient.client.TFTextures;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -50,11 +51,12 @@ public abstract class TitleScreenMixin extends Screen {
         super(title);
     }
 
-    /** Fondo: el cielo animado de la web (nebulosa, auroras y estrellas). */
+    /** Fondo: el paisaje de noche de Tierras Fantásticas (el de la web, img/night-1672.webp). */
     @Inject(method = "render", at = @At("HEAD"))
     private void tfclient$drawBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         try {
-            TFSky.render(g, this.width, this.height, 0f);
+            g.fill(0, 0, this.width, this.height, 0xFF000000);
+            TFDraw.cover(g, TFTextures.MENU, this.width, this.height, 1f);
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Client: error al dibujar el fondo del menú", t);
         }

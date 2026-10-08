@@ -12,7 +12,15 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): TF Claims (protecciones) dentro de TF Client — 1.3.18
+### Última entrega (8 de octubre de 2026): menú de inicio como antes, con el paisaje de noche — TF Client 1.3.19
+No le gustó el menú de 1.3.17 (el cielo animado salía como un óvalo pixelado: la viñeta y las capas estiradas, y los
+botones nuevos): *«regresa al formato anterior, botones… pon el fondo de oscuridad que tiene la página»*, y luego
+**sin nebulosa**: el **paisaje de noche que la web tiene detrás de la nebulosa** (`img/night-1672.webp`). Se restauraron de la 1.3.16 `TFMenuButton`, `TFButtonTheme`, `TitleScreenMixin`, `TFClientEvents`,
+`TFTextures`, `TFMissingModsScreen`, `TFServerCheckScreen`, `gen_buttons.py` y las texturas de los botones (Cinzel, placas
+en ángulo azul noche/oro). Fuera `TFSky`, la letra Unbounded y `textures/gui/sky`. `menu_background.png` es ese paisaje de noche
+(1920x1080, tal cual). **No vuelvas a poner la nebulosa ni el cielo animado en el menú.**
+
+### Entrega anterior (8 de octubre de 2026): TF Claims (protecciones) dentro de TF Client — 1.3.18
 Pidió meter su mod **Fantastic Claims 7.9.2** (es suyo; jar subido, sin código fuente) en TF Client como **TF Claims**,
 con la textura nueva de la piedra (su imagen: piedra oscura, marco de neón, tornillos y «TF»), el resto de caras
 dibujadas pixel perfect, el color de cada tamaño y la protección **infinita hacia arriba** (hacia abajo igual que antes).
@@ -689,7 +697,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.19**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.20**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
