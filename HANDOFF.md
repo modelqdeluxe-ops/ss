@@ -36,6 +36,11 @@ pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado
 - **Avisos dentro del pad** (paquete `Notice`): «no tienes zonas», «tienda cerrada»… salen en una tarjeta en el pad (el
   chat queda tapado por la pantalla). En el GTS los fallos se ven en el propio botón y suenan.
 - Discord desde el pad va por `<web>/discord` (el enlace permanente de la web), con confirmación como WhatsApp.
+- Revisión a fondo sin abrir el juego (agente con las fuentes de Forge 47.3 decompiladas): precio del GTS solo con
+  números («1500», «1.500», «5k», «2m»; «1.5k» o «12,50» se rechazan), la pregunta del precio se saca en el hilo de red
+  (nunca sale al chat público), `gts.json` con algo ilegible se copia a `gts-roto-*.json` y lo que no se lee se guarda
+  tal cual, en el GTS solo cuentan clic y Mayús+clic, zona hija de un grupo → abre la nodriza, en creativo la C abre el
+  pad al soltarla si no se usó para guardar la barra (C + número).
 
 ### Entrega anterior (8 de octubre de 2026): TF Pad y GTS — TF Client 1.3.20
 Pidió un pad como el PokePad de Diosesmon con **su marco** (imagen suya) y **todo conectado**. Iconos: los quiere

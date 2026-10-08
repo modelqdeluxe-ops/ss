@@ -267,7 +267,8 @@ public final class TFMarketMenu extends ChestMenu {
     @Override
     public void clicked(int slot, int button, ClickType type, Player player) {
         if (!(player instanceof ServerPlayer sp)) return;
-        if (type != ClickType.QUICK_CRAFT && type != ClickType.PICKUP_ALL && slot >= 0 && slot < SIZE) {
+        // Solo clics normales y Mayús+clic: Q, las teclas de número, el clic central o el doble clic no hacen nada
+        if ((type == ClickType.PICKUP || type == ClickType.QUICK_MOVE) && slot >= 0 && slot < SIZE) {
             Action action = actions.get(slot);
             if (action != null) {
                 sp.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.MASTER, 0.4F, 1.0F);

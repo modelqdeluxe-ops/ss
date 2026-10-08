@@ -3,7 +3,6 @@ package net.tierrasfantasticas.tfclient.pad;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.InputStream;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,9 @@ public final class TFPadScreen extends Screen {
     private static final int BACK_X = 70, BACK_Y = 69;
 
     private static final Map<String, int[]> SIZES = new HashMap<>();
+    /** 1.500 y 15.000 (el formato es-ES de Java deja 1500 sin punto). */
+    private static final java.text.DecimalFormat THOUSANDS = new java.text.DecimalFormat("#,##0",
+            java.text.DecimalFormatSymbols.getInstance(Locale.forLanguageTag("es-ES")));
 
     /** Botón de una página: textura btn_<id>, posición y qué hace. */
     private record Button(String id, int x, int y, Runnable action) {}
@@ -187,6 +189,7 @@ public final class TFPadScreen extends Screen {
     private void blit(GuiGraphics g, String name, int x, int y) {
         int[] sz = size(name);
         if (sz[0] == 0) return;
+        RenderSystem.enableBlend(); // el texto la apaga
         g.blit(tex(name), x, y, 0, 0, sz[0], sz[1], sz[0], sz[1]);
     }
 
@@ -225,7 +228,7 @@ public final class TFPadScreen extends Screen {
         int right = 330;
         TFPadNet.State s = TFPadClient.state;
         if (s != null && s.balance() >= 0) {
-            String coins = NumberFormat.getIntegerInstance(Locale.forLanguageTag("es-ES")).format(s.balance());
+            String coins = THOUSANDS.format(s.balance());
             int tw = font.width(coins);
             outlined(g, coins, right - tw, 70, 0xFFFFE680);
             right -= tw + 14;
@@ -251,7 +254,7 @@ public final class TFPadScreen extends Screen {
             case "monedero" -> {
                 small(g, "Tu saldo", x, y);
                 String amount = s == null ? "…" : s.balance() < 0 ? "—"
-                        : NumberFormat.getIntegerInstance(Locale.forLanguageTag("es-ES")).format(s.balance()) + " " + s.currency();
+                        : THOUSANDS.format(s.balance()) + " " + s.currency();
                 big(g, amount, x, y + 12, 0xFFC27A10);
                 text(g, "Gana monedas con los oficios, vendiendo en la tienda y en el GTS.", x, y + 36, w);
             }

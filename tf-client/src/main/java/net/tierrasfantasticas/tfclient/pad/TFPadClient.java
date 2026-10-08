@@ -29,6 +29,12 @@ public final class TFPadClient {
 
     /** Lo último que llegó del servidor (null hasta la primera respuesta). */
     static TFPadNet.State state;
+    /**
+     * En creativo, C + número es «guardar barra rápida» de vanilla: ahí el pad se abre al SOLTAR la C, y solo si no
+     * se pulsó un número mientras tanto.
+     */
+    private static boolean waitingRelease;
+    private static boolean usedForHotbar;
 
     private TFPadClient() {}
 
@@ -87,9 +93,32 @@ public final class TFPadClient {
         public static void onTick(TickEvent.ClientTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
+            boolean hotbarKey = mc.player != null && mc.player.isCreative() && mc.options.keySaveHotbarActivator.same(KEY);
             while (KEY.consumeClick()) {
-                if (mc.screen == null) open();
+                if (mc.screen != null) continue;
+                if (hotbarKey) {
+                    waitingRelease = true;
+                    usedForHotbar = false;
+                } else {
+                    open();
+                }
             }
+            if (waitingRelease) {
+                for (KeyMapping slot : mc.options.keyHotbarSlots) {
+                    if (slot.isDown()) usedForHotbar = true;
+                }
+                if (!KEY.isDown()) {
+                    waitingRelease = false;
+                    if (!usedForHotbar && mc.screen == null) open();
+                }
+            }
+        }
+
+        /** Al salir de un servidor se olvidan sus datos (si no, el pad del siguiente enseñaría las monedas de este). */
+        @SubscribeEvent
+        public static void onLogout(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+            state = null;
+            waitingRelease = false;
         }
     }
 }

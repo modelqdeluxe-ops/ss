@@ -127,16 +127,20 @@ public final class TFPadNet {
     }
 
     static void notice(ServerPlayer player, String text) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Notice(text));
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Notice(text.length() > 250 ? text.substring(0, 250) : text));
     }
 
     public static void sendState(ServerPlayer player) {
         OptionalLong balance = TFEconomy.balance(player.getServer(), player.getUUID());
         TFRanks.Rank rank = TFRanks.of(player.getUUID());
-        State state = new State(balance.isPresent() ? balance.getAsLong() : -1, TFServerConfig.currency(),
-                rank == null ? "" : rank.name(), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
+        State state = new State(balance.isPresent() ? balance.getAsLong() : -1, cut(TFServerConfig.currency()),
+                rank == null ? "" : cut(rank.name()), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
                 rank == null ? -1 : rank.homes());
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), state);
+    }
+
+    private static String cut(String text) {
+        return text == null ? "" : text.length() > 60 ? text.substring(0, 60) : text;
     }
 
     static void open(ServerPlayer player, String app) {
@@ -161,6 +165,7 @@ public final class TFPadNet {
         ClaimManager claims = ClaimManager.getInstance();
         Claim here = claims.getClaimAt(player.level(), player.blockPosition());
         Claim claim = here != null && (here.isOwner(player) || player.hasPermissions(2)) ? here : null;
+        if (claim != null && claim.getGroupId() != null && !claim.isGroupMother()) claim = claim.getMother();
         if (claim == null) {
             for (Claim c : claims.getClaimsOf(player.getUUID())) {
                 if (c.getGroupId() == null || c.isGroupMother()) {
