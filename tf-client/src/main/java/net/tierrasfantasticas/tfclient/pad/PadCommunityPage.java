@@ -95,7 +95,10 @@ final class PadCommunityPage extends PadPage {
         // columna derecha: autor, hace cuánto, texto, likes y botones
         int cx = X + 172, cw = W - 178;
         PadUi.text(g, post.name(), cx, top + 6, PadUi.TEXT);
-        PadUi.text(g, ago(post.time()) + "  ·  " + (index + 1) + "/" + Math.max(count, 1), cx, top + 16, PadUi.MUTED);
+        String when = ago(post.time()), num = (index + 1) + "/" + Math.max(count, 1);
+        PadUi.text(g, when, cx, top + 16, PadUi.MUTED);
+        int nw = PadUi.font().width(num);
+        if (PadUi.font().width(when) + 6 + nw <= cw) PadUi.text(g, num, cx + cw - nw, top + 16, PadUi.MUTED);
         if (!post.caption().isEmpty()) PadUi.wrap(g, "«" + post.caption() + "»", cx, top + 29, cw, PadUi.TEXT, 3);
         int ly = top + 62;
         boolean hh = !post.mine() && PadUi.inside(mx, my, cx - 1, ly - 1, 40, 14);

@@ -73,8 +73,7 @@ final class PadViewPage extends PadPage {
             y += 16;
         }
         for (String line : view.header()) {
-            PadUi.text(g, line, X + 2, y + 1, PadUi.TEXT);
-            y += 10;
+            y += 10 * PadUi.wrap(g, line, X + 2, y + 1, W - 4, PadUi.TEXT, 2);
         }
         if (!view.header().isEmpty()) y += 2;
         boolean bottomBar = view.input() != null || !view.footer().isEmpty();
