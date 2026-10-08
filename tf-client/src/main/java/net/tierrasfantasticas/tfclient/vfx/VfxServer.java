@@ -227,6 +227,19 @@ public final class VfxServer {
         }
     }
 
+    /** Lo equipado: {efecto de kill, paquete de skills} (null = nada). */
+    public static String[] equipped(UUID uuid) {
+        Equip e = equip(uuid);
+        return new String[] {e.kill(), e.pack()};
+    }
+
+    /** Equipa (o quita, con null) desde el pad. La web se entera en la siguiente consulta del puente. */
+    public static void setFromPad(ServerPlayer player, boolean kill, String id) {
+        Equip e = equip(player.getUUID());
+        String v = valid(id, kill);
+        set(player.getServer(), player.getUUID(), kill ? v : e.kill(), kill ? e.pack() : v, e.webAt(), false);
+    }
+
     /** Manda al jugador su indicador: lo equipado y los cooldowns que le quedan. */
     public static void sync(ServerPlayer player) {
         Equip e = equip(player.getUUID());

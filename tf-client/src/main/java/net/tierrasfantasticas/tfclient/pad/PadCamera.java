@@ -22,7 +22,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
  * La cámara del pad. «Modo foto»: se esconde la interfaz para encuadrar (puedes moverte y mirar), la C dispara y Esc
- * sale. La foto se guarda en .minecraft/tfclient/fotos (solo en tu ordenador) y el pad vuelve a abrirse en la Cámara
+ * vuelve al pad (no al menú de pausa). La foto se guarda en .minecraft/tfclient/fotos (solo en tu ordenador) y el pad vuelve a abrirse en la Cámara
  * con ella, para publicarla en Comunidad si quieres.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
@@ -72,7 +72,7 @@ public final class PadCamera {
         prevHideGui = mc.options.hideGui;
         mc.options.hideGui = true;
         SystemToast.addOrUpdate(mc.getToasts(), SystemToast.SystemToastIds.TUTORIAL_HINT,
-                Component.literal("Modo foto"), Component.literal("C: hacer la foto · Esc: salir"));
+                Component.literal("Modo foto"), Component.literal("C: hacer la foto · Esc: volver al pad"));
     }
 
     static void stop() {
@@ -86,6 +86,15 @@ public final class PadCamera {
     static void shoot() {
         Minecraft.getInstance().getToasts().clear();
         shootIn = 2;
+    }
+
+    /** Esc en modo foto: en vez del menú de pausa, se sale del modo foto y se vuelve a la Cámara del pad. */
+    @SubscribeEvent
+    public static void onScreen(net.minecraftforge.client.event.ScreenEvent.Opening event) {
+        if (!active || !(event.getNewScreen() instanceof net.minecraft.client.gui.screens.PauseScreen)) return;
+        event.setCanceled(true);
+        stop();
+        Minecraft.getInstance().tell(() -> TFPadClient.openTo("camara"));
     }
 
     @SubscribeEvent
@@ -126,7 +135,7 @@ public final class PadCamera {
         stop();
         flashAt = System.currentTimeMillis();
         PadSettings.load();
-        if (PadSettings.sounds) TFPadClient.sound("foto", 0.9F * PadSettings.volume / 80F);
+        if (PadSettings.sounds) TFPadClient.sound("foto", 0.8F * PadSettings.volume / 80F);
         // de vuelta al pad, en la Cámara, con la foto nueva
         TFPadClient.openTo("camara");
     }

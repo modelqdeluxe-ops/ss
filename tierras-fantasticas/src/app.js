@@ -110,7 +110,13 @@ function rankInfo(rank) {
 
 // Para el puente: además, lo que el TF Client pone en el grupo de LuckPerms del rango (permisos de EssentialsX y hogares).
 function rankSetup(rank) {
-  return { ...rankInfo(rank), homes: rank.rank.homes, permissions: rank.rank.permissions };
+  return {
+    ...rankInfo(rank),
+    homes: rank.rank.homes,
+    permissions: rank.rank.permissions,
+    // Para «Mi rango» del TF Pad: lo que trae, en frases cortas
+    perks: [...(rank.perks || []), ...(rank.serverPerks || []).map((x) => (x.cmd ? `${x.cmd}: ${x.text}` : x.text))].slice(0, 30),
+  };
 }
 
 export function createApp(env) {
@@ -1107,6 +1113,41 @@ export function createApp(env) {
       }));
 
       const online = players.filter((p) => p.uuid).map((p) => p.uuid);
+      const onlineSet = new Set(online);
+
+      // Lo que los jugadores cambian desde el TF Pad (armario y VFX): se guarda como si lo hicieran en la web.
+      const pad = body.pad && typeof body.pad === 'object' ? body.pad : {};
+      for (const w of list(pad.wardrobe, 50)) {
+        if (!w || typeof w.uuid !== 'string' || !UUID_RE.test(w.uuid) || !onlineSet.has(w.uuid.toLowerCase())) continue;
+        if (!WARDROBE_SLOTS.includes(w.slot)) continue;
+        let piece = null;
+        if (w.id != null) {
+          const found = (await ownedPieces(w.uuid)).find((x) => x.set === w.set && x.id === w.id && x.slot === w.slot);
+          if (!found) continue;
+          piece = `${found.set}/${found.id}`;
+        }
+        await store.setWardrobe(w.uuid, w.slot, piece);
+      }
+      for (const v of list(pad.vfx, 50)) {
+        if (!v || typeof v.uuid !== 'string' || !UUID_RE.test(v.uuid) || !onlineSet.has(v.uuid.toLowerCase())) continue;
+        if (v.kind !== 'kill' && v.kind !== 'pack') continue;
+        if (v.id == null) {
+          await store.vfxEquip(v.uuid, v.kind, null);
+          continue;
+        }
+        const item = vfxItem(v.kind, v.id);
+        if (!item) continue;
+        if (VFX_FREE) await store.vfxGive(v.uuid, item.key);
+        else if (!(await store.vfxFor(v.uuid)).owned.includes(item.key)) continue;
+        await store.vfxEquip(v.uuid, item.kind, item.id);
+      }
+      // Lo que tiene cada jugador que abrió el Armario del pad (las piezas de sus compras y de su rango)
+      const padData = [];
+      for (const uuid of list(body.padWant, 20)) {
+        if (typeof uuid !== 'string' || !UUID_RE.test(uuid) || !onlineSet.has(uuid.toLowerCase())) continue;
+        padData.push({ uuid: uuid.toLowerCase(), owned: (await ownedPieces(uuid)).map(({ set, id, name, slot, from }) => ({ set, id, name, slot, from })) });
+      }
+
       const playerRanks = (await store.ranksFor(online)).map((r) => ({ uuid: r.uuid, ...rankInfo(rankById.get(r.rankId)) })).filter((r) => r.id);
 
       return json({
@@ -1119,6 +1160,7 @@ export function createApp(env) {
         vfx: await store.vfxEquipFor(online),
         // Armario de los conectados: «set/pieza» por hueco (el mod lo convierte en tfclient:set_pieza)
         wardrobe: await wardrobesForServer(online),
+        padData,
         roulette: rouletteForServer(),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
       });

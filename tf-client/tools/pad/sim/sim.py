@@ -25,6 +25,11 @@ def _mc_textures():
             for n in z.namelist():
                 if n.startswith('assets/minecraft/textures/font/') or n.startswith('assets/minecraft/textures/item/'):
                     z.extract(n, out)
+    if not os.path.isdir(os.path.join(base, 'block')) and os.path.exists(jar):
+        with zipfile.ZipFile(jar) as z:
+            for n in z.namelist():
+                if n.startswith('assets/minecraft/textures/block/') and n.endswith('.png'):
+                    z.extract(n, out)
     return base
 
 
@@ -38,7 +43,7 @@ def rgb(c):
 
 
 class Sim:
-    X, Y, W, H = 60, 82, 272, 112
+    X, Y, W, H = 60, 84, 272, 110
 
     def __init__(self):
         self.art = Image.new('RGBA', (392, 251), (0, 0, 0, 0))
@@ -206,7 +211,20 @@ class Sim:
             self.fill(x + 1, y + 1, x + 1 + fw, y + 2, rgb(0xFFEC96 if full else 0xA0F078))
 
     def item(self, name, x, y):
+        if name.startswith('tfb:'):
+            p = os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/block', name[4:] + '.png')
+            im = Image.open(p).convert('RGBA').resize((16, 16), Image.NEAREST)
+            self.art.alpha_composite(im, (x, y))
+            return
+        if name.startswith('tf:'):
+            p = os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/item', name[3:] + '.png')
+            if os.path.exists(p):
+                im = Image.open(p).convert('RGBA').resize((16, 16), Image.NEAREST)
+                self.art.alpha_composite(im, (x, y))
+                return
         p = f'{MC}/item/{name}.png'
+        if not os.path.exists(p):
+            p = f'{MC}/block/{name}.png'
         if not os.path.exists(p):
             p = f'{MC}/item/paper.png'
         im = Image.open(p).convert('RGBA').crop((0, 0, 16, 16))
@@ -239,40 +257,95 @@ class Sim:
         right -= w + 14
         self.blit('sun', right, 67)
 
-    def view(self, tabs, sel, header, rows, footer=None, input_=None, empty=''):
-        """Igual que PadViewPage.render."""
+    def fitend(self, s, w):
+        if self.mwidth(s) <= w:
+            return s
+        while s and self.mwidth(s + '...') > w:
+            s = s[:-1]
+        return s + '...'
+
+    def pfit(self, s, w):
+        if self.pwidth(s) <= w:
+            return s
+        while s and self.pwidth(s + '.') > w:
+            s = s[:-1]
+        return s + '.'
+
+    def field(self, x, y, w, text, hint):
+        self.box(x, y, w, 15, NAVY)
+        self.box(x + 1, y + 1, w - 2, 13, (255, 255, 255))
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(0xD6E6F6))
+        shown = self.fitend(text or hint, w - 10)
+        self.mtext(shown, x + 5, y + 4, NAVY if text else rgb(0x96AACC))
+
+    def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None):
+        """Igual que PadViewPage.render (1.3.23): pestañas que siempre caben, cabecera de 2 líneas, rejilla y filas."""
         X, Y, W, H = self.X, self.Y, self.W, self.H
+        cells = cells or []
         y = Y
         if tabs:
+            gap, pad = 3, 10
+            total = sum(self.pwidth(l) + pad for _, l in tabs) + gap * (len(tabs) - 1)
+            if total > W:
+                gap, pad = 2, 6
+                total = sum(self.pwidth(l) + pad for _, l in tabs) + gap * (len(tabs) - 1)
+            maxl = max(12, (W - gap * (len(tabs) - 1)) // len(tabs) - pad) if total > W else 10 ** 6
             x = X
             for key, label in tabs:
-                w = self.pwidth(label) + 10
+                label = self.pfit(label, maxl)
+                w = self.pwidth(label) + pad
                 s = key == sel
                 self.box(x, y, w, 13, NAVY)
                 self.box(x + 1, y + 1, w - 2, 11, rgb(0xF6B628 if s else 0xE8F8FF))
+                if s:
+                    self.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(0xFFEC96))
                 self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 1, (255, 255, 255) if s else NAVY, s)
-                x += w + 3
+                x += w + gap
             y += 16
+        room = 1 if tabs else 2
         for line in header:
-            y += 10 * self.wrap(line, X + 2, y + 1, W - 4, NAVY, 2)
+            if room <= 0:
+                break
+            if room == 1 and self.nlines(line, W - 4) > 1:
+                line = self.fitend(line, W - 4)
+            n = self.wrap(line, X + 2, y + 1, W - 4, NAVY, room)
+            room -= n
+            y += 10 * n
         if header:
             y += 2
         bottom = bool(footer) or input_ is not None
         top, bot = y, Y + H - (19 if bottom else 0)
         self.panel(X, top, W, bot - top)
         ix, iw = X + 3, W - 10
+        cols = max(1, iw // 32)
+        grows = (len(cells) + cols - 1) // cols
+        gridh = grows * 31 + (2 if grows else 0)
+        content = gridh + sum(self.row_h(r, iw) for r in rows)
+        visible = bot - top - 4
         ry = top + 2
+        if grows:
+            gx = X + (W - 4 - cols * 32) // 2
+            for i, c in enumerate(cells):
+                cx, cy = gx + (i % cols) * 32, ry + 1 + (i // cols) * 31
+                if cy + 31 > bot:
+                    break
+                self.cell(c, cx, cy)
+            ry += gridh
         for r in rows:
             h = self.row_h(r, iw)
             if ry + h > bot:
                 break
             self.row(r, ix, ry, iw, h)
             ry += h
-        if not rows:
+        if not rows and not cells:
             n = self.nlines(empty, W - 30)
             self.wrap(empty, X + 15, (top + bot) // 2 - n * 5, W - 30, rgb(0x4A6694))
+        if content > visible:
+            bx, by, bh = X + W - 5, top + 3, visible - 2
+            self.fill(bx, by, bx + 2, by + bh, rgb(0xC8DCF0))
+            th = max(8, bh * visible // content)
+            self.fill(bx, by, bx + 2, by + th, rgb(0x3496FA))
         fy = Y + H - 16
-        # botones de abajo a la derecha; el campo de texto, en lo que queda a la izquierda
         footer = footer or []
         total = sum(self.bw(l) + 4 for l, s in footer)
         x = X + W - total + 4
@@ -284,23 +357,39 @@ class Sim:
             bw = self.bw(label)
             right = X + W - total
             fw = right - X - bw - 4
-            self.box(X, fy, fw, 15, NAVY)
-            self.box(X + 1, fy + 1, fw - 2, 13, (255, 255, 255))
-            self.mtext(typed or hint, X + 5, fy + 4, NAVY if typed else rgb(0x96AACC))
+            self.field(X, fy, fw, typed, hint)
             self.button(right - bw, fy, bw, label, 3, bool(typed))
 
+    def cell(self, c, x, y):
+        icon, label, color, sel = c
+        self.box(x + 1, y, 30, 30, rgb(0xC27A10 if sel else 0xB8D4EE))
+        self.box(x + 2, y + 1, 28, 28, rgb(0xFFE9A8 if sel else 0xF6FBFF))
+        if icon:
+            self.item(icon, x + 8, y + 3)
+        if label:
+            label = self.pfit(label, 28)
+            self.ptext(label, x + 16 - self.pwidth(label) // 2, y + 19, rgb(color), False)
+
     def row_h(self, r, w):
-        icon, title, color, lines, prog, badge, b1, b2 = r
+        icon, title, color, lines, prog, badge, b1, b2 = r[:8]
         if not icon and not b1 and not b2:
             n = sum(max(1, self.nlines(l, w - 8)) for l in lines)
             return 6 + (11 if title else 0) + n * 10 + 3
-        bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
-        tw = w - (24 if icon else 6) - bw - 4
-        n = sum(min(2, self.nlines(l, tw)) for l in lines)
+        tw = self.text_w(r, w)
+        n = sum(min(2, max(1, self.nlines(l, tw))) for l in lines)
         return max(26, 4 + 10 + n * 10 + (8 if prog >= 0 else 0) + 3)
 
+    def text_w(self, r, w):
+        icon, b1, b2 = r[0], r[6], r[7]
+        bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
+        return w - (26 if icon else 8) - bw - 4
+
     def row(self, r, x, y, w, h):
-        icon, title, color, lines, prog, badge, b1, b2 = r
+        icon, title, color, lines, prog, badge, b1, b2 = r[:8]
+        sel = len(r) > 8 and r[8]
+        if sel:
+            self.box(x, y, w, h - 1, rgb(0xFFE9A8))
+            self.fill(x, y + 2, x + 2, y + h - 3, rgb(0xF6B628))
         self.fill(x + 2, y + h - 1, x + w - 2, y + h, rgb(0xC8E4F8))
         if not icon and not b1 and not b2:
             ty = y + 4
@@ -308,21 +397,24 @@ class Sim:
                 self.mtext(title, x + 4, ty, rgb(color))
                 ty += 11
             for l in lines:
-                ty += self.wrap(l, x + 4, ty, w - 8, NAVY) * 10
+                ty += max(1, self.wrap(l, x + 4, ty, w - 8, NAVY)) * 10
             return
-        tx = x + 4
+        tx = x + 5
         if icon:
-            self.item(icon, x + 3, y + (h - 16) // 2)
-            tx = x + 24
+            iy = y + (h - 17) // 2
+            self.box(x + 3, iy - 1, 20, 18, rgb(0xB8D4EE))
+            self.box(x + 4, iy, 18, 16, (255, 255, 255))
+            self.item(icon, x + 5, iy)
+            tx = x + 27
         bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
-        tw = w - (tx - x) - bw - 4
-        bdw = self.mwidth(badge) + 4 if badge else 0
-        self.mtext(title, tx, y + 4, rgb(color))
+        tw = self.text_w(r, w)
+        bdw = self.mwidth(badge) + 6 if badge else 0
+        self.mtext(self.fitend(title, tw - bdw), tx, y + 4, rgb(color))
         if badge:
-            self.mtext(badge, tx + tw - bdw + 4, y + 4, rgb(0xC27A10))
+            self.mtext(badge, tx + tw - bdw + 6, y + 4, rgb(0xC27A10))
         ly = y + 14
         for l in lines:
-            ly += self.wrap(l, tx, ly, tw, rgb(0x4A6694), 2) * 10
+            ly += max(1, self.wrap(l, tx, ly, tw, rgb(0x4A6694), 2)) * 10
         if prog >= 0:
             self.progress(tx, ly + 1, min(tw, 120), prog)
         bx, by = x + w - bw, y + (h - 16) // 2

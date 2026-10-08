@@ -15,15 +15,22 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.pad.server.PadAccount;
+import net.tierrasfantasticas.tfclient.pad.server.PadClaims;
 import net.tierrasfantasticas.tfclient.pad.server.PadClans;
 import net.tierrasfantasticas.tfclient.pad.server.PadHelp;
+import net.tierrasfantasticas.tfclient.pad.server.PadHomes;
+import net.tierrasfantasticas.tfclient.pad.server.PadJobs;
 import net.tierrasfantasticas.tfclient.pad.server.PadKits;
+import net.tierrasfantasticas.tfclient.pad.server.PadMarket;
 import net.tierrasfantasticas.tfclient.pad.server.PadMissions;
 import net.tierrasfantasticas.tfclient.pad.server.PadPlayers;
 import net.tierrasfantasticas.tfclient.pad.server.PadRanking;
+import net.tierrasfantasticas.tfclient.pad.server.PadShop;
 import net.tierrasfantasticas.tfclient.pad.server.PadStats;
 import net.tierrasfantasticas.tfclient.pad.server.PadTitles;
 import net.tierrasfantasticas.tfclient.pad.server.PadTravel;
+import net.tierrasfantasticas.tfclient.pad.server.PadWardrobe;
 
 /**
  * Las apps del pad que viven en el servidor: cada una sabe dibujarse (PadView) y responder a sus botones. Al pulsar
@@ -57,6 +64,15 @@ public final class PadServer {
     private static int ticks;
 
     static {
+        APPS.put("oficios", PadJobs.APP);
+        APPS.put("tienda", PadShop.APP);
+        APPS.put("gts", PadMarket.APP);
+        APPS.put("hogares", PadHomes.APP);
+        APPS.put("armario", PadWardrobe.WARDROBE);
+        APPS.put("efectos", PadWardrobe.EFFECTS);
+        APPS.put("monedero", PadAccount.WALLET);
+        APPS.put("rango", PadAccount.RANK);
+        APPS.put("protecciones", PadClaims.APP);
         APPS.put("misiones", PadMissions.MISSIONS);
         APPS.put("cazas", PadMissions.HUNTS);
         APPS.put("kits", PadKits.APP);
@@ -71,6 +87,7 @@ public final class PadServer {
         STORES.add(PadMissions.STORE);
         STORES.add(PadKits.STORE);
         STORES.add(PadTravel.STORE);
+        STORES.add(PadHomes.STORE);
         STORES.add(PadClans.STORE);
         STORES.add(PadTitles.STORE);
         STORES.add(PadHelp.STORE);
@@ -83,9 +100,49 @@ public final class PadServer {
         return server;
     }
 
-    static void open(ServerPlayer player, String app) {
+    static void open(ServerPlayer player, String app, String tab) {
         App a = APPS.get(app);
-        if (a != null && allowed(player)) send(player, a, "");
+        if (a == null || !allowed(player)) return;
+        SESSIONS.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).keySet().removeIf(k -> k.startsWith(app + "."));
+        send(player, a, tab == null ? "" : tab);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Lo que cada jugador tiene a medias en una app (la cantidad a comprar, el objeto elegido para vender, «¿seguro?»…)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static final Map<UUID, Map<String, Object>> SESSIONS = new HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T> T get(ServerPlayer player, String key, T fallback) {
+        Map<String, Object> m = SESSIONS.get(player.getUUID());
+        Object v = m == null ? null : m.get(key);
+        return v == null ? fallback : (T) v;
+    }
+
+    public static void put(ServerPlayer player, String key, Object value) {
+        Map<String, Object> m = SESSIONS.computeIfAbsent(player.getUUID(), k -> new HashMap<>());
+        if (value == null) m.remove(key);
+        else m.put(key, value);
+    }
+
+    /** Doble clic para lo que no tiene vuelta atrás: el primero pide confirmar (6 s), el segundo devuelve true. */
+    public static boolean confirm(ServerPlayer player, String key) {
+        long now = System.currentTimeMillis();
+        Long at = get(player, "§confirm:" + key, null);
+        if (at != null && now - at < 6000) {
+            put(player, "§confirm:" + key, null);
+            return true;
+        }
+        SESSIONS.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).keySet().removeIf(k -> k.startsWith("§confirm:"));
+        put(player, "§confirm:" + key, now);
+        return false;
+    }
+
+    /** ¿Está esperando el segundo clic de esta acción? (para pintar el botón como «¿SEGURO?»). */
+    public static boolean confirming(ServerPlayer player, String key) {
+        Long at = get(player, "§confirm:" + key, null);
+        return at != null && System.currentTimeMillis() - at < 6000;
     }
 
     static void action(ServerPlayer player, String app, String tab, String action, String text) {
@@ -155,11 +212,13 @@ public final class PadServer {
         }
         server = null;
         RATE.clear();
+        SESSIONS.clear();
     }
 
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         RATE.remove(event.getEntity().getUUID());
+        SESSIONS.remove(event.getEntity().getUUID());
         PadCommunityServer.logout(event.getEntity().getUUID());
     }
 

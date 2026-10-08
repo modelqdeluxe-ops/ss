@@ -14,21 +14,14 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.tierrasfantasticas.tfclient.TFClient;
-import net.tierrasfantasticas.tfclient.claims.data.Claim;
-import net.tierrasfantasticas.tfclient.claims.data.ClaimManager;
-import net.tierrasfantasticas.tfclient.claims.gui.ClaimMenuHandler;
 import net.tierrasfantasticas.tfclient.economy.TFEconomy;
-import net.tierrasfantasticas.tfclient.jobs.TFJobsMenu;
-import net.tierrasfantasticas.tfclient.market.TFMarketMenu;
 import net.tierrasfantasticas.tfclient.server.TFRanks;
 import net.tierrasfantasticas.tfclient.server.TFServerConfig;
-import net.tierrasfantasticas.tfclient.shop.TFShopConfig;
-import net.tierrasfantasticas.tfclient.shop.TFShopMenu;
 
 /**
- * El canal del TF Pad. El cliente pide sus datos (Hello → State: monedas y rango, para la barra de arriba y las
- * páginas Monedero y Mi rango) y abre las apps que viven en el servidor (Open): Oficios, Protecciones, Tienda y GTS.
- * Abren las mismas ventanas que /tf jobs, /tf claims y /tf shop; el GTS solo se abre desde el pad.
+ * El canal del TF Pad. El cliente pide sus datos (Hello → State: monedas y rango, para la barra de arriba) y abre las
+ * apps que viven en el servidor (Open → ViewMsg); cada botón es una Action. El servidor también puede abrir el pad en
+ * una app (OpenApp: /tf jobs, /tf shop, /tf claims menu o al pulsar una piedra de protección).
  */
 public final class TFPadNet {
     private static final String PROTOCOL = TFClient.VERSION;
@@ -57,6 +50,8 @@ public final class TFPadNet {
                 .encoder(ViewMsg::write).decoder(ViewMsg::read).consumerMainThread(ViewMsg::handle).add();
         CHANNEL.messageBuilder(Close.class, 6, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Close::write).decoder(Close::read).consumerMainThread(Close::handle).add();
+        CHANNEL.messageBuilder(OpenApp.class, 7, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenApp::write).decoder(OpenApp::read).consumerMainThread(OpenApp::handle).add();
         PadCommunityNet.register(CHANNEL, 10);
     }
 
@@ -75,21 +70,55 @@ public final class TFPadNet {
         }
     }
 
-    /** Abrir una app del servidor. */
-    public record Open(String app) {
+    /** Abrir una app del servidor (en una pestaña; vacía = la de entrada). */
+    public record Open(String app, String tab) {
         static void write(Open m, FriendlyByteBuf buf) {
             buf.writeUtf(m.app, 32);
+            buf.writeUtf(m.tab, 64);
         }
 
         static Open read(FriendlyByteBuf buf) {
-            return new Open(buf.readUtf(32));
+            return new Open(buf.readUtf(32), buf.readUtf(64));
         }
 
         static void handle(Open m, Supplier<NetworkEvent.Context> ctx) {
             ServerPlayer player = ctx.get().getSender();
-            if (player != null) open(player, m.app);
+            if (player != null) PadServer.open(player, m.app, m.tab);
             ctx.get().setPacketHandled(true);
         }
+    }
+
+    /** El servidor abre el pad en una app (si el pad está abierto, cambia a ella). */
+    public record OpenApp(String app, String tab) {
+        static void write(OpenApp m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.app, 32);
+            buf.writeUtf(m.tab, 64);
+        }
+
+        static OpenApp read(FriendlyByteBuf buf) {
+            return new OpenApp(buf.readUtf(32), buf.readUtf(64));
+        }
+
+        static void handle(OpenApp m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TFPadClient.openTo(m.app, m.tab));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** ¿Tiene este jugador el pad? (el TF Client con este canal). */
+    public static boolean hasPad(ServerPlayer player) {
+        return player.connection != null && CHANNEL.isRemotePresent(player.connection.connection);
+    }
+
+    /**
+     * Abre el pad del jugador en una app. Devuelve false si no tiene el pad (cliente sin TF Client: quien llama usa la
+     * ventana de siempre).
+     */
+    public static boolean openApp(ServerPlayer player, String app, String tab) {
+        if (!hasPad(player)) return false;
+        player.closeContainer();
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new OpenApp(app, tab == null ? "" : tab));
+        return true;
     }
 
     /**
@@ -195,7 +224,7 @@ public final class TFPadNet {
 
     public static void sendState(ServerPlayer player) {
         OptionalLong balance = TFEconomy.balance(player.getServer(), player.getUUID());
-        TFRanks.Rank rank = TFRanks.of(player.getUUID());
+        TFRanks.Rank rank = TFRanks.full(TFRanks.of(player.getUUID()));
         State state = new State(balance.isPresent() ? balance.getAsLong() : -1, cut(TFServerConfig.currency()),
                 rank == null ? "" : cut(rank.name()), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
                 rank == null ? -1 : rank.homes());
@@ -204,42 +233,5 @@ public final class TFPadNet {
 
     private static String cut(String text) {
         return text == null ? "" : text.length() > 60 ? text.substring(0, 60) : text;
-    }
-
-    static void open(ServerPlayer player, String app) {
-        switch (app) {
-            case "oficios" -> TFJobsMenu.openMain(player);
-            case "tienda" -> {
-                if (!TFShopConfig.enabled && !player.hasPermissions(3)) {
-                    notice(player, "La tienda está cerrada ahora mismo. Vuelve a probar más tarde.");
-                } else {
-                    TFShopMenu.openMain(player);
-                }
-            }
-            case "gts" -> TFMarketMenu.openMain(player);
-            case "protecciones" -> openClaims(player);
-            default -> PadServer.open(player, app);
-        }
-    }
-
-    /** La zona donde está el jugador si es suya; si no, la primera que tenga. */
-    private static void openClaims(ServerPlayer player) {
-        ClaimManager claims = ClaimManager.getInstance();
-        Claim here = claims.getClaimAt(player.level(), player.blockPosition());
-        Claim claim = here != null && (here.isOwner(player) || player.hasPermissions(2)) ? here : null;
-        if (claim != null && claim.getGroupId() != null && !claim.isGroupMother()) claim = claim.getMother();
-        if (claim == null) {
-            for (Claim c : claims.getClaimsOf(player.getUUID())) {
-                if (c.getGroupId() == null || c.isGroupMother()) {
-                    claim = c;
-                    break;
-                }
-            }
-        }
-        if (claim == null) {
-            notice(player, "Aún no tienes zonas protegidas. Pon una protección en el suelo para crear la primera.");
-            return;
-        }
-        ClaimMenuHandler.open(player, claim, 0);
     }
 }

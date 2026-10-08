@@ -36,7 +36,7 @@ WHITE = (255, 255, 255)
 
 # Las 20 apps, en el orden del pad (dos páginas de 5x2). Mismo orden y nombres que TFPadScreen.APPS.
 APPS = [('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
-        ('monedero', 'MONEDERO'), ('clanes', 'CLANES'), ('viajes', 'VIAJES'), ('explorar', 'EXPLORAR'), ('kits', 'KITS'),
+        ('monedero', 'MONEDERO'), ('clanes', 'CLANES'), ('viajes', 'VIAJES'), ('hogares', 'HOGARES'), ('kits', 'KITS'),
         ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('jugadores', 'JUGADORES'), ('ranking', 'RANKING'),
         ('titulos', 'TÍTULOS'),
         ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('protecciones', 'PROTECCIÓN'),

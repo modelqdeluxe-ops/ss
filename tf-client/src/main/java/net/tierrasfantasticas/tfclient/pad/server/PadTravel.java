@@ -169,6 +169,13 @@ public final class PadTravel {
             BlockPos bed = player.getRespawnPosition();
             if (bed != null) b.row(row(new ItemStack(Items.RED_BED), "Tu cama", "Donde reapareces", "cama", wait));
             for (Point p : points()) b.row(row(new ItemStack(Items.FILLED_MAP), p.name, dimName(p.dim), "punto:" + p.id, wait));
+            // Explorar va aquí dentro: un sitio seguro al azar, con su propia espera
+            long explore = left(player, "explorar", EXPLORE_COOLDOWN);
+            PadView.Btn eb = explore > 0 ? PadView.Btn.off("EN " + PadKits.time(explore).toUpperCase()) : PadView.Btn.of("EXPLORAR", "explorar", PadView.GOLD);
+            b.row(new PadView.Row(new ItemStack(Items.SPYGLASS), "Explorar", 0x18265C,
+                    List.of("Un sitio seguro al azar, a " + EXPLORE_MIN + "-" + EXPLORE_MAX + " bloques del spawn"), -1, "", eb, null));
+            b.row(new PadView.Row(new ItemStack(Items.RED_BED), "Tus hogares", 0x18265C, List.of("Los sitios que guardaste"), -1, "",
+                    PadView.Btn.of("VER", "§open:hogares", PadView.BLUE), null).clickable("§open:hogares"));
             return b.build();
         }
 
@@ -179,6 +186,7 @@ public final class PadTravel {
 
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
+            if (action.equals("explorar")) return EXPLORE.action(player, tab, action, text);
             if (!action.startsWith("ir:") || left(player, "viaje", TRAVEL_COOLDOWN) > 0) return null;
             String where = action.substring(3);
             MinecraftServer server = player.getServer();

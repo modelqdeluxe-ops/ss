@@ -10,9 +10,10 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (8 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
-> **TF Client 1.3.22** (la siguiente es **1.3.23**). Lo último que pidió el dueño y quedó hecho: el **TF Pad completo**
-> (20 apps en 2 páginas, Misiones, Cazas, Kits, Viajes, Explorar, Clanes, Títulos, Jugadores, Ranking, Ayuda, y la
-> **Cámara + Comunidad**, una red social de fotos con likes). Ver la entrega 1.3.22.
+> **TF Client 1.3.23** (la siguiente es **1.3.24**). Lo último que pidió el dueño y quedó hecho: **todo dentro del TF
+> Pad** (Oficios, Tienda, GTS, Protección, Hogares, Armario, Efectos, Monedero y Mi rango son apps nativas, sin cofres ni
+> chat), sonidos suaves sin campana, Cámara/Comunidad arregladas, contorno del marco limpio y auditoría de píxeles.
+> Ver la entrega 1.3.23. Regla nueva: **todo lo del jugador se hace desde el pad**; nada de abrir otras ventanas.
 >
 > **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
 > inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
@@ -26,7 +27,50 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): TF Pad completo, 20 apps, Cámara y Comunidad — TF Client 1.3.22
+### Última entrega (8 de octubre de 2026): todo dentro del TF Pad, sonidos suaves y auditoría de píxeles — TF Client 1.3.23
+Pidió: auditar el pad (textos, marcos y recuadros solapados), que las apps **no manden a la web ni a otras ventanas**
+(GTS, oficios… «todo debe hacerse desde la app»), meter **hogares**, sonidos de cambio de pantalla menos fuertes y
+**sin campana**, arreglar Cámara y Publicar, quitar los **píxeles blancos del contorno** del marco, y el icono de
+hogares **una casa** («audita bien que no queden píxeles mal, contornos cortados ni solapes con la pantalla»).
+Hecho:
+- **Marco de apps del servidor** (`pad/PadView`, `PadViewPage`): además de filas, una **rejilla de casillas** (objeto +
+  texto pixel debajo, como un inventario), filas que se pulsan enteras y salen resaltadas, pestañas que **siempre
+  caben** (se estrechan y recortan), cabecera de 1 línea con pestañas y 2 sin ellas, todo texto largo acaba en «…»
+  (`PadUi.wrapEllipsis`/`fitEnd`), campo de texto propio, «CARGANDO» con ruedita. Acciones `§open:<app>` abren otra app;
+  Esc/◀ dentro de una ficha vuelve a la pantalla anterior de la app (botón ATRÁS) antes que a la portada. El contenido
+  empieza en Y=84 (no toca el logo TF). Sesiones por jugador y app (`PadServer.get/put`) y doble clic «¿SEGURO?»
+  (`PadServer.confirm`). El servidor puede abrir el pad en una app: `TFPadNet.openApp(player, app, tab)`.
+- **Apps nativas nuevas** (`pad/server/`): `PadJobs` (oficios: lista, MISIONES con COBRAR, CÓMO SE GANA, PREMIOS,
+  trabajar/cambiar/dejar), `PadShop` (tienda: categorías → rejilla con precios → ficha con cantidades, input de lotes,
+  pestaña VENDER con lo que llevas y VENDER TODO), `PadMarket` (GTS: mercado en rejilla con buscador, ficha con
+  COMPRAR/RETIRAR, VENDER eligiendo del inventario y escribiendo el precio **sin chat** (`TFMarket.publish`), MIS VENTAS,
+  RECOGER), `PadClaims` (Protección: tus zonas → AJUSTES con interruptores y ventajas bloqueadas por tamaño, MIEMBROS,
+  BANEOS, PARTÍCULAS en rejilla con densidad, MÁS: mensajes de entrar/salir, contorno, grupo e invitar, eliminar),
+  `PadHomes` (hogares de EssentialsX: lee `plugins/Essentials/userdata/<uuid>.yml` y ejecuta /home, /sethome, /delhome
+  como el jugador; sin Essentials guarda los suyos en `hogares.json` con el límite del rango), `PadWardrobe` (Armario por
+  hueco y Efectos de kill/skills, se ponen al momento y se guardan en la web), `PadAccount` (Monedero: saldo, cobro del
+  oficio, ventas del GTS, mandar monedas a otro jugador con confirmación; Mi rango: lista de rangos con sus ventajas).
+  Explorar pasó a ser una fila de **Viajes** (con «Tus hogares»); su sitio en la portada es **HOGARES**.
+- `/tf jobs`, `/tf shop`, `/tf claims`, `/tf claims menu` y el clic en la piedra abren el pad en su app (sin TF
+  Client, las ventanas de siempre). Los mensajes de la tienda y del GTS salen como aviso del pad (`TFShop.toPad`,
+  `TFMarket.toPad`). Se quitaron las páginas cliente Monedero/Rango/Web (`PadInfoPages` solo tiene Ajustes).
+- **Web** (`src/app.js`, puente): la consulta acepta `pad: {wardrobe:[{uuid,slot,set,id|null}], vfx:[{uuid,kind,id|null}]}`
+  (solo conectados; se valida que la pieza sea suya) y `padWant: [uuid]` → responde `padData: [{uuid, owned:[…]}]` con
+  lo que tiene cada uno en el armario. `rankList` trae `perks` (ventajas en frases) para «Mi rango». Test nuevo.
+- **Sonidos** (`tools/pad/build_sounds.py`, rehechos): sin campanas ni brillos metálicos; burbujas, pulsos cálidos
+  filtrados, soplos de aire muy bajos y un tic de madera para las pestañas (`pad.tab`, nuevo). Más bajos de volumen.
+- **Cámara**: la foto mide 144x81 y MODO FOTO va debajo (antes la pisaba); Esc en modo foto vuelve a la Cámara del pad
+  (antes abría el menú de pausa); la subida nunca se queda en «Subiendo…» (a los 30 s sin respuesta avisa).
+  **Comunidad**: la foto ya no se sale del panel.
+- **Marco**: `tools/pad/limpiar_bordes.py` quita los píxeles grises/blancos del contorno exterior (restos del fondo
+  blanco) y deja una línea oscura limpia (marco.png → frame.png).
+- **Iconos**: HOGARES es una **casa** dibujada a mano (tejado de tejas, chimenea, ventanas encendidas, puerta, césped).
+  `kit.Icon.outline` ya no deja que nada toque el borde del lienzo (Cazas, Títulos y Viajes tenían el contorno cortado).
+  Auditoría: 0 iconos con contorno roto, 0 píxeles semitransparentes.
+- Simulador (`tools/pad/sim/`) al día con el layout nuevo y las 20 vistas (oficios, tienda, GTS, hogares, armario,
+  efectos, protección, monedero, rango, viajes, misiones, comunidad, cámara).
+
+### Entrega anterior (8 de octubre de 2026): TF Pad completo, 20 apps, Cámara y Comunidad — TF Client 1.3.22
 Pidió: quitar los «puntos amarillos» (los iconos de la barra de arriba sin números), iconos **simétricos**, **todas**
 las apps (clanes, kits, misiones, viajes…) y que **Comunidad sea una red social**: una cámara que guarda las fotos en
 su cliente, publicarlas y que los demás les den like. «Revisa cómo funciona el pad de Diosesmon».
@@ -934,7 +978,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.22)
+## 5. El mod (TF Client 1.3.23)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -949,6 +993,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
     `/tf web rango`, `/tf web monedas ver|dar|quitar|poner`, `/tf web ruleta girar`, `/tf web tienda comprar`.
   - Del pad (staff, 1.3.22): `/tf web kits guardar|quitar|recargar`, `/tf web viajes poner|quitar|lista`,
     `/tf web comunidad borrar|denuncias`.
+  - Con TF Client, `/tf jobs`, `/tf shop` y `/tf claims` abren el pad en su app (1.3.23).
 - Código: `server/TFBridge.java` (puente), `shop/TFCoinShop.java`, `shop/TFRoulette.java`, `economy/` (Vault por
   reflexión en Mohist, monedas propias o comandos), `jobs/` (oficios, config `config/tfclient-jobs.json`),
   `menu/TFPanelMenu.java` + `client/TFPanelScreen.java` (ventana de oficios: 10 huecos de la rejilla en los huecos
@@ -958,7 +1003,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   `vfx/` (efectos de kill y skills), `pad/` (TF Pad: `TFPadClient` tecla C y sonidos, `TFPadScreen`, `TFPadNet` canal
   `tfclient:pad`) y `market/` (GTS, 1.3.20). Menú: `mixin/TitleScreenMixin.java`, `client/TFMenuButton.java`,
   `client/TFButtonTheme.java`; fondo `textures/gui/menu_background.png` (paisaje de noche de la web).
-- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
+- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/pad/limpiar_bordes.py` (contorno del marco), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
   menú), `tools/build_vfx.py` (VFX).
 - Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
   `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
