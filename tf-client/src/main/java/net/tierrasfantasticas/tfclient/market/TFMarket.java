@@ -36,7 +36,6 @@ import net.tierrasfantasticas.tfclient.economy.TFEconomy;
 import net.tierrasfantasticas.tfclient.items.TFBinding;
 import net.tierrasfantasticas.tfclient.items.TFItem;
 import net.tierrasfantasticas.tfclient.items.TFRevocations;
-import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
@@ -61,7 +60,7 @@ public final class TFMarket {
         }
     }
 
-    private record Prompt(ItemStack snapshot, int slot, long expires) {}
+    public record Prompt(ItemStack snapshot, int slot, long expires) {}
 
     private static final List<Listing> listings = new ArrayList<>();
     private static final Map<UUID, List<ItemStack>> returns = new HashMap<>();
@@ -118,21 +117,21 @@ public final class TFMarket {
     // Publicar: el precio se escribe en el chat
     // ---------------------------------------------------------------------------------------------------------------
 
-    public static void requestPrice(ServerPlayer player) {
+    /** Pide el precio por el chat; si no se puede vender, devuelve por qué (y no cierra la ventana). */
+    public static String requestPrice(ServerPlayer player) {
         ItemStack hand = player.getMainHandItem();
         String why = whyNot(hand);
-        if (why != null) {
-            tell(player, why, ChatFormatting.RED);
-            return;
-        }
+        if (why != null) return why;
         if (listingsOf(player.getUUID()).size() >= MAX_LISTINGS) {
-            tell(player, "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.", ChatFormatting.RED);
-            return;
+            return "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.";
         }
+        net.tierrasfantasticas.tfclient.claims.gui.ClaimMenuHandler.clearPrompt(player.getUUID());
         prompts.put(player.getUUID(), new Prompt(hand.copy(), player.getInventory().selected, System.currentTimeMillis() + PROMPT_MS));
         player.closeContainer();
         tell(player, "Escribe en el chat el precio para " + describe(hand) + " (o «cancelar»):", ChatFormatting.YELLOW);
         player.sendSystemMessage(Component.literal("    Solo el número, por ejemplo 250. Tu mensaje no lo ve nadie.").withStyle(ChatFormatting.DARK_GRAY));
+        player.playNotifySound(SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.MASTER, 0.6F, 1.2F);
+        return null;
     }
 
     public static boolean hasPrompt(UUID uuid) {
@@ -145,9 +144,14 @@ public final class TFMarket {
         return true;
     }
 
-    /** La respuesta del chat (en el hilo del servidor). */
-    public static void answer(ServerPlayer player, String text) {
-        Prompt p = prompts.remove(player.getUUID());
+    /** Saca la pregunta pendiente (desde el hilo de red, en el mismo momento en que llega el mensaje). */
+    public static Prompt popPrompt(UUID uuid) {
+        Prompt p = prompts.remove(uuid);
+        return p == null || System.currentTimeMillis() > p.expires ? null : p;
+    }
+
+    /** La respuesta del chat a la pregunta p (en el hilo del servidor). */
+    public static void answer(ServerPlayer player, Prompt p, String text) {
         if (p == null || player.hasDisconnected()) return;
         String t = text == null ? "" : text.trim();
         if (t.isEmpty() || t.equalsIgnoreCase("cancelar") || t.equalsIgnoreCase("cancel") || t.startsWith("/")) {
@@ -156,7 +160,7 @@ public final class TFMarket {
         }
         long price = parsePrice(t);
         if (price <= 0 || price > MAX_PRICE) {
-            tell(player, "Ese precio no vale. Escribe solo un número mayor que 0. Vuelve a probar desde el GTS.", ChatFormatting.RED);
+            tell(player, "No entendí ese precio. Escribe solo el número (por ejemplo 1500 o 5k). Vuelve a probar desde el GTS.", ChatFormatting.RED);
             return;
         }
         ItemStack hand = player.getMainHandItem();
@@ -185,15 +189,23 @@ public final class TFMarket {
         TFMarketMenu.openMine(player);
     }
 
-    /** «1.500», «1,500», «1500 monedas» → 1500. */
+    private static final java.util.regex.Pattern PRICE = java.util.regex.Pattern.compile(
+            "^(\\d{1,3}(?:[.,\\s]\\d{3})+|\\d+)\\s*([km])?\\s*(?:monedas?|coins?)?$", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /**
+     * «1500», «1.500», «1,500», «1 500», «250 monedas», «5k» (5.000), «2m» (2.000.000) → el número. Cualquier otra
+     * cosa («1.5k», «12,50», «cinco») devuelve -1: mejor preguntar otra vez que vender por un precio que no quería.
+     */
     static long parsePrice(String text) {
-        String digits = text.replaceAll("[.,\\s]", "").replaceAll("[^0-9].*$", "");
-        if (digits.isEmpty() || digits.length() > 12) return -1;
-        try {
-            return Long.parseLong(digits);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        java.util.regex.Matcher m = PRICE.matcher(text.trim());
+        if (!m.matches()) return -1;
+        String digits = m.group(1).replaceAll("[.,\\s]", "");
+        if (digits.length() > 12) return -1;
+        long value = Long.parseLong(digits);
+        String suffix = m.group(2) == null ? "" : m.group(2).toLowerCase(java.util.Locale.ROOT);
+        if (suffix.equals("k")) value *= 1_000L;
+        if (suffix.equals("m")) value *= 1_000_000L;
+        return value;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -214,7 +226,7 @@ public final class TFMarket {
         }
         listings.remove(l);
         save(); // antes de dar el objeto: si el servidor cae justo aquí, mejor perder la venta que duplicar el objeto
-        TFCoinShop.give(buyer, l.item.copy());
+        give(buyer, l.item.copy());
         String buyerName = buyer.getGameProfile().getName();
         if (!TFEconomy.give(buyer.getServer(), l.seller, l.sellerName, l.price)) owed.merge(l.seller, l.price, Long::sum);
         log("compra " + buyerName, l.sellerName, l);
@@ -238,7 +250,7 @@ public final class TFMarket {
         if (l == null || !l.seller.equals(player.getUUID())) return false;
         listings.remove(l);
         save();
-        TFCoinShop.give(player, l.item.copy());
+        give(player, l.item.copy());
         log("retira", player.getGameProfile().getName(), l);
         tell(player, "Retiraste " + describe(l.item) + " del GTS.", ChatFormatting.GRAY);
         return true;
@@ -251,7 +263,7 @@ public final class TFMarket {
         ItemStack item = list.remove(index);
         if (list.isEmpty()) returns.remove(player.getUUID());
         save();
-        TFCoinShop.give(player, item);
+        give(player, item);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -333,53 +345,73 @@ public final class TFMarket {
     // Guardar
     // ---------------------------------------------------------------------------------------------------------------
 
+    /** Lo que no se pudo leer (por ejemplo, un objeto de un mod que ya no está): se guarda tal cual, nunca se borra. */
+    private static JsonArray unreadListings = new JsonArray();
+    private static JsonObject unreadReturns = new JsonObject();
+
     private static void load() {
         listings.clear();
         returns.clear();
         owed.clear();
         news.clear();
+        unreadListings = new JsonArray();
+        unreadReturns = new JsonObject();
         java.nio.file.Path file = TFJson.worldFile(server, "gts.json");
         JsonObject root = TFJson.read(file);
         if (root == null) {
-            if (Files.exists(file)) {
-                // Un gts.json roto guarda objetos de jugadores: se aparta en vez de pisarlo al guardar
-                try {
-                    Files.move(file, file.resolveSibling("gts-roto-" + System.currentTimeMillis() + ".json"));
-                    TFClient.LOGGER.error("GTS: gts.json no se pudo leer; lo aparto como gts-roto-*.json");
-                } catch (IOException e) {
-                    TFClient.LOGGER.error("GTS: gts.json no se pudo leer ni apartar", e);
-                }
-            }
+            if (Files.exists(file)) setAside(file);
             return;
         }
-        if (root.has("publicaciones")) {
-            for (JsonElement e : root.getAsJsonArray("publicaciones")) {
-                JsonObject o = e.getAsJsonObject();
-                ItemStack item = item(TFJson.str(o, "objeto", ""));
-                if (item.isEmpty()) {
-                    TFClient.LOGGER.warn("GTS: no se pudo leer el objeto de la publicación {}", TFJson.str(o, "id", "?"));
-                    continue;
+        try {
+            if (root.has("publicaciones") && root.get("publicaciones").isJsonArray()) {
+                for (JsonElement e : root.getAsJsonArray("publicaciones")) {
+                    try {
+                        JsonObject o = e.getAsJsonObject();
+                        ItemStack item = item(TFJson.str(o, "objeto", ""));
+                        if (item.isEmpty()) throw new IllegalStateException("objeto ilegible");
+                        listings.add(new Listing(TFJson.str(o, "id", ""), UUID.fromString(TFJson.str(o, "vendedor", "")),
+                                TFJson.str(o, "nombre", "?"), item, TFJson.num(o, "precio", 0), TFJson.num(o, "fecha", 0)));
+                    } catch (Exception ex) {
+                        unreadListings.add(e);
+                        TFClient.LOGGER.warn("GTS: una publicación no se pudo leer ({}); se guarda tal cual", ex.getMessage());
+                    }
                 }
-                listings.add(new Listing(TFJson.str(o, "id", ""), UUID.fromString(TFJson.str(o, "vendedor", "")),
-                        TFJson.str(o, "nombre", "?"), item, TFJson.num(o, "precio", 0), TFJson.num(o, "fecha", 0)));
             }
-        }
-        JsonObject back = TFJson.obj(root, "recoger");
-        for (String key : back.keySet()) {
-            List<ItemStack> items = new ArrayList<>();
-            for (JsonElement e : back.getAsJsonArray(key)) {
-                ItemStack item = item(e.getAsString());
-                if (!item.isEmpty()) items.add(item);
+            JsonObject back = TFJson.obj(root, "recoger");
+            for (String key : back.keySet()) {
+                List<ItemStack> items = new ArrayList<>();
+                JsonArray keep = new JsonArray();
+                for (JsonElement e : back.getAsJsonArray(key)) {
+                    ItemStack item = e.isJsonPrimitive() ? item(e.getAsString()) : ItemStack.EMPTY;
+                    if (item.isEmpty()) keep.add(e);
+                    else items.add(item);
+                }
+                UUID uuid = UUID.fromString(key);
+                if (!items.isEmpty()) returns.put(uuid, items);
+                if (!keep.isEmpty()) unreadReturns.add(key, keep);
             }
-            if (!items.isEmpty()) returns.put(UUID.fromString(key), items);
+            JsonObject pay = TFJson.obj(root, "pendiente");
+            for (String key : pay.keySet()) owed.put(UUID.fromString(key), pay.get(key).getAsLong());
+            JsonObject n = TFJson.obj(root, "avisos");
+            for (String key : n.keySet()) {
+                List<String> lines = new ArrayList<>();
+                for (JsonElement e : n.getAsJsonArray(key)) lines.add(e.getAsString());
+                news.put(UUID.fromString(key), lines);
+            }
+        } catch (Exception e) {
+            // Algo no cuadra en el archivo: se aparta entero (con todo lo de los jugadores) antes de que se pise
+            TFClient.LOGGER.error("GTS: gts.json tiene algo que no se entiende", e);
+            setAside(file);
         }
-        JsonObject pay = TFJson.obj(root, "pendiente");
-        for (String key : pay.keySet()) owed.put(UUID.fromString(key), pay.get(key).getAsLong());
-        JsonObject n = TFJson.obj(root, "avisos");
-        for (String key : n.keySet()) {
-            List<String> lines = new ArrayList<>();
-            for (JsonElement e : n.getAsJsonArray(key)) lines.add(e.getAsString());
-            news.put(UUID.fromString(key), lines);
+    }
+
+    private static void setAside(java.nio.file.Path file) {
+        try {
+            java.nio.file.Path copy = file.resolveSibling("gts-roto-" + System.currentTimeMillis() + ".json");
+            Files.copy(file, copy);
+            TFClient.LOGGER.error("GTS: copia de seguridad en {}", copy.getFileName());
+        } catch (IOException e) {
+            TFClient.LOGGER.error("GTS: gts.json no se pudo copiar", e);
         }
     }
 
@@ -398,6 +430,7 @@ public final class TFMarket {
             o.addProperty("fecha", l.created);
             list.add(o);
         }
+        for (JsonElement raw : unreadListings) list.add(raw);
         root.add("publicaciones", list);
         JsonObject back = new JsonObject();
         returns.forEach((uuid, items) -> {
@@ -405,6 +438,11 @@ public final class TFMarket {
             for (ItemStack item : items) a.add(item.save(new CompoundTag()).toString());
             back.add(uuid.toString(), a);
         });
+        for (String key : unreadReturns.keySet()) {
+            JsonArray a = back.has(key) ? back.getAsJsonArray(key) : new JsonArray();
+            for (JsonElement raw : unreadReturns.getAsJsonArray(key)) a.add(raw);
+            back.add(key, a);
+        }
         root.add("recoger", back);
         JsonObject pay = new JsonObject();
         owed.forEach((uuid, coins) -> pay.addProperty(uuid.toString(), coins));
@@ -441,6 +479,28 @@ public final class TFMarket {
     }
 
     // ---------------------------------------------------------------------------------------------------------------
+
+    /** Da el objeto; lo que no cabe cae a sus pies (también en creativo, donde Inventory.add lo borraría). */
+    static void give(ServerPlayer player, ItemStack template) {
+        int left = template.getCount();
+        while (left > 0) {
+            ItemStack stack = template.copy();
+            int n = Math.min(left, stack.getMaxStackSize());
+            stack.setCount(n);
+            left -= n;
+            boolean fits = player.getInventory().getSlotWithRemainingSpace(stack) != -1 || player.getInventory().getFreeSlot() != -1;
+            if (!fits || !player.getInventory().add(stack) || !stack.isEmpty()) {
+                if (!stack.isEmpty()) {
+                    net.minecraft.world.entity.item.ItemEntity drop = player.drop(stack, false);
+                    if (drop != null) {
+                        drop.setNoPickUpDelay();
+                        drop.setTarget(player.getUUID());
+                    }
+                }
+            }
+        }
+        player.containerMenu.broadcastChanges();
+    }
 
     public static String describe(ItemStack stack) {
         return stack.getCount() + "× " + stack.getHoverName().getString();

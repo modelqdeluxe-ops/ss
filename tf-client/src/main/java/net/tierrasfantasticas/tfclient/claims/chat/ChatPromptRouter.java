@@ -49,10 +49,11 @@ public final class ChatPromptRouter {
                 return true;
             }
             // El precio de una venta del GTS (TF Pad)
-            if (TFMarket.hasPrompt(uuid)) {
+            TFMarket.Prompt market = TFMarket.popPrompt(uuid);
+            if (market != null) {
                 String s3 = ChatPromptRouter.stripControlChars(s);
                 ChatPromptRouter.markSuppressed(uuid, s);
-                minecraftserver.execute(() -> TFMarket.answer(serverplayer, s3));
+                minecraftserver.execute(() -> TFMarket.answer(serverplayer, market, s3));
                 return true;
             }
             return false;

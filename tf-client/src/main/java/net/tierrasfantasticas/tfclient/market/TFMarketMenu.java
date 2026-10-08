@@ -117,7 +117,15 @@ public final class TFMarketMenu extends ChestMenu {
         } else {
             sell.text(why, ChatFormatting.RED);
         }
-        set(45, sell.build(), (pl, t, b) -> TFMarket.requestPrice(pl));
+        set(45, sell.build(), (pl, t, b) -> {
+            String error = TFMarket.requestPrice(pl);
+            if (error != null) {
+                no(pl);
+                set(45, TFIcon.of(Items.EMERALD).name("Vender lo de tu mano", ChatFormatting.GREEN).text(error, ChatFormatting.RED).build(),
+                        (p2, t2, b2) -> {});
+                broadcastChanges();
+            }
+        });
         int mine = TFMarket.listingsOf(player.getUUID()).size();
         set(46, TFIcon.of(Items.CHEST).name("Lo que vendes (" + mine + "/" + TFMarket.MAX_LISTINGS + ")", ChatFormatting.GOLD)
                 .text("Mira tus publicaciones y retira las que quieras.").blank()
@@ -142,14 +150,27 @@ public final class TFMarketMenu extends ChestMenu {
     }
 
     private void fillBuy(ServerPlayer player, Listing l, int page) {
+        fillBuy(player, l, page, null);
+    }
+
+    private void fillBuy(ServerPlayer player, Listing l, int page, String error) {
         clear();
         set(22, listingIcon(l, null), null);
-        set(30, TFIcon.of(Items.LIME_CONCRETE).name(Component.literal("Comprar por " + TFEconomy.format(l.price()))
-                        .withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true).withItalic(false)))
-                .line("Clic para pagar", ChatFormatting.YELLOW).build(), (pl, t, b) -> {
-                    if (TFMarket.buy(pl, l.id())) fillMain(pl, page);
-                    else fillBuy(pl, l, page);
-                });
+        TFIcon pay = TFIcon.of(Items.LIME_CONCRETE).name(Component.literal("Comprar por " + TFEconomy.format(l.price()))
+                .withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true).withItalic(false)));
+        if (error != null) pay.text(error, ChatFormatting.RED).blank();
+        pay.line("Clic para pagar", ChatFormatting.YELLOW);
+        set(30, pay.build(), (pl, t, b) -> {
+            if (TFMarket.buy(pl, l.id())) {
+                fillMain(pl, page);
+            } else if (TFMarket.find(l.id()) == null) {
+                no(pl);
+                fillMain(pl, page);
+            } else {
+                no(pl);
+                fillBuy(pl, l, page, "No te alcanzan las " + TFServerConfig.currency() + ".");
+            }
+        });
         set(32, TFIcon.of(Items.RED_CONCRETE).name("Mejor no", ChatFormatting.RED).build(), (pl, t, b) -> fillMain(pl, page));
         set(45, arrow("◀ Volver"), (pl, t, b) -> fillMain(pl, page));
         set(49, coins(player), null);
@@ -215,6 +236,10 @@ public final class TFMarketMenu extends ChestMenu {
                 .line(balance.isPresent() ? TFEconomy.format(balance.getAsLong()) : "—", ChatFormatting.YELLOW).build();
     }
 
+    private static void no(ServerPlayer player) {
+        player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.MASTER, 0.6F, 1.0F);
+    }
+
     private static ItemStack arrow(String text) {
         return TFIcon.of(Items.ARROW).name(text, ChatFormatting.YELLOW).build();
     }
@@ -242,7 +267,8 @@ public final class TFMarketMenu extends ChestMenu {
     @Override
     public void clicked(int slot, int button, ClickType type, Player player) {
         if (!(player instanceof ServerPlayer sp)) return;
-        if (type != ClickType.QUICK_CRAFT && type != ClickType.PICKUP_ALL && slot >= 0 && slot < SIZE) {
+        // Solo clics normales y Mayús+clic: Q, las teclas de número, el clic central o el doble clic no hacen nada
+        if ((type == ClickType.PICKUP || type == ClickType.QUICK_MOVE) && slot >= 0 && slot < SIZE) {
             Action action = actions.get(slot);
             if (action != null) {
                 sp.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.MASTER, 0.4F, 1.0F);

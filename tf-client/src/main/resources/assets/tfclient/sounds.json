@@ -404,5 +404,47 @@
     "name": "tfclient:vfx/ronin/thunder_strike"
    }
   ]
+ },
+ "pad.open": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/open"
+   }
+  ]
+ },
+ "pad.close": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/close"
+   }
+  ]
+ },
+ "pad.select": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/select"
+   }
+  ]
+ },
+ "pad.back": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/back"
+   }
+  ]
+ },
+ "pad.page": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/page"
+   }
+  ]
+ },
+ "pad.hover": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/hover"
+   }
+  ]
  }
 }
