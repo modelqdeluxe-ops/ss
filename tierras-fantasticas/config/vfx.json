@@ -37,350 +37,400 @@
    "name": "Fuego Infernal",
    "desc": "Llamas de alma consumen el cuerpo hasta las cenizas.",
    "cat": "elementos",
-   "image": "img/vfx/kill_fuego_infernal.webp"
+   "image": "img/vfx/kill_fuego_infernal.webp",
+   "preview": "img/vfx/prev_kill_fuego_infernal.webp"
   },
   {
    "id": "escarcha",
    "name": "Escarcha",
    "desc": "El hielo lo cubre y se hace añicos.",
    "cat": "elementos",
-   "image": "img/vfx/kill_escarcha.webp"
+   "image": "img/vfx/kill_escarcha.webp",
+   "preview": "img/vfx/prev_kill_escarcha.webp"
   },
   {
    "id": "derretido",
    "name": "Derretido",
    "desc": "Se derrite en un charco de agua.",
    "cat": "elementos",
-   "image": "img/vfx/kill_derretido.webp"
+   "image": "img/vfx/kill_derretido.webp",
+   "preview": "img/vfx/prev_kill_derretido.webp"
   },
   {
    "id": "evaporacion",
    "name": "Evaporación",
    "desc": "Se convierte en agua y se evapora.",
    "cat": "elementos",
-   "image": "img/vfx/kill_evaporacion.webp"
+   "image": "img/vfx/kill_evaporacion.webp",
+   "preview": "img/vfx/prev_kill_evaporacion.webp"
   },
   {
    "id": "acido",
    "name": "Ácido",
    "desc": "El ácido lo corroe hasta deshacerlo.",
    "cat": "elementos",
-   "image": "img/vfx/kill_acido.webp"
+   "image": "img/vfx/kill_acido.webp",
+   "preview": "img/vfx/prev_kill_acido.webp"
   },
   {
    "id": "oxido",
    "name": "Óxido",
    "desc": "Se oxida y se cae a trozos.",
    "cat": "elementos",
-   "image": "img/vfx/kill_oxido.webp"
+   "image": "img/vfx/kill_oxido.webp",
+   "preview": "img/vfx/prev_kill_oxido.webp"
   },
   {
    "id": "piedra",
    "name": "Piedra",
    "desc": "Se vuelve de piedra y se desmorona.",
    "cat": "elementos",
-   "image": "img/vfx/kill_piedra.webp"
+   "image": "img/vfx/kill_piedra.webp",
+   "preview": "img/vfx/prev_kill_piedra.webp"
   },
   {
    "id": "jade",
    "name": "Jade",
    "desc": "Se cristaliza en jade y se rompe en pedazos.",
    "cat": "elementos",
-   "image": "img/vfx/kill_jade.webp"
+   "image": "img/vfx/kill_jade.webp",
+   "preview": "img/vfx/prev_kill_jade.webp"
   },
   {
    "id": "niebla",
    "name": "Niebla",
    "desc": "Una niebla mística lo envuelve y lo borra.",
    "cat": "elementos",
-   "image": "img/vfx/kill_niebla.webp"
+   "image": "img/vfx/kill_niebla.webp",
+   "preview": "img/vfx/prev_kill_niebla.webp"
   },
   {
    "id": "humo",
    "name": "Humo",
    "desc": "Desaparece en una nube de humo.",
    "cat": "elementos",
-   "image": "img/vfx/kill_humo.webp"
+   "image": "img/vfx/kill_humo.webp",
+   "preview": "img/vfx/prev_kill_humo.webp"
   },
   {
    "id": "bendicion_angelical",
    "name": "Bendición Angelical",
    "desc": "Unas alas de luz se llevan el cuerpo al cielo.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_bendicion_angelical.webp"
+   "image": "img/vfx/kill_bendicion_angelical.webp",
+   "preview": "img/vfx/prev_kill_bendicion_angelical.webp"
   },
   {
    "id": "absorcion_sagrada",
    "name": "Absorción Sagrada",
    "desc": "Un haz de luz sagrada lo absorbe.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_absorcion_sagrada.webp"
+   "image": "img/vfx/kill_absorcion_sagrada.webp",
+   "preview": "img/vfx/prev_kill_absorcion_sagrada.webp"
   },
   {
    "id": "aurora",
    "name": "Aurora",
    "desc": "Una aurora boreal lo envuelve y se lo lleva.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_aurora.webp"
+   "image": "img/vfx/kill_aurora.webp",
+   "preview": "img/vfx/prev_kill_aurora.webp"
   },
   {
    "id": "constelacion",
    "name": "Constelación",
    "desc": "Planetas en órbita lo desintegran.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_constelacion.webp"
+   "image": "img/vfx/kill_constelacion.webp",
+   "preview": "img/vfx/prev_kill_constelacion.webp"
   },
   {
    "id": "estrella_norte",
    "name": "Estrella del Norte",
    "desc": "Se vuelve dorado y se apaga como una estrella.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_estrella_norte.webp"
+   "image": "img/vfx/kill_estrella_norte.webp",
+   "preview": "img/vfx/prev_kill_estrella_norte.webp"
   },
   {
    "id": "nebulosa",
    "name": "Nebulosa",
    "desc": "Se disuelve en una nube de colores.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_nebulosa.webp"
+   "image": "img/vfx/kill_nebulosa.webp",
+   "preview": "img/vfx/prev_kill_nebulosa.webp"
   },
   {
    "id": "prisma",
    "name": "Prisma",
    "desc": "Un prisma lo descompone en luz.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_prisma.webp"
+   "image": "img/vfx/kill_prisma.webp",
+   "preview": "img/vfx/prev_kill_prisma.webp"
   },
   {
    "id": "portal",
    "name": "Portal",
    "desc": "Un portal lo arrastra a otra dimensión.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_portal.webp"
+   "image": "img/vfx/kill_portal.webp",
+   "preview": "img/vfx/prev_kill_portal.webp"
   },
   {
    "id": "colapso_vacio",
    "name": "Colapso del Vacío",
    "desc": "Un agujero del vacío lo aplasta en un destello.",
    "cat": "cosmos",
-   "image": "img/vfx/kill_colapso_vacio.webp"
+   "image": "img/vfx/kill_colapso_vacio.webp",
+   "preview": "img/vfx/prev_kill_colapso_vacio.webp"
   },
   {
    "id": "chispas",
    "name": "Chispas",
    "desc": "Una descarga eléctrica lo hace chisporrotear.",
    "cat": "energia",
-   "image": "img/vfx/kill_chispas.webp"
+   "image": "img/vfx/kill_chispas.webp",
+   "preview": "img/vfx/prev_kill_chispas.webp"
   },
   {
    "id": "orbe_plasma",
    "name": "Orbe de Plasma",
    "desc": "Un orbe de plasma lo encierra y descarga rayos.",
    "cat": "energia",
-   "image": "img/vfx/kill_orbe_plasma.webp"
+   "image": "img/vfx/kill_orbe_plasma.webp",
+   "preview": "img/vfx/prev_kill_orbe_plasma.webp"
   },
   {
    "id": "magnetismo",
    "name": "Magnetismo",
    "desc": "Un campo magnético lo desarma.",
    "cat": "energia",
-   "image": "img/vfx/kill_magnetismo.webp"
+   "image": "img/vfx/kill_magnetismo.webp",
+   "preview": "img/vfx/prev_kill_magnetismo.webp"
   },
   {
    "id": "energia_cinetica",
    "name": "Energía Cinética",
    "desc": "La energía lo dispersa en todas direcciones.",
    "cat": "energia",
-   "image": "img/vfx/kill_energia_cinetica.webp"
+   "image": "img/vfx/kill_energia_cinetica.webp",
+   "preview": "img/vfx/prev_kill_energia_cinetica.webp"
   },
   {
    "id": "onda_sonora",
    "name": "Onda Sonora",
    "desc": "Una onda de sonido lo deshace.",
    "cat": "energia",
-   "image": "img/vfx/kill_onda_sonora.webp"
+   "image": "img/vfx/kill_onda_sonora.webp",
+   "preview": "img/vfx/prev_kill_onda_sonora.webp"
   },
   {
    "id": "reloj",
    "name": "Reloj",
    "desc": "El tiempo se rebobina y lo borra.",
    "cat": "energia",
-   "image": "img/vfx/kill_reloj.webp"
+   "image": "img/vfx/kill_reloj.webp",
+   "preview": "img/vfx/prev_kill_reloj.webp"
   },
   {
    "id": "holograma",
    "name": "Holograma",
    "desc": "El cuerpo parpadea como un holograma y se apaga.",
    "cat": "energia",
-   "image": "img/vfx/kill_holograma.webp"
+   "image": "img/vfx/kill_holograma.webp",
+   "preview": "img/vfx/prev_kill_holograma.webp"
   },
   {
    "id": "espejo",
    "name": "Espejo",
    "desc": "Su reflejo se agrieta y se esfuma.",
    "cat": "energia",
-   "image": "img/vfx/kill_espejo.webp"
+   "image": "img/vfx/kill_espejo.webp",
+   "preview": "img/vfx/prev_kill_espejo.webp"
   },
   {
    "id": "espectral",
    "name": "Espectral",
    "desc": "Su espíritu sale del cuerpo y se desvanece.",
    "cat": "energia",
-   "image": "img/vfx/kill_espectral.webp"
+   "image": "img/vfx/kill_espectral.webp",
+   "preview": "img/vfx/prev_kill_espectral.webp"
   },
   {
    "id": "engranajes",
    "name": "Engranajes",
    "desc": "Se desmonta pieza a pieza como un reloj.",
    "cat": "energia",
-   "image": "img/vfx/kill_engranajes.webp"
+   "image": "img/vfx/kill_engranajes.webp",
+   "preview": "img/vfx/prev_kill_engranajes.webp"
   },
   {
    "id": "naturaleza",
    "name": "Naturaleza",
    "desc": "Las enredaderas brotan y lo cubren.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_naturaleza.webp"
+   "image": "img/vfx/kill_naturaleza.webp",
+   "preview": "img/vfx/prev_kill_naturaleza.webp"
   },
   {
    "id": "floracion",
    "name": "Floración",
    "desc": "Una rosa brota donde cayó.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_floracion.webp"
+   "image": "img/vfx/kill_floracion.webp",
+   "preview": "img/vfx/prev_kill_floracion.webp"
   },
   {
    "id": "planta_carnivora",
    "name": "Planta Carnívora",
    "desc": "Una planta gigante brota y lo devora.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_planta_carnivora.webp"
+   "image": "img/vfx/kill_planta_carnivora.webp",
+   "preview": "img/vfx/prev_kill_planta_carnivora.webp"
   },
   {
    "id": "miel",
    "name": "Miel",
    "desc": "Se convierte en bloques de miel.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_miel.webp"
+   "image": "img/vfx/kill_miel.webp",
+   "preview": "img/vfx/prev_kill_miel.webp"
   },
   {
    "id": "bioluminiscencia",
    "name": "Bioluminiscencia",
    "desc": "Brilla con luz dorada y se eleva.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_bioluminiscencia.webp"
+   "image": "img/vfx/kill_bioluminiscencia.webp",
+   "preview": "img/vfx/prev_kill_bioluminiscencia.webp"
   },
   {
    "id": "tentaculos",
    "name": "Tentáculos",
    "desc": "Tentáculos surgen del suelo y lo arrastran abajo.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_tentaculos.webp"
+   "image": "img/vfx/kill_tentaculos.webp",
+   "preview": "img/vfx/prev_kill_tentaculos.webp"
   },
   {
    "id": "ataque_tiburon",
    "name": "Ataque de Tiburón",
    "desc": "Un tiburón sale del suelo y se lo lleva de un bocado.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_ataque_tiburon.webp"
+   "image": "img/vfx/kill_ataque_tiburon.webp",
+   "preview": "img/vfx/prev_kill_ataque_tiburon.webp"
   },
   {
    "id": "arenas_movedizas",
    "name": "Arenas Movedizas",
    "desc": "El suelo se abre y la arena se lo traga.",
    "cat": "naturaleza",
-   "image": "img/vfx/kill_arenas_movedizas.webp"
+   "image": "img/vfx/kill_arenas_movedizas.webp",
+   "preview": "img/vfx/prev_kill_arenas_movedizas.webp"
   },
   {
    "id": "papel_quemado",
    "name": "Papel Quemado",
    "desc": "Arde como una hoja de papel.",
    "cat": "arte",
-   "image": "img/vfx/kill_papel_quemado.webp"
+   "image": "img/vfx/kill_papel_quemado.webp",
+   "preview": "img/vfx/prev_kill_papel_quemado.webp"
   },
   {
    "id": "origami",
    "name": "Origami",
    "desc": "Se pliega como una figura de papel.",
    "cat": "arte",
-   "image": "img/vfx/kill_origami.webp"
+   "image": "img/vfx/kill_origami.webp",
+   "preview": "img/vfx/prev_kill_origami.webp"
   },
   {
    "id": "pluma_tinta",
    "name": "Pluma y Tinta",
    "desc": "Una pluma lo borra trazo a trazo.",
    "cat": "arte",
-   "image": "img/vfx/kill_pluma_tinta.webp"
+   "image": "img/vfx/kill_pluma_tinta.webp",
+   "preview": "img/vfx/prev_kill_pluma_tinta.webp"
   },
   {
    "id": "manchas_tinta",
    "name": "Manchas de Tinta",
    "desc": "Se disuelve en manchas de tinta.",
    "cat": "arte",
-   "image": "img/vfx/kill_manchas_tinta.webp"
+   "image": "img/vfx/kill_manchas_tinta.webp",
+   "preview": "img/vfx/prev_kill_manchas_tinta.webp"
   },
   {
    "id": "grafiti",
    "name": "Grafiti",
    "desc": "Un grafiti de cómic estalla en su lugar.",
    "cat": "arte",
-   "image": "img/vfx/kill_grafiti.webp"
+   "image": "img/vfx/kill_grafiti.webp",
+   "preview": "img/vfx/prev_kill_grafiti.webp"
   },
   {
    "id": "mosaico",
    "name": "Mosaico",
    "desc": "Se rompe en teselas de colores.",
    "cat": "arte",
-   "image": "img/vfx/kill_mosaico.webp"
+   "image": "img/vfx/kill_mosaico.webp",
+   "preview": "img/vfx/prev_kill_mosaico.webp"
   },
   {
    "id": "abstracto",
    "name": "Abstracto",
    "desc": "Se deforma en formas imposibles.",
    "cat": "arte",
-   "image": "img/vfx/kill_abstracto.webp"
+   "image": "img/vfx/kill_abstracto.webp",
+   "preview": "img/vfx/prev_kill_abstracto.webp"
   },
   {
    "id": "contorno",
    "name": "Contorno",
    "desc": "Un lápiz repasa su silueta y la borra.",
    "cat": "arte",
-   "image": "img/vfx/kill_contorno.webp"
+   "image": "img/vfx/kill_contorno.webp",
+   "preview": "img/vfx/prev_kill_contorno.webp"
   },
   {
    "id": "sombras",
    "name": "Sombras",
    "desc": "Las sombras del suelo se lo tragan.",
    "cat": "arte",
-   "image": "img/vfx/kill_sombras.webp"
+   "image": "img/vfx/kill_sombras.webp",
+   "preview": "img/vfx/prev_kill_sombras.webp"
   },
   {
    "id": "game_over",
    "name": "Game Over",
    "desc": "Un comecocos de recreativa se zampa al caído.",
    "cat": "divertidos",
-   "image": "img/vfx/kill_game_over.webp"
+   "image": "img/vfx/kill_game_over.webp",
+   "preview": "img/vfx/prev_kill_game_over.webp"
   },
   {
    "id": "knockout",
    "name": "K.O.",
    "desc": "Golpe de cómic: K.O. y fuera del combate.",
    "cat": "divertidos",
-   "image": "img/vfx/kill_knockout.webp"
+   "image": "img/vfx/kill_knockout.webp",
+   "preview": "img/vfx/prev_kill_knockout.webp"
   },
   {
    "id": "bloques_caen",
    "name": "Bloques que Caen",
    "desc": "Piezas de colores caen del cielo y lo aplastan.",
    "cat": "divertidos",
-   "image": "img/vfx/kill_bloques_caen.webp"
+   "image": "img/vfx/kill_bloques_caen.webp",
+   "preview": "img/vfx/prev_kill_bloques_caen.webp"
   },
   {
    "id": "impostor",
    "name": "Impostor",
    "desc": "Alguien sospechoso aparece por detrás. Puñalada.",
    "cat": "divertidos",
-   "image": "img/vfx/kill_impostor.webp"
+   "image": "img/vfx/kill_impostor.webp",
+   "preview": "img/vfx/prev_kill_impostor.webp"
   }
  ],
  "packs": [
@@ -392,48 +442,62 @@
    "image": "img/vfx/pack_vendaval.webp",
    "skills": [
     {
+     "id": "corte",
      "name": "Corte del Vendaval",
      "desc": "Al golpear: tajo de arriba abajo, tajo de abajo arriba y estocada que atrae a los enemigos.",
      "trigger": "golpe",
-     "cooldown": 1.2
+     "cooldown": 1.2,
+     "preview": "img/vfx/prev_vendaval_corte.webp"
     },
     {
+     "id": "danza",
      "name": "Danza de Cuchillas",
      "desc": "Golpeando mientras corres: carga el viento, te lanzas hacia delante y levantas a los enemigos.",
      "trigger": "golpe_corriendo",
-     "cooldown": 7
+     "cooldown": 7,
+     "preview": "img/vfx/prev_vendaval_danza.webp"
     },
     {
+     "id": "perforanubes",
      "name": "Perforanubes",
      "desc": "Golpeando agachado: lanzas una lanza de viento que frena a quien toca; al caer levanta un tornado que atrae y daña.",
      "trigger": "golpe_agachado",
-     "cooldown": 10
+     "cooldown": 10,
+     "preview": "img/vfx/prev_vendaval_perforanubes.webp"
     },
     {
+     "id": "torrente",
      "name": "Torrente",
      "desc": "En combate: haces girar la guja sobre tu cabeza atrayendo a los enemigos y descargas un gran tajo que los aparta.",
      "trigger": "combate",
-     "cooldown": 14
+     "cooldown": 14,
+     "preview": "img/vfx/prev_vendaval_torrente.webp"
     },
     {
+     "id": "runa",
      "name": "Runa del Viento",
      "desc": "En combate: el viento te rodea, saltas más y tus golpes levantan a los enemigos un instante.",
      "trigger": "combate",
-     "cooldown": 12
+     "cooldown": 12,
+     "preview": "img/vfx/prev_vendaval_runa.webp"
     },
     {
+     "id": "furia",
      "name": "Furia del Vendaval",
      "desc": "Con poca vida: un tornado te eleva casi intocable, atrae a todos los enemigos y caes sobre ellos con un tajo que agrieta el suelo.",
      "trigger": "dano",
      "cooldown": 60,
-     "vida": 0.3
+     "vida": 0.3,
+     "preview": "img/vfx/prev_vendaval_furia.webp"
     },
     {
+     "id": "salto",
      "name": "Salto del Viento",
      "desc": "Si te quedas a media vida: saltas por los aires y caes despacio.",
      "trigger": "dano",
      "cooldown": 20,
-     "vida": 0.5
+     "vida": 0.5,
+     "preview": "img/vfx/prev_vendaval_salto.webp"
     }
    ]
   },
@@ -445,88 +509,62 @@
    "image": "img/vfx/pack_trueno.webp",
    "skills": [
     {
+     "id": "corte",
      "name": "Corte del Trueno",
      "desc": "Al golpear: tajo a la izquierda, tajo a la derecha y un salto que cae como un rayo y puede paralizar.",
      "trigger": "golpe",
-     "cooldown": 1.2
+     "cooldown": 1.2,
+     "preview": "img/vfx/prev_trueno_corte.webp"
     },
     {
+     "id": "reflejo",
      "name": "Reflejo Relámpago",
      "desc": "Al recibir un golpe: 22 % de esquivarlo como un rayo y ganar velocidad un momento.",
      "trigger": "dano",
      "cooldown": 3,
-     "chance": 0.22
+     "chance": 0.22,
+     "preview": "img/vfx/prev_trueno_reflejo.webp"
     },
     {
+     "id": "destello",
      "name": "Trueno y Destello",
      "desc": "Golpeando mientras corres: cargas un círculo de rayos y sales disparado cortando todo lo que hay delante.",
      "trigger": "golpe_corriendo",
-     "cooldown": 6
+     "cooldown": 6,
+     "preview": "img/vfx/prev_trueno_destello.webp"
     },
     {
+     "id": "contraataque",
      "name": "Contraataque Tormenta",
      "desc": "Al recibir un golpe: das un paso atrás y respondes con dos tajos que paralizan.",
      "trigger": "dano",
-     "cooldown": 8
+     "cooldown": 8,
+     "preview": "img/vfx/prev_trueno_contraataque.webp"
     },
     {
+     "id": "caida",
      "name": "Caída Crepitante",
      "desc": "Con un golpe crítico: te elevas cargando energía y caes como un rayo, golpeando todo a tu alrededor.",
      "trigger": "golpe_critico",
-     "cooldown": 12
+     "cooldown": 12,
+     "preview": "img/vfx/prev_trueno_caida.webp"
     },
     {
+     "id": "andanada",
      "name": "Andanada de Trueno",
      "desc": "Golpeando agachado: una ráfaga de estocadas eléctricas hacia delante durante dos segundos.",
      "trigger": "golpe_agachado",
-     "cooldown": 9
+     "cooldown": 9,
+     "preview": "img/vfx/prev_trueno_andanada.webp"
     },
     {
+     "id": "dios",
      "name": "Dios del Trueno",
      "desc": "Con poca vida: un dragón de rayos aparece a tu espalda y te da fuerza y velocidad durante diez segundos.",
      "trigger": "dano",
      "cooldown": 90,
-     "vida": 0.4
-    }
-   ]
-  },
-  {
-   "id": "hechizos",
-   "name": "Hechizos del Alma",
-   "desc": "Hechizos con cinemática: te conviertes en mago con tu propia cara para curarte o lanzar agua, estrellas, láseres y una espada de sol.",
-   "color": "#b77dff",
-   "image": "img/vfx/pack_hechizos.webp",
-   "skills": [
-    {
-     "name": "Curación Mágica",
-     "desc": "Con poca vida: te conviertes en mago y te curas durante unos segundos, protegido.",
-     "trigger": "dano",
-     "cooldown": 40,
-     "vida": 0.35
-    },
-    {
-     "name": "Disparo de Agua",
-     "desc": "Golpeando mientras corres: invocas una esfera de agua que sale disparada y atraviesa a los enemigos.",
-     "trigger": "golpe_corriendo",
-     "cooldown": 50
-    },
-    {
-     "name": "Estrella Rebotante",
-     "desc": "En combate: una estrella de energía avanza arrollando enemigos y explota al final.",
-     "trigger": "combate",
-     "cooldown": 80
-    },
-    {
-     "name": "Láser del Vacío",
-     "desc": "Golpeando agachado: abres el vacío y disparas un láser que lo atraviesa todo y estalla delante de ti.",
-     "trigger": "golpe_agachado",
-     "cooldown": 80
-    },
-    {
-     "name": "Espada Solar",
-     "desc": "Con un golpe crítico: una espada de sol barre todo lo que tienes delante, lanzándolo y prendiéndole fuego.",
-     "trigger": "golpe_critico",
-     "cooldown": 60
+     "vida": 0.4,
+     "preview": "img/vfx/prev_trueno_dios.webp"
     }
    ]
   }

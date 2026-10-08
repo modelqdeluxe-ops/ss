@@ -17,6 +17,7 @@ Uso: python3 tools/build_vfx.py <carpeta con los packs descomprimidos>
 """
 import glob
 import json
+import math
 import os
 import shutil
 import sys
@@ -26,6 +27,7 @@ from PIL import Image
 
 import vfx_bb as B
 import vfx_mm as M
+import vfx_preview as PV
 import vfx_render as R
 import vfx_skills as SK
 
@@ -34,6 +36,7 @@ RES = os.path.join(HERE, '..', 'src', 'main', 'resources', 'assets', 'tfclient')
 WEB = os.path.join(HERE, '..', '..', 'tierras-fantasticas')
 MODELS_OUT = os.path.join(RES, 'vfx', 'models')
 TEX_OUT = os.path.join(RES, 'textures', 'vfx')
+# Iconos del indicador de la barra (ya no existe): la carpeta se borra al generar
 ICON_OUT = os.path.join(RES, 'textures', 'gui', 'vfx')
 SOUND_OUT = os.path.join(RES, 'sounds', 'vfx')
 WEB_IMG = os.path.join(WEB, 'public', 'img', 'vfx')
@@ -290,6 +293,10 @@ def build_kills(b):
             if not m.get('figures'):
                 problems.append(f'{vol}/{kind}: sin muñeco (el mob no puede hacer la animación)')
             life = life or 50
+            # El pack quita el modelo a los 50 ticks aunque su animación dure más: entonces el cuerpo (jade, espectral…)
+            # desaparecía de golpe a medio efecto. Se deja que la animación termine entera.
+            if anim in m['anims']:
+                life = max(life, int(math.ceil(m['anims'][anim]['len'] * 20)))
             fx_id = 'kill_' + kid
             # actor: la víctima de verdad hace la animación del muñeco (si el cliente no la tiene, sale el muñeco)
             ev0 = [{'t': 0, 'model': model_name.lower(), 'anim': anim, 'life': life, 'skin': True, 'hop': 1.0,
@@ -367,6 +374,45 @@ def zombie_skin():
     return ZOMBIE_SKIN
 
 
+def steve_figure():
+    """Steve de pie en el centro (las vistas previas de las skills), en triángulos ya puestos en el mundo."""
+    import io
+    import zipfile
+    jars = glob.glob(os.path.expanduser('~/.gradle/caches/forge_gradle/**/downloadClient/client.jar'), recursive=True)
+    if not jars:
+        sys.exit('Falta el client.jar de Minecraft (compila el mod una vez con gradle)')
+    tmp = os.path.join(HERE, '..', 'build', 'tf_preview')  # carpeta de compilación (no va al repositorio)
+    os.makedirs(tmp, exist_ok=True)
+    skin_path = os.path.join(tmp, 'steve.png')
+    with zipfile.ZipFile(jars[0]) as z:
+        with open(skin_path, 'wb') as fh:
+            fh.write(z.read('assets/minecraft/textures/entity/player/wide/steve.png'))
+    skin = np.asarray(Image.open(skin_path).convert('RGBA'), np.float32) / 255
+    model = PV.player_model(skin_path, None, tmp)
+    world = PV.rot_y(0) @ np.diag([1 / 16] * 3 + [1])
+    return R.model_tris(model, [skin], B.pose(model, None, 0), world=world, actor=skin)
+
+
+def write_previews(b, kills, packs):
+    """Vista previa animada (WebP) de cada efecto de kill y de cada skill, para la web."""
+    assets = PV.Assets(MODELS_OUT, TEX_OUT)
+    zombie = zombie_skin()
+    for k in kills:
+        name = 'prev_' + k['image']
+        PV.render_preview(assets, [b.fx[k['fx']]], os.path.join(WEB_IMG, name + '.webp'), actor_skin=zombie)
+        k['preview'] = f'img/vfx/{name}.webp'
+    steve = steve_figure()
+    for p in packs:
+        for s in p['skills']:
+            fxs = [b.fx[st['fx']] for st in s['stages'] if st.get('fx') in b.fx]
+            if not fxs:
+                problems.append(f'{p["id"]}/{s["id"]}: sin efecto para la vista previa')
+                continue
+            name = f'prev_{p["id"]}_{s["id"]}'
+            PV.render_preview(assets, fxs, os.path.join(WEB_IMG, name + '.webp'), steve=steve)
+            s['preview'] = f'img/vfx/{name}.webp'
+
+
 def thumbnail(m, anim, t, size, tex, yaw=-28, pitch=-14, actor=None):
     lo, hi = R.bounds(m, anim, [t])
     center = (lo + hi) / 2
@@ -377,7 +423,6 @@ def thumbnail(m, anim, t, size, tex, yaw=-28, pitch=-14, actor=None):
 
 
 def write_images(b, entries):
-    os.makedirs(ICON_OUT, exist_ok=True)
     os.makedirs(WEB_IMG, exist_ok=True)
     for e in entries:
         m = b.models[e['model']]
@@ -390,18 +435,11 @@ def write_images(b, entries):
         bg = Image.new('RGBA', img.size, (0, 0, 0, 0))
         bg.alpha_composite(img)
         bg.save(os.path.join(WEB_IMG, e['image'] + '.webp'), 'WEBP', quality=86, method=6)
-        icon = img.copy()
-        bbox = icon.getbbox()
-        if bbox:
-            icon = icon.crop(bbox)
-        side = max(icon.size)
-        sq = Image.new('RGBA', (side, side))
-        sq.alpha_composite(icon, ((side - icon.width) // 2, (side - icon.height) // 2))
-        sq.resize((32, 32), Image.LANCZOS).save(os.path.join(ICON_OUT, e['image'] + '.png'))
 
 
 def main(root):
-    for d in (MODELS_OUT, TEX_OUT, ICON_OUT, SOUND_OUT, WEB_IMG):
+    shutil.rmtree(ICON_OUT, ignore_errors=True)
+    for d in (MODELS_OUT, TEX_OUT, SOUND_OUT, WEB_IMG):
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d, exist_ok=True)
     b = Builder(Sources(root))
@@ -426,6 +464,7 @@ def main(root):
     for p in packs:
         p['image'] = 'pack_' + p['id']
     write_images(b, kills + packs)
+    write_previews(b, kills, packs)
 
     catalog = {
         'kills': [{'id': k['id'], 'name': k['name'], 'desc': k['desc'], 'fx': k['fx'], 'volume': k['volume']}
@@ -441,10 +480,10 @@ def main(root):
     web = {
         'cats': [{'id': c[0], 'name': c[1], 'color': c[2]} for c in KILL_CATS],
         'kills': [{'id': k['id'], 'name': k['name'], 'desc': k['desc'], 'cat': KILL_CAT.get(k['id'], 'elementos'),
-                   'image': f'img/vfx/{k["image"]}.webp'} for k in sorted(kills, key=lambda k: order.get(k['id'], 999))],
+                   'image': f'img/vfx/{k["image"]}.webp', 'preview': k['preview']} for k in sorted(kills, key=lambda k: order.get(k['id'], 999))],
         'packs': [{'id': p['id'], 'name': p['name'], 'desc': p['desc'], 'color': p['color'],
                    'image': f'img/vfx/{p["image"]}.webp',
-                   'skills': [{k: s[k] for k in ('name', 'desc', 'trigger', 'cooldown', 'vida', 'chance') if k in s}
+                   'skills': [{k: s[k] for k in ('id', 'name', 'desc', 'trigger', 'cooldown', 'vida', 'chance', 'preview') if k in s}
                               for s in p['skills']]} for p in packs],
     }
     with open(os.path.join(WEB, 'config', 'vfx.json'), 'w') as f:

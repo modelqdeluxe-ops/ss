@@ -12,7 +12,38 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): ventajas de los rangos puestas solas en LuckPerms/EssentialsX y TF Client 1.3.15
+### Última entrega (8 de octubre de 2026): skills más fuertes, kills completas, planeo de 10 s, paleta nueva, página VFX con vistas previas y TF Client 1.3.16
+**Lo que pidió el dueño (resumen):** quitar el paquete de mago y dejar los 2 de cuerpo a cuerpo con mucho más daño;
+revisar los efectos de kill («algunos no hacían bien la kill»); quitar el icono de la barra; planeo de alas con
+cronómetro de 10 s y contador junto al último hueco; rework serio de la página VFX con una animación de lo que se
+compra; rework de colores de toda la web (todo se veía igual). **Pendiente de esa misma petición (siguiente entrega):**
+el menú de inicio de Minecraft con el fondo animado de la web (mismas letras, auroras, botones con efectos) y el
+**armario** del perfil para equipar/desequipar todo lo comprado.
+
+- **Skills** (`vfx_skills.py`, `VfxServer.affect`): fuera *Hechizos del Alma*; el daño es base × (2 + ataque del jugador
+  / 4) × `multiplicadorDanoSkills` (×4 con espada de netherita, más con las armas de los sets).
+- **Kills**: la vida de cada efecto venía del `remove` de MythicMobs (50 ticks) y cortaba la animación 0,5 s antes de
+  terminar en 45 de los 50 (en jade y espectral el cuerpo seguía visible y desaparecía de golpe). Ahora dura lo que la
+  animación (`build_vfx.py`). Auditoría: `killaudit.py` (scratch) mira duración, visibilidad del cuerpo en el tiempo.
+- **Sin indicador** en la barra (`VfxHud` borrado y sus iconos `textures/gui/vfx` ya no se generan).
+- **Alas** (`TFWings.canGlide`, `TFGlideHud`): 10 s de planeo, luego se pliegan hasta tocar suelo/agua; en el suelo no
+  se planea (arregla el «me quedo planeando en el suelo»). Contador a la derecha de la barra mientras planeas.
+- **Vistas previas animadas** (`tools/vfx_preview.py`): simula la línea de tiempo de `fx.json` como `VfxClient`
+  (modelos, swap, vis, estados, tintes, proyectiles, temporizadores y partículas aproximadas) y la dibuja con
+  `vfx_render` (refactorizado en `model_tris` + `raster`) en WebP animado: kills con un zombi haciendo el efecto,
+  skills con Steve (skin del `client.jar`, nunca en el repo). `public/img/vfx/prev_*.webp`; `preview` en
+  `config/vfx.json` (kills y cada skill, que ahora lleva `id`).
+- **Página VFX** (`renderVfx` en app.js, sección VFX de styles.css): escenario grande con la animación de lo elegido
+  (pantalla con suelo de rejilla y «Vista previa»), ficha con disparador/cooldown y botón, lo que llevas puesto; mosaico
+  de kills por categoría (se animan al pasar el ratón; tocar → al escenario); paquetes con cada skill clicable.
+- **Paleta** (tokens al principio de styles.css): tarjetas en pizarra azul (no violeta como el cielo); botones por
+  función: `.btn-buy` oro (comprar, mejorar, pagar, «Tienda» de la cabecera), `.btn-claim` esmeralda (reclamar,
+  obtener), `.btn-ghost` cian (secundarios), `.btn-primary`/`.btn-theme` el destello rosa de la marca (confirmar,
+  equipar, entrar); precios en oro, «Gratis» en esmeralda; cada pestaña de la tienda con su tono (`--tone-*`: gratis
+  esmeralda, rangos oro, cosméticos rosa, crates violeta, VFX cian, monedas ámbar) y las tarjetas de la sección con su
+  filo de ese color (`--tone` en `#products`).
+
+### Entrega anterior (8 de octubre de 2026): ventajas de los rangos puestas solas en LuckPerms/EssentialsX y TF Client 1.3.15
 **Lo que pidió el dueño:** la lista exacta de lo que trae cada rango, añadida a la web y enlazada con el servidor
 (rangos con el plugin LuckPerms; el TF Client hace las llamadas y pone los permisos), «súper preciso, sin errores».
 
@@ -112,9 +143,9 @@ Dynamic Player VFX. De los packs solo se usan modelos, animaciones, texturas y s
   curar, esquivar. Solo dañan monstruos, al que golpeas y jugadores si hay PvP; nunca tus mascotas. Daño pensado para
   survival (config `config/tfclient-vfx.json`: activado, efectosDeKillConMobs, skills, skillsEnPvP,
   multiplicadorDanoSkills). Datos por jugador en `<mundo>/tfclient/vfx.json`.
-- Paquetes: **Filo del Vendaval** (7 skills de viento), **Ronin del Trueno** (7 de rayo), **Hechizos del Alma** (5
+- Paquetes: **Filo del Vendaval** (7 skills de viento), **Ronin del Trueno** (7 de rayo), (Hechizos del Alma, quitado en 1.3.16) (5
   hechizos con cinemática: el jugador se convierte en mago con su cara y no se ve mientras dura).
-- Indicador (`VfxHud`): a la derecha de la barra, con el marco del slot de la mano secundaria (si eres zurdo y llevas
+- Indicador (`VfxHud`, quitado en 1.3.16): a la derecha de la barra, con el marco del slot de la mano secundaria (si eres zurdo y llevas
   algo en esa mano, o tienes el indicador de ataque en la barra, se aparta). Hueco con el paquete (y su cooldown, como
   el de los objetos) y otro con el efecto de kill.
 - Staff: `/tf web vfx lista`, `/tf web vfx kill <jugadores> <id|ninguno>`, `/tf web vfx skills <jugadores>
@@ -611,7 +642,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.16**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.17**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).

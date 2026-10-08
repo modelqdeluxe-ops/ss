@@ -393,7 +393,7 @@
           ${perks.length ? `<ul class="perks">${perks.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
           <div class="card-foot">${giftFoot(p) || rankFoot(p) || `
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn btn-primary btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>`}
+            <button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar</button>`}
           </div>
         </div>
       </article>`;
@@ -413,7 +413,7 @@
           <span class="pieces">${escapeHtml(piecesText(p))}</span>
           <div class="card-foot">
             <span class="price">${formatPrice(p.price)}</span>
-            <button class="btn btn-theme btn-sm" type="button" ${buyAttrs(p)}>Comprar crate</button>
+            <button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Comprar crate</button>
           </div>
         </div>
       </article>`;
@@ -421,7 +421,7 @@
 
   function giftFoot(p) {
     if (p.price !== 0) return '';
-    return `<span class="price free">Gratis</span><button class="btn btn-primary btn-sm" type="button" data-claim="${escapeHtml(p.id)}">Reclamar</button>`;
+    return `<span class="price free">Gratis</span><button class="btn btn-claim btn-sm" type="button" data-claim="${escapeHtml(p.id)}">Reclamar</button>`;
   }
 
   document.addEventListener('click', async (e) => {
@@ -456,7 +456,7 @@
       const mine = me.user.rank.id === p.id;
       return `<span class="price owned">${mine ? 'Tu rango' : 'Incluido'}</span><button class="btn btn-ghost btn-sm" type="button" disabled>${mine ? '✓ Lo tienes' : 'Ya incluido'}</button>`;
     }
-    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><button class="btn btn-primary btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>`;
+    return `<span class="price"><small>Mejora · antes ${formatPrice(p.price)}</small>${formatPrice(q.unit)}</span><button class="btn btn-buy btn-sm" type="button" ${buyAttrs(p)}>Mejorar</button>`;
   }
 
   function rerenderRanks() {
@@ -526,6 +526,8 @@
     closeStages();
     const box = $('#products');
     box.className = 'products';
+    // El tono de la sección (filos de las tarjetas y etiquetas), el mismo que su pestaña
+    box.style.setProperty('--tone', `var(--tone-${category}, var(--a-400))`);
     $('#shop-intro').textContent = INTRO[category] || '';
     $('#shop-intro').hidden = !INTRO[category];
     $('#shop-search-wrap').hidden = category !== 'crates';
@@ -601,7 +603,7 @@
     const key = `${kind}:${id}`;
     const attrs = `data-vfx-kind="${kind}" data-vfx-id="${escapeHtml(id)}"`;
     if (!mine || !mine.owned.includes(key)) {
-      return `<span class="price free">Gratis</span><button class="btn btn-primary btn-sm" type="button" data-vfx-claim ${attrs}>Obtener</button>`;
+      return `<span class="price free">Gratis</span><button class="btn btn-claim btn-sm" type="button" data-vfx-claim ${attrs}>Obtener</button>`;
     }
     if (mine[kind] === id) {
       return `<span class="price owned">Equipado</span><button class="btn btn-ghost btn-sm" type="button" data-vfx-remove ${attrs}>Quitar</button>`;
@@ -609,47 +611,96 @@
     return `<span class="price owned">Tuyo</span><button class="btn btn-primary btn-sm" type="button" data-vfx-equip ${attrs}>Equipar</button>`;
   }
 
-  // Lo que llevas puesto: el efecto de kill y el paquete de skills
+  // Lo seleccionado en el escenario: { kind: 'kill' | 'skill', id, pack }
+  let vfxSel = null;
+  const vfxCatOf = (k) => (vfxData.cats || []).find((c) => c.id === k.cat);
+  const vfxPackOf = (id) => vfxData.packs.find((p) => p.id === id);
+  const vfxColor = (c) => (HEX.test(c || '') ? c : '#45e9ff');
+
+  // Lo que llevas puesto: el efecto de kill y el paquete de skills (con su miniatura)
   function vfxSlot(kind, label) {
     const id = vfxData.me?.[kind];
     const item = id ? (kind === 'kill' ? vfxData.kills : vfxData.packs).find((x) => x.id === id) : null;
     return `<div class="vfx-slot${item ? ' is-on' : ''}">
-        <div class="vfx-slot-art">${item ? img(item.image, '') : '<span aria-hidden="true">+</span>'}</div>
+        <div class="vfx-slot-art">${item ? img(item.image, '') : '<span aria-hidden="true">—</span>'}</div>
         <div><span>${label}</span><b>${item ? escapeHtml(item.name) : 'Ninguno'}</b></div>
       </div>`;
   }
 
-  function vfxKillCard(k) {
-    const on = vfxData.me?.kill === k.id;
+  // El escenario: la animación de lo elegido en grande, con su ficha y el botón
+  function vfxStage() {
+    let title, kicker, desc, preview, color, foot, extra = '';
+    if (vfxSel?.kind === 'skill') {
+      const pack = vfxPackOf(vfxSel.pack);
+      const sk = pack.skills.find((x) => x.id === vfxSel.id) || pack.skills[0];
+      title = sk.name;
+      kicker = `Skill de ${pack.name}`;
+      desc = sk.desc;
+      preview = sk.preview || pack.image;
+      color = vfxColor(pack.color);
+      extra = `<div class="vfx-specs"><span class="vfx-trigger">${escapeHtml(triggerText(sk))}</span><span class="vfx-cd">Cooldown ${seconds(sk.cooldown)}</span></div>
+        <p class="vfx-note">Se consigue con el paquete <b>${escapeHtml(pack.name)}</b> (${pack.skills.length} skills).</p>`;
+      foot = vfxFoot('pack', pack.id);
+    } else {
+      const k = vfxData.kills.find((x) => x.id === vfxSel?.id) || vfxData.kills[0];
+      const cat = vfxCatOf(k);
+      title = k.name;
+      kicker = `Efecto de kill${cat ? ` · ${cat.name}` : ''}`;
+      desc = k.desc;
+      preview = k.preview || k.image;
+      color = vfxColor(cat?.color);
+      extra = '<p class="vfx-note">Sale al derrotar a un jugador o a cualquier mob: la propia víctima hace la animación.</p>';
+      foot = vfxFoot('kill', k.id);
+    }
     return `
-        <article class="panel vfx-kill${on ? ' is-on' : ''}">
-          <div class="vfx-art">${img(k.image, '')}</div>
-          <div class="body">
-            <h4>${escapeHtml(k.name)}</h4>
-            <p>${escapeHtml(k.desc)}</p>
-            <div class="card-foot">${vfxFoot('kill', k.id)}</div>
-          </div>
-        </article>`;
+      <div class="vfx-stage panel" style="--vfx:${color}">
+        <div class="vfx-screen">
+          <img class="vfx-anim" src="${asset(preview)}" alt="" decoding="async">
+          <span class="vfx-live" aria-hidden="true"><i></i>Vista previa</span>
+        </div>
+        <div class="vfx-info">
+          <span class="cat">${escapeHtml(kicker)}</span>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(desc)}</p>
+          ${extra}
+          <div class="card-foot">${foot}</div>
+          <div class="vfx-loadout">${vfxSlot('kill', 'Tu efecto de kill')}${vfxSlot('pack', 'Tu paquete de skills')}</div>
+        </div>
+      </div>`;
   }
 
-  function vfxPackCard(p) {
+  function vfxKillTile(k) {
+    const sel = vfxSel?.kind !== 'skill' && (vfxSel?.id || vfxData.kills[0].id) === k.id;
+    const on = vfxData.me?.kill === k.id;
+    return `<button type="button" class="vfx-tile${sel ? ' is-sel' : ''}${on ? ' is-on' : ''}" data-vfx-pick="kill" data-id="${escapeHtml(k.id)}"
+        data-anim="${escapeHtml(asset(k.preview || k.image))}" aria-pressed="${sel}">
+        <span class="vfx-tile-art">${img(k.image, '')}</span>
+        <span class="vfx-tile-name">${escapeHtml(k.name)}</span>${on ? '<span class="vfx-tag">Equipado</span>' : ''}
+      </button>`;
+  }
+
+  function vfxPackBlock(p) {
     const on = vfxData.me?.pack === p.id;
-    return `
-        <article class="panel vfx-pack${on ? ' is-on' : ''}" style="--vfx:${HEX.test(p.color) ? p.color : '#b77dff'}">
-          <div class="vfx-art">${img(p.image, '')}</div>
-          <div class="body">
-            <span class="cat">${p.skills.length} skills pasivas</span>
+    return `<section class="vfx-pack panel${on ? ' is-on' : ''}" style="--vfx:${vfxColor(p.color)}">
+        <header class="vfx-pack-head">
+          <span class="vfx-pack-art">${img(p.image, '')}</span>
+          <div class="vfx-pack-text">
+            <span class="cat">Paquete · ${p.skills.length} skills pasivas</span>
             <h3>${escapeHtml(p.name)}</h3>
             <p>${escapeHtml(p.desc)}</p>
-            <ul class="vfx-skills">${p.skills
-              .map(
-                (s) => `<li><b>${escapeHtml(s.name)}</b><span class="vfx-desc">${escapeHtml(s.desc)}</span>
-                  <span class="vfx-meta"><span class="vfx-trigger">${escapeHtml(triggerText(s))}</span><span class="cd">${seconds(s.cooldown)}</span></span></li>`,
-              )
-              .join('')}</ul>
-            <div class="card-foot">${vfxFoot('pack', p.id)}</div>
           </div>
-        </article>`;
+          <div class="vfx-pack-buy">${vfxFoot('pack', p.id)}</div>
+        </header>
+        <div class="vfx-skill-grid">${p.skills
+          .map((sk) => {
+            const sel = vfxSel?.kind === 'skill' && vfxSel.pack === p.id && vfxSel.id === sk.id;
+            return `<button type="button" class="vfx-skill${sel ? ' is-sel' : ''}" data-vfx-pick="skill" data-pack="${escapeHtml(p.id)}" data-id="${escapeHtml(sk.id)}" aria-pressed="${sel}">
+              <span class="vfx-skill-art">${sk.preview ? `<img src="${asset(sk.preview)}" alt="" loading="lazy" decoding="async">` : ''}</span>
+              <span class="vfx-skill-text"><b>${escapeHtml(sk.name)}</b><span>${escapeHtml(triggerText(sk))} · ${seconds(sk.cooldown)}</span></span>
+            </button>`;
+          })
+          .join('')}</div>
+      </section>`;
   }
 
   function renderVfx(box) {
@@ -658,13 +709,13 @@
       return;
     }
     box.classList.add('vfx-shop');
+    if (!vfxSel) vfxSel = vfxTab === 'packs' ? { kind: 'skill', pack: vfxData.packs[0].id, id: vfxData.packs[0].skills[0].id } : { kind: 'kill', id: vfxData.kills[0].id };
     const cats = vfxData.cats || [];
     const tab = (id, label, n) =>
       `<button type="button" role="tab" data-vfx-tab="${id}" aria-selected="${vfxTab === id}">${label}<span>${n}</span></button>`;
     let body;
     if (vfxTab === 'packs') {
-      body = `<p class="vfx-lead muted">Cada paquete trae varias skills pasivas: saltan solas según cómo pelees, cada una con su cooldown.</p>
-      <div class="vfx-packs">${vfxData.packs.map(vfxPackCard).join('')}</div>`;
+      body = `<div class="vfx-packs">${vfxData.packs.map(vfxPackBlock).join('')}</div>`;
     } else {
       const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
       body = `<div class="vfx-filter" role="group" aria-label="Categorías">${[{ id: 'todos', name: 'Todos' }, ...cats]
@@ -679,18 +730,21 @@
         .map((c) => {
           const list = vfxData.kills.filter((k) => k.cat === c.id);
           if (!list.length) return '';
-          return `<section class="vfx-group" style="--vfx:${HEX.test(c.color) ? c.color : '#b77dff'}">
+          return `<section class="vfx-group" style="--vfx:${vfxColor(c.color)}">
           <header><h3>${escapeHtml(c.name)}</h3><span>${list.length}</span></header>
-          <div class="vfx-kills">${list.map(vfxKillCard).join('')}</div>
+          <div class="vfx-tiles">${list.map(vfxKillTile).join('')}</div>
         </section>`;
         })
         .join('')}`;
     }
     box.innerHTML = `
-      <section class="vfx-top frame">
-        <div class="vfx-loadout">${vfxSlot('kill', 'Efecto de kill')}${vfxSlot('pack', 'Paquete de skills')}</div>
-        <p class="muted">Todo gratis. En el juego se activan solos y los ves junto al último hueco de tu barra.</p>
-      </section>
+      <div class="vfx-hero">
+        <div>
+          <h2>Efectos visuales</h2>
+          <p>Todo gratis. Se activan solos en el juego: los efectos de kill al derrotar a alguien y las skills al pelear.</p>
+        </div>
+      </div>
+      <div id="vfx-stage">${vfxStage()}</div>
       <div class="vfx-tabs" role="tablist" aria-label="VFX">${tab('kills', 'Efectos de kill', vfxData.kills.length)}${tab(
         'packs',
         'Paquetes de skills',
@@ -699,11 +753,47 @@
       ${body}`;
   }
 
+  // Al pasar el ratón por una kill se anima su miniatura (solo en pantallas con ratón)
+  document.addEventListener('pointerover', (e) => {
+    const t = e.target.closest?.('.vfx-tile[data-anim]');
+    if (!t || e.pointerType === 'touch') return;
+    const im = t.querySelector('.vfx-tile-art img');
+    if (im && !im.dataset.still) {
+      im.dataset.still = im.src;
+      im.src = t.dataset.anim;
+    }
+  });
+  document.addEventListener('pointerout', (e) => {
+    const t = e.target.closest?.('.vfx-tile[data-anim]');
+    if (!t || t.contains(e.relatedTarget)) return;
+    const im = t.querySelector('.vfx-tile-art img');
+    if (im?.dataset.still) {
+      im.src = im.dataset.still;
+      delete im.dataset.still;
+    }
+  });
+
   document.addEventListener('click', async (e) => {
+    const pick = e.target.closest('[data-vfx-pick]');
+    if (pick) {
+      vfxSel = pick.dataset.vfxPick === 'skill' ? { kind: 'skill', pack: pick.dataset.pack, id: pick.dataset.id } : { kind: 'kill', id: pick.dataset.id };
+      $('#vfx-stage').innerHTML = vfxStage();
+      $$('[data-vfx-pick]').forEach((b) => {
+        const sel = b === pick;
+        b.classList.toggle('is-sel', sel);
+        b.setAttribute('aria-pressed', String(sel));
+      });
+      // En el móvil el escenario queda arriba: se sube para verlo
+      const stage = $('#vfx-stage');
+      if (stage.getBoundingClientRect().top < 0) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     const vt = e.target.closest('[data-vfx-tab], [data-vfx-cat]');
     if (vt) {
-      if (vt.dataset.vfxTab) vfxTab = vt.dataset.vfxTab;
-      else vfxCat = vt.dataset.vfxCat;
+      if (vt.dataset.vfxTab && vt.dataset.vfxTab !== vfxTab) {
+        vfxTab = vt.dataset.vfxTab;
+        vfxSel = null;
+      } else if (vt.dataset.vfxCat) vfxCat = vt.dataset.vfxCat;
       if (currentCategory === 'vfx') renderVfx($('#products'));
       return;
     }
@@ -1225,7 +1315,7 @@
     box.innerHTML = `
       <span class="cos-buy-art">${img(p.image, '', '', ' width="52" height="52"')}</span>
       <span class="cos-buy-text"><small>${escapeHtml(p.theme)} · ${SLOT_LABEL[p.slot] || ''}</small><b>${escapeHtml(p.name)}</b></span>
-      <button class="btn btn-theme" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button>`;
+      <button class="btn btn-buy" type="button" ${buyAttrs(p)}>Comprar · ${formatPrice(p.price)}</button>`;
   }
 
   async function drawCosmetics() {
@@ -1286,7 +1376,7 @@
         <p class="cv-bound">${ICON_LOCK}<span>Permanente e irrompible, vinculado a tu cuenta: solo tú puedes usarlo. Los cosméticos (alas, sombreros, mochilas) sí se pueden intercambiar.</span></p>
         <div class="cv-buy">
           <span class="price"><small>Set completo</small><span id="cv-price"></span></span>
-          <button class="btn btn-theme btn-lg" type="button" id="cv-buy">Comprar crate</button>
+          <button class="btn btn-buy btn-lg" type="button" id="cv-buy">Comprar crate</button>
         </div>
       </div>
     </div>
@@ -1484,7 +1574,7 @@
 
       ${termsLabel('pay-terms')}
       <div class="pay-actions">
-        <button type="submit" class="btn btn-primary btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
+        <button type="submit" class="btn btn-buy btn-lg btn-block pay-btn" id="pay-btn" disabled>Pagar con tarjeta</button>
         <button type="button" class="btn btn-paypal btn-lg btn-block pay-btn" id="pay-paypal" hidden disabled>Pagar con <b class="pp-word">Pay<i>Pal</i></b></button>
       </div>
       <p class="pay-note">${ICON_LOCK}<span id="pay-note-text">Pago seguro con <b>Stripe</b>: tarjeta, Apple Pay o Google Pay. Nunca vemos tus datos bancarios.</span></p>
@@ -2002,7 +2092,7 @@
         </section>
       </div>
       <section class="panel account-card account-orders">
-        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-primary btn-sm" href="/tienda">Ir a la tienda</a></div>
+        <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>
         <div id="orders"><p class="muted">Cargando…</p></div>
       </section>`;
 

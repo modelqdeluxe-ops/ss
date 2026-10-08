@@ -74,7 +74,7 @@ public final class VfxClient {
     private static final Map<Integer, Integer> HIDDEN = new HashMap<>();
     private static final int MAX_RUNNING = 64;
 
-    // Estado del indicador (VfxHud)
+    // Lo que lleva equipado el jugador y sus cooldowns (lo manda el servidor; ya no se enseña en la barra)
     static String hudKill;
     static String hudPack;
     static int[] hudCooldowns = new int[0];

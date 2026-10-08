@@ -414,7 +414,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_corte.webp"
     },
     {
      "id": "danza",
@@ -479,7 +480,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_danza.webp"
     },
     {
      "id": "perforanubes",
@@ -539,7 +541,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_perforanubes.webp"
     },
     {
      "id": "torrente",
@@ -586,7 +589,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_torrente.webp"
     },
     {
      "id": "runa",
@@ -623,7 +627,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_runa.webp"
     },
     {
      "id": "furia",
@@ -882,7 +887,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_furia.webp"
     },
     {
      "id": "salto",
@@ -913,7 +919,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_vendaval_salto.webp"
     }
    ]
   },
@@ -999,7 +1006,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_corte.webp"
     },
     {
      "id": "reflejo",
@@ -1027,7 +1035,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_reflejo.webp"
     },
     {
      "id": "destello",
@@ -1060,7 +1069,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_destello.webp"
     },
     {
      "id": "contraataque",
@@ -1107,7 +1117,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_contraataque.webp"
     },
     {
      "id": "caida",
@@ -1153,7 +1164,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_caida.webp"
     },
     {
      "id": "andanada",
@@ -1289,7 +1301,8 @@
         }
        ]
       }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_andanada.webp"
     },
     {
      "id": "dios",
@@ -1321,455 +1334,8 @@
         }
        ]
       }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "hechizos",
-   "name": "Hechizos del Alma",
-   "desc": "Hechizos con cinemática: te conviertes en mago con tu propia cara para curarte o lanzar agua, estrellas, láseres y una espada de sol.",
-   "color": "#b77dff",
-   "skills": [
-    {
-     "id": "curacion",
-     "name": "Curación Mágica",
-     "trigger": "dano",
-     "cooldown": 40,
-     "vida": 0.35,
-     "desc": "Con poca vida: te conviertes en mago y te curas durante unos segundos, protegido.",
-     "stages": [
-      {
-       "fx": "hechizo_curacion",
-       "actions": [
-        {
-         "t": 1,
-         "self": {
-          "pociones": [
-           {
-            "id": "minecraft:resistance",
-            "ticks": 129,
-            "nivel": 3
-           },
-           {
-            "id": "minecraft:speed",
-            "ticks": 129,
-            "nivel": 1
-           }
-          ]
-         }
-        },
-        {
-         "t": 50,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 55,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 60,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 65,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 70,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 75,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 80,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 85,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 90,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 95,
-         "self": {
-          "curar": 1
-         }
-        },
-        {
-         "t": 100,
-         "self": {
-          "curar": 1
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "id": "agua",
-     "name": "Disparo de Agua",
-     "trigger": "golpe_corriendo",
-     "cooldown": 50,
-     "desc": "Golpeando mientras corres: invocas una esfera de agua que sale disparada y atraviesa a los enemigos.",
-     "stages": [
-      {
-       "fx": "hechizo_agua",
-       "actions": [
-        {
-         "t": 1,
-         "self": {
-          "pociones": [
-           {
-            "id": "minecraft:resistance",
-            "ticks": 91,
-            "nivel": 2
-           },
-           {
-            "id": "minecraft:speed",
-            "ticks": 91,
-            "nivel": 1
-           }
-          ]
-         }
-        },
-        {
-         "t": 85,
-         "proyectil": {
-          "v": 1.25,
-          "ticks": 40,
-          "r": 2.2,
-          "up": 1.3,
-          "fwd": 0.3,
-          "atraviesa": true
-         },
-         "dano": 6,
-         "impacto": "hechizo_agua_impacto"
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "id": "estrella",
-     "name": "Estrella Rebotante",
-     "trigger": "combate",
-     "cooldown": 80,
-     "desc": "En combate: una estrella de energía avanza arrollando enemigos y explota al final.",
-     "stages": [
-      {
-       "fx": "hechizo_estrella",
-       "actions": [
-        {
-         "t": 1,
-         "self": {
-          "pociones": [
-           {
-            "id": "minecraft:resistance",
-            "ticks": 95,
-            "nivel": 2
-           },
-           {
-            "id": "minecraft:speed",
-            "ticks": 95,
-            "nivel": 1
-           }
-          ]
-         }
-        },
-        {
-         "t": 82,
-         "proyectil": {
-          "v": 1.25,
-          "ticks": 88,
-          "r": 1.5,
-          "up": 1.3,
-          "fwd": 0.3,
-          "atraviesa": true,
-          "vels": [
-           {
-            "t": 50,
-            "v": 1.0
-           },
-           {
-            "t": 100,
-            "v": 0.005
-           }
-          ],
-          "alFinal": {
-           "fx": "hechizo_explosion",
-           "area": {
-            "r": 6,
-            "vr": 3,
-            "limit": 10
-           },
-           "dano": 6
-          }
-         },
-         "dano": 5,
-         "impacto": "hechizo_impacto"
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "id": "vacio",
-     "name": "Láser del Vacío",
-     "trigger": "golpe_agachado",
-     "cooldown": 80,
-     "desc": "Golpeando agachado: abres el vacío y disparas un láser que lo atraviesa todo y estalla delante de ti.",
-     "stages": [
-      {
-       "fx": "hechizo_vacio",
-       "actions": [
-        {
-         "t": 1,
-         "self": {
-          "pociones": [
-           {
-            "id": "minecraft:resistance",
-            "ticks": 100,
-            "nivel": 2
-           },
-           {
-            "id": "minecraft:speed",
-            "ticks": 100,
-            "nivel": 1
-           }
-          ]
-         }
-        },
-        {
-         "t": 85,
-         "linea": {
-          "len": 15,
-          "r": 1.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 88,
-         "linea": {
-          "len": 15,
-          "r": 1.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 91,
-         "linea": {
-          "len": 15,
-          "r": 1.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 94,
-         "linea": {
-          "len": 15,
-          "r": 1.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 97,
-         "linea": {
-          "len": 15,
-          "r": 1.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 95,
-         "area": {
-          "fwd": 5,
-          "r": 5,
-          "vr": 3,
-          "limit": 10
-         },
-         "dano": 5,
-         "impacto": "hechizo_explosion"
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "id": "sol",
-     "name": "Espada Solar",
-     "trigger": "golpe_critico",
-     "cooldown": 60,
-     "desc": "Con un golpe crítico: una espada de sol barre todo lo que tienes delante, lanzándolo y prendiéndole fuego.",
-     "stages": [
-      {
-       "fx": "hechizo_sol",
-       "actions": [
-        {
-         "t": 1,
-         "self": {
-          "pociones": [
-           {
-            "id": "minecraft:resistance",
-            "ticks": 70,
-            "nivel": 2
-           },
-           {
-            "id": "minecraft:speed",
-            "ticks": 70,
-            "nivel": 1
-           }
-          ]
-         }
-        },
-        {
-         "t": 60,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 64,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 68,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 72,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 76,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 80,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 84,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        },
-        {
-         "t": 88,
-         "area": {
-          "fwd": 3,
-          "r": 3.5,
-          "vr": 2.5,
-          "limit": 8
-         },
-         "dano": 1.5,
-         "lanzar": 0.5,
-         "empuje": 0.8,
-         "fuego": 3,
-         "impacto": "hechizo_impacto"
-        }
-       ]
-      }
-     ]
+     ],
+     "preview": "img/vfx/prev_trueno_dios.webp"
     }
    ]
   }

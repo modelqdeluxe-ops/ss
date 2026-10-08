@@ -224,13 +224,19 @@ Todo sale de `tools/build_vfx.py` (lee los packs comprados, que no están en el 
 - **Efectos de kill** (50): al derrotar a un jugador o a cualquier mob, la propia víctima hace la animación del efecto
   (salta, gira, se encoge, sale volando; los humanoides mueven cabeza, brazos y piernas) con su sonido y partículas;
   si el efecto la convierte en óxido, piedra, jade, agua o un holograma, toma esa textura. Lo ven todos a 96 bloques.
-- **Paquetes de skills** (3): skills pasivas que se lanzan solas según cómo pelees, cada una con su cooldown: al
-  golpear (golpes cargados), con un golpe crítico, golpeando mientras corres o agachado, al recibir daño (algunas solo
-  con poca vida) o en combate. Daño en zona, empujes, paralizar, curar, esquivar…
-- **Indicador**: junto al último hueco de la barra, a la derecha (nunca encima de la mano secundaria): el paquete con
-  el cooldown de la última skill y el efecto de kill.
+- **Paquetes de skills** (2, cuerpo a cuerpo: Filo del Vendaval y Ronin del Trueno): skills pasivas que se lanzan
+  solas según cómo pelees, cada una con su cooldown: al golpear (golpes cargados), con un golpe crítico, golpeando
+  mientras corres o agachado, al recibir daño (algunas solo con poca vida) o en combate. El daño crece con el arma:
+  base × (2 + ataque / 4) (×4 con una espada de netherita), además de `multiplicadorDanoSkills`.
+- Sin indicador en la barra (se quitó en 1.3.16).
 - `config/tfclient-vfx.json`: `activado`, `efectosDeKillConMobs`, `skills`, `skillsEnPvP`, `multiplicadorDanoSkills`.
 - Staff: `/tf web vfx lista | kill <jugadores> <id|ninguno> | skills <jugadores> <id|ninguno> | probar <id>`.
+
+## Alas: planeo de 10 segundos (1.3.16)
+
+Las alas de los sets planean como unas élitros hasta 10 s seguidos; luego se pliegan y no vuelven a abrirse hasta tocar
+el suelo o el agua (en el suelo nunca se planea). Mientras planeas, a la derecha del último hueco de la barra sale un
+contador con los segundos que quedan y una barrita (verde → ámbar → rojo). `TFWings.canGlide`, `TFGlideHud`.
 
 ## Rangos en LuckPerms (1.3.15)
 
@@ -269,7 +275,7 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.15.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.16.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

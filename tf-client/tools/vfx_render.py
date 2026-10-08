@@ -29,42 +29,59 @@ def look_matrix(yaw_deg, pitch_deg):
     return rx @ ry
 
 
-def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, center=None, fov=40, tick=0,
-           hidden=None, ss=2, skin=None, actor=None):
-    """Imagen RGBA del modelo en el instante t (s). La cámara mira la cara delantera (-Z) del modelo.
-    actor: skin de 64×64 de un mob que hace la animación en lugar del muñeco (como en el juego)."""
-    mats = B.pose(model, anim, t)
-    tris = []  # (z, pts3 (3x3), uvs (3x2), tex, normal)
-    flag = lambda q: int(q[24]) if len(q) > 24 else 0
+def model_tris(model, textures, mats, world=None, tick=0, hidden=None, skin=None, actor=None, visible=None,
+               sources=None, tint=None):
+    """Triángulos del modelo con esa pose: (puntos 3×3 en el mundo, uv 3×2, imagen, emisiva, normal, tinte).
+    world: matriz 4×4 del modelo al mundo; visible: huesos que se ven; sources: hueso → (modelo, texturas) que lo
+    sustituye (swap de los efectos); actor: skin del mob que hace de muñeco (ver render)."""
+    out = []
+    flag = lambda q: int(q[24]) if len(q) > 24 else 0  # noqa: E731
+    W = np.eye(4) if world is None else world
     for bi, b in enumerate(model['bones']):
-        if b['hidden'] or (hidden and b['id'] in hidden):
+        if visible is not None:
+            if not visible[bi]:
+                continue
+        elif b['hidden']:
             continue
-        m = np.array(mats[bi])
-        for q in b['quads']:
+        if hidden and b['id'] in hidden:
+            continue
+        src, src_tex, quads = model, textures, b['quads']
+        if sources and bi in sources:
+            src, src_tex = sources[bi]
+            other = next((ob for ob in src['bones'] if ob['id'].lower() == b['id'].lower()), None)
+            quads = other['quads'] if other else []
+        m = W @ np.array(mats[bi])
+        for q in quads:
             ti = q[0]
             if actor is not None:
                 # El muñeco gris lo hace el mob (con su skin); las piezas de material se quedan como en el juego
                 if ti == -3:
                     if not flag(q) & 4:
                         continue
-                elif flag(q) & 2 and (ti < 0 or model['tex'][ti]['body']):
+                elif flag(q) & 2 and (ti < 0 or src['tex'][ti]['body']):
                     continue
             elif ti == -3:
                 continue
-            if ti < 0 and ti != -3 and (skin is None or ti == -2 or any(qq[0] >= 0 for qq in b['quads'])):
+            if ti < 0 and ti != -3 and (skin is None or ti == -2 or any(qq[0] >= 0 for qq in quads)):
                 continue  # cabeza con skin: en las miniaturas va la cabeza del modelo (o una gris si no tiene)
             n = m[:3, :3] @ np.array(q[1:4])
             vs = np.array(q[4:24]).reshape(4, 5)
             pts = (m[:3, :3] @ vs[:, :3].T).T + m[:3, 3]
-            tex = model['tex'][ti] if ti >= 0 else {'ft': 1, 'frames': 1, 'e': False}
+            tex = src['tex'][ti] if ti >= 0 else {'ft': 1, 'frames': 1, 'e': False}
             fr = (tick // tex['ft']) % tex['frames'] if tex['frames'] > 1 else 0
             uv = vs[:, 3:5].copy()
             uv[:, 1] = (uv[:, 1] + fr) / tex['frames']
+            img = src_tex[ti] if ti >= 0 else actor if ti == -3 else skin
             for a, b2, c in ((0, 1, 2), (0, 2, 3)):
-                tris.append((pts[[a, b2, c]], uv[[a, b2, c]], ti, n))
-    if not tris:
+                out.append((pts[[a, b2, c]], uv[[a, b2, c]], img, bool(tex['e']), n, tint))
+    return out
+
+
+def raster(tris, size=512, yaw=-30, pitch=-12, dist=None, center=None, fov=40, ss=2, points=None):
+    """Imagen RGBA de los triángulos (y de partículas: (posición, rgba, radio) en las mismas unidades)."""
+    if not tris and not points:
         return Image.new('RGBA', (size, size))
-    allp = np.concatenate([tr[0] for tr in tris])
+    allp = np.concatenate([tr[0] for tr in tris]) if tris else np.array([p[0] for p in points])
     if center is None:
         center = (allp.min(0) + allp.max(0)) / 2
     rot = look_matrix(yaw, pitch)
@@ -77,7 +94,7 @@ def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, ce
     color = np.zeros((S, S, 4), np.float32)
     zbuf = np.full((S, S), np.inf, np.float32)
     proj = []
-    for pts, uv, ti, n in tris:
+    for pts, uv, img, emissive, n, tint in tris:
         cam = (rot @ (pts - center).T).T
         cam[:, 2] = cam[:, 2] + dist  # profundidad: delante = positivo
         # Mirando hacia +Z desde -Z: la derecha de la imagen es -X del modelo (como Blockbench desde el norte)
@@ -88,11 +105,11 @@ def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, ce
             continue
         sx = S / 2 - cam[:, 0] * f / cam[:, 2]
         sy = S / 2 - cam[:, 1] * f / cam[:, 2]
-        proj.append((cam[:, 2].mean(), np.stack([sx, sy], 1), cam[:, 2], uv, ti, nc))
+        proj.append((cam[:, 2].mean(), np.stack([sx, sy], 1), cam[:, 2], uv, img, emissive, nc, tint))
     proj.sort(key=lambda p: -p[0])
     light = np.array([0.2, 1.0, -0.7])
     light /= np.linalg.norm(light)
-    for _, sp, z, uv, ti, nc in proj:
+    for _, sp, z, uv, tex, emissive, nc, tint in proj:
         x0, y0 = np.floor(sp.min(0)).astype(int)
         x1, y1 = np.ceil(sp.max(0)).astype(int)
         x0, y0 = max(x0, 0), max(y0, 0)
@@ -113,7 +130,6 @@ def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, ce
         iz = w0 / z[0] + w1 / z[1] + w2 / z[2]
         u = (w0 * uv[0, 0] / z[0] + w1 * uv[1, 0] / z[1] + w2 * uv[2, 0] / z[2]) / iz
         v = (w0 * uv[0, 1] / z[0] + w1 * uv[1, 1] / z[1] + w2 * uv[2, 1] / z[2]) / iz
-        tex = textures[ti] if ti >= 0 else actor if ti == -3 else skin
         th, tw = tex.shape[:2]
         tu = np.clip((u * tw).astype(int), 0, tw - 1)
         tv = np.clip((v * th).astype(int), 0, th - 1)
@@ -122,8 +138,10 @@ def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, ce
         ok = inside & (px[..., 3] >= 0.1) & (depth < zbuf[y0:y1 + 1, x0:x1 + 1])
         if not ok.any():
             continue
-        shade = 1.0 if ti >= 0 and model['tex'][ti]['e'] else 0.6 + 0.4 * max(0.0, float(-(nc @ light)))
+        shade = 1.0 if emissive else 0.6 + 0.4 * max(0.0, float(-(nc @ light)))
         src = px[..., :3] * shade
+        if tint is not None:
+            src = src * np.array(tint, np.float32)
         a = px[..., 3:4]
         dst = color[y0:y1 + 1, x0:x1 + 1]
         okm = ok[..., None]
@@ -134,8 +152,35 @@ def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, ce
         # Solo lo casi opaco tapa lo de detrás (como el depth write con transparencia)
         zb = zbuf[y0:y1 + 1, x0:x1 + 1]
         zbuf[y0:y1 + 1, x0:x1 + 1] = np.where(ok & (px[..., 3] > 0.9), depth, zb)
+    # Partículas: cuadraditos de color que miran a la cámara, ocultos por lo que tengan delante
+    for pos, rgba, radius in points or []:
+        cam = rot @ (np.asarray(pos, float) - center)
+        zc = cam[2] + dist
+        if zc <= 1:
+            continue
+        sx = S / 2 - cam[0] * f / zc
+        sy = S / 2 - cam[1] * f / zc
+        r = max(1.0, radius * f / zc)
+        x0, x1 = int(max(0, sx - r)), int(min(S - 1, sx + r))
+        y0, y1 = int(max(0, sy - r)), int(min(S - 1, sy + r))
+        if x0 > x1 or y0 > y1:
+            continue
+        ok = zc < zbuf[y0:y1 + 1, x0:x1 + 1]
+        a = float(rgba[3])
+        dst = color[y0:y1 + 1, x0:x1 + 1]
+        okm = ok[..., None]
+        dst[..., :3] = np.where(okm, np.array(rgba[:3], np.float32) * a + dst[..., :3] * (1 - a), dst[..., :3])
+        dst[..., 3:4] = np.where(okm, a + dst[..., 3:4] * (1 - a), dst[..., 3:4])
     img = Image.fromarray((np.clip(color, 0, 1) * 255).astype(np.uint8), 'RGBA')
     return img.resize((size, size), Image.LANCZOS) if ss > 1 else img
+
+
+def render(model, textures, anim, t, size=512, yaw=-30, pitch=-12, dist=None, center=None, fov=40, tick=0,
+           hidden=None, ss=2, skin=None, actor=None):
+    """Imagen RGBA del modelo en el instante t (s). La cámara mira la cara delantera (-Z) del modelo.
+    actor: skin de 64×64 de un mob que hace la animación en lugar del muñeco (como en el juego)."""
+    tris = model_tris(model, textures, B.pose(model, anim, t), tick=tick, hidden=hidden, skin=skin, actor=actor)
+    return raster(tris, size, yaw, pitch, dist, center, fov, ss)
 
 
 def bounds(model, anim, times):
