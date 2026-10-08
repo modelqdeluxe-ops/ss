@@ -297,10 +297,12 @@ def preview_home(files, meta, page, hover=None):
         w = c.width(name)
         c.text(name, cx - w // 2, ty + 41)
     # puntos de página
+    x = 196 - (6 + 12 + 3) // 2
     for p in range(2):
-        x = 196 - 6 + p * 8
-        c.fill(x, 189, x + 4, 193, NAVY)
-        c.fill(x + 1, 190, x + 3, 192, (255, 230, 128) if p == page else (150, 206, 246))
+        w = 12 if p == page else 6
+        c.fill(x, 189, x + w, 194, NAVY)
+        c.fill(x + 1, 190, x + w - 1, 193, (246, 182, 40) if p == page else (150, 206, 246))
+        x += w + 3
     return c.compose()
 
 

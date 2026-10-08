@@ -139,7 +139,7 @@ final class PadViewPage extends PadPage {
             button(g, right - bw, fy, bw, send, mx, my);
         }
         if (waiting) {
-            PadFont.draw(g, "...", X + W - 14, Y - 13, 0xFFE680, true);
+            PadFont.draw(g, "...", X + W - 16, Y + 2, 0x4A6694, false);
         }
     }
 
@@ -180,7 +180,7 @@ final class PadViewPage extends PadPage {
                 PadUi.text(g, r.title(), x + 4, ty, 0xFF000000 | r.color());
                 ty += 11;
             }
-            for (String line : r.lines()) ty += PadUi.wrap(g, line, x + 4, ty, w - 8, PadUi.TEXT, 30) * 10;
+            for (String line : r.lines()) ty += Math.max(1, PadUi.wrap(g, line, x + 4, ty, w - 8, PadUi.TEXT, 30)) * 10;
             return;
         }
         int tx = x + 4;
@@ -188,7 +188,7 @@ final class PadViewPage extends PadPage {
             int iy = y + (h - 16) / 2;
             g.renderItem(r.icon(), x + 3, iy);
             g.renderItemDecorations(PadUi.font(), r.icon(), x + 3, iy);
-            if (PadUi.inside(mx, my, x + 3, iy, 16, 16)) tooltip = r.icon();
+            if (PadUi.inside(mx, my, x + 3, iy, 16, 16) && my >= listTop + 2 && my < listBottom - 2) tooltip = r.icon();
             tx = x + 24;
         }
         int bw = buttonsWidth(r);
@@ -198,7 +198,7 @@ final class PadViewPage extends PadPage {
         PadUi.text(g, fitMc(r.title(), textW - badgeW), tx, y + 4, 0xFF000000 | r.color());
         if (badgeW > 0) PadUi.text(g, r.badge(), tx + textW - badgeW + 4, y + 4, 0xFFC27A10);
         int ly = y + 14;
-        for (String line : r.lines()) ly += PadUi.wrap(g, line, tx, ly, textW, PadUi.MUTED, 2) * 10;
+        for (String line : r.lines()) ly += Math.max(1, PadUi.wrap(g, line, tx, ly, textW, PadUi.MUTED, 2)) * 10;
         if (r.progress() >= 0) PadUi.progress(g, tx, ly + 1, Math.min(textW, 120), r.progress());
         int bx = x + w - bw;
         int by = y + (h - 16) / 2;

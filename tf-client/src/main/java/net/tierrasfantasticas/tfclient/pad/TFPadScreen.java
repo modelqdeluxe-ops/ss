@@ -249,7 +249,7 @@ public final class TFPadScreen extends Screen {
             right -= 10;
         }
         if (mc.level != null) {
-            long t = mc.level.getDayTime() % 24000L;
+            long t = Math.floorMod(mc.level.getDayTime(), 24000L);
             String time = String.format(Locale.ROOT, "%02d:%02d", (int) ((t / 1000 + 6) % 24), (int) (t % 1000 * 60 / 1000));
             int w = PadFont.width(time);
             PadFont.draw(g, time, right - w, 68, 0xFFFFFF, true);

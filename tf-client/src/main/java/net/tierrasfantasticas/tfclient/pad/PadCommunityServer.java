@@ -390,7 +390,7 @@ public final class PadCommunityServer {
                 }
             }
         }
-        sendFeed(player, m.tab(), m.page());
+        if (m.page() >= 0) sendFeed(player, m.tab(), m.page());
     }
 
     private static boolean remove(String id) {

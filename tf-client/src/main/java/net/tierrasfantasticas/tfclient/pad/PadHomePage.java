@@ -65,10 +65,14 @@ final class PadHomePage extends PadPage {
         drawPage(g, page, shift, mx, my);
         g.disableScissor();
         // puntos de página
+        // la página actual es una barrita dorada; las otras, un punto azul (centrados bajo la rejilla)
+        int total = (PAGES - 1) * 6 + 12 + (PAGES - 1) * 3;
+        int x = 196 - total / 2;
         for (int i = 0; i < PAGES; i++) {
-            int x = 196 - (PAGES * 8 - 4) / 2 + i * 8;
-            g.fill(x, 189, x + 4, 193, PadUi.NAVY);
-            g.fill(x + 1, 190, x + 3, 192, i == page ? 0xFFFFE680 : 0xFF96CEF6);
+            int w = i == page ? 12 : 6;
+            g.fill(x, 189, x + w, 194, PadUi.NAVY);
+            g.fill(x + 1, 190, x + w - 1, 193, i == page ? 0xFFF6B628 : 0xFF96CEF6);
+            x += w + 3;
         }
     }
 
@@ -98,12 +102,14 @@ final class PadHomePage extends PadPage {
     @Override
     boolean click(double mx, double my, int button) {
         if (button != 0) return false;
+        int x = 196 - ((PAGES - 1) * 6 + 12 + (PAGES - 1) * 3) / 2;
         for (int i = 0; i < PAGES; i++) {
-            int x = 196 - (PAGES * 8 - 4) / 2 + i * 8;
-            if (PadUi.inside(mx, my, x - 2, 187, 8, 8)) {
+            int w = i == page ? 12 : 6;
+            if (PadUi.inside(mx, my, x - 1, 186, w + 2, 10)) {
                 go(i);
                 return true;
             }
+            x += w + 3;
         }
         App app = at(mx, my);
         if (app != null && from < 0) {

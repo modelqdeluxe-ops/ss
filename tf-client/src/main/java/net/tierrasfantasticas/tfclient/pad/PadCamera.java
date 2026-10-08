@@ -76,6 +76,7 @@ public final class PadCamera {
     }
 
     static void stop() {
+        shootIn = -1;
         if (!active) return;
         active = false;
         Minecraft.getInstance().options.hideGui = prevHideGui;
@@ -100,21 +101,32 @@ public final class PadCamera {
         if (event.phase != TickEvent.Phase.END || shootIn < 0) return;
         if (shootIn-- > 0) return;
         Minecraft mc = Minecraft.getInstance();
+        // si entre la C y la foto se abrió otra pantalla (Esc, chat, morir…) o se salió del mundo, no hay foto
+        if (mc.player == null || mc.screen != null) {
+            stop();
+            return;
+        }
         NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget());
-        String name = "foto_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss")) + ".png";
-        Path file = dir().resolve(name);
-        lastPhoto = file;
+        String base = "foto_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
+        Path file = dir().resolve(base + ".png");
+        for (int i = 2; Files.exists(file); i++) file = dir().resolve(base + "_" + i + ".png");
+        Path saved = file;
+        lastPhoto = saved;
         Util.ioPool().execute(() -> {
             try (img) {
-                Files.createDirectories(file.getParent());
-                img.writeToFile(file);
+                Files.createDirectories(saved.getParent());
+                img.writeToFile(saved);
             } catch (Exception e) {
                 TFClient.LOGGER.warn("TF Pad: no se pudo guardar la foto", e);
+                mc.execute(() -> {
+                    if (saved.equals(lastPhoto)) lastPhoto = null;
+                });
             }
         });
         stop();
         flashAt = System.currentTimeMillis();
-        TFPadClient.sound("foto", 0.9F);
+        PadSettings.load();
+        if (PadSettings.sounds) TFPadClient.sound("foto", 0.9F * PadSettings.volume / 80F);
         // de vuelta al pad, en la Cámara, con la foto nueva
         TFPadClient.openTo("camara");
     }

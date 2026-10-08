@@ -186,7 +186,7 @@ final class PadInfoPages {
                     case 0 -> PadSettings.sounds = !PadSettings.sounds;
                     case 1 -> PadSettings.hoverTick = !PadSettings.hoverTick;
                     case 2 -> PadSettings.animations = !PadSettings.animations;
-                    case 3 -> PadSettings.volume = PadSettings.volume >= 100 ? 20 : PadSettings.volume + 20;
+                    case 3 -> PadSettings.volume = PadSettings.volume >= 100 ? 20 : Math.min(100, PadSettings.volume + 20);
                     default -> {
                     }
                 }

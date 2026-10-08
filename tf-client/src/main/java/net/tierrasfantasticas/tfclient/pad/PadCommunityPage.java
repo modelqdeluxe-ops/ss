@@ -17,6 +17,7 @@ final class PadCommunityPage extends PadPage {
     private int index;
     private boolean full;
     private long confirm;
+    private String confirmId = "";
     private final List<int[]> hits = new ArrayList<>();
     private final List<Runnable> actions = new ArrayList<>();
 
@@ -117,10 +118,11 @@ final class PadCommunityPage extends PadPage {
         }
         int by = top + H - 16 - 19;
         if (post.canDelete()) {
-            boolean sure = System.currentTimeMillis() - confirm < 3000;
+            boolean sure = post.id().equals(confirmId) && System.currentTimeMillis() - confirm < 3000;
             button(g, cx, by, cw, sure ? "¿SEGURO?" : "BORRAR", PadView.RED, mx, my, () -> {
-                if (System.currentTimeMillis() - confirm > 3000) {
+                if (!post.id().equals(confirmId) || System.currentTimeMillis() - confirm > 3000) {
                     confirm = System.currentTimeMillis();
+                    confirmId = post.id();
                 } else {
                     confirm = 0;
                     PadCommunityClient.act("borrar", post.id());

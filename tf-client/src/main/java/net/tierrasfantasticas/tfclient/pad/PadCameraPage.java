@@ -32,7 +32,12 @@ final class PadCameraPage extends PadPage {
     private boolean captioning;
     private String caption = "";
     private long confirmDelete;
+    private Path confirmPath;
+    /** Fotos que no se pudieron abrir (no se reintentan en cada fotograma). */
+    private final java.util.Set<Path> broken = new java.util.HashSet<>();
+    private final java.util.Set<Path> decoding = new java.util.HashSet<>();
     private long lastScan;
+    private boolean closed;
     private final List<int[]> buttons = new ArrayList<>();
     private final List<Runnable> actions = new ArrayList<>();
 
@@ -53,6 +58,7 @@ final class PadCameraPage extends PadPage {
         lastScan = System.currentTimeMillis();
         if (keep != null) select(keep);
         index = Math.max(0, Math.min(index, photos.size() - 1));
+        confirmDelete = 0;
     }
 
     private void select(Path p) {
@@ -63,35 +69,54 @@ final class PadCameraPage extends PadPage {
     @Override
     void tick() {
         // la foto recién hecha se guarda en segundo plano: se vuelve a mirar hasta que aparece
-        if (PadCamera.lastPhoto != null && !photos.contains(PadCamera.lastPhoto) && System.currentTimeMillis() - lastScan > 400) {
+        if (PadCamera.lastPhoto != null && !photos.contains(PadCamera.lastPhoto) && System.currentTimeMillis() - lastScan > 400
+                && System.currentTimeMillis() - PadCamera.flashAt < 6000) {
             scan();
             select(PadCamera.lastPhoto);
         }
     }
 
+    /** La foto en pequeño (320x180). Se lee y se reduce en segundo plano: una captura 4K tarda en abrirse. */
     private ResourceLocation texture(Path p) {
         Tex t = textures.get(p);
         if (t != null) return t.loc;
-        try (InputStream in = Files.newInputStream(p); NativeImage src = NativeImage.read(in)) {
-            int sw = src.getWidth(), sh = src.getHeight();
-            int cw = sw, ch = sw * 9 / 16;
-            if (ch > sh) {
-                ch = sh;
-                cw = sh * 16 / 9;
+        if (closed || broken.contains(p) || !decoding.add(p)) return null;
+        Util.backgroundExecutor().execute(() -> {
+            NativeImage small = null;
+            try (InputStream in = Files.newInputStream(p); NativeImage src = NativeImage.read(in)) {
+                int sw = src.getWidth(), sh = src.getHeight();
+                int cw = sw, ch = sw * 9 / 16;
+                if (ch > sh) {
+                    ch = sh;
+                    cw = sh * 16 / 9;
+                }
+                small = new NativeImage(320, 180, false);
+                src.resizeSubRectTo((sw - cw) / 2, (sh - ch) / 2, cw, ch, small);
+            } catch (Exception e) {
+                if (small != null) small.close();
+                small = null;
             }
-            NativeImage small = new NativeImage(320, 180, false);
-            src.resizeSubRectTo((sw - cw) / 2, (sh - ch) / 2, cw, ch, small);
-            ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "fotos/" + Integer.toHexString(p.toString().hashCode()));
-            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(small));
-            textures.put(p, new Tex(loc));
-            while (textures.size() > 6) {
-                Path oldest = textures.keySet().iterator().next();
-                Minecraft.getInstance().getTextureManager().release(textures.remove(oldest).loc);
-            }
-            return loc;
-        } catch (Exception e) {
-            return null;
-        }
+            NativeImage done = small;
+            Minecraft.getInstance().execute(() -> {
+                decoding.remove(p);
+                if (done == null) {
+                    broken.add(p);
+                    return;
+                }
+                if (closed) {
+                    done.close();
+                    return;
+                }
+                ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "fotos/" + Integer.toHexString(p.toString().hashCode()));
+                Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(done));
+                textures.put(p, new Tex(loc));
+                while (textures.size() > 6) {
+                    Path oldest = textures.keySet().iterator().next();
+                    Minecraft.getInstance().getTextureManager().release(textures.remove(oldest).loc);
+                }
+            });
+        });
+        return null;
     }
 
     @Override
@@ -107,7 +132,11 @@ final class PadCameraPage extends PadPage {
         } else {
             Path p = photos.get(index);
             ResourceLocation loc = texture(p);
-            if (loc != null) g.blit(loc, px, py, PW, PH, 0, 0, 320, 180, 320, 180);
+            if (loc != null) {
+                g.blit(loc, px, py, PW, PH, 0, 0, 320, 180, 320, 180);
+            } else {
+                PadFont.drawCentered(g, broken.contains(p) ? "NO SE PUEDE ABRIR" : "...", px + PW / 2, py + PH / 2 - 5, 0xE0ECFF, false);
+            }
             if (photos.size() > 1) {
                 arrow(g, px + 2, py + PH / 2 - 7, true, mx, my, () -> move(-1));
                 arrow(g, px + PW - 12, py + PH / 2 - 7, false, mx, my, () -> move(1));
@@ -154,7 +183,7 @@ final class PadCameraPage extends PadPage {
                     captioning = true;
                     caption = "";
                 });
-                boolean sure = System.currentTimeMillis() - confirmDelete < 3000;
+                boolean sure = p.equals(confirmPath) && System.currentTimeMillis() - confirmDelete < 3000;
                 button(g, cx, Y + 51, cw, sure ? "¿SEGURO?" : "BORRAR", PadView.RED, mx, my, this::delete);
             }
         }
@@ -199,17 +228,20 @@ final class PadCameraPage extends PadPage {
         if (photos.isEmpty()) return;
         index = (index + d + photos.size()) % photos.size();
         captioning = false;
+        confirmDelete = 0;
         pad.sound("hover", 0.6F);
     }
 
     private void delete() {
         if (photos.isEmpty()) return;
-        if (System.currentTimeMillis() - confirmDelete > 3000) {
+        Path p = photos.get(index);
+        if (!p.equals(confirmPath) || System.currentTimeMillis() - confirmDelete > 3000) {
             confirmDelete = System.currentTimeMillis();
+            confirmPath = p;
             return;
         }
         confirmDelete = 0;
-        Path p = photos.get(index);
+        if (p.equals(PadCamera.lastPhoto)) PadCamera.lastPhoto = null;
         Tex t = textures.remove(p);
         if (t != null) Minecraft.getInstance().getTextureManager().release(t.loc);
         try {
@@ -289,6 +321,7 @@ final class PadCameraPage extends PadPage {
 
     @Override
     void closed() {
+        closed = true;
         for (Tex t : textures.values()) Minecraft.getInstance().getTextureManager().release(t.loc);
         textures.clear();
     }

@@ -37,6 +37,7 @@ final class PadCommunityClient {
     private static final Map<String, Tex> TEXTURES = new LinkedHashMap<>(16, 0.75F, true);
     private static final Map<String, byte[][]> DOWNLOADS = new HashMap<>();
     private static final Set<String> ASKED = new HashSet<>();
+    private static final Set<String> BROKEN = new HashSet<>();
 
     /** Subida en curso (para la barra de la Cámara). */
     static volatile String uploadStatus;
@@ -92,26 +93,51 @@ final class PadCommunityClient {
         if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadCommunityPage p) p.updated();
     }
 
+    /**
+     * like / borrar / denunciar. Se cambia aquí mismo lo que se ve (sin volver a pedir la lista, para no saltar a otra
+     * foto ni reordenar POPULARES); página -1 = el servidor no manda la lista.
+     */
     static void act(String action, String id) {
-        PadCommunityNet.toServer(new PadCommunityNet.Act(action, id, tab, 0));
-        loadedPage = -1;
+        PadCommunityNet.toServer(new PadCommunityNet.Act(action, id, tab, -1));
+        for (int i = 0; i < POSTS.size(); i++) {
+            PadCommunityNet.Post p = POSTS.get(i);
+            if (!p.id().equals(id)) continue;
+            if (action.equals("like")) {
+                POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(),
+                        Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete()));
+            } else if (action.equals("borrar")) {
+                POSTS.remove(i);
+                total = Math.max(0, total - 1);
+            }
+            break;
+        }
+        if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadCommunityPage p) p.updated();
     }
 
     // ---------------------------------------------------------------------------------------------------------------
     // Fotos
     // ---------------------------------------------------------------------------------------------------------------
 
-    /** La textura de una foto (null mientras se baja). */
+    /** La textura de una foto (null mientras se baja o si no se pudo leer). */
     static ResourceLocation texture(String id) {
         Tex t = TEXTURES.get(id);
         if (t != null) return t.loc;
-        if (!id.matches("[a-z0-9]{1,20}")) return null;
+        if (!id.matches("[a-z0-9]{1,20}") || BROKEN.contains(id)) return null;
         Path cached = cacheDir().resolve(id + ".png");
         if (Files.exists(cached)) {
+            ResourceLocation loc = null;
             try {
-                return load(id, Files.readAllBytes(cached));
+                loc = load(id, Files.readAllBytes(cached));
             } catch (Exception e) {
-                TFClient.LOGGER.warn("Comunidad: foto en caché rota {}", id);
+                // se trata abajo
+            }
+            if (loc != null) return loc;
+            // la copia de la caché está rota: se borra y se pide otra vez (una sola)
+            TFClient.LOGGER.warn("Comunidad: foto en caché rota {}", id);
+            try {
+                Files.deleteIfExists(cached);
+            } catch (Exception ignored) {
+                // nada
             }
         }
         if (ASKED.add(id)) PadCommunityNet.toServer(new PadCommunityNet.ImgReq(id));
@@ -124,6 +150,7 @@ final class PadCommunityClient {
     }
 
     static void image(PadCommunityNet.Img m) {
+        if (!m.id().matches("[a-z0-9]{1,20}")) return;
         if (m.total() <= 0 || m.total() > 20 || m.index() < 0 || m.index() >= m.total()) return;
         byte[][] parts = DOWNLOADS.computeIfAbsent(m.id(), k -> new byte[m.total()][]);
         if (parts.length != m.total()) return;
@@ -139,14 +166,22 @@ final class PadCommunityClient {
         } catch (Exception e) {
             TFClient.LOGGER.warn("Comunidad: no se pudo guardar una foto en la caché", e);
         }
-        load(m.id(), png);
+        if (load(m.id(), png) == null) {
+            // ilegible: no se vuelve a intentar en esta sesión
+            BROKEN.add(m.id());
+            try {
+                Files.deleteIfExists(cacheDir().resolve(m.id() + ".png"));
+            } catch (Exception ignored) {
+                // nada
+            }
+        }
     }
 
     private static ResourceLocation load(String id, byte[] png) {
+        ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "comunidad/" + id);
         try (InputStream in = new ByteArrayInputStream(png)) {
             NativeImage img = NativeImage.read(in);
             DynamicTexture tex = new DynamicTexture(img);
-            ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "comunidad/" + id);
             Minecraft.getInstance().getTextureManager().register(loc, tex);
             TEXTURES.put(id, new Tex(loc, tex, img.getWidth(), img.getHeight()));
             trim();
@@ -235,7 +270,13 @@ final class PadCommunityClient {
     static void clear() {
         POSTS.clear();
         loadedPage = -1;
+        pages = 1;
+        total = 0;
+        loading = false;
+        uploadStatus = null;
+        uploadProgress = 0;
         ASKED.clear();
+        BROKEN.clear();
         DOWNLOADS.clear();
         for (Tex t : TEXTURES.values()) Minecraft.getInstance().getTextureManager().release(t.loc);
         TEXTURES.clear();
