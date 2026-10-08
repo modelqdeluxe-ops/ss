@@ -35,8 +35,6 @@ public final class TFPadNet {
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(TFClient.MOD_ID, "pad"), () -> PROTOCOL,
             NetworkRegistry.acceptMissingOr(PROTOCOL), NetworkRegistry.acceptMissingOr(PROTOCOL));
-    /** Apps que se abren en el servidor. */
-    public static final List<String> SERVER_APPS = List.of("oficios", "protecciones", "tienda", "gts");
 
     private static boolean registered;
 
@@ -53,6 +51,13 @@ public final class TFPadNet {
                 .encoder(State::write).decoder(State::read).consumerMainThread(State::handle).add();
         CHANNEL.messageBuilder(Notice.class, 3, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Notice::write).decoder(Notice::read).consumerMainThread(Notice::handle).add();
+        CHANNEL.messageBuilder(Action.class, 4, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Action::write).decoder(Action::read).consumerMainThread(Action::handle).add();
+        CHANNEL.messageBuilder(ViewMsg.class, 5, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ViewMsg::write).decoder(ViewMsg::read).consumerMainThread(ViewMsg::handle).add();
+        CHANNEL.messageBuilder(Close.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Close::write).decoder(Close::read).consumerMainThread(Close::handle).add();
+        PadCommunityNet.register(CHANNEL, 10);
     }
 
     /** El cliente pide sus datos al abrir el pad. */
@@ -110,6 +115,64 @@ public final class TFPadNet {
         }
     }
 
+    /** Un botón de una app del servidor: app, pestaña abierta, acción y lo que se escribió (si había campo). */
+    public record Action(String app, String tab, String action, String text) {
+        static void write(Action m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.app, 32);
+            buf.writeUtf(m.tab, 32);
+            buf.writeUtf(m.action, 128);
+            buf.writeUtf(m.text, 256);
+        }
+
+        static Action read(FriendlyByteBuf buf) {
+            return new Action(buf.readUtf(32), buf.readUtf(32), buf.readUtf(128), buf.readUtf(256));
+        }
+
+        static void handle(Action m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer player = ctx.get().getSender();
+            if (player != null) PadServer.action(player, m.app, m.tab, m.action, m.text);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** La vista de una app del servidor. */
+    public record ViewMsg(PadView view) {
+        static void write(ViewMsg m, FriendlyByteBuf buf) {
+            m.view.write(buf);
+        }
+
+        static ViewMsg read(FriendlyByteBuf buf) {
+            return new ViewMsg(PadView.read(buf));
+        }
+
+        static void handle(ViewMsg m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TFPadClient.view(m.view));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Cierra el pad (por ejemplo, al empezar la cuenta atrás de un viaje). */
+    public record Close() {
+        static void write(Close m, FriendlyByteBuf buf) {}
+
+        static Close read(FriendlyByteBuf buf) {
+            return new Close();
+        }
+
+        static void handle(Close m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> TFPadClient::closePad);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    public static void close(ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Close());
+    }
+
+    public static void sendView(ServerPlayer player, PadView view) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ViewMsg(view));
+    }
+
     /** Un aviso que se ve dentro del pad (si está cerrado, encima de la barra rápida). */
     public record Notice(String text) {
         static void write(Notice m, FriendlyByteBuf buf) {
@@ -126,7 +189,7 @@ public final class TFPadNet {
         }
     }
 
-    static void notice(ServerPlayer player, String text) {
+    public static void notice(ServerPlayer player, String text) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Notice(text.length() > 250 ? text.substring(0, 250) : text));
     }
 
@@ -155,8 +218,7 @@ public final class TFPadNet {
             }
             case "gts" -> TFMarketMenu.openMain(player);
             case "protecciones" -> openClaims(player);
-            default -> {
-            }
+            default -> PadServer.open(player, app);
         }
     }
 

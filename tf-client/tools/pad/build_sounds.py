@@ -189,7 +189,39 @@ def s_hover():
     return finish(x, 0.30, 0.01)
 
 
-SOUNDS = {'open': s_open, 'close': s_close, 'select': s_select, 'back': s_back, 'page': s_page, 'hover': s_hover}
+def click_burst(dur, seed, bright=1.0):
+    """Chasquido mecánico: ruido muy corto con un pico agudo (el obturador)."""
+    rng = np.random.default_rng(seed)
+    t = t_axis(dur)
+    n = rng.standard_normal(len(t))
+    # paso alto sencillo: diferencia de muestras
+    hp = np.concatenate([[0], np.diff(n)])
+    return bright * hp * env(t, 0.0005, dur / 4)
+
+
+def s_foto():
+    """Foto: clic-clac del obturador, un golpecito grave y un brillo de cristal."""
+    x = np.zeros(int(SR * 0.7))
+    place(x, 0.55 * click_burst(0.025, 11), 0.0)
+    place(x, 0.45 * click_burst(0.03, 12, 0.8), 0.075)
+    t = t_axis(0.08)
+    place(x, 0.35 * np.sin(2 * np.pi * 140 * t) * env(t, 0.002, 0.02), 0.0)
+    place(x, 0.22 * bell(note('B6'), 0.45, decay=0.12, bright=0.6), 0.09)
+    place(x, 0.16 * bell(note('E7'), 0.4, decay=0.1, bright=0.5), 0.13)
+    return finish(reverb(x, 0.14, 0.8), 0.7)
+
+
+def s_like():
+    """Like: burbuja que sube y una campanita (mi → si)."""
+    x = np.zeros(int(SR * 0.6))
+    place(x, blip(700, 1500, 0.09, 0.03), 0.0)
+    place(x, 0.5 * bell(note('E6'), 0.4, decay=0.1), 0.03)
+    place(x, 0.45 * bell(note('B6'), 0.45, decay=0.14), 0.09)
+    return finish(reverb(x, 0.16), 0.6)
+
+
+SOUNDS = {'open': s_open, 'close': s_close, 'select': s_select, 'back': s_back, 'page': s_page, 'hover': s_hover,
+          'foto': s_foto, 'like': s_like}
 
 
 def write_wav(path, x):

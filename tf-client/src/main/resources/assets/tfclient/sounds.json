@@ -446,5 +446,19 @@
     "name": "tfclient:pad/hover"
    }
   ]
+ },
+ "pad.foto": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/foto"
+   }
+  ]
+ },
+ "pad.like": {
+  "sounds": [
+   {
+    "name": "tfclient:pad/like"
+   }
+  ]
  }
 }

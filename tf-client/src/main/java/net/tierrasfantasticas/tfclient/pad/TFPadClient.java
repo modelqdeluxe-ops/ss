@@ -42,6 +42,15 @@ public final class TFPadClient {
         state = s;
     }
 
+    static void closePad() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen instanceof TFPadScreen) mc.setScreen(null);
+    }
+
+    static void view(PadView v) {
+        if (Minecraft.getInstance().screen instanceof TFPadScreen pad) pad.view(v);
+    }
+
     /** Un aviso del servidor: dentro del pad si está abierto; si no, encima de la barra rápida. */
     static void notice(String text) {
         Minecraft mc = Minecraft.getInstance();
@@ -71,8 +80,19 @@ public final class TFPadClient {
             return;
         }
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
-        sound("open", 0.9F);
+        PadSettings.load();
+        if (PadSettings.sounds) sound("open", 0.9F * PadSettings.volume / 80F);
         mc.setScreen(new TFPadScreen());
+    }
+
+    /** Abre el pad directamente en una app (por ejemplo, la Cámara después de una foto). */
+    static void openTo(String app) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getConnection() == null) return;
+        TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
+        TFPadScreen pad = new TFPadScreen();
+        mc.setScreen(pad);
+        pad.openApp(app);
     }
 
     static void openServerApp(String app) {
@@ -96,7 +116,9 @@ public final class TFPadClient {
             boolean hotbarKey = mc.player != null && mc.player.isCreative() && mc.options.keySaveHotbarActivator.same(KEY);
             while (KEY.consumeClick()) {
                 if (mc.screen != null) continue;
-                if (hotbarKey) {
+                if (PadCamera.active()) {
+                    PadCamera.shoot();
+                } else if (hotbarKey) {
                     waitingRelease = true;
                     usedForHotbar = false;
                 } else {
@@ -119,6 +141,8 @@ public final class TFPadClient {
         public static void onLogout(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
             state = null;
             waitingRelease = false;
+            PadCamera.stop();
+            PadCommunityClient.clear();
         }
     }
 }

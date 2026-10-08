@@ -1,13 +1,19 @@
-"""Texturas del pad (TF Pad) a partir de los dibujos de esta carpeta.
+"""Texturas del TF Pad a partir de los dibujos de esta carpeta.
 
-Todo va en la rejilla del marco: 1 píxel del dibujo = 4 píxeles de marco.png (1568x1003), es decir, el marco
-mide 392x251 «píxeles de pad». La pantalla del pad (zona azul) va de x 55 a 336 y de y 66 a 195.
+Todo va en la rejilla del marco: 1 píxel del dibujo = 4 píxeles de marco.png (1568x1003), es decir, el marco mide
+392x251 «píxeles de pad». La pantalla del pad (zona azul) va de x 55 a 336 y de y 66 a 195.
 
     python3 tools/pad/build_pad.py            # escribe src/main/resources/assets/tfclient/textures/gui/pad/
-    python3 tools/pad/build_pad.py --preview  # además, vistas previas en tools/pad/preview_*.png
+    python3 tools/pad/build_pad.py --preview  # además, vistas previas en tools/pad/preview_*.png (no van al repo)
 
+Qué sale:
+- frame.png (el marco), tile.png / tile_h.png (ficha de 38 y su versión al pasar el ratón),
+- icon_<app>.png (las 20 apps, 32x32),
+- font.png + font.json (fuente pixel de 4 px con tildes y signos: la usa PadFont para todos los rótulos),
+- coin, sun, moon, gear, heart, heart_off (iconos pequeños de la barra y de Comunidad).
 Las posiciones las repite TFPadScreen.java: si cambian aquí, cambian allí.
 """
+import json
 import os
 import shutil
 import sys
@@ -17,8 +23,10 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import iconos  # noqa: E402
-from fuente4 import text_pixels  # noqa: E402
-from kit import GOLD  # noqa: E402
+import iconos2  # noqa: E402
+import pico  # noqa: E402
+from fuente4 import ACCENTS, G, glyph10  # noqa: E402
+from kit import GOLD, PINK  # noqa: E402
 
 OUT_DIR = os.path.normpath(os.path.join(HERE, '..', '..', 'src', 'main', 'resources', 'assets', 'tfclient',
                                         'textures', 'gui', 'pad'))
@@ -26,23 +34,20 @@ S = 4
 NAVY = (24, 38, 92)
 WHITE = (255, 255, 255)
 
-# id de la app, nombre en el pad
-APPS = [('oficios', 'OFICIOS'), ('protecciones', 'PROTECCIONES'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
-        ('monedero', 'MONEDERO'), ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'),
-        ('comunidad', 'COMUNIDAD')]
-DRAW = {'oficios': 'oficios', 'protecciones': 'protecciones', 'tienda': 'tienda', 'gts': 'mercado',
-        'monedero': 'monedero', 'armario': 'armario', 'efectos': 'efectos', 'rango': 'rango', 'comunidad': 'comunidad'}
-# botones de las páginas de dentro
-BUTTONS = {'oficios': 'OFICIOS', 'tienda': 'TIENDA', 'gts': 'GTS', 'discord': 'DISCORD', 'whatsapp': 'WHATSAPP',
-           'web': 'PAGINA WEB', 'abrirweb': 'ABRIR EN LA WEB', 'rangos': 'VER RANGOS'}
+# Las 20 apps, en el orden del pad (dos páginas de 5x2). Mismo orden y nombres que TFPadScreen.APPS.
+APPS = [('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
+        ('monedero', 'MONEDERO'), ('clanes', 'CLANES'), ('viajes', 'VIAJES'), ('explorar', 'EXPLORAR'), ('kits', 'KITS'),
+        ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('jugadores', 'JUGADORES'), ('ranking', 'RANKING'),
+        ('titulos', 'TÍTULOS'),
+        ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('protecciones', 'PROTECCIÓN'),
+        ('ayuda', 'AYUDA')]
+DRAW = {'oficios': pico.pico, 'tienda': iconos.tienda, 'gts': iconos.mercado, 'monedero': iconos.monedero,
+        'armario': iconos.armario, 'efectos': iconos.efectos, 'rango': iconos.rango, 'protecciones': iconos.protecciones}
+DRAW.update(iconos2.ICONOS)
 
-# rejilla de la portada: centros de las columnas y fila de arriba de cada ficha
-ROW1_X = [84, 140, 196, 252, 308]
-ROW2_X = [112, 168, 224, 280]
-ROW_Y = [80, 138]
-TILE = 40
-PANEL = (62, 90, 268, 100)   # x, y, ancho, alto
-BACK = (70, 69)
+TILE = 38
+COLS_X = [84, 140, 196, 252, 308]
+ROWS_Y = [82, 136]
 
 
 def img(w, h):
@@ -54,20 +59,16 @@ def put(im, x, y, c):
         im.putpixel((x, y), tuple(c) + (255,) if len(c) == 3 else c)
 
 
-def rounded(w, h, x, y, r=2):
-    cx, cy = min(x, w - 1 - x), min(y, h - 1 - y)
-    return cx + cy >= r, cx == 0 or cy == 0 or cx + cy == r, cx, cy
-
-
 def tile(hover=False):
-    """Ficha de 40x40 con sombra de 2 debajo (40x42)."""
+    """Ficha de 38x38 con sombra de 2 debajo (38x40)."""
     n = TILE
     im = img(n, n + 2)
     for y in range(n):
         for x in range(n):
-            inside, border, cx, cy = rounded(n, n, x, y)
-            if not inside:
+            cx, cy = min(x, n - 1 - x), min(y, n - 1 - y)
+            if cx + cy < 2:
                 continue
+            border = cx == 0 or cy == 0 or cx + cy == 2
             top = y < n // 2
             if border:
                 c = (186, 112, 20) if hover else NAVY
@@ -87,93 +88,31 @@ def tile(hover=False):
     return im
 
 
-def label(text, color=WHITE, shade=(214, 240, 255)):
-    """Texto en la fuente de 4 px con contorno azul marino (1 px a los lados, 2 debajo)."""
-    w, pts = text_pixels(text)
-    im = img(w + 2, 10)
-    for x, y in pts:
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1, 2):
-                if (x + dx, y + dy) not in pts:
-                    put(im, x + 1 + dx, y + 1 + dy, NAVY)
-    for x, y in pts:
-        put(im, x + 1, y + 1, color if y < 4 else shade)
-    return im
+def font_atlas():
+    """Atlas de la fuente pixel: celdas de 6x10, glifos en blanco (PadFont los tiñe)."""
+    chars = ''.join(sorted(set(G) | set(ACCENTS), key=lambda c: (c == ' ', c)))
+    cols = 16
+    rows = (len(chars) + cols - 1) // cols
+    im = img(cols * 6, rows * 10)
+    widths = []
+    for i, ch in enumerate(chars):
+        g = glyph10(ch)
+        widths.append(len(g[0]))
+        ox, oy = (i % cols) * 6, (i // cols) * 10
+        for y, row in enumerate(g):
+            for x, c in enumerate(row):
+                if c == '#':
+                    put(im, ox + x, oy + y, WHITE)
+    return im, {'chars': chars, 'widths': widths, 'cols': cols, 'cell': [6, 10]}
 
 
-def button(text, hover=False):
-    lab = label(text)
-    w = max(56, lab.width + 14)
-    h = 18
-    im = img(w, h + 2)
-    for y in range(h):
-        for x in range(w):
-            inside, border, cx, cy = rounded(w, h, x, y)
-            if not inside:
-                continue
-            if border:
-                c = NAVY
-            elif cy == 1 and y < h // 2:
-                c = (255, 236, 150) if hover else (150, 214, 255)
-            elif cy <= 2 and y > h // 2:
-                c = (186, 112, 20) if hover else (24, 84, 190)
-            else:
-                c = (246, 182, 40) if hover else (52, 150, 250)
-            put(im, x, y, c)
-    for x in range(2, w - 2):
-        put(im, x, h, (40, 130, 210))
-        if 3 <= x < w - 3:
-            put(im, x, h + 1, (66, 170, 236))
-    im.alpha_composite(lab, ((w - lab.width) // 2, 4))
-    return im
-
-
-def back(hover=False):
-    im = img(16, 18)
-    for y in range(16):
-        for x in range(16):
-            inside, border, cx, cy = rounded(16, 16, x, y)
-            if not inside:
-                continue
-            c = NAVY if border else ((246, 182, 40) if hover else (52, 150, 250))
-            if not border and cy == 1 and y < 8:
-                c = (255, 236, 150) if hover else (150, 214, 255)
-            put(im, x, y, c)
-    for x in range(2, 14):
-        put(im, x, 16, (40, 130, 210))
-    # flecha ◀
-    arrow = [(4, 7), (4, 8), (5, 6), (5, 7), (5, 8), (5, 9), (6, 5), (6, 6), (6, 7), (6, 8), (6, 9), (6, 10),
-             (7, 7), (7, 8), (8, 7), (8, 8), (9, 7), (9, 8), (10, 7), (10, 8), (11, 7), (11, 8)]
-    for x, y in arrow:
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                if (x + dx, y + dy) not in arrow and im.getpixel((x + dx, y + dy))[3]:
-                    put(im, x + dx, y + dy, NAVY)
-    for x, y in arrow:
-        put(im, x, y, WHITE)
-    return im
-
-
-def panel():
-    x0, y0, w, h = PANEL
-    im = img(w, h + 2)
-    for y in range(h):
-        for x in range(w):
-            inside, border, cx, cy = rounded(w, h, x, y, 3)
-            if not inside:
-                continue
-            if border:
-                c = NAVY
-            elif cy == 1 and y < h // 2:
-                c = WHITE
-            elif cy <= 2 and y > h // 2:
-                c = (170, 216, 248)
-            else:
-                c = (232, 248, 255)
-            put(im, x, y, c)
-    for x in range(3, w - 3):
-        put(im, x, h, (40, 130, 210))
-        put(im, x, h + 1, (66, 170, 236))
+def small(rows, pal):
+    h, w = len(rows), max(len(r) for r in rows)
+    im = img(w, h)
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in pal:
+                put(im, x, y, pal[ch])
     return im
 
 
@@ -193,11 +132,19 @@ def mini_coin():
     return im
 
 
+def outline(im):
+    solid = {(x, y) for y in range(im.height) for x in range(im.width) if im.getpixel((x, y))[3]}
+    for y in range(im.height):
+        for x in range(im.width):
+            if (x, y) not in solid and any((x + dx, y + dy) in solid for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                put(im, x, y, NAVY)
+    return im
+
+
 def sun():
     im = img(11, 11)
     core = {(x, y) for y in range(11) for x in range(11) if (x - 5) ** 2 + (y - 5) ** 2 <= 8}
-    rays = {(5, 0), (5, 1), (5, 9), (5, 10), (0, 5), (1, 5), (9, 5), (10, 5), (2, 2), (8, 2), (2, 8), (8, 8)}
-    for x, y in rays:
+    for x, y in {(5, 0), (5, 1), (5, 9), (5, 10), (0, 5), (1, 5), (9, 5), (10, 5), (2, 2), (8, 2), (2, 8), (8, 8)}:
         put(im, x, y, (255, 214, 80))
     for x, y in core:
         put(im, x, y, (255, 236, 120) if x + y < 10 else (250, 170, 40))
@@ -214,76 +161,152 @@ def moon():
     return outline(im)
 
 
-def outline(im):
-    solid = {(x, y) for y in range(im.height) for x in range(im.width) if im.getpixel((x, y))[3]}
+def gear():
+    rows = ["....##....",
+            ".#.####.#.",
+            ".########.",
+            "..##..##..",
+            "####..####",
+            "####..####",
+            "..##..##..",
+            ".########.",
+            ".#.####.#.",
+            "....##...."]
+    im = small(rows, {'#': (226, 234, 244)})
     for y in range(im.height):
         for x in range(im.width):
-            if (x, y) not in solid and any((x + dx, y + dy) in solid for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                put(im, x, y, NAVY)
-    return im
+            if im.getpixel((x, y))[3] and x + y > 10:
+                put(im, x, y, (176, 190, 214))
+    return outline(im)
+
+
+def heart(on=True):
+    rows = [".##.##.", "#######", "#######", ".#####.", "..###..", "...#..."]
+    if on:
+        im = small(rows, {'#': PINK[2]})
+        for x, y in ((1, 0), (0, 1), (1, 1)):
+            put(im, x, y, PINK[0])
+        put(im, 2, 1, WHITE)
+    else:
+        im = small(rows, {'#': (214, 226, 240)})
+    return outline(im)
 
 
 def build():
-    os.makedirs(OUT_DIR, exist_ok=True)
-    files = {}
-    files['frame.png'] = None  # se copia tal cual
-    files['tile.png'] = tile()
-    files['tile_h.png'] = tile(True)
-    files['panel.png'] = panel()
-    files['back.png'] = back()
-    files['back_h.png'] = back(True)
-    files['coin.png'] = mini_coin()
-    files['sun.png'] = sun()
-    files['moon.png'] = moon()
-    for key, name in APPS:
-        files[f'icon_{key}.png'] = getattr(iconos, DRAW[key])().image()
-        files[f'label_{key}.png'] = label(name)
-    for key, text in BUTTONS.items():
-        files[f'btn_{key}.png'] = button(text)
-        files[f'btn_{key}_h.png'] = button(text, True)
+    if os.path.isdir(OUT_DIR):
+        shutil.rmtree(OUT_DIR)
+    os.makedirs(OUT_DIR)
+    files = {'tile.png': tile(), 'tile_h.png': tile(True), 'coin.png': mini_coin(), 'sun.png': sun(),
+             'moon.png': moon(), 'gear.png': gear(), 'heart.png': heart(True), 'heart_off.png': heart(False)}
+    for key, _ in APPS:
+        files[f'icon_{key}.png'] = DRAW[key]().image()
+    atlas, meta = font_atlas()
+    files['font.png'] = atlas
     for name, im in files.items():
-        path = os.path.join(OUT_DIR, name)
-        if im is None:
-            shutil.copyfile(os.path.join(HERE, 'marco.png'), path)
-        else:
-            im.save(path)
-    return files
+        im.save(os.path.join(OUT_DIR, name))
+    shutil.copyfile(os.path.join(HERE, 'marco.png'), os.path.join(OUT_DIR, 'frame.png'))
+    with open(os.path.join(OUT_DIR, 'font.json'), 'w', encoding='utf-8') as f:
+        json.dump(meta, f, ensure_ascii=False)
+    return files, meta
 
 
-def compose(files, page='home', hover=None):
-    """Vista previa a escala 4 sobre el marco, igual que la dibuja TFPadScreen."""
-    frame = Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')
-    art = img(392, 251)
+# ---------------------------------------------------------------------------------------------------------------------
+# Vistas previas: dibuja como TFPadScreen (misma fuente pixel, mismas posiciones)
+# ---------------------------------------------------------------------------------------------------------------------
 
-    def blit(name, x, y):
-        art.alpha_composite(files[name], (x, y))
+class Canvas:
+    def __init__(self, files, meta):
+        self.files, self.meta = files, meta
+        self.art = img(392, 251)
 
-    if page == 'home':
-        for i, (key, _) in enumerate(APPS):
-            cx, ty = (ROW1_X[i], ROW_Y[0]) if i < 5 else (ROW2_X[i - 5], ROW_Y[1])
-            blit('tile_h.png' if key == hover else 'tile.png', cx - 20, ty)
-            blit(f'icon_{key}.png', cx - 16, ty + 4)
-            lab = files[f'label_{key}.png']
-            blit(f'label_{key}.png', cx - lab.width // 2, ty + 45)
-    else:
-        blit('back.png', *BACK)
-        blit(f'label_{page}.png', BACK[0] + 22, BACK[1] + 4)
-        blit('panel.png', PANEL[0], PANEL[1])
-        blit(f'icon_{page}.png', PANEL[0] + 12, PANEL[1] + 12)
-        blit('btn_oficios.png', PANEL[0] + 12, PANEL[1] + 72)
-        blit('btn_tienda_h.png', PANEL[0] + 76, PANEL[1] + 72)
-        blit('btn_gts.png', PANEL[0] + 140, PANEL[1] + 72)
-    blit('coin.png', 290, 68)
-    blit('sun.png', 232, 68)
-    out = frame.copy()
-    big = art.resize((art.width * S, art.height * S), Image.NEAREST).crop((0, 0, frame.width, frame.height))
-    out.alpha_composite(big)
-    return out
+    def blit(self, name, x, y):
+        self.art.alpha_composite(self.files[name], (x, y))
+
+    def width(self, text):
+        w = 0
+        for ch in text.upper():
+            i = self.meta['chars'].find(ch)
+            w += (self.meta['widths'][i] if i >= 0 else 2) + 1
+        return max(0, w - 1)
+
+    def text(self, text, x, y, color=WHITE, outline=NAVY):
+        atlas = self.files['font.png']
+        cols = self.meta['cols']
+        pts = []
+        cx = x
+        for ch in text.upper():
+            i = self.meta['chars'].find(ch)
+            if i < 0:
+                cx += 3
+                continue
+            w = self.meta['widths'][i]
+            ox, oy = (i % cols) * 6, (i // cols) * 10
+            for gy in range(10):
+                for gx in range(w):
+                    if atlas.getpixel((ox + gx, oy + gy))[3]:
+                        pts.append((cx + gx, y + gy))
+            cx += w + 1
+        s = set(pts)
+        if outline:
+            for px, py in pts:
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1, 2):
+                        if (px + dx, py + dy) not in s:
+                            put(self.art, px + dx, py + dy, outline)
+        for px, py in pts:
+            put(self.art, px, py, color)
+
+    def fill(self, x0, y0, x1, y1, c):
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                put(self.art, x, y, c)
+
+    def compose(self):
+        frame = Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')
+        big = self.art.resize((392 * S, 251 * S), Image.NEAREST).crop((0, 0, frame.width, frame.height))
+        frame.alpha_composite(big)
+        return frame
+
+
+def status_bar(c, title):
+    """Barra de arriba: título a la izquierda; hora, monedas y ajustes a la derecha (como TFPadScreen.drawStatus)."""
+    c.text(title, 96, 67)
+    right = 330
+    c.blit('gear.png', right - 10, 67)
+    right -= 16
+    coins = '1.250'
+    w = c.width(coins)
+    c.text(coins, right - w, 68, (255, 230, 128))
+    right -= w + 14
+    c.blit('coin.png', right, 67)
+    right -= 10
+    t = '18:30'
+    w = c.width(t)
+    c.text(t, right - w, 68)
+    right -= w + 14
+    c.blit('sun.png', right, 67)
+
+
+def preview_home(files, meta, page, hover=None):
+    c = Canvas(files, meta)
+    status_bar(c, 'TF PAD')
+    for i, (key, name) in enumerate(APPS[page * 10:page * 10 + 10]):
+        cx, ty = COLS_X[i % 5], ROWS_Y[i // 5]
+        c.blit('tile_h.png' if key == hover else 'tile.png', cx - TILE // 2, ty)
+        c.blit(f'icon_{key}.png', cx - 16, ty + 3)
+        w = c.width(name)
+        c.text(name, cx - w // 2, ty + 41)
+    # puntos de página
+    for p in range(2):
+        x = 196 - 6 + p * 8
+        c.fill(x, 189, x + 4, 193, NAVY)
+        c.fill(x + 1, 190, x + 3, 192, (255, 230, 128) if p == page else (150, 206, 246))
+    return c.compose()
 
 
 if __name__ == '__main__':
-    files = build()
-    print(f'{len(files)} texturas en {OUT_DIR}')
+    files, meta = build()
+    print(f'{len(files) + 2} archivos en {OUT_DIR}')
     if '--preview' in sys.argv:
-        compose(files, 'home', hover='gts').save(os.path.join(HERE, 'preview_home.png'))
-        compose(files, 'monedero').save(os.path.join(HERE, 'preview_monedero.png'))
+        preview_home(files, meta, 0, hover='misiones').save(os.path.join(HERE, 'preview_home1.png'))
+        preview_home(files, meta, 1).save(os.path.join(HERE, 'preview_home2.png'))

@@ -229,6 +229,7 @@ public final class TFMarket {
         give(buyer, l.item.copy());
         String buyerName = buyer.getGameProfile().getName();
         if (!TFEconomy.give(buyer.getServer(), l.seller, l.sellerName, l.price)) owed.merge(l.seller, l.price, Long::sum);
+        net.tierrasfantasticas.tfclient.pad.server.PadStats.add(l.seller, net.tierrasfantasticas.tfclient.pad.server.PadStats.GTS_SALES, 1);
         log("compra " + buyerName, l.sellerName, l);
         tell(buyer, "Compraste " + describe(l.item) + " a " + l.sellerName + " por " + TFEconomy.format(l.price) + ".", ChatFormatting.GREEN);
         buyer.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.5F, 1.6F);
