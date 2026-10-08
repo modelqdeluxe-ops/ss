@@ -38,7 +38,9 @@ public final class TFJobsMenu {
 
     // --- Menú principal: elegir oficio ---
 
+    /** Con el TF Client se abre la app Oficios del pad; si no, este menú. */
     public static void openMain(ServerPlayer player) {
+        if (net.tierrasfantasticas.tfclient.pad.TFPadNet.openApp(player, "oficios", "")) return;
         openMain(player, 0);
     }
 
@@ -119,6 +121,7 @@ public final class TFJobsMenu {
     // --- Menú de un oficio: nivel, misiones, recompensas y unirse / abandonar ---
 
     public static void openJob(ServerPlayer player, Job job, int page) {
+        if (net.tierrasfantasticas.tfclient.pad.TFPadNet.openApp(player, "oficios", net.tierrasfantasticas.tfclient.pad.server.PadJobs.tab(job.id()))) return;
         TFPanelMenu.open(player, job.background(), job.name(), SIGN, menu -> fillJob(menu, player, job, page, false));
     }
 
@@ -243,7 +246,7 @@ public final class TFJobsMenu {
     }
 
     /** «Cosechar 64 × trigo» */
-    private static String goal(Mission m) {
+    public static String goal(Mission m) {
         String verb = switch (m.type()) {
             case "romper" -> "Romper";
             case "cosechar" -> "Cosechar";
@@ -295,7 +298,7 @@ public final class TFJobsMenu {
         return icon.build();
     }
 
-    private static String actionLabel(TFJobsConfig.Action a) {
+    public static String actionLabel(TFJobsConfig.Action a) {
         String what = a.target().raw();
         String nice = switch (what) {
             case "*" -> "cualquier cosa";
@@ -375,12 +378,12 @@ public final class TFJobsMenu {
         return TFIcon.of(Items.ARROW).name(name, ChatFormatting.YELLOW).build();
     }
 
-    private static Item icon(Job job) {
+    public static Item icon(Job job) {
         String id = job.icon().contains(":") ? job.icon() : TFClient.MOD_ID + ":job_" + job.icon();
         return item(id, Items.BOOK);
     }
 
-    private static Item item(String id, Item fallback) {
+    public static Item item(String id, Item fallback) {
         ResourceLocation rl = ResourceLocation.tryParse(id);
         Item item = rl == null ? null : ForgeRegistries.ITEMS.getValue(rl);
         return item == null || item == Items.AIR ? fallback : item;

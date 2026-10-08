@@ -22,7 +22,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * Comunidad, con un texto), BORRAR, CARPETA y MODO FOTO (para hacer una nueva).
  */
 final class PadCameraPage extends PadPage {
-    private static final int PW = 160, PH = 90;
+    /** La foto: 16:9 a la izquierda, con hueco debajo para MODO FOTO (nunca se pisan). */
+    private static final int PW = 144, PH = 81;
 
     private record Tex(ResourceLocation loc) {}
 
@@ -123,78 +124,74 @@ final class PadCameraPage extends PadPage {
     void render(GuiGraphics g, double mx, double my, float partial) {
         buttons.clear();
         actions.clear();
+        PadCommunityClient.checkUpload();
         PadUi.panel(g, X, Y, W, H);
-        int px = X + 6, py = Y + 6;
+        int px = X + 6, py = Y + 5;
         PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.NAVY);
         g.fill(px, py, px + PW, py + PH, 0xFF1A2440);
         if (photos.isEmpty()) {
-            PadUi.wrap(g, "Aún no tienes fotos. Pulsa MODO FOTO, busca un buen sitio y dispara con la C.", px + 10, py + 30, PW - 20, 0xFFE0ECFF, 4);
+            PadUi.wrap(g, "Aún no tienes fotos. Pulsa MODO FOTO, busca un buen sitio y dispara con la C.", px + 8, py + 22, PW - 16, 0xFFE0ECFF, 4);
         } else {
             Path p = photos.get(index);
             ResourceLocation loc = texture(p);
             if (loc != null) {
                 g.blit(loc, px, py, PW, PH, 0, 0, 320, 180, 320, 180);
+            } else if (broken.contains(p)) {
+                PadFont.drawCentered(g, "NO SE PUEDE ABRIR", px + PW / 2, py + PH / 2 - 3, 0xE0ECFF, false);
             } else {
-                PadFont.drawCentered(g, broken.contains(p) ? "NO SE PUEDE ABRIR" : "...", px + PW / 2, py + PH / 2 - 5, 0xE0ECFF, false);
+                PadUi.spinner(g, px + PW / 2, py + PH / 2 - 4);
             }
             if (photos.size() > 1) {
                 arrow(g, px + 2, py + PH / 2 - 7, true, mx, my, () -> move(-1));
                 arrow(g, px + PW - 12, py + PH / 2 - 7, false, mx, my, () -> move(1));
             }
         }
-        // abajo del todo: modo foto o el campo del texto
-        int by = Y + H - 18;
+        // abajo: MODO FOTO bajo la foto, o el campo del texto a lo ancho
+        int by = Y + H - 17;
+        int cx = px + PW + 8, cw = X + W - 6 - cx;
         if (captioning) {
-            int fw = W - 12 - 54;
-            PadUi.box(g, px - 1, by, fw, 15, PadUi.NAVY);
-            PadUi.box(g, px, by + 1, fw - 2, 13, 0xFFFFFFFF);
-            String shown = caption.isEmpty() ? "Escribe un texto (opcional)" : caption;
-            var font = PadUi.font();
-            while (font.width(shown) > fw - 12 && shown.length() > 1) shown = shown.substring(1);
-            PadUi.text(g, shown, px + 4, by + 4, caption.isEmpty() ? 0xFF96AACC : PadUi.TEXT);
-            if ((System.currentTimeMillis() / 500) % 2 == 0) {
-                int cx = px + 4 + (caption.isEmpty() ? 0 : font.width(shown));
-                g.fill(cx, by + 3, cx + 1, by + 12, PadUi.TEXT);
-            }
-            button(g, X + W - 6 - 50, by, 50, "ENVIAR", PadView.GREEN, mx, my, this::send);
+            int sendW = PadUi.buttonWidth("ENVIAR");
+            PadUi.field(g, px - 1, by, X + W - 6 - sendW - 4 - (px - 1), caption, "Escribe un texto (opcional)");
+            button(g, X + W - 6 - sendW, by, sendW, "ENVIAR", PadView.GREEN, mx, my, this::send);
         } else {
-            button(g, px, by, PW, "MODO FOTO", PadView.GREEN, mx, my, PadCamera::start);
+            button(g, px - 1, by, PW + 2, "MODO FOTO", PadView.GREEN, mx, my, PadCamera::start);
+            button(g, cx, by, cw, "CARPETA", PadView.BLUE, mx, my, () -> {
+                try {
+                    Files.createDirectories(PadCamera.dir());
+                } catch (Exception ignored) {
+                    // se abre igual
+                }
+                Util.getPlatform().openFile(PadCamera.dir().toFile());
+            });
         }
         // columna derecha
-        int cx = X + 172, cw = W - 178;
         if (!photos.isEmpty()) {
             Path p = photos.get(index);
-            PadUi.text(g, "Foto " + (index + 1) + " de " + photos.size(), cx, Y + 7, PadUi.TEXT);
+            PadUi.text(g, "Foto " + (index + 1) + " de " + photos.size(), cx, py + 1, PadUi.TEXT);
             long when = 0;
             try {
                 when = Files.getLastModifiedTime(p).toMillis();
             } catch (Exception ignored) {
                 // sin fecha
             }
-            PadUi.text(g, new SimpleDateFormat("d MMM · HH:mm").format(new Date(when)), cx, Y + 17, PadUi.MUTED);
+            PadUi.text(g, new SimpleDateFormat("d MMM · HH:mm").format(new Date(when)), cx, py + 11, PadUi.MUTED);
             String status = PadCommunityClient.uploadStatus;
             if (status != null) {
-                PadUi.text(g, status, cx, Y + 32, PadUi.TEXT);
-                PadUi.progress(g, cx, Y + 44, cw, PadCommunityClient.uploadProgress);
+                int n = PadUi.wrap(g, status, cx, py + 26, cw, PadUi.TEXT, 2);
+                PadUi.progress(g, cx, py + 28 + n * 10, cw, PadCommunityClient.uploadProgress);
             } else if (captioning) {
-                PadUi.wrap(g, "Se publicará en Comunidad para que la vean todos. Pulsa ENVIAR.", cx, Y + 32, cw, PadUi.MUTED, 4);
+                PadUi.wrap(g, "Se verá en Comunidad. Escribe un texto si quieres y pulsa ENVIAR.", cx, py + 26, cw, PadUi.MUTED, 5);
             } else {
-                button(g, cx, Y + 32, cw, "PUBLICAR", PadView.GOLD, mx, my, () -> {
+                button(g, cx, py + 26, cw, "PUBLICAR", PadView.GOLD, mx, my, () -> {
                     captioning = true;
                     caption = "";
                 });
                 boolean sure = p.equals(confirmPath) && System.currentTimeMillis() - confirmDelete < 3000;
-                button(g, cx, Y + 51, cw, sure ? "¿SEGURO?" : "BORRAR", PadView.RED, mx, my, this::delete);
+                button(g, cx, py + 45, cw, sure ? "¿SEGURO?" : "BORRAR", PadView.RED, mx, my, this::delete);
             }
+        } else {
+            PadUi.wrap(g, "Tus fotos se guardan en tu ordenador. Desde aquí las publicas en Comunidad.", cx, py + 1, cw, PadUi.MUTED, 6);
         }
-        button(g, cx, by, cw, "CARPETA", PadView.BLUE, mx, my, () -> {
-            try {
-                Files.createDirectories(PadCamera.dir());
-            } catch (Exception ignored) {
-                // se abre igual
-            }
-            Util.getPlatform().openFile(PadCamera.dir().toFile());
-        });
     }
 
     private void arrow(GuiGraphics g, int x, int y, boolean left, double mx, double my, Runnable action) {

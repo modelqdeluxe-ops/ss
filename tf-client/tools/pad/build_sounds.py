@@ -3,8 +3,9 @@
     python3 tools/pad/build_sounds.py            # escribe src/main/resources/assets/tfclient/sounds/pad/*.ogg
     python3 tools/pad/build_sounds.py --wav DIR  # además, los .wav para escucharlos
 
-Timbre: campanita de cristal (parciales de marimba + un toque de FM) con una cola de reverb corta y cálida, en
-la escala de mi mayor (mi, sol#, si): suena a «aparato mágico» y combina con el resto del servidor.
+Timbre (1.3.23): suave y redondo, sin campanas ni brillos metálicos. «Pops» de burbuja con el tono que se desliza,
+pulsos de seno cálidos filtrados (como una tecla de piano eléctrico muy apagada), soplos de aire muy bajitos para
+los cambios de pantalla y un tic de madera para las pestañas. Todo bajo de volumen y corto: acompaña sin molestar.
 Necesita numpy y ffmpeg (libvorbis).
 """
 import os
@@ -35,28 +36,6 @@ def t_axis(dur):
 def env(t, attack, decay):
     a = np.clip(t / max(attack, 1e-4), 0, 1)
     return a * np.exp(-np.maximum(t - attack, 0) / decay)
-
-
-def bell(f, dur, decay=0.35, bright=1.0):
-    """Campanita: fundamental + parciales de marimba (4x, 10x) que se apagan antes + un poco de FM."""
-    t = t_axis(dur)
-    mod = 0.6 * bright * np.exp(-t / 0.05) * np.sin(2 * np.pi * f * 3.5 * t)
-    s = 1.00 * np.sin(2 * np.pi * f * t + mod) * env(t, 0.003, decay)
-    s += 0.32 * bright * np.sin(2 * np.pi * f * 4.0 * t) * env(t, 0.002, decay * 0.35)
-    s += 0.10 * bright * np.sin(2 * np.pi * f * 10.0 * t) * env(t, 0.001, decay * 0.12)
-    # coro: una copia un poco desafinada da cuerpo
-    s += 0.35 * np.sin(2 * np.pi * f * 1.004 * t) * env(t, 0.004, decay * 0.9)
-    return s
-
-
-def blip(f0, f1, dur, decay):
-    """Burbuja: un seno que baja de tono muy rápido (toque de pantalla)."""
-    t = t_axis(dur)
-    f = f1 + (f0 - f1) * np.exp(-t / 0.012)
-    phase = 2 * np.pi * np.cumsum(f) / SR
-    s = np.sin(phase) * env(t, 0.0015, decay)
-    s += 0.25 * np.sin(2 * phase) * env(t, 0.001, decay * 0.5)
-    return s
 
 
 def whoosh(dur, f_from, f_to, level=0.25, seed=1):
@@ -135,58 +114,96 @@ def finish(x, peak, tail=0.02):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+def lowpass(x, fc):
+    """Paso bajo de un polo: quita lo agudo que pica."""
+    a = 1 - np.exp(-2 * np.pi * fc / SR)
+    y = np.zeros(len(x))
+    acc = 0.0
+    for i in range(len(x)):
+        acc += a * (x[i] - acc)
+        y[i] = acc
+    return y
+
+
+def soft(f, dur, decay, attack=0.006, warmth=0.18):
+    """Pulso cálido: seno con un poco de segundo armónico (como un piano eléctrico muy apagado). Nada metálico."""
+    t = t_axis(dur)
+    s = np.sin(2 * np.pi * f * t) + warmth * np.sin(2 * np.pi * 2 * f * t) * np.exp(-t / (decay * 0.4))
+    return s * env(t, attack, decay)
+
+
+def pop(f0, f1, dur, decay, attack=0.002):
+    """Burbuja: un seno cuyo tono se desliza de f0 a f1 (sube o baja) y se apaga rápido."""
+    t = t_axis(dur)
+    f = f1 + (f0 - f1) * np.exp(-t / 0.018)
+    phase = 2 * np.pi * np.cumsum(f) / SR
+    return np.sin(phase) * env(t, attack, decay)
+
+
+def wood(f, dur=0.05, seed=21):
+    """Tic de madera: un golpecito de ruido filtrado con una nota muy corta debajo."""
+    rng = np.random.default_rng(seed)
+    t = t_axis(dur)
+    n = lowpass(rng.standard_normal(len(t)), 2600) * env(t, 0.0005, 0.004)
+    return 0.6 * n / (np.max(np.abs(n)) + 1e-9) + np.sin(2 * np.pi * f * t) * env(t, 0.001, 0.012)
+
+
 def s_open():
-    """Encender: arpegio que sube (mi-sol#-si-mi) con un brillo arriba y un «fum» grave que arranca."""
-    x = np.zeros(int(SR * 1.6))
-    for i, (n, v) in enumerate((('E5', 0.75), ('G#5', 0.7), ('B5', 0.7), ('E6', 0.85))):
-        place(x, v * bell(note(n), 1.1, decay=0.22 + 0.04 * i), 0.055 * i)
-    place(x, 0.18 * bell(note('B6'), 0.7, decay=0.35, bright=0.6), 0.24)
-    t = t_axis(0.25)
-    sub = 0.35 * np.sin(2 * np.pi * (90 + 160 * t / 0.25) * t) * env(t, 0.01, 0.08)
-    place(x, sub, 0.0)
-    place(x, whoosh(0.32, 700, 3600, level=0.035, seed=3), 0.0)
-    return finish(reverb(x, 0.22), 0.80)
+    """Encender: un acorde suave que crece (mi + si), un soplo de aire que sube y una burbuja al final."""
+    x = np.zeros(int(SR * 0.9))
+    place(x, 0.55 * soft(note('E4'), 0.7, 0.22, attack=0.035), 0.0)
+    place(x, 0.45 * soft(note('B4'), 0.65, 0.2, attack=0.035), 0.03)
+    place(x, 0.30 * soft(note('E5'), 0.55, 0.16, attack=0.03), 0.07)
+    place(x, whoosh(0.35, 500, 2200, level=0.05, seed=3), 0.0)
+    place(x, 0.35 * pop(620, 980, 0.12, 0.035), 0.16)
+    return finish(lowpass(reverb(x, 0.16, 0.8), 5200), 0.42)
 
 
 def s_close():
-    """Apagar: dos notas que bajan (si → mi) y un soplo que se va."""
-    x = np.zeros(int(SR * 0.8))
-    place(x, 0.7 * bell(note('B5'), 0.6, decay=0.18), 0.0)
-    place(x, 0.75 * bell(note('E5'), 0.7, decay=0.25), 0.07)
-    place(x, whoosh(0.26, 3000, 600, level=0.03, seed=5), 0.0)
-    return finish(reverb(x, 0.18), 0.65)
+    """Apagar: soplo que baja y una burbuja grave que se va."""
+    x = np.zeros(int(SR * 0.55))
+    place(x, whoosh(0.28, 2000, 450, level=0.05, seed=5), 0.0)
+    place(x, 0.5 * pop(700, 380, 0.16, 0.05), 0.03)
+    place(x, 0.3 * soft(note('E4'), 0.4, 0.12, attack=0.01), 0.05)
+    return finish(lowpass(reverb(x, 0.12, 0.7), 4200), 0.36)
 
 
 def s_select():
-    """Tocar una app: burbuja clara con una chispa de campanita."""
-    x = np.zeros(int(SR * 0.4))
-    place(x, blip(1900, 880, 0.12, 0.035), 0.0)
-    place(x, 0.35 * bell(note('B6'), 0.3, decay=0.07, bright=0.5), 0.012)
-    return finish(reverb(x, 0.12, 0.7), 0.62)
+    """Tocar un botón: burbuja que sube un poco, redonda y corta."""
+    x = np.zeros(int(SR * 0.22))
+    place(x, pop(540, 820, 0.12, 0.03), 0.0)
+    place(x, 0.18 * soft(note('B5'), 0.12, 0.03, attack=0.004, warmth=0.0), 0.008)
+    return finish(lowpass(x, 4200), 0.34)
 
 
 def s_back():
-    """Volver: la misma burbuja, más grave y corta."""
-    x = np.zeros(int(SR * 0.3))
-    place(x, blip(1200, 520, 0.1, 0.03), 0.0)
-    place(x, 0.25 * bell(note('E6'), 0.25, decay=0.05, bright=0.4), 0.01)
-    return finish(reverb(x, 0.10, 0.7), 0.55)
+    """Volver: la misma burbuja, pero bajando."""
+    x = np.zeros(int(SR * 0.2))
+    place(x, pop(620, 400, 0.12, 0.03), 0.0)
+    return finish(lowpass(x, 3600), 0.3)
 
 
 def s_page():
-    """Abrir una página: soplo corto que sube y dos notas (sol# → si)."""
-    x = np.zeros(int(SR * 0.7))
-    place(x, whoosh(0.18, 900, 3400, level=0.035, seed=7), 0.0)
-    place(x, 0.6 * bell(note('G#5'), 0.5, decay=0.16), 0.05)
-    place(x, 0.65 * bell(note('B5'), 0.6, decay=0.22), 0.11)
-    return finish(reverb(x, 0.18), 0.6)
+    """Cambiar de pantalla: un soplo de aire muy bajito y un pulso cálido (sin campanas)."""
+    x = np.zeros(int(SR * 0.4))
+    place(x, whoosh(0.2, 700, 2400, level=0.06, seed=7), 0.0)
+    place(x, 0.4 * soft(note('G#4'), 0.3, 0.07, attack=0.008), 0.035)
+    place(x, 0.3 * pop(480, 720, 0.1, 0.025), 0.05)
+    return finish(lowpass(reverb(x, 0.1, 0.6), 4000), 0.3)
+
+
+def s_tab():
+    """Cambiar de pestaña: un tic de madera suave."""
+    x = np.zeros(int(SR * 0.09))
+    place(x, wood(1150), 0.0)
+    return finish(lowpass(x, 5000), 0.26, 0.008)
 
 
 def s_hover():
     """Pasar por encima: un tic muy suave."""
-    x = np.zeros(int(SR * 0.12))
-    place(x, blip(3200, 2400, 0.05, 0.012), 0.0)
-    return finish(x, 0.30, 0.01)
+    x = np.zeros(int(SR * 0.06))
+    place(x, wood(1700, 0.03, seed=9), 0.0)
+    return finish(lowpass(x, 5200), 0.12, 0.006)
 
 
 def click_burst(dur, seed, bright=1.0):
@@ -194,34 +211,30 @@ def click_burst(dur, seed, bright=1.0):
     rng = np.random.default_rng(seed)
     t = t_axis(dur)
     n = rng.standard_normal(len(t))
-    # paso alto sencillo: diferencia de muestras
     hp = np.concatenate([[0], np.diff(n)])
     return bright * hp * env(t, 0.0005, dur / 4)
 
 
 def s_foto():
-    """Foto: clic-clac del obturador, un golpecito grave y un brillo de cristal."""
-    x = np.zeros(int(SR * 0.7))
+    """Foto: clic-clac del obturador y un golpecito grave (sin brillos)."""
+    x = np.zeros(int(SR * 0.4))
     place(x, 0.55 * click_burst(0.025, 11), 0.0)
     place(x, 0.45 * click_burst(0.03, 12, 0.8), 0.075)
     t = t_axis(0.08)
-    place(x, 0.35 * np.sin(2 * np.pi * 140 * t) * env(t, 0.002, 0.02), 0.0)
-    place(x, 0.22 * bell(note('B6'), 0.45, decay=0.12, bright=0.6), 0.09)
-    place(x, 0.16 * bell(note('E7'), 0.4, decay=0.1, bright=0.5), 0.13)
-    return finish(reverb(x, 0.14, 0.8), 0.7)
+    place(x, 0.4 * np.sin(2 * np.pi * 140 * t) * env(t, 0.002, 0.02), 0.0)
+    return finish(lowpass(lowpass(reverb(x, 0.1, 0.6), 3800), 3800), 0.45)
 
 
 def s_like():
-    """Like: burbuja que sube y una campanita (mi → si)."""
-    x = np.zeros(int(SR * 0.6))
-    place(x, blip(700, 1500, 0.09, 0.03), 0.0)
-    place(x, 0.5 * bell(note('E6'), 0.4, decay=0.1), 0.03)
-    place(x, 0.45 * bell(note('B6'), 0.45, decay=0.14), 0.09)
-    return finish(reverb(x, 0.16), 0.6)
+    """Like: dos burbujas que suben, la segunda más aguda."""
+    x = np.zeros(int(SR * 0.35))
+    place(x, pop(520, 780, 0.12, 0.03), 0.0)
+    place(x, 0.8 * pop(700, 1040, 0.14, 0.035), 0.07)
+    return finish(lowpass(reverb(x, 0.1, 0.6), 4600), 0.36)
 
 
-SOUNDS = {'open': s_open, 'close': s_close, 'select': s_select, 'back': s_back, 'page': s_page, 'hover': s_hover,
-          'foto': s_foto, 'like': s_like}
+SOUNDS = {'open': s_open, 'close': s_close, 'select': s_select, 'back': s_back, 'page': s_page, 'tab': s_tab,
+          'hover': s_hover, 'foto': s_foto, 'like': s_like}
 
 
 def write_wav(path, x):

@@ -62,7 +62,7 @@ public final class TFPadClient {
     }
 
     /**
-     * Sonidos propios del pad (tools/pad/build_sounds.py): open, close, select, back, page y hover. Van por el
+     * Sonidos propios del pad (tools/pad/build_sounds.py): open, close, select, back, page, tab, hover, foto y like. Van por el
      * volumen general, sin posición (suenan igual se mire a donde se mire).
      */
     static void sound(String name, float volume) {
@@ -81,22 +81,33 @@ public final class TFPadClient {
         }
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
         PadSettings.load();
-        if (PadSettings.sounds) sound("open", 0.9F * PadSettings.volume / 80F);
+        if (PadSettings.sounds) sound("open", 0.7F * PadSettings.volume / 80F);
         mc.setScreen(new TFPadScreen());
     }
 
-    /** Abre el pad directamente en una app (por ejemplo, la Cámara después de una foto). */
-    static void openTo(String app) {
+    /** Abre el pad directamente en una app (por ejemplo, la Cámara después de una foto, o la Protección al pulsar
+     *  una piedra). Si el pad ya está abierto, cambia de app sin cerrarlo. */
+    static void openTo(String app, String tab) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.getConnection() == null) return;
+        if (mc.screen instanceof TFPadScreen open) {
+            open.openApp(app, tab);
+            return;
+        }
         TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
+        PadSettings.load();
+        if (PadSettings.sounds) sound("open", 0.7F * PadSettings.volume / 80F);
         TFPadScreen pad = new TFPadScreen();
         mc.setScreen(pad);
-        pad.openApp(app);
+        pad.openApp(app, tab);
     }
 
-    static void openServerApp(String app) {
-        TFPadNet.CHANNEL.sendToServer(new TFPadNet.Open(app));
+    static void openTo(String app) {
+        openTo(app, "");
+    }
+
+    static void openServerApp(String app, String tab) {
+        TFPadNet.CHANNEL.sendToServer(new TFPadNet.Open(app, tab == null ? "" : tab));
     }
 
     @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)

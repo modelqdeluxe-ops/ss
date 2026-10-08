@@ -837,6 +837,8 @@ extends ChestMenu {
     }
 
     public static void open(ServerPlayer serverplayer, final Claim claim, int i, String s) {
+        // Con el TF Client, la zona se administra desde la app Protección del pad
+        if (net.tierrasfantasticas.tfclient.pad.TFPadNet.openApp(serverplayer, "protecciones", "z:" + claim.getClaimId() + ":a")) return;
         if (claim.getGroupId() != null && !claim.isGroupMother()) {
             Claim claim1 = claim.getMother();
             String s2 = claim1 != null ? claim1.getOwnerName() : "?";
@@ -1189,6 +1191,38 @@ extends ChestMenu {
             serverplayer.displayClientMessage((Component)Component.literal((String)("\u2714 Invitacion enviada a " + j + " jugador(es). Grupo: \"" + claimgroup.getName() + "\".")).withStyle(ChatFormatting.GREEN), false);
         }
         ClaimMenuHandler.open(serverplayer, claim, i);
+    }
+
+    /**
+     * Para el TF Pad: crea el grupo de la zona si no tiene (con ese nombre) e invita a los jugadores conectados de la
+     * lista. Devuelve qué pasó, en una frase.
+     */
+    public static String inviteToGroup(ServerPlayer owner, Claim claim, String groupName, String names) {
+        ClaimManager manager = ClaimManager.getInstance();
+        ClaimGroup group = manager.getGroupOf(claim);
+        if (group == null) {
+            String name = groupName == null || groupName.isBlank() ? "Grupo de " + owner.getName().getString() : groupName.trim();
+            group = manager.createGroup(claim, name.length() > 32 ? name.substring(0, 32) : name);
+        }
+        int sent = 0;
+        List<String> missing = new ArrayList<>();
+        for (String raw : ChatPromptRouter.sanitize(names == null ? "" : names).split("[ ,]+")) {
+            String n = raw.trim();
+            if (n.isEmpty()) continue;
+            ServerPlayer target = owner.server.getPlayerList().getPlayerByName(n);
+            if (target == null) {
+                missing.add(n);
+                continue;
+            }
+            if (target.getUUID().equals(owner.getUUID()) || group.isRegistered(target.getUUID())) continue;
+            String code = ClaimMenuHandler.genCode();
+            invites.put(code, new MergeInvite(code, group.getGroupId(), target.getUUID(), owner.getName().getString(), group.getName()));
+            ClaimMenuHandler.sendInvite(target, owner.getName().getString(), group.getName(), code);
+            sent++;
+        }
+        String out = sent > 0 ? "Invitación enviada a " + sent + (sent == 1 ? " jugador." : " jugadores.") : "Grupo «" + group.getName() + "» listo.";
+        if (!missing.isEmpty()) out += " No están conectados: " + String.join(", ", missing) + ".";
+        return out;
     }
 
     private static void sendInvite(ServerPlayer serverplayer, String s, String s1, String s2) {

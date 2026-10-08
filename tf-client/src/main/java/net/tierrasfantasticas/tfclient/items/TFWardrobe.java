@@ -96,6 +96,8 @@ public final class TFWardrobe {
             } catch (IllegalArgumentException e) {
                 continue;
             }
+            Long local = LOCAL.get(uuid);
+            if (local != null && System.currentTimeMillis() - local < 20_000) continue;
             JsonObject items = TFJson.obj(o, "items");
             String[] worn = new String[SLOTS.length];
             for (int i = 0; i < SLOTS.length; i++) worn[i] = valid(TFJson.str(items, SLOTS[i], ""), i);
@@ -108,6 +110,29 @@ public final class TFWardrobe {
             CHANNEL.send(PacketDistributor.ALL.noArg(), new Sync(uuid, worn));
         }
         if (changed) save();
+    }
+
+    /** Cambios hechos desde el pad: durante un rato no se pisan con lo que mande la web (puede ser de antes). */
+    private static final Map<UUID, Long> LOCAL = new HashMap<>();
+
+    /** Lo que lleva puesto: «set/pieza» por hueco ("" = nada). */
+    public static String[] worn(UUID uuid) {
+        String[] w = WORN.get(uuid);
+        return w == null ? new String[] {"", "", "", "", ""} : w.clone();
+    }
+
+    /** Pone (o quita, con "") una pieza desde el pad. La web se entera en la siguiente consulta del puente. */
+    public static boolean setFromPad(UUID uuid, int slot, String piece) {
+        String p = piece.isEmpty() ? "" : valid(piece, slot);
+        if (!piece.isEmpty() && p.isEmpty()) return false;
+        String[] worn = worn(uuid);
+        worn[slot] = p;
+        if (isEmpty(worn)) WORN.remove(uuid);
+        else WORN.put(uuid, worn);
+        LOCAL.put(uuid, System.currentTimeMillis());
+        CHANNEL.send(PacketDistributor.ALL.noArg(), new Sync(uuid, worn));
+        save();
+        return true;
     }
 
     @SubscribeEvent

@@ -7,7 +7,8 @@ import net.minecraft.client.gui.GuiGraphics;
  * (X, Y) a (X + W, Y + H), justo debajo de la barra de arriba.
  */
 abstract class PadPage {
-    static final int X = 60, Y = 82, W = 272, H = 112;
+    /** Empieza en y=84: más arriba, a la izquierda, el emblema TF del marco se mete en la pantalla. */
+    static final int X = 60, Y = 84, W = 272, H = 110;
 
     final TFPadScreen pad;
     final String app;

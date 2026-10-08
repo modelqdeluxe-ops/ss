@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * La portada: 20 apps en dos páginas de 5x2, fichas de 38 con su icono de 32 y el nombre debajo; los puntos de abajo
+ * La portada: 20 apps en dos páginas de 5x2 (Explorar va dentro de Viajes), fichas de 38 con su icono de 32 y el nombre debajo; los puntos de abajo
  * dicen en qué página estás. Se pasa de página con la rueda, las flechas, arrastrando o pulsando los puntos, y la
  * página entra deslizándose. Mismas posiciones que tools/pad/build_pad.py.
  */
@@ -17,7 +17,7 @@ final class PadHomePage extends PadPage {
             new App("oficios", "OFICIOS"), new App("misiones", "MISIONES"), new App("cazas", "CAZAS"),
             new App("tienda", "TIENDA"), new App("gts", "GTS"),
             new App("monedero", "MONEDERO"), new App("clanes", "CLANES"), new App("viajes", "VIAJES"),
-            new App("explorar", "EXPLORAR"), new App("kits", "KITS"),
+            new App("hogares", "HOGARES"), new App("kits", "KITS"),
             new App("comunidad", "COMUNIDAD"), new App("camara", "CÁMARA"), new App("jugadores", "JUGADORES"),
             new App("ranking", "RANKING"), new App("titulos", "TÍTULOS"),
             new App("armario", "ARMARIO"), new App("efectos", "EFECTOS"), new App("rango", "MI RANGO"),
@@ -50,7 +50,7 @@ final class PadHomePage extends PadPage {
         from = page;
         page = to;
         slideAt = System.currentTimeMillis();
-        pad.sound("page", 0.6F);
+        pad.sound("page", 0.5F);
     }
 
     @Override

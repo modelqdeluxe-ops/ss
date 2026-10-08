@@ -79,6 +79,14 @@ final class PadFont {
         RenderSystem.setShaderColor(1, 1, 1, 1);
     }
 
+    /** Recorta el texto (letra pixel) por el final para que quepa en w píxeles. */
+    static String fit(String s, int w) {
+        String t = upper(s);
+        if (width(t) <= w) return t;
+        while (t.length() > 1 && width(t + ".") > w) t = t.substring(0, t.length() - 1);
+        return t.trim() + ".";
+    }
+
     static void drawCentered(GuiGraphics g, String s, int cx, int y, int rgb, boolean outline) {
         draw(g, s, cx - width(s) / 2, y, rgb, outline);
     }

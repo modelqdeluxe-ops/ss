@@ -79,7 +79,7 @@ public final class TFShop {
                         say(player, TFShopConfig.message("desactivada"), Map.of());
                         return 0;
                     }
-                    TFShopMenu.openMain(player);
+                    if (!net.tierrasfantasticas.tfclient.pad.TFPadNet.openApp(player, "tienda", "")) TFShopMenu.openMain(player);
                     return 1;
                 })
                 .then(Commands.literal("recargar").requires(s -> s.hasPermission(3)).executes(ctx -> {
@@ -311,10 +311,18 @@ public final class TFShop {
         return e.name().isBlank() ? e.stack(1).getHoverName().getString() : e.name();
     }
 
+    /** Mientras es true, los mensajes salen como aviso dentro del pad en vez de en el chat (la app Tienda). */
+    public static boolean toPad;
+
     /** Envía un mensaje de la configuración: &amp;a… son los colores de Minecraft; {clave} se sustituye. */
     public static void say(ServerPlayer player, String template, Map<String, String> values) {
         String text = template;
         for (Map.Entry<String, String> v : values.entrySet()) text = text.replace("{" + v.getKey() + "}", v.getValue());
+        if (toPad) {
+            String plain = ChatFormatting.stripFormatting(colors(text));
+            if (plain != null && !plain.isBlank()) net.tierrasfantasticas.tfclient.pad.TFPadNet.notice(player, plain.trim());
+            return;
+        }
         player.sendSystemMessage(Component.literal(colors(text)));
     }
 

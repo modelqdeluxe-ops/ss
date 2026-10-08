@@ -106,6 +106,11 @@ public final class TFBridge {
     /** Cambios de la tienda de monedas para la web, en orden. */
     private static final Deque<JsonObject> shopOps = new ArrayDeque<>();
     private static final int SHOP_PER_POLL = 50;
+    /** Lo que los jugadores cambian desde el TF Pad (armario y VFX), para la web. */
+    private static final Deque<JsonObject> padWardrobe = new ArrayDeque<>();
+    private static final Deque<JsonObject> padVfx = new ArrayDeque<>();
+    /** Jugadores con el Armario del pad abierto hace poco: la web manda lo que tienen. uuid → hasta cuándo (ms). */
+    private static final java.util.Map<java.util.UUID, Long> padWant = new java.util.HashMap<>();
     /** Efectos programados (fuegos artificiales escalonados). */
     private static final List<Scheduled> effects = new ArrayList<>();
     private static long clock;
@@ -193,6 +198,49 @@ public final class TFBridge {
         return root.getChild("lp") != null || root.getChild("luckperms") != null;
     }
 
+    /** Una pieza del armario puesta (o quitada, con id null) desde el pad. */
+    public static void padWardrobe(java.util.UUID uuid, String slot, String set, String id) {
+        JsonObject o = new JsonObject();
+        o.addProperty("uuid", uuid.toString());
+        o.addProperty("slot", slot);
+        if (id != null) {
+            o.addProperty("set", set);
+            o.addProperty("id", id);
+        } else {
+            o.add("id", com.google.gson.JsonNull.INSTANCE);
+        }
+        padWardrobe.addLast(o);
+        soon();
+    }
+
+    /** Un efecto de kill o paquete de skills equipado (o quitado, con id null) desde el pad. */
+    public static void padVfx(java.util.UUID uuid, String kind, String id) {
+        JsonObject o = new JsonObject();
+        o.addProperty("uuid", uuid.toString());
+        o.addProperty("kind", kind);
+        if (id != null) o.addProperty("id", id);
+        else o.add("id", com.google.gson.JsonNull.INSTANCE);
+        padVfx.addLast(o);
+        soon();
+    }
+
+    /** Pide a la web lo que tiene este jugador en el armario (durante un minuto, en cada consulta). */
+    public static void padWant(java.util.UUID uuid) {
+        boolean fresh = padWant.put(uuid, System.currentTimeMillis() + 60_000) == null;
+        if (fresh) soon();
+    }
+
+    /** La dirección de la tienda web (sin https://), para enseñarla. */
+    public static String storeHost() {
+        String host = storeHost.isEmpty() ? TFServerConfig.url().replaceAll("^https?://", "") : storeHost;
+        return java.net.IDN.toUnicode(host.replaceAll("/.*$", ""));
+    }
+
+    /** ¿Hay conexión con la web? */
+    public static boolean connected() {
+        return connected && TFServerConfig.enabled();
+    }
+
     /** Adelanta la siguiente consulta a la web (en un segundo). */
     private static void soon() {
         ticks = Math.max(ticks, TFServerConfig.intervalSeconds() * 20 - 20);
@@ -247,12 +295,31 @@ public final class TFBridge {
         body.add("seen", array(sendingSeen));
         body.add("ranks", array(sendingRanks));
         if (!sendingShop.isEmpty()) body.add("shop", array(sendingShop));
+        List<JsonObject> sendingWardrobe = new ArrayList<>(padWardrobe);
+        List<JsonObject> sendingVfx = new ArrayList<>(padVfx);
+        padWardrobe.clear();
+        padVfx.clear();
+        if (!sendingWardrobe.isEmpty() || !sendingVfx.isEmpty()) {
+            JsonObject pad = new JsonObject();
+            pad.add("wardrobe", array(sendingWardrobe));
+            pad.add("vfx", array(sendingVfx));
+            body.add("pad", pad);
+        }
+        long nowMs = System.currentTimeMillis();
+        padWant.values().removeIf(until -> until < nowMs);
+        if (!padWant.isEmpty()) {
+            JsonArray want = new JsonArray();
+            padWant.keySet().forEach(u -> want.add(u.toString()));
+            body.add("padWant", want);
+        }
         // Si la consulta falla, todo vuelve a la cola para la siguiente.
         Runnable requeue = () -> {
             sending.forEach(done::addLast);
             sendingSeen.forEach(seen::addLast);
             sendingRanks.forEach(rankChanges::addLast);
             for (int i = sendingShop.size() - 1; i >= 0; i--) shopOps.addFirst(sendingShop.get(i));
+            for (int i = sendingWardrobe.size() - 1; i >= 0; i--) padWardrobe.addFirst(sendingWardrobe.get(i));
+            for (int i = sendingVfx.size() - 1; i >= 0; i--) padVfx.addFirst(sendingVfx.get(i));
         };
 
         String url = TFServerConfig.url() + "/bridge/poll";
@@ -356,6 +423,10 @@ public final class TFBridge {
         // Armario de la web (lo que se ve en cada hueco) de los conectados
         if (json.has("wardrobe") && json.get("wardrobe").isJsonArray()) {
             net.tierrasfantasticas.tfclient.items.TFWardrobe.applyWeb(srv, json.getAsJsonArray("wardrobe"));
+        }
+        // Lo que tienen en el armario los que lo abrieron en el pad
+        if (json.has("padData") && json.get("padData").isJsonArray()) {
+            net.tierrasfantasticas.tfclient.pad.server.PadWardrobe.receive(srv, json.getAsJsonArray("padData"));
         }
         JsonArray deliveries = json.has("deliveries") ? json.getAsJsonArray("deliveries") : new JsonArray();
         for (JsonElement element : deliveries) {

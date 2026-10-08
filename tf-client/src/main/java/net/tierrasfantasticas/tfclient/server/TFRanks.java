@@ -39,7 +39,7 @@ public final class TFRanks {
      * LuckPerms); solo vienen en la lista de rangos (rankList), -1 y vacío en el resto.
      */
     public record Rank(String id, String name, int tier, String group, String prefix, String color, int hex, int homes,
-                       List<String> permissions) {
+                       List<String> permissions, List<String> perks) {
         static Rank parse(JsonObject o) {
             if (o == null || !o.has("id") || o.get("id").isJsonNull()) return null;
             String hexText = str(o, "hex", "");
@@ -52,8 +52,14 @@ public final class TFRanks {
                     if (p.isJsonPrimitive()) permissions.add(p.getAsString());
                 }
             }
+            List<String> perks = new ArrayList<>();
+            if (o.has("perks") && o.get("perks").isJsonArray()) {
+                for (JsonElement p : o.getAsJsonArray("perks")) {
+                    if (p.isJsonPrimitive()) perks.add(p.getAsString());
+                }
+            }
             return new Rank(str(o, "id", ""), str(o, "name", ""), o.has("tier") ? o.get("tier").getAsInt() : 0,
-                    str(o, "group", ""), str(o, "prefix", ""), str(o, "color", ""), hex, homes, List.copyOf(permissions));
+                    str(o, "group", ""), str(o, "prefix", ""), str(o, "color", ""), hex, homes, List.copyOf(permissions), List.copyOf(perks));
         }
 
         /** Nombre corto para comandos y sugerencias: «rey», «dragon»… */
@@ -112,6 +118,13 @@ public final class TFRanks {
             if (rank.id().equalsIgnoreCase(key) || rank.key().equalsIgnoreCase(key)) return rank;
         }
         return null;
+    }
+
+    /** El rango tal como viene en la lista (con sus hogares, permisos y ventajas), o el mismo si no está. */
+    public static Rank full(Rank rank) {
+        if (rank == null) return null;
+        Rank listed = LIST.get(rank.id());
+        return listed != null ? listed : rank;
     }
 
     public static Rank of(UUID uuid) {

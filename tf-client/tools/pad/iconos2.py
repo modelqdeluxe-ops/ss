@@ -72,6 +72,87 @@ def explorar():
     return calco(ref('spyglass'), mat, {'glass': DIAM, 'brass': GOLD, 'leather': LEATHER})
 
 
+def hogares():
+    """Casa (dibujada a mano con las reglas del pad): tejado de tejas rojas con caballete, chimenea de ladrillo, pared
+    de yeso con vigas de madera, ventanas encendidas con cruceta, puerta de madera con pomo de oro y césped delante."""
+    ic = Icon()
+    LIT = [(255, 252, 220), (255, 234, 150), (252, 204, 92), (220, 150, 50), (160, 100, 30)]
+    WALL = [(255, 252, 240), (250, 238, 210), (236, 218, 180), (206, 182, 140), (160, 136, 100)]
+    BRICK = [(232, 150, 120), (204, 110, 84), (170, 80, 64), (130, 56, 50), (96, 40, 40)]
+    STONE = [(236, 236, 240), (206, 210, 220), (172, 178, 192), (136, 142, 160), (100, 106, 126)]
+
+    # chimenea (detrás del tejado)
+    chim = ic.rect(20, 4, 23, 10)
+    shade(ic, chim, BRICK)
+    for x in range(20, 24):
+        ic.px(x, 7, BRICK[3])
+    ic.px(21, 5, BRICK[3]); ic.px(22, 9, BRICK[3])
+    cap = ic.rect(19, 3, 24, 3)
+    shade(ic, cap, STONE)
+
+    # pared con vigas
+    wall = ic.rect(5, 15, 26, 27)
+    shade(ic, wall, WALL)
+    for y in range(15, 28):
+        ic.px(5, y, WOOD[2]); ic.px(26, y, WOOD[3])
+    for x in range(5, 27):
+        ic.px(x, 15, WOOD[3] if x > 15 else WOOD[2])
+
+    # ventanas encendidas: marco de madera, cuatro cristales de 2x2 y cruceta
+    for wx in (6, 19):
+        frame = ic.rect(wx, 17, wx + 6, 23)
+        shade(ic, frame, WOOD)
+        for x in range(wx + 1, wx + 6):
+            for y in range(18, 23):
+                if x == wx + 3 or y == 20:
+                    ic.px(x, y, WOOD[2])
+                else:
+                    top = y in (18, 21)
+                    left = x in (wx + 1, wx + 4)
+                    ic.px(x, y, LIT[0] if top and left else LIT[1] if top or left else LIT[2])
+        for x in range(wx - 1, wx + 8):  # alféizar
+            ic.px(x, 24, WOOD[1] if x < wx + 3 else WOOD[3])
+
+    # puerta con arco, ventanita y pomo
+    door = {(x, y) for x in range(14, 18) for y in range(19, 28) if not (y == 19 and x in (14, 17))}
+    shade(ic, door, WOOD)
+    for x in range(15, 17):
+        ic.px(x, 21, LIT[1])
+    ic.px(15, 21, LIT[0])
+    for x in range(14, 18):
+        ic.px(x, 23, WOOD[3])
+    ic.px(16, 25, GOLD[1])
+
+    # tejado: tejas en filas, caballete claro y alero
+    roof = set()
+    for y in range(5, 15):
+        half = (y - 5) * 1.4
+        for x in range(round(15 - half), round(16 + half) + 1):
+            roof.add((x, y))
+    shade(ic, roof, RED)
+    for y in (8, 11):
+        for x, yy in roof:
+            if yy == y and (x + y) % 3:
+                ic.px(x, y, RED[3])
+    for y in range(5, 15):
+        half = (y - 5) * 1.4
+        ic.px(round(15 - half), y, RED[1])
+    ic.px(15, 5, RED[0]); ic.px(16, 5, RED[1])
+    for x in range(2, 30):
+        if (x, 14) in roof:
+            ic.px(x, 14, RED[4] if x > 15 else RED[3])
+
+    # césped y camino de piedras
+    for x in range(3, 29):
+        ic.px(x, 28, GREEN[1] if x < 16 else GREEN[2])
+        ic.px(x, 29, GREEN[3])
+    for x in range(14, 18):
+        ic.px(x, 28, STONE[1] if x < 16 else STONE[2]); ic.px(x, 29, STONE[3])
+    for x, y in ((4, 27), (6, 27), (27, 27), (25, 27)):
+        ic.px(x, y, GREEN[1])
+    return ic.outline()
+
+
 def kits():
     """Saco de kits atado con cordel."""
     return calco(ref('bundle'), lambda r, g, b: 'sack', {'sack': SACK})
@@ -366,6 +447,6 @@ def jugadores():
     return ic.outline()
 
 
-ICONOS = {'misiones': misiones, 'cazas': cazas, 'viajes': viajes, 'explorar': explorar, 'kits': kits,
+ICONOS = {'misiones': misiones, 'cazas': cazas, 'viajes': viajes, 'explorar': explorar, 'hogares': hogares, 'kits': kits,
           'titulos': titulos, 'ayuda': ayuda, 'comunidad': comunidad, 'jugadores': jugadores, 'clanes': clanes,
           'ranking': ranking, 'camara': camara}

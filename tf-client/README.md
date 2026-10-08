@@ -238,6 +238,15 @@ Las alas de los sets planean como unas élitros hasta 10 s seguidos; luego se pl
 el suelo o el agua (en el suelo nunca se planea). Mientras planeas, a la derecha del último hueco de la barra sale un
 contador con los segundos que quedan y una barrita (verde → ámbar → rojo). `TFWings.canGlide`, `TFGlideHud`.
 
+## TF Pad (tecla C)
+
+El móvil del jugador: todo lo del servidor se hace desde aquí, sin cofres ni chat. Apps del servidor (las dibuja
+`pad/PadViewPage` con lo que manda `pad/server/*`): Oficios, Misiones, Cazas, Tienda, GTS, Monedero, Clanes, Viajes (con
+Explorar y Tus hogares), Hogares (EssentialsX o propios), Kits, Jugadores, Ranking, Títulos, Armario, Efectos, Mi rango,
+Protección y Ayuda; en el cliente, Comunidad, Cámara y Ajustes. `/tf jobs`, `/tf shop`, `/tf claims` y la piedra de
+protección abren su app (sin TF Client, las ventanas de siempre). Texturas: `tools/pad/build_pad.py [--preview]`;
+sonidos: `tools/pad/build_sounds.py`; vistas previas: `tools/pad/sim/pages.py <carpeta>`.
+
 ## TF Claims: protecciones (1.3.18)
 
 Antes era el mod Fantastic Claims (7.9.2); ahora va dentro de TF Client (**quítalo** del servidor y de los clientes).

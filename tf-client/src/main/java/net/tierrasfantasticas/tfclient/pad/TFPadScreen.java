@@ -27,20 +27,16 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   <li>Arriba, la barra: el nombre de la página (con la flecha para volver), la hora del mundo, tus monedas y el
  *       engranaje de Ajustes.</li>
  *   <li>Portada: 20 apps en dos páginas de 5x2 ({@link PadHomePage}).</li>
- *   <li>Oficios, Protección, Tienda y GTS abren sus ventanas del servidor; Misiones, Cazas, Kits, Viajes, Explorar,
- *       Clanes, Títulos, Jugadores, Ranking y Ayuda las dibuja el servidor dentro del pad ({@link PadViewPage});
- *       Comunidad y Cámara tienen sus páginas; Monedero, Mi rango, Armario, Efectos y Ajustes, las suyas.</li>
+ *   <li>Todas las apps se usan dentro del pad (nada de cofres ni de mandar a la web): las dibuja el servidor
+ *       ({@link PadViewPage}) salvo Comunidad, Cámara y Ajustes, que tienen sus páginas.</li>
  * </ul>
  */
 public final class TFPadScreen extends Screen {
     static final int W = 392;
     static final int H = 251;
     static final int NAVY = 0xFF18265C;
-    /** Apps que son ventanas del servidor (cofres). */
-    static final Set<String> CHEST_APPS = Set.of("oficios", "protecciones", "tienda", "gts");
-    /** Apps que dibuja el servidor dentro del pad. */
-    static final Set<String> VIEW_APPS = Set.of("misiones", "cazas", "kits", "viajes", "explorar", "clanes", "titulos",
-            "jugadores", "ranking", "ayuda");
+    /** Apps con página propia en el cliente; las demás las dibuja el servidor. */
+    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes");
     private static final Map<String, int[]> SIZES = new HashMap<>();
 
     private float scale = 1;
@@ -125,28 +121,27 @@ public final class TFPadScreen extends Screen {
         hovered = null;
     }
 
+    /** Volver (flecha de arriba, Esc o retroceso): dentro de una app, primero a su pantalla anterior; luego, a la portada. */
     void back() {
-        sound("back", 0.8F);
+        sound("back", 0.6F);
+        if (page instanceof PadViewPage vp && vp.goBack()) return;
         setPage(home);
     }
 
     /** Abre una app de la portada. */
     void openApp(String id) {
-        if (CHEST_APPS.contains(id)) {
-            sound("select", 0.8F);
-            TFPadClient.openServerApp(id);
-            return;
-        }
-        sound("page", 0.8F);
-        if (VIEW_APPS.contains(id)) {
+        openApp(id, "");
+    }
+
+    /** Abre una app en una pestaña (tab vacío: la de entrada). */
+    void openApp(String id, String tab) {
+        sound("page", 0.55F);
+        if (!CLIENT_APPS.contains(id)) {
             setPage(new PadViewPage(this, id));
-            TFPadClient.openServerApp(id);
+            TFPadClient.openServerApp(id, tab);
             return;
         }
         switch (id) {
-            case "monedero" -> setPage(new PadInfoPages.Monedero(this));
-            case "rango" -> setPage(new PadInfoPages.Rango(this));
-            case "armario", "efectos" -> setPage(new PadInfoPages.Web(this, id));
             case "comunidad" -> setPage(new PadCommunityPage(this));
             case "camara" -> setPage(new PadCameraPage(this));
             case "ajustes" -> setPage(new PadInfoPages.Ajustes(this));
@@ -341,7 +336,7 @@ public final class TFPadScreen extends Screen {
     /** Cerrar con Esc (desde la portada) o con la tecla del pad: suena el «apagar». */
     @Override
     public void onClose() {
-        sound("close", 0.8F);
+        sound("close", 0.6F);
         super.onClose();
     }
 

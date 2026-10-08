@@ -80,7 +80,7 @@ extends ChestMenu {
         this.broadcastChanges();
     }
 
-    private static Item iconFor(String s) {
+    public static Item iconFor(String s) {
         switch (s) {
             case "minecraft:heart": {
                 return Items.POPPY;

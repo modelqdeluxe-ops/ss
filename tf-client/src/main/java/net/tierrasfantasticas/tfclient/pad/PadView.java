@@ -6,13 +6,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Lo que una app del servidor manda al pad para dibujar: pestañas, unas líneas de cabecera, filas (icono de objeto,
- * título, hasta tres líneas, barra de progreso, un texto a la derecha y hasta dos botones), botones de abajo y, si
- * hace falta, un campo para escribir. El pad lo dibuja con su estilo (PadViewPage) y cada botón vuelve al servidor como
- * una acción (TFPadNet.Action). Así Misiones, Cazas, Kits, Viajes, Clanes… se programan solo en el servidor.
+ * Lo que una app del servidor manda al pad para dibujar: pestañas, unas líneas de cabecera, una rejilla de objetos
+ * (casillas con su icono y un texto corto debajo, como un inventario), filas (icono de objeto, título, líneas, barra de
+ * progreso, un texto a la derecha y hasta dos botones; la fila entera se puede pulsar), botones de abajo y, si hace
+ * falta, un campo para escribir. El pad lo dibuja con su estilo (PadViewPage) y cada botón vuelve al servidor como una
+ * acción (TFPadNet.Action). Las acciones que empiezan por «§open:» las resuelve el propio pad (abren otra app).
  */
-public record PadView(String app, List<Tab> tabs, String tab, List<String> header, List<Row> rows, List<Btn> footer,
-                      Input input, String empty) {
+public record PadView(String app, List<Tab> tabs, String tab, List<String> header, List<Cell> cells, List<Row> rows,
+                      List<Btn> footer, Input input, String empty) {
 
     /** Estilos de botón. */
     public static final int BLUE = 0, GOLD = 1, RED = 2, GREEN = 3, GRAY = 4;
@@ -29,9 +30,30 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         }
     }
 
-    /** progress < 0: sin barra. color: color del título (0xRRGGBB). */
+    /**
+     * progress < 0: sin barra. color: color del título (0xRRGGBB). click: acción al pulsar la fila entera ("" = no se
+     * pulsa); selected: la fila sale resaltada.
+     */
     public record Row(ItemStack icon, String title, int color, List<String> lines, float progress, String badge,
-                      Btn button, Btn button2) {}
+                      Btn button, Btn button2, String click, boolean selected) {
+        public Row(ItemStack icon, String title, int color, List<String> lines, float progress, String badge, Btn button, Btn button2) {
+            this(icon, title, color, lines, progress, badge, button, button2, "", false);
+        }
+
+        public Row clickable(String action) {
+            return new Row(icon, title, color, lines, progress, badge, button, button2, action, selected);
+        }
+
+        public Row selected(boolean on) {
+            return new Row(icon, title, color, lines, progress, badge, button, button2, click, on);
+        }
+    }
+
+    /**
+     * Una casilla de la rejilla: el objeto (con su cantidad), un texto corto debajo (letra pixel, por ejemplo un precio)
+     * de color label, la acción al pulsarla y si sale marcada.
+     */
+    public record Cell(ItemStack icon, String label, int color, String action, boolean selected) {}
 
     /** Campo de texto: al pulsar Enter (o el botón) se manda la acción con lo escrito. */
     public record Input(String action, String hint, int max, String button) {}
@@ -49,6 +71,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         private final List<Tab> tabs = new ArrayList<>();
         private String tab = "";
         private final List<String> header = new ArrayList<>();
+        private final List<Cell> cells = new ArrayList<>();
         private final List<Row> rows = new ArrayList<>();
         private final List<Btn> footer = new ArrayList<>();
         private Input input;
@@ -83,6 +106,11 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             return this;
         }
 
+        public Builder cell(ItemStack icon, String label, int color, String action, boolean selected) {
+            cells.add(new Cell(icon, label, color, action, selected));
+            return this;
+        }
+
         /** Fila solo de texto (para Ayuda): se parte a lo ancho. */
         public Builder text(String title, int color, List<String> lines) {
             rows.add(new Row(ItemStack.EMPTY, title, color, lines, -1, "", null, null));
@@ -105,7 +133,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         }
 
         public PadView build() {
-            return new PadView(app, tabs, tab, header, rows, footer, input, empty);
+            return new PadView(app, tabs, tab, header, cells, rows, footer, input, empty);
         }
     }
 
@@ -113,7 +141,8 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     // Red
     // ---------------------------------------------------------------------------------------------------------------
 
-    private static final int MAX_ROWS = 60;
+    private static final int MAX_ROWS = 80;
+    private static final int MAX_CELLS = 120;
 
     public void write(FriendlyByteBuf buf) {
         buf.writeUtf(app, 32);
@@ -125,6 +154,16 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         buf.writeUtf(tab, 64);
         buf.writeVarInt(Math.min(header.size(), 4));
         for (int i = 0; i < Math.min(header.size(), 4); i++) buf.writeUtf(cut(header.get(i), 200), 256);
+        int c = Math.min(cells.size(), MAX_CELLS);
+        buf.writeVarInt(c);
+        for (int i = 0; i < c; i++) {
+            Cell cell = cells.get(i);
+            buf.writeItem(cell.icon == null ? ItemStack.EMPTY : cell.icon);
+            buf.writeUtf(cut(cell.label, 12), 24);
+            buf.writeInt(cell.color);
+            buf.writeUtf(cut(cell.action, 120), 128);
+            buf.writeBoolean(cell.selected);
+        }
         int n = Math.min(rows.size(), MAX_ROWS);
         buf.writeVarInt(n);
         for (int i = 0; i < n; i++) {
@@ -138,6 +177,8 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             buf.writeUtf(cut(r.badge, 40), 64);
             writeBtn(buf, r.button);
             writeBtn(buf, r.button2);
+            buf.writeUtf(cut(r.click, 120), 128);
+            buf.writeBoolean(r.selected);
         }
         buf.writeVarInt(Math.min(footer.size(), 4));
         for (int i = 0; i < Math.min(footer.size(), 4); i++) writeBtn(buf, footer.get(i));
@@ -158,6 +199,10 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         String tab = buf.readUtf(64);
         List<String> header = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) header.add(buf.readUtf(256));
+        List<Cell> cells = new ArrayList<>();
+        for (int i = buf.readVarInt(); i > 0; i--) {
+            cells.add(new Cell(buf.readItem(), buf.readUtf(24), buf.readInt(), buf.readUtf(128), buf.readBoolean()));
+        }
         List<Row> rows = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) {
             ItemStack icon = buf.readItem();
@@ -167,13 +212,14 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             for (int j = buf.readVarInt(); j > 0; j--) lines.add(buf.readUtf(512));
             float progress = buf.readFloat();
             String badge = buf.readUtf(64);
-            rows.add(new Row(icon, title, color, lines, progress, badge, readBtn(buf), readBtn(buf)));
+            Btn b1 = readBtn(buf), b2 = readBtn(buf);
+            rows.add(new Row(icon, title, color, lines, progress, badge, b1, b2, buf.readUtf(128), buf.readBoolean()));
         }
         List<Btn> footer = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) footer.add(readBtn(buf));
         Input input = buf.readBoolean() ? new Input(buf.readUtf(64), buf.readUtf(128), buf.readVarInt(), buf.readUtf(32)) : null;
         String empty = buf.readUtf(256);
-        return new PadView(app, tabs, tab, header, rows, footer, input, empty);
+        return new PadView(app, tabs, tab, header, cells, rows, footer, input, empty);
     }
 
     private static void writeBtn(FriendlyByteBuf buf, Btn b) {

@@ -78,6 +78,11 @@ class Icon:
             self.c[y][x] = col
 
     def outline(self, col=OUT):
+        # nada pegado al borde del lienzo: ahí no cabría su contorno y el icono se vería cortado
+        for i in range(self.n):
+            for x, y in ((i, 0), (i, self.n - 1), (0, i), (self.n - 1, i)):
+                if self.c[y][x] and tuple(self.c[y][x]) != tuple(col):
+                    self.c[y][x] = None
         solid = {(x, y) for y in range(self.n) for x in range(self.n) if self.c[y][x]}
         for y in range(self.n):
             for x in range(self.n):

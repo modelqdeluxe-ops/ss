@@ -42,6 +42,8 @@ final class PadCommunityClient {
     /** Subida en curso (para la barra de la Cámara). */
     static volatile String uploadStatus;
     static volatile float uploadProgress;
+    /** Cuándo se mandó el último trozo: si en 30 s el servidor no contesta, se avisa (nunca se queda «Subiendo…»). */
+    private static long uploadSentAt;
 
     private PadCommunityClient() {}
 
@@ -239,7 +241,23 @@ final class PadCommunityClient {
         }
     }
 
+    /** Si la subida lleva 30 s sin respuesta, se da por perdida. */
+    static void checkUpload() {
+        if (uploadStatus != null && uploadSentAt > 0 && System.currentTimeMillis() - uploadSentAt > 30_000) {
+            uploadSentAt = 0;
+            result(new PadCommunityNet.Result(false, "El servidor no contestó. Vuelve a probar en un momento."));
+        }
+    }
+
     private static void send(byte[] png, String caption) {
+        if (png.length > PadCommunityNet.MAX_PHOTO) {
+            result(new PadCommunityNet.Result(false, "La foto es demasiado grande para publicarla."));
+            return;
+        }
+        if (Minecraft.getInstance().getConnection() == null) {
+            result(new PadCommunityNet.Result(false, "No estás conectado al servidor."));
+            return;
+        }
         int total = (png.length + PadCommunityNet.UP_CHUNK - 1) / PadCommunityNet.UP_CHUNK;
         int upload = (int) (System.currentTimeMillis() & 0x7FFFFFFF);
         uploadStatus = "Subiendo...";
@@ -248,10 +266,13 @@ final class PadCommunityClient {
             PadCommunityNet.toServer(new PadCommunityNet.Upload(upload, i, total, i == 0 ? caption : "", part));
             uploadProgress = (i + 1) / (float) total;
         }
+        uploadStatus = "Publicando...";
+        uploadSentAt = System.currentTimeMillis();
     }
 
     static void result(PadCommunityNet.Result r) {
         uploadStatus = null;
+        uploadSentAt = 0;
         Minecraft mc = Minecraft.getInstance();
         if (mc.screen instanceof TFPadScreen pad) {
             pad.showNotice(r.message());
@@ -275,6 +296,7 @@ final class PadCommunityClient {
         loading = false;
         uploadStatus = null;
         uploadProgress = 0;
+        uploadSentAt = 0;
         ASKED.clear();
         BROKEN.clear();
         DOWNLOADS.clear();

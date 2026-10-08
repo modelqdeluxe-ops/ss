@@ -1,5 +1,6 @@
 package net.tierrasfantasticas.tfclient.pad;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -99,8 +100,69 @@ final class PadUi {
         return n;
     }
 
+    /** Como wrap, pero si no cabe en maxLines la última línea acaba en «…» (nunca se corta el texto sin avisar). */
+    static int wrapEllipsis(GuiGraphics g, String s, int x, int y, int w, int color, int maxLines) {
+        List<FormattedCharSequence> all = font().split(Component.literal(s), w);
+        if (all.size() <= maxLines) return wrap(g, s, x, y, w, color, maxLines);
+        // las primeras líneas tal cual; la última, con lo que queda del texto recortado
+        int pos = 0;
+        for (int i = 0; i < maxLines - 1; i++) {
+            StringBuilder b = new StringBuilder();
+            all.get(i).accept((idx, style, cp) -> {
+                b.appendCodePoint(cp);
+                return true;
+            });
+            if (g != null) g.drawString(font(), all.get(i), x, y + i * 10, color, false);
+            String line = b.toString().strip();
+            int at = s.indexOf(line, pos);
+            pos = at < 0 ? Math.min(s.length(), pos + line.length()) : at + line.length();
+        }
+        String rest = s.substring(Math.min(s.length(), pos)).stripLeading();
+        if (g != null) text(g, fitEnd(rest, w), x, y + (maxLines - 1) * 10, color);
+        return maxLines;
+    }
+
     static int lines(String s, int w) {
         return font().split(Component.literal(s), w).size();
+    }
+
+    /** Recorta el texto (letra de Minecraft) por el final con «…» para que quepa en w. */
+    static String fitEnd(String s, int w) {
+        Font font = font();
+        if (font.width(s) <= w) return s;
+        while (!s.isEmpty() && font.width(s + "…") > w) s = s.substring(0, s.length() - 1);
+        return s + "…";
+    }
+
+    /** Recorta por el principio (para lo que se está escribiendo: se ve el final). */
+    static String fitStart(String s, int w) {
+        Font font = font();
+        if (font.width(s) <= w) return s;
+        while (!s.isEmpty() && font.width("…" + s) > w) s = s.substring(1);
+        return "…" + s;
+    }
+
+    /** Campo de texto de 15 de alto: lo escrito (o la pista en gris) y el cursor que parpadea. */
+    static void field(GuiGraphics g, int x, int y, int w, String text, String hint) {
+        box(g, x, y, w, 15, NAVY);
+        box(g, x + 1, y + 1, w - 2, 13, 0xFFFFFFFF);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFD6E6F6);
+        String shown = text.isEmpty() ? fitEnd(hint, w - 10) : fitStart(text, w - 10);
+        text(g, shown, x + 5, y + 4, text.isEmpty() ? 0xFF96AACC : TEXT);
+        if ((System.currentTimeMillis() / 500) % 2 == 0) {
+            int cx = x + 5 + (text.isEmpty() ? 0 : font().width(shown));
+            g.fill(cx, y + 3, cx + 1, y + 12, TEXT);
+        }
+    }
+
+    /** Indicador de «cargando»: cuatro puntos que se encienden en rueda (centrado en cx, desde y). */
+    static void spinner(GuiGraphics g, int cx, int y) {
+        int step = (int) (System.currentTimeMillis() / 140 % 4);
+        int[][] at = {{0, -3}, {3, 0}, {0, 3}, {-3, 0}};
+        for (int i = 0; i < 4; i++) {
+            int c = i == step ? 0xFF3496FA : 0xFFAAC8E8;
+            g.fill(cx + at[i][0] - 1, y + 4 + at[i][1] - 1, cx + at[i][0] + 1, y + 4 + at[i][1] + 1, c);
+        }
     }
 
     static boolean inside(double x, double y, int x0, int y0, int w, int h) {

@@ -12,7 +12,8 @@ import net.minecraft.resources.ResourceLocation;
  */
 final class PadCommunityPage extends PadPage {
     private static final String[][] TABS = {{"recientes", "RECIENTES"}, {"populares", "POPULARES"}, {"mias", "MÍAS"}};
-    private static final int PW = 160, PH = 90;
+    /** La foto: 16:9 y dentro del panel con margen (el panel mide H - 16 de alto). */
+    private static final int PW = 144, PH = 81;
 
     private int index;
     private boolean full;
@@ -85,7 +86,7 @@ final class PadCommunityPage extends PadPage {
             int[] sz = PadCommunityClient.textureSize(post.id());
             g.blit(tex, px, py, PW, PH, 0, 0, sz[0], sz[1], sz[0], sz[1]);
         } else {
-            PadFont.drawCentered(g, "...", px + PW / 2, py + PH / 2 - 5, 0xE0ECFF, false);
+            PadUi.spinner(g, px + PW / 2, py + PH / 2 - 4);
         }
         hit(px, py, PW, PH, () -> full = true);
         int count = PadCommunityClient.total;
@@ -94,7 +95,7 @@ final class PadCommunityPage extends PadPage {
             arrow(g, px + PW - 12, py + PH / 2 - 7, false, mx, my, () -> move(1));
         }
         // columna derecha: autor, hace cuánto, texto, likes y botones
-        int cx = X + 172, cw = W - 178;
+        int cx = px + PW + 8, cw = X + W - 6 - cx;
         PadUi.text(g, post.name(), cx, top + 6, PadUi.TEXT);
         String when = ago(post.time()), num = (index + 1) + "/" + Math.max(count, 1);
         PadUi.text(g, when, cx, top + 16, PadUi.MUTED);

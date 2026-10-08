@@ -1243,3 +1243,43 @@ test('el armario: lo comprado se pone y se quita desde la cuenta, y el puente lo
   assert.deepStrictEqual(wardrobe[0].items, { chest: 'oni/armor_chestplate' });
   assert.ok(wardrobe[0].at > first);
 });
+
+test('el TF Pad: el armario y los VFX se cambian desde el juego y el puente lo guarda', async () => {
+  const cookie = await register('Pad_MC');
+  // Sin compras: el pad no recibe piezas y no puede ponerse nada.
+  let res = await (await poll(['Pad_MC'], [], { padWant: [uuidOf('Pad_MC')] })).json();
+  assert.deepStrictEqual(res.padData, [{ uuid: uuidOf('Pad_MC'), owned: [] }]);
+  const chest = { uuid: uuidOf('Pad_MC'), slot: 'chest', set: 'oni', id: 'armor_chestplate' };
+  res = await (await poll(['Pad_MC'], [], { pad: { wardrobe: [chest] } })).json();
+  assert.deepStrictEqual(res.wardrobe, []);
+
+  const id = await checkout({ productId: 'crate-oni', username: 'Pad_MC' }, cookie);
+  await pay(id);
+  res = await (await poll(['Pad_MC'], [], { padWant: [uuidOf('Pad_MC'), uuidOf('Nadie_MC')] })).json();
+  assert.strictEqual(res.padData.length, 1);
+  assert.ok(res.padData[0].owned.some((x) => x.slot === 'chest' && x.set === 'oni' && x.id === 'armor_chestplate'));
+
+  // Ponerse una pieza desde el pad: la web la guarda y el servidor la recibe en la misma consulta.
+  res = await (await poll(['Pad_MC'], [], { pad: { wardrobe: [chest, { ...chest, slot: 'head' }] } })).json();
+  assert.deepStrictEqual(res.wardrobe[0].items, { chest: 'oni/armor_chestplate' });
+  let view = await (await get('/api/account/wardrobe', { Cookie: cookie })).json();
+  assert.deepStrictEqual(view.equipped, { chest: { set: 'oni', id: 'armor_chestplate' } });
+  res = await (await poll(['Pad_MC'], [], { pad: { wardrobe: [{ uuid: uuidOf('Pad_MC'), slot: 'chest', id: null }] } })).json();
+  assert.deepStrictEqual(res.wardrobe[0].items, {});
+  // Un jugador desconectado no se toca.
+  await poll(['Otro_MC'], [], { pad: { wardrobe: [chest] } });
+  view = await (await get('/api/account/wardrobe', { Cookie: cookie })).json();
+  assert.deepStrictEqual(view.equipped, {});
+
+  // VFX: gratis, se obtienen y se equipan desde el pad; null los quita.
+  const catalog = await (await get('/api/vfx')).json();
+  const kill = catalog.kills[0].id;
+  res = await (await poll(['Pad_MC'], [], { pad: { vfx: [{ uuid: uuidOf('Pad_MC'), kind: 'kill', id: kill }, { uuid: uuidOf('Pad_MC'), kind: 'kill', id: 'no-existe' }] } })).json();
+  assert.strictEqual(res.vfx[0].kill, kill);
+  res = await (await poll(['Pad_MC'], [], { pad: { vfx: [{ uuid: uuidOf('Pad_MC'), kind: 'kill', id: null }] } })).json();
+  assert.strictEqual(res.vfx[0].kill, null);
+
+  // Las ventajas de cada rango llegan para «Mi rango».
+  assert.ok(res.rankList.every((r) => Array.isArray(r.perks)));
+  assert.ok(res.rankList.some((r) => r.perks.length > 0));
+});

@@ -189,6 +189,37 @@ public final class TFMarket {
         TFMarketMenu.openMine(player);
     }
 
+    /**
+     * Publica desde el pad: el montón del hueco slot del inventario (0-35), que tiene que seguir siendo snapshot, a
+     * price. Devuelve el error o null si se publicó.
+     */
+    public static String publish(ServerPlayer player, int slot, ItemStack snapshot, long price) {
+        if (price <= 0 || price > MAX_PRICE) return "Ese precio no vale. Escribe solo el número (por ejemplo 1500 o 5k).";
+        if (slot < 0 || slot >= player.getInventory().items.size()) return "Elige qué vender.";
+        ItemStack stack = player.getInventory().items.get(slot);
+        if (snapshot != null && !ItemStack.matches(stack, snapshot)) return "Ese objeto ya no está donde estaba. Vuelve a elegirlo.";
+        String why = whyNot(stack);
+        if (why != null) return why.equals("No tienes nada en la mano.") ? "Elige qué vender." : why;
+        if (listingsOf(player.getUUID()).size() >= MAX_LISTINGS) {
+            return "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.";
+        }
+        ItemStack item = stack.copy();
+        player.getInventory().items.set(slot, ItemStack.EMPTY);
+        player.getInventory().setChanged();
+        player.containerMenu.broadcastChanges();
+        Listing l = new Listing(UUID.randomUUID().toString().substring(0, 8), player.getUUID(), player.getGameProfile().getName(),
+                item, price, System.currentTimeMillis());
+        listings.add(0, l);
+        save();
+        log("publica", player.getGameProfile().getName(), l);
+        tell(player, "Publicado: " + describe(item) + " por " + TFEconomy.format(price) + ". Estará " + DAYS + " días en el GTS.", ChatFormatting.GREEN);
+        player.playNotifySound(SoundEvents.VILLAGER_YES, SoundSource.MASTER, 0.5F, 1.0F);
+        return null;
+    }
+
+    /** Mientras es true, los avisos del GTS salen dentro del pad en vez de en el chat (la app GTS). */
+    public static boolean toPad;
+
     private static final java.util.regex.Pattern PRICE = java.util.regex.Pattern.compile(
             "^(\\d{1,3}(?:[.,\\s]\\d{3})+|\\d+)\\s*([km])?\\s*(?:monedas?|coins?)?$", java.util.regex.Pattern.CASE_INSENSITIVE);
 
@@ -196,7 +227,7 @@ public final class TFMarket {
      * «1500», «1.500», «1,500», «1 500», «250 monedas», «5k» (5.000), «2m» (2.000.000) → el número. Cualquier otra
      * cosa («1.5k», «12,50», «cinco») devuelve -1: mejor preguntar otra vez que vender por un precio que no quería.
      */
-    static long parsePrice(String text) {
+    public static long parsePrice(String text) {
         java.util.regex.Matcher m = PRICE.matcher(text.trim());
         if (!m.matches()) return -1;
         String digits = m.group(1).replaceAll("[.,\\s]", "");
@@ -508,6 +539,10 @@ public final class TFMarket {
     }
 
     static void tell(ServerPlayer player, String text, ChatFormatting color) {
+        if (toPad) {
+            net.tierrasfantasticas.tfclient.pad.TFPadNet.notice(player, text);
+            return;
+        }
         player.sendSystemMessage(Component.literal("[GTS] ").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(text).withStyle(color)));
     }
