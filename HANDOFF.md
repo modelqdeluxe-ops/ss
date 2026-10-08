@@ -9,6 +9,19 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **Estado al cierre (8 oct 2026, noche):** todo fusionado en `main` y desplegado; **nada a medias**. Última versión
+> publicada del mod: **TF Client 1.3.19** (la siguiente es **1.3.20**). Lo último que pidió el dueño y quedó hecho:
+> 1) TF Claims dentro del mod (1.3.18), 2) el menú de inicio **como antes** (botones Cinzel azul noche/oro de la 1.3.16)
+> con el **paisaje de noche de la web** de fondo (1.3.19). No hay peticiones pendientes.
+>
+> **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
+> inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
+> Cómo comprobar sin abrir el juego (prohibido): compilar (`./gradlew build --offline -q`), `python3
+> tools/check_mod_items.py`, simular con PIL lo que se ve (texturas reales) y mandárselo como imagen. La web: `npm test`
+> en `tierras-fantasticas/` y una vista previa local con Playwright (Chromium en `/opt/pw-browsers/chromium`).
+> Para portar un mod suyo en .jar: CFR + el tsrg de ForgeGradle (`build/createMcpToSrg/output.tsrg`) para pasar los
+> nombres SRG a los oficiales; luego volver a decompilar lo compilado y comparar con el original (ver 1.3.18).
+
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
@@ -818,7 +831,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.10)
+## 5. El mod (TF Client 1.3.19)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -835,6 +848,12 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   reflexión en Mohist, monedas propias o comandos), `jobs/` (oficios, config `config/tfclient-jobs.json`),
   `menu/TFPanelMenu.java` + `client/TFPanelScreen.java` (ventana de oficios: 10 huecos de la rejilla en los huecos
   29-33/38-42 del cofre y 36 botones abajo; nunca el inventario del jugador).
+- Módulos nuevos: `claims/` (TF Claims, protecciones; `/tf claims`, `/tf web claims`; ver entrega 1.3.18),
+  `items/TFWardrobe.java` + `mixin/HumanoidArmorLayerMixin`/`CustomHeadLayerMixin` (armario de la web, 1.3.17),
+  `vfx/` (efectos de kill y skills). Menú: `mixin/TitleScreenMixin.java`, `client/TFMenuButton.java`,
+  `client/TFButtonTheme.java`; fondo `textures/gui/menu_background.png` (paisaje de noche de la web).
+- Generadores: `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
+  menú), `tools/build_vfx.py` (VFX).
 - Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
   `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
   la espalda/cabeza según HMCCosmetics), `tools/check_mod_items.py`, `tools/build_jobs_gui.py <packs>` (arte de oficios
