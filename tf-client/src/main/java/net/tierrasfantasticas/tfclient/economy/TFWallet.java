@@ -41,6 +41,12 @@ public final class TFWallet {
         return instance;
     }
 
+    /** Los n con más monedas (para el Ranking del pad). */
+    public java.util.List<Map.Entry<UUID, Long>> top(int n) {
+        return balances.entrySet().stream().filter(e -> e.getValue() > 0)
+                .sorted(Map.Entry.<UUID, Long>comparingByValue().reversed()).limit(n).map(e -> Map.entry(e.getKey(), e.getValue())).toList();
+    }
+
     public long balance(UUID uuid) {
         return balances.getOrDefault(uuid, 0L);
     }

@@ -160,14 +160,26 @@ public final class TFRanks {
             return;
         }
         if (rank == null) {
-            if (current != null) scoreboard.removePlayerFromTeam(name, current);
+            if (current != null) {
+                scoreboard.removePlayerFromTeam(name, current);
+                player.refreshTabListName();
+            }
             return;
         }
         PlayerTeam team = scoreboard.getPlayerTeam(rank.team());
         if (team == null) team = scoreboard.addPlayerTeam(rank.team());
         Component prefix = rank.tag();
         // Solo se manda el cambio si es distinto (si no, cada consulta reenviaría el equipo a todos).
-        if (!Objects.equals(team.getPlayerPrefix(), prefix)) team.setPlayerPrefix(prefix);
-        if (current != team) scoreboard.addPlayerToTeam(name, team);
+        boolean changed = false;
+        if (!Objects.equals(team.getPlayerPrefix(), prefix)) {
+            team.setPlayerPrefix(prefix);
+            changed = true;
+        }
+        if (current != team) {
+            scoreboard.addPlayerToTeam(name, team);
+            changed = true;
+        }
+        // con título o clan, el nombre de la lista lleva el prefijo del rango dentro: se rehace
+        if (changed) player.refreshTabListName();
     }
 }

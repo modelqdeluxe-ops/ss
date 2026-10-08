@@ -125,7 +125,7 @@ public final class TFJobs {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBreak(BlockEvent.BreakEvent event) {
-        if (!(event.getPlayer() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getPlayer() instanceof ServerPlayer player) || !playing(player)) return;
         BlockState state = event.getState();
         String level = event.getLevel() instanceof net.minecraft.world.level.Level l ? l.dimension().location().toString() : "";
         boolean placed = TFJobsConfig.placedDontCount && TFPlacedBlocks.placed(level, event.getPos());
@@ -157,7 +157,7 @@ public final class TFJobs {
     public static void onPlace(BlockEvent.EntityPlaceEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !(event.getLevel() instanceof net.minecraft.world.level.Level l)) return;
         boolean fresh = TFPlacedBlocks.place(l.dimension().location().toString(), event.getPos());
-        if (!counts(player) || (TFJobsConfig.placedDontCount && !fresh)) return;
+        if (!playing(player) || (TFJobsConfig.placedDontCount && !fresh)) return;
         BlockState state = event.getPlacedBlock();
         record(player, "colocar", t -> t.block(state), 1);
     }
@@ -170,48 +170,48 @@ public final class TFJobs {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onDeath(LivingDeathEvent event) {
         Entity victim = event.getEntity();
-        if (!(event.getSource().getEntity() instanceof ServerPlayer player) || victim instanceof Player || !counts(player)) return;
+        if (!(event.getSource().getEntity() instanceof ServerPlayer player) || victim instanceof Player || !playing(player)) return;
         if (!TFJobsConfig.spawnersCount && victim.getPersistentData().getBoolean(SPAWNER_TAG)) return;
         record(player, "matar", t -> t.entity(victim), 1);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFish(ItemFishedEvent event) {
-        if (!(event.getHookEntity().getPlayerOwner() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getHookEntity().getPlayerOwner() instanceof ServerPlayer player) || !playing(player)) return;
         for (ItemStack stack : event.getDrops()) record(player, "pescar", t -> t.item(stack), stack.getCount());
     }
 
     @SubscribeEvent
     public static void onCraft(PlayerEvent.ItemCraftedEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
         ItemStack stack = event.getCrafting();
         record(player, "fabricar", t -> t.item(stack), Math.max(1, stack.getCount()));
     }
 
     @SubscribeEvent
     public static void onSmelt(PlayerEvent.ItemSmeltedEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
         ItemStack stack = event.getSmelting();
         record(player, "fundir", t -> t.item(stack), Math.max(1, stack.getCount()));
     }
 
     @SubscribeEvent
     public static void onBrew(PlayerBrewedPotionEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
         ItemStack stack = event.getStack();
         record(player, "preparar", t -> t.item(stack), 1);
     }
 
     @SubscribeEvent
     public static void onRepair(AnvilRepairEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !playing(player)) return;
         ItemStack stack = event.getOutput();
         record(player, "reparar", t -> t.item(stack), 1);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBreed(BabyEntitySpawnEvent event) {
-        if (!(event.getCausedByPlayer() instanceof ServerPlayer player) || !counts(player)) return;
+        if (!(event.getCausedByPlayer() instanceof ServerPlayer player) || !playing(player)) return;
         Entity parent = event.getParentA();
         record(player, "criar", t -> t.entity(parent), 1);
     }
@@ -221,8 +221,13 @@ public final class TFJobs {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             int now = player.getStats().getValue(Stats.CUSTOM.get(Stats.ENCHANT_ITEM));
             Integer before = enchants.put(player.getUUID(), now);
-            if (before != null && now > before && counts(player)) record(player, "encantar", t -> t.item(ItemStack.EMPTY), now - before);
+            if (before != null && now > before && playing(player)) record(player, "encantar", t -> t.item(ItemStack.EMPTY), now - before);
         }
+    }
+
+    /** Cuenta para las misiones y cazas del pad (cualquier jugador en supervivencia o aventura). */
+    private static boolean playing(ServerPlayer player) {
+        return server != null && !player.isCreative() && !player.isSpectator();
     }
 
     private static boolean counts(ServerPlayer player) {
@@ -234,6 +239,9 @@ public final class TFJobs {
 
     /** Algo que hizo el jugador: paga según las acciones de sus oficios y avanza sus misiones. */
     private static void record(ServerPlayer player, String type, Predicate<TFJobsConfig.Target> match, int amount) {
+        // Las misiones y cazas del pad cuentan lo mismo (con las mismas reglas: nada de bloques puestos ni spawners)
+        net.tierrasfantasticas.tfclient.pad.server.PadMissions.record(player, type, match, amount);
+        if (!counts(player)) return;
         PlayerJobs p = data().player(player.getUUID());
         boolean changed = false;
         for (String jobId : List.copyOf(p.active)) {

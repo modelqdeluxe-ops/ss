@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
 Última actualización: **8 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
-`claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
+`claude/amazing-ritchie-68hm6n`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -10,8 +10,9 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (8 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
-> **TF Client 1.3.21** (la siguiente es **1.3.22**). Lo último que pidió el dueño y quedó hecho: el **TF Pad** (su
-> marco, 9 apps dibujadas a mano, el **GTS** entre jugadores, **tecla C** y **sonidos propios**). Ver «TF Pad y GTS».
+> **TF Client 1.3.22** (la siguiente es **1.3.23**). Lo último que pidió el dueño y quedó hecho: el **TF Pad completo**
+> (20 apps en 2 páginas, Misiones, Cazas, Kits, Viajes, Explorar, Clanes, Títulos, Jugadores, Ranking, Ayuda, y la
+> **Cámara + Comunidad**, una red social de fotos con likes). Ver la entrega 1.3.22.
 >
 > **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
 > inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
@@ -24,7 +25,43 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): TF Pad con tecla C, sonidos propios y pico nuevo — TF Client 1.3.21
+### Última entrega (8 de octubre de 2026): TF Pad completo, 20 apps, Cámara y Comunidad — TF Client 1.3.22
+Pidió: quitar los «puntos amarillos» (los iconos de la barra de arriba sin números), iconos **simétricos**, **todas**
+las apps (clanes, kits, misiones, viajes…) y que **Comunidad sea una red social**: una cámara que guarda las fotos en
+su cliente, publicarlas y que los demás les den like. «Revisa cómo funciona el pad de Diosesmon».
+- **Inicio:** 20 apps en **2 páginas de 5x2** (rejilla simétrica: centros x 84/140/196/252/308, filas 82 y 136,
+  casillas de 38 px). Se pasa de página con la rueda, las flechas, arrastrando o los puntos (y se desliza).
+  Página 1: Oficios, Misiones, Cazas, Tienda, GTS, Monedero, Clanes, Viajes, Explorar, Kits. Página 2: Comunidad,
+  Cámara, Jugadores, Ranking, Títulos, Armario, Efectos, Mi rango, Protección, Ayuda.
+- **Barra de arriba:** título y botón atrás; a la derecha hora (sol/luna), **monedas con número** y el engranaje de
+  **Ajustes** (sonidos, tic al pasar, animaciones y volumen; `config/tfclient-pad.properties`). Fuente pixel propia con
+  tildes (`tools/pad/fuente4.py`). Esc o Retroceso vuelven al inicio.
+- **Vistas del servidor** (`PadView` + `PadViewPage`): el servidor manda pestañas, cabecera, filas (icono, título,
+  líneas, barra, premio, 2 botones), botones de abajo y un campo de texto; los clics vuelven como `Action`. Así se
+  hicieron casi todas las apps nuevas (`pad/server/*`, registradas en `PadServer`; máx. 12 acciones/s por jugador).
+- **Sistemas** (datos en `<mundo>/tfclient/`, se guardan cada 10 s si cambian; un JSON ilegible se copia aparte):
+  - **Misiones** (`config/tfclient-misiones.json`): 3 diarias y 3 semanales por jugador, y **Cazas**: 4 cada 12 h.
+    Cuentan con lo que ya mide Oficios (`TFJobs.record` → `PadMissions.record`), solo en supervivencia/aventura.
+  - **Kits** (`config/tfclient-kits.json`, **siempre gratis**): inicial, diario y semanal, con vista previa.
+    Staff: `/tf web kits guardar|quitar|recargar`.
+  - **Viajes**: spawn, tu cama y puntos del staff (`/tf web viajes poner|quitar|lista`); 3 s quieto (se cancela al
+    moverte o recibir daño), 30 s de espera. **Explorar**: sitio al azar a 800–6000 bloques, fuera de zonas y agua; 5 min.
+  - **Clanes**: fundar (nombre y etiqueta de 2–4), invitar, rangos, expulsar, pasar el liderazgo, color, fuego amigo,
+    máx. 20. **Títulos**: 12 que se ganan jugando; salen así: «Título» Nombre [TAG] (chat y lista de jugadores).
+  - **Jugadores** (conectados y su ficha), **Ranking** (misiones, cazas, likes, exploraciones, monedas), **Ayuda**
+    (`config/tfclient-ayuda.json`, se edita sin tocar el mod).
+- **Cámara:** «MODO FOTO» esconde la interfaz; la **C** dispara, la foto se guarda en `.minecraft/tfclient/fotos` y el
+  pad vuelve con un flash. Desde la Cámara: publicar, borrar o abrir la carpeta.
+- **Comunidad** (`PadCommunity*`, canal del pad, paquetes 10–16): las fotos se recortan a 16:9 y se suben a 480x270
+  (PNG, máx. 600 KB) en trozos; el servidor las guarda en `<mundo>/tfclient/comunidad/` (+ `comunidad.json`). Pestañas
+  Recientes, Populares y Mías; like (avisa al autor), borrar las tuyas y denunciar (con 5 denuncias se oculta). 90 s
+  entre fotos y 40 por jugador. Staff: `/tf web comunidad borrar|denuncias`. El cliente guarda en caché las que ya vio.
+- **Sonidos nuevos:** `foto` (obturador) y `like`.
+- **Iconos nuevos** calcados de Faithful 32x con nuestra paleta (`tools/pad/calco.py`, `iconos2.py`, referencias en
+  `tools/pad/ref/`). Vistas previas sin abrir el juego: `build_pad.py --preview` (inicio) y un simulador de las páginas
+  con la fuente de Minecraft (hecho en el scratchpad; si hace falta otra vez, copia el layout de `PadViewPage`).
+
+### Entrega anterior (8 de octubre de 2026): TF Pad con tecla C, sonidos propios y pico nuevo — TF Client 1.3.21
 - **Pico (Oficios):** el de la 1.3.20 no le gustó («teniendo los modelos ahí»). Ahora está **adaptado de la estructura
   del pico de Minecraft / Faithful 32x** (`tools/pad/pico.py`): media luna fina (núcleo de 3 px que acaba en punta),
   simétrica respecto al mango, y el mango pasa por debajo y **asoma por encima del centro del arco**. Lección: cuando
@@ -870,7 +907,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.21)
+## 5. El mod (TF Client 1.3.22)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -883,6 +920,8 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   - `/tf shop` (todos; staff: `recargar`): la tienda del servidor, `shop/TFShop*.java`, config `config/tfclient-shop.json`.
   - `/tf web sets list|give`, `/tf web tienda add|precio|quitar|lista|vaciar` (staff) y los que usa la web:
     `/tf web rango`, `/tf web monedas ver|dar|quitar|poner`, `/tf web ruleta girar`, `/tf web tienda comprar`.
+  - Del pad (staff, 1.3.22): `/tf web kits guardar|quitar|recargar`, `/tf web viajes poner|quitar|lista`,
+    `/tf web comunidad borrar|denuncias`.
 - Código: `server/TFBridge.java` (puente), `shop/TFCoinShop.java`, `shop/TFRoulette.java`, `economy/` (Vault por
   reflexión en Mohist, monedas propias o comandos), `jobs/` (oficios, config `config/tfclient-jobs.json`),
   `menu/TFPanelMenu.java` + `client/TFPanelScreen.java` (ventana de oficios: 10 huecos de la rejilla en los huecos
