@@ -15,15 +15,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.TFConfig;
-import net.tierrasfantasticas.tfclient.client.TFDiscord;
 
 /**
  * El TF Pad: el marco del servidor con las apps dentro. Todo se dibuja en «píxeles de pad» (el marco mide 392x251;
@@ -62,6 +59,13 @@ public final class TFPadScreen extends Screen {
     private final List<Button> buttons = new ArrayList<>();
     private float scale = 1;
     private int ox, oy;
+    /** La app bajo el ratón (para el tic al pasar por encima). */
+    private String hovered;
+    /** Aviso del servidor y hasta cuándo se ve. */
+    private String notice;
+    private long noticeUntil;
+    /** Al abrirlo, el pad sube unos píxeles (como sacarlo del bolsillo). */
+    private final long openedAt = System.currentTimeMillis();
 
     public TFPadScreen() {
         super(Component.literal("TF Pad"));
@@ -106,7 +110,7 @@ public final class TFPadScreen extends Screen {
             }
             case "rango" -> addButton("rangos", bx, by, () -> link(web + "/tienda#rangos"));
             case "comunidad" -> {
-                bx = addButton("discord", bx, by, TFDiscord::open);
+                bx = addButton("discord", bx, by, () -> link(web + "/discord"));
                 bx = addButton("whatsapp", bx, by, () -> link(web + "/whatsapp"));
                 addButton("web", bx, by, () -> link(web));
             }
@@ -137,18 +141,22 @@ public final class TFPadScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
-        double ax = (mouseX - ox) / scale, ay = (mouseY - oy) / scale;
+        float p = Math.min(1F, (System.currentTimeMillis() - openedAt) / 160F);
+        int lift = Math.round((1 - p) * (1 - p) * 14);
+        double ax = (mouseX - ox) / scale, ay = (mouseY - oy - lift) / scale;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         g.pose().pushPose();
-        g.pose().translate(ox, oy, 0);
+        g.pose().translate(ox, oy + lift, 0);
         g.pose().scale(scale, scale, 1);
         g.blit(tex("frame"), 0, 0, W, H, 0, 0, 1568, 1003, 1568, 1003);
         drawStatus(g);
+        String over = null;
         if (page.equals("home")) {
             for (App app : APPS) {
                 int x = app.cx - TILE / 2;
                 boolean hover = inside(ax, ay, x, app.y, TILE, TILE);
+                if (hover) over = app.id;
                 blit(g, hover ? "tile_h" : "tile", x, app.y);
                 blit(g, "icon_" + app.id, x + 4, app.y + 4);
                 int lw = size("label_" + app.id)[0];
@@ -164,9 +172,14 @@ public final class TFPadScreen extends Screen {
             for (Button b : buttons) {
                 int[] sz = size("btn_" + b.id);
                 boolean hover = inside(ax, ay, b.x, b.y, sz[0], sz[1] - 2);
+                if (hover) over = "btn_" + b.id;
                 blit(g, hover ? "btn_" + b.id + "_h" : "btn_" + b.id, b.x, b.y);
             }
+            if (hoverBack) over = "back";
         }
+        if (over != null && !over.equals(hovered)) TFPadClient.sound("hover", 0.35F);
+        hovered = over;
+        drawNotice(g);
         g.pose().popPose();
         RenderSystem.disableBlend();
     }
@@ -175,6 +188,35 @@ public final class TFPadScreen extends Screen {
         int[] sz = size(name);
         if (sz[0] == 0) return;
         g.blit(tex(name), x, y, 0, 0, sz[0], sz[1], sz[0], sz[1]);
+    }
+
+    public void showNotice(String text) {
+        notice = text;
+        noticeUntil = System.currentTimeMillis() + 4500;
+        TFPadClient.sound("back", 0.6F);
+    }
+
+    /** El aviso del servidor: una tarjeta azul marino con borde de oro abajo de la pantalla del pad. */
+    private void drawNotice(GuiGraphics g) {
+        if (notice == null) return;
+        long left = noticeUntil - System.currentTimeMillis();
+        if (left <= 0) {
+            notice = null;
+            return;
+        }
+        List<FormattedCharSequence> lines = font.split(Component.literal(notice), 236);
+        int h = lines.size() * 10 + 8, w = 252, x = 70, y = 186 - h;
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 200);
+        g.fill(x + 1, y, x + w - 1, y + h, 0xFFB8741A);
+        g.fill(x, y + 1, x + w, y + h - 1, 0xFFB8741A);
+        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, NAVY);
+        int ty = y + 5;
+        for (FormattedCharSequence line : lines) {
+            g.drawString(font, line, x + (w - font.width(line)) / 2, ty, 0xFFFFE9A8, false);
+            ty += 10;
+        }
+        g.pose().popPose();
     }
 
     /** Arriba a la derecha: la hora del mundo y las monedas, como la barra de un móvil. */
@@ -250,7 +292,13 @@ public final class TFPadScreen extends Screen {
         g.drawString(font, text, x, y, MUTED, false);
     }
 
+    /** Texto grande (al doble); si no cabe dentro del panel, a tamaño normal y centrado en la misma altura. */
     private void big(GuiGraphics g, String text, int x, int y, int color) {
+        int room = PANEL_X + PANEL_W - 8 - x;
+        if (font.width(text) * 2 > room) {
+            g.drawString(font, text, x, y + 4, color, false);
+            return;
+        }
         g.pose().pushPose();
         g.pose().translate(x, y, 0);
         g.pose().scale(2, 2, 1);
@@ -287,22 +335,26 @@ public final class TFPadScreen extends Screen {
         if (page.equals("home")) {
             for (App app : APPS) {
                 if (inside(ax, ay, app.cx - TILE / 2, app.y, TILE, TILE)) {
-                    click();
-                    if (TFPadNet.SERVER_APPS.contains(app.id)) TFPadClient.openServerApp(app.id);
-                    else setPage(app.id);
+                    if (TFPadNet.SERVER_APPS.contains(app.id)) {
+                        TFPadClient.sound("select", 0.8F);
+                        TFPadClient.openServerApp(app.id);
+                    } else {
+                        TFPadClient.sound("page", 0.8F);
+                        setPage(app.id);
+                    }
                     return true;
                 }
             }
         } else {
             if (inside(ax, ay, BACK_X, BACK_Y, 16, 16)) {
-                click();
+                TFPadClient.sound("back", 0.8F);
                 setPage("home");
                 return true;
             }
             for (Button b : buttons) {
                 int[] sz = size("btn_" + b.id);
                 if (inside(ax, ay, b.x, b.y, sz[0], sz[1] - 2)) {
-                    click();
+                    TFPadClient.sound("select", 0.8F);
                     b.action.run();
                     return true;
                 }
@@ -318,14 +370,18 @@ public final class TFPadScreen extends Screen {
             return true;
         }
         if (keyCode == 259 && !page.equals("home")) { // retroceso: volver a la portada
+            TFPadClient.sound("back", 0.8F);
             setPage("home");
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    private static void click() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+    /** Cerrar con Esc o con la tecla del pad: suena el «apagar». Al abrir una ventana del servidor no se llama. */
+    @Override
+    public void onClose() {
+        TFPadClient.sound("close", 0.8F);
+        super.onClose();
     }
 
     @Override

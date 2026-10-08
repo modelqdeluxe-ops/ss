@@ -118,21 +118,20 @@ public final class TFMarket {
     // Publicar: el precio se escribe en el chat
     // ---------------------------------------------------------------------------------------------------------------
 
-    public static void requestPrice(ServerPlayer player) {
+    /** Pide el precio por el chat; si no se puede vender, devuelve por qué (y no cierra la ventana). */
+    public static String requestPrice(ServerPlayer player) {
         ItemStack hand = player.getMainHandItem();
         String why = whyNot(hand);
-        if (why != null) {
-            tell(player, why, ChatFormatting.RED);
-            return;
-        }
+        if (why != null) return why;
         if (listingsOf(player.getUUID()).size() >= MAX_LISTINGS) {
-            tell(player, "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.", ChatFormatting.RED);
-            return;
+            return "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.";
         }
         prompts.put(player.getUUID(), new Prompt(hand.copy(), player.getInventory().selected, System.currentTimeMillis() + PROMPT_MS));
         player.closeContainer();
         tell(player, "Escribe en el chat el precio para " + describe(hand) + " (o «cancelar»):", ChatFormatting.YELLOW);
         player.sendSystemMessage(Component.literal("    Solo el número, por ejemplo 250. Tu mensaje no lo ve nadie.").withStyle(ChatFormatting.DARK_GRAY));
+        player.playNotifySound(SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.MASTER, 0.6F, 1.2F);
+        return null;
     }
 
     public static boolean hasPrompt(UUID uuid) {

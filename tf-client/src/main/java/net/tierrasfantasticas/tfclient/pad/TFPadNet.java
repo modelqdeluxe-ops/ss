@@ -1,12 +1,9 @@
 package net.tierrasfantasticas.tfclient.pad;
 
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalLong;
 import java.util.function.Supplier;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,7 +22,6 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsMenu;
 import net.tierrasfantasticas.tfclient.market.TFMarketMenu;
 import net.tierrasfantasticas.tfclient.server.TFRanks;
 import net.tierrasfantasticas.tfclient.server.TFServerConfig;
-import net.tierrasfantasticas.tfclient.shop.TFShop;
 import net.tierrasfantasticas.tfclient.shop.TFShopConfig;
 import net.tierrasfantasticas.tfclient.shop.TFShopMenu;
 
@@ -55,6 +51,8 @@ public final class TFPadNet {
                 .encoder(Open::write).decoder(Open::read).consumerMainThread(Open::handle).add();
         CHANNEL.messageBuilder(State.class, 2, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(State::write).decoder(State::read).consumerMainThread(State::handle).add();
+        CHANNEL.messageBuilder(Notice.class, 3, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Notice::write).decoder(Notice::read).consumerMainThread(Notice::handle).add();
     }
 
     /** El cliente pide sus datos al abrir el pad. */
@@ -112,6 +110,26 @@ public final class TFPadNet {
         }
     }
 
+    /** Un aviso que se ve dentro del pad (si está cerrado, encima de la barra rápida). */
+    public record Notice(String text) {
+        static void write(Notice m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.text, 256);
+        }
+
+        static Notice read(FriendlyByteBuf buf) {
+            return new Notice(buf.readUtf(256));
+        }
+
+        static void handle(Notice m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TFPadClient.notice(m.text));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    static void notice(ServerPlayer player, String text) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Notice(text));
+    }
+
     public static void sendState(ServerPlayer player) {
         OptionalLong balance = TFEconomy.balance(player.getServer(), player.getUUID());
         TFRanks.Rank rank = TFRanks.of(player.getUUID());
@@ -126,7 +144,7 @@ public final class TFPadNet {
             case "oficios" -> TFJobsMenu.openMain(player);
             case "tienda" -> {
                 if (!TFShopConfig.enabled && !player.hasPermissions(3)) {
-                    TFShop.say(player, TFShopConfig.message("desactivada"), Map.of());
+                    notice(player, "La tienda está cerrada ahora mismo. Vuelve a probar más tarde.");
                 } else {
                     TFShopMenu.openMain(player);
                 }
@@ -152,8 +170,7 @@ public final class TFPadNet {
             }
         }
         if (claim == null) {
-            player.sendSystemMessage(Component.literal("Aún no tienes zonas protegidas. Pon una piedra de protección en el suelo para crear la primera.")
-                    .withStyle(ChatFormatting.YELLOW));
+            notice(player, "Aún no tienes zonas protegidas. Pon una protección en el suelo para crear la primera.");
             return;
         }
         ClaimMenuHandler.open(player, claim, 0);
