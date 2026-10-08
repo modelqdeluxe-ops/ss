@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "tfclient:block/claims/proteccion_10x10"
+    },
+    "facing=east": {
+      "model": "tfclient:block/claims/proteccion_10x10",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "tfclient:block/claims/proteccion_10x10",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "tfclient:block/claims/proteccion_10x10",
+      "y": 270
+    }
+  }
+}

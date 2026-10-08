@@ -42,7 +42,11 @@ public final class TFItems {
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("sets", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.tfclient.sets"))
             .icon(TFItems::icon)
-            .displayItems((params, output) -> BY_SET.values().forEach(list -> list.forEach(o -> output.accept(o.get()))))
+            .displayItems((params, output) -> {
+                BY_SET.values().forEach(list -> list.forEach(o -> output.accept(o.get())));
+                // Las piedras de protección de TF Claims
+                net.tierrasfantasticas.tfclient.claims.item.ClaimItems.all().forEach(o -> output.accept(o.get()));
+            })
             .build());
 
     private TFItems() {}

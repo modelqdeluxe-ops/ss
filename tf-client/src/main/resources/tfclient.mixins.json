@@ -5,7 +5,15 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "tfclient.refmap.json",
   "mixins": [
-    "ItemStackMixin"
+    "ItemStackMixin",
+    "claims.PressurePlateMixin",
+    "claims.DispenserBlockMixin",
+    "claims.ServerChatPromptMixin",
+    "claims.HangingEntityMixin",
+    "claims.HopperGuardMixin",
+    "claims.FluidGuardMixin",
+    "claims.ExplosionCalculatorGuardMixin",
+    "claims.EntityExplosionCalculatorGuardMixin"
   ],
   "client": [
     "LoadingOverlayAccessor",
