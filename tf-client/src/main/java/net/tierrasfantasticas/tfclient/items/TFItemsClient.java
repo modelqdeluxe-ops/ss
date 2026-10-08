@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
@@ -134,12 +135,21 @@ public final class TFItemsClient {
         public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing,
                            float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
             if (player.isInvisible()) return;
+            // Lo de la espalda del armario de la web tapa a lo que lleve puesto
+            ItemStack wardrobe = TFWardrobe.back(player);
+            if (wardrobe != null) {
+                boolean armored = TFWardrobe.chestArmor(player) || player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorItem;
+                if (wardrobe.getItem() instanceof TFItemTypes.Cosmetic cosmetic) {
+                    renderBack(pose, buffers, light, wardrobe, cosmetic, getParentModel().body, armored);
+                }
+                return;
+            }
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
             if (chest.getItem() instanceof TFItemTypes.Cosmetic cosmetic && cosmetic.wornModel() != null) {
-                renderBack(pose, buffers, light, chest, cosmetic, getParentModel().body, false);
+                renderBack(pose, buffers, light, chest, cosmetic, getParentModel().body, TFWardrobe.chestArmor(player));
             }
             // Los de los huecos de accesorios, si su mod no los dibuja ya con nuestro dibujante.
-            boolean armored = TFAccessorySlots.armored(player);
+            boolean armored = TFAccessorySlots.armored(player) || TFWardrobe.chestArmor(player);
             for (ItemStack stack : TFAccessorySlots.backCosmetics(player)) {
                 if (stack != chest && stack.getItem() instanceof TFItemTypes.Cosmetic cosmetic) {
                     renderBack(pose, buffers, light, stack, cosmetic, getParentModel().body, armored);

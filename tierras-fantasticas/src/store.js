@@ -116,6 +116,13 @@ const SCHEMA = [
     pack TEXT,
     updated_at INTEGER NOT NULL
   )`,
+  // Armario: la pieza que se ve en cada hueco (head, chest, legs, feet, back → "set/pieza"), elegida en la web entre
+  // lo comprado. Solo es apariencia: el servidor la manda a los clientes y la dibujan encima de lo que lleve puesto.
+  `CREATE TABLE IF NOT EXISTS wardrobe (
+    uuid TEXT PRIMARY KEY,
+    items TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+  )`,
 ];
 
 // Columnas nuevas en tablas que ya existen en la base de datos publicada.
@@ -502,6 +509,58 @@ export function createStore(db) {
     return results.map((r) => ({ uuid: r.uuid, kill: r.kill, pack: r.pack, at: r.updated_at }));
   }
 
+  // --- Armario ---
+
+  // Productos que tiene un jugador: sus pedidos pagados (entregados o en cola) que no se han reembolsado.
+  async function ownedProducts(uuid) {
+    await init();
+    const { results } = await db
+      .prepare(
+        `SELECT DISTINCT product_id FROM orders
+         WHERE uuid IS NOT NULL AND lower(uuid) = lower(?) AND status IN (${CLAIMED.map(() => '?').join(', ')})
+           AND (refunded IS NULL OR refunded = '')`,
+      )
+      .bind(uuid, ...CLAIMED)
+      .all();
+    return results.map((r) => r.product_id);
+  }
+
+  async function wardrobeFor(uuid) {
+    await init();
+    const row = await db.prepare('SELECT items, updated_at FROM wardrobe WHERE uuid = ?').bind(String(uuid).toLowerCase()).first();
+    return { items: row ? JSON.parse(row.items) : {}, at: row?.updated_at || 0 };
+  }
+
+  // Pone (o quita, con null) la pieza de un hueco. Siempre con una hora nueva, como los VFX.
+  async function setWardrobe(uuid, slot, piece) {
+    await init();
+    const key = String(uuid).toLowerCase();
+    const cur = await wardrobeFor(key);
+    const items = { ...cur.items };
+    if (piece) items[slot] = piece;
+    else delete items[slot];
+    const at = Math.max(Date.now(), cur.at + 1);
+    await db
+      .prepare(
+        `INSERT INTO wardrobe (uuid, items, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT (uuid) DO UPDATE SET items = excluded.items, updated_at = excluded.updated_at`,
+      )
+      .bind(key, JSON.stringify(items), at)
+      .run();
+    return { items, at };
+  }
+
+  // El armario de varios jugadores (los conectados), para el puente.
+  async function wardrobesFor(uuids) {
+    await init();
+    if (!uuids.length) return [];
+    const { results } = await db
+      .prepare('SELECT uuid, items, updated_at FROM wardrobe WHERE uuid IN (SELECT lower(value) FROM json_each(?))')
+      .bind(JSON.stringify(uuids))
+      .all();
+    return results.map((r) => ({ uuid: r.uuid, items: JSON.parse(r.items), at: r.updated_at }));
+  }
+
   // --- Cuentas de la web ---
 
   // Crea la cuenta del jugador. Devuelve false si ese jugador ya tiene cuenta.
@@ -844,6 +903,10 @@ export function createStore(db) {
     vfxGive,
     vfxEquip,
     vfxEquipFor,
+    ownedProducts,
+    wardrobeFor,
+    setWardrobe,
+    wardrobesFor,
     createUser,
     getUser,
     userByDiscord,

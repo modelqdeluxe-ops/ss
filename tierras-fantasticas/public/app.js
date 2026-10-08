@@ -2091,6 +2091,10 @@
           ${discordHtml}
         </section>
       </div>
+      <section class="panel account-card wd" id="wardrobe" aria-labelledby="wd-title">
+        <div class="orders-head"><span class="cat" id="wd-title">Armario</span><span class="muted small">Así te ven en el servidor, encima de lo que lleves puesto</span></div>
+        <div id="wd-body"><p class="muted">Cargando…</p></div>
+      </section>
       <section class="panel account-card account-orders">
         <div class="orders-head"><span class="cat">Mis compras</span><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>
         <div id="orders"><p class="muted">Cargando…</p></div>
@@ -2141,6 +2145,144 @@
       }
     });
     loadOrders();
+    loadWardrobe();
+  }
+
+  // --- Armario: lo comprado que se lleva puesto (solo apariencia) ---
+  const WD_LABEL = { head: 'Cabeza', chest: 'Pecho', legs: 'Piernas', feet: 'Pies', back: 'Espalda' };
+  // Hueco del armario → hueco del probador 3D
+  const WD_OUTFIT = { head: 'helmet', chest: 'chestplate', legs: 'leggings', feet: 'boots', back: 'back' };
+  const wd = { view: null, slot: null, stage: null, token: 0 };
+  const wdKey = (x) => `${x.set}/${x.id}`;
+
+  async function loadWardrobe() {
+    const box = $('#wd-body');
+    if (wd.stage) {
+      stages.splice(stages.indexOf(wd.stage), 1);
+      wd.stage.destroy();
+      wd.stage = null;
+    }
+    try {
+      const res = await fetch('/api/account/wardrobe');
+      if (!res.ok) throw new Error(String(res.status));
+      wd.view = await res.json();
+    } catch {
+      box.innerHTML = '<p class="muted">No se pudo cargar tu armario.</p>';
+      return;
+    }
+    if (!wd.view.owned.length) {
+      box.innerHTML = `<div class="wd-empty"><p class="muted">Aquí aparecen las armaduras, cascos y alas de tus crates y tu rango, y
+        los cosméticos de cabeza y espalda.</p><a class="btn btn-buy btn-sm" href="/tienda">Ir a la tienda</a></div>`;
+      return;
+    }
+    wd.slot ||= wd.view.slots.find((s) => wd.view.owned.some((x) => x.slot === s));
+    box.innerHTML = `
+      <div class="wd-grid">
+        <div class="wd-stage">
+          <canvas id="wd-canvas" aria-label="Tu personaje con lo que llevas en el armario"></canvas>
+          <p class="viewer-status" id="wd-status" hidden></p>
+        </div>
+        <div class="wd-side">
+          <div class="wd-slots" role="tablist" aria-label="Huecos">${wd.view.slots
+            .map((s) => `<button type="button" class="wd-slot" role="tab" data-wd-slot="${s}"></button>`)
+            .join('')}</div>
+          <div class="wd-pick" id="wd-pick" role="tabpanel"></div>
+        </div>
+      </div>`;
+    $$('[data-wd-slot]').forEach((b) =>
+      b.addEventListener('click', () => {
+        wd.slot = b.dataset.wdSlot;
+        drawWardrobeSide();
+      }),
+    );
+    drawWardrobeSide();
+    try {
+      wd.stage = await makeStage($('#wd-canvas'));
+      drawWardrobe();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function drawWardrobeSide() {
+    const { owned, equipped } = wd.view;
+    for (const b of $$('[data-wd-slot]')) {
+      const s = b.dataset.wdSlot;
+      const on = equipped[s] && owned.find((x) => x.slot === s && wdKey(x) === wdKey(equipped[s]));
+      const count = owned.filter((x) => x.slot === s).length;
+      b.disabled = !count;
+      b.classList.toggle('active', s === wd.slot);
+      b.classList.toggle('filled', Boolean(on));
+      b.setAttribute('aria-selected', String(s === wd.slot));
+      b.innerHTML = `<span class="wd-slot-art">${on ? img(thumbOf(on.set, on.id), '', '', ' width="40" height="40"') : ''}</span>
+        <span class="wd-slot-text"><small>${WD_LABEL[s]}</small><b>${on ? escapeHtml(on.name) : count ? 'Nada' : 'Sin piezas'}</b></span>`;
+    }
+    const list = owned.filter((x) => x.slot === wd.slot);
+    const cur = equipped[wd.slot] ? wdKey(equipped[wd.slot]) : null;
+    $('#wd-pick').innerHTML = `
+      <ul class="wd-pieces">${list
+        .map(
+          (x) => `<li><button type="button" class="wd-piece${wdKey(x) === cur ? ' worn' : ''}" data-wd-piece="${escapeHtml(wdKey(x))}"
+            aria-pressed="${wdKey(x) === cur}">${img(thumbOf(x.set, x.id), '', '', ' width="56" height="56"')}
+            <span><b>${escapeHtml(x.name)}</b><small>${escapeHtml(x.from)}</small></span><i class="worn-dot" aria-hidden="true"></i></button></li>`,
+        )
+        .join('')}</ul>
+      ${cur ? `<button type="button" class="btn btn-ghost btn-sm" id="wd-off">Quitar ${WD_LABEL[wd.slot].toLowerCase()}</button>` : ''}`;
+    $$('[data-wd-piece]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const [set, id] = b.dataset.wdPiece.split('/');
+        equipWardrobe(b.dataset.wdPiece === cur ? { slot: wd.slot, id: null } : { slot: wd.slot, set, id });
+      }),
+    );
+    $('#wd-off')?.addEventListener('click', () => equipWardrobe({ slot: wd.slot, id: null }));
+  }
+
+  async function equipWardrobe(body) {
+    const pick = $('#wd-pick');
+    pick.classList.add('is-loading');
+    try {
+      const res = await fetch('/api/account/wardrobe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(data.error || 'No se pudo cambiar.');
+      wd.view = data;
+      drawWardrobeSide();
+      drawWardrobe();
+      toast(body.id ? 'Puesto. En el servidor se ve en unos segundos.' : 'Quitado');
+    } finally {
+      pick.classList.remove('is-loading');
+    }
+  }
+
+  // El personaje con lo puesto: un «set» con las piezas de cada set (las armaduras llevan las capas del suyo)
+  async function drawWardrobe() {
+    const w = wd.stage;
+    if (!w) return;
+    const token = ++wd.token;
+    const status = $('#wd-status');
+    status.hidden = false;
+    status.textContent = 'Poniéndote el armario…';
+    try {
+      const items = {};
+      const outfit = {};
+      for (const [slot, x] of Object.entries(wd.view.equipped)) {
+        const set = await loadWear(x.set);
+        const it = set.items[x.id];
+        if (!it) continue;
+        const key = wdKey(x);
+        items[key] = it.type === 'armor' ? { ...it, armorLayers: set.armor } : it;
+        outfit[WD_OUTFIT[slot]] = key;
+      }
+      if (token !== wd.token) return;
+      await w.showPlayer({ items, armor: {} }, outfit, skinName());
+      if (token === wd.token) status.hidden = true;
+    } catch (err) {
+      console.error(err);
+      if (token === wd.token) status.textContent = 'No se pudo cargar el armario.';
+    }
   }
 
   // Qué versión de los Términos aceptó la cuenta y cuándo (o el aviso para aceptar la vigente).

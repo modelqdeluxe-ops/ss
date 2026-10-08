@@ -35,6 +35,30 @@ const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y
 const productById = new Map(products.map((p) => [p.id, p]));
 // VFX (efectos de kill sueltos y paquetes de skills): por ahora todos gratis.
 const VFX_FREE = true;
+// --- Armario: lo comprado que se puede llevar puesto (solo apariencia) ---
+// Huecos del armario y qué piezas van en cada uno (por el id de la pieza en el set).
+const WARDROBE_SLOTS = ['head', 'chest', 'legs', 'feet', 'back'];
+const BACK_PIECES = new Set(['wings', 'wing', 'backpack', 'cape', 'tail', 'quiver']);
+function wardrobeSlot(pieceId) {
+  if (pieceId === 'armor_helmet' || pieceId === 'helmet' || pieceId === 'hat' || pieceId === 'crown') return 'head';
+  if (pieceId === 'armor_chestplate') return 'chest';
+  if (pieceId === 'armor_leggings') return 'legs';
+  if (pieceId === 'armor_boots') return 'feet';
+  if (BACK_PIECES.has(pieceId)) return 'back';
+  return null;
+}
+// Piezas que da cada producto: los rangos y las crates, su set entero; los cosméticos, su pieza (cabeza o espalda).
+function productPieces(p) {
+  if (p.category === 'cosmeticos') {
+    const slot = p.slot === 'head' || p.slot === 'back' ? p.slot : null;
+    return slot && p.set && p.item ? [{ set: p.set, id: p.item, name: p.name, slot }] : [];
+  }
+  if ((p.category === 'rangos' || p.category === 'crates') && p.set) {
+    return (p.models || []).map((m) => ({ set: p.set, id: m.id, name: m.name, slot: wardrobeSlot(m.id) })).filter((x) => x.slot);
+  }
+  return [];
+}
+
 const vfxKills = new Set(vfx.kills.map((k) => k.id));
 const vfxPacks = new Set(vfx.packs.map((p) => p.id));
 function vfxItem(kind, id) {
@@ -129,6 +153,53 @@ export function createApp(env) {
       redirectUri: `${PUBLIC_URL || origin}/auth/discord/callback`,
       apiBase: env.DISCORD_API_BASE,
     });
+  }
+
+  // Piezas del armario de un jugador: las de sus compras pagadas y las del set de su rango (también si se lo dio el staff)
+  async function ownedPieces(uuid) {
+    const ids = new Set(await store.ownedProducts(uuid));
+    const rank = await store.getRank(uuid);
+    if (rank?.rankId) ids.add(rank.rankId);
+    const out = [];
+    const seen = new Set();
+    for (const id of ids) {
+      const p = productById.get(id);
+      if (!p) continue;
+      for (const piece of productPieces(p)) {
+        const key = `${piece.set}/${piece.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ ...piece, from: p.name });
+      }
+    }
+    return out;
+  }
+
+  // Para el puente: lo puesto de cada conectado, solo con lo que sigue teniendo
+  async function wardrobesForServer(uuids) {
+    const out = [];
+    for (const w of await store.wardrobesFor(uuids)) {
+      const owned = new Set((await ownedPieces(w.uuid)).map((x) => `${x.set}/${x.id}`));
+      const items = {};
+      for (const slot of WARDROBE_SLOTS) if (w.items[slot] && owned.has(w.items[slot])) items[slot] = w.items[slot];
+      out.push({ uuid: w.uuid, items, at: w.at });
+    }
+    return out;
+  }
+
+  async function wardrobeView(uuid) {
+    const owned = await ownedPieces(uuid);
+    const { items } = await store.wardrobeFor(uuid);
+    // Solo cuenta lo que sigue teniendo (si se reembolsó, deja de verse)
+    const ownedKeys = new Set(owned.map((x) => `${x.set}/${x.id}`));
+    const equipped = {};
+    for (const slot of WARDROBE_SLOTS) {
+      if (items[slot] && ownedKeys.has(items[slot])) {
+        const [set, id] = items[slot].split('/');
+        equipped[slot] = { set, id };
+      }
+    }
+    return { slots: WARDROBE_SLOTS, owned, equipped };
   }
 
   // La cuenta con la sesión iniciada (o null). La cookie guarda solo el UUID, firmado.
@@ -370,6 +441,30 @@ export function createApp(env) {
       }
       await store.vfxEquip(user.uuid, body.kind, body.id || null);
       return json({ me: await store.vfxFor(user.uuid) });
+    },
+
+    // Armario: lo que tiene (de sus compras y de su rango) y lo que lleva puesto en cada hueco.
+    'GET /api/account/wardrobe': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
+      return json(await wardrobeView(user.uuid));
+    },
+
+    // Poner una pieza que tiene en su hueco, o quitarla (id null).
+    'POST /api/account/wardrobe': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión primero.' }, 401);
+      const body = (await readJson(req)) || {};
+      if (!WARDROBE_SLOTS.includes(body.slot)) return json({ error: 'Petición no válida.' }, 400);
+      let piece = null;
+      if (body.id != null) {
+        const owned = await ownedPieces(user.uuid);
+        const found = owned.find((x) => x.set === body.set && x.id === body.id && x.slot === body.slot);
+        if (!found) return json({ error: 'Esa pieza no es tuya o no va en ese hueco.', code: 'not_owned' }, 403);
+        piece = `${found.set}/${found.id}`;
+      }
+      await store.setWardrobe(user.uuid, body.slot, piece);
+      return json(await wardrobeView(user.uuid));
     },
 
     // Cada visita renueva la sesión: quien entra a menudo no tiene que volver a iniciar sesión.
@@ -1022,6 +1117,8 @@ export function createApp(env) {
         linkResults,
         coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
         vfx: await store.vfxEquipFor(online),
+        // Armario de los conectados: «set/pieza» por hueco (el mod lo convierte en tfclient:set_pieza)
+        wardrobe: await wardrobesForServer(online),
         roulette: rouletteForServer(),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
       });

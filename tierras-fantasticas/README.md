@@ -77,6 +77,10 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   **nombre de Minecraft y una contraseña**. El nombre se comprueba con el puente (tiene que haber entrado al servidor)
   y la cuenta queda unida a su UUID; un jugador, una cuenta. Dentro del juego no hay que hacer nada. La sesión dura 60
   días y se renueva en cada visita. Contraseñas con PBKDF2 y freno tras 8 intentos fallidos.
+- **Armario** («Mi cuenta»): el jugador elige qué se le ve en cada hueco (cabeza, pecho, piernas, pies, espalda) entre
+  lo que compró —armaduras, cascos y alas de sus crates y su rango, cosméticos de cabeza y espalda— con su personaje en
+  3D. `GET/POST /api/account/wardrobe` (solo piezas que tiene; si se reembolsa, deja de verse) y el puente se lo manda
+  al servidor (`wardrobe`), donde TF Client (1.3.17+) lo dibuja encima de lo que lleve puesto. Solo apariencia.
 - **Discord conectado a la cuenta**: botón «Conectar Discord» → Discord le dice a la web su @ (no se escribe a mano, así
   nadie puede poner el de otro) y si está en el servidor de Discord de Tierras Fantásticas. Si no está y hay bot, lo
   mete; si no, le ofrece unirse y volver a comprobar. Después puede entrar a la web con Discord sin contraseña.

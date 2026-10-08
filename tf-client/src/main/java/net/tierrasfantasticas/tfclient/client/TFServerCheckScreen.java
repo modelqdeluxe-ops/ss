@@ -20,7 +20,7 @@ public class TFServerCheckScreen extends Screen {
     @Override
     protected void init() {
         addRenderableWidget(new TFMenuButton(this.width / 2 - 49, this.height / 2 + 24, 98, 20, TFMenuButton.label("Cancelar"),
-                button -> cancel(), false));
+                button -> cancel(), TFMenuButton.Style.SECONDARY));
         Thread thread = new Thread(this::runCheck, "TF Client server check");
         thread.setDaemon(true);
         thread.start();

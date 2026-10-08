@@ -33,9 +33,9 @@ public class TFMissingModsScreen extends Screen {
     protected void init() {
         int y = this.height - 30;
         addRenderableWidget(new TFMenuButton(this.width / 2 - 102, y, 98, 20, TFMenuButton.label("Volver"),
-                button -> Minecraft.getInstance().setScreen(parent), false));
+                button -> Minecraft.getInstance().setScreen(parent), TFMenuButton.Style.SECONDARY));
         addRenderableWidget(new TFMenuButton(this.width / 2 + 4, y, 98, 20, TFMenuButton.label("Entrar igual"),
-                button -> TFServer.connect(parent), false));
+                button -> TFServer.connect(parent), TFMenuButton.Style.PRIMARY));
     }
 
     @Override

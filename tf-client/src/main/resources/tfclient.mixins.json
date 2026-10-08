@@ -17,7 +17,9 @@
     "AbstractButtonMixin",
     "AbstractSliderButtonMixin",
     "AbstractSelectionListMixin",
-    "LivingEntityRendererMixin"
+    "LivingEntityRendererMixin",
+    "HumanoidArmorLayerMixin",
+    "CustomHeadLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 0
