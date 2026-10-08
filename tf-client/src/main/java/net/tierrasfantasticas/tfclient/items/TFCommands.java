@@ -35,7 +35,7 @@ import net.tierrasfantasticas.tfclient.shop.TFRoulette;
 import net.tierrasfantasticas.tfclient.shop.TFShop;
 
 /**
- * Solo hay tres comandos: /tf web (staff), /tf jobs y /tf shop (todos).
+ * Solo hay cuatro comandos: /tf web (staff), /tf jobs, /tf shop y /tf claims (todos).
  * <pre>
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo), vinculado a cada jugador
@@ -46,6 +46,7 @@ import net.tierrasfantasticas.tfclient.shop.TFShop;
  *                                                {@link TFEconomyCommands}, {@link TFRoulette})
  * /tf jobs                                       los oficios ({@link TFJobsCommands})
  * /tf shop                                       la tienda del servidor ({@link TFShop})
+ * /tf claims ... | /tf web claims ...            las protecciones de zona (TF Claims)
  * </pre>
  * /tf web pide ser operador (nivel 2). Funciona también en servidores Mohist.
  */
@@ -83,6 +84,7 @@ public final class TFCommands {
         dispatcher.register(Commands.literal("tf")
                 .then(TFJobsCommands.command())
                 .then(TFShop.command())
+                .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.command())
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(TFCoinShop.command())
@@ -90,6 +92,7 @@ public final class TFCommands {
                         .then(TFEconomyCommands.command())
                         .then(TFRoulette.command())
                         .then(net.tierrasfantasticas.tfclient.vfx.VfxServer.command())
+                        .then(net.tierrasfantasticas.tfclient.claims.command.ClaimAdminCommands.command())
                         .then(Commands.literal("sets")
                                 .then(Commands.literal("list").executes(TFCommands::list))
                                 .then(Commands.literal("give")

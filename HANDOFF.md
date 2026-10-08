@@ -12,7 +12,34 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): menú de inicio con el cielo de la web y armario del perfil — TF Client 1.3.17
+### Última entrega (8 de octubre de 2026): TF Claims (protecciones) dentro de TF Client — 1.3.18
+Pidió meter su mod **Fantastic Claims 7.9.2** (es suyo; jar subido, sin código fuente) en TF Client como **TF Claims**,
+con la textura nueva de la piedra (su imagen: piedra oscura, marco de neón, tornillos y «TF»), el resto de caras
+dibujadas pixel perfect, el color de cada tamaño y la protección **infinita hacia arriba** (hacia abajo igual que antes).
+
+- **Cómo se portó**: se decompiló el jar con CFR, se pasaron los nombres SRG a los oficiales con el
+  `build/createMcpToSrg/output.tsrg` de ForgeGradle (64 225 nombres, 0 conflictos) y se movió a `tfclient.claims.*`
+  (mixins en `mixin/claims`). Se arreglaron los fallos típicos de CFR (casts de mixin, `case` de enums cualificados, un
+  `switch` mal decompilado en `ClaimMenuHandler.flagLore` y un ternario en `EntityProtectionEvents.onProjectileImpact`).
+  Comprobación: se volvió a decompilar lo compilado y se comparó con el original → solo cambian las cosas hechas a
+  propósito (refmap de los mixins idéntico al del jar original).
+- **Mismos datos**: `claimblocks_data.json`, `claimblocks_config.json` y `global_flags.json` en la carpeta del mundo
+  (las zonas y la configuración de Fantastic Claims siguen igual). Los objetos `claimblocks:proteccion_*` pasan solos a
+  `tfclient:proteccion_*` (`ClaimItems.onMissingMappings`) y el concreto de las zonas viejas se cambia por la piedra nueva
+  cuando su chunk está cargado (`TFClaims.upgradeLegacyStones`, una vez por zona y arranque). **Hay que quitar
+  Fantastic Claims** del servidor y de los clientes.
+- **Altura**: `Claim.contains` protege desde `y − altura` hasta el techo del mundo; dos zonas que se pisan en planta
+  siempre se solapan. Bordes, partículas y la vista previa al llevar la piedra van hasta `getMaxBuildHeight()`.
+- **Piedras** (`ProtectionBlock`, `tools/gen_claim_blocks.py`): 10 bloques `tfclient:proteccion_<tamaño>` (32x32: front
+  con las letras mirando a quien la pone, side con el rombo, top con el anillo del centro, bottom apagado) más una capa
+  `_glow` a plena luz (`forge_data`, se ve de noche). Color = el del concreto que tenía cada tamaño, en neón. No sueltan
+  nada (la devuelve el evento al dueño), los pistones no las mueven y aguantan explosiones. El objeto no es BlockItem
+  (lo coloca `BlockProtectionEvents`, como en Fantastic Claims). Pestaña creativa de TF.
+- **Comandos** (sin raíces nuevas): `/tf claims [menu|info|list|remove|addmember|delmember|members|merge …]` y, del
+  staff, `/tf claims give|clear|ban|unban|transfer|removemember` y `/tf web claims [bypass|list|stats|reload|globalflag]`.
+  Los textos del menú y la configuración ya dicen esos comandos.
+
+### Entrega anterior (8 de octubre de 2026): menú de inicio con el cielo de la web y armario del perfil — TF Client 1.3.17
 Lo que faltaba de la petición de 1.3.16 («el mismo fondo animado que hay en la web en el menú de inicio, con las mismas
 letras, auroras, botones con efectos bonitos» y «en el perfil una especie de armario para equipar y desequipar todo lo
 comprado»):
@@ -662,13 +689,14 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.18**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.19**) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
 - **Secretos** solo en Cloudflare (Secrets), **nunca** en el chat ni en git (lista en la sección 4).
   Stripe va en **modo real** (no quiere modo de prueba; ya se enfadó por eso).
-- Comandos del mod: **solo** `/tf web …` (staff), `/tf jobs` y `/tf shop` (este lo pidió él en 1.3.12). Los VFX
+- Comandos del mod: **solo** `/tf web …` (staff), `/tf jobs`, `/tf shop` (este lo pidió él en 1.3.12) y
+  `/tf claims` (las protecciones, 1.3.18). Los VFX
   no tienen comandos para jugadores: se equipan en la web y en el juego se activan solos. No añadas
   más raíces, alias ni comandos para jugadores (se quejó dos veces de «un vergo de comandos» y de tener `jobs` y
   `oficios` a la vez).

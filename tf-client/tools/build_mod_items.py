@@ -1199,7 +1199,8 @@ def main(packs, only=None):
             path = os.path.join(ASSETS, sub)
             if sub == 'models/item':
                 for f in os.listdir(path) if os.path.isdir(path) else []:
-                    if f != 'sets' and f.endswith('.json') and '_' in f and not f.startswith('job_'):
+                    # Los de los oficios, la moneda y las piedras de TF Claims no son de los sets: se quedan
+                    if f != 'sets' and f.endswith('.json') and '_' in f and not f.startswith(('job_', 'fantastic_coin', 'proteccion_')):
                         os.remove(os.path.join(path, f))
                 shutil.rmtree(os.path.join(path, 'sets'), ignore_errors=True)
             else:
@@ -1333,7 +1334,8 @@ def main(packs, only=None):
         path = os.path.join(ASSETS, 'lang', lang_file)
         old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
         old = {k: v for k, v in old.items()
-               if k.startswith('item.tfclient.job_') or not k.startswith(('item.tfclient.', 'tfclient.set.', 'itemGroup.tfclient'))}
+               if k.startswith(('item.tfclient.job_', 'item.tfclient.fantastic_coin', 'item.tfclient.proteccion_'))
+               or not k.startswith(('item.tfclient.', 'tfclient.set.', 'itemGroup.tfclient'))}
         with open(path, 'w', encoding='utf-8') as fh:
             json.dump({**old, **lang}, fh, ensure_ascii=False, indent=1)
     print(f'TOTAL {total} objetos en {len(sets_out)} sets; mipmap mínimo {mip_low[0]}px')

@@ -240,6 +240,22 @@ Las alas de los sets planean como unas élitros hasta 10 s seguidos; luego se pl
 el suelo o el agua (en el suelo nunca se planea). Mientras planeas, a la derecha del último hueco de la barra sale un
 contador con los segundos que quedan y una barrita (verde → ámbar → rojo). `TFWings.canGlide`, `TFGlideHud`.
 
+## TF Claims: protecciones (1.3.18)
+
+Antes era el mod Fantastic Claims (7.9.2); ahora va dentro de TF Client (**quítalo** del servidor y de los clientes).
+Se protege una zona colocando una **piedra de protección** (10 tamaños, de 10x10 a 500x500): la zona va desde la
+piedra menos su altura hacia abajo **hasta el techo del mundo**. Clic derecho en la piedra: el menú de la zona
+(miembros, baneos, flags, mensajes, partículas, unir zonas). Romperla (el dueño) quita la zona y devuelve la piedra.
+
+- Piedras: `tfclient:proteccion_<tamaño>`, con la textura de TF del color de su tamaño (las letras miran a quien la
+  pone; las líneas brillan de noche). Texturas, modelos y estados: `python3 tools/gen_claim_blocks.py [--preview DIR]`.
+- Comandos: `/tf claims` (ayuda), `menu`, `info`, `list`, `remove`, `addmember|delmember <jugador>`, `members`,
+  `merge accept|reject <código>`, `merge leave`; staff: `/tf claims give <jugadores> <id>`, `clear|ban|unban|transfer|removemember <jugador>`
+  y `/tf web claims` (panel) `bypass|list|stats|reload|globalflag <flag> on|off`.
+- Datos en la carpeta del mundo: `claimblocks_data.json`, `claimblocks_config.json` (recarga con `/tf web claims reload`)
+  y `global_flags.json`: los mismos que usaba Fantastic Claims, así que las zonas que ya había siguen igual. Las piedras
+  viejas (objetos `claimblocks:*` y el concreto de las zonas) pasan solas a las de TF Claims.
+
 ## Armario de la web (1.3.17)
 
 En «Mi cuenta» de la web cada jugador elige qué se ve en cada hueco (cabeza, pecho, piernas, pies y espalda) entre lo
@@ -286,7 +302,7 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.17.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.18.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

@@ -16,11 +16,13 @@ import org.slf4j.Logger;
 @Mod(TFClient.MOD_ID)
 public final class TFClient {
     public static final String MOD_ID = "tfclient";
-    public static final String VERSION = "1.3.17";
+    public static final String VERSION = "1.3.18";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TFClient() {
         TFItems.register(FMLJavaModLoadingContext.get().getModEventBus());
+        // TF Claims: protecciones de zona (antes Fantastic Claims)
+        net.tierrasfantasticas.tfclient.claims.TFClaims.init(FMLJavaModLoadingContext.get().getModEventBus());
         net.tierrasfantasticas.tfclient.menu.TFPanelMenu.MENUS.register(FMLJavaModLoadingContext.get().getModEventBus());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(
                 (net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
