@@ -17,7 +17,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
 > inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
 > Cómo comprobar sin abrir el juego (prohibido): compilar (`./gradlew build --offline -q`), `python3
-> tools/check_mod_items.py`, simular con PIL lo que se ve (texturas reales) y mandárselo como imagen. La web: `npm test`
+> tools/check_mod_items.py`, simular con PIL lo que se ve (texturas reales) y mandárselo como imagen; para el pad,
+> `tools/pad/build_pad.py --preview` y `tools/pad/sim/pages.py <carpeta>` (ver 1.3.22). La web: `npm test`
 > en `tierras-fantasticas/` y una vista previa local con Playwright (Chromium en `/opt/pw-browsers/chromium`).
 > Para portar un mod suyo en .jar: CFR + el tsrg de ForgeGradle (`build/createMcpToSrg/output.tsrg`) para pasar los
 > nombres SRG a los oficiales; luego volver a decompilar lo compilado y comparar con el original (ver 1.3.18).
@@ -30,7 +31,9 @@ Pidió: quitar los «puntos amarillos» (los iconos de la barra de arriba sin n�
 las apps (clanes, kits, misiones, viajes…) y que **Comunidad sea una red social**: una cámara que guarda las fotos en
 su cliente, publicarlas y que los demás les den like. «Revisa cómo funciona el pad de Diosesmon».
 - **Inicio:** 20 apps en **2 páginas de 5x2** (rejilla simétrica: centros x 84/140/196/252/308, filas 82 y 136,
-  casillas de 38 px). Se pasa de página con la rueda, las flechas, arrastrando o los puntos (y se desliza).
+  casillas de 38 px). Se pasa de página con la rueda, las flechas, arrastrando o el indicador de abajo (y se desliza).
+  El indicador: la página actual es una **barrita dorada** y la otra un punto azul (nada de puntitos amarillos sueltos:
+  el dueño los confundió con fallos).
   Página 1: Oficios, Misiones, Cazas, Tienda, GTS, Monedero, Clanes, Viajes, Explorar, Kits. Página 2: Comunidad,
   Cámara, Jugadores, Ranking, Títulos, Armario, Efectos, Mi rango, Protección, Ayuda.
 - **Barra de arriba:** título y botón atrás; a la derecha hora (sol/luna), **monedas con número** y el engranaje de
@@ -58,8 +61,32 @@ su cliente, publicarlas y que los demás les den like. «Revisa cómo funciona e
   entre fotos y 40 por jugador. Staff: `/tf web comunidad borrar|denuncias`. El cliente guarda en caché las que ya vio.
 - **Sonidos nuevos:** `foto` (obturador) y `like`.
 - **Iconos nuevos** calcados de Faithful 32x con nuestra paleta (`tools/pad/calco.py`, `iconos2.py`, referencias en
-  `tools/pad/ref/`). Vistas previas sin abrir el juego: `build_pad.py --preview` (inicio) y un simulador de las páginas
-  con la fuente de Minecraft (hecho en el scratchpad; si hace falta otra vez, copia el layout de `PadViewPage`).
+  `tools/pad/ref/`). Lección: **no inventar dibujos**; partir de un modelo bueno real y adaptarlo.
+- **Vistas previas sin abrir el juego** (mándaselas al dueño como imagen):
+  - Inicio: `python3 tools/pad/build_pad.py --preview` → `tools/pad/preview_home1.png` y `preview_home2.png` (no se
+    suben a git: muévelas fuera antes de hacer commit).
+  - Apps: `python3 tools/pad/sim/pages.py <carpeta>` → `p_misiones.png`, `p_kits.png`… y `hoja_apps.png`. Saca la
+    fuente y los iconos de Minecraft del `client-extra.jar` de ForgeGradle (hay que haber compilado una vez). Los «?»
+    son tildes que la fuente ascii no tiene; en el juego salen bien. Si mueves algo en `PadViewPage`,
+    `PadCommunityPage` o `PadCameraPage`, cámbialo igual en `tools/pad/sim/sim.py`.
+- **Revisión a fondo** (dos agentes con las fuentes de Forge 47.3 decompiladas) y arreglado antes de publicar:
+  - Red: pestañas de hasta 64 caracteres (la ficha de Jugadores, `ficha:<uuid>`, no cabía en 32 y no se abría).
+  - Viajes a la cama con `findRespawnPositionAndUseSpawnBlock(…, true)`: el último `true` es para **no** gastar la
+    carga del ancla. Cualquier daño (`LivingHurtEvent`) cancela la cuenta atrás.
+  - Misiones y kits: primero se paga y solo si `TFEconomy.give` sale bien se marca cobrado.
+  - Clanes: la confirmación (doble clic) va ligada a la acción exacta; los oficiales tienen SALIR; un campo de texto y
+    botones de abajo caben juntos (`PadViewPage`).
+  - Explorar: descarta mares y ríos por el bioma sin generar el chunk, máx. 6 chunks generados por intento y 1 min de
+    espera si falla.
+  - Comunidad: máx. 6 peticiones/s por jugador, subidas a medias se tiran a los 2 min o al salir, `comunidad.json`
+    ilegible se copia a `comunidad-roto-*.json`. En el cliente: like/borrar se cambian en local (sin volver a pedir la
+    lista, para no saltar de foto), fotos ilegibles no se reintentan, el id que manda el servidor se valida, la
+    confirmación de borrar va ligada a esa foto, y la foto no se hace si se abrió otra pantalla entre la C y el disparo.
+  - `TFRanks.apply` rehace el nombre de la lista de jugadores al cambiar de rango (con título o clan lleva el prefijo).
+- **Sin hacer (no pedido; solo si el dueño lo pide):** el progreso de «fabricar *» y «colocar» se puede farmear,
+  invitaciones de clan sin tiempo de espera, Jugadores muestra como mucho 60, `misiones.json` se guarda entero cada
+  10 s (con muchos jugadores puede pesar), Esc en modo foto sale al menú de pausa, y `ImgReq` lee del disco en el
+  hilo principal (40 cada 10 s por jugador).
 
 ### Entrega anterior (8 de octubre de 2026): TF Pad con tecla C, sonidos propios y pico nuevo — TF Client 1.3.21
 - **Pico (Oficios):** el de la 1.3.20 no le gustó («teniendo los modelos ahí»). Ahora está **adaptado de la estructura
@@ -931,7 +958,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   `vfx/` (efectos de kill y skills), `pad/` (TF Pad: `TFPadClient` tecla C y sonidos, `TFPadScreen`, `TFPadNet` canal
   `tfclient:pad`) y `market/` (GTS, 1.3.20). Menú: `mixin/TitleScreenMixin.java`, `client/TFMenuButton.java`,
   `client/TFButtonTheme.java`; fondo `textures/gui/menu_background.png` (paisaje de noche de la web).
-- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
+- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
   menú), `tools/build_vfx.py` (VFX).
 - Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
   `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
