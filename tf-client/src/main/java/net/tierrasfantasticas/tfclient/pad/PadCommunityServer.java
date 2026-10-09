@@ -383,8 +383,7 @@ public final class PadCommunityServer {
                     put(p, "likes", likes);
                     dirty = true;
                 }
-                case "react" -> { // una reacción con emoji por jugador y foto: la misma otra vez la quita, otra la cambia
-                    if (author.equals(me)) break;
+                case "react" -> { // una reacción con emoji por jugador y foto (también en las tuyas): la misma otra vez la quita
                     int k = PadCommunityNet.REACTIONS.indexOf(reaction);
                     if (k < 0) break;
                     if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) p.add("reacciones", new JsonObject());
