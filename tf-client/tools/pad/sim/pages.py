@@ -126,7 +126,7 @@ page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')],
                                      'coal_ore', 'oak_log', 'spruce_log', 'birch_log', 'glass', 'lapis_ore', 'sandstone',
                                      'white_wool', 'orange_wool', 'gold_block', 'iron_block', 'bricks', 'tnt', 'bookshelf',
                                      'obsidian', 'torch', 'chest', 'diamond_ore', 'diamond_block', 'crafting_table', 'furnace')
-     ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('SIGUIENTE »', B), ('CANTIDAD 16', GO), ('LISTO', G)])
+     ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('»', B), ('×16', GO), ('ATRÁS', B)])
 page('p_kit', 'KITS', [], '', ['Constructor · Cada 12 h'], [], cells=[
     ('bread', '', T, False), ('cooked_beef', '', T, False), ('torch', '', T, False), ('tf:fantastic_coin', '200', GOLD, False),
 ], footer=[('ATRÁS', B), ('RECLAMAR', G)])
@@ -185,18 +185,18 @@ for name, ago, cap, likes, liked, mine in posts:
     x, y, w, h = X + 5, cy, W - 16, ch - 4
     s.ucard(x, y, w, h, 2 if mine else 0)
     px, py = x + 5, y + 5
-    s.box(px - 2, py - 2, pw + 4, ph + 4, (11, 20, 48))
+    s.box(px - 2, py - 2, pw + 4, ph + 4, (24, 38, 92))
     s.box(px - 1, py - 1, pw + 2, ph + 2, (192, 120, 24))
     s.paste(photo.resize((pw, ph)), px, py)
     cx = px + pw + 10
     cw = x + w - 6 - cx
-    s.mtext(name, cx, py + 1, (255, 216, 106))
-    s.mtext(ago, cx, py + 12, (169, 188, 232))
+    s.mtext(name, cx, py + 1, (194, 122, 16))
+    s.mtext(ago, cx, py + 12, (74, 102, 148))
     if cap:
-        s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (255, 255, 255), 3)
+        s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (24, 38, 92), 3)
     ly = py + ph - 15
     s.blit('heart' if liked else 'heart_off', cx, ly)
-    s.mtext(f'{likes} likes', cx + 16, ly + 2, (255, 255, 255))
+    s.mtext(f'{likes} likes', cx + 16, ly + 2, (24, 38, 92))
     bw = s.bw('DENUNCIAR')
     s.button(x + w - 6 - bw, ly - 1, bw, 'DENUNCIAR', B)
     cy += ch
@@ -265,7 +265,12 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
     c = max(32, min(round((leftW - 16 - s.bigu(16)) / 1.3), H - 8 - below))
     cx, cy = X + 8, Y + 8
     # tarjeta
-    s.panel(X, Y, leftW, H)
+    s.box(X, Y, leftW, H, NAVY)
+    grad(s, X + 1, Y + 1, leftW - 2, H - 2, rgb(0x262E66), rgb(0x141A3C))
+    s.fill(X + 2, Y + 1, X + leftW - 2, Y + 2, rgb(0x4A56A0))
+    for (a, b, cc, d) in ((X + 2, Y + 2, X + leftW - 2, Y + 3), (X + 2, Y + H - 3, X + leftW - 2, Y + H - 2),
+                          (X + 2, Y + 2, X + 3, Y + H - 2), (X + leftW - 3, Y + 2, X + leftW - 2, Y + H - 2)):
+        s.fill(a, b, cc, d, (246, 182, 40, 85))
     t = playing
     d = round(c * 0.92)
     slide = 0.30 if t else 0.12
@@ -381,28 +386,28 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
         if cur:
             s.ucard(x0, ry, w0, 29, 2)
         else:
-            s.fill(x0 + 3, ry + 29, x0 + w0 - 3, ry + 30, rgb(0x2A3E80))
+            s.fill(x0 + 3, ry + 29, x0 + w0 - 3, ry + 30, rgb(0xC8E4F8))
         if tr.get('cover'):
             s.paste_fit(Image.open(tr['cover']).convert('RGBA'), x0 + 5, ry + 3, 24, 24)
         else:
             grad(s, x0 + 5, ry + 3, 24, 24, tr.get('color', rgb(0x5A6AD0)), rgb(0x1D2550))
             with s.big_at(x0 + 5 + 12 - 8, ry + 3 + 4, px=0.5 * s.cs):
                 s.blit('icon_musica', 0, 0)
-        INK = (11, 20, 48)
+        INK = (24, 38, 92)
         s.fill(x0 + 4, ry + 2, x0 + 30, ry + 3, INK); s.fill(x0 + 4, ry + 27, x0 + 30, ry + 28, INK)
         s.fill(x0 + 4, ry + 2, x0 + 5, ry + 28, INK); s.fill(x0 + 29, ry + 2, x0 + 30, ry + 28, INK)
         tx = x0 + 35
         dur = tr['dur']
         right = x0 + w0 - 6
-        s.mtext(dur, right - s.mwidth(dur), ry + 10, rgb(0xA9BCE8))
+        s.mtext(dur, right - s.mwidth(dur), ry + 10, rgb(0x4A6694))
         right -= s.mwidth(dur) + 6
         ttx = tx
         if cur:
             for i, h in enumerate((5, 8, 3)):
                 s.fill(tx + i * 3, ry + 12 - h, tx + i * 3 + 2, ry + 12, GOLDC)
             ttx += 12
-        s.mtext(s.fitend(tr['title'], right - ttx), ttx, ry + 5, rgb(0xFFD86A) if cur else (255, 255, 255))
-        s.mtext(s.fitend(tr['artist'], right - tx), tx, ry + 16, rgb(0xA9BCE8))
+        s.mtext(s.fitend(tr['title'], right - ttx), ttx, ry + 5, rgb(0xC27A10) if cur else NAVY)
+        s.mtext(s.fitend(tr['artist'], right - tx), tx, ry + 16, rgb(0x4A6694))
         ry += 30
     s.no_scissor()
     if empty:
@@ -413,12 +418,12 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
         for i, l in enumerate(("Pega abajo el link directo de una canción", "(MP3, OGG o WAV) y pulsa AÑADIR.",
                                "Google Drive: «Cualquier persona con el enlace».")):
             l = s.fitend(l, lw - 16)
-            s.mtext(l, lx + (lw - s.mwidth(l)) // 2, mid + 10 + i * 11, rgb(0xA9BCE8) if i == 2 else (255, 255, 255))
+            s.mtext(l, lx + (lw - s.mwidth(l)) // 2, mid + 10 + i * 11, rgb(0x4A6694) if i == 2 else NAVY)
     if job:
         jy = bottom + 3
         s.ucard(lx, jy, lw, 20, 2)
-        s.mtext(job, lx + 15, jy + 3, rgb(0xFFD86A))
-        s.fill(lx + 6, jy + 13, lx + lw - 4, jy + 16, (12, 21, 56)); s.fill(lx + 6, jy + 13, lx + 6 + int((lw - 10) * 0.62), jy + 16, GOLDC)
+        s.mtext(job, lx + 15, jy + 3, rgb(0xC27A10))
+        s.fill(lx + 6, jy + 13, lx + lw - 4, jy + 16, rgb(0xE8D8A8)); s.fill(lx + 6, jy + 13, lx + 6 + int((lw - 10) * 0.62), jy + 16, GOLDC)
     fy = Y + H - 17
     bw = s.bw('AÑADIR')
     s.field(lx, fy, lw - bw - 4, '', 'Pega aquí el link directo de una canción')
@@ -438,7 +443,7 @@ music_page('p_musica', lib, playing=song, job='Descargando… 62%')
 music_page('p_musica_vacia', [], empty=True)
 
 # hoja con todo
-ims = [(lambda im: im.crop((150, 200, im.width - 150, 830)))(Image.open(OUT + n + '.png')) for n in NAMES]
+ims = [(lambda im: im.crop((150, 200, im.width - 150, im.height - 170)))(Image.open(OUT + n + '.png')) for n in NAMES]
 w, h = ims[0].size
 rows = (len(ims) + 1) // 2
 sheet = Image.new('RGBA', (w * 2 + 10, (h + 10) * rows), (20, 24, 40, 255))

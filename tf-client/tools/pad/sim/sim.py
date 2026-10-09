@@ -44,32 +44,19 @@ def rgb(c):
 
 GX, GY, GW, GH = 52, 64, 288, 132
 BAR = 18
-# TFPadScreen.STRETCH_L/R y MAX_EXTRA: columnas de frame.png que se repiten para ensanchar el pad
-STRETCH_L, STRETCH_R, MAX_EXTRA = 526, 964, 72
-INK = (11, 20, 48)
+# TFPadScreen.STRETCH_U/D y MAX_EXTRA: filas de frame.png que se repiten para hacer el pad más alto
+STRETCH_U, STRETCH_D, MAX_EXTRA = 430, 596, 40
+INK = (24, 38, 92)
 GOLD, GOLD_HI, GOLD_LO = (246, 182, 40), (255, 229, 138), (192, 120, 24)
-PANEL_TOP, PANEL_BOT, PANEL_HI = (30, 47, 110), (17, 27, 72), (58, 88, 176)
-SLOT, SLOT_EDGE, SLOT_SHADE = (12, 21, 56), (44, 68, 136), (6, 12, 36)
-TEXT, MUTED, GOLD_TEXT = (255, 255, 255), (169, 188, 232), (255, 216, 106)
-GREEN_TEXT, RED_TEXT = (124, 240, 160), (255, 138, 138)
+PANEL_TOP, PANEL_BOT, PANEL_HI = (248, 252, 255), (220, 238, 252), (255, 255, 255)
+SLOT, SLOT_EDGE, SLOT_SHADE = (226, 238, 250), (157, 188, 224), (194, 216, 238)
+TEXT, MUTED, GOLD_TEXT = (24, 38, 92), (74, 102, 148), (194, 122, 16)
+GREEN_TEXT, RED_TEXT = (30, 158, 70), (200, 50, 60)
 
 
 def on_dark(c):
-    """PadUi.onDark: los colores del servidor (pensados para fondo claro) en su versión clara."""
-    import colorsys
-    c &= 0xFFFFFF
-    table = {0x18265C: 0xFFFFFF, 0x000000: 0xFFFFFF, 0x0B1430: 0xFFFFFF, 0xC27A10: 0xFFD86A, 0xB8741A: 0xFFD86A,
-             0xBA7014: 0xFFD86A, 0x7E8CA8: 0xA9BCE8, 0x4A6694: 0xA9BCE8, 0xAABAD2: 0xA9BCE8, 0x1E9E46: 0x7CF0A0,
-             0x1E7C2C: 0x7CF0A0, 0x40C850: 0x7CF0A0, 0xC8323C: 0xFF8A8A, 0xE83446: 0xFF8A8A, 0x9A1A30: 0xFF8A8A,
-             0x1854BE: 0x8CC4FF, 0x3496FA: 0x8CC4FF}
-    if c in table:
-        return rgb(table[c])
-    r, g, b = rgb(c)
-    h, sat, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
-    if v >= 0.8:
-        return (r, g, b)
-    r, g, b = colorsys.hsv_to_rgb(h, min(sat, 0.6), max(v, 0.95))
-    return (int(r * 255), int(g * 255), int(b * 255))
+    """PadUi.onDark (1.3.26, en blanco): los colores del servidor se usan tal cual."""
+    return rgb(c)
 
 
 def lighten(c, n):
@@ -83,14 +70,14 @@ class Sim:
     576x264 unidades. Las coordenadas de todos los métodos son unidades; dentro de `with s.big_at(x, y)` son píxeles
     de textura a la escala grande con la esquina en (x, y)."""
 
-    def __init__(self, ps=4, fbw=1920):
+    def __init__(self, ps=4, fbh=1080):
         self.ps = ps
         self.cs = ps if ps <= 2 else max(2, round(ps / 2))
         self.big = max(self.cs, int(ps * 0.75 + 0.5))
         self.bs = self.big / self.cs
         self.bar = round(12 * self.bs) + 6
-        self.extra = max(0, min(MAX_EXTRA, int((fbw * 0.97 / ps - 392) // 2)))
-        self.UW, self.UH = (GW + self.extra * 2) * ps // self.cs, GH * ps // self.cs
+        self.extra = max(0, min(MAX_EXTRA, int((fbh * 0.985 / ps - 251) // 2)))
+        self.UW, self.UH = GW * ps // self.cs, (GH + self.extra * 2) * ps // self.cs
         self.Y = self.bar + 4
         self.X = self.logo_right(self.Y) + 4
         self.W = self.UW - self.X - 4
@@ -215,7 +202,7 @@ class Sim:
 
     def panel(self, x, y, w, h):
         """PadUi.panel (1.3.26): ventana azul noche con borde de oro y tachuelas."""
-        self.fill(x + 2, y + h, x + w - 2, y + h + 1, (6, 12, 40, 120))
+        self.fill(x + 2, y + h, x + w - 2, y + h + 1, rgb(0x2882D2))
         self.box(x, y, w, h, INK)
         self.box(x + 1, y + 1, w - 2, h - 2, GOLD_LO)
         self.vgrad(x + 2, y + 2, w - 4, h - 4, PANEL_TOP, PANEL_BOT)
@@ -226,16 +213,17 @@ class Sim:
 
     def ucard(self, x, y, w, h, state=0):
         """PadUi.card: 0 normal, 1 ratón encima, 2 marcada."""
-        edge = GOLD if state == 2 else rgb(0x7AB4FF) if state == 1 else rgb(0x34529E)
-        top = rgb(0x3A5CC0) if state == 1 else rgb(0x33509E) if state == 2 else rgb(0x2A4596)
-        bot = rgb(0x24408E) if state == 1 else rgb(0x1E3378) if state == 2 else rgb(0x1C3074)
-        light = GOLD_HI if state == 2 else rgb(0x9CCAFF) if state == 1 else rgb(0x4E70CC)
-        self.box(x, y, w, h, INK)
-        self.box(x + 1, y + 1, w - 2, h - 2, edge)
-        self.vgrad(x + 2, y + 2, w - 4, h - 4, top, bot)
-        self.fill(x + 2, y + 2, x + w - 2, y + 3, light)
+        edge = rgb(0xE0A030) if state == 2 else rgb(0x3496FA) if state == 1 else rgb(0xB8D4EE)
+        top = rgb(0xF2FAFF) if state == 1 else rgb(0xFFF7DA) if state == 2 else (255, 255, 255)
+        bot = rgb(0xD2EAFF) if state == 1 else rgb(0xFFE9A8) if state == 2 else rgb(0xEAF4FD)
+        self.fill(x + 2, y + h, x + w - 2, y + h + 1, (52, 150, 250, 85) if state == 1 else (32, 64, 112, 51))
+        self.box(x, y, w, h, edge)
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, top, bot)
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
         if state == 2:
-            self.fill(x + 2, y + 3, x + 4, y + h - 2, GOLD)
+            self.fill(x + 1, y + 2, x + 3, y + h - 2, GOLD)
+        elif state == 1:
+            self.fill(x + 1, y + 2, x + 3, y + h - 2, rgb(0x3496FA))
 
     def slot(self, x, y, w, h):
         self.box(x, y, w, h, SLOT_EDGE)
@@ -249,16 +237,19 @@ class Sim:
             self.vgrad(x + 1, y + 1, w - 2, 12, rgb(0xFFDC64), rgb(0xE89A1C))
             self.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI)
         else:
-            self.vgrad(x + 1, y + 1, w - 2, 12, rgb(0x2A4596) if state == 1 else PANEL_TOP, rgb(0x1C3074) if state == 1 else rgb(0x141F50))
-            self.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(0x4E70CC))
-        self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 2, TEXT if state else MUTED)
+            self.vgrad(x + 1, y + 1, w - 2, 12, rgb(0xF2FAFF) if state == 1 else (255, 255, 255), rgb(0xB4DCFF) if state == 1 else rgb(0xD6E8F8))
+            self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
+        if state == 2:
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 2, (255, 255, 255))
+        else:
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 2, NAVY, False)
 
     def divider(self, x, y, w, title, color):
         self.mtext(title, x, y + 1, color)
         lx = x + self.mwidth(title) + 5
         if lx < x + w - 8:
             self.fill(lx, y + 5, x + w - 6, y + 6, GOLD_LO)
-            self.fill(lx, y + 6, x + w - 6, y + 7, (6, 12, 40, 160))
+            self.fill(lx, y + 6, x + w - 6, y + 7, (255, 255, 255))
         cx = x + w - 4
         self.fill(cx - 2, y + 5, cx + 3, y + 6, GOLD_LO)
         self.fill(cx - 1, y + 4, cx + 2, y + 7, GOLD)
@@ -268,7 +259,7 @@ class Sim:
     def scrollbar(self, x, y, h, visible, content, scroll=0):
         if content <= visible or h <= 4:
             return
-        self.fill(x, y, x + 3, y + h, SLOT)
+        self.fill(x, y, x + 3, y + h, rgb(0xC8DCF0))
         th = max(8, h * visible // content)
         ty = y + (h - th) * scroll // max(1, content - visible)
         self.vgrad(x, ty, 3, th, GOLD_HI, GOLD_LO)
@@ -383,7 +374,7 @@ class Sim:
         self.vgrad(x + 1, y + 1, w - 2, 13, top, bot)
         self.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(c[2]))
         self.fill(x + 1, y + 13, x + w - 1, y + 15, rgb(c[3]))
-        col = TEXT if enabled else rgb(0x8C9AC4)
+        col = (255, 255, 255) if enabled else rgb(0x8C9AC4)
         if self.is_back(label):
             ax, ay = x + 6, y + 7
             for i in range(4):
@@ -395,7 +386,7 @@ class Sim:
 
     def progress(self, x, y, w, f):
         self.box(x, y, w, 6, INK)
-        self.fill(x + 1, y + 1, x + w - 1, y + 5, SLOT)
+        self.fill(x + 1, y + 1, x + w - 1, y + 5, rgb(0xC8DCF0))
         fw = round((w - 2) * min(1, f))
         if fw > 0:
             full = f >= 1
@@ -512,13 +503,13 @@ class Sim:
 
     def field(self, x, y, w, text, hint):
         self.box(x, y, w, 16, INK)
-        self.fill(x + 1, y + 1, x + w - 1, y + 15, SLOT)
-        self.fill(x + 1, y + 1, x + w - 1, y + 2, SLOT_SHADE)
-        self.fill(x + 1, y + 14, x + w - 1, y + 15, SLOT_EDGE)
+        self.fill(x + 1, y + 1, x + w - 1, y + 15, (255, 255, 255))
+        self.fill(x + 1, y + 1, x + w - 1, y + 2, rgb(0xD6E6F6))
+        self.fill(x + 1, y + 2, x + 2, y + 15, rgb(0xE6EFF8))
         shown = self.fitend(text or hint, w - 10)
-        self.mtext(shown, x + 5, y + 4, TEXT if text else rgb(0x6C80B4))
+        self.mtext(shown, x + 5, y + 4, TEXT if text else rgb(0x96AACC))
         cx = x + 5 + (self.mwidth(shown) if text else 0)
-        self.fill(cx, y + 3, cx + 1, y + 13, GOLD)
+        self.fill(cx, y + 3, cx + 1, y + 13, TEXT)
 
     def wrap_ellipsis(self, s, x, y, w, color, maxl):
         words = s.split(' ')
@@ -728,10 +719,10 @@ class Sim:
         import numpy as np
         a = np.asarray(Image.open(f'{TEX}/frame.png').convert('RGBA'))
         e = self.extra * 4
-        a = np.concatenate([a[:, :STRETCH_L], np.repeat(a[:, STRETCH_L:STRETCH_L + 1], e, axis=1), a[:, STRETCH_L:STRETCH_R],
-                            np.repeat(a[:, STRETCH_R:STRETCH_R + 1], e, axis=1), a[:, STRETCH_R:]], axis=1)
+        a = np.concatenate([a[:STRETCH_U], np.repeat(a[STRETCH_U:STRETCH_U + 1], e, axis=0), a[STRETCH_U:STRETCH_D],
+                            np.repeat(a[STRETCH_D:STRETCH_D + 1], e, axis=0), a[STRETCH_D:]], axis=0)
         frame = Image.fromarray(a)
         if self.ps != 4:
-            frame = frame.resize(((392 + self.extra * 2) * self.ps, 251 * self.ps), Image.NEAREST)
+            frame = frame.resize((392 * self.ps, (251 + self.extra * 2) * self.ps), Image.NEAREST)
         frame.alpha_composite(self.art, (GX * self.ps, GY * self.ps))
         frame.save(path)

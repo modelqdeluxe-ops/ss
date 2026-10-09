@@ -75,11 +75,11 @@ final class PadItemPicker {
             }
             b.empty("Nada con ese nombre.");
             b.input("pk.q", q.isEmpty() ? "BUSCAR (NOMBRE O ID)" : "BUSCAR: " + q.toUpperCase(Locale.ROOT), 40, "BUSCAR");
-            if (page > 0) b.footer(PadView.Btn.of("« ANTERIOR", "pk.prev", PadView.BLUE));
-            if (page < pages - 1) b.footer(PadView.Btn.of("SIGUIENTE »", "pk.next", PadView.BLUE));
-            b.footer(PadView.Btn.of("CANTIDAD " + n, "pk.n", PadView.GOLD));
+            if (page > 0) b.footer(PadView.Btn.of("«", "pk.prev", PadView.BLUE));
+            if (page < pages - 1) b.footer(PadView.Btn.of("»", "pk.next", PadView.BLUE));
+            b.footer(PadView.Btn.of("×" + n, "pk.n", PadView.GOLD));
         }
-        b.footer(PadView.Btn.of("LISTO", done, PadView.GREEN));
+        b.footer(PadView.Btn.of("ATRÁS", done, PadView.BLUE));
         return b.build();
     }
 

@@ -8,27 +8,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
 /**
- * Piezas de dibujo del pad (1.3.26): ventanas azul noche con borde de oro y tachuelas en las esquinas, tarjetas
- * azules en relieve (más claras al pasar el ratón; con borde de oro si están marcadas), ranuras oscuras para los
- * objetos, botones con relieve y luz, pestañas doradas, campos y barras hundidos. Todo en unidades de la página.
- * Los textos dentro de las ventanas son claros (TEXT, MUTED); los que van sobre el cristal del pad, azul marino
- * (GLASS_TEXT).
+ * Piezas de dibujo del pad (1.3.26), en blanco: ventanas blancas con borde de oro y tachuelas en las esquinas,
+ * tarjetas en relieve (azul claro al pasar el ratón; crema con borde de oro si están marcadas), ranuras hundidas para
+ * los objetos, botones con degradado, luz y sombra, pestañas doradas, campos y barras hundidos. Todo en unidades de
+ * la página. Textos en azul marino (TEXT), gris azulado (MUTED) y oro (GOLD_TEXT).
  */
 final class PadUi {
     static final int NAVY = 0xFF18265C;
-    /** Contorno de todo (tinta). */
-    static final int INK = 0xFF0B1430;
-    /** Texto sobre las ventanas oscuras. */
-    static final int TEXT = 0xFFFFFFFF;
-    static final int MUTED = 0xFFA9BCE8;
-    static final int GOLD_TEXT = 0xFFFFD86A;
-    static final int GREEN_TEXT = 0xFF7CF0A0;
-    static final int RED_TEXT = 0xFFFF8A8A;
+    /** Contorno de botones, pestañas y campos. */
+    static final int INK = 0xFF18265C;
+    static final int TEXT = 0xFF18265C;
+    static final int MUTED = 0xFF4A6694;
+    static final int GOLD_TEXT = 0xFFC27A10;
+    static final int GREEN_TEXT = 0xFF1E9E46;
+    static final int RED_TEXT = 0xFFC8323C;
     /** Texto sobre el cristal azul claro del pad. */
     static final int GLASS_TEXT = 0xFF18265C;
     static final int GOLD = 0xFFF6B628, GOLD_HI = 0xFFFFE58A, GOLD_LO = 0xFFC07818;
-    static final int PANEL_TOP = 0xFF1E2F6E, PANEL_BOT = 0xFF111B48, PANEL_HI = 0xFF3A58B0;
-    static final int SLOT = 0xFF0C1538, SLOT_EDGE = 0xFF2C4488, SLOT_SHADE = 0xFF060C24;
+    static final int PANEL_TOP = 0xFFF8FCFF, PANEL_BOT = 0xFFDCEEFC, PANEL_HI = 0xFFFFFFFF;
+    static final int SLOT = 0xFFE2EEFA, SLOT_EDGE = 0xFF9DBCE0, SLOT_SHADE = 0xFFC2D8EE;
     /** Compatibilidad: el fondo de las ventanas. */
     static final int PANEL = PANEL_TOP;
     static final java.text.DecimalFormat THOUSANDS = new java.text.DecimalFormat("#,##0",
@@ -63,9 +61,9 @@ final class PadUi {
         g.fill(cx, cy - 1, cx + 1, cy + 1, GOLD_HI);
     }
 
-    /** Ventana: tinta, borde de oro, azul noche en degradado, luz arriba y tachuelas en las esquinas. */
+    /** Ventana: contorno azul marino, borde de oro, blanco en degradado, luz arriba y tachuelas en las esquinas. */
     static void panel(GuiGraphics g, int x, int y, int w, int h) {
-        g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0x78060C28);
+        g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0xFF2882D2);
         box(g, x, y, w, h, INK);
         box(g, x + 1, y + 1, w - 2, h - 2, GOLD_LO);
         if (w > 4 && h > 4) g.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, PANEL_TOP, PANEL_BOT);
@@ -80,15 +78,15 @@ final class PadUi {
 
     /** Tarjeta (fila, casilla, ficha) dentro de una ventana. state: 0 normal, 1 ratón encima, 2 marcada. */
     static void card(GuiGraphics g, int x, int y, int w, int h, int state) {
-        int edge = state == 2 ? GOLD : state == 1 ? 0xFF7AB4FF : 0xFF34529E;
-        int top = state == 1 ? 0xFF3A5CC0 : state == 2 ? 0xFF33509E : 0xFF2A4596;
-        int bot = state == 1 ? 0xFF24408E : state == 2 ? 0xFF1E3378 : 0xFF1C3074;
-        int light = state == 2 ? GOLD_HI : state == 1 ? 0xFF9CCAFF : 0xFF4E70CC;
-        box(g, x, y, w, h, INK);
-        box(g, x + 1, y + 1, w - 2, h - 2, edge);
-        if (w > 4 && h > 4) g.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, top, bot);
-        g.fill(x + 2, y + 2, x + w - 2, y + 3, light);
-        if (state == 2) g.fill(x + 2, y + 3, x + 4, y + h - 2, GOLD);
+        int edge = state == 2 ? 0xFFE0A030 : state == 1 ? 0xFF3496FA : 0xFFB8D4EE;
+        int top = state == 1 ? 0xFFF2FAFF : state == 2 ? 0xFFFFF7DA : 0xFFFFFFFF;
+        int bot = state == 1 ? 0xFFD2EAFF : state == 2 ? 0xFFFFE9A8 : 0xFFEAF4FD;
+        g.fill(x + 2, y + h, x + w - 2, y + h + 1, state == 1 ? 0x553496FA : 0x33204070); // sombra
+        box(g, x, y, w, h, edge);
+        if (w > 2 && h > 2) g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, top, bot);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
+        if (state == 2) g.fill(x + 1, y + 2, x + 3, y + h - 2, GOLD);
+        else if (state == 1) g.fill(x + 1, y + 2, x + 3, y + h - 2, 0xFF3496FA);
     }
 
     /** Ranura hundida para un objeto (como las del inventario, en azul noche). */
@@ -138,10 +136,11 @@ final class PadUi {
             g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, 0xFFFFDC64, 0xFFE89A1C);
             g.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI);
         } else {
-            g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, state == 1 ? 0xFF2A4596 : PANEL_TOP, state == 1 ? 0xFF1C3074 : 0xFF141F50);
-            g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF4E70CC);
+            g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, state == 1 ? 0xFFF2FAFF : 0xFFFFFFFF, state == 1 ? 0xFFB4DCFF : 0xFFD6E8F8);
+            g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
         }
-        PadFont.drawCentered(g, label, x + w / 2, y + 2, state == 2 || state == 1 ? 0xFFFFFF : MUTED & 0xFFFFFF, true);
+        if (state == 2) PadFont.drawCentered(g, label, x + w / 2, y + 2, 0xFFFFFF, true);
+        else PadFont.drawCentered(g, label, x + w / 2, y + 2, 0x18265C, false);
     }
 
     /** Título de sección dentro de una ventana: texto de oro, una línea y un rombo al final. */
@@ -150,7 +149,7 @@ final class PadUi {
         int lx = x + font().width(title) + 5;
         if (lx < x + w - 8) {
             g.fill(lx, y + 5, x + w - 6, y + 6, GOLD_LO);
-            g.fill(lx, y + 6, x + w - 6, y + 7, 0xA0060C28);
+            g.fill(lx, y + 6, x + w - 6, y + 7, 0xFFFFFFFF);
         }
         int cx = x + w - 4;
         g.fill(cx - 2, y + 5, cx + 3, y + 6, GOLD_LO);
@@ -162,7 +161,7 @@ final class PadUi {
     /** Barra de desplazamiento: carril hundido y asa de oro. */
     static void scrollbar(GuiGraphics g, int x, int y, int h, int visible, int content, int scroll) {
         if (content <= visible || h <= 4) return;
-        g.fill(x, y, x + 3, y + h, SLOT);
+        g.fill(x, y, x + 3, y + h, 0xFFC8DCF0);
         int th = Math.max(8, h * visible / content);
         int ty = y + (h - th) * scroll / Math.max(1, content - visible);
         g.fillGradient(x, ty, x + 3, ty + th, GOLD_HI, GOLD_LO);
@@ -174,44 +173,16 @@ final class PadUi {
         return c & 0xFF000000 | r << 16 | gg << 8 | b;
     }
 
-    /**
-     * Los colores que manda el servidor estaban pensados para fondo claro: sobre las ventanas oscuras se pasan a su
-     * versión clara (el azul marino del texto normal, a blanco; el oro, a oro claro…).
-     */
+    /** Los colores que manda el servidor ya son para fondo claro: se usan tal cual (con su alfa). */
     static int onDark(int rgb) {
-        rgb &= 0xFFFFFF;
-        switch (rgb) {
-            case 0x18265C, 0x000000, 0x0B1430 -> {
-                return 0xFFFFFFFF;
-            }
-            case 0xC27A10, 0xB8741A, 0xBA7014 -> {
-                return GOLD_TEXT;
-            }
-            case 0x7E8CA8, 0x4A6694, 0xAABAD2 -> {
-                return MUTED;
-            }
-            case 0x1E9E46, 0x1E7C2C, 0x40C850 -> {
-                return GREEN_TEXT;
-            }
-            case 0xC8323C, 0xE83446, 0x9A1A30 -> {
-                return RED_TEXT;
-            }
-            case 0x1854BE, 0x3496FA -> {
-                return 0xFF8CC4FF;
-            }
-            default -> {
-            }
-        }
-        float[] hsb = java.awt.Color.RGBtoHSB(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, null);
-        if (hsb[2] >= 0.8F) return 0xFF000000 | rgb;
-        return 0xFF000000 | (java.awt.Color.HSBtoRGB(hsb[0], Math.min(hsb[1], 0.6F), Math.max(hsb[2], 0.95F)) & 0xFFFFFF);
+        return 0xFF000000 | (rgb & 0xFFFFFF);
     }
 
     /** Barra de progreso hundida (verde; oro cuando está completa). 6 de alto. */
     static void progress(GuiGraphics g, int x, int y, int w, float f) {
         f = Math.max(0, Math.min(1, f));
         box(g, x, y, w, 6, INK);
-        g.fill(x + 1, y + 1, x + w - 1, y + 5, SLOT);
+        g.fill(x + 1, y + 1, x + w - 1, y + 5, 0xFFC8DCF0);
         int fw = Math.round((w - 2) * f);
         if (fw > 0) {
             boolean full = f >= 1;
@@ -281,14 +252,14 @@ final class PadUi {
     /** Campo de texto hundido de 16 de alto: lo escrito (o la pista) y el cursor de oro que parpadea. */
     static void field(GuiGraphics g, int x, int y, int w, String text, String hint) {
         box(g, x, y, w, 16, INK);
-        g.fill(x + 1, y + 1, x + w - 1, y + 15, SLOT);
-        g.fill(x + 1, y + 1, x + w - 1, y + 2, SLOT_SHADE);
-        g.fill(x + 1, y + 14, x + w - 1, y + 15, SLOT_EDGE);
+        g.fill(x + 1, y + 1, x + w - 1, y + 15, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFFD6E6F6);
+        g.fill(x + 1, y + 2, x + 2, y + 15, 0xFFE6EFF8);
         String shown = text.isEmpty() ? fitEnd(hint, w - 10) : fitStart(text, w - 10);
-        text(g, shown, x + 5, y + 4, text.isEmpty() ? 0xFF6C80B4 : TEXT);
+        text(g, shown, x + 5, y + 4, text.isEmpty() ? 0xFF96AACC : TEXT);
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = x + 5 + (text.isEmpty() ? 0 : font().width(shown));
-            g.fill(cx, y + 3, cx + 1, y + 13, GOLD);
+            g.fill(cx, y + 3, cx + 1, y + 13, TEXT);
         }
     }
 
@@ -297,7 +268,7 @@ final class PadUi {
         int step = (int) (System.currentTimeMillis() / 140 % 4);
         int[][] at = {{0, -3}, {3, 0}, {0, 3}, {-3, 0}};
         for (int i = 0; i < 4; i++) {
-            int c = i == step ? GOLD : 0xFF4E70CC;
+            int c = i == step ? 0xFF3496FA : 0xFFAAC8E8;
             g.fill(cx + at[i][0] - 1, y + 4 + at[i][1] - 1, cx + at[i][0] + 1, y + 4 + at[i][1] + 1, c);
         }
     }

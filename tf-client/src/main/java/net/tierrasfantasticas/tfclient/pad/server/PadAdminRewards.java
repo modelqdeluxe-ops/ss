@@ -33,8 +33,10 @@ public final class PadAdminRewards {
 
     private PadAdminRewards() {}
 
-    private static String editing(ServerPlayer p) {
-        return PadServer.get(p, APP_ID + ".edit", "");
+    /** El campo que se está escribiendo, solo si es de la ficha target («d:2», «r:id»); si no, ninguno. */
+    private static String editing(ServerPlayer p, String target) {
+        String v = PadServer.get(p, APP_ID + ".edit", "");
+        return v.startsWith(target + "|") ? v.substring(target.length() + 1) : "";
     }
 
     private static void edit(Consumer<JsonObject> f) {
@@ -126,7 +128,7 @@ public final class PadAdminRewards {
         }
 
         private PadView dayView(ServerPlayer player, int i, PadRewards.Day d) {
-            String edit = editing(player);
+            String edit = editing(player, "d:" + i);
             PadView.Builder b = PadView.of(APP_ID).selected("d:" + i).header("Día " + (i + 1) + " del calendario · " + d.items().size() + " objetos");
             b.row(new PadView.Row(new ItemStack(Items.GOLD_NUGGET), "Monedas", TEXT, List.of("Además de los objetos."), -1,
                     d.coins() > 0 ? TFEconomy.format(d.coins()) : "—", PadView.Btn.of("EDITAR", "editar:monedas", PadView.BLUE), null)
@@ -134,12 +136,12 @@ public final class PadAdminRewards {
             itemsRow(b, player, "d:" + i, d.items(), "pd:" + i);
             for (int k = 0; k < d.items().size(); k++) b.cell(d.items().get(k).copy(), "", TEXT, "quitar:d:" + i + ":" + k, false);
             b.footer(PadView.Btn.of("ATRÁS", "tab:cal", PadView.BLUE));
-            if (!edit.isEmpty()) b.input("campo:d:" + i, "MONEDAS", 16, "GUARDAR");
+            if (edit.equals("monedas")) b.input("campo:d:" + i, "MONEDAS", 16, "GUARDAR");
             return b.build();
         }
 
         private PadView rewardView(ServerPlayer player, PadRewards.Reward r) {
-            String edit = editing(player);
+            String edit = editing(player, "r:" + r.id());
             PadView.Builder b = PadView.of(APP_ID).selected("r:" + r.id()).header(r.name() + " · " + PadRewards.typeText(r) + " · " + r.items().size() + " objetos");
             b.row(new PadView.Row(new ItemStack(Items.NAME_TAG), "Nombre", TEXT, List.of(r.name()), -1, "",
                     PadView.Btn.of("EDITAR", "editar:nombre", PadView.BLUE), null).selected(edit.equals("nombre")));
@@ -291,10 +293,11 @@ public final class PadAdminRewards {
                         if (t != null) PadAdmin.removeItem(t, k);
                     });
                 }
-                case "editar" -> PadServer.put(player, APP_ID + ".edit", arg);
+                case "editar" -> PadServer.put(player, APP_ID + ".edit", tab + "|" + arg);
                 case "campo" -> { // campo:d:<i> o campo:r:<id>
-                    String field = editing(player);
+                    String field = editing(player, arg);
                     if (field.isEmpty()) return null;
+                    if (arg.startsWith("d:") && !field.equals("monedas")) return null;
                     if (field.equals("nombre")) {
                         if (text.isBlank()) return null;
                         edit(o -> {
@@ -310,7 +313,7 @@ public final class PadAdminRewards {
                         edit(o -> {
                             JsonObject t = arg.startsWith("d:") ? day(o, dayOf(arg, 2)) : reward(o, arg.substring(2));
                             if (t == null) return;
-                            t.addProperty(field.equals("horas") ? "horas" : "monedas", field.equals("horas") ? Math.max(1, v) : v);
+                            t.addProperty(field.equals("horas") ? "horas" : "monedas", field.equals("horas") ? Math.max(1, Math.min(24L * 3650, v)) : v);
                         });
                     }
                     PadServer.put(player, APP_ID + ".edit", null);

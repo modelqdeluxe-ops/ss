@@ -215,6 +215,7 @@ public final class PadAdmin {
         PadConfig.load();
         List<String> shop = TFShopConfig.load();
         PadKits.loadConfig();
+        PadRewards.loadConfig();
         List<String> jobs = TFJobsConfig.load();
         PadMissions.loadConfig();
         PadHelp.loadConfig();

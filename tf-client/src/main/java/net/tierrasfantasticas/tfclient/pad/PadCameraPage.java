@@ -162,9 +162,9 @@ final class PadCameraPage extends PadPage {
         int px = X + 6, py = Y + 5;
         PadUi.box(g, px - 2, py - 2, PW + 4, PH + 4, PadUi.INK);
         PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.GOLD_LO);
-        g.fill(px, py, px + PW, py + PH, PadUi.SLOT);
+        g.fill(px, py, px + PW, py + PH, 0xFF1A2440);
         if (photos.isEmpty()) {
-            PadUi.wrap(g, "Sin fotos. MODO FOTO y clic izquierdo.", px + 10, py + PH / 2 - 10, PW - 20, PadUi.MUTED, 3);
+            PadUi.wrap(g, "Sin fotos. MODO FOTO y clic izquierdo.", px + 10, py + PH / 2 - 10, PW - 20, 0xFFE0ECFF, 3);
         } else {
             Path p = photos.get(index);
             ResourceLocation loc = texture(p);

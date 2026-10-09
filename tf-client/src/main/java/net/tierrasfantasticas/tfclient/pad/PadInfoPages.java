@@ -32,11 +32,12 @@ final class PadInfoPages {
             row(g, 1, "Tic al pasar por encima", PadSettings.hoverTick ? "SÍ" : "NO", PadSettings.hoverTick, mx, my);
             row(g, 2, "Animaciones", PadSettings.animations ? "SÍ" : "NO", PadSettings.animations, mx, my);
             row(g, 3, "Volumen", PadSettings.volume + "%", true, mx, my);
-            PadUi.text(g, "Tecla del pad: se cambia en Opciones › Controles.", X + 8, Y + H - 13, PadUi.MUTED);
+            int hintY = Math.max(Y + H - 13, Y + 7 + 4 * 23);
+            if (hintY + 9 <= Y + H) PadUi.text(g, "Tecla del pad: se cambia en Opciones › Controles.", X + 8, hintY, PadUi.MUTED);
         }
 
         private void row(GuiGraphics g, int i, String label, String value, boolean on, double mx, double my) {
-            int y = Y + 7 + i * 25;
+            int y = Y + 7 + i * 23;
             PadUi.card(g, X + 6, y - 2, W - 12, 22, 0);
             PadUi.text(g, label, X + 14, y + 5, PadUi.TEXT);
             int bw = 46, bx = X + W - bw - 12;

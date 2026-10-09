@@ -203,10 +203,9 @@ public final class PadKits {
                 if (e.isJsonObject() && isDaily(e.getAsJsonObject())) daily.add(e.getAsJsonObject());
                 else keep.add(e);
             }
-            if (!daily.isEmpty()) {
+            if (!daily.isEmpty() && PadRewards.adopt(daily)) {
                 o.add("kits", keep);
                 TFJson.write(file, o);
-                PadRewards.adopt(daily);
             }
         }
         if (o.has("kits") && o.get("kits").isJsonArray()) {
@@ -418,6 +417,7 @@ public final class PadKits {
         k.addProperty("nombre", name.isBlank() ? "Kit " + id : name);
         k.addProperty("descripcion", "");
         k.addProperty("icono", icon);
+        k.addProperty("tipo", hours == 0 ? "unico" : hours == 168 ? "semanal" : "horas");
         k.addProperty("esperaSegundos", hours * 3600L);
         k.addProperty("monedas", 0);
         k.add("objetos", items);

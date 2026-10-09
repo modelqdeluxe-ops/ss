@@ -59,7 +59,9 @@ public final class PadRewards {
     static final JsonStore STORE_IMPL = new JsonStore("recompensas.json") {
         @Override
         void loaded(MinecraftServer server) {
+            loaded = true;
             loadConfig();
+            if (!CLAIM_COPIES.isEmpty()) copyClaims();
         }
     };
     public static final PadServer.Store STORE = STORE_IMPL;
@@ -307,7 +309,7 @@ public final class PadRewards {
                     String type = TFJson.str(r, "tipo", "diaria");
                     if (!TYPES.contains(type)) type = "diaria";
                     REWARDS.add(new Reward(id, TFJson.str(r, "nombre", "Recompensa"), TFJson.str(r, "icono", ""), type,
-                            Math.max(1, TFJson.num(r, "horas", 24)), Math.max(0, TFJson.num(r, "monedas", 0)),
+                            Math.max(1, Math.min(24L * 3650, TFJson.num(r, "horas", 24))), Math.max(0, TFJson.num(r, "monedas", 0)),
                             PadItemPicker.stacks(r.has("objetos") && r.get("objetos").isJsonArray() ? r.getAsJsonArray("objetos") : null),
                             TFJson.bool(r, "activada", true)));
                 } catch (Exception ex) {
@@ -347,16 +349,30 @@ public final class PadRewards {
         return d;
     }
 
-    /** Los kits «diarios» de antes pasan a ser recompensas diarias (el dueño quitó el kit diario de Kits). */
-    static void adopt(List<JsonObject> dailyKits) {
-        if (dailyKits.isEmpty()) return;
+    /**
+     * Los kits «diarios» de antes pasan a ser recompensas diarias (el dueño quitó el kit diario de Kits). Quien ya lo
+     * reclamó hoy lo sigue teniendo reclamado. Devuelve false si recompensas.json existe pero no se puede leer (no se
+     * toca nada: así no se pierde ni el archivo ni el kit).
+     */
+    static boolean adopt(List<JsonObject> dailyKits) {
+        if (dailyKits.isEmpty()) return true;
+        if (TFJson.read(configFile()) == null && Files.exists(configFile())) {
+            TFClient.LOGGER.error("TF Pad: recompensas.json no se puede leer; los kits diarios se quedan en kits.json");
+            return false;
+        }
         JsonObject o = readConfig();
         if (!o.has("recompensas") || !o.get("recompensas").isJsonArray()) o.add("recompensas", new JsonArray());
         JsonArray list = o.getAsJsonArray("recompensas");
+        java.util.Set<String> used = new java.util.HashSet<>();
+        for (JsonElement e : list) if (e.isJsonObject()) used.add(TFJson.str(e.getAsJsonObject(), "id", ""));
         for (JsonObject k : dailyKits) {
             JsonObject r = new JsonObject();
-            String id = TFJson.str(k, "id", "diario");
-            r.addProperty("id", id.length() > 32 ? id.substring(0, 32) : id);
+            String kitId = TFJson.str(k, "id", "diario");
+            String id = kitId.length() > 28 ? kitId.substring(0, 28) : kitId;
+            for (int n = 2; used.contains(id); n++) id = (kitId.length() > 26 ? kitId.substring(0, 26) : kitId) + "_" + n;
+            used.add(id);
+            CLAIM_COPIES.put(kitId, id);
+            r.addProperty("id", id);
             r.addProperty("nombre", TFJson.str(k, "nombre", "Recompensa diaria"));
             r.addProperty("icono", TFJson.str(k, "icono", ""));
             r.addProperty("tipo", "diaria");
@@ -368,6 +384,33 @@ public final class PadRewards {
         }
         writeConfig(o);
         TFClient.LOGGER.info("TF Pad: {} kit(s) diario(s) pasaron a Recompensas", dailyKits.size());
+        if (loaded) copyClaims();
+        return true;
+    }
+
+    /** Kit diario → recompensa nueva, para pasar lo que cada jugador ya había reclamado. */
+    private static final java.util.Map<String, String> CLAIM_COPIES = new java.util.HashMap<>();
+    private static boolean loaded;
+
+    private static void copyClaims() {
+        JsonElement all = PadKits.STORE_IMPL.root.get("jugadores");
+        if (all != null && all.isJsonObject()) {
+            for (var e : all.getAsJsonObject().entrySet()) {
+                if (!e.getValue().isJsonObject()) continue;
+                JsonObject kp = e.getValue().getAsJsonObject();
+                for (var c : CLAIM_COPIES.entrySet()) {
+                    if (!kp.has(c.getKey())) continue;
+                    try {
+                        JsonObject rp = STORE_IMPL.player(java.util.UUID.fromString(e.getKey()));
+                        if (!rp.has("r:" + c.getValue())) rp.add("r:" + c.getValue(), kp.get(c.getKey()));
+                    } catch (IllegalArgumentException ignored) {
+                        // clave rara
+                    }
+                }
+            }
+            STORE_IMPL.changed();
+        }
+        CLAIM_COPIES.clear();
     }
 
     // ---------------------------------------------------------------------------------------------------------------

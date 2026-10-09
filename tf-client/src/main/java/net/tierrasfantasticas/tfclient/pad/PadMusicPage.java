@@ -157,8 +157,11 @@ final class PadMusicPage extends PadPage {
 
     private void drawNowPlaying(GuiGraphics g, double mx, double my) {
         int x = X, y = Y, w = leftW(), h = H;
-        // la misma ventana que el resto del pad: azul noche con borde de oro
-        PadUi.panel(g, x, y, w, h);
+        // el reproductor: tarjeta oscura con ribete de oro (resalta la portada y los controles)
+        PadUi.box(g, x, y, w, h, PadUi.NAVY);
+        gradient(g, x + 1, y + 1, w - 2, h - 2, CARD_TOP, CARD_BOTTOM);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF4A56A0);
+        outlineRect(g, x + 2, y + 2, w - 4, h - 4, 0x55F6B628);
 
         MusicLibrary.Track t = MusicPlayer.current();
         int c = coverSize(), cx = coverX(), cy = coverY();
@@ -414,7 +417,7 @@ final class PadMusicPage extends PadPage {
     private void drawRow(GuiGraphics g, MusicLibrary.Track t, int x, int y, int w, double mx, double my, boolean inList, boolean current) {
         boolean hover = inList && PadUi.inside(mx, my, x, y, w, ROW - 1);
         if (current || hover) PadUi.card(g, x, y, w, ROW - 1, current ? 2 : 1);
-        else g.fill(x + 3, y + ROW - 1, x + w - 3, y + ROW, 0xFF2A3E80);
+        else g.fill(x + 3, y + ROW - 1, x + w - 3, y + ROW, 0xFFC8E4F8);
         int thumb = ROW - 6;
         drawCover(g, t, x + 5, y + 3, thumb);
         outlineRect(g, x + 4, y + 2, thumb + 2, thumb + 2, PadUi.INK);
@@ -424,7 +427,7 @@ final class PadMusicPage extends PadPage {
         // borrar (al pasar el ratón)
         boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
         int delW = sure ? PadUi.buttonWidth("¿BORRAR?") : big(12);
-        int delX = right - delW, delY = y + (ROW - 1 - 15) / 2;
+        int delX = right - delW, delY = y + (ROW - 1 - 16) / 2;
         if (hover || sure) {
             boolean dh = PadUi.inside(mx, my, delX, delY, delW, 16);
             if (sure) {
@@ -499,7 +502,7 @@ final class PadMusicPage extends PadPage {
         PadUi.spinner(g, x + 8, y + 3);
         PadUi.text(g, PadUi.fitEnd(status, w - 24), x + 15, y + 3, PadUi.GOLD_TEXT);
         int bx = x + 6, bw = w - 10;
-        g.fill(bx, y + 13, bx + bw, y + 16, PadUi.SLOT);
+        g.fill(bx, y + 13, bx + bw, y + 16, 0xFFE8D8A8);
         int fw = p >= 0 ? Math.round(bw * p) : (int) ((System.currentTimeMillis() / 8) % bw);
         if (p >= 0) g.fill(bx, y + 13, bx + fw, y + 16, GOLD);
         else g.fill(bx + Math.max(0, fw - 20), y + 13, bx + fw, y + 16, GOLD);
@@ -513,14 +516,14 @@ final class PadMusicPage extends PadPage {
                 : "Pega aquí el link directo de una canción";
         boolean fieldHover = PadUi.inside(mx, my, x, y, fw, 16);
         PadUi.box(g, x, y, fw, 16, focused ? PadUi.GOLD : PadUi.INK);
-        g.fill(x + 1, y + 1, x + fw - 1, y + 15, PadUi.SLOT);
-        g.fill(x + 1, y + 1, x + fw - 1, y + 2, PadUi.SLOT_SHADE);
-        g.fill(x + 1, y + 14, x + fw - 1, y + 15, PadUi.SLOT_EDGE);
+        g.fill(x + 1, y + 1, x + fw - 1, y + 15, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + fw - 1, y + 2, 0xFFD6E6F6);
+        g.fill(x + 1, y + 2, x + 2, y + 15, 0xFFE6EFF8);
         String shown = input.isEmpty() ? PadUi.fitEnd(hint, fw - 10) : PadUi.fitStart(input, fw - 10);
-        PadUi.text(g, shown, x + 5, y + 4, input.isEmpty() ? 0xFF6C80B4 : PadUi.TEXT);
+        PadUi.text(g, shown, x + 5, y + 4, input.isEmpty() ? 0xFF96AACC : PadUi.TEXT);
         if (focused && (System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = x + 5 + (input.isEmpty() ? 0 : PadUi.font().width(shown));
-            g.fill(cx, y + 3, cx + 1, y + 13, PadUi.GOLD);
+            g.fill(cx, y + 3, cx + 1, y + 13, PadUi.TEXT);
         }
         if (fieldHover) pad.hover("§field");
         hits.add(new Hit(x, y, fw, 16, () -> focused = true));

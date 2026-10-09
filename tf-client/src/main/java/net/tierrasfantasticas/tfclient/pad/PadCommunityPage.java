@@ -111,7 +111,7 @@ final class PadCommunityPage extends PadPage {
         int px = x + 5, py = y + 5;
         PadUi.box(g, px - 2, py - 2, pw + 4, ph + 4, PadUi.INK);
         PadUi.box(g, px - 1, py - 1, pw + 2, ph + 2, PadUi.GOLD_LO);
-        g.fill(px, py, px + pw, py + ph, PadUi.SLOT);
+        g.fill(px, py, px + pw, py + ph, 0xFF1A2440);
         ResourceLocation tex = PadCommunityClient.texture(post.id());
         if (tex != null) {
             int[] sz = PadCommunityClient.textureSize(post.id());
@@ -170,7 +170,7 @@ final class PadCommunityPage extends PadPage {
         actions.clear();
         g.pose().pushPose();
         g.pose().translate(0, 0, 200);
-        g.fill(OX, OY, OX + SW, OY + SH, 0xE60B1430);
+        g.fill(OX, OY, OX + SW, OY + SH, 0xE618265C);
         int h = SH - 16, w = h * 16 / 9;
         if (w > SW - 16) {
             w = SW - 16;

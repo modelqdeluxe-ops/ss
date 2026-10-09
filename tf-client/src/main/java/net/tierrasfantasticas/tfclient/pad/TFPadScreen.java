@@ -39,11 +39,12 @@ public final class TFPadScreen extends Screen {
     /** El cristal del marco, en píxeles de pad (el logo TF se mete por arriba a la izquierda). */
     static final int GX = 52, GY = 64, GW = 288, GH = 132;
     /**
-     * Para ensanchar el pad sin deformarlo, se repite una columna lisa de cada barra azul (columnas de frame.png,
-     * en píxeles de la imagen: 4 por píxel de pad). Así el marco llena mejor las pantallas anchas.
+     * Para hacer el pad más alto sin deformarlo (más aire entre las filas de apps), se repite una fila lisa de arriba y
+     * otra de abajo de frame.png (filas de la imagen: 4 por píxel de pad), por encima y por debajo de los adornos de
+     * oro de los lados. Lo que se alarga depende de lo alta que sea la pantalla.
      */
-    static final int STRETCH_L = 526, STRETCH_R = 964;
-    static final int MAX_EXTRA = 72;
+    static final int STRETCH_U = 430, STRETCH_D = 596;
+    static final int MAX_EXTRA = 40;
     static final int NAVY = 0xFF18265C;
     /** Altura de la barra de arriba, en unidades de pantalla. */
     /** Alto de la barra de arriba con escala grande 1 (ver {@link #bar}). */
@@ -64,7 +65,7 @@ public final class TFPadScreen extends Screen {
     int bar = BAR;
     /** Esquina del marco y del cristal, en píxeles reales. */
     private int fx, fy, gx, gy;
-    /** Píxeles de pad que se añaden a cada lado (ver {@link #STRETCH_L}). */
+    /** Píxeles de pad que se añaden arriba y abajo del cristal (ver {@link #STRETCH_U}). */
     private int extra;
     /** El cristal en unidades de pantalla. */
     int unitsW = GW, unitsH = GH;
@@ -290,13 +291,13 @@ public final class TFPadScreen extends Screen {
         int fbW = window.getWidth(), fbH = window.getHeight();
         ps = Math.max(1, (int) Math.floor(Math.min(fbW * 0.97 / W, fbH * 0.97 / H)));
         cs = ps <= 2 ? ps : Math.max(2, Math.round(ps / 2F));
-        extra = Math.max(0, Math.min(MAX_EXTRA, (int) Math.floor((fbW * 0.97 / ps - W) / 2)));
-        fx = (fbW - (W + extra * 2) * ps) / 2;
-        fy = (fbH - H * ps) / 2;
+        extra = Math.max(0, Math.min(MAX_EXTRA, (int) Math.floor((fbH * 0.985 / ps - H) / 2)));
+        fx = (fbW - W * ps) / 2;
+        fy = (fbH - (H + extra * 2) * ps) / 2;
         gx = fx + GX * ps;
         gy = fy + GY * ps;
-        unitsW = (GW + extra * 2) * ps / cs;
-        unitsH = GH * ps / cs;
+        unitsW = GW * ps / cs;
+        unitsH = (GH + extra * 2) * ps / cs;
         big = Math.max(cs, Math.round(ps * 0.75F));
         bs = big / (float) cs;
         bar = Math.round(12 * bs) + 6;
@@ -383,15 +384,15 @@ public final class TFPadScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
-    /** El marco en píxeles de la imagen (1568x1003), con las barras alargadas extra píxeles de pad por lado. */
+    /** El marco en píxeles de la imagen (1568x1003), alargado extra píxeles de pad arriba y abajo del cristal. */
     private void drawFrame(GuiGraphics g) {
         ResourceLocation t = tex("frame");
         int e = extra * 4, iw = 1568, ih = 1003;
-        g.blit(t, 0, 0, STRETCH_L, ih, 0, 0, STRETCH_L, ih, iw, ih);
-        if (e > 0) g.blit(t, STRETCH_L, 0, e, ih, STRETCH_L, 0, 1, ih, iw, ih);
-        g.blit(t, STRETCH_L + e, 0, STRETCH_R - STRETCH_L, ih, STRETCH_L, 0, STRETCH_R - STRETCH_L, ih, iw, ih);
-        if (e > 0) g.blit(t, STRETCH_R + e, 0, e, ih, STRETCH_R, 0, 1, ih, iw, ih);
-        g.blit(t, STRETCH_R + e * 2, 0, iw - STRETCH_R, ih, STRETCH_R, 0, iw - STRETCH_R, ih, iw, ih);
+        g.blit(t, 0, 0, iw, STRETCH_U, 0, 0, iw, STRETCH_U, iw, ih);
+        if (e > 0) g.blit(t, 0, STRETCH_U, iw, e, 0, STRETCH_U, iw, 1, iw, ih);
+        g.blit(t, 0, STRETCH_U + e, iw, STRETCH_D - STRETCH_U, 0, STRETCH_U, iw, STRETCH_D - STRETCH_U, iw, ih);
+        if (e > 0) g.blit(t, 0, STRETCH_D + e, iw, e, 0, STRETCH_D, iw, 1, iw, ih);
+        g.blit(t, 0, STRETCH_D + e * 2, iw, ih - STRETCH_D, 0, STRETCH_D, iw, ih - STRETCH_D, iw, ih);
     }
 
     private int backX() {

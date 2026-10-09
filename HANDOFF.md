@@ -47,20 +47,22 @@ Hecho:
   jugador conectado o la última skin vista, que `PadStats.name` guarda como `skin`/`skinFirma`; vale con
   SkinsRestorer). Respaldo en el cliente: `PadUi.skin` usa el perfil de la lista de jugadores. Lo usan Jugadores,
   Clanes y miembros de Protección.
-- **Pad más ancho sin deformar**: `TFPadScreen.drawFrame` repite una columna lisa de cada barra azul de `frame.png`
-  (`STRETCH_L = 526`, `STRETCH_R = 964` en píxeles de la imagen; `extra` píxeles de pad por lado, hasta `MAX_EXTRA`,
-  según el ancho de la pantalla). A 1080p el cristal pasa de 576 a 720 unidades.
+- **Pad más alto sin deformar** (primero se ensanchó y el dueño lo corrigió: «debiste expandir verticalmente, no
+  horizontal», para separar las filas de apps): `TFPadScreen.drawFrame` repite una fila lisa de arriba y otra de abajo
+  de `frame.png` (`STRETCH_U = 430`, `STRETCH_D = 596` en píxeles de la imagen, por encima y por debajo de los adornos
+  de oro de los lados; `extra` píxeles de pad arriba y abajo, hasta `MAX_EXTRA`, según el alto de la pantalla: a 1080p
+  +7 por lado, el cristal pasa de 264 a 292 unidades de alto).
 - **Portada** (`PadHomePage`): 7 columnas (las 21 apps en 7x3 a 1080p), nombres a escala normal, aire repartido; sin
   halo, partículas ni destellos. Al pasar el ratón: la ficha sube con sombra y el icono da **un salto con aplastado y
   estirado**; luego respira, o hace su gesto (el pico golpea, la ballesta retrocede, estandarte y percha se mecen, la
   cámara hace clic, Música late). El engranaje de arriba ya no se mueve (solo un subrayado de oro).
-- **Kit de interfaz nuevo** (`PadUi`): ventanas azul noche con borde de oro y tachuelas (`panel`), tarjetas en
-  relieve (`card`: normal, ratón, marcada con oro), ranuras hundidas para objetos (`slot`), botones con degradado,
-  luz y sombra (16 de alto; los ATRÁS llevan flecha), pestañas doradas (`tab`, 14), títulos de sección con línea y
-  rombo (`divider`), barra de desplazamiento de oro, campos y barras hundidos. Textos claros sobre las ventanas
-  (`TEXT`, `MUTED`, `GOLD_TEXT`) y azul marino sobre el cristal (`GLASS_TEXT`). Los colores que manda el servidor
-  (pensados para fondo claro) se aclaran con `PadUi.onDark`. Aplicado en `PadViewPage` (todas las apps del servidor y
-  del admin), Comunidad, Cámara, Música, Ajustes y la barra de arriba (botón de volver nuevo).
+- **Kit de interfaz nuevo, en BLANCO** (`PadUi`; primero se hizo en azul noche y el dueño lo corrigió: «yo la quería
+  blanca pero rediseñar los elementos en ella»): ventanas blancas con borde de oro y tachuelas (`panel`), tarjetas en
+  relieve (`card`: normal, ratón en azul claro, marcada en crema con oro), ranuras hundidas para objetos (`slot`),
+  botones con degradado, luz y sombra (16 de alto; los ATRÁS llevan flecha), pestañas doradas (`tab`, 14), títulos de
+  sección con línea y rombo (`divider`), barra de desplazamiento de oro, campos y barras hundidos. Textos en azul
+  marino (`TEXT`), gris azulado (`MUTED`) y oro (`GOLD_TEXT`). Aplicado en `PadViewPage` (todas las apps del servidor y
+  del admin), Comunidad, Cámara, Música (el reproductor sigue en su tarjeta oscura), Ajustes y la barra de arriba.
 - **Iconos** (`tools/pad/iconos3.py`): Oficios = pico de diamante grueso (cabeza en media luna sombreada por tonos,
   abrazadera de oro, mango de 3 px); RECOMPENSAS = regalo azul con lazo; WEB = globo terráqueo con el puntero del
   ratón. Ayuda ya no está en el pad (su config sigue, sin usarse).
@@ -76,7 +78,9 @@ Hecho:
   día con monedas y objetos, añadir día / quitar el último) y OTRAS (crear, nombre, activada, tipo, horas, monedas,
   icono de la mano, objetos, borrar). **Selector de objetos** (`PadItemPicker`, también en KITS): TU INVENTARIO (tal
   cual, con cantidad y encantamientos) o TODOS LOS OBJETOS del juego y de los mods (registro de objetos), con
-  buscador por nombre o id, páginas de 96 y CANTIDAD (1/4/8/16/32/64); pulsar un objeto de la ficha lo quita.
+  buscador por nombre o id (en el servidor los nombres son en inglés; el id siempre vale), páginas de 96, «» para pasar de página
+  y ×N para la cantidad (1/4/8/16/32/64); pulsar un objeto de la ficha lo quita. Los kits diarios migrados conservan lo
+  ya reclamado; si recompensas.json está roto no se migra nada.
 - Simulador (`tools/pad/sim/`) al día: marco ancho, portada nueva, kit de interfaz nuevo, Recompensas, admin y selector.
 
 ### Entrega anterior (9 de octubre de 2026, noche): iconos grandes, fichas RPG animadas, apps rediseñadas y Música — TF Client 1.3.25
