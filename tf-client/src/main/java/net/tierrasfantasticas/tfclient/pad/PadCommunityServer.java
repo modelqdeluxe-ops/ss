@@ -62,6 +62,7 @@ public final class PadCommunityServer {
 
     private static final Map<UUID, Up> UPLOADS = new HashMap<>();
     private static final Map<UUID, long[]> IMG_RATE = new HashMap<>();
+    private static final long IMG_BYTES_PER_10S = 12_000_000L;
     private static final Map<UUID, long[]> RATE = new HashMap<>();
     /** «liker:foto» a los que ya se avisó al autor (para que quitar y dar like no llene su pantalla). */
     private static final Set<String> LIKE_TOLD = new HashSet<>();
@@ -308,18 +309,21 @@ public final class PadCommunityServer {
     static void sendImage(ServerPlayer player, String id) {
         if (!id.matches("[a-z0-9]{1,20}") || find(id) == null) return;
         long now = System.currentTimeMillis();
-        long[] r = IMG_RATE.computeIfAbsent(player.getUUID(), k -> new long[] {now, 0});
+        // como mucho 40 fotos y 12 MB cada 10 s por jugador
+        long[] r = IMG_RATE.computeIfAbsent(player.getUUID(), k -> new long[] {now, 0, 0});
         if (now - r[0] > 10_000) {
             r[0] = now;
             r[1] = 0;
+            r[2] = 0;
         }
-        if (++r[1] > 40) return;
+        if (++r[1] > 40 || r[2] > IMG_BYTES_PER_10S) return;
         byte[] data;
         try {
             data = Files.readAllBytes(dir().resolve(id + ".png"));
         } catch (Exception e) {
             return;
         }
+        r[2] += data.length;
         int total = (data.length + PadCommunityNet.DOWN_CHUNK - 1) / PadCommunityNet.DOWN_CHUNK;
         for (int i = 0; i < total; i++) {
             byte[] part = Arrays.copyOfRange(data, i * PadCommunityNet.DOWN_CHUNK, Math.min(data.length, (i + 1) * PadCommunityNet.DOWN_CHUNK));

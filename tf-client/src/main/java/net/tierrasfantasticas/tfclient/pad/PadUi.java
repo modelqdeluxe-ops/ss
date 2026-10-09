@@ -314,8 +314,9 @@ final class PadUi {
      */
     static void tab(GuiGraphics g, int x, int y, int w, String label, int state) {
         if (state == 2) {
-            box(g, x, y, w, 17, INK);
-            g.fillGradient(x + 1, y + 1, x + w - 1, y + 17, 0xFFFFFFFF, PANEL_TOP);
+            // su borde llega hasta el de la ventana (y + 14) y por dentro tapa ese borde y la luz de debajo: se unen
+            box(g, x, y, w, 15, INK);
+            g.fillGradient(x + 1, y + 1, x + w - 1, y + 16, 0xFFFFFFFF, PANEL_TOP);
             g.fill(x + 2, y + 1, x + w - 2, y + 3, GOLD);
             g.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI);
             PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x18265C, false);
@@ -475,7 +476,7 @@ final class PadUi {
             int w = font().width(n) + 2, rx = x + 16 * k + 1 - w, ry = y + 16 * k - 8;
             g.pose().pushPose();
             g.pose().translate(0, 0, 200);
-            box(g, rx, ry, w + 1, 9, 0xD718265C);
+            box(g, rx, ry, w + 1, 9, 0xFF22346E);
             g.drawString(font(), n, rx + 1, ry + 1, 0xFFFFFFFF, false);
             g.pose().popPose();
         }

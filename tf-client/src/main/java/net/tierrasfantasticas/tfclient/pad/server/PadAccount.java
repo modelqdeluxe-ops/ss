@@ -43,18 +43,18 @@ public final class PadAccount {
             PadView.Builder b = PadView.of("monedero");
             var balance = TFEconomy.balance(player.server, player.getUUID());
             b.row(new PadView.Row(coin(), "Tu saldo", TEXT, List.of("Oficios, misiones, cazas, tienda y GTS."), -1,
-                    balance.isPresent() ? PadView.money(balance.getAsLong()) : "—", null, null));
+                    balance.isPresent() ? PadView.moneyExact(balance.getAsLong()) : "—", null, null));
             double pending = TFJobs.pendingCoins(player.getUUID());
             if (pending >= 1) {
                 b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Por cobrar del oficio", TEXT, List.of("Llega en el próximo pago."), -1,
-                        "+" + PadView.money((long) Math.floor(pending)), null, null));
+                        "+" + PadView.moneyExact((long) Math.floor(pending)), null, null));
             }
             int selling = TFMarket.listingsOf(player.getUUID()).size();
             long value = TFMarket.listingsOf(player.getUUID()).stream().mapToLong(TFMarket.Listing::price).sum();
             if (selling > 0) {
                 b.row(new PadView.Row(new ItemStack(Items.EMERALD), "A la venta en el GTS", TEXT,
                         List.of(selling + (selling == 1 ? " cosa." : " cosas.") + " Cobras al momento cuando se venden."), -1,
-                        PadView.money(value), PadView.Btn.of("VER", "§open:gts", PadView.BLUE), null));
+                        PadView.moneyExact(value), PadView.Btn.of("VER", "§open:gts", PadView.BLUE), null));
             }
             Transfer t = PadServer.get(player, "monedero.envio", null);
             if (t != null) {

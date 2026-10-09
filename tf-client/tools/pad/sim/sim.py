@@ -259,8 +259,8 @@ class Sim:
         """PadUi.tab (1.3.28): pestaña de carpeta de 15 de alto; la elegida baja y se une a la ventana (su borde de
         arriba está en y + 14), con su filo de oro."""
         if state == 2:
-            self.box(x, y, w, 17, INK)
-            self.vgrad(x + 1, y + 1, w - 2, 16, (255, 255, 255), PANEL_TOP)
+            self.box(x, y, w, 15, INK)
+            self.vgrad(x + 1, y + 1, w - 2, 15, (255, 255, 255), PANEL_TOP)
             self.fill(x + 2, y + 1, x + w - 2, y + 3, GOLD)
             self.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI)
             self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 4, INK, False)
@@ -554,7 +554,7 @@ class Sim:
         t = str(n)
         w = self.mwidth(t) + 2
         rx, ry = x + 16 * k + 1 - w, y + 16 * k - 8
-        self.box(rx, ry, w + 1, 9, (24, 38, 92, 215))
+        self.box(rx, ry, w + 1, 9, rgb(0x22346E))
         self.mtext(t, rx + 1, ry + 1, (255, 255, 255))
 
     # -------------------------------------------------------------------------------------------------------------
@@ -605,7 +605,7 @@ class Sim:
         t = self.bigu(40)
         gw = self.UW - 8
         cols = max(3, min(7, gw // (t + self.bigu(8))))
-        cw = gw // cols
+        cw = min(gw // cols, t + self.bigu(10))
         rows = (len(apps) + cols - 1) // cols
         base = t + LABEL_H + MIN_GAP
         ch = base if rows * base >= H else base + (H - rows * base) // (rows + 1)

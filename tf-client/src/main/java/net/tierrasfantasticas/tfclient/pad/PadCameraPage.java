@@ -35,9 +35,14 @@ final class PadCameraPage extends PadPage {
     /** Tamaño de las fotos en el pad (16:9). */
     static final int PREVIEW_W = 960, PREVIEW_H = 540;
 
-    /** Con filtro lineal: al reducir o ampliar la foto se ve suave, no pixelada ni con dientes. */
+    /**
+     * Con filtro lineal: al reducir o ampliar la foto se ve suave, no pixelada ni con dientes. Y sin repetirse en los
+     * bordes (si no, el filtro mezcla el borde de un lado con el del otro).
+     */
     static DynamicTexture smooth(DynamicTexture tex) {
         tex.setFilter(true, false);
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10242, 33071); // GL_TEXTURE_WRAP_S = CLAMP_TO_EDGE
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10243, 33071); // GL_TEXTURE_WRAP_T = CLAMP_TO_EDGE
         return tex;
     }
 

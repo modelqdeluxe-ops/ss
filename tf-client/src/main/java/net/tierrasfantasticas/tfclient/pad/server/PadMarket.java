@@ -194,7 +194,7 @@ public final class PadMarket {
         lines.add((own ? "Lo vendes tú" : "Lo vende " + l.sellerName()) + " · " + left(l) + (count > 1 ? " · " + count + " uds." : "."));
         if (!own && balance >= 0) lines.add(balance >= l.price() ? "Tienes " + TFEconomy.format(balance) + "."
                 : "Te faltan " + TFEconomy.format(l.price() - balance) + ".");
-        b.hero(new PadView.Row(l.item(), TFMarket.describe(l.item()), own ? 0x40C850 : 0xF6B628, lines, -1, PadView.money(l.price()), null, null));
+        b.hero(new PadView.Row(l.item(), TFMarket.describe(l.item()), own ? 0x40C850 : 0xF6B628, lines, -1, PadView.moneyExact(l.price()), null, null));
         // lo que dice el objeto (encantamientos, descripción…), como en su tooltip
         List<String> tip = new ArrayList<>();
         var lines2 = l.item().getTooltipLines(player, net.minecraft.world.item.TooltipFlag.NORMAL);

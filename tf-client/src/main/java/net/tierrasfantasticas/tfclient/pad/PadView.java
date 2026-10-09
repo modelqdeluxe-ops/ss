@@ -81,6 +81,11 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
      * Dinero para una etiqueta: «¤1.250» (el pad pone la moneda en lugar de «¤»); desde 100.000, corto: «¤250K»,
      * «¤1,5M». Para lo que se cobra, "+" + money(v).
      */
+    /** Dinero exacto para una etiqueta: «¤1.299.999» (cabeceras de las fichas, monedero, admin: donde se paga o se fija). */
+    public static String moneyExact(long v) {
+        return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
+    }
+
     public static String money(long v) {
         if (v < 100_000) return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
         if (v < 1_000_000) return "¤" + (v / 1000) + "K";

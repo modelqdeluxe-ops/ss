@@ -184,7 +184,7 @@ public final class PadShop {
         String today = dayLeftNow >= 0 ? "Hoy puedes " + (selling ? "vender " : "comprar ") + dayLeftNow + " más." : "";
         if (!selling && balance >= 0) lines.add("Tienes " + TFEconomy.format(balance) + "." + (today.isEmpty() ? "" : " " + today));
         else if (!today.isEmpty()) lines.add(today);
-        String badge = selling ? "+" + PadView.money(e.sell()) : PadView.money(e.buy());
+        String badge = selling ? "+" + PadView.moneyExact(e.sell()) : PadView.moneyExact(e.buy());
         b.hero(new PadView.Row(shown(e, e.amount()), TFShop.name(e), selling ? 0x40C850 : 0xF6B628, lines, -1, badge, null, null));
 
         String cat = ci + ":" + ei;

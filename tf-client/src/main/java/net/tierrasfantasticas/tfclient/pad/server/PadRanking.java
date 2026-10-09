@@ -54,7 +54,7 @@ public final class PadRanking {
                 UUID u = top.get(i).getKey();
                 long v = top.get(i).getValue();
                 ItemStack medal = new ItemStack(i == 0 ? Items.GOLD_INGOT : i == 1 ? Items.IRON_INGOT : i == 2 ? Items.COPPER_INGOT : Items.PAPER);
-                String value = t.equals("monedas") ? PadView.money(v) : v + unit;
+                String value = t.equals("monedas") ? PadView.moneyExact(v) : v + unit;
                 boolean me = u.equals(player.getUUID());
                 // el valor, en su etiqueta a la derecha (oro con la moneda si son monedas; azul si no)
                 b.row(new PadView.Row(medal, (i + 1) + ". " + PadStats.nameOf(u) + (me ? " (tú)" : ""), me ? 0xC27A10 : 0x18265C,

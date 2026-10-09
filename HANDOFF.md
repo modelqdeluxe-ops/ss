@@ -62,7 +62,12 @@ Viendo la 1.3.27 dijo que el interior de las apps era «mediocre y simplista»: 
    1,8 MB, servidor hasta 1280x720, 12 fotos en memoria de vídeo. Las fotos ya publicadas antes siguen a 480x270.
 8. **Ventana centrada**: `PadPage.W = unitsW - 2·X` (mismo margen que el del logo a los dos lados); la portada sigue
    usando todo el ancho (`PadHomePage.gridW()`). Tarjetas desde 76 de ancho para que quepan 4 por fila.
-9. Simulador (`tools/pad/sim`) al día con todo esto (`texture`, `chip`, `tone`, `infobar`, `dock`, `title`…);
+9. Arreglos de la revisión: la foto se sube **un trozo por tick** (`PadCommunityClient.tick()`, llamado desde
+   `TFPadClient`; ~560 KB/s, para no atascar la conexión) y las fotos de Comunidad se **leen en segundo plano**
+   (sin tirones al desplazar); el servidor manda como mucho **12 MB de fotos cada 10 s** por jugador; las fotos no se
+   repiten en los bordes (clamp); en las cabeceras, el monedero, el ranking y el admin el dinero va **exacto**
+   (`PadView.moneyExact`), y abreviado (`money`, «¤250K») solo en tarjetas y filas.
+10. Simulador (`tools/pad/sim`) al día con todo esto (`texture`, `chip`, `tone`, `infobar`, `dock`, `title`…);
    texturas nuevas en `build_pad.py` (`pattern`, `glow`, `floor`, `coin_s`).
 
 ### Entrega anterior (9 de octubre de 2026): portada centrada, apps por dentro otra vez — TF Client 1.3.27

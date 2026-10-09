@@ -131,7 +131,7 @@ public final class PadAdminRewards {
             String edit = editing(player, "d:" + i);
             PadView.Builder b = PadView.of(APP_ID).selected("d:" + i).header("Día " + (i + 1) + " del calendario · " + d.items().size() + " objetos");
             b.row(new PadView.Row(new ItemStack(Items.GOLD_NUGGET), "Monedas", TEXT, List.of("Además de los objetos."), -1,
-                    d.coins() > 0 ? PadView.money(d.coins()) : "—", PadView.Btn.of("EDITAR", "editar:monedas", PadView.BLUE), null)
+                    d.coins() > 0 ? PadView.moneyExact(d.coins()) : "—", PadView.Btn.of("EDITAR", "editar:monedas", PadView.BLUE), null)
                     .selected(edit.equals("monedas")));
             itemsRow(b, player, "d:" + i, d.items(), "pd:" + i);
             for (int k = 0; k < d.items().size(); k++) b.cell(d.items().get(k).copy(), "", TEXT, "quitar:d:" + i + ":" + k, false);
@@ -154,7 +154,7 @@ public final class PadAdminRewards {
                         String.valueOf(r.hours()), PadView.Btn.of("EDITAR", "editar:horas", PadView.BLUE), null).selected(edit.equals("horas")));
             }
             b.row(new PadView.Row(new ItemStack(Items.GOLD_NUGGET), "Monedas", TEXT, List.of("Además de los objetos."), -1,
-                    r.coins() > 0 ? PadView.money(r.coins()) : "—", PadView.Btn.of("EDITAR", "editar:monedas", PadView.BLUE), null)
+                    r.coins() > 0 ? PadView.moneyExact(r.coins()) : "—", PadView.Btn.of("EDITAR", "editar:monedas", PadView.BLUE), null)
                     .selected(edit.equals("monedas")));
             b.row(new PadView.Row(r.iconStack(), "Icono", TEXT, List.of("El objeto que sale en su tarjeta."), -1, "",
                     PadView.Btn.of("MI MANO", "icono:" + r.id(), PadView.GRAY), null));

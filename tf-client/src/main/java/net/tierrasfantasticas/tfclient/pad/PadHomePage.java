@@ -90,7 +90,8 @@ final class PadHomePage extends PadPage {
     }
 
     private int cellW() {
-        return gridW() / cols();
+        // como mucho la ficha y un poco de aire: así la rejilla queda centrada y no llega al logo
+        return Math.min(gridW() / cols(), tile() + pad.big(10));
     }
 
     /** La portada usa todo el ancho del cristal (las apps van centradas en él y se apartan del logo si hace falta). */
