@@ -28,7 +28,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
-/** config/tfclient-jobs.json: oficios, acciones que pagan, misiones, niveles y recompensas. Se crea la primera vez. */
+/** config/tfclient/oficios.json: oficios, acciones que pagan, misiones, niveles y recompensas. Se crea la primera vez. */
 public final class TFJobsConfig {
     public enum Repeat { DAILY, ALWAYS, NEVER }
 
@@ -109,7 +109,7 @@ public final class TFJobsConfig {
     private TFJobsConfig() {}
 
     public static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-jobs.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("oficios.json", "tfclient-jobs.json");
     }
 
     /** Experiencia que hace falta para pasar del nivel dado al siguiente. */

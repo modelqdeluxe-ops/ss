@@ -33,7 +33,7 @@ public final class PadShop {
         @Override
         public PadView view(ServerPlayer player, String tab) {
             if (!TFShopConfig.enabled && !player.hasPermissions(3)) {
-                return PadView.of("tienda").empty("La tienda está cerrada ahora mismo.").build();
+                return PadView.of("tienda").empty("Tienda cerrada.").build();
             }
             List<Category> cats = TFShop.visible(player);
             String[] t = tab.split(":");
@@ -141,20 +141,22 @@ public final class PadShop {
             b.row(new PadView.Row(new ItemStack(c.icon()), plain(c.name()), c.color() == 0 ? TEXT : c.color() & 0xFFFFFF, lines, -1,
                     n + (n == 1 ? " objeto" : " objetos"), null, null).clickable("tab:c:" + i));
         }
-        if (cats.isEmpty()) b.empty("La tienda aún no tiene nada.");
+        if (cats.isEmpty()) b.empty("Tienda vacía.");
         return b.build();
     }
 
     private static PadView category(ServerPlayer player, int ci, Category c) {
-        PadView.Builder b = PadView.of("tienda").header(plain(c.name()) + " · pulsa un objeto.");
+        PadView.Builder b = PadView.of("tienda").header(plain(c.name())).cards();
         for (int i = 0; i < c.entries().size(); i++) {
             Entry e = c.entries().get(i);
             if (!player.hasPermissions(e.permission())) continue;
             boolean buy = e.buyable();
-            String label = buy ? price(e.buy()) : e.sellable() ? "+" + price(e.sell()) : "-";
-            b.cell(shown(e, e.amount()), label, buy ? GOLD : GREEN, "tab:i:" + ci + ":" + i + (buy ? ":b" : ":s"), false);
+            ItemStack shown = shown(e, e.amount());
+            String name = e.name().isBlank() ? shown.getHoverName().getString() : plain(e.name());
+            String sub = buy ? price(e.buy()) + " monedas" : e.sellable() ? "Vende +" + price(e.sell()) : "";
+            b.card(shown, name, buy ? 0xF6B628 : 0x40C850, sub, "tab:i:" + ci + ":" + i + (buy ? ":b" : ":s"), false);
         }
-        if (c.entries().isEmpty()) b.empty("Esta categoría está vacía.");
+        if (c.entries().isEmpty()) b.empty("Vacía.");
         b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
         return b.build();
     }
@@ -239,7 +241,7 @@ public final class PadShop {
                     .clickable("tab:i:" + v[0] + ":" + v[1] + ":s"));
         }
         if (found.isEmpty()) {
-            b.empty("No llevas nada que la tienda compre. Mira los precios en COMPRAR: lo que tiene precio de venta se puede vender aquí.");
+            b.empty("No llevas nada que la tienda compre.");
         } else {
             b.header("Puedes ganar " + TFEconomy.format(total) + " con lo que llevas.");
             if (TFShopConfig.sellAllButton) {

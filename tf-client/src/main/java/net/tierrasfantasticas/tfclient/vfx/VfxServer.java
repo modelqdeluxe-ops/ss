@@ -61,7 +61,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * crítico, golpeando mientras corres o agachado, al recibir daño o cada cierto tiempo en combate) y cada una tiene su
  * cooldown. El servidor hace el daño y los empujes; el efecto visual lo dibuja cada jugador (VfxClient).
  *
- * <p>config/tfclient-vfx.json (se crea solo): activado, efectos de kill también con mobs, skills, skills en PvP y un
+ * <p>config/tfclient/vfx.json (se crea solo): activado, efectos de kill también con mobs, skills, skills en PvP y un
  * multiplicador del daño de las skills. Los datos de los jugadores van en &lt;mundo&gt;/tfclient/vfx.json.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
@@ -120,7 +120,7 @@ public final class VfxServer {
     }
 
     private static Path configFile() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-vfx.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("vfx.json", "tfclient-vfx.json");
     }
 
     private static void loadConfig() {

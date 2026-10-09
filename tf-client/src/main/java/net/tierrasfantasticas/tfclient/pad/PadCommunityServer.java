@@ -180,12 +180,12 @@ public final class PadCommunityServer {
         }
         if (System.currentTimeMillis() - up.started > 120_000) {
             UPLOADS.remove(me);
-            fail(player, "La subida tardó demasiado. Vuelve a probar.");
+            fail(player, "La subida tardó demasiado.");
             return;
         }
         if (m.total() != up.total) {
             UPLOADS.remove(me);
-            fail(player, "La subida llegó mal. Vuelve a probar.");
+            fail(player, "La foto llegó dañada.");
             return;
         }
         if (up.parts[m.index()] == null) {
@@ -224,7 +224,7 @@ public final class PadCommunityServer {
         LAST_POST.put(me, System.currentTimeMillis());
         PadStats.add(player, PadStats.PHOTOS, 1);
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.5F, 1.5F);
-        PadCommunityNet.toPlayer(player, new PadCommunityNet.Result(true, "¡Foto publicada en Comunidad!"));
+        PadCommunityNet.toPlayer(player, new PadCommunityNet.Result(true, "Foto publicada."));
         TFClient.LOGGER.info("Comunidad: {} publicó la foto {}", player.getGameProfile().getName(), id);
     }
 
@@ -378,9 +378,9 @@ public final class PadCommunityServer {
                         dirty = true;
                         for (ServerPlayer s : server.getPlayerList().getPlayers()) {
                             if (s.hasPermissions(2)) {
-                                s.sendSystemMessage(Component.literal("[Comunidad] " + player.getGameProfile().getName() + " denunció la foto "
-                                        + m.id() + " de " + TFJson.str(p, "nombre", "?") + " (" + rep.size() + " denuncias). /tf web comunidad borrar "
-                                        + m.id()).withStyle(ChatFormatting.RED));
+                                s.sendSystemMessage(Component.literal("[Comunidad] " + player.getGameProfile().getName() + " denunció una foto de "
+                                        + TFJson.str(p, "nombre", "?") + " (" + rep.size() + " denuncias). Revísala en el pad de administrador: Comunidad.")
+                                        .withStyle(ChatFormatting.RED));
                             }
                         }
                     }
@@ -391,6 +391,36 @@ public final class PadCommunityServer {
             }
         }
         if (m.page() >= 0) sendFeed(player, m.tab(), m.page());
+    }
+
+    /** Una publicación para el pad de administrador. */
+    public record PostInfo(String id, String name, String caption, long time, int likes, int reports) {}
+
+    /** Las publicaciones (las denunciadas primero si reportedOnly, si no las más nuevas), como mucho max. */
+    public static java.util.List<PostInfo> adminPosts(boolean reportedOnly, int max) {
+        java.util.List<PostInfo> out = new java.util.ArrayList<>();
+        for (JsonElement e : posts()) {
+            JsonObject p = e.getAsJsonObject();
+            int r = set(p, "denuncias").size();
+            if (reportedOnly && r == 0) continue;
+            out.add(new PostInfo(TFJson.str(p, "id", ""), TFJson.str(p, "nombre", "?"), TFJson.str(p, "texto", ""),
+                    TFJson.num(p, "fecha", 0), set(p, "likes").size(), r));
+        }
+        out.sort(reportedOnly ? java.util.Comparator.comparingInt(PostInfo::reports).reversed()
+                : java.util.Comparator.comparingLong(PostInfo::time).reversed());
+        return out.size() > max ? out.subList(0, max) : out;
+    }
+
+    public static boolean adminDelete(String id) {
+        return remove(id);
+    }
+
+    /** Quita las denuncias de una foto (el staff la revisó y está bien). */
+    public static void adminClearReports(String id) {
+        JsonObject p = find(id);
+        if (p == null) return;
+        p.add("denuncias", new JsonArray());
+        dirty = true;
     }
 
     private static boolean remove(String id) {

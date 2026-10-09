@@ -125,17 +125,24 @@ public final class TFPadNet {
      * Datos del jugador para el pad. balance es -1 si la economía no deja ver el saldo; rank vacío si no tiene rango;
      * homes -1 si no se sabe.
      */
-    public record State(long balance, String currency, String rank, int rankColor, int homes) {
+    public record State(long balance, String currency, String rank, int rankColor, int homes, List<String> disabled) {
         static void write(State m, FriendlyByteBuf buf) {
             buf.writeLong(m.balance);
             buf.writeUtf(m.currency, 64);
             buf.writeUtf(m.rank, 64);
             buf.writeInt(m.rankColor);
             buf.writeInt(m.homes);
+            buf.writeVarInt(Math.min(64, m.disabled.size()));
+            for (int i = 0; i < Math.min(64, m.disabled.size()); i++) buf.writeUtf(m.disabled.get(i), 32);
         }
 
         static State read(FriendlyByteBuf buf) {
-            return new State(buf.readLong(), buf.readUtf(64), buf.readUtf(64), buf.readInt(), buf.readInt());
+            long balance = buf.readLong();
+            String currency = buf.readUtf(64), rank = buf.readUtf(64);
+            int color = buf.readInt(), homes = buf.readInt();
+            List<String> off = new java.util.ArrayList<>();
+            for (int i = buf.readVarInt(); i > 0; i--) off.add(buf.readUtf(32));
+            return new State(balance, currency, rank, color, homes, off);
         }
 
         static void handle(State m, Supplier<NetworkEvent.Context> ctx) {
@@ -227,7 +234,7 @@ public final class TFPadNet {
         TFRanks.Rank rank = TFRanks.full(TFRanks.of(player.getUUID()));
         State state = new State(balance.isPresent() ? balance.getAsLong() : -1, cut(TFServerConfig.currency()),
                 rank == null ? "" : cut(rank.name()), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
-                rank == null ? -1 : rank.homes());
+                rank == null ? -1 : rank.homes(), PadConfig.disabledApps());
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), state);
     }
 

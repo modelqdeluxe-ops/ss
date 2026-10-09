@@ -9,7 +9,7 @@ import java.util.Properties;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.tierrasfantasticas.tfclient.TFClient;
 
-/** Ajustes del pad (en el cliente): config/tfclient-pad.properties. */
+/** Ajustes del pad (en el cliente): config/tfclient/pad-cliente.properties. */
 final class PadSettings {
     static boolean sounds = true;
     static boolean hoverTick = true;
@@ -21,7 +21,7 @@ final class PadSettings {
     private PadSettings() {}
 
     private static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-pad.properties");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("pad-cliente.properties", "tfclient-pad.properties");
     }
 
     static void load() {

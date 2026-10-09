@@ -39,55 +39,55 @@
           "objeto": "minecraft:oak_log",
           "cantidad": 16,
           "comprar": 32,
-          "vender": 8
+          "vender": 0
         },
         {
           "objeto": "minecraft:spruce_log",
           "cantidad": 16,
           "comprar": 32,
-          "vender": 8
+          "vender": 0
         },
         {
           "objeto": "minecraft:birch_log",
           "cantidad": 16,
           "comprar": 32,
-          "vender": 8
+          "vender": 0
         },
         {
           "objeto": "minecraft:dark_oak_log",
           "cantidad": 16,
           "comprar": 40,
-          "vender": 10
+          "vender": 0
         },
         {
           "objeto": "minecraft:stone",
           "cantidad": 64,
           "comprar": 24,
-          "vender": 4
+          "vender": 0
         },
         {
           "objeto": "minecraft:cobblestone",
           "cantidad": 64,
           "comprar": 12,
-          "vender": 2
+          "vender": 0
         },
         {
           "objeto": "minecraft:deepslate",
           "cantidad": 64,
           "comprar": 32,
-          "vender": 6
+          "vender": 0
         },
         {
           "objeto": "minecraft:sand",
           "cantidad": 64,
           "comprar": 20,
-          "vender": 4
+          "vender": 0
         },
         {
           "objeto": "minecraft:gravel",
           "cantidad": 64,
           "comprar": 20,
-          "vender": 3
+          "vender": 0
         },
         {
           "objeto": "minecraft:glass",
@@ -111,13 +111,13 @@
           "objeto": "minecraft:dirt",
           "cantidad": 64,
           "comprar": 8,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:obsidian",
           "cantidad": 4,
           "comprar": 40,
-          "vender": 10
+          "vender": 0
         }
       ]
     },
@@ -135,31 +135,31 @@
           "objeto": "minecraft:coal",
           "cantidad": 1,
           "comprar": 4,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:copper_ingot",
           "cantidad": 1,
           "comprar": 6,
-          "vender": 2
+          "vender": 0
         },
         {
           "objeto": "minecraft:iron_ingot",
           "cantidad": 1,
           "comprar": 12,
-          "vender": 4
+          "vender": 0
         },
         {
           "objeto": "minecraft:gold_ingot",
           "cantidad": 1,
           "comprar": 20,
-          "vender": 6
+          "vender": 0
         },
         {
           "objeto": "minecraft:redstone",
           "cantidad": 1,
           "comprar": 3,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:lapis_lazuli",
@@ -171,19 +171,19 @@
           "objeto": "minecraft:quartz",
           "cantidad": 1,
           "comprar": 6,
-          "vender": 2
+          "vender": 0
         },
         {
           "objeto": "minecraft:amethyst_shard",
           "cantidad": 1,
           "comprar": 8,
-          "vender": 2
+          "vender": 0
         },
         {
           "objeto": "minecraft:emerald",
           "cantidad": 1,
           "comprar": 40,
-          "vender": 12
+          "vender": 0
         },
         {
           "objeto": "minecraft:diamond",
@@ -218,76 +218,64 @@
           "vender": 0
         },
         {
-          "objeto": "minecraft:wheat",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 1
-        },
-        {
           "objeto": "minecraft:carrot",
           "cantidad": 1,
           "comprar": 3,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:potato",
           "cantidad": 1,
           "comprar": 3,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:beetroot",
           "cantidad": 1,
           "comprar": 3,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:pumpkin",
           "cantidad": 1,
           "comprar": 12,
-          "vender": 3
+          "vender": 0
         },
         {
           "objeto": "minecraft:melon_slice",
           "cantidad": 1,
           "comprar": 2,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:sugar_cane",
           "cantidad": 1,
           "comprar": 4,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:bamboo",
           "cantidad": 4,
           "comprar": 2,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:cactus",
           "cantidad": 1,
           "comprar": 4,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:cocoa_beans",
           "cantidad": 1,
           "comprar": 4,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:nether_wart",
           "cantidad": 1,
           "comprar": 8,
-          "vender": 2
-        },
-        {
-          "objeto": "minecraft:egg",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 1
+          "vender": 0
         },
         {
           "objeto": "minecraft:bone_meal",
@@ -317,19 +305,19 @@
           "objeto": "minecraft:cooked_beef",
           "cantidad": 8,
           "comprar": 20,
-          "vender": 4
+          "vender": 0
         },
         {
           "objeto": "minecraft:cooked_porkchop",
           "cantidad": 8,
           "comprar": 20,
-          "vender": 4
+          "vender": 0
         },
         {
           "objeto": "minecraft:cooked_chicken",
           "cantidad": 8,
           "comprar": 16,
-          "vender": 3
+          "vender": 0
         },
         {
           "objeto": "minecraft:baked_potato",
@@ -341,7 +329,7 @@
           "objeto": "minecraft:apple",
           "cantidad": 4,
           "comprar": 12,
-          "vender": 2
+          "vender": 0
         },
         {
           "objeto": "minecraft:golden_carrot",
@@ -368,76 +356,34 @@
       "hueco": 31,
       "objetos": [
         {
-          "objeto": "minecraft:rotten_flesh",
-          "cantidad": 4,
-          "comprar": 0,
-          "vender": 1
-        },
-        {
-          "objeto": "minecraft:bone",
-          "cantidad": 2,
-          "comprar": 0,
-          "vender": 1
-        },
-        {
-          "objeto": "minecraft:string",
-          "cantidad": 2,
-          "comprar": 0,
-          "vender": 1
-        },
-        {
-          "objeto": "minecraft:spider_eye",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 2
-        },
-        {
           "objeto": "minecraft:gunpowder",
           "cantidad": 1,
           "comprar": 12,
-          "vender": 3
+          "vender": 0
         },
         {
           "objeto": "minecraft:ender_pearl",
           "cantidad": 1,
           "comprar": 40,
-          "vender": 12
+          "vender": 0
         },
         {
           "objeto": "minecraft:blaze_rod",
           "cantidad": 1,
           "comprar": 40,
-          "vender": 12
+          "vender": 0
         },
         {
           "objeto": "minecraft:slime_ball",
           "cantidad": 1,
           "comprar": 16,
-          "vender": 5
+          "vender": 0
         },
         {
           "objeto": "minecraft:leather",
           "cantidad": 1,
           "comprar": 10,
-          "vender": 3
-        },
-        {
-          "objeto": "minecraft:feather",
-          "cantidad": 2,
-          "comprar": 0,
-          "vender": 1
-        },
-        {
-          "objeto": "minecraft:ghast_tear",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 40
-        },
-        {
-          "objeto": "minecraft:phantom_membrane",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 15
+          "vender": 0
         }
       ]
     },
@@ -452,46 +398,10 @@
       "hueco": 33,
       "objetos": [
         {
-          "objeto": "minecraft:cod",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 2
-        },
-        {
-          "objeto": "minecraft:salmon",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 3
-        },
-        {
-          "objeto": "minecraft:tropical_fish",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 4
-        },
-        {
-          "objeto": "minecraft:pufferfish",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 5
-        },
-        {
           "objeto": "minecraft:ink_sac",
           "cantidad": 1,
           "comprar": 6,
-          "vender": 2
-        },
-        {
-          "objeto": "minecraft:nautilus_shell",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 60
-        },
-        {
-          "objeto": "minecraft:prismarine_shard",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 2
+          "vender": 0
         }
       ]
     },
@@ -540,12 +450,6 @@
           "cantidad": 1,
           "comprar": 30,
           "vender": 0
-        },
-        {
-          "objeto": "minecraft:shulker_shell",
-          "cantidad": 1,
-          "comprar": 0,
-          "vender": 120
         }
       ]
     }

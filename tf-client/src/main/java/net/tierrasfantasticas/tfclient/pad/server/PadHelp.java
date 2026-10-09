@@ -15,7 +15,7 @@ import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
- * Ayuda: la guía del servidor en pestañas (como la wiki). Se edita en config/tfclient-ayuda.json, que se crea con
+ * Ayuda: la guía del servidor en pestañas (como la wiki). Se edita en config/tfclient/ayuda.json, que se crea con
  * estas secciones la primera vez.
  */
 public final class PadHelp {
@@ -57,7 +57,7 @@ public final class PadHelp {
     }
 
     private static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-ayuda.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("ayuda.json", "tfclient-ayuda.json");
     }
 
     static void loadConfig() {
@@ -85,21 +85,21 @@ public final class PadHelp {
         JsonObject o = new JsonObject();
         JsonArray secs = new JsonArray();
         secs.add(section("empezar", "Empezar",
-                "Bienvenido", "Tierras Fantásticas es un mundo de supervivencia, aventura, fantasía y rol. Abre el pad con la C para todo lo del servidor.",
-                "Tus primeros pasos", "Reclama el Kit inicial en Kits, elige un oficio en Oficios y protege tu casa con una protección (Protección).",
-                "Ganar monedas", "Con los oficios, las misiones diarias y semanales, las cazas y vendiendo en la tienda o en el GTS."));
+                "Bienvenido", "Supervivencia, aventura, fantasía y rol. Todo el servidor está en el pad (tecla C).",
+                "Tus primeros pasos", "Reclama el kit inicial en Kits, elige un oficio en Oficios y protege tu casa en Protección.",
+                "Ganar monedas", "Oficios, misiones, cazas, la tienda y el GTS."));
         secs.add(section("normas", "Normas",
-                "Respeto", "Nada de insultos, acoso ni spam. Trata a los demás como quieres que te traten.",
-                "Juego limpio", "Nada de trucos, hacks ni aprovechar fallos. Si encuentras uno, avisa al staff.",
-                "Construcciones", "No rompas ni robes en lo que no es tuyo. Protege lo tuyo con una protección.",
-                "Comunidad", "Solo fotos del juego y para todos los públicos. Lo demás se borra."));
+                "Respeto", "Sin insultos, acoso ni spam.",
+                "Juego limpio", "Sin hacks ni bugs. Si encuentras uno, avisa al staff.",
+                "Construcciones", "No rompas ni robes lo que no es tuyo.",
+                "Comunidad", "Solo fotos del juego y aptas para todos."));
         secs.add(section("pad", "El pad",
-                "Apps", "Dos páginas de apps: pasa de una a otra con la rueda, las flechas o arrastrando. Arriba ves la hora, tus monedas y los ajustes.",
-                "Cámara y Comunidad", "Toma fotos con la Cámara: se guardan en tu ordenador. Publica las que quieras en Comunidad y dale like a las de los demás.",
-                "Viajes y Explorar", "Viaja al spawn, a tu cama o a los puntos del servidor. Explorar te lleva a un sitio nuevo al azar."));
+                "Apps", "Baja con la rueda o arrastrando. Arriba: hora, monedas y ajustes.",
+                "Cámara y Comunidad", "MODO FOTO y clic izquierdo para disparar. Publica en Comunidad.",
+                "Viajes y Explorar", "Spawn, tu cama, warps y puntos del servidor. Explorar: un sitio al azar."));
         secs.add(section("comandos", "Comandos",
-                "Para todos", "/tf jobs (oficios), /tf shop (tienda) y /tf claims (protecciones). Todo lo demás, en el pad.",
-                "Ayuda del staff", "Si algo no va, pregunta en el Discord o en el WhatsApp del servidor (pad → Comunidad)."));
+                "Para todos", "Ninguno: todo se hace desde el pad.",
+                "Ayuda del staff", "Discord o WhatsApp del servidor."));
         o.add("secciones", secs);
         return o;
     }

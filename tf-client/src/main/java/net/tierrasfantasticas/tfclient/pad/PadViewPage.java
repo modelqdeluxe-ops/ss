@@ -8,14 +8,18 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Una app que dibuja el servidor (PadView): pestañas arriba (siempre caben: si no, se estrechan), líneas de cabecera,
- * y dentro del panel la rejilla de objetos (casillas de 32x30 con su texto debajo) y las filas, todo con su barra de
+ * y dentro del panel la rejilla de objetos (casillas de 44x46: el objeto al doble y su texto debajo) y las filas, todo con su barra de
  * desplazamiento. Abajo, los botones o el campo para escribir. Cada botón, fila o casilla manda su acción al servidor,
  * que contesta con la vista nueva; las que empiezan por «§open:» abren otra app del pad.
  */
 final class PadViewPage extends PadPage {
     private static final int ROW_PAD = 3;
     private static final int SEP = 0xFFC8E4F8;
-    private static final int CELL_W = 32, CELL_H = 31;
+    private static final int CELL_W = 44, CELL_H = 46;
+    /** Tarjetas: objeto al doble, nombre y segunda línea. */
+    private static final int CARD_W = 96, CARD_H = 74;
+    /** Icono de las filas: el objeto al doble dentro de su recuadro. */
+    private static final int ICON_BOX = 36;
 
     private PadView view;
     private int scroll;
@@ -44,8 +48,8 @@ final class PadViewPage extends PadPage {
 
     @Override
     String title() {
-        return PadHomePage.APPS.stream().filter(a -> a.id().equals(app)).map(PadHomePage.App::name).findFirst()
-                .orElse(PadFont.upper(app));
+        PadHomePage.App a = PadHomePage.find(app);
+        return a != null ? a.name() : PadFont.upper(app);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -79,9 +83,11 @@ final class PadViewPage extends PadPage {
         listBottom = Y + H - (bottomBar ? 19 : 0);
         PadUi.panel(g, X, listTop, W, listBottom - listTop);
         int innerX = X + 3, innerW = W - 6 - 4;
-        int cols = Math.max(1, innerW / CELL_W);
+        boolean cards = view.cellStyle() == PadView.CARDS;
+        int cw = cards ? CARD_W : CELL_W, ch = cards ? CARD_H : CELL_H;
+        int cols = Math.max(1, innerW / cw);
         int gridRows = (view.cells().size() + cols - 1) / cols;
-        int gridH = gridRows * CELL_H + (gridRows > 0 ? 2 : 0);
+        int gridH = gridRows * ch + (gridRows > 0 ? 2 : 0);
         contentH = gridH;
         for (PadView.Row r : view.rows()) contentH += rowHeight(r, innerW);
         int visible = listBottom - listTop - 4;
@@ -90,10 +96,13 @@ final class PadViewPage extends PadPage {
         int ry = listTop + 2 - scroll;
         // rejilla, centrada
         if (gridRows > 0) {
-            int gx = X + (W - 4 - cols * CELL_W) / 2;
+            int gx = X + (W - 4 - cols * cw) / 2;
             for (int i = 0; i < view.cells().size(); i++) {
-                int cx = gx + (i % cols) * CELL_W, cy = ry + 1 + (i / cols) * CELL_H;
-                if (cy + CELL_H > listTop && cy < listBottom) drawCell(g, view.cells().get(i), cx, cy, mx, my);
+                int cx = gx + (i % cols) * cw, cy = ry + 1 + (i / cols) * ch;
+                if (cy + ch > listTop && cy < listBottom) {
+                    if (cards) drawCard(g, view.cells().get(i), cx, cy, mx, my);
+                    else drawCell(g, view.cells().get(i), cx, cy, mx, my);
+                }
             }
             ry += gridH;
         }
@@ -102,7 +111,7 @@ final class PadViewPage extends PadPage {
             if (ry + h > listTop && ry < listBottom) drawRow(g, r, innerX, ry, innerW, h, mx, my);
             ry += h;
         }
-        g.disableScissor();
+        pad.noScissor(g);
         if (view.rows().isEmpty() && view.cells().isEmpty()) {
             int lines = PadUi.lines(view.empty(), W - 30);
             PadUi.wrap(g, view.empty(), X + 15, (listTop + listBottom) / 2 - lines * 5, W - 30, PadUi.MUTED, 6);
@@ -183,11 +192,17 @@ final class PadViewPage extends PadPage {
         int n = 0;
         for (String line : r.lines()) n += Math.min(2, Math.max(1, PadUi.lines(line, textW)));
         int h = 4 + 10 + n * 10 + (r.progress() >= 0 ? 8 : 0) + ROW_PAD;
-        return Math.max(26, h);
+        return Math.max(r.icon().isEmpty() ? 26 : ICON_BOX + 6, h);
+    }
+
+    private int linesHeight(PadView.Row r, int textW) {
+        int n = 0;
+        for (String line : r.lines()) n += Math.min(2, Math.max(1, PadUi.lines(line, textW)));
+        return n * 10;
     }
 
     private int textWidth(PadView.Row r, int w) {
-        return w - (r.icon().isEmpty() ? 8 : 26) - buttonsWidth(r) - 4;
+        return w - (r.icon().isEmpty() ? 8 : ICON_BOX + 10) - buttonsWidth(r) - 4;
     }
 
     private int buttonsWidth(PadView.Row r) {
@@ -208,17 +223,51 @@ final class PadViewPage extends PadPage {
         PadUi.box(g, x + 1, y, CELL_W - 2, CELL_H - 1, c.selected() ? 0xFFC27A10 : hover && clickable ? 0xFF3496FA : 0xFFB8D4EE);
         PadUi.box(g, x + 2, y + 1, CELL_W - 4, CELL_H - 3, bg);
         if (!c.icon().isEmpty()) {
-            g.renderItem(c.icon(), x + 8, y + 3);
-            g.renderItemDecorations(PadUi.font(), c.icon(), x + 8, y + 3);
+            bigItem(g, c.icon(), x + 6, c.label().isEmpty() ? y + 6 : y + 3);
             if (hover) tooltip = c.icon();
         }
         if (!c.label().isEmpty()) {
-            String label = PadFont.fit(c.label(), CELL_W - 4);
-            PadFont.drawCentered(g, label, x + CELL_W / 2, y + 19, c.color() & 0xFFFFFF, false);
+            String label = PadFont.fit(c.label(), CELL_W - 6);
+            PadFont.drawCentered(g, label, x + CELL_W / 2, y + 36, c.color() & 0xFFFFFF, false);
         }
         if (clickable) {
             if (hover) pad.hover("§cell" + c.action());
             hits.add(new Hit(x + 1, y, CELL_W - 2, CELL_H - 1, 3, c.action(), 0));
+        }
+    }
+
+    /** Un objeto al doble de tamaño (nítido: cada píxel del objeto, dos de pantalla). */
+    private static void bigItem(GuiGraphics g, ItemStack stack, int x, int y) {
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(2, 2, 1);
+        g.renderItem(stack, 0, 0);
+        g.renderItemDecorations(PadUi.font(), stack, 0, 0);
+        g.pose().popPose();
+    }
+
+    private void drawCard(GuiGraphics g, PadView.Cell c, int x, int y, double mx, double my) {
+        boolean clickable = !c.action().isEmpty();
+        int w = CARD_W - 4, h = CARD_H - 4;
+        boolean hover = PadUi.inside(mx, my, x + 2, y, w, h) && inList(my);
+        int border = c.selected() ? 0xFFC27A10 : hover && clickable ? 0xFF3496FA : 0xFFB8D4EE;
+        PadUi.box(g, x + 2, y, w, h, border);
+        PadUi.box(g, x + 3, y + 1, w - 2, h - 2, c.selected() ? 0xFFFFF3C8 : hover && clickable ? 0xFFE4F4FF : 0xFFFFFFFF);
+        // franja de color arriba (el color de la tarjeta) y el objeto grande encima
+        g.fill(x + 4, y + 2, x + w, y + 4, 0xFF000000 | (c.color() & 0xFFFFFF));
+        if (!c.icon().isEmpty()) {
+            bigItem(g, c.icon(), x + 2 + (w - 32) / 2, y + 6);
+            if (hover) tooltip = c.icon();
+        }
+        String name = PadUi.fitEnd(c.label(), w - 8);
+        PadUi.text(g, name, x + 2 + (w - PadUi.font().width(name)) / 2, y + 42, PadUi.TEXT);
+        if (!c.sub().isEmpty()) {
+            String sub = PadUi.fitEnd(c.sub(), w - 8);
+            PadUi.text(g, sub, x + 2 + (w - PadUi.font().width(sub)) / 2, y + 54, 0xFFC27A10);
+        }
+        if (clickable) {
+            if (hover) pad.hover("§card" + c.action());
+            hits.add(new Hit(x + 2, y, w, h, 3, c.action(), 0));
         }
     }
 
@@ -249,21 +298,24 @@ final class PadViewPage extends PadPage {
         }
         int tx = x + 5;
         if (!r.icon().isEmpty()) {
-            int iy = y + (h - 17) / 2;
-            PadUi.box(g, x + 3, iy - 1, 20, 18, 0xFFB8D4EE);
-            PadUi.box(g, x + 4, iy, 18, 16, 0xFFFFFFFF);
-            g.renderItem(r.icon(), x + 5, iy);
-            g.renderItemDecorations(PadUi.font(), r.icon(), x + 5, iy);
-            if (PadUi.inside(mx, my, x + 4, iy, 18, 16) && inList(my)) tooltip = r.icon();
-            tx = x + 27;
+            int iy = y + (h - 1 - ICON_BOX) / 2;
+            PadUi.box(g, x + 4, iy, ICON_BOX, ICON_BOX, 0xFFB8D4EE);
+            PadUi.box(g, x + 5, iy + 1, ICON_BOX - 2, ICON_BOX - 2, 0xFFFFFFFF);
+            bigItem(g, r.icon(), x + 6, iy + 2);
+            if (PadUi.inside(mx, my, x + 4, iy, ICON_BOX, ICON_BOX) && inList(my)) tooltip = r.icon();
+            tx = x + ICON_BOX + 12;
         }
         int bw = buttonsWidth(r);
         int textW = textWidth(r, w);
         // texto a la derecha del título (precio, premio…): el título se recorta para que no lo pise
         int badgeW = r.badge().isEmpty() ? 0 : PadUi.font().width(r.badge()) + 6;
-        PadUi.text(g, PadUi.fitEnd(r.title(), textW - badgeW), tx, y + 4, 0xFF000000 | r.color());
-        if (badgeW > 0) PadUi.text(g, r.badge(), tx + textW - badgeW + 6, y + 4, 0xFFC27A10);
-        int ly = y + 14;
+        int ty0 = r.icon().isEmpty() ? y + 4 : y + Math.max(4, (h - 1 - (10 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0))) / 2);
+        PadUi.text(g, PadUi.fitEnd(r.title(), textW - badgeW), tx, ty0, 0xFF000000 | r.color());
+        if (badgeW > 0) PadUi.text(g, r.badge(), tx + textW - badgeW + 6, ty0, 0xFFC27A10);
+        // título y líneas centrados en vertical junto al icono
+        int textH = 10 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0);
+        int top = r.icon().isEmpty() ? y + 4 : y + Math.max(4, (h - 1 - textH) / 2);
+        int ly = top + 10;
         for (String line : r.lines()) ly += Math.max(1, PadUi.wrapEllipsis(g, line, tx, ly, textW, PadUi.MUTED, 2)) * 10;
         if (r.progress() >= 0) PadUi.progress(g, tx, ly + 1, Math.min(textW, 120), r.progress());
         int bx = x + w - bw;
@@ -359,6 +411,13 @@ final class PadViewPage extends PadPage {
     @Override
     boolean scroll(double mx, double my, double delta) {
         scroll -= (int) Math.signum(delta) * 18;
+        return true;
+    }
+
+    @Override
+    boolean drag(double mx, double my, double dy) {
+        if (!inList(my)) return false;
+        scroll -= (int) Math.round(dy);
         return true;
     }
 

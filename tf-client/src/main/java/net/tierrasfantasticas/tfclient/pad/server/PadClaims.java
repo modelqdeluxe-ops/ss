@@ -161,6 +161,16 @@ public final class PadClaims {
             String[] a = action.split(":", 3);
             Claim c = a.length > 1 ? claim(a[1]) : null;
             if (a[0].equals("volver")) return "";
+            if (a[0].equals("inv_si") || a[0].equals("inv_no")) {
+                String code = a.length > 1 ? a[1] : "";
+                if (a[0].equals("inv_si")) ClaimMenuHandler.acceptMerge(player, code);
+                else ClaimMenuHandler.rejectMerge(player, code);
+                return "";
+            }
+            if (a[0].equals("salirgrupo")) {
+                if (PadServer.confirm(player, "protecciones.salirgrupo")) ClaimMenuHandler.leaveMerge(player);
+                return "";
+            }
             if (!canManage(player, c)) return "";
             ClaimFlags f = c.getFlags();
             String arg = a.length > 2 ? a[2] : "";
@@ -232,7 +242,7 @@ public final class PadClaims {
                     ClaimGroup g = manager.getGroupOf(c);
                     if (g == null || !c.isGroupMother() || !PadServer.confirm(player, "proteccion.disolver")) return null;
                     manager.dissolveGroupBreaking(g.getGroupId());
-                    TFPadNet.notice(player, "Grupo disuelto. Las piedras que se pisaban volvieron a sus dueños.");
+                    TFPadNet.notice(player, "Grupo disuelto.");
                 }
                 case "anadir" -> addMember(player, c, text.trim());
                 case "quitar" -> {
@@ -333,7 +343,7 @@ public final class PadClaims {
         ServerLevel level = null;
         for (ServerLevel l : player.server.getAllLevels()) if (l.dimension().location().toString().equals(c.getWorld())) level = l;
         if (level == null) {
-            TFPadNet.notice(player, "No encuentro el mundo de esa zona.");
+            TFPadNet.notice(player, "Ese mundo no existe.");
             return;
         }
         ClaimTier tier = c.getTier();
@@ -359,7 +369,20 @@ public final class PadClaims {
         if (here != null && !here.isOwner(player.getUUID())) {
             b.header("Estás en la zona de " + here.getOwnerName() + (here.isMember(player.getUUID()) ? " (eres miembro)." : "."));
         } else {
-            b.header(mine.isEmpty() ? "" : "Tus zonas: " + mine.size() + (max > 0 ? " de " + max : "") + ". Pulsa una para administrarla.");
+            b.header(mine.isEmpty() ? "" : "Tus zonas: " + mine.size() + (max > 0 ? " de " + max : "") + ".");
+        }
+        // invitaciones a grupos de otros y el grupo en el que estás
+        for (ClaimMenuHandler.MergeInvite inv : ClaimMenuHandler.invitesFor(player.getUUID())) {
+            b.row(new PadView.Row(new ItemStack(Items.SLIME_BALL), "Invitación: «" + inv.groupName() + "»", GOLD,
+                    List.of(inv.inviterName() + " te invita a unir tus piedras a su grupo."), -1, "",
+                    PadView.Btn.of("ACEPTAR", "inv_si:" + inv.code(), PadView.GREEN), PadView.Btn.of("NO", "inv_no:" + inv.code(), PadView.RED)).selected(true));
+        }
+        ClaimGroup joined = manager.getGroupByRegistered(player.getUUID());
+        if (joined != null && !player.getUUID().equals(joined.getMotherOwnerId())) {
+            boolean sure = PadServer.confirming(player, "protecciones.salirgrupo");
+            b.row(new PadView.Row(new ItemStack(Items.SLIME_BALL), "Grupo «" + joined.getName() + "»", TEXT,
+                    List.of("Tus piedras dentro de su zona se unen a ella."), -1, "",
+                    PadView.Btn.of(sure ? "¿SEGURO?" : "SALIR", "salirgrupo", PadView.RED), null));
         }
         for (Claim c : mine) {
             List<String> lines = new ArrayList<>();
@@ -374,7 +397,7 @@ public final class PadClaims {
             b.row(new PadView.Row(icon(here), "Zona de " + here.getOwnerName(), GOLD, List.of("Staff: puedes administrarla."), -1, "AQUÍ", null, null)
                     .clickable("tab:z:" + here.getClaimId() + ":a"));
         }
-        b.empty("Aún no tienes zonas. Pon una piedra de protección en el suelo y lo de dentro queda protegido, hasta el cielo.");
+        b.empty("Sin zonas. Coloca una piedra de protección.");
         return b.build();
     }
 
@@ -432,7 +455,7 @@ public final class PadClaims {
             b.row(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), name, TEXT, List.of(online ? "Conectado" : "Desconectado"), -1, "",
                     PadView.Btn.of(sure ? "¿SEGURO?" : "QUITAR", "quitar:" + id + ":" + who, PadView.RED), null));
         }
-        b.empty("Aún no hay miembros. Escribe un nombre abajo y AÑADIR.");
+        b.empty("Sin miembros.");
         b.input("anadir:" + id, "NOMBRE DEL JUGADOR", 16, "AÑADIR");
     }
 
@@ -448,7 +471,7 @@ public final class PadClaims {
 
     private static void particles(PadView.Builder b, Claim c, String id) {
         ClaimFlags f = c.getFlags();
-        b.header("Partículas " + (f.showParticles ? "encendidas" : "apagadas") + " · densidad " + f.particleDensity + " · pulsa una.");
+        b.header("Partículas " + (f.showParticles ? "encendidas" : "apagadas") + " · densidad " + f.particleDensity + ".");
         for (String p : ParticleBorder.availableParticles()) {
             boolean sel = p.equals(f.borderParticle);
             b.cell(new ItemStack(ClaimParticleMenuHandler.iconFor(p)), ParticleBorder.particleLabel(p).toUpperCase(Locale.ROOT), sel ? GOLD : TEXT,

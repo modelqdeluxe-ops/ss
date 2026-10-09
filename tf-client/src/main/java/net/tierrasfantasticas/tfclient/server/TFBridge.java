@@ -729,7 +729,7 @@ public final class TFBridge {
     // --- Entregas ejecutadas, en disco ---
 
     private static Path executedFile() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-bridge-entregas.txt");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("puente-entregas.txt", "tfclient-bridge-entregas.txt");
     }
 
     private static void loadExecuted() throws IOException {

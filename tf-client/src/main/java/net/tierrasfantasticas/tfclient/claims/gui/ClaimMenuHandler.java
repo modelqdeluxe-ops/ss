@@ -121,7 +121,7 @@ extends ChestMenu {
         }
         this.chest.setItem(38, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.WRITABLE_BOOK), (Component)Component.literal((String)("Miembros (" + this.claim.getMembers().size() + ")")).withStyle(ChatFormatting.YELLOW)), this.buildMemberLore()));
         this.chest.setItem(40, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.NAME_TAG), (Component)Component.literal((String)"Quitar miembro").withStyle(ChatFormatting.RED)), List.of(Component.literal((String)"Pide nombre por chat").withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic para eliminar a un invitado").withStyle(ChatFormatting.GRAY))));
-        this.chest.setItem(42, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.PLAYER_HEAD), (Component)Component.literal((String)"A\u00f1adir miembro").withStyle(new ChatFormatting[]{ChatFormatting.GREEN, ChatFormatting.BOLD})), List.of(Component.literal((String)"Clic izq: elegir de una lista").withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic der: escribir el nombre por chat").withStyle(ChatFormatting.GRAY), Component.literal((String)"Tambi\u00e9n sirve /tf claims addmember <jugador>").withStyle(ChatFormatting.DARK_GRAY))));
+        this.chest.setItem(42, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.PLAYER_HEAD), (Component)Component.literal((String)"A\u00f1adir miembro").withStyle(new ChatFormatting[]{ChatFormatting.GREEN, ChatFormatting.BOLD})), List.of(Component.literal((String)"Clic izq: elegir de una lista").withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic der: escribir el nombre por chat").withStyle(ChatFormatting.GRAY))));
         this.chest.setItem(39, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.IRON_BARS), (Component)Component.literal((String)"Banear jugador").withStyle(new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.BOLD})), this.buildBanLore()));
         this.chest.setItem(41, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.TRIPWIRE_HOOK), (Component)Component.literal((String)"Desbanear jugador").withStyle(ChatFormatting.GREEN)), List.of(Component.literal((String)"Pide nombre por chat").withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic para quitar del baneo").withStyle(ChatFormatting.GRAY))));
         if (this.page > 0) {
@@ -863,7 +863,7 @@ extends ChestMenu {
     public static void requestAddMember(ServerPlayer serverplayer, Claim claim, int i) {
         pending.put(serverplayer.getUUID(), new PendingChat(PendingType.ADD_MEMBER, claim.getClaimId(), i));
         serverplayer.displayClientMessage((Component)Component.literal((String)"[Protecci\u00f3n] Escribe el nombre del jugador a a\u00f1adir (o 'cancelar'):").withStyle(ChatFormatting.YELLOW), false);
-        serverplayer.displayClientMessage((Component)Component.literal((String)"    No hace falta que est\u00e9 conectado. Alternativa: /tf claims addmember <jugador>").withStyle(ChatFormatting.DARK_GRAY), false);
+        serverplayer.displayClientMessage((Component)Component.literal((String)"    No hace falta que est\u00e9 conectado.").withStyle(ChatFormatting.DARK_GRAY), false);
     }
 
     public static void requestRemoveMember(ServerPlayer serverplayer, Claim claim, int i) {
@@ -1226,10 +1226,15 @@ extends ChestMenu {
     }
 
     private static void sendInvite(ServerPlayer serverplayer, String s, String s1, String s2) {
-        serverplayer.displayClientMessage((Component)Component.literal((String)("[Grupo] " + s + " te invita a unir tu proteccion al grupo \"" + s1 + "\".")).withStyle(ChatFormatting.AQUA), false);
-        MutableComponent mutablecomponent = Component.literal((String)" [\u2714 ACEPTAR] ").withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(Boolean.valueOf(true)).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tf claims merge accept " + s2)));
-        MutableComponent mutablecomponent1 = Component.literal((String)"[\u2718 RECHAZAR]").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withBold(Boolean.valueOf(true)).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tf claims merge reject " + s2)));
-        serverplayer.displayClientMessage((Component)Component.literal((String)"").append((Component)mutablecomponent).append((Component)mutablecomponent1), false);
+        serverplayer.displayClientMessage((Component)Component.literal((String)("[Grupo] " + s + " te invita a unir tu proteccion al grupo \"" + s1 + "\". Aceptala en el pad: Proteccion.")).withStyle(ChatFormatting.AQUA), false);
+        net.tierrasfantasticas.tfclient.pad.TFPadNet.notice(serverplayer, s + " te invita a su grupo «" + s1 + "». Abre Protección para aceptar.");
+    }
+
+    /** Las invitaciones a grupos que tiene este jugador (para el pad). */
+    public static java.util.List<MergeInvite> invitesFor(UUID uuid) {
+        java.util.List<MergeInvite> out = new ArrayList<>();
+        for (MergeInvite i : invites.values()) if (i.targetId().equals(uuid)) out.add(i);
+        return out;
     }
 
     public static void acceptMerge(ServerPlayer serverplayer, String s) {

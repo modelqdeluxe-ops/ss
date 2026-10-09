@@ -16,6 +16,8 @@ final class PadUi {
     static final int TEXT = 0xFF18265C;
     static final int MUTED = 0xFF4A6694;
     static final int PANEL = 0xFFE8F8FF;
+    static final java.text.DecimalFormat THOUSANDS = new java.text.DecimalFormat("#,##0",
+            java.text.DecimalFormatSymbols.getInstance(java.util.Locale.forLanguageTag("es-ES")));
 
     /** Colores de botón: cara, luz, sombra (por estilo de PadView). */
     private static final int[][] BTN = {

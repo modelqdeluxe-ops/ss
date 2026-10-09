@@ -3,12 +3,12 @@ package net.tierrasfantasticas.tfclient.pad;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * Una página del pad (la portada o una app). Todo en «píxeles de pad»: la zona de contenido va de
- * (X, Y) a (X + W, Y + H), justo debajo de la barra de arriba.
+ * Una página del pad (la portada o una app). Todo en «unidades de pantalla» del cristal (las pone TFPadScreen según
+ * el tamaño de la ventana): la zona de la página va de (X, Y) a (X + W, Y + H), bajo la barra de arriba; el cristal
+ * entero mide SW x SH.
  */
 abstract class PadPage {
-    /** Empieza en y=84: más arriba, a la izquierda, el emblema TF del marco se mete en la pantalla. */
-    static final int X = 60, Y = 84, W = 272, H = 110;
+    static int X = 12, Y = 22, W = 270, H = 106, SW = 288, SH = 132;
 
     final TFPadScreen pad;
     final String app;
@@ -31,6 +31,11 @@ abstract class PadPage {
     }
 
     boolean scroll(double mx, double my, double delta) {
+        return false;
+    }
+
+    /** Arrastrar con el ratón (dy en unidades): para desplazar listas como en un móvil. */
+    boolean drag(double mx, double my, double dy) {
         return false;
     }
 

@@ -22,8 +22,15 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * Comunidad, con un texto), BORRAR, CARPETA y MODO FOTO (para hacer una nueva).
  */
 final class PadCameraPage extends PadPage {
-    /** La foto: 16:9 a la izquierda, con hueco debajo para MODO FOTO (nunca se pisan). */
-    private static final int PW = 144, PH = 81;
+    /** La foto: 16:9 a la izquierda, lo más grande que quepa dejando sitio debajo para MODO FOTO (nunca se pisan). */
+    private int pw() {
+        int byHeight = (H - 30) * 16 / 9;
+        return Math.max(128, Math.min((W - 24) * 3 / 5, byHeight)) / 16 * 16;
+    }
+
+    private int ph() {
+        return pw() * 9 / 16;
+    }
 
     private record Tex(ResourceLocation loc) {}
 
@@ -37,6 +44,8 @@ final class PadCameraPage extends PadPage {
     /** Fotos que no se pudieron abrir (no se reintentan en cada fotograma). */
     private final java.util.Set<Path> broken = new java.util.HashSet<>();
     private final java.util.Set<Path> decoding = new java.util.HashSet<>();
+    /** Fotos que aún se están guardando: se vuelve a intentar abrirlas desde este momento. */
+    private final java.util.Map<Path, Long> retryAt = new java.util.HashMap<>();
     private long lastScan;
     private boolean closed;
     private final List<int[]> buttons = new ArrayList<>();
@@ -56,6 +65,10 @@ final class PadCameraPage extends PadPage {
     private void scan() {
         Path keep = photos.isEmpty() ? null : photos.get(Math.min(index, photos.size() - 1));
         photos = PadCamera.photos();
+        // la recién hecha sale ya (aunque el archivo aún se esté guardando): su vista previa está en memoria
+        if (PadCamera.lastPhoto != null && !photos.contains(PadCamera.lastPhoto) && System.currentTimeMillis() - PadCamera.flashAt < 15000) {
+            photos.add(0, PadCamera.lastPhoto);
+        }
         lastScan = System.currentTimeMillis();
         if (keep != null) select(keep);
         index = Math.max(0, Math.min(index, photos.size() - 1));
@@ -81,6 +94,16 @@ final class PadCameraPage extends PadPage {
     private ResourceLocation texture(Path p) {
         Tex t = textures.get(p);
         if (t != null) return t.loc;
+        // la recién hecha: su vista previa ya está en memoria
+        if (p.equals(PadCamera.lastPhoto) && PadCamera.preview != null) {
+            ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "fotos/" + Integer.toHexString(p.toString().hashCode()));
+            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(PadCamera.preview));
+            PadCamera.preview = null;
+            textures.put(p, new Tex(loc));
+            return loc;
+        }
+        Long retry = retryAt.get(p);
+        if (retry != null && System.currentTimeMillis() < retry) return null;
         if (closed || broken.contains(p) || !decoding.add(p)) return null;
         Util.backgroundExecutor().execute(() -> {
             NativeImage small = null;
@@ -101,9 +124,18 @@ final class PadCameraPage extends PadPage {
             Minecraft.getInstance().execute(() -> {
                 decoding.remove(p);
                 if (done == null) {
-                    broken.add(p);
+                    // si se acaba de hacer, puede que aún se esté guardando: otro intento en medio segundo
+                    long age = Long.MAX_VALUE;
+                    try {
+                        age = System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis();
+                    } catch (Exception ignored) {
+                        // sin fecha: rota
+                    }
+                    if (age < 8000) retryAt.put(p, System.currentTimeMillis() + 500);
+                    else broken.add(p);
                     return;
                 }
+                retryAt.remove(p);
                 if (closed) {
                     done.close();
                     return;
@@ -126,11 +158,12 @@ final class PadCameraPage extends PadPage {
         actions.clear();
         PadCommunityClient.checkUpload();
         PadUi.panel(g, X, Y, W, H);
+        int PW = pw(), PH = ph();
         int px = X + 6, py = Y + 5;
         PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.NAVY);
         g.fill(px, py, px + PW, py + PH, 0xFF1A2440);
         if (photos.isEmpty()) {
-            PadUi.wrap(g, "Aún no tienes fotos. Pulsa MODO FOTO, busca un buen sitio y dispara con la C.", px + 8, py + 22, PW - 16, 0xFFE0ECFF, 4);
+            PadUi.wrap(g, "Sin fotos. MODO FOTO y clic izquierdo.", px + 10, py + PH / 2 - 10, PW - 20, 0xFFE0ECFF, 3);
         } else {
             Path p = photos.get(index);
             ResourceLocation loc = texture(p);
@@ -147,7 +180,7 @@ final class PadCameraPage extends PadPage {
             }
         }
         // abajo: MODO FOTO bajo la foto, o el campo del texto a lo ancho
-        int by = Y + H - 17;
+        int by = py + PH + 6;
         int cx = px + PW + 8, cw = X + W - 6 - cx;
         if (captioning) {
             int sendW = PadUi.buttonWidth("ENVIAR");
@@ -180,7 +213,7 @@ final class PadCameraPage extends PadPage {
                 int n = PadUi.wrap(g, status, cx, py + 26, cw, PadUi.TEXT, 2);
                 PadUi.progress(g, cx, py + 28 + n * 10, cw, PadCommunityClient.uploadProgress);
             } else if (captioning) {
-                PadUi.wrap(g, "Se verá en Comunidad. Escribe un texto si quieres y pulsa ENVIAR.", cx, py + 26, cw, PadUi.MUTED, 5);
+                PadUi.wrap(g, "Texto (opcional)", cx, py + 26, cw, PadUi.MUTED, 5);
             } else {
                 button(g, cx, py + 26, cw, "PUBLICAR", PadView.GOLD, mx, my, () -> {
                     captioning = true;
@@ -190,7 +223,7 @@ final class PadCameraPage extends PadPage {
                 button(g, cx, py + 45, cw, sure ? "¿SEGURO?" : "BORRAR", PadView.RED, mx, my, this::delete);
             }
         } else {
-            PadUi.wrap(g, "Tus fotos se guardan en tu ordenador. Desde aquí las publicas en Comunidad.", cx, py + 1, cw, PadUi.MUTED, 6);
+            PadUi.wrap(g, "Pulsa una foto para publicarla.", cx, py + 1, cw, PadUi.MUTED, 6);
         }
     }
 

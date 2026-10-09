@@ -70,7 +70,7 @@ public final class ClaimConfig {
 
     public void load(MinecraftServer minecraftserver) {
         if (minecraftserver != null) {
-            this.file = minecraftserver.getWorldPath(LevelResource.ROOT).resolve(FILE);
+            this.file = net.tierrasfantasticas.tfclient.util.TFConfigDir.fileFrom("protecciones.json", minecraftserver.getWorldPath(LevelResource.ROOT).resolve(FILE));
             this.reload();
         }
     }

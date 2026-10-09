@@ -77,6 +77,11 @@ class JsonStore implements PadServer.Store {
         return e != null && e.isJsonObject() ? e.getAsJsonObject() : null;
     }
 
+    static String str(JsonObject o, String key) {
+        JsonElement e = o.get(key);
+        return e != null && e.isJsonPrimitive() ? e.getAsString() : "";
+    }
+
     static long num(JsonObject o, String key) {
         return TFJson.num(o, key, 0);
     }

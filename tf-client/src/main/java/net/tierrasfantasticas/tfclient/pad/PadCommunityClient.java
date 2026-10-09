@@ -245,13 +245,13 @@ final class PadCommunityClient {
     static void checkUpload() {
         if (uploadStatus != null && uploadSentAt > 0 && System.currentTimeMillis() - uploadSentAt > 30_000) {
             uploadSentAt = 0;
-            result(new PadCommunityNet.Result(false, "El servidor no contestó. Vuelve a probar en un momento."));
+            result(new PadCommunityNet.Result(false, "Sin respuesta del servidor."));
         }
     }
 
     private static void send(byte[] png, String caption) {
         if (png.length > PadCommunityNet.MAX_PHOTO) {
-            result(new PadCommunityNet.Result(false, "La foto es demasiado grande para publicarla."));
+            result(new PadCommunityNet.Result(false, "Foto demasiado grande."));
             return;
         }
         if (Minecraft.getInstance().getConnection() == null) {

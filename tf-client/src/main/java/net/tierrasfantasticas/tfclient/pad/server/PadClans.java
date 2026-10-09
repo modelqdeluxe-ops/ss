@@ -175,7 +175,7 @@ public final class PadClans {
                 b.footer(PadView.Btn.of("CANCELAR", "cancelar", PadView.RED));
                 return b.build();
             }
-            b.header("No estás en ningún clan. Funda el tuyo o acepta una invitación.");
+            b.header("Sin clan.");
             for (String cid : INVITES.getOrDefault(me, Set.of())) {
                 JsonObject c = clan(cid);
                 if (c == null) continue;
@@ -191,7 +191,7 @@ public final class PadClans {
                         0x18265C, List.of(members(c).size() + " miembros · líder " + PadStats.nameOf(UUID.fromString(TFJson.str(c, "lider", new UUID(0, 0).toString())))),
                         -1, "", null, null));
             }
-            b.empty("Aún no hay clanes. ¡Funda el primero!");
+            b.empty("No hay clanes.");
             b.input("crear", "Nombre de tu clan (3 a 20 letras)", 20, "FUNDAR");
             return b.build();
         }
@@ -394,7 +394,7 @@ public final class PadClans {
                         }
                         if (TFJson.str(e.getAsJsonObject(), "nombre", "").equalsIgnoreCase(name)) {
                             CREATING.remove(me);
-                            TFPadNet.notice(player, "Alguien acaba de fundar un clan con ese nombre. Elige otro.");
+                            TFPadNet.notice(player, "Ya hay un clan con ese nombre.");
                             return null;
                         }
                     }
@@ -414,7 +414,7 @@ public final class PadClans {
                     refreshName(me);
                     PadStats.add(player, PadStats.CLAN_FOUNDED, 1);
                     player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.0F);
-                    TFPadNet.notice(player, "¡Fundaste " + name + " [" + tag + "]! Invita a tus amigos desde aquí.");
+                    TFPadNet.notice(player, "Clan " + name + " [" + tag + "] fundado.");
                 }
                 case "unirse" -> {
                     String cid = action.substring(7);
@@ -430,7 +430,7 @@ public final class PadClans {
                     join(me, cid);
                     INVITES.remove(me);
                     refreshName(me);
-                    tellClan(c, player.getGameProfile().getName() + " se unió al clan. ¡Bienvenido!");
+                    tellClan(c, player.getGameProfile().getName() + " se unió al clan.");
                 }
                 case "rechazar" -> {
                     Set<String> inv = INVITES.get(me);

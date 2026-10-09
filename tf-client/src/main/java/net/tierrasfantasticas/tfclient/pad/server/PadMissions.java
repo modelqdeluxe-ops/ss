@@ -40,7 +40,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * Misiones (3 diarias y 3 semanales por jugador) y Cazas (4 objetivos para todo el servidor que cambian cada 12 h).
  * Cuentan lo mismo que los oficios (romper, cosechar, matar, pescar, fabricar, fundir, preparar, colocar, criar…) y con
  * sus mismas reglas: no cuentan los bloques que puso el jugador ni los monstruos de spawner, ni en creativo.
- * Se configuran en config/tfclient-misiones.json (se crea con estas listas la primera vez).
+ * Se configuran en config/tfclient/misiones.json (se crea con estas listas la primera vez).
  */
 public final class PadMissions {
     /** Una misión de la lista: qué hay que hacer, cuántas veces, cuánto paga y su icono. */
@@ -132,7 +132,7 @@ public final class PadMissions {
             st[0] = Math.min(d.amount, st[0] + amount);
             STORE_IMPL.put(slot, d.id, st);
             if (st[0] >= d.amount) {
-                String what = kind.equals("c") ? "¡Caza completada!" : "¡Misión completada!";
+                String what = kind.equals("c") ? "Caza completada" : "Misión completada";
                 player.displayClientMessage(Component.literal(what + " ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
                         .append(Component.literal(d.name + " — reclama tus " + TFEconomy.format(d.coins) + " en el pad (C)")
                                 .withStyle(ChatFormatting.YELLOW)), true);
@@ -147,7 +147,7 @@ public final class PadMissions {
         if (st[0] < d.amount || st[1] != 0) return false;
         // primero se paga: si la economía falla, la recompensa sigue pendiente
         if (d.coins > 0 && !TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), d.coins)) {
-            TFPadNet.notice(player, "No se pudo pagar la recompensa. Inténtalo en un rato.");
+            TFPadNet.notice(player, "Error al pagar la recompensa.");
             return false;
         }
         st[1] = 1;
@@ -216,7 +216,7 @@ public final class PadMissions {
             PadView.Builder b = PadView.of("misiones").tab("diarias", "DIARIAS").tab("semanales", "SEMANALES")
                     .selected(week ? "semanales" : "diarias")
                     .header((week ? "Nuevas misiones en " : "Se renuevan en ") + until(next) + ".")
-                    .empty("No hay misiones configuradas.");
+                    .empty("Sin misiones.");
             String kind = week ? "s" : "d";
             for (Def d : defs) b.row(row(player, kind, d));
             if (claimable(player, kind, defs)) b.footer(PadView.Btn.of("RECLAMAR TODO", "todo:" + kind, PadView.GREEN));
@@ -245,7 +245,7 @@ public final class PadMissions {
             long next = (period() + 1) * 12L * 3600 * 1000;
             ZonedDateTime at = java.time.Instant.ofEpochMilli(next).atZone(ZoneId.systemDefault());
             PadView.Builder b = PadView.of("cazas").header("Las mismas para todo el servidor. Nuevas cazas en " + until(at) + ".")
-                    .empty("No hay cazas configuradas.");
+                    .empty("Sin cazas.");
             for (Def d : defs) b.row(row(player, "c", d));
             if (claimable(player, "c", defs)) b.footer(PadView.Btn.of("RECLAMAR TODO", "todo:c", PadView.GREEN));
             return b.build();
@@ -313,7 +313,7 @@ public final class PadMissions {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static Path configFile() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-misiones.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("misiones.json", "tfclient-misiones.json");
     }
 
     static void loadConfig() {

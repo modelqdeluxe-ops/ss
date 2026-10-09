@@ -108,9 +108,9 @@ public final class PadWardrobe {
             TFBridge.padWant(player.getUUID());
             List<Piece> owned = OWNED.get(player.getUUID());
             if (owned == null) {
-                return b.empty(TFBridge.connected() ? "Mirando en la web lo que tienes…" : "La web no responde ahora mismo. Vuelve a probar en un rato.").build();
+                return b.empty(TFBridge.connected() ? "Cargando…" : "Armario no disponible.").build();
             }
-            b.header("Solo cambia cómo te ven los demás.");
+            b.header("Solo estético.");
             int n = 0;
             for (Piece p : owned) {
                 if (!p.slot.equals(key)) continue;
@@ -168,16 +168,16 @@ public final class PadWardrobe {
             String[] eq = VfxServer.equipped(player.getUUID());
             PadView.Builder b = PadView.of("efectos").tab("", "AL MATAR").tab("skills", "SKILLS").selected(packs ? "skills" : "");
             if (!packs) {
-                b.header("Lo que se ve al derrotar a alguien. Gratis: elige uno.");
+                b.header("Efecto al matar. Gratis.");
                 for (VfxCatalog.Kill k : VfxCatalog.kills().values()) {
                     boolean on = k.id().equals(eq[0]);
                     b.row(new PadView.Row(new ItemStack(Items.WITHER_SKELETON_SKULL), k.name(), TEXT, List.of(), -1, on ? "EQUIPADO" : "",
                             on ? PadView.Btn.of("QUITAR", "quitar:kill", PadView.RED) : PadView.Btn.of("EQUIPAR", "kill:" + k.id(), PadView.GREEN), null)
                             .selected(on));
                 }
-                if (VfxCatalog.kills().isEmpty()) b.empty("Aún no hay efectos.");
+                if (VfxCatalog.kills().isEmpty()) b.empty("Sin efectos.");
             } else {
-                b.header("Habilidades que salen solas al pelear. Lleva un paquete.");
+                b.header("Skills de combate.");
                 for (VfxCatalog.Pack p : VfxCatalog.packs().values()) {
                     boolean on = p.id().equals(eq[1]);
                     List<String> names = new ArrayList<>();
@@ -186,7 +186,7 @@ public final class PadWardrobe {
                             on ? PadView.Btn.of("QUITAR", "quitar:pack", PadView.RED) : PadView.Btn.of("EQUIPAR", "pack:" + p.id(), PadView.GREEN), null)
                             .selected(on));
                 }
-                if (VfxCatalog.packs().isEmpty()) b.empty("Aún no hay paquetes de skills.");
+                if (VfxCatalog.packs().isEmpty()) b.empty("Sin paquetes.");
             }
             return b.build();
         }

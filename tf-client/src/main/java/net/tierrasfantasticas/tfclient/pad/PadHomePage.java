@@ -1,39 +1,40 @@
 package net.tierrasfantasticas.tfclient.pad;
 
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
-import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * La portada: 20 apps en dos páginas de 5x2 (Explorar va dentro de Viajes), fichas de 38 con su icono de 32 y el nombre debajo; los puntos de abajo
- * dicen en qué página estás. Se pasa de página con la rueda, las flechas, arrastrando o pulsando los puntos, y la
- * página entra deslizándose. Mismas posiciones que tools/pad/build_pad.py.
+ * La portada: las apps en una rejilla de fichas (icono de 32 y el nombre debajo) que baja con la rueda o arrastrando,
+ * como en un móvil. Las apps que el staff apaga en el pad de administrador no salen. Con el pad de administrador, la
+ * portada tiene las apps de configurar el servidor.
  */
 final class PadHomePage extends PadPage {
-    record App(String id, String name) {}
+    record App(String id, String name, String icon) {
+        App(String id, String name) {
+            this(id, name, id);
+        }
+    }
 
     static final List<App> APPS = List.of(
             new App("oficios", "OFICIOS"), new App("misiones", "MISIONES"), new App("cazas", "CAZAS"),
-            new App("tienda", "TIENDA"), new App("gts", "GTS"),
-            new App("monedero", "MONEDERO"), new App("clanes", "CLANES"), new App("viajes", "VIAJES"),
-            new App("hogares", "HOGARES"), new App("kits", "KITS"),
-            new App("comunidad", "COMUNIDAD"), new App("camara", "CÁMARA"), new App("jugadores", "JUGADORES"),
-            new App("ranking", "RANKING"), new App("titulos", "TÍTULOS"),
+            new App("tienda", "TIENDA"), new App("gts", "GTS"), new App("monedero", "MONEDERO"),
+            new App("viajes", "VIAJES"), new App("hogares", "HOGARES"), new App("kits", "KITS"),
+            new App("protecciones", "PROTECCIÓN"), new App("clanes", "CLANES"), new App("jugadores", "JUGADORES"),
+            new App("comunidad", "COMUNIDAD"), new App("camara", "CÁMARA"), new App("ranking", "RANKING"),
             new App("armario", "ARMARIO"), new App("efectos", "EFECTOS"), new App("rango", "MI RANGO"),
-            new App("protecciones", "PROTECCIÓN"), new App("ayuda", "AYUDA"));
-    static final int PER_PAGE = 10;
-    static final int PAGES = (APPS.size() + PER_PAGE - 1) / PER_PAGE;
-    private static final int[] COLS = {84, 140, 196, 252, 308};
-    private static final int[] ROWS = {82, 136};
-    private static final int TILE = 38;
-    private static final int SLIDE_MS = 220;
+            new App("ayuda", "AYUDA"));
 
-    /** Se recuerda la página entre aperturas del pad. */
-    private static int page;
-    private int from = -1;
-    private long slideAt;
-    private double dragX = Double.NaN;
+    /** Las del pad de administrador (las dibuja el servidor, solo para el staff). */
+    static final List<App> ADMIN_APPS = List.of(
+            new App("a_apps", "APPS", "admin"), new App("a_tienda", "TIENDA", "tienda"), new App("a_kits", "KITS", "kits"),
+            new App("a_viajes", "VIAJES", "viajes"), new App("a_gts", "GTS", "gts"), new App("a_comunidad", "COMUNIDAD", "comunidad"),
+            new App("a_oficios", "OFICIOS", "oficios"), new App("a_ajustes", "AJUSTES", "admin"));
+
+    private static final int TILE = 38, CELL_W = 64, CELL_H = 62;
+    /** Se recuerda dónde se quedó la rejilla entre aperturas del pad. */
+    private static int scroll;
+    private int contentH;
 
     PadHomePage(TFPadScreen pad) {
         super(pad, "home");
@@ -41,115 +42,102 @@ final class PadHomePage extends PadPage {
 
     @Override
     String title() {
-        return "TF PAD";
+        return pad.admin ? "PAD ADMIN" : "TF PAD";
     }
 
-    private void go(int to) {
-        to = Math.max(0, Math.min(PAGES - 1, to));
-        if (to == page) return;
-        from = page;
-        page = to;
-        slideAt = System.currentTimeMillis();
-        pad.sound("page", 0.5F);
+    List<App> apps() {
+        if (pad.admin) return ADMIN_APPS;
+        TFPadNet.State s = TFPadClient.state;
+        if (s == null || s.disabled().isEmpty()) return APPS;
+        List<App> out = new ArrayList<>();
+        for (App a : APPS) if (!s.disabled().contains(a.id)) out.add(a);
+        return out;
+    }
+
+    static App find(String id) {
+        for (App a : APPS) if (a.id.equals(id)) return a;
+        for (App a : ADMIN_APPS) if (a.id.equals(id)) return a;
+        return null;
+    }
+
+    private int cols() {
+        return Math.max(3, Math.min(8, W / CELL_W));
+    }
+
+    /** Esquina de la ficha i (antes del desplazamiento). */
+    private int[] at(int i) {
+        int cols = cols();
+        int gridW = cols * CELL_W;
+        int x0 = X + (W - gridW) / 2;
+        return new int[] {x0 + (i % cols) * CELL_W + (CELL_W - TILE) / 2, Y + 4 + (i / cols) * CELL_H};
     }
 
     @Override
     void render(GuiGraphics g, double mx, double my, float partial) {
-        float p = from < 0 ? 1 : Math.min(1F, (System.currentTimeMillis() - slideAt) / (float) SLIDE_MS);
-        float ease = 1 - (1 - p) * (1 - p) * (1 - p);
-        if (p >= 1) from = -1;
-        int dir = from < 0 ? 0 : (page > from ? 1 : -1);
-        int shift = Math.round((1 - ease) * 290) * dir;
-        pad.scissor(g, 56, 80, 280, 108);
-        if (from >= 0) drawPage(g, from, shift - 290 * dir, Double.NaN, Double.NaN);
-        drawPage(g, page, shift, mx, my);
-        g.disableScissor();
-        // puntos de página
-        // la página actual es una barrita dorada; las otras, un punto azul (centrados bajo la rejilla)
-        int total = (PAGES - 1) * 6 + 12 + (PAGES - 1) * 3;
-        int x = 196 - total / 2;
-        for (int i = 0; i < PAGES; i++) {
-            int w = i == page ? 12 : 6;
-            g.fill(x, 189, x + w, 194, PadUi.NAVY);
-            g.fill(x + 1, 190, x + w - 1, 193, i == page ? 0xFFF6B628 : 0xFF96CEF6);
-            x += w + 3;
-        }
-    }
-
-    private void drawPage(GuiGraphics g, int index, int dx, double mx, double my) {
-        for (int i = 0; i < PER_PAGE; i++) {
-            int n = index * PER_PAGE + i;
-            if (n >= APPS.size()) break;
-            App app = APPS.get(n);
-            int cx = COLS[i % 5] + dx, ty = ROWS[i / 5];
-            boolean hover = from < 0 && PadUi.inside(mx, my, cx - TILE / 2, ty, TILE, TILE);
+        List<App> apps = apps();
+        int rows = (apps.size() + cols() - 1) / cols();
+        contentH = rows * CELL_H + 4;
+        scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - H)));
+        pad.scissor(g, X, Y, W, H);
+        boolean inside = PadUi.inside(mx, my, X, Y, W, H);
+        for (int i = 0; i < apps.size(); i++) {
+            App app = apps.get(i);
+            int[] p = at(i);
+            int tx = p[0], ty = p[1] - scroll;
+            if (ty + CELL_H < Y || ty > Y + H) continue;
+            boolean hover = inside && PadUi.inside(mx, my, tx, ty, TILE, TILE);
             if (hover) pad.hover(app.id);
-            pad.blit(g, hover ? "tile_h" : "tile", cx - TILE / 2, ty + (hover ? -1 : 0));
-            pad.blit(g, "icon_" + app.id, cx - 16, ty + 3 + (hover ? -1 : 0));
-            PadFont.drawCentered(g, app.name, cx, ty + 41, 0xFFFFFF, true);
+            int lift = hover ? -1 : 0;
+            pad.blit(g, hover ? "tile_h" : "tile", tx, ty + lift);
+            pad.blit(g, "icon_" + app.icon, tx + 3, ty + 3 + lift);
+            PadFont.drawCentered(g, app.name, tx + TILE / 2, ty + 43, 0xFFFFFF, true);
         }
-    }
-
-    private App at(double mx, double my) {
-        for (int i = 0; i < PER_PAGE; i++) {
-            int n = page * PER_PAGE + i;
-            if (n >= APPS.size()) break;
-            if (PadUi.inside(mx, my, COLS[i % 5] - TILE / 2, ROWS[i / 5], TILE, TILE)) return APPS.get(n);
+        pad.noScissor(g);
+        if (contentH > H) {
+            int bx = X + W - 3, bh = H - 4;
+            g.fill(bx, Y + 2, bx + 2, Y + 2 + bh, 0x5518265C);
+            int th = Math.max(10, bh * H / contentH);
+            int ty = Y + 2 + (bh - th) * scroll / Math.max(1, contentH - H);
+            g.fill(bx, ty, bx + 2, ty + th, 0xFFF6B628);
         }
-        return null;
     }
 
     @Override
     boolean click(double mx, double my, int button) {
-        if (button != 0) return false;
-        int x = 196 - ((PAGES - 1) * 6 + 12 + (PAGES - 1) * 3) / 2;
-        for (int i = 0; i < PAGES; i++) {
-            int w = i == page ? 12 : 6;
-            if (PadUi.inside(mx, my, x - 1, 186, w + 2, 10)) {
-                go(i);
+        if (button != 0 || !PadUi.inside(mx, my, X, Y, W, H)) return false;
+        List<App> apps = apps();
+        for (int i = 0; i < apps.size(); i++) {
+            int[] p = at(i);
+            if (PadUi.inside(mx, my, p[0], p[1] - scroll, TILE, TILE)) {
+                pad.openApp(apps.get(i).id);
                 return true;
             }
-            x += w + 3;
         }
-        App app = at(mx, my);
-        if (app != null && from < 0) {
-            pad.openApp(app.id);
-            return true;
-        }
-        dragX = mx;
         return false;
-    }
-
-    /** Arrastrar a un lado pasa de página (como en un móvil). */
-    void released(double mx) {
-        if (!Double.isNaN(dragX)) {
-            double d = mx - dragX;
-            if (d < -40) go(page + 1);
-            else if (d > 40) go(page - 1);
-        }
-        dragX = Double.NaN;
     }
 
     @Override
     boolean scroll(double mx, double my, double delta) {
-        go(page + (delta < 0 ? 1 : -1));
+        scroll -= (int) Math.signum(delta) * 24;
+        return true;
+    }
+
+    @Override
+    boolean drag(double mx, double my, double dy) {
+        scroll -= (int) Math.round(dy);
         return true;
     }
 
     @Override
     boolean key(int key, int scan, int mods) {
-        if (key == 262) { // derecha
-            go(page + 1);
+        if (key == 264) { // abajo
+            scroll += 24;
             return true;
         }
-        if (key == 263) { // izquierda
-            go(page - 1);
+        if (key == 265) { // arriba
+            scroll -= 24;
             return true;
         }
         return false;
-    }
-
-    static ResourceLocation icon(String app) {
-        return new ResourceLocation(TFClient.MOD_ID, "textures/gui/pad/icon_" + app + ".png");
     }
 }

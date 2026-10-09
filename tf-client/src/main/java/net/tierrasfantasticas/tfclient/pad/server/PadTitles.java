@@ -34,6 +34,12 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class PadTitles {
+    /**
+     * Los títulos están apagados desde la 1.3.24 (decisión del dueño: delante del nombre va el prefijo del rango y no
+     * debe competir con nada). De esta clase queda lo que pone la etiqueta del clan junto al nombre.
+     */
+    static final boolean ENABLED = false;
+
     record Title(String id, String name, ChatFormatting color, String stat, long need, String how) {}
 
     static final List<Title> TITLES = List.of(
@@ -61,6 +67,7 @@ public final class PadTitles {
     }
 
     static Title equipped(UUID uuid) {
+        if (!ENABLED) return null;
         JsonObject p = STORE_IMPL.playerIfAny(uuid);
         String id = p == null ? "" : TFJson.str(p, "titulo", "");
         for (Title t : TITLES) if (t.id.equals(id) && unlocked(uuid, t)) return t;
@@ -74,6 +81,7 @@ public final class PadTitles {
 
     /** Avisa de los títulos nuevos (lo llama PadStats al sumar). */
     static void check(ServerPlayer player) {
+        if (!ENABLED) return;
         JsonObject p = STORE_IMPL.player(player.getUUID());
         Set<String> seen = new HashSet<>();
         if (p.has("vistos")) for (JsonElement e : p.getAsJsonArray("vistos")) seen.add(e.getAsString());

@@ -65,7 +65,7 @@ public final class TFEconomyCommands {
             ctx.getSource().sendFailure(Component.literal(switch (kind) {
                 case 1 -> name + " no tiene bastantes monedas.";
                 case 2 -> "«poner» solo funciona con las monedas del TF Client (economy.mode=tf).";
-                default -> "No se pudieron dar las monedas: revisa economy.* en config/tfclient-server.properties.";
+                default -> "No se pudieron dar las monedas: revisa economy.* en config/tfclient/servidor.properties.";
             }));
             return 0;
         }

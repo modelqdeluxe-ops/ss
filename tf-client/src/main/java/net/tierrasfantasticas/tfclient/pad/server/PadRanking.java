@@ -25,7 +25,7 @@ public final class PadRanking {
             PadView.Builder b = PadView.of("ranking").tab("misiones", "MISIONES").tab("cazas", "CAZAS").tab("likes", "LIKES")
                     .tab("exploraciones", "EXPLORAR");
             if (coins) b.tab("monedas", "MONEDAS");
-            b.selected(t).empty("Aún no hay nadie en este ranking. ¡Sé el primero!");
+            b.selected(t).empty("Sin datos.");
             List<Map.Entry<UUID, Long>> top;
             String unit;
             switch (t) {

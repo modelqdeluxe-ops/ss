@@ -40,7 +40,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * El GTS: el mercado entre jugadores del TF Pad. Un jugador publica lo que tiene en la mano a un precio (lo escribe en
- * el chat) y el objeto queda guardado hasta que otro lo compra, él lo retira o pasan {@link #DAYS} días; entonces vuelve
+ * el chat) y el objeto queda guardado hasta que otro lo compra, él lo retira o pasan los días de pad.json; entonces vuelve
  * a «Recoger». Al venderse, el vendedor cobra al momento (si la economía no deja pagarle desconectado, cobra al entrar).
  * <p>
  * No se publica lo que va ligado a su dueño (piezas de sets), lo comprado en la web (lleva TFOrder: un reembolso tiene
@@ -48,15 +48,21 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFMarket {
-    public static final int MAX_LISTINGS = 10;
-    public static final long DAYS = 7;
+    /** Cosas a la venta a la vez por jugador y días que duran (config/tfclient/pad.json). */
+    public static int maxListings() {
+        return (int) net.tierrasfantasticas.tfclient.pad.PadConfig.get("gts.maxPublicaciones");
+    }
+
+    public static long days() {
+        return net.tierrasfantasticas.tfclient.pad.PadConfig.get("gts.dias");
+    }
     public static final long MAX_PRICE = 1_000_000_000L;
     private static final long DAY_MS = 24L * 60 * 60 * 1000;
     private static final long PROMPT_MS = 60_000;
 
     public record Listing(String id, UUID seller, String sellerName, ItemStack item, long price, long created) {
         public long expiresAt() {
-            return created + DAYS * DAY_MS;
+            return created + days() * DAY_MS;
         }
     }
 
@@ -122,8 +128,8 @@ public final class TFMarket {
         ItemStack hand = player.getMainHandItem();
         String why = whyNot(hand);
         if (why != null) return why;
-        if (listingsOf(player.getUUID()).size() >= MAX_LISTINGS) {
-            return "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.";
+        if (listingsOf(player.getUUID()).size() >= maxListings()) {
+            return "Ya tienes " + maxListings() + " cosas a la venta. Retira alguna o espera a que se venda.";
         }
         net.tierrasfantasticas.tfclient.claims.gui.ClaimMenuHandler.clearPrompt(player.getUUID());
         prompts.put(player.getUUID(), new Prompt(hand.copy(), player.getInventory().selected, System.currentTimeMillis() + PROMPT_MS));
@@ -173,8 +179,8 @@ public final class TFMarket {
             tell(player, why, ChatFormatting.RED);
             return;
         }
-        if (listingsOf(player.getUUID()).size() >= MAX_LISTINGS) {
-            tell(player, "Ya tienes " + MAX_LISTINGS + " cosas a la venta.", ChatFormatting.RED);
+        if (listingsOf(player.getUUID()).size() >= maxListings()) {
+            tell(player, "Ya tienes " + maxListings() + " cosas a la venta.", ChatFormatting.RED);
             return;
         }
         ItemStack item = hand.copy();
@@ -184,7 +190,7 @@ public final class TFMarket {
         listings.add(0, l);
         save();
         log("publica", player.getGameProfile().getName(), l);
-        tell(player, "Publicado: " + describe(item) + " por " + TFEconomy.format(price) + ". Estará " + DAYS + " días en el GTS.", ChatFormatting.GREEN);
+        tell(player, "Publicado: " + describe(item) + " por " + TFEconomy.format(price) + ". Estará " + days() + " días en el GTS.", ChatFormatting.GREEN);
         player.playNotifySound(SoundEvents.VILLAGER_YES, SoundSource.MASTER, 0.5F, 1.0F);
         TFMarketMenu.openMine(player);
     }
@@ -200,8 +206,8 @@ public final class TFMarket {
         if (snapshot != null && !ItemStack.matches(stack, snapshot)) return "Ese objeto ya no está donde estaba. Vuelve a elegirlo.";
         String why = whyNot(stack);
         if (why != null) return why.equals("No tienes nada en la mano.") ? "Elige qué vender." : why;
-        if (listingsOf(player.getUUID()).size() >= MAX_LISTINGS) {
-            return "Ya tienes " + MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.";
+        if (listingsOf(player.getUUID()).size() >= maxListings()) {
+            return "Ya tienes " + maxListings() + " cosas a la venta. Retira alguna o espera a que se venda.";
         }
         ItemStack item = stack.copy();
         player.getInventory().items.set(slot, ItemStack.EMPTY);
@@ -212,7 +218,7 @@ public final class TFMarket {
         listings.add(0, l);
         save();
         log("publica", player.getGameProfile().getName(), l);
-        tell(player, "Publicado: " + describe(item) + " por " + TFEconomy.format(price) + ". Estará " + DAYS + " días en el GTS.", ChatFormatting.GREEN);
+        tell(player, "Publicado: " + describe(item) + " por " + TFEconomy.format(price) + ". Estará " + days() + " días en el GTS.", ChatFormatting.GREEN);
         player.playNotifySound(SoundEvents.VILLAGER_YES, SoundSource.MASTER, 0.5F, 1.0F);
         return null;
     }
@@ -276,6 +282,19 @@ public final class TFMarket {
         return true;
     }
 
+    /** El staff quita una publicación: el objeto vuelve a «Recoger» de su dueño. */
+    public static boolean adminRemove(String id) {
+        Listing l = find(id);
+        if (l == null) return false;
+        listings.remove(l);
+        returns.computeIfAbsent(l.seller, k -> new ArrayList<>()).add(l.item);
+        save();
+        log("staff retira", l.sellerName, l);
+        ServerPlayer p = server == null ? null : server.getPlayerList().getPlayer(l.seller);
+        if (p != null) tell(p, "El staff retiró tu " + describe(l.item) + " del GTS: recógelo en el GTS.", ChatFormatting.YELLOW);
+        return true;
+    }
+
     /** Retira una publicación propia y devuelve el objeto. */
     public static boolean withdraw(ServerPlayer player, String id) {
         Listing l = find(id);
@@ -311,7 +330,7 @@ public final class TFMarket {
             dirty = true;
             log("caduca", l.sellerName, l);
             ServerPlayer p = server.getPlayerList().getPlayer(l.seller);
-            if (p != null) tell(p, "Tu " + describe(l.item) + " no se vendió en " + DAYS + " días: recógelo en el GTS.", ChatFormatting.YELLOW);
+            if (p != null) tell(p, "Tu " + describe(l.item) + " no se vendió en " + days() + " días: recógelo en el GTS.", ChatFormatting.YELLOW);
         }
     }
 

@@ -127,7 +127,7 @@ public final class TFMarketMenu extends ChestMenu {
             }
         });
         int mine = TFMarket.listingsOf(player.getUUID()).size();
-        set(46, TFIcon.of(Items.CHEST).name("Lo que vendes (" + mine + "/" + TFMarket.MAX_LISTINGS + ")", ChatFormatting.GOLD)
+        set(46, TFIcon.of(Items.CHEST).name("Lo que vendes (" + mine + "/" + TFMarket.maxListings() + ")", ChatFormatting.GOLD)
                 .text("Mira tus publicaciones y retira las que quieras.").blank()
                 .line("Clic para verlas", ChatFormatting.YELLOW).build(), (pl, t, b) -> fillMine(pl));
         int waiting = TFMarket.returnsOf(player.getUUID()).size();
@@ -141,7 +141,7 @@ public final class TFMarketMenu extends ChestMenu {
                 .text("Compra y vende con otros jugadores usando tus " + TFServerConfig.currency() + ".")
                 .blank()
                 .text("Para vender: ten el objeto en la mano, pulsa «Vender lo de tu mano» y escribe el precio. Estará "
-                        + TFMarket.DAYS + " días; si nadie lo compra, vuelve a «Recoger».", ChatFormatting.GRAY)
+                        + TFMarket.days() + " días; si nadie lo compra, vuelve a «Recoger».", ChatFormatting.GRAY)
                 .blank()
                 .text("Cobras al momento cuando alguien compra lo tuyo, aunque no estés conectado.", ChatFormatting.GREEN)
                 .blank()

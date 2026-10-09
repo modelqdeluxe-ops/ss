@@ -35,7 +35,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Ruleta con las monedas del servidor. Los premios, sus probabilidades y el precio son los mismos que en la web (los
- * manda la web por el puente y se guardan en config/tfclient-ruleta.json por si arranca sin conexión).
+ * manda la web por el puente y se guardan en config/tfclient/ruleta.json por si arranca sin conexión).
  * Se gira desde la web («Girar con monedas»), que manda:
  * <pre>
  * /tf web ruleta girar &lt;jugador&gt; &lt;n&gt;     gira n veces cobrándole las monedas (staff, nivel 3)
@@ -57,7 +57,7 @@ public final class TFRoulette {
     private TFRoulette() {}
 
     private static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-ruleta.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("ruleta.json", "tfclient-ruleta.json");
     }
 
     @SubscribeEvent

@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **8 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
-`claude/amazing-ritchie-68hm6n`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
+Última actualización: **9 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
+`claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -9,11 +9,13 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **Estado al cierre (8 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
-> **TF Client 1.3.23** (la siguiente es **1.3.24**). Lo último que pidió el dueño y quedó hecho: **todo dentro del TF
-> Pad** (Oficios, Tienda, GTS, Protección, Hogares, Armario, Efectos, Monedero y Mi rango son apps nativas, sin cofres ni
-> chat), sonidos suaves sin campana, Cámara/Comunidad arregladas, contorno del marco limpio y auditoría de píxeles.
-> Ver la entrega 1.3.23. Regla nueva: **todo lo del jugador se hace desde el pad**; nada de abrir otras ventanas.
+> **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
+> **TF Client 1.3.24** (la siguiente es **1.3.25**). Lo último que pidió el dueño y quedó hecho: pad **más grande y
+> nítido** (contenido a doble resolución), cristal sin líneas azules, título centrado, **sin Títulos**, interfaz con
+> **tarjetas** y objetos al doble, textos cortos (nada de relleno), **pad de administrador** (objeto físico) que configura
+> todo el pad, toda la config en **`config/tfclient/`**, regalos en Jugadores, warps en Viajes, kits por tipo, tienda
+> que solo compra lo que el staff pone, Comunidad en lista vertical y foto con **clic izquierdo**. Ver la entrega 1.3.24.
+> Reglas: **todo lo del jugador se hace desde el pad**; **sin `/tf claims`** (las piedras se dan como kit).
 >
 > **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
 > inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
@@ -27,7 +29,60 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (8 de octubre de 2026): todo dentro del TF Pad, sonidos suaves y auditoría de píxeles — TF Client 1.3.23
+### Última entrega (9 de octubre de 2026): pad grande, pad de administrador y config en carpeta — TF Client 1.3.24
+Pidió: tableta más grande, quitar las líneas azules del cristal que se solapaban con los recuadros, **nada de textos
+genéricos** («la web no ha mandado…»), centrar «TF PAD», **quitar los títulos** (van en el sitio del prefijo de rango;
+el del clan sí se queda), menús más visuales y con scroll **vertical**, tienda que solo compra lo que pongan ellos (nada
+de granjas), Viajes con **todos los warps** del servidor, kits inicial (1 vez) / diario / otros, un **pad de
+administrador físico** que configure todo el pad, la config del mod **en una carpeta**, sin `/tf claims` (se dan piedras
+por kit), **regalos** dentro de Jugadores. Además: la foto no salía en la vista previa, Comunidad «se juntaba tipo
+mosaico», el corazón estaba mal dibujado y la foto debía tomarse con **clic izquierdo**, no con C.
+Hecho:
+- **Pantalla** (`TFPadScreen`): el marco a escala entera (`ps`, lo máximo que cabe al 97 %) y el contenido en «unidades»
+  a `cs` = la mitad (a 1080p: marco ×4, contenido ×2 → 576×264 unidades, el doble de sitio que antes y nítido). Recorte
+  con `pad.scissor/noScissor` en píxeles reales. `PadPage.X/Y/W/H/SW/SH` ya no son constantes: se calculan en `init()`
+  (X = a la derecha del logo a la altura Y, `logoRight(y)`). Barra: ◀ junto al logo, título **centrado** en el cristal,
+  hora, monedas y ajustes. Avisos abajo centrados. Arrastrar con el ratón baja la lista (`PadPage.drag`).
+- **Cristal** (`tools/pad/marco.png` → `frame.png`): repintado con un degradado limpio; sin líneas ni cuadritos.
+- **Portada** (`PadHomePage`): rejilla que baja (rueda, arrastre, flechas), hasta 8 columnas, barra lateral. Sin Títulos
+  (`PadTitles.ENABLED = false`; la etiqueta del clan se mantiene). Las apps apagadas por el staff no salen
+  (`TFPadNet.State.disabled`).
+- **Interfaz** (`PadView`/`PadViewPage`): **tarjetas** 96×74 (`Builder.cards()` + `card(icono, nombre, color, sub,
+  acción, sel)`: franja de color, objeto al doble, nombre y línea dorada), casillas 44×46 con el objeto al doble, filas con
+  icono al doble en recuadro de 36 y texto centrado. Usan tarjetas: Viajes, Kits, Jugadores, Tienda (categoría), GTS
+  (mercado) y las del admin. Textos repasados en todas las apps: cortos y concretos.
+- **Comunidad** (`PadCommunityPage`): lista vertical, cada publicación su tarjeta (foto 16:9 grande, autor, cuándo, texto,
+  ♥ likes, BORRAR/DENUNCIAR); clic en la foto = en grande. Corazón nuevo 9×8 con contorno (`build_pad.py heart()`).
+- **Cámara** (`PadCamera`, `PadCameraPage`): **clic izquierdo** dispara (cancela el golpe), C ya no; la vista previa sale
+  al momento desde memoria (`PadCamera.preview`) y reintenta leer el archivo si aún se está escribiendo.
+- **Config en carpeta** (`util/TFConfigDir`): todo en `config/tfclient/`: `cliente.properties`, `pad-cliente.properties`,
+  `servidor.properties`, `puente-entregas.txt`, `pad.json`, `tienda.json`, `tienda-monedas.json`, `ruleta.json`,
+  `oficios.json`, `misiones.json`, `kits.json`, `ayuda.json`, `vfx.json`, `limites.json`, `protecciones.json`. Si encuentra
+  el archivo viejo (`config/tfclient-*.…`, o `claimblocks_config.json` del mundo) lo **mueve** solo la primera vez.
+- **`pad.json`** (`pad/PadConfig`): ajustes (`viajes.espera`, `viajes.cuentaAtras`, `viajes.warps`, `explorar.*`,
+  `hogares.sinRango`, `monedero.enviar`, `monedero.maximo`, `regalos.activado`, `regalos.porDia`,
+  `gts.maxPublicaciones`, `gts.dias`), `appsApagadas` y `warpsOcultos`. El servidor bloquea las apps apagadas
+  (`PadServer.usable`).
+- **Pad de administrador** (`pad/AdminPadItem`, objeto `tfclient:pad_admin`, se da con `/tf web pad admin [jugador]`,
+  nivel 3; si lo lleva alguien sin permisos, desaparece). Abre `TFPadScreen(true)` con las apps `a_*`
+  (`pad/server/PadAdmin.java`, solo nivel 3): **APPS** (encender/apagar cada app), **AJUSTES** (los de pad.json +
+  RECARGAR CONFIGS), **TIENDA** (categorías, objetos desde la mano, precio de compra/venta, cantidad por lote, límites
+  diarios, nombre, icono; lo que tiene precio de venta es lo **único** que la tienda compra), **KITS** (crear con tu
+  inventario, tipo unico/diario/semanal/horas, horas, monedas, icono, objetos), **VIAJES** (puntos: poner aquí, mover,
+  icono, renombrar, borrar; warps visibles/ocultos), **GTS** (retirar publicaciones), **COMUNIDAD** (denunciadas y
+  recientes: borrar o «está bien»), **OFICIOS** (ajustes generales de oficios.json).
+- **Viajes** (`PadTravel`, `EssentialsWarps`): Spawn, tu cama, puntos, **todos los warps de EssentialsX**
+  (`plugins/Essentials/warps/*.yml`, ejecuta `/warp <id>` como el jugador), Explorar y Tus hogares. Esperas y distancias
+  desde pad.json.
+- **Kits** (`PadKits`): tipos `unico` (una vez, el inicial), `diario` (cada día natural), `semanal`, `horas`; ficha con lo
+  que trae y RECLAMAR.
+- **Regalos** dentro de **Jugadores** (`PadPlayers`): tarjeta del jugador → FICHA / REGALAR: un objeto del inventario
+  (no los vinculados) o monedas, con límite diario; si está desconectado le llega al entrar (`regalos.json` del mundo).
+- **Protecciones**: sin `/tf claims` (las piedras se dan por kit); invitaciones de grupo y salir del grupo en la app.
+- **Tienda por defecto** (`tfclient-shop-default.json`): solo compra diamante, chatarra de netherita y lapislázuli.
+- Simulador (`tools/pad/sim/sim.py`, `pages.py`) al día con la geometría nueva (unidades, tarjetas, portada, admin).
+
+### Entrega (8 de octubre de 2026): todo dentro del TF Pad, sonidos suaves y auditoría de píxeles — TF Client 1.3.23
 Pidió: auditar el pad (textos, marcos y recuadros solapados), que las apps **no manden a la web ni a otras ventanas**
 (GTS, oficios… «todo debe hacerse desde la app»), meter **hogares**, sonidos de cambio de pantalla menos fuertes y
 **sin campana**, arreglar Cámara y Publicar, quitar los **píxeles blancos del contorno** del marco, y el icono de
@@ -978,7 +1033,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.23)
+## 5. El mod (TF Client 1.3.24)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -993,7 +1048,9 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
     `/tf web rango`, `/tf web monedas ver|dar|quitar|poner`, `/tf web ruleta girar`, `/tf web tienda comprar`.
   - Del pad (staff, 1.3.22): `/tf web kits guardar|quitar|recargar`, `/tf web viajes poner|quitar|lista`,
     `/tf web comunidad borrar|denuncias`.
-  - Con TF Client, `/tf jobs`, `/tf shop` y `/tf claims` abren el pad en su app (1.3.23).
+  - Con TF Client, `/tf jobs` y `/tf shop` abren el pad en su app (1.3.23). `/tf claims` ya no existe (1.3.24).
+  - `/tf web pad admin [jugador]` (nivel 3): da el pad de administrador (1.3.24).
+  - Toda la config del mod está en `config/tfclient/` (1.3.24; antes `config/tfclient-*.…`).
 - Código: `server/TFBridge.java` (puente), `shop/TFCoinShop.java`, `shop/TFRoulette.java`, `economy/` (Vault por
   reflexión en Mohist, monedas propias o comandos), `jobs/` (oficios, config `config/tfclient-jobs.json`),
   `menu/TFPanelMenu.java` + `client/TFPanelScreen.java` (ventana de oficios: 10 huecos de la rejilla en los huecos
