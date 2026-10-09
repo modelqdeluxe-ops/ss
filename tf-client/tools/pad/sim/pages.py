@@ -180,16 +180,16 @@ page('a_tienda_item', 'TIENDA', [], '', ['Minerales · Diamante'], [
     ('emerald', 'Precio de venta', T, ['Lo que cobra el jugador. 0 = la tienda no lo compra.'], -1, '400', ('EDITAR', B), None),
     ('chest', 'Cantidad por lote', T, ['Objetos que van en cada lote.'], -1, '1', ('EDITAR', B), None),
 ], input_=('NUEVO VALOR', 'GUARDAR', '1200'), footer=[('ATRÁS', B)])
-# Protección → AJUSTES (PadClaims.settings, 1.3.33): el botón dice cómo está cada cosa y debajo lo que pasa ahora
+# Protección → AJUSTES (PadClaims.settings, 1.3.34): cada opción es una pregunta; SÍ y NO, el que vale ahora en verde
 ZT = [('a', 'AJUSTES'), ('m', 'MIEMBROS (2)'), ('b', 'BANEOS'), ('p', 'PARTÍCULAS'), ('x', 'MÁS')]
 page('p_proteccion', 'PROTECCIÓN', ZT, 'a', ['Zona 100x100 · Mundo normal · 120, 64, -340'], [
-    ('bricks', 'Construir', T, ['Los de fuera no pueden colocar bloques.'], -1, '', ('BLOQUEADO', G), None),
-    ('tnt', 'Explosiones', T, ['La TNT y los creepers rompen bloques.'], -1, '', ('PERMITIDAS', GR), None),
-    ('flint_and_steel', 'Fuego', T, ['El fuego no se propaga ni quema bloques.'], -1, '', ('BLOQUEADO', G), None),
-    ('blaze_powder', 'Quemar a los monstruos', T, ['Los monstruos que entran arden.'], -1, '', ('ACTIVADO', G), None),
-    ('shield', 'Daño de los mobs', T, ['Los mobs hacen daño como en cualquier sitio.'], -1, '', ('PERMITIDO', GR), None),
-    ('iron_sword', 'Pelear entre jugadores', T, ['Como en el resto del servidor.'], -1, '', ('NORMAL', GR), None),
-    ('bell', 'Avisos de intrusos', T, ['No te avisa cuando entra alguien.'], -1, '', ('DESACTIVADOS', GR), None),
+    ('bricks', '¿Pueden construir?', T, [], -1, '', ('SÍ', GR), ('NO', G)),
+    ('iron_pickaxe', '¿Pueden romper bloques?', T, [], -1, '', ('SÍ', GR), ('NO', G)),
+    ('chest', '¿Pueden abrir cofres?', T, ['Y barriles.'], -1, '', ('SÍ', GR), ('NO', G)),
+    ('ender_pearl', '¿Pueden entrar con perlas?', T, ['Lanzando perlas de ender.'], -1, '', ('SÍ', G), ('NO', GR)),
+    ('tnt', '¿Las explosiones rompen?', T, ['TNT y creepers.'], -1, '', ('SÍ', G), ('NO', GR)),
+    ('blaze_powder', '¿Arden los monstruos?', T, ['Los que entran en la zona.'], -1, '', ('SÍ', G), ('NO', GR)),
+    ('bell', '¿Avisarte si entra alguien?', T, [], -1, '', ('SÍ', GR), ('NO', G)),
 ], footer=[('ATRÁS', B)])
 page('a_apps', 'APPS', [], '', ['Las que apagues no salen en el pad de los jugadores.'], [
     ('iron_pickaxe', 'Oficios', T, ['Activa'], -1, '', ('SÍ', G), None),

@@ -31,8 +31,8 @@ import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 
 /**
- * Protección (TF Claims) dentro del pad. La lista de tus zonas y, en cada una: AJUSTES (lo que se protege, con un
- * interruptor por fila y las ventajas que piden zona grande), MIEMBROS, BANEOS, PARTÍCULAS (rejilla para elegir y
+ * Protección (TF Claims) dentro del pad. La lista de tus zonas y, en cada una: AJUSTES (cada opción es una pregunta
+ * con SÍ y NO; el que vale ahora, en verde; y las ventajas que piden zona grande), MIEMBROS, BANEOS, PARTÍCULAS (rejilla para elegir y
  * densidad) y MÁS (mensajes de entrada y salida, contorno, grupo y eliminar la zona). Todo sin chat. Lo administra el
  * dueño (y el staff). Pestañas: "" la lista; "z:&lt;id&gt;:a|m|b|p|x" una zona.
  */
@@ -42,57 +42,70 @@ public final class PadClaims {
     private static final int TEXT = 0x18265C, MUTED = 0x7E8CA8, GOLD = 0xC27A10;
 
     /**
-     * Una opción de la zona. Para que nunca haya dudas, la fila dice QUÉ controla (name) y el botón CÓMO está ahora
-     * (on/off: «BLOQUEADO», «PERMITIDO», «ACTIVADO»…), y debajo una frase con lo que pasa ahora mismo (onDesc/offDesc).
-     * En el código, la opción encendida es la que protege o la ventaja puesta.
+     * Una opción de la zona, como PREGUNTA con dos botones, SÍ y NO: el que vale ahora se enciende (verde) y el otro
+     * queda gris; se pulsa el otro para cambiarla. yesIsOn: si «SÍ» es la opción encendida en ClaimFlags (en las que
+     * protegen, encendida = los de fuera NO pueden, así que «SÍ» es apagada).
      */
-    private record Flag(FlagId id, String name, String on, String off, String onDesc, String offDesc, Item icon) {}
+    private record Flag(FlagId id, String question, String note, boolean yesIsOn, Item icon) {}
 
-    private static Flag block(FlagId id, String name, String fem, String onDesc, String offDesc, Item icon) {
-        return new Flag(id, name, "BLOQUEAD" + fem, "PERMITID" + fem, onDesc, offDesc, icon);
+    private static Flag can(FlagId id, String question, Item icon) {
+        return new Flag(id, question, "", false, icon);
     }
 
-    private static Flag feature(FlagId id, String name, String fem, String onDesc, String offDesc, Item icon) {
-        return new Flag(id, name, "ACTIVAD" + fem, "DESACTIVAD" + fem, onDesc, offDesc, icon);
+    private static Flag can(FlagId id, String question, String note, Item icon) {
+        return new Flag(id, question, note, false, icon);
+    }
+
+    private static Flag want(FlagId id, String question, Item icon) {
+        return new Flag(id, question, "", true, icon);
+    }
+
+    private static Flag want(FlagId id, String question, String note, Item icon) {
+        return new Flag(id, question, note, true, icon);
     }
 
     private record Section(String title, List<Flag> flags) {}
 
     private static final List<Section> SECTIONS = List.of(
-            new Section("Bloques y terreno (para los de fuera de la zona)", List.of(
-                    block(FlagId.BUILDING, "Construir", "O", "Los de fuera no pueden colocar bloques.", "Cualquiera puede colocar bloques.", Items.BRICKS),
-                    block(FlagId.BREAKING, "Romper bloques", "O", "Los de fuera no pueden romper nada.", "Cualquiera puede romper bloques.", Items.IRON_PICKAXE),
-                    block(FlagId.EXPLOSIONS, "Explosiones", "AS", "La TNT y los creepers no rompen nada.", "La TNT y los creepers rompen bloques.", Items.TNT),
-                    block(FlagId.FIRE, "Fuego", "O", "El fuego no se propaga ni quema bloques.", "El fuego se propaga y quema bloques.", Items.FLINT_AND_STEEL),
-                    block(FlagId.FLUIDS, "Poner agua y lava", "O", "Los de fuera no pueden poner agua ni lava.", "Cualquiera puede poner agua y lava.", Items.WATER_BUCKET),
-                    block(FlagId.TREE_CHOPPING, "Talar árboles", "O", "Los de fuera no pueden talar.", "Cualquiera puede talar.", Items.OAK_SAPLING),
-                    block(FlagId.TRAMPLING, "Pisar los cultivos", "O", "La tierra de cultivo no se rompe al pisarla.", "La tierra de cultivo se rompe al pisarla.", Items.WHEAT_SEEDS),
-                    block(FlagId.CROP_HARVEST, "Cosechar", "O", "Los de fuera no pueden cosechar.", "Cualquiera puede cosechar.", Items.WHEAT),
-                    block(FlagId.ANIMAL_KILLING, "Matar tus animales", "O", "Los de fuera no pueden matar tus animales.", "Cualquiera puede matar tus animales.", Items.LEAD))),
-            new Section("Acceso (para los de fuera de la zona)", List.of(
-                    block(FlagId.CHEST_ACCESS, "Abrir cofres", "O", "Los de fuera no abren cofres ni barriles.", "Cualquiera abre cofres y barriles.", Items.CHEST),
-                    block(FlagId.DOORS_ACCESS, "Puertas y botones", "OS", "Los de fuera no usan puertas, botones ni placas.", "Cualquiera usa puertas, botones y placas.", Items.OAK_DOOR),
-                    block(FlagId.ANVIL_USE, "Usar yunques", "O", "Los de fuera no pueden usar yunques.", "Cualquiera puede usar yunques.", Items.ANVIL),
-                    block(FlagId.SIGN_EDITING, "Editar letreros", "O", "Los de fuera no pueden editarlos.", "Cualquiera puede editarlos.", Items.OAK_SIGN),
-                    block(FlagId.ITEM_USE, "Usar objetos", "O", "Los de fuera no pueden usar objetos.", "Cualquiera puede usar objetos.", Items.BUCKET),
-                    block(FlagId.ENTITY_INTERACT, "Aldeanos, soportes y marcos", "OS", "Los de fuera no pueden tocarlos.", "Cualquiera puede usarlos.", Items.ARMOR_STAND),
-                    block(FlagId.ENDER_PEARL, "Entrar con perlas de ender", "O", "Nadie entra lanzando perlas.", "Se puede entrar lanzando perlas.", Items.ENDER_PEARL),
-                    block(FlagId.BLOCK_ALL_INTERACT, "Tocar cualquier cosa", "O", "Los de fuera no pueden tocar NADA.", "Vale lo que digan las demás opciones.", Items.BARRIER),
-                    feature(FlagId.PUBLIC_MODE, "Modo visita", "O", "Todos pueden entrar a mirar; nadie de fuera modifica nada.", "Apagado.", Items.SPYGLASS))),
+            new Section("Los de fuera de tu zona (tú y tus miembros pueden todo)", List.of(
+                    can(FlagId.BUILDING, "¿Pueden construir?", Items.BRICKS),
+                    can(FlagId.BREAKING, "¿Pueden romper bloques?", Items.IRON_PICKAXE),
+                    can(FlagId.FLUIDS, "¿Pueden poner agua o lava?", Items.WATER_BUCKET),
+                    can(FlagId.TREE_CHOPPING, "¿Pueden talar árboles?", Items.OAK_SAPLING),
+                    can(FlagId.CROP_HARVEST, "¿Pueden cosechar?", Items.WHEAT),
+                    can(FlagId.ANIMAL_KILLING, "¿Pueden matar tus animales?", Items.LEAD),
+                    can(FlagId.CHEST_ACCESS, "¿Pueden abrir cofres?", "Y barriles.", Items.CHEST),
+                    can(FlagId.DOORS_ACCESS, "¿Pueden usar puertas?", "Y botones, palancas y placas.", Items.OAK_DOOR),
+                    can(FlagId.ANVIL_USE, "¿Pueden usar yunques?", Items.ANVIL),
+                    can(FlagId.SIGN_EDITING, "¿Pueden editar letreros?", Items.OAK_SIGN),
+                    can(FlagId.ITEM_USE, "¿Pueden usar objetos?", Items.BUCKET),
+                    can(FlagId.ENTITY_INTERACT, "¿Pueden usar aldeanos?", "Y soportes de armadura y marcos.", Items.ARMOR_STAND),
+                    can(FlagId.ENDER_PEARL, "¿Pueden entrar con perlas?", "Lanzando perlas de ender.", Items.ENDER_PEARL),
+                    can(FlagId.BLOCK_ALL_INTERACT, "¿Pueden tocar algo?", "Si dices NO, no tocan NADA de la zona.", Items.BARRIER))),
+            new Section("La zona", List.of(
+                    can(FlagId.EXPLOSIONS, "¿Las explosiones rompen?", "TNT y creepers.", Items.TNT),
+                    can(FlagId.FIRE, "¿El fuego quema bloques?", "Y se propaga.", Items.FLINT_AND_STEEL),
+                    can(FlagId.TRAMPLING, "¿Pisar rompe los cultivos?", Items.WHEAT_SEEDS),
+                    want(FlagId.PUBLIC_MODE, "¿Modo visita?", "Todos pueden entrar a mirar; nadie de fuera toca nada.", Items.SPYGLASS))),
             new Section("Mobs y PvP", List.of(
-                    block(FlagId.MOB_SPAWN, "Que salgan monstruos", "O", "No salen zombis, esqueletos ni otros monstruos.", "Los monstruos salen como en cualquier sitio.", Items.ZOMBIE_HEAD),
-                    block(FlagId.ALL_MOB_SPAWN, "Que salga cualquier mob", "O", "No sale nada (tampoco mobs de otros mods).", "Los mobs salen como en cualquier sitio.", Items.SPAWNER),
-                    block(FlagId.PASSIVE_MOB_SPAWN, "Que salgan animales", "O", "No salen animales ni peces (aldeanos sí).", "Los animales salen como en cualquier sitio.", Items.EGG),
-                    block(FlagId.MOB_DAMAGE, "Daño de los mobs", "O", "Los mobs no hacen daño en la zona.", "Los mobs hacen daño como en cualquier sitio.", Items.SHIELD),
-                    feature(FlagId.BURN_HOSTILES, "Quemar a los monstruos", "O", "Los monstruos que entran arden.", "Los monstruos que entran no arden.", Items.BLAZE_POWDER),
-                    new Flag(FlagId.PVP, "Pelear entre jugadores", "BLOQUEADO", "NORMAL", "Nadie se puede atacar en la zona.", "Como en el resto del servidor.", Items.IRON_SWORD),
-                    feature(FlagId.PVP_ALL, "PvP libre", "O", "Todos se pueden atacar en la zona.", "Apagado: como en el resto del servidor.", Items.DIAMOND_SWORD),
-                    feature(FlagId.ALERTS, "Avisos de intrusos", "OS", "Te avisa cuando entra alguien.", "No te avisa cuando entra alguien.", Items.BELL))),
+                    can(FlagId.MOB_SPAWN, "¿Salen monstruos?", "Zombis, esqueletos, creepers…", Items.ZOMBIE_HEAD),
+                    can(FlagId.ALL_MOB_SPAWN, "¿Sale algún mob?", "Cualquiera, también de otros mods.", Items.SPAWNER),
+                    can(FlagId.PASSIVE_MOB_SPAWN, "¿Salen animales?", "Y peces (los aldeanos sí salen).", Items.EGG),
+                    can(FlagId.MOB_DAMAGE, "¿Los mobs hacen daño?", Items.SHIELD),
+                    want(FlagId.BURN_HOSTILES, "¿Arden los monstruos?", "Los que entran en la zona.", Items.BLAZE_POWDER),
+                    want(FlagId.PVP, "¿Prohibir el PvP?", "Nadie se puede atacar aquí.", Items.IRON_SWORD),
+                    want(FlagId.PVP_ALL, "¿PvP libre?", "Todos se pueden atacar aquí.", Items.DIAMOND_SWORD),
+                    want(FlagId.ALERTS, "¿Avisarte si entra alguien?", Items.BELL))),
             new Section("Ventajas de zona grande (para ti y tus miembros)", List.of(
-                    feature(FlagId.EFFECT_REGEN, "Regeneración", "A", "Os curáis solos dentro de la zona.", "Sin regeneración.", Items.GOLDEN_APPLE),
-                    feature(FlagId.EFFECT_RESIST, "Resistencia", "A", "Recibís menos daño dentro de la zona.", "Sin resistencia.", Items.IRON_CHESTPLATE),
-                    feature(FlagId.EFFECT_SPEED, "Velocidad", "A", "Vais más rápido dentro de la zona.", "Sin velocidad extra.", Items.SUGAR),
-                    feature(FlagId.ALLOW_FLIGHT, "Volar", "O", "Voláis dentro de la zona.", "Nadie vuela en la zona.", Items.FEATHER))));
+                    want(FlagId.EFFECT_REGEN, "¿Regeneración?", "Os curáis solos en la zona.", Items.GOLDEN_APPLE),
+                    want(FlagId.EFFECT_RESIST, "¿Resistencia?", "Recibís menos daño en la zona.", Items.IRON_CHESTPLATE),
+                    want(FlagId.EFFECT_SPEED, "¿Velocidad?", "Vais más rápido en la zona.", Items.SUGAR),
+                    want(FlagId.ALLOW_FLIGHT, "¿Volar?", "Voláis dentro de la zona.", Items.FEATHER))));
+
+    /** Los dos botones de una pregunta: el que vale ahora, verde; el otro, gris (pulsarlo la cambia). */
+    private static PadView.Btn answer(String label, boolean chosen, String action) {
+        return PadView.Btn.of(label, action, chosen ? PadView.GREEN : PadView.GRAY);
+    }
 
     private PadClaims() {}
 
@@ -192,7 +205,7 @@ public final class PadClaims {
                 case "flag" -> {
                     FlagId id;
                     try {
-                        id = FlagId.valueOf(arg);
+                        id = FlagId.valueOf(arg.split(":")[0]);
                     } catch (IllegalArgumentException e) {
                         return null;
                     }
@@ -201,11 +214,15 @@ public final class PadClaims {
                         TFPadNet.notice(player, "Necesita una zona de " + requiredLabel(need).toLowerCase(Locale.ROOT) + " o más grande.");
                         return null;
                     }
-                    f.toggle(id);
+                    // «flag:<zona>:<opción>:1|0» pone la opción encendida o apagada (no la alterna: pulsar el botón que
+                    // ya está elegido no cambia nada)
+                    String[] v = arg.split(":");
+                    if (v.length > 1) f.set(id, v[1].equals("1"));
+                    else f.toggle(id);
                     manager.save();
                 }
                 case "contorno" -> {
-                    f.showBorder = !f.showBorder;
+                    f.showBorder = arg.isEmpty() ? !f.showBorder : arg.equals("1");
                     manager.save();
                 }
                 case "particulas" -> {
@@ -224,10 +241,12 @@ public final class PadClaims {
                     f.particleDensity = Math.max(1, Math.min(200, f.particleDensity + (arg.equals("+") ? 5 : -5)));
                     manager.save();
                 }
-                case "msg" -> {
-                    boolean welcome = arg.equals("entrar");
-                    if (welcome) f.showWelcome = !f.showWelcome;
-                    else f.showLeave = !f.showLeave;
+                case "msg" -> { // msg:<zona>:entrar|salir:1|0
+                    String[] v = arg.split(":");
+                    boolean welcome = v[0].equals("entrar");
+                    boolean on = v.length > 1 ? v[1].equals("1") : !(welcome ? f.showWelcome : f.showLeave);
+                    if (welcome) f.showWelcome = on;
+                    else f.showLeave = on;
                     manager.save();
                 }
                 case "editar" -> PadServer.put(player, "protecciones.editar", arg);
@@ -448,13 +467,16 @@ public final class PadClaims {
             for (Flag flag : s.flags) {
                 int need = required(flag.id);
                 boolean locked = need > 0 && level < need;
-                boolean on = f.get(flag.id);
-                // el botón dice cómo está (y al pulsarlo cambia); debajo, lo que pasa ahora mismo
-                PadView.Btn btn = locked ? PadView.Btn.off(requiredLabel(need))
-                        : PadView.Btn.of(on ? flag.on : flag.off, "flag:" + id + ":" + flag.id.name(), on ? PadView.GREEN : PadView.GRAY);
-                String now = locked ? "Pide una zona de " + requiredLabel(need).toLowerCase(Locale.ROOT) + ": " + flag.onDesc.toLowerCase(Locale.ROOT)
-                        : (on ? flag.onDesc : flag.offDesc);
-                b.row(new PadView.Row(new ItemStack(flag.icon), flag.name, locked ? MUTED : TEXT, List.of(now), -1, "", btn, null));
+                if (locked) {
+                    b.row(new PadView.Row(new ItemStack(flag.icon), flag.question, MUTED,
+                            List.of("Necesita una zona de " + requiredLabel(need).toLowerCase(Locale.ROOT) + " o más grande."), -1, "",
+                            PadView.Btn.off(requiredLabel(need)), null));
+                    continue;
+                }
+                boolean yes = f.get(flag.id) == flag.yesIsOn;
+                String act = "flag:" + id + ":" + flag.id.name() + ":";
+                b.row(new PadView.Row(new ItemStack(flag.icon), flag.question, TEXT, flag.note.isEmpty() ? List.of() : List.of(flag.note), -1, "",
+                        answer("SÍ", yes, act + (flag.yesIsOn ? "1" : "0")), answer("NO", !yes, act + (flag.yesIsOn ? "0" : "1"))));
             }
         }
     }
@@ -501,17 +523,18 @@ public final class PadClaims {
     private static void more(ServerPlayer player, PadView.Builder b, Claim c, String id) {
         ClaimFlags f = c.getFlags();
         String editing = PadServer.get(player, "protecciones.editar", "");
-        b.row(new PadView.Row(new ItemStack(Items.MAP), "Ver el contorno", TEXT,
-                List.of(f.showBorder ? "Se ven las líneas del borde de la zona." : "No se ven las líneas del borde."), -1, "",
-                PadView.Btn.of(f.showBorder ? "ACTIVADO" : "DESACTIVADO", "contorno:" + id, f.showBorder ? PadView.GREEN : PadView.GRAY), null));
-        b.row(new PadView.Row(new ItemStack(Items.OAK_HANGING_SIGN), "Mensaje al entrar", TEXT,
-                List.of(f.welcomeMessage.isBlank() ? "Sin mensaje." : "«" + f.welcomeMessage + "»"), -1, "",
-                PadView.Btn.of(f.showWelcome ? "ACTIVADO" : "DESACTIVADO", "msg:" + id + ":entrar", f.showWelcome ? PadView.GREEN : PadView.GRAY),
-                PadView.Btn.of("EDITAR", "editar:" + id + ":entrar", PadView.BLUE)).selected(editing.equals("entrar")));
-        b.row(new PadView.Row(new ItemStack(Items.DARK_OAK_HANGING_SIGN), "Mensaje al salir", TEXT,
-                List.of(f.leaveMessage.isBlank() ? "Sin mensaje." : "«" + f.leaveMessage + "»"), -1, "",
-                PadView.Btn.of(f.showLeave ? "ACTIVADO" : "DESACTIVADO", "msg:" + id + ":salir", f.showLeave ? PadView.GREEN : PadView.GRAY),
-                PadView.Btn.of("EDITAR", "editar:" + id + ":salir", PadView.BLUE)).selected(editing.equals("salir")));
+        b.row(new PadView.Row(new ItemStack(Items.MAP), "¿Se ve el contorno de la zona?", TEXT, List.of(), -1, "",
+                answer("SÍ", f.showBorder, "contorno:" + id + ":1"), answer("NO", !f.showBorder, "contorno:" + id + ":0")));
+        b.row(new PadView.Row(new ItemStack(Items.OAK_HANGING_SIGN), "¿Mensaje al entrar?", TEXT,
+                List.of(f.welcomeMessage.isBlank() ? "Sin mensaje escrito." : "«" + f.welcomeMessage + "»"), -1, "",
+                answer("SÍ", f.showWelcome, "msg:" + id + ":entrar:1"), answer("NO", !f.showWelcome, "msg:" + id + ":entrar:0")));
+        b.row(new PadView.Row(new ItemStack(Items.WRITABLE_BOOK), "Escribir el mensaje al entrar", TEXT, List.of(), -1, "",
+                PadView.Btn.of("EDITAR", "editar:" + id + ":entrar", PadView.BLUE), null).selected(editing.equals("entrar")));
+        b.row(new PadView.Row(new ItemStack(Items.DARK_OAK_HANGING_SIGN), "¿Mensaje al salir?", TEXT,
+                List.of(f.leaveMessage.isBlank() ? "Sin mensaje escrito." : "«" + f.leaveMessage + "»"), -1, "",
+                answer("SÍ", f.showLeave, "msg:" + id + ":salir:1"), answer("NO", !f.showLeave, "msg:" + id + ":salir:0")));
+        b.row(new PadView.Row(new ItemStack(Items.WRITABLE_BOOK), "Escribir el mensaje al salir", TEXT, List.of(), -1, "",
+                PadView.Btn.of("EDITAR", "editar:" + id + ":salir", PadView.BLUE), null).selected(editing.equals("salir")));
         ClaimGroup g = ClaimManager.getInstance().getGroupOf(c);
         if (g == null) {
             b.row(new PadView.Row(new ItemStack(Items.SLIME_BALL), "Unir zonas en un grupo", TEXT,
