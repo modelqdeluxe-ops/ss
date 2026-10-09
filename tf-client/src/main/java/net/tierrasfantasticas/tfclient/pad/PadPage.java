@@ -9,6 +9,8 @@ import net.minecraft.client.gui.GuiGraphics;
  */
 abstract class PadPage {
     static int X = 12, Y = 22, W = 270, H = 106, SW = 288, SH = 132;
+    /** Esquina del cristal en las coordenadas de la página (0,0 salvo en las páginas «a escala»: ver {@link #scaled}). */
+    static int OX = 0, OY = 0;
 
     final TFPadScreen pad;
     final String app;
@@ -20,6 +22,15 @@ abstract class PadPage {
 
     /** Lo que sale en la barra de arriba. */
     abstract String title();
+
+    /**
+     * true: la página se dibuja a la escala grande del pad (TFPadScreen.bs, 1,5 a 1080p): mientras se dibuja o recibe
+     * el ratón, X, Y, W, H (y SW, SH, OX, OY) están en «unidades de vista», con la zona de la app empezando en 0,0, y
+     * todo sale 1,5 veces más grande y nítido. Las apps lo usan; la portada no (dibuja ella sus fichas grandes).
+     */
+    boolean scaled() {
+        return true;
+    }
 
     abstract void render(GuiGraphics g, double mx, double my, float partial);
 
@@ -38,6 +49,9 @@ abstract class PadPage {
     boolean drag(double mx, double my, double dy) {
         return false;
     }
+
+    /** Se soltó el botón del ratón (para barras que se arrastran). */
+    void release(double mx, double my, int button) {}
 
     /** true si la página se queda la tecla (por ejemplo, escribiendo en un campo). */
     boolean key(int key, int scan, int mods) {

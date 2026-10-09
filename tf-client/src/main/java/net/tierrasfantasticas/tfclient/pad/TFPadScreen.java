@@ -40,14 +40,22 @@ public final class TFPadScreen extends Screen {
     static final int GX = 52, GY = 64, GW = 288, GH = 132;
     static final int NAVY = 0xFF18265C;
     /** Altura de la barra de arriba, en unidades de pantalla. */
+    /** Alto de la barra de arriba con escala grande 1 (ver {@link #bar}). */
     static final int BAR = 18;
     /** Apps con página propia en el cliente; las demás las dibuja el servidor. */
-    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes");
+    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica");
     private static final Map<String, int[]> SIZES = new HashMap<>();
 
     /** Escala de la interfaz de Minecraft, píxeles reales por píxel de pad y por unidad de pantalla. */
     private double gs = 1;
     private int ps = 1, cs = 1;
+    /**
+     * Escala «grande» (portada, barra de arriba, iconos): px reales por píxel de textura = max(cs, round(ps*0,75));
+     * bs = big / cs en unidades (1,5 a 1080p). Siempre da píxeles enteros: las texturas se ven nítidas.
+     */
+    private int big = 1;
+    float bs = 1F;
+    int bar = BAR;
     /** Esquina del marco y del cristal, en píxeles reales. */
     private int fx, fy, gx, gy;
     /** El cristal en unidades de pantalla. */
@@ -99,12 +107,88 @@ public final class TFPadScreen extends Screen {
         g.blit(tex(name), x, y, 0, 0, sz[0], sz[1], sz[0], sz[1]);
     }
 
-    /** Recorte en unidades de pantalla (en píxeles reales: exacto). Se quita con {@link #noScissor}. */
+    /** Textura del pad a la escala grande, con su esquina en (x, y) unidades. */
+    void blitBig(GuiGraphics g, String name, float x, float y) {
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(bs, bs, 1);
+        blit(g, name, 0, 0);
+        g.pose().popPose();
+    }
+
+    /** Letra pixel a la escala grande, centrada en cx; y es la parte de arriba de la celda. */
+    void textBig(GuiGraphics g, String text, float cx, float y, int rgb) {
+        g.pose().pushPose();
+        g.pose().translate(cx, y, 0);
+        g.pose().scale(bs, bs, 1);
+        PadFont.drawCentered(g, text, 0, 0, rgb, true);
+        g.pose().popPose();
+    }
+
+    /** Tamaño en unidades de algo que mide n píxeles de textura a la escala grande. */
+    int big(int n) {
+        return Math.round(n * bs);
+    }
+
+    /** Recorte en unidades de la página (en píxeles reales: exacto). Se quita con {@link #noScissor}. */
     void scissor(GuiGraphics g, int x, int y, int w, int h) {
         g.flush();
-        int rx = gx + x * cs, ry = gy + liftReal() + y * cs;
+        double k = cs * (local ? bs : 1F);
+        int ox = local ? saved[0] * cs : 0, oy = local ? saved[1] * cs : 0;
+        int rx = gx + ox + (int) Math.floor(x * k), ry = gy + liftReal() + oy + (int) Math.floor(y * k);
+        int rw = (int) Math.ceil(w * k), rh = (int) Math.ceil(h * k);
         int fbH = Minecraft.getInstance().getWindow().getHeight();
-        RenderSystem.enableScissor(Math.max(0, rx), Math.max(0, fbH - (ry + h * cs)), Math.max(0, w * cs), Math.max(0, h * cs));
+        RenderSystem.enableScissor(Math.max(0, rx), Math.max(0, fbH - (ry + rh)), Math.max(0, rw), Math.max(0, rh));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Páginas a escala: mientras se dibujan o reciben el ratón, PadPage.X/Y/W/H están en unidades de vista
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private boolean local;
+    private final int[] saved = new int[8];
+
+    private boolean enter() {
+        if (local || !page.scaled() || bs == 1F) return false;
+        saved[0] = PadPage.X;
+        saved[1] = PadPage.Y;
+        saved[2] = PadPage.W;
+        saved[3] = PadPage.H;
+        saved[4] = PadPage.SW;
+        saved[5] = PadPage.SH;
+        saved[6] = PadPage.OX;
+        saved[7] = PadPage.OY;
+        PadPage.X = 0;
+        PadPage.Y = 0;
+        PadPage.W = (int) (saved[2] / bs);
+        PadPage.H = (int) (saved[3] / bs);
+        PadPage.OX = (int) Math.floor(-saved[0] / bs);
+        PadPage.OY = (int) Math.floor(-saved[1] / bs);
+        PadPage.SW = (int) Math.ceil(unitsW / bs);
+        PadPage.SH = (int) Math.ceil(unitsH / bs);
+        local = true;
+        return true;
+    }
+
+    private void exit(boolean entered) {
+        if (!entered) return;
+        PadPage.X = saved[0];
+        PadPage.Y = saved[1];
+        PadPage.W = saved[2];
+        PadPage.H = saved[3];
+        PadPage.SW = saved[4];
+        PadPage.SH = saved[5];
+        PadPage.OX = saved[6];
+        PadPage.OY = saved[7];
+        local = false;
+    }
+
+    private double lx(double x) {
+        return local ? (x - saved[0]) / bs : x;
+    }
+
+    private double ly(double y) {
+        return local ? (y - saved[1]) / bs : y;
     }
 
     void noScissor(GuiGraphics g) {
@@ -169,6 +253,7 @@ public final class TFPadScreen extends Screen {
             case "comunidad" -> setPage(new PadCommunityPage(this));
             case "camara" -> setPage(new PadCameraPage(this));
             case "ajustes" -> setPage(new PadInfoPages.Ajustes(this));
+            case "musica" -> setPage(new PadMusicPage(this));
             default -> {
             }
         }
@@ -196,8 +281,11 @@ public final class TFPadScreen extends Screen {
         gy = fy + GY * ps;
         unitsW = GW * ps / cs;
         unitsH = GH * ps / cs;
+        big = Math.max(cs, Math.round(ps * 0.75F));
+        bs = big / (float) cs;
+        bar = Math.round(12 * bs) + 6;
         // la zona de las apps: bajo la barra y a la derecha del logo a esa altura (más abajo el logo es más estrecho)
-        PadPage.Y = BAR + 4;
+        PadPage.Y = bar + 4;
         PadPage.X = logoRight(PadPage.Y) + 4;
         PadPage.W = unitsW - PadPage.X - 4;
         PadPage.H = unitsH - PadPage.Y - 4;
@@ -250,7 +338,18 @@ public final class TFPadScreen extends Screen {
         g.pose().scale((float) (cs / gs), (float) (cs / gs), 1);
         hoverNow = null;
         drawStatus(g, mx, my);
-        page.render(g, mx, my, partialTick);
+        boolean in = enter();
+        if (in) {
+            g.pose().pushPose();
+            g.pose().translate(saved[0], saved[1], 0);
+            g.pose().scale(bs, bs, 1);
+        }
+        try {
+            page.render(g, lx(mx), ly(my), partialTick);
+        } finally {
+            if (in) g.pose().popPose();
+            exit(in);
+        }
         if (hoverNow != null && !hoverNow.equals(hovered) && PadSettings.hoverTick) sound("hover", 0.35F);
         hovered = hoverNow;
         drawNotice(g);
@@ -272,46 +371,96 @@ public final class TFPadScreen extends Screen {
         return logoRight(0) + 4;
     }
 
-    /** La barra de arriba: [◀] · título centrado · hora · monedas · ajustes. */
+    private int backY() {
+        return (bar - big(12)) / 2;
+    }
+
+    private int gearX() {
+        return unitsW - 4 - big(12);
+    }
+
+    /** La barra de arriba: [◀] · título centrado · música · hora · monedas · ajustes, todo a la escala grande. */
     private void drawStatus(GuiGraphics g, double mx, double my) {
         Minecraft mc = Minecraft.getInstance();
-        int bx = backX(), by = 3;
+        int bx = backX(), by = backY(), bsz = big(12);
         if (page != home) {
-            boolean hover = PadUi.inside(mx, my, bx, by, 12, 12);
+            boolean hover = PadUi.inside(mx, my, bx, by, bsz, bsz);
             if (hover) hover("§back");
-            PadUi.box(g, bx, by, 12, 12, NAVY);
-            PadUi.box(g, bx + 1, by + 1, 10, 10, hover ? 0xFFF6B628 : 0xFF3496FA);
-            g.fill(bx + 3, by + 5, bx + 4, by + 7, 0xFFFFFFFF);
-            g.fill(bx + 4, by + 4, bx + 5, by + 8, 0xFFFFFFFF);
-            g.fill(bx + 5, by + 3, bx + 6, by + 9, 0xFFFFFFFF);
-            g.fill(bx + 6, by + 5, bx + 9, by + 7, 0xFFFFFFFF);
+            g.pose().pushPose();
+            g.pose().translate(bx, by, 0);
+            g.pose().scale(bs, bs, 1);
+            PadUi.box(g, 0, 0, 12, 12, NAVY);
+            PadUi.box(g, 1, 1, 10, 10, hover ? 0xFFF6B628 : 0xFF3496FA);
+            g.fill(2, 2, 10, 3, hover ? 0xFFFFEC96 : 0xFF96D6FF);
+            g.fill(3, 5, 4, 7, 0xFFFFFFFF);
+            g.fill(4, 4, 5, 8, 0xFFFFFFFF);
+            g.fill(5, 3, 6, 9, 0xFFFFFFFF);
+            g.fill(6, 5, 9, 7, 0xFFFFFFFF);
+            g.pose().popPose();
         }
-        String title = page.title();
-        PadFont.drawCentered(g, title, unitsW / 2, 4, admin && page == home ? 0xFFD36A : 0xFFFFFF, true);
-        int right = unitsW - 4;
-        boolean gearHover = PadUi.inside(mx, my, right - 11, 2, 12, 13);
+        float textY = bar / 2F - 5.5F * bs;
+        textBig(g, page.title(), unitsW / 2F, textY, admin && page == home ? 0xFFD36A : 0xFFFFFF);
+        int right = gearX();
+        boolean gearHover = PadUi.inside(mx, my, right - 1, by, bsz + 2, bsz);
         if (gearHover) hover("§gear");
-        blit(g, "gear", right - 10, 4);
-        if (gearHover) g.fill(right - 11, 15, right + 1, 16, 0xFFFFE680);
-        right -= 16;
+        g.pose().pushPose();
+        g.pose().translate(right + bsz / 2F, bar / 2F, 0);
+        if (gearHover) g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees((System.currentTimeMillis() % 2000) * 0.18F));
+        g.pose().scale(bs, bs, 1);
+        blit(g, "gear", -5, -5);
+        g.pose().popPose();
+        right -= big(8);
         TFPadNet.State s = TFPadClient.state;
         if (s != null && s.balance() >= 0) {
             String coins = PadUi.THOUSANDS.format(s.balance());
-            int w = PadFont.width(coins);
-            PadFont.draw(g, coins, right - w, 5, 0xFFE680, true);
-            right -= w + 14;
-            blit(g, "coin", right, 4);
-            right -= 10;
+            int w = big(PadFont.width(coins));
+            right -= w;
+            g.pose().pushPose();
+            g.pose().translate(right, textY + bs, 0);
+            g.pose().scale(bs, bs, 1);
+            PadFont.draw(g, coins, 0, 0, 0xFFE680, true);
+            g.pose().popPose();
+            right -= big(14);
+            blitBig(g, "coin", right, (bar - big(11)) / 2F);
+            right -= big(8);
         }
         if (mc.level != null) {
             long t = Math.floorMod(mc.level.getDayTime(), 24000L);
             String time = String.format(Locale.ROOT, "%02d:%02d", (int) ((t / 1000 + 6) % 24), (int) (t % 1000 * 60 / 1000));
-            int w = PadFont.width(time);
-            PadFont.draw(g, time, right - w, 5, 0xFFFFFF, true);
-            right -= w + 14;
-            blit(g, t < 13000 ? "sun" : "moon", right, 4);
+            int w = big(PadFont.width(time));
+            right -= w;
+            g.pose().pushPose();
+            g.pose().translate(right, textY + bs, 0);
+            g.pose().scale(bs, bs, 1);
+            PadFont.draw(g, time, 0, 0, 0xFFFFFF, true);
+            g.pose().popPose();
+            right -= big(14);
+            blitBig(g, t < 13000 ? "sun" : "moon", right, (bar - big(11)) / 2F);
+            right -= big(8);
+        }
+        // sonando: barritas de ecualizador que bailan con la canción (clic: abre Música)
+        if (net.tierrasfantasticas.tfclient.pad.music.MusicPlayer.playing()) {
+            int w = big(11);
+            right -= w;
+            musicX = right;
+            boolean hover = PadUi.inside(mx, my, right - 1, by, w + 2, bsz);
+            if (hover) hover("§music");
+            long pos = net.tierrasfantasticas.tfclient.pad.music.MusicPlayer.position();
+            for (int i = 0; i < 4; i++) {
+                float lv = net.tierrasfantasticas.tfclient.pad.music.MusicPlayer.levelAt(pos + i * 70L);
+                float wob = (float) (0.5 + 0.5 * Math.sin(System.currentTimeMillis() / (110.0 + i * 37) + i * 1.7));
+                int h = Math.max(big(2), Math.round(big(10) * Math.min(1F, 0.25F + lv * 0.9F * (0.6F + 0.4F * wob))));
+                int x = right + i * big(3);
+                int y1 = bar / 2 + big(5);
+                g.fill(x - 1, y1 - h - 1, x + big(2) + 1, y1 + 1, 0xFF18265C);
+                g.fill(x, y1 - h, x + big(2), y1, hover ? 0xFFFFE680 : 0xFF7CF0B0);
+            }
+        } else {
+            musicX = -1000;
         }
     }
+
+    private int musicX = -1000;
 
     /** Aviso del servidor: tarjeta azul marino con borde de oro, abajo, centrada en la pantalla. */
     private void drawNotice(GuiGraphics g) {
@@ -343,40 +492,70 @@ public final class TFPadScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         double mx = ax(mouseX), my = ay(mouseY);
         if (button == 0) {
-            if (page != home && PadUi.inside(mx, my, backX(), 3, 12, 12)) {
+            if (page != home && PadUi.inside(mx, my, backX(), backY(), big(12), big(12))) {
                 back();
                 return true;
             }
-            if (PadUi.inside(mx, my, unitsW - 15, 2, 12, 13)) {
+            if (PadUi.inside(mx, my, gearX() - 1, backY(), big(12) + 2, big(12))) {
                 if (!(page instanceof PadInfoPages.Ajustes)) openApp("ajustes");
                 else back();
                 return true;
             }
+            if (PadUi.inside(mx, my, musicX - 1, backY(), big(11) + 2, big(12)) && !(page instanceof PadMusicPage)) {
+                openApp("musica");
+                return true;
+            }
         }
-        if (page.click(mx, my, button)) return true;
+        boolean in = enter();
+        try {
+            if (page.click(lx(mx), ly(my), button)) return true;
+        } finally {
+            exit(in);
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        boolean in = enter();
+        try {
+            page.release(lx(ax(mouseX)), ly(ay(mouseY)), button);
+        } finally {
+            exit(in);
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
-        if (page.drag(ax(mouseX), ay(mouseY), dy * gs / cs)) return true;
+        boolean in = enter();
+        try {
+            if (page.drag(lx(ax(mouseX)), ly(ay(mouseY)), dy * gs / cs / (in ? bs : 1F))) return true;
+        } finally {
+            exit(in);
+        }
         return super.mouseDragged(mouseX, mouseY, button, dx, dy);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (page.scroll(ax(mouseX), ay(mouseY), delta)) return true;
+        boolean in = enter();
+        try {
+            if (page.scroll(lx(ax(mouseX)), ly(ay(mouseY)), delta)) return true;
+        } finally {
+            exit(in);
+        }
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (page.key(keyCode, scanCode, modifiers)) return true;
+        boolean in = enter();
+        try {
+            if (page.key(keyCode, scanCode, modifiers)) return true;
+        } finally {
+            exit(in);
+        }
         if (!page.typing() && TFPadClient.KEY.matches(keyCode, scanCode)) {
             onClose();
             return true;
@@ -390,7 +569,12 @@ public final class TFPadScreen extends Screen {
 
     @Override
     public boolean charTyped(char c, int modifiers) {
-        if (page.chr(c)) return true;
+        boolean in = enter();
+        try {
+            if (page.chr(c)) return true;
+        } finally {
+            exit(in);
+        }
         return super.charTyped(c, modifiers);
     }
 

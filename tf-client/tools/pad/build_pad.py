@@ -7,7 +7,7 @@ Todo va en la rejilla del marco: 1 píxel del dibujo = 4 píxeles de marco.png (
     python3 tools/pad/build_pad.py --preview  # además, vistas previas en tools/pad/preview_*.png (no van al repo)
 
 Qué sale:
-- frame.png (el marco), tile.png / tile_h.png (ficha de 38 y su versión al pasar el ratón),
+- frame.png (el marco), tile.png / tile_h.png (ficha de 40 y su versión al pasar el ratón),
 - icon_<app>.png (las 20 apps, 32x32),
 - font.png + font.json (fuente pixel de 4 px con tildes y signos: la usa PadFont para todos los rótulos),
 - coin, sun, moon, gear, heart, heart_off (iconos pequeños de la barra y de Comunidad).
@@ -35,7 +35,7 @@ NAVY = (24, 38, 92)
 WHITE = (255, 255, 255)
 
 # Las 20 apps, en el orden del pad (dos páginas de 5x2). Mismo orden y nombres que TFPadScreen.APPS.
-APPS = [('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
+APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
         ('monedero', 'MONEDERO'), ('clanes', 'CLANES'), ('viajes', 'VIAJES'), ('hogares', 'HOGARES'), ('kits', 'KITS'),
         ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('jugadores', 'JUGADORES'), ('ranking', 'RANKING'),
         ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('protecciones', 'PROTECCIÓN'),
@@ -44,7 +44,7 @@ DRAW = {'oficios': pico.pico, 'tienda': iconos.tienda, 'gts': iconos.mercado, 'm
         'armario': iconos.armario, 'efectos': iconos.efectos, 'rango': iconos.rango, 'protecciones': iconos.protecciones}
 DRAW.update(iconos2.ICONOS)
 
-TILE = 38
+TILE = 40
 COLS_X = [84, 140, 196, 252, 308]
 ROWS_Y = [82, 136]
 
@@ -59,30 +59,68 @@ def put(im, x, y, c):
 
 
 def tile(hover=False):
-    """Ficha de 38x38 con sombra de 2 debajo (38x40)."""
+    """Ficha de app estilo RPG (40x40 + 2 de sombra = 40x42): marco de oro biselado (luz arriba a la izquierda), engaste
+    oscuro, cara de cristal azul con degradado y brillo en diagonal, y una gema azul en cada esquina como las del marco
+    del pad. Al pasar el ratón el oro se aclara, la cara se enciende y las gemas brillan."""
     n = TILE
     im = img(n, n + 2)
+    gold = [(255, 250, 214), (255, 230, 120), (246, 186, 48), (204, 128, 26), (150, 86, 20)]
+    if hover:
+        gold = [(255, 255, 240), (255, 244, 170), (255, 214, 96), (232, 160, 40), (176, 108, 26)]
+    top_face = (96, 176, 255) if hover else (70, 146, 236)
+    bot_face = (40, 102, 214) if hover else (30, 76, 178)
     for y in range(n):
         for x in range(n):
             cx, cy = min(x, n - 1 - x), min(y, n - 1 - y)
-            if cx + cy < 2:
-                continue
-            border = cx == 0 or cy == 0 or cx + cy == 2
-            top = y < n // 2
-            if border:
-                c = (186, 112, 20) if hover else NAVY
-            elif cy == 1 and top or cx == 1 and x < n // 2 or (cx + cy == 3 and top):
-                c = (255, 236, 150) if hover else WHITE
-            elif cy <= 2 and not top:
-                c = (236, 196, 120) if hover else (150, 206, 246)
-            elif cx == 1 and x > n // 2:
-                c = (250, 222, 160) if hover else (186, 228, 252)
+            d = min(cx, cy)
+            if cx + cy < 3:
+                continue  # esquinas recortadas
+            if d == 0 or cx + cy == 3:
+                c = NAVY
+            elif d <= 2 and cx + cy > 4 or (d <= 2):
+                # oro: claro arriba/izquierda, oscuro abajo/derecha, con una línea media
+                left_top = (y < n - 1 - y and cy <= cx) or (x < n - 1 - x and cx < cy)
+                if d == 1:
+                    c = gold[1] if left_top else gold[3]
+                else:
+                    c = gold[2] if left_top else gold[4]
+                if d == 1 and left_top and (x < 8 or y < 8) and cx + cy < 14:
+                    c = gold[0]
+            elif d == 3:
+                c = (34, 40, 96) if not hover else (40, 60, 130)  # engaste
             else:
-                c = (255, 250, 232) if hover else (226, 246, 255)
+                t = (y - 4) / (n - 9)
+                c = tuple(int(top_face[i] * (1 - t) + bot_face[i] * t) for i in range(3))
+                if d == 4 and y < n // 2 and cy == 4:
+                    c = (150, 210, 255) if not hover else (200, 236, 255)  # luz interior arriba
+                elif d == 4 and y > n // 2 and cy == 4:
+                    c = (22, 56, 140) if not hover else (30, 80, 180)  # sombra interior abajo
+                # brillo en diagonal
+                k = x + y
+                if 14 <= k <= 17 and x < 22 and y < 22:
+                    c = tuple(min(255, v + (34 if hover else 22)) for v in c)
             put(im, x, y, c)
-    for x in range(2, n - 2):
-        put(im, x, n, (40, 130, 210))
+    # tachuelas en las esquinas: rombo de oro con una gema azul en el centro (como las del marco del pad)
+    gem = [(230, 255, 255), (110, 220, 255), (30, 150, 236)] if not hover else [(255, 255, 255), (170, 244, 255), (70, 200, 255)]
+    stud = ["..O..",
+            ".OGO.",
+            "OGgGO",
+            ".OHO.",
+            "..O.."]
+    for ox, oy in ((2, 2), (n - 7, 2), (2, n - 7), (n - 7, n - 7)):
+        for dy, row in enumerate(stud):
+            for dx, ch in enumerate(row):
+                c = {'O': NAVY, 'G': gold[1], 'H': gold[3], 'g': gem[1]}.get(ch)
+                if c:
+                    put(im, ox + dx, oy + dy, c)
+        put(im, ox + 2, oy + 1, gold[0])
+        put(im, ox + 3, oy + 2, gold[3])
+        put(im, ox + 1, oy + 2, gold[1])
+        put(im, ox + 2, oy + 2, gem[0] if hover else gem[1])
+    # sombra debajo
     for x in range(3, n - 3):
+        put(im, x, n, (40, 130, 210))
+    for x in range(4, n - 4):
         put(im, x, n + 1, (66, 170, 236))
     return im
 

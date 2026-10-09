@@ -45,6 +45,7 @@ final class PadUi {
         g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0xFF2882D2);
         box(g, x, y, w, h, NAVY);
         box(g, x + 1, y + 1, w - 2, h - 2, PANEL);
+        if (w > 4 && h > 4) g.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, 0xFFF4FBFF, 0xFFDCEEFC);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
         g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, 0xFFAAD8F8);
     }
@@ -70,7 +71,18 @@ final class PadUi {
         box(g, x + 1, y + 1, w - 2, 13, face);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, light);
         g.fill(x + 2, y + 12, x + w - 2, y + 14, dark);
+        if (hover && enabled) shine(g, x + 2, y + 2, w - 4, 10);
         PadFont.drawCentered(g, label, x + w / 2, y + 2, 0xFFFFFF, true);
+    }
+
+    /** Destello que cruza un botón en diagonal cada ~0,9 s (al pasar el ratón). */
+    static void shine(GuiGraphics g, int x, int y, int w, int h) {
+        float p = (System.currentTimeMillis() % 900) / 900F;
+        int start = x - h + Math.round(p * (w + h * 2));
+        for (int r = 0; r < h; r++) {
+            int a = Math.max(x, start - r / 2), b = Math.min(x + w, start - r / 2 + 3);
+            if (b > a) g.fill(a, y + r, b, y + r + 1, 0x66FFFFFF);
+        }
     }
 
     /** Barra de progreso (verde; oro cuando está completa). */
@@ -81,8 +93,8 @@ final class PadUi {
         int fw = Math.round((w - 2) * f);
         if (fw > 0) {
             boolean full = f >= 1;
-            g.fill(x + 1, y + 1, x + 1 + fw, y + 5, full ? 0xFFF6B628 : 0xFF40C850);
-            g.fill(x + 1, y + 1, x + 1 + fw, y + 2, full ? 0xFFFFEC96 : 0xFFA0F078);
+            g.fillGradient(x + 1, y + 1, x + 1 + fw, y + 5, full ? 0xFFFFD86A : 0xFF6EE07A, full ? 0xFFE89A18 : 0xFF2FA848);
+            g.fill(x + 1, y + 1, x + 1 + fw, y + 2, full ? 0xFFFFF4B0 : 0xFFC8FFA8);
         }
     }
 

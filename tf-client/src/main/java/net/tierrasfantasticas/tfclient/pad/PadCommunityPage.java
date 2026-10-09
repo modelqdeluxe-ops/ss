@@ -177,13 +177,13 @@ final class PadCommunityPage extends PadPage {
         actions.clear();
         g.pose().pushPose();
         g.pose().translate(0, 0, 200);
-        g.fill(0, 0, SW, SH, 0xE618265C);
+        g.fill(OX, OY, OX + SW, OY + SH, 0xE618265C);
         int h = SH - 16, w = h * 16 / 9;
         if (w > SW - 16) {
             w = SW - 16;
             h = w * 9 / 16;
         }
-        int x = (SW - w) / 2, y = (SH - h) / 2;
+        int x = OX + (SW - w) / 2, y = OY + (SH - h) / 2;
         PadUi.box(g, x - 1, y - 1, w + 2, h + 2, 0xFFF6B628);
         ResourceLocation tex = PadCommunityClient.texture(post.id());
         if (tex != null) {
@@ -191,7 +191,7 @@ final class PadCommunityPage extends PadPage {
             g.blit(tex, x, y, w, h, 0, 0, sz[0], sz[1], sz[0], sz[1]);
         }
         g.pose().popPose();
-        hit(0, 0, SW, SH, () -> full = null);
+        hit(OX, OY, SW, SH, () -> full = null);
     }
 
     private static String ago(long time) {
