@@ -437,8 +437,8 @@ final class PadViewPage extends PadPage {
         int badgeW = r.badge().isEmpty() ? 0 : PadUi.font().width(r.badge()) + 6;
         int textH = 10 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0);
         int top = r.icon().isEmpty() ? y + 5 : y + Math.max(5, (h - textH) / 2 + 1);
-        PadUi.text(g, PadUi.fitEnd(r.title(), textW - badgeW), tx, top, titleColor);
-        if (badgeW > 0) PadUi.text(g, r.badge(), tx + textW - badgeW + 6, top, PadUi.GOLD_TEXT);
+        PadUi.text(g, PadUi.fitEnd(r.title(), Math.max(0, textW - badgeW)), tx, top, titleColor);
+        if (badgeW > 0) PadUi.text(g, r.badge(), Math.max(tx, tx + textW - badgeW + 6), top, PadUi.GOLD_TEXT);
         int ly = top + 10;
         for (String line : r.lines()) ly += Math.max(1, PadUi.wrapEllipsis(g, line, tx, ly, textW, PadUi.MUTED, 2)) * 10;
         if (r.progress() >= 0) PadUi.progress(g, tx, ly + 1, Math.min(textW, 120), r.progress());
@@ -474,6 +474,8 @@ final class PadViewPage extends PadPage {
         if (button != 0 || view == null) return false;
         for (Hit h : hits) {
             if (!PadUi.inside(mx, my, h.x, h.y, h.w, h.h)) continue;
+            // filas y tarjetas a medio esconder: solo cuenta la parte que se ve (no lo que queda bajo la cabecera o el campo)
+            if ((h.kind == 2 || h.kind == 3) && !inList(my)) continue;
             switch (h.kind) {
                 case 1 -> {
                     if (!h.action.equals(view.tab())) {

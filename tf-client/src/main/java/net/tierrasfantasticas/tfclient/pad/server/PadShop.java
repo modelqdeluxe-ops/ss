@@ -163,8 +163,8 @@ public final class PadShop {
     }
 
     /**
-     * La ficha de un objeto: arriba, su cabecera grande (el objeto, lo que dice, cuánto trae cada lote, cuántos llevas y
-     * tu saldo, con el precio del lote en la etiqueta); debajo, una tarjeta por cantidad («8 lotes», con lo que cuesta o
+     * La ficha de un objeto: arriba, su cabecera grande (el objeto, cuánto trae cada lote, cuántos llevas, tu saldo y lo
+     * que te queda hoy si hay límite, con el precio del lote en la etiqueta); debajo, una tarjeta por cantidad («8 lotes», con lo que cuesta o
      * lo que cobras); las que no puedes pagar o vender salen apagadas y dicen por qué. Comprar: otra cantidad abajo.
      */
     private static PadView item(ServerPlayer player, int ci, Category c, int ei, Entry e, boolean selling) {
@@ -178,15 +178,13 @@ public final class PadShop {
         int have = TFShop.count(player.getInventory(), e);
         long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
         List<String> lines = new ArrayList<>();
-        for (String l : e.lore()) {
-            String p = plain(l);
-            if (!p.isBlank()) {
-                lines.add(p);
-                break;
-            }
-        }
+        // dos líneas como mucho (lo que dice el objeto, en su tooltip): así las tarjetas caben debajo sin desplazar
         lines.add((e.amount() == 1 ? "Por unidad" : "Lote de " + e.amount()) + " · llevas " + have + ".");
-        if (!selling && balance >= 0) lines.add("Tienes " + TFEconomy.format(balance) + ".");
+        long daily = selling ? e.sellDaily() : e.buyDaily();
+        long dayLeftNow = daily > 0 ? Math.max(0, TFShop.left(player.getUUID(), (selling ? "v:" : "c:") + e.key(), daily)) : -1;
+        String today = dayLeftNow >= 0 ? "Hoy puedes " + (selling ? "vender " : "comprar ") + dayLeftNow + " más." : "";
+        if (!selling && balance >= 0) lines.add("Tienes " + TFEconomy.format(balance) + "." + (today.isEmpty() ? "" : " " + today));
+        else if (!today.isEmpty()) lines.add(today);
         String badge = selling ? "+" + TFEconomy.format(e.sell()) : TFEconomy.format(e.buy());
         b.hero(new PadView.Row(shown(e, e.amount()), TFShop.name(e), selling ? 0x40C850 : 0xF6B628, lines, -1, badge, null, null));
 
@@ -201,7 +199,6 @@ public final class PadShop {
                 String sub = ok ? "+" + money(e.sell() * step) : units > have ? "No tienes " + units : "Límite de hoy";
                 b.card(shown(e, units), amount(e, step), 0x40C850, sub, ok ? "vender:" + cat + ":" + step : "", false);
             }
-            if (e.sellDaily() > 0) b.header("Hoy puedes vender " + Math.max(0, dayLeft) + " más.");
             b.footer(PadView.Btn.of("ATRÁS", "volver:c/" + ci, PadView.BLUE));
             b.footer(canLots > 0 ? PadView.Btn.of("VENDER " + canLots * e.amount(), "vendertodo:" + cat, PadView.GREEN) : PadView.Btn.off("NO TIENES"));
         } else {
@@ -214,7 +211,6 @@ public final class PadShop {
                 String sub = ok ? money(cost) : !afford ? "Te faltan " + PadShop.price(cost - balance) : "Límite de hoy";
                 b.card(shown(e, (long) step * e.amount()), amount(e, step), 0xF6B628, sub, ok ? "comprar:" + cat + ":" + step : "", false);
             }
-            if (e.buyDaily() > 0) b.header("Hoy puedes comprar " + Math.max(0, dayLeft) + " más.");
             b.input("comprar:" + cat, "OTRA CANTIDAD (LOTES)", 3, "COMPRAR");
             b.footer(PadView.Btn.of("ATRÁS", "volver:c/" + ci, PadView.BLUE));
         }
@@ -229,7 +225,7 @@ public final class PadShop {
     }
 
     /** Dinero para una tarjeta: entero hasta 100.000 («1.536 monedas»); más, corto («250K monedas»). */
-    private static String money(long v) {
+    static String money(long v) {
         return v < 100_000 ? TFEconomy.format(v) : price(v) + " " + TFServerConfig.currency();
     }
 

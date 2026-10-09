@@ -173,7 +173,7 @@ public final class PadMarket {
             }
             String who = own ? "Tuyo" : "Lo vende " + l.sellerName();
             b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of(who + " · " + left(l) + "."), -1,
-                    TFEconomy.format(l.price()), btn, null).clickable("tab:l:" + l.id()).selected(own));
+                    PadShop.money(l.price()), btn, null).clickable("tab:l:" + l.id()).selected(own));
             n++;
         }
         if (q != null) {

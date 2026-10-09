@@ -99,7 +99,7 @@ page('p_tienda_cat', 'TIENDA', [], '', ['Minerales'], [], cards=[
 ], footer=[('ATRÁS', B)])
 page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], '', [], [
     ('diamond_sword', 'Espada de diamante', T, ['Lo vende Steve · quedan 3 días.'], -1, '5.000 monedas', ('COMPRAR', GO), None),
-    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '120.000 monedas', ('SIN SALDO', GR, False), None),
+    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '120K monedas', ('SIN SALDO', GR, False), None),
     ('trident', 'Tridente', T, ['Tuyo · quedan 2 días.'], -1, '40.000 monedas', ('RETIRAR', R), None, True),
     ('totem_of_undying', 'Tótem de la inmortalidad', T, ['Lo vende Notch · quedan 18 h.'], -1, '25.000 monedas', ('COMPRAR', GO), None),
     ('enchanted_book', 'Libro encantado', T, ['Lo vende Steve · quedan 6 días.'], -1, '2.500 monedas', ('COMPRAR', GO), None),
