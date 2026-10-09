@@ -13,7 +13,7 @@
  },
  {
   "id": "mago",
-  "name": "Mage",
+  "name": "Mago",
   "skills": [
    "fire_ball",
    "blink_",
@@ -25,7 +25,7 @@
  },
  {
   "id": "dragon_rojo",
-  "name": "dragon",
+  "name": "Dragón Rojo",
   "skills": [
    "red_dragon_mode",
    "red_dragon_mode_balance_breaker",

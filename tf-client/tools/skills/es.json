@@ -1,0 +1,73 @@
+{
+ "_leeme": "Textos en español de las clases (web, pad y juego). build_skills.py los mete en cada clase. Por clase: nombre, rol (una línea), descripción, color de la web y, por skill, nombre y descripción. Las pasivas se lanzan solas.",
+ "glacia": {
+  "name": "Glacia",
+  "role": "Maga de hielo · control y zona",
+  "desc": "La reina del hielo. Congela, ralentiza y encierra a sus enemigos con estacas, muros y tormentas de granizo.",
+  "color": "#7fd3ff",
+  "skills": {
+   "frost_bolt": {"name": "Rayo de Escarcha", "desc": "Dispara un carámbano que hiere y ralentiza al objetivo."},
+   "ice_spike": {"name": "Púas de Hielo", "desc": "Una ola de púas de hielo brota del suelo hacia delante, hiriendo y ralentizando a todo lo que alcanza."},
+   "frigid_path": {"name": "Senda Gélida", "desc": "Pasiva: deja tras de ti un rastro de hielo que ralentiza a los enemigos que lo pisan."},
+   "frost_beam": {"name": "Haz Gélido", "desc": "Lanza un haz de hielo continuo que hiere y ralentiza; si choca con un muro de hielo, estalla."},
+   "ice_wall": {"name": "Muro de Hielo", "desc": "Levanta un muro de hielo que bloquea el paso, lanza por los aires y ralentiza a los enemigos."},
+   "hailstorm": {"name": "Granizada", "desc": "Invoca una tormenta sobre ti: enormes granizos caen al suelo, congelando y ralentizando a los enemigos."}
+  }
+ },
+ "zephyr": {
+  "name": "Zephyr",
+  "role": "Asesino del viento · movilidad y combos",
+  "desc": "Un asesino que se mueve como el viento: marca a sus presas, las levanta con tornados y las remata en el aire.",
+  "color": "#8ff0c8",
+  "skills": {
+   "air_slash": {"name": "Tajo de Viento", "desc": "Dos tajos de viento seguidos. Hace más daño a los enemigos con la marca del viento."},
+   "tornado": {"name": "Tornado", "desc": "Lanza un tornado que daña a todo lo que encuentra en línea y lo deja en el aire."},
+   "aerial_burst": {"name": "Ráfaga Aérea", "desc": "Pasiva: al recibir daño, empuja a los enemigos cercanos y ganas velocidad."},
+   "cyclone": {"name": "Ciclón", "desc": "Crea un ciclón que atrae y hiere a los enemigos cercanos durante unos segundos."},
+   "wind_shadowstep": {"name": "Paso Sombrío", "desc": "Te teletransportas hasta el objetivo y le dejas la marca del viento."},
+   "hurricane_strike": {"name": "Golpe Huracanado", "desc": "Saltas hacia los enemigos que tu tornado dejó en el aire, los cortas varias veces y el último tajo los estrella contra el suelo."}
+  }
+ },
+ "mago": {
+  "name": "Mago",
+  "role": "Hechicero arcano · daño a distancia",
+  "desc": "Domina el fuego, el hielo y lo arcano: bolas de fuego, meteoros y cadenas ardientes desde lejos.",
+  "color": "#b98cff",
+  "skills": {
+   "fire_ball": {"name": "Bola de Fuego", "desc": "Lanza una bola de fuego que hiere y quema al objetivo."},
+   "blink_": {"name": "Parpadeo", "desc": "Te teletransportas unos bloques hacia donde miras."},
+   "arcane_missile": {"name": "Misil Arcano", "desc": "Pasiva: cada 5 hechizos invocas 3 misiles arcanos que persiguen y hieren a los enemigos."},
+   "frost_nova": {"name": "Nova de Escarcha", "desc": "Una ola de púas de hielo que hiere y entorpece a los enemigos."},
+   "meteor": {"name": "Meteoro", "desc": "Un meteoro cae del cielo, explota, quema a los enemigos y deja el suelo ardiendo un rato."},
+   "inferno_chains": {"name": "Cadenas Infernales", "desc": "Cuatro cadenas de fuego atrapan y aturden; luego el suelo se rompe y estalla hacia arriba."}
+  }
+ },
+ "dragon_rojo": {
+  "name": "Dragón Rojo",
+  "role": "Guerrero dragón · se transforma",
+  "desc": "Lleva el Sacred Gear, un guantelete de dragón que se hace más fuerte. Golpea y carga energía (agachado) para subirlo de nivel y desatar la armadura Balance Breaker.",
+  "color": "#ff5a4f",
+  "skills": {
+   "dragon_claw": {"name": "Garra de Dragón", "desc": "Un zarpazo de dragón delante de ti. Cada golpe carga tu guantelete."},
+   "dragon_shot": {"name": "Disparo de Dragón", "desc": "Dispara una bola de energía de dragón hacia el punto al que miras."},
+   "dragon_dash": {"name": "Embestida de Dragón", "desc": "Con el guantelete de nivel 2 o más: una embestida rapidísima hacia delante."},
+   "dragon_jump": {"name": "Salto de Dragón", "desc": "Con el guantelete de nivel 2 o más: un salto enorme y una caída lenta."},
+   "dragon_roar": {"name": "Rugido de Dragón", "desc": "En modo Balance Breaker: un rugido que hiere a todo lo que tienes alrededor."},
+   "dragon_ultimate": {"name": "Cañón del Dragón", "desc": "En modo Balance Breaker: la armadura abre sus cañones y dispara dos rayos devastadores."}
+  }
+ },
+ "thor": {
+  "name": "Thor",
+  "role": "Dios del trueno · golpes y aturdimiento",
+  "desc": "El dios del trueno con su martillo: lo lanza, invoca rayos y se eleva para estrellarse contra el suelo.",
+  "color": "#ffd34d",
+  "skills": {
+   "hammer_strike": {"name": "Martillazo", "desc": "Golpea a los enemigos de delante con el martillo."},
+   "hammer_throw": {"name": "Lanzar el Martillo", "desc": "Lanza el martillo, que atraviesa a los enemigos y vuelve a tu mano."},
+   "mighty_thunder": {"name": "Trueno Poderoso", "desc": "Pasiva: tus ataques y skills tienen un 30 % de probabilidad de hacer caer un rayo que aturde."},
+   "asgardian_fury": {"name": "Furia de Asgard", "desc": "Te cargas de rayos: velocidad II y fuerza II un rato."},
+   "thunder_shockwave": {"name": "Onda de Trueno", "desc": "Una ola de rayos avanza por el suelo aturdiendo a los enemigos."},
+   "thunder_smash": {"name": "Martillo Atronador", "desc": "Te elevas cargándote de rayos y te estrellas contra el suelo con una explosión de trueno que aturde."}
+  }
+ }
+}

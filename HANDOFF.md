@@ -56,10 +56,33 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       pasivas, `/tf web clases dar|lista|ver`, puente: campo `skills` [{uuid, clase, at}] en la respuesta del poll),
 >       `SkillClient` (dibuja actores: ítem en la cabeza como un soporte + modelos ME animados), `SkillHud` (columna a
 >       la derecha con iconos/teclas/cooldown; teclas R G Z X V B N M en Controles › «TF Skills»).
-> - [ ] Simulador offline (`tools/skills/sim.py`): ejecutar cada skill sin el juego (comprobar el programa) y sacar
->       vistas previas animadas para la web.
-> - [ ] Armas y armaduras de cada clase (vinculadas).
-> - [ ] Web: fuera Tienda de monedas, sección Skills (Stripe + monedas, una clase por jugador); puente con el mod.
+> - [x] Simulador offline `tools/skills/sim.py <clase> [skill] [--webp carpeta]` / `--todas`: copia las reglas del
+>       motor Java (si cambias uno, cambia el otro), avisa de mecánicas/objetivos/condiciones/variables que faltan y
+>       saca WebP animados (Steve + 3 zombis, skins del client.jar vía `build_vfx.py`). Con las pasivas de la clase
+>       calienta 45 ticks antes; prueba cada variante del objeto de mano (Dragón Rojo) y se queda con la que más hace.
+>       Pasada a las 39 clases: 271 avisos, todos de tandas futuras (lista: `mmocantarget`, `settextdisplay`,
+>       `<modifier.damage>` sin valor, `setnodamageticks`, `modifyprojectile`, `slash`, `@variablelocation`,
+>       `@children`, `signal`, `setvarloc`, `@targetblock`, `@entitiesinworld`, `hastag`, `posearmorstand`…).
+>       La tanda 1 sale con 0 avisos.
+> - [x] Armas y armaduras de clase: `build_skills.py` genera un set `clase_<id>` (`skills/class_sets.json`, lo lee
+>       `TFSets` además de `tf_sets.json`; `SetDef.classId`): arma de MMOItems (sin la «shiny»), armadura de cuero
+>       con CustomModelData + capas de OptiFine CIT, cabeza, y los objetos de mano que mira la clase (Sacred Gear del
+>       Dragón Rojo y sus niveles s2/s3: `itemissimilar` / `equip …:HAND` → `SkillItems`). Se entregan vinculados al
+>       tener la clase (`equipo` en skills.json, una vez por clase) y se quitan al cambiar de clase.
+>       `/tf web clases equipo <jugador>` las vuelve a dar.
+> - [x] Motor ampliado: `ondamaged/onattack` (auras que multiplican el daño), `command{c="meg disguise X"}` → modelo
+>       en el jugador, objeto en la mano de los efectos (`hand`), etiquetas que no son variables (`<#FFAC00>`) se
+>       quedan, `oH/oT/oE`, `castinstead/orElseCast`. Bug arreglado: rutas del pack relativas (la carpeta `skills/`
+>       del scratch hacía que mobs/ítems contasen como skills).
+> - [x] Textos en español de la tanda 1: `tools/skills/es.json` (nombre, rol, descripción, color; nombre y
+>       descripción de cada skill) → `name_es/role_es/desc_es`, `name_es/desc_es` en el JSON de cada clase.
+> - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
+>       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
+>       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de
+>       `tiendamonedas` ~541). Back: `src/app.js` (rutas al final, `createApp`), `src/store.js`. Falta: catálogo
+>       de clases para la web (iconos, vistas previas WebP del simulador, textos es), compra con Stripe y con monedas,
+>       una clase por jugador, y mandar `skills: [{uuid, clase, at}]` en la respuesta de `/bridge/poll` (el mod ya lo
+>       lee en `SkillServer.applyWeb`).
 > - [ ] Pad: app/apartado de la clase y sus skills.
 > - [ ] Publicar por tandas, con vistas previas. Tanda 1: Glacia, Zephyr, Mago, Dragón Rojo, Thor.
 >

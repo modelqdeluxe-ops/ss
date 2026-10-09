@@ -507,6 +507,21 @@ def build_pack(path, sound_events, name=None):
             rels.append(f'tfclient:skills/{pack.id}/{name}')
         sound_events[ev] = {'subtitle': None, 'sounds': rels}
 
+    # Textos en español (tools/skills/es.json): nombre, rol y descripción de la clase y de cada skill
+    es = ES.get(pack.id, {})
+    if not es:
+        pack.problems.append('sin textos en español (tools/skills/es.json)')
+    cls_info = dict(prog['class'])
+    for k in ('name', 'role', 'desc', 'color'):
+        if es.get(k):
+            cls_info[k + '_es' if k != 'color' else 'color'] = es[k]
+    for sk in prog['skills']:
+        t = (es.get('skills') or {}).get(sk['id'])
+        if t:
+            sk['name_es'], sk['desc_es'] = t['name'], t['desc']
+        elif not sk.get('hidden'):
+            pack.problems.append(f'skill sin texto en español: {sk["id"]}')
+    prog['class'] = cls_info
     cset, mm_items = class_set(pack, prog, models, LANG_ES, LANG_EN)
     out = {'id': pack.id, 'pack': pack.name, 'class': prog['class'], 'skills': prog['skills'], 'icons': icons,
            'set': cset['id'], 'hand_items': mm_items,
@@ -520,6 +535,7 @@ def build_pack(path, sound_events, name=None):
 
 
 LANG_ES, LANG_EN, CLASS_SETS = {}, {}, []
+ES = json.load(open(os.path.join(HERE, 'es.json'), encoding='utf-8'))
 
 
 def icon_png(pack, ref, depth=0):
@@ -831,7 +847,8 @@ def main():
         if not os.path.isdir(d) or name in SKIP_PACKS:
             continue
         pack, out = build_pack(d, sound_events, name)
-        catalog.append({'id': pack.id, 'name': out['class']['name'], 'skills': [s['id'] for s in out['skills']]})
+        catalog.append({'id': pack.id, 'name': out['class'].get('name_es') or out['class']['name'],
+                        'skills': [s['id'] for s in out['skills']]})
         print(f"{pack.id:24s} {len(out['skills'])} skills, {len(out['models'])} modelos ME, "
               f"{len(out['item_models'])} modelos de ítem, {len(out['icons'])} iconos, problemas: {len(pack.problems)}")
         for p in pack.problems[:8]:
