@@ -493,9 +493,19 @@ final class PadViewPage extends PadPage {
         if (clickable) hits.add(0, new Hit(x, y, w, 16, 0, b.action(), b.style()));
     }
 
+    /**
+     * La leyenda del objeto bajo el ratón: solo en la Tienda y en Kits (en el resto los objetos son iconos), y a dos
+     * tercios de su tamaño para que no tape la pantalla.
+     */
     @Override
     void renderOver(GuiGraphics g, int mx, int my) {
-        if (!tooltip.isEmpty()) g.renderTooltip(PadUi.font(), tooltip, mx, my);
+        if (tooltip.isEmpty() || !(app.equals("tienda") || app.equals("kits"))) return;
+        float k = 2F / 3F;
+        g.pose().pushPose();
+        g.pose().translate(mx, my, 0);
+        g.pose().scale(k, k, 1);
+        g.renderTooltip(PadUi.font(), tooltip, 0, 0);
+        g.pose().popPose();
     }
 
     // ---------------------------------------------------------------------------------------------------------------

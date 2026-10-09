@@ -10,10 +10,10 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **EN CURSO (1.3.29, checkpoints):** el dueño vio la 1.3.28 y pidió (con capturas):
-> 1. ⏳ Las leyendas (tooltip) de los objetos **solo en Kits y Tienda**; en el resto no (son iconos; tampoco cabezas) y
+> 1. ✅ Las leyendas (tooltip) de los objetos **solo en Kits y Tienda**; en el resto no (son iconos; tampoco cabezas) y
 >    más pequeñas (tapaban la pantalla).
-> 2. ⏳ Oficios: **ningún mensaje en pantalla** (el actionbar «Leñador 1 +2 xp +1,5 monedas (6/100)» sobra).
-> 3. ⏳ Tienda: en COMPRAR solo lo que se compra; lo que se vende, solo en VENDER (desde tu inventario, lo que el admin
+> 2. ✅ Oficios: **ningún mensaje en pantalla** (el actionbar «Leñador 1 +2 xp +1,5 monedas (6/100)» sobra).
+> 3. ✅ Tienda: en COMPRAR solo lo que se compra; lo que se vende, solo en VENDER (desde tu inventario, lo que el admin
 >    permita). Nada de verdes de venta mezclados.
 > 4. ⏳ Oficios más retadores (se ganan monedas muy fácil); **colchón de 3 meses de misiones** que no se repitan; cazas
 >    igual (3 meses) pero **configurables por él** (tendrá mobs de mods).

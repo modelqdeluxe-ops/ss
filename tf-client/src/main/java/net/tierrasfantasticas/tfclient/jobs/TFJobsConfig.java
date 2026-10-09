@@ -92,7 +92,6 @@ public final class TFJobsConfig {
     public static int maxJobs = 1;
     public static int switchWaitMinutes = 5;
     public static int paySeconds = 15;
-    public static boolean actionBar = true;
     public static boolean placedDontCount = true;
     public static boolean spawnersCount = false;
     public static int maxLevel = 50;
@@ -147,7 +146,6 @@ public final class TFJobsConfig {
         maxJobs = (int) Math.max(1, TFJson.num(json, "maxOficios", 1));
         switchWaitMinutes = (int) Math.max(0, TFJson.num(json, "esperaCambioMinutos", 5));
         paySeconds = (int) Math.max(1, Math.min(600, TFJson.num(json, "pagoCadaSegundos", 15)));
-        actionBar = TFJson.bool(json, "avisoActionBar", true);
         placedDontCount = TFJson.bool(json, "bloquesColocadosNoCuentan", true);
         spawnersCount = TFJson.bool(json, "generadoresCuentan", false);
         JsonObject levels = TFJson.obj(json, "niveles");

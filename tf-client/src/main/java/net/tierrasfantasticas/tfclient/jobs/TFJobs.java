@@ -14,9 +14,6 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -66,8 +63,6 @@ public final class TFJobs {
     /** Monedas ganadas aún sin pagar (se pagan juntas cada pagoCadaSegundos). */
     private static final Map<UUID, Double> pending = new HashMap<>();
     /** Lo ganado desde el último aviso en la barra de acción. */
-    private static final Map<UUID, double[]> feedback = new HashMap<>();
-    private static final Map<UUID, String> feedbackJob = new HashMap<>();
     /** Encantamientos hechos (estadística del juego) para saber cuándo encanta alguien. */
     private static final Map<UUID, Integer> enchants = new HashMap<>();
     private static final String SPAWNER_TAG = "tfclient_generador";
@@ -93,7 +88,6 @@ public final class TFJobs {
         TFJobsData.unload();
         TFPlacedBlocks.save();
         pending.clear();
-        feedback.clear();
         enchants.clear();
         server = null;
     }
@@ -104,7 +98,6 @@ public final class TFJobs {
         int tick = server.getTickCount();
         if (tick % 10 == 0) {
             checkEnchants();
-            showFeedback();
         }
         if (tick % (TFJobsConfig.paySeconds * 20) == 0) payAll(false);
         if (tick % 1200 == 0) {
@@ -117,7 +110,6 @@ public final class TFJobs {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (server == null || !(event.getEntity() instanceof ServerPlayer player)) return;
         pay(player.getUUID(), player.getGameProfile().getName(), true);
-        feedback.remove(player.getUUID());
         enchants.remove(player.getUUID());
     }
 
@@ -270,10 +262,6 @@ public final class TFJobs {
             if (xp > 0 || coins > 0) {
                 changed = true;
                 pending.merge(player.getUUID(), coins, Double::sum);
-                double[] fb = feedback.computeIfAbsent(player.getUUID(), k -> new double[2]);
-                fb[0] += xp;
-                fb[1] += coins;
-                feedbackJob.put(player.getUUID(), jobId);
                 addXp(player, job, jp, xp);
             }
         }
@@ -320,9 +308,7 @@ public final class TFJobs {
         for (String command : TFJobsConfig.levelCommands) runCommand(command, player, job, level);
         if (milestone != null) giveExtras(player, job, level, milestone);
         Style color = Style.EMPTY.withColor(TextColor.fromRgb(job.color()));
-        player.connection.send(new ClientboundSetTitlesAnimationPacket(8, 50, 15));
-        player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("¡Nivel " + level + "!").withStyle(ChatFormatting.GOLD)));
-        player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal(job.name()).withStyle(color)));
+        // sin título ni avisos en pantalla (el dueño no quiere el progreso encima del juego): solo el sonido y el chat
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.8F, 1.0F);
         player.sendSystemMessage(Component.literal("¡Subiste a nivel " + level + " de ").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(job.name()).withStyle(color))
@@ -444,25 +430,6 @@ public final class TFJobs {
     /** Monedas ganadas que se pagarán en el próximo pago. */
     public static double pendingCoins(UUID uuid) {
         return pending.getOrDefault(uuid, 0.0);
-    }
-
-    private static void showFeedback() {
-        if (!TFJobsConfig.actionBar || feedback.isEmpty()) return;
-        for (Map.Entry<UUID, double[]> e : feedback.entrySet()) {
-            ServerPlayer player = server.getPlayerList().getPlayer(e.getKey());
-            Job job = TFJobsConfig.job(feedbackJob.get(e.getKey()));
-            if (player == null || job == null) continue;
-            double[] fb = e.getValue();
-            JobProgress jp = data().player(player.getUUID()).job(job.id());
-            MutableComponent bar = Component.literal(job.name() + " " + jp.level).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(job.color())))
-                    .append(Component.literal("  +" + fmt(fb[0]) + " xp").withStyle(ChatFormatting.AQUA));
-            if (fb[1] > 0) bar.append(Component.literal("  +" + fmt(fb[1]) + " " + TFServerConfig.currency()).withStyle(ChatFormatting.GOLD));
-            if (jp.level < TFJobsConfig.maxLevel) {
-                bar.append(Component.literal("  (" + (int) jp.xp + "/" + TFJobsConfig.xpFor(jp.level) + ")").withStyle(ChatFormatting.DARK_GRAY));
-            }
-            player.displayClientMessage(bar, true);
-        }
-        feedback.clear();
     }
 
     static String fmt(double v) {

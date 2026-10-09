@@ -12,7 +12,6 @@
   "maxOficios": 1,
   "esperaCambioMinutos": 5,
   "pagoCadaSegundos": 15,
-  "avisoActionBar": true,
   "bloquesColocadosNoCuentan": true,
   "generadoresCuentan": false,
   "niveles": {
