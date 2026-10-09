@@ -30,6 +30,9 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > (`TFConfigDir.upgrade`, claves versionEconomia / version). Pagos por acción ÷5–10, misiones ≈10 % de antes.
 > Hecho 6: reacciones risa/wow/triste/fuego/top (`PadCommunityNet.REACTIONS`, iconos `emo_*.png` de build_pad), una por
 > jugador y foto («reacciones» en cada publicación del servidor), fila de emojis encima del corazón.
+> En curso 7: playlists en `MusicLibrary` (listas, listaActual; `queue()` = lo que suena) y altavoz: `PadSpeakerNet`
+> (Up/Down, ids 20-21), `server/PadSpeakers` (quién está a 32 bloques), `music/MusicSpeaker` (cada cliente baja la
+> canción del link y la oye en mono situada en el jugador, categoría Discos). Falta: la interfaz en PadMusicPage.
 > Reglas: checkpoints frecuentes (commit + push) con el avance aquí.
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del

@@ -16,6 +16,8 @@ final class MusicStream implements AudioStream {
     private final AudioFormat format;
     private final long startMs;
     private final int frameBytes;
+    /** Medir el volumen para el ecualizador de la app (solo la música propia, no la de los altavoces de otros). */
+    private final boolean meter;
     private byte[] chunk;
     private int chunkPos;
     private long frames;
@@ -24,6 +26,11 @@ final class MusicStream implements AudioStream {
     volatile boolean ended;
 
     MusicStream(AudioDecoder decoder, long startMs) {
+        this(decoder, startMs, true);
+    }
+
+    MusicStream(AudioDecoder decoder, long startMs, boolean meter) {
+        this.meter = meter;
         this.decoder = decoder;
         this.startMs = startMs;
         this.format = new AudioFormat(decoder.sampleRate(), 16, decoder.channels(), true, false);
@@ -49,7 +56,7 @@ final class MusicStream implements AudioStream {
                 }
             }
             int n = Math.min(out.remaining(), chunk.length - chunkPos);
-            measure(chunk, chunkPos, n);
+            if (meter) measure(chunk, chunkPos, n);
             out.put(chunk, chunkPos, n);
             chunkPos += n;
         }
