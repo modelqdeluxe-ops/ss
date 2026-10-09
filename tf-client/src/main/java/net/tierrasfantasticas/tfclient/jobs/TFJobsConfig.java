@@ -82,6 +82,88 @@ public final class TFJobsConfig {
         }
     }
 
+    // ---------------------------------------------------------------------------------------------------------------
+    // Misiones que rotan: las «diaria» de cada oficio son plantillas; cada día a cada jugador le tocan dailyMissions de
+    // las de su nivel (TFRotation: temporadas de 90 días sin repetir ninguna igual y cada vez algo más difíciles).
+    // Las «siempre» y «nunca» se quedan fijas.
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Las misiones de un oficio hoy para un jugador: primero las diarias que le tocan, luego las fijas. */
+    public static List<Mission> missionsFor(Job job, java.util.UUID uuid, TFJobsData.JobProgress jp) {
+        long day = net.tierrasfantasticas.tfclient.util.TFRotation.day();
+        if (jp.rotDay != day) {
+            List<Mission> open = new ArrayList<>();
+            for (Mission m : job.missions()) if (m.repeat() == Repeat.DAILY && m.level() <= jp.level) open.add(m);
+            // las de ayer se guardan para poder cobrar las que quedaron hechas al pasar la medianoche
+            jp.prevIds.clear();
+            if (jp.rotDay == day - 1) jp.prevIds.addAll(jp.rotIds);
+            jp.prevDay = jp.prevIds.isEmpty() ? -1 : day - 1;
+            jp.rotIds.clear();
+            for (var p : net.tierrasfantasticas.tfclient.util.TFRotation.pick(open.size(), dailyMissions, day,
+                    net.tierrasfantasticas.tfclient.util.TFRotation.SEASON_DAYS, job.id().hashCode(), uuid.hashCode())) {
+                jp.rotIds.add(open.get(p.index()).id() + "@" + p.factor());
+            }
+            jp.rotDay = day;
+            TFJobs.data().changed();
+        }
+        List<Mission> out = new ArrayList<>();
+        for (String r : jp.rotIds) {
+            Mission m = fromRot(job, r, day);
+            if (m != null) out.add(m);
+        }
+        // de ayer, solo las hechas sin cobrar (al final de las diarias)
+        if (jp.prevDay == day - 1) {
+            for (String r : jp.prevIds) {
+                Mission m = fromRot(job, r, jp.prevDay);
+                TFJobsData.MissionState ms = m == null ? null : jp.missions.get(m.id());
+                if (ms != null && ms.done && ms.claimedDay < 0) out.add(m);
+            }
+        }
+        for (Mission m : job.missions()) if (m.repeat() != Repeat.DAILY) out.add(m);
+        return out;
+    }
+
+    /** "plantilla@factor" del día → la misión, o null si la plantilla ya no existe. */
+    private static Mission fromRot(Job job, String r, long day) {
+        int at = r.indexOf('@');
+        Mission t = at > 0 ? job.mission(r.substring(0, at)) : null;
+        if (t == null) return null;
+        double f;
+        try {
+            f = Double.parseDouble(r.substring(at + 1));
+        } catch (NumberFormatException e) {
+            f = 1;
+        }
+        return rotated(t, f, day);
+    }
+
+    /** Una misión de hoy por su id (de missionsFor), o null. */
+    public static Mission missionFor(Job job, java.util.UUID uuid, TFJobsData.JobProgress jp, String id) {
+        for (Mission m : missionsFor(job, uuid, jp)) if (m.id().equals(id)) return m;
+        return null;
+    }
+
+    /** La misión de la plantilla para el día: id «h&lt;día&gt;_&lt;plantilla&gt;», cantidad y premio por el factor. */
+    private static Mission rotated(Mission t, double f, long day) {
+        Reward r = t.reward();
+        Reward scaled = new Reward(net.tierrasfantasticas.tfclient.util.TFRotation.coins(r.coins(), f), Math.round(r.xp() * f), r.items(),
+                r.commands());
+        return new Mission("h" + day + "_" + t.id(), t.name(), t.description(), t.icon(), t.type(), t.target(),
+                net.tierrasfantasticas.tfclient.util.TFRotation.amount(t.amount(), f), t.level(), Repeat.DAILY, scaled);
+    }
+
+    /** El día de una misión que rota («h&lt;día&gt;_…»), o -1 si es fija. */
+    static long rotatedDay(String id) {
+        if (!id.startsWith("h")) return -1;
+        int u = id.indexOf('_');
+        if (u < 2) return -1;
+        try {
+            return Long.parseLong(id.substring(1, u));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
     public static final List<String> BACKGROUNDS = List.of("farmer", "miner", "wood_cutter", "digger", "fisherman", "hunter",
             "alchemist", "blacksmith", "builder", "enchanter");
     static final List<String> TYPES = List.of("romper", "cosechar", "colocar", "matar", "pescar", "fabricar", "fundir", "preparar",
@@ -92,7 +174,6 @@ public final class TFJobsConfig {
     public static int maxJobs = 1;
     public static int switchWaitMinutes = 5;
     public static int paySeconds = 15;
-    public static boolean actionBar = true;
     public static boolean placedDontCount = true;
     public static boolean spawnersCount = false;
     public static int maxLevel = 50;
@@ -100,6 +181,8 @@ public final class TFJobsConfig {
     public static double xpFactor = 1.15;
     public static double coinBonusPerLevel = 0.03;
     public static int announceEvery = 10;
+    /** Cuántas misiones diarias da cada oficio al día (salen de sus misiones «diaria», que rotan). */
+    public static int dailyMissions = 3;
     public static double levelCoins = 150;
     public static double levelCoinsPerLevel = 50;
     public static List<String> levelCommands = List.of();
@@ -141,13 +224,14 @@ public final class TFJobsConfig {
                 warnings.add(file.getFileName() + " no es un JSON válido: se mantienen los oficios de antes");
                 return warnings;
             }
+            // 1.3.29: economía nueva (pagos más bajos, misiones que rotan): la de antes se guarda y se cambia
+            json = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, json, "versionEconomia", 2, defaults(), "oficios.json");
         }
         if (json == null) return warnings;
         enabled = TFJson.bool(json, "activado", true);
         maxJobs = (int) Math.max(1, TFJson.num(json, "maxOficios", 1));
         switchWaitMinutes = (int) Math.max(0, TFJson.num(json, "esperaCambioMinutos", 5));
         paySeconds = (int) Math.max(1, Math.min(600, TFJson.num(json, "pagoCadaSegundos", 15)));
-        actionBar = TFJson.bool(json, "avisoActionBar", true);
         placedDontCount = TFJson.bool(json, "bloquesColocadosNoCuentan", true);
         spawnersCount = TFJson.bool(json, "generadoresCuentan", false);
         JsonObject levels = TFJson.obj(json, "niveles");
@@ -156,6 +240,7 @@ public final class TFJobsConfig {
         xpFactor = Math.max(1, TFJson.dec(levels, "multiplicador", 1.15));
         coinBonusPerLevel = Math.max(0, TFJson.dec(levels, "bonusMonedasPorNivel", 0.03));
         announceEvery = (int) Math.max(0, TFJson.num(levels, "anunciarCada", 10));
+        dailyMissions = (int) Math.max(1, Math.min(8, TFJson.num(json, "misionesDiariasPorOficio", 3)));
         JsonObject levelReward = TFJson.obj(levels, "recompensa");
         levelCoins = TFJson.dec(levelReward, "monedas", 150);
         levelCoinsPerLevel = TFJson.dec(levelReward, "monedasPorNivel", 50);

@@ -35,7 +35,7 @@ final class PadHomePage extends PadPage {
             new App("a_apps", "APPS", "admin"), new App("a_tienda", "TIENDA", "tienda"), new App("a_kits", "KITS", "kits"),
             new App("a_recompensas", "RECOMPENSAS", "recompensas"), new App("a_viajes", "VIAJES", "viajes"),
             new App("a_gts", "GTS", "gts"), new App("a_comunidad", "COMUNIDAD", "comunidad"),
-            new App("a_oficios", "OFICIOS", "oficios"), new App("a_ajustes", "AJUSTES", "admin"));
+            new App("a_oficios", "OFICIOS", "oficios"), new App("a_cazas", "CAZAS", "cazas"), new App("a_ajustes", "AJUSTES", "admin"));
 
     /** Ficha (textura de 40x40 + 2 de sombra) e icono (32x32, a 4 del borde). */
     private static final int TILE_TEX = 40, ICON_OFF = 4;

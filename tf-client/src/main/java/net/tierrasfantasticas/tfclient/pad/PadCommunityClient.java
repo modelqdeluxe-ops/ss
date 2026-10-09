@@ -111,7 +111,17 @@ final class PadCommunityClient {
             if (!p.id().equals(id)) continue;
             if (action.equals("like")) {
                 POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(),
-                        Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete()));
+                        Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete(), p.reactions(), p.myReaction()));
+            } else if (action.startsWith("react:")) {
+                // al momento, como en el servidor: la misma otra vez la quita; otra, la cambia
+                int k = PadCommunityNet.REACTIONS.indexOf(action.substring(6));
+                if (k < 0) break;
+                int[] r = p.reactions().clone();
+                if (p.myReaction() >= 0 && p.myReaction() < r.length) r[p.myReaction()] = Math.max(0, r[p.myReaction()] - 1);
+                int mineNow = p.myReaction() == k ? -1 : k;
+                if (mineNow >= 0) r[mineNow]++;
+                POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(), p.likes(), p.liked(),
+                        p.mine(), p.canDelete(), r, mineNow));
             } else if (action.equals("borrar")) {
                 POSTS.remove(i);
                 total = Math.max(0, total - 1);

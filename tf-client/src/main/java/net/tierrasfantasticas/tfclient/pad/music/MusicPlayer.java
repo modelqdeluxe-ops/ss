@@ -111,7 +111,7 @@ public final class MusicPlayer {
         } else if (current() != null) {
             start(positionMs);
         } else {
-            List<MusicLibrary.Track> all = MusicLibrary.tracks();
+            List<MusicLibrary.Track> all = MusicLibrary.queue();
             if (!all.isEmpty()) play(shuffle() ? all.get(ThreadLocalRandom.current().nextInt(all.size())) : all.get(0));
         }
     }
@@ -119,6 +119,7 @@ public final class MusicPlayer {
     public static void pause() {
         stopSound();
         playing = false;
+        MusicSpeaker.publish();
     }
 
     /** Apaga la música (y vuelve al principio de la canción). */
@@ -126,6 +127,7 @@ public final class MusicPlayer {
         stopSound();
         playing = false;
         positionMs = 0;
+        MusicSpeaker.publish();
     }
 
     public static void next() {
@@ -193,9 +195,9 @@ public final class MusicPlayer {
 
     // ---------------------------------------------------------------------------------------------------------------
 
-    /** La siguiente (dir 1) o anterior (-1) según aleatorio y repetir; null si no hay. */
+    /** La siguiente (dir 1) o anterior (-1) de la lista que suena, según aleatorio y repetir; null si no hay. */
     private static MusicLibrary.Track pick(int dir) {
-        List<MusicLibrary.Track> all = MusicLibrary.tracks();
+        List<MusicLibrary.Track> all = MusicLibrary.queue();
         if (all.isEmpty()) return null;
         if (current == null) return all.get(0);
         if (shuffle() && all.size() > 1 && dir > 0) {
@@ -224,6 +226,7 @@ public final class MusicPlayer {
         lastNanos = System.nanoTime();
         restartedAt = System.currentTimeMillis();
         mc.getMusicManager().stopPlaying();
+        MusicSpeaker.publish();
     }
 
     private static void stopSound() {

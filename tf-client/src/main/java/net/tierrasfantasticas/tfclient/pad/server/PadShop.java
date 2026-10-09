@@ -127,21 +127,29 @@ public final class PadShop {
         return PadView.of("tienda").tab("", "COMPRAR").tab("v", "VENDER").selected(selected);
     }
 
+    /** Lo que se compra de una categoría (con permiso): COMPRAR solo enseña esto; lo que solo se vende va en VENDER. */
+    private static int buyable(ServerPlayer player, Category c) {
+        int n = 0;
+        for (Entry e : c.entries()) if (e.buyable() && player.hasPermissions(e.permission())) n++;
+        return n;
+    }
+
     private static PadView categories(ServerPlayer player, List<Category> cats) {
         PadView.Builder b = base("");
         for (int i = 0; i < cats.size(); i++) {
             Category c = cats.get(i);
+            int n = buyable(player, c);
+            if (n == 0) continue;
             List<String> lines = new ArrayList<>();
             for (String d : c.description()) {
                 String p = plain(d);
                 if (!p.isBlank()) lines.add(p);
                 if (lines.size() >= 1) break;
             }
-            int n = c.entries().size();
             b.row(new PadView.Row(new ItemStack(c.icon()), plain(c.name()), c.color() == 0 ? TEXT : c.color() & 0xFFFFFF, lines, -1,
                     n + (n == 1 ? " objeto" : " objetos"), null, null).clickable("tab:c:" + i));
         }
-        if (cats.isEmpty()) b.empty("Tienda vacía.");
+        b.empty("No hay nada a la venta. Para vender lo tuyo, mira VENDER.");
         return b.build();
     }
 
@@ -149,31 +157,26 @@ public final class PadShop {
         PadView.Builder b = PadView.of("tienda").header(plain(c.name())).cards();
         for (int i = 0; i < c.entries().size(); i++) {
             Entry e = c.entries().get(i);
-            if (!player.hasPermissions(e.permission())) continue;
-            boolean buy = e.buyable();
+            if (!player.hasPermissions(e.permission()) || !e.buyable()) continue;
             ItemStack shown = shown(e, e.amount());
             String name = e.name().isBlank() ? shown.getHoverName().getString() : plain(e.name());
-            String sub = buy ? PadView.money(e.buy()) : e.sellable() ? "+" + PadView.money(e.sell()) : "";
-            b.card(shown, name, buy ? 0xF6B628 : 0x40C850, sub, "tab:i:" + ci + ":" + i + (buy ? ":b" : ":s"), false);
+            b.card(shown, name, 0xF6B628, PadView.money(e.buy()), "tab:i:" + ci + ":" + i + ":b", false);
         }
-        if (c.entries().isEmpty()) b.empty("Vacía.");
+        b.empty("Aquí no hay nada a la venta.");
         b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
         return b.build();
     }
 
     /**
-     * La ficha de un objeto: arriba, su cabecera grande (el objeto, cuánto trae cada lote, cuántos llevas, tu saldo y lo
+     * La ficha de un objeto, de compra o de venta (no se mezclan): arriba, su cabecera grande (el objeto, cuánto trae cada lote, cuántos llevas, tu saldo y lo
      * que te queda hoy si hay límite, con el precio del lote en la etiqueta); debajo, una tarjeta por cantidad («8 lotes», con lo que cuesta o
      * lo que cobras); las que no puedes pagar o vender salen apagadas y dicen por qué. Comprar: otra cantidad abajo.
      */
     private static PadView item(ServerPlayer player, int ci, Category c, int ei, Entry e, boolean selling) {
         if (selling && !e.sellable()) selling = false;
         if (!selling && !e.buyable()) selling = true;
-        String key = "i:" + ci + ":" + ei + ":";
-        PadView.Builder b = PadView.of("tienda");
-        if (e.buyable()) b.tab(key + "b", "COMPRAR");
-        if (e.sellable()) b.tab(key + "s", "VENDER");
-        b.selected(key + (selling ? "s" : "b"));
+        // comprar y vender no se mezclan: la ficha es de compra (desde COMPRAR) o de venta (desde VENDER)
+        PadView.Builder b = PadView.of("tienda").selected("i:" + ci + ":" + ei + ":" + (selling ? "s" : "b"));
         int have = TFShop.count(player.getInventory(), e);
         long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
         List<String> lines = new ArrayList<>();
@@ -198,7 +201,7 @@ public final class PadShop {
                 String sub = ok ? "+" + PadView.money(e.sell() * step) : units > have ? "No tienes " + units : "Límite de hoy";
                 b.card(shown(e, units), amount(e, step), 0x40C850, sub, ok ? "vender:" + cat + ":" + step : "", false);
             }
-            b.footer(PadView.Btn.of("ATRÁS", "volver:c/" + ci, PadView.BLUE));
+            b.footer(PadView.Btn.of("ATRÁS", "volver:v", PadView.BLUE));
             b.footer(canLots > 0 ? PadView.Btn.of("VENDER " + canLots * e.amount(), "vendertodo:" + cat, PadView.GREEN) : PadView.Btn.off("NO TIENES"));
         } else {
             long dayLeft = TFShop.left(player.getUUID(), "c:" + e.key(), e.buyDaily());

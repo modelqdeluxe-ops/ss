@@ -53,6 +53,7 @@ public final class TFPadNet {
         CHANNEL.messageBuilder(OpenApp.class, 7, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(OpenApp::write).decoder(OpenApp::read).consumerMainThread(OpenApp::handle).add();
         PadCommunityNet.register(CHANNEL, 10);
+        PadSpeakerNet.register(CHANNEL, 20);
     }
 
     /** El cliente pide sus datos al abrir el pad. */

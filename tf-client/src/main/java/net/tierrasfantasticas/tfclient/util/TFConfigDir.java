@@ -37,6 +37,26 @@ public final class TFConfigDir {
         return file;
     }
 
+    /**
+     * Si la config del servidor es de una versión anterior (key &lt; version), guarda una copia
+     * («nombre.antes-vN.json», junto a ella) y la cambia por la nueva por defecto. Devuelve la que vale.
+     */
+    public static com.google.gson.JsonObject upgrade(Path file, com.google.gson.JsonObject current, String key, int version,
+                                                     com.google.gson.JsonObject defaults, String what) {
+        if (current == null || defaults == null || TFJson.num(current, key, 0) >= version) return current;
+        try {
+            String name = file.getFileName().toString().replaceFirst("\\.json$", "");
+            Path backup = file.resolveSibling(name + ".antes-v" + version + ".json");
+            if (!Files.exists(backup)) Files.copy(file, backup);
+            TFJson.write(file, defaults);
+            TFClient.LOGGER.info("TF Client: {} actualizado a la versión {} (la de antes, en {})", what, version, backup.getFileName());
+            return defaults;
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Client: no se pudo actualizar {}: {}", what, e.getMessage());
+            return current;
+        }
+    }
+
     /** Como file(), pero trae la config de antes desde otra ruta (por ejemplo, la del mundo). */
     public static Path fileFrom(String name, Path before) {
         Path file = file(name, null);

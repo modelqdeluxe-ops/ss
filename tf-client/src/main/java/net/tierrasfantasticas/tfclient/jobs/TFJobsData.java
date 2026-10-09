@@ -30,6 +30,12 @@ public final class TFJobsData {
         public int level = 1;
         public double xp;
         public final Map<String, MissionState> missions = new HashMap<>();
+        /** Las misiones diarias que le tocaron hoy (día de TFRotation) en este oficio: "plantilla@factor". */
+        public long rotDay = -1;
+        public final List<String> rotIds = new ArrayList<>();
+        /** Las de ayer: las que quedaron hechas sin cobrar se pueden cobrar todavía hoy. */
+        public long prevDay = -1;
+        public final List<String> prevIds = new ArrayList<>();
 
         public MissionState mission(String id) {
             return missions.computeIfAbsent(id, k -> new MissionState());
@@ -105,6 +111,14 @@ public final class TFJobsData {
             JobProgress jp = p.job(id);
             jp.level = (int) Math.max(1, TFJson.num(jo, "nivel", 1));
             jp.xp = Math.max(0, TFJson.dec(jo, "xp", 0));
+            jp.rotDay = TFJson.num(jo, "hoy", -1);
+            if (jo.has("hoyMisiones") && jo.get("hoyMisiones").isJsonArray()) {
+                for (JsonElement el : jo.getAsJsonArray("hoyMisiones")) jp.rotIds.add(el.getAsString());
+            }
+            jp.prevDay = TFJson.num(jo, "ayer", -1);
+            if (jo.has("ayerMisiones") && jo.get("ayerMisiones").isJsonArray()) {
+                for (JsonElement el : jo.getAsJsonArray("ayerMisiones")) jp.prevIds.add(el.getAsString());
+            }
             JsonObject missions = TFJson.obj(jo, "misiones");
             for (String mid : missions.keySet()) {
                 JsonObject mo = missions.getAsJsonObject(mid);
@@ -128,9 +142,25 @@ public final class TFJobsData {
             JsonObject jo = new JsonObject();
             jo.addProperty("nivel", jp.level);
             jo.addProperty("xp", Math.round(jp.xp * 100) / 100.0);
+            if (jp.rotDay >= 0) {
+                jo.addProperty("hoy", jp.rotDay);
+                JsonArray rot = new JsonArray();
+                jp.rotIds.forEach(rot::add);
+                jo.add("hoyMisiones", rot);
+            }
+            if (jp.prevDay >= 0) {
+                jo.addProperty("ayer", jp.prevDay);
+                JsonArray prev = new JsonArray();
+                jp.prevIds.forEach(prev::add);
+                jo.add("ayerMisiones", prev);
+            }
             JsonObject missions = new JsonObject();
+            long today = net.tierrasfantasticas.tfclient.util.TFRotation.day();
             jp.missions.forEach((mid, ms) -> {
                 if (ms.progress == 0 && !ms.done && ms.claimedDay < 0) return;
+                long day = TFJobsConfig.rotatedDay(mid);
+                // las de otros días ya no valen; las de ayer, solo si quedaron hechas sin cobrar
+                if (day >= 0 && (day < today - 1 || (day == today - 1 && !(ms.done && ms.claimedDay < 0)))) return;
                 JsonObject mo = new JsonObject();
                 mo.addProperty("progreso", ms.progress);
                 mo.addProperty("hecha", ms.done);

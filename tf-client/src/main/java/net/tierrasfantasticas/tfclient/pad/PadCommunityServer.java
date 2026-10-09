@@ -300,8 +300,16 @@ public final class PadCommunityServer {
             } catch (IllegalArgumentException e) {
                 continue;
             }
+            int[] reactions = new int[PadCommunityNet.REACTIONS.size()];
+            int myReaction = -1;
+            JsonObject re = TFJson.obj(p, "reacciones");
+            for (int r = 0; r < reactions.length; r++) {
+                Set<String> who = set(re, PadCommunityNet.REACTIONS.get(r));
+                reactions[r] = who.size();
+                if (who.contains(me)) myReaction = r;
+            }
             out.add(new PadCommunityNet.Post(TFJson.str(p, "id", ""), author, TFJson.str(p, "nombre", "?"), TFJson.str(p, "texto", ""),
-                    TFJson.num(p, "fecha", 0), likes.size(), likes.contains(me), mine, mine || staff));
+                    TFJson.num(p, "fecha", 0), likes.size(), likes.contains(me), mine, mine || staff, reactions, myReaction));
         }
         PadCommunityNet.toPlayer(player, new PadCommunityNet.Feed(tab, pg, pages, list.size(), out));
     }
@@ -341,7 +349,13 @@ public final class PadCommunityServer {
         if (p != null) {
             String me = player.getUUID().toString();
             String author = TFJson.str(p, "autor", "");
-            switch (m.action()) {
+            // «react:risa»: la reacción va detrás de los dos puntos
+            String action = m.action(), reaction = "";
+            if (action.startsWith("react:")) {
+                reaction = action.substring(6);
+                action = "react";
+            }
+            switch (action) {
                 case "like" -> {
                     if (author.equals(me)) break;
                     Set<String> likes = set(p, "likes");
@@ -367,6 +381,24 @@ public final class PadCommunityServer {
                         }
                     }
                     put(p, "likes", likes);
+                    dirty = true;
+                }
+                case "react" -> { // una reacción con emoji por jugador y foto: la misma otra vez la quita, otra la cambia
+                    if (author.equals(me)) break;
+                    int k = PadCommunityNet.REACTIONS.indexOf(reaction);
+                    if (k < 0) break;
+                    if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) p.add("reacciones", new JsonObject());
+                    JsonObject re = p.getAsJsonObject("reacciones");
+                    boolean had = set(re, reaction).contains(me);
+                    for (String name : PadCommunityNet.REACTIONS) {
+                        Set<String> who = set(re, name);
+                        if (who.remove(me)) put(re, name, who);
+                    }
+                    if (!had) {
+                        Set<String> who = set(re, reaction);
+                        who.add(me);
+                        put(re, reaction, who);
+                    }
                     dirty = true;
                 }
                 case "borrar" -> {

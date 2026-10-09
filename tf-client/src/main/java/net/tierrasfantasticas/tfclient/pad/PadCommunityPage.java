@@ -137,6 +137,32 @@ final class PadCommunityPage extends PadPage {
             int maxLines = Math.max(1, (ph - 60) / 10);
             PadUi.wrapEllipsis(g, "«" + post.caption() + "»", cx, py + 26, cw, PadUi.TEXT, maxLines);
         }
+        // reacciones con emoji: cada una con cuántas lleva; la tuya, marcada en oro (en las tuyas solo se ven)
+        int ey = py + ph - 32;
+        int ex = cx;
+        for (int k = 0; k < PadCommunityNet.REACTIONS.size(); k++) {
+            String name = PadCommunityNet.REACTIONS.get(k);
+            int n = k < post.reactions().length ? post.reactions()[k] : 0;
+            String count = n > 0 ? String.valueOf(n) : "";
+            int bw = 15 + (count.isEmpty() ? 0 : PadUi.font().width(count) + 2);
+            boolean mineR = post.myReaction() == k;
+            boolean canReact = !post.mine() && inList;
+            boolean hov = canReact && PadUi.inside(mx, my, ex, ey, bw, 15);
+            if (mineR || hov) PadUi.box(g, ex, ey, bw, 15, mineR ? 0xFFE0A030 : 0xFF9DBCE0);
+            if (mineR || hov) g.fill(ex + 1, ey + 1, ex + bw - 1, ey + 14, mineR ? 0xFFFFF3C8 : 0xFFEAF4FD);
+            pad.blit(g, "emo_" + name, ex + 2, ey + 2);
+            if (!count.isEmpty()) PadUi.text(g, count, ex + 15, ey + 4, PadUi.TEXT);
+            if (canReact) {
+                if (hov) pad.hover("§react" + post.id() + name);
+                String action = "react:" + name;
+                hit(ex, ey, bw, 15, () -> {
+                    pad.sound("like", mineR ? 0.5F : 0.9F);
+                    PadCommunityClient.act(action, post.id());
+                });
+            }
+            ex += bw + 2;
+            if (ex > cx + cw - 15) break;
+        }
         // likes y botón, abajo
         int ly = py + ph - 15;
         boolean canLike = !post.mine() && inList;

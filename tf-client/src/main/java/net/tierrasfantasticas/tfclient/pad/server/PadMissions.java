@@ -35,9 +35,12 @@ import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 import net.tierrasfantasticas.tfclient.util.TFJson;
+import net.tierrasfantasticas.tfclient.util.TFRotation;
 
 /**
  * Misiones (3 diarias y 3 semanales por jugador) y Cazas (4 objetivos para todo el servidor que cambian cada 12 h).
+ * Rotan por temporadas de 90 días (TFRotation): en una temporada no se repite ninguna igual y cantidad y premio suben
+ * poco a poco (de x1 a x2,5). La lista de diarias y la de presas de caza se cambian en la config (mobs de mods incluidos).
  * Cuentan lo mismo que los oficios (romper, cosechar, matar, pescar, fabricar, fundir, preparar, colocar, criar…) y con
  * sus mismas reglas: no cuentan los bloques que puso el jugador ni los monstruos de spawner, ni en creativo.
  * Se configuran en config/tfclient/misiones.json (se crea con estas listas la primera vez).
@@ -79,28 +82,39 @@ public final class PadMissions {
         return System.currentTimeMillis() / (12L * 3600 * 1000);
     }
 
-    private static List<Def> pick(List<Def> pool, long seed, int n) {
-        List<Def> copy = new ArrayList<>(pool);
-        java.util.Collections.shuffle(copy, new Random(seed));
-        return copy.subList(0, Math.min(n, copy.size()));
-    }
-
-    static List<Def> daily(UUID uuid) {
-        return pick(DAILY, day() * 1_000_003L ^ uuid.getMostSignificantBits(), 3);
-    }
-
-    static List<Def> weekly(UUID uuid) {
-        List<Def> base = pick(DAILY, week() * 7_919L ^ uuid.getLeastSignificantBits(), 3);
+    /**
+     * Las k de la lista para el periodo, con su cantidad y su premio de esa vuelta de la temporada. El id lleva la
+     * vuelta («zombis~2») para que el progreso de una no pase a la siguiente. times/pay: multiplicadores (semanales).
+     */
+    private static List<Def> rotate(List<Def> pool, int k, long period, long perSeason, long salt, long offset, int times, int pay) {
         List<Def> out = new ArrayList<>();
-        for (Def d : base) {
-            out.add(new Def(d.id, d.name, d.desc.replaceFirst("\\b" + d.amount + "\\b", Integer.toString(d.amount * weeklyTimes)),
-                    d.type, d.target, d.amount * weeklyTimes, d.coins * weeklyPay, d.icon));
+        for (TFRotation.Pick p : TFRotation.pick(pool.size(), k, period, perSeason, salt, offset)) {
+            Def d = pool.get(p.index());
+            int amount = TFRotation.amount(d.amount * times, p.factor());
+            long coins = TFRotation.coins(d.coins * (double) pay, p.factor());
+            out.add(new Def(d.id + "~" + p.round(), d.name, describe(d, amount), d.type, d.target, amount, coins, d.icon));
         }
         return out;
     }
 
+    /** La descripción con la cantidad: «{n}» se cambia por ella (o, si no lo tiene, el número que trajera). */
+    private static String describe(Def d, int amount) {
+        if (d.desc.contains("{n}")) return d.desc.replace("{n}", Integer.toString(amount));
+        return d.desc.replaceFirst("\\b" + d.amount + "\\b", Integer.toString(amount));
+    }
+
+    static List<Def> daily(UUID uuid) {
+        return rotate(DAILY, 3, TFRotation.day(), TFRotation.SEASON_DAYS, 11, uuid.getMostSignificantBits() >>> 1, 1, 1);
+    }
+
+    /** Las semanales cambian el lunes, como su progreso (week()); la temporada, cada 13 semanas. */
+    static List<Def> weekly(UUID uuid) {
+        return rotate(DAILY, 3, week(), 13, 23, uuid.getLeastSignificantBits() >>> 1, weeklyTimes, weeklyPay);
+    }
+
+    /** Las cazas cambian cada 12 h (period()); la temporada, cada 180 medios días. */
     static List<Def> hunts() {
-        return pick(HUNT, period() * 104_729L, 4);
+        return rotate(HUNT, 4, period(), TFRotation.SEASON_DAYS * 2L, 37, 0, 1, 1);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -316,17 +330,32 @@ public final class PadMissions {
         return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("misiones.json", "tfclient-misiones.json");
     }
 
+    /** La config tal cual (para el pad de administrador). */
+    static JsonObject readConfig() {
+        JsonObject o = TFJson.read(configFile());
+        return o != null ? o : defaults();
+    }
+
+    /** Guarda la config y la vuelve a cargar (lo que cambie el admin vale al momento). */
+    static void writeConfig(JsonObject o) {
+        TFJson.write(configFile(), o);
+        loadConfig();
+    }
+
     static void loadConfig() {
         Path file = configFile();
         JsonObject o = TFJson.read(file);
         if (o == null) {
             o = defaults();
             if (!Files.exists(file)) TFJson.write(file, o);
+        } else {
+            // 1.3.29: listas nuevas y economía nueva (rotan por temporadas); la de antes se guarda y se cambia
+            o = net.tierrasfantasticas.tfclient.util.TFConfigDir.upgrade(file, o, "version", 2, defaults(), "misiones.json");
         }
         DAILY.clear();
         HUNT.clear();
         weeklyTimes = (int) Math.max(1, TFJson.num(o, "semanalesPorCantidad", 5));
-        weeklyPay = (int) Math.max(1, TFJson.num(o, "semanalesPorPago", 6));
+        weeklyPay = (int) Math.max(1, TFJson.num(o, "semanalesPorPago", 4));
         read(o, "diarias", DAILY);
         read(o, "cazas", HUNT);
         TFClient.LOGGER.info("TF Pad: {} misiones y {} cazas", DAILY.size(), HUNT.size());
@@ -348,66 +377,16 @@ public final class PadMissions {
         }
     }
 
+    /** Lo de por defecto: src/main/resources/tfclient-misiones-default.json (lo genera tools/gen_economia.py). */
     private static JsonObject defaults() {
-        JsonObject o = new JsonObject();
-        o.addProperty("_ayuda", "tipo: romper, cosechar, colocar, matar, pescar, fabricar, fundir, preparar, criar, encantar. "
-                + "objetivo: un id (minecraft:zombie), una etiqueta (#minecraft:logs), * o, al matar, hostil / animal. "
-                + "Cada día se eligen 3 diarias por jugador; las semanales son 3 diarias con cantidad x semanalesPorCantidad y pago x semanalesPorPago. "
-                + "Cada 12 h se eligen 4 cazas para todo el servidor.");
-        o.addProperty("semanalesPorCantidad", 5);
-        o.addProperty("semanalesPorPago", 6);
-        JsonArray d = new JsonArray();
-        def(d, "piedra", "Pico incansable", "Rompe 128 piedras", "romper", "#minecraft:base_stone_overworld", 128, 60, "minecraft:stone_pickaxe");
-        def(d, "carbon", "Minero de carbón", "Saca 24 menas de carbón", "romper", "#minecraft:coal_ores", 24, 80, "minecraft:coal");
-        def(d, "hierro", "Vena de hierro", "Saca 12 menas de hierro", "romper", "#minecraft:iron_ores", 12, 120, "minecraft:raw_iron");
-        def(d, "cobre", "Brillo de cobre", "Saca 16 menas de cobre", "romper", "#minecraft:copper_ores", 16, 80, "minecraft:raw_copper");
-        def(d, "troncos", "Leñador", "Tala 48 troncos", "romper", "#minecraft:logs", 48, 70, "minecraft:oak_log");
-        def(d, "trigo", "Cosecha de trigo", "Cosecha 32 trigos maduros", "cosechar", "minecraft:wheat", 32, 60, "minecraft:wheat");
-        def(d, "zanahorias", "Huerto naranja", "Cosecha 32 zanahorias maduras", "cosechar", "minecraft:carrots", 32, 60, "minecraft:carrot");
-        def(d, "patatas", "Patatas al punto", "Cosecha 32 patatas maduras", "cosechar", "minecraft:potatoes", 32, 60, "minecraft:potato");
-        def(d, "zombis", "Noche de zombis", "Derrota 15 zombis", "matar", "minecraft:zombie", 15, 90, "minecraft:rotten_flesh");
-        def(d, "esqueletos", "Huesos fuera", "Derrota 12 esqueletos", "matar", "minecraft:skeleton", 12, 90, "minecraft:bone");
-        def(d, "aranas", "Telarañas", "Derrota 10 arañas", "matar", "minecraft:spider", 10, 80, "minecraft:string");
-        def(d, "creepers", "Sin explosiones", "Derrota 8 creepers", "matar", "minecraft:creeper", 8, 110, "minecraft:gunpowder");
-        def(d, "monstruos", "Guardián de la noche", "Derrota 30 monstruos", "matar", "hostil", 30, 120, "minecraft:iron_sword");
-        def(d, "pesca", "Día de pesca", "Pesca 10 veces", "pescar", "*", 10, 90, "minecraft:fishing_rod");
-        def(d, "lingotes", "Fundición", "Funde 16 lingotes de hierro", "fundir", "minecraft:iron_ingot", 16, 90, "minecraft:iron_ingot");
-        def(d, "cocina", "Cocinero", "Cocina o funde 32 cosas", "fundir", "*", 32, 70, "minecraft:furnace");
-        def(d, "artesano", "Artesano", "Fabrica 64 objetos", "fabricar", "*", 64, 60, "minecraft:crafting_table");
-        def(d, "constructor", "Constructor", "Coloca 200 bloques", "colocar", "*", 200, 70, "minecraft:bricks");
-        def(d, "granja", "Ganadero", "Cría 6 animales", "criar", "animal", 6, 70, "minecraft:wheat_seeds");
-        def(d, "pociones", "Alquimista", "Prepara 3 pociones", "preparar", "*", 3, 100, "minecraft:brewing_stand");
-        o.add("diarias", d);
-        JsonArray c = new JsonArray();
-        def(c, "c_zombi", "Plaga de zombis", "Derrota 40 zombis", "matar", "minecraft:zombie", 40, 250, "minecraft:zombie_head");
-        def(c, "c_esqueleto", "Arqueros de hueso", "Derrota 30 esqueletos", "matar", "minecraft:skeleton", 30, 250, "minecraft:skeleton_skull");
-        def(c, "c_creeper", "Silencio verde", "Derrota 20 creepers", "matar", "minecraft:creeper", 20, 300, "minecraft:creeper_head");
-        def(c, "c_arana", "Nido de arañas", "Derrota 25 arañas", "matar", "minecraft:spider", 25, 220, "minecraft:spider_eye");
-        def(c, "c_enderman", "Ojos del End", "Derrota 10 endermans", "matar", "minecraft:enderman", 10, 400, "minecraft:ender_pearl");
-        def(c, "c_bruja", "Caza de brujas", "Derrota 6 brujas", "matar", "minecraft:witch", 6, 350, "minecraft:glass_bottle");
-        def(c, "c_slime", "Pegajoso", "Derrota 20 slimes", "matar", "minecraft:slime", 20, 250, "minecraft:slime_ball");
-        def(c, "c_ahogado", "Bajo el agua", "Derrota 15 ahogados", "matar", "minecraft:drowned", 15, 300, "minecraft:trident");
-        def(c, "c_saqueador", "Patrulla", "Derrota 10 saqueadores", "matar", "minecraft:pillager", 10, 350, "minecraft:crossbow");
-        def(c, "c_blaze", "Fuego del Nether", "Derrota 12 blazes", "matar", "minecraft:blaze", 12, 450, "minecraft:blaze_rod");
-        def(c, "c_wither", "Esqueletos oscuros", "Derrota 8 esqueletos wither", "matar", "minecraft:wither_skeleton", 8, 500, "minecraft:wither_skeleton_skull");
-        def(c, "c_fantasma", "Cielo nocturno", "Derrota 8 phantoms", "matar", "minecraft:phantom", 8, 350, "minecraft:phantom_membrane");
-        def(c, "c_magma", "Magma", "Derrota 15 cubos de magma", "matar", "minecraft:magma_cube", 15, 350, "minecraft:magma_cream");
-        def(c, "c_monstruos", "Gran cacería", "Derrota 80 monstruos", "matar", "hostil", 80, 400, "minecraft:diamond_sword");
-        o.add("cazas", c);
-        return o;
-    }
-
-    private static void def(JsonArray a, String id, String name, String desc, String type, String target, int amount, long coins, String icon) {
-        JsonObject m = new JsonObject();
-        m.addProperty("id", id);
-        m.addProperty("nombre", name);
-        m.addProperty("descripcion", desc);
-        m.addProperty("tipo", type);
-        m.addProperty("objetivo", target);
-        m.addProperty("cantidad", amount);
-        m.addProperty("monedas", coins);
-        m.addProperty("icono", icon);
-        a.add(m);
+        try (java.io.InputStream in = PadMissions.class.getResourceAsStream("/tfclient-misiones-default.json")) {
+            if (in == null) return new JsonObject();
+            return com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+        } catch (Exception e) {
+            TFClient.LOGGER.error("TF Pad: no se pudieron leer las misiones por defecto", e);
+            return new JsonObject();
+        }
     }
 
     /** Para Jugadores y Ranking. */
