@@ -11,7 +11,6 @@ import net.tierrasfantasticas.tfclient.economy.TFEconomy;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
-import net.tierrasfantasticas.tfclient.server.TFServerConfig;
 import net.tierrasfantasticas.tfclient.shop.TFShop;
 import net.tierrasfantasticas.tfclient.shop.TFShopConfig;
 import net.tierrasfantasticas.tfclient.shop.TFShopConfig.Category;
@@ -154,7 +153,7 @@ public final class PadShop {
             boolean buy = e.buyable();
             ItemStack shown = shown(e, e.amount());
             String name = e.name().isBlank() ? shown.getHoverName().getString() : plain(e.name());
-            String sub = buy ? money(e.buy()) : e.sellable() ? "+" + money(e.sell()) : "";
+            String sub = buy ? PadView.money(e.buy()) : e.sellable() ? "+" + PadView.money(e.sell()) : "";
             b.card(shown, name, buy ? 0xF6B628 : 0x40C850, sub, "tab:i:" + ci + ":" + i + (buy ? ":b" : ":s"), false);
         }
         if (c.entries().isEmpty()) b.empty("Vacía.");
@@ -185,7 +184,7 @@ public final class PadShop {
         String today = dayLeftNow >= 0 ? "Hoy puedes " + (selling ? "vender " : "comprar ") + dayLeftNow + " más." : "";
         if (!selling && balance >= 0) lines.add("Tienes " + TFEconomy.format(balance) + "." + (today.isEmpty() ? "" : " " + today));
         else if (!today.isEmpty()) lines.add(today);
-        String badge = selling ? "+" + TFEconomy.format(e.sell()) : TFEconomy.format(e.buy());
+        String badge = selling ? "+" + PadView.money(e.sell()) : PadView.money(e.buy());
         b.hero(new PadView.Row(shown(e, e.amount()), TFShop.name(e), selling ? 0x40C850 : 0xF6B628, lines, -1, badge, null, null));
 
         String cat = ci + ":" + ei;
@@ -196,7 +195,7 @@ public final class PadShop {
                 if (step > TFShopConfig.maxLots) continue;
                 long units = (long) step * e.amount();
                 boolean ok = step <= canLots;
-                String sub = ok ? "+" + money(e.sell() * step) : units > have ? "No tienes " + units : "Límite de hoy";
+                String sub = ok ? "+" + PadView.money(e.sell() * step) : units > have ? "No tienes " + units : "Límite de hoy";
                 b.card(shown(e, units), amount(e, step), 0x40C850, sub, ok ? "vender:" + cat + ":" + step : "", false);
             }
             b.footer(PadView.Btn.of("ATRÁS", "volver:c/" + ci, PadView.BLUE));
@@ -208,7 +207,7 @@ public final class PadShop {
                 long cost = e.buy() * step;
                 boolean afford = balance < 0 || cost <= balance;
                 boolean ok = afford && (long) step * e.amount() <= dayLeft;
-                String sub = ok ? money(cost) : !afford ? "Te faltan " + PadShop.price(cost - balance) : "Límite de hoy";
+                String sub = ok ? PadView.money(cost) : !afford ? "Faltan " + PadShop.price(cost - balance) : "Límite de hoy";
                 b.card(shown(e, (long) step * e.amount()), amount(e, step), 0xF6B628, sub, ok ? "comprar:" + cat + ":" + step : "", false);
             }
             b.input("comprar:" + cat, "OTRA CANTIDAD (LOTES)", 3, "COMPRAR");
@@ -224,10 +223,6 @@ public final class PadShop {
         return step + (step == 1 ? " lote · " : " lotes · ") + units;
     }
 
-    /** Dinero para una tarjeta: entero hasta 100.000 («1.536 monedas»); más, corto («250K monedas»). */
-    static String money(long v) {
-        return v < 100_000 ? TFEconomy.format(v) : price(v) + " " + TFServerConfig.currency();
-    }
 
     /** Lo que llevas encima que la tienda compra, agrupado por objeto. */
     private static PadView sell(ServerPlayer player) {
@@ -253,7 +248,7 @@ public final class PadShop {
             total += pay;
             List<String> lines = List.of("Llevas " + v[2] + " · " + TFEconomy.format(e.sell()) + (e.amount() == 1 ? " c/u" : " por " + e.amount()));
             PadView.Btn btn = lots > 0 ? PadView.Btn.of("VENDER", "vendertodo:" + v[0] + ":" + v[1], PadView.GREEN) : PadView.Btn.off("LÍMITE");
-            b.row(new PadView.Row(shown(e, v[2]), TFShop.name(e), TEXT, lines, -1, lots > 0 ? "+" + TFEconomy.format(pay) : "", btn, null)
+            b.row(new PadView.Row(shown(e, v[2]), TFShop.name(e), TEXT, lines, -1, lots > 0 ? "+" + PadView.money(pay) : "", btn, null)
                     .clickable("tab:i:" + v[0] + ":" + v[1] + ":s"));
         }
         if (found.isEmpty()) {

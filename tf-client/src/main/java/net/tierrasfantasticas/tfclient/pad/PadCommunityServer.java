@@ -43,7 +43,7 @@ public final class PadCommunityServer {
     private static final int MAX_PER_PLAYER = 40;
     private static final long POST_COOLDOWN = 90_000;
     private static final int HIDE_AT = 5;
-    private static final int MAX_W = 640, MAX_H = 360;
+    private static final int MAX_W = 1280, MAX_H = 720;
 
     /** Una subida a medias. */
     private static final class Up {

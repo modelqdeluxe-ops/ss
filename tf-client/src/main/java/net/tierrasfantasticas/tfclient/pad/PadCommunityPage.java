@@ -50,32 +50,41 @@ final class PadCommunityPage extends PadPage {
     void render(GuiGraphics g, double mx, double my, float partial) {
         hits.clear();
         actions.clear();
-        // pestañas y + FOTO
-        int x = X;
+        // la ventana con sus pestañas de carpeta encima (la elegida, la última: se une a ella) y + FOTO a la derecha
+        int top = Y + 14, bottom = Y + H;
+        PadUi.panel(g, X, top, W, bottom - top);
+        int x = X + 4;
+        int selX = -1, selW = 0;
+        String selLabel = "";
         for (String[] t : TABS) {
             int w = PadFont.width(t[1]) + 14;
             boolean sel = t[0].equals(PadCommunityClient.tab);
-            boolean hover = PadUi.inside(mx, my, x, Y, w, 14);
-            if (hover && !sel) pad.hover("§tab" + t[0]);
-            PadUi.tab(g, x, Y, w, t[1], sel ? 2 : hover ? 1 : 0);
+            boolean hover = PadUi.inside(mx, my, x, Y, w, 15);
+            if (sel) {
+                selX = x;
+                selW = w;
+                selLabel = t[1];
+            } else {
+                if (hover) pad.hover("§tab" + t[0]);
+                PadUi.tab(g, x, Y, w, t[1], hover ? 1 : 0);
+            }
             String key = t[0];
-            hit(x, Y, w, 14, () -> {
+            hit(x, Y, w, 15, () -> {
                 if (!key.equals(PadCommunityClient.tab)) {
                     scroll = 0;
                     pad.sound("tab", 0.7F);
                     PadCommunityClient.open(key);
                 }
             });
-            x += w + 3;
+            x += w + 2;
         }
+        if (selX >= 0) PadUi.tab(g, selX, Y, selW, selLabel, 2);
         int fw = PadUi.buttonWidth("+ FOTO");
-        boolean fh = PadUi.inside(mx, my, X + W - fw, Y - 1, fw, 16);
+        boolean fh = PadUi.inside(mx, my, X + W - fw - 4, Y - 3, fw, 16);
         if (fh) pad.hover("§foto");
-        PadUi.button(g, X + W - fw, Y - 1, fw, "+ FOTO", PadView.GOLD, fh, true);
-        hit(X + W - fw, Y - 1, fw, 16, () -> pad.openApp("camara"));
+        PadUi.button(g, X + W - fw - 4, Y - 3, fw, "+ FOTO", PadView.GOLD, fh, true);
+        hit(X + W - fw - 4, Y - 3, fw, 16, () -> pad.openApp("camara"));
 
-        int top = Y + 17, bottom = Y + H;
-        PadUi.panel(g, X, top, W, bottom - top);
         List<PadCommunityNet.Post> posts = PadCommunityClient.POSTS;
         if (posts.isEmpty()) {
             if (PadCommunityClient.loading) {

@@ -3,15 +3,18 @@ package net.tierrasfantasticas.tfclient.pad;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
 /**
- * Piezas de dibujo del pad (1.3.26), en blanco: ventanas blancas con borde de oro y tachuelas en las esquinas,
- * tarjetas en relieve (azul claro al pasar el ratón; crema con borde de oro si están marcadas), ranuras hundidas para
- * los objetos, botones con degradado, luz y sombra, pestañas doradas, campos y barras hundidos. Todo en unidades de
- * la página. Textos en azul marino (TEXT), gris azulado (MUTED) y oro (GOLD_TEXT).
+ * Piezas de dibujo del pad (1.3.28), en blanco con textura: la ventana de cada app (borde azul noche, bisel, rombos de
+ * cristal tallado y esquinas de oro) con sus pestañas de carpeta encima, su barra de información y su barra de acciones;
+ * tarjetas en relieve, medallones del color de cada cosa, vitrinas con luz, etiquetas de estado y de precio (con su
+ * moneda), botones con degradado y barras redondeadas. Todo en unidades de la página. Textos en azul marino (TEXT),
+ * gris azulado (MUTED) y oro (GOLD_TEXT); los títulos, en negrita.
  */
 final class PadUi {
     static final int NAVY = 0xFF18265C;
@@ -61,64 +64,216 @@ final class PadUi {
         g.fill(cx, cy - 1, cx + 1, cy + 1, GOLD_HI);
     }
 
-    /** Ventana: contorno azul marino, borde de oro, blanco en degradado, luz arriba y tachuelas en las esquinas. */
-    static void panel(GuiGraphics g, int x, int y, int w, int h) {
-        g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0xFF2882D2);
-        box(g, x, y, w, h, INK);
-        box(g, x + 1, y + 1, w - 2, h - 2, GOLD_LO);
-        if (w > 4 && h > 4) g.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, PANEL_TOP, PANEL_BOT);
-        g.fill(x + 3, y + 2, x + w - 3, y + 3, PANEL_HI);
-        if (w >= 12 && h >= 12) {
-            stud(g, x + 2, y + 2);
-            stud(g, x + w - 3, y + 2);
-            stud(g, x + 2, y + h - 3);
-            stud(g, x + w - 3, y + h - 3);
-        }
+    /** El color c (RGB o ARGB) mezclado con blanco: k = 1 el color tal cual, k = 0 blanco. Devuelve ARGB opaco. */
+    static int tint(int c, float k) {
+        int r = Math.round(255 + ((c >> 16 & 255) - 255) * k), gg = Math.round(255 + ((c >> 8 & 255) - 255) * k);
+        int b = Math.round(255 + ((c & 255) - 255) * k);
+        return 0xFF000000 | r << 16 | gg << 8 | b;
     }
 
-    /** Tarjeta (fila, casilla, ficha) dentro de una ventana. state: 0 normal, 1 ratón encima, 2 marcada. */
+    /** El dibujo de rombos de cristal tallado (pattern.png, 16x16) en mosaico: la textura se repite sola. */
+    static void texture(GuiGraphics g, int x, int y, int w, int h) {
+        if (w <= 0 || h <= 0) return;
+        RenderSystem.enableBlend();
+        g.blit(TFPadScreen.tex("pattern"), x, y, 0, 0, w, h, 16, 16);
+    }
+
+    /** Una textura del pad estirada a w x h (la luz y la sombra de las vitrinas). */
+    static void stretch(GuiGraphics g, String name, int x, int y, int w, int h) {
+        int[] sz = TFPadScreen.size(name);
+        if (sz[0] == 0 || w <= 0 || h <= 0) return;
+        RenderSystem.enableBlend();
+        g.blit(TFPadScreen.tex(name), x, y, w, h, 0, 0, sz[0], sz[1], sz[0], sz[1]);
+    }
+
+    /**
+     * La ventana de una app: contorno azul noche, blanco en degradado con bisel (luz arriba, sombra abajo), la textura
+     * de cristal tallado y una escuadra de oro en cada esquina.
+     */
+    static void panel(GuiGraphics g, int x, int y, int w, int h) {
+        g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0x5A286EC8);
+        box(g, x, y, w, h, INK);
+        if (w <= 4 || h <= 4) return;
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, PANEL_TOP, PANEL_BOT);
+        texture(g, x + 1, y + 1, w - 2, h - 2);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, PANEL_HI);
+        g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, 0xFFC6DAEE);
+        if (w >= 16 && h >= 16) corners(g, x, y, w, h);
+    }
+
+    /** Escuadras de oro de 4 px en las esquinas de dentro. */
+    static void corners(GuiGraphics g, int x, int y, int w, int h) {
+        int l = x + 2, r = x + w - 3, t = y + 2, b = y + h - 3;
+        g.fill(l, t, l + 4, t + 1, GOLD);
+        g.fill(l, t, l + 1, t + 4, GOLD);
+        g.fill(r - 3, t, r + 1, t + 1, GOLD);
+        g.fill(r, t, r + 1, t + 4, GOLD);
+        g.fill(l, b, l + 4, b + 1, GOLD);
+        g.fill(l, b - 3, l + 1, b + 1, GOLD);
+        g.fill(r - 3, b, r + 1, b + 1, GOLD);
+        g.fill(r, b - 3, r + 1, b + 1, GOLD);
+        for (int[] p : new int[][] {{l, t}, {r, t}, {l, b}, {r, b}}) g.fill(p[0], p[1], p[0] + 1, p[1] + 1, GOLD_HI);
+    }
+
+    /** Tarjeta (fila, casilla, ficha) dentro de una ventana. state: 0 normal, 1 ratón encima, 2 marcada (oro). */
     static void card(GuiGraphics g, int x, int y, int w, int h, int state) {
-        int edge = state == 2 ? 0xFFE0A030 : state == 1 ? 0xFF3496FA : 0xFFB8D4EE;
-        int top = state == 1 ? 0xFFF2FAFF : state == 2 ? 0xFFFFF7DA : 0xFFFFFFFF;
-        int bot = state == 1 ? 0xFFD2EAFF : state == 2 ? 0xFFFFE9A8 : 0xFFEAF4FD;
-        g.fill(x + 2, y + h, x + w - 2, y + h + 1, state == 1 ? 0x553496FA : 0x33204070); // sombra
+        int edge = state == 2 ? 0xFFE0A030 : state == 1 ? 0xFF3496FA : 0xFFBBD3EC;
+        int top = state == 2 ? 0xFFFFFBEA : state == 1 ? 0xFFF2F9FF : 0xFFFFFFFF;
+        int bot = state == 2 ? 0xFFFFEFC0 : state == 1 ? 0xFFDCEEFF : 0xFFF1F7FD;
+        g.fill(x + 1, y + h, x + w - 1, y + h + 1, state == 1 ? 0x5A3496FA : 0x2D285AA0); // sombra
         box(g, x, y, w, h, edge);
         if (w > 2 && h > 2) g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, top, bot);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
-        if (state == 2) g.fill(x + 1, y + 2, x + 3, y + h - 2, GOLD);
-        else if (state == 1) g.fill(x + 1, y + 2, x + 3, y + h - 2, 0xFF3496FA);
     }
 
-    /** Ranura hundida para un objeto (como las del inventario, en azul noche). */
+    /** Medallón para un objeto: azul hielo, o del color de su fila (color != 0). */
+    static void slot(GuiGraphics g, int x, int y, int w, int h, int color) {
+        box(g, x, y, w, h, color != 0 ? tint(color, 0.45F) : SLOT_EDGE);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, color != 0 ? tint(color, 0.08F) : 0xFFF0F6FD,
+                color != 0 ? tint(color, 0.20F) : SLOT);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
+    }
+
     static void slot(GuiGraphics g, int x, int y, int w, int h) {
-        box(g, x, y, w, h, SLOT_EDGE);
-        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, SLOT);
-        g.fill(x + 1, y + 1, x + w - 1, y + 2, SLOT_SHADE);
-        g.fill(x + 1, y + 2, x + 2, y + h - 1, SLOT_SHADE);
+        slot(g, x, y, w, h, 0);
     }
 
-    /** Etiqueta (precio, aviso…): estilos de PadView.GOLD (oro con texto azul), GREEN (verde con texto blanco), GRAY. */
-    static int pillWidth(String text) {
-        return font().width(text) + 8;
+    // ---------------------------------------------------------------------------------------------------------------
+    // Etiquetas: estado (azul), precio (oro, con su moneda), lo que ganas (verde), no disponible (gris)
+
+    static final int TONE_GOLD = 1, TONE_GREEN = 2, TONE_GRAY = 3, TONE_BLUE = 4;
+    private static final int[][] CHIP = {
+            {0xFFD69A1E, 0xFFFFF7D8, 0xFFFFE2A0, 0xFF7A4C00},   // oro
+            {0xFF3DAA5C, 0xFFEAFBEF, 0xFFC2F0CF, 0xFF136B30},   // verde
+            {0xFFB4C6DC, 0xFFF7FAFD, 0xFFE4ECF5, 0xFF5A7398},   // gris
+            {0xFF6FA8E8, 0xFFF0F7FF, 0xFFD4E7FC, 0xFF1E4E9C},   // azul
+    };
+
+    /**
+     * El color de una etiqueta: el que pida el servidor (tone 1 oro, 2 verde, 3 gris, 4 azul) o, si no (0): gris si
+     * no se puede pulsar, oro si es un precio («¤…»), verde si es lo que ganas («+…»), azul si es un estado.
+     */
+    static int tone(String text, boolean on, int tone) {
+        if (tone >= 1 && tone <= 4) return tone;
+        if (!on) return TONE_GRAY;
+        return text.startsWith("¤") ? TONE_GOLD : text.startsWith("+") ? TONE_GREEN : TONE_BLUE;
     }
 
-    /** Dibuja la etiqueta de alto h (12 o 14) con la letra de Minecraft centrada. Devuelve su ancho. */
-    static int pill(GuiGraphics g, int x, int y, String text, int style, int h) {
-        int w = pillWidth(text);
-        int edge, top, bot, color;
-        if (style == 3) {
-            edge = 0xFF147034; top = 0xFF68E886; bot = 0xFF22A84C; color = 0xFFFFFFFF;
-        } else if (style == 4) {
-            edge = SLOT_EDGE; top = 0xFFF2F7FC; bot = SLOT; color = MUTED;
-        } else {
-            edge = GOLD_LO; top = GOLD_HI; bot = GOLD; color = TEXT;
+    /** Ancho de una etiqueta. «¤1.250» lleva la moneda delante; «+¤48», más y la moneda. */
+    static int chipWidth(String text) {
+        boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
+        String rest = plus ? text.substring(2) : coin ? text.substring(1) : text;
+        return (plus ? font().width("+") : 0) + (coin ? 9 : 0) + font().width(rest) + 8;
+    }
+
+    /** Dibuja la etiqueta (alto h: 11, 12 o 14) del tono dado. Devuelve su ancho. */
+    static int chip(GuiGraphics g, int x, int y, String text, int tone, int h) {
+        int[] c = CHIP[Math.max(1, Math.min(4, tone)) - 1];
+        int w = chipWidth(text);
+        box(g, x, y, w, h, c[0]);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, c[1], c[2]);
+        boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
+        String rest = plus ? text.substring(2) : coin ? text.substring(1) : text;
+        int tx = x + 4, ty = y + (h - 8) / 2 + 1;
+        if (plus) {
+            g.drawString(font(), "+", tx, ty, c[3], false);
+            tx += font().width("+");
         }
-        box(g, x, y, w, h, edge);
-        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, top, bot);
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0x66FFFFFF);
-        int ty = y + (h - 8) / 2;
-        g.drawString(font(), text, x + 4, ty, color, style == 3);
+        if (coin) {
+            RenderSystem.enableBlend();
+            g.blit(TFPadScreen.tex("coin_s"), tx, y + (h - 8) / 2, 0, 0, 8, 8, 8, 8);
+            tx += 9;
+        }
+        g.drawString(font(), rest, tx, ty, c[3], false);
         return w;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Negrita (títulos)
+
+    static Component bold(String s) {
+        return Component.literal(s).withStyle(ChatFormatting.BOLD);
+    }
+
+    static int boldWidth(String s) {
+        return font().width(bold(s));
+    }
+
+    /** Título en negrita recortado a w con «...»; si en negrita no cabe pero normal sí, normal. */
+    static void title(GuiGraphics g, String s, int x, int y, int w, int color) {
+        if (boldWidth(s) <= w) {
+            g.drawString(font(), bold(s), x, y, color, false);
+        } else if (font().width(s) <= w) {
+            g.drawString(font(), s, x, y, color, false);
+        } else {
+            String cut = s;
+            while (!cut.isEmpty() && boldWidth(cut + "...") > w) cut = cut.substring(0, cut.length() - 1);
+            g.drawString(font(), bold(cut + "..."), x, y, color, false);
+        }
+    }
+
+    /** Ancho con el que title() dibuja s en w. */
+    static int titleWidth(String s, int w) {
+        int b = boldWidth(s);
+        if (b <= w) return b;
+        return font().width(s) <= w ? font().width(s) : w;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Partes de la ventana
+
+    /**
+     * La barra de información arriba de la ventana (lo que el servidor manda en header): un rombo de oro y el texto, en
+     * room líneas como mucho. Devuelve el alto que ocupa.
+     */
+    static int infobar(GuiGraphics g, int x, int y, int w, List<String> header, int room) {
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        for (String line : header) {
+            for (FormattedCharSequence seq : font().split(Component.literal(line), w - 18)) {
+                StringBuilder b = new StringBuilder();
+                seq.accept((i, st, cp) -> {
+                    b.appendCodePoint(cp);
+                    return true;
+                });
+                lines.add(b.toString());
+            }
+        }
+        if (lines.isEmpty()) return 0;
+        if (lines.size() > room) {
+            lines = new java.util.ArrayList<>(lines.subList(0, room));
+            lines.set(room - 1, fitEnd(lines.get(room - 1) + "...", w - 18));
+        }
+        int h = lines.size() * 10 + 4;
+        g.fillGradient(x, y, x + w, y + h, 0xFFF0F7FE, 0xFFE0EDFA);
+        g.fill(x, y + h, x + w, y + h + 1, 0xFFC9DCF0);
+        g.fill(x, y + h + 1, x + w, y + h + 2, 0xFFFFFFFF);
+        diamond(g, x + 7, y + 6);
+        for (int i = 0; i < lines.size(); i++) text(g, lines.get(i), x + 13, y + 3 + i * 10, TEXT);
+        return h + 2;
+    }
+
+    /** La barra de acciones abajo de la ventana (botones y campo), con su filo arriba. */
+    static void dock(GuiGraphics g, int x, int y, int w, int h) {
+        g.fill(x, y - 2, x + w, y - 1, 0xFFC6DAEE);
+        g.fill(x, y - 1, x + w, y, 0xFFFFFFFF);
+        g.fillGradient(x, y, x + w, y + h, 0xFFEAF3FC, 0xFFD8E7F6);
+    }
+
+    /** Rombo de oro de 5x5 con centro en (cx, cy). */
+    static void diamond(GuiGraphics g, int cx, int cy) {
+        g.fill(cx - 2, cy, cx + 3, cy + 1, GOLD_TEXT);
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, GOLD);
+        g.fill(cx, cy - 2, cx + 1, cy + 3, GOLD_TEXT);
+        g.fill(cx, cy - 1, cx + 1, cy, 0xFFFFEC96);
+    }
+
+    /** Compatibilidad: la etiqueta con los estilos de PadView (GOLD, GREEN, GRAY). */
+    static int pillWidth(String text) {
+        return chipWidth(text);
+    }
+
+    static int pill(GuiGraphics g, int x, int y, String text, int style, int h) {
+        return chip(g, x, y, text, style == 3 ? TONE_GREEN : style == 4 ? TONE_GRAY : TONE_GOLD, h);
     }
 
     static int buttonWidth(String label) {
@@ -153,26 +308,30 @@ final class PadUi {
         }
     }
 
-    /** Pestaña de 14 de alto. state: 0 normal, 1 ratón encima, 2 elegida (dorada). */
+    /**
+     * Pestaña de carpeta, 15 de alto, para ir encima de una ventana cuyo borde de arriba está en y + 14. state: 0
+     * normal, 1 ratón encima, 2 elegida: baja hasta la ventana y se une a ella, blanca y con su filo de oro.
+     */
     static void tab(GuiGraphics g, int x, int y, int w, String label, int state) {
-        box(g, x, y, w, 14, INK);
         if (state == 2) {
-            g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, 0xFFFFDC64, 0xFFE89A1C);
+            box(g, x, y, w, 17, INK);
+            g.fillGradient(x + 1, y + 1, x + w - 1, y + 17, 0xFFFFFFFF, PANEL_TOP);
+            g.fill(x + 2, y + 1, x + w - 2, y + 3, GOLD);
             g.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI);
+            PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x18265C, false);
         } else {
-            g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, state == 1 ? 0xFFF2FAFF : 0xFFFFFFFF, state == 1 ? 0xFFB4DCFF : 0xFFD6E8F8);
-            g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
+            box(g, x, y + 2, w, 13, 0xFF6A88B8);
+            g.fillGradient(x + 1, y + 3, x + w - 1, y + 14, state == 1 ? 0xFFF2F9FF : 0xFFE2EFFB, state == 1 ? 0xFFCFE3F6 : 0xFFC0D7EE);
+            PadFont.drawCentered(g, label, x + w / 2, y + 4, 0x34507E, false);
         }
-        if (state == 2) PadFont.drawCentered(g, label, x + w / 2, y + 2, 0xFFFFFF, true);
-        else PadFont.drawCentered(g, label, x + w / 2, y + 2, 0x18265C, false);
     }
 
-    /** Título de sección dentro de una ventana: texto de oro, una línea y un rombo al final. */
+    /** Título de sección dentro de una ventana: texto en negrita, una línea y un rombo al final. */
     static void divider(GuiGraphics g, int x, int y, int w, String title, int color) {
-        text(g, title, x, y + 1, color);
-        int lx = x + font().width(title) + 5;
+        g.drawString(font(), bold(title), x, y + 1, color, false);
+        int lx = x + boldWidth(title) + 5;
         if (lx < x + w - 8) {
-            g.fill(lx, y + 5, x + w - 6, y + 6, GOLD_LO);
+            g.fill(lx, y + 5, x + w - 6, y + 6, 0xFFDAB46E);
             g.fill(lx, y + 6, x + w - 6, y + 7, 0xFFFFFFFF);
         }
         int cx = x + w - 4;
@@ -182,13 +341,14 @@ final class PadUi {
         g.fill(cx, y + 4, cx + 1, y + 5, GOLD_HI);
     }
 
-    /** Barra de desplazamiento: carril hundido y asa de oro. */
+    /** Barra de desplazamiento de 4: carril redondeado y asa de oro. */
     static void scrollbar(GuiGraphics g, int x, int y, int h, int visible, int content, int scroll) {
         if (content <= visible || h <= 4) return;
-        g.fill(x, y, x + 3, y + h, 0xFFC8DCF0);
-        int th = Math.max(8, h * visible / content);
+        box(g, x, y, 4, h, 0xFFD2E2F2);
+        int th = Math.max(10, h * visible / content);
         int ty = y + (h - th) * scroll / Math.max(1, content - visible);
-        g.fillGradient(x, ty, x + 3, ty + th, GOLD_HI, GOLD_LO);
+        box(g, x, ty, 4, th, GOLD_LO);
+        g.fillGradient(x + 1, ty + 1, x + 3, ty + th - 1, GOLD_HI, GOLD);
     }
 
     /** Aclara un color ARGB n puntos por canal. */
@@ -205,13 +365,14 @@ final class PadUi {
     /** Barra de progreso hundida (verde; oro cuando está completa). 6 de alto. */
     static void progress(GuiGraphics g, int x, int y, int w, float f) {
         f = Math.max(0, Math.min(1, f));
-        box(g, x, y, w, 6, INK);
-        g.fill(x + 1, y + 1, x + w - 1, y + 5, 0xFFC8DCF0);
+        box(g, x, y, w, 6, 0xFF9DB8D8);
+        g.fill(x + 1, y + 1, x + w - 1, y + 5, 0xFFDCE8F4);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFFC6D8EC);
         int fw = Math.round((w - 2) * f);
         if (fw > 0) {
             boolean full = f >= 1;
-            g.fillGradient(x + 1, y + 1, x + 1 + fw, y + 5, full ? 0xFFFFE070 : 0xFF7CF09A, full ? 0xFFE08E14 : 0xFF1E9E46);
-            g.fill(x + 1, y + 1, x + 1 + fw, y + 2, full ? 0xFFFFF6C0 : 0xFFD0FFDA);
+            g.fillGradient(x + 1, y + 1, x + 1 + fw, y + 5, full ? 0xFFFFE070 : 0xFF8CF0A8, full ? 0xFFE08E14 : 0xFF1E9E46);
+            g.fill(x + 1, y + 1, x + 1 + fw, y + 2, full ? 0xFFFFF6C0 : 0xFFD8FFE2);
         }
     }
 
@@ -308,11 +469,14 @@ final class PadUi {
         g.renderItem(stack, 0, 0);
         g.renderItemDecorations(font(), stack, 0, 0, "");
         g.pose().popPose();
+        // la cantidad: en blanco sobre una etiqueta azul noche, sin sombra (se lee sobre cualquier fondo)
         if (stack.getCount() > 1) {
             String n = Integer.toString(stack.getCount());
+            int w = font().width(n) + 2, rx = x + 16 * k + 1 - w, ry = y + 16 * k - 8;
             g.pose().pushPose();
             g.pose().translate(0, 0, 200);
-            g.drawString(font(), n, x + 16 * k + 1 - font().width(n), y + 16 * k - 8, 0xFFFFFFFF, true);
+            box(g, rx, ry, w + 1, 9, 0xD718265C);
+            g.drawString(font(), n, rx + 1, ry + 1, 0xFFFFFFFF, false);
             g.pose().popPose();
         }
     }

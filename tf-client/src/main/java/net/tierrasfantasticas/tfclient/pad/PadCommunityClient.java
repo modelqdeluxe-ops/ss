@@ -24,7 +24,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * .minecraft/tfclient/cache/comunidad) y la subida de una foto propia (recortada a 16:9 y reducida a 480x270).
  */
 final class PadCommunityClient {
-    static final int PHOTO_W = 480, PHOTO_H = 270;
+    static final int PHOTO_W = 1280, PHOTO_H = 720;
 
     /** Lo que se ve: publicaciones cargadas de la pestaña actual (varias páginas seguidas). */
     static final List<PadCommunityNet.Post> POSTS = new ArrayList<>();
@@ -153,7 +153,7 @@ final class PadCommunityClient {
 
     static void image(PadCommunityNet.Img m) {
         if (!m.id().matches("[a-z0-9]{1,20}")) return;
-        if (m.total() <= 0 || m.total() > 20 || m.index() < 0 || m.index() >= m.total()) return;
+        if (m.total() <= 0 || m.total() > PadCommunityServer.MAX_PHOTO_PARTS * 2 || m.index() < 0 || m.index() >= m.total()) return;
         byte[][] parts = DOWNLOADS.computeIfAbsent(m.id(), k -> new byte[m.total()][]);
         if (parts.length != m.total()) return;
         parts[m.index()] = m.data();
@@ -183,7 +183,7 @@ final class PadCommunityClient {
         ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "comunidad/" + id);
         try (InputStream in = new ByteArrayInputStream(png)) {
             NativeImage img = NativeImage.read(in);
-            DynamicTexture tex = new DynamicTexture(img);
+            DynamicTexture tex = PadCameraPage.smooth(new DynamicTexture(img));
             Minecraft.getInstance().getTextureManager().register(loc, tex);
             TEXTURES.put(id, new Tex(loc, tex, img.getWidth(), img.getHeight()));
             trim();
@@ -194,9 +194,9 @@ final class PadCommunityClient {
         }
     }
 
-    /** Como mucho 24 fotos en memoria de vídeo. */
+    /** Como mucho 12 fotos en memoria de vídeo (a 1280x720, unos 44 MB). */
     private static void trim() {
-        while (TEXTURES.size() > 24) {
+        while (TEXTURES.size() > 12) {
             String oldest = TEXTURES.keySet().iterator().next();
             Tex t = TEXTURES.remove(oldest);
             Minecraft.getInstance().getTextureManager().release(t.loc);
@@ -207,7 +207,7 @@ final class PadCommunityClient {
     // Publicar
     // ---------------------------------------------------------------------------------------------------------------
 
-    /** Prepara la foto (16:9, 480x270, PNG) en segundo plano y la manda a trozos. */
+    /** Prepara la foto (16:9, 1280x720 o, si pesa demasiado, 960x540, PNG) en segundo plano y la manda a trozos. */
     static void publish(Path file, String caption) {
         uploadStatus = "Preparando la foto...";
         uploadProgress = 0;
@@ -215,8 +215,8 @@ final class PadCommunityClient {
             byte[] png;
             try (InputStream in = Files.newInputStream(file); NativeImage src = NativeImage.read(in)) {
                 png = encode(src, PHOTO_W, PHOTO_H);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 384, 216);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 320, 180);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 960, 540);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 640, 360);
             } catch (Exception e) {
                 TFClient.LOGGER.warn("Comunidad: no se pudo preparar la foto", e);
                 Minecraft.getInstance().execute(() -> result(new PadCommunityNet.Result(false, "No se pudo leer la foto.")));
