@@ -100,13 +100,13 @@ final class PadHomePage extends PadPage {
         return W / cols();
     }
 
-    /** Ficha + rótulo (que sube un poco: sus dos primeras filas son para las tildes) + aire. */
+    /** Ficha + rótulo (empieza 1 por encima del borde de la ficha: sus dos primeras filas son para las tildes) + 1. */
     private int cellH() {
-        return tile() + pad.big(11) + pad.big(2);
+        return tile() + pad.big(10) + 1;
     }
 
     private int top() {
-        return Y + pad.big(1);
+        return Y;
     }
 
     /** Esquina de la ficha i (antes del desplazamiento). */
@@ -128,7 +128,7 @@ final class PadHomePage extends PadPage {
         long now = System.currentTimeMillis();
         List<App> apps = apps();
         int rows = (apps.size() + cols() - 1) / cols();
-        contentH = rows * cellH() + pad.big(2);
+        contentH = rows * cellH();
         scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - H)));
         int t = tile();
         boolean inside = PadUi.inside(mx, my, X, Y, W, H);
@@ -167,7 +167,7 @@ final class PadHomePage extends PadPage {
             pad.blitBig(g, hover ? "tile_h" : "tile", tx, ty + lift);
             drawIcon(g, app.icon, tx, ty + lift, hover ? ht : playing ? (now % 100000) / 1000F : -1F, hover || playing);
             if (i == glintIndex) drawGlint(g, tx, ty + lift, t, (now - glintStart) / 600F);
-            pad.textBig(g, app.name, tx + t / 2F, ty + t - pad.big(1), hover ? 0xFFE680 : 0xFFFFFF);
+            pad.textBig(g, app.name, tx + t / 2F, ty + t - 1, hover ? 0xFFE680 : 0xFFFFFF);
         }
         drawParticles(g, dt);
         pad.noScissor(g);
