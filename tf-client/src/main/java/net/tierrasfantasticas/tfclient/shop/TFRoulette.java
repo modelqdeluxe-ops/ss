@@ -66,6 +66,12 @@ public final class TFRoulette {
         if (json != null) parse(json);
     }
 
+    /** Vuelve a leer config/tfclient/ruleta.json (/tf reload; la web la vuelve a mandar en su siguiente consulta). */
+    public static void reload() {
+        JsonObject json = TFJson.read(file());
+        if (json != null) parse(json);
+    }
+
     /** La ruleta que manda la web en cada consulta del puente. */
     public static void setConfig(JsonObject json) {
         boolean first = config == null;

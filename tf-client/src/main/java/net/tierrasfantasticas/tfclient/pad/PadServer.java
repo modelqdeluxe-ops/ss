@@ -117,7 +117,29 @@ public final class PadServer {
         App a = APPS.get(app);
         if (a == null || !allowed(player) || !usable(player, app)) return;
         SESSIONS.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).keySet().removeIf(k -> k.startsWith(app + "."));
+        shown(player, app, tab == null ? "" : tab);
         send(player, a, tab == null ? "" : tab);
+    }
+
+    /** Apunta la última vista que se le mandó (app y pestaña), para refrescarla tras /tf reload. */
+    private static void shown(ServerPlayer player, String app, String tab) {
+        put(player, "§vista", app + "\n" + tab);
+    }
+
+    /**
+     * Tras recargar las configs: a cada jugador conectado, su estado (apps encendidas, saldo…) y otra vez la vista de la
+     * app que miró la última vez (si ya no la tiene abierta, el cliente la ignora).
+     */
+    public static void refreshOpen() {
+        if (server == null) return;
+        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+            TFPadNet.sendState(p);
+            String v = get(p, "§vista", null);
+            int nl = v == null ? -1 : v.indexOf('\n');
+            if (nl <= 0) continue;
+            String app = v.substring(0, nl);
+            if (app.startsWith("a_") ? isAdmin(p) : PadConfig.appOn(app)) refresh(p, app, v.substring(nl + 1));
+        }
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -162,6 +184,7 @@ public final class PadServer {
         App a = APPS.get(app);
         if (a == null || !allowed(player) || !usable(player, app)) return;
         if (action.startsWith("tab:")) {
+            shown(player, app, action.substring(4));
             send(player, a, action.substring(4));
             return;
         }
@@ -172,7 +195,10 @@ public final class PadServer {
             TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
             TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
         }
-        if (!player.hasDisconnected()) send(player, a, next == null ? tab : next);
+        if (!player.hasDisconnected()) {
+            shown(player, app, next == null ? tab : next);
+            send(player, a, next == null ? tab : next);
+        }
     }
 
     /** Vuelve a mandar la vista de una app (por ejemplo, cuando cambia algo mientras la tiene abierta). */

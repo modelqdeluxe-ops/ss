@@ -1,6 +1,6 @@
 {
   "_ayuda": [
-    "Oficios de Tierras Fantásticas (/tf jobs). Cambia lo que quieras y usa /tf jobs recargar (no hace falta reiniciar).",
+    "Oficios de Tierras Fantásticas (app Oficios del pad). Cambia lo que quieras y usa /tf reload (no hace falta reiniciar).",
     "tipos de acción y misión: romper, cosechar (solo cultivos maduros), colocar (solo sitios nuevos), matar, pescar, fabricar, fundir, preparar (pociones), encantar, reparar (yunque), criar.",
     "objetivo: un id (minecraft:wheat), una etiqueta (#minecraft:logs), * para todo; en matar también hostil o animal.",
     "icono del oficio: farmer, miner, wood_cutter, digger, fisherman, hunter, alchemist, blacksmith, builder, enchanter o un objeto (minecraft:wheat). fondo: uno de esos diez.",

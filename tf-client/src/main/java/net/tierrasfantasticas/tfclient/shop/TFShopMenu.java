@@ -239,7 +239,7 @@ public final class TFShopMenu extends ChestMenu {
         TFIcon icon = TFIcon.of(TFItems.COIN.get()).name("Tus " + TFServerConfig.currency(), ChatFormatting.GOLD);
         icon.line(balance.isPresent() ? TFEconomy.format(balance.getAsLong()) : "—", ChatFormatting.YELLOW);
         icon.blank();
-        icon.text("Se ganan con los oficios (/tf jobs) y vendiendo en la tienda.", ChatFormatting.DARK_GRAY);
+        icon.text("Se ganan con los oficios (app Oficios del pad) y vendiendo en la tienda.", ChatFormatting.DARK_GRAY);
         return icon.build();
     }
 

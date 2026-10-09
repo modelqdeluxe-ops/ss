@@ -8,10 +8,7 @@ import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.arguments.item.ItemParser;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
@@ -53,7 +50,7 @@ import net.tierrasfantasticas.tfclient.server.TFServerConfig;
 import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 
 /**
- * Oficios: el jugador elige uno con /tf jobs y gana experiencia del oficio y monedas al hacer su trabajo (romper,
+ * Oficios: el jugador elige uno en el pad (app Oficios) y gana experiencia del oficio y monedas al hacer su trabajo (romper,
  * cosechar, pescar...). Sube de nivel, cumple misiones con recompensa y puede dejarlo cuando quiera sin perder nada.
  * Todo se ajusta en config/tfclient/oficios.json ({@link TFJobsConfig}).
  */
@@ -321,11 +318,9 @@ public final class TFJobs {
     }
 
     private static void missionDone(ServerPlayer player, Job job, Mission mission) {
-        MutableComponent claim = Component.literal("[Cobrar]").withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tf jobs ver " + job.id()))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Abre el oficio para cobrar la recompensa"))));
         player.sendSystemMessage(Component.literal("✔ Misión completada: ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(mission.name()).withStyle(ChatFormatting.WHITE)).append(" ").append(claim));
+                .append(Component.literal(mission.name()).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(" (cóbrala en el pad, app Oficios)").withStyle(ChatFormatting.GRAY)));
         player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 0.5F, 1.2F);
     }
 

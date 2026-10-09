@@ -488,7 +488,7 @@ class Sim:
     # PadUi.BTN: cara arriba, cara abajo, luz, sombra
     BTN = [(0x5AB4FF, 0x2C74E4, 0xB4E0FF, 0x1A4AA8), (0xFFD650, 0xE8961A, 0xFFF2B0, 0xA05E0E),
            (0xFF6274, 0xC82038, 0xFFB4BC, 0x861428), (0x68E886, 0x22A84C, 0xC4FFD0, 0x147034),
-           (0x4A5884, 0x36426C, 0x6E7CA8, 0x252E50)]
+           (0x4A5884, 0x36426C, 0x6E7CA8, 0x252E50), (0x97A3BF, 0x66728F, 0xC9D0E2, 0x434D69)]
 
     @staticmethod
     def is_back(label):
@@ -498,7 +498,7 @@ class Sim:
         return max(36, self.pwidth(label) + 14 + (8 if self.is_back(label) else 0))
 
     def button(self, x, y, w, label, style, enabled=True, hover=False):
-        c = self.BTN[min(style, 3) if enabled else 4]
+        c = self.BTN[4 if not enabled else 5 if style == 4 else min(style, 3)]
         top, bot = rgb(c[0]), rgb(c[1])
         if hover and enabled:
             top, bot = lighten(top, 30), lighten(bot, 30)

@@ -1,7 +1,6 @@
 package net.tierrasfantasticas.tfclient.shop;
 
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,12 +34,8 @@ import net.tierrasfantasticas.tfclient.shop.TFShopConfig.Entry;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
- * La tienda del servidor: /tf shop abre la ventana ({@link TFShopMenu}) y se compra y se vende con las monedas del
- * servidor ({@link TFEconomy}). Todo se configura en config/tfclient/tienda.json ({@link TFShopConfig}).
- * <pre>
- * /tf shop             abre la tienda
- * /tf shop recargar    vuelve a leer config/tfclient/tienda.json (staff, nivel 3)
- * </pre>
+ * La tienda del servidor: se abre desde el pad (app Tienda) y se compra y se vende con las monedas del servidor
+ * ({@link TFEconomy}). Todo se configura en config/tfclient/tienda.json ({@link TFShopConfig}; /tf reload la vuelve a leer).
  * Solo se venden objetos «limpios» (sin nombre, encantamientos ni daño; o con el NBT exacto que pide la tienda) y nunca
  * los objetos de los sets. Los límites diarios por jugador se guardan en &lt;mundo&gt;/tfclient/tienda.json y las compras y
  * ventas, si registro = true, en &lt;mundo&gt;/tfclient/tienda-registro.log.
@@ -69,27 +62,6 @@ public final class TFShop {
         saveDaily();
         server = null;
         today.clear();
-    }
-
-    public static LiteralArgumentBuilder<CommandSourceStack> command() {
-        return Commands.literal("shop")
-                .executes(ctx -> {
-                    ServerPlayer player = ctx.getSource().getPlayerOrException();
-                    if (!TFShopConfig.enabled && !player.hasPermissions(3)) {
-                        say(player, TFShopConfig.message("desactivada"), Map.of());
-                        return 0;
-                    }
-                    if (!net.tierrasfantasticas.tfclient.pad.TFPadNet.openApp(player, "tienda", "")) TFShopMenu.openMain(player);
-                    return 1;
-                })
-                .then(Commands.literal("recargar").requires(s -> s.hasPermission(3)).executes(ctx -> {
-                    List<String> warnings = TFShopConfig.load();
-                    int items = TFShopConfig.categories.values().stream().mapToInt(c -> c.entries().size()).sum();
-                    ctx.getSource().sendSuccess(() -> Component.literal("Tienda recargada: " + TFShopConfig.categories.size() + " categorías, "
-                            + items + " objetos" + (warnings.isEmpty() ? "." : ", " + warnings.size() + " avisos:")).withStyle(ChatFormatting.GREEN), true);
-                    for (String w : warnings) ctx.getSource().sendFailure(Component.literal(w));
-                    return items;
-                }));
     }
 
     // ---------------------------------------------------------------------------------------------------------------

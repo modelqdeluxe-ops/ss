@@ -80,6 +80,11 @@ public final class TFCoinShop {
         load();
     }
 
+    /** Vuelve a leer config/tfclient/tienda-monedas.json (/tf reload). */
+    public static void reload() {
+        load();
+    }
+
     private static void load() {
         ENTRIES.clear();
         loaded = true;
