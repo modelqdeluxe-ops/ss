@@ -85,7 +85,7 @@ class Sim:
         self.UW, self.UH = GW * ps // self.cs, (GH + self.extra * 2) * ps // self.cs
         self.Y = self.bar + 4
         self.X = self.logo_right(self.Y) + 4
-        self.W = self.UW - self.X - 4
+        self.W = self.UW - self.X * 2
         self.H = self.UH - self.Y - 4
         self.clip = None
         self.o, self.f = (0, 0), self.cs
@@ -603,15 +603,16 @@ class Sim:
         X, Y, W, H = self.X, self.Y, self.W, self.H
         LABEL_H, MIN_GAP = 11, 4
         t = self.bigu(40)
-        cols = max(3, min(7, W // (t + self.bigu(8))))
-        cw = W // cols
+        gw = self.UW - 8
+        cols = max(3, min(7, gw // (t + self.bigu(8))))
+        cw = gw // cols
         rows = (len(apps) + cols - 1) // cols
         base = t + LABEL_H + MIN_GAP
         ch = base if rows * base >= H else base + (H - rows * base) // (rows + 1)
         top = Y + (H - rows * ch) // 2 + (ch - t - LABEL_H) // 2 if rows * ch <= H else Y + 2
         x0 = (self.UW - cols * cw) // 2
         x0 = max(x0, self.logo_right(top) + 2 - (cw - t) // 2)
-        x0 = min(x0, X + W - cols * cw)
+        x0 = min(x0, self.UW - 4 - cols * cw)
         self.scissor(2, Y, self.UW - 4, H)
         for i, (icon, name) in enumerate(apps):
             tx, ty = x0 + (i % cols) * cw + (cw - t) // 2, top + (i // cols) * ch
@@ -669,7 +670,7 @@ class Sim:
         return len(lines)
 
     CELL_W, CELL_H, CARD_MIN, CARD_MAX, CARD_H, CARD_BAR, ICON_BOX, ROW_GAP, HERO_MIN, HERO_SLOT, SHOW, DOCK = (
-        30, 32, 84, 116, 76, 8, 26, 3, 50, 40, 40, 20)
+        30, 32, 76, 116, 76, 8, 26, 3, 50, 40, 40, 20)
 
     def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None, hover=None, hero=None):
         """PadViewPage.render (1.3.28): una sola ventana. Pestañas de carpeta encima (la elegida se une a ella); dentro,

@@ -20,7 +20,7 @@ final class PadViewPage extends PadPage {
      * Tarjetas: ranura con el objeto al doble, nombre y segunda línea (y, si la vista lo pide, una barra de progreso).
      * Llenan el ancho de la ventana; si son pocas, se agrandan hasta CARD_MAX y van centradas.
      */
-    private static final int CARD_MIN = 84, CARD_MAX = 116, CARD_H = 76, CARD_BAR = 8;
+    private static final int CARD_MIN = 76, CARD_MAX = 116, CARD_H = 76, CARD_BAR = 8;
     /** Alto de la vitrina de las tarjetas (donde va el objeto al doble con su luz). */
     private static final int SHOW = 40;
     /** Cabecera grande de una ficha: el objeto al doble en su medallón de 40. */
