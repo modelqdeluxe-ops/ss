@@ -17,13 +17,23 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > **Decisiones del dueño:** se consiguen **con dinero (Stripe) y con monedas** (las dos); se lanzan con **teclas propias
 > configurables** (Opciones › Controles); el **arma y la armadura del pack vienen con la skill** (vinculadas, como los
 > sets); cada jugador tiene **una sola clase** a la vez.
-> **Recibidos (25 de ~39), descomprimidos en el scratch de la sesión `skills/`:** Red-DragonPack, MAGEPACK-1.1 (.rar),
+> **Recibidos: 40 packs** (40 clases, ~280 skills; ver `tools/skills/inventario.py <carpeta>`), descomprimidos en el
+> scratch de la sesión `skills/` (si se pierde el scratch, los zips están en las subidas del chat: hay que pedírselos
+> de nuevo al dueño). Los primeros 25: Red-DragonPack, MAGEPACK-1.1 (.rar),
 > Glacia-v1.2, ZEPHYR-v1.3, samus2002_NECROMANCER, THORPACK-1.3, NULLPACK-1.1, samus2002_ARCTIC_KNIGHT,
 > RPG_Class_Series_Dragon_Warrior, samus2002_BLOODMOON_VAMPIRE, samus2002_SUMMONER_PACK_v1.7, samus2002_DEATH_KNIGHT,
 > RRPG_Void_Edge_Class_Full, PackClass_Magic_Lightning (zips dentro), LostAssets_ClassPack_04_Revenant,
 > LostAssets_OriginalClassPack_01_FrostSamurai, samus2002_AWAKENED_ASSASSIN, samus2002_HEROES_THUNDER_RONIN,
 > ModelFoundrys_Witch_Class, HEROES_WATER_SAMURAI, AWAKENED_WARRIOR, LostAssets_ClassPack_03_Paladin,
-> HEROES_FLAME_WARRIOR, samus2002_AWAKENED_ARCHER, fire_katana.
+> HEROES_FLAME_WARRIOR, samus2002_AWAKENED_ARCHER, fire_katana; y después: Lost_Loong-Cetus, samus2002_AWAKENED_MAGE,
+> Warrior_Class, samus2002_GALE_GLAIVE, Khans_RPG_Klasses (Archer, Mender, Rogue), samus2002_AWAKENED_MARTIAL_ARTIST,
+> _SHAMAN, samus2002_HEROES_BEAST_SLAYER, samus2002_AWAKENED_GUNSLINGER, _PYROMANCER, _CLERIC, _NECROMANCER, _SPIRITCALLER.
+> Formatos: clases MMOCore (`classes/*.yml` + `skills/*.yml` con nombre/lore/cooldown/maná) → MythicLib
+> (`mythicmobs-skill-id`) → árbol de MythicMobs; armas de MMOItems con `ability: {type, mode: LEFT_CLICK/RIGHT_CLICK/
+> SHIFT_*/SNEAK}`; VFX como mobs de ModelEngine (`.bbmodel`) o modelos de ítem (ItemsAdder/Nexo/«resourcepack»).
+> Mecánicas usadas (≈60): summon, state, changepart, model, aura, delay, projectile, missile, damage, potion, throw,
+> lunge, leap, orbital, totem, effect:sound/particles/particlering/particlesphere, teleport, heal, ignite, stun, pull,
+> velocity, equip, brightness, tint, partvis, setvariable, randomskill, sudoskill… (conteo en el commit del inventario).
 > **Plan** (marca [x] y haz commit+push como checkpoint):
 > - [ ] Inventario automático de cada pack (clase, skills, descripción, cooldown, mana, disparador, modelos, sonidos,
 >       iconos, arma/armadura) → `tools/skills/inventario.py`.
