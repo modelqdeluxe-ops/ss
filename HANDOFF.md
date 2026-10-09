@@ -9,6 +9,22 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **🚧 TRABAJO EN CURSO — TF Client 1.3.25 (checkpoint; si retomas, sigue esta lista):**
+> Pedido del dueño (9 oct): (1) iconos de la portada **más grandes**, ajustados al pad nuevo; (2) **mejor textura de
+> las fichas/botones** y **animaciones RPG** al pasar el ratón, distintas según el icono; (3) **rediseñar el interior
+> de cada app** (más bonito, ajustado al tamaño nuevo); (4) app **MÚSICA** tipo Etched: pegar un link directo (Google
+> Drive convertido, Dropbox…), se **descarga y guarda**, reproductor completo (portada de la canción, play/pausa,
+> anterior/siguiente, barra de progreso, aleatorio, repetir, **volumen**), sigue sonando con el pad cerrado hasta
+> pararla en la app, solo la oye el jugador; (5) darle al dueño un **link directo de un MP3 gratis** para probar.
+> Plan y estado (marca [x] al terminar cada punto y haz commit+push a la rama como checkpoint):
+> - [ ] Escala «grande» `big = max(cs, round(ps*0.75))` px reales por texel: portada y barra de estado a esa escala.
+> - [ ] Fichas nuevas (`build_pad.py tile()`): marco RPG (oro + engaste) y versión hover; icono de Música.
+> - [ ] Animaciones por app al pasar el ratón (`PadHomePage`: balanceo del pico, moneda que gira, humo de la casa…).
+> - [ ] Rediseño de `PadUi`/`PadViewPage` (panel, filas como tarjetas, pestañas, botones con brillo, cabecera).
+> - [ ] Música: `pad/music/` (descarga + conversión de links, biblioteca `tfclient/musica/`, decodificadores MP3
+>       (JLayer en jarJar)/OGG (STBVorbis)/WAV, `SoundInstance` con `getStream` de Forge, portada ID3), `PadMusicPage`.
+> - [ ] MP3 de prueba con link directo; simulador y vistas previas; docs; publicar 1.3.25 y mandar el .jar.
+>
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
 > **TF Client 1.3.24** (la siguiente es **1.3.25**). Lo último que pidió el dueño y quedó hecho: pad **más grande y
 > nítido** (contenido a doble resolución), cristal sin líneas azules, título centrado, **sin Títulos**, interfaz con
