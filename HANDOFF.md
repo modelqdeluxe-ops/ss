@@ -37,7 +37,13 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > icono de Oficios** (el pico no le gusta); 6) **quitar Ayuda**; app **WEB** (va directo a la página) y app
 > **RECOMPENSAS** (diarias o como digan los admins, configurables en el pad de admin); **quitar el kit diario** de Kits;
 > kits y recompensas se montan con el inventario o con **todos los objetos del juego (también de mods)**.
-> Avance: (se va apuntando aquí)
+> Avance: hecho en código (compila): números de cantidad a tamaño normal (`PadUi.item`), cabezas con skin
+> (`PadClans.head` con perfil completo, skin guardada en `PadStats.skinOf`, respaldo en cliente `PadUi.skin`), marco
+> ensanchado (`TFPadScreen.drawFrame`, `STRETCH_L/R`, `extra`), portada 7 columnas sin partículas con salto y gestos
+> (`PadHomePage`), engranaje quieto, botón de volver nuevo, kit de interfaz oscuro con oro (`PadUi`: panel, card, slot,
+> button, tab, divider, scrollbar, field, progress, onDark) aplicado a `PadViewPage`, app WEB, lista de apps nueva (sin
+> Ayuda; con RECOMPENSAS y WEB). Falta: Comunidad/Cámara/Música/Ajustes con el kit nuevo, iconos (oficios, web,
+> recompensas), Recompensas (servidor + admin), quitar kit diario, selector de objetos con todo el juego, simulador.
 
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.

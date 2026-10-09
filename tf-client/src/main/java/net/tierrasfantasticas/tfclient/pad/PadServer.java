@@ -82,7 +82,6 @@ public final class PadServer {
         APPS.put("clanes", PadClans.APP);
         APPS.put("jugadores", PadPlayers.APP);
         APPS.put("ranking", PadRanking.APP);
-        APPS.put("ayuda", PadHelp.APP);
         // pad de administrador (los a_* solo los abre el staff)
         APPS.put("a_apps", PadAdmin.APPS);
         APPS.put("a_ajustes", PadAdmin.SETTINGS);

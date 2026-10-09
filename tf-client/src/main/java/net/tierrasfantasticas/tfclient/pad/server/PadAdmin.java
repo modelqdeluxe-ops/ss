@@ -122,7 +122,8 @@ public final class PadAdmin {
 
     private static final List<AppInfo> PLAYER_APPS = List.of(
             new AppInfo("musica", "Música", Items.MUSIC_DISC_CAT), new AppInfo("oficios", "Oficios", Items.IRON_PICKAXE), new AppInfo("misiones", "Misiones", Items.WRITABLE_BOOK),
-            new AppInfo("cazas", "Cazas", Items.CROSSBOW), new AppInfo("tienda", "Tienda", Items.CHEST),
+            new AppInfo("cazas", "Cazas", Items.CROSSBOW), new AppInfo("recompensas", "Recompensas", Items.CHEST_MINECART),
+            new AppInfo("tienda", "Tienda", Items.CHEST),
             new AppInfo("gts", "GTS", Items.EMERALD), new AppInfo("monedero", "Monedero", Items.GOLD_INGOT),
             new AppInfo("viajes", "Viajes", Items.FILLED_MAP), new AppInfo("hogares", "Hogares", Items.OAK_DOOR),
             new AppInfo("kits", "Kits", Items.BUNDLE), new AppInfo("protecciones", "Protección", Items.SHIELD),
@@ -130,7 +131,7 @@ public final class PadAdmin {
             new AppInfo("comunidad", "Comunidad", Items.PAINTING), new AppInfo("camara", "Cámara", Items.SPYGLASS),
             new AppInfo("ranking", "Ranking", Items.GOLD_BLOCK), new AppInfo("armario", "Armario", Items.LEATHER_CHESTPLATE),
             new AppInfo("efectos", "Efectos", Items.BLAZE_POWDER), new AppInfo("rango", "Mi rango", Items.NETHER_STAR),
-            new AppInfo("ayuda", "Ayuda", Items.KNOWLEDGE_BOOK));
+            new AppInfo("web", "Web", Items.COMPASS));
 
     private static final class Apps implements PadServer.App {
         @Override

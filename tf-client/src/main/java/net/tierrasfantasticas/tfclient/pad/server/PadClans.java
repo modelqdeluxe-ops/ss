@@ -144,12 +144,26 @@ public final class PadClans {
         }
     }
 
+    /**
+     * La cabeza de un jugador con su skin de verdad: el perfil completo (con la propiedad «textures») del jugador
+     * conectado o, si no está, la última skin que se le vio. Sin eso, Minecraft pinta una cabeza por defecto.
+     */
     static ItemStack head(UUID uuid, String name) {
         ItemStack s = new ItemStack(Items.PLAYER_HEAD);
-        CompoundTag owner = new CompoundTag();
-        owner.putUUID("Id", uuid);
-        owner.putString("Name", name);
-        s.getOrCreateTag().put("SkullOwner", owner);
+        com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(uuid, name);
+        net.minecraft.server.MinecraftServer server = PadServer.server();
+        ServerPlayer online = server == null ? null : server.getPlayerList().getPlayer(uuid);
+        if (online != null) {
+            profile.getProperties().putAll(online.getGameProfile().getProperties());
+        } else {
+            String[] skin = PadStats.skinOf(uuid);
+            if (skin != null) {
+                profile.getProperties().put("textures", skin[1].isEmpty()
+                        ? new com.mojang.authlib.properties.Property("textures", skin[0])
+                        : new com.mojang.authlib.properties.Property("textures", skin[0], skin[1]));
+            }
+        }
+        s.getOrCreateTag().put("SkullOwner", net.minecraft.nbt.NbtUtils.writeGameProfile(new CompoundTag(), profile));
         return s;
     }
 
