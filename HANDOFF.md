@@ -9,6 +9,13 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **EN CURSO (1.3.27, checkpoint):** el dueño vio la 1.3.26 y pidió: 1) portada centrada en el cristal ✅;
+> 2) el GTS/regalos dejaban vender las alas de crates (cosmético de un set) → ahora se bloquea todo objeto de un set ✅;
+> 3) el planeo: quitar el contador y dejar solo una barrita ✅ (bajo la mira); 4) Tienda → comprar: el precio en
+> colores confunde, mucho espacio vacío, nada centrado; 5) GTS en **lista ordenada** (no tarjetas); 6) Oficios en
+> **tarjetas grandes con su progreso bien puesto**; 7) auditar y diseñar bien el interior de todas las apps.
+> Pendiente: 4–7, subir a 1.3.27, PR, fusionar y mandar el .jar.
+
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
 > mod: **TF Client 1.3.26** (la siguiente es **1.3.27**). Lo último: rediseño del interior de las apps, pad más ancho,
 > portada 7x3 sin partículas, Recompensas, Web, cabezas con skin y números de cantidad normales (ver la entrega 1.3.26).

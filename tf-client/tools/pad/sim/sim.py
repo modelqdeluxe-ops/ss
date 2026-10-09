@@ -473,8 +473,10 @@ class Sim:
         base = t + LABEL_H + MIN_GAP
         ch = base if rows * base >= H else base + (H - rows * base) // (rows + 1)
         top = Y + (H - rows * ch) // 2 + (ch - t - LABEL_H) // 2 if rows * ch <= H else Y + 2
-        x0 = X + (W - cols * cw) // 2
-        self.scissor(X, Y, W, H)
+        x0 = (self.UW - cols * cw) // 2
+        x0 = max(x0, self.logo_right(top) + 2 - (cw - t) // 2)
+        x0 = min(x0, X + W - cols * cw)
+        self.scissor(2, Y, self.UW - 4, H)
         for i, (icon, name) in enumerate(apps):
             tx, ty = x0 + (i % cols) * cw + (cw - t) // 2, top + (i // cols) * ch
             hv = icon == hover

@@ -34,6 +34,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.economy.TFEconomy;
 import net.tierrasfantasticas.tfclient.items.TFBinding;
+import net.tierrasfantasticas.tfclient.items.TFItemTypes;
 import net.tierrasfantasticas.tfclient.items.TFItem;
 import net.tierrasfantasticas.tfclient.items.TFRevocations;
 import net.tierrasfantasticas.tfclient.util.TFJson;
@@ -105,8 +106,9 @@ public final class TFMarket {
     /** Por qué no se puede publicar este objeto (null si se puede). */
     public static String whyNot(ItemStack stack) {
         if (stack.isEmpty()) return "No tienes nada en la mano.";
-        if (stack.getItem() instanceof TFItem && (TFBinding.bindable(stack) || TFBinding.owner(stack) != null)) {
-            return "Las piezas de los sets van ligadas a su dueño y no se pueden vender.";
+        if (stack.getItem() instanceof TFItem
+                && (TFItemTypes.setOf(stack.getItem()) != null || TFBinding.owner(stack) != null)) {
+            return "Las piezas de los sets y sus cosméticos van ligados a su dueño y no se pueden vender.";
         }
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.contains(TFRevocations.ORDER, Tag.TAG_STRING)) {
