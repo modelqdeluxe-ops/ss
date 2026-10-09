@@ -287,6 +287,7 @@ def glyph_draw(s, rows, cx, cy, c):
                     s.fill(gx, gy, gx + 1, gy + 1, c)
 
 
+BROADCAST = ["#.......#", "#..#.#..#", "#.#...#.#", "#.#.#.#.#", "#.#...#.#", "#..#.#..#", "#.......#"]
 PLAY = ["#......", "###....", "#####..", "#######", "#####..", "###....", "#......"]
 PAUSE = ["##.##"] * 7
 NEXT = ["#...#.#", "##..#.#", "###.#.#", "#####.#", "###.#.#", "##..#.#", "#...#.#"]
@@ -400,7 +401,7 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
     # controles
     y0 = by0 + barH + 13
     playD, small, gap = s.bigu(22), s.bigu(15), s.bigu(6)
-    total = playD + small * 4 + gap * 4
+    total = playD + small * 5 + gap * 5
     x = X + (leftW - total) // 2
     cym = y0 + playD // 2
     for g, col in ((SHUFFLE, LAV), (PREV, (255, 255, 255))):
@@ -415,15 +416,26 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
     glyph_draw(s, NEXT, x + small // 2, cym, (255, 255, 255)); x += small + gap
     disc(s, x + small // 2, cym, small // 2, (255, 255, 255, 34))
     glyph_draw(s, REPEAT, x + small // 2, cym, GREENC)
+    x += small + gap
+    if playing:
+        disc(s, x + small // 2, cym, small // 2, (255, 255, 255, 34))
+    glyph_draw(s, BROADCAST, x + small // 2, cym, GREENC if playing else LAV)
     # lista
     lx, lw = X + leftW + 6, W - leftW - 6
-    with s.big_at(lx + 2, Y + 1):
-        s.ptext('TU MÚSICA', 0, 0)
-    cnt = f"{len(tracks)} {'canción' if len(tracks) == 1 else 'canciones'}"
-    s.mtext(cnt, lx + lw - s.mwidth(cnt) - 2, Y + 3, NAVY)
-    top = Y + s.bigu(13) + 2
+    top = Y + 14
     bottom = Y + H - 19 - (24 if job else 0)
     s.panel(lx, top, lw, bottom - top)
+    # pestañas: TODAS, las playlists y + (PadMusicPage.drawListTabs)
+    tx, chosen = lx + 4, None
+    for i, label in enumerate(['TODAS', 'FAVORITAS', 'CAMINO']):
+        w = s.pwidth(label) + 12
+        if i == 0:
+            chosen = (tx, w, label)
+        else:
+            s.tab(tx, Y, w, label, 0)
+        tx += w + 2
+    s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+    s.tab(tx, Y, s.pwidth('+') + 12, '+', 0)
     s.scissor(lx + 2, top + 4, lw - 4, bottom - top - 8)
     ry = top + 4
     for tr in tracks:

@@ -32,7 +32,9 @@ final class PadInfoPages {
             row(g, 1, "Tic al pasar por encima", PadSettings.hoverTick ? "SÍ" : "NO", PadSettings.hoverTick, mx, my);
             row(g, 2, "Animaciones", PadSettings.animations ? "SÍ" : "NO", PadSettings.animations, mx, my);
             row(g, 3, "Volumen", PadSettings.volume + "%", true, mx, my);
-            int hintY = Math.max(Y + H - 13, Y + 7 + 4 * 23);
+            boolean hear = net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.hearOthers();
+            row(g, 4, "Oír los altavoces de otros", hear ? "SÍ" : "NO", hear, mx, my);
+            int hintY = Math.max(Y + H - 13, Y + 7 + 5 * 23);
             if (hintY + 9 <= Y + H) PadUi.text(g, "Tecla del pad: se cambia en Opciones › Controles.", X + 8, hintY, PadUi.MUTED);
         }
 
@@ -57,6 +59,8 @@ final class PadInfoPages {
                     case 1 -> PadSettings.hoverTick = !PadSettings.hoverTick;
                     case 2 -> PadSettings.animations = !PadSettings.animations;
                     case 3 -> PadSettings.volume = PadSettings.volume >= 100 ? 20 : Math.min(100, PadSettings.volume + 20);
+                    case 4 -> net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.setHearOthers(
+                            !net.tierrasfantasticas.tfclient.pad.music.MusicLibrary.hearOthers());
                     default -> {
                     }
                 }

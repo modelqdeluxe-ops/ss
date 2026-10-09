@@ -18,9 +18,11 @@ import net.tierrasfantasticas.tfclient.pad.music.MusicPlayer;
  *       baila con la canción de verdad, la barra para saltar a cualquier punto (se arrastra), los controles (aleatorio,
  *       anterior, play/pausa, siguiente, repetir: todas / una / no), el volumen (barra vertical; clic en el altavoz:
  *       silencio) y PORTADA para ponerle una imagen desde un link.</li>
- *   <li>Derecha, «tu música»: la biblioteca (clic: suena; la X la borra con confirmación), la descarga en curso con su
- *       barra y, abajo, el campo para pegar el link directo de una canción (MP3, OGG o WAV; los links de compartir de
- *       Google Drive y Dropbox se convierten solos).</li>
+ *   <li>Derecha, «tu música»: pestañas TODAS, cada playlist y «+» (crear una); la lista (clic: suena; el + mete o saca la
+ *       canción de tus playlists; la X la borra con confirmación; dentro de una playlist, el − la saca de ella), la
+ *       descarga en curso con su barra y, abajo, el campo para pegar el link directo de una canción (MP3, OGG o WAV; los
+ *       links de compartir de Google Drive y Dropbox se convierten solos).</li>
+ *   <li>El botón del altavoz (al final de los controles): los de cerca oyen tu música (ver MusicSpeaker).</li>
  * </ul>
  * La música sigue sonando con el pad cerrado (ver {@link MusicPlayer}). Teclas: espacio = play/pausa, ←/→ = 5 s.
  */
@@ -41,6 +43,13 @@ final class PadMusicPage extends PadPage {
     private float spin;
     private long lastNs = System.nanoTime();
     private MusicDownloader.Job shownJob;
+    /** Modo lista nueva: el campo pide el nombre de una playlist. */
+    private boolean newList;
+    /** El menú de playlists abierto para esta canción (null cerrado) y dónde. */
+    private String menuFor;
+    private int menuX, menuY;
+    private String confirmList;
+    private long confirmListAt;
     private final List<Hit> hits = new ArrayList<>();
 
     private record Hit(int x, int y, int w, int h, Runnable action) {}
@@ -235,7 +244,7 @@ final class PadMusicPage extends PadPage {
     private void drawControls(GuiGraphics g, double mx, double my, int y0) {
         int w = leftW();
         int playD = big(22), small = big(15), gap = big(6);
-        int total = playD + small * 4 + gap * 4;
+        int total = playD + small * 5 + gap * 5;
         int cx0 = X + (w - total) / 2;
         int cyMid = y0 + playD / 2;
         int x = cx0;
@@ -261,8 +270,12 @@ final class PadMusicPage extends PadPage {
         x = px + playD + gap;
         x = control(g, mx, my, x, cyMid, small, NEXT, 0xFFFFFFFF, false, MusicPlayer::next) + gap;
         MusicLibrary.Repeat rep = MusicPlayer.repeat();
-        control(g, mx, my, x, cyMid, small, rep == MusicLibrary.Repeat.ONE ? REPEAT_ONE : REPEAT,
-                rep == MusicLibrary.Repeat.OFF ? LAVENDER : GREEN, rep != MusicLibrary.Repeat.OFF, MusicPlayer::cycleRepeat);
+        x = control(g, mx, my, x, cyMid, small, rep == MusicLibrary.Repeat.ONE ? REPEAT_ONE : REPEAT,
+                rep == MusicLibrary.Repeat.OFF ? LAVENDER : GREEN, rep != MusicLibrary.Repeat.OFF, MusicPlayer::cycleRepeat) + gap;
+        // altavoz: que los de cerca oigan lo que suena
+        boolean spk = MusicLibrary.speaker();
+        control(g, mx, my, x, cyMid, small, BROADCAST, spk ? GREEN : LAVENDER, spk,
+                () -> pad.showNotice(net.tierrasfantasticas.tfclient.pad.music.MusicSpeaker.toggle()));
     }
 
     /** Botón redondo pequeño con un dibujo; devuelve dónde acaba. */
@@ -382,20 +395,14 @@ final class PadMusicPage extends PadPage {
 
     private void drawLibrary(GuiGraphics g, double mx, double my) {
         int x = listX(), w = listW(), y = Y;
-        List<MusicLibrary.Track> tracks = MusicLibrary.tracks();
-        // cabecera
-        g.pose().pushPose();
-        g.pose().translate(x + 2, y + 1, 0);
-        g.pose().scale(1F, 1F, 1);
-        PadFont.draw(g, "TU MÚSICA", 0, 0, 0xFFFFFF, true);
-        g.pose().popPose();
-        String count = tracks.size() + (tracks.size() == 1 ? " canción" : " canciones");
-        PadUi.text(g, count, x + w - PadUi.font().width(count) - 2, y + 3, 0xFF18265C);
-        int top = y + big(13) + 2;
+        List<MusicLibrary.Track> tracks = MusicLibrary.queue();
+        String list = MusicLibrary.currentList();
+        int top = y + 14;
         int bottom = Y + H - 19;
         MusicDownloader.Job job = MusicDownloader.job();
         if (job != null && !job.finished) bottom -= 24;
         PadUi.panel(g, x, top, w, bottom - top);
+        drawListTabs(g, mx, my, x, y, w, list);
         int inner = bottom - top - 8;
         int content = tracks.size() * ROW;
         listScroll = Math.max(0, Math.min(listScroll, Math.max(0, content - inner)));
@@ -404,17 +411,128 @@ final class PadMusicPage extends PadPage {
         int ry = top + 4 - listScroll;
         boolean inList = my >= top + 4 && my < top + 4 + inner;
         for (MusicLibrary.Track t : tracks) {
-            if (ry + ROW > top && ry < bottom) drawRow(g, t, x + 5, ry, w - 14, mx, my, inList, current != null && current.id().equals(t.id()));
+            if (ry + ROW > top && ry < bottom) drawRow(g, t, x + 5, ry, w - 14, mx, my, inList, current != null && current.id().equals(t.id()), list);
             ry += ROW;
         }
         pad.noScissor(g);
-        if (tracks.isEmpty()) drawEmpty(g, x, top, w, bottom - top);
+        if (tracks.isEmpty()) {
+            if (list.isEmpty()) drawEmpty(g, x, top, w, bottom - top);
+            else drawEmptyList(g, x, top, w, bottom - top);
+        }
         PadUi.scrollbar(g, x + w - 7, top + 5, inner - 2, inner, content, listScroll);
         if (job != null && !job.finished) drawJob(g, job, x, bottom + 3, w);
         drawInput(g, mx, my, x, Y + H - 16, w);
+        if (menuFor != null) drawMenu(g, mx, my);
     }
 
-    private void drawRow(GuiGraphics g, MusicLibrary.Track t, int x, int y, int w, double mx, double my, boolean inList, boolean current) {
+    /** Pestañas de carpeta encima de la lista: TODAS, cada playlist (la elegida con su X para borrarla) y «+». */
+    private void drawListTabs(GuiGraphics g, double mx, double my, int x, int y, int w, String list) {
+        List<MusicLibrary.Playlist> lists = MusicLibrary.playlists();
+        int n = lists.size() + 2, gap = 2, room = w - 8;
+        int plus = PadFont.width("+") + 12;
+        int maxLabel = Math.max(14, (room - plus - gap * (n - 1)) / Math.max(1, n - 1) - 12);
+        int tx = x + 4;
+        int[] chosen = null;
+        String chosenLabel = "";
+        for (int i = -1; i < lists.size(); i++) {
+            String id = i < 0 ? "" : lists.get(i).id();
+            String label = PadFont.fit(i < 0 ? "TODAS" : PadFont.upper(lists.get(i).name()), maxLabel);
+            boolean sel = id.equals(list);
+            boolean sure = sel && !id.isEmpty() && id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000;
+            if (sure) label = "¿BORRAR?";
+            int tw = PadFont.width(label) + 12 + (sel && !id.isEmpty() ? 8 : 0);
+            boolean hover = PadUi.inside(mx, my, tx, y, tw, 15);
+            if (sel) {
+                chosen = new int[] {tx, tw};
+                chosenLabel = label;
+            } else {
+                if (hover) pad.hover("§lista" + id);
+                PadUi.tab(g, tx, y, tw, label, hover ? 1 : 0);
+            }
+            if (sel && !id.isEmpty()) { // la X para borrarla
+                int bx = tx + tw - 10;
+                hits.add(0, new Hit(bx - 1, y + 2, 9, 11, () -> {
+                    if (id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000) {
+                        MusicLibrary.deleteList(id);
+                        confirmList = null;
+                        pad.sound("back", 0.6F);
+                    } else {
+                        confirmList = id;
+                        confirmListAt = System.currentTimeMillis();
+                    }
+                }));
+            } else {
+                hits.add(new Hit(tx, y, tw, 15, () -> {
+                    MusicLibrary.selectList(id);
+                    listScroll = 0;
+                    pad.sound("tab", 0.6F);
+                }));
+            }
+            tx += tw + gap;
+        }
+        if (chosen != null) {
+            PadUi.tab(g, chosen[0], y, chosen[1], chosenLabel, 2);
+            if (!list.isEmpty()) drawGlyph(g, CROSS, chosen[0] + chosen[1] - 10, y + 6, 0xFFC8323C);
+        }
+        // «+»: lista nueva
+        boolean ph = PadUi.inside(mx, my, tx, y, plus, 15);
+        if (ph) pad.hover("§listanueva");
+        PadUi.tab(g, tx, y, plus, "+", ph || newList ? 1 : 0);
+        hits.add(new Hit(tx, y, plus, 15, () -> {
+            newList = true;
+            coverFor = null;
+            focused = true;
+            input = "";
+            pad.sound("tab", 0.6F);
+        }));
+    }
+
+    private void drawEmptyList(GuiGraphics g, int x, int top, int w, int h) {
+        String[] lines = {"Esta lista está vacía.", "En TODAS, pasa el ratón por una canción", "y pulsa + para meterla aquí."};
+        int cy = top + h / 2 - 15;
+        for (int i = 0; i < lines.length; i++) {
+            String l = PadUi.fitEnd(lines[i], w - 16);
+            PadUi.text(g, l, x + (w - PadUi.font().width(l)) / 2, cy + i * 11, i == 0 ? PadUi.TEXT : PadUi.MUTED);
+        }
+    }
+
+    /** El menú de playlists de una canción: cada lista con su marca (dentro o no); clic, la mete o la saca. */
+    private void drawMenu(GuiGraphics g, double mx, double my) {
+        List<MusicLibrary.Playlist> lists = MusicLibrary.playlists();
+        int w = 110, rowH = 13;
+        int h = 6 + Math.max(1, lists.size()) * rowH + 2;
+        int x = Math.min(menuX, X + W - w - 2), y = Math.min(menuY, Y + H - h - 2);
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 300);
+        PadUi.card(g, x, y, w, h, 0);
+        PadUi.box(g, x, y, w, h, PadUi.INK);
+        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFFFFFFFF);
+        // el menú tapa lo de debajo: un clic dentro que no da en una lista no hace nada
+        hits.add(0, new Hit(x, y, w, h, () -> {}));
+        if (lists.isEmpty()) {
+            PadUi.text(g, "Crea una lista con + arriba.", x + 5, y + 5, PadUi.MUTED);
+        }
+        for (int i = 0; i < lists.size(); i++) {
+            MusicLibrary.Playlist p = lists.get(i);
+            int ry = y + 4 + i * rowH;
+            boolean in = MusicLibrary.inList(p.id(), menuFor);
+            boolean hover = PadUi.inside(mx, my, x + 2, ry, w - 4, rowH);
+            if (hover) g.fill(x + 2, ry, x + w - 2, ry + rowH, 0xFFE2EEFA);
+            PadUi.box(g, x + 5, ry + 2, 9, 9, in ? 0xFF1E9E46 : 0xFF9DBCE0);
+            g.fill(x + 6, ry + 3, x + 13, ry + 10, in ? 0xFF7CF0A8 : 0xFFFFFFFF);
+            if (in) drawGlyph(g, CHECK, x + 6, ry + 4, 0xFF136B30);
+            PadUi.text(g, PadUi.fitEnd(p.name(), w - 24), x + 18, ry + 3, PadUi.TEXT);
+            String track = menuFor;
+            hits.add(0, new Hit(x + 2, ry, w - 4, rowH, () -> {
+                MusicLibrary.toggleInList(p.id(), track);
+                pad.sound("tab", 0.6F);
+            }));
+        }
+        g.pose().popPose();
+    }
+
+    private void drawRow(GuiGraphics g, MusicLibrary.Track t, int x, int y, int w, double mx, double my, boolean inList, boolean current,
+                         String list) {
         boolean hover = inList && PadUi.inside(mx, my, x, y, w, ROW - 1);
         if (current || hover) PadUi.card(g, x, y, w, ROW - 1, current ? 2 : 1);
         else g.fill(x + 3, y + ROW - 1, x + w - 3, y + ROW, 0xFFC8E4F8);
@@ -424,11 +542,39 @@ final class PadMusicPage extends PadPage {
         int tx = x + thumb + 11;
         String dur = t.durationMs() > 0 ? time(t.durationMs()) : "";
         int right = x + w - 6;
+        // en una playlist: el − la saca de ella (no la borra)
+        if (!list.isEmpty()) {
+            int bw = big(12), bx = right - bw, by = y + (ROW - 1 - 16) / 2;
+            if (hover) {
+                boolean bh = PadUi.inside(mx, my, bx, by, bw, 16);
+                PadUi.box(g, bx, by + 1, bw, 13, bh ? 0xFF3496FA : 0x333496FA);
+                drawGlyphCentered(g, MINUS, bx + bw / 2, by + 8, bh ? 0xFFFFFFFF : 0xFF3496FA);
+                if (bh) pad.hover("§quitar" + t.id());
+                hits.add(0, new Hit(bx, by, bw, 16, () -> {
+                    MusicLibrary.toggleInList(list, t.id());
+                    pad.sound("back", 0.5F);
+                }));
+                right = bx - 6;
+            }
+        } else if (hover || t.id().equals(menuFor)) {
+            // el + abre el menú de playlists
+            int bw = big(12), bx = right - bw - (big(12) + 4), by = y + (ROW - 1 - 16) / 2;
+            boolean bh = PadUi.inside(mx, my, bx, by, bw, 16);
+            PadUi.box(g, bx, by + 1, bw, 13, bh || t.id().equals(menuFor) ? 0xFF1E9E46 : 0x331E9E46);
+            drawGlyphCentered(g, PLUS, bx + bw / 2, by + 8, bh || t.id().equals(menuFor) ? 0xFFFFFFFF : 0xFF1E9E46);
+            if (bh) pad.hover("§listas" + t.id());
+            hits.add(0, new Hit(bx, by, bw, 16, () -> {
+                menuFor = t.id().equals(menuFor) ? null : t.id();
+                menuX = bx - 100;
+                menuY = by + 16;
+                pad.sound("tab", 0.6F);
+            }));
+        }
         // borrar (al pasar el ratón)
         boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
         int delW = sure ? PadUi.buttonWidth("¿BORRAR?") : big(12);
         int delX = right - delW, delY = y + (ROW - 1 - 16) / 2;
-        if (hover || sure) {
+        if (list.isEmpty() && (hover || sure)) {
             boolean dh = PadUi.inside(mx, my, delX, delY, delW, 16);
             if (sure) {
                 PadUi.button(g, delX, delY, delW, "¿BORRAR?", PadView.RED, dh, true);
@@ -509,10 +655,11 @@ final class PadMusicPage extends PadPage {
     }
 
     private void drawInput(GuiGraphics g, double mx, double my, int x, int y, int w) {
-        String label = coverFor != null ? "PONER" : "AÑADIR";
+        String label = newList ? "CREAR" : coverFor != null ? "PONER" : "AÑADIR";
         int bw = PadUi.buttonWidth(label);
         int fw = w - bw - 4;
-        String hint = coverFor != null ? "Link de una imagen (PNG o JPG) para «" + coverFor.shownTitle() + "»"
+        String hint = newList ? "Nombre de la lista nueva"
+                : coverFor != null ? "Link de una imagen (PNG o JPG) para «" + coverFor.shownTitle() + "»"
                 : "Pega aquí el link directo de una canción";
         boolean fieldHover = PadUi.inside(mx, my, x, y, fw, 16);
         PadUi.box(g, x, y, fw, 16, focused ? PadUi.GOLD : PadUi.INK);
@@ -527,7 +674,7 @@ final class PadMusicPage extends PadPage {
         }
         if (fieldHover) pad.hover("§field");
         hits.add(new Hit(x, y, fw, 16, () -> focused = true));
-        boolean busy = MusicDownloader.busy();
+        boolean busy = MusicDownloader.busy() && !newList;
         boolean enabled = !input.isBlank() && !busy;
         boolean bh = enabled && PadUi.inside(mx, my, x + fw + 4, y, bw, 16);
         PadUi.button(g, x + fw + 4, y, bw, label, PadView.GREEN, bh, enabled);
@@ -535,6 +682,17 @@ final class PadMusicPage extends PadPage {
     }
 
     private void submit() {
+        if (newList) {
+            MusicLibrary.Playlist p = MusicLibrary.createList(input);
+            if (p == null) return;
+            newList = false;
+            input = "";
+            focused = false;
+            listScroll = 0;
+            pad.showNotice("Lista «" + p.name() + "» creada. En TODAS, pulsa + en una canción para meterla.");
+            pad.sound("like", 0.8F);
+            return;
+        }
         String link = input.trim();
         if (link.isEmpty() || MusicDownloader.busy()) return;
         boolean ok = coverFor != null ? MusicDownloader.downloadCover(coverFor, link) : MusicDownloader.download(link);
@@ -572,6 +730,10 @@ final class PadMusicPage extends PadPage {
     private static final int[][] SPEAKER_LOW = glyph("...#...", "..##...", "####.#.", "####..#", "####.#.", "..##...", "...#...");
     private static final int[][] MUTE = glyph("...#.....", "..##.....", "####.#.#.", "####..#..", "####.#.#.", "..##.....", "...#.....");
     private static final int[][] CROSS = glyph("#...#", ".#.#.", "..#..", ".#.#.", "#...#");
+    private static final int[][] PLUS = glyph("..#..", "..#..", "#####", "..#..", "..#..");
+    private static final int[][] MINUS = glyph(".....", ".....", "#####", ".....", ".....");
+    private static final int[][] CHECK = glyph("......#", ".....#.", "#...#..", ".#.#...", "..#....");
+    private static final int[][] BROADCAST = glyph("#.......#", "#..#.#..#", "#.#...#.#", "#.#.#.#.#", "#.#...#.#", "#..#.#..#", "#.......#");
     private static final int[][] IMAGE = glyph("#########", "#.......#", "#.##..#.#", "#.##.###.", "#..#####.", "#.#######", "#########");
 
     private void drawGlyph(GuiGraphics g, int[][] glyph, int x, int y, int color) {
@@ -684,16 +846,26 @@ final class PadMusicPage extends PadPage {
             return true;
         }
         boolean wasFocused = focused;
+        String menuBefore = menuFor;
         for (Hit h : hits) {
             if (PadUi.inside(mx, my, h.x, h.y, h.w, h.h)) {
                 focused = false;
                 h.action.run();
+                if (menuBefore != null && menuBefore.equals(menuFor) && !inMenu(mx, my)) menuFor = null;
                 if (wasFocused && !focused && coverFor == null) focused = false;
                 return true;
             }
         }
         focused = false;
+        menuFor = null;
         return false;
+    }
+
+    /** ¿Está el ratón dentro del menú de playlists? (fuera, un clic lo cierra). */
+    private boolean inMenu(double mx, double my) {
+        int w = 110, h = 6 + Math.max(1, MusicLibrary.playlists().size()) * 13 + 2;
+        int x = Math.min(menuX, X + W - w - 2), y = Math.min(menuY, Y + H - h - 2);
+        return PadUi.inside(mx, my, x, y, w, h);
     }
 
     private long seekAt(double mx, MusicLibrary.Track t) {
@@ -756,9 +928,10 @@ final class PadMusicPage extends PadPage {
     @Override
     boolean key(int key, int scan, int mods) {
         if (focused) {
-            if (key == 256) { // Esc: deja de escribir (y sale del modo portada)
+            if (key == 256) { // Esc: deja de escribir (y sale del modo portada o de lista nueva)
                 focused = false;
                 coverFor = null;
+                newList = false;
                 return true;
             }
             if (key == 259) {
