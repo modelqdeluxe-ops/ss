@@ -1,0 +1,65 @@
+[
+ {
+  "id": "glacia",
+  "name": "Glacia",
+  "skills": [
+   "frost_bolt",
+   "ice_spike",
+   "frigid_path",
+   "frost_beam",
+   "ice_wall",
+   "hailstorm"
+  ]
+ },
+ {
+  "id": "mago",
+  "name": "Mage",
+  "skills": [
+   "fire_ball",
+   "blink_",
+   "arcane_missile",
+   "frost_nova",
+   "meteor",
+   "inferno_chains"
+  ]
+ },
+ {
+  "id": "dragon_rojo",
+  "name": "dragon",
+  "skills": [
+   "red_dragon_mode",
+   "red_dragon_mode_balance_breaker",
+   "red_dragon_addaura",
+   "dragon_claw",
+   "dragon_shot",
+   "dragon_dash",
+   "dragon_jump",
+   "dragon_roar",
+   "dragon_ultimate"
+  ]
+ },
+ {
+  "id": "thor",
+  "name": "Thor",
+  "skills": [
+   "hammer_strike",
+   "hammer_throw",
+   "mighty_thunder",
+   "asgardian_fury",
+   "thunder_shockwave",
+   "thunder_smash"
+  ]
+ },
+ {
+  "id": "zephyr",
+  "name": "Zephyr",
+  "skills": [
+   "air_slash",
+   "tornado",
+   "aerial_burst",
+   "cyclone",
+   "wind_shadowstep",
+   "hurricane_strike"
+  ]
+ }
+]

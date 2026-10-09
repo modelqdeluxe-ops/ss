@@ -467,5 +467,214 @@
     "name": "tfclient:pad/tab"
    }
   ]
+ },
+ "skills.glacia.samus_hailstorm": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_hailstorm"
+  ]
+ },
+ "skills.glacia.samus_ice_beam_energy": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_beam_energy"
+  ]
+ },
+ "skills.glacia.samus_ice_beam": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_beam"
+  ]
+ },
+ "skills.glacia.samus_ice_freeze": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_freeze"
+  ]
+ },
+ "skills.glacia.samus_icicle_shoot": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_icicle_shoot"
+  ]
+ },
+ "skills.glacia.samus_hail_impact": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_hail_impact"
+  ]
+ },
+ "skills.glacia.samus_wall_erode": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_wall_erode"
+  ]
+ },
+ "skills.glacia.samus_ice_break": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_break"
+  ]
+ },
+ "skills.glacia.samus_ice_spike": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_spike"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_explosion": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_explosion"
+  ]
+ },
+ "skills.mago.samus_blink": {
+  "sounds": [
+   "tfclient:skills/mago/samus_blink"
+  ]
+ },
+ "skills.mago.samus_fireball": {
+  "sounds": [
+   "tfclient:skills/mago/samus_fireball"
+  ]
+ },
+ "skills.mago.samus_fire_burn": {
+  "sounds": [
+   "tfclient:skills/mago/samus_fire_burn"
+  ]
+ },
+ "skills.mago.samus_frost_nova": {
+  "sounds": [
+   "tfclient:skills/mago/samus_frost_nova"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_summon": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_summon"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_chain": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_chain"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_chain_hit": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_chain_hit"
+  ]
+ },
+ "skills.dragon_rojo.dargon_ultimate": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_ultimate"
+  ]
+ },
+ "skills.dragon_rojo.dargon_ultimate_beem": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_ultimate_beem"
+  ]
+ },
+ "skills.dragon_rojo.dargon_roar": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_roar"
+  ]
+ },
+ "skills.dragon_rojo.dargon_jump": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_jump"
+  ]
+ },
+ "skills.dragon_rojo.dargon_dash": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_dash"
+  ]
+ },
+ "skills.dragon_rojo.dargon_shot": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_shot"
+  ]
+ },
+ "skills.dragon_rojo.claw_dargon": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/claw_dargon"
+  ]
+ },
+ "skills.dragon_rojo.boost": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/boost"
+  ]
+ },
+ "skills.thor.samus_discharge": {
+  "sounds": [
+   "tfclient:skills/thor/samus_discharge"
+  ]
+ },
+ "skills.thor.samus_thor_enchant": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thor_enchant"
+  ]
+ },
+ "skills.thor.samus_lightning": {
+  "sounds": [
+   "tfclient:skills/thor/samus_lightning"
+  ]
+ },
+ "skills.thor.samus_thunder_leap": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_leap"
+  ]
+ },
+ "skills.thor.samus_thunder_smash": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_smash"
+  ]
+ },
+ "skills.thor.samus_thunder_clap": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_clap"
+  ]
+ },
+ "skills.thor.samus_thunder_clap_big": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_clap_big"
+  ]
+ },
+ "skills.thor.samus_mjolnir_throw": {
+  "sounds": [
+   "tfclient:skills/thor/samus_mjolnir_throw"
+  ]
+ },
+ "skills.thor.samus_thor_hit": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thor_hit_0",
+   "tfclient:skills/thor/samus_thor_hit_1",
+   "tfclient:skills/thor/samus_thor_hit_2"
+  ]
+ },
+ "skills.thor.samus_mjolnir_catch": {
+  "sounds": [
+   "tfclient:skills/thor/samus_mjolnir_catch"
+  ]
+ },
+ "skills.thor.samus_thunder_clap_medium": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_clap_medium"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_shadowstep": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_shadowstep"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_hurricane": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_hurricane"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_slash": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_slash_0",
+   "tfclient:skills/zephyr/samus_zephyr_slash_1",
+   "tfclient:skills/zephyr/samus_zephyr_slash_2"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_tornado": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_tornado"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_cyclone": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_cyclone"
+  ]
  }
 }

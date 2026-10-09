@@ -71,7 +71,9 @@ def scan(pack_dir):
             disp = data.get('display', {}) or {}
             out['classes'].append({'file': os.path.basename(p), 'name': strip_colors(disp.get('name')),
                                    'lore': [strip_colors(x) for x in (disp.get('lore') or [])],
-                                   'skills': list((data.get('skills') or {}).keys())})
+                                   'skills': list((data.get('skills') or {}).keys()),
+                                   'skill_conf': {norm(k): v for k, v in (data.get('skills') or {}).items()
+                                                  if isinstance(v, dict)}})
         elif '/skills/' in lp and 'mmocore' in lp:
             sid = norm(os.path.basename(p))
             s = out['skills'].setdefault(sid, {})
@@ -82,6 +84,11 @@ def scan(pack_dir):
             mana = data.get('mana') or {}
             s['mana'] = mana.get('base') if isinstance(mana, dict) else mana
             s['icon_item'] = data.get('material')
+            if data.get('passive-type'):
+                # skill pasiva de MMOCore: se dispara sola (TIMER cada «timer» s, o al atacar, recibir daño...)
+                timer = data.get('timer') or {}
+                s['passive'] = {'type': str(data['passive-type']).upper(),
+                                'timer': timer.get('base') if isinstance(timer, dict) else timer}
         elif 'mythiclib' in lp and '/skill' in lp:
             # un archivo puede tener una skill (formato plano) o varias (clave = id)
             entries = {norm(os.path.basename(p)): data} if 'mythicmobs-skill-id' in data or 'mythic-skill' in data \

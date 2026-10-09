@@ -95,6 +95,12 @@ def parse_line(line):
     if rest.startswith('{'):
         body, rest = take_braces(rest)
         args = parse_args(body)
+    # valor suelto tras la mecánica («delay 28», «aura 20»...)
+    pm = re.match(r'^\s+([^\s@~?{}]+)', rest)
+    if pm and not re.fullmatch(r'0?\.\d+', pm.group(1)):
+        args = dict(args)
+        args['_'] = pm.group(1)
+        rest = rest[:pm.start()] + rest[pm.end():]
     out = {'m': name, 'a': args}
     # objetivo
     tm = re.search(r'@([\w]+)', rest)
@@ -270,8 +276,15 @@ def compile_pack(pack_dir):
                 if cand.lower() in lower_tree:
                     entry = cand
                     break
+        # la clase puede fijar otro cooldown o maná para la skill
+        conf = (cls or {}).get('skill_conf', {}).get(sid, {})
+        cd, mana = s.get('cooldown'), s.get('mana')
+        if isinstance(conf.get('cooldown'), dict) and conf['cooldown'].get('base') is not None:
+            cd = conf['cooldown']['base']
+        if isinstance(conf.get('mana'), dict) and conf['mana'].get('base') is not None:
+            mana = conf['mana']['base']
         out_skills.append({'id': sid.lower(), 'name': s.get('name') or sid.title(), 'lore': s.get('lore', []),
-                           'cooldown': s.get('cooldown'), 'mana': s.get('mana'),
+                           'cooldown': cd, 'mana': mana, 'passive': s.get('passive'),
                            'entry': lower_tree.get(entry.lower()), 'icon': s.get('icon_item'),
                            'modes': s.get('modes', [])})
 
