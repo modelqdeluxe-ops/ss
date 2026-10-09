@@ -9,36 +9,12 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **EN CURSO (1.3.29, checkpoints):** el dueño vio la 1.3.28 y pidió (con capturas):
-> 1. ✅ Las leyendas (tooltip) de los objetos **solo en Kits y Tienda**; en el resto no (son iconos; tampoco cabezas) y
->    más pequeñas (tapaban la pantalla).
-> 2. ✅ Oficios: **ningún mensaje en pantalla** (el actionbar «Leñador 1 +2 xp +1,5 monedas (6/100)» sobra).
-> 3. ✅ Tienda: en COMPRAR solo lo que se compra; lo que se vende, solo en VENDER (desde tu inventario, lo que el admin
->    permita). Nada de verdes de venta mezclados.
-> 4. ✅ Oficios más retadores (se ganan monedas muy fácil); **colchón de 3 meses de misiones** que no se repitan; cazas
->    igual (3 meses) pero **configurables por él** (tendrá mobs de mods).
-> 5. ✅ **Economía estable** (tipo dólar), no inflada: bajar precios, pagos y premios en todo.
-> 6. ✅ Comunidad: reaccionar a las fotos con **emojis** además del corazón.
-> 7. ⏳ Música: **playlists** (una o varias) y botón **altavoz**: que los demás lo oigan por proximidad en el juego (bien
->    hecho, sin romper nada).
-> Hecho 4–5: `util/TFRotation` (temporadas de 90 días; cada misión igual sale una vez por temporada; cantidad y premio
-> de x1 a x2,5). Oficios: las misiones «diaria» son plantillas y a cada jugador le tocan 3 al día de las de su nivel
-> (`TFJobsConfig.missionsFor`, guardadas en oficios.json «hoy»/«hoyMisiones»). Misiones del pad y Cazas rotan igual
-> (`PadMissions.rotate`); listas en `tfclient-misiones-default.json`. Todo lo genera `tools/gen_economia.py`
-> (154 misiones de oficio, 60 diarias, 27 presas). Cazas configurables desde el pad de admin: app **CAZAS**
-> (`PadAdminHunts`, `a_cazas`): presas con mob (también de mods), cantidad, monedas, descripción ({n}) e icono. Las configs viejas se guardan como `*.antes-v2.json` y se cambian
-> (`TFConfigDir.upgrade`, claves versionEconomia / version). Pagos por acción ÷5–10, misiones ≈10 % de antes.
-> Hecho 6: reacciones risa/wow/triste/fuego/top (`PadCommunityNet.REACTIONS`, iconos `emo_*.png` de build_pad), una por
-> jugador y foto («reacciones» en cada publicación del servidor), fila de emojis encima del corazón.
-> En curso 7: playlists en `MusicLibrary` (listas, listaActual; `queue()` = lo que suena) y altavoz: `PadSpeakerNet`
-> (Up/Down, ids 20-21), `server/PadSpeakers` (quién está a 32 bloques), `music/MusicSpeaker` (cada cliente baja la
-> canción del link y la oye en mono situada en el jugador, categoría Discos). Falta: la interfaz en PadMusicPage.
-> Reglas: checkpoints frecuentes (commit + push) con el avance aquí.
-
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.28** (la siguiente es **1.3.29**). Lo último: el interior de las apps con un lenguaje visual
-> nuevo (una sola ventana con pestañas de carpeta, textura de cristal tallado, vitrinas, etiquetas con la moneda),
-> la ventana centrada en el cristal, fotos nítidas y cantidades sin números oscuros (ver la entrega 1.3.28).
+> mod: **TF Client 1.3.29** (la siguiente es **1.3.30**). Lo último: leyendas solo en Tienda/Kits, oficios sin avisos
+> en pantalla, tienda sin mezclar compra y venta, **economía estable** y **misiones/cazas que rotan por temporadas de 90
+> días** (cazas configurables en el pad de admin), **reacciones con emojis** en Comunidad, **playlists** y **altavoz
+> por proximidad** en Música (ver la entrega 1.3.29).
+> Antes (1.3.28): interior de las apps con diseño nuevo (ventana única, textura, vitrinas, etiquetas con moneda).
 > Antes (1.3.27): portada centrada, GTS sin objetos de sets, planeo con barrita, Oficios en tarjetas, GTS en lista.
 > Antes (1.3.26): rediseño del interior de las apps, pad más alto, portada 7x3 sin partículas, Recompensas, Web,
 > cabezas con skin y números de cantidad normales.
@@ -63,7 +39,40 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): interior de las apps con diseño nuevo, ventana centrada, fotos nítidas — TF Client 1.3.28
+### Última entrega (9 de octubre de 2026): economía, misiones por temporadas, emojis, playlists y altavoz — TF Client 1.3.29
+Lo que pidió viendo la 1.3.28 (con capturas):
+1. **Leyendas de objetos** solo en **Tienda y Kits** y a 2/3 de tamaño (`PadViewPage.renderOver`); en el resto son
+   iconos y no salen (ni las cabezas).
+2. **Oficios sin mensajes en pantalla**: fuera el actionbar «Leñador 1 +2 xp +1,5 monedas (6/100)» (y la clave
+   `avisoActionBar`) y el título grande al subir de nivel; queda el sonido y la línea en el chat.
+3. **Tienda**: COMPRAR solo enseña lo que se compra (categorías sin nada a la venta no salen); lo que solo se vende va
+   en VENDER (desde tu inventario). La ficha de un objeto ya no mezcla pestañas COMPRAR/VENDER.
+4. **Economía estable** (`tools/gen_economia.py` genera los JSON por defecto): lo que paga cada acción de oficio ÷5–10
+   (una hora de trabajo ≈ 40–150 monedas), subir de nivel 10 + 3/nivel, hito 50 = netherita + 1.500, misiones de oficio
+   ≈ 10 % de antes (y piden un 50 % más), Misiones del pad 10–35, Cazas 30–90, recompensas y kits por defecto más bajos.
+   La tienda por defecto ya era «tipo dólar» (diamante 150). Las configs viejas se guardan como `*.antes-v2.json` y se
+   cambian solas (`TFConfigDir.upgrade`). Kits, recompensas y tienda del servidor (los configura el dueño) no se tocan.
+5. **Colchón de 3 meses** (`util/TFRotation`): temporadas de 90 días; de cada lista sale cada misión una vez por vuelta
+   y en cada vuelta con más cantidad y premio (x1 → x2,5), así en una temporada no se repite ninguna igual.
+   - Oficios: las misiones «diaria» son **plantillas** (154 en total); cada día a cada jugador le tocan 3 de las de su
+     nivel (`TFJobsConfig.missionsFor`; se guardan en oficios.json «hoy»/«hoyMisiones»; id «h<día>_<plantilla>»).
+   - Misiones del pad: 60 diarias (3 al día por jugador) y semanales (3, x5 cantidad, x4 pago).
+   - Cazas: 27 presas, 4 cada 12 h; **configurables desde el pad de admin, app CAZAS** (`PadAdminHunts`): mob (vale el
+     id de un mob de mod, #etiqueta, hostil/animal), cantidad, monedas, descripción ({n}) e icono.
+6. **Comunidad: reacciones** risa, wow, triste, fuego y top (iconos `emo_*.png`), una por jugador y foto (se cambia o
+   se quita), además del corazón; contadores encima del like.
+7. **Música**:
+   - **Playlists**: pestañas TODAS / cada lista / «+» (crear); el + de cada canción abre un menú para meterla o sacarla
+     de tus listas; dentro de una lista, el − la saca; la X de la pestaña borra la lista. Siguiente/anterior recorren la
+     lista que suena (`MusicLibrary.queue()`).
+   - **Altavoz** (botón al final de los controles): los jugadores a menos de 32 bloques oyen tu música situada en ti,
+     más fuerte cuanto más cerca. Cómo va: el cliente avisa al servidor (link, por dónde va; cada 10 s se resincroniza),
+     el servidor (`PadSpeakers`) se lo cuenta a los que están cerca y a los que llegan, y cada cliente (`MusicSpeaker`)
+     baja la canción **del mismo link** (caché musica/altavoz/, 30 como mucho) y la reproduce en mono (`MonoDecoder`)
+     en la categoría Discos. Solo funciona con canciones que vinieron de un link. En Ajustes: «Oír los altavoces de
+     otros» (SÍ/NO).
+
+### Entrega anterior (9 de octubre de 2026): interior de las apps con diseño nuevo, ventana centrada, fotos nítidas — TF Client 1.3.28
 Viendo la 1.3.27 dijo que el interior de las apps era «mediocre y simplista»: el blanco está bien, pero quería
 **textura** y **mejor orden visual**; además, **nada de números oscuros sombreados**, las **fotos se veían borrosas**
 (al publicarlas y en la vista previa) y, a mitad del trabajo, que **la GUI estaba descentrada** (más hacia la derecha).
@@ -1231,7 +1240,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.28)
+## 5. El mod (TF Client 1.3.29)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
