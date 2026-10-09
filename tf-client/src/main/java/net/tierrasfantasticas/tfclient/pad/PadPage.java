@@ -39,6 +39,9 @@ abstract class PadPage {
         return false;
     }
 
+    /** Se soltó el botón del ratón (para barras que se arrastran). */
+    void release(double mx, double my, int button) {}
+
     /** true si la página se queda la tecla (por ejemplo, escribiendo en un campo). */
     boolean key(int key, int scan, int mods) {
         return false;

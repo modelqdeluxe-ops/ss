@@ -472,6 +472,44 @@ def admin():
     return ic.outline()
 
 
+def musica():
+    """Música (a mano): disco de vinilo con surcos y etiqueta roja, y delante una doble corchea de oro con su barra."""
+    ic = Icon()
+    VINYL = [(150, 160, 205), (96, 104, 150), (52, 58, 98), (34, 38, 70), (22, 24, 48)]
+    cx, cy, r = 12.5, 18.5, 11.2
+    disc = {(x, y) for y in range(32) for x in range(32) if math.hypot(x + 0.5 - cx, y + 0.5 - cy) <= r}
+    shade(ic, disc, VINYL)
+    for x, y in disc:
+        d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+        a = math.degrees(math.atan2(y + 0.5 - cy, x + 0.5 - cx))
+        if 6.6 < d <= 7.4 or 8.9 < d <= 9.6:
+            ic.px(x, y, VINYL[1] if -170 < a < -100 else VINYL[3])  # surcos, con brillo arriba a la izquierda
+        if 4.6 < d < r - 0.8 and -150 < a < -118:
+            ic.px(x, y, VINYL[0])  # reflejo
+    label = {(x, y) for y in range(32) for x in range(32) if math.hypot(x + 0.5 - cx, y + 0.5 - cy) <= 3.9}
+    shade(ic, label, RED)
+    for x, y in ((12, 18), (13, 18), (12, 19), (13, 19)):
+        ic.px(x, y, VINYL[4])  # agujero
+    ic.px(11, 16, RED[0])
+    # doble corchea: dos cabezas ovaladas, dos plicas y la barra inclinada arriba
+    heads = set()
+    for hx, hy in ((19.0, 24.5), (27.0, 22.5)):
+        heads |= {(x, y) for y in range(32) for x in range(32)
+                  if ((x + 0.5 - hx) / 3.1) ** 2 + ((y + 0.5 - hy) / 2.3) ** 2 <= 1.0}
+    stems = ic.rect(21, 8, 22, 24) | ic.rect(29, 6, 30, 22)
+    beam = set()
+    for x in range(21, 31):
+        top = 8 - (x - 21) * 2 / 9
+        for y in range(32):
+            if top - 0.6 <= y + 0.5 <= top + 3.4:
+                beam.add((x, y))
+    note = heads | stems | beam
+    shade(ic, note, GOLD)
+    for x, y in ((17, 23), (18, 23), (25, 21), (26, 21)):
+        ic.px(x, y, GOLD[0])  # brillo de las cabezas
+    return ic.outline()
+
+
 ICONOS = {'misiones': misiones, 'cazas': cazas, 'viajes': viajes, 'explorar': explorar, 'hogares': hogares, 'kits': kits,
           'titulos': titulos, 'ayuda': ayuda, 'comunidad': comunidad, 'jugadores': jugadores, 'clanes': clanes,
-          'ranking': ranking, 'camara': camara}
+          'ranking': ranking, 'camara': camara, 'musica': musica}

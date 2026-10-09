@@ -119,7 +119,9 @@ public final class MusicLibrary {
         try (InputStream in = Files.newInputStream(png)) {
             NativeImage img = NativeImage.read(in);
             loc = new ResourceLocation(TFClient.MOD_ID, "musica/" + t.id().toLowerCase(Locale.ROOT));
-            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(img));
+            DynamicTexture texture = new DynamicTexture(img);
+            texture.setFilter(true, false); // es una foto: suavizada al escalar
+            Minecraft.getInstance().getTextureManager().register(loc, texture);
             COVERS.put(t.id(), loc);
             return loc;
         } catch (Exception e) {

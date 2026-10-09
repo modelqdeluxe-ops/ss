@@ -121,7 +121,7 @@ public final class PadAdmin {
     private record AppInfo(String id, String name, Item icon) {}
 
     private static final List<AppInfo> PLAYER_APPS = List.of(
-            new AppInfo("oficios", "Oficios", Items.IRON_PICKAXE), new AppInfo("misiones", "Misiones", Items.WRITABLE_BOOK),
+            new AppInfo("musica", "Música", Items.MUSIC_DISC_CAT), new AppInfo("oficios", "Oficios", Items.IRON_PICKAXE), new AppInfo("misiones", "Misiones", Items.WRITABLE_BOOK),
             new AppInfo("cazas", "Cazas", Items.CROSSBOW), new AppInfo("tienda", "Tienda", Items.CHEST),
             new AppInfo("gts", "GTS", Items.EMERALD), new AppInfo("monedero", "Monedero", Items.GOLD_INGOT),
             new AppInfo("viajes", "Viajes", Items.FILLED_MAP), new AppInfo("hogares", "Hogares", Items.OAK_DOOR),
