@@ -248,6 +248,15 @@ Ayuda; en el cliente, Comunidad, Cámara (foto con clic izquierdo) y Ajustes. `/
 protección abren su app (sin TF Client, las ventanas de siempre). Texturas: `tools/pad/build_pad.py [--preview]`;
 sonidos: `tools/pad/build_sounds.py`; vistas previas: `tools/pad/sim/pages.py <carpeta>`.
 
+**Música** (1.3.25): app del cliente (solo la oye el jugador). Se pega el link directo de una canción (MP3, OGG o WAV;
+los links de compartir de Google Drive, Dropbox y GitHub se convierten solos), se descarga a
+`.minecraft/tfclient/musica/` con su título, artista y portada, y se reproduce con un reproductor completo (portada,
+ecualizador, barra para saltar, aleatorio, repetir, volumen). Sigue sonando con el pad cerrado hasta pausarla en la app.
+MP3 con JavaMP3 (MIT, incluido en `pad/music/mp3`). Prueba: `https://xn--tierrasfantsticas-hpb.store/musica/epic-rpg.mp3`.
+
+**Escala**: la portada, la barra de arriba y las apps se dibujan a la escala grande del pad (1,5 a 1080p, siempre a
+píxeles enteros), con fichas RPG animadas en la portada.
+
 **Pad de administrador** (1.3.24): objeto `tfclient:pad_admin`, solo staff (nivel 3), se da con
 `/tf web pad admin [jugador]`. Configura todo el pad sin tocar archivos: qué apps salen, los ajustes de `pad.json`
 (esperas de viajes, Explorar, hogares sin rango, envíos de monedas, regalos, GTS), la tienda (objetos desde la mano,
@@ -321,7 +330,7 @@ dueño. Todo en `config/tfclient/limites.json` (se crea solo): `activado`, los t
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.24.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.25.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 

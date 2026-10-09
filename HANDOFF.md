@@ -9,35 +9,15 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **🚧 TRABAJO EN CURSO — TF Client 1.3.25 (checkpoint; si retomas, sigue esta lista):**
-> Pedido del dueño (9 oct): (1) iconos de la portada **más grandes**, ajustados al pad nuevo; (2) **mejor textura de
-> las fichas/botones** y **animaciones RPG** al pasar el ratón, distintas según el icono; (3) **rediseñar el interior
-> de cada app** (más bonito, ajustado al tamaño nuevo); (4) app **MÚSICA** tipo Etched: pegar un link directo (Google
-> Drive convertido, Dropbox…), se **descarga y guarda**, reproductor completo (portada de la canción, play/pausa,
-> anterior/siguiente, barra de progreso, aleatorio, repetir, **volumen**), sigue sonando con el pad cerrado hasta
-> pararla en la app, solo la oye el jugador; (5) darle al dueño un **link directo de un MP3 gratis** para probar.
-> Plan y estado (marca [x] al terminar cada punto y haz commit+push a la rama como checkpoint):
-> - [ ] Escala «grande» `big = max(cs, round(ps*0.75))` px reales por texel: portada y barra de estado a esa escala.
-> - [ ] Fichas nuevas (`build_pad.py tile()`): marco RPG (oro + engaste) y versión hover; icono de Música.
-> - [ ] Animaciones por app al pasar el ratón (`PadHomePage`: balanceo del pico, moneda que gira, humo de la casa…).
-> - [ ] Rediseño de `PadUi`/`PadViewPage` (panel, filas como tarjetas, pestañas, botones con brillo, cabecera).
-> - [~] Música: hecho y probado fuera del juego `pad/music/` — decodificadores (`mp3/Decoder` = JavaMP3 MIT copiado,
->       `Mp3Decoder`/`Mp3Frames` con salto exacto, `OggDecoder` stb_vorbis, `WavDecoder`), `MusicTags` (ID3/Vorbis +
->       portada), `MusicDownloader` (Drive/Dropbox/GitHub → link directo, redirecciones, página de Drive),
->       `MusicLibrary` (`.minecraft/tfclient/musica/biblioteca.json`), `MusicStream`/`MusicSound` (getStream de
->       Forge, categoría MASTER), `MusicPlayer` (sigue con el pad cerrado). **Falta:** `PadMusicPage` (la app),
->       icono `icon_musica`, añadir «musica» a `PadHomePage.APPS`, `TFPadScreen.CLIENT_APPS/openApp` y `PadAdmin.PLAYER_APPS`.
->       Canción de prueba ya en la web: `tierras-fantasticas/public/musica/epic-rpg.mp3`
->       (→ https://xn--tierrasfantsticas-hpb.store/musica/epic-rpg.mp3 tras fusionar).
-> - [ ] MP3 de prueba con link directo; simulador y vistas previas; docs; publicar 1.3.25 y mandar el .jar.
->
-> **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
-> **TF Client 1.3.24** (la siguiente es **1.3.25**). Lo último que pidió el dueño y quedó hecho: pad **más grande y
-> nítido** (contenido a doble resolución), cristal sin líneas azules, título centrado, **sin Títulos**, interfaz con
-> **tarjetas** y objetos al doble, textos cortos (nada de relleno), **pad de administrador** (objeto físico) que configura
-> todo el pad, toda la config en **`config/tfclient/`**, regalos en Jugadores, warps en Viajes, kits por tipo, tienda
-> que solo compra lo que el staff pone, Comunidad en lista vertical y foto con **clic izquierdo**. Ver la entrega 1.3.24.
-> Reglas: **todo lo del jugador se hace desde el pad**; **sin `/tf claims`** (las piedras se dan como kit).
+> **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
+> mod: **TF Client 1.3.25** (la siguiente es **1.3.26**). Lo último que pidió el dueño y quedó hecho: portada con
+> **iconos grandes** (escala 1,5 a 1080p) en **fichas RPG** nuevas con **animación propia por app** al pasar el ratón,
+> **todas las apps rediseñadas y a la escala grande** (filas como tarjetas, paneles con degradado, botones con brillo) y
+> la app **Música** (pegar un link directo → se descarga y se guarda; reproductor completo con portada, sigue sonando con
+> el pad cerrado, solo la oye el jugador). Canción de prueba: https://xn--tierrasfantsticas-hpb.store/musica/epic-rpg.mp3.
+> Ver la entrega 1.3.25. Reglas: **todo lo del jugador se hace desde el pad**; **sin `/tf claims`**.
+> **Checkpoints:** el dueño pidió (9 oct) que en trabajos largos se vaya apuntando el plan y el avance aquí arriba y se
+> haga commit + push a la rama de vez en cuando, para que otra IA pueda seguir sin perder nada.
 >
 > **Para seguir:** lee las secciones 0 (entregas, de la más nueva a la vieja) y 2 (reglas). Antes de tocar el menú de
 > inicio, lee «menú de inicio como antes»: el dueño **no** quiere la nebulosa ni el cielo animado ni botones nuevos ahí.
@@ -51,7 +31,54 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): pad grande, pad de administrador y config en carpeta — TF Client 1.3.24
+### Última entrega (9 de octubre de 2026, noche): iconos grandes, fichas RPG animadas, apps rediseñadas y Música — TF Client 1.3.25
+Pidió: los iconos de la portada **más grandes** (no estaban ajustados al pad nuevo), **mejor textura de las fichas** con
+**animaciones tipo RPG según el icono**, **rediseñar el interior de cada app** («más bonitas, ajusta todo al tamaño
+nuevo») y una app de **Música** como el mod Etched: pegar un **link directo** (Google Drive convertido…), que se
+**descargue y se guarde**, reproductor completo con la **imagen de la canción**, **volumen**, que **siga sonando con el
+pad cerrado** hasta apagarla en la app, y que **solo la oiga él**. Además, un MP3 gratis con link directo para probar.
+Hecho:
+- **Escala grande** (`TFPadScreen.big/bs`): px reales por píxel de textura = max(cs, round(ps·0,75)); bs = big/cs (1,5 a
+  1080p, 4/3 a 1440p…). Siempre píxeles enteros: nítido. La barra de arriba (◀, título, hora, monedas, engranaje y un
+  ecualizador cuando suena música, que abre Música) va a esa escala; `bar = round(12·bs)+6`.
+- **Portada** (`PadHomePage`): fichas de 40 px a escala grande (60 unidades), rótulos grandes, 7 columnas: las 20 apps
+  caben sin desplazar a 1080p. **Fichas nuevas** (`build_pad.py tile()`): marco de oro biselado, engaste oscuro, cara de
+  cristal azul con brillo y tachuelas con gema azul en las esquinas; hover más claro. **Animaciones por app** al pasar el
+  ratón: el pico pica y saltan chispas, la moneda gira, el cofre y el saco saltan, sale humo de la chimenea, el escudo
+  late, el estandarte ondea, la percha se balancea, la ballesta retrocede y dispara, la cámara hace flash, el engranaje
+  gira, Música late al ritmo de la canción que suena…; halo dorado, partículas y un destello que cruza fichas al azar.
+- **Apps a escala** (mecanismo general en `TFPadScreen.enter/exit`): toda página con `scaled()` (todas menos la portada)
+  se dibuja con la pose ×bs y, mientras se dibuja o recibe el ratón, `PadPage.X/Y/W/H/SW/SH/OX/OY` están en «unidades de
+  vista» (zona de la app desde 0,0; a 1080p 353x154). `pad.scissor` convierte solo. **Rediseño** (`PadViewPage`,
+  `PadUi`): filas como tarjetas separadas (borde, degradado, barra de color al seleccionar/pasar), títulos de sección con
+  línea y rombo de oro, cabecera con rombo, casillas tipo inventario 30x32, tarjetas 84x66 que se elevan y cuyo objeto
+  flota, paneles con degradado, botones con destello al pasar el ratón, barras de progreso con degradado, pantallas
+  vacías con el icono de la app.
+- **Música** (`pad/PadMusicPage` + `pad/music/`), solo cliente:
+  - Descarga (`MusicDownloader`): convierte links de compartir de Google Drive (→ `drive.usercontent.google.com/download
+    ?id=…&export=download&confirm=t`, y sigue el botón de «descargar de todos modos»), Dropbox (`dl=1`) y GitHub (raw);
+    sigue redirecciones; máximo 80 MB; comprueba que sea MP3/OGG/WAV de verdad y que se pueda reproducir.
+  - Etiquetas y portada (`MusicTags`): ID3 v2.2–2.4 + v1 (título, artista, APIC) y comentarios Vorbis (con
+    METADATA_BLOCK_PICTURE); la portada se guarda a 256x256 PNG (sin Graphics2D). Botón PORTADA: imagen desde un link.
+  - Biblioteca (`MusicLibrary`): `.minecraft/tfclient/musica/` (`<id>.mp3|ogg|wav`, `<id>.png`, `biblioteca.json` con
+    la lista y volumen/aleatorio/repetir). Borrar con confirmación.
+  - Decodificadores (`AudioDecoder`): MP3 con **JavaMP3** (MIT, copiado en `pad/music/mp3/`, con un arreglo para saltar
+    a mitad de canción; licencia también en `META-INF/licenses/`), salto exacto con `Mp3Frames` (recorre cabeceras);
+    OGG con stb_vorbis (el de Minecraft); WAV 8/16/24/32 bits y float.
+  - Sonido (`MusicStream`/`MusicSound`/`MusicPlayer`): es un sonido del juego (Forge `SoundInstance.getStream`),
+    categoría principal, sin posición; play/pausa (para al momento), anterior/siguiente, salto arrastrando la barra,
+    aleatorio, repetir (todas/una/no), volumen (barra vertical, rueda, clic en el altavoz = silencio). Sigue sonando con
+    el pad cerrado; calla la música de fondo de Minecraft mientras suena; si el motor de sonido se reinicia, sigue donde
+    iba; al salir del servidor se pausa. «Now playing» de Minecraft al empezar cada canción. Ecualizador que mide el
+    volumen real de la canción cada 50 ms. Teclas: espacio, ←/→ (5 s), Ctrl+V pega el link.
+  - Probado fuera del juego: decodificación entera (≈55× tiempo real), salto exacto bit a bit, descarga real con
+    redirecciones, etiquetas y portada.
+- Canción de prueba en la web: `tierras-fantasticas/public/musica/epic-rpg.mp3` («Epic Computer Game Music» de Kris
+  Klavenes, dominio público, con título/artista/portada puestos por nosotros; ver `LEEME.txt` al lado).
+- Simulador (`tools/pad/sim/`): ahora dibuja en píxeles reales con la escala grande (`Sim.big_at`, `Local` en pages.py)
+  y tiene la portada nueva, las apps a escala y Música.
+
+### Entrega (9 de octubre de 2026): pad grande, pad de administrador y config en carpeta — TF Client 1.3.24
 Pidió: tableta más grande, quitar las líneas azules del cristal que se solapaban con los recuadros, **nada de textos
 genéricos** («la web no ha mandado…»), centrar «TF PAD», **quitar los títulos** (van en el sitio del prefijo de rango;
 el del clan sí se queda), menús más visuales y con scroll **vertical**, tienda que solo compra lo que pongan ellos (nada
@@ -1055,7 +1082,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.24)
+## 5. El mod (TF Client 1.3.25)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

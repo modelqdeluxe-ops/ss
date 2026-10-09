@@ -1,7 +1,5 @@
 package net.tierrasfantasticas.tfclient.pad.music;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -317,20 +315,40 @@ public final class MusicDownloader {
         }
     }
 
-    /** Recorta al cuadrado del centro, lo deja en 256x256 y lo guarda como PNG. false si no es una imagen. */
+    /**
+     * Recorta al cuadrado del centro, lo deja en 256x256 (media de los píxeles de cada zona: suave, sin Graphics2D,
+     * que en macOS no conviene arrancar junto a la ventana del juego) y lo guarda como PNG. false si no es una imagen.
+     */
     static boolean saveCover(byte[] bytes, Path png) {
         try {
             BufferedImage src = ImageIO.read(new ByteArrayInputStream(bytes));
             if (src == null) return false;
             int side = Math.min(src.getWidth(), src.getHeight());
             int sx = (src.getWidth() - side) / 2, sy = (src.getHeight() - side) / 2;
-            BufferedImage out = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = out.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.drawImage(src, 0, 0, 256, 256, sx, sy, sx + side, sy + side, null);
-            g.dispose();
-            return ImageIO.write(out, "png", png.toFile());
+            int[] in = src.getRGB(sx, sy, side, side, null, 0, side);
+            int n = 256;
+            int[] out = new int[n * n];
+            for (int y = 0; y < n; y++) {
+                int y0 = y * side / n, y1 = Math.max(y0 + 1, (y + 1) * side / n);
+                for (int x = 0; x < n; x++) {
+                    int x0 = x * side / n, x1 = Math.max(x0 + 1, (x + 1) * side / n);
+                    long r = 0, gr = 0, b = 0, a = 0, count = 0;
+                    for (int yy = y0; yy < y1; yy++) {
+                        for (int xx = x0; xx < x1; xx++) {
+                            int c = in[yy * side + xx];
+                            a += c >>> 24;
+                            r += (c >> 16) & 0xFF;
+                            gr += (c >> 8) & 0xFF;
+                            b += c & 0xFF;
+                            count++;
+                        }
+                    }
+                    out[y * n + x] = (int) (a / count) << 24 | (int) (r / count) << 16 | (int) (gr / count) << 8 | (int) (b / count);
+                }
+            }
+            BufferedImage dst = new BufferedImage(n, n, BufferedImage.TYPE_INT_ARGB);
+            dst.setRGB(0, 0, n, n, out, 0, n);
+            return ImageIO.write(dst, "png", png.toFile());
         } catch (Exception e) {
             TFClient.LOGGER.info("Música: portada no válida ({})", e.toString());
             return false;
