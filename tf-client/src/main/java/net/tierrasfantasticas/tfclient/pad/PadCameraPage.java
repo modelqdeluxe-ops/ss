@@ -160,7 +160,8 @@ final class PadCameraPage extends PadPage {
         PadUi.panel(g, X, Y, W, H);
         int PW = pw(), PH = ph();
         int px = X + 6, py = Y + 5;
-        PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.NAVY);
+        PadUi.box(g, px - 2, py - 2, PW + 4, PH + 4, PadUi.INK);
+        PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.GOLD_LO);
         g.fill(px, py, px + PW, py + PH, 0xFF1A2440);
         if (photos.isEmpty()) {
             PadUi.wrap(g, "Sin fotos. MODO FOTO y clic izquierdo.", px + 10, py + PH / 2 - 10, PW - 20, 0xFFE0ECFF, 3);
@@ -200,7 +201,7 @@ final class PadCameraPage extends PadPage {
         // columna derecha
         if (!photos.isEmpty()) {
             Path p = photos.get(index);
-            PadUi.text(g, "Foto " + (index + 1) + " de " + photos.size(), cx, py + 1, PadUi.TEXT);
+            PadUi.text(g, "Foto " + (index + 1) + " de " + photos.size(), cx, py + 1, PadUi.GOLD_TEXT);
             long when = 0;
             try {
                 when = Files.getLastModifiedTime(p).toMillis();
@@ -229,8 +230,8 @@ final class PadCameraPage extends PadPage {
 
     private void arrow(GuiGraphics g, int x, int y, boolean left, double mx, double my, Runnable action) {
         boolean hover = PadUi.inside(mx, my, x, y, 10, 14);
-        PadUi.box(g, x, y, 10, 14, PadUi.NAVY);
-        PadUi.box(g, x + 1, y + 1, 8, 12, hover ? 0xFFF6B628 : 0xCC3496FA);
+        PadUi.box(g, x, y, 10, 14, PadUi.INK);
+        g.fillGradient(x + 1, y + 1, x + 9, y + 13, hover ? 0xFFFFD650 : 0xEE5AB4FF, hover ? 0xFFE8961A : 0xEE2C74E4);
         int c = 0xFFFFFFFF;
         if (left) {
             g.fill(x + 3, y + 6, x + 4, y + 8, c);
@@ -247,10 +248,10 @@ final class PadCameraPage extends PadPage {
     }
 
     private void button(GuiGraphics g, int x, int y, int w, String label, int style, double mx, double my, Runnable action) {
-        boolean hover = PadUi.inside(mx, my, x, y, w, 15);
+        boolean hover = PadUi.inside(mx, my, x, y, w, 16);
         if (hover) pad.hover("§" + label);
         PadUi.button(g, x, y, w, label, style, hover, true);
-        buttons.add(new int[] {x, y, w, 15});
+        buttons.add(new int[] {x, y, w, 16});
         actions.add(action);
     }
 

@@ -8,24 +8,37 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
 /**
- * Piezas de dibujo del pad, todas en «píxeles de pad» y con el mismo estilo que las fichas: esquinas recortadas,
- * borde azul marino, luz arriba y sombra abajo.
+ * Piezas de dibujo del pad (1.3.26), en blanco: ventanas blancas con borde de oro y tachuelas en las esquinas,
+ * tarjetas en relieve (azul claro al pasar el ratón; crema con borde de oro si están marcadas), ranuras hundidas para
+ * los objetos, botones con degradado, luz y sombra, pestañas doradas, campos y barras hundidos. Todo en unidades de
+ * la página. Textos en azul marino (TEXT), gris azulado (MUTED) y oro (GOLD_TEXT).
  */
 final class PadUi {
     static final int NAVY = 0xFF18265C;
+    /** Contorno de botones, pestañas y campos. */
+    static final int INK = 0xFF18265C;
     static final int TEXT = 0xFF18265C;
     static final int MUTED = 0xFF4A6694;
-    static final int PANEL = 0xFFE8F8FF;
+    static final int GOLD_TEXT = 0xFFC27A10;
+    static final int GREEN_TEXT = 0xFF1E9E46;
+    static final int RED_TEXT = 0xFFC8323C;
+    /** Texto sobre el cristal azul claro del pad. */
+    static final int GLASS_TEXT = 0xFF18265C;
+    static final int GOLD = 0xFFF6B628, GOLD_HI = 0xFFFFE58A, GOLD_LO = 0xFFC07818;
+    static final int PANEL_TOP = 0xFFF8FCFF, PANEL_BOT = 0xFFDCEEFC, PANEL_HI = 0xFFFFFFFF;
+    static final int SLOT = 0xFFE2EEFA, SLOT_EDGE = 0xFF9DBCE0, SLOT_SHADE = 0xFFC2D8EE;
+    /** Compatibilidad: el fondo de las ventanas. */
+    static final int PANEL = PANEL_TOP;
     static final java.text.DecimalFormat THOUSANDS = new java.text.DecimalFormat("#,##0",
             java.text.DecimalFormatSymbols.getInstance(java.util.Locale.forLanguageTag("es-ES")));
 
-    /** Colores de botón: cara, luz, sombra (por estilo de PadView). */
+    /** Botones por estilo de PadView: cara arriba, cara abajo, luz, sombra. */
     private static final int[][] BTN = {
-            {0xFF3496FA, 0xFF96D6FF, 0xFF1854BE},   // azul
-            {0xFFF6B628, 0xFFFFEC96, 0xFFBA7014},   // oro
-            {0xFFE83446, 0xFFFF9C9C, 0xFF9A1A30},   // rojo
-            {0xFF40C850, 0xFFA0F078, 0xFF1E7C2C},   // verde
-            {0xFFAABAD2, 0xFFD6E2F0, 0xFF7E8CA8},   // gris (desactivado)
+            {0xFF5AB4FF, 0xFF2C74E4, 0xFFB4E0FF, 0xFF1A4AA8},   // azul
+            {0xFFFFD650, 0xFFE8961A, 0xFFFFF2B0, 0xFFA05E0E},   // oro
+            {0xFFFF6274, 0xFFC82038, 0xFFFFB4BC, 0xFF861428},   // rojo
+            {0xFF68E886, 0xFF22A84C, 0xFFC4FFD0, 0xFF147034},   // verde
+            {0xFF4A5884, 0xFF36426C, 0xFF6E7CA8, 0xFF252E50},   // gris (desactivado)
     };
 
     private PadUi() {}
@@ -40,61 +53,141 @@ final class PadUi {
         g.fill(x, y + 1, x + w, y + h - 1, color);
     }
 
-    /** Panel blanco con borde, luz arriba y sombra azul debajo. */
+    /** Tachuela de oro de 3x3 con brillo, centrada en (cx, cy). */
+    static void stud(GuiGraphics g, int cx, int cy) {
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, GOLD_LO);
+        g.fill(cx, cy - 1, cx + 1, cy + 2, GOLD);
+        g.fill(cx - 1, cy, cx + 2, cy + 1, GOLD);
+        g.fill(cx, cy - 1, cx + 1, cy + 1, GOLD_HI);
+    }
+
+    /** Ventana: contorno azul marino, borde de oro, blanco en degradado, luz arriba y tachuelas en las esquinas. */
     static void panel(GuiGraphics g, int x, int y, int w, int h) {
         g.fill(x + 2, y + h, x + w - 2, y + h + 1, 0xFF2882D2);
-        box(g, x, y, w, h, NAVY);
-        box(g, x + 1, y + 1, w - 2, h - 2, PANEL);
-        if (w > 4 && h > 4) g.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, 0xFFF4FBFF, 0xFFDCEEFC);
+        box(g, x, y, w, h, INK);
+        box(g, x + 1, y + 1, w - 2, h - 2, GOLD_LO);
+        if (w > 4 && h > 4) g.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, PANEL_TOP, PANEL_BOT);
+        g.fill(x + 3, y + 2, x + w - 3, y + 3, PANEL_HI);
+        if (w >= 12 && h >= 12) {
+            stud(g, x + 2, y + 2);
+            stud(g, x + w - 3, y + 2);
+            stud(g, x + 2, y + h - 3);
+            stud(g, x + w - 3, y + h - 3);
+        }
+    }
+
+    /** Tarjeta (fila, casilla, ficha) dentro de una ventana. state: 0 normal, 1 ratón encima, 2 marcada. */
+    static void card(GuiGraphics g, int x, int y, int w, int h, int state) {
+        int edge = state == 2 ? 0xFFE0A030 : state == 1 ? 0xFF3496FA : 0xFFB8D4EE;
+        int top = state == 1 ? 0xFFF2FAFF : state == 2 ? 0xFFFFF7DA : 0xFFFFFFFF;
+        int bot = state == 1 ? 0xFFD2EAFF : state == 2 ? 0xFFFFE9A8 : 0xFFEAF4FD;
+        g.fill(x + 2, y + h, x + w - 2, y + h + 1, state == 1 ? 0x553496FA : 0x33204070); // sombra
+        box(g, x, y, w, h, edge);
+        if (w > 2 && h > 2) g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, top, bot);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
-        g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, 0xFFAAD8F8);
+        if (state == 2) g.fill(x + 1, y + 2, x + 3, y + h - 2, GOLD);
+        else if (state == 1) g.fill(x + 1, y + 2, x + 3, y + h - 2, 0xFF3496FA);
+    }
+
+    /** Ranura hundida para un objeto (como las del inventario, en azul noche). */
+    static void slot(GuiGraphics g, int x, int y, int w, int h) {
+        box(g, x, y, w, h, SLOT_EDGE);
+        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, SLOT);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, SLOT_SHADE);
+        g.fill(x + 1, y + 2, x + 2, y + h - 1, SLOT_SHADE);
     }
 
     static int buttonWidth(String label) {
-        return Math.max(36, PadFont.width(label) + 14);
+        return Math.max(36, PadFont.width(label) + 14 + (isBack(label) ? 8 : 0));
     }
 
-    /** Botón de 16 de alto (15 + 1 de sombra). */
+    /** Los botones de volver llevan una flecha delante. */
+    static boolean isBack(String label) {
+        return label.startsWith("ATR") || label.equals("VOLVER");
+    }
+
+    /** Botón de 16 de alto: tinta, cara en degradado, luz arriba, sombra abajo; al pasar el ratón, más claro. */
     static void button(GuiGraphics g, int x, int y, int w, String label, int style, boolean hover, boolean enabled) {
         int[] c = BTN[enabled ? Math.max(0, Math.min(3, style)) : 4];
-        int face = c[0], light = c[1], dark = c[2];
+        int top = c[0], bot = c[1];
         if (hover && enabled) {
-            face = BTN[1][0];
-            light = BTN[1][1];
-            dark = BTN[1][2];
-            if (style == PadView.GOLD) {
-                face = 0xFFFFD36A;
-            }
+            top = lighten(top, 30);
+            bot = lighten(bot, 30);
         }
-        g.fill(x + 2, y + 15, x + w - 2, y + 16, 0xFF2882D2);
-        box(g, x, y, w, 15, NAVY);
-        box(g, x + 1, y + 1, w - 2, 13, face);
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, light);
-        g.fill(x + 2, y + 12, x + w - 2, y + 14, dark);
-        if (hover && enabled) shine(g, x + 2, y + 2, w - 4, 10);
-        PadFont.drawCentered(g, label, x + w / 2, y + 2, 0xFFFFFF, true);
-    }
-
-    /** Destello que cruza un botón en diagonal cada ~0,9 s (al pasar el ratón). */
-    static void shine(GuiGraphics g, int x, int y, int w, int h) {
-        float p = (System.currentTimeMillis() % 900) / 900F;
-        int start = x - h + Math.round(p * (w + h * 2));
-        for (int r = 0; r < h; r++) {
-            int a = Math.max(x, start - r / 2), b = Math.min(x + w, start - r / 2 + 3);
-            if (b > a) g.fill(a, y + r, b, y + r + 1, 0x66FFFFFF);
+        box(g, x, y, w, 16, INK);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + 14, top, bot);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, c[2]);
+        g.fill(x + 1, y + 13, x + w - 1, y + 15, c[3]);
+        int text = enabled ? 0xFFFFFF : 0x8C9AC4;
+        if (isBack(label)) {
+            int ax = x + 6, ay = y + 7;
+            for (int i = 0; i < 4; i++) g.fill(ax + i, ay - i, ax + i + 1, ay + i + 1, 0xFF000000 | text);
+            g.fill(ax + 1, ay, ax + 7, ay + 1, 0xFF000000 | text);
+            PadFont.drawCentered(g, label, x + w / 2 + 4, y + 2, text, true);
+        } else {
+            PadFont.drawCentered(g, label, x + w / 2, y + 2, text, true);
         }
     }
 
-    /** Barra de progreso (verde; oro cuando está completa). */
+    /** Pestaña de 14 de alto. state: 0 normal, 1 ratón encima, 2 elegida (dorada). */
+    static void tab(GuiGraphics g, int x, int y, int w, String label, int state) {
+        box(g, x, y, w, 14, INK);
+        if (state == 2) {
+            g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, 0xFFFFDC64, 0xFFE89A1C);
+            g.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI);
+        } else {
+            g.fillGradient(x + 1, y + 1, x + w - 1, y + 13, state == 1 ? 0xFFF2FAFF : 0xFFFFFFFF, state == 1 ? 0xFFB4DCFF : 0xFFD6E8F8);
+            g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
+        }
+        if (state == 2) PadFont.drawCentered(g, label, x + w / 2, y + 2, 0xFFFFFF, true);
+        else PadFont.drawCentered(g, label, x + w / 2, y + 2, 0x18265C, false);
+    }
+
+    /** Título de sección dentro de una ventana: texto de oro, una línea y un rombo al final. */
+    static void divider(GuiGraphics g, int x, int y, int w, String title, int color) {
+        text(g, title, x, y + 1, color);
+        int lx = x + font().width(title) + 5;
+        if (lx < x + w - 8) {
+            g.fill(lx, y + 5, x + w - 6, y + 6, GOLD_LO);
+            g.fill(lx, y + 6, x + w - 6, y + 7, 0xFFFFFFFF);
+        }
+        int cx = x + w - 4;
+        g.fill(cx - 2, y + 5, cx + 3, y + 6, GOLD_LO);
+        g.fill(cx - 1, y + 4, cx + 2, y + 7, GOLD);
+        g.fill(cx, y + 3, cx + 1, y + 8, GOLD);
+        g.fill(cx, y + 4, cx + 1, y + 5, GOLD_HI);
+    }
+
+    /** Barra de desplazamiento: carril hundido y asa de oro. */
+    static void scrollbar(GuiGraphics g, int x, int y, int h, int visible, int content, int scroll) {
+        if (content <= visible || h <= 4) return;
+        g.fill(x, y, x + 3, y + h, 0xFFC8DCF0);
+        int th = Math.max(8, h * visible / content);
+        int ty = y + (h - th) * scroll / Math.max(1, content - visible);
+        g.fillGradient(x, ty, x + 3, ty + th, GOLD_HI, GOLD_LO);
+    }
+
+    /** Aclara un color ARGB n puntos por canal. */
+    static int lighten(int c, int n) {
+        int r = Math.min(255, (c >> 16 & 255) + n), gg = Math.min(255, (c >> 8 & 255) + n), b = Math.min(255, (c & 255) + n);
+        return c & 0xFF000000 | r << 16 | gg << 8 | b;
+    }
+
+    /** Los colores que manda el servidor ya son para fondo claro: se usan tal cual (con su alfa). */
+    static int onDark(int rgb) {
+        return 0xFF000000 | (rgb & 0xFFFFFF);
+    }
+
+    /** Barra de progreso hundida (verde; oro cuando está completa). 6 de alto. */
     static void progress(GuiGraphics g, int x, int y, int w, float f) {
         f = Math.max(0, Math.min(1, f));
-        box(g, x, y, w, 6, NAVY);
+        box(g, x, y, w, 6, INK);
         g.fill(x + 1, y + 1, x + w - 1, y + 5, 0xFFC8DCF0);
         int fw = Math.round((w - 2) * f);
         if (fw > 0) {
             boolean full = f >= 1;
-            g.fillGradient(x + 1, y + 1, x + 1 + fw, y + 5, full ? 0xFFFFD86A : 0xFF6EE07A, full ? 0xFFE89A18 : 0xFF2FA848);
-            g.fill(x + 1, y + 1, x + 1 + fw, y + 2, full ? 0xFFFFF4B0 : 0xFFC8FFA8);
+            g.fillGradient(x + 1, y + 1, x + 1 + fw, y + 5, full ? 0xFFFFE070 : 0xFF7CF09A, full ? 0xFFE08E14 : 0xFF1E9E46);
+            g.fill(x + 1, y + 1, x + 1 + fw, y + 2, full ? 0xFFFFF6C0 : 0xFFD0FFDA);
         }
     }
 
@@ -156,16 +249,17 @@ final class PadUi {
         return "…" + s;
     }
 
-    /** Campo de texto de 15 de alto: lo escrito (o la pista en gris) y el cursor que parpadea. */
+    /** Campo de texto hundido de 16 de alto: lo escrito (o la pista) y el cursor de oro que parpadea. */
     static void field(GuiGraphics g, int x, int y, int w, String text, String hint) {
-        box(g, x, y, w, 15, NAVY);
-        box(g, x + 1, y + 1, w - 2, 13, 0xFFFFFFFF);
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFD6E6F6);
+        box(g, x, y, w, 16, INK);
+        g.fill(x + 1, y + 1, x + w - 1, y + 15, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFFD6E6F6);
+        g.fill(x + 1, y + 2, x + 2, y + 15, 0xFFE6EFF8);
         String shown = text.isEmpty() ? fitEnd(hint, w - 10) : fitStart(text, w - 10);
         text(g, shown, x + 5, y + 4, text.isEmpty() ? 0xFF96AACC : TEXT);
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = x + 5 + (text.isEmpty() ? 0 : font().width(shown));
-            g.fill(cx, y + 3, cx + 1, y + 12, TEXT);
+            g.fill(cx, y + 3, cx + 1, y + 13, TEXT);
         }
     }
 
@@ -177,6 +271,44 @@ final class PadUi {
             int c = i == step ? 0xFF3496FA : 0xFFAAC8E8;
             g.fill(cx + at[i][0] - 1, y + 4 + at[i][1] - 1, cx + at[i][0] + 1, y + 4 + at[i][1] + 1, c);
         }
+    }
+
+    /**
+     * Un objeto a escala k (1 o 2: nítido) con su barra de durabilidad a esa escala, pero el número de cantidad siempre
+     * a tamaño normal en la esquina de abajo a la derecha (al doble salía enorme).
+     */
+    static void item(GuiGraphics g, net.minecraft.world.item.ItemStack stack, int x, int y, int k) {
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(k, k, 1);
+        g.renderItem(stack, 0, 0);
+        g.renderItemDecorations(font(), stack, 0, 0, "");
+        g.pose().popPose();
+        if (stack.getCount() > 1) {
+            String n = Integer.toString(stack.getCount());
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 200);
+            g.drawString(font(), n, x + 16 * k + 1 - font().width(n), y + 16 * k - 8, 0xFFFFFFFF, true);
+            g.pose().popPose();
+        }
+    }
+
+    /**
+     * Cabeza de jugador sin skin (el servidor no la sabía): si ese jugador está en la lista de jugadores del cliente, se
+     * le pone el perfil que ya tiene el cliente (con su skin, también la de SkinsRestorer).
+     */
+    static void skin(net.minecraft.world.item.ItemStack stack) {
+        if (!stack.is(net.minecraft.world.item.Items.PLAYER_HEAD) || stack.getTag() == null) return;
+        net.minecraft.nbt.CompoundTag tag = stack.getTag();
+        if (!tag.contains("SkullOwner", 10)) return;
+        net.minecraft.nbt.CompoundTag owner = tag.getCompound("SkullOwner");
+        if (owner.getCompound("Properties").contains("textures", 9) && !owner.getCompound("Properties").getList("textures", 10).isEmpty()) return;
+        var conn = Minecraft.getInstance().getConnection();
+        if (conn == null) return;
+        net.minecraft.client.multiplayer.PlayerInfo info = owner.hasUUID("Id") ? conn.getPlayerInfo(owner.getUUID("Id")) : null;
+        if (info == null && owner.contains("Name", 8)) info = conn.getPlayerInfo(owner.getString("Name"));
+        if (info == null || info.getProfile().getProperties().get("textures").isEmpty()) return;
+        tag.put("SkullOwner", net.minecraft.nbt.NbtUtils.writeGameProfile(new net.minecraft.nbt.CompoundTag(), info.getProfile()));
     }
 
     static boolean inside(double x, double y, int x0, int y0, int w, int h) {

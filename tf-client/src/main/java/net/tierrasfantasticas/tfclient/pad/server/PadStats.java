@@ -47,6 +47,25 @@ public final class PadStats {
             p.addProperty("nombre", name);
             STORE_IMPL.changed();
         }
+        // la skin (propiedad «textures» del perfil; con SkinsRestorer también) para dibujar su cabeza aunque no esté
+        for (com.mojang.authlib.properties.Property t : player.getGameProfile().getProperties().get("textures")) {
+            String sig = t.getSignature() == null ? "" : t.getSignature();
+            String old = p.has("skin") ? p.get("skin").getAsString() : "";
+            String oldSig = p.has("skinFirma") ? p.get("skinFirma").getAsString() : "";
+            if (!t.getValue().equals(old) || !sig.equals(oldSig)) {
+                p.addProperty("skin", t.getValue());
+                p.addProperty("skinFirma", sig);
+                STORE_IMPL.changed();
+            }
+            break;
+        }
+    }
+
+    /** La skin guardada de un jugador: {valor, firma} o null. */
+    public static String[] skinOf(UUID uuid) {
+        JsonObject p = STORE_IMPL.playerIfAny(uuid);
+        if (p == null || !p.has("skin")) return null;
+        return new String[] {p.get("skin").getAsString(), p.has("skinFirma") ? p.get("skinFirma").getAsString() : ""};
     }
 
     public static String nameOf(UUID uuid) {

@@ -157,7 +157,7 @@ final class PadMusicPage extends PadPage {
 
     private void drawNowPlaying(GuiGraphics g, double mx, double my) {
         int x = X, y = Y, w = leftW(), h = H;
-        // tarjeta oscura con ribete de oro
+        // el reproductor: tarjeta oscura con ribete de oro (resalta la portada y los controles)
         PadUi.box(g, x, y, w, h, PadUi.NAVY);
         gradient(g, x + 1, y + 1, w - 2, h - 2, CARD_TOP, CARD_BOTTOM);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF4A56A0);
@@ -396,52 +396,40 @@ final class PadMusicPage extends PadPage {
         MusicDownloader.Job job = MusicDownloader.job();
         if (job != null && !job.finished) bottom -= 24;
         PadUi.panel(g, x, top, w, bottom - top);
-        int inner = bottom - top - 4;
+        int inner = bottom - top - 8;
         int content = tracks.size() * ROW;
         listScroll = Math.max(0, Math.min(listScroll, Math.max(0, content - inner)));
-        pad.scissor(g, x + 1, top + 2, w - 2, inner);
+        pad.scissor(g, x + 2, top + 4, w - 4, inner);
         MusicLibrary.Track current = MusicPlayer.current();
-        int ry = top + 2 - listScroll;
-        boolean inList = my >= top + 2 && my < top + 2 + inner;
+        int ry = top + 4 - listScroll;
+        boolean inList = my >= top + 4 && my < top + 4 + inner;
         for (MusicLibrary.Track t : tracks) {
-            if (ry + ROW > top && ry < bottom) drawRow(g, t, x + 3, ry, w - 10, mx, my, inList, current != null && current.id().equals(t.id()));
+            if (ry + ROW > top && ry < bottom) drawRow(g, t, x + 5, ry, w - 14, mx, my, inList, current != null && current.id().equals(t.id()));
             ry += ROW;
         }
         pad.noScissor(g);
         if (tracks.isEmpty()) drawEmpty(g, x, top, w, bottom - top);
-        if (content > inner) {
-            int bx = x + w - 5, by = top + 3, bh = inner - 2;
-            g.fill(bx, by, bx + 2, by + bh, 0xFFC8DCF0);
-            int th = Math.max(8, bh * inner / content);
-            int ty = by + (bh - th) * listScroll / Math.max(1, content - inner);
-            g.fill(bx, ty, bx + 2, ty + th, 0xFF3496FA);
-        }
+        PadUi.scrollbar(g, x + w - 7, top + 5, inner - 2, inner, content, listScroll);
         if (job != null && !job.finished) drawJob(g, job, x, bottom + 3, w);
         drawInput(g, mx, my, x, Y + H - 16, w);
     }
 
     private void drawRow(GuiGraphics g, MusicLibrary.Track t, int x, int y, int w, double mx, double my, boolean inList, boolean current) {
         boolean hover = inList && PadUi.inside(mx, my, x, y, w, ROW - 1);
-        if (current) {
-            PadUi.box(g, x, y, w, ROW - 1, 0xFFFFE9A8);
-            g.fill(x, y + 2, x + 2, y + ROW - 3, GOLD);
-        } else if (hover) {
-            PadUi.box(g, x, y, w, ROW - 1, 0xFFD6EEFF);
-            g.fill(x, y + 2, x + 2, y + ROW - 3, 0xFF3496FA);
-        }
-        g.fill(x + 2, y + ROW - 1, x + w - 2, y + ROW, 0xFFC8E4F8);
+        if (current || hover) PadUi.card(g, x, y, w, ROW - 1, current ? 2 : 1);
+        else g.fill(x + 3, y + ROW - 1, x + w - 3, y + ROW, 0xFFC8E4F8);
         int thumb = ROW - 6;
         drawCover(g, t, x + 5, y + 3, thumb);
-        outlineRect(g, x + 4, y + 2, thumb + 2, thumb + 2, 0xFF18265C);
+        outlineRect(g, x + 4, y + 2, thumb + 2, thumb + 2, PadUi.INK);
         int tx = x + thumb + 11;
         String dur = t.durationMs() > 0 ? time(t.durationMs()) : "";
         int right = x + w - 6;
         // borrar (al pasar el ratón)
         boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
         int delW = sure ? PadUi.buttonWidth("¿BORRAR?") : big(12);
-        int delX = right - delW, delY = y + (ROW - 1 - 15) / 2;
+        int delX = right - delW, delY = y + (ROW - 1 - 16) / 2;
         if (hover || sure) {
-            boolean dh = PadUi.inside(mx, my, delX, delY, delW, 15);
+            boolean dh = PadUi.inside(mx, my, delX, delY, delW, 16);
             if (sure) {
                 PadUi.button(g, delX, delY, delW, "¿BORRAR?", PadView.RED, dh, true);
             } else {
@@ -449,7 +437,7 @@ final class PadMusicPage extends PadPage {
                 drawGlyphCentered(g, CROSS, delX + delW / 2, delY + 8, dh ? 0xFFFFFFFF : 0xFFE83446);
             }
             if (dh) pad.hover("§del" + t.id());
-            hits.add(0, new Hit(delX, delY, delW, 15, () -> {
+            hits.add(0, new Hit(delX, delY, delW, 16, () -> {
                 if (sure) {
                     MusicPlayer.removed(t.id());
                     MusicLibrary.remove(t.id());
@@ -463,7 +451,7 @@ final class PadMusicPage extends PadPage {
             right = delX - 6;
         }
         if (!dur.isEmpty()) {
-            PadUi.text(g, dur, right - PadUi.font().width(dur), y + 10, 0xFF4A6694);
+            PadUi.text(g, dur, right - PadUi.font().width(dur), y + 10, PadUi.MUTED);
             right -= PadUi.font().width(dur) + 6;
         }
         // sonando: barritas animadas junto al título
@@ -472,12 +460,12 @@ final class PadMusicPage extends PadPage {
             long now = System.currentTimeMillis();
             for (int i = 0; i < 3; i++) {
                 int h = 2 + Math.round(6 * (0.5F + 0.5F * (float) Math.sin(now / (120.0 + i * 40) + i * 2)));
-                g.fill(tx + i * 3, y + 12 - h, tx + i * 3 + 2, y + 12, 0xFFC27A10);
+                g.fill(tx + i * 3, y + 12 - h, tx + i * 3 + 2, y + 12, GOLD);
             }
             titleX += 12;
         }
-        PadUi.text(g, PadUi.fitEnd(t.shownTitle(), right - titleX), titleX, y + 5, current ? 0xFF7A4A08 : 0xFF18265C);
-        PadUi.text(g, PadUi.fitEnd(t.shownArtist(), right - tx), tx, y + 16, 0xFF4A6694);
+        PadUi.text(g, PadUi.fitEnd(t.shownTitle(), right - titleX), titleX, y + 5, current ? PadUi.GOLD_TEXT : PadUi.TEXT);
+        PadUi.text(g, PadUi.fitEnd(t.shownArtist(), right - tx), tx, y + 16, PadUi.MUTED);
         if (inList) {
             if (hover) pad.hover("§row" + t.id());
             hits.add(new Hit(x, y, w, ROW - 1, () -> {
@@ -501,20 +489,19 @@ final class PadMusicPage extends PadPage {
         int ly = cy + 10;
         for (int i = 0; i < lines.length; i++) {
             String l = PadUi.fitEnd(lines[i], w - 16);
-            PadUi.text(g, l, x + (w - PadUi.font().width(l)) / 2, ly + i * 11, i == 2 ? 0xFF4A6694 : 0xFF18265C);
+            PadUi.text(g, l, x + (w - PadUi.font().width(l)) / 2, ly + i * 11, i == 2 ? PadUi.MUTED : PadUi.TEXT);
         }
     }
 
     private void drawJob(GuiGraphics g, MusicDownloader.Job job, int x, int y, int w) {
-        PadUi.box(g, x, y, w, 20, PadUi.NAVY);
-        PadUi.box(g, x + 1, y + 1, w - 2, 18, 0xFFFFF6D6);
+        PadUi.card(g, x, y, w, 20, 2);
         String status = job.status;
         float p = job.progress();
         if (p >= 0) status += " " + Math.round(p * 100) + "%";
         else if (job.done > 0) status += " " + (job.done >> 10) + " KB";
         PadUi.spinner(g, x + 8, y + 3);
-        PadUi.text(g, PadUi.fitEnd(status, w - 24), x + 15, y + 3, 0xFF7A4A08);
-        int bx = x + 4, bw = w - 8;
+        PadUi.text(g, PadUi.fitEnd(status, w - 24), x + 15, y + 3, PadUi.GOLD_TEXT);
+        int bx = x + 6, bw = w - 10;
         g.fill(bx, y + 13, bx + bw, y + 16, 0xFFE8D8A8);
         int fw = p >= 0 ? Math.round(bw * p) : (int) ((System.currentTimeMillis() / 8) % bw);
         if (p >= 0) g.fill(bx, y + 13, bx + fw, y + 16, GOLD);
@@ -527,23 +514,24 @@ final class PadMusicPage extends PadPage {
         int fw = w - bw - 4;
         String hint = coverFor != null ? "Link de una imagen (PNG o JPG) para «" + coverFor.shownTitle() + "»"
                 : "Pega aquí el link directo de una canción";
-        boolean fieldHover = PadUi.inside(mx, my, x, y, fw, 15);
-        PadUi.box(g, x, y, fw, 15, focused ? 0xFFF6B628 : PadUi.NAVY);
-        PadUi.box(g, x + 1, y + 1, fw - 2, 13, 0xFFFFFFFF);
-        g.fill(x + 2, y + 1, x + fw - 2, y + 2, 0xFFD6E6F6);
+        boolean fieldHover = PadUi.inside(mx, my, x, y, fw, 16);
+        PadUi.box(g, x, y, fw, 16, focused ? PadUi.GOLD : PadUi.INK);
+        g.fill(x + 1, y + 1, x + fw - 1, y + 15, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + fw - 1, y + 2, 0xFFD6E6F6);
+        g.fill(x + 1, y + 2, x + 2, y + 15, 0xFFE6EFF8);
         String shown = input.isEmpty() ? PadUi.fitEnd(hint, fw - 10) : PadUi.fitStart(input, fw - 10);
         PadUi.text(g, shown, x + 5, y + 4, input.isEmpty() ? 0xFF96AACC : PadUi.TEXT);
         if (focused && (System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = x + 5 + (input.isEmpty() ? 0 : PadUi.font().width(shown));
-            g.fill(cx, y + 3, cx + 1, y + 12, PadUi.TEXT);
+            g.fill(cx, y + 3, cx + 1, y + 13, PadUi.TEXT);
         }
         if (fieldHover) pad.hover("§field");
-        hits.add(new Hit(x, y, fw, 15, () -> focused = true));
+        hits.add(new Hit(x, y, fw, 16, () -> focused = true));
         boolean busy = MusicDownloader.busy();
         boolean enabled = !input.isBlank() && !busy;
-        boolean bh = enabled && PadUi.inside(mx, my, x + fw + 4, y, bw, 15);
+        boolean bh = enabled && PadUi.inside(mx, my, x + fw + 4, y, bw, 16);
         PadUi.button(g, x + fw + 4, y, bw, label, PadView.GREEN, bh, enabled);
-        if (enabled) hits.add(new Hit(x + fw + 4, y, bw, 15, this::submit));
+        if (enabled) hits.add(new Hit(x + fw + 4, y, bw, 16, this::submit));
     }
 
     private void submit() {

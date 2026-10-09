@@ -53,12 +53,12 @@ def page(name, title, *args, **kw):
     NAMES.append(name)
 
 
-APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
-        ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'), ('hogares', 'HOGARES'), ('kits', 'KITS'),
-        ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'), ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'),
-        ('camara', 'CÁMARA'), ('ranking', 'RANKING'), ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'),
-        ('ayuda', 'AYUDA')]
-ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
+APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'),
+        ('recompensas', 'RECOMPENSAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'), ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'),
+        ('hogares', 'HOGARES'), ('kits', 'KITS'), ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'),
+        ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('ranking', 'RANKING'),
+        ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('web', 'WEB')]
+ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('recompensas', 'RECOMPENSAS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
          ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('admin', 'AJUSTES')]
 
 s = Sim()
@@ -99,10 +99,35 @@ page('p_viajes', 'VIAJES', [], '', [], [], cards=[
     ('oak_door', 'Tus hogares', 0xC27A10, 'Abrir', False),
 ])
 page('p_kits', 'KITS', [], '', ['1 listo para reclamar.'], [], cards=[
-    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False), ('bread', 'Diario', 0x40C850, 'Listo', True),
+    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False), ('bread', 'Constructor', 0x40C850, 'Listo', True),
     ('iron_sword', 'Semanal', 0xF6B628, 'en 3 d 4 h', False), ('diamond', 'VIP', 0xF6B628, 'en 5 h', False),
 ])
-page('p_kit', 'KITS', [], '', ['Diario · cada día'], [], cells=[
+page('p_recompensas', 'RECOMPENSAS', [('diaria', 'DIARIA'), ('otras', 'OTRAS (1)')], 'diaria',
+     ['Día 3 de 7: ¡reclámala! Si te saltas un día, vuelves al día 1.'], [], cards=[
+         ('bread', 'Día 1 · 25', 0xAABAD2, 'Reclamada', False, 8), ('torch', 'Día 2 · 25', 0xAABAD2, 'Reclamada', False, 16),
+         ('iron_ingot', 'Día 3 · 50', 0x40C850, '¡Hoy!', True, 4), ('cooked_beef', 'Día 4 · 50', 0xF6B628, 'Mañana', False, 12),
+         ('golden_carrot', 'Día 5 · 75', 0xF6B628, '', False, 8), ('experience_bottle', 'Día 6 · 100', 0xF6B628, '', False, 8),
+         ('diamond', 'Día 7 · 200', 0xF6B628, '', False, 2),
+     ], footer=[('RECLAMAR DÍA 3', G)])
+page('a_recompensas', 'RECOMPENSAS', [('cal', 'CALENDARIO'), ('otras', 'OTRAS')], 'cal',
+     ['El calendario diario: cada día se reclama el siguiente de la racha. Pulsa un día para cambiarlo.'], [
+         ('clock_00', 'Calendario', T, ['Encendido.'], -1, '', ('SÍ', G), None),
+         ('compass_00', 'Si alguien se salta un día', T, ['Vuelve al día 1.'], -1, '', ('CAMBIAR', B), None),
+     ], cards=[
+         ('bread', 'Día 1', 0xF6B628, '1 obj. · 25', False, 8), ('torch', 'Día 2', 0xF6B628, '1 obj. · 25', False, 16),
+         ('iron_ingot', 'Día 3', 0xF6B628, '1 obj. · 50', False, 4), ('cooked_beef', 'Día 4', 0xF6B628, '1 obj. · 50', False, 12),
+         ('golden_carrot', 'Día 5', 0xF6B628, '1 obj. · 75', False, 8), ('experience_bottle', 'Día 6', 0xF6B628, '1 obj. · 100', False, 8),
+         ('diamond', 'Día 7', 0xF6B628, '1 obj. · 200', False, 2),
+     ], footer=[('AÑADIR DÍA', G), ('QUITAR EL ÚLTIMO', R)])
+page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
+     ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], cells=[
+         (n, '', T, False) for n in ('stone', 'granite', 'diorite', 'andesite', 'grass_block', 'dirt', 'cobblestone', 'oak_planks',
+                                     'spruce_planks', 'birch_planks', 'oak_sapling', 'sand', 'gravel', 'gold_ore', 'iron_ore',
+                                     'coal_ore', 'oak_log', 'spruce_log', 'birch_log', 'glass', 'lapis_ore', 'sandstone',
+                                     'white_wool', 'orange_wool', 'gold_block', 'iron_block', 'bricks', 'tnt', 'bookshelf',
+                                     'obsidian', 'torch', 'chest', 'diamond_ore', 'diamond_block', 'crafting_table', 'furnace')
+     ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('»', B), ('×16', GO), ('ATRÁS', B)])
+page('p_kit', 'KITS', [], '', ['Constructor · Cada 12 h'], [], cells=[
     ('bread', '', T, False), ('cooked_beef', '', T, False), ('torch', '', T, False), ('tf:fantastic_coin', '200', GOLD, False),
 ], footer=[('ATRÁS', B), ('RECLAMAR', G)])
 page('p_jugadores', 'JUGADORES', [], '', ['3 conectados'], [], cards=[
@@ -142,11 +167,8 @@ _local.__enter__()
 X, Y, W, H = s.X, s.Y, s.W, s.H
 x = X
 for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
-    w = s.pwidth(label) + 12
-    sel = key == 'recientes'
-    s.box(x, Y, w, 13, (24, 38, 92))
-    s.box(x + 1, Y + 1, w - 2, 11, rgb(0xF6B628 if sel else 0xE8F8FF))
-    s.ptext(label, x + w // 2 - s.pwidth(label) // 2, Y + 1, (255, 255, 255) if sel else (24, 38, 92), sel)
+    w = s.pwidth(label) + 14
+    s.tab(x, Y, w, label, 2 if key == 'recientes' else 0)
     x += w + 3
 fw = s.bw('+ FOTO')
 s.button(X + W - fw, Y - 1, fw, '+ FOTO', GO)
@@ -154,22 +176,22 @@ top, bottom = Y + 17, Y + H
 s.panel(X, top, W, bottom - top)
 pw = max(128, min(256, (W - 20) // 2)) // 16 * 16
 ph = pw * 9 // 16
-ch = ph + 12
-s.scissor(X + 1, top + 2, W - 2, bottom - top - 4)
+ch = ph + 14
+s.scissor(X + 2, top + 4, W - 4, bottom - top - 8)
 posts = [('Pewez777', 'hace 12 min', 'Atardecer desde la torre del spawn', 18, True, False),
          ('Steve', 'hace 2 h', '', 4, False, False)]
-cy = top + 4
+cy = top + 5
 for name, ago, cap, likes, liked, mine in posts:
-    x, y, w, h = X + 4, cy, W - 14, ch - 4
-    s.box(x, y, w, h, rgb(0xB8D4EE))
-    s.box(x + 1, y + 1, w - 2, h - 2, (255, 255, 255))
-    px, py = x + 4, y + 4
-    s.box(px - 1, py - 1, pw + 2, ph + 2, (24, 38, 92))
+    x, y, w, h = X + 5, cy, W - 16, ch - 4
+    s.ucard(x, y, w, h, 2 if mine else 0)
+    px, py = x + 5, y + 5
+    s.box(px - 2, py - 2, pw + 4, ph + 4, (24, 38, 92))
+    s.box(px - 1, py - 1, pw + 2, ph + 2, (192, 120, 24))
     s.paste(photo.resize((pw, ph)), px, py)
     cx = px + pw + 10
     cw = x + w - 6 - cx
-    s.mtext(name, cx, py + 1, (24, 38, 92))
-    s.mtext(ago, cx, py + 12, rgb(0x4A6694))
+    s.mtext(name, cx, py + 1, (194, 122, 16))
+    s.mtext(ago, cx, py + 12, (74, 102, 148))
     if cap:
         s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (24, 38, 92), 3)
     ly = py + ph - 15
@@ -356,22 +378,24 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
     top = Y + s.bigu(13) + 2
     bottom = Y + H - 19 - (24 if job else 0)
     s.panel(lx, top, lw, bottom - top)
-    s.scissor(lx + 1, top + 2, lw - 2, bottom - top - 4)
-    ry = top + 2
+    s.scissor(lx + 2, top + 4, lw - 4, bottom - top - 8)
+    ry = top + 4
     for tr in tracks:
-        x0, w0 = lx + 3, lw - 10
+        x0, w0 = lx + 5, lw - 14
         cur = playing and tr['title'] == playing['title']
         if cur:
-            s.box(x0, ry, w0, 29, rgb(0xFFE9A8)); s.fill(x0, ry + 2, x0 + 2, ry + 27, GOLDC)
-        s.fill(x0 + 2, ry + 29, x0 + w0 - 2, ry + 30, rgb(0xC8E4F8))
+            s.ucard(x0, ry, w0, 29, 2)
+        else:
+            s.fill(x0 + 3, ry + 29, x0 + w0 - 3, ry + 30, rgb(0xC8E4F8))
         if tr.get('cover'):
             s.paste_fit(Image.open(tr['cover']).convert('RGBA'), x0 + 5, ry + 3, 24, 24)
         else:
             grad(s, x0 + 5, ry + 3, 24, 24, tr.get('color', rgb(0x5A6AD0)), rgb(0x1D2550))
             with s.big_at(x0 + 5 + 12 - 8, ry + 3 + 4, px=0.5 * s.cs):
                 s.blit('icon_musica', 0, 0)
-        s.fill(x0 + 4, ry + 2, x0 + 30, ry + 3, NAVY); s.fill(x0 + 4, ry + 27, x0 + 30, ry + 28, NAVY)
-        s.fill(x0 + 4, ry + 2, x0 + 5, ry + 28, NAVY); s.fill(x0 + 29, ry + 2, x0 + 30, ry + 28, NAVY)
+        INK = (24, 38, 92)
+        s.fill(x0 + 4, ry + 2, x0 + 30, ry + 3, INK); s.fill(x0 + 4, ry + 27, x0 + 30, ry + 28, INK)
+        s.fill(x0 + 4, ry + 2, x0 + 5, ry + 28, INK); s.fill(x0 + 29, ry + 2, x0 + 30, ry + 28, INK)
         tx = x0 + 35
         dur = tr['dur']
         right = x0 + w0 - 6
@@ -380,9 +404,9 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
         ttx = tx
         if cur:
             for i, h in enumerate((5, 8, 3)):
-                s.fill(tx + i * 3, ry + 12 - h, tx + i * 3 + 2, ry + 12, rgb(0xC27A10))
+                s.fill(tx + i * 3, ry + 12 - h, tx + i * 3 + 2, ry + 12, GOLDC)
             ttx += 12
-        s.mtext(s.fitend(tr['title'], right - ttx), ttx, ry + 5, rgb(0x7A4A08) if cur else NAVY)
+        s.mtext(s.fitend(tr['title'], right - ttx), ttx, ry + 5, rgb(0xC27A10) if cur else NAVY)
         s.mtext(s.fitend(tr['artist'], right - tx), tx, ry + 16, rgb(0x4A6694))
         ry += 30
     s.no_scissor()
@@ -393,13 +417,14 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
             s.blit('icon_musica', 0, 0)
         for i, l in enumerate(("Pega abajo el link directo de una canción", "(MP3, OGG o WAV) y pulsa AÑADIR.",
                                "Google Drive: «Cualquier persona con el enlace».")):
+            l = s.fitend(l, lw - 16)
             s.mtext(l, lx + (lw - s.mwidth(l)) // 2, mid + 10 + i * 11, rgb(0x4A6694) if i == 2 else NAVY)
     if job:
         jy = bottom + 3
-        s.box(lx, jy, lw, 20, NAVY); s.box(lx + 1, jy + 1, lw - 2, 18, rgb(0xFFF6D6))
-        s.mtext(job, lx + 15, jy + 3, rgb(0x7A4A08))
-        s.fill(lx + 4, jy + 13, lx + lw - 4, jy + 16, rgb(0xE8D8A8)); s.fill(lx + 4, jy + 13, lx + 4 + int((lw - 8) * 0.62), jy + 16, GOLDC)
-    fy = Y + H - 16
+        s.ucard(lx, jy, lw, 20, 2)
+        s.mtext(job, lx + 15, jy + 3, rgb(0xC27A10))
+        s.fill(lx + 6, jy + 13, lx + lw - 4, jy + 16, rgb(0xE8D8A8)); s.fill(lx + 6, jy + 13, lx + 6 + int((lw - 10) * 0.62), jy + 16, GOLDC)
+    fy = Y + H - 17
     bw = s.bw('AÑADIR')
     s.field(lx, fy, lw - bw - 4, '', 'Pega aquí el link directo de una canción')
     s.button(lx + lw - bw, fy, bw, 'AÑADIR', 3, False)
@@ -418,7 +443,7 @@ music_page('p_musica', lib, playing=song, job='Descargando… 62%')
 music_page('p_musica_vacia', [], empty=True)
 
 # hoja con todo
-ims = [Image.open(OUT + n + '.png').crop((150, 200, 1418, 830)) for n in NAMES]
+ims = [(lambda im: im.crop((150, 200, im.width - 150, im.height - 170)))(Image.open(OUT + n + '.png')) for n in NAMES]
 w, h = ims[0].size
 rows = (len(ims) + 1) // 2
 sheet = Image.new('RGBA', (w * 2 + 10, (h + 10) * rows), (20, 24, 40, 255))

@@ -14,14 +14,13 @@ import net.minecraft.world.item.ItemStack;
  */
 final class PadViewPage extends PadPage {
     private static final int ROW_PAD = 3;
-    private static final int SEP = 0xFFC8E4F8;
     private static final int CELL_W = 30, CELL_H = 32;
-    /** Tarjetas: objeto al doble, nombre y segunda línea. */
-    private static final int CARD_W = 84, CARD_H = 66;
+    /** Tarjetas: ranura con el objeto al doble, nombre y segunda línea. */
+    private static final int CARD_W = 84, CARD_H = 70;
     /** Icono de las filas: el objeto al doble dentro de su recuadro. */
     private static final int ICON_BOX = 26;
     /** Hueco entre filas (cada fila es su propia tarjeta). */
-    private static final int ROW_GAP = 2;
+    private static final int ROW_GAP = 3;
 
     private PadView view;
     private int scroll;
@@ -46,6 +45,8 @@ final class PadViewPage extends PadPage {
         if (view == null || !sameTab || v.input() == null) input = "";
         view = v;
         waiting = false;
+        for (PadView.Row r : v.rows()) PadUi.skin(r.icon());
+        for (PadView.Cell c : v.cells()) PadUi.skin(c.icon());
     }
 
     @Override
@@ -63,13 +64,13 @@ final class PadViewPage extends PadPage {
         if (view == null) {
             PadUi.panel(g, X, Y, W, H);
             PadUi.spinner(g, X + W / 2, Y + H / 2 - 8);
-            PadFont.drawCentered(g, "CARGANDO", X + W / 2, Y + H / 2 + 4, 0x4A6694, false);
+            PadFont.drawCentered(g, "CARGANDO", X + W / 2, Y + H / 2 + 4, PadUi.MUTED & 0xFFFFFF, true);
             return;
         }
         int y = Y;
         if (!view.tabs().isEmpty()) {
             drawTabs(g, y, mx, my);
-            y += 16;
+            y += 17;
         }
         // con pestañas, una línea de cabecera (la lista necesita el sitio); sin pestañas, dos. Lo que no cabe, con «…»
         int headerRoom = view.tabs().isEmpty() ? 2 : 1;
@@ -78,16 +79,16 @@ final class PadViewPage extends PadPage {
             if (headerRoom <= 0) break;
             if (firstHeader) diamond(g, X + 3, y + 4);
             firstHeader = false;
-            int n = PadUi.wrapEllipsis(g, line, X + 10, y + 1, W - 12, PadUi.TEXT, headerRoom);
+            int n = PadUi.wrapEllipsis(g, line, X + 10, y + 1, W - 12, PadUi.GLASS_TEXT, headerRoom);
             headerRoom -= n;
             y += 10 * n;
         }
         if (!view.header().isEmpty()) y += 2;
         boolean bottomBar = view.input() != null || !view.footer().isEmpty();
         listTop = y;
-        listBottom = Y + H - (bottomBar ? 19 : 0);
+        listBottom = Y + H - (bottomBar ? 20 : 0);
         PadUi.panel(g, X, listTop, W, listBottom - listTop);
-        int innerX = X + 3, innerW = W - 6 - 4;
+        int innerX = X + 5, innerW = W - 10 - 5;
         boolean cards = view.cellStyle() == PadView.CARDS;
         int cw = cards ? CARD_W : CELL_W, ch = cards ? CARD_H : CELL_H;
         int cols = Math.max(1, innerW / cw);
@@ -95,13 +96,13 @@ final class PadViewPage extends PadPage {
         int gridH = gridRows * ch + (gridRows > 0 ? 2 : 0);
         contentH = gridH;
         for (PadView.Row r : view.rows()) contentH += rowHeight(r, innerW);
-        int visible = listBottom - listTop - 4;
+        int visible = listBottom - listTop - 8;
         scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - visible)));
-        pad.scissor(g, X + 1, listTop + 2, W - 2, visible);
-        int ry = listTop + 2 - scroll;
+        pad.scissor(g, X + 2, listTop + 4, W - 4, visible);
+        int ry = listTop + 4 - scroll;
         // rejilla, centrada
         if (gridRows > 0) {
-            int gx = X + (W - 4 - cols * cw) / 2;
+            int gx = X + (W - 5 - cols * cw) / 2;
             for (int i = 0; i < view.cells().size(); i++) {
                 int cx = gx + (i % cols) * cw, cy = ry + 1 + (i / cols) * ch;
                 if (cy + ch > listTop && cy < listBottom) {
@@ -130,15 +131,9 @@ final class PadViewPage extends PadPage {
             }
         }
         // barra de desplazamiento
-        if (contentH > visible) {
-            int bx = X + W - 5, by = listTop + 3, bh = visible - 2;
-            g.fill(bx, by, bx + 2, by + bh, 0xFFC8DCF0);
-            int th = Math.max(8, bh * visible / contentH);
-            int ty = by + (bh - th) * scroll / Math.max(1, contentH - visible);
-            g.fill(bx, ty, bx + 2, ty + th, 0xFF3496FA);
-        }
+        PadUi.scrollbar(g, X + W - 6, listTop + 5, visible - 2, visible, contentH, scroll);
         // abajo: botones a la derecha; el campo de texto ocupa lo que queda a la izquierda
-        int fy = Y + H - 16;
+        int fy = Y + H - 17;
         int footerW = 0;
         for (PadView.Btn b : view.footer()) footerW += PadUi.buttonWidth(b.label()) + 4;
         int x = X + W - footerW + 4;
@@ -162,12 +157,12 @@ final class PadViewPage extends PadPage {
     /** Pestañas: si no caben con su margen, se estrechan y, si aún no, se recorta el texto. */
     private void drawTabs(GuiGraphics g, int y, double mx, double my) {
         List<PadView.Tab> tabs = view.tabs();
-        int gap = 3, pad = 10;
+        int gap = 3, pad = 14;
         int total = 0;
         for (PadView.Tab t : tabs) total += PadFont.width(t.label()) + pad;
         total += gap * (tabs.size() - 1);
         if (total > W) {
-            pad = 6;
+            pad = 8;
             gap = 2;
             total = 0;
             for (PadView.Tab t : tabs) total += PadFont.width(t.label()) + pad;
@@ -179,13 +174,10 @@ final class PadViewPage extends PadPage {
             String label = PadFont.fit(t.label(), maxLabel);
             int w = PadFont.width(label) + pad;
             boolean sel = t.key().equals(view.tab());
-            boolean hover = PadUi.inside(mx, my, x, y, w, 13);
+            boolean hover = PadUi.inside(mx, my, x, y, w, 14);
             if (hover && !sel) pad().hover("§tab" + t.key());
-            PadUi.box(g, x, y, w, 13, PadUi.NAVY);
-            PadUi.box(g, x + 1, y + 1, w - 2, 11, sel ? 0xFFF6B628 : hover ? 0xFF96D6FF : 0xFFE8F8FF);
-            if (sel) g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFEC96);
-            PadFont.drawCentered(g, label, x + w / 2, y + 1, sel ? 0xFFFFFF : 0x18265C, sel);
-            hits.add(new Hit(x, y, w, 13, 1, t.key(), 0));
+            PadUi.tab(g, x, y, w, label, sel ? 2 : hover ? 1 : 0);
+            hits.add(new Hit(x, y, w, 14, 1, t.key(), 0));
             x += w + gap;
         }
     }
@@ -200,13 +192,13 @@ final class PadViewPage extends PadPage {
         if (textOnly) {
             int n = 0;
             for (String line : r.lines()) n += Math.max(1, PadUi.lines(line, w - 12));
-            return 6 + (r.title().isEmpty() ? 0 : 11) + n * 10 + ROW_PAD + ROW_GAP;
+            return 8 + (r.title().isEmpty() ? 0 : 11) + n * 10 + ROW_PAD + ROW_GAP;
         }
         int textW = textWidth(r, w);
         int n = 0;
         for (String line : r.lines()) n += Math.min(2, Math.max(1, PadUi.lines(line, textW)));
         int h = 4 + 10 + n * 10 + (r.progress() >= 0 ? 8 : 0) + ROW_PAD;
-        return Math.max(r.icon().isEmpty() ? 24 : ICON_BOX + 6, h) + ROW_GAP;
+        return Math.max(r.icon().isEmpty() ? 26 : ICON_BOX + 10, h + 2) + ROW_GAP;
     }
 
     private int linesHeight(PadView.Row r, int textW) {
@@ -216,7 +208,7 @@ final class PadViewPage extends PadPage {
     }
 
     private int textWidth(PadView.Row r, int w) {
-        return w - (r.icon().isEmpty() ? 10 : ICON_BOX + 10) - buttonsWidth(r) - 6;
+        return w - (r.icon().isEmpty() ? 12 : ICON_BOX + 13) - buttonsWidth(r) - 8;
     }
 
     private int buttonsWidth(PadView.Row r) {
@@ -233,20 +225,16 @@ final class PadViewPage extends PadPage {
     private void drawCell(GuiGraphics g, PadView.Cell c, int x, int y, double mx, double my) {
         boolean clickable = !c.action().isEmpty();
         boolean hover = PadUi.inside(mx, my, x + 1, y, CELL_W - 2, CELL_H - 1) && inList(my);
-        int bg = c.selected() ? 0xFFFFE9A8 : hover && clickable ? 0xFFD6EEFF : 0xFFF6FBFF;
-        PadUi.box(g, x + 1, y, CELL_W - 2, CELL_H - 1, c.selected() ? 0xFFC27A10 : hover && clickable ? 0xFF3496FA : 0xFFB8D4EE);
-        PadUi.box(g, x + 2, y + 1, CELL_W - 4, CELL_H - 3, bg);
-        g.fill(x + 3, y + 1, x + CELL_W - 3, y + 2, 0xFFFFFFFF);
+        PadUi.card(g, x + 1, y, CELL_W - 2, CELL_H - 1, c.selected() ? 2 : hover && clickable ? 1 : 0);
         if (!c.icon().isEmpty()) {
-            int iy = c.label().isEmpty() ? y + (CELL_H - 1 - 16) / 2 : y + 3;
+            int iy = c.label().isEmpty() ? y + (CELL_H - 1 - 16) / 2 : y + 4;
             if (hover && clickable) iy -= 1;
-            g.renderItem(c.icon(), x + (CELL_W - 16) / 2, iy);
-            g.renderItemDecorations(PadUi.font(), c.icon(), x + (CELL_W - 16) / 2, iy);
+            PadUi.item(g, c.icon(), x + (CELL_W - 16) / 2, iy, 1);
             if (hover) tooltip = c.icon();
         }
         if (!c.label().isEmpty()) {
             String label = PadFont.fit(c.label(), CELL_W - 4);
-            PadFont.drawCentered(g, label, x + CELL_W / 2, y + 20, c.color() & 0xFFFFFF, false);
+            PadFont.drawCentered(g, label, x + CELL_W / 2, y + 20, PadUi.onDark(c.color()) & 0xFFFFFF, true);
         }
         if (clickable) {
             if (hover) pad.hover("§cell" + c.action());
@@ -254,41 +242,33 @@ final class PadViewPage extends PadPage {
         }
     }
 
-    /** Un objeto al doble de tamaño (nítido: cada píxel del objeto, dos de pantalla). */
+    /** Un objeto al doble de tamaño (nítido: cada píxel del objeto, dos de pantalla); el número, a tamaño normal. */
     private static void bigItem(GuiGraphics g, ItemStack stack, int x, int y) {
-        g.pose().pushPose();
-        g.pose().translate(x, y, 0);
-        g.pose().scale(2, 2, 1);
-        g.renderItem(stack, 0, 0);
-        g.renderItemDecorations(PadUi.font(), stack, 0, 0);
-        g.pose().popPose();
+        PadUi.item(g, stack, x, y, 2);
     }
 
+    /** Tarjeta: el objeto al doble en su ranura, el nombre y una segunda línea en oro (precio, estado…). */
     private void drawCard(GuiGraphics g, PadView.Cell c, int x, int y, double mx, double my) {
         boolean clickable = !c.action().isEmpty();
         int w = CARD_W - 4, h = CARD_H - 4;
         boolean hover = PadUi.inside(mx, my, x + 2, y, w, h) && inList(my);
         boolean lift = hover && clickable;
         int yy = lift ? y - 1 : y;
-        // sombra, borde y cara (con luz arriba)
-        g.fill(x + 4, yy + h, x + w, yy + h + (lift ? 2 : 1), lift ? 0x553496FA : 0x33204070);
-        int border = c.selected() ? 0xFFC27A10 : lift ? 0xFF3496FA : 0xFFB8D4EE;
-        PadUi.box(g, x + 2, yy, w, h, border);
-        g.fillGradient(x + 3, yy + 1, x + 1 + w, yy + h - 1, c.selected() ? 0xFFFFF7DA : lift ? 0xFFF2FAFF : 0xFFFFFFFF,
-                c.selected() ? 0xFFFFE9A8 : lift ? 0xFFD6EEFF : 0xFFEAF4FD);
-        // franja de color arriba (el color de la tarjeta) y el objeto grande, que flota al pasar el ratón
-        g.fill(x + 4, yy + 2, x + w, yy + 4, 0xFF000000 | (c.color() & 0xFFFFFF));
-        g.fill(x + 4, yy + 4, x + w, yy + 5, 0x33000000 | (c.color() & 0xFFFFFF));
+        PadUi.card(g, x + 2, yy, w, h, c.selected() ? 2 : lift ? 1 : 0);
+        // la franja de su color, bajo la luz de arriba
+        g.fill(x + 4, yy + 3, x + w, yy + 4, 0xFF000000 | (PadUi.onDark(c.color()) & 0xFFFFFF));
+        int sx = x + 2 + (w - 38) / 2;
+        PadUi.slot(g, sx, yy + 6, 38, 38);
         if (!c.icon().isEmpty()) {
-            int bob = lift ? Math.round((float) Math.sin(System.currentTimeMillis() / 160.0) * 1.5F) : 0;
-            bigItem(g, c.icon(), x + 2 + (w - 32) / 2, yy + 6 + bob);
+            int bob = lift ? Math.round((float) Math.sin(System.currentTimeMillis() / 180.0)) : 0;
+            bigItem(g, c.icon(), sx + 3, yy + 9 + bob);
             if (hover) tooltip = c.icon();
         }
         String name = PadUi.fitEnd(c.label(), w - 8);
-        PadUi.text(g, name, x + 2 + (w - PadUi.font().width(name)) / 2, yy + 41, PadUi.TEXT);
+        PadUi.text(g, name, x + 2 + (w - PadUi.font().width(name)) / 2, yy + 47, PadUi.TEXT);
         if (!c.sub().isEmpty()) {
             String sub = PadUi.fitEnd(c.sub(), w - 8);
-            PadUi.text(g, sub, x + 2 + (w - PadUi.font().width(sub)) / 2, yy + 51, 0xFFC27A10);
+            PadUi.text(g, sub, x + 2 + (w - PadUi.font().width(sub)) / 2, yy + 56, PadUi.GOLD_TEXT);
         }
         if (clickable) {
             if (hover) pad.hover("§card" + c.action());
@@ -302,58 +282,47 @@ final class PadViewPage extends PadPage {
         boolean hover = clickable && PadUi.inside(mx, my, x, y, w, h) && inList(my);
         boolean textOnly = r.icon().isEmpty() && r.button() == null && r.button2() == null;
         boolean section = textOnly && r.lines().isEmpty() && !r.title().isEmpty();
-        if (section) { // título de sección: texto de color con una línea de oro
-            PadUi.text(g, r.title(), x + 4, y + 5, 0xFF000000 | r.color());
-            int lx = x + 8 + PadUi.font().width(r.title());
-            g.fill(lx, y + 9, x + w - 4, y + 10, 0x66C27A10);
-            diamond(g, x + w - 6, y + 8);
+        int titleColor = PadUi.onDark(r.color());
+        if (section) { // título de sección: texto de oro (o de su color), una línea y un rombo
+            int c = (r.color() & 0xFFFFFF) == 0x18265C ? PadUi.GOLD_TEXT : titleColor;
+            PadUi.divider(g, x + 2, y + 4, w - 4, r.title(), c);
             return;
         }
-        int border = r.selected() ? 0xFFE0A030 : hover ? 0xFF3496FA : 0xFFC9DDF2;
-        int faceTop = r.selected() ? 0xFFFFF7DA : hover ? 0xFFEFF8FF : 0xFFFFFFFF;
-        int faceBottom = r.selected() ? 0xFFFFE9A8 : hover ? 0xFFD6EEFF : 0xFFF1F7FD;
-        PadUi.box(g, x, y, w, h, border);
-        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, faceTop, faceBottom);
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xAAFFFFFF);
-        if (r.selected() || hover) g.fill(x + 1, y + 2, x + 3, y + h - 2, r.selected() ? 0xFFF6B628 : 0xFF3496FA);
+        PadUi.card(g, x, y, w, h, r.selected() ? 2 : hover ? 1 : 0);
         if (clickable) {
             if (hover) pad.hover("§row" + r.click());
             hits.add(new Hit(x, y, w, h, 2, r.click(), 0));
         }
         if (textOnly) {
-            int ty = y + 4;
+            int ty = y + 5;
             if (!r.title().isEmpty()) {
-                PadUi.text(g, r.title(), x + 6, ty, 0xFF000000 | r.color());
+                PadUi.text(g, r.title(), x + 7, ty, titleColor);
                 ty += 11;
             }
-            for (String line : r.lines()) ty += Math.max(1, PadUi.wrap(g, line, x + 6, ty, w - 12, PadUi.TEXT, 30)) * 10;
+            for (String line : r.lines()) ty += Math.max(1, PadUi.wrap(g, line, x + 7, ty, w - 14, PadUi.MUTED, 30)) * 10;
             return;
         }
-        int tx = x + 6;
+        int tx = x + 7;
         if (!r.icon().isEmpty()) {
             int iy = y + (h - ICON_BOX) / 2;
-            PadUi.box(g, x + 4, iy, ICON_BOX, ICON_BOX, r.selected() ? 0xFFE0A030 : 0xFFB8D4EE);
-            g.fillGradient(x + 5, iy + 1, x + 3 + ICON_BOX, iy + ICON_BOX - 1, 0xFFFFFFFF, 0xFFE4F1FC);
-            int bob = hover ? Math.round((float) Math.sin(System.currentTimeMillis() / 160.0)) : 0;
-            g.renderItem(r.icon(), x + 4 + (ICON_BOX - 16) / 2, iy + (ICON_BOX - 16) / 2 + bob);
-            g.renderItemDecorations(PadUi.font(), r.icon(), x + 4 + (ICON_BOX - 16) / 2, iy + (ICON_BOX - 16) / 2 + bob);
-            if (PadUi.inside(mx, my, x + 4, iy, ICON_BOX, ICON_BOX) && inList(my)) tooltip = r.icon();
-            tx = x + ICON_BOX + 10;
+            PadUi.slot(g, x + 5, iy, ICON_BOX, ICON_BOX);
+            int bob = hover ? Math.round((float) Math.sin(System.currentTimeMillis() / 180.0)) : 0;
+            PadUi.item(g, r.icon(), x + 5 + (ICON_BOX - 16) / 2, iy + (ICON_BOX - 16) / 2 + bob, 1);
+            if (PadUi.inside(mx, my, x + 5, iy, ICON_BOX, ICON_BOX) && inList(my)) tooltip = r.icon();
+            tx = x + ICON_BOX + 11;
         }
         int bw = buttonsWidth(r);
         int textW = textWidth(r, w);
         // texto a la derecha del título (precio, premio…): el título se recorta para que no lo pise
         int badgeW = r.badge().isEmpty() ? 0 : PadUi.font().width(r.badge()) + 6;
-        int ty0 = r.icon().isEmpty() ? y + 4 : y + Math.max(4, (h - 1 - (10 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0))) / 2);
-        PadUi.text(g, PadUi.fitEnd(r.title(), textW - badgeW), tx, ty0, 0xFF000000 | r.color());
-        if (badgeW > 0) PadUi.text(g, r.badge(), tx + textW - badgeW + 6, ty0, 0xFFC27A10);
-        // título y líneas centrados en vertical junto al icono
         int textH = 10 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0);
-        int top = r.icon().isEmpty() ? y + 4 : y + Math.max(4, (h - 1 - textH) / 2);
+        int top = r.icon().isEmpty() ? y + 5 : y + Math.max(5, (h - textH) / 2 + 1);
+        PadUi.text(g, PadUi.fitEnd(r.title(), textW - badgeW), tx, top, titleColor);
+        if (badgeW > 0) PadUi.text(g, r.badge(), tx + textW - badgeW + 6, top, PadUi.GOLD_TEXT);
         int ly = top + 10;
         for (String line : r.lines()) ly += Math.max(1, PadUi.wrapEllipsis(g, line, tx, ly, textW, PadUi.MUTED, 2)) * 10;
         if (r.progress() >= 0) PadUi.progress(g, tx, ly + 1, Math.min(textW, 120), r.progress());
-        int bx = x + w - bw;
+        int bx = x + w - bw - 2;
         int by = y + (h - 16) / 2;
         if (r.button() != null) {
             int b1 = PadUi.buttonWidth(r.button().label());
@@ -366,11 +335,11 @@ final class PadViewPage extends PadPage {
     private void button(GuiGraphics g, int x, int y, int w, PadView.Btn b, double mx, double my, boolean footer) {
         boolean visible = footer || (y >= listTop && y + 16 <= listBottom + 1);
         boolean clickable = b.enabled() && visible && !b.action().isEmpty();
-        boolean hover = clickable && PadUi.inside(mx, my, x, y, w, 15) && (footer || inList(my));
+        boolean hover = clickable && PadUi.inside(mx, my, x, y, w, 16) && (footer || inList(my));
         if (hover) pad.hover("§btn" + b.action() + x + "," + y);
         PadUi.button(g, x, y, w, b.label(), b.style(), hover, b.enabled());
         // los botones van encima de su fila: se miran antes
-        if (clickable) hits.add(0, new Hit(x, y, w, 15, 0, b.action(), b.style()));
+        if (clickable) hits.add(0, new Hit(x, y, w, 16, 0, b.action(), b.style()));
     }
 
     @Override

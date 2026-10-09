@@ -35,12 +35,13 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Kits gratis (las normas de Mojang no dejan vender kits). Cada uno tiene su tipo: «unico» (de inicio: una sola vez),
- * «diario» (una vez cada día), «semanal» (cada 7 días) u «horas» (cada esperaSegundos), lo que trae y, si quiere,
- * unas monedas. Se configuran en config/tfclient/kits.json; el staff los crea y cambia desde el pad de administrador
+ * «semanal» (cada 7 días) u «horas» (cada esperaSegundos), lo que trae y, si quiere, unas monedas. Lo diario está en
+ * Recompensas. Se configuran en config/tfclient/kits.json; el staff los crea y cambia desde el pad de administrador
  * (con lo que lleva en el inventario) o con /tf web kits guardar &lt;id&gt; &lt;horas&gt; [nombre].
  */
 public final class PadKits {
-    public static final List<String> TYPES = List.of("unico", "diario", "semanal", "horas");
+    /** Sin «diario» desde la 1.3.26: lo diario va en Recompensas (los kits diarios de antes se pasan allí solos). */
+    public static final List<String> TYPES = List.of("unico", "semanal", "horas");
 
     record Kit(String id, String name, String desc, String icon, long cooldownSeconds, long coins, List<ItemStack> items, String type) {
         Item iconItem() {
@@ -194,6 +195,19 @@ public final class PadKits {
             if (!Files.exists(file)) TFJson.write(file, o);
         }
         KITS.clear();
+        // los kits diarios pasan a Recompensas (se quitan de aquí una sola vez, sin perder lo que traían)
+        if (o.has("kits") && o.get("kits").isJsonArray()) {
+            List<JsonObject> daily = new ArrayList<>();
+            JsonArray keep = new JsonArray();
+            for (JsonElement e : o.getAsJsonArray("kits")) {
+                if (e.isJsonObject() && isDaily(e.getAsJsonObject())) daily.add(e.getAsJsonObject());
+                else keep.add(e);
+            }
+            if (!daily.isEmpty() && PadRewards.adopt(daily)) {
+                o.add("kits", keep);
+                TFJson.write(file, o);
+            }
+        }
         if (o.has("kits") && o.get("kits").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("kits")) {
                 try {
@@ -204,7 +218,7 @@ public final class PadKits {
                     String id = TFJson.str(k, "id", "");
                     if (id.isEmpty() || id.length() > 32) id = "kit" + KITS.size();
                     long seconds = TFJson.num(k, "esperaSegundos", 86400);
-                    String type = TFJson.str(k, "tipo", seconds <= 0 ? "unico" : seconds == 86400 ? "diario" : seconds == 604800 ? "semanal" : "horas");
+                    String type = TFJson.str(k, "tipo", seconds <= 0 ? "unico" : seconds == 604800 ? "semanal" : "horas");
                     if (!TYPES.contains(type)) type = "horas";
                     KITS.add(new Kit(id, TFJson.str(k, "nombre", "Kit"), TFJson.str(k, "descripcion", ""),
                             TFJson.str(k, "icono", "minecraft:bundle"), seconds, TFJson.num(k, "monedas", 0), items, type));
@@ -213,6 +227,11 @@ public final class PadKits {
                 }
             }
         }
+    }
+
+    private static boolean isDaily(JsonObject k) {
+        String type = TFJson.str(k, "tipo", "");
+        return type.equals("diario") || type.isEmpty() && TFJson.num(k, "esperaSegundos", -1) == 86400;
     }
 
     /** "minecraft:bread 16" o {"nbt": "..."} (lo que guarda el comando). */
@@ -233,14 +252,12 @@ public final class PadKits {
 
     private static JsonObject defaults() {
         JsonObject o = new JsonObject();
-        o.addProperty("_ayuda", "Kits gratis. tipo: unico (una sola vez), diario, semanal u horas (cada esperaSegundos). "
+        o.addProperty("_ayuda", "Kits gratis. tipo: unico (una sola vez), semanal u horas (cada esperaSegundos); lo diario va en recompensas.json. "
                 + "objetos: \"minecraft:bread 16\". Se crean y cambian desde el pad de administrador.");
         JsonArray kits = new JsonArray();
         kits.add(kit("inicial", "Kit inicial", "Lo justo para empezar tu aventura.", "minecraft:stone_pickaxe", 0, 100,
                 "minecraft:stone_sword", "minecraft:stone_pickaxe", "minecraft:stone_axe", "minecraft:stone_shovel",
                 "minecraft:bread 16", "minecraft:torch 32", "minecraft:oak_log 16", "minecraft:white_bed"));
-        kits.add(kit("diario", "Kit diario", "Comida y un poco de todo, cada día.", "minecraft:cooked_beef", 86400, 50,
-                "minecraft:cooked_beef 12", "minecraft:apple 4", "minecraft:torch 16", "minecraft:arrow 16"));
         kits.add(kit("semanal", "Kit semanal", "Una ayuda más grande cada semana.", "minecraft:iron_pickaxe", 604800, 300,
                 "minecraft:iron_pickaxe", "minecraft:iron_ingot 8", "minecraft:golden_carrot 16", "minecraft:experience_bottle 8"));
         o.add("kits", kits);
@@ -253,7 +270,7 @@ public final class PadKits {
         k.addProperty("nombre", name);
         k.addProperty("descripcion", desc);
         k.addProperty("icono", icon);
-        k.addProperty("tipo", seconds <= 0 ? "unico" : seconds == 86400 ? "diario" : seconds == 604800 ? "semanal" : "horas");
+        k.addProperty("tipo", seconds <= 0 ? "unico" : seconds == 604800 ? "semanal" : "horas");
         k.addProperty("esperaSegundos", seconds);
         k.addProperty("monedas", coins);
         JsonArray a = new JsonArray();
@@ -312,10 +329,9 @@ public final class PadKits {
         return items;
     }
 
-    /** Un kit nuevo con lo que lleva en el inventario. Devuelve su id o null si no lleva nada. */
+    /** Un kit nuevo con lo que lleva en el inventario (o vacío, para llenarlo con el selector). Devuelve su id. */
     static String createFromInventory(ServerPlayer player, String name, String type) {
         JsonArray items = inventoryItems(player);
-        if (items.isEmpty()) return null;
         JsonObject o = TFJson.read(configFile());
         if (o == null) o = defaults();
         if (!o.has("kits")) o.add("kits", new JsonArray());
@@ -324,7 +340,7 @@ public final class PadKits {
         if (base.length() > 24) base = base.substring(0, 24);
         String id = base;
         for (int i = 2; kit(id) != null; i++) id = base + "_" + i;
-        ItemStack first = ItemStack.EMPTY;
+        ItemStack first = new ItemStack(Items.BUNDLE);
         for (ItemStack s : player.getInventory().items) if (!s.isEmpty()) {
             first = s;
             break;
@@ -335,7 +351,7 @@ public final class PadKits {
         k.addProperty("descripcion", "");
         k.addProperty("icono", String.valueOf(ForgeRegistries.ITEMS.getKey(first.getItem())));
         k.addProperty("tipo", TYPES.contains(type) ? type : "unico");
-        k.addProperty("esperaSegundos", type.equals("diario") ? 86400 : type.equals("semanal") ? 604800 : type.equals("horas") ? 86400 : 0);
+        k.addProperty("esperaSegundos", type.equals("semanal") ? 604800 : type.equals("horas") ? 86400 : 0);
         k.addProperty("monedas", 0);
         k.add("objetos", items);
         o.getAsJsonArray("kits").add(k);
@@ -401,6 +417,7 @@ public final class PadKits {
         k.addProperty("nombre", name.isBlank() ? "Kit " + id : name);
         k.addProperty("descripcion", "");
         k.addProperty("icono", icon);
+        k.addProperty("tipo", hours == 0 ? "unico" : hours == 168 ? "semanal" : "horas");
         k.addProperty("esperaSegundos", hours * 3600L);
         k.addProperty("monedas", 0);
         k.add("objetos", items);

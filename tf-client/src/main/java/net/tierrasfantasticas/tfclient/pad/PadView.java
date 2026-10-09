@@ -179,7 +179,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         buf.writeVarInt(c);
         for (int i = 0; i < c; i++) {
             Cell cell = cells.get(i);
-            buf.writeItem(cell.icon == null ? ItemStack.EMPTY : cell.icon);
+            buf.writeItem(wire(cell.icon));
             buf.writeUtf(cut(cell.label, 40), 80);
             buf.writeInt(cell.color);
             buf.writeUtf(cut(cell.action, 120), 128);
@@ -190,7 +190,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         buf.writeVarInt(n);
         for (int i = 0; i < n; i++) {
             Row r = rows.get(i);
-            buf.writeItem(r.icon == null ? ItemStack.EMPTY : r.icon);
+            buf.writeItem(wire(r.icon));
             buf.writeUtf(cut(r.title, 120), 256);
             buf.writeInt(r.color);
             buf.writeVarInt(Math.min(r.lines.size(), 8));
@@ -262,5 +262,14 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     static String cut(String s, int max) {
         if (s == null) return "";
         return s.length() > max ? s.substring(0, max) : s;
+    }
+
+    /** La cantidad viaja en un byte: un montón de más de 127 (kits viejos) se manda con 127 para no salir negativo. */
+    private static ItemStack wire(ItemStack s) {
+        if (s == null || s.isEmpty()) return ItemStack.EMPTY;
+        if (s.getCount() <= 127) return s;
+        ItemStack c = s.copy();
+        c.setCount(127);
+        return c;
     }
 }

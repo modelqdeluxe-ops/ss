@@ -38,12 +38,19 @@ public final class TFPadScreen extends Screen {
     static final int H = 251;
     /** El cristal del marco, en píxeles de pad (el logo TF se mete por arriba a la izquierda). */
     static final int GX = 52, GY = 64, GW = 288, GH = 132;
+    /**
+     * Para hacer el pad más alto sin deformarlo (más aire entre las filas de apps), se repite una fila lisa de arriba y
+     * otra de abajo de frame.png (filas de la imagen: 4 por píxel de pad), por encima y por debajo de los adornos de
+     * oro de los lados. Lo que se alarga depende de lo alta que sea la pantalla.
+     */
+    static final int STRETCH_U = 430, STRETCH_D = 596;
+    static final int MAX_EXTRA = 40;
     static final int NAVY = 0xFF18265C;
     /** Altura de la barra de arriba, en unidades de pantalla. */
     /** Alto de la barra de arriba con escala grande 1 (ver {@link #bar}). */
     static final int BAR = 18;
     /** Apps con página propia en el cliente; las demás las dibuja el servidor. */
-    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica");
+    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web");
     private static final Map<String, int[]> SIZES = new HashMap<>();
 
     /** Escala de la interfaz de Minecraft, píxeles reales por píxel de pad y por unidad de pantalla. */
@@ -58,6 +65,8 @@ public final class TFPadScreen extends Screen {
     int bar = BAR;
     /** Esquina del marco y del cristal, en píxeles reales. */
     private int fx, fy, gx, gy;
+    /** Píxeles de pad que se añaden arriba y abajo del cristal (ver {@link #STRETCH_U}). */
+    private int extra;
     /** El cristal en unidades de pantalla. */
     int unitsW = GW, unitsH = GH;
     final boolean admin;
@@ -243,6 +252,13 @@ public final class TFPadScreen extends Screen {
 
     /** Abre una app en una pestaña (tab vacío: la de entrada). */
     void openApp(String id, String tab) {
+        if (id.equals("web")) { // va directa a la página del servidor, en el navegador
+            sound("select", 0.7F);
+            Util.getPlatform().openUri(net.tierrasfantasticas.tfclient.TFConfig.webUrl());
+            showNotice("Abriendo " + net.tierrasfantasticas.tfclient.TFConfig.webUrl().replaceFirst("^https?://", "")
+                    .replace("xn--tierrasfantsticas-hpb", "tierrasfantásticas") + " en tu navegador…");
+            return;
+        }
         sound("page", 0.55F);
         if (!CLIENT_APPS.contains(id)) {
             setPage(new PadViewPage(this, id));
@@ -275,12 +291,13 @@ public final class TFPadScreen extends Screen {
         int fbW = window.getWidth(), fbH = window.getHeight();
         ps = Math.max(1, (int) Math.floor(Math.min(fbW * 0.97 / W, fbH * 0.97 / H)));
         cs = ps <= 2 ? ps : Math.max(2, Math.round(ps / 2F));
+        extra = Math.max(0, Math.min(MAX_EXTRA, (int) Math.floor((fbH * 0.985 / ps - H) / 2)));
         fx = (fbW - W * ps) / 2;
-        fy = (fbH - H * ps) / 2;
+        fy = (fbH - (H + extra * 2) * ps) / 2;
         gx = fx + GX * ps;
         gy = fy + GY * ps;
         unitsW = GW * ps / cs;
-        unitsH = GH * ps / cs;
+        unitsH = (GH + extra * 2) * ps / cs;
         big = Math.max(cs, Math.round(ps * 0.75F));
         bs = big / (float) cs;
         bar = Math.round(12 * bs) + 6;
@@ -329,8 +346,8 @@ public final class TFPadScreen extends Screen {
         // el marco, a escala entera
         g.pose().pushPose();
         g.pose().translate(fx / gs, (fy + lift) / gs, 0);
-        g.pose().scale((float) (ps / gs), (float) (ps / gs), 1);
-        g.blit(tex("frame"), 0, 0, W, H, 0, 0, 1568, 1003, 1568, 1003);
+        g.pose().scale((float) (ps / 4.0 / gs), (float) (ps / 4.0 / gs), 1);
+        drawFrame(g);
         g.pose().popPose();
         // el cristal: barra y página
         g.pose().pushPose();
@@ -367,6 +384,17 @@ public final class TFPadScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
+    /** El marco en píxeles de la imagen (1568x1003), alargado extra píxeles de pad arriba y abajo del cristal. */
+    private void drawFrame(GuiGraphics g) {
+        ResourceLocation t = tex("frame");
+        int e = extra * 4, iw = 1568, ih = 1003;
+        g.blit(t, 0, 0, iw, STRETCH_U, 0, 0, iw, STRETCH_U, iw, ih);
+        if (e > 0) g.blit(t, 0, STRETCH_U, iw, e, 0, STRETCH_U, iw, 1, iw, ih);
+        g.blit(t, 0, STRETCH_U + e, iw, STRETCH_D - STRETCH_U, 0, STRETCH_U, iw, STRETCH_D - STRETCH_U, iw, ih);
+        if (e > 0) g.blit(t, 0, STRETCH_D + e, iw, e, 0, STRETCH_D, iw, 1, iw, ih);
+        g.blit(t, 0, STRETCH_D + e * 2, iw, ih - STRETCH_D, 0, STRETCH_D, iw, ih - STRETCH_D, iw, ih);
+    }
+
     private int backX() {
         return logoRight(0) + 4;
     }
@@ -389,13 +417,15 @@ public final class TFPadScreen extends Screen {
             g.pose().pushPose();
             g.pose().translate(bx, by, 0);
             g.pose().scale(bs, bs, 1);
-            PadUi.box(g, 0, 0, 12, 12, NAVY);
-            PadUi.box(g, 1, 1, 10, 10, hover ? 0xFFF6B628 : 0xFF3496FA);
-            g.fill(2, 2, 10, 3, hover ? 0xFFFFEC96 : 0xFF96D6FF);
-            g.fill(3, 5, 4, 7, 0xFFFFFFFF);
-            g.fill(4, 4, 5, 8, 0xFFFFFFFF);
-            g.fill(5, 3, 6, 9, 0xFFFFFFFF);
-            g.fill(6, 5, 9, 7, 0xFFFFFFFF);
+            // botón de volver con relieve, como los de dentro de las apps (dorado al pasar el ratón)
+            PadUi.box(g, 0, 0, 12, 12, PadUi.INK);
+            g.fillGradient(1, 1, 11, 10, hover ? 0xFFFFD650 : 0xFF5AB4FF, hover ? 0xFFE8961A : 0xFF2C74E4);
+            g.fill(2, 1, 10, 2, hover ? 0xFFFFF2B0 : 0xFFB4E0FF);
+            g.fill(1, 9, 11, 11, hover ? 0xFFA05E0E : 0xFF1A4AA8);
+            g.fill(3, 5, 4, 6, 0xFFFFFFFF);
+            g.fill(4, 4, 5, 7, 0xFFFFFFFF);
+            g.fill(5, 3, 6, 8, 0xFFFFFFFF);
+            g.fill(6, 5, 9, 6, 0xFFFFFFFF);
             g.pose().popPose();
         }
         float textY = bar / 2F - 5.5F * bs;
@@ -405,9 +435,9 @@ public final class TFPadScreen extends Screen {
         if (gearHover) hover("§gear");
         g.pose().pushPose();
         g.pose().translate(right + bsz / 2F, bar / 2F, 0);
-        if (gearHover) g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees((System.currentTimeMillis() % 2000) * 0.18F));
         g.pose().scale(bs, bs, 1);
         blit(g, "gear", -5, -5);
+        if (gearHover) g.fill(-6, 6, 6, 7, 0xFFF6B628); // subrayado de oro al pasar el ratón (sin animación)
         g.pose().popPose();
         right -= big(8);
         TFPadNet.State s = TFPadClient.state;

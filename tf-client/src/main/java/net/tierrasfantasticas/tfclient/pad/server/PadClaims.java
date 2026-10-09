@@ -452,7 +452,7 @@ public final class PadClaims {
             String name = i < c.getMemberNames().size() ? c.getMemberNames().get(i) : PlayerLookup.nameOf(player.server, who);
             boolean online = player.server.getPlayerList().getPlayer(who) != null;
             boolean sure = PadServer.confirming(player, "proteccion.quitar:" + who);
-            b.row(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), name, TEXT, List.of(online ? "Conectado" : "Desconectado"), -1, "",
+            b.row(new PadView.Row(PadClans.head(who, name), name, TEXT, List.of(online ? "Conectado" : "Desconectado"), -1, "",
                     PadView.Btn.of(sure ? "¿SEGURO?" : "QUITAR", "quitar:" + id + ":" + who, PadView.RED), null));
         }
         b.empty("Sin miembros.");
