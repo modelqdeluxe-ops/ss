@@ -10,7 +10,9 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.32** (la siguiente es **1.3.33**). Lo último (1.3.32): puedes reaccionar también a tus fotos.
+> mod: **TF Client 1.3.33** (la siguiente es **1.3.34**). Lo último (1.3.33): solo quedan `/tf web` y `/tf reload`
+> (recarga todo de verdad) y los ajustes de Protección dicen claro cómo está cada cosa. Antes (1.3.32): puedes
+> reaccionar también a tus fotos.
 > Antes (1.3.31): Comunidad con botón REACCIONAR (selector de emojis) y tarjetas limpias. Antes (1.3.30): emojis de Comunidad redibujados.
 > Antes (1.3.29): leyendas solo en Tienda/Kits, oficios sin avisos
 > en pantalla, tienda sin mezclar compra y venta, **economía estable** y **misiones/cazas que rotan por temporadas de 90
@@ -41,7 +43,26 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): reaccionar a tus fotos — TF Client 1.3.32
+### Última entrega (9 de octubre de 2026): solo /tf web y /tf reload, ajustes de Protección claros — TF Client 1.3.33
+Pidió quitar los comandos `/tf` porque todo va por la tableta (dejar `/tf web`, «tf claims creo» y un `/tf reload` que
+«se actualice de verdad»), y que los ajustes de la zona no confundan («MOBS HOSTILES … SÍ», ¿sí qué?).
+1. **Comandos**: fuera `/tf jobs` (borrado `jobs/TFJobsCommands.java`) y `/tf shop`. Quedan `/tf web …` (staff; las
+   protecciones del staff siguen en `/tf web claims`) y **`/tf reload`** (nivel 3). El aviso de misión de oficio hecha
+   ya no lleva el botón [Cobrar] (era `/tf jobs ver`): dice «cóbrala en el pad, app Oficios».
+2. **`/tf reload`** (`pad/server/TFReload.java`; RECARGAR CONFIGS del pad de admin usa lo mismo): pad, tienda,
+   oficios, kits, recompensas, misiones y cazas, ayuda, protecciones, límites, efectos (vfx), tienda de monedas,
+   ruleta y servidor.properties. Antes de cada JSON comprueba que se lee: si tiene un error, **esa** config se queda
+   como estaba y dice el archivo y el error (antes, un JSON roto dejaba los valores de fábrica sin avisar). Después
+   manda a todos su estado y **vuelve a pintar la app que tengan abierta** (`PadServer.refreshOpen`, que apunta la
+   última vista de cada uno en la sesión «§vista»).
+3. **Protección → AJUSTES** (`PadClaims`): cada fila dice QUÉ controla («Construir», «Explosiones», «Daño de los
+   mobs»…) y el botón CÓMO está ahora («BLOQUEADO»/«PERMITIDO», «ACTIVADO»/«DESACTIVADO»; el PvP: «BLOQUEADO»/
+   «NORMAL»); debajo, una frase con lo que pasa ahora mismo. En MÁS, contorno y mensajes con «ACTIVADO»/«DESACTIVADO».
+4. **Botones grises**: `PadView.GRAY` se pintaba **verde** (PadUi.button recortaba el estilo a 3), así que el «NO»
+   salía igual que el «SÍ». Ahora es gris de verdad (`BTN[5]`; el de desactivado sigue siendo `BTN[4]`). Afecta a
+   todos los botones grises del pad (también en el simulador).
+
+### Entrega anterior (9 de octubre de 2026): reaccionar a tus fotos — TF Client 1.3.32
 Pidió poder reaccionar a sus propias fotos (para probarlo): REACCIONAR sale también en las tuyas y el servidor ya no
 lo bloquea (`PadCommunityServer`, case "react"). El like a tus fotos sigue sin poderse (no lo pidió).
 
@@ -1154,8 +1175,9 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
 - **Secretos** solo en Cloudflare (Secrets), **nunca** en el chat ni en git (lista en la sección 4).
   Stripe va en **modo real** (no quiere modo de prueba; ya se enfadó por eso).
-- Comandos del mod: **solo** `/tf web …` (staff), `/tf jobs`, `/tf shop` (este lo pidió él en 1.3.12) y
-  `/tf claims` (las protecciones, 1.3.18). Los VFX
+- Comandos del mod (1.3.33, lo pidió él: «usaremos la tableta»): **solo** `/tf web …` (staff; dentro, `/tf web claims`
+  para las protecciones) y `/tf reload` (staff, nivel 3: recarga TODAS las configs de verdad). Fuera `/tf jobs` y
+  `/tf shop`: todo lo de los jugadores va por el pad. Los VFX
   no tienen comandos para jugadores: se equipan en la web y en el juego se activan solos. No añadas
   más raíces, alias ni comandos para jugadores (se quejó dos veces de «un vergo de comandos» y de tener `jobs` y
   `oficios` a la vez).
@@ -1269,7 +1291,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.32)
+## 5. El mod (TF Client 1.3.33)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -1278,13 +1300,13 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   (`tier` en `tf_sets.json`: `iron`, `diamond`, `netherite` o `netherite+N`). Crates +1 (desde la 1.3.5, decisión del
   dueño); rangos de hierro a +3 (1.3.6). Atributos ocultos en la descripción (`HIDE_ATTRIBUTES`).
 - Comandos (todos en `items/TFCommands.java`):
-  - `/tf jobs` (todos; staff: `recargar`, `nivel`, `xp`, `reiniciar`; `ver <oficio>` lo usan los avisos del chat).
-  - `/tf shop` (todos; staff: `recargar`): la tienda del servidor, `shop/TFShop*.java`, config `config/tfclient-shop.json`.
+  - `/tf reload` (nivel 3, 1.3.33): `pad/server/TFReload.java`, lo mismo que RECARGAR CONFIGS del pad de admin.
+  - (`/tf jobs` y `/tf shop` se quitaron en la 1.3.33; con ellos, `recargar`, `nivel`, `xp` y `reiniciar` de oficios.)
   - `/tf web sets list|give`, `/tf web tienda add|precio|quitar|lista|vaciar` (staff) y los que usa la web:
     `/tf web rango`, `/tf web monedas ver|dar|quitar|poner`, `/tf web ruleta girar`, `/tf web tienda comprar`.
   - Del pad (staff, 1.3.22): `/tf web kits guardar|quitar|recargar`, `/tf web viajes poner|quitar|lista`,
     `/tf web comunidad borrar|denuncias`.
-  - Con TF Client, `/tf jobs` y `/tf shop` abren el pad en su app (1.3.23). `/tf claims` ya no existe (1.3.24).
+  - `/tf claims` (de jugadores) ya no existe (1.3.24); el del staff es `/tf web claims`.
   - `/tf web pad admin [jugador]` (nivel 3): da el pad de administrador (1.3.24).
   - Toda la config del mod está en `config/tfclient/` (1.3.24; antes `config/tfclient-*.…`).
 - Código: `server/TFBridge.java` (puente), `shop/TFCoinShop.java`, `shop/TFRoulette.java`, `economy/` (Vault por

@@ -41,45 +41,58 @@ public final class PadClaims {
 
     private static final int TEXT = 0x18265C, MUTED = 0x7E8CA8, GOLD = 0xC27A10;
 
-    private record Flag(FlagId id, String name, String desc, Item icon) {}
+    /**
+     * Una opción de la zona. Para que nunca haya dudas, la fila dice QUÉ controla (name) y el botón CÓMO está ahora
+     * (on/off: «BLOQUEADO», «PERMITIDO», «ACTIVADO»…), y debajo una frase con lo que pasa ahora mismo (onDesc/offDesc).
+     * En el código, la opción encendida es la que protege o la ventaja puesta.
+     */
+    private record Flag(FlagId id, String name, String on, String off, String onDesc, String offDesc, Item icon) {}
+
+    private static Flag block(FlagId id, String name, String fem, String onDesc, String offDesc, Item icon) {
+        return new Flag(id, name, "BLOQUEAD" + fem, "PERMITID" + fem, onDesc, offDesc, icon);
+    }
+
+    private static Flag feature(FlagId id, String name, String fem, String onDesc, String offDesc, Item icon) {
+        return new Flag(id, name, "ACTIVAD" + fem, "DESACTIVAD" + fem, onDesc, offDesc, icon);
+    }
 
     private record Section(String title, List<Flag> flags) {}
 
     private static final List<Section> SECTIONS = List.of(
-            new Section("Bloques y terreno", List.of(
-                    new Flag(FlagId.BUILDING, "No construir", "Los de fuera no colocan bloques.", Items.BRICKS),
-                    new Flag(FlagId.BREAKING, "No romper", "Los de fuera no rompen nada.", Items.IRON_PICKAXE),
-                    new Flag(FlagId.EXPLOSIONS, "Sin explosiones", "La TNT y los creepers no destruyen.", Items.TNT),
-                    new Flag(FlagId.FIRE, "Sin fuego", "El fuego no se propaga.", Items.FLINT_AND_STEEL),
-                    new Flag(FlagId.FLUIDS, "Sin agua ni lava", "Nadie de fuera pone agua ni lava.", Items.WATER_BUCKET),
-                    new Flag(FlagId.TREE_CHOPPING, "Árboles protegidos", "Los de fuera no talan.", Items.OAK_SAPLING),
-                    new Flag(FlagId.TRAMPLING, "Tierra protegida", "Nadie pisa ni rompe la tierra de cultivo.", Items.WHEAT_SEEDS),
-                    new Flag(FlagId.CROP_HARVEST, "Cosechas protegidas", "Los de fuera no cosechan.", Items.WHEAT),
-                    new Flag(FlagId.ANIMAL_KILLING, "Animales protegidos", "Los de fuera no matan tus animales.", Items.LEAD))),
-            new Section("Acceso", List.of(
-                    new Flag(FlagId.CHEST_ACCESS, "Cofres cerrados", "Nadie de fuera abre cofres ni barriles.", Items.CHEST),
-                    new Flag(FlagId.DOORS_ACCESS, "Puertas cerradas", "Ni puertas, ni botones, ni placas.", Items.OAK_DOOR),
-                    new Flag(FlagId.ANVIL_USE, "Yunques cerrados", "Los de fuera no usan yunques.", Items.ANVIL),
-                    new Flag(FlagId.SIGN_EDITING, "Letreros cerrados", "Nadie de fuera los edita.", Items.OAK_SIGN),
-                    new Flag(FlagId.ITEM_USE, "Sin usar objetos", "Los de fuera no usan objetos.", Items.BUCKET),
-                    new Flag(FlagId.ENTITY_INTERACT, "Entidades protegidas", "Ni aldeanos, ni soportes, ni marcos.", Items.ARMOR_STAND),
-                    new Flag(FlagId.ENDER_PEARL, "Sin perlas de ender", "Nadie entra con perlas.", Items.ENDER_PEARL),
-                    new Flag(FlagId.BLOCK_ALL_INTERACT, "Todo cerrado", "Los de fuera no tocan NADA.", Items.BARRIER),
-                    new Flag(FlagId.PUBLIC_MODE, "Modo visita", "Todos entran a mirar, nadie modifica.", Items.SPYGLASS))),
+            new Section("Bloques y terreno (para los de fuera de la zona)", List.of(
+                    block(FlagId.BUILDING, "Construir", "O", "Los de fuera no pueden colocar bloques.", "Cualquiera puede colocar bloques.", Items.BRICKS),
+                    block(FlagId.BREAKING, "Romper bloques", "O", "Los de fuera no pueden romper nada.", "Cualquiera puede romper bloques.", Items.IRON_PICKAXE),
+                    block(FlagId.EXPLOSIONS, "Explosiones", "AS", "La TNT y los creepers no rompen nada.", "La TNT y los creepers rompen bloques.", Items.TNT),
+                    block(FlagId.FIRE, "Fuego", "O", "El fuego no se propaga ni quema bloques.", "El fuego se propaga y quema bloques.", Items.FLINT_AND_STEEL),
+                    block(FlagId.FLUIDS, "Poner agua y lava", "O", "Los de fuera no pueden poner agua ni lava.", "Cualquiera puede poner agua y lava.", Items.WATER_BUCKET),
+                    block(FlagId.TREE_CHOPPING, "Talar árboles", "O", "Los de fuera no pueden talar.", "Cualquiera puede talar.", Items.OAK_SAPLING),
+                    block(FlagId.TRAMPLING, "Pisar los cultivos", "O", "La tierra de cultivo no se rompe al pisarla.", "La tierra de cultivo se rompe al pisarla.", Items.WHEAT_SEEDS),
+                    block(FlagId.CROP_HARVEST, "Cosechar", "O", "Los de fuera no pueden cosechar.", "Cualquiera puede cosechar.", Items.WHEAT),
+                    block(FlagId.ANIMAL_KILLING, "Matar tus animales", "O", "Los de fuera no pueden matar tus animales.", "Cualquiera puede matar tus animales.", Items.LEAD))),
+            new Section("Acceso (para los de fuera de la zona)", List.of(
+                    block(FlagId.CHEST_ACCESS, "Abrir cofres", "O", "Los de fuera no abren cofres ni barriles.", "Cualquiera abre cofres y barriles.", Items.CHEST),
+                    block(FlagId.DOORS_ACCESS, "Puertas y botones", "OS", "Los de fuera no usan puertas, botones ni placas.", "Cualquiera usa puertas, botones y placas.", Items.OAK_DOOR),
+                    block(FlagId.ANVIL_USE, "Usar yunques", "O", "Los de fuera no pueden usar yunques.", "Cualquiera puede usar yunques.", Items.ANVIL),
+                    block(FlagId.SIGN_EDITING, "Editar letreros", "O", "Los de fuera no pueden editarlos.", "Cualquiera puede editarlos.", Items.OAK_SIGN),
+                    block(FlagId.ITEM_USE, "Usar objetos", "O", "Los de fuera no pueden usar objetos.", "Cualquiera puede usar objetos.", Items.BUCKET),
+                    block(FlagId.ENTITY_INTERACT, "Aldeanos, soportes y marcos", "OS", "Los de fuera no pueden tocarlos.", "Cualquiera puede usarlos.", Items.ARMOR_STAND),
+                    block(FlagId.ENDER_PEARL, "Entrar con perlas de ender", "O", "Nadie entra lanzando perlas.", "Se puede entrar lanzando perlas.", Items.ENDER_PEARL),
+                    block(FlagId.BLOCK_ALL_INTERACT, "Tocar cualquier cosa", "O", "Los de fuera no pueden tocar NADA.", "Vale lo que digan las demás opciones.", Items.BARRIER),
+                    feature(FlagId.PUBLIC_MODE, "Modo visita", "O", "Todos pueden entrar a mirar; nadie de fuera modifica nada.", "Apagado.", Items.SPYGLASS))),
             new Section("Mobs y PvP", List.of(
-                    new Flag(FlagId.MOB_SPAWN, "Sin monstruos", "No salen zombis, esqueletos…", Items.ZOMBIE_HEAD),
-                    new Flag(FlagId.ALL_MOB_SPAWN, "Sin ningún mob", "No sale nada (tampoco de otros mods).", Items.SPAWNER),
-                    new Flag(FlagId.PASSIVE_MOB_SPAWN, "Sin animales nuevos", "Ni animales, ni peces (aldeanos sí).", Items.EGG),
-                    new Flag(FlagId.MOB_DAMAGE, "Mobs inofensivos", "Los mobs no hacen daño.", Items.SHIELD),
-                    new Flag(FlagId.BURN_HOSTILES, "Repeler monstruos", "Los hostiles que entran arden.", Items.BLAZE_POWDER),
-                    new Flag(FlagId.PVP, "Sin PvP", "Nadie se puede atacar.", Items.IRON_SWORD),
-                    new Flag(FlagId.PVP_ALL, "PvP libre", "Todos se pueden atacar aquí.", Items.DIAMOND_SWORD),
-                    new Flag(FlagId.ALERTS, "Avisos de intrusos", "Te avisa cuando entra alguien.", Items.BELL))),
-            new Section("Ventajas de zona grande", List.of(
-                    new Flag(FlagId.EFFECT_REGEN, "Regeneración", "Para ti y tus miembros.", Items.GOLDEN_APPLE),
-                    new Flag(FlagId.EFFECT_RESIST, "Resistencia", "Menos daño para ti y tus miembros.", Items.IRON_CHESTPLATE),
-                    new Flag(FlagId.EFFECT_SPEED, "Velocidad", "Para ti y tus miembros.", Items.SUGAR),
-                    new Flag(FlagId.ALLOW_FLIGHT, "Volar", "Tú y tus miembros voláis en la zona.", Items.FEATHER))));
+                    block(FlagId.MOB_SPAWN, "Que salgan monstruos", "O", "No salen zombis, esqueletos ni otros monstruos.", "Los monstruos salen como en cualquier sitio.", Items.ZOMBIE_HEAD),
+                    block(FlagId.ALL_MOB_SPAWN, "Que salga cualquier mob", "O", "No sale nada (tampoco mobs de otros mods).", "Los mobs salen como en cualquier sitio.", Items.SPAWNER),
+                    block(FlagId.PASSIVE_MOB_SPAWN, "Que salgan animales", "O", "No salen animales ni peces (aldeanos sí).", "Los animales salen como en cualquier sitio.", Items.EGG),
+                    block(FlagId.MOB_DAMAGE, "Daño de los mobs", "O", "Los mobs no hacen daño en la zona.", "Los mobs hacen daño como en cualquier sitio.", Items.SHIELD),
+                    feature(FlagId.BURN_HOSTILES, "Quemar a los monstruos", "O", "Los monstruos que entran arden.", "Los monstruos que entran no arden.", Items.BLAZE_POWDER),
+                    new Flag(FlagId.PVP, "Pelear entre jugadores", "BLOQUEADO", "NORMAL", "Nadie se puede atacar en la zona.", "Como en el resto del servidor.", Items.IRON_SWORD),
+                    feature(FlagId.PVP_ALL, "PvP libre", "O", "Todos se pueden atacar en la zona.", "Apagado: como en el resto del servidor.", Items.DIAMOND_SWORD),
+                    feature(FlagId.ALERTS, "Avisos de intrusos", "OS", "Te avisa cuando entra alguien.", "No te avisa cuando entra alguien.", Items.BELL))),
+            new Section("Ventajas de zona grande (para ti y tus miembros)", List.of(
+                    feature(FlagId.EFFECT_REGEN, "Regeneración", "A", "Os curáis solos dentro de la zona.", "Sin regeneración.", Items.GOLDEN_APPLE),
+                    feature(FlagId.EFFECT_RESIST, "Resistencia", "A", "Recibís menos daño dentro de la zona.", "Sin resistencia.", Items.IRON_CHESTPLATE),
+                    feature(FlagId.EFFECT_SPEED, "Velocidad", "A", "Vais más rápido dentro de la zona.", "Sin velocidad extra.", Items.SUGAR),
+                    feature(FlagId.ALLOW_FLIGHT, "Volar", "O", "Voláis dentro de la zona.", "Nadie vuela en la zona.", Items.FEATHER))));
 
     private PadClaims() {}
 
@@ -436,9 +449,12 @@ public final class PadClaims {
                 int need = required(flag.id);
                 boolean locked = need > 0 && level < need;
                 boolean on = f.get(flag.id);
+                // el botón dice cómo está (y al pulsarlo cambia); debajo, lo que pasa ahora mismo
                 PadView.Btn btn = locked ? PadView.Btn.off(requiredLabel(need))
-                        : PadView.Btn.of(on ? "SÍ" : "NO", "flag:" + id + ":" + flag.id.name(), on ? PadView.GREEN : PadView.GRAY);
-                b.row(new PadView.Row(new ItemStack(flag.icon), flag.name, locked ? MUTED : TEXT, List.of(flag.desc), -1, "", btn, null));
+                        : PadView.Btn.of(on ? flag.on : flag.off, "flag:" + id + ":" + flag.id.name(), on ? PadView.GREEN : PadView.GRAY);
+                String now = locked ? "Pide una zona de " + requiredLabel(need).toLowerCase(Locale.ROOT) + ": " + flag.onDesc.toLowerCase(Locale.ROOT)
+                        : (on ? flag.onDesc : flag.offDesc);
+                b.row(new PadView.Row(new ItemStack(flag.icon), flag.name, locked ? MUTED : TEXT, List.of(now), -1, "", btn, null));
             }
         }
     }
@@ -485,15 +501,16 @@ public final class PadClaims {
     private static void more(ServerPlayer player, PadView.Builder b, Claim c, String id) {
         ClaimFlags f = c.getFlags();
         String editing = PadServer.get(player, "protecciones.editar", "");
-        b.row(new PadView.Row(new ItemStack(Items.MAP), "Contorno", TEXT, List.of("Dibuja las líneas del borde de la zona."), -1, "",
-                PadView.Btn.of(f.showBorder ? "SÍ" : "NO", "contorno:" + id, f.showBorder ? PadView.GREEN : PadView.GRAY), null));
-        b.row(new PadView.Row(new ItemStack(Items.OAK_HANGING_SIGN), "Al entrar", TEXT,
+        b.row(new PadView.Row(new ItemStack(Items.MAP), "Ver el contorno", TEXT,
+                List.of(f.showBorder ? "Se ven las líneas del borde de la zona." : "No se ven las líneas del borde."), -1, "",
+                PadView.Btn.of(f.showBorder ? "ACTIVADO" : "DESACTIVADO", "contorno:" + id, f.showBorder ? PadView.GREEN : PadView.GRAY), null));
+        b.row(new PadView.Row(new ItemStack(Items.OAK_HANGING_SIGN), "Mensaje al entrar", TEXT,
                 List.of(f.welcomeMessage.isBlank() ? "Sin mensaje." : "«" + f.welcomeMessage + "»"), -1, "",
-                PadView.Btn.of(f.showWelcome ? "SÍ" : "NO", "msg:" + id + ":entrar", f.showWelcome ? PadView.GREEN : PadView.GRAY),
+                PadView.Btn.of(f.showWelcome ? "ACTIVADO" : "DESACTIVADO", "msg:" + id + ":entrar", f.showWelcome ? PadView.GREEN : PadView.GRAY),
                 PadView.Btn.of("EDITAR", "editar:" + id + ":entrar", PadView.BLUE)).selected(editing.equals("entrar")));
-        b.row(new PadView.Row(new ItemStack(Items.DARK_OAK_HANGING_SIGN), "Al salir", TEXT,
+        b.row(new PadView.Row(new ItemStack(Items.DARK_OAK_HANGING_SIGN), "Mensaje al salir", TEXT,
                 List.of(f.leaveMessage.isBlank() ? "Sin mensaje." : "«" + f.leaveMessage + "»"), -1, "",
-                PadView.Btn.of(f.showLeave ? "SÍ" : "NO", "msg:" + id + ":salir", f.showLeave ? PadView.GREEN : PadView.GRAY),
+                PadView.Btn.of(f.showLeave ? "ACTIVADO" : "DESACTIVADO", "msg:" + id + ":salir", f.showLeave ? PadView.GREEN : PadView.GRAY),
                 PadView.Btn.of("EDITAR", "editar:" + id + ":salir", PadView.BLUE)).selected(editing.equals("salir")));
         ClaimGroup g = ClaimManager.getInstance().getGroupOf(c);
         if (g == null) {

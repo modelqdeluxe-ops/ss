@@ -41,7 +41,8 @@ final class PadUi {
             {0xFFFFD650, 0xFFE8961A, 0xFFFFF2B0, 0xFFA05E0E},   // oro
             {0xFFFF6274, 0xFFC82038, 0xFFFFB4BC, 0xFF861428},   // rojo
             {0xFF68E886, 0xFF22A84C, 0xFFC4FFD0, 0xFF147034},   // verde
-            {0xFF4A5884, 0xFF36426C, 0xFF6E7CA8, 0xFF252E50},   // gris (desactivado)
+            {0xFF4A5884, 0xFF36426C, 0xFF6E7CA8, 0xFF252E50},   // desactivado (no se puede pulsar)
+            {0xFF97A3BF, 0xFF66728F, 0xFFC9D0E2, 0xFF434D69},   // gris (PadView.GRAY: «apagado», «permitido»…)
     };
 
     private PadUi() {}
@@ -287,7 +288,8 @@ final class PadUi {
 
     /** Botón de 16 de alto: tinta, cara en degradado, luz arriba, sombra abajo; al pasar el ratón, más claro. */
     static void button(GuiGraphics g, int x, int y, int w, String label, int style, boolean hover, boolean enabled) {
-        int[] c = BTN[enabled ? Math.max(0, Math.min(3, style)) : 4];
+        // PadView.GRAY (4) es el gris de pulsar (antes salía verde); el de desactivado es otro, más oscuro
+        int[] c = BTN[!enabled ? 4 : style == PadView.GRAY ? 5 : Math.max(0, Math.min(3, style))];
         int top = c[0], bot = c[1];
         if (hover && enabled) {
             top = lighten(top, 30);

@@ -210,18 +210,11 @@ public final class PadAdmin {
         }
     }
 
-    /** Vuelve a leer todas las configs de config/tfclient/ (pad, tienda, kits, oficios, misiones y ayuda). */
+    /** Vuelve a leer todas las configs de config/tfclient/ (lo mismo que /tf reload: {@link TFReload}). */
     static void reloadAll(ServerPlayer player) {
-        PadConfig.load();
-        List<String> shop = TFShopConfig.load();
-        PadKits.loadConfig();
-        PadRewards.loadConfig();
-        List<String> jobs = TFJobsConfig.load();
-        PadMissions.loadConfig();
-        PadHelp.loadConfig();
-        broadcastState();
-        int warnings = shop.size() + jobs.size();
-        TFPadNet.notice(player, "Configs recargadas" + (warnings > 0 ? " (" + warnings + " avisos en la consola)." : "."));
+        TFReload.Result r = TFReload.all();
+        TFPadNet.notice(player, r.problems().isEmpty() ? "Configs recargadas."
+                : r.problems().size() == 1 ? r.problems().get(0) : "Configs recargadas con " + r.problems().size() + " avisos: " + r.problems().get(0));
     }
 
     // ---------------------------------------------------------------------------------------------------------------

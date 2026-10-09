@@ -123,6 +123,11 @@ public final class VfxServer {
         return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("vfx.json", "tfclient-vfx.json");
     }
 
+    /** Vuelve a leer config/tfclient/vfx.json (/tf reload). */
+    public static void reloadConfig() {
+        loadConfig();
+    }
+
     private static void loadConfig() {
         JsonObject json = TFJson.read(configFile());
         if (json == null) json = new JsonObject();

@@ -28,14 +28,12 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.economy.TFEconomyCommands;
-import net.tierrasfantasticas.tfclient.jobs.TFJobsCommands;
 import net.tierrasfantasticas.tfclient.server.TFBridgeCommands;
 import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 import net.tierrasfantasticas.tfclient.shop.TFRoulette;
-import net.tierrasfantasticas.tfclient.shop.TFShop;
 
 /**
- * Solo hay cuatro comandos: /tf web (staff), /tf jobs, /tf shop y /tf claims (todos).
+ * Solo hay dos comandos (todo lo de los jugadores se hace desde el pad): /tf web (staff) y /tf reload (staff).
  * <pre>
  * /tf web sets list                              lista los sets
  * /tf web sets give &lt;jugadores&gt; &lt;set&gt; [objeto]   da el set entero (o un objeto suyo), vinculado a cada jugador
@@ -44,9 +42,10 @@ import net.tierrasfantasticas.tfclient.shop.TFShop;
  * /tf web tienda ...                             la tienda de monedas de la web ({@link TFCoinShop})
  * /tf web rango | monedas | ruleta ...           los usa la web al entregar (staff; {@link TFBridgeCommands},
  *                                                {@link TFEconomyCommands}, {@link TFRoulette})
- * /tf jobs                                       los oficios ({@link TFJobsCommands})
- * /tf shop                                       la tienda del servidor ({@link TFShop})
- * /tf claims ... | /tf web claims ...            las protecciones de zona (TF Claims)
+ * /tf web claims ...                             las protecciones de zona (TF Claims: panel, bypass, list, stats...)
+ * /tf web kits | viajes | comunidad | vfx ...    herramientas del staff de cada sistema
+ * /tf reload                                     vuelve a leer TODAS las configs de config/tfclient/ y refresca los pads
+ *                                                abiertos ({@link net.tierrasfantasticas.tfclient.pad.server.TFReload})
  * </pre>
  * /tf web pide ser operador (nivel 2). Funciona también en servidores Mohist.
  */
@@ -99,8 +98,7 @@ public final class TFCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("tf")
-                .then(TFJobsCommands.command())
-                .then(TFShop.command())
+                .then(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload))
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(TFCoinShop.command())
@@ -136,6 +134,15 @@ public final class TFCommands {
                                                                 .then(Commands.argument("item", StringArgumentType.word())
                                                                         .suggests(ITEMS)
                                                                         .executes(ctx -> revoke(ctx, StringArgumentType.getString(ctx, "item")))))))))));
+    }
+
+    /** /tf reload: todas las configs a la vez (lo mismo que RECARGAR CONFIGS en el pad de administrador). */
+    private static int reload(CommandContext<CommandSourceStack> ctx) {
+        net.tierrasfantasticas.tfclient.pad.server.TFReload.Result r = net.tierrasfantasticas.tfclient.pad.server.TFReload.all();
+        ctx.getSource().sendSuccess(() -> Component.literal("Configs recargadas: " + String.join(", ", r.done()) + ".")
+                .withStyle(ChatFormatting.GREEN), true);
+        for (String w : r.problems()) ctx.getSource().sendFailure(Component.literal(w));
+        return r.done().size();
     }
 
     private static int list(CommandContext<CommandSourceStack> ctx) {
