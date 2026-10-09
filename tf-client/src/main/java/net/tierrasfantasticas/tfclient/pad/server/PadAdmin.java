@@ -343,7 +343,7 @@ public final class PadAdmin {
                 String value = f.key.equals("nombre") ? TFJson.str(o, "nombre", "") : String.valueOf(TFJson.num(o, f.key, f.key.equals("cantidad") ? 1 : 0));
                 if (!f.key.equals("nombre") && (f.key.equals("comprar") || f.key.equals("vender"))) {
                     long v = TFJson.num(o, f.key, 0);
-                    value = v > 0 ? TFEconomy.format(v) : "No";
+                    value = v > 0 ? PadView.moneyExact(v) : "No";
                 }
                 b.row(new PadView.Row(f.key.equals("vender") ? new ItemStack(Items.HOPPER) : f.key.equals("comprar") ? new ItemStack(Items.GOLD_NUGGET) : s.copy(),
                         f.label, TEXT, List.of(f.help), -1, value.isEmpty() ? "—" : value, editBtn(f.key), null).selected(edit.equals(f.key)));
@@ -544,7 +544,7 @@ public final class PadAdmin {
                         String.valueOf(k.cooldownSeconds() / 3600), editBtn("horas"), null).selected(edit.equals("horas")));
             }
             b.row(new PadView.Row(new ItemStack(Items.GOLD_NUGGET), "Monedas", TEXT, List.of("Además de los objetos."), -1,
-                    k.coins() > 0 ? TFEconomy.format(k.coins()) : "—", editBtn("monedas"), null).selected(edit.equals("monedas")));
+                    k.coins() > 0 ? PadView.moneyExact(k.coins()) : "—", editBtn("monedas"), null).selected(edit.equals("monedas")));
             b.row(new PadView.Row(new ItemStack(k.iconItem()), "Icono", TEXT, List.of("El objeto que sale en su tarjeta."), -1, "",
                     PadView.Btn.of("MI MANO", "icono:" + k.id(), PadView.GRAY), null));
             boolean sureEmpty = PadServer.confirming(player, "a_kits.vaciar:" + k.id());
@@ -753,7 +753,7 @@ public final class PadAdmin {
                 long days = Math.max(0, (l.expiresAt() - System.currentTimeMillis()) / 86_400_000L);
                 boolean sure = PadServer.confirming(player, "a_gts.retirar:" + l.id());
                 b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of("De " + l.sellerName() + " · quedan " + days + " días"), -1,
-                        TFEconomy.format(l.price()), PadView.Btn.of(sure ? "¿SEGURO?" : "RETIRAR", "retirar:" + l.id(), PadView.RED), null));
+                        PadView.moneyExact(l.price()), PadView.Btn.of(sure ? "¿SEGURO?" : "RETIRAR", "retirar:" + l.id(), PadView.RED), null));
             }
             b.empty("No hay nada a la venta.");
             return b.build();

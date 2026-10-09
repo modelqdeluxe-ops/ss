@@ -173,7 +173,7 @@ public final class PadMarket {
             }
             String who = own ? "Tuyo" : "Lo vende " + l.sellerName();
             b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of(who + " · " + left(l) + "."), -1,
-                    PadShop.money(l.price()), btn, null).clickable("tab:l:" + l.id()).selected(own));
+                    PadView.money(l.price()), btn, null).clickable("tab:l:" + l.id()).selected(own));
             n++;
         }
         if (q != null) {
@@ -194,7 +194,7 @@ public final class PadMarket {
         lines.add((own ? "Lo vendes tú" : "Lo vende " + l.sellerName()) + " · " + left(l) + (count > 1 ? " · " + count + " uds." : "."));
         if (!own && balance >= 0) lines.add(balance >= l.price() ? "Tienes " + TFEconomy.format(balance) + "."
                 : "Te faltan " + TFEconomy.format(l.price() - balance) + ".");
-        b.hero(new PadView.Row(l.item(), TFMarket.describe(l.item()), own ? 0x40C850 : 0xF6B628, lines, -1, TFEconomy.format(l.price()), null, null));
+        b.hero(new PadView.Row(l.item(), TFMarket.describe(l.item()), own ? 0x40C850 : 0xF6B628, lines, -1, PadView.moneyExact(l.price()), null, null));
         // lo que dice el objeto (encantamientos, descripción…), como en su tooltip
         List<String> tip = new ArrayList<>();
         var lines2 = l.item().getTooltipLines(player, net.minecraft.world.item.TooltipFlag.NORMAL);
@@ -251,7 +251,7 @@ public final class PadMarket {
         List<Listing> list = TFMarket.listingsOf(player.getUUID());
         for (Listing l : list) {
             boolean sure = PadServer.confirming(player, "gts.retirar:" + l.id());
-            b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of(left(l) + "."), -1, TFEconomy.format(l.price()),
+            b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of(left(l) + "."), -1, PadView.money(l.price()),
                     PadView.Btn.of(sure ? "¿SEGURO?" : "RETIRAR", "retirar:" + l.id(), PadView.RED), null).clickable("tab:l:" + l.id()));
         }
         if (!list.isEmpty()) b.header(list.size() + " de " + TFMarket.maxListings() + " publicaciones.");

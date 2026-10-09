@@ -171,6 +171,59 @@ def mini_coin():
     return im
 
 
+def pattern():
+    """Textura de las ventanas (1.3.28): rombos de cristal tallado muy suaves (se repite en mosaico de 16x16)."""
+    im = img(16, 16)
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 16 == 0 or (x - y) % 16 == 0:
+                put(im, x, y, (52, 110, 190, 13))
+    for x, y in ((0, 0), (8, 8)):
+        put(im, x, y, (52, 110, 190, 30))
+    for x, y in ((8, 0), (0, 8)):
+        put(im, x, y, (255, 255, 255, 120))
+    return im
+
+
+def coin_small():
+    """Moneda de 8x8 para las etiquetas de precio (1.3.28)."""
+    rows = ["..####..",
+            ".#hhgg#.",
+            "#hhggggd",
+            "#hgg+ggd",
+            "#gg+++gd",
+            "#ggg+ggd",
+            ".#ggggd.",
+            "..dddd.."]
+    pal = {'#': (138, 86, 0, 255), 'h': (255, 240, 170, 255), 'g': (246, 182, 40, 255), 'd': (192, 120, 24, 255),
+           '+': (255, 224, 120, 255)}
+    return small(rows, pal)
+
+
+def glow():
+    """Luz suave detrás de los objetos en las vitrinas y cabeceras (1.3.28): blanco que se apaga hacia fuera."""
+    im = img(48, 48)
+    for y in range(48):
+        for x in range(48):
+            d = (((x - 23.5) / 24) ** 2 + ((y - 23.5) / 24) ** 2) ** 0.5
+            if d < 1:
+                a = int(200 * (1 - d) ** 1.6)
+                if a > 0:
+                    put(im, x, y, (255, 255, 255, a))
+    return im
+
+
+def floor_shadow():
+    """Sombra ovalada bajo los objetos de las vitrinas (1.3.28)."""
+    im = img(32, 6)
+    for y in range(6):
+        for x in range(32):
+            d = (((x - 15.5) / 16) ** 2 + ((y - 2.5) / 3) ** 2) ** 0.5
+            if d < 1:
+                put(im, x, y, (24, 38, 92, int(70 * (1 - d))))
+    return im
+
+
 def outline(im):
     solid = {(x, y) for y in range(im.height) for x in range(im.width) if im.getpixel((x, y))[3]}
     for y in range(im.height):
@@ -252,7 +305,9 @@ def build():
         shutil.rmtree(OUT_DIR)
     os.makedirs(OUT_DIR)
     files = {'tile.png': tile(), 'tile_h.png': tile(True), 'coin.png': mini_coin(), 'sun.png': sun(),
-             'moon.png': moon(), 'gear.png': gear(), 'heart.png': heart(True), 'heart_off.png': heart(False)}
+             'moon.png': moon(), 'gear.png': gear(), 'heart.png': heart(True), 'heart_off.png': heart(False),
+             'pattern.png': pattern(), 'glow.png': glow(), 'floor.png': floor_shadow(),
+             'coin_s.png': coin_small()}
     for key, _ in APPS:
         files[f'icon_{key}.png'] = DRAW[key]().image()
     files['icon_admin.png'] = iconos2.admin().image()

@@ -175,7 +175,7 @@ public final class PadMissions {
         List<String> lines = new ArrayList<>();
         lines.add(d.desc + "  ·  " + Math.min(st[0], d.amount) + "/" + d.amount);
         return new PadView.Row(new ItemStack(d.item()), d.name, claimed ? 0x7E8CA8 : 0x18265C, lines,
-                Math.min(1F, st[0] / (float) d.amount), "+" + TFEconomy.number(d.coins), btn, null);
+                Math.min(1F, st[0] / (float) d.amount), "+" + PadView.money(d.coins), btn, null);
     }
 
     private static void claimAll(ServerPlayer player, String kind, List<Def> defs) {

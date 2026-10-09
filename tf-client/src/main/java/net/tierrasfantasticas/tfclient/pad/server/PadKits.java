@@ -132,7 +132,8 @@ public final class PadKits {
                 long left = left(player, k);
                 if (left == 0) ready++;
                 String status = left == 0 ? "Listo" : left < 0 ? "Reclamado" : "en " + time(left);
-                b.card(new ItemStack(k.iconItem()), k.name, left == 0 ? 0x40C850 : left < 0 ? 0xAABAD2 : 0xF6B628, status, "tab:ver:" + k.id, left == 0);
+                b.card(new ItemStack(k.iconItem()), k.name, left == 0 ? 0x40C850 : left < 0 ? 0xAABAD2 : 0xF6B628, status,
+                        left == 0 ? PadView.TONE_GREEN : left < 0 ? PadView.TONE_GRAY : 0, -1, "", "tab:ver:" + k.id, left == 0);
             }
             if (!KITS.isEmpty()) b.header(ready == 0 ? "Ninguno listo."
                     : ready + (ready == 1 ? " kit listo" : " kits listos") + " para reclamar. Pulsa uno para verlo.");

@@ -63,6 +63,11 @@ def lighten(c, n):
     return tuple(min(255, v + n) for v in c)
 
 
+def tint(c, k):
+    """PadUi.tint: el color c mezclado con blanco (k=1 el color tal cual, k=0 blanco)."""
+    return tuple(int(round(255 + (v - 255) * k)) for v in c[:3])
+
+
 class Sim:
     """El cristal del pad, dibujado en píxeles reales como en el juego (TFPadScreen.init): ps = píxeles reales por
     píxel del marco, cs = píxeles reales por unidad de contenido, big = píxeles reales por píxel de textura en la escala
@@ -80,7 +85,7 @@ class Sim:
         self.UW, self.UH = GW * ps // self.cs, (GH + self.extra * 2) * ps // self.cs
         self.Y = self.bar + 4
         self.X = self.logo_right(self.Y) + 4
-        self.W = self.UW - self.X - 4
+        self.W = self.UW - self.X * 2
         self.H = self.UH - self.Y - 4
         self.clip = None
         self.o, self.f = (0, 0), self.cs
@@ -200,55 +205,76 @@ class Sim:
         self.fill(cx - 1, cy, cx + 2, cy + 1, GOLD)
         self.fill(cx, cy - 1, cx + 1, cy + 1, GOLD_HI)
 
+    def texture(self, x, y, w, h):
+        """PadUi.texture: el dibujo de rombos (pattern.png, 16x16) en mosaico."""
+        im = self.img('pattern')
+        for ty in range(y, y + h, 16):
+            for tx in range(x, x + w, 16):
+                self.paste(im.crop((0, 0, min(16, x + w - tx), min(16, y + h - ty))), tx, ty)
+
+    def stretch(self, name, x, y, w, h):
+        """Una textura estirada a w x h unidades (la luz y la sombra de las vitrinas)."""
+        im = self.img(name)
+        r = self._rect(x, y, x + w, y + h)
+        self._paste_px(im.resize((max(1, r[2] - r[0]), max(1, r[3] - r[1])), Image.BILINEAR), r[0], r[1])
+
     def panel(self, x, y, w, h):
-        """PadUi.panel (1.3.26): ventana azul noche con borde de oro y tachuelas."""
-        self.fill(x + 2, y + h, x + w - 2, y + h + 1, rgb(0x2882D2))
+        """PadUi.panel (1.3.28): la ventana de la app. Borde azul noche, blanco con bisel, textura de cristal tallado y
+        esquinas de oro."""
+        self.fill(x + 2, y + h, x + w - 2, y + h + 1, (40, 110, 200, 90))
         self.box(x, y, w, h, INK)
-        self.box(x + 1, y + 1, w - 2, h - 2, GOLD_LO)
-        self.vgrad(x + 2, y + 2, w - 4, h - 4, PANEL_TOP, PANEL_BOT)
-        self.fill(x + 3, y + 2, x + w - 3, y + 3, PANEL_HI)
-        if w >= 12 and h >= 12:
-            for cx, cy in ((x + 2, y + 2), (x + w - 3, y + 2), (x + 2, y + h - 3), (x + w - 3, y + h - 3)):
-                self.stud(cx, cy)
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, PANEL_TOP, PANEL_BOT)
+        self.texture(x + 1, y + 1, w - 2, h - 2)
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
+        self.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, rgb(0xC6DAEE))
+        self.corners(x, y, w, h)
+
+    def corners(self, x, y, w, h):
+        for cx, cy, dx, dy in ((x + 2, y + 2, 1, 1), (x + w - 3, y + 2, -1, 1), (x + 2, y + h - 3, 1, -1), (x + w - 3, y + h - 3, -1, -1)):
+            for i in range(4):
+                self.put(cx + dx * i, cy, GOLD)
+                self.put(cx, cy + dy * i, GOLD)
+            self.put(cx, cy, GOLD_HI)
 
     def ucard(self, x, y, w, h, state=0):
-        """PadUi.card: 0 normal, 1 ratón encima, 2 marcada."""
-        edge = rgb(0xE0A030) if state == 2 else rgb(0x3496FA) if state == 1 else rgb(0xB8D4EE)
-        top = rgb(0xF2FAFF) if state == 1 else rgb(0xFFF7DA) if state == 2 else (255, 255, 255)
-        bot = rgb(0xD2EAFF) if state == 1 else rgb(0xFFE9A8) if state == 2 else rgb(0xEAF4FD)
-        self.fill(x + 2, y + h, x + w - 2, y + h + 1, (52, 150, 250, 85) if state == 1 else (32, 64, 112, 51))
+        """PadUi.card (1.3.28): 0 normal, 1 ratón encima, 2 marcada."""
+        edge = rgb(0xE0A030) if state == 2 else rgb(0x3496FA) if state == 1 else rgb(0xBBD3EC)
+        top = rgb(0xFFFBEA) if state == 2 else rgb(0xF2F9FF) if state == 1 else (255, 255, 255)
+        bot = rgb(0xFFEFC0) if state == 2 else rgb(0xDCEEFF) if state == 1 else rgb(0xF1F7FD)
+        self.fill(x + 1, y + h, x + w - 1, y + h + 1, (52, 150, 250, 90) if state == 1 else (40, 90, 160, 45))
         self.box(x, y, w, h, edge)
         self.vgrad(x + 1, y + 1, w - 2, h - 2, top, bot)
         self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
-        if state == 2:
-            self.fill(x + 1, y + 2, x + 3, y + h - 2, GOLD)
-        elif state == 1:
-            self.fill(x + 1, y + 2, x + 3, y + h - 2, rgb(0x3496FA))
 
-    def slot(self, x, y, w, h):
-        self.box(x, y, w, h, SLOT_EDGE)
-        self.fill(x + 1, y + 1, x + w - 1, y + h - 1, SLOT)
-        self.fill(x + 1, y + 1, x + w - 1, y + 2, SLOT_SHADE)
-        self.fill(x + 1, y + 2, x + 2, y + h - 1, SLOT_SHADE)
+    def slot(self, x, y, w, h, color=None):
+        """PadUi.slot (1.3.28): medallón para un objeto, del color de su fila (o azul hielo)."""
+        edge = tint(color, 0.45) if color else SLOT_EDGE
+        top = tint(color, 0.08) if color else rgb(0xF0F6FD)
+        bot = tint(color, 0.20) if color else SLOT
+        self.box(x, y, w, h, edge)
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, top, bot)
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
 
     def tab(self, x, y, w, label, state):
-        self.box(x, y, w, 14, INK)
+        """PadUi.tab (1.3.28): pestaña de carpeta de 15 de alto; la elegida baja y se une a la ventana (su borde de
+        arriba está en y + 14), con su filo de oro."""
         if state == 2:
-            self.vgrad(x + 1, y + 1, w - 2, 12, rgb(0xFFDC64), rgb(0xE89A1C))
+            self.box(x, y, w, 15, INK)
+            self.vgrad(x + 1, y + 1, w - 2, 15, (255, 255, 255), PANEL_TOP)
+            self.fill(x + 2, y + 1, x + w - 2, y + 3, GOLD)
             self.fill(x + 2, y + 1, x + w - 2, y + 2, GOLD_HI)
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 4, INK, False)
         else:
-            self.vgrad(x + 1, y + 1, w - 2, 12, rgb(0xF2FAFF) if state == 1 else (255, 255, 255), rgb(0xB4DCFF) if state == 1 else rgb(0xD6E8F8))
-            self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
-        if state == 2:
-            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 2, (255, 255, 255))
-        else:
-            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 2, NAVY, False)
+            top, bot = (rgb(0xF2F9FF), rgb(0xCFE3F6)) if state == 1 else (rgb(0xE2EFFB), rgb(0xC0D7EE))
+            self.box(x, y + 2, w, 13, rgb(0x6A88B8))
+            self.vgrad(x + 1, y + 3, w - 2, 11, top, bot)
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 4, rgb(0x34507E), False)
 
     def divider(self, x, y, w, title, color):
-        self.mtext(title, x, y + 1, color)
-        lx = x + self.mwidth(title) + 5
+        self.btext(title, x, y + 1, color)
+        lx = x + self.bwidth(title) + 5
         if lx < x + w - 8:
-            self.fill(lx, y + 5, x + w - 6, y + 6, GOLD_LO)
+            self.fill(lx, y + 5, x + w - 6, y + 6, tint(GOLD_LO, 0.6))
             self.fill(lx, y + 6, x + w - 6, y + 7, (255, 255, 255))
         cx = x + w - 4
         self.fill(cx - 2, y + 5, cx + 3, y + 6, GOLD_LO)
@@ -259,10 +285,116 @@ class Sim:
     def scrollbar(self, x, y, h, visible, content, scroll=0):
         if content <= visible or h <= 4:
             return
-        self.fill(x, y, x + 3, y + h, rgb(0xC8DCF0))
-        th = max(8, h * visible // content)
+        self.box(x, y, 4, h, rgb(0xD2E2F2))
+        th = max(10, h * visible // content)
         ty = y + (h - th) * scroll // max(1, content - visible)
-        self.vgrad(x, ty, 3, th, GOLD_HI, GOLD_LO)
+        self.box(x, ty, 4, th, GOLD_LO)
+        self.vgrad(x + 1, ty + 1, 2, th - 2, GOLD_HI, GOLD)
+
+    def infobar(self, x, y, w, header, room):
+        """La barra de información arriba de la ventana: un rombo de oro y el texto (lo que antes iba sobre el
+        cristal). Devuelve su alto."""
+        lines = []
+        for line in header:
+            for l in self.split(line, w - 18):
+                lines.append(l)
+        if len(lines) > room:
+            lines = lines[:room]
+            lines[-1] = self.fitend(lines[-1] + '...', w - 18)
+        h = len(lines) * 10 + 4
+        self.vgrad(x, y, w, h, rgb(0xF0F7FE), rgb(0xE0EDFA))
+        self.fill(x, y + h, x + w, y + h + 1, rgb(0xC9DCF0))
+        self.fill(x, y + h + 1, x + w, y + h + 2, (255, 255, 255))
+        self.diamond(x + 7, y + 6)
+        for i, l in enumerate(lines):
+            self.mtext(l, x + 13, y + 3 + i * 10, TEXT)
+        return h + 2
+
+    def split(self, s, w):
+        words, line, out = s.split(' '), '', []
+        for wd in words:
+            t = (line + ' ' + wd).strip()
+            if self.mwidth(t) > w and line:
+                out.append(line)
+                line = wd
+            else:
+                line = t
+        if line:
+            out.append(line)
+        return out
+
+    def dock(self, x, y, w, h):
+        """La barra de acciones abajo de la ventana."""
+        self.fill(x, y - 2, x + w, y - 1, rgb(0xC6DAEE))
+        self.fill(x, y - 1, x + w, y, (255, 255, 255))
+        self.vgrad(x, y, w, h, rgb(0xEAF3FC), rgb(0xD8E7F6))
+
+    @staticmethod
+    def tone(text, on=True, tone=0):
+        """El color de una etiqueta (PadUi.tone): el que pida el servidor (1 oro, 2 verde, 3 gris, 4 azul) o, si no,
+        gris si no se puede pulsar, oro si es un precio («¤…»), verde si es lo que ganas («+…»), azul si es un estado."""
+        if tone:
+            return {1: 'gold', 2: 'green', 3: 'gray', 4: 'blue'}[tone]
+        if not on:
+            return 'gray'
+        return 'gold' if text.startswith('¤') else 'green' if text.startswith('+') else 'blue'
+
+    @staticmethod
+    def money_parts(text):
+        plus = text.startswith('+¤')
+        coin = plus or text.startswith('¤')
+        return plus, coin, text[2:] if plus else text[1:] if coin else text
+
+    def chip_w(self, text):
+        plus, coin, rest = self.money_parts(text)
+        return (self.mwidth('+') if plus else 0) + (9 if coin else 0) + self.mwidth(rest) + 8
+
+    def chip(self, x, y, text, style, h=12):
+        """PadUi.chip: etiqueta de estado o de precio. style: gold, green, gray, blue. «¤1.250» lleva la moneda delante
+        («+¤48»: más la moneda)."""
+        pal = {'gold': (0xD69A1E, 0xFFF7D8, 0xFFE2A0, 0x7A4C00), 'green': (0x3DAA5C, 0xEAFBEF, 0xC2F0CF, 0x136B30),
+               'gray': (0xB4C6DC, 0xF7FAFD, 0xE4ECF5, 0x5A7398), 'blue': (0x6FA8E8, 0xF0F7FF, 0xD4E7FC, 0x1E4E9C)}[style]
+        w = self.chip_w(text)
+        self.box(x, y, w, h, rgb(pal[0]))
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, rgb(pal[1]), rgb(pal[2]))
+        plus, coin, rest = self.money_parts(text)
+        tx, ty = x + 4, y + (h - 8) // 2 + 1
+        if plus:
+            self.mtext('+', tx, ty, rgb(pal[3]))
+            tx += self.mwidth('+')
+        if coin:
+            self.blit('coin_s', tx, y + (h - 8) // 2)
+            tx += 9
+        self.mtext(rest, tx, ty, rgb(pal[3]))
+        return w
+
+    def btext(self, s, x, y, color):
+        """Texto en negrita (como el de Minecraft: dos veces, a 1 de distancia)."""
+        self.mtext(s, x, y, color)
+        self.mtext(s, x + 1, y, color)
+
+    def bwidth(self, s):
+        return self.mwidth(s) + sum(1 for ch in s if ch != ' ')
+
+    def title(self, s, x, y, w, color):
+        """PadUi.title: en negrita; si así no cabe pero normal sí, normal; si no, recortado en negrita."""
+        if self.bwidth(s) <= w:
+            self.btext(s, x, y, color)
+        elif self.mwidth(s) <= w:
+            self.mtext(s, x, y, color)
+        else:
+            self.btext(self.bfit(s, w), x, y, color)
+
+    def title_w(self, s, w):
+        b = self.bwidth(s)
+        return b if b <= w else self.mwidth(s) if self.mwidth(s) <= w else w
+
+    def bfit(self, s, w):
+        if self.bwidth(s) <= w:
+            return s
+        while s and self.bwidth(s + '...') > w:
+            s = s[:-1]
+        return s + '...'
 
     # pixel font
     def pwidth(self, s):
@@ -385,13 +517,15 @@ class Sim:
             self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 2, col)
 
     def progress(self, x, y, w, f):
-        self.box(x, y, w, 6, INK)
-        self.fill(x + 1, y + 1, x + w - 1, y + 5, rgb(0xC8DCF0))
+        """PadUi.progress (1.3.28): barra redondeada de 6 con su hueco hundido."""
+        self.box(x, y, w, 6, rgb(0x9DB8D8))
+        self.fill(x + 1, y + 1, x + w - 1, y + 5, rgb(0xDCE8F4))
+        self.fill(x + 1, y + 1, x + w - 1, y + 2, rgb(0xC6D8EC))
         fw = round((w - 2) * min(1, f))
         if fw > 0:
             full = f >= 1
-            self.vgrad(x + 1, y + 1, fw, 4, rgb(0xFFE070 if full else 0x7CF09A), rgb(0xE08E14 if full else 0x1E9E46))
-            self.fill(x + 1, y + 1, x + 1 + fw, y + 2, rgb(0xFFF6C0 if full else 0xD0FFDA))
+            self.vgrad(x + 1, y + 1, fw, 4, rgb(0xFFE070 if full else 0x8CF0A8), rgb(0xE08E14 if full else 0x1E9E46))
+            self.fill(x + 1, y + 1, x + 1 + fw, y + 2, rgb(0xFFF6C0 if full else 0xD8FFE2))
 
     def item(self, name, x, y, scale=1):
         if name.startswith('tfb:'):
@@ -416,10 +550,12 @@ class Sim:
         self.paste(im, x, y)
 
     def count(self, n, x, y, k=1):
-        """PadUi.item: el número de cantidad a tamaño normal en la esquina de abajo a la derecha."""
+        """PadUi.item (1.3.28): la cantidad en blanco sobre una etiqueta azul noche, sin sombra."""
         t = str(n)
-        self.mtext(t, x + 16 * k + 2 - self.mwidth(t), y + 16 * k - 7, (63, 63, 63))
-        self.mtext(t, x + 16 * k + 1 - self.mwidth(t), y + 16 * k - 8, TEXT)
+        w = self.mwidth(t) + 2
+        rx, ry = x + 16 * k + 1 - w, y + 16 * k - 8
+        self.box(rx, ry, w + 1, 9, rgb(0x22346E))
+        self.mtext(t, rx + 1, ry + 1, (255, 255, 255))
 
     # -------------------------------------------------------------------------------------------------------------
     def status(self, title, back=True, title_color=(255, 255, 255), music=False):
@@ -467,15 +603,16 @@ class Sim:
         X, Y, W, H = self.X, self.Y, self.W, self.H
         LABEL_H, MIN_GAP = 11, 4
         t = self.bigu(40)
-        cols = max(3, min(7, W // (t + self.bigu(8))))
-        cw = W // cols
+        gw = self.UW - 8
+        cols = max(3, min(7, gw // (t + self.bigu(8))))
+        cw = min(gw // cols, t + self.bigu(10))
         rows = (len(apps) + cols - 1) // cols
         base = t + LABEL_H + MIN_GAP
         ch = base if rows * base >= H else base + (H - rows * base) // (rows + 1)
         top = Y + (H - rows * ch) // 2 + (ch - t - LABEL_H) // 2 if rows * ch <= H else Y + 2
         x0 = (self.UW - cols * cw) // 2
         x0 = max(x0, self.logo_right(top) + 2 - (cw - t) // 2)
-        x0 = min(x0, X + W - cols * cw)
+        x0 = min(x0, self.UW - 4 - cols * cw)
         self.scissor(2, Y, self.UW - 4, H)
         for i, (icon, name) in enumerate(apps):
             tx, ty = x0 + (i % cols) * cw + (cw - t) // 2, top + (i // cols) * ch
@@ -532,52 +669,52 @@ class Sim:
             self.mtext(l, x, y + i * 10, color)
         return len(lines)
 
-    CELL_W, CELL_H, CARD_MIN, CARD_MAX, CARD_H, ICON_BOX, ROW_GAP, HERO_MIN, HERO_SLOT = 30, 32, 84, 116, 70, 26, 3, 50, 40
+    CELL_W, CELL_H, CARD_MIN, CARD_MAX, CARD_H, CARD_BAR, ICON_BOX, ROW_GAP, HERO_MIN, HERO_SLOT, SHOW, DOCK = (
+        30, 32, 76, 116, 76, 8, 26, 3, 50, 40, 40, 20)
 
     def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None, hover=None, hero=None):
-        """Igual que PadViewPage.render (1.3.26): pestañas, cabecera en el cristal, ventana oscura con la rejilla de
-        casillas o tarjetas y las filas, barra de desplazamiento de oro y abajo los botones o el campo."""
+        """PadViewPage.render (1.3.28): una sola ventana. Pestañas de carpeta encima (la elegida se une a ella); dentro,
+        la barra de información, la cabecera grande, la lista (casillas, tarjetas, filas) y abajo la barra de acciones."""
         X, Y, W, H = self.X, self.Y, self.W, self.H
         cards_mode = cards is not None
         cells = cards if cards_mode else (cells or [])
-        y = Y
+        top = Y + (14 if tabs else 0)
+        self.panel(X, top, W, Y + H - top)
         if tabs:
-            gap, pad = 3, 14
+            gap, pad = 2, 14
             total = sum(self.pwidth(l) + pad for _, l in tabs) + gap * (len(tabs) - 1)
-            if total > W:
-                gap, pad = 2, 8
+            room = W - 8
+            if total > room:
+                pad = 8
                 total = sum(self.pwidth(l) + pad for _, l in tabs) + gap * (len(tabs) - 1)
-            maxl = max(12, (W - gap * (len(tabs) - 1)) // len(tabs) - pad) if total > W else 10 ** 6
-            x = X
+            maxl = max(12, (room - gap * (len(tabs) - 1)) // len(tabs) - pad) if total > room else 10 ** 6
+            x, chosen = X + 4, None
             for key, label in tabs:
                 label = self.pfit(label, maxl)
                 w = self.pwidth(label) + pad
-                self.tab(x, y, w, label, 2 if key == sel else 0)
+                if key == sel:
+                    chosen = (x, w, label)
+                else:
+                    self.tab(x, Y, w, label, 0)
                 x += w + gap
-            y += 17
-        room = 1 if tabs else 2
-        for k, line in enumerate(header):
-            if room <= 0:
-                break
-            if k == 0:
-                self.diamond(X + 3, y + 4)
-            n = self.wrap_ellipsis(line, X + 10, y + 1, W - 12, NAVY, room)
-            room -= n
-            y += 10 * n
+            if chosen:
+                self.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+        y = top + 1
         if header:
-            y += 2
+            y += self.infobar(X + 1, y, W - 2, header, 1 if tabs else 2)
+        y += 3
         bottom = bool(footer) or input_ is not None
-        bot = Y + H - (20 if bottom else 0)
+        dockh = self.DOCK if bottom else 0
+        dock_y = Y + H - 1 - dockh
+        bot = dock_y - (3 if bottom else 2)
+        alone = hero and not (cells or rows or empty)
         if hero:
-            hh = self.hero_h(hero, W)
-            alone = not (cells or rows or empty)
-            self.hero(hero, X, y + max(0, (bot - y - hh) // 2) if alone else y, W, hh)
+            hh = self.hero_h(hero, W - 10)
+            hy = y + max(0, (bot - y - hh) // 2) if alone else y
+            self.hero(hero, X + 5, hy, W - 10, hh)
             y += hh + 4
-        top = y
-        visible = bot - top - 8
-        content = 0
-        if not hero or cells or rows or empty:
-            self.panel(X, top, W, bot - top)
+        visible = bot - y
+        if not alone:
             ix, iw = X + 5, W - 15
             n = len(cells)
             if cards_mode:
@@ -588,50 +725,53 @@ class Sim:
                 else:
                     cw = iw // cols
                 bar = any(len(c) > 6 and c[6].get('prog', -1) >= 0 for c in cells)
-                ch = self.CARD_H + (12 if bar else 0)
-                gx = X + 5 + (iw - cols * cw) // 2
+                ch = self.CARD_H + (self.CARD_BAR if bar else 0)
+                gx = ix + (iw - cols * cw) // 2
             else:
                 cw, ch = self.CELL_W, self.CELL_H
                 cols = max(1, iw // cw)
-                gx = X + 5 + (iw - max(1, min(cols, n)) * cw) // 2
+                gx = ix + (iw - max(1, min(cols, n)) * cw) // 2
             grows = (n + cols - 1) // cols
             gridh = grows * ch + (2 if grows else 0)
             content = gridh + sum(self.row_h(r, iw) for r in rows)
-            self.scissor(X + 2, top + 4, W - 4, visible)
-            ry = top + 4
+            self.scissor(X + 1, y, W - 2, visible)
+            ry = y + 1
             if cards_mode and not rows and content < visible:
                 ry += (visible - content) // 2
-            if grows:
-                for i, c in enumerate(cells):
-                    cx, cy = gx + (i % cols) * cw, ry + 1 + (i // cols) * ch
-                    if cards_mode:
-                        self.card(c, cx, cy, cw, ch, hover == i)
-                    else:
-                        self.cell(c, cx, cy)
-                ry += gridh
+            for i, c in enumerate(cells):
+                cx, cy = gx + (i % cols) * cw, ry + 1 + (i // cols) * ch
+                if cards_mode:
+                    self.card(c, cx, cy, cw, ch, hover == i)
+                else:
+                    self.cell(c, cx, cy)
+            ry += gridh
             for r in rows:
                 h = self.row_h(r, iw)
                 self.row(r, ix, ry, iw, h)
                 ry += h
             self.no_scissor()
             if not rows and not cells:
-                nl = self.nlines(empty, W - 30)
-                self.wrap(empty, X + 15, (top + bot) // 2 - nl * 5, W - 30, MUTED)
-        self.scrollbar(X + W - 6, top + 5, visible - 2, visible, content)
-        fy = Y + H - 17
-        footer = footer or []
-        total = sum(self.bw(l) + 4 for l, s in footer)
-        x = X + W - total + 4
-        for l, st in footer:
-            self.button(x, fy, self.bw(l), l, st)
-            x += self.bw(l) + 4
-        if input_:
-            hint, label, typed = input_
-            bw = self.bw(label)
-            right = X + W - total
-            fw = right - X - bw - 4
-            self.field(X, fy, fw, typed, hint)
-            self.button(right - bw, fy, bw, label, 3, bool(typed))
+                nl = self.nlines(empty, W - 40)
+                mid = (y + bot) // 2
+                for i, l in enumerate(self.split(empty, W - 40)):
+                    self.mtext(l, X + W // 2 - self.mwidth(l) // 2, mid - nl * 5 + i * 10, MUTED)
+            self.scrollbar(X + W - 8, y + 1, visible - 2, visible, content)
+        if bottom:
+            self.dock(X + 1, dock_y, W - 2, dockh)
+            fy = dock_y + (dockh - 16) // 2
+            footer = footer or []
+            total = sum(self.bw(l) + 4 for l, s_ in footer)
+            x = X + W - 5 - total + 4
+            for l, st in footer:
+                self.button(x, fy, self.bw(l), l, st)
+                x += self.bw(l) + 4
+            if input_:
+                hint, label, typed = input_
+                bw = self.bw(label)
+                right = X + W - 5 - total
+                fw = right - (X + 5) - bw - 4
+                self.field(X + 5, fy, fw, typed, hint)
+                self.button(right - bw, fy, bw, label, 3, bool(typed))
 
     def diamond(self, cx, cy):
         self.fill(cx - 2, cy, cx + 3, cy + 1, rgb(0xC27A10))
@@ -640,6 +780,7 @@ class Sim:
         self.fill(cx, cy - 1, cx + 1, cy, rgb(0xFFEC96))
 
     def cell(self, c, x, y):
+        """Casilla pequeña (1.3.28): medallón azul hielo con el objeto y su cantidad."""
         icon, label, color, sel = c[:4]
         n = c[4] if len(c) > 4 else 1
         cw, ch = self.CELL_W, self.CELL_H
@@ -651,88 +792,89 @@ class Sim:
                 self.count(n, x + (cw - 16) // 2, iy)
         if label:
             label = self.pfit(label, cw - 4)
-            self.ptext(label, x + cw // 2 - self.pwidth(label) // 2, y + 20, on_dark(color))
+            self.ptext(label, x + cw // 2 - self.pwidth(label) // 2, y + 20, on_dark(color), False)
 
     def pill(self, x, y, text, style, h):
-        """PadUi.pill: etiqueta de oro (texto azul), verde (texto blanco) o gris."""
-        w = self.mwidth(text) + 8
-        if style == 3:
-            edge, top, bot, col = rgb(0x147034), rgb(0x68E886), rgb(0x22A84C), (255, 255, 255)
-        elif style == 4:
-            edge, top, bot, col = SLOT_EDGE, rgb(0xF2F7FC), SLOT, MUTED
-        else:
-            edge, top, bot, col = GOLD_LO, GOLD_HI, GOLD, TEXT
-        self.box(x, y, w, h, edge)
-        self.vgrad(x + 1, y + 1, w - 2, h - 2, top, bot)
-        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255, 102))
-        ty = y + (h - 8) // 2
-        if style == 3:
-            self.mtext(text, x + 5, ty + 1, (40, 90, 50))
-        self.mtext(text, x + 4, ty, col)
-        return w
+        return self.chip(x, y, text, {3: 'green', 4: 'gray'}.get(style, 'gold'), h)
 
     def card(self, c, x, y, cw, ch, hover=False):
-        """PadViewPage.drawCard (1.3.27): la tarjeta llena su hueco; burbuja de aviso, barra de progreso y apagada si no
-        tiene acción. c = (icono, nombre, color, segunda línea, marcada, cantidad, {prog, badge, off})."""
+        """PadViewPage.drawCard (1.3.28): arriba la vitrina tintada del color de la tarjeta (con la textura, una luz
+        detrás del objeto al doble y su sombra en el suelo); abajo el nombre en negrita y una etiqueta (precio o estado:
+        oro; «+…» verde; gris si no se puede pulsar); la barra de progreso si tiene y la burbuja de aviso arriba.
+        c = (icono, nombre, color, segunda línea, marcada, cantidad, {prog, badge, off})."""
         icon, name, color, sub, sel = c[:5]
         n = c[5] if len(c) > 5 else 1
         ex = c[6] if len(c) > 6 else {}
         on = not ex.get('off')
+        col = on_dark(color)
         w, h = cw - 4, ch - 4
-        yy = y - 1 if hover else y
-        self.ucard(x + 2, yy, w, h, 2 if sel else 1 if hover else 0)
-        self.fill(x + 4, yy + 3, x + w, yy + 4, on_dark(color))
-        sx = x + 2 + (w - 38) // 2
-        self.slot(sx, yy + 6, 38, 38)
+        x0, yy = x + 2, (y - 1 if hover else y)
+        self.ucard(x0, yy, w, h, 2 if sel else 1 if hover else 0)
+        sh = self.SHOW
+        self.vgrad(x0 + 1, yy + 1, w - 2, sh, tint(col, 0.30), tint(col, 0.10))
+        self.texture(x0 + 1, yy + 1, w - 2, sh)
+        self.fill(x0 + 1, yy + 1 + sh, x0 + w - 1, yy + 2 + sh, tint(col, 0.55))
+        self.fill(x0 + 1, yy + 2 + sh, x0 + w - 1, yy + 3 + sh, (255, 255, 255))
+        cx = x0 + w // 2
+        self.stretch('glow', cx - 20, yy + 2, 40, sh - 2)
+        self.stretch('floor', cx - 13, yy + sh - 6, 26, 5)
         if icon:
-            self.item(icon, sx + 3, yy + 9, 2)
+            self.item(icon, cx - 16, yy + 4, 2)
             if n > 1:
-                self.count(n, sx + 3, yy + 9, 2)
-        if ex.get('badge'):
-            bw = self.mwidth(ex['badge']) + 8
-            self.pill(min(sx + 38 - bw // 2, x + 2 + w - bw - 2), yy + 3, ex['badge'], 3, 12)
-        name = self.fitend(name, w - 8)
-        self.mtext(name, x + 2 + (w - self.mwidth(name)) // 2, yy + 47, TEXT)
+                self.count(n, cx - 16, yy + 4, 2)
+        self.title(name, cx - self.title_w(name, w - 6) // 2, yy + sh + 6, w - 6, TEXT)
         if sub:
-            sub = self.fitend(sub, w - 8)
-            col = MUTED if not on and not sel else GREEN_TEXT if sub.startswith('+') else GOLD_TEXT
-            self.mtext(sub, x + 2 + (w - self.mwidth(sub)) // 2, yy + 56, col)
+            style = self.tone(sub, on or sel, ex.get('tone', 0))
+            if self.chip_w(sub) > w - 6:
+                sub = self.fitend(sub, w - 14)
+            self.chip(cx - self.chip_w(sub) // 2, yy + sh + 17, sub, style)
         if ex.get('prog', -1) >= 0:
             pct = f"{round(min(1, ex['prog']) * 100)}%"
             pw = self.mwidth(pct)
-            bx, bw = x + 8, w - 12 - pw - 4
-            self.progress(bx, yy + 68, bw, ex['prog'])
-            self.mtext(pct, bx + bw + 4, yy + 67, MUTED)
+            bw = w - 12 - pw - 4
+            self.progress(x0 + 6, yy + sh + 33, bw, ex['prog'])
+            self.mtext(pct, x0 + 6 + bw + 4, yy + sh + 32, MUTED)
+        if ex.get('badge'):
+            bw = self.chip_w(ex['badge'])
+            self.chip(x0 + w - bw - 3, yy + 4, ex['badge'], 'green', 11)
 
     def hero_right(self, r):
         badge, b1, b2 = r[5], r[6], r[7]
-        w = self.mwidth(badge) + 14 if badge else 0
+        w = self.chip_w(badge) + 6 if badge else 0
         return w + sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
 
     def hero_tw(self, r, w):
-        return w - (self.HERO_SLOT + 16) - self.hero_right(r) - 6
+        return w - (self.HERO_SLOT + 18) - self.hero_right(r) - 6
 
     def hero_h(self, r, w):
-        h = 8 + 10 + self.lines_h(r, self.hero_tw(r, w)) + (10 if r[4] >= 0 else 0) + 6
+        h = 8 + 11 + self.lines_h(r, self.hero_tw(r, w)) + (10 if r[4] >= 0 else 0) + 6
         return max(self.HERO_MIN, h)
 
     def hero(self, r, x, y, w, h):
-        """PadViewPage.drawHero (1.3.27): la cabecera grande de una ficha."""
+        """PadViewPage.drawHero (1.3.28): banner tintado del color de la ficha, con textura; el objeto al doble en su
+        medallón con luz; título en negrita, líneas, barra y la etiqueta grande del precio."""
         icon, title, color, lines, prog, badge, b1, b2 = r[:8]
-        self.ucard(x, y, w, h, 0)
-        self.fill(x + 1, y + 2, x + 3, y + h - 2, on_dark(color))
-        sy = y + (h - self.HERO_SLOT) // 2
-        self.slot(x + 7, sy, self.HERO_SLOT, self.HERO_SLOT)
+        col = on_dark(color)
+        self.fill(x + 1, y + h, x + w - 1, y + h + 1, (40, 90, 160, 60))
+        self.box(x, y, w, h, tint(col, 0.65))
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, tint(col, 0.24), tint(col, 0.07))
+        self.texture(x + 1, y + 1, w - 2, h - 2)
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
+        ms = self.HERO_SLOT
+        mx, my = x + 6, y + (h - ms) // 2
+        self.slot(mx, my, ms, ms, col)
+        self.stretch('glow', mx + 1, my + 1, ms - 2, ms - 2)
+        self.stretch('floor', mx + 8, my + ms - 7, ms - 16, 4)
         if icon:
-            self.item(icon, x + 7 + (self.HERO_SLOT - 32) // 2, sy + (self.HERO_SLOT - 32) // 2, 2)
-            n = r[8] if len(r) > 8 else 1
+            self.item(icon, mx + (ms - 32) // 2, my + (ms - 32) // 2 - 1, 2)
+            n = r[8] if len(r) > 8 and isinstance(r[8], int) else 1
             if n > 1:
-                self.count(n, x + 7 + (self.HERO_SLOT - 32) // 2, sy + (self.HERO_SLOT - 32) // 2, 2)
-        tx, tw = x + self.HERO_SLOT + 16, self.hero_tw(r, w)
-        th = 10 + self.lines_h(r, tw) + (10 if prog >= 0 else 0)
+                self.count(n, mx + (ms - 32) // 2, my + (ms - 32) // 2 - 1, 2)
+        tx, tw = x + ms + 14, self.hero_tw(r, w)
+        th = 11 + self.lines_h(r, tw) + (10 if prog >= 0 else 0)
         top = y + max(6, (h - th) // 2 + 1)
-        self.mtext(self.fitend(title, tw), tx, top, TEXT)
-        ly = top + 11
+        self.title(title, tx, top, tw, TEXT)
+        ly = top + 12
         for l in lines:
             ly += max(1, self.wrap_ellipsis(l, tx, ly, tw, MUTED, 2)) * 10
         if prog >= 0:
@@ -742,8 +884,8 @@ class Sim:
             self.mtext(pct, tx + bw + 4, ly, MUTED)
         bx = x + w - self.hero_right(r) - 2
         if badge:
-            self.pill(bx, y + (h - 14) // 2, badge, 3 if badge.startswith('+') else 1, 14)
-            bx += self.mwidth(badge) + 14
+            self.chip(bx, y + (h - 14) // 2, badge, self.tone(badge), 14)
+            bx += self.chip_w(badge) + 6
         by = y + (h - 16) // 2
         for b in (b1, b2):
             if b:
@@ -759,20 +901,24 @@ class Sim:
         if text_only and not lines and title:
             return 16
         if text_only:
-            n = sum(max(1, self.nlines(l, w - 12)) for l in lines)
-            return 8 + (11 if title else 0) + n * 10 + 3 + self.ROW_GAP
+            n = sum(max(1, self.nlines(l, w - 14)) for l in lines)
+            return 8 + (12 if title else 0) + n * 10 + 3 + self.ROW_GAP
         tw = self.text_w(r, w)
-        h = 4 + 10 + self.lines_h(r, tw) + (8 if prog >= 0 else 0) + 3
+        h = 4 + 11 + self.lines_h(r, tw) + (8 if prog >= 0 else 0) + 3
         return max(self.ICON_BOX + 10 if icon else 26, h + 2) + self.ROW_GAP
 
+    def right_w(self, r):
+        badge, b1, b2 = r[5], r[6], r[7]
+        return (self.chip_w(badge) + 6 if badge else 0) + sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
+
     def text_w(self, r, w):
-        icon, b1, b2 = r[0], r[6], r[7]
-        bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
-        return w - (self.ICON_BOX + 13 if icon else 12) - bw - 8
+        return w - (self.ICON_BOX + 15 if r[0] else 12) - self.right_w(r) - 6
 
     def row(self, r, x, y, w, h):
+        """PadViewPage.drawRow (1.3.28): tarjeta con el objeto en su medallón (del color de la fila), el título en
+        negrita, las líneas, la barra y a la derecha la etiqueta (precio, premio, estado) y los botones."""
         icon, title, color, lines, prog, badge, b1, b2 = r[:8]
-        sel = len(r) > 8 and r[8]
+        sel = len(r) > 8 and r[8] is True
         h -= self.ROW_GAP
         text_only = not icon and not b1 and not b2
         tcol = on_dark(color)
@@ -783,32 +929,33 @@ class Sim:
         if text_only:
             ty = y + 5
             if title:
-                self.mtext(title, x + 7, ty, tcol)
-                ty += 11
+                self.btext(title, x + 7, ty, tcol)
+                ty += 12
             for l in lines:
                 ty += max(1, self.wrap(l, x + 7, ty, w - 14, MUTED)) * 10
             return
-        tx = x + 7
+        tx = x + 8
         if icon:
             ib = self.ICON_BOX
             iy = y + (h - ib) // 2
-            self.slot(x + 5, iy, ib, ib)
+            plain = color in (0x18265C, 0x7E8CA8)
+            self.slot(x + 5, iy, ib, ib, None if plain else tcol)
             self.item(icon, x + 5 + (ib - 16) // 2, iy + (ib - 16) // 2)
-            tx = x + ib + 11
-        bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
+            tx = x + ib + 12
         tw = self.text_w(r, w)
-        bdw = self.mwidth(badge) + 6 if badge else 0
-        th = 10 + self.lines_h(r, tw) + (8 if prog >= 0 else 0)
+        th = 11 + self.lines_h(r, tw) + (8 if prog >= 0 else 0)
         top = y + 5 if not icon else y + max(5, (h - th) // 2 + 1)
-        self.mtext(self.fitend(title, tw - bdw), tx, top, tcol)
-        if badge:
-            self.mtext(badge, tx + tw - bdw + 6, top, GOLD_TEXT)
-        ly = top + 10
+        self.title(title, tx, top, tw, tcol)
+        ly = top + 11
         for l in lines:
             ly += max(1, self.wrap_ellipsis(l, tx, ly, tw, MUTED, 2)) * 10
         if prog >= 0:
-            self.progress(tx, ly + 1, min(tw, 120), prog)
-        bx, by = x + w - bw - 2, y + (h - 16) // 2
+            self.progress(tx, ly + 1, min(tw, 140), prog)
+        bx = x + w - self.right_w(r) - 2
+        if badge:
+            self.chip(bx + 2, y + (h - 12) // 2, badge, self.tone(badge))
+            bx += self.chip_w(badge) + 6
+        by = y + (h - 16) // 2
         for b in (b1, b2):
             if b:
                 self.button(bx, by, self.bw(b[0]), b[0], b[1], b[2] if len(b) > 2 else True)

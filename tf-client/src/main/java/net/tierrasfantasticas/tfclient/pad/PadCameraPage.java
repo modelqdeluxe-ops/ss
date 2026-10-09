@@ -32,6 +32,20 @@ final class PadCameraPage extends PadPage {
         return pw() * 9 / 16;
     }
 
+    /** Tamaño de las fotos en el pad (16:9). */
+    static final int PREVIEW_W = 960, PREVIEW_H = 540;
+
+    /**
+     * Con filtro lineal: al reducir o ampliar la foto se ve suave, no pixelada ni con dientes. Y sin repetirse en los
+     * bordes (si no, el filtro mezcla el borde de un lado con el del otro).
+     */
+    static DynamicTexture smooth(DynamicTexture tex) {
+        tex.setFilter(true, false);
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10242, 33071); // GL_TEXTURE_WRAP_S = CLAMP_TO_EDGE
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10243, 33071); // GL_TEXTURE_WRAP_T = CLAMP_TO_EDGE
+        return tex;
+    }
+
     private record Tex(ResourceLocation loc) {}
 
     private List<Path> photos = new ArrayList<>();
@@ -90,14 +104,17 @@ final class PadCameraPage extends PadPage {
         }
     }
 
-    /** La foto en pequeño (320x180). Se lee y se reduce en segundo plano: una captura 4K tarda en abrirse. */
+    /**
+     * La foto a 960x540 (lo que ocupa en pantalla a 1080p, para que no se vea borrosa), dibujada con suavizado. Se lee
+     * y se reduce en segundo plano: una captura 4K tarda en abrirse.
+     */
     private ResourceLocation texture(Path p) {
         Tex t = textures.get(p);
         if (t != null) return t.loc;
         // la recién hecha: su vista previa ya está en memoria
         if (p.equals(PadCamera.lastPhoto) && PadCamera.preview != null) {
             ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "fotos/" + Integer.toHexString(p.toString().hashCode()));
-            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(PadCamera.preview));
+            Minecraft.getInstance().getTextureManager().register(loc, smooth(new DynamicTexture(PadCamera.preview)));
             PadCamera.preview = null;
             textures.put(p, new Tex(loc));
             return loc;
@@ -114,7 +131,7 @@ final class PadCameraPage extends PadPage {
                     ch = sh;
                     cw = sh * 16 / 9;
                 }
-                small = new NativeImage(320, 180, false);
+                small = new NativeImage(PREVIEW_W, PREVIEW_H, false);
                 src.resizeSubRectTo((sw - cw) / 2, (sh - ch) / 2, cw, ch, small);
             } catch (Exception e) {
                 if (small != null) small.close();
@@ -141,7 +158,7 @@ final class PadCameraPage extends PadPage {
                     return;
                 }
                 ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "fotos/" + Integer.toHexString(p.toString().hashCode()));
-                Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(done));
+                Minecraft.getInstance().getTextureManager().register(loc, smooth(new DynamicTexture(done)));
                 textures.put(p, new Tex(loc));
                 while (textures.size() > 6) {
                     Path oldest = textures.keySet().iterator().next();
@@ -169,7 +186,7 @@ final class PadCameraPage extends PadPage {
             Path p = photos.get(index);
             ResourceLocation loc = texture(p);
             if (loc != null) {
-                g.blit(loc, px, py, PW, PH, 0, 0, 320, 180, 320, 180);
+                g.blit(loc, px, py, PW, PH, 0, 0, PREVIEW_W, PREVIEW_H, PREVIEW_W, PREVIEW_H);
             } else if (broken.contains(p)) {
                 PadFont.drawCentered(g, "NO SE PUEDE ABRIR", px + PW / 2, py + PH / 2 - 3, 0xE0ECFF, false);
             } else {

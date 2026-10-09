@@ -86,11 +86,17 @@ final class PadHomePage extends PadPage {
 
     private int cols() {
         int t = tile();
-        return Math.max(3, Math.min(7, W / (t + pad.big(8))));
+        return Math.max(3, Math.min(7, gridW() / (t + pad.big(8))));
     }
 
     private int cellW() {
-        return W / cols();
+        // como mucho la ficha y un poco de aire: así la rejilla queda centrada y no llega al logo
+        return Math.min(gridW() / cols(), tile() + pad.big(10));
+    }
+
+    /** La portada usa todo el ancho del cristal (las apps van centradas en él y se apartan del logo si hace falta). */
+    private int gridW() {
+        return SW - 8;
     }
 
     private int rows() {
@@ -118,7 +124,7 @@ final class PadHomePage extends PadPage {
         int cols = cols(), cw = cellW();
         int x0 = (SW - cols * cw) / 2;
         x0 = Math.max(x0, pad.logoRight(top()) + 2 - (cw - tile()) / 2);
-        x0 = Math.min(x0, X + W - cols * cw);
+        x0 = Math.min(x0, SW - 4 - cols * cw);
         return new int[] {x0 + (i % cols) * cw + (cw - tile()) / 2, top() + (i / cols) * cellH()};
     }
 
@@ -168,7 +174,7 @@ final class PadHomePage extends PadPage {
         }
         pad.noScissor(g);
         if (contentH > H) {
-            int bx = X + W - 3, bh = H - 4;
+            int bx = SW - 5, bh = H - 4;
             g.fill(bx, Y + 2, bx + 2, Y + 2 + bh, 0x5518265C);
             int th = Math.max(10, bh * H / contentH);
             int ty = Y + 2 + (bh - th) * scroll / Math.max(1, contentH - H);

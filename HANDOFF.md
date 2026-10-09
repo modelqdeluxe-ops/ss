@@ -10,9 +10,10 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.27** (la siguiente es **1.3.28**). Lo último: portada centrada en el cristal, GTS sin objetos de
-> sets (ni sus cosméticos), planeo con solo una barrita, y el interior de las apps rediseñado otra vez: cabecera grande en
-> las fichas, tarjetas que llenan el ancho, Oficios en tarjetas con su progreso, GTS en lista (ver la entrega 1.3.27).
+> mod: **TF Client 1.3.28** (la siguiente es **1.3.29**). Lo último: el interior de las apps con un lenguaje visual
+> nuevo (una sola ventana con pestañas de carpeta, textura de cristal tallado, vitrinas, etiquetas con la moneda),
+> la ventana centrada en el cristal, fotos nítidas y cantidades sin números oscuros (ver la entrega 1.3.28).
+> Antes (1.3.27): portada centrada, GTS sin objetos de sets, planeo con barrita, Oficios en tarjetas, GTS en lista.
 > Antes (1.3.26): rediseño del interior de las apps, pad más alto, portada 7x3 sin partículas, Recompensas, Web,
 > cabezas con skin y números de cantidad normales.
 > Antes de eso (1.3.25): Lo último que pidió el dueño y quedó hecho: portada con
@@ -36,7 +37,40 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): portada centrada, apps por dentro otra vez — TF Client 1.3.27
+### Última entrega (9 de octubre de 2026): interior de las apps con diseño nuevo, ventana centrada, fotos nítidas — TF Client 1.3.28
+Viendo la 1.3.27 dijo que el interior de las apps era «mediocre y simplista»: el blanco está bien, pero quería
+**textura** y **mejor orden visual**; además, **nada de números oscuros sombreados**, las **fotos se veían borrosas**
+(al publicarlas y en la vista previa) y, a mitad del trabajo, que **la GUI estaba descentrada** (más hacia la derecha).
+1. **Una sola ventana por app** (`PadViewPage`): pestañas **de carpeta** encima (la elegida baja y se une a la
+   ventana, blanca con filo de oro; las otras, más bajas y azuladas); dentro, de arriba abajo: **barra de información**
+   (lo que antes era el texto suelto sobre el cristal), la **cabecera grande**, la lista y abajo una **barra de
+   acciones** con los botones y el campo. Comunidad usa las mismas pestañas.
+2. **Textura**: `pattern.png` (rombos de cristal tallado muy suaves, 16x16, se repite sola con GL_REPEAT) en la
+   ventana, las vitrinas y las cabeceras; **escuadras de oro** en las esquinas de la ventana.
+3. **Tarjetas con vitrina**: arriba, un fondo tintado del color de la tarjeta con la textura, una luz (`glow.png`)
+   detrás del objeto al doble y su sombra (`floor.png`); abajo el nombre **en negrita** y una **etiqueta**.
+4. **Etiquetas con sentido** (`PadUi.chip`/`tone`): **oro** = precio, con el icono de moneda (`coin_s.png`) —
+   el servidor manda `PadView.money(v)` → «¤1.250» y el pad cambia «¤» por la moneda; **verde** = lo que ganas o lo
+   que está listo («+¤48», «Listo»); **azul** = estado o nivel; **gris** = no disponible. `Cell.tone` fuerza uno.
+   ¡Ojo! «¤» solo se entiende al principio de una etiqueta (sub de tarjeta, badge de fila o de cabecera): en líneas,
+   cabeceras o avisos saldría tal cual.
+5. **Filas**: medallón del color de la fila, título en negrita, etiqueta a la derecha. **Cabecera grande** como banner
+   tintado con el objeto en su medallón con luz.
+6. **Cantidades**: el número va en blanco sobre una etiqueta azul noche, sin sombra (`PadUi.item`).
+7. **Fotos nítidas**: se publican a **1280x720** (si pesan más de 1,8 MB, 960x540 o 640x360) y la vista previa de la
+   cámara va a **960x540**; todas se dibujan con **filtro lineal** (`PadCameraPage.smooth`). Límites: `MAX_PHOTO`
+   1,8 MB, servidor hasta 1280x720, 12 fotos en memoria de vídeo. Las fotos ya publicadas antes siguen a 480x270.
+8. **Ventana centrada**: `PadPage.W = unitsW - 2·X` (mismo margen que el del logo a los dos lados); la portada sigue
+   usando todo el ancho (`PadHomePage.gridW()`). Tarjetas desde 76 de ancho para que quepan 4 por fila.
+9. Arreglos de la revisión: la foto se sube **un trozo por tick** (`PadCommunityClient.tick()`, llamado desde
+   `TFPadClient`; ~560 KB/s, para no atascar la conexión) y las fotos de Comunidad se **leen en segundo plano**
+   (sin tirones al desplazar); el servidor manda como mucho **12 MB de fotos cada 10 s** por jugador; las fotos no se
+   repiten en los bordes (clamp); en las cabeceras, el monedero, el ranking y el admin el dinero va **exacto**
+   (`PadView.moneyExact`), y abreviado (`money`, «¤250K») solo en tarjetas y filas.
+10. Simulador (`tools/pad/sim`) al día con todo esto (`texture`, `chip`, `tone`, `infobar`, `dock`, `title`…);
+   texturas nuevas en `build_pad.py` (`pattern`, `glow`, `floor`, `coin_s`).
+
+### Entrega anterior (9 de octubre de 2026): portada centrada, apps por dentro otra vez — TF Client 1.3.27
 Viendo la 1.3.26 en el juego pidió (y le gustó lo demás, «los iconos ya quedaron bien»):
 1. **Los iconos no estaban centrados en la pantalla** → `PadHomePage.at()`: la rejilla se centra en **todo el
    cristal** (`SW`), no solo en la zona a la derecha del logo; si la primera fila fuera a pisar el logo se aparta
@@ -1171,7 +1205,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.27)
+## 5. El mod (TF Client 1.3.28)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

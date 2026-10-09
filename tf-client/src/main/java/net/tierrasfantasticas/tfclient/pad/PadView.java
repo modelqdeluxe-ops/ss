@@ -58,18 +58,40 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     /**
      * Una casilla de la rejilla: el objeto (con su cantidad), un texto corto debajo de color color (en las pequeñas, letra
      * pixel, por ejemplo un precio; en las tarjetas, el nombre), sub (en las tarjetas, la segunda línea en dorado, por
-     * ejemplo el precio; si empieza por «+», en verde: lo que cobras), la acción al pulsarla y si sale marcada. Solo en
-     * las tarjetas: progress (&lt; 0 sin barra; la barra va bajo la segunda línea) y badge (un aviso corto en una burbuja
-     * sobre la esquina del objeto, por ejemplo cuántos premios hay). En una tarjeta sin acción, la segunda línea va en gris.
+     * ejemplo el precio), la acción al pulsarla y si sale marcada. En las tarjetas la segunda línea va en una etiqueta:
+     * tone 0 elige solo (oro si es un precio, «¤1.250», con su moneda; verde si empieza por «+»; gris si la tarjeta no
+     * se puede pulsar; azul si es un estado) o la fuerza: TONE_GOLD, TONE_GREEN, TONE_GRAY, TONE_BLUE. Solo en las
+     * tarjetas: progress (&lt; 0 sin barra) y badge (un aviso corto en una burbuja, por ejemplo cuántos premios hay).
      */
-    public record Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub, float progress, String badge) {
+    public record Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub, float progress, String badge,
+                       int tone) {
         public Cell(ItemStack icon, String label, int color, String action, boolean selected) {
-            this(icon, label, color, action, selected, "", -1, "");
+            this(icon, label, color, action, selected, "", -1, "", 0);
         }
 
         public Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub) {
-            this(icon, label, color, action, selected, sub, -1, "");
+            this(icon, label, color, action, selected, sub, -1, "", 0);
         }
+    }
+
+    /** Tonos de las etiquetas (0: el que toque por el texto). */
+    public static final int TONE_GOLD = 1, TONE_GREEN = 2, TONE_GRAY = 3, TONE_BLUE = 4;
+
+    /**
+     * Dinero para una etiqueta: «¤1.250» (el pad pone la moneda en lugar de «¤»); desde 100.000, corto: «¤250K»,
+     * «¤1,5M». Para lo que se cobra, "+" + money(v).
+     */
+    /** Dinero exacto para una etiqueta: «¤1.299.999» (cabeceras de las fichas, monedero, admin: donde se paga o se fija). */
+    public static String moneyExact(long v) {
+        return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
+    }
+
+    public static String money(long v) {
+        if (v < 100_000) return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
+        if (v < 1_000_000) return "¤" + (v / 1000) + "K";
+        String m = String.format(java.util.Locale.ROOT, "%.1f", Math.floor(v / 100_000.0) / 10);
+        if (m.endsWith(".0")) m = m.substring(0, m.length() - 2);
+        return "¤" + m.replace('.', ',') + "M";
     }
 
     /** Campo de texto: al pulsar Enter (o el botón) se manda la acción con lo escrito. */
@@ -145,7 +167,13 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
 
         /** Una tarjeta con barra de progreso bajo la segunda línea y una burbuja de aviso (badge, "" sin ella). */
         public Builder card(ItemStack icon, String name, int color, String sub, float progress, String badge, String action, boolean selected) {
-            cells.add(new Cell(icon, name, color, action, selected, sub == null ? "" : sub, progress, badge == null ? "" : badge));
+            return card(icon, name, color, sub, 0, progress, badge, action, selected);
+        }
+
+        /** Una tarjeta con el tono de su etiqueta elegido (TONE_…), barra (&lt; 0 sin ella) y burbuja. */
+        public Builder card(ItemStack icon, String name, int color, String sub, int tone, float progress, String badge, String action,
+                            boolean selected) {
+            cells.add(new Cell(icon, name, color, action, selected, sub == null ? "" : sub, progress, badge == null ? "" : badge, tone));
             cellStyle = CARDS;
             return this;
         }
@@ -212,6 +240,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             buf.writeUtf(cut(cell.sub, 40), 80);
             buf.writeFloat(cell.progress);
             buf.writeUtf(cut(cell.badge, 12), 24);
+            buf.writeByte(cell.tone);
         }
         int n = Math.min(rows.size(), MAX_ROWS);
         buf.writeVarInt(n);
@@ -240,7 +269,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         List<Cell> cells = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) {
             cells.add(new Cell(buf.readItem(), buf.readUtf(80), buf.readInt(), buf.readUtf(128), buf.readBoolean(), buf.readUtf(80),
-                    buf.readFloat(), buf.readUtf(24)));
+                    buf.readFloat(), buf.readUtf(24), buf.readByte()));
         }
         List<Row> rows = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) rows.add(readRow(buf));

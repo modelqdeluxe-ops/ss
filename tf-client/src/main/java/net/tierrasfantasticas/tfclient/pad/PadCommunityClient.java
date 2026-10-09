@@ -24,7 +24,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
  * .minecraft/tfclient/cache/comunidad) y la subida de una foto propia (recortada a 16:9 y reducida a 480x270).
  */
 final class PadCommunityClient {
-    static final int PHOTO_W = 480, PHOTO_H = 270;
+    static final int PHOTO_W = 1280, PHOTO_H = 720;
 
     /** Lo que se ve: publicaciones cargadas de la pestaña actual (varias páginas seguidas). */
     static final List<PadCommunityNet.Post> POSTS = new ArrayList<>();
@@ -38,6 +38,11 @@ final class PadCommunityClient {
     private static final Map<String, byte[][]> DOWNLOADS = new HashMap<>();
     private static final Set<String> ASKED = new HashSet<>();
     private static final Set<String> BROKEN = new HashSet<>();
+    /** Fotos que se están leyendo en segundo plano (para no leer dos veces la misma). */
+    private static final Set<String> DECODING = new HashSet<>();
+    /** Los trozos de la foto que se está subiendo: uno por tick, para no atascar la conexión. */
+    private static final java.util.ArrayDeque<PadCommunityNet.Upload> OUTBOX = new java.util.ArrayDeque<>();
+    private static int outboxTotal;
 
     /** Subida en curso (para la barra de la Cámara). */
     static volatile String uploadStatus;
@@ -125,22 +130,36 @@ final class PadCommunityClient {
         Tex t = TEXTURES.get(id);
         if (t != null) return t.loc;
         if (!id.matches("[a-z0-9]{1,20}") || BROKEN.contains(id)) return null;
+        if (DECODING.contains(id)) return null;
         Path cached = cacheDir().resolve(id + ".png");
         if (Files.exists(cached)) {
-            ResourceLocation loc = null;
-            try {
-                loc = load(id, Files.readAllBytes(cached));
-            } catch (Exception e) {
-                // se trata abajo
-            }
-            if (loc != null) return loc;
-            // la copia de la caché está rota: se borra y se pide otra vez (una sola)
-            TFClient.LOGGER.warn("Comunidad: foto en caché rota {}", id);
-            try {
-                Files.deleteIfExists(cached);
-            } catch (Exception ignored) {
-                // nada
-            }
+            // se lee en segundo plano (una foto de 1280x720 tarda): mientras, la rueda de carga
+            DECODING.add(id);
+            Util.backgroundExecutor().execute(() -> {
+                NativeImage img = null;
+                try {
+                    img = decode(Files.readAllBytes(cached));
+                } catch (Exception e) {
+                    // se trata abajo
+                }
+                NativeImage done = img;
+                Minecraft.getInstance().execute(() -> {
+                    DECODING.remove(id);
+                    if (done != null) {
+                        register(id, done);
+                        return;
+                    }
+                    // la copia de la caché está rota: se borra y se pide otra vez (una sola)
+                    TFClient.LOGGER.warn("Comunidad: foto en caché rota {}", id);
+                    try {
+                        Files.deleteIfExists(cached);
+                    } catch (Exception ignored) {
+                        // nada
+                    }
+                    if (ASKED.add(id)) PadCommunityNet.toServer(new PadCommunityNet.ImgReq(id));
+                });
+            });
+            return null;
         }
         if (ASKED.add(id)) PadCommunityNet.toServer(new PadCommunityNet.ImgReq(id));
         return null;
@@ -153,7 +172,7 @@ final class PadCommunityClient {
 
     static void image(PadCommunityNet.Img m) {
         if (!m.id().matches("[a-z0-9]{1,20}")) return;
-        if (m.total() <= 0 || m.total() > 20 || m.index() < 0 || m.index() >= m.total()) return;
+        if (m.total() <= 0 || m.total() > PadCommunityServer.MAX_PHOTO_PARTS * 2 || m.index() < 0 || m.index() >= m.total()) return;
         byte[][] parts = DOWNLOADS.computeIfAbsent(m.id(), k -> new byte[m.total()][]);
         if (parts.length != m.total()) return;
         parts[m.index()] = m.data();
@@ -168,35 +187,48 @@ final class PadCommunityClient {
         } catch (Exception e) {
             TFClient.LOGGER.warn("Comunidad: no se pudo guardar una foto en la caché", e);
         }
-        if (load(m.id(), png) == null) {
-            // ilegible: no se vuelve a intentar en esta sesión
-            BROKEN.add(m.id());
-            try {
-                Files.deleteIfExists(cacheDir().resolve(m.id() + ".png"));
-            } catch (Exception ignored) {
-                // nada
-            }
-        }
+        String id = m.id();
+        DECODING.add(id);
+        Util.backgroundExecutor().execute(() -> {
+            NativeImage img = decode(png);
+            Minecraft.getInstance().execute(() -> {
+                DECODING.remove(id);
+                if (img != null) {
+                    register(id, img);
+                    return;
+                }
+                // ilegible: no se vuelve a intentar en esta sesión
+                BROKEN.add(id);
+                try {
+                    Files.deleteIfExists(cacheDir().resolve(id + ".png"));
+                } catch (Exception ignored) {
+                    // nada
+                }
+            });
+        });
     }
 
-    private static ResourceLocation load(String id, byte[] png) {
-        ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "comunidad/" + id);
+    /** Lee el PNG (en segundo plano); null si no es una imagen. */
+    private static NativeImage decode(byte[] png) {
         try (InputStream in = new ByteArrayInputStream(png)) {
-            NativeImage img = NativeImage.read(in);
-            DynamicTexture tex = new DynamicTexture(img);
-            Minecraft.getInstance().getTextureManager().register(loc, tex);
-            TEXTURES.put(id, new Tex(loc, tex, img.getWidth(), img.getHeight()));
-            trim();
-            return loc;
+            return NativeImage.read(in);
         } catch (Exception e) {
-            TFClient.LOGGER.warn("Comunidad: foto ilegible {}", id);
             return null;
         }
     }
 
-    /** Como mucho 24 fotos en memoria de vídeo. */
+    /** Sube la foto ya leída a la tarjeta gráfica (en el hilo del juego). */
+    private static void register(String id, NativeImage img) {
+        ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "comunidad/" + id);
+        DynamicTexture tex = PadCameraPage.smooth(new DynamicTexture(img));
+        Minecraft.getInstance().getTextureManager().register(loc, tex);
+        TEXTURES.put(id, new Tex(loc, tex, img.getWidth(), img.getHeight()));
+        trim();
+    }
+
+    /** Como mucho 12 fotos en memoria de vídeo (a 1280x720, unos 44 MB). */
     private static void trim() {
-        while (TEXTURES.size() > 24) {
+        while (TEXTURES.size() > 12) {
             String oldest = TEXTURES.keySet().iterator().next();
             Tex t = TEXTURES.remove(oldest);
             Minecraft.getInstance().getTextureManager().release(t.loc);
@@ -207,7 +239,7 @@ final class PadCommunityClient {
     // Publicar
     // ---------------------------------------------------------------------------------------------------------------
 
-    /** Prepara la foto (16:9, 480x270, PNG) en segundo plano y la manda a trozos. */
+    /** Prepara la foto (16:9, 1280x720 o, si pesa demasiado, 960x540, PNG) en segundo plano y la manda a trozos. */
     static void publish(Path file, String caption) {
         uploadStatus = "Preparando la foto...";
         uploadProgress = 0;
@@ -215,8 +247,8 @@ final class PadCommunityClient {
             byte[] png;
             try (InputStream in = Files.newInputStream(file); NativeImage src = NativeImage.read(in)) {
                 png = encode(src, PHOTO_W, PHOTO_H);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 384, 216);
-                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 320, 180);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 960, 540);
+                if (png.length > PadCommunityNet.MAX_PHOTO) png = encode(src, 640, 360);
             } catch (Exception e) {
                 TFClient.LOGGER.warn("Comunidad: no se pudo preparar la foto", e);
                 Minecraft.getInstance().execute(() -> result(new PadCommunityNet.Result(false, "No se pudo leer la foto.")));
@@ -261,13 +293,35 @@ final class PadCommunityClient {
         int total = (png.length + PadCommunityNet.UP_CHUNK - 1) / PadCommunityNet.UP_CHUNK;
         int upload = (int) (System.currentTimeMillis() & 0x7FFFFFFF);
         uploadStatus = "Subiendo...";
+        uploadProgress = 0;
+        OUTBOX.clear();
         for (int i = 0; i < total; i++) {
             byte[] part = java.util.Arrays.copyOfRange(png, i * PadCommunityNet.UP_CHUNK, Math.min(png.length, (i + 1) * PadCommunityNet.UP_CHUNK));
-            PadCommunityNet.toServer(new PadCommunityNet.Upload(upload, i, total, i == 0 ? caption : "", part));
-            uploadProgress = (i + 1) / (float) total;
+            OUTBOX.add(new PadCommunityNet.Upload(upload, i, total, i == 0 ? caption : "", part));
         }
-        uploadStatus = "Publicando...";
-        uploadSentAt = System.currentTimeMillis();
+        outboxTotal = total;
+    }
+
+    /**
+     * Cada tick del juego: manda el siguiente trozo de la foto (28 KB; unos 560 KB por segundo, para no atascar la
+     * conexión ni que el servidor te eche) y, al acabar, empieza a contar la espera de la respuesta.
+     */
+    static void tick() {
+        if (OUTBOX.isEmpty()) {
+            checkUpload();
+            return;
+        }
+        if (Minecraft.getInstance().getConnection() == null) {
+            OUTBOX.clear();
+            result(new PadCommunityNet.Result(false, "No estás conectado al servidor."));
+            return;
+        }
+        PadCommunityNet.toServer(OUTBOX.poll());
+        uploadProgress = (outboxTotal - OUTBOX.size()) / (float) Math.max(1, outboxTotal);
+        if (OUTBOX.isEmpty()) {
+            uploadStatus = "Publicando...";
+            uploadSentAt = System.currentTimeMillis();
+        }
     }
 
     static void result(PadCommunityNet.Result r) {
@@ -300,6 +354,8 @@ final class PadCommunityClient {
         ASKED.clear();
         BROKEN.clear();
         DOWNLOADS.clear();
+        DECODING.clear();
+        OUTBOX.clear();
         for (Tex t : TEXTURES.values()) Minecraft.getInstance().getTextureManager().release(t.loc);
         TEXTURES.clear();
     }

@@ -134,6 +134,7 @@ public final class TFPadClient {
         @SubscribeEvent
         public static void onTick(TickEvent.ClientTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
+            PadCommunityClient.tick();
             Minecraft mc = Minecraft.getInstance();
             boolean hotbarKey = mc.player != null && mc.player.isCreative() && mc.options.keySaveHotbarActivator.same(KEY);
             while (KEY.consumeClick()) {

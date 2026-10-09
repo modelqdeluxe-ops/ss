@@ -20,7 +20,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 public final class PadCommunityNet {
     static final int UP_CHUNK = 28_000;
     static final int DOWN_CHUNK = 60_000;
-    static final int MAX_PHOTO = 600_000;
+    static final int MAX_PHOTO = 1_800_000;
 
     private static SimpleChannel channel;
 

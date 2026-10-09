@@ -75,17 +75,17 @@ NAMES.append('p_admin')
 
 page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], cards=[
     ('wheat', 'Granjero', 0x6FB43C, 'Nivel 3', False, 1, {'prog': 0.5}),
-    ('iron_pickaxe', 'Minero', 0x8C9BB4, 'Nivel 12 · tuyo', True, 1, {'prog': 0.28, 'badge': '+2'}),
+    ('iron_pickaxe', 'Minero', 0x8C9BB4, 'Nivel 12', True, 1, {'prog': 0.28, 'badge': '+2'}),
     ('iron_axe', 'Leñador', 0xA0703C, 'Nivel 5', False, 1, {'prog': 0.8}),
-    ('iron_shovel', 'Excavador', 0xC8A064, 'Sin empezar', False, 1, {'prog': 0}),
-    ('fishing_rod', 'Pescador', 0x3C8CD2, 'Sin empezar', False, 1, {'prog': 0}),
+    ('iron_shovel', 'Excavador', 0xC8A064, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3}),
+    ('fishing_rod', 'Pescador', 0x3C8CD2, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3}),
     ('bow', 'Cazador', 0xC83C3C, 'Nivel 1', False, 1, {'prog': 0.1}),
-    ('brewing_stand', 'Alquimista', 0x9A5CF0, 'Sin empezar', False, 1, {'prog': 0}),
-    ('anvil', 'Herrero', 0x707880, 'Nivel máximo', False, 1, {'prog': 1}),
+    ('brewing_stand', 'Alquimista', 0x9A5CF0, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3}),
+    ('anvil', 'Herrero', 0x707880, 'Nivel máximo', False, 1, {'prog': 1, 'tone': 1}),
 ])
 page('p_oficio', 'OFICIOS', [('m', 'MISIONES (1)'), ('a', 'CÓMO SE GANA'), ('r', 'PREMIOS')], 'm', [], [
-    ('coal', 'Carbón para la forja', T, ['Saca 32 menas de carbón: 32/32 · cada día'], 1.0, '+120', ('COBRAR', G), None, True),
-    ('iron_ore', 'Vena de hierro', T, ['Saca 16 menas de hierro: 9/16 · cada día'], 0.56, '+200', None, None),
+    ('coal', 'Carbón para la forja', T, ['Saca 32 menas de carbón: 32/32 · cada día'], 1.0, '+¤120', ('COBRAR', G), None, True),
+    ('iron_ore', 'Vena de hierro', T, ['Saca 16 menas de hierro: 9/16 · cada día'], 0.56, '+¤200', None, None),
 ], hero=('iron_pickaxe', 'Minero · tu oficio', 0x8C9BB4, ['Pica piedra y minerales bajo tierra.', 'Nivel 12 de 50 · 340/1200 xp.'], 0.28, '', None, None),
      footer=[('ATRÁS', B), ('DEJAR', R)])
 page('p_tienda', 'TIENDA', [('', 'COMPRAR'), ('v', 'VENDER')], '', [], [
@@ -93,30 +93,30 @@ page('p_tienda', 'TIENDA', [('', 'COMPRAR'), ('v', 'VENDER')], '', [], [
     ('bread', 'Comida', 0xD2A050, ['Pan, filete, manzana dorada'], -1, '8 objetos', None, None),
 ])
 page('p_tienda_cat', 'TIENDA', [], '', ['Minerales'], [], cards=[
-    ('diamond', 'Diamante', 0xF6B628, '950 monedas', False), ('netherite_scrap', 'Chatarra de netherita', 0xF6B628, '6K monedas', False),
-    ('lapis_lazuli', 'Lapislázuli', 0x40C850, '+12 monedas', False), ('emerald', 'Esmeralda', 0xF6B628, '1,2K monedas', False),
-    ('gold_ingot', 'Lingote de oro', 0xF6B628, '300 monedas', False),
+    ('diamond', 'Diamante', 0xF6B628, '¤950', False), ('netherite_scrap', 'Chatarra de netherita', 0xF6B628, '¤6.000', False),
+    ('lapis_lazuli', 'Lapislázuli', 0x40C850, '+¤12', False), ('emerald', 'Esmeralda', 0xF6B628, '¤1.200', False),
+    ('gold_ingot', 'Lingote de oro', 0xF6B628, '¤300', False),
 ], footer=[('ATRÁS', B)])
 page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], '', [], [
-    ('diamond_sword', 'Espada de diamante', T, ['Lo vende Steve · quedan 3 días.'], -1, '5.000 monedas', ('COMPRAR', GO), None),
-    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '120K monedas', ('SIN SALDO', GR, False), None),
-    ('trident', 'Tridente', T, ['Tuyo · quedan 2 días.'], -1, '40.000 monedas', ('RETIRAR', R), None, True),
-    ('totem_of_undying', 'Tótem de la inmortalidad', T, ['Lo vende Notch · quedan 18 h.'], -1, '25.000 monedas', ('COMPRAR', GO), None),
-    ('enchanted_book', 'Libro encantado', T, ['Lo vende Steve · quedan 6 días.'], -1, '2.500 monedas', ('COMPRAR', GO), None),
+    ('diamond_sword', 'Espada de diamante', T, ['Lo vende Steve · quedan 3 días.'], -1, '¤5.000', ('COMPRAR', GO), None),
+    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '¤120K', ('SIN SALDO', GR, False), None),
+    ('trident', 'Tridente', T, ['Tuyo · quedan 2 días.'], -1, '¤40.000', ('RETIRAR', R), None, True),
+    ('totem_of_undying', 'Tótem de la inmortalidad', T, ['Lo vende Notch · quedan 18 h.'], -1, '¤25.000', ('COMPRAR', GO), None),
+    ('enchanted_book', 'Libro encantado', T, ['Lo vende Steve · quedan 6 días.'], -1, '¤2.500', ('COMPRAR', GO), None),
 ], input_=('BUSCAR OBJETO O JUGADOR', 'BUSCAR', ''))
 page('p_gts_item', 'GTS', [], '', [], [
     ('', 'Lo que dice el objeto', T, ['Filo V', 'Irrompible III', 'Reparación'], -1, '', None, None),
 ], hero=('diamond_sword', 'Espada de diamante', 0xF6B628, ['Lo vende Steve · quedan 3 días.', 'Tienes 12.450 monedas.'], -1,
-         '5.000 monedas', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
+         '¤5.000', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
 page('p_gts_item_solo', 'GTS', [], '', [], [],
      hero=('totem_of_undying', 'Tótem de la inmortalidad', 0xF6B628, ['Lo vende Notch · quedan 18 h.', 'Tienes 30.000 monedas.'], -1,
-           '25.000 monedas', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
+           '¤25.000', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
 page('p_tienda_comprar', 'TIENDA', [('b', 'COMPRAR'), ('s', 'VENDER')], 'b', [], [], cards=[
-    ('diamond', '1 unidad', 0xF6B628, '950 monedas', False, 1),
-    ('diamond', '8 uds.', 0xF6B628, '7.600 monedas', False, 8),
-    ('diamond', '32 uds.', 0xF6B628, 'Te faltan 18K', False, 32, {'off': True}),
-    ('diamond', '64 uds.', 0xF6B628, 'Te faltan 48K', False, 64, {'off': True}),
-], hero=('diamond', 'Diamante', 0xF6B628, ['Por unidad · llevas 5.', 'Tienes 12.450 monedas.'], -1, '950 monedas', None, None),
+    ('diamond', '1 unidad', 0xF6B628, '¤950', False, 1),
+    ('diamond', '8 uds.', 0xF6B628, '¤7.600', False, 8),
+    ('diamond', '32 uds.', 0xF6B628, 'Faltan 18K', False, 32, {'off': True}),
+    ('diamond', '64 uds.', 0xF6B628, 'Faltan 48K', False, 64, {'off': True}),
+], hero=('diamond', 'Diamante', 0xF6B628, ['Por unidad · llevas 5.', 'Tienes 12.450 monedas.'], -1, '¤950', None, None),
      input_=('OTRA CANTIDAD (LOTES)', 'COMPRAR', ''), footer=[('ATRÁS', B)])
 page('p_viajes', 'VIAJES', [], '', [], [], cards=[
     ('compass_00', 'Spawn', 0x3496FA, 'Mundo normal', False), ('red_bed', 'Tu cama', 0xE83446, 'Mundo normal', False),
@@ -125,13 +125,13 @@ page('p_viajes', 'VIAJES', [], '', [], [], cards=[
     ('oak_door', 'Tus hogares', 0xC27A10, 'Abrir', False),
 ])
 page('p_kits', 'KITS', [], '', ['1 listo para reclamar.'], [], cards=[
-    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False), ('bread', 'Constructor', 0x40C850, 'Listo', True),
+    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False, 1, {'tone': 3}), ('bread', 'Constructor', 0x40C850, 'Listo', True, 1, {'tone': 2}),
     ('iron_sword', 'Semanal', 0xF6B628, 'en 3 d 4 h', False), ('diamond', 'VIP', 0xF6B628, 'en 5 h', False),
 ])
 page('p_recompensas', 'RECOMPENSAS', [('diaria', 'DIARIA'), ('otras', 'OTRAS (1)')], 'diaria',
      ['Día 3 de 7: ¡reclámala! Si te saltas un día, vuelves al día 1.'], [], cards=[
-         ('bread', 'Día 1 · 25', 0xAABAD2, 'Reclamada', False, 8), ('torch', 'Día 2 · 25', 0xAABAD2, 'Reclamada', False, 16),
-         ('iron_ingot', 'Día 3 · 50', 0x40C850, '¡Hoy!', True, 4), ('cooked_beef', 'Día 4 · 50', 0xF6B628, 'Mañana', False, 12),
+         ('bread', 'Día 1 · 25', 0xAABAD2, 'Reclamada', False, 8, {'tone': 3}), ('torch', 'Día 2 · 25', 0xAABAD2, 'Reclamada', False, 16, {'tone': 3}),
+         ('iron_ingot', 'Día 3 · 50', 0x40C850, '¡Hoy!', True, 4, {'tone': 2}), ('cooked_beef', 'Día 4 · 50', 0xF6B628, 'Mañana', False, 12),
          ('golden_carrot', 'Día 5 · 75', 0xF6B628, '', False, 8), ('experience_bottle', 'Día 6 · 100', 0xF6B628, '', False, 8),
          ('diamond', 'Día 7 · 200', 0xF6B628, '', False, 2),
      ], footer=[('RECLAMAR DÍA 3', G)])
@@ -172,8 +172,8 @@ page('p_hogares', 'HOGARES', [], '', ['2 de 5 hogares.'], [
     ('crimson_nylium', 'base_nether', T, ['Nether · 40, 70, 12'], -1, '', ('IR', B), ('BORRAR', R)),
 ], input_=('NOMBRE DEL HOGAR', 'GUARDAR AQUÍ', ''))
 page('p_misiones', 'MISIONES', [('diarias', 'DIARIAS'), ('semanales', 'SEMANALES')], 'diarias', ['Se renuevan en 5 h 12 min.'], [
-    ('coal', 'Minero de carbón', T, ['Saca 24 menas de carbón  ·  24/24'], 1.0, '+80', ('RECLAMAR', G), None),
-    ('rotten_flesh', 'Noche de zombis', T, ['Derrota 15 zombis  ·  9/15'], 0.6, '+90', None, None),
+    ('coal', 'Minero de carbón', T, ['Saca 24 menas de carbón  ·  24/24'], 1.0, '+¤80', ('RECLAMAR', G), None),
+    ('rotten_flesh', 'Noche de zombis', T, ['Derrota 15 zombis  ·  9/15'], 0.6, '+¤90', None, None),
 ], footer=[('RECLAMAR TODO', G)])
 page('a_tienda_item', 'TIENDA', [], '', ['Minerales · Diamante'], [
     ('gold_ingot', 'Precio de compra', T, ['Lo que paga el jugador por lote. 0 = no se vende.'], -1, '950', ('EDITAR', B), None, True),
@@ -193,15 +193,19 @@ s.status('COMUNIDAD')
 _local = Local(s)
 _local.__enter__()
 X, Y, W, H = s.X, s.Y, s.W, s.H
-x = X
+top, bottom = Y + 14, Y + H
+s.panel(X, top, W, bottom - top)
+x, chosen = X + 4, None
 for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
     w = s.pwidth(label) + 14
-    s.tab(x, Y, w, label, 2 if key == 'recientes' else 0)
-    x += w + 3
+    if key == 'recientes':
+        chosen = (x, w, label)
+    else:
+        s.tab(x, Y, w, label, 0)
+    x += w + 2
+s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
 fw = s.bw('+ FOTO')
-s.button(X + W - fw, Y - 1, fw, '+ FOTO', GO)
-top, bottom = Y + 17, Y + H
-s.panel(X, top, W, bottom - top)
+s.button(X + W - fw - 4, Y - 3, fw, '+ FOTO', GO)
 pw = max(128, min(256, (W - 20) // 2)) // 16 * 16
 ph = pw * 9 // 16
 ch = ph + 14

@@ -301,10 +301,11 @@ public final class TFPadScreen extends Screen {
         big = Math.max(cs, Math.round(ps * 0.75F));
         bs = big / (float) cs;
         bar = Math.round(12 * bs) + 6;
-        // la zona de las apps: bajo la barra y a la derecha del logo a esa altura (más abajo el logo es más estrecho)
+        // la zona de las apps: bajo la barra, a la derecha del logo a esa altura y con el mismo margen a la derecha, para
+        // que la ventana de cada app quede centrada en el cristal (la portada usa todo el ancho: ver PadHomePage)
         PadPage.Y = bar + 4;
         PadPage.X = logoRight(PadPage.Y) + 4;
-        PadPage.W = unitsW - PadPage.X - 4;
+        PadPage.W = unitsW - PadPage.X * 2;
         PadPage.H = unitsH - PadPage.Y - 4;
         PadPage.SW = unitsW;
         PadPage.SH = unitsH;

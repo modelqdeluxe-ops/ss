@@ -174,7 +174,8 @@ public final class PadRewards {
                     String sub = today ? (done ? "Reclamada" : "¡Hoy!") : past ? "Reclamada" : i == idx + 1 ? "Mañana" : "";
                     String coins = d.coins > 0 ? PadShop.price(d.coins) : "";
                     b.card(d.icon(), "Día " + (i + 1) + (coins.isEmpty() ? "" : " · " + coins), past ? 0xAABAD2 : today ? 0x40C850 : 0xF6B628,
-                            sub, today && !done ? "dia" : "tab:dia:" + i, today && !done);
+                            sub, past ? PadView.TONE_GRAY : today ? PadView.TONE_GREEN : 0, -1, "", today && !done ? "dia" : "tab:dia:" + i,
+                            today && !done);
                 }
                 if (!done) b.footer(PadView.Btn.of("RECLAMAR DÍA " + (idx + 1), "dia", PadView.GREEN));
                 return b.build();
@@ -185,7 +186,8 @@ public final class PadRewards {
                 long left = left(player, r);
                 if (left == 0) ready++;
                 b.card(r.iconStack(), r.name, left == 0 ? 0x40C850 : left < 0 ? 0xAABAD2 : 0xF6B628,
-                        left == 0 ? "Lista" : left < 0 ? "Reclamada" : "en " + PadKits.time(left), "tab:ver:" + r.id, left == 0);
+                        left == 0 ? "Lista" : left < 0 ? "Reclamada" : "en " + PadKits.time(left),
+                        left == 0 ? PadView.TONE_GREEN : left < 0 ? PadView.TONE_GRAY : 0, -1, "", "tab:ver:" + r.id, left == 0);
             }
             if (!others.isEmpty()) b.header(ready == 0 ? "Ninguna lista ahora." : ready + (ready == 1 ? " lista" : " listas") + " para reclamar. Pulsa una para verla.");
             return b.build();

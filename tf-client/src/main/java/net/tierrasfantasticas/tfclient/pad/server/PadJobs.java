@@ -105,20 +105,22 @@ public final class PadJobs {
         } else {
             b.header("Elige un oficio.");
         }
-        // una tarjeta grande por oficio: su icono, el nombre, el nivel y la barra hasta el siguiente (la tuya, marcada en
-        // oro; la burbuja verde, las misiones listas para cobrar)
+        // una tarjeta grande por oficio: su icono, el nombre, el nivel (azul; gris sin empezar; oro al máximo) y la barra
+        // hasta el siguiente. La tuya, marcada en oro; la burbuja verde, las misiones listas para cobrar.
         for (Job job : TFJobsConfig.jobs.values()) {
             JobProgress jp = p.jobs.get(job.id());
             boolean on = p.active.contains(job.id());
             float progress = 0;
             String level = "Sin empezar";
+            int tone = PadView.TONE_GRAY;
             if (jp != null) {
                 boolean max = jp.level >= TFJobsConfig.maxLevel;
                 progress = max ? 1 : (float) Math.max(0, Math.min(1, jp.xp / TFJobsConfig.xpFor(jp.level)));
-                level = max ? "Nivel máximo" : "Nivel " + jp.level + (on ? " · tuyo" : "");
+                level = max ? "Nivel máximo" : "Nivel " + jp.level;
+                tone = max ? PadView.TONE_GOLD : PadView.TONE_BLUE;
             }
             int ready = on && jp != null ? claimable(job, jp) : 0;
-            b.card(new ItemStack(TFJobsMenu.icon(job)), job.name(), job.color(), level, progress, ready > 0 ? "+" + ready : "",
+            b.card(new ItemStack(TFJobsMenu.icon(job)), job.name(), job.color(), level, tone, progress, ready > 0 ? "+" + ready : "",
                     "ver:" + job.id(), on);
         }
         if (TFJobsConfig.jobs.isEmpty()) b.empty("Sin oficios.");
@@ -193,7 +195,7 @@ public final class PadJobs {
             ItemStack icon = new ItemStack(locked ? Items.GRAY_DYE : TFJobsMenu.item(m.icon(), Items.PAPER));
             float progress = locked || claimed ? -1 : Math.min(1F, (float) ms.progress / Math.max(1, m.amount()));
             int color = locked || claimed ? MUTED : done ? GREEN : TEXT;
-            b.row(new PadView.Row(icon, m.name(), color, lines, progress, coins > 0 ? "+" + PadShop.price(coins) : "", btn, null).selected(done && active));
+            b.row(new PadView.Row(icon, m.name(), color, lines, progress, coins > 0 ? "+" + PadView.money(coins) : "", btn, null).selected(done && active));
         }
         if (job.missions().isEmpty()) b.empty("Sin misiones.");
     }
@@ -237,7 +239,7 @@ public final class PadJobs {
         if (lines.isEmpty()) lines.add(next ? "El siguiente nivel." : "Al llegar a este nivel.");
         ItemStack icon = new ItemStack(stone != null ? Items.CHEST : Items.EXPERIENCE_BOTTLE);
         b.row(new PadView.Row(icon, "Nivel " + level + (stone != null ? " · hito" : ""), stone != null ? 0xC27A10 : TEXT, lines, -1,
-                "+" + PadShop.price(coins), null, null).selected(next));
+                "+" + PadView.money(coins), null, null).selected(next));
     }
 
     private static String num(double v) {

@@ -33,7 +33,7 @@ public final class PadCamera {
     /** Para el destello del pad al volver. */
     static long flashAt;
     static Path lastPhoto;
-    /** La foto recién hecha en pequeño (320x180), para enseñarla al momento sin esperar a que se guarde el archivo. */
+    /** La foto recién hecha a 960x540, para enseñarla al momento (y nítida) sin esperar a que se guarde el archivo. */
     static com.mojang.blaze3d.platform.NativeImage preview;
 
     private PadCamera() {}
@@ -134,7 +134,7 @@ public final class PadCamera {
                 ch = sh;
                 cw = sh * 16 / 9;
             }
-            NativeImage small = new NativeImage(320, 180, false);
+            NativeImage small = new NativeImage(PadCameraPage.PREVIEW_W, PadCameraPage.PREVIEW_H, false);
             img.resizeSubRectTo((sw - cw) / 2, (sh - ch) / 2, cw, ch, small);
             if (preview != null) preview.close();
             preview = small;
