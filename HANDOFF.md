@@ -9,6 +9,33 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **🚧 TRABAJO EN CURSO — Skills (TF Client 1.3.35+; checkpoint, si retomas sigue esto):**
+> Pedido del dueño (9 oct, noche): portar **~39 packs de skills** (clases de MMOCore / MythicLib / MythicMobs /
+> ModelEngine / ItemsAdder / MMOItems) «correctamente y sin errores»: modelos, animaciones, mecánicas, controles,
+> ilustraciones, sonidos, todo. En la web, **quitar «Tienda de monedas»** y poner una sección **«Skills»** bien hecha;
+> actualizar el pad y lo necesario. Los manda de 5 en 5 (comprados: **no subir los packs al repo**, solo lo convertido).
+> **Decisiones del dueño:** se consiguen **con dinero (Stripe) y con monedas** (las dos); se lanzan con **teclas propias
+> configurables** (Opciones › Controles); el **arma y la armadura del pack vienen con la skill** (vinculadas, como los
+> sets); cada jugador tiene **una sola clase** a la vez.
+> **Recibidos (25 de ~39), descomprimidos en el scratch de la sesión `skills/`:** Red-DragonPack, MAGEPACK-1.1 (.rar),
+> Glacia-v1.2, ZEPHYR-v1.3, samus2002_NECROMANCER, THORPACK-1.3, NULLPACK-1.1, samus2002_ARCTIC_KNIGHT,
+> RPG_Class_Series_Dragon_Warrior, samus2002_BLOODMOON_VAMPIRE, samus2002_SUMMONER_PACK_v1.7, samus2002_DEATH_KNIGHT,
+> RRPG_Void_Edge_Class_Full, PackClass_Magic_Lightning (zips dentro), LostAssets_ClassPack_04_Revenant,
+> LostAssets_OriginalClassPack_01_FrostSamurai, samus2002_AWAKENED_ASSASSIN, samus2002_HEROES_THUNDER_RONIN,
+> ModelFoundrys_Witch_Class, HEROES_WATER_SAMURAI, AWAKENED_WARRIOR, LostAssets_ClassPack_03_Paladin,
+> HEROES_FLAME_WARRIOR, samus2002_AWAKENED_ARCHER, fire_katana.
+> **Plan** (marca [x] y haz commit+push como checkpoint):
+> - [ ] Inventario automático de cada pack (clase, skills, descripción, cooldown, mana, disparador, modelos, sonidos,
+>       iconos, arma/armadura) → `tools/skills/inventario.py`.
+> - [ ] Motor: compilar las skills de MythicMobs/MythicLib a un programa JSON (`tools/skills/compile.py`, reusa
+>       `vfx_bb.py`/`vfx_compile.py`) y ejecutarlo en el mod (`skills/` servidor + cliente): mecánicas, modelos animados,
+>       partículas, sonidos.
+> - [ ] Controles: teclas configurables por skill, barra con iconos y cooldowns.
+> - [ ] Armas y armaduras de cada clase (vinculadas).
+> - [ ] Web: fuera Tienda de monedas, sección Skills (Stripe + monedas, una clase por jugador); puente con el mod.
+> - [ ] Pad: app/apartado de la clase y sus skills.
+> - [ ] Publicar por tandas, con vistas previas.
+>
 > **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main` (último PR: #56); **nada a medias**, el árbol
 > está limpio. Última versión publicada del mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). La web no se tocó
 > en esta tanda.
