@@ -28,6 +28,17 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > Para portar un mod suyo en .jar: CFR + el tsrg de ForgeGradle (`build/createMcpToSrg/output.tsrg`) para pasar los
 > nombres SRG a los oficiales; luego volver a decompilar lo compilado y comparar con el original (ver 1.3.18).
 
+> **EN CURSO (9 oct 2026) — TF Client 1.3.26** (rama `claude/amazing-ritchie-68hm6n`). Pidió, viendo la 1.3.25 en el
+> juego: 1) los números de cantidad de los objetos salen enormes (objeto al doble con su número al doble) → número a
+> tamaño normal; 2) la cabeza de Jugadores no sale con su skin → perfil completo con texturas (todas las skins);
+> 3) apps muy pegadas y abultadas → pad más grande (marco ensanchado repitiendo columnas lisas de las barras, más aire
+> entre apps); animaciones feas: **quitar partículas**, nada de solo girar, **el engranaje de ajustes sin animación**;
+> 4) **rediseño bonito del interior de las apps** con botones de navegación bonitos (no los iconos); 5) **rework del
+> icono de Oficios** (el pico no le gusta); 6) **quitar Ayuda**; app **WEB** (va directo a la página) y app
+> **RECOMPENSAS** (diarias o como digan los admins, configurables en el pad de admin); **quitar el kit diario** de Kits;
+> kits y recompensas se montan con el inventario o con **todos los objetos del juego (también de mods)**.
+> Avance: (se va apuntando aquí)
+
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
