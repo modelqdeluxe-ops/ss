@@ -9,25 +9,32 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). Lo último (1.3.34): ajustes de Protección como preguntas
-> con SÍ / NO (el que vale, en verde). Antes (1.3.33): solo quedan `/tf web` y `/tf reload` (recarga todo de verdad). Antes (1.3.32): puedes
-> reaccionar también a tus fotos.
-> Antes (1.3.31): Comunidad con botón REACCIONAR (selector de emojis) y tarjetas limpias. Antes (1.3.30): emojis de Comunidad redibujados.
-> Antes (1.3.29): leyendas solo en Tienda/Kits, oficios sin avisos
-> en pantalla, tienda sin mezclar compra y venta, **economía estable** y **misiones/cazas que rotan por temporadas de 90
-> días** (cazas configurables en el pad de admin), **reacciones con emojis** en Comunidad, **playlists** y **altavoz
-> por proximidad** en Música (ver la entrega 1.3.29).
-> Antes (1.3.28): interior de las apps con diseño nuevo (ventana única, textura, vitrinas, etiquetas con moneda).
-> Antes (1.3.27): portada centrada, GTS sin objetos de sets, planeo con barrita, Oficios en tarjetas, GTS en lista.
-> Antes (1.3.26): rediseño del interior de las apps, pad más alto, portada 7x3 sin partículas, Recompensas, Web,
-> cabezas con skin y números de cantidad normales.
-> Antes de eso (1.3.25): Lo último que pidió el dueño y quedó hecho: portada con
-> **iconos grandes** (escala 1,5 a 1080p) en **fichas RPG** nuevas con **animación propia por app** al pasar el ratón,
-> **todas las apps rediseñadas y a la escala grande** (filas como tarjetas, paneles con degradado, botones con brillo) y
-> la app **Música** (pegar un link directo → se descarga y se guarda; reproductor completo con portada, sigue sonando con
-> el pad cerrado, solo la oye el jugador). Canción de prueba: https://xn--tierrasfantsticas-hpb.store/musica/epic-rpg.mp3.
-> Ver la entrega 1.3.25. Reglas: **todo lo del jugador se hace desde el pad**; **sin `/tf claims`**.
+> **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main` (último PR: #56); **nada a medias**, el árbol
+> está limpio. Última versión publicada del mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). La web no se tocó
+> en esta tanda.
+>
+> **Resumen rápido para la IA que siga (lo hecho hoy, de lo más nuevo a lo más viejo; detalle en las entregas abajo):**
+> - 1.3.34: Protección → AJUSTES como **preguntas con SÍ / NO** (el que vale, verde; el otro, gris). El dueño se quejó
+>   dos veces de textos confusos («No construir: SÍ», «BLOQUEADO»): **no vuelvas a poner estados ambiguos**; pregunta
+>   clara + respuesta.
+> - 1.3.33: **solo `/tf web …` y `/tf reload`** (fuera `/tf jobs` y `/tf shop`); `/tf reload` = `pad/server/TFReload`
+>   (no recarga un JSON roto: dice cuál y el error; refresca la app abierta de cada jugador). Botones `PadView.GRAY`
+>   ahora son grises de verdad (antes salían verdes).
+> - 1.3.32: reaccionar también a tus fotos (el like a las tuyas sigue sin poderse).
+> - 1.3.31: Comunidad: tarjeta limpia + botón **REACCIONAR** con selector de emojis. 1.3.30: emojis de Noto (44x44).
+> - 1.3.29: economía estable, misiones/cazas por temporadas de 90 días, emojis, playlists, altavoz por proximidad.
+>
+> **Temas abiertos (se le ofrecieron; NO los hagas sin que los pida):**
+> - Con `/tf jobs` se fueron los comandos de staff de oficios (`nivel`, `xp`, `reiniciar`): si los quiere, irían en el
+>   pad de administrador (no como comandos).
+> - Dar like a tus propias fotos (para probar), como ya se hizo con las reacciones.
+>
+> **Cómo se trabaja con él (resumen de la sección 2):** háblale en español; haz exactamente lo que pide y nada más;
+> cuando esté terminado y probado: PR → squash merge → reiniciar la rama desde `origin/main` (force-with-lease) sin
+> pedir permiso; cada cambio del mod sube `mod_version` (gradle.properties) y `TFClient.VERSION`, se compila y se le
+> manda el `.jar` adjunto (y vistas previas del simulador si cambia algo visual). **Nunca** abrir el juego ni un
+> servidor. Secretos solo en Cloudflare. Rama de trabajo: `claude/amazing-ritchie-68hm6n`.
+>
 > **Checkpoints:** el dueño pidió (9 oct) que en trabajos largos se vaya apuntando el plan y el avance aquí arriba y se
 > haga commit + push a la rama de vez en cuando, para que otra IA pueda seguir sin perder nada.
 >
@@ -1179,7 +1186,7 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
-- **Cada vez que cambie el mod**: subir la versión (siguiente: **1.3.20**) en `tf-client/gradle.properties`
+- **Cada vez que cambie el mod**: subir la versión (mira la de «Estado al cierre», arriba) en `tf-client/gradle.properties`
   (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
