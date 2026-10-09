@@ -91,8 +91,15 @@ public final class PadCommunityNet {
     }
 
     /** Una publicación tal como la ve un jugador. */
+    /**
+     * Una foto de la lista. reactions: cuántas reacciones lleva de cada emoji (REACTIONS, en ese orden); mine: la que
+     * puso este jugador (-1 ninguna).
+     */
     public record Post(String id, UUID author, String name, String caption, long time, int likes, boolean liked,
-                       boolean mine, boolean canDelete) {}
+                       boolean mine, boolean canDelete, int[] reactions, int myReaction) {}
+
+    /** Las reacciones con emoji, además del corazón (cada una con su icono emo_&lt;nombre&gt; del pad). */
+    public static final List<String> REACTIONS = List.of("risa", "wow", "triste", "fuego", "top");
 
     public record Feed(String tab, int page, int pages, int total, List<Post> posts) {
         static void write(Feed m, FriendlyByteBuf buf) {
@@ -111,6 +118,8 @@ public final class PadCommunityNet {
                 buf.writeBoolean(p.liked);
                 buf.writeBoolean(p.mine);
                 buf.writeBoolean(p.canDelete);
+                for (int i = 0; i < REACTIONS.size(); i++) buf.writeVarInt(i < p.reactions.length ? p.reactions[i] : 0);
+                buf.writeByte(p.myReaction);
             }
         }
 
@@ -119,8 +128,15 @@ public final class PadCommunityNet {
             int page = buf.readVarInt(), pages = buf.readVarInt(), total = buf.readVarInt();
             List<Post> posts = new ArrayList<>();
             for (int i = buf.readVarInt(); i > 0; i--) {
-                posts.add(new Post(buf.readUtf(32), buf.readUUID(), buf.readUtf(32), buf.readUtf(140), buf.readLong(), buf.readVarInt(),
-                        buf.readBoolean(), buf.readBoolean(), buf.readBoolean()));
+                String id = buf.readUtf(32);
+                UUID author = buf.readUUID();
+                String name = buf.readUtf(32), caption = buf.readUtf(140);
+                long time = buf.readLong();
+                int likes = buf.readVarInt();
+                boolean liked = buf.readBoolean(), mine = buf.readBoolean(), canDelete = buf.readBoolean();
+                int[] reactions = new int[REACTIONS.size()];
+                for (int r = 0; r < reactions.length; r++) reactions[r] = buf.readVarInt();
+                posts.add(new Post(id, author, name, caption, time, likes, liked, mine, canDelete, reactions, buf.readByte()));
             }
             return new Feed(tab, page, pages, total, posts);
         }

@@ -18,7 +18,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > 4. ✅ Oficios más retadores (se ganan monedas muy fácil); **colchón de 3 meses de misiones** que no se repitan; cazas
 >    igual (3 meses) pero **configurables por él** (tendrá mobs de mods).
 > 5. ✅ **Economía estable** (tipo dólar), no inflada: bajar precios, pagos y premios en todo.
-> 6. ⏳ Comunidad: reaccionar a las fotos con **emojis** además del corazón.
+> 6. ✅ Comunidad: reaccionar a las fotos con **emojis** además del corazón.
 > 7. ⏳ Música: **playlists** (una o varias) y botón **altavoz**: que los demás lo oigan por proximidad en el juego (bien
 >    hecho, sin romper nada).
 > Hecho 4–5: `util/TFRotation` (temporadas de 90 días; cada misión igual sale una vez por temporada; cantidad y premio
@@ -28,6 +28,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > (154 misiones de oficio, 60 diarias, 27 presas). Cazas configurables desde el pad de admin: app **CAZAS**
 > (`PadAdminHunts`, `a_cazas`): presas con mob (también de mods), cantidad, monedas, descripción ({n}) e icono. Las configs viejas se guardan como `*.antes-v2.json` y se cambian
 > (`TFConfigDir.upgrade`, claves versionEconomia / version). Pagos por acción ÷5–10, misiones ≈10 % de antes.
+> Hecho 6: reacciones risa/wow/triste/fuego/top (`PadCommunityNet.REACTIONS`, iconos `emo_*.png` de build_pad), una por
+> jugador y foto («reacciones» en cada publicación del servidor), fila de emojis encima del corazón.
 > Reglas: checkpoints frecuentes (commit + push) con el avance aquí.
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del

@@ -226,6 +226,20 @@ for name, ago, cap, likes, liked, mine in posts:
     s.mtext(ago, cx, py + 12, (74, 102, 148))
     if cap:
         s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (24, 38, 92), 3)
+    # reacciones con emoji (PadCommunityPage, 1.3.29)
+    ey, ex = py + ph - 32, cx
+    reacts = [3, 1, 0, 5, 2] if likes > 10 else [0, 0, 1, 0, 1]
+    mine_r = 3 if likes > 10 else -1
+    for k, name in enumerate(('risa', 'wow', 'triste', 'fuego', 'top')):
+        cnt = str(reacts[k]) if reacts[k] else ''
+        bw = 15 + (s.mwidth(cnt) + 2 if cnt else 0)
+        if k == mine_r:
+            s.box(ex, ey, bw, 15, rgb(0xE0A030))
+            s.fill(ex + 1, ey + 1, ex + bw - 1, ey + 14, rgb(0xFFF3C8))
+        s.blit('emo_' + name, ex + 2, ey + 2)
+        if cnt:
+            s.mtext(cnt, ex + 15, ey + 4, (24, 38, 92))
+        ex += bw + 2
     ly = py + ph - 15
     s.blit('heart' if liked else 'heart_off', cx, ly)
     s.mtext(f'{likes} likes', cx + 16, ly + 2, (24, 38, 92))

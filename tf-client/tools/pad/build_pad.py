@@ -300,6 +300,84 @@ def heart(on=True):
     return outline(framed)
 
 
+def emoji(kind):
+    """Reacciones de Comunidad (1.3.29), 9x9 con contorno (11x11): risa, wow, triste, fuego y top (pulgar arriba)."""
+    Y1, Y2, Y3 = (255, 226, 92, 255), (250, 196, 40, 255), (214, 150, 20, 255)
+    BR, TEAR, RED = (90, 54, 20, 255), (110, 190, 255, 255), (214, 60, 70, 255)
+    face = [".#######.",
+            "#########",
+            "#########",
+            "#########",
+            "#########",
+            "#########",
+            "#########",
+            "#########",
+            ".#######."]
+    if kind == 'fuego':
+        rows = ["....#....",
+                "...##....",
+                "...###.#.",
+                "..#####..",
+                ".######.#",
+                ".#######.",
+                "#########",
+                "#########",
+                ".#######."]
+        im = small(rows, {'#': (255, 120, 40, 255)})
+        for x, y in ((3, 2), (2, 4), (2, 5), (1, 6), (1, 7)):
+            put(im, x, y, (255, 214, 90, 255))
+        for x, y in ((3, 5), (4, 5), (3, 6), (4, 6), (5, 6), (3, 7), (4, 7), (5, 7)):
+            put(im, x, y, (255, 236, 140, 255))
+        for x, y in ((7, 6), (7, 7), (6, 8), (8, 6)):
+            put(im, x, y, (214, 64, 30, 255))
+    elif kind == 'top':
+        rows = ["...##....",
+                "...##....",
+                "..###....",
+                "######...",
+                "#########",
+                "#########",
+                "#########",
+                "########.",
+                ".######.."]
+        im = small(rows, {'#': Y2})
+        for x, y in ((3, 0), (3, 1), (2, 2), (0, 3), (0, 4)):
+            put(im, x, y, Y1)
+        for x, y in ((4, 5), (4, 6), (4, 7), (8, 5), (8, 6), (7, 7), (6, 8)):
+            put(im, x, y, Y3)
+    else:
+        im = small(face, {'#': Y2})
+        for x, y in ((1, 1), (2, 1), (1, 2)):
+            put(im, x, y, Y1)
+        for x, y in ((8, 4), (8, 5), (7, 7), (6, 8), (7, 6)):
+            put(im, x, y, Y3)
+        if kind == 'risa':
+            for x, y in ((2, 3), (3, 2), (5, 2), (6, 3)):
+                put(im, x, y, BR)
+            for x in range(2, 7):
+                put(im, x, 5, BR)
+            for x in range(3, 6):
+                put(im, x, 6, RED)
+            put(im, 1, 4, TEAR)
+            put(im, 7, 4, TEAR)
+        elif kind == 'wow':
+            for x, y in ((3, 2), (3, 3), (5, 2), (5, 3)):
+                put(im, x, y, BR)
+            for x, y in ((3, 5), (4, 5), (5, 5), (3, 6), (5, 6), (3, 7), (4, 7), (5, 7)):
+                put(im, x, y, BR)
+            put(im, 4, 6, RED)
+        else:  # triste
+            for x, y in ((3, 2), (3, 3), (5, 2), (5, 3)):
+                put(im, x, y, BR)
+            for x, y in ((2, 7), (3, 6), (4, 6), (5, 6), (6, 7)):
+                put(im, x, y, BR)
+            put(im, 6, 4, TEAR)
+            put(im, 6, 5, TEAR)
+    framed = img(im.width + 2, im.height + 2)
+    framed.alpha_composite(im, (1, 1))
+    return outline(framed)
+
+
 def build():
     if os.path.isdir(OUT_DIR):
         shutil.rmtree(OUT_DIR)
@@ -308,6 +386,8 @@ def build():
              'moon.png': moon(), 'gear.png': gear(), 'heart.png': heart(True), 'heart_off.png': heart(False),
              'pattern.png': pattern(), 'glow.png': glow(), 'floor.png': floor_shadow(),
              'coin_s.png': coin_small()}
+    for k in ('risa', 'wow', 'triste', 'fuego', 'top'):
+        files[f'emo_{k}.png'] = emoji(k)
     for key, _ in APPS:
         files[f'icon_{key}.png'] = DRAW[key]().image()
     files['icon_admin.png'] = iconos2.admin().image()
