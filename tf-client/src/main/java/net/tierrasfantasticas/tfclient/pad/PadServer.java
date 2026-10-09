@@ -77,6 +77,7 @@ public final class PadServer {
         APPS.put("misiones", PadMissions.MISSIONS);
         APPS.put("cazas", PadMissions.HUNTS);
         APPS.put("kits", PadKits.APP);
+        APPS.put("recompensas", net.tierrasfantasticas.tfclient.pad.server.PadRewards.APP);
         APPS.put("viajes", PadTravel.TRAVEL);
         APPS.put("explorar", PadTravel.EXPLORE);
         APPS.put("clanes", PadClans.APP);
@@ -87,6 +88,7 @@ public final class PadServer {
         APPS.put("a_ajustes", PadAdmin.SETTINGS);
         APPS.put("a_tienda", PadAdmin.SHOP);
         APPS.put("a_kits", PadAdmin.KITS);
+        APPS.put("a_recompensas", net.tierrasfantasticas.tfclient.pad.server.PadAdminRewards.APP);
         APPS.put("a_viajes", PadAdmin.TRAVEL);
         APPS.put("a_gts", PadAdmin.MARKET);
         APPS.put("a_comunidad", PadAdmin.COMMUNITY);
@@ -94,6 +96,7 @@ public final class PadServer {
         STORES.add(PadStats.STORE);
         STORES.add(PadMissions.STORE);
         STORES.add(PadKits.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadRewards.STORE);
         STORES.add(PadTravel.STORE);
         STORES.add(PadHomes.STORE);
         STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadPlayers.STORE);

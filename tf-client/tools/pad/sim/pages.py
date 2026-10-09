@@ -99,10 +99,35 @@ page('p_viajes', 'VIAJES', [], '', [], [], cards=[
     ('oak_door', 'Tus hogares', 0xC27A10, 'Abrir', False),
 ])
 page('p_kits', 'KITS', [], '', ['1 listo para reclamar.'], [], cards=[
-    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False), ('bread', 'Diario', 0x40C850, 'Listo', True),
+    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False), ('bread', 'Constructor', 0x40C850, 'Listo', True),
     ('iron_sword', 'Semanal', 0xF6B628, 'en 3 d 4 h', False), ('diamond', 'VIP', 0xF6B628, 'en 5 h', False),
 ])
-page('p_kit', 'KITS', [], '', ['Diario · cada día'], [], cells=[
+page('p_recompensas', 'RECOMPENSAS', [('diaria', 'DIARIA'), ('otras', 'OTRAS (1)')], 'diaria',
+     ['Día 3 de 7: ¡reclámala! Si te saltas un día, vuelves al día 1.'], [], cards=[
+         ('bread', 'Día 1 · 25', 0xAABAD2, 'Reclamada', False, 8), ('torch', 'Día 2 · 25', 0xAABAD2, 'Reclamada', False, 16),
+         ('iron_ingot', 'Día 3 · 50', 0x40C850, '¡Hoy!', True, 4), ('cooked_beef', 'Día 4 · 50', 0xF6B628, 'Mañana', False, 12),
+         ('golden_carrot', 'Día 5 · 75', 0xF6B628, '', False, 8), ('experience_bottle', 'Día 6 · 100', 0xF6B628, '', False, 8),
+         ('diamond', 'Día 7 · 200', 0xF6B628, '', False, 2),
+     ], footer=[('RECLAMAR DÍA 3', G)])
+page('a_recompensas', 'RECOMPENSAS', [('cal', 'CALENDARIO'), ('otras', 'OTRAS')], 'cal',
+     ['El calendario diario: cada día se reclama el siguiente de la racha. Pulsa un día para cambiarlo.'], [
+         ('clock_00', 'Calendario', T, ['Encendido.'], -1, '', ('SÍ', G), None),
+         ('compass_00', 'Si alguien se salta un día', T, ['Vuelve al día 1.'], -1, '', ('CAMBIAR', B), None),
+     ], cards=[
+         ('bread', 'Día 1', 0xF6B628, '1 obj. · 25', False, 8), ('torch', 'Día 2', 0xF6B628, '1 obj. · 25', False, 16),
+         ('iron_ingot', 'Día 3', 0xF6B628, '1 obj. · 50', False, 4), ('cooked_beef', 'Día 4', 0xF6B628, '1 obj. · 50', False, 12),
+         ('golden_carrot', 'Día 5', 0xF6B628, '1 obj. · 75', False, 8), ('experience_bottle', 'Día 6', 0xF6B628, '1 obj. · 100', False, 8),
+         ('diamond', 'Día 7', 0xF6B628, '1 obj. · 200', False, 2),
+     ], footer=[('AÑADIR DÍA', G), ('QUITAR EL ÚLTIMO', R)])
+page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
+     ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], cells=[
+         (n, '', T, False) for n in ('stone', 'granite', 'diorite', 'andesite', 'grass_block', 'dirt', 'cobblestone', 'oak_planks',
+                                     'spruce_planks', 'birch_planks', 'oak_sapling', 'sand', 'gravel', 'gold_ore', 'iron_ore',
+                                     'coal_ore', 'oak_log', 'spruce_log', 'birch_log', 'glass', 'lapis_ore', 'sandstone',
+                                     'white_wool', 'orange_wool', 'gold_block', 'iron_block', 'bricks', 'tnt', 'bookshelf',
+                                     'obsidian', 'torch', 'chest', 'diamond_ore', 'diamond_block', 'crafting_table', 'furnace')
+     ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('SIGUIENTE »', B), ('CANTIDAD 16', GO), ('LISTO', G)])
+page('p_kit', 'KITS', [], '', ['Constructor · Cada 12 h'], [], cells=[
     ('bread', '', T, False), ('cooked_beef', '', T, False), ('torch', '', T, False), ('tf:fantastic_coin', '200', GOLD, False),
 ], footer=[('ATRÁS', B), ('RECLAMAR', G)])
 page('p_jugadores', 'JUGADORES', [], '', ['3 conectados'], [], cards=[

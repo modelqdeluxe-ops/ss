@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
 Última actualización: **9 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
-`claude/amazing-wozniak-gtw9ll`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
+`claude/amazing-ritchie-68hm6n`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -9,8 +9,10 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.25** (la siguiente es **1.3.26**). Lo último que pidió el dueño y quedó hecho: portada con
+> **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
+> mod: **TF Client 1.3.26** (la siguiente es **1.3.27**). Lo último: rediseño del interior de las apps, pad más ancho,
+> portada 7x3 sin partículas, Recompensas, Web, cabezas con skin y números de cantidad normales (ver la entrega 1.3.26).
+> Antes de eso (1.3.25): Lo último que pidió el dueño y quedó hecho: portada con
 > **iconos grandes** (escala 1,5 a 1080p) en **fichas RPG** nuevas con **animación propia por app** al pasar el ratón,
 > **todas las apps rediseñadas y a la escala grande** (filas como tarjetas, paneles con degradado, botones con brillo) y
 > la app **Música** (pegar un link directo → se descarga y se guarda; reproductor completo con portada, sigue sonando con
@@ -28,27 +30,56 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > Para portar un mod suyo en .jar: CFR + el tsrg de ForgeGradle (`build/createMcpToSrg/output.tsrg`) para pasar los
 > nombres SRG a los oficiales; luego volver a decompilar lo compilado y comparar con el original (ver 1.3.18).
 
-> **EN CURSO (9 oct 2026) — TF Client 1.3.26** (rama `claude/amazing-ritchie-68hm6n`). Pidió, viendo la 1.3.25 en el
-> juego: 1) los números de cantidad de los objetos salen enormes (objeto al doble con su número al doble) → número a
-> tamaño normal; 2) la cabeza de Jugadores no sale con su skin → perfil completo con texturas (todas las skins);
-> 3) apps muy pegadas y abultadas → pad más grande (marco ensanchado repitiendo columnas lisas de las barras, más aire
-> entre apps); animaciones feas: **quitar partículas**, nada de solo girar, **el engranaje de ajustes sin animación**;
-> 4) **rediseño bonito del interior de las apps** con botones de navegación bonitos (no los iconos); 5) **rework del
-> icono de Oficios** (el pico no le gusta); 6) **quitar Ayuda**; app **WEB** (va directo a la página) y app
-> **RECOMPENSAS** (diarias o como digan los admins, configurables en el pad de admin); **quitar el kit diario** de Kits;
-> kits y recompensas se montan con el inventario o con **todos los objetos del juego (también de mods)**.
-> Avance: hecho en código (compila): números de cantidad a tamaño normal (`PadUi.item`), cabezas con skin
-> (`PadClans.head` con perfil completo, skin guardada en `PadStats.skinOf`, respaldo en cliente `PadUi.skin`), marco
-> ensanchado (`TFPadScreen.drawFrame`, `STRETCH_L/R`, `extra`), portada 7 columnas sin partículas con salto y gestos
-> (`PadHomePage`), engranaje quieto, botón de volver nuevo, kit de interfaz oscuro con oro (`PadUi`: panel, card, slot,
-> button, tab, divider, scrollbar, field, progress, onDark) aplicado a `PadViewPage`, app WEB, lista de apps nueva (sin
-> Ayuda; con RECOMPENSAS y WEB). Falta: Comunidad/Cámara/Música/Ajustes con el kit nuevo, iconos (oficios, web,
-> recompensas), Recompensas (servidor + admin), quitar kit diario, selector de objetos con todo el juego, simulador.
-
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026, noche): iconos grandes, fichas RPG animadas, apps rediseñadas y Música — TF Client 1.3.25
+### Última entrega (9 de octubre de 2026): interior de las apps rediseñado, Recompensas y Web — TF Client 1.3.26
+Viendo la 1.3.25 en el juego pidió: 1) los **números de cantidad** salían enormes; 2) la **cabeza** de Jugadores no
+salía con su skin («conecta con las skins de todos»); 3) apps **pegadas y abultadas** → pad más grande; **quitar las
+partículas**, animaciones correctas (no solo girar) y **el engranaje sin animación**; 4) **rediseño bonito del interior
+de las apps** con botones de navegación bonitos (no los iconos); 5) **rework del icono de Oficios** («ese pico más
+mierda»); 6) **quitar Ayuda**, app **WEB** (directo a la página) y app **RECOMPENSAS** (diarias o como quieran los
+admins, configurables en el pad de admin); **quitar el kit diario** de Kits; kits y recompensas se montan con el
+inventario o con **todos los objetos del juego, mods incluidos**.
+Hecho:
+- **Cantidades** (`PadUi.item`): el objeto a escala k (tarjetas al doble) y el número siempre a tamaño normal.
+- **Cabezas con skin**: `PadClans.head` pone en `SkullOwner` el perfil completo con la propiedad `textures` (del
+  jugador conectado o la última skin vista, que `PadStats.name` guarda como `skin`/`skinFirma`; vale con
+  SkinsRestorer). Respaldo en el cliente: `PadUi.skin` usa el perfil de la lista de jugadores. Lo usan Jugadores,
+  Clanes y miembros de Protección.
+- **Pad más ancho sin deformar**: `TFPadScreen.drawFrame` repite una columna lisa de cada barra azul de `frame.png`
+  (`STRETCH_L = 526`, `STRETCH_R = 964` en píxeles de la imagen; `extra` píxeles de pad por lado, hasta `MAX_EXTRA`,
+  según el ancho de la pantalla). A 1080p el cristal pasa de 576 a 720 unidades.
+- **Portada** (`PadHomePage`): 7 columnas (las 21 apps en 7x3 a 1080p), nombres a escala normal, aire repartido; sin
+  halo, partículas ni destellos. Al pasar el ratón: la ficha sube con sombra y el icono da **un salto con aplastado y
+  estirado**; luego respira, o hace su gesto (el pico golpea, la ballesta retrocede, estandarte y percha se mecen, la
+  cámara hace clic, Música late). El engranaje de arriba ya no se mueve (solo un subrayado de oro).
+- **Kit de interfaz nuevo** (`PadUi`): ventanas azul noche con borde de oro y tachuelas (`panel`), tarjetas en
+  relieve (`card`: normal, ratón, marcada con oro), ranuras hundidas para objetos (`slot`), botones con degradado,
+  luz y sombra (16 de alto; los ATRÁS llevan flecha), pestañas doradas (`tab`, 14), títulos de sección con línea y
+  rombo (`divider`), barra de desplazamiento de oro, campos y barras hundidos. Textos claros sobre las ventanas
+  (`TEXT`, `MUTED`, `GOLD_TEXT`) y azul marino sobre el cristal (`GLASS_TEXT`). Los colores que manda el servidor
+  (pensados para fondo claro) se aclaran con `PadUi.onDark`. Aplicado en `PadViewPage` (todas las apps del servidor y
+  del admin), Comunidad, Cámara, Música, Ajustes y la barra de arriba (botón de volver nuevo).
+- **Iconos** (`tools/pad/iconos3.py`): Oficios = pico de diamante grueso (cabeza en media luna sombreada por tonos,
+  abrazadera de oro, mango de 3 px); RECOMPENSAS = regalo azul con lazo; WEB = globo terráqueo con el puntero del
+  ratón. Ayuda ya no está en el pad (su config sigue, sin usarse).
+- **WEB**: app del cliente; abre `TFConfig.webUrl()` en el navegador al momento.
+- **RECOMPENSAS** (`pad/server/PadRewards.java`, config `config/tfclient/recompensas.json`, datos del jugador en
+  `<mundo>/tfclient/recompensas.json`): pestaña DIARIA = calendario (7 días de partida) con racha: cada día natural se
+  reclama el siguiente; si se salta un día vuelve al día 1 (o sigue, si el staff lo cambia); tras el último, vuelta a
+  empezar. Pestaña OTRAS = recompensas sueltas (diaria, semanal, cada X horas, una vez), con su ficha y RECLAMAR.
+  Primero se pagan las monedas y solo si salen bien se marca cobrado.
+- **Kits sin «diario»** (`PadKits.TYPES` = unico, semanal, horas): los kits diarios que hubiera se pasan solos a
+  Recompensas como recompensas diarias la primera vez que carga (`PadRewards.adopt`).
+- **Pad de admin**: app **RECOMPENSAS** (`PadAdminRewards`): CALENDARIO (encender, qué pasa si se salta un día, cada
+  día con monedas y objetos, añadir día / quitar el último) y OTRAS (crear, nombre, activada, tipo, horas, monedas,
+  icono de la mano, objetos, borrar). **Selector de objetos** (`PadItemPicker`, también en KITS): TU INVENTARIO (tal
+  cual, con cantidad y encantamientos) o TODOS LOS OBJETOS del juego y de los mods (registro de objetos), con
+  buscador por nombre o id, páginas de 96 y CANTIDAD (1/4/8/16/32/64); pulsar un objeto de la ficha lo quita.
+- Simulador (`tools/pad/sim/`) al día: marco ancho, portada nueva, kit de interfaz nuevo, Recompensas, admin y selector.
+
+### Entrega anterior (9 de octubre de 2026, noche): iconos grandes, fichas RPG animadas, apps rediseñadas y Música — TF Client 1.3.25
 Pidió: los iconos de la portada **más grandes** (no estaban ajustados al pad nuevo), **mejor textura de las fichas** con
 **animaciones tipo RPG según el icono**, **rediseñar el interior de cada app** («más bonitas, ajusta todo al tamaño
 nuevo») y una app de **Música** como el mod Etched: pegar un **link directo** (Google Drive convertido…), que se
@@ -1099,7 +1130,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.25)
+## 5. El mod (TF Client 1.3.26)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
