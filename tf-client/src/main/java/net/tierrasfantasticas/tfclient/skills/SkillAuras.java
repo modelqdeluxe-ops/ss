@@ -34,6 +34,9 @@ final class SkillAuras {
         String onEnd;
         int age;
         boolean alive = true;
+        /** onDamaged / onAttack: multiplica el daño que recibe / que hace quien la lleva. */
+        double takenMult = 1.0;
+        double dealtMult = 1.0;
 
         Aura(String name, Who on) {
             this.name = name;
@@ -71,6 +74,8 @@ final class SkillAuras {
             a.stacks = 1;
             a.onTick = onTick;
             a.onEnd = onEnd;
+            if (m.m.equals("ondamaged")) a.takenMult = SkillRuntime.num(m.arg("1", "multiplier", "m"), 1);
+            if (m.m.equals("onattack")) a.dealtMult = SkillRuntime.num(m.arg("1", "multiplier", "m"), 1);
             st.auras.put(key, a);
             AURAS.add(a);
             if (onStart != null) SkillRuntime.runMeta(ctx.cls.meta(onStart), auraCtx(a));
@@ -130,6 +135,15 @@ final class SkillAuras {
         a.alive = false;
         if (st != null && st.auras.get(a.name) == a) st.auras.remove(a.name);
         if (a.onEnd != null) SkillRuntime.runMeta(a.ctx.cls.meta(a.onEnd), auraCtx(a));
+    }
+
+    /** Multiplicador del daño que recibe (taken) o hace (!taken) una entidad por sus auras onDamaged / onAttack. */
+    static double multiplier(net.minecraft.world.entity.Entity e, boolean taken) {
+        SkillRuntime.WhoState st = SkillRuntime.stateIfAny(Who.of(e));
+        if (st == null || st.auras.isEmpty()) return 1.0;
+        double m = 1.0;
+        for (Aura a : st.auras.values()) if (a.alive) m *= taken ? a.takenMult : a.dealtMult;
+        return m;
     }
 
     static void forget(UUID player) {

@@ -1,0 +1,179 @@
+{
+ "sets": [
+  {
+   "id": "clase_glacia",
+   "name": "Glacia",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "glacia",
+   "items": [
+    {
+     "id": "clase_glacia_scepter",
+     "type": "sword"
+    },
+    {
+     "id": "clase_glacia_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_glacia_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_glacia_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_glacia_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_glacia_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_glacia_scepter",
+    "clase_glacia_armor_helmet",
+    "clase_glacia_armor_chestplate",
+    "clase_glacia_armor_leggings",
+    "clase_glacia_armor_boots",
+    "clase_glacia_head"
+   ]
+  },
+  {
+   "id": "clase_mago",
+   "name": "Mage",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "mago",
+   "items": [
+    {
+     "id": "clase_mago_mage_staff",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_mago_mage_staff"
+   ]
+  },
+  {
+   "id": "clase_dragon_rojo",
+   "name": "dragon",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "dragon_rojo",
+   "items": [
+    {
+     "id": "clase_dragon_rojo_sacred_gear",
+     "type": "sword"
+    },
+    {
+     "id": "clase_dragon_rojo_sacred_gear_s2",
+     "type": "sword"
+    },
+    {
+     "id": "clase_dragon_rojo_sacred_gear_s3",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_dragon_rojo_sacred_gear"
+   ]
+  },
+  {
+   "id": "clase_thor",
+   "name": "Thor",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "thor",
+   "items": [
+    {
+     "id": "clase_thor_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "clase_thor_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_thor_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_thor_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_thor_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_thor_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_thor_hammer",
+    "clase_thor_armor_helmet",
+    "clase_thor_armor_chestplate",
+    "clase_thor_armor_leggings",
+    "clase_thor_armor_boots",
+    "clase_thor_head"
+   ]
+  },
+  {
+   "id": "clase_zephyr",
+   "name": "Zephyr",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "zephyr",
+   "items": [
+    {
+     "id": "clase_zephyr_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "clase_zephyr_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_zephyr_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_zephyr_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_zephyr_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_zephyr_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_zephyr_dagger",
+    "clase_zephyr_armor_helmet",
+    "clase_zephyr_armor_chestplate",
+    "clase_zephyr_armor_leggings",
+    "clase_zephyr_armor_boots",
+    "clase_zephyr_head"
+   ]
+  }
+ ]
+}

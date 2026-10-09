@@ -76,7 +76,9 @@ final class SkillConds {
                 String v = SkillRuntime.varScope(var, ctx, who == null ? null : SkillRuntime.Tgt.of(who)).get(SkillRuntime.varName(var));
                 yield v != null && inRange(SkillRuntime.num(v, 0), arg(a, ">0", "value", "val", "v", "range"));
             }
-            case "offgcd", "gcd", "incombat", "hasai", "hastarget", "itemissimilar", "holding", "wearing", "haspermission",
+            case "itemissimilar", "holding" -> e instanceof net.minecraft.world.entity.player.Player p
+                    && SkillItems.holds(p, ctx.cls, arg(a, "", "i", "item", "material", "m"));
+            case "offgcd", "gcd", "incombat", "hasai", "hastarget", "wearing", "haspermission",
                     "lineofsight", "los", "world", "biome", "dimension", "moonphase", "stance", "hasowner" -> true;
             case "targetwithin", "targetinlineofsight", "targetnotwithin" -> {
                 Entity t = ctx.aim;

@@ -146,11 +146,12 @@ def pick_files(pack_dir):
     for d, _, fs in os.walk(pack_dir):
         for f in fs:
             p = os.path.join(d, f)
-            lp = p.lower()
+            lp = '/' + os.path.relpath(p, pack_dir).lower()  # solo lo de dentro del pack (no la carpeta donde está)
             if not f.lower().endswith(('.yml', '.yaml')) or 'mythicmobs' not in lp or EXCLUDE.search(lp):
                 continue
             cands.append(p)
-    sk = [p for p in cands if re.search(r'/skills?/', p.lower())]
+    rel = lambda p: '/' + os.path.relpath(p, pack_dir).lower()  # noqa: E731
+    sk = [p for p in cands if re.search(r'/skills?/', rel(p))]
     mm = [p for p in sk if 'mmocore' in os.path.basename(p).lower()]
     if mm:
         # la carpeta de la versión MMOCore y la normal comparten mobs; los archivos sin «mmocore» de la misma
@@ -159,7 +160,7 @@ def pick_files(pack_dir):
                    and os.path.dirname(p) not in {os.path.dirname(x) for x in mm}]
     roots = {os.path.dirname(os.path.dirname(p)) for p in sk} or {pack_dir}
     for p in cands:
-        lp = p.lower()
+        lp = rel(p)
         if not any(p.startswith(r) for r in roots):
             continue
         if re.search(r'/mobs?/', lp):

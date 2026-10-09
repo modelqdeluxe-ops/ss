@@ -96,7 +96,7 @@ final class SkillVars {
             who = ctx.trigger;
             rest = low.substring(8);
         } else {
-            return "0";
+            return "<" + tag + ">"; // no es una variable (un color «<#FFAC00>» en un nombre...): se queda como está
         }
         if (who == null) return "0";
         if (rest.startsWith("owner.")) {

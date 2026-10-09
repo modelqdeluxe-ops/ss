@@ -93,7 +93,7 @@ public final class SkillNet {
      * convertido en el modelo, como el traje del Dragón Rojo).
      */
     public record Spawn(int id, double x, double y, double z, float yaw, float pitch, String head, String me, boolean small,
-                        int follow, boolean hideHost, float headPitch) {
+                        int follow, boolean hideHost, float headPitch, String hand, String anim) {
         static void write(Spawn m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.id);
             buf.writeDouble(m.x);
@@ -107,12 +107,14 @@ public final class SkillNet {
             buf.writeVarInt(m.follow + 1);
             buf.writeBoolean(m.hideHost);
             buf.writeFloat(m.headPitch);
+            buf.writeUtf(m.hand == null ? "" : m.hand, 256);
+            buf.writeUtf(m.anim == null ? "" : m.anim, 128);
         }
 
         static Spawn read(FriendlyByteBuf buf) {
             return new Spawn(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readFloat(),
                     buf.readFloat(), emptyNull(buf.readUtf(256)), emptyNull(buf.readUtf(128)), buf.readBoolean(),
-                    buf.readVarInt() - 1, buf.readBoolean(), buf.readFloat());
+                    buf.readVarInt() - 1, buf.readBoolean(), buf.readFloat(), emptyNull(buf.readUtf(256)), emptyNull(buf.readUtf(128)));
         }
 
         static void handle(Spawn m, Supplier<NetworkEvent.Context> ctx) {

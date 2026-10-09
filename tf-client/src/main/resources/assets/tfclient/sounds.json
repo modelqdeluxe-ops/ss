@@ -518,6 +518,22 @@
    "tfclient:skills/mago/samus_inferno_chains_explosion"
   ]
  },
+ "skills.mago.samus_meteor": {
+  "sounds": [
+   "tfclient:skills/mago/samus_meteor"
+  ]
+ },
+ "skills.mago.samus_meteor_explosion": {
+  "sounds": [
+   "tfclient:skills/mago/samus_meteor_explosion_0",
+   "tfclient:skills/mago/samus_meteor_explosion_1"
+  ]
+ },
+ "skills.mago.samus_fire_burn": {
+  "sounds": [
+   "tfclient:skills/mago/samus_fire_burn"
+  ]
+ },
  "skills.mago.samus_blink": {
   "sounds": [
    "tfclient:skills/mago/samus_blink"
@@ -531,11 +547,6 @@
  "skills.mago.samus_quake": {
   "sounds": [
    "tfclient:skills/mago/samus_quake"
-  ]
- },
- "skills.mago.samus_fire_burn": {
-  "sounds": [
-   "tfclient:skills/mago/samus_fire_burn"
   ]
  },
  "skills.mago.samus_frost_nova": {

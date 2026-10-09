@@ -30,6 +30,8 @@ public final class SkillActor {
     boolean moved;
     int removeAt = -1;
     String head;
+    /** Lo que lleva en la mano derecha (modelo de ítem), como los soportes de algunos efectos. */
+    String hand;
     String me;
     /** Entidad a la que va pegado (el modelo puesto sobre un jugador) y si la tapa. */
     Entity follow;
@@ -68,7 +70,7 @@ public final class SkillActor {
 
     SkillNet.Spawn spawnMessage() {
         return new SkillNet.Spawn(id, pos.x, pos.y, pos.z, yaw, pitch, head, me, def != null && def.small,
-                follow == null ? -1 : follow.getId(), hideHost, 0F);
+                follow == null ? -1 : follow.getId(), hideHost, 0F, hand, anim);
     }
 
     void prop(String key, String a, String b, String c) {

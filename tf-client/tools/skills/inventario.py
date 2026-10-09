@@ -63,7 +63,6 @@ def files(root, ext):
 def scan(pack_dir):
     out = {'pack': os.path.basename(pack_dir), 'classes': [], 'skills': {}, 'weapons': [], 'armor': [],
            'mm_skill_files': [], 'bbmodels': 0, 'sounds': 0, 'icons': 0, 'errors': []}
-    lower = lambda p: p.lower()  # noqa: E731
     for p in files(pack_dir, '.bbmodel'):
         out['bbmodels'] += 1
     for p in files(pack_dir, '.ogg'):
@@ -76,7 +75,7 @@ def scan(pack_dir):
             out['icons'] += 1
     ymls = list(files(pack_dir, '.yml')) + list(files(pack_dir, '.yaml'))
     for p in ymls:
-        lp = lower(p)
+        lp = '/' + os.path.relpath(p, pack_dir).lower()  # solo lo de dentro del pack
         data = load(p)
         if isinstance(data, dict) and '__error__' in data:
             out['errors'].append(f'{os.path.relpath(p, pack_dir)}: {data["__error__"][:120]}')

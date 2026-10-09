@@ -330,6 +330,10 @@ def pack_sounds(pack):
     return out
 
 
+# Efectos que el pack usa pero no trae: el más parecido del mismo pack (anillos mágicos del Dragón Rojo → los anillos
+# de su rugido)
+ITEM_ALIASES = {'dragon_magic_ring': 'dragon_roar'}
+
 # Sonidos que el pack usa pero no trae (ni ningún otro pack de la serie): el vanilla más parecido
 MISSING_SOUNDS = {
     'universal.ultimate.sfx': 'block.beacon.activate',
@@ -404,6 +408,8 @@ def build_pack(path, sound_events, name=None):
     lower_models = {k.lower(): v for k, v in item_models.items()}
     for iid in missing_items:
         base = re.sub(r'_(green|blue|yellow|purple|red)(?=_|$)', '', iid.lower())
+        for a, b in ITEM_ALIASES.items():
+            base = base.replace(a, b)
         stem, num = re.match(r'(.*?)(\d*)$', base).groups()
         cands = [base] + sorted((k for k in lower_models if re.fullmatch(re.escape(stem) + r'\d+', k)),
                                 key=lambda k: abs(int(re.search(r'\d+$', k).group()) - int(num or 0)))
@@ -501,13 +507,19 @@ def build_pack(path, sound_events, name=None):
             rels.append(f'tfclient:skills/{pack.id}/{name}')
         sound_events[ev] = {'subtitle': None, 'sounds': rels}
 
+    cset, mm_items = class_set(pack, prog, models, LANG_ES, LANG_EN)
     out = {'id': pack.id, 'pack': pack.name, 'class': prog['class'], 'skills': prog['skills'], 'icons': icons,
+           'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
            'weapons': prog['weapons'], 'armor': prog['armor']}
     os.makedirs(OUT_CLASSES, exist_ok=True)
     with open(os.path.join(OUT_CLASSES, pack.id + '.json'), 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
+    CLASS_SETS.append(cset)
     return pack, out
+
+
+LANG_ES, LANG_EN, CLASS_SETS = {}, {}, []
 
 
 def icon_png(pack, ref, depth=0):
@@ -630,6 +642,167 @@ def mob_frames(mob, tree, lower_tree):
     return frames
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Armas y armaduras de la clase (vienen con ella, vinculadas): un «set» más del mod (skills/class_sets.json)
+# ---------------------------------------------------------------------------------------------------------------
+
+OUT_ITEM_JSON = os.path.join(RES, 'models', 'item')
+OUT_ARMOR = os.path.join(RES, 'textures', 'models', 'armor')
+WORDS_ES = {'scepter': 'Cetro', 'staff': 'Bastón', 'dagger': 'Daga', 'hammer': 'Martillo', 'sword': 'Espada',
+            'katana': 'Katana', 'bow': 'Arco', 'helmet': 'Casco', 'chestplate': 'Pechera', 'leggings': 'Grebas',
+            'boots': 'Botas', 'head': 'Cabeza', 'gauntlet': 'Guantelete', 'glaive': 'Guja', 'scythe': 'Guadaña',
+            'axe': 'Hacha', 'spear': 'Lanza', 'wand': 'Varita', 'shield': 'Escudo', 'gun': 'Pistola', 'book': 'Libro',
+            'sacred': 'Sagrado', 'gear': 'Guantelete'}
+ARMOR_SLOTS = {'HELMET': 'helmet', 'CHESTPLATE': 'chestplate', 'LEGGINGS': 'leggings', 'BOOTS': 'boots'}
+
+
+def name_es(name, cls_name):
+    """«Scepter of Glacia» → «Cetro de Glacia» (lo que no está en la lista se queda igual)."""
+    m = re.match(r'^(shiny\s+)?(.+?)\s+of\s+(.+)$', name.strip(), re.I)
+    if m:
+        what = WORDS_ES.get(m.group(2).lower(), m.group(2))
+        return f"{what} de {m.group(3)}" + (' brillante' if m.group(1) else '')
+    return ' '.join(WORDS_ES.get(w.lower(), w) for w in name.split())
+
+
+def cit_layers(pack, material, cmd):
+    """Capas de la armadura puesta (OptiFine CIT): la propiedad con ese CustomModelData → (capa 1, capa 2)."""
+    for r in pack.roots:
+        cit = os.path.join(r, 'minecraft', 'optifine', 'cit')
+        if not os.path.isdir(cit):
+            continue
+        for d, _, fs in os.walk(cit):
+            for f in fs:
+                if not f.endswith('.properties'):
+                    continue
+                props = {}
+                for line in open(os.path.join(d, f), encoding='utf-8', errors='ignore'):
+                    if '=' in line:
+                        k, v = line.split('=', 1)
+                        props[k.strip()] = v.strip()
+                if props.get('type') != 'armor':
+                    continue
+                want = props.get('nbt.CustomModelData')
+                if want is None or int(float(want)) != int(float(cmd)):
+                    continue
+                if str(material).lower() not in props.get('items', '').replace('\\', '').lower():
+                    continue
+                out = []
+                for k in ('texture.leather_layer_1', 'texture.leather_layer_2'):
+                    name = props.get(k)
+                    path = os.path.join(d, name + '.png') if name else None
+                    out.append(path if path and os.path.exists(path) else None)
+                return out
+    return [None, None]
+
+
+def item_json(item_id, model_id):
+    dest = os.path.join(OUT_ITEM_JSON, item_id + '.json')
+    with open(dest, 'w', encoding='utf-8') as f:
+        json.dump({'parent': model_id}, f)
+
+
+def class_set(pack, prog, models, names_es, names_en):
+    """Las armas (MMOItems) y la armadura (cuero con CustomModelData + capas de OptiFine) de la clase como un set."""
+    set_id = f'clase_{pack.id}'
+    cls_name = prog['class'].get('name') or pack.id
+    items, mm_items = [], {}
+    prefix = re.compile(r'^' + re.escape(pack.id.split('_')[0]) + r'_', re.I)
+
+    def add(item_id, model_ref, typ, en, slot=None):
+        mid = models.model(model_ref) if model_ref else None
+        if not mid:
+            pack.problems.append(f'objeto de la clase sin modelo: {item_id}')
+            return None
+        full = f'{set_id}_{item_id}'
+        item_json(full, mid)
+        names_en[f'item.tfclient.{full}'] = en
+        names_es[f'item.tfclient.{full}'] = name_es(en, cls_name)
+        entry = {'id': full, 'type': typ}
+        if slot:
+            entry['slot'] = slot
+        items.append(entry)
+        return full
+
+    # Armas: las de MMOItems (sin las «brillantes», que son la misma con otro color)
+    for w in prog['weapons']:
+        if 'shiny' in str(w['id']).lower() or w.get('cmd') is None:
+            continue
+        ref = item_override(pack, w['material'], w['cmd'])
+        slug_id = slug(prefix.sub('', str(w['id'])))
+        typ = 'heavy' if any(k in slug_id for k in ('hammer', 'mace', 'club')) else 'sword'
+        add(slug_id, ref, typ, w.get('name') or w['id'])
+    # Armadura
+    layers = [None, None]
+    for a in prog['armor']:
+        mat = str(a.get('material') or '').upper()
+        if a.get('cmd') is None:
+            continue
+        ref = item_override(pack, mat, a['cmd'])
+        piece = next((v for k, v in ARMOR_SLOTS.items() if k in mat), None)
+        if piece:
+            l1, l2 = cit_layers(pack, mat, a['cmd'])
+            layers = [layers[0] or l1, layers[1] or l2]
+            add(f'armor_{piece}', ref, 'armor', a.get('name') or piece.title(), piece)
+        elif 'HEAD' in str(a['id']).upper():
+            add('head', ref, 'head', a.get('name') or 'Head')
+    if any(i['type'] == 'armor' for i in items):
+        if not all(layers):
+            pack.problems.append('faltan las capas de la armadura puesta (OptiFine CIT)')
+        os.makedirs(OUT_ARMOR, exist_ok=True)
+        for n, path in enumerate(layers, 1):
+            if path:
+                shutil.copyfile(path, os.path.join(OUT_ARMOR, f'{set_id}_layer_{n}.png'))
+    # Objetos de MythicMobs que la clase lleva en la mano y mira (itemissimilar / equip ...:HAND), p. ej. el
+    # guantelete del Dragón Rojo, que cambia según el modo
+    hand = set()
+    for key, ent in prog['tree'].items():
+        if key.startswith('mob_'):
+            continue  # lo que lleva en la mano un efecto (no el jugador)
+        for c in ent.get('conditions', []) + ent.get('target_conditions', []):
+            if c['m'] in ('itemissimilar', 'holding') and c['a'].get('i'):
+                hand.add(c['a']['i'])
+        for m in ent['mechs']:
+            if m['m'] == 'equip' and str(m['a'].get('item', '')).upper().endswith(':HAND') and m.get('t') in (None, 'self', 'caster'):
+                hand.add(str(m['a']['item']).split(':')[0])
+    for iid in sorted(hand):
+        idef = prog['items'].get(iid)
+        if not idef:
+            continue
+        ref = item_override(pack, idef.get('Id') or idef.get('Material') or 'paper', idef.get('Model') or idef.get('CustomModelData') or 0)
+        name = strip_mc(idef.get('Display')) or iid.replace('_', ' ')
+        full = add(slug(iid), ref, 'sword', name)
+        if full:
+            mm_items[iid] = full
+    # El arma que se entrega: la primera de MMOItems o, si la clase va con un objeto en la mano, el de nombre más
+    # corto (el básico: Sacred_Gear y no Sacred_Gear_s2)
+    first_weapon = next((i['id'] for i in items if i['type'] in ('sword', 'heavy') and i['id'] not in mm_items.values()),
+                        None) or (min(mm_items.values(), key=len) if mm_items else None)
+    return {'id': set_id, 'name': cls_name, 'color': '#7fd3ff', 'tier': 'netherite', 'clase': pack.id, 'items': items,
+            'give': [i['id'] for i in items if not (i['id'] in mm_items.values() and i['id'] != first_weapon)]}, mm_items
+
+
+def write_class_items(full):
+    """skills/class_sets.json (los sets de las clases) y los nombres de sus objetos en los idiomas del mod."""
+    path = os.path.join(RES, 'skills', 'class_sets.json')
+    old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) and not full else {'sets': []}
+    keep = [x for x in old['sets'] if x['id'] not in {c['id'] for c in CLASS_SETS}]
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump({'sets': keep + CLASS_SETS}, f, ensure_ascii=False, indent=1)
+    for lang, names in (('es_es', LANG_ES), ('en_us', LANG_EN)):
+        lp = os.path.join(RES, 'lang', lang + '.json')
+        data = json.load(open(lp, encoding='utf-8'))
+        if full:
+            data = {k: v for k, v in data.items() if not k.startswith('item.tfclient.clase_')}
+        data.update(names)
+        with open(lp, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=1)
+
+
+def strip_mc(s):
+    return re.sub(r'[&§][0-9a-fk-orx]', '', re.sub(r'<[^>]+>', '', str(s or ''))).strip()
+
+
 def main():
     root = sys.argv[1]
     only = set(sys.argv[2:])
@@ -639,6 +812,10 @@ def main():
         only = set(RELEASED)
         for d in (OUT_CLASSES, OUT_MODELS, OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS, OUT_ICONS):
             shutil.rmtree(d, ignore_errors=True)
+        for d in (OUT_ITEM_JSON, OUT_ARMOR):
+            for f in os.listdir(d) if os.path.isdir(d) else []:
+                if f.startswith('clase_'):
+                    os.remove(os.path.join(d, f))
     sound_events = {}
     catalog = []
     for name in sorted(os.listdir(root)):
@@ -668,6 +845,7 @@ def main():
         sj[ev] = {'sounds': d['sounds']}
     with open(SOUNDS_JSON, 'w', encoding='utf-8') as f:
         json.dump(sj, f, ensure_ascii=False, indent=1)
+    write_class_items(full)
     if full:
         with open(os.path.join(RES, 'skills', 'catalog.json'), 'w', encoding='utf-8') as f:
             json.dump(catalog, f, ensure_ascii=False, indent=1)

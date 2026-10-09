@@ -37,6 +37,7 @@ SOUND_SUBST = {
     'event.mob_effect.bad_omen': 'block.beacon.deactivate',
     'event.mob_effect.raid_omen': 'block.beacon.deactivate',
     'item.mace.smash_air': 'entity.player.attack.strong',
+    'block.trial_spawner.place': 'block.respawn_anchor.set_spawn',
     'item.mace.smash_ground': 'entity.generic.explode',
     'block.trial_spawner.spawn_item': 'block.amethyst_block.chime',
     'block.trial_spawner.spawn_item_begin': 'block.beacon.power_select',

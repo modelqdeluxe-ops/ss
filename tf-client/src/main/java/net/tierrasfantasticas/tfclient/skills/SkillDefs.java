@@ -117,6 +117,10 @@ public final class SkillDefs {
         public final Map<String, MobDef> mobs = new HashMap<>();
         /** Icono de cada skill (textura de 32×32). */
         public final Map<String, String> icons = new HashMap<>();
+        /** El set de objetos de la clase (armas y armadura, en skills/class_sets.json). */
+        public String set;
+        /** Objetos de MythicMobs que la clase lleva en la mano → objeto del mod (el Sacred Gear del Dragón Rojo...). */
+        public final Map<String, String> handItems = new HashMap<>();
         /** Modelos de ítem que salen en los efectos (el cliente los carga al arrancar). */
         public final java.util.Set<String> itemModels = new java.util.HashSet<>();
 
@@ -218,6 +222,12 @@ public final class SkillDefs {
         }
         if (o.has("icons") && o.get("icons").isJsonObject()) {
             for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("icons").entrySet()) c.icons.put(e.getKey(), e.getValue().getAsString());
+        }
+        c.set = str(o, "set", null);
+        if (o.has("hand_items") && o.get("hand_items").isJsonObject()) {
+            for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("hand_items").entrySet()) {
+                c.handItems.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().getAsString());
+            }
         }
         if (o.has("item_models") && o.get("item_models").isJsonObject()) {
             for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("item_models").entrySet()) c.itemModels.add(e.getValue().getAsString());

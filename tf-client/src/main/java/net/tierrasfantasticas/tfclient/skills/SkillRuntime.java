@@ -452,7 +452,7 @@ public final class SkillRuntime {
             case "remove" -> {
                 for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.remove();
             }
-            case "equip" -> equip(m, targets);
+            case "equip" -> equip(m, ctx, targets);
             case "model" -> SkillModels.model(m, ctx, targets);
             case "state", "animation" -> SkillModels.state(m, ctx, targets);
             case "changepart" -> SkillModels.changePart(m, ctx, targets);
@@ -464,6 +464,8 @@ public final class SkillRuntime {
             case "orbital" -> SkillMovers.orbital(m, ctx, targets);
             case "shoot", "shootfireball" -> SkillMovers.shoot(m, ctx, targets);
             case "aura", "buff", "debuff" -> SkillAuras.aura(m, ctx, targets);
+            case "ondamaged", "onattack", "onshoot" -> SkillAuras.aura(m, ctx, targets);
+            case "command", "consolecommand", "cmd" -> command(m, ctx, targets);
             case "auraremove", "removeaura", "removebuff" -> SkillAuras.remove(m, targets);
             case "damage", "d" -> damage(m, ctx, targets, false);
             case "basedamage" -> damage(m, ctx, targets, true);
@@ -498,9 +500,9 @@ public final class SkillRuntime {
             case "variableunset", "unsetvariable" -> unsetVariable(m, ctx, targets);
             case "message", "msg", "actionmessage" -> message(m, targets);
             case "cancelevent", "gcd", "setai", "animatearmorstand", "bodyrotation", "brightness", "lockmodel",
-                    "bodyclamp", "setmodelscale", "enchant", "ondamaged", "setgravity", "setnoai", "setspeed",
+                    "bodyclamp", "setmodelscale", "enchant", "setgravity", "setnoai", "setspeed",
                     "settarget", "threat", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
-                    "setglobalscore", "command", "consolecommand", "feed", "playanimation", "swing",
+                    "setglobalscore", "feed", "playanimation", "swing",
                     "remapmodel", "mountmodel", "glow", "setcollidable", "setinvulnerable", "setrotation" -> { /* nada */ }
             default -> warn("mecánica " + m.m);
         }
@@ -592,15 +594,26 @@ public final class SkillRuntime {
         return a;
     }
 
-    private static void equip(Mech m, List<Tgt> targets) {
+    private static void equip(Mech m, Ctx ctx, List<Tgt> targets) {
         String model = m.a.get("model");
+        String item = m.arg("", "item", "i");
         String slot = m.arg("HEAD", "slot").toUpperCase(Locale.ROOT);
-        if (!(slot.equals("HEAD") || slot.equals("4") || slot.equals("HELMET"))) return; // solo se ve lo de la cabeza
+        boolean head = slot.equals("HEAD") || slot.equals("4") || slot.equals("HELMET");
+        boolean hand = slot.equals("HAND") || slot.equals("0") || slot.equals("MAINHAND");
         for (Tgt t : targets) {
-            if (t.who == null || t.who.actor == null) continue;
-            SkillActor a = t.who.actor;
-            a.head = model;
-            a.prop("head", model, null, null);
+            if (t.who == null) continue;
+            if (t.who.actor != null) {
+                SkillActor a = t.who.actor;
+                if (head) {
+                    a.head = model;
+                    a.prop("head", model, null, null);
+                } else if (hand) {
+                    a.hand = model;
+                    a.prop("hand", model, null, null);
+                }
+            } else if (hand && t.who.entity instanceof ServerPlayer p) {
+                SkillItems.swapHand(p, ctx.cls, item.split(":")[0]);
+            }
         }
     }
 
@@ -861,6 +874,29 @@ public final class SkillRuntime {
         String var = m.arg(null, "var", "variable", "name", "key", "k");
         if (var == null) return;
         varScope(var, ctx, targets.isEmpty() ? null : targets.get(0)).remove(varName(var));
+    }
+
+    /**
+     * Comandos de los packs: solo los de ModelEngine para ponerse o quitarse un modelo («meg disguise redsuit»,
+     * «meg undisguise»), que aquí son la mecánica model. Los demás comandos no se ejecutan nunca.
+     */
+    private static void command(Mech m, Ctx ctx, List<Tgt> targets) {
+        String c = unquote(m.arg("", "command", "cmd", "c")).trim().toLowerCase(Locale.ROOT);
+        if (c.startsWith("/")) c = c.substring(1);
+        String[] p = c.split("\\s+");
+        if (p.length >= 2 && (p[0].equals("meg") || p[0].equals("modelengine"))) {
+            Mech mm = new Mech();
+            mm.m = "model";
+            if (p[1].equals("disguise") && p.length >= 3) {
+                String id = p[2].contains(".") ? p[2] : ctx.cls.id + "." + p[2];
+                mm.a = Map.of("mid", id);
+            } else if (p[1].equals("undisguise")) {
+                mm.a = Map.of("remove", "true");
+            } else {
+                return;
+            }
+            SkillModels.model(mm, ctx, targets);
+        }
     }
 
     private static void message(Mech m, List<Tgt> targets) {

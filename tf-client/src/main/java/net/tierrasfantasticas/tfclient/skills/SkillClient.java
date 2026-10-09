@@ -105,10 +105,12 @@ public final class SkillClient {
         a.yaw = a.prevYaw = m.yaw();
         a.pitch = a.prevPitch = m.pitch();
         a.head = m.head() == null ? null : new ResourceLocation(m.head());
+        a.hand = m.hand() == null ? null : new ResourceLocation(m.hand());
         a.small = m.small();
         a.follow = m.follow();
         a.hideHost = m.hideHost();
         a.setModel(m.me());
+        if (m.anim() != null) a.play(m.anim(), 1F);
     }
 
     static void moves(SkillNet.Moves m) {
@@ -126,6 +128,7 @@ public final class SkillClient {
         if (a == null) return;
         switch (m.key()) {
             case "head" -> a.head = m.a().isEmpty() ? null : new ResourceLocation(m.a());
+            case "hand" -> a.hand = m.a().isEmpty() ? null : new ResourceLocation(m.a());
             case "me" -> a.setModel(m.a().isEmpty() ? null : m.a());
             case "state" -> a.play(m.a(), parse(m.b(), 1F));
             case "stop" -> {
@@ -313,6 +316,7 @@ public final class SkillClient {
                 if (at == null || at.distanceToSqr(cam) > 128 * 128) continue;
                 float yaw = a.lerpYaw(mc.level, partial);
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
+                if (a.hand != null) renderHand(a, at.subtract(cam), yaw, pose, buffers);
                 if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers);
             }
         } catch (Throwable t) {
@@ -346,6 +350,25 @@ public final class SkillClient {
         pose.popPose();
     }
 
+    /** Lo que lleva en la mano derecha un soporte con los brazos en reposo (como ItemInHandLayer del soporte). */
+    private static void renderHand(Actor a, Vec3 at, float yaw, PoseStack pose, MultiBufferSource buffers) {
+        BakedModel model = Minecraft.getInstance().getModelManager().getModel(a.hand);
+        if (model == null || model == Minecraft.getInstance().getModelManager().getMissingModel()) return;
+        pose.pushPose();
+        pose.translate(at.x, at.y, at.z);
+        pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+        if (a.small) pose.scale(0.5F, 0.5F, 0.5F);
+        pose.scale(-1F, -1F, 1F);
+        pose.translate(0F, -1.501F, 0F);
+        pose.translate(-5F / 16F, 2F / 16F, 0F); // hombro derecho del soporte
+        pose.mulPose(Axis.XP.rotationDegrees(-90F));
+        pose.mulPose(Axis.YP.rotationDegrees(180F));
+        pose.translate(1F / 16F, 0.125F, -0.625F);
+        Minecraft.getInstance().getItemRenderer().render(STACK, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, pose, buffers,
+                FULL_BRIGHT, OverlayTexture.NO_OVERLAY, model);
+        pose.popPose();
+    }
+
     // ------------------------------------------------------------------------------------------- actor
 
     private static final class Actor {
@@ -360,6 +383,7 @@ public final class SkillClient {
         Float targetYaw;
         Float targetPitch;
         ResourceLocation head;
+        ResourceLocation hand;
         boolean small;
         int follow = -1;
         boolean hideHost;

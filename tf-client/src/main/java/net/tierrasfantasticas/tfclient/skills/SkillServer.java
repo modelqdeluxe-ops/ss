@@ -43,7 +43,8 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class SkillServer {
-    private record Owned(String cls, long webAt) {}
+    /** La clase, cuándo la puso la web y de qué clase se le dio ya el equipo. */
+    private record Owned(String cls, long webAt, String given) {}
 
     private static MinecraftServer server;
     private static final Map<UUID, Owned> CLASSES = new HashMap<>();
@@ -130,7 +131,7 @@ public final class SkillServer {
                 JsonObject p = players.getAsJsonObject(key);
                 String cls = TFJson.str(p, "clase", null);
                 if (cls != null && SkillDefs.get(cls) == null) cls = null;
-                CLASSES.put(UUID.fromString(key), new Owned(cls, TFJson.num(p, "web", 0)));
+                CLASSES.put(UUID.fromString(key), new Owned(cls, TFJson.num(p, "web", 0), TFJson.str(p, "equipo", null)));
             } catch (Exception ignored) {
                 // entrada rota
             }
@@ -144,6 +145,7 @@ public final class SkillServer {
             JsonObject p = new JsonObject();
             if (o.cls() != null) p.addProperty("clase", o.cls());
             if (o.webAt() > 0) p.addProperty("web", o.webAt());
+            if (o.given() != null) p.addProperty("equipo", o.given());
             players.add(uuid.toString(), p);
         });
         JsonObject json = new JsonObject();
@@ -183,7 +185,7 @@ public final class SkillServer {
 
     private static void set(MinecraftServer srv, UUID uuid, String cls, long webAt, boolean tell) {
         Owned old = CLASSES.get(uuid);
-        CLASSES.put(uuid, new Owned(cls, Math.max(webAt, old == null ? 0 : old.webAt())));
+        CLASSES.put(uuid, new Owned(cls, Math.max(webAt, old == null ? 0 : old.webAt()), old == null ? null : old.given()));
         COOLDOWN.remove(uuid);
         dirty = true;
         save();
@@ -191,6 +193,7 @@ public final class SkillServer {
         if (player == null) return;
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
+        equipment(player);
         sync(player);
         if (tell && cls != null && (old == null || !cls.equals(old.cls()))) {
             SkillDefs.ClassDef def = SkillDefs.get(cls);
@@ -293,6 +296,16 @@ public final class SkillServer {
         }
     }
 
+    /** Auras que cambian el daño (onDamaged / onAttack de MythicMobs: el traje del Dragón Rojo recibe la mitad). */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onHurtScale(LivingHurtEvent event) {
+        if (!enabled || event.getAmount() <= 0) return;
+        double m = SkillAuras.multiplier(event.getEntity(), true);
+        net.minecraft.world.entity.Entity src = event.getSource().getEntity();
+        if (src != null) m *= SkillAuras.multiplier(src, false);
+        if (m != 1.0) event.setAmount((float) Math.max(0, event.getAmount() * m));
+    }
+
     /** Pasivas al recibir daño (DAMAGED). */
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onHurt(LivingHurtEvent event) {
@@ -312,7 +325,41 @@ public final class SkillServer {
 
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) sync(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            equipment(player);
+            sync(player);
+        }
+    }
+
+    /** Quita el equipo de otras clases y, si aún no se le dio el de la suya, se lo da (una vez por clase). */
+    private static void equipment(ServerPlayer player) {
+        Owned o = CLASSES.get(player.getUUID());
+        String cls = o == null ? null : o.cls();
+        try {
+            SkillItems.purge(player, cls);
+            if (cls != null && !cls.equals(o.given())) {
+                SkillItems.give(player, SkillDefs.get(cls));
+                CLASSES.put(player.getUUID(), new Owned(cls, o.webAt(), cls));
+                dirty = true;
+            }
+        } catch (Throwable t) {
+            TFClient.LOGGER.error("TF Skills: no se pudo dar el equipo de la clase", t);
+        }
+    }
+
+    /** /tf web clases equipo: vuelve a dar el equipo de su clase (si lo perdió). */
+    private static int regive(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
+        int n = 0;
+        for (ServerPlayer p : targets) {
+            String cls = classOf(p.getUUID());
+            if (cls == null) continue;
+            SkillItems.give(p, SkillDefs.get(cls));
+            n++;
+        }
+        int done = n;
+        ctx.getSource().sendSuccess(() -> Component.literal("Equipo de clase entregado a " + done + " jugador(es)."), true);
+        return n;
     }
 
     @SubscribeEvent
@@ -341,7 +388,10 @@ public final class SkillServer {
 
     // ------------------------------------------------------------------------------------------- comandos
 
-    /** /tf web clases dar &lt;jugadores&gt; &lt;clase|ninguna&gt;, /tf web clases lista, /tf web clases ver &lt;jugador&gt;. */
+    /**
+     * /tf web clases dar &lt;jugadores&gt; &lt;clase|ninguna&gt;, /tf web clases lista, /tf web clases ver &lt;jugador&gt;,
+     * /tf web clases equipo &lt;jugadores&gt; (vuelve a dar las armas y la armadura de su clase).
+     */
     public static LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("clases")
                 .then(Commands.literal("lista").executes(SkillServer::list))
@@ -355,7 +405,9 @@ public final class SkillServer {
                                         })
                                         .executes(SkillServer::give))))
                 .then(Commands.literal("ver")
-                        .then(Commands.argument("target", EntityArgument.player()).executes(SkillServer::show)));
+                        .then(Commands.argument("target", EntityArgument.player()).executes(SkillServer::show)))
+                .then(Commands.literal("equipo")
+                        .then(Commands.argument("targets", EntityArgument.players()).executes(SkillServer::regive)));
     }
 
     private static int list(CommandContext<CommandSourceStack> ctx) {
