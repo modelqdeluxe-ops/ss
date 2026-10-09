@@ -430,7 +430,7 @@ class Sim:
 
     # Minecraft font
     def mcbase(self, ch):
-        ch = {'·': '.', '«': '"', '»': '"', '…': '.'}.get(ch, ch)
+        ch = {'·': '.', '«': '"', '»': '"', '…': '.', '¿': '?', '¡': '!'}.get(ch, ch)
         if ord(ch) < 256 and ord(ch) >= 32 and ch.isascii():
             return ch
         d = unicodedata.normalize('NFD', ch)[0]
@@ -452,10 +452,14 @@ class Sim:
                 cx += 4
                 continue
             gx, gy = (code % 16) * 8, (code // 16) * 8
+            flip = ch in '¿¡'  # como en Minecraft: el ? y el ! dados la vuelta
             for yy in range(8):
                 for xx in range(self.mcw[code]):
                     if self.mcfont.getpixel((gx + xx, gy + yy))[3]:
-                        self.put(cx + xx, y + yy, color)
+                        if flip:
+                            self.put(cx + self.mcw[code] - 1 - xx, y + 7 - yy, color)
+                        else:
+                            self.put(cx + xx, y + yy, color)
             cx += self.mcw[code] + 1
 
     def wrap(self, s, x, y, w, color, maxl=99):

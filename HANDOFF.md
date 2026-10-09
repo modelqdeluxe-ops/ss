@@ -10,8 +10,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.33** (la siguiente es **1.3.34**). Lo último (1.3.33): solo quedan `/tf web` y `/tf reload`
-> (recarga todo de verdad) y los ajustes de Protección dicen claro cómo está cada cosa. Antes (1.3.32): puedes
+> mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). Lo último (1.3.34): ajustes de Protección como preguntas
+> con SÍ / NO (el que vale, en verde). Antes (1.3.33): solo quedan `/tf web` y `/tf reload` (recarga todo de verdad). Antes (1.3.32): puedes
 > reaccionar también a tus fotos.
 > Antes (1.3.31): Comunidad con botón REACCIONAR (selector de emojis) y tarjetas limpias. Antes (1.3.30): emojis de Comunidad redibujados.
 > Antes (1.3.29): leyendas solo en Tienda/Kits, oficios sin avisos
@@ -43,7 +43,17 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): solo /tf web y /tf reload, ajustes de Protección claros — TF Client 1.3.33
+### Última entrega (9 de octubre de 2026): ajustes de Protección como preguntas — TF Client 1.3.34
+Con «BLOQUEADO»/«PERMITIDO» (1.3.33) seguía sin entenderse («¿el que está bloqueado? ¿permitido qué?»). Ahora
+(`PadClaims`) cada opción es una **pregunta** con **dos botones, SÍ y NO**: el que vale ahora sale **verde** y el
+otro **gris**; se pulsa el otro para cambiarla (la acción `flag:<zona>:<opción>:1|0` pone el valor, no lo alterna).
+Las de los de fuera van bajo «Los de fuera de tu zona (tú y tus miembros pueden todo)»: «¿Pueden construir?»,
+«¿Pueden abrir cofres?»…; las demás: «¿Las explosiones rompen?», «¿Salen monstruos?», «¿Prohibir el PvP?»,
+«¿Avisarte si entra alguien?», «¿Volar?»… con una nota corta debajo cuando hace falta. En MÁS: «¿Se ve el contorno de
+la zona?», «¿Mensaje al entrar/salir?» (SÍ/NO) y una fila aparte con EDITAR para escribir cada mensaje. Las preguntas
+son cortas para que no se corten (con la fuente de Minecraft, que tiene «¿»; el simulador ya también lo dibuja).
+
+### Entrega anterior (9 de octubre de 2026): solo /tf web y /tf reload, ajustes de Protección claros — TF Client 1.3.33
 Pidió quitar los comandos `/tf` porque todo va por la tableta (dejar `/tf web`, «tf claims creo» y un `/tf reload` que
 «se actualice de verdad»), y que los ajustes de la zona no confundan («MOBS HOSTILES … SÍ», ¿sí qué?).
 1. **Comandos**: fuera `/tf jobs` (borrado `jobs/TFJobsCommands.java`) y `/tf shop`. Quedan `/tf web …` (staff; las
@@ -1291,7 +1301,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.33)
+## 5. El mod (TF Client 1.3.34)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
