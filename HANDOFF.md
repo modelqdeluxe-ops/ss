@@ -21,8 +21,14 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > - [ ] Fichas nuevas (`build_pad.py tile()`): marco RPG (oro + engaste) y versión hover; icono de Música.
 > - [ ] Animaciones por app al pasar el ratón (`PadHomePage`: balanceo del pico, moneda que gira, humo de la casa…).
 > - [ ] Rediseño de `PadUi`/`PadViewPage` (panel, filas como tarjetas, pestañas, botones con brillo, cabecera).
-> - [ ] Música: `pad/music/` (descarga + conversión de links, biblioteca `tfclient/musica/`, decodificadores MP3
->       (JLayer en jarJar)/OGG (STBVorbis)/WAV, `SoundInstance` con `getStream` de Forge, portada ID3), `PadMusicPage`.
+> - [~] Música: hecho y probado fuera del juego `pad/music/` — decodificadores (`mp3/Decoder` = JavaMP3 MIT copiado,
+>       `Mp3Decoder`/`Mp3Frames` con salto exacto, `OggDecoder` stb_vorbis, `WavDecoder`), `MusicTags` (ID3/Vorbis +
+>       portada), `MusicDownloader` (Drive/Dropbox/GitHub → link directo, redirecciones, página de Drive),
+>       `MusicLibrary` (`.minecraft/tfclient/musica/biblioteca.json`), `MusicStream`/`MusicSound` (getStream de
+>       Forge, categoría MASTER), `MusicPlayer` (sigue con el pad cerrado). **Falta:** `PadMusicPage` (la app),
+>       icono `icon_musica`, añadir «musica» a `PadHomePage.APPS`, `TFPadScreen.CLIENT_APPS/openApp` y `PadAdmin.PLAYER_APPS`.
+>       Canción de prueba ya en la web: `tierras-fantasticas/public/musica/epic-rpg.mp3`
+>       (→ https://xn--tierrasfantsticas-hpb.store/musica/epic-rpg.mp3 tras fusionar).
 > - [ ] MP3 de prueba con link directo; simulador y vistas previas; docs; publicar 1.3.25 y mandar el .jar.
 >
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del mod:
