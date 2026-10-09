@@ -50,12 +50,13 @@ import net.tierrasfantasticas.tfclient.pad.PadSpeakerNet;
 public final class MusicSpeaker {
     /** Distancia a la que deja de oírse (como el servidor, PadSpeakers.RANGE). */
     private static final int RANGE = 32;
-    private static final int MAX_CACHE = 30;
+    private static final int MAX_CACHE = 30, MAX_DOWNLOADS = 2;
     private static final ResourceLocation ID = new ResourceLocation(TFClient.MOD_ID, "pad_altavoz");
 
     private static final class Heard {
         final String url;
-        final long originMs, durationMs;
+        final long durationMs;
+        long originMs;
         SpeakerSound sound;
 
         Heard(String url, long originMs, long durationMs) {
@@ -75,6 +76,7 @@ public final class MusicSpeaker {
 
     private static final Map<UUID, Heard> HEARD = new HashMap<>();
     private static final Set<String> DOWNLOADING = new HashSet<>();
+    private static final Map<String, Long> FAILED = new HashMap<>();
     private static boolean published;
     private static long lastPublish;
     private static int ticks;
@@ -117,12 +119,20 @@ public final class MusicSpeaker {
 
     /** Lo que cuenta el servidor de un altavoz cercano. */
     public static void heard(PadSpeakerNet.Down m) {
-        Heard old = HEARD.remove(m.speaker());
+        long origin = System.currentTimeMillis() - m.positionMs();
+        Heard old = HEARD.get(m.speaker());
+        // el recordatorio de lo mismo que ya suena (a menos de 1,5 s de donde va): no se corta, solo se apunta
+        if (m.playing() && old != null && old.url.equals(m.url()) && Math.abs(origin - old.originMs) < 1500) {
+            old.originMs = origin;
+            if (old.sound == null && MusicLibrary.hearOthers()) ensure(m.speaker(), old);
+            return;
+        }
+        HEARD.remove(m.speaker());
         if (old != null) stopSound(old);
         if (!m.playing()) return;
         String url = m.url();
         if (!(url.startsWith("https://") || url.startsWith("http://"))) return;
-        Heard h = new Heard(url, System.currentTimeMillis() - m.positionMs(), m.durationMs());
+        Heard h = new Heard(url, origin, m.durationMs());
         HEARD.put(m.speaker(), h);
         if (MusicLibrary.hearOthers()) ensure(m.speaker(), h);
     }
@@ -142,13 +152,17 @@ public final class MusicSpeaker {
             play(speaker, h, file);
             return;
         }
-        if (file == null || !DOWNLOADING.add(h.url)) return;
+        // como mucho 2 descargas a la vez (si hay más, se intenta con el siguiente recordatorio)
+        if (file == null || DOWNLOADING.size() >= MAX_DOWNLOADS) return;
+        Long failed = FAILED.get(h.url);
+        if (failed != null && System.currentTimeMillis() - failed < 120_000) return; // un link que falló: no se reintenta en 2 min
+        if (!DOWNLOADING.add(h.url)) return;
         Thread t = new Thread(() -> {
             boolean ok = false;
             Path part = file.resolveSibling(file.getFileName() + ".part");
             try {
                 Files.createDirectories(file.getParent());
-                MusicDownloader.fetch(new MusicDownloader.Job(h.url, false), h.url, part, MusicDownloader.MAX_AUDIO, true);
+                MusicDownloader.fetch(new MusicDownloader.Job(h.url, false), h.url, part, MusicDownloader.MAX_AUDIO, true, true);
                 if (AudioDecoder.AudioFormatSniffer.sniff(part) != AudioDecoder.Kind.UNKNOWN) {
                     Files.move(part, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                     ok = true;
@@ -166,7 +180,11 @@ public final class MusicSpeaker {
             boolean done = ok;
             Minecraft.getInstance().execute(() -> {
                 DOWNLOADING.remove(h.url);
-                if (!done) return;
+                if (!done) {
+                    if (FAILED.size() > 50) FAILED.clear();
+                    FAILED.put(h.url, System.currentTimeMillis());
+                    return;
+                }
                 // sigue sonando la misma en ese altavoz: a la par por donde vaya
                 for (Map.Entry<UUID, Heard> e : HEARD.entrySet()) {
                     if (e.getValue().url.equals(h.url) && MusicLibrary.hearOthers()) play(e.getKey(), e.getValue(), file);

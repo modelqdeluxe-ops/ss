@@ -217,8 +217,14 @@ public final class MusicDownloader {
      * extensión) para usarlo de título si la canción no trae uno.
      */
     static String fetch(Job j, String url, Path file, long max, boolean audio) throws IOException {
+        return fetch(j, url, file, max, audio, false);
+    }
+
+    /** Como fetch; con publicOnly (links que manda otro jugador) solo baja de internet, nunca de la red de casa. */
+    static String fetch(Job j, String url, Path file, long max, boolean audio, boolean publicOnly) throws IOException {
         String current = url;
         for (int hop = 0; hop < 12; hop++) {
+            if (publicOnly) checkPublic(new URL(current));
             HttpURLConnection c = (HttpURLConnection) new URL(current).openConnection();
             c.setInstanceFollowRedirects(false);
             c.setConnectTimeout(15_000);
@@ -267,6 +273,28 @@ public final class MusicDownloader {
             return fileName(c.getHeaderField("Content-Disposition"), current);
         }
         throw new IOException("Demasiadas redirecciones.");
+    }
+
+    /**
+     * Que el link vaya a internet: http(s), puerto normal y ninguna dirección de este equipo ni de la red local
+     * (127.x, 10.x, 192.168.x, 169.254.x, fc00::/7…). Así un link de otro jugador no puede tocar el router ni nada de casa.
+     */
+    private static void checkPublic(URL u) throws IOException {
+        String proto = u.getProtocol().toLowerCase(Locale.ROOT);
+        if (!proto.equals("http") && !proto.equals("https")) throw new IOException("Link no permitido.");
+        int port = u.getPort();
+        if (port != -1 && port != 80 && port != 443) throw new IOException("Link no permitido (puerto).");
+        String host = u.getHost();
+        if (host == null || host.isBlank()) throw new IOException("Link no permitido.");
+        for (java.net.InetAddress a : java.net.InetAddress.getAllByName(host)) {
+            byte[] b = a.getAddress();
+            boolean uniqueLocal = b.length == 16 && (b[0] & 0xFE) == 0xFC;
+            boolean cgnat = b.length == 4 && (b[0] & 0xFF) == 100 && (b[1] & 0xC0) == 64;
+            if (a.isAnyLocalAddress() || a.isLoopbackAddress() || a.isLinkLocalAddress() || a.isSiteLocalAddress()
+                    || a.isMulticastAddress() || uniqueLocal || cgnat || (b.length == 4 && b[0] == 0)) {
+                throw new IOException("Link no permitido (red local).");
+            }
+        }
     }
 
     /** El enlace del botón «Descargar de todos modos» de Google Drive, si la página es esa. */

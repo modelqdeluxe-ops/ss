@@ -36,22 +36,32 @@ public final class PadSpeakers {
     private static final Map<UUID, State> SPEAKERS = new HashMap<>();
     private static final Map<UUID, Set<UUID>> TOLD = new HashMap<>();
     private static final Map<UUID, Long> LAST = new HashMap<>();
+    /** Cuándo cambió de canción por última vez cada altavoz. */
+    private static final Map<UUID, Long> URL_AT = new HashMap<>();
     private static int ticks;
 
     private PadSpeakers() {}
 
-    /** Lo que manda el que pone la música (como mucho 4 veces por segundo). */
+    /**
+     * Lo que manda el que pone la música. Parar vale siempre; lo demás, como mucho 4 veces por segundo y una canción
+     * nueva cada 2 s (lo que se salte llega con el recordatorio de cada 10 s del cliente).
+     */
     public static void update(ServerPlayer p, PadSpeakerNet.Up m) {
-        long now = System.currentTimeMillis();
-        Long last = LAST.get(p.getUUID());
-        if (last != null && now - last < 250) return;
-        LAST.put(p.getUUID(), now);
         if (!m.playing()) {
             stop(p.getUUID());
             return;
         }
+        long now = System.currentTimeMillis();
+        Long last = LAST.get(p.getUUID());
+        if (last != null && now - last < 250) return;
         String url = m.url().trim();
         if (!(url.startsWith("https://") || url.startsWith("http://")) || url.length() > 500) return;
+        State old = SPEAKERS.get(p.getUUID());
+        Long changed = URL_AT.get(p.getUUID());
+        boolean newUrl = old == null || !old.url.equals(url);
+        if (newUrl && changed != null && now - changed < 2000) return;
+        LAST.put(p.getUUID(), now);
+        if (newUrl) URL_AT.put(p.getUUID(), now);
         State s = new State(url, cut(m.title()), cut(m.artist()), now - m.positionMs(), m.durationMs());
         SPEAKERS.put(p.getUUID(), s);
         // a los que ya lo oían, lo nuevo (otra canción, otro punto)
@@ -128,6 +138,7 @@ public final class PadSpeakers {
         UUID u = event.getEntity().getUUID();
         stop(u);
         LAST.remove(u);
+        URL_AT.remove(u);
         for (Set<UUID> told : TOLD.values()) told.remove(u);
     }
 

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -501,8 +503,15 @@ final class PadViewPage extends PadPage {
     void renderOver(GuiGraphics g, int mx, int my) {
         if (tooltip.isEmpty() || !(app.equals("tienda") || app.equals("kits"))) return;
         float k = 2F / 3F;
+        // a 2/3 el juego no sabe si se sale de la pantalla: se mide aquí y, si no cabe, va al otro lado del ratón
+        List<Component> lines = Screen.getTooltipFromItem(Minecraft.getInstance(), tooltip);
+        int tw = 0;
+        for (Component c : lines) tw = Math.max(tw, PadUi.font().width(c));
+        float w = (tw + 20) * k, h = (lines.size() * 10 + 8) * k;
+        float tx = mx + w > g.guiWidth() ? Math.max(0, mx - w - 4) : mx;
+        float ty = my + h > g.guiHeight() ? Math.max(0, g.guiHeight() - h) : my;
         g.pose().pushPose();
-        g.pose().translate(mx, my, 0);
+        g.pose().translate(tx, ty, 0);
         g.pose().scale(k, k, 1);
         g.renderTooltip(PadUi.font(), tooltip, 0, 0);
         g.pose().popPose();

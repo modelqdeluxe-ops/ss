@@ -71,6 +71,13 @@ Lo que pidió viendo la 1.3.28 (con capturas):
      baja la canción **del mismo link** (caché musica/altavoz/, 30 como mucho) y la reproduce en mono (`MonoDecoder`)
      en la categoría Discos. Solo funciona con canciones que vinieron de un link. En Ajustes: «Oír los altavoces de
      otros» (SÍ/NO).
+   - Para que no se rompa: parar vale siempre; el servidor acepta 4 avisos/s y una canción nueva cada 2 s; el
+     recordatorio de cada 10 s no corta lo que ya suena (solo si va desfasado más de 1,5 s); los links de otros solo se
+     bajan de internet (nunca 127.x, 10.x, 192.168.x, etc., ni puertos raros: `MusicDownloader.checkPublic`), como
+     mucho 2 descargas a la vez, y un link que falla no se reintenta en 2 min.
+   - Pestañas de playlists: si no caben, flechas < > (la elegida siempre se ve, el + siempre al final).
+8. **Misiones de oficio a medianoche**: las de ayer hechas sin cobrar siguen saliendo (y se cobran) al día siguiente
+   (`JobProgress.prevDay/prevIds`, en oficios.json «ayer»/«ayerMisiones»).
 
 ### Entrega anterior (9 de octubre de 2026): interior de las apps con diseño nuevo, ventana centrada, fotos nítidas — TF Client 1.3.28
 Viendo la 1.3.27 dijo que el interior de las apps era «mediocre y simplista»: el blanco está bien, pero quería

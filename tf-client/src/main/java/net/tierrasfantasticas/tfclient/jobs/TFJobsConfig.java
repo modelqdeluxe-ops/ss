@@ -94,6 +94,10 @@ public final class TFJobsConfig {
         if (jp.rotDay != day) {
             List<Mission> open = new ArrayList<>();
             for (Mission m : job.missions()) if (m.repeat() == Repeat.DAILY && m.level() <= jp.level) open.add(m);
+            // las de ayer se guardan para poder cobrar las que quedaron hechas al pasar la medianoche
+            jp.prevIds.clear();
+            if (jp.rotDay == day - 1) jp.prevIds.addAll(jp.rotIds);
+            jp.prevDay = jp.prevIds.isEmpty() ? -1 : day - 1;
             jp.rotIds.clear();
             for (var p : net.tierrasfantasticas.tfclient.util.TFRotation.pick(open.size(), dailyMissions, day,
                     net.tierrasfantasticas.tfclient.util.TFRotation.SEASON_DAYS, job.id().hashCode(), uuid.hashCode())) {
@@ -104,19 +108,33 @@ public final class TFJobsConfig {
         }
         List<Mission> out = new ArrayList<>();
         for (String r : jp.rotIds) {
-            int at = r.indexOf('@');
-            Mission t = at > 0 ? job.mission(r.substring(0, at)) : null;
-            if (t == null) continue;
-            double f;
-            try {
-                f = Double.parseDouble(r.substring(at + 1));
-            } catch (NumberFormatException e) {
-                f = 1;
+            Mission m = fromRot(job, r, day);
+            if (m != null) out.add(m);
+        }
+        // de ayer, solo las hechas sin cobrar (al final de las diarias)
+        if (jp.prevDay == day - 1) {
+            for (String r : jp.prevIds) {
+                Mission m = fromRot(job, r, jp.prevDay);
+                TFJobsData.MissionState ms = m == null ? null : jp.missions.get(m.id());
+                if (ms != null && ms.done && ms.claimedDay < 0) out.add(m);
             }
-            out.add(rotated(t, f, day));
         }
         for (Mission m : job.missions()) if (m.repeat() != Repeat.DAILY) out.add(m);
         return out;
+    }
+
+    /** "plantilla@factor" del día → la misión, o null si la plantilla ya no existe. */
+    private static Mission fromRot(Job job, String r, long day) {
+        int at = r.indexOf('@');
+        Mission t = at > 0 ? job.mission(r.substring(0, at)) : null;
+        if (t == null) return null;
+        double f;
+        try {
+            f = Double.parseDouble(r.substring(at + 1));
+        } catch (NumberFormatException e) {
+            f = 1;
+        }
+        return rotated(t, f, day);
     }
 
     /** Una misión de hoy por su id (de missionsFor), o null. */

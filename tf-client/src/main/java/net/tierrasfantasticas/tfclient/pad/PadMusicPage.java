@@ -50,6 +50,9 @@ final class PadMusicPage extends PadPage {
     private int menuX, menuY;
     private String confirmList;
     private long confirmListAt;
+    /** La primera playlist que se ve en las pestañas (si no caben todas). */
+    private int tabFirst;
+    private String tabFor;
     private final List<Hit> hits = new ArrayList<>();
 
     private record Hit(int x, int y, int w, int h, Runnable action) {}
@@ -206,6 +209,7 @@ final class PadMusicPage extends PadPage {
             MusicLibrary.Track track = t;
             hits.add(new Hit(bx, by, big(14), big(12), () -> {
                 coverFor = coverFor == null ? track : null;
+                newList = false;
                 focused = coverFor != null;
                 input = "";
                 pad.sound("select", 0.6F);
@@ -429,12 +433,36 @@ final class PadMusicPage extends PadPage {
     private void drawListTabs(GuiGraphics g, double mx, double my, int x, int y, int w, String list) {
         List<MusicLibrary.Playlist> lists = MusicLibrary.playlists();
         int n = lists.size() + 2, gap = 2, room = w - 8;
-        int plus = PadFont.width("+") + 12;
-        int maxLabel = Math.max(14, (room - plus - gap * (n - 1)) / Math.max(1, n - 1) - 12);
+        int plus = PadFont.width("+") + 12, arrow = PadFont.width(">") + 12;
+        int maxLabel = Math.max(24, (room - plus - gap * (n - 1)) / Math.max(1, n - 1) - 12);
+        // si no caben todas: flechas < > y se enseñan las que quepan (siempre la elegida y el «+»)
+        int selIdx = -1;
+        for (int i = 0; i < lists.size(); i++) if (lists.get(i).id().equals(list)) selIdx = i;
+        tabFirst = Math.max(0, Math.min(tabFirst, lists.size() - 1));
+        // al cambiar de playlist (o crear una), las pestañas se mueven hasta que se vea; con las flechas, se mueven libres
+        boolean follow = !list.equals(tabFor);
+        tabFor = list;
+        if (follow && selIdx >= 0 && selIdx < tabFirst) tabFirst = selIdx;
+        int last;
+        while (true) {
+            int used = tabWidth("TODAS", maxLabel, false) + gap + plus + (tabFirst > 0 ? arrow + gap : 0);
+            last = tabFirst - 1;
+            for (int i = tabFirst; i < lists.size(); i++) {
+                int tw = tabWidth(PadFont.upper(lists.get(i).name()), maxLabel, i == selIdx) + gap;
+                boolean more = i < lists.size() - 1;
+                if (used + tw + (more ? arrow + gap : 0) > room) break;
+                used += tw;
+                last = i;
+            }
+            if (!follow || selIdx <= last || tabFirst >= selIdx) break;
+            tabFirst++;
+        }
         int tx = x + 4;
         int[] chosen = null;
         String chosenLabel = "";
         for (int i = -1; i < lists.size(); i++) {
+            if (i >= 0 && (i < tabFirst || i > last)) continue;
+            if (i == tabFirst && tabFirst > 0) tx = arrowTab(g, mx, my, tx, y, arrow, "<", -1) + gap;
             String id = i < 0 ? "" : lists.get(i).id();
             String label = PadFont.fit(i < 0 ? "TODAS" : PadFont.upper(lists.get(i).name()), maxLabel);
             boolean sel = id.equals(list);
@@ -470,6 +498,7 @@ final class PadMusicPage extends PadPage {
             }
             tx += tw + gap;
         }
+        if (last < lists.size() - 1) tx = arrowTab(g, mx, my, tx, y, arrow, ">", 1) + gap;
         if (chosen != null) {
             PadUi.tab(g, chosen[0], y, chosen[1], chosenLabel, 2);
             if (!list.isEmpty()) drawGlyph(g, CROSS, chosen[0] + chosen[1] - 10, y + 6, 0xFFC8323C);
@@ -485,6 +514,23 @@ final class PadMusicPage extends PadPage {
             input = "";
             pad.sound("tab", 0.6F);
         }));
+    }
+
+    /** Ancho de una pestaña de playlist (como la dibuja drawListTabs). */
+    private static int tabWidth(String label, int maxLabel, boolean selected) {
+        return PadFont.width(PadFont.fit(label, maxLabel)) + 12 + (selected ? 8 : 0);
+    }
+
+    /** Pestaña de flecha para ver más playlists (dir -1 las de antes, 1 las de después). Devuelve dónde acaba. */
+    private int arrowTab(GuiGraphics g, double mx, double my, int tx, int y, int w, String label, int dir) {
+        boolean hover = PadUi.inside(mx, my, tx, y, w, 15);
+        if (hover) pad.hover("§listas" + dir);
+        PadUi.tab(g, tx, y, w, label, hover ? 1 : 0);
+        hits.add(new Hit(tx, y, w, 15, () -> {
+            tabFirst = Math.max(0, tabFirst + dir);
+            pad.sound("tab", 0.5F);
+        }));
+        return tx + w;
     }
 
     private void drawEmptyList(GuiGraphics g, int x, int top, int w, int h) {
@@ -684,7 +730,10 @@ final class PadMusicPage extends PadPage {
     private void submit() {
         if (newList) {
             MusicLibrary.Playlist p = MusicLibrary.createList(input);
-            if (p == null) return;
+            if (p == null) {
+                focused = true; // sigue escribiendo el nombre
+                return;
+            }
             newList = false;
             input = "";
             focused = false;
@@ -853,10 +902,12 @@ final class PadMusicPage extends PadPage {
                 h.action.run();
                 if (menuBefore != null && menuBefore.equals(menuFor) && !inMenu(mx, my)) menuFor = null;
                 if (wasFocused && !focused && coverFor == null) focused = false;
+                if (newList && !focused) newList = false; // clic fuera del campo: se deja la lista nueva
                 return true;
             }
         }
         focused = false;
+        newList = false;
         menuFor = null;
         return false;
     }
