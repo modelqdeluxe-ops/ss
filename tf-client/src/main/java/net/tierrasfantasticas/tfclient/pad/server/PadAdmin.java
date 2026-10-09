@@ -495,6 +495,19 @@ public final class PadAdmin {
         }
     }
 
+    /** Quita el objeto n.º index de la lista «objetos» (los que se leen; los ilegibles no cuentan). */
+    static void removeItem(JsonObject o, int index) {
+        if (!o.has("objetos") || !o.get("objetos").isJsonArray()) return;
+        JsonArray keep = new JsonArray();
+        int i = 0;
+        for (JsonElement e : o.getAsJsonArray("objetos")) {
+            boolean valid = !PadItemPicker.stack(e).isEmpty();
+            if (valid && i++ == index) continue;
+            keep.add(e);
+        }
+        o.add("objetos", keep);
+    }
+
     // ---------------------------------------------------------------------------------------------------------------
     // KITS (config/tfclient/kits.json)
     // ---------------------------------------------------------------------------------------------------------------
@@ -502,15 +515,20 @@ public final class PadAdmin {
     private static final class Kits implements PadServer.App {
         @Override
         public PadView view(ServerPlayer player, String tab) {
+            tab = PadItemPicker.tab(player, "a_kits", tab);
+            if (tab.startsWith("p:")) { // elegir objetos para el kit
+                PadKits.Kit k = PadKits.kit(tab.substring(2));
+                if (k != null) return PadItemPicker.view(player, "a_kits", tab, k.name(), "tab:k:" + k.id());
+            }
             if (tab.startsWith("k:")) {
                 PadKits.Kit k = PadKits.kit(tab.substring(2));
                 if (k != null) return kitView(player, k);
             }
-            PadView.Builder b = PadView.of("a_kits").header("Pulsa un kit para cambiarlo. Uno nuevo se crea con lo que llevas en el inventario.");
+            PadView.Builder b = PadView.of("a_kits").header("Pulsa un kit para cambiarlo. Uno nuevo se crea con lo que llevas en el inventario (o vacío).");
             for (PadKits.Kit k : PadKits.kits()) {
                 b.card(new ItemStack(k.iconItem()), k.name(), 0x40C850, PadKits.typeText(k), "tab:k:" + k.id(), false);
             }
-            b.input("nuevo", "NOMBRE DEL KIT NUEVO", 32, "CREAR CON MI INVENTARIO");
+            b.input("nuevo", "NOMBRE DEL KIT NUEVO", 32, "CREAR");
             return b.build();
         }
 
@@ -528,9 +546,12 @@ public final class PadAdmin {
                     k.coins() > 0 ? TFEconomy.format(k.coins()) : "—", editBtn("monedas"), null).selected(edit.equals("monedas")));
             b.row(new PadView.Row(new ItemStack(k.iconItem()), "Icono", TEXT, List.of("El objeto que sale en su tarjeta."), -1, "",
                     PadView.Btn.of("MI MANO", "icono:" + k.id(), PadView.GRAY), null));
-            b.row(new PadView.Row(new ItemStack(Items.BUNDLE), "Objetos", TEXT, List.of("Se cambian por lo que llevas en el inventario."), -1,
-                    String.valueOf(k.items().size()), PadView.Btn.of("MI INVENTARIO", "objetos:" + k.id(), PadView.GRAY), null));
-            for (ItemStack s : k.items()) b.cell(s.copy(), "", TEXT, "", false);
+            boolean sureEmpty = PadServer.confirming(player, "a_kits.vaciar:" + k.id());
+            b.row(new PadView.Row(new ItemStack(Items.BUNDLE), "Objetos", TEXT,
+                    List.of("AÑADIR: de tu inventario o de todos los objetos del juego (también mods). Pulsa uno de abajo para quitarlo."), -1,
+                    String.valueOf(k.items().size()), PadView.Btn.of("AÑADIR", "tab:p:" + k.id(), PadView.GREEN),
+                    PadView.Btn.of(sureEmpty ? "¿SEGURO?" : "VACIAR", "vaciar:" + k.id(), PadView.RED)));
+            for (int i = 0; i < k.items().size(); i++) b.cell(k.items().get(i).copy(), "", TEXT, "quitarobj:" + k.id() + ":" + i, false);
             b.footer(PadView.Btn.of("ATRÁS", "tab:", PadView.BLUE));
             boolean sure = PadServer.confirming(player, "a_kits.borrar:" + k.id());
             b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "BORRAR", "borrar:" + k.id(), PadView.RED));
@@ -540,18 +561,46 @@ public final class PadAdmin {
 
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
+            tab = PadItemPicker.tab(player, "a_kits", tab);
+            // el selector de objetos: lo elegido se añade al kit
+            if (tab.startsWith("p:")) {
+                ItemStack chosen = PadItemPicker.action(player, "a_kits", action, text);
+                if (chosen != null) {
+                    if (!chosen.isEmpty()) {
+                        String kid = tab.substring(2);
+                        PadKits.edit(kid, o -> {
+                            if (!o.has("objetos") || !o.get("objetos").isJsonArray()) o.add("objetos", new JsonArray());
+                            o.getAsJsonArray("objetos").add(PadItemPicker.json(chosen));
+                        });
+                        TFPadNet.notice(player, "Añadido: " + chosen.getCount() + " × " + chosen.getHoverName().getString() + ".");
+                    }
+                    return null;
+                }
+            }
             String[] a = action.split(":", 2);
             String id = a.length > 1 ? a[1] : "";
             switch (a[0]) {
                 case "nuevo" -> {
                     if (text.isBlank()) return null;
                     String made = PadKits.createFromInventory(player, text.trim(), "unico");
-                    if (made == null) {
-                        TFPadNet.notice(player, "Lleva en el inventario lo que debe traer el kit.");
+                    TFPadNet.notice(player, "Kit creado (una sola vez). Añade objetos o cambia el tipo.");
+                    return "k:" + made;
+                }
+                case "vaciar" -> {
+                    if (!PadServer.confirm(player, "a_kits.vaciar:" + id)) return null;
+                    PadKits.edit(id, o -> o.add("objetos", new JsonArray()));
+                }
+                case "quitarobj" -> {
+                    int colon = id.lastIndexOf(':');
+                    if (colon < 0) return null;
+                    String kid = id.substring(0, colon);
+                    int index;
+                    try {
+                        index = Integer.parseInt(id.substring(colon + 1));
+                    } catch (NumberFormatException e) {
                         return null;
                     }
-                    TFPadNet.notice(player, "Kit creado (una sola vez). Cambia el tipo si quieres.");
-                    return "k:" + made;
+                    PadKits.edit(kid, o -> removeItem(o, index));
                 }
                 case "tipo" -> {
                     PadKits.Kit k = PadKits.kit(id);

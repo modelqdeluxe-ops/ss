@@ -36,19 +36,21 @@ final class PadInfoPages {
         }
 
         private void row(GuiGraphics g, int i, String label, String value, boolean on, double mx, double my) {
-            int y = Y + 6 + i * 22;
-            PadUi.text(g, label, X + 10, y + 4, PadUi.TEXT);
-            int bw = 46, bx = X + W - bw - 10;
-            PadUi.button(g, bx, y, bw, value, on ? PadView.GREEN : PadView.RED, PadUi.inside(mx, my, bx, y, bw, 15), true);
-            rects.add(new int[] {bx, y, bw});
-            if (i < 3) g.fill(X + 6, y + 19, X + W - 6, y + 20, 0xFFC8E4F8);
+            int y = Y + 7 + i * 25;
+            PadUi.card(g, X + 6, y - 2, W - 12, 22, 0);
+            PadUi.text(g, label, X + 14, y + 5, PadUi.TEXT);
+            int bw = 46, bx = X + W - bw - 12;
+            boolean hover = PadUi.inside(mx, my, bx, y + 1, bw, 16);
+            if (hover) pad.hover("§ajuste" + i);
+            PadUi.button(g, bx, y + 1, bw, value, on ? PadView.GREEN : PadView.RED, hover, true);
+            rects.add(new int[] {bx, y + 1, bw});
         }
 
         @Override
         boolean click(double mx, double my, int button) {
             for (int i = 0; i < rects.size(); i++) {
                 int[] r = rects.get(i);
-                if (!PadUi.inside(mx, my, r[0], r[1], r[2], 15)) continue;
+                if (!PadUi.inside(mx, my, r[0], r[1], r[2], 16)) continue;
                 switch (i) {
                     case 0 -> PadSettings.sounds = !PadSettings.sounds;
                     case 1 -> PadSettings.hoverTick = !PadSettings.hoverTick;

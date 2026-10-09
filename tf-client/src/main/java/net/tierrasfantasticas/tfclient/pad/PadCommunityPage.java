@@ -43,7 +43,7 @@ final class PadCommunityPage extends PadPage {
     }
 
     private int cardH() {
-        return photoH() + 12;
+        return photoH() + 14;
     }
 
     @Override
@@ -53,15 +53,13 @@ final class PadCommunityPage extends PadPage {
         // pestañas y + FOTO
         int x = X;
         for (String[] t : TABS) {
-            int w = PadFont.width(t[1]) + 12;
+            int w = PadFont.width(t[1]) + 14;
             boolean sel = t[0].equals(PadCommunityClient.tab);
-            boolean hover = PadUi.inside(mx, my, x, Y, w, 13);
-            PadUi.box(g, x, Y, w, 13, PadUi.NAVY);
-            PadUi.box(g, x + 1, Y + 1, w - 2, 11, sel ? 0xFFF6B628 : hover ? 0xFF96D6FF : 0xFFE8F8FF);
-            if (sel) g.fill(x + 2, Y + 1, x + w - 2, Y + 2, 0xFFFFEC96);
-            PadFont.drawCentered(g, t[1], x + w / 2, Y + 1, sel ? 0xFFFFFF : 0x18265C, sel);
+            boolean hover = PadUi.inside(mx, my, x, Y, w, 14);
+            if (hover && !sel) pad.hover("§tab" + t[0]);
+            PadUi.tab(g, x, Y, w, t[1], sel ? 2 : hover ? 1 : 0);
             String key = t[0];
-            hit(x, Y, w, 13, () -> {
+            hit(x, Y, w, 14, () -> {
                 if (!key.equals(PadCommunityClient.tab)) {
                     scroll = 0;
                     pad.sound("tab", 0.7F);
@@ -71,9 +69,10 @@ final class PadCommunityPage extends PadPage {
             x += w + 3;
         }
         int fw = PadUi.buttonWidth("+ FOTO");
-        boolean fh = PadUi.inside(mx, my, X + W - fw, Y - 1, fw, 15);
+        boolean fh = PadUi.inside(mx, my, X + W - fw, Y - 1, fw, 16);
+        if (fh) pad.hover("§foto");
         PadUi.button(g, X + W - fw, Y - 1, fw, "+ FOTO", PadView.GOLD, fh, true);
-        hit(X + W - fw, Y - 1, fw, 15, () -> pad.openApp("camara"));
+        hit(X + W - fw, Y - 1, fw, 16, () -> pad.openApp("camara"));
 
         int top = Y + 17, bottom = Y + H;
         PadUi.panel(g, X, top, W, bottom - top);
@@ -89,23 +88,17 @@ final class PadCommunityPage extends PadPage {
             }
             return;
         }
-        int ch = cardH(), visible = bottom - top - 4;
-        int contentH = posts.size() * ch + 4;
+        int ch = cardH(), visible = bottom - top - 8;
+        int contentH = posts.size() * ch + 2;
         scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - visible)));
-        pad.scissor(g, X + 1, top + 2, W - 2, visible);
-        int cy = top + 4 - scroll;
+        pad.scissor(g, X + 2, top + 4, W - 4, visible);
+        int cy = top + 5 - scroll;
         for (PadCommunityNet.Post post : posts) {
-            if (cy + ch > top && cy < bottom) drawPost(g, post, X + 4, cy, W - 14, ch - 4, mx, my, top, bottom);
+            if (cy + ch > top && cy < bottom) drawPost(g, post, X + 5, cy, W - 16, ch - 4, mx, my, top, bottom);
             cy += ch;
         }
         pad.noScissor(g);
-        if (contentH > visible) {
-            int bx = X + W - 6, bh = visible - 4;
-            g.fill(bx, top + 4, bx + 2, top + 4 + bh, 0xFFC8DCF0);
-            int th = Math.max(10, bh * visible / contentH);
-            int ty = top + 4 + (bh - th) * scroll / Math.max(1, contentH - visible);
-            g.fill(bx, ty, bx + 2, ty + th, 0xFF3496FA);
-        }
+        PadUi.scrollbar(g, X + W - 7, top + 5, visible - 2, visible, contentH, scroll);
         // cerca del final, la página siguiente
         if (scroll + visible > contentH - ch * 2) PadCommunityClient.more();
         if (full != null) drawFull(g, full);
@@ -113,12 +106,12 @@ final class PadCommunityPage extends PadPage {
 
     private void drawPost(GuiGraphics g, PadCommunityNet.Post post, int x, int y, int w, int h, double mx, double my, int top, int bottom) {
         boolean inList = my >= top + 2 && my < bottom - 2;
-        PadUi.box(g, x, y, w, h, 0xFFB8D4EE);
-        PadUi.box(g, x + 1, y + 1, w - 2, h - 2, 0xFFFFFFFF);
+        PadUi.card(g, x, y, w, h, post.mine() ? 2 : 0);
         int pw = photoW(), ph = photoH();
-        int px = x + 4, py = y + 4;
-        PadUi.box(g, px - 1, py - 1, pw + 2, ph + 2, PadUi.NAVY);
-        g.fill(px, py, px + pw, py + ph, 0xFF1A2440);
+        int px = x + 5, py = y + 5;
+        PadUi.box(g, px - 2, py - 2, pw + 4, ph + 4, PadUi.INK);
+        PadUi.box(g, px - 1, py - 1, pw + 2, ph + 2, PadUi.GOLD_LO);
+        g.fill(px, py, px + pw, py + ph, PadUi.SLOT);
         ResourceLocation tex = PadCommunityClient.texture(post.id());
         if (tex != null) {
             int[] sz = PadCommunityClient.textureSize(post.id());
@@ -129,7 +122,7 @@ final class PadCommunityPage extends PadPage {
         if (inList) hit(px, py, pw, ph, () -> full = post);
         // columna derecha
         int cx = px + pw + 10, cw = x + w - 6 - cx;
-        PadUi.text(g, PadUi.fitEnd(post.name(), cw), cx, py + 1, PadUi.TEXT);
+        PadUi.text(g, PadUi.fitEnd(post.name(), cw), cx, py + 1, PadUi.GOLD_TEXT);
         PadUi.text(g, ago(post.time()), cx, py + 12, PadUi.MUTED);
         if (!post.caption().isEmpty()) {
             int maxLines = Math.max(1, (ph - 60) / 10);
@@ -143,7 +136,7 @@ final class PadCommunityPage extends PadPage {
         g.pose().translate(cx, ly, 0);
         pad.blit(g, post.liked() || post.mine() ? "heart" : "heart_off", 0, 0);
         g.pose().popPose();
-        PadUi.text(g, post.likes() + (post.likes() == 1 ? " like" : " likes"), cx + 16, ly + 2, hh ? 0xFFF63C96 : PadUi.TEXT);
+        PadUi.text(g, post.likes() + (post.likes() == 1 ? " like" : " likes"), cx + 16, ly + 2, hh ? 0xFFFF8CC8 : PadUi.TEXT);
         if (canLike) {
             if (hh) pad.hover("§like" + post.id());
             hit(cx - 1, ly - 1, 70, 16, () -> {
@@ -177,14 +170,15 @@ final class PadCommunityPage extends PadPage {
         actions.clear();
         g.pose().pushPose();
         g.pose().translate(0, 0, 200);
-        g.fill(OX, OY, OX + SW, OY + SH, 0xE618265C);
+        g.fill(OX, OY, OX + SW, OY + SH, 0xE60B1430);
         int h = SH - 16, w = h * 16 / 9;
         if (w > SW - 16) {
             w = SW - 16;
             h = w * 9 / 16;
         }
         int x = OX + (SW - w) / 2, y = OY + (SH - h) / 2;
-        PadUi.box(g, x - 1, y - 1, w + 2, h + 2, 0xFFF6B628);
+        PadUi.box(g, x - 2, y - 2, w + 4, h + 4, PadUi.INK);
+        PadUi.box(g, x - 1, y - 1, w + 2, h + 2, PadUi.GOLD);
         ResourceLocation tex = PadCommunityClient.texture(post.id());
         if (tex != null) {
             int[] sz = PadCommunityClient.textureSize(post.id());
@@ -204,11 +198,11 @@ final class PadCommunityPage extends PadPage {
     }
 
     private void button(GuiGraphics g, int x, int y, int w, String label, int style, double mx, double my, Runnable action) {
-        boolean hover = PadUi.inside(mx, my, x, y, w, 15);
+        boolean hover = PadUi.inside(mx, my, x, y, w, 16);
         if (hover) pad.hover("§" + label + x + "," + y);
         PadUi.button(g, x, y, w, label, style, hover, true);
         // los botones van antes que la foto y la tarjeta en los clics
-        hits.add(0, new int[] {x, y, w, 15});
+        hits.add(0, new int[] {x, y, w, 16});
         actions.add(0, action);
     }
 

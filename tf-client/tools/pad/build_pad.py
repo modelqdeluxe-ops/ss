@@ -24,6 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import iconos  # noqa: E402
 import iconos2  # noqa: E402
+import iconos3  # noqa: E402
 import pico  # noqa: E402
 from fuente4 import ACCENTS, G, glyph10  # noqa: E402
 from kit import GOLD, PINK  # noqa: E402
@@ -35,14 +36,15 @@ NAVY = (24, 38, 92)
 WHITE = (255, 255, 255)
 
 # Las 20 apps, en el orden del pad (dos páginas de 5x2). Mismo orden y nombres que TFPadScreen.APPS.
-APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
-        ('monedero', 'MONEDERO'), ('clanes', 'CLANES'), ('viajes', 'VIAJES'), ('hogares', 'HOGARES'), ('kits', 'KITS'),
-        ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('jugadores', 'JUGADORES'), ('ranking', 'RANKING'),
-        ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('protecciones', 'PROTECCIÓN'),
-        ('ayuda', 'AYUDA')]
+APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'),
+        ('recompensas', 'RECOMPENSAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'), ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'),
+        ('hogares', 'HOGARES'), ('kits', 'KITS'), ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'),
+        ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('ranking', 'RANKING'),
+        ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('web', 'WEB')]
 DRAW = {'oficios': pico.pico, 'tienda': iconos.tienda, 'gts': iconos.mercado, 'monedero': iconos.monedero,
         'armario': iconos.armario, 'efectos': iconos.efectos, 'rango': iconos.rango, 'protecciones': iconos.protecciones}
 DRAW.update(iconos2.ICONOS)
+DRAW.update(iconos3.ICONOS)  # 1.3.26: oficios (pico grueso), recompensas y web
 
 TILE = 40
 COLS_X = [84, 140, 196, 252, 308]
