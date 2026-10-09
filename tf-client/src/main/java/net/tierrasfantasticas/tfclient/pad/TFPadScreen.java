@@ -116,12 +116,17 @@ public final class TFPadScreen extends Screen {
         g.blit(tex(name), x, y, 0, 0, sz[0], sz[1], sz[0], sz[1]);
     }
 
-    /** Textura entera del pad metida en w x h unidades (para texturas con más detalle que una unidad por píxel). */
+    /**
+     * Textura entera del pad metida en w x h unidades, suavizada (para las que tienen más detalle que una unidad por
+     * píxel, como los emojis de 44x44: se ven bien a cualquier escala).
+     */
     void blitFit(GuiGraphics g, String name, int x, int y, int w, int h) {
         int[] sz = size(name);
         if (sz[0] == 0) return;
         RenderSystem.enableBlend();
-        g.blit(tex(name), x, y, w, h, 0, 0, sz[0], sz[1], sz[0], sz[1]);
+        ResourceLocation loc = tex(name);
+        Minecraft.getInstance().getTextureManager().getTexture(loc).setFilter(true, false);
+        g.blit(loc, x, y, w, h, 0, 0, sz[0], sz[1], sz[0], sz[1]);
     }
 
     /** Textura del pad a la escala grande, con su esquina en (x, y) unidades. */
