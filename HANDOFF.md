@@ -10,8 +10,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.31** (la siguiente es **1.3.32**). Lo último (1.3.31): Comunidad con botón REACCIONAR (selector
-> de emojis) y tarjetas limpias. Antes (1.3.30): emojis de Comunidad redibujados.
+> mod: **TF Client 1.3.32** (la siguiente es **1.3.33**). Lo último (1.3.32): puedes reaccionar también a tus fotos.
+> Antes (1.3.31): Comunidad con botón REACCIONAR (selector de emojis) y tarjetas limpias. Antes (1.3.30): emojis de Comunidad redibujados.
 > Antes (1.3.29): leyendas solo en Tienda/Kits, oficios sin avisos
 > en pantalla, tienda sin mezclar compra y venta, **economía estable** y **misiones/cazas que rotan por temporadas de 90
 > días** (cazas configurables en el pad de admin), **reacciones con emojis** en Comunidad, **playlists** y **altavoz
@@ -41,10 +41,14 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): botón REACCIONAR en Comunidad — TF Client 1.3.31
+### Última entrega (9 de octubre de 2026): reaccionar a tus fotos — TF Client 1.3.32
+Pidió poder reaccionar a sus propias fotos (para probarlo): REACCIONAR sale también en las tuyas y el servidor ya no
+lo bloquea (`PadCommunityServer`, case "react"). El like a tus fotos sigue sin poderse (no lo pidió).
+
+### Entrega anterior (9 de octubre de 2026): botón REACCIONAR en Comunidad — TF Client 1.3.31
 Pidió que la tarjeta de cada foto quede **limpia** (sin la fila de los 5 emojis puesta por defecto) y que haya un
 botón **REACCIONAR** para elegir el emoji que quiera. `PadCommunityPage`:
-- En la tarjeta: REACCIONAR (azul; en tus fotos no sale) y a su lado **solo las reacciones que ya tiene** la foto, con
+- En la tarjeta: REACCIONAR (azul; desde la 1.3.32 también en tus fotos) y a su lado **solo las reacciones que ya tiene** la foto, con
   su número (la tuya, en oro). Una foto sin reacciones no enseña ningún emoji.
 - REACCIONAR abre un **selector** (`drawPicker`): burbuja blanca con filo de oro encima del botón (debajo si no cabe)
   con los 5 emojis a 14 unidades (crecen al pasar el ratón; el tuyo, en oro). Clic en uno = reaccionar (el mismo otra
@@ -1265,7 +1269,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.31)
+## 5. El mod (TF Client 1.3.32)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

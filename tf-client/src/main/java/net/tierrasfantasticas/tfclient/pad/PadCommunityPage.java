@@ -151,34 +151,32 @@ final class PadCommunityPage extends PadPage {
             int maxLines = Math.max(1, (ph - 60) / 10);
             PadUi.wrapEllipsis(g, "«" + post.caption() + "»", cx, py + 26, cw, PadUi.TEXT, maxLines);
         }
-        // reacciones: el botón REACCIONAR (abre el selector con los emojis) y al lado solo las que ya tiene la foto, con
-        // cuántas lleva (la tuya, en oro). Sin reacciones, la tarjeta queda limpia.
+        // reacciones: el botón REACCIONAR (abre el selector con los emojis; también en tus fotos) y al lado solo las que ya
+        // tiene la foto, con cuántas lleva (la tuya, en oro). Sin reacciones, la tarjeta queda limpia.
         int ey = py + ph - 32;
         int ex = cx;
-        if (!post.mine()) {
-            String label = "REACCIONAR";
-            int bw = PadUi.buttonWidth(label);
-            boolean open = post.id().equals(pickerFor);
-            if (open) {
-                pickerSeen = true;
-                pickerX = ex;
-                pickerY = ey - 1;
-            }
-            if (inList) {
-                boolean hov = PadUi.inside(mx, my, ex, ey - 1, bw, 16);
-                if (hov) pad.hover("§reaccionar" + post.id());
-                PadUi.button(g, ex, ey - 1, bw, label, PadView.BLUE, hov || open, true);
-                String id = post.id();
-                hits.add(0, new int[] {ex, ey - 1, bw, 16});
-                actions.add(0, () -> {
-                    pickerFor = id.equals(pickerFor) ? null : id;
-                    pad.sound("tab", 0.6F);
-                });
-            } else {
-                PadUi.button(g, ex, ey - 1, bw, label, PadView.BLUE, false, true);
-            }
-            ex += bw + 4;
+        String rlabel = "REACCIONAR";
+        int rbw = PadUi.buttonWidth(rlabel);
+        boolean open = post.id().equals(pickerFor);
+        if (open) {
+            pickerSeen = true;
+            pickerX = ex;
+            pickerY = ey - 1;
         }
+        if (inList) {
+            boolean hov = PadUi.inside(mx, my, ex, ey - 1, rbw, 16);
+            if (hov) pad.hover("§reaccionar" + post.id());
+            PadUi.button(g, ex, ey - 1, rbw, rlabel, PadView.BLUE, hov || open, true);
+            String id = post.id();
+            hits.add(0, new int[] {ex, ey - 1, rbw, 16});
+            actions.add(0, () -> {
+                pickerFor = id.equals(pickerFor) ? null : id;
+                pad.sound("tab", 0.6F);
+            });
+        } else {
+            PadUi.button(g, ex, ey - 1, rbw, rlabel, PadView.BLUE, false, true);
+        }
+        ex += rbw + 4;
         for (int k = 0; k < PadCommunityNet.REACTIONS.size(); k++) {
             int n = k < post.reactions().length ? post.reactions()[k] : 0;
             if (n <= 0) continue;
