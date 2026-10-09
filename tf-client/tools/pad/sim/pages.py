@@ -21,10 +21,34 @@ T, M, GOLD, GREEN = 0x18265C, 0x7E8CA8, 0xC27A10, 0x1E9E46
 NAMES = []
 
 
+class Local:
+    """Como TFPadScreen con una página «a escala»: dentro, X, Y, W, H son unidades de vista (zona de la app desde 0,0)
+    y todo sale bs veces más grande; las medidas «grandes» (bigu) ya no se agrandan otra vez."""
+
+    def __init__(self, s):
+        self.s = s
+
+    def __enter__(self):
+        s = self.s
+        self.saved = (s.X, s.Y, s.W, s.H, s.bs, s.big)
+        self.ctx = s.big_at(s.X, s.Y, px=s.big)
+        self.ctx.__enter__()
+        s.X, s.Y, s.W, s.H = 0, 0, int(self.saved[2] / s.bs), int(self.saved[3] / s.bs)
+        s.bs, s.big = 1, s.f
+        return s
+
+    def __exit__(self, *a):
+        s = self.s
+        self.ctx.__exit__(*a)
+        s.X, s.Y, s.W, s.H, s.bs, s.big = self.saved
+
+
 def page(name, title, *args, **kw):
+    """Una app del servidor (PadViewPage): a la escala grande, como en el juego desde la 1.3.25."""
     s = Sim()
     s.status(title)
-    s.view(*args, **kw)
+    with Local(s):
+        s.view(*args, **kw)
     s.save(OUT + name + '.png')
     NAMES.append(name)
 
@@ -113,6 +137,8 @@ page('a_apps', 'APPS', [], '', ['Las que apagues no salen en el pad de los jugad
 photo = Image.open(os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/gui/menu_background.png')).convert('RGBA')
 s = Sim()
 s.status('COMUNIDAD')
+_local = Local(s)
+_local.__enter__()
 X, Y, W, H = s.X, s.Y, s.W, s.H
 x = X
 for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
@@ -153,6 +179,7 @@ for name, ago, cap, likes, liked, mine in posts:
     s.button(x + w - 6 - bw, ly - 1, bw, 'DENUNCIAR', B)
     cy += ch
 s.no_scissor()
+_local.__exit__(None, None, None)
 s.save(OUT + 'p_comunidad.png')
 NAMES.append('p_comunidad')
 
@@ -207,8 +234,10 @@ LAV, GOLDC, GL, GREENC = rgb(0xB8C2F0), rgb(0xF6B628), rgb(0xFFEC96), rgb(0x7CF0
 def music_page(name, tracks, playing=None, job=None, empty=False):
     s = Sim()
     s.status('MÚSICA', music=playing is not None)
+    local = Local(s)
+    local.__enter__()
     X, Y, W, H = s.X, s.Y, s.W, s.H
-    leftW = max(150, min(240, round(W * 0.42)))
+    leftW = max(140, min(240, round(W * 0.44)))
     barH = max(3, s.bigu(3))
     below = 4 + s.bigu(9) + 2 + 13 + barH + 3 + 10 + s.bigu(22) + 4
     c = max(32, min(round((leftW - 16 - s.bigu(16)) / 1.3), H - 8 - below))
@@ -374,6 +403,7 @@ def music_page(name, tracks, playing=None, job=None, empty=False):
     bw = s.bw('AÑADIR')
     s.field(lx, fy, lw - bw - 4, '', 'Pega aquí el link directo de una canción')
     s.button(lx + lw - bw, fy, bw, 'AÑADIR', 3, False)
+    local.__exit__(None, None, None)
     s.save(OUT + name + '.png')
     NAMES.append(name)
 

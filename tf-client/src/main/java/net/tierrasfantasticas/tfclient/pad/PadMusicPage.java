@@ -58,21 +58,26 @@ final class PadMusicPage extends PadPage {
     // Geometría
     // ---------------------------------------------------------------------------------------------------------------
 
+    /** La página va a escala (ver PadPage.scaled): las medidas son píxeles de textura, el pad las agranda. */
+    private static int big(int n) {
+        return n;
+    }
+
     private int leftW() {
-        return Math.max(150, Math.min(240, Math.round(W * 0.42F)));
+        return Math.max(140, Math.min(240, Math.round(W * 0.44F)));
     }
 
     private int barH() {
-        return Math.max(3, pad.big(3));
+        return Math.max(3, big(3));
     }
 
     /** Lo que ocupa todo lo de debajo de la portada: título, artista, barra, tiempos y controles. */
     private int belowCover() {
-        return 4 + pad.big(9) + 2 + 13 + barH() + 3 + 10 + pad.big(22) + 4;
+        return 4 + big(9) + 2 + 13 + barH() + 3 + 10 + big(22) + 4;
     }
 
     private int coverSize() {
-        int byWidth = Math.round((leftW() - 16 - pad.big(16)) / 1.3F);
+        int byWidth = Math.round((leftW() - 16 - big(16)) / 1.3F);
         int byHeight = H - 8 - belowCover();
         return Math.max(32, Math.min(byWidth, byHeight));
     }
@@ -82,7 +87,7 @@ final class PadMusicPage extends PadPage {
     }
 
     private int artistY() {
-        return titleY() + pad.big(9) + 2;
+        return titleY() + big(9) + 2;
     }
 
     private int coverX() {
@@ -101,9 +106,9 @@ final class PadMusicPage extends PadPage {
     /** La barra del volumen (vertical, a la derecha de la portada): x, y, alto. */
     private int[] volumeBar() {
         int c = coverSize();
-        int x = X + leftW() - 8 - pad.big(6);
-        int top = coverY() + pad.big(16);
-        return new int[] {x, top, c - pad.big(16)};
+        int x = X + leftW() - 8 - big(6);
+        int top = coverY() + big(16);
+        return new int[] {x, top, c - big(16)};
     }
 
     private int listX() {
@@ -177,7 +182,7 @@ final class PadMusicPage extends PadPage {
 
         // título (grande) y artista
         int ty = titleY(), ay = artistY();
-        int textW = w - 16 - pad.big(18);
+        int textW = w - 16 - big(18);
         if (t == null) {
             bigText(g, "Nada sonando", x + 8, ty, 0xFFFFFFFF, textW);
             PadUi.text(g, "Elige una canción de tu lista", x + 8, ay, LAVENDER);
@@ -185,12 +190,12 @@ final class PadMusicPage extends PadPage {
             bigText(g, t.shownTitle(), x + 8, ty, 0xFFFFFFFF, textW);
             PadUi.text(g, PadUi.fitEnd(t.shownArtist(), textW), x + 8, ay, LAVENDER);
             // botón PORTADA (cuadrito con un paisaje)
-            int bx = x + w - 8 - pad.big(14), by = ty;
-            boolean hover = PadUi.inside(mx, my, bx, by, pad.big(14), pad.big(12));
-            iconButton(g, bx, by, pad.big(14), pad.big(12), hover, coverFor != null, "§cover");
-            drawGlyph(g, IMAGE, bx + pad.big(3), by + pad.big(2), hover || coverFor != null ? GOLD_LIGHT : LAVENDER);
+            int bx = x + w - 8 - big(14), by = ty;
+            boolean hover = PadUi.inside(mx, my, bx, by, big(14), big(12));
+            iconButton(g, bx, by, big(14), big(12), hover, coverFor != null, "§cover");
+            drawGlyph(g, IMAGE, bx + big(3), by + big(2), hover || coverFor != null ? GOLD_LIGHT : LAVENDER);
             MusicLibrary.Track track = t;
-            hits.add(new Hit(bx, by, pad.big(14), pad.big(12), () -> {
+            hits.add(new Hit(bx, by, big(14), big(12), () -> {
                 coverFor = coverFor == null ? track : null;
                 focused = coverFor != null;
                 input = "";
@@ -214,7 +219,7 @@ final class PadMusicPage extends PadPage {
         }
         if (t != null) {
             int kx = bar[0] + 1 + fw, ky = bar[1] + 1 + bh / 2;
-            int kr = barHover || draggingSeek ? pad.big(4) : pad.big(3);
+            int kr = barHover || draggingSeek ? big(4) : big(3);
             disc(g, kx, ky, kr + 1, 0xFF0C1030);
             disc(g, kx, ky, kr, barHover || draggingSeek ? 0xFFFFFFFF : GOLD_LIGHT);
             if (barHover) pad.hover("§seek");
@@ -229,7 +234,7 @@ final class PadMusicPage extends PadPage {
 
     private void drawControls(GuiGraphics g, double mx, double my, int y0) {
         int w = leftW();
-        int playD = pad.big(22), small = pad.big(15), gap = pad.big(6);
+        int playD = big(22), small = big(15), gap = big(6);
         int total = playD + small * 4 + gap * 4;
         int cx0 = X + (w - total) / 2;
         int cyMid = y0 + playD / 2;
@@ -248,7 +253,7 @@ final class PadMusicPage extends PadPage {
         disc(g, px + r, cyMid, r, hover ? 0xFFFFD36A : GOLD);
         disc(g, px + r, cyMid - Math.round(r * 0.35F), Math.round(r * 0.55F), hover ? 0x55FFFFFF : 0x33FFFFFF);
         int[][] glyph = MusicPlayer.playing() ? PAUSE : PLAY;
-        drawGlyphCentered(g, glyph, px + r + (MusicPlayer.playing() ? 0 : pad.big(1)), cyMid, 0xFF1A2350);
+        drawGlyphCentered(g, glyph, px + r + (MusicPlayer.playing() ? 0 : big(1)), cyMid, 0xFF1A2350);
         hits.add(new Hit(px, cyMid - r, playD, playD, () -> {
             MusicPlayer.toggle();
             pad.sound("select", 0.6F);
@@ -276,13 +281,13 @@ final class PadMusicPage extends PadPage {
 
     private void drawVolume(GuiGraphics g, double mx, double my) {
         int[] v = volumeBar();
-        int x = v[0], top = v[1], h = v[2], w = pad.big(6);
+        int x = v[0], top = v[1], h = v[2], w = big(6);
         float vol = MusicPlayer.volume();
         // altavoz arriba (clic: silencio)
-        int sx = x + w / 2, sy = coverY() + pad.big(6);
-        boolean sHover = PadUi.inside(mx, my, x - pad.big(4), coverY(), w + pad.big(8), pad.big(12));
+        int sx = x + w / 2, sy = coverY() + big(6);
+        boolean sHover = PadUi.inside(mx, my, x - big(4), coverY(), w + big(8), big(12));
         drawGlyphCentered(g, vol <= 0 ? MUTE : vol < 0.5F ? SPEAKER_LOW : SPEAKER, sx, sy, sHover ? GOLD_LIGHT : LAVENDER);
-        hits.add(new Hit(x - pad.big(4), coverY(), w + pad.big(8), pad.big(12), () -> {
+        hits.add(new Hit(x - big(4), coverY(), w + big(8), big(12), () -> {
             if (MusicPlayer.volume() > 0) {
                 savedVolume = MusicPlayer.volume();
                 MusicPlayer.setVolume(0);
@@ -298,8 +303,8 @@ final class PadMusicPage extends PadPage {
         int fh = Math.round((h - 2) * vol);
         if (fh > 0) gradient(g, x + 1, top + h - 1 - fh, w - 2, fh, 0xFF8CF0C8, 0xFF2EB87A);
         int ky = top + h - 1 - fh;
-        disc(g, x + w / 2, ky, pad.big(4) + 1, 0xFF0C1030);
-        disc(g, x + w / 2, ky, pad.big(4), hover || draggingVolume ? 0xFFFFFFFF : GOLD_LIGHT);
+        disc(g, x + w / 2, ky, big(4) + 1, 0xFF0C1030);
+        disc(g, x + w / 2, ky, big(4), hover || draggingVolume ? 0xFFFFFFFF : GOLD_LIGHT);
         if (hover || draggingVolume) {
             String pct = Math.round(vol * 100) + "%";
             PadUi.text(g, pct, x + w / 2 - PadUi.font().width(pct) / 2, top + h + 3, 0xFFFFFFFF);
@@ -356,7 +361,7 @@ final class PadMusicPage extends PadPage {
 
     /** Barras que suben y bajan con el volumen medido de la canción (y un poco de vida propia). */
     private void drawEqualizer(GuiGraphics g, int x, int bottom, int w, int maxH) {
-        int n = Math.max(8, Math.min(24, w / pad.big(5)));
+        int n = Math.max(8, Math.min(24, w / big(5)));
         int bw = Math.max(2, w / n - 1);
         long pos = MusicPlayer.position();
         boolean on = MusicPlayer.playing();
@@ -381,12 +386,12 @@ final class PadMusicPage extends PadPage {
         // cabecera
         g.pose().pushPose();
         g.pose().translate(x + 2, y + 1, 0);
-        g.pose().scale(pad.bs, pad.bs, 1);
+        g.pose().scale(1F, 1F, 1);
         PadFont.draw(g, "TU MÚSICA", 0, 0, 0xFFFFFF, true);
         g.pose().popPose();
         String count = tracks.size() + (tracks.size() == 1 ? " canción" : " canciones");
         PadUi.text(g, count, x + w - PadUi.font().width(count) - 2, y + 3, 0xFF18265C);
-        int top = y + pad.big(13) + 2;
+        int top = y + big(13) + 2;
         int bottom = Y + H - 19;
         MusicDownloader.Job job = MusicDownloader.job();
         if (job != null && !job.finished) bottom -= 24;
@@ -433,7 +438,7 @@ final class PadMusicPage extends PadPage {
         int right = x + w - 6;
         // borrar (al pasar el ratón)
         boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
-        int delW = sure ? PadUi.buttonWidth("¿BORRAR?") : pad.big(12);
+        int delW = sure ? PadUi.buttonWidth("¿BORRAR?") : big(12);
         int delX = right - delW, delY = y + (ROW - 1 - 15) / 2;
         if (hover || sure) {
             boolean dh = PadUi.inside(mx, my, delX, delY, delW, 15);
@@ -486,7 +491,7 @@ final class PadMusicPage extends PadPage {
     private void drawEmpty(GuiGraphics g, int x, int top, int w, int h) {
         int cy = top + h / 2;
         g.pose().pushPose();
-        float s = pad.bs * 1.25F;
+        float s = 1F * 1.25F;
         g.pose().translate(x + w / 2F - 16 * s, cy - 40 - 16 * s + 6, 0);
         g.pose().scale(s, s, 1);
         pad.blit(g, "icon_musica", 0, 0);
@@ -584,7 +589,7 @@ final class PadMusicPage extends PadPage {
     private void drawGlyph(GuiGraphics g, int[][] glyph, int x, int y, int color) {
         g.pose().pushPose();
         g.pose().translate(x, y, 0);
-        g.pose().scale(pad.bs, pad.bs, 1);
+        g.pose().scale(1F, 1F, 1);
         for (int gy = 0; gy < glyph.length; gy++) {
             for (int gx = 0; gx < glyph[gy].length; gx++) {
                 if (glyph[gy][gx] != 0) g.fill(gx, gy, gx + 1, gy + 1, color);
@@ -594,13 +599,13 @@ final class PadMusicPage extends PadPage {
     }
 
     private void drawGlyphCentered(GuiGraphics g, int[][] glyph, int cx, int cy, int color) {
-        int w = Math.round(glyph[0].length * pad.bs), h = Math.round(glyph.length * pad.bs);
+        int w = Math.round(glyph[0].length * 1F), h = Math.round(glyph.length * 1F);
         drawGlyph(g, glyph, cx - w / 2, cy - h / 2, color);
     }
 
     /** Texto de Minecraft a la escala grande (recortado con «…» a w unidades). */
     private void bigText(GuiGraphics g, String text, int x, int y, int color, int w) {
-        float s = pad.bs;
+        float s = 1F;
         String shown = PadUi.fitEnd(text, Math.round(w / s));
         g.pose().pushPose();
         g.pose().translate(x, y, 0);
@@ -685,7 +690,7 @@ final class PadMusicPage extends PadPage {
             return true;
         }
         int[] v = volumeBar();
-        if (PadUi.inside(mx, my, v[0] - 3, v[1] - 3, pad.big(6) + 6, v[2] + 6)) {
+        if (PadUi.inside(mx, my, v[0] - 3, v[1] - 3, big(6) + 6, v[2] + 6)) {
             draggingVolume = true;
             MusicPlayer.setVolume(volumeAt(my));
             return true;
@@ -746,7 +751,7 @@ final class PadMusicPage extends PadPage {
 
     @Override
     boolean scroll(double mx, double my, double delta) {
-        if (PadUi.inside(mx, my, volumeBar()[0] - 8, Y, pad.big(6) + 16, H) && mx < listX()) {
+        if (PadUi.inside(mx, my, volumeBar()[0] - 8, Y, big(6) + 16, H) && mx < listX()) {
             MusicPlayer.setVolume(MusicPlayer.volume() + (float) Math.signum(delta) * 0.05F);
             MusicPlayer.saveSettings();
             return true;

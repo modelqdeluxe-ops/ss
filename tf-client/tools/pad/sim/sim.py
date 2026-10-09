@@ -171,10 +171,16 @@ class Sim:
         self.fill(x + 1, y, x + w - 1, y + h, c)
         self.fill(x, y + 1, x + w, y + h - 1, c)
 
+    def vgrad(self, x, y, w, h, top, bot):
+        for i in range(max(0, h)):
+            t = i / max(1, h - 1)
+            self.fill(x, y + i, x + w, y + i + 1, tuple(int(top[k] * (1 - t) + bot[k] * t) for k in range(3)))
+
     def panel(self, x, y, w, h):
         self.fill(x + 2, y + h, x + w - 2, y + h + 1, rgb(0x2882D2))
         self.box(x, y, w, h, NAVY)
         self.box(x + 1, y + 1, w - 2, h - 2, rgb(0xE8F8FF))
+        self.vgrad(x + 2, y + 2, w - 4, h - 4, rgb(0xF4FBFF), rgb(0xDCEEFC))
         self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255))
         self.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, rgb(0xAAD8F8))
 
@@ -446,7 +452,7 @@ class Sim:
             self.mtext(l, x, y + i * 10, color)
         return len(lines)
 
-    CELL_W, CELL_H, CARD_W, CARD_H, ICON_BOX = 44, 46, 96, 74, 36
+    CELL_W, CELL_H, CARD_W, CARD_H, ICON_BOX, ROW_GAP = 30, 32, 84, 66, 26, 2
 
     def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None):
         """Igual que PadViewPage.render (1.3.24): pestañas, cabecera, rejilla de casillas o tarjetas y filas."""
@@ -474,10 +480,12 @@ class Sim:
                 x += w + gap
             y += 16
         room = 1 if tabs else 2
-        for line in header:
+        for k, line in enumerate(header):
             if room <= 0:
                 break
-            n = self.wrap_ellipsis(line, X + 2, y + 1, W - 4, NAVY, room)
+            if k == 0:
+                self.diamond(X + 3, y + 4)
+            n = self.wrap_ellipsis(line, X + 10, y + 1, W - 12, NAVY, room)
             room -= n
             y += 10 * n
         if header:
@@ -531,72 +539,92 @@ class Sim:
             self.field(X, fy, fw, typed, hint)
             self.button(right - bw, fy, bw, label, 3, bool(typed))
 
+    def diamond(self, cx, cy):
+        self.fill(cx - 2, cy, cx + 3, cy + 1, rgb(0xC27A10))
+        self.fill(cx - 1, cy - 1, cx + 2, cy + 2, rgb(0xF6B628))
+        self.fill(cx, cy - 2, cx + 1, cy + 3, rgb(0xC27A10))
+        self.fill(cx, cy - 1, cx + 1, cy, rgb(0xFFEC96))
+
     def cell(self, c, x, y):
         icon, label, color, sel = c
         cw, ch = self.CELL_W, self.CELL_H
         self.box(x + 1, y, cw - 2, ch - 1, rgb(0xC27A10 if sel else 0xB8D4EE))
         self.box(x + 2, y + 1, cw - 4, ch - 3, rgb(0xFFE9A8 if sel else 0xF6FBFF))
+        self.fill(x + 3, y + 1, x + cw - 3, y + 2, (255, 255, 255))
         if icon:
-            self.item(icon, x + 6, y + 3 if label else y + 6, 2)
+            self.item(icon, x + (cw - 16) // 2, y + 3 if label else y + (ch - 1 - 16) // 2)
         if label:
-            label = self.pfit(label, cw - 6)
-            self.ptext(label, x + cw // 2 - self.pwidth(label) // 2, y + 36, rgb(color), False)
+            label = self.pfit(label, cw - 4)
+            self.ptext(label, x + cw // 2 - self.pwidth(label) // 2, y + 20, rgb(color), False)
 
     def card(self, c, x, y):
-        """PadViewPage.drawCard: franja de color, objeto al doble, nombre y segunda línea en oro."""
+        """PadViewPage.drawCard (1.3.25): degradado, franja de color, objeto al doble, nombre y línea en oro."""
         icon, name, color, sub, sel = c
         w, h = self.CARD_W - 4, self.CARD_H - 4
+        self.fill(x + 4, y + h, x + w, y + h + 1, (32, 64, 112, 51))
         self.box(x + 2, y, w, h, rgb(0xC27A10 if sel else 0xB8D4EE))
-        self.box(x + 3, y + 1, w - 2, h - 2, rgb(0xFFF3C8 if sel else 0xFFFFFF))
+        self.vgrad(x + 3, y + 1, w - 2, h - 2, rgb(0xFFF7DA if sel else 0xFFFFFF), rgb(0xFFE9A8 if sel else 0xEAF4FD))
         self.fill(x + 4, y + 2, x + w, y + 4, rgb(color))
         if icon:
             self.item(icon, x + 2 + (w - 32) // 2, y + 6, 2)
         name = self.fitend(name, w - 8)
-        self.mtext(name, x + 2 + (w - self.mwidth(name)) // 2, y + 42, NAVY)
+        self.mtext(name, x + 2 + (w - self.mwidth(name)) // 2, y + 41, NAVY)
         if sub:
             sub = self.fitend(sub, w - 8)
-            self.mtext(sub, x + 2 + (w - self.mwidth(sub)) // 2, y + 54, rgb(0xC27A10))
+            self.mtext(sub, x + 2 + (w - self.mwidth(sub)) // 2, y + 51, rgb(0xC27A10))
 
     def lines_h(self, r, tw):
         return sum(min(2, max(1, self.nlines(l, tw))) for l in r[3]) * 10
 
     def row_h(self, r, w):
         icon, title, color, lines, prog, badge, b1, b2 = r[:8]
-        if not icon and not b1 and not b2:
-            n = sum(max(1, self.nlines(l, w - 8)) for l in lines)
-            return 6 + (11 if title else 0) + n * 10 + 3
+        text_only = not icon and not b1 and not b2
+        if text_only and not lines and title:
+            return 16
+        if text_only:
+            n = sum(max(1, self.nlines(l, w - 12)) for l in lines)
+            return 6 + (11 if title else 0) + n * 10 + 3 + self.ROW_GAP
         tw = self.text_w(r, w)
         h = 4 + 10 + self.lines_h(r, tw) + (8 if prog >= 0 else 0) + 3
-        return max(self.ICON_BOX + 6 if icon else 26, h)
+        return max(self.ICON_BOX + 6 if icon else 24, h) + self.ROW_GAP
 
     def text_w(self, r, w):
         icon, b1, b2 = r[0], r[6], r[7]
         bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
-        return w - (self.ICON_BOX + 10 if icon else 8) - bw - 4
+        return w - (self.ICON_BOX + 10 if icon else 10) - bw - 6
 
     def row(self, r, x, y, w, h):
         icon, title, color, lines, prog, badge, b1, b2 = r[:8]
         sel = len(r) > 8 and r[8]
+        h -= self.ROW_GAP
+        text_only = not icon and not b1 and not b2
+        if text_only and not lines and title:
+            self.mtext(title, x + 4, y + 5, rgb(color))
+            lx = x + 8 + self.mwidth(title)
+            self.fill(lx, y + 9, x + w - 4, y + 10, (194, 122, 16, 102))
+            self.diamond(x + w - 6, y + 8)
+            return
+        self.box(x, y, w, h, rgb(0xE0A030 if sel else 0xC9DDF2))
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, rgb(0xFFF7DA if sel else 0xFFFFFF), rgb(0xFFE9A8 if sel else 0xF1F7FD))
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255, 170))
         if sel:
-            self.box(x, y, w, h - 1, rgb(0xFFE9A8))
-            self.fill(x, y + 2, x + 2, y + h - 3, rgb(0xF6B628))
-        self.fill(x + 2, y + h - 1, x + w - 2, y + h, rgb(0xC8E4F8))
-        if not icon and not b1 and not b2:
+            self.fill(x + 1, y + 2, x + 3, y + h - 2, rgb(0xF6B628))
+        if text_only:
             ty = y + 4
             if title:
-                self.mtext(title, x + 4, ty, rgb(color))
+                self.mtext(title, x + 6, ty, rgb(color))
                 ty += 11
             for l in lines:
-                ty += max(1, self.wrap(l, x + 4, ty, w - 8, NAVY)) * 10
+                ty += max(1, self.wrap(l, x + 6, ty, w - 12, NAVY)) * 10
             return
-        tx = x + 5
+        tx = x + 6
         if icon:
             ib = self.ICON_BOX
-            iy = y + (h - 1 - ib) // 2
-            self.box(x + 4, iy, ib, ib, rgb(0xB8D4EE))
-            self.box(x + 5, iy + 1, ib - 2, ib - 2, (255, 255, 255))
-            self.item(icon, x + 6, iy + 2, 2)
-            tx = x + ib + 12
+            iy = y + (h - ib) // 2
+            self.box(x + 4, iy, ib, ib, rgb(0xE0A030 if sel else 0xB8D4EE))
+            self.vgrad(x + 5, iy + 1, ib - 2, ib - 2, (255, 255, 255), rgb(0xE4F1FC))
+            self.item(icon, x + 4 + (ib - 16) // 2, iy + (ib - 16) // 2)
+            tx = x + ib + 10
         bw = sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
         tw = self.text_w(r, w)
         bdw = self.mwidth(badge) + 6 if badge else 0

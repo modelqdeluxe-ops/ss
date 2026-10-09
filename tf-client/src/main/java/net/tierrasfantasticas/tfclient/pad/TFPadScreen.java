@@ -130,12 +130,65 @@ public final class TFPadScreen extends Screen {
         return Math.round(n * bs);
     }
 
-    /** Recorte en unidades de pantalla (en píxeles reales: exacto). Se quita con {@link #noScissor}. */
+    /** Recorte en unidades de la página (en píxeles reales: exacto). Se quita con {@link #noScissor}. */
     void scissor(GuiGraphics g, int x, int y, int w, int h) {
         g.flush();
-        int rx = gx + x * cs, ry = gy + liftReal() + y * cs;
+        double k = cs * (local ? bs : 1F);
+        int ox = local ? saved[0] * cs : 0, oy = local ? saved[1] * cs : 0;
+        int rx = gx + ox + (int) Math.floor(x * k), ry = gy + liftReal() + oy + (int) Math.floor(y * k);
+        int rw = (int) Math.ceil(w * k), rh = (int) Math.ceil(h * k);
         int fbH = Minecraft.getInstance().getWindow().getHeight();
-        RenderSystem.enableScissor(Math.max(0, rx), Math.max(0, fbH - (ry + h * cs)), Math.max(0, w * cs), Math.max(0, h * cs));
+        RenderSystem.enableScissor(Math.max(0, rx), Math.max(0, fbH - (ry + rh)), Math.max(0, rw), Math.max(0, rh));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Páginas a escala: mientras se dibujan o reciben el ratón, PadPage.X/Y/W/H están en unidades de vista
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private boolean local;
+    private final int[] saved = new int[8];
+
+    private boolean enter() {
+        if (local || !page.scaled() || bs == 1F) return false;
+        saved[0] = PadPage.X;
+        saved[1] = PadPage.Y;
+        saved[2] = PadPage.W;
+        saved[3] = PadPage.H;
+        saved[4] = PadPage.SW;
+        saved[5] = PadPage.SH;
+        saved[6] = PadPage.OX;
+        saved[7] = PadPage.OY;
+        PadPage.X = 0;
+        PadPage.Y = 0;
+        PadPage.W = (int) (saved[2] / bs);
+        PadPage.H = (int) (saved[3] / bs);
+        PadPage.OX = (int) Math.floor(-saved[0] / bs);
+        PadPage.OY = (int) Math.floor(-saved[1] / bs);
+        PadPage.SW = (int) Math.ceil(unitsW / bs);
+        PadPage.SH = (int) Math.ceil(unitsH / bs);
+        local = true;
+        return true;
+    }
+
+    private void exit(boolean entered) {
+        if (!entered) return;
+        PadPage.X = saved[0];
+        PadPage.Y = saved[1];
+        PadPage.W = saved[2];
+        PadPage.H = saved[3];
+        PadPage.SW = saved[4];
+        PadPage.SH = saved[5];
+        PadPage.OX = saved[6];
+        PadPage.OY = saved[7];
+        local = false;
+    }
+
+    private double lx(double x) {
+        return local ? (x - saved[0]) / bs : x;
+    }
+
+    private double ly(double y) {
+        return local ? (y - saved[1]) / bs : y;
     }
 
     void noScissor(GuiGraphics g) {
@@ -285,7 +338,18 @@ public final class TFPadScreen extends Screen {
         g.pose().scale((float) (cs / gs), (float) (cs / gs), 1);
         hoverNow = null;
         drawStatus(g, mx, my);
-        page.render(g, mx, my, partialTick);
+        boolean in = enter();
+        if (in) {
+            g.pose().pushPose();
+            g.pose().translate(saved[0], saved[1], 0);
+            g.pose().scale(bs, bs, 1);
+        }
+        try {
+            page.render(g, lx(mx), ly(my), partialTick);
+        } finally {
+            if (in) g.pose().popPose();
+            exit(in);
+        }
         if (hoverNow != null && !hoverNow.equals(hovered) && PadSettings.hoverTick) sound("hover", 0.35F);
         hovered = hoverNow;
         drawNotice(g);
@@ -442,31 +506,56 @@ public final class TFPadScreen extends Screen {
                 return true;
             }
         }
-        if (page.click(mx, my, button)) return true;
+        boolean in = enter();
+        try {
+            if (page.click(lx(mx), ly(my), button)) return true;
+        } finally {
+            exit(in);
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        page.release(ax(mouseX), ay(mouseY), button);
+        boolean in = enter();
+        try {
+            page.release(lx(ax(mouseX)), ly(ay(mouseY)), button);
+        } finally {
+            exit(in);
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
-        if (page.drag(ax(mouseX), ay(mouseY), dy * gs / cs)) return true;
+        boolean in = enter();
+        try {
+            if (page.drag(lx(ax(mouseX)), ly(ay(mouseY)), dy * gs / cs / (in ? bs : 1F))) return true;
+        } finally {
+            exit(in);
+        }
         return super.mouseDragged(mouseX, mouseY, button, dx, dy);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (page.scroll(ax(mouseX), ay(mouseY), delta)) return true;
+        boolean in = enter();
+        try {
+            if (page.scroll(lx(ax(mouseX)), ly(ay(mouseY)), delta)) return true;
+        } finally {
+            exit(in);
+        }
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (page.key(keyCode, scanCode, modifiers)) return true;
+        boolean in = enter();
+        try {
+            if (page.key(keyCode, scanCode, modifiers)) return true;
+        } finally {
+            exit(in);
+        }
         if (!page.typing() && TFPadClient.KEY.matches(keyCode, scanCode)) {
             onClose();
             return true;
@@ -480,7 +569,12 @@ public final class TFPadScreen extends Screen {
 
     @Override
     public boolean charTyped(char c, int modifiers) {
-        if (page.chr(c)) return true;
+        boolean in = enter();
+        try {
+            if (page.chr(c)) return true;
+        } finally {
+            exit(in);
+        }
         return super.charTyped(c, modifiers);
     }
 

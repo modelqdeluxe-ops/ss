@@ -68,6 +68,11 @@ final class PadHomePage extends PadPage {
         return pad.admin ? "PAD ADMIN" : "TF PAD";
     }
 
+    @Override
+    boolean scaled() {
+        return false;
+    }
+
     List<App> apps() {
         if (pad.admin) return ADMIN_APPS;
         TFPadNet.State s = TFPadClient.state;
