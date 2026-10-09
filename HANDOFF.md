@@ -9,6 +9,20 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **EN CURSO (1.3.29, checkpoints):** el dueño vio la 1.3.28 y pidió (con capturas):
+> 1. ⏳ Las leyendas (tooltip) de los objetos **solo en Kits y Tienda**; en el resto no (son iconos; tampoco cabezas) y
+>    más pequeñas (tapaban la pantalla).
+> 2. ⏳ Oficios: **ningún mensaje en pantalla** (el actionbar «Leñador 1 +2 xp +1,5 monedas (6/100)» sobra).
+> 3. ⏳ Tienda: en COMPRAR solo lo que se compra; lo que se vende, solo en VENDER (desde tu inventario, lo que el admin
+>    permita). Nada de verdes de venta mezclados.
+> 4. ⏳ Oficios más retadores (se ganan monedas muy fácil); **colchón de 3 meses de misiones** que no se repitan; cazas
+>    igual (3 meses) pero **configurables por él** (tendrá mobs de mods).
+> 5. ⏳ **Economía estable** (tipo dólar), no inflada: bajar precios, pagos y premios en todo.
+> 6. ⏳ Comunidad: reaccionar a las fotos con **emojis** además del corazón.
+> 7. ⏳ Música: **playlists** (una o varias) y botón **altavoz**: que los demás lo oigan por proximidad en el juego (bien
+>    hecho, sin romper nada).
+> Reglas: checkpoints frecuentes (commit + push) con el avance aquí.
+
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
 > mod: **TF Client 1.3.28** (la siguiente es **1.3.29**). Lo último: el interior de las apps con un lenguaje visual
 > nuevo (una sola ventana con pestañas de carpeta, textura de cristal tallado, vitrinas, etiquetas con la moneda),
