@@ -193,9 +193,10 @@ public final class PadRewards {
 
         private PadView dayDetail(ServerPlayer player, int i) {
             Day d = DAYS.get(i);
-            PadView.Builder b = PadView.of("recompensas").selected("dia:" + i).header("Día " + (i + 1) + " del calendario: lo que trae.");
-            for (ItemStack s : d.items) b.cell(s.copy(), "", 0x18265C, "", false);
-            if (d.coins > 0) b.cell(new ItemStack(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()), PadShop.price(d.coins), 0xC27A10, "", false);
+            PadView.Builder b = PadView.of("recompensas").selected("dia:" + i);
+            b.hero(new PadView.Row(d.icon(), "Día " + (i + 1) + " del calendario", 0xF6B628, List.of("Lo que trae ese día de la racha."), -1,
+                    "", null, null));
+            PadKits.contents(b, d.items, d.coins);
             b.empty("Este día no trae nada.");
             b.footer(PadView.Btn.of("ATRÁS", "tab:", PadView.BLUE));
             return b.build();
@@ -203,9 +204,10 @@ public final class PadRewards {
 
         private PadView detail(ServerPlayer player, Reward r) {
             long left = left(player, r);
-            PadView.Builder b = PadView.of("recompensas").selected("ver:" + r.id).header(r.name + " · " + typeText(r));
-            for (ItemStack s : r.items) b.cell(s.copy(), "", 0x18265C, "", false);
-            if (r.coins > 0) b.cell(new ItemStack(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()), PadShop.price(r.coins), 0xC27A10, "", false);
+            PadView.Builder b = PadView.of("recompensas").selected("ver:" + r.id);
+            b.hero(new PadView.Row(r.iconStack(), r.name, left == 0 ? 0x40C850 : 0xF6B628, List.of(typeText(r) + " · "
+                    + (left == 0 ? "lista para reclamar." : left < 0 ? "ya la reclamaste." : "vuelve en " + PadKits.time(left) + ".")), -1, "", null, null));
+            PadKits.contents(b, r.items, r.coins);
             b.footer(PadView.Btn.of("ATRÁS", "tab:otras", PadView.BLUE));
             b.footer(left == 0 ? PadView.Btn.of("RECLAMAR", "reclamar:" + r.id, PadView.GREEN)
                     : PadView.Btn.off(left < 0 ? "RECLAMADA" : "EN " + PadKits.time(left).toUpperCase()));

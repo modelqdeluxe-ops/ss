@@ -97,6 +97,30 @@ final class PadUi {
         g.fill(x + 1, y + 2, x + 2, y + h - 1, SLOT_SHADE);
     }
 
+    /** Etiqueta (precio, aviso…): estilos de PadView.GOLD (oro con texto azul), GREEN (verde con texto blanco), GRAY. */
+    static int pillWidth(String text) {
+        return font().width(text) + 8;
+    }
+
+    /** Dibuja la etiqueta de alto h (12 o 14) con la letra de Minecraft centrada. Devuelve su ancho. */
+    static int pill(GuiGraphics g, int x, int y, String text, int style, int h) {
+        int w = pillWidth(text);
+        int edge, top, bot, color;
+        if (style == 3) {
+            edge = 0xFF147034; top = 0xFF68E886; bot = 0xFF22A84C; color = 0xFFFFFFFF;
+        } else if (style == 4) {
+            edge = SLOT_EDGE; top = 0xFFF2F7FC; bot = SLOT; color = MUTED;
+        } else {
+            edge = GOLD_LO; top = GOLD_HI; bot = GOLD; color = TEXT;
+        }
+        box(g, x, y, w, h, edge);
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, top, bot);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0x66FFFFFF);
+        int ty = y + (h - 8) / 2;
+        g.drawString(font(), text, x + 4, ty, color, style == 3);
+        return w;
+    }
+
     static int buttonWidth(String label) {
         return Math.max(36, PadFont.width(label) + 14 + (isBack(label) ? 8 : 0));
     }

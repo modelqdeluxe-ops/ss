@@ -105,20 +105,21 @@ public final class PadJobs {
         } else {
             b.header("Elige un oficio.");
         }
+        // una tarjeta grande por oficio: su icono, el nombre, el nivel y la barra hasta el siguiente (la tuya, marcada en
+        // oro; la burbuja verde, las misiones listas para cobrar)
         for (Job job : TFJobsConfig.jobs.values()) {
             JobProgress jp = p.jobs.get(job.id());
             boolean on = p.active.contains(job.id());
-            float progress = -1;
-            String badge = "NUEVO";
+            float progress = 0;
+            String level = "Sin empezar";
             if (jp != null) {
                 boolean max = jp.level >= TFJobsConfig.maxLevel;
-                progress = max ? 1 : (float) (jp.xp / TFJobsConfig.xpFor(jp.level));
-                badge = max ? "NIVEL MÁX." : "NIVEL " + jp.level;
+                progress = max ? 1 : (float) Math.max(0, Math.min(1, jp.xp / TFJobsConfig.xpFor(jp.level)));
+                level = max ? "Nivel máximo" : "Nivel " + jp.level + (on ? " · tuyo" : "");
             }
             int ready = on && jp != null ? claimable(job, jp) : 0;
-            if (ready > 0) badge = ready + (ready == 1 ? " PREMIO" : " PREMIOS");
-            b.row(new PadView.Row(new ItemStack(TFJobsMenu.icon(job)), job.name() + (on ? " · tu oficio" : ""), job.color(),
-                    List.of(job.description()), progress, badge, null, null).clickable("ver:" + job.id()).selected(on));
+            b.card(new ItemStack(TFJobsMenu.icon(job)), job.name(), job.color(), level, progress, ready > 0 ? "+" + ready : "",
+                    "ver:" + job.id(), on);
         }
         if (TFJobsConfig.jobs.isEmpty()) b.empty("Sin oficios.");
         return b.build();
@@ -141,9 +142,13 @@ public final class PadJobs {
         PadView.Builder b = PadView.of("oficios").tab(base + "m", ready > 0 ? "MISIONES (" + ready + ")" : "MISIONES")
                 .tab(base + "a", "CÓMO SE GANA").tab(base + "r", "PREMIOS").selected(base + section);
         boolean max = jp.level >= TFJobsConfig.maxLevel;
-        b.header(job.name() + " · nivel " + jp.level + "/" + TFJobsConfig.maxLevel
-                + (max ? " · máximo" : " · " + (int) jp.xp + "/" + TFJobsConfig.xpFor(jp.level) + " xp")
-                + (active ? "" : " · no es tu oficio"));
+        List<String> about = new ArrayList<>();
+        if (!job.description().isEmpty()) about.add(job.description());
+        about.add("Nivel " + jp.level + " de " + TFJobsConfig.maxLevel
+                + (max ? " · máximo." : " · " + (int) jp.xp + "/" + TFJobsConfig.xpFor(jp.level) + " xp.") + (active ? "" : " No es tu oficio."));
+        float progress = max ? 1 : (float) Math.max(0, Math.min(1, jp.xp / TFJobsConfig.xpFor(jp.level)));
+        b.hero(new PadView.Row(new ItemStack(TFJobsMenu.icon(job)), job.name() + (active ? " · tu oficio" : ""), job.color(), about,
+                progress, "", null, null));
         switch (section) {
             case "a" -> actions(b, job, jp);
             case "r" -> rewards(b, jp);

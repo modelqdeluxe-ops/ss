@@ -532,9 +532,9 @@ class Sim:
             self.mtext(l, x, y + i * 10, color)
         return len(lines)
 
-    CELL_W, CELL_H, CARD_W, CARD_H, ICON_BOX, ROW_GAP = 30, 32, 84, 70, 26, 3
+    CELL_W, CELL_H, CARD_MIN, CARD_MAX, CARD_H, ICON_BOX, ROW_GAP, HERO_MIN, HERO_SLOT = 30, 32, 84, 116, 70, 26, 3, 50, 40
 
-    def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None, hover=None):
+    def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None, hover=None, hero=None):
         """Igual que PadViewPage.render (1.3.26): pestañas, cabecera en el cristal, ventana oscura con la rejilla de
         casillas o tarjetas y las filas, barra de desplazamiento de oro y abajo los botones o el campo."""
         X, Y, W, H = self.X, self.Y, self.W, self.H
@@ -567,34 +567,56 @@ class Sim:
         if header:
             y += 2
         bottom = bool(footer) or input_ is not None
-        top, bot = y, Y + H - (20 if bottom else 0)
-        self.panel(X, top, W, bot - top)
-        ix, iw = X + 5, W - 15
-        cw, ch = (self.CARD_W, self.CARD_H) if cards_mode else (self.CELL_W, self.CELL_H)
-        cols = max(1, iw // cw)
-        grows = (len(cells) + cols - 1) // cols
-        gridh = grows * ch + (2 if grows else 0)
-        content = gridh + sum(self.row_h(r, iw) for r in rows)
+        bot = Y + H - (20 if bottom else 0)
+        if hero:
+            hh = self.hero_h(hero, W)
+            alone = not (cells or rows or empty)
+            self.hero(hero, X, y + max(0, (bot - y - hh) // 2) if alone else y, W, hh)
+            y += hh + 4
+        top = y
         visible = bot - top - 8
-        self.scissor(X + 2, top + 4, W - 4, visible)
-        ry = top + 4
-        if grows:
-            gx = X + (W - 5 - cols * cw) // 2
-            for i, c in enumerate(cells):
-                cx, cy = gx + (i % cols) * cw, ry + 1 + (i // cols) * ch
-                if cards_mode:
-                    self.card(c, cx, cy, hover == i)
+        content = 0
+        if not hero or cells or rows or empty:
+            self.panel(X, top, W, bot - top)
+            ix, iw = X + 5, W - 15
+            n = len(cells)
+            if cards_mode:
+                cols = max(1, iw // self.CARD_MIN)
+                if 0 < n < cols:
+                    cols = n
+                    cw = min(self.CARD_MAX, iw // cols)
                 else:
-                    self.cell(c, cx, cy)
-            ry += gridh
-        for r in rows:
-            h = self.row_h(r, iw)
-            self.row(r, ix, ry, iw, h)
-            ry += h
-        self.no_scissor()
-        if not rows and not cells:
-            n = self.nlines(empty, W - 30)
-            self.wrap(empty, X + 15, (top + bot) // 2 - n * 5, W - 30, MUTED)
+                    cw = iw // cols
+                bar = any(len(c) > 6 and c[6].get('prog', -1) >= 0 for c in cells)
+                ch = self.CARD_H + (12 if bar else 0)
+                gx = X + 5 + (iw - cols * cw) // 2
+            else:
+                cw, ch = self.CELL_W, self.CELL_H
+                cols = max(1, iw // cw)
+                gx = X + 5 + (iw - max(1, min(cols, n)) * cw) // 2
+            grows = (n + cols - 1) // cols
+            gridh = grows * ch + (2 if grows else 0)
+            content = gridh + sum(self.row_h(r, iw) for r in rows)
+            self.scissor(X + 2, top + 4, W - 4, visible)
+            ry = top + 4
+            if cards_mode and not rows and content < visible:
+                ry += (visible - content) // 2
+            if grows:
+                for i, c in enumerate(cells):
+                    cx, cy = gx + (i % cols) * cw, ry + 1 + (i // cols) * ch
+                    if cards_mode:
+                        self.card(c, cx, cy, cw, ch, hover == i)
+                    else:
+                        self.cell(c, cx, cy)
+                ry += gridh
+            for r in rows:
+                h = self.row_h(r, iw)
+                self.row(r, ix, ry, iw, h)
+                ry += h
+            self.no_scissor()
+            if not rows and not cells:
+                nl = self.nlines(empty, W - 30)
+                self.wrap(empty, X + 15, (top + bot) // 2 - nl * 5, W - 30, MUTED)
         self.scrollbar(X + W - 6, top + 5, visible - 2, visible, content)
         fy = Y + H - 17
         footer = footer or []
@@ -631,12 +653,32 @@ class Sim:
             label = self.pfit(label, cw - 4)
             self.ptext(label, x + cw // 2 - self.pwidth(label) // 2, y + 20, on_dark(color))
 
-    def card(self, c, x, y, hover=False):
-        """PadViewPage.drawCard (1.3.26): tarjeta azul, franja de su color, ranura con el objeto al doble, nombre y
-        segunda línea en oro."""
+    def pill(self, x, y, text, style, h):
+        """PadUi.pill: etiqueta de oro (texto azul), verde (texto blanco) o gris."""
+        w = self.mwidth(text) + 8
+        if style == 3:
+            edge, top, bot, col = rgb(0x147034), rgb(0x68E886), rgb(0x22A84C), (255, 255, 255)
+        elif style == 4:
+            edge, top, bot, col = SLOT_EDGE, rgb(0xF2F7FC), SLOT, MUTED
+        else:
+            edge, top, bot, col = GOLD_LO, GOLD_HI, GOLD, TEXT
+        self.box(x, y, w, h, edge)
+        self.vgrad(x + 1, y + 1, w - 2, h - 2, top, bot)
+        self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255, 102))
+        ty = y + (h - 8) // 2
+        if style == 3:
+            self.mtext(text, x + 5, ty + 1, (40, 90, 50))
+        self.mtext(text, x + 4, ty, col)
+        return w
+
+    def card(self, c, x, y, cw, ch, hover=False):
+        """PadViewPage.drawCard (1.3.27): la tarjeta llena su hueco; burbuja de aviso, barra de progreso y apagada si no
+        tiene acción. c = (icono, nombre, color, segunda línea, marcada, cantidad, {prog, badge, off})."""
         icon, name, color, sub, sel = c[:5]
         n = c[5] if len(c) > 5 else 1
-        w, h = self.CARD_W - 4, self.CARD_H - 4
+        ex = c[6] if len(c) > 6 else {}
+        on = not ex.get('off')
+        w, h = cw - 4, ch - 4
         yy = y - 1 if hover else y
         self.ucard(x + 2, yy, w, h, 2 if sel else 1 if hover else 0)
         self.fill(x + 4, yy + 3, x + w, yy + 4, on_dark(color))
@@ -646,11 +688,67 @@ class Sim:
             self.item(icon, sx + 3, yy + 9, 2)
             if n > 1:
                 self.count(n, sx + 3, yy + 9, 2)
+        if ex.get('badge'):
+            bw = self.mwidth(ex['badge']) + 8
+            self.pill(min(sx + 38 - bw // 2, x + 2 + w - bw - 2), yy + 3, ex['badge'], 3, 12)
         name = self.fitend(name, w - 8)
         self.mtext(name, x + 2 + (w - self.mwidth(name)) // 2, yy + 47, TEXT)
         if sub:
             sub = self.fitend(sub, w - 8)
-            self.mtext(sub, x + 2 + (w - self.mwidth(sub)) // 2, yy + 56, GOLD_TEXT)
+            col = MUTED if not on and not sel else GREEN_TEXT if sub.startswith('+') else GOLD_TEXT
+            self.mtext(sub, x + 2 + (w - self.mwidth(sub)) // 2, yy + 56, col)
+        if ex.get('prog', -1) >= 0:
+            pct = f"{round(min(1, ex['prog']) * 100)}%"
+            pw = self.mwidth(pct)
+            bx, bw = x + 8, w - 12 - pw - 4
+            self.progress(bx, yy + 68, bw, ex['prog'])
+            self.mtext(pct, bx + bw + 4, yy + 67, MUTED)
+
+    def hero_right(self, r):
+        badge, b1, b2 = r[5], r[6], r[7]
+        w = self.mwidth(badge) + 14 if badge else 0
+        return w + sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
+
+    def hero_tw(self, r, w):
+        return w - (self.HERO_SLOT + 16) - self.hero_right(r) - 6
+
+    def hero_h(self, r, w):
+        h = 8 + 10 + self.lines_h(r, self.hero_tw(r, w)) + (10 if r[4] >= 0 else 0) + 6
+        return max(self.HERO_MIN, h)
+
+    def hero(self, r, x, y, w, h):
+        """PadViewPage.drawHero (1.3.27): la cabecera grande de una ficha."""
+        icon, title, color, lines, prog, badge, b1, b2 = r[:8]
+        self.ucard(x, y, w, h, 0)
+        self.fill(x + 1, y + 2, x + 3, y + h - 2, on_dark(color))
+        sy = y + (h - self.HERO_SLOT) // 2
+        self.slot(x + 7, sy, self.HERO_SLOT, self.HERO_SLOT)
+        if icon:
+            self.item(icon, x + 7 + (self.HERO_SLOT - 32) // 2, sy + (self.HERO_SLOT - 32) // 2, 2)
+            n = r[8] if len(r) > 8 else 1
+            if n > 1:
+                self.count(n, x + 7 + (self.HERO_SLOT - 32) // 2, sy + (self.HERO_SLOT - 32) // 2, 2)
+        tx, tw = x + self.HERO_SLOT + 16, self.hero_tw(r, w)
+        th = 10 + self.lines_h(r, tw) + (10 if prog >= 0 else 0)
+        top = y + max(6, (h - th) // 2 + 1)
+        self.mtext(self.fitend(title, tw), tx, top, TEXT)
+        ly = top + 11
+        for l in lines:
+            ly += max(1, self.wrap_ellipsis(l, tx, ly, tw, MUTED, 2)) * 10
+        if prog >= 0:
+            pct = f"{round(min(1, prog) * 100)}%"
+            bw = min(tw - self.mwidth(pct) - 4, 160)
+            self.progress(tx, ly + 1, bw, prog)
+            self.mtext(pct, tx + bw + 4, ly, MUTED)
+        bx = x + w - self.hero_right(r) - 2
+        if badge:
+            self.pill(bx, y + (h - 14) // 2, badge, 3 if badge.startswith('+') else 1, 14)
+            bx += self.mwidth(badge) + 14
+        by = y + (h - 16) // 2
+        for b in (b1, b2):
+            if b:
+                self.button(bx, by, self.bw(b[0]), b[0], b[1], b[2] if len(b) > 2 else True)
+                bx += self.bw(b[0]) + 4
 
     def lines_h(self, r, tw):
         return sum(min(2, max(1, self.nlines(l, tw))) for l in r[3]) * 10

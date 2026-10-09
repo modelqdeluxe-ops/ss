@@ -86,6 +86,24 @@ public final class PadKits {
         }
     }
 
+    /**
+     * Lo que trae un kit o una recompensa, debajo de su cabecera: hasta 8 cosas, en tarjetas (el objeto al doble con su
+     * cantidad y su nombre); más, en casillas pequeñas para que se vean todas. Las monedas, en su propia tarjeta.
+     */
+    static void contents(PadView.Builder b, List<ItemStack> items, long coins) {
+        int n = items.size() + (coins > 0 ? 1 : 0);
+        ItemStack coin = new ItemStack(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get());
+        if (n > 8) {
+            for (ItemStack s : items) b.cell(s.copy(), "", 0x18265C, "", false);
+            if (coins > 0) b.cell(coin, PadShop.price(coins), 0xC27A10, "", false);
+            return;
+        }
+        for (ItemStack s : items) {
+            b.card(s.copy(), s.getHoverName().getString(), 0x3496FA, "", "", false);
+        }
+        if (coins > 0) b.card(coin, TFEconomy.format(coins), 0xF6B628, "", "", false);
+    }
+
     static String typeText(Kit k) {
         return switch (k.type) {
             case "unico" -> "Una sola vez";
@@ -124,9 +142,11 @@ public final class PadKits {
         private PadView preview(ServerPlayer player, Kit k) {
             long left = left(player, k);
             PadView.Builder b = PadView.of("kits").selected("ver:" + k.id);
-            b.header(k.name + " · " + typeText(k) + (k.desc.isEmpty() ? "" : " · " + k.desc));
-            for (ItemStack s : k.items) b.cell(s.copy(), "", 0x18265C, "", false);
-            if (k.coins > 0) b.cell(new ItemStack(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()), PadShop.price(k.coins), 0xC27A10, "", false);
+            List<String> lines = new ArrayList<>();
+            if (!k.desc.isEmpty()) lines.add(k.desc);
+            lines.add(typeText(k) + " · " + (left == 0 ? "listo para reclamar." : left < 0 ? "ya lo reclamaste." : "vuelve en " + time(left) + "."));
+            b.hero(new PadView.Row(new ItemStack(k.iconItem()), k.name, left == 0 ? 0x40C850 : 0xF6B628, lines, -1, "", null, null));
+            contents(b, k.items, k.coins);
             b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
             b.footer(left == 0 ? PadView.Btn.of("RECLAMAR", "reclamar:" + k.id, PadView.GREEN)
                     : PadView.Btn.off(left < 0 ? "RECLAMADO" : "EN " + time(left).toUpperCase()));
