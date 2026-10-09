@@ -150,7 +150,7 @@ final class PadCommunityPage extends PadPage {
             boolean hov = canReact && PadUi.inside(mx, my, ex, ey, bw, 15);
             if (mineR || hov) PadUi.box(g, ex, ey, bw, 15, mineR ? 0xFFE0A030 : 0xFF9DBCE0);
             if (mineR || hov) g.fill(ex + 1, ey + 1, ex + bw - 1, ey + 14, mineR ? 0xFFFFF3C8 : 0xFFEAF4FD);
-            pad.blit(g, "emo_" + name, ex + 2, ey + 2);
+            pad.blitFit(g, "emo_" + name, ex + 2, ey + 2, 11, 11); // textura de 22x22: el doble de detalle
             if (!count.isEmpty()) PadUi.text(g, count, ex + 15, ey + 4, PadUi.TEXT);
             if (canReact) {
                 if (hov) pad.hover("§react" + post.id() + name);

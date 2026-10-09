@@ -236,7 +236,7 @@ for name, ago, cap, likes, liked, mine in posts:
         if k == mine_r:
             s.box(ex, ey, bw, 15, rgb(0xE0A030))
             s.fill(ex + 1, ey + 1, ex + bw - 1, ey + 14, rgb(0xFFF3C8))
-        s.blit('emo_' + name, ex + 2, ey + 2)
+        s.paste(s.img('emo_' + name), ex + 2, ey + 2, px=s.f / 2)  # 22x22 en 11 unidades
         if cnt:
             s.mtext(cnt, ex + 15, ey + 4, (24, 38, 92))
         ex += bw + 2
