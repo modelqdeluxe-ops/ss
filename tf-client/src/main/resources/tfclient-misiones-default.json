@@ -1,0 +1,880 @@
+{
+  "_ayuda": "Misiones del pad y Cazas (1.3.29). tipo: romper, cosechar, colocar, matar, pescar, fabricar, fundir, preparar, criar, encantar. objetivo: un id (minecraft:zombie o mod:mob), una etiqueta (#minecraft:logs), * o, al matar, hostil / animal. En descripcion, {n} se cambia por la cantidad. Rotan por temporadas de 90 días sin repetir ninguna igual: cada día 3 diarias por jugador, cada semana 3 semanales (cantidad x semanalesPorCantidad, pago x semanalesPorPago) y cada 12 h 4 cazas para todo el servidor; a lo largo de la temporada suben cantidad y premio (x1 a x2,5). Para los mobs de tus mods, añade presas a «cazas» con su id.",
+  "version": 2,
+  "semanalesPorCantidad": 5,
+  "semanalesPorPago": 4,
+  "diarias": [
+    {
+      "id": "piedra",
+      "nombre": "Pico incansable",
+      "descripcion": "Rompe {n} piedras",
+      "tipo": "romper",
+      "objetivo": "#minecraft:base_stone_overworld",
+      "cantidad": 192,
+      "monedas": 12,
+      "icono": "minecraft:stone_pickaxe"
+    },
+    {
+      "id": "pizarra",
+      "nombre": "Bajo la pizarra",
+      "descripcion": "Rompe {n} de pizarra profunda",
+      "tipo": "romper",
+      "objetivo": "minecraft:deepslate",
+      "cantidad": 128,
+      "monedas": 14,
+      "icono": "minecraft:deepslate"
+    },
+    {
+      "id": "carbon",
+      "nombre": "Minero de carbón",
+      "descripcion": "Saca {n} menas de carbón",
+      "tipo": "romper",
+      "objetivo": "#minecraft:coal_ores",
+      "cantidad": 36,
+      "monedas": 15,
+      "icono": "minecraft:coal"
+    },
+    {
+      "id": "cobre",
+      "nombre": "Brillo de cobre",
+      "descripcion": "Saca {n} menas de cobre",
+      "tipo": "romper",
+      "objetivo": "#minecraft:copper_ores",
+      "cantidad": 24,
+      "monedas": 15,
+      "icono": "minecraft:raw_copper"
+    },
+    {
+      "id": "hierro",
+      "nombre": "Vena de hierro",
+      "descripcion": "Saca {n} menas de hierro",
+      "tipo": "romper",
+      "objetivo": "#minecraft:iron_ores",
+      "cantidad": 18,
+      "monedas": 20,
+      "icono": "minecraft:raw_iron"
+    },
+    {
+      "id": "oro",
+      "nombre": "Pepitas de oro",
+      "descripcion": "Saca {n} menas de oro",
+      "tipo": "romper",
+      "objetivo": "#minecraft:gold_ores",
+      "cantidad": 10,
+      "monedas": 22,
+      "icono": "minecraft:raw_gold"
+    },
+    {
+      "id": "redstone",
+      "nombre": "Chispas rojas",
+      "descripcion": "Saca {n} menas de redstone",
+      "tipo": "romper",
+      "objetivo": "#minecraft:redstone_ores",
+      "cantidad": 12,
+      "monedas": 20,
+      "icono": "minecraft:redstone"
+    },
+    {
+      "id": "lapis",
+      "nombre": "Azul profundo",
+      "descripcion": "Saca {n} menas de lapislázuli",
+      "tipo": "romper",
+      "objetivo": "#minecraft:lapis_ores",
+      "cantidad": 8,
+      "monedas": 22,
+      "icono": "minecraft:lapis_lazuli"
+    },
+    {
+      "id": "diamante",
+      "nombre": "Brillo de diamante",
+      "descripcion": "Saca {n} menas de diamante",
+      "tipo": "romper",
+      "objetivo": "#minecraft:diamond_ores",
+      "cantidad": 3,
+      "monedas": 35,
+      "icono": "minecraft:diamond"
+    },
+    {
+      "id": "arena",
+      "nombre": "Arenero",
+      "descripcion": "Excava {n} de arena",
+      "tipo": "romper",
+      "objetivo": "#minecraft:sand",
+      "cantidad": 96,
+      "monedas": 12,
+      "icono": "minecraft:sand"
+    },
+    {
+      "id": "grava",
+      "nombre": "Gravilla",
+      "descripcion": "Excava {n} de grava",
+      "tipo": "romper",
+      "objetivo": "minecraft:gravel",
+      "cantidad": 64,
+      "monedas": 12,
+      "icono": "minecraft:gravel"
+    },
+    {
+      "id": "tierra",
+      "nombre": "Movimiento de tierras",
+      "descripcion": "Excava {n} de tierra",
+      "tipo": "romper",
+      "objetivo": "minecraft:dirt",
+      "cantidad": 192,
+      "monedas": 12,
+      "icono": "minecraft:dirt"
+    },
+    {
+      "id": "arcilla",
+      "nombre": "Arcilla del río",
+      "descripcion": "Rompe {n} bloques de arcilla",
+      "tipo": "romper",
+      "objetivo": "minecraft:clay",
+      "cantidad": 32,
+      "monedas": 15,
+      "icono": "minecraft:clay_ball"
+    },
+    {
+      "id": "roble",
+      "nombre": "Leñador de roble",
+      "descripcion": "Tala {n} troncos de roble",
+      "tipo": "romper",
+      "objetivo": "minecraft:oak_log",
+      "cantidad": 64,
+      "monedas": 12,
+      "icono": "minecraft:oak_log"
+    },
+    {
+      "id": "abedul",
+      "nombre": "Bosque blanco",
+      "descripcion": "Tala {n} troncos de abedul",
+      "tipo": "romper",
+      "objetivo": "minecraft:birch_log",
+      "cantidad": 64,
+      "monedas": 12,
+      "icono": "minecraft:birch_log"
+    },
+    {
+      "id": "abeto",
+      "nombre": "Taiga",
+      "descripcion": "Tala {n} troncos de abeto",
+      "tipo": "romper",
+      "objetivo": "minecraft:spruce_log",
+      "cantidad": 64,
+      "monedas": 12,
+      "icono": "minecraft:spruce_log"
+    },
+    {
+      "id": "jungla",
+      "nombre": "Selva",
+      "descripcion": "Tala {n} troncos de jungla",
+      "tipo": "romper",
+      "objetivo": "minecraft:jungle_log",
+      "cantidad": 48,
+      "monedas": 14,
+      "icono": "minecraft:jungle_log"
+    },
+    {
+      "id": "acacia",
+      "nombre": "Sabana",
+      "descripcion": "Tala {n} troncos de acacia",
+      "tipo": "romper",
+      "objetivo": "minecraft:acacia_log",
+      "cantidad": 48,
+      "monedas": 14,
+      "icono": "minecraft:acacia_log"
+    },
+    {
+      "id": "oscuro",
+      "nombre": "Bosque oscuro",
+      "descripcion": "Tala {n} troncos de roble oscuro",
+      "tipo": "romper",
+      "objetivo": "minecraft:dark_oak_log",
+      "cantidad": 48,
+      "monedas": 15,
+      "icono": "minecraft:dark_oak_log"
+    },
+    {
+      "id": "cerezo",
+      "nombre": "Cerezos",
+      "descripcion": "Tala {n} troncos de cerezo",
+      "tipo": "romper",
+      "objetivo": "minecraft:cherry_log",
+      "cantidad": 48,
+      "monedas": 15,
+      "icono": "minecraft:cherry_log"
+    },
+    {
+      "id": "troncos",
+      "nombre": "Tala grande",
+      "descripcion": "Tala {n} troncos",
+      "tipo": "romper",
+      "objetivo": "#minecraft:logs",
+      "cantidad": 128,
+      "monedas": 18,
+      "icono": "minecraft:iron_axe"
+    },
+    {
+      "id": "trigo",
+      "nombre": "Cosecha de trigo",
+      "descripcion": "Cosecha {n} trigos maduros",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:wheat",
+      "cantidad": 48,
+      "monedas": 12,
+      "icono": "minecraft:wheat"
+    },
+    {
+      "id": "zanahorias",
+      "nombre": "Huerto naranja",
+      "descripcion": "Cosecha {n} zanahorias maduras",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:carrots",
+      "cantidad": 48,
+      "monedas": 12,
+      "icono": "minecraft:carrot"
+    },
+    {
+      "id": "patatas",
+      "nombre": "Patatas al punto",
+      "descripcion": "Cosecha {n} patatas maduras",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:potatoes",
+      "cantidad": 48,
+      "monedas": 12,
+      "icono": "minecraft:potato"
+    },
+    {
+      "id": "remolachas",
+      "nombre": "Remolachas",
+      "descripcion": "Cosecha {n} remolachas maduras",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:beetroots",
+      "cantidad": 48,
+      "monedas": 12,
+      "icono": "minecraft:beetroot"
+    },
+    {
+      "id": "melones",
+      "nombre": "Melones",
+      "descripcion": "Cosecha {n} melones",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:melon",
+      "cantidad": 24,
+      "monedas": 14,
+      "icono": "minecraft:melon_slice"
+    },
+    {
+      "id": "calabazas",
+      "nombre": "Calabazas",
+      "descripcion": "Cosecha {n} calabazas",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:pumpkin",
+      "cantidad": 24,
+      "monedas": 14,
+      "icono": "minecraft:pumpkin"
+    },
+    {
+      "id": "cana",
+      "nombre": "Cañaveral",
+      "descripcion": "Cosecha {n} cañas de azúcar",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:sugar_cane",
+      "cantidad": 64,
+      "monedas": 12,
+      "icono": "minecraft:sugar_cane"
+    },
+    {
+      "id": "verruga",
+      "nombre": "Verruga del Nether",
+      "descripcion": "Cosecha {n} verrugas maduras",
+      "tipo": "cosechar",
+      "objetivo": "minecraft:nether_wart",
+      "cantidad": 48,
+      "monedas": 18,
+      "icono": "minecraft:nether_wart"
+    },
+    {
+      "id": "zombis",
+      "nombre": "Noche de zombis",
+      "descripcion": "Derrota {n} zombis",
+      "tipo": "matar",
+      "objetivo": "minecraft:zombie",
+      "cantidad": 15,
+      "monedas": 15,
+      "icono": "minecraft:rotten_flesh"
+    },
+    {
+      "id": "esqueletos",
+      "nombre": "Huesos fuera",
+      "descripcion": "Derrota {n} esqueletos",
+      "tipo": "matar",
+      "objetivo": "minecraft:skeleton",
+      "cantidad": 12,
+      "monedas": 15,
+      "icono": "minecraft:bone"
+    },
+    {
+      "id": "aranas",
+      "nombre": "Telarañas",
+      "descripcion": "Derrota {n} arañas",
+      "tipo": "matar",
+      "objetivo": "minecraft:spider",
+      "cantidad": 10,
+      "monedas": 14,
+      "icono": "minecraft:string"
+    },
+    {
+      "id": "creepers",
+      "nombre": "Sin explosiones",
+      "descripcion": "Derrota {n} creepers",
+      "tipo": "matar",
+      "objetivo": "minecraft:creeper",
+      "cantidad": 8,
+      "monedas": 18,
+      "icono": "minecraft:gunpowder"
+    },
+    {
+      "id": "endermans",
+      "nombre": "Mirada del End",
+      "descripcion": "Derrota {n} endermans",
+      "tipo": "matar",
+      "objetivo": "minecraft:enderman",
+      "cantidad": 5,
+      "monedas": 22,
+      "icono": "minecraft:ender_pearl"
+    },
+    {
+      "id": "ahogados",
+      "nombre": "Bajo el agua",
+      "descripcion": "Derrota {n} ahogados",
+      "tipo": "matar",
+      "objetivo": "minecraft:drowned",
+      "cantidad": 8,
+      "monedas": 16,
+      "icono": "minecraft:kelp"
+    },
+    {
+      "id": "slimes",
+      "nombre": "Pegajoso",
+      "descripcion": "Derrota {n} slimes",
+      "tipo": "matar",
+      "objetivo": "minecraft:slime",
+      "cantidad": 10,
+      "monedas": 15,
+      "icono": "minecraft:slime_ball"
+    },
+    {
+      "id": "monstruos",
+      "nombre": "Guardián de la noche",
+      "descripcion": "Derrota {n} monstruos",
+      "tipo": "matar",
+      "objetivo": "hostil",
+      "cantidad": 40,
+      "monedas": 20,
+      "icono": "minecraft:iron_sword"
+    },
+    {
+      "id": "pesca",
+      "nombre": "Día de pesca",
+      "descripcion": "Pesca {n} veces",
+      "tipo": "pescar",
+      "objetivo": "*",
+      "cantidad": 12,
+      "monedas": 16,
+      "icono": "minecraft:fishing_rod"
+    },
+    {
+      "id": "bacalao",
+      "nombre": "Bacalao",
+      "descripcion": "Pesca {n} bacalaos",
+      "tipo": "pescar",
+      "objetivo": "minecraft:cod",
+      "cantidad": 8,
+      "monedas": 14,
+      "icono": "minecraft:cod"
+    },
+    {
+      "id": "salmon",
+      "nombre": "Salmones",
+      "descripcion": "Pesca {n} salmones",
+      "tipo": "pescar",
+      "objetivo": "minecraft:salmon",
+      "cantidad": 5,
+      "monedas": 16,
+      "icono": "minecraft:salmon"
+    },
+    {
+      "id": "lingotes",
+      "nombre": "Fundición",
+      "descripcion": "Funde {n} lingotes de hierro",
+      "tipo": "fundir",
+      "objetivo": "minecraft:iron_ingot",
+      "cantidad": 24,
+      "monedas": 16,
+      "icono": "minecraft:iron_ingot"
+    },
+    {
+      "id": "cristal",
+      "nombre": "Vidriero",
+      "descripcion": "Funde {n} de cristal",
+      "tipo": "fundir",
+      "objetivo": "minecraft:glass",
+      "cantidad": 48,
+      "monedas": 12,
+      "icono": "minecraft:glass"
+    },
+    {
+      "id": "ladrillo",
+      "nombre": "Horno de ladrillos",
+      "descripcion": "Funde {n} ladrillos",
+      "tipo": "fundir",
+      "objetivo": "minecraft:brick",
+      "cantidad": 48,
+      "monedas": 12,
+      "icono": "minecraft:brick"
+    },
+    {
+      "id": "liso",
+      "nombre": "Piedra lisa",
+      "descripcion": "Funde {n} de piedra",
+      "tipo": "fundir",
+      "objetivo": "minecraft:stone",
+      "cantidad": 64,
+      "monedas": 12,
+      "icono": "minecraft:stone"
+    },
+    {
+      "id": "carne",
+      "nombre": "Asador",
+      "descripcion": "Cocina {n} filetes",
+      "tipo": "fundir",
+      "objetivo": "minecraft:cooked_beef",
+      "cantidad": 16,
+      "monedas": 14,
+      "icono": "minecraft:cooked_beef"
+    },
+    {
+      "id": "pan",
+      "nombre": "Panadero",
+      "descripcion": "Hornea {n} panes",
+      "tipo": "fabricar",
+      "objetivo": "minecraft:bread",
+      "cantidad": 24,
+      "monedas": 12,
+      "icono": "minecraft:bread"
+    },
+    {
+      "id": "antorchas",
+      "nombre": "Luz en la mina",
+      "descripcion": "Fabrica {n} antorchas",
+      "tipo": "fabricar",
+      "objetivo": "minecraft:torch",
+      "cantidad": 64,
+      "monedas": 10,
+      "icono": "minecraft:torch"
+    },
+    {
+      "id": "cofres",
+      "nombre": "Almacén",
+      "descripcion": "Fabrica {n} cofres",
+      "tipo": "fabricar",
+      "objetivo": "minecraft:chest",
+      "cantidad": 8,
+      "monedas": 12,
+      "icono": "minecraft:chest"
+    },
+    {
+      "id": "artesano",
+      "nombre": "Artesano",
+      "descripcion": "Fabrica {n} objetos",
+      "tipo": "fabricar",
+      "objetivo": "*",
+      "cantidad": 96,
+      "monedas": 14,
+      "icono": "minecraft:crafting_table"
+    },
+    {
+      "id": "rieles",
+      "nombre": "Ferroviario",
+      "descripcion": "Fabrica {n} rieles",
+      "tipo": "fabricar",
+      "objetivo": "minecraft:rail",
+      "cantidad": 32,
+      "monedas": 16,
+      "icono": "minecraft:rail"
+    },
+    {
+      "id": "constructor",
+      "nombre": "Constructor",
+      "descripcion": "Coloca {n} bloques",
+      "tipo": "colocar",
+      "objetivo": "*",
+      "cantidad": 256,
+      "monedas": 14,
+      "icono": "minecraft:bricks"
+    },
+    {
+      "id": "ladrillos",
+      "nombre": "Muro de ladrillo",
+      "descripcion": "Coloca {n} ladrillos",
+      "tipo": "colocar",
+      "objetivo": "minecraft:bricks",
+      "cantidad": 64,
+      "monedas": 14,
+      "icono": "minecraft:brick"
+    },
+    {
+      "id": "ventanas",
+      "nombre": "Ventanales",
+      "descripcion": "Coloca {n} de cristal",
+      "tipo": "colocar",
+      "objetivo": "#forge:glass",
+      "cantidad": 48,
+      "monedas": 14,
+      "icono": "minecraft:glass_pane"
+    },
+    {
+      "id": "arboles",
+      "nombre": "Reforestar",
+      "descripcion": "Planta {n} brotes",
+      "tipo": "colocar",
+      "objetivo": "#minecraft:saplings",
+      "cantidad": 24,
+      "monedas": 12,
+      "icono": "minecraft:oak_sapling"
+    },
+    {
+      "id": "vacas",
+      "nombre": "Rebaño",
+      "descripcion": "Cría {n} vacas",
+      "tipo": "criar",
+      "objetivo": "minecraft:cow",
+      "cantidad": 4,
+      "monedas": 12,
+      "icono": "minecraft:leather"
+    },
+    {
+      "id": "ovejas",
+      "nombre": "Lana nueva",
+      "descripcion": "Cría {n} ovejas",
+      "tipo": "criar",
+      "objetivo": "minecraft:sheep",
+      "cantidad": 4,
+      "monedas": 12,
+      "icono": "minecraft:white_wool"
+    },
+    {
+      "id": "cerdos",
+      "nombre": "Corral",
+      "descripcion": "Cría {n} cerdos",
+      "tipo": "criar",
+      "objetivo": "minecraft:pig",
+      "cantidad": 4,
+      "monedas": 12,
+      "icono": "minecraft:porkchop"
+    },
+    {
+      "id": "gallinas",
+      "nombre": "Gallinero",
+      "descripcion": "Cría {n} gallinas",
+      "tipo": "criar",
+      "objetivo": "minecraft:chicken",
+      "cantidad": 4,
+      "monedas": 12,
+      "icono": "minecraft:egg"
+    },
+    {
+      "id": "pociones",
+      "nombre": "Alquimista",
+      "descripcion": "Prepara {n} pociones",
+      "tipo": "preparar",
+      "objetivo": "*",
+      "cantidad": 6,
+      "monedas": 18,
+      "icono": "minecraft:brewing_stand"
+    },
+    {
+      "id": "encantar",
+      "nombre": "Aprendiz de mago",
+      "descripcion": "Encanta {n} objetos",
+      "tipo": "encantar",
+      "objetivo": "*",
+      "cantidad": 2,
+      "monedas": 20,
+      "icono": "minecraft:enchanted_book"
+    }
+  ],
+  "cazas": [
+    {
+      "id": "c_zombi",
+      "nombre": "Plaga de zombis",
+      "descripcion": "Derrota {n} zombis",
+      "tipo": "matar",
+      "objetivo": "minecraft:zombie",
+      "cantidad": 40,
+      "monedas": 35,
+      "icono": "minecraft:zombie_head"
+    },
+    {
+      "id": "c_esqueleto",
+      "nombre": "Arqueros de hueso",
+      "descripcion": "Derrota {n} esqueletos",
+      "tipo": "matar",
+      "objetivo": "minecraft:skeleton",
+      "cantidad": 30,
+      "monedas": 35,
+      "icono": "minecraft:skeleton_skull"
+    },
+    {
+      "id": "c_creeper",
+      "nombre": "Silencio verde",
+      "descripcion": "Derrota {n} creepers",
+      "tipo": "matar",
+      "objetivo": "minecraft:creeper",
+      "cantidad": 20,
+      "monedas": 45,
+      "icono": "minecraft:creeper_head"
+    },
+    {
+      "id": "c_arana",
+      "nombre": "Nido de arañas",
+      "descripcion": "Derrota {n} arañas",
+      "tipo": "matar",
+      "objetivo": "minecraft:spider",
+      "cantidad": 25,
+      "monedas": 30,
+      "icono": "minecraft:spider_eye"
+    },
+    {
+      "id": "c_cueva",
+      "nombre": "Arañas de cueva",
+      "descripcion": "Derrota {n} arañas de cueva",
+      "tipo": "matar",
+      "objetivo": "minecraft:cave_spider",
+      "cantidad": 20,
+      "monedas": 35,
+      "icono": "minecraft:fermented_spider_eye"
+    },
+    {
+      "id": "c_enderman",
+      "nombre": "Ojos del End",
+      "descripcion": "Derrota {n} endermans",
+      "tipo": "matar",
+      "objetivo": "minecraft:enderman",
+      "cantidad": 10,
+      "monedas": 55,
+      "icono": "minecraft:ender_pearl"
+    },
+    {
+      "id": "c_bruja",
+      "nombre": "Caza de brujas",
+      "descripcion": "Derrota {n} brujas",
+      "tipo": "matar",
+      "objetivo": "minecraft:witch",
+      "cantidad": 6,
+      "monedas": 50,
+      "icono": "minecraft:glass_bottle"
+    },
+    {
+      "id": "c_slime",
+      "nombre": "Pegajoso",
+      "descripcion": "Derrota {n} slimes",
+      "tipo": "matar",
+      "objetivo": "minecraft:slime",
+      "cantidad": 20,
+      "monedas": 35,
+      "icono": "minecraft:slime_ball"
+    },
+    {
+      "id": "c_ahogado",
+      "nombre": "Bajo el agua",
+      "descripcion": "Derrota {n} ahogados",
+      "tipo": "matar",
+      "objetivo": "minecraft:drowned",
+      "cantidad": 15,
+      "monedas": 40,
+      "icono": "minecraft:trident"
+    },
+    {
+      "id": "c_husk",
+      "nombre": "Momias",
+      "descripcion": "Derrota {n} husks",
+      "tipo": "matar",
+      "objetivo": "minecraft:husk",
+      "cantidad": 15,
+      "monedas": 40,
+      "icono": "minecraft:sand"
+    },
+    {
+      "id": "c_stray",
+      "nombre": "Errantes",
+      "descripcion": "Derrota {n} strays",
+      "tipo": "matar",
+      "objetivo": "minecraft:stray",
+      "cantidad": 12,
+      "monedas": 45,
+      "icono": "minecraft:tipped_arrow"
+    },
+    {
+      "id": "c_saqueador",
+      "nombre": "Patrulla",
+      "descripcion": "Derrota {n} saqueadores",
+      "tipo": "matar",
+      "objetivo": "minecraft:pillager",
+      "cantidad": 10,
+      "monedas": 50,
+      "icono": "minecraft:crossbow"
+    },
+    {
+      "id": "c_vindicador",
+      "nombre": "Hachas en la mansión",
+      "descripcion": "Derrota {n} vindicadores",
+      "tipo": "matar",
+      "objetivo": "minecraft:vindicator",
+      "cantidad": 5,
+      "monedas": 60,
+      "icono": "minecraft:iron_axe"
+    },
+    {
+      "id": "c_fantasma",
+      "nombre": "Cielo nocturno",
+      "descripcion": "Derrota {n} phantoms",
+      "tipo": "matar",
+      "objetivo": "minecraft:phantom",
+      "cantidad": 8,
+      "monedas": 50,
+      "icono": "minecraft:phantom_membrane"
+    },
+    {
+      "id": "c_lepisma",
+      "nombre": "Bichos de piedra",
+      "descripcion": "Derrota {n} lepismas",
+      "tipo": "matar",
+      "objetivo": "minecraft:silverfish",
+      "cantidad": 15,
+      "monedas": 35,
+      "icono": "minecraft:stone_bricks"
+    },
+    {
+      "id": "c_guardian",
+      "nombre": "Templo del mar",
+      "descripcion": "Derrota {n} guardianes",
+      "tipo": "matar",
+      "objetivo": "minecraft:guardian",
+      "cantidad": 10,
+      "monedas": 60,
+      "icono": "minecraft:prismarine_shard"
+    },
+    {
+      "id": "c_blaze",
+      "nombre": "Fuego del Nether",
+      "descripcion": "Derrota {n} blazes",
+      "tipo": "matar",
+      "objetivo": "minecraft:blaze",
+      "cantidad": 12,
+      "monedas": 65,
+      "icono": "minecraft:blaze_rod"
+    },
+    {
+      "id": "c_magma",
+      "nombre": "Magma",
+      "descripcion": "Derrota {n} cubos de magma",
+      "tipo": "matar",
+      "objetivo": "minecraft:magma_cube",
+      "cantidad": 15,
+      "monedas": 50,
+      "icono": "minecraft:magma_cream"
+    },
+    {
+      "id": "c_ghast",
+      "nombre": "Lágrimas de ghast",
+      "descripcion": "Derrota {n} ghasts",
+      "tipo": "matar",
+      "objetivo": "minecraft:ghast",
+      "cantidad": 4,
+      "monedas": 70,
+      "icono": "minecraft:ghast_tear"
+    },
+    {
+      "id": "c_wither",
+      "nombre": "Esqueletos oscuros",
+      "descripcion": "Derrota {n} esqueletos wither",
+      "tipo": "matar",
+      "objetivo": "minecraft:wither_skeleton",
+      "cantidad": 8,
+      "monedas": 75,
+      "icono": "minecraft:wither_skeleton_skull"
+    },
+    {
+      "id": "c_hoglin",
+      "nombre": "Bestias carmesíes",
+      "descripcion": "Derrota {n} hoglins",
+      "tipo": "matar",
+      "objetivo": "minecraft:hoglin",
+      "cantidad": 6,
+      "monedas": 60,
+      "icono": "minecraft:cooked_porkchop"
+    },
+    {
+      "id": "c_piglin",
+      "nombre": "Brutos",
+      "descripcion": "Derrota {n} piglins brutos",
+      "tipo": "matar",
+      "objetivo": "minecraft:piglin_brute",
+      "cantidad": 3,
+      "monedas": 80,
+      "icono": "minecraft:golden_axe"
+    },
+    {
+      "id": "c_zombiaguerrido",
+      "nombre": "Pueblo maldito",
+      "descripcion": "Derrota {n} aldeanos zombi",
+      "tipo": "matar",
+      "objetivo": "minecraft:zombie_villager",
+      "cantidad": 8,
+      "monedas": 45,
+      "icono": "minecraft:emerald"
+    },
+    {
+      "id": "c_shulker",
+      "nombre": "Cajas del End",
+      "descripcion": "Derrota {n} shulkers",
+      "tipo": "matar",
+      "objetivo": "minecraft:shulker",
+      "cantidad": 6,
+      "monedas": 80,
+      "icono": "minecraft:shulker_shell"
+    },
+    {
+      "id": "c_endermite",
+      "nombre": "Plaga del End",
+      "descripcion": "Derrota {n} endermites",
+      "tipo": "matar",
+      "objetivo": "minecraft:endermite",
+      "cantidad": 6,
+      "monedas": 45,
+      "icono": "minecraft:ender_eye"
+    },
+    {
+      "id": "c_monstruos",
+      "nombre": "Gran cacería",
+      "descripcion": "Derrota {n} monstruos",
+      "tipo": "matar",
+      "objetivo": "hostil",
+      "cantidad": 80,
+      "monedas": 60,
+      "icono": "minecraft:diamond_sword"
+    },
+    {
+      "id": "c_noche",
+      "nombre": "Vigilia",
+      "descripcion": "Derrota {n} monstruos",
+      "tipo": "matar",
+      "objetivo": "hostil",
+      "cantidad": 150,
+      "monedas": 90,
+      "icono": "minecraft:netherite_sword"
+    }
+  ]
+}

@@ -30,6 +30,9 @@ public final class TFJobsData {
         public int level = 1;
         public double xp;
         public final Map<String, MissionState> missions = new HashMap<>();
+        /** Las misiones diarias que le tocaron hoy (día de TFRotation) en este oficio: "plantilla@factor". */
+        public long rotDay = -1;
+        public final List<String> rotIds = new ArrayList<>();
 
         public MissionState mission(String id) {
             return missions.computeIfAbsent(id, k -> new MissionState());
@@ -105,6 +108,10 @@ public final class TFJobsData {
             JobProgress jp = p.job(id);
             jp.level = (int) Math.max(1, TFJson.num(jo, "nivel", 1));
             jp.xp = Math.max(0, TFJson.dec(jo, "xp", 0));
+            jp.rotDay = TFJson.num(jo, "hoy", -1);
+            if (jo.has("hoyMisiones") && jo.get("hoyMisiones").isJsonArray()) {
+                for (JsonElement el : jo.getAsJsonArray("hoyMisiones")) jp.rotIds.add(el.getAsString());
+            }
             JsonObject missions = TFJson.obj(jo, "misiones");
             for (String mid : missions.keySet()) {
                 JsonObject mo = missions.getAsJsonObject(mid);
@@ -128,9 +135,17 @@ public final class TFJobsData {
             JsonObject jo = new JsonObject();
             jo.addProperty("nivel", jp.level);
             jo.addProperty("xp", Math.round(jp.xp * 100) / 100.0);
+            if (jp.rotDay >= 0) {
+                jo.addProperty("hoy", jp.rotDay);
+                JsonArray rot = new JsonArray();
+                jp.rotIds.forEach(rot::add);
+                jo.add("hoyMisiones", rot);
+            }
             JsonObject missions = new JsonObject();
+            long today = net.tierrasfantasticas.tfclient.util.TFRotation.day();
             jp.missions.forEach((mid, ms) -> {
                 if (ms.progress == 0 && !ms.done && ms.claimedDay < 0) return;
+                if (TFJobsConfig.rotatedDay(mid) >= 0 && TFJobsConfig.rotatedDay(mid) < today) return; // las de otros días ya no valen
                 JsonObject mo = new JsonObject();
                 mo.addProperty("progreso", ms.progress);
                 mo.addProperty("hecha", ms.done);

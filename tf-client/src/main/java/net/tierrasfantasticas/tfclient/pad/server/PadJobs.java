@@ -60,7 +60,7 @@ public final class PadJobs {
                     return "";
                 }
                 case "cobrar" -> {
-                    Mission m = job == null || a.length < 3 ? null : job.mission(a[2]);
+                    Mission m = job == null || a.length < 3 ? null : TFJobsConfig.missionFor(job, player.getUUID(), p.job(job.id()), a[2]);
                     if (m == null) return null;
                     if (!p.active.contains(job.id())) {
                         TFPadNet.notice(player, "Trabaja de " + job.name() + " para cobrar sus misiones.");
@@ -119,7 +119,7 @@ public final class PadJobs {
                 level = max ? "Nivel máximo" : "Nivel " + jp.level;
                 tone = max ? PadView.TONE_GOLD : PadView.TONE_BLUE;
             }
-            int ready = on && jp != null ? claimable(job, jp) : 0;
+            int ready = on && jp != null ? claimable(player, job, jp) : 0;
             b.card(new ItemStack(TFJobsMenu.icon(job)), job.name(), job.color(), level, tone, progress, ready > 0 ? "+" + ready : "",
                     "ver:" + job.id(), on);
         }
@@ -127,9 +127,9 @@ public final class PadJobs {
         return b.build();
     }
 
-    private static int claimable(Job job, JobProgress jp) {
+    private static int claimable(ServerPlayer player, Job job, JobProgress jp) {
         int n = 0;
-        for (Mission m : job.missions()) {
+        for (Mission m : TFJobsConfig.missionsFor(job, player.getUUID(), jp)) {
             MissionState ms = TFJobs.refresh(jp, m);
             if (ms.done && ms.claimedDay < 0) n++;
         }
@@ -140,7 +140,7 @@ public final class PadJobs {
         JobProgress jp = p.job(job.id());
         boolean active = p.active.contains(job.id());
         String base = "o:" + job.id() + ":";
-        int ready = active ? claimable(job, jp) : 0;
+        int ready = active ? claimable(player, job, jp) : 0;
         PadView.Builder b = PadView.of("oficios").tab(base + "m", ready > 0 ? "MISIONES (" + ready + ")" : "MISIONES")
                 .tab(base + "a", "CÓMO SE GANA").tab(base + "r", "PREMIOS").selected(base + section);
         boolean max = jp.level >= TFJobsConfig.maxLevel;
@@ -154,7 +154,7 @@ public final class PadJobs {
         switch (section) {
             case "a" -> actions(b, job, jp);
             case "r" -> rewards(b, jp);
-            default -> missions(b, job, jp, active);
+            default -> missions(b, player, job, jp, active);
         }
         b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
         boolean full = !active && p.active.size() >= TFJobsConfig.maxJobs;
@@ -170,8 +170,9 @@ public final class PadJobs {
         return b.build();
     }
 
-    private static void missions(PadView.Builder b, Job job, JobProgress jp, boolean active) {
-        for (Mission m : job.missions()) {
+    private static void missions(PadView.Builder b, ServerPlayer player, Job job, JobProgress jp, boolean active) {
+        List<Mission> list = TFJobsConfig.missionsFor(job, player.getUUID(), jp);
+        for (Mission m : list) {
             MissionState ms = TFJobs.refresh(jp, m);
             boolean locked = jp.level < m.level();
             boolean claimed = ms.claimedDay >= 0;
@@ -197,7 +198,7 @@ public final class PadJobs {
             int color = locked || claimed ? MUTED : done ? GREEN : TEXT;
             b.row(new PadView.Row(icon, m.name(), color, lines, progress, coins > 0 ? "+" + PadView.money(coins) : "", btn, null).selected(done && active));
         }
-        if (job.missions().isEmpty()) b.empty("Sin misiones.");
+        if (list.isEmpty()) b.empty("Sin misiones.");
     }
 
     private static void actions(PadView.Builder b, Job job, JobProgress jp) {

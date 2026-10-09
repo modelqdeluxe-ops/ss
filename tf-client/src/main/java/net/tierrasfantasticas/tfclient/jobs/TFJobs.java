@@ -248,7 +248,7 @@ public final class TFJobs {
                 coins += action.coins() * amount * (1 + TFJobsConfig.coinBonusPerLevel * (jp.level - 1));
                 break; // la primera acción que encaja (de más concreta a más general, como estén en la config)
             }
-            for (Mission mission : job.missions()) {
+            for (Mission mission : TFJobsConfig.missionsFor(job, player.getUUID(), jp)) {
                 if (!mission.type().equals(type) || jp.level < mission.level() || !match.test(mission.target())) continue;
                 MissionState ms = refresh(jp, mission);
                 if (ms.done || ms.claimedDay >= 0) continue;

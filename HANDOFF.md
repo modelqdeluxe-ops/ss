@@ -15,12 +15,18 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > 2. ✅ Oficios: **ningún mensaje en pantalla** (el actionbar «Leñador 1 +2 xp +1,5 monedas (6/100)» sobra).
 > 3. ✅ Tienda: en COMPRAR solo lo que se compra; lo que se vende, solo en VENDER (desde tu inventario, lo que el admin
 >    permita). Nada de verdes de venta mezclados.
-> 4. ⏳ Oficios más retadores (se ganan monedas muy fácil); **colchón de 3 meses de misiones** que no se repitan; cazas
+> 4. ✅ Oficios más retadores (se ganan monedas muy fácil); **colchón de 3 meses de misiones** que no se repitan; cazas
 >    igual (3 meses) pero **configurables por él** (tendrá mobs de mods).
-> 5. ⏳ **Economía estable** (tipo dólar), no inflada: bajar precios, pagos y premios en todo.
+> 5. ✅ **Economía estable** (tipo dólar), no inflada: bajar precios, pagos y premios en todo.
 > 6. ⏳ Comunidad: reaccionar a las fotos con **emojis** además del corazón.
 > 7. ⏳ Música: **playlists** (una o varias) y botón **altavoz**: que los demás lo oigan por proximidad en el juego (bien
 >    hecho, sin romper nada).
+> Hecho 4–5: `util/TFRotation` (temporadas de 90 días; cada misión igual sale una vez por temporada; cantidad y premio
+> de x1 a x2,5). Oficios: las misiones «diaria» son plantillas y a cada jugador le tocan 3 al día de las de su nivel
+> (`TFJobsConfig.missionsFor`, guardadas en oficios.json «hoy»/«hoyMisiones»). Misiones del pad y Cazas rotan igual
+> (`PadMissions.rotate`); listas en `tfclient-misiones-default.json`. Todo lo genera `tools/gen_economia.py`
+> (154 misiones de oficio, 60 diarias, 27 presas). Las configs viejas se guardan como `*.antes-v2.json` y se cambian
+> (`TFConfigDir.upgrade`, claves versionEconomia / version). Pagos por acción ÷5–10, misiones ≈10 % de antes.
 > Reglas: checkpoints frecuentes (commit + push) con el avance aquí.
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del

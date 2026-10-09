@@ -142,7 +142,7 @@ public final class TFJobsMenu {
         JobProgress jp = p.job(job.id());
         boolean active = p.active.contains(job.id());
 
-        List<Mission> missions = job.missions();
+        List<Mission> missions = TFJobsConfig.missionsFor(job, player.getUUID(), jp);
         int pages = Math.max(1, (missions.size() + GRID - 1) / GRID);
         int current = Math.max(0, Math.min(page, pages - 1));
         for (int i = 0; i < GRID; i++) {

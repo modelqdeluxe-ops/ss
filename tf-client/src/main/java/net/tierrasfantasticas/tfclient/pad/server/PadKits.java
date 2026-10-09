@@ -276,10 +276,10 @@ public final class PadKits {
         o.addProperty("_ayuda", "Kits gratis. tipo: unico (una sola vez), semanal u horas (cada esperaSegundos); lo diario va en recompensas.json. "
                 + "objetos: \"minecraft:bread 16\". Se crean y cambian desde el pad de administrador.");
         JsonArray kits = new JsonArray();
-        kits.add(kit("inicial", "Kit inicial", "Lo justo para empezar tu aventura.", "minecraft:stone_pickaxe", 0, 100,
+        kits.add(kit("inicial", "Kit inicial", "Lo justo para empezar tu aventura.", "minecraft:stone_pickaxe", 0, 25,
                 "minecraft:stone_sword", "minecraft:stone_pickaxe", "minecraft:stone_axe", "minecraft:stone_shovel",
                 "minecraft:bread 16", "minecraft:torch 32", "minecraft:oak_log 16", "minecraft:white_bed"));
-        kits.add(kit("semanal", "Kit semanal", "Una ayuda más grande cada semana.", "minecraft:iron_pickaxe", 604800, 300,
+        kits.add(kit("semanal", "Kit semanal", "Una ayuda más grande cada semana.", "minecraft:iron_pickaxe", 604800, 60,
                 "minecraft:iron_pickaxe", "minecraft:iron_ingot 8", "minecraft:golden_carrot 16", "minecraft:experience_bottle 8"));
         o.add("kits", kits);
         return o;
