@@ -10,8 +10,11 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
 > **Estado al cierre (9 oct 2026):** todo fusionado en `main`; **nada a medias**. Última versión publicada del
-> mod: **TF Client 1.3.26** (la siguiente es **1.3.27**). Lo último: rediseño del interior de las apps, pad más ancho,
-> portada 7x3 sin partículas, Recompensas, Web, cabezas con skin y números de cantidad normales (ver la entrega 1.3.26).
+> mod: **TF Client 1.3.27** (la siguiente es **1.3.28**). Lo último: portada centrada en el cristal, GTS sin objetos de
+> sets (ni sus cosméticos), planeo con solo una barrita, y el interior de las apps rediseñado otra vez: cabecera grande en
+> las fichas, tarjetas que llenan el ancho, Oficios en tarjetas con su progreso, GTS en lista (ver la entrega 1.3.27).
+> Antes (1.3.26): rediseño del interior de las apps, pad más alto, portada 7x3 sin partículas, Recompensas, Web,
+> cabezas con skin y números de cantidad normales.
 > Antes de eso (1.3.25): Lo último que pidió el dueño y quedó hecho: portada con
 > **iconos grandes** (escala 1,5 a 1080p) en **fichas RPG** nuevas con **animación propia por app** al pasar el ratón,
 > **todas las apps rediseñadas y a la escala grande** (filas como tarjetas, paneles con degradado, botones con brillo) y
@@ -33,7 +36,41 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 **Prioridades del dueño:** 1) la web (diseño y ahora también **lo legal**), 2) el mod TF Client (cambios que vaya
 pidiendo: cada uno sube versión y se le manda el `.jar`), 3) **Stripe conectado** por el dueño (ya no está en pausa); PayPal listo para cuando ponga sus claves.
 
-### Última entrega (9 de octubre de 2026): interior de las apps rediseñado, Recompensas y Web — TF Client 1.3.26
+### Última entrega (9 de octubre de 2026): portada centrada, apps por dentro otra vez — TF Client 1.3.27
+Viendo la 1.3.26 en el juego pidió (y le gustó lo demás, «los iconos ya quedaron bien»):
+1. **Los iconos no estaban centrados en la pantalla** → `PadHomePage.at()`: la rejilla se centra en **todo el
+   cristal** (`SW`), no solo en la zona a la derecha del logo; si la primera fila fuera a pisar el logo se aparta
+   (`pad.logoRight(top())`). El recorte y el ratón de la portada van ahora de 2 a SW-2.
+2. **El GTS le dejó vender sus alas de crates ligadas a él** → `TFMarket.whyNot`: se bloquea **todo objeto de un set**
+   (`TFItemTypes.setOf(item) != null`), también los cosméticos (alas, etc.), y lo que lleve dueño. Vale para el GTS y
+   para los regalos de Jugadores (usan el mismo `whyNot`). Lo que ya estuviera publicado antes sigue en el GTS hasta
+   que se retire o caduque.
+3. **El contador del planeo se solapaba** → `TFGlideHud`: ya no hay hueco ni segundos; solo una **barrita** de 30x2
+   bajo la mira (verde → ámbar → rojo; en rojo apagado si gastaste el planeo y sigues en el aire).
+4. **Tienda → comprar: el color del precio confundía, mucho espacio vacío, nada centrado** → la ficha de un objeto
+   lleva una **cabecera grande** (el objeto al doble, lo que dice, «Lote de 16 · llevas 5», «Tienes X monedas» y el
+   precio del lote en una etiqueta de oro) y debajo **una tarjeta por cantidad** (1, 8, 32, 64 lotes: «8 uds.» /
+   «8 lotes · 128» y el precio en palabras, «7.600 monedas»); las que no puedes pagar dicen por qué en gris («Te faltan
+   18K», «Límite de hoy»). Vender igual, con «+…» en verde. Las categorías también ponen el precio entero.
+5. **GTS en lista, no en tarjetas** → MERCADO es una lista ordenada: objeto, «Lo vende Steve · quedan 3 días», precio
+   y COMPRAR (o SIN SALDO; RETIRAR si es tuyo, marcado en oro); cada fila abre la ficha (cabecera grande con el precio y
+   debajo lo que dice el objeto).
+6. **Esa vista de tarjetas grandes, para los oficios, con su progreso bien puesto** → Oficios: una tarjeta por oficio
+   (icono al doble, nombre, «Nivel 12 · tuyo», barra con el %; la tuya en oro; burbuja verde «+2» si tienes misiones
+   para cobrar). Dentro de un oficio, cabecera grande con la descripción, «Nivel 12 de 50 · 340/1200 xp» y su barra.
+7. **Auditar todas las apps** → en `PadViewPage`: las tarjetas **llenan el ancho** (y si son pocas se agrandan hasta
+   116 y van centradas), y si solo hay tarjetas y caben, **centradas en alto**; las casillas pequeñas, centradas si son
+   pocas; una ficha que solo tiene cabecera grande sale centrada en el hueco (sin ventana vacía). Ficha de un kit, de un
+   día del calendario y de una recompensa: cabecera grande + lo que trae en tarjetas (`PadKits.contents`; más de 8
+   cosas, en casillas pequeñas para que se vean todas).
+
+Piezas nuevas (para seguir): `PadView.hero` (una `Row`; se manda antes de las casillas), `Cell.progress` y
+`Cell.badge` (solo tarjetas; `Builder.card(icon, name, color, sub, progress, badge, action, selected)`), `PadUi.pill`
+(etiqueta oro/verde/gris). En las tarjetas, la segunda línea va en oro; en verde si empieza por «+»; en gris si la
+tarjeta no se puede pulsar. El simulador (`tools/pad/sim`) ya dibuja todo esto (`hero=`, tarjetas con `{prog, badge,
+off}`) y tiene páginas nuevas: p_tienda_comprar, p_gts_item(_solo), p_oficio.
+
+### Entrega anterior (9 de octubre de 2026): interior de las apps rediseñado, Recompensas y Web — TF Client 1.3.26
 Viendo la 1.3.25 en el juego pidió: 1) los **números de cantidad** salían enormes; 2) la **cabeza** de Jugadores no
 salía con su skin («conecta con las skins de todos»); 3) apps **pegadas y abultadas** → pad más grande; **quitar las
 partículas**, animaciones correctas (no solo girar) y **el engranaje sin animación**; 4) **rediseño bonito del interior
@@ -1134,7 +1171,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.26)
+## 5. El mod (TF Client 1.3.27)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

@@ -13,15 +13,15 @@ import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 
 /**
- * El GTS dentro del pad, sin chat ni ventanas aparte. MERCADO: todo lo publicado en rejilla con su precio (y un
- * buscador); cada casilla abre su ficha con COMPRAR (o RETIRAR si es tuyo). VENDER: tu inventario en rejilla; eliges
+ * El GTS dentro del pad, sin chat ni ventanas aparte. MERCADO: todo lo publicado en una lista ordenada (objeto, quién
+ * lo vende, cuánto le queda, el precio y COMPRAR o, si es tuyo, RETIRAR; con un buscador); cada fila abre su ficha. VENDER: tu inventario en rejilla; eliges
  * un objeto, escribes el precio y PUBLICAR. MIS VENTAS: lo tuyo a la venta. RECOGER: lo que no se vendió.
  * Pestañas: "" mercado, "v" vender, "m" mis ventas, "r" recoger, "l:&lt;id&gt;" una publicación.
  */
 public final class PadMarket {
     public static final PadServer.App APP = new App();
 
-    private static final int TEXT = 0x18265C, GOLD = 0xC27A10, GREEN = 0x1E9E46, MUTED = 0x7E8CA8;
+    private static final int TEXT = 0x18265C, MUTED = 0x7E8CA8;
     private static final long DAY_MS = 24L * 60 * 60 * 1000;
 
     private PadMarket() {}
@@ -153,15 +153,27 @@ public final class PadMarket {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static PadView market(ServerPlayer player) {
-        PadView.Builder b = base(player, "").cards();
+        PadView.Builder b = base(player, "");
         String q = PadServer.get(player, "gts.q", null);
+        long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
         int n = 0;
         for (Listing l : TFMarket.listings()) {
             if (q != null && !l.item().getHoverName().getString().toLowerCase(Locale.ROOT).contains(q)
                     && !l.sellerName().toLowerCase(Locale.ROOT).contains(q)) continue;
             boolean own = l.seller().equals(player.getUUID());
-            b.card(l.item(), l.item().getHoverName().getString(), own ? 0x40C850 : 0xF6B628,
-                    PadShop.price(l.price()) + " · " + (own ? "tuyo" : l.sellerName()), "tab:l:" + l.id(), own);
+            PadView.Btn btn;
+            if (own) {
+                boolean sure = PadServer.confirming(player, "gts.retirar:" + l.id());
+                btn = PadView.Btn.of(sure ? "¿SEGURO?" : "RETIRAR", "retirar:" + l.id(), PadView.RED);
+            } else if (balance >= 0 && balance < l.price()) {
+                btn = PadView.Btn.off("SIN SALDO");
+            } else {
+                boolean sure = PadServer.confirming(player, "gts.comprar:" + l.id());
+                btn = PadView.Btn.of(sure ? "¿SEGURO?" : "COMPRAR", "comprar:" + l.id(), PadView.GOLD);
+            }
+            String who = own ? "Tuyo" : "Lo vende " + l.sellerName();
+            b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of(who + " · " + left(l) + "."), -1,
+                    PadShop.money(l.price()), btn, null).clickable("tab:l:" + l.id()).selected(own));
             n++;
         }
         if (q != null) {
@@ -176,12 +188,13 @@ public final class PadMarket {
     private static PadView listing(ServerPlayer player, Listing l) {
         boolean own = l.seller().equals(player.getUUID());
         PadView.Builder b = PadView.of("gts");
-        List<String> lines = new ArrayList<>();
-        lines.add("Lo vende " + l.sellerName() + " · " + left(l) + ".");
         long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
+        int count = l.item().getCount();
+        List<String> lines = new ArrayList<>();
+        lines.add((own ? "Lo vendes tú" : "Lo vende " + l.sellerName()) + " · " + left(l) + (count > 1 ? " · " + count + " uds." : "."));
         if (!own && balance >= 0) lines.add(balance >= l.price() ? "Tienes " + TFEconomy.format(balance) + "."
                 : "Te faltan " + TFEconomy.format(l.price() - balance) + ".");
-        b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, lines, -1, TFEconomy.format(l.price()), null, null));
+        b.hero(new PadView.Row(l.item(), TFMarket.describe(l.item()), own ? 0x40C850 : 0xF6B628, lines, -1, TFEconomy.format(l.price()), null, null));
         // lo que dice el objeto (encantamientos, descripción…), como en su tooltip
         List<String> tip = new ArrayList<>();
         var lines2 = l.item().getTooltipLines(player, net.minecraft.world.item.TooltipFlag.NORMAL);
@@ -189,7 +202,7 @@ public final class PadMarket {
             String s = lines2.get(i).getString();
             if (!s.isBlank()) tip.add(s);
         }
-        if (!tip.isEmpty()) b.text("", TEXT, tip);
+        if (!tip.isEmpty()) b.text("Lo que dice el objeto", TEXT, tip);
         b.footer(PadView.Btn.of("ATRÁS", "volver:", PadView.BLUE));
         if (own) {
             boolean sure = PadServer.confirming(player, "gts.retirar:" + l.id());

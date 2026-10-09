@@ -110,10 +110,15 @@ final class PadHomePage extends PadPage {
         return rows * ch <= H ? Y + (H - rows * ch) / 2 + (ch - tile() - LABEL_H) / 2 : Y + 2;
     }
 
-    /** Esquina de la ficha i (antes del desplazamiento). */
+    /**
+     * Esquina de la ficha i (antes del desplazamiento). La rejilla va centrada en todo el cristal, no solo en la zona a
+     * la derecha del logo; solo se aparta si la primera fila fuera a pisar el logo.
+     */
     private int[] at(int i) {
         int cols = cols(), cw = cellW();
-        int x0 = X + (W - cols * cw) / 2;
+        int x0 = (SW - cols * cw) / 2;
+        x0 = Math.max(x0, pad.logoRight(top()) + 2 - (cw - tile()) / 2);
+        x0 = Math.min(x0, X + W - cols * cw);
         return new int[] {x0 + (i % cols) * cw + (cw - tile()) / 2, top() + (i / cols) * cellH()};
     }
 
@@ -128,7 +133,8 @@ final class PadHomePage extends PadPage {
         contentH = rows() * cellH() + 4;
         scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - H)));
         int t = tile();
-        boolean inside = PadUi.inside(mx, my, X, Y, W, H);
+        // la rejilla va centrada en todo el cristal: recorta y recibe el ratón en todo su ancho
+        boolean inside = PadUi.inside(mx, my, 2, Y, SW - 4, H);
         String hoverNow = null;
         int hoverIndex = -1;
         for (int i = 0; i < apps.size(); i++) {
@@ -142,7 +148,7 @@ final class PadHomePage extends PadPage {
         hovered = hoverNow;
         if (hoverNow != null) pad.hover(hoverNow);
 
-        pad.scissor(g, X, Y, W, H);
+        pad.scissor(g, 2, Y, SW - 4, H);
         for (int i = 0; i < apps.size(); i++) {
             App app = apps.get(i);
             int[] p = at(i);
@@ -273,7 +279,7 @@ final class PadHomePage extends PadPage {
 
     @Override
     boolean click(double mx, double my, int button) {
-        if (button != 0 || !PadUi.inside(mx, my, X, Y, W, H)) return false;
+        if (button != 0 || !PadUi.inside(mx, my, 2, Y, SW - 4, H)) return false;
         List<App> apps = apps();
         int t = tile();
         for (int i = 0; i < apps.size(); i++) {
