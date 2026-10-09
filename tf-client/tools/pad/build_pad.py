@@ -38,7 +38,6 @@ WHITE = (255, 255, 255)
 APPS = [('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
         ('monedero', 'MONEDERO'), ('clanes', 'CLANES'), ('viajes', 'VIAJES'), ('hogares', 'HOGARES'), ('kits', 'KITS'),
         ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('jugadores', 'JUGADORES'), ('ranking', 'RANKING'),
-        ('titulos', 'TÍTULOS'),
         ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('protecciones', 'PROTECCIÓN'),
         ('ayuda', 'AYUDA')]
 DRAW = {'oficios': pico.pico, 'tienda': iconos.tienda, 'gts': iconos.mercado, 'monedero': iconos.monedero,
@@ -181,15 +180,31 @@ def gear():
 
 
 def heart(on=True):
-    rows = [".##.##.", "#######", "#######", ".#####.", "..###..", "...#..."]
+    """Corazón de like de 9x8 (11x10 con el contorno): lóbulos redondos, punta centrada, brillo arriba a la izquierda."""
+    rows = [".##...##.",
+            "####.####",
+            "#########",
+            "#########",
+            ".#######.",
+            "..#####..",
+            "...###...",
+            "....#...."]
     if on:
         im = small(rows, {'#': PINK[2]})
-        for x, y in ((1, 0), (0, 1), (1, 1)):
-            put(im, x, y, PINK[0])
-        put(im, 2, 1, WHITE)
+        for x, y in ((1, 0), (2, 0), (0, 1), (6, 0), (7, 0), (5, 1)):
+            put(im, x, y, PINK[1])
+        for x, y in ((1, 1), (1, 2)):
+            put(im, x, y, WHITE)
+        for x, y in ((8, 2), (8, 3), (7, 4), (6, 5), (5, 6), (4, 7), (7, 3), (6, 4)):
+            put(im, x, y, PINK[3])
     else:
-        im = small(rows, {'#': (214, 226, 240)})
-    return outline(im)
+        im = small(rows, {'#': (230, 238, 248)})
+        for x, y in ((8, 2), (8, 3), (7, 4), (6, 5), (5, 6), (4, 7)):
+            put(im, x, y, (190, 204, 224))
+    # un píxel de margen alrededor para que el contorno quepa entero
+    framed = img(im.width + 2, im.height + 2)
+    framed.alpha_composite(im, (1, 1))
+    return outline(framed)
 
 
 def build():
@@ -200,6 +215,7 @@ def build():
              'moon.png': moon(), 'gear.png': gear(), 'heart.png': heart(True), 'heart_off.png': heart(False)}
     for key, _ in APPS:
         files[f'icon_{key}.png'] = DRAW[key]().image()
+    files['icon_admin.png'] = iconos2.admin().image()
     atlas, meta = font_atlas()
     files['font.png'] = atlas
     for name, im in files.items():

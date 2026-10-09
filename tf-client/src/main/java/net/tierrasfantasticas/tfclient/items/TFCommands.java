@@ -80,11 +80,27 @@ public final class TFCommands {
         register(event.getDispatcher());
     }
 
+    /** /tf web pad admin [jugador]: el pad de administrador (solo funciona en manos del staff). */
+    private static int giveAdminPad(CommandSourceStack source, java.util.Collection<net.minecraft.server.level.ServerPlayer> players) {
+        int n = 0;
+        for (net.minecraft.server.level.ServerPlayer p : players) {
+            if (!p.hasPermissions(3)) {
+                source.sendFailure(net.minecraft.network.chat.Component.literal(p.getGameProfile().getName() + " no es staff (nivel 3): no se le da."));
+                continue;
+            }
+            net.minecraft.world.item.ItemStack pad = new net.minecraft.world.item.ItemStack(TFItems.ADMIN_PAD.get());
+            if (!p.getInventory().add(pad)) p.drop(pad, false);
+            n++;
+        }
+        int given = n;
+        source.sendSuccess(() -> net.minecraft.network.chat.Component.literal("Pad de administrador dado a " + given + (given == 1 ? " jugador." : " jugadores.")), true);
+        return n;
+    }
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("tf")
                 .then(TFJobsCommands.command())
                 .then(TFShop.command())
-                .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.command())
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(TFCoinShop.command())
@@ -96,6 +112,11 @@ public final class TFCommands {
                         .then(net.tierrasfantasticas.tfclient.pad.server.PadKits.command())
                         .then(net.tierrasfantasticas.tfclient.pad.server.PadTravel.command())
                         .then(net.tierrasfantasticas.tfclient.pad.PadCommunityServer.command())
+                        .then(Commands.literal("pad").requires(s -> s.hasPermission(3))
+                                .then(Commands.literal("admin")
+                                        .executes(ctx -> giveAdminPad(ctx.getSource(), java.util.List.of(ctx.getSource().getPlayerOrException())))
+                                        .then(Commands.argument("jugador", EntityArgument.players())
+                                                .executes(ctx -> giveAdminPad(ctx.getSource(), EntityArgument.getPlayers(ctx, "jugador"))))))
                         .then(Commands.literal("sets")
                                 .then(Commands.literal("list").executes(TFCommands::list))
                                 .then(Commands.literal("give")

@@ -52,7 +52,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * /tf web tienda lista | vaciar             lista los objetos / quita todos
  * /tf web tienda comprar &lt;jugador&gt; &lt;id&gt;     lo usa la web: cobra y entrega
  * </pre>
- * Se guarda en config/tfclient-tienda.json (con el objeto exacto: encantamientos, nombre, NBT).
+ * Se guarda en config/tfclient/tienda-monedas.json (con el objeto exacto: encantamientos, nombre, NBT).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFCoinShop {
@@ -72,7 +72,7 @@ public final class TFCoinShop {
     private TFCoinShop() {}
 
     private static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-tienda.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("tienda-monedas.json", "tfclient-tienda.json");
     }
 
     @SubscribeEvent

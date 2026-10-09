@@ -13,7 +13,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * Ajustes del puente en el servidor: config/tfclient-server.properties.
+ * Ajustes del puente en el servidor: config/tfclient/servidor.properties.
  * La primera vez se crea con una clave aleatoria que hay que copiar en Cloudflare (BRIDGE_SECRET).
  * También dice de dónde salen las monedas de la tienda de monedas y de los oficios (economy.*).
  */
@@ -104,7 +104,7 @@ public final class TFServerConfig {
     }
 
     public static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-server.properties");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("servidor.properties", "tfclient-server.properties");
     }
 
     public static void load() {

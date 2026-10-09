@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 import net.minecraftforge.fml.loading.FMLPaths;
 
-/** Ajustes en config/tfclient.properties (se crea con los valores por defecto la primera vez). */
+/** Ajustes en config/tfclient/cliente.properties (se crea con los valores por defecto la primera vez). */
 public final class TFConfig {
     private static final String DEFAULT_NAME = "Tierras Fantásticas";
     /** Servidor de pruebas por ahora. El de siempre es 216.163.187.40:19001. */
@@ -52,7 +52,7 @@ public final class TFConfig {
     }
 
     public static void load() {
-        Path file = FMLPaths.CONFIGDIR.get().resolve("tfclient.properties");
+        Path file = net.tierrasfantasticas.tfclient.util.TFConfigDir.file("cliente.properties", "tfclient.properties");
         Properties props = new Properties();
         if (Files.exists(file)) {
             try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {

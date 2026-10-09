@@ -42,7 +42,7 @@ Y en el **servidor** (opcional) hace de **puente con la web**:
   que funciona sin plugins; a un jugador que ya está en el equipo de otro sistema no se le toca.
 - Si el comprador no está conectado, la compra espera en la web y se le da en cuanto entra.
 - Es el servidor el que llama a la web: no hace falta RCON ni abrir puertos. Cada entrega tiene un número y el puente
-  apunta las que ya ejecutó (`config/tfclient-bridge-entregas.txt`), así que nunca entrega dos veces.
+  apunta las que ya ejecutó (`config/tfclient/puente-entregas.txt`), así que nunca entrega dos veces.
 
 No necesita Fabric API, GeckoLib ni ningún otro mod: solo Forge.
 
@@ -93,7 +93,7 @@ Solo hay dos: `/tf jobs` (todos los jugadores) y `/tf web` (staff, nivel 2).
 
 ```
 /tf jobs                                     (todos) los oficios: todo se hace desde su ventana
-/tf jobs recargar                            (staff, nivel 3) vuelve a leer config/tfclient-jobs.json
+/tf jobs recargar                            (staff, nivel 3) vuelve a leer config/tfclient/oficios.json
 /tf jobs nivel|xp <jugador> <oficio> <n>     (staff) pone el nivel o suma experiencia
 /tf jobs reiniciar <jugador> [oficio]        (staff) borra el progreso
 
@@ -135,7 +135,7 @@ salgan rayas sueltas en los bordes.
 ## Monedas
 
 La tienda de monedas y los oficios pagan y cobran con la economía que diga `economy.mode` en
-`config/tfclient-server.properties`:
+`config/tfclient/servidor.properties`:
 
 | `economy.mode` | De dónde salen las monedas |
 | -------------- | -------------------------- |
@@ -150,7 +150,7 @@ web tienen que dar con `tf web monedas dar {player} <cantidad>` en vez de `eco g
 ## Tienda de monedas
 
 El staff pone a la venta lo que tiene en la mano con `/tf web tienda add <precio> [nombre]` (el objeto exacto: cantidad,
-encantamientos, nombre y NBT). Se guarda en `config/tfclient-tienda.json` y, con el puente activo, la pestaña *Tienda
+encantamientos, nombre y NBT). Se guarda en `config/tfclient/tienda-monedas.json` y, con el puente activo, la pestaña *Tienda
 de monedas* de la web se actualiza sola en unos segundos (al conectar se le manda la tienda entera: el servidor es el
 que manda). Los jugadores compran en la web con su cuenta: la web manda `tf web tienda comprar <jugador> <id>`, que
 cobra las monedas y da el objeto cuando está conectado; si no tiene bastantes, no se cobra nada y la web lo dice.
@@ -158,7 +158,7 @@ cobra las monedas y da el objeto cuando está conectado; si no tiene bastantes, 
 ## Ruleta con monedas
 
 Los mismos premios y probabilidades que la ruleta de la web (los manda la web por el puente; se guardan en
-`config/tfclient-ruleta.json` por si el servidor arranca sin conexión). En la web, «girar con monedas» manda
+`config/tfclient/ruleta.json` por si el servidor arranca sin conexión). En la web, «girar con monedas» manda
 `tf web ruleta girar <jugador> <n>`: si no tiene bastantes monedas (`economy.mode`) no se cobra nada y la web lo dice;
 si gira, le salen los premios en pantalla, la web los enseña y, si toca un arma legendaria, se anuncia a todos.
 
@@ -179,7 +179,7 @@ abandonar y cerrar; al abandonar o cambiar de oficio aparecen *Aceptar* y *Cance
   `esperaCambioMinutos` evita cambiar de oficio a cada rato.
 - Antitrampas: romper lo que uno mismo ha colocado (o colocar en el mismo sitio otra vez) no cuenta, los cultivos solo
   cuentan maduros, los monstruos de generadores no cuentan (`generadoresCuentan`) y en creativo no se gana nada.
-- Todo está en `config/tfclient-jobs.json` (se crea la primera vez, en español): oficios, nombres, colores, fondos,
+- Todo está en `config/tfclient/oficios.json` (se crea la primera vez, en español): oficios, nombres, colores, fondos,
   acciones que pagan (`romper`, `cosechar`, `colocar`, `matar`, `pescar`, `fabricar`, `fundir`, `preparar`,
   `encantar`, `reparar`, `criar`, con ids, etiquetas `#...` o `*`), misiones, niveles y recompensas. Se aplica sin
   reiniciar con `/tf jobs recargar`. El progreso está en `<mundo>/tfclient/oficios.json`.
@@ -197,7 +197,7 @@ un cofre de 6 filas: las categorías, los objetos de cada una (por páginas) y u
   nunca los objetos de los sets (están vinculados a su dueño).
 - El icono del saldo es la **Fantastic Coin** (`tfclient:fantastic_coin`, la moneda de oro de Tierras Fantásticas;
   solo es un icono, el saldo es el de la economía del servidor). También sale en `/tf jobs`.
-- Todo en `config/tfclient-shop.json` (se crea la primera vez con 7 categorías y 73 objetos, en español): `titulo`
+- Todo en `config/tfclient/tienda.json` (se crea la primera vez con 7 categorías y 73 objetos, en español): `titulo`
   (con colores `&`), `relleno`, `sonidos`, `pasos`, `maximoPorCompra`, `registro` y los `mensajes` (`{cantidad}`,
   `{objeto}`, `{precio}`, `{limite}`, `{lineas}`). Cada categoría: `id`, `nombre`, `descripcion`, `icono`, `color`,
   `hueco` (0-44; si no, se colocan solas) y `nivelPermiso`. Cada objeto:
@@ -229,7 +229,7 @@ Todo sale de `tools/build_vfx.py` (lee los packs comprados, que no están en el 
   mientras corres o agachado, al recibir daño (algunas solo con poca vida) o en combate. El daño crece con el arma:
   base × (2 + ataque / 4) (×4 con una espada de netherita), además de `multiplicadorDanoSkills`.
 - Sin indicador en la barra (se quitó en 1.3.16).
-- `config/tfclient-vfx.json`: `activado`, `efectosDeKillConMobs`, `skills`, `skillsEnPvP`, `multiplicadorDanoSkills`.
+- `config/tfclient/vfx.json`: `activado`, `efectosDeKillConMobs`, `skills`, `skillsEnPvP`, `multiplicadorDanoSkills`.
 - Staff: `/tf web vfx lista | kill <jugadores> <id|ninguno> | skills <jugadores> <id|ninguno> | probar <id>`.
 
 ## Alas: planeo de 10 segundos (1.3.16)
@@ -241,11 +241,23 @@ contador con los segundos que quedan y una barrita (verde → ámbar → rojo). 
 ## TF Pad (tecla C)
 
 El móvil del jugador: todo lo del servidor se hace desde aquí, sin cofres ni chat. Apps del servidor (las dibuja
-`pad/PadViewPage` con lo que manda `pad/server/*`): Oficios, Misiones, Cazas, Tienda, GTS, Monedero, Clanes, Viajes (con
-Explorar y Tus hogares), Hogares (EssentialsX o propios), Kits, Jugadores, Ranking, Títulos, Armario, Efectos, Mi rango,
-Protección y Ayuda; en el cliente, Comunidad, Cámara y Ajustes. `/tf jobs`, `/tf shop`, `/tf claims` y la piedra de
+`pad/PadViewPage` con lo que manda `pad/server/*`): Oficios, Misiones, Cazas, Tienda, GTS, Monedero, Clanes, Viajes (spawn,
+cama, puntos, warps de EssentialsX, Explorar y Tus hogares), Hogares (EssentialsX o propios), Kits (una vez, diarios,
+semanales o cada X horas), Jugadores (con REGALAR objetos o monedas), Ranking, Armario, Efectos, Mi rango, Protección y
+Ayuda; en el cliente, Comunidad, Cámara (foto con clic izquierdo) y Ajustes. `/tf jobs`, `/tf shop` y la piedra de
 protección abren su app (sin TF Client, las ventanas de siempre). Texturas: `tools/pad/build_pad.py [--preview]`;
 sonidos: `tools/pad/build_sounds.py`; vistas previas: `tools/pad/sim/pages.py <carpeta>`.
+
+**Pad de administrador** (1.3.24): objeto `tfclient:pad_admin`, solo staff (nivel 3), se da con
+`/tf web pad admin [jugador]`. Configura todo el pad sin tocar archivos: qué apps salen, los ajustes de `pad.json`
+(esperas de viajes, Explorar, hogares sin rango, envíos de monedas, regalos, GTS), la tienda (objetos desde la mano,
+precios de compra y venta, cantidades, límites diarios; **solo se puede vender lo que tiene precio de venta**), los kits
+(desde tu inventario), los puntos de viaje y los warps visibles, el GTS, las fotos denunciadas y los oficios.
+
+**Configuración**: todo en la carpeta `config/tfclient/` (`cliente.properties`, `pad-cliente.properties`,
+`servidor.properties`, `pad.json`, `tienda.json`, `tienda-monedas.json`, `ruleta.json`, `oficios.json`, `misiones.json`,
+`kits.json`, `ayuda.json`, `vfx.json`, `limites.json`, `protecciones.json`, `puente-entregas.txt`). Los archivos de
+antes (`config/tfclient-*.…`) se mueven solos la primera vez.
 
 ## TF Claims: protecciones (1.3.18)
 
@@ -256,11 +268,11 @@ piedra menos su altura hacia abajo **hasta el techo del mundo**. Clic derecho en
 
 - Piedras: `tfclient:proteccion_<tamaño>`, con la textura de TF del color de su tamaño (las letras miran a quien la
   pone; las líneas brillan de noche). Texturas, modelos y estados: `python3 tools/gen_claim_blocks.py [--preview DIR]`.
-- Comandos: `/tf claims` (ayuda), `menu`, `info`, `list`, `remove`, `addmember|delmember <jugador>`, `members`,
-  `merge accept|reject <código>`, `merge leave`; staff: `/tf claims give <jugadores> <id>`, `clear|ban|unban|transfer|removemember <jugador>`
-  y `/tf web claims` (panel) `bypass|list|stats|reload|globalflag <flag> on|off`.
-- Datos en la carpeta del mundo: `claimblocks_data.json`, `claimblocks_config.json` (recarga con `/tf web claims reload`)
-  y `global_flags.json`: los mismos que usaba Fantastic Claims, así que las zonas que ya había siguen igual. Las piedras
+- Todo desde la app Protección del pad (miembros, baneos, ajustes, grupos e invitaciones). Ya no hay `/tf claims` (1.3.24):
+  las piedras se dan en un kit (pad de administrador → KITS). Staff: `/tf web claims bypass|list|stats|reload|globalflag <flag> on|off`.
+- Datos en la carpeta del mundo: `claimblocks_data.json` y `global_flags.json`; la config en `config/tfclient/protecciones.json`
+  (antes `claimblocks_config.json` del mundo; se copia sola; recarga con `/tf web claims reload`):
+  los mismos que usaba Fantastic Claims, así que las zonas que ya había siguen igual. Las piedras
   viejas (objetos `claimblocks:*` y el concreto de las zonas) pasan solas a las de TF Claims.
 
 ## Armario de la web (1.3.17)
@@ -304,17 +316,17 @@ objeto, el daño de ataque se recorta a 8 (10 las armas lentas, como el hacha de
 3/8/6/3, la dureza a 3 y la resistencia al empuje a 0,1 por pieza, y se quitan los multiplicadores que suban; la
 velocidad de minar no pasa de la de un pico de netherita. Lo que ya está por debajo no cambia. Los únicos por encima
 son los objetos de los sets de Tierras Fantásticas (rangos, crates y los que se reparten en eventos), vinculados a su
-dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los topes y `excepciones` (ids o `mod:*`).
+dueño. Todo en `config/tfclient/limites.json` (se crea solo): `activado`, los topes y `excepciones` (ids o `mod:*`).
 
 ## Instalar
 
 1. Instala **Forge 1.20.1** (47.x).
-2. Copia `tfclient-1.20.1-1.3.19.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
+2. Copia `tfclient-1.20.1-1.3.24.jar` en la carpeta `mods` (del juego y, para el puente, también del servidor).
 
 ### Puente en el servidor
 
 1. Sube el jar a la carpeta `mods` del servidor y reinícialo.
-2. Se crea `config/tfclient-server.properties`:
+2. Se crea `config/tfclient/servidor.properties`:
    ```properties
    bridge.enabled=true
    bridge.url=https\://xn--tierrasfantsticas-hpb.store
@@ -340,7 +352,7 @@ dueño. Todo en `config/tfclient-limits.json` (se crea solo): `activado`, los to
 
 ## Cambiar el servidor
 
-La primera vez que se abre el juego se crea `config/tfclient.properties`:
+La primera vez que se abre el juego se crea `config/tfclient/cliente.properties`:
 
 ```properties
 server.name=Tierras Fantásticas

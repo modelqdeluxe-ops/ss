@@ -23,7 +23,7 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsData.PlayerJobs;
  * <pre>
  * /tf jobs                                abre el menú de oficios (todo se hace desde ahí)
  * /tf jobs ver &lt;oficio&gt;                   abre un oficio (lo usan los avisos del chat)
- * /tf jobs recargar                       vuelve a leer config/tfclient-jobs.json (staff, nivel 3)
+ * /tf jobs recargar                       vuelve a leer config/tfclient/oficios.json (staff, nivel 3)
  * /tf jobs nivel &lt;jugador&gt; &lt;oficio&gt; &lt;n&gt;    pone el nivel (staff)
  * /tf jobs xp &lt;jugador&gt; &lt;oficio&gt; &lt;n&gt;       suma experiencia (staff)
  * /tf jobs reiniciar &lt;jugador&gt; [oficio]   borra el progreso (staff)

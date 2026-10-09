@@ -113,7 +113,7 @@ public final class PadMarket {
                     }
                     case "recogertodo" -> {
                         for (int i = TFMarket.returnsOf(player.getUUID()).size() - 1; i >= 0; i--) TFMarket.collect(player, i);
-                        TFPadNet.notice(player, "Lo tienes todo en el inventario (lo que no cabía, a tus pies).");
+                        TFPadNet.notice(player, "Recogido. Lo que no cabía está a tus pies.");
                         return null;
                     }
                     default -> {
@@ -153,14 +153,15 @@ public final class PadMarket {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static PadView market(ServerPlayer player) {
-        PadView.Builder b = base(player, "");
+        PadView.Builder b = base(player, "").cards();
         String q = PadServer.get(player, "gts.q", null);
         int n = 0;
         for (Listing l : TFMarket.listings()) {
             if (q != null && !l.item().getHoverName().getString().toLowerCase(Locale.ROOT).contains(q)
                     && !l.sellerName().toLowerCase(Locale.ROOT).contains(q)) continue;
             boolean own = l.seller().equals(player.getUUID());
-            b.cell(l.item(), PadShop.price(l.price()), own ? GREEN : GOLD, "tab:l:" + l.id(), own);
+            b.card(l.item(), l.item().getHoverName().getString(), own ? 0x40C850 : 0xF6B628,
+                    PadShop.price(l.price()) + " · " + (own ? "tuyo" : l.sellerName()), "tab:l:" + l.id(), own);
             n++;
         }
         if (q != null) {
@@ -168,7 +169,7 @@ public final class PadMarket {
             b.footer(PadView.Btn.of("LIMPIAR", "limpiar", PadView.GRAY));
         }
         b.input("buscar", "BUSCAR OBJETO O JUGADOR", 24, "BUSCAR");
-        b.empty(q != null ? "Nadie vende eso ahora mismo." : "Aún no hay nada a la venta. ¡Sé el primero en VENDER!");
+        b.empty(q != null ? "Nadie vende eso." : "No hay nada a la venta.");
         return b.build();
     }
 
@@ -211,12 +212,12 @@ public final class PadMarket {
             chosen = null;
             PadServer.put(player, "gts.slot", null);
         }
-        if (listed >= TFMarket.MAX_LISTINGS) {
-            b.header("Ya tienes " + TFMarket.MAX_LISTINGS + " cosas a la venta. Retira alguna o espera a que se venda.");
+        if (listed >= TFMarket.maxListings()) {
+            b.header("Límite: " + TFMarket.maxListings() + " a la venta.");
         } else if (chosen == null) {
-            b.header("Pulsa lo que quieres vender. Estará " + TFMarket.DAYS + " días; si nadie lo compra, vuelve a RECOGER.");
+            b.header("Elige qué vender (" + TFMarket.days() + " días a la venta).");
         } else {
-            b.header("Vendes " + TFMarket.describe(items.get(chosen)) + ": precio (5k, 2m) y PUBLICAR.");
+            b.header("Vendes " + TFMarket.describe(items.get(chosen)) + ". Precio: 500, 5k, 2m.");
         }
         // primero la barra rápida (0-8), luego la mochila (9-35), como se ven en el inventario
         int shown = 0;
@@ -228,7 +229,7 @@ public final class PadMarket {
             shown++;
         }
         if (shown == 0) b.empty("Tu inventario está vacío.");
-        if (chosen != null && listed < TFMarket.MAX_LISTINGS) b.input("publicar", "PRECIO", 14, "PUBLICAR");
+        if (chosen != null && listed < TFMarket.maxListings()) b.input("publicar", "PRECIO", 14, "PUBLICAR");
         return b.build();
     }
 
@@ -240,8 +241,8 @@ public final class PadMarket {
             b.row(new PadView.Row(l.item(), TFMarket.describe(l.item()), TEXT, List.of(left(l) + "."), -1, TFEconomy.format(l.price()),
                     PadView.Btn.of(sure ? "¿SEGURO?" : "RETIRAR", "retirar:" + l.id(), PadView.RED), null).clickable("tab:l:" + l.id()));
         }
-        if (!list.isEmpty()) b.header(list.size() + " de " + TFMarket.MAX_LISTINGS + " publicaciones. Cobras al momento cuando alguien compra.");
-        b.empty("No tienes nada a la venta. Publica algo en VENDER.");
+        if (!list.isEmpty()) b.header(list.size() + " de " + TFMarket.maxListings() + " publicaciones.");
+        b.empty("No tienes nada a la venta.");
         return b.build();
     }
 

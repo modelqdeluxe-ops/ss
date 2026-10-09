@@ -42,7 +42,7 @@ public final class PadAccount {
         public PadView view(ServerPlayer player, String tab) {
             PadView.Builder b = PadView.of("monedero");
             var balance = TFEconomy.balance(player.server, player.getUUID());
-            b.row(new PadView.Row(coin(), "Tu saldo", TEXT, List.of("Se gana con oficios, misiones, cazas, la tienda y el GTS."), -1,
+            b.row(new PadView.Row(coin(), "Tu saldo", TEXT, List.of("Oficios, misiones, cazas, tienda y GTS."), -1,
                     balance.isPresent() ? TFEconomy.format(balance.getAsLong()) : "—", null, null));
             double pending = TFJobs.pendingCoins(player.getUUID());
             if (pending >= 1) {
@@ -106,14 +106,23 @@ public final class PadAccount {
         }
 
         private static void prepare(ServerPlayer player, String text) {
+            if (!net.tierrasfantasticas.tfclient.pad.PadConfig.on("monedero.enviar")) {
+                TFPadNet.notice(player, "Envíos desactivados.");
+                return;
+            }
             String[] parts = text.split("\\s+");
             if (parts.length != 2) {
-                TFPadNet.notice(player, "Escribe el jugador y la cantidad, por ejemplo: Steve 500");
+                TFPadNet.notice(player, "Jugador y cantidad: Steve 500");
                 return;
             }
             long amount = TFMarket.parsePrice(parts[1]);
             if (amount <= 0) {
-                TFPadNet.notice(player, "Esa cantidad no vale. Por ejemplo: Steve 500 (o 5k).");
+                TFPadNet.notice(player, "Cantidad no válida (500, 5k).");
+                return;
+            }
+            long max = net.tierrasfantasticas.tfclient.pad.PadConfig.get("monedero.maximo");
+            if (amount > max) {
+                TFPadNet.notice(player, "Como mucho " + TFEconomy.format(max) + " por envío.");
                 return;
             }
             Optional<GameProfile> profile = player.server.getProfileCache() == null ? Optional.empty() : player.server.getProfileCache().get(parts[0]);
@@ -147,8 +156,8 @@ public final class PadAccount {
                 for (TFRanks.Rank r : all) if (r.id().equals(tab.substring(2))) return detail(player, r, mine);
             }
             PadView.Builder b = PadView.of("rango");
-            b.header(mine == null ? "Aún no tienes rango. Los rangos se consiguen en la tienda web: " + TFBridge.storeHost() + "."
-                    : "Tu rango: " + mine.name() + ". Pulsa uno para ver todo lo que trae.");
+            b.header(mine == null ? "Sin rango. Tienda: " + TFBridge.storeHost()
+                    : "Tu rango: " + mine.name() + ".");
             for (TFRanks.Rank r : all) {
                 boolean on = mine != null && mine.id().equals(r.id());
                 List<String> lines = new ArrayList<>();
@@ -157,7 +166,7 @@ public final class PadAccount {
                 b.row(new PadView.Row(icon(r), r.name(), r.hex() >= 0 ? r.hex() : TEXT, lines, -1, on ? "TU RANGO" : "", null, null)
                         .clickable("tab:r:" + r.id()).selected(on));
             }
-            if (all.isEmpty()) b.empty("La web aún no ha mandado la lista de rangos.");
+            if (all.isEmpty()) b.empty("Sin rangos.");
             return b.build();
         }
 

@@ -85,6 +85,17 @@ public final class TFPadClient {
         mc.setScreen(new TFPadScreen());
     }
 
+    /** El pad de administrador (desde su objeto). */
+    public static void openAdmin() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getConnection() == null || mc.screen != null) return;
+        if (!TFPadNet.CHANNEL.isRemotePresent(mc.getConnection().getConnection())) return;
+        TFPadNet.CHANNEL.sendToServer(new TFPadNet.Hello());
+        PadSettings.load();
+        if (PadSettings.sounds) sound("open", 0.7F * PadSettings.volume / 80F);
+        mc.setScreen(new TFPadScreen(true));
+    }
+
     /** Abre el pad directamente en una app (por ejemplo, la Cámara después de una foto, o la Protección al pulsar
      *  una piedra). Si el pad ya está abierto, cambia de app sin cerrarlo. */
     static void openTo(String app, String tab) {
@@ -128,7 +139,7 @@ public final class TFPadClient {
             while (KEY.consumeClick()) {
                 if (mc.screen != null) continue;
                 if (PadCamera.active()) {
-                    PadCamera.shoot();
+                    continue; // en modo foto se dispara con el clic izquierdo
                 } else if (hotbarKey) {
                     waitingRelease = true;
                     usedForHotbar = false;

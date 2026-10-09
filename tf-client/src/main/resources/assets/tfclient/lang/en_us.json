@@ -1149,5 +1149,6 @@
  "item.tfclient.proteccion_500x500": "Protection 500x500",
  "block.tfclient.proteccion_500x500": "Protection 500x500",
  "key.tfclient.pad": "Open the TF Pad",
- "key.categories.tfclient": "Tierras Fantásticas"
+ "key.categories.tfclient": "Tierras Fantásticas",
+ "item.tfclient.pad_admin": "Admin Pad"
 }

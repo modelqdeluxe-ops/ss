@@ -29,107 +29,94 @@ def page(name, title, *args, **kw):
     NAMES.append(name)
 
 
+APPS = [('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'),
+        ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'), ('hogares', 'HOGARES'), ('kits', 'KITS'),
+        ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'), ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'),
+        ('camara', 'CÁMARA'), ('ranking', 'RANKING'), ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'),
+        ('ayuda', 'AYUDA')]
+ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
+         ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('admin', 'AJUSTES')]
+
+s = Sim()
+s.status('TF PAD', back=False)
+s.home(APPS)
+s.save(OUT + 'p_inicio.png')
+NAMES.append('p_inicio')
+
+s = Sim()
+s.status('PAD ADMIN', back=False, title_color=rgb(0xFFD36A))
+s.home(ADMIN)
+s.save(OUT + 'p_admin.png')
+NAMES.append('p_admin')
+
 page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [
     ('iron_pickaxe', 'Minero · tu oficio', 0x8C9BB4, ['Pica piedra y minerales bajo tierra.'], 0.28, 'NIVEL 12', None, None, True),
     ('wheat', 'Granjero', 0x6FB43C, ['Cosecha y planta cultivos.'], 0.5, 'NIVEL 3', None, None),
     ('fishing_rod', 'Pescador', 0x3C8CD2, ['Pesca en ríos y mares.'], -1, 'NUEVO', None, None),
 ])
-page('p_oficio', 'OFICIOS', [('m', 'MISIONES (1)'), ('a', 'CÓMO SE GANA'), ('r', 'PREMIOS')], 'm',
-     ['Minero · nivel 12/50 · 340/1200 xp'], [
-         ('coal', 'Carbón para el invierno', GREEN, ['Romper: 64/64 · cada día'], 1.0, '+120', ('COBRAR', G), None, True),
-         ('iron_ingot', 'Hierro de calidad', T, ['Romper: 20/48 · cada día'], 0.42, '+200', None, None),
-         ('gray_dye', 'Diamantes', M, ['Se desbloquea en el nivel 15.'], -1, '+800', None, None),
-     ], footer=[('ATRÁS', B), ('DEJAR', R)])
 page('p_tienda', 'TIENDA', [('', 'COMPRAR'), ('v', 'VENDER')], '', [], [
-    ('diamond', 'Minerales', 0x3CB4E6, ['Diamantes, hierro, oro y más.'], -1, '12 objetos', None, None),
-    ('bread', 'Comida', 0xD2A050, ['Para no pasar hambre.'], -1, '8 objetos', None, None),
-    ('oak_log', 'Bloques', 0x8C6E3C, ['Madera, piedra, cristal…'], -1, '20 objetos', None, None),
+    ('diamond', 'Minerales', 0x3CB4E6, ['Diamante, netherita, lapislázuli'], -1, '3 objetos', None, None),
+    ('bread', 'Comida', 0xD2A050, ['Pan, filete, manzana dorada'], -1, '8 objetos', None, None),
 ])
-page('p_tienda_cat', 'TIENDA', [], '', ['Minerales · pulsa un objeto.'], [], cells=[
-    ('diamond', '950', GOLD, False), ('iron_ingot', '120', GOLD, False), ('gold_ingot', '300', GOLD, False),
-    ('emerald', '1,2K', GOLD, False), ('coal', '20', GOLD, False), ('redstone', '45', GOLD, False),
-    ('lapis_lazuli', '60', GOLD, False), ('quartz', '+40', GREEN, False), ('netherite_ingot', '35K', GOLD, False),
-    ('copper_ingot', '30', GOLD, False), ('amethyst_shard', '80', GOLD, False), ('raw_iron', '+15', GREEN, False),
+page('p_tienda_cat', 'TIENDA', [], '', ['Minerales'], [], cards=[
+    ('diamond', 'Diamante', 0xF6B628, '950 monedas', False), ('netherite_scrap', 'Chatarra de netherita', 0xF6B628, '6K monedas', False),
+    ('lapis_lazuli', 'Lapislázuli', 0x40C850, 'Vende +12', False), ('emerald', 'Esmeralda', 0xF6B628, '1,2K monedas', False),
+    ('gold_ingot', 'Lingote de oro', 0xF6B628, '300 monedas', False),
 ], footer=[('ATRÁS', B)])
-page('p_tienda_item', 'TIENDA', [('b', 'COMPRAR'), ('s', 'VENDER')], 'b', [], [
-    ('diamond', 'Diamante', T, ['Compra 950 monedas · Venta 400 monedas (1 ud.)', 'Llevas 3.'], -1, '', None, None),
-], cells=[('diamond', '950', GOLD, False), ('diamond', '7,6K', GOLD, False), ('diamond', '30K', M, False), ('diamond', '60K', M, False)],
-     input_=('OTRA CANTIDAD (LOTES)', 'COMPRAR', ''), footer=[('ATRÁS', B)])
-page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], '', [], [], cells=[
-    ('diamond_sword', '5K', GOLD, False), ('elytra', '120K', GOLD, False), ('golden_apple', '800', GOLD, False),
-    ('enchanted_book', '2,5K', GOLD, False), ('trident', '40K', GREEN, True), ('ender_pearl', '150', GOLD, False),
-    ('totem_of_undying', '25K', GOLD, False), ('shulker_shell', '3K', GOLD, False),
+page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], '', [], [], cards=[
+    ('diamond_sword', 'Espada de diamante', 0xF6B628, '5K · Steve', False), ('elytra', 'Élitros', 0xF6B628, '120K · Alex', False),
+    ('trident', 'Tridente', 0x40C850, '40K · tuyo', True), ('totem_of_undying', 'Tótem', 0xF6B628, '25K · Notch', False),
+    ('enchanted_book', 'Libro encantado', 0xF6B628, '2,5K · Steve', False),
 ], input_=('BUSCAR OBJETO O JUGADOR', 'BUSCAR', ''))
-page('p_gts_vender', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], 'v',
-     ['Vendes 1× Tridente. Escribe el precio (1500, 5k, 2m) y PUBLICAR.'], [], cells=[
-         ('diamond_pickaxe', '', M, False), ('trident', '', M, True), ('bread', '', M, False), ('torch', '', M, False),
-         ('iron_ingot', '', M, False), ('tf:fantastic_coin', 'NO', M, False), ('arrow', '', M, False), ('bow', '', M, False),
-     ], input_=('PRECIO', 'PUBLICAR', '40k'))
-page('p_hogares', 'HOGARES', [], '', ['2 de 5 hogares. Escribe un nombre y GUARDAR AQUÍ guarda donde estás.'], [
+page('p_viajes', 'VIAJES', [], '', [], [], cards=[
+    ('compass_00', 'Spawn', 0x3496FA, 'Mundo normal', False), ('red_bed', 'Tu cama', 0xE83446, 'Mundo normal', False),
+    ('filled_map', 'Mercado', 0xF6B628, 'Mundo normal', False), ('ender_pearl', 'Arena PvP', 0x9A5CF0, 'Warp', False),
+    ('ender_pearl', 'Nether hub', 0x9A5CF0, 'Warp', False), ('spyglass', 'Explorar', 0x40C850, 'Al azar', False),
+    ('oak_door', 'Tus hogares', 0xC27A10, 'Abrir', False),
+])
+page('p_kits', 'KITS', [], '', ['1 listo para reclamar.'], [], cards=[
+    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False), ('bread', 'Diario', 0x40C850, 'Listo', True),
+    ('iron_sword', 'Semanal', 0xF6B628, 'en 3 d 4 h', False), ('diamond', 'VIP', 0xF6B628, 'en 5 h', False),
+])
+page('p_kit', 'KITS', [], '', ['Diario · cada día'], [], cells=[
+    ('bread', '', T, False), ('cooked_beef', '', T, False), ('torch', '', T, False), ('tf:fantastic_coin', '200', GOLD, False),
+], footer=[('ATRÁS', B), ('RECLAMAR', G)])
+page('p_jugadores', 'JUGADORES', [], '', ['3 conectados'], [], cards=[
+    ('player_head', 'Pewez777 (tú)', 0xF6B628, 'Rey', False), ('player_head', 'Steve', 0x3496FA, 'Mortal', False),
+    ('player_head', 'Alex', 0x3496FA, '', False),
+])
+page('p_regalar', 'JUGADORES', [('f', 'FICHA'), ('r', 'REGALAR')], 'r',
+     ['Regalo para Steve: elige un objeto o escribe monedas. Te quedan 9 hoy.'], [], cells=[
+         ('diamond_pickaxe', '', M, False), ('golden_apple', '', M, True), ('bread', '', M, False), ('torch', '', M, False),
+         ('iron_ingot', '', M, False), ('tf:pad_admin', 'NO', M, False), ('arrow', '', M, False), ('bow', '', M, False),
+     ], input_=('MONEDAS', 'ENVIAR', ''), footer=[('REGALAR', G)])
+page('p_hogares', 'HOGARES', [], '', ['2 de 5 hogares.'], [
     ('red_bed', 'casa', T, ['Mundo normal · 120, 64, -340 · a 85 m'], -1, '', ('IR', B), ('BORRAR', R)),
     ('crimson_nylium', 'base_nether', T, ['Nether · 40, 70, 12'], -1, '', ('IR', B), ('BORRAR', R)),
 ], input_=('NOMBRE DEL HOGAR', 'GUARDAR AQUÍ', ''))
-page('p_armario', 'ARMARIO', [('head', 'CABEZA ·'), ('chest', 'PECHO'), ('legs', 'PIERNAS'), ('feet', 'PIES'), ('back', 'ESPALDA')],
-     'head', ['Solo cambia cómo te ven: tu armadura real sigue igual.'], [
-         ('diamond_helmet', 'Casco de Oni', T, ['De Crate Oni.'], -1, 'PUESTO', ('QUITAR', R), None, True),
-         ('golden_helmet', 'Corona del Rey', T, ['De Rango Rey.'], -1, '', ('PONER', G), None),
-     ])
-page('p_efectos', 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS')], '', ['Lo que se ve al derrotar a alguien. Gratis: elige uno.'], [
-    ('wither_skeleton_skull', 'Explosión de almas', T, [], -1, 'EQUIPADO', ('QUITAR', R), None, True),
-    ('wither_skeleton_skull', 'Lluvia de pétalos', T, [], -1, '', ('EQUIPAR', G), None),
-    ('wither_skeleton_skull', 'Rayo divino', T, [], -1, '', ('EQUIPAR', G), None),
-])
-page('p_proteccion', 'PROTECCIÓN', [], '', ['Tus zonas: 2. Pulsa una para administrarla.'], [
-    ('tfb:claims/proteccion_100x100_front', 'Zona 100x100', T, ['Mundo normal · 120, 64, -340', '3 miembros'], -1, 'ESTÁS AQUÍ', None, None, True),
-    ('tfb:claims/proteccion_25x25_front', 'Zona 25x25', T, ['Mundo normal · 900, 70, 40', 'Sin miembros'], -1, '', None, None),
-])
-page('p_proteccion_ajustes', 'PROTECCIÓN', [('a', 'AJUSTES'), ('m', 'MIEMBROS (3)'), ('b', 'BANEOS'), ('p', 'PARTÍCULAS'), ('x', 'MÁS')], 'a',
-     ['Zona 100x100 · Mundo normal · 120, 64, -340'], [
-         (None, 'Bloques y terreno', GOLD, [], -1, '', None, None),
-         ('bricks', 'No construir', T, ['Los de fuera no colocan bloques.'], -1, '', ('SÍ', G), None),
-         ('tnt', 'Sin explosiones', T, ['La TNT y los creepers no destruyen.'], -1, '', ('NO', GR), None),
-         ('golden_apple', 'Regeneración', M, ['Para ti y tus miembros.'], -1, '', ('250X250', GR, False), None),
-     ], footer=[('ATRÁS', B)])
-page('p_proteccion_miembros', 'PROTECCIÓN', [('a', 'AJUSTES'), ('m', 'MIEMBROS (3)'), ('b', 'BANEOS'), ('p', 'PARTÍCULAS'), ('x', 'MÁS')], 'm',
-     ['Pueden construir y usarlo todo.'], [
-         ('player_head', 'Steve', T, ['Conectado'], -1, '', ('QUITAR', R), None),
-         ('player_head', 'Alex', T, ['Desconectado'], -1, '', ('QUITAR', R), None),
-     ], input_=('NOMBRE DEL JUGADOR', 'AÑADIR', ''), footer=[('ATRÁS', B)])
-page('p_proteccion_particulas', 'PROTECCIÓN', [('a', 'AJUSTES'), ('m', 'MIEMBROS (3)'), ('b', 'BANEOS'), ('p', 'PARTÍCULAS'), ('x', 'MÁS')], 'p',
-     ['Partículas encendidas · densidad 10 · pulsa una.'], [], cells=[
-         ('poppy', 'CORAZÓN', T, False), ('blaze_powder', 'LLAMA', GOLD, True), ('torch', 'LLAMITA', T, False),
-         ('soul_torch', 'ALMA', T, False), ('end_rod', 'VARA', T, False), ('iron_sword', 'CRÍTICO', T, False),
-         ('diamond_sword', 'MÁGICO', T, False), ('enchanted_book', 'RUNAS', T, False),
-     ], footer=[('MENOS', GR), ('MÁS', GR), ('APAGAR', R), ('ATRÁS', B)])
-page('p_monedero', 'MONEDERO', [], '', [], [
-    ('tf:fantastic_coin', 'Tu saldo', T, ['Se gana con oficios, misiones, cazas, la tienda y el GTS.'], -1, '1.250 monedas', None, None),
-    ('clock_00', 'Por cobrar del oficio', T, ['Llega en el próximo pago.'], -1, '+42 monedas', None, None),
-    ('emerald', 'A la venta en el GTS', T, ['2 cosas. Cobras al momento cuando se venden.'], -1, '45.000 monedas', ('VER', B), None),
-], input_=('MANDAR: JUGADOR CANTIDAD', 'PREPARAR', ''))
-page('p_rango', 'MI RANGO', [], '', ['Tu rango: Rey. Pulsa uno para ver todo lo que trae.'], [
-    ('iron_ingot', 'Mortal', 0x55FF55, ['Prefijo «Mortal» con color en el chat', '5 hogares'], -1, '', None, None),
-    ('gold_ingot', 'Rey', 0xFFAA00, ['Prefijo «Rey» con color en el chat', '10 hogares'], -1, 'TU RANGO', None, None, True),
-    ('diamond', 'Dragón', 0xAA00AA, ['Prefijo «Dragón» con color en el chat', '15 hogares'], -1, '', None, None),
-])
-page('p_viajes', 'VIAJES', [], '', ['Elige a dónde ir. 3 s sin moverte y ¡listo!'], [
-    ('compass_00', 'Spawn', T, ['El corazón del servidor'], -1, '', ('VIAJAR', B), None),
-    ('filled_map', 'Mercado central', T, ['Mundo normal'], -1, '', ('VIAJAR', B), None),
-    ('spyglass', 'Explorar', T, ['Un sitio seguro al azar, a 800-6000 bloques del spawn'], -1, '', ('EXPLORAR', GO), None),
-    ('red_bed', 'Tus hogares', T, ['Los sitios que guardaste'], -1, '', ('VER', B), None),
-])
 page('p_misiones', 'MISIONES', [('diarias', 'DIARIAS'), ('semanales', 'SEMANALES')], 'diarias', ['Se renuevan en 5 h 12 min.'], [
     ('coal', 'Minero de carbón', T, ['Saca 24 menas de carbón  ·  24/24'], 1.0, '+80', ('RECLAMAR', G), None),
     ('rotten_flesh', 'Noche de zombis', T, ['Derrota 15 zombis  ·  9/15'], 0.6, '+90', None, None),
 ], footer=[('RECLAMAR TODO', G)])
+page('a_tienda_item', 'TIENDA', [], '', ['Minerales · Diamante'], [
+    ('gold_ingot', 'Precio de compra', T, ['Lo que paga el jugador por lote. 0 = no se vende.'], -1, '950', ('EDITAR', B), None, True),
+    ('emerald', 'Precio de venta', T, ['Lo que cobra el jugador. 0 = la tienda no lo compra.'], -1, '400', ('EDITAR', B), None),
+    ('chest', 'Cantidad por lote', T, ['Objetos que van en cada lote.'], -1, '1', ('EDITAR', B), None),
+], input_=('NUEVO VALOR', 'GUARDAR', '1200'), footer=[('ATRÁS', B)])
+page('a_apps', 'APPS', [], '', ['Las que apagues no salen en el pad de los jugadores.'], [
+    ('iron_pickaxe', 'Oficios', T, ['Activa'], -1, '', ('SÍ', G), None),
+    ('writable_book', 'Misiones', T, ['Activa'], -1, '', ('SÍ', G), None),
+    ('crossbow', 'Cazas', M, ['Apagada'], -1, '', ('NO', GR), None),
+])
 
-# Comunidad (PadCommunityPage)
+# Comunidad (PadCommunityPage): pestañas, + FOTO y las publicaciones una debajo de otra
 photo = Image.open(os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/gui/menu_background.png')).convert('RGBA')
 s = Sim()
 s.status('COMUNIDAD')
 X, Y, W, H = s.X, s.Y, s.W, s.H
 x = X
 for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
-    w = s.pwidth(label) + 10
+    w = s.pwidth(label) + 12
     sel = key == 'recientes'
     s.box(x, Y, w, 13, (24, 38, 92))
     s.box(x + 1, Y + 1, w - 2, 11, rgb(0xF6B628 if sel else 0xE8F8FF))
@@ -137,45 +124,40 @@ for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mia
     x += w + 3
 fw = s.bw('+ FOTO')
 s.button(X + W - fw, Y - 1, fw, '+ FOTO', GO)
-top = Y + 16
-s.panel(X, top, W, H - 16)
-px, py = X + 6, top + 5
-s.box(px - 1, py - 1, 146, 83, (24, 38, 92))
-s.art.alpha_composite(photo.resize((144, 81)), (px, py))
-cx = px + 152
-cw = X + W - 6 - cx
-s.mtext('Pewez777', cx, top + 6, (24, 38, 92))
-s.mtext('hace 12 min', cx, top + 16, rgb(0x4A6694))
-s.mtext('1/24', cx + cw - s.mwidth('1/24'), top + 16, rgb(0x4A6694))
-s.wrap('«Atardecer desde la torre del spawn»', cx, top + 29, cw, (24, 38, 92), 3)
-heart = s.img('heart').resize((14, 12), Image.NEAREST)
-s.art.alpha_composite(heart, (cx, top + 62))
-s.mtext('18 likes', cx + 20, top + 65, (24, 38, 92))
-s.button(cx, top + H - 16 - 19, cw, 'DENUNCIAR', B)
+top, bottom = Y + 17, Y + H
+s.panel(X, top, W, bottom - top)
+pw = max(128, min(256, (W - 20) // 2)) // 16 * 16
+ph = pw * 9 // 16
+ch = ph + 12
+s.scissor(X + 1, top + 2, W - 2, bottom - top - 4)
+posts = [('Pewez777', 'hace 12 min', 'Atardecer desde la torre del spawn', 18, True, False),
+         ('Steve', 'hace 2 h', '', 4, False, False)]
+cy = top + 4
+for name, ago, cap, likes, liked, mine in posts:
+    x, y, w, h = X + 4, cy, W - 14, ch - 4
+    s.box(x, y, w, h, rgb(0xB8D4EE))
+    s.box(x + 1, y + 1, w - 2, h - 2, (255, 255, 255))
+    px, py = x + 4, y + 4
+    s.box(px - 1, py - 1, pw + 2, ph + 2, (24, 38, 92))
+    s.paste(photo.resize((pw, ph)), px, py)
+    cx = px + pw + 10
+    cw = x + w - 6 - cx
+    s.mtext(name, cx, py + 1, (24, 38, 92))
+    s.mtext(ago, cx, py + 12, rgb(0x4A6694))
+    if cap:
+        s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (24, 38, 92), 3)
+    ly = py + ph - 15
+    s.blit('heart' if liked else 'heart_off', cx, ly)
+    s.mtext(f'{likes} likes', cx + 16, ly + 2, (24, 38, 92))
+    bw = s.bw('DENUNCIAR')
+    s.button(x + w - 6 - bw, ly - 1, bw, 'DENUNCIAR', B)
+    cy += ch
+s.no_scissor()
 s.save(OUT + 'p_comunidad.png')
 NAMES.append('p_comunidad')
 
-# Cámara (PadCameraPage)
-s = Sim()
-s.status('CÁMARA')
-s.panel(X, Y, W, H)
-px, py = X + 6, Y + 5
-s.box(px - 1, py - 1, 146, 83, (24, 38, 92))
-s.art.alpha_composite(photo.resize((144, 81)), (px, py))
-by = Y + H - 17
-cx = px + 152
-cw = X + W - 6 - cx
-s.button(px - 1, by, 146, 'MODO FOTO', G)
-s.button(cx, by, cw, 'CARPETA', B)
-s.mtext('Foto 1 de 7', cx, py + 1, (24, 38, 92))
-s.mtext('8 oct · 18:30', cx, py + 11, rgb(0x4A6694))
-s.button(cx, py + 26, cw, 'PUBLICAR', GO)
-s.button(cx, py + 45, cw, 'BORRAR', R)
-s.save(OUT + 'p_camara.png')
-NAMES.append('p_camara')
-
 # hoja con todo
-ims = [Image.open(OUT + n + '.png').crop((180, 220, 1400, 820)) for n in NAMES]
+ims = [Image.open(OUT + n + '.png').crop((150, 200, 1418, 830)) for n in NAMES]
 w, h = ims[0].size
 rows = (len(ims) + 1) // 2
 sheet = Image.new('RGBA', (w * 2 + 10, (h + 10) * rows), (20, 24, 40, 255))

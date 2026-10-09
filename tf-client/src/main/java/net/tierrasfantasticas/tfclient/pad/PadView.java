@@ -13,7 +13,10 @@ import net.minecraft.world.item.ItemStack;
  * acción (TFPadNet.Action). Las acciones que empiezan por «§open:» las resuelve el propio pad (abren otra app).
  */
 public record PadView(String app, List<Tab> tabs, String tab, List<String> header, List<Cell> cells, List<Row> rows,
-                      List<Btn> footer, Input input, String empty) {
+                      List<Btn> footer, Input input, String empty, int cellStyle) {
+
+    /** Casillas pequeñas (objeto y texto pixel debajo, como un inventario) o tarjetas (objeto grande, nombre y precio). */
+    public static final int SMALL = 0, CARDS = 1;
 
     /** Estilos de botón. */
     public static final int BLUE = 0, GOLD = 1, RED = 2, GREEN = 3, GRAY = 4;
@@ -50,10 +53,15 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     }
 
     /**
-     * Una casilla de la rejilla: el objeto (con su cantidad), un texto corto debajo (letra pixel, por ejemplo un precio)
-     * de color label, la acción al pulsarla y si sale marcada.
+     * Una casilla de la rejilla: el objeto (con su cantidad), un texto corto debajo de color color (en las pequeñas, letra
+     * pixel, por ejemplo un precio; en las tarjetas, el nombre), sub (en las tarjetas, la segunda línea en dorado, por
+     * ejemplo el precio), la acción al pulsarla y si sale marcada.
      */
-    public record Cell(ItemStack icon, String label, int color, String action, boolean selected) {}
+    public record Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub) {
+        public Cell(ItemStack icon, String label, int color, String action, boolean selected) {
+            this(icon, label, color, action, selected, "");
+        }
+    }
 
     /** Campo de texto: al pulsar Enter (o el botón) se manda la acción con lo escrito. */
     public record Input(String action, String hint, int max, String button) {}
@@ -76,6 +84,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         private final List<Btn> footer = new ArrayList<>();
         private Input input;
         private String empty = "";
+        private int cellStyle = SMALL;
 
         private Builder(String app) {
             this.app = app;
@@ -111,6 +120,18 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             return this;
         }
 
+        /** Una tarjeta (pide cards()): objeto grande, nombre y una segunda línea dorada. */
+        public Builder card(ItemStack icon, String name, int color, String sub, String action, boolean selected) {
+            cells.add(new Cell(icon, name, color, action, selected, sub == null ? "" : sub));
+            cellStyle = CARDS;
+            return this;
+        }
+
+        public Builder cards() {
+            cellStyle = CARDS;
+            return this;
+        }
+
         /** Fila solo de texto (para Ayuda): se parte a lo ancho. */
         public Builder text(String title, int color, List<String> lines) {
             rows.add(new Row(ItemStack.EMPTY, title, color, lines, -1, "", null, null));
@@ -133,7 +154,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         }
 
         public PadView build() {
-            return new PadView(app, tabs, tab, header, cells, rows, footer, input, empty);
+            return new PadView(app, tabs, tab, header, cells, rows, footer, input, empty, cellStyle);
         }
     }
 
@@ -159,10 +180,11 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         for (int i = 0; i < c; i++) {
             Cell cell = cells.get(i);
             buf.writeItem(cell.icon == null ? ItemStack.EMPTY : cell.icon);
-            buf.writeUtf(cut(cell.label, 12), 24);
+            buf.writeUtf(cut(cell.label, 40), 80);
             buf.writeInt(cell.color);
             buf.writeUtf(cut(cell.action, 120), 128);
             buf.writeBoolean(cell.selected);
+            buf.writeUtf(cut(cell.sub, 40), 80);
         }
         int n = Math.min(rows.size(), MAX_ROWS);
         buf.writeVarInt(n);
@@ -190,6 +212,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             buf.writeUtf(cut(input.button, 20), 32);
         }
         buf.writeUtf(cut(empty, 200), 256);
+        buf.writeByte(cellStyle);
     }
 
     public static PadView read(FriendlyByteBuf buf) {
@@ -201,7 +224,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         for (int i = buf.readVarInt(); i > 0; i--) header.add(buf.readUtf(256));
         List<Cell> cells = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) {
-            cells.add(new Cell(buf.readItem(), buf.readUtf(24), buf.readInt(), buf.readUtf(128), buf.readBoolean()));
+            cells.add(new Cell(buf.readItem(), buf.readUtf(80), buf.readInt(), buf.readUtf(128), buf.readBoolean(), buf.readUtf(80)));
         }
         List<Row> rows = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) {
@@ -219,7 +242,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         for (int i = buf.readVarInt(); i > 0; i--) footer.add(readBtn(buf));
         Input input = buf.readBoolean() ? new Input(buf.readUtf(64), buf.readUtf(128), buf.readVarInt(), buf.readUtf(32)) : null;
         String empty = buf.readUtf(256);
-        return new PadView(app, tabs, tab, header, cells, rows, footer, input, empty);
+        return new PadView(app, tabs, tab, header, cells, rows, footer, input, empty, buf.readByte());
     }
 
     private static void writeBtn(FriendlyByteBuf buf, Btn b) {

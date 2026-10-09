@@ -447,6 +447,31 @@ def jugadores():
     return ic.outline()
 
 
+def admin():
+    """Pad de administrador: engranaje de oro con su eje azul (dibujado a mano, 8 dientes, luz arriba a la izquierda)."""
+    ic = Icon()
+    cx = cy = 15.5
+    gear = set()
+    for y in range(32):
+        for x in range(32):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            r = math.hypot(dx, dy)
+            a = math.atan2(dy, dx)
+            tooth = math.cos(8 * a) > 0.35
+            if r <= 10.5 or (tooth and r <= 13.5):
+                if r > 4.2:
+                    gear.add((x, y))
+    shade(ic, gear, GOLD)
+    hub = {(x, y) for y in range(32) for x in range(32) if 2.0 < math.hypot(x + 0.5 - cx, y + 0.5 - cy) <= 4.2}
+    shade(ic, hub, BLUE)
+    # anillo interior (relieve)
+    for x, y in gear:
+        r = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+        if 7.2 < r <= 8.2:
+            ic.px(x, y, GOLD[3] if x + y > 31 else GOLD[1])
+    return ic.outline()
+
+
 ICONOS = {'misiones': misiones, 'cazas': cazas, 'viajes': viajes, 'explorar': explorar, 'hogares': hogares, 'kits': kits,
           'titulos': titulos, 'ayuda': ayuda, 'comunidad': comunidad, 'jugadores': jugadores, 'clanes': clanes,
           'ranking': ranking, 'camara': camara}

@@ -21,8 +21,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * La cámara del pad. «Modo foto»: se esconde la interfaz para encuadrar (puedes moverte y mirar), la C dispara y Esc
- * vuelve al pad (no al menú de pausa). La foto se guarda en .minecraft/tfclient/fotos (solo en tu ordenador) y el pad vuelve a abrirse en la Cámara
+ * La cámara del pad. «Modo foto»: se esconde la interfaz para encuadrar (puedes moverte y mirar), el clic izquierdo
+ * dispara (sin pegar a nada) y Esc vuelve al pad (no al menú de pausa). La foto se guarda en .minecraft/tfclient/fotos (solo en tu ordenador) y el pad vuelve a abrirse en la Cámara
  * con ella, para publicarla en Comunidad si quieres.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
@@ -33,6 +33,8 @@ public final class PadCamera {
     /** Para el destello del pad al volver. */
     static long flashAt;
     static Path lastPhoto;
+    /** La foto recién hecha en pequeño (320x180), para enseñarla al momento sin esperar a que se guarde el archivo. */
+    static com.mojang.blaze3d.platform.NativeImage preview;
 
     private PadCamera() {}
 
@@ -72,7 +74,7 @@ public final class PadCamera {
         prevHideGui = mc.options.hideGui;
         mc.options.hideGui = true;
         SystemToast.addOrUpdate(mc.getToasts(), SystemToast.SystemToastIds.TUTORIAL_HINT,
-                Component.literal("Modo foto"), Component.literal("C: hacer la foto · Esc: volver al pad"));
+                Component.literal("Modo foto"), Component.literal("Clic izquierdo: foto · Esc: volver al pad"));
     }
 
     static void stop() {
@@ -82,7 +84,15 @@ public final class PadCamera {
         Minecraft.getInstance().options.hideGui = prevHideGui;
     }
 
-    /** La C en modo foto: fuera avisos y, dos fotogramas después, la foto. */
+    /** Clic izquierdo en modo foto: no pega ni rompe; dispara. */
+    @SubscribeEvent
+    public static void onMouse(net.minecraftforge.client.event.InputEvent.MouseButton.Pre event) {
+        if (!active || event.getButton() != 0 || Minecraft.getInstance().screen != null) return;
+        event.setCanceled(true);
+        if (event.getAction() == org.lwjgl.glfw.GLFW.GLFW_PRESS && shootIn < 0) shoot();
+    }
+
+    /** Fuera avisos y, dos fotogramas después, la foto. */
     static void shoot() {
         Minecraft.getInstance().getToasts().clear();
         shootIn = 2;
@@ -116,6 +126,21 @@ public final class PadCamera {
             return;
         }
         NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget());
+        // la vista previa, ya: recorte 16:9 centrado y reducido
+        try {
+            int sw = img.getWidth(), sh = img.getHeight();
+            int cw = sw, ch = sw * 9 / 16;
+            if (ch > sh) {
+                ch = sh;
+                cw = sh * 16 / 9;
+            }
+            NativeImage small = new NativeImage(320, 180, false);
+            img.resizeSubRectTo((sw - cw) / 2, (sh - ch) / 2, cw, ch, small);
+            if (preview != null) preview.close();
+            preview = small;
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo preparar la vista previa de la foto", e);
+        }
         String base = "foto_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss"));
         Path file = dir().resolve(base + ".png");
         for (int i = 2; Files.exists(file); i++) file = dir().resolve(base + "_" + i + ".png");

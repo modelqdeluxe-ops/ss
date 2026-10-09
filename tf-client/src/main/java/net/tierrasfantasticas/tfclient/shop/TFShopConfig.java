@@ -27,7 +27,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
- * config/tfclient-shop.json: la tienda del servidor (/tf shop). Categorías, objetos, precios de compra y venta,
+ * config/tfclient/tienda.json: la tienda del servidor (/tf shop). Categorías, objetos, precios de compra y venta,
  * límites diarios, comandos y textos. Se crea la primera vez con una tienda por defecto; /tf shop recargar la vuelve a
  * leer sin reiniciar. Los precios son en las monedas del servidor (TFEconomy).
  */
@@ -83,7 +83,7 @@ public final class TFShopConfig {
     private TFShopConfig() {}
 
     public static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-shop.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("tienda.json", "tfclient-shop.json");
     }
 
     public static String message(String key) {

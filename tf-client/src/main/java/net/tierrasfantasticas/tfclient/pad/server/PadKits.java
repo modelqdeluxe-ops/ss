@@ -34,12 +34,15 @@ import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
- * Kits gratis (las normas de Mojang no dejan vender kits): cada uno con su tiempo de espera (0 = una sola vez), lo
- * que trae y, si quiere, unas monedas. Se configuran en config/tfclient-kits.json; el staff puede guardar uno con lo
- * que lleva en la barra rápida: /tf web kits guardar &lt;id&gt; &lt;horas&gt; [nombre].
+ * Kits gratis (las normas de Mojang no dejan vender kits). Cada uno tiene su tipo: «unico» (de inicio: una sola vez),
+ * «diario» (una vez cada día), «semanal» (cada 7 días) u «horas» (cada esperaSegundos), lo que trae y, si quiere,
+ * unas monedas. Se configuran en config/tfclient/kits.json; el staff los crea y cambia desde el pad de administrador
+ * (con lo que lleva en el inventario) o con /tf web kits guardar &lt;id&gt; &lt;horas&gt; [nombre].
  */
 public final class PadKits {
-    record Kit(String id, String name, String desc, String icon, long cooldownSeconds, long coins, List<ItemStack> items) {
+    public static final List<String> TYPES = List.of("unico", "diario", "semanal", "horas");
+
+    record Kit(String id, String name, String desc, String icon, long cooldownSeconds, long coins, List<ItemStack> items, String type) {
         Item iconItem() {
             Item i = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(icon));
             return i == null || i == Items.AIR ? Items.BUNDLE : i;
@@ -63,9 +66,32 @@ public final class PadKits {
         JsonObject p = STORE_IMPL.playerIfAny(player.getUUID());
         if (p == null || !p.has(k.id)) return 0;
         long last = p.get(k.id).getAsLong();
-        if (k.cooldownSeconds <= 0) return -1;
-        long next = last + k.cooldownSeconds * 1000;
-        return Math.max(0, (next - System.currentTimeMillis()) / 1000);
+        switch (k.type) {
+            case "unico" -> {
+                return -1;
+            }
+            case "diario" -> {
+                // se renueva a medianoche (hora del servidor)
+                java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+                java.time.LocalDate day = java.time.Instant.ofEpochMilli(last).atZone(zone).toLocalDate();
+                if (!day.equals(java.time.LocalDate.now(zone))) return 0;
+                long midnight = java.time.LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli();
+                return Math.max(1, (midnight - System.currentTimeMillis()) / 1000);
+            }
+            default -> {
+                long seconds = k.type.equals("semanal") ? 7 * 86400L : Math.max(1, k.cooldownSeconds);
+                return Math.max(0, (last + seconds * 1000 - System.currentTimeMillis()) / 1000);
+            }
+        }
+    }
+
+    static String typeText(Kit k) {
+        return switch (k.type) {
+            case "unico" -> "Una sola vez";
+            case "diario" -> "Cada día";
+            case "semanal" -> "Cada semana";
+            default -> "Cada " + time(k.cooldownSeconds);
+        };
     }
 
     static String time(long s) {
@@ -81,32 +107,28 @@ public final class PadKits {
             Kit open = null;
             for (Kit k : KITS) if (tab.equals("ver:" + k.id)) open = k;
             if (open != null) return preview(player, open);
-            PadView.Builder b = PadView.of("kits").header("Kits gratis: reclámalos cuando estén listos.").empty("No hay kits configurados.");
+            PadView.Builder b = PadView.of("kits").empty("Sin kits.").cards();
+            int ready = 0;
             for (Kit k : KITS) {
                 long left = left(player, k);
-                String status = left == 0 ? "¡Listo!" : left < 0 ? "Ya lo reclamaste" : "Listo en " + time(left);
-                String every = k.cooldownSeconds <= 0 ? "Una sola vez" : "Cada " + time(k.cooldownSeconds);
-                List<String> lines = new ArrayList<>();
-                lines.add(k.desc.isEmpty() ? every + " · " + k.items.size() + " objetos" : k.desc);
-                lines.add(status + (k.desc.isEmpty() ? "" : "  ·  " + every));
-                PadView.Btn claim = left == 0 ? PadView.Btn.of("RECLAMAR", "reclamar:" + k.id, PadView.GREEN) : PadView.Btn.off("ESPERA");
-                b.row(new PadView.Row(new ItemStack(k.iconItem()), k.name, left == 0 ? 0x1E7C2C : 0x18265C, lines, -1,
-                        k.coins > 0 ? "+" + TFEconomy.number(k.coins) : "", PadView.Btn.of("VER", "ver:" + k.id, PadView.BLUE), claim));
+                if (left == 0) ready++;
+                String status = left == 0 ? "Listo" : left < 0 ? "Reclamado" : "en " + time(left);
+                b.card(new ItemStack(k.iconItem()), k.name, left == 0 ? 0x40C850 : left < 0 ? 0xAABAD2 : 0xF6B628, status, "tab:ver:" + k.id, left == 0);
             }
+            if (!KITS.isEmpty()) b.header(ready == 0 ? "Ninguno listo."
+                    : ready + (ready == 1 ? " kit listo" : " kits listos") + " para reclamar. Pulsa uno para verlo.");
             return b.build();
         }
 
         private PadView preview(ServerPlayer player, Kit k) {
-            PadView.Builder b = PadView.of("kits").selected("ver:" + k.id).header(k.name + ": lo que trae.");
-            for (ItemStack s : k.items) {
-                b.row(new PadView.Row(s.copy(), s.getHoverName().getString(), 0x18265C, List.of("× " + s.getCount()), -1, "", null, null));
-            }
-            if (k.coins > 0) {
-                b.row(new PadView.Row(new ItemStack(Items.GOLD_NUGGET), TFEconomy.format(k.coins), 0xC27A10, List.of("Monedas"), -1, "", null, null));
-            }
-            b.footer(PadView.Btn.of("VOLVER", "volver", PadView.BLUE));
             long left = left(player, k);
-            b.footer(left == 0 ? PadView.Btn.of("RECLAMAR", "reclamar:" + k.id, PadView.GREEN) : PadView.Btn.off("ESPERA"));
+            PadView.Builder b = PadView.of("kits").selected("ver:" + k.id);
+            b.header(k.name + " · " + typeText(k) + (k.desc.isEmpty() ? "" : " · " + k.desc));
+            for (ItemStack s : k.items) b.cell(s.copy(), "", 0x18265C, "", false);
+            if (k.coins > 0) b.cell(new ItemStack(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()), PadShop.price(k.coins), 0xC27A10, "", false);
+            b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
+            b.footer(left == 0 ? PadView.Btn.of("RECLAMAR", "reclamar:" + k.id, PadView.GREEN)
+                    : PadView.Btn.off(left < 0 ? "RECLAMADO" : "EN " + time(left).toUpperCase()));
             return b.build();
         }
 
@@ -120,7 +142,7 @@ public final class PadKits {
                 if (!k.id.equals(id) || left(player, k) != 0) continue;
                 // primero las monedas: si la economía no puede pagar, el kit sigue sin reclamar
                 if (k.coins > 0 && !TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), k.coins)) {
-                    TFPadNet.notice(player, "No se pudieron dar las monedas del kit. Inténtalo en un rato.");
+                    TFPadNet.notice(player, "Error al dar las monedas del kit.");
                     return null;
                 }
                 JsonObject p = STORE_IMPL.player(player.getUUID());
@@ -129,7 +151,9 @@ public final class PadKits {
                 for (ItemStack s : k.items) give(player, s.copy());
                 PadStats.add(player, PadStats.KITS, 1);
                 player.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.MASTER, 0.8F, 0.8F);
-                TFPadNet.notice(player, "Reclamaste el kit " + k.name + ".");
+                TFPadNet.notice(player, "Reclamaste " + k.name + ".");
+                if (k.coins > 0) TFPadNet.sendState(player);
+                return "";
             }
             return null;
         }
@@ -159,7 +183,7 @@ public final class PadKits {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static Path configFile() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-kits.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("kits.json", "tfclient-kits.json");
     }
 
     static void loadConfig() {
@@ -179,8 +203,11 @@ public final class PadKits {
                     items.removeIf(ItemStack::isEmpty);
                     String id = TFJson.str(k, "id", "");
                     if (id.isEmpty() || id.length() > 32) id = "kit" + KITS.size();
+                    long seconds = TFJson.num(k, "esperaSegundos", 86400);
+                    String type = TFJson.str(k, "tipo", seconds <= 0 ? "unico" : seconds == 86400 ? "diario" : seconds == 604800 ? "semanal" : "horas");
+                    if (!TYPES.contains(type)) type = "horas";
                     KITS.add(new Kit(id, TFJson.str(k, "nombre", "Kit"), TFJson.str(k, "descripcion", ""),
-                            TFJson.str(k, "icono", "minecraft:bundle"), TFJson.num(k, "esperaSegundos", 86400), TFJson.num(k, "monedas", 0), items));
+                            TFJson.str(k, "icono", "minecraft:bundle"), seconds, TFJson.num(k, "monedas", 0), items, type));
                 } catch (Exception ex) {
                     TFClient.LOGGER.warn("TF Pad: un kit no se pudo leer: {}", ex.getMessage());
                 }
@@ -206,8 +233,8 @@ public final class PadKits {
 
     private static JsonObject defaults() {
         JsonObject o = new JsonObject();
-        o.addProperty("_ayuda", "Kits gratis. esperaSegundos: 0 = una sola vez. objetos: \"minecraft:bread 16\". "
-                + "Con /tf web kits guardar <id> <horas> [nombre] el staff guarda uno con su barra rápida.");
+        o.addProperty("_ayuda", "Kits gratis. tipo: unico (una sola vez), diario, semanal u horas (cada esperaSegundos). "
+                + "objetos: \"minecraft:bread 16\". Se crean y cambian desde el pad de administrador.");
         JsonArray kits = new JsonArray();
         kits.add(kit("inicial", "Kit inicial", "Lo justo para empezar tu aventura.", "minecraft:stone_pickaxe", 0, 100,
                 "minecraft:stone_sword", "minecraft:stone_pickaxe", "minecraft:stone_axe", "minecraft:stone_shovel",
@@ -226,12 +253,95 @@ public final class PadKits {
         k.addProperty("nombre", name);
         k.addProperty("descripcion", desc);
         k.addProperty("icono", icon);
+        k.addProperty("tipo", seconds <= 0 ? "unico" : seconds == 86400 ? "diario" : seconds == 604800 ? "semanal" : "horas");
         k.addProperty("esperaSegundos", seconds);
         k.addProperty("monedas", coins);
         JsonArray a = new JsonArray();
         for (String s : items) a.add(s);
         k.add("objetos", a);
         return k;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Para el pad de administrador
+    // ---------------------------------------------------------------------------------------------------------------
+
+    static List<Kit> kits() {
+        return List.copyOf(KITS);
+    }
+
+    static Kit kit(String id) {
+        for (Kit k : KITS) if (k.id.equals(id)) return k;
+        return null;
+    }
+
+    /** Cambia el kit id en kits.json con f (sobre su objeto JSON) y recarga. Devuelve false si no existe. */
+    static boolean edit(String id, java.util.function.Consumer<JsonObject> f) {
+        JsonObject o = TFJson.read(configFile());
+        if (o == null || !o.has("kits")) return false;
+        for (JsonElement e : o.getAsJsonArray("kits")) {
+            JsonObject k = e.getAsJsonObject();
+            if (!TFJson.str(k, "id", "").equals(id)) continue;
+            f.accept(k);
+            TFJson.write(configFile(), o);
+            loadConfig();
+            return true;
+        }
+        return false;
+    }
+
+    static void delete(String id) {
+        JsonObject o = TFJson.read(configFile());
+        if (o == null || !o.has("kits")) return;
+        JsonArray keep = new JsonArray();
+        for (JsonElement e : o.getAsJsonArray("kits")) if (!TFJson.str(e.getAsJsonObject(), "id", "").equals(id)) keep.add(e);
+        o.add("kits", keep);
+        TFJson.write(configFile(), o);
+        loadConfig();
+    }
+
+    /** Lo que lleva el jugador en el inventario (mochila y barra), como lista de objetos de un kit. */
+    static JsonArray inventoryItems(ServerPlayer player) {
+        JsonArray items = new JsonArray();
+        for (ItemStack s : player.getInventory().items) {
+            if (s.isEmpty()) continue;
+            JsonObject it = new JsonObject();
+            it.addProperty("nbt", s.save(new CompoundTag()).toString());
+            items.add(it);
+        }
+        return items;
+    }
+
+    /** Un kit nuevo con lo que lleva en el inventario. Devuelve su id o null si no lleva nada. */
+    static String createFromInventory(ServerPlayer player, String name, String type) {
+        JsonArray items = inventoryItems(player);
+        if (items.isEmpty()) return null;
+        JsonObject o = TFJson.read(configFile());
+        if (o == null) o = defaults();
+        if (!o.has("kits")) o.add("kits", new JsonArray());
+        String base = name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]+", "_").replaceAll("^_|_$", "");
+        if (base.isEmpty()) base = "kit";
+        if (base.length() > 24) base = base.substring(0, 24);
+        String id = base;
+        for (int i = 2; kit(id) != null; i++) id = base + "_" + i;
+        ItemStack first = ItemStack.EMPTY;
+        for (ItemStack s : player.getInventory().items) if (!s.isEmpty()) {
+            first = s;
+            break;
+        }
+        JsonObject k = new JsonObject();
+        k.addProperty("id", id);
+        k.addProperty("nombre", name);
+        k.addProperty("descripcion", "");
+        k.addProperty("icono", String.valueOf(ForgeRegistries.ITEMS.getKey(first.getItem())));
+        k.addProperty("tipo", TYPES.contains(type) ? type : "unico");
+        k.addProperty("esperaSegundos", type.equals("diario") ? 86400 : type.equals("semanal") ? 604800 : type.equals("horas") ? 86400 : 0);
+        k.addProperty("monedas", 0);
+        k.add("objetos", items);
+        o.getAsJsonArray("kits").add(k);
+        TFJson.write(configFile(), o);
+        loadConfig();
+        return id;
     }
 
     /** /tf web kits guardar|quitar|recargar (staff). */

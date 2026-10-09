@@ -10,8 +10,6 @@ import net.tierrasfantasticas.tfclient.TFConfig;
 final class PadInfoPages {
     private PadInfoPages() {}
 
-    static final java.text.DecimalFormat THOUSANDS = new java.text.DecimalFormat("#,##0",
-            java.text.DecimalFormatSymbols.getInstance(Locale.forLanguageTag("es-ES")));
 
     /** Ajustes del pad: sonidos, tic al pasar por encima, animaciones y volumen. */
     static final class Ajustes extends PadPage {

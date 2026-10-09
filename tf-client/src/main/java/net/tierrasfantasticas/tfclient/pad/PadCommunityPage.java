@@ -6,17 +6,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Comunidad: la red social del servidor. Pestañas RECIENTES / POPULARES / MÍAS, una foto grande con su autor, cuándo
- * se publicó, el texto y el corazón de likes; flechas (o la rueda) para pasar; clic en la foto para verla en grande.
- * BORRAR (las tuyas, o el staff) y DENUNCIAR (las de otros). «+ FOTO» lleva a la Cámara.
+ * Comunidad: la red social del servidor. Pestañas RECIENTES / POPULARES / MÍAS y, debajo, las publicaciones una
+ * debajo de otra (cada una en su tarjeta: la foto, quién la subió, cuándo, el texto y el corazón de likes); se baja
+ * con la rueda o arrastrando. Clic en una foto para verla en grande. BORRAR (las tuyas, o el staff) y DENUNCIAR (las
+ * de otros). «+ FOTO» lleva a la Cámara.
  */
 final class PadCommunityPage extends PadPage {
     private static final String[][] TABS = {{"recientes", "RECIENTES"}, {"populares", "POPULARES"}, {"mias", "MÍAS"}};
-    /** La foto: 16:9 y dentro del panel con margen (el panel mide H - 16 de alto). */
-    private static final int PW = 144, PH = 81;
 
-    private int index;
-    private boolean full;
+    private int scroll;
+    private PadCommunityNet.Post full;
     private long confirm;
     private String confirmId = "";
     private final List<int[]> hits = new ArrayList<>();
@@ -32,13 +31,19 @@ final class PadCommunityPage extends PadPage {
         return "COMUNIDAD";
     }
 
-    void updated() {
-        index = Math.max(0, Math.min(index, PadCommunityClient.POSTS.size() - 1));
+    void updated() {}
+
+    /** Ancho y alto de la foto de cada tarjeta (16:9, la mitad del ancho como mucho). */
+    private int photoW() {
+        return Math.max(128, Math.min(256, (W - 20) / 2)) / 16 * 16;
     }
 
-    private PadCommunityNet.Post current() {
-        List<PadCommunityNet.Post> posts = PadCommunityClient.POSTS;
-        return posts.isEmpty() ? null : posts.get(Math.max(0, Math.min(index, posts.size() - 1)));
+    private int photoH() {
+        return photoW() * 9 / 16;
+    }
+
+    private int cardH() {
+        return photoH() + 12;
     }
 
     @Override
@@ -48,17 +53,18 @@ final class PadCommunityPage extends PadPage {
         // pestañas y + FOTO
         int x = X;
         for (String[] t : TABS) {
-            int w = PadFont.width(t[1]) + 10;
+            int w = PadFont.width(t[1]) + 12;
             boolean sel = t[0].equals(PadCommunityClient.tab);
             boolean hover = PadUi.inside(mx, my, x, Y, w, 13);
             PadUi.box(g, x, Y, w, 13, PadUi.NAVY);
             PadUi.box(g, x + 1, Y + 1, w - 2, 11, sel ? 0xFFF6B628 : hover ? 0xFF96D6FF : 0xFFE8F8FF);
+            if (sel) g.fill(x + 2, Y + 1, x + w - 2, Y + 2, 0xFFFFEC96);
             PadFont.drawCentered(g, t[1], x + w / 2, Y + 1, sel ? 0xFFFFFF : 0x18265C, sel);
             String key = t[0];
             hit(x, Y, w, 13, () -> {
                 if (!key.equals(PadCommunityClient.tab)) {
-                    index = 0;
-                    full = false;
+                    scroll = 0;
+                    pad.sound("tab", 0.7F);
                     PadCommunityClient.open(key);
                 }
             });
@@ -69,58 +75,88 @@ final class PadCommunityPage extends PadPage {
         PadUi.button(g, X + W - fw, Y - 1, fw, "+ FOTO", PadView.GOLD, fh, true);
         hit(X + W - fw, Y - 1, fw, 15, () -> pad.openApp("camara"));
 
-        int top = Y + 16;
-        PadUi.panel(g, X, top, W, H - 16);
-        PadCommunityNet.Post post = current();
-        if (post == null) {
-            String msg = PadCommunityClient.loading ? "Cargando..." : PadCommunityClient.tab.equals("mias")
-                    ? "Aún no has publicado fotos. Hazte una con la Cámara y publícala." : "Aún no hay fotos. ¡Publica la primera desde la Cámara!";
-            PadUi.wrap(g, msg, X + 20, top + 38, W - 40, PadUi.MUTED, 3);
+        int top = Y + 17, bottom = Y + H;
+        PadUi.panel(g, X, top, W, bottom - top);
+        List<PadCommunityNet.Post> posts = PadCommunityClient.POSTS;
+        if (posts.isEmpty()) {
+            if (PadCommunityClient.loading) {
+                PadUi.spinner(g, X + W / 2, (top + bottom) / 2 - 4);
+            } else {
+                String msg = PadCommunityClient.tab.equals("mias") ? "No has publicado fotos."
+                        : "Sin fotos.";
+                int n = PadUi.lines(msg, W - 60);
+                PadUi.wrap(g, msg, X + 30, (top + bottom) / 2 - n * 5, W - 60, PadUi.MUTED, 3);
+            }
             return;
         }
-        int px = X + 6, py = top + 5;
-        PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.NAVY);
-        g.fill(px, py, px + PW, py + PH, 0xFF1A2440);
+        int ch = cardH(), visible = bottom - top - 4;
+        int contentH = posts.size() * ch + 4;
+        scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - visible)));
+        pad.scissor(g, X + 1, top + 2, W - 2, visible);
+        int cy = top + 4 - scroll;
+        for (PadCommunityNet.Post post : posts) {
+            if (cy + ch > top && cy < bottom) drawPost(g, post, X + 4, cy, W - 14, ch - 4, mx, my, top, bottom);
+            cy += ch;
+        }
+        pad.noScissor(g);
+        if (contentH > visible) {
+            int bx = X + W - 6, bh = visible - 4;
+            g.fill(bx, top + 4, bx + 2, top + 4 + bh, 0xFFC8DCF0);
+            int th = Math.max(10, bh * visible / contentH);
+            int ty = top + 4 + (bh - th) * scroll / Math.max(1, contentH - visible);
+            g.fill(bx, ty, bx + 2, ty + th, 0xFF3496FA);
+        }
+        // cerca del final, la página siguiente
+        if (scroll + visible > contentH - ch * 2) PadCommunityClient.more();
+        if (full != null) drawFull(g, full);
+    }
+
+    private void drawPost(GuiGraphics g, PadCommunityNet.Post post, int x, int y, int w, int h, double mx, double my, int top, int bottom) {
+        boolean inList = my >= top + 2 && my < bottom - 2;
+        PadUi.box(g, x, y, w, h, 0xFFB8D4EE);
+        PadUi.box(g, x + 1, y + 1, w - 2, h - 2, 0xFFFFFFFF);
+        int pw = photoW(), ph = photoH();
+        int px = x + 4, py = y + 4;
+        PadUi.box(g, px - 1, py - 1, pw + 2, ph + 2, PadUi.NAVY);
+        g.fill(px, py, px + pw, py + ph, 0xFF1A2440);
         ResourceLocation tex = PadCommunityClient.texture(post.id());
         if (tex != null) {
             int[] sz = PadCommunityClient.textureSize(post.id());
-            g.blit(tex, px, py, PW, PH, 0, 0, sz[0], sz[1], sz[0], sz[1]);
+            g.blit(tex, px, py, pw, ph, 0, 0, sz[0], sz[1], sz[0], sz[1]);
         } else {
-            PadUi.spinner(g, px + PW / 2, py + PH / 2 - 4);
+            PadUi.spinner(g, px + pw / 2, py + ph / 2 - 4);
         }
-        hit(px, py, PW, PH, () -> full = true);
-        int count = PadCommunityClient.total;
-        if (count > 1) {
-            arrow(g, px + 2, py + PH / 2 - 7, true, mx, my, () -> move(-1));
-            arrow(g, px + PW - 12, py + PH / 2 - 7, false, mx, my, () -> move(1));
+        if (inList) hit(px, py, pw, ph, () -> full = post);
+        // columna derecha
+        int cx = px + pw + 10, cw = x + w - 6 - cx;
+        PadUi.text(g, PadUi.fitEnd(post.name(), cw), cx, py + 1, PadUi.TEXT);
+        PadUi.text(g, ago(post.time()), cx, py + 12, PadUi.MUTED);
+        if (!post.caption().isEmpty()) {
+            int maxLines = Math.max(1, (ph - 60) / 10);
+            PadUi.wrapEllipsis(g, "«" + post.caption() + "»", cx, py + 26, cw, PadUi.TEXT, maxLines);
         }
-        // columna derecha: autor, hace cuánto, texto, likes y botones
-        int cx = px + PW + 8, cw = X + W - 6 - cx;
-        PadUi.text(g, post.name(), cx, top + 6, PadUi.TEXT);
-        String when = ago(post.time()), num = (index + 1) + "/" + Math.max(count, 1);
-        PadUi.text(g, when, cx, top + 16, PadUi.MUTED);
-        int nw = PadUi.font().width(num);
-        if (PadUi.font().width(when) + 6 + nw <= cw) PadUi.text(g, num, cx + cw - nw, top + 16, PadUi.MUTED);
-        if (!post.caption().isEmpty()) PadUi.wrap(g, "«" + post.caption() + "»", cx, top + 29, cw, PadUi.TEXT, 3);
-        int ly = top + 62;
-        boolean hh = !post.mine() && PadUi.inside(mx, my, cx - 1, ly - 1, 40, 14);
+        // likes y botón, abajo
+        int ly = py + ph - 15;
+        boolean canLike = !post.mine() && inList;
+        boolean hh = canLike && PadUi.inside(mx, my, cx - 1, ly - 1, 70, 16);
         g.pose().pushPose();
         g.pose().translate(cx, ly, 0);
-        g.pose().scale(2, 2, 1);
         pad.blit(g, post.liked() || post.mine() ? "heart" : "heart_off", 0, 0);
         g.pose().popPose();
-        PadUi.text(g, post.likes() + (post.likes() == 1 ? " like" : " likes"), cx + 20, ly + 3, hh ? 0xFFF63C96 : PadUi.TEXT);
-        if (!post.mine()) {
-            if (hh) pad.hover("§like");
-            hit(cx - 1, ly - 1, 60, 14, () -> {
+        PadUi.text(g, post.likes() + (post.likes() == 1 ? " like" : " likes"), cx + 16, ly + 2, hh ? 0xFFF63C96 : PadUi.TEXT);
+        if (canLike) {
+            if (hh) pad.hover("§like" + post.id());
+            hit(cx - 1, ly - 1, 70, 16, () -> {
                 pad.sound("like", post.liked() ? 0.5F : 0.9F);
                 PadCommunityClient.act("like", post.id());
             });
         }
-        int by = top + H - 16 - 19;
+        if (!inList) return;
         if (post.canDelete()) {
             boolean sure = post.id().equals(confirmId) && System.currentTimeMillis() - confirm < 3000;
-            button(g, cx, by, cw, sure ? "¿SEGURO?" : "BORRAR", PadView.RED, mx, my, () -> {
+            String label = sure ? "¿SEGURO?" : "BORRAR";
+            int bw = PadUi.buttonWidth(label);
+            button(g, x + w - 6 - bw, ly - 1, bw, label, PadView.RED, mx, my, () -> {
                 if (!post.id().equals(confirmId) || System.currentTimeMillis() - confirm > 3000) {
                     confirm = System.currentTimeMillis();
                     confirmId = post.id();
@@ -130,10 +166,9 @@ final class PadCommunityPage extends PadPage {
                 }
             });
         } else if (!post.mine()) {
-            button(g, cx, by, cw, "DENUNCIAR", PadView.BLUE, mx, my, () -> PadCommunityClient.act("denunciar", post.id()));
+            int bw = PadUi.buttonWidth("DENUNCIAR");
+            button(g, x + w - 6 - bw, ly - 1, bw, "DENUNCIAR", PadView.BLUE, mx, my, () -> PadCommunityClient.act("denunciar", post.id()));
         }
-        if (index >= PadCommunityClient.POSTS.size() - 2) PadCommunityClient.more();
-        if (full) drawFull(g, post);
     }
 
     /** La foto en grande, encima de todo; un clic la cierra. */
@@ -142,8 +177,13 @@ final class PadCommunityPage extends PadPage {
         actions.clear();
         g.pose().pushPose();
         g.pose().translate(0, 0, 200);
-        g.fill(X - 3, Y - 2, X + W + 3, Y + H + 1, 0xE618265C);
-        int w = 196, h = 110, x = X + (W - w) / 2, y = Y;
+        g.fill(0, 0, SW, SH, 0xE618265C);
+        int h = SH - 16, w = h * 16 / 9;
+        if (w > SW - 16) {
+            w = SW - 16;
+            h = w * 9 / 16;
+        }
+        int x = (SW - w) / 2, y = (SH - h) / 2;
         PadUi.box(g, x - 1, y - 1, w + 2, h + 2, 0xFFF6B628);
         ResourceLocation tex = PadCommunityClient.texture(post.id());
         if (tex != null) {
@@ -151,55 +191,30 @@ final class PadCommunityPage extends PadPage {
             g.blit(tex, x, y, w, h, 0, 0, sz[0], sz[1], sz[0], sz[1]);
         }
         g.pose().popPose();
-        hit(X - 3, Y - 2, W + 6, H + 3, () -> full = false);
+        hit(0, 0, SW, SH, () -> full = null);
     }
 
     private static String ago(long time) {
         long s = Math.max(0, (System.currentTimeMillis() - time) / 1000);
-        if (s < 60) return "ahora mismo";
+        if (s < 60) return "ahora";
         if (s < 3600) return "hace " + (s / 60) + " min";
         if (s < 86400) return "hace " + (s / 3600) + " h";
         long d = s / 86400;
         return d == 1 ? "ayer" : "hace " + d + " días";
     }
 
-    private void arrow(GuiGraphics g, int x, int y, boolean left, double mx, double my, Runnable action) {
-        boolean hover = PadUi.inside(mx, my, x, y, 10, 14);
-        PadUi.box(g, x, y, 10, 14, PadUi.NAVY);
-        PadUi.box(g, x + 1, y + 1, 8, 12, hover ? 0xFFF6B628 : 0xCC3496FA);
-        int c = 0xFFFFFFFF;
-        if (left) {
-            g.fill(x + 3, y + 6, x + 4, y + 8, c);
-            g.fill(x + 4, y + 5, x + 5, y + 9, c);
-            g.fill(x + 5, y + 4, x + 6, y + 10, c);
-        } else {
-            g.fill(x + 6, y + 6, x + 7, y + 8, c);
-            g.fill(x + 5, y + 5, x + 6, y + 9, c);
-            g.fill(x + 4, y + 4, x + 5, y + 10, c);
-        }
-        if (hover) pad.hover("§arrow" + left);
-        // las flechas van antes que la foto en los clics
-        hits.add(0, new int[] {x, y, 10, 14});
-        actions.add(0, action);
-    }
-
     private void button(GuiGraphics g, int x, int y, int w, String label, int style, double mx, double my, Runnable action) {
         boolean hover = PadUi.inside(mx, my, x, y, w, 15);
-        if (hover) pad.hover("§" + label);
+        if (hover) pad.hover("§" + label + x + "," + y);
         PadUi.button(g, x, y, w, label, style, hover, true);
-        hit(x, y, w, 15, action);
+        // los botones van antes que la foto y la tarjeta en los clics
+        hits.add(0, new int[] {x, y, w, 15});
+        actions.add(0, action);
     }
 
     private void hit(int x, int y, int w, int h, Runnable action) {
         hits.add(new int[] {x, y, w, h});
         actions.add(action);
-    }
-
-    private void move(int d) {
-        int n = PadCommunityClient.POSTS.size();
-        if (n == 0) return;
-        index = Math.max(0, Math.min(n - 1, index + d));
-        pad.sound("hover", 0.6F);
     }
 
     @Override
@@ -217,22 +232,29 @@ final class PadCommunityPage extends PadPage {
 
     @Override
     boolean scroll(double mx, double my, double delta) {
-        if (!full) move(delta < 0 ? 1 : -1);
+        if (full == null) scroll -= (int) Math.signum(delta) * 30;
+        return true;
+    }
+
+    @Override
+    boolean drag(double mx, double my, double dy) {
+        if (full != null) return false;
+        scroll -= (int) Math.round(dy);
         return true;
     }
 
     @Override
     boolean key(int key, int scan, int mods) {
-        if (full && (key == 256 || key == 259)) {
-            full = false;
+        if (full != null && (key == 256 || key == 259)) {
+            full = null;
             return true;
         }
-        if (key == 262) {
-            move(1);
+        if (key == 264) {
+            scroll += 30;
             return true;
         }
-        if (key == 263) {
-            move(-1);
+        if (key == 265) {
+            scroll -= 30;
             return true;
         }
         return false;

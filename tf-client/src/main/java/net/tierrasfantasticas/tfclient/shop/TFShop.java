@@ -38,10 +38,10 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * La tienda del servidor: /tf shop abre la ventana ({@link TFShopMenu}) y se compra y se vende con las monedas del
- * servidor ({@link TFEconomy}). Todo se configura en config/tfclient-shop.json ({@link TFShopConfig}).
+ * servidor ({@link TFEconomy}). Todo se configura en config/tfclient/tienda.json ({@link TFShopConfig}).
  * <pre>
  * /tf shop             abre la tienda
- * /tf shop recargar    vuelve a leer config/tfclient-shop.json (staff, nivel 3)
+ * /tf shop recargar    vuelve a leer config/tfclient/tienda.json (staff, nivel 3)
  * </pre>
  * Solo se venden objetos «limpios» (sin nombre, encantamientos ni daño; o con el NBT exacto que pide la tienda) y nunca
  * los objetos de los sets. Los límites diarios por jugador se guardan en &lt;mundo&gt;/tfclient/tienda.json y las compras y

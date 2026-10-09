@@ -37,7 +37,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * resistencia al empuje se recortan al valor de la netherita (y se quitan los multiplicadores que suban). La velocidad
  * de minar se recorta al ritmo de un pico de netherita. Lo que ya está por debajo no cambia.
  *
- * <p>config/tfclient-limits.json (se crea solo): activado, los topes y «excepciones» (ids de objetos o «mod:*»).
+ * <p>config/tfclient/limites.json (se crea solo): activado, los topes y «excepciones» (ids de objetos o «mod:*»).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFLimits {
@@ -64,7 +64,7 @@ public final class TFLimits {
     private TFLimits() {}
 
     public static Path file() {
-        return FMLPaths.CONFIGDIR.get().resolve("tfclient-limits.json");
+        return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("limites.json", "tfclient-limits.json");
     }
 
     public static void load() {

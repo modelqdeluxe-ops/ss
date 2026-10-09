@@ -16,6 +16,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.pad.server.PadAccount;
+import net.tierrasfantasticas.tfclient.pad.server.PadAdmin;
 import net.tierrasfantasticas.tfclient.pad.server.PadClaims;
 import net.tierrasfantasticas.tfclient.pad.server.PadClans;
 import net.tierrasfantasticas.tfclient.pad.server.PadHelp;
@@ -79,15 +80,24 @@ public final class PadServer {
         APPS.put("viajes", PadTravel.TRAVEL);
         APPS.put("explorar", PadTravel.EXPLORE);
         APPS.put("clanes", PadClans.APP);
-        APPS.put("titulos", PadTitles.APP);
         APPS.put("jugadores", PadPlayers.APP);
         APPS.put("ranking", PadRanking.APP);
         APPS.put("ayuda", PadHelp.APP);
+        // pad de administrador (los a_* solo los abre el staff)
+        APPS.put("a_apps", PadAdmin.APPS);
+        APPS.put("a_ajustes", PadAdmin.SETTINGS);
+        APPS.put("a_tienda", PadAdmin.SHOP);
+        APPS.put("a_kits", PadAdmin.KITS);
+        APPS.put("a_viajes", PadAdmin.TRAVEL);
+        APPS.put("a_gts", PadAdmin.MARKET);
+        APPS.put("a_comunidad", PadAdmin.COMMUNITY);
+        APPS.put("a_oficios", PadAdmin.JOBS);
         STORES.add(PadStats.STORE);
         STORES.add(PadMissions.STORE);
         STORES.add(PadKits.STORE);
         STORES.add(PadTravel.STORE);
         STORES.add(PadHomes.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadPlayers.STORE);
         STORES.add(PadClans.STORE);
         STORES.add(PadTitles.STORE);
         STORES.add(PadHelp.STORE);
@@ -102,7 +112,7 @@ public final class PadServer {
 
     static void open(ServerPlayer player, String app, String tab) {
         App a = APPS.get(app);
-        if (a == null || !allowed(player)) return;
+        if (a == null || !allowed(player) || !usable(player, app)) return;
         SESSIONS.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).keySet().removeIf(k -> k.startsWith(app + "."));
         send(player, a, tab == null ? "" : tab);
     }
@@ -147,7 +157,7 @@ public final class PadServer {
 
     static void action(ServerPlayer player, String app, String tab, String action, String text) {
         App a = APPS.get(app);
-        if (a == null || !allowed(player)) return;
+        if (a == null || !allowed(player) || !usable(player, app)) return;
         if (action.startsWith("tab:")) {
             send(player, a, action.substring(4));
             return;
@@ -157,7 +167,7 @@ public final class PadServer {
             next = a.action(player, tab, action, text == null ? "" : text);
         } catch (Exception e) {
             TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
-            TFPadNet.notice(player, "Algo salió mal. Vuelve a probar en un momento.");
+            TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
         }
         if (!player.hasDisconnected()) send(player, a, next == null ? tab : next);
     }
@@ -176,6 +186,21 @@ public final class PadServer {
         }
     }
 
+    /** Las apps del pad de administrador («a_…») son del staff; las demás, si el staff no las apagó. */
+    static boolean usable(ServerPlayer player, String app) {
+        if (app.startsWith("a_")) return isAdmin(player);
+        if (!PadConfig.appOn(app)) {
+            TFPadNet.notice(player, "App desactivada.");
+            return false;
+        }
+        return true;
+    }
+
+    /** Staff que puede usar el pad de administrador (nivel de permisos 3, como /tf web). */
+    public static boolean isAdmin(ServerPlayer player) {
+        return player.hasPermissions(3);
+    }
+
     /** Como mucho 12 pulsaciones por segundo y jugador (botones repetidos o clientes raros). */
     private static boolean allowed(ServerPlayer player) {
         long now = System.currentTimeMillis();
@@ -192,6 +217,7 @@ public final class PadServer {
     @SubscribeEvent
     public static void onStarted(ServerStartedEvent event) {
         server = event.getServer();
+        PadConfig.load();
         for (Store s : STORES) {
             try {
                 s.load(server);

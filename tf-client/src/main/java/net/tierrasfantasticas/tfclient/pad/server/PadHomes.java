@@ -50,7 +50,6 @@ public final class PadHomes {
 
     private static final Pattern NAME = Pattern.compile("[a-z0-9_-]{1,16}");
     private static final int TEXT = 0x18265C;
-    private static final int DEFAULT_LIMIT = 3;
 
     record Home(String name, String world, double x, double y, double z, float yaw, float pitch) {}
 
@@ -170,7 +169,7 @@ public final class PadHomes {
                 // sin config: el de siempre
             }
         }
-        return DEFAULT_LIMIT;
+        return (int) net.tierrasfantasticas.tfclient.pad.PadConfig.get("hogares.sinRango");
     }
 
     private static String where(Home h) {
@@ -203,8 +202,8 @@ public final class PadHomes {
             Map<String, Home> homes = homes(player);
             int limit = limit(player);
             PadView.Builder b = PadView.of("hogares");
-            b.header(homes.size() + " de " + limit + " hogares." + (homes.size() < limit ? " Escribe un nombre y GUARDAR AQUÍ guarda donde estás."
-                    : " Para uno nuevo, borra otro (o guarda encima con el mismo nombre)."));
+            b.header(homes.size() + " de " + limit + " hogares." + (homes.size() < limit ? ""
+                    : " Borra uno para guardar otro."));
             for (Home h : homes.values()) {
                 List<String> lines = new ArrayList<>();
                 String line = where(h);
@@ -217,7 +216,7 @@ public final class PadHomes {
                 b.row(new PadView.Row(icon(h), h.name, TEXT, lines, -1, "", PadView.Btn.of("IR", "ir:" + h.name, PadView.BLUE),
                         PadView.Btn.of(sure ? "¿SEGURO?" : "BORRAR", "borrar:" + h.name, PadView.RED)));
             }
-            b.empty("Aún no tienes hogares. Escribe un nombre abajo (por ejemplo «casa») y pulsa GUARDAR AQUÍ.");
+            b.empty("Sin hogares. Escribe un nombre y pulsa GUARDAR AQUÍ.");
             b.input("guardar", "NOMBRE DEL HOGAR", 16, "GUARDAR AQUÍ");
             return b.build();
         }
@@ -232,7 +231,7 @@ public final class PadHomes {
             switch (a[0]) {
                 case "guardar" -> {
                     if (!NAME.matcher(name).matches()) {
-                        TFPadNet.notice(player, "Usa un nombre corto: letras, números, _ o - (hasta 16).");
+                        TFPadNet.notice(player, "Nombre: letras, números, _ o - (hasta 16).");
                         return null;
                     }
                     if (!homes.containsKey(name) && homes.size() >= limit(player)) {

@@ -75,7 +75,7 @@ public final class PadJobs {
                     if (job == null) return null;
                     if (a[0].equals("cambiar") && !PadServer.confirm(player, "oficio.cambiar")) return null;
                     String error = a[0].equals("cambiar") ? TFJobs.switchTo(player, job) : TFJobs.join(player, job);
-                    TFPadNet.notice(player, error != null ? error : "Ahora trabajas de " + job.name() + ". ¡Mucha suerte!");
+                    TFPadNet.notice(player, error != null ? error : "Oficio: " + job.name() + ".");
                     return null;
                 }
                 case "dejar" -> {
@@ -96,14 +96,14 @@ public final class PadJobs {
 
     private static PadView list(ServerPlayer player, PlayerJobs p) {
         PadView.Builder b = PadView.of("oficios");
-        if (!TFJobsConfig.enabled) return b.empty("Los oficios están desactivados en este servidor.").build();
+        if (!TFJobsConfig.enabled) return b.empty("Oficios desactivados.").build();
         Job active = p.active.isEmpty() ? null : TFJobsConfig.job(p.active.get(0));
         if (active != null) {
             double pending = TFJobs.pendingCoins(player.getUUID());
             b.header("Trabajas de " + active.name() + (pending >= 1 ? " · cobras " + TFEconomy.format(Math.round(Math.floor(pending)))
                     + " en el próximo pago." : " · cobras cada " + TFJobsConfig.paySeconds + " s."));
         } else {
-            b.header("Elige un oficio: ganas " + TFServerConfig.currency() + " y experiencia trabajando.");
+            b.header("Elige un oficio.");
         }
         for (Job job : TFJobsConfig.jobs.values()) {
             JobProgress jp = p.jobs.get(job.id());
@@ -120,7 +120,7 @@ public final class PadJobs {
             b.row(new PadView.Row(new ItemStack(TFJobsMenu.icon(job)), job.name() + (on ? " · tu oficio" : ""), job.color(),
                     List.of(job.description()), progress, badge, null, null).clickable("ver:" + job.id()).selected(on));
         }
-        if (TFJobsConfig.jobs.isEmpty()) b.empty("Aún no hay oficios.");
+        if (TFJobsConfig.jobs.isEmpty()) b.empty("Sin oficios.");
         return b.build();
     }
 
@@ -142,7 +142,7 @@ public final class PadJobs {
                 .tab(base + "a", "CÓMO SE GANA").tab(base + "r", "PREMIOS").selected(base + section);
         boolean max = jp.level >= TFJobsConfig.maxLevel;
         b.header(job.name() + " · nivel " + jp.level + "/" + TFJobsConfig.maxLevel
-                + (max ? " · ¡máximo!" : " · " + (int) jp.xp + "/" + TFJobsConfig.xpFor(jp.level) + " xp")
+                + (max ? " · máximo" : " · " + (int) jp.xp + "/" + TFJobsConfig.xpFor(jp.level) + " xp")
                 + (active ? "" : " · no es tu oficio"));
         switch (section) {
             case "a" -> actions(b, job, jp);
@@ -190,7 +190,7 @@ public final class PadJobs {
             int color = locked || claimed ? MUTED : done ? GREEN : TEXT;
             b.row(new PadView.Row(icon, m.name(), color, lines, progress, coins > 0 ? "+" + PadShop.price(coins) : "", btn, null).selected(done && active));
         }
-        if (job.missions().isEmpty()) b.empty("Este oficio aún no tiene misiones.");
+        if (job.missions().isEmpty()) b.empty("Sin misiones.");
     }
 
     private static void actions(PadView.Builder b, Job job, JobProgress jp) {
@@ -206,12 +206,12 @@ public final class PadJobs {
             lines.add("+" + num(a.xp()) + " xp" + (a.coins() > 0 ? " · +" + num(a.coins() * bonus) + " " + TFServerConfig.currency() : ""));
             b.row(new PadView.Row(icon, TFJobsMenu.actionLabel(a), TEXT, lines, -1, "", null, null));
         }
-        if (job.actions().isEmpty()) b.empty("Este oficio solo paga con misiones.");
+        if (job.actions().isEmpty()) b.empty("Solo paga con misiones.");
     }
 
     private static void rewards(PadView.Builder b, JobProgress jp) {
         if (jp.level >= TFJobsConfig.maxLevel) {
-            b.empty("Ya tienes todas las recompensas de este oficio. ¡Enhorabuena!");
+            b.empty("Todas reclamadas.");
             return;
         }
         int to = Math.min(TFJobsConfig.maxLevel, jp.level + 8);

@@ -58,7 +58,7 @@ import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
 /**
  * Oficios: el jugador elige uno con /tf jobs y gana experiencia del oficio y monedas al hacer su trabajo (romper,
  * cosechar, pescar...). Sube de nivel, cumple misiones con recompensa y puede dejarlo cuando quiera sin perder nada.
- * Todo se ajusta en config/tfclient-jobs.json ({@link TFJobsConfig}).
+ * Todo se ajusta en config/tfclient/oficios.json ({@link TFJobsConfig}).
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class TFJobs {
