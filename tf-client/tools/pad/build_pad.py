@@ -301,7 +301,7 @@ def heart(on=True):
 
 
 def emoji(kind):
-    """Reacciones de Comunidad (1.3.30): los emojis de Noto Color Emoji a 22x22 (los hace make_emojis.py en emoji/)."""
+    """Reacciones de Comunidad (1.3.31): los emojis de Noto Color Emoji a 44x44 (los hace make_emojis.py en emoji/)."""
     return Image.open(os.path.join(HERE, 'emoji', kind + '.png')).convert('RGBA')
 
 

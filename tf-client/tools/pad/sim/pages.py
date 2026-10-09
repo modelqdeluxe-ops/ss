@@ -186,70 +186,107 @@ page('a_apps', 'APPS', [], '', ['Las que apagues no salen en el pad de los jugad
     ('crossbow', 'Cazas', M, ['Apagada'], -1, '', ('NO', GR), None),
 ])
 
-# Comunidad (PadCommunityPage): pestañas, + FOTO y las publicaciones una debajo de otra
+# Comunidad (PadCommunityPage): pestañas, + FOTO y las publicaciones una debajo de otra; REACCIONAR abre el selector
 photo = Image.open(os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/gui/menu_background.png')).convert('RGBA')
-s = Sim()
-s.status('COMUNIDAD')
-_local = Local(s)
-_local.__enter__()
-X, Y, W, H = s.X, s.Y, s.W, s.H
-top, bottom = Y + 14, Y + H
-s.panel(X, top, W, bottom - top)
-x, chosen = X + 4, None
-for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
-    w = s.pwidth(label) + 14
-    if key == 'recientes':
-        chosen = (x, w, label)
-    else:
-        s.tab(x, Y, w, label, 0)
-    x += w + 2
-s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
-fw = s.bw('+ FOTO')
-s.button(X + W - fw - 4, Y - 3, fw, '+ FOTO', GO)
-pw = max(128, min(256, (W - 20) // 2)) // 16 * 16
-ph = pw * 9 // 16
-ch = ph + 14
-s.scissor(X + 2, top + 4, W - 4, bottom - top - 8)
-posts = [('Pewez777', 'hace 12 min', 'Atardecer desde la torre del spawn', 18, True, False),
-         ('Steve', 'hace 2 h', '', 4, False, False)]
-cy = top + 5
-for name, ago, cap, likes, liked, mine in posts:
-    x, y, w, h = X + 5, cy, W - 16, ch - 4
-    s.ucard(x, y, w, h, 2 if mine else 0)
-    px, py = x + 5, y + 5
-    s.box(px - 2, py - 2, pw + 4, ph + 4, (24, 38, 92))
-    s.box(px - 1, py - 1, pw + 2, ph + 2, (192, 120, 24))
-    s.paste(photo.resize((pw, ph)), px, py)
-    cx = px + pw + 10
-    cw = x + w - 6 - cx
-    s.mtext(name, cx, py + 1, (194, 122, 16))
-    s.mtext(ago, cx, py + 12, (74, 102, 148))
-    if cap:
-        s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (24, 38, 92), 3)
-    # reacciones con emoji (PadCommunityPage, 1.3.29)
-    ey, ex = py + ph - 32, cx
-    reacts = [3, 1, 0, 5, 2] if likes > 10 else [0, 0, 1, 0, 1]
-    mine_r = 3 if likes > 10 else -1
-    for k, name in enumerate(('risa', 'wow', 'triste', 'fuego', 'top')):
-        cnt = str(reacts[k]) if reacts[k] else ''
-        bw = 15 + (s.mwidth(cnt) + 2 if cnt else 0)
-        if k == mine_r:
-            s.box(ex, ey, bw, 15, rgb(0xE0A030))
-            s.fill(ex + 1, ey + 1, ex + bw - 1, ey + 14, rgb(0xFFF3C8))
-        s.paste(s.img('emo_' + name), ex + 2, ey + 2, px=s.f / 2)  # 22x22 en 11 unidades
-        if cnt:
+REACTS = ('risa', 'wow', 'triste', 'fuego', 'top')
+
+
+def comunidad(out, picker):
+    s = Sim()
+    s.status('COMUNIDAD')
+    _local = Local(s)
+    _local.__enter__()
+    X, Y, W, H = s.X, s.Y, s.W, s.H
+    top, bottom = Y + 14, Y + H
+    s.panel(X, top, W, bottom - top)
+    x, chosen = X + 4, None
+    for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
+        w = s.pwidth(label) + 14
+        if key == 'recientes':
+            chosen = (x, w, label)
+        else:
+            s.tab(x, Y, w, label, 0)
+        x += w + 2
+    s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+    fw = s.bw('+ FOTO')
+    s.button(X + W - fw - 4, Y - 3, fw, '+ FOTO', GO)
+    pw = max(128, min(256, (W - 20) // 2)) // 16 * 16
+    ph = pw * 9 // 16
+    ch = ph + 14
+    s.scissor(X + 2, top + 4, W - 4, bottom - top - 8)
+    posts = [('Pewez777', 'hace 12 min', 'Atardecer desde la torre del spawn', 18, True, [3, 1, 0, 5, 2], 3),
+             ('Steve', 'hace 2 h', '', 4, False, [0, 0, 0, 0, 0], -1)]
+    cy = top + 5
+    pick = None
+    for name, ago, cap, likes, liked, reacts, mine_r in posts:
+        x, y, w, h = X + 5, cy, W - 16, ch - 4
+        s.ucard(x, y, w, h, 0)
+        px, py = x + 5, y + 5
+        s.box(px - 2, py - 2, pw + 4, ph + 4, (24, 38, 92))
+        s.box(px - 1, py - 1, pw + 2, ph + 2, (192, 120, 24))
+        s.paste(photo.resize((pw, ph)), px, py)
+        cx = px + pw + 10
+        cw = x + w - 6 - cx
+        s.mtext(name, cx, py + 1, (194, 122, 16))
+        s.mtext(ago, cx, py + 12, (74, 102, 148))
+        if cap:
+            s.wrap_ellipsis('«' + cap + '»', cx, py + 26, cw, (24, 38, 92), 3)
+        # REACCIONAR y solo las reacciones que ya tiene (la tuya en oro)
+        ey, ex = py + ph - 32, cx
+        bw = s.bw('REACCIONAR')
+        open_ = picker and pick is None
+        s.button(ex, ey - 1, bw, 'REACCIONAR', B, hover=open_)
+        if open_:
+            pick = (ex, ey - 1, mine_r)
+        ex += bw + 4
+        for k, rname in enumerate(REACTS):
+            if not reacts[k]:
+                continue
+            cnt = str(reacts[k])
+            rw = 15 + s.mwidth(cnt) + 2
+            if ex + rw > cx + cw:
+                break
+            if k == mine_r:
+                s.box(ex, ey, rw, 15, rgb(0xE0A030))
+                s.fill(ex + 1, ey + 1, ex + rw - 1, ey + 14, rgb(0xFFF3C8))
+            s.paste_fit(s.img('emo_' + rname), ex + 2, ey + 2, 11, 11)
             s.mtext(cnt, ex + 15, ey + 4, (24, 38, 92))
-        ex += bw + 2
-    ly = py + ph - 15
-    s.blit('heart' if liked else 'heart_off', cx, ly)
-    s.mtext(f'{likes} likes', cx + 16, ly + 2, (24, 38, 92))
-    bw = s.bw('DENUNCIAR')
-    s.button(x + w - 6 - bw, ly - 1, bw, 'DENUNCIAR', B)
-    cy += ch
-s.no_scissor()
-_local.__exit__(None, None, None)
-s.save(OUT + 'p_comunidad.png')
-NAMES.append('p_comunidad')
+            ex += rw + 2
+        ly = py + ph - 15
+        s.blit('heart' if liked else 'heart_off', cx, ly)
+        s.mtext(f'{likes} likes', cx + 16, ly + 2, (24, 38, 92))
+        bw = s.bw('DENUNCIAR')
+        s.button(x + w - 6 - bw, ly - 1, bw, 'DENUNCIAR', B)
+        cy += ch
+    s.no_scissor()
+    if pick:  # el selector, encima del botón (PadCommunityPage.drawPicker)
+        cell, emo = 20, 14
+        pw_, ph_ = len(REACTS) * cell + 6, cell + 6
+        bx, by, mine_r = pick
+        x0 = max(X + 4, min(bx, X + W - pw_ - 4))
+        y0 = by - ph_ - 2
+        if y0 < top + 2:
+            y0 = by + 18
+        s.fill(x0 + 2, y0 + 2, x0 + pw_ + 2, y0 + ph_ + 2, (24, 38, 92, 85))
+        s.box(x0, y0, pw_, ph_, (24, 38, 92))
+        s.box(x0 + 1, y0 + 1, pw_ - 2, ph_ - 2, (192, 120, 24))
+        s.fill(x0 + 2, y0 + 2, x0 + pw_ - 2, y0 + ph_ - 2, (255, 255, 255))
+        hover = 1
+        for k, rname in enumerate(REACTS):
+            ex, ey = x0 + 3 + k * cell, y0 + 3
+            if k == mine_r or k == hover:
+                s.box(ex, ey, cell, cell, rgb(0xE0A030 if k == mine_r else 0x9DBCE0))
+                s.fill(ex + 1, ey + 1, ex + cell - 1, ey + cell - 1, rgb(0xFFF3C8 if k == mine_r else 0xEAF4FD))
+            sz = emo + 2 if k == hover else emo
+            o = (cell - sz) // 2
+            s.paste_fit(s.img('emo_' + rname), ex + o, ey + o, sz, sz)
+    _local.__exit__(None, None, None)
+    s.save(OUT + out + '.png')
+    NAMES.append(out)
+
+
+comunidad('p_comunidad', False)
+comunidad('p_comunidad_reaccionar', True)
 
 
 # Música (PadMusicPage): misma geometría que el Java
