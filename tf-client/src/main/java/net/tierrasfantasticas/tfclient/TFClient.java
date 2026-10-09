@@ -27,6 +27,7 @@ public final class TFClient {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(
                 (net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
                     net.tierrasfantasticas.tfclient.vfx.VfxNet.register();
+                    net.tierrasfantasticas.tfclient.skills.SkillNet.register();
                     net.tierrasfantasticas.tfclient.items.TFWardrobe.register();
                     net.tierrasfantasticas.tfclient.pad.TFPadNet.register();
                 }));

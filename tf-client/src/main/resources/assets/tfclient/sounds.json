@@ -488,6 +488,11 @@
    "tfclient:skills/glacia/samus_ice_freeze"
   ]
  },
+ "skills.glacia.samus_ice_break": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_break"
+  ]
+ },
  "skills.glacia.samus_icicle_shoot": {
   "sounds": [
    "tfclient:skills/glacia/samus_icicle_shoot"
@@ -501,11 +506,6 @@
  "skills.glacia.samus_wall_erode": {
   "sounds": [
    "tfclient:skills/glacia/samus_wall_erode"
-  ]
- },
- "skills.glacia.samus_ice_break": {
-  "sounds": [
-   "tfclient:skills/glacia/samus_ice_break"
   ]
  },
  "skills.glacia.samus_ice_spike": {
@@ -526,6 +526,11 @@
  "skills.mago.samus_fireball": {
   "sounds": [
    "tfclient:skills/mago/samus_fireball"
+  ]
+ },
+ "skills.mago.samus_quake": {
+  "sounds": [
+   "tfclient:skills/mago/samus_quake"
   ]
  },
  "skills.mago.samus_fire_burn": {
@@ -591,6 +596,11 @@
  "skills.dragon_rojo.boost": {
   "sounds": [
    "tfclient:skills/dragon_rojo/boost"
+  ]
+ },
+ "skills.dragon_rojo.dargon_loop_17_5s": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_loop_17_5s"
   ]
  },
  "skills.thor.samus_discharge": {
@@ -665,6 +675,11 @@
    "tfclient:skills/zephyr/samus_zephyr_slash_0",
    "tfclient:skills/zephyr/samus_zephyr_slash_1",
    "tfclient:skills/zephyr/samus_zephyr_slash_2"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_tornado_spin": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_tornado_spin"
   ]
  },
  "skills.zephyr.samus_zephyr_tornado": {

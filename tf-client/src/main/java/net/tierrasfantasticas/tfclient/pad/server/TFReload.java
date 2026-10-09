@@ -76,6 +76,10 @@ public final class TFReload {
             VfxServer.reloadConfig();
             return List.of();
         }, done, problems);
+        reload("skills.json", "clases de skills", () -> {
+            net.tierrasfantasticas.tfclient.skills.SkillServer.reloadConfig();
+            return List.of();
+        }, done, problems);
         reload("tienda-monedas.json", "tienda de monedas", () -> {
             TFCoinShop.reload();
             return List.of();

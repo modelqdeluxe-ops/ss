@@ -35,16 +35,33 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > lunge, leap, orbital, totem, effect:sound/particles/particlering/particlesphere, teleport, heal, ignite, stun, pull,
 > velocity, equip, brightness, tint, partvis, setvariable, randomskill, sudoskill… (conteo en el commit del inventario).
 > **Plan** (marca [x] y haz commit+push como checkpoint):
-> - [ ] Inventario automático de cada pack (clase, skills, descripción, cooldown, mana, disparador, modelos, sonidos,
->       iconos, arma/armadura) → `tools/skills/inventario.py`.
-> - [ ] Motor: compilar las skills de MythicMobs/MythicLib a un programa JSON (`tools/skills/compile.py`, reusa
->       `vfx_bb.py`/`vfx_compile.py`) y ejecutarlo en el mod (`skills/` servidor + cliente): mecánicas, modelos animados,
->       partículas, sonidos.
-> - [ ] Controles: teclas configurables por skill, barra con iconos y cooldowns.
+> - [x] Inventario automático de cada pack → `tools/skills/inventario.py` (valores con nivel al máximo: la clase se
+>       compra entera; pasivas TIMER/DAMAGED de MMOCore o MythicLib).
+> - [x] Compilador → `tools/skills/compile.py` (programa JSON por clase: skills, árbol de MythicMobs alcanzado,
+>       mobs/efectos, ítems; sigue `oH/oT/oE`, `castinstead/orElseCast`; valores sueltos como `delay 28` en `a._`).
+> - [x] Generador → `tools/skills/build_skills.py <scratch>/skills` (sin args = solo las clases de `TANDAS`; con
+>       `--todas` revisa los 40): `assets/tfclient/skills/classes/<id>.json` + `catalog.json`, modelos de ítem
+>       (`models/skills/`, `textures/skills/`, también los que genera ItemsAdder/Oraxen desde su config), modelos de
+>       ModelEngine (`skills/models/<clase>.<modelo>.json`, formato de `vfx_bb.py`), sonidos (`sounds/skills/`, eventos
+>       `tfclient:skills.<clase>.<x>` en sounds.json; si el pack no trae uno, el de otro pack o el vanilla más
+>       parecido) e iconos 32×32 (`textures/gui/skills/<clase>/<skill>.png`; si el pack no trae, se dibuja el efecto,
+>       `skills/jsonmodel.py`). `samus2002_NECROMANCER` no es clase (es un jefe): fuera. Magic Lightning: la versión
+>       «Skills_Untimate_V3 / config to Oraxen».
+> - [x] Motor en el mod (`skills/`, compila; **sin probar en juego**): `SkillDefs` (lee el jar), `SkillRuntime`
+>       (intérprete: delay, repeat, objetivos, condiciones con acciones, variables `SkillVars`), `SkillTargets`,
+>       `SkillConds`, `SkillMovers` (projectile/missile/totem/orbital), `SkillAuras`, `SkillFx` (partículas/sonidos por
+>       paquete), `SkillModels` (model/state/changepart/partvis/tint, disfraz en jugador, @modelpart), `SkillMotion`,
+>       `SkillActor` (los «mobs» de efecto NO son entidades: los lleva el servidor y los dibuja el cliente),
+>       `SkillServer` (una clase por jugador, `<mundo>/tfclient/skills.json`, config `config/tfclient/skills.json`,
+>       pasivas, `/tf web clases dar|lista|ver`, puente: campo `skills` [{uuid, clase, at}] en la respuesta del poll),
+>       `SkillClient` (dibuja actores: ítem en la cabeza como un soporte + modelos ME animados), `SkillHud` (columna a
+>       la derecha con iconos/teclas/cooldown; teclas R G Z X V B N M en Controles › «TF Skills»).
+> - [ ] Simulador offline (`tools/skills/sim.py`): ejecutar cada skill sin el juego (comprobar el programa) y sacar
+>       vistas previas animadas para la web.
 > - [ ] Armas y armaduras de cada clase (vinculadas).
 > - [ ] Web: fuera Tienda de monedas, sección Skills (Stripe + monedas, una clase por jugador); puente con el mod.
 > - [ ] Pad: app/apartado de la clase y sus skills.
-> - [ ] Publicar por tandas, con vistas previas.
+> - [ ] Publicar por tandas, con vistas previas. Tanda 1: Glacia, Zephyr, Mago, Dragón Rojo, Thor.
 >
 > **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main` (último PR: #56); **nada a medias**, el árbol
 > está limpio. Última versión publicada del mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). La web no se tocó

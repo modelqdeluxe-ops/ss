@@ -106,6 +106,7 @@ public final class TFCommands {
                         .then(TFEconomyCommands.command())
                         .then(TFRoulette.command())
                         .then(net.tierrasfantasticas.tfclient.vfx.VfxServer.command())
+                        .then(net.tierrasfantasticas.tfclient.skills.SkillServer.command())
                         .then(net.tierrasfantasticas.tfclient.claims.command.ClaimAdminCommands.command())
                         .then(net.tierrasfantasticas.tfclient.pad.server.PadKits.command())
                         .then(net.tierrasfantasticas.tfclient.pad.server.PadTravel.command())

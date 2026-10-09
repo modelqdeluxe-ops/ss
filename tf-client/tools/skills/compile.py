@@ -23,7 +23,7 @@ import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from inventario import load, norm, scan, strip_colors  # noqa: E402
+from inventario import leveled, load, norm, scan, strip_colors  # noqa: E402
 
 EXCLUDE = re.compile(r'only.?damage|crucible|no player dmg|_npd|no_take_away|yellow|mmoitems\.yml$|_mmoitems', re.I)
 # argumentos de mecánicas que nombran otras skills o mobs
@@ -174,7 +174,9 @@ CALLERS = {'skill', 'metaskill', 'cast', 'sudoskill', 'randomskill', 'skillseque
 CALLBACK_KEYS = ('ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval', 'onremove', 'onfinish',
                  'ontickskill', 'onhitskill', 'onendskill', 'onstartskill', 'then', 'else', 'oncast', 'onapply',
                  'onexpire', 'onattack', 'ondamaged', 'onlandskill', 'onland', 'onbreak', 'ondeath', 'onswing',
-                 'ondamagedskill', 'onhitentity')
+                 'ondamagedskill', 'onhitentity',
+                 # atajos de MythicMobs
+                 'oh', 'ot', 'oe', 'os', 'ob', 'ohb', 'oi', 'ontickskill')
 
 
 def inline_list(v):
@@ -279,12 +281,17 @@ def compile_pack(pack_dir):
         # la clase puede fijar otro cooldown o maná para la skill
         conf = (cls or {}).get('skill_conf', {}).get(sid, {})
         cd, mana = s.get('cooldown'), s.get('mana')
-        if isinstance(conf.get('cooldown'), dict) and conf['cooldown'].get('base') is not None:
-            cd = conf['cooldown']['base']
-        if isinstance(conf.get('mana'), dict) and conf['mana'].get('base') is not None:
-            mana = conf['mana']['base']
+        mods = dict(s.get('mods', {}))
+        for k, v in conf.items():
+            if isinstance(v, dict) and 'base' in v:
+                mods[str(k).lower()] = leveled(v)
+        if 'cooldown' in mods and isinstance(conf.get('cooldown'), dict):
+            cd = mods['cooldown']
+        if 'mana' in mods and isinstance(conf.get('mana'), dict):
+            mana = mods['mana']
+        s = dict(s, mods=mods)
         out_skills.append({'id': sid.lower(), 'name': s.get('name') or sid.title(), 'lore': s.get('lore', []),
-                           'cooldown': cd, 'mana': mana, 'passive': s.get('passive'),
+                           'cooldown': cd, 'mana': mana, 'passive': s.get('passive'), 'mods': s.get('mods', {}),
                            'entry': lower_tree.get(entry.lower()), 'icon': s.get('icon_item'),
                            'modes': s.get('modes', [])})
 
@@ -326,6 +333,12 @@ def compile_pack(pack_dir):
                 s2, m2 = refs(pm)
                 stack += s2
                 mob_stack += m2
+            # condiciones que lanzan otra skill («castinstead X», «orElseCast X»)
+            for cl in ('conditions', 'target_conditions', 'trigger_conditions'):
+                for c in compiled_tree[key][cl]:
+                    cm = re.match(r'(?:castinstead|orelsecast)\s+(\S+)', c.get('v', ''))
+                    if cm:
+                        stack.append(cm.group(1))
         while mob_stack:
             name = mob_stack.pop()
             key = lower_mobs.get(str(name).lower())

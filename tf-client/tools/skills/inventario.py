@@ -30,6 +30,22 @@ def norm(name):
     return re.sub(r'[\s\-]+', '_', os.path.splitext(name)[0]).upper()
 
 
+def leveled(v, level=100):
+    """Valor de MMOCore a un nivel: base + por nivel, dentro de [min, max]. Sin límites puestos se queda la base
+    (si no, con 100 niveles saldrían valores sin sentido)."""
+    try:
+        base = float(v.get('base') or 0)
+        per = float(v.get('per-level') or 0)
+        lo = float(v['min']) if v.get('min') is not None else 0.0
+        hi = float(v['max']) if v.get('max') is not None else 0.0
+        if per == 0 or (lo == 0 and hi == 0):
+            return round(base, 3)
+        val = base + per * (level - 1)
+        return round(max(min(lo, hi), min(max(lo, hi), val)), 3)
+    except (TypeError, ValueError):
+        return v.get('base')
+
+
 def strip_colors(s):
     s = str(s or '')
     s = re.sub(r'<[^>]+>', '', s)
@@ -79,16 +95,23 @@ def scan(pack_dir):
             s = out['skills'].setdefault(sid, {})
             s['name'] = strip_colors(data.get('name'))
             s['lore'] = [strip_colors(x) for x in (data.get('lore') or []) if strip_colors(x)]
+            # Valores con nivel (daño, duración, cooldown...): la clase se compra entera, así que van al nivel máximo
+            mods = {}
+            for k, v in data.items():
+                if isinstance(v, dict) and 'base' in v:
+                    mods[str(k).lower()] = leveled(v)
+            s['mods'] = mods
             cd = data.get('cooldown') or {}
-            s['cooldown'] = cd.get('base') if isinstance(cd, dict) else cd
+            s['cooldown'] = mods.get('cooldown') if isinstance(cd, dict) else cd
             mana = data.get('mana') or {}
-            s['mana'] = mana.get('base') if isinstance(mana, dict) else mana
+            s['mana'] = mods.get('mana') if isinstance(mana, dict) else mana
             s['icon_item'] = data.get('material')
             if data.get('passive-type'):
                 # skill pasiva de MMOCore: se dispara sola (TIMER cada «timer» s, o al atacar, recibir daño...)
                 timer = data.get('timer') or {}
-                s['passive'] = {'type': str(data['passive-type']).upper(),
-                                'timer': timer.get('base') if isinstance(timer, dict) else timer}
+                prev = s.get('passive') or {}
+                t = timer.get('base') if isinstance(timer, dict) else timer
+                s['passive'] = {'type': str(data['passive-type']).upper(), 'timer': t or prev.get('timer')}
         elif 'mythiclib' in lp and '/skill' in lp:
             # un archivo puede tener una skill (formato plano) o varias (clave = id)
             entries = {norm(os.path.basename(p)): data} if 'mythicmobs-skill-id' in data or 'mythic-skill' in data \
@@ -99,6 +122,11 @@ def scan(pack_dir):
                 s.setdefault('name', strip_colors(v.get('name')))
                 if v.get('cooldown') is not None:
                     s.setdefault('cooldown', v.get('cooldown'))
+                if v.get('passive-type'):
+                    if not s.get('passive'):
+                        s['passive'] = {'type': str(v['passive-type']).upper(), 'timer': v.get('timer')}
+                    elif not s['passive'].get('timer') and v.get('timer'):
+                        s['passive']['timer'] = v.get('timer')
         elif 'mmoitems' in lp and '/item/' in lp:
             for iid, it in data.items():
                 if not isinstance(it, dict):

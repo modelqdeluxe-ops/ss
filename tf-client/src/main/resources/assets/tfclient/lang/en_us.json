@@ -1150,5 +1150,14 @@
  "block.tfclient.proteccion_500x500": "Protection 500x500",
  "key.tfclient.pad": "Open the TF Pad",
  "key.categories.tfclient": "Tierras Fantásticas",
- "item.tfclient.pad_admin": "Admin Pad"
+ "item.tfclient.pad_admin": "Admin Pad",
+ "key.categories.tfclient.skills": "TF Skills (class)",
+ "key.tfclient.skill.1": "Skill 1",
+ "key.tfclient.skill.2": "Skill 2",
+ "key.tfclient.skill.3": "Skill 3",
+ "key.tfclient.skill.4": "Skill 4",
+ "key.tfclient.skill.5": "Skill 5",
+ "key.tfclient.skill.6": "Skill 6",
+ "key.tfclient.skill.7": "Skill 7",
+ "key.tfclient.skill.8": "Skill 8"
 }
