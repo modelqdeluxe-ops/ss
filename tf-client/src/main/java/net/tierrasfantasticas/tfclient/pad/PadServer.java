@@ -93,6 +93,7 @@ public final class PadServer {
         APPS.put("a_gts", PadAdmin.MARKET);
         APPS.put("a_comunidad", PadAdmin.COMMUNITY);
         APPS.put("a_oficios", PadAdmin.JOBS);
+        APPS.put("a_cazas", net.tierrasfantasticas.tfclient.pad.server.PadAdminHunts.APP);
         STORES.add(PadStats.STORE);
         STORES.add(PadMissions.STORE);
         STORES.add(PadKits.STORE);

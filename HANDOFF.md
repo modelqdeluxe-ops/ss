@@ -25,7 +25,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > de x1 a x2,5). Oficios: las misiones «diaria» son plantillas y a cada jugador le tocan 3 al día de las de su nivel
 > (`TFJobsConfig.missionsFor`, guardadas en oficios.json «hoy»/«hoyMisiones»). Misiones del pad y Cazas rotan igual
 > (`PadMissions.rotate`); listas en `tfclient-misiones-default.json`. Todo lo genera `tools/gen_economia.py`
-> (154 misiones de oficio, 60 diarias, 27 presas). Las configs viejas se guardan como `*.antes-v2.json` y se cambian
+> (154 misiones de oficio, 60 diarias, 27 presas). Cazas configurables desde el pad de admin: app **CAZAS**
+> (`PadAdminHunts`, `a_cazas`): presas con mob (también de mods), cantidad, monedas, descripción ({n}) e icono. Las configs viejas se guardan como `*.antes-v2.json` y se cambian
 > (`TFConfigDir.upgrade`, claves versionEconomia / version). Pagos por acción ÷5–10, misiones ≈10 % de antes.
 > Reglas: checkpoints frecuentes (commit + push) con el avance aquí.
 

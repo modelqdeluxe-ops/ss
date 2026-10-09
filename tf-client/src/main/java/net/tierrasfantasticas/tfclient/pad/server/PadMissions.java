@@ -330,6 +330,18 @@ public final class PadMissions {
         return net.tierrasfantasticas.tfclient.util.TFConfigDir.file("misiones.json", "tfclient-misiones.json");
     }
 
+    /** La config tal cual (para el pad de administrador). */
+    static JsonObject readConfig() {
+        JsonObject o = TFJson.read(configFile());
+        return o != null ? o : defaults();
+    }
+
+    /** Guarda la config y la vuelve a cargar (lo que cambie el admin vale al momento). */
+    static void writeConfig(JsonObject o) {
+        TFJson.write(configFile(), o);
+        loadConfig();
+    }
+
     static void loadConfig() {
         Path file = configFile();
         JsonObject o = TFJson.read(file);
