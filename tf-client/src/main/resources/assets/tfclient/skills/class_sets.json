@@ -787,14 +787,9 @@
     {
      "id": "clase_invocador_summoner_tome",
      "type": "sword"
-    },
-    {
-     "id": "clase_invocador_summoner_tome",
-     "type": "sword"
     }
    ],
    "give": [
-    "clase_invocador_summoner_tome",
     "clase_invocador_summoner_tome"
    ]
   }

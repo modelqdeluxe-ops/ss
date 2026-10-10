@@ -141,6 +141,9 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       `cooldown`/`cd` de cada línea; `pk`; **`@TargetedTarget` = el objetivo heredado** (en 13 packs el daño en área
 >       solo le llegaba al de la mira); los displays no salen en `@EIR/@ENO` salvo que se busquen por tipo;
 >       `@forward{ofowner}`, `targetSelf` (curas del Clérigo), `livingOnly`, `targetArmorStands`.
+> - [x] **TF Client 1.3.37 (10 oct)** — 1.3.35 y 1.3.36 NO arrancaban: «Duplicate registration
+>       clase_invocador_summoner_tome» (el tomo del Invocador salía dos veces en su set: en la mano y en MMOItems).
+>       `build_skills.class_set` ya no repite un objeto y `check_mod_items.py` revisa también `skills/class_sets.json`.
 > - [x] **Web: sección «Skills»** en lugar de «Tienda de monedas» (`tools/skills.py` → `config/skills.json` +
 >       `public/img/skills/`; precio **5,99 USD o 7.500 monedas** para todas, en `PRICE_CENTS`/`COIN_PRICE` al
 >       principio de `tools/skills.py`). Las monedas salen de la economía del pad (estimado: un jugador normal, 2 h/día,
@@ -1456,7 +1459,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.36)
+## 5. El mod (TF Client 1.3.37)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

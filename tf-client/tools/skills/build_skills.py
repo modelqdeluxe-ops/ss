@@ -878,6 +878,8 @@ def class_set(pack, prog, models, names_es, names_en):
             pack.problems.append(f'objeto de la clase sin modelo: {item_id}')
             return None
         full = f'{set_id}_{item_id}'
+        if any(i['id'] == full for i in items):
+            return full  # el mismo objeto dos veces (en la mano y en MMOItems): Forge no deja registrarlo dos veces
         item_json(full, mid)
         names_en[f'item.tfclient.{full}'] = en
         names_es[f'item.tfclient.{full}'] = name_es(en, cls_name)
@@ -942,7 +944,7 @@ def class_set(pack, prog, models, names_es, names_en):
     first_weapon = next((i['id'] for i in items if i['type'] in ('sword', 'heavy') and i['id'] not in mm_items.values()),
                         None) or (min(mm_items.values(), key=len) if mm_items else None)
     return {'id': set_id, 'name': cls_name, 'color': '#7fd3ff', 'tier': 'netherite', 'clase': pack.id, 'items': items,
-            'give': [i['id'] for i in items if not (i['id'] in mm_items.values() and i['id'] != first_weapon)]}, mm_items
+            'give': list(dict.fromkeys(i['id'] for i in items if not (i['id'] in mm_items.values() and i['id'] != first_weapon)))}, mm_items
 
 
 def write_class_items(full):

@@ -76,6 +76,8 @@ def main():
             if (fr['index'] if isinstance(fr, dict) else fr) >= n:
                 errs.append(('fotograma', f))
     data = json.load(open('tf_sets.json'))
+    # También los sets de las clases de skills: TFSets los carga juntos y Forge no deja un id repetido (el juego no arranca)
+    data['sets'] = data['sets'] + json.load(open('skills/class_sets.json'))['sets']
     ids = [i['id'] for s in data['sets'] for i in s['items']]
     lang = json.load(open('lang/es_es.json', encoding='utf-8'))
     for i in ids:
