@@ -83,6 +83,14 @@ PACK_SUBDIR = {
 }
 
 
+# Variables con las que empieza la clase (si el pack no las pone nunca): los esbirros del Nigromante y del Invocador
+# de Espíritus solo atacan en el modo que elige su «Orden», que empieza sin poner; así salen en modo Libre
+START_VARS = {
+    'nigromante': {'summonstance': 'free'},
+    'invocador_espiritus': {'summonstance': 'free'},
+}
+
+
 # Packs que no son una clase de jugador (samus2002_NECROMANCER es un jefe: sus skills mueven la IA y el modelo del mob;
 # la clase de nigromante es la de AWAKENED_NECROMANCER)
 SKIP_PACKS = {'samus2002_NECROMANCER'}
@@ -218,11 +226,21 @@ def item_override(pack, material, cmd):
     try:
         data = json.load(open(p, encoding='utf-8'))
     except Exception:  # noqa: BLE001
-        return None
+        return conf  # archivo roto en el pack (dos JSON pegados...): el de la configuración
     for ov in data.get('overrides', []):
         pred = ov.get('predicate', {})
         if 'custom_model_data' in pred and int(float(pred['custom_model_data'])) == int(float(cmd)):
-            return ov.get('model')
+            model = ov.get('model')
+            ns, path = split_ref(model)
+            if pack.find(f'{ns}/models/{path}.json'):
+                return model
+            # el override del pack apunta mal («models/x»: en vanilla tampoco existe): el de la configuración o sin
+            # el «models/» de más
+            if conf:
+                return conf
+            if path.startswith('models/') and pack.find(f'{ns}/models/{path[7:]}.json'):
+                return f'{ns}:{path[7:]}'
+            return model
     return conf
 
 
@@ -639,7 +657,8 @@ def build_pack(path, sound_events, name=None):
     out = {'id': pack.id, 'pack': pack.name, 'class': prog['class'], 'skills': prog['skills'], 'icons': icons,
            'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
-           'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing}
+           'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing,
+           'start_vars': START_VARS.get(pack.id, {})}
     os.makedirs(OUT_CLASSES, exist_ok=True)
     with open(os.path.join(OUT_CLASSES, pack.id + '.json'), 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
@@ -703,7 +722,8 @@ def icon_by_name(pack, skill):
     return square(Image.open(best)) if best else None
 
 
-SKILL_REF_KEYS = ('s', 'skill', 'skills', 'oe', 'ot', 'oh', 'os', 'onend', 'ontick', 'onhit', 'onstart', 'then')
+SKILL_REF_KEYS = ('s', 'skill', 'skills', 'oe', 'ot', 'oh', 'os', 'onend', 'ontick', 'onhit', 'onstart', 'then', 'ohb',
+                  'onhitblock', 'onsummon', 'op', 'onpoint', 'od')
 MOB_REF_KEYS = ('t', 'type', 'mob', 'mobtype', 'm')
 
 
@@ -731,6 +751,11 @@ def icon_from_effects(pack, models, prog, sk, me_models, store):
                         img = J.icon(pack.find, ref) if ref else None
                         if img:
                             return J.framed(img)
+                    # el modelo de ModelEngine que se pone el efecto invocado
+                    for mm in mobs[mob].get('mechs', []):
+                        mid = str(mm.get('a', {}).get('mid', ''))
+                        if mm['m'] == 'model' and mid.startswith(pack.id + '.') and mid not in me_used:
+                            me_used.append(mid)
             for k in SKILL_REF_KEYS:
                 for nm in str(a.get(k, '')).split(','):
                     if nm.strip():

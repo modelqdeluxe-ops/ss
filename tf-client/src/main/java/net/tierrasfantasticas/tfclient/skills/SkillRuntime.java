@@ -314,6 +314,10 @@ public final class SkillRuntime {
         Meta meta = cls.meta(skill.entry());
         if (meta == null) return false;
         Ctx ctx = new Ctx(cls, Who.of(player));
+        if (!cls.startVars.isEmpty()) {
+            Map<String, String> vars = state(ctx.caster).vars;
+            cls.startVars.forEach(vars::putIfAbsent);
+        }
         ctx.mods = skill.mods();
         ctx.origin = player.position();
         ctx.aim = aimed(player, 32);
@@ -591,8 +595,15 @@ public final class SkillRuntime {
                 }
             }
             case "setname" -> {
-                String name = unquote(m.arg("", "name", "n"));
-                for (Tgt t : targets) if (t.who != null && t.who.actor != null && !name.isBlank()) t.who.actor.customName = name;
+                // A un jugador nunca se le cambia el nombre: «setname{name=<target.name>} @owner» desde un esbirro es
+                // para que el esbirro se llame como su dueño (sus skills buscan el aura «<caster.name>TARGET»)
+                String raw = m.arg("", "name", "n");
+                for (Tgt t : targets) {
+                    String name = unquote(raw.indexOf('<') >= 0 ? SkillVars.text(raw, ctx, t) : raw);
+                    if (t.who == null || name.isBlank()) continue;
+                    if (t.who.actor != null) t.who.actor.customName = name;
+                    else if (ctx.caster.actor != null) ctx.caster.actor.customName = name;
+                }
             }
             case "cancelskill" -> throw new CancelSkill();
             case "signal" -> {
@@ -602,9 +613,18 @@ public final class SkillRuntime {
             case "settarget" -> {
                 if (ctx.caster.actor != null) {
                     LivingEntity found = null;
-                    if (m.t != null) for (Tgt t : targets) if (t.living() != null) {
-                        found = t.living();
-                        break;
+                    if (m.t != null) {
+                        // Entre los vivos que cumplen (el «limit=1» de @EIR cogería a veces un efecto, que no vale)
+                        Mech all = m.copyWith(m.a, new HashMap<>(m.ta));
+                        all.ta.remove("limit");
+                        List<LivingEntity> alive = new ArrayList<>();
+                        for (Tgt t : SkillTargets.resolve(all, ctx)) {
+                            if (t.living() != null && canHurt(ctx, t.living())) alive.add(t.living());
+                        }
+                        if (!alive.isEmpty()) {
+                            boolean random = m.targetArg("", "sort").equalsIgnoreCase("RANDOM");
+                            found = alive.get(random ? ThreadLocalRandom.current().nextInt(alive.size()) : 0);
+                        }
                     }
                     ctx.caster.actor.target = found;
                 }

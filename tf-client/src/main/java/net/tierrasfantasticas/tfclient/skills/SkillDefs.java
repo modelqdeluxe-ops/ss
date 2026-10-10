@@ -147,6 +147,8 @@ public final class SkillDefs {
         public String glyphs = "";
         /** Skills que el pack llama sin definirlas (en MythicMobs esas líneas no hacen nada). */
         public final java.util.Set<String> missing = new java.util.HashSet<>();
+        /** Variables con las que empieza quien tiene la clase (si aún no las tiene): el modo de los esbirros. */
+        public final Map<String, String> startVars = new HashMap<>();
 
         public Meta meta(String name) {
             return name == null ? null : tree.get(name.toLowerCase(Locale.ROOT));
@@ -250,6 +252,11 @@ public final class SkillDefs {
         c.set = str(o, "set", null);
         c.glyphs = str(o, "glyphs", "");
         for (String x : strings(o.get("missing"))) c.missing.add(x.toLowerCase(Locale.ROOT));
+        if (o.has("start_vars") && o.get("start_vars").isJsonObject()) {
+            for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("start_vars").entrySet()) {
+                c.startVars.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().getAsString());
+            }
+        }
         if (o.has("hand_items") && o.get("hand_items").isJsonObject()) {
             for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("hand_items").entrySet()) {
                 c.handItems.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().getAsString());

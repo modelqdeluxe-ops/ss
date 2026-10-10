@@ -330,7 +330,8 @@ class Sim:
         self.player = Entity(self, 'player', [0, 0, 0], 0.0, 'Jugador')
         self.player.pitch = 8.0  # mirando al primer zombi (un poco hacia abajo), como al apuntar en el juego
         self.mobs_world = [Entity(self, 'zombie', [0, 0, 6], 180, 'Zombi'), Entity(self, 'zombie', [2.5, 0, 8], 180, 'Zombi 2'),
-                           Entity(self, 'zombie', [-2.5, 0, 7.5], 180, 'Zombi 3')]
+                           Entity(self, 'zombie', [-2.5, 0, 7.5], 180, 'Zombi 3'),
+                           Entity(self, 'zombie', [0.4, 0, 2.3], 180, 'Zombi cerca')]  # para los golpes cuerpo a cuerpo
         self.entities = [self.player] + self.mobs_world
         self.particles = []
         self.sounds = []
@@ -379,6 +380,8 @@ class Sim:
             self.problem(f'la skill {skill["id"]} no tiene entrada')
             return False
         ctx = Ctx(self.cls, Who(entity=self.player))
+        for k, v in (self.cls.get('start_vars') or {}).items():
+            self.state(ctx.caster)['vars'].setdefault(k.lower(), v)
         ctx.origin = self.player.pos.copy()
         ctx.aim = self.mobs_world[0]
         ctx.vars = {}
@@ -560,7 +563,8 @@ class Sim:
         """SkillVars.resolve"""
         first = ctx.targets[0] if ctx.targets else None
         m = dict(m)
-        m['a'] = {k: self.text(v, ctx, first) for k, v in m.get('a', {}).items()}
+        m['a'] = {k: (v if m['m'] == 'setname' and k in ('name', 'n') else self.text(v, ctx, first))
+                  for k, v in m.get('a', {}).items()}  # setname: <target.name> de cada objetivo
         m['ta'] = {k: self.text(v, ctx, first) for k, v in (m.get('ta') or {}).items()}
         return m
 
@@ -943,6 +947,16 @@ class Sim:
             r = False
         elif m in ('itemissimilar', 'holding'):
             r = e is self.player and self.hand is not None and self.hand == str(arg(a, '', 'i', 'item', 'material', 'm')).lower()
+        elif m in ('distance', 'distancefromorigin'):
+            p = at if at is not None else (who.pos() if who is not None else ctx.caster.pos())
+            frm = ctx.caster.pos() if m == 'distance' else self.origin(ctx)
+            r = in_range(float(np.linalg.norm(np.asarray(p) - frm)), arg(a, '>0', 'distance', 'd'))
+        elif m in ('health', 'hp', 'healthpercent', 'hppercent', 'hpp'):
+            r = e is not None and in_range(e.health if m in ('health', 'hp') else e.health / 20,
+                                           arg(a, '>0', 'health', 'h', 'amount', 'a', 'percent', 'p'))
+        elif m in ('altitude', 'height'):
+            p = at if at is not None else (who.pos() if who is not None else ctx.caster.pos())
+            r = in_range(float(p[1]), arg(a, '>0', 'height', 'h', 'a'))
         elif m in ('offgcd', 'gcd'):
             r = self.state(who or ctx.caster)['gcd'] <= self.clock
         elif m == 'stance':
@@ -1206,10 +1220,15 @@ class Sim:
                     else:
                         cd[nm] = self.clock + round(sec * 20)
         elif name == 'setname':
-            nm = str(arg(a, '', 'name', 'n')).strip().strip('"')
+            raw = str(arg(a, '', 'name', 'n'))
             for t in targets:
-                if t.who is not None and t.who.actor is not None and nm:
+                nm = unquote(self.text(raw, ctx, t))
+                if t.who is None or not nm:
+                    continue
+                if t.who.actor is not None:
                     t.who.actor.custom_name = nm
+                elif ctx.caster.actor is not None:  # nunca al jugador: el esbirro toma el nombre de su dueño
+                    ctx.caster.actor.custom_name = nm
         elif name == 'cancelskill':
             raise CancelSkill()
         elif name == 'signal':
@@ -1220,8 +1239,13 @@ class Sim:
         elif name == 'settarget':
             if ctx.caster.actor is not None:
                 found = None
-                if m.get('t'):
-                    found = next((t.entity() for t in targets if t.entity() is not None), None)
+                if m.get('t'):  # entre los vivos que cumplen, como SkillRuntime
+                    ta = dict(m.get('ta') or {})
+                    ta.pop('limit', None)
+                    alive = [t.entity() for t in self.targets(dict(m, ta=ta), ctx)
+                             if t.entity() is not None and self.can_hurt(ctx, t.entity())]
+                    if alive:
+                        found = random.choice(alive) if str(ta.get('sort', '')).upper() == 'RANDOM' else alive[0]
                 ctx.caster.actor.target = found
         elif name in ('setai', 'setnoai'):
             ai = boolean(arg(a, 'true', 'ai', 'a'))
@@ -1915,6 +1939,25 @@ class Sim:
         if p['onhit'] or p['se']:
             lo = np.minimum(frm, p['pos']) - [p['hr'], p['vr'], p['hr']]
             hi = np.maximum(frm, p['pos']) + [p['hr'], p['vr'], p['hr']]
+            # efectos del pack que el proyectil busca (hitConditions con mythicmobtype true), como SkillMovers
+            if any(c['m'] in ('mythicmobtype', 'mmt', 'mobtype') and c.get('v', 'true') == 'true' for c in p['hc']):
+                for act in list(self.actors):
+                    if not act.alive or act.follow is not None or act is p['bullet'] or ('a', act.id) in p['hit_at']:
+                        continue
+                    if not ((lo - 0.3 <= act.pos).all() and (hi + 0.3 >= act.pos).all()):
+                        continue
+                    if not self.passes_conds(p['hc'], Tgt(Who(actor=act)), p['ctx']):
+                        continue
+                    p['hit_at'][('a', act.id)] = self.clock
+                    p['hits'] += 1
+                    self.count('impacto')
+                    if p['onhit']:
+                        self.mover_run(p, p['onhit'], [Tgt(Who(actor=act))], None)
+                    if not p['alive']:
+                        return
+                    if p['se'] or (p['charges'] and p['hits'] >= p['charges']):
+                        self.mover_end(p)
+                        return
             for e in self.entities:
                 if not e.alive or e is p['ctx'].caster.entity or e is p['ctx'].caster.player():
                     continue
@@ -2340,7 +2383,6 @@ def run_skill(cls, skill, ticks=100, frames=False, step=2, hand=None):
         for _ in range(45):
             sim.tick()
         sim.particles, sim.sounds, sim.damage, sim.counts = [], [], [], {}
-        sim.passives = []
     if hand is not None:
         sim.hand = hand
     # Para la vista previa: lo que la skill pide para salir (en su entrada y en lo que llama directamente): las

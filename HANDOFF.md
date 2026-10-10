@@ -101,6 +101,19 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       las N primeras `passive-type` de una clase con N ranuras `<PASSIVE>` son pasivas (las demás, con tecla);
 >       acción `cast X` de las condiciones; variable sin poner = `UNDEFINED`; `isChild` = «tiene dueño».
 >       `sim.py --todas`: 0 problemas en las 39; `--trace` enseña por qué una skill no sale.
+> - [x] **Checkpoint 10 oct (tarde)** — sin compilar el jar todavía (falta subir a **1.3.35**):
+>       textos en español de las 39 (`tools/skills/es.json`); `tools/skills/check_assets.py` (sonidos, modelos de ítem
+>       y de ModelEngine con sus texturas, iconos, fuentes y partículas de 1.20.1: **0 fallos**); modelos rotos de los
+>       Khans (override malo → el del config); iconos de LostAssets sacados del modelo del mob que invocan; los
+>       esbirros pegan a otros actores cuando el pack lo pide (hitConditions con mythicmobtype); `START_VARS`
+>       (nigromante/invocador empiezan en postura «free»); **esbirros que no atacaban**: `setname{name=<target.name>}
+>       @owner` desde un esbirro le pone al esbirro el nombre del dueño (así encuentra el aura «<caster.name>TARGET»),
+>       y `<target.name>` de setname se resuelve por cada objetivo de la línea (Java `SkillVars.resolve` + `sim.py`).
+>       `sim.py` tiene ahora un muñeco cerca (2.3 bloques) para probar golpes cuerpo a cuerpo.
+>       **Queda:** revisar la lista de skills con daño 0 en el sim (casi todas son buffs/posturas/pasivas; mirar
+>       `zephyr air_slash/hurricane_strike`, `katana_fuego *_lc/_rc`, `mago arcane_missile`, `piromante
+>       firestorm_volley`, `vampiro bloodborne_*`, `thor mighty_thunder`), revisión visual de las hojas de
+>       vista previa, subir a 1.3.35, `./gradlew build`, `check_mod_items.py` y mandar el jar.
 > - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
 >       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
 >       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de

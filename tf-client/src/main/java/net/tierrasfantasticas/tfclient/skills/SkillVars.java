@@ -27,7 +27,13 @@ final class SkillVars {
 
     static Mech resolve(Mech m, Ctx ctx) {
         Tgt first = ctx.targets != null && !ctx.targets.isEmpty() ? ctx.targets.get(0) : null;
-        return m.copyWith(map(m.a, ctx, first), map(m.ta, ctx, first));
+        Map<String, String> a = map(m.a, ctx, first);
+        // setname: «<target.name>» es el de cada objetivo de la línea (se resuelve en la mecánica)
+        if (m.m.equals("setname") && a != m.a) {
+            a = new HashMap<>(a);
+            for (String k : new String[] {"name", "n"}) if (m.a.containsKey(k)) a.put(k, m.a.get(k));
+        }
+        return m.copyWith(a, map(m.ta, ctx, first));
     }
 
     private static Map<String, String> map(Map<String, String> in, Ctx ctx, Tgt target) {

@@ -442,6 +442,23 @@ final class SkillMovers {
             found.add(e);
         }
         found.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(from)));
+        // Efectos del pack que el proyectil busca a propósito (hitConditions=[ - mythicmobtype{t=X} true ]): el
+        // Nigromante tira un muñeco donde cae el disparo y otro proyectil va a por él
+        if (wantsActors(p)) {
+            for (SkillActor a : new ArrayList<>(SkillRuntime.ACTORS)) {
+                if (!a.alive || a.level != p.level || a.carried || a.follow != null || p.hit.containsKey(a.id)) continue;
+                if (!box.contains(a.pos) && !box.inflate(0.3).contains(a.pos.add(0, 0.5, 0))) continue;
+                if (!SkillTargets.passes(p.hitConds, Tgt.of(a.who), p.ctx)) continue;
+                p.hit.put(a.id, now);
+                p.hits++;
+                if (p.onHit != null) run(p, p.onHit, List.of(Tgt.of(a.who)), null);
+                if (!p.alive) return;
+                if (p.stopAtEntity || (p.charges > 0 && p.hits >= p.charges)) {
+                    end(p);
+                    return;
+                }
+            }
+        }
         for (LivingEntity e : found) {
             p.hit.put(e.getUUID(), now);
             p.hits++;
@@ -452,6 +469,13 @@ final class SkillMovers {
                 return;
             }
         }
+    }
+
+    private static boolean wantsActors(Mover p) {
+        for (Cond c : p.hitConds) {
+            if ((c.m().equals("mythicmobtype") || c.m().equals("mmt") || c.m().equals("mobtype")) && c.action().equals("true")) return true;
+        }
+        return false;
     }
 
     private static void run(Mover p, String skill, List<Tgt> targets, LivingEntity trigger) {

@@ -6,12 +6,30 @@
   "desc": "La reina del hielo. Congela, ralentiza y encierra a sus enemigos con estacas, muros y tormentas de granizo.",
   "color": "#7fd3ff",
   "skills": {
-   "frost_bolt": {"name": "Rayo de Escarcha", "desc": "Dispara un carámbano que hiere y ralentiza al objetivo."},
-   "ice_spike": {"name": "Púas de Hielo", "desc": "Una ola de púas de hielo brota del suelo hacia delante, hiriendo y ralentizando a todo lo que alcanza."},
-   "frigid_path": {"name": "Senda Gélida", "desc": "Pasiva: deja tras de ti un rastro de hielo que ralentiza a los enemigos que lo pisan."},
-   "frost_beam": {"name": "Haz Gélido", "desc": "Lanza un haz de hielo continuo que hiere y ralentiza; si choca con un muro de hielo, estalla."},
-   "ice_wall": {"name": "Muro de Hielo", "desc": "Levanta un muro de hielo que bloquea el paso, lanza por los aires y ralentiza a los enemigos."},
-   "hailstorm": {"name": "Granizada", "desc": "Invoca una tormenta sobre ti: enormes granizos caen al suelo, congelando y ralentizando a los enemigos."}
+   "frost_bolt": {
+    "name": "Rayo de Escarcha",
+    "desc": "Dispara un carámbano que hiere y ralentiza al objetivo."
+   },
+   "ice_spike": {
+    "name": "Púas de Hielo",
+    "desc": "Una ola de púas de hielo brota del suelo hacia delante, hiriendo y ralentizando a todo lo que alcanza."
+   },
+   "frigid_path": {
+    "name": "Senda Gélida",
+    "desc": "Pasiva: deja tras de ti un rastro de hielo que ralentiza a los enemigos que lo pisan."
+   },
+   "frost_beam": {
+    "name": "Haz Gélido",
+    "desc": "Lanza un haz de hielo continuo que hiere y ralentiza; si choca con un muro de hielo, estalla."
+   },
+   "ice_wall": {
+    "name": "Muro de Hielo",
+    "desc": "Levanta un muro de hielo que bloquea el paso, lanza por los aires y ralentiza a los enemigos."
+   },
+   "hailstorm": {
+    "name": "Granizada",
+    "desc": "Invoca una tormenta sobre ti: enormes granizos caen al suelo, congelando y ralentizando a los enemigos."
+   }
   }
  },
  "zephyr": {
@@ -20,12 +38,30 @@
   "desc": "Un asesino que se mueve como el viento: marca a sus presas, las levanta con tornados y las remata en el aire.",
   "color": "#8ff0c8",
   "skills": {
-   "air_slash": {"name": "Tajo de Viento", "desc": "Dos tajos de viento seguidos. Hace más daño a los enemigos con la marca del viento."},
-   "tornado": {"name": "Tornado", "desc": "Lanza un tornado que daña a todo lo que encuentra en línea y lo deja en el aire."},
-   "aerial_burst": {"name": "Ráfaga Aérea", "desc": "Pasiva: al recibir daño, empuja a los enemigos cercanos y ganas velocidad."},
-   "cyclone": {"name": "Ciclón", "desc": "Crea un ciclón que atrae y hiere a los enemigos cercanos durante unos segundos."},
-   "wind_shadowstep": {"name": "Paso Sombrío", "desc": "Te teletransportas hasta el objetivo y le dejas la marca del viento."},
-   "hurricane_strike": {"name": "Golpe Huracanado", "desc": "Saltas hacia los enemigos que tu tornado dejó en el aire, los cortas varias veces y el último tajo los estrella contra el suelo."}
+   "air_slash": {
+    "name": "Tajo de Viento",
+    "desc": "Dos tajos de viento seguidos. Hace más daño a los enemigos con la marca del viento."
+   },
+   "tornado": {
+    "name": "Tornado",
+    "desc": "Lanza un tornado que daña a todo lo que encuentra en línea y lo deja en el aire."
+   },
+   "aerial_burst": {
+    "name": "Ráfaga Aérea",
+    "desc": "Pasiva: al recibir daño, empuja a los enemigos cercanos y ganas velocidad."
+   },
+   "cyclone": {
+    "name": "Ciclón",
+    "desc": "Crea un ciclón que atrae y hiere a los enemigos cercanos durante unos segundos."
+   },
+   "wind_shadowstep": {
+    "name": "Paso Sombrío",
+    "desc": "Te teletransportas hasta el objetivo y le dejas la marca del viento."
+   },
+   "hurricane_strike": {
+    "name": "Golpe Huracanado",
+    "desc": "Saltas hacia los enemigos que tu tornado dejó en el aire, los cortas varias veces y el último tajo los estrella contra el suelo."
+   }
   }
  },
  "mago": {
@@ -34,12 +70,30 @@
   "desc": "Domina el fuego, el hielo y lo arcano: bolas de fuego, meteoros y cadenas ardientes desde lejos.",
   "color": "#b98cff",
   "skills": {
-   "fire_ball": {"name": "Bola de Fuego", "desc": "Lanza una bola de fuego que hiere y quema al objetivo."},
-   "blink_": {"name": "Parpadeo", "desc": "Te teletransportas unos bloques hacia donde miras."},
-   "arcane_missile": {"name": "Misil Arcano", "desc": "Pasiva: cada 5 hechizos invocas 3 misiles arcanos que persiguen y hieren a los enemigos."},
-   "frost_nova": {"name": "Nova de Escarcha", "desc": "Una ola de púas de hielo que hiere y entorpece a los enemigos."},
-   "meteor": {"name": "Meteoro", "desc": "Un meteoro cae del cielo, explota, quema a los enemigos y deja el suelo ardiendo un rato."},
-   "inferno_chains": {"name": "Cadenas Infernales", "desc": "Cuatro cadenas de fuego atrapan y aturden; luego el suelo se rompe y estalla hacia arriba."}
+   "fire_ball": {
+    "name": "Bola de Fuego",
+    "desc": "Lanza una bola de fuego que hiere y quema al objetivo."
+   },
+   "blink_": {
+    "name": "Parpadeo",
+    "desc": "Te teletransportas unos bloques hacia donde miras."
+   },
+   "arcane_missile": {
+    "name": "Misil Arcano",
+    "desc": "Pasiva: cada 5 hechizos invocas 3 misiles arcanos que persiguen y hieren a los enemigos."
+   },
+   "frost_nova": {
+    "name": "Nova de Escarcha",
+    "desc": "Una ola de púas de hielo que hiere y entorpece a los enemigos."
+   },
+   "meteor": {
+    "name": "Meteoro",
+    "desc": "Un meteoro cae del cielo, explota, quema a los enemigos y deja el suelo ardiendo un rato."
+   },
+   "inferno_chains": {
+    "name": "Cadenas Infernales",
+    "desc": "Cuatro cadenas de fuego atrapan y aturden; luego el suelo se rompe y estalla hacia arriba."
+   }
   }
  },
  "dragon_rojo": {
@@ -48,12 +102,30 @@
   "desc": "Lleva el Sacred Gear, un guantelete de dragón que se hace más fuerte. Golpea y carga energía (agachado) para subirlo de nivel y desatar la armadura Balance Breaker.",
   "color": "#ff5a4f",
   "skills": {
-   "dragon_claw": {"name": "Garra de Dragón", "desc": "Un zarpazo de dragón delante de ti. Cada golpe carga tu guantelete."},
-   "dragon_shot": {"name": "Disparo de Dragón", "desc": "Dispara una bola de energía de dragón hacia el punto al que miras."},
-   "dragon_dash": {"name": "Embestida de Dragón", "desc": "Con el guantelete de nivel 2 o más: una embestida rapidísima hacia delante."},
-   "dragon_jump": {"name": "Salto de Dragón", "desc": "Con el guantelete de nivel 2 o más: un salto enorme y una caída lenta."},
-   "dragon_roar": {"name": "Rugido de Dragón", "desc": "En modo Balance Breaker: un rugido que hiere a todo lo que tienes alrededor."},
-   "dragon_ultimate": {"name": "Cañón del Dragón", "desc": "En modo Balance Breaker: la armadura abre sus cañones y dispara dos rayos devastadores."}
+   "dragon_claw": {
+    "name": "Garra de Dragón",
+    "desc": "Un zarpazo de dragón delante de ti. Cada golpe carga tu guantelete."
+   },
+   "dragon_shot": {
+    "name": "Disparo de Dragón",
+    "desc": "Dispara una bola de energía de dragón hacia el punto al que miras."
+   },
+   "dragon_dash": {
+    "name": "Embestida de Dragón",
+    "desc": "Con el guantelete de nivel 2 o más: una embestida rapidísima hacia delante."
+   },
+   "dragon_jump": {
+    "name": "Salto de Dragón",
+    "desc": "Con el guantelete de nivel 2 o más: un salto enorme y una caída lenta."
+   },
+   "dragon_roar": {
+    "name": "Rugido de Dragón",
+    "desc": "En modo Balance Breaker: un rugido que hiere a todo lo que tienes alrededor."
+   },
+   "dragon_ultimate": {
+    "name": "Cañón del Dragón",
+    "desc": "En modo Balance Breaker: la armadura abre sus cañones y dispara dos rayos devastadores."
+   }
   }
  },
  "thor": {
@@ -62,12 +134,1162 @@
   "desc": "El dios del trueno con su martillo: lo lanza, invoca rayos y se eleva para estrellarse contra el suelo.",
   "color": "#ffd34d",
   "skills": {
-   "hammer_strike": {"name": "Martillazo", "desc": "Golpea a los enemigos de delante con el martillo."},
-   "hammer_throw": {"name": "Lanzar el Martillo", "desc": "Lanza el martillo, que atraviesa a los enemigos y vuelve a tu mano."},
-   "mighty_thunder": {"name": "Trueno Poderoso", "desc": "Pasiva: tus ataques y skills tienen un 30 % de probabilidad de hacer caer un rayo que aturde."},
-   "asgardian_fury": {"name": "Furia de Asgard", "desc": "Te cargas de rayos: velocidad II y fuerza II un rato."},
-   "thunder_shockwave": {"name": "Onda de Trueno", "desc": "Una ola de rayos avanza por el suelo aturdiendo a los enemigos."},
-   "thunder_smash": {"name": "Martillo Atronador", "desc": "Te elevas cargándote de rayos y te estrellas contra el suelo con una explosión de trueno que aturde."}
+   "hammer_strike": {
+    "name": "Martillazo",
+    "desc": "Golpea a los enemigos de delante con el martillo."
+   },
+   "hammer_throw": {
+    "name": "Lanzar el Martillo",
+    "desc": "Lanza el martillo, que atraviesa a los enemigos y vuelve a tu mano."
+   },
+   "mighty_thunder": {
+    "name": "Trueno Poderoso",
+    "desc": "Pasiva: tus ataques y skills tienen un 30 % de probabilidad de hacer caer un rayo que aturde."
+   },
+   "asgardian_fury": {
+    "name": "Furia de Asgard",
+    "desc": "Te cargas de rayos: velocidad II y fuerza II un rato."
+   },
+   "thunder_shockwave": {
+    "name": "Onda de Trueno",
+    "desc": "Una ola de rayos avanza por el suelo aturdiendo a los enemigos."
+   },
+   "thunder_smash": {
+    "name": "Martillo Atronador",
+    "desc": "Te elevas cargándote de rayos y te estrellas contra el suelo con una explosión de trueno que aturde."
+   }
+  }
+ },
+ "arquero": {
+  "name": "Arquero",
+  "role": "Tirador · movilidad y lluvia de flechas",
+  "color": "#9fd86b",
+  "desc": "Un arquero ágil que salta y planea por el aire, encadena flechas entre enemigos y hace llover proyectiles sobre el campo de batalla.",
+  "skills": {
+   "archer_windwalker": {
+    "name": "Paso del Viento",
+    "desc": "Haz un doble salto y planea por el aire para cambiar de posición rápido y atacar desde arriba."
+   },
+   "archer_quickshot": {
+    "name": "Disparo Rápido",
+    "desc": "Dispara una flecha que salta a 2 enemigos cercanos. Cada 3 impactos ganas un breve acelerón."
+   },
+   "archer_volleystep": {
+    "name": "Paso de Andanada",
+    "desc": "Dispara 5 flechas en abanico. Con 3 cargas, disparas en ráfaga y el último tiro te impulsa hacia atrás para escapar."
+   },
+   "archer_volleystep_stacks": {
+    "name": "Cargas de Andanada",
+    "desc": "Pasiva: ganas 1 carga de Paso de Andanada cada 5 segundos (máximo 3)."
+   },
+   "archer_rainofarrows": {
+    "name": "Lluvia de Flechas",
+    "desc": "Marca el suelo y haz caer una lluvia de flechas que hiere y ralentiza a los enemigos de la zona."
+   },
+   "archer_cyclone_shot": {
+    "name": "Disparo Ciclón",
+    "desc": "Dispara una flecha que, al impactar, crea un remolino que arrastra a los enemigos hacia el centro."
+   },
+   "archer_aeroglaive": {
+    "name": "Aeroglaive",
+    "desc": "Una flecha poderosa que perfora el suelo al impactar y causa mucho daño en área. Se puede usar en el aire o en el suelo."
+   }
+  }
+ },
+ "arquero_despertado": {
+  "name": "Arquero Despertado",
+  "role": "Tirador · combos y ráfagas perforantes",
+  "color": "#ffcf5a",
+  "desc": "Un arquero despertado que rueda entre disparos, lanza abanicos de flechas y libera tiros destructivos que atraviesan todo a su paso.",
+  "skills": {
+   "ambush": {
+    "name": "Emboscada",
+    "desc": "Pasiva: tu primer golpe contra un enemigo nuevo hace un 50 % más de daño."
+   },
+   "blasting_combo": {
+    "name": "Combo Explosivo",
+    "desc": "Del primer al tercer golpe ruedas hacia donde te mueves y disparas una flecha; el cuarto es un salto con un tiro cargado que hace temblar el suelo donde cae."
+   },
+   "evasive_shot": {
+    "name": "Disparo Evasivo",
+    "desc": "Saltas hacia atrás disparando 2 flechas que se dividen, 3 veces seguidas."
+   },
+   "volley_of_arrows": {
+    "name": "Andanada de Flechas",
+    "desc": "Disparas un abanico de flechas que empuja un poco; luego un tiro cargado más fuerte que agrieta el suelo, empuja y aturde."
+   },
+   "piercing_skyfall": {
+    "name": "Lluvia Perforante",
+    "desc": "Disparas varias flechas al cielo y cae una lluvia de flechas en línea recta hacia delante que atraviesa a todos los enemigos."
+   },
+   "rapid_arrows": {
+    "name": "Flechas Veloces",
+    "desc": "Disparas 5 flechas seguidas y, tras una pausa, 3 flechas fuertes que atraviesan a los enemigos."
+   },
+   "shot_of_destruction": {
+    "name": "Disparo de Destrucción",
+    "desc": "Concentras la energía en la punta de la flecha y disparas una ráfaga destructiva que arrasa todo lo que encuentra."
+   }
+  }
+ },
+ "asesino_despertado": {
+  "name": "Asesino Despertado",
+  "role": "Asesino · sombras y críticos",
+  "color": "#b46bff",
+  "desc": "Un asesino de las sombras: se vuelve invisible, atraviesa a sus enemigos con dagas y shuriken y acaba con ellos en una danza de cuchillas.",
+  "skills": {
+   "deadly_calm": {
+    "name": "Calma Mortal",
+    "desc": "Pasiva: si te quedas quieto 3 segundos ganas Concentración: tu siguiente skill es crítica segura y hace el doble de daño."
+   },
+   "lethal_combo": {
+    "name": "Combo Letal",
+    "desc": "Una cadena de cuchilladas: un tajo, un tajo con giro doble, un paso atrás con estocada en carrera y, por último, una daga lanzada al suelo que estalla en un doble tajo."
+   },
+   "ravaging_dash": {
+    "name": "Embestida Devastadora",
+    "desc": "Cargas la hoja de sombras y recorres una gran distancia de un salto, cortando varias veces a todos los enemigos del camino."
+   },
+   "death_bloom": {
+    "name": "Flor de la Muerte",
+    "desc": "Un vórtice de sombras atrae a los enemigos y desapareces; poco después desatas una lluvia de tajos con mucho daño en área."
+   },
+   "shadowquake": {
+    "name": "Terremoto de Sombras",
+    "desc": "Te vuelves invisible y muy rápido durante unos segundos. Tu siguiente ataque acaba con el efecto y lanza un tajo de onda que hiere y aturde a los de delante."
+   },
+   "crimson_arc": {
+    "name": "Arco Carmesí",
+    "desc": "Das un paso atrás y lanzas 3 shuriken de sombras en abanico que vuelven a ti, atravesando a todos los enemigos."
+   },
+   "last_dance": {
+    "name": "Última Danza",
+    "desc": "Haces girar hojas de sombras a tu alrededor y las lanzas en todas direcciones; luego levantas a los enemigos cercanos, los acuchillas en el aire con tus sombras y los atraviesas con una última embestida."
+   }
+  }
+ },
+ "bruja": {
+  "name": "Bruja Tejedora",
+  "role": "Hechicera · caos y maldiciones",
+  "color": "#7a3cff",
+  "desc": "La Tejedora del Caos Reptante: teje hilos de sangre de los Dioses Exteriores, lanza sigilos malditos, cuervos y elixires inestables, y potencia sus hechizos dentro de su círculo ritual.",
+  "skills": {
+   "mf_witch_thread_of_crawling_chaos": {
+    "name": "Hilo del Caos Reptante",
+    "desc": "Pasiva: guardas hasta 8 de energía del Caos Reptante. Cada impacto de un sigilo te devuelve 0,5; tus otros hechizos gastan de esa reserva."
+   },
+   "mf_witch_sigil_volley": {
+    "name": "Andanada de Sigilos",
+    "desc": "Lanza tres sigilos malditos que estallan al impactar y te devuelven energía. Dentro del Círculo de Hechizos son cinco."
+   },
+   "mf_witch_crow_hex": {
+    "name": "Maleficio del Cuervo",
+    "desc": "Un cuervo espectral persigue a tu enemigo y lo marca con un presagio maldito. Si vuelves a golpear al marcado, el cuervo estalla y deja una zona que lo corrompe poco a poco."
+   },
+   "mf_witch_spell_circle": {
+    "name": "Círculo de Hechizos",
+    "desc": "Un círculo ritual de sangre y locura: mientras estés dentro, tus hechizos se vuelven más terribles. Gasta 8 de energía."
+   },
+   "mf_witch_eldritch_elixirs": {
+    "name": "Elixires Arcanos",
+    "desc": "Lanzas tres elixires inestables al azar (fuego, hielo, arcano o caos) mientras saltas hacia atrás. Dentro del círculo, el tiempo de espera se reduce a la mitad."
+   },
+   "mf_witch_doomspike": {
+    "name": "Lanza Funesta",
+    "desc": "Invocas tres lanzas abisales que se arrojan una tras otra, hieren y empujan. Dentro del círculo, cada golpe hace llover lanzas alrededor del objetivo y lo inmoviliza."
+   },
+   "mf_witch_abyssal_crucible": {
+    "name": "Crisol Abisal",
+    "desc": "Invocas un crisol abisal sobre tu objetivo que atrae y hiere sin parar a los enemigos cercanos. Si le aciertas con un elixir, estalla y corrompe la zona."
+   }
+  }
+ },
+ "caballero_artico": {
+  "name": "Caballero Ártico",
+  "role": "Lancero · hielo y control",
+  "color": "#8fe3ff",
+  "desc": "Un caballero de los hielos con lanza y escudo: congela, empala y clava a sus enemigos al suelo helado.",
+  "skills": {
+   "frostbite": {
+    "name": "Congelación",
+    "desc": "Pasiva: tus skills tienen un 20 % de probabilidad de congelar a los enemigos que golpean, que reciben daño durante un rato."
+   },
+   "frost_strike": {
+    "name": "Golpe Gélido",
+    "desc": "Golpeas con tu lanza helada; cada tercer golpe es un golpe al suelo que abre un cráter de hielo y lanza a los enemigos por los aires."
+   },
+   "glacial_impalement": {
+    "name": "Empalamiento Glacial",
+    "desc": "Invocas tu lanza y apuntas; a los 3 segundos sale disparada a toda velocidad atravesando a todos los enemigos."
+   },
+   "arctic_charge": {
+    "name": "Carga Ártica",
+    "desc": "Cargas hacia delante con el espíritu del lobo ártico, lanzando atrás a los enemigos y dejando un rastro de hielo que hiere y ralentiza."
+   },
+   "glacier_smash": {
+    "name": "Impacto Glaciar",
+    "desc": "Saltas y caes con fuerza abriendo un gran cráter de hielo que congela por completo a los enemigos de la zona."
+   },
+   "frozen_shield": {
+    "name": "Escudo Congelado",
+    "desc": "Invocas tu escudo helado, que frena a los enemigos y bloquea proyectiles; después lo empujas hacia delante derribándolos."
+   },
+   "permafrost_lance": {
+    "name": "Lanza de Permafrost",
+    "desc": "Dos tajos que empujan, un tercero que lanza por los aires y un último golpe que clava a los enemigos al suelo, congelados mucho tiempo."
+   }
+  }
+ },
+ "caballero_muerte": {
+  "name": "Caballero de la Muerte",
+  "role": "Guerrero · necrosis y ejecución",
+  "color": "#3fe0b0",
+  "desc": "Un caballero no muerto con alas de muerte: encadena a sus enemigos, los arrastra y ejecuta a quien lleva el sello maldito completo.",
+  "skills": {
+   "cursed_seal": {
+    "name": "Sello Maldito",
+    "desc": "Pasiva: tus golpes ponen un sello maldito que se carga hasta 4 veces; al completarse, el enemigo queda debilitado."
+   },
+   "death_strike_st": {
+    "name": "Golpe Mortal",
+    "desc": "Un tajo que empuja; a la tercera lanzas cadenas que te llevan hasta donde se enganchan y a la cuarta golpeas el suelo con una enorme onda necrótica."
+   },
+   "phantom_charge": {
+    "name": "Carga Fantasma",
+    "desc": "Despliegas tus alas de muerte y cargas hacia delante con una fuerza arrolladora, arrastrando a los enemigos que pillas."
+   },
+   "wraithbound_chains": {
+    "name": "Cadenas Espectrales",
+    "desc": "Lanzas cadenas de muerte que atan a los enemigos y los arrastran hacia ti mientras unas manos necróticas los agarran y aturden."
+   },
+   "soul_barrier": {
+    "name": "Barrera de Almas",
+    "desc": "Una barrera de energía necrótica te hace invulnerable unos segundos y convierte el daño que recibes en curación."
+   },
+   "necrotic_whirlwind": {
+    "name": "Torbellino Necrótico",
+    "desc": "Haces girar tu guadaña en un vórtice que levanta a los enemigos; al acabar, unas garras necróticas los cortan y te curas según a cuántos golpees."
+   },
+   "death_sentence": {
+    "name": "Sentencia de Muerte",
+    "desc": "Despliegas las alas, subes al cielo y eliges una zona; te lanzas en picado cortando a todos con tu hoja de almas. Los que tengan el sello maldito completo mueren al instante."
+   }
+  }
+ },
+ "cazador_bestias": {
+  "name": "Cazador de Bestias",
+  "role": "Guerrero · dos hojas y sangrado",
+  "color": "#e0573d",
+  "desc": "Un cazador salvaje con dos hojas: encadena cortes, desgarra a sus presas, las deja sangrando y arrasa con cargas imparables.",
+  "skills": {
+   "spatial_awareness": {
+    "name": "Percepción Espacial",
+    "desc": "Pasiva: detecta a los enemigos a 15 bloques y los resalta."
+   },
+   "slice_n_dice": {
+    "name": "Corte y Trinchado",
+    "desc": "Una cadena rápida de cortes: tajos con giro doble, tres cortes seguidos con las dos hojas y, al final, una estocada en carrera con un tajo hacia arriba y otro hacia abajo."
+   },
+   "devour": {
+    "name": "Devorar",
+    "desc": "Dos tajos horizontales a la vez que desgarran con fuerza salvaje y te curan."
+   },
+   "palisade_bite": {
+    "name": "Mordisco de Empalizada",
+    "desc": "Te lanzas sobre los enemigos y los enganchas con las dos hojas; luego saltas atrás arrancándolas y los dejas sangrando."
+   },
+   "sudden_throwing_strike": {
+    "name": "Lanzamiento Súbito",
+    "desc": "Lanzas tus dos hojas girando contra un enemigo; vuelven a ti al poco rato."
+   },
+   "crazy_cutting": {
+    "name": "Corte Frenético",
+    "desc": "Saltas y cortas en todas direcciones en el aire, y vuelves a hacerlo mientras caes al suelo."
+   },
+   "explosive_rush": {
+    "name": "Embestida Explosiva",
+    "desc": "Una onda a tus pies y cargas contra el enemigo a una velocidad cegadora, sin que nada te frene; luego tres acometidas seguidas que cortan y hacen sangrar a todos los del camino."
+   }
+  }
+ },
+ "cetus": {
+  "name": "Cetus",
+  "role": "Espadón de agua · dragón loong",
+  "color": "#3fb3ff",
+  "desc": "El Loong Perdido: un guerrero con un espadón de agua que invoca a un dragón de agua para cargar, girar y arrasar con olas.",
+  "skills": {
+   "cetus_slash": {
+    "name": "Tajo de Agua",
+    "desc": "Un combo de 5 golpes con el espadón: dos tajos, uno hacia arriba, un golpe al suelo y un doble tajo saltando."
+   },
+   "cetus_dragoncharge": {
+    "name": "Carga del Loong",
+    "desc": "Invocas un loong de agua y cargas con él; después caes lentamente un momento."
+   },
+   "cetus_dragonwhirl": {
+    "name": "Remolino del Loong",
+    "desc": "Un enorme loong de agua aparece delante y ataca una gran zona con chorros de agua y un golpe contra el suelo."
+   },
+   "cetus_greatsword": {
+    "name": "Ola del Espadón",
+    "desc": "Un espadón de agua ataca delante y despliega ondas circulares (3 veces) que ralentizan a los enemigos que están dentro."
+   },
+   "cetus_parry": {
+    "name": "Parada",
+    "desc": "Levantas un espadón de agua que bloquea los ataques 3 segundos; después lo blandes y salen olas a los lados que ralentizan y debilitan."
+   },
+   "cetus_dragon_surge": {
+    "name": "Oleada del Loong",
+    "desc": "El combo con el poder del loong: los tajos llevan al dragón, el tercero sube con olas y el último es una carga con el dragón que deja olas a su paso."
+   }
+  }
+ },
+ "chaman": {
+  "name": "Chamán Despertado",
+  "role": "Soporte · trueno y tierra",
+  "color": "#ffd24a",
+  "desc": "Un chamán que cambia entre la postura del Trueno (ataque) y la de la Tierra (curación y protección), con tótems, raíces y manos ancestrales.",
+  "skills": {
+   "soul_link": {
+    "name": "Vínculo de Almas",
+    "desc": "Pasiva: te vinculas con el aliado más cercano. En Trueno le das fuerza; en Tierra lo vas curando."
+   },
+   "primal_combo": {
+    "name": "Combo Primigenio",
+    "desc": "En Trueno: rayos hacia delante, un rayo continuo y uno que cae donde miras. En Tierra: rayos que curan a los aliados."
+   },
+   "echo_step": {
+    "name": "Paso del Eco",
+    "desc": "Entras en forma de espíritu y te deslizas rápido hacia donde te mueves durante 2 segundos, sin recibir daño."
+   },
+   "ritual_totem": {
+    "name": "Tótem Ritual",
+    "desc": "En Trueno: un tótem cazador que dispara espíritus a los enemigos. En Tierra: un tótem guardián con un escudo que no deja entrar a enemigos y cura a los aliados."
+   },
+   "stance_switch": {
+    "name": "Cambio de Postura",
+    "desc": "Cambias entre la postura del Trueno y la de la Tierra."
+   },
+   "earthen_embrace": {
+    "name": "Abrazo Terrestre",
+    "desc": "Unas raíces brotan bajo hasta 5 enemigos cercanos y los atrapan 2,5 segundos."
+   },
+   "ancestral_hands": {
+    "name": "Manos Ancestrales",
+    "desc": "En Trueno: manos de espíritu golpean el suelo, lanzan por los aires y aturden. En Tierra: manos verdes que curan y protegen a los aliados."
+   }
+  }
+ },
+ "clerigo_despertado": {
+  "name": "Clérigo Despertado",
+  "role": "Sanador · luz sagrada",
+  "color": "#ffe680",
+  "desc": "Un clérigo bendecido por la luz: golpea con su maza sagrada, cura a sus aliados con orbes, campanas y haces de luz y despliega una catedral divina.",
+  "skills": {
+   "divine_revelation": {
+    "name": "Revelación Divina",
+    "desc": "Pasiva: de vez en cuando brillas con voluntad divina; tu siguiente golpe es una onda de luz que aturde a los enemigos y cura a los aliados."
+   },
+   "sacred_combo": {
+    "name": "Combo Sagrado",
+    "desc": "Dos golpes de maza en diagonal que empujan, una embestida con la maza y un golpe al suelo con un pulso sagrado que hiere y cura a los aliados."
+   },
+   "cruciform_judgement": {
+    "name": "Juicio Cruciforme",
+    "desc": "Una enorme onda sagrada en forma de X avanza muy despacio golpeando una y otra vez; al final estalla en luz y aturde."
+   },
+   "orbs_of_benediction": {
+    "name": "Orbes de Bendición",
+    "desc": "Varios orbes de luz bajan del cielo a tu alrededor; tú y tus aliados los tomáis para curaros."
+   },
+   "bell_of_absolution": {
+    "name": "Campana de la Absolución",
+    "desc": "Una gran campana sagrada que se toca hasta tres veces: la 1.ª cura, la 2.ª limpia a los aliados y ralentiza a los enemigos, y la 3.ª da a cada aliado una invulnerabilidad divina."
+   },
+   "sanctuary_beam": {
+    "name": "Haz del Santuario",
+    "desc": "Un haz de luz cae donde apuntas y deja un anillo sagrado que cura y protege a los aliados, y hiere y ralentiza a los enemigos."
+   },
+   "divine_cathedral": {
+    "name": "Catedral Divina",
+    "desc": "Despliegas alas de luz y vuelas libre por el campo de batalla mientras una enorme cruz sagrada aparece en el suelo: cura a los aliados y ralentiza y debilita a los enemigos."
+   }
+  }
+ },
+ "filo_vacio": {
+  "name": "Filo del Vacío",
+  "role": "Espadachín · cortes dimensionales",
+  "color": "#9b6bff",
+  "desc": "Un espadachín del vacío que corta la realidad con su katana: atraviesa dimensiones, se teletransporta a través de sus enemigos y desata la bendición del vacío.",
+  "skills": {
+   "void_edge_dimension_benediction": {
+    "name": "Bendición Dimensional",
+    "desc": "Te envuelves en la bendición del vacío: tus ataques con la katana se convierten en cortes dimensionales más poderosos."
+   },
+   "void_edge_dimension_cut": {
+    "name": "Corte Dimensional",
+    "desc": "Abres un corte en la dimensión delante de ti que hiere a todos los enemigos que alcanza."
+   },
+   "void_edge_katana_upper_slash": {
+    "name": "Tajo Ascendente",
+    "desc": "Un tajo hacia arriba con la katana que lanza a los enemigos de delante por los aires."
+   },
+   "void_edge_piercing_dimension": {
+    "name": "Dimensión Perforante",
+    "desc": "Te teletransportas 13 bloques hacia delante atravesando a los enemigos del camino y vuelves a tu sitio; con la bendición, el golpe parte la dimensión."
+   }
+  }
+ },
+ "guerrero": {
+  "name": "Guerrero",
+  "role": "Guerrero · espada y furia",
+  "color": "#d9a066",
+  "desc": "Un guerrero de espada ancha: combos furiosos, saltos demoledores y torbellinos que arrasan todo a su alrededor.",
+  "skills": {
+   "warrior_rage": {
+    "name": "Furia",
+    "desc": "Pasiva: con menos del 30 % de vida, al recibir daño ganas Resistencia y Velocidad."
+   },
+   "warrior_furiousslash": {
+    "name": "Tajo Furioso",
+    "desc": "Un combo rápido de 3 golpes, cada uno más fuerte que el anterior."
+   },
+   "warrior_furiousstrike": {
+    "name": "Golpe Furioso",
+    "desc": "Lanzas a los enemigos al aire, los cortas allí y los estrellas contra el suelo, aturdiéndolos."
+   },
+   "warrior_leapingslash": {
+    "name": "Tajo Saltando",
+    "desc": "Saltas hacia delante y caes con la espada, haciendo estallar todo en el punto de impacto."
+   },
+   "warrior_whirlwind": {
+    "name": "Torbellino",
+    "desc": "Giras sin parar cortando todo a tu alrededor y atrayendo a los enemigos lejanos a la tormenta."
+   },
+   "warrior_hellblade": {
+    "name": "Espada Infernal",
+    "desc": "Clavas la espada en el suelo y la energía estalla en una onda que arrasa todo lo cercano."
+   }
+  }
+ },
+ "guerrero_despertado": {
+  "name": "Guerrero Despertado",
+  "role": "Guerrero · furia de sangre",
+  "color": "#ff4a4a",
+  "desc": "Un guerrero despertado con una espada espiritual roja: combos brutales, saltos berserker, barreras de sangre y grietas que hacen estallar el suelo.",
+  "skills": {
+   "bulwark_instinct": {
+    "name": "Instinto de Baluarte",
+    "desc": "Pasiva: al recibir un golpe ganas Resistencia III durante 5 segundos."
+   },
+   "brutal_combo": {
+    "name": "Combo Brutal",
+    "desc": "Dos tajos amplios, una estocada en carrera, un tajo giratorio que levanta a los enemigos y un golpe final hacia el suelo."
+   },
+   "berserkers_leap": {
+    "name": "Salto Berserker",
+    "desc": "Arrastras la espada por el suelo abriendo una grieta; luego saltas y caes con fuerza donde miras."
+   },
+   "relentless_whirlwind": {
+    "name": "Torbellino Implacable",
+    "desc": "Un torbellino de tajos durante un rato y, después, un paso atrás y dos estocadas largas en carrera."
+   },
+   "bloodbound_barrier": {
+    "name": "Barrera de Sangre",
+    "desc": "Un aura de sangre forma una barrera que bloquea hasta 5 golpes; cada vez que te golpean suelta un pulso de sangre que hiere a los cercanos."
+   },
+   "vicious_strike": {
+    "name": "Golpe Feroz",
+    "desc": "Te quedas quieto acumulando aura y sueltas tu rabia con un tajo desde el suelo que abre una larga grieta destructiva hacia delante."
+   },
+   "strike_of_fury": {
+    "name": "Golpe de Furia",
+    "desc": "Tu espada espiritual crece enormemente: cuatro tajos, un salto y un golpe que abre una gran grieta donde miras; vuelves atrás y la grieta estalla con rocas y escombros."
+   }
+  }
+ },
+ "guerrero_dragon": {
+  "name": "Guerrero Dragón",
+  "role": "Lancero · poder del dragón",
+  "color": "#e8a33a",
+  "desc": "Un guerrero con lanza y alas de dragón: estocadas, alientos en X, lanzas que forman una zona de dragón y cargas que estrellan a los enemigos contra el suelo.",
+  "skills": {
+   "dragon_slash": {
+    "name": "Tajo del Dragón",
+    "desc": "Un tajo con el poder del dragón."
+   },
+   "dragon_dash": {
+    "name": "Embestida del Dragón",
+    "desc": "Cargas energía y te lanzas hacia delante atravesando a los enemigos con tu lanza."
+   },
+   "dragon_skin": {
+    "name": "Piel de Dragón",
+    "desc": "Pasiva: al recibir un golpe, un 25 % de probabilidad de herir a los enemigos cercanos."
+   },
+   "dragon_zone": {
+    "name": "Zona del Dragón",
+    "desc": "Clavas 3 lanzas de dragón que forman una zona: dentro de ella ganas velocidad y resistencia."
+   },
+   "dragon_breath": {
+    "name": "Aliento del Dragón",
+    "desc": "Cuatro tajos de dragón que empujan y, como golpe final, un aliento de dragón en forma de X."
+   },
+   "dragonborn": {
+    "name": "Sangre de Dragón",
+    "desc": "Despliegas tus alas, cargas arrastrando a los enemigos, subes con ellos y los estrellas contra el suelo con una onda de dragón."
+   }
+  }
+ },
+ "guerrero_llama": {
+  "name": "Guerrero de las Llamas",
+  "role": "Espadachín · fuego",
+  "color": "#ff7a2a",
+  "desc": "Un espadachín envuelto en llamas: tajos ardientes, embestidas de fuego y un tigre llameante que arrasa todo a su paso. Inmune al fuego y la lava.",
+  "skills": {
+   "blazing_spirit": {
+    "name": "Espíritu Ardiente",
+    "desc": "Pasiva: tus skills tienen un 15 % de probabilidad de quemar; haces un 35 % más de daño a los quemados y eres inmune al fuego y la lava."
+   },
+   "blazing_slash": {
+    "name": "Tajo Ardiente",
+    "desc": "Dos tajos de fuego, una embestida con un corte en X y un tajo hacia el suelo que empuja a los enemigos."
+   },
+   "unknowing_fire": {
+    "name": "Fuego Súbito",
+    "desc": "Una embestida de fuego a toda velocidad que quema a los enemigos del camino."
+   },
+   "rising_scorching_sun": {
+    "name": "Sol Abrasador Naciente",
+    "desc": "Un tajo vertical que lanza a los enemigos por los aires; se quedan suspendidos y arden con un segundo golpe."
+   },
+   "blooming_flame_undulation": {
+    "name": "Espiral de Llamas",
+    "desc": "Un tajo en espiral defensivo: un momento sin recibir daño y desviando los proyectiles."
+   },
+   "blazing_universe": {
+    "name": "Universo Ardiente",
+    "desc": "Das un paso atrás, te lanzas hacia delante y clavas la espada en el suelo aplastando a los enemigos y haciendo temblar la tierra."
+   },
+   "flame_tiger": {
+    "name": "Tigre de Llamas",
+    "desc": "Invocas un tigre de fuego que carga rodeado de tajos ardientes, quema y empuja; al final golpea el suelo y lanza por los aires a los enemigos."
+   }
+  }
+ },
+ "guja_vendaval": {
+  "name": "Guja del Vendaval",
+  "role": "Lancero · viento y aire",
+  "color": "#7fe3c8",
+  "desc": "Un guerrero del viento con una guja: salta, cae despacio, levanta a sus enemigos y los arrastra con tornados.",
+  "skills": {
+   "windrune_blade": {
+    "name": "Hoja de Runa Eólica",
+    "desc": "Pasiva: saltas más alto y tus golpes hacen levitar al enemigo un momento."
+   },
+   "gale_slash": {
+    "name": "Tajo del Vendaval",
+    "desc": "Un tajo hacia abajo, otro hacia arriba y una estocada que atrae a los enemigos. Si estás cayendo despacio, en su lugar te lanzas atravesándolos."
+   },
+   "vault": {
+    "name": "Salto con Pértiga",
+    "desc": "Saltas por los aires y caes despacio."
+   },
+   "dancing_blade": {
+    "name": "Hoja Danzante",
+    "desc": "Una embestida fuerte: si golpeas a alguien, os lanzáis los dos por los aires y caes despacio."
+   },
+   "cloudpiercer": {
+    "name": "Perforanubes",
+    "desc": "Lanzas una lanza que ralentiza; al caer en un bloque crea un tornado que atrae y hiere a los enemigos."
+   },
+   "torrent": {
+    "name": "Torrente",
+    "desc": "Mantén agachado para girar la guja sobre tu cabeza atrayendo a los enemigos; al soltar, un enorme tajo que los empuja lejos."
+   },
+   "windbound_fury": {
+    "name": "Furia del Viento",
+    "desc": "Te vuelves invulnerable y subes por los aires con los enemigos cercanos; los atraes y los derribas con un tajo giratorio que aturde."
+   }
+  }
+ },
+ "invocador": {
+  "name": "Invocador",
+  "role": "Invocador · guardián espiritual",
+  "color": "#6bd1ff",
+  "desc": "Un invocador con un guardián espiritual a su lado que lucha por él, además de espadas mágicas, caballos y un fénix de fuego.",
+  "skills": {
+   "soul_strike": {
+    "name": "Golpe del Alma",
+    "desc": "Tu guardián espiritual lanza un tajo delante de ti; si vuelves a usarla a tiempo, encadena hasta 2 tajos más."
+   },
+   "guardians_defense": {
+    "name": "Defensa del Guardián",
+    "desc": "Tu guardián te cubre con su escudo, bloqueando proyectiles y ataques. Úsala seguido para mantener el escudo."
+   },
+   "spirit_guardian": {
+    "name": "Guardián Espiritual",
+    "desc": "Pasiva: invocas un guardián espiritual que lucha por ti con tus hechizos."
+   },
+   "magical_blades": {
+    "name": "Espadas Mágicas",
+    "desc": "Invocas 5 espadas mágicas que se disparan una tras otra."
+   },
+   "summon_horse": {
+    "name": "Caballos Espirituales",
+    "desc": "Invocas 2 caballos espirituales que galopan por el suelo y lanzan por los aires a quien golpean."
+   },
+   "summon_phoenix": {
+    "name": "Fénix",
+    "desc": "Invocas un fénix que vuela a ras de suelo quemando a los enemigos y dejando un rastro de fuego."
+   }
+  }
+ },
+ "invocador_espiritus": {
+  "name": "Invocador de Espíritus",
+  "role": "Invocador · esbirros ancestrales",
+  "color": "#5ff0d0",
+  "desc": "Un invocador de espíritus ancestrales: lucha con una lanza espiritual, monta un caballo de espíritu y llama a serpientes, gólems, águilas y tigres que pelean a su lado.",
+  "skills": {
+   "ancestral_stallion": {
+    "name": "Corcel Ancestral",
+    "desc": "Pasiva: salta y agáchate en el aire para invocar un caballo espiritual y montarlo; al bajarte se deshace en polvo espiritual."
+   },
+   "spiritual_combo": {
+    "name": "Combo Espiritual",
+    "desc": "Luchas junto a una lanza espiritual: tajos en diagonal, un giro amplio, una estocada en carrera y un salto con la lanza girando que cae con fuerza."
+   },
+   "wraith_serpent": {
+    "name": "Serpiente Espectral",
+    "desc": "Invocas una serpiente espectral que repta por el suelo y muerde a los enemigos, envenenándolos."
+   },
+   "spirit_golem": {
+    "name": "Gólem Espiritual",
+    "desc": "Invocas un gólem ancestral que golpea el suelo aturdiendo y crea una zona protectora que te da Resistencia III y aleja a los enemigos."
+   },
+   "spiritcallers_command": {
+    "name": "Orden del Invocador",
+    "desc": "Cambia el modo de tus esbirros: Foco (atacan al último enemigo que golpeaste), Libre (atacan a cualquier enemigo) o Quieto (solo te siguen)."
+   },
+   "spirit_talon": {
+    "name": "Garra Espiritual",
+    "desc": "Invocas un ave espiritual que baja del cielo y lanza tornados cortantes que levantan y atraviesan a los enemigos."
+   },
+   "ancestral_tiger": {
+    "name": "Tigre Ancestral",
+    "desc": "Invocas un tigre ancestral que te da velocidad y fuerza; se lanza sobre sus presas con un zarpazo en X y ruge para debilitar a los enemigos."
+   }
+  }
+ },
+ "katana_fuego": {
+  "name": "Katana de Fuego",
+  "role": "Espadachín · tajos de fuego",
+  "color": "#ff5a1f",
+  "desc": "Un espadachín con una katana en llamas: tajos que dejan arcos de fuego, danzas giratorias y un último corte que marca el suelo con fuego.",
+  "skills": {
+   "lostassetsanime_firekatana_lc": {
+    "name": "Filo Kagerō",
+    "desc": "Un combo de tres tajos de fuego; cada golpe deja un arco de llamas."
+   },
+   "lostassetsanime_firekatana_rc": {
+    "name": "Enjin Rinbu",
+    "desc": "Un círculo de fuego: giras con la katana cortando a tu alrededor y saltas para rematar con dos tajos ardientes."
+   },
+   "lostassetsanime_firekatana_slc": {
+    "name": "Bakuen Crash",
+    "desc": "Un tajo de fuego hacia delante, un salto y una caída que estalla en llamas donde aterrizas."
+   },
+   "lostassetsanime_firekatana_src": {
+    "name": "Hi no Kizamu",
+    "desc": "Te concentras un momento y grabas el suelo con tres enormes tajos de fuego en círculo."
+   }
+  }
+ },
+ "luchador_despertado": {
+  "name": "Luchador Despertado",
+  "role": "Artista marcial · golpes y patadas",
+  "color": "#ffb347",
+  "desc": "Un maestro de las artes marciales: combos de puños y patadas, ondas de choque y un golpe del dragón que se teletransporta entre sus enemigos.",
+  "skills": {
+   "agile_striker": {
+    "name": "Golpeador Ágil",
+    "desc": "Pasiva: mientras corres, agáchate para hacer un largo sprint rápido hacia delante."
+   },
+   "martial_combo": {
+    "name": "Combo Marcial",
+    "desc": "Golpes izquierda y derecha, un gancho que levanta, un golpe hacia abajo con doble puño y, al final, una carga rápida que empuja y aturde."
+   },
+   "ground_blow": {
+    "name": "Golpe a Tierra",
+    "desc": "Corres agarrando a todos los enemigos del camino y, al final, saltas y los estrellas contra el suelo, aturdiéndolos."
+   },
+   "multistrike_uppercut": {
+    "name": "Gancho Múltiple",
+    "desc": "Cinco golpes rapidísimos y un gancho saltando que lanza a los enemigos por los aires."
+   },
+   "heavy_shockwave": {
+    "name": "Onda de Choque",
+    "desc": "Un puñetazo fuerte que empuja; luego cargas un aura y golpeas creando una larga onda que empuja y aturde."
+   },
+   "spinning_blow": {
+    "name": "Patada Giratoria",
+    "desc": "Dos patadas giratorias que golpean dos veces y una patada final: en el suelo lanza por los aires; en el aire, estrella a los enemigos contra el suelo."
+   },
+   "dragon_strike": {
+    "name": "Golpe del Dragón",
+    "desc": "Cinco golpes y un pisotón que deja a los enemigos flotando a cámara lenta; te teletransportas entre ellos golpeándolos, los estrellas contra el suelo y rematas con dragones espirituales."
+   }
+  }
+ },
+ "mago_despertado": {
+  "name": "Mago Despertado",
+  "role": "Mago · fuego, hielo y trueno",
+  "color": "#5aa8ff",
+  "desc": "Un mago que domina los tres elementos: bolas de fuego, prisiones de hielo, teletransportes de trueno y un meteoro de la perdición.",
+  "skills": {
+   "mana_barrier": {
+    "name": "Barrera de Maná",
+    "desc": "Pasiva: cada cierto tiempo generas un escudo de maná que bloquea un ataque."
+   },
+   "sorcery_combo": {
+    "name": "Combo de Hechicería",
+    "desc": "Dos bolas de fuego que estallan y queman, un salto atrás con púas de hielo en abanico que ralentizan y un rayo que cae donde miras."
+   },
+   "teleport_strike": {
+    "name": "Golpe Teleportado",
+    "desc": "Te teletransportas hacia delante cargado de trueno y, al llegar, una explosión eléctrica aturde a los enemigos."
+   },
+   "blazing_barrage": {
+    "name": "Andanada Ardiente",
+    "desc": "Seis círculos de fuego detrás de ti disparan bolas de fuego seguidas; luego una gran bola de fuego que estalla en abanico."
+   },
+   "cryo_prison": {
+    "name": "Prisión Criogénica",
+    "desc": "Un aura de hielo estalla en un enorme prisma: los enemigos quedan congelados dentro de un cristal que acaba rompiéndose con daño extra."
+   },
+   "hailpiercer": {
+    "name": "Perforagranizo",
+    "desc": "Absorbes el aura de hielo de delante atrayendo un poco a los enemigos y haces brotar tres enormes púas de hielo que hieren y ralentizan."
+   },
+   "meteor_of_doom": {
+    "name": "Meteoro de la Perdición",
+    "desc": "Te elevas formando un enorme meteoro y lo lanzas contra el suelo, abriendo una grieta en cruz de fuego que lo quema todo."
+   }
+  }
+ },
+ "mago_rayo": {
+  "name": "Mago del Rayo",
+  "role": "Mago · electricidad",
+  "color": "#f6e05a",
+  "desc": "Un mago del rayo: lanza descargas, ondas y anillos eléctricos, levanta muros de rayos y dispara lanzas de trueno.",
+  "skills": {
+   "skill_lightning_bolt": {
+    "name": "Descarga",
+    "desc": "Lanzas un rayo hacia donde apuntas que estalla y electrocuta a los enemigos cercanos."
+   },
+   "skill_lightning_wave": {
+    "name": "Onda Eléctrica",
+    "desc": "Te impulsas y sueltas una onda de rayos hacia delante que golpea y empuja a los enemigos."
+   },
+   "skill_lightning_ring": {
+    "name": "Anillo Eléctrico",
+    "desc": "Un anillo de rayos estalla a tu alrededor golpeando y empujando a los enemigos cercanos."
+   },
+   "skill_lightning_cast": {
+    "name": "Tormenta",
+    "desc": "Invocas rayos que caen sobre los enemigos y los sitios de alrededor."
+   },
+   "skill_lightning_wall": {
+    "name": "Muro de Rayos",
+    "desc": "Levantas un círculo de rayos a tu alrededor que hiere a todo lo que lo toca."
+   },
+   "skill_lightning_spear": {
+    "name": "Lanza de Trueno",
+    "desc": "Te elevas, rodeado de lanzas de trueno, y las disparas hacia delante haciendo estallar todo donde caen."
+   }
+  }
+ },
+ "nigromante": {
+  "name": "Nigromante",
+  "role": "Invocador · ejército no muerto",
+  "color": "#3fe0a8",
+  "desc": "Un nigromante con una guadaña espectral: recoge las almas de los caídos y las usa para invocar guerreros, magos y caballeros esqueleto que luchan a su lado.",
+  "skills": {
+   "deathbound_souls": {
+    "name": "Almas Vinculadas",
+    "desc": "Pasiva: una guadaña espectral flota a tu lado; los enemigos que mueren cerca dejan un alma (guardas hasta 5) para invocar a tu ejército (hasta 10 esbirros, 2 de ellos caballeros)."
+   },
+   "necrotic_combo": {
+    "name": "Combo Necrótico",
+    "desc": "Barridos de guadaña de lado a lado, un giro vertical y un golpe al suelo que lanza un poco a los enemigos."
+   },
+   "skull_wisps": {
+    "name": "Calaveras Errantes",
+    "desc": "Lanzas una calavera de energía necrótica que estalla al impactar y empuja a los enemigos."
+   },
+   "skeletal_warrior": {
+    "name": "Guerrero Esqueleto",
+    "desc": "Gastas 1 alma para invocar un guerrero esqueleto que lucha a tu lado con su espada."
+   },
+   "necromancers_command": {
+    "name": "Orden del Nigromante",
+    "desc": "Cambia el modo de tus esbirros: Foco (al último enemigo que golpeaste), Libre (a cualquier enemigo) o Quieto (solo te siguen)."
+   },
+   "skeletal_mage": {
+    "name": "Mago Esqueleto",
+    "desc": "Gastas 1 alma para invocar un mago esqueleto que ataca de lejos con orbes que queman."
+   },
+   "necroknight": {
+    "name": "Caballero Necrótico",
+    "desc": "Gastas 1 alma para invocar un caballero no muerto a lomos de un caballo esqueleto que ataca con su lanza y carga contra los enemigos."
+   }
+  }
+ },
+ "null": {
+  "name": "Null",
+  "role": "Arquero del vacío",
+  "color": "#a37bff",
+  "desc": "Null, el arquero del vacío: flechas que marchitan, portales para escapar, agujeros negros y lluvias de flechas del vacío.",
+  "skills": {
+   "void_arrow": {
+    "name": "Flecha del Vacío",
+    "desc": "Dispara una flecha del vacío con un 15 % de probabilidad de marchitar al objetivo."
+   },
+   "retreat": {
+    "name": "Retirada",
+    "desc": "Abre un portal y se teletransporta hacia atrás."
+   },
+   "gravitational_boost": {
+    "name": "Impulso Gravitatorio",
+    "desc": "Pasiva: más velocidad y saltos más altos."
+   },
+   "blackhole_shot": {
+    "name": "Disparo Agujero Negro",
+    "desc": "Una flecha que crea un agujero negro que atrae a los enemigos cercanos."
+   },
+   "void_rain": {
+    "name": "Lluvia del Vacío",
+    "desc": "Hace caer una lluvia de flechas del vacío que marchitan a los enemigos."
+   },
+   "pulse_mode": {
+    "name": "Modo Pulso",
+    "desc": "Cambia a modo pulso: sin moverse ni usar otras skills, dispara pulsos del vacío más rápidos y fuertes, con un 50 % de probabilidad de marchitar."
+   }
+  }
+ },
+ "paladin": {
+  "name": "Paladín",
+  "role": "Guerrero sagrado · martillo",
+  "color": "#f2c94c",
+  "desc": "Un paladín con un martillo sagrado: golpes de égida, martillos lanzados y una forma celestial que lo protege del daño y del fuego.",
+  "skills": {
+   "lostassets_paladin_lc": {
+    "name": "Égida",
+    "desc": "Un golpe con el martillo sagrado que hiere a los enemigos de delante."
+   },
+   "lostassets_paladin_rc": {
+    "name": "Lanzamiento Triple",
+    "desc": "Lanzas tres martillos sagrados hacia delante, uno tras otro."
+   },
+   "lostassets_paladin_slc": {
+    "name": "Martillazo",
+    "desc": "Dos golpes de martillo que hieren y lanzan por los aires a los enemigos."
+   },
+   "lostassets_paladin_src": {
+    "name": "Martillo Celestial",
+    "desc": "Invocas el martillo celestial a tu alrededor y ganas resistencia al daño y al fuego."
+   }
+  }
+ },
+ "picaro": {
+  "name": "Pícaro",
+  "role": "Asesino · sangrado y movilidad",
+  "color": "#8a7bff",
+  "desc": "Un pícaro con dos dagas: combos veloces, bombas de humo, gancho para moverse y una marca de muerte que estalla en sangre.",
+  "skills": {
+   "rogue_vicious_cuts": {
+    "name": "Cortes Crueles",
+    "desc": "Pasiva: tras agacharte un momento ganas Cortes Crueles; tus ataques hacen sangrar a los enemigos."
+   },
+   "rogue_slice_and_dice": {
+    "name": "Corte y Puñalada",
+    "desc": "Un combo rápido de 3 golpes: dos tajos y una puñalada fuerte."
+   },
+   "rogue_cutthroat_combo": {
+    "name": "Combo Degollador",
+    "desc": "Te lanzas hiriendo a los del camino, haces un corte en X saltando atrás y vuelves a cruzarlos girando."
+   },
+   "rogue_smokebomb": {
+    "name": "Bomba de Humo",
+    "desc": "Una nube de humo que tapa la vista desde fuera mientras tú ves dentro; los enemigos que entran van más lentos."
+   },
+   "rogue_grappling_hook": {
+    "name": "Gancho",
+    "desc": "Disparas un gancho: si pilla a un enemigo lo atraes; si pilla el terreno, vas tú hacia allí."
+   },
+   "rogue_mark_of_death": {
+    "name": "Marca de la Muerte",
+    "desc": "Marcas a un objetivo y ganas 3 golpes mortales que te teletransportan a él atravesándolo; al acabar, la marca estalla con mucho daño."
+   }
+  }
+ },
+ "piromante": {
+  "name": "Piromante",
+  "role": "Mago · fuego e ignición",
+  "color": "#ff4a1a",
+  "desc": "Un piromante que acumula calor con sus ataques hasta entrar en Ignición, potenciando misiles de ceniza, lanzas volcánicas, rayos de fuego y meteoros.",
+  "skills": {
+   "heat_mastery": {
+    "name": "Maestría del Calor",
+    "desc": "Pasiva: cada ataque básico da 1 de calor; con 3 entras en Ignición y tu siguiente skill (no la definitiva) sale más poderosa."
+   },
+   "pyro_combo": {
+    "name": "Combo Pirómano",
+    "desc": "Dos misiles de ceniza, una onda de fuego en cono y un meteoro que cae en diagonal y deja una grieta ardiente."
+   },
+   "volcanic_spear": {
+    "name": "Lanza Volcánica",
+    "desc": "Invocas una lanza ardiente y encadenas estocadas, tajos y un golpe al suelo que queman a los enemigos."
+   },
+   "hellfire_overblast": {
+    "name": "Rayo Infernal",
+    "desc": "Concentras fuego delante de ti y sueltas un rayo continuo durante 4 segundos que lo abrasa todo a su paso."
+   },
+   "firestorm_volley": {
+    "name": "Andanada de Fuego",
+    "desc": "Bolas de fuego giran sobre ti formando una esfera; al pulsar otra vez estalla y salen bolas que persiguen a los enemigos cercanos."
+   },
+   "magma_dash": {
+    "name": "Embestida de Magma",
+    "desc": "Te lanzas hacia delante abriendo el suelo y dejando un camino de lava que quema a quien lo pisa."
+   },
+   "infernal_judgement": {
+    "name": "Juicio Infernal",
+    "desc": "Saltas incendiando el suelo; círculos mágicos a tu espalda disparan lanzas de fuego y caes con una enorme lanza ardiente que lo arrasa todo."
+   }
+  }
+ },
+ "pistolero_despertado": {
+  "name": "Pistolero Despertado",
+  "role": "Tirador · balas y misiles",
+  "color": "#ff6b4a",
+  "desc": "Un pistolero letal: ráfagas que perforan, escopetazos incendiarios, marcas de ejecución y lluvias de misiles.",
+  "skills": {
+   "markmans_creed": {
+    "name": "Credo del Tirador",
+    "desc": "Pasiva: tus balas hacen más daño cuanto más lejos llegan."
+   },
+   "piercing_combo": {
+    "name": "Combo Perforante",
+    "desc": "Un disparo, dos rápidos, seis seguidos y una bala de onda que atraviesa y te empuja atrás. Sobrecalentado, se convierte en un Cañón de Llamas."
+   },
+   "hellflare_burst": {
+    "name": "Ráfaga Infernal",
+    "desc": "Cargas y sueltas un escopetazo amplio y largo que incendia a los enemigos y te empuja atrás."
+   },
+   "deathmark": {
+    "name": "Marca Mortal",
+    "desc": "Marcas hasta 9 enemigos a 30 bloques y, poco después, las balas de ejecución los alcanzan a todos a la vez."
+   },
+   "overheat": {
+    "name": "Sobrecalentamiento",
+    "desc": "Tu arma se sobrecalienta 10 segundos: vas más lento, pero tu Combo Perforante se convierte en Cañón de Llamas."
+   },
+   "skyfall_barrage": {
+    "name": "Bombardeo Celeste",
+    "desc": "Disparas al aire y caen 8 misiles sobre enemigos cercanos al azar que estallan y queman."
+   },
+   "vermilion_execution": {
+    "name": "Ejecución Bermellón",
+    "desc": "Marcas una gran zona: una lluvia de balas la castiga 4 segundos y acaba con 8 enormes misiles que lo queman todo."
+   }
+  }
+ },
+ "revenant": {
+  "name": "Aparecido",
+  "role": "Espadachín · sombras",
+  "color": "#7e5bd6",
+  "desc": "Un espíritu vengativo con una hoja de sombras: tajos oscuros, embestidas y un cataclismo del abismo.",
+  "skills": {
+   "lostassets_revenant_lc": {
+    "name": "Tajo Sombrío",
+    "desc": "Un tajo de sombras que hiere a los enemigos de delante."
+   },
+   "lostassets_revenant_rc": {
+    "name": "Embestida Oscura",
+    "desc": "Te lanzas hacia delante dejando cortes de sombra que hieren a todos los del camino."
+   },
+   "lostassets_revenant_slc": {
+    "name": "Hoja de Sombras",
+    "desc": "Invocas una hoja de sombras delante de ti que corta a los enemigos durante un rato."
+   },
+   "lostassets_revenant_src": {
+    "name": "Cataclismo del Abismo",
+    "desc": "Abres el abismo delante de ti: una zona de sombras que hiere sin parar a los enemigos que hay dentro."
+   }
+  }
+ },
+ "ronin_trueno": {
+  "name": "Ronin del Trueno",
+  "role": "Samurái · rayos",
+  "color": "#ffe14a",
+  "desc": "Un samurái errante cargado de trueno: tajos que paralizan, desenvainados a la velocidad del rayo y una forma de Dios del Trueno.",
+  "skills": {
+   "lightning_reflex": {
+    "name": "Reflejo del Rayo",
+    "desc": "Pasiva: un 22 % de probabilidad de esquivar un ataque y ganar un acelerón."
+   },
+   "thunder_slash": {
+    "name": "Tajo del Trueno",
+    "desc": "Tajos cargados de trueno; cada tercer golpe saltas y caes con un rayo que puede paralizar."
+   },
+   "thunderclap_and_flash": {
+    "name": "Trueno y Destello",
+    "desc": "Una embestida rapidísima desenvainando la espada: un golpe devastador antes de que el enemigo reaccione."
+   },
+   "flashstorm_reversal": {
+    "name": "Contraataque Relámpago",
+    "desc": "Das un paso atrás y lanzas dos tajos amplios que contraatacan y paralizan."
+   },
+   "crackling_skyfall": {
+    "name": "Caída Crepitante",
+    "desc": "Saltas acumulando energía de trueno y caes en picado como un rayo."
+   },
+   "thunderous_barrage": {
+    "name": "Ráfaga de Truenos",
+    "desc": "Te concentras y lanzas muchas estocadas rapidísimas hacia delante, moviéndote más despacio mientras tanto."
+   },
+   "flaming_thunder_god": {
+    "name": "Dios del Trueno Llameante",
+    "desc": "Te transformas en el Dios del Trueno con un dragón de trueno a tu espalda: tus ataques cambian y caen rayos con cada golpe."
+   }
+  }
+ },
+ "samurai_agua": {
+  "name": "Samurái del Agua",
+  "role": "Samurái · agua y movimiento",
+  "color": "#4ac7ff",
+  "desc": "Un samurái que fluye como el agua: tajos en remolino, danzas que levantan a los enemigos y mareas que lo arrasan todo.",
+  "skills": {
+   "splashing_water_flow_turbulent": {
+    "name": "Flujo Turbulento",
+    "desc": "Pasiva: una técnica de movimiento fluido; corres más rápido."
+   },
+   "water_surface_slash": {
+    "name": "Tajo de Superficie",
+    "desc": "Un tajo horizontal de agua; cada tercer golpe son dos tajos seguidos."
+   },
+   "water_wheel": {
+    "name": "Rueda de Agua",
+    "desc": "Un tajo hacia arriba que te lleva con los enemigos al aire y un tajo giratorio vertical allí arriba."
+   },
+   "flowing_dance": {
+    "name": "Danza Fluida",
+    "desc": "Un combo continuo y elegante atravesando a los enemigos, que quedan levitando un rato."
+   },
+   "whirlpool": {
+    "name": "Remolino",
+    "desc": "Un remolino de agua que atrae a los enemigos, seguido de tres tajos giratorios."
+   },
+   "striking_tide": {
+    "name": "Marea Golpeante",
+    "desc": "Una serie rápida de tajos como el golpear de la marea; el último abre una línea de salpicaduras que lanza por los aires."
+   },
+   "constant_flux": {
+    "name": "Flujo Constante",
+    "desc": "Giras sin parar cada vez más rápido y moviéndote veloz; al final sueltas el agua acumulada y los enemigos quedan levitando."
+   }
+  }
+ },
+ "samurai_escarcha": {
+  "name": "Samurái de Escarcha",
+  "role": "Samurái · hielo",
+  "color": "#9fe4ff",
+  "desc": "Un samurái helado: filos de escarcha, una danza ártica a saltos, agujas de hielo y una caída invernal que congela el suelo.",
+  "skills": {
+   "lostassetsoriginal_frostsamurai_lc": {
+    "name": "Filo de Escarcha",
+    "desc": "Un tajo helado que hiere a los enemigos de delante."
+   },
+   "lostassetsoriginal_frostsamurai_rc": {
+    "name": "Danza Ártica",
+    "desc": "Cuatro saltos hacia delante, cada uno con un tajo de hielo."
+   },
+   "lostassetsoriginal_frostsamurai_slc": {
+    "name": "Aguja de Hielo",
+    "desc": "Una sucesión de agujas de hielo que brotan hacia delante hiriendo a todo lo que encuentran."
+   },
+   "lostassetsoriginal_frostsamurai_src": {
+    "name": "Caída Invernal",
+    "desc": "Saltas, te quedas un momento en el aire y caes con un golpe helado que congela la zona."
+   }
+  }
+ },
+ "sanador": {
+  "name": "Sanador",
+  "role": "Soporte · curación",
+  "color": "#7dff9a",
+  "desc": "Un sanador que mantiene vivos a sus aliados: rayos que curan o hieren, luz purificadora y un orbe que reparte curación.",
+  "skills": {
+   "mender_lifebound": {
+    "name": "Vínculo Vital",
+    "desc": "Pasiva: los aliados cercanos se curan poco a poco y de vez en cuando sueltas un pulso de curación."
+   },
+   "mender_spiritbolt": {
+    "name": "Rayo Espiritual",
+    "desc": "Un pequeño rayo espiritual que hiere a los enemigos y cura un poco a los jugadores."
+   },
+   "mender_cascadebolt": {
+    "name": "Rayo en Cascada",
+    "desc": "Un rayo grande que se divide al impactar: salta entre enemigos (hasta 6) o cura a aliados cercanos."
+   },
+   "mender_purging_light": {
+    "name": "Luz Purificadora",
+    "desc": "Un destello que empuja a los enemigos y quita los efectos negativos a los aliados de la zona."
+   },
+   "mender_vital_beam": {
+    "name": "Haz Vital",
+    "desc": "Un haz radiante que te cura a ti y a los jugadores que atraviesa, y hiere a los enemigos."
+   },
+   "mender_lifeweavers_grace": {
+    "name": "Gracia del Tejevidas",
+    "desc": "Un gran orbe de curación avanza y lanza curaciones a los 3 aliados con menos vida, que se reparten también a los de alrededor."
+   }
+  }
+ },
+ "vampiro": {
+  "name": "Vampiro de la Luna de Sangre",
+  "role": "Guerrero · sangre y robo de vida",
+  "color": "#d6224a",
+  "desc": "Un vampiro que moldea su sangre en cuatro armas (Hojas, Grimorio, Agujas y Guadaña), cada una con sus combos, y roba la vida de sus enemigos.",
+  "skills": {
+   "bloodbending": {
+    "name": "Sangre Moldeable",
+    "desc": "Pasiva: moldeas tu sangre en una de cuatro armas: Hojas, Grimorio, Agujas o Guadaña."
+   },
+   "bloodmoon_combo": {
+    "name": "Combo Luna de Sangre",
+    "desc": "Un combo distinto según tu arma: cortes en X con las Hojas, púas y meteoro con el Grimorio, agujas que se acumulan o tajos amplios con la Guadaña."
+   },
+   "vampiric_surge": {
+    "name": "Oleada Vampírica",
+    "desc": "Según tu arma: embestida que roba vida, murciélagos de sangre, explosión de agujas o guadaña giratoria; todas te curan."
+   },
+   "bloodborne_blades": {
+    "name": "Hojas de Sangre",
+    "desc": "Tu sangre toma forma de hojas: rápidas, de varios golpes y corto alcance. Ganas velocidad."
+   },
+   "bloodborne_needles": {
+    "name": "Agujas de Sangre",
+    "desc": "Tu sangre toma forma de agujas: rápidas y de largo alcance."
+   },
+   "bloodborne_grimoire_mmocore": {
+    "name": "Grimorio de Sangre",
+    "desc": "Tu sangre toma forma de grimorio: velocidad normal, largo alcance y daño en área."
+   },
+   "bloodborne_scythe": {
+    "name": "Guadaña de Sangre",
+    "desc": "Tu sangre toma forma de guadaña: lenta, pesada y de gran alcance. Vas un poco más lento."
+   }
   }
  }
 }

@@ -1,7 +1,7 @@
 [
  {
   "id": "guerrero_despertado",
-  "name": "Awakened Warrior Class",
+  "name": "Guerrero Despertado",
   "skills": [
    "bulwark_instinct",
    "brutal_combo",
@@ -26,7 +26,7 @@
  },
  {
   "id": "guerrero_llama",
-  "name": "Flame Warrior Class",
+  "name": "Guerrero de las Llamas",
   "skills": [
    "blazing_spirit",
    "blazing_slash",
@@ -39,7 +39,7 @@
  },
  {
   "id": "samurai_agua",
-  "name": "Water Samurai Class",
+  "name": "Samurái del Agua",
   "skills": [
    "splashing_water_flow_turbulent",
    "water_surface_slash",
@@ -52,7 +52,7 @@
  },
  {
   "id": "arquero",
-  "name": "Archer Class",
+  "name": "Arquero",
   "skills": [
    "archer_windwalker",
    "archer_quickshot",
@@ -65,7 +65,7 @@
  },
  {
   "id": "sanador",
-  "name": "Mender",
+  "name": "Sanador",
   "skills": [
    "mender_lifebound",
    "mender_spiritbolt",
@@ -77,7 +77,7 @@
  },
  {
   "id": "picaro",
-  "name": "Rogue",
+  "name": "Pícaro",
   "skills": [
    "rogue_vicious_cuts",
    "rogue_slice_and_dice",
@@ -89,7 +89,7 @@
  },
  {
   "id": "paladin",
-  "name": "LostAssets_ClassPack_03_Paladin",
+  "name": "Paladín",
   "skills": [
    "lostassets_paladin_lc",
    "lostassets_paladin_rc",
@@ -99,7 +99,7 @@
  },
  {
   "id": "revenant",
-  "name": "LostAssets_ClassPack_04_Revenant",
+  "name": "Aparecido",
   "skills": [
    "lostassets_revenant_lc",
    "lostassets_revenant_rc",
@@ -109,7 +109,7 @@
  },
  {
   "id": "samurai_escarcha",
-  "name": "LostAssets_OriginalClassPack_01_FrostSamurai",
+  "name": "Samurái de Escarcha",
   "skills": [
    "lostassetsoriginal_frostsamurai_lc",
    "lostassetsoriginal_frostsamurai_rc",
@@ -143,7 +143,7 @@
  },
  {
   "id": "bruja",
-  "name": "The Threadweaver of Crawling Chaos",
+  "name": "Bruja Tejedora",
   "skills": [
    "mf_witch_thread_of_crawling_chaos",
    "mf_witch_sigil_volley",
@@ -168,7 +168,7 @@
  },
  {
   "id": "mago_rayo",
-  "name": "Mage-Lightning",
+  "name": "Mago del Rayo",
   "skills": [
    "skill_lightning_bolt",
    "skill_lightning_wave",
@@ -180,7 +180,7 @@
  },
  {
   "id": "guerrero_dragon",
-  "name": "Dragon Warrior",
+  "name": "Guerrero Dragón",
   "skills": [
    "dragon_slash",
    "dragon_dash",
@@ -192,7 +192,7 @@
  },
  {
   "id": "filo_vacio",
-  "name": "Void Edge",
+  "name": "Filo del Vacío",
   "skills": [
    "void_edge_dimension_benediction",
    "void_edge_dimension_cut",
@@ -229,7 +229,7 @@
  },
  {
   "id": "guerrero",
-  "name": "Warrior Class",
+  "name": "Guerrero",
   "skills": [
    "warrior_rage",
    "warrior_furiousslash",
@@ -253,7 +253,7 @@
  },
  {
   "id": "katana_fuego",
-  "name": "fire_katana",
+  "name": "Katana de Fuego",
   "skills": [
    "lostassetsanime_firekatana_lc",
    "lostassetsanime_firekatana_rc",
@@ -263,7 +263,7 @@
  },
  {
   "id": "caballero_artico",
-  "name": "Arctic Knight Class",
+  "name": "Caballero Ártico",
   "skills": [
    "frostbite",
    "frost_strike",
@@ -276,7 +276,7 @@
  },
  {
   "id": "arquero_despertado",
-  "name": "Awakened Archer Class",
+  "name": "Arquero Despertado",
   "skills": [
    "ambush",
    "blasting_combo",
@@ -289,7 +289,7 @@
  },
  {
   "id": "asesino_despertado",
-  "name": "Awakened Assassin Class",
+  "name": "Asesino Despertado",
   "skills": [
    "deadly_calm",
    "lethal_combo",
@@ -302,7 +302,7 @@
  },
  {
   "id": "clerigo_despertado",
-  "name": "Awakened Cleric Class",
+  "name": "Clérigo Despertado",
   "skills": [
    "divine_revelation",
    "sacred_combo",
@@ -315,7 +315,7 @@
  },
  {
   "id": "pistolero_despertado",
-  "name": "Awakened Gunslinger Class",
+  "name": "Pistolero Despertado",
   "skills": [
    "markmans_creed",
    "piercing_combo",
@@ -328,7 +328,7 @@
  },
  {
   "id": "mago_despertado",
-  "name": "Awakened Mage Class",
+  "name": "Mago Despertado",
   "skills": [
    "mana_barrier",
    "sorcery_combo",
@@ -341,7 +341,7 @@
  },
  {
   "id": "luchador_despertado",
-  "name": "Awakened Martial Artist Class",
+  "name": "Luchador Despertado",
   "skills": [
    "agile_striker",
    "martial_combo",
@@ -354,7 +354,7 @@
  },
  {
   "id": "nigromante",
-  "name": "Awakened Necromancer Class",
+  "name": "Nigromante",
   "skills": [
    "deathbound_souls",
    "necrotic_combo",
@@ -367,7 +367,7 @@
  },
  {
   "id": "piromante",
-  "name": "Awakened Pyromancer Class",
+  "name": "Piromante",
   "skills": [
    "heat_mastery",
    "pyro_combo",
@@ -380,7 +380,7 @@
  },
  {
   "id": "chaman",
-  "name": "Awakened Shaman Class",
+  "name": "Chamán Despertado",
   "skills": [
    "soul_link",
    "primal_combo",
@@ -393,7 +393,7 @@
  },
  {
   "id": "invocador_espiritus",
-  "name": "Awakened Spiritcaller Class",
+  "name": "Invocador de Espíritus",
   "skills": [
    "ancestral_stallion",
    "spiritual_combo",
@@ -406,7 +406,7 @@
  },
  {
   "id": "vampiro",
-  "name": "Bloodmoon Vampire Class",
+  "name": "Vampiro de la Luna de Sangre",
   "skills": [
    "bloodbending",
    "bloodmoon_combo",
@@ -419,7 +419,7 @@
  },
  {
   "id": "caballero_muerte",
-  "name": "Death Knight Class",
+  "name": "Caballero de la Muerte",
   "skills": [
    "cursed_seal",
    "death_strike_st",
@@ -432,7 +432,7 @@
  },
  {
   "id": "guja_vendaval",
-  "name": "Gale Glaive Class",
+  "name": "Guja del Vendaval",
   "skills": [
    "windrune_blade",
    "gale_slash",
@@ -445,7 +445,7 @@
  },
  {
   "id": "cazador_bestias",
-  "name": "Beast Slayer Class",
+  "name": "Cazador de Bestias",
   "skills": [
    "spatial_awareness",
    "slice_n_dice",
@@ -458,7 +458,7 @@
  },
  {
   "id": "ronin_trueno",
-  "name": "Thunder Ronin Class",
+  "name": "Ronin del Trueno",
   "skills": [
    "lightning_reflex",
    "thunder_slash",
@@ -471,7 +471,7 @@
  },
  {
   "id": "invocador",
-  "name": "Summoner Class",
+  "name": "Invocador",
   "skills": [
    "soul_strike",
    "guardians_defense",
