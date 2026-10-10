@@ -22,7 +22,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > scratch de la sesión `skills/` (el scratch es **de cada sesión**: en una nueva hay que pedirle los zips al dueño otra
 > vez; llegan a `/root/.claude/uploads/<sesión>/<prefijo>-<Pack>.zip`. Se descomprimen con `bsdtar -xf` (paquete
 > `libarchive-tools`, que también abre el `.rar`) en `<scratch>/skills/<Pack sin prefijo>/`, y los zips de dentro en una
-> carpeta con su nombre; con eso `build_skills.py` saca la tanda 1 **idéntica** a la del repo). Los primeros 25: Red-DragonPack, MAGEPACK-1.1 (.rar),
+> carpeta con su nombre; con eso `build_skills.py` saca la tanda 1 **idéntica** a la del repo. El zip de
+> `samus2002_AWAKENED_ARCHER` trae dentro una copia exacta de `fire_katana`: bórrala, o el arquero cuenta 4 skills de más). Los primeros 25: Red-DragonPack, MAGEPACK-1.1 (.rar),
 > Glacia-v1.2, ZEPHYR-v1.3, samus2002_NECROMANCER, THORPACK-1.3, NULLPACK-1.1, samus2002_ARCTIC_KNIGHT,
 > RPG_Class_Series_Dragon_Warrior, samus2002_BLOODMOON_VAMPIRE, samus2002_SUMMONER_PACK_v1.7, samus2002_DEATH_KNIGHT,
 > RRPG_Void_Edge_Class_Full, PackClass_Magic_Lightning (zips dentro), LostAssets_ClassPack_04_Revenant,
