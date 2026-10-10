@@ -293,6 +293,14 @@ class ItemModels:
             if isinstance(v, str) and not v.startswith('#'):
                 data['textures'][k] = self.texture(v, ns)
         data.pop('overrides', None)
+        if 'parent' not in data:
+            # Caras que apuntan a una textura sin definir («#missing» que deja Blockbench en las caras de grosor 0 de
+            # un plano): Minecraft las pintaría negro y morado; fuera
+            tx = data.get('textures') or {}
+            for el in data.get('elements') or []:
+                faces = el.get('faces') or {}
+                for face in [k for k, fd in faces.items() if str(fd.get('texture', '')).lstrip('#') not in tx]:
+                    del faces[face]
         dest = os.path.join(OUT_ITEM_MODELS, *out_rel.split('/')) + '.json'
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, 'w', encoding='utf-8') as f:

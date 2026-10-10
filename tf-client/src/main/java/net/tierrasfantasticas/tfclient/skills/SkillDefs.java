@@ -31,7 +31,13 @@ public final class SkillDefs {
     private SkillDefs() {}
 
     /** Una condición: mecánica de condición, sus argumentos, si va negada y qué hace (true, false, cancel, power 2...). */
-    public record Cond(String m, Map<String, String> a, boolean not, String action) {}
+    /** Una condición. «or»/«and» son las compuestas de MythicMobs («(A false || B) true»): sus partes, cada una con su
+     * true/false. */
+    public record Cond(String m, Map<String, String> a, boolean not, String action, List<Cond> parts) {
+        public Cond(String m, Map<String, String> a, boolean not, String action) {
+            this(m, a, not, action, List.of());
+        }
+    }
 
     /** Una línea del programa: mecánica{a} @objetivo{ta} ~disparador:valor ?condiciones probabilidad. */
     public static final class Mech {
@@ -358,7 +364,7 @@ public final class SkillDefs {
             String m = o.get("m").getAsString().toLowerCase(Locale.ROOT);
             boolean not = m.startsWith("!");
             if (not) m = m.substring(1);
-            out.add(new Cond(m, args(o.get("a")), not, str(o, "v", "true").toLowerCase(Locale.ROOT).trim()));
+            out.add(new Cond(m, args(o.get("a")), not, str(o, "v", "true").toLowerCase(Locale.ROOT).trim(), conds(o.get("parts"))));
         }
         return out;
     }

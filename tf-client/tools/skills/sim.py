@@ -118,6 +118,16 @@ def evaluate(s):
         return None
 
 
+def wants_actors(conds):
+    """SkillMovers.wantsActors: ¿busca el proyectil efectos del pack (mythicmobtype true, también dentro de una compuesta)?"""
+    for c in conds or []:
+        if c['m'] in ('mythicmobtype', 'mmt', 'mobtype') and c.get('v', 'true') == 'true':
+            return True
+        if wants_actors(c.get('parts')):
+            return True
+    return False
+
+
 def unquote(s):
     """SkillRuntime.unquote: sin las comillas de fuera (dobles o simples)"""
     s = str(s or '').strip()
@@ -902,6 +912,10 @@ class Sim:
         m = c['m']
         neg = m.startswith('!')
         m = m.lstrip('!')
+        if m in ('or', 'and'):  # SkillConds: compuesta, cada parte con su true/false
+            oks = [self.test(p, who, ctx, at) == (p.get('v', 'true') != 'false') for p in c.get('parts', [])]
+            r = any(oks) if m == 'or' else all(oks)
+            return r != neg
         a = c.get('a', {})
         if any('<' in str(v) for v in a.values()):
             tg = Tgt(who) if who is not None else (Tgt(at=at) if at is not None else None)
@@ -957,7 +971,8 @@ class Sim:
         elif m in ('isliving', 'living'):
             r = e is not None
         elif m in ('entitytype', 'type', 'entitytypes'):
-            r = e is not None and any(x.strip().lower() == e.kind for x in arg(a, '', 'types', 'type', 't').split(','))
+            kind = e.kind if e is not None else str(((who.actor.mob or {}).get('type') if who is not None and who.actor is not None else '') or '').lower()
+            r = bool(kind) and any(x.strip().lower() == kind for x in arg(a, '', 'types', 'type', 't').split(','))
         elif m in ('blocktype', 'inblock', 'inside', 'standingon'):
             r = False
         elif m in ('itemissimilar', 'holding'):
@@ -1818,7 +1833,8 @@ class Sim:
 
     def orbital(self, a, ctx, targets):
         aura_name = arg(a, None, 'auraname', 'aura', 'n', 'buffname')
-        refresh = boolean(arg(a, 'false', 'refreshduration', 'rd'))
+        refresh = boolean(arg(a, 'false', 'refreshduration', 'rd')) or boolean(arg(a, 'false', 'mergeall', 'ma')) \
+            or boolean(arg(a, 'false', 'mergesamecaster', 'ms'))  # SkillMovers: se suma a la que hay
         for t in targets:
             if t.who is None:
                 continue
@@ -1827,8 +1843,8 @@ class Sim:
                 old = self.state(t.who)['auras'].get(str(aura_name).lower())
                 if old and old['alive'] and old.get('mover') is not None and old['mover']['alive']:
                     if refresh:
-                        old['left'] = dur
-                        old['mover']['ticks'] = old['mover']['age'] + dur
+                        old['left'] = max(old['left'], dur)
+                        old['mover']['ticks'] = max(old['mover']['ticks'], old['mover']['age'] + dur)
                     continue
             p = self.mover(ctx, a, 3)
             p['center'] = t.who
@@ -1999,7 +2015,7 @@ class Sim:
             lo = np.minimum(frm, p['pos']) - [p['hr'], p['vr'], p['hr']]
             hi = np.maximum(frm, p['pos']) + [p['hr'], p['vr'], p['hr']]
             # efectos del pack que el proyectil busca (hitConditions con mythicmobtype true), como SkillMovers
-            if any(c['m'] in ('mythicmobtype', 'mmt', 'mobtype') and c.get('v', 'true') == 'true' for c in p['hc']):
+            if wants_actors(p['hc']):
                 for act in list(self.actors):
                     if not act.alive or act.follow is not None or act is p['bullet'] or ('a', act.id) in p['hit_at']:
                         continue
@@ -2071,6 +2087,9 @@ class Sim:
                 au['stacks'] = min(au['max'], au['stacks'] + 1)
                 if boolean(arg(a, 'true', 'refreshduration', 'rd')):
                     au['left'] = dur
+                    mv = au.get('mover')  # SkillAuras: el aura de una órbita alarga la órbita
+                    if mv is not None and mv['alive']:
+                        mv['ticks'] = max(mv['ticks'], mv['age'] + dur)
                 continue
             c = ctx.copy()
             c.targets = [Tgt(t.who)]
@@ -2175,7 +2194,7 @@ class Sim:
                         self.exec(mm, c)
                     except CancelSkill:
                         pass
-            if act.age > 1200 and act.follow is None:
+            if act.follow is None and act.age > (20 * 60 * 90 if act.carried else 1200):  # SkillRuntime: MAX_AGE
                 self.remove_actor(act)
         self.actors = [a for a in self.actors if a.alive]
         # Física sencilla de las entidades (para ver empujes y saltos)

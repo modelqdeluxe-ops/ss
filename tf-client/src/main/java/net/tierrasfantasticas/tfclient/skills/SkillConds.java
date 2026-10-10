@@ -19,6 +19,16 @@ final class SkillConds {
 
     /** ¿Se cumple la condición para «who» (o el punto «at» si el objetivo es un sitio)? */
     static boolean test(Cond c, Who who, Ctx ctx, Vec3 at) {
+        if (c.m().equals("or") || c.m().equals("and")) {
+            // Compuesta: cada parte cumple si da lo que pide (true/false)
+            boolean any = false, all = true;
+            for (Cond p : c.parts()) {
+                boolean ok = test(p, who, ctx, at) == !"false".equals(p.action());
+                any |= ok;
+                all &= ok;
+            }
+            return c.m().equals("or") ? any : all;
+        }
         Map<String, String> a = c.a();
         // Variables en los argumentos (hasaura{aura=<caster.name>TARGET})
         for (String v : a.values()) {
@@ -189,8 +199,11 @@ final class SkillConds {
             case "healthpercent", "hppercent", "hpp" -> le != null && inRange(le.getHealth() / Math.max(1, le.getMaxHealth()),
                     arg(a, ">0", "percent", "p", "health", "h"));
             case "entitytype", "type", "entitytypes" -> {
-                if (e == null) yield false;
-                String id = BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath();
+                // Un efecto del pack (actor): el tipo que tenía su mob (ARMOR_STAND, ITEM_DISPLAY...)
+                String id = e != null ? BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath()
+                        : who != null && who.actor != null && who.actor.def != null && who.actor.def.type != null
+                        ? who.actor.def.type.toLowerCase(Locale.ROOT) : null;
+                if (id == null) yield false;
                 boolean hit = false;
                 for (String t : arg(a, "", "types", "type", "t").split(",")) if (t.trim().equalsIgnoreCase(id)) hit = true;
                 yield hit;

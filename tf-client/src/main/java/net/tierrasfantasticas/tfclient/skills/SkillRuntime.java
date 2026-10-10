@@ -1214,7 +1214,9 @@ public final class SkillRuntime {
                     }
                 }
             }
-            if (a.age > SkillActor.MAX_AGE && a.follow == null) a.remove();
+            // Lo que nadie quita se va al minuto; la bala de un proyectil u órbita dura lo que su movimiento (el arma
+            // que flota sobre el jugador es una órbita de 99999 ticks): solo un tope muy largo por si acaso
+            if (a.follow == null && a.age > (a.carried ? SkillActor.MAX_AGE_CARRIED : SkillActor.MAX_AGE)) a.remove();
             if (a.moved) {
                 a.moved = false;
                 moved.computeIfAbsent(a.level, k -> new ArrayList<>()).add(a);

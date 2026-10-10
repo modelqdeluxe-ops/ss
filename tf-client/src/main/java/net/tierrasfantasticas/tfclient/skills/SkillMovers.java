@@ -182,7 +182,10 @@ final class SkillMovers {
 
     static void orbital(Mech m, Ctx ctx, List<Tgt> targets) {
         String auraName = m.arg(null, "auraname", "aura", "n", "buffname");
-        boolean refresh = SkillRuntime.bool(m.arg("false", "refreshduration", "rd"));
+        // mergeAll / mergeSameCaster: aplicarla otra vez se suma a la que hay (la pasiva que la pone cada medio
+        // segundo con duration=20 la mantiene, no la vuelve a crear)
+        boolean refresh = SkillRuntime.bool(m.arg("false", "refreshduration", "rd"))
+                || SkillRuntime.bool(m.arg("false", "mergeall", "ma")) || SkillRuntime.bool(m.arg("false", "mergesamecaster", "ms"));
         for (Tgt t : targets) {
             if (MOVERS.size() >= MAX || t.who == null) continue;
             int duration = (int) SkillRuntime.num(m.arg("100", "duration", "d", "maxduration", "md", "ticks"), 100);
@@ -192,8 +195,8 @@ final class SkillMovers {
                 SkillAuras.Aura old = st == null ? null : st.auras.get(auraName.toLowerCase(Locale.ROOT));
                 if (old != null && old.alive && old.mover != null && old.mover.alive) {
                     if (refresh) {
-                        old.left = duration;
-                        old.mover.maxTicks = old.mover.age + duration;
+                        old.left = Math.max(old.left, duration);
+                        old.mover.maxTicks = Math.max(old.mover.maxTicks, old.mover.age + duration);
                     }
                     continue;
                 }
@@ -486,8 +489,13 @@ final class SkillMovers {
     }
 
     private static boolean wantsActors(Mover p) {
-        for (Cond c : p.hitConds) {
+        return wantsActors(p.hitConds);
+    }
+
+    private static boolean wantsActors(List<Cond> conds) {
+        for (Cond c : conds) {
             if ((c.m().equals("mythicmobtype") || c.m().equals("mmt") || c.m().equals("mobtype")) && c.action().equals("true")) return true;
+            if (wantsActors(c.parts())) return true; // dentro de una compuesta («(entitytype false || mythicmobtype{t=X})»)
         }
         return false;
     }

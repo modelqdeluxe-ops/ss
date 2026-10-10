@@ -45,6 +45,7 @@ public final class SkillActor {
     float animSpeed = 1F;
     /** Para no durar para siempre si nadie lo quita. */
     static final int MAX_AGE = 20 * 60;
+    static final int MAX_AGE_CARRIED = 20 * 60 * 90;
     /** setname: el nombre con el que lo nombran sus skills (&lt;caster.name&gt;). */
     String customName;
     /** Esbirros (mobs con IA en el pack): a quién ataca, si tiene la IA puesta (setai) y su velocidad (setspeed). */

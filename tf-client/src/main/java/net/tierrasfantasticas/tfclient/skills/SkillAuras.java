@@ -73,7 +73,12 @@ final class SkillAuras {
             Aura a = st.auras.get(key);
             if (a != null && a.alive) {
                 a.stacks = Math.min(a.maxStacks, a.stacks + 1);
-                if (refresh) a.left = duration;
+                if (refresh) {
+                    a.left = duration;
+                    // El aura de una órbita (orbital{auraName=X}): renovarla también alarga la órbita (el guardián del
+                    // Invocador se mantiene así cada tick)
+                    if (a.mover != null && a.mover.alive) a.mover.maxTicks = Math.max(a.mover.maxTicks, a.mover.age + duration);
+                }
                 continue;
             }
             a = new Aura(key, t.who);

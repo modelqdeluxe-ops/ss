@@ -168,8 +168,65 @@ def inline_conds(v):
     return out
 
 
+def _split_top(s, sep):
+    """Parte «s» por «sep» (|| o &&) solo fuera de paréntesis y llaves."""
+    out, depth, cur, i = [], 0, '', 0
+    while i < len(s):
+        ch = s[i]
+        if ch in '({[':
+            depth += 1
+        elif ch in ')}]':
+            depth -= 1
+        if depth == 0 and s.startswith(sep, i):
+            out.append(cur)
+            cur = ''
+            i += len(sep)
+            continue
+        cur += ch
+        i += 1
+    out.append(cur)
+    return [x.strip() for x in out if x.strip()]
+
+
+def _compound(expr):
+    """«A true || (B false && C)» → {'m': 'or'|'and', 'parts': [...]} (cada parte con su «v» true/false)."""
+    ors = _split_top(expr, '||')
+    if len(ors) > 1:
+        return {'m': 'or', 'a': {}, 'parts': [_term(x) for x in ors]}
+    ands = _split_top(expr, '&&')
+    if len(ands) > 1:
+        return {'m': 'and', 'a': {}, 'parts': [_term(x) for x in ands]}
+    return _term(expr)
+
+
+def _term(s):
+    s = s.strip()
+    neg = s.startswith('!')
+    s = s.lstrip('!').strip()
+    if s.startswith('('):
+        depth = 0
+        for i, ch in enumerate(s):
+            depth += ch == '('
+            depth -= ch == ')'
+            if depth == 0:
+                break
+        c = _compound(s[1:i])
+        if c['m'] not in ('or', 'and'):
+            c = {'m': 'and', 'a': {}, 'parts': [c]}
+        rest = s[i + 1:].strip().lower()
+        c['v'] = rest or 'true'
+    else:
+        c = parse_condition(s) or {'m': 'true', 'a': {}, 'v': 'true'}
+    if neg:
+        c['v'] = {'true': 'false', 'false': 'true'}.get(c['v'], c['v'])
+    return c
+
+
 def parse_condition(line):
     line = str(line).strip().lstrip('-').strip()
+    if line.startswith('(') or line.startswith('!('):
+        # Condición compuesta de MythicMobs: «(A false || B false) true» (también con && y paréntesis dentro)
+        return _term(line)
     m = re.match(r'^(!?[\w:]+)\s*(\{[^}]*\})?\s*(.*)$', line)
     if not m:
         return None
