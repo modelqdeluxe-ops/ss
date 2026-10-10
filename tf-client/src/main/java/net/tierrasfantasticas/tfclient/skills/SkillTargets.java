@@ -30,7 +30,13 @@ final class SkillTargets {
             case "owner" -> who(ctx.caster.owner() != null ? ctx.caster.owner() : ctx.caster);
             case "parent", "summoner" -> who(ctx.caster.owner());
             case "trigger" -> who(ctx.trigger != null ? ctx.trigger : ctx.caster);
-            case "target", "t", "targetedtarget", "tt", "targetedentity", "targeted" -> target(ctx);
+            case "target", "t", "targetedentity", "targeted" -> target(ctx);
+            // @TargetedTarget: el objetivo heredado (skill{s=X} @EntitiesNearOrigin → dentro de X, cada uno de ellos)
+            case "targetedtarget", "tt" -> {
+                List<Tgt> inh = new ArrayList<>();
+                if (ctx.targets != null) for (Tgt x : ctx.targets) if (x.who != null && !x.who.same(ctx.caster)) inh.add(x);
+                yield inh.isEmpty() ? target(ctx) : inh;
+            }
             case "origin", "o", "source" -> List.of(Tgt.at(offset(m, ctx, origin(ctx)).add(0, yOff, 0)));
             case "selflocation", "casterlocation", "sl", "bosslocation", "moblocation" ->
                     List.of(Tgt.at(offset(m, ctx, ctx.caster.pos()).add(0, yOff, 0)));
@@ -40,7 +46,12 @@ final class SkillTargets {
                 yield List.of(Tgt.at(fo == 0 ? eye : eye.add(ctx.caster.forward().scale(fo))));
             }
             case "targetlocation", "tl", "targetloc", "targetedlocation", "targetedloc" -> targetLocation(m, ctx, yOff);
-            case "forward", "f" -> List.of(Tgt.at(forward(m, ctx, ctx.caster.pos(), ctx.caster.yaw(), ctx.caster.pitch(), yOff)));
+            case "forward", "f" -> {
+                // ofowner=true: delante del dueño (los efectos que se quedan pegados al jugador: alas, cargas...)
+                Who src = SkillRuntime.bool(m.targetArg("false", "ofowner", "oo")) && ctx.caster.owner() != null
+                        ? ctx.caster.owner() : ctx.caster;
+                yield List.of(Tgt.at(forward(m, src, src.pos(), src.yaw(), src.pitch(), yOff)));
+            }
             case "projectileforward", "pf" -> {
                 Vec3 d = ctx.dir != null ? ctx.dir : ctx.caster.forward();
                 double f = SkillRuntime.num(m.targetArg("1", "f", "forward"), 1);
@@ -301,16 +312,14 @@ final class SkillTargets {
      * @forward{f=distancia;y;sideoffset;lockpitch;uel}: delante de quien lanza, en la dirección a la que mira (uel:
      * desde los ojos).
      */
-    static Vec3 forward(Mech m, Ctx ctx, Vec3 base, float yaw, float pitch, double yOff) {
+    static Vec3 forward(Mech m, Who src, Vec3 base, float yaw, float pitch, double yOff) {
         double f = SkillRuntime.num(m.targetArg("5", "f", "forward", "amount", "a"), 5);
         double side = SkillRuntime.num(m.targetArg("0", "sideoffset", "so", "side", "s"), 0);
-        if (SkillRuntime.bool(m.targetArg("false", "uel", "useeyelocation"))) base = ctx.caster.eye();
-        boolean lock = SkillRuntime.bool(m.targetArg("false", "lockpitch", "lp")) || ctx.caster.actor != null;
+        if (SkillRuntime.bool(m.targetArg("false", "uel", "useeyelocation"))) base = src.eye();
+        boolean lock = SkillRuntime.bool(m.targetArg("false", "lockpitch", "lp")) || src.actor != null;
         Vec3 d = SkillRuntime.dir(yaw, lock ? 0F : pitch);
         Vec3 right = SkillRuntime.dir(yaw + 90F, 0F);
-        Vec3 from = base;
-        if (!lock && ctx.caster.entity != null) from = base.add(0, ctx.caster.entity.getEyeHeight() * 0.0, 0);
-        return from.add(d.scale(f)).add(right.scale(side)).add(0, yOff, 0);
+        return base.add(d.scale(f)).add(right.scale(side)).add(0, yOff, 0);
     }
 
     /** forwardoffset/sideoffset de un sitio, según hacia dónde mira quien lanza (los elixires de la Bruja salen detrás). */
@@ -332,9 +341,10 @@ final class SkillTargets {
         AABB box = new AABB(c.x - r, c.y - r, c.z - r, c.x + r, c.y + r, c.z + r);
         List<Tgt> out = new ArrayList<>();
         String ignore = m.targetArg("", "ignore").toLowerCase(Locale.ROOT);
+        boolean self = SkillRuntime.bool(m.targetArg("false", "targetself", "ts"));
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
             if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
-            if (ctx.caster.entity == e) continue;
+            if (ctx.caster.entity == e && !self) continue;
             if (playersOnly && !(e instanceof Player)) continue;
             if (mobsOnly && e instanceof Player) continue;
             if (e.position().distanceToSqr(c) > r * r && e.getBoundingBox().getCenter().distanceToSqr(c) > r * r) continue;
@@ -345,14 +355,30 @@ final class SkillTargets {
         // moverlos (con ?mythicmobtype)
         // (la bala de un proyectil no, salvo que se busque por tipo: en el pack el misil le da al de al lado, no a sí mismo)
         if (!playersOnly) {
-            boolean byType = m != null && m.targetArg(null, "types", "type", "t", "mobtypes") != null;
+            boolean byType = m != null && (m.targetArg(null, "types", "type", "t", "mobtypes") != null || looksForType(m.tc));
+            // livingOnly: sin los displays (los soportes sí son mobs vivos); targetArmorStands=false: sin soportes
+            boolean livingOnly = SkillRuntime.bool(m.targetArg("false", "livingonly"));
+            boolean armorStands = SkillRuntime.bool(m.targetArg("true", "targetarmorstands", "tas"));
             for (SkillActor a : SkillRuntime.ACTORS) {
                 if (!a.alive || a.level != level || a.follow != null || ctx.caster.actor == a) continue;
                 if (a.carried && !byType) continue;
+                String type = a.def != null && a.def.type != null ? a.def.type.toLowerCase(Locale.ROOT) : "";
+                // Un display (block/item/text_display) no es un mob vivo: solo sale si se busca por su tipo de mob
+                if ((livingOnly || !byType) && type.contains("display")) continue;
+                if (!armorStands && type.equals("armor_stand")) continue;
                 if (a.pos.distanceToSqr(c) <= r * r) out.add(Tgt.of(a.who));
             }
         }
         return out;
+    }
+
+    /** ¿Busca la línea un efecto del pack por su tipo (?mythicmobtype{t=X} true, también dentro de una compuesta)? */
+    static boolean looksForType(List<SkillDefs.Cond> conds) {
+        for (SkillDefs.Cond c : conds) {
+            if ((c.m().equals("mythicmobtype") || c.m().equals("mmt") || c.m().equals("mobtype")) && !"false".equals(c.action())) return true;
+            if (looksForType(c.parts())) return true;
+        }
+        return false;
     }
 
     private static List<Tgt> nearest(List<Tgt> list, Vec3 c) {

@@ -122,6 +122,16 @@ CALL_KEYS = {'s', 'skill', 'skills', '$skill', 'spell', 'delay', 'repeat', 'repe
              'origin', 'cooldown', 'sync', 'forcesync', 'targetisorigin', 'tio', '_'}
 
 
+def looks_for_type(conds):
+    """SkillTargets.looksForType: ?mythicmobtype{t=X} true (también dentro de una compuesta)"""
+    for c in conds or []:
+        if c['m'] in ('mythicmobtype', 'mmt', 'mobtype') and c.get('v', 'true') != 'false':
+            return True
+        if looks_for_type(c.get('parts')):
+            return True
+    return False
+
+
 def wants_actors(conds):
     """SkillMovers.wantsActors: ¿busca el proyectil efectos del pack (mythicmobtype true, también dentro de una compuesta)?"""
     for c in conds or []:
@@ -674,6 +684,7 @@ class Sim:
 
     # --- objetivos (SkillTargets)
     def targets(self, m, ctx):
+        self.cur_tc = m.get('tc') or []  # para in_radius (SkillTargets.looksForType)
         out = self.targets_raw(m, ctx)
         if m.get('tc') and out:
             out = [x for x in out if self.passes_conds(m['tc'], x, ctx)]
@@ -725,7 +736,10 @@ class Sim:
             return [Tgt(c.owner())] if c.owner() else []
         if t == 'trigger':
             return [Tgt(ctx.trigger or c)]
-        if t in ('target', 't', 'targetedtarget', 'tt', 'targetedentity', 'targeted'):
+        if t in ('targetedtarget', 'tt'):  # SkillTargets: el objetivo heredado (cada uno de los de @ENO...)
+            inh = [x for x in (ctx.targets or []) if x.who is not None and not x.who.same(ctx.caster)]
+            return inh or self.target(ctx)
+        if t in ('target', 't', 'targetedentity', 'targeted'):
             return self.target(ctx)
         if t in ('origin', 'o', 'source'):
             return [Tgt(at=self.loc_offset(ta, ctx, self.origin(ctx)) + [0, y, 0])]
@@ -879,6 +893,8 @@ class Sim:
 
     def forward(self, ta, ctx, y):
         c = ctx.caster
+        if boolean(arg(ta, 'false', 'ofowner', 'oo')) and c.owner() is not None:  # SkillTargets: delante del dueño
+            c = c.owner()
         f = num(arg(ta, '5', 'f', 'forward', 'amount', 'a'), 5)
         side = num(arg(ta, '0', 'sideoffset', 'so', 'side', 's'), 0)
         lock = boolean(arg(ta, 'false', 'lockpitch', 'lp')) or c.actor is not None
@@ -889,8 +905,9 @@ class Sim:
 
     def in_radius(self, ctx, center, r, players, mobs_only, ta=None):
         out = []
+        self_ok = boolean(arg(ta or {}, 'false', 'targetself', 'ts'))
         for e in self.entities:
-            if not e.alive or (ctx.caster.entity is e):
+            if not e.alive or (ctx.caster.entity is e and not self_ok):
                 continue
             if players and e.kind != 'player':
                 continue
@@ -899,9 +916,15 @@ class Sim:
             if np.linalg.norm(e.pos - center) <= r or np.linalg.norm(e.pos + [0, 0.9, 0] - center) <= r:
                 out.append(Tgt(Who(entity=e)))
         if not players:
-            by_type = arg(ta or {}, None, 'types', 'type', 't', 'mobtypes') is not None
+            by_type = arg(ta or {}, None, 'types', 'type', 't', 'mobtypes') is not None or looks_for_type(getattr(self, 'cur_tc', []))
+            living_only = boolean(arg(ta or {}, 'false', 'livingonly'))
+            stands = boolean(arg(ta or {}, 'true', 'targetarmorstands', 'tas'))
             for a in self.actors:
                 if a.carried and not by_type:
+                    continue
+                kind = str((a.mob or {}).get('type') or '').lower()
+                # SkillTargets: un display solo sale si se busca por su tipo de mob
+                if ((living_only or not by_type) and 'display' in kind) or (not stands and kind == 'armor_stand'):
                     continue
                 if a.alive and a.follow is None and ctx.caster.actor is not a and np.linalg.norm(a.pos - center) <= r:
                     out.append(Tgt(Who(actor=a)))
