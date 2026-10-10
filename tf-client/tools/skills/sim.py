@@ -519,7 +519,10 @@ class Sim:
             m = s.mechs[s.pc]
             s.pc += 1
             if m['m'] == 'delay':
-                s.wait = int(max(0, num(arg(m.get('a', {}), '0', '_', 'ticks', 't', 'd'))))
+                d = unquote(arg(m.get('a', {}), '0', '_', 'ticks', 't', 'd'))  # SkillRuntime: con variables y cuentas
+                if '<' in d:
+                    d = self.text(d, s.ctx, None)
+                s.wait = int(max(0, num(d)))
                 continue
             try:
                 self.exec(m, s.ctx)

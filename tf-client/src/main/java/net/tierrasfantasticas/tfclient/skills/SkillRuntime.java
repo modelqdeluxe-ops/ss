@@ -270,7 +270,10 @@ public final class SkillRuntime {
                 if (!ctx.caster.alive() && ctx.caster.actor != null) return true;
                 Mech m = mechs.get(pc++);
                 if (m.m.equals("delay")) {
-                    wait = (int) Math.max(0, num(m.arg("0", "_", "ticks", "t", "d"), 0));
+                    // «delay "<modifier.duration> * 20"»: con variables y cuentas
+                    String d = unquote(m.arg("0", "_", "ticks", "t", "d"));
+                    if (d.indexOf('<') >= 0) d = SkillVars.text(d, ctx, null);
+                    wait = (int) Math.max(0, num(d, 0));
                     continue;
                 }
                 try {

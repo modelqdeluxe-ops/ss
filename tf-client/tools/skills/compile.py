@@ -96,7 +96,7 @@ def parse_line(line):
         body, rest = take_braces(rest)
         args = parse_args(body)
     # valor suelto tras la mecánica («delay 28», «aura 20»...)
-    pm = re.match(r'^\s+([^\s@~?{}]+)', rest)
+    pm = re.match(r'^\s+("[^"]*"|\'[^\']*\'|[^\s@~?{}]+)', rest)  # entre comillas: «delay "<modifier.duration> * 20"»
     if pm and not re.fullmatch(r'0?\.\d+', pm.group(1)):
         args = dict(args)
         args['_'] = pm.group(1)
