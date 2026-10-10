@@ -216,6 +216,8 @@ public final class SkillRuntime {
         Map<String, Double> mods = Map.of();
         /** El proyectil que la lanzó (para modifyprojectile, endprojectile, setprojectiledirection). */
         SkillMovers.Mover mover;
+        /** Parámetros con los que la llamaron (skill{s=X;damage=4}): &lt;skill.damage&gt; dentro de X. */
+        Map<String, String> params = Map.of();
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -234,6 +236,7 @@ public final class SkillRuntime {
             c.vars = vars;
             c.mods = mods;
             c.mover = mover;
+            c.params = params;
             return c;
         }
 
@@ -459,6 +462,15 @@ public final class SkillRuntime {
             boolean r = SkillConds.test(c, ctx.caster, ctx, null);
             if (c.not() == r) return;
         }
+        // Cooldown de la propia línea (settarget{cooldown=5}, effect:sound{cooldown=1}...): de cada quién, en segundos
+        double lineCd = num(raw.a.getOrDefault("cooldown", raw.a.get("cd")), 0);
+        if (lineCd > 0) {
+            WhoState st = state(ctx.caster);
+            String key = "\u0001línea" + System.identityHashCode(raw);
+            Long until = st.cooldowns.get(key);
+            if (until != null && until > clock) return;
+            st.cooldowns.put(key, clock + Math.round(lineCd * 20));
+        }
         int delay = (int) num(m.a.get("delay"), 0);
         int repeat = (int) num(m.arg("0", "repeat", "r_"), 0);
         int every = (int) Math.max(1, num(m.arg("1", "repeatinterval", "repeati", "ri"), 1));
@@ -683,10 +695,26 @@ public final class SkillRuntime {
         }
     }
 
+    /** Opciones de la propia mecánica skill{} (lo demás son parámetros para la skill llamada). */
+    private static final Set<String> CALL_KEYS = Set.of("s", "skill", "skills", "$skill", "spell", "delay", "repeat",
+            "repeatinterval", "repeati", "ri", "r_", "origin", "cooldown", "sync", "forcesync", "targetisorigin", "tio", "_");
+
     private static void callSkill(Mech m, Ctx ctx, List<Tgt> targets) {
         String names = m.arg(null, "s", "skill", "skills", "$skill", "spell");
         if (names == null) return;
-        for (String n : names.split(",")) callNamed(n.trim().split(" ")[0], ctx, targets);
+        Ctx use = ctx;
+        Map<String, String> params = null;
+        for (Map.Entry<String, String> e : m.a.entrySet()) {
+            if (CALL_KEYS.contains(e.getKey())) continue;
+            if (params == null) params = new HashMap<>(ctx.params);
+            params.put(e.getKey(), unquote(e.getValue()));
+        }
+        if (params != null) {
+            use = ctx.copy();
+            use.depth = ctx.depth;
+            use.params = params;
+        }
+        for (String n : names.split(",")) callNamed(n.trim().split(" ")[0], use, targets);
     }
 
     /** skill{s=X}: ejecuta X con los objetivos de la línea (o los heredados) y su propio tiempo. */
@@ -831,7 +859,7 @@ public final class SkillRuntime {
             double attack = owner != null ? owner.getAttributeValue(Attributes.ATTACK_DAMAGE) : 1;
             amount = attack * num(m.arg("1", "multiplier", "m"), 1);
         }
-        boolean noKnock = bool(m.arg("false", "preventknockback", "pkb"));
+        boolean noKnock = bool(m.arg("false", "preventknockback", "pkb", "pk"));
         boolean ignoreArmor = bool(m.arg("false", "ignorearmor", "ia"));
         for (Tgt t : targets) {
             LivingEntity le = t.living();

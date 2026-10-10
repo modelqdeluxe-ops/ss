@@ -83,6 +83,8 @@ final class SkillVars {
         if (low.equals("skill.targets")) return String.valueOf(ctx.targets == null ? 1 : ctx.targets.size());
         if (low.startsWith("skill.")) {
             String k = low.substring(6);
+            String param = ctx.params.get(k);
+            if (param != null) return param.indexOf('<') >= 0 ? text(param, ctx, target) : param;
             if (ctx.mods.containsKey(k)) return SkillRuntime.fmt(ctx.mods.get(k));
             return orZero(ctx.vars == null ? null : ctx.vars.get(k));
         }

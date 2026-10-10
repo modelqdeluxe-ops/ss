@@ -118,6 +118,10 @@ def evaluate(s):
         return None
 
 
+CALL_KEYS = {'s', 'skill', 'skills', '$skill', 'spell', 'delay', 'repeat', 'repeatinterval', 'repeati', 'ri', 'r_',
+             'origin', 'cooldown', 'sync', 'forcesync', 'targetisorigin', 'tio', '_'}
+
+
 def wants_actors(conds):
     """SkillMovers.wantsActors: ¿busca el proyectil efectos del pack (mythicmobtype true, también dentro de una compuesta)?"""
     for c in conds or []:
@@ -298,11 +302,13 @@ class Ctx:
         self.vars = None
         self.mods = {}
         self.mover = None
+        self.params = {}  # skill{s=X;damage=4}: <skill.damage> dentro de X
 
     def copy(self):
         c = Ctx(self.cls, self.caster)
         c.trigger, c.origin, c.targets, c.aim, c.power = self.trigger, self.origin, self.targets, self.aim, self.power
         c.dir, c.depth, c.vars, c.mods, c.mover = self.dir, self.depth + 1, self.vars, self.mods, self.mover
+        c.params = self.params
         return c
 
     def as_(self, who):
@@ -540,6 +546,7 @@ class Sim:
 
     # --- una línea (SkillRuntime.exec)
     def exec(self, m, ctx):
+        raw = m
         if any('<' in str(v) for v in list(m.get('a', {}).values()) + list((m.get('ta') or {}).values())):
             m = self.resolve(m, ctx)
         if m.get('ch', 1.0) < 1.0 and random.random() >= m['ch']:
@@ -549,6 +556,13 @@ class Sim:
             if c.get('not') == r:
                 self.trace(f'  ({m["m"]} saltada: ?{"!" if c.get("not") else ""}{c["m"]})')
                 return
+        line_cd = num(raw.get('a', {}).get('cooldown', raw.get('a', {}).get('cd')), 0)  # SkillRuntime: cooldown de la línea
+        if line_cd > 0:
+            cds = self.state(ctx.caster)['cd']
+            key = f'\x01línea{id(raw)}'
+            if cds.get(key, -1) > self.clock:
+                return
+            cds[key] = self.clock + round(line_cd * 20)
         a = m.get('a', {})
         delay = int(num(a.get('delay'), 0))
         repeat = int(num(arg(a, '0', 'repeat'), 0))
@@ -610,6 +624,9 @@ class Sim:
                 return str(len(ctx.targets or [1]))
             if t.startswith('skill.'):
                 k = t[6:]
+                if k in ctx.params:
+                    pv = ctx.params[k]
+                    return self.text(pv, ctx, target) if '<' in str(pv) else str(pv)
                 if k in ctx.mods:
                     return fmt(ctx.mods[k])
                 return str((ctx.vars or {}).get(k, '0'))
@@ -1063,8 +1080,14 @@ class Sim:
                                                                           if name in ('skill', 'summon', 'projectile', 'aura', 'signal') else ''))
         if name in ('skill', 'metaskill', 'cast', 's'):
             names = arg(a, None, 's', 'skill', 'skills', '$skill', 'spell')
+            extra = {k: unquote(v) for k, v in a.items() if k not in CALL_KEYS}  # SkillRuntime.callSkill: parámetros
+            use = ctx
+            if extra:
+                use = ctx.copy()
+                use.depth = ctx.depth
+                use.params = {**ctx.params, **extra}
             for n in str(names or '').split(','):
-                self.call(n.strip().split(' ')[0], ctx, targets)
+                self.call(n.strip().split(' ')[0], use, targets)
         elif name == 'randomskill':
             opts = []
             for part in str(arg(a, '', 'skills', 's')).split(','):
