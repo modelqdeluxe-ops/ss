@@ -126,13 +126,30 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       **El jar ya pesa ~48 MB y el envío de archivos admite 30 MB.** El dueño prefiere **enlace directo**: el jar se
 >       sube a `descargas/` en la rama y se le da `https://github.com/modelqdeluxe-ops/ss/raw/<rama>/descargas/<jar>`
 >       (el repo es público; comprobar con `curl -sSL -o /dev/null -w '%{http_code} %{size_download}'`).
-> - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
->       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
->       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de
->       `tiendamonedas` ~541). Back: `src/app.js` (rutas al final, `createApp`), `src/store.js`. Falta: catálogo
->       de clases para la web (iconos, vistas previas WebP del simulador, textos es), compra con Stripe y con monedas,
->       una clase por jugador, y mandar `skills: [{uuid, clase, at}]` en la respuesta de `/bridge/poll` (el mod ya lo
->       lee en `SkillServer.applyWeb`).
+> - [x] **Rechequeo a fondo + TF Client 1.3.36 (10 oct, noche)** — el dueño: «no quiero errores, son cosas que vamos
+>       a vender». Herramientas nuevas: `tools/skills/audit.py` (modelos de ítem con las reglas de 1.20.1, animaciones/
+>       huesos/piezas de ModelEngine que piden las skills y los mobs, texturas, cabeceras Ogg, textos; los 17 avisos
+>       son cosas que el pack trae así, listadas en `PACK_AS_IS`). En el scratch: `stress.py` (cada clase lanza todas
+>       sus skills 3 rondas con golpes), `flicker.py` (qué efecto se vuelve a crear en bucle con el jugador quieto),
+>       `residue.py` (lo que el compilador deja sin leer de cada línea de los .yml). Fallos encontrados y arreglados
+>       (Java y `sim.py` igual): condiciones compuestas `(A false || B) true` y `&&` se perdían (armas del Vampiro
+>       parpadeando, golpes de la Bruja); `mergeAll`/`mergeSameCaster` en órbitas (lanza del Invocador de Espíritus);
+>       renovar el aura de una órbita alarga la órbita (guardián del Invocador); el tope de 60 s ya no borra la bala de
+>       una órbita (guadañas fijas); `entitytype` sobre efectos mira el tipo del mob del pack; caras `#missing` fuera
+>       (Disparo de Dragón); `delay "<modifier.duration> * 20"` (Escudo Helado, Shadowquake); **parámetros de skill**
+>       (`skill{s=X;damage=<modifier.damage> * 0.4}` → `<skill.damage>` en X: los combos pegaban de más);
+>       `cooldown`/`cd` de cada línea; `pk`; **`@TargetedTarget` = el objetivo heredado** (en 13 packs el daño en área
+>       solo le llegaba al de la mira); los displays no salen en `@EIR/@ENO` salvo que se busquen por tipo;
+>       `@forward{ofowner}`, `targetSelf` (curas del Clérigo), `livingOnly`, `targetArmorStands`.
+> - [x] **Web: sección «Skills»** en lugar de «Tienda de monedas» (`tools/skills.py` → `config/skills.json` +
+>       `public/img/skills/`; precio por defecto **5,99 USD o 30.000 monedas** para todas, en `PRICE_CENTS`/`COIN_PRICE`
+>       al principio de `tools/skills.py` — **el dueño aún no ha dicho precios**). Compra con Stripe/PayPal y con
+>       monedas (`tf web monedas quitar {player} N` por el puente); las clases compradas son para siempre y se elige
+>       la activa en la web (tabla `skill_active`); `/bridge/poll` manda `skills: [{uuid, clase, at}]`. Términos a
+>       versión 2026-10-10.1 (producto nuevo: todos vuelven a aceptarlos). El maná no se enseña (el mod no lo gasta).
+>       Vistas previas: `sim.py <clase> --webp <carpeta>` (de 2 en 2) y `python3 tools/skills.py --vistas <carpeta>
+>       --rehacer`. Las rutas `/api/coinshop` siguen. **Aviso**: vender ventaja de juego con dinero va contra las
+>       normas de Mojang; lo decidió el dueño.
 > - [ ] Pad: app/apartado de la clase y sus skills.
 > - [ ] Publicar por tandas, con vistas previas. Tanda 1: Glacia, Zephyr, Mago, Dragón Rojo, Thor.
 >
@@ -1434,7 +1451,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.35)
+## 5. El mod (TF Client 1.3.36)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
