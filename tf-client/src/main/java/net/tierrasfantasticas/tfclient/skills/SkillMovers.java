@@ -127,13 +127,18 @@ final class SkillMovers {
             dir = dir.normalize();
             double ho = SkillRuntime.num(m.arg("0", "horizontaloffset", "ho"), 0);
             double vo = SkillRuntime.num(m.arg("0", "verticaloffset", "vo"), 0);
-            if (ho != 0 || vo != 0) {
-                dir = SkillRuntime.dir(SkillRuntime.yawOf(dir) + (float) ho, SkillRuntime.pitchOf(dir) - (float) vo);
+            // como MythicMobs: «ho» gira la dirección (grados) y «vo» se suma a su Y (el granizo de Glacia cae casi
+            // en vertical con vo=-5)
+            if (ho != 0) dir = SkillRuntime.dir(SkillRuntime.yawOf(dir) + (float) ho, SkillRuntime.pitchOf(dir));
+            if (vo != 0) {
+                Vec3 d2 = dir.add(0, vo, 0);
+                if (d2.lengthSqr() > 1e-6) dir = d2.normalize();
             }
-            Vec3 right = SkillRuntime.dir(SkillRuntime.yawOf(dir) + 90F, 0F);
             Vec3 flat = new Vec3(dir.x, 0, dir.z);
             flat = flat.lengthSqr() < 1e-6 ? Vec3.ZERO : flat.normalize();
-            p.pos = start0.add(flat.scale(sfo)).add(right.scale(sso));
+            // sfo/sso según hacia dónde mira quien lanza (como MythicMobs; con un disparo en vertical también valen)
+            float cy = ctx.caster.yaw();
+            p.pos = start0.add(SkillRuntime.dir(cy, 0F).scale(sfo)).add(SkillRuntime.dir(cy + 90F, 0F).scale(sso));
             p.dir = dir;
             double v = SkillRuntime.num(m.arg("5", "velocity", "v"), 5);
             p.step = v / 20.0 * p.interval;

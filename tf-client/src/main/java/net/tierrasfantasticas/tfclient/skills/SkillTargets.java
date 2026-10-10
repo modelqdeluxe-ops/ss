@@ -334,9 +334,12 @@ final class SkillTargets {
         }
         // Los efectos invocados también están ahí (en MythicMobs eran mobs): los packs los buscan para quitarlos o
         // moverlos (con ?mythicmobtype)
+        // (la bala de un proyectil no, salvo que se busque por tipo: en el pack el misil le da al de al lado, no a sí mismo)
         if (!playersOnly) {
+            boolean byType = m != null && m.targetArg(null, "types", "type", "t", "mobtypes") != null;
             for (SkillActor a : SkillRuntime.ACTORS) {
                 if (!a.alive || a.level != level || a.follow != null || ctx.caster.actor == a) continue;
+                if (a.carried && !byType) continue;
                 if (a.pos.distanceToSqr(c) <= r * r) out.add(Tgt.of(a.who));
             }
         }

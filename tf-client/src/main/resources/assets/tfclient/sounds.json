@@ -885,6 +885,11 @@
    "tfclient:skills/mago/samus_fire_burn"
   ]
  },
+ "skills.mago.samus_frost_nova_break": {
+  "sounds": [
+   "tfclient:skills/mago/samus_frost_nova_break"
+  ]
+ },
  "skills.mago.samus_blink": {
   "sounds": [
    "tfclient:skills/mago/samus_blink"
@@ -898,6 +903,11 @@
  "skills.mago.samus_quake": {
   "sounds": [
    "tfclient:skills/mago/samus_quake"
+  ]
+ },
+ "skills.mago.samus_arcane_missile": {
+  "sounds": [
+   "tfclient:skills/mago/samus_arcane_missile"
   ]
  },
  "skills.mago.samus_frost_nova": {

@@ -386,6 +386,23 @@ def compile_pack(pack_dir, shared=None):
                 if seen > slots:
                     sk['passive'] = None
 
+    # Una skill con tecla que en el pack solo se «arma» al primer lanzamiento y sale al segundo (Firestorm Volley del
+    # Piromante en MMOCore: «hasaurastacks{A} castinstead B» + «Aura{A} @self»). Con el enfriamiento de la tecla no
+    # daría tiempo a la segunda pulsación: la tecla lanza ya la de verdad.
+    for sk in out_skills:
+        raw = tree.get(sk['entry']) if sk['entry'] and not sk.get('passive') else None
+        if not isinstance(raw, dict):
+            continue
+        conds = [c for c in (parse_condition(x) for x in (raw.get('Conditions') or [])) if c]
+        mechs = [pm for pm in (parse_line(l) for l in (raw.get('Skills') or [])) if pm]
+        if len(conds) != 1 or len(mechs) != 1 or conds[0]['m'] != 'hasaurastacks' or mechs[0]['m'] != 'aura':
+            continue
+        cm = re.match(r'castinstead\s+(\S+)', conds[0].get('v', ''))
+        armed = str(conds[0]['a'].get('auraname') or conds[0]['a'].get('n') or conds[0]['a'].get('aura') or '').lower()
+        aura = str(mechs[0]['a'].get('auraname') or mechs[0]['a'].get('n') or mechs[0]['a'].get('aura') or '').lower()
+        if cm and armed and armed == aura and lower_tree.get(cm.group(1).lower()):
+            sk['entry'] = lower_tree[cm.group(1).lower()]
+
     # lo que se alcanza desde las skills de la clase
     reach_s, reach_m = set(), set()
     stack = [s['entry'] for s in out_skills if s['entry']]
@@ -424,10 +441,10 @@ def compile_pack(pack_dir, shared=None):
                 s2, m2 = refs(pm)
                 stack += s2
                 mob_stack += m2
-            # condiciones que lanzan otra skill («castinstead X», «orElseCast X»)
+            # condiciones que lanzan otra skill («cast X», «castinstead X», «orElseCast X»)
             for cl in ('conditions', 'target_conditions', 'trigger_conditions'):
                 for c in compiled_tree[key][cl]:
-                    cm = re.match(r'(?:castinstead|orelsecast)\s+(\S+)', c.get('v', ''))
+                    cm = re.match(r'(?:castinstead|orelsecast|cast)\s+(\S+)', c.get('v', ''))
                     if cm:
                         stack.append(cm.group(1))
         while mob_stack:

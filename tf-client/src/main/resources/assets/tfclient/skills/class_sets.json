@@ -624,6 +624,22 @@
    ]
   },
   {
+   "id": "clase_nigromante",
+   "name": "Awakened Necromancer Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "nigromante",
+   "items": [
+    {
+     "id": "clase_nigromante_awakened_necromancer_necrostaff",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_nigromante_awakened_necromancer_necrostaff"
+   ]
+  },
+  {
    "id": "clase_piromante",
    "name": "Awakened Pyromancer Class",
    "color": "#7fd3ff",
@@ -653,6 +669,22 @@
    ],
    "give": [
     "clase_chaman_awakened_shaman_lifescepter"
+   ]
+  },
+  {
+   "id": "clase_invocador_espiritus",
+   "name": "Awakened Spiritcaller Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "invocador_espiritus",
+   "items": [
+    {
+     "id": "clase_invocador_espiritus_awakened_spiritcaller_animus",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_invocador_espiritus_awakened_spiritcaller_animus"
    ]
   },
   {
@@ -764,38 +796,6 @@
    "give": [
     "clase_invocador_summoner_tome",
     "clase_invocador_summoner_tome"
-   ]
-  },
-  {
-   "id": "clase_nigromante",
-   "name": "Awakened Necromancer Class",
-   "color": "#7fd3ff",
-   "tier": "netherite",
-   "clase": "nigromante",
-   "items": [
-    {
-     "id": "clase_nigromante_awakened_necromancer_necrostaff",
-     "type": "sword"
-    }
-   ],
-   "give": [
-    "clase_nigromante_awakened_necromancer_necrostaff"
-   ]
-  },
-  {
-   "id": "clase_invocador_espiritus",
-   "name": "Awakened Spiritcaller Class",
-   "color": "#7fd3ff",
-   "tier": "netherite",
-   "clase": "invocador_espiritus",
-   "items": [
-    {
-     "id": "clase_invocador_espiritus_awakened_spiritcaller_animus",
-     "type": "sword"
-    }
-   ],
-   "give": [
-    "clase_invocador_espiritus_awakened_spiritcaller_animus"
    ]
   }
  ]

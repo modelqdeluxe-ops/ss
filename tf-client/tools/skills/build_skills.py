@@ -657,8 +657,9 @@ def build_pack(path, sound_events, name=None):
     out = {'id': pack.id, 'pack': pack.name, 'class': prog['class'], 'skills': prog['skills'], 'icons': icons,
            'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
-           'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing,
-           'start_vars': START_VARS.get(pack.id, {})}
+           'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing}
+    if START_VARS.get(pack.id):
+        out['start_vars'] = START_VARS[pack.id]  # variables con las que empieza la clase (postura «free»...)
     os.makedirs(OUT_CLASSES, exist_ok=True)
     with open(os.path.join(OUT_CLASSES, pack.id + '.json'), 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))

@@ -1,12 +1,19 @@
 package net.tierrasfantasticas.tfclient.skills;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs.Mech;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Tgt;
+import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Who;
 
 /** Partículas y sonidos: el servidor dice dónde y cuántas; cada jugador cercano las saca (SkillClient). */
 final class SkillFx {
@@ -212,6 +219,8 @@ final class SkillFx {
      */
     static void slash(Mech m, Ctx ctx, List<Tgt> targets) {
         SkillDefs.Meta onPoint = ctx.cls.meta(m.arg(null, "onpoint", "op", "onpointskill"));
+        SkillDefs.Meta onHit = ctx.cls.meta(m.arg(null, "onhit", "oh", "onhitskill"));
+        double hr = Math.max(0, SkillRuntime.num(m.arg("1", "radius", "r", "hitradius", "hr"), 1));
         double w = SkillRuntime.num(m.arg("3", "width", "w"), 3) / 2;
         double h = SkillRuntime.num(m.arg(String.valueOf(w * 2), "height", "h"), w * 2) / 2;
         double arc = Math.toRadians(SkillRuntime.num(m.arg("180", "angle", "a", "arc"), 180));
@@ -225,7 +234,7 @@ final class SkillFx {
         int points = (int) Math.max(2, Math.min(240, SkillRuntime.num(m.arg("30", "points", "p"), 30)));
         double fo = SkillRuntime.num(m.arg("0", "forwardoffset", "fo"), 0);
         double yo = SkillRuntime.num(m.arg("0", "yoffset", "y"), 0);
-        if (onPoint == null) return;
+        if (onPoint == null && onHit == null) return;
         float yaw = ctx.caster.yaw();
         Vec3 fwd = SkillRuntime.dir(yaw, 0F), right = SkillRuntime.dir(yaw + 90F, 0F), up = new Vec3(0, 1, 0);
         double rr = Math.toRadians(roll);
@@ -233,13 +242,18 @@ final class SkillFx {
         Vec3 axisA = right.scale(Math.cos(rr)).add(up.scale(Math.sin(rr)));
         for (Tgt t : targets) {
             Vec3 c = t.pos().add(fwd.scale(fo)).add(0, yo, 0);
+            // cada tajo le da una sola vez a cada uno (onHit a los que pasan a «r» bloques de un punto)
+            Set<UUID> hit = new HashSet<>();
             for (int i = 0; i < points; i++) {
                 double k = (double) i / (points - 1);
                 double ang = -arc / 2 + arc * k;
                 // de un lado al otro por delante (la elipse va hacia delante: «h» es lo que entra)
                 Vec3 p = c.add(axisA.scale(Math.sin(ang) * w)).add(fwd.scale(Math.cos(ang) * h - h * 0.5));
                 int when = dur <= 0 ? 0 : (int) Math.round(k * dur);
-                SkillRuntime.later(when, () -> point(ctx, onPoint, p));
+                SkillRuntime.later(when, () -> {
+                    if (onPoint != null) point(ctx, onPoint, p);
+                    if (onHit != null) slashHit(ctx, onHit, p, hr, hit);
+                });
             }
         }
     }
@@ -272,6 +286,22 @@ final class SkillFx {
                 int n = (int) Math.min(200, Math.ceil(a.distanceTo(b) / db));
                 for (int k = 1; k < n; k++) point(ctx, edge, a.lerp(b, (double) k / n));
             }
+        }
+    }
+
+    private static void slashHit(Ctx ctx, SkillDefs.Meta skill, Vec3 p, double r, Set<UUID> hit) {
+        ServerLevel level = ctx.caster.level();
+        if (level == null) return;
+        AABB box = new AABB(p, p).inflate(r);
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
+            if (e == ctx.caster.entity || e == ctx.caster.player() || hit.contains(e.getUUID())) continue;
+            if (!SkillRuntime.canHurt(ctx, e)) continue;
+            hit.add(e.getUUID());
+            Ctx c = ctx.copy();
+            c.origin = p;
+            c.targets = List.of(Tgt.of(Who.of(e)));
+            SkillRuntime.runMeta(skill, c);
         }
     }
 

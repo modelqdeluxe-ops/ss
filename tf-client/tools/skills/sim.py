@@ -189,6 +189,7 @@ class Actor:
         self.anim, self.anim_start, self.anim_speed = None, 0, 1.0
         self.timers = []
         self.follow = None
+        self.carried = False  # la bala de un proyectil
         self.swaps, self.vis, self.tint = {}, {}, None
         self.uid = ('actor', self.id)
         self.name = mob.get('_name', '') if mob else ''
@@ -719,16 +720,16 @@ class Sim:
             return [Tgt(at=self.origin(ctx) + d / max(1e-6, np.linalg.norm(d)) * f + [0, y, 0])]
         r = min(64, num(arg(ta, '5', 'r', 'radius'), 5))
         if t in ('entitiesnearorigin', 'eno', 'livingentitiesnearorigin', 'leno'):
-            return self.in_radius(ctx, self.origin(ctx), r, False, False)
+            return self.in_radius(ctx, self.origin(ctx), r, False, False, ta)
         if t in ('playersnearorigin', 'pno'):
-            return self.in_radius(ctx, self.origin(ctx), r, True, False)
+            return self.in_radius(ctx, self.origin(ctx), r, True, False, ta)
         if t in ('entitiesinradius', 'eir', 'livingentitiesinradius', 'leir', 'livinginradius', 'allinradius', 'air',
                  'entitiesinring', 'eirr'):
-            return self.in_radius(ctx, c.pos(), r, False, False)
+            return self.in_radius(ctx, c.pos(), r, False, False, ta)
         if t in ('mobsinradius', 'mir'):
-            return self.in_radius(ctx, c.pos(), r, False, True)
+            return self.in_radius(ctx, c.pos(), r, False, True, ta)
         if t in ('playersinradius', 'pir', 'playersinworld', 'world', 'pinr', 'nearestplayer', 'np'):
-            return self.in_radius(ctx, c.pos(), r, True, False)
+            return self.in_radius(ctx, c.pos(), r, True, False, ta)
         if t in ('ring', 'circle'):
             pts = int(max(1, min(128, num(arg(ta, '8', 'points', 'p'), 8))))
             rr = num(arg(ta, '5', 'radius', 'r'), 5)
@@ -752,26 +753,26 @@ class Sim:
         if t in ('mountedmodel', 'mounted'):
             return [Tgt(Who(actor=a)) for a in self.actors if a.alive and a.rider is not None and c.entity is a.rider][:1]
         if t in ('mobsnearorigin', 'mno'):
-            out = self.in_radius(ctx, self.origin(ctx), r, False, True)
+            out = self.in_radius(ctx, self.origin(ctx), r, False, True, ta)
             types = arg(ta, None, 'types', 'type', 't', 'mobtypes')
             if types:
                 names = {x.strip().lower() for x in types.split(',')}
                 out = [x for x in out if x.who.actor is not None and x.who.actor.name.lower() in names]
             return out
         if t in ('entitiesinworld', 'eiw', 'livingentitiesinworld'):
-            return self.in_radius(ctx, c.pos(), 128, False, False)
+            return self.in_radius(ctx, c.pos(), 128, False, False, ta)
         if t in ('entitiesinringnearorigin', 'eirno'):
             lo = num(arg(ta, '0', 'min', 'minradius', 'minr'), 0)
             hi = num(arg(ta, '5', 'max', 'maxradius', 'maxr', 'r'), 5)
             o = self.origin(ctx)
-            return [x for x in self.in_radius(ctx, o, hi, False, False) if np.linalg.norm(x.pos() - o) >= lo]
+            return [x for x in self.in_radius(ctx, o, hi, False, False, ta) if np.linalg.norm(x.pos() - o) >= lo]
         if t in ('entitiesincone', 'eic', 'livingentitiesincone'):
             rng = num(arg(ta, '5', 'range', 'r'), 5)
             ang = num(arg(ta, '90', 'angle', 'a'), 90)
             look = direction(c.yaw(), 0)
             cs = math.cos(math.radians(ang / 2))
             out = []
-            for x in self.in_radius(ctx, c.pos(), rng, False, False):
+            for x in self.in_radius(ctx, c.pos(), rng, False, False, ta):
                 to = x.pos() - c.pos()
                 to[1] = 0
                 n = np.linalg.norm(to)
@@ -793,7 +794,7 @@ class Sim:
             d = to - frm
             ln = float(np.linalg.norm(d))
             out = []
-            for x in self.in_radius(ctx, frm + d / 2, ln / 2 + rr + 1, False, False):
+            for x in self.in_radius(ctx, frm + d / 2, ln / 2 + rr + 1, False, False, ta):
                 p = x.pos() + [0, 0.9, 0]
                 k = 0 if ln < 1e-6 else max(0.0, min(1.0, float(np.dot(p - frm, d)) / (ln * ln)))
                 if np.linalg.norm(p - (frm + d * k + [0, 0.9, 0])) <= rr + 0.6:
@@ -845,7 +846,7 @@ class Sim:
         base = c.eye() if boolean(arg(ta, 'false', 'uel', 'useeyelocation')) else c.pos()
         return base + d * f + right * side + [0, y, 0]
 
-    def in_radius(self, ctx, center, r, players, mobs_only):
+    def in_radius(self, ctx, center, r, players, mobs_only, ta=None):
         out = []
         for e in self.entities:
             if not e.alive or (ctx.caster.entity is e):
@@ -857,7 +858,10 @@ class Sim:
             if np.linalg.norm(e.pos - center) <= r or np.linalg.norm(e.pos + [0, 0.9, 0] - center) <= r:
                 out.append(Tgt(Who(entity=e)))
         if not players:
+            by_type = arg(ta or {}, None, 'types', 'type', 't', 'mobtypes') is not None
             for a in self.actors:
+                if a.carried and not by_type:
+                    continue
                 if a.alive and a.follow is None and ctx.caster.actor is not a and np.linalg.norm(a.pos - center) <= r:
                     out.append(Tgt(Who(actor=a)))
         return out
@@ -1480,7 +1484,9 @@ class Sim:
     def slash(self, a, ctx, targets):
         """SkillFx.slash"""
         meta = self.meta(arg(a, None, 'onpoint', 'op', 'onpointskill'))
-        if meta is None:
+        onhit = self.meta(arg(a, None, 'onhit', 'oh', 'onhitskill'))
+        hr = max(0, num(arg(a, '1', 'radius', 'r', 'hitradius', 'hr'), 1))
+        if meta is None and onhit is None:
             return
         w = num(arg(a, '3', 'width', 'w'), 3) / 2
         h = num(arg(a, str(w * 2), 'height', 'h'), w * 2) / 2
@@ -1498,12 +1504,35 @@ class Sim:
         axis = right * math.cos(rr) + np.array([0, 1, 0]) * math.sin(rr)
         for t in targets:
             c = t.pos() + fwd * fo + [0, yo, 0]
+            hit = set()  # cada tajo le da una sola vez a cada uno
             for i in range(pts):
                 k = i / (pts - 1)
                 ang = -arc / 2 + arc * k
                 p = c + axis * math.sin(ang) * w + fwd * (math.cos(ang) * h - h * 0.5)
                 when = 0 if dur <= 0 else round(k * dur)
-                self.later(when, lambda p=p: self.run_point(ctx, meta, p))
+
+                def go(p=p, hit=hit):
+                    if meta is not None:
+                        self.run_point(ctx, meta, p)
+                    if onhit is not None:
+                        self.slash_hit(ctx, onhit, p, hr, hit)
+                self.later(when, go)
+
+    def slash_hit(self, ctx, meta, p, r, hit):
+        """SkillFx.slashHit: los vivos cuya caja toca la de «r» alrededor del punto"""
+        p = np.array(p, float)
+        for e in list(self.entities):
+            if not e.alive or e is ctx.caster.entity or e is ctx.caster.player() or e.uid in hit:
+                continue
+            if not self.can_hurt(ctx, e):
+                continue
+            lo, hi = e.pos - [0.3, 0, 0.3], e.pos + [0.3, 1.8, 0.3]
+            if (hi >= p - r).all() and (lo <= p + r).all():
+                hit.add(e.uid)
+                c = ctx.copy()
+                c.origin = p
+                c.targets = [Tgt(Who(entity=e))]
+                self.run_meta(meta, c)
 
     def polygon(self, a, ctx, targets):
         """SkillFx.polygon"""
@@ -1732,12 +1761,17 @@ class Sim:
                 d = ctx.caster.forward()
             d = d / np.linalg.norm(d)
             ho, vo = num(arg(a, '0', 'horizontaloffset', 'ho'), 0), num(arg(a, '0', 'verticaloffset', 'vo'), 0)
-            if ho or vo:
-                d = direction(yaw_of(d) + ho, pitch_of(d) - vo)
+            if ho:  # como MythicMobs: «ho» gira (grados) y «vo» se suma a la Y
+                d = direction(yaw_of(d) + ho, pitch_of(d))
+            if vo:
+                d2 = d + [0, vo, 0]
+                if np.linalg.norm(d2) > 1e-6:
+                    d = d2 / np.linalg.norm(d2)
             flat = np.array([d[0], 0, d[2]])
             flat = flat / np.linalg.norm(flat) if np.linalg.norm(flat) > 1e-6 else np.zeros(3)
-            right = direction(yaw_of(d) + 90, 0)
-            p['pos'] = start0 + flat * num(arg(a, '1', 'startforwardoffset', 'sfo'), 1) + right * num(arg(a, '0', 'startsideoffset', 'sso'), 0)
+            cy = ctx.caster.yaw()  # sfo/sso según hacia dónde mira quien lanza (como MythicMobs)
+            p['pos'] = (start0 + direction(cy, 0) * num(arg(a, '1', 'startforwardoffset', 'sfo'), 1)
+                        + direction(cy + 90, 0) * num(arg(a, '0', 'startsideoffset', 'sso'), 0))
             p['dir'] = d
             p['step'] = num(arg(a, '5', 'velocity', 'v'), 5) / 20 * p['interval']
             p['range'] = num(arg(a, '40', 'maxrange', 'mr'), 40)
@@ -1849,6 +1883,8 @@ class Sim:
                 yaw = yaw_of(d) if np.linalg.norm(d) > 0 else p['ctx'].caster.yaw()
                 pitch = pitch_of(d) if np.linalg.norm(d) > 0 and p['kind'] in (0, 1) else 0
                 p['bullet'] = self.spawn(p['ctx'], m, p['pos'], yaw, pitch)
+                if p['bullet'] is not None:
+                    p['bullet'].carried = True
         os_ = arg(a, None, 'onstart', 'os', 'onstartskill')
         if os_:
             self.mover_run(p, os_, [Tgt(at=p['pos'])], None)
