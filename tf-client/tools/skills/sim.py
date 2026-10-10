@@ -698,8 +698,10 @@ class Sim:
         if t in ('target', 't', 'targetedtarget', 'tt', 'targetedentity', 'targeted'):
             return self.target(ctx)
         if t in ('origin', 'o', 'source'):
-            return [Tgt(at=self.origin(ctx) + [0, y, 0])]
-        if t in ('selflocation', 'casterlocation', 'sl', 'bosslocation', 'moblocation', 'spawnlocation'):
+            return [Tgt(at=self.loc_offset(ta, ctx, self.origin(ctx)) + [0, y, 0])]
+        if t in ('selflocation', 'casterlocation', 'sl', 'bosslocation', 'moblocation'):
+            return [Tgt(at=self.loc_offset(ta, ctx, c.pos()) + [0, y, 0])]
+        if t == 'spawnlocation':
             return [Tgt(at=c.pos() + [0, y, 0])]
         if t in ('selfeyelocation', 'eyelocation', 'casterseyelocation', 'boss_eye', 'sel', 'se'):
             fo = num(arg(ta, '0', 'fo', 'forwardoffset', 'f'), 0)
@@ -835,6 +837,15 @@ class Sim:
             if t.who is not None and not t.who.same(ctx.caster):
                 return [t]
         return []
+
+    def loc_offset(self, ta, ctx, at):
+        """SkillTargets.offset: forwardoffset/sideoffset según hacia dónde mira quien lanza"""
+        fo = num(arg(ta, '0', 'forwardoffset', 'fo'), 0)
+        so = num(arg(ta, '0', 'sideoffset', 'so'), 0)
+        if fo == 0 and so == 0:
+            return np.array(at, float)
+        yaw = ctx.caster.yaw()
+        return np.array(at, float) + direction(yaw, 0) * fo + direction(yaw + 90, 0) * so
 
     def forward(self, ta, ctx, y):
         c = ctx.caster
@@ -1002,7 +1013,9 @@ class Sim:
             rad = num(arg(a, '5', 'radius', 'r'), 5)
             types = arg(a, None, 'types', 'type', 't', 'mobtypes')
             players = m.startswith('players') or m == 'pir'
-            if types and not players:
+            if m in ('mobsinradius', 'mir') and not types:  # como MythicMobs: sin «types» no cuenta ninguno
+                n = 0
+            elif types and not players:
                 names = {x.strip().lower() for x in types.split(',')}
                 n = sum(1 for x in self.actors if x.alive and x.name.lower() in names and np.linalg.norm(x.pos - p) <= rad)
             else:
@@ -1134,7 +1147,7 @@ class Sim:
         elif name == 'orbital':
             self.orbital(a, ctx, targets)
         elif name in ('aura', 'buff', 'debuff', 'ondamaged', 'onattack', 'onshoot'):
-            self.aura(a, ctx, targets)
+            self.aura(a, ctx, targets, name)
         elif name in ('command', 'consolecommand', 'cmd'):
             c = str(arg(a, '', 'command', 'cmd', 'c')).strip().strip('"').lower().lstrip('/').split()
             if len(c) >= 2 and c[0] in ('meg', 'modelengine'):
@@ -1307,6 +1320,8 @@ class Sim:
                     p['step'] = ap(p['step'], v if act.startswith('MULT') else v / 20 * p['interval'])
                 elif trait in ('RADIUS', 'HITRADIUS'):
                     p['hr'], p['vr'] = ap(p['hr'], v), ap(p['vr'], v)
+                elif trait == 'GRAVITY':
+                    p['gravity'] = ap(p.get('gravity', 0), v if act == 'MULTIPLY' else v / 20)
         elif name in ('endprojectile', 'terminateprojectile'):
             if ctx.mover is not None:
                 self.mover_end(ctx.mover)
@@ -1317,7 +1332,7 @@ class Sim:
                 if np.linalg.norm(d) > 1e-6:
                     p['dir'] = d / np.linalg.norm(d)
         elif name in ('onswing', 'ondeath'):
-            self.aura(a, ctx, targets)
+            self.aura(a, ctx, targets, name)
         elif name in NOOP:
             pass
         else:
@@ -1352,7 +1367,7 @@ class Sim:
                 away[1] = 0
                 n = np.linalg.norm(away)
                 away = away / n * v if n > 1e-6 else np.zeros(3)
-                e.vel = np.array([away[0], vy, away[2]])
+                e.vel = np.clip(np.array([away[0], vy, away[2]]), -6.0, 6.0)
         elif name in ('leap', 'lunge', 'propel'):
             for t in targets:
                 d = t.pos() - ctx.caster.pos()
@@ -1366,9 +1381,11 @@ class Sim:
                 elif name == 'lunge':
                     vel = d / n * min(4, num(arg(a, '1', 'velocity', 'v'), 1)) + [0, num(arg(a, '0', 'velocityy', 'vy'), 0), 0]
                 else:
-                    vel = d / n * num(arg(a, '1', 'velocity', 'v'), 1) / 10
+                    if ctx.caster.entity is None:  # SkillMotion.propel: solo entidades, y se suma a lo que ya lleva
+                        break
+                    vel = ctx.caster.entity.vel + d / n * num(arg(a, '1', 'velocity', 'v'), 1) / 10
                 if ctx.caster.entity is not None:
-                    ctx.caster.entity.vel = vel
+                    ctx.caster.entity.vel = np.clip(vel, -6.0, 6.0)  # SkillMotion.push: como mucho 6 por eje
                 elif ctx.caster.actor is not None:
                     ctx.caster.actor.pos = ctx.caster.actor.pos + vel
                 break
@@ -1776,6 +1793,7 @@ class Sim:
             p['step'] = num(arg(a, '5', 'velocity', 'v'), 5) / 20 * p['interval']
             p['range'] = num(arg(a, '40', 'maxrange', 'mr'), 40)
             p['ticks'] = int(num(arg(a, '400', 'maxduration', 'md', 'duration', 'd'), 400))
+            p['gravity'] = num(arg(a, '0', 'gravity', 'g'), 0) / 20
             p['hug'] = boolean(arg(a, 'false', 'hugsurface', 'hs'))
             p['hfs'] = num(arg(a, '0.5', 'heightfromsurface', 'hfs'), 0.5)
             if p['hug']:
@@ -1946,6 +1964,11 @@ class Sim:
                 if np.linalg.norm(to) > 1e-6:
                     nd = p['dir'] * p['inertia'] + to / np.linalg.norm(to)
                     p['dir'] = nd / np.linalg.norm(nd)
+            if p.get('gravity') and not p['hug']:  # SkillMovers: la gravedad se resta a la velocidad (como MythicMobs)
+                vel = p['dir'] * p['step'] + [0, -p['gravity'] * p['interval'], 0]
+                sp = float(np.linalg.norm(vel))
+                if sp > 1e-6:
+                    p['dir'], p['step'] = vel / sp, sp
             to = p['pos'] + p['dir'] * p['step']
             if p['hug']:
                 to[1] = p['hfs']  # el suelo del mundo de prueba es plano
@@ -2036,7 +2059,7 @@ class Sim:
                 b.pitch = pitch_of(d)
 
     # --- auras (SkillAuras)
-    def aura(self, a, ctx, targets):
+    def aura(self, a, ctx, targets, kind='aura'):
         name = str(arg(a, 'aura', 'auraname', 'aura', 'name', 'n', 'buffname', 'b')).lower()
         dur = int(num(arg(a, '200', 'duration', 'd', 'ticks', 't', 'time'), 200))
         for t in targets:
@@ -2054,12 +2077,29 @@ class Sim:
             au = {'name': name, 'on': t.who, 'ctx': c, 'left': dur, 'interval': int(max(1, num(arg(a, '1', 'interval', 'i'), 1))),
                   'stacks': 1, 'max': int(max(1, num(arg(a, '1', 'maxstacks', 'ms', 'stacks'), 1))),
                   'ontick': arg(a, None, 'ontick', 'ot', 'ontickskill'), 'onend': arg(a, None, 'onend', 'oe', 'onendskill'),
-                  'age': 0, 'alive': True, 'st': st}
+                  'age': 0, 'alive': True, 'st': st, 'kind': kind,
+                  'charges': int(num(arg(a, '0', 'charges', 'c'), 0)),
+                  'onevent': arg(a, None, 'onswing', 'onswingskill', 'os2') if kind == 'onswing' else None}
             st['auras'][name] = au
             self.auras.append(au)
             os_ = arg(a, None, 'onstart', 'os', 'onstartskill')
             if os_:
                 self.run_meta(self.meta(os_), self.aura_ctx(au))
+
+    def swing(self):
+        """SkillAuras.swing: el jugador da un golpe (clic izquierdo): sus auras onSwing"""
+        for au in list(self.state(Who(entity=self.player))['auras'].values()):
+            if not au['alive'] or au.get('kind') != 'onswing':
+                continue
+            if au['onevent']:
+                try:
+                    self.run_meta(self.meta(au['onevent']), self.aura_ctx(au))
+                except CancelSkill:
+                    pass
+            if au['charges'] > 0:
+                au['charges'] -= 1
+                if au['charges'] <= 0:
+                    self.finish_aura(au)
 
     def aura_ctx(self, au):
         c = au['ctx'].copy()

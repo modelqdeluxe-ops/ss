@@ -150,8 +150,13 @@ final class SkillConds {
                 double r = SkillRuntime.num(arg(a, "5", "radius", "r"), 5);
                 String types = arg(a, null, "types", "type", "t", "mobtypes");
                 boolean players = c.m().startsWith("players") || c.m().equals("pir");
+                // mobsInRadius de MythicMobs solo cuenta los mobs de «types»: sin tipos no cuenta ninguno (el remolino
+                // del Arquero pide «mobsinradius{r=5;a=<1}» y debe salir aunque haya enemigos)
+                boolean mobs = c.m().equals("mobsinradius") || c.m().equals("mir");
                 int n = 0;
-                if (types != null && !players) {
+                if (mobs && types == null) {
+                    n = 0;
+                } else if (types != null && !players) {
                     for (SkillActor ac : SkillRuntime.ACTORS) {
                         if (!ac.alive || ac.level != ctx.caster.level() || ac.pos.distanceToSqr(p) > r * r) continue;
                         for (String ty : types.split(",")) if (ty.trim().equalsIgnoreCase(ac.name())) n++;

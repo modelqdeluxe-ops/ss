@@ -373,7 +373,16 @@ final class SkillMovers {
                     Vec3 to = p.homing.getBoundingBox().getCenter().subtract(p.pos);
                     if (to.lengthSqr() > 1e-6) p.dir = p.dir.scale(p.inertia).add(to.normalize()).normalize();
                 }
-                if (p.gravity != 0 && !p.hug) p.dir = p.dir.add(0, -p.gravity * p.interval, 0).normalize();
+                if (p.gravity != 0 && !p.hug) {
+                    // como MythicMobs: la gravedad se resta a la velocidad (bloques por tick), que cambia de rumbo y de
+                    // rapidez (un tiro hacia arriba sube, se para y cae)
+                    Vec3 vel = p.dir.scale(p.step).add(0, -p.gravity * p.interval, 0);
+                    double sp = vel.length();
+                    if (sp > 1e-6) {
+                        p.dir = vel.scale(1 / sp);
+                        p.step = sp;
+                    }
+                }
                 Vec3 to = p.pos.add(p.dir.scale(p.step));
                 if (p.hug) {
                     // Pegado al suelo: sube escalones de hasta «maxclimbheight» y baja lo que haga falta

@@ -31,9 +31,9 @@ final class SkillTargets {
             case "parent", "summoner" -> who(ctx.caster.owner());
             case "trigger" -> who(ctx.trigger != null ? ctx.trigger : ctx.caster);
             case "target", "t", "targetedtarget", "tt", "targetedentity", "targeted" -> target(ctx);
-            case "origin", "o", "source" -> List.of(Tgt.at(origin(ctx).add(0, yOff, 0)));
+            case "origin", "o", "source" -> List.of(Tgt.at(offset(m, ctx, origin(ctx)).add(0, yOff, 0)));
             case "selflocation", "casterlocation", "sl", "bosslocation", "moblocation" ->
-                    List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
+                    List.of(Tgt.at(offset(m, ctx, ctx.caster.pos()).add(0, yOff, 0)));
             case "selfeyelocation", "eyelocation", "casterseyelocation", "boss_eye", "sel", "se" -> {
                 double fo = SkillRuntime.num(m.targetArg("0", "fo", "forwardoffset", "f"), 0);
                 Vec3 eye = ctx.caster.eye().add(0, yOff, 0);
@@ -311,6 +311,15 @@ final class SkillTargets {
         Vec3 from = base;
         if (!lock && ctx.caster.entity != null) from = base.add(0, ctx.caster.entity.getEyeHeight() * 0.0, 0);
         return from.add(d.scale(f)).add(right.scale(side)).add(0, yOff, 0);
+    }
+
+    /** forwardoffset/sideoffset de un sitio, según hacia dónde mira quien lanza (los elixires de la Bruja salen detrás). */
+    private static Vec3 offset(Mech m, Ctx ctx, Vec3 at) {
+        double fo = SkillRuntime.num(m.targetArg("0", "forwardoffset", "fo"), 0);
+        double so = SkillRuntime.num(m.targetArg("0", "sideoffset", "so"), 0);
+        if (fo == 0 && so == 0) return at;
+        float yaw = ctx.caster.yaw();
+        return at.add(SkillRuntime.dir(yaw, 0F).scale(fo)).add(SkillRuntime.dir(yaw + 90F, 0F).scale(so));
     }
 
     private static double radius(Mech m) {
