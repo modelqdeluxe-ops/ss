@@ -123,6 +123,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       jugador (Nigromante, Invocador de Espíritus, Vampiro) son el arma del combo del pack (orbital de radio 0).
 >       `sim --todas` 0 problemas (solo `vampiro bloodborne_blades` «no se lanza»: ya empiezas con hojas),
 >       `check_assets` 0 fallos, `check_mod_items` 0 errores. **No publicado todavía** (falta la web de Skills).
+>       **El jar ya pesa ~48 MB y el envío de archivos admite 30 MB**: se manda como zip dividido
+>       (`zip -j -s 25m tfclient-…zip build/libs/tfclient-…jar` → `.zip` + `.z01`; el dueño los abre con 7-Zip/WinRAR).
 > - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
 >       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
 >       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de
