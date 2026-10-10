@@ -101,7 +101,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       las N primeras `passive-type` de una clase con N ranuras `<PASSIVE>` son pasivas (las demás, con tecla);
 >       acción `cast X` de las condiciones; variable sin poner = `UNDEFINED`; `isChild` = «tiene dueño».
 >       `sim.py --todas`: 0 problemas en las 39; `--trace` enseña por qué una skill no sale.
-> - [x] **Checkpoint 10 oct (tarde)** — sin compilar el jar todavía (falta subir a **1.3.35**):
+> - [x] **Checkpoint 10 oct (tarde):**
 >       textos en español de las 39 (`tools/skills/es.json`); `tools/skills/check_assets.py` (sonidos, modelos de ítem
 >       y de ModelEngine con sus texturas, iconos, fuentes y partículas de 1.20.1: **0 fallos**); modelos rotos de los
 >       Khans (override malo → el del config); iconos de LostAssets sacados del modelo del mob que invocan; los
@@ -110,10 +110,19 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       @owner` desde un esbirro le pone al esbirro el nombre del dueño (así encuentra el aura «<caster.name>TARGET»),
 >       y `<target.name>` de setname se resuelve por cada objetivo de la línea (Java `SkillVars.resolve` + `sim.py`).
 >       `sim.py` tiene ahora un muñeco cerca (2.3 bloques) para probar golpes cuerpo a cuerpo.
->       **Queda:** revisar la lista de skills con daño 0 en el sim (casi todas son buffs/posturas/pasivas; mirar
->       `zephyr air_slash/hurricane_strike`, `katana_fuego *_lc/_rc`, `mago arcane_missile`, `piromante
->       firestorm_volley`, `vampiro bloodborne_*`, `thor mighty_thunder`), revisión visual de las hojas de
->       vista previa, subir a 1.3.35, `./gradlew build`, `check_mod_items.py` y mandar el jar.
+>       Arreglos de motor de la otra sesión (commits `f2eb275`, `374b1e5`): `slash` con onHit (Katana de Fuego),
+>       condiciones `cast X` seguidas al compilar (Misil Arcano), la bala de un proyectil fuera de los selectores de
+>       área salvo por tipo, `vo` de proyectiles y gravedad (granizo de Glacia, lluvia de Null), Firestorm Volley con
+>       una pulsación, elixires de la Bruja, Cyclone Shot del arquero, offsets de @selflocation/@origin.
+>       Skills con daño 0 en el sim revisadas: son pasivas/buffs/posturas o necesitan otra skill antes (detalle en el
+>       PR borrador #58). Duda abierta: el Shift+clic derecho del Samurái de Escarcha (`leap` de MythicMobs) puede
+>       soltar el golpe en el aire; no se tocó (afectaría a 10 clases).
+> - [x] **TF Client 1.3.35 (10 oct)** — las 39 clases de Skills dentro. Revisión visual de las 39 hecha (hojas de 4
+>       fotogramas con `sim.py`): sin texturas rotas ni modelos que falten. Lo que se ve raro en las hojas y está
+>       bien: el cubo gris es la partícula `explosion` dibujada por el sim; la guadaña/lanza/dagas flotando sobre el
+>       jugador (Nigromante, Invocador de Espíritus, Vampiro) son el arma del combo del pack (orbital de radio 0).
+>       `sim --todas` 0 problemas (solo `vampiro bloodborne_blades` «no se lanza»: ya empiezas con hojas),
+>       `check_assets` 0 fallos, `check_mod_items` 0 errores. **No publicado todavía** (falta la web de Skills).
 > - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
 >       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
 >       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de
@@ -1422,7 +1431,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.34)
+## 5. El mod (TF Client 1.3.35)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
