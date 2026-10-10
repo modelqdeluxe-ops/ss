@@ -1,7 +1,7 @@
 {
  "_leeme": "Generado por tools/skills.py (no lo edites a mano: cambia el script y vuelve a ejecutarlo).",
  "price": 599,
- "coinPrice": 30000,
+ "coinPrice": 7500,
  "keys": [
   "R",
   "G",
@@ -55,7 +55,7 @@
    "icon": "img/skills/revenant/lostassets_revenant_lc.png",
    "showcase": "lostassets_revenant_src",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "lostassets_revenant_lc",
@@ -109,7 +109,7 @@
    "icon": "img/skills/arquero/archer_windwalker.png",
    "showcase": "archer_rainofarrows",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "archer_windwalker",
@@ -192,7 +192,7 @@
    "icon": "img/skills/arquero_despertado/blasting_combo.png",
    "showcase": "rapid_arrows",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "ambush",
@@ -275,7 +275,7 @@
    "icon": "img/skills/asesino_despertado/lethal_combo.png",
    "showcase": "last_dance",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "deadly_calm",
@@ -358,7 +358,7 @@
    "icon": "img/skills/bruja/mf_witch_sigil_volley.png",
    "showcase": "mf_witch_spell_circle",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "mf_witch_thread_of_crawling_chaos",
@@ -441,7 +441,7 @@
    "icon": "img/skills/caballero_muerte/death_strike_st.png",
    "showcase": "death_sentence",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "cursed_seal",
@@ -524,7 +524,7 @@
    "icon": "img/skills/caballero_artico/frost_strike.png",
    "showcase": "arctic_charge",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "frostbite",
@@ -607,7 +607,7 @@
    "icon": "img/skills/cazador_bestias/slice_n_dice.png",
    "showcase": "explosive_rush",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "spatial_awareness",
@@ -690,7 +690,7 @@
    "icon": "img/skills/cetus/cetus_slash.png",
    "showcase": "cetus_dragon_surge",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "cetus_slash",
@@ -764,7 +764,7 @@
    "icon": "img/skills/chaman/primal_combo.png",
    "showcase": "earthen_embrace",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "soul_link",
@@ -847,7 +847,7 @@
    "icon": "img/skills/clerigo_despertado/sacred_combo.png",
    "showcase": "divine_cathedral",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "divine_revelation",
@@ -930,7 +930,7 @@
    "icon": "img/skills/dragon_rojo/dragon_claw.png",
    "showcase": "dragon_ultimate",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "dragon_claw",
@@ -1004,7 +1004,7 @@
    "icon": "img/skills/filo_vacio/void_edge_dimension_benediction.png",
    "showcase": "void_edge_piercing_dimension",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "void_edge_dimension_benediction",
@@ -1058,7 +1058,7 @@
    "icon": "img/skills/glacia/frost_bolt.png",
    "showcase": "frost_beam",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "frost_bolt",
@@ -1131,7 +1131,7 @@
    "icon": "img/skills/guerrero/warrior_furiousslash.png",
    "showcase": "warrior_whirlwind",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "warrior_rage",
@@ -1204,7 +1204,7 @@
    "icon": "img/skills/guerrero_llama/blazing_slash.png",
    "showcase": "flame_tiger",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "blazing_spirit",
@@ -1287,7 +1287,7 @@
    "icon": "img/skills/guerrero_despertado/brutal_combo.png",
    "showcase": "bulwark_instinct",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "bulwark_instinct",
@@ -1370,7 +1370,7 @@
    "icon": "img/skills/guerrero_dragon/dragon_slash.png",
    "showcase": "dragon_zone",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "dragon_slash",
@@ -1443,7 +1443,7 @@
    "icon": "img/skills/guja_vendaval/gale_slash.png",
    "showcase": "windbound_fury",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "windrune_blade",
@@ -1526,7 +1526,7 @@
    "icon": "img/skills/invocador/soul_strike.png",
    "showcase": "summon_phoenix",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "soul_strike",
@@ -1599,7 +1599,7 @@
    "icon": "img/skills/invocador_espiritus/spiritual_combo.png",
    "showcase": "spirit_golem",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "ancestral_stallion",
@@ -1682,7 +1682,7 @@
    "icon": "img/skills/katana_fuego/lostassetsanime_firekatana_lc.png",
    "showcase": "lostassetsanime_firekatana_slc",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "lostassetsanime_firekatana_lc",
@@ -1736,7 +1736,7 @@
    "icon": "img/skills/luchador_despertado/martial_combo.png",
    "showcase": "dragon_strike",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "agile_striker",
@@ -1819,7 +1819,7 @@
    "icon": "img/skills/mago/fire_ball.png",
    "showcase": "frost_nova",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "fire_ball",
@@ -1892,7 +1892,7 @@
    "icon": "img/skills/mago_rayo/skill_lightning_bolt.png",
    "showcase": "skill_lightning_wall",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "skill_lightning_bolt",
@@ -1966,7 +1966,7 @@
    "icon": "img/skills/mago_despertado/sorcery_combo.png",
    "showcase": "meteor_of_doom",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "mana_barrier",
@@ -2049,7 +2049,7 @@
    "icon": "img/skills/nigromante/necrotic_combo.png",
    "showcase": "necroknight",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "deathbound_souls",
@@ -2132,7 +2132,7 @@
    "icon": "img/skills/null/void_arrow.png",
    "showcase": "blackhole_shot",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "void_arrow",
@@ -2205,7 +2205,7 @@
    "icon": "img/skills/paladin/lostassets_paladin_lc.png",
    "showcase": "lostassets_paladin_src",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "lostassets_paladin_lc",
@@ -2259,7 +2259,7 @@
    "icon": "img/skills/piromante/pyro_combo.png",
    "showcase": "magma_dash",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "heat_mastery",
@@ -2342,7 +2342,7 @@
    "icon": "img/skills/pistolero_despertado/piercing_combo.png",
    "showcase": "vermilion_execution",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "markmans_creed",
@@ -2425,7 +2425,7 @@
    "icon": "img/skills/picaro/rogue_slice_and_dice.png",
    "showcase": "rogue_smokebomb",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "rogue_vicious_cuts",
@@ -2498,7 +2498,7 @@
    "icon": "img/skills/ronin_trueno/thunder_slash.png",
    "showcase": "flaming_thunder_god",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "lightning_reflex",
@@ -2581,7 +2581,7 @@
    "icon": "img/skills/samurai_escarcha/lostassetsoriginal_frostsamurai_lc.png",
    "showcase": "lostassetsoriginal_frostsamurai_src",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "lostassetsoriginal_frostsamurai_lc",
@@ -2635,7 +2635,7 @@
    "icon": "img/skills/samurai_agua/water_surface_slash.png",
    "showcase": "constant_flux",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "splashing_water_flow_turbulent",
@@ -2718,7 +2718,7 @@
    "icon": "img/skills/sanador/mender_spiritbolt.png",
    "showcase": "mender_lifeweavers_grace",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "mender_lifebound",
@@ -2791,7 +2791,7 @@
    "icon": "img/skills/thor/hammer_strike.png",
    "showcase": "thunder_smash",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "hammer_strike",
@@ -2864,7 +2864,7 @@
    "icon": "img/skills/vampiro/bloodmoon_combo.png",
    "showcase": "bloodborne_scythe",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "bloodbending",
@@ -2947,7 +2947,7 @@
    "icon": "img/skills/zephyr/air_slash.png",
    "showcase": "cyclone",
    "price": 599,
-   "coinPrice": 30000,
+   "coinPrice": 7500,
    "skills": [
     {
      "id": "air_slash",

@@ -142,8 +142,12 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       solo le llegaba al de la mira); los displays no salen en `@EIR/@ENO` salvo que se busquen por tipo;
 >       `@forward{ofowner}`, `targetSelf` (curas del Clérigo), `livingOnly`, `targetArmorStands`.
 > - [x] **Web: sección «Skills»** en lugar de «Tienda de monedas» (`tools/skills.py` → `config/skills.json` +
->       `public/img/skills/`; precio por defecto **5,99 USD o 30.000 monedas** para todas, en `PRICE_CENTS`/`COIN_PRICE`
->       al principio de `tools/skills.py` — **el dueño aún no ha dicho precios**). Compra con Stripe/PayPal y con
+>       `public/img/skills/`; precio **5,99 USD o 7.500 monedas** para todas, en `PRICE_CENTS`/`COIN_PRICE` al
+>       principio de `tools/skills.py`). Las monedas salen de la economía del pad (estimado: un jugador normal, 2 h/día,
+>       gana ~450/día con oficio ~160, misiones de oficio ~75, diarias del pad ~50, semanales ~25, cazas ~100, ventas
+>       ~50; uno activo 4 h ~1.000/día) → una clase en ~2 semanas jugando normal o ~1 semana activo; pagar es el atajo.
+>       Ojo: la venta de diamantes (40, tope 64/día) y chatarra de netherita (180, tope 16/día) deja sacar hasta ~5.400
+>       al día a quien farmee eso. Compra con Stripe/PayPal y con
 >       monedas (`tf web monedas quitar {player} N` por el puente); las clases compradas son para siempre y se elige
 >       la activa en la web (tabla `skill_active`); `/bridge/poll` manda `skills: [{uuid, clase, at}]`. Términos a
 >       versión 2026-10-10.1 (producto nuevo: todos vuelven a aceptarlos). El maná no se enseña (el mod no lo gasta).
