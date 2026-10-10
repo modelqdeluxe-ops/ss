@@ -45,6 +45,21 @@ public final class SkillActor {
     float animSpeed = 1F;
     /** Para no durar para siempre si nadie lo quita. */
     static final int MAX_AGE = 20 * 60;
+    /** setname: el nombre con el que lo nombran sus skills (&lt;caster.name&gt;). */
+    String customName;
+    /** Esbirros (mobs con IA en el pack): a quién ataca, si tiene la IA puesta (setai) y su velocidad (setspeed). */
+    net.minecraft.world.entity.LivingEntity target;
+    boolean ai = true;
+    double speedMul = 1.0;
+    boolean walking;
+    /** El jugador montado en él (mountmodel). */
+    Entity rider;
+    /** Texto de un text_display (settextdisplay): letras de la fuente de la clase o texto normal. */
+    String text;
+    float scale = 1F;
+    /** spin: grados por tick que gira sobre sí mismo y hasta qué edad. */
+    float spin;
+    int spinUntil;
 
     SkillActor(SkillDefs.ClassDef cls, SkillDefs.MobDef def, ServerLevel level, Vec3 pos, float yaw, float pitch,
                SkillRuntime.Who owner) {
@@ -70,20 +85,66 @@ public final class SkillActor {
 
     SkillNet.Spawn spawnMessage() {
         return new SkillNet.Spawn(id, pos.x, pos.y, pos.z, yaw, pitch, head, me, def != null && def.small,
-                follow == null ? -1 : follow.getId(), hideHost, 0F, hand, anim);
+                follow == null ? -1 : follow.getId(), hideHost, 0F, hand, anim, cls == null ? "" : cls.id,
+                def == null ? "" : def.name, text, scale);
+    }
+
+    void setText(String t) {
+        text = t;
+        prop("text", t, null, null);
+    }
+
+    /** signal{s=X}: lanza sus mecánicas ~onSignal:X (quien la manda queda como trigger). */
+    void signal(String sig, SkillRuntime.Who from) {
+        if (!alive || def == null) return;
+        for (SkillDefs.Mech mm : def.mechs) {
+            if (!"onsignal".equals(mm.tr) || mm.trv == null || !mm.trv.equalsIgnoreCase(sig)) continue;
+            SkillRuntime.Ctx c = new SkillRuntime.Ctx(cls, who);
+            c.origin = pos;
+            c.trigger = from;
+            c.aim = target;
+            SkillRuntime.exec(mm, c);
+        }
+    }
+
+    /** Las mecánicas ~onDespawn (al quitarlo): sus skills de «me voy» (restar esbirros, animación de irse). */
+    private void despawnTriggers() {
+        if (def == null) return;
+        for (SkillDefs.Mech mm : def.mechs) {
+            if (!"ondespawn".equals(mm.tr) && !"onremove".equals(mm.tr)) continue;
+            SkillRuntime.Ctx c = new SkillRuntime.Ctx(cls, who);
+            c.origin = pos;
+            c.trigger = owner;
+            try {
+                SkillRuntime.exec(mm, c);
+            } catch (RuntimeException ignored) {
+                // nada que hacer: ya se va
+            }
+        }
     }
 
     void prop(String key, String a, String b, String c) {
         SkillNet.near(level, pos, new SkillNet.Prop(id, key, a, b, c));
     }
 
+    private boolean leaving;
+
     void remove() {
-        if (!alive) return;
+        if (!alive || leaving) return;
+        leaving = true;
+        despawnTriggers();
         alive = false;
         prop("remove", null, null, null);
+        SkillModels.unmounted(this);
     }
 
+    /** El tipo de mob del pack (para ?mythicmobtype). */
     String name() {
         return def == null ? "" : def.name;
+    }
+
+    /** Como lo llaman sus skills: el que le puso setname o el tipo. */
+    String displayName() {
+        return customName != null ? customName : name();
     }
 }

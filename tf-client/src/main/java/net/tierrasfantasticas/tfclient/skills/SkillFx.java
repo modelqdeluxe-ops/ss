@@ -151,6 +151,137 @@ final class SkillFx {
         }
     }
 
+    /** hide{duration} / showentity: quien lanza no se ve (para todos, con lo que lleva) un rato, o se vuelve a ver. */
+    static void hide(Mech m, Ctx ctx, List<Tgt> targets, boolean hide) {
+        int ticks = hide ? (int) Math.max(1, SkillRuntime.num(m.arg("40", "duration", "d", "ticks", "t"), 40)) : 0;
+        for (Tgt t : targets) {
+            if (t.entity() == null) continue;
+            Vec3 p = t.pos();
+            send(ctx.caster.level(), p, new SkillNet.Fx(5, String.valueOf(t.entity().getId()), p.x, p.y, p.z, ticks, 0, 0, 0, 0, 0,
+                    null, 0, 0, 0, 0));
+        }
+    }
+
+    /**
+     * sendtitle{title;subtitle;d;fi;fo}: título en la pantalla del jugador. Las letras que son imágenes del pack (la
+     * pantalla de la Bruja) van con la fuente de la clase.
+     */
+    static void title(Mech m, Ctx ctx, List<Tgt> targets) {
+        String title = SkillRuntime.unquote(m.arg("", "title", "t"));
+        String sub = SkillRuntime.unquote(m.arg("", "subtitle", "st", "s"));
+        int stay = (int) SkillRuntime.num(m.arg("40", "duration", "d", "stay"), 40);
+        int fadeIn = (int) SkillRuntime.num(m.arg("0", "fadein", "fi"), 0);
+        int fadeOut = (int) SkillRuntime.num(m.arg("0", "fadeout", "fo"), 0);
+        for (Tgt t : targets) {
+            if (!(t.entity() instanceof net.minecraft.server.level.ServerPlayer p)) continue;
+            p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
+            p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(styled(sub, ctx)));
+            p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(styled(title, ctx)));
+        }
+    }
+
+    /** Un texto de un pack: sus letras-imagen con la fuente de la clase; el resto, normal (sin los &códigos). */
+    static net.minecraft.network.chat.Component styled(String text, Ctx ctx) {
+        String clean = text.replaceAll("[&§][0-9a-fk-orA-FK-OR]", "");
+        String glyphs = ctx.cls.glyphs;
+        net.minecraft.network.chat.MutableComponent out = net.minecraft.network.chat.Component.empty();
+        net.minecraft.network.chat.Style font = net.minecraft.network.chat.Style.EMPTY.withFont(
+                new net.minecraft.resources.ResourceLocation(net.tierrasfantasticas.tfclient.TFClient.MOD_ID, "skills_" + ctx.cls.id))
+                .withColor(net.minecraft.ChatFormatting.WHITE);
+        StringBuilder plain = new StringBuilder();
+        clean.codePoints().forEach(cp -> {
+            String ch = new String(Character.toChars(cp));
+            if (!glyphs.isEmpty() && glyphs.contains(ch)) {
+                if (plain.length() > 0) {
+                    out.append(net.minecraft.network.chat.Component.literal(plain.toString()));
+                    plain.setLength(0);
+                }
+                out.append(net.minecraft.network.chat.Component.literal(ch).withStyle(font));
+            } else {
+                plain.append(ch);
+            }
+        });
+        if (plain.length() > 0) out.append(net.minecraft.network.chat.Component.literal(plain.toString()));
+        return out;
+    }
+
+    /**
+     * slash{w;h;a;roll;rot;d;p;fo;y;op}: un tajo dibujado: un arco de elipse (ancho w, alto h, «a» grados) delante del
+     * objetivo, girado «roll» sobre la dirección a la que mira quien lanza, que se va dibujando en «d» ticks; en cada
+     * punto se lanza la skill «op» (sus partículas).
+     */
+    static void slash(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillDefs.Meta onPoint = ctx.cls.meta(m.arg(null, "onpoint", "op", "onpointskill"));
+        double w = SkillRuntime.num(m.arg("3", "width", "w"), 3) / 2;
+        double h = SkillRuntime.num(m.arg(String.valueOf(w * 2), "height", "h"), w * 2) / 2;
+        double arc = Math.toRadians(SkillRuntime.num(m.arg("180", "angle", "a", "arc"), 180));
+        double roll = SkillRuntime.num(m.arg("0", "roll", "rl"), 0);
+        String rot = m.arg(null, "rot", "rotation");
+        if (rot != null) {
+            String[] r = rot.split(",");
+            if (r.length >= 3) roll += SkillRuntime.num(r[2], 0);
+        }
+        int dur = (int) Math.max(0, SkillRuntime.num(m.arg("0", "duration", "d"), 0));
+        int points = (int) Math.max(2, Math.min(240, SkillRuntime.num(m.arg("30", "points", "p"), 30)));
+        double fo = SkillRuntime.num(m.arg("0", "forwardoffset", "fo"), 0);
+        double yo = SkillRuntime.num(m.arg("0", "yoffset", "y"), 0);
+        if (onPoint == null) return;
+        float yaw = ctx.caster.yaw();
+        Vec3 fwd = SkillRuntime.dir(yaw, 0F), right = SkillRuntime.dir(yaw + 90F, 0F), up = new Vec3(0, 1, 0);
+        double rr = Math.toRadians(roll);
+        // el plano del tajo: horizontal (right/fwd) girado «roll» alrededor de fwd
+        Vec3 axisA = right.scale(Math.cos(rr)).add(up.scale(Math.sin(rr)));
+        for (Tgt t : targets) {
+            Vec3 c = t.pos().add(fwd.scale(fo)).add(0, yo, 0);
+            for (int i = 0; i < points; i++) {
+                double k = (double) i / (points - 1);
+                double ang = -arc / 2 + arc * k;
+                // de un lado al otro por delante (la elipse va hacia delante: «h» es lo que entra)
+                Vec3 p = c.add(axisA.scale(Math.sin(ang) * w)).add(fwd.scale(Math.cos(ang) * h - h * 0.5));
+                int when = dur <= 0 ? 0 : (int) Math.round(k * dur);
+                SkillRuntime.later(when, () -> point(ctx, onPoint, p));
+            }
+        }
+    }
+
+    /**
+     * polygon{p;skip;scale;yaw;db;y;os;oe}: un polígono (o estrella: une cada punto con el que está «skip» más allá)
+     * en el suelo, de «scale» bloques; en las esquinas la skill «os» y por los lados, cada «db» bloques, la «oe».
+     */
+    static void polygon(Mech m, Ctx ctx, List<Tgt> targets) {
+        int pts = (int) Math.max(1, Math.min(64, SkillRuntime.num(m.arg("5", "points", "p"), 5)));
+        int skip = (int) Math.max(1, SkillRuntime.num(m.arg("1", "skip", "s"), 1));
+        double scale = SkillRuntime.num(m.arg("3", "scale", "radius", "r"), 3);
+        double yaw0 = Math.toRadians(SkillRuntime.num(m.arg("0", "yaw", "rotation"), 0));
+        double db = Math.max(0.1, SkillRuntime.num(m.arg("0.5", "distancebetween", "db"), 0.5));
+        double y = SkillRuntime.num(m.arg("0", "yoffset", "y"), 0);
+        SkillDefs.Meta corner = ctx.cls.meta(m.arg(null, "onstart", "os", "onvertex"));
+        SkillDefs.Meta edge = ctx.cls.meta(m.arg(null, "onend", "oe", "onpoint", "op"));
+        if (corner == null && edge == null) return;
+        for (Tgt t : targets) {
+            Vec3 c = t.pos().add(0, y, 0);
+            Vec3[] v = new Vec3[pts];
+            for (int i = 0; i < pts; i++) {
+                double a = yaw0 + Math.PI * 2 * i / pts;
+                v[i] = c.add(Math.cos(a) * scale, 0, Math.sin(a) * scale);
+                if (corner != null) point(ctx, corner, v[i]);
+            }
+            if (edge == null || skip % pts == 0) continue;
+            for (int i = 0; i < pts; i++) {
+                Vec3 a = v[i], b = v[(i + skip) % pts];
+                int n = (int) Math.min(200, Math.ceil(a.distanceTo(b) / db));
+                for (int k = 1; k < n; k++) point(ctx, edge, a.lerp(b, (double) k / n));
+            }
+        }
+    }
+
+    private static void point(Ctx ctx, SkillDefs.Meta skill, Vec3 p) {
+        Ctx c = ctx.copy();
+        c.origin = p;
+        c.targets = List.of(Tgt.at(p));
+        SkillRuntime.runMeta(skill, c);
+    }
+
     private static void send(ServerLevel level, Vec3 at, SkillNet.Fx fx) {
         SkillNet.near(level, at, fx);
     }

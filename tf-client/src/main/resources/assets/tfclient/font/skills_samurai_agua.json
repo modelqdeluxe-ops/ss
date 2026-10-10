@@ -1,0 +1,58 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/samurai_agua/glyph/vfx_water_impact_1.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ᝠ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/samurai_agua/glyph/vfx_water_impact_2.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ᝡ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/samurai_agua/glyph/vfx_water_impact_3.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ᝢ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/samurai_agua/glyph/vfx_water_impact_4.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ᝣ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/samurai_agua/glyph/vfx_water_impact_5.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ᝤ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/samurai_agua/glyph/vfx_water_impact_6.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ᝥ"
+   ]
+  }
+ ]
+}

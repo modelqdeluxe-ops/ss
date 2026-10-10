@@ -39,6 +39,7 @@ OUT_ITEM_MODELS = os.path.join(RES, 'models', 'skills')
 OUT_SOUNDS = os.path.join(RES, 'sounds', 'skills')
 OUT_ICONS = os.path.join(RES, 'textures', 'gui', 'skills')
 SOUNDS_JSON = os.path.join(RES, 'sounds.json')
+OUT_FONTS = os.path.join(RES, 'font')
 
 # Prioridad de los resource packs dentro de un pack (el primero que tenga el archivo gana)
 ROOT_ORDER = [r'resourcepack \(for players\)', r'raw resource pack', r'for vanilla', r'modelengine',
@@ -54,7 +55,24 @@ def slug(s):
 # Nombre de la clase en el mod y en la web (id corto y estable)
 CLASS_IDS = {
     'Glacia-v1.2': 'glacia', 'ZEPHYR-v1.3': 'zephyr', 'Red-DragonPack': 'dragon_rojo', 'MAGEPACK-1.1': 'mago',
-    'samus2002_NECROMANCER': 'nigromante', 'THORPACK-1.3': 'thor', 'NULLPACK-1.1': 'null',
+    'THORPACK-1.3': 'thor', 'NULLPACK-1.1': 'null',
+    'AWAKENED_WARRIOR': 'guerrero_despertado', 'HEROES_FLAME_WARRIOR': 'guerrero_llama',
+    'HEROES_WATER_SAMURAI': 'samurai_agua', 'Khans_RPG_Klasses_-_Archer': 'arquero',
+    'Khans_RPG_Klasses_-_Mender_v1.0.1': 'sanador', 'Khans_RPG_Klasses_-_Rogue': 'picaro',
+    'LostAssets_ClassPack_03_Paladin': 'paladin', 'LostAssets_ClassPack_04_Revenant': 'revenant',
+    'LostAssets_OriginalClassPack_01_FrostSamurai': 'samurai_escarcha', 'Lost_Loong-Cetus_POKMAGOON_SFILE.MOBI': 'cetus',
+    'ModelFoundrys_Witch_Class_1.1.0': 'bruja', 'PackClass_Magic_Lightning': 'mago_rayo',
+    'RPG_Class_Series_Dragon_Warrior': 'guerrero_dragon', 'RRPG_Void_Edge_Class_Full': 'filo_vacio',
+    'Warrior_Class': 'guerrero', 'fire_katana': 'katana_fuego',
+    'samus2002_ARCTIC_KNIGHT_PACK_v1.1': 'caballero_artico', 'samus2002_AWAKENED_ARCHER': 'arquero_despertado',
+    'samus2002_AWAKENED_ASSASSIN': 'asesino_despertado', 'samus2002_AWAKENED_CLERIC': 'clerigo_despertado',
+    'samus2002_AWAKENED_GUNSLINGER': 'pistolero_despertado', 'samus2002_AWAKENED_MAGE': 'mago_despertado',
+    'samus2002_AWAKENED_MARTIAL_ARTIST': 'luchador_despertado', 'samus2002_AWAKENED_NECROMANCER': 'nigromante',
+    'samus2002_AWAKENED_PYROMANCER_v1.1': 'piromante', 'samus2002_AWAKENED_SHAMAN': 'chaman',
+    'samus2002_AWAKENED_SPIRITCALLER': 'invocador_espiritus', 'samus2002_BLOODMOON_VAMPIRE_PACK-3mhvfc': 'vampiro',
+    'samus2002_DEATH_KNIGHT_PACK_v1.1': 'caballero_muerte', 'samus2002_GALE_GLAIVE_PACK_v1.1': 'guja_vendaval',
+    'samus2002_HEROES_BEAST_SLAYER': 'cazador_bestias', 'samus2002_HEROES_THUNDER_RONIN': 'ronin_trueno',
+    'samus2002_SUMMONER_PACK_v1.7': 'invocador',
 }
 
 
@@ -73,6 +91,7 @@ SKIP_PACKS = {'samus2002_NECROMANCER'}
 # Tandas publicadas: solo estas clases entran en el mod (y en la web). Se añade una tanda cada vez.
 TANDAS = [
     ['Glacia-v1.2', 'ZEPHYR-v1.3', 'MAGEPACK-1.1', 'Red-DragonPack', 'THORPACK-1.3'],
+    sorted(set(CLASS_IDS) - {'Glacia-v1.2', 'ZEPHYR-v1.3', 'MAGEPACK-1.1', 'Red-DragonPack', 'THORPACK-1.3'}),
 ]
 RELEASED = {p for t in TANDAS for p in t}
 
@@ -372,9 +391,94 @@ def similar_sound(sounds, key):
 
 # ---------------------------------------------------------------------------------------------------------------
 
+def pack_glyphs(pack):
+    """Los glifos de las fuentes del pack: carácter → (png, ascent, height). Los packs dibujan impactos y pantallas
+    enteras con letras de una fuente («settextdisplay{text=ក}», «sendtitle{subtitle=𡰀}»): cada letra es una imagen."""
+    out = {}
+    fonts = []
+    for r in pack.roots:
+        for ns in os.listdir(r):
+            d = os.path.join(r, ns, 'font')
+            if os.path.isdir(d):
+                fonts += [(os.path.join(d, f), ns, r) for f in sorted(os.listdir(d)) if f.endswith('.json')]
+    for r in pack.oraxen:
+        d = os.path.join(r, 'font')
+        if os.path.isdir(d):
+            fonts += [(os.path.join(d, f), 'minecraft', None) for f in sorted(os.listdir(d)) if f.endswith('.json')]
+    for path, ns, _ in fonts:
+        try:
+            data = json.load(open(path, encoding='utf-8'))
+        except Exception:  # noqa: BLE001
+            continue
+        for prov in data.get('providers') or []:
+            if prov.get('type') != 'bitmap' or not prov.get('file') or not prov.get('chars'):
+                continue
+            fns, _, fpath = prov['file'].rpartition(':')
+            fns = fns or 'minecraft'
+            png = pack.find(f'{fns}/textures/{fpath}')
+            if not png:
+                continue
+            rows = prov['chars']
+            for ri, row in enumerate(rows):
+                for ci, ch in enumerate(row):
+                    if ch in out or ch == '\u0000':
+                        continue
+                    out[ch] = {'png': png, 'ascent': prov.get('ascent', 7), 'height': prov.get('height', 8),
+                               'rows': len(rows), 'cols': len(row), 'row': ri, 'col': ci}
+    return out
+
+
+def write_glyphs(pack, prog):
+    """Los glifos que usan las skills de la clase → textures/skills/<clase>/glyph/ y la fuente tfclient:skills_<clase>.
+    Devuelve los caracteres que tiene (para que el cliente sepa cuáles dibujar con ella)."""
+    glyphs = pack_glyphs(pack)
+    used = set()
+    for coll in list(prog['tree'].values()) + list(prog['mobs'].values()):
+        for pm in coll['mechs']:
+            if pm['m'] in ('settextdisplay', 'sendtitle', 'message', 'actionmessage', 'title'):
+                for v in pm['a'].values():
+                    used |= {ch for ch in str(v) if ch in glyphs}
+    font_path = os.path.join(OUT_FONTS, f'skills_{pack.id}.json')
+    if not used:
+        if os.path.exists(font_path):
+            os.remove(font_path)
+        return ''
+    providers, done = [], {}
+    for ch in sorted(used):
+        g = glyphs[ch]
+        if g['rows'] != 1 or g['cols'] != 1:
+            # una hoja con varias letras: se recorta la de este carácter
+            img = Image.open(g['png']).convert('RGBA')
+            w, h = img.width // g['cols'], img.height // g['rows']
+            img = img.crop((g['col'] * w, g['row'] * h, (g['col'] + 1) * w, (g['row'] + 1) * h))
+            key = (g['png'], g['row'], g['col'])
+        else:
+            img, key = None, g['png']
+        if key not in done:
+            name = slug(os.path.splitext(os.path.basename(g['png']))[0])
+            if img is not None:
+                name += f'_{g["row"]}_{g["col"]}'
+            dest = os.path.join(OUT_TEX, pack.id, 'glyph', name + '.png')
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            if img is not None:
+                img.save(dest)
+            else:
+                shutil.copyfile(g['png'], dest)
+            done[key] = f'tfclient:skills/{pack.id}/glyph/{name}.png'
+        providers.append({'type': 'bitmap', 'file': done[key], 'ascent': min(g['ascent'], g['height']),
+                          'height': g['height'], 'chars': [ch]})
+    os.makedirs(OUT_FONTS, exist_ok=True)
+    with open(font_path, 'w', encoding='utf-8') as f:
+        json.dump({'providers': providers}, f, ensure_ascii=False, indent=1)
+    return ''.join(sorted(used))
+
+
+SHARED = {}
+
+
 def build_pack(path, sound_events, name=None):
     pack = Pack(path, name)
-    prog = C.compile_pack(path)
+    prog = C.compile_pack(path, SHARED)
     models = ItemModels(pack)
     sounds = pack_sounds(pack)
     used_sounds = {}
@@ -529,10 +633,13 @@ def build_pack(path, sound_events, name=None):
             pack.problems.append(f'skill sin texto en español: {sk["id"]}')
     prog['class'] = cls_info
     cset, mm_items = class_set(pack, prog, models, LANG_ES, LANG_EN)
+    glyphs = write_glyphs(pack, prog)
+    # Skills que el pack llama pero no define (en MythicMobs esas líneas no hacen nada)
+    missing = sorted(m.split(':', 1)[1] for m in prog.get('missing', []) if m.startswith('skill:'))
     out = {'id': pack.id, 'pack': pack.name, 'class': prog['class'], 'skills': prog['skills'], 'icons': icons,
            'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
-           'weapons': prog['weapons'], 'armor': prog['armor']}
+           'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing}
     os.makedirs(OUT_CLASSES, exist_ok=True)
     with open(os.path.join(OUT_CLASSES, pack.id + '.json'), 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
@@ -834,12 +941,16 @@ def main():
         only = set(RELEASED)
         for d in (OUT_CLASSES, OUT_MODELS, OUT_TEX, OUT_ITEM_MODELS, OUT_SOUNDS, OUT_ICONS):
             shutil.rmtree(d, ignore_errors=True)
+        for f in os.listdir(OUT_FONTS) if os.path.isdir(OUT_FONTS) else []:
+            if f.startswith('skills_'):
+                os.remove(os.path.join(OUT_FONTS, f))
         for d in (OUT_ITEM_JSON, OUT_ARMOR):
             for f in os.listdir(d) if os.path.isdir(d) else []:
                 if f.startswith('clase_'):
                     os.remove(os.path.join(d, f))
     sound_events = {}
     catalog = []
+    SHARED.update(C.shared_files(root))
     for name in sorted(os.listdir(root)):
         d = pack_path(root, name)
         if os.path.isdir(d):
@@ -857,7 +968,7 @@ def main():
                         'skills': [s['id'] for s in out['skills']]})
         print(f"{pack.id:24s} {len(out['skills'])} skills, {len(out['models'])} modelos ME, "
               f"{len(out['item_models'])} modelos de ítem, {len(out['icons'])} iconos, problemas: {len(pack.problems)}")
-        for p in pack.problems[:8]:
+        for p in pack.problems[:int(os.environ.get("MAXP", 8))]:
             print('   -', p)
     # sounds.json: se conservan los eventos que no son de skills
     sj = json.load(open(SOUNDS_JSON, encoding='utf-8')) if os.path.exists(SOUNDS_JSON) else {}

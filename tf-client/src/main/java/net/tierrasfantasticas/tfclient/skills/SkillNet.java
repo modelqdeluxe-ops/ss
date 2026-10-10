@@ -48,6 +48,8 @@ public final class SkillNet {
                 .encoder(Prop::write).decoder(Prop::read).consumerMainThread(Prop::handle).add();
         CHANNEL.messageBuilder(Fx.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(Fx::write).decoder(Fx::read).consumerMainThread(Fx::handle).add();
+        CHANNEL.messageBuilder(Swing.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Swing::write).decoder(Swing::read).consumerMainThread(Swing::handle).add();
     }
 
     // ------------------------------------------------------------------------------------------- jugador → servidor
@@ -65,6 +67,21 @@ public final class SkillNet {
         static void handle(Cast m, Supplier<NetworkEvent.Context> ctx) {
             ServerPlayer player = ctx.get().getSender();
             if (player != null) SkillServer.castSlot(player, m.slot);
+        }
+    }
+
+    /** Ha dado un golpe (clic izquierdo, también al aire): para las auras onSwing de MythicMobs. */
+    public record Swing() {
+        static void write(Swing m, FriendlyByteBuf buf) {
+        }
+
+        static Swing read(FriendlyByteBuf buf) {
+            return new Swing();
+        }
+
+        static void handle(Swing m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer player = ctx.get().getSender();
+            if (player != null) SkillAuras.swing(player);
         }
     }
 
@@ -93,7 +110,8 @@ public final class SkillNet {
      * convertido en el modelo, como el traje del Dragón Rojo).
      */
     public record Spawn(int id, double x, double y, double z, float yaw, float pitch, String head, String me, boolean small,
-                        int follow, boolean hideHost, float headPitch, String hand, String anim) {
+                        int follow, boolean hideHost, float headPitch, String hand, String anim, String cls, String mob,
+                        String text, float scale) {
         static void write(Spawn m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.id);
             buf.writeDouble(m.x);
@@ -109,12 +127,17 @@ public final class SkillNet {
             buf.writeFloat(m.headPitch);
             buf.writeUtf(m.hand == null ? "" : m.hand, 256);
             buf.writeUtf(m.anim == null ? "" : m.anim, 128);
+            buf.writeUtf(m.cls == null ? "" : m.cls, 64);
+            buf.writeUtf(m.mob == null ? "" : m.mob, 128);
+            buf.writeUtf(m.text == null ? "" : m.text, 256);
+            buf.writeFloat(m.scale);
         }
 
         static Spawn read(FriendlyByteBuf buf) {
             return new Spawn(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readFloat(),
                     buf.readFloat(), emptyNull(buf.readUtf(256)), emptyNull(buf.readUtf(128)), buf.readBoolean(),
-                    buf.readVarInt() - 1, buf.readBoolean(), buf.readFloat(), emptyNull(buf.readUtf(256)), emptyNull(buf.readUtf(128)));
+                    buf.readVarInt() - 1, buf.readBoolean(), buf.readFloat(), emptyNull(buf.readUtf(256)), emptyNull(buf.readUtf(128)),
+                    buf.readUtf(64), buf.readUtf(128), emptyNull(buf.readUtf(256)), buf.readFloat());
         }
 
         static void handle(Spawn m, Supplier<NetworkEvent.Context> ctx) {
@@ -160,7 +183,8 @@ public final class SkillNet {
     /**
      * Cambia algo de un actor: «head» (modelo en la cabeza), «me» (modelo de ModelEngine), «state» (animación:
      * nombre y velocidad), «stop» (deja una animación), «part» (hueso → hueso de otro modelo), «vis» (enseña u
-     * oculta un hueso), «tint» (color), «remove» (desaparece).
+     * oculta un hueso), «tint» (color), «remove» (desaparece), «text» (texto del display), «walk» (anda / quieto),
+     * «scale» (escala del modelo), «mount» (lleva a un jugador montado: id de la entidad y altura).
      */
     public record Prop(int id, String key, String a, String b, String c) {
         static void write(Prop m, FriendlyByteBuf buf) {
@@ -182,8 +206,9 @@ public final class SkillNet {
 
     /**
      * Partículas o un sonido. kind 0: partículas en un punto (n, desvío horizontal y vertical, velocidad); 1: esfera
-     * (radio); 2: anillo (radio, puntos); 3: línea hasta (x2, y2, z2) cada «radio» bloques; 9: sonido (id, volumen,
-     * tono). extra: color «#rrggbb» o bloque para las de bloque.
+     * (radio); 2: anillo (radio, puntos); 3: línea hasta (x2, y2, z2) cada «radio» bloques; 4: bloques que se ven
+     * cambiados (blockmask); 5: esconder una entidad n ticks (id = su número; n = 0, se vuelve a ver); 6: retroceso de
+     * la cámara (hs = grados hacia arriba); 9: sonido (id, volumen, tono). extra: color «#rrggbb» o bloque.
      */
     public record Fx(int kind, String id, double x, double y, double z, int n, float hs, float vs, float speed,
                      float radius, int points, String extra, float size, double x2, double y2, double z2) {

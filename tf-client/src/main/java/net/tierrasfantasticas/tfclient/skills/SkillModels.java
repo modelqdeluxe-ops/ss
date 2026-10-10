@@ -79,6 +79,11 @@ final class SkillModels {
             if (a == null) continue;
             a.me = mid;
             a.anim = null;
+            float sc = (float) SkillRuntime.num(m.arg("1", "scale", "s", "size"), 1);
+            if (sc > 0 && sc != a.scale) {
+                a.scale = sc;
+                if (!isNew) a.prop("scale", String.valueOf(sc), null, null);
+            }
             if (isNew) {
                 SkillNet.near(a.level, a.pos, a.spawnMessage());
             } else {
@@ -105,6 +110,58 @@ final class SkillModels {
                 a.prop("state", s, String.valueOf(speed), null);
             }
         }
+    }
+
+    /** setmodelscale{scale}: el modelo más grande o más pequeño. */
+    static void scale(Mech m, Ctx ctx, List<Tgt> targets) {
+        float sc = (float) SkillRuntime.num(m.arg("1", "scale", "s", "amount", "a"), 1);
+        if (sc <= 0) return;
+        for (Tgt t : targets) {
+            SkillActor a = holder(t, false, ctx);
+            if (a == null) continue;
+            a.scale = sc;
+            a.prop("scale", String.valueOf(sc), null, null);
+        }
+    }
+
+    /**
+     * mountmodel @owner (desde el efecto): el jugador se monta en el modelo (el caballo del Invocador). El modelo va
+     * con él (anda el jugador) y al jugador se le dibuja subido encima.
+     */
+    static void mount(Mech m, Ctx ctx, List<Tgt> targets) {
+        SkillActor a = ctx.caster.actor;
+        if (a == null) return;
+        for (Tgt t : targets) {
+            Entity e = t.entity();
+            if (e == null) continue;
+            a.rider = e;
+            a.follow = e;
+            a.hideHost = false;
+            a.prop("mount", String.valueOf(e.getId()), "1.0", null);
+            break;
+        }
+    }
+
+    static void dismount(Ctx ctx, List<Tgt> targets) {
+        for (Tgt t : targets) {
+            Entity e = t.entity();
+            if (e == null) continue;
+            SkillActor a = mountedBy(e);
+            if (a == null) continue;
+            a.rider = null;
+            a.follow = null;
+            a.prop("mount", "", null, null);
+        }
+    }
+
+    /** El efecto en el que va montado alguien (null si no). */
+    static SkillActor mountedBy(Entity e) {
+        for (SkillActor a : SkillRuntime.ACTORS) if (a.alive && a.rider == e) return a;
+        return null;
+    }
+
+    static void unmounted(SkillActor a) {
+        a.rider = null;
     }
 
     static void changePart(Mech m, Ctx ctx, List<Tgt> targets) {
@@ -159,8 +216,9 @@ final class SkillModels {
         SkillActor a = holder(Tgt.of(ctx.caster), false, ctx);
         if (a == null || a.me == null || part == null) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
         VfxModel model = load(a.me);
-        int b = model == null ? -1 : model.bone(part);
-        if (b < 0) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
+        if (model == null) return List.of(Tgt.at(ctx.caster.pos().add(0, yOff, 0)));
+        int b = model.bone(part);
+        if (b < 0) return List.of(); // como ModelEngine: sin ese hueso no hay sitio
         Matrix4f[] mats = new Matrix4f[model.bones.length];
         for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
         VfxModel.Anim anim = a.anim == null ? model.anims.get("idle") : model.anims.get(a.anim);

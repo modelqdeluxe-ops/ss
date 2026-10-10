@@ -49,7 +49,8 @@ final class SkillMotion {
 
     static void pull(Mech m, Ctx ctx, List<Tgt> targets) {
         double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1) / 10.0;
-        Vec3 to = ctx.caster.pos();
+        // to=true: hacia el origen de la skill (el centro del remolino), no hacia quien lanza
+        Vec3 to = SkillRuntime.bool(m.arg("false", "toorigin", "to")) ? SkillTargets.origin(ctx) : ctx.caster.pos();
         for (Tgt t : targets) {
             Entity e = t.entity();
             if (e == null || !movable(ctx, e)) continue;
@@ -199,6 +200,85 @@ final class SkillMotion {
             le.setDeltaMovement(0, Math.min(0, le.getDeltaMovement().y), 0);
             le.hurtMarked = true;
         }
+    }
+
+    /**
+     * directionalvelocity{yaw;pitch;velocity;mode}: empuja a los objetivos hacia un lado concreto (el giro de quien
+     * lanza ± algo). mode=MINIMUM: solo si ahora van más despacio que eso.
+     */
+    static void directional(Mech m, Ctx ctx, List<Tgt> targets) {
+        float yaw = (float) SkillRuntime.num(m.arg(String.valueOf(ctx.caster.yaw()), "yaw", "y"), ctx.caster.yaw());
+        float pitch = (float) SkillRuntime.num(m.arg("0", "pitch", "p"), 0);
+        double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1);
+        String mode = m.arg("SET", "mode", "m").toUpperCase(Locale.ROOT);
+        Vec3 add = SkillRuntime.dir(yaw, pitch).scale(v);
+        for (Tgt t : targets) {
+            Entity e = t.entity();
+            if (e == null || !movable(ctx, e)) continue;
+            Vec3 now = e.getDeltaMovement();
+            Vec3 out = switch (mode) {
+                case "ADD" -> now.add(add);
+                case "MINIMUM", "MIN" -> now.lengthSqr() >= add.lengthSqr() ? now : add;
+                default -> add;
+            };
+            push(e, out);
+        }
+    }
+
+    /** recoil{r;pitch}: la cámara del jugador da un tirón (la del arma al disparar). */
+    static void recoil(Mech m, Ctx ctx, List<Tgt> targets) {
+        float pitch = (float) SkillRuntime.num(m.arg("-2", "pitch", "p"), -2);
+        for (Tgt t : targets) {
+            if (t.entity() instanceof ServerPlayer p) {
+                SkillNet.toPlayer(p, new SkillNet.Fx(6, "", 0, 0, 0, 0, pitch, 0, 0, 0, 0, null, 0, 0, 0, 0));
+            }
+        }
+    }
+
+    /**
+     * chain{bounces;bounceRadius;bounceDelay;hitPlayers;hitNonPlayers;onBounce}: salta del primer objetivo al más
+     * cercano que no haya tocado aún, cada «bounceDelay» ticks, lanzando onBounce en cada uno (el rayo en cadena).
+     */
+    static void chain(Mech m, Ctx ctx, List<Tgt> targets) {
+        int bounces = (int) Math.max(1, Math.min(32, SkillRuntime.num(m.arg("3", "bounces", "b"), 3)));
+        double radius = SkillRuntime.num(m.arg("5", "bounceradius", "br", "radius", "r"), 5);
+        int delay = (int) Math.max(0, SkillRuntime.num(m.arg("2", "bouncedelay", "bd"), 2));
+        boolean players = SkillRuntime.bool(m.arg("true", "hitplayers", "hp"));
+        boolean others = SkillRuntime.bool(m.arg("true", "hitnonplayers", "hnp"));
+        SkillDefs.Meta onBounce = ctx.cls.meta(m.arg(null, "onbounce", "ob", "onbounceskill"));
+        LivingEntity first = null;
+        for (Tgt t : targets) if (t.living() != null && SkillRuntime.canHurt(ctx, t.living())) {
+            first = t.living();
+            break;
+        }
+        if (first == null || onBounce == null) return;
+        java.util.Set<LivingEntity> done = new java.util.HashSet<>();
+        bounce(ctx, onBounce, first, done, bounces, radius, delay, players, others, null);
+    }
+
+    private static void bounce(Ctx ctx, SkillDefs.Meta skill, LivingEntity at, java.util.Set<LivingEntity> done, int left,
+                               double radius, int delay, boolean players, boolean others, LivingEntity from) {
+        if (at == null || !at.isAlive() || left <= 0) return;
+        done.add(at);
+        Ctx c = ctx.copy();
+        c.targets = List.of(Tgt.of(SkillRuntime.Who.of(at)));
+        c.origin = from != null ? from.position() : ctx.caster.pos();
+        c.trigger = SkillRuntime.Who.of(at);
+        SkillRuntime.runMeta(skill, c);
+        SkillRuntime.later(Math.max(1, delay), () -> {
+            LivingEntity next = null;
+            double best = radius * radius;
+            for (LivingEntity e : at.level().getEntitiesOfClass(LivingEntity.class, at.getBoundingBox().inflate(radius))) {
+                if (done.contains(e) || !e.isAlive() || !SkillRuntime.canHurt(ctx, e)) continue;
+                if (e instanceof net.minecraft.world.entity.player.Player ? !players : !others) continue;
+                double d = e.distanceToSqr(at);
+                if (d < best) {
+                    best = d;
+                    next = e;
+                }
+            }
+            bounce(ctx, skill, next, done, left - 1, radius, delay, players, others, at);
+        });
     }
 
     /** No se empuja a quien la skill no puede tocar (aliados, mascotas, jugadores sin PvP), salvo a uno mismo. */

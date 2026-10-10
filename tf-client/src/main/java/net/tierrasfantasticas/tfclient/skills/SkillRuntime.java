@@ -145,6 +145,11 @@ public final class SkillRuntime {
         final Map<String, SkillAuras.Aura> auras = new HashMap<>();
         final Map<String, String> vars = new HashMap<>();
         final Map<String, Long> cooldowns = new HashMap<>();
+        /** Etiquetas (addtag/hastag), postura (setstance/stance), facción (setfaction/faction) y el gcd (setgcd/offgcd). */
+        final Set<String> tags = new HashSet<>();
+        String stance;
+        String faction;
+        long gcdUntil;
         long touched;
     }
 
@@ -209,6 +214,8 @@ public final class SkillRuntime {
         Map<String, String> vars;
         /** Valores de la skill de clase que la lanzó (daño, duración...): &lt;skill.damage&gt;, &lt;modifier.damage&gt;. */
         Map<String, Double> mods = Map.of();
+        /** El proyectil que la lanzó (para modifyprojectile, endprojectile, setprojectiledirection). */
+        SkillMovers.Mover mover;
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -226,6 +233,7 @@ public final class SkillRuntime {
             c.depth = depth + 1;
             c.vars = vars;
             c.mods = mods;
+            c.mover = mover;
             return c;
         }
 
@@ -267,12 +275,21 @@ public final class SkillRuntime {
                 }
                 try {
                     exec(m, ctx);
+                } catch (CancelSkill c) {
+                    return true;
                 } catch (Throwable t) {
                     warn("error en " + m.m + ": " + t);
                     TFClient.LOGGER.debug("TF Skills: error en la mecánica {}", m.m, t);
                 }
             }
             return true;
+        }
+    }
+
+    /** cancelskill: para la skill que se está ejecutando (lo que queda de su lista no se hace). */
+    static final class CancelSkill extends RuntimeException {
+        CancelSkill() {
+            super(null, null, false, false);
         }
     }
 
@@ -349,6 +366,14 @@ public final class SkillRuntime {
                         if (r) copy.power *= num(act.substring(5).trim(), 1);
                         continue;
                     }
+                    if (act.startsWith("cast ")) {
+                        if (r) {
+                            Ctx other = run.copy();
+                            other.targets = List.of(copy);
+                            runNamed(act.substring(5).trim(), other);
+                        }
+                        continue;
+                    }
                     // castinstead / orElseCast: ese objetivo se va a la otra skill; los demás siguen
                     boolean alt = act.startsWith("castinstead");
                     if (alt || act.startsWith("orelsecast")) {
@@ -384,6 +409,11 @@ public final class SkillRuntime {
     /** Qué hace una condición de la skill según su resultado (true, false, cancel, castinstead X, orElseCast X, power N). */
     private static Outcome outcome(Cond c, boolean r, Ctx ctx) {
         String act = c.action();
+        if (act.startsWith("cast ")) {
+            // «cast X»: si se cumple, lanza también X; la skill sigue igual
+            if (r) runNamed(act.substring(5).trim(), ctx);
+            return Outcome.GO;
+        }
         if (act.startsWith("castinstead")) {
             if (!r) return Outcome.GO;
             runNamed(act.substring("castinstead".length()).trim(), ctx);
@@ -427,7 +457,18 @@ public final class SkillRuntime {
         int every = (int) Math.max(1, num(m.arg("1", "repeatinterval", "repeati", "ri"), 1));
         Runnable once = () -> {
             if (ctx.caster.actor != null && !ctx.caster.alive() && !m.m.equals("remove")) return;
-            apply(m, ctx, targets(m, ctx));
+            Ctx use = ctx;
+            // origin=@Objetivo{...}: la línea (y lo que llame) sale desde ahí
+            String o = m.a.get("origin");
+            if (o != null && o.trim().startsWith("@")) {
+                List<Tgt> r = SkillTargets.fromString(o, ctx);
+                if (!r.isEmpty()) {
+                    use = ctx.copy();
+                    use.depth = ctx.depth;
+                    use.origin = r.get(0).pos();
+                }
+            }
+            apply(m, use, targets(m, use));
         };
         if (delay <= 0 && repeat <= 0) {
             once.run();
@@ -453,13 +494,13 @@ public final class SkillRuntime {
                     runMeta(ctx.cls.meta(name), c);
                 }
             }
-            case "effect:particles", "particles", "particle", "e:p", "effect:particle" -> SkillFx.particles(m, ctx, targets);
-            case "effect:particlering", "particlering", "e:pr" -> SkillFx.ring(m, ctx, targets);
-            case "effect:particlesphere", "particlesphere", "e:ps" -> SkillFx.sphere(m, ctx, targets);
-            case "effect:particleorbital", "particleorbital", "e:po" -> SkillFx.orbital(m, ctx, targets);
-            case "effect:particleline", "particleline", "e:pl" -> SkillFx.line(m, ctx, targets);
-            case "effect:particlebox", "particlebox" -> SkillFx.sphere(m, ctx, targets);
-            case "effect:sound", "sound", "e:s" -> SkillFx.sound(m, ctx, targets);
+            case "effect:particles", "particles", "particle", "e:p", "effect:p", "effect:particle" -> SkillFx.particles(m, ctx, targets);
+            case "effect:particlering", "particlering", "e:pr", "effect:pr" -> SkillFx.ring(m, ctx, targets);
+            case "effect:particlesphere", "particlesphere", "e:ps", "effect:ps" -> SkillFx.sphere(m, ctx, targets);
+            case "effect:particleorbital", "particleorbital", "e:po", "effect:po" -> SkillFx.orbital(m, ctx, targets);
+            case "effect:particleline", "particleline", "e:pl", "effect:pl" -> SkillFx.line(m, ctx, targets);
+            case "effect:particlebox", "particlebox", "effect:pb" -> SkillFx.sphere(m, ctx, targets);
+            case "effect:sound", "sound", "e:s", "effect:s" -> SkillFx.sound(m, ctx, targets);
             case "effect:lightning", "lightning" -> SkillFx.lightning(m, ctx, targets);
             case "effect:blockmask", "blockmask", "effect:blockwave", "blockwave" -> SkillFx.blockmask(m, ctx, targets);
             case "summon" -> summon(m, ctx, targets);
@@ -513,11 +554,108 @@ public final class SkillRuntime {
             case "variableadd", "varadd" -> addVariable(m, ctx, targets);
             case "variableunset", "unsetvariable" -> unsetVariable(m, ctx, targets);
             case "message", "msg", "actionmessage" -> message(m, targets);
-            case "cancelevent", "gcd", "setai", "animatearmorstand", "bodyrotation", "brightness", "lockmodel",
-                    "bodyclamp", "setmodelscale", "enchant", "setgravity", "setnoai", "setspeed",
-                    "settarget", "threat", "runaitargetselector", "runaigoalselector", "modifyglobalscore",
-                    "setglobalscore", "feed", "playanimation", "swing",
-                    "remapmodel", "mountmodel", "glow", "setcollidable", "setinvulnerable", "setrotation" -> { /* nada */ }
+            case "variablesubtract", "varsubtract" -> {
+                Mech neg = m.copyWith(new HashMap<>(m.a), m.ta);
+                neg.a.put("amount", fmt(-num(unquote(m.arg("1", "amount", "a", "value", "val")), 1)));
+                addVariable(neg, ctx, targets);
+            }
+            case "setvarloc", "setvariablelocation" -> setVarLoc(m, ctx, targets);
+            // Estado de cada quién
+            case "addtag" -> {
+                String tag = m.arg(null, "tag", "t");
+                for (Tgt t : targets) if (tag != null && t.who != null) state(t.who).tags.add(tag.toLowerCase(Locale.ROOT));
+            }
+            case "removetag" -> {
+                String tag = m.arg(null, "tag", "t");
+                for (Tgt t : targets) if (tag != null && t.who != null) state(t.who).tags.remove(tag.toLowerCase(Locale.ROOT));
+            }
+            case "setstance" -> {
+                String st = m.arg(null, "stance", "s");
+                for (Tgt t : targets) if (t.who != null) state(t.who).stance = st;
+            }
+            case "setfaction" -> {
+                String f = m.arg(null, "faction", "f");
+                for (Tgt t : targets) if (t.who != null) state(t.who).faction = f;
+            }
+            case "gcd", "setgcd", "globalcooldown" -> {
+                int ticks = (int) num(m.arg("20", "ticks", "t", "duration", "d", "_"), 20);
+                for (Tgt t : targets) if (t.who != null) state(t.who).gcdUntil = clock + ticks;
+            }
+            case "setskillcooldown" -> {
+                Meta other = ctx.cls.meta(m.arg(null, "skill", "s"));
+                double sec = num(m.arg("0", "seconds", "s2", "ticks"), 0);
+                for (Tgt t : targets) {
+                    if (other == null || t.who == null) continue;
+                    if (sec <= 0) state(t.who).cooldowns.remove(other.name);
+                    else state(t.who).cooldowns.put(other.name, clock + Math.round(sec * 20));
+                }
+            }
+            case "setname" -> {
+                String name = unquote(m.arg("", "name", "n"));
+                for (Tgt t : targets) if (t.who != null && t.who.actor != null && !name.isBlank()) t.who.actor.customName = name;
+            }
+            case "cancelskill" -> throw new CancelSkill();
+            case "signal" -> {
+                String sig = m.arg(null, "signal", "s");
+                for (Tgt t : targets) if (sig != null && t.who != null && t.who.actor != null) t.who.actor.signal(sig, ctx.caster);
+            }
+            case "settarget" -> {
+                if (ctx.caster.actor != null) {
+                    LivingEntity found = null;
+                    if (m.t != null) for (Tgt t : targets) if (t.living() != null) {
+                        found = t.living();
+                        break;
+                    }
+                    ctx.caster.actor.target = found;
+                }
+            }
+            case "setai", "setnoai" -> {
+                boolean ai = m.m.equals("setai") ? bool(m.arg("true", "ai", "a")) : !bool(m.arg("true", "ai", "a"));
+                for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.ai = ai;
+            }
+            case "setspeed" -> {
+                double sp = num(m.arg("1", "speed", "s", "amount", "a"), 1);
+                for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.speedMul = sp;
+            }
+            case "settextdisplay" -> {
+                String text = unquote(m.arg("", "text", "t"));
+                for (Tgt t : targets) if (t.who != null && t.who.actor != null) t.who.actor.setText(text);
+            }
+            case "setmodelscale" -> SkillModels.scale(m, ctx, targets);
+            case "mountmodel" -> SkillModels.mount(m, ctx, targets);
+            case "dismountmodel", "dismountall" -> SkillModels.dismount(ctx, targets);
+            case "setnodamageticks" -> {
+                int ticks = (int) num(m.arg("0", "ticks", "t", "_"), 0);
+                for (Tgt t : targets) if (t.living() != null) t.living().invulnerableTime = Math.max(0, ticks);
+            }
+            case "directionalvelocity" -> SkillMotion.directional(m, ctx, targets);
+            case "spin" -> {
+                // spin{velocity=grados por tick;duration=ticks (0 = siempre)}: el efecto gira sobre sí mismo
+                float v = (float) num(m.arg("10", "velocity", "v"), 10);
+                int d = (int) num(m.arg("0", "duration", "d"), 0);
+                for (Tgt t : targets) {
+                    if (t.who == null || t.who.actor == null) continue;
+                    t.who.actor.spin = v;
+                    t.who.actor.spinUntil = d > 0 ? t.who.actor.age + d : Integer.MAX_VALUE;
+                }
+            }
+            case "recoil" -> SkillMotion.recoil(m, ctx, targets);
+            case "chain" -> SkillMotion.chain(m, ctx, targets);
+            case "hide" -> SkillFx.hide(m, ctx, targets, true);
+            case "showentity", "show" -> SkillFx.hide(m, ctx, targets, false);
+            case "sendtitle", "title" -> SkillFx.title(m, ctx, targets);
+            case "slash" -> SkillFx.slash(m, ctx, targets);
+            case "polygon" -> SkillFx.polygon(m, ctx, targets);
+            case "fakelightning" -> SkillFx.lightning(m, ctx, targets);
+            case "modifyprojectile" -> SkillMovers.modify(m, ctx);
+            case "endprojectile", "terminateprojectile" -> SkillMovers.endCurrent(ctx);
+            case "setprojectiledirection" -> SkillMovers.setDirection(ctx, targets);
+            case "onswing", "ondeath" -> SkillAuras.aura(m, ctx, targets);
+            case "cancelevent", "animatearmorstand", "bodyrotation", "brightness", "lockmodel",
+                    "bodyclamp", "enchant", "setgravity", "threat", "runaitargetselector", "runaigoalselector",
+                    "modifyglobalscore", "setglobalscore", "feed", "playanimation", "swing", "remapmodel", "glow",
+                    "setcollidable", "setinvulnerable", "setrotation", "bindhitbox", "clearthreat", "cullconfig",
+                    "posearmorstand", "segment", "removehelditem" -> { /* nada (o no se puede hacer sin entidades de verdad) */ }
             default -> warn("mecánica " + m.m);
         }
     }
@@ -572,18 +710,29 @@ public final class SkillRuntime {
         }
         int amount = (int) Math.max(1, Math.min(32, num(m.arg("1", "amount", "a"), 1)));
         double radius = num(m.arg("0", "radius", "r"), 0);
+        double yRadius = num(m.arg("0", "yradius", "yr"), 0);
+        boolean upOnly = bool(m.arg("false", "yradiusuponly", "yu"));
+        boolean surface = bool(m.arg("false", "onsurface", "os"));
+        Meta onSummon = ctx.cls.meta(m.arg(null, "onsummon", "onsummonskill"));
         for (Tgt t : targets) {
             Vec3 base = t.pos();
             for (int i = 0; i < amount; i++) {
                 Vec3 at = base;
-                if (radius > 0) {
-                    ThreadLocalRandom rnd = ThreadLocalRandom.current();
-                    at = at.add((rnd.nextDouble() * 2 - 1) * radius, 0, (rnd.nextDouble() * 2 - 1) * radius);
-                }
+                ThreadLocalRandom rnd = ThreadLocalRandom.current();
+                if (radius > 0) at = at.add((rnd.nextDouble() * 2 - 1) * radius, 0, (rnd.nextDouble() * 2 - 1) * radius);
+                if (yRadius > 0) at = at.add(0, upOnly ? rnd.nextDouble() * yRadius : (rnd.nextDouble() * 2 - 1) * yRadius, 0);
+                if (surface || def.living) at = SkillMinions.ground(ctx.caster.level(), at);
                 // Con @self/@forward del lanzador, el efecto mira a donde mira él (como en MythicMobs)
                 float yaw = ctx.caster.yaw();
                 float pitch = 0F;
-                spawn(ctx, def, at, yaw, pitch);
+                SkillActor a = spawn(ctx, def, at, yaw, pitch);
+                // onSummon: la lanza quien invoca, con lo invocado como objetivo
+                if (a != null && onSummon != null) {
+                    Ctx c = ctx.copy();
+                    c.targets = List.of(Tgt.of(a.who));
+                    c.aim = null;
+                    runMeta(onSummon, c);
+                }
             }
         }
     }
@@ -601,7 +750,7 @@ public final class SkillRuntime {
         for (Mech mm : def.mechs) {
             String tr = mm.tr == null ? "onspawn" : mm.tr;
             if (tr.equals("ontimer")) a.timers.add(mm);
-            else if (tr.equals("onspawn") || tr.equals("onload") || tr.equals("onready")) onSpawn.add(mm);
+            else if (tr.equals("onspawn") || tr.equals("onready")) onSpawn.add(mm);
         }
         Script s = new Script(mine, onSpawn);
         if (!s.run()) SCRIPTS.add(s);
@@ -884,6 +1033,29 @@ public final class SkillRuntime {
         scope.put(name, fmt(now + add));
     }
 
+    /**
+     * setvarloc{var=caster.x;v=@forward{f=2}}: guarda un sitio (el del objetivo que se pone en «v», o el de la línea)
+     * como «x,y,z» para usarlo luego con @variableLocation{var=caster.x}.
+     */
+    private static void setVarLoc(Mech m, Ctx ctx, List<Tgt> targets) {
+        String var = m.arg(null, "var", "variable", "name", "key", "k");
+        if (var == null) return;
+        String v = unquote(m.arg("", "value", "val", "v", "location", "l")).trim();
+        Vec3 at = null;
+        if (v.startsWith("@")) {
+            List<Tgt> r = SkillTargets.fromString(v, ctx);
+            if (!r.isEmpty()) at = r.get(0).pos();
+        } else if (v.split(",").length >= 3) {
+            String[] p = v.split(",");
+            at = new Vec3(num(p[0], 0), num(p[1], 0), num(p[2], 0));
+        }
+        if (at == null && !targets.isEmpty()) at = targets.get(0).pos();
+        if (at == null) return;
+        String val = fmt(Math.round(at.x * 1000) / 1000.0) + "," + fmt(Math.round(at.y * 1000) / 1000.0) + ","
+                + fmt(Math.round(at.z * 1000) / 1000.0);
+        varScope(var, ctx, targets.isEmpty() ? null : targets.get(0)).put(varName(var), val);
+    }
+
     private static void unsetVariable(Mech m, Ctx ctx, List<Tgt> targets) {
         String var = m.arg(null, "var", "variable", "name", "key", "k");
         if (var == null) return;
@@ -953,6 +1125,8 @@ public final class SkillRuntime {
             for (Task t : due) {
                 try {
                     t.run().run();
+                } catch (CancelSkill ignored) {
+                    // la línea con delay paró su skill: ya no queda nada de ella aquí
                 } catch (Throwable e) {
                     TFClient.LOGGER.debug("TF Skills: error en una tarea", e);
                 }
@@ -986,6 +1160,7 @@ public final class SkillRuntime {
         for (SkillActor a : list) {
             if (!a.alive) continue;
             a.age++;
+            if (a.spin != 0F && a.age <= a.spinUntil && a.follow == null) a.moveTo(a.pos, a.yaw + a.spin, a.pitch);
             if (a.follow != null) {
                 if (!a.follow.isAlive() || a.follow.isRemoved()) {
                     a.remove();
@@ -993,6 +1168,12 @@ public final class SkillRuntime {
                 }
                 float yaw = a.follow instanceof LivingEntity le ? le.yBodyRot : a.follow.getYRot();
                 a.moveTo(a.follow.position(), yaw, 0F);
+            } else if (a.def != null && a.def.living) {
+                try {
+                    SkillMinions.tick(a);
+                } catch (Throwable e) {
+                    TFClient.LOGGER.debug("TF Skills: error en un esbirro", e);
+                }
             }
             if (!a.timers.isEmpty()) {
                 for (Mech mm : a.timers) {
@@ -1001,6 +1182,7 @@ public final class SkillRuntime {
                         Ctx c = new Ctx(a.cls, a.who);
                         c.origin = a.pos;
                         c.trigger = a.owner;
+                        c.aim = a.target;
                         currentCtx = c;
                         try {
                             exec(mm, c);

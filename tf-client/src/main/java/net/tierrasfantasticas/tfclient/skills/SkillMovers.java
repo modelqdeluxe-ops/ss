@@ -1,10 +1,11 @@
 package net.tierrasfantasticas.tfclient.skills;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Map;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -15,6 +16,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.skills.SkillDefs.Cond;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs.Mech;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs.MobDef;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
@@ -24,7 +26,11 @@ import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Who;
 /**
  * Lo que se mueve solo: proyectiles (projectile), misiles que persiguen (missile), tótems quietos (totem) y orbitales
  * que dan vueltas a alguien (orbital). Cada uno con sus skills al salir (onStart), en cada paso (onTick), al tocar
- * (onHit) y al acabar (onEnd), y con un efecto que lo acompaña si es de tipo MOB.
+ * (onHit), al chocar con un bloque (onHitBlock) y al acabar (onEnd), y con un efecto que lo acompaña si es de tipo MOB.
+ * Las opciones de MythicMobs que usan los packs: pegado al suelo (hugSurface + heightFromSurface: las ondas que van por
+ * el suelo), salir desde el objetivo (targetIsOrigin), a quién puede tocar (hitConditions, hitTargetOnly), cada cuánto
+ * puede volver a tocar al mismo (immuneDelay), cuándo pararse (stopConditions), y los orbitales con nombre de aura
+ * (se quitan con auraremove y se miran con hasaura).
  */
 final class SkillMovers {
     private static final List<Mover> MOVERS = new ArrayList<>();
@@ -32,7 +38,7 @@ final class SkillMovers {
 
     private SkillMovers() {}
 
-    private static final class Mover {
+    static final class Mover {
         final Ctx ctx;
         final int kind; // 0 proyectil, 1 misil, 2 tótem, 3 orbital
         final ServerLevel level;
@@ -54,8 +60,20 @@ final class SkillMovers {
         String onTick;
         String onHit;
         String onEnd;
+        String onHitBlock;
         SkillActor bullet;
-        final Set<Object> hit = new HashSet<>();
+        double bulletY;
+        double bulletForward;
+        int deathDelay;
+        /** Cuándo tocó a cada uno (para immuneDelay: 0 = una sola vez). */
+        final Map<Object, Long> hit = new HashMap<>();
+        int immuneDelay;
+        List<Cond> hitConds = List.of();
+        List<Cond> stopConds = List.of();
+        LivingEntity onlyTarget;
+        boolean hug;
+        double hugHeight;
+        double climb;
         LivingEntity homing;
         double inertia;
         int age;
@@ -67,7 +85,13 @@ final class SkillMovers {
         double angle;
         double angleStep;
         double oy;
-        double tilt;
+        double rx;
+        double ry;
+        double rz;
+        double avx;
+        double avy;
+        double avz;
+        SkillAuras.Aura aura;
 
         Mover(Ctx ctx, int kind, ServerLevel level) {
             this.ctx = ctx;
@@ -84,14 +108,21 @@ final class SkillMovers {
             Mover p = new Mover(ctx.copy(), missile ? 1 : 0, ctx.caster.level());
             common(p, m);
             boolean fromOrigin = SkillRuntime.bool(m.arg("false", "fromorigin", "fo"));
-            Vec3 base = fromOrigin ? SkillTargets.origin(ctx) : ctx.caster.pos();
+            boolean targetIsOrigin = SkillRuntime.bool(m.arg("false", "targetisorigin", "tio"));
+            Vec3 base = targetIsOrigin ? t.pos() : fromOrigin ? SkillTargets.origin(ctx) : ctx.caster.pos();
             double syo = SkillRuntime.num(m.arg("1", "startyoffset", "syo"), 1);
             double sfo = SkillRuntime.num(m.arg("1", "startforwardoffset", "sfo"), 1);
             double sso = SkillRuntime.num(m.arg("0", "startsideoffset", "sso"), 0);
             double tyo = SkillRuntime.num(m.arg("1", "targetyoffset", "tyo"), 1);
-            Vec3 target = t.pos().add(0, tyo, 0);
+            double tso = SkillRuntime.num(m.arg("0", "targetsideoffset", "tso"), 0);
+            Vec3 target = targetIsOrigin ? t.pos().add(ctx.caster.forward().scale(0.01)) : t.pos();
             Vec3 start0 = base.add(0, syo, 0);
-            Vec3 dir = target.subtract(start0);
+            Vec3 aimAt = target.add(0, tyo, 0);
+            if (tso != 0) {
+                Vec3 side = SkillRuntime.dir(SkillRuntime.yawOf(aimAt.subtract(start0)) + 90F, 0F);
+                aimAt = aimAt.add(side.scale(tso));
+            }
+            Vec3 dir = targetIsOrigin ? ctx.caster.forward() : aimAt.subtract(start0);
             if (dir.lengthSqr() < 1e-6) dir = ctx.caster.forward();
             dir = dir.normalize();
             double ho = SkillRuntime.num(m.arg("0", "horizontaloffset", "ho"), 0);
@@ -109,12 +140,22 @@ final class SkillMovers {
             p.maxRange = SkillRuntime.num(m.arg("40", "maxrange", "mr"), 40);
             p.maxTicks = (int) SkillRuntime.num(m.arg("400", "maxduration", "md", "duration", "d"), 400);
             p.gravity = SkillRuntime.num(m.arg("0", "gravity", "g"), 0) / 20.0;
+            p.hug = SkillRuntime.bool(m.arg("false", "hugsurface", "hs"));
+            p.hugHeight = SkillRuntime.num(m.arg("0.5", "heightfromsurface", "hfs"), 0.5);
+            p.climb = SkillRuntime.num(m.arg("1", "maxclimbheight", "mch"), 1);
+            if (p.hug) {
+                // Pegado al suelo: va en horizontal a «hfs» del suelo
+                p.dir = flat.lengthSqr() < 1e-6 ? SkillRuntime.dir(ctx.caster.yaw(), 0F) : flat;
+                Vec3 g = SkillMinions.ground(p.level, p.pos, p.pos.y);
+                p.pos = new Vec3(p.pos.x, g.y + p.hugHeight, p.pos.z);
+            }
+            if (SkillRuntime.bool(m.arg("false", "hittargetonly", "hto"))) p.onlyTarget = t.living();
             if (missile) {
                 p.homing = t.living();
                 p.inertia = Math.max(0.1, SkillRuntime.num(m.arg("1.5", "inertia", "in"), 1.5));
                 if (p.homing == null && ctx.aim instanceof LivingEntity le) p.homing = le;
             }
-            p.ctx.dir = dir;
+            p.ctx.dir = p.dir;
             start(p, m);
         }
     }
@@ -124,7 +165,7 @@ final class SkillMovers {
             if (MOVERS.size() >= MAX) return;
             Mover p = new Mover(ctx.copy(), 2, ctx.caster.level());
             common(p, m);
-            p.pos = t.pos().add(0, SkillRuntime.num(m.arg("0", "yoffset", "y"), 0), 0);
+            p.pos = t.pos().add(0, SkillRuntime.num(m.arg("0", "yoffset", "y", "yo"), 0), 0);
             p.dir = ctx.caster.forward();
             p.step = 0;
             p.maxRange = Double.MAX_VALUE;
@@ -135,20 +176,42 @@ final class SkillMovers {
     }
 
     static void orbital(Mech m, Ctx ctx, List<Tgt> targets) {
+        String auraName = m.arg(null, "auraname", "aura", "n", "buffname");
+        boolean refresh = SkillRuntime.bool(m.arg("false", "refreshduration", "rd"));
         for (Tgt t : targets) {
             if (MOVERS.size() >= MAX || t.who == null) continue;
+            int duration = (int) SkillRuntime.num(m.arg("100", "duration", "d", "maxduration", "md", "ticks"), 100);
+            // Con nombre de aura: si ya lo tiene, se renueva (rd) o se queda el que hay
+            if (auraName != null) {
+                SkillRuntime.WhoState st = SkillRuntime.stateIfAny(t.who);
+                SkillAuras.Aura old = st == null ? null : st.auras.get(auraName.toLowerCase(Locale.ROOT));
+                if (old != null && old.alive && old.mover != null && old.mover.alive) {
+                    if (refresh) {
+                        old.left = duration;
+                        old.mover.maxTicks = old.mover.age + duration;
+                    }
+                    continue;
+                }
+            }
             Mover p = new Mover(ctx.copy(), 3, ctx.caster.level());
             common(p, m);
             p.center = t.who;
             p.radius = SkillRuntime.num(m.arg("4", "radius", "r"), 4);
             int points = (int) Math.max(1, SkillRuntime.num(m.arg("32", "points", "p"), 32));
-            p.angleStep = Math.PI * 2 / points;
+            p.angleStep = Math.PI * 2 / points * (SkillRuntime.bool(m.arg("false", "reversed", "rev")) ? -1 : 1);
+            p.angle = p.angleStep * SkillRuntime.num(m.arg("0", "startingpoint", "sp"), 0);
             p.oy = SkillRuntime.num(m.arg("0", "offsety", "oy", "yoffset"), 0);
-            p.tilt = Math.toRadians(SkillRuntime.num(m.arg("0", "rotationx", "rx"), 0));
-            p.maxTicks = (int) SkillRuntime.num(m.arg("100", "duration", "d", "maxduration", "md"), 100);
+            p.rx = Math.toRadians(SkillRuntime.num(m.arg("0", "rotationx", "rx"), 0));
+            p.ry = Math.toRadians(SkillRuntime.num(m.arg("0", "rotationy", "ry"), 0));
+            p.rz = Math.toRadians(SkillRuntime.num(m.arg("0", "rotationz", "rz"), 0));
+            p.avx = Math.toRadians(SkillRuntime.num(m.arg("0", "angularvelocityx", "avx"), 0));
+            p.avy = Math.toRadians(SkillRuntime.num(m.arg("0", "angularvelocityy", "avy"), 0));
+            p.avz = Math.toRadians(SkillRuntime.num(m.arg("0", "angularvelocityz", "avz"), 0));
+            p.maxTicks = duration;
             p.maxRange = Double.MAX_VALUE;
             p.pos = orbitPos(p);
             p.dir = Vec3.ZERO;
+            if (auraName != null) p.aura = SkillAuras.forMover(p, auraName, t.who, ctx, duration);
             start(p, m);
         }
     }
@@ -159,7 +222,7 @@ final class SkillMovers {
     }
 
     private static void common(Mover p, Mech m) {
-        p.interval = (int) Math.max(1, SkillRuntime.num(m.arg("1", "interval", "i"), 1));
+        p.interval = (int) Math.max(1, SkillRuntime.num(m.arg("1", "interval", "i", "int"), 1));
         p.hr = SkillRuntime.num(m.arg("1.25", "horizontalradius", "hitradius", "hr", "radius_h"), 1.25);
         p.vr = SkillRuntime.num(m.arg(String.valueOf(p.hr), "verticalradius", "vr"), p.hr);
         p.hitPlayers = SkillRuntime.bool(m.arg("true", "hitplayers", "hp"));
@@ -170,6 +233,13 @@ final class SkillMovers {
         p.onTick = m.arg(null, "ontick", "ot", "ontickskill");
         p.onHit = m.arg(null, "onhit", "oh", "onhitskill");
         p.onEnd = m.arg(null, "onend", "oe", "onendskill");
+        p.onHitBlock = m.arg(null, "onhitblock", "ohb", "onhitblockskill");
+        p.immuneDelay = (int) SkillRuntime.num(m.arg("0", "immunedelay", "id"), 0);
+        p.deathDelay = (int) SkillRuntime.num(m.arg("0", "deathdelay", "dd"), 0);
+        p.bulletY = SkillRuntime.num(m.arg("0", "bulletyoffset", "byo"), 0);
+        p.bulletForward = SkillRuntime.num(m.arg("0", "bulletforwardoffset", "bfo"), 0);
+        p.hitConds = m.hc;
+        p.stopConds = m.sc;
     }
 
     private static void start(Mover p, Mech m) {
@@ -180,7 +250,7 @@ final class SkillMovers {
             if (def != null) {
                 float yaw = p.dir.lengthSqr() > 0 ? SkillRuntime.yawOf(p.dir) : p.ctx.caster.yaw();
                 float pitch = p.dir.lengthSqr() > 0 ? SkillRuntime.pitchOf(p.dir) : 0F;
-                p.bullet = SkillRuntime.spawn(p.ctx, def, p.pos, yaw, p.kind == 2 || p.kind == 3 ? 0F : pitch);
+                p.bullet = SkillRuntime.spawn(p.ctx, def, bulletPos(p), yaw, p.kind == 2 || p.kind == 3 ? 0F : pitch);
                 if (p.bullet != null) p.bullet.carried = true;
             }
         }
@@ -189,12 +259,62 @@ final class SkillMovers {
         MOVERS.add(p);
     }
 
+    private static Vec3 bulletPos(Mover p) {
+        Vec3 at = p.pos.add(0, p.bulletY, 0);
+        if (p.bulletForward != 0 && p.dir.lengthSqr() > 1e-6) at = at.add(p.dir.normalize().scale(p.bulletForward));
+        return at;
+    }
+
     private static Vec3 orbitPos(Mover p) {
         Vec3 c = p.center.pos();
-        double x = Math.cos(p.angle) * p.radius, z = Math.sin(p.angle) * p.radius;
-        double y = p.oy + z * Math.sin(p.tilt);
-        z = z * Math.cos(p.tilt);
-        return c.add(x, y, z);
+        double t = p.age;
+        Vec3 o = new Vec3(Math.cos(p.angle) * p.radius, 0, Math.sin(p.angle) * p.radius);
+        o = o.xRot((float) (p.rx + p.avx * t)).yRot((float) (p.ry + p.avy * t)).zRot((float) (p.rz + p.avz * t));
+        return c.add(o).add(0, p.oy, 0);
+    }
+
+    // ------------------------------------------------------------------------------------------- desde sus skills
+
+    /** modifyprojectile{trait=VELOCITY|RADIUS|GRAVITY;action=SET|ADD|MULTIPLY;value}: cambia el proyectil que la lanzó. */
+    static void modify(Mech m, Ctx ctx) {
+        Mover p = ctx.mover;
+        if (p == null || !p.alive) return;
+        String trait = m.arg("VELOCITY", "trait", "t").toUpperCase(Locale.ROOT);
+        String action = m.arg("SET", "action", "a").toUpperCase(Locale.ROOT);
+        double v = SkillRuntime.num(m.arg("1", "value", "v"), 1);
+        switch (trait) {
+            // la velocidad va en bloques por segundo (como v= del proyectil); multiplicar, tal cual
+            case "VELOCITY", "SPEED" -> p.step = apply(p.step, action, action.startsWith("MULT") ? v : v / 20.0 * p.interval);
+            case "RADIUS", "HITRADIUS" -> {
+                p.hr = apply(p.hr, action, v);
+                p.vr = apply(p.vr, action, v);
+            }
+            case "GRAVITY" -> p.gravity = apply(p.gravity, action, action.equals("MULTIPLY") ? v : v / 20.0);
+            default -> { }
+        }
+    }
+
+    private static double apply(double now, String action, double v) {
+        return switch (action) {
+            case "ADD" -> now + v;
+            case "MULTIPLY", "MULT" -> now * v;
+            default -> v;
+        };
+    }
+
+    static void endCurrent(Ctx ctx) {
+        if (ctx.mover != null) end(ctx.mover);
+    }
+
+    /** setprojectiledirection @objetivo: el proyectil que la lanzó gira hacia allí. */
+    static void setDirection(Ctx ctx, List<Tgt> targets) {
+        Mover p = ctx.mover;
+        if (p == null || !p.alive || targets.isEmpty()) return;
+        Vec3 d = targets.get(0).pos().subtract(p.pos);
+        if (d.lengthSqr() > 1e-6) {
+            p.dir = d.normalize();
+            p.ctx.dir = p.dir;
+        }
     }
 
     // ------------------------------------------------------------------------------------------- cada tick
@@ -206,6 +326,8 @@ final class SkillMovers {
             if (!p.alive) continue;
             try {
                 step(p);
+            } catch (SkillRuntime.CancelSkill c) {
+                // una skill del proyectil se paró sola
             } catch (Throwable t) {
                 p.alive = false;
                 TFClient.LOGGER.debug("TF Skills: error en un proyectil", t);
@@ -220,6 +342,21 @@ final class SkillMovers {
             end(p);
             return;
         }
+        if (p.aura != null && !p.aura.alive) {
+            end(p);
+            return;
+        }
+        if (!p.stopConds.isEmpty()) {
+            Tgt self = Tgt.of(p.ctx.caster);
+            for (Cond c : p.stopConds) {
+                boolean r = SkillConds.test(c, self.who, p.ctx, p.pos);
+                boolean want = !(c.action().equals("false") || c.action().equals("cancel"));
+                if (r == want) {
+                    end(p);
+                    return;
+                }
+            }
+        }
         if (p.age % p.interval != 0) {
             if (p.age >= p.maxTicks) end(p);
             return;
@@ -231,15 +368,24 @@ final class SkillMovers {
                     Vec3 to = p.homing.getBoundingBox().getCenter().subtract(p.pos);
                     if (to.lengthSqr() > 1e-6) p.dir = p.dir.scale(p.inertia).add(to.normalize()).normalize();
                 }
-                if (p.gravity != 0) p.dir = p.dir.add(0, -p.gravity * p.interval, 0).normalize();
+                if (p.gravity != 0 && !p.hug) p.dir = p.dir.add(0, -p.gravity * p.interval, 0).normalize();
                 Vec3 to = p.pos.add(p.dir.scale(p.step));
-                if (p.stopAtBlock) {
+                if (p.hug) {
+                    // Pegado al suelo: sube escalones de hasta «maxclimbheight» y baja lo que haga falta
+                    Vec3 g = SkillMinions.ground(p.level, to, p.pos.y - p.hugHeight + Math.max(0, p.climb - 1));
+                    double groundNow = p.pos.y - p.hugHeight;
+                    if (g.y - groundNow > p.climb + 1e-3 && p.stopAtBlock) {
+                        hitBlock(p);
+                        return;
+                    }
+                    to = new Vec3(to.x, g.y + p.hugHeight, to.z);
+                } else if (p.stopAtBlock) {
                     BlockHitResult hit = p.level.clip(new ClipContext(p.pos, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
                             (net.minecraft.world.entity.Entity) null));
                     if (hit.getType() == HitResult.Type.BLOCK) {
                         p.pos = hit.getLocation();
                         moveBullet(p);
-                        end(p);
+                        hitBlock(p);
                         return;
                     }
                 }
@@ -267,30 +413,40 @@ final class SkillMovers {
         if (p.travelled >= p.maxRange || p.age >= p.maxTicks) end(p);
     }
 
+    private static void hitBlock(Mover p) {
+        if (p.onHitBlock != null) run(p, p.onHitBlock, List.of(Tgt.at(p.pos)), null);
+        end(p);
+    }
+
     private static void moveBullet(Mover p) {
         if (p.bullet == null || !p.bullet.alive) return;
         float yaw = p.dir.lengthSqr() > 1e-6 ? SkillRuntime.yawOf(p.dir) : p.bullet.yaw;
         float pitch = p.kind == 0 || p.kind == 1 ? (p.dir.lengthSqr() > 1e-6 ? SkillRuntime.pitchOf(p.dir) : p.bullet.pitch) : 0F;
-        p.bullet.moveTo(p.pos, yaw, pitch);
+        p.bullet.moveTo(bulletPos(p), yaw, pitch);
     }
 
     private static void hits(Mover p, Vec3 from) {
         if (p.onHit == null && !p.stopAtEntity) return;
         AABB box = new AABB(from, p.pos).inflate(p.hr, p.vr, p.hr);
         List<LivingEntity> found = new ArrayList<>();
+        long now = SkillRuntime.clock;
         for (LivingEntity e : p.level.getEntitiesOfClass(LivingEntity.class, box)) {
             if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
             if (e == p.ctx.caster.entity || e == p.ctx.caster.player()) continue;
-            if (p.hit.contains(e.getUUID())) continue;
+            if (p.onlyTarget != null && e != p.onlyTarget) continue;
+            Long last = p.hit.get(e.getUUID());
+            if (last != null && (p.immuneDelay <= 0 || now - last < p.immuneDelay)) continue;
             if (e instanceof Player ? !p.hitPlayers : !p.hitNonPlayers) continue;
             if (!SkillRuntime.canHurt(p.ctx, e)) continue;
+            if (!p.hitConds.isEmpty() && !SkillTargets.passes(p.hitConds, Tgt.of(Who.of(e)), p.ctx)) continue;
             found.add(e);
         }
         found.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(from)));
         for (LivingEntity e : found) {
-            p.hit.add(e.getUUID());
+            p.hit.put(e.getUUID(), now);
             p.hits++;
             if (p.onHit != null) run(p, p.onHit, List.of(Tgt.of(Who.of(e))), e);
+            if (!p.alive) return;
             if (p.stopAtEntity || (p.charges > 0 && p.hits >= p.charges)) {
                 end(p);
                 return;
@@ -303,18 +459,35 @@ final class SkillMovers {
         c.origin = p.pos;
         c.targets = targets;
         c.dir = p.dir;
+        c.mover = p;
         if (trigger != null) c.trigger = Who.of(trigger);
         SkillRuntime.runMeta(c.cls.meta(skill), c);
     }
 
-    private static void end(Mover p) {
+    static void end(Mover p) {
         if (!p.alive) return;
         p.alive = false;
-        if (p.onEnd != null) run(p, p.onEnd, List.of(Tgt.at(p.pos)), null);
-        if (p.bullet != null) p.bullet.remove();
+        if (p.onEnd != null) {
+            try {
+                run(p, p.onEnd, List.of(Tgt.at(p.pos)), null);
+            } catch (SkillRuntime.CancelSkill ignored) {
+                // nada
+            }
+        }
+        if (p.bullet != null) {
+            SkillActor b = p.bullet;
+            if (p.deathDelay > 0) SkillRuntime.later(p.deathDelay, b::remove);
+            else b.remove();
+        }
+        if (p.aura != null) SkillAuras.moverEnded(p.aura);
     }
 
     static void clear() {
         MOVERS.clear();
+    }
+
+    /** ¿Está en el aire un sitio? (para quien lo necesite). */
+    static boolean air(ServerLevel level, Vec3 p) {
+        return level.getBlockState(BlockPos.containing(p)).isAir();
     }
 }

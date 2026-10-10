@@ -72,6 +72,10 @@ public final class SkillClient {
     private static final Map<String, ResourceLocation> TEXTURES = new HashMap<>();
     /** Bloques que se ven cambiados un rato (blockmask): posición → (lo que había, lo que se puso, hasta cuándo). */
     private static final Map<BlockPos, Mask> MASKS = new HashMap<>();
+    /** Entidades escondidas (hide): id → hasta cuándo (ticks del cliente). */
+    private static final Map<Integer, Long> HIDDEN = new HashMap<>();
+    /** A quién se le subió la pose al dibujarlo (montado): para bajarla al terminar. */
+    private static final Set<Integer> RAISED = new HashSet<>();
     private static final ItemStack STACK = new ItemStack(Items.PAPER);
     private static final RandomSource RANDOM = RandomSource.create();
     private static final int MAX_ACTORS = 1500;
@@ -109,6 +113,11 @@ public final class SkillClient {
         a.small = m.small();
         a.follow = m.follow();
         a.hideHost = m.hideHost();
+        a.cls = m.cls();
+        SkillDefs.ClassDef cd = SkillDefs.get(m.cls());
+        a.def = cd == null ? null : cd.mob(m.mob());
+        a.text = m.text();
+        a.scale = m.scale() <= 0 ? 1F : m.scale();
         a.setModel(m.me());
         if (m.anim() != null) a.play(m.anim(), 1F);
     }
@@ -157,6 +166,13 @@ public final class SkillClient {
                 a.tb = c.z;
             }
             case "remove" -> ACTORS.remove(m.id());
+            case "text" -> a.text = m.a().isEmpty() ? null : m.a();
+            case "scale" -> a.scale = Math.max(0.01F, parse(m.a(), 1F));
+            case "walk" -> a.walk("1".equals(m.a()));
+            case "mount" -> {
+                a.rider = m.a().isEmpty() ? -1 : (int) parse(m.a(), -1F);
+                a.seat = parse(m.b(), 1F);
+            }
             default -> { }
         }
     }
@@ -174,6 +190,16 @@ public final class SkillClient {
         }
         if (m.kind() == 4) {
             mask(level, m);
+            return;
+        }
+        if (m.kind() == 5) { // esconder / enseñar una entidad
+            int id = (int) parse(m.id(), -1F);
+            if (m.n() <= 0) HIDDEN.remove(id);
+            else HIDDEN.put(id, clientTicks + m.n());
+            return;
+        }
+        if (m.kind() == 6) { // retroceso de la cámara
+            if (mc.player != null) mc.player.setXRot(Math.max(-90F, Math.min(90F, mc.player.getXRot() + m.hs())));
             return;
         }
         ParticleOptions opts = particle(m.id(), m.extra(), m.size());
@@ -285,17 +311,49 @@ public final class SkillClient {
         }
     }
 
-    /** Quien lleva un modelo encima (disfraz) no se dibuja: se ve el modelo. */
+    /**
+     * Quien lleva un modelo encima (disfraz) no se dibuja: se ve el modelo. Quien está escondido (hide) tampoco. Quien
+     * va montado en un modelo (el caballo del Invocador) se dibuja subido encima.
+     */
     @SubscribeEvent
     public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event) {
-        if (ACTORS.isEmpty()) return;
         int id = event.getEntity().getId();
+        if (!HIDDEN.isEmpty()) {
+            Long until = HIDDEN.get(id);
+            if (until != null) {
+                if (until > clientTicks) {
+                    event.setCanceled(true);
+                    return;
+                }
+                HIDDEN.remove(id);
+            }
+        }
+        if (ACTORS.isEmpty()) return;
         for (Actor a : ACTORS.values()) {
             if (a.hideHost && a.follow == id && a.model != null) {
                 event.setCanceled(true);
                 return;
             }
         }
+        for (Actor a : ACTORS.values()) {
+            if (a.rider == id) {
+                event.getPoseStack().pushPose();
+                event.getPoseStack().translate(0, a.seat * a.scale, 0);
+                RAISED.add(id);
+                return;
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> event) {
+        if (RAISED.remove(event.getEntity().getId())) event.getPoseStack().popPose();
+    }
+
+    /** Golpe al aire o a algo (clic izquierdo): se le dice al servidor (auras onSwing de la clase). */
+    @SubscribeEvent
+    public static void onInteract(net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+        if (event.isAttack() && !classId.isEmpty()) SkillNet.CHANNEL.sendToServer(new SkillNet.Swing());
     }
 
     @SubscribeEvent
@@ -318,6 +376,7 @@ public final class SkillClient {
                 if (a.head != null) renderHead(a, at.subtract(cam), yaw, a.prevPitch + (a.pitch - a.prevPitch) * partial, pose, buffers);
                 if (a.hand != null) renderHand(a, at.subtract(cam), yaw, pose, buffers);
                 if (a.model != null) a.renderModel(at.subtract(cam), yaw, partial, pose, buffers);
+                if (a.text != null && !a.text.isEmpty()) renderText(a, at.subtract(cam), yaw, camera, pose, buffers);
             }
         } catch (Throwable t) {
             TFClient.LOGGER.error("TF Skills: error al dibujar los efectos", t);
@@ -347,6 +406,58 @@ public final class SkillClient {
         pose.scale(0.625F, -0.625F, -0.625F);
         Minecraft.getInstance().getItemRenderer().render(STACK, ItemDisplayContext.HEAD, false, pose, buffers, FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, model);
+        pose.popPose();
+    }
+
+    /**
+     * Un text_display del pack (settextdisplay): como lo dibuja Minecraft (TextDisplayRenderer): 1/40 de bloque por
+     * píxel de la fuente, centrado y creciendo hacia arriba, mirando a la cámara (Billboard CENTER) o fijo, con la
+     * escala y el desplazamiento del display. Las letras-imagen del pack van con la fuente de la clase.
+     */
+    private static void renderText(Actor a, Vec3 at, float yaw, Camera camera, PoseStack pose, MultiBufferSource buffers) {
+        net.minecraft.client.gui.Font font = Minecraft.getInstance().font;
+        SkillDefs.ClassDef cd = SkillDefs.get(a.cls);
+        net.minecraft.network.chat.MutableComponent text = net.minecraft.network.chat.Component.empty();
+        String glyphs = cd == null ? "" : cd.glyphs;
+        net.minecraft.network.chat.Style style = net.minecraft.network.chat.Style.EMPTY.withFont(
+                new ResourceLocation(TFClient.MOD_ID, "skills_" + a.cls));
+        StringBuilder plain = new StringBuilder();
+        a.text.codePoints().forEach(cp -> {
+            String ch = new String(Character.toChars(cp));
+            if (!glyphs.isEmpty() && glyphs.contains(ch)) {
+                if (plain.length() > 0) {
+                    text.append(net.minecraft.network.chat.Component.literal(plain.toString()));
+                    plain.setLength(0);
+                }
+                text.append(net.minecraft.network.chat.Component.literal(ch).withStyle(style));
+            } else {
+                plain.append(ch);
+            }
+        });
+        if (plain.length() > 0) text.append(net.minecraft.network.chat.Component.literal(plain.toString()));
+        SkillDefs.MobDef def = a.def;
+        pose.pushPose();
+        pose.translate(at.x, at.y, at.z);
+        String bb = def == null || def.billboard == null ? "CENTER" : def.billboard.toUpperCase(java.util.Locale.ROOT);
+        switch (bb) {
+            case "FIXED" -> pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+            case "VERTICAL" -> pose.mulPose(Axis.YP.rotationDegrees(180F - camera.getYRot()));
+            case "HORIZONTAL" -> {
+                pose.mulPose(Axis.YP.rotationDegrees(180F - yaw));
+                pose.mulPose(Axis.XP.rotationDegrees(-camera.getXRot()));
+            }
+            default -> pose.mulPose(camera.rotation());
+        }
+        if (def != null) {
+            pose.translate(def.transX, def.transY, def.transZ);
+            pose.scale(def.scaleX, def.scaleY, def.scaleZ);
+        }
+        pose.scale(-0.025F, -0.025F, 0.025F);
+        Matrix4f m = pose.last().pose();
+        int width = font.width(text);
+        int height = font.lineHeight + 1;
+        font.drawInBatch(text, 1F - width / 2F, -height, 0xFFFFFFFF, false, m, buffers,
+                net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
         pose.popPose();
     }
 
@@ -399,9 +510,26 @@ public final class SkillClient {
         float speed = 1F;
         int animStart;
         float tr = 1F, tg = 1F, tb = 1F;
+        String cls = "";
+        SkillDefs.MobDef def;
+        String text;
+        float scale = 1F;
+        boolean walking;
+        int rider = -1;
+        float seat = 1F;
 
         Actor(int id) {
             this.id = id;
+        }
+
+        /** Un esbirro que echa a andar o se para: «walk» o la de reposo, si no está con otra animación. */
+        void walk(boolean now) {
+            walking = now;
+            if (model == null) return;
+            boolean free = animName == null || animName.equalsIgnoreCase("idle") || animName.equalsIgnoreCase("walk");
+            if (!free) return;
+            if (now && model.anims.containsKey("walk")) play("walk", 1F);
+            else playIdle();
         }
 
         void setModel(String id) {
@@ -478,8 +606,11 @@ public final class SkillClient {
                 pitch = targetPitch;
                 targetPitch = null;
             }
-            // Una animación de una vez que ya acabó vuelve a la de reposo
-            if (anim != null && anim.loop == 0 && (age - animStart) / 20F * speed > anim.length + 0.05F) playIdle();
+            // Una animación de una vez que ya acabó vuelve a la de reposo (o a andar, si va andando)
+            if (anim != null && anim.loop == 0 && (age - animStart) / 20F * speed > anim.length + 0.05F) {
+                playIdle();
+                if (walking) walk(true);
+            }
         }
 
         Vec3 lerp(ClientLevel level, float partial) {
@@ -507,7 +638,7 @@ public final class SkillClient {
             float seconds = (age - animStart + partial) / 20F * speed;
             VfxPose.compute(model, anim, seconds, 0F, bones);
             Matrix4f inst = new Matrix4f().translate((float) at.x, (float) at.y, (float) at.z)
-                    .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(1F / 16F);
+                    .rotate(Axis.YP.rotationDegrees(180F - yaw)).scale(scale / 16F);
             Matrix4f base = new Matrix4f(pose.last().pose()).mul(inst);
             Matrix3f normalView = new Matrix3f(pose.last().normal());
             Matrix3f normalBase = new Matrix3f(normalView).mul(new Matrix3f(inst));

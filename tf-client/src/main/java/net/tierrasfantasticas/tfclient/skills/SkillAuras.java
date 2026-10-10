@@ -37,6 +37,18 @@ final class SkillAuras {
         /** onDamaged / onAttack: multiplica el daño que recibe / que hace quien la lleva. */
         double takenMult = 1.0;
         double dealtMult = 1.0;
+        /** De qué es: aura, ondamaged, onattack, onswing, ondeath. */
+        String kind = "aura";
+        /** cancelEvent: ese golpe (o el golpe al aire) no pasa. */
+        boolean cancel;
+        /** Tipos de daño a los que afecta (damageMods / modDamageType; vacío = a todos) y multiplicador por tipo. */
+        final java.util.Map<String, Double> types = new java.util.HashMap<>();
+        /** La skill de su evento (al recibir el golpe, al pegar, al dar un golpe al aire, al morir). */
+        String onEvent;
+        /** Cuántas veces puede saltar antes de acabarse (0 = sin límite). */
+        int charges;
+        /** El orbital que la lleva (orbital{auraName=X}): se acaban juntos. */
+        SkillMovers.Mover mover;
 
         Aura(String name, Who on) {
             this.name = name;
@@ -76,6 +88,26 @@ final class SkillAuras {
             a.onEnd = onEnd;
             if (m.m.equals("ondamaged")) a.takenMult = SkillRuntime.num(m.arg("1", "multiplier", "m"), 1);
             if (m.m.equals("onattack")) a.dealtMult = SkillRuntime.num(m.arg("1", "multiplier", "m"), 1);
+            a.kind = m.m;
+            a.cancel = SkillRuntime.bool(m.arg("false", "cancelevent", "ce", "canceldamage"));
+            a.charges = (int) SkillRuntime.num(m.arg("0", "charges", "c"), 0);
+            a.onEvent = switch (m.m) {
+                case "ondamaged" -> m.arg(null, "ondamagedskill", "onhit", "oh", "od", "ondamaged");
+                case "onattack" -> m.arg(null, "onattackskill", "onhit", "oh", "onattack");
+                case "onswing" -> m.arg(null, "onswing", "onswingskill", "os2");
+                case "ondeath" -> m.arg(null, "ondeath", "od", "ondeathskill");
+                case "onshoot" -> m.arg(null, "onshoot", "onshootskill", "oh");
+                default -> null;
+            };
+            // damageMods=FALL 0 / moddamagetype=ENTITY_ATTACK,PROJECTILE: a qué golpes afecta (y con qué multiplicador)
+            String mods = m.arg(null, "damagemods", "damagemodifiers", "moddamagetype", "damagetypes");
+            if (mods != null) {
+                for (String part : mods.split("[,;]")) {
+                    String[] kv = part.trim().split("\\s+");
+                    if (kv[0].isEmpty()) continue;
+                    a.types.put(kv[0].toUpperCase(Locale.ROOT), kv.length > 1 ? SkillRuntime.num(kv[1], 1) : -1.0);
+                }
+            }
             st.auras.put(key, a);
             AURAS.add(a);
             if (onStart != null) SkillRuntime.runMeta(ctx.cls.meta(onStart), auraCtx(a));
@@ -100,6 +132,103 @@ final class SkillAuras {
         }
     }
 
+    /** El aura que va con un orbital (orbital{auraName}): hasaura la ve y auraremove para el orbital. */
+    static Aura forMover(SkillMovers.Mover p, String name, Who on, Ctx ctx, int duration) {
+        String key = name.toLowerCase(Locale.ROOT);
+        SkillRuntime.WhoState st = SkillRuntime.state(on);
+        Aura a = new Aura(key, on);
+        a.ctx = ctx.copy();
+        a.ctx.targets = List.of(Tgt.of(on));
+        a.left = duration;
+        a.duration = duration;
+        a.interval = 1;
+        a.maxStacks = 1;
+        a.stacks = 1;
+        a.mover = p;
+        st.auras.put(key, a);
+        AURAS.add(a);
+        return a;
+    }
+
+    static void moverEnded(Aura a) {
+        if (a.alive) finish(a, SkillRuntime.stateIfAny(a.on));
+    }
+
+    // ------------------------------------------------------------------------------------------- eventos
+
+    /** Las auras de evento de alguien (de un tipo), vivas. */
+    private static List<Aura> of(net.minecraft.world.entity.Entity e, String kind) {
+        SkillRuntime.WhoState st = SkillRuntime.stateIfAny(Who.of(e));
+        if (st == null || st.auras.isEmpty()) return List.of();
+        List<Aura> out = new ArrayList<>();
+        for (Aura a : st.auras.values()) if (a.alive && a.kind.equals(kind)) out.add(a);
+        return out;
+    }
+
+    /** ¿Afecta el aura a este tipo de daño? (sin lista, a todos). */
+    private static boolean affects(Aura a, String type) {
+        if (a.types.isEmpty()) return true;
+        return a.types.containsKey(type);
+    }
+
+    /** Le van a hacer daño a «e» (de tipo «type», de «attacker»): sus auras onDamaged. true = se cancela el golpe. */
+    static boolean damaged(net.minecraft.world.entity.LivingEntity e, String type, net.minecraft.world.entity.Entity attacker) {
+        boolean cancel = false;
+        for (Aura a : of(e, "ondamaged")) {
+            if (!affects(a, type)) continue;
+            Double mult = a.types.get(type);
+            if (mult != null && mult == 0) cancel = true;
+            if (a.cancel) cancel = true;
+            fire(a, attacker);
+        }
+        return cancel;
+    }
+
+    /** «e» va a pegar a «victim»: sus auras onAttack. true = se cancela el golpe. */
+    static boolean attacking(net.minecraft.world.entity.Entity e, net.minecraft.world.entity.LivingEntity victim) {
+        boolean cancel = false;
+        for (Aura a : of(e, "onattack")) {
+            if (a.cancel) cancel = true;
+            fire(a, victim);
+        }
+        return cancel;
+    }
+
+    /** Dio un golpe (clic izquierdo): sus auras onSwing. */
+    static void swing(net.minecraft.server.level.ServerPlayer player) {
+        for (Aura a : of(player, "onswing")) fire(a, null);
+    }
+
+    /** Murió alguien con un aura onDeath: su skill (en el sitio donde cayó). */
+    static void died(net.minecraft.world.entity.LivingEntity e) {
+        for (Aura a : of(e, "ondeath")) {
+            if (a.onEvent != null) {
+                Ctx c = a.ctx.copy();
+                c.targets = List.of(Tgt.at(e.position()));
+                c.origin = e.position();
+                c.trigger = Who.of(e);
+                SkillRuntime.runMeta(c.cls.meta(a.onEvent), c);
+            }
+            finish(a, SkillRuntime.stateIfAny(Who.of(e)));
+        }
+    }
+
+    private static void fire(Aura a, net.minecraft.world.entity.Entity other) {
+        if (a.onEvent != null) {
+            Ctx c = auraCtx(a);
+            if (other != null) {
+                c.trigger = Who.of(other);
+                if (a.kind.equals("onattack")) c.targets = List.of(Tgt.of(Who.of(other)));
+            }
+            try {
+                SkillRuntime.runMeta(a.ctx.cls.meta(a.onEvent), c);
+            } catch (SkillRuntime.CancelSkill ignored) {
+                // la skill se paró sola
+            }
+        }
+        if (a.charges > 0 && --a.charges <= 0) finish(a, SkillRuntime.stateIfAny(a.on));
+    }
+
     /** Las skills del aura las lanza quien la puso, con el que la lleva como objetivo. */
     private static Ctx auraCtx(Aura a) {
         Ctx c = a.ctx.copy();
@@ -120,7 +249,13 @@ final class SkillAuras {
                     finish(a, st);
                     continue;
                 }
-                if (a.onTick != null && a.age % a.interval == 0) SkillRuntime.runMeta(a.ctx.cls.meta(a.onTick), auraCtx(a));
+                if (a.onTick != null && a.age % a.interval == 0) {
+                    try {
+                        SkillRuntime.runMeta(a.ctx.cls.meta(a.onTick), auraCtx(a));
+                    } catch (SkillRuntime.CancelSkill ignored) {
+                        // esa vuelta de la skill se paró sola
+                    }
+                }
                 if (a.left <= 0) finish(a, SkillRuntime.stateIfAny(a.on));
             } catch (Throwable t) {
                 a.alive = false;
@@ -134,7 +269,14 @@ final class SkillAuras {
         if (!a.alive) return;
         a.alive = false;
         if (st != null && st.auras.get(a.name) == a) st.auras.remove(a.name);
-        if (a.onEnd != null) SkillRuntime.runMeta(a.ctx.cls.meta(a.onEnd), auraCtx(a));
+        if (a.mover != null && a.mover.alive) SkillMovers.end(a.mover);
+        if (a.onEnd != null) {
+            try {
+                SkillRuntime.runMeta(a.ctx.cls.meta(a.onEnd), auraCtx(a));
+            } catch (SkillRuntime.CancelSkill ignored) {
+                // nada
+            }
+        }
     }
 
     /** Multiplicador del daño que recibe (taken) o hace (!taken) una entidad por sus auras onDamaged / onAttack. */

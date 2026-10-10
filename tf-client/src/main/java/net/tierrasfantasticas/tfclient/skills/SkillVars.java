@@ -117,7 +117,7 @@ final class SkillVars {
         }
         LivingEntity le = who.entity instanceof LivingEntity l ? l : null;
         return switch (rest) {
-            case "name" -> who.entity != null ? who.entity.getName().getString() : who.actor.name();
+            case "name" -> who.entity != null ? who.entity.getName().getString() : who.actor.displayName();
             case "uuid" -> who.entity != null ? who.entity.getUUID().toString() : String.valueOf(who.actor.id);
             case "hp" -> SkillRuntime.fmt(le == null ? 0 : le.getHealth());
             case "mhp" -> SkillRuntime.fmt(le == null ? 0 : le.getMaxHealth());

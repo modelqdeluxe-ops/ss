@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from inventario import leveled, load, norm, scan, strip_colors  # noqa: E402
 
-EXCLUDE = re.compile(r'only.?damage|crucible|no player dmg|_npd|no_take_away|yellow|mmoitems\.yml$|_mmoitems', re.I)
+EXCLUDE = re.compile(r'only.?damage|crucible|no player dmg|_npd|no_take_away|yellow|mmoitems\.yml$|_mmoitems(?!-mmocore)', re.I)
 # argumentos de mecánicas que nombran otras skills o mobs
 _UNUSED_SKILL_ARGS = ('s', 'skill', 'skills', 'ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval',
               'onremove', 'onfinish', 'ontickskill', 'onhitskill', 'onendskill', 'onstartskill', 'then', 'else',
@@ -126,12 +126,51 @@ def parse_line(line):
     hm = re.search(r'(?<![\w.])(0?\.\d+|1(?:\.0+)?)\s*$', rest.strip())
     if hm:
         out['ch'] = float(hm.group(1))  # probabilidad
+    # Condiciones en línea: del objetivo («@EIR{conditions=[ - isLiving true ]}») y de los proyectiles
+    # (hitConditions: a quién toca; stopConditions: cuándo se para)
+    ta = out.get('ta') or {}
+    for k in ('conditions', 'targetconditions', 'tc', 'cond', 'c'):
+        if k in ta and str(ta[k]).strip().startswith('['):
+            out['tc'] = inline_conds(ta.pop(k))
+            break
+    for k, dest in (('hitconditions', 'hc'), ('hc', 'hc'), ('stopconditions', 'sc')):
+        if k in args and str(args[k]).strip().startswith('['):
+            out[dest] = inline_conds(args.pop(k))
+    return out
+
+
+def inline_conds(v):
+    """«[ - isLiving true - hasaura{aura=x} false ]» → [{m, a, v}, ...]."""
+    body = str(v).strip()
+    body = body[1:-1] if body.endswith(']') else body[1:]
+    items, depth, cur = [], 0, ''
+    for i, ch in enumerate(body):
+        if ch in '{[':
+            depth += 1
+        elif ch in '}]':
+            depth -= 1
+        if depth == 0 and ch == '-' and (i == 0 or body[i - 1] in ' \t\n') and i + 1 < len(body) and body[i + 1] in ' \t':
+            if cur.strip():
+                items.append(cur.strip())
+            cur = ''
+        else:
+            cur += ch
+    if cur.strip():
+        items.append(cur.strip())
+    out = []
+    for it in items:
+        neg = it.lstrip().startswith('!')
+        c = parse_condition(it.lstrip().lstrip('!'))
+        if c:
+            if neg:
+                c['v'] = {'true': 'false', 'false': 'true'}.get(c['v'], c['v'])
+            out.append(c)
     return out
 
 
 def parse_condition(line):
     line = str(line).strip().lstrip('-').strip()
-    m = re.match(r'^([\w:]+)\s*(\{[^}]*\})?\s*(.*)$', line)
+    m = re.match(r'^(!?[\w:]+)\s*(\{[^}]*\})?\s*(.*)$', line)
     if not m:
         return None
     rest = m.group(3).strip().lower()
@@ -175,7 +214,8 @@ CALLERS = {'skill', 'metaskill', 'cast', 'sudoskill', 'randomskill', 'skillseque
 CALLBACK_KEYS = ('ontick', 'onhit', 'onend', 'onstart', 'onbounce', 'onhitblock', 'oninterval', 'onremove', 'onfinish',
                  'ontickskill', 'onhitskill', 'onendskill', 'onstartskill', 'then', 'else', 'oncast', 'onapply',
                  'onexpire', 'onattack', 'ondamaged', 'onlandskill', 'onland', 'onbreak', 'ondeath', 'onswing',
-                 'ondamagedskill', 'onhitentity',
+                 'ondamagedskill', 'onhitentity', 'onsummon', 'onsummonskill', 'op', 'onpoint', 'onpointskill', 'od',
+                 'ondeathskill', 'onhitblockskill', 'onbounceskill', 'onswingskill',
                  # atajos de MythicMobs
                  'oh', 'ot', 'oe', 'os', 'ob', 'ohb', 'oi', 'ontickskill')
 
@@ -219,7 +259,11 @@ def refs(mech):
     if m in CALLERS:
         for k in ('s', 'skill', 'skills', '$skill', 'spell'):
             if a.get(k):
-                skills += skill_names(a[k])
+                if m == 'randomskill':
+                    # «a 6,b 6,c 1»: nombre y peso
+                    skills += [x.strip().split()[0].strip('"') for x in str(a[k]).split(',') if x.strip()]
+                else:
+                    skills += skill_names(a[k])
     for k in CALLBACK_KEYS:
         if a.get(k):
             skills += skill_names(a[k])
@@ -245,7 +289,22 @@ def extract_inline(mechs, tree_out, prefix):
                 pm['a'][k] = name
 
 
-def compile_pack(pack_dir):
+def shared_files(root, exclude=None):
+    """Los archivos «Essentials» de la serie Awakened de samus2002 de todos los packs (skills, mobs, ítems): cada pack
+    de la serie los usa, pero no todos los traen (al Nigromante le faltan). Solo se usa lo que falte."""
+    out = {'skills': [], 'mobs': [], 'items': []}
+    for name in sorted(os.listdir(root)):
+        d = os.path.join(root, name)
+        if not os.path.isdir(d) or d == exclude:
+            continue
+        sk, mb, it = pick_files(d)
+        out['skills'] += [p for p in sk if 'essentials' in os.path.basename(p).lower()]
+        out['mobs'] += [p for p in mb if 'essentials' in os.path.basename(p).lower()]
+        out['items'] += [p for p in it if 'essentials' in os.path.basename(p).lower()]
+    return out
+
+
+def compile_pack(pack_dir, shared=None):
     inv = scan(pack_dir)
     sk_files, mob_files, item_files = pick_files(pack_dir)
     tree, mobs, items = {}, {}, {}
@@ -261,12 +320,28 @@ def compile_pack(pack_dir):
         for k, v in (load(p) or {}).items():
             if isinstance(v, dict):
                 items.setdefault(k, v)
+    # lo que el pack no trae de los «Essentials» de la serie (de otros packs): después, para no pisar lo suyo
+    borrowed = set()
+    for kind, dest in (('skills', tree), ('mobs', mobs), ('items', items)):
+        for p in (shared or {}).get(kind, []):
+            for k, v in (load(p) or {}).items():
+                if isinstance(v, dict) and k not in dest:
+                    dest[k] = v
+                    borrowed.add(k)
     lower_tree = {k.lower(): k for k in tree}
     lower_mobs = {k.lower(): k for k in mobs}
 
+    missing = set()
     # clase y skills en orden
     cls = inv['classes'][0] if inv['classes'] else None
-    order = [norm(s) for s in (cls['skills'] if cls else [])] or list(inv['skills'].keys())
+    order = [norm(s) for s in (cls['skills'] if cls else [])]
+    if not order:
+        # sin clase de MMOCore (los packs de arma): en el orden de las habilidades del arma (clic izq., der., ...)
+        for w in inv['weapons']:
+            for ab in w['abilities']:
+                if ab['skill'] and ab['skill'] not in order:
+                    order.append(ab['skill'])
+        order += [k for k in inv['skills'] if k not in order]
     out_skills = []
     for sid in order:
         s = inv['skills'].get(sid)
@@ -291,13 +366,28 @@ def compile_pack(pack_dir):
         if 'mana' in mods and isinstance(conf.get('mana'), dict):
             mana = mods['mana']
         s = dict(s, mods=mods)
+        if not lower_tree.get(entry.lower()):
+            # sin skill de MythicMobs no hace nada (archivos sueltos del pack que ningún arma usa)
+            missing.add(f'entry:{sid}')
+            continue
         out_skills.append({'id': sid.lower(), 'name': s.get('name') or sid.title(), 'lore': s.get('lore', []),
                            'cooldown': cd, 'mana': mana, 'passive': s.get('passive'), 'mods': s.get('mods', {}),
                            'entry': lower_tree.get(entry.lower()), 'icon': s.get('icon_item'),
                            'modes': s.get('modes', [])})
 
+    # Una clase con N ranuras de pasiva: solo sus N primeras skills con «passive-type» son pasivas; las demás que lo
+    # traen (copiado de otra skill en el pack: Crackling Skyfall, Whirlpool, Shadowquake...) se lanzan con su tecla
+    slots = (cls or {}).get('passive_slots') or 0
+    if slots:
+        seen = 0
+        for sk in out_skills:
+            if sk.get('passive'):
+                seen += 1
+                if seen > slots:
+                    sk['passive'] = None
+
     # lo que se alcanza desde las skills de la clase
-    reach_s, reach_m, missing = set(), set(), set()
+    reach_s, reach_m = set(), set()
     stack = [s['entry'] for s in out_skills if s['entry']]
     mob_stack = []
     compiled_tree, compiled_mobs = {}, {}
@@ -363,6 +453,12 @@ def compile_pack(pack_dir):
             compiled_mobs[key] = {'type': v.get('Type', 'ZOMBIE'), 'options': v.get('Options') or {},
                                   'head': v.get('ItemHead') or (v.get('Equipment') or [None])[0],
                                   'display': v.get('Display'), 'health': v.get('Health'), 'mechs': mechs}
+            if isinstance(v.get('DisplayOptions'), dict):
+                compiled_mobs[key]['display_options'] = v['DisplayOptions']
+            for yk, ok in (('AIGoalSelectors', 'ai_goals'), ('AITargetSelectors', 'ai_targets'), ('Damage', 'damage'),
+                           ('Faction', 'faction'), ('Mount', 'mount')):
+                if v.get(yk) is not None:
+                    compiled_mobs[key][ok] = v[yk]
             for pm in mechs:
                 s2, m2 = refs(pm)
                 stack += s2

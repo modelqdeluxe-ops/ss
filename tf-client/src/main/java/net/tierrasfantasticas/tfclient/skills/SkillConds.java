@@ -20,6 +20,16 @@ final class SkillConds {
     /** ¿Se cumple la condición para «who» (o el punto «at» si el objetivo es un sitio)? */
     static boolean test(Cond c, Who who, Ctx ctx, Vec3 at) {
         Map<String, String> a = c.a();
+        // Variables en los argumentos (hasaura{aura=<caster.name>TARGET})
+        for (String v : a.values()) {
+            if (v.indexOf('<') >= 0) {
+                Map<String, String> r = new java.util.HashMap<>(a.size());
+                SkillRuntime.Tgt tg = who != null ? SkillRuntime.Tgt.of(who) : at != null ? SkillRuntime.Tgt.at(at) : null;
+                a.forEach((k, x) -> r.put(k, x.indexOf('<') >= 0 ? SkillVars.text(x, ctx, tg) : x));
+                a = r;
+                break;
+            }
+        }
         Entity e = who != null ? who.entity : null;
         LivingEntity le = e instanceof LivingEntity l ? l : null;
         return switch (c.m()) {
@@ -68,7 +78,8 @@ final class SkillConds {
                 if (var == null) yield false;
                 String v = SkillRuntime.varScope(var, ctx, who == null ? null : SkillRuntime.Tgt.of(who)).get(SkillRuntime.varName(var));
                 String want = SkillRuntime.unquote(arg(a, "", "value", "val", "v"));
-                yield v != null && (v.equalsIgnoreCase(want) || numEq(v, want));
+                if (v == null) v = "UNDEFINED"; // como MythicMobs: una variable sin poner vale «UNDEFINED»
+                yield v.equalsIgnoreCase(want) || numEq(v, want);
             }
             case "variableinrange", "varinrange", "varrange" -> {
                 String var = arg(a, null, "var", "variable", "name", "key", "k");
@@ -78,8 +89,86 @@ final class SkillConds {
             }
             case "itemissimilar", "holding" -> e instanceof net.minecraft.world.entity.player.Player p
                     && SkillItems.holds(p, ctx.cls, arg(a, "", "i", "item", "material", "m"));
-            case "offgcd", "gcd", "incombat", "hasai", "hastarget", "wearing", "haspermission",
-                    "lineofsight", "los", "world", "biome", "dimension", "moonphase", "stance", "hasowner" -> true;
+            case "offgcd", "gcd" -> {
+                SkillRuntime.WhoState st = SkillRuntime.stateIfAny(who != null ? who : ctx.caster);
+                yield st == null || st.gcdUntil <= SkillRuntime.clock;
+            }
+            case "stance" -> {
+                SkillRuntime.WhoState st = SkillRuntime.stateIfAny(who != null ? who : ctx.caster);
+                String want = arg(a, "", "stance", "s");
+                yield st != null && st.stance != null && st.stance.equalsIgnoreCase(want);
+            }
+            case "faction" -> {
+                SkillRuntime.WhoState st = who == null ? null : SkillRuntime.stateIfAny(who);
+                String want = arg(a, "", "faction", "f");
+                yield st != null && st.faction != null && st.faction.equalsIgnoreCase(want);
+            }
+            case "hastag", "tag" -> {
+                String tag = arg(a, "", "tag", "t").toLowerCase(Locale.ROOT);
+                SkillRuntime.WhoState st = who == null ? null : SkillRuntime.stateIfAny(who);
+                yield st != null && st.tags.contains(tag) || e != null && e.getTags().contains(arg(a, "", "tag", "t"));
+            }
+            case "hastarget" -> who != null && who.actor != null ? who.actor.target != null : ctx.aim != null;
+            case "mmocantarget", "cantarget" -> e instanceof LivingEntity l2 && SkillRuntime.canHurt(ctx, l2);
+            case "iscaster" -> who != null && who.same(ctx.caster);
+            // isChild: el objetivo es algo invocado (tiene dueño). Sirve igual desde el jugador (sus lanzas del Dragón) que
+            // desde su esbirro con sudoskill (el guardián del Invocador comprobándose a sí mismo)
+            case "ischild", "children", "child" -> who != null && who.actor != null && who.actor.owner != null;
+            case "modelhasdriver" -> {
+                Who w = who != null ? who : ctx.caster;
+                yield w.actor != null && w.actor.rider != null;
+            }
+            case "drivingmodel", "isdriving" -> {
+                Who w = who != null ? who : ctx.caster;
+                yield w.entity != null && SkillModels.mountedBy(w.entity) != null;
+            }
+            case "ownerisonline" -> ctx.caster.player() != null && !ctx.caster.player().hasDisconnected();
+            case "ismoving", "moving" -> e != null && SkillServer.moving(e);
+            case "pitch" -> inRange(who != null ? who.pitch() : ctx.caster.pitch(), arg(a, ">0", "pitch", "p", "range"));
+            case "onblock" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                BlockPos pos = BlockPos.containing(p.x, p.y - 0.2, p.z);
+                String id = BuiltInRegistries.BLOCK.getKey(ctx.caster.level().getBlockState(pos).getBlock()).getPath();
+                boolean hit = false;
+                for (String t : arg(a, "", "material", "m", "types", "t", "b").toLowerCase(Locale.ROOT).split(",")) {
+                    String tt = t.trim().replace("minecraft:", "");
+                    if (tt.equals(id) || tt.equals("air") && (id.equals("cave_air") || id.equals("void_air"))) hit = true;
+                }
+                yield hit;
+            }
+            case "hasitem" -> {
+                if (!(e instanceof Player p)) yield false;
+                String item = arg(a, "", "item", "i", "material", "m").toLowerCase(Locale.ROOT).replace("minecraft:", "");
+                int n = 0;
+                for (net.minecraft.world.item.ItemStack st : p.getInventory().items) {
+                    if (!st.isEmpty() && BuiltInRegistries.ITEM.getKey(st.getItem()).getPath().equals(item)) n += st.getCount();
+                }
+                yield inRange(n, arg(a, ">0", "amount", "a"));
+            }
+            case "mobsinradius", "mir", "entitiesinradius", "eir", "playersinradius", "pir" -> {
+                Vec3 p = at != null ? at : who != null ? who.pos() : ctx.caster.pos();
+                double r = SkillRuntime.num(arg(a, "5", "radius", "r"), 5);
+                String types = arg(a, null, "types", "type", "t", "mobtypes");
+                boolean players = c.m().startsWith("players") || c.m().equals("pir");
+                int n = 0;
+                if (types != null && !players) {
+                    for (SkillActor ac : SkillRuntime.ACTORS) {
+                        if (!ac.alive || ac.level != ctx.caster.level() || ac.pos.distanceToSqr(p) > r * r) continue;
+                        for (String ty : types.split(",")) if (ty.trim().equalsIgnoreCase(ac.name())) n++;
+                    }
+                } else {
+                    for (LivingEntity le2 : ctx.caster.level().getEntitiesOfClass(LivingEntity.class,
+                            new net.minecraft.world.phys.AABB(p, p).inflate(r))) {
+                        if (!le2.isAlive() || le2 instanceof net.minecraft.world.entity.decoration.ArmorStand) continue;
+                        if (le2.position().distanceToSqr(p) > r * r) continue;
+                        if (players != le2 instanceof Player) continue;
+                        n++;
+                    }
+                }
+                yield inRange(n, arg(a, ">0", "amount", "a"));
+            }
+            case "incombat", "hasai", "wearing", "haspermission",
+                    "lineofsight", "los", "world", "biome", "dimension", "moonphase", "hasowner" -> true;
             case "targetwithin", "targetinlineofsight", "targetnotwithin" -> {
                 Entity t = ctx.aim;
                 double d = SkillRuntime.num(arg(a, "16", "distance", "d"), 16);

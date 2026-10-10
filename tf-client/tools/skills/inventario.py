@@ -87,6 +87,9 @@ def scan(pack_dir):
             out['classes'].append({'file': os.path.basename(p), 'name': strip_colors(disp.get('name')),
                                    'lore': [strip_colors(x) for x in (disp.get('lore') or [])],
                                    'skills': list((data.get('skills') or {}).keys()),
+                                   # ranuras de pasiva (formula: <PASSIVE>): solo esas llevan pasivas
+                                   'passive_slots': sum(1 for v in (data.get('skill-slots') or {}).values()
+                                                        if isinstance(v, dict) and '<PASSIVE>' in str(v.get('formula', ''))),
                                    'skill_conf': {norm(k): v for k, v in (data.get('skills') or {}).items()
                                                   if isinstance(v, dict)}})
         elif '/skills/' in lp and 'mmocore' in lp:
@@ -117,8 +120,35 @@ def scan(pack_dir):
                 else {k.upper(): v for k, v in data.items() if isinstance(v, dict)}
             for sid, v in entries.items():
                 s = out['skills'].setdefault(sid, {})
-                s['mm'] = v.get('mythicmobs-skill-id') or v.get('mythic-skill') or s.get('mm')
+                src = str(v.get('source') or '')
+                s['mm'] = v.get('mythicmobs-skill-id') or v.get('mythic-skill') or \
+                    (src.split(':', 1)[1] if src.lower().startswith('mythicmobs:') else None) or s.get('mm')
                 s.setdefault('name', strip_colors(v.get('name')))
+                # MythicLib nuevo: parameters: {damage: {player: {base, per-level, min, max}}}, trigger, icon, lore
+                params = v.get('parameters')
+                if isinstance(params, dict):
+                    mods = dict(s.get('mods') or {})
+                    for k, pv in params.items():
+                        if not isinstance(pv, dict):
+                            continue
+                        lv = pv.get('player') if isinstance(pv.get('player'), dict) else pv
+                        if 'base' in lv:
+                            mods.setdefault(str(k).lower(), leveled(lv))
+                        elif pv.get('item') is not None:
+                            mods.setdefault(str(k).lower(), pv.get('item'))
+                    s['mods'] = mods
+                    if s.get('cooldown') is None and 'cooldown' in mods:
+                        s['cooldown'] = mods['cooldown']
+                    if s.get('mana') is None and 'mana' in mods:
+                        s['mana'] = mods['mana']
+                if not s.get('lore') and v.get('lore'):
+                    s['lore'] = [strip_colors(x) for x in v['lore'] if strip_colors(x)]
+                if not s.get('icon_item') and v.get('icon'):
+                    s['icon_item'] = v.get('icon')
+                trig = str(v.get('trigger') or '').upper()
+                if trig in ('TIMER', 'DAMAGED', 'ATTACK', 'KILL_ENTITY', 'SHOOT_BOW', 'DEATH', 'SNEAK', 'LOGIN') \
+                        and not s.get('passive'):
+                    s['passive'] = {'type': trig, 'timer': (s.get('mods') or {}).get('timer')}
                 if v.get('cooldown') is not None:
                     s.setdefault('cooldown', v.get('cooldown'))
                 if v.get('passive-type'):
@@ -126,6 +156,15 @@ def scan(pack_dir):
                         s['passive'] = {'type': str(v['passive-type']).upper(), 'timer': v.get('timer')}
                     elif not s['passive'].get('timer') and v.get('timer'):
                         s['passive']['timer'] = v.get('timer')
+                p = s.get('passive')
+                if p and p.get('type') == 'TIMER' and not p.get('timer'):
+                    t = (s.get('mods') or {}).get('timer')
+                    if t:
+                        p['timer'] = t
+                    else:
+                        # «passive-type: TIMER» con el temporizador a 0: en la clase va en una ranura normal y se
+                        # lanza con su tecla (el Mando del Nigromante, la Andanada del Piromante)
+                        s.pop('passive')
         elif 'mmoitems' in lp and '/item/' in lp:
             for iid, it in data.items():
                 if not isinstance(it, dict):
@@ -138,8 +177,16 @@ def scan(pack_dir):
                          'abilities': []}
                 for ab in (base.get('ability') or {}).values():
                     if isinstance(ab, dict):
+                        vals = {}
+                        for k, v in ab.items():
+                            if k in ('type', 'mode'):
+                                continue
+                            try:
+                                vals[str(k).lower()] = float(v)
+                            except (TypeError, ValueError):
+                                pass
                         entry['abilities'].append({'skill': str(ab.get('type', '')).upper(), 'mode': ab.get('mode'),
-                                                   'cooldown': ab.get('cooldown')})
+                                                   'cooldown': ab.get('cooldown'), 'values': vals})
                 mat = str(base.get('material', '')).upper()
                 if any(k in mat for k in ('HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS')) or 'armor' in os.path.basename(p).lower():
                     out['armor'].append(entry)
@@ -158,6 +205,11 @@ def scan(pack_dir):
             s.setdefault('modes', []).append(ab['mode'])
             if s.get('cooldown') in (None, 0) and ab.get('cooldown'):
                 s['cooldown'] = ab['cooldown']
+            # los valores de la habilidad del arma (daño...) cuando la skill no trae los suyos
+            mods = s.setdefault('mods', {})
+            for k, v in (ab.get('values') or {}).items():
+                if not mods.get(k):
+                    mods[k] = v
     return out
 
 

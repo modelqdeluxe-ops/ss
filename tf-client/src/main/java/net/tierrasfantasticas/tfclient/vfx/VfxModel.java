@@ -97,6 +97,15 @@ public final class VfxModel {
         if (id == null) return -1;
         Integer i = boneIndex.get(id);
         if (i == null) i = boneIndex.get(id.toLowerCase(java.util.Locale.ROOT));
+        if (i == null) {
+            // ModelEngine quita los prefijos de comportamiento del nombre (ef_suelo → «suelo»)
+            String tail = "_" + id.toLowerCase(java.util.Locale.ROOT);
+            for (int b = 0; b < bones.length; b++) {
+                if (bones[b].id.toLowerCase(java.util.Locale.ROOT).endsWith(tail) && bones[b].id.indexOf('_') == bones[b].id.length() - tail.length()) {
+                    return b;
+                }
+            }
+        }
         return i == null ? -1 : i;
     }
 

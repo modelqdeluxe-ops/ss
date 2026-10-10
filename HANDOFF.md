@@ -84,6 +84,23 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       objetivo). Ahora, por objetivo: si toca, ese objetivo va a la otra skill y los demás siguen
 >       (`SkillRuntime.runMeta` y `sim.py`). Antes `frost_beam` (Glacia) hacía 0 de daño y el martillo de Thor al
 >       volver se trataba a sí mismo como objetivo en vez de desaparecer.
+> - [x] **Las 39 clases** (10 oct): `build_skills.py` ya convierte todas (`TANDAS` con las 39; ids limpios en
+>       `CLASS_IDS`: `arquero`, `nigromante`, `vampiro`...). El pack `samus2002_NECROMANCER` es un **jefe** (mob con
+>       barra de jefe y fases), no una clase: fuera. Zips con copias dentro: `samus2002_AWAKENED_ARCHER` trae
+>       `fire katana` y `samus2002_AWAKENED_CLERIC` trae el Piromante entero: bórralas (son idénticas a sus packs).
+>       Motor ampliado (Java y `sim.py` igual): condiciones en línea de objetivos y proyectiles (`tc`/`hc`/`sc`),
+>       `sort`/`limit`, ~30 mecánicas nuevas (signal/onSignal, settextdisplay con la fuente de la clase, slash,
+>       polygon, chain, spin, hide, sendtitle, modifyprojectile, setvarloc, tags, stance, faction, gcd...), ~15
+>       objetivos (@children, @EntitiesInCone, @EntitiesInLine, @VariableLocation, @TargetBlock...), ~15 condiciones
+>       (mmocantarget, ischild, hastag, pitch, ismoving...), `origin=@Objetivo` en cualquier línea, `@forward{uel}`,
+>       proyectiles pegados al suelo (hugSurface), targetIsOrigin, onHitBlock, immuneDelay, orbitales con aura,
+>       auras de evento (onDamaged con cancelEvent/damageMods, onAttack, onSwing con clic al aire, onDeath),
+>       **esbirros** (`SkillMinions`: los mobs con IA del pack siguen al dueño, persiguen y atacan con sus skills),
+>       montar en un modelo (mountmodel), `onSummon`, `onSurface`, «Essentials» de la serie Awakened que le faltan
+>       a un pack (se cogen de otro). Errores que había: TIMER de las pasivas va en **ticks** (no segundos); solo
+>       las N primeras `passive-type` de una clase con N ranuras `<PASSIVE>` son pasivas (las demás, con tecla);
+>       acción `cast X` de las condiciones; variable sin poner = `UNDEFINED`; `isChild` = «tiene dueño».
+>       `sim.py --todas`: 0 problemas en las 39; `--trace` enseña por qué una skill no sale.
 > - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
 >       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
 >       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de

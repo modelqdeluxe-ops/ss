@@ -51,6 +51,8 @@ public final class SkillServer {
     /** Hasta cuándo (tick) no se puede volver a lanzar cada skill: jugador → id de skill → tick. */
     private static final Map<UUID, Map<String, Long>> COOLDOWN = new HashMap<>();
     private static final Map<UUID, Long> NO_FALL = new HashMap<>();
+    /** Desde cuándo cuentan sus pasivas por tiempo (al entrar o al tener la clase saltan ya, y luego cada «timer»). */
+    private static final Map<UUID, Long> PASSIVE_START = new HashMap<>();
     private static boolean dirty;
 
     private static boolean enabled = true;
@@ -190,6 +192,7 @@ public final class SkillServer {
         dirty = true;
         save();
         ServerPlayer player = srv.getPlayerList().getPlayer(uuid);
+        PASSIVE_START.remove(uuid);
         if (player == null) return;
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
@@ -269,15 +272,24 @@ public final class SkillServer {
             TFClient.LOGGER.error("TF Skills: error en el tick", t);
         }
         if (!enabled) return;
-        // Pasivas por tiempo (TIMER): cada «timer» segundos
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            net.minecraft.world.phys.Vec3 now = player.position();
+            net.minecraft.world.phys.Vec3 before = LAST_POS.put(player.getUUID(), now);
+            if (before != null && (now.x - before.x) * (now.x - before.x) + (now.z - before.z) * (now.z - before.z) > 0.0009) {
+                MOVED_AT.put(player.getUUID(), SkillRuntime.clock);
+            }
+        }
+        // Pasivas por tiempo (TIMER): cada «timer» ticks (como MythicLib: el aura de 20 ticks del Clérigo o de Thor
+        // con timer 10 está siempre puesta; el rastro de hielo de Glacia sale cada 5)
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (!player.isAlive() || player.isSpectator()) continue;
             SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
             if (def == null) continue;
             for (SkillDefs.SkillDef s : def.skills) {
                 if (s.passive() == null || !s.passive().type().equals("TIMER") || s.entry() == null) continue;
-                int every = (int) Math.max(5, Math.round(Math.max(0.25, s.passive().timer()) * 20));
-                if ((SkillRuntime.clock + player.getId()) % every != 0) continue;
+                int every = (int) Math.max(1, Math.round(s.passive().timer() > 0 ? s.passive().timer() : 20));
+                long start = PASSIVE_START.computeIfAbsent(player.getUUID(), k -> SkillRuntime.clock + 20);
+                if (SkillRuntime.clock < start || (SkillRuntime.clock - start) % every != 0) continue;
                 passive(player, def, s);
             }
         }
@@ -294,6 +306,70 @@ public final class SkillServer {
         } catch (Throwable t) {
             TFClient.LOGGER.debug("TF Skills: error en la pasiva {}", s.id(), t);
         }
+    }
+
+    /**
+     * Auras de evento antes del golpe: onDamaged de quien lo recibe (paradas, inmunidad al caer: cancelEvent y
+     * damageMods) y onAttack de quien pega.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onAttacked(net.minecraftforge.event.entity.living.LivingAttackEvent event) {
+        if (!enabled || event.getEntity().level().isClientSide()) return;
+        net.minecraft.world.entity.LivingEntity victim = event.getEntity();
+        net.minecraft.world.entity.Entity src = event.getSource().getEntity();
+        try {
+            boolean cancel = SkillAuras.damaged(victim, damageType(event.getSource()), src);
+            if (src != null && !SkillRuntime.inDamage && SkillAuras.attacking(src, victim)) cancel = true;
+            if (cancel) event.setCanceled(true);
+        } catch (Throwable t) {
+            TFClient.LOGGER.debug("TF Skills: error en un aura de evento", t);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (!enabled || event.getEntity().level().isClientSide()) return;
+        try {
+            SkillAuras.died(event.getEntity());
+        } catch (Throwable t) {
+            TFClient.LOGGER.debug("TF Skills: error en un aura onDeath", t);
+        }
+    }
+
+    /** El tipo de daño con el nombre de Bukkit que usan los packs (FALL, PROJECTILE, ENTITY_ATTACK...). */
+    static String damageType(net.minecraft.world.damagesource.DamageSource src) {
+        if (src.is(net.minecraft.tags.DamageTypeTags.IS_FALL)) return "FALL";
+        if (src.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE)) return "PROJECTILE";
+        if (src.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) return src.getEntity() != null ? "ENTITY_EXPLOSION" : "BLOCK_EXPLOSION";
+        if (src.is(net.minecraft.tags.DamageTypeTags.IS_LIGHTNING)) return "LIGHTNING";
+        if (src.is(net.minecraft.tags.DamageTypeTags.IS_DROWNING)) return "DROWNING";
+        if (src.is(net.minecraft.tags.DamageTypeTags.IS_FIRE)) return "FIRE";
+        return switch (src.getMsgId()) {
+            case "magic", "indirectMagic" -> "MAGIC";
+            case "sonic_boom" -> "SONIC_BOOM";
+            case "wither", "witherSkull" -> "WITHER";
+            case "thorns" -> "THORNS";
+            case "inWall", "cramming" -> "SUFFOCATION";
+            case "cactus", "sweetBerryBush", "stalagmite" -> "CONTACT";
+            case "outOfWorld", "genericKill" -> "VOID";
+            case "starve" -> "STARVATION";
+            case "freeze" -> "FREEZE";
+            case "mob", "player", "mobAttack", "playerAttack", "mobAttackNoAggro" -> "ENTITY_ATTACK";
+            default -> "CUSTOM";
+        };
+    }
+
+    // ¿Se está moviendo? (?isMoving): dónde estaba cada jugador hace un momento
+    private static final Map<UUID, net.minecraft.world.phys.Vec3> LAST_POS = new HashMap<>();
+    private static final Map<UUID, Long> MOVED_AT = new HashMap<>();
+
+    static boolean moving(net.minecraft.world.entity.Entity e) {
+        if (e instanceof ServerPlayer p) {
+            Long at = MOVED_AT.get(p.getUUID());
+            return at != null && SkillRuntime.clock - at <= 3;
+        }
+        net.minecraft.world.phys.Vec3 d = e.getDeltaMovement();
+        return d.x * d.x + d.z * d.z > 1e-4;
     }
 
     /** Auras que cambian el daño (onDamaged / onAttack de MythicMobs: el traje del Dragón Rojo recibe la mitad). */
@@ -368,6 +444,9 @@ public final class SkillServer {
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
         NO_FALL.remove(uuid);
+        LAST_POS.remove(uuid);
+        MOVED_AT.remove(uuid);
+        PASSIVE_START.remove(uuid);
     }
 
     @SubscribeEvent
