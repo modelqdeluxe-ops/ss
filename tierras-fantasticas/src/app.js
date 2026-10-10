@@ -4,6 +4,7 @@
 import products from '../config/products.json' with { type: 'json' };
 import legal from '../config/legal.json' with { type: 'json' };
 import vfx from '../config/vfx.json' with { type: 'json' };
+import skillsCatalog from '../config/skills.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
 import { PayPal, formatAmount } from './paypal.js';
 import { Discord, isSnowflake } from './discord.js';
@@ -32,7 +33,30 @@ const BRIDGE_TEMPLATES = 2;
 const TERMS_VERSION = legal.version;
 const TERMS_ERROR = 'Marca la casilla para aceptar los Términos y condiciones y el Aviso de privacidad.';
 
-const productById = new Map(products.map((p) => [p.id, p]));
+// --- Skills: las clases del TF Client (config/skills.json, de tools/skills.py) ---
+// Cada clase se vende como un producto «clase-<id>» (con dinero por Stripe/PayPal o con las monedas del servidor). Las
+// compradas son del jugador para siempre; tiene UNA activa a la vez, la que el puente manda al servidor.
+const SKILL_PREFIX = 'clase-';
+const skillClasses = skillsCatalog.classes;
+const skillById = new Map(skillClasses.map((c) => [c.id, c]));
+const skillProducts = skillClasses.map((c) => ({
+  id: `${SKILL_PREFIX}${c.id}`,
+  category: 'skills',
+  skillClass: c.id,
+  name: `Clase ${c.name}`,
+  description: `${c.role}. ${c.desc}`,
+  price: c.price,
+  coinPrice: c.coinPrice,
+  maxQuantity: 1,
+  image: c.icon,
+  colors: [c.color, c.color],
+  // La clase no se entrega con comandos: va en el campo «skills» de /bridge/poll (el mod la pone y da su equipo).
+  commands: [],
+  discordRoles: [],
+}));
+const allProducts = [...products, ...skillProducts];
+const productById = new Map(allProducts.map((p) => [p.id, p]));
+const skillOf = (product) => (product?.category === 'skills' ? skillById.get(product.skillClass) || null : null);
 // VFX (efectos de kill sueltos y paquetes de skills): por ahora todos gratis.
 const VFX_FREE = true;
 // --- Armario: lo comprado que se puede llevar puesto (solo apariencia) ---
@@ -181,6 +205,17 @@ export function createApp(env) {
     return out;
   }
 
+  // Para el puente: la clase activa de cada conectado que alguna vez eligió una (solo si sigue siendo suya)
+  async function skillsForServer(uuids) {
+    const out = [];
+    for (const a of await store.skillActiveFor(uuids)) {
+      let clase = a.cls && skillById.has(a.cls) ? a.cls : null;
+      if (clase && !(await store.skillsOwned(a.uuid)).includes(clase)) clase = null;
+      out.push({ uuid: a.uuid, clase, at: a.at });
+    }
+    return out;
+  }
+
   // Para el puente: lo puesto de cada conectado, solo con lo que sigue teniendo
   async function wardrobesForServer(uuids) {
     const out = [];
@@ -206,6 +241,19 @@ export function createApp(env) {
       }
     }
     return { slots: WARDROBE_SLOTS, owned, equipped };
+  }
+
+  // Las clases de skills de un jugador: las que tiene, la activa (solo si sigue siendo suya) y las que paga con monedas.
+  async function skillsView(uuid) {
+    const owned = (await store.skillsOwned(uuid)).filter((id) => skillById.has(id));
+    const active = await store.skillActive(uuid);
+    const player = await store.playerByUuid(uuid);
+    return {
+      owned,
+      active: active?.cls && owned.includes(active.cls) ? active.cls : null,
+      pending: (await store.skillsPending(uuid)).filter((id) => skillById.has(id) && !owned.includes(id)),
+      coins: player?.coins ?? null,
+    };
   }
 
   // La cuenta con la sesión iniciada (o null). La cookie guarda solo el UUID, firmado.
@@ -270,6 +318,11 @@ export function createApp(env) {
 
   // Precio de un producto para un jugador: los rangos se mejoran pagando solo la diferencia.
   async function quote(product, uuid) {
+    const cls = skillOf(product);
+    if (cls) {
+      if ((await store.skillsOwned(uuid)).includes(cls.id)) return { blocked: `Este jugador ya tiene la clase ${cls.name}.`, code: 'owned' };
+      return { unit: product.price };
+    }
     if (!rankById.has(product.id)) return { unit: product.price };
     const current = await store.getRank(uuid);
     const owned = current && rankById.get(current.rankId);
@@ -289,7 +342,7 @@ export function createApp(env) {
       id: order.id,
       status: order.status,
       username: order.username,
-      kind: shopItem ? 'tienda' : order.id.startsWith('COIN') ? 'ruleta' : null,
+      kind: shopItem ? 'tienda' : product?.category === 'skills' ? 'skills' : order.id.startsWith('COIN') ? 'ruleta' : null,
       product: shopItem ? `${shopItem.count > 1 ? `${shopItem.count}× ` : ''}${shopItem.name}` : product?.name || order.productId,
       image: shopItem ? shopItem.icon || null : product?.image || null,
       quantity: order.quantity,
@@ -405,7 +458,7 @@ export function createApp(env) {
     // Los comandos y los IDs de rol nunca se envían al navegador.
     'GET /api/products': async (req, { discord }) =>
       json(
-        products.map(({ commands, discordRoles, ...p }) => ({
+        allProducts.map(({ commands, discordRoles, ...p }) => ({
           ...p,
           ...(p.pool ? { pool: p.pool.map(({ give, ...entry }) => entry) } : {}),
           discordRole: discord.rolesEnabled && productRoles({ discordRoles }).length > 0,
@@ -447,6 +500,75 @@ export function createApp(env) {
       }
       await store.vfxEquip(user.uuid, body.kind, body.id || null);
       return json({ me: await store.vfxFor(user.uuid) });
+    },
+
+    // Skills: el catálogo de clases y, con la cuenta iniciada, las que tiene, la activa y las que está pagando con monedas.
+    'GET /api/skills': async (req) => {
+      const user = await currentUser(req);
+      return json({
+        price: skillsCatalog.price,
+        coinPrice: skillsCatalog.coinPrice,
+        keys: skillsCatalog.keys,
+        groups: skillsCatalog.groups,
+        classes: skillClasses,
+        me: user ? await skillsView(user.uuid) : null,
+      });
+    },
+
+    // Comprar una clase con las monedas del servidor: se cobra en el juego cuando el jugador está conectado (o al entrar)
+    // con /tf web monedas quitar; si no tiene bastantes, el servidor no cobra nada y el pedido queda como no entregado.
+    // Cuando el servidor confirma el cobro, la clase es suya y pasa a ser la activa (ver /bridge/poll).
+    'POST /api/skills/coins': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para comprar con tus monedas.', code: 'login' }, 401);
+      const terms = termsMissing(user);
+      if (terms) return terms;
+      const body = (await readJson(req)) || {};
+      const cls = skillById.get(String(body.id || ''));
+      if (!cls) return json({ error: 'Esa clase no existe.' }, 400);
+      if (!Number.isSafeInteger(cls.coinPrice) || cls.coinPrice < 1) return json({ error: 'Esta clase no se vende con monedas.' }, 400);
+      if ((await store.skillsOwned(user.uuid)).includes(cls.id)) return json({ error: `Ya tienes la clase ${cls.name}.`, code: 'owned' }, 409);
+      if ((await store.skillsPending(user.uuid)).includes(cls.id)) {
+        return json({ error: `Ya estás comprando ${cls.name}: se cobra en cuanto entres al servidor.`, code: 'pending' }, 409);
+      }
+      const player = await store.playerByUuid(user.uuid);
+      const username = player?.name || user.name;
+      const bytes = crypto.getRandomValues(new Uint8Array(12));
+      const id = `COIN${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+      await store.createOrder({
+        id,
+        status: 'pending',
+        username,
+        uuid: user.uuid,
+        productId: `${SKILL_PREFIX}${cls.id}`,
+        quantity: 1,
+        amount: 0,
+        currency: CURRENCY,
+      });
+      await store.queueDelivery(id, {
+        username,
+        uuid: user.uuid,
+        commands: [`tf web monedas quitar {player} ${cls.coinPrice}`],
+        // «tienda-monedas»: el mod lo trata como un cobro con monedas (sin anuncio y con el motivo tal cual si falla)
+        extra: { kind: 'tienda-monedas', color: cls.color },
+      });
+      log.log(`Clase con monedas ${id}: ${cls.name} (${cls.coinPrice} monedas) para ${username} (${user.uuid}), en cola del puente`);
+      return json({ id, status: 'queued' });
+    },
+
+    // Elegir la clase activa entre las que tiene (o ninguna, con id null). El servidor la pone en la siguiente consulta.
+    'POST /api/skills/active': async (req) => {
+      const user = await currentUser(req);
+      if (!user) return json({ error: 'Inicia sesión para elegir tu clase.', code: 'login' }, 401);
+      const body = (await readJson(req)) || {};
+      if (body.id != null) {
+        const cls = skillById.get(String(body.id));
+        if (!cls) return json({ error: 'Esa clase no existe.' }, 400);
+        if (!(await store.skillsOwned(user.uuid)).includes(cls.id)) return json({ error: 'Primero tienes que comprar esta clase.', code: 'not_owned' }, 403);
+      }
+      const cur = await store.skillActive(user.uuid);
+      if ((cur?.cls || null) !== (body.id || null)) await store.setSkillActive(user.uuid, body.id || null);
+      return json({ me: await skillsView(user.uuid) });
     },
 
     // Armario: lo que tiene (de sus compras y de su rango) y lo que lleva puesto en cada hueco.
@@ -758,7 +880,7 @@ export function createApp(env) {
       }
 
       const q = await quote(product, player.uuid);
-      if (q.blocked) return json({ error: q.blocked, code: 'rank_owned' }, 409);
+      if (q.blocked) return json({ error: q.blocked, code: q.code || 'rank_owned' }, 409);
 
       const id = orderId();
       const base = PUBLIC_URL || url.origin;
@@ -1105,12 +1227,18 @@ export function createApp(env) {
         .filter((d) => d && Number.isInteger(d.id))
         .map((d) => ({ ...d, prizes: cleanPrizes(d.prizes) }));
       const templates = Number(body.protocol) >= BRIDGE_TEMPLATES;
+      // Clases compradas con monedas cuyo cobro confirma ahora el servidor: pasan a ser suyas y su clase activa
+      const coinSkills = await store.coinSkillDeliveries(done.filter((d) => d.ok === true).map((d) => d.id));
       const deliveries = (await store.bridgePoll({ players, max, done })).map(({ productId, commands, ...d }) => ({
         ...d,
         product: productById.get(productId)?.name || productId,
         // Las versiones antiguas del mod ejecutan los comandos tal cual: les ponemos nosotros el nombre.
         commands: templates ? commands : commands.map((c) => c.replaceAll('{player}', d.player).replaceAll('{uuid}', d.uuid || '')),
       }));
+
+      for (const s of coinSkills) {
+        if (skillById.has(s.cls)) await store.setSkillActive(s.uuid, s.cls);
+      }
 
       const online = players.filter((p) => p.uuid).map((p) => p.uuid);
       const onlineSet = new Set(online);
@@ -1158,6 +1286,8 @@ export function createApp(env) {
         linkResults,
         coinShop: (await store.coinShop()).map((it) => ({ id: it.id, name: it.name, count: it.count, price: it.price })),
         vfx: await store.vfxEquipFor(online),
+        // Clase de skills activa de los conectados (null = ninguna); el mod solo aplica un «at» más nuevo que el último
+        skills: await skillsForServer(online),
         // Armario de los conectados: «set/pieza» por hueco (el mod lo convierte en tfclient:set_pieza)
         wardrobe: await wardrobesForServer(online),
         padData,
@@ -1301,6 +1431,9 @@ export function createApp(env) {
     const queued = await store.queueDelivery(id, { username: local.username, uuid: local.uuid, commands, extra, paymentIntent });
     if (!queued) return (await store.getOrder(id)).status;
     if (rank && local.uuid) await store.setRank(local.uuid, rank.id, rank.tier);
+    // Clase de skills pagada: ya es suya y pasa a ser la activa (el puente la manda al servidor)
+    const cls = skillOf(product);
+    if (cls && local.uuid) await store.setSkillActive(local.uuid, cls.id);
     log.log(`Pedido ${id} ${product.price === 0 ? 'reclamado (gratis)' : 'pagado'}: ${product.name} x${local.quantity} para ${local.username} (${local.uuid}), en cola del puente`);
 
     // En Discord: rol y anuncio. Un fallo aquí no afecta a la entrega en el juego.
@@ -1325,6 +1458,16 @@ export function createApp(env) {
   async function revoke(order, ctx) {
     const product = productById.get(order.productId);
     if (!product) return;
+    // Clase de skills reembolsada: deja de ser suya; si era la activa, se quita también en el servidor
+    const cls = skillOf(product);
+    if (cls && order.uuid) {
+      const active = await store.skillActive(order.uuid);
+      if (active?.cls === cls.id && !(await store.skillsOwned(order.uuid)).includes(cls.id)) {
+        await store.setSkillActive(order.uuid, null);
+        log.warn(`Pedido ${order.id}: clase ${cls.id} retirada de ${order.username}`);
+      }
+      return;
+    }
     const rank = rankById.get(product.id);
     const current = rank && order.uuid ? await store.getRank(order.uuid) : null;
     const rankStillCurrent = Boolean(rank && current?.rankId === rank.id);

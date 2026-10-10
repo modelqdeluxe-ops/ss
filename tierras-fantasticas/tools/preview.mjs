@@ -1,6 +1,7 @@
 // Vista previa local de la web con datos de prueba (sin Stripe ni Discord reales), en http://127.0.0.1:8788.
 // Uso (desde tierras-fantasticas/): node tools/preview.mjs
-// Crea un jugador «Notch» con cuenta (contraseña «contraseña-segura»), un rango y una tienda de monedas de ejemplo.
+// Crea un jugador «Notch» con cuenta (contraseña «contraseña-segura»), un rango, dos clases de skills (Glacia activa y
+// Thor) y 12.000 monedas.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -41,6 +42,14 @@ await call('/bridge/poll', { method: 'POST', headers: { Authorization: 'Bearer x
 const reg = await call('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Notch', password: 'contraseña-segura', acceptTerms: true }) });
 const cookie = reg.headers.getSetCookie()[0].split(';')[0];
 env.DB.raw.prepare("UPDATE users SET discord_id='1', discord_username='notch_tf', discord_name='Notch', discord_member=0").run();
+// Skills de ejemplo: Notch tiene Glacia (activa) y Thor, y 12.000 monedas en el servidor
+for (const [i, cls] of ['glacia', 'thor'].entries()) {
+  env.DB.raw
+    .prepare("INSERT INTO orders (id, status, username, uuid, product_id, quantity, amount, currency, created_at, updated_at) VALUES (?, 'delivered', 'Notch', '069a79f4-44e9-4726-a5be-fca90e38aaf5', ?, 1, 599, 'USD', datetime('now'), datetime('now'))")
+    .run(`TFPREVIEWSKILL${i}`, `clase-${cls}`);
+}
+env.DB.raw.prepare("INSERT INTO skill_active (uuid, class, updated_at) VALUES ('069a79f4-44e9-4726-a5be-fca90e38aaf5', 'glacia', 1)").run();
+env.DB.raw.prepare("UPDATE players SET coins = 12000, coins_at = 1 WHERE uuid = '069a79f4-44e9-4726-a5be-fca90e38aaf5'").run();
 // Cookie de sesión de Notch, por si hace falta ver «Mi cuenta» con la sesión iniciada
 if (process.env.COOKIE_FILE) fs.writeFileSync(process.env.COOKIE_FILE, cookie);
 http.createServer(async (req, res) => {

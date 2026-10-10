@@ -118,6 +118,13 @@ const SCHEMA = [
   )`,
   // Armario: la pieza que se ve en cada hueco (head, chest, legs, feet, back → "set/pieza"), elegida en la web entre
   // lo comprado. Solo es apariencia: el servidor la manda a los clientes y la dibujan encima de lo que lleve puesto.
+  // Skills: la clase activa de cada jugador (la que manda el puente al servidor; null = ninguna). Las clases que tiene
+  // salen de sus pedidos (productos «clase-<id>»). updated_at (ms) le dice al servidor si el cambio es nuevo.
+  `CREATE TABLE IF NOT EXISTS skill_active (
+    uuid TEXT PRIMARY KEY,
+    class TEXT,
+    updated_at INTEGER NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS wardrobe (
     uuid TEXT PRIMARY KEY,
     items TEXT NOT NULL,
@@ -507,6 +514,86 @@ export function createStore(db) {
       .bind(JSON.stringify(uuids))
       .all();
     return results.map((r) => ({ uuid: r.uuid, kill: r.kill, pack: r.pack, at: r.updated_at }));
+  }
+
+  // --- Skills (clases del TF Client) ---
+
+  // Clases que tiene un jugador: sus pedidos de «clase-<id>» pagados con dinero (en cola o entregados) o con monedas ya
+  // cobradas en el juego (entregados), sin reembolsar. Devuelve los ids de clase.
+  async function skillsOwned(uuid) {
+    await init();
+    const { results } = await db
+      .prepare(
+        `SELECT DISTINCT product_id FROM orders
+         WHERE uuid IS NOT NULL AND lower(uuid) = lower(?) AND product_id LIKE 'clase-%'
+           AND (refunded IS NULL OR refunded = '')
+           AND (status = 'delivered' OR (id NOT LIKE 'COIN%' AND status IN (${CLAIMED.map(() => '?').join(', ')})))`,
+      )
+      .bind(String(uuid), ...CLAIMED)
+      .all();
+    return results.map((r) => r.product_id.slice('clase-'.length));
+  }
+
+  // Clases que está comprando con monedas (en cola hasta que el servidor las cobre).
+  async function skillsPending(uuid) {
+    await init();
+    const { results } = await db
+      .prepare(
+        `SELECT DISTINCT product_id FROM orders
+         WHERE uuid IS NOT NULL AND lower(uuid) = lower(?) AND product_id LIKE 'clase-%' AND id LIKE 'COIN%' AND status = 'queued'`,
+      )
+      .bind(String(uuid))
+      .all();
+    return results.map((r) => r.product_id.slice('clase-'.length));
+  }
+
+  async function skillActive(uuid) {
+    await init();
+    const row = await db.prepare('SELECT class, updated_at FROM skill_active WHERE uuid = ?').bind(String(uuid).toLowerCase()).first();
+    return row ? { cls: row.class || null, at: row.updated_at } : null;
+  }
+
+  // Pone la clase activa (o ninguna, con null). Siempre con una hora nueva: el servidor solo aplica lo más reciente.
+  async function setSkillActive(uuid, cls) {
+    await init();
+    const key = String(uuid).toLowerCase();
+    const cur = await skillActive(key);
+    const at = Math.max(Date.now(), (cur?.at || 0) + 1);
+    await db
+      .prepare(
+        `INSERT INTO skill_active (uuid, class, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT (uuid) DO UPDATE SET class = excluded.class, updated_at = excluded.updated_at`,
+      )
+      .bind(key, cls || null, at)
+      .run();
+    return { cls: cls || null, at };
+  }
+
+  // La clase activa de varios jugadores (los conectados), para el puente.
+  async function skillActiveFor(uuids) {
+    await init();
+    if (!uuids.length) return [];
+    const { results } = await db
+      .prepare('SELECT uuid, class, updated_at FROM skill_active WHERE uuid IN (SELECT lower(value) FROM json_each(?))')
+      .bind(JSON.stringify(uuids))
+      .all();
+    return results.map((r) => ({ uuid: r.uuid, cls: r.class || null, at: r.updated_at }));
+  }
+
+  // De las entregas que el servidor acaba de confirmar, las compras de clases con monedas que aún no se habían cerrado
+  // (se mira antes de apuntar las confirmaciones: una confirmación repetida no vuelve a activar la clase).
+  async function coinSkillDeliveries(ids) {
+    await init();
+    if (!ids.length) return [];
+    const { results } = await db
+      .prepare(
+        `SELECT d.id, o.uuid, o.product_id FROM deliveries d JOIN orders o ON o.id = d.order_id
+         WHERE d.id IN (SELECT value FROM json_each(?)) AND d.status IN ('pending', 'sent')
+           AND o.id LIKE 'COIN%' AND o.product_id LIKE 'clase-%' AND o.uuid IS NOT NULL`,
+      )
+      .bind(JSON.stringify(ids))
+      .all();
+    return results.map((r) => ({ id: r.id, uuid: r.uuid.toLowerCase(), cls: r.product_id.slice('clase-'.length) }));
   }
 
   // --- Armario ---
@@ -903,6 +990,12 @@ export function createStore(db) {
     vfxGive,
     vfxEquip,
     vfxEquipFor,
+    skillsOwned,
+    skillsPending,
+    skillActive,
+    setSkillActive,
+    skillActiveFor,
+    coinSkillDeliveries,
     ownedProducts,
     wardrobeFor,
     setWardrobe,
