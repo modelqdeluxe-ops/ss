@@ -39,12 +39,10 @@ BOOT = ("<script>(function(d){var h=d.documentElement,s,t=Date.now();h.classList
         "else{addEventListener('load',function(){setTimeout(done,Math.max(0,700-(Date.now()-t)))});setTimeout(done,3000)}"
         "})(document)</script>")
 
-# Fondo vivo: la nebulosa que se desplaza y respira, estrellas que titilan y alguna estrella fugaz (styles.css,
-# «Fondo vivo»). Detrás de todo, sin eventos del ratón.
+# Fondo vivo: el degradado de neón (la nebulosa que se desplaza y respira; styles.css, «Fondo vivo»). Sin estrellas
+# ni puntos de colores (el dueño los quitó). Detrás de todo, sin eventos del ratón.
 SKY = '''  <div class="sky" aria-hidden="true">
     <i class="neb-a"></i><i class="neb-b"></i><i class="neb-glow"></i>
-    <span class="sky-stars"><i class="stars-a"></i><i class="stars-b"></i></span>
-    <i class="shoot"></i><i class="shoot s2"></i>
   </div>
 '''
 

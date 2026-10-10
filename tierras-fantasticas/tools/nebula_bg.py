@@ -1,11 +1,10 @@
-"""Fondo vivo de la web: el reino de noche oscurecido con una nebulosa de neón (rosa, violeta y cian) y estrellas.
+"""Fondo vivo de la web: el reino de noche oscurecido con una nebulosa de neón (rosa, violeta y cian), sin estrellas.
 
 Uso: python3 tools/nebula_bg.py
 Lee public/img/night-1672.webp y escribe en public/img/:
   nebula-{768,1280,1672}.webp   la base fija: el reino oscuro con un velo suave de la nebulosa
   nebula-a-{640,1280}.webp      la nebulosa (con transparencia): se desplaza y respira muy despacio
   nebula-b-{640,1280}.webp      otra nebulosa con las nubes en otro sitio: aparece y se apaga, así cambia de color
-  stars-a.webp, stars-b.webp    dos mosaicos de estrellas (con transparencia) que titilan a destiempo
   nebula-mobile.webp            el fondo de los teléfonos: vertical y quieto, con todo lo anterior dentro
 La web los pone en capas fijas que solo se animan con transform y opacity (las mueve la tarjeta gráfica; en el móvil
 van menos capas). Todo sale de ruido fractal con semillas fijas: el resultado es siempre el mismo.
@@ -131,7 +130,7 @@ def nebula_layer(clouds, seed, width=1280, strength=0.85):
     return to_rgba(np.asarray(big, np.float32) / 255.0 * strength)
 
 
-def stars(seed, size=512, count=90):
+def stars(seed, size=512, count=90):  # ya no se usa: el dueño quitó las estrellas y los puntos de colores
     """Mosaico de estrellas (se repite): puntos pequeños y redondos de brillos distintos, sin destellos."""
     rng = np.random.default_rng(seed)
     scale = 4  # se dibuja a 4× y se reduce: estrellas redondas y suaves
@@ -161,7 +160,7 @@ def save(img, name, **kw):
 
 
 def mobile(width=720, height=1440):
-    """Fondo de los teléfonos: una sola imagen vertical, quieta, con todo dentro (la base, las dos nebulosas y las
+    """Fondo de los teléfonos: una sola imagen vertical, quieta, con todo dentro (la base y las dos nebulosas; sin
     estrellas). En el móvil no hay capas animadas detrás: así no parpadea ni se traba al hacer scroll."""
     big = base(1672).convert('RGBA')
     for clouds, seed, k in ((CLOUDS_A, SEED, 0.85), (CLOUDS_B, SEED + 1, 0.45)):
@@ -169,14 +168,6 @@ def mobile(width=720, height=1440):
         alpha = layer.getchannel('A').point(lambda v, k=k: int(v * k))
         layer.putalpha(alpha)
         big.alpha_composite(layer)
-    tile = stars(11)
-    sky = Image.new('RGBA', big.size, (0, 0, 0, 0))
-    for y in range(0, big.height, tile.height):
-        for x in range(0, big.width, tile.width):
-            sky.alpha_composite(tile, (x, y))
-    fade = Image.linear_gradient('L').resize(big.size).point(lambda v: max(0, 255 - int(v * 1.7)))
-    sky.putalpha(Image.composite(sky.getchannel('A'), Image.new('L', big.size, 0), fade))
-    big.alpha_composite(sky)
     # Recorte vertical centrado en el castillo (72 % del ancho), ampliado al tamaño del teléfono
     crop_w = round(big.height * width / height)
     cx = round(big.width * 0.70)
@@ -194,8 +185,6 @@ def main():
         for w in (640, 1280):
             img = layer if w == layer.width else layer.resize((w, round(layer.height * w / layer.width)), Image.LANCZOS)
             save(img, f'nebula-{name}-{w}.webp', quality=78)
-    save(stars(11), 'stars-a.webp', quality=85)
-    save(stars(12, count=70), 'stars-b.webp', quality=85)
     save(mobile(), 'nebula-mobile.webp', quality=78)
 
 

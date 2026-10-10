@@ -481,10 +481,7 @@ def main(root):
         'cats': [{'id': c[0], 'name': c[1], 'color': c[2]} for c in KILL_CATS],
         'kills': [{'id': k['id'], 'name': k['name'], 'desc': k['desc'], 'cat': KILL_CAT.get(k['id'], 'elementos'),
                    'image': f'img/vfx/{k["image"]}.webp', 'preview': k['preview']} for k in sorted(kills, key=lambda k: order.get(k['id'], 999))],
-        'packs': [{'id': p['id'], 'name': p['name'], 'desc': p['desc'], 'color': p['color'],
-                   'image': f'img/vfx/{p["image"]}.webp',
-                   'skills': [{k: s[k] for k in ('id', 'name', 'desc', 'trigger', 'cooldown', 'vida', 'chance', 'preview') if k in s}
-                              for s in p['skills']]} for p in packs],
+        # Los paquetes de skills ya no se venden en la web (ahora están las clases de Skills): no van en vfx.json
     }
     with open(os.path.join(WEB, 'config', 'vfx.json'), 'w') as f:
         json.dump(web, f, indent=1, ensure_ascii=False)

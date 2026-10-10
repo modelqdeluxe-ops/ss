@@ -1010,52 +1010,81 @@ test('los regalos gratis se reclaman con la cuenta, una vez por jugador, y se an
   assert.ok(orders.some((o) => o.id === id));
 });
 
-// --- VFX: efectos de kill y paquetes de skills (gratis) ---
+// --- VFX: efectos de kill (gratis). Los paquetes de skills ya no se dan, pero quien tenía uno lo conserva ---
 test('los VFX se obtienen gratis con la cuenta, se equipan y el puente los manda al servidor', async () => {
   const catalog = await (await get('/api/vfx')).json();
   assert.strictEqual(catalog.free, true);
-  assert.ok(catalog.kills.length >= 50 && catalog.packs.length === 2);
-  // Cada kill y cada skill traen su vista previa animada
-  assert.ok(catalog.kills.every((k) => k.preview) && catalog.packs.every((p) => p.skills.every((s) => s.id && s.preview)));
+  assert.ok(catalog.kills.length >= 50);
+  // Los paquetes de skills ya no salen en la tienda
+  assert.strictEqual(catalog.packs, undefined);
+  // Cada kill trae su vista previa animada
+  assert.ok(catalog.kills.every((k) => k.preview));
   // Cada efecto de kill está en una de las categorías de la web
   const cats = new Set(catalog.cats.map((c) => c.id));
   assert.ok(cats.size >= 5 && catalog.kills.every((k) => cats.has(k.cat)));
   assert.strictEqual(catalog.me, null);
   const kill = catalog.kills[0].id;
-  const pack = catalog.packs[0].id;
   // Sin sesión no se puede; con un id que no existe tampoco.
   assert.strictEqual((await post('/api/vfx/claim', { kind: 'kill', id: kill })).status, 401);
   await seen('Efectos_MC');
   const cookie = await register('Efectos_MC');
   assert.strictEqual((await post('/api/vfx/claim', { kind: 'kill', id: 'no-existe' }, cookie)).status, 400);
   assert.strictEqual((await post('/api/vfx/claim', { kind: 'skin', id: kill }, cookie)).status, 400);
+  // Un paquete de skills ya no se puede obtener ni equipar si no lo tenía.
+  assert.strictEqual((await post('/api/vfx/claim', { kind: 'pack', id: 'vendaval' }, cookie)).status, 400);
+  assert.strictEqual((await post('/api/vfx/equip', { kind: 'pack', id: 'vendaval' }, cookie)).status, 403);
   // Equipar uno que no tiene, no.
-  assert.strictEqual((await post('/api/vfx/equip', { kind: 'pack', id: pack }, cookie)).status, 403);
+  assert.strictEqual((await post('/api/vfx/equip', { kind: 'kill', id: kill }, cookie)).status, 403);
 
   // Obtenerlo lo deja en la cuenta y equipado.
   let { me } = await (await post('/api/vfx/claim', { kind: 'kill', id: kill }, cookie)).json();
   assert.deepStrictEqual(me.owned, [`kill:${kill}`]);
   assert.strictEqual(me.kill, kill);
-  ({ me } = await (await post('/api/vfx/claim', { kind: 'pack', id: pack }, cookie)).json());
-  assert.strictEqual(me.pack, pack);
+  assert.deepStrictEqual(me.packs, []);
   const first = me.at;
 
   // El servidor recibe lo equipado de los conectados (con la hora del cambio).
   let { vfx } = await (await poll(['Efectos_MC'])).json();
-  assert.deepStrictEqual(vfx, [{ uuid: uuidOf('Efectos_MC'), kill, pack, at: first }]);
+  assert.deepStrictEqual(vfx, [{ uuid: uuidOf('Efectos_MC'), kill, pack: null, at: first }]);
   ({ vfx } = await (await poll(['Otro_MC'])).json());
   assert.deepStrictEqual(vfx, []);
 
-  // Quitar el efecto de kill deja el paquete y cambia la hora.
+  // Quitar el efecto de kill cambia la hora.
   ({ me } = await (await post('/api/vfx/equip', { kind: 'kill', id: null }, cookie)).json());
   assert.strictEqual(me.kill, null);
-  assert.strictEqual(me.pack, pack);
   assert.ok(me.at > first);
   // Volver a equipar uno que ya tiene.
   ({ me } = await (await post('/api/vfx/equip', { kind: 'kill', id: kill }, cookie)).json());
   assert.strictEqual(me.kill, kill);
   const mine = await (await get('/api/vfx', { Cookie: cookie })).json();
-  assert.deepStrictEqual(mine.me.owned.sort(), [`kill:${kill}`, `pack:${pack}`].sort());
+  assert.deepStrictEqual(mine.me.owned, [`kill:${kill}`]);
+});
+
+test('quien ya tenía un paquete de skills lo sigue viendo y equipando (web y pad), sin que se venda', async () => {
+  await seen('Paquete_MC');
+  const cookie = await register('Paquete_MC');
+  const uuid = uuidOf('Paquete_MC');
+  // Lo obtuvo cuando se daban (antes de quitarlos de la tienda)
+  env.DB.raw.prepare("INSERT INTO vfx_owned (uuid, item, created_at) VALUES (?, 'pack:vendaval', datetime('now'))").run(uuid);
+  let { me } = await (await get('/api/vfx', { Cookie: cookie })).json();
+  assert.deepStrictEqual(me.packs, [{ id: 'vendaval', name: 'Filo del Vendaval', image: 'img/vfx/pack_vendaval.webp' }]);
+  // Lo equipa y el servidor lo recibe
+  ({ me } = await (await post('/api/vfx/equip', { kind: 'pack', id: 'vendaval' }, cookie)).json());
+  assert.strictEqual(me.pack, 'vendaval');
+  let { vfx } = await (await poll(['Paquete_MC'])).json();
+  assert.strictEqual(vfx[0].pack, 'vendaval');
+  // Uno que no tenía, no (ni desde la web ni desde el pad)
+  assert.strictEqual((await post('/api/vfx/equip', { kind: 'pack', id: 'trueno' }, cookie)).status, 403);
+  ({ vfx } = await (await poll(['Paquete_MC'], [], { pad: { vfx: [{ uuid, kind: 'pack', id: 'trueno' }] } })).json());
+  assert.strictEqual(vfx[0].pack, 'vendaval');
+  // Desde el pad lo quita y lo vuelve a poner
+  ({ vfx } = await (await poll(['Paquete_MC'], [], { pad: { vfx: [{ uuid, kind: 'pack', id: null }] } })).json());
+  assert.strictEqual(vfx[0].pack, null);
+  ({ vfx } = await (await poll(['Paquete_MC'], [], { pad: { vfx: [{ uuid, kind: 'pack', id: 'vendaval' }] } })).json());
+  assert.strictEqual(vfx[0].pack, 'vendaval');
+  // Quitarlo desde la web
+  ({ me } = await (await post('/api/vfx/equip', { kind: 'pack', id: null }, cookie)).json());
+  assert.strictEqual(me.pack, null);
 });
 
 // --- Aceptación de los Términos ---

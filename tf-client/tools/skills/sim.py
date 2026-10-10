@@ -2519,7 +2519,7 @@ def figure_tris(fig, skin, pos, yaw):
     return R.model_tris(model, [skin], B.pose(model, None, 0), world=world, actor=skin)
 
 
-def run_skill(cls, skill, ticks=100, frames=False, step=2, hand=None):
+def run_skill(cls, skill, ticks=100, frames=False, step=2, hand=None, casts=1, every=14):
     sim = Sim(cls)
     if sim.passives:
         # Las pasivas van solas en el juego: antes de la skill, unos segundos con ellas (modos, auras, traje). Luego
@@ -2577,12 +2577,18 @@ def run_skill(cls, skill, ticks=100, frames=False, step=2, hand=None):
     items = ItemModels() if frames else None
     steve = figures() if frames else None
     quiet = 0
-    for _ in range(ticks):
+    done = 1
+    for i in range(ticks):
+        # casts > 1: la skill otra vez cada «every» ticks (los golpes de un combo, para la vista previa)
+        if done < casts and i > 0 and i % every == 0:
+            sim.cast(skill)
+            done += 1
+            quiet = 0
         sim.tick()
         if frames and sim.clock % step == 0:
             out_frames.append(scene(sim, items, steve))
         quiet = quiet + 1 if not sim.busy() else 0
-        if quiet > 6:
+        if quiet > 6 and done >= casts:
             break
     return sim, ok, out_frames
 
