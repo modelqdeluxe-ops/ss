@@ -882,7 +882,7 @@
         </div>
         <div class="sk-buy-row">
           <span class="sk-coins"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">${fmtCoins(c.coinPrice)}<small>monedas</small></span>
-          <button class="btn btn-coin" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar con monedas</button>
+          <button class="btn btn-ghost" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar con monedas</button>
         </div>
         <p class="sk-buy-note">Con monedas se cobra en el juego cuando estés conectado; si no tienes bastantes, no se cobra nada.${
           coins !== null ? ` Tienes <b class="${short ? 'is-short' : ''}">${fmtCoins(coins)} monedas</b>.` : ''

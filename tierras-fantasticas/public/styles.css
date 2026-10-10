@@ -92,8 +92,34 @@
   --tone-vfx: #45e9ff;
   --tone-monedas: #ffb23a;
   --tone-skills: #ff6b5b;
-  /* Fondo de las vistas previas de las skills: va pintado en las imágenes (tools/skills.py → PREVIEW_BG) */
+  /* Fondo de las vistas previas (Skills y VFX): va pintado en las imágenes de Skills (tools/skills.py → PREVIEW_BG,
+     el mismo color; si cambia uno, cambia el otro) */
   --sk-bg: #0c0f1f;
+  /* Tienda (rework oct. 2026): paleta sobria y legible. Superficies lisas de pizarra índigo con un borde que se ve,
+     texto claro y botones de color sólido, cada acción con el suyo:
+     comprar = ámbar · gratis/obtener = esmeralda · equipar/usar/elegido = magenta de la marca · secundario = pizarra */
+  --ui-0: #0c0f1f;
+  --ui-1: #141936;
+  --ui-2: #1c2247;
+  --ui-3: #262d5c;
+  --ui-line: #2e3768;
+  --ui-line-2: #4a5596;
+  --ui-text: #f3f4fb;
+  --ui-text-2: #c7cbe6;
+  --ui-muted: #9095bd;
+  --brand: #a933c9;
+  --brand-hover: #b941d9;
+  --brand-lip: #5c1572;
+  --buy: #ffc23d;
+  --buy-hover: #ffcd5e;
+  --buy-ink: #1f1400;
+  --get: #27c98a;
+  --get-hover: #36d897;
+  --get-ink: #03261a;
+  --sec: #2a3266;
+  --sec-hover: #343d78;
+  --sec-lip: #11163a;
+  --ok-2: #34d399;
   --tone: var(--a-400);
   --neon-border: linear-gradient(135deg, rgb(var(--a-rgb) / 0.7), rgb(var(--v-rgb) / 0.35) 45%, rgb(var(--c-rgb) / 0.6));
   /* Neón de los bordes: un filo fino de luz y un halo suave alrededor (nunca en las letras) */
@@ -153,10 +179,9 @@ body::before {
 /* ---------- Fondo vivo ---------- */
 
 /* Encima de la base fija (body::before) y debajo de la viñeta (body::after): la nebulosa A se desplaza y respira, la B
-   (con las nubes en otro sitio) aparece y se apaga, y así el color del cielo cambia despacio; dos mosaicos de
-   estrellas bajan muy despacio y titilan a destiempo, y de vez en cuando cruza una estrella fugaz. Solo transform y
-   opacity (lo mueve la tarjeta gráfica). En el móvil van la nebulosa A y un mosaico de estrellas. Lo genera
-   tools/nebula_bg.py. */
+   (con las nubes en otro sitio) aparece y se apaga, y así el color del cielo cambia despacio. Sin estrellas ni puntos
+   de colores (los quitó el dueño). Solo transform y opacity (lo mueve la tarjeta gráfica). En el móvil va solo la
+   nebulosa A. Lo genera tools/nebula_bg.py. */
 .sky {
   position: fixed;
   inset: 0;
@@ -199,54 +224,6 @@ body::before {
   animation: neb-glow 18s ease-in-out infinite alternate;
 }
 
-/* Las estrellas solo en el cielo: se apagan hacia el valle */
-.sky-stars {
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 78%);
-  mask-image: linear-gradient(180deg, #000 30%, transparent 78%);
-}
-
-.sky .stars-a,
-.sky .stars-b {
-  inset: -512px 0 0;
-  background: url('/img/stars-a.webp') 0 0 / 512px 512px repeat;
-  animation:
-    stars-fall 260s linear infinite,
-    twinkle 4.2s ease-in-out infinite alternate;
-}
-
-.sky .stars-b {
-  background-image: url('/img/stars-b.webp');
-  background-position: 190px 140px;
-  animation:
-    stars-fall 170s linear infinite,
-    twinkle 3.1s ease-in-out -1.6s infinite alternate;
-}
-
-/* Estrella fugaz: una estela que cruza el cielo cada pocos segundos (solo en pantallas grandes) */
-.sky .shoot {
-  display: none;
-  top: 9%;
-  left: 68%;
-  width: 150px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgb(var(--a-rgb) / 0.6) 30%, transparent);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-  opacity: 0;
-  transform-origin: 0 50%;
-  animation: shoot 13s ease-in 4s infinite;
-}
-
-.sky .shoot.s2 {
-  top: 22%;
-  left: 34%;
-  width: 110px;
-  animation-duration: 17s;
-  animation-delay: 11s;
-}
-
 @keyframes neb-a {
   from {
     transform: translate3d(1.5%, -1%, 0) scale(1) rotate(0deg);
@@ -283,51 +260,14 @@ body::before {
   }
 }
 
-@keyframes stars-fall {
-  to {
-    transform: translate3d(0, 512px, 0);
-  }
-}
-
-@keyframes twinkle {
-  from {
-    opacity: 0.35;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes shoot {
-  0%,
-  90% {
-    opacity: 0;
-    transform: rotate(-24deg) translate3d(0, 0, 0) scaleX(0.3);
-  }
-  92% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: rotate(-24deg) translate3d(-520px, 0, 0) scaleX(1);
-  }
-}
-
-@media (min-width: 960px) {
-  .sky .shoot {
-    display: block;
-  }
-}
-
-/* Móvil: menos capas (la nebulosa A más pequeña y un solo mosaico de estrellas) */
+/* Móvil: menos capas (la nebulosa A más pequeña) */
 @media (max-width: 760px) {
   .sky .neb-a {
     background-image: url('/img/nebula-a-640.webp');
     background-position: 72% 30%;
   }
 
-  .sky .neb-b,
-  .sky .stars-b {
+  .sky .neb-b {
     display: none;
   }
 
@@ -480,15 +420,6 @@ h4 {
   font: 800 11.5px/1 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-}
-
-.eyebrow::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: currentColor;
-  box-shadow: 0 0 10px currentColor;
 }
 
 .text-grad {
@@ -881,157 +812,92 @@ h4 {
   transform: scale(1.15) rotate(-6deg);
 }
 
+/* Variantes de la tienda (rework oct. 2026): color sólido, sin degradados ni destellos, con buen contraste y un borde
+   inferior más oscuro (el volumen de bloque). Cada acción con su color, el mismo en toda la web:
+   marca/equipar = magenta · comprar = ámbar · gratis = esmeralda · secundario = pizarra · monedas = oro */
 .btn-primary,
-.btn-theme {
-  --a: var(--pri-a);
-  --b: var(--pri-b);
-  --lip: var(--pri-lip);
-  --fg: var(--on-accent);
-  --glow: rgb(var(--a2-rgb) / 0.75);
-  /* El degradado es el doble de ancho: al pasar el ratón se desliza del rosa al violeta y el cian */
-  background: var(--shimmer) 0 0 / 220% 100%;
-  text-shadow: 0 1px 2px rgba(40, 0, 60, 0.45);
-  /* Neón: filo rosa claro y halo */
+.btn-theme,
+.btn-ghost,
+.btn-buy,
+.btn-claim,
+.btn-coin {
+  --glow: rgba(0, 0, 0, 0);
+  background: var(--a);
+  text-shadow: none;
   box-shadow:
-    inset 0 0 0 1px rgb(255 214 247 / 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 var(--lift) 0 var(--lip),
-    0 0 22px -4px rgb(var(--a-rgb) / 0.55),
-    0 12px 26px -12px var(--glow);
-}
-
-.btn-primary:hover,
-.btn-theme:hover {
-  background-position: 100% 0;
-  box-shadow:
-    inset 0 0 0 1px rgb(255 214 247 / 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 34px -2px rgb(var(--a-rgb) / 0.75),
-    0 0 60px -14px rgb(var(--c-rgb) / 0.6);
-  animation: btn-breathe 1.8s ease-in-out 0.3s infinite;
-}
-
-.btn-ghost {
-  /* Secundario: pizarra con filo cian (se distingue del de comprar, del de gratis y del de la marca) */
-  --a: #253066;
-  --b: #1b2350;
-  --lip: #0a0f2c;
-  /* Al pasar el ratón una capa (::before, en «Relleno de neón») lo llena de izquierda a derecha */
-  background: linear-gradient(180deg, var(--a), var(--b));
-  color: #dffbff;
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--sec-rgb) / 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 var(--lift) 0 var(--lip),
-    0 0 18px -8px rgb(var(--sec-rgb) / 0.7);
+    0 10px 20px -12px rgba(0, 0, 0, 0.9);
   transition:
     transform 0.25s var(--spring),
     box-shadow 0.25s var(--ease),
-    filter 0.2s;
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.btn-primary:hover,
+.btn-theme:hover,
+.btn-ghost:hover,
+.btn-buy:hover,
+.btn-claim:hover,
+.btn-coin:hover {
+  background: var(--b);
+  filter: none;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 calc(var(--lift) + 2px) 0 var(--lip),
+    0 14px 24px -12px rgba(0, 0, 0, 0.95);
+}
+
+.btn-primary,
+.btn-theme {
+  --a: var(--brand);
+  --b: var(--brand-hover);
+  --lip: var(--brand-lip);
+  --fg: #fff;
+}
+
+.btn-ghost {
+  /* Secundario: pizarra clara con borde visible (nunca transparente: se distingue del fondo y de la tarjeta) */
+  --a: var(--sec);
+  --b: var(--sec-hover);
+  --lip: var(--sec-lip);
+  --fg: #fff;
+  box-shadow:
+    inset 0 0 0 1px var(--ui-line-2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 var(--lift) 0 var(--lip),
+    0 10px 20px -12px rgba(0, 0, 0, 0.9);
 }
 
 .btn-ghost:hover {
-  color: #fff;
   box-shadow:
-    inset 0 0 0 1px rgb(var(--sec-rgb) / 0.95),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px #6570b4,
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
     0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 30px -6px rgb(var(--sec-rgb) / 0.7);
+    0 14px 24px -12px rgba(0, 0, 0, 0.95);
 }
 
-/* Comprar: oro (lo único dorado de la página junto a los precios, para que se vea a la primera) */
+/* Comprar: ámbar (lo único ámbar de la tienda junto a los precios, para que se vea a la primera) */
 .btn-buy {
-  --lip: var(--buy-lip);
-  --fg: var(--buy-fg);
-  --glow: rgb(var(--buy-rgb) / 0.7);
-  background: var(--buy-grad) 0 0 / 220% 100%;
-  text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 246 200 / 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -2px 0 rgba(140, 60, 0, 0.25),
-    0 var(--lift) 0 var(--lip),
-    0 0 22px -6px rgb(var(--buy-rgb) / 0.6),
-    0 12px 26px -12px var(--glow);
-}
-
-.btn-buy:hover {
-  background-position: 100% 0;
-  box-shadow:
-    inset 0 0 0 1px rgb(255 250 220 / 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 34px -2px rgb(var(--buy-rgb) / 0.75),
-    0 0 60px -16px rgb(255 120 40 / 0.6);
+  --a: var(--buy);
+  --b: var(--buy-hover);
+  --lip: #9a5a00;
+  --fg: var(--buy-ink);
 }
 
 /* Gratis / obtener: esmeralda */
 .btn-claim {
-  --lip: var(--get-lip);
-  --fg: var(--get-fg);
-  --glow: rgb(var(--get-rgb) / 0.65);
-  background: var(--get-grad) 0 0 / 220% 100%;
-  text-shadow: 0 1px 0 rgb(255 255 255 / 0.3);
-  box-shadow:
-    inset 0 0 0 1px rgb(210 255 236 / 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 var(--lift) 0 var(--lip),
-    0 0 22px -6px rgb(var(--get-rgb) / 0.55),
-    0 12px 26px -12px var(--glow);
+  --a: var(--get);
+  --b: var(--get-hover);
+  --lip: #0b6b49;
+  --fg: var(--get-ink);
 }
 
-.btn-claim:hover {
-  background-position: 100% 0;
-  box-shadow:
-    inset 0 0 0 1px rgb(230 255 245 / 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 calc(var(--lift) + 2px) 0 var(--lip),
-    0 0 34px -2px rgb(var(--get-rgb) / 0.7),
-    0 0 60px -16px rgb(20 184 166 / 0.6);
-}
-
-/* Relleno de neón (botones secundarios y pestañas): una capa con el destello rosa → azul que entra desde la izquierda
-   con un fundido rápido y, al quitar el ratón, se recoge hacia la derecha mientras se desvanece (sin dejar una línea).
-   El destello se sigue deslizando por dentro mientras está lleno. */
-.btn-ghost:not(.is-loading)::before,
+/* Pestañas: al pasar el ratón no hay relleno de neón (solo cambia el fondo, ver .tab:hover) */
 .tab::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: linear-gradient(110deg, #1d6f8a 0%, #2f5fd0 45%, #1aa6c4 80%, #1d6f8a 100%) 0 0 / 220% 100%;
-  opacity: 0;
-  transform: scaleX(0);
-  transform-origin: right center;
-  transition:
-    transform 0.5s cubic-bezier(0.65, 0, 0.35, 1),
-    opacity 0.32s ease 0.06s,
-    background-position 0.9s var(--ease);
-  pointer-events: none;
-}
-
-.btn-ghost:hover::before,
-.tab:hover::before {
-  opacity: 1;
-  transform: scaleX(1);
-  transform-origin: left center;
-  background-position: 100% 0;
-  transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.16s ease,
-    background-position 0.9s var(--ease);
-}
-
-.tab[aria-selected='true']::before {
   display: none;
-}
-
-/* En las pestañas el relleno al pasar el ratón es suave (translúcido): el destello fuerte es solo de la elegida, así
-   nunca se confunde cuál está abierta */
-.tab::before {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--tone, #fff) 24%, transparent), color-mix(in srgb, var(--tone, #fff) 8%, transparent));
 }
 
 .btn-discord {
@@ -1101,12 +967,11 @@ h4 {
 }
 
 .btn-coin {
-  --a: #ffe08a;
-  --b: #f5b324;
-  --c3: #fff1b8;
-  --lip: #9a5c08;
-  --fg: #2b1a00;
-  --glow: rgba(245, 179, 36, 0.55);
+  /* Comprar con monedas: oro más claro que el de comprar con dinero, con texto oscuro */
+  --a: #f2d27a;
+  --b: #f8de96;
+  --lip: #8a6510;
+  --fg: #241700;
 }
 
 .btn-sm {
@@ -1355,7 +1220,7 @@ body:not([data-hero]) .header::before {
   animation: pop 0.45s var(--spring);
 }
 
-/* Punto de estado: verde con un latido cuando el servidor está en línea */
+/* Punto de estado del servidor (verde en línea, rojo apagado): un indicador quieto, sin brillo ni latido */
 .dot {
   position: relative;
   flex: none;
@@ -1367,15 +1232,6 @@ body:not([data-hero]) .header::before {
 
 .dot.online {
   background: var(--ok);
-}
-
-.dot.online::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--ok);
-  animation: ping 2s var(--ease) infinite;
 }
 
 .dot.offline {
@@ -2767,17 +2623,6 @@ body:not([data-hero]) .header::before {
   transition-duration: 0.9s;
 }
 
-.product:hover .card-foot .btn-primary,
-.product:hover .card-foot .btn-theme,
-.crate-tile:hover .card-foot .btn-primary,
-.crate-tile:hover .card-foot .btn-theme {
-  background-position: 100% 0;
-  box-shadow:
-    inset 0 0 0 1px rgb(255 214 247 / 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 var(--lift) 0 var(--lip),
-    0 0 28px -4px rgb(var(--a-rgb) / 0.7);
-}
 
 .price {
   font: 700 21px/1 var(--font-display);
@@ -2890,15 +2735,21 @@ body:not([data-hero]) .header::before {
   padding-bottom: 64px;
 }
 
-/* Pestañas: un mando segmentado; cada pestaña es un botón que se ve (fondo y filo propios), al pasar el ratón se llena
-   de izquierda a derecha con el destello rosa → azul y la elegida lo lleva fluyendo despacio */
+/* Pestañas: un mando segmentado sobre una barra lisa. Cada pestaña es un botón sólido de pizarra con el texto claro;
+   la elegida, llena del magenta de la marca con el texto blanco. Sin puntos de color ni destellos. */
 .shop-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+  gap: 6px;
   margin-top: 30px;
   padding: 6px;
   border-radius: var(--r-lg);
+}
+
+.shop-tabs.frame {
+  border: 1px solid var(--ui-line);
+  background: var(--ui-1);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9);
 }
 
 .tab {
@@ -2910,32 +2761,27 @@ body:not([data-hero]) .header::before {
   min-width: 0;
   height: 46px;
   padding: 0 12px;
-  border: 0;
+  border: 1px solid var(--ui-line);
   border-radius: var(--r);
-  isolation: isolate;
-  overflow: hidden;
-  background: rgb(var(--line-rgb) / 0.06);
-  box-shadow: inset 0 0 0 1px rgb(var(--line-rgb) / 0.14);
-  color: var(--text-2);
+  background: var(--ui-2);
+  color: var(--ui-text-2);
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   transition:
-    color 0.25s,
-    box-shadow 0.25s,
-    transform 0.25s var(--spring);
+    color 0.2s,
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .tab:hover {
+  border-color: var(--ui-line-2);
+  background: var(--ui-3);
   color: #fff;
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--tone, #fff) 60%, transparent),
-    0 0 22px -6px var(--tone, rgb(var(--a-rgb)));
 }
 
 .tab:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .tab .count {
@@ -2945,10 +2791,11 @@ body:not([data-hero]) .header::before {
   height: 20px;
   padding: 0 6px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(255 255 255 / 0.08);
   font-size: 11.5px;
   font-weight: 800;
-  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-muted);
 }
 
 .tab .count:empty {
@@ -2956,80 +2803,19 @@ body:not([data-hero]) .header::before {
 }
 
 .tab:hover .count {
-  background: rgb(255 255 255 / 0.2);
-  color: #fff;
-}
-
-/* Cada pestaña con el tono de su sección: un punto de color siempre y, la elegida, llena de ese color */
-.tab[data-category] {
-  --tone: var(--a-400);
-  --tone-fg: #fff;
-}
-
-.tab[data-category='gratis'] {
-  --tone: var(--tone-gratis);
-  --tone-fg: #032619;
-}
-
-.tab[data-category='rangos'] {
-  --tone: var(--tone-rangos);
-  --tone-fg: #2a1500;
-}
-
-.tab[data-category='cosmeticos'] {
-  --tone: var(--tone-cosmeticos);
-}
-
-.tab[data-category='crates'] {
-  --tone: var(--tone-crates);
-}
-
-.tab[data-category='vfx'] {
-  --tone: var(--tone-vfx);
-  --tone-fg: #02262e;
-}
-
-.tab[data-category='monedas'] {
-  --tone: var(--tone-monedas);
-  --tone-fg: #2a1500;
-}
-
-.tab[data-category='skills'] {
-  --tone: var(--tone-skills);
-  --tone-fg: #2a0905;
-}
-
-.tab[data-category]::after {
-  content: '';
-  order: -1;
-  width: 8px;
-  height: 8px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--tone);
-  box-shadow: 0 0 10px var(--tone);
+  color: var(--ui-text-2);
 }
 
 .tab[aria-selected='true'] {
-  color: var(--tone-fg, var(--on-accent));
-  background:
-    linear-gradient(110deg, color-mix(in srgb, var(--tone) 55%, #fff) 0%, var(--tone) 45%,
-      color-mix(in srgb, var(--tone) 70%, #000) 100%) 0 0 / 220% 100%;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    0 3px 0 color-mix(in srgb, var(--tone) 40%, #000),
-    0 0 26px -6px var(--tone);
-  animation: shimmer-flow 5s ease-in-out infinite alternate;
-}
-
-.tab[aria-selected='true']::after {
-  background: var(--tone-fg, #fff);
-  box-shadow: none;
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--brand-lip);
 }
 
 .tab[aria-selected='true'] .count {
-  background: rgb(0 0 0 / 0.16);
-  color: inherit;
+  background: rgb(0 0 0 / 0.22);
+  color: #fff;
 }
 
 .shop-intro {
@@ -3793,12 +3579,12 @@ body:not([data-hero]) .header::before {
 }
 
 .rk-piece .worn-dot {
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  background: var(--rk);
-  box-shadow: 0 0 8px var(--rk);
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background-size: 10px;
 }
 
 .rk-buy {
@@ -3924,31 +3710,33 @@ body:not([data-hero]) .header::before {
   margin-top: 16px;
 }
 
+/* Filtros: píldoras sólidas de pizarra; la elegida, magenta de la marca (sin destellos ni puntos de color) */
 .chip {
   height: 36px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid var(--bd-2);
-  background: var(--s1);
-  color: var(--text-2);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-2);
+  color: var(--ui-text-2);
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
   transition:
-    background-color 0.25s,
-    border-color 0.25s,
-    color 0.25s;
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .chip:hover {
-  border-color: rgb(var(--a-rgb) / 0.5);
+  border-color: var(--ui-line-2);
+  background: var(--ui-3);
+  color: #fff;
 }
 
 .chip[aria-pressed='true'] {
-  border-color: transparent;
-  background: var(--shimmer) 0 0 / 220% 100%;
+  border-color: var(--brand);
+  background: var(--brand);
   color: #fff;
-  animation: shimmer-flow 5s ease-in-out infinite alternate;
 }
 
 .cos-themes {
@@ -4455,280 +4243,104 @@ body:not([data-hero]) .header::before {
   color: var(--t1, var(--a-300));
 }
 
-/* ---------- VFX: paquetes de skills y efectos de kill ---------- */
+/* ---------- VFX y Skills: base común (rework oct. 2026) ---------- */
 
-/* Cada cosa de los VFX lleva su color en --vfx (la categoría de la kill o el paquete) */
-.vfx-shop {
+/* Superficies lisas (--ui-*), texto claro y botones sólidos. El color propio de cada efecto o clase (--vfx, --sk) solo
+   se usa en el texto pequeño de su categoría; nada de rejillas, halos ni puntos de neón. Las vistas previas van sobre
+   un fondo liso del mismo color que el pintado en las imágenes (--sk-bg = PREVIEW_BG) y, como mucho, a su tamaño
+   natural (Skills 480 px, VFX 320 px): nítidas en cualquier pantalla. */
+.vfx-shop,
+.sk-shop {
   --vfx: var(--tone-vfx);
+  --sk: var(--tone-skills);
+  color: var(--ui-text);
 }
 
-.vfx-hero h2 {
+.vfx-hero h2,
+.sk-hero h2 {
   font: 800 clamp(24px, 3.6vw, 34px) / 1.15 var(--font-display);
   letter-spacing: -0.02em;
 }
 
-.vfx-hero p {
+.vfx-hero p,
+.sk-hero > div > p {
   margin: 8px 0 0;
   max-width: 640px;
-  color: var(--muted);
-  font-size: 15px;
+  color: var(--ui-text-2);
+  font-size: 15.5px;
 }
 
-/* El escenario: la vista previa animada de lo elegido, como una pantalla de holograma con su suelo de luz */
-#vfx-stage {
-  margin-top: 20px;
-  scroll-margin-top: calc(var(--header-h) + 12px);
-}
-
-.vfx-stage {
-  display: grid;
+/* La ficha grande (escenario + datos): una tarjeta lisa con borde visible */
+.vfx-stage.panel,
+.sk-card.panel {
   overflow: hidden;
-  border-color: color-mix(in srgb, var(--vfx) 40%, var(--edge));
-  box-shadow: var(--card-shadow), 0 0 50px -24px var(--vfx);
+  padding: 0;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-1);
+  box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.95);
 }
 
-.vfx-screen {
+/* El escenario de la vista previa */
+.vfx-screen,
+.sk-screen {
   position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-bottom: 1px solid var(--bd);
-  background:
-    radial-gradient(42% 14% at 50% 82%, color-mix(in srgb, var(--vfx) 45%, transparent), transparent 75%),
-    radial-gradient(70% 60% at 50% 50%, color-mix(in srgb, var(--vfx) 18%, transparent), transparent 72%),
-    linear-gradient(180deg, #0b0f26 0%, #070a1c 100%);
+  min-width: 0;
+  background: var(--sk-bg);
 }
 
-/* Rejilla del suelo (en perspectiva) para que la animación no flote en el vacío */
-.vfx-screen::before {
-  content: '';
-  position: absolute;
-  inset: 55% -30% -10%;
-  background:
-    linear-gradient(color-mix(in srgb, var(--vfx) 26%, transparent) 1px, transparent 1px) 0 0 / 100% 34px,
-    linear-gradient(90deg, color-mix(in srgb, var(--vfx) 26%, transparent) 1px, transparent 1px) 0 0 / 34px 100%;
-  transform: perspective(380px) rotateX(62deg);
-  transform-origin: 50% 0;
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, transparent 95%);
-  mask-image: linear-gradient(180deg, transparent, #000 30%, transparent 95%);
-  pointer-events: none;
-}
-
-.vfx-anim {
-  position: relative;
-  width: min(100%, 520px);
+.vfx-anim,
+.sk-anim {
+  display: block;
+  max-width: 100%;
+  height: auto;
   aspect-ratio: 1;
   object-fit: contain;
+  /* A su tamaño o más pequeña se ve suave; en pantallas de alta densidad (que la amplían) los píxeles se quedan
+     nítidos, como en Minecraft */
   image-rendering: auto;
-  filter: drop-shadow(0 18px 30px rgb(0 0 0 / 0.6));
+}
+
+@media (min-resolution: 1.5dppx) {
+  .vfx-anim,
+  .sk-anim {
+    image-rendering: pixelated;
+  }
 }
 
 .vfx-live {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
+  z-index: 2;
+  top: 12px;
+  left: 12px;
   padding: 5px 10px;
-  border-radius: 999px;
+  border-radius: 8px;
   border: 1px solid rgb(255 255 255 / 0.14);
-  background: rgb(0 0 0 / 0.45);
-  color: var(--text-2);
+  background: rgb(255 255 255 / 0.07);
+  color: var(--ui-text-2);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.vfx-live i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ff4d6d;
-  box-shadow: 0 0 8px #ff4d6d;
-  animation: ping 1.6s ease-in-out infinite;
-}
-
-.vfx-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 22px;
+/* Texto pequeño de la categoría (con el color del efecto o la clase, aclarado para que se lea) */
+.vfx-info .cat,
+.sk-title .cat {
+  display: block;
+  font: 800 11.5px/1.3 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .vfx-info .cat {
-  color: var(--vfx);
-  font: 800 11px/1.2 var(--font-body);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  color: color-mix(in srgb, var(--vfx) 65%, #fff);
 }
 
-.vfx-info h3 {
-  margin: 6px 0 4px;
-  font: 800 clamp(26px, 3.2vw, 36px) / 1.1 var(--font-display);
-  letter-spacing: -0.02em;
+.sk-title .cat {
+  color: color-mix(in srgb, var(--sk) 65%, #fff);
 }
 
-.vfx-info > p {
-  margin: 0;
-  color: var(--text-2);
-  font-size: 16px;
-}
-
-.vfx-specs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.vfx-trigger,
-.vfx-cd {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.vfx-trigger {
-  border: 1px solid color-mix(in srgb, var(--vfx) 60%, transparent);
-  background: color-mix(in srgb, var(--vfx) 16%, transparent);
-  color: #fff;
-}
-
-.vfx-cd {
-  border: 1px solid rgb(var(--line-rgb) / 0.22);
-  background: rgb(255 255 255 / 0.05);
-  color: var(--text-2);
-  font-variant-numeric: tabular-nums;
-}
-
-.vfx-note {
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.vfx-info .card-foot {
-  margin-top: 20px;
-}
-
-/* Lo que llevas puesto, debajo de la ficha */
-.vfx-loadout {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.vfx-slot {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 8px;
-  border-radius: var(--r);
-  border: 1px solid var(--bd);
-  background: rgb(var(--bg-rgb) / 0.45);
-}
-
-.vfx-slot.is-on {
-  border-color: color-mix(in srgb, var(--tone-gratis) 45%, transparent);
-}
-
-.vfx-slot-art {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  border: 1px dashed var(--bd-2);
-  background: radial-gradient(circle at 50% 60%, rgb(var(--sec-rgb) / 0.16), transparent 70%);
-  color: var(--faint);
-}
-
-.vfx-slot.is-on .vfx-slot-art {
-  border-style: solid;
-  border-color: var(--bd);
-}
-
-.vfx-slot-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.vfx-slot span {
-  display: block;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.vfx-slot b {
-  display: block;
-  overflow: hidden;
-  font: 700 13px/1.3 var(--font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Pestañas: efectos de kill o paquetes de skills */
-.vfx-tabs {
-  display: flex;
-  gap: 4px;
-  margin-top: 26px;
-  padding: 4px;
-  border-radius: 14px;
-  border: 1px solid var(--bd-2);
-  background: var(--s1);
-}
-
-.vfx-tabs button {
-  display: inline-flex;
-  flex: 1;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background-color 0.25s,
-    color 0.25s;
-}
-
-.vfx-tabs button span {
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgb(var(--line-rgb) / 0.12);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.vfx-tabs button[aria-selected='true'] {
-  background: linear-gradient(110deg, #9ff6ff 0%, var(--tone-vfx) 45%, #1a9fbd 100%);
-  color: #02262e;
-  box-shadow: 0 0 22px -6px var(--tone-vfx);
-}
-
-.vfx-tabs button[aria-selected='true'] span {
-  background: rgb(0 0 0 / 0.16);
-}
-
-/* Categorías de los efectos de kill, cada una con su color (en el móvil, en una fila que se desliza) */
+/* Filtros por categoría (en el móvil, en una fila que se desliza) */
 .vfx-filter {
   display: flex;
   gap: 8px;
@@ -4746,29 +4358,161 @@ body:not([data-hero]) .header::before {
   flex: none;
 }
 
-.vfx-filter .chip[style]::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 7px;
-  border-radius: 50%;
-  background: var(--vfx);
-  vertical-align: 1px;
+/* ---------- VFX: efectos de kill ---------- */
+
+#vfx-stage {
+  margin-top: 20px;
+  scroll-margin-top: calc(var(--header-h) + 12px);
 }
 
-.vfx-filter .chip[style][aria-pressed='true'] {
-  background: var(--vfx);
-  color: #0b0b18;
-  animation: none;
+.vfx-stage {
+  display: grid;
 }
 
-.vfx-filter .chip[style][aria-pressed='true']::before {
-  background: #0b0b18;
+.vfx-screen {
+  display: grid;
+  place-items: center;
+  min-height: 340px;
+  padding: 44px 16px 16px;
+  border-bottom: 1px solid var(--ui-line);
 }
 
+/* Los VFX son de píxeles (320 px): a su tamaño natural y, si la pantalla la amplía, con los píxeles nítidos */
+.vfx-anim {
+  width: 320px;
+  image-rendering: pixelated !important;
+}
+
+.vfx-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 22px;
+}
+
+.vfx-info h3 {
+  margin: 8px 0 6px;
+  font: 800 clamp(26px, 3.2vw, 34px) / 1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.vfx-info > p {
+  margin: 0;
+  color: var(--ui-text-2);
+  font-size: 16px;
+}
+
+.vfx-info > .vfx-note {
+  margin-top: 10px;
+  color: var(--ui-muted);
+  font-size: 14px;
+}
+
+.vfx-info .card-foot {
+  margin-top: 20px;
+  padding: 14px 14px 14px 18px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--r);
+  background: var(--ui-2);
+}
+
+.vfx-info .price.free {
+  color: var(--get);
+}
+
+.vfx-info .price.owned {
+  color: var(--ui-text);
+}
+
+/* Lo que llevas puesto, debajo de la ficha */
+.vfx-loadout {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.vfx-slot {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px 10px 8px 8px;
+  border-radius: var(--r);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-0);
+}
+
+.vfx-slot.is-on {
+  border-color: color-mix(in srgb, var(--ok-2) 55%, var(--ui-line));
+}
+
+.vfx-slot > div:not(.vfx-slot-art) {
+  flex: 1;
+  min-width: 0;
+}
+
+.vfx-slot-art {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-1);
+  color: var(--ui-muted);
+}
+
+.vfx-slot-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.vfx-slot span {
+  display: block;
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vfx-slot.is-on span {
+  color: var(--ok-2);
+}
+
+.vfx-slot b {
+  display: block;
+  overflow: hidden;
+  font: 700 13.5px/1.3 var(--font-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vfx-slot .btn {
+  flex: none;
+}
+
+/* Paquetes de skills de antes (ya no se dan): solo los ve quien tenía alguno */
+.vfx-old {
+  display: grid;
+  gap: 8px;
+}
+
+.vfx-old-label {
+  margin-top: 6px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Cada categoría de efectos: título con una barra de su color y su mosaico */
 .vfx-group {
-  margin-top: 26px;
+  margin-top: 28px;
 }
 
 .vfx-group header {
@@ -4776,7 +4520,7 @@ body:not([data-hero]) .header::before {
   gap: 10px;
   align-items: center;
   padding-bottom: 10px;
-  border-bottom: 1px solid color-mix(in srgb, var(--vfx) 28%, var(--bd));
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .vfx-group header::before {
@@ -4793,9 +4537,13 @@ body:not([data-hero]) .header::before {
 }
 
 .vfx-group header span {
-  color: var(--vfx);
-  font-size: 13px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--ui-2);
+  color: var(--ui-text-2);
+  font-size: 12px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Mosaico de kills: miniatura que se anima al pasar el ratón; tocar una la pone en el escenario */
@@ -4810,41 +4558,36 @@ body:not([data-hero]) .header::before {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   overflow: hidden;
   padding: 0;
   border-radius: var(--r);
-  border: 1px solid var(--edge);
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-1);
+  color: var(--ui-text);
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--card-shadow);
   transition:
-    transform 0.3s var(--ease),
-    border-color 0.25s,
-    box-shadow 0.25s;
+    transform 0.25s var(--ease),
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .vfx-tile:hover {
-  border-color: color-mix(in srgb, var(--vfx) 60%, transparent);
-  box-shadow: var(--card-shadow), 0 0 24px -8px var(--vfx);
+  border-color: var(--ui-line-2);
 }
 
 .vfx-tile.is-sel {
-  border-color: var(--vfx);
-  box-shadow:
-    inset 0 0 0 1px var(--vfx),
-    0 0 28px -6px var(--vfx);
+  border-color: var(--brand);
+  box-shadow: inset 0 0 0 1px var(--brand);
 }
 
 .vfx-tile-art {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  background:
-    radial-gradient(60% 55% at 50% 58%, color-mix(in srgb, var(--vfx) 24%, transparent), transparent 72%),
-    linear-gradient(180deg, #0d1129, #080b1f);
-  border-bottom: 1px solid var(--bd);
+  border-bottom: 1px solid var(--ui-line);
+  background: var(--sk-bg);
 }
 
 .vfx-tile-art img {
@@ -4861,13 +4604,18 @@ body:not([data-hero]) .header::before {
   white-space: nowrap;
 }
 
+.vfx-tile.is-sel .vfx-tile-name {
+  background: var(--brand);
+  color: #fff;
+}
+
 .vfx-tag {
   position: absolute;
   top: 8px;
   right: 8px;
   padding: 3px 8px;
-  border-radius: 999px;
-  background: var(--tone-gratis);
+  border-radius: 6px;
+  background: var(--ok-2);
   color: #03281b;
   font-size: 10px;
   font-weight: 900;
@@ -4875,158 +4623,11 @@ body:not([data-hero]) .header::before {
   text-transform: uppercase;
 }
 
-/* Paquetes de skills: cabecera con el paquete y debajo cada skill (con su animación pequeña) */
-.vfx-packs {
-  display: grid;
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.vfx-pack {
-  padding: 18px;
-  border-color: color-mix(in srgb, var(--vfx) 34%, var(--edge));
-}
-
-.vfx-pack.is-on {
-  border-color: var(--vfx);
-  box-shadow: var(--card-shadow), inset 0 0 0 1px var(--vfx);
-}
-
-.vfx-pack-head {
-  display: grid;
-  gap: 14px;
-}
-
-.vfx-pack-art {
-  display: grid;
-  place-items: center;
-  width: 96px;
-  aspect-ratio: 1;
-  border-radius: var(--r);
-  background:
-    radial-gradient(60% 55% at 50% 58%, color-mix(in srgb, var(--vfx) 30%, transparent), transparent 72%),
-    #0b0f26;
-  border: 1px solid var(--bd);
-}
-
-.vfx-pack-art img {
-  width: 92%;
-  height: 92%;
-  object-fit: contain;
-}
-
-.vfx-pack-text .cat {
-  color: var(--vfx);
-  font: 800 11px/1.2 var(--font-body);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.vfx-pack-text h3 {
-  margin: 6px 0 4px;
-  font: 800 22px/1.2 var(--font-display);
-}
-
-.vfx-pack-text p {
-  margin: 0;
-  color: var(--text-2);
-  font-size: 14px;
-}
-
-.vfx-pack-buy {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.vfx-skill-grid {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.vfx-skill {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 8px;
-  border-radius: var(--r);
-  border: 1px solid var(--bd);
-  border-left: 3px solid var(--vfx);
-  background: rgb(var(--bg-rgb) / 0.45);
-  color: var(--text);
-  text-align: left;
-  cursor: pointer;
-  transition:
-    transform 0.3s var(--ease),
-    border-color 0.25s,
-    background-color 0.25s;
-}
-
-.vfx-skill:hover {
-  border-color: color-mix(in srgb, var(--vfx) 60%, transparent);
-  background: color-mix(in srgb, var(--vfx) 8%, rgb(var(--bg-rgb) / 0.45));
-}
-
-.vfx-skill.is-sel {
-  border-color: var(--vfx);
-  background: color-mix(in srgb, var(--vfx) 14%, rgb(var(--bg-rgb) / 0.45));
-}
-
-.vfx-skill-art {
-  flex: none;
-  width: 64px;
-  height: 64px;
-  overflow: hidden;
-  border-radius: 10px;
-  background:
-    radial-gradient(60% 55% at 50% 58%, color-mix(in srgb, var(--vfx) 26%, transparent), transparent 72%),
-    #0b0f26;
-}
-
-.vfx-skill-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.vfx-skill-text {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-
-.vfx-skill-text b {
-  font: 700 14px/1.25 var(--font-display);
-}
-
-.vfx-skill-text span {
-  color: var(--muted);
-  font-size: 12.5px;
-}
-
 /* ---------- Skills: las clases del TF Client ---------- */
-
-/* Cada clase lleva su color en --sk; la sección, el tono de su pestaña */
-.sk-shop {
-  --sk: var(--tone-skills);
-}
 
 .sk-hero {
   display: grid;
   gap: 16px;
-}
-
-.sk-hero h2 {
-  font: 800 clamp(24px, 3.6vw, 34px) / 1.15 var(--font-display);
-  letter-spacing: -0.02em;
-}
-
-.sk-hero > div > p {
-  margin: 8px 0 0;
-  max-width: 640px;
-  color: var(--muted);
-  font-size: 15px;
 }
 
 /* Tus clases: la activa y las demás que tienes, para cambiar de una a otra */
@@ -5038,24 +4639,22 @@ body:not([data-hero]) .header::before {
   justify-content: space-between;
   padding: 12px 14px;
   border-radius: var(--r);
-  border: 1px dashed var(--bd-2);
-  background: rgb(var(--s1-rgb) / 0.7);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-1);
 }
 
 .sk-mine p {
   margin: 0;
-  color: var(--muted);
+  color: var(--ui-text-2);
   font-size: 14px;
 }
 
 .sk-mine.has-classes {
   justify-content: flex-start;
-  border-style: solid;
-  border-color: var(--bd);
 }
 
 .sk-mine-label {
-  color: var(--muted);
+  color: var(--ui-muted);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -5074,24 +4673,24 @@ body:not([data-hero]) .header::before {
   gap: 8px;
   align-items: center;
   max-width: 100%;
-  min-height: 36px;
+  min-height: 38px;
   padding: 4px 12px 4px 4px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--sk) 40%, transparent);
-  background: color-mix(in srgb, var(--sk) 10%, var(--s1));
-  color: var(--text);
+  border-radius: 10px;
+  border: 1px solid var(--ui-line-2);
+  background: var(--ui-2);
+  color: var(--ui-text);
   font: 700 13px/1.2 var(--font-body);
   cursor: pointer;
   transition:
-    border-color 0.25s,
-    box-shadow 0.25s;
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .sk-mine-item img {
   width: 28px;
   height: 28px;
   flex: none;
-  border-radius: 999px;
+  border-radius: 7px;
 }
 
 .sk-mine-item span {
@@ -5102,18 +4701,20 @@ body:not([data-hero]) .header::before {
 
 .sk-mine-item i {
   padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--tone-gratis);
+  border-radius: 5px;
+  background: var(--ok-2);
   color: #03281b;
   font: normal 900 9.5px/1.3 var(--font-body);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.sk-mine-item:hover,
+.sk-mine-item:hover {
+  background: var(--ui-3);
+}
+
 .sk-mine-item.is-active {
-  border-color: var(--sk);
-  box-shadow: 0 0 18px -6px var(--sk);
+  border-color: var(--ok-2);
 }
 
 /* La ficha de la clase elegida */
@@ -5122,106 +4723,55 @@ body:not([data-hero]) .header::before {
   scroll-margin-top: calc(var(--header-h) + 12px);
 }
 
-.sk-card {
-  overflow: hidden;
-  padding: 0;
-  border-color: color-mix(in srgb, var(--sk) 42%, var(--edge));
-  box-shadow: var(--card-shadow), 0 0 54px -26px var(--sk);
-}
-
 .sk-top {
   display: grid;
 }
 
-/* El escenario: la vista previa (con su fondo pintado, el mismo que --sk-bg), la luz del color de la clase y el suelo
-   de rejilla encima en modo «pantalla», y abajo la skill con su tecla */
+/* El escenario: la vista previa arriba (fondo liso = el pintado en la imagen) y debajo la skill con su tecla */
 .sk-screen {
-  position: relative;
   display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-bottom: 1px solid var(--bd);
-  background: var(--sk-bg);
-  isolation: isolate;
-}
-
-.sk-screen::before,
-.sk-screen::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-
-.sk-screen::before {
-  inset: 58% -30% -10%;
-  background:
-    linear-gradient(color-mix(in srgb, var(--sk) 22%, transparent) 1px, transparent 1px) 0 0 / 100% 34px,
-    linear-gradient(90deg, color-mix(in srgb, var(--sk) 22%, transparent) 1px, transparent 1px) 0 0 / 34px 100%;
-  transform: perspective(380px) rotateX(62deg);
-  transform-origin: 50% 0;
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, transparent 95%);
-  mask-image: linear-gradient(180deg, transparent, #000 30%, transparent 95%);
-}
-
-.sk-screen::after {
-  inset: 0;
-  background:
-    radial-gradient(46% 16% at 50% 80%, color-mix(in srgb, var(--sk) 34%, transparent), transparent 75%),
-    radial-gradient(70% 60% at 50% 46%, color-mix(in srgb, var(--sk) 14%, transparent), transparent 72%);
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .sk-anim {
-  width: min(100%, 540px);
-  aspect-ratio: 1;
-  object-fit: contain;
-  /* Los bordes se funden con el fondo (por si la compresión cambia un poco el color) */
-  -webkit-mask-image: radial-gradient(closest-side, #000 86%, transparent);
-  mask-image: radial-gradient(closest-side, #000 86%, transparent);
+  width: 480px;
+  place-self: center;
 }
 
 .sk-noanim {
   display: grid;
   gap: 18px;
+  place-self: center;
   justify-items: center;
-  max-width: 300px;
-  padding: 24px 24px 96px;
+  max-width: 320px;
+  padding: 72px 24px 48px;
   text-align: center;
 }
 
 .sk-noanim-icon {
   width: 112px;
   height: 112px;
-  border-radius: 22px;
-  border: 1px solid color-mix(in srgb, var(--sk) 50%, transparent);
-  box-shadow: 0 0 60px -10px var(--sk);
+  border-radius: 20px;
+  border: 1px solid var(--ui-line-2);
+  background: var(--ui-1);
 }
 
 .sk-noanim p {
   margin: 0;
-  color: var(--text-2);
+  color: var(--ui-text-2);
   font-size: 14px;
 }
 
-.sk-screen .vfx-live {
-  z-index: 2;
-}
-
 .sk-caption {
-  position: absolute;
-  z-index: 2;
-  right: 12px;
-  bottom: 12px;
-  left: 12px;
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 8px 12px 8px 8px;
-  border-radius: 14px;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  background: rgb(4 6 18 / 0.72);
+  min-width: 0;
+  padding: 10px 14px 10px 10px;
+  border-top: 1px solid var(--ui-line);
+  background: var(--ui-1);
 }
 
 .sk-caption img {
@@ -5229,7 +4779,7 @@ body:not([data-hero]) .header::before {
   height: 40px;
   flex: none;
   border-radius: 9px;
-  border: 1px solid color-mix(in srgb, var(--sk) 55%, transparent);
+  border: 1px solid var(--ui-line-2);
 }
 
 .sk-caption div {
@@ -5249,13 +4799,13 @@ body:not([data-hero]) .header::before {
   display: inline-flex;
   gap: 7px;
   align-items: center;
-  color: var(--muted);
+  color: var(--ui-text-2);
   font-size: 12px;
   font-weight: 700;
 }
 
 .sk-key.is-passive {
-  color: var(--violet);
+  color: #d9c9ff;
 }
 
 /* Una tecla del teclado */
@@ -5266,9 +4816,9 @@ body:not([data-hero]) .header::before {
   height: 22px;
   padding: 0 6px;
   border-radius: 6px;
-  border: 1px solid rgb(255 255 255 / 0.28);
+  border: 1px solid #6a74b8;
   border-bottom-width: 3px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.05));
+  background: var(--ui-3);
   color: #fff;
   font: 800 11.5px/1 var(--font-display);
 }
@@ -5294,25 +4844,15 @@ body:not([data-hero]) .header::before {
   place-items: center;
   width: 64px;
   height: 64px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--sk) 50%, transparent);
-  background:
-    radial-gradient(60% 55% at 50% 55%, color-mix(in srgb, var(--sk) 34%, transparent), transparent 75%),
-    #0b0f26;
-  box-shadow: 0 0 26px -8px var(--sk);
+  border-radius: 14px;
+  border: 1px solid var(--ui-line-2);
+  background: var(--ui-0);
 }
 
 .sk-badge img {
   width: 48px;
   height: 48px;
-  border-radius: 10px;
-}
-
-.sk-title .cat {
-  color: var(--sk);
-  font: 800 11px/1.3 var(--font-body);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  border-radius: 9px;
 }
 
 .sk-title h3 {
@@ -5324,7 +4864,7 @@ body:not([data-hero]) .header::before {
 
 .sk-desc {
   margin: 0;
-  color: var(--text-2);
+  color: var(--ui-text-2);
   font-size: 16px;
 }
 
@@ -5339,23 +4879,26 @@ body:not([data-hero]) .header::before {
 
 .sk-facts li {
   padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--line-rgb) / 0.2);
-  background: rgb(255 255 255 / 0.04);
-  color: var(--text-2);
+  border-radius: 8px;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-2);
+  color: var(--ui-text-2);
   font-size: 13px;
   font-weight: 700;
 }
 
 .sk-facts b {
-  color: var(--sk);
+  color: #fff;
 }
 
-/* Comprar (con dinero o con monedas) o, si ya es tuya, usarla */
+/* Comprar (con dinero o con monedas) o, si ya es tuya, usarla: una caja con dos filas */
 .sk-buy {
   display: grid;
-  gap: 10px;
   margin-top: 4px;
+  overflow: hidden;
+  border-radius: var(--r);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-2);
 }
 
 .sk-buy-row {
@@ -5364,59 +4907,75 @@ body:not([data-hero]) .header::before {
   gap: 10px 14px;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 12px 12px 16px;
-  border-radius: var(--r);
-  border: 1px solid var(--bd);
-  background: rgb(var(--bg-rgb) / 0.45);
+  padding: 14px 14px 14px 18px;
+}
+
+.sk-buy-row + .sk-buy-row {
+  border-top: 1px solid var(--ui-line);
 }
 
 .sk-buy-row .price {
-  font-size: 24px;
+  font-size: 26px;
+  color: var(--buy);
 }
 
 .sk-buy-row .btn {
-  min-width: 200px;
+  min-width: 210px;
 }
 
 .sk-coins {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  color: var(--gold);
+  color: #f2d27a;
   font: 700 20px/1 var(--font-display);
   font-variant-numeric: tabular-nums;
 }
 
 .sk-coins small {
-  color: var(--muted);
+  color: var(--ui-muted);
   font: 700 12px/1 var(--font-body);
 }
 
 .sk-buy-note {
   margin: 0;
-  color: var(--muted);
+  padding: 12px 18px 14px;
+  border-top: 1px solid var(--ui-line);
+  background: var(--ui-1);
+  color: var(--ui-muted);
   font-size: 13px;
 }
 
 .sk-buy-note b {
-  color: var(--gold);
+  color: #f2d27a;
 }
 
 .sk-buy-note b.is-short {
   color: var(--red);
 }
 
+/* Si ya es tuya: el estado (activa, tuya o comprándose) con una franja de su color a la izquierda */
 .sk-own {
+  --st: var(--brand-hover);
   display: flex;
   flex-wrap: wrap;
   gap: 12px 16px;
   align-items: center;
   justify-content: space-between;
   margin-top: 4px;
-  padding: 14px 16px;
+  padding: 14px 16px 14px 18px;
   border-radius: var(--r);
-  border: 1px solid color-mix(in srgb, var(--sk) 45%, transparent);
-  background: color-mix(in srgb, var(--sk) 9%, rgb(var(--bg-rgb) / 0.5));
+  border: 1px solid var(--ui-line);
+  border-left: 4px solid var(--st);
+  background: var(--ui-2);
+}
+
+.sk-own.is-active {
+  --st: var(--ok-2);
+}
+
+.sk-own.is-pending {
+  --st: var(--buy);
 }
 
 .sk-own > div {
@@ -5426,22 +4985,13 @@ body:not([data-hero]) .header::before {
 
 .sk-own-title {
   display: block;
-  color: var(--tone-vfx);
-  font: 700 18px/1.25 var(--font-display);
-}
-
-.sk-own.is-active .sk-own-title {
-  color: var(--tone-gratis);
-}
-
-.sk-own.is-pending .sk-own-title {
-  color: var(--gold);
-  font-size: 16px;
+  color: #fff;
+  font: 700 17px/1.25 var(--font-display);
 }
 
 .sk-own p {
   margin: 6px 0 0;
-  color: var(--text-2);
+  color: var(--ui-text-2);
   font-size: 14px;
 }
 
@@ -5452,7 +5002,7 @@ body:not([data-hero]) .header::before {
   gap: 4px 12px;
   align-items: baseline;
   padding: 20px 22px 0;
-  border-top: 1px solid var(--bd);
+  border-top: 1px solid var(--ui-line);
 }
 
 .sk-list-head h4 {
@@ -5460,7 +5010,7 @@ body:not([data-hero]) .header::before {
 }
 
 .sk-list-head span {
-  color: var(--muted);
+  color: var(--ui-muted);
   font-size: 13px;
 }
 
@@ -5477,27 +5027,25 @@ body:not([data-hero]) .header::before {
   min-width: 0;
   padding: 12px;
   border-radius: var(--r);
-  border: 1px solid var(--bd);
-  border-left: 3px solid color-mix(in srgb, var(--sk) 70%, transparent);
-  background: rgb(var(--bg-rgb) / 0.45);
-  color: var(--text);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-2);
+  color: var(--ui-text);
   text-align: left;
   cursor: pointer;
   transition:
-    transform 0.3s var(--ease),
-    border-color 0.25s,
-    background-color 0.25s;
+    transform 0.25s var(--ease),
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .sk-skill:hover {
-  border-color: color-mix(in srgb, var(--sk) 60%, transparent);
-  background: color-mix(in srgb, var(--sk) 7%, rgb(var(--bg-rgb) / 0.45));
+  border-color: var(--ui-line-2);
+  background: var(--ui-3);
 }
 
 .sk-skill.is-sel {
-  border-color: var(--sk);
-  background: color-mix(in srgb, var(--sk) 13%, rgb(var(--bg-rgb) / 0.45));
-  box-shadow: 0 0 22px -10px var(--sk);
+  border-color: var(--brand);
+  box-shadow: inset 0 0 0 1px var(--brand);
 }
 
 .sk-skill-icon {
@@ -5506,9 +5054,9 @@ body:not([data-hero]) .header::before {
   place-items: center;
   width: 52px;
   height: 52px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--sk) 35%, var(--bd));
-  background: #0b0f26;
+  border-radius: 11px;
+  border: 1px solid var(--ui-line-2);
+  background: var(--ui-0);
 }
 
 .sk-skill-icon img {
@@ -5538,10 +5086,10 @@ body:not([data-hero]) .header::before {
   gap: 6px;
   align-items: center;
   padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--line-rgb) / 0.2);
-  background: rgb(255 255 255 / 0.05);
-  color: var(--text-2);
+  border-radius: 7px;
+  border: 1px solid var(--ui-line-2);
+  background: var(--ui-1);
+  color: var(--ui-text-2);
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -5549,8 +5097,6 @@ body:not([data-hero]) .header::before {
 
 .sk-chip.is-key {
   padding-left: 4px;
-  border-color: color-mix(in srgb, var(--sk) 55%, transparent);
-  background: color-mix(in srgb, var(--sk) 14%, transparent);
   color: #fff;
 }
 
@@ -5562,18 +5108,18 @@ body:not([data-hero]) .header::before {
 }
 
 .sk-chip.is-passive {
-  border-color: rgb(var(--v-rgb) / 0.5);
-  background: rgb(var(--v-rgb) / 0.14);
+  border-color: #6a55b8;
+  background: #2a2160;
   color: #e4dcff;
 }
 
 .sk-skill-desc {
-  color: var(--text-2);
+  color: var(--ui-text-2);
   font-size: 13.5px;
   line-height: 1.45;
 }
 
-/* Todas las clases: filtro por tipo y rejilla con el color e icono de cada una */
+/* Todas las clases: filtro por tipo y rejilla con el icono de cada una */
 .sk-browse {
   margin-top: 34px;
 }
@@ -5584,7 +5130,7 @@ body:not([data-hero]) .header::before {
 
 .sk-filter .sk-n {
   margin-left: 4px;
-  opacity: 0.65;
+  opacity: 0.7;
   font-variant-numeric: tabular-nums;
 }
 
@@ -5604,41 +5150,26 @@ body:not([data-hero]) .header::before {
   padding: 10px;
   overflow: hidden;
   border-radius: var(--r);
-  border: 1px solid var(--edge);
-  background:
-    radial-gradient(90% 120% at 0% 50%, color-mix(in srgb, var(--sk) 16%, transparent), transparent 60%),
-    var(--surface);
-  color: var(--text);
+  border: 1px solid var(--ui-line);
+  background: var(--ui-1);
+  color: var(--ui-text);
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--card-shadow);
   transition:
-    transform 0.3s var(--ease),
-    border-color 0.25s,
-    box-shadow 0.25s;
-}
-
-.sk-tile::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 3px;
-  background: var(--sk);
-  opacity: 0.8;
+    transform 0.25s var(--ease),
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .sk-tile:hover {
-  border-color: color-mix(in srgb, var(--sk) 60%, transparent);
-  box-shadow: var(--card-shadow), 0 0 24px -8px var(--sk);
+  border-color: var(--ui-line-2);
+  background: var(--ui-2);
 }
 
 .sk-tile.is-sel {
-  border-color: var(--sk);
-  box-shadow:
-    inset 0 0 0 1px var(--sk),
-    0 0 28px -6px var(--sk);
+  border-color: var(--brand);
+  background: var(--ui-2);
+  box-shadow: inset 0 0 0 1px var(--brand);
 }
 
 .sk-tile-icon {
@@ -5647,11 +5178,9 @@ body:not([data-hero]) .header::before {
   place-items: center;
   width: 46px;
   height: 46px;
-  border-radius: 11px;
-  border: 1px solid color-mix(in srgb, var(--sk) 40%, transparent);
-  background:
-    radial-gradient(60% 55% at 50% 55%, color-mix(in srgb, var(--sk) 30%, transparent), transparent 75%),
-    #0b0f26;
+  border-radius: 10px;
+  border: 1px solid var(--ui-line-2);
+  background: var(--ui-0);
 }
 
 .sk-tile-icon img {
@@ -5676,7 +5205,7 @@ body:not([data-hero]) .header::before {
 
 .sk-tile-text small {
   overflow: hidden;
-  color: var(--muted);
+  color: var(--ui-muted);
   font-size: 11.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5686,7 +5215,7 @@ body:not([data-hero]) .header::before {
   justify-self: start;
   margin-top: 2px;
   padding: 2px 7px;
-  border-radius: 999px;
+  border-radius: 5px;
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -5694,19 +5223,21 @@ body:not([data-hero]) .header::before {
 }
 
 .sk-tag.is-active {
-  background: var(--tone-gratis);
+  background: var(--ok-2);
   color: #03281b;
 }
 
 .sk-tag.is-owned {
-  background: rgb(255 255 255 / 0.14);
-  color: var(--text);
+  background: var(--ui-3);
+  color: var(--ui-text);
 }
 
 .sk-tag.is-pending {
-  background: var(--gold);
-  color: #2a1500;
+  background: var(--buy);
+  color: var(--buy-ink);
 }
+
+/* ---------- VFX y Skills: tamaños de pantalla ---------- */
 
 @media (max-width: 639px) {
   /* En el móvil, el icono encima del nombre: así caben enteros nombres largos como «Despertado» */
@@ -5733,22 +5264,54 @@ body:not([data-hero]) .header::before {
   }
 
   .sk-info,
-  .sk-list-head {
+  .sk-list-head,
+  .sk-skills,
+  .vfx-info {
     padding-inline: 16px;
   }
 
-  .sk-skills {
-    padding-inline: 16px;
+  .vfx-slot {
+    flex-wrap: wrap;
   }
 }
 
 @media (min-width: 640px) {
+  .vfx-filter {
+    flex-wrap: wrap;
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .vfx-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
   .sk-grid {
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   }
 }
 
 @media (min-width: 960px) {
+  /* El escenario a la izquierda y la ficha a la derecha */
+  .vfx-stage {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+
+  .vfx-screen {
+    min-height: 420px;
+    border-right: 1px solid var(--ui-line);
+    border-bottom: 0;
+  }
+
+  .vfx-info {
+    padding: 32px 34px;
+  }
+
+  .vfx-tiles {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
   .sk-hero {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
@@ -5765,12 +5328,11 @@ body:not([data-hero]) .header::before {
 
   #sk-screen {
     display: grid;
-    border-right: 1px solid var(--bd);
+    border-right: 1px solid var(--ui-line);
   }
 
   .sk-screen {
-    aspect-ratio: auto;
-    min-height: 500px;
+    min-height: 580px;
     border-bottom: 0;
   }
 
@@ -5788,9 +5350,10 @@ body:not([data-hero]) .header::before {
 }
 
 @media (hover: hover) and (min-width: 960px) {
+  .vfx-tile:hover,
   .sk-tile:hover,
   .sk-skill:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
   }
 }
 
@@ -7283,15 +6846,17 @@ body:not([data-hero]) .header::before {
   color: var(--text-2);
 }
 
+/* Marca de «lo llevas puesto»: un recuadro pequeño con un visto blanco (sin puntos de neón) */
 .worn-dot {
   position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--a-400);
-  box-shadow: 0 0 8px var(--a-400);
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  background: var(--brand)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")
+    center / 11px no-repeat;
   opacity: 0;
   transform: scale(0);
   transition:
@@ -7383,18 +6948,6 @@ body:not([data-hero]) .header::before {
   50% {
     opacity: 1;
     transform: scale(1.04);
-  }
-}
-
-@keyframes ping {
-  0% {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-  80%,
-  100% {
-    opacity: 0;
-    transform: scale(2.8);
   }
 }
 
@@ -7569,7 +7122,6 @@ body:not([data-hero]) .header::before {
   /* Sin bucles en las tarjetas y las pestañas (el brillo de las crates se queda, quieto) */
   .crate-glow,
   .rk-aura,
-  .tab[aria-selected='true'],
   .auth-tabs button[aria-selected='true'],
   .cv-modes button[aria-pressed='true'],
   .chip[aria-pressed='true'] {
@@ -7707,35 +7259,6 @@ body:not([data-hero]) .header::before {
 }
 
 @media (min-width: 640px) {
-  .vfx-tabs button {
-    font-size: 14px;
-  }
-
-  .vfx-filter {
-    flex-wrap: wrap;
-    margin-inline: 0;
-    padding: 0;
-    overflow: visible;
-  }
-
-  .vfx-slot span {
-    font-size: 11px;
-    letter-spacing: 0.06em;
-  }
-
-  .vfx-tiles {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-
-  .vfx-pack-head {
-    grid-template-columns: 120px minmax(0, 1fr) auto;
-    align-items: center;
-  }
-
-  .vfx-pack-art {
-    width: 120px;
-  }
-
   :root {
     --gutter: 28px;
   }
@@ -7920,35 +7443,6 @@ body:not([data-hero]) .header::before {
 /* ---------- Escritorio ---------- */
 
 @media (min-width: 960px) {
-  /* El escenario: la animación grande a la izquierda y la ficha a la derecha */
-  .vfx-stage {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  }
-
-  .vfx-screen {
-    aspect-ratio: auto;
-    min-height: 460px;
-    border-right: 1px solid var(--bd);
-    border-bottom: 0;
-  }
-
-  .vfx-info {
-    padding: 34px 36px;
-  }
-
-  .vfx-tiles {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .vfx-skill-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .vfx-tile:hover,
-  .vfx-skill:hover {
-    transform: translateY(-4px);
-  }
-
   .rk-ladder {
     grid-auto-flow: row;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -8124,8 +7618,6 @@ body:not([data-hero]) .header::before {
   .rule:hover,
   .reel-item:hover,
   .odds li:hover,
-  .vfx-tile:hover,
-  .vfx-skill:hover,
   .ip-box:hover {
     transform: none;
   }
@@ -8168,7 +7660,6 @@ body:not([data-hero]) .header::before {
     animation-iteration-count: infinite !important;
   }
 
-  .tab[aria-selected='true'],
   .auth-tabs button[aria-selected='true'],
   .cv-modes button[aria-pressed='true'],
   .chip[aria-pressed='true'] {
@@ -8198,25 +7689,6 @@ body:not([data-hero]) .header::before {
     animation-duration: 18s !important;
   }
 
-  .sky .stars-a {
-    animation-duration: 260s, 4.2s !important;
-  }
-
-  .sky .stars-b {
-    animation-duration: 170s, 3.1s !important;
-    animation-delay: 0s, -1.6s !important;
-  }
-
-  .sky .shoot {
-    animation-duration: 13s !important;
-    animation-delay: 4s !important;
-  }
-
-  .sky .shoot.s2 {
-    animation-duration: 17s !important;
-    animation-delay: 11s !important;
-  }
-
   /* La entrada de cada página (corta y suave) y el halo de los botones al pasar el ratón también se quedan */
   .ready main,
   .ready .footer {
@@ -8227,8 +7699,6 @@ body:not([data-hero]) .header::before {
     animation-delay: 0.12s !important;
   }
 
-  .btn-primary:hover,
-  .btn-theme:hover,
   .btn-shop:hover {
     animation-duration: 1.8s !important;
     animation-iteration-count: infinite !important;
