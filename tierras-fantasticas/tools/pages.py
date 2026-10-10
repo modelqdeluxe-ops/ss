@@ -181,7 +181,7 @@ def footer():
             <li><a href="/tienda#cosmeticos">Cosméticos</a></li>
             <li><a href="/tienda#crates">Crates</a></li>
             <li><a href="/tienda#vfx">VFX</a></li>
-            <li><a href="/tienda#tiendamonedas">Tienda de monedas</a></li>
+            <li><a href="/tienda#skills">Skills</a></li>
             <li><a href="/ayuda">Preguntas frecuentes</a></li>
           </ul>
         </div>
@@ -326,12 +326,12 @@ def index():
 
 def tienda():
     tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'),
-            ('vfx', 'VFX'), ('tiendamonedas', 'Tienda de monedas')]
+            ('vfx', 'VFX'), ('skills', 'Skills')]
     tab_html = '\n'.join(
         f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
         for k, label in tabs)
     return head('Tienda — Tierras Fantásticas',
-                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, cosméticos, crates con sets completos, VFX y recompensas gratis. Pago seguro y entrega automática en el juego.',
+                'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, cosméticos, crates con sets completos, VFX, clases de skills y recompensas gratis. Pago seguro y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
   <main id="main">
     <section class="shop-head">
@@ -569,8 +569,8 @@ def ayuda():
 {faq('¿Qué recibo al comprar una crate?', 'El set completo, siempre el mismo y sin nada al azar: sus armas, herramientas, la armadura y los cosméticos (alas, mochilas, cascos). Llegan a tu inventario en cuanto estás conectado, son permanentes y quedan vinculados a tu cuenta. En la tienda puedes ver cada pieza en 3D y probártela antes.')}
 {faq('¿Puedo regalar o intercambiar lo que compro?', 'Los cosméticos y la ropa, sí. Las armas, herramientas y armaduras de los rangos y de las crates, no: quedan vinculadas a tu cuenta y solo tú puedes usarlas. Lo tienes explicado en la <a href="/tienda#vinculados">tienda</a>.')}
 {faq('¿Las alas sirven para volar?', 'Sí: todas las alas de la tienda planean como unas élitros, en el pecho o en el hueco de la espalda (con la pechera puesta), y nunca se gastan. Las mochilas, capas y colas son solo de adorno.')}
-{faq('¿Qué es la tienda de monedas?', 'Objetos del servidor que se pagan con las monedas que ganas jugando. Las monedas no se venden con dinero, no tienen valor real y no se pueden cambiar por dinero. El staff la actualiza desde el juego y la web la muestra al momento.')}
-{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Al reembolsarla, el servidor retira todo lo que se entregó con esa compra, esté donde esté (también en cofres), y el rango si lo era. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
+{faq('¿Cómo funcionan las clases de skills?', 'Cada clase trae sus skills (se lanzan con teclas propias que puedes cambiar en Opciones › Controles › «TF Skills»; las pasivas van solas) y su arma y armadura, vinculadas a tu cuenta. Se compran con dinero o con las monedas que ganas jugando. Las que compras son tuyas para siempre, pero llevas una sola a la vez: eliges la activa en la tienda, en la sección Skills, y el servidor te la cambia en unos segundos. Las monedas no se venden con dinero y no se pueden cambiar por dinero.')}
+{faq('¿Puedo cancelar una compra?', f'Sí. Tienes 5 días hábiles desde la entrega para cancelar cualquier compra y recuperar tu dinero, sin dar explicaciones: escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> con tu número de pedido. Al reembolsarla, el servidor retira todo lo que se entregó con esa compra, esté donde esté (también en cofres), y el rango o la clase de skills si lo era. Todos los detalles están en los <a href="/terminos#reembolsos">Términos y condiciones</a>.')}
 {faq('¿Tierras Fantásticas es oficial de Minecraft?', 'No. Es un servidor independiente: no es un producto oficial de Minecraft y no está aprobado por Mojang ni Microsoft ni asociado con ellos. Lo que se compra en la tienda ayuda a mantener el servidor. Más información en el <a href="/legal">Aviso legal</a>.')}
 {faq('¿Cómo recibo el rol en Discord?', 'Crea tu cuenta con tu nombre de Minecraft (botón «Entrar» arriba) y conecta tu Discord en «Mi cuenta». Cuando se confirme el pago, el bot te dará el rol de tu rango; si aún no estás en nuestro Discord, te añadirá.')}
 {faq('No he recibido mi compra, ¿qué hago?', f'Entra al servidor y espera unos segundos. Si sigue sin llegar, escríbenos a <a href="mailto:{EMAIL}">{EMAIL}</a> o por Discord con el número de pedido (aparece al terminar la compra, en tu recibo y en «Mi cuenta») y tu nombre de jugador.')}

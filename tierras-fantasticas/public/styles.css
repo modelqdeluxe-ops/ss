@@ -91,7 +91,9 @@
   --tone-crates: #a78bfa;
   --tone-vfx: #45e9ff;
   --tone-monedas: #ffb23a;
-  --tone-tiendamonedas: #ff9a4d;
+  --tone-skills: #ff6b5b;
+  /* Fondo de las vistas previas de las skills: va pintado en las imágenes (tools/skills.py → PREVIEW_BG) */
+  --sk-bg: #0c0f1f;
   --tone: var(--a-400);
   --neon-border: linear-gradient(135deg, rgb(var(--a-rgb) / 0.7), rgb(var(--v-rgb) / 0.35) 45%, rgb(var(--c-rgb) / 0.6));
   /* Neón de los bordes: un filo fino de luz y un halo suave alrededor (nunca en las letras) */
@@ -2992,9 +2994,9 @@ body:not([data-hero]) .header::before {
   --tone-fg: #2a1500;
 }
 
-.tab[data-category='tiendamonedas'] {
-  --tone: var(--tone-tiendamonedas);
-  --tone-fg: #2a1000;
+.tab[data-category='skills'] {
+  --tone: var(--tone-skills);
+  --tone-fg: #2a0905;
 }
 
 .tab[data-category]::after {
@@ -4112,7 +4114,6 @@ body:not([data-hero]) .header::before {
 /* Destello que cruza la tarjeta al pasar el ratón */
 .crate-tile::after,
 .product::after,
-.coin-item::after,
 .cos-piece::after {
   content: '';
   position: absolute;
@@ -4127,12 +4128,10 @@ body:not([data-hero]) .header::before {
 
 .crate-tile:hover::after,
 .product:hover::after,
-.coin-item:hover::after,
 .cos-piece:hover::after {
   transform: translateX(115%);
 }
 
-.coin-item,
 .cos-piece {
   overflow: hidden;
 }
@@ -4447,121 +4446,6 @@ body:not([data-hero]) .header::before {
   line-height: 1.3;
   text-align: center;
   color: var(--text-2);
-}
-
-/* ---------- Tienda de monedas ---------- */
-
-.coin-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.coin-head h2 {
-  font: 800 clamp(24px, 4vw, 34px) / 1.15 var(--font-display);
-  letter-spacing: -0.02em;
-}
-
-.coin-head p {
-  margin: 8px 0 0;
-  font-size: 15px;
-}
-
-.coin-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.coin-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  padding: 12px 12px 14px;
-  transition:
-    transform 0.35s var(--ease),
-    border-color 0.3s;
-}
-
-.coin-item:hover {
-  transform: translateY(-4px);
-  border-color: rgba(252, 201, 74, 0.55);
-  box-shadow: var(--card-shadow), 0 0 0 1px rgba(252, 201, 74, 0.15), 0 0 30px -8px rgba(252, 201, 74, 0.5);
-}
-
-.coin-icon {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  margin-bottom: 6px;
-  border-radius: var(--r);
-  background:
-    radial-gradient(50% 50% at 50% 55%, rgba(252, 201, 74, 0.16), transparent 75%),
-    var(--s0);
-  box-shadow: inset 0 0 0 1px var(--bd);
-}
-
-.coin-icon img {
-  width: 54%;
-  height: 54%;
-  object-fit: contain;
-  image-rendering: pixelated;
-  transition: transform 0.4s var(--spring);
-}
-
-.coin-item:hover .coin-icon img.ok {
-  transform: translateY(-4px) scale(1.08);
-}
-
-.coin-icon span {
-  font: 800 34px var(--font-display);
-  color: var(--gold);
-}
-
-.coin-item h3 {
-  font: 700 15px/1.3 var(--font-body);
-  letter-spacing: 0;
-  overflow-wrap: anywhere;
-}
-
-.coin-price {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 6px;
-  font: 700 16px/1 var(--font-display);
-  color: var(--gold);
-  font-variant-numeric: tabular-nums;
-}
-
-.coin-item .btn {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.coin-empty {
-  margin-top: 22px;
-  padding: 32px 24px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.coin-empty p {
-  margin: 0;
-}
-
-.coin-empty code,
-.coin-note code {
-  color: var(--text);
-}
-
-.coin-note {
-  margin: 20px 0 0;
 }
 
 .hint3d {
@@ -5119,6 +5003,795 @@ body:not([data-hero]) .header::before {
 .vfx-skill-text span {
   color: var(--muted);
   font-size: 12.5px;
+}
+
+/* ---------- Skills: las clases del TF Client ---------- */
+
+/* Cada clase lleva su color en --sk; la sección, el tono de su pestaña */
+.sk-shop {
+  --sk: var(--tone-skills);
+}
+
+.sk-hero {
+  display: grid;
+  gap: 16px;
+}
+
+.sk-hero h2 {
+  font: 800 clamp(24px, 3.6vw, 34px) / 1.15 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.sk-hero > div > p {
+  margin: 8px 0 0;
+  max-width: 640px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* Tus clases: la activa y las demás que tienes, para cambiar de una a otra */
+.sk-mine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  border: 1px dashed var(--bd-2);
+  background: rgb(var(--s1-rgb) / 0.7);
+}
+
+.sk-mine p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.sk-mine.has-classes {
+  justify-content: flex-start;
+  border-style: solid;
+  border-color: var(--bd);
+}
+
+.sk-mine-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sk-mine-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sk-mine-item {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sk) 40%, transparent);
+  background: color-mix(in srgb, var(--sk) 10%, var(--s1));
+  color: var(--text);
+  font: 700 13px/1.2 var(--font-body);
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.sk-mine-item img {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 999px;
+}
+
+.sk-mine-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sk-mine-item i {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--tone-gratis);
+  color: #03281b;
+  font: normal 900 9.5px/1.3 var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sk-mine-item:hover,
+.sk-mine-item.is-active {
+  border-color: var(--sk);
+  box-shadow: 0 0 18px -6px var(--sk);
+}
+
+/* La ficha de la clase elegida */
+#sk-detail {
+  margin-top: 20px;
+  scroll-margin-top: calc(var(--header-h) + 12px);
+}
+
+.sk-card {
+  overflow: hidden;
+  padding: 0;
+  border-color: color-mix(in srgb, var(--sk) 42%, var(--edge));
+  box-shadow: var(--card-shadow), 0 0 54px -26px var(--sk);
+}
+
+.sk-top {
+  display: grid;
+}
+
+/* El escenario: la vista previa (con su fondo pintado, el mismo que --sk-bg), la luz del color de la clase y el suelo
+   de rejilla encima en modo «pantalla», y abajo la skill con su tecla */
+.sk-screen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-bottom: 1px solid var(--bd);
+  background: var(--sk-bg);
+  isolation: isolate;
+}
+
+.sk-screen::before,
+.sk-screen::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.sk-screen::before {
+  inset: 58% -30% -10%;
+  background:
+    linear-gradient(color-mix(in srgb, var(--sk) 22%, transparent) 1px, transparent 1px) 0 0 / 100% 34px,
+    linear-gradient(90deg, color-mix(in srgb, var(--sk) 22%, transparent) 1px, transparent 1px) 0 0 / 34px 100%;
+  transform: perspective(380px) rotateX(62deg);
+  transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, transparent 95%);
+  mask-image: linear-gradient(180deg, transparent, #000 30%, transparent 95%);
+}
+
+.sk-screen::after {
+  inset: 0;
+  background:
+    radial-gradient(46% 16% at 50% 80%, color-mix(in srgb, var(--sk) 34%, transparent), transparent 75%),
+    radial-gradient(70% 60% at 50% 46%, color-mix(in srgb, var(--sk) 14%, transparent), transparent 72%);
+}
+
+.sk-anim {
+  width: min(100%, 540px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  /* Los bordes se funden con el fondo (por si la compresión cambia un poco el color) */
+  -webkit-mask-image: radial-gradient(closest-side, #000 86%, transparent);
+  mask-image: radial-gradient(closest-side, #000 86%, transparent);
+}
+
+.sk-noanim {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  max-width: 300px;
+  padding: 24px 24px 96px;
+  text-align: center;
+}
+
+.sk-noanim-icon {
+  width: 112px;
+  height: 112px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--sk) 50%, transparent);
+  box-shadow: 0 0 60px -10px var(--sk);
+}
+
+.sk-noanim p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.sk-screen .vfx-live {
+  z-index: 2;
+}
+
+.sk-caption {
+  position: absolute;
+  z-index: 2;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px 8px 8px;
+  border-radius: 14px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(4 6 18 / 0.72);
+}
+
+.sk-caption img {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--sk) 55%, transparent);
+}
+
+.sk-caption div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sk-caption b {
+  overflow: hidden;
+  font: 700 14px/1.2 var(--font-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sk-key {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sk-key.is-passive {
+  color: var(--violet);
+}
+
+/* Una tecla del teclado */
+.sk-shop kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-bottom-width: 3px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.05));
+  color: #fff;
+  font: 800 11.5px/1 var(--font-display);
+}
+
+.sk-info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 22px;
+}
+
+.sk-title {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+}
+
+.sk-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--sk) 50%, transparent);
+  background:
+    radial-gradient(60% 55% at 50% 55%, color-mix(in srgb, var(--sk) 34%, transparent), transparent 75%),
+    #0b0f26;
+  box-shadow: 0 0 26px -8px var(--sk);
+}
+
+.sk-badge img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+.sk-title .cat {
+  color: var(--sk);
+  font: 800 11px/1.3 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sk-title h3 {
+  margin-top: 4px;
+  font: 800 clamp(24px, 3vw, 34px) / 1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.sk-desc {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 16px;
+}
+
+.sk-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-facts li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--line-rgb) / 0.2);
+  background: rgb(255 255 255 / 0.04);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sk-facts b {
+  color: var(--sk);
+}
+
+/* Comprar (con dinero o con monedas) o, si ya es tuya, usarla */
+.sk-buy {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sk-buy-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: rgb(var(--bg-rgb) / 0.45);
+}
+
+.sk-buy-row .price {
+  font-size: 24px;
+}
+
+.sk-buy-row .btn {
+  min-width: 200px;
+}
+
+.sk-coins {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--gold);
+  font: 700 20px/1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-coins small {
+  color: var(--muted);
+  font: 700 12px/1 var(--font-body);
+}
+
+.sk-buy-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sk-buy-note b {
+  color: var(--gold);
+}
+
+.sk-buy-note b.is-short {
+  color: var(--red);
+}
+
+.sk-own {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  border: 1px solid color-mix(in srgb, var(--sk) 45%, transparent);
+  background: color-mix(in srgb, var(--sk) 9%, rgb(var(--bg-rgb) / 0.5));
+}
+
+.sk-own > div {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.sk-own-title {
+  display: block;
+  color: var(--tone-vfx);
+  font: 700 18px/1.25 var(--font-display);
+}
+
+.sk-own.is-active .sk-own-title {
+  color: var(--tone-gratis);
+}
+
+.sk-own.is-pending .sk-own-title {
+  color: var(--gold);
+  font-size: 16px;
+}
+
+.sk-own p {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+/* Las skills de la clase: tocar una la pone en el escenario */
+.sk-list-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  padding: 20px 22px 0;
+  border-top: 1px solid var(--bd);
+}
+
+.sk-list-head h4 {
+  font: 800 17px/1.3 var(--font-display);
+}
+
+.sk-list-head span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sk-skills {
+  display: grid;
+  gap: 10px;
+  padding: 14px 22px 22px;
+}
+
+.sk-skill {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  border-left: 3px solid color-mix(in srgb, var(--sk) 70%, transparent);
+  background: rgb(var(--bg-rgb) / 0.45);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.3s var(--ease),
+    border-color 0.25s,
+    background-color 0.25s;
+}
+
+.sk-skill:hover {
+  border-color: color-mix(in srgb, var(--sk) 60%, transparent);
+  background: color-mix(in srgb, var(--sk) 7%, rgb(var(--bg-rgb) / 0.45));
+}
+
+.sk-skill.is-sel {
+  border-color: var(--sk);
+  background: color-mix(in srgb, var(--sk) 13%, rgb(var(--bg-rgb) / 0.45));
+  box-shadow: 0 0 22px -10px var(--sk);
+}
+
+.sk-skill-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--sk) 35%, var(--bd));
+  background: #0b0f26;
+}
+
+.sk-skill-icon img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+
+.sk-skill-text {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sk-skill-text b {
+  font: 700 15px/1.25 var(--font-display);
+}
+
+.sk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sk-chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--line-rgb) / 0.2);
+  background: rgb(255 255 255 / 0.05);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-chip.is-key {
+  padding-left: 4px;
+  border-color: color-mix(in srgb, var(--sk) 55%, transparent);
+  background: color-mix(in srgb, var(--sk) 14%, transparent);
+  color: #fff;
+}
+
+.sk-chip.is-key kbd {
+  min-width: 18px;
+  height: 18px;
+  border-bottom-width: 2px;
+  font-size: 10px;
+}
+
+.sk-chip.is-passive {
+  border-color: rgb(var(--v-rgb) / 0.5);
+  background: rgb(var(--v-rgb) / 0.14);
+  color: #e4dcff;
+}
+
+.sk-skill-desc {
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+/* Todas las clases: filtro por tipo y rejilla con el color e icono de cada una */
+.sk-browse {
+  margin-top: 34px;
+}
+
+.sk-browse-head h3 {
+  font: 800 20px/1.2 var(--font-display);
+}
+
+.sk-filter .sk-n {
+  margin-left: 4px;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sk-tile {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  overflow: hidden;
+  border-radius: var(--r);
+  border: 1px solid var(--edge);
+  background:
+    radial-gradient(90% 120% at 0% 50%, color-mix(in srgb, var(--sk) 16%, transparent), transparent 60%),
+    var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition:
+    transform 0.3s var(--ease),
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.sk-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--sk);
+  opacity: 0.8;
+}
+
+.sk-tile:hover {
+  border-color: color-mix(in srgb, var(--sk) 60%, transparent);
+  box-shadow: var(--card-shadow), 0 0 24px -8px var(--sk);
+}
+
+.sk-tile.is-sel {
+  border-color: var(--sk);
+  box-shadow:
+    inset 0 0 0 1px var(--sk),
+    0 0 28px -6px var(--sk);
+}
+
+.sk-tile-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--sk) 40%, transparent);
+  background:
+    radial-gradient(60% 55% at 50% 55%, color-mix(in srgb, var(--sk) 30%, transparent), transparent 75%),
+    #0b0f26;
+}
+
+.sk-tile-icon img {
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
+}
+
+.sk-tile-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sk-tile-text b {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 700 13px/1.25 var(--font-display);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.sk-tile-text small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sk-tag {
+  justify-self: start;
+  margin-top: 2px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sk-tag.is-active {
+  background: var(--tone-gratis);
+  color: #03281b;
+}
+
+.sk-tag.is-owned {
+  background: rgb(255 255 255 / 0.14);
+  color: var(--text);
+}
+
+.sk-tag.is-pending {
+  background: var(--gold);
+  color: #2a1500;
+}
+
+@media (max-width: 639px) {
+  /* En el móvil, el icono encima del nombre: así caben enteros nombres largos como «Despertado» */
+  .sk-tile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 10px 10px 12px;
+  }
+
+  .sk-tile-text {
+    width: 100%;
+  }
+
+  .sk-tile-text b {
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 479px) {
+  .sk-buy-row .btn {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .sk-info,
+  .sk-list-head {
+    padding-inline: 16px;
+  }
+
+  .sk-skills {
+    padding-inline: 16px;
+  }
+}
+
+@media (min-width: 640px) {
+  .sk-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .sk-hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .sk-hero .sk-mine {
+    max-width: 560px;
+  }
+
+  /* Escenario a la izquierda y la ficha a la derecha; las skills debajo, en dos columnas */
+  .sk-top {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+
+  #sk-screen {
+    display: grid;
+    border-right: 1px solid var(--bd);
+  }
+
+  .sk-screen {
+    aspect-ratio: auto;
+    min-height: 500px;
+    border-bottom: 0;
+  }
+
+  .sk-info {
+    padding: 32px 34px;
+  }
+
+  .sk-skills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sk-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (hover: hover) and (min-width: 960px) {
+  .sk-tile:hover,
+  .sk-skill:hover {
+    transform: translateY(-3px);
+  }
 }
 
 /* ---------- Ventanas (compra, visor 3D y probador) ---------- */
@@ -7141,8 +7814,7 @@ body:not([data-hero]) .header::before {
   }
 
   .crate-grid,
-  .skel-grid,
-  .coin-grid {
+  .skel-grid {
     gap: 16px;
   }
 
@@ -7374,10 +8046,6 @@ body:not([data-hero]) .header::before {
     gap: 20px;
   }
 
-  .coin-grid {
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  }
-
   .split {
     grid-template-columns: 1.05fr 1fr;
     gap: 64px;
@@ -7455,7 +8123,6 @@ body:not([data-hero]) .header::before {
   .step:hover,
   .rule:hover,
   .reel-item:hover,
-  .coin-item:hover,
   .odds li:hover,
   .vfx-tile:hover,
   .vfx-skill:hover,

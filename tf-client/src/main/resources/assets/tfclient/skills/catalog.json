@@ -1,0 +1,484 @@
+[
+ {
+  "id": "guerrero_despertado",
+  "name": "Guerrero Despertado",
+  "skills": [
+   "bulwark_instinct",
+   "brutal_combo",
+   "berserkers_leap",
+   "relentless_whirlwind",
+   "bloodbound_barrier",
+   "vicious_strike",
+   "strike_of_fury"
+  ]
+ },
+ {
+  "id": "glacia",
+  "name": "Glacia",
+  "skills": [
+   "frost_bolt",
+   "ice_spike",
+   "frigid_path",
+   "frost_beam",
+   "ice_wall",
+   "hailstorm"
+  ]
+ },
+ {
+  "id": "guerrero_llama",
+  "name": "Guerrero de las Llamas",
+  "skills": [
+   "blazing_spirit",
+   "blazing_slash",
+   "unknowing_fire",
+   "rising_scorching_sun",
+   "blooming_flame_undulation",
+   "blazing_universe",
+   "flame_tiger"
+  ]
+ },
+ {
+  "id": "samurai_agua",
+  "name": "Samurái del Agua",
+  "skills": [
+   "splashing_water_flow_turbulent",
+   "water_surface_slash",
+   "water_wheel",
+   "flowing_dance",
+   "whirlpool",
+   "striking_tide",
+   "constant_flux"
+  ]
+ },
+ {
+  "id": "arquero",
+  "name": "Arquero",
+  "skills": [
+   "archer_windwalker",
+   "archer_quickshot",
+   "archer_volleystep",
+   "archer_volleystep_stacks",
+   "archer_rainofarrows",
+   "archer_cyclone_shot",
+   "archer_aeroglaive"
+  ]
+ },
+ {
+  "id": "sanador",
+  "name": "Sanador",
+  "skills": [
+   "mender_lifebound",
+   "mender_spiritbolt",
+   "mender_cascadebolt",
+   "mender_purging_light",
+   "mender_vital_beam",
+   "mender_lifeweavers_grace"
+  ]
+ },
+ {
+  "id": "picaro",
+  "name": "Pícaro",
+  "skills": [
+   "rogue_vicious_cuts",
+   "rogue_slice_and_dice",
+   "rogue_cutthroat_combo",
+   "rogue_smokebomb",
+   "rogue_grappling_hook",
+   "rogue_mark_of_death"
+  ]
+ },
+ {
+  "id": "paladin",
+  "name": "Paladín",
+  "skills": [
+   "lostassets_paladin_lc",
+   "lostassets_paladin_rc",
+   "lostassets_paladin_slc",
+   "lostassets_paladin_src"
+  ]
+ },
+ {
+  "id": "revenant",
+  "name": "Aparecido",
+  "skills": [
+   "lostassets_revenant_lc",
+   "lostassets_revenant_rc",
+   "lostassets_revenant_slc",
+   "lostassets_revenant_src"
+  ]
+ },
+ {
+  "id": "samurai_escarcha",
+  "name": "Samurái de Escarcha",
+  "skills": [
+   "lostassetsoriginal_frostsamurai_lc",
+   "lostassetsoriginal_frostsamurai_rc",
+   "lostassetsoriginal_frostsamurai_slc",
+   "lostassetsoriginal_frostsamurai_src"
+  ]
+ },
+ {
+  "id": "cetus",
+  "name": "Cetus",
+  "skills": [
+   "cetus_slash",
+   "cetus_dragoncharge",
+   "cetus_dragonwhirl",
+   "cetus_greatsword",
+   "cetus_parry",
+   "cetus_dragon_surge"
+  ]
+ },
+ {
+  "id": "mago",
+  "name": "Mago",
+  "skills": [
+   "fire_ball",
+   "blink_",
+   "arcane_missile",
+   "frost_nova",
+   "meteor",
+   "inferno_chains"
+  ]
+ },
+ {
+  "id": "bruja",
+  "name": "Bruja Tejedora",
+  "skills": [
+   "mf_witch_thread_of_crawling_chaos",
+   "mf_witch_sigil_volley",
+   "mf_witch_crow_hex",
+   "mf_witch_spell_circle",
+   "mf_witch_eldritch_elixirs",
+   "mf_witch_doomspike",
+   "mf_witch_abyssal_crucible"
+  ]
+ },
+ {
+  "id": "null",
+  "name": "Null",
+  "skills": [
+   "void_arrow",
+   "retreat",
+   "gravitational_boost",
+   "blackhole_shot",
+   "void_rain",
+   "pulse_mode"
+  ]
+ },
+ {
+  "id": "mago_rayo",
+  "name": "Mago del Rayo",
+  "skills": [
+   "skill_lightning_bolt",
+   "skill_lightning_wave",
+   "skill_lightning_ring",
+   "skill_lightning_cast",
+   "skill_lightning_wall",
+   "skill_lightning_spear"
+  ]
+ },
+ {
+  "id": "guerrero_dragon",
+  "name": "Guerrero Dragón",
+  "skills": [
+   "dragon_slash",
+   "dragon_dash",
+   "dragon_skin",
+   "dragon_zone",
+   "dragon_breath",
+   "dragonborn"
+  ]
+ },
+ {
+  "id": "filo_vacio",
+  "name": "Filo del Vacío",
+  "skills": [
+   "void_edge_dimension_benediction",
+   "void_edge_dimension_cut",
+   "void_edge_katana_upper_slash",
+   "void_edge_piercing_dimension"
+  ]
+ },
+ {
+  "id": "dragon_rojo",
+  "name": "Dragón Rojo",
+  "skills": [
+   "red_dragon_mode",
+   "red_dragon_mode_balance_breaker",
+   "red_dragon_addaura",
+   "dragon_claw",
+   "dragon_shot",
+   "dragon_dash",
+   "dragon_jump",
+   "dragon_roar",
+   "dragon_ultimate"
+  ]
+ },
+ {
+  "id": "thor",
+  "name": "Thor",
+  "skills": [
+   "hammer_strike",
+   "hammer_throw",
+   "mighty_thunder",
+   "asgardian_fury",
+   "thunder_shockwave",
+   "thunder_smash"
+  ]
+ },
+ {
+  "id": "guerrero",
+  "name": "Guerrero",
+  "skills": [
+   "warrior_rage",
+   "warrior_furiousslash",
+   "warrior_furiousstrike",
+   "warrior_leapingslash",
+   "warrior_whirlwind",
+   "warrior_hellblade"
+  ]
+ },
+ {
+  "id": "zephyr",
+  "name": "Zephyr",
+  "skills": [
+   "air_slash",
+   "tornado",
+   "aerial_burst",
+   "cyclone",
+   "wind_shadowstep",
+   "hurricane_strike"
+  ]
+ },
+ {
+  "id": "katana_fuego",
+  "name": "Katana de Fuego",
+  "skills": [
+   "lostassetsanime_firekatana_lc",
+   "lostassetsanime_firekatana_rc",
+   "lostassetsanime_firekatana_slc",
+   "lostassetsanime_firekatana_src"
+  ]
+ },
+ {
+  "id": "caballero_artico",
+  "name": "Caballero Ártico",
+  "skills": [
+   "frostbite",
+   "frost_strike",
+   "glacial_impalement",
+   "arctic_charge",
+   "glacier_smash",
+   "frozen_shield",
+   "permafrost_lance"
+  ]
+ },
+ {
+  "id": "arquero_despertado",
+  "name": "Arquero Despertado",
+  "skills": [
+   "ambush",
+   "blasting_combo",
+   "evasive_shot",
+   "volley_of_arrows",
+   "piercing_skyfall",
+   "rapid_arrows",
+   "shot_of_destruction"
+  ]
+ },
+ {
+  "id": "asesino_despertado",
+  "name": "Asesino Despertado",
+  "skills": [
+   "deadly_calm",
+   "lethal_combo",
+   "ravaging_dash",
+   "death_bloom",
+   "shadowquake",
+   "crimson_arc",
+   "last_dance"
+  ]
+ },
+ {
+  "id": "clerigo_despertado",
+  "name": "Clérigo Despertado",
+  "skills": [
+   "divine_revelation",
+   "sacred_combo",
+   "cruciform_judgement",
+   "orbs_of_benediction",
+   "bell_of_absolution",
+   "sanctuary_beam",
+   "divine_cathedral"
+  ]
+ },
+ {
+  "id": "pistolero_despertado",
+  "name": "Pistolero Despertado",
+  "skills": [
+   "markmans_creed",
+   "piercing_combo",
+   "hellflare_burst",
+   "deathmark",
+   "overheat",
+   "skyfall_barrage",
+   "vermilion_execution"
+  ]
+ },
+ {
+  "id": "mago_despertado",
+  "name": "Mago Despertado",
+  "skills": [
+   "mana_barrier",
+   "sorcery_combo",
+   "teleport_strike",
+   "blazing_barrage",
+   "cryo_prison",
+   "hailpiercer",
+   "meteor_of_doom"
+  ]
+ },
+ {
+  "id": "luchador_despertado",
+  "name": "Luchador Despertado",
+  "skills": [
+   "agile_striker",
+   "martial_combo",
+   "ground_blow",
+   "multistrike_uppercut",
+   "heavy_shockwave",
+   "spinning_blow",
+   "dragon_strike"
+  ]
+ },
+ {
+  "id": "nigromante",
+  "name": "Nigromante",
+  "skills": [
+   "deathbound_souls",
+   "necrotic_combo",
+   "skull_wisps",
+   "skeletal_warrior",
+   "necromancers_command",
+   "skeletal_mage",
+   "necroknight"
+  ]
+ },
+ {
+  "id": "piromante",
+  "name": "Piromante",
+  "skills": [
+   "heat_mastery",
+   "pyro_combo",
+   "volcanic_spear",
+   "hellfire_overblast",
+   "firestorm_volley",
+   "magma_dash",
+   "infernal_judgement"
+  ]
+ },
+ {
+  "id": "chaman",
+  "name": "Chamán Despertado",
+  "skills": [
+   "soul_link",
+   "primal_combo",
+   "echo_step",
+   "ritual_totem",
+   "stance_switch",
+   "earthen_embrace",
+   "ancestral_hands"
+  ]
+ },
+ {
+  "id": "invocador_espiritus",
+  "name": "Invocador de Espíritus",
+  "skills": [
+   "ancestral_stallion",
+   "spiritual_combo",
+   "wraith_serpent",
+   "spirit_golem",
+   "spiritcallers_command",
+   "spirit_talon",
+   "ancestral_tiger"
+  ]
+ },
+ {
+  "id": "vampiro",
+  "name": "Vampiro de la Luna de Sangre",
+  "skills": [
+   "bloodbending",
+   "bloodmoon_combo",
+   "vampiric_surge",
+   "bloodborne_blades",
+   "bloodborne_needles",
+   "bloodborne_grimoire_mmocore",
+   "bloodborne_scythe"
+  ]
+ },
+ {
+  "id": "caballero_muerte",
+  "name": "Caballero de la Muerte",
+  "skills": [
+   "cursed_seal",
+   "death_strike_st",
+   "phantom_charge",
+   "wraithbound_chains",
+   "soul_barrier",
+   "necrotic_whirlwind",
+   "death_sentence"
+  ]
+ },
+ {
+  "id": "guja_vendaval",
+  "name": "Guja del Vendaval",
+  "skills": [
+   "windrune_blade",
+   "gale_slash",
+   "vault",
+   "dancing_blade",
+   "cloudpiercer",
+   "torrent",
+   "windbound_fury"
+  ]
+ },
+ {
+  "id": "cazador_bestias",
+  "name": "Cazador de Bestias",
+  "skills": [
+   "spatial_awareness",
+   "slice_n_dice",
+   "devour",
+   "palisade_bite",
+   "sudden_throwing_strike",
+   "crazy_cutting",
+   "explosive_rush"
+  ]
+ },
+ {
+  "id": "ronin_trueno",
+  "name": "Ronin del Trueno",
+  "skills": [
+   "lightning_reflex",
+   "thunder_slash",
+   "thunderclap_and_flash",
+   "flashstorm_reversal",
+   "crackling_skyfall",
+   "thunderous_barrage",
+   "flaming_thunder_god"
+  ]
+ },
+ {
+  "id": "invocador",
+  "name": "Invocador",
+  "skills": [
+   "soul_strike",
+   "guardians_defense",
+   "spirit_guardian",
+   "magical_blades",
+   "summon_horse",
+   "summon_phoenix"
+  ]
+ }
+]

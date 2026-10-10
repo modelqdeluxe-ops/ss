@@ -319,6 +319,7 @@
   // --- Productos ---
   const CATEGORY_LABEL = {
     gratis: 'Recompensa gratis', rangos: 'Rango', crates: 'Crate', ruleta: 'Ruleta', monedas: 'Monedas de oro', cosmeticos: 'Cosmético',
+    skills: 'Clase de skills',
   };
   const crates = () => products.filter((p) => p.category === 'crates');
   const ranks = () => products.filter((p) => p.category === 'rangos').sort((a, b) => (a.tier || 0) - (b.tier || 0));
@@ -342,7 +343,7 @@
     }
   }
   const buyAttrs = (p) => `data-buy="${escapeHtml(p.id)}" ${config.paymentsEnabled ? '' : 'disabled'}`;
-  const isPixel = (src) => /\/ranks\/|coins-|\/gifts\//.test(src || '');
+  const isPixel = (src) => /\/ranks\/|coins-|\/gifts\/|\/skills\/.*\.png$/.test(src || '');
   // Las imágenes aparecen con un fundido cuando terminan de cargar (clase «ok», ver .fx en styles.css).
   const img = (src, alt, cls = '', extra = '') =>
     `<img src="${asset(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async" class="${[cls, 'fx', isPixel(src) ? 'pixel-img' : '']
@@ -357,7 +358,11 @@
 
   async function loadProducts() {
     try {
-      const [list] = await Promise.all([fetch('/api/products').then((r) => r.json()), page === 'tienda' ? loadVfx() : null]);
+      const [list] = await Promise.all([
+        fetch('/api/products').then((r) => r.json()),
+        page === 'tienda' ? loadVfx() : null,
+        page === 'tienda' ? loadSkills() : null,
+      ]);
       products = list;
     } catch {
       $$('#products').forEach(
@@ -470,18 +475,21 @@
     crates: 'Cada crate es un set completo, siempre el mismo y sin nada al azar: armas, herramientas, armadura y cosméticos animados. Es permanente, irrompible y queda vinculado a tu cuenta. Toca una para probártela en tu personaje.',
     ruleta: '',
     vfx: '',
-    monedas: 'Monedas de oro para la economía del servidor: compra terrenos, objetos y lo que veas en la tienda de monedas.',
-    tiendamonedas: '',
+    monedas: 'Monedas de oro para la economía del servidor.',
+    skills: '',
   };
 
   let currentCategory = null;
-  let coinShopTimer = null;
   function initShop() {
     const tabs = $$('#shop-tabs [role="tab"]');
     for (const tab of tabs) {
       const cat = tab.dataset.category;
       const count =
-        cat === 'tiendamonedas' ? null : cat === 'vfx' ? (vfxData ? vfxData.kills.length + vfxData.packs.length : 0) : products.filter((p) => p.category === cat).length;
+        cat === 'vfx'
+          ? vfxData ? vfxData.kills.length + vfxData.packs.length : 0
+          : cat === 'skills'
+            ? skData?.classes?.length || 0
+            : products.filter((p) => p.category === cat).length;
       tab.hidden = count === 0;
       if (count) tab.insertAdjacentHTML('beforeend', `<span class="count">${cat === 'ruleta' ? '' : count}</span>`);
       tab.addEventListener('click', () => selectCategory(cat, true));
@@ -500,16 +508,20 @@
       const h = decodeURIComponent(location.hash.slice(1));
       if (h.startsWith('crates-')) return { cat: 'crates', crate: h.slice(7) };
       if (h.startsWith('rangos-')) return { cat: 'rangos', rank: `rango-${h.slice(7)}` };
+      if (h.startsWith('skills-') && !tabs.find((t) => t.dataset.category === 'skills')?.hidden) return { cat: 'skills', cls: h.slice(7) };
       return tabs.some((t) => t.dataset.category === h && !t.hidden) ? { cat: h } : null;
     };
     const start = fromHash() || { cat: 'crates' };
+    if (start.cls) skPick(start.cls);
     selectCategory(start.cat, false, start.rank);
     if (start.crate) openCrateView(start.crate);
     window.addEventListener('hashchange', () => {
       const h = fromHash();
       if (!h) return;
+      if (h.cls && h.cls !== skSel?.cls) skPick(h.cls);
       if (h.cat !== currentCategory) selectCategory(h.cat, false, h.rank);
       else if (h.rank) showRank(h.rank);
+      else if (h.cls) skRefresh();
       if (h.crate) openCrateView(h.crate);
     });
   }
@@ -522,7 +534,6 @@
       tab.tabIndex = active ? 0 : -1;
       if (active) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
-    clearInterval(coinShopTimer);
     closeStages();
     const box = $('#products');
     box.className = 'products';
@@ -538,9 +549,8 @@
       filterCrates();
     } else if (category === 'ruleta') {
       renderRoulette(box);
-    } else if (category === 'tiendamonedas') {
-      renderCoinShop(box);
-      coinShopTimer = setInterval(() => renderCoinShop(box, true), 15000);
+    } else if (category === 'skills') {
+      renderSkills(box);
     } else if (category === 'rangos') {
       renderRanks(box, focus);
     } else if (category === 'cosmeticos') {
@@ -828,6 +838,322 @@
     btn.classList.remove('is-loading');
   });
 
+  // --- Skills: las clases del TF Client. Se compran con dinero (Stripe/PayPal, ventana de compra de siempre) o con las
+  // monedas del servidor; las compradas son del jugador para siempre y lleva UNA activa a la vez, que se elige aquí y el
+  // servidor pone sola (con su arma y su armadura). ---
+  let skData = null;
+  let skGroup = 'todas';
+  // Lo que se ve en la ficha: la clase y la skill del escenario
+  let skSel = null;
+  async function loadSkills() {
+    try {
+      const res = await fetch('/api/skills');
+      skData = res.ok ? await res.json() : null;
+    } catch {
+      skData = null;
+    }
+  }
+
+  const skColor = (c) => (HEX.test(c || '') ? c : '#ff6b5b');
+  const skClass = (id) => skData?.classes.find((c) => c.id === id) || null;
+  const fmtCoins = (n) => new Intl.NumberFormat('es-ES', { useGrouping: 'always' }).format(n);
+  const SK_PASSIVE = { siempre: 'Siempre activa', dano: 'Al recibir daño' };
+  const skPassiveText = (s) => SK_PASSIVE[s.passive] || 'Pasiva';
+  const skFirstShown = (c) => c.skills.find((s) => s.id === c.showcase) || c.skills.find((s) => s.preview) || c.skills[0];
+
+  // Estado de una clase para el jugador con la cuenta iniciada
+  function skState(c) {
+    const mine = skData?.me;
+    if (!mine) return 'none';
+    if (mine.active === c.id) return 'active';
+    if (mine.owned.includes(c.id)) return 'owned';
+    if (mine.pending.includes(c.id)) return 'pending';
+    return 'none';
+  }
+
+  function skPick(id, skill) {
+    const c = skClass(id);
+    if (!c) return false;
+    skSel = { cls: c.id, skill: skill && c.skills.some((s) => s.id === skill) ? skill : skFirstShown(c).id };
+    return true;
+  }
+
+  function skDefault() {
+    const mine = skData.me;
+    const id = mine?.active || mine?.owned?.[0] || (skClass('glacia') ? 'glacia' : skData.classes[0].id);
+    skPick(id);
+  }
+
+  // Etiqueta de la clase: activa, tuya o comprándose con monedas
+  function skTag(c) {
+    const st = skState(c);
+    if (st === 'active') return '<span class="sk-tag is-active">Activa</span>';
+    if (st === 'owned') return '<span class="sk-tag is-owned">Tuya</span>';
+    if (st === 'pending') return '<span class="sk-tag is-pending">En cola</span>';
+    return '';
+  }
+
+  const skIcon = (src, cls = '') =>
+    src ? `<img src="${asset(src)}" alt="" loading="lazy" decoding="async" class="pixel-img ${cls}" width="64" height="64">` : '';
+
+  // El escenario: la vista previa animada de la skill elegida (o su icono si es una mejora que no se ve)
+  function skScreen(c, sk) {
+    const key = sk.passive
+      ? `<span class="sk-key is-passive">${escapeHtml(skPassiveText(sk))}</span>`
+      : `<span class="sk-key"><kbd>${escapeHtml(sk.key || '·')}</kbd>Tecla</span>`;
+    const art = sk.preview
+      ? `<img class="sk-anim" src="${asset(sk.preview)}" alt="Vista previa de ${escapeHtml(sk.name)}" decoding="async">`
+      : `<div class="sk-noanim">${skIcon(sk.icon, 'sk-noanim-icon')}<p>Esta skill no tiene animación propia: ${
+          sk.passive ? 'funciona sola mientras llevas la clase' : 'mejora tus otras skills o tus golpes'
+        }.</p></div>`;
+    return `<div class="sk-screen${sk.preview ? '' : ' is-still'}">
+        ${art}
+        <span class="vfx-live" aria-hidden="true"><i></i>Vista previa</span>
+        <div class="sk-caption">${skIcon(sk.icon)}<div><b>${escapeHtml(sk.name)}</b>${key}</div></div>
+      </div>`;
+  }
+
+  // Comprar, usar o quitar: según lo que tenga el jugador
+  function skBuy(c) {
+    const st = skState(c);
+    const product = products.find((p) => p.skillClass === c.id);
+    const mine = skData.me;
+    const activeCls = mine?.active ? skClass(mine.active) : null;
+    if (st === 'active') {
+      return `<div class="sk-own is-active">
+          <div><b class="sk-own-title">Tu clase activa</b><p>La llevas en el servidor con sus skills, su arma y su armadura.</p></div>
+          <button class="btn btn-ghost btn-sm" type="button" data-sk-active="">Quitar clase</button>
+        </div>`;
+    }
+    if (st === 'owned') {
+      return `<div class="sk-own">
+          <div><b class="sk-own-title">Es tuya</b><p>${
+            activeCls ? `Ahora llevas <b>${escapeHtml(activeCls.name)}</b>. Al cambiar, el servidor te pone esta en unos segundos.` : 'Actívala y el servidor te la pone en unos segundos.'
+          }</p></div>
+          <button class="btn btn-primary btn-sm" type="button" data-sk-active="${escapeHtml(c.id)}">Usar esta clase</button>
+        </div>`;
+    }
+    if (st === 'pending') {
+      return `<div class="sk-own is-pending">
+          <div><b class="sk-own-title">Comprando con monedas</b><p>Se cobra en el juego en cuanto entres al servidor; después es tuya y pasa a ser tu clase activa.</p></div>
+        </div>`;
+    }
+    const coins = Number.isFinite(mine?.coins) ? mine.coins : null;
+    const short = coins !== null && coins < c.coinPrice;
+    return `<div class="sk-buy">
+        <div class="sk-buy-row">
+          <span class="price">${formatPrice(c.price)}</span>
+          <button class="btn btn-buy" type="button" ${product ? buyAttrs(product) : 'disabled'}>Comprar</button>
+        </div>
+        <div class="sk-buy-row">
+          <span class="sk-coins"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">${fmtCoins(c.coinPrice)}<small>monedas</small></span>
+          <button class="btn btn-coin" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar con monedas</button>
+        </div>
+        <p class="sk-buy-note">Con monedas se cobra en el juego cuando estés conectado; si no tienes bastantes, no se cobra nada.${
+          coins !== null ? ` Tienes <b class="${short ? 'is-short' : ''}">${fmtCoins(coins)} monedas</b>.` : ''
+        }</p>
+      </div>`;
+  }
+
+  function skSkillRow(c, s) {
+    const sel = skSel?.skill === s.id;
+    const chips = [
+      s.passive
+        ? `<span class="sk-chip is-passive">Pasiva · ${escapeHtml(skPassiveText(s))}</span>`
+        : `<span class="sk-chip is-key"><kbd>${escapeHtml(s.key || '·')}</kbd>Tecla</span>`,
+      s.cooldown > 0 ? `<span class="sk-chip">Cooldown ${seconds(s.cooldown)}</span>` : '',
+    ].join('');
+    return `<button type="button" class="sk-skill${sel ? ' is-sel' : ''}" data-sk-skill="${escapeHtml(s.id)}" aria-pressed="${sel}">
+        <span class="sk-skill-icon">${skIcon(s.icon)}</span>
+        <span class="sk-skill-text">
+          <b>${escapeHtml(s.name)}</b>
+          <span class="sk-chips">${chips}</span>
+          <span class="sk-skill-desc">${escapeHtml(s.desc)}</span>
+        </span>
+      </button>`;
+  }
+
+  // La ficha de la clase elegida: escenario, datos, compra y sus skills
+  function skDetail() {
+    const c = skClass(skSel?.cls) || skData.classes[0];
+    const sk = c.skills.find((s) => s.id === skSel?.skill) || skFirstShown(c);
+    const actives = c.skills.filter((s) => !s.passive).length;
+    const passives = c.skills.length - actives;
+    return `
+      <article class="sk-card panel" style="--sk:${skColor(c.color)}" aria-labelledby="sk-name">
+        <div class="sk-top">
+          <div id="sk-screen">${skScreen(c, sk)}</div>
+          <div class="sk-info">
+            <div class="sk-title">
+              <span class="sk-badge">${skIcon(c.icon)}</span>
+              <div><span class="cat">${escapeHtml(c.role)}</span><h3 id="sk-name">${escapeHtml(c.name)}</h3></div>
+            </div>
+            <p class="sk-desc">${escapeHtml(c.desc)}</p>
+            <ul class="sk-facts">
+              <li><b>${actives}</b> ${actives === 1 ? 'skill' : 'skills'} con tecla</li>
+              ${passives ? `<li><b>${passives}</b> ${passives === 1 ? 'pasiva' : 'pasivas'}</li>` : ''}
+              <li>Arma y armadura de la clase</li>
+            </ul>
+            ${skBuy(c)}
+          </div>
+        </div>
+        <div class="sk-list-head"><h4>Skills de ${escapeHtml(c.name)}</h4><span>Toca una para verla. Las teclas se cambian en Opciones › Controles › «TF Skills».</span></div>
+        <div class="sk-skills">${c.skills.map((s) => skSkillRow(c, s)).join('')}</div>
+      </article>`;
+  }
+
+  function skTile(c) {
+    const sel = skSel?.cls === c.id;
+    return `<button type="button" class="sk-tile${sel ? ' is-sel' : ''}" style="--sk:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}" aria-pressed="${sel}">
+        <span class="sk-tile-icon">${skIcon(c.icon)}</span>
+        <span class="sk-tile-text"><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.role)}</small>${skTag(c)}</span>
+      </button>`;
+  }
+
+  function skGrid() {
+    const list = skData.classes.filter((c) => skGroup === 'todas' || c.group === skGroup);
+    return list.map(skTile).join('');
+  }
+
+  // Lo que tiene el jugador: su clase activa y las demás que son suyas (para cambiar rápido)
+  function skMine() {
+    const mine = skData.me;
+    if (!mine) {
+      return `<div class="sk-mine"><p>Entra con tu cuenta para ver tus clases y elegir la que llevas.</p>
+        <a class="btn btn-ghost btn-sm" href="/cuenta?return=${encodeURIComponent('/tienda#skills')}">Entrar</a></div>`;
+    }
+    const owned = mine.owned.map(skClass).filter(Boolean);
+    if (!owned.length) return '<div class="sk-mine"><p>Todavía no tienes ninguna clase. Elige una abajo y pruébala en la vista previa.</p></div>';
+    return `<div class="sk-mine has-classes">
+        <span class="sk-mine-label">Tus clases</span>
+        <div class="sk-mine-list">${owned
+          .map(
+            (c) => `<button type="button" class="sk-mine-item${mine.active === c.id ? ' is-active' : ''}" style="--sk:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}">
+              ${skIcon(c.icon)}<span>${escapeHtml(c.name)}</span>${mine.active === c.id ? '<i>Activa</i>' : ''}</button>`,
+          )
+          .join('')}</div>
+      </div>`;
+  }
+
+  function renderSkills(box) {
+    if (!skData?.classes?.length) {
+      box.innerHTML = '<p class="loading">No se pudieron cargar las clases. Recarga la página.</p>';
+      return;
+    }
+    box.classList.add('sk-shop');
+    if (!skClass(skSel?.cls)) skDefault();
+    const groups = [{ id: 'todas', name: 'Todas', n: skData.classes.length }, ...(skData.groups || []).map((g) => ({ ...g, n: skData.classes.filter((c) => c.group === g.id).length }))];
+    box.innerHTML = `
+      <div class="sk-hero">
+        <div>
+          <h2>Clases de skills</h2>
+          <p>${skData.classes.length} clases, cada una con sus skills, su arma y su armadura. Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí cuando quieras.</p>
+        </div>
+        ${skMine()}
+      </div>
+      <div id="sk-detail">${skDetail()}</div>
+      <div class="sk-browse">
+        <div class="sk-browse-head"><h3>Todas las clases</h3></div>
+        <div class="vfx-filter sk-filter" role="group" aria-label="Tipo de clase">${groups
+          .map(
+            (g) => `<button type="button" class="chip" data-sk-group="${escapeHtml(g.id)}" aria-pressed="${g.id === skGroup}"${
+              g.color && HEX.test(g.color) ? ` style="--vfx:${g.color}"` : ''
+            }>${escapeHtml(g.name)} <span class="sk-n">${g.n}</span></button>`,
+          )
+          .join('')}</div>
+        <div class="sk-grid" id="sk-grid">${skGrid()}</div>
+      </div>`;
+  }
+
+  // Vuelve a pintar la sección conservando dónde está el jugador en la página
+  function skRefresh() {
+    if (currentCategory === 'skills') renderSkills($('#products'));
+  }
+
+  function skShowDetail(scroll) {
+    $('#sk-detail').innerHTML = skDetail();
+    $$('[data-sk-pick]').forEach((b) => {
+      const sel = b.dataset.skPick === skSel.cls && b.classList.contains('sk-tile');
+      b.classList.toggle('is-sel', sel);
+      if (b.classList.contains('sk-tile')) b.setAttribute('aria-pressed', String(sel));
+    });
+    if (scroll) {
+      const d = $('#sk-detail');
+      if (d.getBoundingClientRect().top < 0 || d.getBoundingClientRect().top > innerHeight * 0.6) d.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  document.addEventListener('click', async (e) => {
+    if (currentCategory !== 'skills' || !skData) return;
+    const pick = e.target.closest('[data-sk-pick]');
+    if (pick) {
+      if (skPick(pick.dataset.skPick)) {
+        history.replaceState(null, '', `#skills-${skSel.cls}`);
+        skShowDetail(true);
+      }
+      return;
+    }
+    const row = e.target.closest('[data-sk-skill]');
+    if (row) {
+      const c = skClass(skSel.cls);
+      const sk = c?.skills.find((s) => s.id === row.dataset.skSkill);
+      if (!sk) return;
+      skSel.skill = sk.id;
+      $('#sk-screen').innerHTML = skScreen(c, sk);
+      $$('[data-sk-skill]').forEach((b) => {
+        const sel = b === row;
+        b.classList.toggle('is-sel', sel);
+        b.setAttribute('aria-pressed', String(sel));
+      });
+      // En el móvil el escenario queda arriba: se sube para verlo
+      const screen = $('#sk-screen');
+      if (screen.getBoundingClientRect().bottom < 80) screen.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+      return;
+    }
+    const grp = e.target.closest('[data-sk-group]');
+    if (grp) {
+      skGroup = grp.dataset.skGroup;
+      $$('[data-sk-group]').forEach((b) => b.setAttribute('aria-pressed', String(b === grp)));
+      $('#sk-grid').innerHTML = skGrid();
+      return;
+    }
+    const btn = e.target.closest('[data-sk-coins], [data-sk-active]');
+    if (!btn) return;
+    if (!me.user) {
+      toast('skCoins' in btn.dataset ? 'Entra con tu cuenta para comprar con tus monedas' : 'Entra con tu cuenta para elegir tu clase');
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(`/tienda#skills-${skSel.cls}`)}`), 900);
+      return;
+    }
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    try {
+      if ('skCoins' in btn.dataset) {
+        const { res, data } = await postWithTerms('/api/skills/coins', { id: btn.dataset.skCoins });
+        if (res.ok) {
+          location.href = `/success?order=${encodeURIComponent(data.id)}`;
+          return;
+        }
+        toast(data.error || 'No se pudo comprar ahora mismo.');
+      } else {
+        const id = btn.dataset.skActive || null;
+        const { res, data } = await postWithTerms('/api/skills/active', { id });
+        if (res.ok) {
+          skData.me = data.me;
+          toast(id ? `Ahora llevas ${skClass(id)?.name || 'la clase'}: el servidor te la pone en unos segundos` : 'Clase quitada: en el servidor se quita en unos segundos');
+          const y = scrollY;
+          skRefresh();
+          scrollTo(0, y);
+          return;
+        }
+        toast(data.error || 'No se pudo cambiar la clase.');
+      }
+    } catch {
+      toast('No se pudo completar. Revisa tu conexión.');
+    }
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+  });
+
   // --- Ruleta: premios con su probabilidad a la vista; las armas legendarias son el premio raro ---
   function renderRoulette(box) {
     const spins = products.filter((p) => p.category === 'ruleta').sort((a, b) => a.spins - b.spins);
@@ -896,26 +1222,20 @@
     for (const pic of $$('.odds-icon img', box)) pic.classList.add('pixel-img');
   }
 
-  // Pagar con monedas (girar la ruleta o comprar en la tienda de monedas): hace falta la cuenta, porque su jugador es
-  // el que paga las monedas en el juego.
+  // Girar la ruleta con monedas: hace falta la cuenta, porque su jugador es el que paga las monedas en el juego.
   document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-coin-spin], [data-coin-buy]');
+    const btn = e.target.closest('[data-coin-spin]');
     if (!btn) return;
-    const spin = 'coinSpin' in btn.dataset;
     if (!me.user) {
-      toast(spin ? 'Entra con tu cuenta para girar con tus monedas' : 'Entra con tu cuenta para comprar con tus monedas');
-      const back = spin ? '/tienda#ruleta' : '/tienda#tiendamonedas';
-      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent(back)}`), 900);
+      toast('Entra con tu cuenta para girar con tus monedas');
+      setTimeout(() => (location.href = `/cuenta?return=${encodeURIComponent('/tienda#ruleta')}`), 900);
       return;
     }
-    const failed = spin ? 'No se pudo girar ahora mismo.' : 'No se pudo comprar ahora mismo.';
+    const failed = 'No se pudo girar ahora mismo.';
     btn.disabled = true;
     btn.classList.add('is-loading');
     try {
-      const { res, data } = await postWithTerms(
-        spin ? '/api/roulette/coins' : '/api/coinshop/buy',
-        spin ? { spins: Number(btn.dataset.coinSpin) } : { id: btn.dataset.coinBuy },
-      );
+      const { res, data } = await postWithTerms('/api/roulette/coins', { spins: Number(btn.dataset.coinSpin) });
       if (res.ok) {
         location.href = `/success?order=${encodeURIComponent(data.id)}`;
         return;
@@ -945,52 +1265,6 @@
       toast('No se pudo abrir el visor 3D en este navegador.');
     }
   });
-
-  // --- Tienda de monedas (la actualiza el staff desde el juego) ---
-  let coinShopVersion = null;
-  async function renderCoinShop(box, refresh) {
-    let data;
-    try {
-      data = await (await fetch('/api/coinshop')).json();
-    } catch {
-      if (!refresh) box.innerHTML = '<p class="muted">No se pudo cargar la tienda de monedas.</p>';
-      return;
-    }
-    if (currentCategory !== 'tiendamonedas' || (refresh && data.version === coinShopVersion)) return;
-    coinShopVersion = data.version;
-    const items = data.items || [];
-    const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always' });
-    box.innerHTML = `
-      <div class="coin-head">
-        <div>
-          <h2>Tienda de monedas</h2>
-          <p class="muted">Objetos del servidor que se pagan con las monedas que ganas jugando.</p>
-        </div>
-      </div>
-      ${
-        items.length
-          ? `<div class="coin-grid">${items
-              .map(
-                (it) => `<article class="panel coin-item">
-                  <div class="coin-icon" data-letter="${escapeHtml(it.name.slice(0, 1).toUpperCase())}">${it.icon ? img(it.icon, '') : ''}</div>
-                  <h3>${escapeHtml(it.name)}</h3>
-                  <span class="muted small">× ${it.count}</span>
-                  <span class="coin-price"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">${fmt.format(it.price)}</span>
-                  <button type="button" class="btn btn-coin btn-sm" data-coin-buy="${escapeHtml(it.id)}">Comprar</button>
-                </article>`,
-              )
-              .join('')}</div>`
-          : '<div class="panel coin-empty"><p>Todavía no hay objetos. El staff los añade desde el juego con <code>/tf web tienda add &lt;precio&gt;</code>.</p></div>'
-      }
-      <p class="muted small coin-note">Se pagan con tus monedas del servidor: se cobran y te llega el objeto en el juego cuando estés conectado. Si no tienes bastantes, no se cobra nada.</p>`;
-    // Sin icono (o si no carga), la inicial del objeto.
-    for (const icon of $$('.coin-icon', box)) {
-      const letter = () => icon.replaceChildren(Object.assign(document.createElement('span'), { textContent: icon.dataset.letter }));
-      const pic = $('img', icon);
-      if (!pic) letter();
-      else pic.addEventListener('error', letter, { once: true });
-    }
-  }
 
   // --- Escaparates 3D: el personaje con la skin del jugador y lo que se vende puesto (rangos y cosméticos) ---
   const stages = [];
@@ -1801,6 +2075,10 @@
     let hash = location.hash;
     if (product && page === 'tienda') {
       hash = `#${product.category}`;
+      if (product.skillClass) {
+        skPick(product.skillClass);
+        hash = `#skills-${product.skillClass}`;
+      }
       selectCategory(product.category, false);
     }
     history.replaceState(null, '', `${location.pathname}${hash}`);

@@ -84,9 +84,24 @@
       $('prizes').hidden = false;
     }
 
-    // Con monedas (ruleta o tienda de monedas): se cobra en el juego; esperamos a que el servidor responda.
+    // Con monedas (ruleta, tienda de monedas o una clase de skills): se cobra en el juego; esperamos a que el servidor responda.
     if (order.coins) {
       const shop = order.kind === 'tienda';
+      const skill = order.kind === 'skills';
+      if (skill) {
+        if (order.status === 'delivered') {
+          show('ok', 'Hecho', '¡Clase conseguida!', `Se cobraron tus monedas en el servidor. ${order.product} ya es tuya y es tu clase activa: tienes sus skills en las teclas de la barra.`);
+          return;
+        }
+        if (order.status === 'delivery_failed') {
+          show('bad', 'Sin comprar', 'No se pudo comprar', order.error || 'No tenías bastantes monedas en el servidor. No se ha cobrado nada.');
+          return;
+        }
+        show('wait', 'En cola', 'Esperando al servidor', `Se cobrará en el juego en cuanto ${order.username} esté conectado; después la clase será tuya y pasará a ser tu clase activa.`);
+        await new Promise((r) => setTimeout(r, 4000));
+        attempt = Math.min(attempt, 10);
+        continue;
+      }
       if (order.status === 'delivered') {
         if (shop) show('ok', 'Hecho', '¡Compra hecha!', `Se cobraron tus monedas en el servidor y ${order.product} ya está en tu inventario.`);
         else show('ok', 'Hecho', '¡La ruleta ha girado!', 'Se cobraron tus monedas en el servidor y los premios ya están en tu inventario.');
@@ -110,6 +125,10 @@
       show('ok', 'Reclamada', '¡Recompensa reclamada!', order.status === 'delivered'
         ? 'Tu recompensa ya está en el servidor. ¡Disfrútala!'
         : `Tu recompensa llegará a ${order.username} en cuanto entre al servidor (si ya está dentro, en unos segundos).`);
+      return;
+    }
+    if (PAID.includes(order.status) && order.kind === 'skills') {
+      show('ok', 'Pagado', '¡Gracias por tu compra!', `Tu pago se ha completado. ${order.product} ya es de ${order.username} para siempre y es su clase activa: la tendrá en el servidor en unos segundos si está conectado o al entrar. La clase activa se cambia en la tienda, en Skills.`);
       return;
     }
     if (PAID.includes(order.status)) {

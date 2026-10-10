@@ -345,8 +345,8 @@ def convert(bb_path, store, problems):
             if not isinstance(c, dict):
                 continue  # cubos sueltos en la raíz: ModelEngine no los usa
             bname = c.get('name', 'bone')
-            if bname.lower() in SPECIAL_BONES or c.get('export') is False:
-                continue
+            if bname.lower() in SPECIAL_BONES:
+                continue  # (el «export: false» de Blockbench no cuenta: ModelEngine dibuja igual ese hueso)
             idx = len(bones)
             pivot = [num(v) for v in c.get('origin', [0, 0, 0])]
             sid = strip_prefix(bname)

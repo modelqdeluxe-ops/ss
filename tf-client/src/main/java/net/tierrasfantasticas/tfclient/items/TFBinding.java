@@ -204,7 +204,7 @@ public final class TFBinding {
         }
     }
 
-    private static void giveOrDrop(ServerPlayer player, ItemStack stack) {
+    public static void giveOrDrop(ServerPlayer player, ItemStack stack) {
         if (!player.getInventory().add(stack) || !stack.isEmpty()) {
             ItemEntity drop = player.drop(stack, false);
             if (drop != null) {

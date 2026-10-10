@@ -467,5 +467,1671 @@
     "name": "tfclient:pad/tab"
    }
   ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_charge": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_charge"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_slash_ult": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_slash_ult_0",
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_slash_ult_1"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_slash_ult_slash": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_slash_ult_slash"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_move": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_move_0",
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_move_1"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_airdash": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_airdash"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_rupture_quick"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_ult_stomp": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_ult_stomp"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_stomp_charge": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_stomp_charge"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_stomp": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_stomp"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_rupture_big": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_rupture_big"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_wheel_spin": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_wheel_spin"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_pierce": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_pierce_0",
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_pierce_1"
+  ]
+ },
+ "skills.guerrero_despertado.samus_awakened_warrior_warrior_slash": {
+  "sounds": [
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_slash_0",
+   "tfclient:skills/guerrero_despertado/samus_awakened_warrior_warrior_slash_1"
+  ]
+ },
+ "skills.glacia.samus_hailstorm": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_hailstorm"
+  ]
+ },
+ "skills.glacia.samus_ice_beam_energy": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_beam_energy"
+  ]
+ },
+ "skills.glacia.samus_ice_beam": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_beam"
+  ]
+ },
+ "skills.glacia.samus_ice_freeze": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_freeze"
+  ]
+ },
+ "skills.glacia.samus_ice_break": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_break"
+  ]
+ },
+ "skills.glacia.samus_icicle_shoot": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_icicle_shoot"
+  ]
+ },
+ "skills.glacia.samus_hail_impact": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_hail_impact"
+  ]
+ },
+ "skills.glacia.samus_wall_erode": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_wall_erode"
+  ]
+ },
+ "skills.glacia.samus_ice_spike": {
+  "sounds": [
+   "tfclient:skills/glacia/samus_ice_spike"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_charge1": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_charge1"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_tiger": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_tiger"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_tiger_explode": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_tiger_explode"
+  ]
+ },
+ "skills.guerrero_llama.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.guerrero_llama.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_universal_move_0",
+   "tfclient:skills/guerrero_llama/samus_universal_move_1"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_spin": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_spin"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_slash": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_slash"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_ground": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_ground"
+  ]
+ },
+ "skills.guerrero_llama.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_charge2": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_charge2"
+  ]
+ },
+ "skills.guerrero_llama.samus_flame_warrior_flame_dash": {
+  "sounds": [
+   "tfclient:skills/guerrero_llama/samus_flame_warrior_flame_dash"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_dragon_summon": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_dragon_summon"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_dragon": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_dragon_0",
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_dragon_1"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_dash": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_dash"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_wheel": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_wheel"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_slash": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_slash"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_spin": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_spin"
+  ]
+ },
+ "skills.samurai_agua.samus_water_samurai_water_wheel2": {
+  "sounds": [
+   "tfclient:skills/samurai_agua/samus_water_samurai_water_wheel2"
+  ]
+ },
+ "skills.arquero.universal_ultimate_sfx": {
+  "sounds": [
+   "tfclient:skills/arquero/universal_ultimate_sfx"
+  ]
+ },
+ "skills.arquero.archer_aeroglaive_charge": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_aeroglaive_charge"
+  ]
+ },
+ "skills.arquero.archer_aeroglaive_shoot": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_aeroglaive_shoot"
+  ]
+ },
+ "skills.arquero.archer_aeroglaive": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_aeroglaive"
+  ]
+ },
+ "skills.arquero.archer_quickshot": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_quickshot"
+  ]
+ },
+ "skills.arquero.archer_cyclone_shot_whirlwind": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_cyclone_shot_whirlwind"
+  ]
+ },
+ "skills.arquero.archer_rainofarrows": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_rainofarrows"
+  ]
+ },
+ "skills.arquero.archer_volleystep_charge": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_volleystep_charge"
+  ]
+ },
+ "skills.arquero.archer_volleystep_3": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_volleystep_3"
+  ]
+ },
+ "skills.arquero.archer_volleystep": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_volleystep"
+  ]
+ },
+ "skills.arquero.archer_hit_confirm": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_hit_confirm"
+  ]
+ },
+ "skills.arquero.archer_speedboost": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_speedboost"
+  ]
+ },
+ "skills.arquero.archer_hit_confirm_special": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_hit_confirm_special"
+  ]
+ },
+ "skills.arquero.archer_quickshot_stack": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_quickshot_stack"
+  ]
+ },
+ "skills.arquero.archer_windwalker_doublejump": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_windwalker_doublejump"
+  ]
+ },
+ "skills.arquero.archer_windwalker_glide": {
+  "sounds": [
+   "tfclient:skills/arquero/archer_windwalker_glide"
+  ]
+ },
+ "skills.sanador.universal_ultimate_sfx": {
+  "sounds": [
+   "tfclient:skills/sanador/universal_ultimate_sfx"
+  ]
+ },
+ "skills.sanador.mender_lifeweavers_grace": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_lifeweavers_grace"
+  ]
+ },
+ "skills.sanador.mender_vital_beam": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_vital_beam"
+  ]
+ },
+ "skills.sanador.mender_purging_light": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_purging_light"
+  ]
+ },
+ "skills.sanador.mender_cascadebolt_shoot": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_cascadebolt_shoot"
+  ]
+ },
+ "skills.sanador.mender_cascadebolt_impact": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_cascadebolt_impact"
+  ]
+ },
+ "skills.sanador.mender_spiritbolt_impact": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_spiritbolt_impact"
+  ]
+ },
+ "skills.sanador.mender_cascadebolt_split_impact": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_cascadebolt_split_impact"
+  ]
+ },
+ "skills.sanador.mender_spiritbolt_shoot": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_spiritbolt_shoot"
+  ]
+ },
+ "skills.sanador.mender_lifebound_skill": {
+  "sounds": [
+   "tfclient:skills/sanador/mender_lifebound_skill"
+  ]
+ },
+ "skills.picaro.rogue_mark_of_death_disappear": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_mark_of_death_disappear"
+  ]
+ },
+ "skills.picaro.rogue_mark_of_death": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_mark_of_death"
+  ]
+ },
+ "skills.picaro.universal_ultimate_sfx": {
+  "sounds": [
+   "tfclient:skills/picaro/universal_ultimate_sfx"
+  ]
+ },
+ "skills.picaro.rogue_grappling_hook_in": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_grappling_hook_in"
+  ]
+ },
+ "skills.picaro.rogue_grappling_hook_out": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_grappling_hook_out"
+  ]
+ },
+ "skills.picaro.rogue_smokebomb": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_smokebomb"
+  ]
+ },
+ "skills.picaro.rogue_cutthroat_combo_spindash": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_cutthroat_combo_spindash"
+  ]
+ },
+ "skills.picaro.rogue_cutthroat_combo_xslash": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_cutthroat_combo_xslash"
+  ]
+ },
+ "skills.picaro.rogue_cutthroat_combo_dash": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_cutthroat_combo_dash"
+  ]
+ },
+ "skills.picaro.rogue_slice_and_dice_3": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_slice_and_dice_3"
+  ]
+ },
+ "skills.picaro.rogue_slice_and_dice_1": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_slice_and_dice_1"
+  ]
+ },
+ "skills.picaro.rogue_slice_and_dice_2": {
+  "sounds": [
+   "tfclient:skills/picaro/rogue_slice_and_dice_2"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_explosion": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_explosion"
+  ]
+ },
+ "skills.mago.samus_meteor": {
+  "sounds": [
+   "tfclient:skills/mago/samus_meteor"
+  ]
+ },
+ "skills.mago.samus_meteor_explosion": {
+  "sounds": [
+   "tfclient:skills/mago/samus_meteor_explosion_0",
+   "tfclient:skills/mago/samus_meteor_explosion_1"
+  ]
+ },
+ "skills.mago.samus_fire_burn": {
+  "sounds": [
+   "tfclient:skills/mago/samus_fire_burn"
+  ]
+ },
+ "skills.mago.samus_frost_nova_break": {
+  "sounds": [
+   "tfclient:skills/mago/samus_frost_nova_break"
+  ]
+ },
+ "skills.mago.samus_blink": {
+  "sounds": [
+   "tfclient:skills/mago/samus_blink"
+  ]
+ },
+ "skills.mago.samus_fireball": {
+  "sounds": [
+   "tfclient:skills/mago/samus_fireball"
+  ]
+ },
+ "skills.mago.samus_quake": {
+  "sounds": [
+   "tfclient:skills/mago/samus_quake"
+  ]
+ },
+ "skills.mago.samus_arcane_missile": {
+  "sounds": [
+   "tfclient:skills/mago/samus_arcane_missile"
+  ]
+ },
+ "skills.mago.samus_frost_nova": {
+  "sounds": [
+   "tfclient:skills/mago/samus_frost_nova"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_summon": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_summon"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_chain": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_chain"
+  ]
+ },
+ "skills.mago.samus_inferno_chains_chain_hit": {
+  "sounds": [
+   "tfclient:skills/mago/samus_inferno_chains_chain_hit"
+  ]
+ },
+ "skills.null.samus_void_arrow_shoot": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_arrow_shoot"
+  ]
+ },
+ "skills.null.samus_void_teleport": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_teleport"
+  ]
+ },
+ "skills.null.samus_void_pulse": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_pulse"
+  ]
+ },
+ "skills.null.samus_void_missile": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_missile"
+  ]
+ },
+ "skills.null.samus_void_blackhole_summon": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_blackhole_summon"
+  ]
+ },
+ "skills.null.samus_void_blackhole": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_blackhole"
+  ]
+ },
+ "skills.null.samus_void_rain_circle": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_rain_circle"
+  ]
+ },
+ "skills.null.samus_void_rain_arrow": {
+  "sounds": [
+   "tfclient:skills/null/samus_void_rain_arrow"
+  ]
+ },
+ "skills.mago_rayo.lightning_bolt_shoot": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_bolt_shoot"
+  ]
+ },
+ "skills.mago_rayo.lightning_cast_bolt": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_cast_bolt"
+  ]
+ },
+ "skills.mago_rayo.lightning_wall": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_wall"
+  ]
+ },
+ "skills.mago_rayo.lightning_ps": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_ps"
+  ]
+ },
+ "skills.mago_rayo.lightning_wave": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_wave"
+  ]
+ },
+ "skills.mago_rayo.lightning_ring": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_ring"
+  ]
+ },
+ "skills.mago_rayo.lightning_cast": {
+  "sounds": [
+   "tfclient:skills/mago_rayo/lightning_cast"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_aura": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_aura"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_wings_spread": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_wings_spread"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_roar_1": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_roar_1"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_leap_up": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_leap_up"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_smash_ground": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_smash_ground"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_breath": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_breath"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_roar_2": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_roar_2"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_pulse": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_pulse"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_pierce": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_pierce"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_wheel": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_wheel"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_wheel_aura": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_wheel_aura"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_slash": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_slash_0",
+   "tfclient:skills/guerrero_dragon/samus_dragon_slash_1"
+  ]
+ },
+ "skills.guerrero_dragon.samus_summon_dragon_spear": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_summon_dragon_spear"
+  ]
+ },
+ "skills.guerrero_dragon.samus_dragon_spear_smash": {
+  "sounds": [
+   "tfclient:skills/guerrero_dragon/samus_dragon_spear_smash"
+  ]
+ },
+ "skills.filo_vacio.sfx_upperslash_katana": {
+  "sounds": [
+   "tfclient:skills/filo_vacio/sfx_upperslash_katana"
+  ]
+ },
+ "skills.filo_vacio.sfx_void_edge_teleport": {
+  "sounds": [
+   "tfclient:skills/filo_vacio/sfx_void_edge_teleport"
+  ]
+ },
+ "skills.dragon_rojo.dargon_ultimate": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_ultimate"
+  ]
+ },
+ "skills.dragon_rojo.dargon_ultimate_beem": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_ultimate_beem"
+  ]
+ },
+ "skills.dragon_rojo.dargon_roar": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_roar"
+  ]
+ },
+ "skills.dragon_rojo.dargon_jump": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_jump"
+  ]
+ },
+ "skills.dragon_rojo.dargon_dash": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_dash"
+  ]
+ },
+ "skills.dragon_rojo.dargon_shot": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_shot"
+  ]
+ },
+ "skills.dragon_rojo.claw_dargon": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/claw_dargon"
+  ]
+ },
+ "skills.dragon_rojo.boost": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/boost"
+  ]
+ },
+ "skills.dragon_rojo.dargon_loop_17_5s": {
+  "sounds": [
+   "tfclient:skills/dragon_rojo/dargon_loop_17_5s"
+  ]
+ },
+ "skills.thor.samus_discharge": {
+  "sounds": [
+   "tfclient:skills/thor/samus_discharge"
+  ]
+ },
+ "skills.thor.samus_thor_enchant": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thor_enchant"
+  ]
+ },
+ "skills.thor.samus_lightning": {
+  "sounds": [
+   "tfclient:skills/thor/samus_lightning"
+  ]
+ },
+ "skills.thor.samus_thunder_leap": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_leap"
+  ]
+ },
+ "skills.thor.samus_thunder_smash": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_smash"
+  ]
+ },
+ "skills.thor.samus_thunder_clap": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_clap"
+  ]
+ },
+ "skills.thor.samus_thunder_clap_big": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_clap_big"
+  ]
+ },
+ "skills.thor.samus_mjolnir_throw": {
+  "sounds": [
+   "tfclient:skills/thor/samus_mjolnir_throw"
+  ]
+ },
+ "skills.thor.samus_thor_hit": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thor_hit_0",
+   "tfclient:skills/thor/samus_thor_hit_1",
+   "tfclient:skills/thor/samus_thor_hit_2"
+  ]
+ },
+ "skills.thor.samus_mjolnir_catch": {
+  "sounds": [
+   "tfclient:skills/thor/samus_mjolnir_catch"
+  ]
+ },
+ "skills.thor.samus_thunder_clap_medium": {
+  "sounds": [
+   "tfclient:skills/thor/samus_thunder_clap_medium"
+  ]
+ },
+ "skills.guerrero.universal_ultimate_sfx": {
+  "sounds": [
+   "tfclient:skills/guerrero/universal_ultimate_sfx"
+  ]
+ },
+ "skills.guerrero.warrior_hellblade": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_hellblade"
+  ]
+ },
+ "skills.guerrero.warrior_whirlwind": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_whirlwind"
+  ]
+ },
+ "skills.guerrero.warrior_leapingslash_leap": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_leapingslash_leap"
+  ]
+ },
+ "skills.guerrero.warrior_leapingslash_impact": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_leapingslash_impact"
+  ]
+ },
+ "skills.guerrero.warrior_furiousstrike_whirlwind": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_furiousstrike_whirlwind"
+  ]
+ },
+ "skills.guerrero.warrior_furiousstrike_knockup": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_furiousstrike_knockup"
+  ]
+ },
+ "skills.guerrero.warrior_furiousslash3": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_furiousslash3"
+  ]
+ },
+ "skills.guerrero.warrior_furiousslash2": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_furiousslash2"
+  ]
+ },
+ "skills.guerrero.warrior_furiousslash1": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_furiousslash1"
+  ]
+ },
+ "skills.guerrero.warrior_rage": {
+  "sounds": [
+   "tfclient:skills/guerrero/warrior_rage"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_shadowstep": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_shadowstep"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_hurricane": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_hurricane"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_slash": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_slash_0",
+   "tfclient:skills/zephyr/samus_zephyr_slash_1",
+   "tfclient:skills/zephyr/samus_zephyr_slash_2"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_tornado_spin": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_tornado_spin"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_tornado": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_tornado"
+  ]
+ },
+ "skills.zephyr.samus_zephyr_cyclone": {
+  "sounds": [
+   "tfclient:skills/zephyr/samus_zephyr_cyclone"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_charge": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_charge"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_strong_arrow": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_strong_arrow"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_rubble_path": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_rubble_path"
+  ]
+ },
+ "skills.arquero_despertado.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_first_hit": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_first_hit"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_rapid_fire": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_rapid_fire"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_arrow_shoot": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_arrow_shoot"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_arrow_shoot_whoosh": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_arrow_shoot_whoosh"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_ground": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_ground"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_arrow_fan": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_arrow_fan"
+  ]
+ },
+ "skills.arquero_despertado.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_universal_move_0",
+   "tfclient:skills/arquero_despertado/samus_universal_move_1"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_move": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_move_0",
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_move_1"
+  ]
+ },
+ "skills.arquero_despertado.samus_awakened_archer_awakened_archer_charge_shot": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_awakened_archer_awakened_archer_charge_shot"
+  ]
+ },
+ "skills.arquero_despertado.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/arquero_despertado/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.asesino_despertado.samus_awakened_assassin_aa_blades_spin": {
+  "sounds": [
+   "tfclient:skills/asesino_despertado/samus_awakened_assassin_aa_blades_spin"
+  ]
+ },
+ "skills.asesino_despertado.samus_awakened_assassin_aa_spin": {
+  "sounds": [
+   "tfclient:skills/asesino_despertado/samus_awakened_assassin_aa_spin"
+  ]
+ },
+ "skills.asesino_despertado.samus_awakened_assassin_aa_slash": {
+  "sounds": [
+   "tfclient:skills/asesino_despertado/samus_awakened_assassin_aa_slash"
+  ]
+ },
+ "skills.asesino_despertado.samus_awakened_assassin_aa_dash": {
+  "sounds": [
+   "tfclient:skills/asesino_despertado/samus_awakened_assassin_aa_dash"
+  ]
+ },
+ "skills.asesino_despertado.samus_awakened_assassin_aa_pierce": {
+  "sounds": [
+   "tfclient:skills/asesino_despertado/samus_awakened_assassin_aa_pierce"
+  ]
+ },
+ "skills.asesino_despertado.samus_awakened_assassin_aa_cut": {
+  "sounds": [
+   "tfclient:skills/asesino_despertado/samus_awakened_assassin_aa_cut"
+  ]
+ },
+ "skills.clerigo_despertado.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_universal_move_0",
+   "tfclient:skills/clerigo_despertado/samus_universal_move_1"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_stream_loop": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_stream_loop"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_holy_summon": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_holy_summon"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_holy_explosion": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_holy_explosion"
+  ]
+ },
+ "skills.clerigo_despertado.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_orbs": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_orbs"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_holy_wave_x": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_holy_wave_x"
+  ]
+ },
+ "skills.clerigo_despertado.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_holy_impact": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_holy_impact"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_bash": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_bash"
+  ]
+ },
+ "skills.clerigo_despertado.samus_awakened_cleric_mace_swing": {
+  "sounds": [
+   "tfclient:skills/clerigo_despertado/samus_awakened_cleric_mace_swing"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_big_zone": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_big_zone"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_missile_flyby": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_missile_flyby"
+  ]
+ },
+ "skills.pistolero_despertado.samus_universal_explosion_big": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_universal_explosion_big"
+  ]
+ },
+ "skills.pistolero_despertado.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_gun_shoot": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_gun_shoot"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_bullet_impact_ground": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_bullet_impact_ground"
+  ]
+ },
+ "skills.pistolero_despertado.samus_universal_explosion_small": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_universal_explosion_small"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_overheat": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_overheat"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_set_targets": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_set_targets"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_spin_pistol": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_spin_pistol"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_aim": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_aim"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_shotgun_gather_blast": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_shotgun_gather_blast"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_focus_shot_charge": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_focus_shot_charge"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_focus_shot_decharge": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_focus_shot_decharge"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_gunslinger_shockwave_bullet_shoot": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_gunslinger_shockwave_bullet_shoot"
+  ]
+ },
+ "skills.pistolero_despertado.samus_awakened_archer_awakened_archer_arrow_shoot": {
+  "sounds": [
+   "tfclient:skills/pistolero_despertado/samus_awakened_archer_awakened_archer_arrow_shoot"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_meteor_creation": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_meteor_creation"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_meteor_shoot": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_meteor_shoot"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_meteor_explosion": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_meteor_explosion"
+  ]
+ },
+ "skills.mago_despertado.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.mago_despertado.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_ice_charge": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_ice_charge"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_ice_spike_creation": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_ice_spike_creation"
+  ]
+ },
+ "skills.mago_despertado.block_glass_break": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/block_glass_break"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_fire_circle": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_fire_circle"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_fire_ball": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_fire_ball"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_fire_blast": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_fire_blast"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_fire_explode": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_fire_explode"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_thunder_teleport": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_thunder_teleport"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_thunder_strike": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_thunder_strike"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_glacial_spikes_shoot": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_glacial_spikes_shoot"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_mana_barrier_break": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_mana_barrier_break"
+  ]
+ },
+ "skills.mago_despertado.samus_awakened_mage_ice_break": {
+  "sounds": [
+   "tfclient:skills/mago_despertado/samus_awakened_mage_ice_break"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_small_swing": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_small_swing"
+  ]
+ },
+ "skills.luchador_despertado.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.luchador_despertado.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_universal_move_0",
+   "tfclient:skills/luchador_despertado/samus_universal_move_1"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_dragon_strike": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_dragon_strike"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_dragonroar": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_dragonroar"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_strong_punch": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_strong_punch"
+  ]
+ },
+ "skills.luchador_despertado.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_big_swing": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_big_swing"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_kick_impact": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_kick_impact"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_big_punch": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_big_punch"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_charge": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_charge"
+  ]
+ },
+ "skills.luchador_despertado.samus_awakened_martial_artist_shockwave": {
+  "sounds": [
+   "tfclient:skills/luchador_despertado/samus_awakened_martial_artist_shockwave"
+  ]
+ },
+ "skills.nigromante.samus_awakened_necromancer_summon": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_awakened_necromancer_summon"
+  ]
+ },
+ "skills.nigromante.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.nigromante.samus_awakened_summoner_summon": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_awakened_summoner_summon"
+  ]
+ },
+ "skills.nigromante.samus_awakened_necromancer_shoot": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_awakened_necromancer_shoot"
+  ]
+ },
+ "skills.nigromante.samus_universal_explosion_small": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_universal_explosion_small"
+  ]
+ },
+ "skills.nigromante.samus_awakened_necromancer_slash": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_awakened_necromancer_slash"
+  ]
+ },
+ "skills.nigromante.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.nigromante.samus_awakened_necromancer_spin_slash": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_awakened_necromancer_spin_slash"
+  ]
+ },
+ "skills.nigromante.samus_awakened_necromancer_lance_thrust": {
+  "sounds": [
+   "tfclient:skills/nigromante/samus_awakened_necromancer_lance_thrust"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_flame_charge": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_flame_charge"
+  ]
+ },
+ "skills.piromante.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_universal_move_0",
+   "tfclient:skills/piromante/samus_universal_move_1"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_flame_slash": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_flame_slash"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_blazing_spear_form": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_blazing_spear_form"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_ultimate_spear_smash": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_ultimate_spear_smash"
+  ]
+ },
+ "skills.piromante.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_fire_circle": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_fire_circle"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_spear_shoot": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_spear_shoot"
+  ]
+ },
+ "skills.piromante.samus_universal_explosion_small": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_universal_explosion_small"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_firestorm_form": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_firestorm_form"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_flame_shoot": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_flame_shoot"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_fire_beam": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_fire_beam"
+  ]
+ },
+ "skills.piromante.samus_awakened_pyromancer_flame_jab": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_awakened_pyromancer_flame_jab"
+  ]
+ },
+ "skills.piromante.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/piromante/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.piromante.entity_blaze_shoot": {
+  "sounds": [
+   "tfclient:skills/piromante/entity_blaze_shoot"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_nature_hands_ultimate_summon": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_nature_hands_ultimate_summon"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_nature_hands_ultimate_heal": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_nature_hands_ultimate_heal"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_thunder_fist_final": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_thunder_fist_final"
+  ]
+ },
+ "skills.chaman.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_thunder_slap": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_thunder_slap"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_thunder_fist": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_thunder_fist"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_earth_roots_entangle": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_earth_roots_entangle"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_earth_roots_entangle_2": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_earth_roots_entangle_2"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_thunder_stance": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_thunder_stance"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_earth_stance": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_earth_stance"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_totem_heal": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_totem_heal"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_totem_summon": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_totem_summon"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_soul_sprint": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_soul_sprint"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_heal_beam": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_heal_beam"
+  ]
+ },
+ "skills.chaman.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_heal_beam_loop": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_heal_beam_loop"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_thunder_zap": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_thunder_zap"
+  ]
+ },
+ "skills.chaman.samus_awakened_shaman_thunder_zap_loop": {
+  "sounds": [
+   "tfclient:skills/chaman/samus_awakened_shaman_thunder_zap_loop"
+  ]
+ },
+ "skills.invocador_espiritus.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.invocador_espiritus.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_universal_move_0",
+   "tfclient:skills/invocador_espiritus/samus_universal_move_1"
+  ]
+ },
+ "skills.invocador_espiritus.samus_awakened_spiritcaller_spear_spin": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_awakened_spiritcaller_spear_spin"
+  ]
+ },
+ "skills.invocador_espiritus.samus_awakened_spiritcaller_spear_heavy_thrust": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_awakened_spiritcaller_spear_heavy_thrust"
+  ]
+ },
+ "skills.invocador_espiritus.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.invocador_espiritus.samus_awakened_spiritcaller_spear_slash": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_awakened_spiritcaller_spear_slash"
+  ]
+ },
+ "skills.invocador_espiritus.samus_awakened_spiritcaller_tiger_roar": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_awakened_spiritcaller_tiger_roar"
+  ]
+ },
+ "skills.invocador_espiritus.samus_awakened_spiritcaller_tiger_growl": {
+  "sounds": [
+   "tfclient:skills/invocador_espiritus/samus_awakened_spiritcaller_tiger_growl"
+  ]
+ },
+ "skills.caballero_muerte.entity_breeze_death": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/entity_breeze_death"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_death_sentence_smash": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_death_sentence_smash"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_soul_blade_slash": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_soul_blade_slash"
+  ]
+ },
+ "skills.caballero_muerte.item_mace_smash_air": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/item_mace_smash_air"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_cursed_seal": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_cursed_seal"
+  ]
+ },
+ "skills.caballero_muerte.particle_soul_escape": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/particle_soul_escape"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_whirlwind": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_whirlwind"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_claw_slash": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_claw_slash"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_chain": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_chain"
+  ]
+ },
+ "skills.caballero_muerte.samus_death_knight_death_slash": {
+  "sounds": [
+   "tfclient:skills/caballero_muerte/samus_death_knight_death_slash"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_buff_start": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_buff_start"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_ulton": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_ulton"
+  ]
+ },
+ "skills.cazador_bestias.samus_universal_rupture_quick": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_universal_rupture_quick"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_claw_slash": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_claw_slash"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_growl": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_growl"
+  ]
+ },
+ "skills.cazador_bestias.samus_universal_hit_impact_thud": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_universal_hit_impact_thud"
+  ]
+ },
+ "skills.cazador_bestias.samus_universal_move": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_universal_move_0",
+   "tfclient:skills/cazador_bestias/samus_universal_move_1"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_slash_once": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_slash_once"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_roar": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_roar"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_pierce": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_pierce"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_devour": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_devour"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_slash_double": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_slash_double"
+  ]
+ },
+ "skills.cazador_bestias.samus_beast_slayer_slash_spin": {
+  "sounds": [
+   "tfclient:skills/cazador_bestias/samus_beast_slayer_slash_spin"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_circle_charge": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_circle_charge"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_dragon_summon": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_dragon_summon"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_charge": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_charge"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_barrage": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_barrage"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_strike": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_strike"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_dash": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_dash"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_slash_ult": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_slash_ult_0",
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_slash_ult_1"
+  ]
+ },
+ "skills.ronin_trueno.samus_thunder_ronin_thunder_slash": {
+  "sounds": [
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_slash_0",
+   "tfclient:skills/ronin_trueno/samus_thunder_ronin_thunder_slash_1"
+  ]
+ },
+ "skills.invocador.samus_summon_sound": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_summon_sound"
+  ]
+ },
+ "skills.invocador.samus_phoenix_summon": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_phoenix_summon"
+  ]
+ },
+ "skills.invocador.samus_phoenix_screech": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_phoenix_screech"
+  ]
+ },
+ "skills.invocador.samus_horse_summon": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_horse_summon"
+  ]
+ },
+ "skills.invocador.samus_horse_neigh": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_horse_neigh"
+  ]
+ },
+ "skills.invocador.samus_magical_blades_summon": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_magical_blades_summon"
+  ]
+ },
+ "skills.invocador.samus_magical_blades_shoot": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_magical_blades_shoot"
+  ]
+ },
+ "skills.invocador.samus_magical_blade_shoot_single": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_magical_blade_shoot_single"
+  ]
+ },
+ "skills.invocador.samus_guardian_defense": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_guardian_defense"
+  ]
+ },
+ "skills.invocador.samus_soul_strike_pierce": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_soul_strike_pierce"
+  ]
+ },
+ "skills.invocador.samus_soul_strike_2": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_soul_strike_2"
+  ]
+ },
+ "skills.invocador.samus_soul_strike_1": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_soul_strike_1"
+  ]
+ },
+ "skills.invocador.samus_phoenix_fire": {
+  "sounds": [
+   "tfclient:skills/invocador/samus_phoenix_fire"
+  ]
  }
 }

@@ -1,7 +1,8 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **9 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
-`claude/amazing-ritchie-68hm6n`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
+Última actualización: **10 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`. Rama de trabajo de **Skills** (sin
+fusionar todavía): `claude/admiring-pascal-q0szox` (antes `claude/amazing-wozniak-gtw9ll`, mismo historial); lo
+publicado está en `main`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -9,9 +10,155 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main` (último PR: #56); **nada a medias**, el árbol
-> está limpio. Última versión publicada del mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). La web no se tocó
-> en esta tanda.
+> **🚧 TRABAJO EN CURSO — Skills (TF Client 1.3.35+; checkpoint, si retomas sigue esto):**
+> Pedido del dueño (9 oct, noche): portar **~39 packs de skills** (clases de MMOCore / MythicLib / MythicMobs /
+> ModelEngine / ItemsAdder / MMOItems) «correctamente y sin errores»: modelos, animaciones, mecánicas, controles,
+> ilustraciones, sonidos, todo. En la web, **quitar «Tienda de monedas»** y poner una sección **«Skills»** bien hecha;
+> actualizar el pad y lo necesario. Los manda de 5 en 5 (comprados: **no subir los packs al repo**, solo lo convertido).
+> **Decisiones del dueño:** se consiguen **con dinero (Stripe) y con monedas** (las dos); se lanzan con **teclas propias
+> configurables** (Opciones › Controles); el **arma y la armadura del pack vienen con la skill** (vinculadas, como los
+> sets); cada jugador tiene **una sola clase** a la vez.
+> **Recibidos: 40 packs** (40 clases, ~280 skills; ver `tools/skills/inventario.py <carpeta>`), descomprimidos en el
+> scratch de la sesión `skills/` (el scratch es **de cada sesión**: en una nueva hay que pedirle los zips al dueño otra
+> vez; llegan a `/root/.claude/uploads/<sesión>/<prefijo>-<Pack>.zip`. Se descomprimen con `bsdtar -xf` (paquete
+> `libarchive-tools`, que también abre el `.rar`) en `<scratch>/skills/<Pack sin prefijo>/`, y los zips de dentro en una
+> carpeta con su nombre; con eso `build_skills.py` saca la tanda 1 **idéntica** a la del repo. El zip de
+> `samus2002_AWAKENED_ARCHER` trae dentro una copia exacta de `fire_katana`: bórrala, o el arquero cuenta 4 skills de más). Los primeros 25: Red-DragonPack, MAGEPACK-1.1 (.rar),
+> Glacia-v1.2, ZEPHYR-v1.3, samus2002_NECROMANCER, THORPACK-1.3, NULLPACK-1.1, samus2002_ARCTIC_KNIGHT,
+> RPG_Class_Series_Dragon_Warrior, samus2002_BLOODMOON_VAMPIRE, samus2002_SUMMONER_PACK_v1.7, samus2002_DEATH_KNIGHT,
+> RRPG_Void_Edge_Class_Full, PackClass_Magic_Lightning (zips dentro), LostAssets_ClassPack_04_Revenant,
+> LostAssets_OriginalClassPack_01_FrostSamurai, samus2002_AWAKENED_ASSASSIN, samus2002_HEROES_THUNDER_RONIN,
+> ModelFoundrys_Witch_Class, HEROES_WATER_SAMURAI, AWAKENED_WARRIOR, LostAssets_ClassPack_03_Paladin,
+> HEROES_FLAME_WARRIOR, samus2002_AWAKENED_ARCHER, fire_katana; y después: Lost_Loong-Cetus, samus2002_AWAKENED_MAGE,
+> Warrior_Class, samus2002_GALE_GLAIVE, Khans_RPG_Klasses (Archer, Mender, Rogue), samus2002_AWAKENED_MARTIAL_ARTIST,
+> _SHAMAN, samus2002_HEROES_BEAST_SLAYER, samus2002_AWAKENED_GUNSLINGER, _PYROMANCER, _CLERIC, _NECROMANCER, _SPIRITCALLER.
+> Formatos: clases MMOCore (`classes/*.yml` + `skills/*.yml` con nombre/lore/cooldown/maná) → MythicLib
+> (`mythicmobs-skill-id`) → árbol de MythicMobs; armas de MMOItems con `ability: {type, mode: LEFT_CLICK/RIGHT_CLICK/
+> SHIFT_*/SNEAK}`; VFX como mobs de ModelEngine (`.bbmodel`) o modelos de ítem (ItemsAdder/Nexo/«resourcepack»).
+> Mecánicas usadas (≈60): summon, state, changepart, model, aura, delay, projectile, missile, damage, potion, throw,
+> lunge, leap, orbital, totem, effect:sound/particles/particlering/particlesphere, teleport, heal, ignite, stun, pull,
+> velocity, equip, brightness, tint, partvis, setvariable, randomskill, sudoskill… (conteo en el commit del inventario).
+> **Plan** (marca [x] y haz commit+push como checkpoint):
+> - [x] Inventario automático de cada pack → `tools/skills/inventario.py` (valores con nivel al máximo: la clase se
+>       compra entera; pasivas TIMER/DAMAGED de MMOCore o MythicLib).
+> - [x] Compilador → `tools/skills/compile.py` (programa JSON por clase: skills, árbol de MythicMobs alcanzado,
+>       mobs/efectos, ítems; sigue `oH/oT/oE`, `castinstead/orElseCast`; valores sueltos como `delay 28` en `a._`).
+> - [x] Generador → `tools/skills/build_skills.py <scratch>/skills` (sin args = solo las clases de `TANDAS`; con
+>       `--todas` revisa los 40): `assets/tfclient/skills/classes/<id>.json` + `catalog.json`, modelos de ítem
+>       (`models/skills/`, `textures/skills/`, también los que genera ItemsAdder/Oraxen desde su config), modelos de
+>       ModelEngine (`skills/models/<clase>.<modelo>.json`, formato de `vfx_bb.py`), sonidos (`sounds/skills/`, eventos
+>       `tfclient:skills.<clase>.<x>` en sounds.json; si el pack no trae uno, el de otro pack o el vanilla más
+>       parecido) e iconos 32×32 (`textures/gui/skills/<clase>/<skill>.png`; si el pack no trae, se dibuja el efecto,
+>       `skills/jsonmodel.py`). `samus2002_NECROMANCER` no es clase (es un jefe): fuera. Magic Lightning: la versión
+>       «Skills_Untimate_V3 / config to Oraxen».
+> - [x] Motor en el mod (`skills/`, compila; **sin probar en juego**): `SkillDefs` (lee el jar), `SkillRuntime`
+>       (intérprete: delay, repeat, objetivos, condiciones con acciones, variables `SkillVars`), `SkillTargets`,
+>       `SkillConds`, `SkillMovers` (projectile/missile/totem/orbital), `SkillAuras`, `SkillFx` (partículas/sonidos por
+>       paquete), `SkillModels` (model/state/changepart/partvis/tint, disfraz en jugador, @modelpart), `SkillMotion`,
+>       `SkillActor` (los «mobs» de efecto NO son entidades: los lleva el servidor y los dibuja el cliente),
+>       `SkillServer` (una clase por jugador, `<mundo>/tfclient/skills.json`, config `config/tfclient/skills.json`,
+>       pasivas, `/tf web clases dar|lista|ver`, puente: campo `skills` [{uuid, clase, at}] en la respuesta del poll),
+>       `SkillClient` (dibuja actores: ítem en la cabeza como un soporte + modelos ME animados), `SkillHud` (columna a
+>       la derecha con iconos/teclas/cooldown; teclas R G Z X V B N M en Controles › «TF Skills»).
+> - [x] Simulador offline `tools/skills/sim.py <clase> [skill] [--webp carpeta]` / `--todas`: copia las reglas del
+>       motor Java (si cambias uno, cambia el otro), avisa de mecánicas/objetivos/condiciones/variables que faltan y
+>       saca WebP animados (Steve + 3 zombis, skins del client.jar vía `build_vfx.py`). Con las pasivas de la clase
+>       calienta 45 ticks antes; prueba cada variante del objeto de mano (Dragón Rojo) y se queda con la que más hace.
+>       Pasada a las 39 clases: 271 avisos, todos de tandas futuras (lista: `mmocantarget`, `settextdisplay`,
+>       `<modifier.damage>` sin valor, `setnodamageticks`, `modifyprojectile`, `slash`, `@variablelocation`,
+>       `@children`, `signal`, `setvarloc`, `@targetblock`, `@entitiesinworld`, `hastag`, `posearmorstand`…).
+>       La tanda 1 sale con 0 avisos.
+> - [x] Armas y armaduras de clase: `build_skills.py` genera un set `clase_<id>` (`skills/class_sets.json`, lo lee
+>       `TFSets` además de `tf_sets.json`; `SetDef.classId`): arma de MMOItems (sin la «shiny»), armadura de cuero
+>       con CustomModelData + capas de OptiFine CIT, cabeza, y los objetos de mano que mira la clase (Sacred Gear del
+>       Dragón Rojo y sus niveles s2/s3: `itemissimilar` / `equip …:HAND` → `SkillItems`). Se entregan vinculados al
+>       tener la clase (`equipo` en skills.json, una vez por clase) y se quitan al cambiar de clase.
+>       `/tf web clases equipo <jugador>` las vuelve a dar.
+> - [x] Motor ampliado: `ondamaged/onattack` (auras que multiplican el daño), `command{c="meg disguise X"}` → modelo
+>       en el jugador, objeto en la mano de los efectos (`hand`), etiquetas que no son variables (`<#FFAC00>`) se
+>       quedan, `oH/oT/oE`, `castinstead/orElseCast`. Bug arreglado: rutas del pack relativas (la carpeta `skills/`
+>       del scratch hacía que mobs/ítems contasen como skills).
+> - [x] Textos en español de la tanda 1: `tools/skills/es.json` (nombre, rol, descripción, color; nombre y
+>       descripción de cada skill) → `name_es/role_es/desc_es`, `name_es/desc_es` en el JSON de cada clase.
+> - [x] Bug (10 oct): las TargetConditions con `castinstead`/`orElseCast` se trataban como filtro (tiraban el
+>       objetivo). Ahora, por objetivo: si toca, ese objetivo va a la otra skill y los demás siguen
+>       (`SkillRuntime.runMeta` y `sim.py`). Antes `frost_beam` (Glacia) hacía 0 de daño y el martillo de Thor al
+>       volver se trataba a sí mismo como objetivo en vez de desaparecer.
+> - [x] **Las 39 clases** (10 oct): `build_skills.py` ya convierte todas (`TANDAS` con las 39; ids limpios en
+>       `CLASS_IDS`: `arquero`, `nigromante`, `vampiro`...). El pack `samus2002_NECROMANCER` es un **jefe** (mob con
+>       barra de jefe y fases), no una clase: fuera. Zips con copias dentro: `samus2002_AWAKENED_ARCHER` trae
+>       `fire katana` y `samus2002_AWAKENED_CLERIC` trae el Piromante entero: bórralas (son idénticas a sus packs).
+>       Motor ampliado (Java y `sim.py` igual): condiciones en línea de objetivos y proyectiles (`tc`/`hc`/`sc`),
+>       `sort`/`limit`, ~30 mecánicas nuevas (signal/onSignal, settextdisplay con la fuente de la clase, slash,
+>       polygon, chain, spin, hide, sendtitle, modifyprojectile, setvarloc, tags, stance, faction, gcd...), ~15
+>       objetivos (@children, @EntitiesInCone, @EntitiesInLine, @VariableLocation, @TargetBlock...), ~15 condiciones
+>       (mmocantarget, ischild, hastag, pitch, ismoving...), `origin=@Objetivo` en cualquier línea, `@forward{uel}`,
+>       proyectiles pegados al suelo (hugSurface), targetIsOrigin, onHitBlock, immuneDelay, orbitales con aura,
+>       auras de evento (onDamaged con cancelEvent/damageMods, onAttack, onSwing con clic al aire, onDeath),
+>       **esbirros** (`SkillMinions`: los mobs con IA del pack siguen al dueño, persiguen y atacan con sus skills),
+>       montar en un modelo (mountmodel), `onSummon`, `onSurface`, «Essentials» de la serie Awakened que le faltan
+>       a un pack (se cogen de otro). Errores que había: TIMER de las pasivas va en **ticks** (no segundos); solo
+>       las N primeras `passive-type` de una clase con N ranuras `<PASSIVE>` son pasivas (las demás, con tecla);
+>       acción `cast X` de las condiciones; variable sin poner = `UNDEFINED`; `isChild` = «tiene dueño».
+>       `sim.py --todas`: 0 problemas en las 39; `--trace` enseña por qué una skill no sale.
+> - [x] **Checkpoint 10 oct (tarde):**
+>       textos en español de las 39 (`tools/skills/es.json`); `tools/skills/check_assets.py` (sonidos, modelos de ítem
+>       y de ModelEngine con sus texturas, iconos, fuentes y partículas de 1.20.1: **0 fallos**); modelos rotos de los
+>       Khans (override malo → el del config); iconos de LostAssets sacados del modelo del mob que invocan; los
+>       esbirros pegan a otros actores cuando el pack lo pide (hitConditions con mythicmobtype); `START_VARS`
+>       (nigromante/invocador empiezan en postura «free»); **esbirros que no atacaban**: `setname{name=<target.name>}
+>       @owner` desde un esbirro le pone al esbirro el nombre del dueño (así encuentra el aura «<caster.name>TARGET»),
+>       y `<target.name>` de setname se resuelve por cada objetivo de la línea (Java `SkillVars.resolve` + `sim.py`).
+>       `sim.py` tiene ahora un muñeco cerca (2.3 bloques) para probar golpes cuerpo a cuerpo.
+>       Arreglos de motor de la otra sesión (commits `f2eb275`, `374b1e5`): `slash` con onHit (Katana de Fuego),
+>       condiciones `cast X` seguidas al compilar (Misil Arcano), la bala de un proyectil fuera de los selectores de
+>       área salvo por tipo, `vo` de proyectiles y gravedad (granizo de Glacia, lluvia de Null), Firestorm Volley con
+>       una pulsación, elixires de la Bruja, Cyclone Shot del arquero, offsets de @selflocation/@origin.
+>       Skills con daño 0 en el sim revisadas: son pasivas/buffs/posturas o necesitan otra skill antes (detalle en el
+>       PR borrador #58). Duda abierta: el Shift+clic derecho del Samurái de Escarcha (`leap` de MythicMobs) puede
+>       soltar el golpe en el aire; no se tocó (afectaría a 10 clases).
+> - [x] **TF Client 1.3.35 (10 oct)** — las 39 clases de Skills dentro. Revisión visual de las 39 hecha (hojas de 4
+>       fotogramas con `sim.py`): sin texturas rotas ni modelos que falten. Lo que se ve raro en las hojas y está
+>       bien: el cubo gris es la partícula `explosion` dibujada por el sim; la guadaña/lanza/dagas flotando sobre el
+>       jugador (Nigromante, Invocador de Espíritus, Vampiro) son el arma del combo del pack (orbital de radio 0).
+>       `sim --todas` 0 problemas (solo `vampiro bloodborne_blades` «no se lanza»: ya empiezas con hojas),
+>       `check_assets` 0 fallos, `check_mod_items` 0 errores. **No publicado todavía** (falta la web de Skills).
+>       **El jar ya pesa ~48 MB y el envío de archivos admite 30 MB.** El dueño prefiere **enlace directo**: el jar se
+>       sube a `descargas/` en la rama y se le da `https://github.com/modelqdeluxe-ops/ss/raw/<rama>/descargas/<jar>`
+>       (el repo es público; comprobar con `curl -sSL -o /dev/null -w '%{http_code} %{size_download}'`).
+> - [x] **Rechequeo a fondo + TF Client 1.3.36 (10 oct, noche)** — el dueño: «no quiero errores, son cosas que vamos
+>       a vender». Herramientas nuevas: `tools/skills/audit.py` (modelos de ítem con las reglas de 1.20.1, animaciones/
+>       huesos/piezas de ModelEngine que piden las skills y los mobs, texturas, cabeceras Ogg, textos; los 17 avisos
+>       son cosas que el pack trae así, listadas en `PACK_AS_IS`). En el scratch: `stress.py` (cada clase lanza todas
+>       sus skills 3 rondas con golpes), `flicker.py` (qué efecto se vuelve a crear en bucle con el jugador quieto),
+>       `residue.py` (lo que el compilador deja sin leer de cada línea de los .yml). Fallos encontrados y arreglados
+>       (Java y `sim.py` igual): condiciones compuestas `(A false || B) true` y `&&` se perdían (armas del Vampiro
+>       parpadeando, golpes de la Bruja); `mergeAll`/`mergeSameCaster` en órbitas (lanza del Invocador de Espíritus);
+>       renovar el aura de una órbita alarga la órbita (guardián del Invocador); el tope de 60 s ya no borra la bala de
+>       una órbita (guadañas fijas); `entitytype` sobre efectos mira el tipo del mob del pack; caras `#missing` fuera
+>       (Disparo de Dragón); `delay "<modifier.duration> * 20"` (Escudo Helado, Shadowquake); **parámetros de skill**
+>       (`skill{s=X;damage=<modifier.damage> * 0.4}` → `<skill.damage>` en X: los combos pegaban de más);
+>       `cooldown`/`cd` de cada línea; `pk`; **`@TargetedTarget` = el objetivo heredado** (en 13 packs el daño en área
+>       solo le llegaba al de la mira); los displays no salen en `@EIR/@ENO` salvo que se busquen por tipo;
+>       `@forward{ofowner}`, `targetSelf` (curas del Clérigo), `livingOnly`, `targetArmorStands`.
+> - [x] **Web: sección «Skills»** en lugar de «Tienda de monedas» (`tools/skills.py` → `config/skills.json` +
+>       `public/img/skills/`; precio **5,99 USD o 7.500 monedas** para todas, en `PRICE_CENTS`/`COIN_PRICE` al
+>       principio de `tools/skills.py`). Las monedas salen de la economía del pad (estimado: un jugador normal, 2 h/día,
+>       gana ~450/día con oficio ~160, misiones de oficio ~75, diarias del pad ~50, semanales ~25, cazas ~100, ventas
+>       ~50; uno activo 4 h ~1.000/día) → una clase en ~2 semanas jugando normal o ~1 semana activo; pagar es el atajo.
+>       Ojo: la venta de diamantes (40, tope 64/día) y chatarra de netherita (180, tope 16/día) deja sacar hasta ~5.400
+>       al día a quien farmee eso. Compra con Stripe/PayPal y con
+>       monedas (`tf web monedas quitar {player} N` por el puente); las clases compradas son para siempre y se elige
+>       la activa en la web (tabla `skill_active`); `/bridge/poll` manda `skills: [{uuid, clase, at}]`. Términos a
+>       versión 2026-10-10.1 (producto nuevo: todos vuelven a aceptarlos). El maná no se enseña (el mod no lo gasta).
+>       Vistas previas: `sim.py <clase> --webp <carpeta>` (de 2 en 2) y `python3 tools/skills.py --vistas <carpeta>
+>       --rehacer`. Las rutas `/api/coinshop` siguen. **Aviso**: vender ventaja de juego con dinero va contra las
+>       normas de Mojang; lo decidió el dueño.
+> - [ ] Pad: app/apartado de la clase y sus skills.
+> - [ ] Publicar por tandas, con vistas previas. Tanda 1: Glacia, Zephyr, Mago, Dragón Rojo, Thor.
+>
+> **Estado de `main` (9 oct 2026, noche):** último PR fusionado #56/#57. Última versión publicada del mod: **TF Client
+> 1.3.34** (la siguiente, con las Skills, será **1.3.35**). Lo de Skills de arriba está **a medias** en su rama.
 >
 > **Resumen rápido para la IA que siga (lo hecho hoy, de lo más nuevo a lo más viejo; detalle en las entregas abajo):**
 > - 1.3.34: Protección → AJUSTES como **preguntas con SÍ / NO** (el que vale, verde; el otro, gris). El dueño se quejó
@@ -33,7 +180,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > cuando esté terminado y probado: PR → squash merge → reiniciar la rama desde `origin/main` (force-with-lease) sin
 > pedir permiso; cada cambio del mod sube `mod_version` (gradle.properties) y `TFClient.VERSION`, se compila y se le
 > manda el `.jar` adjunto (y vistas previas del simulador si cambia algo visual). **Nunca** abrir el juego ni un
-> servidor. Secretos solo en Cloudflare. Rama de trabajo: `claude/amazing-ritchie-68hm6n`.
+> servidor. Secretos solo en Cloudflare. Rama de trabajo: la que te asigne tu sesión (Skills: ver arriba).
 >
 > **Checkpoints:** el dueño pidió (9 oct) que en trabajos largos se vaya apuntando el plan y el avance aquí arriba y se
 > haga commit + push a la rama de vez en cuando, para que otra IA pueda seguir sin perder nada.
@@ -1180,14 +1327,15 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
 
 - Habla con él **en español**, claro y sin rodeos. Es exigente y se enfada (con razón) si se repiten errores: lee bien
   lo que pide, haz exactamente eso y **no añadas cosas que no pidió**.
-- «dale, y no me pidas permiso para la otra»: cuando el trabajo esté terminado y probado, **fusionar y publicar sin
-  preguntar**. Flujo: PR en borrador → marcarlo listo → *squash merge* → reiniciar la rama:
+- «dale, y no me pidas permiso para la otra» y (10 oct) «nunca me pidas permiso, sube siempre a main todo para que se
+  actualice»: cuando el trabajo esté terminado y probado, **fusionar a `main` y publicar SIN PREGUNTAR NUNCA**. Flujo: PR en borrador → marcarlo listo → *squash merge* → reiniciar la rama:
   `git fetch origin main && git checkout -B claude/amazing-wozniak-gtw9ll origin/main && git push --force-with-lease -u origin claude/amazing-wozniak-gtw9ll`.
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
 - **Cada vez que cambie el mod**: subir la versión (mira la de «Estado al cierre», arriba) en `tf-client/gradle.properties`
-  (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
+  (`mod_version`) y en `TFClient.VERSION`, compilar y **darle el enlace directo de descarga** del `.jar` subido a
+  `descargas/` (pesa ~48 MB: más que el límite de 30 MB de los adjuntos; deja solo el último jar en `descargas/`).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
 - **Secretos** solo en Cloudflare (Secrets), **nunca** en el chat ni en git (lista en la sección 4).
@@ -1308,7 +1456,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.34)
+## 5. El mod (TF Client 1.3.36)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

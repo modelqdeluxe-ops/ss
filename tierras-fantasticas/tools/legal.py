@@ -93,15 +93,19 @@ cuenta por ti. Si un menor compró sin permiso, escríbenos y lo resolvemos (ver
     ('que-compras', 'Qué compras', '''
 <p>Lo que se vende en la tienda es <b>contenido digital para usar dentro de Tierras Fantásticas</b>: rangos (prefijo con
 color, rol de Discord y un set completo), cosméticos (piezas de aspecto: sombreros, mochilas, alas, globos y objetos de
-mano, que no cambian nada más) y crates (sets completos con armas, herramientas, armadura y cosméticos). Al
-comprar recibes un permiso de uso personal dentro del servidor:</p>
+mano, que no cambian nada más), crates (sets completos con armas, herramientas, armadura y cosméticos) y clases de
+skills (habilidades que se lanzan con teclas, con el arma y la armadura de la clase). Al comprar recibes un permiso de
+uso personal dentro del servidor:</p>
 <ul>
   <li>No es dinero, no tiene valor fuera del servidor y no se puede cambiar por dinero, revender ni pasar a otro
     jugador ni a otro servidor.</li>
   <li>Cada producto dice antes de pagar qué incluye exactamente. Las crates tienen un contenido fijo, sin nada al azar,
     y lo puedes ver completo (y probártelo en 3D) antes de comprar.</li>
-  <li>Las <b>monedas del servidor</b> solo se ganan jugando. La «Tienda de monedas» de la web se paga con esas monedas,
-    nunca con dinero.</li>
+  <li>Las <b>monedas del servidor</b> solo se ganan jugando y nunca se venden con dinero. Con ellas también se pueden
+    conseguir en la web las clases de skills; se cobran en el juego y, si no tienes bastantes, no se cobra nada.</li>
+  <li>Las <b>clases de skills</b> que consigues son tuyas para siempre, pero llevas <b>una sola a la vez</b>: eliges la
+    activa en la web y puedes cambiarla cuando quieras. Al cambiar de clase, el arma y la armadura de la anterior se
+    quitan y recibes las de la nueva.</li>
   <li>Las <b>recompensas gratis</b> se pueden reclamar una vez por jugador, con la cuenta iniciada.</li>
 </ul>'''),
 
@@ -149,7 +153,8 @@ pedido.</p>'''),
     pedido. Cuando una compra se reembolsa, el servidor retira automáticamente todo lo que se entregó con ella esté
     donde esté: inventario, cofre de ender, huecos de accesorios, cofres y demás contenedores (también dentro de cajas
     de shulker), marcos, soportes y el suelo; lo que esté en zonas sin cargar se retira en cuanto se cargan. Si la
-    compra era un rango, se quita el rango (o vuelves al que tenías si era una mejora) y sus roles de Discord.</li>
+    compra era un rango, se quita el rango (o vuelves al que tenías si era una mejora) y sus roles de Discord; si era una
+    clase de skills, deja de ser tuya (y, si era tu clase activa, se quita).</li>
   <li><b>En cualquier momento</b> te devolvemos el dinero si no recibimos la compra en el servidor, si se cobró dos veces
     o por error, o si un menor compró sin permiso de su madre, padre o tutor.</li>
   <li>Respondemos en un máximo de 5 días hábiles. El reembolso se hace por Stripe o PayPal al mismo medio de pago; tu banco puede

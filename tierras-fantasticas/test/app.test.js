@@ -1283,3 +1283,188 @@ test('el TF Pad: el armario y los VFX se cambian desde el juego y el puente lo g
   assert.ok(res.rankList.every((r) => Array.isArray(r.perks)));
   assert.ok(res.rankList.some((r) => r.perks.length > 0));
 });
+
+// --- Skills: clases del TF Client ---
+test('el catálogo de Skills: 39 clases con sus skills, iconos y vistas previas, y cada clase se vende como producto', async () => {
+  const fs = await import('node:fs');
+  const pub = new URL('../public/', import.meta.url);
+  const exists = (rel) => fs.existsSync(new URL(rel, pub));
+  const cat = await (await get('/api/skills')).json();
+  assert.strictEqual(cat.me, null);
+  assert.strictEqual(cat.classes.length, 39);
+  assert.deepStrictEqual(cat.keys, ['R', 'G', 'Z', 'X', 'V', 'B', 'N', 'M']);
+  assert.ok(Number.isInteger(cat.price) && cat.price >= 50 && Number.isInteger(cat.coinPrice) && cat.coinPrice > 0);
+  const groups = new Set(cat.groups.map((g) => g.id));
+  const ids = new Set();
+  for (const c of cat.classes) {
+    assert.match(c.id, /^[a-z_]+$/);
+    assert.ok(!ids.has(c.id), `clase repetida: ${c.id}`);
+    ids.add(c.id);
+    assert.ok(c.name && c.role && c.desc, c.id);
+    assert.match(c.color, /^#[0-9a-f]{6}$/i);
+    assert.ok(groups.has(c.group), `${c.id}: grupo ${c.group}`);
+    assert.ok(Number.isInteger(c.price) && c.price >= 50 && Number.isInteger(c.coinPrice) && c.coinPrice > 0, c.id);
+    assert.ok(c.icon && exists(c.icon), `${c.id}: falta el icono`);
+    assert.ok(c.skills.length >= 4, c.id);
+    // Las skills con tecla van en orden en la barra del mod; las pasivas no llevan tecla
+    const actives = c.skills.filter((s) => !s.passive);
+    assert.ok(actives.length >= 1 && actives.length <= 8, c.id);
+    actives.forEach((s, i) => {
+      assert.strictEqual(s.slot, i, `${c.id}/${s.id}`);
+      assert.strictEqual(s.key, cat.keys[i]);
+      assert.ok(s.cooldown >= 0.2, `${c.id}/${s.id}: cooldown`);
+    });
+    for (const s of c.skills) {
+      assert.ok(s.id && s.name && s.desc, `${c.id}/${s.id}`);
+      assert.ok(!s.passive || ['siempre', 'dano'].includes(s.passive), `${c.id}/${s.id}`);
+      assert.ok(typeof s.cooldown === 'number' && !('mana' in s)); // el mod no gasta maná: la web no lo enseña
+      assert.ok(s.icon && exists(s.icon), `${c.id}/${s.id}: falta el icono`);
+      if (s.preview) assert.ok(exists(s.preview), `${c.id}/${s.id}: falta la vista previa`);
+    }
+    assert.ok(c.skills.some((s) => s.preview), `${c.id}: ninguna vista previa`);
+  }
+  // En la lista de productos (sin comandos), con el mismo precio
+  const list = await (await get('/api/products')).json();
+  const skillProducts = list.filter((p) => p.category === 'skills');
+  assert.strictEqual(skillProducts.length, 39);
+  for (const p of skillProducts) {
+    const c = cat.classes.find((x) => x.id === p.skillClass);
+    assert.ok(c && p.id === `clase-${c.id}` && p.price === c.price && p.coinPrice === c.coinPrice && p.maxQuantity === 1, p.id);
+  }
+});
+
+test('Skills con Stripe: se paga, la clase es suya, pasa a ser la activa y el puente la manda al servidor', async () => {
+  received.length = 0;
+  await seen('Clase_MC');
+  const uuid = uuidOf('Clase_MC');
+  const cat = await (await get('/api/skills')).json();
+  const glacia = cat.classes.find((c) => c.id === 'glacia');
+
+  const id = await checkout({ productId: 'clase-glacia', username: 'Clase_MC' });
+  const session = sessionOf(id);
+  assert.strictEqual(session.amount_total, glacia.price);
+  assert.strictEqual(session.form['line_items[0][price_data][product_data][name]'], 'Clase Glacia');
+  const order = await pay(id);
+  assert.strictEqual(order.status, 'queued');
+  assert.strictEqual(order.kind, 'skills');
+  assert.strictEqual(order.product, 'Clase Glacia');
+
+  // El servidor recibe la clase activa del conectado (y una entrega sin comandos, solo para el anuncio)
+  const res = await (await poll(['Clase_MC'])).json();
+  assert.strictEqual(res.skills.length, 1);
+  const [entry] = res.skills;
+  assert.deepStrictEqual({ uuid: entry.uuid, clase: entry.clase }, { uuid, clase: 'glacia' });
+  assert.ok(Number.isInteger(entry.at) && entry.at > 0);
+  const [delivery] = res.deliveries;
+  assert.deepStrictEqual(delivery.commands, []);
+  assert.strictEqual(delivery.kind, 'skills');
+  assert.strictEqual(delivery.product, 'Clase Glacia');
+  await poll(['Clase_MC'], [{ id: delivery.id, ok: true }]);
+  assert.strictEqual((await (await get(`/api/order/${id}`)).json()).status, 'delivered');
+  // Si no está conectado no se manda nada
+  assert.deepStrictEqual((await (await poll(['Otro_MC'])).json()).skills, []);
+
+  // No se puede volver a comprar la misma clase (ni con dinero ni con monedas)
+  const quote = await (await get('/api/player/Clase_MC?product=clase-glacia')).json();
+  assert.match(quote.quote.blocked, /ya tiene la clase Glacia/);
+  const again = await post('/api/checkout', { acceptTerms: true, productId: 'clase-glacia', username: 'Clase_MC' });
+  assert.strictEqual(again.status, 409);
+  assert.strictEqual((await again.json()).code, 'owned');
+  const cookie = await register('Clase_MC');
+  assert.strictEqual((await post('/api/skills/coins', { id: 'glacia' }, cookie)).status, 409);
+  const mine = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
+  assert.deepStrictEqual({ owned: mine.owned, active: mine.active, pending: mine.pending }, { owned: ['glacia'], active: 'glacia', pending: [] });
+
+  // Un reembolso completo se la quita y el servidor recibe «sin clase» con una hora más nueva
+  await signedEvent({ type: 'charge.refunded', data: { object: { id: `ch_${id}`, payment_intent: sessionOf(id).payment_intent, refunded: true } } });
+  const after = (await (await poll(['Clase_MC'])).json()).skills;
+  assert.deepStrictEqual(after.map((s) => [s.uuid, s.clase]), [[uuid, null]]);
+  assert.ok(after[0].at > entry.at);
+  assert.deepStrictEqual((await (await get('/api/skills', { Cookie: cookie })).json()).me.owned, []);
+  assert.strictEqual(received.length, 0, 'la clase no se entrega con comandos');
+});
+
+test('Skills con monedas: se cobra en el juego con /tf web monedas quitar y, al confirmarlo, la clase es suya y activa', async () => {
+  // Sin cuenta, o con una clase que no existe, no
+  assert.strictEqual((await post('/api/skills/coins', { id: 'thor' })).status, 401);
+  const cookie = await register('Monedas_Skill');
+  const uuid = uuidOf('Monedas_Skill');
+  assert.strictEqual((await post('/api/skills/coins', { id: 'no_existe' }, cookie)).status, 400);
+  const thor = (await (await get('/api/skills')).json()).classes.find((c) => c.id === 'thor');
+
+  // Primer intento: no tiene bastantes monedas. No es suya y se puede volver a intentar.
+  let res = await post('/api/skills/coins', { id: 'thor' }, cookie);
+  assert.strictEqual(res.status, 200);
+  const first = (await res.json()).id;
+  assert.match(first, /^COIN[0-9A-F]{24}$/);
+  // Mientras está en cola no se puede pedir otra vez
+  assert.strictEqual((await post('/api/skills/coins', { id: 'thor' }, cookie)).status, 409);
+  assert.deepStrictEqual((await (await get('/api/skills', { Cookie: cookie })).json()).me.pending, ['thor']);
+  const [d1] = (await (await poll(['Monedas_Skill'])).json()).deliveries;
+  assert.deepStrictEqual(d1.commands, [`tf web monedas quitar {player} ${thor.coinPrice}`]);
+  assert.strictEqual(d1.kind, 'tienda-monedas');
+  await poll(['Monedas_Skill'], [{ id: d1.id, ok: false, error: 'Monedas_Skill no tiene bastantes monedas.' }]);
+  const failed = await (await get(`/api/order/${first}`)).json();
+  assert.strictEqual(failed.status, 'delivery_failed');
+  assert.strictEqual(failed.kind, 'skills');
+  assert.strictEqual(failed.coins, thor.coinPrice);
+  assert.match(failed.error, /bastantes monedas/);
+  let me = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
+  assert.deepStrictEqual([me.owned, me.active, me.pending], [[], null, []]);
+
+  // Segundo intento: el servidor cobra y lo confirma; en esa misma respuesta ya va la clase
+  const second = (await (await post('/api/skills/coins', { id: 'thor' }, cookie)).json()).id;
+  const [d2] = (await (await poll(['Monedas_Skill'])).json()).deliveries;
+  const ack = await (await poll(['Monedas_Skill'], [{ id: d2.id, ok: true }])).json();
+  assert.deepStrictEqual(ack.skills.map((s) => [s.uuid, s.clase]), [[uuid, 'thor']]);
+  const order = await (await get(`/api/order/${second}`)).json();
+  assert.deepStrictEqual([order.status, order.kind, order.product, order.coins], ['delivered', 'skills', 'Clase Thor', thor.coinPrice]);
+  me = (await (await get('/api/skills', { Cookie: cookie })).json()).me;
+  assert.deepStrictEqual([me.owned, me.active, me.pending], [['thor'], 'thor', []]);
+  assert.strictEqual((await post('/api/skills/coins', { id: 'thor' }, cookie)).status, 409);
+});
+
+test('Skills: con varias clases se elige la activa en la web (solo una) y el servidor recibe la última', async () => {
+  received.length = 0;
+  const cookie = await register('Varias_MC');
+  const uuid = uuidOf('Varias_MC');
+  assert.strictEqual((await post('/api/skills/active', { id: 'mago' })).status, 401);
+  // No se puede activar una que no tiene, ni una que no existe
+  assert.strictEqual((await post('/api/skills/active', { id: 'mago' }, cookie)).status, 403);
+  assert.strictEqual((await post('/api/skills/active', { id: 'nada' }, cookie)).status, 400);
+
+  // Compra Mago con dinero y Zephyr con monedas: la última comprada queda activa
+  await pay(await checkout({ productId: 'clase-mago', username: 'Varias_MC' }));
+  await post('/api/skills/coins', { id: 'zephyr' }, cookie);
+  const pending = (await (await poll(['Varias_MC'])).json()).deliveries;
+  const coin = pending.find((d) => d.kind === 'tienda-monedas');
+  const acks = pending.map((d) => ({ id: d.id, ok: true }));
+  let res = await (await poll(['Varias_MC'], acks)).json();
+  assert.deepStrictEqual(res.skills.map((s) => s.clase), ['zephyr']);
+  const t1 = res.skills[0].at;
+
+  // Cambia a Mago: una sola clase activa, con hora más nueva
+  let { me } = await (await post('/api/skills/active', { id: 'mago' }, cookie)).json();
+  assert.deepStrictEqual([me.owned.sort(), me.active], [['mago', 'zephyr'], 'mago']);
+  res = await (await poll(['Varias_MC'])).json();
+  assert.deepStrictEqual(res.skills.map((s) => [s.uuid, s.clase]), [[uuid, 'mago']]);
+  const t2 = res.skills[0].at;
+  assert.ok(t2 > t1);
+
+  // Una confirmación repetida del cobro de Zephyr (el mod la reenvía si se perdió) no la vuelve a activar
+  res = await (await poll(['Varias_MC'], [{ id: coin.id, ok: true }])).json();
+  assert.deepStrictEqual(res.skills.map((s) => [s.clase, s.at]), [['mago', t2]]);
+
+  // Quitar la clase: el servidor recibe null
+  ({ me } = await (await post('/api/skills/active', { id: null }, cookie)).json());
+  assert.strictEqual(me.active, null);
+  res = await (await poll(['Varias_MC'])).json();
+  assert.strictEqual(res.skills[0].clase, null);
+  assert.ok(res.skills[0].at > t2);
+  // Elegir la que ya está activa no cambia la hora (el servidor no la vuelve a aplicar)
+  await post('/api/skills/active', { id: 'zephyr' }, cookie);
+  const t3 = (await (await poll(['Varias_MC'])).json()).skills[0].at;
+  await post('/api/skills/active', { id: 'zephyr' }, cookie);
+  assert.strictEqual((await (await poll(['Varias_MC'])).json()).skills[0].at, t3);
+  assert.deepStrictEqual(received, []);
+});

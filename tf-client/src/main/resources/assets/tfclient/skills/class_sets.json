@@ -1,0 +1,802 @@
+{
+ "sets": [
+  {
+   "id": "clase_guerrero_despertado",
+   "name": "Awakened Warrior Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "guerrero_despertado",
+   "items": [
+    {
+     "id": "clase_guerrero_despertado_awakened_warrior_brutesword",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_guerrero_despertado_awakened_warrior_brutesword"
+   ]
+  },
+  {
+   "id": "clase_glacia",
+   "name": "Glacia",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "glacia",
+   "items": [
+    {
+     "id": "clase_glacia_scepter",
+     "type": "sword"
+    },
+    {
+     "id": "clase_glacia_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_glacia_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_glacia_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_glacia_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_glacia_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_glacia_scepter",
+    "clase_glacia_armor_helmet",
+    "clase_glacia_armor_chestplate",
+    "clase_glacia_armor_leggings",
+    "clase_glacia_armor_boots",
+    "clase_glacia_head"
+   ]
+  },
+  {
+   "id": "clase_guerrero_llama",
+   "name": "Flame Warrior Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "guerrero_llama",
+   "items": [
+    {
+     "id": "clase_guerrero_llama_flame_warrior_katana",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_guerrero_llama_flame_warrior_katana"
+   ]
+  },
+  {
+   "id": "clase_samurai_agua",
+   "name": "Water Samurai Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "samurai_agua",
+   "items": [
+    {
+     "id": "clase_samurai_agua_water_samurai_katana",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_samurai_agua_water_samurai_katana"
+   ]
+  },
+  {
+   "id": "clase_arquero",
+   "name": "Archer Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "arquero",
+   "items": [
+    {
+     "id": "clase_arquero_archer_swiftbow",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_arquero_archer_swiftbow"
+   ]
+  },
+  {
+   "id": "clase_sanador",
+   "name": "Mender",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "sanador",
+   "items": [
+    {
+     "id": "clase_sanador_mender_lifecane",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_sanador_mender_lifecane"
+   ]
+  },
+  {
+   "id": "clase_picaro",
+   "name": "Rogue",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "picaro",
+   "items": [
+    {
+     "id": "clase_picaro_rogue_dualdaggers",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_picaro_rogue_dualdaggers"
+   ]
+  },
+  {
+   "id": "clase_paladin",
+   "name": "LostAssets_ClassPack_03_Paladin",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "paladin",
+   "items": [
+    {
+     "id": "clase_paladin_lostassets_paladin",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_paladin_lostassets_paladin"
+   ]
+  },
+  {
+   "id": "clase_revenant",
+   "name": "LostAssets_ClassPack_04_Revenant",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "revenant",
+   "items": [
+    {
+     "id": "clase_revenant_lostassets_revenant",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_revenant_lostassets_revenant"
+   ]
+  },
+  {
+   "id": "clase_samurai_escarcha",
+   "name": "LostAssets_OriginalClassPack_01_FrostSamurai",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "samurai_escarcha",
+   "items": [
+    {
+     "id": "clase_samurai_escarcha_lostassetsoriginal_frostsamurai",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_samurai_escarcha_lostassetsoriginal_frostsamurai"
+   ]
+  },
+  {
+   "id": "clase_cetus",
+   "name": "Cetus",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "cetus",
+   "items": [],
+   "give": []
+  },
+  {
+   "id": "clase_mago",
+   "name": "Mage",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "mago",
+   "items": [
+    {
+     "id": "clase_mago_mage_staff",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_mago_mage_staff"
+   ]
+  },
+  {
+   "id": "clase_bruja",
+   "name": "The Threadweaver of Crawling Chaos",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "bruja",
+   "items": [],
+   "give": []
+  },
+  {
+   "id": "clase_null",
+   "name": "Null",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "null",
+   "items": [
+    {
+     "id": "clase_null_bow",
+     "type": "sword"
+    },
+    {
+     "id": "clase_null_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_null_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_null_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_null_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_null_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_null_bow",
+    "clase_null_armor_helmet",
+    "clase_null_armor_chestplate",
+    "clase_null_armor_leggings",
+    "clase_null_armor_boots",
+    "clase_null_head"
+   ]
+  },
+  {
+   "id": "clase_mago_rayo",
+   "name": "Mage-Lightning",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "mago_rayo",
+   "items": [
+    {
+     "id": "clase_mago_rayo_lightning_cast_1",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_cast_2",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_cast_3",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_cast_4",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_cast_5",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_cast_6",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_cast_7",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_wall_1",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_wall_2",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_wall_3",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_wall_4",
+     "type": "sword"
+    },
+    {
+     "id": "clase_mago_rayo_lightning_wall_5",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_mago_rayo_lightning_cast_1"
+   ]
+  },
+  {
+   "id": "clase_guerrero_dragon",
+   "name": "Dragon Warrior",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "guerrero_dragon",
+   "items": [
+    {
+     "id": "clase_guerrero_dragon_dragon_warrior_spear",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_guerrero_dragon_dragon_warrior_spear"
+   ]
+  },
+  {
+   "id": "clase_filo_vacio",
+   "name": "Void Edge",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "filo_vacio",
+   "items": [
+    {
+     "id": "clase_filo_vacio_void_edge_kattana",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_filo_vacio_void_edge_kattana"
+   ]
+  },
+  {
+   "id": "clase_dragon_rojo",
+   "name": "dragon",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "dragon_rojo",
+   "items": [
+    {
+     "id": "clase_dragon_rojo_sacred_gear",
+     "type": "sword"
+    },
+    {
+     "id": "clase_dragon_rojo_sacred_gear_s2",
+     "type": "sword"
+    },
+    {
+     "id": "clase_dragon_rojo_sacred_gear_s3",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_dragon_rojo_sacred_gear"
+   ]
+  },
+  {
+   "id": "clase_thor",
+   "name": "Thor",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "thor",
+   "items": [
+    {
+     "id": "clase_thor_hammer",
+     "type": "heavy"
+    },
+    {
+     "id": "clase_thor_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_thor_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_thor_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_thor_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_thor_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_thor_hammer",
+    "clase_thor_armor_helmet",
+    "clase_thor_armor_chestplate",
+    "clase_thor_armor_leggings",
+    "clase_thor_armor_boots",
+    "clase_thor_head"
+   ]
+  },
+  {
+   "id": "clase_guerrero",
+   "name": "Warrior Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "guerrero",
+   "items": [
+    {
+     "id": "clase_guerrero_warrior_battleblade",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_guerrero_warrior_battleblade"
+   ]
+  },
+  {
+   "id": "clase_zephyr",
+   "name": "Zephyr",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "zephyr",
+   "items": [
+    {
+     "id": "clase_zephyr_dagger",
+     "type": "sword"
+    },
+    {
+     "id": "clase_zephyr_armor_helmet",
+     "type": "armor",
+     "slot": "helmet"
+    },
+    {
+     "id": "clase_zephyr_armor_chestplate",
+     "type": "armor",
+     "slot": "chestplate"
+    },
+    {
+     "id": "clase_zephyr_armor_leggings",
+     "type": "armor",
+     "slot": "leggings"
+    },
+    {
+     "id": "clase_zephyr_armor_boots",
+     "type": "armor",
+     "slot": "boots"
+    },
+    {
+     "id": "clase_zephyr_head",
+     "type": "head"
+    }
+   ],
+   "give": [
+    "clase_zephyr_dagger",
+    "clase_zephyr_armor_helmet",
+    "clase_zephyr_armor_chestplate",
+    "clase_zephyr_armor_leggings",
+    "clase_zephyr_armor_boots",
+    "clase_zephyr_head"
+   ]
+  },
+  {
+   "id": "clase_katana_fuego",
+   "name": "fire_katana",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "katana_fuego",
+   "items": [
+    {
+     "id": "clase_katana_fuego_lostassetsanime_firekatana",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_katana_fuego_lostassetsanime_firekatana"
+   ]
+  },
+  {
+   "id": "clase_caballero_artico",
+   "name": "Arctic Knight Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "caballero_artico",
+   "items": [
+    {
+     "id": "clase_caballero_artico_frigid_lance_arctic_knight",
+     "type": "sword"
+    },
+    {
+     "id": "clase_caballero_artico_frigid_lance_arctic_knight_darkice",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_caballero_artico_frigid_lance_arctic_knight",
+    "clase_caballero_artico_frigid_lance_arctic_knight_darkice"
+   ]
+  },
+  {
+   "id": "clase_arquero_despertado",
+   "name": "Awakened Archer Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "arquero_despertado",
+   "items": [
+    {
+     "id": "clase_arquero_despertado_awakened_archer_galebow",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_arquero_despertado_awakened_archer_galebow"
+   ]
+  },
+  {
+   "id": "clase_asesino_despertado",
+   "name": "Awakened Assassin Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "asesino_despertado",
+   "items": [
+    {
+     "id": "clase_asesino_despertado_awakened_assassin_duskblade",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_asesino_despertado_awakened_assassin_duskblade"
+   ]
+  },
+  {
+   "id": "clase_clerigo_despertado",
+   "name": "Awakened Cleric Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "clerigo_despertado",
+   "items": [
+    {
+     "id": "clase_clerigo_despertado_awakened_cleric_faithcrusher",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_clerigo_despertado_awakened_cleric_faithcrusher"
+   ]
+  },
+  {
+   "id": "clase_pistolero_despertado",
+   "name": "Awakened Gunslinger Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "pistolero_despertado",
+   "items": [
+    {
+     "id": "clase_pistolero_despertado_awakened_gunslinger_doomblaster",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_pistolero_despertado_awakened_gunslinger_doomblaster"
+   ]
+  },
+  {
+   "id": "clase_mago_despertado",
+   "name": "Awakened Mage Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "mago_despertado",
+   "items": [
+    {
+     "id": "clase_mago_despertado_awakened_mage_runestaff",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_mago_despertado_awakened_mage_runestaff"
+   ]
+  },
+  {
+   "id": "clase_luchador_despertado",
+   "name": "Awakened Martial Artist Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "luchador_despertado",
+   "items": [
+    {
+     "id": "clase_luchador_despertado_awakened_martial_artist_tigerfist",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_luchador_despertado_awakened_martial_artist_tigerfist"
+   ]
+  },
+  {
+   "id": "clase_nigromante",
+   "name": "Awakened Necromancer Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "nigromante",
+   "items": [
+    {
+     "id": "clase_nigromante_awakened_necromancer_necrostaff",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_nigromante_awakened_necromancer_necrostaff"
+   ]
+  },
+  {
+   "id": "clase_piromante",
+   "name": "Awakened Pyromancer Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "piromante",
+   "items": [
+    {
+     "id": "clase_piromante_awakened_pyromancer_blazestaff",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_piromante_awakened_pyromancer_blazestaff"
+   ]
+  },
+  {
+   "id": "clase_chaman",
+   "name": "Awakened Shaman Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "chaman",
+   "items": [
+    {
+     "id": "clase_chaman_awakened_shaman_lifescepter",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_chaman_awakened_shaman_lifescepter"
+   ]
+  },
+  {
+   "id": "clase_invocador_espiritus",
+   "name": "Awakened Spiritcaller Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "invocador_espiritus",
+   "items": [
+    {
+     "id": "clase_invocador_espiritus_awakened_spiritcaller_animus",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_invocador_espiritus_awakened_spiritcaller_animus"
+   ]
+  },
+  {
+   "id": "clase_vampiro",
+   "name": "Bloodmoon Vampire Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "vampiro",
+   "items": [
+    {
+     "id": "clase_vampiro_bloodmoon_orb",
+     "type": "sword"
+    },
+    {
+     "id": "clase_vampiro_ethereal_orb",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_vampiro_bloodmoon_orb",
+    "clase_vampiro_ethereal_orb"
+   ]
+  },
+  {
+   "id": "clase_caballero_muerte",
+   "name": "Death Knight Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "caballero_muerte",
+   "items": [
+    {
+     "id": "clase_caballero_muerte_death_knight_necroslayer",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_caballero_muerte_death_knight_necroslayer"
+   ]
+  },
+  {
+   "id": "clase_guja_vendaval",
+   "name": "Gale Glaive Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "guja_vendaval",
+   "items": [
+    {
+     "id": "clase_guja_vendaval_windreaver_gale_glaive",
+     "type": "sword"
+    },
+    {
+     "id": "clase_guja_vendaval_windreaver_gale_glaive_ancient",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_guja_vendaval_windreaver_gale_glaive",
+    "clase_guja_vendaval_windreaver_gale_glaive_ancient"
+   ]
+  },
+  {
+   "id": "clase_cazador_bestias",
+   "name": "Beast Slayer Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "cazador_bestias",
+   "items": [
+    {
+     "id": "clase_cazador_bestias_katana_beast_slayer",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_cazador_bestias_katana_beast_slayer"
+   ]
+  },
+  {
+   "id": "clase_ronin_trueno",
+   "name": "Thunder Ronin Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "ronin_trueno",
+   "items": [
+    {
+     "id": "clase_ronin_trueno_thunder_ronin_katana",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_ronin_trueno_thunder_ronin_katana"
+   ]
+  },
+  {
+   "id": "clase_invocador",
+   "name": "Summoner Class",
+   "color": "#7fd3ff",
+   "tier": "netherite",
+   "clase": "invocador",
+   "items": [
+    {
+     "id": "clase_invocador_summoner_tome",
+     "type": "sword"
+    },
+    {
+     "id": "clase_invocador_summoner_tome",
+     "type": "sword"
+    }
+   ],
+   "give": [
+    "clase_invocador_summoner_tome",
+    "clase_invocador_summoner_tome"
+   ]
+  }
+ ]
+}

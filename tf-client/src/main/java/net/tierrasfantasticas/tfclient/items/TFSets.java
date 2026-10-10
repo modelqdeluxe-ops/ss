@@ -28,7 +28,7 @@ public final class TFSets {
 
     /** tier: nivel de atributos del set (ver TFTier). cosmetic: set de cosméticos (sus objetos no se vinculan, TFBinding). */
     public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime, TFTier tier,
-                         boolean cosmetic) {}
+                         boolean cosmetic, String classId) {}
 
     private static final Map<String, SetDef> SETS = new LinkedHashMap<>();
 
@@ -44,8 +44,16 @@ public final class TFSets {
 
     public static void load() {
         SETS.clear();
+        read("tf_sets.json");
+        // Las armas y armaduras de las clases de skills (tools/skills/build_skills.py)
+        read("skills/class_sets.json");
+        TFClient.LOGGER.info("TF Client: {} sets cargados", SETS.size());
+    }
+
+    private static void read(String file) {
         try {
-            Path path = ModList.get().getModFileById(TFClient.MOD_ID).getFile().findResource("assets", TFClient.MOD_ID, "tf_sets.json");
+            Path path = ModList.get().getModFileById(TFClient.MOD_ID).getFile().findResource(("assets/" + TFClient.MOD_ID + "/" + file).split("/"));
+            if (!Files.exists(path)) return;
             try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
                 for (JsonElement el : root.getAsJsonArray("sets")) {
@@ -67,12 +75,12 @@ public final class TFSets {
                             s.has("armorFrames") ? s.get("armorFrames").getAsInt() : 1,
                             s.has("armorFrametime") ? Math.max(1, s.get("armorFrametime").getAsInt()) : 2,
                             TFTier.parse(s.has("tier") ? s.get("tier").getAsString() : null),
-                            s.has("cosmetic") && s.get("cosmetic").getAsBoolean()));
+                            s.has("cosmetic") && s.get("cosmetic").getAsBoolean(),
+                            s.has("clase") ? s.get("clase").getAsString() : null));
                 }
             }
-            TFClient.LOGGER.info("TF Client: {} sets cargados", SETS.size());
         } catch (Exception e) {
-            TFClient.LOGGER.error("TF Client: no se pudo leer tf_sets.json", e);
+            TFClient.LOGGER.error("TF Client: no se pudo leer {}", file, e);
         }
     }
 }

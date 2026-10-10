@@ -12,13 +12,22 @@ Página web del servidor de Minecraft **Tierras Fantásticas** con tienda y pasa
   - **Inicio** (`/`): el emblema, el estado del servidor en vivo, la IP (clic para copiar), las cifras del servidor,
     tres pilares y cuatro crates.
   - **Tienda** (`/tienda`), con pestañas (`/tienda#crates` abre una directamente): **Recompensas gratis**, **Rangos**,
-    **Crates** y **Tienda de monedas**.
+    **Cosméticos**, **Crates**, **VFX** y **Skills**.
     - **Crates**: cada crate es un set completo (armas, herramientas, armadura y cosméticos) con contenido fijo y a la
       vista, sin nada al azar. La web no habla de sus atributos (los define el TF Client). Al tocarla se abre el **probador** (`/tienda#crates-oni`): tu personaje en 3D con tu skin y el set
       puesto; al tocar una pieza se ve suelta en 3D y se puede **equipar** o quitar.
-    - **Tienda de monedas**: objetos del servidor que se compran en la web con las monedas que se ganan jugando. La
-      llena el staff desde el juego (`/tf web tienda add <precio>`) y la web se actualiza sola. Al comprar, la web manda
-      `tf web tienda comprar <jugador> <id>`: el TF Client cobra las monedas y da el objeto.
+    - **Skills** (`/tienda#skills`, `/tienda#skills-<clase>` abre una): las 39 clases de skills del TF Client. Catálogo
+      en `config/skills.json`, generado con `python3 tools/skills.py` (lee `tf-client/.../skills/classes/*.json`, copia
+      los iconos y convierte las vistas previas de `tf-client/tools/skills/sim.py` a `public/img/skills/`; ver la
+      cabecera del script). **Precio** (el mismo para todas): `PRICE_CENTS` y `COIN_PRICE` al principio de
+      `tools/skills.py` (o `PRICE_OVERRIDES` por clase); después, `python3 tools/skills.py`. Cada clase es el producto
+      `clase-<id>`: con dinero, Stripe/PayPal como el resto; con monedas, `POST /api/skills/coins` crea un pedido `COIN…`
+      cuya entrega es `tf web monedas quitar {player} <precio>` (kind `tienda-monedas`): si el servidor lo confirma,
+      la clase es suya. Las compradas son del jugador para siempre; lleva **una activa** (tabla `skill_active`, se elige
+      con `POST /api/skills/active`; al comprar una pasa a ser la activa). El puente manda `skills: [{uuid, clase, at}]`
+      de los conectados (`clase` null = ninguna); el mod solo aplica un `at` más nuevo que el último.
+    - La **tienda de monedas** ya no tiene pestaña (octubre de 2026, la sustituye Skills). Sus rutas (`/api/coinshop`) y
+      el puente (`coinShop`) siguen funcionando por si vuelve.
     - **Retirado por las normas de Mojang** (octubre de 2026): la **ruleta** (premios al azar: se parece al juego de
       azar y daba objetos con ventaja) y la venta de **monedas con dinero**. Su código sigue en la web y en los tests
       (con productos de ejemplo en `test/retired-products.json`) por si algún día vuelven de forma permitida; en

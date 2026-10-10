@@ -1,0 +1,3014 @@
+{
+ "_leeme": "Generado por tools/skills.py (no lo edites a mano: cambia el script y vuelve a ejecutarlo).",
+ "price": 599,
+ "coinPrice": 7500,
+ "keys": [
+  "R",
+  "G",
+  "Z",
+  "X",
+  "V",
+  "B",
+  "N",
+  "M"
+ ],
+ "groups": [
+  {
+   "id": "cuerpo",
+   "name": "Cuerpo a cuerpo",
+   "color": "#ff7a4a"
+  },
+  {
+   "id": "magia",
+   "name": "Magia",
+   "color": "#b77dff"
+  },
+  {
+   "id": "distancia",
+   "name": "A distancia",
+   "color": "#9fd86b"
+  },
+  {
+   "id": "sigilo",
+   "name": "Sigilo",
+   "color": "#8a9bff"
+  },
+  {
+   "id": "invocacion",
+   "name": "Invocación",
+   "color": "#45e9c8"
+  },
+  {
+   "id": "apoyo",
+   "name": "Apoyo",
+   "color": "#ffd166"
+  }
+ ],
+ "classes": [
+  {
+   "id": "revenant",
+   "name": "Aparecido",
+   "role": "Espadachín · sombras",
+   "group": "cuerpo",
+   "desc": "Un espíritu vengativo con una hoja de sombras: tajos oscuros, embestidas y un cataclismo del abismo.",
+   "color": "#7e5bd6",
+   "icon": "img/skills/revenant/lostassets_revenant_lc.png",
+   "showcase": "lostassets_revenant_src",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "lostassets_revenant_lc",
+     "name": "Tajo Sombrío",
+     "desc": "Un tajo de sombras que hiere a los enemigos de delante.",
+     "cooldown": 0.4,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/revenant/lostassets_revenant_lc.png",
+     "preview": "img/skills/revenant/prev_lostassets_revenant_lc.webp"
+    },
+    {
+     "id": "lostassets_revenant_rc",
+     "name": "Embestida Oscura",
+     "desc": "Te lanzas hacia delante dejando cortes de sombra que hieren a todos los del camino.",
+     "cooldown": 3.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/revenant/lostassets_revenant_rc.png",
+     "preview": "img/skills/revenant/prev_lostassets_revenant_rc.webp"
+    },
+    {
+     "id": "lostassets_revenant_slc",
+     "name": "Hoja de Sombras",
+     "desc": "Invocas una hoja de sombras delante de ti que corta a los enemigos durante un rato.",
+     "cooldown": 5.5,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/revenant/lostassets_revenant_slc.png",
+     "preview": "img/skills/revenant/prev_lostassets_revenant_slc.webp"
+    },
+    {
+     "id": "lostassets_revenant_src",
+     "name": "Cataclismo del Abismo",
+     "desc": "Abres el abismo delante de ti: una zona de sombras que hiere sin parar a los enemigos que hay dentro.",
+     "cooldown": 16.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/revenant/lostassets_revenant_src.png",
+     "preview": "img/skills/revenant/prev_lostassets_revenant_src.webp"
+    }
+   ]
+  },
+  {
+   "id": "arquero",
+   "name": "Arquero",
+   "role": "Tirador · movilidad y lluvia de flechas",
+   "group": "distancia",
+   "desc": "Un arquero ágil que salta y planea por el aire, encadena flechas entre enemigos y hace llover proyectiles sobre el campo de batalla.",
+   "color": "#9fd86b",
+   "icon": "img/skills/arquero/archer_windwalker.png",
+   "showcase": "archer_rainofarrows",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "archer_windwalker",
+     "name": "Paso del Viento",
+     "desc": "Haz un doble salto y planea por el aire para cambiar de posición rápido y atacar desde arriba.",
+     "cooldown": 4.5,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/arquero/archer_windwalker.png",
+     "preview": "img/skills/arquero/prev_archer_windwalker.webp"
+    },
+    {
+     "id": "archer_quickshot",
+     "name": "Disparo Rápido",
+     "desc": "Dispara una flecha que salta a 2 enemigos cercanos. Cada 3 impactos ganas un breve acelerón.",
+     "cooldown": 0.2,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/arquero/archer_quickshot.png",
+     "preview": "img/skills/arquero/prev_archer_quickshot.webp"
+    },
+    {
+     "id": "archer_volleystep",
+     "name": "Paso de Andanada",
+     "desc": "Dispara 5 flechas en abanico. Con 3 cargas, disparas en ráfaga y el último tiro te impulsa hacia atrás para escapar.",
+     "cooldown": 0.2,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/arquero/archer_volleystep.png",
+     "preview": "img/skills/arquero/prev_archer_volleystep.webp"
+    },
+    {
+     "id": "archer_volleystep_stacks",
+     "name": "Cargas de Andanada",
+     "desc": "Pasiva: ganas 1 carga de Paso de Andanada cada 5 segundos (máximo 3).",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/arquero/archer_volleystep_stacks.png",
+     "preview": null
+    },
+    {
+     "id": "archer_rainofarrows",
+     "name": "Lluvia de Flechas",
+     "desc": "Marca el suelo y haz caer una lluvia de flechas que hiere y ralentiza a los enemigos de la zona.",
+     "cooldown": 5.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/arquero/archer_rainofarrows.png",
+     "preview": "img/skills/arquero/prev_archer_rainofarrows.webp"
+    },
+    {
+     "id": "archer_cyclone_shot",
+     "name": "Disparo Ciclón",
+     "desc": "Dispara una flecha que, al impactar, crea un remolino que arrastra a los enemigos hacia el centro.",
+     "cooldown": 5.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/arquero/archer_cyclone_shot.png",
+     "preview": "img/skills/arquero/prev_archer_cyclone_shot.webp"
+    },
+    {
+     "id": "archer_aeroglaive",
+     "name": "Aeroglaive",
+     "desc": "Una flecha poderosa que perfora el suelo al impactar y causa mucho daño en área. Se puede usar en el aire o en el suelo.",
+     "cooldown": 7.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/arquero/archer_aeroglaive.png",
+     "preview": "img/skills/arquero/prev_archer_aeroglaive.webp"
+    }
+   ]
+  },
+  {
+   "id": "arquero_despertado",
+   "name": "Arquero Despertado",
+   "role": "Tirador · combos y ráfagas perforantes",
+   "group": "distancia",
+   "desc": "Un arquero despertado que rueda entre disparos, lanza abanicos de flechas y libera tiros destructivos que atraviesan todo a su paso.",
+   "color": "#ffcf5a",
+   "icon": "img/skills/arquero_despertado/blasting_combo.png",
+   "showcase": "rapid_arrows",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "ambush",
+     "name": "Emboscada",
+     "desc": "Pasiva: tu primer golpe contra un enemigo nuevo hace un 50 % más de daño.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/arquero_despertado/ambush.png",
+     "preview": null
+    },
+    {
+     "id": "blasting_combo",
+     "name": "Combo Explosivo",
+     "desc": "Del primer al tercer golpe ruedas hacia donde te mueves y disparas una flecha; el cuarto es un salto con un tiro cargado que hace temblar el suelo donde cae.",
+     "cooldown": 0.3,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/arquero_despertado/blasting_combo.png",
+     "preview": "img/skills/arquero_despertado/prev_blasting_combo.webp"
+    },
+    {
+     "id": "evasive_shot",
+     "name": "Disparo Evasivo",
+     "desc": "Saltas hacia atrás disparando 2 flechas que se dividen, 3 veces seguidas.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/arquero_despertado/evasive_shot.png",
+     "preview": "img/skills/arquero_despertado/prev_evasive_shot.webp"
+    },
+    {
+     "id": "volley_of_arrows",
+     "name": "Andanada de Flechas",
+     "desc": "Disparas un abanico de flechas que empuja un poco; luego un tiro cargado más fuerte que agrieta el suelo, empuja y aturde.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/arquero_despertado/volley_of_arrows.png",
+     "preview": "img/skills/arquero_despertado/prev_volley_of_arrows.webp"
+    },
+    {
+     "id": "piercing_skyfall",
+     "name": "Lluvia Perforante",
+     "desc": "Disparas varias flechas al cielo y cae una lluvia de flechas en línea recta hacia delante que atraviesa a todos los enemigos.",
+     "cooldown": 6.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/arquero_despertado/piercing_skyfall.png",
+     "preview": "img/skills/arquero_despertado/prev_piercing_skyfall.webp"
+    },
+    {
+     "id": "rapid_arrows",
+     "name": "Flechas Veloces",
+     "desc": "Disparas 5 flechas seguidas y, tras una pausa, 3 flechas fuertes que atraviesan a los enemigos.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/arquero_despertado/rapid_arrows.png",
+     "preview": "img/skills/arquero_despertado/prev_rapid_arrows.webp"
+    },
+    {
+     "id": "shot_of_destruction",
+     "name": "Disparo de Destrucción",
+     "desc": "Concentras la energía en la punta de la flecha y disparas una ráfaga destructiva que arrasa todo lo que encuentra.",
+     "cooldown": 11.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/arquero_despertado/shot_of_destruction.png",
+     "preview": "img/skills/arquero_despertado/prev_shot_of_destruction.webp"
+    }
+   ]
+  },
+  {
+   "id": "asesino_despertado",
+   "name": "Asesino Despertado",
+   "role": "Asesino · sombras y críticos",
+   "group": "sigilo",
+   "desc": "Un asesino de las sombras: se vuelve invisible, atraviesa a sus enemigos con dagas y shuriken y acaba con ellos en una danza de cuchillas.",
+   "color": "#b46bff",
+   "icon": "img/skills/asesino_despertado/lethal_combo.png",
+   "showcase": "last_dance",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "deadly_calm",
+     "name": "Calma Mortal",
+     "desc": "Pasiva: si te quedas quieto 3 segundos ganas Concentración: tu siguiente skill es crítica segura y hace el doble de daño.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/asesino_despertado/deadly_calm.png",
+     "preview": "img/skills/asesino_despertado/prev_deadly_calm.webp"
+    },
+    {
+     "id": "lethal_combo",
+     "name": "Combo Letal",
+     "desc": "Una cadena de cuchilladas: un tajo, un tajo con giro doble, un paso atrás con estocada en carrera y, por último, una daga lanzada al suelo que estalla en un doble tajo.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/asesino_despertado/lethal_combo.png",
+     "preview": "img/skills/asesino_despertado/prev_lethal_combo.webp"
+    },
+    {
+     "id": "ravaging_dash",
+     "name": "Embestida Devastadora",
+     "desc": "Cargas la hoja de sombras y recorres una gran distancia de un salto, cortando varias veces a todos los enemigos del camino.",
+     "cooldown": 3.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/asesino_despertado/ravaging_dash.png",
+     "preview": "img/skills/asesino_despertado/prev_ravaging_dash.webp"
+    },
+    {
+     "id": "death_bloom",
+     "name": "Flor de la Muerte",
+     "desc": "Un vórtice de sombras atrae a los enemigos y desapareces; poco después desatas una lluvia de tajos con mucho daño en área.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/asesino_despertado/death_bloom.png",
+     "preview": "img/skills/asesino_despertado/prev_death_bloom.webp"
+    },
+    {
+     "id": "shadowquake",
+     "name": "Terremoto de Sombras",
+     "desc": "Te vuelves invisible y muy rápido durante unos segundos. Tu siguiente ataque acaba con el efecto y lanza un tajo de onda que hiere y aturde a los de delante.",
+     "cooldown": 10.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/asesino_despertado/shadowquake.png",
+     "preview": "img/skills/asesino_despertado/prev_shadowquake.webp"
+    },
+    {
+     "id": "crimson_arc",
+     "name": "Arco Carmesí",
+     "desc": "Das un paso atrás y lanzas 3 shuriken de sombras en abanico que vuelven a ti, atravesando a todos los enemigos.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/asesino_despertado/crimson_arc.png",
+     "preview": "img/skills/asesino_despertado/prev_crimson_arc.webp"
+    },
+    {
+     "id": "last_dance",
+     "name": "Última Danza",
+     "desc": "Haces girar hojas de sombras a tu alrededor y las lanzas en todas direcciones; luego levantas a los enemigos cercanos, los acuchillas en el aire con tus sombras y los atraviesas con una última embestida.",
+     "cooldown": 13.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/asesino_despertado/last_dance.png",
+     "preview": "img/skills/asesino_despertado/prev_last_dance.webp"
+    }
+   ]
+  },
+  {
+   "id": "bruja",
+   "name": "Bruja Tejedora",
+   "role": "Hechicera · caos y maldiciones",
+   "group": "magia",
+   "desc": "La Tejedora del Caos Reptante: teje hilos de sangre de los Dioses Exteriores, lanza sigilos malditos, cuervos y elixires inestables, y potencia sus hechizos dentro de su círculo ritual.",
+   "color": "#7a3cff",
+   "icon": "img/skills/bruja/mf_witch_sigil_volley.png",
+   "showcase": "mf_witch_spell_circle",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "mf_witch_thread_of_crawling_chaos",
+     "name": "Hilo del Caos Reptante",
+     "desc": "Pasiva: guardas hasta 8 de energía del Caos Reptante. Cada impacto de un sigilo te devuelve 0,5; tus otros hechizos gastan de esa reserva.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/bruja/mf_witch_thread_of_crawling_chaos.png",
+     "preview": null
+    },
+    {
+     "id": "mf_witch_sigil_volley",
+     "name": "Andanada de Sigilos",
+     "desc": "Lanza tres sigilos malditos que estallan al impactar y te devuelven energía. Dentro del Círculo de Hechizos son cinco.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/bruja/mf_witch_sigil_volley.png",
+     "preview": "img/skills/bruja/prev_mf_witch_sigil_volley.webp"
+    },
+    {
+     "id": "mf_witch_crow_hex",
+     "name": "Maleficio del Cuervo",
+     "desc": "Un cuervo espectral persigue a tu enemigo y lo marca con un presagio maldito. Si vuelves a golpear al marcado, el cuervo estalla y deja una zona que lo corrompe poco a poco.",
+     "cooldown": 5.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/bruja/mf_witch_crow_hex.png",
+     "preview": "img/skills/bruja/prev_mf_witch_crow_hex.webp"
+    },
+    {
+     "id": "mf_witch_spell_circle",
+     "name": "Círculo de Hechizos",
+     "desc": "Un círculo ritual de sangre y locura: mientras estés dentro, tus hechizos se vuelven más terribles. Gasta 8 de energía.",
+     "cooldown": 0.2,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/bruja/mf_witch_spell_circle.png",
+     "preview": "img/skills/bruja/prev_mf_witch_spell_circle.webp"
+    },
+    {
+     "id": "mf_witch_eldritch_elixirs",
+     "name": "Elixires Arcanos",
+     "desc": "Lanzas tres elixires inestables al azar (fuego, hielo, arcano o caos) mientras saltas hacia atrás. Dentro del círculo, el tiempo de espera se reduce a la mitad.",
+     "cooldown": 0.2,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/bruja/mf_witch_eldritch_elixirs.png",
+     "preview": "img/skills/bruja/prev_mf_witch_eldritch_elixirs.webp"
+    },
+    {
+     "id": "mf_witch_doomspike",
+     "name": "Lanza Funesta",
+     "desc": "Invocas tres lanzas abisales que se arrojan una tras otra, hieren y empujan. Dentro del círculo, cada golpe hace llover lanzas alrededor del objetivo y lo inmoviliza.",
+     "cooldown": 0.2,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/bruja/mf_witch_doomspike.png",
+     "preview": "img/skills/bruja/prev_mf_witch_doomspike.webp"
+    },
+    {
+     "id": "mf_witch_abyssal_crucible",
+     "name": "Crisol Abisal",
+     "desc": "Invocas un crisol abisal sobre tu objetivo que atrae y hiere sin parar a los enemigos cercanos. Si le aciertas con un elixir, estalla y corrompe la zona.",
+     "cooldown": 0.2,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/bruja/mf_witch_abyssal_crucible.png",
+     "preview": "img/skills/bruja/prev_mf_witch_abyssal_crucible.webp"
+    }
+   ]
+  },
+  {
+   "id": "caballero_muerte",
+   "name": "Caballero de la Muerte",
+   "role": "Guerrero · necrosis y ejecución",
+   "group": "cuerpo",
+   "desc": "Un caballero no muerto con alas de muerte: encadena a sus enemigos, los arrastra y ejecuta a quien lleva el sello maldito completo.",
+   "color": "#3fe0b0",
+   "icon": "img/skills/caballero_muerte/death_strike_st.png",
+   "showcase": "death_sentence",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "cursed_seal",
+     "name": "Sello Maldito",
+     "desc": "Pasiva: tus golpes ponen un sello maldito que se carga hasta 4 veces; al completarse, el enemigo queda debilitado.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/caballero_muerte/cursed_seal.png",
+     "preview": null
+    },
+    {
+     "id": "death_strike_st",
+     "name": "Golpe Mortal",
+     "desc": "Un tajo que empuja; a la tercera lanzas cadenas que te llevan hasta donde se enganchan y a la cuarta golpeas el suelo con una enorme onda necrótica.",
+     "cooldown": 0.3,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/caballero_muerte/death_strike_st.png",
+     "preview": "img/skills/caballero_muerte/prev_death_strike_st.webp"
+    },
+    {
+     "id": "phantom_charge",
+     "name": "Carga Fantasma",
+     "desc": "Despliegas tus alas de muerte y cargas hacia delante con una fuerza arrolladora, arrastrando a los enemigos que pillas.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/caballero_muerte/phantom_charge.png",
+     "preview": "img/skills/caballero_muerte/prev_phantom_charge.webp"
+    },
+    {
+     "id": "wraithbound_chains",
+     "name": "Cadenas Espectrales",
+     "desc": "Lanzas cadenas de muerte que atan a los enemigos y los arrastran hacia ti mientras unas manos necróticas los agarran y aturden.",
+     "cooldown": 6.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/caballero_muerte/wraithbound_chains.png",
+     "preview": "img/skills/caballero_muerte/prev_wraithbound_chains.webp"
+    },
+    {
+     "id": "soul_barrier",
+     "name": "Barrera de Almas",
+     "desc": "Una barrera de energía necrótica te hace invulnerable unos segundos y convierte el daño que recibes en curación.",
+     "cooldown": 14.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/caballero_muerte/soul_barrier.png",
+     "preview": "img/skills/caballero_muerte/prev_soul_barrier.webp"
+    },
+    {
+     "id": "necrotic_whirlwind",
+     "name": "Torbellino Necrótico",
+     "desc": "Haces girar tu guadaña en un vórtice que levanta a los enemigos; al acabar, unas garras necróticas los cortan y te curas según a cuántos golpees.",
+     "cooldown": 7.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/caballero_muerte/necrotic_whirlwind.png",
+     "preview": "img/skills/caballero_muerte/prev_necrotic_whirlwind.webp"
+    },
+    {
+     "id": "death_sentence",
+     "name": "Sentencia de Muerte",
+     "desc": "Despliegas las alas, subes al cielo y eliges una zona; te lanzas en picado cortando a todos con tu hoja de almas. Los que tengan el sello maldito completo mueren al instante.",
+     "cooldown": 7.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/caballero_muerte/death_sentence.png",
+     "preview": "img/skills/caballero_muerte/prev_death_sentence.webp"
+    }
+   ]
+  },
+  {
+   "id": "caballero_artico",
+   "name": "Caballero Ártico",
+   "role": "Lancero · hielo y control",
+   "group": "cuerpo",
+   "desc": "Un caballero de los hielos con lanza y escudo: congela, empala y clava a sus enemigos al suelo helado.",
+   "color": "#8fe3ff",
+   "icon": "img/skills/caballero_artico/frost_strike.png",
+   "showcase": "arctic_charge",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "frostbite",
+     "name": "Congelación",
+     "desc": "Pasiva: tus skills tienen un 20 % de probabilidad de congelar a los enemigos que golpean, que reciben daño durante un rato.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/caballero_artico/frostbite.png",
+     "preview": null
+    },
+    {
+     "id": "frost_strike",
+     "name": "Golpe Gélido",
+     "desc": "Golpeas con tu lanza helada; cada tercer golpe es un golpe al suelo que abre un cráter de hielo y lanza a los enemigos por los aires.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/caballero_artico/frost_strike.png",
+     "preview": "img/skills/caballero_artico/prev_frost_strike.webp"
+    },
+    {
+     "id": "glacial_impalement",
+     "name": "Empalamiento Glacial",
+     "desc": "Invocas tu lanza y apuntas; a los 3 segundos sale disparada a toda velocidad atravesando a todos los enemigos.",
+     "cooldown": 4.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/caballero_artico/glacial_impalement.png",
+     "preview": "img/skills/caballero_artico/prev_glacial_impalement.webp"
+    },
+    {
+     "id": "arctic_charge",
+     "name": "Carga Ártica",
+     "desc": "Cargas hacia delante con el espíritu del lobo ártico, lanzando atrás a los enemigos y dejando un rastro de hielo que hiere y ralentiza.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/caballero_artico/arctic_charge.png",
+     "preview": "img/skills/caballero_artico/prev_arctic_charge.webp"
+    },
+    {
+     "id": "glacier_smash",
+     "name": "Impacto Glaciar",
+     "desc": "Saltas y caes con fuerza abriendo un gran cráter de hielo que congela por completo a los enemigos de la zona.",
+     "cooldown": 5.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/caballero_artico/glacier_smash.png",
+     "preview": "img/skills/caballero_artico/prev_glacier_smash.webp"
+    },
+    {
+     "id": "frozen_shield",
+     "name": "Escudo Congelado",
+     "desc": "Invocas tu escudo helado, que frena a los enemigos y bloquea proyectiles; después lo empujas hacia delante derribándolos.",
+     "cooldown": 8.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/caballero_artico/frozen_shield.png",
+     "preview": "img/skills/caballero_artico/prev_frozen_shield.webp"
+    },
+    {
+     "id": "permafrost_lance",
+     "name": "Lanza de Permafrost",
+     "desc": "Dos tajos que empujan, un tercero que lanza por los aires y un último golpe que clava a los enemigos al suelo, congelados mucho tiempo.",
+     "cooldown": 8.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/caballero_artico/permafrost_lance.png",
+     "preview": "img/skills/caballero_artico/prev_permafrost_lance.webp"
+    }
+   ]
+  },
+  {
+   "id": "cazador_bestias",
+   "name": "Cazador de Bestias",
+   "role": "Guerrero · dos hojas y sangrado",
+   "group": "cuerpo",
+   "desc": "Un cazador salvaje con dos hojas: encadena cortes, desgarra a sus presas, las deja sangrando y arrasa con cargas imparables.",
+   "color": "#e0573d",
+   "icon": "img/skills/cazador_bestias/slice_n_dice.png",
+   "showcase": "explosive_rush",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "spatial_awareness",
+     "name": "Percepción Espacial",
+     "desc": "Pasiva: detecta a los enemigos a 15 bloques y los resalta.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/cazador_bestias/spatial_awareness.png",
+     "preview": null
+    },
+    {
+     "id": "slice_n_dice",
+     "name": "Corte y Trinchado",
+     "desc": "Una cadena rápida de cortes: tajos con giro doble, tres cortes seguidos con las dos hojas y, al final, una estocada en carrera con un tajo hacia arriba y otro hacia abajo.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/cazador_bestias/slice_n_dice.png",
+     "preview": "img/skills/cazador_bestias/prev_slice_n_dice.webp"
+    },
+    {
+     "id": "devour",
+     "name": "Devorar",
+     "desc": "Dos tajos horizontales a la vez que desgarran con fuerza salvaje y te curan.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/cazador_bestias/devour.png",
+     "preview": "img/skills/cazador_bestias/prev_devour.webp"
+    },
+    {
+     "id": "palisade_bite",
+     "name": "Mordisco de Empalizada",
+     "desc": "Te lanzas sobre los enemigos y los enganchas con las dos hojas; luego saltas atrás arrancándolas y los dejas sangrando.",
+     "cooldown": 2.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/cazador_bestias/palisade_bite.png",
+     "preview": "img/skills/cazador_bestias/prev_palisade_bite.webp"
+    },
+    {
+     "id": "sudden_throwing_strike",
+     "name": "Lanzamiento Súbito",
+     "desc": "Lanzas tus dos hojas girando contra un enemigo; vuelven a ti al poco rato.",
+     "cooldown": 1.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/cazador_bestias/sudden_throwing_strike.png",
+     "preview": "img/skills/cazador_bestias/prev_sudden_throwing_strike.webp"
+    },
+    {
+     "id": "crazy_cutting",
+     "name": "Corte Frenético",
+     "desc": "Saltas y cortas en todas direcciones en el aire, y vuelves a hacerlo mientras caes al suelo.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/cazador_bestias/crazy_cutting.png",
+     "preview": "img/skills/cazador_bestias/prev_crazy_cutting.webp"
+    },
+    {
+     "id": "explosive_rush",
+     "name": "Embestida Explosiva",
+     "desc": "Una onda a tus pies y cargas contra el enemigo a una velocidad cegadora, sin que nada te frene; luego tres acometidas seguidas que cortan y hacen sangrar a todos los del camino.",
+     "cooldown": 7.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/cazador_bestias/explosive_rush.png",
+     "preview": "img/skills/cazador_bestias/prev_explosive_rush.webp"
+    }
+   ]
+  },
+  {
+   "id": "cetus",
+   "name": "Cetus",
+   "role": "Espadón de agua · dragón loong",
+   "group": "cuerpo",
+   "desc": "El Loong Perdido: un guerrero con un espadón de agua que invoca a un dragón de agua para cargar, girar y arrasar con olas.",
+   "color": "#3fb3ff",
+   "icon": "img/skills/cetus/cetus_slash.png",
+   "showcase": "cetus_dragon_surge",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "cetus_slash",
+     "name": "Tajo de Agua",
+     "desc": "Un combo de 5 golpes con el espadón: dos tajos, uno hacia arriba, un golpe al suelo y un doble tajo saltando.",
+     "cooldown": 0.4,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/cetus/cetus_slash.png",
+     "preview": "img/skills/cetus/prev_cetus_slash.webp"
+    },
+    {
+     "id": "cetus_dragoncharge",
+     "name": "Carga del Loong",
+     "desc": "Invocas un loong de agua y cargas con él; después caes lentamente un momento.",
+     "cooldown": 3.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/cetus/cetus_dragoncharge.png",
+     "preview": "img/skills/cetus/prev_cetus_dragoncharge.webp"
+    },
+    {
+     "id": "cetus_dragonwhirl",
+     "name": "Remolino del Loong",
+     "desc": "Un enorme loong de agua aparece delante y ataca una gran zona con chorros de agua y un golpe contra el suelo.",
+     "cooldown": 6.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/cetus/cetus_dragonwhirl.png",
+     "preview": "img/skills/cetus/prev_cetus_dragonwhirl.webp"
+    },
+    {
+     "id": "cetus_greatsword",
+     "name": "Ola del Espadón",
+     "desc": "Un espadón de agua ataca delante y despliega ondas circulares (3 veces) que ralentizan a los enemigos que están dentro.",
+     "cooldown": 21.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/cetus/cetus_greatsword.png",
+     "preview": "img/skills/cetus/prev_cetus_greatsword.webp"
+    },
+    {
+     "id": "cetus_parry",
+     "name": "Parada",
+     "desc": "Levantas un espadón de agua que bloquea los ataques 3 segundos; después lo blandes y salen olas a los lados que ralentizan y debilitan.",
+     "cooldown": 12.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/cetus/cetus_parry.png",
+     "preview": "img/skills/cetus/prev_cetus_parry.webp"
+    },
+    {
+     "id": "cetus_dragon_surge",
+     "name": "Oleada del Loong",
+     "desc": "El combo con el poder del loong: los tajos llevan al dragón, el tercero sube con olas y el último es una carga con el dragón que deja olas a su paso.",
+     "cooldown": 30.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/cetus/cetus_dragon_surge.png",
+     "preview": "img/skills/cetus/prev_cetus_dragon_surge.webp"
+    }
+   ]
+  },
+  {
+   "id": "chaman",
+   "name": "Chamán Despertado",
+   "role": "Soporte · trueno y tierra",
+   "group": "apoyo",
+   "desc": "Un chamán que cambia entre la postura del Trueno (ataque) y la de la Tierra (curación y protección), con tótems, raíces y manos ancestrales.",
+   "color": "#ffd24a",
+   "icon": "img/skills/chaman/primal_combo.png",
+   "showcase": "earthen_embrace",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "soul_link",
+     "name": "Vínculo de Almas",
+     "desc": "Pasiva: te vinculas con el aliado más cercano. En Trueno le das fuerza; en Tierra lo vas curando.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/chaman/soul_link.png",
+     "preview": "img/skills/chaman/prev_soul_link.webp"
+    },
+    {
+     "id": "primal_combo",
+     "name": "Combo Primigenio",
+     "desc": "En Trueno: rayos hacia delante, un rayo continuo y uno que cae donde miras. En Tierra: rayos que curan a los aliados.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/chaman/primal_combo.png",
+     "preview": "img/skills/chaman/prev_primal_combo.webp"
+    },
+    {
+     "id": "echo_step",
+     "name": "Paso del Eco",
+     "desc": "Entras en forma de espíritu y te deslizas rápido hacia donde te mueves durante 2 segundos, sin recibir daño.",
+     "cooldown": 4.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/chaman/echo_step.png",
+     "preview": "img/skills/chaman/prev_echo_step.webp"
+    },
+    {
+     "id": "ritual_totem",
+     "name": "Tótem Ritual",
+     "desc": "En Trueno: un tótem cazador que dispara espíritus a los enemigos. En Tierra: un tótem guardián con un escudo que no deja entrar a enemigos y cura a los aliados.",
+     "cooldown": 11.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/chaman/ritual_totem.png",
+     "preview": "img/skills/chaman/prev_ritual_totem.webp"
+    },
+    {
+     "id": "stance_switch",
+     "name": "Cambio de Postura",
+     "desc": "Cambias entre la postura del Trueno y la de la Tierra.",
+     "cooldown": 1.7,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/chaman/stance_switch.png",
+     "preview": "img/skills/chaman/prev_stance_switch.webp"
+    },
+    {
+     "id": "earthen_embrace",
+     "name": "Abrazo Terrestre",
+     "desc": "Unas raíces brotan bajo hasta 5 enemigos cercanos y los atrapan 2,5 segundos.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/chaman/earthen_embrace.png",
+     "preview": "img/skills/chaman/prev_earthen_embrace.webp"
+    },
+    {
+     "id": "ancestral_hands",
+     "name": "Manos Ancestrales",
+     "desc": "En Trueno: manos de espíritu golpean el suelo, lanzan por los aires y aturden. En Tierra: manos verdes que curan y protegen a los aliados.",
+     "cooldown": 7.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/chaman/ancestral_hands.png",
+     "preview": "img/skills/chaman/prev_ancestral_hands.webp"
+    }
+   ]
+  },
+  {
+   "id": "clerigo_despertado",
+   "name": "Clérigo Despertado",
+   "role": "Sanador · luz sagrada",
+   "group": "apoyo",
+   "desc": "Un clérigo bendecido por la luz: golpea con su maza sagrada, cura a sus aliados con orbes, campanas y haces de luz y despliega una catedral divina.",
+   "color": "#ffe680",
+   "icon": "img/skills/clerigo_despertado/sacred_combo.png",
+   "showcase": "divine_cathedral",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "divine_revelation",
+     "name": "Revelación Divina",
+     "desc": "Pasiva: de vez en cuando brillas con voluntad divina; tu siguiente golpe es una onda de luz que aturde a los enemigos y cura a los aliados.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/clerigo_despertado/divine_revelation.png",
+     "preview": "img/skills/clerigo_despertado/prev_divine_revelation.webp"
+    },
+    {
+     "id": "sacred_combo",
+     "name": "Combo Sagrado",
+     "desc": "Dos golpes de maza en diagonal que empujan, una embestida con la maza y un golpe al suelo con un pulso sagrado que hiere y cura a los aliados.",
+     "cooldown": 0.3,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/clerigo_despertado/sacred_combo.png",
+     "preview": "img/skills/clerigo_despertado/prev_sacred_combo.webp"
+    },
+    {
+     "id": "cruciform_judgement",
+     "name": "Juicio Cruciforme",
+     "desc": "Una enorme onda sagrada en forma de X avanza muy despacio golpeando una y otra vez; al final estalla en luz y aturde.",
+     "cooldown": 1.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/clerigo_despertado/cruciform_judgement.png",
+     "preview": "img/skills/clerigo_despertado/prev_cruciform_judgement.webp"
+    },
+    {
+     "id": "orbs_of_benediction",
+     "name": "Orbes de Bendición",
+     "desc": "Varios orbes de luz bajan del cielo a tu alrededor; tú y tus aliados los tomáis para curaros.",
+     "cooldown": 1.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/clerigo_despertado/orbs_of_benediction.png",
+     "preview": "img/skills/clerigo_despertado/prev_orbs_of_benediction.webp"
+    },
+    {
+     "id": "bell_of_absolution",
+     "name": "Campana de la Absolución",
+     "desc": "Una gran campana sagrada que se toca hasta tres veces: la 1.ª cura, la 2.ª limpia a los aliados y ralentiza a los enemigos, y la 3.ª da a cada aliado una invulnerabilidad divina.",
+     "cooldown": 14.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/clerigo_despertado/bell_of_absolution.png",
+     "preview": "img/skills/clerigo_despertado/prev_bell_of_absolution.webp"
+    },
+    {
+     "id": "sanctuary_beam",
+     "name": "Haz del Santuario",
+     "desc": "Un haz de luz cae donde apuntas y deja un anillo sagrado que cura y protege a los aliados, y hiere y ralentiza a los enemigos.",
+     "cooldown": 6.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/clerigo_despertado/sanctuary_beam.png",
+     "preview": "img/skills/clerigo_despertado/prev_sanctuary_beam.webp"
+    },
+    {
+     "id": "divine_cathedral",
+     "name": "Catedral Divina",
+     "desc": "Despliegas alas de luz y vuelas libre por el campo de batalla mientras una enorme cruz sagrada aparece en el suelo: cura a los aliados y ralentiza y debilita a los enemigos.",
+     "cooldown": 14.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/clerigo_despertado/divine_cathedral.png",
+     "preview": "img/skills/clerigo_despertado/prev_divine_cathedral.webp"
+    }
+   ]
+  },
+  {
+   "id": "dragon_rojo",
+   "name": "Dragón Rojo",
+   "role": "Guerrero dragón · se transforma",
+   "group": "cuerpo",
+   "desc": "Lleva el Sacred Gear, un guantelete de dragón que se hace más fuerte. Golpea y carga energía (agachado) para subirlo de nivel y desatar la armadura Balance Breaker.",
+   "color": "#ff5a4f",
+   "icon": "img/skills/dragon_rojo/dragon_claw.png",
+   "showcase": "dragon_ultimate",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "dragon_claw",
+     "name": "Garra de Dragón",
+     "desc": "Un zarpazo de dragón delante de ti. Cada golpe carga tu guantelete.",
+     "cooldown": 2.0,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/dragon_rojo/dragon_claw.png",
+     "preview": "img/skills/dragon_rojo/prev_dragon_claw.webp"
+    },
+    {
+     "id": "dragon_shot",
+     "name": "Disparo de Dragón",
+     "desc": "Dispara una bola de energía de dragón hacia el punto al que miras.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/dragon_rojo/dragon_shot.png",
+     "preview": "img/skills/dragon_rojo/prev_dragon_shot.webp"
+    },
+    {
+     "id": "dragon_dash",
+     "name": "Embestida de Dragón",
+     "desc": "Con el guantelete de nivel 2 o más: una embestida rapidísima hacia delante.",
+     "cooldown": 1.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/dragon_rojo/dragon_dash.png",
+     "preview": "img/skills/dragon_rojo/prev_dragon_dash.webp"
+    },
+    {
+     "id": "dragon_jump",
+     "name": "Salto de Dragón",
+     "desc": "Con el guantelete de nivel 2 o más: un salto enorme y una caída lenta.",
+     "cooldown": 1.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/dragon_rojo/dragon_jump.png",
+     "preview": "img/skills/dragon_rojo/prev_dragon_jump.webp"
+    },
+    {
+     "id": "dragon_roar",
+     "name": "Rugido de Dragón",
+     "desc": "En modo Balance Breaker: un rugido que hiere a todo lo que tienes alrededor.",
+     "cooldown": 6.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/dragon_rojo/dragon_roar.png",
+     "preview": "img/skills/dragon_rojo/prev_dragon_roar.webp"
+    },
+    {
+     "id": "dragon_ultimate",
+     "name": "Cañón del Dragón",
+     "desc": "En modo Balance Breaker: la armadura abre sus cañones y dispara dos rayos devastadores.",
+     "cooldown": 15.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/dragon_rojo/dragon_ultimate.png",
+     "preview": "img/skills/dragon_rojo/prev_dragon_ultimate.webp"
+    }
+   ]
+  },
+  {
+   "id": "filo_vacio",
+   "name": "Filo del Vacío",
+   "role": "Espadachín · cortes dimensionales",
+   "group": "cuerpo",
+   "desc": "Un espadachín del vacío que corta la realidad con su katana: atraviesa dimensiones, se teletransporta a través de sus enemigos y desata la bendición del vacío.",
+   "color": "#9b6bff",
+   "icon": "img/skills/filo_vacio/void_edge_dimension_benediction.png",
+   "showcase": "void_edge_piercing_dimension",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "void_edge_dimension_benediction",
+     "name": "Bendición Dimensional",
+     "desc": "Te envuelves en la bendición del vacío: tus ataques con la katana se convierten en cortes dimensionales más poderosos.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/filo_vacio/void_edge_dimension_benediction.png",
+     "preview": null
+    },
+    {
+     "id": "void_edge_dimension_cut",
+     "name": "Corte Dimensional",
+     "desc": "Abres un corte en la dimensión delante de ti que hiere a todos los enemigos que alcanza.",
+     "cooldown": 0.2,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/filo_vacio/void_edge_dimension_cut.png",
+     "preview": "img/skills/filo_vacio/prev_void_edge_dimension_cut.webp"
+    },
+    {
+     "id": "void_edge_katana_upper_slash",
+     "name": "Tajo Ascendente",
+     "desc": "Un tajo hacia arriba con la katana que lanza a los enemigos de delante por los aires.",
+     "cooldown": 0.2,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/filo_vacio/void_edge_katana_upper_slash.png",
+     "preview": "img/skills/filo_vacio/prev_void_edge_katana_upper_slash.webp"
+    },
+    {
+     "id": "void_edge_piercing_dimension",
+     "name": "Dimensión Perforante",
+     "desc": "Te teletransportas 13 bloques hacia delante atravesando a los enemigos del camino y vuelves a tu sitio; con la bendición, el golpe parte la dimensión.",
+     "cooldown": 0.2,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/filo_vacio/void_edge_piercing_dimension.png",
+     "preview": "img/skills/filo_vacio/prev_void_edge_piercing_dimension.webp"
+    }
+   ]
+  },
+  {
+   "id": "glacia",
+   "name": "Glacia",
+   "role": "Maga de hielo · control y zona",
+   "group": "magia",
+   "desc": "La reina del hielo. Congela, ralentiza y encierra a sus enemigos con estacas, muros y tormentas de granizo.",
+   "color": "#7fd3ff",
+   "icon": "img/skills/glacia/frost_bolt.png",
+   "showcase": "frost_beam",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "frost_bolt",
+     "name": "Rayo de Escarcha",
+     "desc": "Dispara un carámbano que hiere y ralentiza al objetivo.",
+     "cooldown": 1.0,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/glacia/frost_bolt.png",
+     "preview": "img/skills/glacia/prev_frost_bolt.webp"
+    },
+    {
+     "id": "ice_spike",
+     "name": "Púas de Hielo",
+     "desc": "Una ola de púas de hielo brota del suelo hacia delante, hiriendo y ralentizando a todo lo que alcanza.",
+     "cooldown": 5.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/glacia/ice_spike.png",
+     "preview": "img/skills/glacia/prev_ice_spike.webp"
+    },
+    {
+     "id": "frigid_path",
+     "name": "Senda Gélida",
+     "desc": "Pasiva: deja tras de ti un rastro de hielo que ralentiza a los enemigos que lo pisan.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/glacia/frigid_path.png",
+     "preview": "img/skills/glacia/prev_frigid_path.webp"
+    },
+    {
+     "id": "frost_beam",
+     "name": "Haz Gélido",
+     "desc": "Lanza un haz de hielo continuo que hiere y ralentiza; si choca con un muro de hielo, estalla.",
+     "cooldown": 8.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/glacia/frost_beam.png",
+     "preview": "img/skills/glacia/prev_frost_beam.webp"
+    },
+    {
+     "id": "ice_wall",
+     "name": "Muro de Hielo",
+     "desc": "Levanta un muro de hielo que bloquea el paso, lanza por los aires y ralentiza a los enemigos.",
+     "cooldown": 10.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/glacia/ice_wall.png",
+     "preview": "img/skills/glacia/prev_ice_wall.webp"
+    },
+    {
+     "id": "hailstorm",
+     "name": "Granizada",
+     "desc": "Invoca una tormenta sobre ti: enormes granizos caen al suelo, congelando y ralentizando a los enemigos.",
+     "cooldown": 10.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/glacia/hailstorm.png",
+     "preview": "img/skills/glacia/prev_hailstorm.webp"
+    }
+   ]
+  },
+  {
+   "id": "guerrero",
+   "name": "Guerrero",
+   "role": "Guerrero · espada y furia",
+   "group": "cuerpo",
+   "desc": "Un guerrero de espada ancha: combos furiosos, saltos demoledores y torbellinos que arrasan todo a su alrededor.",
+   "color": "#d9a066",
+   "icon": "img/skills/guerrero/warrior_furiousslash.png",
+   "showcase": "warrior_whirlwind",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "warrior_rage",
+     "name": "Furia",
+     "desc": "Pasiva: con menos del 30 % de vida, al recibir daño ganas Resistencia y Velocidad.",
+     "cooldown": 10.0,
+     "passive": "dano",
+     "icon": "img/skills/guerrero/warrior_rage.png",
+     "preview": "img/skills/guerrero/prev_warrior_rage.webp"
+    },
+    {
+     "id": "warrior_furiousslash",
+     "name": "Tajo Furioso",
+     "desc": "Un combo rápido de 3 golpes, cada uno más fuerte que el anterior.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/guerrero/warrior_furiousslash.png",
+     "preview": "img/skills/guerrero/prev_warrior_furiousslash.webp"
+    },
+    {
+     "id": "warrior_furiousstrike",
+     "name": "Golpe Furioso",
+     "desc": "Lanzas a los enemigos al aire, los cortas allí y los estrellas contra el suelo, aturdiéndolos.",
+     "cooldown": 0.2,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/guerrero/warrior_furiousstrike.png",
+     "preview": "img/skills/guerrero/prev_warrior_furiousstrike.webp"
+    },
+    {
+     "id": "warrior_leapingslash",
+     "name": "Tajo Saltando",
+     "desc": "Saltas hacia delante y caes con la espada, haciendo estallar todo en el punto de impacto.",
+     "cooldown": 2.5,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/guerrero/warrior_leapingslash.png",
+     "preview": "img/skills/guerrero/prev_warrior_leapingslash.webp"
+    },
+    {
+     "id": "warrior_whirlwind",
+     "name": "Torbellino",
+     "desc": "Giras sin parar cortando todo a tu alrededor y atrayendo a los enemigos lejanos a la tormenta.",
+     "cooldown": 5.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/guerrero/warrior_whirlwind.png",
+     "preview": "img/skills/guerrero/prev_warrior_whirlwind.webp"
+    },
+    {
+     "id": "warrior_hellblade",
+     "name": "Espada Infernal",
+     "desc": "Clavas la espada en el suelo y la energía estalla en una onda que arrasa todo lo cercano.",
+     "cooldown": 8.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/guerrero/warrior_hellblade.png",
+     "preview": "img/skills/guerrero/prev_warrior_hellblade.webp"
+    }
+   ]
+  },
+  {
+   "id": "guerrero_llama",
+   "name": "Guerrero de las Llamas",
+   "role": "Espadachín · fuego",
+   "group": "cuerpo",
+   "desc": "Un espadachín envuelto en llamas: tajos ardientes, embestidas de fuego y un tigre llameante que arrasa todo a su paso. Inmune al fuego y la lava.",
+   "color": "#ff7a2a",
+   "icon": "img/skills/guerrero_llama/blazing_slash.png",
+   "showcase": "flame_tiger",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "blazing_spirit",
+     "name": "Espíritu Ardiente",
+     "desc": "Pasiva: tus skills tienen un 15 % de probabilidad de quemar; haces un 35 % más de daño a los quemados y eres inmune al fuego y la lava.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/guerrero_llama/blazing_spirit.png",
+     "preview": "img/skills/guerrero_llama/prev_blazing_spirit.webp"
+    },
+    {
+     "id": "blazing_slash",
+     "name": "Tajo Ardiente",
+     "desc": "Dos tajos de fuego, una embestida con un corte en X y un tajo hacia el suelo que empuja a los enemigos.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/guerrero_llama/blazing_slash.png",
+     "preview": "img/skills/guerrero_llama/prev_blazing_slash.webp"
+    },
+    {
+     "id": "unknowing_fire",
+     "name": "Fuego Súbito",
+     "desc": "Una embestida de fuego a toda velocidad que quema a los enemigos del camino.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/guerrero_llama/unknowing_fire.png",
+     "preview": "img/skills/guerrero_llama/prev_unknowing_fire.webp"
+    },
+    {
+     "id": "rising_scorching_sun",
+     "name": "Sol Abrasador Naciente",
+     "desc": "Un tajo vertical que lanza a los enemigos por los aires; se quedan suspendidos y arden con un segundo golpe.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/guerrero_llama/rising_scorching_sun.png",
+     "preview": "img/skills/guerrero_llama/prev_rising_scorching_sun.webp"
+    },
+    {
+     "id": "blooming_flame_undulation",
+     "name": "Espiral de Llamas",
+     "desc": "Un tajo en espiral defensivo: un momento sin recibir daño y desviando los proyectiles.",
+     "cooldown": 6.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/guerrero_llama/blooming_flame_undulation.png",
+     "preview": "img/skills/guerrero_llama/prev_blooming_flame_undulation.webp"
+    },
+    {
+     "id": "blazing_universe",
+     "name": "Universo Ardiente",
+     "desc": "Das un paso atrás, te lanzas hacia delante y clavas la espada en el suelo aplastando a los enemigos y haciendo temblar la tierra.",
+     "cooldown": 11.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/guerrero_llama/blazing_universe.png",
+     "preview": "img/skills/guerrero_llama/prev_blazing_universe.webp"
+    },
+    {
+     "id": "flame_tiger",
+     "name": "Tigre de Llamas",
+     "desc": "Invocas un tigre de fuego que carga rodeado de tajos ardientes, quema y empuja; al final golpea el suelo y lanza por los aires a los enemigos.",
+     "cooldown": 4.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/guerrero_llama/flame_tiger.png",
+     "preview": "img/skills/guerrero_llama/prev_flame_tiger.webp"
+    }
+   ]
+  },
+  {
+   "id": "guerrero_despertado",
+   "name": "Guerrero Despertado",
+   "role": "Guerrero · furia de sangre",
+   "group": "cuerpo",
+   "desc": "Un guerrero despertado con una espada espiritual roja: combos brutales, saltos berserker, barreras de sangre y grietas que hacen estallar el suelo.",
+   "color": "#ff4a4a",
+   "icon": "img/skills/guerrero_despertado/brutal_combo.png",
+   "showcase": "bulwark_instinct",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "bulwark_instinct",
+     "name": "Instinto de Baluarte",
+     "desc": "Pasiva: al recibir un golpe ganas Resistencia III durante 5 segundos.",
+     "cooldown": 9.0,
+     "passive": "dano",
+     "icon": "img/skills/guerrero_despertado/bulwark_instinct.png",
+     "preview": "img/skills/guerrero_despertado/prev_bulwark_instinct.webp"
+    },
+    {
+     "id": "brutal_combo",
+     "name": "Combo Brutal",
+     "desc": "Dos tajos amplios, una estocada en carrera, un tajo giratorio que levanta a los enemigos y un golpe final hacia el suelo.",
+     "cooldown": 0.4,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/guerrero_despertado/brutal_combo.png",
+     "preview": "img/skills/guerrero_despertado/prev_brutal_combo.webp"
+    },
+    {
+     "id": "berserkers_leap",
+     "name": "Salto Berserker",
+     "desc": "Arrastras la espada por el suelo abriendo una grieta; luego saltas y caes con fuerza donde miras.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/guerrero_despertado/berserkers_leap.png",
+     "preview": "img/skills/guerrero_despertado/prev_berserkers_leap.webp"
+    },
+    {
+     "id": "relentless_whirlwind",
+     "name": "Torbellino Implacable",
+     "desc": "Un torbellino de tajos durante un rato y, después, un paso atrás y dos estocadas largas en carrera.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/guerrero_despertado/relentless_whirlwind.png",
+     "preview": "img/skills/guerrero_despertado/prev_relentless_whirlwind.webp"
+    },
+    {
+     "id": "bloodbound_barrier",
+     "name": "Barrera de Sangre",
+     "desc": "Un aura de sangre forma una barrera que bloquea hasta 5 golpes; cada vez que te golpean suelta un pulso de sangre que hiere a los cercanos.",
+     "cooldown": 0.2,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/guerrero_despertado/bloodbound_barrier.png",
+     "preview": "img/skills/guerrero_despertado/prev_bloodbound_barrier.webp"
+    },
+    {
+     "id": "vicious_strike",
+     "name": "Golpe Feroz",
+     "desc": "Te quedas quieto acumulando aura y sueltas tu rabia con un tajo desde el suelo que abre una larga grieta destructiva hacia delante.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/guerrero_despertado/vicious_strike.png",
+     "preview": "img/skills/guerrero_despertado/prev_vicious_strike.webp"
+    },
+    {
+     "id": "strike_of_fury",
+     "name": "Golpe de Furia",
+     "desc": "Tu espada espiritual crece enormemente: cuatro tajos, un salto y un golpe que abre una gran grieta donde miras; vuelves atrás y la grieta estalla con rocas y escombros.",
+     "cooldown": 11.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/guerrero_despertado/strike_of_fury.png",
+     "preview": "img/skills/guerrero_despertado/prev_strike_of_fury.webp"
+    }
+   ]
+  },
+  {
+   "id": "guerrero_dragon",
+   "name": "Guerrero Dragón",
+   "role": "Lancero · poder del dragón",
+   "group": "cuerpo",
+   "desc": "Un guerrero con lanza y alas de dragón: estocadas, alientos en X, lanzas que forman una zona de dragón y cargas que estrellan a los enemigos contra el suelo.",
+   "color": "#e8a33a",
+   "icon": "img/skills/guerrero_dragon/dragon_slash.png",
+   "showcase": "dragon_zone",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "dragon_slash",
+     "name": "Tajo del Dragón",
+     "desc": "Un tajo con el poder del dragón.",
+     "cooldown": 0.5,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/guerrero_dragon/dragon_slash.png",
+     "preview": "img/skills/guerrero_dragon/prev_dragon_slash.webp"
+    },
+    {
+     "id": "dragon_dash",
+     "name": "Embestida del Dragón",
+     "desc": "Cargas energía y te lanzas hacia delante atravesando a los enemigos con tu lanza.",
+     "cooldown": 2.5,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/guerrero_dragon/dragon_dash.png",
+     "preview": "img/skills/guerrero_dragon/prev_dragon_dash.webp"
+    },
+    {
+     "id": "dragon_skin",
+     "name": "Piel de Dragón",
+     "desc": "Pasiva: al recibir un golpe, un 25 % de probabilidad de herir a los enemigos cercanos.",
+     "cooldown": 0.0,
+     "passive": "dano",
+     "icon": "img/skills/guerrero_dragon/dragon_skin.png",
+     "preview": null
+    },
+    {
+     "id": "dragon_zone",
+     "name": "Zona del Dragón",
+     "desc": "Clavas 3 lanzas de dragón que forman una zona: dentro de ella ganas velocidad y resistencia.",
+     "cooldown": 12.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/guerrero_dragon/dragon_zone.png",
+     "preview": "img/skills/guerrero_dragon/prev_dragon_zone.webp"
+    },
+    {
+     "id": "dragon_breath",
+     "name": "Aliento del Dragón",
+     "desc": "Cuatro tajos de dragón que empujan y, como golpe final, un aliento de dragón en forma de X.",
+     "cooldown": 5.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/guerrero_dragon/dragon_breath.png",
+     "preview": "img/skills/guerrero_dragon/prev_dragon_breath.webp"
+    },
+    {
+     "id": "dragonborn",
+     "name": "Sangre de Dragón",
+     "desc": "Despliegas tus alas, cargas arrastrando a los enemigos, subes con ellos y los estrellas contra el suelo con una onda de dragón.",
+     "cooldown": 6.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/guerrero_dragon/dragonborn.png",
+     "preview": "img/skills/guerrero_dragon/prev_dragonborn.webp"
+    }
+   ]
+  },
+  {
+   "id": "guja_vendaval",
+   "name": "Guja del Vendaval",
+   "role": "Lancero · viento y aire",
+   "group": "cuerpo",
+   "desc": "Un guerrero del viento con una guja: salta, cae despacio, levanta a sus enemigos y los arrastra con tornados.",
+   "color": "#7fe3c8",
+   "icon": "img/skills/guja_vendaval/gale_slash.png",
+   "showcase": "windbound_fury",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "windrune_blade",
+     "name": "Hoja de Runa Eólica",
+     "desc": "Pasiva: saltas más alto y tus golpes hacen levitar al enemigo un momento.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/guja_vendaval/windrune_blade.png",
+     "preview": "img/skills/guja_vendaval/prev_windrune_blade.webp"
+    },
+    {
+     "id": "gale_slash",
+     "name": "Tajo del Vendaval",
+     "desc": "Un tajo hacia abajo, otro hacia arriba y una estocada que atrae a los enemigos. Si estás cayendo despacio, en su lugar te lanzas atravesándolos.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/guja_vendaval/gale_slash.png",
+     "preview": "img/skills/guja_vendaval/prev_gale_slash.webp"
+    },
+    {
+     "id": "vault",
+     "name": "Salto con Pértiga",
+     "desc": "Saltas por los aires y caes despacio.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/guja_vendaval/vault.png",
+     "preview": "img/skills/guja_vendaval/prev_vault.webp"
+    },
+    {
+     "id": "dancing_blade",
+     "name": "Hoja Danzante",
+     "desc": "Una embestida fuerte: si golpeas a alguien, os lanzáis los dos por los aires y caes despacio.",
+     "cooldown": 3.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/guja_vendaval/dancing_blade.png",
+     "preview": "img/skills/guja_vendaval/prev_dancing_blade.webp"
+    },
+    {
+     "id": "cloudpiercer",
+     "name": "Perforanubes",
+     "desc": "Lanzas una lanza que ralentiza; al caer en un bloque crea un tornado que atrae y hiere a los enemigos.",
+     "cooldown": 3.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/guja_vendaval/cloudpiercer.png",
+     "preview": "img/skills/guja_vendaval/prev_cloudpiercer.webp"
+    },
+    {
+     "id": "torrent",
+     "name": "Torrente",
+     "desc": "Mantén agachado para girar la guja sobre tu cabeza atrayendo a los enemigos; al soltar, un enorme tajo que los empuja lejos.",
+     "cooldown": 0.2,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/guja_vendaval/torrent.png",
+     "preview": "img/skills/guja_vendaval/prev_torrent.webp"
+    },
+    {
+     "id": "windbound_fury",
+     "name": "Furia del Viento",
+     "desc": "Te vuelves invulnerable y subes por los aires con los enemigos cercanos; los atraes y los derribas con un tajo giratorio que aturde.",
+     "cooldown": 8.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/guja_vendaval/windbound_fury.png",
+     "preview": "img/skills/guja_vendaval/prev_windbound_fury.webp"
+    }
+   ]
+  },
+  {
+   "id": "invocador",
+   "name": "Invocador",
+   "role": "Invocador · guardián espiritual",
+   "group": "invocacion",
+   "desc": "Un invocador con un guardián espiritual a su lado que lucha por él, además de espadas mágicas, caballos y un fénix de fuego.",
+   "color": "#6bd1ff",
+   "icon": "img/skills/invocador/soul_strike.png",
+   "showcase": "summon_phoenix",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "soul_strike",
+     "name": "Golpe del Alma",
+     "desc": "Tu guardián espiritual lanza un tajo delante de ti; si vuelves a usarla a tiempo, encadena hasta 2 tajos más.",
+     "cooldown": 0.5,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/invocador/soul_strike.png",
+     "preview": "img/skills/invocador/prev_soul_strike.webp"
+    },
+    {
+     "id": "guardians_defense",
+     "name": "Defensa del Guardián",
+     "desc": "Tu guardián te cubre con su escudo, bloqueando proyectiles y ataques. Úsala seguido para mantener el escudo.",
+     "cooldown": 0.2,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/invocador/guardians_defense.png",
+     "preview": "img/skills/invocador/prev_guardians_defense.webp"
+    },
+    {
+     "id": "spirit_guardian",
+     "name": "Guardián Espiritual",
+     "desc": "Pasiva: invocas un guardián espiritual que lucha por ti con tus hechizos.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/invocador/spirit_guardian.png",
+     "preview": "img/skills/invocador/prev_spirit_guardian.webp"
+    },
+    {
+     "id": "magical_blades",
+     "name": "Espadas Mágicas",
+     "desc": "Invocas 5 espadas mágicas que se disparan una tras otra.",
+     "cooldown": 5.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/invocador/magical_blades.png",
+     "preview": "img/skills/invocador/prev_magical_blades.webp"
+    },
+    {
+     "id": "summon_horse",
+     "name": "Caballos Espirituales",
+     "desc": "Invocas 2 caballos espirituales que galopan por el suelo y lanzan por los aires a quien golpean.",
+     "cooldown": 5.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/invocador/summon_horse.png",
+     "preview": "img/skills/invocador/prev_summon_horse.webp"
+    },
+    {
+     "id": "summon_phoenix",
+     "name": "Fénix",
+     "desc": "Invocas un fénix que vuela a ras de suelo quemando a los enemigos y dejando un rastro de fuego.",
+     "cooldown": 7.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/invocador/summon_phoenix.png",
+     "preview": "img/skills/invocador/prev_summon_phoenix.webp"
+    }
+   ]
+  },
+  {
+   "id": "invocador_espiritus",
+   "name": "Invocador de Espíritus",
+   "role": "Invocador · esbirros ancestrales",
+   "group": "invocacion",
+   "desc": "Un invocador de espíritus ancestrales: lucha con una lanza espiritual, monta un caballo de espíritu y llama a serpientes, gólems, águilas y tigres que pelean a su lado.",
+   "color": "#5ff0d0",
+   "icon": "img/skills/invocador_espiritus/spiritual_combo.png",
+   "showcase": "spirit_golem",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "ancestral_stallion",
+     "name": "Corcel Ancestral",
+     "desc": "Pasiva: salta y agáchate en el aire para invocar un caballo espiritual y montarlo; al bajarte se deshace en polvo espiritual.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/invocador_espiritus/ancestral_stallion.png",
+     "preview": "img/skills/invocador_espiritus/prev_ancestral_stallion.webp"
+    },
+    {
+     "id": "spiritual_combo",
+     "name": "Combo Espiritual",
+     "desc": "Luchas junto a una lanza espiritual: tajos en diagonal, un giro amplio, una estocada en carrera y un salto con la lanza girando que cae con fuerza.",
+     "cooldown": 0.3,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/invocador_espiritus/spiritual_combo.png",
+     "preview": "img/skills/invocador_espiritus/prev_spiritual_combo.webp"
+    },
+    {
+     "id": "wraith_serpent",
+     "name": "Serpiente Espectral",
+     "desc": "Invocas una serpiente espectral que repta por el suelo y muerde a los enemigos, envenenándolos.",
+     "cooldown": 1.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/invocador_espiritus/wraith_serpent.png",
+     "preview": "img/skills/invocador_espiritus/prev_wraith_serpent.webp"
+    },
+    {
+     "id": "spirit_golem",
+     "name": "Gólem Espiritual",
+     "desc": "Invocas un gólem ancestral que golpea el suelo aturdiendo y crea una zona protectora que te da Resistencia III y aleja a los enemigos.",
+     "cooldown": 1.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/invocador_espiritus/spirit_golem.png",
+     "preview": "img/skills/invocador_espiritus/prev_spirit_golem.webp"
+    },
+    {
+     "id": "spiritcallers_command",
+     "name": "Orden del Invocador",
+     "desc": "Cambia el modo de tus esbirros: Foco (atacan al último enemigo que golpeaste), Libre (atacan a cualquier enemigo) o Quieto (solo te siguen).",
+     "cooldown": 0.2,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/invocador_espiritus/spiritcallers_command.png",
+     "preview": "img/skills/invocador_espiritus/prev_spiritcallers_command.webp"
+    },
+    {
+     "id": "spirit_talon",
+     "name": "Garra Espiritual",
+     "desc": "Invocas un ave espiritual que baja del cielo y lanza tornados cortantes que levantan y atraviesan a los enemigos.",
+     "cooldown": 2.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/invocador_espiritus/spirit_talon.png",
+     "preview": "img/skills/invocador_espiritus/prev_spirit_talon.webp"
+    },
+    {
+     "id": "ancestral_tiger",
+     "name": "Tigre Ancestral",
+     "desc": "Invocas un tigre ancestral que te da velocidad y fuerza; se lanza sobre sus presas con un zarpazo en X y ruge para debilitar a los enemigos.",
+     "cooldown": 2.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/invocador_espiritus/ancestral_tiger.png",
+     "preview": "img/skills/invocador_espiritus/prev_ancestral_tiger.webp"
+    }
+   ]
+  },
+  {
+   "id": "katana_fuego",
+   "name": "Katana de Fuego",
+   "role": "Espadachín · tajos de fuego",
+   "group": "cuerpo",
+   "desc": "Un espadachín con una katana en llamas: tajos que dejan arcos de fuego, danzas giratorias y un último corte que marca el suelo con fuego.",
+   "color": "#ff5a1f",
+   "icon": "img/skills/katana_fuego/lostassetsanime_firekatana_lc.png",
+   "showcase": "lostassetsanime_firekatana_slc",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "lostassetsanime_firekatana_lc",
+     "name": "Filo Kagerō",
+     "desc": "Un combo de tres tajos de fuego; cada golpe deja un arco de llamas.",
+     "cooldown": 0.3,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/katana_fuego/lostassetsanime_firekatana_lc.png",
+     "preview": "img/skills/katana_fuego/prev_lostassetsanime_firekatana_lc.webp"
+    },
+    {
+     "id": "lostassetsanime_firekatana_rc",
+     "name": "Enjin Rinbu",
+     "desc": "Un círculo de fuego: giras con la katana cortando a tu alrededor y saltas para rematar con dos tajos ardientes.",
+     "cooldown": 4.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/katana_fuego/lostassetsanime_firekatana_rc.png",
+     "preview": "img/skills/katana_fuego/prev_lostassetsanime_firekatana_rc.webp"
+    },
+    {
+     "id": "lostassetsanime_firekatana_slc",
+     "name": "Bakuen Crash",
+     "desc": "Un tajo de fuego hacia delante, un salto y una caída que estalla en llamas donde aterrizas.",
+     "cooldown": 6.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/katana_fuego/lostassetsanime_firekatana_slc.png",
+     "preview": "img/skills/katana_fuego/prev_lostassetsanime_firekatana_slc.webp"
+    },
+    {
+     "id": "lostassetsanime_firekatana_src",
+     "name": "Hi no Kizamu",
+     "desc": "Te concentras un momento y grabas el suelo con tres enormes tajos de fuego en círculo.",
+     "cooldown": 16.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/katana_fuego/lostassetsanime_firekatana_src.png",
+     "preview": "img/skills/katana_fuego/prev_lostassetsanime_firekatana_src.webp"
+    }
+   ]
+  },
+  {
+   "id": "luchador_despertado",
+   "name": "Luchador Despertado",
+   "role": "Artista marcial · golpes y patadas",
+   "group": "cuerpo",
+   "desc": "Un maestro de las artes marciales: combos de puños y patadas, ondas de choque y un golpe del dragón que se teletransporta entre sus enemigos.",
+   "color": "#ffb347",
+   "icon": "img/skills/luchador_despertado/martial_combo.png",
+   "showcase": "dragon_strike",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "agile_striker",
+     "name": "Golpeador Ágil",
+     "desc": "Pasiva: mientras corres, agáchate para hacer un largo sprint rápido hacia delante.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/luchador_despertado/agile_striker.png",
+     "preview": null
+    },
+    {
+     "id": "martial_combo",
+     "name": "Combo Marcial",
+     "desc": "Golpes izquierda y derecha, un gancho que levanta, un golpe hacia abajo con doble puño y, al final, una carga rápida que empuja y aturde.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/luchador_despertado/martial_combo.png",
+     "preview": "img/skills/luchador_despertado/prev_martial_combo.webp"
+    },
+    {
+     "id": "ground_blow",
+     "name": "Golpe a Tierra",
+     "desc": "Corres agarrando a todos los enemigos del camino y, al final, saltas y los estrellas contra el suelo, aturdiéndolos.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/luchador_despertado/ground_blow.png",
+     "preview": "img/skills/luchador_despertado/prev_ground_blow.webp"
+    },
+    {
+     "id": "multistrike_uppercut",
+     "name": "Gancho Múltiple",
+     "desc": "Cinco golpes rapidísimos y un gancho saltando que lanza a los enemigos por los aires.",
+     "cooldown": 2.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/luchador_despertado/multistrike_uppercut.png",
+     "preview": "img/skills/luchador_despertado/prev_multistrike_uppercut.webp"
+    },
+    {
+     "id": "heavy_shockwave",
+     "name": "Onda de Choque",
+     "desc": "Un puñetazo fuerte que empuja; luego cargas un aura y golpeas creando una larga onda que empuja y aturde.",
+     "cooldown": 4.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/luchador_despertado/heavy_shockwave.png",
+     "preview": "img/skills/luchador_despertado/prev_heavy_shockwave.webp"
+    },
+    {
+     "id": "spinning_blow",
+     "name": "Patada Giratoria",
+     "desc": "Dos patadas giratorias que golpean dos veces y una patada final: en el suelo lanza por los aires; en el aire, estrella a los enemigos contra el suelo.",
+     "cooldown": 2.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/luchador_despertado/spinning_blow.png",
+     "preview": "img/skills/luchador_despertado/prev_spinning_blow.webp"
+    },
+    {
+     "id": "dragon_strike",
+     "name": "Golpe del Dragón",
+     "desc": "Cinco golpes y un pisotón que deja a los enemigos flotando a cámara lenta; te teletransportas entre ellos golpeándolos, los estrellas contra el suelo y rematas con dragones espirituales.",
+     "cooldown": 7.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/luchador_despertado/dragon_strike.png",
+     "preview": "img/skills/luchador_despertado/prev_dragon_strike.webp"
+    }
+   ]
+  },
+  {
+   "id": "mago",
+   "name": "Mago",
+   "role": "Hechicero arcano · daño a distancia",
+   "group": "magia",
+   "desc": "Domina el fuego, el hielo y lo arcano: bolas de fuego, meteoros y cadenas ardientes desde lejos.",
+   "color": "#b98cff",
+   "icon": "img/skills/mago/fire_ball.png",
+   "showcase": "frost_nova",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "fire_ball",
+     "name": "Bola de Fuego",
+     "desc": "Lanza una bola de fuego que hiere y quema al objetivo.",
+     "cooldown": 1.0,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/mago/fire_ball.png",
+     "preview": "img/skills/mago/prev_fire_ball.webp"
+    },
+    {
+     "id": "blink_",
+     "name": "Parpadeo",
+     "desc": "Te teletransportas unos bloques hacia donde miras.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/mago/blink_.png",
+     "preview": "img/skills/mago/prev_blink_.webp"
+    },
+    {
+     "id": "arcane_missile",
+     "name": "Misil Arcano",
+     "desc": "Pasiva: cada 5 hechizos invocas 3 misiles arcanos que persiguen y hieren a los enemigos.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/mago/arcane_missile.png",
+     "preview": null
+    },
+    {
+     "id": "frost_nova",
+     "name": "Nova de Escarcha",
+     "desc": "Una ola de púas de hielo que hiere y entorpece a los enemigos.",
+     "cooldown": 3.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/mago/frost_nova.png",
+     "preview": "img/skills/mago/prev_frost_nova.webp"
+    },
+    {
+     "id": "meteor",
+     "name": "Meteoro",
+     "desc": "Un meteoro cae del cielo, explota, quema a los enemigos y deja el suelo ardiendo un rato.",
+     "cooldown": 4.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/mago/meteor.png",
+     "preview": "img/skills/mago/prev_meteor.webp"
+    },
+    {
+     "id": "inferno_chains",
+     "name": "Cadenas Infernales",
+     "desc": "Cuatro cadenas de fuego atrapan y aturden; luego el suelo se rompe y estalla hacia arriba.",
+     "cooldown": 6.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/mago/inferno_chains.png",
+     "preview": "img/skills/mago/prev_inferno_chains.webp"
+    }
+   ]
+  },
+  {
+   "id": "mago_rayo",
+   "name": "Mago del Rayo",
+   "role": "Mago · electricidad",
+   "group": "magia",
+   "desc": "Un mago del rayo: lanza descargas, ondas y anillos eléctricos, levanta muros de rayos y dispara lanzas de trueno.",
+   "color": "#f6e05a",
+   "icon": "img/skills/mago_rayo/skill_lightning_bolt.png",
+   "showcase": "skill_lightning_wall",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "skill_lightning_bolt",
+     "name": "Descarga",
+     "desc": "Lanzas un rayo hacia donde apuntas que estalla y electrocuta a los enemigos cercanos.",
+     "cooldown": 10.0,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/mago_rayo/skill_lightning_bolt.png",
+     "preview": "img/skills/mago_rayo/prev_skill_lightning_bolt.webp"
+    },
+    {
+     "id": "skill_lightning_wave",
+     "name": "Onda Eléctrica",
+     "desc": "Te impulsas y sueltas una onda de rayos hacia delante que golpea y empuja a los enemigos.",
+     "cooldown": 20.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/mago_rayo/skill_lightning_wave.png",
+     "preview": "img/skills/mago_rayo/prev_skill_lightning_wave.webp"
+    },
+    {
+     "id": "skill_lightning_ring",
+     "name": "Anillo Eléctrico",
+     "desc": "Un anillo de rayos estalla a tu alrededor golpeando y empujando a los enemigos cercanos.",
+     "cooldown": 25.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/mago_rayo/skill_lightning_ring.png",
+     "preview": "img/skills/mago_rayo/prev_skill_lightning_ring.webp"
+    },
+    {
+     "id": "skill_lightning_cast",
+     "name": "Tormenta",
+     "desc": "Invocas rayos que caen sobre los enemigos y los sitios de alrededor.",
+     "cooldown": 25.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/mago_rayo/skill_lightning_cast.png",
+     "preview": "img/skills/mago_rayo/prev_skill_lightning_cast.webp"
+    },
+    {
+     "id": "skill_lightning_wall",
+     "name": "Muro de Rayos",
+     "desc": "Levantas un círculo de rayos a tu alrededor que hiere a todo lo que lo toca.",
+     "cooldown": 50.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/mago_rayo/skill_lightning_wall.png",
+     "preview": "img/skills/mago_rayo/prev_skill_lightning_wall.webp"
+    },
+    {
+     "id": "skill_lightning_spear",
+     "name": "Lanza de Trueno",
+     "desc": "Te elevas, rodeado de lanzas de trueno, y las disparas hacia delante haciendo estallar todo donde caen.",
+     "cooldown": 50.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/mago_rayo/skill_lightning_spear.png",
+     "preview": "img/skills/mago_rayo/prev_skill_lightning_spear.webp"
+    }
+   ]
+  },
+  {
+   "id": "mago_despertado",
+   "name": "Mago Despertado",
+   "role": "Mago · fuego, hielo y trueno",
+   "group": "magia",
+   "desc": "Un mago que domina los tres elementos: bolas de fuego, prisiones de hielo, teletransportes de trueno y un meteoro de la perdición.",
+   "color": "#5aa8ff",
+   "icon": "img/skills/mago_despertado/sorcery_combo.png",
+   "showcase": "meteor_of_doom",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "mana_barrier",
+     "name": "Barrera de Maná",
+     "desc": "Pasiva: cada cierto tiempo generas un escudo de maná que bloquea un ataque.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/mago_despertado/mana_barrier.png",
+     "preview": "img/skills/mago_despertado/prev_mana_barrier.webp"
+    },
+    {
+     "id": "sorcery_combo",
+     "name": "Combo de Hechicería",
+     "desc": "Dos bolas de fuego que estallan y queman, un salto atrás con púas de hielo en abanico que ralentizan y un rayo que cae donde miras.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/mago_despertado/sorcery_combo.png",
+     "preview": "img/skills/mago_despertado/prev_sorcery_combo.webp"
+    },
+    {
+     "id": "teleport_strike",
+     "name": "Golpe Teleportado",
+     "desc": "Te teletransportas hacia delante cargado de trueno y, al llegar, una explosión eléctrica aturde a los enemigos.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/mago_despertado/teleport_strike.png",
+     "preview": "img/skills/mago_despertado/prev_teleport_strike.webp"
+    },
+    {
+     "id": "blazing_barrage",
+     "name": "Andanada Ardiente",
+     "desc": "Seis círculos de fuego detrás de ti disparan bolas de fuego seguidas; luego una gran bola de fuego que estalla en abanico.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/mago_despertado/blazing_barrage.png",
+     "preview": "img/skills/mago_despertado/prev_blazing_barrage.webp"
+    },
+    {
+     "id": "cryo_prison",
+     "name": "Prisión Criogénica",
+     "desc": "Un aura de hielo estalla en un enorme prisma: los enemigos quedan congelados dentro de un cristal que acaba rompiéndose con daño extra.",
+     "cooldown": 6.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/mago_despertado/cryo_prison.png",
+     "preview": "img/skills/mago_despertado/prev_cryo_prison.webp"
+    },
+    {
+     "id": "hailpiercer",
+     "name": "Perforagranizo",
+     "desc": "Absorbes el aura de hielo de delante atrayendo un poco a los enemigos y haces brotar tres enormes púas de hielo que hieren y ralentizan.",
+     "cooldown": 11.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/mago_despertado/hailpiercer.png",
+     "preview": "img/skills/mago_despertado/prev_hailpiercer.webp"
+    },
+    {
+     "id": "meteor_of_doom",
+     "name": "Meteoro de la Perdición",
+     "desc": "Te elevas formando un enorme meteoro y lo lanzas contra el suelo, abriendo una grieta en cruz de fuego que lo quema todo.",
+     "cooldown": 7.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/mago_despertado/meteor_of_doom.png",
+     "preview": "img/skills/mago_despertado/prev_meteor_of_doom.webp"
+    }
+   ]
+  },
+  {
+   "id": "nigromante",
+   "name": "Nigromante",
+   "role": "Invocador · ejército no muerto",
+   "group": "invocacion",
+   "desc": "Un nigromante con una guadaña espectral: recoge las almas de los caídos y las usa para invocar guerreros, magos y caballeros esqueleto que luchan a su lado.",
+   "color": "#3fe0a8",
+   "icon": "img/skills/nigromante/necrotic_combo.png",
+   "showcase": "necroknight",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "deathbound_souls",
+     "name": "Almas Vinculadas",
+     "desc": "Pasiva: una guadaña espectral flota a tu lado; los enemigos que mueren cerca dejan un alma (guardas hasta 5) para invocar a tu ejército (hasta 10 esbirros, 2 de ellos caballeros).",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/nigromante/deathbound_souls.png",
+     "preview": null
+    },
+    {
+     "id": "necrotic_combo",
+     "name": "Combo Necrótico",
+     "desc": "Barridos de guadaña de lado a lado, un giro vertical y un golpe al suelo que lanza un poco a los enemigos.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/nigromante/necrotic_combo.png",
+     "preview": "img/skills/nigromante/prev_necrotic_combo.webp"
+    },
+    {
+     "id": "skull_wisps",
+     "name": "Calaveras Errantes",
+     "desc": "Lanzas una calavera de energía necrótica que estalla al impactar y empuja a los enemigos.",
+     "cooldown": 0.5,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/nigromante/skull_wisps.png",
+     "preview": "img/skills/nigromante/prev_skull_wisps.webp"
+    },
+    {
+     "id": "skeletal_warrior",
+     "name": "Guerrero Esqueleto",
+     "desc": "Gastas 1 alma para invocar un guerrero esqueleto que lucha a tu lado con su espada.",
+     "cooldown": 1.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/nigromante/skeletal_warrior.png",
+     "preview": "img/skills/nigromante/prev_skeletal_warrior.webp"
+    },
+    {
+     "id": "necromancers_command",
+     "name": "Orden del Nigromante",
+     "desc": "Cambia el modo de tus esbirros: Foco (al último enemigo que golpeaste), Libre (a cualquier enemigo) o Quieto (solo te siguen).",
+     "cooldown": 1.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/nigromante/necromancers_command.png",
+     "preview": "img/skills/nigromante/prev_necromancers_command.webp"
+    },
+    {
+     "id": "skeletal_mage",
+     "name": "Mago Esqueleto",
+     "desc": "Gastas 1 alma para invocar un mago esqueleto que ataca de lejos con orbes que queman.",
+     "cooldown": 1.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/nigromante/skeletal_mage.png",
+     "preview": "img/skills/nigromante/prev_skeletal_mage.webp"
+    },
+    {
+     "id": "necroknight",
+     "name": "Caballero Necrótico",
+     "desc": "Gastas 1 alma para invocar un caballero no muerto a lomos de un caballo esqueleto que ataca con su lanza y carga contra los enemigos.",
+     "cooldown": 3.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/nigromante/necroknight.png",
+     "preview": "img/skills/nigromante/prev_necroknight.webp"
+    }
+   ]
+  },
+  {
+   "id": "null",
+   "name": "Null",
+   "role": "Arquero del vacío",
+   "group": "distancia",
+   "desc": "Null, el arquero del vacío: flechas que marchitan, portales para escapar, agujeros negros y lluvias de flechas del vacío.",
+   "color": "#a37bff",
+   "icon": "img/skills/null/void_arrow.png",
+   "showcase": "blackhole_shot",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "void_arrow",
+     "name": "Flecha del Vacío",
+     "desc": "Dispara una flecha del vacío con un 15 % de probabilidad de marchitar al objetivo.",
+     "cooldown": 1.0,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/null/void_arrow.png",
+     "preview": "img/skills/null/prev_void_arrow.webp"
+    },
+    {
+     "id": "retreat",
+     "name": "Retirada",
+     "desc": "Abre un portal y se teletransporta hacia atrás.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/null/retreat.png",
+     "preview": "img/skills/null/prev_retreat.webp"
+    },
+    {
+     "id": "gravitational_boost",
+     "name": "Impulso Gravitatorio",
+     "desc": "Pasiva: más velocidad y saltos más altos.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/null/gravitational_boost.png",
+     "preview": "img/skills/null/prev_gravitational_boost.webp"
+    },
+    {
+     "id": "blackhole_shot",
+     "name": "Disparo Agujero Negro",
+     "desc": "Una flecha que crea un agujero negro que atrae a los enemigos cercanos.",
+     "cooldown": 5.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/null/blackhole_shot.png",
+     "preview": "img/skills/null/prev_blackhole_shot.webp"
+    },
+    {
+     "id": "void_rain",
+     "name": "Lluvia del Vacío",
+     "desc": "Hace caer una lluvia de flechas del vacío que marchitan a los enemigos.",
+     "cooldown": 3.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/null/void_rain.png",
+     "preview": "img/skills/null/prev_void_rain.webp"
+    },
+    {
+     "id": "pulse_mode",
+     "name": "Modo Pulso",
+     "desc": "Cambia a modo pulso: sin moverse ni usar otras skills, dispara pulsos del vacío más rápidos y fuertes, con un 50 % de probabilidad de marchitar.",
+     "cooldown": 10.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/null/pulse_mode.png",
+     "preview": "img/skills/null/prev_pulse_mode.webp"
+    }
+   ]
+  },
+  {
+   "id": "paladin",
+   "name": "Paladín",
+   "role": "Guerrero sagrado · martillo",
+   "group": "cuerpo",
+   "desc": "Un paladín con un martillo sagrado: golpes de égida, martillos lanzados y una forma celestial que lo protege del daño y del fuego.",
+   "color": "#f2c94c",
+   "icon": "img/skills/paladin/lostassets_paladin_lc.png",
+   "showcase": "lostassets_paladin_src",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "lostassets_paladin_lc",
+     "name": "Égida",
+     "desc": "Un golpe con el martillo sagrado que hiere a los enemigos de delante.",
+     "cooldown": 0.6,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/paladin/lostassets_paladin_lc.png",
+     "preview": "img/skills/paladin/prev_lostassets_paladin_lc.webp"
+    },
+    {
+     "id": "lostassets_paladin_rc",
+     "name": "Lanzamiento Triple",
+     "desc": "Lanzas tres martillos sagrados hacia delante, uno tras otro.",
+     "cooldown": 4.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/paladin/lostassets_paladin_rc.png",
+     "preview": "img/skills/paladin/prev_lostassets_paladin_rc.webp"
+    },
+    {
+     "id": "lostassets_paladin_slc",
+     "name": "Martillazo",
+     "desc": "Dos golpes de martillo que hieren y lanzan por los aires a los enemigos.",
+     "cooldown": 7.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/paladin/lostassets_paladin_slc.png",
+     "preview": "img/skills/paladin/prev_lostassets_paladin_slc.webp"
+    },
+    {
+     "id": "lostassets_paladin_src",
+     "name": "Martillo Celestial",
+     "desc": "Invocas el martillo celestial a tu alrededor y ganas resistencia al daño y al fuego.",
+     "cooldown": 20.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/paladin/lostassets_paladin_src.png",
+     "preview": "img/skills/paladin/prev_lostassets_paladin_src.webp"
+    }
+   ]
+  },
+  {
+   "id": "piromante",
+   "name": "Piromante",
+   "role": "Mago · fuego e ignición",
+   "group": "magia",
+   "desc": "Un piromante que acumula calor con sus ataques hasta entrar en Ignición, potenciando misiles de ceniza, lanzas volcánicas, rayos de fuego y meteoros.",
+   "color": "#ff4a1a",
+   "icon": "img/skills/piromante/pyro_combo.png",
+   "showcase": "magma_dash",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "heat_mastery",
+     "name": "Maestría del Calor",
+     "desc": "Pasiva: cada ataque básico da 1 de calor; con 3 entras en Ignición y tu siguiente skill (no la definitiva) sale más poderosa.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/piromante/heat_mastery.png",
+     "preview": null
+    },
+    {
+     "id": "pyro_combo",
+     "name": "Combo Pirómano",
+     "desc": "Dos misiles de ceniza, una onda de fuego en cono y un meteoro que cae en diagonal y deja una grieta ardiente.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/piromante/pyro_combo.png",
+     "preview": "img/skills/piromante/prev_pyro_combo.webp"
+    },
+    {
+     "id": "volcanic_spear",
+     "name": "Lanza Volcánica",
+     "desc": "Invocas una lanza ardiente y encadenas estocadas, tajos y un golpe al suelo que queman a los enemigos.",
+     "cooldown": 1.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/piromante/volcanic_spear.png",
+     "preview": "img/skills/piromante/prev_volcanic_spear.webp"
+    },
+    {
+     "id": "hellfire_overblast",
+     "name": "Rayo Infernal",
+     "desc": "Concentras fuego delante de ti y sueltas un rayo continuo durante 4 segundos que lo abrasa todo a su paso.",
+     "cooldown": 3.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/piromante/hellfire_overblast.png",
+     "preview": "img/skills/piromante/prev_hellfire_overblast.webp"
+    },
+    {
+     "id": "firestorm_volley",
+     "name": "Andanada de Fuego",
+     "desc": "Bolas de fuego giran sobre ti formando una esfera; al pulsar otra vez estalla y salen bolas que persiguen a los enemigos cercanos.",
+     "cooldown": 4.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/piromante/firestorm_volley.png",
+     "preview": "img/skills/piromante/prev_firestorm_volley.webp"
+    },
+    {
+     "id": "magma_dash",
+     "name": "Embestida de Magma",
+     "desc": "Te lanzas hacia delante abriendo el suelo y dejando un camino de lava que quema a quien lo pisa.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/piromante/magma_dash.png",
+     "preview": "img/skills/piromante/prev_magma_dash.webp"
+    },
+    {
+     "id": "infernal_judgement",
+     "name": "Juicio Infernal",
+     "desc": "Saltas incendiando el suelo; círculos mágicos a tu espalda disparan lanzas de fuego y caes con una enorme lanza ardiente que lo arrasa todo.",
+     "cooldown": 11.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/piromante/infernal_judgement.png",
+     "preview": "img/skills/piromante/prev_infernal_judgement.webp"
+    }
+   ]
+  },
+  {
+   "id": "pistolero_despertado",
+   "name": "Pistolero Despertado",
+   "role": "Tirador · balas y misiles",
+   "group": "distancia",
+   "desc": "Un pistolero letal: ráfagas que perforan, escopetazos incendiarios, marcas de ejecución y lluvias de misiles.",
+   "color": "#ff6b4a",
+   "icon": "img/skills/pistolero_despertado/piercing_combo.png",
+   "showcase": "vermilion_execution",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "markmans_creed",
+     "name": "Credo del Tirador",
+     "desc": "Pasiva: tus balas hacen más daño cuanto más lejos llegan.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/pistolero_despertado/markmans_creed.png",
+     "preview": null
+    },
+    {
+     "id": "piercing_combo",
+     "name": "Combo Perforante",
+     "desc": "Un disparo, dos rápidos, seis seguidos y una bala de onda que atraviesa y te empuja atrás. Sobrecalentado, se convierte en un Cañón de Llamas.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/pistolero_despertado/piercing_combo.png",
+     "preview": "img/skills/pistolero_despertado/prev_piercing_combo.webp"
+    },
+    {
+     "id": "hellflare_burst",
+     "name": "Ráfaga Infernal",
+     "desc": "Cargas y sueltas un escopetazo amplio y largo que incendia a los enemigos y te empuja atrás.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/pistolero_despertado/hellflare_burst.png",
+     "preview": "img/skills/pistolero_despertado/prev_hellflare_burst.webp"
+    },
+    {
+     "id": "deathmark",
+     "name": "Marca Mortal",
+     "desc": "Marcas hasta 9 enemigos a 30 bloques y, poco después, las balas de ejecución los alcanzan a todos a la vez.",
+     "cooldown": 3.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/pistolero_despertado/deathmark.png",
+     "preview": "img/skills/pistolero_despertado/prev_deathmark.webp"
+    },
+    {
+     "id": "overheat",
+     "name": "Sobrecalentamiento",
+     "desc": "Tu arma se sobrecalienta 10 segundos: vas más lento, pero tu Combo Perforante se convierte en Cañón de Llamas.",
+     "cooldown": 13.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/pistolero_despertado/overheat.png",
+     "preview": "img/skills/pistolero_despertado/prev_overheat.webp"
+    },
+    {
+     "id": "skyfall_barrage",
+     "name": "Bombardeo Celeste",
+     "desc": "Disparas al aire y caen 8 misiles sobre enemigos cercanos al azar que estallan y queman.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/pistolero_despertado/skyfall_barrage.png",
+     "preview": "img/skills/pistolero_despertado/prev_skyfall_barrage.webp"
+    },
+    {
+     "id": "vermilion_execution",
+     "name": "Ejecución Bermellón",
+     "desc": "Marcas una gran zona: una lluvia de balas la castiga 4 segundos y acaba con 8 enormes misiles que lo queman todo.",
+     "cooldown": 11.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/pistolero_despertado/vermilion_execution.png",
+     "preview": "img/skills/pistolero_despertado/prev_vermilion_execution.webp"
+    }
+   ]
+  },
+  {
+   "id": "picaro",
+   "name": "Pícaro",
+   "role": "Asesino · sangrado y movilidad",
+   "group": "sigilo",
+   "desc": "Un pícaro con dos dagas: combos veloces, bombas de humo, gancho para moverse y una marca de muerte que estalla en sangre.",
+   "color": "#8a7bff",
+   "icon": "img/skills/picaro/rogue_slice_and_dice.png",
+   "showcase": "rogue_smokebomb",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "rogue_vicious_cuts",
+     "name": "Cortes Crueles",
+     "desc": "Pasiva: tras agacharte un momento ganas Cortes Crueles; tus ataques hacen sangrar a los enemigos.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/picaro/rogue_vicious_cuts.png",
+     "preview": "img/skills/picaro/prev_rogue_vicious_cuts.webp"
+    },
+    {
+     "id": "rogue_slice_and_dice",
+     "name": "Corte y Puñalada",
+     "desc": "Un combo rápido de 3 golpes: dos tajos y una puñalada fuerte.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/picaro/rogue_slice_and_dice.png",
+     "preview": "img/skills/picaro/prev_rogue_slice_and_dice.webp"
+    },
+    {
+     "id": "rogue_cutthroat_combo",
+     "name": "Combo Degollador",
+     "desc": "Te lanzas hiriendo a los del camino, haces un corte en X saltando atrás y vuelves a cruzarlos girando.",
+     "cooldown": 0.2,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/picaro/rogue_cutthroat_combo.png",
+     "preview": "img/skills/picaro/prev_rogue_cutthroat_combo.webp"
+    },
+    {
+     "id": "rogue_smokebomb",
+     "name": "Bomba de Humo",
+     "desc": "Una nube de humo que tapa la vista desde fuera mientras tú ves dentro; los enemigos que entran van más lentos.",
+     "cooldown": 8.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/picaro/rogue_smokebomb.png",
+     "preview": "img/skills/picaro/prev_rogue_smokebomb.webp"
+    },
+    {
+     "id": "rogue_grappling_hook",
+     "name": "Gancho",
+     "desc": "Disparas un gancho: si pilla a un enemigo lo atraes; si pilla el terreno, vas tú hacia allí.",
+     "cooldown": 2.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/picaro/rogue_grappling_hook.png",
+     "preview": "img/skills/picaro/prev_rogue_grappling_hook.webp"
+    },
+    {
+     "id": "rogue_mark_of_death",
+     "name": "Marca de la Muerte",
+     "desc": "Marcas a un objetivo y ganas 3 golpes mortales que te teletransportan a él atravesándolo; al acabar, la marca estalla con mucho daño.",
+     "cooldown": 0.3,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/picaro/rogue_mark_of_death.png",
+     "preview": null
+    }
+   ]
+  },
+  {
+   "id": "ronin_trueno",
+   "name": "Ronin del Trueno",
+   "role": "Samurái · rayos",
+   "group": "cuerpo",
+   "desc": "Un samurái errante cargado de trueno: tajos que paralizan, desenvainados a la velocidad del rayo y una forma de Dios del Trueno.",
+   "color": "#ffe14a",
+   "icon": "img/skills/ronin_trueno/thunder_slash.png",
+   "showcase": "flaming_thunder_god",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "lightning_reflex",
+     "name": "Reflejo del Rayo",
+     "desc": "Pasiva: un 22 % de probabilidad de esquivar un ataque y ganar un acelerón.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/ronin_trueno/lightning_reflex.png",
+     "preview": null
+    },
+    {
+     "id": "thunder_slash",
+     "name": "Tajo del Trueno",
+     "desc": "Tajos cargados de trueno; cada tercer golpe saltas y caes con un rayo que puede paralizar.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/ronin_trueno/thunder_slash.png",
+     "preview": "img/skills/ronin_trueno/prev_thunder_slash.webp"
+    },
+    {
+     "id": "thunderclap_and_flash",
+     "name": "Trueno y Destello",
+     "desc": "Una embestida rapidísima desenvainando la espada: un golpe devastador antes de que el enemigo reaccione.",
+     "cooldown": 3.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/ronin_trueno/thunderclap_and_flash.png",
+     "preview": "img/skills/ronin_trueno/prev_thunderclap_and_flash.webp"
+    },
+    {
+     "id": "flashstorm_reversal",
+     "name": "Contraataque Relámpago",
+     "desc": "Das un paso atrás y lanzas dos tajos amplios que contraatacan y paralizan.",
+     "cooldown": 0.2,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/ronin_trueno/flashstorm_reversal.png",
+     "preview": "img/skills/ronin_trueno/prev_flashstorm_reversal.webp"
+    },
+    {
+     "id": "crackling_skyfall",
+     "name": "Caída Crepitante",
+     "desc": "Saltas acumulando energía de trueno y caes en picado como un rayo.",
+     "cooldown": 0.2,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/ronin_trueno/crackling_skyfall.png",
+     "preview": "img/skills/ronin_trueno/prev_crackling_skyfall.webp"
+    },
+    {
+     "id": "thunderous_barrage",
+     "name": "Ráfaga de Truenos",
+     "desc": "Te concentras y lanzas muchas estocadas rapidísimas hacia delante, moviéndote más despacio mientras tanto.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/ronin_trueno/thunderous_barrage.png",
+     "preview": "img/skills/ronin_trueno/prev_thunderous_barrage.webp"
+    },
+    {
+     "id": "flaming_thunder_god",
+     "name": "Dios del Trueno Llameante",
+     "desc": "Te transformas en el Dios del Trueno con un dragón de trueno a tu espalda: tus ataques cambian y caen rayos con cada golpe.",
+     "cooldown": 19.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/ronin_trueno/flaming_thunder_god.png",
+     "preview": "img/skills/ronin_trueno/prev_flaming_thunder_god.webp"
+    }
+   ]
+  },
+  {
+   "id": "samurai_escarcha",
+   "name": "Samurái de Escarcha",
+   "role": "Samurái · hielo",
+   "group": "cuerpo",
+   "desc": "Un samurái helado: filos de escarcha, una danza ártica a saltos, agujas de hielo y una caída invernal que congela el suelo.",
+   "color": "#9fe4ff",
+   "icon": "img/skills/samurai_escarcha/lostassetsoriginal_frostsamurai_lc.png",
+   "showcase": "lostassetsoriginal_frostsamurai_src",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "lostassetsoriginal_frostsamurai_lc",
+     "name": "Filo de Escarcha",
+     "desc": "Un tajo helado que hiere a los enemigos de delante.",
+     "cooldown": 0.4,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/samurai_escarcha/lostassetsoriginal_frostsamurai_lc.png",
+     "preview": "img/skills/samurai_escarcha/prev_lostassetsoriginal_frostsamurai_lc.webp"
+    },
+    {
+     "id": "lostassetsoriginal_frostsamurai_rc",
+     "name": "Danza Ártica",
+     "desc": "Cuatro saltos hacia delante, cada uno con un tajo de hielo.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/samurai_escarcha/lostassetsoriginal_frostsamurai_rc.png",
+     "preview": "img/skills/samurai_escarcha/prev_lostassetsoriginal_frostsamurai_rc.webp"
+    },
+    {
+     "id": "lostassetsoriginal_frostsamurai_slc",
+     "name": "Aguja de Hielo",
+     "desc": "Una sucesión de agujas de hielo que brotan hacia delante hiriendo a todo lo que encuentran.",
+     "cooldown": 2.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/samurai_escarcha/lostassetsoriginal_frostsamurai_slc.png",
+     "preview": "img/skills/samurai_escarcha/prev_lostassetsoriginal_frostsamurai_slc.webp"
+    },
+    {
+     "id": "lostassetsoriginal_frostsamurai_src",
+     "name": "Caída Invernal",
+     "desc": "Saltas, te quedas un momento en el aire y caes con un golpe helado que congela la zona.",
+     "cooldown": 2.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/samurai_escarcha/lostassetsoriginal_frostsamurai_src.png",
+     "preview": "img/skills/samurai_escarcha/prev_lostassetsoriginal_frostsamurai_src.webp"
+    }
+   ]
+  },
+  {
+   "id": "samurai_agua",
+   "name": "Samurái del Agua",
+   "role": "Samurái · agua y movimiento",
+   "group": "cuerpo",
+   "desc": "Un samurái que fluye como el agua: tajos en remolino, danzas que levantan a los enemigos y mareas que lo arrasan todo.",
+   "color": "#4ac7ff",
+   "icon": "img/skills/samurai_agua/water_surface_slash.png",
+   "showcase": "constant_flux",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "splashing_water_flow_turbulent",
+     "name": "Flujo Turbulento",
+     "desc": "Pasiva: una técnica de movimiento fluido; corres más rápido.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/samurai_agua/splashing_water_flow_turbulent.png",
+     "preview": null
+    },
+    {
+     "id": "water_surface_slash",
+     "name": "Tajo de Superficie",
+     "desc": "Un tajo horizontal de agua; cada tercer golpe son dos tajos seguidos.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/samurai_agua/water_surface_slash.png",
+     "preview": "img/skills/samurai_agua/prev_water_surface_slash.webp"
+    },
+    {
+     "id": "water_wheel",
+     "name": "Rueda de Agua",
+     "desc": "Un tajo hacia arriba que te lleva con los enemigos al aire y un tajo giratorio vertical allí arriba.",
+     "cooldown": 1.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/samurai_agua/water_wheel.png",
+     "preview": "img/skills/samurai_agua/prev_water_wheel.webp"
+    },
+    {
+     "id": "flowing_dance",
+     "name": "Danza Fluida",
+     "desc": "Un combo continuo y elegante atravesando a los enemigos, que quedan levitando un rato.",
+     "cooldown": 0.2,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/samurai_agua/flowing_dance.png",
+     "preview": "img/skills/samurai_agua/prev_flowing_dance.webp"
+    },
+    {
+     "id": "whirlpool",
+     "name": "Remolino",
+     "desc": "Un remolino de agua que atrae a los enemigos, seguido de tres tajos giratorios.",
+     "cooldown": 0.2,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/samurai_agua/whirlpool.png",
+     "preview": "img/skills/samurai_agua/prev_whirlpool.webp"
+    },
+    {
+     "id": "striking_tide",
+     "name": "Marea Golpeante",
+     "desc": "Una serie rápida de tajos como el golpear de la marea; el último abre una línea de salpicaduras que lanza por los aires.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/samurai_agua/striking_tide.png",
+     "preview": "img/skills/samurai_agua/prev_striking_tide.webp"
+    },
+    {
+     "id": "constant_flux",
+     "name": "Flujo Constante",
+     "desc": "Giras sin parar cada vez más rápido y moviéndote veloz; al final sueltas el agua acumulada y los enemigos quedan levitando.",
+     "cooldown": 11.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/samurai_agua/constant_flux.png",
+     "preview": "img/skills/samurai_agua/prev_constant_flux.webp"
+    }
+   ]
+  },
+  {
+   "id": "sanador",
+   "name": "Sanador",
+   "role": "Soporte · curación",
+   "group": "apoyo",
+   "desc": "Un sanador que mantiene vivos a sus aliados: rayos que curan o hieren, luz purificadora y un orbe que reparte curación.",
+   "color": "#7dff9a",
+   "icon": "img/skills/sanador/mender_spiritbolt.png",
+   "showcase": "mender_lifeweavers_grace",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "mender_lifebound",
+     "name": "Vínculo Vital",
+     "desc": "Pasiva: los aliados cercanos se curan poco a poco y de vez en cuando sueltas un pulso de curación.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/sanador/mender_lifebound.png",
+     "preview": "img/skills/sanador/prev_mender_lifebound.webp"
+    },
+    {
+     "id": "mender_spiritbolt",
+     "name": "Rayo Espiritual",
+     "desc": "Un pequeño rayo espiritual que hiere a los enemigos y cura un poco a los jugadores.",
+     "cooldown": 0.9,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/sanador/mender_spiritbolt.png",
+     "preview": "img/skills/sanador/prev_mender_spiritbolt.webp"
+    },
+    {
+     "id": "mender_cascadebolt",
+     "name": "Rayo en Cascada",
+     "desc": "Un rayo grande que se divide al impactar: salta entre enemigos (hasta 6) o cura a aliados cercanos.",
+     "cooldown": 2.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/sanador/mender_cascadebolt.png",
+     "preview": "img/skills/sanador/prev_mender_cascadebolt.webp"
+    },
+    {
+     "id": "mender_purging_light",
+     "name": "Luz Purificadora",
+     "desc": "Un destello que empuja a los enemigos y quita los efectos negativos a los aliados de la zona.",
+     "cooldown": 7.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/sanador/mender_purging_light.png",
+     "preview": "img/skills/sanador/prev_mender_purging_light.webp"
+    },
+    {
+     "id": "mender_vital_beam",
+     "name": "Haz Vital",
+     "desc": "Un haz radiante que te cura a ti y a los jugadores que atraviesa, y hiere a los enemigos.",
+     "cooldown": 5.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/sanador/mender_vital_beam.png",
+     "preview": "img/skills/sanador/prev_mender_vital_beam.webp"
+    },
+    {
+     "id": "mender_lifeweavers_grace",
+     "name": "Gracia del Tejevidas",
+     "desc": "Un gran orbe de curación avanza y lanza curaciones a los 3 aliados con menos vida, que se reparten también a los de alrededor.",
+     "cooldown": 18.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/sanador/mender_lifeweavers_grace.png",
+     "preview": "img/skills/sanador/prev_mender_lifeweavers_grace.webp"
+    }
+   ]
+  },
+  {
+   "id": "thor",
+   "name": "Thor",
+   "role": "Dios del trueno · golpes y aturdimiento",
+   "group": "cuerpo",
+   "desc": "El dios del trueno con su martillo: lo lanza, invoca rayos y se eleva para estrellarse contra el suelo.",
+   "color": "#ffd34d",
+   "icon": "img/skills/thor/hammer_strike.png",
+   "showcase": "thunder_smash",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "hammer_strike",
+     "name": "Martillazo",
+     "desc": "Golpea a los enemigos de delante con el martillo.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/thor/hammer_strike.png",
+     "preview": "img/skills/thor/prev_hammer_strike.webp"
+    },
+    {
+     "id": "hammer_throw",
+     "name": "Lanzar el Martillo",
+     "desc": "Lanza el martillo, que atraviesa a los enemigos y vuelve a tu mano.",
+     "cooldown": 3.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/thor/hammer_throw.png",
+     "preview": "img/skills/thor/prev_hammer_throw.webp"
+    },
+    {
+     "id": "mighty_thunder",
+     "name": "Trueno Poderoso",
+     "desc": "Pasiva: tus ataques y skills tienen un 30 % de probabilidad de hacer caer un rayo que aturde.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/thor/mighty_thunder.png",
+     "preview": null
+    },
+    {
+     "id": "asgardian_fury",
+     "name": "Furia de Asgard",
+     "desc": "Te cargas de rayos: velocidad II y fuerza II un rato.",
+     "cooldown": 5.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/thor/asgardian_fury.png",
+     "preview": "img/skills/thor/prev_asgardian_fury.webp"
+    },
+    {
+     "id": "thunder_shockwave",
+     "name": "Onda de Trueno",
+     "desc": "Una ola de rayos avanza por el suelo aturdiendo a los enemigos.",
+     "cooldown": 3.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/thor/thunder_shockwave.png",
+     "preview": "img/skills/thor/prev_thunder_shockwave.webp"
+    },
+    {
+     "id": "thunder_smash",
+     "name": "Martillo Atronador",
+     "desc": "Te elevas cargándote de rayos y te estrellas contra el suelo con una explosión de trueno que aturde.",
+     "cooldown": 7.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/thor/thunder_smash.png",
+     "preview": "img/skills/thor/prev_thunder_smash.webp"
+    }
+   ]
+  },
+  {
+   "id": "vampiro",
+   "name": "Vampiro de la Luna de Sangre",
+   "role": "Guerrero · sangre y robo de vida",
+   "group": "cuerpo",
+   "desc": "Un vampiro que moldea su sangre en cuatro armas (Hojas, Grimorio, Agujas y Guadaña), cada una con sus combos, y roba la vida de sus enemigos.",
+   "color": "#d6224a",
+   "icon": "img/skills/vampiro/bloodmoon_combo.png",
+   "showcase": "bloodborne_scythe",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "bloodbending",
+     "name": "Sangre Moldeable",
+     "desc": "Pasiva: moldeas tu sangre en una de cuatro armas: Hojas, Grimorio, Agujas o Guadaña.",
+     "cooldown": 0.0,
+     "passive": "siempre",
+     "icon": "img/skills/vampiro/bloodbending.png",
+     "preview": "img/skills/vampiro/prev_bloodbending.webp"
+    },
+    {
+     "id": "bloodmoon_combo",
+     "name": "Combo Luna de Sangre",
+     "desc": "Un combo distinto según tu arma: cortes en X con las Hojas, púas y meteoro con el Grimorio, agujas que se acumulan o tajos amplios con la Guadaña.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/vampiro/bloodmoon_combo.png",
+     "preview": "img/skills/vampiro/prev_bloodmoon_combo.webp"
+    },
+    {
+     "id": "vampiric_surge",
+     "name": "Oleada Vampírica",
+     "desc": "Según tu arma: embestida que roba vida, murciélagos de sangre, explosión de agujas o guadaña giratoria; todas te curan.",
+     "cooldown": 0.2,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/vampiro/vampiric_surge.png",
+     "preview": "img/skills/vampiro/prev_vampiric_surge.webp"
+    },
+    {
+     "id": "bloodborne_blades",
+     "name": "Hojas de Sangre",
+     "desc": "Tu sangre toma forma de hojas: rápidas, de varios golpes y corto alcance. Ganas velocidad.",
+     "cooldown": 4.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/vampiro/bloodborne_blades.png",
+     "preview": "img/skills/vampiro/prev_bloodborne_blades.webp"
+    },
+    {
+     "id": "bloodborne_needles",
+     "name": "Agujas de Sangre",
+     "desc": "Tu sangre toma forma de agujas: rápidas y de largo alcance.",
+     "cooldown": 4.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/vampiro/bloodborne_needles.png",
+     "preview": "img/skills/vampiro/prev_bloodborne_needles.webp"
+    },
+    {
+     "id": "bloodborne_grimoire_mmocore",
+     "name": "Grimorio de Sangre",
+     "desc": "Tu sangre toma forma de grimorio: velocidad normal, largo alcance y daño en área.",
+     "cooldown": 4.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/vampiro/bloodborne_grimoire_mmocore.png",
+     "preview": "img/skills/vampiro/prev_bloodborne_grimoire_mmocore.webp"
+    },
+    {
+     "id": "bloodborne_scythe",
+     "name": "Guadaña de Sangre",
+     "desc": "Tu sangre toma forma de guadaña: lenta, pesada y de gran alcance. Vas un poco más lento.",
+     "cooldown": 4.0,
+     "slot": 5,
+     "key": "B",
+     "icon": "img/skills/vampiro/bloodborne_scythe.png",
+     "preview": "img/skills/vampiro/prev_bloodborne_scythe.webp"
+    }
+   ]
+  },
+  {
+   "id": "zephyr",
+   "name": "Zephyr",
+   "role": "Asesino del viento · movilidad y combos",
+   "group": "sigilo",
+   "desc": "Un asesino que se mueve como el viento: marca a sus presas, las levanta con tornados y las remata en el aire.",
+   "color": "#8ff0c8",
+   "icon": "img/skills/zephyr/air_slash.png",
+   "showcase": "cyclone",
+   "price": 599,
+   "coinPrice": 7500,
+   "skills": [
+    {
+     "id": "air_slash",
+     "name": "Tajo de Viento",
+     "desc": "Dos tajos de viento seguidos. Hace más daño a los enemigos con la marca del viento.",
+     "cooldown": 0.2,
+     "slot": 0,
+     "key": "R",
+     "icon": "img/skills/zephyr/air_slash.png",
+     "preview": "img/skills/zephyr/prev_air_slash.webp"
+    },
+    {
+     "id": "tornado",
+     "name": "Tornado",
+     "desc": "Lanza un tornado que daña a todo lo que encuentra en línea y lo deja en el aire.",
+     "cooldown": 3.0,
+     "slot": 1,
+     "key": "G",
+     "icon": "img/skills/zephyr/tornado.png",
+     "preview": "img/skills/zephyr/prev_tornado.webp"
+    },
+    {
+     "id": "aerial_burst",
+     "name": "Ráfaga Aérea",
+     "desc": "Pasiva: al recibir daño, empuja a los enemigos cercanos y ganas velocidad.",
+     "cooldown": 7.0,
+     "passive": "dano",
+     "icon": "img/skills/zephyr/aerial_burst.png",
+     "preview": "img/skills/zephyr/prev_aerial_burst.webp"
+    },
+    {
+     "id": "cyclone",
+     "name": "Ciclón",
+     "desc": "Crea un ciclón que atrae y hiere a los enemigos cercanos durante unos segundos.",
+     "cooldown": 10.0,
+     "slot": 2,
+     "key": "Z",
+     "icon": "img/skills/zephyr/cyclone.png",
+     "preview": "img/skills/zephyr/prev_cyclone.webp"
+    },
+    {
+     "id": "wind_shadowstep",
+     "name": "Paso Sombrío",
+     "desc": "Te teletransportas hasta el objetivo y le dejas la marca del viento.",
+     "cooldown": 4.0,
+     "slot": 3,
+     "key": "X",
+     "icon": "img/skills/zephyr/wind_shadowstep.png",
+     "preview": "img/skills/zephyr/prev_wind_shadowstep.webp"
+    },
+    {
+     "id": "hurricane_strike",
+     "name": "Golpe Huracanado",
+     "desc": "Saltas hacia los enemigos que tu tornado dejó en el aire, los cortas varias veces y el último tajo los estrella contra el suelo.",
+     "cooldown": 10.0,
+     "slot": 4,
+     "key": "V",
+     "icon": "img/skills/zephyr/hurricane_strike.png",
+     "preview": null
+    }
+   ]
+  }
+ ]
+}

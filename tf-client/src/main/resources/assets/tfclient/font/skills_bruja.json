@@ -1,0 +1,157 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_01.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰀"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_02.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰁"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_03.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰂"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_04.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰃"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_05.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰄"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_06.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰅"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_07.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰆"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_08.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰇"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_09.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰈"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_10.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰉"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_11.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰊"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_12.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰋"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_13.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰌"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_14.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰍"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_15.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰎"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_16.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰏"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/bruja/glyph/mf_class_witch_passive_17.png",
+   "ascent": 36,
+   "height": 48,
+   "chars": [
+    "𡰐"
+   ]
+  }
+ ]
+}

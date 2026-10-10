@@ -1,0 +1,166 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_1.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰰ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_2.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰱ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_3.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰲ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_4.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰳ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_5.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰴ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_6.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰵ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_7.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰶ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_impact_8.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰷ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_mark_1.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰹ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_mark_2.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰺ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_mark_3.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰻ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_mark_4.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰼ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_sentence_1.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰽ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_sentence_2.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰾ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_sentence_3.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⰿ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_sentence_4.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⱀ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_sentence_5.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⱁ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/caballero_muerte/glyph/vfx_death_sentence_6.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "Ⱂ"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_1.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ក"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_2.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ខ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_3.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "គ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_4.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ឃ"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_5.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ង"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_6.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ច"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "tfclient:skills/nigromante/glyph/vfx_dusk_impact_7.png",
+   "ascent": 85,
+   "height": 180,
+   "chars": [
+    "ឆ"
+   ]
+  }
+ ]
+}
