@@ -486,7 +486,7 @@
       const cat = tab.dataset.category;
       const count =
         cat === 'vfx'
-          ? vfxData ? vfxData.kills.length + vfxData.packs.length : 0
+          ? vfxData?.kills?.length || 0
           : cat === 'skills'
             ? skData?.classes?.length || 0
             : products.filter((p) => p.category === cat).length;
@@ -579,10 +579,10 @@
     $('#crate-empty').hidden = shown > 0;
   }
 
-  // --- VFX: efectos de kill sueltos y paquetes de skills. Por ahora gratis: se obtienen y se equipan con la cuenta y
-  // el servidor los pone solo. En el juego se activan solos y se ven en un indicador junto a la barra. ---
+  // --- VFX: efectos de kill. Por ahora gratis: se obtienen y se equipan con la cuenta y el servidor los pone solo; en
+  // el juego salen solos al derrotar a alguien. Los paquetes de skills ya no se dan (ahora están las clases de Skills):
+  // quien tenía uno lo ve en «Lo que llevas» y lo puede seguir equipando o quitando. ---
   let vfxData = null;
-  let vfxTab = 'kills';
   let vfxCat = 'todos';
   async function loadVfx() {
     try {
@@ -592,20 +592,6 @@
     }
   }
 
-  const TRIGGER = {
-    golpe: 'Al golpear',
-    golpe_critico: 'Golpe crítico',
-    golpe_corriendo: 'Golpe corriendo',
-    golpe_agachado: 'Golpe agachado',
-    dano: 'Al recibir daño',
-    combate: 'En combate',
-  };
-  const triggerText = (s) => {
-    let t = TRIGGER[s.trigger] || s.trigger;
-    if (s.vida && s.vida < 1) t = `Con menos del ${Math.round(s.vida * 100)} % de vida`;
-    if (s.chance && s.chance < 1) t += ` · ${Math.round(s.chance * 100)} %`;
-    return t;
-  };
   const seconds = (n) => `${String(n).replace('.', ',')} s`;
 
   function vfxFoot(kind, id) {
@@ -621,120 +607,88 @@
     return `<span class="price owned">Tuyo</span><button class="btn btn-primary btn-sm" type="button" data-vfx-equip ${attrs}>Equipar</button>`;
   }
 
-  // Lo seleccionado en el escenario: { kind: 'kill' | 'skill', id, pack }
+  // Lo seleccionado en el escenario: el id de la kill
   let vfxSel = null;
   const vfxCatOf = (k) => (vfxData.cats || []).find((c) => c.id === k.cat);
-  const vfxPackOf = (id) => vfxData.packs.find((p) => p.id === id);
   const vfxColor = (c) => (HEX.test(c || '') ? c : '#45e9ff');
+  const vfxNameOf = (kind, id) => (kind === 'kill' ? vfxData.kills : vfxData.me?.packs || []).find((x) => x.id === id)?.name || '';
 
-  // Lo que llevas puesto: el efecto de kill y el paquete de skills (con su miniatura)
-  function vfxSlot(kind, label) {
-    const id = vfxData.me?.[kind];
-    const item = id ? (kind === 'kill' ? vfxData.kills : vfxData.packs).find((x) => x.id === id) : null;
-    return `<div class="vfx-slot${item ? ' is-on' : ''}">
-        <div class="vfx-slot-art">${item ? img(item.image, '') : '<span aria-hidden="true">—</span>'}</div>
-        <div><span>${label}</span><b>${item ? escapeHtml(item.name) : 'Ninguno'}</b></div>
+  // Lo que llevas puesto: el efecto de kill y, si tenías alguno, los paquetes de skills de antes
+  function vfxLoadout() {
+    const mine = vfxData.me;
+    const kill = mine?.kill ? vfxData.kills.find((x) => x.id === mine.kill) : null;
+    const slot = `<div class="vfx-slot${kill ? ' is-on' : ''}">
+        <div class="vfx-slot-art">${kill ? img(kill.image, '') : '<span aria-hidden="true">—</span>'}</div>
+        <div><span>Tu efecto de kill</span><b>${kill ? escapeHtml(kill.name) : 'Ninguno'}</b></div>
       </div>`;
+    const packs = mine?.packs || [];
+    const old = packs.length
+      ? `<div class="vfx-old"><span class="vfx-old-label">Paquetes de skills que ya tenías</span>${packs
+          .map((p) => {
+            const on = mine.pack === p.id;
+            const attrs = `data-vfx-kind="pack" data-vfx-id="${escapeHtml(p.id)}"`;
+            return `<div class="vfx-slot${on ? ' is-on' : ''}">
+              <div class="vfx-slot-art">${img(p.image, '')}</div>
+              <div><span>${on ? 'Equipado' : 'Tuyo'}</span><b>${escapeHtml(p.name)}</b></div>
+              ${
+                on
+                  ? `<button class="btn btn-ghost btn-sm" type="button" data-vfx-remove ${attrs}>Quitar</button>`
+                  : `<button class="btn btn-primary btn-sm" type="button" data-vfx-equip ${attrs}>Equipar</button>`
+              }
+            </div>`;
+          })
+          .join('')}</div>`
+      : '';
+    return `<div class="vfx-loadout">${slot}${old}</div>`;
   }
 
-  // El escenario: la animación de lo elegido en grande, con su ficha y el botón
+  // El escenario: la animación de lo elegido, con su ficha y el botón
   function vfxStage() {
-    let title, kicker, desc, preview, color, foot, extra = '';
-    if (vfxSel?.kind === 'skill') {
-      const pack = vfxPackOf(vfxSel.pack);
-      const sk = pack.skills.find((x) => x.id === vfxSel.id) || pack.skills[0];
-      title = sk.name;
-      kicker = `Skill de ${pack.name}`;
-      desc = sk.desc;
-      preview = sk.preview || pack.image;
-      color = vfxColor(pack.color);
-      extra = `<div class="vfx-specs"><span class="vfx-trigger">${escapeHtml(triggerText(sk))}</span><span class="vfx-cd">Cooldown ${seconds(sk.cooldown)}</span></div>
-        <p class="vfx-note">Se consigue con el paquete <b>${escapeHtml(pack.name)}</b> (${pack.skills.length} skills).</p>`;
-      foot = vfxFoot('pack', pack.id);
-    } else {
-      const k = vfxData.kills.find((x) => x.id === vfxSel?.id) || vfxData.kills[0];
-      const cat = vfxCatOf(k);
-      title = k.name;
-      kicker = `Efecto de kill${cat ? ` · ${cat.name}` : ''}`;
-      desc = k.desc;
-      preview = k.preview || k.image;
-      color = vfxColor(cat?.color);
-      extra = '<p class="vfx-note">Sale al derrotar a un jugador o a cualquier mob: la propia víctima hace la animación.</p>';
-      foot = vfxFoot('kill', k.id);
-    }
+    const k = vfxData.kills.find((x) => x.id === vfxSel) || vfxData.kills[0];
+    const cat = vfxCatOf(k);
     return `
-      <div class="vfx-stage panel" style="--vfx:${color}">
+      <div class="vfx-stage panel" style="--vfx:${vfxColor(cat?.color)}">
         <div class="vfx-screen">
-          <img class="vfx-anim" src="${asset(preview)}" alt="" decoding="async">
-          <span class="vfx-live" aria-hidden="true"><i></i>Vista previa</span>
+          <img class="vfx-anim" src="${asset(k.preview || k.image)}" alt="Vista previa de ${escapeHtml(k.name)}" width="320" height="320" decoding="async">
+          <span class="vfx-live" aria-hidden="true">Vista previa</span>
         </div>
         <div class="vfx-info">
-          <span class="cat">${escapeHtml(kicker)}</span>
-          <h3>${escapeHtml(title)}</h3>
-          <p>${escapeHtml(desc)}</p>
-          ${extra}
-          <div class="card-foot">${foot}</div>
-          <div class="vfx-loadout">${vfxSlot('kill', 'Tu efecto de kill')}${vfxSlot('pack', 'Tu paquete de skills')}</div>
+          <span class="cat">Efecto de kill${cat ? ` · ${escapeHtml(cat.name)}` : ''}</span>
+          <h3>${escapeHtml(k.name)}</h3>
+          <p>${escapeHtml(k.desc)}</p>
+          <p class="vfx-note">Sale al derrotar a un jugador o a cualquier mob: la propia víctima hace la animación.</p>
+          <div class="card-foot">${vfxFoot('kill', k.id)}</div>
+          ${vfxLoadout()}
         </div>
       </div>`;
   }
 
   function vfxKillTile(k) {
-    const sel = vfxSel?.kind !== 'skill' && (vfxSel?.id || vfxData.kills[0].id) === k.id;
+    const sel = (vfxSel || vfxData.kills[0].id) === k.id;
     const on = vfxData.me?.kill === k.id;
-    return `<button type="button" class="vfx-tile${sel ? ' is-sel' : ''}${on ? ' is-on' : ''}" data-vfx-pick="kill" data-id="${escapeHtml(k.id)}"
+    return `<button type="button" class="vfx-tile${sel ? ' is-sel' : ''}${on ? ' is-on' : ''}" data-vfx-pick="${escapeHtml(k.id)}"
         data-anim="${escapeHtml(asset(k.preview || k.image))}" aria-pressed="${sel}">
         <span class="vfx-tile-art">${img(k.image, '')}</span>
         <span class="vfx-tile-name">${escapeHtml(k.name)}</span>${on ? '<span class="vfx-tag">Equipado</span>' : ''}
       </button>`;
   }
 
-  function vfxPackBlock(p) {
-    const on = vfxData.me?.pack === p.id;
-    return `<section class="vfx-pack panel${on ? ' is-on' : ''}" style="--vfx:${vfxColor(p.color)}">
-        <header class="vfx-pack-head">
-          <span class="vfx-pack-art">${img(p.image, '')}</span>
-          <div class="vfx-pack-text">
-            <span class="cat">Paquete · ${p.skills.length} skills pasivas</span>
-            <h3>${escapeHtml(p.name)}</h3>
-            <p>${escapeHtml(p.desc)}</p>
-          </div>
-          <div class="vfx-pack-buy">${vfxFoot('pack', p.id)}</div>
-        </header>
-        <div class="vfx-skill-grid">${p.skills
-          .map((sk) => {
-            const sel = vfxSel?.kind === 'skill' && vfxSel.pack === p.id && vfxSel.id === sk.id;
-            return `<button type="button" class="vfx-skill${sel ? ' is-sel' : ''}" data-vfx-pick="skill" data-pack="${escapeHtml(p.id)}" data-id="${escapeHtml(sk.id)}" aria-pressed="${sel}">
-              <span class="vfx-skill-art">${sk.preview ? `<img src="${asset(sk.preview)}" alt="" loading="lazy" decoding="async">` : ''}</span>
-              <span class="vfx-skill-text"><b>${escapeHtml(sk.name)}</b><span>${escapeHtml(triggerText(sk))} · ${seconds(sk.cooldown)}</span></span>
-            </button>`;
-          })
-          .join('')}</div>
-      </section>`;
-  }
-
   function renderVfx(box) {
-    if (!vfxData) {
+    if (!vfxData?.kills?.length) {
       box.innerHTML = '<p class="loading">No se pudieron cargar los efectos. Recarga la página.</p>';
       return;
     }
     box.classList.add('vfx-shop');
-    if (!vfxSel) vfxSel = vfxTab === 'packs' ? { kind: 'skill', pack: vfxData.packs[0].id, id: vfxData.packs[0].skills[0].id } : { kind: 'kill', id: vfxData.kills[0].id };
     const cats = vfxData.cats || [];
-    const tab = (id, label, n) =>
-      `<button type="button" role="tab" data-vfx-tab="${id}" aria-selected="${vfxTab === id}">${label}<span>${n}</span></button>`;
-    let body;
-    if (vfxTab === 'packs') {
-      body = `<div class="vfx-packs">${vfxData.packs.map(vfxPackBlock).join('')}</div>`;
-    } else {
-      const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
-      body = `<div class="vfx-filter" role="group" aria-label="Categorías">${[{ id: 'todos', name: 'Todos' }, ...cats]
-        .map(
-          (c) =>
-            `<button type="button" class="chip" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}"${
-              c.color && HEX.test(c.color) ? ` style="--vfx:${c.color}"` : ''
-            }>${escapeHtml(c.name)}</button>`,
-        )
+    const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
+    box.innerHTML = `
+      <div class="vfx-hero">
+        <h2>Efectos de kill</h2>
+        <p>${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.</p>
+      </div>
+      <div id="vfx-stage">${vfxStage()}</div>
+      <div class="vfx-filter" role="group" aria-label="Categorías">${[{ id: 'todos', name: 'Todos' }, ...cats]
+        .map((c) => `<button type="button" class="chip" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}">${escapeHtml(c.name)}</button>`)
         .join('')}</div>
       ${shown
         .map((c) => {
@@ -746,21 +700,6 @@
         </section>`;
         })
         .join('')}`;
-    }
-    box.innerHTML = `
-      <div class="vfx-hero">
-        <div>
-          <h2>Efectos visuales</h2>
-          <p>Todo gratis. Se activan solos en el juego: los efectos de kill al derrotar a alguien y las skills al pelear.</p>
-        </div>
-      </div>
-      <div id="vfx-stage">${vfxStage()}</div>
-      <div class="vfx-tabs" role="tablist" aria-label="VFX">${tab('kills', 'Efectos de kill', vfxData.kills.length)}${tab(
-        'packs',
-        'Paquetes de skills',
-        vfxData.packs.length,
-      )}</div>
-      ${body}`;
   }
 
   // Al pasar el ratón por una kill se anima su miniatura (solo en pantallas con ratón)
@@ -786,7 +725,7 @@
   document.addEventListener('click', async (e) => {
     const pick = e.target.closest('[data-vfx-pick]');
     if (pick) {
-      vfxSel = pick.dataset.vfxPick === 'skill' ? { kind: 'skill', pack: pick.dataset.pack, id: pick.dataset.id } : { kind: 'kill', id: pick.dataset.id };
+      vfxSel = pick.dataset.vfxPick;
       $('#vfx-stage').innerHTML = vfxStage();
       $$('[data-vfx-pick]').forEach((b) => {
         const sel = b === pick;
@@ -798,12 +737,9 @@
       if (stage.getBoundingClientRect().top < 0) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    const vt = e.target.closest('[data-vfx-tab], [data-vfx-cat]');
+    const vt = e.target.closest('[data-vfx-cat]');
     if (vt) {
-      if (vt.dataset.vfxTab && vt.dataset.vfxTab !== vfxTab) {
-        vfxTab = vt.dataset.vfxTab;
-        vfxSel = null;
-      } else if (vt.dataset.vfxCat) vfxCat = vt.dataset.vfxCat;
+      vfxCat = vt.dataset.vfxCat;
       if (currentCategory === 'vfx') renderVfx($('#products'));
       return;
     }
@@ -823,9 +759,8 @@
       const body = { kind, id: 'vfxRemove' in btn.dataset ? null : id };
       const { res, data } = await postWithTerms(url, body);
       if (res.ok) {
+        const name = vfxNameOf(kind, id);
         vfxData.me = data.me;
-        const list = kind === 'kill' ? vfxData.kills : vfxData.packs;
-        const name = list.find((x) => x.id === id)?.name || '';
         toast('vfxRemove' in btn.dataset ? `Quitaste ${name}` : `${name} equipado: en el juego se activa solo`);
         if (currentCategory === 'vfx') renderVfx($('#products'));
         return;
@@ -902,13 +837,13 @@
       ? `<span class="sk-key is-passive">${escapeHtml(skPassiveText(sk))}</span>`
       : `<span class="sk-key"><kbd>${escapeHtml(sk.key || '·')}</kbd>Tecla</span>`;
     const art = sk.preview
-      ? `<img class="sk-anim" src="${asset(sk.preview)}" alt="Vista previa de ${escapeHtml(sk.name)}" decoding="async">`
+      ? `<img class="sk-anim" src="${asset(sk.preview)}" alt="Vista previa de ${escapeHtml(sk.name)}" width="480" height="480" decoding="async">`
       : `<div class="sk-noanim">${skIcon(sk.icon, 'sk-noanim-icon')}<p>Esta skill no tiene animación propia: ${
           sk.passive ? 'funciona sola mientras llevas la clase' : 'mejora tus otras skills o tus golpes'
         }.</p></div>`;
     return `<div class="sk-screen${sk.preview ? '' : ' is-still'}">
         ${art}
-        <span class="vfx-live" aria-hidden="true"><i></i>Vista previa</span>
+        <span class="vfx-live" aria-hidden="true">Vista previa</span>
         <div class="sk-caption">${skIcon(sk.icon)}<div><b>${escapeHtml(sk.name)}</b>${key}</div></div>
       </div>`;
   }
@@ -1056,9 +991,8 @@
         <div class="sk-browse-head"><h3>Todas las clases</h3></div>
         <div class="vfx-filter sk-filter" role="group" aria-label="Tipo de clase">${groups
           .map(
-            (g) => `<button type="button" class="chip" data-sk-group="${escapeHtml(g.id)}" aria-pressed="${g.id === skGroup}"${
-              g.color && HEX.test(g.color) ? ` style="--vfx:${g.color}"` : ''
-            }>${escapeHtml(g.name)} <span class="sk-n">${g.n}</span></button>`,
+            (g) =>
+              `<button type="button" class="chip" data-sk-group="${escapeHtml(g.id)}" aria-pressed="${g.id === skGroup}">${escapeHtml(g.name)} <span class="sk-n">${g.n}</span></button>`,
           )
           .join('')}</div>
         <div class="sk-grid" id="sk-grid">${skGrid()}</div>

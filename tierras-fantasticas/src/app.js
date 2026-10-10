@@ -57,7 +57,7 @@ const skillProducts = skillClasses.map((c) => ({
 const allProducts = [...products, ...skillProducts];
 const productById = new Map(allProducts.map((p) => [p.id, p]));
 const skillOf = (product) => (product?.category === 'skills' ? skillById.get(product.skillClass) || null : null);
-// VFX (efectos de kill sueltos y paquetes de skills): por ahora todos gratis.
+// VFX (efectos de kill): por ahora todos gratis.
 const VFX_FREE = true;
 // --- Armario: lo comprado que se puede llevar puesto (solo apariencia) ---
 // Huecos del armario y qué piezas van en cada uno (por el id de la pieza en el set).
@@ -84,12 +84,22 @@ function productPieces(p) {
 }
 
 const vfxKills = new Set(vfx.kills.map((k) => k.id));
-const vfxPacks = new Set(vfx.packs.map((p) => p.id));
+// Paquetes de skills de los VFX: ya no se dan ni se enseñan en la tienda (ahora están las clases de Skills). Quien ya
+// tenía uno lo conserva: lo puede seguir equipando o quitando desde la web y el pad, y el puente lo sigue mandando.
+const VFX_OLD_PACKS = new Map([
+  ['vendaval', { name: 'Filo del Vendaval', image: 'img/vfx/pack_vendaval.webp' }],
+  ['trueno', { name: 'Ronin del Trueno', image: 'img/vfx/pack_trueno.webp' }],
+]);
+// Lo que se puede obtener ahora (solo efectos de kill)
 function vfxItem(kind, id) {
   if (typeof id !== 'string') return null;
   if (kind === 'kill' && vfxKills.has(id)) return { kind, id, key: `kill:${id}` };
-  if (kind === 'pack' && vfxPacks.has(id)) return { kind, id, key: `pack:${id}` };
   return null;
+}
+// Lo que se puede equipar si ya es suyo: los efectos de kill y los paquetes viejos
+function vfxEquipable(kind, id) {
+  if (kind === 'pack' && typeof id === 'string' && VFX_OLD_PACKS.has(id)) return { kind, id, key: `pack:${id}` };
+  return vfxItem(kind, id);
 }
 const productRoles = (p) => (p.discordRoles || []).filter(isSnowflake);
 const ranks = products.filter((p) => p.category === 'rangos' && p.rank && Number.isInteger(p.tier));
@@ -155,6 +165,15 @@ export function createApp(env) {
   const log = env.LOGGER || console;
 
   const store = createStore(env.DB);
+
+  // Lo del jugador para la web: lo suyo, lo equipado y, si tenía alguno, sus paquetes viejos (nombre y miniatura)
+  async function vfxView(uuid) {
+    const mine = await store.vfxFor(uuid);
+    const packs = mine.owned
+      .filter((k) => k.startsWith('pack:') && VFX_OLD_PACKS.has(k.slice(5)))
+      .map((k) => ({ id: k.slice(5), ...VFX_OLD_PACKS.get(k.slice(5)) }));
+    return { ...mine, packs };
+  }
   const stripe = env.STRIPE_SECRET_KEY ? new Stripe({ secretKey: env.STRIPE_SECRET_KEY, apiBase: env.STRIPE_API_BASE }) : null;
   // PayPal (opcional): con PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET en Cloudflare aparece el botón «Pagar con PayPal».
   // PAYPAL_ENV = 'sandbox' para pruebas (por defecto, live).
@@ -468,7 +487,7 @@ export function createApp(env) {
     // VFX: el catálogo y, con la cuenta iniciada, lo que tiene y lleva equipado el jugador.
     'GET /api/vfx': async (req) => {
       const user = await currentUser(req);
-      return json({ free: VFX_FREE, cats: vfx.cats, kills: vfx.kills, packs: vfx.packs, me: user ? await store.vfxFor(user.uuid) : null });
+      return json({ free: VFX_FREE, cats: vfx.cats, kills: vfx.kills, me: user ? await vfxView(user.uuid) : null });
     },
 
     // Obtener un VFX (gratis): queda en la cuenta y se equipa; el servidor lo pone en la siguiente consulta del puente.
@@ -479,11 +498,11 @@ export function createApp(env) {
       if (terms) return terms;
       const body = (await readJson(req)) || {};
       const item = vfxItem(body.kind, body.id);
-      if (!item) return json({ error: 'Ese efecto no existe.' }, 400);
+      if (!item) return json({ error: body.kind === 'pack' ? 'Los paquetes de skills ya no están disponibles.' : 'Ese efecto no existe.' }, 400);
       if (!VFX_FREE) return json({ error: 'Este efecto ya no es gratis.' }, 403);
       await store.vfxGive(user.uuid, item.key);
       await store.vfxEquip(user.uuid, item.kind, item.id);
-      return json({ me: await store.vfxFor(user.uuid) });
+      return json({ me: await vfxView(user.uuid) });
     },
 
     // Equipar uno que ya tiene, o quitarlo (id null).
@@ -493,13 +512,13 @@ export function createApp(env) {
       const body = (await readJson(req)) || {};
       if (body.kind !== 'kill' && body.kind !== 'pack') return json({ error: 'Petición no válida.' }, 400);
       if (body.id != null) {
-        const item = vfxItem(body.kind, body.id);
+        const item = vfxEquipable(body.kind, body.id);
         if (!item) return json({ error: 'Ese efecto no existe.' }, 400);
         const mine = await store.vfxFor(user.uuid);
         if (!mine.owned.includes(item.key)) return json({ error: 'Primero tienes que obtenerlo.', code: 'not_owned' }, 403);
       }
       await store.vfxEquip(user.uuid, body.kind, body.id || null);
-      return json({ me: await store.vfxFor(user.uuid) });
+      return json({ me: await vfxView(user.uuid) });
     },
 
     // Skills: el catálogo de clases y, con la cuenta iniciada, las que tiene, la activa y las que está pagando con monedas.
@@ -1263,9 +1282,10 @@ export function createApp(env) {
           await store.vfxEquip(v.uuid, v.kind, null);
           continue;
         }
-        const item = vfxItem(v.kind, v.id);
+        // Los efectos de kill gratis se dan al equiparlos; los paquetes viejos solo si ya eran suyos
+        const item = vfxEquipable(v.kind, v.id);
         if (!item) continue;
-        if (VFX_FREE) await store.vfxGive(v.uuid, item.key);
+        if (VFX_FREE && item.kind === 'kill') await store.vfxGive(v.uuid, item.key);
         else if (!(await store.vfxFor(v.uuid)).owned.includes(item.key)) continue;
         await store.vfxEquip(v.uuid, item.kind, item.id);
       }

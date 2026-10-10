@@ -59,15 +59,16 @@ ROLE_GROUP = {
 # Icono de la clase en la rejilla: por defecto el de su primera skill con tecla; aquí se puede elegir otra.
 CLASS_ICON = {}
 
-# Vistas previas: lado en píxeles, calidad WebP, máximo de fotogramas (a 10 por segundo) y el fondo, que va pintado en
+# Vistas previas (de tf-client/tools/skills/previews.py: ya encuadradas a 480 px, 20 por segundo, sin pérdida): lado,
+# calidad WebP, máximo de fotogramas y el fondo, que va pintado en
 # la imagen (con transparencia pesan el doble). La web pone ese mismo color detrás (--sk-bg en styles.css).
-PREVIEW_SIZE = 256
-PREVIEW_QUALITY = 42
-PREVIEW_MAX_FRAMES = 56
-PREVIEW_HOLD = 4
-PREVIEW_MIN_FRAMES = 18
+PREVIEW_SIZE = 480
+PREVIEW_QUALITY = 72
+PREVIEW_MAX_FRAMES = 130
+PREVIEW_HOLD = 8
+PREVIEW_MIN_FRAMES = 36
 PREVIEW_BG = (12, 15, 31)
-FRAME_MS = 100
+FRAME_MS = 50
 
 
 def mod_dir(args):
@@ -132,7 +133,9 @@ def convert_preview(src, dst):
     alpha = stack[..., 3].max(axis=0) > 8
     ys, xs = np.nonzero(alpha)
     h, w = alpha.shape
-    if len(xs):
+    if (w, h) == (PREVIEW_SIZE, PREVIEW_SIZE):
+        box = (0, 0, w, h)  # previews.py ya las da encuadradas y al tamaño final: ni recorte ni reescalado
+    elif len(xs):
         x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
         side = int(min(max(h, w) * 1.1, max(max(x1 - x0, y1 - y0) * 1.12, 120)))
         bx = int(round((x0 + x1) / 2 - side / 2))
@@ -142,13 +145,15 @@ def convert_preview(src, dst):
         box = (0, 0, w, h)
     out = []
     for fr in stack:
-        img = Image.fromarray(fr, 'RGBA').crop(box).resize((PREVIEW_SIZE, PREVIEW_SIZE), Image.LANCZOS)
+        img = Image.fromarray(fr, 'RGBA').crop(box)
+        if img.size != (PREVIEW_SIZE, PREVIEW_SIZE):
+            img = img.resize((PREVIEW_SIZE, PREVIEW_SIZE), Image.LANCZOS)
         bg = Image.new('RGBA', img.size, PREVIEW_BG + (255,))
         bg.alpha_composite(img)
         out.append(bg.convert('RGB'))
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     out[0].save(dst, 'WEBP', save_all=True, append_images=out[1:], duration=FRAME_MS, loop=0,
-                quality=PREVIEW_QUALITY, method=4)
+                quality=PREVIEW_QUALITY, method=6)
     return True
 
 
