@@ -1327,14 +1327,15 @@ READMEs detallados: `tierras-fantasticas/README.md` (web, Stripe, Discord, puent
 
 - Habla con él **en español**, claro y sin rodeos. Es exigente y se enfada (con razón) si se repiten errores: lee bien
   lo que pide, haz exactamente eso y **no añadas cosas que no pidió**.
-- «dale, y no me pidas permiso para la otra»: cuando el trabajo esté terminado y probado, **fusionar y publicar sin
-  preguntar**. Flujo: PR en borrador → marcarlo listo → *squash merge* → reiniciar la rama:
+- «dale, y no me pidas permiso para la otra» y (10 oct) «nunca me pidas permiso, sube siempre a main todo para que se
+  actualice»: cuando el trabajo esté terminado y probado, **fusionar a `main` y publicar SIN PREGUNTAR NUNCA**. Flujo: PR en borrador → marcarlo listo → *squash merge* → reiniciar la rama:
   `git fetch origin main && git checkout -B claude/amazing-wozniak-gtw9ll origin/main && git push --force-with-lease -u origin claude/amazing-wozniak-gtw9ll`.
   Tras fusionar, esperar el despliegue de Cloudflare y **comprobar la web en vivo**.
 - Los mensajes de commit terminan con las líneas de atribución de la sesión (Co-Authored-By / Claude-Session) y las
   descripciones de PR con «🤖 Generated with Claude Code» y el enlace de la sesión.
 - **Cada vez que cambie el mod**: subir la versión (mira la de «Estado al cierre», arriba) en `tf-client/gradle.properties`
-  (`mod_version`) y en `TFClient.VERSION`, compilar y **mandarle el `.jar`** (como archivo adjunto).
+  (`mod_version`) y en `TFClient.VERSION`, compilar y **darle el enlace directo de descarga** del `.jar` subido a
+  `descargas/` (pesa ~48 MB: más que el límite de 30 MB de los adjuntos; deja solo el último jar en `descargas/`).
 - **Nunca** lanzar el juego ni un servidor de Minecraft. El mod se comprueba compilando y simulando (p. ej. la ventana
   de oficios se simuló con PIL usando la textura del cofre de vanilla y el arte real).
 - **Secretos** solo en Cloudflare (Secrets), **nunca** en el chat ni en git (lista en la sección 4).
