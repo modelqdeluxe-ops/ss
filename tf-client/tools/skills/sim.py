@@ -353,6 +353,7 @@ class Sim:
         if meta.get('target_conditions'):
             ins = ctx.targets if ctx.targets is not None else [Tgt(ctx.caster)]
             outs = []
+            replaced = False
             for t in ins:
                 cp = Tgt(t.who, t.at)
                 cp.power = t.power
@@ -364,13 +365,24 @@ class Sim:
                         if r:
                             cp.power *= num(act[5:].strip(), 1)
                         continue
+                    # castinstead / orElseCast: ese objetivo se va a la otra skill; los demás siguen
+                    alt = act.startswith('castinstead')
+                    if alt or act.startswith('orelsecast'):
+                        if r == alt:
+                            other = ctx.copy()
+                            other.targets = [cp]
+                            self.run_named(act[len('castinstead' if alt else 'orelsecast'):].strip(), other)
+                            replaced = True
+                            keep = False
+                            break
+                        continue
                     if not self.passes(act, r):
                         keep = False
                         break
                 if keep:
                     outs.append(cp)
             if not outs:
-                return False
+                return replaced
             run = ctx.copy()
             run.depth = ctx.depth
             run.targets = outs

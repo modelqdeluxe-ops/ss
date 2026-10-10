@@ -337,6 +337,7 @@ public final class SkillRuntime {
         if (!meta.targetConditions.isEmpty()) {
             List<Tgt> in = run.targets != null ? run.targets : List.of(Tgt.of(run.caster));
             List<Tgt> out = new ArrayList<>();
+            boolean replaced = false;
             for (Tgt t : in) {
                 Tgt copy = new Tgt(t.who, t.at);
                 copy.power = t.power;
@@ -348,6 +349,19 @@ public final class SkillRuntime {
                         if (r) copy.power *= num(act.substring(5).trim(), 1);
                         continue;
                     }
+                    // castinstead / orElseCast: ese objetivo se va a la otra skill; los demás siguen
+                    boolean alt = act.startsWith("castinstead");
+                    if (alt || act.startsWith("orelsecast")) {
+                        if (r == alt) {
+                            Ctx other = run.copy();
+                            other.targets = List.of(copy);
+                            runNamed(act.substring((alt ? "castinstead" : "orelsecast").length()).trim(), other);
+                            replaced = true;
+                            keep = false;
+                            break;
+                        }
+                        continue;
+                    }
                     if (!passes(act, r)) {
                         keep = false;
                         break;
@@ -355,7 +369,7 @@ public final class SkillRuntime {
                 }
                 if (keep) out.add(copy);
             }
-            if (out.isEmpty()) return false;
+            if (out.isEmpty()) return replaced;
             run = run.copy();
             run.depth = ctx.depth;
             run.targets = out;

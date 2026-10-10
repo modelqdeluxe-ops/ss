@@ -1,7 +1,8 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **9 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`, rama de trabajo
-`claude/amazing-ritchie-68hm6n`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
+Última actualización: **10 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`. Rama de trabajo de **Skills** (sin
+fusionar todavía): `claude/admiring-pascal-q0szox` (antes `claude/amazing-wozniak-gtw9ll`, mismo historial); lo
+publicado está en `main`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
 funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -18,8 +19,10 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > configurables** (Opciones › Controles); el **arma y la armadura del pack vienen con la skill** (vinculadas, como los
 > sets); cada jugador tiene **una sola clase** a la vez.
 > **Recibidos: 40 packs** (40 clases, ~280 skills; ver `tools/skills/inventario.py <carpeta>`), descomprimidos en el
-> scratch de la sesión `skills/` (si se pierde el scratch, los zips están en las subidas del chat: hay que pedírselos
-> de nuevo al dueño). Los primeros 25: Red-DragonPack, MAGEPACK-1.1 (.rar),
+> scratch de la sesión `skills/` (el scratch es **de cada sesión**: en una nueva hay que pedirle los zips al dueño otra
+> vez; llegan a `/root/.claude/uploads/<sesión>/<prefijo>-<Pack>.zip`. Se descomprimen con `bsdtar -xf` (paquete
+> `libarchive-tools`, que también abre el `.rar`) en `<scratch>/skills/<Pack sin prefijo>/`, y los zips de dentro en una
+> carpeta con su nombre; con eso `build_skills.py` saca la tanda 1 **idéntica** a la del repo). Los primeros 25: Red-DragonPack, MAGEPACK-1.1 (.rar),
 > Glacia-v1.2, ZEPHYR-v1.3, samus2002_NECROMANCER, THORPACK-1.3, NULLPACK-1.1, samus2002_ARCTIC_KNIGHT,
 > RPG_Class_Series_Dragon_Warrior, samus2002_BLOODMOON_VAMPIRE, samus2002_SUMMONER_PACK_v1.7, samus2002_DEATH_KNIGHT,
 > RRPG_Void_Edge_Class_Full, PackClass_Magic_Lightning (zips dentro), LostAssets_ClassPack_04_Revenant,
@@ -76,6 +79,10 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >       del scratch hacía que mobs/ítems contasen como skills).
 > - [x] Textos en español de la tanda 1: `tools/skills/es.json` (nombre, rol, descripción, color; nombre y
 >       descripción de cada skill) → `name_es/role_es/desc_es`, `name_es/desc_es` en el JSON de cada clase.
+> - [x] Bug (10 oct): las TargetConditions con `castinstead`/`orElseCast` se trataban como filtro (tiraban el
+>       objetivo). Ahora, por objetivo: si toca, ese objetivo va a la otra skill y los demás siguen
+>       (`SkillRuntime.runMeta` y `sim.py`). Antes `frost_beam` (Glacia) hacía 0 de daño y el martillo de Thor al
+>       volver se trataba a sí mismo como objetivo en vez de desaparecer.
 > - [ ] **SIGUIENTE: web.** `tierras-fantasticas/` (Cloudflare Workers). Páginas con `tools/pages.py` (pestañas de la
 >       tienda en `tienda()`, línea ~327: cambiar `('tiendamonedas', 'Tienda de monedas')` por `('skills', 'Skills')`
 >       y el enlace del pie). Front: `public/app.js` (`renderVfx` ~706 es el modelo a seguir; quitar el render de
@@ -86,9 +93,8 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > - [ ] Pad: app/apartado de la clase y sus skills.
 > - [ ] Publicar por tandas, con vistas previas. Tanda 1: Glacia, Zephyr, Mago, Dragón Rojo, Thor.
 >
-> **Estado al cierre (9 oct 2026, noche):** todo fusionado en `main` (último PR: #56); **nada a medias**, el árbol
-> está limpio. Última versión publicada del mod: **TF Client 1.3.34** (la siguiente es **1.3.35**). La web no se tocó
-> en esta tanda.
+> **Estado de `main` (9 oct 2026, noche):** último PR fusionado #56/#57. Última versión publicada del mod: **TF Client
+> 1.3.34** (la siguiente, con las Skills, será **1.3.35**). Lo de Skills de arriba está **a medias** en su rama.
 >
 > **Resumen rápido para la IA que siga (lo hecho hoy, de lo más nuevo a lo más viejo; detalle en las entregas abajo):**
 > - 1.3.34: Protección → AJUSTES como **preguntas con SÍ / NO** (el que vale, verde; el otro, gris). El dueño se quejó
@@ -110,7 +116,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > cuando esté terminado y probado: PR → squash merge → reiniciar la rama desde `origin/main` (force-with-lease) sin
 > pedir permiso; cada cambio del mod sube `mod_version` (gradle.properties) y `TFClient.VERSION`, se compila y se le
 > manda el `.jar` adjunto (y vistas previas del simulador si cambia algo visual). **Nunca** abrir el juego ni un
-> servidor. Secretos solo en Cloudflare. Rama de trabajo: `claude/amazing-ritchie-68hm6n`.
+> servidor. Secretos solo en Cloudflare. Rama de trabajo: la que te asigne tu sesión (Skills: ver arriba).
 >
 > **Checkpoints:** el dueño pidió (9 oct) que en trabajos largos se vaya apuntando el plan y el avance aquí arriba y se
 > haga commit + push a la rama de vez en cuando, para que otra IA pueda seguir sin perder nada.

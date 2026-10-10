@@ -58,11 +58,10 @@ CLASS_IDS = {
 }
 
 
-# Packs que traen varias versiones: la carpeta de la completa (con todas las skills de la clase)
+# Packs que traen varias versiones: la carpeta de la completa (con todas las skills de la clase). Se busca por el
+# final de la ruta, porque según cómo se descompriman los zips de dentro sale con más o menos carpetas repetidas.
 PACK_SUBDIR = {
-    'PackClass_Magic_Lightning': 'PackClass_Magic_Lightning/PackClass_Magic_Lightning/'
-                                 'PackClass_Magic_Lightning_Skills_Untimate_V3/PackClass_Magic_Lightning_Skills_Untimate_V3/'
-                                 'PackClass_Magic_Lightning_Skills_Untimate_V3/config to Oraxen',
+    'PackClass_Magic_Lightning': 'PackClass_Magic_Lightning_Skills_Untimate_V3/config to Oraxen',
 }
 
 
@@ -79,7 +78,14 @@ RELEASED = {p for t in TANDAS for p in t}
 
 
 def pack_path(root, name):
-    return os.path.join(root, name, PACK_SUBDIR[name]) if name in PACK_SUBDIR else os.path.join(root, name)
+    base = os.path.join(root, name)
+    if name not in PACK_SUBDIR:
+        return base
+    tail = os.sep + PACK_SUBDIR[name].replace('/', os.sep)
+    for d, _, _ in sorted(os.walk(base)):
+        if d.endswith(tail):
+            return d
+    return os.path.join(base, PACK_SUBDIR[name])
 
 
 class Pack:
