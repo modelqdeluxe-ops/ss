@@ -273,7 +273,7 @@
    "desc": "Un asesino de las sombras: se vuelve invisible, atraviesa a sus enemigos con dagas y shuriken y acaba con ellos en una danza de cuchillas.",
    "color": "#b46bff",
    "icon": "img/skills/asesino_despertado/lethal_combo.png",
-   "showcase": "last_dance",
+   "showcase": "shadowquake",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -1002,7 +1002,7 @@
    "desc": "Un espadachín del vacío que corta la realidad con su katana: atraviesa dimensiones, se teletransporta a través de sus enemigos y desata la bendición del vacío.",
    "color": "#9b6bff",
    "icon": "img/skills/filo_vacio/void_edge_dimension_benediction.png",
-   "showcase": "void_edge_piercing_dimension",
+   "showcase": "void_edge_katana_upper_slash",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -1056,7 +1056,7 @@
    "desc": "La reina del hielo. Congela, ralentiza y encierra a sus enemigos con estacas, muros y tormentas de granizo.",
    "color": "#7fd3ff",
    "icon": "img/skills/glacia/frost_bolt.png",
-   "showcase": "frost_beam",
+   "showcase": "ice_spike",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -1285,7 +1285,7 @@
    "desc": "Un guerrero despertado con una espada espiritual roja: combos brutales, saltos berserker, barreras de sangre y grietas que hacen estallar el suelo.",
    "color": "#ff4a4a",
    "icon": "img/skills/guerrero_despertado/brutal_combo.png",
-   "showcase": "bulwark_instinct",
+   "showcase": "strike_of_fury",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -1597,7 +1597,7 @@
    "desc": "Un invocador de espíritus ancestrales: lucha con una lanza espiritual, monta un caballo de espíritu y llama a serpientes, gólems, águilas y tigres que pelean a su lado.",
    "color": "#5ff0d0",
    "icon": "img/skills/invocador_espiritus/spiritual_combo.png",
-   "showcase": "spirit_golem",
+   "showcase": "ancestral_tiger",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -2257,7 +2257,7 @@
    "desc": "Un piromante que acumula calor con sus ataques hasta entrar en Ignición, potenciando misiles de ceniza, lanzas volcánicas, rayos de fuego y meteoros.",
    "color": "#ff4a1a",
    "icon": "img/skills/piromante/pyro_combo.png",
-   "showcase": "magma_dash",
+   "showcase": "volcanic_spear",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -2340,7 +2340,7 @@
    "desc": "Un pistolero letal: ráfagas que perforan, escopetazos incendiarios, marcas de ejecución y lluvias de misiles.",
    "color": "#ff6b4a",
    "icon": "img/skills/pistolero_despertado/piercing_combo.png",
-   "showcase": "vermilion_execution",
+   "showcase": "hellflare_burst",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -2633,7 +2633,7 @@
    "desc": "Un samurái que fluye como el agua: tajos en remolino, danzas que levantan a los enemigos y mareas que lo arrasan todo.",
    "color": "#4ac7ff",
    "icon": "img/skills/samurai_agua/water_surface_slash.png",
-   "showcase": "constant_flux",
+   "showcase": "striking_tide",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
@@ -2862,7 +2862,7 @@
    "desc": "Un vampiro que moldea su sangre en cuatro armas (Hojas, Grimorio, Agujas y Guadaña), cada una con sus combos, y roba la vida de sus enemigos.",
    "color": "#d6224a",
    "icon": "img/skills/vampiro/bloodmoon_combo.png",
-   "showcase": "bloodborne_scythe",
+   "showcase": "vampiric_surge",
    "price": 599,
    "coinPrice": 7500,
    "skills": [
