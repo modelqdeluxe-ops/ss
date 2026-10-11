@@ -395,25 +395,30 @@ def mix_argb(a, b, t):
 WHATSAPP, DISCORD = 'whatsapp', 'discord_kind'
 GOLD_TEXT, RED_TEXT = 0xFFE08A, 0xFFC9D2
 BRAND = {WHATSAPP: 0x25D366, DISCORD: 0x5865F2}
-_plates = None
+_plates = {}
+WOOD_CENTER = 0.46  # centro a la vista de la madera, en altos del botón
 
 
 def plate(g, S, gx, gy, gw, index, alpha):
-    """TFMenuButton.plate: placa de menu_buttons.png (200x20 cada una), 4 px de cada lado y el centro cortado."""
-    global _plates
-    if _plates is None:
-        _plates = Image.open(GUI + '/menu_buttons.png').convert('RGBA')
-    src = _plates.crop((0, index * 20, 200, index * 20 + 20))
-    row = Image.new('RGBA', (gw, 20))
-    row.paste(src.crop((0, 0, 4, 20)), (0, 0))
-    done = 0
-    while done < gw - 8:
-        part = min(192, gw - 8 - done)
-        row.paste(src.crop((4, 0, 4 + part, 20)), (4 + done, 0))
+    """TFMenuButton.plate: placa de menu_buttons_S.png (200S x 20S cada una), CAP de cada lado y el centro cortado."""
+    n = max(1, min(6, S))
+    if n not in _plates:
+        _plates[n] = Image.open(GUI + '/menu_buttons_%d.png' % n).convert('RGBA')
+    tex = _plates[n]
+    tw, h, cap = 200 * n, 20 * n, min(7 * n, gw * n // 2)
+    src = tex.crop((0, index * h, tw, index * h + h))
+    w = gw * n
+    row = Image.new('RGBA', (w, h))
+    row.paste(src.crop((0, 0, cap, h)), (0, 0))
+    mid, done = tw - 2 * cap, 0
+    while done < w - 2 * cap:
+        part = min(mid, w - 2 * cap - done)
+        row.paste(src.crop((cap, 0, cap + part, h)), (cap + done, 0))
         done += part
-    row.paste(src.crop((196, 0, 200, 20)), (gw - 4, 0))
-    big = row.resize((gw * S, 20 * S), Image.NEAREST)
-    g.composite(to_float_img(big), gx * S, gy * S, (1, 1, 1, alpha))
+    row.paste(src.crop((tw - cap, 0, tw, h)), (w - cap, 0))
+    if n != S:
+        row = row.resize((gw * S, 20 * S), Image.NEAREST)
+    g.composite(to_float_img(row), gx * S, gy * S, (1, 1, 1, alpha))
 
 
 def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=False, active=True, alpha=1.0, sweep=None):
@@ -431,7 +436,7 @@ def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=Fal
     if not active:
         ink = 0x7C8299
     elif primary:
-        ink = 0x2A1A04
+        ink = mix_rgb(GOLD_TEXT, 0xFFF6D6, e)
     else:
         ink = mix_rgb(0xF3EFFF, RED_TEXT if kind == DANGER else GOLD_TEXT, e)
 
@@ -447,14 +452,11 @@ def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=Fal
         n = ICON * S
         iconimg = icon_image(icon, n)
         ix = int(round(gx0 * S))
-        iy = gy * S + (gh * S - n) // 2
+        iy = int(round(gy * S + gh * S * WOOD_CENTER - n / 2.0))
         g.composite(iconimg, ix, iy, tuple(c / 255.0 for c in rgb3(BRAND.get(kind, GOLD_TEXT))) + (alpha,))
         gx0 += ICON + GAP
-    ty = snap(gy + gh / 2.0 - TEXT_UP * scale)
-    if primary:
-        draw_text(g, label, gx0, ty, S, (255, 240, 192), 0.6 * alpha, off, scale)
-    else:
-        draw_text(g, label, gx0, ty, S, (0, 0, 0), 0.75 * alpha, off, scale)
+    ty = snap(gy + gh * WOOD_CENTER - TEXT_UP * scale)
+    draw_text(g, label, gx0, ty, S, (0x1A, 0x0E, 0x04), 0.85 * alpha, off, scale)
     draw_text(g, label, gx0, ty, S, rgb3(ink), alpha, 0, scale)
 
 

@@ -10,13 +10,17 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-> **TF Client 1.3.42 (11 oct)** — el dueño: «¿por qué no le das textura a los botones? ¿por qué siempre todo
-> transparente? un contorno bonito… agrega en medio el botón de la web». Botones del menú de inicio con **textura
-> opaca en pixel art** (`textures/gui/menu_buttons.png`, de `tools/gen_menu_buttons.py`: 8 placas de 200x20, 1 texel por
-> píxel de interfaz): piedra pizarra con grano, marco de metal dorado biselado de 2 px con remaches y un adorno en cada
-> lado; el principal, de oro; con el ratón la placa iluminada entra con un fundido; Salir en rojo. `TFMenuButton.plate`
-> la corta en tres (4 px de cada lado, centro sin estirar). Orden: Tierras Fantásticas · Mundo local · Mods ·
-> Opciones | Salir · WhatsApp | Web | Discord (70/52/70). Iconos solo en WhatsApp y Discord. `tools/menu_sim.py` al día.
+> **TF Client 1.3.43 (11 oct)** — el dueño rechazó los botones en pixel art hechos a mano («la peor basura de
+> diseño… busca texturas bonitas en internet»). Ahora los botones del menú de inicio son las **tablas de madera con
+> marco de metal** del "Medieval Game Button Pack" de pzUH (**CC0**, https://opengameart.org/content/medieval-game-button-pack;
+> el pack no va en el repo, solo lo convertido). `tools/gen_menu_buttons.py <Button.png del pack>` las pasa a
+> `textures/gui/menu_buttons_N.png` (N = escala de interfaz 1..6, placas de 200N x 20N, centro repetido en espejo):
+> marco plateado en reposo, dorado con el ratón (fundido), el principal dorado, Salir rojo, pulsado más oscuro,
+> desactivado gris. `TFMenuButton.plate` dibuja la hoja de la escala actual 1:1 en píxeles reales (7 px de interfaz de
+> cada lado, centro cortado), nítida. Texto Cinzel claro (dorado en el principal) con sombra marrón, centrado en la
+> madera (`WOOD_CENTER` 0.46: el marco de abajo es más grueso). Mismo orden: Tierras Fantásticas · Mundo local · Mods ·
+> Opciones | Salir · WhatsApp | Web | Discord; iconos solo en WhatsApp y Discord. `tools/menu_sim.py` al día. (La 1.3.42,
+> pixel art, nunca llegó a main.)
 
 > **TF Client 1.3.41 (11 oct)** — el dueño: «los botones del menú de inicio están horribles, no pongas figuras, solo
 > para WhatsApp y Discord». Botones planos y sobrios (`TFMenuButton`): principal dorado liso con borde fino; los demás,
@@ -1609,7 +1613,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.42)
+## 5. El mod (TF Client 1.3.43)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
