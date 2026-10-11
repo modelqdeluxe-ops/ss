@@ -45,7 +45,10 @@ def rgb(c):
 GX, GY, GW, GH = 52, 64, 288, 132
 BAR = 18
 # TFPadScreen.STRETCH_U/D y MAX_EXTRA: filas de frame.png que se repiten para hacer el pad más alto
-STRETCH_U, STRETCH_D, MAX_EXTRA = 430, 596, 40
+STRETCH_U, STRETCH_D, MAX_EXTRA = 430, 596, 48
+# 1.3.38: también a lo ancho (columnas repetidas a cada lado de la gema) y el tamaño se calcula con lo que se ve
+STRETCH_L, STRETCH_R, MAX_EXTRA_X = 540, 1028, 24
+VIS_L, VIS_R, VIS_T, VIS_B = 10, 382, 2, 235
 INK = (24, 38, 92)
 GOLD, GOLD_HI, GOLD_LO = (246, 182, 40), (255, 229, 138), (192, 120, 24)
 PANEL_TOP, PANEL_BOT, PANEL_HI = (248, 252, 255), (220, 238, 252), (255, 255, 255)
@@ -75,14 +78,17 @@ class Sim:
     576x264 unidades. Las coordenadas de todos los métodos son unidades; dentro de `with s.big_at(x, y)` son píxeles
     de textura a la escala grande con la esquina en (x, y)."""
 
-    def __init__(self, ps=4, fbh=1080):
-        self.ps = ps
-        self.cs = ps if ps <= 2 else max(2, round(ps / 2))
+    def __init__(self, ps=None, fbh=1080, fbw=1920):
+        vw, vh = VIS_R - VIS_L, VIS_B - VIS_T
+        self.fbw, self.fbh = fbw, fbh
+        self.ps = ps = ps or max(1, int(min(fbw * 0.97 / vw, fbh * 0.975 / vh)))
+        self.cs = ps if ps <= 2 else max(2, int(ps / 2 + 0.5))
         self.big = max(self.cs, int(ps * 0.75 + 0.5))
         self.bs = self.big / self.cs
         self.bar = round(12 * self.bs) + 6
-        self.extra = max(0, min(MAX_EXTRA, int((fbh * 0.985 / ps - 251) // 2)))
-        self.UW, self.UH = GW * ps // self.cs, (GH + self.extra * 2) * ps // self.cs
+        self.extra = max(0, min(MAX_EXTRA, int((fbh * 0.985 / ps - vh) // 2)))
+        self.extra_x = max(0, min(MAX_EXTRA_X, int((fbw * 0.97 / ps - vw) // 2)))
+        self.UW, self.UH = (GW + self.extra_x * 2) * ps // self.cs, (GH + self.extra * 2) * ps // self.cs
         self.Y = self.bar + 4
         self.X = self.logo_right(self.Y) + 4
         self.W = self.UW - self.X * 2
@@ -296,11 +302,11 @@ class Sim:
         cristal). Devuelve su alto."""
         lines = []
         for line in header:
-            for l in self.split(line, w - 18):
+            for l in self.split(line, w - 30):
                 lines.append(l)
         if len(lines) > room:
             lines = lines[:room]
-            lines[-1] = self.fitend(lines[-1] + '...', w - 18)
+            lines[-1] = self.fitend(lines[-1] + "...", w - 30)
         h = len(lines) * 10 + 4
         self.vgrad(x, y, w, h, rgb(0xF0F7FE), rgb(0xE0EDFA))
         self.fill(x, y + h, x + w, y + h + 1, rgb(0xC9DCF0))
@@ -562,7 +568,7 @@ class Sim:
         self.mtext(t, rx + 1, ry + 1, (255, 255, 255))
 
     # -------------------------------------------------------------------------------------------------------------
-    def status(self, title, back=True, title_color=(255, 255, 255), music=False):
+    def status(self, title, back=True, title_color=(255, 255, 255), music=False, greens=True):
         """TFPadScreen.drawStatus (1.3.25): todo a la escala grande."""
         bsz = self.bigu(12)
         bx, by = self.logo_right(0) + 4, (self.bar - bsz) // 2
@@ -583,7 +589,9 @@ class Sim:
         with self.big_at(right + bsz / 2 - 5 * self.bs, self.bar / 2 - 5 * self.bs):
             self.blit('gear', 0, 0)
         right -= self.bigu(8)
-        for text, icon, color in (('1,250', 'coin', (255, 230, 128)), ('18:30', 'sun', (255, 255, 255))):
+        for text, icon, color in (('1.250', 'coin', (255, 230, 128)), ('7', 'coin_green', (140, 240, 180)), ('18:30', 'sun', (255, 255, 255))):
+            if icon == 'coin_green' and not greens:
+                continue
             w = self.bigu(self.pwidth(text))
             right -= w
             with self.big_at(right, ty + self.bs):
@@ -602,29 +610,51 @@ class Sim:
                 self.fill(x, y1 - h, x + self.bigu(2), y1, rgb(0x7CF0B0))
 
     def home(self, apps, hover=None, glint=None):
-        """PadHomePage (1.3.26): fichas de 40 a la escala grande, nombres a escala normal, 7 columnas y el aire
-        repartido; la del ratón, elevada con su sombra. Sin halo ni partículas."""
-        X, Y, W, H = self.X, self.Y, self.W, self.H
+        """PadHomePage (1.3.38): rejilla simétrica. Fichas iguales a la escala grande (o a una escala entera menor si
+        así no caben las filas), el mismo hueco a lo ancho y a lo alto, filas repartidas (23 → 8+8+7), centrada en el
+        cristal y la última fila incompleta centrada. Nombres a escala normal; la del ratón, elevada con su sombra."""
+        Y, H, SW = self.Y, self.H, self.UW
         LABEL_H, MIN_GAP = 11, 4
-        t = self.bigu(40)
-        gw = self.UW - 8
-        cols = max(3, min(7, gw // (t + self.bigu(8))))
-        cw = min(gw // cols, t + self.bigu(10))
-        rows = (len(apps) + cols - 1) // cols
-        base = t + LABEL_H + MIN_GAP
-        ch = base if rows * base >= H else base + (H - rows * base) // (rows + 1)
-        top = Y + (H - rows * ch) // 2 + (ch - t - LABEL_H) // 2 if rows * ch <= H else Y + 2
-        x0 = (self.UW - cols * cw) // 2
-        x0 = max(x0, self.logo_right(top) + 2 - (cw - t) // 2)
-        x0 = min(x0, self.UW - 4 - cols * cw)
-        self.scissor(2, Y, self.UW - 4, H)
+        n = len(apps)
+        max_label = max(self.pwidth(name) for _, name in apps)
+        room = SW - 8
+        grid = None
+        for k in range(self.big, max(1, self.cs) - 1, -1):
+            ts = k / self.cs
+            t = round(40 * ts)
+            min_gap = max(round(8 * ts), max_label - t + 6)
+            max_cols = max(1, min(9, (room + min_gap) // (t + min_gap)))
+            rows = max(1, -(-n // max_cols))
+            cols = max(1, -(-n // rows))
+            cell_h = t + LABEL_H
+            gap_v = (H - rows * cell_h) // (rows + 1)
+            gap_h = (room - cols * t) // (cols + 1)
+            fits = gap_v >= MIN_GAP
+            gap_x = max(min_gap, min(gap_h, round(26 * ts)))
+            gap_y = min(gap_x, gap_v) if fits else MIN_GAP
+            gap_x = max(min_gap, min(gap_x, gap_y))
+            grid_w = cols * t + (cols - 1) * gap_x
+            content_h = rows * cell_h + (rows - 1) * gap_y
+            x0 = (SW - grid_w) // 2
+            top = Y + (H - content_h) // 2 if fits else Y + 2
+            while self.logo_right(top) + 2 > x0 and top + content_h < Y + H:
+                top += 1
+            grid = (ts, t, cols, x0, top, t + gap_x, cell_h + gap_y)
+            if fits:
+                break
+        ts, t, cols, x0, top, px, py = grid
+        self.home_grid = grid
+        self.scissor(2, Y, SW - 4, H)
         for i, (icon, name) in enumerate(apps):
-            tx, ty = x0 + (i % cols) * cw + (cw - t) // 2, top + (i // cols) * ch
+            row, col = divmod(i, cols)
+            in_row = min(cols, n - row * cols)
+            tx = x0 + (cols - in_row) * px // 2 + col * px
+            ty = top + row * py
             hv = icon == hover
-            lift = -round(self.bs * 2) if hv else 0
+            lift = -round(ts * 2) if hv else 0
             if lift:
-                self.fill(tx + self.bigu(3), ty + t, tx + t - self.bigu(3), ty + t + self.bigu(1), (24, 38, 92, 0x55))
-            with self.big_at(tx, ty + lift):
+                self.fill(tx + round(3 * ts), ty + t, tx + t - round(3 * ts), ty + t + max(1, round(ts)), (24, 38, 92, 0x55))
+            with self.big_at(tx, ty + lift, px=ts * self.cs):
                 self.blit('tile_h' if hv else 'tile', 0, 0)
                 self.blit('icon_' + icon, 4, 4)
             self.ptext(name, tx + t // 2 - self.pwidth(name) // 2, ty + t + 2, (255, 230, 128) if hv else (255, 255, 255))
@@ -829,8 +859,11 @@ class Sim:
         self.title(name, cx - self.title_w(name, w - 6) // 2, yy + sh + 6, w - 6, TEXT)
         if sub:
             style = self.tone(sub, on or sel, ex.get('tone', 0))
-            if self.chip_w(sub) > w - 6:
-                sub = self.fitend(sub, w - 14)
+            if self.chip_w(sub) > w - 6:  # PadUi.fitChip: se recorta lo de dentro, contando la moneda y el «+»
+                plus, coin, rest = self.money_parts(sub)
+                head = '+¤' if plus else '¤' if coin else ''
+                room = w - 6 - (self.chip_w(head + 'x') - self.mwidth('x'))
+                sub = head + self.fitend(rest, max(6, room))
             self.chip(cx - self.chip_w(sub) // 2, yy + sh + 17, sub, style)
         if ex.get('prog', -1) >= 0:
             pct = f"{round(min(1, ex['prog']) * 100)}%"
@@ -965,15 +998,30 @@ class Sim:
                 self.button(bx, by, self.bw(b[0]), b[0], b[1], b[2] if len(b) > 2 else True)
                 bx += self.bw(b[0]) + 4
 
-    def save(self, path):
-        """El marco a escala ps y el cristal encima, como en el juego."""
+    def frame(self):
+        """frame.png alargado como TFPadScreen.drawFrame (filas y columnas lisas repetidas), a escala ps."""
         import numpy as np
         a = np.asarray(Image.open(f'{TEX}/frame.png').convert('RGBA'))
-        e = self.extra * 4
+        e, ex = self.extra * 4, self.extra_x * 4
         a = np.concatenate([a[:STRETCH_U], np.repeat(a[STRETCH_U:STRETCH_U + 1], e, axis=0), a[STRETCH_U:STRETCH_D],
                             np.repeat(a[STRETCH_D:STRETCH_D + 1], e, axis=0), a[STRETCH_D:]], axis=0)
+        a = np.concatenate([a[:, :STRETCH_L], np.repeat(a[:, STRETCH_L:STRETCH_L + 1], ex, axis=1), a[:, STRETCH_L:STRETCH_R],
+                            np.repeat(a[:, STRETCH_R:STRETCH_R + 1], ex, axis=1), a[:, STRETCH_R:]], axis=1)
         frame = Image.fromarray(a)
         if self.ps != 4:
-            frame = frame.resize((392 * self.ps, (251 + self.extra * 2) * self.ps), Image.NEAREST)
+            frame = frame.resize(((392 + self.extra_x * 2) * self.ps, (251 + self.extra * 2) * self.ps), Image.NEAREST)
+        return frame
+
+    def save(self, path, screen=False):
+        """El marco a escala ps y el cristal encima, como en el juego. screen=True: dentro de la pantalla entera (fbw x
+        fbh, con el fondo oscurecido), centrado por lo que se ve del marco, como TFPadScreen.init."""
+        frame = self.frame()
         frame.alpha_composite(self.art, (GX * self.ps, GY * self.ps))
+        if screen:
+            vw, vh = VIS_R - VIS_L, VIS_B - VIS_T
+            fx = (self.fbw - (vw + self.extra_x * 2) * self.ps) // 2 - VIS_L * self.ps
+            fy = (self.fbh - (vh + self.extra * 2) * self.ps) // 2 - VIS_T * self.ps
+            out = Image.new('RGBA', (self.fbw, self.fbh), (16, 16, 24, 255))
+            out.alpha_composite(frame, (fx, fy))
+            frame = out
         frame.save(path)

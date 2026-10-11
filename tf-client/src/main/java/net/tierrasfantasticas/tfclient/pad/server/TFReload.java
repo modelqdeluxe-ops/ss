@@ -20,7 +20,8 @@ import net.tierrasfantasticas.tfclient.util.TFConfigDir;
 import net.tierrasfantasticas.tfclient.vfx.VfxServer;
 
 /**
- * /tf reload (y RECARGAR CONFIGS del pad de administrador): vuelve a leer todas las configs de config/tfclient/ sin
+ * /tf reload (y RECARGAR CONFIGS del pad de administrador): vuelve a leer todas las configs de config/tfclient/ (también
+ * gachapon.json y pase.json, 1.3.38) sin
  * reiniciar y lo aplica al momento:
  * <ul>
  *   <li>Antes de recargar cada JSON se comprueba que se puede leer. Si tiene un error (una coma de más, unas comillas
@@ -58,6 +59,14 @@ public final class TFReload {
         }, done, problems);
         reload("misiones.json", "misiones y cazas", () -> {
             PadMissions.loadConfig();
+            return List.of();
+        }, done, problems);
+        reload("gachapon.json", "gachapón", () -> {
+            PadGacha.loadConfig();
+            return List.of();
+        }, done, problems);
+        reload("pase.json", "TF Pass", () -> {
+            PadPass.loadConfig();
             return List.of();
         }, done, problems);
         reload("ayuda.json", "ayuda", () -> {

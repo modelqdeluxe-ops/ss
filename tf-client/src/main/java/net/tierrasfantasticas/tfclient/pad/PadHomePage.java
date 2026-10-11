@@ -7,8 +7,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.tierrasfantasticas.tfclient.pad.music.MusicPlayer;
 
 /**
- * La portada: las apps en una rejilla de fichas (7 columnas: las 21 caben a 1080p) que baja con la rueda o
- * arrastrando, como en un móvil. Las fichas van a la escala grande del pad ({@link TFPadScreen#bs}) y los nombres a la
+ * La portada: las apps en una rejilla simétrica de fichas (23 apps: 8 + 8 + 7 a 1080p, ver {@link #layout}) que baja
+ * con la rueda o arrastrando si no cabe, como en un móvil. Las fichas van a la escala grande del pad ({@link TFPadScreen#bs}) y los nombres a la
  * escala normal, para que haya aire entre ellas. Al pasar el ratón, la ficha se eleva y su icono da un salto con
  * aplastado y estirado (como en los juegos de rol); algunas tienen su gesto: el pico golpea, la ballesta retrocede,
  * el estandarte y la percha se mecen, la cámara hace clic y Música late con la canción. Sin partículas ni destellos.
@@ -23,7 +23,8 @@ final class PadHomePage extends PadPage {
 
     static final List<App> APPS = List.of(
             new App("musica", "MÚSICA"), new App("oficios", "OFICIOS"), new App("misiones", "MISIONES"),
-            new App("cazas", "CAZAS"), new App("recompensas", "RECOMPENSAS"), new App("tienda", "TIENDA"), new App("gts", "GTS"),
+            new App("pase", "TF PASS"), new App("gachapon", "GACHAPÓN"), new App("cazas", "CAZAS"),
+            new App("recompensas", "RECOMPENSAS"), new App("tienda", "TIENDA"), new App("gts", "GTS"),
             new App("monedero", "MONEDERO"), new App("viajes", "VIAJES"), new App("hogares", "HOGARES"), new App("kits", "KITS"),
             new App("protecciones", "PROTECCIÓN"), new App("clanes", "CLANES"), new App("jugadores", "JUGADORES"),
             new App("comunidad", "COMUNIDAD"), new App("camara", "CÁMARA"), new App("ranking", "RANKING"),
@@ -80,52 +81,68 @@ final class PadHomePage extends PadPage {
     // Geometría (unidades)
     // ---------------------------------------------------------------------------------------------------------------
 
-    private int tile() {
-        return pad.big(TILE_TEX);
-    }
-
-    private int cols() {
-        int t = tile();
-        return Math.max(3, Math.min(7, gridW() / (t + pad.big(8))));
-    }
-
-    private int cellW() {
-        // como mucho la ficha y un poco de aire: así la rejilla queda centrada y no llega al logo
-        return Math.min(gridW() / cols(), tile() + pad.big(10));
-    }
-
-    /** La portada usa todo el ancho del cristal (las apps van centradas en él y se apartan del logo si hace falta). */
-    private int gridW() {
-        return SW - 8;
-    }
-
-    private int rows() {
-        return (apps().size() + cols() - 1) / cols();
-    }
-
-    /** Alto de cada fila: ficha + nombre + el aire que sobre, repartido (si caben todas sin desplazar). */
-    private int cellH() {
-        int base = tile() + LABEL_H + MIN_GAP;
-        int rows = rows();
-        if (rows * base >= H) return base;
-        return base + (H - rows * base) / (rows + 1);
-    }
-
-    private int top() {
-        int rows = rows(), ch = cellH();
-        return rows * ch <= H ? Y + (H - rows * ch) / 2 + (ch - tile() - LABEL_H) / 2 : Y + 2;
-    }
-
     /**
-     * Esquina de la ficha i (antes del desplazamiento). La rejilla va centrada en todo el cristal, no solo en la zona a
-     * la derecha del logo; solo se aparta si la primera fila fuera a pisar el logo.
+     * La rejilla (1.3.38), simétrica: todas las fichas iguales, el mismo hueco entre ellas a lo ancho y a lo alto,
+     * centrada en todo el cristal y con las filas repartidas (23 apps en 8 + 8 + 7, no 7 + 7 + 7 + 2); la última fila,
+     * si tiene menos, va centrada. Las fichas van a la escala grande; si así no caben todas las filas, a una escala
+     * entera menor (siempre nítidas). ts: unidades por píxel de la textura de la ficha.
      */
-    private int[] at(int i) {
-        int cols = cols(), cw = cellW();
-        int x0 = (SW - cols * cw) / 2;
-        x0 = Math.max(x0, pad.logoRight(top()) + 2 - (cw - tile()) / 2);
-        x0 = Math.min(x0, SW - 4 - cols * cw);
-        return new int[] {x0 + (i % cols) * cw + (cw - tile()) / 2, top() + (i / cols) * cellH()};
+    private record Grid(float ts, int tile, int cols, int rows, int gap, int x0, int top, int pitchX, int pitchY, int contentH) {}
+
+    private Grid grid;
+
+    private Grid layout(int n) {
+        int maxLabel = 0;
+        for (App a : apps()) maxLabel = Math.max(maxLabel, PadFont.width(a.name));
+        int room = SW - 8;
+        Grid best = null;
+        // de la escala grande hacia abajo, en pasos enteros de píxeles reales por píxel de textura
+        int k0 = pad.bigPx(), kMin = Math.max(1, pad.cs());
+        for (int k = k0; k >= kMin; k--) {
+            float ts = k / (float) pad.cs();
+            int t = Math.round(TILE_TEX * ts);
+            int minGap = Math.max(Math.round(8 * ts), maxLabel - t + 6); // los nombres nunca se tocan
+            int maxCols = Math.max(1, Math.min(9, (room + minGap) / (t + minGap)));
+            int rows = Math.max(1, (n + maxCols - 1) / maxCols);
+            int cols = Math.max(1, (n + rows - 1) / rows); // filas repartidas
+            int cellH = t + LABEL_H;
+            int gapV = (H - rows * cellH) / (rows + 1);
+            int gapH = (room - cols * t) / (cols + 1);
+            boolean fits = gapV >= MIN_GAP;
+            // el mismo hueco a lo ancho y a lo alto; si a lo alto no hay tanto sitio, las filas se juntan un poco más
+            int gapX = Math.max(minGap, Math.min(gapH, Math.round(26 * ts)));
+            int gapY = fits ? Math.min(gapX, gapV) : MIN_GAP;
+            gapX = Math.max(minGap, Math.min(gapX, gapY)); // a lo ancho, como mucho lo que haya a lo alto
+            int gap = gapX;
+            int pitchX = t + gapX, pitchY = cellH + gapY;
+            int gridW = cols * t + (cols - 1) * gapX;
+            int contentH = rows * cellH + (rows - 1) * gapY;
+            int x0 = (SW - gridW) / 2;
+            int top = fits ? Y + (H - contentH) / 2 : Y + 2;
+            // el logo de arriba a la izquierda: si la primera fila lo fuera a pisar, la rejilla baja un poco
+            while (pad.logoRight(top) + 2 > x0 && top + contentH < Y + H) top++;
+            Grid gr = new Grid(ts, t, cols, rows, gap, x0, top, pitchX, pitchY, contentH + 4);
+            if (fits || k == kMin) return gr;
+            if (best == null) best = gr;
+        }
+        return best;
+    }
+
+    private int tile() {
+        return grid.tile;
+    }
+
+    /** Esquina de la ficha i (antes del desplazamiento); la última fila, si está incompleta, centrada. */
+    private int[] at(int i, int n) {
+        Grid gr = grid;
+        int row = i / gr.cols, col = i % gr.cols;
+        int inRow = Math.min(gr.cols, n - row * gr.cols);
+        int x = gr.x0 + (gr.cols - inRow) * gr.pitchX / 2 + col * gr.pitchX;
+        return new int[] {x, gr.top + row * gr.pitchY};
+    }
+
+    private int cellH() {
+        return grid.pitchY;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -136,15 +153,17 @@ final class PadHomePage extends PadPage {
     void render(GuiGraphics g, double mx, double my, float partial) {
         long now = System.currentTimeMillis();
         List<App> apps = apps();
-        contentH = rows() * cellH() + 4;
+        grid = layout(apps.size());
+        contentH = grid.contentH;
         scroll = Math.max(0, Math.min(scroll, Math.max(0, contentH - H)));
         int t = tile();
+        float ts = grid.ts;
         // la rejilla va centrada en todo el cristal: recorta y recibe el ratón en todo su ancho
         boolean inside = PadUi.inside(mx, my, 2, Y, SW - 4, H);
         String hoverNow = null;
         int hoverIndex = -1;
         for (int i = 0; i < apps.size(); i++) {
-            int[] p = at(i);
+            int[] p = at(i, apps.size());
             if (inside && PadUi.inside(mx, my, p[0], p[1] - scroll, t, t + LABEL_H)) {
                 hoverNow = apps.get(i).id;
                 hoverIndex = i;
@@ -157,7 +176,7 @@ final class PadHomePage extends PadPage {
         pad.scissor(g, 2, Y, SW - 4, H);
         for (int i = 0; i < apps.size(); i++) {
             App app = apps.get(i);
-            int[] p = at(i);
+            int[] p = at(i, apps.size());
             int tx = p[0], ty = p[1] - scroll;
             if (ty + cellH() < Y || ty > Y + H) continue;
             boolean hover = i == hoverIndex;
@@ -165,11 +184,15 @@ final class PadHomePage extends PadPage {
             boolean playing = app.id.equals("musica") && MusicPlayer.playing();
             // al pasar el ratón la ficha sube (con una ease rápida) y deja su sombra debajo
             float rise = hover && PadSettings.animations ? Math.min(1F, ht / 0.12F) : 0F;
-            int lift = -Math.round(pad.bs * 2 * ease(rise));
-            if (lift != 0) g.fill(tx + pad.big(3), ty + t, tx + t - pad.big(3), ty + t + pad.big(1), 0x5518265C);
-            pad.blitBig(g, hover ? "tile_h" : "tile", tx, ty + lift);
+            int lift = -Math.round(ts * 2 * ease(rise));
+            if (lift != 0) g.fill(tx + Math.round(3 * ts), ty + t, tx + t - Math.round(3 * ts), ty + t + Math.max(1, Math.round(ts)), 0x5518265C);
+            g.pose().pushPose();
+            g.pose().translate(tx, ty + lift, 0);
+            g.pose().scale(ts, ts, 1);
+            pad.blit(g, hover ? "tile_h" : "tile", 0, 0);
+            g.pose().popPose();
             float anim = !PadSettings.animations ? -1F : hover ? ht : playing ? (now % 100000) / 1000F : -1F;
-            drawIcon(g, app.icon, tx, ty + lift, anim, hover);
+            drawIcon(g, app.icon, tx, ty + lift, anim, hover, ts);
             PadFont.drawCentered(g, app.name, tx + t / 2, ty + t + 2, hover ? 0xFFE680 : 0xFFFFFF, true);
         }
         pad.noScissor(g);
@@ -191,8 +214,7 @@ final class PadHomePage extends PadPage {
      * El icono con su animación. t: segundos desde que el ratón entró (negativo: quieto). Primero un salto con
      * aplastado y estirado; luego un respirar suave, o el gesto propio de la app cada poco.
      */
-    private void drawIcon(GuiGraphics g, String icon, int x, int y, float t, boolean hover) {
-        float bs = pad.bs;
+    private void drawIcon(GuiGraphics g, String icon, int x, int y, float t, boolean hover, float bs) {
         g.pose().pushPose();
         g.pose().translate(x + ICON_OFF * bs, y + ICON_OFF * bs, 0);
         g.pose().scale(bs, bs, 1);
@@ -287,9 +309,10 @@ final class PadHomePage extends PadPage {
     boolean click(double mx, double my, int button) {
         if (button != 0 || !PadUi.inside(mx, my, 2, Y, SW - 4, H)) return false;
         List<App> apps = apps();
+        if (grid == null) return false;
         int t = tile();
         for (int i = 0; i < apps.size(); i++) {
-            int[] p = at(i);
+            int[] p = at(i, apps.size());
             if (PadUi.inside(mx, my, p[0], p[1] - scroll, t, t + LABEL_H)) {
                 pad.openApp(apps.get(i).id);
                 return true;
@@ -300,7 +323,7 @@ final class PadHomePage extends PadPage {
 
     @Override
     boolean scroll(double mx, double my, double delta) {
-        scroll -= (int) Math.signum(delta) * cellH() / 2;
+        if (grid != null) scroll -= (int) Math.signum(delta) * cellH() / 2;
         return true;
     }
 
@@ -312,6 +335,7 @@ final class PadHomePage extends PadPage {
 
     @Override
     boolean key(int key, int scan, int mods) {
+        if (grid == null) return false;
         if (key == 264) { // abajo
             scroll += cellH() / 2;
             return true;

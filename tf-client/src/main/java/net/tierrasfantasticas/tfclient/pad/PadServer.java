@@ -49,6 +49,20 @@ public final class PadServer {
         }
     }
 
+    /**
+     * Una app con página propia en el cliente (1.3.38: Gachapón y TF Pass): manda sus datos en JSON (TFPadNet.Data) en
+     * vez de una vista. action devuelve un «evento» para el cliente (el resultado de una tirada…) o null.
+     */
+    public interface DataApp {
+        com.google.gson.JsonObject data(ServerPlayer player);
+
+        default com.google.gson.JsonObject action(ServerPlayer player, String action) {
+            return null;
+        }
+    }
+
+    private static final Map<String, DataApp> DATA_APPS = new LinkedHashMap<>();
+
     /** Datos que se guardan en el mundo. */
     public interface Store {
         void load(MinecraftServer server);
@@ -83,6 +97,8 @@ public final class PadServer {
         APPS.put("clanes", PadClans.APP);
         APPS.put("jugadores", PadPlayers.APP);
         APPS.put("ranking", PadRanking.APP);
+        DATA_APPS.put("gachapon", net.tierrasfantasticas.tfclient.pad.server.PadGacha.APP);
+        DATA_APPS.put("pase", net.tierrasfantasticas.tfclient.pad.server.PadPass.APP);
         // pad de administrador (los a_* solo los abre el staff)
         APPS.put("a_apps", PadAdmin.APPS);
         APPS.put("a_ajustes", PadAdmin.SETTINGS);
@@ -105,6 +121,9 @@ public final class PadServer {
         STORES.add(PadTitles.STORE);
         STORES.add(PadHelp.STORE);
         STORES.add(PadCommunityServer.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadGreen.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadGacha.STORE);
+        STORES.add(net.tierrasfantasticas.tfclient.pad.server.PadPass.STORE);
     }
 
     private PadServer() {}
@@ -114,6 +133,13 @@ public final class PadServer {
     }
 
     static void open(ServerPlayer player, String app, String tab) {
+        DataApp d = DATA_APPS.get(app);
+        if (d != null) {
+            if (!allowed(player) || !usable(player, app)) return;
+            shown(player, app, "");
+            sendData(player, app, d, null);
+            return;
+        }
         App a = APPS.get(app);
         if (a == null || !allowed(player) || !usable(player, app)) return;
         SESSIONS.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).keySet().removeIf(k -> k.startsWith(app + "."));
@@ -181,6 +207,19 @@ public final class PadServer {
     }
 
     static void action(ServerPlayer player, String app, String tab, String action, String text) {
+        DataApp d = DATA_APPS.get(app);
+        if (d != null) {
+            if (!allowed(player) || !usable(player, app)) return;
+            com.google.gson.JsonObject event = null;
+            try {
+                event = d.action(player, action);
+            } catch (Exception e) {
+                TFClient.LOGGER.error("TF Pad: la app {} falló con la acción {}", app, action, e);
+                TFPadNet.notice(player, "Error. Si se repite, avisa al staff.");
+            }
+            if (!player.hasDisconnected()) sendData(player, app, d, event);
+            return;
+        }
         App a = APPS.get(app);
         if (a == null || !allowed(player) || !usable(player, app)) return;
         if (action.startsWith("tab:")) {
@@ -201,8 +240,23 @@ public final class PadServer {
         }
     }
 
+    private static void sendData(ServerPlayer player, String app, DataApp d, com.google.gson.JsonObject event) {
+        try {
+            com.google.gson.JsonObject data = d.data(player);
+            if (event != null) data.add("evento", event);
+            TFPadNet.sendData(player, app, data);
+        } catch (Exception e) {
+            TFClient.LOGGER.error("TF Pad: no se pudieron mandar los datos de {}", app, e);
+        }
+    }
+
     /** Vuelve a mandar la vista de una app (por ejemplo, cuando cambia algo mientras la tiene abierta). */
     public static void refresh(ServerPlayer player, String app, String tab) {
+        DataApp d = DATA_APPS.get(app);
+        if (d != null) {
+            sendData(player, app, d, null);
+            return;
+        }
         App a = APPS.get(app);
         if (a != null) send(player, a, tab);
     }
