@@ -13,8 +13,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'main', 'resources', 'assets', 'tfclient')
 GUI = ROOT + '/textures/gui'
-FONT = ROOT + '/font/newrocker.ttf'  # la letra de los botones del menú principal (TFMenuButton.MENU_FONT)
-ASC, DESC, UPEM = 946, -283, 1000
+FONT = ROOT + '/font/titanone.ttf'  # la letra de los botones del menú principal (TFMenuButton.MENU_FONT_AT_SCALE)
+ASC, DESC, UPEM = 970, -175, 1000
 
 
 # ------------------------------------------------------------------------------------------------ lienzo (framebuffer)
@@ -379,13 +379,14 @@ import json
 
 PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
 GAP = 3          # entre icono y texto (interfaz)
-TEXT_UP = 4.0    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de New Rocker)
+TEXT_UP = 4.0    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Titan One)
 INK, INK_HOT, OUTLINE = 0xFFF3DC, 0xFFFFFF, 0x140A04
 MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
 ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
-SPAN = 1.42  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
-K_MAX, LOGO_MIN, BOTTOM_MARGIN = 0.15, 80, 6
-CAP_HEIGHT, CAP_FILL, INTERIOR = 6.0, 0.56, 0.7
+SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
+K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 6  # el emblema: al menos el 44 % del alto
+ROW_GAP = 50  # separación entre filas (en la lámina eran 70-100: más juntas, placas más grandes)
+CAP_HEIGHT, CAP_FILL, INTERIOR = 6.2, 0.7, 0.7
 LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
 _menu = {}
 
@@ -529,24 +530,28 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     tw = text_width(label, S)
     maxw = x1 - x0
     icon_w = (ICON + GAP) * scale if icon else 0
-    group = tw * scale + icon_w
+    group = tw * scale + icon_w  # el icono crece con la letra
     if group > maxw and group > 0:
         scale *= max(0.6, (maxw - icon_w) / (tw * scale))
         group = tw * scale + icon_w
     gx = snapS((x0 + x1) / 2 - group / 2, S)
-    ro = max(1, round(S * 0.5))
-    o = ro / S
-    dark = rgb3(OUTLINE)
+    # contorno grueso (un 8,5 % de la letra) en 16 direcciones + 8 a media distancia, y sombra debajo
+    ro = max(1, round(10 * scale * S * 0.085))
+    sh = max(1, round(ro * 0.8))
+    ring = ring_offsets(ro)
+    gold_text = kind == PRIMARY and active
+    edge = rgb3(GOLD_OUTLINE if gold_text else OUTLINE)
     if icon:
-        sz = ICON * n
-        img = icon_image(icon, sz)
+        sz = round(ICON * scale * S)
+        img = menu_icon(icon, sz)
         ix, iy = round(gx * S), round(cy * S - sz / 2)
-        for dx, dy in ((-ro, 0), (ro, 0), (0, -ro), (0, ro + max(1, S // 2))):
-            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in dark) + (0.9,))
+        for dx, dy in ring:
+            g.composite(img, ix + dx, iy + dy + sh, tuple(c / 255 for c in edge) + (0.55,))
+        for dx, dy in ring:
+            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in edge) + (1,))
         g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
         gx += icon_w
     ty = snapS(cy - TEXT_UP * scale, S)
-    gold_text = kind == PRIMARY and active
     if gold_text:  # TFMenuButton.goldGlow
         glow = menu_data()['glow']
         w = tw * scale
@@ -554,25 +559,22 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         im = glow.resize((max(1, round(gw * S)), max(1, round(gh * S))), Image.BILINEAR)
         g.composite(to_float_img(im), round((gx + w / 2 - gw / 2) * S), round((cy - gh / 2) * S),
                     (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
-    draw_text(g, label, gx, ty + o + max(1, S // 2) / S, S, dark, 0.6, 0, scale, n)
-    ring = rgb3(GOLD_OUTLINE if gold_text else OUTLINE)
-    for dx in range(-ro, ro + 1):
-        for dy in range(-ro, ro + 1):
-            if max(abs(dx), abs(dy)) == ro:
-                draw_text(g, label, gx + dx / S, ty + dy / S, S, ring, 0.9, 0, scale, n)
-    if not gold_text:
-        draw_text(g, label, gx, ty, S, rgb3(ink), 1.0, 0, scale, n)
-        return
-    # TFMenuButton.goldLetters: degradado en franjas de 2 px reales y brillo que cruza
+    for dx, dy in ring:
+        draw_text(g, label, gx + dx / S, ty + (dy + sh) / S, S, edge, 0.55, 0, scale, n)
+    for dx, dy in ring:
+        draw_text(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
+    # letras en degradado (franjas de 2 px reales): oro en Tierras Fantásticas, blanco a gris azulado en las demás
     x0r, x1r = math.floor(gx * S) - 4, math.ceil((gx + tw * scale) * S) + 4
     y0r, y1r = math.floor((ty + GOLD_TOP * scale) * S), math.ceil((ty + GOLD_BOTTOM * scale) * S)
-    draw_text(g, label, gx, ty, S, rgb3(GOLD[2]), 1.0, 0, scale, n)
+    draw_text(g, label, gx, ty, S, rgb3(GOLD[2] if gold_text else WHITE[1]), 1.0, 0, scale, n)
     bands = max(2, (y1r - y0r) // 2)
     for i in range(bands):
         b0 = y0r + (y1r - y0r) * i // bands
         b1 = y0r + (y1r - y0r) * (i + 1) // bands
         g.scissor = (x0r, b0, x1r, b1)
-        draw_text(g, label, gx, ty, S, rgb3(gold((i + 0.5) / bands, e)), 1.0, 0, scale, n)
+        t = (i + 0.5) / bands
+        c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xFFFFFF, 0.6 * e) if active else 0x9A9AA6)
+        draw_text(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
     if shine is not None:
         k = math.sin(shine * math.pi)
         band = max(6, (x1r - x0r) // 5)
@@ -584,9 +586,46 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     g.scissor = None
 
 
+def ring_offsets(ro):
+    """TFMenuButton.ring: 16 direcciones a ro píxeles reales y 8 a la mitad (sin repetir)."""
+    out = []
+    for i in range(16):
+        a = i * math.pi / 8
+        out.append((round(math.cos(a) * ro), round(math.sin(a) * ro)))
+    if ro >= 2:
+        for i in range(8):
+            a = i * math.pi / 4
+            out.append((round(math.cos(a) * ro / 2), round(math.sin(a) * ro / 2)))
+    seen, res = set(), []
+    for o in out:
+        if o not in seen and o != (0, 0):
+            seen.add(o)
+            res.append(o)
+    return res
+
+
+def ramp(cols, t):
+    p = t * (len(cols) - 1)
+    i = min(len(cols) - 2, int(p))
+    return lerp_argb(0xFF000000 | cols[i], 0xFF000000 | cols[i + 1], p - i) & 0xFFFFFF
+
+
+_icons = {}
+
+
+def menu_icon(name, n):
+    """menu_icons.png (whatsapp, discord, web; 256 cada uno) a n x n, blanco con opacidad."""
+    if 'atlas' not in _icons:
+        _icons['atlas'] = Image.open(GUI + '/menu_icons.png').convert('RGBA')
+    i = ['whatsapp', 'discord', 'web'].index(name)
+    im = _icons['atlas'].crop((16 + i * 272, 16, 16 + i * 272 + 256, 272)).resize((n, n), Image.LANCZOS)
+    return to_float_img(im)
+
+
 GOLD = [0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E]
 GOLD_OUTLINE = 0x2A1204
-GOLD_TOP, GOLD_BOTTOM = -0.4, 6.2
+GOLD_TOP, GOLD_BOTTOM = 0.0, 6.7
+WHITE = [0xFFFFFF, 0xF6F8FF, 0xDCE3F4]  # el degradado de las demás letras (arriba a abajo)
 
 
 def gold(t, e):
@@ -683,7 +722,18 @@ def layout(w, h):
         for i in row:
             widen[i] = tf_span * SPAN / span
     half_w = max(max(cen - L[i][0], L[i][2] - cen) * widen[i] for i in range(len(MAIN)))
-    k = min(K_MAX, (h - BOTTOM_MARGIN - LOGO_MIN - 6) / comp_h)
+    # filas más juntas que en la lámina: cada fila empieza ROW_GAP debajo de la anterior
+    row_y = {}
+    ny = L[0][1]
+    for row in ROWS:
+        rt, rb = min(L[i][1] for i in row), max(L[i][3] for i in row)
+        for i in row:
+            row_y[i] = ny + (L[i][1] - rt)
+        ny += (rb - rt) + ROW_GAP
+    last = ROWS[-1]
+    cbot = row_y[last[0]] - L[last[0]][1] + max(L[i][3] for i in last) + (cbot - max(L[i][3] for i in last))
+    comp_h = cbot - ctop
+    k = min(K_MAX, (h - BOTTOM_MARGIN - round(h * LOGO_FRAC) - 6) / comp_h)
     k = min(k, (w / 2 - 10) / half_w)
     free = h - BOTTOM_MARGIN - comp_h * k
     top = free - max(0.0, (free - 186) / 2)
@@ -693,8 +743,8 @@ def layout(w, h):
         l = d['plates'][n]['layout']
         x0 = round(cx + (l[0] - cen) * k * widen[i])
         x1 = round(cx + (l[2] - cen) * k * widen[i])
-        y0 = round(top + (l[1] - ctop) * k)
-        y1 = round(top + (l[3] - ctop) * k)
+        y0 = round(top + (row_y[i] - ctop) * k)
+        y1 = round(top + (row_y[i] + l[3] - l[1] - ctop) * k)
         rects.append((x0, y0, x1 - x0, y1 - y0))
     labels = [('Tierras Fantásticas', None, PRIMARY), ('Mundo local', None, SECONDARY), ('Mods', None, SECONDARY),
               ('Opciones', None, SECONDARY), ('Salir', None, DANGER), ('WhatsApp', 'whatsapp', SECONDARY),
