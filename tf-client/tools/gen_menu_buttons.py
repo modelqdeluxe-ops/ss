@@ -106,6 +106,34 @@ def bleed(a):
     return a
 
 
+def recolor(sprite, rgb):
+    """El hueco de la placa (los ladrillos del color de la placa, con sus juntas) pasado a otro color con su luz; el
+    marco de oro, los tréboles y el contorno se quedan igual."""
+    a = sprite.copy()
+    c = a[..., :3]
+    r, g, b = c[..., 0], c[..., 1], c[..., 2]
+    mx, mn = c.max(-1), c.min(-1)
+    sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1), 0)
+    own = ((r > g * 1.5) & (r > b * 1.3) | (b > r * 1.4) & (b > g * 1.15)) & (sat > 0.35) & (a[..., 3] > 0)
+    body = body_of(sprite)
+    cy, cx = (body[1] + body[3]) // 2, (body[0] + body[2]) // 2
+    lab, n = ndimage.label(own)
+    seed = lab[cy - 3:cy + 4, cx - 30:cx + 31]
+    ids = [v for v in np.unique(seed) if v]
+    inner = np.isin(lab, ids)
+    region = ndimage.binary_fill_holes(inner)  # el hueco entero (con juntas y tréboles dentro)
+    green = (g > r * 1.15) & (g > b * 1.05) & (sat > 0.25)  # tréboles
+    gold = (r > 150) & (g > 100) & (b < 110) & (r > b * 1.6) & (g > b * 1.3) & (np.abs(r - g) < 120)
+    lum = 0.3 * r + 0.59 * g + 0.11 * b
+    ref = np.median(lum[inner]) if inner.any() else 1.0
+    # solo el color de la placa y sus juntas oscuras (el filo claro del marco por dentro no se toca)
+    paint = region & ~green & ~gold & (own | (lum < ref * 0.75)) & (a[..., 3] > 0)
+    k = np.clip(lum / max(ref, 1.0), 0.0, 3.0)[..., None]
+    target = np.array(rgb, np.float32)[None, None, :] * k
+    a[..., :3] = np.where(paint[..., None], np.clip(target, 0, 255), c)
+    return a
+
+
 def body_of(sprite):
     """Cuerpo de la placa: el rectángulo del marco dorado (filas y columnas con mucho oro)."""
     r, g, b, al = (sprite[..., i] for i in range(4))
@@ -168,6 +196,16 @@ def menu(path):
             s[540 - y0:, :, 3] = 0
         if name == 'blue2':
             s[:0, :, 3] = 0
+        # simétrica de punta a punta: la mitad izquierda y su reflejo (el dibujo original no es simétrico por unos píxeles)
+        body = body_of(s)
+        g0, _ = gems_of(s)
+        mid = (body[0] + body[2]) / 2
+        near = [g[0] for g in g0 if abs(g[0] - mid) < (body[2] - body[0]) * 0.1]
+        axis = int(round(sum(near) / len(near) if near else mid))
+        s = np.concatenate([s[:, :axis], s[:, :axis][:, ::-1]], axis=1)
+        left = [f for f in fills if f[1] <= axis]
+        cross = [(f[0], 2 * axis - f[0]) for f in fills if f[0] < axis < f[1]]  # la que cruza el eje, centrada en él
+        fills = left + cross + [(2 * axis - f[1], 2 * axis - f[0]) for f in reversed(left)]
         sprites[name] = s
         body = body_of(s)
         bh = body[3] - body[1]
@@ -188,6 +226,15 @@ def menu(path):
             'layout': [body[0] + x0, body[1] + y0, body[2] + x0, body[3] + y0],
             'tint': tint,
         }
+    # Filas simétricas en espejo: Opciones es Salir teñido de gris y WhatsApp es Discord teñido de verde (mismo dibujo,
+    # mismos tréboles), con su color original de la lámina
+    for dst, src, rgb in (('gray', 'red', (0x67, 0x6B, 0x6F)), ('green', 'blueb', (0x05, 0x6C, 0x16))):
+        sprites[dst] = recolor(sprites[src], rgb)
+        keep = info[dst]['layout']
+        info[dst] = dict(info[src])
+        b0 = info[src]['body']
+        info[dst]['layout'] = [keep[0], keep[1], keep[0] + b0[2] - b0[0], keep[1] + b0[3] - b0[1]]
+        info[dst]['tint'] = '%02X%02X%02X' % rgb
     atlas, pos = pack(sprites)
     for name, (px, py) in pos.items():
         h, w = sprites[name].shape[:2]

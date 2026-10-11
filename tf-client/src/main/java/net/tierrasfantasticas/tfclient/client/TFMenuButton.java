@@ -58,10 +58,10 @@ public class TFMenuButton extends Button {
     private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
     private static final int[][] GROUPS = {{0}, {1, 2}, {3, 4}, {5, 7}, {6}};
     /** Separación entre filas en la lámina: lo justo para que las gemas de una no toquen la siguiente. */
-    private static final float[] GAPS = {84f, 86f, 62f, 46f};
+    private static final float[] GAPS = {96f, 96f, 72f, 80f};
     /** Aire a cada lado del texto (en altos de la placa), entre botones de una fila, y el ancho mínimo de los azules. */
     private static final float PAD = 0.4f, BLUE_MIN = 0.62f;
-    private static final int GROUP_GAP = 5;
+    private static final int GROUP_GAP = 14;
     /** Escala máxima de la lámina (interfaz por píxel): Mundo local de unos 21 de alto. */
     private static final float K_MAX = 0.16f;
     private static final float LOGO_FRAC = 0.44f;
@@ -73,6 +73,8 @@ public class TFMenuButton extends Button {
      * más grande (su placa es más alta). Ver mainLayout.
      */
     private static float mainTextSize = 1f, tfTextSize = 1f;
+    /** Lo que se corre el dibujo de las placas para quedar en el centro exacto de la pantalla (0 o ±0,5). */
+    private static float mainShiftX;
 
     /** Separación entre icono y texto, en píxeles de interfaz. */
     private static final int GAP = 3;
@@ -192,18 +194,27 @@ public class TFMenuButton extends Button {
             size *= 0.9f;
             tf *= 0.9f;
         }
+        // anchos pares (y separación par): todas las filas tienen el mismo centro exacto, las gemas en un mismo eje
+        // el centro de verdad de la ventana (el ancho de la interfaz se redondea hacia arriba: width / 2 puede caer medio
+        // píxel de interfaz al lado); las placas se dibujan corridas lo que falte (mainShiftX), justas en píxeles reales
+        float cx = mc.getWindow().getWidth() / (2f * s);
         int[][] out = new int[MAIN.length + 1][];
         for (int[] row : ROWS) {
             int total = GROUP_GAP * (row.length - 1);
-            for (int i : row) total += Math.round(widths[i]);
-            int x = Math.round(width / 2f - total / 2f);
+            for (int i : row) total += even(widths[i]);
+            int x = Math.round(cx - total / 2f);
+            mainShiftX = cx - (x + total / 2f);
             for (int i : row) {
-                out[i] = new int[] {x, ys[i], Math.round(widths[i]), hs[i]};
-                x += Math.round(widths[i]) + GROUP_GAP;
+                out[i] = new int[] {x, ys[i], even(widths[i]), hs[i]};
+                x += even(widths[i]) + GROUP_GAP;
             }
         }
         out[MAIN.length] = new int[] {Math.round(top)};
         return out;
+    }
+
+    private static int even(float w) {
+        return 2 * Math.round(w / 2f);
     }
 
     /** El tamaño de letra nítido que usa paintContent: n/escala con n entero, como mucho un 10 % más que size. */
@@ -278,7 +289,7 @@ public class TFMenuButton extends Button {
         float grow = pressed ? 0.98f : 1f + 0.015f * e;
         float lift = pressed ? 0.5f : -0.6f * e;
         g.pose().pushPose();
-        g.pose().translate(cx, cy + lift, 0f);
+        g.pose().translate(cx + mainShiftX, cy + lift, 0f);
         g.pose().scale(grow, grow, 1f);
         g.pose().translate(-cx, -cy, 0f);
 

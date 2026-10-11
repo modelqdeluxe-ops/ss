@@ -48,6 +48,19 @@ public final class TFMenuPlates {
         }
 
         public float bodyW() { return body[2] - body[0]; }
+
+        /** La x (en la placa) que debe quedar en el centro del botón: la gema del centro si la hay, si no el centro. */
+        float anchor() {
+            float mid = (body[0] + body[2]) / 2f, sum = 0f;
+            int n = 0;
+            for (float[] g : sparks) {
+                if (Math.abs(g[0] - mid) < bodyW() * 0.1f) {
+                    sum += g[0];
+                    n++;
+                }
+            }
+            return n > 0 ? sum / n : mid;
+        }
         public float bodyH() { return body[3] - body[1]; }
     }
 
@@ -62,11 +75,23 @@ public final class TFMenuPlates {
         Placed(Plate p, float bx, float by, float bw, float bh, int s) {
             this.plate = p;
             this.k = bh / p.bodyH();
-            float fillTotal = 0f;
-            for (float[] f : p.fills) fillTotal += f[1] - f[0];
-            float extra = bw - p.bodyW() * k;
-            // Escala de las zonas lisas: lo que sobre (o falte) se reparte entre ellas
-            float fillK = fillTotal > 0f ? Math.max(k * 0.25f, k + extra / fillTotal) : k;
+            // Las zonas lisas de cada lado de la gema del centro (o del centro del cuerpo) se estiran cada una lo suyo para
+            // que esa gema caiga justo en el centro del botón: así las gemas de todas las filas quedan en el mismo eje
+            float anchor = p.anchor();
+            float fillL = 0f, fillR = 0f;
+            for (float[] f : p.fills) {
+                if (f[1] <= anchor) fillL += f[1] - f[0];
+                else fillR += f[1] - f[0];
+            }
+            float fixedL = anchor - p.body[0] - fillL, fixedR = p.body[2] - anchor - fillR;
+            float fillKL, fillKR;
+            if (fillL > 0f && fillR > 0f) {
+                fillKL = Math.max(k * 0.25f, (bw / 2f - fixedL * k) / fillL);
+                fillKR = Math.max(k * 0.25f, (bw / 2f - fixedR * k) / fillR);
+            } else {
+                float fillTotal = fillL + fillR, extra = bw - p.bodyW() * k;
+                fillKL = fillKR = fillTotal > 0f ? Math.max(k * 0.25f, k + extra / fillTotal) : k;
+            }
             int n = p.fills.length * 2 + 2;
             srcX = new float[n];
             float[] scale = new float[n - 1];
@@ -76,7 +101,7 @@ public final class TFMenuPlates {
                 srcX[i] = f[0];
                 scale[i - 1] = k;
                 srcX[i + 1] = f[1];
-                scale[i] = fillK;
+                scale[i] = f[1] <= anchor ? fillKL : fillKR;
                 i += 2;
             }
             srcX[n - 1] = p.w;
