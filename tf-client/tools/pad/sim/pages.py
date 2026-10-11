@@ -404,7 +404,7 @@ LAV, GOLDC, GL, GREENC = rgb(0xB8C2F0), rgb(0xF6B628), rgb(0xFFEC96), rgb(0x7CF0
 
 
 def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, sure=False, sel_list=0, vol_hover=False,
-               lists=('FAVORITAS', 'CAMINO'), tab_first=0, picking=False, in_list=(), hover_btn=False):
+               lists=('LOFI', 'PARA MINAR'), tab_first=0, picking=False, in_list=(), hover_btn=False):
     s = Sim()
     s.status('MÚSICA', music=playing is not None)
     local = Local(s)
@@ -697,7 +697,7 @@ music_page('p_musica_fila', lib, playing=song, hover_row=1, vol_hover=True)
 music_page('p_musica_borrar', lib, playing=song, hover_row=2, sure=True)
 music_page('p_musica_lista', lib[:2], playing=song, hover_row=1, sel_list=1)
 music_page('p_musica_elegir', lib, playing=song, hover_row=2, sel_list=1, picking=True, in_list=(0, 1))
-many = ('Favoritas', 'Supe', 'Dad', 'Para correr', 'Lofi noche', 'Jefes', 'Dw', 'Taberna')
+many = ('Lofi', 'Rock', 'Dad', 'Para correr', 'Lofi noche', 'Jefes', 'Dw', 'Taberna')
 music_page('p_musica_muchas', lib, playing=song, sel_list=4, lists=many, tab_first=2, hover_row=0, hover_btn=True)
 
 

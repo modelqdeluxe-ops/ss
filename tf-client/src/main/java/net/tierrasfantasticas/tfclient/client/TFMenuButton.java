@@ -24,9 +24,10 @@ import net.tierrasfantasticas.tfclient.TFConfig;
  *
  * Animación: con el ratón encima la placa sube un poco, se ilumina con un fundido suave y la cruza una línea de luz;
  * al pulsar se hunde y se oscurece. Las gemas echan una chispa de vez en cuando (y brillan más con el ratón), los
- * faroles titilan, y por Tierras Fantásticas pasa un destello cada pocos segundos. Texto en New Rocker (Cinzel fuera
- * del menú) con contorno oscuro, del mismo tamaño y color en todos los botones (el mayor que cabe en todos; nítido);
- * iconos en WhatsApp, Web y Discord. Todas las filas miden lo mismo (una columna).
+ * faroles titilan, y por Tierras Fantásticas pasa un destello cada pocos segundos. Letra Titan One (Cinzel fuera del
+ * menú) gruesa, con contorno grueso, sombra y degradado (oro en Tierras Fantásticas), del mismo tamaño en todos los
+ * botones (el mayor que cabe en todos; nítido); iconos de verdad (logos de WhatsApp y Discord, globo en Web) en
+ * menu_icons.png. Todas las filas miden lo mismo (una columna).
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
@@ -36,14 +37,14 @@ public class TFMenuButton extends Button {
      */
     private static final ResourceLocation[] FONT_AT_SCALE = new ResourceLocation[12];
     /**
-     * La letra de los botones del menú principal: New Rocker (OFL, font/OFL-NewRocker.txt), de título de juego, gruesa
-     * y con carácter; también a 1..12 píxeles reales por píxel de interfaz (font/newrocker_N.json).
+     * La letra de los botones del menú principal: Titan One (OFL, font/OFL-TitanOne.txt), gruesa y redonda, de botón
+     * de juego; también a 1..12 píxeles reales por píxel de interfaz (font/titanone_N.json).
      */
     private static final ResourceLocation[] MENU_FONT_AT_SCALE = new ResourceLocation[12];
     static {
         for (int i = 0; i < FONT_AT_SCALE.length; i++) {
             FONT_AT_SCALE[i] = i == 3 ? FONT : new ResourceLocation(TFClient.MOD_ID, "cinzel_" + (i + 1));
-            MENU_FONT_AT_SCALE[i] = new ResourceLocation(TFClient.MOD_ID, "newrocker_" + (i + 1));
+            MENU_FONT_AT_SCALE[i] = new ResourceLocation(TFClient.MOD_ID, "titanone_" + (i + 1));
         }
     }
 
@@ -56,12 +57,13 @@ public class TFMenuButton extends Button {
     /** Filas de la composición (índices de MAIN). Todas miden lo mismo: una columna limpia. */
     private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
     /** Ancho de cada fila: el de Tierras Fantásticas en la lámina por SPAN (las placas se estiran por sus zonas lisas). */
-    private static final float SPAN = 1.42f;
+    private static final float SPAN = 1.7f;
     /** Escala máxima de la lámina (interfaz por píxel): Mundo local de unos 21 de alto. */
-    private static final float K_MAX = 0.15f;
-    private static final int LOGO_MIN = 80, BOTTOM_MARGIN = 6;
-    /** Alto de las mayúsculas de New Rocker a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
-    private static final float CAP_HEIGHT = 6f, CAP_FILL = 0.56f, INTERIOR = 0.7f;
+    private static final float K_MAX = 0.16f;
+    private static final float LOGO_FRAC = 0.44f;
+    private static final int BOTTOM_MARGIN = 6;
+    /** Alto de las mayúsculas de Titan One a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
+    private static final float CAP_HEIGHT = 6.2f, CAP_FILL = 0.7f, INTERIOR = 0.7f;
     /** Tamaño de letra común a todos los botones del menú principal (el mayor que cabe en todos). Ver mainLayout. */
     private static float mainTextSize = 1f;
 
@@ -69,13 +71,17 @@ public class TFMenuButton extends Button {
     private static final int GAP = 3;
     /** El texto se dibuja en el centro - TEXT_UP (centrado a la vista: Cinzel en las demás pantallas, New Rocker en el menú). */
     private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4f;
+    /** Separación entre filas en la lámina (en ella eran 70-100: más juntas, las placas salen más grandes). */
+    private static final float ROW_GAP = 50f;
     private static final float HOVER_MS = 140f, SWEEP_MS = 850f;
     private static final long TF_SHINE_EVERY = 6500L, SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
     private static final int INK = 0xFFF3DC, INK_HOT = 0xFFFFFF, OUTLINE = 0x140A04, GOLD_OUTLINE = 0x2A1204;
     /** Oro de las letras de Tierras Fantásticas, de arriba abajo, y alto de las mayúsculas en la celda (escala 1). */
     private static final int[] GOLD = {0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E};
-    private static final float GOLD_TOP = -0.4f, GOLD_BOTTOM = 6.2f;
+    private static final float GOLD_TOP = 0f, GOLD_BOTTOM = 6.7f;
+    /** El degradado de las demás letras del menú, de arriba abajo. */
+    private static final int[] WHITE = {0xFFFFFF, 0xF6F8FF, 0xDCE3F4};
     private static final long GOLD_SHINE_EVERY = 4200L, GOLD_SHINE_MS = 1300L;
 
     private final Kind kind;
@@ -107,7 +113,8 @@ public class TFMenuButton extends Button {
 
     /**
      * Rectángulos (x, y, ancho, alto) del cuerpo de las 8 placas del menú principal, como en la lámina, y al final
-     * {arriba de la composición}. La lámina se escala para que quepa debajo del emblema (que tiene al menos LOGO_MIN).
+     * {arriba de la composición}. La lámina se escala para que quepa debajo del emblema (que tiene al menos LOGO_FRAC
+     * del alto de la pantalla).
      * Null si no hay textura.
      */
     public static int[][] mainLayout(int width, int height) {
@@ -129,7 +136,22 @@ public class TFMenuButton extends Button {
             TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
             halfW = Math.max(halfW, Math.max(comp[2] - p.layout[0], p.layout[2] - comp[2]) * widen[i]);
         }
-        float k = Math.min(K_MAX, (height - BOTTOM_MARGIN - LOGO_MIN - 6) / compH);
+        // filas más juntas que en la lámina: cada fila empieza ROW_GAP debajo de la anterior
+        float[] rowY = new float[MAIN.length];
+        float ny = tfLayout[1], lastBottom = 0f;
+        for (int[] row : ROWS) {
+            float rt = Float.MAX_VALUE, rb = -Float.MAX_VALUE;
+            for (int i : row) {
+                rt = Math.min(rt, TFMenuPlates.get(MAIN[i]).layout[1]);
+                rb = Math.max(rb, TFMenuPlates.get(MAIN[i]).layout[3]);
+            }
+            for (int i : row) rowY[i] = ny + TFMenuPlates.get(MAIN[i]).layout[1] - rt;
+            lastBottom = rb;
+            ny += rb - rt + ROW_GAP;
+        }
+        compH = ny - ROW_GAP + (comp[1] - lastBottom) - comp[0];
+        // el emblema se queda al menos con LOGO_FRAC del alto (más grande que los botones); los botones, con el resto
+        float k = Math.min(K_MAX, (height - BOTTOM_MARGIN - Math.round(height * LOGO_FRAC) - 6) / compH);
         k = Math.min(k, (width / 2f - 10f) / halfW);
         float free = height - BOTTOM_MARGIN - compH * k;
         float top = free - Math.max(0f, (free - 186f) / 2f); // lo que sobre, repartido entre emblema y botones
@@ -139,8 +161,8 @@ public class TFMenuButton extends Button {
             TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
             float x0 = cx + (p.layout[0] - comp[2]) * k * widen[i];
             float x1 = cx + (p.layout[2] - comp[2]) * k * widen[i];
-            float y0 = top + (p.layout[1] - comp[0]) * k;
-            float y1 = top + (p.layout[3] - comp[0]) * k;
+            float y0 = top + (rowY[i] - comp[0]) * k;
+            float y1 = top + (rowY[i] + p.layout[3] - p.layout[1] - comp[0]) * k;
             out[i] = new int[] {Math.round(x0), Math.round(y0), Math.round(x1) - Math.round(x0), Math.round(y1) - Math.round(y0)};
         }
         out[MAIN.length] = new int[] {Math.round(top)};
@@ -339,40 +361,84 @@ public class TFMenuButton extends Button {
             group = textW * scale + iconW;
         }
         float gx = snap((x0 + x1) / 2f - group / 2f, s);
-        int ro = Math.max(1, Math.round(s * 0.5f)); // grosor del contorno en píxeles reales
-        float o = ro / (float) s;
-
-        if (withIcon) {
-            int sz = TFMenuIcons.SIZE * n;
-            int ix = Math.round(gx * s);
-            int iy = Math.round(centerY * s - sz / 2f);
-            g.pose().pushPose();
-            g.pose().scale(1f / s, 1f / s, 1f);
+        FormattedCharSequence seq = text.getVisualOrderText();
+        if (plate == null) {
+            // fuera del menú principal: contorno fino y un color
+            int ro = Math.max(1, Math.round(s * 0.5f));
+            float o = ro / (float) s;
+            float ty = snap(centerY - TEXT_UP * scale, s);
+            drawText(g, font, seq, gx, ty + o + Math.max(1, s / 2) / (float) s, scale, TFMenuPaint.argb(0.6f * alpha, OUTLINE));
             int dark = TFMenuPaint.argb(0.9f * alpha, OUTLINE);
-            TFMenuIcons.draw(g, icon, ix - ro, iy, n, dark);
-            TFMenuIcons.draw(g, icon, ix + ro, iy, n, dark);
-            TFMenuIcons.draw(g, icon, ix, iy - ro, n, dark);
-            TFMenuIcons.draw(g, icon, ix, iy + ro + Math.max(1, s / 2), n, dark);
-            TFMenuIcons.draw(g, icon, ix, iy, n, TFMenuPaint.argb(alpha, ink));
-            g.pose().popPose();
+            for (int dx = -ro; dx <= ro; dx++) {
+                for (int dy = -ro; dy <= ro; dy++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) == ro) drawText(g, font, seq, gx + dx / (float) s, ty + dy / (float) s, scale, dark);
+                }
+            }
+            drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+            return;
+        }
+
+        // Menú principal: letra gruesa con contorno grueso (8,5 % de la letra), sombra debajo y degradado
+        int ro = Math.max(1, Math.round(10f * scale * s * 0.085f)), sh = Math.max(1, Math.round(ro * 0.8f));
+        int[][] ring = ring(ro);
+        boolean goldText = kind == Kind.PRIMARY && this.active;
+        int edge = goldText ? GOLD_OUTLINE : OUTLINE;
+        if (withIcon) {
+            float sz = TFMenuIcons.SIZE * scale;
+            float iy = snap(centerY - sz / 2f, s);
+            for (int[] d : ring) icon(g, gx + d[0] / (float) s, iy + (d[1] + sh) / (float) s, sz, edge, 0.55f * alpha);
+            for (int[] d : ring) icon(g, gx + d[0] / (float) s, iy + d[1] / (float) s, sz, edge, alpha);
+            icon(g, gx, iy, sz, ink, alpha);
             gx += iconW;
         }
-
-        FormattedCharSequence seq = text.getVisualOrderText();
-        float ty = snap(centerY - (plate != null ? MENU_TEXT_UP : TEXT_UP) * scale, s);
-        boolean goldText = kind == Kind.PRIMARY && plate != null && this.active;
+        float ty = snap(centerY - MENU_TEXT_UP * scale, s);
         if (goldText) goldGlow(g, gx, centerY, textW * scale, scale, e, alpha);
-        // Sombra hacia abajo y contorno grueso (todo el borde de un cuadrado de ro píxeles reales): la letra resalta
-        drawText(g, font, seq, gx, ty + o + Math.max(1, s / 2) / (float) s, scale, TFMenuPaint.argb(0.6f * alpha, OUTLINE));
-        int dark = TFMenuPaint.argb(0.9f * alpha, goldText ? GOLD_OUTLINE : OUTLINE);
-        for (int dx = -ro; dx <= ro; dx++) {
-            for (int dy = -ro; dy <= ro; dy++) {
-                if (Math.max(Math.abs(dx), Math.abs(dy)) == ro) drawText(g, font, seq, gx + dx / (float) s, ty + dy / (float) s, scale, dark);
-            }
-        }
-        if (goldText) goldLetters(g, font, seq, gx, ty, scale, textW, e, alpha);
+        for (int[] d : ring) drawText(g, font, seq, gx + d[0] / (float) s, ty + (d[1] + sh) / (float) s, scale, TFMenuPaint.argb(0.55f * alpha, edge));
+        for (int[] d : ring) drawText(g, font, seq, gx + d[0] / (float) s, ty + d[1] / (float) s, scale, TFMenuPaint.argb(alpha, edge));
+        if (this.active) gradientLetters(g, font, seq, gx, ty, scale, textW, goldText, e, alpha);
         else drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
     }
+
+    /** Desplazamientos (en píxeles reales) del contorno: 16 direcciones a ro y 8 a la mitad, sin repetir. */
+    private static int[][] ring(int ro) {
+        int[][] cached = RINGS.get(ro);
+        if (cached != null) return cached;
+        java.util.LinkedHashSet<Long> seen = new java.util.LinkedHashSet<>();
+        java.util.List<int[]> out = new java.util.ArrayList<>();
+        for (int pass = 0; pass < 2; pass++) {
+            int n = pass == 0 ? 16 : 8;
+            float r = pass == 0 ? ro : ro / 2f;
+            if (pass == 1 && ro < 2) break;
+            for (int i = 0; i < n; i++) {
+                double a = i * 2 * Math.PI / n;
+                int dx = (int) Math.round(Math.cos(a) * r), dy = (int) Math.round(Math.sin(a) * r);
+                if ((dx != 0 || dy != 0) && seen.add(((long) dx << 32) ^ (dy & 0xFFFFFFFFL))) out.add(new int[] {dx, dy});
+            }
+        }
+        cached = out.toArray(new int[0][]);
+        RINGS.put(ro, cached);
+        return cached;
+    }
+
+    private static final java.util.Map<Integer, int[][]> RINGS = new java.util.HashMap<>();
+
+    /** El icono del botón (menu_icons.png: WhatsApp, Discord y el globo de la web, 256 cada uno) de sz de lado. */
+    private void icon(GuiGraphics g, float x, float y, float sz, int rgb, float alpha) {
+        if (!TFTextures.MENU_ICONS.ready()) return;
+        int i = icon == TFMenuIcons.Icon.WHATSAPP ? 0 : icon == TFMenuIcons.Icon.DISCORD ? 1 : 2;
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        g.setColor(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, alpha);
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0f);
+        g.pose().scale(sz / ICON_CELL, sz / ICON_CELL, 1f);
+        g.blit(TFTextures.MENU_ICONS.id(), 0, 0, ICON_PAD + i * (ICON_CELL + ICON_PAD), ICON_PAD, ICON_CELL, ICON_CELL,
+                TFTextures.MENU_ICONS.width(), TFTextures.MENU_ICONS.height());
+        g.pose().popPose();
+        g.setColor(1f, 1f, 1f, 1f);
+    }
+
+    private static final int ICON_CELL = 256, ICON_PAD = 16;
 
     /** Luz cálida que late detrás de las letras de Tierras Fantásticas (más fuerte con el ratón encima). */
     private static void goldGlow(GuiGraphics g, float gx, float cy, float w, float scale, float e, float alpha) {
@@ -393,11 +459,11 @@ public class TFMenuButton extends Button {
     }
 
     /**
-     * Letras de oro: degradado de oro pálido arriba a ámbar abajo (franjas de 2 píxeles reales con tijera) y un brillo
-     * que cruza las letras cada pocos segundos (y al pasar el ratón).
+     * Letras en degradado (franjas de 2 píxeles reales con tijera): de oro pálido a ámbar en Tierras Fantásticas, con un
+     * brillo que las cruza cada pocos segundos (y al pasar el ratón); de blanco a gris azulado en las demás.
      */
-    private void goldLetters(GuiGraphics g, Font font, FormattedCharSequence seq, float gx, float ty, float scale, int textW,
-                             float e, float alpha) {
+    private void gradientLetters(GuiGraphics g, Font font, FormattedCharSequence seq, float gx, float ty, float scale, int textW,
+                                 boolean goldText, float e, float alpha) {
         com.mojang.blaze3d.platform.Window win = Minecraft.getInstance().getWindow();
         double gs = win.getGuiScale();
         org.joml.Matrix4f m = g.pose().last().pose();
@@ -406,16 +472,22 @@ public class TFMenuButton extends Button {
         int x0 = (int) Math.floor(a.x * gs) - 4, x1 = (int) Math.ceil(b.x * gs) + 4;
         int y0 = (int) Math.floor(a.y * gs), y1 = (int) Math.ceil(b.y * gs);
         int fbH = win.getHeight();
-        // Fuera de la franja (por si algún trazo se sale): el oro del medio
-        drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, GOLD[2]));
+        // Fuera de la franja (por si algún trazo se sale): el color del medio
+        drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, goldText ? GOLD[2] : WHITE[1]));
         g.flush();
         int bands = Math.max(2, (y1 - y0) / 2);
         for (int i = 0; i < bands; i++) {
             int by0 = y0 + (y1 - y0) * i / bands, by1 = y0 + (y1 - y0) * (i + 1) / bands;
             if (by1 <= by0) continue;
             RenderSystem.enableScissor(x0, fbH - by1, x1 - x0, by1 - by0);
-            drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, gold((i + 0.5f) / bands, e)));
+            float t = (i + 0.5f) / bands;
+            int c = goldText ? gold(t, e) : TFMenuPaint.lerp(0xFF000000 | ramp(WHITE, t), 0xFFFFFFFF, 0.6f * e) & 0xFFFFFF;
+            drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, c));
             g.flush();
+        }
+        if (!goldText) {
+            RenderSystem.disableScissor();
+            return;
         }
         // Brillo: una franja clara que cruza las letras (cada GOLD_SHINE_EVERY ms y al entrar el ratón)
         long now = Util.getMillis();
@@ -438,10 +510,14 @@ public class TFMenuButton extends Button {
 
     /** Oro de arriba (t = 0) a abajo (t = 1); con el ratón, más claro. */
     private static int gold(float t, float e) {
-        float p = t * (GOLD.length - 1);
-        int i = Math.min(GOLD.length - 2, (int) p);
-        int c = TFMenuPaint.lerp(0xFF000000 | GOLD[i], 0xFF000000 | GOLD[i + 1], p - i);
-        return TFMenuPaint.lerp(c, 0xFFFFF2C8, 0.35f * e) & 0xFFFFFF;
+        return TFMenuPaint.lerp(0xFF000000 | ramp(GOLD, t), 0xFFFFF2C8, 0.35f * e) & 0xFFFFFF;
+    }
+
+    /** Color de una escala de colores (de arriba abajo) en t de 0 a 1. */
+    private static int ramp(int[] cols, float t) {
+        float p = Mth.clamp(t, 0f, 1f) * (cols.length - 1);
+        int i = Math.min(cols.length - 2, (int) p);
+        return TFMenuPaint.lerp(0xFF000000 | cols[i], 0xFF000000 | cols[i + 1], p - i) & 0xFFFFFF;
     }
 
     private static void drawText(GuiGraphics g, Font font, FormattedCharSequence text, float x, float y, float scale, int argb) {

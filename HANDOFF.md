@@ -10,6 +10,19 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.48 (11 oct)** — el dueño: «las letras siguen siendo delgadas y pequeñas, el icono de Discord no se
+> parece, ¿por qué el logo más pequeño? debe ser más grande que los botones». Menú de inicio:
+> - Letra **Titan One** (OFL, `font/titanone.ttf` + `titanone_1..12.json`; quitada New Rocker): gruesa y redonda, de
+>   botón de juego. Contorno grueso (8,5 % de la letra: 16 direcciones + 8 a media distancia, `TFMenuButton.ring`),
+>   sombra debajo y degradado en todas (oro en Tierras Fantásticas, blanco a gris azulado en las demás;
+>   `gradientLetters`). Llena hasta el 70 % del hueco de la placa (`CAP_FILL`).
+> - **Iconos de verdad** (`textures/gui/menu_icons.png`, `tools/gen_menu_icons.py`): logos de WhatsApp y Discord
+>   (Simple Icons, CC0) y globo de Lucide (ISC) en Web, con contorno y sombra como las letras.
+> - **Emblema grande**: se queda al menos con el 44 % del alto (`LOGO_FRAC`; 113 de alto a 1080p, antes 77); filas más
+>   juntas (`ROW_GAP` 50) y columna más ancha (`SPAN` 1,7) para que los botones no pierdan tamaño.
+> - Música: lo de «Favoritas» era solo un nombre de ejemplo del simulador (`tools/pad/sim/pages.py`; cambiado); en el
+>   juego no hay pestaña de favoritos. Pegar un link con una playlist abierta la guarda en esa playlist (1.3.47).
+
 > **TF Client 1.3.47 (11 oct)** — 7 pedidos del dueño:
 > 1. **Pad Música, botones de fila** (`PadMusicPage.rowButton`): 14x14 redondeados con borde de su color, cara clara y
 >    dibujo de 8x8 con trazo de 2 justo en el centro (antes 5x5 descentrado); al pasar el ratón, llenos de su color.
@@ -1669,7 +1682,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.47)
+## 5. El mod (TF Client 1.3.48)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

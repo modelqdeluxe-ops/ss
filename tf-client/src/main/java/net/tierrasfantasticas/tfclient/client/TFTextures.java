@@ -33,6 +33,8 @@ public enum TFTextures {
     BUTTON_SLICE("button_slice.png"),
     /** Placas del menú principal (lámina del dueño) y su mapa menu_main.json. Ver TFMenuPlates. */
     MENU_MAIN("menu_main.png"),
+    /** Iconos de los botones del menú principal: logos de WhatsApp y Discord y el globo de la web (256 cada uno). */
+    MENU_ICONS("menu_icons.png"),
     /** Punto de luz redondo y suave: faroles y gemas del menú principal. */
     MENU_GLOW("menu_glow.png", Mode.NO_MIPMAPS);
 
