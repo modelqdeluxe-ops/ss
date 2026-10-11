@@ -384,9 +384,11 @@ y `discord.url` el enlace de reserva si el widget no responde.
 - Icono en la lista de mods: `src/main/resources/tfclient_logo.png`.
 - Efecto del emblema: `tools/gen_logo_fx.py` genera `logo_glow.png`, `logo_shine.png`, `sparkle.png` y
   `button_shine.png` (la línea luminosa de los botones de oro) a partir de `logo.png` (vuelve a ejecutarlo si cambias el emblema).
-- Botones: `tools/gen_buttons.py` genera `button_slice.png` (azul noche) y `button_slice_primary.png` (oro), en tres
-  piezas: puntas de 16 píxeles de interfaz a tamaño fijo y centro uniforme que se estira al ancho de cada botón
-  (3 estados apilados: normal, ratón encima, desactivado; 4 píxeles por píxel de interfaz).
+- Botones: `tools/gen_menu_buttons.py <lámina del menú> <lámina de ajustes>` recorta las dos láminas del dueño (el
+  fondo de cuadritos viene pintado y se quita) y genera `menu_main.png` + `menu_main.json` (las 8 placas del menú
+  principal, su cuerpo, zonas lisas que se estiran, gemas y faroles, y su sitio en la composición), `menu_glow.png` y
+  `button_slice.png` (la placa de piedra de los demás menús: normal, ratón encima y desactivada). Las láminas no van en
+  el repo. Vista previa sin abrir el juego: `tools/menu_sim.py <carpeta>`.
 - Fuente: `src/main/resources/assets/tfclient/font/cinzel.ttf` (Cinzel, licencia SIL Open Font License, incluida en
   `OFL-Cinzel.txt`).
 - Música: `src/main/resources/assets/tfclient/music/menu.ogg` (OGG Vorbis; para convertir un MP3:

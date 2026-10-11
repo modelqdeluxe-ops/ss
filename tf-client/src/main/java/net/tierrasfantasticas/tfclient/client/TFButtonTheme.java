@@ -15,14 +15,18 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 
 /**
- * Tema de TF para los botones fuera de una partida (menú principal, mundos, opciones, conexión...): placa azul noche
- * con doble filete dorado y letra Cinzel. Dentro de una partida no se toca nada, para que cada jugador vea sus
- * paquetes de recursos.
+ * Tema de TF para los botones fuera de una partida (mundos, opciones, conexión...): la placa de piedra con marco
+ * plateado y gemas ámbar de la lámina de ajustes del dueño (button_slice.png, de tools/gen_menu_buttons.py) y letra
+ * Cinzel. Las puntas (con la gema) guardan su forma a la altura del botón y el centro liso se corta a lo que mida (sin
+ * estirar). Con el ratón encima la placa se aclara y las gemas se encienden con un fundido suave. Dentro de una partida
+ * no se toca nada, para que cada jugador vea sus paquetes de recursos.
  */
 public final class TFButtonTheme {
-    /** Ancho de cada punta en píxeles de interfaz (ver tools/gen_buttons.py). */
-    private static final int CAP = 16;
-    private static final int TEXELS_PER_PIXEL = 4;
+    /** Medidas de button_slice.png: alto de la placa, separación entre estados y ancho de cada punta (en texels). */
+    private static final int PLATE_H = 135, PAD = 16, CAP_L = 115, CAP_R = 114;
+    private static final float HOVER_MS = 140f;
+    /** Fundido del ratón de cada botón: {encendido 0..1, último fotograma}. */
+    private static final java.util.Map<AbstractWidget, float[]> FADE = new java.util.WeakHashMap<>();
 
     private TFButtonTheme() {}
 
@@ -37,9 +41,9 @@ public final class TFButtonTheme {
     public static boolean renderButton(AbstractButton button, GuiGraphics g) {
         if (!themed(button) || !TFTextures.BUTTON_SLICE.ready()) return false;
         boolean hot = button.active && button.isHoveredOrFocused();
-        int state = !button.active ? 2 : hot ? 1 : 0;
-        drawPlate(g, TFTextures.BUTTON_SLICE, button.getX(), button.getY(), button.getWidth(), button.getHeight(), state, 1f);
-        int color = !button.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
+        float e = fade(button, hot);
+        drawPlate(g, button.getX(), button.getY(), button.getWidth(), button.getHeight(), e, button.active, 1f);
+        int color = !button.active ? 0xA0A0A0 : TFMenuPaint.lerp(0xFFF5EAD0, 0xFFFFD667, e) & 0xFFFFFF;
         drawLabel(g, button.getMessage(), button.getX(), button.getY(), button.getWidth(), button.getHeight(), color, 1f, true);
         return true;
     }
@@ -52,7 +56,7 @@ public final class TFButtonTheme {
         int y = slider.getY();
         int w = slider.getWidth();
         int h = slider.getHeight();
-        drawPlate(g, TFTextures.BUTTON_SLICE, x, y, w, h, slider.active ? 0 : 2, 1f);
+        drawPlate(g, x, y, w, h, fade(slider, hot), slider.active, 1f);
         int handleX = x + (int) (Mth.clamp(value, 0.0, 1.0) * (w - 8));
         g.fill(handleX, y + 1, handleX + 8, y + h - 1, 0xFF1A1206);
         g.fill(handleX + 1, y + 2, handleX + 7, y + h - 2, hot ? 0xFFFFD667 : 0xFFE2B04A);
@@ -63,23 +67,66 @@ public final class TFButtonTheme {
         return true;
     }
 
-    /** Placa en tres piezas: puntas a tamaño fijo y centro estirado al ancho del botón. */
-    public static void drawPlate(GuiGraphics g, TFTextures texture, int x, int y, int w, int h, int state, float alpha) {
-        int texW = texture.width();
-        int texH = texture.height();
-        int stateH = texH / 3;
-        int capTex = CAP * TEXELS_PER_PIXEL;
-        int cap = Math.min(Math.round(CAP * h / 20f), w / 2);
-        float v = state * stateH;
+    /** Fundido suave del estado de ratón encima (0..1, con curva). */
+    private static float fade(AbstractWidget widget, boolean hot) {
+        float[] f = FADE.computeIfAbsent(widget, w -> new float[] {0f, 0f});
+        float now = net.minecraft.Util.getMillis() % 1_000_000L;
+        float dt = f[1] == 0f || now < f[1] ? 1000f : Math.min(250f, now - f[1]);
+        f[1] = now;
+        float step = dt / HOVER_MS;
+        f[0] = hot ? Math.min(1f, f[0] + step) : Math.max(0f, f[0] - step);
+        return f[0] * f[0] * (3f - 2f * f[0]);
+    }
+
+    /** Placa de piedra: la normal y, encima, la iluminada con la opacidad del ratón; gris si está desactivada. */
+    public static void drawPlate(GuiGraphics g, int x, int y, int w, int h, float hover, boolean active, float alpha) {
+        if (!TFTextures.BUTTON_SLICE.ready()) return;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        g.setColor(1f, 1f, 1f, alpha);
-        g.blit(texture.id(), x, y, cap, h, 0f, v, capTex, stateH, texW, texH);
-        g.blit(texture.id(), x + w - cap, y, cap, h, texW - capTex, v, capTex, stateH, texW, texH);
-        if (w - 2 * cap > 0) {
-            g.blit(texture.id(), x + cap, y, w - 2 * cap, h, capTex, v, texW - 2 * capTex, stateH, texW, texH);
+        if (!active) {
+            drawState(g, x, y, w, h, 2, alpha);
+        } else {
+            drawState(g, x, y, w, h, 0, alpha);
+            if (hover > 0.01f) drawState(g, x, y, w, h, 1, alpha * hover);
         }
         g.setColor(1f, 1f, 1f, 1f);
+    }
+
+    /** Un estado de la placa: puntas a la altura del botón y el centro cortado (repetido si el botón es muy ancho). */
+    private static void drawState(GuiGraphics g, int x, int y, int w, int h, int state, float alpha) {
+        TFTextures tex = TFTextures.BUTTON_SLICE;
+        int s = Math.max(1, (int) Math.round(Minecraft.getInstance().getWindow().getGuiScale()));
+        float k = h / (float) PLATE_H;
+        float capL = CAP_L * k, capR = CAP_R * k;
+        if (capL + capR > w) {
+            float f = w / (capL + capR);
+            capL *= f;
+            capR *= f;
+        }
+        float xl = snap(x + capL, s), xr = snap(x + w - capR, s);
+        int v = PAD + state * (PLATE_H + PAD);
+        int fill = tex.width() - CAP_L - CAP_R;
+        g.setColor(1f, 1f, 1f, alpha);
+        piece(g, tex, x, y, xl - x, h, 0, v, CAP_L);
+        for (float at = xl; at < xr - 0.01f; ) {
+            float seg = Math.min(fill * k, xr - at);
+            piece(g, tex, at, y, seg, h, CAP_L, v, Math.max(1, Math.min(fill, Math.round(seg / k))));
+            at += seg;
+        }
+        piece(g, tex, xr, y, x + w - xr, h, tex.width() - CAP_R, v, CAP_R);
+    }
+
+    private static void piece(GuiGraphics g, TFTextures tex, float x, float y, float w, float h, int u, int v, int uw) {
+        if (w <= 0f) return;
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0f);
+        g.pose().scale(w / uw, h / PLATE_H, 1f);
+        g.blit(tex.id(), 0, 0, u, v, uw, PLATE_H, tex.width(), tex.height());
+        g.pose().popPose();
+    }
+
+    private static float snap(float gui, int s) {
+        return Math.round(gui * s) / (float) s;
     }
 
     /** Texto centrado con la letra de TF; si no cabe, se reduce un poco. */

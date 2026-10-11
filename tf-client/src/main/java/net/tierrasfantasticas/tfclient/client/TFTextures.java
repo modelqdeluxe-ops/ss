@@ -29,8 +29,12 @@ public enum TFTextures {
     SPARKLE("sparkle.png"),
     /** Línea luminosa que cruza los botones del menú principal (la del emblema, más suave). Ver TFMenuPaint.sweep. */
     BUTTON_SHINE("button_shine.png", Mode.NO_MIPMAPS),
-    /** Botones de los demás menús en tres piezas (puntas fijas y centro estirable; 3 estados apilados). Ver TFButtonTheme. */
-    BUTTON_SLICE("button_slice.png");
+    /** Placas de piedra de los demás menús (puntas con gema y centro largo; normal, ratón y desactivada). Ver TFButtonTheme. */
+    BUTTON_SLICE("button_slice.png"),
+    /** Placas del menú principal (lámina del dueño) y su mapa menu_main.json. Ver TFMenuPlates. */
+    MENU_MAIN("menu_main.png"),
+    /** Punto de luz redondo y suave: faroles y gemas del menú principal. */
+    MENU_GLOW("menu_glow.png", Mode.NO_MIPMAPS);
 
     /** Cómo se sube la imagen: suavizada con mipmaps, suavizada sin mipmaps, o pixel art sin suavizar. */
     public enum Mode { MIPMAPS, NO_MIPMAPS, PIXEL_ART }

@@ -30,8 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Menú principal de TF: el paisaje de fondo en lugar del panorama, el emblema TF encima de los botones y los botones
- * con el diseño de TF (TFMenuButton: el del servidor dorado; los demás, paneles oscuros; solo WhatsApp y Discord con
- * icono). El orden de Tab es el de arriba abajo. Sin textos de Mojang, versión,
+ * de la lámina del dueño (TFMenuButton + TFMenuPlates), colocados como en ella. El orden de Tab es el de arriba abajo. Sin textos de Mojang, versión,
  * Realms, idioma ni accesibilidad (idioma y accesibilidad siguen en Opciones).
  *
  * Importante: sin lambdas ni referencias a métodos aquí (van en TFMenuButton); en un mixin pueden generar métodos que
@@ -42,8 +41,6 @@ public abstract class TitleScreenMixin extends Screen {
     @Shadow
     private SplashRenderer splash;
 
-    @Unique
-    private static final int BUTTON_SHIFT = 12;
     @Unique
     private int tfclient$buttonsTop = -1;
 
@@ -127,34 +124,27 @@ public abstract class TitleScreenMixin extends Screen {
         }
         if (singleplayer == null) return; // modo demo: se deja el menú normal
 
-        // Botones un poco más abajo para dejar sitio a un emblema más grande
-        int shift = Math.max(0, Math.min(BUTTON_SHIFT, this.height - (singleplayer.getY() + 132)));
-        int x = this.width / 2 - 100;
-        int top = singleplayer.getY() + shift;
-        this.tfclient$buttonsTop = top;
+        // La composición de la lámina del dueño, escalada para caber debajo del emblema (TFMenuButton.mainLayout):
+        // Tierras Fantásticas; Mundo local y Mods; Opciones | Salir; WhatsApp | Web | Discord
+        int[][] r = TFMenuButton.mainLayout(this.width, this.height);
+        if (r == null) return; // sin textura: se deja el menú normal
+        this.tfclient$buttonsTop = r[8][0];
         for (GuiEventListener child : remove) {
             this.removeWidget(child);
         }
-
-        // Servidor, mundo local y mods a lo ancho; debajo Opciones y Salir, y abajo WhatsApp, Web y Discord (solo
-        // WhatsApp y Discord con icono, el de su marca)
-        this.addRenderableWidget(TFMenuButton.server(x, top, 200));
-        this.tfclient$swap(singleplayer, x, top + 24, 200, "Mundo local", null, TFMenuButton.Kind.SECONDARY);
-        int row = top + 48;
-        if (mods != null) {
-            this.tfclient$swap(mods, x, row, 200, "Mods", null, TFMenuButton.Kind.SECONDARY);
-            row += 24;
-        }
-        if (options != null) this.tfclient$swap(options, x, row, 98, "Opciones", null, TFMenuButton.Kind.SECONDARY);
-        if (quit != null) this.tfclient$swap(quit, x + 102, row, 98, "Salir", null, TFMenuButton.Kind.DANGER);
-        this.addRenderableWidget(TFMenuButton.whatsapp(x, row + 24, 70));
-        this.addRenderableWidget(TFMenuButton.web(x + 74, row + 24, 52));
-        this.addRenderableWidget(TFMenuButton.discord(x + 130, row + 24, 70));
+        this.addRenderableWidget(TFMenuButton.server(r[0]));
+        this.tfclient$swap(singleplayer, r[1], "Mundo local", TFMenuButton.Kind.SECONDARY, TFMenuButton.BLUE_1);
+        if (mods != null) this.tfclient$swap(mods, r[2], "Mods", TFMenuButton.Kind.SECONDARY, TFMenuButton.BLUE_2);
+        if (options != null) this.tfclient$swap(options, r[3], "Opciones", TFMenuButton.Kind.SECONDARY, TFMenuButton.GRAY);
+        if (quit != null) this.tfclient$swap(quit, r[4], "Salir", TFMenuButton.Kind.DANGER, TFMenuButton.RED);
+        this.addRenderableWidget(TFMenuButton.whatsapp(r[5]));
+        this.addRenderableWidget(TFMenuButton.web(r[6]));
+        this.addRenderableWidget(TFMenuButton.discord(r[7]));
     }
 
     @Unique
-    private void tfclient$swap(Button original, int x, int y, int width, String text, net.tierrasfantasticas.tfclient.client.TFMenuIcons.Icon icon, TFMenuButton.Kind kind) {
+    private void tfclient$swap(Button original, int[] rect, String text, TFMenuButton.Kind kind, String plate) {
         this.removeWidget(original);
-        this.addRenderableWidget(TFMenuButton.wrapping(original, x, y, width, text, icon, kind));
+        this.addRenderableWidget(TFMenuButton.wrapping(original, rect, text, kind, plate));
     }
 }
