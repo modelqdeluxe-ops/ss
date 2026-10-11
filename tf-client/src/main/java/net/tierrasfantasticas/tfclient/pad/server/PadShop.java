@@ -71,10 +71,15 @@ public final class PadShop {
                         Entry e = c == null ? null : entry(c, a[2]);
                         if (e == null) return null;
                         int lots = 0;
-                        if (a.length > 3) lots = parse(a[3]);
-                        else if (!text.isBlank()) lots = parse(text);
+                        // las tarjetas mandan cuántas veces la cantidad del objeto; en el campo se escriben unidades
+                        if (a.length > 3) {
+                            lots = parse(a[3]);
+                        } else if (!text.isBlank()) {
+                            int units = parse(text);
+                            lots = units > 0 && units % e.amount() == 0 && units / e.amount() <= TFShopConfig.maxLots ? units / e.amount() : 0;
+                        }
                         if (!a[0].equals("vendertodo") && lots <= 0) {
-                            TFPadNet.notice(player, "Escribe cuántos lotes quieres (1 a " + TFShopConfig.maxLots + ").");
+                            TFPadNet.notice(player, askUnits(e));
                             return null;
                         }
                         lots = Math.min(lots, TFShopConfig.maxLots);
@@ -116,7 +121,7 @@ public final class PadShop {
         return p == null ? "" : p;
     }
 
-    /** El objeto tal como se ve, con la cantidad de un lote (como mucho 64 en el dibujo). */
+    /** El objeto tal como se ve, con estas unidades (como mucho 64 en el dibujo). */
     private static ItemStack shown(Entry e, long units) {
         return e.stack((int) Math.max(1, Math.min(64, units)));
     }
@@ -168,9 +173,9 @@ public final class PadShop {
     }
 
     /**
-     * La ficha de un objeto, de compra o de venta (no se mezclan): arriba, su cabecera grande (el objeto, cuánto trae cada lote, cuántos llevas, tu saldo y lo
-     * que te queda hoy si hay límite, con el precio del lote en la etiqueta); debajo, una tarjeta por cantidad («8 lotes», con lo que cuesta o
-     * lo que cobras); las que no puedes pagar o vender salen apagadas y dicen por qué. Comprar: otra cantidad abajo.
+     * La ficha de un objeto, de compra o de venta (no se mezclan): arriba, su cabecera grande (el objeto, de cuántas unidades es el precio, cuántas
+     * llevas, tu saldo y lo que te queda hoy si hay límite, con ese precio en la etiqueta); debajo, una tarjeta por cantidad («128 unidades», con lo
+     * que cuesta o lo que cobras); las que no puedes pagar o vender salen apagadas y dicen por qué. Comprar: otra cantidad (en unidades) abajo.
      */
     private static PadView item(ServerPlayer player, int ci, Category c, int ei, Entry e, boolean selling) {
         if (selling && !e.sellable()) selling = false;
@@ -181,7 +186,7 @@ public final class PadShop {
         long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
         List<String> lines = new ArrayList<>();
         // dos líneas como mucho (lo que dice el objeto, en su tooltip): así las tarjetas caben debajo sin desplazar
-        lines.add((e.amount() == 1 ? "Por unidad" : "Lote de " + e.amount()) + " · llevas " + have + ".");
+        lines.add("Precio por " + units(e.amount()) + " · llevas " + have + ".");
         long daily = selling ? e.sellDaily() : e.buyDaily();
         long dayLeftNow = daily > 0 ? Math.max(0, TFShop.left(player.getUUID(), (selling ? "v:" : "c:") + e.key(), daily)) : -1;
         String today = dayLeftNow >= 0 ? "Hoy puedes " + (selling ? "vender " : "comprar ") + dayLeftNow + " más." : "";
@@ -213,17 +218,30 @@ public final class PadShop {
                 String sub = ok ? PadView.money(cost) : !afford ? "Faltan " + PadShop.price(cost - balance) : "Límite de hoy";
                 b.card(shown(e, (long) step * e.amount()), amount(e, step), 0xF6B628, sub, ok ? "comprar:" + cat + ":" + step : "", false);
             }
-            b.input("comprar:" + cat, "OTRA CANTIDAD (LOTES)", 3, "COMPRAR");
+            long maxUnits = (long) TFShopConfig.maxLots * e.amount();
+            b.input("comprar:" + cat, e.amount() == 1 ? "OTRA CANTIDAD (UNIDADES)" : "OTRA CANTIDAD (DE " + e.amount() + " EN " + e.amount() + ")",
+                    Long.toString(maxUnits).length(), "COMPRAR");
             b.footer(PadView.Btn.of("ATRÁS", "volver:c/" + ci, PadView.BLUE));
         }
         return b.build();
     }
 
-    /** El nombre de cada opción: «16 uds.» si se vende de uno en uno; si no, «8 lotes · 128». */
+    /** El nombre de cada opción, siempre en unidades: «1 unidad», «128 unidades». */
     private static String amount(Entry e, int step) {
-        long units = (long) step * e.amount();
-        if (e.amount() == 1) return units + (units == 1 ? " unidad" : " uds.");
-        return step + (step == 1 ? " lote · " : " lotes · ") + units;
+        return units((long) step * e.amount());
+    }
+
+    /** «1 unidad», «16 unidades». */
+    private static String units(long n) {
+        return n + (n == 1 ? " unidad" : " unidades");
+    }
+
+    /** Qué escribir en «otra cantidad»: unidades, de N en N si el objeto va de N en N. */
+    private static String askUnits(Entry e) {
+        long max = (long) TFShopConfig.maxLots * e.amount();
+        if (e.amount() == 1) return "Escribe cuántas unidades quieres (1 a " + max + ").";
+        if (max == e.amount()) return "Escribe " + e.amount() + ": se compra de " + e.amount() + " en " + e.amount() + ".";
+        return "Escribe cuántas unidades quieres, de " + e.amount() + " en " + e.amount() + " (" + e.amount() + ", " + 2L * e.amount() + "… hasta " + max + ").";
     }
 
 

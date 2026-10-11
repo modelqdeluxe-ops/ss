@@ -79,6 +79,13 @@ final class PadFont {
         RenderSystem.setShaderColor(1, 1, 1, 1);
     }
 
+    /** ¿Tiene alguna letra que la fuente pixel sepa dibujar? (si no, saldría en blanco). */
+    static boolean drawable(String s) {
+        load();
+        for (char c : upper(s).toCharArray()) if (c != ' ' && chars.indexOf(c) >= 0) return true;
+        return false;
+    }
+
     /** Recorta el texto (letra pixel) por el final para que quepa en w píxeles. */
     static String fit(String s, int w) {
         String t = upper(s);

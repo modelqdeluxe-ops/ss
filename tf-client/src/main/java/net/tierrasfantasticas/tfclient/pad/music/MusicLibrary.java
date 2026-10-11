@@ -157,6 +157,17 @@ public final class MusicLibrary {
         save();
     }
 
+    /** Mete la canción en la lista (si no estaba ya). */
+    public static synchronized void addToList(String listId, String trackId) {
+        load();
+        Playlist p = playlist(listId);
+        if (p == null || p.tracks().contains(trackId)) return;
+        List<String> ids = new ArrayList<>(p.tracks());
+        ids.add(trackId);
+        LISTS.set(LISTS.indexOf(p), new Playlist(p.id(), p.name(), ids));
+        save();
+    }
+
     public static synchronized boolean speaker() {
         load();
         return speaker;

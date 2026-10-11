@@ -10,6 +10,31 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.47 (11 oct)** — 7 pedidos del dueño:
+> 1. **Pad Música, botones de fila** (`PadMusicPage.rowButton`): 14x14 redondeados con borde de su color, cara clara y
+>    dibujo de 8x8 con trazo de 2 justo en el centro (antes 5x5 descentrado); al pasar el ratón, llenos de su color.
+>    El «+» de las pestañas es una cruz dibujada y centrada.
+> 2. **Contorno de las protecciones** (`claims/client/ClaimOutlineRenderer` + nuevo `MagicDustParticle`, solo
+>    cliente): ya no es una caja de líneas con tapa; es polvo mágico del color de la protección (destellos y polvo
+>    vanilla teñidos, brillo propio): líneas verticales en las esquinas (16 abajo a 24 arriba del jugador) y por el
+>    suelo en cada lado, hasta 32 bloques. A ≤5 bloques de un lado: «cortina» de 12 de ancho en franjas diagonales
+>    que se deslizan, todas parpadeando a la vez (pulso de 14 ticks), más densa cuanto más cerca. Tope: 14 motas/tick
+>    las líneas + 10 por lado cercano (máx. 2), ×0,6/×0,3 con partículas reducidas/mínimas. Se borran al salir del
+>    servidor. `ParticleBorder` (relleno opcional del dueño, del servidor) sin tocar.
+> 3. **Avisos del pad** (`TFPadScreen.drawNotice`): pastilla arriba, bajo la barra (no tapa los controles), del ancho
+>    del texto, entra y se apaga sola en 2–3,5 s. Textos del altavoz cortos.
+> 4. **Playlists**: TODAS es solo ver/oír todo (sin el + de cada fila ni su menú). En una playlist: cabecera
+>    «N canciones» + ELEGIR CANCIONES (modo elegir: toda tu música con casillas ✓/+; LISTO), el − la saca, y el link
+>    pegado abajo se baja **y entra en esa lista** (`MusicDownloader.download(link, listId)`, `MusicLibrary.addToList`).
+>    Al crear una lista se abre el modo elegir.
+> 5. **Pestañas de playlists**: TODAS + las que quepan (nombre ≤58 px; «LISTA» si no tiene letras dibujables) y, a la
+>    derecha y fijas, flechas ‹ › por páginas y el +; la rueda sobre las pestañas también pasa.
+> 6. **Tienda en unidades** (`PadShop`, `TFShopMenu`, `PadAdmin`): «16 unidades» / «1 unidad», nunca «lote»; el campo
+>    «otra cantidad» pide unidades (múltiplo del paquete; si no, aviso y no compra).
+> 7. **Menú de inicio**: letra **New Rocker** (OFL, `font/newrocker.ttf` + `newrocker_1..12.json`,
+>    `OFL-NewRocker.txt`) en las placas; todas las filas del mismo ancho (`ROWS`, `SPAN` 1,42 × Tierras Fantásticas):
+>    una columna limpia. Cinzel sigue en las demás pantallas. `tools/menu_sim.py` y `tools/pad/sim/pages.py` al día.
+
 > **TF Client 1.3.46 (11 oct)** — el dueño: «el de Tierras Fantásticas debe ser dorado, que las letras resalten más
 > y tengan efecto». Letras de Tierras Fantásticas en **oro** (`TFMenuButton.goldLetters`: degradado de oro pálido a
 > ámbar en franjas de 2 px reales con `RenderSystem.enableScissor`, contorno marrón oscuro), **luz cálida que late**
@@ -1644,7 +1669,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.46)
+## 5. El mod (TF Client 1.3.47)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

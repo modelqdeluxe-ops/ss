@@ -24,8 +24,9 @@ import net.tierrasfantasticas.tfclient.TFConfig;
  *
  * Animación: con el ratón encima la placa sube un poco, se ilumina con un fundido suave y la cruza una línea de luz;
  * al pulsar se hunde y se oscurece. Las gemas echan una chispa de vez en cuando (y brillan más con el ratón), los
- * faroles titilan, y por Tierras Fantásticas pasa un destello cada pocos segundos. Texto Cinzel con contorno oscuro,
- * del mismo tamaño y color en todos los botones (el mayor que cabe en todos; nítido); iconos en WhatsApp, Web y Discord.
+ * faroles titilan, y por Tierras Fantásticas pasa un destello cada pocos segundos. Texto en New Rocker (Cinzel fuera
+ * del menú) con contorno oscuro, del mismo tamaño y color en todos los botones (el mayor que cabe en todos; nítido);
+ * iconos en WhatsApp, Web y Discord. Todas las filas miden lo mismo (una columna).
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
@@ -34,9 +35,15 @@ public class TFMenuButton extends Button {
      * con la letra a n/escala se dibuja 1:1 en pantalla, nítida.
      */
     private static final ResourceLocation[] FONT_AT_SCALE = new ResourceLocation[12];
+    /**
+     * La letra de los botones del menú principal: New Rocker (OFL, font/OFL-NewRocker.txt), de título de juego, gruesa
+     * y con carácter; también a 1..12 píxeles reales por píxel de interfaz (font/newrocker_N.json).
+     */
+    private static final ResourceLocation[] MENU_FONT_AT_SCALE = new ResourceLocation[12];
     static {
         for (int i = 0; i < FONT_AT_SCALE.length; i++) {
             FONT_AT_SCALE[i] = i == 3 ? FONT : new ResourceLocation(TFClient.MOD_ID, "cinzel_" + (i + 1));
+            MENU_FONT_AT_SCALE[i] = new ResourceLocation(TFClient.MOD_ID, "newrocker_" + (i + 1));
         }
     }
 
@@ -46,27 +53,29 @@ public class TFMenuButton extends Button {
     public static final String TF = "tf", BLUE_1 = "blue1", BLUE_2 = "blue2", GRAY = "gray", RED = "red", GREEN = "green",
             PURPLE = "purple", BLUE = "blueb";
     private static final String[] MAIN = {TF, BLUE_1, BLUE_2, GRAY, RED, GREEN, PURPLE, BLUE};
-    /** Cuánto se ensancha cada fila respecto a la lámina (solo por sus zonas lisas): los de abajo, para que quepa el texto. */
-    private static final float[] WIDEN = {1.25f, 1.25f, 1.25f, 1.4f, 1.4f, 1.5f, 1.5f, 1.5f};
+    /** Filas de la composición (índices de MAIN). Todas miden lo mismo: una columna limpia. */
+    private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
+    /** Ancho de cada fila: el de Tierras Fantásticas en la lámina por SPAN (las placas se estiran por sus zonas lisas). */
+    private static final float SPAN = 1.42f;
     /** Escala máxima de la lámina (interfaz por píxel): Mundo local de unos 21 de alto. */
     private static final float K_MAX = 0.15f;
     private static final int LOGO_MIN = 80, BOTTOM_MARGIN = 6;
-    /** Alto de las mayúsculas de Cinzel a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
-    private static final float CAP_HEIGHT = 5.3f, CAP_FILL = 0.56f, INTERIOR = 0.7f;
+    /** Alto de las mayúsculas de New Rocker a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
+    private static final float CAP_HEIGHT = 6f, CAP_FILL = 0.56f, INTERIOR = 0.7f;
     /** Tamaño de letra común a todos los botones del menú principal (el mayor que cabe en todos). Ver mainLayout. */
     private static float mainTextSize = 1f;
 
     /** Separación entre icono y texto, en píxeles de interfaz. */
     private static final int GAP = 3;
-    /** El texto se dibuja en el centro - TEXT_UP (centrado a la vista de Cinzel). */
-    private static final float TEXT_UP = 3.5f;
+    /** El texto se dibuja en el centro - TEXT_UP (centrado a la vista: Cinzel en las demás pantallas, New Rocker en el menú). */
+    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4f;
     private static final float HOVER_MS = 140f, SWEEP_MS = 850f;
     private static final long TF_SHINE_EVERY = 6500L, SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
     private static final int INK = 0xFFF3DC, INK_HOT = 0xFFFFFF, OUTLINE = 0x140A04, GOLD_OUTLINE = 0x2A1204;
     /** Oro de las letras de Tierras Fantásticas, de arriba abajo, y alto de las mayúsculas en la celda (escala 1). */
     private static final int[] GOLD = {0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E};
-    private static final float GOLD_TOP = -0.2f, GOLD_BOTTOM = 5.4f;
+    private static final float GOLD_TOP = -0.4f, GOLD_BOTTOM = 6.2f;
     private static final long GOLD_SHINE_EVERY = 4200L, GOLD_SHINE_MS = 1300L;
 
     private final Kind kind;
@@ -105,11 +114,20 @@ public class TFMenuButton extends Button {
         float[] comp = TFMenuPlates.composition();
         if (comp == null) return null;
         float compH = comp[1] - comp[0];
-        float maxWiden = 0f, halfW = 0f;
+        float[] widen = new float[MAIN.length];
+        float[] tfLayout = TFMenuPlates.get(TF).layout;
+        for (int[] row : ROWS) {
+            float x0 = Float.MAX_VALUE, x1 = -Float.MAX_VALUE;
+            for (int i : row) {
+                x0 = Math.min(x0, TFMenuPlates.get(MAIN[i]).layout[0]);
+                x1 = Math.max(x1, TFMenuPlates.get(MAIN[i]).layout[2]);
+            }
+            for (int i : row) widen[i] = (tfLayout[2] - tfLayout[0]) * SPAN / (x1 - x0);
+        }
+        float halfW = 0f;
         for (int i = 0; i < MAIN.length; i++) {
             TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
-            maxWiden = Math.max(maxWiden, WIDEN[i]);
-            halfW = Math.max(halfW, Math.max(comp[2] - p.layout[0], p.layout[2] - comp[2]) * WIDEN[i]);
+            halfW = Math.max(halfW, Math.max(comp[2] - p.layout[0], p.layout[2] - comp[2]) * widen[i]);
         }
         float k = Math.min(K_MAX, (height - BOTTOM_MARGIN - LOGO_MIN - 6) / compH);
         k = Math.min(k, (width / 2f - 10f) / halfW);
@@ -119,8 +137,8 @@ public class TFMenuButton extends Button {
         float cx = width / 2f;
         for (int i = 0; i < MAIN.length; i++) {
             TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
-            float x0 = cx + (p.layout[0] - comp[2]) * k * WIDEN[i];
-            float x1 = cx + (p.layout[2] - comp[2]) * k * WIDEN[i];
+            float x0 = cx + (p.layout[0] - comp[2]) * k * widen[i];
+            float x1 = cx + (p.layout[2] - comp[2]) * k * widen[i];
             float y0 = top + (p.layout[1] - comp[0]) * k;
             float y1 = top + (p.layout[3] - comp[0]) * k;
             out[i] = new int[] {Math.round(x0), Math.round(y0), Math.round(x1) - Math.round(x0), Math.round(y1) - Math.round(y0)};
@@ -144,7 +162,8 @@ public class TFMenuButton extends Button {
             int[] r = rects[i];
             TFMenuPlates.Placed at = new TFMenuPlates.Placed(p, r[0], r[1], r[2], r[3], s);
             float room = at.x(p.text[2]) - at.x(p.text[0]);
-            float need = mc.font.width(label(labels[i])) + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0);
+            float need = mc.font.width(Component.literal(labels[i]).setStyle(Style.EMPTY.withFont(MENU_FONT_AT_SCALE[3])))
+                    + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0);
             size = Math.min(size, room / need);
             size = Math.min(size, CAP_FILL * INTERIOR * r[3] / CAP_HEIGHT);
         }
@@ -304,11 +323,12 @@ public class TFMenuButton extends Button {
         int ink = !this.active ? 0x9A9AA6 : TFMenuPaint.lerp(0xFF000000 | INK, 0xFF000000 | INK_HOT, e) & 0xFFFFFF;
 
         // Letra a la escala de la interfaz (n píxeles reales por píxel de glifo; como mucho un 8 % más que `size`): nítida
-        int n = Mth.clamp(Math.round(s * size), 1, FONT_AT_SCALE.length);
+        ResourceLocation[] fonts = plate != null ? MENU_FONT_AT_SCALE : FONT_AT_SCALE;
+        int n = Mth.clamp(Math.round(s * size), 1, fonts.length);
         if (n > 1 && n / (float) s > size * 1.08f) n--;
         float scale = n / (float) s;
         MutableComponent text = Component.literal(getMessage().getString())
-                .setStyle(Style.EMPTY.withFont(FONT_AT_SCALE[n - 1]));
+                .setStyle(Style.EMPTY.withFont(fonts[n - 1]));
         int textW = font.width(text);
         float maxW = x1 - x0;
         boolean withIcon = icon != null;
@@ -339,7 +359,7 @@ public class TFMenuButton extends Button {
         }
 
         FormattedCharSequence seq = text.getVisualOrderText();
-        float ty = snap(centerY - TEXT_UP * scale, s);
+        float ty = snap(centerY - (plate != null ? MENU_TEXT_UP : TEXT_UP) * scale, s);
         boolean goldText = kind == Kind.PRIMARY && plate != null && this.active;
         if (goldText) goldGlow(g, gx, centerY, textW * scale, scale, e, alpha);
         // Sombra hacia abajo y contorno grueso (todo el borde de un cuadrado de ro píxeles reales): la letra resalta
