@@ -286,6 +286,13 @@ def icon_alpha(name, px, py):
         eq = abs(py - 8.0) <= 0.7 and r <= 6.0
         lat = (abs(py - 5.0) <= 0.6 or abs(py - 11.0) <= 0.6) and r <= 5.6
         return 1.0 if ring or meridian or eq else (0.0 if not lat else 1.0)
+    if name == 'whatsapp':  # bocadillo con colita y teléfono (TFMenuIcons.WHATSAPP)
+        ring = abs(math.hypot(px - 8.4, py - 7.6) - 6.0) <= 0.95
+        tail = _seg(px, py, 2.4, 13.8, 4.0, 11.0) <= 1.0 or _seg(px, py, 2.4, 13.8, 5.4, 12.9) <= 1.0
+        ang = math.degrees(math.atan2(py - 5.8, px - 10.3))
+        band = abs(math.hypot(px - 10.3, py - 5.8) - 4.3) <= 0.7 and 92 <= ang <= 178
+        ends = _circ(px, py, 5.9, 5.7, 1.15) <= 0 or _circ(px, py, 10.2, 10.1, 1.15) <= 0
+        return 1.0 if ring or tail or band or ends else 0.0
     if name == 'discord':  # mando con dos ojos (sin marca)
         body = _box(px, py, 8.0, 8.4, 6.6, 4.4, 3.2)
         ear_l = _circ(px, py, 4.0, 4.6, 1.8)
@@ -385,57 +392,41 @@ def mix_argb(a, b, t):
     return lerp_argb(a, b, t)
 
 
+WHATSAPP, DISCORD = 'whatsapp', 'discord_kind'
+GOLD, GOLD_TEXT, RED, RED_TEXT = 0xE9C46A, 0xFFE3A0, 0xE2556B, 0xFFC9D2
+BRAND = {WHATSAPP: 0x25D366, DISCORD: 0x5865F2}
+
+
 def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=False, active=True, alpha=1.0, sweep=None):
-    R = 3 * S
-    T = 1 if S < 3 else 2
+    """TFMenuButton: dorado liso (principal) o panel oscuro con borde fino (los demás); iconos solo WhatsApp/Discord."""
+    R = 2 * S
+    T = 1 if S < 4 else 2
     e = ease(hover) if active else 0.0
-    lift = -max(1, S // 2) if pressed else int(round(e * S))
-    X, Y, W, H = gx * S, gy * S - lift, gw * S, gh * S
+    X, Y, W, H = gx * S, gy * S, gw * S, gh * S
+    accent = RED if kind == DANGER else BRAND.get(kind, GOLD)
 
     if kind == PRIMARY:
-        halo(g, X, Y, W, H, R, 2 * S, argb(0.45 * alpha, 0x05040A))
-        halo(g, X, Y, W, H, R, 4 * S, argb((0.20 + 0.22 * e) * alpha, 0xFFB43C))
-        top = mix_argb(0xFFFFE49A, 0xFFFFF0B8, e)
-        mid = mix_argb(0xFFF2BC48, 0xFFFFCF60, e)
-        bot = mix_argb(0xFFCC841C, 0xFFE09A2A, e)
+        top = mix_argb(0xFFF3C553, 0xFFFFD46A, e)
+        bot = mix_argb(0xFFDDA437, 0xFFEBB445, e)
         if pressed:
-            top, mid, bot = mix_argb(top, bot, 0.35), mix_argb(mid, bot, 0.35), bot
-        round_fill(g, X, Y, W, H, R, T, 0, H // 2, with_alpha(top, alpha), with_alpha(mid, alpha))
-        round_fill(g, X, Y, W, H, R, T, H // 2, H, with_alpha(mid, alpha), with_alpha(bot, alpha))
-        # luz arriba y labio oscuro abajo, dentro del borde
-        g.fill(X + R, Y + T, X + W - R, Y + T + max(1, S // 2), argb(0.80 * alpha, 0xFFF9E0))
-        g.fill(X + R, Y + H - T - max(1, S // 2), X + W - R, Y + H - T, argb(0.45 * alpha, 0x8A4A06))
-        round_ring(g, X, Y, W, H, R, T, argb(alpha, 0xFFF4C8), argb(alpha, 0x6E3E06))
-        ink, ink_icon = 0x2A1600, 0x2A1600
-    else:
-        danger = kind == DANGER
-        accent_hi = 0xFF9DB0 if danger else 0xFFE29A
-        accent_lo = 0xC2435C if danger else 0xD9A040
-        glow = 0xFF4F70 if danger else 0xFFBE50
-        halo(g, X, Y, W, H, R, 2 * S, argb(0.38 * alpha, 0x04050C))
-        if e > 0:
-            halo(g, X, Y, W, H, R, 3 * S, argb(0.30 * e * alpha, glow))
-        top = mix_argb(argb(0.64, 0x1D2452), argb(0.80, 0x2B3572), e)
-        bot = mix_argb(argb(0.80, 0x0A0D21), argb(0.88, 0x121735), e)
-        if pressed:
-            top = mix_argb(top, bot, 0.6)
+            top, bot = mix_argb(top, 0xFFB98322, 0.5), mix_argb(bot, 0xFFB98322, 0.5)
         round_fill(g, X, Y, W, H, R, T, 0, H, with_alpha(top, alpha), with_alpha(bot, alpha))
-        round_fill(g, X, Y, W, H, R, T, T, H // 2, argb((0.07 + 0.05 * e) * alpha, 0xFFFFFF), argb(0.0, 0xFFFFFF))
-        ring_top = mix_argb(argb(0.42, 0xB9C6FF), argb(0.95, accent_hi), e)
-        ring_bot = mix_argb(argb(0.16, 0x8494D6), argb(0.70, accent_lo), e)
-        round_ring(g, X, Y, W, H, R, T, with_alpha(ring_top, alpha), with_alpha(ring_bot, alpha))
-        if not active:
-            ink, ink_icon = 0x7C8299, 0x5E6580
-        else:
-            ink = mix_rgb(0xEEF0FA, 0xFFE9EE if danger else 0xFFF1CF, e)
-            ink_icon = mix_rgb(0xAFC0F0, accent_hi, e)
-
-    if sweep is not None:
-        paint_sweep(g, S, gx, gy, gw, gh, sweep, (0.42 if kind == PRIMARY else 0.16) * alpha, lift)
-
-    # Contenido: icono + texto centrados como grupo (TFMenuButton.paintContent)
+        g.fill(X + R, Y + T, X + W - R, Y + T + max(1, S // 2), argb(0.55 * alpha, 0xFFF3C8))
+        ring = argb(0.95 * alpha, 0x7A4E0E)
+        round_ring(g, X, Y, W, H, R, T, ring, ring)
+        ink = 0x2A1A04
+    else:
+        fill = mix_argb(argb(0.74, 0x0A0C14), argb(0.84, 0x171B28), e)
+        if pressed:
+            fill = argb(0.85, 0x05060A)
+        ring = mix_argb(argb(0.22, 0xFFFFFF), argb(0.95, accent), e)
+        round_fill(g, X, Y, W, H, R, T, 0, H, with_alpha(fill, alpha), with_alpha(fill, alpha))
+        round_ring(g, X, Y, W, H, R, T, with_alpha(ring, alpha), with_alpha(ring, alpha))
+        hot = RED_TEXT if kind == DANGER else (0xFFFFFF if kind in BRAND else GOLD_TEXT)
+        ink = mix_rgb(0xE9ECF5, hot, e)
     if not active:
-        ink, ink_icon = 0x7C8299, 0x5E6580
+        ink = 0x7C8299
+
     tw = text_width(label, S)
     maxw = gw - 2 * min(10, gw // 6)
     with_icon = icon is not None and tw + ICON + GAP <= maxw
@@ -449,18 +440,12 @@ def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=Fal
         iconimg = icon_image(icon, n)
         ix = int(round(gx0 * S))
         iy = Y + (H - n) // 2
-        if kind != PRIMARY:
-            g.composite(iconimg, ix, iy + off, (0, 0, 0, 0.45 * alpha))
-        g.composite(iconimg, ix, iy, tuple(c / 255.0 for c in rgb3(ink_icon)) + (alpha,))
+        g.composite(iconimg, ix, iy, tuple(c / 255.0 for c in rgb3(accent)) + (alpha,))
         gx0 += ICON + GAP
     ty = snap(gy + gh / 2.0 - TEXT_UP * scale)
-    if kind == PRIMARY:
-        draw_text(g, label, gx0, ty, S, (255, 246, 206), 0.55 * alpha, -lift + off, scale)
-    else:
-        draw_text(g, label, gx0, ty, S, (0, 0, 0), 0.55 * alpha, -lift + off, scale)
-        if S >= 3:
-            draw_text(g, label, gx0, ty, S, (0, 0, 0), 0.25 * alpha, -lift + 2 * off, scale)
-    draw_text(g, label, gx0, ty, S, rgb3(ink), alpha, -lift, scale)
+    if kind != PRIMARY:
+        draw_text(g, label, gx0, ty, S, (0, 0, 0), 0.5 * alpha, off, scale)
+    draw_text(g, label, gx0, ty, S, rgb3(ink), alpha, 0, scale)
 
 
 def rgb3(c):
@@ -505,15 +490,15 @@ def layout(w, h):
     shift = max(0, min(12, h - (l + 132)))
     x = w // 2 - 100
     top = l + shift
-    row4 = top + 72 + 10  # GROUP_GAP
     return top, [
-        ('Tierras Fantásticas', 'play', PRIMARY, x, top, 200),
-        ('Mundo local', 'world', SECONDARY, x, top + 24, 200),
-        ('Mods', 'mods', SECONDARY, x, top + 48, 200),
-        ('Opciones', 'options', SECONDARY, x, row4, 98),
-        ('Salir', 'quit', DANGER, x + 102, row4, 98),
-        ('Web', 'web', SECONDARY, x, row4 + 24, 98),
-        ('Discord', 'discord', SECONDARY, x + 102, row4 + 24, 98),
+        ('Tierras Fantásticas', None, PRIMARY, x, top, 200),
+        ('Mundo local', None, SECONDARY, x, top + 24, 200),
+        ('Mods', None, SECONDARY, x, top + 48, 98),
+        ('Web', None, SECONDARY, x + 102, top + 48, 98),
+        ('Opciones', None, SECONDARY, x, top + 72, 98),
+        ('Salir', None, DANGER, x + 102, top + 72, 98),
+        ('WhatsApp', 'whatsapp', WHATSAPP, x, top + 96, 98),
+        ('Discord', 'discord', DISCORD, x + 102, top + 96, 98),
     ]
 
 
@@ -561,21 +546,20 @@ if __name__ == '__main__':
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(__import__('tempfile').gettempdir(), 'tf_menu_sim')
     os.makedirs(out, exist_ok=True)
     scenes = [
-        ('1920x1080_escala4_raton_mundo', 1920, 1080, 4, 1, None, 0.45),
-        ('1920x1080_escala3_raton_web_destello', 1920, 1080, 3, 5, None, None),
-        ('1920x1080_escala2', 1920, 1080, 2, None, None, None),
+        ('1920x1080_escala4', 1920, 1080, 4, None, None, None),
+        ('1920x1080_escala3_raton_mundo', 1920, 1080, 3, 1, None, None),
+        ('1920x1080_escala3_raton_whatsapp', 1920, 1080, 3, 6, None, None),
+        ('1920x1080_escala2_raton_discord', 1920, 1080, 2, 7, None, None),
         ('1280x720_escala3_raton_servidor', 1280, 720, 3, 0, None, None),
-        ('1280x720_escala2', 1280, 720, 2, 4, None, None),
-        ('1280x720_escala1', 1280, 720, 1, None, None, None),
-        ('2560x1440_escala4_raton_salir', 2560, 1440, 4, 4, None, None),
-        ('2560x1440_escala3_pulsado_opciones', 2560, 1440, 3, 3, 3, None),
+        ('1280x720_escala2', 1280, 720, 2, None, None, None),
+        ('2560x1440_escala4_raton_salir', 2560, 1440, 4, 5, None, None),
+        ('2560x1440_escala3_pulsado_opciones', 2560, 1440, 3, 4, 4, None),
     ]
     only = sys.argv[2] if len(sys.argv) > 2 else None
     for name, fw, fh, S, hv, pr, sw in scenes:
         if only and only not in name:
             continue
-        im, S, gsz, buttons = render(fw, fh, S, hv, pr, sw, f'{out}/{name}.png',
-                                     hover_sweep=0.5 if 'destello' in name else None)
+        im, S, gsz, buttons = render(fw, fh, S, hv, pr, sw, f'{out}/{name}.png')
         # Recorte de los botones a tamaño real
         top = min(b[4] for b in buttons) - 8
         bot = max(b[4] for b in buttons) + 28

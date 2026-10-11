@@ -21,7 +21,7 @@ public final class TFMenuIcons {
     public static final int SIZE = 9;
     private static final int SS = 4;
 
-    public enum Icon { PLAY, WORLD, MODS, OPTIONS, QUIT, WEB, DISCORD }
+    public enum Icon { PLAY, WORLD, MODS, OPTIONS, QUIT, WEB, DISCORD, WHATSAPP }
 
     private static final Map<Integer, ResourceLocation> ATLAS = new HashMap<>();
 
@@ -146,6 +146,14 @@ public final class TFMenuIcons {
                 float eye = Math.min(box(px, py, 5.6f, 8.4f, 1.15f, 1.45f, 1.1f), box(px, py, 10.4f, 8.4f, 1.15f, 1.45f, 1.1f));
                 d = Math.max(d, -eye);
                 return d <= 0f ? 1f : 0f;
+            }
+            case WHATSAPP: { // bocadillo redondo con colita abajo a la izquierda y el teléfono dentro
+                boolean ring = Math.abs(Math.hypot(px - 8.4f, py - 7.6f) - 6.0f) <= 0.95f;
+                boolean tail = seg(px, py, 2.4f, 13.8f, 4.0f, 11.0f) <= 1.0f || seg(px, py, 2.4f, 13.8f, 5.4f, 12.9f) <= 1.0f;
+                double ang = Math.toDegrees(Math.atan2(py - 5.8f, px - 10.3f));
+                boolean band = Math.abs(Math.hypot(px - 10.3f, py - 5.8f) - 4.3f) <= 0.7f && ang >= 92 && ang <= 178;
+                boolean ends = circ(px, py, 5.9f, 5.7f, 1.15f) <= 0f || circ(px, py, 10.2f, 10.1f, 1.15f) <= 0f;
+                return ring || tail || band || ends ? 1f : 0f;
             }
             default:
                 return 0f;
