@@ -517,8 +517,9 @@ def draw_nav(g, S, x, y, w, h, hover, active=True):
             state(1, hover)
 
 
-def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True):
-    """TFMenuButton.paintContent: icono y texto centrados, contorno oscuro de max(1, 0.4 S) píxeles reales."""
+def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shine=None):
+    """TFMenuButton.paintContent: icono y texto centrados, contorno oscuro de max(1, 0.5 S) píxeles reales; Tierras
+    Fantásticas en oro (degradado, luz detrás y brillo que cruza en `shine`, 0..1)."""
     ink = 0x9A9AA6 if not active else mix_rgb(INK, INK_HOT, e)
     n = max(1, min(12, round(S * size)))
     if n > 1 and n / S > size * 1.08:
@@ -532,24 +533,66 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True):
         scale *= max(0.6, (maxw - icon_w) / (tw * scale))
         group = tw * scale + icon_w
     gx = snapS((x0 + x1) / 2 - group / 2, S)
-    o = max(1, round(S * 0.4)) / S
+    ro = max(1, round(S * 0.5))
+    o = ro / S
     dark = rgb3(OUTLINE)
     if icon:
         sz = ICON * n
         img = icon_image(icon, sz)
         ix, iy = round(gx * S), round(cy * S - sz / 2)
-        ro = round(o * S)
         for dx, dy in ((-ro, 0), (ro, 0), (0, -ro), (0, ro + max(1, S // 2))):
-            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in dark) + (0.85,))
+            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in dark) + (0.9,))
         g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
         gx += icon_w
     ty = snapS(cy - TEXT_UP * scale, S)
-    draw_text(g, label, gx, ty + 1, S, dark, 0.5, 0, scale, n)
-    for dx in (-1, 0, 1):
-        for dy in (-1, 0, 1):
-            if dx or dy:
-                draw_text(g, label, gx + dx * o, ty + dy * o, S, dark, 0.85, 0, scale, n)
-    draw_text(g, label, gx, ty, S, rgb3(ink), 1.0, 0, scale, n)
+    gold_text = kind == PRIMARY and active
+    if gold_text:  # TFMenuButton.goldGlow
+        glow = menu_data()['glow']
+        w = tw * scale
+        gw, gh = w + 24, 13 * scale
+        im = glow.resize((max(1, round(gw * S)), max(1, round(gh * S))), Image.BILINEAR)
+        g.composite(to_float_img(im), round((gx + w / 2 - gw / 2) * S), round((cy - gh / 2) * S),
+                    (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
+    draw_text(g, label, gx, ty + o + max(1, S // 2) / S, S, dark, 0.6, 0, scale, n)
+    ring = rgb3(GOLD_OUTLINE if gold_text else OUTLINE)
+    for dx in range(-ro, ro + 1):
+        for dy in range(-ro, ro + 1):
+            if max(abs(dx), abs(dy)) == ro:
+                draw_text(g, label, gx + dx / S, ty + dy / S, S, ring, 0.9, 0, scale, n)
+    if not gold_text:
+        draw_text(g, label, gx, ty, S, rgb3(ink), 1.0, 0, scale, n)
+        return
+    # TFMenuButton.goldLetters: degradado en franjas de 2 px reales y brillo que cruza
+    x0r, x1r = math.floor(gx * S) - 4, math.ceil((gx + tw * scale) * S) + 4
+    y0r, y1r = math.floor((ty + GOLD_TOP * scale) * S), math.ceil((ty + GOLD_BOTTOM * scale) * S)
+    draw_text(g, label, gx, ty, S, rgb3(GOLD[2]), 1.0, 0, scale, n)
+    bands = max(2, (y1r - y0r) // 2)
+    for i in range(bands):
+        b0 = y0r + (y1r - y0r) * i // bands
+        b1 = y0r + (y1r - y0r) * (i + 1) // bands
+        g.scissor = (x0r, b0, x1r, b1)
+        draw_text(g, label, gx, ty, S, rgb3(gold((i + 0.5) / bands, e)), 1.0, 0, scale, n)
+    if shine is not None:
+        k = math.sin(shine * math.pi)
+        band = max(6, (x1r - x0r) // 5)
+        bx = round(x0r - band + shine * (x1r - x0r + band))
+        for j in range(3):
+            inset = j * band // 6
+            g.scissor = (bx + inset, y0r, bx + band - inset, y1r)
+            draw_text(g, label, gx, ty, S, (255, 255, 246), 0.35 * k, 0, scale, n)
+    g.scissor = None
+
+
+GOLD = [0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E]
+GOLD_OUTLINE = 0x2A1204
+GOLD_TOP, GOLD_BOTTOM = -0.2, 5.4
+
+
+def gold(t, e):
+    p = t * (len(GOLD) - 1)
+    i = min(len(GOLD) - 2, int(p))
+    c = lerp_argb(0xFF000000 | GOLD[i], 0xFF000000 | GOLD[i + 1], p - i)
+    return lerp_argb(c, 0xFFFFF2C8, 0.35 * e) & 0xFFFFFF
 
 
 def text_size(S, buttons):
@@ -590,7 +633,7 @@ def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, siz
         iy0, iy1 = round(at.y(p['body'][1] + bh * 0.16)), round(at.y(p['body'][3] - bh * 0.16))
         paint_sweep(g, S, ix0, iy0, ix1 - ix0, iy1 - iy0, sweep, 0.55, 0)
     paint_content(g, S, at.x(p['text'][0]), at.x(p['text'][2]), at.y((p['body'][1] + p['body'][3]) / 2), label, icon,
-                  kind, size, e, active)
+                  kind, size, e, active, shine=sweep if kind == PRIMARY else None)
 
 
 _shine = None

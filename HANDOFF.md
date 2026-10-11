@@ -10,6 +10,13 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.46 (11 oct)** — el dueño: «el de Tierras Fantásticas debe ser dorado, que las letras resalten más
+> y tengan efecto». Letras de Tierras Fantásticas en **oro** (`TFMenuButton.goldLetters`: degradado de oro pálido a
+> ámbar en franjas de 2 px reales con `RenderSystem.enableScissor`, contorno marrón oscuro), **luz cálida que late**
+> detrás (`goldGlow`, menu_glow aditivo) y un **brillo que cruza las letras** cada 4,2 s y al entrar el ratón. Todas las
+> letras resaltan más: contorno de ½ píxel de interfaz (borde entero de un cuadrado de `ro` px reales) y sombra más
+> marcada. Los demás textos siguen en blanco cálido. `tools/menu_sim.py` al día (escena `_destello` muestra el brillo).
+
 > **TF Client 1.3.45 (11 oct)** — el dueño: «la tipografía no es congruente, es demasiado pequeña; el color de Mundo
 > local no es amarillo». Menú principal: **un solo tamaño de letra para todos los botones** (`TFMenuButton.textSizeFor`:
 > el mayor con el que cada texto + icono cabe en su placa y las mayúsculas, 5,3 de alto a escala 1, no pasan del 56 %
@@ -1637,7 +1644,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.45)
+## 5. El mod (TF Client 1.3.46)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

@@ -63,7 +63,11 @@ public class TFMenuButton extends Button {
     private static final float HOVER_MS = 140f, SWEEP_MS = 850f;
     private static final long TF_SHINE_EVERY = 6500L, SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
-    private static final int INK = 0xFFF3DC, INK_HOT = 0xFFFFFF, OUTLINE = 0x140A04;
+    private static final int INK = 0xFFF3DC, INK_HOT = 0xFFFFFF, OUTLINE = 0x140A04, GOLD_OUTLINE = 0x2A1204;
+    /** Oro de las letras de Tierras Fantásticas, de arriba abajo, y alto de las mayúsculas en la celda (escala 1). */
+    private static final int[] GOLD = {0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E};
+    private static final float GOLD_TOP = -0.2f, GOLD_BOTTOM = 5.4f;
+    private static final long GOLD_SHINE_EVERY = 4200L, GOLD_SHINE_MS = 1300L;
 
     private final Kind kind;
     private final TFMenuIcons.Icon icon;
@@ -315,7 +319,8 @@ public class TFMenuButton extends Button {
             group = textW * scale + iconW;
         }
         float gx = snap((x0 + x1) / 2f - group / 2f, s);
-        float o = Math.max(1, Math.round(s * 0.4f)) / (float) s; // grosor del contorno
+        int ro = Math.max(1, Math.round(s * 0.5f)); // grosor del contorno en píxeles reales
+        float o = ro / (float) s;
 
         if (withIcon) {
             int sz = TFMenuIcons.SIZE * n;
@@ -323,8 +328,7 @@ public class TFMenuButton extends Button {
             int iy = Math.round(centerY * s - sz / 2f);
             g.pose().pushPose();
             g.pose().scale(1f / s, 1f / s, 1f);
-            int ro = Math.round(o * s);
-            int dark = TFMenuPaint.argb(0.85f * alpha, OUTLINE);
+            int dark = TFMenuPaint.argb(0.9f * alpha, OUTLINE);
             TFMenuIcons.draw(g, icon, ix - ro, iy, n, dark);
             TFMenuIcons.draw(g, icon, ix + ro, iy, n, dark);
             TFMenuIcons.draw(g, icon, ix, iy - ro, n, dark);
@@ -336,14 +340,88 @@ public class TFMenuButton extends Button {
 
         FormattedCharSequence seq = text.getVisualOrderText();
         float ty = snap(centerY - TEXT_UP * scale, s);
-        int dark = TFMenuPaint.argb(0.85f * alpha, OUTLINE);
-        drawText(g, font, seq, gx, ty + 1f, scale, TFMenuPaint.argb(0.5f * alpha, OUTLINE)); // sombra
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                if (dx != 0 || dy != 0) drawText(g, font, seq, gx + dx * o, ty + dy * o, scale, dark);
+        boolean goldText = kind == Kind.PRIMARY && plate != null && this.active;
+        if (goldText) goldGlow(g, gx, centerY, textW * scale, scale, e, alpha);
+        // Sombra hacia abajo y contorno grueso (todo el borde de un cuadrado de ro píxeles reales): la letra resalta
+        drawText(g, font, seq, gx, ty + o + Math.max(1, s / 2) / (float) s, scale, TFMenuPaint.argb(0.6f * alpha, OUTLINE));
+        int dark = TFMenuPaint.argb(0.9f * alpha, goldText ? GOLD_OUTLINE : OUTLINE);
+        for (int dx = -ro; dx <= ro; dx++) {
+            for (int dy = -ro; dy <= ro; dy++) {
+                if (Math.max(Math.abs(dx), Math.abs(dy)) == ro) drawText(g, font, seq, gx + dx / (float) s, ty + dy / (float) s, scale, dark);
             }
         }
-        drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+        if (goldText) goldLetters(g, font, seq, gx, ty, scale, textW, e, alpha);
+        else drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+    }
+
+    /** Luz cálida que late detrás de las letras de Tierras Fantásticas (más fuerte con el ratón encima). */
+    private static void goldGlow(GuiGraphics g, float gx, float cy, float w, float scale, float e, float alpha) {
+        if (!TFTextures.MENU_GLOW.ready()) return;
+        float pulse = 0.5f + 0.5f * Mth.sin(Util.getMillis() / 1000f * 2.2f);
+        int tw = TFTextures.MENU_GLOW.width(), th = TFTextures.MENU_GLOW.height();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        g.setColor(1f, 0.72f, 0.25f, (0.22f + 0.1f * pulse + 0.18f * e) * alpha);
+        g.pose().pushPose();
+        g.pose().translate(gx + w / 2f, cy, 0f);
+        g.pose().scale((w + 24f) / tw, 13f * scale / th, 1f);
+        g.pose().translate(-tw / 2f, -th / 2f, 0f);
+        g.blit(TFTextures.MENU_GLOW.id(), 0, 0, 0f, 0f, tw, th, tw, th);
+        g.pose().popPose();
+        g.setColor(1f, 1f, 1f, 1f);
+        RenderSystem.defaultBlendFunc();
+    }
+
+    /**
+     * Letras de oro: degradado de oro pálido arriba a ámbar abajo (franjas de 2 píxeles reales con tijera) y un brillo
+     * que cruza las letras cada pocos segundos (y al pasar el ratón).
+     */
+    private void goldLetters(GuiGraphics g, Font font, FormattedCharSequence seq, float gx, float ty, float scale, int textW,
+                             float e, float alpha) {
+        com.mojang.blaze3d.platform.Window win = Minecraft.getInstance().getWindow();
+        double gs = win.getGuiScale();
+        org.joml.Matrix4f m = g.pose().last().pose();
+        org.joml.Vector3f a = m.transformPosition(gx, ty + GOLD_TOP * scale, 0f, new org.joml.Vector3f());
+        org.joml.Vector3f b = m.transformPosition(gx + textW * scale, ty + GOLD_BOTTOM * scale, 0f, new org.joml.Vector3f());
+        int x0 = (int) Math.floor(a.x * gs) - 4, x1 = (int) Math.ceil(b.x * gs) + 4;
+        int y0 = (int) Math.floor(a.y * gs), y1 = (int) Math.ceil(b.y * gs);
+        int fbH = win.getHeight();
+        // Fuera de la franja (por si algún trazo se sale): el oro del medio
+        drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, GOLD[2]));
+        g.flush();
+        int bands = Math.max(2, (y1 - y0) / 2);
+        for (int i = 0; i < bands; i++) {
+            int by0 = y0 + (y1 - y0) * i / bands, by1 = y0 + (y1 - y0) * (i + 1) / bands;
+            if (by1 <= by0) continue;
+            RenderSystem.enableScissor(x0, fbH - by1, x1 - x0, by1 - by0);
+            drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, gold((i + 0.5f) / bands, e)));
+            g.flush();
+        }
+        // Brillo: una franja clara que cruza las letras (cada GOLD_SHINE_EVERY ms y al entrar el ratón)
+        long now = Util.getMillis();
+        float t = -1f;
+        if (sweepStart >= 0L && now - sweepStart < GOLD_SHINE_MS) t = (now - sweepStart) / (float) GOLD_SHINE_MS;
+        else if (now % GOLD_SHINE_EVERY < GOLD_SHINE_MS) t = (now % GOLD_SHINE_EVERY) / (float) GOLD_SHINE_MS;
+        if (t >= 0f) {
+            float k = Mth.sin(t * Mth.PI);
+            int bandW = Math.max(6, (x1 - x0) / 5);
+            int bx = Math.round(x0 - bandW + t * (x1 - x0 + bandW));
+            for (int j = 0; j < 3; j++) { // franja con los bordes más suaves
+                int inset = j * bandW / 6;
+                RenderSystem.enableScissor(bx + inset, fbH - y1, Math.max(1, bandW - 2 * inset), y1 - y0);
+                drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(0.35f * k * alpha, 0xFFFFF6));
+                g.flush();
+            }
+        }
+        RenderSystem.disableScissor();
+    }
+
+    /** Oro de arriba (t = 0) a abajo (t = 1); con el ratón, más claro. */
+    private static int gold(float t, float e) {
+        float p = t * (GOLD.length - 1);
+        int i = Math.min(GOLD.length - 2, (int) p);
+        int c = TFMenuPaint.lerp(0xFF000000 | GOLD[i], 0xFF000000 | GOLD[i + 1], p - i);
+        return TFMenuPaint.lerp(c, 0xFFFFF2C8, 0.35f * e) & 0xFFFFFF;
     }
 
     private static void drawText(GuiGraphics g, Font font, FormattedCharSequence text, float x, float y, float scale, int argb) {
