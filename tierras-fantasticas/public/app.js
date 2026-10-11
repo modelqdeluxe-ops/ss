@@ -775,7 +775,7 @@
 
   // --- Skills: las clases del TF Client. Se compran con dinero (Stripe/PayPal, ventana de compra de siempre) o con las
   // monedas del servidor; las compradas son del jugador para siempre y lleva UNA activa a la vez, que se elige aquí y el
-  // servidor pone sola (con su arma y su armadura). ---
+  // servidor pone sola. Solo dan skills (ni armas ni armadura). ---
   let skData = null;
   let skGroup = 'todas';
   // Lo que se ve en la ficha: la clase y la skill del escenario
@@ -856,7 +856,7 @@
     const activeCls = mine?.active ? skClass(mine.active) : null;
     if (st === 'active') {
       return `<div class="sk-own is-active">
-          <div><b class="sk-own-title">Tu clase activa</b><p>La llevas en el servidor con sus skills, su arma y su armadura.</p></div>
+          <div><b class="sk-own-title">Tu clase activa</b><p>La llevas en el servidor: elige una skill con las teclas 5 a 0 y úsala con el clic izquierdo.</p></div>
           <button class="btn btn-ghost btn-sm" type="button" data-sk-active="">Quitar clase</button>
         </div>`;
     }
@@ -896,6 +896,7 @@
       s.passive
         ? `<span class="sk-chip is-passive">Pasiva · ${escapeHtml(skPassiveText(s))}</span>`
         : `<span class="sk-chip is-key"><kbd>${escapeHtml(s.key || '·')}</kbd>Tecla</span>`,
+      s.basic ? '<span class="sk-chip">Ataque básico · se queda puesto</span>' : '',
       s.cooldown > 0 ? `<span class="sk-chip">Cooldown ${seconds(s.cooldown)}</span>` : '',
     ].join('');
     return `<button type="button" class="sk-skill${sel ? ' is-sel' : ''}" data-sk-skill="${escapeHtml(s.id)}" aria-pressed="${sel}">
@@ -927,12 +928,12 @@
             <ul class="sk-facts">
               <li><b>${actives}</b> ${actives === 1 ? 'skill' : 'skills'} con tecla</li>
               ${passives ? `<li><b>${passives}</b> ${passives === 1 ? 'pasiva' : 'pasivas'}</li>` : ''}
-              <li>Arma y armadura de la clase</li>
+              <li>${c.bow ? 'Con tu arco: la skill sale al disparar' : 'Elige con 5–0 y usa con clic izquierdo'}</li>
             </ul>
             ${skBuy(c)}
           </div>
         </div>
-        <div class="sk-list-head"><h4>Skills de ${escapeHtml(c.name)}</h4><span>Toca una para verla. Las teclas se cambian en Opciones › Controles › «TF Skills».</span></div>
+        <div class="sk-list-head"><h4>Skills de ${escapeHtml(c.name)}</h4><span>Toca una para verla. En el juego, cada skill va en una tecla del 5 al 0 (en este orden); tu ataque básico se queda puesto y cada clic lo repite.</span></div>
         <div class="sk-skills">${c.skills.map((s) => skSkillRow(c, s)).join('')}</div>
       </article>`;
   }
@@ -982,7 +983,7 @@
       <div class="sk-hero">
         <div>
           <h2>Clases de skills</h2>
-          <p>${skData.classes.length} clases, cada una con sus skills, su arma y su armadura. Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí cuando quieras.</p>
+          <p>${skData.classes.length} clases con sus skills (solo skills: sin armas ni objetos). Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí o en el TF Pad. En el juego eliges la skill con las teclas 5 a 0 y la usas con el clic izquierdo.</p>
         </div>
         ${skMine()}
       </div>

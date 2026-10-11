@@ -655,6 +655,8 @@ def build_pack(path, sound_events, name=None):
             png = icon_png(pack, ref) if ref else None
         if png is None:
             png = icon_by_name(pack, sk)
+        if png is None and (pack.id, sk['id']) in ICON_MODEL:
+            png = icon_of_model(ICON_MODEL[(pack.id, sk['id'])], store)
         if png is None:
             png = icon_from_effects(pack, models, prog, sk, me_models, store)
         if png is None:
@@ -770,6 +772,30 @@ def icon_by_name(pack, skill):
 SKILL_REF_KEYS = ('s', 'skill', 'skills', 'oe', 'ot', 'oh', 'os', 'onend', 'ontick', 'onhit', 'onstart', 'then', 'ohb',
                   'onhitblock', 'onsummon', 'op', 'onpoint', 'od')
 MOB_REF_KEYS = ('t', 'type', 'mob', 'mobtype', 'm')
+
+
+# Skills sin icono en el pack cuyo efecto sale oscuro como icono: se dibuja este modelo de ModelEngine
+ICON_MODEL = {('filo_vacio', 'void_edge_attack'): 'filo_vacio.rrpg_void_edge_main_katana'}
+
+
+def icon_of_model(mid, store, yaw=-20, pitch=-8):
+    """Icono con un modelo de ModelEngine de la clase (encuadrado y con marco)."""
+    path = os.path.join(OUT_MODELS, mid + '.json')
+    if not os.path.exists(path):
+        return None
+    model = json.load(open(path, encoding='utf-8'))
+    img = R.render(model, R.load_textures(model, store.out_dir), None, 0, size=256, yaw=yaw, pitch=pitch)
+    box = img.getbbox()
+    if not box:
+        return None
+    img = img.crop(box)
+    if img.height > img.width * 2.5:  # algo largo y fino (una katana): en diagonal llena más el icono
+        img = img.rotate(-45, resample=Image.BICUBIC, expand=True)
+        img = img.crop(img.getbbox())
+    side = max(img.size)
+    sq = Image.new('RGBA', (side, side))
+    sq.paste(img, ((side - img.width) // 2, (side - img.height) // 2))
+    return J.framed(sq)
 
 
 def icon_from_effects(pack, models, prog, sk, me_models, store):

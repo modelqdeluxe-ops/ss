@@ -88,7 +88,8 @@ public final class SkillHud {
      */
     static void preTick() {
         Minecraft mc = Minecraft.getInstance();
-        boolean has = hasClass(mc) && mc.screen == null;
+        boolean classOk = hasClass(mc);
+        boolean has = classOk && mc.screen == null;
         for (int i = 0; i < SLOTS; i++) {
             boolean pressed = false;
             while (KEYS[i].consumeClick()) pressed = true;
@@ -102,7 +103,7 @@ public final class SkillHud {
             }
             if (pressed) press(mc, i);
         }
-        if (!has && (selected >= 0 || basicOn)) setSelected(-1, false);
+        if (!classOk && (selected >= 0 || basicOn)) setSelected(-1, false);
         // Cambiar de hueco (1-4, rueda) suelta la skill elegida y el ataque básico
         if ((selected >= 0 || basicOn) && mc.player != null && mc.player.getInventory().selected != selectedHotbar) setSelected(-1, false);
     }

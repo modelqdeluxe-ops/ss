@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **10 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`. Rama de trabajo de **Skills** (sin
+Última actualización: **11 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`. Rama de trabajo de **Skills** (sin
 fusionar todavía): `claude/admiring-pascal-q0szox` (antes `claude/amazing-wozniak-gtw9ll`, mismo historial); lo
 publicado está en `main`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
 quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
@@ -9,6 +9,64 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 ---
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
+
+> **TF Client 1.3.39 (11 oct) — Skills rehechas tras probarlas el dueño** (publicado en main; jar en `descargas/`).
+> Quejas del dueño (textual, resumido): «texturas moradas incompletas; skills que no funcionan; partículas flotantes de
+> polvillo que dan lag; no tengo control, a veces ellas me controlan; no quiero que al presionar una letra se pongan;
+> GUI de skills más pequeña; usar las skills con 5 6 7 8 9 0 (los de los huecos): al presionar se ELIGE la skill y se
+> usa con el clic de ataque (arqueros: al soltar la flecha con el arco); no quiero que me den armas, solo la skill; las
+> de la hechicera no hacen nada; el pad aún enseña el paquete de skills de VFX y deben salir las clases para activar y
+> desactivar; dime qué dependencias necesitan y si corren en Forge 1.20.1 Mohist».
+> - **Texturas moradas**: en 1.20.1 los modelos de ítem solo ven texturas del atlas de bloques (`block/`, `item/`...);
+>   las 738 texturas de `textures/skills/` no estaban → moradas y negras. Ahora `assets/minecraft/atlases/blocks.json`
+>   (lo escribe `build_skills.write_atlas`, solo con las carpetas que usan los modelos de ítem; las de ModelEngine
+>   `me/` se cargan aparte y NO van al atlas: son ~49 M píxeles). `audit.py` comprueba el atlas (`check_atlas`).
+> - **Controles** (`SkillHud`, `SkillNet.Select/Use`, `SkillServer.select/useSelected`): teclas «TF Skills»
+>   `key.tfclient.skillslot.1-6` = 5,6,7,8,9,0 (nombres nuevos para que a todos les salgan esas). Con clase, esas teclas
+>   no cambian de hueco (`preTick` les quita la pulsación a `keyHotbarSlots` con la misma tecla: Forge reparte una
+>   pulsación a todos los atajos de esa tecla) y **eligen** la skill; sale con el siguiente clic izquierdo (`attack`,
+>   solo pulsación nueva: mantener picando no lanza) o, en las clases de arco (`SkillDefs.BOW_CLASSES`: arquero,
+>   arquero_despertado, null), al soltar una flecha (`ArrowLooseEvent`, con munición y algo de tensión). El **ataque
+>   básico** de cada clase (`basic` en el JSON de la clase: la habilidad de clic izquierdo del arma del pack, o
+>   `BASIC_OVERRIDE` en build_skills) se queda puesto y cada clic lo repite; las demás se usan una vez y se vuelve al
+>   básico. Misma tecla = quitar; cambiar de hueco (1-4, rueda) = quitar todo. HUD: fila pequeña (16 px) a la derecha de
+>   la barra (dos filas si no cabe), tecla pequeña, dorado = elegida, azul = básico puesto. Sin esto la Bruja no podía
+>   cargar energía (su básico la da) y sus hechizos «no hacían nada».
+> - **Sin armas ni armaduras**: `SkillItems` ya no da nada y quita del inventario los objetos de clase que se dieron
+>   (al entrar o cambiar de clase). Fuera `/tf web clases equipo`. El objeto de mano que miran algunas skills (guantelete
+>   del Dragón Rojo: itemissimilar / equip HAND) se lleva «de mentira» por jugador (`SkillItems.HAND`, empieza en el
+>   básico). Los items `clase_*` siguen registrados (por si alguien los tiene) pero nadie los recibe.
+> - **Lag**: presupuesto de partículas por jugador en el servidor (`SkillFx.allow`: 30/tick con reserva de 450 para
+>   las skills que lanzas; 1,5/tick para lo que sale de pasivas TIMER — `Ctx.ambient`) y en el cliente
+>   (`SkillClient.add`: 200/80/25 por tick según Opciones › Partículas, máx. 48 por efecto, **sin forzar** (antes
+>   `addParticle(force=true)` saltaba el ajuste del jugador), polvo como mucho tamaño 2: dura menos). Medido con
+>   `pcount.py` (scratch): quietos, Vampiro ~950 partículas/s, Chamán 500, Guja 458; Catedral Divina ~94.000 en 5 s.
+> - **Control**: un jugador nunca se aturde a sí mismo; lentitud fuerte (nivel ≥3), salto bloqueado, ceguera, náusea...
+>   que se pone él mismo, fuera; levitación propia máx. 1 s, lentitud suave máx. 1,5 s (`SkillRuntime.selfEffect`);
+>   lo que sale de una pasiva por tiempo nunca mueve ni teletransporta al jugador (`SkillMotion.push`); `recoil` ya no
+>   mueve la cámara.
+> - **Filo del Vacío**: le faltaba su ataque básico (VOID_EDGE_ATTACK, del arma, no está en la clase de MMOCore);
+>   `compile.py` mete el de clic izquierdo del arma si falta. Ahora 5 skills (Tajo del Vacío).
+> - **Tajos cuerpo a cuerpo**: los tótems de un momento (≤10 ticks, radio ≤2) de un jugador llegan 0,5 más
+>   (`SkillMovers.MELEE_REACH`, igual en sim.py): en el pack llegaban ~2 bloques y se pega a los mobs hasta a 3.
+> - **Textos**: el mod enseña nombres en español (`name_es`/`role_es`); avisos del pack traducidos (`es.json`
+>   «_mensajes», `build_skills.translate_messages`); descripciones que explican la energía de la Bruja (el básico la
+>   carga, cada hechizo cuesta 3-16) y el guantelete del Dragón (se carga **manteniendo Shift**).
+> - **Pad**: Efectos › SKILLS ya no enseña los paquetes de VFX (y `VfxServer` ya no equipa paquetes): enseña las clases
+>   compradas (la web las manda en `skills[].owned` del poll) con ACTIVAR / DESACTIVAR y, de la activa, sus skills con
+>   tecla. Lo elegido va a la web en `pad.skills` del poll (`SkillServer.chooseFromPad`, `TFBridge.padSkill`).
+> - **Web**: teclas 5-0 en Skills, «Ataque básico · se queda puesto», sin «arma y armadura», FAQ de cómo se juega, la
+>   skill nueva del Filo del Vacío con su vista previa. **Las clases siguen a 1 moneda** (prueba del dueño: `COIN_PRICE`
+>   en tools/skills.py; volver a 7500 cuando lo diga).
+> - Prueba nueva (scratch `bin/combat2.py`): combate con los controles nuevos (15 s de básico que carga recursos, luego
+>   cada skill + clics, ventana de 10 s, zombis a 1,8/6/7,5/8). Resultado: 188 de 246 pegan; ~18 son de apoyo/modo
+>   (escudos, saltos, teletransportes, curas, formas del Vampiro) y las que no salen piden algo del pack (Golpe
+>   Huracanado: enemigos en el aire por el tornado; Paso del Viento: en el aire; Marca de la Muerte: en dos pasos).
+> - Dependencias (pregunta del dueño): los packs originales piden MythicMobs (+ ModelEngine R4, MythicLib/MMOCore,
+>   MMOItems, ItemsAdder/Oraxen/Nexo según el pack). Son plugins de Paper; en Mohist (Forge+Bukkit) MythicMobs a veces
+>   va, pero ModelEngine e ItemsAdder no soportan servidores híbridos. Por eso el TF Client trae su propio motor: no
+>   hace falta ningún plugin. El jar de MythicMobs 5.11 que mandó el dueño solo se usó como referencia (descompilado en
+>   el scratch, nunca en el repo).
 
 > **TF Client 1.3.38 (10 oct, noche) — TF Pad: auditoría, pad más grande, iconos nuevos, Gachapón y TF Pass** (sin
 > commit: lo hace el dueño). Pedido: «los botones de x … en la música están solapados… audita el pad… módulo
@@ -65,9 +123,9 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > ModelEngine / ItemsAdder / MMOItems) «correctamente y sin errores»: modelos, animaciones, mecánicas, controles,
 > ilustraciones, sonidos, todo. En la web, **quitar «Tienda de monedas»** y poner una sección **«Skills»** bien hecha;
 > actualizar el pad y lo necesario. Los manda de 5 en 5 (comprados: **no subir los packs al repo**, solo lo convertido).
-> **Decisiones del dueño:** se consiguen **con dinero (Stripe) y con monedas** (las dos); se lanzan con **teclas propias
-> configurables** (Opciones › Controles); el **arma y la armadura del pack vienen con la skill** (vinculadas, como los
-> sets); cada jugador tiene **una sola clase** a la vez.
+> **Decisiones del dueño:** se consiguen **con dinero (Stripe) y con monedas** (las dos); cada jugador tiene **una
+> sola clase** a la vez. **Cambiado el 11 oct (1.3.39, ver arriba):** las teclas 5-0 ELIGEN la skill y se usa con el
+> clic izquierdo (arqueros: al disparar); **sin armas ni armaduras**, solo las skills.
 > **Recibidos: 40 packs** (40 clases, ~280 skills; ver `tools/skills/inventario.py <carpeta>`), descomprimidos en el
 > scratch de la sesión `skills/` (el scratch es **de cada sesión**: en una nueva hay que pedirle los zips al dueño otra
 > vez; llegan a `/root/.claude/uploads/<sesión>/<prefijo>-<Pack>.zip`. Se descomprimen con `bsdtar -xf` (paquete
@@ -1509,7 +1567,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.38)
+## 5. El mod (TF Client 1.3.39)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

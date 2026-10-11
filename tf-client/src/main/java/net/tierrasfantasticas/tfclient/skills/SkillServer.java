@@ -310,7 +310,10 @@ public final class SkillServer {
         // Aún no está lista (si es el ataque básico, el clic es un golpe normal y sigue elegido)
         Map<String, Long> cd = COOLDOWN.get(uuid);
         Long until = slot < def.actives().size() && cd != null ? cd.get(def.actives().get(slot).id()) : null;
-        if (until != null && until > SkillRuntime.clock) return false;
+        if (until != null && until > SkillRuntime.clock) {
+            sync(player); // por si el cliente creía que ya estaba lista
+            return false;
+        }
         // Después: el ataque básico sigue elegido; cualquier otra se usa una vez y se vuelve al básico (si lo tiene puesto)
         int basic = def.basicSlot();
         if (slot != basic) {

@@ -1321,7 +1321,7 @@ test('el catálogo de Skills: 39 clases con sus skills, iconos y vistas previas,
   const cat = await (await get('/api/skills')).json();
   assert.strictEqual(cat.me, null);
   assert.strictEqual(cat.classes.length, 39);
-  assert.deepStrictEqual(cat.keys, ['R', 'G', 'Z', 'X', 'V', 'B', 'N', 'M']);
+  assert.deepStrictEqual(cat.keys, ['5', '6', '7', '8', '9', '0']);
   assert.ok(Number.isInteger(cat.price) && cat.price >= 50 && Number.isInteger(cat.coinPrice) && cat.coinPrice > 0);
   const groups = new Set(cat.groups.map((g) => g.id));
   const ids = new Set();

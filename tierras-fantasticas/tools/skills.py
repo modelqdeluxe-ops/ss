@@ -37,7 +37,8 @@ COIN_PRICE = 1  # PRUEBA temporal (antes 7500: ~2 semanas jugando 2 h al día, v
 PRICE_OVERRIDES = {}  # 'glacia': {'price': 799, 'coinPrice': 40000}
 
 # Teclas por defecto de la barra de skills del mod (SkillHud.DEFAULT_KEYS): las skills con tecla, por orden.
-KEYS = ['R', 'G', 'Z', 'X', 'V', 'B', 'N', 'M']
+KEYS = ['5', '6', '7', '8', '9', '0']  # las teclas de las skills en el mod (SkillHud: eligen la skill)
+BOW_CLASSES = {'arquero', 'arquero_despertado', 'null'}  # SkillDefs.BOW_CLASSES: la skill sale al disparar con el arco
 
 # Grupos del filtro de la web, por la primera palabra del rol de la clase
 GROUPS = [
@@ -57,7 +58,7 @@ ROLE_GROUP = {
 }
 
 # Icono de la clase en la rejilla: por defecto el de su primera skill con tecla; aquí se puede elegir otra.
-CLASS_ICON = {}
+CLASS_ICON = {'filo_vacio': 'void_edge_dimension_benediction'}  # el icono de la clase (si no, el de su primera skill)
 
 # Vistas previas (de tf-client/tools/skills/previews.py: ya encuadradas a 480 px, 20 por segundo, sin pérdida): lado,
 # calidad WebP, máximo de fotogramas y el fondo, que va pintado en
@@ -209,6 +210,8 @@ def main():
                 entry['cooldown'] = max(entry['cooldown'], 0.2)
                 entry['slot'] = slot
                 entry['key'] = KEYS[slot] if slot < len(KEYS) else None
+                if sid == data.get('basic'):
+                    entry['basic'] = True
                 slot += 1
             entry['icon'] = icon_rel if has_icon else None
             entry['preview'] = prev_rel if os.path.exists(prev_abs) else None
@@ -227,6 +230,7 @@ def main():
             'group': group_of(role),
             'desc': info.get('desc_es') or ' '.join(info.get('lore') or []),
             'color': info.get('color') or '#45e9ff',
+            'bow': cid in BOW_CLASSES,
             'icon': lead['icon'],
             'showcase': showcase,
             'price': int(prices.get('price', PRICE_CENTS)),
