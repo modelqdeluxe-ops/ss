@@ -25,15 +25,20 @@ import net.tierrasfantasticas.tfclient.TFConfig;
  * Animación: con el ratón encima la placa sube un poco, se ilumina con un fundido suave y la cruza una línea de luz;
  * al pulsar se hunde y se oscurece. Las gemas echan una chispa de vez en cuando (y brillan más con el ratón), los
  * faroles titilan, y por Tierras Fantásticas pasa un destello cada pocos segundos. Texto Cinzel con contorno oscuro,
- * a la escala de la interfaz (nítido); iconos solo en WhatsApp, Web y Discord.
+ * del mismo tamaño y color en todos los botones (el mayor que cabe en todos; nítido); iconos en WhatsApp, Web y Discord.
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
-    /** Cinzel con los glifos rasterizados a 1..6 píxeles reales por píxel de interfaz (font/cinzel_N.json; 4 = FONT). */
-    private static final ResourceLocation[] FONT_AT_SCALE = {
-            new ResourceLocation(TFClient.MOD_ID, "cinzel_1"), new ResourceLocation(TFClient.MOD_ID, "cinzel_2"),
-            new ResourceLocation(TFClient.MOD_ID, "cinzel_3"), FONT,
-            new ResourceLocation(TFClient.MOD_ID, "cinzel_5"), new ResourceLocation(TFClient.MOD_ID, "cinzel_6")};
+    /**
+     * Cinzel con los glifos rasterizados a 1..12 píxeles reales por píxel de interfaz (font/cinzel_N.json; 4 = FONT):
+     * con la letra a n/escala se dibuja 1:1 en pantalla, nítida.
+     */
+    private static final ResourceLocation[] FONT_AT_SCALE = new ResourceLocation[12];
+    static {
+        for (int i = 0; i < FONT_AT_SCALE.length; i++) {
+            FONT_AT_SCALE[i] = i == 3 ? FONT : new ResourceLocation(TFClient.MOD_ID, "cinzel_" + (i + 1));
+        }
+    }
 
     public enum Kind { PRIMARY, SECONDARY, DANGER, WHATSAPP, DISCORD }
 
@@ -42,10 +47,14 @@ public class TFMenuButton extends Button {
             PURPLE = "purple", BLUE = "blueb";
     private static final String[] MAIN = {TF, BLUE_1, BLUE_2, GRAY, RED, GREEN, PURPLE, BLUE};
     /** Cuánto se ensancha cada fila respecto a la lámina (solo por sus zonas lisas): los de abajo, para que quepa el texto. */
-    private static final float[] WIDEN = {1.2f, 1.2f, 1.2f, 1.3f, 1.3f, 1.38f, 1.38f, 1.38f};
+    private static final float[] WIDEN = {1.25f, 1.25f, 1.25f, 1.4f, 1.4f, 1.5f, 1.5f, 1.5f};
     /** Escala máxima de la lámina (interfaz por píxel): Mundo local de unos 21 de alto. */
-    private static final float K_MAX = 0.153f;
-    private static final int LOGO_MIN = 92, BOTTOM_MARGIN = 6;
+    private static final float K_MAX = 0.15f;
+    private static final int LOGO_MIN = 80, BOTTOM_MARGIN = 6;
+    /** Alto de las mayúsculas de Cinzel a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
+    private static final float CAP_HEIGHT = 5.3f, CAP_FILL = 0.56f, INTERIOR = 0.7f;
+    /** Tamaño de letra común a todos los botones del menú principal (el mayor que cabe en todos). Ver mainLayout. */
+    private static float mainTextSize = 1f;
 
     /** Separación entre icono y texto, en píxeles de interfaz. */
     private static final int GAP = 3;
@@ -53,7 +62,8 @@ public class TFMenuButton extends Button {
     private static final float TEXT_UP = 3.5f;
     private static final float HOVER_MS = 140f, SWEEP_MS = 850f;
     private static final long TF_SHINE_EVERY = 6500L, SPARK_CYCLE = 5200L, SPARK_MS = 900L;
-    private static final int INK = 0xFFF8EC, INK_HOT = 0xFFE08A, INK_TF = 0xFFE7A6, INK_TF_HOT = 0xFFFFF4, OUTLINE = 0x140A04;
+    /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
+    private static final int INK = 0xFFF3DC, INK_HOT = 0xFFFFFF, OUTLINE = 0x140A04;
 
     private final Kind kind;
     private final TFMenuIcons.Icon icon;
@@ -112,7 +122,29 @@ public class TFMenuButton extends Button {
             out[i] = new int[] {Math.round(x0), Math.round(y0), Math.round(x1) - Math.round(x0), Math.round(y1) - Math.round(y0)};
         }
         out[MAIN.length] = new int[] {Math.round(top)};
+        mainTextSize = textSizeFor(out);
         return out;
+    }
+
+    /**
+     * Un solo tamaño de letra para todo el menú: el mayor con el que cada texto (y su icono) cabe en su placa y las
+     * mayúsculas no pasan de CAP_FILL del hueco interior de la placa más baja.
+     */
+    private static float textSizeFor(int[][] rects) {
+        Minecraft mc = Minecraft.getInstance();
+        int s = Math.max(1, (int) Math.round(mc.getWindow().getGuiScale()));
+        String[] labels = {TFConfig.serverName(), "Mundo local", "Mods", "Opciones", "Salir", "WhatsApp", "Web", "Discord"};
+        float size = Float.MAX_VALUE;
+        for (int i = 0; i < MAIN.length; i++) {
+            TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
+            int[] r = rects[i];
+            TFMenuPlates.Placed at = new TFMenuPlates.Placed(p, r[0], r[1], r[2], r[3], s);
+            float room = at.x(p.text[2]) - at.x(p.text[0]);
+            float need = mc.font.width(label(labels[i])) + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0);
+            size = Math.min(size, room / need);
+            size = Math.min(size, CAP_FILL * INTERIOR * r[3] / CAP_HEIGHT);
+        }
+        return Math.max(1f, size);
     }
 
     /** Botón principal: conexión directa a Tierras Fantásticas. */
@@ -210,7 +242,7 @@ public class TFMenuButton extends Button {
         }
 
         float textY = at.y((p.body[1] + p.body[3]) / 2f);
-        paintContent(g, mc.font, s, tx0, tx1, textY, kind == Kind.PRIMARY ? 1.25f : 1f, e, alpha);
+        paintContent(g, mc.font, s, tx0, tx1, textY, mainTextSize, e, alpha);
         g.pose().popPose();
     }
 
@@ -265,21 +297,18 @@ public class TFMenuButton extends Button {
     /** Icono (WhatsApp, Web y Discord) y texto centrados entre x0 y x1, con contorno oscuro. */
     private void paintContent(GuiGraphics g, Font font, int s, float x0, float x1, float centerY, float size, float e, float alpha) {
         if (alpha * 255f < 4f) return; // casi transparente: Minecraft pintaría el texto opaco
-        boolean gold = kind == Kind.PRIMARY;
-        int ink;
-        if (!this.active) ink = 0x9A9AA6;
-        else if (gold) ink = TFMenuPaint.lerp(0xFF000000 | INK_TF, 0xFF000000 | INK_TF_HOT, e) & 0xFFFFFF;
-        else ink = TFMenuPaint.lerp(0xFF000000 | INK, 0xFF000000 | INK_HOT, e) & 0xFFFFFF;
+        int ink = !this.active ? 0x9A9AA6 : TFMenuPaint.lerp(0xFF000000 | INK, 0xFF000000 | INK_HOT, e) & 0xFFFFFF;
 
-        // Letra a la escala de la interfaz (n píxeles reales por píxel de glifo): nítida
+        // Letra a la escala de la interfaz (n píxeles reales por píxel de glifo; como mucho un 8 % más que `size`): nítida
         int n = Mth.clamp(Math.round(s * size), 1, FONT_AT_SCALE.length);
+        if (n > 1 && n / (float) s > size * 1.08f) n--;
         float scale = n / (float) s;
         MutableComponent text = Component.literal(getMessage().getString())
                 .setStyle(Style.EMPTY.withFont(FONT_AT_SCALE[n - 1]));
         int textW = font.width(text);
         float maxW = x1 - x0;
         boolean withIcon = icon != null;
-        float iconW = withIcon ? TFMenuIcons.SIZE + GAP : 0f;
+        float iconW = withIcon ? (TFMenuIcons.SIZE + GAP) * scale : 0f; // el icono crece con la letra
         float group = textW * scale + iconW;
         if (group > maxW && group > 0f) {
             scale *= Math.max(0.6f, (maxW - iconW) / (textW * scale));
@@ -289,18 +318,18 @@ public class TFMenuButton extends Button {
         float o = Math.max(1, Math.round(s * 0.4f)) / (float) s; // grosor del contorno
 
         if (withIcon) {
-            int sz = TFMenuIcons.SIZE * s;
+            int sz = TFMenuIcons.SIZE * n;
             int ix = Math.round(gx * s);
             int iy = Math.round(centerY * s - sz / 2f);
             g.pose().pushPose();
             g.pose().scale(1f / s, 1f / s, 1f);
             int ro = Math.round(o * s);
             int dark = TFMenuPaint.argb(0.85f * alpha, OUTLINE);
-            TFMenuIcons.draw(g, icon, ix - ro, iy, s, dark);
-            TFMenuIcons.draw(g, icon, ix + ro, iy, s, dark);
-            TFMenuIcons.draw(g, icon, ix, iy - ro, s, dark);
-            TFMenuIcons.draw(g, icon, ix, iy + ro + Math.max(1, s / 2), s, dark);
-            TFMenuIcons.draw(g, icon, ix, iy, s, TFMenuPaint.argb(alpha, ink));
+            TFMenuIcons.draw(g, icon, ix - ro, iy, n, dark);
+            TFMenuIcons.draw(g, icon, ix + ro, iy, n, dark);
+            TFMenuIcons.draw(g, icon, ix, iy - ro, n, dark);
+            TFMenuIcons.draw(g, icon, ix, iy + ro + Math.max(1, s / 2), n, dark);
+            TFMenuIcons.draw(g, icon, ix, iy, n, TFMenuPaint.argb(alpha, ink));
             g.pose().popPose();
             gx += iconW;
         }

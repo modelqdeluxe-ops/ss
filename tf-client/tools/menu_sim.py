@@ -380,10 +380,12 @@ import json
 PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
 GAP = 3          # entre icono y texto (interfaz)
 TEXT_UP = 3.5    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Cinzel)
-INK, INK_HOT, INK_TF, INK_TF_HOT, OUTLINE = 0xFFF8EC, 0xFFE08A, 0xFFE7A6, 0xFFFFF4, 0x140A04
+INK, INK_HOT, OUTLINE = 0xFFF3DC, 0xFFFFFF, 0x140A04
 MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
-WIDEN = [1.2, 1.2, 1.2, 1.3, 1.3, 1.38, 1.38, 1.38]
-K_MAX, LOGO_MIN, BOTTOM_MARGIN = 0.153, 92, 6
+WIDEN = [1.25, 1.25, 1.25, 1.4, 1.4, 1.5, 1.5, 1.5]
+K_MAX, LOGO_MIN, BOTTOM_MARGIN = 0.15, 80, 6
+CAP_HEIGHT, CAP_FILL, INTERIOR = 5.3, 0.56, 0.7
+LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
 _menu = {}
 
 
@@ -517,17 +519,14 @@ def draw_nav(g, S, x, y, w, h, hover, active=True):
 
 def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True):
     """TFMenuButton.paintContent: icono y texto centrados, contorno oscuro de max(1, 0.4 S) píxeles reales."""
-    if not active:
-        ink = 0x9A9AA6
-    elif kind == PRIMARY:
-        ink = mix_rgb(INK_TF, INK_TF_HOT, e)
-    else:
-        ink = mix_rgb(INK, INK_HOT, e)
-    n = max(1, min(6, round(S * size)))
+    ink = 0x9A9AA6 if not active else mix_rgb(INK, INK_HOT, e)
+    n = max(1, min(12, round(S * size)))
+    if n > 1 and n / S > size * 1.08:
+        n -= 1
     scale = n / S
     tw = text_width(label, S)
     maxw = x1 - x0
-    icon_w = ICON + GAP if icon else 0
+    icon_w = (ICON + GAP) * scale if icon else 0
     group = tw * scale + icon_w
     if group > maxw and group > 0:
         scale *= max(0.6, (maxw - icon_w) / (tw * scale))
@@ -536,7 +535,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True):
     o = max(1, round(S * 0.4)) / S
     dark = rgb3(OUTLINE)
     if icon:
-        sz = ICON * S
+        sz = ICON * n
         img = icon_image(icon, sz)
         ix, iy = round(gx * S), round(cy * S - sz / 2)
         ro = round(o * S)
@@ -553,7 +552,20 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True):
     draw_text(g, label, gx, ty, S, rgb3(ink), 1.0, 0, scale, n)
 
 
-def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None):
+def text_size(S, buttons):
+    """TFMenuButton.textSizeFor: un solo tamaño para todo el menú (el mayor que cabe en todos)."""
+    d = menu_data()['json']
+    size = 1e9
+    for label, icon, kind, plate, x, y, w, h in buttons:
+        p = d['plates'][plate]
+        at = Placed(p, x, y, w, h, S)
+        room = at.x(p['text'][2]) - at.x(p['text'][0])
+        need = text_width(label) + (ICON + GAP if icon else 0)
+        size = min(size, room / need, CAP_FILL * INTERIOR * h / CAP_HEIGHT)
+    return max(1.0, size)
+
+
+def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, size=1.0):
     """TFMenuButton.renderWidget con placa (sin el zoom de 2 %: aquí solo sube 0,8 al pasar el ratón)."""
     label, icon, kind, plate, x, y, w, h = b
     m = menu_data()
@@ -578,7 +590,7 @@ def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None):
         iy0, iy1 = round(at.y(p['body'][1] + bh * 0.16)), round(at.y(p['body'][3] - bh * 0.16))
         paint_sweep(g, S, ix0, iy0, ix1 - ix0, iy1 - iy0, sweep, 0.55, 0)
     paint_content(g, S, at.x(p['text'][0]), at.x(p['text'][2]), at.y((p['body'][1] + p['body'][3]) / 2), label, icon,
-                  kind, 1.25 if kind == PRIMARY else 1.0, e, active)
+                  kind, size, e, active)
 
 
 _shine = None
@@ -670,8 +682,9 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
         g.composite(to_float_img(gl), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
         lg = _logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)
         g.composite(to_float_img(lg), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
+    size = text_size(S, buttons)
     for i, b in enumerate(buttons):
-        paint_button(g, S, b, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
+        paint_button(g, S, b, size=size, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
                      sweep=(sweep if b[2] == PRIMARY else (hover_sweep if hover == i else None)))
     im = g.image()
     if out:

@@ -10,6 +10,14 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.45 (11 oct)** — el dueño: «la tipografía no es congruente, es demasiado pequeña; el color de Mundo
+> local no es amarillo». Menú principal: **un solo tamaño de letra para todos los botones** (`TFMenuButton.textSizeFor`:
+> el mayor con el que cada texto + icono cabe en su placa y las mayúsculas, 5,3 de alto a escala 1, no pasan del 56 %
+> del hueco interior de la placa más baja; ~1,5 a 1080p, 1,33 a 720p) y **un solo color** (blanco cálido `FFF3DC`;
+> con el ratón blanco puro, ya no dorado/amarillo; también en `TFButtonTheme`). Nuevas `font/cinzel_7..12.json` para
+> que cualquier tamaño se dibuje 1:1 (nítido); el icono crece con la letra. Fila de abajo más ancha (WIDEN 1,5),
+> K_MAX 0,15, LOGO_MIN 80, hueco del texto a 0,2 del alto en las placas pequeñas.
+
 > **TF Client 1.3.44 (11 oct)** — el dueño mandó dos láminas: la del menú principal (con el layout) y la de los
 > botones de ajustes/navegación: «corta bien, escribe bien, diseña bien, anima bien», sin píxeles blancos en el
 > contorno y con icono en Web. `tools/gen_menu_buttons.py <lámina menú> <lámina ajustes>` (las láminas NO van en el
@@ -1629,7 +1637,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.44)
+## 5. El mod (TF Client 1.3.45)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
