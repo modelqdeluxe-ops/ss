@@ -63,9 +63,12 @@ public class TFMenuButton extends Button {
     private static final float LOGO_FRAC = 0.44f;
     private static final int BOTTOM_MARGIN = 6;
     /** Alto de las mayúsculas de Titan One a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
-    private static final float CAP_HEIGHT = 6.2f, CAP_FILL = 0.5f, INTERIOR = 0.7f;
-    /** Tamaño de letra común a todos los botones del menú principal (el mayor que cabe en todos). Ver mainLayout. */
-    private static float mainTextSize = 1f;
+    private static final float CAP_HEIGHT = 6.2f, CAP_FILL = 0.5f, TF_CAP_FILL = 0.66f, INTERIOR = 0.7f;
+    /**
+     * Tamaño de letra común a los botones del menú principal (el mayor que cabe en todos) y el de Tierras Fantásticas,
+     * más grande (su placa es más alta). Ver mainLayout.
+     */
+    private static float mainTextSize = 1f, tfTextSize = 1f;
 
     /** Separación entre icono y texto, en píxeles de interfaz. */
     private static final int GAP = 3;
@@ -169,7 +172,9 @@ public class TFMenuButton extends Button {
             out[i] = new int[] {Math.round(x0), Math.round(y0), Math.round(x1) - Math.round(x0), Math.round(y1) - Math.round(y0)};
         }
         out[MAIN.length] = new int[] {Math.round(top)};
-        mainTextSize = textSizeFor(out);
+        float[] sizes = textSizeFor(out);
+        mainTextSize = sizes[0];
+        tfTextSize = sizes[1];
         return out;
     }
 
@@ -177,11 +182,11 @@ public class TFMenuButton extends Button {
      * Un solo tamaño de letra para todo el menú: el mayor con el que cada texto (y su icono) cabe en su placa y las
      * mayúsculas no pasan de CAP_FILL del hueco interior de la placa más baja.
      */
-    private static float textSizeFor(int[][] rects) {
+    private static float[] textSizeFor(int[][] rects) {
         Minecraft mc = Minecraft.getInstance();
         int s = Math.max(1, (int) Math.round(mc.getWindow().getGuiScale()));
         String[] labels = {TFConfig.serverName(), "Mundo local", "Mods", "Opciones", "Salir", "WhatsApp", "Web", "Discord"};
-        float size = Float.MAX_VALUE;
+        float size = Float.MAX_VALUE, tf = Float.MAX_VALUE;
         for (int i = 0; i < MAIN.length; i++) {
             TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
             int[] r = rects[i];
@@ -189,10 +194,15 @@ public class TFMenuButton extends Button {
             float room = at.x(p.text[2]) - at.x(p.text[0]);
             float need = mc.font.width(Component.literal(labels[i]).setStyle(Style.EMPTY.withFont(MENU_FONT_AT_SCALE[3])))
                     + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0);
+            if (i == 0) { // Tierras Fantásticas: su placa es más alta, su letra más grande
+                tf = Math.min(room / need, TF_CAP_FILL * INTERIOR * r[3] / CAP_HEIGHT);
+                continue;
+            }
             size = Math.min(size, room / need);
             size = Math.min(size, CAP_FILL * INTERIOR * r[3] / CAP_HEIGHT);
         }
-        return Math.max(1f, size);
+        size = Math.max(1f, size);
+        return new float[] {size, Math.max(size, tf)};
     }
 
     /** Botón principal: conexión directa a Tierras Fantásticas. */
@@ -280,7 +290,7 @@ public class TFMenuButton extends Button {
         float tx0 = at.x(p.text[0]), tx1 = at.x(p.text[2]);
 
         float textY = at.y((p.body[1] + p.body[3]) / 2f);
-        paintContent(g, mc.font, s, tx0, tx1, textY, mainTextSize, e, alpha);
+        paintContent(g, mc.font, s, tx0, tx1, textY, kind == Kind.PRIMARY ? tfTextSize : mainTextSize, e, alpha);
         g.pose().popPose();
     }
 

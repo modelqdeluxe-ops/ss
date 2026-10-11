@@ -386,7 +386,7 @@ ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
 SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
 K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 6  # el emblema: al menos el 44 % del alto
 ROW_GAP = 50  # separación entre filas (en la lámina eran 70-100: más juntas, placas más grandes)
-CAP_HEIGHT, CAP_FILL, INTERIOR = 6.2, 0.5, 0.7
+CAP_HEIGHT, CAP_FILL, TF_CAP_FILL, INTERIOR = 6.2, 0.5, 0.66, 0.7
 LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
 _menu = {}
 
@@ -631,17 +631,22 @@ def gold(t, e):
     return lerp_argb(c, 0xFFFBEFCF, 0.35 * e) & 0xFFFFFF
 
 
-def text_size(S, buttons):
-    """TFMenuButton.textSizeFor: un solo tamaño para todo el menú (el mayor que cabe en todos)."""
+def text_size(S, buttons, tf=False):
+    """TFMenuButton.textSizeFor: un solo tamaño para los botones (el mayor que cabe en todos); con tf=True, el de
+    Tierras Fantásticas (más grande: su placa es más alta)."""
     d = menu_data()['json']
-    size = 1e9
-    for label, icon, kind, plate, x, y, w, h in buttons:
+    size, tf_size = 1e9, 1e9
+    for idx, (label, icon, kind, plate, x, y, w, h) in enumerate(buttons):
         p = d['plates'][plate]
         at = Placed(p, x, y, w, h, S)
         room = at.x(p['text'][2]) - at.x(p['text'][0])
         need = text_width(label) + (ICON + GAP if icon else 0)
+        if idx == 0:
+            tf_size = min(room / need, TF_CAP_FILL * INTERIOR * h / CAP_HEIGHT)
+            continue
         size = min(size, room / need, CAP_FILL * INTERIOR * h / CAP_HEIGHT)
-    return max(1.0, size)
+    size = max(1.0, size)
+    return max(size, tf_size) if tf else size
 
 
 def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, size=1.0):
@@ -774,9 +779,9 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
         g.composite(to_float_img(gl), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
         lg = _logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)
         g.composite(to_float_img(lg), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
-    size = text_size(S, buttons)
+    size, tf_size = text_size(S, buttons), text_size(S, buttons, tf=True)
     for i, b in enumerate(buttons):
-        paint_button(g, S, b, size=size, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
+        paint_button(g, S, b, size=tf_size if i == 0 else size, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
                      sweep=(sweep if b[2] == PRIMARY else (hover_sweep if hover == i else None)))
     im = g.image()
     if out:
