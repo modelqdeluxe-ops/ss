@@ -126,8 +126,9 @@ public final class SkillDefs {
     /** Cómo se dispara sola una pasiva de MMOCore: TIMER cada «timer» ticks (como MythicLib), DAMAGED... */
     public record Passive(String type, double timer) {}
 
+    /** name y desc: en español (los del pack si no hay traducción). */
     public record SkillDef(String id, String name, List<String> lore, double cooldown, double mana, String entry,
-                           String icon, Passive passive, boolean hidden, Map<String, Double> mods) {
+                           String icon, Passive passive, boolean hidden, Map<String, Double> mods, String desc) {
         /** Se lanza con su tecla (no es pasiva ni interna). */
         public boolean active() {
             return passive == null && !hidden;
@@ -136,7 +137,9 @@ public final class SkillDefs {
 
     public static final class ClassDef {
         public String id;
+        /** Nombre y papel en español (Bruja Tejedora · Hechicera, caos y maldiciones). */
         public String name;
+        public String role = "";
         public List<String> lore = List.of();
         public List<SkillDef> skills = List.of();
         public final Map<String, Meta> tree = new HashMap<>();
@@ -174,6 +177,16 @@ public final class SkillDefs {
         public SkillDef skill(String id) {
             for (SkillDef s : skills) if (s.id().equals(id)) return s;
             return null;
+        }
+
+        /** El ataque básico de la clase (su combo): elegido, se queda y cada clic lo repite. null = no tiene. */
+        public String basic;
+
+        /** El sitio del ataque básico en la barra (-1 = no tiene). */
+        public int basicSlot() {
+            List<SkillDef> a = actives();
+            for (int i = 0; i < a.size(); i++) if (a.get(i).id().equals(basic)) return i;
+            return -1;
         }
 
         /** Clase de arco: la skill elegida sale al soltar la flecha con un arco (las demás, con el clic izquierdo). */
@@ -227,7 +240,8 @@ public final class SkillDefs {
         ClassDef c = new ClassDef();
         c.id = o.get("id").getAsString();
         JsonObject cls = o.has("class") && o.get("class").isJsonObject() ? o.getAsJsonObject("class") : new JsonObject();
-        c.name = str(cls, "name", c.id);
+        c.name = str(cls, "name_es", str(cls, "name", c.id));
+        c.role = str(cls, "role_es", "");
         c.lore = strings(cls.get("lore"));
         List<SkillDef> skills = new ArrayList<>();
         for (JsonElement e : o.getAsJsonArray("skills")) {
@@ -243,9 +257,10 @@ public final class SkillDefs {
                     mods.put(me.getKey().toLowerCase(Locale.ROOT), num(me.getValue(), 0));
                 }
             }
-            skills.add(new SkillDef(s.get("id").getAsString(), str(s, "name", s.get("id").getAsString()), strings(s.get("lore")),
+            String name = str(s, "name_es", str(s, "name", s.get("id").getAsString()));
+            skills.add(new SkillDef(s.get("id").getAsString(), name, strings(s.get("lore")),
                     num(s.get("cooldown"), 0), num(s.get("mana"), 0), str(s, "entry", null), str(s, "icon", null), passive,
-                    s.has("hidden") && s.get("hidden").getAsBoolean(), Map.copyOf(mods)));
+                    s.has("hidden") && s.get("hidden").getAsBoolean(), Map.copyOf(mods), str(s, "desc_es", "")));
         }
         c.skills = List.copyOf(skills);
         JsonObject tree = o.getAsJsonObject("tree");
@@ -264,6 +279,7 @@ public final class SkillDefs {
             for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("icons").entrySet()) c.icons.put(e.getKey(), e.getValue().getAsString());
         }
         c.set = str(o, "set", null);
+        c.basic = str(o, "basic", null);
         c.glyphs = str(o, "glyphs", "");
         for (String x : strings(o.get("missing"))) c.missing.add(x.toLowerCase(Locale.ROOT));
         if (o.has("start_vars") && o.get("start_vars").isJsonObject()) {

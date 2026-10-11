@@ -184,7 +184,8 @@ public final class VfxServer {
 
     private static String valid(String id, boolean kill) {
         if (id == null || id.isBlank()) return null;
-        return kill ? (VfxCatalog.kill(id) != null ? id : null) : (VfxCatalog.pack(id) != null ? id : null);
+        // Los paquetes de skills de VFX ya no se usan (ahora están las clases de Skills): nunca se equipan
+        return kill ? (VfxCatalog.kill(id) != null ? id : null) : null;
     }
 
     private static Equip equip(UUID uuid) {

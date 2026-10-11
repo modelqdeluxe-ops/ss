@@ -99,7 +99,7 @@ public final class SkillClient {
         left = m.left().clone();
         total = m.total().clone();
         if (denied.length != left.length) denied = new long[left.length];
-        SkillHud.serverSelected(m.selected());
+        SkillHud.serverSelected(m.selected(), m.basic());
     }
 
     static void spawn(SkillNet.Spawn m) {
@@ -201,37 +201,39 @@ public final class SkillClient {
         }
         if (m.kind() == 6) return; // retroceso de la cámara: ya no se mueve la vista de nadie (el jugador manda)
         ParticleOptions opts = particle(m.id(), m.extra(), m.size());
-        if (opts == null) return;
+        if (opts == null || particleBudget <= 0) return;
         Vec3 at = new Vec3(m.x(), m.y(), m.z());
         switch (m.kind()) {
             case 1 -> { // esfera
-                for (int i = 0; i < m.n(); i++) {
+                for (int i = 0, n = Math.min(m.n(), MAX_PER_FX); i < n; i++) {
                     double u = RANDOM.nextDouble() * 2 - 1, a = RANDOM.nextDouble() * Math.PI * 2, rr = Math.sqrt(1 - u * u);
                     Vec3 d = new Vec3(rr * Math.cos(a), u, rr * Math.sin(a));
                     Vec3 p = at.add(d.scale(m.radius()));
-                    level.addParticle(opts, true, p.x, p.y, p.z, d.x * m.speed(), d.y * m.speed(), d.z * m.speed());
+                    add(level, opts, p.x, p.y, p.z, d.x * m.speed(), d.y * m.speed(), d.z * m.speed());
                 }
             }
-            case 2 -> { // anillo
-                for (int i = 0; i < m.points(); i++) {
-                    double a = Math.PI * 2 * i / Math.max(1, m.points());
-                    burst(level, opts, at.add(Math.cos(a) * m.radius(), 0, Math.sin(a) * m.radius()), Math.max(1, m.n()), m.hs(), m.vs(), m.speed());
+            case 2 -> { // anillo: si pide demasiadas, con menos puntos (sigue siendo un anillo entero)
+                int per = Math.max(1, Math.min(m.n(), 4));
+                int points = Math.max(1, Math.min(m.points(), MAX_PER_FX * 2 / per));
+                for (int i = 0; i < points; i++) {
+                    double a = Math.PI * 2 * i / points;
+                    burst(level, opts, at.add(Math.cos(a) * m.radius(), 0, Math.sin(a) * m.radius()), per, m.hs(), m.vs(), m.speed());
                 }
             }
             case 3 -> { // línea
                 Vec3 to = new Vec3(m.x2(), m.y2(), m.z2());
                 double len = to.distanceTo(at);
-                int steps = (int) Math.min(200, len / Math.max(0.1, m.radius()));
+                int steps = (int) Math.min(MAX_PER_FX, len / Math.max(0.1, m.radius()));
                 for (int i = 0; i <= steps; i++) {
                     Vec3 p = at.lerp(to, steps == 0 ? 0 : (double) i / steps);
-                    burst(level, opts, p, Math.max(1, m.n()), 0, 0, 0);
+                    burst(level, opts, p, Math.max(1, Math.min(m.n(), 2)), 0, 0, 0);
                 }
             }
             default -> {
                 if (m.n() <= 0) {
-                    level.addParticle(opts, true, at.x, at.y, at.z, m.hs() * m.speed(), m.vs() * m.speed(), m.hs() * m.speed());
+                    add(level, opts, at.x, at.y, at.z, m.hs() * m.speed(), m.vs() * m.speed(), m.hs() * m.speed());
                 } else {
-                    burst(level, opts, at, m.n(), m.hs(), m.vs(), m.speed());
+                    burst(level, opts, at, Math.min(m.n(), MAX_PER_FX), m.hs(), m.vs(), m.speed());
                 }
             }
         }
@@ -240,9 +242,32 @@ public final class SkillClient {
     /** Como hace Minecraft con las partículas que manda el servidor: desvío y velocidad gaussianos. */
     private static void burst(ClientLevel level, ParticleOptions opts, Vec3 at, int n, double hs, double vs, double sp) {
         for (int i = 0; i < n; i++) {
-            level.addParticle(opts, true, at.x + RANDOM.nextGaussian() * hs, at.y + RANDOM.nextGaussian() * vs,
+            add(level, opts, at.x + RANDOM.nextGaussian() * hs, at.y + RANDOM.nextGaussian() * vs,
                     at.z + RANDOM.nextGaussian() * hs, RANDOM.nextGaussian() * sp, RANDOM.nextGaussian() * sp, RANDOM.nextGaussian() * sp);
         }
+    }
+
+    /**
+     * Una partícula, si queda presupuesto en este tick. Sin forzar: Minecraft aplica el ajuste de Partículas del jugador
+     * (Todas / Reducidas / Mínimas) y no dibuja las que están lejos.
+     */
+    private static void add(ClientLevel level, ParticleOptions opts, double x, double y, double z, double vx, double vy, double vz) {
+        if (particleBudget <= 0) return;
+        particleBudget--;
+        level.addParticle(opts, false, x, y, z, vx, vy, vz);
+    }
+
+    /** Como mucho, partículas de un solo efecto. */
+    private static final int MAX_PER_FX = 48;
+    /** Partículas de skills que aún se pueden sacar en este tick (se rellena cada tick según el ajuste de Partículas). */
+    private static int particleBudget = 200;
+
+    private static int particlesPerTick(Minecraft mc) {
+        return switch (mc.options.particles().get()) {
+            case ALL -> 200;
+            case DECREASED -> 80;
+            case MINIMAL -> 25;
+        };
     }
 
     private static void mask(ClientLevel level, SkillNet.Fx m) {
@@ -285,6 +310,7 @@ public final class SkillClient {
         }
         if (mc.isPaused()) return;
         clientTicks++;
+        particleBudget = particlesPerTick(mc);
         for (int i = 0; i < left.length; i++) if (left[i] > 0) left[i]--;
         SkillHud.postTick();
         Iterator<Actor> it = ACTORS.values().iterator();
@@ -763,7 +789,8 @@ public final class SkillClient {
                 TFClient.LOGGER.debug("TF Skills: partícula desconocida {}", rawName);
                 return Optional.empty();
             }
-            float sz = Math.max(0.05F, Math.min(4F, size));
+            // El polvo dura más cuanto más grande es (hasta 8 s flotando con tamaño 4): como mucho 2
+            float sz = Math.max(0.05F, Math.min(2F, size));
             if (type == ParticleTypes.DUST) return Optional.of(new DustParticleOptions(color(extra, new Vector3f(1, 0, 0)), sz));
             if (type == ParticleTypes.DUST_COLOR_TRANSITION) {
                 String[] c = extra == null ? new String[0] : extra.split(">");

@@ -522,6 +522,10 @@
   "color": "#9b6bff",
   "desc": "Un espadachín del vacío que corta la realidad con su katana: atraviesa dimensiones, se teletransporta a través de sus enemigos y desata la bendición del vacío.",
   "skills": {
+   "void_edge_attack": {
+    "name": "Tajo del Vacío",
+    "desc": "Tu ataque básico: una cadena de tres tajos de katana en abanico delante de ti (con el daño del arma que lleves). Con la Bendición Dimensional se convierten en cortes dimensionales."
+   },
    "void_edge_dimension_benediction": {
     "name": "Bendición Dimensional",
     "desc": "Te envuelves en la bendición del vacío: tus ataques con la katana se convierten en cortes dimensionales más poderosos."

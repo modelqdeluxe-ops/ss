@@ -1496,4 +1496,17 @@ test('Skills: con varias clases se elige la activa en la web (solo una) y el ser
   await post('/api/skills/active', { id: 'zephyr' }, cookie);
   assert.strictEqual((await (await poll(['Varias_MC'])).json()).skills[0].at, t3);
   assert.deepStrictEqual(received, []);
+
+  // El puente manda también las clases que tiene (el TF Pad las enseña) y desde el pad se cambia la activa
+  res = await (await poll(['Varias_MC'])).json();
+  assert.deepStrictEqual(res.skills[0].owned.sort(), ['mago', 'zephyr']);
+  res = await (await poll(['Varias_MC'], [], { pad: { skills: [{ uuid, clase: 'mago' }] } })).json();
+  assert.strictEqual(res.skills[0].clase, 'mago');
+  assert.ok(res.skills[0].at > t3);
+  // Una que no es suya no se pone; null la quita
+  res = await (await poll(['Varias_MC'], [], { pad: { skills: [{ uuid, clase: 'glacia' }] } })).json();
+  assert.strictEqual(res.skills[0].clase, 'mago');
+  res = await (await poll(['Varias_MC'], [], { pad: { skills: [{ uuid, clase: null }] } })).json();
+  assert.strictEqual(res.skills[0].clase, null);
+  assert.strictEqual((await (await get('/api/skills', { Cookie: cookie })).json()).me.active, null);
 });

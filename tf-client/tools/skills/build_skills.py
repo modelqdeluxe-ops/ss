@@ -83,6 +83,23 @@ PACK_SUBDIR = {
 }
 
 
+# El ataque básico de cada clase (con los controles nuevos se queda elegido y cada clic lo repite): la habilidad de
+# clic izquierdo del arma del pack; estas clases no tienen arma con clic izquierdo (o la suya es otra cosa)
+BASIC_OVERRIDE = {'bruja': 'mf_witch_sigil_volley', 'cetus': 'cetus_slash', 'dragon_rojo': 'dragon_claw', 'null': 'void_arrow',
+                  'mago_rayo': None}
+
+
+def basic_skill(pack_id, prog):
+    if pack_id in BASIC_OVERRIDE:
+        return BASIC_OVERRIDE[pack_id]
+    actives = [sk['id'] for sk in prog['skills'] if not sk.get('passive') and not sk.get('hidden')]
+    for w in prog['weapons']:
+        for ab in w['abilities']:
+            if ab.get('mode') == 'LEFT_CLICK' and ab['skill'] and ab['skill'].lower() in actives:
+                return ab['skill'].lower()
+    return None
+
+
 # Variables con las que empieza la clase (si el pack no las pone nunca): los esbirros del Nigromante y del Invocador
 # de Espíritus solo atacan en el modo que elige su «Orden», que empieza sin poner; así salen en modo Libre
 START_VARS = {
@@ -666,6 +683,9 @@ def build_pack(path, sound_events, name=None):
            'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
            'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing}
+    basic = basic_skill(pack.id, prog)
+    if basic:
+        out['basic'] = basic
     if START_VARS.get(pack.id):
         out['start_vars'] = START_VARS[pack.id]  # variables con las que empieza la clase (postura «free»...)
     os.makedirs(OUT_CLASSES, exist_ok=True)
@@ -762,7 +782,8 @@ def icon_from_effects(pack, models, prog, sk, me_models, store):
                             return J.framed(img)
                     # el modelo de ModelEngine que se pone el efecto invocado
                     for mm in mobs[mob].get('mechs', []):
-                        mid = str(mm.get('a', {}).get('mid', ''))
+                        ma = mm.get('a', {})
+                        mid = str(next((ma[k] for k in ('mid', 'm', 'modelid', 'model') if ma.get(k)), ''))
                         if mm['m'] == 'model' and mid.startswith(pack.id + '.') and mid not in me_used:
                             me_used.append(mid)
             for k in SKILL_REF_KEYS:

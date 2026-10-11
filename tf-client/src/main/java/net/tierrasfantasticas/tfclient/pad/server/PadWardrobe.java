@@ -24,6 +24,8 @@ import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 import net.tierrasfantasticas.tfclient.server.TFBridge;
+import net.tierrasfantasticas.tfclient.skills.SkillDefs;
+import net.tierrasfantasticas.tfclient.skills.SkillServer;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 import net.tierrasfantasticas.tfclient.vfx.VfxCatalog;
 import net.tierrasfantasticas.tfclient.vfx.VfxServer;
@@ -31,8 +33,9 @@ import net.tierrasfantasticas.tfclient.vfx.VfxServer;
 /**
  * Armario y Efectos dentro del pad. Armario: lo que tienes de tus compras y de tu rango (lo dice la web por el puente)
  * por hueco (CABEZA, PECHO, PIERNAS, PIES, ESPALDA) con PONER / QUITAR; solo cambia cómo te ven, no la armadura de
- * verdad. Efectos: los efectos de kill y los paquetes de skills (gratis) con EQUIPAR / QUITAR. Los dos se aplican al
- * momento en el servidor y se guardan en la web en la siguiente consulta del puente.
+ * verdad. Efectos: los efectos de kill (gratis) con EQUIPAR / QUITAR y, en SKILLS, las clases de skills que has
+ * comprado en la web con ACTIVAR / DESACTIVAR (una activa a la vez). Todo se aplica al momento en el servidor y se
+ * guarda en la web en la siguiente consulta del puente.
  */
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID)
 public final class PadWardrobe {
@@ -164,10 +167,11 @@ public final class PadWardrobe {
     private static final class Effects implements PadServer.App {
         @Override
         public PadView view(ServerPlayer player, String tab) {
-            boolean packs = tab.equals("skills");
+            boolean skills = tab.equals("skills");
+            PadServer.put(player, "efectos.tab", skills ? "skills" : "");
             String[] eq = VfxServer.equipped(player.getUUID());
-            PadView.Builder b = PadView.of("efectos").tab("", "AL MATAR").tab("skills", "SKILLS").selected(packs ? "skills" : "");
-            if (!packs) {
+            PadView.Builder b = PadView.of("efectos").tab("", "AL MATAR").tab("skills", "SKILLS").selected(skills ? "skills" : "");
+            if (!skills) {
                 b.header("Efecto al matar. Gratis.");
                 for (VfxCatalog.Kill k : VfxCatalog.kills().values()) {
                     boolean on = k.id().equals(eq[0]);
@@ -177,18 +181,50 @@ public final class PadWardrobe {
                 }
                 if (VfxCatalog.kills().isEmpty()) b.empty("Sin efectos.");
             } else {
-                b.header("Skills de combate.");
-                for (VfxCatalog.Pack p : VfxCatalog.packs().values()) {
-                    boolean on = p.id().equals(eq[1]);
-                    List<String> names = new ArrayList<>();
-                    for (VfxCatalog.Skill s : p.skills()) names.add(s.name());
-                    b.row(new PadView.Row(new ItemStack(Items.BLAZE_POWDER), p.name(), TEXT, List.of(String.join(" · ", names)), -1, on ? "EQUIPADO" : "",
-                            on ? PadView.Btn.of("QUITAR", "quitar:pack", PadView.RED) : PadView.Btn.of("EQUIPAR", "pack:" + p.id(), PadView.GREEN), null)
-                            .selected(on));
-                }
-                if (VfxCatalog.packs().isEmpty()) b.empty("Sin paquetes.");
+                skillsTab(player, b);
             }
             return b.build();
+        }
+
+        /**
+         * SKILLS: las clases que tiene (las compradas en la web y, si el staff le dio otra, esa), con ACTIVAR o
+         * DESACTIVAR; la activa, con sus skills y la tecla de cada una.
+         */
+        private static void skillsTab(ServerPlayer player, PadView.Builder b) {
+            UUID uuid = player.getUUID();
+            String active = SkillServer.classOf(uuid);
+            List<String> mine = new ArrayList<>(SkillServer.ownedOf(uuid));
+            if (active != null && !mine.contains(active)) mine.add(0, active);
+            if (mine.isEmpty()) {
+                if (!SkillServer.ownedKnown(uuid) && TFBridge.connected()) {
+                    b.empty("Cargando tus clases…");
+                } else {
+                    b.empty("Aún no tienes clases de skills. Consíguelas en la tienda web: " + TFBridge.storeHost() + " (pestaña Skills).");
+                }
+                return;
+            }
+            b.header("Una activa a la vez. Elige skill con 5-0 y úsala con clic izquierdo.");
+            for (String id : mine) {
+                SkillDefs.ClassDef def = SkillDefs.get(id);
+                if (def == null) continue;
+                boolean on = id.equals(active);
+                List<String> lines = new ArrayList<>();
+                if (!def.role.isEmpty()) lines.add(def.role);
+                if (on) {
+                    String[] keys = {"5", "6", "7", "8", "9", "0"};
+                    List<SkillDefs.SkillDef> acts = def.actives();
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < acts.size() && i < keys.length; i++) {
+                        if (sb.length() > 0) sb.append(" · ");
+                        sb.append(keys[i]).append(" ").append(acts.get(i).name());
+                    }
+                    lines.add(sb.toString());
+                    if (def.bow()) lines.add("Clase de arco: la skill sale al disparar con tu arco.");
+                }
+                PadView.Btn btn = on ? PadView.Btn.of("DESACTIVAR", "clase:-", PadView.RED) : PadView.Btn.of("ACTIVAR", "clase:" + id, PadView.GREEN);
+                b.row(new PadView.Row(new ItemStack(Items.ENCHANTED_BOOK), def.name, TEXT, lines, -1, on ? "ACTIVA" : "", btn, null)
+                        .selected(on));
+            }
         }
 
         @Override
@@ -196,19 +232,25 @@ public final class PadWardrobe {
             String[] a = action.split(":", 2);
             if (a.length < 2) return null;
             switch (a[0]) {
-                case "kill", "pack" -> {
-                    boolean kill = a[0].equals("kill");
-                    String name = kill ? (VfxCatalog.kill(a[1]) == null ? null : VfxCatalog.kill(a[1]).name())
-                            : (VfxCatalog.pack(a[1]) == null ? null : VfxCatalog.pack(a[1]).name());
-                    if (name == null) return null;
-                    VfxServer.setFromPad(player, kill, a[1]);
+                case "kill" -> {
+                    VfxCatalog.Kill k = VfxCatalog.kill(a[1]);
+                    if (k == null) return null;
+                    VfxServer.setFromPad(player, true, a[1]);
                     TFBridge.padVfx(player.getUUID(), a[0], a[1]);
-                    TFPadNet.notice(player, (kill ? "Efecto equipado: " : "Skills equipadas: ") + name + ".");
+                    TFPadNet.notice(player, "Efecto equipado: " + k.name() + ".");
                 }
                 case "quitar" -> {
-                    boolean kill = a[1].equals("kill");
-                    VfxServer.setFromPad(player, kill, null);
-                    TFBridge.padVfx(player.getUUID(), kill ? "kill" : "pack", null);
+                    if (!a[1].equals("kill")) return null;
+                    VfxServer.setFromPad(player, true, null);
+                    TFBridge.padVfx(player.getUUID(), "kill", null);
+                }
+                case "clase" -> {
+                    String cls = a[1].equals("-") ? null : a[1];
+                    if (!SkillServer.chooseFromPad(player, cls)) {
+                        TFPadNet.notice(player, "Esa clase no es tuya.");
+                        return null;
+                    }
+                    TFPadNet.notice(player, cls == null ? "Clase desactivada." : "Clase activada: " + SkillDefs.get(cls).name + ".");
                 }
                 default -> {
                 }

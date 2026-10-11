@@ -55,8 +55,12 @@ public final class SkillServer {
     private static final Map<UUID, Long> NO_FALL = new HashMap<>();
     /** Desde cuándo cuentan sus pasivas por tiempo (al entrar o al tener la clase saltan ya, y luego cada «timer»). */
     private static final Map<UUID, Long> PASSIVE_START = new HashMap<>();
+    /** Las clases que ha comprado cada uno (lo dice la web en cada consulta, de los conectados). */
+    private static final Map<UUID, List<String>> OWNED = new HashMap<>();
     /** La skill elegida de cada uno (índice en la barra); se lanza con el siguiente clic o flecha. */
     private static final Map<UUID, Integer> SELECTED = new HashMap<>();
+    /** Los que tienen puesto su ataque básico: después de usar otra skill vuelven a él. */
+    private static final java.util.Set<UUID> BASIC_ON = new java.util.HashSet<>();
     private static boolean dirty;
 
     private static boolean enabled = true;
@@ -160,6 +164,28 @@ public final class SkillServer {
         dirty = false;
     }
 
+    /** Las clases que ha comprado en la web (vacío si la web aún no lo ha dicho). */
+    public static List<String> ownedOf(UUID uuid) {
+        return OWNED.getOrDefault(uuid, List.of());
+    }
+
+    /** ¿Ya dijo la web qué clases tiene? */
+    public static boolean ownedKnown(UUID uuid) {
+        return OWNED.containsKey(uuid);
+    }
+
+    /**
+     * Desde el TF Pad: pone una de sus clases como activa (o ninguna, con null). Se aplica ya y se guarda en la web en
+     * la siguiente consulta. false si no es suya.
+     */
+    public static boolean chooseFromPad(ServerPlayer player, String cls) {
+        UUID uuid = player.getUUID();
+        if (cls != null && (SkillDefs.get(cls) == null || !(ownedOf(uuid).contains(cls) || cls.equals(classOf(uuid))))) return false;
+        set(player.getServer(), uuid, cls, System.currentTimeMillis(), true);
+        net.tierrasfantasticas.tfclient.server.TFBridge.padSkill(uuid, cls);
+        return true;
+    }
+
     /** La clase del jugador (null = ninguna). */
     public static String classOf(UUID uuid) {
         Owned o = CLASSES.get(uuid);
@@ -167,8 +193,8 @@ public final class SkillServer {
     }
 
     /**
-     * Lo que manda la web en cada consulta: [{uuid, clase, at}] de los conectados. at = cuándo se compró o cambió; si
-     * el staff la cambió después aquí, gana lo del staff.
+     * Lo que manda la web en cada consulta: [{uuid, clase, at, owned}] de los conectados. at = cuándo se compró o
+     * cambió la activa; si el staff la cambió después aquí, gana lo del staff. owned = las clases que ha comprado.
      */
     public static void applyWeb(MinecraftServer srv, JsonArray list) {
         for (JsonElement el : list) {
@@ -179,6 +205,18 @@ public final class SkillServer {
                 uuid = UUID.fromString(TFJson.str(o, "uuid", ""));
             } catch (IllegalArgumentException e) {
                 continue;
+            }
+            if (o.has("owned") && o.get("owned").isJsonArray()) {
+                List<String> owned = new ArrayList<>();
+                for (JsonElement c : o.getAsJsonArray("owned")) {
+                    if (c.isJsonPrimitive() && SkillDefs.get(c.getAsString()) != null) owned.add(c.getAsString());
+                }
+                List<String> old = OWNED.put(uuid, owned);
+                ServerPlayer p = srv.getPlayerList().getPlayer(uuid);
+                if (p != null && !owned.equals(old)) {
+                    net.tierrasfantasticas.tfclient.pad.PadServer.refresh(p, "efectos",
+                            net.tierrasfantasticas.tfclient.pad.PadServer.get(p, "efectos.tab", ""));
+                }
             }
             long at = TFJson.num(o, "at", 0);
             Owned old = CLASSES.get(uuid);
@@ -198,6 +236,7 @@ public final class SkillServer {
         ServerPlayer player = srv.getPlayerList().getPlayer(uuid);
         PASSIVE_START.remove(uuid);
         SELECTED.remove(uuid);
+        BASIC_ON.remove(uuid);
         if (player == null) return;
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
@@ -220,7 +259,7 @@ public final class SkillServer {
         String cls = classOf(player.getUUID());
         SkillDefs.ClassDef def = SkillDefs.get(cls);
         if (def == null || !enabled) {
-            SkillNet.toPlayer(player, new SkillNet.State("", new int[0], new int[0], -1));
+            SkillNet.toPlayer(player, new SkillNet.State("", new int[0], new int[0], -1, false));
             return;
         }
         List<SkillDefs.SkillDef> actives = def.actives();
@@ -233,7 +272,7 @@ public final class SkillServer {
             left[i] = until == null ? 0 : (int) Math.max(0, until - SkillRuntime.clock);
         }
         Integer sel = SELECTED.get(player.getUUID());
-        SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total, sel == null ? -1 : sel));
+        SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total, sel == null ? -1 : sel, BASIC_ON.contains(player.getUUID())));
     }
 
     private static int cooldownTicks(SkillDefs.SkillDef s) {
@@ -242,16 +281,19 @@ public final class SkillServer {
 
     // ------------------------------------------------------------------------------------------- lanzar
 
-    /** Eligió la skill «slot» de su barra (teclas 5-0) o ninguna (-1): aún no se lanza. */
-    static void select(ServerPlayer player, int slot) {
+    /**
+     * Eligió la skill «slot» de su barra (teclas 5-0) o ninguna (-1): aún no se lanza. basic: tiene puesto su ataque
+     * básico (se queda elegido; las demás skills se usan una vez y se vuelve a él).
+     */
+    static void select(ServerPlayer player, int slot, boolean basic) {
         SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
+        UUID uuid = player.getUUID();
+        if (basic && def != null && def.basicSlot() >= 0) BASIC_ON.add(uuid);
+        else BASIC_ON.remove(uuid);
         if (def == null || slot < 0 || slot >= def.actives().size()) {
-            SELECTED.remove(player.getUUID());
+            SELECTED.remove(uuid);
         } else {
-            Map<String, Long> cd = COOLDOWN.get(player.getUUID());
-            Long until = cd == null ? null : cd.get(def.actives().get(slot).id());
-            if (until != null && until > SkillRuntime.clock) SELECTED.remove(player.getUUID()); // aún no está lista
-            else SELECTED.put(player.getUUID(), slot);
+            SELECTED.put(uuid, slot);
         }
         sync(player);
     }
@@ -262,9 +304,19 @@ public final class SkillServer {
      */
     static boolean useSelected(ServerPlayer player, boolean bow) {
         SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
-        Integer slot = SELECTED.get(player.getUUID());
+        UUID uuid = player.getUUID();
+        Integer slot = SELECTED.get(uuid);
         if (def == null || slot == null || def.bow() != bow) return false;
-        SELECTED.remove(player.getUUID());
+        // Aún no está lista (si es el ataque básico, el clic es un golpe normal y sigue elegido)
+        Map<String, Long> cd = COOLDOWN.get(uuid);
+        Long until = slot < def.actives().size() && cd != null ? cd.get(def.actives().get(slot).id()) : null;
+        if (until != null && until > SkillRuntime.clock) return false;
+        // Después: el ataque básico sigue elegido; cualquier otra se usa una vez y se vuelve al básico (si lo tiene puesto)
+        int basic = def.basicSlot();
+        if (slot != basic) {
+            if (BASIC_ON.contains(uuid) && basic >= 0) SELECTED.put(uuid, basic);
+            else SELECTED.remove(uuid);
+        }
         castSlot(player, slot);
         sync(player);
         return true;
@@ -339,7 +391,8 @@ public final class SkillServer {
         Long until = cd.get(s.id());
         if (until != null && until > SkillRuntime.clock) return;
         try {
-            if (SkillRuntime.cast(player, def, s) && s.cooldown() > 0) cd.put(s.id(), SkillRuntime.clock + cooldownTicks(s));
+            boolean timer = "TIMER".equals(s.passive().type());
+            if (SkillRuntime.cast(player, def, s, timer) && s.cooldown() > 0) cd.put(s.id(), SkillRuntime.clock + cooldownTicks(s));
         } catch (Throwable t) {
             TFClient.LOGGER.debug("TF Skills: error en la pasiva {}", s.id(), t);
         }
@@ -468,6 +521,9 @@ public final class SkillServer {
         SkillModels.forget(uuid);
         NO_FALL.remove(uuid);
         SELECTED.remove(uuid);
+        BASIC_ON.remove(uuid);
+        OWNED.remove(uuid);
+        SkillFx.forget(uuid);
         SkillItems.forget(uuid);
         LAST_POS.remove(uuid);
         MOVED_AT.remove(uuid);
@@ -480,6 +536,7 @@ public final class SkillServer {
             SkillModels.forget(player.getUUID());
             SkillItems.forget(player.getUUID());
             SELECTED.remove(player.getUUID());
+            BASIC_ON.remove(player.getUUID());
             sync(player);
         }
     }

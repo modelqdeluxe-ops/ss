@@ -30,8 +30,10 @@ import org.lwjgl.glfw.GLFW;
  *
  * <p>Las skills van en las teclas 5, 6, 7, 8, 9 y 0 (las de los huecos de la barra que casi nadie usa): con una clase,
  * esas teclas ya no cambian de hueco, sino que <b>eligen</b> la skill (no la lanzan). La elegida sale con el siguiente
- * clic izquierdo (las clases de arco: al soltar una flecha con el arco) y deja de estar elegida. Pulsar otra vez la
- * misma tecla o cambiar de hueco (1-4, rueda) la suelta. Se cambian en Opciones → Controles → «TF Skills».
+ * clic izquierdo (las clases de arco: al soltar una flecha con el arco). El ataque básico de la clase (su combo) se
+ * queda elegido y cada clic lo repite; las demás skills se usan una vez y después se vuelve al básico (si estaba
+ * puesto). Pulsar otra vez la misma tecla la quita; cambiar de hueco (1-4, rueda) lo quita todo. Se cambian en
+ * Opciones → Controles → «TF Skills».
  */
 public final class SkillHud {
     public static final int SLOTS = 6;
@@ -68,6 +70,8 @@ public final class SkillHud {
 
     /** La skill elegida (-1 = ninguna) y el hueco de la barra cuando se eligió (al cambiar de hueco se suelta). */
     static int selected = -1;
+    /** ¿Tiene puesto el ataque básico? (después de usar otra skill se vuelve a él) */
+    static boolean basicOn;
     private static int selectedHotbar = -1;
     /** ¿Estaba pulsado el clic izquierdo al acabar el tick anterior? (mantenerlo picando no lanza skills) */
     private static boolean attackWasDown;
@@ -98,9 +102,9 @@ public final class SkillHud {
             }
             if (pressed) press(mc, i);
         }
-        if (!has && selected >= 0) setSelected(-1);
-        // Cambiar de hueco (1-4, rueda) suelta la skill elegida
-        if (selected >= 0 && mc.player != null && mc.player.getInventory().selected != selectedHotbar) setSelected(-1);
+        if (!has && (selected >= 0 || basicOn)) setSelected(-1, false);
+        // Cambiar de hueco (1-4, rueda) suelta la skill elegida y el ataque básico
+        if ((selected >= 0 || basicOn) && mc.player != null && mc.player.getInventory().selected != selectedHotbar) setSelected(-1, false);
     }
 
     /** Al acabar el tick. */
@@ -112,15 +116,30 @@ public final class SkillHud {
         SkillDefs.ClassDef def = SkillDefs.get(SkillClient.classId);
         List<SkillDefs.SkillDef> actives = def.actives();
         if (i >= actives.size()) return;
-        if (selected == i) { // la misma tecla: suelta
-            setSelected(-1);
+        int basic = def.basicSlot();
+        if (i == basic) { // el ataque básico: se pone o se quita
+            if (basicOn) {
+                setSelected(selected == basic ? -1 : selected, false);
+                mc.gui.setOverlayMessage(Component.literal("Ataque básico quitado: tus clics vuelven a ser golpes normales")
+                        .withStyle(ChatFormatting.GRAY), false);
+                return;
+            }
+            setSelected(basic, true);
+            mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.25F, 1.6F);
+            mc.gui.setOverlayMessage(Component.literal("✦ " + actives.get(i).name() + " ").withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal(def.bow() ? "— cada flecha que dispares" : "— cada clic izquierdo").withStyle(ChatFormatting.GRAY)),
+                    false);
+            return;
+        }
+        if (selected == i) { // la misma tecla: la quita (vuelve al básico si está puesto)
+            setSelected(basicOn ? basic : -1, basicOn);
             return;
         }
         if (i < SkillClient.left.length && SkillClient.left[i] > 0) {
             if (i < SkillClient.denied.length) SkillClient.denied[i] = SkillClient.clientTicks;
             return;
         }
-        setSelected(i);
+        setSelected(i, basicOn);
         mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.25F, 1.6F);
         SkillDefs.SkillDef s = actives.get(i);
         mc.gui.setOverlayMessage(Component.literal("✦ " + s.name() + " ").withStyle(ChatFormatting.GOLD)
@@ -128,18 +147,20 @@ public final class SkillHud {
                 false);
     }
 
-    private static void setSelected(int i) {
+    private static void setSelected(int i, boolean basic) {
         Minecraft mc = Minecraft.getInstance();
         selected = i;
+        basicOn = basic;
         selectedHotbar = mc.player == null ? -1 : mc.player.getInventory().selected;
-        SkillNet.CHANNEL.sendToServer(new SkillNet.Select(i));
+        SkillNet.CHANNEL.sendToServer(new SkillNet.Select(i, basic));
     }
 
     /** Lo que diga el servidor (al lanzarse o si no estaba lista). */
-    static void serverSelected(int i) {
+    static void serverSelected(int i, boolean basic) {
         selected = i;
+        basicOn = basic;
         Minecraft mc = Minecraft.getInstance();
-        if (i >= 0 && mc.player != null) selectedHotbar = mc.player.getInventory().selected;
+        if ((i >= 0 || basic) && mc.player != null) selectedHotbar = mc.player.getInventory().selected;
     }
 
     /**
@@ -151,7 +172,9 @@ public final class SkillHud {
         if (!hasClass(mc) || attackWasDown) return;
         SkillDefs.ClassDef def = SkillDefs.get(SkillClient.classId);
         if (selected >= 0 && !def.bow() && (selected >= SkillClient.left.length || SkillClient.left[selected] <= 0)) {
-            selected = -1;
+            // Como hará el servidor: el básico sigue elegido; otra skill se usa una vez y se vuelve al básico
+            int basic = def.basicSlot();
+            if (selected != basic) selected = basicOn && basic >= 0 ? basic : -1;
             SkillNet.CHANNEL.sendToServer(new SkillNet.Use());
         } else {
             SkillNet.CHANNEL.sendToServer(new SkillNet.Swing());
@@ -182,10 +205,11 @@ public final class SkillHud {
             int total = Math.max(1, SkillClient.total.length > i ? SkillClient.total[i] : 1);
             boolean ready = left <= 0;
             boolean sel = selected == i;
+            boolean basicMark = basicOn && i == def.basicSlot();
             boolean flash = i < SkillClient.denied.length && SkillClient.clientTicks - SkillClient.denied[i] < 6;
             if (sel) y -= 2;
             // Marco: dorado y brillante si está elegida, claro si está lista, apagado si no, rojo si se pulsó sin estar lista
-            int border = flash ? 0xFFE0524A : sel ? 0xFFFFD54A : ready ? 0xFFB8A57A : 0xFF4A4438;
+            int border = flash ? 0xFFE0524A : sel ? 0xFFFFD54A : basicMark ? 0xFF7FD3FF : ready ? 0xFFB8A57A : 0xFF4A4438;
             g.fill(x - 1, y - 1, x + SIZE + 1, y + SIZE + 1, border);
             g.fill(x, y, x + SIZE, y + SIZE, 0xC0101014);
             if (sel) {

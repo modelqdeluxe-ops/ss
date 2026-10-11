@@ -399,6 +399,12 @@ def compile_pack(pack_dir, shared=None):
                 if ab['skill'] and ab['skill'] not in order:
                     order.append(ab['skill'])
         order += [k for k in inv['skills'] if k not in order]
+    # El ataque básico del arma (clic izquierdo) aunque la clase de MMOCore no lo liste (Filo del Vacío: su tajo de
+    # katana, al que la Bendición Dimensional convierte en cortes dimensionales), el primero
+    for w in reversed(inv['weapons']):
+        for ab in w['abilities']:
+            if ab.get('mode') == 'LEFT_CLICK' and ab['skill'] and ab['skill'] not in order and ab['skill'] in inv['skills']:
+                order.insert(0, ab['skill'])
     out_skills = []
     for sid in order:
         s = inv['skills'].get(sid)
