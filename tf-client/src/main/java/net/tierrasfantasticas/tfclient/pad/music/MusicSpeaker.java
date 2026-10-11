@@ -107,10 +107,10 @@ public final class MusicSpeaker {
         boolean on = !MusicLibrary.speaker();
         MusicLibrary.setSpeaker(on);
         publish();
-        if (!on) return "Altavoz apagado: solo lo oyes tú.";
+        if (!on) return "Altavoz apagado";
         MusicLibrary.Track t = MusicPlayer.current();
-        if (t != null && t.url().isBlank()) return "Altavoz encendido, pero esta canción no vino de un link: los demás no la pueden bajar.";
-        return "Altavoz encendido: los que estén a menos de " + RANGE + " bloques oyen tu música.";
+        if (t != null && t.url().isBlank()) return "Altavoz encendido · esta canción no la pueden oír los demás";
+        return "Altavoz encendido · te oyen a " + RANGE + " bloques";
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ public final class MusicSpeaker {
             Path part = file.resolveSibling(file.getFileName() + ".part");
             try {
                 Files.createDirectories(file.getParent());
-                MusicDownloader.fetch(new MusicDownloader.Job(h.url, false), h.url, part, MusicDownloader.MAX_AUDIO, true, true);
+                MusicDownloader.fetch(new MusicDownloader.Job(h.url, false, ""), h.url, part, MusicDownloader.MAX_AUDIO, true, true);
                 if (AudioDecoder.AudioFormatSniffer.sniff(part) != AudioDecoder.Kind.UNKNOWN) {
                     Files.move(part, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                     ok = true;

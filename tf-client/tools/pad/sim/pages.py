@@ -387,10 +387,24 @@ REPEAT = ["..######.", ".#.....##", "#......#.", "#.......#", ".#......#", "##..
 SPEAKER = ["...#.....", "..##..#..", "####...#.", "####.#.#.", "####...#.", "..##..#..", "...#....."]
 IMAGE = ["#########", "#.......#", "#.##..#.#", "#.##.###.", "#..#####.", "#.#######", "#########"]
 CROSS = ["#...#", ".#.#.", "..#..", ".#.#.", "#...#"]
+CROSS8 = ["##....##", "###..###", ".######.", "..####..", "..####..", ".######.", "###..###", "##....##"]
+PLUS8 = ["...##...", "...##...", "...##...", "########", "########", "...##...", "...##...", "...##..."]
+MINUS8 = ["........", "........", "........", "########", "########", "........", "........", "........"]
+CHECK8 = ["......##", ".....###", "#....##.", "##..###.", "###.##..", ".####...", "..###...", "...#...."]
+ARROW_LEFT = ["....#", "...##", "..###", ".####", "#####", ".####", "..###", "...##", "....#"]
+ARROW_RIGHT = ["#....", "##...", "###..", "####.", "#####", "####.", "###..", "##...", "#...."]
+
+
+def glyph_at(s, rows, x, y, c):
+    for gy, row in enumerate(rows):
+        for gx, ch in enumerate(row):
+            if ch == '#':
+                s.fill(x + gx, y + gy, x + gx + 1, y + gy + 1, c)
 LAV, GOLDC, GL, GREENC = rgb(0xB8C2F0), rgb(0xF6B628), rgb(0xFFEC96), rgb(0x7CF0B0)
 
 
-def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, sure=False, sel_list=0, vol_hover=False):
+def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, sure=False, sel_list=0, vol_hover=False,
+               lists=('FAVORITAS', 'CAMINO'), tab_first=0, picking=False, in_list=(), hover_btn=False):
     s = Sim()
     s.status('MÚSICA', music=playing is not None)
     local = Local(s)
@@ -531,42 +545,83 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
     top = Y + 14
     bottom = Y + H - 19 - (24 if job else 0)
     s.panel(lx, top, lw, bottom - top)
-    # pestañas: TODAS, las playlists y + (PadMusicPage.drawListTabs)
-    tx, chosen = lx + 4, None
-    for i, label in enumerate(['TODAS', 'FAVORITAS', 'CAMINO']):
-        w = s.pwidth(label) + 12 + (9 if i == sel_list and i > 0 else 0)
-        if i == sel_list:
-            chosen = (tx, w, label)
+    # pestañas (PadMusicPage.drawListTabs): TODAS, las que quepan, y a la derecha ‹ › (si no caben) y +
+    INK = (24, 38, 92)
+    gap, plus, arrow = 2, 18, 13
+    todas_w = s.pwidth('TODAS') + 12
+    names = [s.pfit(n.upper(), 58) for n in lists]
+    widths = [s.pwidth(n) + 12 + (10 if i + 1 == sel_list else 0) for i, n in enumerate(names)]
+    strip_x = lx + 4 + todas_w + gap
+    end = lx + lw - 4 - plus
+    paged = strip_x + sum(w + gap for w in widths) > end - gap
+    strip_end = end - gap - 2 * arrow - gap * 2 if paged else end - gap
+    last, xx = tab_first - 1, strip_x
+    for i in range(tab_first, len(widths)):
+        if xx + widths[i] > strip_end:
+            break
+        xx += widths[i] + gap
+        last = i
+    chosen = None
+    tx = lx + 4
+    for i in range(-1, len(names)):
+        if i >= 0 and (i < tab_first or i > last):
+            continue
+        label = 'TODAS' if i < 0 else names[i]
+        w = todas_w if i < 0 else widths[i]
+        if i + 1 == sel_list:
+            chosen = (tx, w, label, i >= 0)
         else:
             s.tab(tx, Y, w, label, 0)
-        tx += w + 2
-    if sel_list == 0:
-        s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
-    else:  # 1.3.38: el nombre a la izquierda y la X detrás, con su hueco
-        s.tab(chosen[0], Y, chosen[1], '', 2)
-        s.ptext(chosen[2], chosen[0] + 6, Y + 4, NAVY, False)
-        bx = chosen[0] + chosen[1] - 11
-        for gy, row in enumerate(CROSS):
-            for gx, ch in enumerate(row):
-                if ch == '#':
-                    s.fill(bx + gx, Y + 6 + gy, bx + gx + 1, Y + 7 + gy, rgb(0xC8323C))
-    s.tab(tx, Y, s.pwidth('+') + 12, '+', 0)
-    s.scissor(lx + 2, top + 4, lw - 4, bottom - top - 8)
-    ry = top + 4
-    def small_btn(bx, by, glyph, col):
-        s.box(bx, by, 14, 14, col + (64,))
-        s.box(bx + 1, by + 1, 12, 12, (255, 255, 255, 240))
-        for gy, row in enumerate(glyph):
-            for gx, ch in enumerate(row):
-                if ch == '#':
-                    s.fill(bx + 7 - len(row) // 2 + gx, by + 7 - len(glyph) // 2 + gy, bx + 8 - len(row) // 2 + gx,
-                           by + 8 - len(glyph) // 2 + gy, col)
+        tx = strip_x if i < 0 else tx + w + gap
+    if chosen:
+        if not chosen[3]:
+            s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+        else:
+            s.tab(chosen[0], Y, chosen[1], '', 2)
+            s.ptext(chosen[2], chosen[0] + 6, Y + 4, NAVY, False)
+            glyph_at(s, CROSS, chosen[0] + chosen[1] - 12 + 2, Y + 3 + 2, rgb(0xC8323C))
+
+    def arrow_btn(ax, ay, g, enabled):
+        s.box(ax, ay, 13, 13, rgb(0x6A88B8) if enabled else rgb(0xB4C6DE))
+        grad(s, ax + 1, ay + 1, 11, 11, rgb(0xE8F2FC), rgb(0xC8DCF0))
+        glyph_at(s, g, ax + (13 - len(g[0])) // 2, ay + (13 - len(g)) // 2, rgb(0x34507E) if enabled else rgb(0xA4B6D0))
+    if paged:
+        ax = end - gap - 2 * arrow - gap
+        arrow_btn(ax, Y + 1, ARROW_LEFT, tab_first > 0)
+        arrow_btn(ax + arrow + gap, Y + 1, ARROW_RIGHT, last < len(names) - 1)
+    s.tab(end, Y, plus, '', 0)
+    glyph_at(s, PLUS8, end + (plus - 8) // 2, Y + 5, rgb(0x34507E))
+    rows_top = top + 4
+    if sel_list > 0:  # cabecera de la playlist: cuántas lleva y ELEGIR CANCIONES / LISTO
+        label = 'LISTO' if picking else 'ELEGIR CANCIONES'
+        bw = s.bw(label)
+        bx = lx + lw - 6 - bw
+        info = ('Marca las que van en «%s»' % lists[sel_list - 1]) if picking else '%d canciones' % len(tracks)
+        s.mtext(s.fitend(info, bx - lx - 14), lx + 8, top + 8, rgb(0xC27A10) if picking else rgb(0x4A6694))
+        s.button(bx, top + 4, bw, label, 1 if picking else 3, True, hover_btn)
+        s.fill(lx + 6, top + 20, lx + lw - 6, top + 21, rgb(0xC8E4F8))
+        rows_top = top + 22
+    s.scissor(lx + 2, rows_top, lw - 4, bottom - rows_top - 4)
+    ry = rows_top
+
+    def small_btn(bx, by, glyph, col, full):
+        """PadMusicPage.rowButton: 14x14 redondeado, borde de su color, dibujo de 8x8 justo en el centro."""
+        edge = tuple(round(c * 0.72) for c in col)
+        s.box(bx, by, 14, 14, edge)
+        if full:
+            grad(s, bx + 1, by + 1, 12, 12, tuple(round(c + (255 - c) * 0.28) for c in col), col)
+            s.fill(bx + 2, by + 1, bx + 12, by + 2, (255, 255, 255, 102))
+        else:
+            grad(s, bx + 1, by + 1, 12, 12, (255, 255, 255), tuple(round(c + (255 - c) * 0.82) for c in col))
+        s.fill(bx + 2, by + 12, bx + 12, by + 13, (0, 0, 0, 85 if full else 51))
+        glyph_at(s, glyph, bx + (14 - len(glyph[0])) // 2, by + (14 - len(glyph)) // 2, (255, 255, 255) if full else col)
 
     for ti, tr in enumerate(tracks):
         x0, w0 = lx + 5, lw - 14
-        cur = playing and tr['title'] == playing['title']
+        cur = playing and tr['title'] == playing['title'] and not picking
         hv = ti == hover_row
-        if cur or hv:
+        inl = picking and ti in in_list
+        if cur or hv or inl:
             s.ucard(x0, ry, w0, 29, 2 if cur else 1)
         else:
             s.fill(x0 + 3, ry + 29, x0 + w0 - 3, ry + 30, rgb(0xC8E4F8))
@@ -576,27 +631,26 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
             grad(s, x0 + 5, ry + 3, 24, 24, tr.get('color', rgb(0x5A6AD0)), rgb(0x1D2550))
             with s.big_at(x0 + 5 + 12 - 8, ry + 3 + 4, px=0.5 * s.cs):
                 s.blit('icon_musica', 0, 0)
-        INK = (24, 38, 92)
         s.fill(x0 + 4, ry + 2, x0 + 30, ry + 3, INK); s.fill(x0 + 4, ry + 27, x0 + 30, ry + 28, INK)
         s.fill(x0 + 4, ry + 2, x0 + 5, ry + 28, INK); s.fill(x0 + 29, ry + 2, x0 + 30, ry + 28, INK)
         tx = x0 + 35
         dur = tr['dur']
         right = x0 + w0 - 6
-        if hv:  # 1.3.38: de derecha a izquierda, cada uno en su sitio: [X o ¿BORRAR?] [+] duración / [−] duración
-            by = ry + (29 - 14) // 2
+        by = ry + (29 - 14) // 2
+        if picking:
+            small_btn(right - 14, by, CHECK8 if inl else PLUS8, rgb(0x1E9E46), inl or hv)
+            right -= 20
+        elif hv:
             if sel_list > 0:
-                small_btn(right - 14, by, [".....", ".....", "#####", ".....", "....."], rgb(0x3496FA))
-                right -= 19
+                small_btn(right - 14, by, MINUS8, rgb(0x3496FA), hover_btn)
+                right -= 20
+            elif sure:
+                dw = s.bw('¿BORRAR?')
+                s.button(right - dw, ry + (29 - 16) // 2, dw, '¿BORRAR?', 2)
+                right -= dw + 6
             else:
-                if sure:
-                    dw = s.bw('¿BORRAR?')
-                    s.button(right - dw, ry + (29 - 16) // 2, dw, '¿BORRAR?', 2)
-                    right -= dw + 5
-                else:
-                    small_btn(right - 14, by, CROSS, rgb(0xE83446))
-                    right -= 18
-                small_btn(right - 14, by, ["..#..", "..#..", "#####", "..#..", "..#.."], rgb(0x1E9E46))
-                right -= 19
+                small_btn(right - 14, by, CROSS8, rgb(0xE83446), hover_btn)
+                right -= 20
         s.mtext(dur, right - s.mwidth(dur), ry + 10, rgb(0x4A6694))
         right -= s.mwidth(dur) + 6
         ttx = tx
@@ -641,7 +695,10 @@ music_page('p_musica', lib, playing=song, job='Descargando… 62%')
 music_page('p_musica_vacia', [], empty=True)
 music_page('p_musica_fila', lib, playing=song, hover_row=1, vol_hover=True)
 music_page('p_musica_borrar', lib, playing=song, hover_row=2, sure=True)
-music_page('p_musica_lista', lib, playing=song, hover_row=1, sel_list=1)
+music_page('p_musica_lista', lib[:2], playing=song, hover_row=1, sel_list=1)
+music_page('p_musica_elegir', lib, playing=song, hover_row=2, sel_list=1, picking=True, in_list=(0, 1))
+many = ('Favoritas', 'Supe', 'Dad', 'Para correr', 'Lofi noche', 'Jefes', 'Dw', 'Taberna')
+music_page('p_musica_muchas', lib, playing=song, sel_list=4, lists=many, tab_first=2, hover_row=0, hover_btn=True)
 
 
 # ---------------------------------------------------------------------------------------------------------------------

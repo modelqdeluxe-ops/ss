@@ -13,8 +13,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'main', 'resources', 'assets', 'tfclient')
 GUI = ROOT + '/textures/gui'
-FONT = ROOT + '/font/cinzel.ttf'
-ASC, DESC, UPEM = 976, -372, 1000
+FONT = ROOT + '/font/newrocker.ttf'  # la letra de los botones del menú principal (TFMenuButton.MENU_FONT)
+ASC, DESC, UPEM = 946, -283, 1000
 
 
 # ------------------------------------------------------------------------------------------------ lienzo (framebuffer)
@@ -379,12 +379,13 @@ import json
 
 PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
 GAP = 3          # entre icono y texto (interfaz)
-TEXT_UP = 3.5    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Cinzel)
+TEXT_UP = 4.0    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de New Rocker)
 INK, INK_HOT, OUTLINE = 0xFFF3DC, 0xFFFFFF, 0x140A04
 MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
-WIDEN = [1.25, 1.25, 1.25, 1.4, 1.4, 1.5, 1.5, 1.5]
+ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
+SPAN = 1.42  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
 K_MAX, LOGO_MIN, BOTTOM_MARGIN = 0.15, 80, 6
-CAP_HEIGHT, CAP_FILL, INTERIOR = 5.3, 0.56, 0.7
+CAP_HEIGHT, CAP_FILL, INTERIOR = 6.0, 0.56, 0.7
 LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
 _menu = {}
 
@@ -585,7 +586,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
 
 GOLD = [0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E]
 GOLD_OUTLINE = 0x2A1204
-GOLD_TOP, GOLD_BOTTOM = -0.2, 5.4
+GOLD_TOP, GOLD_BOTTOM = -0.4, 6.2
 
 
 def gold(t, e):
@@ -674,8 +675,14 @@ def layout(w, h):
     comp = d['composition']
     ctop, cbot, cen = comp['top'], comp['bottom'], comp['center']
     comp_h = cbot - ctop
-    half_w = max(max(cen - d['plates'][n]['layout'][0], d['plates'][n]['layout'][2] - cen) * WIDEN[i]
-                 for i, n in enumerate(MAIN))
+    L = [d['plates'][n]['layout'] for n in MAIN]
+    widen = [1.0] * len(MAIN)
+    tf_span = L[0][2] - L[0][0]
+    for row in ROWS:
+        span = max(L[i][2] for i in row) - min(L[i][0] for i in row)
+        for i in row:
+            widen[i] = tf_span * SPAN / span
+    half_w = max(max(cen - L[i][0], L[i][2] - cen) * widen[i] for i in range(len(MAIN)))
     k = min(K_MAX, (h - BOTTOM_MARGIN - LOGO_MIN - 6) / comp_h)
     k = min(k, (w / 2 - 10) / half_w)
     free = h - BOTTOM_MARGIN - comp_h * k
@@ -684,8 +691,8 @@ def layout(w, h):
     rects = []
     for i, n in enumerate(MAIN):
         l = d['plates'][n]['layout']
-        x0 = round(cx + (l[0] - cen) * k * WIDEN[i])
-        x1 = round(cx + (l[2] - cen) * k * WIDEN[i])
+        x0 = round(cx + (l[0] - cen) * k * widen[i])
+        x1 = round(cx + (l[2] - cen) * k * widen[i])
         y0 = round(top + (l[1] - ctop) * k)
         y1 = round(top + (l[3] - ctop) * k)
         rects.append((x0, y0, x1 - x0, y1 - y0))

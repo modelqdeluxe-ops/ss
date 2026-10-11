@@ -34,7 +34,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * <ul>
  *   <li>APPS: qué apps salen en el pad de los jugadores.</li>
  *   <li>AJUSTES: los de pad.json (esperas de viajes, explorar, hogares sin rango, envíos, regalos, GTS) y RECARGAR.</li>
- *   <li>TIENDA: categorías y objetos (desde tu mano): precio de compra y de venta por lote, cantidad, límites diarios.
+ *   <li>TIENDA: categorías y objetos (desde tu mano): unidades por compra, precio de compra y de venta (por esas unidades), límites diarios.
  *       Lo que tiene precio de venta es la lista de lo que la tienda compra.</li>
  *   <li>KITS: se crean con lo que llevas en el inventario; tipo (una vez, diario, semanal, cada X horas), monedas e
  *       icono.</li>
@@ -250,9 +250,9 @@ public final class PadAdmin {
     private record ShopField(String key, String label, String help) {}
 
     private static final List<ShopField> SHOP_FIELDS = List.of(
-            new ShopField("comprar", "Precio de compra", "Lo que paga el jugador por un lote. 0 = no se compra."),
-            new ShopField("vender", "Precio de venta", "Lo que la tienda paga por un lote. 0 = no se vende."),
-            new ShopField("cantidad", "Cantidad por lote", "Unidades en cada lote."),
+            new ShopField("comprar", "Precio de compra", "Lo que paga el jugador por esas unidades (Unidades por compra). 0 = no se compra."),
+            new ShopField("vender", "Precio de venta", "Lo que paga la tienda por esas unidades (Unidades por compra). 0 = no se vende."),
+            new ShopField("cantidad", "Unidades por compra", "Se compra y se vende de tantas en tantas (16 = de 16 en 16)."),
             new ShopField("limiteCompraDiario", "Límite de compra al día", "Unidades por jugador. 0 = sin límite."),
             new ShopField("limiteVentaDiario", "Límite de venta al día", "Unidades por jugador. 0 = sin límite."),
             new ShopField("nombre", "Nombre", "Vacío = el del objeto."));

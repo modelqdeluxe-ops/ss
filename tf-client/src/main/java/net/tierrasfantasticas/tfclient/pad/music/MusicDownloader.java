@@ -33,6 +33,8 @@ public final class MusicDownloader {
     public static final class Job {
         public final String url;
         public final boolean cover;
+        /** La playlist donde se mete la canción al acabar ("" = solo a la música). */
+        public final String listId;
         public volatile long done, total = -1;
         public volatile String status = "Conectando…";
         public volatile String error;
@@ -40,9 +42,10 @@ public final class MusicDownloader {
         public volatile boolean finished;
         public final long started = System.currentTimeMillis();
 
-        Job(String url, boolean cover) {
+        Job(String url, boolean cover, String listId) {
             this.url = url;
             this.cover = cover;
+            this.listId = listId == null ? "" : listId;
         }
 
         public float progress() {
@@ -68,11 +71,14 @@ public final class MusicDownloader {
         if (!busy()) job = null;
     }
 
-    /** Empieza a bajar una canción. false si ya hay una descarga en marcha o el link no vale. */
-    public static boolean download(String link) {
+    /**
+     * Empieza a bajar una canción; al acabar se mete también en la playlist listId (si no es ""). false si ya hay una
+     * descarga en marcha o el link no vale.
+     */
+    public static boolean download(String link, String listId) {
         String url = direct(link);
         if (busy() || url == null) return false;
-        Job j = new Job(url, false);
+        Job j = new Job(url, false, listId);
         job = j;
         start(j, () -> downloadSong(j));
         return true;
@@ -82,7 +88,7 @@ public final class MusicDownloader {
     public static boolean downloadCover(MusicLibrary.Track track, String link) {
         String url = direct(link);
         if (busy() || url == null || track == null) return false;
-        Job j = new Job(url, true);
+        Job j = new Job(url, true, "");
         job = j;
         start(j, () -> downloadCoverFor(j, track));
         return true;
@@ -184,6 +190,7 @@ public final class MusicDownloader {
             Files.move(part, dir.resolve(id + ext), StandardCopyOption.REPLACE_EXISTING);
             MusicLibrary.Track t = new MusicLibrary.Track(id, title, tags.artist(), id + ext, cover, duration, j.url, System.currentTimeMillis());
             MusicLibrary.add(t);
+            if (!j.listId.isEmpty()) MusicLibrary.addToList(j.listId, t.id());
             j.result = t;
             j.status = "Guardada";
         } finally {

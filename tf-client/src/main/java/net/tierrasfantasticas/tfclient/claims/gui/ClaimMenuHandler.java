@@ -602,7 +602,7 @@ extends ChestMenu {
                 break;
             }
             case SHOW_BORDER: {
-                s = "Dibuja el contorno de tu protecci\u00f3n (l\u00edneas)";
+                s = "Dibuja el contorno de tu protecci\u00f3n (polvo m\u00e1gico)";
                 break;
             }
             case SHOW_PARTICLES: {

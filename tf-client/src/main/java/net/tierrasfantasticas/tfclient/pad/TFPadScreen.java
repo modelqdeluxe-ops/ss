@@ -88,7 +88,7 @@ public final class TFPadScreen extends Screen {
     private final PadHomePage home;
     private String hovered, hoverNow;
     private String notice;
-    private long noticeUntil;
+    private long noticeUntil, noticeAt;
     private final long openedAt = System.currentTimeMillis();
 
     public TFPadScreen() {
@@ -319,7 +319,9 @@ public final class TFPadScreen extends Screen {
 
     void showNotice(String text) {
         notice = text;
-        noticeUntil = System.currentTimeMillis() + 4500;
+        noticeAt = System.currentTimeMillis();
+        // corto: lo justo para leerlo (de 2 a 3,5 s según lo largo que sea)
+        noticeUntil = noticeAt + Math.max(2000, Math.min(3500, 1200 + text.length() * 30L));
         sound("back", 0.6F);
     }
 
@@ -629,23 +631,35 @@ public final class TFPadScreen extends Screen {
 
     private int musicX = -1000;
 
-    /** Aviso del servidor: tarjeta azul marino con borde de oro, abajo, centrada en la pantalla. */
+    /**
+     * Aviso: una pastilla azul marino con borde de oro justo debajo de la barra de arriba (no tapa los botones de la app),
+     * del ancho del texto. Baja y se enciende al salir, y se apaga sola en 2 a 3,5 s.
+     */
     private void drawNotice(GuiGraphics g) {
         if (notice == null) return;
-        if (System.currentTimeMillis() > noticeUntil) {
+        long now = System.currentTimeMillis();
+        if (now > noticeUntil) {
             notice = null;
             return;
         }
-        int w = Math.min(unitsW - 40, 320);
-        List<FormattedCharSequence> lines = font.split(Component.literal(notice), w - 16);
-        int h = lines.size() * 10 + 8, x = (unitsW - w) / 2, y = unitsH - 8 - h;
+        float in = Math.min(1F, (now - noticeAt) / 140F), out = Math.min(1F, (noticeUntil - now) / 260F);
+        float a = Math.min(in, out);
+        int maxW = Math.min(unitsW - 40, 300);
+        List<FormattedCharSequence> lines = font.split(Component.literal(notice), maxW - 16);
+        int textW = 0;
+        for (FormattedCharSequence line : lines) textW = Math.max(textW, font.width(line));
+        int w = textW + 16, h = lines.size() * 10 + 7, x = (unitsW - w) / 2;
+        int y = bar + 3 - Math.round((1 - in) * 6);
+        int alpha = Math.round(a * 255) << 24;
+        if (alpha >>> 24 < 8) return;
         g.pose().pushPose();
         g.pose().translate(0, 0, 300);
-        PadUi.box(g, x, y, w, h, 0xFFB8741A);
-        PadUi.box(g, x + 1, y + 1, w - 2, h - 2, NAVY);
-        int ty = y + 5;
+        PadUi.box(g, x, y, w, h, (alpha & 0xFF000000) | 0xB8741A);
+        PadUi.box(g, x + 1, y + 1, w - 2, h - 2, (alpha & 0xFF000000) | (NAVY & 0xFFFFFF));
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, (Math.round(a * 0x66) << 24) | 0xFFE9A8);
+        int ty = y + 4;
         for (FormattedCharSequence line : lines) {
-            g.drawString(font, line, x + (w - font.width(line)) / 2, ty, 0xFFFFE9A8, false);
+            g.drawString(font, line, x + (w - font.width(line)) / 2, ty, (alpha & 0xFF000000) | 0xFFE9A8, false);
             ty += 10;
         }
         g.pose().popPose();

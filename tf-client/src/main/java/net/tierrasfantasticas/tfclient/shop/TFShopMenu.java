@@ -160,7 +160,7 @@ public final class TFShopMenu extends ChestMenu {
         if (!e.name().isBlank()) icon.name(Component.literal(TFShop.colors(e.name())).withStyle(Style.EMPTY.withItalic(false)));
         for (String line : e.lore()) icon.text(TFShop.colors(line), ChatFormatting.GRAY);
         if (!e.lore().isEmpty()) icon.blank();
-        String lot = e.amount() > 1 ? " (" + e.amount() + " u.)" : "";
+        String lot = e.amount() > 1 ? " por " + e.amount() + " unidades" : " la unidad";
         if (e.buyable()) {
             icon.line(Component.literal("Comprar: ").withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(TFEconomy.format(e.buy()) + lot).withStyle(ChatFormatting.GREEN)));
@@ -181,10 +181,15 @@ public final class TFShopMenu extends ChestMenu {
         icon.blank();
         if (e.buyable()) icon.line("Clic izquierdo: comprar", ChatFormatting.YELLOW);
         if (e.sellable()) {
-            icon.line("Clic derecho: vender " + (e.amount() > 1 ? "un lote" : "uno"), ChatFormatting.YELLOW);
+            icon.line("Clic derecho: vender " + (e.amount() > 1 ? e.amount() + " unidades" : "una unidad"), ChatFormatting.YELLOW);
             icon.line("Mayús + clic derecho: vender todo", ChatFormatting.YELLOW);
         }
         return icon.build();
+    }
+
+    /** «1 unidad», «16 unidades»: la tienda siempre habla en unidades. */
+    private static String units(long n) {
+        return n + (n == 1 ? " unidad" : " unidades");
     }
 
     private static void openAmount(ServerPlayer player, Category c, int page, Entry e) {
@@ -205,19 +210,20 @@ public final class TFShopMenu extends ChestMenu {
         // Restar (rojo) a la izquierda y sumar (verde) a la derecha del objeto
         for (int i = 0; i < steps.size(); i++) {
             int step = steps.get(i);
-            set(21 - i, TFIcon.of(Items.RED_STAINED_GLASS_PANE).count(Math.min(64, step)).name("−" + step, ChatFormatting.RED).build(),
+            long stepUnits = (long) step * e.amount();
+            set(21 - i, TFIcon.of(Items.RED_STAINED_GLASS_PANE).count((int) Math.min(64, stepUnits)).name("−" + units(stepUnits), ChatFormatting.RED).build(),
                     (pl, t, b) -> fillAmount(pl, c, page, e, n - step));
-            set(23 + i, TFIcon.of(Items.LIME_STAINED_GLASS_PANE).count(Math.min(64, step)).name("+" + step, ChatFormatting.GREEN).build(),
+            set(23 + i, TFIcon.of(Items.LIME_STAINED_GLASS_PANE).count((int) Math.min(64, stepUnits)).name("+" + units(stepUnits), ChatFormatting.GREEN).build(),
                     (pl, t, b) -> fillAmount(pl, c, page, e, n + step));
         }
         TFIcon preview = TFIcon.of(e.stack((int) Math.min(64, Math.max(1, units)))).keepOriginal();
         if (!e.name().isBlank()) preview.name(Component.literal(TFShop.colors(e.name())).withStyle(Style.EMPTY.withItalic(false)));
         preview.line(Component.literal("Cantidad: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(units + (e.amount() > 1 ? " (" + n + " lotes)" : "")).withStyle(ChatFormatting.WHITE)));
+                .append(Component.literal(units(units)).withStyle(ChatFormatting.WHITE)));
         preview.line(Component.literal("Total: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(TFEconomy.format(price)).withStyle(ChatFormatting.GOLD)));
         set(22, preview.build(), null);
-        set(40, TFIcon.of(Items.LIME_CONCRETE).name(Component.literal("Comprar " + units + " por " + TFEconomy.format(price))
+        set(40, TFIcon.of(Items.LIME_CONCRETE).name(Component.literal("Comprar " + units(units) + " por " + TFEconomy.format(price))
                         .withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true).withItalic(false)))
                 .line("Clic para pagar", ChatFormatting.YELLOW).build(), (pl, t, b) -> {
                     if (TFShop.buy(pl, e, n)) fillAmount(pl, c, page, e, n);
