@@ -393,42 +393,55 @@ def mix_argb(a, b, t):
 
 
 WHATSAPP, DISCORD = 'whatsapp', 'discord_kind'
-GOLD, GOLD_TEXT, RED, RED_TEXT = 0xE9C46A, 0xFFE3A0, 0xE2556B, 0xFFC9D2
+GOLD_TEXT, RED_TEXT = 0xFFE08A, 0xFFC9D2
 BRAND = {WHATSAPP: 0x25D366, DISCORD: 0x5865F2}
+_plates = {}
+WOOD_CENTER = 0.46  # centro a la vista de la madera, en altos del botón
+
+
+def plate(g, S, gx, gy, gw, index, alpha):
+    """TFMenuButton.plate: placa de menu_buttons_S.png (200S x 20S cada una), CAP de cada lado y el centro cortado."""
+    n = max(1, min(6, S))
+    if n not in _plates:
+        _plates[n] = Image.open(GUI + '/menu_buttons_%d.png' % n).convert('RGBA')
+    tex = _plates[n]
+    tw, h, cap = 200 * n, 20 * n, min(7 * n, gw * n // 2)
+    src = tex.crop((0, index * h, tw, index * h + h))
+    w = gw * n
+    row = Image.new('RGBA', (w, h))
+    row.paste(src.crop((0, 0, cap, h)), (0, 0))
+    mid, done = tw - 2 * cap, 0
+    while done < w - 2 * cap:
+        part = min(mid, w - 2 * cap - done)
+        row.paste(src.crop((cap, 0, cap + part, h)), (cap + done, 0))
+        done += part
+    row.paste(src.crop((tw - cap, 0, tw, h)), (w - cap, 0))
+    if n != S:
+        row = row.resize((gw * S, 20 * S), Image.NEAREST)
+    g.composite(to_float_img(row), gx * S, gy * S, (1, 1, 1, alpha))
 
 
 def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=False, active=True, alpha=1.0, sweep=None):
-    """TFMenuButton: dorado liso (principal) o panel oscuro con borde fino (los demás); iconos solo WhatsApp/Discord."""
-    R = 2 * S
-    T = 1 if S < 4 else 2
+    """TFMenuButton: placas con textura (reposo + iluminada con la opacidad del ratón); iconos solo WhatsApp/Discord."""
     e = ease(hover) if active else 0.0
-    X, Y, W, H = gx * S, gy * S, gw * S, gh * S
-    accent = RED if kind == DANGER else BRAND.get(kind, GOLD)
-
-    if kind == PRIMARY:
-        top = mix_argb(0xFFF3C553, 0xFFFFD46A, e)
-        bot = mix_argb(0xFFDDA437, 0xFFEBB445, e)
-        if pressed:
-            top, bot = mix_argb(top, 0xFFB98322, 0.5), mix_argb(bot, 0xFFB98322, 0.5)
-        round_fill(g, X, Y, W, H, R, T, 0, H, with_alpha(top, alpha), with_alpha(bot, alpha))
-        g.fill(X + R, Y + T, X + W - R, Y + T + max(1, S // 2), argb(0.55 * alpha, 0xFFF3C8))
-        ring = argb(0.95 * alpha, 0x7A4E0E)
-        round_ring(g, X, Y, W, H, R, T, ring, ring)
-        ink = 0x2A1A04
+    primary = kind == PRIMARY
+    if not active:
+        plate(g, S, gx, gy, gw, 7, alpha)
+    elif pressed:
+        plate(g, S, gx, gy, gw, 5 if primary else 2, alpha)
     else:
-        fill = mix_argb(argb(0.74, 0x0A0C14), argb(0.84, 0x171B28), e)
-        if pressed:
-            fill = argb(0.85, 0x05060A)
-        ring = mix_argb(argb(0.22, 0xFFFFFF), argb(0.95, accent), e)
-        round_fill(g, X, Y, W, H, R, T, 0, H, with_alpha(fill, alpha), with_alpha(fill, alpha))
-        round_ring(g, X, Y, W, H, R, T, with_alpha(ring, alpha), with_alpha(ring, alpha))
-        hot = RED_TEXT if kind == DANGER else (0xFFFFFF if kind in BRAND else GOLD_TEXT)
-        ink = mix_rgb(0xE9ECF5, hot, e)
+        plate(g, S, gx, gy, gw, 3 if primary else 0, alpha)
+        if e > 0.01:
+            plate(g, S, gx, gy, gw, 4 if primary else (6 if kind == DANGER else 1), alpha * e)
     if not active:
         ink = 0x7C8299
+    elif primary:
+        ink = mix_rgb(GOLD_TEXT, 0xFFF6D6, e)
+    else:
+        ink = mix_rgb(0xF3EFFF, RED_TEXT if kind == DANGER else GOLD_TEXT, e)
 
     tw = text_width(label, S)
-    maxw = gw - 2 * min(10, gw // 6)
+    maxw = gw - 2 * min(10, gw // 12)
     with_icon = icon is not None and tw + ICON + GAP <= maxw
     group = tw + (ICON + GAP if with_icon else 0)
     scale = max(0.6, maxw / group) if group > maxw else 1.0
@@ -439,12 +452,11 @@ def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=Fal
         n = ICON * S
         iconimg = icon_image(icon, n)
         ix = int(round(gx0 * S))
-        iy = Y + (H - n) // 2
-        g.composite(iconimg, ix, iy, tuple(c / 255.0 for c in rgb3(accent)) + (alpha,))
+        iy = int(round(gy * S + gh * S * WOOD_CENTER - n / 2.0))
+        g.composite(iconimg, ix, iy, tuple(c / 255.0 for c in rgb3(BRAND.get(kind, GOLD_TEXT))) + (alpha,))
         gx0 += ICON + GAP
-    ty = snap(gy + gh / 2.0 - TEXT_UP * scale)
-    if kind != PRIMARY:
-        draw_text(g, label, gx0, ty, S, (0, 0, 0), 0.5 * alpha, off, scale)
+    ty = snap(gy + gh * WOOD_CENTER - TEXT_UP * scale)
+    draw_text(g, label, gx0, ty, S, (0x1A, 0x0E, 0x04), 0.85 * alpha, off, scale)
     draw_text(g, label, gx0, ty, S, rgb3(ink), alpha, 0, scale)
 
 
@@ -493,12 +505,12 @@ def layout(w, h):
     return top, [
         ('Tierras Fantásticas', None, PRIMARY, x, top, 200),
         ('Mundo local', None, SECONDARY, x, top + 24, 200),
-        ('Mods', None, SECONDARY, x, top + 48, 98),
-        ('Web', None, SECONDARY, x + 102, top + 48, 98),
+        ('Mods', None, SECONDARY, x, top + 48, 200),
         ('Opciones', None, SECONDARY, x, top + 72, 98),
         ('Salir', None, DANGER, x + 102, top + 72, 98),
-        ('WhatsApp', 'whatsapp', WHATSAPP, x, top + 96, 98),
-        ('Discord', 'discord', DISCORD, x + 102, top + 96, 98),
+        ('WhatsApp', 'whatsapp', WHATSAPP, x, top + 96, 70),
+        ('Web', None, SECONDARY, x + 74, top + 96, 52),
+        ('Discord', 'discord', DISCORD, x + 130, top + 96, 70),
     ]
 
 
@@ -548,12 +560,13 @@ if __name__ == '__main__':
     scenes = [
         ('1920x1080_escala4', 1920, 1080, 4, None, None, None),
         ('1920x1080_escala3_raton_mundo', 1920, 1080, 3, 1, None, None),
-        ('1920x1080_escala3_raton_whatsapp', 1920, 1080, 3, 6, None, None),
+        ('1920x1080_escala3_raton_whatsapp', 1920, 1080, 3, 5, None, None),
         ('1920x1080_escala2_raton_discord', 1920, 1080, 2, 7, None, None),
+        ('1920x1080_escala3_raton_web', 1920, 1080, 3, 6, None, None),
         ('1280x720_escala3_raton_servidor', 1280, 720, 3, 0, None, None),
         ('1280x720_escala2', 1280, 720, 2, None, None, None),
-        ('2560x1440_escala4_raton_salir', 2560, 1440, 4, 5, None, None),
-        ('2560x1440_escala3_pulsado_opciones', 2560, 1440, 3, 4, 4, None),
+        ('2560x1440_escala4_raton_salir', 2560, 1440, 4, 4, None, None),
+        ('2560x1440_escala3_pulsado_opciones', 2560, 1440, 3, 3, 3, None),
     ]
     only = sys.argv[2] if len(sys.argv) > 2 else None
     for name, fw, fh, S, hv, pr, sw in scenes:
