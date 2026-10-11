@@ -19,7 +19,6 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.client.TFDraw;
 import net.tierrasfantasticas.tfclient.client.TFLogoRenderer;
 import net.tierrasfantasticas.tfclient.client.TFMenuButton;
-import net.tierrasfantasticas.tfclient.client.TFMenuIcons;
 import net.tierrasfantasticas.tfclient.client.TFTextures;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,8 +30,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Menú principal de TF: el paisaje de fondo en lugar del panorama, el emblema TF encima de los botones y los botones
- * con el diseño de TF (TFMenuButton: el del servidor de oro; Mundo local, Mods, Opciones, Salir, Web y Discord de
- * cristal, cada uno con su icono). El orden de Tab es el de arriba abajo. Sin textos de Mojang, versión,
+ * con el diseño de TF (TFMenuButton: el del servidor dorado; los demás, paneles oscuros; solo WhatsApp y Discord con
+ * icono). El orden de Tab es el de arriba abajo. Sin textos de Mojang, versión,
  * Realms, idioma ni accesibilidad (idioma y accesibilidad siguen en Opciones).
  *
  * Importante: sin lambdas ni referencias a métodos aquí (van en TFMenuButton); en un mixin pueden generar métodos que
@@ -45,10 +44,6 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Unique
     private static final int BUTTON_SHIFT = 12;
-    /** Espacio entre los tres botones grandes y las dos filas de abajo (entre botones hay 4). */
-    @Unique
-    private static final int GROUP_GAP = 10;
-
     @Unique
     private int tfclient$buttonsTop = -1;
 
@@ -141,19 +136,20 @@ public abstract class TitleScreenMixin extends Screen {
             this.removeWidget(child);
         }
 
-        // Tres grandes (servidor, mundo local, mods) y debajo, separados un poco más, dos filas de dos
-        int row = top + 72 + GROUP_GAP;
+        // Servidor y mundo local a lo ancho; debajo, filas de dos: Mods y Web, Opciones y Salir, WhatsApp y Discord
+        // (solo esos dos con icono, el de su marca)
         this.addRenderableWidget(TFMenuButton.server(x, top, 200));
-        this.tfclient$swap(singleplayer, x, top + 24, 200, "Mundo local", TFMenuIcons.Icon.WORLD, TFMenuButton.Kind.SECONDARY);
-        if (mods != null) this.tfclient$swap(mods, x, top + 48, 200, "Mods", TFMenuIcons.Icon.MODS, TFMenuButton.Kind.SECONDARY);
-        if (options != null) this.tfclient$swap(options, x, row, 98, "Opciones", TFMenuIcons.Icon.OPTIONS, TFMenuButton.Kind.SECONDARY);
-        if (quit != null) this.tfclient$swap(quit, x + 102, row, 98, "Salir", TFMenuIcons.Icon.QUIT, TFMenuButton.Kind.DANGER);
-        this.addRenderableWidget(TFMenuButton.web(x, row + 24, 98));
-        this.addRenderableWidget(TFMenuButton.discord(x + 102, row + 24, 98));
+        this.tfclient$swap(singleplayer, x, top + 24, 200, "Mundo local", null, TFMenuButton.Kind.SECONDARY);
+        if (mods != null) this.tfclient$swap(mods, x, top + 48, 98, "Mods", null, TFMenuButton.Kind.SECONDARY);
+        this.addRenderableWidget(TFMenuButton.web(mods != null ? x + 102 : x, top + 48, mods != null ? 98 : 200));
+        if (options != null) this.tfclient$swap(options, x, top + 72, 98, "Opciones", null, TFMenuButton.Kind.SECONDARY);
+        if (quit != null) this.tfclient$swap(quit, x + 102, top + 72, 98, "Salir", null, TFMenuButton.Kind.DANGER);
+        this.addRenderableWidget(TFMenuButton.whatsapp(x, top + 96, 98));
+        this.addRenderableWidget(TFMenuButton.discord(x + 102, top + 96, 98));
     }
 
     @Unique
-    private void tfclient$swap(Button original, int x, int y, int width, String text, TFMenuIcons.Icon icon, TFMenuButton.Kind kind) {
+    private void tfclient$swap(Button original, int x, int y, int width, String text, net.tierrasfantasticas.tfclient.client.TFMenuIcons.Icon icon, TFMenuButton.Kind kind) {
         this.removeWidget(original);
         this.addRenderableWidget(TFMenuButton.wrapping(original, x, y, width, text, icon, kind));
     }

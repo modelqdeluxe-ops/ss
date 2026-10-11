@@ -10,6 +10,15 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.41 (11 oct)** — el dueño: «los botones del menú de inicio están horribles, no pongas figuras, solo
+> para WhatsApp y Discord». Botones planos y sobrios (`TFMenuButton`): principal dorado liso con borde fino; los demás,
+> panel oscuro (74 %) con borde fino blanco que al pasar el ratón se vuelve dorado (rojo en Salir); sin degradados de
+> cristal, halos ni destellos. Iconos solo en WhatsApp (verde #25D366) y Discord (#5865F2), en su color.
+> Orden: Tierras Fantásticas · Mundo local · Mods | Web · Opciones | Salir · WhatsApp | Discord. WhatsApp abre
+> `<web>/whatsapp` (la web redirige al grupo, `WHATSAPP_URL`). Simulador al día: `tools/menu_sim.py`.
+> Música del pad: los enlaces que se le dieron (CC0 de OpenGameArt) pasan las comprobaciones de `MusicDownloader`
+> (MP3 MPEG-1 capa III ≥128 kbps, 200 audio/mpeg, <80 MB).
+
 > **TF Client 1.3.40 (11 oct)** — segunda ronda de quejas del dueño (publicado en main; jar en `descargas/`):
 > - **Skills siempre activas**: la skill elegida con 5-0 se queda puesta hasta elegir otra (cada clic la usa cuando
 >   está lista; mientras se recarga, o si no se dan sus condiciones, el clic es un golpe normal que lanza las auras de
@@ -1592,7 +1601,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.40)
+## 5. El mod (TF Client 1.3.41)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
