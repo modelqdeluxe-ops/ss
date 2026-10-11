@@ -170,7 +170,7 @@ def menu(path):
         sprites[name] = s
         body = body_of(s)
         bh = body[3] - body[1]
-        side = TEXT_SIDE.get(name, 0.3) * bh
+        side = TEXT_SIDE.get(name, 0.2) * bh
         sparks, lights = gems_of(s)
         # Faroles: solo los de Tierras Fantásticas, colgados fuera del marco (lo demás que brilla es oro)
         lights = [l for l in lights if name == 'tf' and (l[0] < body[0] - 30 or l[0] > body[2] + 30)]

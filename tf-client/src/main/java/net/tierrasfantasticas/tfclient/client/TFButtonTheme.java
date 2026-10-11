@@ -43,7 +43,7 @@ public final class TFButtonTheme {
         boolean hot = button.active && button.isHoveredOrFocused();
         float e = fade(button, hot);
         drawPlate(g, button.getX(), button.getY(), button.getWidth(), button.getHeight(), e, button.active, 1f);
-        int color = !button.active ? 0xA0A0A0 : TFMenuPaint.lerp(0xFFF5EAD0, 0xFFFFD667, e) & 0xFFFFFF;
+        int color = !button.active ? 0xA0A0A0 : TFMenuPaint.lerp(0xFFF5EAD0, 0xFFFFFFFF, e) & 0xFFFFFF;
         drawLabel(g, button.getMessage(), button.getX(), button.getY(), button.getWidth(), button.getHeight(), color, 1f, true);
         return true;
     }
@@ -62,7 +62,7 @@ public final class TFButtonTheme {
         g.fill(handleX + 1, y + 2, handleX + 7, y + h - 2, hot ? 0xFFFFD667 : 0xFFE2B04A);
         g.fill(handleX + 1, y + 2, handleX + 7, y + 3, 0xFFFFF3C4);
         g.fill(handleX + 1, y + h - 3, handleX + 7, y + h - 2, 0xFF9A6A1C);
-        int color = !slider.active ? 0xA0A0A0 : hot ? 0xFFD667 : 0xF5EAD0;
+        int color = !slider.active ? 0xA0A0A0 : hot ? 0xFFFFFF : 0xF5EAD0;
         drawLabel(g, slider.getMessage(), x, y, w, h, color, 1f, true);
         return true;
     }
