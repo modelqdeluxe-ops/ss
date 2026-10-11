@@ -77,21 +77,62 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     /** Tonos de las etiquetas (0: el que toque por el texto). */
     public static final int TONE_GOLD = 1, TONE_GREEN = 2, TONE_GRAY = 3, TONE_BLUE = 4;
 
-    /**
-     * Dinero para una etiqueta: «¤1.250» (el pad pone la moneda en lugar de «¤»); desde 100.000, corto: «¤250K»,
-     * «¤1,5M». Para lo que se cobra, "+" + money(v).
-     */
     /** Dinero exacto para una etiqueta: «¤1.299.999» (cabeceras de las fichas, monedero, admin: donde se paga o se fija). */
     public static String moneyExact(long v) {
         return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
     }
 
+    /**
+     * Dinero para una etiqueta: «¤1.250» (el pad pone la moneda en lugar de «¤»); desde 100.000, corto: «¤250K»,
+     * «¤1,5M». Para lo que se cobra, "+" + money(v).
+     */
     public static String money(long v) {
         if (v < 100_000) return "¤" + java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
         if (v < 1_000_000) return "¤" + (v / 1000) + "K";
         String m = String.format(java.util.Locale.ROOT, "%.1f", Math.floor(v / 100_000.0) / 10);
         if (m.endsWith(".0")) m = m.substring(0, m.length() - 2);
         return "¤" + m.replace('.', ',') + "M";
+    }
+
+    /**
+     * Número corto (para debajo de una casilla o encima de un objeto): 950, 1,2K, 35K, 1,5M. Redondea hacia abajo
+     * (1.899 → «1,8K»); para lo que falta, que no debe quedarse corto, {@link #shortUp}.
+     */
+    public static String shortNumber(long v) {
+        if (v < 1000) return Long.toString(v);
+        if (v < 10_000) return decimal(Math.floor(v / 100.0) / 10) + "K";
+        if (v < 1_000_000) return (v / 1000) + "K";
+        return decimal(Math.floor(v / 100_000.0) / 10) + "M";
+    }
+
+    /** Como shortNumber pero redondeando hacia arriba (1.801 → «1,9K»): para «Faltan…», que nunca diga de menos. */
+    public static String shortUp(long v) {
+        if (v < 1000) return Long.toString(v);
+        if (v < 10_000) return decimal(Math.ceil(v / 100.0) / 10) + "K";
+        if (v < 1_000_000) {
+            long k = (v + 999) / 1000;
+            return k < 1000 ? k + "K" : "1M";
+        }
+        return decimal(Math.ceil(v / 100_000.0) / 10) + "M";
+    }
+
+    private static String decimal(double d) {
+        String s = String.format(java.util.Locale.ROOT, "%.1f", d);
+        if (s.endsWith(".0")) s = s.substring(0, s.length() - 2);
+        return s.replace('.', ',');
+    }
+
+    /** Un número entero con sus puntos de miles, como el dinero: «1.024». */
+    public static String number(long v) {
+        return java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("es-ES")).format(v);
+    }
+
+    /**
+     * La cantidad que se dibuja encima de un objeto: la de verdad (un montón de la tienda puede ser de 1.024 aunque el
+     * objeto se apile de 64 en 64). Al doble (big) cabe exacta hasta 9.999; al tamaño normal, hasta 999; más, corta.
+     */
+    public static String countLabel(long n, boolean big) {
+        return n < (big ? 10_000 : 1000) ? number(n) : shortNumber(n);
     }
 
     /** Campo de texto: al pulsar Enter (o el botón) se manda la acción con lo escrito. */
@@ -232,7 +273,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         buf.writeVarInt(c);
         for (int i = 0; i < c; i++) {
             Cell cell = cells.get(i);
-            buf.writeItem(wire(cell.icon));
+            writeIcon(buf, cell.icon);
             buf.writeUtf(cut(cell.label, 40), 80);
             buf.writeInt(cell.color);
             buf.writeUtf(cut(cell.action, 120), 128);
@@ -268,7 +309,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         Row hero = buf.readBoolean() ? readRow(buf) : null;
         List<Cell> cells = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) {
-            cells.add(new Cell(buf.readItem(), buf.readUtf(80), buf.readInt(), buf.readUtf(128), buf.readBoolean(), buf.readUtf(80),
+            cells.add(new Cell(readIcon(buf), buf.readUtf(80), buf.readInt(), buf.readUtf(128), buf.readBoolean(), buf.readUtf(80),
                     buf.readFloat(), buf.readUtf(24), buf.readByte()));
         }
         List<Row> rows = new ArrayList<>();
@@ -281,7 +322,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     }
 
     private static void writeRow(FriendlyByteBuf buf, Row r) {
-        buf.writeItem(wire(r.icon));
+        writeIcon(buf, r.icon);
         buf.writeUtf(cut(r.title, 120), 256);
         buf.writeInt(r.color);
         buf.writeVarInt(Math.min(r.lines.size(), 8));
@@ -295,7 +336,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
     }
 
     private static Row readRow(FriendlyByteBuf buf) {
-        ItemStack icon = buf.readItem();
+        ItemStack icon = readIcon(buf);
         String title = buf.readUtf(256);
         int color = buf.readInt();
         List<String> lines = new ArrayList<>();
@@ -325,12 +366,31 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         return s.length() > max ? s.substring(0, max) : s;
     }
 
-    /** La cantidad viaja en un byte: un montón de más de 127 (kits viejos) se manda con 127 para no salir negativo. */
-    private static ItemStack wire(ItemStack s) {
-        if (s == null || s.isEmpty()) return ItemStack.EMPTY;
-        if (s.getCount() <= 127) return s;
-        ItemStack c = s.copy();
-        c.setCount(127);
-        return c;
+    /**
+     * El objeto de una casilla o fila. La cantidad de un ItemStack viaja en un byte, así que el objeto va con 127 como
+     * mucho (para no salir negativo) y detrás va la cantidad de verdad: la tienda manda 128 o 1.024 unidades (o un kit
+     * viejo de 200) y el pad dibuja ese número, no 64 ni 127.
+     */
+    private static void writeIcon(FriendlyByteBuf buf, ItemStack s) {
+        if (s == null || s.isEmpty()) {
+            buf.writeItem(ItemStack.EMPTY);
+            buf.writeVarInt(0);
+            return;
+        }
+        ItemStack w = s;
+        if (s.getCount() > 127) {
+            w = s.copy();
+            w.setCount(127);
+        }
+        buf.writeItem(w);
+        buf.writeVarInt(s.getCount());
+    }
+
+    private static ItemStack readIcon(FriendlyByteBuf buf) {
+        ItemStack s = buf.readItem();
+        int count = buf.readVarInt();
+        // solo se dibuja (nunca va a un inventario): puede llevar más de lo que se apila
+        if (!s.isEmpty() && count > 0) s.setCount(count);
+        return s;
     }
 }

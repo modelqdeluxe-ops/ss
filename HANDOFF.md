@@ -10,6 +10,28 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.51 (11 oct)** — el dueño (con captura): botones solapados, raya/sombra oscura en las letras de
+> Tierras, botones gigantes con texto pequeño, sin simetría, botones que pierden la animación (Discord); partículas de
+> las protecciones desordenadas; en la tienda «128 unidades» con un 64 en el icono.
+> - **Menú** (`TFMenuButton.mainLayout`): filas separadas lo justo para que las gemas no se toquen (`GAPS` 84/86/62/46
+>   en la lámina); cada botón **a la medida de su texto** (+ `PAD` 0,4 del alto a cada lado; `TEXT_SIDE` del json: 0,9 en
+>   Tierras, 1,25 en los azules por las enredaderas) y **simetría en espejo** (`GROUPS`: Opciones = Salir, WhatsApp =
+>   Discord, Web en medio; azules iguales y ≥ 62 % de Tierras); cada fila centrada. Contorno de las letras fino (5 %) y
+>   suave (`OUTLINE_SHADE` 0,55, oro 0,72 del color de la placa), oro más claro abajo. El foco solo enciende el botón con
+>   teclado (`getLastInputType().isKeyboard()`): tras un clic ya no se queda encendido.
+> - **Protecciones** (`ClaimOutlineRenderer`, `MagicDustParticle`): líneas de puntos fijos cada 0,5 bloques alineados
+>   al mundo (rombo de la vara del End, color de la zona avivado `vivid()`), nodo grande cada 2 bloques y una onda de
+>   brillo que recorre la línea; menos densidad lejos (≤12 cada 0,5, ≤22 cada 1, ≤32 solo nodos). A ≤5 bloques de un
+>   lado: **flechas «┘» de 7 bloquecitos que bajan en diagonal** (0,05 bloque/tick hacia delante y hacia abajo) en una
+>   rejilla fija del mundo, parpadeo común de 14 ticks, más vivas cuanto más cerca. Tandas cada 8 ticks; tope ~1.750
+>   motas vivas en el peor caso. Solo sprites glitter; nunca una mota sin sprite.
+> - **Tienda** (auditoría completa): el número del icono es el real (128, 1.024; el pad manda la cantidad aparte del
+>   ItemStack: `PadView.writeIcon/readIcon`); «Faltan N» exacto hasta 9.999 y redondeado hacia arriba después; precios
+>   exactos hasta 9.999.999; límite diario en unidades reales y por delante del dinero; venta con «Faltan N» y
+>   «LÍMITE DE HOY»; «Puedes ganar» igual que VENDER TODO; campo OTRA CANTIDAD acepta «1.024» y explica el error;
+>   mensajes nuevos (`limiteCompraQueda`, «te faltan …», `{unidades}`), singular/plural, puntos de miles; tienda de cofre
+>   con el permiso de categoría y sus textos (parece sin uso, arreglada igual). Sim del pad al día.
+
 > **TF Client 1.3.50 (11 oct)** — **crash arreglado**: `MagicDustParticle.refreshSprites` usaba
 > `Minecraft.getTextureAtlas(LOCATION_PARTICLES)` y el atlas de partículas no está en el ModelManager (NPE en
 > `AtlasSet` al entrar al mundo con contorno de protección). Ahora lo pide al TextureManager (`TextureAtlas.getSprite`),
@@ -1700,7 +1722,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.50)
+## 5. El mod (TF Client 1.3.51)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

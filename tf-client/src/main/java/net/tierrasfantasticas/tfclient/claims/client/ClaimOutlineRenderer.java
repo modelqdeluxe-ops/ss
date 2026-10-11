@@ -8,7 +8,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,41 +21,69 @@ import net.tierrasfantasticas.tfclient.claims.data.ClaimTier;
 import org.joml.Vector3f;
 
 /**
- * El contorno de las protecciones, hecho de polvo mágico del color de la zona (antes eran líneas finas formando una
- * caja con un cuadrado arriba; ya no hay tapa).
+ * El contorno de las protecciones, hecho de polvo mágico del color de la zona (sin tapa arriba). Todo ordenado, nada
+ * al azar:
  *
- *  - Lejos del límite: líneas suaves de polvo que titila, en las esquinas (columnas verticales) y a ras de suelo a lo
- *    largo de cada lado. Solo cerca del jugador.
- *  - Pegado al límite (a 5 bloques o menos de un lado): ese trozo de pared se llena de una cortina de polvillo que
- *    parpadea y sube en diagonal, para ver bien dónde acaba la zona.
+ *  - LÍNEAS (esquinas = columnas verticales, y a ras de suelo a lo largo de cada lado): un punto cada medio bloque,
+ *    clavado a la rejilla del mundo (no tiembla al moverse), quieto, opaco y con el color de la zona avivado. Cada
+ *    4 puntos (cada 2 bloques) un «nodo» más grande y más blanco. Una onda de brillo recorre las líneas. Se repone
+ *    cada LINE_PERIOD ticks con motas que viven un poco más, así la línea se ve continua. De lejos se aclara la rejilla
+ *    (1 bloque, y a lo lejos solo los nodos).
+ *  - FLECHAS (a 5 bloques o menos de un lado): ese trozo de pared se llena de flechitas hechas de bloquecitos de
+ *    polvo (una «V» en ángulo recto, 7 motas) que bajan en diagonal como una cinta transportadora, en una rejilla fija
+ *    del mundo. Parpadean todas a la vez; cuanto más cerca, más vivas y (a menos de 2,5 bloques) el doble de juntas.
  *
  * Se ve en los mismos casos que antes: las zonas con «Ver contorno» que manda el servidor y la vista previa al llevar
- * una piedra de protección en la mano. Rendimiento: un tope fijo de motas por tick (ver LINE_BUDGET y CURTAIN_BUDGET),
- * solo a menos de 32 bloques, nada detrás de la cámara, y menos aún con «Partículas: reducidas/mínimas».
+ * una piedra de protección en la mano (solo líneas, con motas de vida corta para que no dejen estela). Rendimiento:
+ * topes fijos de motas por tanda (LINE_CAP, PREVIEW_CAP, ARROWS_PER_ROW), solo a menos de 32 bloques, líneas nada
+ * detrás de la cámara, y menos aún con «Partículas: reducidas/mínimas».
  */
 @Mod.EventBusSubscriber(modid=TFClient.MOD_ID, value={Dist.CLIENT}, bus=Mod.EventBusSubscriber.Bus.FORGE)
 public final class ClaimOutlineRenderer {
-    // Hasta dónde se ven las líneas (bloques, en planta) y cuánto suben/bajan las columnas alrededor del jugador
+    // Hasta dónde se ven las líneas (bloques) y cuánto suben/bajan las columnas alrededor del jugador
     private static final double VIEW_RANGE = 32.0;
     private static final double COLUMN_BELOW = 16.0;
     private static final double COLUMN_ABOVE = 24.0;
     // Si el suelo queda más lejos que esto en vertical (cuevas), la línea de suelo va a la altura del jugador
     private static final double GROUND_SNAP = 12.0;
-    // Cortina: distancia al lado para que salga, ancho a cada lado del jugador y alto (desde los pies)
+    // Altura de los puntos de suelo sobre el bloque
+    private static final double GROUND_LIFT = 0.12;
+
+    // Líneas: rejilla de medio bloque (índice k = coordenada·2), nodo cada 4 puntos
+    private static final double STEP = 0.5;
+    private static final int NODE_EVERY = 4;
+    // Detalle según la distancia: rejilla completa hasta NEAR_DETAIL, 1 bloque hasta FAR_DETAIL, solo nodos después
+    private static final double NEAR_DETAIL = 12.0;
+    private static final double FAR_DETAIL = 22.0;
+    // Cadencia y vida (ticks): la vida pasa un poco de la cadencia para que la línea no parpadee al reponerse
+    private static final int LINE_PERIOD = 8;
+    private static final int LINE_LIFE = 11;
+    private static final int PREVIEW_PERIOD = 4;
+    private static final int PREVIEW_LIFE = 6;
+    // Tope de puntos por tanda (con todas las partículas; se reduce con el ajuste)
+    private static final int LINE_CAP = 400;
+    private static final int PREVIEW_CAP = 200;
+
+    // Flechas: distancia al lado para que salgan, ancho a cada lado del jugador y alto (desde los pies)
     private static final double NEAR_RANGE = 5.0;
+    private static final double DENSE_RANGE = 2.5;
     private static final double CURTAIN_HALF_WIDTH = 6.0;
     private static final double CURTAIN_BELOW = 1.5;
     private static final double CURTAIN_ABOVE = 4.5;
-    // Separación entre las franjas diagonales y lo rápido que se deslizan (bloques por tick)
-    private static final double BAND_SPACING = 1.6;
-    private static final double BAND_DRIFT = 0.04;
-    private static final double CURTAIN_SPEED = 0.045;
-    // Tope de motas por tick: líneas (todas las zonas juntas) y cortina (por pared cercana, máx. 2 paredes)
-    private static final int LINE_BUDGET = 14;
-    private static final int CURTAIN_BUDGET = 10;
+    // Velocidad de las flechas (bloques por tick en cada eje: baja y avanza lo mismo, 45°)
+    private static final double ARROW_SPEED = 0.05;
+    // Cada ROW_TICKS sale una fila arriba; ROW_STEP = ARROW_SPEED·ROW_TICKS (separación entre filas)
+    private static final int ROW_TICKS = 15;
+    private static final double ROW_STEP = ARROW_SPEED * ROW_TICKS;
+    // Separación entre «carriles» diagonales (u + v constante) en la rejilla normal
+    private static final double TRACK_SPACING = 3.0;
+    // Forma de la flecha: punta + 3 bloquecitos por brazo, separados ARM_STEP
+    private static final int ARM_BLOCKS = 3;
+    private static final double ARM_STEP = 0.17;
+    private static final int ARROWS_PER_ROW = 6;
     private static final int MAX_NEAR_WALLS = 2;
 
-    // Listas reutilizadas cada tick (sin basura)
+    // Listas reutilizadas cada tick
     private static final List<double[]> PREVIEW_BOXES = new ArrayList<double[]>();
     private static final List<double[]> PREVIEW_WALLS = new ArrayList<double[]>();
     private static final List<double[]> PREVIEW_CORNERS = new ArrayList<double[]>();
@@ -67,6 +94,22 @@ public final class ClaimOutlineRenderer {
     private static final int GROUND = 0;
     private static final int COLUMN = 1;
 
+    // Reloj propio (ticks sin pausa): marca las tandas, sin depender de los saltos de hora del servidor
+    private static int ticks = 0;
+
+    // Estado de la tanda en curso (solo se usa dentro del tick, en el hilo del cliente)
+    private static Minecraft mc;
+    private static ClientLevel level;
+    private static Vec3 cam;
+    private static Vector3f look;
+    private static double px;
+    private static double py;
+    private static double pz;
+    private static double nearDetail;
+    private static int lineLeft;
+    private static int lineLife;
+    private static int lineFadeOut;
+
     private ClaimOutlineRenderer() {
     }
 
@@ -74,6 +117,8 @@ public final class ClaimOutlineRenderer {
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientBorderStore.clear();
+        mc = null;
+        level = null;
     }
 
     @SubscribeEvent
@@ -87,9 +132,10 @@ public final class ClaimOutlineRenderer {
         if (localplayer == null || clientlevel == null || minecraft.isPaused()) {
             return;
         }
+        ++ticks;
         List<double[]> walls = ClientBorderStore.walls();
         List<double[]> corners = ClientBorderStore.corners();
-        // Vista previa de la piedra de protección en la mano (misma zona que antes, ahora sin techo)
+        // Vista previa de la piedra de protección en la mano (misma zona que antes, sin techo)
         PREVIEW_WALLS.clear();
         PREVIEW_CORNERS.clear();
         ClaimTier claimtier = ClaimBlocks.readTier(localplayer.getMainHandItem());
@@ -107,177 +153,252 @@ public final class ClaimOutlineRenderer {
         if (walls.isEmpty() && PREVIEW_WALLS.isEmpty()) {
             return;
         }
-        // Respeta el ajuste de partículas del jugador
-        ParticleStatus particlestatus = minecraft.options.particles().get();
-        float f = particlestatus == ParticleStatus.MINIMAL ? 0.3f : (particlestatus == ParticleStatus.DECREASED ? 0.6f : 1.0f);
         if (!MagicDustParticle.spritesReady() || clientlevel.getGameTime() % 20L == 0L) {
             MagicDustParticle.refreshSprites(minecraft);
         }
         if (!MagicDustParticle.spritesReady()) {
             return; // sin las texturas de partículas todavía: nada (una mota sin textura cerraría el juego al dibujarse)
         }
-        Vec3 vec3 = minecraft.gameRenderer.getMainCamera().getPosition();
-        Vector3f look = minecraft.gameRenderer.getMainCamera().getLookVector();
-        double px = localplayer.getX();
-        double py = localplayer.getY();
-        double pz = localplayer.getZ();
-        RandomSource randomsource = clientlevel.getRandom();
+        // Respeta el ajuste de partículas del jugador
+        ParticleStatus particlestatus = minecraft.options.particles().get();
+        float f = particlestatus == ParticleStatus.MINIMAL ? 0.3f : (particlestatus == ParticleStatus.DECREASED ? 0.6f : 1.0f);
+        mc = minecraft;
+        level = clientlevel;
+        cam = minecraft.gameRenderer.getMainCamera().getPosition();
+        look = minecraft.gameRenderer.getMainCamera().getLookVector();
+        px = localplayer.getX();
+        py = localplayer.getY();
+        pz = localplayer.getZ();
+        // Con partículas mínimas no hay rejilla de medio bloque; con reducidas solo muy cerca
+        nearDetail = particlestatus == ParticleStatus.MINIMAL ? 0.0 : (particlestatus == ParticleStatus.DECREASED ? NEAR_DETAIL * 0.5 : NEAR_DETAIL);
 
-        // 1) Líneas de polvo (esquinas y suelo), repartidas por longitud visible
-        EMITTERS.clear();
-        ClaimOutlineRenderer.collectLines(walls, corners, px, py, pz, false);
-        ClaimOutlineRenderer.collectLines(PREVIEW_WALLS, PREVIEW_CORNERS, px, py, pz, true);
-        int i = Math.max(1, Math.round(LINE_BUDGET * f));
-        double d0 = 0.0;
-        for (double[] adouble : EMITTERS) {
-            d0 += adouble[0];
+        // 1) Líneas de las zonas (esquinas y suelo)
+        if (!walls.isEmpty() && ticks % LINE_PERIOD == 0) {
+            EMITTERS.clear();
+            ClaimOutlineRenderer.collectLines(walls, corners);
+            ClaimOutlineRenderer.spawnLines(Math.round(LINE_CAP * f), LINE_LIFE, 2);
         }
-        if (d0 > 0.0) {
-            for (int j = 0; j < i; ++j) {
-                double d1 = randomsource.nextDouble() * d0;
-                double[] adouble1 = EMITTERS.get(EMITTERS.size() - 1);
-                for (double[] adouble2 : EMITTERS) {
-                    d1 -= adouble2[0];
-                    if (d1 > 0.0) continue;
-                    adouble1 = adouble2;
-                    break;
+        // 1b) Vista previa: misma línea, repuesta más a menudo y con vida corta (se mueve con el jugador)
+        if (!PREVIEW_WALLS.isEmpty() && ticks % PREVIEW_PERIOD == 0) {
+            EMITTERS.clear();
+            ClaimOutlineRenderer.collectLines(PREVIEW_WALLS, PREVIEW_CORNERS);
+            ClaimOutlineRenderer.spawnLines(Math.round(PREVIEW_CAP * f), PREVIEW_LIFE, 1);
+        }
+
+        // 2) Flechas que bajan en diagonal por las paredes que el jugador tiene al lado (solo las de verdad)
+        if (!walls.isEmpty() && ticks % ROW_TICKS == 0) {
+            NEAR.clear();
+            for (double[] wall : walls) {
+                boolean alongX = wall[0] == 0.0;
+                double proj = alongX ? px : pz;
+                double dist = Math.abs((alongX ? pz : px) - wall[1]);
+                if (dist > NEAR_RANGE || proj < wall[2] - 1.0 || proj > wall[3] + 1.0 || py < wall[4] - 2.0 || py > wall[5]) continue;
+                NEAR.add(new double[]{dist, proj, wall[0], wall[1], wall[2], wall[3], wall[4], wall[5], wall[6], wall[7], wall[8]});
+            }
+            if (!NEAR.isEmpty()) {
+                NEAR.sort((a, b) -> Double.compare(a[0], b[0]));
+                for (int i = 0; i < Math.min(MAX_NEAR_WALLS, NEAR.size()); ++i) {
+                    ClaimOutlineRenderer.spawnArrowRow(NEAR.get(i), particlestatus);
                 }
-                ClaimOutlineRenderer.spawnLine(minecraft, clientlevel, randomsource, adouble1, py, vec3, look);
             }
         }
-
-        // 2) Cortina diagonal que parpadea en las paredes que el jugador tiene al lado (solo las de verdad, no la vista previa)
-        NEAR.clear();
-        for (double[] adouble3 : walls) {
-            boolean flag = adouble3[0] == 0.0;
-            double d2 = flag ? px : pz;
-            double d3 = Math.abs((flag ? pz : px) - adouble3[1]);
-            if (d3 > NEAR_RANGE || d2 < adouble3[2] - 1.0 || d2 > adouble3[3] + 1.0 || py < adouble3[4] - 2.0 || py > adouble3[5]) continue;
-            NEAR.add(new double[]{d3, d2, adouble3[0], adouble3[1], adouble3[2], adouble3[3], adouble3[4], adouble3[5], adouble3[6], adouble3[7], adouble3[8]});
-        }
-        if (!NEAR.isEmpty()) {
-            NEAR.sort((a, b) -> Double.compare(a[0], b[0]));
-            double phase = (clientlevel.getGameTime() * BAND_DRIFT) % BAND_SPACING;
-            for (int k = 0; k < Math.min(MAX_NEAR_WALLS, NEAR.size()); ++k) {
-                ClaimOutlineRenderer.spawnCurtain(minecraft, clientlevel, randomsource, NEAR.get(k), py, phase, f);
-            }
-        }
-    }
-
-    /** Mete en EMITTERS los trozos de línea a la vista: {peso, tipo, ...}. */
-    private static void collectLines(List<double[]> walls, List<double[]> corners, double px, double py, double pz, boolean preview) {
-        double p = preview ? 1.0 : 0.0;
-        for (double[] adouble : walls) {
-            boolean flag = adouble[0] == 0.0;
-            double d0 = Math.abs((flag ? pz : px) - adouble[1]);
-            if (d0 > VIEW_RANGE) continue;
-            double d1 = Math.sqrt(VIEW_RANGE * VIEW_RANGE - d0 * d0);
-            double d2 = flag ? px : pz;
-            double d3 = Math.max(adouble[2], d2 - d1);
-            double d4 = Math.min(adouble[3], d2 + d1);
-            if (d4 <= d3) continue;
-            // {peso, tipo, eje, fija, u0, u1, abajo, arriba, r, g, b, vista previa}
-            EMITTERS.add(new double[]{d4 - d3, GROUND, adouble[0], adouble[1], d3, d4, adouble[4], adouble[5], adouble[6], adouble[7], adouble[8], p});
-        }
-        for (double[] adouble1 : corners) {
-            double d5 = adouble1[0] - px;
-            double d6 = adouble1[1] - pz;
-            if (d5 * d5 + d6 * d6 > VIEW_RANGE * VIEW_RANGE) continue;
-            double d7 = Math.max(adouble1[2], py - COLUMN_BELOW);
-            double d8 = Math.min(adouble1[3], py + COLUMN_ABOVE);
-            if (d8 <= d7) continue;
-            // Las columnas pesan algo menos que el suelo para no comerse todo el presupuesto
-            // {peso, tipo, x, z, y0, y1, -, -, r, g, b, vista previa}
-            EMITTERS.add(new double[]{(d8 - d7) * 0.6, COLUMN, adouble1[0], adouble1[1], d7, d8, 0.0, 0.0, adouble1[4], adouble1[5], adouble1[6], p});
-        }
-    }
-
-    private static void spawnLine(Minecraft minecraft, ClientLevel clientlevel, RandomSource randomsource, double[] adouble, double py, Vec3 cam, Vector3f look) {
-        double x;
-        double y;
-        double z;
-        double vx = 0.0;
-        double vz = 0.0;
-        if (adouble[1] == GROUND) {
-            boolean flag = adouble[2] == 0.0;
-            double u = adouble[4] + randomsource.nextDouble() * (adouble[5] - adouble[4]);
-            x = flag ? u : adouble[3];
-            z = flag ? adouble[3] : u;
-            // A ras de suelo (el más alto de los dos bloques que tocan el límite; MOTION_BLOCKING es el mapa que tiene el cliente)
-            int i = Mth.floor(x);
-            int j = Mth.floor(z);
-            int k = Math.max(clientlevel.getHeight(Heightmap.Types.MOTION_BLOCKING, i, j),
-                    flag ? clientlevel.getHeight(Heightmap.Types.MOTION_BLOCKING, i, j - 1) : clientlevel.getHeight(Heightmap.Types.MOTION_BLOCKING, i - 1, j));
-            y = Math.abs(k - py) > GROUND_SNAP ? py : k;
-            y = Mth.clamp(y, adouble[6], adouble[7]) + 0.08 + randomsource.nextDouble() * 0.18;
-            // Deriva muy lenta a lo largo de la línea
-            double d0 = (randomsource.nextDouble() - 0.5) * 0.012;
-            vx = flag ? d0 : 0.0;
-            vz = flag ? 0.0 : d0;
-        } else {
-            x = adouble[2];
-            z = adouble[3];
-            y = adouble[4] + randomsource.nextDouble() * (adouble[5] - adouble[4]);
-        }
-        // Nada detrás de la cámara (salvo lo que está pegado)
-        double d1 = x - cam.x;
-        double d2 = y - cam.y;
-        double d3 = z - cam.z;
-        if (d1 * look.x() + d2 * look.y() + d3 * look.z() < 0.0 && d1 * d1 + d2 * d2 + d3 * d3 > 9.0) {
-            return;
-        }
-        boolean preview = adouble[11] != 0.0;
-        // La vista previa se mueve con el jugador: vive menos para no dejar estela
-        int life = preview ? 10 + randomsource.nextInt(5) : 22 + randomsource.nextInt(13);
-        float[] col = ClaimOutlineRenderer.tint(randomsource, adouble[8], adouble[9], adouble[10], 0.25f);
-        float size = 0.07f + randomsource.nextFloat() * 0.05f;
-        minecraft.particleEngine.add(new MagicDustParticle(clientlevel, x, y, z, vx, 0.004 + randomsource.nextDouble() * 0.008, vz,
-                col[0], col[1], col[2], false, randomsource.nextFloat() < 0.75f, life, size, 0.85f));
     }
 
     /**
-     * Cortina de polvillo en el trozo de pared junto al jugador: las motas salen sobre franjas diagonales (45°) que se
-     * deslizan poco a poco y cada mota sube en diagonal por su franja; el pulso común las hace parpadear. Cuanto más
-     * cerca del límite, más densa y más viva.
-     * near = {distancia, proyección, eje, fija, u0, u1, abajo, arriba, r, g, b}
+     * Mete en EMITTERS los trozos de línea a la vista, ordenados del más cercano al más lejano:
+     * suelo {distancia, GROUND, eje, fija, u0, u1, abajo, arriba, r, g, b} y columna {distancia, COLUMN, x, z, y0, y1, -, -, r, g, b}.
      */
-    private static void spawnCurtain(Minecraft minecraft, ClientLevel clientlevel, RandomSource randomsource, double[] near, double py, double phase, float f) {
-        double closeness = 1.0 - near[0] / NEAR_RANGE;
-        int i = Math.round((float)(CURTAIN_BUDGET * f * (0.35 + 0.65 * closeness)));
-        double ua = Math.max(near[4], near[1] - CURTAIN_HALF_WIDTH);
-        double ub = Math.min(near[5], near[1] + CURTAIN_HALF_WIDTH);
-        double va = Math.max(near[6], py - CURTAIN_BELOW);
-        double vb = Math.min(near[7], py + CURTAIN_ABOVE);
-        if (ub <= ua || vb <= va || i <= 0) {
-            return;
+    private static void collectLines(List<double[]> walls, List<double[]> corners) {
+        for (double[] wall : walls) {
+            boolean alongX = wall[0] == 0.0;
+            double d0 = Math.abs((alongX ? pz : px) - wall[1]);
+            if (d0 > VIEW_RANGE) continue;
+            double half = Math.sqrt(VIEW_RANGE * VIEW_RANGE - d0 * d0);
+            double proj = alongX ? px : pz;
+            double ua = Math.max(wall[2], proj - half);
+            double ub = Math.min(wall[3], proj + half);
+            if (ub < ua) continue;
+            double du = proj < ua ? ua - proj : (proj > ub ? proj - ub : 0.0);
+            EMITTERS.add(new double[]{Math.sqrt(d0 * d0 + du * du), GROUND, wall[0], wall[1], ua, ub, wall[4], wall[5], wall[6], wall[7], wall[8]});
         }
-        boolean flag = near[2] == 0.0;
-        // Sentido de la diagonal alternando cada pocos segundos, para que no parezca siempre igual
-        double dir = (clientlevel.getGameTime() / 200L) % 2L == 0L ? 1.0 : -1.0;
-        float alpha = (float)(0.6 + 0.4 * closeness);
-        for (int j = 0; j < i; ++j) {
-            double v = va + randomsource.nextDouble() * (vb - va);
-            double u = ua + randomsource.nextDouble() * (ub - ua);
-            // Lleva la mota a la franja diagonal más cercana (u - dir·v = fase + n·separación)
-            double d0 = Mth.positiveModulo(u - dir * v - phase, BAND_SPACING);
-            if (d0 > BAND_SPACING / 2.0) {
-                d0 -= BAND_SPACING;
+        for (double[] corner : corners) {
+            double dx = corner[0] - px;
+            double dz = corner[1] - pz;
+            if (dx * dx + dz * dz > VIEW_RANGE * VIEW_RANGE) continue;
+            double y0 = Math.max(corner[2], py - COLUMN_BELOW);
+            double y1 = Math.min(corner[3], py + COLUMN_ABOVE);
+            if (y1 < y0) continue;
+            EMITTERS.add(new double[]{Math.sqrt(dx * dx + dz * dz), COLUMN, corner[0], corner[1], y0, y1, 0.0, 0.0, corner[4], corner[5], corner[6]});
+        }
+        EMITTERS.sort((a, b) -> Double.compare(a[0], b[0]));
+    }
+
+    /** Una tanda de puntos de línea: de cada trozo, desde el punto más cercano al jugador hacia fuera, hasta el tope. */
+    private static void spawnLines(int cap, int life, int fadeOut) {
+        lineLeft = Math.max(1, cap);
+        lineLife = life;
+        lineFadeOut = fadeOut;
+        for (double[] em : EMITTERS) {
+            float[] rgb = ClaimOutlineRenderer.vivid(em[8], em[9], em[10]);
+            // Índices de la rejilla de medio bloque dentro del trozo, y el más cercano al jugador
+            int ka = Mth.ceil(em[4] / STEP - 1.0E-6);
+            int kb = Mth.floor(em[5] / STEP + 1.0E-6);
+            if (kb < ka) continue;
+            double center = em[1] == GROUND ? (em[2] == 0.0 ? px : pz) : py;
+            int kc = Mth.clamp((int)Math.round(center / STEP), ka, kb);
+            for (int s = 0; ; ++s) {
+                boolean any = false;
+                if (kc + s <= kb) {
+                    any = true;
+                    if (!ClaimOutlineRenderer.linePoint(em, kc + s, rgb)) return;
+                }
+                if (s > 0 && kc - s >= ka) {
+                    any = true;
+                    if (!ClaimOutlineRenderer.linePoint(em, kc - s, rgb)) return;
+                }
+                if (!any) break;
             }
-            u = u - d0 + randomsource.nextGaussian() * 0.06;
-            if (u < ua || u > ub) continue;
-            double x = flag ? u : near[3];
-            double z = flag ? near[3] : u;
-            double d1 = dir * CURTAIN_SPEED;
-            float[] col = ClaimOutlineRenderer.tint(randomsource, near[8], near[9], near[10], 0.35f);
-            float size = 0.06f + randomsource.nextFloat() * 0.06f;
-            minecraft.particleEngine.add(new MagicDustParticle(clientlevel, x, v, z, flag ? d1 : 0.0, CURTAIN_SPEED, flag ? 0.0 : d1,
-                    col[0], col[1], col[2], true, randomsource.nextFloat() < 0.6f, 18 + randomsource.nextInt(7), size, alpha));
         }
     }
 
-    // El color de la zona con un toque de blanco al azar (destellos más claros, como polvo mágico)
-    private static float[] tint(RandomSource randomsource, double r, double g, double b, float maxWhite) {
-        float f = randomsource.nextFloat() * maxWhite;
-        return new float[]{(float)(r + (1.0 - r) * f), (float)(g + (1.0 - g) * f), (float)(b + (1.0 - b) * f)};
+    /** Pone (o no) el punto k de una línea. Devuelve false cuando se acaba el tope de la tanda. */
+    private static boolean linePoint(double[] em, int k, float[] rgb) {
+        double c = k * STEP;
+        double x;
+        double y;
+        double z;
+        if (em[1] == GROUND) {
+            boolean alongX = em[2] == 0.0;
+            x = alongX ? c : em[3];
+            z = alongX ? em[3] : c;
+            // A ras de suelo (el más alto de los dos bloques que tocan el límite; MOTION_BLOCKING es el mapa que tiene el cliente)
+            int i = Mth.floor(x);
+            int j = Mth.floor(z);
+            int top = Math.max(level.getHeight(Heightmap.Types.MOTION_BLOCKING, i, j),
+                    alongX ? level.getHeight(Heightmap.Types.MOTION_BLOCKING, i, j - 1) : level.getHeight(Heightmap.Types.MOTION_BLOCKING, i - 1, j));
+            double ground = Math.abs(top - py) > GROUND_SNAP ? Mth.floor(py) : top;
+            y = Mth.clamp(ground, em[6], em[7]) + GROUND_LIFT;
+        } else {
+            x = em[2];
+            z = em[3];
+            y = c;
+        }
+        double dx = x - px;
+        double dy = y - py;
+        double dz = z - pz;
+        double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (d > VIEW_RANGE) {
+            return true;
+        }
+        // De lejos la rejilla se aclara (siempre un subconjunto de la de cerca, así no salta)
+        if (d > FAR_DETAIL ? Math.floorMod(k, NODE_EVERY) != 0 : (d > nearDetail && Math.floorMod(k, 2) != 0)) {
+            return true;
+        }
+        // Nada detrás de la cámara (salvo lo que está pegado)
+        double cx = x - cam.x;
+        double cy = y - cam.y;
+        double cz = z - cam.z;
+        if (cx * look.x() + cy * look.y() + cz * look.z() < 0.0 && cx * cx + cy * cy + cz * cz > 9.0) {
+            return true;
+        }
+        boolean node = Math.floorMod(k, NODE_EVERY) == 0;
+        MagicDustParticle particle = MagicDustParticle.point(level, x, y, z, rgb, node, (float)c, lineLife, 1, lineFadeOut);
+        if (particle == null) {
+            return false; // sin textura: se corta la tanda
+        }
+        mc.particleEngine.add(particle);
+        return --lineLeft > 0;
+    }
+
+    /**
+     * Una fila de flechas arriba del trozo de pared junto al jugador. Las flechas viven en una rejilla fija del mundo
+     * que se desliza en diagonal hacia abajo: cada flecha sigue un «carril» (u + v constante) y las filas van separadas
+     * ROW_STEP. La fila que entra por arriba se calcula con el reloj, así da igual dónde esté el jugador: no se
+     * descuadra. near = {distancia, proyección, eje, fija, u0, u1, abajo, arriba, r, g, b}
+     */
+    private static void spawnArrowRow(double[] near, ParticleStatus particlestatus) {
+        double closeness = 1.0 - near[0] / NEAR_RANGE;
+        boolean alongX = near[2] == 0.0;
+        // Arriba de la ventana, encajado en la rejilla de filas; abajo, donde acaban (vida = alto / velocidad)
+        double top = Math.min(near[7], py + CURTAIN_ABOVE);
+        int q = Mth.floor(top / ROW_STEP + 1.0E-6);
+        double vt = q * ROW_STEP;
+        double vb = Math.max(near[6], py - CURTAIN_BELOW);
+        if (vt - vb < 1.0) {
+            return;
+        }
+        // Etiqueta de la fila en la rejilla del mundo; la rejilla normal usa las pares, de cerca también las impares
+        int row = q + ticks / ROW_TICKS;
+        boolean dense = particlestatus == ParticleStatus.ALL && near[0] <= DENSE_RANGE;
+        if (!dense && Math.floorMod(row, 2) != 0) {
+            return;
+        }
+        int armBlocks = particlestatus == ParticleStatus.MINIMAL ? 2 : ARM_BLOCKS;
+        // La flecha entera (con el brazo de arriba) cabe bajo el borde superior; todas sus motas viven lo mismo
+        double tipV = vt - armBlocks * ARM_STEP;
+        int life = Mth.floor((tipV - vb) / ARROW_SPEED);
+        if (life < 20) {
+            return;
+        }
+        // Carriles: u + v ≡ (fila impar ? medio carril : 0) módulo TRACK_SPACING
+        double offset = Math.floorMod(row, 2) * (TRACK_SPACING / 2.0) - vt;
+        // La ventana es un paralelogramo centrado en el jugador: arriba empieza medio alto antes (las flechas avanzan al bajar)
+        double halfWidth = CURTAIN_HALF_WIDTH * (particlestatus == ParticleStatus.MINIMAL ? 0.5 : (particlestatus == ParticleStatus.DECREASED ? 0.75 : 1.0));
+        double shift = (vt - vb) / 2.0;
+        double lo = Math.max(near[1] - halfWidth - shift, near[4] - (vt - vb));
+        double hi = Math.min(near[1] + halfWidth - shift, near[5]);
+        int na = Mth.ceil((lo - offset) / TRACK_SPACING);
+        int nb = Mth.floor((hi - offset) / TRACK_SPACING);
+        float[] rgb = ClaimOutlineRenderer.vivid(near[8], near[9], near[10]);
+        float alpha = (float)(0.75 + 0.25 * closeness);
+        float tipWhite = (float)(0.5 + 0.3 * closeness);
+        double vu = ARROW_SPEED;
+        double vx = alongX ? vu : 0.0;
+        double vz = alongX ? 0.0 : vu;
+        int axis = alongX ? 0 : 1;
+        int count = 0;
+        for (int n = na; n <= nb && count < ARROWS_PER_ROW; ++n) {
+            double u = offset + n * TRACK_SPACING;
+            ++count;
+            // Punta (abajo, hacia donde va) y dos brazos: uno hacia atrás en horizontal y otro hacia arriba: «┘» = flecha ↘
+            ClaimOutlineRenderer.arrowBlock(alongX, near[3], u, tipV, vx, vz, rgb, true, tipWhite, alpha, 0.2f, life, axis, near[4], near[5]);
+            for (int i = 1; i <= armBlocks; ++i) {
+                // Los bloquecitos se afinan un poco hacia el final de cada brazo
+                float size = 0.2f * (1.0f - 0.1f * (i - 1));
+                ClaimOutlineRenderer.arrowBlock(alongX, near[3], u - i * ARM_STEP, tipV, vx, vz, rgb, false, 0.1f, alpha, size, life, axis, near[4], near[5]);
+                ClaimOutlineRenderer.arrowBlock(alongX, near[3], u, tipV + i * ARM_STEP, vx, vz, rgb, false, 0.1f, alpha, size, life, axis, near[4], near[5]);
+            }
+        }
+    }
+
+    private static void arrowBlock(boolean alongX, double fixed, double u, double v, double vx, double vz, float[] rgb, boolean tip,
+                                   float white, float alpha, float size, int life, int axis, double clipMin, double clipMax) {
+        double x = alongX ? u : fixed;
+        double z = alongX ? fixed : u;
+        MagicDustParticle particle = MagicDustParticle.arrowBlock(level, x, v, z, vx, -ARROW_SPEED, vz, rgb, tip, white, alpha, size, life, axis, clipMin, clipMax);
+        if (particle != null) {
+            mc.particleEngine.add(particle);
+        }
+    }
+
+    /**
+     * El color de la zona avivado para que destaque: se sube al máximo brillo y se satura más (los colores pálidos
+     * dejan de verse lavados). Los grises se quedan casi blancos.
+     */
+    static float[] vivid(double r, double g, double b) {
+        double max = Math.max(r, Math.max(g, b));
+        double min = Math.min(r, Math.min(g, b));
+        if (max < 0.02) {
+            return new float[]{0.9f, 0.9f, 0.9f};
+        }
+        double rr = r / max;
+        double gg = g / max;
+        double bb = b / max;
+        if (max - min > 0.08 * max) {
+            rr = Mth.clamp(1.0 - (1.0 - rr) * 1.5, 0.0, 1.0);
+            gg = Mth.clamp(1.0 - (1.0 - gg) * 1.5, 0.0, 1.0);
+            bb = Mth.clamp(1.0 - (1.0 - bb) * 1.5, 0.0, 1.0);
+        }
+        return new float[]{(float)rr, (float)gg, (float)bb};
     }
 }

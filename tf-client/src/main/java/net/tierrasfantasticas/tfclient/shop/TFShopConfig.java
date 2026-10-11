@@ -63,7 +63,7 @@ public final class TFShopConfig {
     public static boolean sellAllButton = true;
     public static boolean sellFromInventory = true;
     public static boolean log = true;
-    public static List<Integer> steps = List.of(1, 8, 32, 64);
+    public static List<Integer> steps = List.of(1, 8, 64);
     public static int maxLots = 64;
     public static Map<String, String> messages = new LinkedHashMap<>();
     public static Map<String, Category> categories = new LinkedHashMap<>();
@@ -72,10 +72,11 @@ public final class TFShopConfig {
             Map.entry("compra", "&a✔ Compraste &f{cantidad}× {objeto} &apor &6{precio}&a."),
             Map.entry("venta", "&a✔ Vendiste &f{cantidad}× {objeto} &apor &6{precio}&a."),
             Map.entry("ventaTodo", "&a✔ Vendiste {lineas} objetos por &6{precio}&a."),
-            Map.entry("sinDinero", "&cNo tienes bastantes monedas: cuesta &6{precio}&c."),
+            Map.entry("sinDinero", "&cNo tienes bastantes monedas: cuesta &6{precio}&c (te faltan &6{faltan}&c)."),
             Map.entry("sinObjetos", "&cNo tienes {objeto} para vender (sin nombre, encantamientos ni daño)."),
             Map.entry("nadaQueVender", "&cNo tienes nada que se pueda vender aquí."),
             Map.entry("limiteCompra", "&cHoy ya no puedes comprar más {objeto} (límite diario: {limite})."),
+            Map.entry("limiteCompraQueda", "&cHoy solo puedes comprar {quedan} más de {objeto} (límite diario: {limite})."),
             Map.entry("limiteVenta", "&cHoy ya no puedes vender más {objeto} (límite diario: {limite})."),
             Map.entry("sinPermiso", "&cNo tienes permiso para esto."),
             Map.entry("desactivada", "&cLa tienda está cerrada ahora mismo."));

@@ -1,5 +1,6 @@
 """Simulador de las páginas del TF Pad (mismas posiciones y colores que el código Java) para ver cómo quedan."""
 import json
+import math
 import os
 import sys
 import unicodedata
@@ -559,9 +560,25 @@ class Sim:
             im = im.resize((16 * scale, 16 * scale), Image.NEAREST)
         self.paste(im, x, y)
 
+    @staticmethod
+    def count_label(n, big):
+        """PadView.countLabel: la cantidad de verdad; exacta (con puntos de miles) hasta 9.999 al doble y 999 a tamaño
+        normal; más, corta como PadView.shortNumber (1,8K, 35K, 1,5M; hacia abajo)."""
+        if n < (10_000 if big else 1000):
+            return f'{n:,}'.replace(',', '.')
+        def dec(d):
+            t = f'{d:.1f}'
+            return (t[:-2] if t.endswith('.0') else t).replace('.', ',')
+        if n < 10_000:
+            return dec(math.floor(n / 100) / 10) + 'K'
+        if n < 1_000_000:
+            return f'{n // 1000}K'
+        return dec(math.floor(n / 100_000) / 10) + 'M'
+
     def count(self, n, x, y, k=1):
-        """PadUi.item (1.3.28): la cantidad en blanco sobre una etiqueta azul noche, sin sombra."""
-        t = str(n)
+        """PadUi.item (1.3.28): la cantidad en blanco sobre una etiqueta azul noche, sin sombra. Es la de verdad
+        (la tienda manda 128 o 1.024 aunque el objeto se apile de 64): PadView.countLabel."""
+        t = self.count_label(n, k > 1)
         w = self.mwidth(t) + 2
         rx, ry = x + 16 * k + 1 - w, y + 16 * k - 8
         self.box(rx, ry, w + 1, 9, rgb(0x22346E))

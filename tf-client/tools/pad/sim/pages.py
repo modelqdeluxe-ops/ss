@@ -111,13 +111,14 @@ page('p_gts_item', 'GTS', [], '', [], [
 page('p_gts_item_solo', 'GTS', [], '', [], [],
      hero=('totem_of_undying', 'Tótem de la inmortalidad', 0xF6B628, ['Lo vende Notch · quedan 18 h.', 'Tienes 30.000 monedas.'], -1,
            '¤25.000', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
-page('p_tienda_comprar', 'TIENDA', [('b', 'COMPRAR'), ('s', 'VENDER')], 'b', [], [], cards=[
-    ('diamond', '1 unidad', 0xF6B628, '¤950', False, 1),
-    ('diamond', '8 uds.', 0xF6B628, '¤7.600', False, 8),
-    ('diamond', '32 uds.', 0xF6B628, 'Faltan 18K', False, 32, {'off': True}),
-    ('diamond', '64 uds.', 0xF6B628, 'Faltan 48K', False, 64, {'off': True}),
-], hero=('diamond', 'Diamante', 0xF6B628, ['Por unidad · llevas 5.', 'Tienes 12.450 monedas.'], -1, '¤950', None, None),
-     input_=('OTRA CANTIDAD (LOTES)', 'COMPRAR', ''), footer=[('ATRÁS', B)])
+# PadShop.item: la ficha de compra, sin pestañas (comprar y vender no se mezclan). Cada tarjeta lleva el objeto
+# marcado con sus unidades de verdad (128, 1.024; no 64) y, si no se puede pagar, lo que falta (exacto hasta 9.999).
+page('p_tienda_comprar', 'TIENDA', [], 'i:0:0:b', [], [], cards=[
+    ('oak_log', '16 unidades', 0xF6B628, '¤32', False, 16),
+    ('oak_log', '128 unidades', 0xF6B628, 'Faltan 53', False, 128, {'off': True}),
+    ('oak_log', '1.024 unidades', 0xF6B628, 'Faltan 1.845', False, 1024, {'off': True}),
+], hero=('oak_log', 'Tronco de roble', 0xF6B628, ['Precio por 16 unidades · llevas 0.', 'Tienes 203 monedas.'], -1, '¤32', None, None, 16),
+     input_=('OTRA CANTIDAD (DE 16 EN 16)', 'COMPRAR', ''), footer=[('ATRÁS', B)])
 page('p_viajes', 'VIAJES', [], '', [], [], cards=[
     ('compass_00', 'Spawn', 0x3496FA, 'Mundo normal', False), ('red_bed', 'Tu cama', 0xE83446, 'Mundo normal', False),
     ('filled_map', 'Mercado', 0xF6B628, 'Mundo normal', False), ('ender_pearl', 'Arena PvP', 0x9A5CF0, 'Warp', False),

@@ -78,12 +78,17 @@ public final class TFShop {
         long units = (long) lots * e.amount();
         long left = left(player.getUUID(), "c:" + e.key(), e.buyDaily());
         if (left <= 0 || units > left) {
-            say(player, TFShopConfig.message("limiteCompra"), Map.of("objeto", name(e), "limite", Long.toString(e.buyDaily())));
+            // aún puede comprar algo (de N en N), pero no tanto: se le dice cuánto le queda, no que ya no puede más
+            long fits = left / e.amount() * e.amount();
+            say(player, TFShopConfig.message(fits > 0 ? "limiteCompraQueda" : "limiteCompra"), Map.of("objeto", name(e),
+                    "limite", TFEconomy.number(e.buyDaily()), "quedan", TFEconomy.number(fits)));
             return false;
         }
         long price = Math.multiplyExact(e.buy(), (long) lots);
         if (!TFEconomy.take(player, price)) {
-            say(player, TFShopConfig.message("sinDinero"), Map.of("precio", TFEconomy.format(price)));
+            long balance = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
+            say(player, TFShopConfig.message("sinDinero"), Map.of("precio", TFEconomy.format(price),
+                    "faltan", TFEconomy.format(balance >= 0 ? Math.max(0, price - balance) : price)));
             sound(player, false);
             return false;
         }
@@ -103,7 +108,7 @@ public final class TFShop {
             if (!errors.isEmpty()) TFClient.LOGGER.warn("TF Tienda: «{}» falló: {}", c, errors.get(0));
         }
         count(player.getUUID(), "c:" + e.key(), units);
-        say(player, TFShopConfig.message("compra"), Map.of("cantidad", Long.toString(units), "objeto", name(e), "precio", TFEconomy.format(price)));
+        say(player, TFShopConfig.message("compra"), Map.of("cantidad", TFEconomy.number(units), "objeto", name(e), "precio", TFEconomy.format(price)));
         sound(player, true);
         log(player, "COMPRA", e, units, price);
         return true;
@@ -126,7 +131,7 @@ public final class TFShop {
         long left = left(player.getUUID(), "v:" + e.key(), e.sellDaily());
         wantLots = Math.min(wantLots, left / e.amount());
         if (wantLots <= 0) {
-            if (!quiet) say(player, TFShopConfig.message("limiteVenta"), Map.of("objeto", name(e), "limite", Long.toString(e.sellDaily())));
+            if (!quiet) say(player, TFShopConfig.message("limiteVenta"), Map.of("objeto", name(e), "limite", TFEconomy.number(e.sellDaily())));
             return false;
         }
         long units = wantLots * e.amount();
@@ -136,7 +141,7 @@ public final class TFShop {
         count(player.getUUID(), "v:" + e.key(), units);
         player.containerMenu.broadcastChanges();
         if (!quiet) {
-            say(player, TFShopConfig.message("venta"), Map.of("cantidad", Long.toString(units), "objeto", name(e), "precio", TFEconomy.format(price)));
+            say(player, TFShopConfig.message("venta"), Map.of("cantidad", TFEconomy.number(units), "objeto", name(e), "precio", TFEconomy.format(price)));
             sound(player, true);
         }
         log(player, "VENTA", e, units, price);
@@ -147,7 +152,7 @@ public final class TFShop {
     public static void sellAll(ServerPlayer player) {
         long before = TFEconomy.balance(player.server, player.getUUID()).orElse(-1);
         int lines = 0;
-        long total = 0;
+        long total = 0, units = 0;
         for (TFShopConfig.Category c : TFShopConfig.categories.values()) {
             if (!player.hasPermissions(c.permission())) continue;
             for (Entry e : c.entries()) {
@@ -158,6 +163,7 @@ public final class TFShop {
                 if (lots > 0 && sell(player, e, (int) lots, true)) {
                     lines++;
                     total += e.sell() * lots;
+                    units += lots * e.amount();
                 }
             }
         }
@@ -166,16 +172,19 @@ public final class TFShop {
             sound(player, false);
             return;
         }
-        say(player, TFShopConfig.message("ventaTodo"), Map.of("lineas", Integer.toString(lines), "precio", TFEconomy.format(total)));
+        // {lineas}: cuántos objetos distintos; {unidades}: cuántas unidades en total. «1 objetos» → «1 objeto»
+        String template = TFShopConfig.message("ventaTodo");
+        if (lines == 1) template = template.replace("{lineas} objetos", "{lineas} objeto");
+        say(player, template, Map.of("lineas", Integer.toString(lines), "unidades", TFEconomy.number(units), "precio", TFEconomy.format(total)));
         sound(player, true);
     }
 
-    /** El objeto de la tienda que se puede vender con este montón del inventario (o null). */
-    public static Entry sellableFor(ItemStack stack) {
+    /** El objeto de la tienda que este jugador puede vender con este montón del inventario (o null). */
+    public static Entry sellableFor(ServerPlayer player, ItemStack stack) {
         if (stack.isEmpty()) return null;
-        for (TFShopConfig.Category c : TFShopConfig.categories.values()) {
+        for (TFShopConfig.Category c : visible(player)) {
             for (Entry e : c.entries()) {
-                if (e.sellable() && matches(stack, e)) return e;
+                if (e.sellable() && player.hasPermissions(e.permission()) && matches(stack, e)) return e;
             }
         }
         return null;
