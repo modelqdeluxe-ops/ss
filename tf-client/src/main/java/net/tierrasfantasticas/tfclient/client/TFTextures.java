@@ -27,11 +27,10 @@ public enum TFTextures {
     LOGO_SHINE("logo_shine.png", Mode.NO_MIPMAPS),
     /** Chispa de la gema de la corona. */
     SPARKLE("sparkle.png"),
-    /** Línea luminosa de los botones de oro (la del emblema, más suave). */
+    /** Línea luminosa que cruza los botones del menú principal (la del emblema, más suave). Ver TFMenuPaint.sweep. */
     BUTTON_SHINE("button_shine.png", Mode.NO_MIPMAPS),
-    /** Botones en tres piezas (puntas fijas y centro estirable; 3 estados apilados). Ver TFButtonTheme. */
-    BUTTON_SLICE("button_slice.png"),
-    BUTTON_SLICE_PRIMARY("button_slice_primary.png");
+    /** Botones de los demás menús en tres piezas (puntas fijas y centro estirable; 3 estados apilados). Ver TFButtonTheme. */
+    BUTTON_SLICE("button_slice.png");
 
     /** Cómo se sube la imagen: suavizada con mipmaps, suavizada sin mipmaps, o pixel art sin suavizar. */
     public enum Mode { MIPMAPS, NO_MIPMAPS, PIXEL_ART }

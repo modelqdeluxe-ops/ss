@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -140,6 +141,64 @@ public final class TFPadScreen extends Screen {
         ResourceLocation loc = tex(name);
         Minecraft.getInstance().getTextureManager().getTexture(loc).setFilter(true, false);
         g.blit(loc, x, y, w, h, 0, 0, sz[0], sz[1], sz[0], sz[1]);
+    }
+
+    /** Reducciones ya hechas para {@link #blitSharp}: «nombre_píxeles» → textura (null si no existe el original). */
+    private static final Map<String, Optional<ResourceLocation>> SHARP = new HashMap<>();
+
+    /**
+     * Textura grande (los emojis de Comunidad: 96x96) en u x u unidades y nítida a cualquier escala: la primera vez se
+     * reduce al tamaño exacto en píxeles reales con que sale (u por los píxeles reales de una unidad: siempre entero),
+     * con media por área, y luego se pinta 1 píxel de textura = 1 píxel real, sin filtro. Una reducción por tamaño.
+     */
+    void blitSharp(GuiGraphics g, String name, int x, int y, int u) {
+        int px = u * (local ? big : cs);
+        if (px <= 0) return;
+        Optional<ResourceLocation> loc = SHARP.computeIfAbsent(name + "_" + px, k -> reduce(name, px));
+        if (loc.isEmpty()) return;
+        RenderSystem.enableBlend();
+        g.blit(loc.get(), x, y, u, u, 0, 0, px, px, px, px);
+    }
+
+    private static Optional<ResourceLocation> reduce(String name, int px) {
+        Optional<Resource> res = Minecraft.getInstance().getResourceManager().getResource(tex(name));
+        if (res.isEmpty()) return Optional.empty();
+        try (InputStream in = res.get().open(); NativeImage src = NativeImage.read(in)) {
+            int sw = src.getWidth(), sh = src.getHeight();
+            NativeImage out = new NativeImage(px, px, true);
+            double kx = sw / (double) px, ky = sh / (double) px;
+            for (int oy = 0; oy < px; oy++) {
+                double y0 = oy * ky, y1 = y0 + ky;
+                for (int ox = 0; ox < px; ox++) {
+                    double x0 = ox * kx, x1 = x0 + kx;
+                    // media de lo que cae dentro del píxel, con el color pesado por su alfa (sin bordes oscuros)
+                    double area = 0, a = 0, c0 = 0, c1 = 0, c2 = 0;
+                    for (int sy = (int) y0; sy < Math.min(sh, Math.ceil(y1)); sy++) {
+                        double wy = Math.min(y1, sy + 1) - Math.max(y0, sy);
+                        for (int sx = (int) x0; sx < Math.min(sw, Math.ceil(x1)); sx++) {
+                            double w = wy * (Math.min(x1, sx + 1) - Math.max(x0, sx));
+                            if (w <= 0) continue;
+                            int p = src.getPixelRGBA(sx, sy);
+                            double al = (p >>> 24) * w;
+                            area += w;
+                            a += al;
+                            c0 += (p & 255) * al;
+                            c1 += (p >> 8 & 255) * al;
+                            c2 += (p >> 16 & 255) * al;
+                        }
+                    }
+                    int pa = area > 0 ? (int) Math.round(a / area) : 0;
+                    int r0 = a > 0 ? (int) Math.round(c0 / a) : 0, r1 = a > 0 ? (int) Math.round(c1 / a) : 0,
+                            r2 = a > 0 ? (int) Math.round(c2 / a) : 0;
+                    out.setPixelRGBA(ox, oy, pa << 24 | Math.min(255, r2) << 16 | Math.min(255, r1) << 8 | Math.min(255, r0));
+                }
+            }
+            ResourceLocation loc = new ResourceLocation(TFClient.MOD_ID, "pad_sharp/" + name + "_" + px);
+            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(out));
+            return Optional.of(loc);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     /** Textura del pad a la escala grande, con su esquina en (x, y) unidades. */

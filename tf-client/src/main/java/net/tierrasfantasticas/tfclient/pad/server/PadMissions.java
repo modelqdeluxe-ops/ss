@@ -17,7 +17,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,6 +33,7 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsConfig;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 import net.tierrasfantasticas.tfclient.util.TFRotation;
 
@@ -146,12 +146,13 @@ public final class PadMissions {
             st[0] = Math.min(d.amount, st[0] + amount);
             STORE_IMPL.put(slot, d.id, st);
             if (st[0] >= d.amount) {
-                String what = kind.equals("c") ? "Caza completada" : "Misión completada";
                 // 1.3.38: completarla da XP del TF Pass (pase.json: xp.diaria / semanal / caza)
                 long xp = PadPass.missionDone(player, kind);
-                player.displayClientMessage(Component.literal(what + " ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                        .append(Component.literal(d.name + " — reclama tus " + TFEconomy.format(d.coins) + " en el pad (C)"
-                                + (xp > 0 ? " · +" + xp + " XP de TF Pass" : "")).withStyle(ChatFormatting.YELLOW)), true);
+                // una línea de chat (nada encima de la barra): «[Misiones] Completada: X · +35 monedas · +100 XP de pase · cóbrala en el pad (C)»
+                boolean hunt = kind.equals("c");
+                TFChat.send(player, hunt ? "Cazas" : "Misiones", hunt ? ChatFormatting.RED : ChatFormatting.AQUA,
+                        "Completada: ", TFChat.hl(d.name), TFChat.SEP, TFChat.money("+" + TFEconomy.format(d.coins)),
+                        (xp > 0 ? TFChat.SEP + "+" + xp + " XP de pase" : "") + TFChat.SEP + "cóbrala en el pad (C)");
                 player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.4F);
             }
         }

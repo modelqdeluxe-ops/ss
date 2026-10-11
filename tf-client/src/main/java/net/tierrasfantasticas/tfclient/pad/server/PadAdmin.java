@@ -812,7 +812,6 @@ public final class PadAdmin {
             new JobField("maxOficios", "Oficios a la vez", "Cuántos puede tener cada jugador.", false, 1, 10),
             new JobField("esperaCambioMinutos", "Espera para cambiar (min)", "Tras unirse a uno.", false, 0, 1440),
             new JobField("pagoCadaSegundos", "Pago cada (s)", "Cada cuánto se cobra lo ganado.", false, 1, 600),
-            new JobField("avisoActionBar", "Aviso encima de la barra", "+xp y +monedas al trabajar.", true, 0, 1),
             new JobField("bloquesColocadosNoCuentan", "Bloques colocados no cuentan", "Evita poner y romper para ganar.", true, 0, 1),
             new JobField("generadoresCuentan", "Mobs de generador cuentan", "Mejor que no (granjas).", true, 0, 1));
 

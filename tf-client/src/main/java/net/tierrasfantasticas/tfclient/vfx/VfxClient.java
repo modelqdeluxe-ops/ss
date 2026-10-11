@@ -694,12 +694,13 @@ public final class VfxClient {
                     if (bone.shade) n.set(bone.quads[o + 1], bone.quads[o + 2], bone.quads[o + 3]).mul(normal).normalize();
                     else n.set(0, 1, 0).mul(normalView);
                     if (!Float.isFinite(n.x)) n.set(0, 1, 0);
+                    float[] c = VfxModel.uvCenter(bone.quads, o); // esquinas un poco hacia dentro (sin rayas en los bordes)
                     for (int k = 0; k < 4; k++) {
                         int p = o + 4 + k * 5;
                         v.set(bone.quads[p], bone.quads[p + 1], bone.quads[p + 2], 1F);
                         full.transform(v);
-                        float tv = (bone.quads[p + 4] + frame) / frames;
-                        vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(bone.quads[p + 3], tv)
+                        float tv = (VfxModel.insetUv(bone.quads[p + 4], c[1]) + frame) / frames;
+                        vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(VfxModel.insetUv(bone.quads[p + 3], c[0]), tv)
                                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(FULL_BRIGHT).normal(n.x, n.y, n.z).endVertex();
                     }
                 }

@@ -1,8 +1,9 @@
-"""Genera las texturas de los botones del menú de TF.
+"""Genera la textura de los botones de los demás menús de TF (opciones, mundos, conexión...; TFButtonTheme).
+Los del menú principal ya no usan textura: se dibujan en píxeles reales (TFMenuButton, TFMenuPaint, TFMenuIcons).
 
 Diseño: placa con las puntas en ángulo (forma hexagonal alargada), fondo azul noche como el zafiro de la corona del
-logo, doble filete dorado metálico y pequeños rombos dorados con líneas finas en los extremos. El botón principal es de
-oro con letras oscuras. Al pasar el ratón el marco brilla y aparece un halo dorado.
+logo, doble filete dorado metálico y pequeños rombos dorados con líneas finas en los extremos. (make() aún sabe hacer
+la versión de oro, `primary`, que ya no se usa.) Al pasar el ratón el marco brilla y aparece un halo dorado.
 
 Cada PNG mide 64x20 píxeles de interfaz (256x80 de textura por estado) y lleva tres estados apilados (normal, ratón
 encima, desactivado). Se dibuja "en tres piezas": las puntas (CAP = 16 píxeles de interfaz a cada lado) van a tamaño fijo
@@ -154,5 +155,4 @@ def make(name, w_gui, primary):
     print(name, sheet.size)
 
 
-make("button_slice_primary.png", 64, True)
 make("button_slice.png", 64, False)

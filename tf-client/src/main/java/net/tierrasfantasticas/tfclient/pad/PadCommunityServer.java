@@ -34,7 +34,7 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
  * datos (comunidad.json: autor, texto, fecha, likes y denuncias), y se las manda a quien las mira.
  * <ul>
  *   <li>Solo PNG de hasta 640x360 y 600 KB; una cada 90 s y como mucho 40 por jugador (las más viejas no se tocan).</li>
- *   <li>Like: uno por jugador y foto (no a las tuyas). El autor suma likes en sus estadísticas.</li>
+ *   <li>Like: uno por jugador y foto (también a las tuyas). El autor suma en sus estadísticas los likes de los demás.</li>
  *   <li>Borrar: el autor o el staff (nivel 2). Denunciar: avisa al staff conectado; con 5 denuncias se oculta.</li>
  * </ul>
  */
@@ -356,12 +356,11 @@ public final class PadCommunityServer {
                 action = "react";
             }
             switch (action) {
-                case "like" -> {
-                    if (author.equals(me)) break;
+                case "like" -> { // uno por jugador y foto, también en las tuyas (esos no suman a tus estadísticas ni avisan)
                     Set<String> likes = set(p, "likes");
                     UUID au = null;
                     try {
-                        au = UUID.fromString(author);
+                        au = author.equals(me) ? null : UUID.fromString(author);
                     } catch (IllegalArgumentException ignored) {
                         // autor raro
                     }

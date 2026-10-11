@@ -59,8 +59,6 @@ public final class SkillServer {
     private static final Map<UUID, List<String>> OWNED = new HashMap<>();
     /** La skill elegida de cada uno (índice en la barra); se lanza con el siguiente clic o flecha. */
     private static final Map<UUID, Integer> SELECTED = new HashMap<>();
-    /** Los que tienen puesto su ataque básico: después de usar otra skill vuelven a él. */
-    private static final java.util.Set<UUID> BASIC_ON = new java.util.HashSet<>();
     private static boolean dirty;
 
     private static boolean enabled = true;
@@ -236,7 +234,6 @@ public final class SkillServer {
         ServerPlayer player = srv.getPlayerList().getPlayer(uuid);
         PASSIVE_START.remove(uuid);
         SELECTED.remove(uuid);
-        BASIC_ON.remove(uuid);
         if (player == null) return;
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
@@ -259,7 +256,7 @@ public final class SkillServer {
         String cls = classOf(player.getUUID());
         SkillDefs.ClassDef def = SkillDefs.get(cls);
         if (def == null || !enabled) {
-            SkillNet.toPlayer(player, new SkillNet.State("", new int[0], new int[0], -1, false));
+            SkillNet.toPlayer(player, new SkillNet.State("", new int[0], new int[0], -1));
             return;
         }
         List<SkillDefs.SkillDef> actives = def.actives();
@@ -272,7 +269,7 @@ public final class SkillServer {
             left[i] = until == null ? 0 : (int) Math.max(0, until - SkillRuntime.clock);
         }
         Integer sel = SELECTED.get(player.getUUID());
-        SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total, sel == null ? -1 : sel, BASIC_ON.contains(player.getUUID())));
+        SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total, sel == null ? -1 : sel));
     }
 
     private static int cooldownTicks(SkillDefs.SkillDef s) {
@@ -282,14 +279,12 @@ public final class SkillServer {
     // ------------------------------------------------------------------------------------------- lanzar
 
     /**
-     * Eligió la skill «slot» de su barra (teclas 5-0) o ninguna (-1): aún no se lanza. basic: tiene puesto su ataque
-     * básico (se queda elegido; las demás skills se usan una vez y se vuelve a él).
+     * Eligió la skill «slot» de su barra (teclas 5-0) o ninguna (-1): aún no se lanza. Se queda elegida (cada clic la
+     * usa cuando está lista) hasta que elija otra.
      */
-    static void select(ServerPlayer player, int slot, boolean basic) {
+    static void select(ServerPlayer player, int slot) {
         SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
         UUID uuid = player.getUUID();
-        if (basic && def != null && def.basicSlot() >= 0) BASIC_ON.add(uuid);
-        else BASIC_ON.remove(uuid);
         if (def == null || slot < 0 || slot >= def.actives().size()) {
             SELECTED.remove(uuid);
         } else {
@@ -300,46 +295,36 @@ public final class SkillServer {
 
     /**
      * Usa la skill elegida: con el clic izquierdo (bow = false) o al soltar una flecha (bow = true), según la clase.
-     * Deja de estar elegida. false si no había ninguna elegida para ese gesto (entonces el clic es un golpe normal).
+     * Sigue elegida. false si no salió (ninguna elegida, aún no está lista o no se dan sus condiciones: entonces el
+     * clic es un golpe normal, que también lanza las auras de golpe, como las lanzas de la Bruja).
      */
     static boolean useSelected(ServerPlayer player, boolean bow) {
         SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
         UUID uuid = player.getUUID();
         Integer slot = SELECTED.get(uuid);
         if (def == null || slot == null || def.bow() != bow) return false;
-        // Aún no está lista (si es el ataque básico, el clic es un golpe normal y sigue elegido)
+        // Aún no está lista: el clic es un golpe normal
         Map<String, Long> cd = COOLDOWN.get(uuid);
         Long until = slot < def.actives().size() && cd != null ? cd.get(def.actives().get(slot).id()) : null;
         if (until != null && until > SkillRuntime.clock) {
             sync(player); // por si el cliente creía que ya estaba lista
             return false;
         }
-        // Después: el ataque básico sigue elegido; cualquier otra se usa una vez y se vuelve al básico (si lo tiene puesto)
-        int basic = def.basicSlot();
-        if (slot != basic) {
-            if (BASIC_ON.contains(uuid) && basic >= 0) SELECTED.put(uuid, basic);
-            else SELECTED.remove(uuid);
-        }
-        castSlot(player, slot);
-        sync(player);
-        return true;
+        return castSlot(player, slot);
     }
 
-    /** Lanza la skill «slot» de su barra. */
-    private static void castSlot(ServerPlayer player, int slot) {
-        if (!enabled || server == null || !player.isAlive() || player.isSpectator()) return;
+    /** Lanza la skill «slot» de su barra. false si no salió. */
+    private static boolean castSlot(ServerPlayer player, int slot) {
+        if (!enabled || server == null || !player.isAlive() || player.isSpectator()) return false;
         SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
-        if (def == null) return;
+        if (def == null) return false;
         List<SkillDefs.SkillDef> actives = def.actives();
-        if (slot < 0 || slot >= actives.size()) return;
+        if (slot < 0 || slot >= actives.size()) return false;
         SkillDefs.SkillDef s = actives.get(slot);
         Map<String, Long> cd = COOLDOWN.computeIfAbsent(player.getUUID(), k -> new HashMap<>());
         Long until = cd.get(s.id());
-        if (until != null && until > SkillRuntime.clock) return; // aún no (la barra ya lo enseña)
-        if (s.entry() == null) {
-            player.displayClientMessage(Component.literal("Esta skill aún no está lista.").withStyle(ChatFormatting.GRAY), true);
-            return;
-        }
+        if (until != null && until > SkillRuntime.clock) return false; // aún no (la barra ya lo enseña)
+        if (s.entry() == null) return false;
         boolean ok;
         try {
             ok = SkillRuntime.cast(player, def, s);
@@ -351,6 +336,7 @@ public final class SkillServer {
             cd.put(s.id(), SkillRuntime.clock + cooldownTicks(s));
             sync(player);
         }
+        return ok;
     }
 
     // ------------------------------------------------------------------------------------------- eventos
@@ -524,7 +510,6 @@ public final class SkillServer {
         SkillModels.forget(uuid);
         NO_FALL.remove(uuid);
         SELECTED.remove(uuid);
-        BASIC_ON.remove(uuid);
         OWNED.remove(uuid);
         SkillFx.forget(uuid);
         SkillItems.forget(uuid);
@@ -539,7 +524,6 @@ public final class SkillServer {
             SkillModels.forget(player.getUUID());
             SkillItems.forget(player.getUUID());
             SELECTED.remove(player.getUUID());
-            BASIC_ON.remove(player.getUUID());
             sync(player);
         }
     }

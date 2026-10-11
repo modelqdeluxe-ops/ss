@@ -18,6 +18,27 @@ import java.util.Map;
 public final class VfxModel {
     /** Floats por cara: textura, normal (3), 4 vértices × (x, y, z, u, v), emisiva. */
     public static final int QUAD = 25;
+    /** Cuánto se meten las esquinas de cada cara en la textura (en unidades 0-1: medio píxel de una de 1024). */
+    public static final float UV_INSET = 0.0005F;
+
+    /**
+     * Una coordenada de textura movida un poco hacia el centro de su cara (como hace Minecraft al hornear modelos): así
+     * en los bordes no se cuela el píxel de al lado ni, en las texturas animadas, una raya del fotograma siguiente.
+     */
+    public static float insetUv(float uv, float center) {
+        float d = center - uv;
+        return uv + Math.signum(d) * Math.min(UV_INSET, Math.abs(d) * 0.25F);
+    }
+
+    /** El centro de la cara «q» en la textura: {u, v}. */
+    public static float[] uvCenter(float[] quads, int o) {
+        float cu = 0, cv = 0;
+        for (int k = 0; k < 4; k++) {
+            cu += quads[o + 4 + k * 5 + 3] * 0.25F;
+            cv += quads[o + 4 + k * 5 + 4] * 0.25F;
+        }
+        return new float[] {cu, cv};
+    }
 
     public record Tex(String path, int frames, int frameTime, boolean emissive, boolean body) {}
 

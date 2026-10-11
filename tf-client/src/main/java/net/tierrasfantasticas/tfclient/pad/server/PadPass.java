@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -18,6 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 import net.tierrasfantasticas.tfclient.util.TFConfigDir;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
@@ -144,7 +146,8 @@ public final class PadPass {
         STORE_IMPL.changed();
         int lv = levelOf(before + xp);
         if (lv > lvBefore) {
-            TFPadNet.notice(player, "TF Pass: ¡nivel " + lv + "! Reclama tu premio en el pad, app TF Pass.");
+            // en el chat (no encima de la barra): «[TF Pass] Nivel 5 · reclama tu premio en el pad (C)»
+            TFChat.send(player, "TF Pass", ChatFormatting.GREEN, TFChat.hl("Nivel " + lv), TFChat.SEP + "reclama tu premio en el pad (C)");
             player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.7F, 1.6F);
         }
         String shown = PadServer.get(player, "§vista", "");

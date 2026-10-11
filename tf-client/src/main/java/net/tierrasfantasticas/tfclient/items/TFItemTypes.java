@@ -337,7 +337,7 @@ public final class TFItemTypes {
         @Override
         public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
             tooltip.add(Component.literal(slot == EquipmentSlot.HEAD ? "Cosmético · cabeza"
-                    : glides ? "Alas · planean como unas élitros 10 s seguidos (se recargan al tocar el suelo)" : "Cosmético · espalda")
+                    : glides ? "Alas · planean como unas élitros 10 s seguidos (se recargan 3 s después de gastarse)" : "Cosmético · espalda")
                     .withStyle(ChatFormatting.GRAY));
             tooltip(stack, tooltip);
         }

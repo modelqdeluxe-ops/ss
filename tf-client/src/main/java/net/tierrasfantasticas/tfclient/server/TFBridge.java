@@ -38,9 +38,6 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -59,6 +56,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
  * Puente entre el servidor de Minecraft y la web de Tierras Fantásticas (solo en servidores dedicados).
@@ -565,61 +563,41 @@ public final class TFBridge {
         int rgb = color(delivery, rank);
         Style accent = Style.EMPTY.withColor(TextColor.fromRgb(rgb));
         String what = quantity > 1 ? product + " ×" + quantity : product;
-        String upgrade = text(delivery, "upgradeFrom", null);
 
-        // Al comprador: título en pantalla y su mensaje.
-        buyer.connection.send(new ClientboundSetTitlesAnimationPacket(10, 80, 25));
-        buyer.connection.send(new ClientboundSetTitleTextPacket(Component.literal("¡GRACIAS!").withStyle(accent.withBold(true))));
-        buyer.connection.send(new ClientboundSetSubtitleTextPacket(rank != null
-                ? Component.literal("Ahora eres ").withStyle(ChatFormatting.WHITE).append(rank.tag())
-                : Component.literal("Has recibido ").withStyle(ChatFormatting.WHITE).append(Component.literal(what).withStyle(accent))));
-        buyer.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.9f, 1.0f);
+        // Al comprador: una sola línea en el chat (sin título en pantalla). Si es una ruleta, con lo que le tocó.
+        MutableComponent got = Component.literal(what).withStyle(accent);
+        String prizes = prizeList(delivery);
+        if (!prizes.isEmpty()) got.append(Component.literal(" (" + prizes + ")").withStyle(ChatFormatting.GRAY));
+        TFChat.send(buyer, "Tienda", ChatFormatting.GOLD, "Recibiste ", got, ". ¡Gracias por tu compra!");
+        buyer.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.7f, 1.0f);
 
-        if (!TFServerConfig.broadcast()) {
-            buyer.sendSystemMessage(Component.literal("✦ Tu compra ha llegado: ").withStyle(ChatFormatting.GOLD)
-                    .append(Component.literal(what).withStyle(accent.withBold(true)))
-                    .append(Component.literal(". ¡Gracias por apoyar Tierras Fantásticas!").withStyle(ChatFormatting.GOLD)));
-            return;
+        if (!TFServerConfig.broadcast()) return;
+
+        // A los demás: también una línea («[Tienda] Steve compró Rango Mortal»), con clic a la tienda si se sabe.
+        MutableComponent line = TFChat.line("Tienda", ChatFormatting.GOLD, TFChat.hl(name), " compró ",
+                Component.literal(what).withStyle(accent), ".");
+        if (!storeHost.isEmpty()) {
+            line.withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://" + storeHost))
+                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            Component.literal(IDN.toUnicode(storeHost.replaceAll("/.*$", ""))).withStyle(ChatFormatting.GOLD))));
         }
-
-        // A todos: el mensaje enmarcado con el color del producto, un sonido y fuegos artificiales.
-        String store = storeHost.isEmpty() ? "" : IDN.toUnicode(storeHost.replaceAll("/.*$", ""));
-        Component line = Component.literal("  ✦ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ✦").withStyle(accent);
-        MutableComponent who = Component.literal(name).withStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(true));
-        if (TFRanks.of(buyer.getUUID()) != null) who = TFRanks.of(buyer.getUUID()).tag().append(who);
-
-        List<Component> lines = new ArrayList<>();
-        lines.add(Component.empty());
-        lines.add(line);
-        lines.add(Component.literal("        ⚡ ").withStyle(ChatFormatting.YELLOW)
-                .append(Component.literal("¡COMPRA EN LA TIENDA!").withStyle(Style.EMPTY.withColor(ChatFormatting.GOLD).withBold(true)))
-                .append(Component.literal(" ⚡").withStyle(ChatFormatting.YELLOW)));
-        if (rank != null) {
-            lines.add(Component.literal("   ♛ ").withStyle(accent).append(who)
-                    .append(Component.literal(" ahora es ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(rank.prefix().toUpperCase(java.util.Locale.ROOT)).withStyle(accent.withBold(true)))
-                    .append(Component.literal(upgrade != null ? " (mejoró desde " + upgrade.replaceFirst("^Rango ", "") + ")" : "").withStyle(ChatFormatting.DARK_GRAY)));
-        } else {
-            lines.add(Component.literal("   ✧ ").withStyle(accent).append(who)
-                    .append(Component.literal(" ha conseguido ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(what).withStyle(accent.withBold(true))));
-        }
-        lines.add(Component.literal("   ¡Gracias por apoyar Tierras Fantásticas! ").withStyle(ChatFormatting.YELLOW)
-                .append(Component.literal("❤").withStyle(ChatFormatting.RED)));
-        if (!store.isEmpty()) {
-            Style link = Style.EMPTY.withColor(ChatFormatting.AQUA).withUnderlined(true)
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://" + storeHost))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Abrir la tienda").withStyle(ChatFormatting.GOLD)));
-            lines.add(Component.literal("   ➜ ").withStyle(ChatFormatting.GRAY).append(Component.literal(store).withStyle(link)));
-        }
-        lines.add(line);
-        lines.add(Component.empty());
-        for (Component message : lines) srv.getPlayerList().broadcastSystemMessage(message, false);
-
         for (ServerPlayer player : srv.getPlayerList().getPlayers()) {
-            if (player != buyer) player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 0.55f, 1.0f);
+            if (player != buyer) player.sendSystemMessage(line);
         }
+        srv.sendSystemMessage(line); // en la consola, como antes
         if (TFServerConfig.fireworks()) fireworks(buyer, rgb, rank != null ? 3 + Math.min(rank.tier(), 4) : 3);
+    }
+
+    /** Los premios de una ruleta pagada en la web (campo «prizes» de la entrega), en corto: «A, B, C y 2 más». */
+    private static String prizeList(JsonObject delivery) {
+        if (!delivery.has("prizes") || !delivery.get("prizes").isJsonArray()) return "";
+        List<String> names = new ArrayList<>();
+        for (JsonElement e : delivery.getAsJsonArray("prizes")) {
+            if (e.isJsonPrimitive()) names.add(e.getAsString());
+            else if (e.isJsonObject() && e.getAsJsonObject().has("name")) names.add(e.getAsJsonObject().get("name").getAsString());
+        }
+        if (names.size() <= 3) return String.join(", ", names);
+        return String.join(", ", names.subList(0, 3)) + " y " + (names.size() - 3) + " más";
     }
 
     /** Fuegos artificiales del color de la compra alrededor del comprador, escalonados durante unos segundos. */

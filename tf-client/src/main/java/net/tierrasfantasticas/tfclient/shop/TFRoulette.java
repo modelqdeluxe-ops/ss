@@ -17,9 +17,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -31,6 +28,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.economy.TFEconomy;
 import net.tierrasfantasticas.tfclient.server.TFBridge;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
@@ -146,41 +144,21 @@ public final class TFRoulette {
                 capture.add(o);
             }
         }
-        // Mensaje con todo lo que tocó, y anuncio si cayó un arma legendaria
-        MutableComponent msg = Component.literal("✦ Ruleta: ").withStyle(ChatFormatting.GOLD);
+        // Una línea de chat con todo lo que tocó (sin título en pantalla), y otra para todos si cayó un arma legendaria
+        MutableComponent prizes = Component.empty();
         for (int i = 0; i < results.size(); i++) {
             Result r = results.get(i);
-            if (i > 0) msg.append(Component.literal(", ").withStyle(ChatFormatting.GRAY));
-            msg.append(Component.literal(r.name()).withStyle(r.weapon() ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.YELLOW));
+            if (i > 0) prizes.append(Component.literal(", ").withStyle(ChatFormatting.GRAY));
+            prizes.append(Component.literal(r.name()).withStyle(r.weapon() ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.WHITE));
         }
-        player.sendSystemMessage(msg);
-        Result best = best(results);
-        player.connection.send(new ClientboundSetTitlesAnimationPacket(6, 40, 12));
-        player.connection.send(new ClientboundSetTitleTextPacket(Component.literal(best.weapon() ? "¡ARMA LEGENDARIA!" : "¡Premio!")
-                .withStyle(best.weapon() ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD)));
-        player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal(best.name()).withStyle(ChatFormatting.WHITE)));
-        player.playNotifySound(best.weapon() ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.8F, 1.0F);
+        TFChat.send(player, "Ruleta", ChatFormatting.LIGHT_PURPLE, results.size() == 1 ? "Premio: " : "Premios: ", prizes);
+        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.7F, 1.0F);
         for (Result r : results) {
             if (r.weapon()) {
-                server.getPlayerList().broadcastSystemMessage(Component.literal("✦ " + name + " ha ganado ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                        .append(Component.literal(r.name()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
-                        .append(Component.literal(" en la ruleta").withStyle(ChatFormatting.LIGHT_PURPLE)), false);
+                server.getPlayerList().broadcastSystemMessage(TFChat.line("Ruleta", ChatFormatting.LIGHT_PURPLE, TFChat.hl(name),
+                        " ganó ", Component.literal(r.name()).withStyle(ChatFormatting.LIGHT_PURPLE), "."), false);
             }
         }
-    }
-
-    /** El premio más raro de la tirada (el que se enseña al final de la animación). */
-    private static Result best(List<Result> results) {
-        Result best = results.get(0);
-        double bestChance = Double.MAX_VALUE;
-        for (Result r : results) {
-            double c = r.weapon() ? -1 : config.pool().stream().filter(p -> p.id().equals(r.id())).mapToDouble(Prize::chance).findFirst().orElse(100);
-            if (c < bestChance) {
-                bestChance = c;
-                best = r;
-            }
-        }
-        return best;
     }
 
     /** Lo usa el puente: apunta los premios de los comandos que se ejecuten hasta stopCapture (para la web). */
@@ -215,7 +193,7 @@ public final class TFRoulette {
         if (results == null) {
             ctx.getSource().sendFailure(Component.literal("No tenías bastantes monedas en el servidor (" + n + " giro" + (n > 1 ? "s" : "")
                     + " = " + TFEconomy.format(config.coinPrice() * n) + "). No se ha cobrado nada."));
-            player.sendSystemMessage(Component.literal("La ruleta de la web no pudo girar: necesitas "
+            TFChat.send(player, "Ruleta", ChatFormatting.LIGHT_PURPLE, Component.literal("Giro no realizado: necesitas "
                     + TFEconomy.format(config.coinPrice() * n) + ".").withStyle(ChatFormatting.RED));
             return 0;
         }

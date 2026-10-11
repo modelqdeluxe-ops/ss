@@ -25,6 +25,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
@@ -90,10 +91,9 @@ public final class PadTitles {
             if (t.need <= 0 || seen.contains(t.id) || !unlocked(player.getUUID(), t)) continue;
             seen.add(t.id);
             changed = true;
-            player.sendSystemMessage(Component.literal("¡Nuevo título! ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                    .append(Component.literal("«" + t.name + "»").withStyle(t.color))
-                    .append(Component.literal(" — póntelo en el pad (C) → Títulos.").withStyle(ChatFormatting.YELLOW)));
-            player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 0.5F, 1.2F);
+            TFChat.send(player, "Títulos", ChatFormatting.LIGHT_PURPLE, "Nuevo título: ",
+                    Component.literal(t.name).withStyle(t.color), TFChat.SEP + "póntelo en el pad (C)");
+            player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.MASTER, 0.5F, 1.2F);
         }
         if (changed) {
             JsonArray a = new JsonArray();
