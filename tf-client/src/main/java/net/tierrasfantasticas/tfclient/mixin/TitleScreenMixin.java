@@ -136,16 +136,20 @@ public abstract class TitleScreenMixin extends Screen {
             this.removeWidget(child);
         }
 
-        // Servidor y mundo local a lo ancho; debajo, filas de dos: Mods y Web, Opciones y Salir, WhatsApp y Discord
-        // (solo esos dos con icono, el de su marca)
+        // Servidor, mundo local y mods a lo ancho; debajo Opciones y Salir, y abajo WhatsApp, Web y Discord (solo
+        // WhatsApp y Discord con icono, el de su marca)
         this.addRenderableWidget(TFMenuButton.server(x, top, 200));
         this.tfclient$swap(singleplayer, x, top + 24, 200, "Mundo local", null, TFMenuButton.Kind.SECONDARY);
-        if (mods != null) this.tfclient$swap(mods, x, top + 48, 98, "Mods", null, TFMenuButton.Kind.SECONDARY);
-        this.addRenderableWidget(TFMenuButton.web(mods != null ? x + 102 : x, top + 48, mods != null ? 98 : 200));
-        if (options != null) this.tfclient$swap(options, x, top + 72, 98, "Opciones", null, TFMenuButton.Kind.SECONDARY);
-        if (quit != null) this.tfclient$swap(quit, x + 102, top + 72, 98, "Salir", null, TFMenuButton.Kind.DANGER);
-        this.addRenderableWidget(TFMenuButton.whatsapp(x, top + 96, 98));
-        this.addRenderableWidget(TFMenuButton.discord(x + 102, top + 96, 98));
+        int row = top + 48;
+        if (mods != null) {
+            this.tfclient$swap(mods, x, row, 200, "Mods", null, TFMenuButton.Kind.SECONDARY);
+            row += 24;
+        }
+        if (options != null) this.tfclient$swap(options, x, row, 98, "Opciones", null, TFMenuButton.Kind.SECONDARY);
+        if (quit != null) this.tfclient$swap(quit, x + 102, row, 98, "Salir", null, TFMenuButton.Kind.DANGER);
+        this.addRenderableWidget(TFMenuButton.whatsapp(x, row + 24, 70));
+        this.addRenderableWidget(TFMenuButton.web(x + 74, row + 24, 52));
+        this.addRenderableWidget(TFMenuButton.discord(x + 130, row + 24, 70));
     }
 
     @Unique

@@ -15,19 +15,11 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.TFConfig;
 
 /**
- * Botón del menú principal de TF (y de las pantallas que salen de él). Diseño plano y sobrio:
- * <ul>
- *   <li><b>Principal</b> (entrar al servidor): dorado liso, borde fino más oscuro y una línea de luz arriba; letras
- *   oscuras.</li>
- *   <li><b>Secundario</b>: panel oscuro casi negro semitransparente con un borde fino claro. Al pasar el ratón (o con el
- *   foco del teclado) el panel se aclara un poco y el borde y el texto se vuelven dorados.</li>
- *   <li><b>Salir</b>: igual, pero en rojo al pasar el ratón.</li>
- *   <li><b>WhatsApp y Discord</b>: los únicos con icono, en el color de cada marca (verde y azul), que es también el
- *   del borde al pasar el ratón.</li>
- * </ul>
- * Sin degradados de cristal, halos ni destellos. Todo se dibuja en píxeles reales (TFMenuPaint, TFMenuIcons) y la letra
- * Cinzel se elige con los glifos hechos para la escala de interfaz actual: nítido en cualquier escala. Pulsado: más
- * oscuro.
+ * Botón del menú principal de TF (y de las pantallas que salen de él): placas opacas con textura en pixel art
+ * (textures/gui/menu_buttons.png, de tools/gen_menu_buttons.py), 1 píxel de textura por píxel de interfaz, nítidas en
+ * cualquier escala. Piedra pizarra con grano y marco de metal dorado biselado con remaches; el principal, de oro. Al
+ * pasar el ratón (o con el foco del teclado) la placa se ilumina con un fundido suave; Salir se pone roja. Solo WhatsApp
+ * y Discord llevan icono, en el color de su marca. La placa se corta en tres (4 px a cada lado y el centro), sin estirar.
  */
 public class TFMenuButton extends Button {
     public static final ResourceLocation FONT = new ResourceLocation(TFClient.MOD_ID, "cinzel");
@@ -44,7 +36,11 @@ public class TFMenuButton extends Button {
     /** El texto va en y + alto/2 - TEXT_UP: así las letras de Cinzel quedan centradas a la vista. */
     private static final float TEXT_UP = 3f;
     private static final float HOVER_MS = 110f;
-    private static final int GOLD = 0xE9C46A, GOLD_TEXT = 0xFFE3A0, RED = 0xE2556B, RED_TEXT = 0xFFC9D2;
+    private static final int GOLD_TEXT = 0xFFE08A, RED_TEXT = 0xFFC9D2;
+    private static final ResourceLocation TEX = new ResourceLocation(TFClient.MOD_ID, "textures/gui/menu_buttons.png");
+    /** Placas de la textura (una debajo de otra, de 200x20). */
+    private static final int NORMAL = 0, HOVER = 1, PRESSED = 2, PRIMARY_NORMAL = 3, PRIMARY_HOVER = 4, PRIMARY_PRESSED = 5,
+            DANGER_HOVER = 6, DISABLED = 7, TEX_W = 200, TEX_H = 160, PLATE_H = 20, SIDE = 4;
     private static final int WHATSAPP_GREEN = 0x25D366, DISCORD_BLURPLE = 0x5865F2;
 
     private final Kind kind;
@@ -116,66 +112,38 @@ public class TFMenuButton extends Button {
         float e = this.active ? hover * hover * (3f - 2f * hover) : 0f;
         float alpha = this.alpha;
 
-        // Placa, en píxeles reales
-        int r = 2 * s;
-        int t = s < 4 ? 1 : 2;
-        int x = getX() * s;
-        int y = getY() * s;
-        int w = getWidth() * s;
-        int h = getHeight() * s;
-        g.pose().pushPose();
-        g.pose().scale(1f / s, 1f / s, 1f);
-        if (kind == Kind.PRIMARY) paintGold(g, x, y, w, h, r, t, s, e, pressed, alpha);
-        else paintPanel(g, x, y, w, h, r, t, e, pressed, alpha);
-        g.pose().popPose();
-
-        paintContent(g, mc.font, s, x, y, h, e, alpha);
-    }
-
-    /** El color del borde y del texto al pasar el ratón. */
-    private int accent() {
-        return switch (kind) {
-            case DANGER -> RED;
-            case WHATSAPP -> WHATSAPP_GREEN;
-            case DISCORD -> DISCORD_BLURPLE;
-            default -> GOLD;
-        };
-    }
-
-    /** Dorado liso del botón principal. */
-    private void paintGold(GuiGraphics g, int x, int y, int w, int h, int r, int t, int s, float e, boolean pressed, float alpha) {
-        int top = TFMenuPaint.lerp(0xFFF3C553, 0xFFFFD46A, e);
-        int bot = TFMenuPaint.lerp(0xFFDDA437, 0xFFEBB445, e);
-        if (pressed) {
-            top = TFMenuPaint.lerp(top, 0xFFB98322, 0.5f);
-            bot = TFMenuPaint.lerp(bot, 0xFFB98322, 0.5f);
-        }
+        // Placa: la de reposo y, encima, la iluminada con la opacidad del ratón (fundido suave)
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        boolean primary = kind == Kind.PRIMARY;
         if (!this.active) {
-            top = TFMenuPaint.lerp(top, 0xFF5E5E66, 0.75f);
-            bot = TFMenuPaint.lerp(bot, 0xFF4C4C54, 0.75f);
+            plate(g, DISABLED, alpha);
+        } else if (pressed) {
+            plate(g, primary ? PRIMARY_PRESSED : PRESSED, alpha);
+        } else {
+            plate(g, primary ? PRIMARY_NORMAL : NORMAL, alpha);
+            if (e > 0.01f) plate(g, primary ? PRIMARY_HOVER : kind == Kind.DANGER ? DANGER_HOVER : HOVER, alpha * e);
         }
-        int topA = TFMenuPaint.withAlpha(top, alpha), botA = TFMenuPaint.withAlpha(bot, alpha);
-        int lightA = TFMenuPaint.argb(0.55f * alpha, 0xFFF3C8);
-        int ringA = TFMenuPaint.argb(0.95f * alpha, 0x7A4E0E);
-        int line = Math.max(1, s / 2);
-        g.drawManaged(() -> {
-            TFMenuPaint.roundFill(g, x, y, w, h, r, t, 0, h, topA, botA);
-            g.fill(x + r, y + t, x + w - r, y + t + line, lightA); // línea de luz arriba
-            TFMenuPaint.roundRing(g, x, y, w, h, r, t, ringA, ringA);
-        });
+        g.setColor(1f, 1f, 1f, 1f);
+
+        paintContent(g, mc.font, s, getX() * s, getY() * s, getHeight() * s, e, alpha);
     }
 
-    /** Panel oscuro de los demás botones. */
-    private void paintPanel(GuiGraphics g, int x, int y, int w, int h, int r, int t, float e, boolean pressed, float alpha) {
-        int fill = TFMenuPaint.lerp(TFMenuPaint.argb(0.74f, 0x0A0C14), TFMenuPaint.argb(0.84f, 0x171B28), e);
-        if (pressed) fill = TFMenuPaint.argb(0.85f, 0x05060A);
-        int ring = TFMenuPaint.lerp(TFMenuPaint.argb(0.22f, 0xFFFFFF), TFMenuPaint.argb(0.95f, accent()), e);
-        if (!this.active) ring = TFMenuPaint.argb(0.10f, 0xFFFFFF);
-        int fillA = TFMenuPaint.withAlpha(fill, alpha), ringA = TFMenuPaint.withAlpha(ring, alpha);
-        g.drawManaged(() -> {
-            TFMenuPaint.roundFill(g, x, y, w, h, r, t, 0, h, fillA, fillA);
-            TFMenuPaint.roundRing(g, x, y, w, h, r, t, ringA, ringA);
-        });
+    /** Una placa de la textura en el botón: los 4 px de cada lado tal cual y el centro cortado (o repetido si es largo). */
+    private void plate(GuiGraphics g, int index, float alpha) {
+        int x = getX(), y = getY(), w = getWidth(), h = Math.min(getHeight(), PLATE_H), v = index * PLATE_H;
+        g.setColor(1f, 1f, 1f, alpha);
+        g.blit(TEX, x, y, 0, v, SIDE, h, TEX_W, TEX_H);
+        int mid = TEX_W - 2 * SIDE;
+        for (int done = 0; done < w - 2 * SIDE; done += mid) {
+            g.blit(TEX, x + SIDE + done, y, SIDE, v, Math.min(mid, w - 2 * SIDE - done), h, TEX_W, TEX_H);
+        }
+        g.blit(TEX, x + w - SIDE, y, TEX_W - SIDE, v, SIDE, h, TEX_W, TEX_H);
+    }
+
+    /** El color del icono (WhatsApp verde, Discord azul). */
+    private int accent() {
+        return kind == Kind.WHATSAPP ? WHATSAPP_GREEN : kind == Kind.DISCORD ? DISCORD_BLURPLE : GOLD_TEXT;
     }
 
     /** Icono (solo WhatsApp y Discord) y texto centrados juntos, con una sombra suave. */
@@ -186,17 +154,13 @@ public class TFMenuButton extends Button {
         if (!this.active) ink = 0x7C8299;
         else if (gold) ink = 0x2A1A04;
         else {
-            int hotInk = switch (kind) {
-                case DANGER -> RED_TEXT;
-                case WHATSAPP, DISCORD -> 0xFFFFFF;
-                default -> GOLD_TEXT;
-            };
-            ink = TFMenuPaint.lerp(0xFFE9ECF5, 0xFF000000 | hotInk, e) & 0xFFFFFF;
+            int hotInk = kind == Kind.DANGER ? RED_TEXT : GOLD_TEXT;
+            ink = TFMenuPaint.lerp(0xFFF3EFFF, 0xFF000000 | hotInk, e) & 0xFFFFFF;
         }
 
         MutableComponent text = Component.literal(getMessage().getString()).setStyle(Style.EMPTY.withFont(fontFor(s)));
         int textW = font.width(text);
-        int maxW = getWidth() - 2 * Math.min(10, getWidth() / 6);
+        int maxW = getWidth() - 2 * Math.min(10, getWidth() / 12);
         boolean withIcon = icon != null && textW + TFMenuIcons.SIZE + GAP <= maxW;
         int group = textW + (withIcon ? TFMenuIcons.SIZE + GAP : 0);
         float scale = group > maxW && group > 0 ? Math.max(0.6f, maxW / (float) group) : 1f;
@@ -217,7 +181,8 @@ public class TFMenuButton extends Button {
 
         FormattedCharSequence seq = text.getVisualOrderText();
         float ty = snap(getY() + getHeight() / 2f - TEXT_UP * scale, s);
-        if (!gold) drawText(g, font, seq, gx, ty + shadowOff / (float) s, scale, TFMenuPaint.argb(0.5f * alpha, 0x000000));
+        if (gold) drawText(g, font, seq, gx, ty + shadowOff / (float) s, scale, TFMenuPaint.argb(0.6f * alpha, 0xFFF0C0));
+        else drawText(g, font, seq, gx, ty + shadowOff / (float) s, scale, TFMenuPaint.argb(0.75f * alpha, 0x000000));
         drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
     }
 
