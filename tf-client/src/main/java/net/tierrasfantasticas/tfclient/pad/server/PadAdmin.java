@@ -122,6 +122,7 @@ public final class PadAdmin {
 
     private static final List<AppInfo> PLAYER_APPS = List.of(
             new AppInfo("musica", "Música", Items.MUSIC_DISC_CAT), new AppInfo("oficios", "Oficios", Items.IRON_PICKAXE), new AppInfo("misiones", "Misiones", Items.WRITABLE_BOOK),
+            new AppInfo("pase", "TF Pass", Items.NETHER_STAR), new AppInfo("gachapon", "Gachapón", Items.EMERALD),
             new AppInfo("cazas", "Cazas", Items.CROSSBOW), new AppInfo("recompensas", "Recompensas", Items.CHEST_MINECART),
             new AppInfo("tienda", "Tienda", Items.CHEST),
             new AppInfo("gts", "GTS", Items.EMERALD), new AppInfo("monedero", "Monedero", Items.GOLD_INGOT),

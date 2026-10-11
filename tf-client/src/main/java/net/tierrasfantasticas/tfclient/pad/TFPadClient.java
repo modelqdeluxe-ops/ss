@@ -47,6 +47,11 @@ public final class TFPadClient {
         if (mc.screen instanceof TFPadScreen) mc.setScreen(null);
     }
 
+    /** Datos de una app con página propia (Gachapón, TF Pass): si es la que está abierta, los recibe. */
+    static void data(String app, String json) {
+        if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadDataPage p && p.app.equals(app)) p.set(json);
+    }
+
     static void view(PadView v) {
         if (Minecraft.getInstance().screen instanceof TFPadScreen pad) pad.view(v);
     }

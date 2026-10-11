@@ -52,6 +52,8 @@ public final class TFPadNet {
                 .encoder(Close::write).decoder(Close::read).consumerMainThread(Close::handle).add();
         CHANNEL.messageBuilder(OpenApp.class, 7, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(OpenApp::write).decoder(OpenApp::read).consumerMainThread(OpenApp::handle).add();
+        CHANNEL.messageBuilder(Data.class, 8, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Data::write).decoder(Data::read).consumerMainThread(Data::handle).add();
         PadCommunityNet.register(CHANNEL, 10);
         PadSpeakerNet.register(CHANNEL, 20);
     }
@@ -126,9 +128,10 @@ public final class TFPadNet {
      * Datos del jugador para el pad. balance es -1 si la economía no deja ver el saldo; rank vacío si no tiene rango;
      * homes -1 si no se sabe.
      */
-    public record State(long balance, String currency, String rank, int rankColor, int homes, List<String> disabled) {
+    public record State(long balance, String currency, String rank, int rankColor, int homes, List<String> disabled, long green) {
         static void write(State m, FriendlyByteBuf buf) {
             buf.writeLong(m.balance);
+            buf.writeLong(m.green);
             buf.writeUtf(m.currency, 64);
             buf.writeUtf(m.rank, 64);
             buf.writeInt(m.rankColor);
@@ -138,12 +141,12 @@ public final class TFPadNet {
         }
 
         static State read(FriendlyByteBuf buf) {
-            long balance = buf.readLong();
+            long balance = buf.readLong(), green = buf.readLong();
             String currency = buf.readUtf(64), rank = buf.readUtf(64);
             int color = buf.readInt(), homes = buf.readInt();
             List<String> off = new java.util.ArrayList<>();
             for (int i = buf.readVarInt(); i > 0; i--) off.add(buf.readUtf(32));
-            return new State(balance, currency, rank, color, homes, off);
+            return new State(balance, currency, rank, color, homes, off, green);
         }
 
         static void handle(State m, Supplier<NetworkEvent.Context> ctx) {
@@ -186,6 +189,31 @@ public final class TFPadNet {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TFPadClient.view(m.view));
             ctx.get().setPacketHandled(true);
         }
+    }
+
+    /**
+     * Los datos de una app que dibuja el cliente con su propia página (1.3.38: Gachapón y TF Pass), en JSON: lo que
+     * tiene el jugador, los premios, el resultado de una tirada… El cliente lo pide con Open y sus botones son Action,
+     * como las demás apps.
+     */
+    public record Data(String app, String json) {
+        static void write(Data m, FriendlyByteBuf buf) {
+            buf.writeUtf(m.app, 32);
+            buf.writeUtf(m.json, 262144);
+        }
+
+        static Data read(FriendlyByteBuf buf) {
+            return new Data(buf.readUtf(32), buf.readUtf(262144));
+        }
+
+        static void handle(Data m, Supplier<NetworkEvent.Context> ctx) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TFPadClient.data(m.app, m.json));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    public static void sendData(ServerPlayer player, String app, com.google.gson.JsonObject json) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Data(app, json.toString()));
     }
 
     /** Cierra el pad (por ejemplo, al empezar la cuenta atrás de un viaje). */
@@ -235,7 +263,8 @@ public final class TFPadNet {
         TFRanks.Rank rank = TFRanks.full(TFRanks.of(player.getUUID()));
         State state = new State(balance.isPresent() ? balance.getAsLong() : -1, cut(TFServerConfig.currency()),
                 rank == null ? "" : cut(rank.name()), rank == null || rank.hex() < 0 ? 0xFFFFFF : rank.hex(),
-                rank == null ? -1 : rank.homes(), PadConfig.disabledApps());
+                rank == null ? -1 : rank.homes(), PadConfig.disabledApps(),
+                net.tierrasfantasticas.tfclient.pad.server.PadGreen.balance(player.getUUID()));
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), state);
     }
 

@@ -44,13 +44,26 @@ public final class TFPadScreen extends Screen {
      * oro de los lados. Lo que se alarga depende de lo alta que sea la pantalla.
      */
     static final int STRETCH_U = 430, STRETCH_D = 596;
-    static final int MAX_EXTRA = 40;
+    static final int MAX_EXTRA = 48;
+    /**
+     * Y para hacerlo más ancho (1.3.38): se repite una columna lisa a cada lado de la gema de arriba (columnas de la
+     * imagen, simétricas respecto al centro 784: por las barras azules de arriba y de abajo y el cristal), hasta
+     * MAX_EXTRA_X píxeles de pad por lado.
+     */
+    static final int STRETCH_L = 540, STRETCH_R = 1028;
+    static final int MAX_EXTRA_X = 24;
+    /**
+     * Lo que se ve del marco (frame.png tiene márgenes transparentes, sobre todo abajo): de x 10 a 382 y de y 2 a 235
+     * en píxeles de pad. El tamaño y el centrado se calculan con esto, no con la imagen entera: así el pad sale más
+     * grande y centrado de verdad en la pantalla.
+     */
+    static final int VIS_L = 10, VIS_R = 382, VIS_T = 2, VIS_B = 235;
     static final int NAVY = 0xFF18265C;
     /** Altura de la barra de arriba, en unidades de pantalla. */
     /** Alto de la barra de arriba con escala grande 1 (ver {@link #bar}). */
     static final int BAR = 18;
     /** Apps con página propia en el cliente; las demás las dibuja el servidor. */
-    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web");
+    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web", "gachapon", "pase");
     private static final Map<String, int[]> SIZES = new HashMap<>();
 
     /** Escala de la interfaz de Minecraft, píxeles reales por píxel de pad y por unidad de pantalla. */
@@ -65,8 +78,8 @@ public final class TFPadScreen extends Screen {
     int bar = BAR;
     /** Esquina del marco y del cristal, en píxeles reales. */
     private int fx, fy, gx, gy;
-    /** Píxeles de pad que se añaden arriba y abajo del cristal (ver {@link #STRETCH_U}). */
-    private int extra;
+    /** Píxeles de pad que se añaden arriba y abajo del cristal (ver {@link #STRETCH_U}) y a cada lado (STRETCH_L/R). */
+    private int extra, extraX;
     /** El cristal en unidades de pantalla. */
     int unitsW = GW, unitsH = GH;
     final boolean admin;
@@ -145,6 +158,16 @@ public final class TFPadScreen extends Screen {
         g.pose().scale(bs, bs, 1);
         PadFont.drawCentered(g, text, 0, 0, rgb, true);
         g.pose().popPose();
+    }
+
+    /** Píxeles reales por unidad de contenido. */
+    int cs() {
+        return cs;
+    }
+
+    /** Píxeles reales por píxel de textura a la escala grande. */
+    int bigPx() {
+        return big;
     }
 
     /** Tamaño en unidades de algo que mide n píxeles de textura a la escala grande. */
@@ -283,6 +306,10 @@ public final class TFPadScreen extends Screen {
             case "camara" -> setPage(new PadCameraPage(this));
             case "ajustes" -> setPage(new PadInfoPages.Ajustes(this));
             case "musica" -> setPage(new PadMusicPage(this));
+            case "gachapon", "pase" -> { // páginas propias con los datos del servidor
+                setPage(id.equals("pase") ? new PadPassPage(this) : new PadGachaPage(this));
+                TFPadClient.openServerApp(id, tab);
+            }
             default -> {
             }
         }
@@ -302,14 +329,17 @@ public final class TFPadScreen extends Screen {
         var window = Minecraft.getInstance().getWindow();
         gs = window.getGuiScale();
         int fbW = window.getWidth(), fbH = window.getHeight();
-        ps = Math.max(1, (int) Math.floor(Math.min(fbW * 0.97 / W, fbH * 0.97 / H)));
+        int visW = VIS_R - VIS_L, visH = VIS_B - VIS_T;
+        ps = Math.max(1, (int) Math.floor(Math.min(fbW * 0.97 / visW, fbH * 0.975 / visH)));
         cs = ps <= 2 ? ps : Math.max(2, Math.round(ps / 2F));
-        extra = Math.max(0, Math.min(MAX_EXTRA, (int) Math.floor((fbH * 0.985 / ps - H) / 2)));
-        fx = (fbW - W * ps) / 2;
-        fy = (fbH - (H + extra * 2) * ps) / 2;
+        extra = Math.max(0, Math.min(MAX_EXTRA, (int) Math.floor((fbH * 0.985 / ps - visH) / 2)));
+        extraX = Math.max(0, Math.min(MAX_EXTRA_X, (int) Math.floor((fbW * 0.97 / ps - visW) / 2)));
+        // centrado por lo que se ve del marco (no por la imagen entera, que tiene más margen abajo)
+        fx = (fbW - (visW + extraX * 2) * ps) / 2 - VIS_L * ps;
+        fy = (fbH - (visH + extra * 2) * ps) / 2 - VIS_T * ps;
         gx = fx + GX * ps;
         gy = fy + GY * ps;
-        unitsW = GW * ps / cs;
+        unitsW = (GW + extraX * 2) * ps / cs;
         unitsH = (GH + extra * 2) * ps / cs;
         big = Math.max(cs, Math.round(ps * 0.75F));
         bs = big / (float) cs;
@@ -398,15 +428,31 @@ public final class TFPadScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
-    /** El marco en píxeles de la imagen (1568x1003), alargado extra píxeles de pad arriba y abajo del cristal. */
+    /**
+     * El marco en píxeles de la imagen (1568x1003), alargado extra píxeles de pad arriba y abajo del cristal y extraX a
+     * cada lado de la gema de arriba: se parte en 3x3 trozos y las filas/columnas lisas de entre medias se estiran.
+     */
     private void drawFrame(GuiGraphics g) {
         ResourceLocation t = tex("frame");
-        int e = extra * 4, iw = 1568, ih = 1003;
-        g.blit(t, 0, 0, iw, STRETCH_U, 0, 0, iw, STRETCH_U, iw, ih);
-        if (e > 0) g.blit(t, 0, STRETCH_U, iw, e, 0, STRETCH_U, iw, 1, iw, ih);
-        g.blit(t, 0, STRETCH_U + e, iw, STRETCH_D - STRETCH_U, 0, STRETCH_U, iw, STRETCH_D - STRETCH_U, iw, ih);
-        if (e > 0) g.blit(t, 0, STRETCH_D + e, iw, e, 0, STRETCH_D, iw, 1, iw, ih);
-        g.blit(t, 0, STRETCH_D + e * 2, iw, ih - STRETCH_D, 0, STRETCH_D, iw, ih - STRETCH_D, iw, ih);
+        int e = extra * 4, ex = extraX * 4, iw = 1568, ih = 1003;
+        // columnas: [0, L) tal cual · L repetida ex veces · [L, R) tal cual · R repetida ex veces · [R, iw) tal cual
+        int[][] cols = {{0, STRETCH_L, 0}, {STRETCH_L, 1, ex}, {STRETCH_L, STRETCH_R - STRETCH_L, 0}, {STRETCH_R, 1, ex},
+                {STRETCH_R, iw - STRETCH_R, 0}};
+        int[][] rows = {{0, STRETCH_U, 0}, {STRETCH_U, 1, e}, {STRETCH_U, STRETCH_D - STRETCH_U, 0}, {STRETCH_D, 1, e},
+                {STRETCH_D, ih - STRETCH_D, 0}};
+        int dy = 0;
+        for (int[] r : rows) {
+            int h = r[2] > 0 ? r[2] : r[1];
+            if (h <= 0) continue;
+            int dx = 0;
+            for (int[] c : cols) {
+                int w = c[2] > 0 ? c[2] : c[1];
+                if (w <= 0) continue;
+                g.blit(t, dx, dy, w, h, c[0], r[0], c[1], r[1], iw, ih);
+                dx += w;
+            }
+            dy += h;
+        }
     }
 
     private int backX() {
@@ -443,7 +489,6 @@ public final class TFPadScreen extends Screen {
             g.pose().popPose();
         }
         float textY = bar / 2F - 5.5F * bs;
-        textBig(g, page.title(), unitsW / 2F, textY, admin && page == home ? 0xFFD36A : 0xFFFFFF);
         int right = gearX();
         boolean gearHover = PadUi.inside(mx, my, right - 1, by, bsz + 2, bsz);
         if (gearHover) hover("§gear");
@@ -466,6 +511,20 @@ public final class TFPadScreen extends Screen {
             g.pose().popPose();
             right -= big(14);
             blitBig(g, "coin", right, (bar - big(11)) / 2F);
+            right -= big(8);
+        }
+        // 1.3.38: las monedas verdes (las del Gachapón, se ganan con el TF Pass)
+        if (s != null && !admin) {
+            String greens = PadUi.THOUSANDS.format(s.green());
+            int w = big(PadFont.width(greens));
+            right -= w;
+            g.pose().pushPose();
+            g.pose().translate(right, textY + bs, 0);
+            g.pose().scale(bs, bs, 1);
+            PadFont.draw(g, greens, 0, 0, 0x8CF0B4, true);
+            g.pose().popPose();
+            right -= big(14);
+            blitBig(g, "coin_green", right, (bar - big(11)) / 2F);
             right -= big(8);
         }
         if (mc.level != null) {
@@ -502,6 +561,11 @@ public final class TFPadScreen extends Screen {
         } else {
             musicX = -1000;
         }
+        // el título, centrado; si lo de la derecha (hora, monedas…) llegara hasta él, se aparta (nunca se pisan)
+        float tw = big(PadFont.width(page.title()));
+        float cx = Math.min(unitsW / 2F, right - big(6) - tw / 2F);
+        cx = Math.max(cx, backX() + big(12) + big(6) + tw / 2F);
+        textBig(g, page.title(), cx, textY, admin && page == home ? 0xFFD36A : 0xFFFFFF);
     }
 
     private int musicX = -1000;

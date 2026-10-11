@@ -147,9 +147,11 @@ public final class PadMissions {
             STORE_IMPL.put(slot, d.id, st);
             if (st[0] >= d.amount) {
                 String what = kind.equals("c") ? "Caza completada" : "Misión completada";
+                // 1.3.38: completarla da XP del TF Pass (pase.json: xp.diaria / semanal / caza)
+                long xp = PadPass.missionDone(player, kind);
                 player.displayClientMessage(Component.literal(what + " ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                        .append(Component.literal(d.name + " — reclama tus " + TFEconomy.format(d.coins) + " en el pad (C)")
-                                .withStyle(ChatFormatting.YELLOW)), true);
+                        .append(Component.literal(d.name + " — reclama tus " + TFEconomy.format(d.coins) + " en el pad (C)"
+                                + (xp > 0 ? " · +" + xp + " XP de TF Pass" : "")).withStyle(ChatFormatting.YELLOW)), true);
                 player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.4F);
             }
         }
@@ -187,7 +189,8 @@ public final class PadMissions {
         boolean done = st[0] >= d.amount, claimed = st[1] != 0;
         PadView.Btn btn = claimed ? PadView.Btn.off("HECHA") : done ? PadView.Btn.of("RECLAMAR", "reclamar:" + kind + ":" + d.id, PadView.GREEN) : null;
         List<String> lines = new ArrayList<>();
-        lines.add(d.desc + "  ·  " + Math.min(st[0], d.amount) + "/" + d.amount);
+        long passXp = PadPass.xpOf(kind);
+        lines.add(d.desc + "  ·  " + Math.min(st[0], d.amount) + "/" + d.amount + (passXp > 0 ? "  ·  +" + passXp + " XP de pase" : ""));
         return new PadView.Row(new ItemStack(d.item()), d.name, claimed ? 0x7E8CA8 : 0x18265C, lines,
                 Math.min(1F, st[0] / (float) d.amount), "+" + PadView.money(d.coins), btn, null);
     }

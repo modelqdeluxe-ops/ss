@@ -36,6 +36,9 @@ public final class TFItems {
     /** La Fantastic Coin: la moneda de oro de Tierras Fantásticas. Solo es el icono de las monedas en los menús (la
      *  tienda /tf shop, los oficios): el saldo es el de la economía del servidor (TFEconomy), no un objeto. */
     public static RegistryObject<Item> COIN;
+    /** La moneda verde (1.3.38): la de abrir el Gachapón del pad. También es solo un icono: el saldo lo lleva el
+     *  servidor (pad/server/PadGreen) y solo se gana con el TF Pass. */
+    public static RegistryObject<Item> GREEN_COIN;
     public static RegistryObject<Item> ADMIN_PAD;
     public static final List<String> JOB_ICONS = List.of("farmer", "miner", "wood_cutter", "digger", "fisherman", "hunter",
             "alchemist", "blacksmith", "builder", "enchanter");
@@ -74,6 +77,7 @@ public final class TFItems {
         }
         for (String icon : JOB_ICONS) ITEMS.register("job_" + icon, () -> new Item(new Item.Properties().stacksTo(1)));
         COIN = ITEMS.register("fantastic_coin", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+        GREEN_COIN = ITEMS.register("fantastic_coin_green", () -> new Item(new Item.Properties().rarity(Rarity.RARE)));
         ADMIN_PAD = ITEMS.register("pad_admin", net.tierrasfantasticas.tfclient.pad.AdminPadItem::new);
         ITEMS.register(modBus);
         TABS.register(modBus);

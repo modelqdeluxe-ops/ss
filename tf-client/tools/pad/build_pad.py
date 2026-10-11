@@ -25,6 +25,7 @@ sys.path.insert(0, HERE)
 import iconos  # noqa: E402
 import iconos2  # noqa: E402
 import iconos3  # noqa: E402
+import iconos4  # noqa: E402
 import pico  # noqa: E402
 from fuente4 import ACCENTS, G, glyph10  # noqa: E402
 from kit import GOLD, PINK  # noqa: E402
@@ -36,8 +37,8 @@ NAVY = (24, 38, 92)
 WHITE = (255, 255, 255)
 
 # Las 20 apps, en el orden del pad (dos páginas de 5x2). Mismo orden y nombres que TFPadScreen.APPS.
-APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('cazas', 'CAZAS'),
-        ('recompensas', 'RECOMPENSAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'), ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'),
+APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('pase', 'TF PASS'),
+        ('gachapon', 'GACHAPÓN'), ('cazas', 'CAZAS'), ('recompensas', 'RECOMPENSAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'), ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'),
         ('hogares', 'HOGARES'), ('kits', 'KITS'), ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'),
         ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('ranking', 'RANKING'),
         ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('web', 'WEB')]
@@ -45,6 +46,7 @@ DRAW = {'oficios': pico.pico, 'tienda': iconos.tienda, 'gts': iconos.mercado, 'm
         'armario': iconos.armario, 'efectos': iconos.efectos, 'rango': iconos.rango, 'protecciones': iconos.protecciones}
 DRAW.update(iconos2.ICONOS)
 DRAW.update(iconos3.ICONOS)  # 1.3.26: oficios (pico grueso), recompensas y web
+DRAW.update(iconos4.ICONOS)  # 1.3.38: pico de Minecraft, TF Pass, Gachapón, mapa, destello y pergamino
 
 TILE = 40
 COLS_X = [84, 140, 196, 252, 308]
@@ -169,6 +171,35 @@ def mini_coin():
     for x, y in ((5, 4), (4, 5), (5, 5), (6, 5), (5, 6)):
         put(im, x, y, GOLD[3])
     return im
+
+
+def verde(im):
+    """La moneda verde (1.3.38): la misma moneda de oro pintada en esmeralda. Cada píxel de oro toma el tono de una
+    rampa esmeralda según su luz (misma luz, mismo dibujo y el mismo contraste que la de oro); el contorno azul noche y
+    los blancos se quedan."""
+    import colorsys
+    ramp = [(236, 255, 214), (150, 248, 150), (64, 222, 112), (30, 176, 96), (18, 128, 84), (14, 92, 70), (10, 60, 52)]
+    out = im.convert('RGBA').copy()
+    px = out.load()
+    for y in range(out.height):
+        for x in range(out.width):
+            r, g, b, a = px[x, y]
+            if not a:
+                continue
+            h, sat, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            if sat < 0.25 or not (0.0 <= h <= 0.2):
+                continue
+            lum = (0.3 * r + 0.59 * g + 0.11 * b) / 255  # luz percibida, de 0 a 1
+            f = max(0.0, min(1.0, (lum - 0.15) / 0.8)) ** 1.7   # 1 = lo más claro (el oro es muy luminoso: se baja)
+            k = (1 - f) * (len(ramp) - 1)
+            i = int(k)
+            t = k - i
+            c0, c1 = ramp[i], ramp[min(i + 1, len(ramp) - 1)]
+            px[x, y] = tuple(round(c0[j] * (1 - t) + c1[j] * t) for j in range(3)) + (a,)
+    return out
+
+
+ITEM_DIR = os.path.normpath(os.path.join(OUT_DIR, '..', '..', 'item'))
 
 
 def pattern():
@@ -305,6 +336,34 @@ def emoji(kind):
     return Image.open(os.path.join(HERE, 'emoji', kind + '.png')).convert('RGBA')
 
 
+def normalize(im, box=30):
+    """Todos los iconos igual (1.3.38): caben en 30x30 (1 px de aire hasta el engaste de la ficha por cada lado, nunca
+    pegados a él) y van centrados por su caja. Si uno mide más, se le quitan filas/columnas repetidas (las que son
+    iguales a su vecina, las que menos se notan en pixel art), empezando por las del centro."""
+    import numpy as np
+    a = np.array(im.convert('RGBA'))
+    ys, xs = np.where(a[:, :, 3] > 0)
+    a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
+    def shrink(arr, axis):
+        while arr.shape[axis] > box:
+            n = arr.shape[axis]
+            diffs = []
+            for i in range(1, n - 1):
+                s0 = np.take(arr, i, axis=axis).astype(int)
+                s1 = np.take(arr, i + 1, axis=axis).astype(int)
+                diffs.append((int(np.abs(s0 - s1).sum()), abs(i - n / 2), i))
+            _, _, i = min(diffs)
+            arr = np.delete(arr, i, axis=axis)
+        return arr
+
+    a = shrink(shrink(a, 1), 0)
+    out = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+    h, w = a.shape[:2]
+    out.alpha_composite(Image.fromarray(a), ((32 - w) // 2, (32 - h) // 2))
+    return out
+
+
 def build():
     if os.path.isdir(OUT_DIR):
         shutil.rmtree(OUT_DIR)
@@ -313,16 +372,20 @@ def build():
              'moon.png': moon(), 'gear.png': gear(), 'heart.png': heart(True), 'heart_off.png': heart(False),
              'pattern.png': pattern(), 'glow.png': glow(), 'floor.png': floor_shadow(),
              'coin_s.png': coin_small()}
+    files['coin_green.png'] = verde(files['coin.png'])
+    files['coin_green_s.png'] = verde(files['coin_s.png'])
     for k in ('risa', 'wow', 'triste', 'fuego', 'top'):
         files[f'emo_{k}.png'] = emoji(k)
     for key, _ in APPS:
-        files[f'icon_{key}.png'] = DRAW[key]().image()
-    files['icon_admin.png'] = iconos2.admin().image()
+        files[f'icon_{key}.png'] = normalize(DRAW[key]().image())
+    files['icon_admin.png'] = normalize(iconos2.admin().image())
     atlas, meta = font_atlas()
     files['font.png'] = atlas
     for name, im in files.items():
         im.save(os.path.join(OUT_DIR, name))
     shutil.copyfile(os.path.join(HERE, 'marco.png'), os.path.join(OUT_DIR, 'frame.png'))
+    # el objeto de la moneda verde, sacado de la Fantastic Coin de oro (textures/item/fantastic_coin.png)
+    verde(Image.open(os.path.join(ITEM_DIR, 'fantastic_coin.png'))).save(os.path.join(ITEM_DIR, 'fantastic_coin_green.png'))
     with open(os.path.join(OUT_DIR, 'font.json'), 'w', encoding='utf-8') as f:
         json.dump(meta, f, ensure_ascii=False)
     return files, meta

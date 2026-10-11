@@ -90,7 +90,7 @@ final class PadMusicPage extends PadPage {
 
     private int coverSize() {
         int byWidth = Math.round((leftW() - 16 - big(16)) / 1.3F);
-        int byHeight = H - 8 - belowCover();
+        int byHeight = Y + H - coverY() - belowCover();
         return Math.max(32, Math.min(byWidth, byHeight));
     }
 
@@ -106,8 +106,13 @@ final class PadMusicPage extends PadPage {
         return X + 8;
     }
 
+    /** La tarjeta del reproductor empieza donde la ventana de la lista (bajo las pestañas): las dos alineadas. */
+    private int cardTop() {
+        return Y + 14;
+    }
+
     private int coverY() {
-        return Y + 8;
+        return cardTop() + 8;
     }
 
     /** La barra de progreso: x, y, ancho. */
@@ -168,12 +173,21 @@ final class PadMusicPage extends PadPage {
     // ---- «sonando» ------------------------------------------------------------------------------------------------
 
     private void drawNowPlaying(GuiGraphics g, double mx, double my) {
-        int x = X, y = Y, w = leftW(), h = H;
+        int x = X, y = cardTop(), w = leftW(), h = Y + H - cardTop();
+        // su pestaña (oscura, como la tarjeta), a la misma altura que las de la lista
+        String tabLabel = MusicPlayer.playing() ? "SONANDO" : "REPRODUCTOR";
+        int tw = PadFont.width(tabLabel) + 14;
+        PadUi.box(g, x + 4, Y, tw, 15, PadUi.NAVY);
+        g.fillGradient(x + 5, Y + 1, x + 4 + tw - 1, Y + 16, 0xFF323C80, CARD_TOP);
+        g.fill(x + 6, Y + 1, x + 4 + tw - 2, Y + 3, GOLD);
+        g.fill(x + 6, Y + 1, x + 4 + tw - 2, Y + 2, GOLD_LIGHT);
+        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, Y + 4, 0xFFE680, false);
         // el reproductor: tarjeta oscura con ribete de oro (resalta la portada y los controles)
         PadUi.box(g, x, y, w, h, PadUi.NAVY);
         gradient(g, x + 1, y + 1, w - 2, h - 2, CARD_TOP, CARD_BOTTOM);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF4A56A0);
         outlineRect(g, x + 2, y + 2, w - 4, h - 4, 0x55F6B628);
+        g.fill(x + 5, y, x + 4 + tw - 1, y + 2, CARD_TOP); // la pestaña se une a la tarjeta
 
         MusicLibrary.Track t = MusicPlayer.current();
         int c = coverSize(), cx = coverX(), cy = coverY();
@@ -323,8 +337,15 @@ final class PadMusicPage extends PadPage {
         disc(g, x + w / 2, ky, big(4) + 1, 0xFF0C1030);
         disc(g, x + w / 2, ky, big(4), hover || draggingVolume ? 0xFFFFFFFF : GOLD_LIGHT);
         if (hover || draggingVolume) {
+            // el tanto por ciento en una etiqueta a la izquierda del botón (debajo de la barra está PORTADA)
             String pct = Math.round(vol * 100) + "%";
-            PadUi.text(g, pct, x + w / 2 - PadUi.font().width(pct) / 2, top + h + 3, 0xFFFFFFFF);
+            int pw = PadUi.font().width(pct) + 6, px = x - 3 - pw, py = Math.max(top - 4, Math.min(top + h - 6, ky - 5));
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 50);
+            PadUi.box(g, px, py, pw, 11, 0xFF0C1030);
+            PadUi.box(g, px + 1, py + 1, pw - 2, 9, 0xFF39407A);
+            PadUi.text(g, pct, px + 3, py + 2, 0xFFFFFFFF);
+            g.pose().popPose();
         }
     }
 
@@ -468,7 +489,8 @@ final class PadMusicPage extends PadPage {
             boolean sel = id.equals(list);
             boolean sure = sel && !id.isEmpty() && id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000;
             if (sure) label = "¿BORRAR?";
-            int tw = PadFont.width(label) + 12 + (sel && !id.isEmpty() ? 8 : 0);
+            // la elegida (si es una playlist) lleva su X para borrarla detrás del nombre, con su propio hueco
+            int tw = PadFont.width(label) + 12 + (sel && !id.isEmpty() ? 9 : 0);
             boolean hover = PadUi.inside(mx, my, tx, y, tw, 15);
             if (sel) {
                 chosen = new int[] {tx, tw};
@@ -478,8 +500,8 @@ final class PadMusicPage extends PadPage {
                 PadUi.tab(g, tx, y, tw, label, hover ? 1 : 0);
             }
             if (sel && !id.isEmpty()) { // la X para borrarla
-                int bx = tx + tw - 10;
-                hits.add(0, new Hit(bx - 1, y + 2, 9, 11, () -> {
+                int bx = tx + tw - 11;
+                hits.add(0, new Hit(bx - 2, y + 2, 10, 12, () -> {
                     if (id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000) {
                         MusicLibrary.deleteList(id);
                         confirmList = null;
@@ -500,8 +522,21 @@ final class PadMusicPage extends PadPage {
         }
         if (last < lists.size() - 1) tx = arrowTab(g, mx, my, tx, y, arrow, ">", 1) + gap;
         if (chosen != null) {
-            PadUi.tab(g, chosen[0], y, chosen[1], chosenLabel, 2);
-            if (!list.isEmpty()) drawGlyph(g, CROSS, chosen[0] + chosen[1] - 10, y + 6, 0xFFC8323C);
+            if (list.isEmpty()) {
+                PadUi.tab(g, chosen[0], y, chosen[1], chosenLabel, 2);
+            } else {
+                // nombre a la izquierda y la X a su derecha (antes el nombre iba centrado y tocaba la X)
+                PadUi.tab(g, chosen[0], y, chosen[1], "", 2);
+                boolean sure = chosenLabel.startsWith("¿");
+                PadFont.draw(g, chosenLabel, chosen[0] + 6, y + 4, sure ? 0xC8323C : 0x18265C, false);
+                int bx = chosen[0] + chosen[1] - 11;
+                boolean xh = PadUi.inside(mx, my, bx - 2, y + 2, 10, 12);
+                if (xh) {
+                    pad.hover("§borrarlista");
+                    PadUi.box(g, bx - 2, y + 4, 9, 9, 0xFFE83446);
+                }
+                drawGlyph(g, CROSS, bx, y + 6, xh ? 0xFFFFFFFF : 0xFFC8323C);
+            }
         }
         // «+»: lista nueva
         boolean ph = PadUi.inside(mx, my, tx, y, plus, 15);
@@ -518,7 +553,7 @@ final class PadMusicPage extends PadPage {
 
     /** Ancho de una pestaña de playlist (como la dibuja drawListTabs). */
     private static int tabWidth(String label, int maxLabel, boolean selected) {
-        return PadFont.width(PadFont.fit(label, maxLabel)) + 12 + (selected ? 8 : 0);
+        return PadFont.width(PadFont.fit(label, maxLabel)) + 12 + (selected ? 9 : 0);
     }
 
     /** Pestaña de flecha para ver más playlists (dir -1 las de antes, 1 las de después). Devuelve dónde acaba. */
@@ -588,59 +623,52 @@ final class PadMusicPage extends PadPage {
         int tx = x + thumb + 11;
         String dur = t.durationMs() > 0 ? time(t.durationMs()) : "";
         int right = x + w - 6;
-        // en una playlist: el − la saca de ella (no la borra)
+        // los botones de la fila van de derecha a izquierda, cada uno en su sitio (1.3.38: antes el + y la duración se
+        // pisaban, y el + quedaba encima de ¿BORRAR?): [borrar o ¿BORRAR?] [+] duración  ·  en una playlist: [−] duración
+        int sb = 14, by = y + (ROW - 1 - sb) / 2;
+        boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
         if (!list.isEmpty()) {
-            int bw = big(12), bx = right - bw, by = y + (ROW - 1 - 16) / 2;
-            if (hover) {
-                boolean bh = PadUi.inside(mx, my, bx, by, bw, 16);
-                PadUi.box(g, bx, by + 1, bw, 13, bh ? 0xFF3496FA : 0x333496FA);
-                drawGlyphCentered(g, MINUS, bx + bw / 2, by + 8, bh ? 0xFFFFFFFF : 0xFF3496FA);
-                if (bh) pad.hover("§quitar" + t.id());
-                hits.add(0, new Hit(bx, by, bw, 16, () -> {
+            if (hover) { // en una playlist: el − la saca de ella (no la borra)
+                int bx = right - sb;
+                rowButton(g, mx, my, bx, by, sb, MINUS, 0xFF3496FA, false, "§quitar" + t.id(), () -> {
                     MusicLibrary.toggleInList(list, t.id());
                     pad.sound("back", 0.5F);
-                }));
-                right = bx - 6;
+                });
+                right = bx - 5;
             }
-        } else if (hover || t.id().equals(menuFor)) {
-            // el + abre el menú de playlists
-            int bw = big(12), bx = right - bw - (big(12) + 4), by = y + (ROW - 1 - 16) / 2;
-            boolean bh = PadUi.inside(mx, my, bx, by, bw, 16);
-            PadUi.box(g, bx, by + 1, bw, 13, bh || t.id().equals(menuFor) ? 0xFF1E9E46 : 0x331E9E46);
-            drawGlyphCentered(g, PLUS, bx + bw / 2, by + 8, bh || t.id().equals(menuFor) ? 0xFFFFFFFF : 0xFF1E9E46);
-            if (bh) pad.hover("§listas" + t.id());
-            hits.add(0, new Hit(bx, by, bw, 16, () -> {
-                menuFor = t.id().equals(menuFor) ? null : t.id();
-                menuX = bx - 100;
-                menuY = by + 16;
-                pad.sound("tab", 0.6F);
-            }));
-        }
-        // borrar (al pasar el ratón)
-        boolean sure = t.id().equals(confirmDelete) && System.currentTimeMillis() - confirmAt < 3000;
-        int delW = sure ? PadUi.buttonWidth("¿BORRAR?") : big(12);
-        int delX = right - delW, delY = y + (ROW - 1 - 16) / 2;
-        if (list.isEmpty() && (hover || sure)) {
-            boolean dh = PadUi.inside(mx, my, delX, delY, delW, 16);
-            if (sure) {
-                PadUi.button(g, delX, delY, delW, "¿BORRAR?", PadView.RED, dh, true);
-            } else {
-                PadUi.box(g, delX, delY + 1, delW, 13, dh ? 0xFFE83446 : 0x33E83446);
-                drawGlyphCentered(g, CROSS, delX + delW / 2, delY + 8, dh ? 0xFFFFFFFF : 0xFFE83446);
-            }
-            if (dh) pad.hover("§del" + t.id());
-            hits.add(0, new Hit(delX, delY, delW, 16, () -> {
+        } else {
+            if (hover || sure) { // borrar: la X; con el primer clic pide confirmar
                 if (sure) {
-                    MusicPlayer.removed(t.id());
-                    MusicLibrary.remove(t.id());
-                    confirmDelete = null;
-                    pad.sound("back", 0.6F);
+                    int delW = PadUi.buttonWidth("¿BORRAR?"), delX = right - delW, delY = y + (ROW - 1 - 16) / 2;
+                    boolean dh = PadUi.inside(mx, my, delX, delY, delW, 16);
+                    if (dh) pad.hover("§del" + t.id());
+                    PadUi.button(g, delX, delY, delW, "¿BORRAR?", PadView.RED, dh, true);
+                    hits.add(0, new Hit(delX, delY, delW, 16, () -> {
+                        MusicPlayer.removed(t.id());
+                        MusicLibrary.remove(t.id());
+                        confirmDelete = null;
+                        pad.sound("back", 0.6F);
+                    }));
+                    right = delX - 5;
                 } else {
-                    confirmDelete = t.id();
-                    confirmAt = System.currentTimeMillis();
+                    int bx = right - sb;
+                    rowButton(g, mx, my, bx, by, sb, CROSS, 0xFFE83446, false, "§del" + t.id(), () -> {
+                        confirmDelete = t.id();
+                        confirmAt = System.currentTimeMillis();
+                    });
+                    right = bx - 4;
                 }
-            }));
-            right = delX - 6;
+            }
+            if (hover || t.id().equals(menuFor)) { // el + abre el menú de playlists
+                int bx = right - sb;
+                rowButton(g, mx, my, bx, by, sb, PLUS, 0xFF1E9E46, t.id().equals(menuFor), "§listas" + t.id(), () -> {
+                    menuFor = t.id().equals(menuFor) ? null : t.id();
+                    menuX = bx + sb - 110;
+                    menuY = by + sb + 2;
+                    pad.sound("tab", 0.6F);
+                });
+                right = bx - 5;
+            }
         }
         if (!dur.isEmpty()) {
             PadUi.text(g, dur, right - PadUi.font().width(dur), y + 10, PadUi.MUTED);
@@ -666,6 +694,18 @@ final class PadMusicPage extends PadPage {
                 pad.sound("select", 0.6F);
             }));
         }
+    }
+
+    /** Botón pequeño de una fila (+, −, X): cuadradito con el dibujo; lleno de su color al pasar el ratón. */
+    private void rowButton(GuiGraphics g, double mx, double my, int x, int y, int size, int[][] glyph, int color, boolean on,
+                           String id, Runnable action) {
+        boolean h = PadUi.inside(mx, my, x, y, size, size);
+        if (h) pad.hover(id);
+        boolean full = h || on;
+        PadUi.box(g, x, y, size, size, full ? color : 0x40000000 | (color & 0xFFFFFF));
+        if (!full) PadUi.box(g, x + 1, y + 1, size - 2, size - 2, 0xF0FFFFFF);
+        drawGlyphCentered(g, glyph, x + size / 2, y + size / 2, full ? 0xFFFFFFFF : color);
+        hits.add(0, new Hit(x, y, size, size, action));
     }
 
     private void drawEmpty(GuiGraphics g, int x, int top, int w, int h) {

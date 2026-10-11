@@ -166,13 +166,14 @@ final class PadViewPage extends PadPage {
                 PadView.Input in = view.input();
                 int bw = PadUi.buttonWidth(in.button());
                 int right = X + W - 5 - footerW;
-                int fw = right - (X + 5) - bw - 4;
+                int fw = Math.max(40, right - (X + 5) - bw - 4);
                 PadUi.field(g, X + 5, fy, fw, input, in.hint());
                 PadView.Btn send = new PadView.Btn(in.button(), "§input", PadView.GREEN, !input.isBlank());
                 button(g, right - bw, fy, bw, send, mx, my, true);
             }
         }
-        if (waiting) PadUi.spinner(g, X + W - 10, top + 6);
+        // esperando al servidor: la ruedita va en el hueco que la barra de información deja a la derecha (no encima del texto)
+        if (waiting) PadUi.spinner(g, X + W - 10, top + 2);
     }
 
     /**
@@ -266,7 +267,7 @@ final class PadViewPage extends PadPage {
     }
 
     private int textWidth(PadView.Row r, int w) {
-        return w - (r.icon().isEmpty() ? 12 : ICON_BOX + 15) - rightWidth(r) - 6;
+        return Math.max(30, w - (r.icon().isEmpty() ? 12 : ICON_BOX + 15) - rightWidth(r) - 6);
     }
 
     private int buttonsWidth(PadView.Row r) {
@@ -335,7 +336,8 @@ final class PadViewPage extends PadPage {
         int nameW = PadUi.titleWidth(c.label(), w - 6);
         PadUi.title(g, c.label(), cx - nameW / 2, yy + SHOW + 6, w - 6, PadUi.TEXT);
         if (!c.sub().isEmpty()) {
-            String sub = PadUi.chipWidth(c.sub()) > w - 6 ? PadUi.fitEnd(c.sub(), w - 14) : c.sub();
+            // si no cabe, se recorta lo de dentro de la etiqueta (sin contar la moneda ni el «+»: antes se salía de la tarjeta)
+            String sub = PadUi.fitChip(c.sub(), w - 6);
             int tone = PadUi.tone(sub, clickable || c.selected(), c.tone());
             PadUi.chip(g, cx - PadUi.chipWidth(sub) / 2, yy + SHOW + 17, sub, tone, 12);
         }
@@ -368,7 +370,7 @@ final class PadViewPage extends PadPage {
     }
 
     private int heroTextWidth(PadView.Row r, int w) {
-        return w - (HERO_SLOT + 18) - heroRight(r) - 6;
+        return Math.max(30, w - (HERO_SLOT + 18) - heroRight(r) - 6);
     }
 
     private int heroHeight(PadView.Row r, int w) {

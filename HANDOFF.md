@@ -10,6 +10,56 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.38 (10 oct, noche) — TF Pad: auditoría, pad más grande, iconos nuevos, Gachapón y TF Pass** (sin
+> commit: lo hace el dueño). Pedido: «los botones de x … en la música están solapados… audita el pad… módulo
+> Gachapón con monedas verdes… las monedas se ganan en el pase de batalla, TF Pass… pad un poco más grande vertical y
+> horizontal… apps simétricas… redibuja el pico de jobs».
+> - **Pad más grande** (`TFPadScreen.init/drawFrame`): el tamaño y el centrado se calculan con lo que **se ve** del marco
+>   (`VIS_L/R/T/B` = x 10–382, y 2–235 en píxeles de pad; frame.png tiene 16 px transparentes abajo) y además de las
+>   filas lisas (`STRETCH_U/D`, `MAX_EXTRA` 48) se repiten **dos columnas lisas** simétricas a los lados de la gema
+>   (`STRETCH_L/R` = 540/1028 de la imagen, `MAX_EXTRA_X` 24 por lado). 1920×1080: cristal 672×328 unidades (antes
+>   576×292); 1366×768: ahora ps 3 (antes 2), 504×225 (antes 288×212); 1280×720 y 2560×1440 también caben.
+> - **Portada simétrica** (`PadHomePage.layout`): fichas iguales, mismo hueco a lo ancho y a lo alto, filas repartidas
+>   (23 apps → 8+8+7), centrada, la última fila incompleta centrada; si no caben las filas, baja a una escala entera
+>   menor (siempre nítida). Orden: MÚSICA, OFICIOS, MISIONES, **TF PASS, GACHAPÓN**, CAZAS, RECOMPENSAS, TIENDA, GTS,
+>   MONEDERO, VIAJES, HOGARES, KITS, PROTECCIÓN, CLANES, JUGADORES, COMUNIDAD, CÁMARA, RANKING, ARMARIO, EFECTOS, MI RANGO,
+>   WEB. También en el pad de admin (APPS) para apagarlas.
+> - **Auditoría (arreglado)**: Música — el «+» de cada canción caía encima de la duración y debajo de «¿BORRAR?»
+>   (ahora los botones van de derecha a izquierda con su hueco: [X/¿BORRAR?] [+] duración; en playlist [−]); la X de la
+>   playlist elegida tocaba el nombre (nombre a la izquierda y X detrás, con hueco y hover); el % del volumen caía
+>   encima de PORTADA (ahora en una etiqueta a la izquierda del botón); la tarjeta del reproductor empezaba más arriba
+>   que la lista (ahora las dos alineadas, con su pestaña oscura SONANDO/REPRODUCTOR). Apps del servidor
+>   (`PadViewPage`/`PadUi`): etiquetas con moneda que se salían de la tarjeta al recortarse (`PadUi.fitChip`), la
+>   ruedita de «cargando» encima del texto de la barra de información (la barra deja 12 libres), anchos de texto de
+>   filas/cabecera y del campo de abajo que podían quedar negativos (mínimos). Barra de arriba: el título se aparta si
+>   lo de la derecha llegara a él.
+> - **Iconos** (`tools/pad/iconos4.py` + `build_pad.normalize`): pico de Oficios con la estructura del de Minecraft
+>   (arco con centro en la empuñadura, puntas curvadas, mango que asoma), TF Pass (billete dorado con estrella y moneda
+>   verde), Gachapón (máquina de cápsulas), Misiones (pergamino con lista), Viajes (mapa plegado), Efectos (destello).
+>   Todos caben en 30×30 y van centrados por su caja (antes Cazas, GTS, Música, Protección y Armario tocaban el borde).
+> - **Moneda verde** `tfclient:fantastic_coin_green` («Fantastic Coin verde» / «Green Fantastic Coin»), textura sacada
+>   de la de oro con una rampa esmeralda por luz (`build_pad.verde`; también `coin_green.png` y `coin_green_s.png`). Saldo
+>   propio en el servidor (`pad/server/PadGreen`, `<mundo>/tfclient/monedas-verdes.json`), en la barra de arriba (junto
+>   a las de oro), en el Gachapón y en el Pase. **Solo se gana con el TF Pass**: no hay comando, la web no la vende ni la
+>   conoce y no se manda a otros (normas de Mojang sobre premios al azar).
+> - **Gachapón** (`pad/server/PadGacha` + `pad/PadGachaPage`): config `config/tfclient/gachapon.json` (precio 1, tirada
+>   x5 por 5, historial 30, garantía: épico o mejor cada 10 tiradas; rarezas Común 62 / Raro 27 / Épico 9 / Legendario
+>   2 con su color; 22 premios con rareza y peso: monedas, objetos, comandos con {player}/{uuid}, verdes). El servidor
+>   cobra, tira y da el premio; el pad anima una ruleta (tira de premios que frena en ~4,6 s con tic) y enseña el
+>   resultado, las demás de la x5, PREMIOS con su probabilidad e HISTORIAL. Datos en `<mundo>/tfclient/gachapon.json`.
+> - **TF Pass** (`pad/server/PadPass` + `pad/PadPassPage`): config `config/tfclient/pase.json` (temporada 1 «El
+>   Despertar» desde el día que se crea, 60 días, se renueva sola; 50 niveles de 400 XP, `xpExtraPorNivel`; XP diaria
+>   100, semanal 500, caza 40; premios por nivel: 65 monedas verdes por temporada + monedas y objetos). `PadMissions`
+>   llama a `PadPass.missionDone` al completar una misión (y la fila dice «+100 XP de pase»). Pad: cabecera con el
+>   nivel, barra de XP, cuenta atrás, verdes y RECLAMAR TODO; pista de niveles con desplazamiento (rueda, flechas,
+>   ←/→), raíl de oro, hitos cada 5, tu nivel con «TÚ», COBRAR/✓/candado; abajo el nivel señalado y cómo se gana XP.
+>   Datos en `<mundo>/tfclient/pase.json` (por temporada: lo no reclamado se pierde al cambiar de temporada).
+> - Red: paquete nuevo `TFPadNet.Data` (JSON, id 8) y `PadServer.DataApp` para apps con página propia; `State` lleva el
+>   saldo verde. `/tf reload` recarga gachapon.json y pase.json.
+> - Simulador: `tools/pad/sim/sim.py` con la geometría nueva (`Sim(fbw, fbh)`, `save(screen=True)`), portada nueva,
+>   Música con los estados de ratón (`p_musica_fila/borrar/lista`), `p_gachapon*` y `p_pase*`. Compilado, jar 1.3.38,
+>   `check_mod_items` 0 errores. **Sin probar en juego** (regla).
+
 > **🚧 TRABAJO EN CURSO — Skills (TF Client 1.3.35+; checkpoint, si retomas sigue esto):**
 > Pedido del dueño (9 oct, noche): portar **~39 packs de skills** (clases de MMOCore / MythicLib / MythicMobs /
 > ModelEngine / ItemsAdder / MMOItems) «correctamente y sin errores»: modelos, animaciones, mecánicas, controles,
@@ -1459,7 +1509,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.37)
+## 5. El mod (TF Client 1.3.38)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -1486,7 +1536,10 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   `vfx/` (efectos de kill y skills), `pad/` (TF Pad: `TFPadClient` tecla C y sonidos, `TFPadScreen`, `TFPadNet` canal
   `tfclient:pad`) y `market/` (GTS, 1.3.20). Menú: `mixin/TitleScreenMixin.java`, `client/TFMenuButton.java`,
   `client/TFButtonTheme.java`; fondo `textures/gui/menu_background.png` (paisaje de noche de la web).
-- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/pad/limpiar_bordes.py` (contorno del marco), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
+- Pad 1.3.38: `config/tfclient/gachapon.json` (Gachapón) y `config/tfclient/pase.json` (TF Pass), datos en
+  `<mundo>/tfclient/{monedas-verdes,gachapon,pase}.json`; apps con página propia = `PadServer.DataApp` + `PadDataPage`.
+- Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad; iconos de `iconos*.py`, los de 1.3.38 en
+  `iconos4.py`; moneda verde con `verde()`, también el objeto), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/pad/limpiar_bordes.py` (contorno del marco), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
   menú), `tools/build_vfx.py` (VFX).
 - Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
   `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en

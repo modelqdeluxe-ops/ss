@@ -167,6 +167,16 @@ final class PadUi {
         return (plus ? font().width("+") : 0) + (coin ? 9 : 0) + font().width(rest) + 8;
     }
 
+    /** La etiqueta recortada (con «…») para que mida como mucho w, contando la moneda y el «+» que lleve delante. */
+    static String fitChip(String text, int w) {
+        if (chipWidth(text) <= w) return text;
+        boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
+        String head = plus ? text.substring(0, 2) : coin ? text.substring(0, 1) : "";
+        String rest = text.substring(head.length());
+        int room = w - (chipWidth(head + "x") - font().width("x"));
+        return head + fitEnd(rest, Math.max(6, room));
+    }
+
     /** Dibuja la etiqueta (alto h: 11, 12 o 14) del tono dado. Devuelve su ancho. */
     static int chip(GuiGraphics g, int x, int y, String text, int tone, int h) {
         int[] c = CHIP[Math.max(1, Math.min(4, tone)) - 1];
@@ -225,12 +235,12 @@ final class PadUi {
 
     /**
      * La barra de información arriba de la ventana (lo que el servidor manda en header): un rombo de oro y el texto, en
-     * room líneas como mucho. Devuelve el alto que ocupa.
+     * room líneas como mucho (el texto deja 12 libres a la derecha: ahí va la ruedita de «cargando»). Devuelve su alto.
      */
     static int infobar(GuiGraphics g, int x, int y, int w, List<String> header, int room) {
         java.util.List<String> lines = new java.util.ArrayList<>();
         for (String line : header) {
-            for (FormattedCharSequence seq : font().split(Component.literal(line), w - 18)) {
+            for (FormattedCharSequence seq : font().split(Component.literal(line), w - 30)) {
                 StringBuilder b = new StringBuilder();
                 seq.accept((i, st, cp) -> {
                     b.appendCodePoint(cp);
@@ -242,7 +252,7 @@ final class PadUi {
         if (lines.isEmpty()) return 0;
         if (lines.size() > room) {
             lines = new java.util.ArrayList<>(lines.subList(0, room));
-            lines.set(room - 1, fitEnd(lines.get(room - 1) + "...", w - 18));
+            lines.set(room - 1, fitEnd(lines.get(room - 1) + "...", w - 30));
         }
         int h = lines.size() * 10 + 4;
         g.fillGradient(x, y, x + w, y + h, 0xFFF0F7FE, 0xFFE0EDFA);
