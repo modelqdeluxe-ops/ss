@@ -39,6 +39,7 @@ import net.tierrasfantasticas.tfclient.TFClient;
 import net.tierrasfantasticas.tfclient.economy.TFEconomy;
 import net.tierrasfantasticas.tfclient.server.TFBridge;
 import net.tierrasfantasticas.tfclient.server.TFServerConfig;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
@@ -272,13 +273,13 @@ public final class TFCoinShop {
             ctx.getSource().sendFailure(Component.literal("No tenías bastantes " + TFServerConfig.currency() + " (cuesta "
                     + TFEconomy.format(e.price()) + (have.isPresent() ? ", tienes " + TFEconomy.format(have.getAsLong()) : "")
                     + "). No se ha cobrado nada."));
-            player.sendSystemMessage(Component.literal("La compra de la web no se pudo hacer: " + e.name() + " cuesta "
+            TFChat.send(player, "Tienda", ChatFormatting.GOLD, Component.literal("Compra no realizada: " + e.name() + " cuesta "
                     + TFEconomy.format(e.price()) + ".").withStyle(ChatFormatting.RED));
             return 0;
         }
         give(player, e.stack());
-        player.sendSystemMessage(Component.literal("✔ Compraste " + e.stack().getCount() + "× " + e.name() + " por "
-                + TFEconomy.format(e.price()) + ".").withStyle(ChatFormatting.GREEN));
+        TFChat.send(player, "Tienda", ChatFormatting.GOLD, "Compraste ", TFChat.hl(e.stack().getCount() + "× " + e.name()),
+                TFChat.SEP, TFChat.money("−" + TFEconomy.format(e.price())));
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.5F, 1.6F);
         return 1;
     }

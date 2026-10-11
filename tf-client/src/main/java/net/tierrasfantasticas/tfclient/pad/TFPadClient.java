@@ -56,13 +56,16 @@ public final class TFPadClient {
         if (Minecraft.getInstance().screen instanceof TFPadScreen pad) pad.view(v);
     }
 
-    /** Un aviso del servidor: dentro del pad si está abierto; si no, encima de la barra rápida. */
+    /** Un aviso del servidor: dentro del pad si está abierto; si no, una línea en el chat (nada encima de la barra). */
     static void notice(String text) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.screen instanceof TFPadScreen pad) {
             pad.showNotice(text);
         } else if (mc.player != null) {
-            mc.player.displayClientMessage(Component.literal(text).withStyle(ChatFormatting.YELLOW), true);
+            mc.player.displayClientMessage(Component.literal("[").withStyle(ChatFormatting.DARK_GRAY)
+                    .append(Component.literal("TF Pad").withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal("] ").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.literal(text).withStyle(ChatFormatting.GRAY)), false);
         }
     }
 

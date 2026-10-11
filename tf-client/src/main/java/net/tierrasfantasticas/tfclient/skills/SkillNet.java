@@ -58,26 +58,25 @@ public final class SkillNet {
     // ------------------------------------------------------------------------------------------- jugador → servidor
 
     /**
-     * Ha elegido la skill número «slot» de la barra (0 = la primera, tecla 5) o ninguna (-1); todavía no se lanza.
-     * basic: tiene puesto su ataque básico (vuelve a él después de usar otra skill).
+     * Ha elegido la skill número «slot» de la barra (0 = la primera, tecla 5) o ninguna (-1); todavía no se lanza. Se
+     * queda elegida hasta que elija otra.
      */
-    public record Select(int slot, boolean basic) {
+    public record Select(int slot) {
         static void write(Select m, FriendlyByteBuf buf) {
             buf.writeVarInt(m.slot + 1);
-            buf.writeBoolean(m.basic);
         }
 
         static Select read(FriendlyByteBuf buf) {
-            return new Select(buf.readVarInt() - 1, buf.readBoolean());
+            return new Select(buf.readVarInt() - 1);
         }
 
         static void handle(Select m, Supplier<NetworkEvent.Context> ctx) {
             ServerPlayer player = ctx.get().getSender();
-            if (player != null) SkillServer.select(player, m.slot, m.basic);
+            if (player != null) SkillServer.select(player, m.slot);
         }
     }
 
-    /** Clic izquierdo con una skill elegida: se lanza esa (y deja de estar elegida). */
+    /** Clic izquierdo con una skill elegida: se lanza esa (sigue elegida); si no sale, es un golpe normal. */
     public record Use() {
         static void write(Use m, FriendlyByteBuf buf) {
         }
@@ -111,19 +110,18 @@ public final class SkillNet {
 
     /**
      * La clase del jugador ("" = ninguna), lo que le queda de cooldown a cada skill de la barra (ticks), la que tiene
-     * elegida (-1 = ninguna) y si tiene puesto su ataque básico.
+     * elegida (-1 = ninguna).
      */
-    public record State(String classId, int[] left, int[] total, int selected, boolean basic) {
+    public record State(String classId, int[] left, int[] total, int selected) {
         static void write(State m, FriendlyByteBuf buf) {
             buf.writeUtf(m.classId, 64);
             buf.writeVarIntArray(m.left);
             buf.writeVarIntArray(m.total);
             buf.writeVarInt(m.selected + 1);
-            buf.writeBoolean(m.basic);
         }
 
         static State read(FriendlyByteBuf buf) {
-            return new State(buf.readUtf(64), buf.readVarIntArray(32), buf.readVarIntArray(32), buf.readVarInt() - 1, buf.readBoolean());
+            return new State(buf.readUtf(64), buf.readVarIntArray(32), buf.readVarIntArray(32), buf.readVarInt() - 1);
         }
 
         static void handle(State m, Supplier<NetworkEvent.Context> ctx) {

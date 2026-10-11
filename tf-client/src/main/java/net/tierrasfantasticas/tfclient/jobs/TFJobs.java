@@ -48,6 +48,7 @@ import net.tierrasfantasticas.tfclient.jobs.TFJobsData.PlayerJobs;
 import net.tierrasfantasticas.tfclient.server.TFBridge;
 import net.tierrasfantasticas.tfclient.server.TFServerConfig;
 import net.tierrasfantasticas.tfclient.shop.TFCoinShop;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
  * Oficios: el jugador elige uno en el pad (app Oficios) y gana experiencia del oficio y monedas al hacer su trabajo (romper,
@@ -305,23 +306,23 @@ public final class TFJobs {
         for (String command : TFJobsConfig.levelCommands) runCommand(command, player, job, level);
         if (milestone != null) giveExtras(player, job, level, milestone);
         Style color = Style.EMPTY.withColor(TextColor.fromRgb(job.color()));
-        // sin título ni avisos en pantalla (el dueño no quiere el progreso encima del juego): solo el sonido y el chat
+        // sin título ni avisos en pantalla: una línea de chat corta («[Oficios] Minero nivel 12 · +35 monedas») y el sonido
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.8F, 1.0F);
-        player.sendSystemMessage(Component.literal("¡Subiste a nivel " + level + " de ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(job.name()).withStyle(color))
-                .append(Component.literal("! +" + TFEconomy.format(coins)).withStyle(ChatFormatting.GOLD)));
+        StringBuilder gained = new StringBuilder(coins > 0 ? "+" + TFEconomy.format(coins) : "");
+        if (milestone != null) for (String item : milestone.items()) gained.append(gained.isEmpty() ? "" : TFChat.SEP).append(itemLabel(item));
+        TFChat.send(player, "Oficios", ChatFormatting.GOLD, Component.literal(job.name()).withStyle(color),
+                TFChat.hl(" nivel " + level), gained.isEmpty() ? null : TFChat.SEP, TFChat.money(gained.toString()));
         if (TFJobsConfig.announceEvery > 0 && level % TFJobsConfig.announceEvery == 0) {
-            Component msg = Component.literal("✦ " + name + " ha llegado a nivel " + level + " de ").withStyle(ChatFormatting.YELLOW)
-                    .append(Component.literal(job.name()).withStyle(color));
+            Component msg = TFChat.line("Oficios", ChatFormatting.GOLD, TFChat.hl(name), " llegó a ",
+                    Component.literal(job.name()).withStyle(color), TFChat.hl(" nivel " + level));
             server.getPlayerList().broadcastSystemMessage(msg, false);
         }
     }
 
     private static void missionDone(ServerPlayer player, Job job, Mission mission) {
-        player.sendSystemMessage(Component.literal("✔ Misión completada: ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(mission.name()).withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(" (cóbrala en el pad, app Oficios)").withStyle(ChatFormatting.GRAY)));
-        player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 0.5F, 1.2F);
+        TFChat.send(player, "Oficios", ChatFormatting.GOLD, "Misión completada: ", TFChat.hl(mission.name()),
+                TFChat.SEP + "cóbrala en el pad (C)");
+        player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.MASTER, 0.5F, 1.2F);
     }
 
     /** Cobrar una misión hecha. Devuelve el mensaje de error o null si se cobró. */
@@ -343,9 +344,8 @@ public final class TFJobs {
         if (r.xp() > 0) addXp(player, job, jp, r.xp());
         data().changed();
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.5F);
-        StringBuilder text = new StringBuilder("Recompensa de «" + mission.name() + "»: ");
-        text.append(rewardText(r));
-        player.sendSystemMessage(Component.literal(text.toString()).withStyle(ChatFormatting.GOLD));
+        TFChat.send(player, "Oficios", ChatFormatting.GOLD, "Cobraste ", TFChat.hl(mission.name()), TFChat.SEP,
+                TFChat.money(r.coins() > 0 ? "+" + rewardText(r) : rewardText(r)));
         return null;
     }
 
@@ -449,9 +449,8 @@ public final class TFJobs {
         p.job(job.id());
         data().changed();
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.8F);
-        player.sendSystemMessage(Component.literal("Ahora trabajas de ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(job.name()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(job.color())).withBold(true)))
-                .append(Component.literal(". ¡Mucha suerte!").withStyle(ChatFormatting.GREEN)));
+        TFChat.send(player, "Oficios", ChatFormatting.GOLD, "Ahora trabajas de ",
+                Component.literal(job.name()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(job.color()))), ".");
         return null;
     }
 
@@ -471,8 +470,8 @@ public final class TFJobs {
         pay(player.getUUID(), player.getGameProfile().getName(), true);
         Job job = TFJobsConfig.job(jobId);
         if (message) {
-            player.sendSystemMessage(Component.literal("Has dejado el oficio de " + (job != null ? job.name() : jobId)
-                    + ". Tu nivel y tus misiones se quedan guardados por si vuelves.").withStyle(ChatFormatting.YELLOW));
+            TFChat.send(player, "Oficios", ChatFormatting.GOLD, "Dejaste ", TFChat.hl(job != null ? job.name() : jobId),
+                    TFChat.SEP + "tu progreso queda guardado.");
         }
     }
 

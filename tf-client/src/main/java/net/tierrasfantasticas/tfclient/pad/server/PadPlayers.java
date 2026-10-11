@@ -12,7 +12,6 @@ import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -31,6 +30,7 @@ import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
 import net.tierrasfantasticas.tfclient.server.TFRanks;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
  * Jugadores: los conectados en tarjetas (cabeza, nombre y rango). Al pulsar uno, su ficha (rango, clan, oficios,
@@ -310,8 +310,8 @@ public final class PadPlayers {
 
     private static void receive(ServerPlayer player, String from, String what) {
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.5F, 1.6F);
-        TFPadNet.notice(player, from + " te regaló " + what + ".");
-        player.sendSystemMessage(Component.literal("🎁 " + from + " te regaló " + what + ".").withStyle(ChatFormatting.GOLD));
+        // solo el chat (el aviso del pad salía además encima de la barra con el pad cerrado)
+        TFChat.send(player, "Regalo", ChatFormatting.YELLOW, TFChat.hl(from), " te regaló ", TFChat.money(what), ".");
         TFPadNet.sendState(player);
     }
 

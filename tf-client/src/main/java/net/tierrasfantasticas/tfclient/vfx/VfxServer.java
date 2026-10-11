@@ -53,6 +53,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
@@ -224,12 +225,10 @@ public final class VfxServer {
         sync(player);
         if (!tell) return;
         if (kill != null && !kill.equals(old.kill())) {
-            player.sendSystemMessage(Component.literal("✦ Efecto de kill equipado: ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                    .append(Component.literal(VfxCatalog.kill(kill).name()).withStyle(ChatFormatting.WHITE)));
+            TFChat.send(player, "Efectos", ChatFormatting.LIGHT_PURPLE, "Efecto de kill equipado: ", TFChat.hl(VfxCatalog.kill(kill).name()));
         }
         if (pack != null && !pack.equals(old.pack())) {
-            player.sendSystemMessage(Component.literal("✦ Skills equipadas: ").withStyle(ChatFormatting.AQUA)
-                    .append(Component.literal(VfxCatalog.pack(pack).name()).withStyle(ChatFormatting.WHITE)));
+            TFChat.send(player, "Efectos", ChatFormatting.LIGHT_PURPLE, "Skills equipadas: ", TFChat.hl(VfxCatalog.pack(pack).name()));
         }
     }
 

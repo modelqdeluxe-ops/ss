@@ -47,6 +47,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.tierrasfantasticas.tfclient.TFClient;
+import net.tierrasfantasticas.tfclient.util.TFChat;
 
 /**
  * Compras reembolsadas: lo que se entregó con ese pedido se retira del servidor esté donde esté.
@@ -240,7 +241,7 @@ public final class TFRevocations {
         if (removed > 0) {
             player.containerMenu.broadcastChanges();
             player.inventoryMenu.broadcastChanges();
-            player.sendSystemMessage(Component.literal("Se han retirado " + removed + (removed == 1 ? " objeto" : " objetos")
+            TFChat.send(player, "Tienda", ChatFormatting.GOLD, Component.literal("Se retiraron " + removed + (removed == 1 ? " objeto" : " objetos")
                     + " de una compra reembolsada.").withStyle(ChatFormatting.RED));
         }
         return removed;
@@ -352,7 +353,7 @@ public final class TFRevocations {
         }
         if (removed > 0) {
             event.getContainer().broadcastChanges();
-            player.sendSystemMessage(Component.literal("Se han retirado de este contenedor objetos de una compra reembolsada.")
+            TFChat.send(player, "Tienda", ChatFormatting.GOLD, Component.literal("Se retiraron de este contenedor objetos de una compra reembolsada.")
                     .withStyle(ChatFormatting.RED));
         }
     }

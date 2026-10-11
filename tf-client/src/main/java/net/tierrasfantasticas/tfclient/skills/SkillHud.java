@@ -30,9 +30,8 @@ import org.lwjgl.glfw.GLFW;
  *
  * <p>Las skills van en las teclas 5, 6, 7, 8, 9 y 0 (las de los huecos de la barra que casi nadie usa): con una clase,
  * esas teclas ya no cambian de hueco, sino que <b>eligen</b> la skill (no la lanzan). La elegida sale con el siguiente
- * clic izquierdo (las clases de arco: al soltar una flecha con el arco). El ataque básico de la clase (su combo) se
- * queda elegido y cada clic lo repite; las demás skills se usan una vez y después se vuelve al básico (si estaba
- * puesto). Pulsar otra vez la misma tecla la quita; cambiar de hueco (1-4, rueda) lo quita todo. Se cambian en
+ * clic izquierdo (las clases de arco: al soltar una flecha con el arco) y <b>se queda elegida</b>: cada clic la vuelve a
+ * usar en cuanto está lista (mientras se recarga, el clic es un golpe normal) hasta que se elija otra. Se cambian en
  * Opciones → Controles → «TF Skills».
  */
 public final class SkillHud {
@@ -65,14 +64,11 @@ public final class SkillHud {
         }
     }
 
-    private static final int SIZE = 16;
+    private static final int SIZE = 12;
     private static final int GAP = 2;
 
-    /** La skill elegida (-1 = ninguna) y el hueco de la barra cuando se eligió (al cambiar de hueco se suelta). */
+    /** La skill elegida (-1 = ninguna): se queda puesta hasta que se elija otra. */
     static int selected = -1;
-    /** ¿Tiene puesto el ataque básico? (después de usar otra skill se vuelve a él) */
-    static boolean basicOn;
-    private static int selectedHotbar = -1;
     /** ¿Estaba pulsado el clic izquierdo al acabar el tick anterior? (mantenerlo picando no lanza skills) */
     private static boolean attackWasDown;
 
@@ -103,9 +99,7 @@ public final class SkillHud {
             }
             if (pressed) press(mc, i);
         }
-        if (!classOk && (selected >= 0 || basicOn)) setSelected(-1, false);
-        // Cambiar de hueco (1-4, rueda) suelta la skill elegida y el ataque básico
-        if ((selected >= 0 || basicOn) && mc.player != null && mc.player.getInventory().selected != selectedHotbar) setSelected(-1, false);
+        if (!classOk && selected >= 0) setSelected(-1);
     }
 
     /** Al acabar el tick. */
@@ -116,66 +110,31 @@ public final class SkillHud {
     private static void press(Minecraft mc, int i) {
         SkillDefs.ClassDef def = SkillDefs.get(SkillClient.classId);
         List<SkillDefs.SkillDef> actives = def.actives();
-        if (i >= actives.size()) return;
-        int basic = def.basicSlot();
-        if (i == basic) { // el ataque básico: se pone o se quita
-            if (basicOn) {
-                setSelected(selected == basic ? -1 : selected, false);
-                mc.gui.setOverlayMessage(Component.literal("Ataque básico quitado: tus clics vuelven a ser golpes normales")
-                        .withStyle(ChatFormatting.GRAY), false);
-                return;
-            }
-            setSelected(basic, true);
-            mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.25F, 1.6F);
-            mc.gui.setOverlayMessage(Component.literal("✦ " + actives.get(i).name() + " ").withStyle(ChatFormatting.GOLD)
-                    .append(Component.literal(def.bow() ? "— cada flecha que dispares" : "— cada clic izquierdo").withStyle(ChatFormatting.GRAY)),
-                    false);
-            return;
-        }
-        if (selected == i) { // la misma tecla: la quita (vuelve al básico si está puesto)
-            setSelected(basicOn ? basic : -1, basicOn);
-            return;
-        }
-        if (i < SkillClient.left.length && SkillClient.left[i] > 0) {
-            if (i < SkillClient.denied.length) SkillClient.denied[i] = SkillClient.clientTicks;
-            return;
-        }
-        setSelected(i, basicOn);
+        if (i >= actives.size() || selected == i) return;
+        setSelected(i);
         mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.25F, 1.6F);
-        SkillDefs.SkillDef s = actives.get(i);
-        mc.gui.setOverlayMessage(Component.literal("✦ " + s.name() + " ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(def.bow() ? "— dispara con tu arco" : "— clic izquierdo para usarla").withStyle(ChatFormatting.GRAY)),
-                false);
+        mc.gui.setOverlayMessage(Component.literal("✦ " + actives.get(i).name()).withStyle(ChatFormatting.GOLD), false);
     }
 
-    private static void setSelected(int i, boolean basic) {
-        Minecraft mc = Minecraft.getInstance();
+    private static void setSelected(int i) {
         selected = i;
-        basicOn = basic;
-        selectedHotbar = mc.player == null ? -1 : mc.player.getInventory().selected;
-        SkillNet.CHANNEL.sendToServer(new SkillNet.Select(i, basic));
+        SkillNet.CHANNEL.sendToServer(new SkillNet.Select(i));
     }
 
-    /** Lo que diga el servidor (al lanzarse o si no estaba lista). */
-    static void serverSelected(int i, boolean basic) {
+    /** Lo que diga el servidor (al cambiar de clase, morir...). */
+    static void serverSelected(int i) {
         selected = i;
-        basicOn = basic;
-        Minecraft mc = Minecraft.getInstance();
-        if ((i >= 0 || basic) && mc.player != null) selectedHotbar = mc.player.getInventory().selected;
     }
 
     /**
-     * Clic izquierdo: con una skill elegida y lista (y la clase no es de arco) se lanza; si no, es un golpe normal (que
-     * también avisa a las auras onSwing de la clase, como las lanzas de la Bruja que salen a cada golpe).
+     * Clic izquierdo: con una skill elegida y lista (y la clase no es de arco) se lanza y sigue elegida; si no, es un
+     * golpe normal (que también avisa a las auras onSwing de la clase, como las lanzas de la Bruja).
      */
     static void attack() {
         Minecraft mc = Minecraft.getInstance();
         if (!hasClass(mc) || attackWasDown) return;
         SkillDefs.ClassDef def = SkillDefs.get(SkillClient.classId);
         if (selected >= 0 && !def.bow() && (selected >= SkillClient.left.length || SkillClient.left[selected] <= 0)) {
-            // Como hará el servidor: el básico sigue elegido; otra skill se usa una vez y se vuelve al básico
-            int basic = def.basicSlot();
-            if (selected != basic) selected = basicOn && basic >= 0 ? basic : -1;
             SkillNet.CHANNEL.sendToServer(new SkillNet.Use());
         } else {
             SkillNet.CHANNEL.sendToServer(new SkillNet.Swing());
@@ -206,11 +165,10 @@ public final class SkillHud {
             int total = Math.max(1, SkillClient.total.length > i ? SkillClient.total[i] : 1);
             boolean ready = left <= 0;
             boolean sel = selected == i;
-            boolean basicMark = basicOn && i == def.basicSlot();
             boolean flash = i < SkillClient.denied.length && SkillClient.clientTicks - SkillClient.denied[i] < 6;
-            if (sel) y -= 2;
-            // Marco: dorado y brillante si está elegida, claro si está lista, apagado si no, rojo si se pulsó sin estar lista
-            int border = flash ? 0xFFE0524A : sel ? 0xFFFFD54A : basicMark ? 0xFF7FD3FF : ready ? 0xFFB8A57A : 0xFF4A4438;
+            if (sel) y -= 1;
+            // Marco: dorado y brillante si está elegida, claro si está lista, apagado si no
+            int border = flash ? 0xFFE0524A : sel ? 0xFFFFD54A : ready ? 0xFFB8A57A : 0xFF4A4438;
             g.fill(x - 1, y - 1, x + SIZE + 1, y + SIZE + 1, border);
             g.fill(x, y, x + SIZE, y + SIZE, 0xC0101014);
             if (sel) {
@@ -230,12 +188,12 @@ public final class SkillHud {
                 int h = Math.round((SIZE - 2) * frac);
                 g.fill(x + 1, y + 1 + (SIZE - 2 - h), x + SIZE - 1, y + SIZE - 1, 0xB0000000);
                 String secs = left >= 20 ? String.valueOf((left + 19) / 20) : String.format(java.util.Locale.ROOT, "%.1f", left / 20F);
-                small(g, font, secs, x + SIZE / 2F, y + SIZE / 2F - 2, 0xFFFFFFFF, true);
+                small(g, font, secs, x + SIZE / 2F, y + SIZE / 2F - 1.5F, 0xFFFFFFFF, true);
             }
             // La tecla, pequeña en la esquina de abajo
             String key = KEYS[i].getTranslatedKeyMessage().getString();
             if (key.length() > 2) key = key.substring(0, 2);
-            small(g, font, key, x + SIZE - 2.5F, y + SIZE - 4.5F, sel ? 0xFFFFD54A : ready ? 0xFFE8DCC0 : 0xFF8A8070, true);
+            small(g, font, key, x + SIZE - 2F, y + SIZE - 4F, sel ? 0xFFFFD54A : ready ? 0xFFE8DCC0 : 0xFF8A8070, true);
         }
         RenderSystem.disableBlend();
     }

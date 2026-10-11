@@ -896,7 +896,6 @@
       s.passive
         ? `<span class="sk-chip is-passive">Pasiva · ${escapeHtml(skPassiveText(s))}</span>`
         : `<span class="sk-chip is-key"><kbd>${escapeHtml(s.key || '·')}</kbd>Tecla</span>`,
-      s.basic ? '<span class="sk-chip">Ataque básico · se queda puesto</span>' : '',
       s.cooldown > 0 ? `<span class="sk-chip">Cooldown ${seconds(s.cooldown)}</span>` : '',
     ].join('');
     return `<button type="button" class="sk-skill${sel ? ' is-sel' : ''}" data-sk-skill="${escapeHtml(s.id)}" aria-pressed="${sel}">
@@ -933,7 +932,7 @@
             ${skBuy(c)}
           </div>
         </div>
-        <div class="sk-list-head"><h4>Skills de ${escapeHtml(c.name)}</h4><span>Toca una para verla. En el juego, cada skill va en una tecla del 5 al 0 (en este orden); tu ataque básico se queda puesto y cada clic lo repite.</span></div>
+        <div class="sk-list-head"><h4>Skills de ${escapeHtml(c.name)}</h4><span>Toca una para verla. En el juego, cada skill va en una tecla del 5 al 0 (en este orden); la que eliges se queda puesta y cada clic la usa hasta que elijas otra.</span></div>
         <div class="sk-skills">${c.skills.map((s) => skSkillRow(c, s)).join('')}</div>
       </article>`;
   }

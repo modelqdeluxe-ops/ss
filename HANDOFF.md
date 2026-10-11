@@ -10,6 +10,31 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.40 (11 oct)** — segunda ronda de quejas del dueño (publicado en main; jar en `descargas/`):
+> - **Skills siempre activas**: la skill elegida con 5-0 se queda puesta hasta elegir otra (cada clic la usa cuando
+>   está lista; mientras se recarga, o si no se dan sus condiciones, el clic es un golpe normal que lanza las auras de
+>   golpe). Fuera lo de «ataque básico» y «un solo uso»: `SkillNet.Select(slot)`, `State(...selected)`,
+>   `SkillServer.useSelected` devuelve si salió. HUD más pequeño (iconos de 12 px).
+> - **«Dejan de hacer daño con el tiempo»**: `SkillRuntime.later` descartaba en silencio las tareas nuevas al pasar de
+>   20.000, y los efectos con `repeat=999` (Mago del Rayo...) programaban todas sus repeticiones de golpe (≈99.000 en 8
+>   min de simulación). Ahora cada repetición programa la siguiente y se corta si el efecto ya no existe (igual en
+>   `sim.py`); si aun así se llena, avisa en el log. Prueba larga (scratch `bin/leak2.py`, 8 min por clase): las 39
+>   clases siguen haciendo el mismo daño cada minuto.
+> - **Rayas en texturas**: las esquinas de cada cara se meten un poco hacia el centro en la textura
+>   (`VfxModel.insetUv/uvCenter`, en `SkillClient` y `VfxClient`): no se cuela el píxel vecino ni el fotograma siguiente
+>   de las texturas animadas.
+> - **Alas**: el planeo no se recargaba nunca (la marca de gastado solo se borraba en el suelo, donde Minecraft no
+>   pregunta). Ahora 10 s de planeo → caes → 3 s → otra vez (`TFWings`); quitada la barra del centro (`TFGlideHud`).
+> - **Comunidad (pad)**: REACCIONAR se cerraba con el temblor del ratón (`drag` cerraba el selector): ahora el arrastre
+>   cuenta desde 4 unidades. Corazón = botón de like que funciona (también en tus fotos, sin sumar estadísticas).
+>   Emojis más pequeños y nítidos (`TFPadScreen.blitSharp`).
+> - **Mensajes**: nada en pantalla (títulos/encima de la barra) por oficios, misiones, cazas, TF Pass, tienda web,
+>   ruleta, regalos: una línea de chat `[Prefijo] texto` (`util/TFChat`). Compra web: «[Tienda] Recibiste X. ¡Gracias
+>   por tu compra!» y a todos «[Tienda] Steve compró X.» (antes 8 líneas y un título).
+> - **Menú principal**: botones nuevos (`client/TFMenuButton`, `TFMenuPaint`, `TFMenuIcons`): principal en placa de oro,
+>   secundarios de cristal azul noche con icono, hover dorado con halo y destello, Salir en rojo; Cinzel por escala
+>   (`font/cinzel_N.json`). Simulador: `tools/menu_sim.py`.
+
 > **TF Client 1.3.39 (11 oct) — Skills rehechas tras probarlas el dueño** (publicado en main; jar en `descargas/`).
 > Quejas del dueño (textual, resumido): «texturas moradas incompletas; skills que no funcionan; partículas flotantes de
 > polvillo que dan lag; no tengo control, a veces ellas me controlan; no quiero que al presionar una letra se pongan;
@@ -1567,7 +1592,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.39)
+## 5. El mod (TF Client 1.3.40)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

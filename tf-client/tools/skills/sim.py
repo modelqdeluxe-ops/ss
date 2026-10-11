@@ -596,9 +596,17 @@ class Sim:
         if delay <= 0 and repeat <= 0:
             once()
             return
-        self.later(delay, once)
-        for k in range(1, min(repeat, 400) + 1):
-            self.later(delay + k * every, once)
+        # SkillRuntime: cada repetición programa la siguiente y se acaba si el efecto que la lanza ya no existe
+        left = [min(repeat, 2400)]
+
+        def step():
+            if ctx.caster.actor is not None and not ctx.caster.alive() and m['m'] != 'remove':
+                return
+            once()
+            if left[0] > 0:
+                left[0] -= 1
+                self.later(every, step)
+        self.later(delay, step)
 
     def resolve(self, m, ctx):
         """SkillVars.resolve"""

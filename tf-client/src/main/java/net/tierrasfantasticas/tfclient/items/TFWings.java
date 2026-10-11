@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 
 /**
  * Las alas de los sets planean como unas élitros, sin gastarse nunca (las mochilas, capas, colas y demás no), hasta
- * 10 segundos seguidos: luego se pliegan hasta tocar el suelo (TFGlideHud enseña el tiempo que queda).
+ * 10 segundos seguidos: luego se pliegan, caes, y a los 3 segundos se pueden volver a abrir (sin barra en pantalla).
  *
  * <p>Puestas en el pecho lo hace el propio objeto ({@link TFItemTypes.Cosmetic#canElytraFly}). Puestas en el hueco de
  * la espalda de Accessories o Curios (con la pechera en el pecho), Minecraft no las mira: ItemStackMixin pregunta aquí
@@ -28,38 +28,51 @@ public final class TFWings {
     private static final Map<LivingEntity, long[]> CACHE = new WeakHashMap<>();
     private static boolean accessoriesFailed;
     private static boolean curiosFailed;
-    /** Lo más que se puede planear seguido con unas alas (10 s). */
+    /** Lo más que se puede planear seguido con unas alas (10 s): la «barra» del planeo. */
     public static final int GLIDE_TICKS = 200;
-    /** Jugadores que ya gastaron su planeo y no pueden volver a planear hasta tocar el suelo (o el agua). */
-    private static final Map<LivingEntity, Boolean> SPENT = new WeakHashMap<>();
+    /** Enfriamiento después de gastar el planeo (3 s); luego la barra vuelve a estar llena. */
+    public static final int COOLDOWN_TICKS = 60;
+    /**
+     * Jugadores que gastaron el planeo → su {@code tickCount} cuando se les agotó. Caduca solo por tiempo (no hace
+     * falta tocar el suelo ni que nadie lo borre), así nunca se queda bloqueado: al morir, cambiar de dimensión o
+     * reconectar el jugador es otro objeto y empieza con la barra llena; en el mismo objeto su tickCount sigue
+     * subiendo y a los 3 s se olvida. Cliente y servidor guardan cada uno el suyo (con su propia entidad) y aplican la
+     * misma regla, así que coinciden.
+     */
+    private static final Map<LivingEntity, Integer> SPENT_AT = new WeakHashMap<>();
 
     private TFWings() {}
 
     /**
-     * ¿Puede seguir planeando con unas alas? Hasta 10 s seguidos; después las alas se pliegan y no vuelven a abrirse
-     * hasta tocar el suelo o el agua. En el suelo nunca se planea (así no se queda «planeando» de pie). Lo mismo en el
-     * cliente y en el servidor, para que los dos vean lo mismo.
+     * ¿Puede seguir planeando con unas alas? Mientras planeas se gasta la barra (10 s seguidos); al agotarse las alas
+     * se pliegan, caes y empieza un enfriamiento de 3 s; después la barra vuelve a estar llena y se puede planear otra
+     * vez (también en el aire). En el suelo, en el agua o montado nunca se planea (así no se queda «planeando» de pie),
+     * pero eso no toca el enfriamiento. Lo mismo en el cliente y en el servidor, para que los dos vean lo mismo.
+     *
+     * <p>Antes el «gastado» solo se borraba aquí al estar en el suelo, pero Minecraft no pregunta si se puede planear
+     * estando en el suelo (ni al saltar ni en el vuelo), así que nunca se borraba y ya no se volvía a planear.
      */
     public static boolean canGlide(LivingEntity entity) {
-        synchronized (SPENT) {
-            if (entity.onGround() || entity.isInWater() || entity.isPassenger()) {
-                SPENT.remove(entity);
-                return false;
-            }
-            if (SPENT.containsKey(entity)) return false;
+        synchronized (SPENT_AT) {
+            if (cooling(entity)) return false;
+            if (entity.onGround() || entity.isInWater() || entity.isPassenger()) return false;
             if (entity.isFallFlying() && entity.getFallFlyingTicks() >= GLIDE_TICKS) {
-                SPENT.put(entity, Boolean.TRUE);
+                SPENT_AT.put(entity, entity.tickCount);
                 return false;
             }
             return true;
         }
     }
 
-    /** Ya gastó el planeo y aún no ha tocado el suelo. */
-    public static boolean spent(LivingEntity entity) {
-        synchronized (SPENT) {
-            return SPENT.containsKey(entity);
-        }
+    /** Está en el enfriamiento de 3 s tras gastar el planeo (lo olvida en cuanto pasa). Llamar con SPENT_AT cogido. */
+    private static boolean cooling(LivingEntity entity) {
+        Integer at = SPENT_AT.get(entity);
+        if (at == null) return false;
+        int since = entity.tickCount - at;
+        // since < 0: el contador volvió atrás (no debería); mejor dejar planear que bloquear
+        if (since >= 0 && since < COOLDOWN_TICKS) return true;
+        SPENT_AT.remove(entity);
+        return false;
     }
 
     /** Está planeando con unas alas de los sets (no con unas élitros normales). */

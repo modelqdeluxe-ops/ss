@@ -1,8 +1,6 @@
 package net.tierrasfantasticas.tfclient.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -82,39 +80,6 @@ public final class TFButtonTheme {
             g.blit(texture.id(), x + cap, y, w - 2 * cap, h, capTex, v, texW - 2 * capTex, stateH, texW, texH);
         }
         g.setColor(1f, 1f, 1f, 1f);
-    }
-
-    /**
-     * Línea luminosa de los botones de oro: la misma del emblema, más suave. Pasa justo después de la del emblema y
-     * en cascada (servidor, Web, Discord), recortada para no salirse de la placa.
-     */
-    public static void drawGoldSweep(GuiGraphics g, int x, int y, int w, int h, float alpha, int order) {
-        if (!TFTextures.BUTTON_SHINE.ready() || w < 20) return;
-        long cycle = Util.getMillis() % TFLogoRenderer.SHINE_CYCLE_MS;
-        long start = TFLogoRenderer.SHINE_MS + 200L + order * 350L; // al terminar la del emblema
-        long duration = 1800L;
-        if (cycle < start || cycle >= start + duration) return;
-        float t = (cycle - start) / (float) duration;
-        float eased = t * t * (3f - 2f * t); // entra y sale suave
-        float bandW = h * 2.4f;
-        float bandX = x - bandW + eased * (w + bandW);
-        float strength = 0.42f * (float) Math.sin(t * Math.PI); // se enciende y se apaga, nunca de golpe
-
-        int inset = Math.min(7, w / 4); // sin tocar las puntas en ángulo
-        g.enableScissor(x + inset, y + 1, x + w - inset, y + h - 1);
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        g.setColor(1f, 1f, 1f, Mth.clamp(alpha * strength, 0f, 1f));
-        g.pose().pushPose();
-        g.pose().translate(bandX, y, 0f);
-        int tw = TFTextures.BUTTON_SHINE.width();
-        int th = TFTextures.BUTTON_SHINE.height();
-        g.pose().scale(bandW / tw, h / (float) th, 1f);
-        g.blit(TFTextures.BUTTON_SHINE.id(), 0, 0, 0f, 0f, tw, th, tw, th);
-        g.pose().popPose();
-        g.setColor(1f, 1f, 1f, 1f);
-        RenderSystem.defaultBlendFunc();
-        g.disableScissor();
     }
 
     /** Texto centrado con la letra de TF; si no cabe, se reduce un poco. */

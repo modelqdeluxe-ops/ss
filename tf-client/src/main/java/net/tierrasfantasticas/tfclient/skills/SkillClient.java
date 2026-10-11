@@ -99,7 +99,7 @@ public final class SkillClient {
         left = m.left().clone();
         total = m.total().clone();
         if (denied.length != left.length) denied = new long[left.length];
-        SkillHud.serverSelected(m.selected(), m.basic());
+        SkillHud.serverSelected(m.selected());
     }
 
     static void spawn(SkillNet.Spawn m) {
@@ -707,12 +707,17 @@ public final class SkillClient {
                     if (bone.shade) n.set(bone.quads[o + 1], bone.quads[o + 2], bone.quads[o + 3]).mul(normal).normalize();
                     else n.set(0, 1, 0).mul(normalView);
                     if (!Float.isFinite(n.x)) n.set(0, 1, 0);
+                    // Centro de la cara en la textura: cada esquina se mete un poco hacia él (como hace Minecraft al
+                    // hornear los modelos), para que en los bordes no se cuele el píxel de al lado ni, en las texturas
+                    // animadas, una raya del fotograma siguiente
+                    float[] c = VfxModel.uvCenter(bone.quads, o);
                     for (int k = 0; k < 4; k++) {
                         int p = o + 4 + k * 5;
                         v.set(bone.quads[p], bone.quads[p + 1], bone.quads[p + 2], 1F);
                         full.transform(v);
-                        float tv = (bone.quads[p + 4] + frame) / frames;
-                        vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(bone.quads[p + 3], tv)
+                        float tu = VfxModel.insetUv(bone.quads[p + 3], c[0]);
+                        float tv = (VfxModel.insetUv(bone.quads[p + 4], c[1]) + frame) / frames;
+                        vc.vertex(v.x, v.y, v.z).color(tr, tg, tb, 1F).uv(tu, tv)
                                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(FULL_BRIGHT).normal(n.x, n.y, n.z).endVertex();
                     }
                 }

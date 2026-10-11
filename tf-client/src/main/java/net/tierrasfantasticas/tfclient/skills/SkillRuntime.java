@@ -304,12 +304,19 @@ public final class SkillRuntime {
 
     private record Task(long at, Runnable run) {}
 
+    private static boolean tasksFull;
+
     static void later(int ticks, Runnable r) {
         if (ticks <= 0) {
             r.run();
             return;
         }
-        if (TASKS.size() > 20000) return;
+        if (TASKS.size() > 20000) {
+            if (!tasksFull) TFClient.LOGGER.warn("TF Skills: demasiadas tareas pendientes (20000); se descartan las nuevas");
+            tasksFull = true;
+            return;
+        }
+        tasksFull = false;
         TASKS.add(new Task(clock + ticks, r));
     }
 
@@ -502,9 +509,21 @@ public final class SkillRuntime {
             once.run();
             return;
         }
-        later(delay, once);
-        for (int k = 1; k <= Math.min(repeat, 400); k++) later(delay + k * every, once);
+        // Cada repetición programa la siguiente (antes se programaban todas de golpe: los efectos con repeat=999 dejaban
+        // miles de tareas en cola aunque ya no existieran, y al llegar al tope las skills con delay dejaban de salir).
+        // Como en MythicMobs, si el efecto que la lanza ya no existe, se acaba.
+        int[] left = {Math.min(repeat, MAX_REPEAT)};
+        Runnable[] step = new Runnable[1];
+        step[0] = () -> {
+            if (ctx.caster.actor != null && !ctx.caster.alive() && !m.m.equals("remove")) return;
+            once.run();
+            if (left[0]-- > 0) later(every, step[0]);
+        };
+        later(delay, step[0]);
     }
+
+    /** Repeticiones como mucho de una línea (repeat=999 de los efectos que duran lo que viven). */
+    private static final int MAX_REPEAT = 2400;
 
     static void apply(Mech m, Ctx ctx, List<Tgt> targets) {
         switch (m.m) {
