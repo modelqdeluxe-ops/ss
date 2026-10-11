@@ -301,8 +301,39 @@ def check_texts(fails):
                 fails.append(f'{d["id"]}/{s["id"]}: sin descripción en español')
 
 
+# Carpetas que el atlas de bloques de 1.20.1 ya trae (assets/minecraft/atlases/blocks.json de vanilla)
+VANILLA_ATLAS = ('block/', 'item/', 'entity/conduit/')
+
+
+def check_atlas(fails):
+    """Cada textura de un modelo de ítem o de bloque tiene que estar en el atlas de bloques (si no, morada y negra)."""
+    atlas = os.path.join(RES, 'minecraft', 'atlases', 'blocks.json')
+    dirs, singles = list(VANILLA_ATLAS), set()
+    if os.path.exists(atlas):
+        for src in json.load(open(atlas, encoding='utf-8'))['sources']:
+            if src['type'] == 'directory':
+                dirs.append(src['source'].rstrip('/') + '/')
+            elif src['type'] == 'single':
+                singles.add(src['resource'].rpartition(':')[2])
+    n = 0
+    for f in sorted(glob.glob(os.path.join(TF, 'models', '**', '*.json'), recursive=True)):
+        try:
+            tx = json.load(open(f, encoding='utf-8')).get('textures') or {}
+        except ValueError:
+            continue
+        for v in tx.values():
+            if not isinstance(v, str) or v.startswith('#'):
+                continue
+            n += 1
+            path = v.rpartition(':')[2]
+            if path not in singles and not any(path.startswith(d) for d in dirs):
+                fails.append(f'{os.path.relpath(f, TF)}: la textura {v} no está en el atlas de bloques (saldría morada)')
+    return n
+
+
 def main():
     fails, warns = [], []
+    check_atlas(fails)
     n_items = check_item_models(fails)
     n_me = check_me(fails, warns)
     n_tex = check_textures(fails)

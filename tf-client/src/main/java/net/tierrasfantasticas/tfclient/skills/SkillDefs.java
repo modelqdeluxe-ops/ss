@@ -175,7 +175,15 @@ public final class SkillDefs {
             for (SkillDef s : skills) if (s.id().equals(id)) return s;
             return null;
         }
+
+        /** Clase de arco: la skill elegida sale al soltar la flecha con un arco (las demás, con el clic izquierdo). */
+        public boolean bow() {
+            return BOW_CLASSES.contains(id);
+        }
     }
+
+    /** Las clases de arqueros (sus packs disparaban con el arco de la clase): Arquero, Arquero Despertado y Null. */
+    private static final java.util.Set<String> BOW_CLASSES = java.util.Set.of("arquero", "arquero_despertado", "null");
 
     // ------------------------------------------------------------------------------------------- carga
 

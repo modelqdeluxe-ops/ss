@@ -1,0 +1,189 @@
+{
+ "sources": [
+  {
+   "type": "directory",
+   "source": "skills/arquero/minecraft",
+   "prefix": "skills/arquero/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/arquero_despertado/minecraft",
+   "prefix": "skills/arquero_despertado/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/asesino_despertado/minecraft",
+   "prefix": "skills/asesino_despertado/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/caballero_artico/minecraft",
+   "prefix": "skills/caballero_artico/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/caballero_muerte/minecraft",
+   "prefix": "skills/caballero_muerte/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/cazador_bestias/minecraft",
+   "prefix": "skills/cazador_bestias/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/chaman/minecraft",
+   "prefix": "skills/chaman/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/clerigo_despertado/minecraft",
+   "prefix": "skills/clerigo_despertado/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/dragon_rojo/skills_dragon_red",
+   "prefix": "skills/dragon_rojo/skills_dragon_red/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/filo_vacio/rrpg_void_edge",
+   "prefix": "skills/filo_vacio/rrpg_void_edge/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/glacia/minecraft",
+   "prefix": "skills/glacia/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/guerrero/minecraft",
+   "prefix": "skills/guerrero/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/guerrero_despertado/awakened_warrior",
+   "prefix": "skills/guerrero_despertado/awakened_warrior/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/guerrero_dragon/minecraft",
+   "prefix": "skills/guerrero_dragon/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/guerrero_llama/flame_warrior",
+   "prefix": "skills/guerrero_llama/flame_warrior/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/guja_vendaval/minecraft",
+   "prefix": "skills/guja_vendaval/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/invocador/minecraft",
+   "prefix": "skills/invocador/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/invocador_espiritus/minecraft",
+   "prefix": "skills/invocador_espiritus/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/katana_fuego/minecraft",
+   "prefix": "skills/katana_fuego/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/luchador_despertado/minecraft",
+   "prefix": "skills/luchador_despertado/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/mago/minecraft",
+   "prefix": "skills/mago/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/mago_despertado/minecraft",
+   "prefix": "skills/mago_despertado/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/mago_rayo/minecraft",
+   "prefix": "skills/mago_rayo/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/nigromante/minecraft",
+   "prefix": "skills/nigromante/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/null/minecraft",
+   "prefix": "skills/null/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/paladin/minecraft",
+   "prefix": "skills/paladin/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/picaro/khan_rogue_class",
+   "prefix": "skills/picaro/khan_rogue_class/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/piromante/minecraft",
+   "prefix": "skills/piromante/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/pistolero_despertado/minecraft",
+   "prefix": "skills/pistolero_despertado/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/revenant/minecraft",
+   "prefix": "skills/revenant/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/ronin_trueno/minecraft",
+   "prefix": "skills/ronin_trueno/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/samurai_agua/water_samurai",
+   "prefix": "skills/samurai_agua/water_samurai/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/samurai_escarcha/minecraft",
+   "prefix": "skills/samurai_escarcha/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/sanador/khan_mender_class",
+   "prefix": "skills/sanador/khan_mender_class/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/thor/minecraft",
+   "prefix": "skills/thor/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/vampiro/minecraft",
+   "prefix": "skills/vampiro/minecraft/"
+  },
+  {
+   "type": "directory",
+   "source": "skills/zephyr/minecraft",
+   "prefix": "skills/zephyr/minecraft/"
+  }
+ ]
+}

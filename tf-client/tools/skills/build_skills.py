@@ -964,6 +964,38 @@ def write_class_items(full):
             json.dump(data, f, ensure_ascii=False, indent=1)
 
 
+ATLAS = os.path.normpath(os.path.join(RES, '..', 'minecraft', 'atlases', 'blocks.json'))
+
+
+def write_atlas():
+    """Las texturas de los modelos de ítem de las skills (textures/skills/...) al atlas de bloques: en 1.20.1 los
+    modelos de ítem solo ven las texturas de las carpetas que dice atlases/blocks.json (block/, item/...); las demás
+    salen moradas y negras. Solo las carpetas que usan esos modelos (las de ModelEngine, «me/», se cargan aparte)."""
+    dirs, singles = set(), set()
+    for root, _d, files in os.walk(OUT_ITEM_MODELS):
+        for f in files:
+            if not f.endswith('.json'):
+                continue
+            for ref in (json.load(open(os.path.join(root, f), encoding='utf-8')).get('textures') or {}).values():
+                if not isinstance(ref, str) or ref.startswith('#'):
+                    continue
+                ns, _, path = ref.partition(':') if ':' in ref else ('minecraft', ':', ref)
+                parts = path.split('/')
+                if ns != 'tfclient' or parts[0] != 'skills':
+                    continue
+                if len(parts) > 3:
+                    dirs.add('/'.join(parts[:3]))
+                else:
+                    singles.add(path)
+    sources = [{'type': 'directory', 'source': d, 'prefix': d + '/'} for d in sorted(dirs)]
+    sources += [{'type': 'single', 'resource': 'tfclient:' + x} for x in sorted(singles)
+                if not any(x.startswith(d + '/') for d in dirs)]
+    os.makedirs(os.path.dirname(ATLAS), exist_ok=True)
+    with open(ATLAS, 'w', encoding='utf-8') as f:
+        json.dump({'sources': sources}, f, indent=1)
+        f.write('\n')
+
+
 def strip_mc(s):
     return re.sub(r'[&§][0-9a-fk-orx]', '', re.sub(r'<[^>]+>', '', str(s or ''))).strip()
 
@@ -1017,6 +1049,7 @@ def main():
         json.dump(sj, f, ensure_ascii=False, indent=1)
     write_class_items(full)
     if full:
+        write_atlas()
         with open(os.path.join(RES, 'skills', 'catalog.json'), 'w', encoding='utf-8') as f:
             json.dump(catalog, f, ensure_ascii=False, indent=1)
 

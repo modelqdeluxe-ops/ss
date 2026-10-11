@@ -225,14 +225,8 @@ final class SkillMotion {
         }
     }
 
-    /** recoil{r;pitch}: la cámara del jugador da un tirón (la del arma al disparar). */
+    /** recoil{r;pitch}: en el pack, la cámara del jugador daba un tirón al disparar. Ya no: la vista solo la mueve él. */
     static void recoil(Mech m, Ctx ctx, List<Tgt> targets) {
-        float pitch = (float) SkillRuntime.num(m.arg("-2", "pitch", "p"), -2);
-        for (Tgt t : targets) {
-            if (t.entity() instanceof ServerPlayer p) {
-                SkillNet.toPlayer(p, new SkillNet.Fx(6, "", 0, 0, 0, 0, pitch, 0, 0, 0, 0, null, 0, 0, 0, 0));
-            }
-        }
     }
 
     /**

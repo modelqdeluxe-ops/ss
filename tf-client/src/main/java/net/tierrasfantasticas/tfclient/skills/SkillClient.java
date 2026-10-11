@@ -99,6 +99,7 @@ public final class SkillClient {
         left = m.left().clone();
         total = m.total().clone();
         if (denied.length != left.length) denied = new long[left.length];
+        SkillHud.serverSelected(m.selected());
     }
 
     static void spawn(SkillNet.Spawn m) {
@@ -198,10 +199,7 @@ public final class SkillClient {
             else HIDDEN.put(id, clientTicks + m.n());
             return;
         }
-        if (m.kind() == 6) { // retroceso de la cámara
-            if (mc.player != null) mc.player.setXRot(Math.max(-90F, Math.min(90F, mc.player.getXRot() + m.hs())));
-            return;
-        }
+        if (m.kind() == 6) return; // retroceso de la cámara: ya no se mueve la vista de nadie (el jugador manda)
         ParticleOptions opts = particle(m.id(), m.extra(), m.size());
         if (opts == null) return;
         Vec3 at = new Vec3(m.x(), m.y(), m.z());
@@ -275,7 +273,10 @@ public final class SkillClient {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+        if (event.phase == TickEvent.Phase.START) {
+            if (Minecraft.getInstance().level != null) SkillHud.preTick();
+            return;
+        }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             ACTORS.clear();
@@ -285,7 +286,7 @@ public final class SkillClient {
         if (mc.isPaused()) return;
         clientTicks++;
         for (int i = 0; i < left.length; i++) if (left[i] > 0) left[i]--;
-        SkillHud.tick();
+        SkillHud.postTick();
         Iterator<Actor> it = ACTORS.values().iterator();
         while (it.hasNext()) {
             Actor a = it.next();
@@ -350,10 +351,10 @@ public final class SkillClient {
         if (RAISED.remove(event.getEntity().getId())) event.getPoseStack().popPose();
     }
 
-    /** Golpe al aire o a algo (clic izquierdo): se le dice al servidor (auras onSwing de la clase). */
+    /** Clic izquierdo (al aire o a algo): lanza la skill elegida o es un golpe normal (ver {@link SkillHud#attack()}). */
     @SubscribeEvent
     public static void onInteract(net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
-        if (event.isAttack() && !classId.isEmpty()) SkillNet.CHANNEL.sendToServer(new SkillNet.Swing());
+        if (event.isAttack() && !classId.isEmpty()) SkillHud.attack();
     }
 
     @SubscribeEvent
