@@ -423,13 +423,23 @@ class Placed:
         self.p = p
         body = p['body']
         self.k = k = bh / (body[3] - body[1])
-        fill_total = sum(f[1] - f[0] for f in p['fills'])
-        extra = bw - (body[2] - body[0]) * k
-        fill_k = max(k * 0.25, k + extra / fill_total) if fill_total > 0 else k
+        # cada lado de la gema del centro se estira lo suyo: la gema cae en el centro del botón (TFMenuPlates.Placed)
+        mid = (body[0] + body[2]) / 2
+        near = [g[0] for g in p['sparks'] if abs(g[0] - mid) < (body[2] - body[0]) * 0.1]
+        anchor = sum(near) / len(near) if near else mid
+        fill_l = sum(f[1] - f[0] for f in p['fills'] if f[1] <= anchor)
+        fill_r = sum(f[1] - f[0] for f in p['fills'] if f[1] > anchor)
+        fixed_l, fixed_r = anchor - body[0] - fill_l, body[2] - anchor - fill_r
+        if fill_l > 0 and fill_r > 0:
+            kl = max(k * 0.25, (bw / 2 - fixed_l * k) / fill_l)
+            kr = max(k * 0.25, (bw / 2 - fixed_r * k) / fill_r)
+        else:
+            tot, extra = fill_l + fill_r, bw - (body[2] - body[0]) * k
+            kl = kr = max(k * 0.25, k + extra / tot) if tot > 0 else k
         src, scale = [0.0], []
         for f in p['fills']:
             src += [f[0], f[1]]
-            scale += [k, fill_k]
+            scale += [k, kl if f[1] <= anchor else kr]
         src.append(p['uv'][2])
         scale.append(k)
         rel = [0.0]
@@ -687,9 +697,9 @@ def auto_scale(fbw, fbh, limit=0):
     return i
 
 
-GAPS = [84, 86, 62, 46]  # separación entre filas en la lámina: lo justo para que las gemas no se toquen
+GAPS = [96, 96, 72, 80]  # separación entre filas en la lámina: lo justo para que las gemas no se toquen
 PAD = 0.4  # aire a cada lado del texto, en altos de la placa
-GROUP_GAP = 5  # entre los botones de una misma fila (interfaz)
+GROUP_GAP = 14  # entre los botones de una misma fila (interfaz)
 BLUE_MIN = 0.62  # Mundo local y Mods, como poco este tanto del ancho de Tierras Fantásticas
 GROUPS = [[0], [1, 2], [3, 4], [5, 7], [6]]  # los de un grupo, del mismo ancho (simetría en espejo)
 ROW_OF = [0, 1, 2, 3, 3, 4, 4, 4]
@@ -703,7 +713,7 @@ def crisp(size, S):
     return n / S
 
 
-def layout(w, h, S=4):
+def layout(w, h, S=4, fbw=None):
     """TFMenuButton.mainLayout + TitleScreenMixin: (texto, icono, tipo, placa, x, y, ancho, alto) y los tamaños de
     letra (botones, Tierras Fantásticas). Alto: la lámina con filas separadas lo justo; ancho: cada botón a su texto
     (los de una fila, iguales), todo centrado."""
@@ -751,15 +761,17 @@ def layout(w, h, S=4):
         if widest <= w - 16 or size <= 0.6:
             break
         size, tf = size * 0.9, tf * 0.9
-    cx = w / 2
+    cx = w / 2 if fbw is None else fbw / (2 * S)  # el centro de verdad de la ventana (TFMenuButton.mainLayout)
     rects = [None] * 8
     for row in rows:
-        tot = sum(round(widths[i]) for i in row) + GROUP_GAP * (len(row) - 1)
+        even = lambda v: 2 * round(v / 2)  # anchos pares: todas las filas con el mismo centro exacto
+        tot = sum(even(widths[i]) for i in row) + GROUP_GAP * (len(row) - 1)
         x = round(cx - tot / 2)
+        shift = cx - (x + tot / 2)  # TFMenuButton.mainShiftX: medio píxel si el ancho es impar
         for i in row:
             y0 = round(top + (row_y[i] - ctop) * k)
-            rects[i] = (x, y0, round(widths[i]), hs[i])
-            x += round(widths[i]) + GROUP_GAP
+            rects[i] = (x + shift, y0, even(widths[i]), hs[i])
+            x += even(widths[i]) + GROUP_GAP
     out = [lab + (n,) + r for lab, n, r in zip(labels, MAIN, rects)]
     return round(top), out, (eff, efft)
 
@@ -783,7 +795,7 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
     dw, dh = math.ceil(_bg.width * sc), math.ceil(_bg.height * sc)
     bg = _bg.resize((dw * S, dh * S), Image.LANCZOS)
     g.composite(to_float_img(bg), (w - dw) // 2 * S, (h - dh) // 2 * S)
-    top, buttons, (eff, efft) = layout(w, h, S)
+    top, buttons, (eff, efft) = layout(w, h, S, fbw)
     # Emblema
     lh = min(170, top - 4 - 8)
     if lh > 16:

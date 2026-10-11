@@ -10,6 +10,18 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.52 (11 oct)** — el dueño: «¿eso es simétrico? mira las gemas», «botones pegados, sigue un milímetro
+> asimétrico de punta a punta». Simetría exacta:
+> - `gen_menu_buttons.py`: cada placa es su mitad izquierda + su reflejo (eje en la gema del centro); la lámina original
+>   no era simétrica por unos píxeles. **Opciones = Salir y WhatsApp = Discord en dibujo** (`recolor`: la placa de
+>   Salir/Discord con el hueco pasado al gris/verde de la lámina; marco, tréboles y filo intactos).
+> - `TFMenuPlates.Placed`: las zonas lisas de cada lado de la gema del centro se estiran por separado para que la gema
+>   caiga en el centro exacto del botón (`Plate.anchor`).
+> - `mainLayout`: anchos pares, centro de verdad de la ventana (`getWidth() / 2s`; el ancho de interfaz se redondea) y
+>   `mainShiftX` (medio píxel) al dibujar: todas las gemas en el mismo píxel y bordes izq/der iguales (simulador:
+>   silueta = su espejo en el 99–99,6 % de los píxeles; lo demás, las letras).
+> - Más aire: `GROUP_GAP` 14 entre botones de una fila; `GAPS` 96/96/72/80 entre filas (los tréboles ya no se tocan).
+
 > **TF Client 1.3.51 (11 oct)** — el dueño (con captura): botones solapados, raya/sombra oscura en las letras de
 > Tierras, botones gigantes con texto pequeño, sin simetría, botones que pierden la animación (Discord); partículas de
 > las protecciones desordenadas; en la tienda «128 unidades» con un 64 en el icono.
@@ -1722,7 +1734,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.51)
+## 5. El mod (TF Client 1.3.52)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
