@@ -386,7 +386,7 @@ ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
 SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
 K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 6  # el emblema: al menos el 44 % del alto
 ROW_GAP = 50  # separación entre filas (en la lámina eran 70-100: más juntas, placas más grandes)
-CAP_HEIGHT, CAP_FILL, INTERIOR = 6.2, 0.7, 0.7
+CAP_HEIGHT, CAP_FILL, TF_CAP_FILL, INTERIOR = 6.2, 0.5, 0.52, 0.7
 LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
 _menu = {}
 
@@ -524,7 +524,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     Fantásticas en oro (degradado, luz detrás y brillo que cruza en `shine`, 0..1)."""
     ink = 0x9A9AA6 if not active else mix_rgb(INK, INK_HOT, e)
     n = max(1, min(12, round(S * size)))
-    if n > 1 and n / S > size * 1.08:
+    if n > 1 and n / S > size * 1.1:
         n -= 1
     scale = n / S
     tw = text_width(label, S)
@@ -537,17 +537,13 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     gx = snapS((x0 + x1) / 2 - group / 2, S)
     # contorno grueso (un 8,5 % de la letra) en 16 direcciones + 8 a media distancia, y sombra debajo
     gold_text = kind == PRIMARY and active
-    ro = max(1, round(10 * scale * S * (0.085 if gold_text else 0.07)))
-    shadow = 0.55 if gold_text else 0.3
-    sh = max(1, round(ro * 0.8))
+    ro = max(1, round(10 * scale * S * (0.07 if gold_text else 0.06)))
     ring = ring_offsets(ro)
-    edge = rgb3(GOLD_OUTLINE) if gold_text else tuple(round(c * OUTLINE_SHADE) for c in rgb3(int(tint, 16)))
+    edge = tuple(round(c * (GOLD_OUTLINE_SHADE if gold_text else OUTLINE_SHADE)) for c in rgb3(int(tint, 16)))
     if icon:
         sz = round(ICON * scale * S)
         img = menu_icon(icon, sz)
         ix, iy = round(gx * S), round(cy * S - sz / 2)
-        for dx, dy in ring:
-            g.composite(img, ix + dx, iy + dy + sh, tuple(c / 255 for c in edge) + (shadow,))
         for dx, dy in ring:
             g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in edge) + (1,))
         g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
@@ -561,8 +557,6 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         g.composite(to_float_img(im), round((gx + w / 2 - gw / 2) * S), round((cy - gh / 2) * S),
                     (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
     for dx, dy in ring:
-        draw_text(g, label, gx + dx / S, ty + (dy + sh) / S, S, edge, shadow, 0, scale, n)
-    for dx, dy in ring:
         draw_text(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
     # letras en degradado (franjas de 2 px reales): oro en Tierras Fantásticas, blanco a gris azulado en las demás
     x0r, x1r = math.floor(gx * S) - 4, math.ceil((gx + tw * scale) * S) + 4
@@ -574,7 +568,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         b1 = y0r + (y1r - y0r) * (i + 1) // bands
         g.scissor = (x0r, b0, x1r, b1)
         t = (i + 0.5) / bands
-        c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xFFFBF2, 0.45 * e) if active else 0x9A9AA6)
+        c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xF6F1E6, 0.45 * e) if active else 0x9A9AA6)
         draw_text(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
     if shine is not None:
         k = math.sin(shine * math.pi)
@@ -623,31 +617,36 @@ def menu_icon(name, n):
     return to_float_img(im)
 
 
-GOLD = [0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E]
+GOLD = [0xF7E7BE, 0xF2D58C, 0xE2B55A, 0xC9913A, 0xA87430]
 GOLD_OUTLINE = 0x2A1204
 GOLD_TOP, GOLD_BOTTOM = 0.0, 6.7
-WHITE = [0xF3EEE3, 0xE7E1D5, 0xCFC8BB]
-OUTLINE_SHADE = 0.3  # contorno de las letras blancas: el color de su placa (tint) oscurecido  # el degradado de las demás letras (arriba a abajo)
+WHITE = [0xE6E0D3, 0xD9D2C3, 0xBDB5A6]
+OUTLINE_SHADE, GOLD_OUTLINE_SHADE = 0.42, 0.5  # contorno de las letras blancas: el color de su placa (tint) oscurecido  # el degradado de las demás letras (arriba a abajo)
 
 
 def gold(t, e):
     p = t * (len(GOLD) - 1)
     i = min(len(GOLD) - 2, int(p))
     c = lerp_argb(0xFF000000 | GOLD[i], 0xFF000000 | GOLD[i + 1], p - i)
-    return lerp_argb(c, 0xFFFFF2C8, 0.35 * e) & 0xFFFFFF
+    return lerp_argb(c, 0xFFFBEFCF, 0.35 * e) & 0xFFFFFF
 
 
-def text_size(S, buttons):
-    """TFMenuButton.textSizeFor: un solo tamaño para todo el menú (el mayor que cabe en todos)."""
+def text_size(S, buttons, tf=False):
+    """TFMenuButton.textSizeFor: un solo tamaño para los botones (el mayor que cabe en todos); con tf=True, el de
+    Tierras Fantásticas (más grande: su placa es más alta)."""
     d = menu_data()['json']
-    size = 1e9
-    for label, icon, kind, plate, x, y, w, h in buttons:
+    size, tf_size = 1e9, 1e9
+    for idx, (label, icon, kind, plate, x, y, w, h) in enumerate(buttons):
         p = d['plates'][plate]
         at = Placed(p, x, y, w, h, S)
         room = at.x(p['text'][2]) - at.x(p['text'][0])
         need = text_width(label) + (ICON + GAP if icon else 0)
+        if idx == 0:
+            tf_size = min(room / need, TF_CAP_FILL * INTERIOR * h / CAP_HEIGHT)
+            continue
         size = min(size, room / need, CAP_FILL * INTERIOR * h / CAP_HEIGHT)
-    return max(1.0, size)
+    size = max(1.0, size)
+    return max(size, tf_size) if tf else size
 
 
 def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, size=1.0):
@@ -656,12 +655,12 @@ def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, siz
     m = menu_data()
     p = m['json']['plates'][plate]
     e = ease(hover) if active else 0.0
-    lift = 0.5 if pressed else -0.8 * e
+    lift = 0.5 if pressed else -0.6 * e
     at = Placed(p, x, y + lift, w, h, S)
     shade = 0.45 if not active else 0.8 if pressed else 1.0
     draw_plate(g, S, at, (shade, shade, shade, 1))
     if e > 0.01 and not pressed:
-        draw_plate(g, S, at, (1, 1, 1, 0.24 * e), additive=True)
+        draw_plate(g, S, at, (1, 1, 1, 0.16 * e), additive=True)
     for i, l in enumerate(p['lights']):
         flick = 0.5 + 0.18 * math.sin(i * 2.1) + 0.1 * math.sin(i * 4.3)
         draw_glow(g, S, m['glow'], at.x(l[0]), at.y(l[1]), l[2] * at.k * (3.0 + 0.25 * flick),
@@ -670,12 +669,8 @@ def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, siz
         for gem in p['sparks']:
             draw_glow(g, S, m['glow'], at.x(gem[0]), at.y(gem[1]), gem[2] * at.k * 2.2, (0.35, 0.75, 1, 0.5 * e))
     bh = p['body'][3] - p['body'][1]
-    if sweep is not None:
-        ix0, ix1 = round(at.x(p['body'][0] + bh * 0.18)), round(at.x(p['body'][2] - bh * 0.18))
-        iy0, iy1 = round(at.y(p['body'][1] + bh * 0.16)), round(at.y(p['body'][3] - bh * 0.16))
-        paint_sweep(g, S, ix0, iy0, ix1 - ix0, iy1 - iy0, sweep, 0.55, 0)
     paint_content(g, S, at.x(p['text'][0]), at.x(p['text'][2]), at.y((p['body'][1] + p['body'][3]) / 2), label, icon,
-                  kind, size, e, active, shine=sweep if kind == PRIMARY else None, tint=p.get('tint', '806040'))
+                  kind, size, e, active, shine=None, tint=p.get('tint', '806040'))
 
 
 _shine = None
@@ -784,9 +779,9 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
         g.composite(to_float_img(gl), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
         lg = _logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)
         g.composite(to_float_img(lg), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
-    size = text_size(S, buttons)
+    size, tf_size = text_size(S, buttons), text_size(S, buttons, tf=True)
     for i, b in enumerate(buttons):
-        paint_button(g, S, b, size=size, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
+        paint_button(g, S, b, size=tf_size if i == 0 else size, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
                      sweep=(sweep if b[2] == PRIMARY else (hover_sweep if hover == i else None)))
     im = g.image()
     if out:

@@ -113,6 +113,9 @@ public final class ClaimOutlineRenderer {
         if (!MagicDustParticle.spritesReady() || clientlevel.getGameTime() % 20L == 0L) {
             MagicDustParticle.refreshSprites(minecraft);
         }
+        if (!MagicDustParticle.spritesReady()) {
+            return; // sin las texturas de partículas todavía: nada (una mota sin textura cerraría el juego al dibujarse)
+        }
         Vec3 vec3 = minecraft.gameRenderer.getMainCamera().getPosition();
         Vector3f look = minecraft.gameRenderer.getMainCamera().getLookVector();
         double px = localplayer.getX();

@@ -10,6 +10,18 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.50 (11 oct)** — **crash arreglado**: `MagicDustParticle.refreshSprites` usaba
+> `Minecraft.getTextureAtlas(LOCATION_PARTICLES)` y el atlas de partículas no está en el ModelManager (NPE en
+> `AtlasSet` al entrar al mundo con contorno de protección). Ahora lo pide al TextureManager (`TextureAtlas.getSprite`),
+> con try/catch; si no hay sprites no se crean motas, y una mota sin sprite se quita sola. Menú (el dueño: «una línea
+> negra delante del botón de Tierras, la letra demasiado grande, la animación de la línea blanca horrible, menos
+> contraste»): fuera la sombra de las letras (era la raya oscura debajo de Tierras Fantásticas), fuera las líneas de
+> luz (`TFMenuPaint.sweep` ya no se usa en el menú) y el brillo de las letras; el oro «respira» despacio
+> (`GOLD_BREATH_MS` 3,8 s) con la luz cálida detrás; con el ratón la placa se ilumina menos (16 %) y sube menos.
+> Letra más pequeña (`CAP_FILL` 0,5: ×1 a 1080p), blancas más apagadas (E6E0D3→BDB5A6), oro más suave, contorno del
+> color de la placa también en el oro (`GOLD_OUTLINE_SHADE` 0,5) y más fino. «Tierras Fantásticas» con su propio tamaño,
+> más grande (`TF_CAP_FILL` 0,52 de su placa, más alta: ×1,5 a 1080p, ×1,33 a 720p; `tfTextSize`).
+
 > **TF Client 1.3.49 (11 oct)** — el dueño: «las letras blancas tienen un contraste muy alto, que no se vean más
 > contrastadas que su fondo». Las blancas del menú pasan a blanco hueso (`WHITE` F3EEE3→CFC8BB; con el ratón, casi
 > blanco), su contorno es más fino (7 % de la letra) y del **color de su placa oscurecido** (`tint` en
@@ -1688,7 +1700,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.49)
+## 5. El mod (TF Client 1.3.50)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
