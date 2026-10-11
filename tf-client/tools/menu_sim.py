@@ -386,7 +386,7 @@ ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
 SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
 K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 6  # el emblema: al menos el 44 % del alto
 ROW_GAP = 50  # separación entre filas (en la lámina eran 70-100: más juntas, placas más grandes)
-CAP_HEIGHT, CAP_FILL, TF_CAP_FILL, INTERIOR = 6.2, 0.5, 0.66, 0.7
+CAP_HEIGHT, CAP_FILL, TF_CAP_FILL, INTERIOR = 6.2, 0.5, 0.52, 0.7
 LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
 _menu = {}
 
@@ -524,7 +524,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     Fantásticas en oro (degradado, luz detrás y brillo que cruza en `shine`, 0..1)."""
     ink = 0x9A9AA6 if not active else mix_rgb(INK, INK_HOT, e)
     n = max(1, min(12, round(S * size)))
-    if n > 1 and n / S > size * 1.08:
+    if n > 1 and n / S > size * 1.1:
         n -= 1
     scale = n / S
     tw = text_width(label, S)

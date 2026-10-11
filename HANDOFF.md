@@ -20,7 +20,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > (`GOLD_BREATH_MS` 3,8 s) con la luz cálida detrás; con el ratón la placa se ilumina menos (16 %) y sube menos.
 > Letra más pequeña (`CAP_FILL` 0,5: ×1 a 1080p), blancas más apagadas (E6E0D3→BDB5A6), oro más suave, contorno del
 > color de la placa también en el oro (`GOLD_OUTLINE_SHADE` 0,5) y más fino. «Tierras Fantásticas» con su propio tamaño,
-> más grande (`TF_CAP_FILL` 0,66 de su placa, más alta: ×1,75 a 1080p; `tfTextSize`).
+> más grande (`TF_CAP_FILL` 0,52 de su placa, más alta: ×1,5 a 1080p, ×1,33 a 720p; `tfTextSize`).
 
 > **TF Client 1.3.49 (11 oct)** — el dueño: «las letras blancas tienen un contraste muy alto, que no se vean más
 > contrastadas que su fondo». Las blancas del menú pasan a blanco hueso (`WHITE` F3EEE3→CFC8BB; con el ratón, casi

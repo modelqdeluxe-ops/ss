@@ -63,7 +63,7 @@ public class TFMenuButton extends Button {
     private static final float LOGO_FRAC = 0.44f;
     private static final int BOTTOM_MARGIN = 6;
     /** Alto de las mayúsculas de Titan One a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
-    private static final float CAP_HEIGHT = 6.2f, CAP_FILL = 0.5f, TF_CAP_FILL = 0.66f, INTERIOR = 0.7f;
+    private static final float CAP_HEIGHT = 6.2f, CAP_FILL = 0.5f, TF_CAP_FILL = 0.52f, INTERIOR = 0.7f;
     /**
      * Tamaño de letra común a los botones del menú principal (el mayor que cabe en todos) y el de Tierras Fantásticas,
      * más grande (su placa es más alta). Ver mainLayout.
@@ -347,10 +347,10 @@ public class TFMenuButton extends Button {
         if (alpha * 255f < 4f) return; // casi transparente: Minecraft pintaría el texto opaco
         int ink = !this.active ? 0x9A9AA6 : TFMenuPaint.lerp(0xFF000000 | INK, 0xFF000000 | INK_HOT, e) & 0xFFFFFF;
 
-        // Letra a la escala de la interfaz (n píxeles reales por píxel de glifo; como mucho un 8 % más que `size`): nítida
+        // Letra a la escala de la interfaz (n píxeles reales por píxel de glifo; como mucho un 10 % más que `size`): nítida
         ResourceLocation[] fonts = plate != null ? MENU_FONT_AT_SCALE : FONT_AT_SCALE;
         int n = Mth.clamp(Math.round(s * size), 1, fonts.length);
-        if (n > 1 && n / (float) s > size * 1.08f) n--;
+        if (n > 1 && n / (float) s > size * 1.1f) n--;
         float scale = n / (float) s;
         MutableComponent text = Component.literal(getMessage().getString())
                 .setStyle(Style.EMPTY.withFont(fonts[n - 1]));
