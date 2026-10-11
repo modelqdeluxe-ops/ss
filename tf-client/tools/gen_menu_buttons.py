@@ -44,7 +44,7 @@ MENU = {
     'blueb':  ((874, 971, 1297, 1178), [(135, 290)]),
 }
 # Ancho del hueco para el texto a cada lado del cuerpo (gemas y marco), en altos del cuerpo.
-TEXT_SIDE = {'tf': 0.62, 'blue1': 0.62, 'blue2': 0.62}
+TEXT_SIDE = {'tf': 0.9, 'blue1': 1.25, 'blue2': 1.25}
 # Lámina 2: la placa mediana de piedra; puntas fijas y el centro (liso) repetido en espejo hasta FILL_W.
 NAV_BOX, NAV_CAPS, FILL_W = (132, 601, 791, 736), (115, 545), 1600
 

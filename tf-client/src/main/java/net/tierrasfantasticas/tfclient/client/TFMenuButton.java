@@ -54,10 +54,14 @@ public class TFMenuButton extends Button {
     public static final String TF = "tf", BLUE_1 = "blue1", BLUE_2 = "blue2", GRAY = "gray", RED = "red", GREEN = "green",
             PURPLE = "purple", BLUE = "blueb";
     private static final String[] MAIN = {TF, BLUE_1, BLUE_2, GRAY, RED, GREEN, PURPLE, BLUE};
-    /** Filas de la composición (índices de MAIN). Todas miden lo mismo: una columna limpia. */
+    /** Filas de la composición (índices de MAIN) y grupos de botones del mismo ancho (simetría en espejo). */
     private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
-    /** Ancho de cada fila: el de Tierras Fantásticas en la lámina por SPAN (las placas se estiran por sus zonas lisas). */
-    private static final float SPAN = 1.7f;
+    private static final int[][] GROUPS = {{0}, {1, 2}, {3, 4}, {5, 7}, {6}};
+    /** Separación entre filas en la lámina: lo justo para que las gemas de una no toquen la siguiente. */
+    private static final float[] GAPS = {84f, 86f, 62f, 46f};
+    /** Aire a cada lado del texto (en altos de la placa), entre botones de una fila, y el ancho mínimo de los azules. */
+    private static final float PAD = 0.4f, BLUE_MIN = 0.62f;
+    private static final int GROUP_GAP = 5;
     /** Escala máxima de la lámina (interfaz por píxel): Mundo local de unos 21 de alto. */
     private static final float K_MAX = 0.16f;
     private static final float LOGO_FRAC = 0.44f;
@@ -74,19 +78,17 @@ public class TFMenuButton extends Button {
     private static final int GAP = 3;
     /** El texto se dibuja en el centro - TEXT_UP (centrado a la vista: Cinzel en las demás pantallas, New Rocker en el menú). */
     private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4f;
-    /** Separación entre filas en la lámina (en ella eran 70-100: más juntas, las placas salen más grandes). */
-    private static final float ROW_GAP = 50f;
     private static final float HOVER_MS = 160f;
     private static final long SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
     private static final int INK = 0xE7E1D5, INK_HOT = 0xFFFBF2, OUTLINE = 0x140A04;
     /** Oro de las letras de Tierras Fantásticas, de arriba abajo, y alto de las mayúsculas en la celda (escala 1). */
-    private static final int[] GOLD = {0xF7E7BE, 0xF2D58C, 0xE2B55A, 0xC9913A, 0xA87430};
+    private static final int[] GOLD = {0xF9EBC4, 0xF4DA96, 0xE8C06A, 0xD8A955, 0xCB9C4E};
     private static final float GOLD_TOP = 0f, GOLD_BOTTOM = 6.7f;
     /** El degradado de las demás letras del menú, de arriba abajo. */
     private static final int[] WHITE = {0xE6E0D3, 0xD9D2C3, 0xBDB5A6};
     /** Contorno de las letras blancas: el color de su placa, oscurecido (no negro: menos contraste con el fondo). */
-    private static final float OUTLINE_SHADE = 0.42f, GOLD_OUTLINE_SHADE = 0.5f;
+    private static final float OUTLINE_SHADE = 0.55f, GOLD_OUTLINE_SHADE = 0.72f;
     /** Las letras de oro «respiran»: se aclaran y oscurecen muy despacio (un ciclo cada GOLD_BREATH_MS). */
     private static final float GOLD_BREATH_MS = 3800f;
 
@@ -118,91 +120,97 @@ public class TFMenuButton extends Button {
     // --------------------------------------------------------------------------------------------- menú principal
 
     /**
-     * Rectángulos (x, y, ancho, alto) del cuerpo de las 8 placas del menú principal, como en la lámina, y al final
-     * {arriba de la composición}. La lámina se escala para que quepa debajo del emblema (que tiene al menos LOGO_FRAC
-     * del alto de la pantalla).
-     * Null si no hay textura.
+     * Rectángulos (x, y, ancho, alto) del cuerpo de las 8 placas del menú principal y al final {arriba de la
+     * composición}. En alto, la lámina con las filas separadas lo justo para que las gemas de una no toquen la siguiente
+     * (GAPS), escalada para caber debajo del emblema (que se queda al menos LOGO_FRAC del alto). En ancho, cada botón a
+     * la medida de su texto (con aire a los lados, PAD) y los de un mismo grupo iguales: simetría en espejo (Opciones y
+     * Salir iguales; WhatsApp y Discord iguales, Web en medio). Cada fila, centrada. Null si no hay textura.
      */
     public static int[][] mainLayout(int width, int height) {
         float[] comp = TFMenuPlates.composition();
         if (comp == null) return null;
-        float compH = comp[1] - comp[0];
-        float[] widen = new float[MAIN.length];
-        float[] tfLayout = TFMenuPlates.get(TF).layout;
-        for (int[] row : ROWS) {
-            float x0 = Float.MAX_VALUE, x1 = -Float.MAX_VALUE;
-            for (int i : row) {
-                x0 = Math.min(x0, TFMenuPlates.get(MAIN[i]).layout[0]);
-                x1 = Math.max(x1, TFMenuPlates.get(MAIN[i]).layout[2]);
-            }
-            for (int i : row) widen[i] = (tfLayout[2] - tfLayout[0]) * SPAN / (x1 - x0);
-        }
-        float halfW = 0f;
-        for (int i = 0; i < MAIN.length; i++) {
-            TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
-            halfW = Math.max(halfW, Math.max(comp[2] - p.layout[0], p.layout[2] - comp[2]) * widen[i]);
-        }
-        // filas más juntas que en la lámina: cada fila empieza ROW_GAP debajo de la anterior
+        Minecraft mc = Minecraft.getInstance();
+        int s = Math.max(1, (int) Math.round(mc.getWindow().getGuiScale()));
+        TFMenuPlates.Plate[] p = new TFMenuPlates.Plate[MAIN.length];
+        for (int i = 0; i < MAIN.length; i++) p[i] = TFMenuPlates.get(MAIN[i]);
+        // alto: filas una debajo de otra, con su separación
         float[] rowY = new float[MAIN.length];
-        float ny = tfLayout[1], lastBottom = 0f;
-        for (int[] row : ROWS) {
+        float ny = p[0].layout[1], lastBottom = 0f;
+        for (int r = 0; r < ROWS.length; r++) {
             float rt = Float.MAX_VALUE, rb = -Float.MAX_VALUE;
-            for (int i : row) {
-                rt = Math.min(rt, TFMenuPlates.get(MAIN[i]).layout[1]);
-                rb = Math.max(rb, TFMenuPlates.get(MAIN[i]).layout[3]);
+            for (int i : ROWS[r]) {
+                rt = Math.min(rt, p[i].layout[1]);
+                rb = Math.max(rb, p[i].layout[3]);
             }
-            for (int i : row) rowY[i] = ny + TFMenuPlates.get(MAIN[i]).layout[1] - rt;
+            for (int i : ROWS[r]) rowY[i] = ny + p[i].layout[1] - rt;
             lastBottom = rb;
-            ny += rb - rt + ROW_GAP;
+            ny += rb - rt + (r < GAPS.length ? GAPS[r] : 0f);
         }
-        compH = ny - ROW_GAP + (comp[1] - lastBottom) - comp[0];
-        // el emblema se queda al menos con LOGO_FRAC del alto (más grande que los botones); los botones, con el resto
+        float compH = ny + (comp[1] - lastBottom) - comp[0];
         float k = Math.min(K_MAX, (height - BOTTOM_MARGIN - Math.round(height * LOGO_FRAC) - 6) / compH);
-        k = Math.min(k, (width / 2f - 10f) / halfW);
         float free = height - BOTTOM_MARGIN - compH * k;
         float top = free - Math.max(0f, (free - 186f) / 2f); // lo que sobre, repartido entre emblema y botones
-        int[][] out = new int[MAIN.length + 1][];
-        float cx = width / 2f;
+        int[] ys = new int[MAIN.length], hs = new int[MAIN.length];
         for (int i = 0; i < MAIN.length; i++) {
-            TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
-            float x0 = cx + (p.layout[0] - comp[2]) * k * widen[i];
-            float x1 = cx + (p.layout[2] - comp[2]) * k * widen[i];
-            float y0 = top + (rowY[i] - comp[0]) * k;
-            float y1 = top + (rowY[i] + p.layout[3] - p.layout[1] - comp[0]) * k;
-            out[i] = new int[] {Math.round(x0), Math.round(y0), Math.round(x1) - Math.round(x0), Math.round(y1) - Math.round(y0)};
+            ys[i] = Math.round(top + (rowY[i] - comp[0]) * k);
+            hs[i] = Math.round(top + (rowY[i] + p[i].layout[3] - p[i].layout[1] - comp[0]) * k) - ys[i];
+        }
+        // letra: la de los botones, la mayor que cabe a lo alto en todos; Tierras Fantásticas, más grande
+        float size = Float.MAX_VALUE;
+        for (int i = 1; i < MAIN.length; i++) size = Math.min(size, CAP_FILL * INTERIOR * hs[i] / CAP_HEIGHT);
+        size = Math.max(1f, size);
+        float tf = Math.max(size, TF_CAP_FILL * INTERIOR * hs[0] / CAP_HEIGHT);
+        String[] labels = {TFConfig.serverName(), "Mundo local", "Mods", "Opciones", "Salir", "WhatsApp", "Web", "Discord"};
+        float[] widths = new float[MAIN.length];
+        for (int attempt = 0; attempt < 4; attempt++) { // si una fila no cabe a lo ancho, letra un poco más pequeña
+            float eff = crisp(size, s), efft = crisp(tf, s);
+            float[] need = new float[MAIN.length];
+            for (int i = 0; i < MAIN.length; i++) {
+                float sc = i == 0 ? efft : eff;
+                float side = (p[i].text[0] - p[i].body[0]) * k;
+                float fills = 0f;
+                for (float[] f : p[i].fills) fills += f[1] - f[0];
+                float minW = (p[i].bodyW() - fills * 0.75f) * k; // las zonas lisas encogen como mucho a la cuarta parte
+                float textW = mc.font.width(Component.literal(labels[i]).setStyle(Style.EMPTY.withFont(MENU_FONT_AT_SCALE[3])));
+                need[i] = Math.max(minW, (textW + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0)) * sc + 2 * (side + PAD * hs[i]));
+            }
+            for (int[] group : GROUPS) {
+                float w = 0f;
+                for (int i : group) w = Math.max(w, need[i]);
+                for (int i : group) widths[i] = w;
+            }
+            widths[1] = widths[2] = Math.max(widths[1], BLUE_MIN * widths[0]);
+            float widest = 0f;
+            for (int[] row : ROWS) {
+                float w = GROUP_GAP * (row.length - 1);
+                for (int i : row) w += widths[i];
+                widest = Math.max(widest, w);
+            }
+            mainTextSize = eff;
+            tfTextSize = efft;
+            if (widest <= width - 16 || size <= 0.6f) break;
+            size *= 0.9f;
+            tf *= 0.9f;
+        }
+        int[][] out = new int[MAIN.length + 1][];
+        for (int[] row : ROWS) {
+            int total = GROUP_GAP * (row.length - 1);
+            for (int i : row) total += Math.round(widths[i]);
+            int x = Math.round(width / 2f - total / 2f);
+            for (int i : row) {
+                out[i] = new int[] {x, ys[i], Math.round(widths[i]), hs[i]};
+                x += Math.round(widths[i]) + GROUP_GAP;
+            }
         }
         out[MAIN.length] = new int[] {Math.round(top)};
-        float[] sizes = textSizeFor(out);
-        mainTextSize = sizes[0];
-        tfTextSize = sizes[1];
         return out;
     }
 
-    /**
-     * Un solo tamaño de letra para todo el menú: el mayor con el que cada texto (y su icono) cabe en su placa y las
-     * mayúsculas no pasan de CAP_FILL del hueco interior de la placa más baja.
-     */
-    private static float[] textSizeFor(int[][] rects) {
-        Minecraft mc = Minecraft.getInstance();
-        int s = Math.max(1, (int) Math.round(mc.getWindow().getGuiScale()));
-        String[] labels = {TFConfig.serverName(), "Mundo local", "Mods", "Opciones", "Salir", "WhatsApp", "Web", "Discord"};
-        float size = Float.MAX_VALUE, tf = Float.MAX_VALUE;
-        for (int i = 0; i < MAIN.length; i++) {
-            TFMenuPlates.Plate p = TFMenuPlates.get(MAIN[i]);
-            int[] r = rects[i];
-            TFMenuPlates.Placed at = new TFMenuPlates.Placed(p, r[0], r[1], r[2], r[3], s);
-            float room = at.x(p.text[2]) - at.x(p.text[0]);
-            float need = mc.font.width(Component.literal(labels[i]).setStyle(Style.EMPTY.withFont(MENU_FONT_AT_SCALE[3])))
-                    + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0);
-            if (i == 0) { // Tierras Fantásticas: su placa es más alta, su letra más grande
-                tf = Math.min(room / need, TF_CAP_FILL * INTERIOR * r[3] / CAP_HEIGHT);
-                continue;
-            }
-            size = Math.min(size, room / need);
-            size = Math.min(size, CAP_FILL * INTERIOR * r[3] / CAP_HEIGHT);
-        }
-        size = Math.max(1f, size);
-        return new float[] {size, Math.max(size, tf)};
+    /** El tamaño de letra nítido que usa paintContent: n/escala con n entero, como mucho un 10 % más que size. */
+    private static float crisp(float size, int s) {
+        int n = Mth.clamp(Math.round(s * size), 1, FONT_AT_SCALE.length);
+        if (n > 1 && n / (float) s > size * 1.1f) n--;
+        return n / (float) s;
     }
 
     /** Botón principal: conexión directa a Tierras Fantásticas. */
@@ -245,7 +253,8 @@ public class TFMenuButton extends Button {
         Minecraft mc = Minecraft.getInstance();
         int s = Math.max(1, (int) Math.round(mc.getWindow().getGuiScale()));
         long now = Util.getMillis();
-        boolean hot = this.active && this.isHoveredOrFocused();
+        // el foco solo cuenta con el teclado: tras un clic el botón se queda con el foco y no debe seguir encendido
+        boolean hot = this.active && (this.isHovered() || this.isFocused() && mc.getLastInputType().isKeyboard());
         float dt = lastFrame == 0L ? 1000f : Math.min(250f, now - lastFrame);
         lastFrame = now;
         float step = dt / HOVER_MS;
@@ -381,10 +390,10 @@ public class TFMenuButton extends Button {
             return;
         }
 
-        // Menú principal: letra gruesa con contorno (6-7 % de la letra) del color de su placa oscurecido, sin sombra
+        // Menú principal: letra gruesa con contorno fino (5 % de la letra) del color de su placa oscurecido, sin sombra
         // (la sombra hacia abajo se veía como una raya oscura delante del botón) y degradado suave
         boolean goldText = kind == Kind.PRIMARY && this.active;
-        int ro = Math.max(1, Math.round(10f * scale * s * (goldText ? 0.07f : 0.06f)));
+        int ro = Math.max(1, Math.round(10f * scale * s * 0.05f));
         int[][] ring = ring(ro);
         TFMenuPlates.Plate pl = TFMenuPlates.get(plate);
         int edge = shade(pl == null ? 0x806040 : pl.tint, goldText ? GOLD_OUTLINE_SHADE : OUTLINE_SHADE);

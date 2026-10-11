@@ -537,7 +537,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     gx = snapS((x0 + x1) / 2 - group / 2, S)
     # contorno grueso (un 8,5 % de la letra) en 16 direcciones + 8 a media distancia, y sombra debajo
     gold_text = kind == PRIMARY and active
-    ro = max(1, round(10 * scale * S * (0.07 if gold_text else 0.06)))
+    ro = max(1, round(10 * scale * S * 0.05))
     ring = ring_offsets(ro)
     edge = tuple(round(c * (GOLD_OUTLINE_SHADE if gold_text else OUTLINE_SHADE)) for c in rgb3(int(tint, 16)))
     if icon:
@@ -617,11 +617,11 @@ def menu_icon(name, n):
     return to_float_img(im)
 
 
-GOLD = [0xF7E7BE, 0xF2D58C, 0xE2B55A, 0xC9913A, 0xA87430]
+GOLD = [0xF9EBC4, 0xF4DA96, 0xE8C06A, 0xD8A955, 0xCB9C4E]
 GOLD_OUTLINE = 0x2A1204
 GOLD_TOP, GOLD_BOTTOM = 0.0, 6.7
 WHITE = [0xE6E0D3, 0xD9D2C3, 0xBDB5A6]
-OUTLINE_SHADE, GOLD_OUTLINE_SHADE = 0.42, 0.5  # contorno de las letras blancas: el color de su placa (tint) oscurecido  # el degradado de las demás letras (arriba a abajo)
+OUTLINE_SHADE, GOLD_OUTLINE_SHADE = 0.55, 0.72  # contorno de las letras blancas: el color de su placa (tint) oscurecido  # el degradado de las demás letras (arriba a abajo)
 
 
 def gold(t, e):
@@ -629,24 +629,6 @@ def gold(t, e):
     i = min(len(GOLD) - 2, int(p))
     c = lerp_argb(0xFF000000 | GOLD[i], 0xFF000000 | GOLD[i + 1], p - i)
     return lerp_argb(c, 0xFFFBEFCF, 0.35 * e) & 0xFFFFFF
-
-
-def text_size(S, buttons, tf=False):
-    """TFMenuButton.textSizeFor: un solo tamaño para los botones (el mayor que cabe en todos); con tf=True, el de
-    Tierras Fantásticas (más grande: su placa es más alta)."""
-    d = menu_data()['json']
-    size, tf_size = 1e9, 1e9
-    for idx, (label, icon, kind, plate, x, y, w, h) in enumerate(buttons):
-        p = d['plates'][plate]
-        at = Placed(p, x, y, w, h, S)
-        room = at.x(p['text'][2]) - at.x(p['text'][0])
-        need = text_width(label) + (ICON + GAP if icon else 0)
-        if idx == 0:
-            tf_size = min(room / need, TF_CAP_FILL * INTERIOR * h / CAP_HEIGHT)
-            continue
-        size = min(size, room / need, CAP_FILL * INTERIOR * h / CAP_HEIGHT)
-    size = max(1.0, size)
-    return max(size, tf_size) if tf else size
 
 
 def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, size=1.0):
@@ -705,48 +687,81 @@ def auto_scale(fbw, fbh, limit=0):
     return i
 
 
-def layout(w, h):
-    """TFMenuButton.mainLayout + TitleScreenMixin: (texto, icono, tipo, placa, x, y, ancho, alto)."""
+GAPS = [84, 86, 62, 46]  # separación entre filas en la lámina: lo justo para que las gemas no se toquen
+PAD = 0.4  # aire a cada lado del texto, en altos de la placa
+GROUP_GAP = 5  # entre los botones de una misma fila (interfaz)
+BLUE_MIN = 0.62  # Mundo local y Mods, como poco este tanto del ancho de Tierras Fantásticas
+GROUPS = [[0], [1, 2], [3, 4], [5, 7], [6]]  # los de un grupo, del mismo ancho (simetría en espejo)
+ROW_OF = [0, 1, 2, 3, 3, 4, 4, 4]
+
+
+def crisp(size, S):
+    """El tamaño nítido que usa paintContent: n/S con n entero, como mucho un 10 % más que size."""
+    n = max(1, min(12, round(S * size)))
+    if n > 1 and n / S > size * 1.1:
+        n -= 1
+    return n / S
+
+
+def layout(w, h, S=4):
+    """TFMenuButton.mainLayout + TitleScreenMixin: (texto, icono, tipo, placa, x, y, ancho, alto) y los tamaños de
+    letra (botones, Tierras Fantásticas). Alto: la lámina con filas separadas lo justo; ancho: cada botón a su texto
+    (los de una fila, iguales), todo centrado."""
     d = menu_data()['json']
     comp = d['composition']
-    ctop, cbot, cen = comp['top'], comp['bottom'], comp['center']
-    comp_h = cbot - ctop
-    L = [d['plates'][n]['layout'] for n in MAIN]
-    widen = [1.0] * len(MAIN)
-    tf_span = L[0][2] - L[0][0]
-    for row in ROWS:
-        span = max(L[i][2] for i in row) - min(L[i][0] for i in row)
-        for i in row:
-            widen[i] = tf_span * SPAN / span
-    half_w = max(max(cen - L[i][0], L[i][2] - cen) * widen[i] for i in range(len(MAIN)))
-    # filas más juntas que en la lámina: cada fila empieza ROW_GAP debajo de la anterior
+    ctop, cbot = comp['top'], comp['bottom']
+    P = [d['plates'][n] for n in MAIN]
+    L = [p['layout'] for p in P]
+    rows = [[0], [1], [2], [3, 4], [5, 6, 7]]
     row_y = {}
     ny = L[0][1]
-    for row in ROWS:
+    for r, row in enumerate(rows):
         rt, rb = min(L[i][1] for i in row), max(L[i][3] for i in row)
         for i in row:
             row_y[i] = ny + (L[i][1] - rt)
-        ny += (rb - rt) + ROW_GAP
-    last = ROWS[-1]
-    cbot = row_y[last[0]] - L[last[0]][1] + max(L[i][3] for i in last) + (cbot - max(L[i][3] for i in last))
-    comp_h = cbot - ctop
+        ny += (rb - rt) + (GAPS[r] if r < len(GAPS) else 0)
+        last_bottom = rb
+    comp_h = ny + (cbot - last_bottom) - ctop
     k = min(K_MAX, (h - BOTTOM_MARGIN - round(h * LOGO_FRAC) - 6) / comp_h)
-    k = min(k, (w / 2 - 10) / half_w)
     free = h - BOTTOM_MARGIN - comp_h * k
     top = free - max(0.0, (free - 186) / 2)
-    cx = w / 2
-    rects = []
-    for i, n in enumerate(MAIN):
-        l = d['plates'][n]['layout']
-        x0 = round(cx + (l[0] - cen) * k * widen[i])
-        x1 = round(cx + (l[2] - cen) * k * widen[i])
-        y0 = round(top + (row_y[i] - ctop) * k)
-        y1 = round(top + (row_y[i] + l[3] - l[1] - ctop) * k)
-        rects.append((x0, y0, x1 - x0, y1 - y0))
+    hs = [round((row_y[i] + L[i][3] - L[i][1] - ctop) * k) - round((row_y[i] - ctop) * k) for i in range(8)]
+    size = max(1.0, min(CAP_FILL * INTERIOR * hs[i] / CAP_HEIGHT for i in range(1, 8)))
+    tf = max(size, TF_CAP_FILL * INTERIOR * hs[0] / CAP_HEIGHT)
     labels = [('Tierras Fantásticas', None, PRIMARY), ('Mundo local', None, SECONDARY), ('Mods', None, SECONDARY),
               ('Opciones', None, SECONDARY), ('Salir', None, DANGER), ('WhatsApp', 'whatsapp', SECONDARY),
               ('Web', 'web', SECONDARY), ('Discord', 'discord', SECONDARY)]
-    return round(top), [lab + (n,) + r for lab, n, r in zip(labels, MAIN, rects)]
+    for _ in range(4):  # si una fila no cabe a lo ancho, letra un poco más pequeña
+        eff, efft = crisp(size, S), crisp(tf, S)
+        need = []
+        for i, (label, icon, kind) in enumerate(labels):
+            sc = efft if i == 0 else eff
+            body, text = P[i]['body'], P[i]['text']
+            side = (text[0] - body[0]) * k
+            fills = sum(f[1] - f[0] for f in P[i]['fills'])
+            min_w = ((body[2] - body[0]) - fills * 0.75) * k
+            need.append(max(min_w, (text_width(label) + (ICON + GAP if icon else 0)) * sc + 2 * (side + PAD * hs[i])))
+        widths = [0.0] * 8
+        for grp in GROUPS:
+            for i in grp:
+                widths[i] = max(need[j] for j in grp)
+        for i in (1, 2):
+            widths[i] = max(widths[i], BLUE_MIN * widths[0])
+        widest = max(sum(widths[i] for i in row) + GROUP_GAP * (len(row) - 1) for row in rows)
+        if widest <= w - 16 or size <= 0.6:
+            break
+        size, tf = size * 0.9, tf * 0.9
+    cx = w / 2
+    rects = [None] * 8
+    for row in rows:
+        tot = sum(round(widths[i]) for i in row) + GROUP_GAP * (len(row) - 1)
+        x = round(cx - tot / 2)
+        for i in row:
+            y0 = round(top + (row_y[i] - ctop) * k)
+            rects[i] = (x, y0, round(widths[i]), hs[i])
+            x += round(widths[i]) + GROUP_GAP
+    out = [lab + (n,) + r for lab, n, r in zip(labels, MAIN, rects)]
+    return round(top), out, (eff, efft)
 
 
 _bg = None
@@ -768,7 +783,7 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
     dw, dh = math.ceil(_bg.width * sc), math.ceil(_bg.height * sc)
     bg = _bg.resize((dw * S, dh * S), Image.LANCZOS)
     g.composite(to_float_img(bg), (w - dw) // 2 * S, (h - dh) // 2 * S)
-    top, buttons = layout(w, h)
+    top, buttons, (eff, efft) = layout(w, h, S)
     # Emblema
     lh = min(170, top - 4 - 8)
     if lh > 16:
@@ -779,9 +794,8 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
         g.composite(to_float_img(gl), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
         lg = _logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)
         g.composite(to_float_img(lg), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
-    size, tf_size = text_size(S, buttons), text_size(S, buttons, tf=True)
     for i, b in enumerate(buttons):
-        paint_button(g, S, b, size=tf_size if i == 0 else size, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
+        paint_button(g, S, b, size=efft if i == 0 else eff, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
                      sweep=(sweep if b[2] == PRIMARY else (hover_sweep if hover == i else None)))
     im = g.image()
     if out:
