@@ -16,10 +16,11 @@
     "compra": "&a✔ Compraste &f{cantidad}× {objeto} &apor &6{precio}&a.",
     "venta": "&a✔ Vendiste &f{cantidad}× {objeto} &apor &6{precio}&a.",
     "ventaTodo": "&a✔ Vendiste {lineas} objetos por &6{precio}&a.",
-    "sinDinero": "&cNo tienes bastantes monedas: cuesta &6{precio}&c.",
+    "sinDinero": "&cNo tienes bastantes monedas: cuesta &6{precio}&c (te faltan &6{faltan}&c).",
     "sinObjetos": "&cNo tienes {objeto} para vender (sin nombre, encantamientos ni daño).",
     "nadaQueVender": "&cNo tienes nada que se pueda vender aquí.",
     "limiteCompra": "&cHoy ya no puedes comprar más {objeto} (límite diario: {limite}).",
+    "limiteCompraQueda": "&cHoy solo puedes comprar {quedan} más de {objeto} (límite diario: {limite}).",
     "limiteVenta": "&cHoy ya no puedes vender más {objeto} (límite diario: {limite}).",
     "sinPermiso": "&cNo tienes permiso para esto.",
     "desactivada": "&cLa tienda está cerrada ahora mismo."

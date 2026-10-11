@@ -482,9 +482,10 @@ final class PadUi {
         g.renderItem(stack, 0, 0);
         g.renderItemDecorations(font(), stack, 0, 0, "");
         g.pose().popPose();
-        // la cantidad: en blanco sobre una etiqueta azul noche, sin sombra (se lee sobre cualquier fondo)
+        // la cantidad: en blanco sobre una etiqueta azul noche, sin sombra (se lee sobre cualquier fondo). Es la de verdad
+        // (la tienda manda 128 o 1.024 aunque se apile de 64): exacta si cabe, si no corta («1,8K»)
         if (stack.getCount() > 1) {
-            String n = Integer.toString(stack.getCount());
+            String n = PadView.countLabel(stack.getCount(), k > 1);
             int w = font().width(n) + 2, rx = x + 16 * k + 1 - w, ry = y + 16 * k - 8;
             g.pose().pushPose();
             g.pose().translate(0, 0, 200);

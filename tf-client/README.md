@@ -199,7 +199,8 @@ un cofre de 6 filas: las categorías, los objetos de cada una (por páginas) y u
   solo es un icono, el saldo es el de la economía del servidor). También sale en `/tf jobs`.
 - Todo en `config/tfclient/tienda.json` (se crea la primera vez con 7 categorías y 73 objetos, en español): `titulo`
   (con colores `&`), `relleno`, `sonidos`, `pasos`, `maximoPorCompra`, `registro` y los `mensajes` (`{cantidad}`,
-  `{objeto}`, `{precio}`, `{limite}`, `{lineas}`). Cada categoría: `id`, `nombre`, `descripcion`, `icono`, `color`,
+  `{objeto}`, `{precio}`, `{limite}`, `{lineas}`; `{faltan}` en `sinDinero`, `{quedan}` en `limiteCompraQueda` y
+  `{unidades}` en `ventaTodo`). Cada categoría: `id`, `nombre`, `descripcion`, `icono`, `color`,
   `hueco` (0-44; si no, se colocan solas) y `nivelPermiso`. Cada objeto:
 
   | Campo | Qué es |

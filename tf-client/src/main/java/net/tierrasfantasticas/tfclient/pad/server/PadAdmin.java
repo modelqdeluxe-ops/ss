@@ -285,7 +285,7 @@ public final class PadAdmin {
                 int sells = 0;
                 if (c.has("objetos")) for (JsonElement o : c.getAsJsonArray("objetos")) if (TFJson.num(o.getAsJsonObject(), "vender", 0) > 0) sells++;
                 b.row(new PadView.Row(item(TFJson.str(c, "icono", "minecraft:chest"), Items.CHEST), TFJson.str(c, "nombre", "?"), TEXT,
-                        List.of(n + " objetos · la tienda compra " + sells), -1, "", null, null).clickable("tab:c:" + TFJson.str(c, "id", "")));
+                        List.of(n + (n == 1 ? " objeto" : " objetos") + " · la tienda compra " + sells), -1, "", null, null).clickable("tab:c:" + TFJson.str(c, "id", "")));
             }
             b.input("nuevacat", "NOMBRE DE UNA CATEGORÍA NUEVA", 32, "CREAR");
             return b.build();
@@ -325,7 +325,8 @@ public final class PadAdmin {
                     // sin NBT
                 }
             }
-            s.setCount((int) Math.max(1, Math.min(64, TFJson.num(o, "cantidad", 1))));
+            // la cantidad de verdad (128, 1.024…): el pad la dibuja aunque pase de lo que se apila
+            s.setCount((int) Math.max(1, Math.min(6400, TFJson.num(o, "cantidad", 1))));
             return s;
         }
 
