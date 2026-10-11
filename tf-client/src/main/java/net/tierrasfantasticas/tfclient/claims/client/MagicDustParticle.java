@@ -1,7 +1,6 @@
 package net.tierrasfantasticas.tfclient.claims.client;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.function.Function;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -58,14 +57,22 @@ public class MagicDustParticle extends TextureSheetParticle {
         this.pickFrame();
     }
 
-    /** Vuelve a leer los sprites del atlas de partículas (barato: 16 búsquedas en un mapa). */
+    /**
+     * Vuelve a leer los sprites del atlas de partículas (barato: 16 búsquedas en un mapa). El atlas de partículas no
+     * está en el ModelManager (Minecraft.getTextureAtlas daba NullPointerException y cerraba el juego): se pide al
+     * TextureManager. Si aún no está cargado, no hace nada (y no salen motas).
+     */
     static void refreshSprites(Minecraft mc) {
-        Function<ResourceLocation, TextureAtlasSprite> atlas = mc.getTextureAtlas(TextureAtlas.LOCATION_PARTICLES);
-        for (int i = 0; i < 8; i++) {
-            GLITTER[i] = atlas.apply(new ResourceLocation("minecraft", "glitter_" + i));
-            DUST[i] = atlas.apply(new ResourceLocation("minecraft", "generic_" + i));
+        try {
+            if (!(mc.getTextureManager().getTexture(TextureAtlas.LOCATION_PARTICLES) instanceof TextureAtlas atlas)) return;
+            for (int i = 0; i < 8; i++) {
+                GLITTER[i] = atlas.getSprite(new ResourceLocation("minecraft", "glitter_" + i));
+                DUST[i] = atlas.getSprite(new ResourceLocation("minecraft", "generic_" + i));
+            }
+            spritesReady = true;
+        } catch (RuntimeException e) {
+            spritesReady = false;
         }
-        spritesReady = true;
     }
 
     static boolean spritesReady() {
@@ -91,6 +98,10 @@ public class MagicDustParticle extends TextureSheetParticle {
 
     @Override
     public void render(VertexConsumer consumer, Camera camera, float partial) {
+        if (this.sprite == null) {
+            this.remove();
+            return;
+        }
         float t = this.age + partial;
         // Aparece y se desvanece suave (sin «pops»)
         float fade = Math.min(1.0f, t / 4.0f) * Math.min(1.0f, (this.lifetime - t) / 6.0f);
