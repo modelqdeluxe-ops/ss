@@ -14,7 +14,8 @@ repo, solo lo convertido. Uso:
 Sale:
   textures/gui/menu_main.png   las 8 placas del menú principal a su tamaño original (con mipmaps en el juego)
   textures/gui/menu_main.json  dónde está cada una, su cuerpo (lo que se pulsa), las zonas lisas que se pueden estirar
-                               a lo ancho, sus gemas y faroles (para animarlos) y su sitio en la composición
+                               a lo ancho, sus gemas y faroles (para animarlos), su sitio en la composición y su color
+                               (tint: el contorno de las letras)
   textures/gui/menu_glow.png   un punto de luz redondo y suave (luz de los faroles y de las gemas)
   textures/gui/button_slice.png la placa de piedra para los demás menús (TFButtonTheme): normal, ratón y desactivada
 """
@@ -171,6 +172,10 @@ def menu(path):
         body = body_of(s)
         bh = body[3] - body[1]
         side = TEXT_SIDE.get(name, 0.2) * bh
+        # el color de la placa (mediana del hueco del texto): las letras blancas llevan el contorno de ese color, oscuro
+        side_px = TEXT_SIDE.get(name, 0.2) * bh
+        hole = s[int(body[1] + bh * 0.3):int(body[3] - bh * 0.3), int(body[0] + side_px):int(body[2] - side_px), :3]
+        tint = '%06X' % int(''.join('%02X' % int(c) for c in np.median(hole.reshape(-1, 3), axis=0)), 16)
         sparks, lights = gems_of(s)
         # Faroles: solo los de Tierras Fantásticas, colgados fuera del marco (lo demás que brilla es oro)
         lights = [l for l in lights if name == 'tf' and (l[0] < body[0] - 30 or l[0] > body[2] + 30)]
@@ -181,6 +186,7 @@ def menu(path):
             'sparks': sparks,
             'lights': lights,
             'layout': [body[0] + x0, body[1] + y0, body[2] + x0, body[3] + y0],
+            'tint': tint,
         }
     atlas, pos = pack(sprites)
     for name, (px, py) in pos.items():
@@ -193,7 +199,7 @@ def menu(path):
     data = {'atlas': [atlas.shape[1], atlas.shape[0]],
             'composition': {'top': min(tops), 'bottom': max(bottoms),
                             'center': round((info['tf']['layout'][0] + info['tf']['layout'][2]) / 2)},
-            'plates': {k: {f: info[k][f] for f in ('uv', 'body', 'text', 'fills', 'sparks', 'lights', 'layout')}
+            'plates': {k: {f: info[k][f] for f in ('uv', 'body', 'text', 'fills', 'sparks', 'lights', 'layout', 'tint')}
                        for k in MENU}}
     with open(os.path.join(GUI, 'menu_main.json'), 'w') as f:
         json.dump(data, f, indent=1)

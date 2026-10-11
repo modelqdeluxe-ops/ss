@@ -10,6 +10,12 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.49 (11 oct)** — el dueño: «las letras blancas tienen un contraste muy alto, que no se vean más
+> contrastadas que su fondo». Las blancas del menú pasan a blanco hueso (`WHITE` F3EEE3→CFC8BB; con el ratón, casi
+> blanco), su contorno es más fino (7 % de la letra) y del **color de su placa oscurecido** (`tint` en
+> menu_main.json, mediana del hueco del texto, × `OUTLINE_SHADE` 0,3) en vez de negro, y la sombra más tenue (30 %).
+> Las doradas de Tierras Fantásticas igual.
+
 > **TF Client 1.3.48 (11 oct)** — el dueño: «las letras siguen siendo delgadas y pequeñas, el icono de Discord no se
 > parece, ¿por qué el logo más pequeño? debe ser más grande que los botones». Menú de inicio:
 > - Letra **Titan One** (OFL, `font/titanone.ttf` + `titanone_1..12.json`; quitada New Rocker): gruesa y redonda, de
@@ -1682,7 +1688,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.48)
+## 5. El mod (TF Client 1.3.49)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

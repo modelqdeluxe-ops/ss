@@ -380,7 +380,7 @@ import json
 PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
 GAP = 3          # entre icono y texto (interfaz)
 TEXT_UP = 4.0    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Titan One)
-INK, INK_HOT, OUTLINE = 0xFFF3DC, 0xFFFFFF, 0x140A04
+INK, INK_HOT, OUTLINE = 0xE7E1D5, 0xFFFBF2, 0x140A04
 MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
 ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
 SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
@@ -519,7 +519,7 @@ def draw_nav(g, S, x, y, w, h, hover, active=True):
             state(1, hover)
 
 
-def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shine=None):
+def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shine=None, tint='806040'):
     """TFMenuButton.paintContent: icono y texto centrados, contorno oscuro de max(1, 0.5 S) píxeles reales; Tierras
     Fantásticas en oro (degradado, luz detrás y brillo que cruza en `shine`, 0..1)."""
     ink = 0x9A9AA6 if not active else mix_rgb(INK, INK_HOT, e)
@@ -536,17 +536,18 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         group = tw * scale + icon_w
     gx = snapS((x0 + x1) / 2 - group / 2, S)
     # contorno grueso (un 8,5 % de la letra) en 16 direcciones + 8 a media distancia, y sombra debajo
-    ro = max(1, round(10 * scale * S * 0.085))
+    gold_text = kind == PRIMARY and active
+    ro = max(1, round(10 * scale * S * (0.085 if gold_text else 0.07)))
+    shadow = 0.55 if gold_text else 0.3
     sh = max(1, round(ro * 0.8))
     ring = ring_offsets(ro)
-    gold_text = kind == PRIMARY and active
-    edge = rgb3(GOLD_OUTLINE if gold_text else OUTLINE)
+    edge = rgb3(GOLD_OUTLINE) if gold_text else tuple(round(c * OUTLINE_SHADE) for c in rgb3(int(tint, 16)))
     if icon:
         sz = round(ICON * scale * S)
         img = menu_icon(icon, sz)
         ix, iy = round(gx * S), round(cy * S - sz / 2)
         for dx, dy in ring:
-            g.composite(img, ix + dx, iy + dy + sh, tuple(c / 255 for c in edge) + (0.55,))
+            g.composite(img, ix + dx, iy + dy + sh, tuple(c / 255 for c in edge) + (shadow,))
         for dx, dy in ring:
             g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in edge) + (1,))
         g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
@@ -560,7 +561,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         g.composite(to_float_img(im), round((gx + w / 2 - gw / 2) * S), round((cy - gh / 2) * S),
                     (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
     for dx, dy in ring:
-        draw_text(g, label, gx + dx / S, ty + (dy + sh) / S, S, edge, 0.55, 0, scale, n)
+        draw_text(g, label, gx + dx / S, ty + (dy + sh) / S, S, edge, shadow, 0, scale, n)
     for dx, dy in ring:
         draw_text(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
     # letras en degradado (franjas de 2 px reales): oro en Tierras Fantásticas, blanco a gris azulado en las demás
@@ -573,7 +574,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         b1 = y0r + (y1r - y0r) * (i + 1) // bands
         g.scissor = (x0r, b0, x1r, b1)
         t = (i + 0.5) / bands
-        c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xFFFFFF, 0.6 * e) if active else 0x9A9AA6)
+        c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xFFFBF2, 0.45 * e) if active else 0x9A9AA6)
         draw_text(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
     if shine is not None:
         k = math.sin(shine * math.pi)
@@ -625,7 +626,8 @@ def menu_icon(name, n):
 GOLD = [0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E]
 GOLD_OUTLINE = 0x2A1204
 GOLD_TOP, GOLD_BOTTOM = 0.0, 6.7
-WHITE = [0xFFFFFF, 0xF6F8FF, 0xDCE3F4]  # el degradado de las demás letras (arriba a abajo)
+WHITE = [0xF3EEE3, 0xE7E1D5, 0xCFC8BB]
+OUTLINE_SHADE = 0.3  # contorno de las letras blancas: el color de su placa (tint) oscurecido  # el degradado de las demás letras (arriba a abajo)
 
 
 def gold(t, e):
@@ -673,7 +675,7 @@ def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None, siz
         iy0, iy1 = round(at.y(p['body'][1] + bh * 0.16)), round(at.y(p['body'][3] - bh * 0.16))
         paint_sweep(g, S, ix0, iy0, ix1 - ix0, iy1 - iy0, sweep, 0.55, 0)
     paint_content(g, S, at.x(p['text'][0]), at.x(p['text'][2]), at.y((p['body'][1] + p['body'][3]) / 2), label, icon,
-                  kind, size, e, active, shine=sweep if kind == PRIMARY else None)
+                  kind, size, e, active, shine=sweep if kind == PRIMARY else None, tint=p.get('tint', '806040'))
 
 
 _shine = None
