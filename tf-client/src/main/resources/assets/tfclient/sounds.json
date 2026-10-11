@@ -1086,6 +1086,11 @@
    "tfclient:skills/filo_vacio/sfx_void_edge_teleport"
   ]
  },
+ "skills.filo_vacio.sfx_slash_katana": {
+  "sounds": [
+   "tfclient:skills/filo_vacio/sfx_slash_katana"
+  ]
+ },
  "skills.dragon_rojo.dargon_ultimate": {
   "sounds": [
    "tfclient:skills/dragon_rojo/dargon_ultimate"

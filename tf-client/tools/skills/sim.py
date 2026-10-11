@@ -334,6 +334,9 @@ class Script:
         self.pc, self.wait = 0, 0
 
 
+MELEE_REACH = 0.5  # SkillMovers.MELEE_REACH
+
+
 class Sim:
     """El mundo y el motor (SkillRuntime + SkillMovers + SkillAuras + SkillModels)."""
 
@@ -1878,6 +1881,9 @@ class Sim:
             p['pos'] = t.pos() + [0, num(arg(a, '0', 'yoffset', 'y', 'yo'), 0), 0]
             p['dir'] = ctx.caster.forward()
             p['ticks'] = int(num(arg(a, '200', 'maxduration', 'md', 'duration', 'd'), 200))
+            # SkillMovers.totem: los tajos cuerpo a cuerpo de un jugador llegan medio bloque más
+            if p['ticks'] <= 10 and 0 < p['hr'] <= 2 and ctx.caster.entity is self.player:
+                p['hr'] += MELEE_REACH
             self.start_mover(p, a)
 
     def orbital(self, a, ctx, targets):

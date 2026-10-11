@@ -36,7 +36,9 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 
 /**
  * Las clases de skills en el servidor: qué clase tiene cada jugador (una sola; la compra en la web o se la da el
- * staff), las teclas que pulsa, los cooldowns, las pasivas que se lanzan solas y la barra que ve cada uno.
+ * staff), la skill que tiene elegida (teclas 5-0) y cuándo la usa (clic izquierdo; las clases de arco, al soltar la
+ * flecha), los cooldowns, las pasivas que se lanzan solas y la barra que ve cada uno. Las clases solo dan skills: ni
+ * armas ni armadura (las que se dieron antes se quitan al entrar).
  *
  * <p>config/tfclient/skills.json (se crea solo): activado, si las skills dañan a jugadores (además del PvP del
  * servidor) y un multiplicador del daño. Las clases de los jugadores van en &lt;mundo&gt;/tfclient/skills.json.
@@ -53,6 +55,12 @@ public final class SkillServer {
     private static final Map<UUID, Long> NO_FALL = new HashMap<>();
     /** Desde cuándo cuentan sus pasivas por tiempo (al entrar o al tener la clase saltan ya, y luego cada «timer»). */
     private static final Map<UUID, Long> PASSIVE_START = new HashMap<>();
+    /** Las clases que ha comprado cada uno (lo dice la web en cada consulta, de los conectados). */
+    private static final Map<UUID, List<String>> OWNED = new HashMap<>();
+    /** La skill elegida de cada uno (índice en la barra); se lanza con el siguiente clic o flecha. */
+    private static final Map<UUID, Integer> SELECTED = new HashMap<>();
+    /** Los que tienen puesto su ataque básico: después de usar otra skill vuelven a él. */
+    private static final java.util.Set<UUID> BASIC_ON = new java.util.HashSet<>();
     private static boolean dirty;
 
     private static boolean enabled = true;
@@ -156,6 +164,28 @@ public final class SkillServer {
         dirty = false;
     }
 
+    /** Las clases que ha comprado en la web (vacío si la web aún no lo ha dicho). */
+    public static List<String> ownedOf(UUID uuid) {
+        return OWNED.getOrDefault(uuid, List.of());
+    }
+
+    /** ¿Ya dijo la web qué clases tiene? */
+    public static boolean ownedKnown(UUID uuid) {
+        return OWNED.containsKey(uuid);
+    }
+
+    /**
+     * Desde el TF Pad: pone una de sus clases como activa (o ninguna, con null). Se aplica ya y se guarda en la web en
+     * la siguiente consulta. false si no es suya.
+     */
+    public static boolean chooseFromPad(ServerPlayer player, String cls) {
+        UUID uuid = player.getUUID();
+        if (cls != null && (SkillDefs.get(cls) == null || !(ownedOf(uuid).contains(cls) || cls.equals(classOf(uuid))))) return false;
+        set(player.getServer(), uuid, cls, System.currentTimeMillis(), true);
+        net.tierrasfantasticas.tfclient.server.TFBridge.padSkill(uuid, cls);
+        return true;
+    }
+
     /** La clase del jugador (null = ninguna). */
     public static String classOf(UUID uuid) {
         Owned o = CLASSES.get(uuid);
@@ -163,8 +193,8 @@ public final class SkillServer {
     }
 
     /**
-     * Lo que manda la web en cada consulta: [{uuid, clase, at}] de los conectados. at = cuándo se compró o cambió; si
-     * el staff la cambió después aquí, gana lo del staff.
+     * Lo que manda la web en cada consulta: [{uuid, clase, at, owned}] de los conectados. at = cuándo se compró o
+     * cambió la activa; si el staff la cambió después aquí, gana lo del staff. owned = las clases que ha comprado.
      */
     public static void applyWeb(MinecraftServer srv, JsonArray list) {
         for (JsonElement el : list) {
@@ -175,6 +205,18 @@ public final class SkillServer {
                 uuid = UUID.fromString(TFJson.str(o, "uuid", ""));
             } catch (IllegalArgumentException e) {
                 continue;
+            }
+            if (o.has("owned") && o.get("owned").isJsonArray()) {
+                List<String> owned = new ArrayList<>();
+                for (JsonElement c : o.getAsJsonArray("owned")) {
+                    if (c.isJsonPrimitive() && SkillDefs.get(c.getAsString()) != null) owned.add(c.getAsString());
+                }
+                List<String> old = OWNED.put(uuid, owned);
+                ServerPlayer p = srv.getPlayerList().getPlayer(uuid);
+                if (p != null && !owned.equals(old)) {
+                    net.tierrasfantasticas.tfclient.pad.PadServer.refresh(p, "efectos",
+                            net.tierrasfantasticas.tfclient.pad.PadServer.get(p, "efectos.tab", ""));
+                }
             }
             long at = TFJson.num(o, "at", 0);
             Owned old = CLASSES.get(uuid);
@@ -193,16 +235,21 @@ public final class SkillServer {
         save();
         ServerPlayer player = srv.getPlayerList().getPlayer(uuid);
         PASSIVE_START.remove(uuid);
+        SELECTED.remove(uuid);
+        BASIC_ON.remove(uuid);
         if (player == null) return;
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
+        SkillItems.forget(uuid);
         equipment(player);
         sync(player);
         if (tell && cls != null && (old == null || !cls.equals(old.cls()))) {
             SkillDefs.ClassDef def = SkillDefs.get(cls);
             player.sendSystemMessage(Component.literal("✦ Ya eres de la clase ").withStyle(ChatFormatting.AQUA)
                     .append(Component.literal(def.name).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
-                    .append(Component.literal(". Tus skills van en las teclas de la barra (se cambian en Controles).")
+                    .append(Component.literal(def.bow()
+                            ? ". Elige una skill con 5, 6, 7, 8, 9 o 0 y sale al disparar con tu arco."
+                            : ". Elige una skill con 5, 6, 7, 8, 9 o 0 y úsala con el clic izquierdo.")
                             .withStyle(ChatFormatting.GRAY)));
         }
     }
@@ -212,7 +259,7 @@ public final class SkillServer {
         String cls = classOf(player.getUUID());
         SkillDefs.ClassDef def = SkillDefs.get(cls);
         if (def == null || !enabled) {
-            SkillNet.toPlayer(player, new SkillNet.State("", new int[0], new int[0]));
+            SkillNet.toPlayer(player, new SkillNet.State("", new int[0], new int[0], -1, false));
             return;
         }
         List<SkillDefs.SkillDef> actives = def.actives();
@@ -224,7 +271,8 @@ public final class SkillServer {
             Long until = cd == null ? null : cd.get(actives.get(i).id());
             left[i] = until == null ? 0 : (int) Math.max(0, until - SkillRuntime.clock);
         }
-        SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total));
+        Integer sel = SELECTED.get(player.getUUID());
+        SkillNet.toPlayer(player, new SkillNet.State(def.id, left, total, sel == null ? -1 : sel, BASIC_ON.contains(player.getUUID())));
     }
 
     private static int cooldownTicks(SkillDefs.SkillDef s) {
@@ -233,8 +281,52 @@ public final class SkillServer {
 
     // ------------------------------------------------------------------------------------------- lanzar
 
-    /** El jugador pulsó la tecla de la skill «slot» de su barra. */
-    static void castSlot(ServerPlayer player, int slot) {
+    /**
+     * Eligió la skill «slot» de su barra (teclas 5-0) o ninguna (-1): aún no se lanza. basic: tiene puesto su ataque
+     * básico (se queda elegido; las demás skills se usan una vez y se vuelve a él).
+     */
+    static void select(ServerPlayer player, int slot, boolean basic) {
+        SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
+        UUID uuid = player.getUUID();
+        if (basic && def != null && def.basicSlot() >= 0) BASIC_ON.add(uuid);
+        else BASIC_ON.remove(uuid);
+        if (def == null || slot < 0 || slot >= def.actives().size()) {
+            SELECTED.remove(uuid);
+        } else {
+            SELECTED.put(uuid, slot);
+        }
+        sync(player);
+    }
+
+    /**
+     * Usa la skill elegida: con el clic izquierdo (bow = false) o al soltar una flecha (bow = true), según la clase.
+     * Deja de estar elegida. false si no había ninguna elegida para ese gesto (entonces el clic es un golpe normal).
+     */
+    static boolean useSelected(ServerPlayer player, boolean bow) {
+        SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
+        UUID uuid = player.getUUID();
+        Integer slot = SELECTED.get(uuid);
+        if (def == null || slot == null || def.bow() != bow) return false;
+        // Aún no está lista (si es el ataque básico, el clic es un golpe normal y sigue elegido)
+        Map<String, Long> cd = COOLDOWN.get(uuid);
+        Long until = slot < def.actives().size() && cd != null ? cd.get(def.actives().get(slot).id()) : null;
+        if (until != null && until > SkillRuntime.clock) {
+            sync(player); // por si el cliente creía que ya estaba lista
+            return false;
+        }
+        // Después: el ataque básico sigue elegido; cualquier otra se usa una vez y se vuelve al básico (si lo tiene puesto)
+        int basic = def.basicSlot();
+        if (slot != basic) {
+            if (BASIC_ON.contains(uuid) && basic >= 0) SELECTED.put(uuid, basic);
+            else SELECTED.remove(uuid);
+        }
+        castSlot(player, slot);
+        sync(player);
+        return true;
+    }
+
+    /** Lanza la skill «slot» de su barra. */
+    private static void castSlot(ServerPlayer player, int slot) {
         if (!enabled || server == null || !player.isAlive() || player.isSpectator()) return;
         SkillDefs.ClassDef def = SkillDefs.get(classOf(player.getUUID()));
         if (def == null) return;
@@ -302,7 +394,8 @@ public final class SkillServer {
         Long until = cd.get(s.id());
         if (until != null && until > SkillRuntime.clock) return;
         try {
-            if (SkillRuntime.cast(player, def, s) && s.cooldown() > 0) cd.put(s.id(), SkillRuntime.clock + cooldownTicks(s));
+            boolean timer = "TIMER".equals(s.passive().type());
+            if (SkillRuntime.cast(player, def, s, timer) && s.cooldown() > 0) cd.put(s.id(), SkillRuntime.clock + cooldownTicks(s));
         } catch (Throwable t) {
             TFClient.LOGGER.debug("TF Skills: error en la pasiva {}", s.id(), t);
         }
@@ -393,6 +486,14 @@ public final class SkillServer {
         }
     }
 
+    /** Clases de arco: la skill elegida sale al soltar una flecha (con munición y el arco algo tensado). */
+    @SubscribeEvent
+    public static void onArrowLoose(net.minecraftforge.event.entity.player.ArrowLooseEvent event) {
+        if (!enabled || !(event.getEntity() instanceof ServerPlayer player) || !event.hasAmmo()) return;
+        if (net.minecraft.world.item.BowItem.getPowerForTime(event.getCharge()) < 0.1F) return;
+        useSelected(player, true);
+    }
+
     @SubscribeEvent
     public static void onFall(LivingFallEvent event) {
         Long until = NO_FALL.get(event.getEntity().getUUID());
@@ -407,35 +508,13 @@ public final class SkillServer {
         }
     }
 
-    /** Quita el equipo de otras clases y, si aún no se le dio el de la suya, se lo da (una vez por clase). */
+    /** Las clases ya no dan objetos: se quitan las armas y armaduras de clase que se dieron antes. */
     private static void equipment(ServerPlayer player) {
-        Owned o = CLASSES.get(player.getUUID());
-        String cls = o == null ? null : o.cls();
         try {
-            SkillItems.purge(player, cls);
-            if (cls != null && !cls.equals(o.given())) {
-                SkillItems.give(player, SkillDefs.get(cls));
-                CLASSES.put(player.getUUID(), new Owned(cls, o.webAt(), cls));
-                dirty = true;
-            }
+            SkillItems.purge(player);
         } catch (Throwable t) {
-            TFClient.LOGGER.error("TF Skills: no se pudo dar el equipo de la clase", t);
+            TFClient.LOGGER.error("TF Skills: no se pudieron quitar los objetos de clase", t);
         }
-    }
-
-    /** /tf web clases equipo: vuelve a dar el equipo de su clase (si lo perdió). */
-    private static int regive(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
-        int n = 0;
-        for (ServerPlayer p : targets) {
-            String cls = classOf(p.getUUID());
-            if (cls == null) continue;
-            SkillItems.give(p, SkillDefs.get(cls));
-            n++;
-        }
-        int done = n;
-        ctx.getSource().sendSuccess(() -> Component.literal("Equipo de clase entregado a " + done + " jugador(es)."), true);
-        return n;
     }
 
     @SubscribeEvent
@@ -444,6 +523,11 @@ public final class SkillServer {
         SkillRuntime.forget(uuid);
         SkillModels.forget(uuid);
         NO_FALL.remove(uuid);
+        SELECTED.remove(uuid);
+        BASIC_ON.remove(uuid);
+        OWNED.remove(uuid);
+        SkillFx.forget(uuid);
+        SkillItems.forget(uuid);
         LAST_POS.remove(uuid);
         MOVED_AT.remove(uuid);
         PASSIVE_START.remove(uuid);
@@ -453,6 +537,9 @@ public final class SkillServer {
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             SkillModels.forget(player.getUUID());
+            SkillItems.forget(player.getUUID());
+            SELECTED.remove(player.getUUID());
+            BASIC_ON.remove(player.getUUID());
             sync(player);
         }
     }
@@ -468,8 +555,7 @@ public final class SkillServer {
     // ------------------------------------------------------------------------------------------- comandos
 
     /**
-     * /tf web clases dar &lt;jugadores&gt; &lt;clase|ninguna&gt;, /tf web clases lista, /tf web clases ver &lt;jugador&gt;,
-     * /tf web clases equipo &lt;jugadores&gt; (vuelve a dar las armas y la armadura de su clase).
+     * /tf web clases dar &lt;jugadores&gt; &lt;clase|ninguna&gt;, /tf web clases lista, /tf web clases ver &lt;jugador&gt;.
      */
     public static LiteralArgumentBuilder<CommandSourceStack> command() {
         return Commands.literal("clases")
@@ -484,9 +570,7 @@ public final class SkillServer {
                                         })
                                         .executes(SkillServer::give))))
                 .then(Commands.literal("ver")
-                        .then(Commands.argument("target", EntityArgument.player()).executes(SkillServer::show)))
-                .then(Commands.literal("equipo")
-                        .then(Commands.argument("targets", EntityArgument.players()).executes(SkillServer::regive)));
+                        .then(Commands.argument("target", EntityArgument.player()).executes(SkillServer::show)));
     }
 
     private static int list(CommandContext<CommandSourceStack> ctx) {

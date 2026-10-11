@@ -109,6 +109,7 @@ public final class TFBridge {
     /** Lo que los jugadores cambian desde el TF Pad (armario y VFX), para la web. */
     private static final Deque<JsonObject> padWardrobe = new ArrayDeque<>();
     private static final Deque<JsonObject> padVfx = new ArrayDeque<>();
+    private static final Deque<JsonObject> padSkills = new ArrayDeque<>();
     /** Jugadores con el Armario del pad abierto hace poco: la web manda lo que tienen. uuid → hasta cuándo (ms). */
     private static final java.util.Map<java.util.UUID, Long> padWant = new java.util.HashMap<>();
     /** Efectos programados (fuegos artificiales escalonados). */
@@ -224,6 +225,16 @@ public final class TFBridge {
         soon();
     }
 
+    /** La clase de skills activa elegida (o quitada, con null) desde el pad. */
+    public static void padSkill(java.util.UUID uuid, String cls) {
+        JsonObject o = new JsonObject();
+        o.addProperty("uuid", uuid.toString());
+        if (cls != null) o.addProperty("clase", cls);
+        else o.add("clase", com.google.gson.JsonNull.INSTANCE);
+        padSkills.addLast(o);
+        soon();
+    }
+
     /** Pide a la web lo que tiene este jugador en el armario (durante un minuto, en cada consulta). */
     public static void padWant(java.util.UUID uuid) {
         boolean fresh = padWant.put(uuid, System.currentTimeMillis() + 60_000) == null;
@@ -297,12 +308,15 @@ public final class TFBridge {
         if (!sendingShop.isEmpty()) body.add("shop", array(sendingShop));
         List<JsonObject> sendingWardrobe = new ArrayList<>(padWardrobe);
         List<JsonObject> sendingVfx = new ArrayList<>(padVfx);
+        List<JsonObject> sendingSkills = new ArrayList<>(padSkills);
         padWardrobe.clear();
         padVfx.clear();
-        if (!sendingWardrobe.isEmpty() || !sendingVfx.isEmpty()) {
+        padSkills.clear();
+        if (!sendingWardrobe.isEmpty() || !sendingVfx.isEmpty() || !sendingSkills.isEmpty()) {
             JsonObject pad = new JsonObject();
             pad.add("wardrobe", array(sendingWardrobe));
             pad.add("vfx", array(sendingVfx));
+            pad.add("skills", array(sendingSkills));
             body.add("pad", pad);
         }
         long nowMs = System.currentTimeMillis();
@@ -320,6 +334,7 @@ public final class TFBridge {
             for (int i = sendingShop.size() - 1; i >= 0; i--) shopOps.addFirst(sendingShop.get(i));
             for (int i = sendingWardrobe.size() - 1; i >= 0; i--) padWardrobe.addFirst(sendingWardrobe.get(i));
             for (int i = sendingVfx.size() - 1; i >= 0; i--) padVfx.addFirst(sendingVfx.get(i));
+            for (int i = sendingSkills.size() - 1; i >= 0; i--) padSkills.addFirst(sendingSkills.get(i));
         };
 
         String url = TFServerConfig.url() + "/bridge/poll";

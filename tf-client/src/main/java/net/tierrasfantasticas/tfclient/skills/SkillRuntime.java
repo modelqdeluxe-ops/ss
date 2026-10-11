@@ -218,6 +218,8 @@ public final class SkillRuntime {
         SkillMovers.Mover mover;
         /** Parámetros con los que la llamaron (skill{s=X;damage=4}): &lt;skill.damage&gt; dentro de X. */
         Map<String, String> params = Map.of();
+        /** La lanzó una pasiva por tiempo (TIMER): sus partículas van muy rebajadas (ver SkillFx). */
+        boolean ambient;
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -237,6 +239,7 @@ public final class SkillRuntime {
             c.mods = mods;
             c.mover = mover;
             c.params = params;
+            c.ambient = ambient;
             return c;
         }
 
@@ -317,9 +320,15 @@ public final class SkillRuntime {
      * @target es lo que tiene delante (hasta 32 bloques) y, sin objetivo, la mecánica va a él mismo.
      */
     static boolean cast(ServerPlayer player, ClassDef cls, SkillDefs.SkillDef skill) {
+        return cast(player, cls, skill, false);
+    }
+
+    /** ambient: la lanza una pasiva por tiempo (sus partículas, muy rebajadas). */
+    static boolean cast(ServerPlayer player, ClassDef cls, SkillDefs.SkillDef skill, boolean ambient) {
         Meta meta = cls.meta(skill.entry());
         if (meta == null) return false;
         Ctx ctx = new Ctx(cls, Who.of(player));
+        ctx.ambient = ambient;
         if (!cls.startVars.isEmpty()) {
             Map<String, String> vars = state(ctx.caster).vars;
             cls.startVars.forEach(vars::putIfAbsent);
@@ -982,8 +991,25 @@ public final class SkillRuntime {
             LivingEntity le = t.living();
             if (le == null) continue;
             if (harmful(effect) && !canHurt(ctx, le) && !isCasterSide(ctx, le)) continue;
-            le.addEffect(new MobEffectInstance(effect, duration, Math.min(level, 127), false, particles, icon));
+            int d = duration;
+            if (le instanceof Player && isCasterSide(ctx, le)) {
+                d = selfEffect(effect, duration, level);
+                if (d <= 0) continue;
+            }
+            le.addEffect(new MobEffectInstance(effect, d, Math.min(level, 127), false, particles, icon));
         }
+    }
+
+    /**
+     * Lo que un jugador se pone a sí mismo con su skill: nada que le quite el control. Los packs se ponían lentitud
+     * fuerte (quedarse clavado al cargar), levitación larga, saltos bloqueados, ceguera... Fuera; la levitación y la
+     * lentitud suave, como mucho un momento. Devuelve la duración que queda (0 = no se pone).
+     */
+    private static int selfEffect(MobEffect effect, int duration, int amplifier) {
+        if (effect == MobEffects.LEVITATION) return Math.min(duration, 20);
+        if (effect == MobEffects.MOVEMENT_SLOWDOWN) return amplifier >= 2 ? 0 : Math.min(duration, 30);
+        if (effect == MobEffects.JUMP && amplifier > 10) return 0; // «salto 128»: no poder saltar
+        return harmful(effect) ? 0 : duration;
     }
 
     /** El que lanza o su dueño: las pociones malas que se pone él mismo (inmovilizarse al cargar) sí valen. */
@@ -1139,7 +1165,9 @@ public final class SkillRuntime {
     private static void message(Mech m, List<Tgt> targets) {
         String msg = unquote(m.arg("", "message", "msg", "m"));
         if (msg.isBlank()) return;
-        String clean = msg.replaceAll("<[^>]+>", "").replaceAll("[&§][0-9a-fk-orA-FK-OR]", "");
+        // <&lb> <&rb> <&co> de MythicMobs son [ ] : (los demás <...> son colores)
+        String clean = msg.replace("<&lb>", "[").replace("<&rb>", "]").replace("<&co>", ":")
+                .replaceAll("<[^>]+>", "").replaceAll("[&§][0-9a-fk-orA-FK-OR]", "");
         for (Tgt t : targets) {
             if (t.entity() instanceof ServerPlayer p) {
                 p.displayClientMessage(net.minecraft.network.chat.Component.literal(clean), true);

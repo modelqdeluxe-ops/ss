@@ -19,7 +19,12 @@ import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Tgt;
 final class SkillMotion {
     private SkillMotion() {}
 
-    private static void push(Entity e, Vec3 motion) {
+    /**
+     * Mueve a una entidad. Lo que sale solo de una pasiva por tiempo nunca mueve a un jugador (solo te mueven las
+     * skills que tú lanzas).
+     */
+    private static void push(Ctx ctx, Entity e, Vec3 motion) {
+        if (ctx.ambient && e instanceof ServerPlayer) return;
         double max = 6.0;
         motion = new Vec3(clamp(motion.x, max), clamp(motion.y, max), clamp(motion.z, max));
         e.setDeltaMovement(motion);
@@ -43,7 +48,7 @@ final class SkillMotion {
             if (e == null || !movable(ctx, e)) continue;
             Vec3 away = new Vec3(e.getX() - from.x, 0, e.getZ() - from.z);
             away = away.lengthSqr() < 1e-6 ? Vec3.ZERO : away.normalize().scale(v);
-            push(e, new Vec3(away.x, vy, away.z));
+            push(ctx, e, new Vec3(away.x, vy, away.z));
         }
     }
 
@@ -58,7 +63,7 @@ final class SkillMotion {
             double dist = d.length();
             if (dist < 0.5) continue;
             Vec3 motion = d.normalize().scale(v * Math.max(1, Math.min(4, dist / 2)));
-            push(e, new Vec3(motion.x, Math.max(0.1, motion.y + 0.15), motion.z));
+            push(ctx, e, new Vec3(motion.x, Math.max(0.1, motion.y + 0.15), motion.z));
         }
     }
 
@@ -70,7 +75,7 @@ final class SkillMotion {
             Vec3 d = t.pos().subtract(ctx.caster.pos());
             if (d.lengthSqr() < 1e-6) continue;
             Vec3 motion = d.normalize().scale(Math.min(4, v));
-            if (self != null) push(self, motion);
+            if (self != null) push(ctx, self, motion);
             else if (ctx.caster.actor != null) moveActor(ctx.caster.actor, motion);
             break;
         }
@@ -86,7 +91,7 @@ final class SkillMotion {
             d = new Vec3(d.x, 0, d.z);
             if (d.lengthSqr() < 1e-6) d = SkillRuntime.dir(ctx.caster.yaw(), 0F);
             Vec3 motion = d.normalize().scale(Math.min(4, v)).add(0, vy, 0);
-            if (self != null) push(self, motion);
+            if (self != null) push(ctx, self, motion);
             else if (ctx.caster.actor != null) moveActor(ctx.caster.actor, motion);
             break;
         }
@@ -96,7 +101,7 @@ final class SkillMotion {
         double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1);
         for (Tgt t : targets) {
             Entity e = t.entity();
-            if (e != null) push(e, new Vec3(e.getDeltaMovement().x, v, e.getDeltaMovement().z));
+            if (e != null) push(ctx, e, new Vec3(e.getDeltaMovement().x, v, e.getDeltaMovement().z));
         }
     }
 
@@ -107,7 +112,7 @@ final class SkillMotion {
         for (Tgt t : targets) {
             Vec3 d = t.pos().subtract(self.position());
             if (d.lengthSqr() < 1e-6) continue;
-            push(self, self.getDeltaMovement().add(d.normalize().scale(v)));
+            push(ctx, self, self.getDeltaMovement().add(d.normalize().scale(v)));
             break;
         }
     }
@@ -134,7 +139,7 @@ final class SkillMotion {
                 case "remove" -> Vec3.ZERO;
                 default -> add;
             };
-            push(e, out);
+            push(ctx, e, out);
         }
     }
 
@@ -156,6 +161,7 @@ final class SkillMotion {
             to = safe(level, to, e);
             if (to == null) return;
             if (e instanceof ServerPlayer p) {
+                if (ctx.ambient) return; // una pasiva no te teletransporta
                 p.teleportTo(level, to.x, to.y, to.z, p.getYRot(), p.getXRot());
                 SkillServer.noFall(p.getUUID(), 40);
             } else {
@@ -193,6 +199,7 @@ final class SkillMotion {
             LivingEntity le = t.living();
             if (le == null) continue;
             boolean self = le == ctx.caster.entity || le == ctx.caster.player();
+            if (self && le instanceof net.minecraft.world.entity.player.Player) continue; // un jugador nunca se aturde solo
             if (!self && !SkillRuntime.canHurt(ctx, le)) continue;
             le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, d, 9, false, false, false));
             le.addEffect(new MobEffectInstance(MobEffects.JUMP, d, 200, false, false, false));
@@ -221,18 +228,12 @@ final class SkillMotion {
                 case "MINIMUM", "MIN" -> now.lengthSqr() >= add.lengthSqr() ? now : add;
                 default -> add;
             };
-            push(e, out);
+            push(ctx, e, out);
         }
     }
 
-    /** recoil{r;pitch}: la cámara del jugador da un tirón (la del arma al disparar). */
+    /** recoil{r;pitch}: en el pack, la cámara del jugador daba un tirón al disparar. Ya no: la vista solo la mueve él. */
     static void recoil(Mech m, Ctx ctx, List<Tgt> targets) {
-        float pitch = (float) SkillRuntime.num(m.arg("-2", "pitch", "p"), -2);
-        for (Tgt t : targets) {
-            if (t.entity() instanceof ServerPlayer p) {
-                SkillNet.toPlayer(p, new SkillNet.Fx(6, "", 0, 0, 0, 0, pitch, 0, 0, 0, 0, null, 0, 0, 0, 0));
-            }
-        }
     }
 
     /**

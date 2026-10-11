@@ -194,6 +194,7 @@
   "id": "filo_vacio",
   "name": "Filo del Vacío",
   "skills": [
+   "void_edge_attack",
    "void_edge_dimension_benediction",
    "void_edge_dimension_cut",
    "void_edge_katana_upper_slash",

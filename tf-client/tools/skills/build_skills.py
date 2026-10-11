@@ -83,6 +83,38 @@ PACK_SUBDIR = {
 }
 
 
+# El ataque básico de cada clase (con los controles nuevos se queda elegido y cada clic lo repite): la habilidad de
+# clic izquierdo del arma del pack; estas clases no tienen arma con clic izquierdo (o la suya es otra cosa)
+BASIC_OVERRIDE = {'bruja': 'mf_witch_sigil_volley', 'cetus': 'cetus_slash', 'dragon_rojo': 'dragon_claw', 'null': 'void_arrow',
+                  'mago_rayo': None}
+
+
+def translate_messages(prog):
+    """Los avisos del pack en la barra de acción (message), en español (es.json «_mensajes»: inglés → español)."""
+    pairs = sorted((ES.get('_mensajes') or {}).items(), key=lambda kv: -len(kv[0]))
+    for node in list(prog['tree'].values()) + list(prog['mobs'].values()):
+        for m in node.get('mechs', []):
+            if m['m'] not in ('message', 'msg', 'actionmessage'):
+                continue
+            for k in ('m', 'message', 'msg'):
+                if isinstance(m['a'].get(k), str):
+                    text = m['a'][k]
+                    for en, es in pairs:
+                        text = text.replace(en, es)
+                    m['a'][k] = text
+
+
+def basic_skill(pack_id, prog):
+    if pack_id in BASIC_OVERRIDE:
+        return BASIC_OVERRIDE[pack_id]
+    actives = [sk['id'] for sk in prog['skills'] if not sk.get('passive') and not sk.get('hidden')]
+    for w in prog['weapons']:
+        for ab in w['abilities']:
+            if ab.get('mode') == 'LEFT_CLICK' and ab['skill'] and ab['skill'].lower() in actives:
+                return ab['skill'].lower()
+    return None
+
+
 # Variables con las que empieza la clase (si el pack no las pone nunca): los esbirros del Nigromante y del Invocador
 # de Espíritus solo atacan en el modo que elige su «Orden», que empieza sin poner; así salen en modo Libre
 START_VARS = {
@@ -623,6 +655,8 @@ def build_pack(path, sound_events, name=None):
             png = icon_png(pack, ref) if ref else None
         if png is None:
             png = icon_by_name(pack, sk)
+        if png is None and (pack.id, sk['id']) in ICON_MODEL:
+            png = icon_of_model(ICON_MODEL[(pack.id, sk['id'])], store)
         if png is None:
             png = icon_from_effects(pack, models, prog, sk, me_models, store)
         if png is None:
@@ -666,6 +700,10 @@ def build_pack(path, sound_events, name=None):
            'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
            'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing}
+    translate_messages(prog)
+    basic = basic_skill(pack.id, prog)
+    if basic:
+        out['basic'] = basic
     if START_VARS.get(pack.id):
         out['start_vars'] = START_VARS[pack.id]  # variables con las que empieza la clase (postura «free»...)
     os.makedirs(OUT_CLASSES, exist_ok=True)
@@ -736,6 +774,30 @@ SKILL_REF_KEYS = ('s', 'skill', 'skills', 'oe', 'ot', 'oh', 'os', 'onend', 'onti
 MOB_REF_KEYS = ('t', 'type', 'mob', 'mobtype', 'm')
 
 
+# Skills sin icono en el pack cuyo efecto sale oscuro como icono: se dibuja este modelo de ModelEngine
+ICON_MODEL = {('filo_vacio', 'void_edge_attack'): 'filo_vacio.rrpg_void_edge_main_katana'}
+
+
+def icon_of_model(mid, store, yaw=-20, pitch=-8):
+    """Icono con un modelo de ModelEngine de la clase (encuadrado y con marco)."""
+    path = os.path.join(OUT_MODELS, mid + '.json')
+    if not os.path.exists(path):
+        return None
+    model = json.load(open(path, encoding='utf-8'))
+    img = R.render(model, R.load_textures(model, store.out_dir), None, 0, size=256, yaw=yaw, pitch=pitch)
+    box = img.getbbox()
+    if not box:
+        return None
+    img = img.crop(box)
+    if img.height > img.width * 2.5:  # algo largo y fino (una katana): en diagonal llena más el icono
+        img = img.rotate(-45, resample=Image.BICUBIC, expand=True)
+        img = img.crop(img.getbbox())
+    side = max(img.size)
+    sq = Image.new('RGBA', (side, side))
+    sq.paste(img, ((side - img.width) // 2, (side - img.height) // 2))
+    return J.framed(sq)
+
+
 def icon_from_effects(pack, models, prog, sk, me_models, store):
     """Icono dibujado del efecto de la skill cuando el pack no trae ninguno: el modelo de ítem del primer efecto que
     invoca (el fotograma del medio de su animación) o, si no hay, el modelo de ModelEngine que usa."""
@@ -762,7 +824,8 @@ def icon_from_effects(pack, models, prog, sk, me_models, store):
                             return J.framed(img)
                     # el modelo de ModelEngine que se pone el efecto invocado
                     for mm in mobs[mob].get('mechs', []):
-                        mid = str(mm.get('a', {}).get('mid', ''))
+                        ma = mm.get('a', {})
+                        mid = str(next((ma[k] for k in ('mid', 'm', 'modelid', 'model') if ma.get(k)), ''))
                         if mm['m'] == 'model' and mid.startswith(pack.id + '.') and mid not in me_used:
                             me_used.append(mid)
             for k in SKILL_REF_KEYS:
@@ -964,6 +1027,38 @@ def write_class_items(full):
             json.dump(data, f, ensure_ascii=False, indent=1)
 
 
+ATLAS = os.path.normpath(os.path.join(RES, '..', 'minecraft', 'atlases', 'blocks.json'))
+
+
+def write_atlas():
+    """Las texturas de los modelos de ítem de las skills (textures/skills/...) al atlas de bloques: en 1.20.1 los
+    modelos de ítem solo ven las texturas de las carpetas que dice atlases/blocks.json (block/, item/...); las demás
+    salen moradas y negras. Solo las carpetas que usan esos modelos (las de ModelEngine, «me/», se cargan aparte)."""
+    dirs, singles = set(), set()
+    for root, _d, files in os.walk(OUT_ITEM_MODELS):
+        for f in files:
+            if not f.endswith('.json'):
+                continue
+            for ref in (json.load(open(os.path.join(root, f), encoding='utf-8')).get('textures') or {}).values():
+                if not isinstance(ref, str) or ref.startswith('#'):
+                    continue
+                ns, _, path = ref.partition(':') if ':' in ref else ('minecraft', ':', ref)
+                parts = path.split('/')
+                if ns != 'tfclient' or parts[0] != 'skills':
+                    continue
+                if len(parts) > 3:
+                    dirs.add('/'.join(parts[:3]))
+                else:
+                    singles.add(path)
+    sources = [{'type': 'directory', 'source': d, 'prefix': d + '/'} for d in sorted(dirs)]
+    sources += [{'type': 'single', 'resource': 'tfclient:' + x} for x in sorted(singles)
+                if not any(x.startswith(d + '/') for d in dirs)]
+    os.makedirs(os.path.dirname(ATLAS), exist_ok=True)
+    with open(ATLAS, 'w', encoding='utf-8') as f:
+        json.dump({'sources': sources}, f, indent=1)
+        f.write('\n')
+
+
 def strip_mc(s):
     return re.sub(r'[&§][0-9a-fk-orx]', '', re.sub(r'<[^>]+>', '', str(s or ''))).strip()
 
@@ -1017,6 +1112,7 @@ def main():
         json.dump(sj, f, ensure_ascii=False, indent=1)
     write_class_items(full)
     if full:
+        write_atlas()
         with open(os.path.join(RES, 'skills', 'catalog.json'), 'w', encoding='utf-8') as f:
             json.dump(catalog, f, ensure_ascii=False, indent=1)
 

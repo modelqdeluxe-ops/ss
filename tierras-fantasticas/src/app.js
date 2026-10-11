@@ -224,13 +224,18 @@ export function createApp(env) {
     return out;
   }
 
-  // Para el puente: la clase activa de cada conectado que alguna vez eligió una (solo si sigue siendo suya)
+  // Para el puente: de cada conectado con clases, la activa (solo si sigue siendo suya) y las que tiene (el TF Pad las
+  // enseña para activarlas desde el juego)
   async function skillsForServer(uuids) {
+    const active = new Map((await store.skillActiveFor(uuids)).map((a) => [a.uuid, a]));
     const out = [];
-    for (const a of await store.skillActiveFor(uuids)) {
-      let clase = a.cls && skillById.has(a.cls) ? a.cls : null;
-      if (clase && !(await store.skillsOwned(a.uuid)).includes(clase)) clase = null;
-      out.push({ uuid: a.uuid, clase, at: a.at });
+    for (const raw of uuids) {
+      const uuid = raw.toLowerCase();
+      const owned = (await store.skillsOwned(uuid)).filter((id) => skillById.has(id));
+      const a = active.get(uuid);
+      if (!a && !owned.length) continue;
+      const clase = a?.cls && owned.includes(a.cls) ? a.cls : null;
+      out.push({ uuid, clase, at: a?.at || 0, owned });
     }
     return out;
   }
@@ -1288,6 +1293,17 @@ export function createApp(env) {
         if (VFX_FREE && item.kind === 'kill') await store.vfxGive(v.uuid, item.key);
         else if (!(await store.vfxFor(v.uuid)).owned.includes(item.key)) continue;
         await store.vfxEquip(v.uuid, item.kind, item.id);
+      }
+      // La clase de skills activa elegida desde el pad (solo una que sea suya; null = ninguna)
+      for (const k of list(pad.skills, 50)) {
+        if (!k || typeof k.uuid !== 'string' || !UUID_RE.test(k.uuid) || !onlineSet.has(k.uuid.toLowerCase())) continue;
+        if (k.clase == null) {
+          await store.setSkillActive(k.uuid, null);
+          continue;
+        }
+        if (typeof k.clase !== 'string' || !skillById.has(k.clase)) continue;
+        if (!(await store.skillsOwned(k.uuid)).includes(k.clase)) continue;
+        await store.setSkillActive(k.uuid, k.clase);
       }
       // Lo que tiene cada jugador que abrió el Armario del pad (las piezas de sus compras y de su rango)
       const padData = [];

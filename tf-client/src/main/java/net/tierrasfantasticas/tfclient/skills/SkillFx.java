@@ -15,9 +15,43 @@ import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Tgt;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Who;
 
-/** Partículas y sonidos: el servidor dice dónde y cuántas; cada jugador cercano las saca (SkillClient). */
+/**
+ * Partículas y sonidos: el servidor dice dónde y cuántas; cada jugador cercano las saca (SkillClient).
+ *
+ * <p>Los packs sueltan muchísimas (la Catedral Divina del Clérigo, ~94.000 en 5 s; las pasivas del Vampiro, ~950 por
+ * segundo de polvo flotando aunque estés quieto) y eso da lag. Cada jugador tiene un presupuesto de partículas que se
+ * rellena con el tiempo: las skills que lanza, {@link #RATE} por tick (con reserva de {@link #MAX}); lo que sale solo
+ * de sus pasivas por tiempo, muy poco ({@link #AMBIENT_RATE}). Si una skill pide más, se dibuja con menos.
+ */
 final class SkillFx {
+    private static final double RATE = 30, MAX = 450, AMBIENT_RATE = 1.5, AMBIENT_MAX = 12;
+    /** Presupuesto de cada jugador: [skills, tick de la última cuenta, pasivas]. */
+    private static final java.util.Map<UUID, double[]> BUDGET = new java.util.HashMap<>();
+
     private SkillFx() {}
+
+    /** Cuánto de lo que pide («cost» partículas) se puede dibujar ahora (0 = nada, 1 = todo). */
+    private static double allow(Ctx ctx, double cost) {
+        net.minecraft.server.level.ServerPlayer p = ctx.caster.player();
+        if (p == null || cost <= 0) return 1;
+        long now = SkillRuntime.clock;
+        double[] b = BUDGET.computeIfAbsent(p.getUUID(), k -> new double[] {MAX, now, AMBIENT_MAX});
+        long dt = now - (long) b[1];
+        if (dt > 0) {
+            b[0] = Math.min(MAX, b[0] + dt * RATE);
+            b[2] = Math.min(AMBIENT_MAX, b[2] + dt * AMBIENT_RATE);
+            b[1] = now;
+        }
+        int i = ctx.ambient ? 2 : 0;
+        if (b[i] < 1) return 0;
+        double scale = Math.min(1, b[i] / cost);
+        b[i] -= cost * scale;
+        return scale;
+    }
+
+    static void forget(UUID player) {
+        BUDGET.remove(player);
+    }
 
     /** Punto de una partícula: el objetivo, subido «y» y movido delante/al lado según hacia dónde mira quien lanza. */
     private static Vec3 point(Mech m, Ctx ctx, Tgt t) {
@@ -61,8 +95,10 @@ final class SkillFx {
         String id = particle(m), extra = extra(m);
         float size = size(m);
         for (Tgt t : targets) {
+            int k = (int) Math.round(n * allow(ctx, n));
+            if (k <= 0) continue;
             Vec3 p = point(m, ctx, t);
-            send(ctx.caster.level(), p, new SkillNet.Fx(0, id, p.x, p.y, p.z, n, hs, vs, speed, 0, 0, extra, size, 0, 0, 0));
+            send(ctx.caster.level(), p, new SkillNet.Fx(0, id, p.x, p.y, p.z, k, hs, vs, speed, 0, 0, extra, size, 0, 0, 0));
         }
     }
 
@@ -75,8 +111,13 @@ final class SkillFx {
         float speed = (float) SkillRuntime.num(m.arg("0", "speed", "s"), 0);
         String id = particle(m), extra = extra(m);
         for (Tgt t : targets) {
+            double scale = allow(ctx, (double) points * n);
+            if (scale <= 0) continue;
+            // Con menos: primero menos partículas por punto, luego menos puntos (el anillo sigue entero)
+            int k = (int) Math.max(1, Math.round(n * scale));
+            int pts = (int) Math.max(Math.min(points, 4), Math.min(points, Math.round(points * n * scale / k)));
             Vec3 p = point(m, ctx, t);
-            send(ctx.caster.level(), p, new SkillNet.Fx(2, id, p.x, p.y, p.z, n, hs, vs, speed, r, points, extra, size(m), 0, 0, 0));
+            send(ctx.caster.level(), p, new SkillNet.Fx(2, id, p.x, p.y, p.z, k, hs, vs, speed, r, pts, extra, size(m), 0, 0, 0));
         }
     }
 
@@ -86,8 +127,10 @@ final class SkillFx {
         float speed = (float) SkillRuntime.num(m.arg("0", "speed", "s"), 0);
         String id = particle(m), extra = extra(m);
         for (Tgt t : targets) {
+            int k = (int) Math.round(n * allow(ctx, n));
+            if (k <= 0) continue;
             Vec3 p = point(m, ctx, t);
-            send(ctx.caster.level(), p, new SkillNet.Fx(1, id, p.x, p.y, p.z, n, 0, 0, speed, r, 0, extra, size(m), 0, 0, 0));
+            send(ctx.caster.level(), p, new SkillNet.Fx(1, id, p.x, p.y, p.z, k, 0, 0, speed, r, 0, extra, size(m), 0, 0, 0));
         }
     }
 
@@ -104,10 +147,12 @@ final class SkillFx {
             for (int k = 0; k * interval < ticks; k++) {
                 final int step = k;
                 SkillRuntime.later(k * interval, () -> {
+                    int q = (int) Math.round(n * allow(ctx, n));
+                    if (q <= 0) return;
                     Vec3 c = t.pos();
                     double a = Math.PI * 2 * step / points;
                     Vec3 p = c.add(Math.cos(a) * r, oy, Math.sin(a) * r);
-                    send(ctx.caster.level(), p, new SkillNet.Fx(0, id, p.x, p.y, p.z, n, 0, 0, 0, 0, 0, extra, size(m), 0, 0, 0));
+                    send(ctx.caster.level(), p, new SkillNet.Fx(0, id, p.x, p.y, p.z, q, 0, 0, 0, 0, 0, extra, size(m), 0, 0, 0));
                 });
             }
         }
@@ -122,8 +167,12 @@ final class SkillFx {
         String id = particle(m), extra = extra(m);
         for (Tgt t : targets) {
             Vec3 to = t.pos().add(0, SkillRuntime.num(m.arg("1", "targetyoffset", "tyo"), 1), 0);
-            send(ctx.caster.level(), from, new SkillNet.Fx(3, id, from.x, from.y, from.z, n, 0, 0, 0, spacing, 0, extra, size(m),
-                    to.x, to.y, to.z));
+            double steps = Math.min(200, from.distanceTo(to) / spacing) + 1;
+            double scale = allow(ctx, steps * n);
+            if (scale <= 0) continue;
+            // Con menos: los puntos de la línea más separados
+            send(ctx.caster.level(), from, new SkillNet.Fx(3, id, from.x, from.y, from.z, n, 0, 0, 0, (float) (spacing / scale), 0, extra,
+                    size(m), to.x, to.y, to.z));
         }
     }
 

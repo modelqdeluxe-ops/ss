@@ -20,7 +20,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
 /**
  * Mensajes de las skills de clase. El servidor lo decide todo (daño, empujes, efectos que aparecen y se mueven) y
  * manda a los jugadores cercanos lo que tienen que ver: los efectos (actores con su modelo), partículas y sonidos.
- * El jugador solo manda qué tecla de skill ha pulsado.
+ * El jugador solo manda qué skill ha elegido (teclas 5-0) y cuándo la usa (clic izquierdo; con arco, el servidor lo
+ * ve al soltar la flecha).
  */
 public final class SkillNet {
     private static final String PROTOCOL = TFClient.VERSION;
@@ -36,8 +37,8 @@ public final class SkillNet {
         if (registered) return;
         registered = true;
         int id = 0;
-        CHANNEL.messageBuilder(Cast.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(Cast::write).decoder(Cast::read).consumerMainThread(Cast::handle).add();
+        CHANNEL.messageBuilder(Select.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Select::write).decoder(Select::read).consumerMainThread(Select::handle).add();
         CHANNEL.messageBuilder(State.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(State::write).decoder(State::read).consumerMainThread(State::handle).add();
         CHANNEL.messageBuilder(Spawn.class, id++, NetworkDirection.PLAY_TO_CLIENT)
@@ -50,23 +51,44 @@ public final class SkillNet {
                 .encoder(Fx::write).decoder(Fx::read).consumerMainThread(Fx::handle).add();
         CHANNEL.messageBuilder(Swing.class, id++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(Swing::write).decoder(Swing::read).consumerMainThread(Swing::handle).add();
+        CHANNEL.messageBuilder(Use.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Use::write).decoder(Use::read).consumerMainThread(Use::handle).add();
     }
 
     // ------------------------------------------------------------------------------------------- jugador → servidor
 
-    /** Ha pulsado la tecla de la skill número «slot» de la barra (0 = la primera). */
-    public record Cast(int slot) {
-        static void write(Cast m, FriendlyByteBuf buf) {
-            buf.writeVarInt(m.slot);
+    /**
+     * Ha elegido la skill número «slot» de la barra (0 = la primera, tecla 5) o ninguna (-1); todavía no se lanza.
+     * basic: tiene puesto su ataque básico (vuelve a él después de usar otra skill).
+     */
+    public record Select(int slot, boolean basic) {
+        static void write(Select m, FriendlyByteBuf buf) {
+            buf.writeVarInt(m.slot + 1);
+            buf.writeBoolean(m.basic);
         }
 
-        static Cast read(FriendlyByteBuf buf) {
-            return new Cast(buf.readVarInt());
+        static Select read(FriendlyByteBuf buf) {
+            return new Select(buf.readVarInt() - 1, buf.readBoolean());
         }
 
-        static void handle(Cast m, Supplier<NetworkEvent.Context> ctx) {
+        static void handle(Select m, Supplier<NetworkEvent.Context> ctx) {
             ServerPlayer player = ctx.get().getSender();
-            if (player != null) SkillServer.castSlot(player, m.slot);
+            if (player != null) SkillServer.select(player, m.slot, m.basic);
+        }
+    }
+
+    /** Clic izquierdo con una skill elegida: se lanza esa (y deja de estar elegida). */
+    public record Use() {
+        static void write(Use m, FriendlyByteBuf buf) {
+        }
+
+        static Use read(FriendlyByteBuf buf) {
+            return new Use();
+        }
+
+        static void handle(Use m, Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer player = ctx.get().getSender();
+            if (player != null && !SkillServer.useSelected(player, false)) SkillAuras.swing(player);
         }
     }
 
@@ -87,16 +109,21 @@ public final class SkillNet {
 
     // ------------------------------------------------------------------------------------------- servidor → jugador
 
-    /** La clase del jugador ("" = ninguna) y lo que le queda de cooldown a cada skill de la barra (ticks). */
-    public record State(String classId, int[] left, int[] total) {
+    /**
+     * La clase del jugador ("" = ninguna), lo que le queda de cooldown a cada skill de la barra (ticks), la que tiene
+     * elegida (-1 = ninguna) y si tiene puesto su ataque básico.
+     */
+    public record State(String classId, int[] left, int[] total, int selected, boolean basic) {
         static void write(State m, FriendlyByteBuf buf) {
             buf.writeUtf(m.classId, 64);
             buf.writeVarIntArray(m.left);
             buf.writeVarIntArray(m.total);
+            buf.writeVarInt(m.selected + 1);
+            buf.writeBoolean(m.basic);
         }
 
         static State read(FriendlyByteBuf buf) {
-            return new State(buf.readUtf(64), buf.readVarIntArray(32), buf.readVarIntArray(32));
+            return new State(buf.readUtf(64), buf.readVarIntArray(32), buf.readVarIntArray(32), buf.readVarInt() - 1, buf.readBoolean());
         }
 
         static void handle(State m, Supplier<NetworkEvent.Context> ctx) {
