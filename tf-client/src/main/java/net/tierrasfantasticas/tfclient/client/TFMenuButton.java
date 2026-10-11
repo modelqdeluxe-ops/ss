@@ -76,12 +76,14 @@ public class TFMenuButton extends Button {
     private static final float HOVER_MS = 140f, SWEEP_MS = 850f;
     private static final long TF_SHINE_EVERY = 6500L, SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
-    private static final int INK = 0xFFF3DC, INK_HOT = 0xFFFFFF, OUTLINE = 0x140A04, GOLD_OUTLINE = 0x2A1204;
+    private static final int INK = 0xE7E1D5, INK_HOT = 0xFFFBF2, OUTLINE = 0x140A04, GOLD_OUTLINE = 0x2A1204;
     /** Oro de las letras de Tierras Fantásticas, de arriba abajo, y alto de las mayúsculas en la celda (escala 1). */
     private static final int[] GOLD = {0xFFF8D2, 0xFFE58A, 0xFFC93C, 0xE89A1E, 0xB8670E};
     private static final float GOLD_TOP = 0f, GOLD_BOTTOM = 6.7f;
     /** El degradado de las demás letras del menú, de arriba abajo. */
-    private static final int[] WHITE = {0xFFFFFF, 0xF6F8FF, 0xDCE3F4};
+    private static final int[] WHITE = {0xF3EEE3, 0xE7E1D5, 0xCFC8BB};
+    /** Contorno de las letras blancas: el color de su placa, oscurecido (no negro: menos contraste con el fondo). */
+    private static final float OUTLINE_SHADE = 0.3f;
     private static final long GOLD_SHINE_EVERY = 4200L, GOLD_SHINE_MS = 1300L;
 
     private final Kind kind;
@@ -379,24 +381,32 @@ public class TFMenuButton extends Button {
         }
 
         // Menú principal: letra gruesa con contorno grueso (8,5 % de la letra), sombra debajo y degradado
-        int ro = Math.max(1, Math.round(10f * scale * s * 0.085f)), sh = Math.max(1, Math.round(ro * 0.8f));
-        int[][] ring = ring(ro);
         boolean goldText = kind == Kind.PRIMARY && this.active;
-        int edge = goldText ? GOLD_OUTLINE : OUTLINE;
+        // las blancas, más suaves: contorno algo más fino y no negro, sombra más tenue
+        int ro = Math.max(1, Math.round(10f * scale * s * (goldText ? 0.085f : 0.07f))), sh = Math.max(1, Math.round(ro * 0.8f));
+        int[][] ring = ring(ro);
+        TFMenuPlates.Plate pl = TFMenuPlates.get(plate);
+        int edge = goldText ? GOLD_OUTLINE : shade(pl == null ? 0x806040 : pl.tint, OUTLINE_SHADE);
+        float shadow = goldText ? 0.55f : 0.3f;
         if (withIcon) {
             float sz = TFMenuIcons.SIZE * scale;
             float iy = snap(centerY - sz / 2f, s);
-            for (int[] d : ring) icon(g, gx + d[0] / (float) s, iy + (d[1] + sh) / (float) s, sz, edge, 0.55f * alpha);
+            for (int[] d : ring) icon(g, gx + d[0] / (float) s, iy + (d[1] + sh) / (float) s, sz, edge, shadow * alpha);
             for (int[] d : ring) icon(g, gx + d[0] / (float) s, iy + d[1] / (float) s, sz, edge, alpha);
             icon(g, gx, iy, sz, ink, alpha);
             gx += iconW;
         }
         float ty = snap(centerY - MENU_TEXT_UP * scale, s);
         if (goldText) goldGlow(g, gx, centerY, textW * scale, scale, e, alpha);
-        for (int[] d : ring) drawText(g, font, seq, gx + d[0] / (float) s, ty + (d[1] + sh) / (float) s, scale, TFMenuPaint.argb(0.55f * alpha, edge));
+        for (int[] d : ring) drawText(g, font, seq, gx + d[0] / (float) s, ty + (d[1] + sh) / (float) s, scale, TFMenuPaint.argb(shadow * alpha, edge));
         for (int[] d : ring) drawText(g, font, seq, gx + d[0] / (float) s, ty + d[1] / (float) s, scale, TFMenuPaint.argb(alpha, edge));
         if (this.active) gradientLetters(g, font, seq, gx, ty, scale, textW, goldText, e, alpha);
         else drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+    }
+
+    /** Un color RGB oscurecido (k de 0 a 1). */
+    private static int shade(int rgb, float k) {
+        return (Math.round(((rgb >> 16) & 255) * k) << 16) | (Math.round(((rgb >> 8) & 255) * k) << 8) | Math.round((rgb & 255) * k);
     }
 
     /** Desplazamientos (en píxeles reales) del contorno: 16 direcciones a ro y 8 a la mitad, sin repetir. */
@@ -481,7 +491,7 @@ public class TFMenuButton extends Button {
             if (by1 <= by0) continue;
             RenderSystem.enableScissor(x0, fbH - by1, x1 - x0, by1 - by0);
             float t = (i + 0.5f) / bands;
-            int c = goldText ? gold(t, e) : TFMenuPaint.lerp(0xFF000000 | ramp(WHITE, t), 0xFFFFFFFF, 0.6f * e) & 0xFFFFFF;
+            int c = goldText ? gold(t, e) : TFMenuPaint.lerp(0xFF000000 | ramp(WHITE, t), 0xFFFFFBF2, 0.45f * e) & 0xFFFFFF;
             drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, c));
             g.flush();
         }
