@@ -348,10 +348,10 @@ def text_width(s, S=4):
     return math.ceil(font_os(64).getlength(s) / 64)
 
 
-def draw_text(g, s, gx, gy, S, rgb, alpha=1.0, dy_real=0, scale=1.0):
+def draw_text(g, s, gx, gy, S, rgb, alpha=1.0, dy_real=0, scale=1.0, os_=None):
     """drawString(font, s, gx, gy) con la letra TTF: glifos rasterizados a `oversample` px por px de interfaz (sin
     hinting, como stb_truetype: se dibuja a 8x y se reduce por promedio) y muestreados sin suavizar."""
-    os_ = oversample(S)
+    os_ = os_ or oversample(S)
     big = 8
     f = font_os(os_ * big)
     base4 = 10.0 * ASC / (ASC - DESC) + 1 - 3  # línea base respecto a y (en píxeles de interfaz)
@@ -375,9 +375,16 @@ def draw_text(g, s, gx, gy, S, rgb, alpha=1.0, dy_real=0, scale=1.0):
 
 
 # ------------------------------------------------------------------------------------------------ botón (TFMenuButton)
+import json
+
 PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
-GAP = 4         # entre icono y texto (interfaz)
-TEXT_UP = 3.0   # el texto se dibuja en y + h/2 - TEXT_UP (centrado óptico de Cinzel)
+GAP = 3          # entre icono y texto (interfaz)
+TEXT_UP = 3.5    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Cinzel)
+INK, INK_HOT, INK_TF, INK_TF_HOT, OUTLINE = 0xFFF8EC, 0xFFE08A, 0xFFE7A6, 0xFFFFF4, 0x140A04
+MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
+WIDEN = [1.2, 1.2, 1.2, 1.3, 1.3, 1.38, 1.38, 1.38]
+K_MAX, LOGO_MIN, BOTTOM_MARGIN = 0.153, 92, 6
+_menu = {}
 
 
 def ease(t):
@@ -388,88 +395,198 @@ def mix_rgb(a, b, t):
     return lerp_argb(a | 0xFF000000, b | 0xFF000000, t) & 0xFFFFFF
 
 
-def mix_argb(a, b, t):
-    return lerp_argb(a, b, t)
-
-
-WHATSAPP, DISCORD = 'whatsapp', 'discord_kind'
-GOLD_TEXT, RED_TEXT = 0xFFE08A, 0xFFC9D2
-BRAND = {WHATSAPP: 0x25D366, DISCORD: 0x5865F2}
-_plates = {}
-WOOD_CENTER = 0.46  # centro a la vista de la madera, en altos del botón
-
-
-def plate(g, S, gx, gy, gw, index, alpha):
-    """TFMenuButton.plate: placa de menu_buttons_S.png (200S x 20S cada una), CAP de cada lado y el centro cortado."""
-    n = max(1, min(6, S))
-    if n not in _plates:
-        _plates[n] = Image.open(GUI + '/menu_buttons_%d.png' % n).convert('RGBA')
-    tex = _plates[n]
-    tw, h, cap = 200 * n, 20 * n, min(7 * n, gw * n // 2)
-    src = tex.crop((0, index * h, tw, index * h + h))
-    w = gw * n
-    row = Image.new('RGBA', (w, h))
-    row.paste(src.crop((0, 0, cap, h)), (0, 0))
-    mid, done = tw - 2 * cap, 0
-    while done < w - 2 * cap:
-        part = min(mid, w - 2 * cap - done)
-        row.paste(src.crop((cap, 0, cap + part, h)), (cap + done, 0))
-        done += part
-    row.paste(src.crop((tw - cap, 0, tw, h)), (w - cap, 0))
-    if n != S:
-        row = row.resize((gw * S, 20 * S), Image.NEAREST)
-    g.composite(to_float_img(row), gx * S, gy * S, (1, 1, 1, alpha))
-
-
-def paint_button(g, S, gx, gy, gw, gh, kind, label, icon, hover=0.0, pressed=False, active=True, alpha=1.0, sweep=None):
-    """TFMenuButton: placas con textura (reposo + iluminada con la opacidad del ratón); iconos solo WhatsApp/Discord."""
-    e = ease(hover) if active else 0.0
-    primary = kind == PRIMARY
-    if not active:
-        plate(g, S, gx, gy, gw, 7, alpha)
-    elif pressed:
-        plate(g, S, gx, gy, gw, 5 if primary else 2, alpha)
-    else:
-        plate(g, S, gx, gy, gw, 3 if primary else 0, alpha)
-        if e > 0.01:
-            plate(g, S, gx, gy, gw, 4 if primary else (6 if kind == DANGER else 1), alpha * e)
-    if not active:
-        ink = 0x7C8299
-    elif primary:
-        ink = mix_rgb(GOLD_TEXT, 0xFFF6D6, e)
-    else:
-        ink = mix_rgb(0xF3EFFF, RED_TEXT if kind == DANGER else GOLD_TEXT, e)
-
-    tw = text_width(label, S)
-    maxw = gw - 2 * min(10, gw // 12)
-    with_icon = icon is not None and tw + ICON + GAP <= maxw
-    group = tw + (ICON + GAP if with_icon else 0)
-    scale = max(0.6, maxw / group) if group > maxw else 1.0
-    snap = lambda v: round(v * S) / S
-    gx0 = snap(gx + (gw - group * scale) / 2.0)
-    off = max(1, S // 2)
-    if with_icon:
-        n = ICON * S
-        iconimg = icon_image(icon, n)
-        ix = int(round(gx0 * S))
-        iy = int(round(gy * S + gh * S * WOOD_CENTER - n / 2.0))
-        g.composite(iconimg, ix, iy, tuple(c / 255.0 for c in rgb3(BRAND.get(kind, GOLD_TEXT))) + (alpha,))
-        gx0 += ICON + GAP
-    ty = snap(gy + gh * WOOD_CENTER - TEXT_UP * scale)
-    draw_text(g, label, gx0, ty, S, (0x1A, 0x0E, 0x04), 0.85 * alpha, off, scale)
-    draw_text(g, label, gx0, ty, S, rgb3(ink), alpha, 0, scale)
-
-
 def rgb3(c):
     return ((c >> 16) & 255, (c >> 8) & 255, c & 255)
+
+
+def menu_data():
+    if not _menu:
+        _menu['json'] = json.load(open(GUI + '/menu_main.json'))
+        _menu['atlas'] = Image.open(GUI + '/menu_main.png').convert('RGBA')
+        _menu['glow'] = Image.open(GUI + '/menu_glow.png').convert('RGBA')
+        _menu['nav'] = Image.open(GUI + '/button_slice.png').convert('RGBA')
+    return _menu
+
+
+def snapS(v, S):
+    return round(v * S) / S
+
+
+class Placed:
+    """TFMenuPlates.Placed: escala por la altura del cuerpo y zonas lisas estiradas a lo ancho."""
+
+    def __init__(self, p, bx, by, bw, bh, S):
+        self.p = p
+        body = p['body']
+        self.k = k = bh / (body[3] - body[1])
+        fill_total = sum(f[1] - f[0] for f in p['fills'])
+        extra = bw - (body[2] - body[0]) * k
+        fill_k = max(k * 0.25, k + extra / fill_total) if fill_total > 0 else k
+        src, scale = [0.0], []
+        for f in p['fills']:
+            src += [f[0], f[1]]
+            scale += [k, fill_k]
+        src.append(p['uv'][2])
+        scale.append(k)
+        rel = [0.0]
+        for j in range(1, len(src)):
+            rel.append(rel[-1] + (src[j] - src[j - 1]) * scale[j - 1])
+        self.src = src
+        body_rel = self._at(rel, src, body[0])
+        self.left = bx - body_rel
+        self.top = by - body[1] * k
+        self.gui = [snapS(self.left + r, S) for r in rel]
+
+    @staticmethod
+    def _at(out, inn, sx):
+        for j in range(1, len(inn)):
+            if sx <= inn[j] or j == len(inn) - 1:
+                t = (sx - inn[j - 1]) / max(1e-3, inn[j] - inn[j - 1])
+                return out[j - 1] + (out[j] - out[j - 1]) * t
+        return out[0]
+
+    def x(self, sx):
+        return self._at(self.gui, self.src, sx)
+
+    def y(self, sy):
+        return self.top + sy * self.k
+
+
+def draw_plate(g, S, at, tint=(1, 1, 1, 1), additive=False, dy=0.0):
+    """TFMenuPlates.draw: pieza a pieza (con mipmaps y filtro lineal en el juego: aquí LANCZOS)."""
+    m = menu_data()
+    p = at.p
+    u, v, w, h = p['uv']
+    hh = h * at.k
+    for j in range(1, len(at.src)):
+        sx0, sx1 = at.src[j - 1], at.src[j]
+        gx0, gx1 = at.gui[j - 1], at.gui[j]
+        if sx1 - sx0 < 0.5 or gx1 - gx0 <= 0:
+            continue
+        u0 = round(sx0)
+        uw = max(1, round(sx1) - u0)
+        piece = m['atlas'].crop((u + u0, v, u + u0 + uw, v + h))
+        rw, rh = round((gx1 - gx0) * S), round(hh * S)
+        if rw <= 0 or rh <= 0:
+            continue
+        piece = piece.convert('RGBa').resize((rw, rh), Image.LANCZOS).convert('RGBA')
+        g.composite(to_float_img(piece), round(gx0 * S), round((at.top + dy) * S), tint, additive)
+
+
+def draw_glow(g, S, img, x, y, r, tint):
+    n = max(1, round(2 * r * S))
+    im = img.resize((n, n), Image.BILINEAR)
+    g.composite(to_float_img(im), round((x - r) * S), round((y - r) * S), tint, additive=True)
+
+
+def draw_nav(g, S, x, y, w, h, hover, active=True):
+    """TFButtonTheme.drawPlate: puntas a la altura del botón y el centro cortado; estado ratón fundido encima."""
+    tex = menu_data()['nav']
+    PH, PAD, CL, CR = 135, 16, 115, 114
+    fill = tex.width - CL - CR
+
+    def state(i, a):
+        k = h / PH
+        cl, cr = CL * k, CR * k
+        if cl + cr > w:
+            f = w / (cl + cr)
+            cl, cr = cl * f, cr * f
+        xl, xr = snapS(x + cl, S), snapS(x + w - cr, S)
+        v = PAD + i * (PH + PAD)
+        parts = [(x, xl - x, 0, CL)]
+        at = xl
+        while at < xr - 0.01:
+            seg = min(fill * k, xr - at)
+            parts.append((at, seg, CL, max(1, min(fill, round(seg / k)))))
+            at += seg
+        parts.append((xr, x + w - xr, tex.width - CR, CR))
+        for px, pw, u, uw in parts:
+            rw = round((px + pw) * S) - round(px * S)
+            if rw <= 0:
+                continue
+            piece = tex.crop((u, v, u + uw, v + PH)).convert('RGBa').resize((rw, round(h * S)), Image.LANCZOS)
+            g.composite(to_float_img(piece.convert('RGBA')), round(px * S), round(y * S), (1, 1, 1, a))
+
+    if not active:
+        state(2, 1)
+    else:
+        state(0, 1)
+        if hover > 0.01:
+            state(1, hover)
+
+
+def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True):
+    """TFMenuButton.paintContent: icono y texto centrados, contorno oscuro de max(1, 0.4 S) píxeles reales."""
+    if not active:
+        ink = 0x9A9AA6
+    elif kind == PRIMARY:
+        ink = mix_rgb(INK_TF, INK_TF_HOT, e)
+    else:
+        ink = mix_rgb(INK, INK_HOT, e)
+    n = max(1, min(6, round(S * size)))
+    scale = n / S
+    tw = text_width(label, S)
+    maxw = x1 - x0
+    icon_w = ICON + GAP if icon else 0
+    group = tw * scale + icon_w
+    if group > maxw and group > 0:
+        scale *= max(0.6, (maxw - icon_w) / (tw * scale))
+        group = tw * scale + icon_w
+    gx = snapS((x0 + x1) / 2 - group / 2, S)
+    o = max(1, round(S * 0.4)) / S
+    dark = rgb3(OUTLINE)
+    if icon:
+        sz = ICON * S
+        img = icon_image(icon, sz)
+        ix, iy = round(gx * S), round(cy * S - sz / 2)
+        ro = round(o * S)
+        for dx, dy in ((-ro, 0), (ro, 0), (0, -ro), (0, ro + max(1, S // 2))):
+            g.composite(img, ix + dx, iy + dy, tuple(c / 255 for c in dark) + (0.85,))
+        g.composite(img, ix, iy, tuple(c / 255 for c in rgb3(ink)) + (1,))
+        gx += icon_w
+    ty = snapS(cy - TEXT_UP * scale, S)
+    draw_text(g, label, gx, ty + 1, S, dark, 0.5, 0, scale, n)
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx or dy:
+                draw_text(g, label, gx + dx * o, ty + dy * o, S, dark, 0.85, 0, scale, n)
+    draw_text(g, label, gx, ty, S, rgb3(ink), 1.0, 0, scale, n)
+
+
+def paint_button(g, S, b, hover=0.0, pressed=False, active=True, sweep=None):
+    """TFMenuButton.renderWidget con placa (sin el zoom de 2 %: aquí solo sube 0,8 al pasar el ratón)."""
+    label, icon, kind, plate, x, y, w, h = b
+    m = menu_data()
+    p = m['json']['plates'][plate]
+    e = ease(hover) if active else 0.0
+    lift = 0.5 if pressed else -0.8 * e
+    at = Placed(p, x, y + lift, w, h, S)
+    shade = 0.45 if not active else 0.8 if pressed else 1.0
+    draw_plate(g, S, at, (shade, shade, shade, 1))
+    if e > 0.01 and not pressed:
+        draw_plate(g, S, at, (1, 1, 1, 0.24 * e), additive=True)
+    for i, l in enumerate(p['lights']):
+        flick = 0.5 + 0.18 * math.sin(i * 2.1) + 0.1 * math.sin(i * 4.3)
+        draw_glow(g, S, m['glow'], at.x(l[0]), at.y(l[1]), l[2] * at.k * (3.0 + 0.25 * flick),
+                  (1, 0.6, 0.22, min(1, flick * (0.55 + 0.25 * e))))
+    if e > 0.01:
+        for gem in p['sparks']:
+            draw_glow(g, S, m['glow'], at.x(gem[0]), at.y(gem[1]), gem[2] * at.k * 2.2, (0.35, 0.75, 1, 0.5 * e))
+    bh = p['body'][3] - p['body'][1]
+    if sweep is not None:
+        ix0, ix1 = round(at.x(p['body'][0] + bh * 0.18)), round(at.x(p['body'][2] - bh * 0.18))
+        iy0, iy1 = round(at.y(p['body'][1] + bh * 0.16)), round(at.y(p['body'][3] - bh * 0.16))
+        paint_sweep(g, S, ix0, iy0, ix1 - ix0, iy1 - iy0, sweep, 0.55, 0)
+    paint_content(g, S, at.x(p['text'][0]), at.x(p['text'][2]), at.y((p['body'][1] + p['body'][3]) / 2), label, icon,
+                  kind, 1.25 if kind == PRIMARY else 1.0, e, active)
 
 
 _shine = None
 
 
 def paint_sweep(g, S, gx, gy, gw, gh, t, strength, lift):
-    """Línea luminosa (button_shine.png) que cruza el botón; t de 0 a 1. Recortada dentro del borde (tijera en
-    unidades de interfaz, como enableScissor)."""
+    """TFMenuPaint.sweep: línea luminosa (button_shine.png) que cruza el botón; t de 0 a 1. Recortada dentro del
+    borde (tijera en unidades de interfaz, como enableScissor)."""
     global _shine
     if _shine is None:
         _shine = Image.open(GUI + '/button_shine.png').convert('RGBA')
@@ -497,21 +614,30 @@ def auto_scale(fbw, fbh, limit=0):
 
 
 def layout(w, h):
-    """TitleScreenMixin.tfclient$replaceButtons: (texto, icono, tipo, x, y, ancho)."""
-    l = h // 4 + 48
-    shift = max(0, min(12, h - (l + 132)))
-    x = w // 2 - 100
-    top = l + shift
-    return top, [
-        ('Tierras Fantásticas', None, PRIMARY, x, top, 200),
-        ('Mundo local', None, SECONDARY, x, top + 24, 200),
-        ('Mods', None, SECONDARY, x, top + 48, 200),
-        ('Opciones', None, SECONDARY, x, top + 72, 98),
-        ('Salir', None, DANGER, x + 102, top + 72, 98),
-        ('WhatsApp', 'whatsapp', WHATSAPP, x, top + 96, 70),
-        ('Web', None, SECONDARY, x + 74, top + 96, 52),
-        ('Discord', 'discord', DISCORD, x + 130, top + 96, 70),
-    ]
+    """TFMenuButton.mainLayout + TitleScreenMixin: (texto, icono, tipo, placa, x, y, ancho, alto)."""
+    d = menu_data()['json']
+    comp = d['composition']
+    ctop, cbot, cen = comp['top'], comp['bottom'], comp['center']
+    comp_h = cbot - ctop
+    half_w = max(max(cen - d['plates'][n]['layout'][0], d['plates'][n]['layout'][2] - cen) * WIDEN[i]
+                 for i, n in enumerate(MAIN))
+    k = min(K_MAX, (h - BOTTOM_MARGIN - LOGO_MIN - 6) / comp_h)
+    k = min(k, (w / 2 - 10) / half_w)
+    free = h - BOTTOM_MARGIN - comp_h * k
+    top = free - max(0.0, (free - 186) / 2)
+    cx = w / 2
+    rects = []
+    for i, n in enumerate(MAIN):
+        l = d['plates'][n]['layout']
+        x0 = round(cx + (l[0] - cen) * k * WIDEN[i])
+        x1 = round(cx + (l[2] - cen) * k * WIDEN[i])
+        y0 = round(top + (l[1] - ctop) * k)
+        y1 = round(top + (l[3] - ctop) * k)
+        rects.append((x0, y0, x1 - x0, y1 - y0))
+    labels = [('Tierras Fantásticas', None, PRIMARY), ('Mundo local', None, SECONDARY), ('Mods', None, SECONDARY),
+              ('Opciones', None, SECONDARY), ('Salir', None, DANGER), ('WhatsApp', 'whatsapp', SECONDARY),
+              ('Web', 'web', SECONDARY), ('Discord', 'discord', SECONDARY)]
+    return round(top), [lab + (n,) + r for lab, n, r in zip(labels, MAIN, rects)]
 
 
 _bg = None
@@ -544,10 +670,9 @@ def render(fbw, fbh, S=None, hover=None, pressed=None, sweep=None, out=None, hov
         g.composite(to_float_img(gl), int((cx - gw_ / 2) * S), int((cy - gh_ / 2) * S), (1, 1, 1, 0.72))
         lg = _logo.resize((int(lw * S), int(lh * S)), Image.LANCZOS)
         g.composite(to_float_img(lg), int((cx - lw / 2) * S), int((cy - lh / 2) * S))
-    for i, (label, icon, kind, bx, by, bw) in enumerate(buttons):
-        paint_button(g, S, bx, by, bw, 20, kind, label, icon,
-                     hover=1.0 if hover == i else 0.0, pressed=pressed == i,
-                     sweep=(sweep if kind == PRIMARY else (hover_sweep if hover == i else None)))
+    for i, b in enumerate(buttons):
+        paint_button(g, S, b, hover=1.0 if hover == i else 0.0, pressed=pressed == i,
+                     sweep=(sweep if b[2] == PRIMARY else (hover_sweep if hover == i else None)))
     im = g.image()
     if out:
         im.save(out)
@@ -567,6 +692,8 @@ if __name__ == '__main__':
         ('1280x720_escala2', 1280, 720, 2, None, None, None),
         ('2560x1440_escala4_raton_salir', 2560, 1440, 4, 4, None, None),
         ('2560x1440_escala3_pulsado_opciones', 2560, 1440, 3, 3, 3, None),
+        ('1920x1080_escala4_destello', 1920, 1080, 4, None, None, 0.45),
+        ('2560x1440_escala6', 2560, 1440, 6, None, None, None),
     ]
     only = sys.argv[2] if len(sys.argv) > 2 else None
     for name, fw, fh, S, hv, pr, sw in scenes:
@@ -574,8 +701,9 @@ if __name__ == '__main__':
             continue
         im, S, gsz, buttons = render(fw, fh, S, hv, pr, sw, f'{out}/{name}.png')
         # Recorte de los botones a tamaño real
-        top = min(b[4] for b in buttons) - 8
-        bot = max(b[4] for b in buttons) + 28
-        left = buttons[0][3] - 14
-        im.crop((left * S, top * S, (left + 228) * S, bot * S)).save(f'{out}/{name}_botones.png')
+        top = min(b[5] for b in buttons) - 12
+        bot = max(b[5] + b[7] for b in buttons) + 8
+        left = min(b[4] for b in buttons) - 14
+        right = max(b[4] + b[6] for b in buttons) + 14
+        im.crop((left * S, top * S, right * S, bot * S)).save(f'{out}/{name}_botones.png')
         print(name, 'escala', S, 'interfaz', gsz)

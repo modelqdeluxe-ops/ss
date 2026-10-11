@@ -10,6 +10,22 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.44 (11 oct)** — el dueño mandó dos láminas: la del menú principal (con el layout) y la de los
+> botones de ajustes/navegación: «corta bien, escribe bien, diseña bien, anima bien», sin píxeles blancos en el
+> contorno y con icono en Web. `tools/gen_menu_buttons.py <lámina menú> <lámina ajustes>` (las láminas NO van en el
+> repo; traen el fondo de cuadritos pintado: se quita rellenando desde el borde, se suaviza el contorno, se borra lo
+> claro a ≤2 px del borde y los transparentes toman el color del vecino) genera `menu_main.png` (8 placas, mipmaps) +
+> `menu_main.json` (uv, cuerpo, hueco del texto, zonas lisas estirables, gemas, faroles y sitio en la lámina),
+> `menu_glow.png` y `button_slice.png` (piedra con gemas ámbar: normal/ratón/desactivada). **Menú principal**
+> (`TFMenuButton.mainLayout` + `TFMenuPlates`): la composición de la lámina escalada para caber bajo el emblema
+> (Tierras Fantásticas madera con gemas y faroles; Mundo local y Mods azules; Opciones gris | Salir rojo; WhatsApp
+> verde | Web morado | Discord azul, iconos en los tres); solo se estiran las zonas lisas (tréboles, gemas y faroles
+> conservan su forma). Animación: con el ratón sube y crece un 2 %, se ilumina (placa sumada), la cruza una línea de
+> luz y las gemas brillan; al pulsar se hunde y oscurece; faroles que titilan, chispas en las gemas cada ~5 s y
+> destello en Tierras Fantásticas cada 6,5 s. Texto Cinzel nítido con contorno oscuro (Tierras Fantásticas a 1,25).
+> **Demás menús** (`TFButtonTheme`): placa de piedra, puntas a la altura del botón y centro cortado (sin estirar),
+> fundido del ratón por botón. `tools/menu_sim.py` al día. Quitados `gen_buttons.py` y `menu_buttons_N.png`.
+
 > **TF Client 1.3.43 (11 oct)** — el dueño rechazó los botones en pixel art hechos a mano («la peor basura de
 > diseño… busca texturas bonitas en internet»). Ahora los botones del menú de inicio son las **tablas de madera con
 > marco de metal** del "Medieval Game Button Pack" de pzUH (**CC0**, https://opengameart.org/content/medieval-game-button-pack;
@@ -1613,7 +1629,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.43)
+## 5. El mod (TF Client 1.3.44)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
@@ -1643,8 +1659,8 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
 - Pad 1.3.38: `config/tfclient/gachapon.json` (Gachapón) y `config/tfclient/pase.json` (TF Pass), datos en
   `<mundo>/tfclient/{monedas-verdes,gachapon,pase}.json`; apps con página propia = `PadServer.DataApp` + `PadDataPage`.
 - Generadores: `tools/pad/build_pad.py [--preview]` (texturas del TF Pad; iconos de `iconos*.py`, los de 1.3.38 en
-  `iconos4.py`; moneda verde con `verde()`, también el objeto), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/pad/limpiar_bordes.py` (contorno del marco), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_buttons.py` (botones del
-  menú), `tools/build_vfx.py` (VFX).
+  `iconos4.py`; moneda verde con `verde()`, también el objeto), `tools/pad/sim/pages.py <carpeta>` (vista previa de las apps del pad), `tools/pad/build_sounds.py [--wav DIR]` (sonidos del pad), `tools/pad/limpiar_bordes.py` (contorno del marco), `tools/gen_claim_blocks.py [--preview DIR]` (piedras de TF Claims), `tools/gen_menu_buttons.py` (botones de
+  los menús, de las láminas del dueño), `tools/build_vfx.py` (VFX).
 - Herramientas: `tools/check_backs.py [--fix]` (mide/acerca los cosméticos de espalda sin necesitar los packs),
   `tools/build_mod_items.py <packs> [set ...]` (con sets, solo rehace esos; modelos/texturas de los packs; usa `hmc_worn.py` para lo que va en
   la espalda/cabeza según HMCCosmetics), `tools/check_mod_items.py`, `tools/build_jobs_gui.py <packs>` (arte de oficios
