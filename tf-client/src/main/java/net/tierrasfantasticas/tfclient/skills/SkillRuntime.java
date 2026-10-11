@@ -1165,7 +1165,9 @@ public final class SkillRuntime {
     private static void message(Mech m, List<Tgt> targets) {
         String msg = unquote(m.arg("", "message", "msg", "m"));
         if (msg.isBlank()) return;
-        String clean = msg.replaceAll("<[^>]+>", "").replaceAll("[&§][0-9a-fk-orA-FK-OR]", "");
+        // <&lb> <&rb> <&co> de MythicMobs son [ ] : (los demás <...> son colores)
+        String clean = msg.replace("<&lb>", "[").replace("<&rb>", "]").replace("<&co>", ":")
+                .replaceAll("<[^>]+>", "").replaceAll("[&§][0-9a-fk-orA-FK-OR]", "");
         for (Tgt t : targets) {
             if (t.entity() instanceof ServerPlayer p) {
                 p.displayClientMessage(net.minecraft.network.chat.Component.literal(clean), true);

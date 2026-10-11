@@ -1,5 +1,14 @@
 {
  "_leeme": "Textos en español de las clases (web, pad y juego). build_skills.py los mete en cada clase. Por clase: nombre, rol (una línea), descripción, color de la web y, por skill, nombre y descripción. Las pasivas se lanzan solas.",
+ "_mensajes": {
+  "This skill is not available yet!": "Aún no: mantén Shift (agachado) para cargar el guantelete.",
+  "Balance Breaker is on cooldown": "Balance Breaker aún se está recargando.",
+  "Balance Breaker is ready to use": "¡Balance Breaker listo! Mantén Shift para activarlo.",
+  "Balance Breaker Boost": "Carga de Balance Breaker",
+  "Boost": "Carga del guantelete",
+  "Total Minions": "Esbirros",
+  "Necroknights": "Caballeros"
+ },
  "glacia": {
   "name": "Glacia",
   "role": "Maga de hielo · control y zona",
@@ -99,12 +108,12 @@
  "dragon_rojo": {
   "name": "Dragón Rojo",
   "role": "Guerrero dragón · se transforma",
-  "desc": "Lleva el Sacred Gear, un guantelete de dragón que se hace más fuerte. Golpea y carga energía (agachado) para subirlo de nivel y desatar la armadura Balance Breaker.",
+  "desc": "Lleva el Sacred Gear, un guantelete de dragón. Mantén Shift (agachado) para cargarlo: al nivel 2 desbloquea la Embestida y el Salto; si sigues cargando, desata la armadura Balance Breaker con el Rugido y el Cañón.",
   "color": "#ff5a4f",
   "skills": {
    "dragon_claw": {
     "name": "Garra de Dragón",
-    "desc": "Un zarpazo de dragón delante de ti. Cada golpe carga tu guantelete."
+    "desc": "Tu ataque básico: un zarpazo de dragón delante de ti."
    },
    "dragon_shot": {
     "name": "Disparo de Dragón",
@@ -112,19 +121,19 @@
    },
    "dragon_dash": {
     "name": "Embestida de Dragón",
-    "desc": "Con el guantelete de nivel 2 o más: una embestida rapidísima hacia delante."
+    "desc": "Con el guantelete de nivel 2 (mantén Shift para cargarlo): una embestida rapidísima hacia delante."
    },
    "dragon_jump": {
     "name": "Salto de Dragón",
-    "desc": "Con el guantelete de nivel 2 o más: un salto enorme y una caída lenta."
+    "desc": "Con el guantelete de nivel 2 (mantén Shift para cargarlo): un salto enorme y una caída lenta."
    },
    "dragon_roar": {
     "name": "Rugido de Dragón",
-    "desc": "En modo Balance Breaker: un rugido que hiere a todo lo que tienes alrededor."
+    "desc": "Con la armadura Balance Breaker (sigue cargando con Shift): un rugido que hiere a todo lo que tienes alrededor."
    },
    "dragon_ultimate": {
     "name": "Cañón del Dragón",
-    "desc": "En modo Balance Breaker: la armadura abre sus cañones y dispara dos rayos devastadores."
+    "desc": "Con la armadura Balance Breaker: la armadura abre sus cañones, carga unos segundos y dispara dos rayos devastadores hacia delante."
    }
   }
  },
@@ -168,7 +177,7 @@
   "skills": {
    "archer_windwalker": {
     "name": "Paso del Viento",
-    "desc": "Haz un doble salto y planea por el aire para cambiar de posición rápido y atacar desde arriba."
+    "desc": "Úsala en el aire (salta y dispara): un doble salto y planeas para cambiar de posición rápido y atacar desde arriba."
    },
    "archer_quickshot": {
     "name": "Disparo Rápido",
@@ -272,35 +281,35 @@
   "name": "Bruja Tejedora",
   "role": "Hechicera · caos y maldiciones",
   "color": "#7a3cff",
-  "desc": "La Tejedora del Caos Reptante: teje hilos de sangre de los Dioses Exteriores, lanza sigilos malditos, cuervos y elixires inestables, y potencia sus hechizos dentro de su círculo ritual.",
+  "desc": "La Tejedora del Caos Reptante: su Andanada de Sigilos (el ataque básico) carga energía del Caos y sus demás hechizos la gastan: cuervos, elixires, lanzas abisales y su círculo ritual.",
   "skills": {
    "mf_witch_thread_of_crawling_chaos": {
     "name": "Hilo del Caos Reptante",
-    "desc": "Pasiva: guardas hasta 8 de energía del Caos Reptante. Cada impacto de un sigilo te devuelve 0,5; tus otros hechizos gastan de esa reserva."
+    "desc": "Pasiva: guardas hasta 16 de energía del Caos Reptante. Cada sigilo que acierta te da 1; tus otros hechizos la gastan."
    },
    "mf_witch_sigil_volley": {
     "name": "Andanada de Sigilos",
-    "desc": "Lanza tres sigilos malditos que estallan al impactar y te devuelven energía. Dentro del Círculo de Hechizos son cinco."
+    "desc": "Tu ataque básico: tres sigilos malditos que estallan al impactar y te dan 1 de energía cada uno. Dentro del Círculo de Hechizos son cinco."
    },
    "mf_witch_crow_hex": {
     "name": "Maleficio del Cuervo",
-    "desc": "Un cuervo espectral persigue a tu enemigo y lo marca con un presagio maldito. Si vuelves a golpear al marcado, el cuervo estalla y deja una zona que lo corrompe poco a poco."
+    "desc": "Gasta 4 de energía. Un cuervo espectral persigue a tu enemigo y lo marca; si vuelves a golpear al marcado, el cuervo estalla y deja una zona que lo corrompe poco a poco."
    },
    "mf_witch_spell_circle": {
     "name": "Círculo de Hechizos",
-    "desc": "Un círculo ritual de sangre y locura: mientras estés dentro, tus hechizos se vuelven más terribles. Gasta 8 de energía."
+    "desc": "Gasta 16 de energía. Un círculo ritual de sangre y locura: mientras estés dentro, tus hechizos se vuelven más terribles."
    },
    "mf_witch_eldritch_elixirs": {
     "name": "Elixires Arcanos",
-    "desc": "Lanzas tres elixires inestables al azar (fuego, hielo, arcano o caos) mientras saltas hacia atrás. Dentro del círculo, el tiempo de espera se reduce a la mitad."
+    "desc": "Gasta 3 de energía. Lanzas tres elixires inestables al azar (fuego, hielo, arcano o caos) mientras saltas hacia atrás. Dentro del círculo, el tiempo de espera se reduce a la mitad."
    },
    "mf_witch_doomspike": {
     "name": "Lanza Funesta",
-    "desc": "Invocas tres lanzas abisales que se arrojan una tras otra, hieren y empujan. Dentro del círculo, cada golpe hace llover lanzas alrededor del objetivo y lo inmoviliza."
+    "desc": "Gasta 6 de energía. Invocas tres lanzas abisales; con cada golpe que das después, se arroja una. Dentro del círculo, cada lanza hace llover más alrededor del objetivo y lo inmoviliza."
    },
    "mf_witch_abyssal_crucible": {
     "name": "Crisol Abisal",
-    "desc": "Invocas un crisol abisal sobre tu objetivo que atrae y hiere sin parar a los enemigos cercanos. Si le aciertas con un elixir, estalla y corrompe la zona."
+    "desc": "Gasta 8 de energía. Invocas un crisol abisal sobre tu objetivo que atrae y hiere sin parar a los enemigos cercanos. Si le aciertas con un elixir, estalla y corrompe la zona."
    }
   }
  },

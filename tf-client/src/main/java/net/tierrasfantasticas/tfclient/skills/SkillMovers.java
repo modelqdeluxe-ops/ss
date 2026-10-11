@@ -175,10 +175,16 @@ final class SkillMovers {
             p.step = 0;
             p.maxRange = Double.MAX_VALUE;
             p.maxTicks = (int) SkillRuntime.num(m.arg("200", "maxduration", "md", "duration", "d"), 200);
+            // Los tajos cuerpo a cuerpo (tótems de un momento) de un jugador llegan medio bloque más: en el pack
+            // alcanzaban ~2 bloques y un jugador pega a los mobs hasta a 3 (fallaban aunque le dieras al mob)
+            if (p.maxTicks <= 10 && p.hr > 0 && p.hr <= 2 && ctx.caster.entity instanceof net.minecraft.server.level.ServerPlayer) p.hr += MELEE_REACH;
             p.ctx.dir = p.dir;
             start(p, m);
         }
     }
+
+    /** Lo que llegan de más los tajos cuerpo a cuerpo de un jugador (ver totem). */
+    static final double MELEE_REACH = 0.5;
 
     static void orbital(Mech m, Ctx ctx, List<Tgt> targets) {
         String auraName = m.arg(null, "auraname", "aura", "n", "buffname");

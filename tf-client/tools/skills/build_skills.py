@@ -89,6 +89,21 @@ BASIC_OVERRIDE = {'bruja': 'mf_witch_sigil_volley', 'cetus': 'cetus_slash', 'dra
                   'mago_rayo': None}
 
 
+def translate_messages(prog):
+    """Los avisos del pack en la barra de acción (message), en español (es.json «_mensajes»: inglés → español)."""
+    pairs = sorted((ES.get('_mensajes') or {}).items(), key=lambda kv: -len(kv[0]))
+    for node in list(prog['tree'].values()) + list(prog['mobs'].values()):
+        for m in node.get('mechs', []):
+            if m['m'] not in ('message', 'msg', 'actionmessage'):
+                continue
+            for k in ('m', 'message', 'msg'):
+                if isinstance(m['a'].get(k), str):
+                    text = m['a'][k]
+                    for en, es in pairs:
+                        text = text.replace(en, es)
+                    m['a'][k] = text
+
+
 def basic_skill(pack_id, prog):
     if pack_id in BASIC_OVERRIDE:
         return BASIC_OVERRIDE[pack_id]
@@ -683,6 +698,7 @@ def build_pack(path, sound_events, name=None):
            'set': cset['id'], 'hand_items': mm_items,
            'tree': prog['tree'], 'mobs': prog['mobs'], 'models': me_models, 'item_models': item_models,
            'weapons': prog['weapons'], 'armor': prog['armor'], 'glyphs': glyphs, 'missing': missing}
+    translate_messages(prog)
     basic = basic_skill(pack.id, prog)
     if basic:
         out['basic'] = basic
