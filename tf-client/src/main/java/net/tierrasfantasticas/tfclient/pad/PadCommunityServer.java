@@ -437,7 +437,7 @@ public final class PadCommunityServer {
                     put(p, "likes", likes);
                     dirty = true;
                 }
-                case "react" -> { // cualquier emoji (validado aquí); varios por jugador, cada uno se pone o se quita (como en Discord)
+                case "react" -> { // cualquier emoji (validado aquí); UNO por jugador: el mismo lo quita, otro lo cambia
                     String emoji = PadEmojis.canonical(reaction);
                     if (emoji == null) break;
                     if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) p.add("reacciones", new JsonObject());
@@ -447,6 +447,13 @@ public final class PadCommunityServer {
                         if (who.isEmpty()) re.remove(emoji);
                         else put(re, emoji, who);
                     } else {
+                        // quita la reacción que tuviera antes en esta foto
+                        for (String other : new java.util.ArrayList<>(re.keySet())) {
+                            Set<String> was = set(re, other);
+                            if (!was.remove(me)) continue;
+                            if (was.isEmpty()) re.remove(other);
+                            else put(re, other, was);
+                        }
                         if (who.isEmpty() && kinds(re) >= PadCommunityNet.MAX_REACTIONS) {
                             TFPadNet.notice(player, "Esa foto ya tiene " + PadCommunityNet.MAX_REACTIONS + " emojis distintos.");
                             break;

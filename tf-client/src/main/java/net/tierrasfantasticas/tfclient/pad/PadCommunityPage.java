@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
  * arrastrando. Clic en una foto para verla en grande. BORRAR (las tuyas, o el staff) y DENUNCIAR (las de otros).
  * «+ FOTO» lleva a la Cámara.
  * <p>Reacciones como en Discord: REACCIONAR abre el selector de emojis ({@link PadEmojiPicker}: casi 2.000 de Discord y
- * casi 100 animados, con buscador y categorías) y se puede reaccionar con varios; las etiquetas de cada foto (emoji y
+ * casi 100 animados, con buscador y categorías) y cada jugador reacciona con uno (otro lo cambia); las etiquetas de cada foto (emoji y
  * cuántos) se pulsan para sumarte o quitarte de esa reacción. Las tuyas, en oro.
  */
 final class PadCommunityPage extends PadPage {
@@ -36,7 +36,6 @@ final class PadCommunityPage extends PadPage {
     private final PadEmojiPicker picker;
     /** La etiqueta de reacción bajo el ratón (para su globo con el :atajo:). */
     private PadEmojis.Emoji chipHover;
-    private int chipHoverX, chipHoverY;
     /**
      * Arrastrar para bajar la lista empieza a partir de DRAG_START unidades desde donde se pulsó. Minecraft llama a
      * mouseDragged con cualquier temblor del ratón entre pulsar y soltar: antes eso cerraba el selector recién abierto
@@ -145,7 +144,6 @@ final class PadCommunityPage extends PadPage {
         PadUi.scrollbar(g, X + W - 7, top + 5, visible - 2, visible, contentH, scroll);
         // cerca del final, la página siguiente
         if (scroll + visible > contentH - ch * 2) PadCommunityClient.more();
-        if (chipHover != null) chipTip(g);
         if (pickerFor != null) {
             PadCommunityNet.Post open = find(pickerFor);
             if (open == null || !pickerSeen) pickerFor = null;
@@ -329,27 +327,12 @@ final class PadCommunityPage extends PadPage {
         if (hov) {
             pad.hover("§chip" + post.id() + e.id());
             chipHover = e;
-            chipHoverX = ex + bw / 2;
-            chipHoverY = cy;
         }
         String id = post.id(), action = "react:" + e.id();
         hits.add(0, new Hit(ex, cy, bw, CHIP_H, () -> {
             pad.sound("like", mine ? 0.5F : 0.9F);
             PadCommunityClient.act(action, id);
         }));
-    }
-
-    /** El globo encima de la etiqueta bajo el ratón: su :atajo:. */
-    private void chipTip(GuiGraphics g) {
-        String t = chipHover.code();
-        int tw = PadUi.font().width(t) + 8;
-        int x = Math.max(X + 2, Math.min(chipHoverX - tw / 2, X + W - tw - 2)), y = chipHoverY - 14;
-        g.pose().pushPose();
-        g.pose().translate(0, 0, 120);
-        PadUi.box(g, x, y, tw, 12, PadUi.INK);
-        g.fill(x + 1, y + 1, x + tw - 1, y + 11, 0xFF2A3A70);
-        PadUi.text(g, t, x + 4, y + 2, 0xFFFFFFFF);
-        g.pose().popPose();
     }
 
     private PadCommunityNet.Post find(String id) {
@@ -374,7 +357,7 @@ final class PadCommunityPage extends PadPage {
         picker.open(mineOf(post));
     }
 
-    /** Se eligió un emoji en el selector: se pone (o se quita, si ya era tuyo) y se cierra (con Mayús, no). */
+    /** Se eligió un emoji en el selector: se pone (o se quita, si ya era tuyo) y se cierra. */
     private void picked(PadEmojis.Emoji e) {
         PadCommunityNet.Post post = pickerFor == null ? null : find(pickerFor);
         if (post == null) return;
@@ -390,7 +373,7 @@ final class PadCommunityPage extends PadPage {
         }
         pad.sound("like", had ? 0.5F : 0.9F);
         PadCommunityClient.act("react:" + e.id(), post.id());
-        if (!PadEmojiPicker.keepOpen()) pickerFor = null;
+        pickerFor = null;
     }
 
     /** El selector, encima de todo lo de la página (con la lista oscurecida debajo). */
