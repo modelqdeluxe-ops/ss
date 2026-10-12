@@ -81,7 +81,9 @@ public class TFMenuButton extends Button {
     /** Separación entre icono y texto, en píxeles de interfaz. */
     private static final int GAP = 3;
     /** El texto se dibuja en el centro - TEXT_UP (centrado a la vista: Cinzel en las demás pantallas, New Rocker en el menú). */
-    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4f;
+    private static final float TEXT_UP = 3.5f, MENU_TEXT_UP = 4.6f;
+    /** Cuánto más juntas van las letras del menú (píxeles de glifo a escala 1 entre cada dos letras). */
+    private static final float TRACKING = 0.45f;
     private static final float HOVER_MS = 160f;
     private static final long SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
@@ -194,7 +196,7 @@ public class TFMenuButton extends Button {
                 float fills = 0f;
                 for (float[] f : p[i].fills) fills += f[1] - f[0];
                 float minW = (p[i].bodyW() - fills * 0.75f) * k; // las zonas lisas encogen como mucho a la cuarta parte
-                float textW = mc.font.width(Component.literal(labels[i]).setStyle(Style.EMPTY.withFont(MENU_FONT_AT_SCALE[3])));
+                float textW = new Tracked(mc.font, labels[i], MENU_FONT_AT_SCALE[3]).width;
                 need[i] = Math.max(minW, (textW + (i >= 5 ? TFMenuIcons.SIZE + GAP : 0)) * sc + 2 * (side + PAD * hs[i]));
             }
             for (int[] group : GROUPS) {
@@ -395,7 +397,9 @@ public class TFMenuButton extends Button {
         float scale = n / (float) s;
         MutableComponent text = Component.literal(getMessage().getString())
                 .setStyle(Style.EMPTY.withFont(fonts[n - 1]));
-        int textW = font.width(text);
+        // en el menú, las letras un poco más juntas (TRACKING menos entre cada dos)
+        Tracked tracked = plate != null ? new Tracked(font, getMessage().getString(), fonts[n - 1]) : null;
+        float textW = tracked != null ? tracked.width : font.width(text);
         float maxW = x1 - x0;
         boolean withIcon = icon != null;
         float iconW = withIcon ? (TFMenuIcons.SIZE + GAP) * scale : 0f; // el icono crece con la letra
@@ -438,9 +442,34 @@ public class TFMenuButton extends Button {
         }
         float ty = snap(centerY - MENU_TEXT_UP * scale, s);
         if (goldText) goldGlow(g, gx, centerY, textW * scale, scale, e, alpha);
-        for (int[] d : ring) drawText(g, font, seq, gx + d[0] / (float) s, ty + d[1] / (float) s, scale, TFMenuPaint.argb(alpha, edge));
-        if (this.active) gradientLetters(g, font, seq, gx, ty, scale, textW, goldText, e, alpha);
-        else drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+        for (int[] d : ring) tracked.draw(g, font, gx + d[0] / (float) s, ty + d[1] / (float) s, scale, TFMenuPaint.argb(alpha, edge));
+        if (this.active) gradientLetters(g, font, tracked, gx, ty, scale, textW, goldText, e, alpha);
+        else tracked.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+    }
+
+    /** Un texto dibujado letra a letra con las letras un poco más juntas (TRACKING píxeles de glifo menos entre cada dos). */
+    private static final class Tracked {
+        final FormattedCharSequence[] chars;
+        final float[] x;
+        final float width;
+
+        Tracked(Font font, String text, ResourceLocation fontId) {
+            int[] cps = text.codePoints().toArray();
+            chars = new FormattedCharSequence[cps.length];
+            x = new float[cps.length];
+            float at = 0f;
+            for (int i = 0; i < cps.length; i++) {
+                MutableComponent c = Component.literal(new String(Character.toChars(cps[i]))).setStyle(Style.EMPTY.withFont(fontId));
+                chars[i] = c.getVisualOrderText();
+                x[i] = at;
+                at += font.getSplitter().stringWidth(c) - (cps[i] == ' ' ? 0f : TRACKING); // ancho exacto, sin redondear
+            }
+            width = Math.max(0f, at + (cps.length > 0 && cps[cps.length - 1] != ' ' ? TRACKING : 0f));
+        }
+
+        void draw(GuiGraphics g, Font font, float gx, float ty, float scale, int argb) {
+            for (int i = 0; i < chars.length; i++) drawText(g, font, chars[i], gx + x[i] * scale, ty, scale, argb);
+        }
     }
 
     /** Un color RGB oscurecido (k de 0 a 1). */
@@ -511,7 +540,7 @@ public class TFMenuButton extends Button {
      * Letras en degradado (franjas de 2 píxeles reales con tijera): de oro pálido a ámbar en Tierras Fantásticas, con un
      * brillo que las cruza cada pocos segundos (y al pasar el ratón); de blanco a gris azulado en las demás.
      */
-    private void gradientLetters(GuiGraphics g, Font font, FormattedCharSequence seq, float gx, float ty, float scale, int textW,
+    private void gradientLetters(GuiGraphics g, Font font, Tracked seq, float gx, float ty, float scale, float textW,
                                  boolean goldText, float e, float alpha) {
         com.mojang.blaze3d.platform.Window win = Minecraft.getInstance().getWindow();
         double gs = win.getGuiScale();
@@ -522,7 +551,7 @@ public class TFMenuButton extends Button {
         int y0 = (int) Math.floor(a.y * gs), y1 = (int) Math.ceil(b.y * gs);
         int fbH = win.getHeight();
         // Fuera de la franja (por si algún trazo se sale): el color del medio
-        drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, goldText ? GOLD[2] : WHITE[1]));
+        seq.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, goldText ? GOLD[2] : WHITE[1]));
         g.flush();
         int bands = Math.max(2, (y1 - y0) / 2);
         // el oro respira despacio (se aclara un poco y vuelve), sin rayas ni destellos
@@ -533,10 +562,26 @@ public class TFMenuButton extends Button {
             RenderSystem.enableScissor(x0, fbH - by1, x1 - x0, by1 - by0);
             float t = (i + 0.5f) / bands;
             int c = goldText ? gold(t, Math.min(1f, e + breath)) : TFMenuPaint.lerp(0xFF000000 | ramp(WHITE, t), 0xFFF6F1E6, 0.45f * e) & 0xFFFFFF;
-            drawText(g, font, seq, gx, ty, scale, TFMenuPaint.argb(alpha, c));
+            c = texture(c, t, i);
+            seq.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, c));
             g.flush();
         }
         RenderSystem.disableScissor();
+    }
+
+    /**
+     * Textura de las letras (t de 0 arriba a 1 abajo, i = franja): un brillo estrecho arriba, como un bisel, la parte de
+     * abajo algo más oscura y un grano fino de franjas alternas, que las hace parecer talladas y no planas.
+     */
+    private static int texture(int rgb, float t, int i) {
+        float k = 1f;
+        k += 0.16f * Math.max(0f, 1f - Math.abs(t - 0.22f) / 0.1f); // brillo del bisel
+        k -= 0.12f * Mth.clamp((t - 0.72f) / 0.28f, 0f, 1f);        // abajo, en sombra
+        k += (i % 2 == 0 ? 0.025f : -0.025f);                        // grano
+        int r = Mth.clamp(Math.round(((rgb >> 16) & 255) * k), 0, 255);
+        int gg = Mth.clamp(Math.round(((rgb >> 8) & 255) * k), 0, 255);
+        int b = Mth.clamp(Math.round((rgb & 255) * k), 0, 255);
+        return (r << 16) | (gg << 8) | b;
     }
 
     /** Oro de arriba (t = 0) a abajo (t = 1); con el ratón, más claro. */

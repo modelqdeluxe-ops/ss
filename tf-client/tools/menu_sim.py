@@ -379,7 +379,7 @@ import json
 
 PRIMARY, SECONDARY, DANGER = 'primary', 'secondary', 'danger'
 GAP = 3          # entre icono y texto (interfaz)
-TEXT_UP = 4.0    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Titan One)
+TEXT_UP = 4.6    # el texto se dibuja en el centro - TEXT_UP (centrado a la vista de Titan One)
 INK, INK_HOT, OUTLINE = 0xE7E1D5, 0xFFFBF2, 0x140A04
 MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
 ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
@@ -537,7 +537,7 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
     if n > 1 and n / S > size * 1.1:
         n -= 1
     scale = n / S
-    tw = text_width(label, S)
+    tw = tracked_width(label)
     maxw = x1 - x0
     icon_w = (ICON + GAP) * scale if icon else 0
     group = tw * scale + icon_w  # el icono crece con la letra
@@ -567,11 +567,11 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         g.composite(to_float_img(im), round((gx + w / 2 - gw / 2) * S), round((cy - gh / 2) * S),
                     (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
     for dx, dy in ring:
-        draw_text(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
+        draw_tracked(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
     # letras en degradado (franjas de 2 px reales): oro en Tierras Fantásticas, blanco a gris azulado en las demás
     x0r, x1r = math.floor(gx * S) - 4, math.ceil((gx + tw * scale) * S) + 4
     y0r, y1r = math.floor((ty + GOLD_TOP * scale) * S), math.ceil((ty + GOLD_BOTTOM * scale) * S)
-    draw_text(g, label, gx, ty, S, rgb3(GOLD[2] if gold_text else WHITE[1]), 1.0, 0, scale, n)
+    draw_tracked(g, label, gx, ty, S, rgb3(GOLD[2] if gold_text else WHITE[1]), 1.0, 0, scale, n)
     bands = max(2, (y1r - y0r) // 2)
     for i in range(bands):
         b0 = y0r + (y1r - y0r) * i // bands
@@ -579,7 +579,8 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         g.scissor = (x0r, b0, x1r, b1)
         t = (i + 0.5) / bands
         c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xF6F1E6, 0.45 * e) if active else 0x9A9AA6)
-        draw_text(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
+        c = texture(c, t, i)
+        draw_tracked(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
     if shine is not None:
         k = math.sin(shine * math.pi)
         band = max(6, (x1r - x0r) // 5)
@@ -587,8 +588,33 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
         for j in range(3):
             inset = j * band // 6
             g.scissor = (bx + inset, y0r, bx + band - inset, y1r)
-            draw_text(g, label, gx, ty, S, (255, 255, 246), 0.35 * k, 0, scale, n)
+            draw_tracked(g, label, gx, ty, S, (255, 255, 246), 0.35 * k, 0, scale, n)
     g.scissor = None
+
+
+TRACKING = 0.45  # letras del menú un poco más juntas (TFMenuButton.TRACKING)
+
+
+def tracked_width(label):
+    """TFMenuButton.Tracked.width: la suma de cada letra menos TRACKING entre cada dos."""
+    w = sum(font_os(64).getlength(c) / 64 - (0 if c == ' ' else TRACKING) for c in label)
+    return max(0.0, w + (TRACKING if label and label[-1] != ' ' else 0))
+
+
+def draw_tracked(g, label, gx, gy, S, rgb, alpha=1.0, dy_real=0, scale=1.0, os_=None):
+    """TFMenuButton.Tracked.draw: letra a letra."""
+    x = 0.0
+    for c in label:
+        draw_text(g, c, gx + x * scale, gy, S, rgb, alpha, dy_real, scale, os_)
+        x += font_os(64).getlength(c) / 64 - (0 if c == ' ' else TRACKING)
+
+
+def texture(rgb, t, i):
+    """TFMenuButton.texture: brillo de bisel arriba, sombra abajo y grano fino."""
+    k = 1.0 + 0.16 * max(0.0, 1 - abs(t - 0.22) / 0.1) - 0.12 * min(1.0, max(0.0, (t - 0.72) / 0.28))
+    k += 0.025 if i % 2 == 0 else -0.025
+    r, g, b = (rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255
+    return (min(255, max(0, round(r * k))) << 16) | (min(255, max(0, round(g * k))) << 8) | min(255, max(0, round(b * k)))
 
 
 def ring_offsets(ro):
@@ -765,7 +791,7 @@ def layout(w, h, S=4, fbw=None):
             side = (text[0] - body[0]) * k
             fills = sum(f[1] - f[0] for f in P[i]['fills'])
             min_w = ((body[2] - body[0]) - fills * 0.75) * k
-            need.append(max(min_w, (text_width(label) + (ICON + GAP if icon else 0)) * sc + 2 * (side + PAD * hs[i])))
+            need.append(max(min_w, (tracked_width(label) + (ICON + GAP if icon else 0)) * sc + 2 * (side + PAD * hs[i])))
         widths = [0.0] * 8
         for grp in GROUPS:
             for i in grp:
