@@ -10,6 +10,14 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.53 (12 oct)** — el dueño: «Mundo local pegado a Tierras, mira el espaciado vertical»; «las flechas
+> son una mierda, solo que salten partículas al acercarme al borde». Menú: el hueco vertical se mide entre lo que se
+> VE de cada fila (gemas y tréboles incluidos: `vis` en menu_main.json) y es el mismo en todas (`VIS_GAP` 30 de la
+> lámina); las filas se apilan con la escala real de cada placa y lo que no cae en píxel de interfaz se corrige al
+> dibujar (`SHIFT_Y`). Simulador: huecos iguales ±1 px real. Protecciones: fuera las flechas; a ≤4 bloques de un lado
+> saltan **chispitas** sueltas del color de la zona alrededor del jugador (±2,5 bloques, de los pies a +2,2), que suben
+> un poco y se apagan en 10–15 ticks; 4 cada 2 ticks como mucho (menos lejos y con partículas reducidas/mínimas).
+
 > **TF Client 1.3.52 (11 oct)** — el dueño: «¿eso es simétrico? mira las gemas», «botones pegados, sigue un milímetro
 > asimétrico de punta a punta». Simetría exacta:
 > - `gen_menu_buttons.py`: cada placa es su mitad izquierda + su reflejo (eje en la gema del centro); la lámina original
@@ -1734,7 +1742,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.52)
+## 5. El mod (TF Client 1.3.53)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

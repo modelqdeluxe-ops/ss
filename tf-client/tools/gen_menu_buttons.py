@@ -134,6 +134,12 @@ def recolor(sprite, rgb):
     return a
 
 
+def vis_of(sprite, body):
+    """Arriba y abajo de todo lo que se ve de la placa (gemas y tréboles incluidos): para separar las filas por igual."""
+    rows = np.where((sprite[..., 3] > 128).any(1))[0]
+    return [int(rows.min()), int(rows.max()) + 1]
+
+
 def body_of(sprite):
     """Cuerpo de la placa: el rectángulo del marco dorado (filas y columnas con mucho oro)."""
     r, g, b, al = (sprite[..., i] for i in range(4))
@@ -225,6 +231,7 @@ def menu(path):
             'lights': lights,
             'layout': [body[0] + x0, body[1] + y0, body[2] + x0, body[3] + y0],
             'tint': tint,
+            'vis': vis_of(s, body),
         }
     # Filas simétricas en espejo: Opciones es Salir teñido de gris y WhatsApp es Discord teñido de verde (mismo dibujo,
     # mismos tréboles), con su color original de la lámina
@@ -235,6 +242,7 @@ def menu(path):
         b0 = info[src]['body']
         info[dst]['layout'] = [keep[0], keep[1], keep[0] + b0[2] - b0[0], keep[1] + b0[3] - b0[1]]
         info[dst]['tint'] = '%02X%02X%02X' % rgb
+        info[dst]['vis'] = info[src]['vis']
     atlas, pos = pack(sprites)
     for name, (px, py) in pos.items():
         h, w = sprites[name].shape[:2]
@@ -246,7 +254,7 @@ def menu(path):
     data = {'atlas': [atlas.shape[1], atlas.shape[0]],
             'composition': {'top': min(tops), 'bottom': max(bottoms),
                             'center': round((info['tf']['layout'][0] + info['tf']['layout'][2]) / 2)},
-            'plates': {k: {f: info[k][f] for f in ('uv', 'body', 'text', 'fills', 'sparks', 'lights', 'layout', 'tint')}
+            'plates': {k: {f: info[k][f] for f in ('uv', 'body', 'text', 'fills', 'sparks', 'lights', 'layout', 'tint', 'vis')}
                        for k in MENU}}
     with open(os.path.join(GUI, 'menu_main.json'), 'w') as f:
         json.dump(data, f, indent=1)

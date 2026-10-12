@@ -34,6 +34,8 @@ public final class TFMenuPlates {
         final float[][] sparks, lights;
         /** El color de la placa (RGB): oscurecido, el contorno de sus letras blancas. */
         final int tint;
+        /** Arriba y abajo de todo lo que se ve de la placa (gemas y tréboles incluidos), en y de la placa. */
+        final float[] vis;
 
         Plate(JsonObject o) {
             int[] uv = ints(o.getAsJsonArray("uv"));
@@ -45,6 +47,7 @@ public final class TFMenuPlates {
             sparks = floats2(o.getAsJsonArray("sparks"));
             lights = floats2(o.getAsJsonArray("lights"));
             tint = o.has("tint") ? Integer.parseInt(o.get("tint").getAsString(), 16) : 0x806040;
+            vis = o.has("vis") ? floats(o.getAsJsonArray("vis")) : new float[] {0f, h};
         }
 
         public float bodyW() { return body[2] - body[0]; }

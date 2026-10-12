@@ -57,15 +57,15 @@ public class TFMenuButton extends Button {
     /** Filas de la composición (índices de MAIN) y grupos de botones del mismo ancho (simetría en espejo). */
     private static final int[][] ROWS = {{0}, {1}, {2}, {3, 4}, {5, 6, 7}};
     private static final int[][] GROUPS = {{0}, {1, 2}, {3, 4}, {5, 7}, {6}};
-    /** Separación entre filas en la lámina: lo justo para que las gemas de una no toquen la siguiente. */
-    private static final float[] GAPS = {96f, 96f, 72f, 80f};
+    /** Hueco entre lo que se ve de una fila (gemas incluidas) y lo de la siguiente, en píxeles de la lámina: igual en todas. */
+    private static final float VIS_GAP = 30f;
     /** Aire a cada lado del texto (en altos de la placa), entre botones de una fila, y el ancho mínimo de los azules. */
     private static final float PAD = 0.4f, BLUE_MIN = 0.62f;
     private static final int GROUP_GAP = 14;
     /** Escala máxima de la lámina (interfaz por píxel): Mundo local de unos 21 de alto. */
     private static final float K_MAX = 0.16f;
     private static final float LOGO_FRAC = 0.44f;
-    private static final int BOTTOM_MARGIN = 6;
+    private static final int BOTTOM_MARGIN = 10;
     /** Alto de las mayúsculas de Titan One a escala 1 (interfaz) y cuánto del hueco interior ocupan como mucho. */
     private static final float CAP_HEIGHT = 6.2f, CAP_FILL = 0.5f, TF_CAP_FILL = 0.52f, INTERIOR = 0.7f;
     /**
@@ -75,6 +75,8 @@ public class TFMenuButton extends Button {
     private static float mainTextSize = 1f, tfTextSize = 1f;
     /** Lo que se corre el dibujo de las placas para quedar en el centro exacto de la pantalla (0 o ±0,5). */
     private static float mainShiftX;
+    /** Lo que se corre cada placa hacia abajo (fracción de píxel de interfaz) para quedar en su sitio exacto. */
+    private static final java.util.Map<String, Float> SHIFT_Y = new java.util.HashMap<>();
 
     /** Separación entre icono y texto, en píxeles de interfaz. */
     private static final int GAP = 3;
@@ -123,8 +125,8 @@ public class TFMenuButton extends Button {
 
     /**
      * Rectángulos (x, y, ancho, alto) del cuerpo de las 8 placas del menú principal y al final {arriba de la
-     * composición}. En alto, la lámina con las filas separadas lo justo para que las gemas de una no toquen la siguiente
-     * (GAPS), escalada para caber debajo del emblema (que se queda al menos LOGO_FRAC del alto). En ancho, cada botón a
+     * composición}. En alto, las filas con el mismo hueco entre lo que se ve de cada una, gemas incluidas (VIS_GAP),
+     * escaladas para caber debajo del emblema (que se queda al menos LOGO_FRAC del alto). En ancho, cada botón a
      * la medida de su texto (con aire a los lados, PAD) y los de un mismo grupo iguales: simetría en espejo (Opciones y
      * Salir iguales; WhatsApp y Discord iguales, Web en medio). Cada fila, centrada. Null si no hay textura.
      */
@@ -136,26 +138,45 @@ public class TFMenuButton extends Button {
         TFMenuPlates.Plate[] p = new TFMenuPlates.Plate[MAIN.length];
         for (int i = 0; i < MAIN.length; i++) p[i] = TFMenuPlates.get(MAIN[i]);
         // alto: filas una debajo de otra, con su separación
+        // rowY: arriba del cuerpo de cada placa; entre lo que se ve de una fila (gemas incluidas) y lo de la siguiente,
+        // siempre el mismo hueco (VIS_GAP)
         float[] rowY = new float[MAIN.length];
-        float ny = p[0].layout[1], lastBottom = 0f;
+        float ny = 0f, firstTop = 0f, lastBottom = 0f;
         for (int r = 0; r < ROWS.length; r++) {
-            float rt = Float.MAX_VALUE, rb = -Float.MAX_VALUE;
+            float above = 0f, below = 0f; // lo que asoma por encima y por debajo del arriba del cuerpo
             for (int i : ROWS[r]) {
-                rt = Math.min(rt, p[i].layout[1]);
-                rb = Math.max(rb, p[i].layout[3]);
+                above = Math.max(above, p[i].body[1] - p[i].vis[0]);
+                below = Math.max(below, p[i].vis[1] - p[i].body[1]);
             }
-            for (int i : ROWS[r]) rowY[i] = ny + p[i].layout[1] - rt;
-            lastBottom = rb;
-            ny += rb - rt + (r < GAPS.length ? GAPS[r] : 0f);
+            float bodyTop = r == 0 ? above : ny + above;
+            if (r == 0) firstTop = 0f;
+            for (int i : ROWS[r]) rowY[i] = bodyTop;
+            lastBottom = bodyTop + below;
+            ny = lastBottom + VIS_GAP;
         }
-        float compH = ny + (comp[1] - lastBottom) - comp[0];
+        float compH = lastBottom - firstTop;
         float k = Math.min(K_MAX, (height - BOTTOM_MARGIN - Math.round(height * LOGO_FRAC) - 6) / compH);
         float free = height - BOTTOM_MARGIN - compH * k;
         float top = free - Math.max(0f, (free - 186f) / 2f); // lo que sobre, repartido entre emblema y botones
+        // cada placa con su alto entero y su escala real (alto / alto del cuerpo); las filas se apilan con esas escalas
+        // para que el hueco visible sea el mismo en todas, en píxeles reales (lo que no cae en píxel de interfaz se
+        // corrige al dibujar: shiftY)
         int[] ys = new int[MAIN.length], hs = new int[MAIN.length];
-        for (int i = 0; i < MAIN.length; i++) {
-            ys[i] = Math.round(top + (rowY[i] - comp[0]) * k);
-            hs[i] = Math.round(top + (rowY[i] + p[i].layout[3] - p[i].layout[1] - comp[0]) * k) - ys[i];
+        for (int i = 0; i < MAIN.length; i++) hs[i] = Math.max(1, Math.round(p[i].bodyH() * k));
+        float cursor = top, gap = Math.round(VIS_GAP * k * s) / (float) s;
+        for (int[] row : ROWS) {
+            float above = 0f, below = 0f;
+            for (int i : row) {
+                float ki = hs[i] / p[i].bodyH();
+                above = Math.max(above, (p[i].body[1] - p[i].vis[0]) * ki);
+                below = Math.max(below, (p[i].vis[1] - p[i].body[1]) * ki);
+            }
+            float bodyTop = Math.round((cursor + above) * s) / (float) s;
+            for (int i : row) {
+                ys[i] = (int) Math.floor(bodyTop);
+                SHIFT_Y.put(MAIN[i], bodyTop - ys[i]);
+            }
+            cursor = Math.round((bodyTop + below) * s) / (float) s + gap;
         }
         // letra: la de los botones, la mayor que cabe a lo alto en todos; Tierras Fantásticas, más grande
         float size = Float.MAX_VALUE;
@@ -289,7 +310,7 @@ public class TFMenuButton extends Button {
         float grow = pressed ? 0.98f : 1f + 0.015f * e;
         float lift = pressed ? 0.5f : -0.6f * e;
         g.pose().pushPose();
-        g.pose().translate(cx + mainShiftX, cy + lift, 0f);
+        g.pose().translate(cx + mainShiftX, cy + lift + SHIFT_Y.getOrDefault(plate, 0f), 0f);
         g.pose().scale(grow, grow, 1f);
         g.pose().translate(-cx, -cy, 0f);
 
