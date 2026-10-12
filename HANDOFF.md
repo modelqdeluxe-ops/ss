@@ -10,6 +10,27 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.55 (12 oct)** — pedidos del dueño:
+> - **Chispitas de protección**: «muy grandes y muy rápidas» → 0,022 (grandes 0,032), salen a 0,042–0,06/tick y frenan
+>   (`friction` 0,96 en `MagicDustParticle.spark`), viven 28–38 ticks con entrada 4 y salida 10: flotan ~1 bloque.
+> - **`/tf claim give <jugadores> <nivel> [cantidad]`** de vuelta (se perdió en la 1.3.33 al dejar solo /tf web y
+>   /tf reload; `ClaimCommands.command()` ya no se registraba). Operadores (nivel 2). También en `/tf web claims give`.
+>   Código: `ClaimCommands.giveCommand()`.
+> - **Letras del menú**: fuera la textura por franjas con tijera (`gradientLetters`/`texture`): en el juego se veía
+>   «toda la letra oscura y solo el pie claro» y pixelada. Ahora color liso (`TFMenuButton.fill`: oro 0xF0CF7E que
+>   respira hacia 0xFBE7B4 en Tierras Fantásticas, crema 0xEAE4D8 en las demás) con el mismo contorno fino. Sim igual.
+> - **Pad rediseñado** (todas las apps menos Música; Comunidad va con los emojis, abajo): `PadSkin.java` (cabecera por
+>   app con color, eslogan, rayas que se mueven y brillos; fichas con luz, sombra y elevación; seleccionada con borde
+>   de oro que late; cabeceras grandes con rayos; filas con franja de color; botones que suben/bajan; barras con
+>   reflejo; vacíos con ilustración). Fondo del pad animado sin quitar el azul: luces desenfocadas que suben, un haz
+>   cada ~13 s, destellos y trama de cristal (el logo TF se repinta encima con `logo_over.png`). Todo respeta
+>   `PadSettings.animations`. Efectos: galería de kills con la **imagen real de cada efecto** (`textures/gui/pad/fx/
+>   kill_<id>.png`, 50) y clases de skill con su imagen (`class_<id>.png`, 39), de `tools/pad/fx_images.py` (lee
+>   `tierras-fantasticas/config/vfx.json` y `skills.json`); `PadView` filas/celdas llevan un id de imagen opcional
+>   (**cambió el formato de red de PadView**). Ranking con podio, Monedero/Mi Rango con cabecera grande, Ajustes con
+>   interruptores y deslizador. Texturas del skin: `tools/pad/build_skin.py` (build_pad.py lo llama). Simulador al día
+>   (`tools/pad/sim/skin.py`). Solo visto en el simulador: **probar en el juego**.
+
 > **Emojis de Comunidad (pad) — el dueño: «auméntalos, emojis de Discord vanilla, muchos, hasta animados»**:
 > - **1.897 emojis de Discord** (Twemoji 15.1, los mismos de Discord; gráficos **CC BY 4.0**) + **95 animados**
 >   (Noto Animated Emoji de Google, **CC BY 4.0**), en atlas: `assets/tfclient/textures/gui/emoji/` (`static_*.png`,
@@ -1785,7 +1806,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.54)
+## 5. El mod (TF Client 1.3.55)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
