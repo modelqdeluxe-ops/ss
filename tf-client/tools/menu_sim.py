@@ -568,28 +568,19 @@ def paint_content(g, S, x0, x1, cy, label, icon, kind, size, e, active=True, shi
                     (1, 0.72, 0.25, 0.27 + 0.18 * e), additive=True)
     for dx, dy in ring:
         draw_tracked(g, label, gx + dx / S, ty + dy / S, S, edge, 1.0, 0, scale, n)
-    # letras en degradado (franjas de 2 px reales): oro en Tierras Fantásticas, blanco a gris azulado en las demás
-    x0r, x1r = math.floor(gx * S) - 4, math.ceil((gx + tw * scale) * S) + 4
-    y0r, y1r = math.floor((ty + GOLD_TOP * scale) * S), math.ceil((ty + GOLD_BOTTOM * scale) * S)
-    draw_tracked(g, label, gx, ty, S, rgb3(GOLD[2] if gold_text else WHITE[1]), 1.0, 0, scale, n)
-    bands = max(2, (y1r - y0r) // 2)
-    for i in range(bands):
-        b0 = y0r + (y1r - y0r) * i // bands
-        b1 = y0r + (y1r - y0r) * (i + 1) // bands
-        g.scissor = (x0r, b0, x1r, b1)
-        t = (i + 0.5) / bands
-        c = gold(t, e) if gold_text else (mix_rgb(ramp(WHITE, t), 0xF6F1E6, 0.45 * e) if active else 0x9A9AA6)
-        c = texture(c, t, i)
-        draw_tracked(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
-    if shine is not None:
-        k = math.sin(shine * math.pi)
-        band = max(6, (x1r - x0r) // 5)
-        bx = round(x0r - band + shine * (x1r - x0r + band))
-        for j in range(3):
-            inset = j * band // 6
-            g.scissor = (bx + inset, y0r, bx + band - inset, y1r)
-            draw_tracked(g, label, gx, ty, S, (255, 255, 246), 0.35 * k, 0, scale, n)
-    g.scissor = None
+    # letras de un color liso (sin franjas ni sombreado): oro en Tierras Fantásticas, blanco crema en las demás
+    c = fill(gold_text, e) if active else 0x9A9AA6
+    draw_tracked(g, label, gx, ty, S, rgb3(c), 1.0, 0, scale, n)
+
+
+GOLD_FILL, GOLD_HOT, WHITE_FILL, WHITE_HOT = 0xF0CF7E, 0xFBE7B4, 0xEAE4D8, 0xFFFAF0
+
+
+def fill(gold_text, e, breath=0.5):
+    """TFMenuButton.fill: color liso de las letras (el oro respira; breath de 0 a 1)."""
+    if not gold_text:
+        return mix_rgb(WHITE_FILL, WHITE_HOT, e)
+    return mix_rgb(GOLD_FILL, GOLD_HOT, min(1.0, 0.25 * breath + e))
 
 
 TRACKING = 0.45  # letras del menú un poco más juntas (TFMenuButton.TRACKING)

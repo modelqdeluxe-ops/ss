@@ -99,6 +99,9 @@ public final class TFCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("tf")
                 .then(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload))
+                // /tf claim give <jugadores> <id> [cantidad]: dar protecciones a mano
+                .then(Commands.literal("claim").requires(s -> s.hasPermission(2))
+                        .then(net.tierrasfantasticas.tfclient.claims.command.ClaimCommands.giveCommand()))
                 .then(Commands.literal("web")
                         .requires(source -> source.hasPermission(2))
                         .then(TFCoinShop.command())

@@ -9,6 +9,7 @@ import net.tierrasfantasticas.tfclient.claims.data.ClaimTier;
 import net.tierrasfantasticas.tfclient.claims.gui.ClaimMenuHandler;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -287,7 +288,24 @@ public final class ClaimCommands {
         return 1;
     }
 
+    /**
+     * give &lt;jugadores&gt; &lt;id&gt; [cantidad]: da piedras de protección del nivel pedido (solo operadores). Va en
+     * /tf claim give y en /tf web claims give.
+     */
+    public static LiteralArgumentBuilder<CommandSourceStack> giveCommand() {
+        return Commands.literal("give").requires(source -> source.hasPermission(2))
+                .then(Commands.argument("jugador", EntityArgument.players())
+                        .then(Commands.argument("id", StringArgumentType.word()).suggests(CLAIMSTONE_IDS)
+                                .executes(ctx -> give(ctx, 1))
+                                .then(Commands.argument("cantidad", IntegerArgumentType.integer(1, 64))
+                                        .executes(ctx -> give(ctx, IntegerArgumentType.getInteger(ctx, "cantidad"))))));
+    }
+
     private static int give(CommandContext<CommandSourceStack> commandcontext) throws CommandSyntaxException {
+        return give(commandcontext, 1);
+    }
+
+    private static int give(CommandContext<CommandSourceStack> commandcontext, int amount) throws CommandSyntaxException {
         String s = StringArgumentType.getString(commandcontext, (String)"id");
         ClaimTier claimtier = ClaimTier.byId(s);
         if (claimtier == null) {
@@ -296,13 +314,14 @@ public final class ClaimCommands {
         }
         Collection<ServerPlayer> collection = EntityArgument.getPlayers(commandcontext, (String)"jugador");
         for (ServerPlayer serverplayer : collection) {
-            ItemStack itemstack = ClaimBlocks.createTierItem(claimtier, 1);
+            ItemStack itemstack = ClaimBlocks.createTierItem(claimtier, amount);
             if (!serverplayer.getInventory().add(itemstack)) {
                 serverplayer.drop(itemstack, false);
             }
-            serverplayer.displayClientMessage((Component)Component.literal((String)("[+] Recibiste Protecci\u00f3n " + claimtier.label())).withStyle(ChatFormatting.GREEN), false);
+            serverplayer.displayClientMessage((Component)Component.literal((String)("[+] Recibiste " + (amount > 1 ? amount + "x " : "") + "Protecci\u00f3n " + claimtier.label())).withStyle(ChatFormatting.GREEN), false);
         }
-        ((CommandSourceStack)commandcontext.getSource()).sendSuccess(() -> Component.literal((String)("\u2714 Protecci\u00f3n " + claimtier.label() + " entregada a " + collection.size() + " jugador(es).")).withStyle(ChatFormatting.GREEN), true);
+        String what = (amount > 1 ? amount + "x " : "") + "Protecci\u00f3n " + claimtier.label();
+        ((CommandSourceStack)commandcontext.getSource()).sendSuccess(() -> Component.literal((String)("\u2714 " + what + " entregada a " + collection.size() + " jugador(es).")).withStyle(ChatFormatting.GREEN), true);
         return collection.size();
     }
 

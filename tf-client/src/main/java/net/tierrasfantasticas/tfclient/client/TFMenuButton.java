@@ -88,11 +88,10 @@ public class TFMenuButton extends Button {
     private static final long SPARK_CYCLE = 5200L, SPARK_MS = 900L;
     /** Mismo color en todos los botones; con el ratón, un poco más claro (la placa es la que se ilumina). */
     private static final int INK = 0xE7E1D5, INK_HOT = 0xFFFBF2, OUTLINE = 0x140A04;
-    /** Oro de las letras de Tierras Fantásticas, de arriba abajo, y alto de las mayúsculas en la celda (escala 1). */
-    private static final int[] GOLD = {0xF9EBC4, 0xF4DA96, 0xE8C06A, 0xD8A955, 0xCB9C4E};
-    private static final float GOLD_TOP = 0f, GOLD_BOTTOM = 6.7f;
-    /** El degradado de las demás letras del menú, de arriba abajo. */
-    private static final int[] WHITE = {0xE6E0D3, 0xD9D2C3, 0xBDB5A6};
+    /** Oro liso de las letras de Tierras Fantásticas y el de con el ratón encima (o al respirar). */
+    private static final int GOLD = 0xF0CF7E, GOLD_HOT = 0xFBE7B4;
+    /** Blanco crema liso de las demás letras del menú y el de con el ratón encima. */
+    private static final int WHITE = 0xEAE4D8, WHITE_HOT = 0xFFFAF0;
     /** Contorno de las letras blancas: el color de su placa, oscurecido (no negro: menos contraste con el fondo). */
     private static final float OUTLINE_SHADE = 0.55f, GOLD_OUTLINE_SHADE = 0.72f;
     /** Las letras de oro «respiran»: se aclaran y oscurecen muy despacio (un ciclo cada GOLD_BREATH_MS). */
@@ -443,8 +442,7 @@ public class TFMenuButton extends Button {
         float ty = snap(centerY - MENU_TEXT_UP * scale, s);
         if (goldText) goldGlow(g, gx, centerY, textW * scale, scale, e, alpha);
         for (int[] d : ring) tracked.draw(g, font, gx + d[0] / (float) s, ty + d[1] / (float) s, scale, TFMenuPaint.argb(alpha, edge));
-        if (this.active) gradientLetters(g, font, tracked, gx, ty, scale, textW, goldText, e, alpha);
-        else tracked.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, ink));
+        tracked.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, this.active ? fill(goldText, e) : ink));
     }
 
     /** Un texto dibujado letra a letra con las letras un poco más juntas (TRACKING píxeles de glifo menos entre cada dos). */
@@ -537,63 +535,13 @@ public class TFMenuButton extends Button {
     }
 
     /**
-     * Letras en degradado (franjas de 2 píxeles reales con tijera): de oro pálido a ámbar en Tierras Fantásticas, con un
-     * brillo que las cruza cada pocos segundos (y al pasar el ratón); de blanco a gris azulado en las demás.
+     * Color liso de las letras del menú (sin franjas ni sombreado): oro cálido en Tierras Fantásticas, que respira muy
+     * despacio, y blanco crema en las demás; con el ratón encima, las dos un poco más claras.
      */
-    private void gradientLetters(GuiGraphics g, Font font, Tracked seq, float gx, float ty, float scale, float textW,
-                                 boolean goldText, float e, float alpha) {
-        com.mojang.blaze3d.platform.Window win = Minecraft.getInstance().getWindow();
-        double gs = win.getGuiScale();
-        org.joml.Matrix4f m = g.pose().last().pose();
-        org.joml.Vector3f a = m.transformPosition(gx, ty + GOLD_TOP * scale, 0f, new org.joml.Vector3f());
-        org.joml.Vector3f b = m.transformPosition(gx + textW * scale, ty + GOLD_BOTTOM * scale, 0f, new org.joml.Vector3f());
-        int x0 = (int) Math.floor(a.x * gs) - 4, x1 = (int) Math.ceil(b.x * gs) + 4;
-        int y0 = (int) Math.floor(a.y * gs), y1 = (int) Math.ceil(b.y * gs);
-        int fbH = win.getHeight();
-        // Fuera de la franja (por si algún trazo se sale): el color del medio
-        seq.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, goldText ? GOLD[2] : WHITE[1]));
-        g.flush();
-        int bands = Math.max(2, (y1 - y0) / 2);
-        // el oro respira despacio (se aclara un poco y vuelve), sin rayas ni destellos
-        float breath = goldText ? 0.12f * (0.5f + 0.5f * Mth.sin(Util.getMillis() / GOLD_BREATH_MS * Mth.TWO_PI)) : 0f;
-        for (int i = 0; i < bands; i++) {
-            int by0 = y0 + (y1 - y0) * i / bands, by1 = y0 + (y1 - y0) * (i + 1) / bands;
-            if (by1 <= by0) continue;
-            RenderSystem.enableScissor(x0, fbH - by1, x1 - x0, by1 - by0);
-            float t = (i + 0.5f) / bands;
-            int c = goldText ? gold(t, Math.min(1f, e + breath)) : TFMenuPaint.lerp(0xFF000000 | ramp(WHITE, t), 0xFFF6F1E6, 0.45f * e) & 0xFFFFFF;
-            c = texture(c, t, i);
-            seq.draw(g, font, gx, ty, scale, TFMenuPaint.argb(alpha, c));
-            g.flush();
-        }
-        RenderSystem.disableScissor();
-    }
-
-    /**
-     * Textura de las letras (t de 0 arriba a 1 abajo, i = franja): un brillo estrecho arriba, como un bisel, la parte de
-     * abajo algo más oscura y un grano fino de franjas alternas, que las hace parecer talladas y no planas.
-     */
-    private static int texture(int rgb, float t, int i) {
-        float k = 1f;
-        k += 0.16f * Math.max(0f, 1f - Math.abs(t - 0.22f) / 0.1f); // brillo del bisel
-        k -= 0.12f * Mth.clamp((t - 0.72f) / 0.28f, 0f, 1f);        // abajo, en sombra
-        k += (i % 2 == 0 ? 0.025f : -0.025f);                        // grano
-        int r = Mth.clamp(Math.round(((rgb >> 16) & 255) * k), 0, 255);
-        int gg = Mth.clamp(Math.round(((rgb >> 8) & 255) * k), 0, 255);
-        int b = Mth.clamp(Math.round((rgb & 255) * k), 0, 255);
-        return (r << 16) | (gg << 8) | b;
-    }
-
-    /** Oro de arriba (t = 0) a abajo (t = 1); con el ratón, más claro. */
-    private static int gold(float t, float e) {
-        return TFMenuPaint.lerp(0xFF000000 | ramp(GOLD, t), 0xFFFBEFCF, 0.35f * e) & 0xFFFFFF;
-    }
-
-    /** Color de una escala de colores (de arriba abajo) en t de 0 a 1. */
-    private static int ramp(int[] cols, float t) {
-        float p = Mth.clamp(t, 0f, 1f) * (cols.length - 1);
-        int i = Math.min(cols.length - 2, (int) p);
-        return TFMenuPaint.lerp(0xFF000000 | cols[i], 0xFF000000 | cols[i + 1], p - i) & 0xFFFFFF;
+    private static int fill(boolean goldText, float e) {
+        if (!goldText) return TFMenuPaint.lerp(0xFF000000 | WHITE, 0xFF000000 | WHITE_HOT, e) & 0xFFFFFF;
+        float breath = 0.5f + 0.5f * Mth.sin(Util.getMillis() / GOLD_BREATH_MS * Mth.TWO_PI);
+        return TFMenuPaint.lerp(0xFF000000 | GOLD, 0xFF000000 | GOLD_HOT, Math.min(1f, 0.25f * breath + e)) & 0xFFFFFF;
     }
 
     private static void drawText(GuiGraphics g, Font font, FormattedCharSequence text, float x, float y, float scale, int argb) {

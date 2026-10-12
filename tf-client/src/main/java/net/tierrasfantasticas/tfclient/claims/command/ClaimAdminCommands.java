@@ -36,6 +36,7 @@ public final class ClaimAdminCommands {
         literalargumentbuilder.then(Commands.literal((String)"list").executes(ClaimAdminCommands::list));
         literalargumentbuilder.then(Commands.literal((String)"stats").executes(ClaimAdminCommands::stats));
         literalargumentbuilder.then(Commands.literal((String)"reload").executes(ClaimAdminCommands::reload));
+        literalargumentbuilder.then(ClaimCommands.giveCommand());
         literalargumentbuilder.then(Commands.literal((String)"globalflag").then(Commands.argument((String)"flag", (ArgumentType)StringArgumentType.word()).suggests(GLOBAL_FLAGS).then(Commands.argument((String)"value", (ArgumentType)StringArgumentType.word()).suggests(ON_OFF).executes(ClaimAdminCommands::globalFlag))));
         return literalargumentbuilder;
     }
