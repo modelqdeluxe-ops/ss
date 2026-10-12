@@ -331,11 +331,6 @@ def heart(on=True):
     return outline(framed)
 
 
-def emoji(kind):
-    """Reacciones de Comunidad: los emojis de Noto Color Emoji a 96x96 (los hace make_emojis.py en emoji/)."""
-    return Image.open(os.path.join(HERE, 'emoji', kind + '.png')).convert('RGBA')
-
-
 def normalize(im, box=30):
     """Todos los iconos igual (1.3.38): caben en 30x30 (1 px de aire hasta el engaste de la ficha por cada lado, nunca
     pegados a él) y van centrados por su caja. Si uno mide más, se le quitan filas/columnas repetidas (las que son
@@ -374,8 +369,7 @@ def build():
              'coin_s.png': coin_small()}
     files['coin_green.png'] = verde(files['coin.png'])
     files['coin_green_s.png'] = verde(files['coin_s.png'])
-    for k in ('risa', 'wow', 'triste', 'fuego', 'top'):
-        files[f'emo_{k}.png'] = emoji(k)
+    # los emojis de Comunidad van aparte, en textures/gui/emoji (make_emojis.py)
     for key, _ in APPS:
         files[f'icon_{key}.png'] = normalize(DRAW[key]().image())
     files['icon_admin.png'] = normalize(iconos2.admin().image())

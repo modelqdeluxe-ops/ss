@@ -10,6 +10,22 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **Emojis de Comunidad (pad) — el dueño: «auméntalos, emojis de Discord vanilla, muchos, hasta animados»**:
+> - **1.897 emojis de Discord** (Twemoji 15.1, los mismos de Discord; gráficos **CC BY 4.0**) + **95 animados**
+>   (Noto Animated Emoji de Google, **CC BY 4.0**), en atlas: `assets/tfclient/textures/gui/emoji/` (`static_*.png`,
+>   `anim_*.png`, PNG de paleta, ~2,2 MB en total) + `index.json` (id = atajo de Discord, atajos en inglés y español,
+>   categoría, nombre en español, celda, fotogramas). Atribución: `LICENSE-twemoji.txt`, `LICENSE-noto-animated.txt`,
+>   `CREDITS.txt` en esa carpeta (hay que mantenerlos). Se rehacen con `python3 tools/pad/make_emojis.py` (baja a
+>   `tf-client/build/emoji-src`, fuera de git; `--offline` reusa lo bajado). Atajos en español a mano:
+>   `tools/pad/emoji/alias_es.json`; lista de animados: `tools/pad/emoji/animated.json`.
+> - Código: `PadEmojis` (índice, búsqueda, validación; también en el servidor), `PadEmojiDraw` (dibujo nítido por hoja
+>   reducida en segundo plano, animados por la hora, texto con `:atajo:`/emoji tal cual), `PadEmojiPicker` (selector
+>   tipo Discord: buscador, pestañas por categoría, Frecuentes en `tfclient/emojis_frecuentes.json`, pie con el
+>   emoji, Mayús+clic = sigue abierto). Reacciones con **cualquier** emoji, varias por jugador, 20 distintas por foto;
+>   el servidor valida los ids. Las reacciones viejas (risa/wow/triste/fuego/top) se pasan solas a joy/open_mouth/cry/
+>   fire/thumbsup al cargar `comunidad.json`. **Cambió el formato de red de Feed/Act**: cliente y servidor juntos.
+>   Fuera `emo_*.png` y `tools/pad/emoji/*.png` viejos. Simulador: `tools/pad/sim/comunidad.py` (lo llama pages.py).
+
 > **Web (12 oct)**: el despliegue de Cloudflare del PR #77 falló (el código compila: `npx wrangler deploy --dry-run`
 > en una copia limpia de main va bien, 5.726 archivos); se reintenta con un push nuevo. Si vuelve a fallar, mirar el
 > registro en el panel de Cloudflare (Workers › tierras-fantasticas › Builds). Ojo con el tamaño del repo (~1,8 GB por

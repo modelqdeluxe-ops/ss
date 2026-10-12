@@ -87,10 +87,11 @@ public final class PadCommunityServer {
             }
             root = r == null ? new JsonObject() : r;
             if (!root.has("publicaciones") || !root.get("publicaciones").isJsonArray()) root.add("publicaciones", new JsonArray());
+            dirty = false;
+            migrateReactions();
             UPLOADS.clear();
             RATE.clear();
             LIKE_TOLD.clear();
-            dirty = false;
         }
 
         @Override
@@ -154,6 +155,67 @@ public final class PadCommunityServer {
         JsonArray a = new JsonArray();
         s.forEach(a::add);
         p.add(key, a);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Reacciones: «reacciones»: {emoji: [uuid, ...]} en el orden en que se pusieron
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Emojis distintos (con alguien) de una foto. */
+    private static int kinds(JsonObject re) {
+        int n = 0;
+        for (Map.Entry<String, JsonElement> e : re.entrySet()) if (e.getValue().isJsonArray() && !e.getValue().getAsJsonArray().isEmpty()) n++;
+        return n;
+    }
+
+    /** Las reacciones de una foto para un jugador (solo emojis que existen, como mucho MAX_REACTIONS). */
+    private static List<PadCommunityNet.Reaction> reactions(JsonObject p, String me) {
+        List<PadCommunityNet.Reaction> out = new ArrayList<>();
+        JsonObject re = TFJson.obj(p, "reacciones");
+        if (re == null) return out;
+        for (Map.Entry<String, JsonElement> e : re.entrySet()) {
+            if (out.size() >= PadCommunityNet.MAX_REACTIONS) break;
+            String emoji = PadEmojis.canonical(e.getKey());
+            if (emoji == null || !e.getValue().isJsonArray()) continue;
+            Set<String> who = set(re, e.getKey());
+            if (!who.isEmpty()) out.add(new PadCommunityNet.Reaction(emoji, who.size(), who.contains(me)));
+        }
+        return out;
+    }
+
+    /**
+     * Las fotos de antes (1.3.29-1.3.55) guardaban las reacciones con su nombre viejo (risa, wow, triste, fuego, top) y
+     * una por jugador: se pasan a su emoji nuevo (joy, open_mouth, cry, fire, thumbsup) al cargar. Lo que no se conoce
+     * se deja tal cual (no se borra nada; simplemente no se enseña).
+     */
+    private static void migrateReactions() {
+        int changed = 0;
+        for (JsonElement el : posts()) {
+            if (!el.isJsonObject()) continue;
+            JsonObject p = el.getAsJsonObject();
+            if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) continue;
+            JsonObject old = p.getAsJsonObject("reacciones");
+            boolean legacy = false;
+            for (String k : old.keySet()) {
+                String c = PadEmojis.canonical(k);
+                if (c != null && !c.equals(k)) legacy = true;
+            }
+            if (!legacy) continue;
+            JsonObject now = new JsonObject();
+            for (Map.Entry<String, JsonElement> e : old.entrySet()) {
+                String c = PadEmojis.canonical(e.getKey());
+                String key = c == null ? e.getKey() : c;
+                Set<String> who = now.has(key) ? set(now, key) : new java.util.LinkedHashSet<>();
+                if (e.getValue().isJsonArray()) for (JsonElement w : e.getValue().getAsJsonArray()) who.add(w.getAsString());
+                if (!who.isEmpty()) put(now, key, who);
+            }
+            p.add("reacciones", now);
+            changed++;
+        }
+        if (changed > 0) {
+            dirty = true;
+            TFClient.LOGGER.info("Comunidad: reacciones de {} fotos pasadas a los emojis nuevos", changed);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -300,16 +362,9 @@ public final class PadCommunityServer {
             } catch (IllegalArgumentException e) {
                 continue;
             }
-            int[] reactions = new int[PadCommunityNet.REACTIONS.size()];
-            int myReaction = -1;
-            JsonObject re = TFJson.obj(p, "reacciones");
-            for (int r = 0; r < reactions.length; r++) {
-                Set<String> who = set(re, PadCommunityNet.REACTIONS.get(r));
-                reactions[r] = who.size();
-                if (who.contains(me)) myReaction = r;
-            }
+            List<PadCommunityNet.Reaction> reactions = reactions(p, me);
             out.add(new PadCommunityNet.Post(TFJson.str(p, "id", ""), author, TFJson.str(p, "nombre", "?"), TFJson.str(p, "texto", ""),
-                    TFJson.num(p, "fecha", 0), likes.size(), likes.contains(me), mine, mine || staff, reactions, myReaction));
+                    TFJson.num(p, "fecha", 0), likes.size(), likes.contains(me), mine, mine || staff, reactions));
         }
         PadCommunityNet.toPlayer(player, new PadCommunityNet.Feed(tab, pg, pages, list.size(), out));
     }
@@ -349,7 +404,7 @@ public final class PadCommunityServer {
         if (p != null) {
             String me = player.getUUID().toString();
             String author = TFJson.str(p, "autor", "");
-            // «react:risa»: la reacción va detrás de los dos puntos
+            // «react:fire»: el emoji va detrás de los dos puntos
             String action = m.action(), reaction = "";
             if (action.startsWith("react:")) {
                 reaction = action.substring(6);
@@ -382,20 +437,22 @@ public final class PadCommunityServer {
                     put(p, "likes", likes);
                     dirty = true;
                 }
-                case "react" -> { // una reacción con emoji por jugador y foto (también en las tuyas): la misma otra vez la quita
-                    int k = PadCommunityNet.REACTIONS.indexOf(reaction);
-                    if (k < 0) break;
+                case "react" -> { // cualquier emoji (validado aquí); varios por jugador, cada uno se pone o se quita (como en Discord)
+                    String emoji = PadEmojis.canonical(reaction);
+                    if (emoji == null) break;
                     if (!p.has("reacciones") || !p.get("reacciones").isJsonObject()) p.add("reacciones", new JsonObject());
                     JsonObject re = p.getAsJsonObject("reacciones");
-                    boolean had = set(re, reaction).contains(me);
-                    for (String name : PadCommunityNet.REACTIONS) {
-                        Set<String> who = set(re, name);
-                        if (who.remove(me)) put(re, name, who);
-                    }
-                    if (!had) {
-                        Set<String> who = set(re, reaction);
+                    Set<String> who = set(re, emoji);
+                    if (who.remove(me)) {
+                        if (who.isEmpty()) re.remove(emoji);
+                        else put(re, emoji, who);
+                    } else {
+                        if (who.isEmpty() && kinds(re) >= PadCommunityNet.MAX_REACTIONS) {
+                            TFPadNet.notice(player, "Esa foto ya tiene " + PadCommunityNet.MAX_REACTIONS + " emojis distintos.");
+                            break;
+                        }
                         who.add(me);
-                        put(re, reaction, who);
+                        put(re, emoji, who);
                     }
                     dirty = true;
                 }

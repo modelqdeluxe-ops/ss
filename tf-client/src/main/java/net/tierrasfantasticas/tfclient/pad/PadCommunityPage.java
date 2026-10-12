@@ -1,15 +1,21 @@
 package net.tierrasfantasticas.tfclient.pad;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 /**
  * Comunidad: la red social del servidor. Pestañas RECIENTES / POPULARES / MÍAS y, debajo, las publicaciones una
- * debajo de otra (cada una en su tarjeta: la foto, quién la subió, cuándo, el texto, REACCIONAR con las reacciones que
- * ya tiene y el botón del corazón para dar o quitar like, también en las tuyas); se baja con la rueda o arrastrando. Clic en una foto para verla en grande. BORRAR
- * (las tuyas, o el staff) y DENUNCIAR (las de otros). «+ FOTO» lleva a la Cámara.
+ * debajo de otra (cada una en su tarjeta: la foto, quién la subió, cuándo, el texto con sus emojis, REACCIONAR con las
+ * reacciones que ya tiene y el botón del corazón para dar o quitar like, también en las tuyas); se baja con la rueda o
+ * arrastrando. Clic en una foto para verla en grande. BORRAR (las tuyas, o el staff) y DENUNCIAR (las de otros).
+ * «+ FOTO» lleva a la Cámara.
+ * <p>Reacciones como en Discord: REACCIONAR abre el selector de emojis ({@link PadEmojiPicker}: casi 2.000 de Discord y
+ * casi 100 animados, con buscador y categorías) y se puede reaccionar con varios; las etiquetas de cada foto (emoji y
+ * cuántos) se pulsan para sumarte o quitarte de esa reacción. Las tuyas, en oro.
  */
 final class PadCommunityPage extends PadPage {
     private static final String[][] TABS = {{"recientes", "RECIENTES"}, {"populares", "POPULARES"}, {"mias", "MÍAS"}};
@@ -20,16 +26,17 @@ final class PadCommunityPage extends PadPage {
     private String confirmId = "";
     /** Zonas de clic de lo dibujado en el último fotograma (la primera que contiene el ratón se lleva el clic). */
     private final List<Hit> hits = new ArrayList<>();
-    /** opener: un botón REACCIONAR (con el selector abierto, un clic en otro lo cambia a esa foto en vez de solo cerrar). */
-    private record Hit(int x, int y, int w, int h, boolean opener, Runnable action) {}
+    private record Hit(int x, int y, int w, int h, Runnable action) {}
+    /** Emojis de las reacciones de cada tarjeta, alto de sus etiquetas y hueco entre filas de etiquetas. */
+    private static final int CHIP_EMOJI = 9, CHIP_H = 13, CHIP_ROW = 15;
     /** El selector de emojis abierto (id de la foto) y dónde está su botón REACCIONAR. */
-    private static final int PICK_CELL = 16, PICK_EMOJI = 12;
-    /** Emojis de las reacciones de cada tarjeta y alto de sus etiquetas. */
-    private static final int CHIP_EMOJI = 9, CHIP_H = 13;
     private String pickerFor;
     private boolean pickerSeen;
-    private int pickerX, pickerY;
-    private int[] pickerBox;
+    private int pickerX;
+    private final PadEmojiPicker picker;
+    /** La etiqueta de reacción bajo el ratón (para su globo con el :atajo:). */
+    private PadEmojis.Emoji chipHover;
+    private int chipHoverX, chipHoverY;
     /**
      * Arrastrar para bajar la lista empieza a partir de DRAG_START unidades desde donde se pulsó. Minecraft llama a
      * mouseDragged con cualquier temblor del ratón entre pulsar y soltar: antes eso cerraba el selector recién abierto
@@ -41,6 +48,9 @@ final class PadCommunityPage extends PadPage {
 
     PadCommunityPage(TFPadScreen pad) {
         super(pad, "comunidad");
+        picker = new PadEmojiPicker(pad, this::picked);
+        // el índice de emojis (casi 2.000) se lee en segundo plano la primera vez, sin parar el juego
+        net.minecraft.Util.backgroundExecutor().execute(PadEmojis::all);
         PadCommunityClient.open(PadCommunityClient.tab);
     }
 
@@ -66,8 +76,14 @@ final class PadCommunityPage extends PadPage {
 
     @Override
     void render(GuiGraphics g, double mx, double my, float partial) {
+        double pmx = mx, pmy = my;
         hits.clear();
-        pickerBox = null;
+        chipHover = null;
+        // con el selector abierto, lo de debajo no se ilumina
+        if (pickerFor != null && full == null) {
+            mx = -1000;
+            my = -1000;
+        }
         // la ventana con sus pestañas de carpeta encima (la elegida, la última: se une a ella) y + FOTO a la derecha
         int top = Y + 14, bottom = Y + H;
         PadUi.panel(g, X, top, W, bottom - top);
@@ -126,15 +142,15 @@ final class PadCommunityPage extends PadPage {
             cy += ch;
         }
         pad.noScissor(g);
-        if (pickerFor != null) {
-            PadCommunityNet.Post open = null;
-            for (PadCommunityNet.Post p : posts) if (p.id().equals(pickerFor)) open = p;
-            if (open == null || !pickerSeen || pickerY < top + 2 || pickerY + 16 > bottom - 2) pickerFor = null;
-            else drawPicker(g, open, mx, my, top, bottom);
-        }
         PadUi.scrollbar(g, X + W - 7, top + 5, visible - 2, visible, contentH, scroll);
         // cerca del final, la página siguiente
         if (scroll + visible > contentH - ch * 2) PadCommunityClient.more();
+        if (chipHover != null) chipTip(g);
+        if (pickerFor != null) {
+            PadCommunityNet.Post open = find(pickerFor);
+            if (open == null || !pickerSeen) pickerFor = null;
+            else drawPicker(g, open, pmx, pmy);
+        }
         if (full != null) drawFull(g, full);
     }
 
@@ -158,46 +174,29 @@ final class PadCommunityPage extends PadPage {
         int cx = px + pw + 10, cw = x + w - 6 - cx;
         PadUi.text(g, PadUi.fitEnd(post.name(), cw), cx, py + 1, PadUi.GOLD_TEXT);
         PadUi.text(g, ago(post.time()), cx, py + 12, PadUi.MUTED);
-        if (!post.caption().isEmpty()) {
-            int maxLines = Math.max(1, (ph - 60) / 10);
-            PadUi.wrapEllipsis(g, "«" + post.caption() + "»", cx, py + 26, cw, PadUi.TEXT, maxLines);
-        }
-        // reacciones: el botón REACCIONAR (abre el selector con los emojis; también en tus fotos) y al lado, en etiquetas
-        // iguales, solo las que ya tiene la foto con cuántas lleva (la tuya, en oro). Sin reacciones, solo el botón.
+        // reacciones: el botón REACCIONAR (abre el selector de emojis; también en tus fotos) y, en etiquetas, las que ya
+        // tiene la foto con cuántos (las tuyas, en oro; clic = sumarte o quitarte). Si no caben al lado del botón, suben
+        // en filas encima (el texto se recorta) y lo que no quepa sale como «+N».
         int ey = py + ph - 32;
-        int ex = cx;
         String rlabel = "REACCIONAR";
         int rbw = PadUi.buttonWidth(rlabel);
         boolean open = post.id().equals(pickerFor);
         if (open) {
             pickerSeen = true;
-            pickerX = ex;
-            pickerY = ey - 1;
+            pickerX = cx;
         }
-        boolean rhov = inList && PadUi.inside(mx, my, ex, ey - 1, rbw, 16);
+        boolean rhov = inList && PadUi.inside(mx, my, cx, ey - 1, rbw, 16);
         if (rhov) pad.hover("§reaccionar" + post.id());
-        PadUi.button(g, ex, ey - 1, rbw, rlabel, PadView.BLUE, rhov || open, true);
-        if (inList) {
-            String id = post.id();
-            hits.add(0, new Hit(ex, ey - 1, rbw, 16, true, () -> {
-                pickerFor = id.equals(pickerFor) ? null : id;
-                pad.sound("tab", 0.6F);
-            }));
-        }
-        ex += rbw + 4;
-        int chipY = ey + 1;
-        for (int k = 0; k < PadCommunityNet.REACTIONS.size(); k++) {
-            int n = k < post.reactions().length ? post.reactions()[k] : 0;
-            if (n <= 0) continue;
-            String count = String.valueOf(n);
-            int bw = CHIP_EMOJI + 6 + PadUi.font().width(count);
-            if (ex + bw > cx + cw) break;
-            boolean mine = post.myReaction() == k;
-            PadUi.box(g, ex, chipY, bw, CHIP_H, mine ? 0xFFE0A030 : PadUi.SLOT_EDGE);
-            g.fill(ex + 1, chipY + 1, ex + bw - 1, chipY + CHIP_H - 1, mine ? 0xFFFFF3C8 : 0xFFF2F8FE);
-            pad.blitSharp(g, "emo_" + PadCommunityNet.REACTIONS.get(k), ex + 2, chipY + 2, CHIP_EMOJI);
-            PadUi.text(g, count, ex + CHIP_EMOJI + 4, chipY + 3, mine ? PadUi.GOLD_TEXT : PadUi.TEXT);
-            ex += bw + 3;
+        PadUi.button(g, cx, ey - 1, rbw, rlabel, PadView.BLUE, rhov || open, true);
+        if (inList) hits.add(0, new Hit(cx, ey - 1, rbw, 16, () -> openPicker(post)));
+        int capTop = py + 26;
+        int maxRows = 1 + Math.max(0, (ey - 2 - (post.caption().isEmpty() ? 0 : 10) - capTop) / CHIP_ROW);
+        Chips chips = chips(post, cx, cx + rbw + 4, cx + cw, maxRows);
+        for (int[] c : chips.placed()) drawChip(g, post, c, ey + 1 - (chips.rows() - 1 - c[1]) * CHIP_ROW, mx, my, inList);
+        if (!post.caption().isEmpty()) {
+            int chipsTop = ey + 1 - (chips.rows() - 1) * CHIP_ROW;
+            int maxLines = Math.max(1, Math.min((ph - 60) / 10, (chipsTop - 2 - capTop) / 10));
+            PadEmojiDraw.wrap(g, "«" + post.caption() + "»", cx, capTop, cw, PadUi.TEXT, maxLines, PadEmojiDraw.px(pad));
         }
         // like: el corazón es un botón (lleno y rosa si ya diste like) con cuántos lleva; clic = dar o quitar el like.
         // También en tus fotos.
@@ -210,7 +209,7 @@ final class PadCommunityPage extends PadPage {
             if (lh) pad.hover("§like" + post.id());
             String id = post.id();
             boolean liked = post.liked();
-            hits.add(0, new Hit(cx, ly - 1, lw, 16, false, () -> {
+            hits.add(0, new Hit(cx, ly - 1, lw, 16, () -> {
                 pad.sound("like", liked ? 0.5F : 0.9F);
                 PadCommunityClient.act("like", id);
             }));
@@ -253,43 +252,155 @@ final class PadCommunityPage extends PadPage {
     }
 
     /**
-     * El selector de REACCIONAR: una burbuja encima del botón (o debajo, si no cabe) con los emojis; clic en uno para
-     * reaccionar con él (el que ya pusiste, en oro: otra vez lo quita). Un clic fuera la cierra.
+     * Dónde va cada etiqueta de reacción: placed = {x, fila, ancho, índice en post.reactions() (o -1 - N: la de «+N»)};
+     * rows = cuántas filas. Las filas de arriba van de xFull a end; la última, a la derecha de REACCIONAR (de xLast).
      */
-    private void drawPicker(GuiGraphics g, PadCommunityNet.Post post, double mx, double my, int top, int bottom) {
-        int n = PadCommunityNet.REACTIONS.size();
-        int w = n * PICK_CELL + 6, h = PICK_CELL + 6;
-        // encima del botón REACCIONAR (debajo si no cabe), sin salirse de la ventana
-        int x = Math.max(X + 4, Math.min(pickerX, X + W - w - 4));
-        int y = pickerY - h - 2;
-        if (y < top + 2) y = pickerY + 18;
-        pickerBox = new int[] {x, y, w, h};
+    private record Chips(List<int[]> placed, int rows) {}
+
+    private Chips chips(PadCommunityNet.Post post, int xFull, int xLast, int end, int maxRows) {
+        List<PadCommunityNet.Reaction> rs = post.reactions();
+        int known = 0;
+        for (PadCommunityNet.Reaction r : rs) if (PadEmojis.get(r.emoji()) != null) known++;
+        List<int[]> best = new ArrayList<>();
+        int rows = 1;
+        // las menos filas en que caben todas (como mucho maxRows)
+        for (; rows <= maxRows; rows++) {
+            best = new ArrayList<>();
+            int row = 0, rx = rows == 1 ? xLast : xFull;
+            for (int k = 0; k < rs.size(); k++) {
+                if (PadEmojis.get(rs.get(k).emoji()) == null) continue;
+                int bw = chipWidth(String.valueOf(rs.get(k).count()));
+                if (rx + bw > end) {
+                    if (row + 1 >= rows) break;
+                    row++;
+                    rx = row == rows - 1 ? xLast : xFull;
+                    if (rx + bw > end) break;
+                }
+                best.add(new int[] {rx, row, bw, k});
+                rx += bw + 3;
+            }
+            if (best.size() == known || rows == maxRows) break;
+        }
+        rows = Math.min(rows, maxRows);
+        if (best.size() < known) {
+            // «+N» al final de la última fila (quitando etiquetas hasta que quepa)
+            int last = rows - 1;
+            while (true) {
+                int more = known - best.size();
+                int mw = PadUi.font().width("+" + more) + 8;
+                int[] prev = best.isEmpty() ? null : best.get(best.size() - 1);
+                int sx = prev != null && prev[1] == last ? prev[0] + prev[2] + 3 : xLast;
+                if (sx + mw <= end || prev == null) {
+                    best.add(new int[] {sx, last, mw, -1 - more});
+                    break;
+                }
+                best.remove(best.size() - 1);
+            }
+        }
+        return new Chips(best, rows);
+    }
+
+    private static int chipWidth(String count) {
+        return CHIP_EMOJI + 6 + PadUi.font().width(count);
+    }
+
+    /** Una etiqueta de reacción: el emoji y cuántos (la tuya, en oro); clic = sumarte o quitarte. «+N»: abre el selector. */
+    private void drawChip(GuiGraphics g, PadCommunityNet.Post post, int[] c, int cy, double mx, double my, boolean inList) {
+        int ex = c[0], bw = c[2];
+        boolean hov = inList && PadUi.inside(mx, my, ex, cy, bw, CHIP_H);
+        if (c[3] < 0) {
+            PadUi.box(g, ex, cy, bw, CHIP_H, hov ? 0xFF6A9AD0 : PadUi.SLOT_EDGE);
+            g.fill(ex + 1, cy + 1, ex + bw - 1, cy + CHIP_H - 1, hov ? 0xFFE4F0FC : 0xFFF2F8FE);
+            PadUi.text(g, "+" + (-1 - c[3]), ex + 4, cy + 3, PadUi.MUTED);
+            if (inList) {
+                if (hov) pad.hover("§mas" + post.id());
+                hits.add(0, new Hit(ex, cy, bw, CHIP_H, () -> openPicker(post)));
+            }
+            return;
+        }
+        PadCommunityNet.Reaction r = post.reactions().get(c[3]);
+        PadEmojis.Emoji e = PadEmojis.get(r.emoji());
+        boolean mine = r.mine();
+        PadUi.box(g, ex, cy, bw, CHIP_H, mine ? 0xFFE0A030 : hov ? 0xFF6A9AD0 : PadUi.SLOT_EDGE);
+        g.fill(ex + 1, cy + 1, ex + bw - 1, cy + CHIP_H - 1, mine ? (hov ? 0xFFFFEBB0 : 0xFFFFF3C8) : hov ? 0xFFE4F0FC : 0xFFF2F8FE);
+        PadEmojiDraw.draw(g, e, ex + 2, cy + 2, CHIP_EMOJI, PadEmojiDraw.px(pad));
+        PadUi.text(g, String.valueOf(r.count()), ex + CHIP_EMOJI + 4, cy + 3, mine ? PadUi.GOLD_TEXT : PadUi.TEXT);
+        if (!inList) return;
+        if (hov) {
+            pad.hover("§chip" + post.id() + e.id());
+            chipHover = e;
+            chipHoverX = ex + bw / 2;
+            chipHoverY = cy;
+        }
+        String id = post.id(), action = "react:" + e.id();
+        hits.add(0, new Hit(ex, cy, bw, CHIP_H, () -> {
+            pad.sound("like", mine ? 0.5F : 0.9F);
+            PadCommunityClient.act(action, id);
+        }));
+    }
+
+    /** El globo encima de la etiqueta bajo el ratón: su :atajo:. */
+    private void chipTip(GuiGraphics g) {
+        String t = chipHover.code();
+        int tw = PadUi.font().width(t) + 8;
+        int x = Math.max(X + 2, Math.min(chipHoverX - tw / 2, X + W - tw - 2)), y = chipHoverY - 14;
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 120);
+        PadUi.box(g, x, y, tw, 12, PadUi.INK);
+        g.fill(x + 1, y + 1, x + tw - 1, y + 11, 0xFF2A3A70);
+        PadUi.text(g, t, x + 4, y + 2, 0xFFFFFFFF);
+        g.pose().popPose();
+    }
+
+    private PadCommunityNet.Post find(String id) {
+        for (PadCommunityNet.Post p : PadCommunityClient.POSTS) if (p.id().equals(id)) return p;
+        return null;
+    }
+
+    private static Set<String> mineOf(PadCommunityNet.Post post) {
+        Set<String> s = new HashSet<>();
+        for (PadCommunityNet.Reaction r : post.reactions()) if (r.mine()) s.add(r.emoji());
+        return s;
+    }
+
+    /** REACCIONAR: abre el selector para esa foto (o lo cierra si ya era suyo). */
+    private void openPicker(PadCommunityNet.Post post) {
+        pad.sound("tab", 0.6F);
+        if (post.id().equals(pickerFor)) {
+            pickerFor = null;
+            return;
+        }
+        pickerFor = post.id();
+        picker.open(mineOf(post));
+    }
+
+    /** Se eligió un emoji en el selector: se pone (o se quita, si ya era tuyo) y se cierra (con Mayús, no). */
+    private void picked(PadEmojis.Emoji e) {
+        PadCommunityNet.Post post = pickerFor == null ? null : find(pickerFor);
+        if (post == null) return;
+        boolean had = false, exists = false;
+        for (PadCommunityNet.Reaction r : post.reactions()) {
+            if (!r.emoji().equals(e.id())) continue;
+            exists = true;
+            had = r.mine();
+        }
+        if (!exists && post.reactions().size() >= PadCommunityNet.MAX_REACTIONS) {
+            pad.showNotice("Una foto puede tener " + PadCommunityNet.MAX_REACTIONS + " emojis distintos como mucho.");
+            return;
+        }
+        pad.sound("like", had ? 0.5F : 0.9F);
+        PadCommunityClient.act("react:" + e.id(), post.id());
+        if (!PadEmojiPicker.keepOpen()) pickerFor = null;
+    }
+
+    /** El selector, encima de todo lo de la página (con la lista oscurecida debajo). */
+    private void drawPicker(GuiGraphics g, PadCommunityNet.Post post, double mx, double my) {
         g.pose().pushPose();
         g.pose().translate(0, 0, 150);
-        g.fill(x + 2, y + 2, x + w + 2, y + h + 2, 0x5518265C); // sombra
-        PadUi.box(g, x, y, w, h, PadUi.INK);
-        PadUi.box(g, x + 1, y + 1, w - 2, h - 2, PadUi.GOLD_LO);
-        g.fill(x + 2, y + 2, x + w - 2, y + h - 2, 0xFFFFFFFF);
-        for (int k = 0; k < n; k++) {
-            String name = PadCommunityNet.REACTIONS.get(k);
-            int ex = x + 3 + k * PICK_CELL, ey = y + 3;
-            boolean mine = post.myReaction() == k;
-            boolean hov = PadUi.inside(mx, my, ex, ey, PICK_CELL, PICK_CELL);
-            if (mine || hov) {
-                PadUi.box(g, ex, ey, PICK_CELL, PICK_CELL, mine ? 0xFFE0A030 : 0xFF9DBCE0);
-                g.fill(ex + 1, ey + 1, ex + PICK_CELL - 1, ey + PICK_CELL - 1, mine ? 0xFFFFF3C8 : 0xFFEAF4FD);
-            }
-            // mismo tamaño siempre (nítido): con el ratón encima, el emoji sube una unidad
-            int o = (PICK_CELL - PICK_EMOJI) / 2;
-            pad.blitSharp(g, "emo_" + name, ex + o, ey + o - (hov ? 1 : 0), PICK_EMOJI);
-            if (hov) pad.hover("§pick" + name);
-            String id = post.id(), action = "react:" + name;
-            hits.add(0, new Hit(ex, ey, PICK_CELL, PICK_CELL, false, () -> {
-                pad.sound("like", mine ? 0.5F : 0.9F);
-                PadCommunityClient.act(action, id);
-                pickerFor = null;
-            }));
-        }
+        g.fill(X, Y - 4, X + W, Y + H, 0x5518265C);
+        picker.mine(mineOf(post));
+        picker.place(X, Y, W, H, pickerX + PadUi.buttonWidth("REACCIONAR") / 2);
+        picker.render(g, mx, my);
         g.pose().popPose();
     }
 
@@ -330,11 +441,11 @@ final class PadCommunityPage extends PadPage {
         if (hover) pad.hover("§" + label + x + "," + y);
         PadUi.button(g, x, y, w, label, style, hover, true);
         // los botones van antes que la foto y la tarjeta en los clics
-        hits.add(0, new Hit(x, y, w, 16, false, action));
+        hits.add(0, new Hit(x, y, w, 16, action));
     }
 
     private void hit(int x, int y, int w, int h, Runnable action) {
-        hits.add(new Hit(x, y, w, h, false, action));
+        hits.add(new Hit(x, y, w, h, action));
     }
 
     @Override
@@ -342,19 +453,15 @@ final class PadCommunityPage extends PadPage {
         pressY = my;
         dragging = false;
         if (button != 0) return false;
-        // con el selector de emojis abierto, un clic fuera lo cierra (y si es en otro REACCIONAR, abre ese)
-        boolean picker = full == null && pickerFor != null && pickerBox != null;
-        boolean outside = picker && !PadUi.inside(mx, my, pickerBox[0], pickerBox[1], pickerBox[2], pickerBox[3]);
-        for (Hit h : hits) {
-            if (!PadUi.inside(mx, my, h.x(), h.y(), h.w(), h.h())) continue;
-            if (outside && !h.opener()) break;
-            // dentro de la burbuja solo cuentan sus emojis (no lo que queda debajo)
-            if (picker && !outside && !PadUi.inside(h.x(), h.y(), pickerBox[0], pickerBox[1], pickerBox[2], pickerBox[3])) return true;
-            h.action().run();
+        // con el selector abierto, todo va a él; un clic fuera lo cierra
+        if (full == null && pickerFor != null) {
+            if (!picker.inside(mx, my)) pickerFor = null;
+            else picker.click(mx, my);
             return true;
         }
-        if (outside) {
-            pickerFor = null;
+        for (Hit h : hits) {
+            if (!PadUi.inside(mx, my, h.x(), h.y(), h.w(), h.h())) continue;
+            h.action().run();
             return true;
         }
         return false;
@@ -362,8 +469,9 @@ final class PadCommunityPage extends PadPage {
 
     @Override
     boolean scroll(double mx, double my, double delta) {
-        if (full == null) scroll -= (int) Math.signum(delta) * 30;
-        pickerFor = null;
+        if (full != null) return true;
+        if (pickerFor != null) return picker.scroll(delta);
+        scroll -= (int) Math.signum(delta) * 30;
         return true;
     }
 
@@ -371,13 +479,29 @@ final class PadCommunityPage extends PadPage {
     boolean drag(double mx, double my, double dy) {
         if (full != null) return false;
         if (!dragging) {
-            // un temblor al hacer clic no es arrastrar (ni cierra el selector)
+            // un temblor al hacer clic no es arrastrar
             if (Math.abs(my - pressY) < DRAG_START) return true;
             dragging = true;
-            pickerFor = null;
         }
-        scroll -= (int) Math.round(dy);
+        if (pickerFor != null) picker.drag(dy);
+        else scroll -= (int) Math.round(dy);
         return true;
+    }
+
+    @Override
+    void release(double mx, double my, int button) {
+        picker.release();
+    }
+
+    /** Con el selector abierto se escribe en su buscador (la tecla del pad no lo cierra). */
+    @Override
+    boolean typing() {
+        return pickerFor != null;
+    }
+
+    @Override
+    boolean chr(char c) {
+        return pickerFor != null && full == null && picker.chr(c);
     }
 
     @Override
@@ -386,8 +510,9 @@ final class PadCommunityPage extends PadPage {
             full = null;
             return true;
         }
-        if (pickerFor != null && key == 256) { // Esc cierra el selector de emojis
-            pickerFor = null;
+        if (pickerFor != null) { // Esc cierra el selector; lo demás, a su buscador
+            if (key == 256) pickerFor = null;
+            else picker.key(key);
             return true;
         }
         if (key == 264) {
