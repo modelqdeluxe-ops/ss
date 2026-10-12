@@ -10,6 +10,11 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **Web (12 oct)**: el despliegue de Cloudflare del PR #77 falló (el código compila: `npx wrangler deploy --dry-run`
+> en una copia limpia de main va bien, 5.726 archivos); se reintenta con un push nuevo. Si vuelve a fallar, mirar el
+> registro en el panel de Cloudflare (Workers › tierras-fantasticas › Builds). Ojo con el tamaño del repo (~1,8 GB por
+> los jar de `descargas/` en el historial).
+
 > **TF Client 1.3.54 (12 oct)** — pedidos del dueño:
 > - **Menú**: letras con textura (`TFMenuButton.texture`: bisel de brillo arriba, sombra abajo, grano fino), un poco
 >   más arriba (`MENU_TEXT_UP` 4,6) y más juntas (`Tracked`: letra a letra, `TRACKING` 0,45 px de glifo, ancho exacto
