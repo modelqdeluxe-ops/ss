@@ -384,7 +384,7 @@ INK, INK_HOT, OUTLINE = 0xE7E1D5, 0xFFFBF2, 0x140A04
 MAIN = ['tf', 'blue1', 'blue2', 'gray', 'red', 'green', 'purple', 'blueb']
 ROWS = [[0], [1], [2], [3, 4], [5, 6, 7]]
 SPAN = 1.7  # cada fila mide lo que Tierras Fantásticas en la lámina por SPAN (una columna limpia)
-K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 6  # el emblema: al menos el 44 % del alto
+K_MAX, LOGO_FRAC, BOTTOM_MARGIN = 0.16, 0.44, 10  # el emblema: al menos el 44 % del alto
 ROW_GAP = 50  # separación entre filas (en la lámina eran 70-100: más juntas, placas más grandes)
 CAP_HEIGHT, CAP_FILL, TF_CAP_FILL, INTERIOR = 6.2, 0.5, 0.52, 0.7
 LABELS = ['Tierras Fantásticas', 'Mundo local', 'Mods', 'Opciones', 'Salir', 'WhatsApp', 'Web', 'Discord']
@@ -697,7 +697,7 @@ def auto_scale(fbw, fbh, limit=0):
     return i
 
 
-GAPS = [96, 96, 72, 80]  # separación entre filas en la lámina: lo justo para que las gemas no se toquen
+VIS_GAP = 30  # hueco entre lo que se ve de cada fila (gemas incluidas), en píxeles de la lámina
 PAD = 0.4  # aire a cada lado del texto, en altos de la placa
 GROUP_GAP = 14  # entre los botones de una misma fila (interfaz)
 BLUE_MIN = 0.62  # Mundo local y Mods, como poco este tanto del ancho de Tierras Fantásticas
@@ -723,19 +723,34 @@ def layout(w, h, S=4, fbw=None):
     P = [d['plates'][n] for n in MAIN]
     L = [p['layout'] for p in P]
     rows = [[0], [1], [2], [3, 4], [5, 6, 7]]
+    # mismo hueco entre lo que se ve de cada fila (gemas incluidas): TFMenuButton.VIS_GAP
     row_y = {}
-    ny = L[0][1]
+    ny, last_bottom = 0.0, 0.0
     for r, row in enumerate(rows):
-        rt, rb = min(L[i][1] for i in row), max(L[i][3] for i in row)
+        above = max(P[i]['body'][1] - P[i]['vis'][0] for i in row)
+        below = max(P[i]['vis'][1] - P[i]['body'][1] for i in row)
+        body_top = above if r == 0 else ny + above
         for i in row:
-            row_y[i] = ny + (L[i][1] - rt)
-        ny += (rb - rt) + (GAPS[r] if r < len(GAPS) else 0)
-        last_bottom = rb
-    comp_h = ny + (cbot - last_bottom) - ctop
+            row_y[i] = body_top
+        last_bottom = body_top + below
+        ny = last_bottom + VIS_GAP
+    comp_h = last_bottom
+    ctop = 0
     k = min(K_MAX, (h - BOTTOM_MARGIN - round(h * LOGO_FRAC) - 6) / comp_h)
     free = h - BOTTOM_MARGIN - comp_h * k
     top = free - max(0.0, (free - 186) / 2)
-    hs = [round((row_y[i] + L[i][3] - L[i][1] - ctop) * k) - round((row_y[i] - ctop) * k) for i in range(8)]
+    hs = [max(1, round((P[i]['body'][3] - P[i]['body'][1]) * k)) for i in range(8)]
+    # filas apiladas con la escala real de cada placa (TFMenuButton.mainLayout: shiftY)
+    ys = [0.0] * 8
+    cursor, gap = top, round(VIS_GAP * k * S) / S
+    for row in rows:
+        kk = {i: hs[i] / (P[i]['body'][3] - P[i]['body'][1]) for i in row}
+        above = max((P[i]['body'][1] - P[i]['vis'][0]) * kk[i] for i in row)
+        below = max((P[i]['vis'][1] - P[i]['body'][1]) * kk[i] for i in row)
+        body_top = round((cursor + above) * S) / S
+        for i in row:
+            ys[i] = body_top
+        cursor = round((body_top + below) * S) / S + gap
     size = max(1.0, min(CAP_FILL * INTERIOR * hs[i] / CAP_HEIGHT for i in range(1, 8)))
     tf = max(size, TF_CAP_FILL * INTERIOR * hs[0] / CAP_HEIGHT)
     labels = [('Tierras Fantásticas', None, PRIMARY), ('Mundo local', None, SECONDARY), ('Mods', None, SECONDARY),
@@ -769,7 +784,7 @@ def layout(w, h, S=4, fbw=None):
         x = round(cx - tot / 2)
         shift = cx - (x + tot / 2)  # TFMenuButton.mainShiftX: medio píxel si el ancho es impar
         for i in row:
-            y0 = round(top + (row_y[i] - ctop) * k)
+            y0 = ys[i]
             rects[i] = (x + shift, y0, even(widths[i]), hs[i])
             x += even(widths[i]) + GROUP_GAP
     out = [lab + (n,) + r for lab, n, r in zip(labels, MAIN, rects)]

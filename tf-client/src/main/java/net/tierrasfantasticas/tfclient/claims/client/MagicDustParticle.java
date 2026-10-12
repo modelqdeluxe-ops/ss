@@ -22,9 +22,8 @@ import net.minecraft.util.Mth;
  * Dos modos:
  *  - PUNTO de línea: quieto, opaco, en una rejilla fija. Una «onda» de brillo recorre la línea (todas las motas usan
  *    el mismo reloj y su posición, así dos tandas seguidas se ven idénticas y la línea parece continua).
- *  - FLECHA: los bloquecitos de las flechas que bajan en diagonal por la pared cuando el jugador está pegado al
- *    límite. Velocidad constante (rozamiento 1, sin azar) para que la flecha no se deforme; parpadean todas a la vez
- *    (pulso común) y se recortan en los extremos de la pared.
+ *  - CHISPA: las chispitas que saltan en la pared cuando el jugador está cerca del límite. Suben un poco, parpadean
+ *    (pulso común), se apagan rápido y se recortan en los extremos de la pared.
  */
 public class MagicDustParticle extends TextureSheetParticle {
     // Sprites cacheados del atlas de partículas (se refrescan desde el contorno, por si cambian los packs)
@@ -42,7 +41,7 @@ public class MagicDustParticle extends TextureSheetParticle {
     // Onda de las líneas: cada cuánto hay una cresta (bloques) y lo rápido que avanza (bloques por tick)
     private static final float WAVE_LENGTH = 12.0f;
     private static final float WAVE_SPEED = 0.2f;
-    // Periodo del parpadeo común de las flechas (ticks)
+    // Periodo del parpadeo común de las chispas (ticks)
     private static final float PULSE_PERIOD = 14.0f;
     // Margen de recorte suave en los extremos de la pared (bloques)
     private static final float CLIP_SOFT = 0.3f;
@@ -107,16 +106,16 @@ public class MagicDustParticle extends TextureSheetParticle {
                 node ? 0.45f : 0.0f, 1.0f, node ? 0.17f : 0.12f, lifetime, fadeIn, fadeOut, false, waveCoord, -1, 0.0, 0.0);
     }
 
-    /** Un bloquecito de una flecha (null si aún no hay textura). */
-    static MagicDustParticle arrowBlock(ClientLevel level, double x, double y, double z, double vx, double vy, double vz,
-                                        float[] rgb, boolean tip, float whiten, float alpha, float size, int lifetime,
-                                        int clipAxis, double clipMin, double clipMax) {
-        TextureAtlasSprite sprite = sprite(tip ? FRAME_TIP : FRAME_BLOCK);
+    /** Una chispita del aviso de cerca del límite; big = rombo más grande y blanco (null si aún no hay textura). */
+    static MagicDustParticle spark(ClientLevel level, double x, double y, double z, double vx, double vy, double vz,
+                                   float[] rgb, boolean big, float whiten, float alpha, float size, int lifetime,
+                                   int clipAxis, double clipMin, double clipMax) {
+        TextureAtlasSprite sprite = sprite(big ? FRAME_TIP : FRAME_BLOCK);
         if (sprite == null) {
             return null;
         }
         return new MagicDustParticle(level, x, y, z, vx, vy, vz, sprite, rgb[0], rgb[1], rgb[2], whiten, alpha, size,
-                lifetime, 8, 14, true, 0.0f, clipAxis, clipMin, clipMax);
+                lifetime, 2, 6, true, 0.0f, clipAxis, clipMin, clipMax);
     }
 
     private static TextureAtlasSprite sprite(int frame) {
@@ -146,7 +145,7 @@ public class MagicDustParticle extends TextureSheetParticle {
         return spritesReady;
     }
 
-    // Coordenada a lo largo de la pared (para el recorte de las flechas)
+    // Coordenada a lo largo de la pared (para el recorte de las chispas)
     private double alongWall(float partial) {
         return this.clipAxis == 0 ? Mth.lerp(partial, this.xo, this.x) : Mth.lerp(partial, this.zo, this.z);
     }
@@ -154,7 +153,7 @@ public class MagicDustParticle extends TextureSheetParticle {
     @Override
     public void tick() {
         super.tick();
-        // Una flecha que ya ha salido por el extremo de la pared hacia el que va no vuelve: fuera
+        // Una chispa que ya ha salido por un extremo de la pared no vuelve: fuera
         if (this.isAlive() && this.clipAxis >= 0) {
             double u = this.alongWall(1.0f);
             double v = this.clipAxis == 0 ? this.xd : this.zd;
@@ -176,7 +175,7 @@ public class MagicDustParticle extends TextureSheetParticle {
         if (fade <= 0.0f) {
             return;
         }
-        // Mismo reloj para todas las motas: así las tandas encajan y las flechas parpadean a la vez
+        // Mismo reloj para todas las motas: así las tandas encajan y las chispas parpadean a la vez
         float clock = (this.level.getGameTime() % CLOCK_WRAP) + partial;
         float white;
         float size;

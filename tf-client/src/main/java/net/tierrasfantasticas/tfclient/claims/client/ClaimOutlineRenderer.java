@@ -29,13 +29,12 @@ import org.joml.Vector3f;
  *    4 puntos (cada 2 bloques) un «nodo» más grande y más blanco. Una onda de brillo recorre las líneas. Se repone
  *    cada LINE_PERIOD ticks con motas que viven un poco más, así la línea se ve continua. De lejos se aclara la rejilla
  *    (1 bloque, y a lo lejos solo los nodos).
- *  - FLECHAS (a 5 bloques o menos de un lado): ese trozo de pared se llena de flechitas hechas de bloquecitos de
- *    polvo (una «V» en ángulo recto, 7 motas) que bajan en diagonal como una cinta transportadora, en una rejilla fija
- *    del mundo. Parpadean todas a la vez; cuanto más cerca, más vivas y (a menos de 2,5 bloques) el doble de juntas.
+ *  - AVISO DE CERCA (a 4 bloques o menos de un lado): en ese trozo de pared, alrededor del jugador, saltan chispitas
+ *    sueltas del color de la zona que suben un poco y se apagan; cuanto más cerca, más y más vivas.
  *
  * Se ve en los mismos casos que antes: las zonas con «Ver contorno» que manda el servidor y la vista previa al llevar
  * una piedra de protección en la mano (solo líneas, con motas de vida corta para que no dejen estela). Rendimiento:
- * topes fijos de motas por tanda (LINE_CAP, PREVIEW_CAP, ARROWS_PER_ROW), solo a menos de 32 bloques, líneas nada
+ * topes fijos de motas por tanda (LINE_CAP, PREVIEW_CAP, SPARKS), solo a menos de 32 bloques, líneas nada
  * detrás de la cámara, y menos aún con «Partículas: reducidas/mínimas».
  */
 @Mod.EventBusSubscriber(modid=TFClient.MOD_ID, value={Dist.CLIENT}, bus=Mod.EventBusSubscriber.Bus.FORGE)
@@ -64,23 +63,14 @@ public final class ClaimOutlineRenderer {
     private static final int LINE_CAP = 400;
     private static final int PREVIEW_CAP = 200;
 
-    // Flechas: distancia al lado para que salgan, ancho a cada lado del jugador y alto (desde los pies)
-    private static final double NEAR_RANGE = 5.0;
-    private static final double DENSE_RANGE = 2.5;
-    private static final double CURTAIN_HALF_WIDTH = 6.0;
-    private static final double CURTAIN_BELOW = 1.5;
-    private static final double CURTAIN_ABOVE = 4.5;
-    // Velocidad de las flechas (bloques por tick en cada eje: baja y avanza lo mismo, 45°)
-    private static final double ARROW_SPEED = 0.05;
-    // Cada ROW_TICKS sale una fila arriba; ROW_STEP = ARROW_SPEED·ROW_TICKS (separación entre filas)
-    private static final int ROW_TICKS = 15;
-    private static final double ROW_STEP = ARROW_SPEED * ROW_TICKS;
-    // Separación entre «carriles» diagonales (u + v constante) en la rejilla normal
-    private static final double TRACK_SPACING = 3.0;
-    // Forma de la flecha: punta + 3 bloquecitos por brazo, separados ARM_STEP
-    private static final int ARM_BLOCKS = 3;
-    private static final double ARM_STEP = 0.17;
-    private static final int ARROWS_PER_ROW = 6;
+    // Aviso de cerca: distancia al lado para que salga, cada cuántos ticks, cuántas chispitas (con todas las partículas),
+    // ancho a cada lado del jugador y alto (desde los pies)
+    private static final double NEAR_RANGE = 4.0;
+    private static final int SPARK_TICKS = 2;
+    private static final int SPARKS = 4;
+    private static final double SPARK_HALF_WIDTH = 2.5;
+    private static final double SPARK_BELOW = 0.2;
+    private static final double SPARK_ABOVE = 2.2;
     private static final int MAX_NEAR_WALLS = 2;
 
     // Listas reutilizadas cada tick
@@ -185,8 +175,8 @@ public final class ClaimOutlineRenderer {
             ClaimOutlineRenderer.spawnLines(Math.round(PREVIEW_CAP * f), PREVIEW_LIFE, 1);
         }
 
-        // 2) Flechas que bajan en diagonal por las paredes que el jugador tiene al lado (solo las de verdad)
-        if (!walls.isEmpty() && ticks % ROW_TICKS == 0) {
+        // 2) Chispitas que saltan en la pared que el jugador tiene al lado (solo las de verdad): aviso de que está cerca
+        if (!walls.isEmpty() && ticks % SPARK_TICKS == 0) {
             NEAR.clear();
             for (double[] wall : walls) {
                 boolean alongX = wall[0] == 0.0;
@@ -198,7 +188,7 @@ public final class ClaimOutlineRenderer {
             if (!NEAR.isEmpty()) {
                 NEAR.sort((a, b) -> Double.compare(a[0], b[0]));
                 for (int i = 0; i < Math.min(MAX_NEAR_WALLS, NEAR.size()); ++i) {
-                    ClaimOutlineRenderer.spawnArrowRow(NEAR.get(i), particlestatus);
+                    ClaimOutlineRenderer.spawnSparks(NEAR.get(i), particlestatus);
                 }
             }
         }
@@ -311,73 +301,38 @@ public final class ClaimOutlineRenderer {
     }
 
     /**
-     * Una fila de flechas arriba del trozo de pared junto al jugador. Las flechas viven en una rejilla fija del mundo
-     * que se desliza en diagonal hacia abajo: cada flecha sigue un «carril» (u + v constante) y las filas van separadas
-     * ROW_STEP. La fila que entra por arriba se calcula con el reloj, así da igual dónde esté el jugador: no se
-     * descuadra. near = {distancia, proyección, eje, fija, u0, u1, abajo, arriba, r, g, b}
+     * Chispitas sueltas en el trozo de pared junto al jugador: aparecen en sitios al azar a su alrededor, saltan un poco
+     * hacia arriba y se apagan rápido, parpadeando; cuantas más y más vivas, más cerca del límite.
+     * near = {distancia, proyección, eje, fija, u0, u1, abajo, arriba, r, g, b}
      */
-    private static void spawnArrowRow(double[] near, ParticleStatus particlestatus) {
+    private static void spawnSparks(double[] near, ParticleStatus particlestatus) {
         double closeness = 1.0 - near[0] / NEAR_RANGE;
         boolean alongX = near[2] == 0.0;
-        // Arriba de la ventana, encajado en la rejilla de filas; abajo, donde acaban (vida = alto / velocidad)
-        double top = Math.min(near[7], py + CURTAIN_ABOVE);
-        int q = Mth.floor(top / ROW_STEP + 1.0E-6);
-        double vt = q * ROW_STEP;
-        double vb = Math.max(near[6], py - CURTAIN_BELOW);
-        if (vt - vb < 1.0) {
+        float f = particlestatus == ParticleStatus.MINIMAL ? 0.35f : (particlestatus == ParticleStatus.DECREASED ? 0.65f : 1.0f);
+        int n = Math.max(1, Math.round(SPARKS * f * (float)(0.4 + 0.6 * closeness)));
+        double lo = Math.max(near[4], near[1] - SPARK_HALF_WIDTH);
+        double hi = Math.min(near[5], near[1] + SPARK_HALF_WIDTH);
+        double vb = Math.max(near[6], py - SPARK_BELOW);
+        double vt = Math.min(near[7], py + SPARK_ABOVE);
+        if (hi <= lo || vt <= vb) {
             return;
         }
-        // Etiqueta de la fila en la rejilla del mundo; la rejilla normal usa las pares, de cerca también las impares
-        int row = q + ticks / ROW_TICKS;
-        boolean dense = particlestatus == ParticleStatus.ALL && near[0] <= DENSE_RANGE;
-        if (!dense && Math.floorMod(row, 2) != 0) {
-            return;
-        }
-        int armBlocks = particlestatus == ParticleStatus.MINIMAL ? 2 : ARM_BLOCKS;
-        // La flecha entera (con el brazo de arriba) cabe bajo el borde superior; todas sus motas viven lo mismo
-        double tipV = vt - armBlocks * ARM_STEP;
-        int life = Mth.floor((tipV - vb) / ARROW_SPEED);
-        if (life < 20) {
-            return;
-        }
-        // Carriles: u + v ≡ (fila impar ? medio carril : 0) módulo TRACK_SPACING
-        double offset = Math.floorMod(row, 2) * (TRACK_SPACING / 2.0) - vt;
-        // La ventana es un paralelogramo centrado en el jugador: arriba empieza medio alto antes (las flechas avanzan al bajar)
-        double halfWidth = CURTAIN_HALF_WIDTH * (particlestatus == ParticleStatus.MINIMAL ? 0.5 : (particlestatus == ParticleStatus.DECREASED ? 0.75 : 1.0));
-        double shift = (vt - vb) / 2.0;
-        double lo = Math.max(near[1] - halfWidth - shift, near[4] - (vt - vb));
-        double hi = Math.min(near[1] + halfWidth - shift, near[5]);
-        int na = Mth.ceil((lo - offset) / TRACK_SPACING);
-        int nb = Mth.floor((hi - offset) / TRACK_SPACING);
         float[] rgb = ClaimOutlineRenderer.vivid(near[8], near[9], near[10]);
-        float alpha = (float)(0.75 + 0.25 * closeness);
-        float tipWhite = (float)(0.5 + 0.3 * closeness);
-        double vu = ARROW_SPEED;
-        double vx = alongX ? vu : 0.0;
-        double vz = alongX ? 0.0 : vu;
+        float alpha = (float)(0.7 + 0.3 * closeness);
         int axis = alongX ? 0 : 1;
-        int count = 0;
-        for (int n = na; n <= nb && count < ARROWS_PER_ROW; ++n) {
-            double u = offset + n * TRACK_SPACING;
-            ++count;
-            // Punta (abajo, hacia donde va) y dos brazos: uno hacia atrás en horizontal y otro hacia arriba: «┘» = flecha ↘
-            ClaimOutlineRenderer.arrowBlock(alongX, near[3], u, tipV, vx, vz, rgb, true, tipWhite, alpha, 0.2f, life, axis, near[4], near[5]);
-            for (int i = 1; i <= armBlocks; ++i) {
-                // Los bloquecitos se afinan un poco hacia el final de cada brazo
-                float size = 0.2f * (1.0f - 0.1f * (i - 1));
-                ClaimOutlineRenderer.arrowBlock(alongX, near[3], u - i * ARM_STEP, tipV, vx, vz, rgb, false, 0.1f, alpha, size, life, axis, near[4], near[5]);
-                ClaimOutlineRenderer.arrowBlock(alongX, near[3], u, tipV + i * ARM_STEP, vx, vz, rgb, false, 0.1f, alpha, size, life, axis, near[4], near[5]);
+        for (int i = 0; i < n; ++i) {
+            double u = lo + level.random.nextDouble() * (hi - lo);
+            double v = vb + level.random.nextDouble() * (vt - vb);
+            double x = alongX ? u : near[3];
+            double z = alongX ? near[3] : u;
+            // salta hacia arriba (y un pelín hacia fuera de la pared, hacia el jugador) y se apaga
+            double out = Math.signum((alongX ? pz : px) - near[3]) * 0.01;
+            boolean big = level.random.nextFloat() < 0.3f;
+            MagicDustParticle particle = MagicDustParticle.spark(level, x, v, z, alongX ? 0.0 : out, 0.035 + level.random.nextDouble() * 0.02,
+                    alongX ? out : 0.0, rgb, big, big ? 0.5f : 0.15f, alpha, big ? 0.16f : 0.11f, 10 + level.random.nextInt(6), axis, near[4], near[5]);
+            if (particle != null) {
+                mc.particleEngine.add(particle);
             }
-        }
-    }
-
-    private static void arrowBlock(boolean alongX, double fixed, double u, double v, double vx, double vz, float[] rgb, boolean tip,
-                                   float white, float alpha, float size, int life, int axis, double clipMin, double clipMax) {
-        double x = alongX ? u : fixed;
-        double z = alongX ? fixed : u;
-        MagicDustParticle particle = MagicDustParticle.arrowBlock(level, x, v, z, vx, -ARROW_SPEED, vz, rgb, tip, white, alpha, size, life, axis, clipMin, clipMax);
-        if (particle != null) {
-            mc.particleEngine.add(particle);
         }
     }
 
