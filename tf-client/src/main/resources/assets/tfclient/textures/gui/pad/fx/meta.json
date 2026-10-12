@@ -1,0 +1,629 @@
+{
+ "classes": {
+  "arquero": {
+   "color": 10475627,
+   "desc": "Un arquero ágil que salta y planea por el aire, encadena flechas entre enemigos y hace llover proyectiles sobre el campo de batalla.",
+   "group": "A distancia",
+   "name": "Arquero",
+   "role": "Tirador · movilidad y lluvia de flechas"
+  },
+  "arquero_despertado": {
+   "color": 16764762,
+   "desc": "Un arquero despertado que rueda entre disparos, lanza abanicos de flechas y libera tiros destructivos que atraviesan todo a su paso.",
+   "group": "A distancia",
+   "name": "Arquero Despertado",
+   "role": "Tirador · combos y ráfagas perforantes"
+  },
+  "asesino_despertado": {
+   "color": 11824127,
+   "desc": "Un asesino de las sombras: se vuelve invisible, atraviesa a sus enemigos con dagas y shuriken y acaba con ellos en una danza de cuchillas.",
+   "group": "Sigilo",
+   "name": "Asesino Despertado",
+   "role": "Asesino · sombras y críticos"
+  },
+  "bruja": {
+   "color": 8011007,
+   "desc": "La Tejedora del Caos Reptante: su Andanada de Sigilos (el ataque básico) carga energía del Caos y sus demás hechizos la gastan: cuervos, elixires, lanzas abisales y su círculo ritual.",
+   "group": "Magia",
+   "name": "Bruja Tejedora",
+   "role": "Hechicera · caos y maldiciones"
+  },
+  "caballero_artico": {
+   "color": 9430015,
+   "desc": "Un caballero de los hielos con lanza y escudo: congela, empala y clava a sus enemigos al suelo helado.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Caballero Ártico",
+   "role": "Lancero · hielo y control"
+  },
+  "caballero_muerte": {
+   "color": 4186288,
+   "desc": "Un caballero no muerto con alas de muerte: encadena a sus enemigos, los arrastra y ejecuta a quien lleva el sello maldito completo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Caballero de la Muerte",
+   "role": "Guerrero · necrosis y ejecución"
+  },
+  "cazador_bestias": {
+   "color": 14702397,
+   "desc": "Un cazador salvaje con dos hojas: encadena cortes, desgarra a sus presas, las deja sangrando y arrasa con cargas imparables.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Cazador de Bestias",
+   "role": "Guerrero · dos hojas y sangrado"
+  },
+  "cetus": {
+   "color": 4174847,
+   "desc": "El Loong Perdido: un guerrero con un espadón de agua que invoca a un dragón de agua para cargar, girar y arrasar con olas.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Cetus",
+   "role": "Espadón de agua · dragón loong"
+  },
+  "chaman": {
+   "color": 16765514,
+   "desc": "Un chamán que cambia entre la postura del Trueno (ataque) y la de la Tierra (curación y protección), con tótems, raíces y manos ancestrales.",
+   "group": "Apoyo",
+   "name": "Chamán Despertado",
+   "role": "Soporte · trueno y tierra"
+  },
+  "clerigo_despertado": {
+   "color": 16770688,
+   "desc": "Un clérigo bendecido por la luz: golpea con su maza sagrada, cura a sus aliados con orbes, campanas y haces de luz y despliega una catedral divina.",
+   "group": "Apoyo",
+   "name": "Clérigo Despertado",
+   "role": "Sanador · luz sagrada"
+  },
+  "dragon_rojo": {
+   "color": 16734799,
+   "desc": "Lleva el Sacred Gear, un guantelete de dragón. Mantén Shift (agachado) para cargarlo: al nivel 2 desbloquea la Embestida y el Salto; si sigues cargando, desata la armadura Balance Breaker con el Rugido y el Cañón.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Dragón Rojo",
+   "role": "Guerrero dragón · se transforma"
+  },
+  "filo_vacio": {
+   "color": 10185727,
+   "desc": "Un espadachín del vacío que corta la realidad con su katana: atraviesa dimensiones, se teletransporta a través de sus enemigos y desata la bendición del vacío.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Filo del Vacío",
+   "role": "Espadachín · cortes dimensionales"
+  },
+  "glacia": {
+   "color": 8377343,
+   "desc": "La reina del hielo. Congela, ralentiza y encierra a sus enemigos con estacas, muros y tormentas de granizo.",
+   "group": "Magia",
+   "name": "Glacia",
+   "role": "Maga de hielo · control y zona"
+  },
+  "guerrero": {
+   "color": 14262374,
+   "desc": "Un guerrero de espada ancha: combos furiosos, saltos demoledores y torbellinos que arrasan todo a su alrededor.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Guerrero",
+   "role": "Guerrero · espada y furia"
+  },
+  "guerrero_despertado": {
+   "color": 16730698,
+   "desc": "Un guerrero despertado con una espada espiritual roja: combos brutales, saltos berserker, barreras de sangre y grietas que hacen estallar el suelo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Guerrero Despertado",
+   "role": "Guerrero · furia de sangre"
+  },
+  "guerrero_dragon": {
+   "color": 15246138,
+   "desc": "Un guerrero con lanza y alas de dragón: estocadas, alientos en X, lanzas que forman una zona de dragón y cargas que estrellan a los enemigos contra el suelo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Guerrero Dragón",
+   "role": "Lancero · poder del dragón"
+  },
+  "guerrero_llama": {
+   "color": 16742954,
+   "desc": "Un espadachín envuelto en llamas: tajos ardientes, embestidas de fuego y un tigre llameante que arrasa todo a su paso. Inmune al fuego y la lava.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Guerrero de las Llamas",
+   "role": "Espadachín · fuego"
+  },
+  "guja_vendaval": {
+   "color": 8381384,
+   "desc": "Un guerrero del viento con una guja: salta, cae despacio, levanta a sus enemigos y los arrastra con tornados.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Guja del Vendaval",
+   "role": "Lancero · viento y aire"
+  },
+  "invocador": {
+   "color": 7066111,
+   "desc": "Un invocador con un guardián espiritual a su lado que lucha por él, además de espadas mágicas, caballos y un fénix de fuego.",
+   "group": "Invocación",
+   "name": "Invocador",
+   "role": "Invocador · guardián espiritual"
+  },
+  "invocador_espiritus": {
+   "color": 6287568,
+   "desc": "Un invocador de espíritus ancestrales: lucha con una lanza espiritual, monta un caballo de espíritu y llama a serpientes, gólems, águilas y tigres que pelean a su lado.",
+   "group": "Invocación",
+   "name": "Invocador de Espíritus",
+   "role": "Invocador · esbirros ancestrales"
+  },
+  "katana_fuego": {
+   "color": 16734751,
+   "desc": "Un espadachín con una katana en llamas: tajos que dejan arcos de fuego, danzas giratorias y un último corte que marca el suelo con fuego.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Katana de Fuego",
+   "role": "Espadachín · tajos de fuego"
+  },
+  "luchador_despertado": {
+   "color": 16757575,
+   "desc": "Un maestro de las artes marciales: combos de puños y patadas, ondas de choque y un golpe del dragón que se teletransporta entre sus enemigos.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Luchador Despertado",
+   "role": "Artista marcial · golpes y patadas"
+  },
+  "mago": {
+   "color": 12160255,
+   "desc": "Domina el fuego, el hielo y lo arcano: bolas de fuego, meteoros y cadenas ardientes desde lejos.",
+   "group": "Magia",
+   "name": "Mago",
+   "role": "Hechicero arcano · daño a distancia"
+  },
+  "mago_despertado": {
+   "color": 5941503,
+   "desc": "Un mago que domina los tres elementos: bolas de fuego, prisiones de hielo, teletransportes de trueno y un meteoro de la perdición.",
+   "group": "Magia",
+   "name": "Mago Despertado",
+   "role": "Mago · fuego, hielo y trueno"
+  },
+  "mago_rayo": {
+   "color": 16179290,
+   "desc": "Un mago del rayo: lanza descargas, ondas y anillos eléctricos, levanta muros de rayos y dispara lanzas de trueno.",
+   "group": "Magia",
+   "name": "Mago del Rayo",
+   "role": "Mago · electricidad"
+  },
+  "nigromante": {
+   "color": 4186280,
+   "desc": "Un nigromante con una guadaña espectral: recoge las almas de los caídos y las usa para invocar guerreros, magos y caballeros esqueleto que luchan a su lado.",
+   "group": "Invocación",
+   "name": "Nigromante",
+   "role": "Invocador · ejército no muerto"
+  },
+  "null": {
+   "color": 10714111,
+   "desc": "Null, el arquero del vacío: flechas que marchitan, portales para escapar, agujeros negros y lluvias de flechas del vacío.",
+   "group": "A distancia",
+   "name": "Null",
+   "role": "Arquero del vacío"
+  },
+  "paladin": {
+   "color": 15911244,
+   "desc": "Un paladín con un martillo sagrado: golpes de égida, martillos lanzados y una forma celestial que lo protege del daño y del fuego.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Paladín",
+   "role": "Guerrero sagrado · martillo"
+  },
+  "picaro": {
+   "color": 9075711,
+   "desc": "Un pícaro con dos dagas: combos veloces, bombas de humo, gancho para moverse y una marca de muerte que estalla en sangre.",
+   "group": "Sigilo",
+   "name": "Pícaro",
+   "role": "Asesino · sangrado y movilidad"
+  },
+  "piromante": {
+   "color": 16730650,
+   "desc": "Un piromante que acumula calor con sus ataques hasta entrar en Ignición, potenciando misiles de ceniza, lanzas volcánicas, rayos de fuego y meteoros.",
+   "group": "Magia",
+   "name": "Piromante",
+   "role": "Mago · fuego e ignición"
+  },
+  "pistolero_despertado": {
+   "color": 16739146,
+   "desc": "Un pistolero letal: ráfagas que perforan, escopetazos incendiarios, marcas de ejecución y lluvias de misiles.",
+   "group": "A distancia",
+   "name": "Pistolero Despertado",
+   "role": "Tirador · balas y misiles"
+  },
+  "revenant": {
+   "color": 8281046,
+   "desc": "Un espíritu vengativo con una hoja de sombras: tajos oscuros, embestidas y un cataclismo del abismo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Aparecido",
+   "role": "Espadachín · sombras"
+  },
+  "ronin_trueno": {
+   "color": 16769354,
+   "desc": "Un samurái errante cargado de trueno: tajos que paralizan, desenvainados a la velocidad del rayo y una forma de Dios del Trueno.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Ronin del Trueno",
+   "role": "Samurái · rayos"
+  },
+  "samurai_agua": {
+   "color": 4900863,
+   "desc": "Un samurái que fluye como el agua: tajos en remolino, danzas que levantan a los enemigos y mareas que lo arrasan todo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Samurái del Agua",
+   "role": "Samurái · agua y movimiento"
+  },
+  "samurai_escarcha": {
+   "color": 10478847,
+   "desc": "Un samurái helado: filos de escarcha, una danza ártica a saltos, agujas de hielo y una caída invernal que congela el suelo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Samurái de Escarcha",
+   "role": "Samurái · hielo"
+  },
+  "sanador": {
+   "color": 8257434,
+   "desc": "Un sanador que mantiene vivos a sus aliados: rayos que curan o hieren, luz purificadora y un orbe que reparte curación.",
+   "group": "Apoyo",
+   "name": "Sanador",
+   "role": "Soporte · curación"
+  },
+  "thor": {
+   "color": 16765773,
+   "desc": "El dios del trueno con su martillo: lo lanza, invoca rayos y se eleva para estrellarse contra el suelo.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Thor",
+   "role": "Dios del trueno · golpes y aturdimiento"
+  },
+  "vampiro": {
+   "color": 14033482,
+   "desc": "Un vampiro que moldea su sangre en cuatro armas (Hojas, Grimorio, Agujas y Guadaña), cada una con sus combos, y roba la vida de sus enemigos.",
+   "group": "Cuerpo a cuerpo",
+   "name": "Vampiro de la Luna de Sangre",
+   "role": "Guerrero · sangre y robo de vida"
+  },
+  "zephyr": {
+   "color": 9433288,
+   "desc": "Un asesino que se mueve como el viento: marca a sus presas, las levanta con tornados y las remata en el aire.",
+   "group": "Sigilo",
+   "name": "Zephyr",
+   "role": "Asesino del viento · movilidad y combos"
+  }
+ },
+ "kills": {
+  "absorcion_sagrada": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Un haz de luz sagrada lo absorbe.",
+   "name": "Absorción Sagrada",
+   "order": 1
+  },
+  "abstracto": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Se deforma en formas imposibles.",
+   "name": "Abstracto",
+   "order": 4
+  },
+  "acido": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "El ácido lo corroe hasta deshacerlo.",
+   "name": "Ácido",
+   "order": 0
+  },
+  "arenas_movedizas": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "El suelo se abre y la arena se lo traga.",
+   "name": "Arenas Movedizas",
+   "order": 3
+  },
+  "ataque_tiburon": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Un tiburón sale del suelo y se lo lleva de un bocado.",
+   "name": "Ataque de Tiburón",
+   "order": 3
+  },
+  "aurora": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Una aurora boreal lo envuelve y se lo lleva.",
+   "name": "Aurora",
+   "order": 1
+  },
+  "bendicion_angelical": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Unas alas de luz se llevan el cuerpo al cielo.",
+   "name": "Bendición Angelical",
+   "order": 1
+  },
+  "bioluminiscencia": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Brilla con luz dorada y se eleva.",
+   "name": "Bioluminiscencia",
+   "order": 3
+  },
+  "bloques_caen": {
+   "cat": "Divertidos",
+   "color": 16740270,
+   "desc": "Piezas de colores caen del cielo y lo aplastan.",
+   "name": "Bloques que Caen",
+   "order": 5
+  },
+  "chispas": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Una descarga eléctrica lo hace chisporrotear.",
+   "name": "Chispas",
+   "order": 2
+  },
+  "colapso_vacio": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Un agujero del vacío lo aplasta en un destello.",
+   "name": "Colapso del Vacío",
+   "order": 1
+  },
+  "constelacion": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Planetas en órbita lo desintegran.",
+   "name": "Constelación",
+   "order": 1
+  },
+  "contorno": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Un lápiz repasa su silueta y la borra.",
+   "name": "Contorno",
+   "order": 4
+  },
+  "derretido": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Se derrite en un charco de agua.",
+   "name": "Derretido",
+   "order": 0
+  },
+  "energia_cinetica": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "La energía lo dispersa en todas direcciones.",
+   "name": "Energía Cinética",
+   "order": 2
+  },
+  "engranajes": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Se desmonta pieza a pieza como un reloj.",
+   "name": "Engranajes",
+   "order": 2
+  },
+  "escarcha": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "El hielo lo cubre y se hace añicos.",
+   "name": "Escarcha",
+   "order": 0
+  },
+  "espectral": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Su espíritu sale del cuerpo y se desvanece.",
+   "name": "Espectral",
+   "order": 2
+  },
+  "espejo": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Su reflejo se agrieta y se esfuma.",
+   "name": "Espejo",
+   "order": 2
+  },
+  "estrella_norte": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Se vuelve dorado y se apaga como una estrella.",
+   "name": "Estrella del Norte",
+   "order": 1
+  },
+  "evaporacion": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Se convierte en agua y se evapora.",
+   "name": "Evaporación",
+   "order": 0
+  },
+  "floracion": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Una rosa brota donde cayó.",
+   "name": "Floración",
+   "order": 3
+  },
+  "fuego_infernal": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Llamas de alma consumen el cuerpo hasta las cenizas.",
+   "name": "Fuego Infernal",
+   "order": 0
+  },
+  "game_over": {
+   "cat": "Divertidos",
+   "color": 16740270,
+   "desc": "Un comecocos de recreativa se zampa al caído.",
+   "name": "Game Over",
+   "order": 5
+  },
+  "grafiti": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Un grafiti de cómic estalla en su lugar.",
+   "name": "Grafiti",
+   "order": 4
+  },
+  "holograma": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "El cuerpo parpadea como un holograma y se apaga.",
+   "name": "Holograma",
+   "order": 2
+  },
+  "humo": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Desaparece en una nube de humo.",
+   "name": "Humo",
+   "order": 0
+  },
+  "impostor": {
+   "cat": "Divertidos",
+   "color": 16740270,
+   "desc": "Alguien sospechoso aparece por detrás. Puñalada.",
+   "name": "Impostor",
+   "order": 5
+  },
+  "jade": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Se cristaliza en jade y se rompe en pedazos.",
+   "name": "Jade",
+   "order": 0
+  },
+  "knockout": {
+   "cat": "Divertidos",
+   "color": 16740270,
+   "desc": "Golpe de cómic: K.O. y fuera del combate.",
+   "name": "K.O.",
+   "order": 5
+  },
+  "magnetismo": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Un campo magnético lo desarma.",
+   "name": "Magnetismo",
+   "order": 2
+  },
+  "manchas_tinta": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Se disuelve en manchas de tinta.",
+   "name": "Manchas de Tinta",
+   "order": 4
+  },
+  "miel": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Se convierte en bloques de miel.",
+   "name": "Miel",
+   "order": 3
+  },
+  "mosaico": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Se rompe en teselas de colores.",
+   "name": "Mosaico",
+   "order": 4
+  },
+  "naturaleza": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Las enredaderas brotan y lo cubren.",
+   "name": "Naturaleza",
+   "order": 3
+  },
+  "nebulosa": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Se disuelve en una nube de colores.",
+   "name": "Nebulosa",
+   "order": 1
+  },
+  "niebla": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Una niebla mística lo envuelve y lo borra.",
+   "name": "Niebla",
+   "order": 0
+  },
+  "onda_sonora": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Una onda de sonido lo deshace.",
+   "name": "Onda Sonora",
+   "order": 2
+  },
+  "orbe_plasma": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "Un orbe de plasma lo encierra y descarga rayos.",
+   "name": "Orbe de Plasma",
+   "order": 2
+  },
+  "origami": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Se pliega como una figura de papel.",
+   "name": "Origami",
+   "order": 4
+  },
+  "oxido": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Se oxida y se cae a trozos.",
+   "name": "Óxido",
+   "order": 0
+  },
+  "papel_quemado": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Arde como una hoja de papel.",
+   "name": "Papel Quemado",
+   "order": 4
+  },
+  "piedra": {
+   "cat": "Elementos",
+   "color": 16747069,
+   "desc": "Se vuelve de piedra y se desmorona.",
+   "name": "Piedra",
+   "order": 0
+  },
+  "planta_carnivora": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Una planta gigante brota y lo devora.",
+   "name": "Planta Carnívora",
+   "order": 3
+  },
+  "pluma_tinta": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Una pluma lo borra trazo a trazo.",
+   "name": "Pluma y Tinta",
+   "order": 4
+  },
+  "portal": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Un portal lo arrastra a otra dimensión.",
+   "name": "Portal",
+   "order": 1
+  },
+  "prisma": {
+   "cat": "Cielo y cosmos",
+   "color": 12025343,
+   "desc": "Un prisma lo descompone en luz.",
+   "name": "Prisma",
+   "order": 1
+  },
+  "reloj": {
+   "cat": "Energía y tecnología",
+   "color": 5032432,
+   "desc": "El tiempo se rebobina y lo borra.",
+   "name": "Reloj",
+   "order": 2
+  },
+  "sombras": {
+   "cat": "Arte y papel",
+   "color": 16765286,
+   "desc": "Las sombras del suelo se lo tragan.",
+   "name": "Sombras",
+   "order": 4
+  },
+  "tentaculos": {
+   "cat": "Naturaleza",
+   "color": 6280314,
+   "desc": "Tentáculos surgen del suelo y lo arrastran abajo.",
+   "name": "Tentáculos",
+   "order": 3
+  }
+ }
+}

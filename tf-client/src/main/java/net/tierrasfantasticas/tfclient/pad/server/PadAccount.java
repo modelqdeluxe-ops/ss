@@ -42,9 +42,11 @@ public final class PadAccount {
         public PadView view(ServerPlayer player, String tab) {
             PadView.Builder b = PadView.of("monedero");
             var balance = TFEconomy.balance(player.server, player.getUUID());
-            b.row(new PadView.Row(coin(), "Tu saldo", TEXT, List.of("Oficios, misiones, cazas, tienda y GTS."), -1,
-                    balance.isPresent() ? PadView.moneyExact(balance.getAsLong()) : "—", null, null));
+            // 1.4: el saldo, en grande arriba (la ficha de oro hace de cabecera); debajo lo que llega y los atajos
             double pending = TFJobs.pendingCoins(player.getUUID());
+            List<String> sub = List.of("Lo ganas con oficios, misiones, cazas, la tienda y el GTS.");
+            b.hero(new PadView.Row(coin(), "Tu saldo", 0xE6A019, sub, -1,
+                    balance.isPresent() ? PadView.moneyExact(balance.getAsLong()) : "—", null, null));
             if (pending >= 1) {
                 b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Por cobrar del oficio", TEXT, List.of("Llega en el próximo pago."), -1,
                         "+" + PadView.moneyExact((long) Math.floor(pending)), null, null));
@@ -156,8 +158,16 @@ public final class PadAccount {
                 for (TFRanks.Rank r : all) if (r.id().equals(tab.substring(2))) return detail(player, r, mine);
             }
             PadView.Builder b = PadView.of("rango");
-            b.header(mine == null ? "Sin rango. Tienda: " + TFBridge.storeHost()
-                    : "Tu rango: " + mine.name() + ".");
+            // 1.4: tu rango arriba en grande (su color, sus ventajas); debajo, los demás para verlos
+            if (mine == null) {
+                b.header("Sin rango. Tienda: " + TFBridge.storeHost());
+            } else {
+                List<String> perks = new ArrayList<>();
+                if (!mine.perks().isEmpty()) perks.add(mine.perks().get(0));
+                perks.add((mine.homes() > 0 ? mine.homes() + " hogares · " : "") + "Más rangos en " + TFBridge.storeHost() + ".");
+                b.hero(new PadView.Row(icon(mine), mine.name(), mine.hex() >= 0 ? mine.hex() : 0xD9A21E, perks, -1, "TU RANGO",
+                        PadView.Btn.of("VER", "tab:r:" + mine.id(), PadView.BLUE), null));
+            }
             for (TFRanks.Rank r : all) {
                 boolean on = mine != null && mine.id().equals(r.id());
                 List<String> lines = new ArrayList<>();
@@ -173,8 +183,8 @@ public final class PadAccount {
         private static PadView detail(ServerPlayer player, TFRanks.Rank r, TFRanks.Rank mine) {
             boolean on = mine != null && mine.id().equals(r.id());
             PadView.Builder b = PadView.of("rango");
-            b.row(new PadView.Row(icon(r), r.name(), r.hex() >= 0 ? r.hex() : TEXT,
-                    List.of(on ? "Es tu rango." : "Se consigue en " + TFBridge.storeHost() + "."), -1, on ? "TU RANGO" : "", null, null).selected(on));
+            b.hero(new PadView.Row(icon(r), r.name(), r.hex() >= 0 ? r.hex() : 0xD9A21E,
+                    List.of(on ? "Es tu rango." : "Se consigue en " + TFBridge.storeHost() + "."), -1, on ? "TU RANGO" : "", null, null));
             List<String> perks = new ArrayList<>(r.perks());
             if (r.homes() > 0 && perks.stream().noneMatch(p -> p.toLowerCase().contains("hogar"))) perks.add(r.homes() + " hogares.");
             if (!perks.isEmpty()) {

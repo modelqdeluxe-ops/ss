@@ -43,7 +43,65 @@ public final class PadWardrobe {
     public static final PadServer.App EFFECTS = new Effects();
 
     private static final int TEXT = 0x18265C;
+    /** El color de las tarjetas del Armario (el de la app). */
+    private static final int WARDROBE_COLOR = 0x9E5AE0;
     private static final String[] LABELS = {"CABEZA", "PECHO", "PIERNAS", "PIES", "ESPALDA"};
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Imágenes de los efectos (tools/pad/fx_images.py): textures/gui/pad/fx/kill_<id>.png, class_<id>.png y meta.json
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Lo que dice la web de un efecto de kill o de una clase: categoría (o grupo), color, descripción y orden. */
+    record FxMeta(String cat, int color, String desc, int order, String role) {}
+
+    private static Map<String, FxMeta> killMeta, classMeta;
+
+    private static synchronized void loadMeta() {
+        if (killMeta != null) return;
+        killMeta = new HashMap<>();
+        classMeta = new HashMap<>();
+        try (java.io.InputStream in = PadWardrobe.class.getResourceAsStream("/assets/tfclient/textures/gui/pad/fx/meta.json")) {
+            if (in == null) return;
+            JsonObject o = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+            for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("kills").entrySet()) {
+                JsonObject k = e.getValue().getAsJsonObject();
+                killMeta.put(e.getKey(), new FxMeta(TFJson.str(k, "cat", ""), k.has("color") ? k.get("color").getAsInt() : 0xE0489E,
+                        TFJson.str(k, "desc", ""), k.has("order") ? k.get("order").getAsInt() : 99, ""));
+            }
+            for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("classes").entrySet()) {
+                JsonObject c = e.getValue().getAsJsonObject();
+                classMeta.put(e.getKey(), new FxMeta(TFJson.str(c, "group", ""), c.has("color") ? c.get("color").getAsInt() : 0xE0489E,
+                        TFJson.str(c, "desc", ""), 0, TFJson.str(c, "role", "")));
+            }
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("TF Pad: no se pudo leer fx/meta.json", e);
+        }
+    }
+
+    static FxMeta killMeta(String id) {
+        loadMeta();
+        return killMeta.getOrDefault(id, new FxMeta("", 0xE0489E, "", 99, ""));
+    }
+
+    static FxMeta classMeta(String id) {
+        loadMeta();
+        return classMeta.getOrDefault(id, new FxMeta("", 0xE0489E, "", 0, ""));
+    }
+
+    /**
+     * Un color que se lee como texto sobre blanco: los muy claros (amarillos, celestes) se oscurecen hacia el azul
+     * noche del pad.
+     */
+    static int readable(int rgb) {
+        double lum = (0.299 * (rgb >> 16 & 255) + 0.587 * (rgb >> 8 & 255) + 0.114 * (rgb & 255)) / 255;
+        if (lum <= 0.55) return rgb;
+        float k = (float) Math.min(0.75, (lum - 0.55) / 0.45 + 0.35);
+        int r = Math.round((rgb >> 16 & 255) + (0x18 - (rgb >> 16 & 255)) * k);
+        int g = Math.round((rgb >> 8 & 255) + (0x26 - (rgb >> 8 & 255)) * k);
+        int b = Math.round((rgb & 255) + (0x5C - (rgb & 255)) * k);
+        return r << 16 | g << 8 | b;
+    }
 
     record Piece(String set, String id, String name, String slot, String from) {
         String key() {
@@ -113,18 +171,20 @@ public final class PadWardrobe {
             if (owned == null) {
                 return b.empty(TFBridge.connected() ? "Cargando…" : "Armario no disponible.").build();
             }
-            b.header("Solo estético.");
+            // 1.4: cada pieza es una tarjeta (pulsarla la pone; la puesta, marcada, se quita con QUITAR abajo)
             int n = 0;
+            String wornName = "";
             for (Piece p : owned) {
                 if (!p.slot.equals(key)) continue;
                 n++;
                 boolean on = worn[slot].equals(p.key());
-                List<String> lines = new ArrayList<>();
-                if (!p.from.isEmpty()) lines.add("De " + p.from + ".");
-                PadView.Btn btn = on ? PadView.Btn.of("QUITAR", "quitar:" + slot, PadView.RED) : PadView.Btn.of("PONER", "poner:" + slot + ":" + p.key(), PadView.GREEN);
-                b.row(new PadView.Row(stack(p.set, p.id), p.name.isEmpty() ? p.key() : p.name, TEXT, lines, -1, on ? "PUESTO" : "", btn, null)
-                        .selected(on));
+                String name = p.name.isEmpty() ? p.key() : p.name;
+                if (on) wornName = name;
+                b.card(stack(p.set, p.id), name, WARDROBE_COLOR, on ? "PUESTO" : p.from.isEmpty() ? "PONER" : p.from,
+                        on ? PadView.TONE_GREEN : PadView.TONE_BLUE, -1, "", on ? "" : "poner:" + slot + ":" + p.key(), on);
             }
+            b.header(wornName.isEmpty() ? "Solo estético: pulsa una pieza para ponértela." : "Llevas " + wornName + ". Solo estético.");
+            if (!wornName.isEmpty()) b.footer(PadView.Btn.of("QUITAR", "quitar:" + slot, PadView.RED));
             if (n == 0) b.empty("No tienes nada para " + LABELS[slot].toLowerCase() + ". Los sets de los rangos y de las crates de la tienda web aparecen aquí.");
             return b.build();
         }
@@ -172,18 +232,38 @@ public final class PadWardrobe {
             String[] eq = VfxServer.equipped(player.getUUID());
             PadView.Builder b = PadView.of("efectos").tab("", "AL MATAR").tab("skills", "SKILLS").selected(skills ? "skills" : "");
             if (!skills) {
-                b.header("Efecto al matar. Gratis.");
-                for (VfxCatalog.Kill k : VfxCatalog.kills().values()) {
-                    boolean on = k.id().equals(eq[0]);
-                    b.row(new PadView.Row(new ItemStack(Items.WITHER_SKELETON_SKULL), k.name(), TEXT, List.of(), -1, on ? "EQUIPADO" : "",
-                            on ? PadView.Btn.of("QUITAR", "quitar:kill", PadView.RED) : PadView.Btn.of("EQUIPAR", "kill:" + k.id(), PadView.GREEN), null)
-                            .selected(on));
-                }
-                if (VfxCatalog.kills().isEmpty()) b.empty("Sin efectos.");
+                killsTab(b, eq[0]);
             } else {
                 skillsTab(player, b);
             }
             return b.build();
+        }
+
+        /**
+         * AL MATAR (1.4): una galería con la imagen de cada efecto (la de la web: el zombi con el efecto puesto),
+         * agrupados por categoría (la vitrina, de su color) y con la categoría en la etiqueta. Pulsar uno lo equipa; el
+         * equipado sale marcado (oro, «EQUIPADO») y se quita con QUITAR EFECTO abajo.
+         */
+        private static void killsTab(PadView.Builder b, String equipped) {
+            List<VfxCatalog.Kill> kills = new ArrayList<>(VfxCatalog.kills().values());
+            kills.sort(java.util.Comparator.comparingInt(k -> killMeta(k.id()).order()));
+            VfxCatalog.Kill on = VfxCatalog.kill(equipped);
+            if (on != null) {
+                String desc = killMeta(on.id()).desc();
+                b.header("Equipado: " + on.name() + (desc.isEmpty() ? "." : " · " + desc));
+                b.footer(PadView.Btn.of("QUITAR EFECTO", "quitar:kill", PadView.RED));
+            } else {
+                b.header("Elige el efecto que sale al matar. Gratis.");
+            }
+            b.gallery();
+            for (VfxCatalog.Kill k : kills) {
+                FxMeta m = killMeta(k.id());
+                boolean sel = on != null && k.id().equals(on.id());
+                b.cell(new PadView.Cell(new ItemStack(Items.NETHER_STAR), k.name(), m.color(), sel ? "" : "kill:" + k.id(), sel,
+                        sel ? "EQUIPADO" : m.cat().isEmpty() ? "EQUIPAR" : m.cat(), -1, "", sel ? PadView.TONE_GREEN : PadView.TONE_BLUE)
+                        .image(PadView.padImage("fx/kill_" + k.id())));
+            }
+            if (kills.isEmpty()) b.empty("Sin efectos.");
         }
 
         /**
@@ -203,27 +283,46 @@ public final class PadWardrobe {
                 }
                 return;
             }
-            b.header("Una activa a la vez. Elige skill con 5-0 y úsala con clic izquierdo.");
+            // 1.4: la clase activa arriba en grande (su icono, su papel y DESACTIVAR); debajo sus skills con el icono de
+            // cada una, lo que hace, su recarga y su tecla; y abajo las demás clases que tienes, con su icono y ACTIVAR
+            SkillDefs.ClassDef cur = active == null ? null : SkillDefs.get(active);
+            String[] keys = {"5", "6", "7", "8", "9", "0"};
+            if (cur != null) {
+                FxMeta m = classMeta(cur.id);
+                List<String> lines = new ArrayList<>();
+                if (!cur.role.isEmpty()) lines.add(cur.role);
+                lines.add(cur.bow() ? "Elige skill con 5-0: sale al disparar con tu arco." : "Elige skill con 5-0 y úsala con clic izquierdo.");
+                b.hero(new PadView.Row(new ItemStack(Items.ENCHANTED_BOOK), cur.name, m.color(), lines, -1, "ACTIVA",
+                        PadView.Btn.of("DESACTIVAR", "clase:-", PadView.RED), null).image(PadView.padImage("fx/class_" + cur.id)));
+                List<SkillDefs.SkillDef> acts = cur.actives();
+                int titleColor = readable(m.color());
+                for (int i = 0; i < acts.size() && i < keys.length; i++) {
+                    SkillDefs.SkillDef s = acts.get(i);
+                    List<String> about = new ArrayList<>();
+                    String cd = s.cooldown() > 0 ? "Recarga " + (s.cooldown() == Math.floor(s.cooldown()) ? String.valueOf((long) s.cooldown())
+                            : String.valueOf(s.cooldown()).replace('.', ',')) + " s" : "";
+                    String kind = i == cur.basicSlot() ? "Ataque básico" : "";
+                    String head = kind.isEmpty() ? cd : cd.isEmpty() ? kind : kind + " · " + cd;
+                    if (!s.desc().isEmpty()) about.add(head.isEmpty() ? s.desc() : head + " · " + s.desc());
+                    else if (!head.isEmpty()) about.add(head);
+                    b.row(new PadView.Row(new ItemStack(Items.ENCHANTED_BOOK), s.name(), titleColor, about, -1, "TECLA " + keys[i], null, null)
+                            .image(cur.icons.getOrDefault(s.id(), "")));
+                }
+            } else {
+                b.header("Una activa a la vez: elige la tuya. Luego, skill con 5-0 y clic izquierdo.");
+            }
+            boolean others = false;
             for (String id : mine) {
                 SkillDefs.ClassDef def = SkillDefs.get(id);
-                if (def == null) continue;
-                boolean on = id.equals(active);
+                if (def == null || id.equals(active)) continue;
+                if (!others && cur != null) b.text("TUS OTRAS CLASES", TEXT, List.of());
+                others = true;
+                FxMeta m = classMeta(id);
                 List<String> lines = new ArrayList<>();
                 if (!def.role.isEmpty()) lines.add(def.role);
-                if (on) {
-                    String[] keys = {"5", "6", "7", "8", "9", "0"};
-                    List<SkillDefs.SkillDef> acts = def.actives();
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < acts.size() && i < keys.length; i++) {
-                        if (sb.length() > 0) sb.append(" · ");
-                        sb.append(keys[i]).append(" ").append(acts.get(i).name());
-                    }
-                    lines.add(sb.toString());
-                    if (def.bow()) lines.add("Clase de arco: la skill sale al disparar con tu arco.");
-                }
-                PadView.Btn btn = on ? PadView.Btn.of("DESACTIVAR", "clase:-", PadView.RED) : PadView.Btn.of("ACTIVAR", "clase:" + id, PadView.GREEN);
-                b.row(new PadView.Row(new ItemStack(Items.ENCHANTED_BOOK), def.name, TEXT, lines, -1, on ? "ACTIVA" : "", btn, null)
-                        .selected(on));
+                if (!m.cat().isEmpty()) lines.add(m.cat() + " · " + def.actives().size() + " skills");
+                b.row(new PadView.Row(new ItemStack(Items.ENCHANTED_BOOK), def.name, readable(m.color()), lines, -1, "",
+                        PadView.Btn.of("ACTIVAR", "clase:" + id, PadView.GREEN), null).image(PadView.padImage("fx/class_" + id)));
             }
         }
 

@@ -177,12 +177,14 @@ final class PadUi {
         return head + fitEnd(rest, Math.max(6, room));
     }
 
-    /** Dibuja la etiqueta (alto h: 11, 12 o 14) del tono dado. Devuelve su ancho. */
+    /** Dibuja la etiqueta (alto h: 11, 12 o 14) del tono dado, con brillo arriba y su sombra (1.4). Devuelve su ancho. */
     static int chip(GuiGraphics g, int x, int y, String text, int tone, int h) {
         int[] c = CHIP[Math.max(1, Math.min(4, tone)) - 1];
         int w = chipWidth(text);
+        g.fill(x + 1, y + h, x + w - 1, y + h + 1, 0x46000000 | c[0] & 0xFFFFFF);
         box(g, x, y, w, h, c[0]);
         g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, c[1], c[2]);
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
         boolean plus = text.startsWith("+¤"), coin = plus || text.startsWith("¤");
         String rest = plus ? text.substring(2) : coin ? text.substring(1) : text;
         int tx = x + 4, ty = y + (h - 8) / 2 + 1;

@@ -4,13 +4,15 @@ Dibuja las apps con el mismo layout que PadViewPage (pestañas, cabecera, rejill
 PadCameraPage, con la fuente de Minecraft, y una hoja con todas (hoja_apps.png). Los datos son de ejemplo. Si cambias
 posiciones en esas clases Java, cámbialas también en sim.py.
 """
+import json
 import os
 import sys
 
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from sim import NAVY, ROOT, Sim, rgb  # noqa: E402
+from sim import NAVY, ROOT, Sim, lighten, rgb  # noqa: E402
+from skin import accent, mix, darken as darken_t  # noqa: E402
 
 if len(sys.argv) < 2:
     sys.exit('Uso: python3 tools/pad/sim/pages.py <carpeta de salida>')
@@ -43,14 +45,31 @@ class Local:
         s.X, s.Y, s.W, s.H, s.bs, s.big = self.saved
 
 
-def page(name, title, *args, **kw):
-    """Una app del servidor (PadViewPage): a la escala grande, como en el juego desde la 1.3.25."""
+ONLY = set(filter(None, os.environ.get('PAGES', '').split(',')))
+FX = os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/gui/pad/fx')
+SKILLS = os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/gui/skills')
+
+
+def page(name, title, *args, app='', **kw):
+    """Una app del servidor (PadViewPage): a la escala grande, como en el juego desde la 1.3.25. app: su id (el color,
+    el icono y la frase de su cabecera)."""
+    if ONLY and name not in ONLY:
+        return
     s = Sim()
     s.status(title)
     with Local(s):
-        s.view(*args, **kw)
+        s.view(*args, app=app, **kw)
     s.save(OUT + name + '.png')
     NAMES.append(name)
+
+
+def fx(kind, id_):
+    """La imagen de un efecto (PadView.padImage('fx/kill_…') o 'fx/class_…'): tools/pad/fx_images.py."""
+    return {'img': os.path.join(FX, f'{kind}_{id_}.png'), 'smooth': kind == 'kill'}
+
+
+def skill_icon(cls, skill):
+    return {'img': os.path.join(SKILLS, cls, skill + '.png'), 'smooth': False}
 
 
 APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'), ('pase', 'TF PASS'), ('gachapon', 'GACHAPÓN'), ('cazas', 'CAZAS'),
@@ -61,19 +80,30 @@ APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'),
 ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('recompensas', 'RECOMPENSAS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
          ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('admin', 'AJUSTES')]
 
-s = Sim()
-s.status('TF PAD', back=False, music=True)
-s.home(APPS, hover='hogares', glint='tienda')
-s.save(OUT + 'p_inicio.png')
-NAMES.append('p_inicio')
+if not ONLY or 'p_inicio' in ONLY:
+    s = Sim()
+    s.status('TF PAD', back=False, music=True)
+    s.home(APPS, hover='hogares', glint='tienda')
+    s.save(OUT + 'p_inicio.png')
+    NAMES.append('p_inicio')
+    # el fondo animado en otros dos momentos (las luces suben y el haz cruza)
+    for tt in (4.2, 9.6):
+        s = Sim(backdrop=False)
+        s.T = tt
+        s.backdrop(tt)
+        s.status('TF PAD', back=False, music=True)
+        s.home(APPS)
+        s.save(OUT + f'p_inicio_t{int(tt)}.png')
 
-s = Sim()
-s.status('PAD ADMIN', back=False, title_color=rgb(0xFFD36A), greens=False)
-s.home(ADMIN)
-s.save(OUT + 'p_admin.png')
-NAMES.append('p_admin')
+if not ONLY or 'p_admin' in ONLY:
+    s = Sim()
+    s.status('PAD ADMIN', back=False, title_color=rgb(0xFFD36A), greens=False)
+    s.home(ADMIN)
+    s.save(OUT + 'p_admin.png')
+    NAMES.append('p_admin')
 
-page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], cards=[
+# --- Oficios -----------------------------------------------------------------------------------------------------------
+page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], app='oficios', hover=2, cards=[
     ('wheat', 'Granjero', 0x6FB43C, 'Nivel 3', False, 1, {'prog': 0.5}),
     ('iron_pickaxe', 'Minero', 0x8C9BB4, 'Nivel 12', True, 1, {'prog': 0.28, 'badge': '+2'}),
     ('iron_axe', 'Leñador', 0xA0703C, 'Nivel 5', False, 1, {'prog': 0.8}),
@@ -87,101 +117,89 @@ page('p_oficio', 'OFICIOS', [('m', 'MISIONES (1)'), ('a', 'CÓMO SE GANA'), ('r'
     ('coal', 'Carbón para la forja', T, ['Saca 32 menas de carbón: 32/32 · cada día'], 1.0, '+¤120', ('COBRAR', G), None, True),
     ('iron_ore', 'Vena de hierro', T, ['Saca 16 menas de hierro: 9/16 · cada día'], 0.56, '+¤200', None, None),
 ], hero=('iron_pickaxe', 'Minero · tu oficio', 0x8C9BB4, ['Pica piedra y minerales bajo tierra.', 'Nivel 12 de 50 · 340/1200 xp.'], 0.28, '', None, None),
-     footer=[('ATRÁS', B), ('DEJAR', R)])
-page('p_tienda', 'TIENDA', [('', 'COMPRAR'), ('v', 'VENDER')], '', [], [
-    ('diamond', 'Minerales', 0x3CB4E6, ['Diamante, netherita, lapislázuli'], -1, '3 objetos', None, None),
-    ('bread', 'Comida', 0xD2A050, ['Pan, filete, manzana dorada'], -1, '8 objetos', None, None),
-])
-page('p_tienda_cat', 'TIENDA', [], '', ['Minerales'], [], cards=[
-    ('diamond', 'Diamante', 0xF6B628, '¤950', False), ('netherite_scrap', 'Chatarra de netherita', 0xF6B628, '¤6.000', False),
-    ('lapis_lazuli', 'Lapislázuli', 0x40C850, '+¤12', False), ('emerald', 'Esmeralda', 0xF6B628, '¤1.200', False),
-    ('gold_ingot', 'Lingote de oro', 0xF6B628, '¤300', False),
-], footer=[('ATRÁS', B)])
-page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], '', [], [
-    ('diamond_sword', 'Espada de diamante', T, ['Lo vende Steve · quedan 3 días.'], -1, '¤5.000', ('COMPRAR', GO), None),
-    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '¤120K', ('SIN SALDO', GR, False), None),
-    ('trident', 'Tridente', T, ['Tuyo · quedan 2 días.'], -1, '¤40.000', ('RETIRAR', R), None, True),
-    ('totem_of_undying', 'Tótem de la inmortalidad', T, ['Lo vende Notch · quedan 18 h.'], -1, '¤25.000', ('COMPRAR', GO), None),
-    ('enchanted_book', 'Libro encantado', T, ['Lo vende Steve · quedan 6 días.'], -1, '¤2.500', ('COMPRAR', GO), None),
-], input_=('BUSCAR OBJETO O JUGADOR', 'BUSCAR', ''))
-page('p_gts_item', 'GTS', [], '', [], [
-    ('', 'Lo que dice el objeto', T, ['Filo V', 'Irrompible III', 'Reparación'], -1, '', None, None),
-], hero=('diamond_sword', 'Espada de diamante', 0xF6B628, ['Lo vende Steve · quedan 3 días.', 'Tienes 12.450 monedas.'], -1,
-         '¤5.000', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
-page('p_gts_item_solo', 'GTS', [], '', [], [],
-     hero=('totem_of_undying', 'Tótem de la inmortalidad', 0xF6B628, ['Lo vende Notch · quedan 18 h.', 'Tienes 30.000 monedas.'], -1,
-           '¤25.000', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)])
-# PadShop.item: la ficha de compra, sin pestañas (comprar y vender no se mezclan). Cada tarjeta lleva el objeto
-# marcado con sus unidades de verdad (128, 1.024; no 64) y, si no se puede pagar, lo que falta (exacto hasta 9.999).
-page('p_tienda_comprar', 'TIENDA', [], 'i:0:0:b', [], [], cards=[
-    ('oak_log', '16 unidades', 0xF6B628, '¤32', False, 16),
-    ('oak_log', '128 unidades', 0xF6B628, 'Faltan 53', False, 128, {'off': True}),
-    ('oak_log', '1.024 unidades', 0xF6B628, 'Faltan 1.845', False, 1024, {'off': True}),
-], hero=('oak_log', 'Tronco de roble', 0xF6B628, ['Precio por 16 unidades · llevas 0.', 'Tienes 203 monedas.'], -1, '¤32', None, None, 16),
-     input_=('OTRA CANTIDAD (DE 16 EN 16)', 'COMPRAR', ''), footer=[('ATRÁS', B)])
-page('p_viajes', 'VIAJES', [], '', [], [], cards=[
-    ('compass_00', 'Spawn', 0x3496FA, 'Mundo normal', False), ('red_bed', 'Tu cama', 0xE83446, 'Mundo normal', False),
-    ('filled_map', 'Mercado', 0xF6B628, 'Mundo normal', False), ('ender_pearl', 'Arena PvP', 0x9A5CF0, 'Warp', False),
-    ('ender_pearl', 'Nether hub', 0x9A5CF0, 'Warp', False), ('spyglass', 'Explorar', 0x40C850, 'Al azar', False),
-    ('oak_door', 'Tus hogares', 0xC27A10, 'Abrir', False),
-])
-page('p_kits', 'KITS', [], '', ['1 listo para reclamar.'], [], cards=[
-    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False, 1, {'tone': 3}), ('bread', 'Constructor', 0x40C850, 'Listo', True, 1, {'tone': 2}),
-    ('iron_sword', 'Semanal', 0xF6B628, 'en 3 d 4 h', False), ('diamond', 'VIP', 0xF6B628, 'en 5 h', False),
-])
+     footer=[('ATRÁS', B), ('DEJAR', R)], app='oficios')
+
+# --- Misiones y Cazas --------------------------------------------------------------------------------------------------
+page('p_misiones', 'MISIONES', [('diarias', 'DIARIAS'), ('semanales', 'SEMANALES')], 'diarias', ['Se renuevan en 5 h 12 min.'], [
+    ('coal', 'Minero de carbón', T, ['Saca 24 menas de carbón  ·  24/24  ·  +100 XP de pase'], 1.0, '+¤80', ('RECLAMAR', G), None),
+    ('rotten_flesh', 'Noche de zombis', T, ['Derrota 15 zombis  ·  9/15  ·  +100 XP de pase'], 0.6, '+¤90', None, None),
+    ('wheat', 'Cosecha del día', M, ['Recoge 64 de trigo  ·  hecha'], 1.0, 'HECHA', None, None),
+], footer=[('RECLAMAR TODO', G)], app='misiones', hover_row=1)
+page('p_cazas', 'CAZAS', [], '', ['Las mismas para todo el servidor. Nuevas cazas en 2 d 4 h.'], [
+    ('bone', 'Cazador de esqueletos', T, ['Derrota 40 esqueletos  ·  28/40'], 0.7, '+¤250', None, None),
+    ('spider_eye', 'Telarañas fuera', T, ['Derrota 25 arañas  ·  25/25'], 1.0, '+¤180', ('RECLAMAR', G), None),
+    ('blaze_rod', 'Fuego del Nether', T, ['Derrota 10 blazes  ·  2/10'], 0.2, '+¤400', None, None),
+], app='cazas')
+
+# --- Recompensas -------------------------------------------------------------------------------------------------------
 page('p_recompensas', 'RECOMPENSAS', [('diaria', 'DIARIA'), ('otras', 'OTRAS (1)')], 'diaria',
-     ['Día 3 de 7: ¡reclámala! Si te saltas un día, vuelves al día 1.'], [], cards=[
+     ['Día 3 de 7: ¡reclámala! Si te saltas un día, vuelves al día 1.'], [], app='recompensas', hover=3, cards=[
          ('bread', 'Día 1 · 25', 0xAABAD2, 'Reclamada', False, 8, {'tone': 3}), ('torch', 'Día 2 · 25', 0xAABAD2, 'Reclamada', False, 16, {'tone': 3}),
          ('iron_ingot', 'Día 3 · 50', 0x40C850, '¡Hoy!', True, 4, {'tone': 2}), ('cooked_beef', 'Día 4 · 50', 0xF6B628, 'Mañana', False, 12),
          ('golden_carrot', 'Día 5 · 75', 0xF6B628, '', False, 8), ('experience_bottle', 'Día 6 · 100', 0xF6B628, '', False, 8),
          ('diamond', 'Día 7 · 200', 0xF6B628, '', False, 2),
      ], footer=[('RECLAMAR DÍA 3', G)])
-page('a_recompensas', 'RECOMPENSAS', [('cal', 'CALENDARIO'), ('otras', 'OTRAS')], 'cal',
-     ['El calendario diario: cada día se reclama el siguiente de la racha. Pulsa un día para cambiarlo.'], [
-         ('clock_00', 'Calendario', T, ['Encendido.'], -1, '', ('SÍ', G), None),
-         ('compass_00', 'Si alguien se salta un día', T, ['Vuelve al día 1.'], -1, '', ('CAMBIAR', B), None),
-     ], cards=[
-         ('bread', 'Día 1', 0xF6B628, '1 obj. · 25', False, 8), ('torch', 'Día 2', 0xF6B628, '1 obj. · 25', False, 16),
-         ('iron_ingot', 'Día 3', 0xF6B628, '1 obj. · 50', False, 4), ('cooked_beef', 'Día 4', 0xF6B628, '1 obj. · 50', False, 12),
-         ('golden_carrot', 'Día 5', 0xF6B628, '1 obj. · 75', False, 8), ('experience_bottle', 'Día 6', 0xF6B628, '1 obj. · 100', False, 8),
-         ('diamond', 'Día 7', 0xF6B628, '1 obj. · 200', False, 2),
-     ], footer=[('AÑADIR DÍA', G), ('QUITAR EL ÚLTIMO', R)])
-page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
-     ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], cells=[
-         (n, '', T, False) for n in ('stone', 'granite', 'diorite', 'andesite', 'grass_block', 'dirt', 'cobblestone', 'oak_planks',
-                                     'spruce_planks', 'birch_planks', 'oak_sapling', 'sand', 'gravel', 'gold_ore', 'iron_ore',
-                                     'coal_ore', 'oak_log', 'spruce_log', 'birch_log', 'glass', 'lapis_ore', 'sandstone',
-                                     'white_wool', 'orange_wool', 'gold_block', 'iron_block', 'bricks', 'tnt', 'bookshelf',
-                                     'obsidian', 'torch', 'chest', 'diamond_ore', 'diamond_block', 'crafting_table', 'furnace')
-     ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('»', B), ('×16', GO), ('ATRÁS', B)])
-page('p_kit', 'KITS', [], '', [], [], cards=[
+
+# --- Tienda y GTS ------------------------------------------------------------------------------------------------------
+page('p_tienda', 'TIENDA', [('', 'COMPRAR'), ('v', 'VENDER')], '', [], [
+    ('diamond', 'Minerales', 0x3CB4E6, ['Diamante, netherita, lapislázuli'], -1, '3 objetos', None, None),
+    ('bread', 'Comida', 0xD2A050, ['Pan, filete, manzana dorada'], -1, '8 objetos', None, None),
+    ('oak_log', 'Bloques', 0x8C6A3C, ['Troncos, piedra, cristal'], -1, '24 objetos', None, None),
+    ('enchanted_book', 'Encantamientos', 0x9A5CF0, ['Libros para tus herramientas'], -1, '6 objetos', None, None),
+], app='tienda', hover_row=0)
+page('p_tienda_cat', 'TIENDA', [], '', ['Minerales'], [], app='tienda', hover=1, cards=[
+    ('diamond', 'Diamante', 0xF6B628, '¤950', False), ('netherite_scrap', 'Chatarra de netherita', 0xF6B628, '¤6.000', False),
+    ('lapis_lazuli', 'Lapislázuli', 0x40C850, '+¤12', False), ('emerald', 'Esmeralda', 0xF6B628, '¤1.200', False),
+    ('gold_ingot', 'Lingote de oro', 0xF6B628, '¤300', False),
+], footer=[('ATRÁS', B)])
+page('p_tienda_comprar', 'TIENDA', [], 'i:0:0:b', [], [], app='tienda', cards=[
+    ('oak_log', '16 unidades', 0xF6B628, '¤32', False, 16),
+    ('oak_log', '128 unidades', 0xF6B628, 'Faltan 53', False, 128, {'off': True}),
+    ('oak_log', '1.024 unidades', 0xF6B628, 'Faltan 1.845', False, 1024, {'off': True}),
+], hero=('oak_log', 'Tronco de roble', 0xF6B628, ['Precio por 16 unidades · llevas 0.', 'Tienes 203 monedas.'], -1, '¤32', None, None, 16),
+     input_=('OTRA CANTIDAD (DE 16 EN 16)', 'COMPRAR', ''), footer=[('ATRÁS', B)])
+page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'), ('r', 'RECOGER')], '', [], [
+    ('diamond_sword', 'Espada de diamante', T, ['Lo vende Steve · quedan 3 días.'], -1, '¤5.000', ('COMPRAR', GO), None),
+    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '¤120K', ('SIN SALDO', GR, False), None),
+    ('trident', 'Tridente', T, ['Tuyo · quedan 2 días.'], -1, '¤40.000', ('RETIRAR', R), None, True),
+    ('totem_of_undying', 'Tótem de la inmortalidad', T, ['Lo vende Notch · quedan 18 h.'], -1, '¤25.000', ('COMPRAR', GO), None),
+], input_=('BUSCAR OBJETO O JUGADOR', 'BUSCAR', ''), app='gts', hover_row=0)
+page('p_gts_item', 'GTS', [], '', [], [
+    ('', 'Lo que dice el objeto', T, ['Filo V', 'Irrompible III', 'Reparación'], -1, '', None, None),
+], hero=('diamond_sword', 'Espada de diamante', 0xF6B628, ['Lo vende Steve · quedan 3 días.', 'Tienes 12.450 monedas.'], -1,
+         '¤5.000', None, None), footer=[('ATRÁS', B), ('COMPRAR', GO)], app='gts')
+
+# --- Monedero (1.4: el saldo en grande) ----------------------------------------------------------------------------------
+page('p_monedero', 'MONEDERO', [], '', [], [
+    ('clock_00', 'Por cobrar del oficio', T, ['Llega en el próximo pago.'], -1, '+¤42', None, None),
+    ('emerald', 'A la venta en el GTS', T, ['2 cosas. Cobras al momento cuando se venden.'], -1, '¤45.000', ('VER', B), None),
+    ('chest', 'Tienda', T, ['Compra y vende con el servidor.'], -1, '', ('ABRIR', B), None),
+    ('iron_pickaxe', 'Oficios', T, ['Gana monedas trabajando.'], -1, '', ('ABRIR', B), None),
+], hero=('tf:fantastic_coin', 'Tu saldo', 0xE6A019, ['Lo ganas con oficios, misiones, cazas, la tienda y el GTS.'], -1, '¤12.450', None, None),
+     input_=('MANDAR: JUGADOR CANTIDAD', 'PREPARAR', ''), app='monedero')
+
+# --- Viajes, Hogares, Kits ---------------------------------------------------------------------------------------------
+page('p_viajes', 'VIAJES', [], '', [], [], app='viajes', hover=4, cards=[
+    ('compass_00', 'Spawn', 0x3496FA, 'Mundo normal', False), ('red_bed', 'Tu cama', 0xE83446, 'Mundo normal', False),
+    ('filled_map', 'Mercado', 0xF6B628, 'Mundo normal', False), ('ender_pearl', 'Arena PvP', 0x9A5CF0, 'Warp', False),
+    ('ender_pearl', 'Nether hub', 0x9A5CF0, 'Warp', False), ('spyglass', 'Explorar', 0x40C850, 'Al azar', False),
+    ('oak_door', 'Tus hogares', 0xC27A10, 'Abrir', False),
+])
+page('p_hogares', 'HOGARES', [], '', ['2 de 5 hogares.'], [
+    ('red_bed', 'casa', T, ['Mundo normal · 120, 64, -340 · a 85 m'], -1, '', ('IR', B), ('BORRAR', R)),
+    ('crimson_nylium', 'base_nether', T, ['Nether · 40, 70, 12'], -1, '', ('IR', B), ('BORRAR', R)),
+], input_=('NOMBRE DEL HOGAR', 'GUARDAR AQUÍ', ''), app='hogares', hover_row=0)
+page('p_kits', 'KITS', [], '', ['1 listo para reclamar.'], [], app='kits', cards=[
+    ('bundle', 'Kit inicial', 0xAABAD2, 'Reclamado', False, 1, {'tone': 3}), ('bread', 'Constructor', 0x40C850, 'Listo', True, 1, {'tone': 2}),
+    ('iron_sword', 'Semanal', 0xF6B628, 'en 3 d 4 h', False), ('diamond', 'VIP', 0xF6B628, 'en 5 h', False),
+])
+page('p_kit', 'KITS', [], '', [], [], app='kits', cards=[
     ('bread', 'Pan', 0x3496FA, '', False, 16), ('cooked_beef', 'Filete', 0x3496FA, '', False, 8),
     ('torch', 'Antorcha', 0x3496FA, '', False, 32), ('tf:fantastic_coin', '200 monedas', 0xF6B628, '', False),
 ], hero=('bread', 'Constructor', 0x40C850, ['Para empezar a construir.', 'Cada 12 h · listo para reclamar.'], -1, '', None, None),
      footer=[('ATRÁS', B), ('RECLAMAR', G)])
-page('p_jugadores', 'JUGADORES', [], '', ['3 conectados'], [], cards=[
-    ('player_head', 'Pewez777 (tú)', 0xF6B628, 'Rey', False), ('player_head', 'Steve', 0x3496FA, 'Mortal', False),
-    ('player_head', 'Alex', 0x3496FA, '', False),
-])
-page('p_regalar', 'JUGADORES', [('f', 'FICHA'), ('r', 'REGALAR')], 'r',
-     ['Regalo para Steve: elige un objeto o escribe monedas. Te quedan 9 hoy.'], [], cells=[
-         ('diamond_pickaxe', '', M, False), ('golden_apple', '', M, True), ('bread', '', M, False), ('torch', '', M, False),
-         ('iron_ingot', '', M, False), ('tf:pad_admin', 'NO', M, False), ('arrow', '', M, False), ('bow', '', M, False),
-     ], input_=('MONEDAS', 'ENVIAR', ''), footer=[('REGALAR', G)])
-page('p_hogares', 'HOGARES', [], '', ['2 de 5 hogares.'], [
-    ('red_bed', 'casa', T, ['Mundo normal · 120, 64, -340 · a 85 m'], -1, '', ('IR', B), ('BORRAR', R)),
-    ('crimson_nylium', 'base_nether', T, ['Nether · 40, 70, 12'], -1, '', ('IR', B), ('BORRAR', R)),
-], input_=('NOMBRE DEL HOGAR', 'GUARDAR AQUÍ', ''))
-page('p_misiones', 'MISIONES', [('diarias', 'DIARIAS'), ('semanales', 'SEMANALES')], 'diarias', ['Se renuevan en 5 h 12 min.'], [
-    ('coal', 'Minero de carbón', T, ['Saca 24 menas de carbón  ·  24/24  ·  +100 XP de pase'], 1.0, '+¤80', ('RECLAMAR', G), None),
-    ('rotten_flesh', 'Noche de zombis', T, ['Derrota 15 zombis  ·  9/15  ·  +100 XP de pase'], 0.6, '+¤90', None, None),
-], footer=[('RECLAMAR TODO', G)])
-page('a_tienda_item', 'TIENDA', [], '', ['Minerales · Diamante'], [
-    ('gold_ingot', 'Precio de compra', T, ['Lo que paga el jugador por lote. 0 = no se vende.'], -1, '950', ('EDITAR', B), None, True),
-    ('emerald', 'Precio de venta', T, ['Lo que cobra el jugador. 0 = la tienda no lo compra.'], -1, '400', ('EDITAR', B), None),
-    ('chest', 'Cantidad por lote', T, ['Objetos que van en cada lote.'], -1, '1', ('EDITAR', B), None),
-], input_=('NUEVO VALOR', 'GUARDAR', '1200'), footer=[('ATRÁS', B)])
-# Protección → AJUSTES (PadClaims.settings, 1.3.34): cada opción es una pregunta; SÍ y NO, el que vale ahora en verde
+
+# --- Protección y Clanes -----------------------------------------------------------------------------------------------
 ZT = [('a', 'AJUSTES'), ('m', 'MIEMBROS (2)'), ('b', 'BANEOS'), ('p', 'PARTÍCULAS'), ('x', 'MÁS')]
 page('p_proteccion', 'PROTECCIÓN', ZT, 'a', ['Zona 100x100 · Mundo normal · 120, 64, -340'], [
     ('bricks', '¿Pueden construir?', T, [], -1, '', ('SÍ', GR), ('NO', G)),
@@ -189,14 +207,172 @@ page('p_proteccion', 'PROTECCIÓN', ZT, 'a', ['Zona 100x100 · Mundo normal · 1
     ('chest', '¿Pueden abrir cofres?', T, ['Y barriles.'], -1, '', ('SÍ', GR), ('NO', G)),
     ('ender_pearl', '¿Pueden entrar con perlas?', T, ['Lanzando perlas de ender.'], -1, '', ('SÍ', G), ('NO', GR)),
     ('tnt', '¿Las explosiones rompen?', T, ['TNT y creepers.'], -1, '', ('SÍ', G), ('NO', GR)),
-    ('blaze_powder', '¿Arden los monstruos?', T, ['Los que entran en la zona.'], -1, '', ('SÍ', G), ('NO', GR)),
-    ('bell', '¿Avisarte si entra alguien?', T, [], -1, '', ('SÍ', GR), ('NO', G)),
-], footer=[('ATRÁS', B)])
+], footer=[('ATRÁS', B)], app='protecciones')
+page('p_clanes', 'CLANES', [('miembros', 'MIEMBROS'), ('ajustes', 'AJUSTES')], 'miembros',
+     ['Los Lobos [LOB] · 3/10 miembros · jefe: Pewez777'], [
+         ('player_head', 'Pewez777', 0x1E7C2C, ['Jefe · conectado'], -1, 'JEFE', None, None),
+         ('player_head', 'Steve', 0x1E7C2C, ['Miembro · conectado'], -1, '', ('ECHAR', R), None),
+         ('player_head', 'Alex', T, ['Miembro · hace 2 días'], -1, '', ('ECHAR', R), None),
+     ], input_=('INVITAR A UN JUGADOR', 'INVITAR', ''), app='clanes')
+
+# --- Jugadores ---------------------------------------------------------------------------------------------------------
+page('p_jugadores', 'JUGADORES', [], '', ['3 conectados'], [], app='jugadores', hover=1, cards=[
+    ('player_head', 'Pewez777 (tú)', 0xF6B628, 'Rey', False), ('player_head', 'Steve', 0x3496FA, 'Mortal', False),
+    ('player_head', 'Alex', 0x3496FA, '', False),
+])
+page('p_regalar', 'JUGADORES', [('f', 'FICHA'), ('r', 'REGALAR')], 'r',
+     ['Regalo para Steve: elige un objeto o escribe monedas. Te quedan 9 hoy.'], [], app='jugadores', cells=[
+         ('diamond_pickaxe', '', M, False), ('golden_apple', '', M, True), ('bread', '', M, False), ('torch', '', M, False),
+         ('iron_ingot', '', M, False), ('arrow', '', M, False), ('bow', '', M, False),
+     ], input_=('MONEDAS', 'ENVIAR', ''), footer=[('REGALAR', G)])
+
+# --- Ranking (1.4: el podio) -------------------------------------------------------------------------------------------
+page('p_ranking', 'RANKING', [('misiones', 'MISIONES'), ('cazas', 'CAZAS'), ('likes', 'LIKES'), ('exploraciones', 'EXPLORAR'),
+                              ('monedas', 'MONEDAS')], 'misiones', [], [
+    ('paper', '4. Notch', T, [], -1, '61 misiones', None, None),
+    ('paper', '5. Pewez777 (tú)', GOLD, [], -1, '58 misiones', None, None, True),
+    ('paper', '6. Herobrine', T, [], -1, '40 misiones', None, None),
+], app='ranking', cards=[
+    ('player_head', '2º Alex', 0xA9B8CC, '120 misiones', False, 1, {'tone': 4}),
+    ('player_head', '1º Steve', 0xF6B628, '154 misiones', False, 1, {'tone': 1, 'badge': 'TOP 1'}),
+    ('player_head', '3º Jeb', 0xD08A4E, '97 misiones', False, 1, {'tone': 4}),
+])
+
+# --- Armario y Efectos (1.4: tarjetas e imágenes de los efectos) -----------------------------------------------------------
+page('p_armario', 'ARMARIO', [('cabeza', 'CABEZA ·'), ('pecho', 'PECHO'), ('piernas', 'PIERNAS'), ('pies', 'PIES'), ('espalda', 'ESPALDA')],
+     'cabeza', ['Llevas Corona del Rey. Solo estético.'], [], app='armario', hover=1, cards=[
+         ('golden_helmet', 'Corona del Rey', 0x9E5AE0, 'PUESTO', True, 1, {'tone': 2}),
+         ('diamond_helmet', 'Yelmo de cristal', 0x9E5AE0, 'Rango Mítico', False, 1, {'tone': 4}),
+         ('leather_helmet', 'Sombrero de paja', 0x9E5AE0, 'Crate verano', False, 1, {'tone': 4}),
+         ('turtle_helmet', 'Casco marino', 0x9E5AE0, 'PONER', False, 1, {'tone': 4}),
+     ], footer=[('QUITAR', R)])
+KILLS = json.load(open(os.path.join(FX, 'meta.json'), encoding='utf-8'))['kills']
+kill_ids = sorted(KILLS, key=lambda k: (KILLS[k]['order'], k))
+page('p_efectos', 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS')], '',
+     ['Equipado: Fuego Infernal · ' + KILLS['fuego_infernal']['desc']], [], app='efectos', hover=2, gallery=[
+         ('nether_star', KILLS[k]['name'], KILLS[k]['color'], 'EQUIPADO' if k == 'fuego_infernal' else KILLS[k]['cat'],
+          k == 'fuego_infernal', 1, dict(fx('kill', k), tone=2 if k == 'fuego_infernal' else 4)) for k in kill_ids[:12]
+     ], footer=[('QUITAR EFECTO', R)])
+page('p_efectos_mas', 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS')], '',
+     ['Elige el efecto que sale al matar. Gratis.'], [], app='efectos', gallery=[
+         ('nether_star', KILLS[k]['name'], KILLS[k]['color'], KILLS[k]['cat'], False, 1, dict(fx('kill', k), tone=4))
+         for k in kill_ids[20:32]
+     ])
+CLASSES = json.load(open(os.path.join(FX, 'meta.json'), encoding='utf-8'))['classes']
+rev = [('lostassets_revenant_lc', 'Tajo Sombrío', 'Ataque básico · Recarga 0,4 s · Un tajo de sombras que hiere a los enemigos de delante.'),
+       ('lostassets_revenant_rc', 'Embestida Oscura', 'Recarga 3 s · Te lanzas hacia delante dejando cortes de sombra.'),
+       ('lostassets_revenant_slc', 'Hoja de Sombras', 'Recarga 5,5 s · Invocas una hoja de sombras que corta a los enemigos.'),
+       ('lostassets_revenant_src', 'Cataclismo del Abismo', 'Recarga 16 s · Abres el abismo: una zona que hiere sin parar.')]
+REV = 0x5A3FA8  # PadWardrobe.readable(color de la clase)
+page('p_efectos_skills', 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS')], 'skills', [], [
+    ('enchanted_book', n, REV, [d], -1, 'TECLA ' + str(5 + i), None, None, skill_icon('revenant', sid)) for i, (sid, n, d) in enumerate(rev)
+] + [
+    ('', 'TUS OTRAS CLASES', T, [], -1, '', None, None),
+    ('enchanted_book', 'Arquero', 0x5E8A2E, ['Tirador · movilidad y lluvia de flechas', 'A distancia · 6 skills'], -1, '', ('ACTIVAR', G), None,
+     fx('class', 'arquero')),
+    ('enchanted_book', 'Thor', 0x8A7420, ['Dios del trueno · martillo', 'Cuerpo a cuerpo · 5 skills'], -1, '', ('ACTIVAR', G), None,
+     fx('class', 'thor')),
+], app='efectos', hero=('enchanted_book', 'Aparecido', CLASSES['revenant']['color'],
+                        ['Espadachín · sombras', 'Elige skill con 5-0 y úsala con clic izquierdo.'], -1, 'ACTIVA', ('DESACTIVAR', R), None,
+                        fx('class', 'revenant')))
+
+# --- Mi Rango ----------------------------------------------------------------------------------------------------------
+page('p_rango', 'MI RANGO', [], '', [], [
+    ('golden_helmet', 'Rey', 0xC27A10, ['Kit semanal, 5 hogares, /fly en tus zonas.'], -1, 'TU RANGO', None, None, True),
+    ('diamond', 'Mítico', 0x3CB4E6, ['Kit diario, 8 hogares, partículas.'], -1, '', None, None),
+    ('iron_ingot', 'Caballero', 0x6A7A99, ['Kit semanal, 3 hogares.'], -1, '', None, None),
+], hero=('gold_ingot', 'Rey', 0xC27A10, ['Kit semanal, /fly en tus zonas.', '5 hogares · Más rangos en tierrasfantasticas.com.'], -1,
+         'TU RANGO', ('VER', B), None), app='rango')
+
+# --- Ajustes (PadInfoPages.Ajustes, 1.4): interruptores que se deslizan y el volumen con deslizador ---------------------
+def ajustes_page(name, values=(True, True, True, 80, False), hover=None, knob=None):
+    if ONLY and name not in ONLY:
+        return
+    from skin import accent as _acc, tagline as _tag, icon_of as _ico  # noqa: E402
+    s = Sim()
+    s.status('AJUSTES')
+    with Local(s):
+        X, Y, W, H = s.X, s.Y, s.W, s.H
+        acc = _acc('ajustes')
+        s.sk_window(X, Y, W, H, acc)
+        bh = s.banner_h([1])
+        s.sk_banner(X + 1, Y + 1, W - 2, bh, acc, _ico('ajustes'), [_tag('ajustes')])
+        names = ['Sonidos del pad', 'Tic al pasar por encima', 'Animaciones', 'Volumen', 'Oír los altavoces de otros']
+        about = ['Clics, pestañas y avisos.', 'Un tic suave al pasar el ratón por encima.', 'Fondo animado, brillos y transiciones.',
+                 'El de los sonidos del pad.', 'La música que ponen cerca de ti.']
+        icons = ['note_block', 'lever', 'firework_rocket', 'jukebox', 'bell']
+        top, bottom = Y + bh + 6, Y + H - 14
+        row_h = max(22, min(30, (bottom - top) // 5))
+        SW = 96
+        for i in range(5):
+            y, h, x, w = top + i * row_h, row_h - 4, X + 6, W - 12
+            hv = hover == i
+            slider = i == 3
+            yy = s.sk_card(x, y, w, h, 1 if hv and not slider else 0, acc)
+            s.vgrad(x + 1, yy + 1, 3, h - 2, lighten(acc, 40), acc)
+            ms = min(20, h - 4)
+            iy = yy + (h - ms) // 2
+            s.sk_slot(x + 8, iy, ms)
+            s.item(icons[i], x + 8 + (ms - 16) // 2, iy + (ms - 16) // 2)
+            tx = x + 8 + ms + 7
+            tw = w - (tx - x) - (SW + 50 if slider else 44)
+            two = h >= 24
+            ty = yy + ((h - 20) // 2 + 1 if two else (h - 8) // 2)
+            s.title(names[i], tx, ty, tw, rgb(0x18265C))
+            if two:
+                s.mtext(s.fitend(about[i], tw), tx, ty + 10, rgb(0x4A6694))
+            if slider:
+                sx = x + w - SW - 10
+                pct = f'{values[3]}%'
+                s.sk_chip(sx - 6 - s.chip_w(pct), yy + (h - 12) // 2, pct, 'blue')
+                s.slider(sx, yy + (h - 14) // 2, SW, values[3] / 100, acc, hv)
+            else:
+                k = knob[i] if knob and knob[i] is not None else (1.0 if values[i] else 0.0)
+                s.toggle(x + w - 38, yy + (h - 14) // 2, k, hv)
+        s.mtext(s.fitend('Tecla del pad: se cambia en Opciones > Controles.', W - 16), X + 8, Y + H - 11, rgb(0x4A6694))
+    s.save(OUT + name + '.png')
+    NAMES.append(name)
+
+
+ajustes_page('p_ajustes', hover=3)
+ajustes_page('p_ajustes_mov', values=(True, False, True, 40, False), hover=1, knob=(None, 0.45, None, None, None))
+
+# --- Vacíos (estado sin nada) -------------------------------------------------------------------------------------------
+page('p_vacio', 'HOGARES', [], '', ['0 de 5 hogares.'], [], empty='Aún no tienes hogares. Escribe un nombre abajo y pulsa GUARDAR AQUÍ.',
+     input_=('NOMBRE DEL HOGAR', 'GUARDAR AQUÍ', ''), app='hogares')
+page('p_vacio_armario', 'ARMARIO', [('cabeza', 'CABEZA'), ('pecho', 'PECHO'), ('piernas', 'PIERNAS'), ('pies', 'PIES'), ('espalda', 'ESPALDA')],
+     'espalda', ['Solo estético: pulsa una pieza para ponértela.'], [],
+     empty='No tienes nada para espalda. Los sets de los rangos y de las crates de la tienda web aparecen aquí.', app='armario')
+
+# --- Admin -------------------------------------------------------------------------------------------------------------
+page('a_recompensas', 'RECOMPENSAS', [('cal', 'CALENDARIO'), ('otras', 'OTRAS')], 'cal',
+     ['El calendario diario: cada día se reclama el siguiente de la racha. Pulsa un día para cambiarlo.'], [
+         ('clock_00', 'Calendario', T, ['Encendido.'], -1, '', ('SÍ', G), None),
+         ('compass_00', 'Si alguien se salta un día', T, ['Vuelve al día 1.'], -1, '', ('CAMBIAR', B), None),
+     ], cards=[
+         ('bread', 'Día 1', 0xF6B628, '1 obj. · 25', False, 8), ('torch', 'Día 2', 0xF6B628, '1 obj. · 25', False, 16),
+         ('iron_ingot', 'Día 3', 0xF6B628, '1 obj. · 50', False, 4), ('cooked_beef', 'Día 4', 0xF6B628, '1 obj. · 50', False, 12),
+         ('golden_carrot', 'Día 5', 0xF6B628, '1 obj. · 75', False, 8),
+     ], footer=[('AÑADIR DÍA', G), ('QUITAR EL ÚLTIMO', R)], app='a_recompensas')
+page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
+     ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], app='a_kits', hover=5, cells=[
+         (n, '', T, False) for n in ('stone', 'granite', 'diorite', 'andesite', 'grass_block', 'dirt', 'cobblestone', 'oak_planks',
+                                     'spruce_planks', 'birch_planks', 'oak_sapling', 'sand', 'gravel', 'gold_ore', 'iron_ore',
+                                     'coal_ore', 'oak_log', 'spruce_log', 'birch_log', 'glass', 'lapis_ore', 'sandstone',
+                                     'white_wool', 'orange_wool', 'gold_block', 'iron_block', 'bricks', 'tnt', 'bookshelf',
+                                     'obsidian', 'torch', 'chest', 'diamond_ore', 'diamond_block', 'crafting_table', 'furnace')
+     ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('»', B), ('×16', GO), ('ATRÁS', B)])
+page('a_tienda_item', 'TIENDA', [], '', ['Minerales · Diamante'], [
+    ('gold_ingot', 'Precio de compra', T, ['Lo que paga el jugador por lote. 0 = no se vende.'], -1, '950', ('EDITAR', B), None, True),
+    ('emerald', 'Precio de venta', T, ['Lo que cobra el jugador. 0 = la tienda no lo compra.'], -1, '400', ('EDITAR', B), None),
+    ('chest', 'Cantidad por lote', T, ['Objetos que van en cada lote.'], -1, '1', ('EDITAR', B), None),
+], input_=('NUEVO VALOR', 'GUARDAR', '1200'), footer=[('ATRÁS', B)], app='a_tienda')
 page('a_apps', 'APPS', [], '', ['Las que apagues no salen en el pad de los jugadores.'], [
     ('iron_pickaxe', 'Oficios', T, ['Activa'], -1, '', ('SÍ', G), None),
     ('writable_book', 'Misiones', T, ['Activa'], -1, '', ('SÍ', G), None),
     ('crossbow', 'Cazas', M, ['Apagada'], -1, '', ('NO', GR), None),
-])
+    ('chest', 'Tienda', T, ['Activa'], -1, '', ('SÍ', G), None),
+], app='a_apps')
 
 # Comunidad (PadCommunityPage) con el selector de emojis (PadEmojiPicker): ver comunidad.py
 import comunidad  # noqa: E402
@@ -267,6 +443,8 @@ LAV, GOLDC, GL, GREENC = rgb(0xB8C2F0), rgb(0xF6B628), rgb(0xFFEC96), rgb(0x7CF0
 
 def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, sure=False, sel_list=0, vol_hover=False,
                lists=('LOFI', 'PARA MINAR'), tab_first=0, picking=False, in_list=(), hover_btn=False):
+    if ONLY and name not in ONLY:
+        return
     s = Sim()
     s.status('MÚSICA', music=playing is not None)
     local = Local(s)
@@ -606,7 +784,7 @@ def dark_card(s, x, top, w, bottom, tab_y, tab):
 def price_button(s, x, y, label, price, style, enabled=True):
     n = str(price)
     w = s.pwidth(label) + 6 + 10 + s.pwidth(n) + 14
-    s.button(x, y, w, '', style, enabled)
+    s.sk_button(x, y, w, '', style, enabled)
     col = (255, 255, 255) if enabled else rgb(0x8C9AC4)
     tx = x + 7
     s.ptext(label, tx, y + 2, col)
@@ -657,6 +835,8 @@ PREMIOS = [
 
 
 def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=1920, fbh=1080):
+    if ONLY and name not in ONLY:
+        return
     s = Sim(fbw=fbw, fbh=fbh)
     s.status('GACHAPÓN')
     loc = Local(s)
@@ -682,6 +862,12 @@ def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=192
     s.vgrad(rx, ry, rw, rh, rgb(0x0E1432), rgb(0x1C2452))
     center = rx + rw // 2
     s.scissor(rx, ry, rw, rh)
+    # 1.4: rayas que corren, luz del color de la app bajo la flecha y, con premio, rayos de su rareza
+    s.tiled('stripes', rx, ry, rw, rh, 0.05, off=s.T * 6)
+    s.glow(center, ry + rh / 2, rh * 0.95, accent('gachapon'), 110 if result else 70)
+    if result:
+        s.rays(center, ry + rh / 2, rh * 1.1, 0.55, s.T * 30)
+        s.glow(center, ry + rh / 2, rh * 0.7, rgb(RAR[result[0]['r']][1]), 150)
     strip = [PREMIOS[(i * 7) % len(PREMIOS)] for i in range(40)]
     win_i = None
     if result:
@@ -698,6 +884,9 @@ def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=192
         a = int(150 * (1 - i / 16))
         s.fill(rx + i, ry, rx + i + 1, ry + rh, (12, 16, 48, a))
         s.fill(rx + rw - 1 - i, ry, rx + rw - i, ry + rh, (12, 16, 48, a))
+    if result:
+        for i, (dx, dy) in enumerate(((-30, 6), (28, 10), (-24, rh - 10), (32, rh - 14), (0, 3))):
+            s.sparkle(center + dx, ry + dy, 2, s.twinkle(i * 1.3 + 0.2))
     s.no_scissor()
     s.fill(center, ry, center + 1, ry + rh, (255, 230, 128, 102))
     for i in range(4):
@@ -737,27 +926,31 @@ def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=192
                     s.count(p['n'], cx + 3, sy + 3)
     # derecha: PREMIOS / HISTORIAL
     lx, lw2 = X + lw + 6, W - lw - 6
-    s.panel(lx, top, lw2, bottom - top)
+    acc = accent('gachapon')
+    s.sk_window(lx, top, lw2, bottom - top, acc)
+    s.vgrad(lx + 1, top + 1, lw2 - 2, 3, mix(acc, (255, 255, 255), 0.14), darken_t(acc, 0.78))
     tx, chosen = lx + 4, None
     for key, label in (('premios', 'PREMIOS'), ('historial', 'HISTORIAL')):
         tw = s.pwidth(label) + 14
         if key == tab:
             chosen = (tx, tw, label)
         else:
-            s.tab(tx, Y, tw, label, 0)
+            s.sk_tab(tx, Y, tw, label, 0, acc)
         tx += tw + 2
-    s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+    s.sk_tab(chosen[0], Y, chosen[1], chosen[2], 2, acc)
     rows = PREMIOS if tab == 'premios' else [dict(r, t=m) for r, m in zip(result or PREMIOS[3:9], ('ahora', 'ahora', 'hace 3 min', 'hace 2 h', 'hace 1 d', 'hace 2 d'))]
-    s.scissor(lx + 2, top + 4, lw2 - 4, bottom - top - 8)
-    ry2 = top + 4
+    s.scissor(lx + 2, top + 6, lw2 - 4, bottom - top - 10)
+    ry2 = top + 6
     for p in rows:
         x0, w0 = lx + 5, lw2 - 14
         col = rgb(RAR[p['r']][1])
         s.fill(x0 + 3, ry2 + 23, x0 + w0 - 3, ry2 + 24, rgb(0xC8E4F8))
-        s.slot(x0 + 1, ry2 + 2, 20, 20, col)
-        s.item(item_of(p), x0 + 3, ry2 + 4)
+        s.vgrad(x0, ry2 + 3, 2, 18, lighten(col, 50), col)
+        s.sk_slot(x0 + 4, ry2 + 2, 20, col)
+        s.item(item_of(p), x0 + 6, ry2 + 4)
         if p['tipo'] == 'objeto' and p['n'] > 1:
-            s.count(p['n'], x0 + 3, ry2 + 4)
+            s.count(p['n'], x0 + 6, ry2 + 4)
+        x0, w0 = x0 + 3, w0 - 3
         right = (f"{p['p']:.2f}".rstrip('0').rstrip('.').replace('.', ',') + ' %') if tab == 'premios' else p['t']
         rw2 = s.mwidth(right)
         s.mtext(right, x0 + w0 - 4 - rw2, ry2 + 8, rgb(0x4A6694))
@@ -767,7 +960,7 @@ def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=192
         ry2 += 24
     s.no_scissor()
     content = len(rows) * 24
-    s.scrollbar(lx + lw2 - 7, top + 5, bottom - top - 10, bottom - top - 8, content)
+    s.sk_scrollbar(lx + lw2 - 7, top + 7, bottom - top - 12, bottom - top - 10, content, 0, acc)
     loc.__exit__(None, None, None)
     s.save(OUT + name + '.png')
     NAMES.append(name)
@@ -809,6 +1002,8 @@ def pass_levels():
 
 
 def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh=1080):
+    if ONLY and name not in ONLY:
+        return
     s = Sim(fbw=fbw, fbh=fbh)
     s.status('TF PASS')
     loc = Local(s)
@@ -825,10 +1020,17 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
     s.box(x, y, w, h, NAVY)
     s.vgrad(x + 1, y + 1, w - 2, h - 2, rgb(0x1E6B52), rgb(0x14284F))
     s.texture(x + 1, y + 1, w - 2, h - 2)
+    s.tiled('stripes', x + 1, y + 1, w - 2, h - 2, 0.06, off=s.T * 3)
     s.fill(x + 2, y + 1, x + w - 2, y + 2, rgb(0x5FD39A))
     s.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, rgb(0xC07818))
     s.corners(x, y, w, h)
     sx, sy, ss = x + 8, y + 6, 38
+    clip = s.clip
+    s.scissor(x + 1, y + 1, w - 2, h - 2)
+    s.rays(sx + ss / 2, sy + ss / 2, 48, 0.6, s.T * 18)
+    s.glow(sx + ss / 2, sy + ss / 2, 30, rgb(0x8CF0B4), 110)
+    s.glow(x + w * 0.62, y + h / 2, 60, rgb(0x5FD39A), 40)
+    s.clip = clip
     cx = sx + ss // 2
     for row in range(ss):
         half = ss // 4 + row if row < ss // 4 else ss // 4 + (ss - 1 - row) if row > ss * 3 // 4 else ss // 2
@@ -849,7 +1051,7 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
     if ready:
         label = f'RECLAMAR TODO ({len(ready)})'
         bw = s.bw(label)
-        s.button(right - bw, y + h - 22, bw, label, 3)
+        s.sk_button(right - bw, y + h - 22, bw, label, 3)
     clock = 'Termina en 47 d 6 h'
     cw = s.chip_w(clock) + 12
     s.box(right - cw, y + 5, cw, 12, rgb(0x0C1030))
@@ -878,9 +1080,12 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
     s.mtext('240 / 400 XP', bx0, by0 + 10, rgb(0xE0ECFF))
     nx = f'nivel {lv + 1}'
     s.mtext(nx, bx0 + bar_w - s.mwidth(nx), by0 + 10, rgb(0xB8C2F0))
+    for i, (dx, dy) in enumerate(((w - 20, 22), (ss + 14, 4), (w // 2, h - 5))):
+        s.sparkle(x + dx, y + dy, 2, s.twinkle(i * 1.7 + 0.6) * 0.9)
+    s.sheen(x + 1, y + 1, w - 2, h - 2, period=8.0, alpha=0.12)
     # pista
     top = Y + HERO + 4
-    s.panel(X, top, W, track_h)
+    s.sk_window(X, top, W, track_h, accent('pase'))
     trx, trw = X + 16, W - 32
     max_scroll = max(0, 50 * PITCH - GAP - trw)
     at = scroll_to or (ready[0] if ready else lv + 1)
@@ -972,7 +1177,7 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
             s.fill(trx + trw - 1 - i, top + 2, trx + trw - i, top + track_h - 2, (255, 255, 255, a))
     # abajo
     btop = top + track_h + 4
-    s.panel(X, btop, W, bottom_h)
+    s.sk_window(X, btop, W, bottom_h, accent('pase'))
     src = ['+100 Misión diaria', '+500 Misión semanal', '+40 Caza']
     head = 'Cómo se gana XP'
     colw = min(round(W * 0.52), max(s.bwidth(head), sum(s.chip_w(t) + 4 for t in src) - 4))

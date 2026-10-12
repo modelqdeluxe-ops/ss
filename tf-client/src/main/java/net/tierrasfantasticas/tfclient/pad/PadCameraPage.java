@@ -174,14 +174,23 @@ final class PadCameraPage extends PadPage {
         buttons.clear();
         actions.clear();
         PadCommunityClient.checkUpload();
-        PadUi.panel(g, X, Y, W, H);
+        int acc = PadSkin.accent(app);
+        PadSkin.window(g, X, Y, W, H, acc);
         int PW = pw(), PH = ph();
         int px = X + 6, py = Y + 5;
+        // 1.4: el visor: marco de oro con su sombra, fondo oscuro con rayas y, encima de la foto, las esquinas del visor
+        g.fill(px - 1, py + PH + 2, px + PW + 1, py + PH + 3, 0x4018265C);
         PadUi.box(g, px - 2, py - 2, PW + 4, PH + 4, PadUi.INK);
         PadUi.box(g, px - 1, py - 1, PW + 2, PH + 2, PadUi.GOLD_LO);
-        g.fill(px, py, px + PW, py + PH, 0xFF1A2440);
+        g.fillGradient(px, py, px + PW, py + PH, 0xFF22305A, 0xFF121A34);
+        PadSkin.stripes(g, px, py, PW, PH, 0.04F, PadSkin.time() * 3);
         if (photos.isEmpty()) {
-            PadUi.wrap(g, "Sin fotos. MODO FOTO y clic izquierdo.", px + 10, py + PH / 2 - 10, PW - 20, 0xFFE0ECFF, 3);
+            int cy = py + PH / 2 - 10;
+            PadSkin.glow(g, px + PW / 2F, cy, 30, acc & 0xFFFFFF, 140);
+            PadSkin.iconCrisp(g, pad, "camara", px + PW / 2F, cy + Math.round((float) Math.sin(PadSkin.time() * 2.2F) * 1.5F), 30);
+            String hint = "Sin fotos. MODO FOTO y clic izquierdo.";
+            int n = PadUi.lines(hint, PW - 20);
+            PadUi.wrap(g, hint, px + (PW - Math.min(PW - 20, PadUi.font().width(hint))) / 2, cy + 20, PW - 20, 0xFFE0ECFF, Math.max(1, n));
         } else {
             Path p = photos.get(index);
             ResourceLocation loc = texture(p);
@@ -192,6 +201,7 @@ final class PadCameraPage extends PadPage {
             } else {
                 PadUi.spinner(g, px + PW / 2, py + PH / 2 - 4);
             }
+            viewfinder(g, px, py, PW, PH);
             if (photos.size() > 1) {
                 arrow(g, px + 2, py + PH / 2 - 7, true, mx, my, () -> move(-1));
                 arrow(g, px + PW - 12, py + PH / 2 - 7, false, mx, my, () -> move(1));
@@ -218,7 +228,7 @@ final class PadCameraPage extends PadPage {
         // columna derecha
         if (!photos.isEmpty()) {
             Path p = photos.get(index);
-            PadUi.text(g, "Foto " + (index + 1) + " de " + photos.size(), cx, py + 1, PadUi.GOLD_TEXT);
+            PadUi.title(g, "Foto " + (index + 1) + " de " + photos.size(), cx, py + 1, cw, PadSkin.darken(acc, 0.7F));
             long when = 0;
             try {
                 when = Files.getLastModifiedTime(p).toMillis();
@@ -229,7 +239,7 @@ final class PadCameraPage extends PadPage {
             String status = PadCommunityClient.uploadStatus;
             if (status != null) {
                 int n = PadUi.wrap(g, status, cx, py + 26, cw, PadUi.TEXT, 2);
-                PadUi.progress(g, cx, py + 28 + n * 10, cw, PadCommunityClient.uploadProgress);
+                PadSkin.progress(g, cx, py + 28 + n * 10, cw, PadCommunityClient.uploadProgress);
             } else if (captioning) {
                 PadUi.wrap(g, "Texto (opcional)", cx, py + 26, cw, PadUi.MUTED, 5);
             } else {
@@ -242,6 +252,17 @@ final class PadCameraPage extends PadPage {
             }
         } else {
             PadUi.wrap(g, "Pulsa una foto para publicarla.", cx, py + 1, cw, PadUi.MUTED, 6);
+        }
+    }
+
+    /** Las cuatro esquinas del visor (blancas, un poco transparentes) dentro de la foto. */
+    private static void viewfinder(GuiGraphics g, int x, int y, int w, int h) {
+        int c = 0xB4FFFFFF, l = 8, m = 5;
+        int[][] at = {{x + m, y + m, 1, 1}, {x + w - m - 1, y + m, -1, 1}, {x + m, y + h - m - 1, 1, -1}, {x + w - m - 1, y + h - m - 1, -1, -1}};
+        for (int[] a : at) {
+            int x0 = Math.min(a[0], a[0] + a[2] * (l - 1)), y0 = Math.min(a[1], a[1] + a[3] * (l - 1));
+            g.fill(x0, a[1], x0 + l, a[1] + 1, c);
+            g.fill(a[0], y0, a[0] + 1, y0 + l, c);
         }
     }
 
@@ -267,7 +288,7 @@ final class PadCameraPage extends PadPage {
     private void button(GuiGraphics g, int x, int y, int w, String label, int style, double mx, double my, Runnable action) {
         boolean hover = PadUi.inside(mx, my, x, y, w, 16);
         if (hover) pad.hover("§" + label);
-        PadUi.button(g, x, y, w, label, style, hover, true);
+        PadSkin.button(g, x, y, w, label, style, hover, true, false);
         buttons.add(new int[] {x, y, w, 16});
         actions.add(action);
     }

@@ -30,6 +30,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *       del marco: cabe el doble a lo ancho y a lo alto y sigue siendo nítido. Esas son las coordenadas de las páginas
  *       ({@link PadPage#X} …), en «unidades de pantalla».</li>
  *   <li>Arriba, la barra: volver, el nombre de la página centrado, la hora del mundo, tus monedas y Ajustes.</li>
+ *   <li>El cristal tiene un fondo animado (1.4, {@link #drawBackdrop}): luces que suben, un haz que lo cruza y destellos,
+ *       por detrás del logo; las apps se dibujan con el diseño de {@link PadSkin}.</li>
  *   <li>Todas las apps se usan dentro del pad: las dibuja el servidor ({@link PadViewPage}) salvo Comunidad, Cámara y
  *       Ajustes, que tienen sus páginas. Con el pad de administrador, las apps son las de configurar el servidor.</li>
  * </ul>
@@ -112,8 +114,13 @@ public final class TFPadScreen extends Screen {
     }
 
     static int[] size(String name) {
-        return SIZES.computeIfAbsent(name, n -> {
-            Optional<Resource> res = Minecraft.getInstance().getResourceManager().getResource(tex(n));
+        return size(tex(name));
+    }
+
+    /** Tamaño en píxeles de cualquier textura ({0, 0} si no existe); se mira una vez y se recuerda. */
+    static int[] size(ResourceLocation loc) {
+        return SIZES.computeIfAbsent(loc.toString(), n -> {
+            Optional<Resource> res = Minecraft.getInstance().getResourceManager().getResource(loc);
             if (res.isEmpty()) return new int[] {0, 0};
             try (InputStream in = res.get().open(); NativeImage img = NativeImage.read(in)) {
                 return new int[] {img.getWidth(), img.getHeight()};
@@ -234,15 +241,56 @@ public final class TFPadScreen extends Screen {
         return Math.round(n * bs);
     }
 
-    /** Recorte en unidades de la página (en píxeles reales: exacto). Se quita con {@link #noScissor}. */
-    void scissor(GuiGraphics g, int x, int y, int w, int h) {
-        g.flush();
+    /** Píxeles reales por unidad donde se está dibujando (en las páginas a escala, más que en la barra de arriba). */
+    int unitPx() {
+        return local ? big : cs;
+    }
+
+    /** Recortes abiertos (en píxeles reales, como los pide OpenGL): el de arriba es el que vale. */
+    private final java.util.ArrayDeque<int[]> clips = new java.util.ArrayDeque<>();
+
+    /** Un rectángulo en unidades de la página, en píxeles reales de OpenGL {x, y desde abajo, ancho, alto}. */
+    private int[] realClip(int x, int y, int w, int h) {
         double k = cs * (local ? bs : 1F);
         int ox = local ? saved[0] * cs : 0, oy = local ? saved[1] * cs : 0;
         int rx = gx + ox + (int) Math.floor(x * k), ry = gy + liftReal() + oy + (int) Math.floor(y * k);
         int rw = (int) Math.ceil(w * k), rh = (int) Math.ceil(h * k);
         int fbH = Minecraft.getInstance().getWindow().getHeight();
-        RenderSystem.enableScissor(Math.max(0, rx), Math.max(0, fbH - (ry + rh)), Math.max(0, rw), Math.max(0, rh));
+        return new int[] {Math.max(0, rx), Math.max(0, fbH - (ry + rh)), Math.max(0, rw), Math.max(0, rh)};
+    }
+
+    /** Recorte en unidades de la página (en píxeles reales: exacto). Se quita con {@link #noScissor}. */
+    void scissor(GuiGraphics g, int x, int y, int w, int h) {
+        g.flush();
+        clips.clear();
+        int[] r = realClip(x, y, w, h);
+        clips.push(r);
+        RenderSystem.enableScissor(r[0], r[1], r[2], r[3]);
+    }
+
+    /**
+     * Un recorte dentro del que ya hay (se quedan con lo que tienen en común): para lo que no debe salirse de una
+     * tarjeta dentro de una lista que ya recorta. Se quita con {@link #clipPop}, que deja el de antes.
+     */
+    void clipPush(GuiGraphics g, int x, int y, int w, int h) {
+        g.flush();
+        int[] r = realClip(x, y, w, h);
+        int[] top = clips.peek();
+        if (top != null) {
+            int x0 = Math.max(r[0], top[0]), y0 = Math.max(r[1], top[1]);
+            int x1 = Math.min(r[0] + r[2], top[0] + top[2]), y1 = Math.min(r[1] + r[3], top[1] + top[3]);
+            r = new int[] {x0, y0, Math.max(0, x1 - x0), Math.max(0, y1 - y0)};
+        }
+        clips.push(r);
+        RenderSystem.enableScissor(r[0], r[1], r[2], r[3]);
+    }
+
+    void clipPop(GuiGraphics g) {
+        g.flush();
+        if (!clips.isEmpty()) clips.pop();
+        int[] top = clips.peek();
+        if (top == null) RenderSystem.disableScissor();
+        else RenderSystem.enableScissor(top[0], top[1], top[2], top[3]);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -297,6 +345,7 @@ public final class TFPadScreen extends Screen {
 
     void noScissor(GuiGraphics g) {
         g.flush();
+        clips.clear();
         RenderSystem.disableScissor();
     }
 
@@ -454,6 +503,18 @@ public final class TFPadScreen extends Screen {
         g.pose().scale((float) (ps / 4.0 / gs), (float) (ps / 4.0 / gs), 1);
         drawFrame(g);
         g.pose().popPose();
+        // el fondo del cristal (luces que suben, un haz que lo cruza, destellos) y, encima, otra vez el logo
+        g.pose().pushPose();
+        g.pose().translate(gx / gs, (gy + lift) / gs, 0);
+        g.pose().scale((float) (cs / gs), (float) (cs / gs), 1);
+        drawBackdrop(g);
+        g.pose().popPose();
+        g.pose().pushPose();
+        g.pose().translate(fx / gs, (fy + lift) / gs, 0);
+        g.pose().scale((float) (ps / 4.0 / gs), (float) (ps / 4.0 / gs), 1);
+        RenderSystem.enableBlend();
+        g.blit(tex("logo_over"), LOGO_X, LOGO_Y, 0, 0, 128, 104, 128, 104);
+        g.pose().popPose();
         // el cristal: barra y página
         g.pose().pushPose();
         g.pose().translate(gx / gs, (gy + lift) / gs, 0);
@@ -487,6 +548,53 @@ public final class TFPadScreen extends Screen {
             g.pose().popPose();
         }
         RenderSystem.disableBlend();
+    }
+
+    /** Dónde va logo_over.png (el trozo del logo que pisa el cristal) en píxeles de frame.png (tools/pad/build_skin.py). */
+    private static final int LOGO_X = 52 * 4, LOGO_Y = 64 * 4;
+
+    /**
+     * Luces del fondo: x, y (0 a 1 del cristal), radio (unidades), velocidad de subida (unidades/s), vaivén (amplitud
+     * y periodo en s), alfa; y su color. Las mismas que tools/pad/sim/skin.py (BOKEH).
+     */
+    private static final float[][] BOKEH = {
+            {0.08F, 0.30F, 46, 3.0F, 14, 9.0F, 0.20F}, {0.22F, 0.85F, 30, 4.5F, 10, 7.0F, 0.26F},
+            {0.37F, 0.55F, 64, 2.2F, 18, 11.0F, 0.13F}, {0.52F, 0.15F, 26, 5.0F, 8, 6.5F, 0.24F},
+            {0.63F, 0.70F, 52, 2.8F, 16, 10.0F, 0.16F}, {0.78F, 0.35F, 36, 3.8F, 12, 8.0F, 0.22F},
+            {0.90F, 0.80F, 58, 2.5F, 20, 12.0F, 0.14F}, {0.95F, 0.12F, 24, 4.2F, 9, 7.5F, 0.22F},
+            {0.45F, 0.95F, 40, 3.4F, 13, 9.5F, 0.18F}};
+    private static final int[] BOKEH_RGB = {0xFFFFFF, 0xDCF6FF, 0xFFFFFF, 0xFFF4C8, 0xFFFFFF, 0xC8EEFF, 0xFFFFFF, 0xFFECAA, 0xE6FAFF};
+    /** Destellos del fondo (x, y de 0 a 1). */
+    private static final float[][] STARS = {{0.12F, 0.62F}, {0.27F, 0.18F}, {0.33F, 0.82F}, {0.48F, 0.40F}, {0.58F, 0.88F},
+            {0.66F, 0.22F}, {0.74F, 0.58F}, {0.86F, 0.30F}, {0.92F, 0.66F}, {0.18F, 0.92F}, {0.55F, 0.62F}, {0.81F, 0.90F},
+            {0.40F, 0.12F}, {0.70F, 0.78F}};
+
+    /**
+     * El fondo del cristal (1.4), sin quitarle su azul: el rombo tallado muy suave, una sombra leve abajo, luces
+     * desenfocadas que suben despacio meciéndose, un haz de luz en diagonal que lo cruza cada 13 s y destellos que
+     * parpadean. Con las animaciones apagadas (Ajustes), todo quieto. Luego se vuelve a pintar el logo encima.
+     */
+    private void drawBackdrop(GuiGraphics g) {
+        float t = PadSkin.time();
+        int w = unitsW, h = unitsH;
+        scissor(g, 0, 0, w, h);
+        PadUi.texture(g, 0, 0, w, h);
+        PadSkin.vgrad(g, 0, h * 2 / 3F, w, h, 0x00144696, 0x16144696);
+        float k = (t % 13F) / 4.5F;
+        if (PadSettings.animations && k < 1) PadSkin.beam(g, -120 + k * (w + 240), 70, w, h, 0.16F);
+        ResourceLocation bokeh = tex("bokeh");
+        for (int i = 0; i < BOKEH.length; i++) {
+            float[] b = BOKEH[i];
+            float r = b[2], span = h + 2 * r;
+            float y = (((b[1] * span - b[3] * t) % span) + span) % span - r;
+            float x = b[0] * w + b[4] * (float) Math.sin(t * 2 * Math.PI / b[5] + b[0] * 9);
+            PadSkin.texture(g, bokeh, x - r, y - r, 2 * r, 2 * r, b[6], BOKEH_RGB[i], true);
+        }
+        for (int i = 0; i < STARS.length; i++) {
+            float tw = (float) Math.max(0, Math.sin(t * 1.7F + i * 2.17F));
+            PadSkin.sparkle(g, (int) (STARS[i][0] * w), (int) (STARS[i][1] * h), i % 3 == 0 ? 2 : 1, tw * tw * tw * 0.85F, 0xFFFFFF);
+        }
+        noScissor(g);
     }
 
     /**

@@ -72,7 +72,9 @@ abstract class PadDataPage extends PadPage {
     /** Pantalla de espera mientras llegan los datos. */
     boolean loading(GuiGraphics g) {
         if (data != null) return false;
-        PadUi.panel(g, X, Y, W, H);
+        int acc = PadSkin.accent(app);
+        PadSkin.window(g, X, Y, W, H, acc);
+        PadSkin.banner(g, pad, X + 1, Y + 1, W - 2, PadSkin.bannerHeight(1), acc, PadSkin.icon(app), java.util.List.of(PadSkin.tagline(app)));
         PadUi.spinner(g, X + W / 2, Y + H / 2 - 8);
         PadFont.drawCentered(g, "CARGANDO", X + W / 2, Y + H / 2 + 4, PadUi.MUTED & 0xFFFFFF, true);
         return true;
@@ -212,13 +214,14 @@ abstract class PadDataPage extends PadPage {
         int w = buttonWidth(label, price);
         boolean hover = enabled && PadUi.inside(mx, my, x, y, w, 16);
         if (hover) pad.hover(id);
-        PadUi.button(g, x, y, w, "", style, hover, enabled);
+        PadSkin.button(g, x, y, w, "", style, hover, enabled, false);
+        int yy = y - (hover ? 1 : 0); // el botón sube al pasar el ratón: el texto, con él
         int tx = x + 7;
-        PadFont.draw(g, label, tx, y + 2, enabled ? 0xFFFFFF : 0x8C9AC4, true);
+        PadFont.draw(g, label, tx, yy + 2, enabled ? 0xFFFFFF : 0x8C9AC4, true);
         tx += PadFont.width(label) + 6;
-        g.fill(tx - 3, y + 4, tx - 2, y + 11, enabled ? 0x66FFFFFF : 0x338C9AC4);
-        pad.blit(g, "coin_green_s", tx, y + 4);
-        PadFont.draw(g, n, tx + 10, y + 2, enabled ? 0xFFFFFF : 0x8C9AC4, true);
+        g.fill(tx - 3, yy + 4, tx - 2, yy + 11, enabled ? 0x66FFFFFF : 0x338C9AC4);
+        pad.blit(g, "coin_green_s", tx, yy + 4);
+        PadFont.draw(g, n, tx + 10, yy + 2, enabled ? 0xFFFFFF : 0x8C9AC4, true);
         if (enabled) hit(x, y, w, 16, action);
         return w;
     }
