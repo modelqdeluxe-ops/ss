@@ -328,9 +328,9 @@ public final class ClaimOutlineRenderer {
             // salta hacia arriba (y un pelín hacia fuera de la pared, hacia el jugador) y se apaga
             double out = Math.signum((alongX ? pz : px) - near[3]) * 0.01;
             boolean big = level.random.nextFloat() < 0.3f;
-            // pequeñas y rápidas: suben unos 2 bloques en lo que viven
-            MagicDustParticle particle = MagicDustParticle.spark(level, x, v, z, alongX ? 0.0 : out, 0.11 + level.random.nextDouble() * 0.05,
-                    alongX ? out : 0.0, rgb, big, big ? 0.5f : 0.15f, alpha, big ? 0.075f : 0.05f, 14 + level.random.nextInt(6), axis, near[4], near[5]);
+            // diminutas y tranquilas: salen despacio, frenan poco a poco y suben un bloque y algo en lo que viven
+            MagicDustParticle particle = MagicDustParticle.spark(level, x, v, z, alongX ? 0.0 : out, 0.042 + level.random.nextDouble() * 0.018,
+                    alongX ? out : 0.0, rgb, big, big ? 0.5f : 0.15f, alpha, big ? 0.032f : 0.022f, 28 + level.random.nextInt(10), axis, near[4], near[5]);
             if (particle != null) {
                 mc.particleEngine.add(particle);
             }

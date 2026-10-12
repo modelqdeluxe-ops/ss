@@ -90,16 +90,20 @@ public final class PadCommunityNet {
         }
     }
 
-    /** Una publicación tal como la ve un jugador. */
     /**
-     * Una foto de la lista. reactions: cuántas reacciones lleva de cada emoji (REACTIONS, en ese orden); mine: la que
-     * puso este jugador (-1 ninguna).
+     * Una foto de la lista tal como la ve un jugador. reactions: las reacciones con emoji que tiene (en el orden en que
+     * se pusieron, como en Discord), cada una con cuántos la pusieron y si este jugador es uno de ellos.
      */
     public record Post(String id, UUID author, String name, String caption, long time, int likes, boolean liked,
-                       boolean mine, boolean canDelete, int[] reactions, int myReaction) {}
+                       boolean mine, boolean canDelete, List<Reaction> reactions) {}
 
-    /** Las reacciones con emoji, además del corazón (cada una con su icono emo_&lt;nombre&gt; del pad). */
-    public static final List<String> REACTIONS = List.of("risa", "wow", "triste", "fuego", "top");
+    /** Una reacción de una foto: el emoji (id de {@link PadEmojis}), cuántos la pusieron y si tú la pusiste. */
+    public record Reaction(String emoji, int count, boolean mine) {}
+
+    /** Emojis distintos por foto como mucho (como en Discord: 20). */
+    public static final int MAX_REACTIONS = 20;
+    /** Lo más largo de una acción («react:» + el id del emoji). */
+    static final int ACTION_MAX = 8 + PadEmojis.ID_MAX;
 
     public record Feed(String tab, int page, int pages, int total, List<Post> posts) {
         static void write(Feed m, FriendlyByteBuf buf) {
@@ -118,8 +122,14 @@ public final class PadCommunityNet {
                 buf.writeBoolean(p.liked);
                 buf.writeBoolean(p.mine);
                 buf.writeBoolean(p.canDelete);
-                for (int i = 0; i < REACTIONS.size(); i++) buf.writeVarInt(i < p.reactions.length ? p.reactions[i] : 0);
-                buf.writeByte(p.myReaction);
+                int n = Math.min(MAX_REACTIONS, p.reactions.size());
+                buf.writeVarInt(n);
+                for (int r = 0; r < n; r++) {
+                    Reaction re = p.reactions.get(r);
+                    buf.writeUtf(re.emoji, PadEmojis.ID_MAX);
+                    buf.writeVarInt(re.count);
+                    buf.writeBoolean(re.mine);
+                }
             }
         }
 
@@ -134,9 +144,11 @@ public final class PadCommunityNet {
                 long time = buf.readLong();
                 int likes = buf.readVarInt();
                 boolean liked = buf.readBoolean(), mine = buf.readBoolean(), canDelete = buf.readBoolean();
-                int[] reactions = new int[REACTIONS.size()];
-                for (int r = 0; r < reactions.length; r++) reactions[r] = buf.readVarInt();
-                posts.add(new Post(id, author, name, caption, time, likes, liked, mine, canDelete, reactions, buf.readByte()));
+                int n = buf.readVarInt();
+                if (n < 0 || n > MAX_REACTIONS) throw new IllegalArgumentException("Demasiadas reacciones: " + n);
+                List<Reaction> reactions = new ArrayList<>(n);
+                for (int r = 0; r < n; r++) reactions.add(new Reaction(buf.readUtf(PadEmojis.ID_MAX), buf.readVarInt(), buf.readBoolean()));
+                posts.add(new Post(id, author, name, caption, time, likes, liked, mine, canDelete, List.copyOf(reactions)));
             }
             return new Feed(tab, page, pages, total, posts);
         }
@@ -147,17 +159,20 @@ public final class PadCommunityNet {
         }
     }
 
-    /** like, borrar o denunciar una publicación (y en qué pestaña/página está el jugador, para mandarle la lista). */
+    /**
+     * like, react:&lt;emoji&gt; (pone o quita esa reacción), borrar o denunciar una publicación (y en qué pestaña/página está
+     * el jugador, para mandarle la lista).
+     */
     public record Act(String action, String id, String tab, int page) {
         static void write(Act m, FriendlyByteBuf buf) {
-            buf.writeUtf(m.action, 16);
+            buf.writeUtf(m.action, ACTION_MAX);
             buf.writeUtf(m.id, 32);
             buf.writeUtf(m.tab, 16);
             buf.writeVarInt(m.page);
         }
 
         static Act read(FriendlyByteBuf buf) {
-            return new Act(buf.readUtf(16), buf.readUtf(32), buf.readUtf(16), buf.readVarInt());
+            return new Act(buf.readUtf(ACTION_MAX), buf.readUtf(32), buf.readUtf(16), buf.readVarInt());
         }
 
         static void handle(Act m, Supplier<NetworkEvent.Context> ctx) {

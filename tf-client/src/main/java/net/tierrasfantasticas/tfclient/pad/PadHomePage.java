@@ -185,6 +185,8 @@ final class PadHomePage extends PadPage {
             // al pasar el ratón la ficha sube (con una ease rápida) y deja su sombra debajo
             float rise = hover && PadSettings.animations ? Math.min(1F, ht / 0.12F) : 0F;
             int lift = -Math.round(ts * 2 * ease(rise));
+            // 1.4: la ficha del ratón se enciende con un halo dorado detrás
+            if (hover) PadSkin.glow(g, tx + t / 2F, ty + lift + t / 2F, t * 0.95F, 0xFFE68C, Math.round(150 * ease(Math.max(rise, 0.35F))));
             if (lift != 0) g.fill(tx + Math.round(3 * ts), ty + t, tx + t - Math.round(3 * ts), ty + t + Math.max(1, Math.round(ts)), 0x5518265C);
             g.pose().pushPose();
             g.pose().translate(tx, ty + lift, 0);

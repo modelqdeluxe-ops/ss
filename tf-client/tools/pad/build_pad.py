@@ -10,7 +10,9 @@ Qué sale:
 - frame.png (el marco), tile.png / tile_h.png (ficha de 40 y su versión al pasar el ratón),
 - icon_<app>.png (las 20 apps, 32x32),
 - font.png + font.json (fuente pixel de 4 px con tildes y signos: la usa PadFont para todos los rótulos),
-- coin, sun, moon, gear, heart, heart_off (iconos pequeños de la barra y de Comunidad).
+- coin, sun, moon, gear, heart, heart_off (iconos pequeños de la barra y de Comunidad),
+- 1.4: stripes, bokeh, rays y logo_over (build_skin.py) y las imágenes de los efectos en fx/ (fx_images.py, desde
+  la web). Para rehacer solo esas, sin tocar lo demás: python3 tools/pad/build_skin.py / tools/pad/fx_images.py.
 Las posiciones las repite TFPadScreen.java: si cambian aquí, cambian allí.
 """
 import json
@@ -331,11 +333,6 @@ def heart(on=True):
     return outline(framed)
 
 
-def emoji(kind):
-    """Reacciones de Comunidad: los emojis de Noto Color Emoji a 96x96 (los hace make_emojis.py en emoji/)."""
-    return Image.open(os.path.join(HERE, 'emoji', kind + '.png')).convert('RGBA')
-
-
 def normalize(im, box=30):
     """Todos los iconos igual (1.3.38): caben en 30x30 (1 px de aire hasta el engaste de la ficha por cada lado, nunca
     pegados a él) y van centrados por su caja. Si uno mide más, se le quitan filas/columnas repetidas (las que son
@@ -374,8 +371,7 @@ def build():
              'coin_s.png': coin_small()}
     files['coin_green.png'] = verde(files['coin.png'])
     files['coin_green_s.png'] = verde(files['coin_s.png'])
-    for k in ('risa', 'wow', 'triste', 'fuego', 'top'):
-        files[f'emo_{k}.png'] = emoji(k)
+    # los emojis de Comunidad van aparte, en textures/gui/emoji (make_emojis.py)
     for key, _ in APPS:
         files[f'icon_{key}.png'] = normalize(DRAW[key]().image())
     files['icon_admin.png'] = normalize(iconos2.admin().image())
@@ -388,6 +384,12 @@ def build():
     verde(Image.open(os.path.join(ITEM_DIR, 'fantastic_coin.png'))).save(os.path.join(ITEM_DIR, 'fantastic_coin_green.png'))
     with open(os.path.join(OUT_DIR, 'font.json'), 'w', encoding='utf-8') as f:
         json.dump(meta, f, ensure_ascii=False)
+    # 1.4: las texturas del diseño de las apps (rayas, luces, rayos, el logo encima del fondo) y las imágenes de los
+    # efectos (fx/): esta carpeta se acaba de borrar, así que se vuelven a hacer aquí
+    import build_skin  # noqa: E402
+    import fx_images  # noqa: E402
+    build_skin.build(OUT_DIR)
+    fx_images.build()
     return files, meta
 
 

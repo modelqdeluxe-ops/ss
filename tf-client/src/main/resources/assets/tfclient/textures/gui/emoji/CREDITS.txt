@@ -1,0 +1,5 @@
+Emojis de Comunidad (TF Pad)
+
+* Emojis estáticos: Twemoji (los de Discord) — https://github.com/jdecked/twemoji — CC BY 4.0, Copyright Twitter, Inc and other contributors. Ver LICENSE-twemoji.txt.
+* Emojis animados: Noto Animated Emoji de Google — https://googlefonts.github.io/noto-emoji-animation/ — CC BY 4.0. Ver LICENSE-noto-animated.txt.
+* Nombres y atajos: emojibase-data (MIT, Miles Johnson; datos de Unicode CLDR) y atajos en español propios (tools/pad/emoji/alias_es.json).

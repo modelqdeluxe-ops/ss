@@ -114,8 +114,11 @@ public class MagicDustParticle extends TextureSheetParticle {
         if (sprite == null) {
             return null;
         }
-        return new MagicDustParticle(level, x, y, z, vx, vy, vz, sprite, rgb[0], rgb[1], rgb[2], whiten, alpha, size,
-                lifetime, 2, 6, true, 0.0f, clipAxis, clipMin, clipMax);
+        MagicDustParticle p = new MagicDustParticle(level, x, y, z, vx, vy, vz, sprite, rgb[0], rgb[1], rgb[2], whiten, alpha,
+                size, lifetime, 4, 10, true, 0.0f, clipAxis, clipMin, clipMax);
+        // Frena poco a poco: sube suave en vez de salir disparada
+        p.friction = 0.96f;
+        return p;
     }
 
     private static TextureAtlasSprite sprite(int frame) {

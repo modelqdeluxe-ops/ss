@@ -18,8 +18,20 @@ import net.minecraft.world.item.ItemStack;
 public record PadView(String app, List<Tab> tabs, String tab, List<String> header, Row hero, List<Cell> cells, List<Row> rows,
                       List<Btn> footer, Input input, String empty, int cellStyle) {
 
-    /** Casillas pequeñas (objeto y texto pixel debajo, como un inventario) o tarjetas (objeto grande, nombre y precio). */
-    public static final int SMALL = 0, CARDS = 1;
+    /**
+     * Casillas pequeñas (objeto y texto pixel debajo, como un inventario), tarjetas (objeto grande, nombre y precio) o
+     * galería (1.4: tarjetas más grandes con la imagen en grande, para los efectos y las clases de skills).
+     */
+    public static final int SMALL = 0, CARDS = 1, GALLERY = 2;
+
+    /**
+     * Una textura del pad para el campo image de filas y tarjetas: «fx/kill_fuego_infernal» →
+     * «tfclient:textures/gui/pad/fx/kill_fuego_infernal.png». image puede ser cualquier ResourceLocation de una textura
+     * (los iconos de las skills: «tfclient:textures/gui/skills/…»); si el cliente no la tiene, dibuja el objeto.
+     */
+    public static String padImage(String name) {
+        return "tfclient:textures/gui/pad/" + name + ".png";
+    }
 
     /** Estilos de botón. */
     public static final int BLUE = 0, GOLD = 1, RED = 2, GREEN = 3, GRAY = 4;
@@ -38,20 +50,35 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
 
     /**
      * progress < 0: sin barra. color: color del título (0xRRGGBB). click: acción al pulsar la fila entera ("" = no se
-     * pulsa); selected: la fila sale resaltada.
+     * pulsa); selected: la fila sale resaltada. image (1.4): una textura que se dibuja en lugar del objeto ("" = el
+     * objeto; ver {@link #padImage}); el objeto sigue yendo, por si el cliente no tiene esa textura.
      */
     public record Row(ItemStack icon, String title, int color, List<String> lines, float progress, String badge,
-                      Btn button, Btn button2, String click, boolean selected) {
+                      Btn button, Btn button2, String click, boolean selected, String image) {
         public Row(ItemStack icon, String title, int color, List<String> lines, float progress, String badge, Btn button, Btn button2) {
-            this(icon, title, color, lines, progress, badge, button, button2, "", false);
+            this(icon, title, color, lines, progress, badge, button, button2, "", false, "");
+        }
+
+        public Row(ItemStack icon, String title, int color, List<String> lines, float progress, String badge, Btn button, Btn button2,
+                   String click, boolean selected) {
+            this(icon, title, color, lines, progress, badge, button, button2, click, selected, "");
         }
 
         public Row clickable(String action) {
-            return new Row(icon, title, color, lines, progress, badge, button, button2, action, selected);
+            return new Row(icon, title, color, lines, progress, badge, button, button2, action, selected, image);
         }
 
         public Row selected(boolean on) {
-            return new Row(icon, title, color, lines, progress, badge, button, button2, click, on);
+            return new Row(icon, title, color, lines, progress, badge, button, button2, click, on, image);
+        }
+
+        /** La misma fila con una imagen en lugar del objeto (ver {@link #padImage}). */
+        public Row image(String id) {
+            return new Row(icon, title, color, lines, progress, badge, button, button2, click, selected, id == null ? "" : id);
+        }
+
+        public boolean hasImage() {
+            return image != null && !image.isEmpty();
         }
     }
 
@@ -64,13 +91,27 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
      * tarjetas: progress (&lt; 0 sin barra) y badge (un aviso corto en una burbuja, por ejemplo cuántos premios hay).
      */
     public record Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub, float progress, String badge,
-                       int tone) {
+                       int tone, String image) {
         public Cell(ItemStack icon, String label, int color, String action, boolean selected) {
-            this(icon, label, color, action, selected, "", -1, "", 0);
+            this(icon, label, color, action, selected, "", -1, "", 0, "");
         }
 
         public Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub) {
-            this(icon, label, color, action, selected, sub, -1, "", 0);
+            this(icon, label, color, action, selected, sub, -1, "", 0, "");
+        }
+
+        public Cell(ItemStack icon, String label, int color, String action, boolean selected, String sub, float progress, String badge,
+                    int tone) {
+            this(icon, label, color, action, selected, sub, progress, badge, tone, "");
+        }
+
+        /** La misma tarjeta con una imagen en lugar del objeto (ver {@link #padImage}). */
+        public Cell image(String id) {
+            return new Cell(icon, label, color, action, selected, sub, progress, badge, tone, id == null ? "" : id);
+        }
+
+        public boolean hasImage() {
+            return image != null && !image.isEmpty();
         }
     }
 
@@ -202,7 +243,14 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         /** Una tarjeta (pide cards()): objeto grande, nombre y una segunda línea dorada. */
         public Builder card(ItemStack icon, String name, int color, String sub, String action, boolean selected) {
             cells.add(new Cell(icon, name, color, action, selected, sub == null ? "" : sub));
-            cellStyle = CARDS;
+            if (cellStyle == SMALL) cellStyle = CARDS;
+            return this;
+        }
+
+        /** Una tarjeta ya hecha (por ejemplo, con imagen: {@link Cell#image}). Sale como tarjeta si no se pidió otra cosa. */
+        public Builder cell(Cell cell) {
+            cells.add(cell);
+            if (cellStyle == SMALL) cellStyle = CARDS;
             return this;
         }
 
@@ -215,12 +263,18 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         public Builder card(ItemStack icon, String name, int color, String sub, int tone, float progress, String badge, String action,
                             boolean selected) {
             cells.add(new Cell(icon, name, color, action, selected, sub == null ? "" : sub, progress, badge == null ? "" : badge, tone));
-            cellStyle = CARDS;
+            if (cellStyle == SMALL) cellStyle = CARDS;
             return this;
         }
 
         public Builder cards() {
             cellStyle = CARDS;
+            return this;
+        }
+
+        /** Tarjetas grandes con la imagen en grande (1.4): efectos, clases de skills. */
+        public Builder gallery() {
+            cellStyle = GALLERY;
             return this;
         }
 
@@ -282,6 +336,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
             buf.writeFloat(cell.progress);
             buf.writeUtf(cut(cell.badge, 12), 24);
             buf.writeByte(cell.tone);
+            buf.writeUtf(cut(cell.image, 160), 256);
         }
         int n = Math.min(rows.size(), MAX_ROWS);
         buf.writeVarInt(n);
@@ -310,7 +365,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         List<Cell> cells = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) {
             cells.add(new Cell(readIcon(buf), buf.readUtf(80), buf.readInt(), buf.readUtf(128), buf.readBoolean(), buf.readUtf(80),
-                    buf.readFloat(), buf.readUtf(24), buf.readByte()));
+                    buf.readFloat(), buf.readUtf(24), buf.readByte(), buf.readUtf(256)));
         }
         List<Row> rows = new ArrayList<>();
         for (int i = buf.readVarInt(); i > 0; i--) rows.add(readRow(buf));
@@ -333,6 +388,7 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         writeBtn(buf, r.button2);
         buf.writeUtf(cut(r.click, 120), 128);
         buf.writeBoolean(r.selected);
+        buf.writeUtf(cut(r.image, 160), 256);
     }
 
     private static Row readRow(FriendlyByteBuf buf) {
@@ -344,7 +400,9 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
         float progress = buf.readFloat();
         String badge = buf.readUtf(64);
         Btn b1 = readBtn(buf), b2 = readBtn(buf);
-        return new Row(icon, title, color, lines, progress, badge, b1, b2, buf.readUtf(128), buf.readBoolean());
+        String click = buf.readUtf(128);
+        boolean selected = buf.readBoolean();
+        return new Row(icon, title, color, lines, progress, badge, b1, b2, click, selected, buf.readUtf(256));
     }
 
     private static void writeBtn(FriendlyByteBuf buf, Btn b) {

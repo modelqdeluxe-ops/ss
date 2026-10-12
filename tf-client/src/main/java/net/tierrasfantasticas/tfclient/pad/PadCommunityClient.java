@@ -111,17 +111,28 @@ final class PadCommunityClient {
             if (!p.id().equals(id)) continue;
             if (action.equals("like")) {
                 POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(),
-                        Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete(), p.reactions(), p.myReaction()));
+                        Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete(), p.reactions()));
             } else if (action.startsWith("react:")) {
-                // al momento, como en el servidor: la misma otra vez la quita; otra, la cambia
-                int k = PadCommunityNet.REACTIONS.indexOf(action.substring(6));
-                if (k < 0) break;
-                int[] r = p.reactions().clone();
-                if (p.myReaction() >= 0 && p.myReaction() < r.length) r[p.myReaction()] = Math.max(0, r[p.myReaction()] - 1);
-                int mineNow = p.myReaction() == k ? -1 : k;
-                if (mineNow >= 0) r[mineNow]++;
+                // al momento, como en el servidor: tu reacción con ese emoji se pone o se quita (las demás no cambian)
+                String emoji = PadEmojis.canonical(action.substring(6));
+                if (emoji == null) break;
+                List<PadCommunityNet.Reaction> r = new ArrayList<>(p.reactions());
+                int at = -1;
+                for (int k = 0; k < r.size(); k++) if (r.get(k).emoji().equals(emoji)) at = k;
+                if (at >= 0) {
+                    PadCommunityNet.Reaction old = r.get(at);
+                    int n = Math.max(0, old.count() + (old.mine() ? -1 : 1));
+                    if (n == 0) r.remove(at);
+                    else r.set(at, new PadCommunityNet.Reaction(emoji, n, !old.mine()));
+                    if (!old.mine()) used(emoji);
+                } else if (r.size() < PadCommunityNet.MAX_REACTIONS) {
+                    r.add(new PadCommunityNet.Reaction(emoji, 1, true));
+                    used(emoji);
+                } else {
+                    break;
+                }
                 POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(), p.likes(), p.liked(),
-                        p.mine(), p.canDelete(), r, mineNow));
+                        p.mine(), p.canDelete(), List.copyOf(r)));
             } else if (action.equals("borrar")) {
                 POSTS.remove(i);
                 total = Math.max(0, total - 1);
@@ -368,5 +379,91 @@ final class PadCommunityClient {
         OUTBOX.clear();
         for (Tex t : TEXTURES.values()) Minecraft.getInstance().getTextureManager().release(t.loc);
         TEXTURES.clear();
+        PadEmojiDraw.clear();
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Emojis frecuentes (los que más usas, primero en el selector, como en Discord): tfclient/emojis_frecuentes.json
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Los de siempre mientras no hayas usado ninguno. */
+    private static final List<String> DEFAULT_FREQUENT = List.of("joy", "thumbsup", "heart", "fire", "sob", "open_mouth",
+            "a_fire", "a_joy", "tada", "clap", "100", "eyes", "skull", "pray", "sparkles", "a_heart", "smiling_face_with_three_hearts",
+            "rofl", "cry", "pout", "sunglasses", "thinking", "a_thumbsup", "a_tada");
+    /** id → {veces, última vez}. */
+    private static Map<String, long[]> uses;
+
+    private static Path frequentFile() {
+        return Minecraft.getInstance().gameDirectory.toPath().resolve("tfclient").resolve("emojis_frecuentes.json");
+    }
+
+    private static Map<String, long[]> uses() {
+        if (uses != null) return uses;
+        uses = new HashMap<>();
+        try {
+            Path f = frequentFile();
+            if (Files.exists(f)) {
+                com.google.gson.JsonObject o = com.google.gson.JsonParser.parseString(Files.readString(f)).getAsJsonObject();
+                for (Map.Entry<String, com.google.gson.JsonElement> e : o.entrySet()) {
+                    String id = PadEmojis.canonical(e.getKey());
+                    if (id == null || !e.getValue().isJsonArray() || e.getValue().getAsJsonArray().size() < 2) continue;
+                    uses.put(id, new long[] {e.getValue().getAsJsonArray().get(0).getAsLong(), e.getValue().getAsJsonArray().get(1).getAsLong()});
+                }
+            }
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Emojis: no se pudo leer emojis_frecuentes.json", e);
+        }
+        return uses;
+    }
+
+    /** Has usado este emoji (reaccionar con él). */
+    static void used(String id) {
+        long[] u = uses().computeIfAbsent(id, k -> new long[2]);
+        u[0]++;
+        u[1] = System.currentTimeMillis();
+        // como mucho 60 (fuera los que menos y hace más que no usas)
+        while (uses.size() > 60) {
+            String worst = null;
+            for (Map.Entry<String, long[]> e : uses.entrySet()) {
+                if (worst == null || score(e.getValue()) < score(uses.get(worst))) worst = e.getKey();
+            }
+            uses.remove(worst);
+        }
+        com.google.gson.JsonObject o = new com.google.gson.JsonObject();
+        for (Map.Entry<String, long[]> e : uses.entrySet()) {
+            com.google.gson.JsonArray a = new com.google.gson.JsonArray();
+            a.add(e.getValue()[0]);
+            a.add(e.getValue()[1]);
+            o.add(e.getKey(), a);
+        }
+        try {
+            Files.createDirectories(frequentFile().getParent());
+            Files.writeString(frequentFile(), o.toString());
+        } catch (Exception e) {
+            TFClient.LOGGER.warn("Emojis: no se pudo guardar emojis_frecuentes.json", e);
+        }
+    }
+
+    /** Veces que lo usaste, que pesan menos cuanto más hace (la mitad cada semana). */
+    private static double score(long[] u) {
+        double weeks = (System.currentTimeMillis() - u[1]) / (7 * 86_400_000.0);
+        return u[0] * Math.pow(0.5, Math.max(0, weeks));
+    }
+
+    /** Los que más usas (completados con los de siempre hasta max). */
+    static List<PadEmojis.Emoji> frequent(int max) {
+        List<Map.Entry<String, long[]>> l = new ArrayList<>(uses().entrySet());
+        l.sort((a, b) -> Double.compare(score(b.getValue()), score(a.getValue())));
+        List<PadEmojis.Emoji> out = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (Map.Entry<String, long[]> e : l) {
+            PadEmojis.Emoji em = PadEmojis.get(e.getKey());
+            if (em != null && out.size() < max && seen.add(em.id())) out.add(em);
+        }
+        for (String id : DEFAULT_FREQUENT) {
+            PadEmojis.Emoji em = PadEmojis.get(id);
+            if (em != null && out.size() < max && seen.add(em.id())) out.add(em);
+        }
+        return out;
     }
 }

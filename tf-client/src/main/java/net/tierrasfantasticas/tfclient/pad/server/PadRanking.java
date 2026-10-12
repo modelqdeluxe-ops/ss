@@ -14,6 +14,8 @@ import net.tierrasfantasticas.tfclient.pad.PadView;
 /** Ranking: los 10 primeros en misiones, cazas, likes, exploraciones y (con las monedas del TF Client) monedas. */
 public final class PadRanking {
     public static final PadServer.App APP = new App();
+    /** Colores del podio: oro, plata y bronce. */
+    private static final int[] PODIUM = {0xF6B628, 0xA9B8CC, 0xD08A4E};
 
     private PadRanking() {}
 
@@ -50,7 +52,21 @@ public final class PadRanking {
                     unit = " misiones";
                 }
             }
-            for (int i = 0; i < top.size(); i++) {
+            // 1.4: el podio: los tres primeros en tarjetas con su cabeza (oro, plata y bronce, el primero en medio), y
+            // del cuarto en adelante, en filas
+            int podium = Math.min(3, top.size());
+            int[] order = podium == 3 ? new int[] {1, 0, 2} : podium == 2 ? new int[] {0, 1} : new int[] {0};
+            for (int k = 0; k < podium && top.size() > 0; k++) {
+                int i = order[k];
+                UUID u = top.get(i).getKey();
+                long v = top.get(i).getValue();
+                boolean me = u.equals(player.getUUID());
+                String name = PadStats.nameOf(u);
+                String value = t.equals("monedas") ? PadView.money(v) : v + unit;
+                b.card(PadClans.head(u, name), (i + 1) + "º " + name + (me ? " (tú)" : ""), PODIUM[i], value,
+                        i == 0 ? PadView.TONE_GOLD : PadView.TONE_BLUE, -1, i == 0 ? "TOP 1" : "", "", me);
+            }
+            for (int i = podium; i < top.size(); i++) {
                 UUID u = top.get(i).getKey();
                 long v = top.get(i).getValue();
                 ItemStack medal = new ItemStack(i == 0 ? Items.GOLD_INGOT : i == 1 ? Items.IRON_INGOT : i == 2 ? Items.COPPER_INGOT : Items.PAPER);

@@ -162,6 +162,15 @@ final class PadGachaPage extends PadDataPage {
         float off = currentOffset();
         int center = rx + rw / 2;
         pad.scissor(g, rx, ry, rw, rh);
+        // 1.4: rayas que corren y una luz del color de la app bajo la flecha; al salir el premio, rayos de su rareza
+        float t = PadSkin.time();
+        PadSkin.stripes(g, rx, ry, rw, rh, 0.05F, t * 6);
+        PadSkin.glow(g, center, ry + rh / 2F, rh * 0.95F, PadSkin.accent(app) & 0xFFFFFF, revealed ? 110 : 70);
+        if (revealed && !result.isEmpty()) {
+            int rc = rarityColor(str(result.get(resultBest), "r", ""));
+            PadSkin.rays(g, center, ry + rh / 2F, rh * 1.1F, 0.55F, t * 30);
+            PadSkin.glow(g, center, ry + rh / 2F, rh * 0.7F, rc & 0xFFFFFF, 150);
+        }
         if (!strip.isEmpty()) {
             int firstCard = (int) Math.floor((off - rw / 2F) / PITCH) - 1;
             for (int i = firstCard; i < firstCard + rw / PITCH + 4; i++) {
@@ -188,6 +197,10 @@ final class PadGachaPage extends PadDataPage {
             int a = (int) (150 * (1 - i / 16F)) << 24;
             g.fill(rx + i, ry, rx + i + 1, ry + rh, a | 0x0C1030);
             g.fill(rx + rw - 1 - i, ry, rx + rw - i, ry + rh, a | 0x0C1030);
+        }
+        if (revealed && !result.isEmpty()) {
+            int[][] sp = {{-30, 6}, {28, 10}, {-24, rh - 10}, {32, rh - 14}, {0, 3}};
+            for (int i = 0; i < sp.length; i++) PadSkin.sparkle(g, center + sp[i][0], ry + sp[i][1], 2, PadSkin.twinkle(i * 1.3F + 0.2F), 0xFFFFFF);
         }
         pad.noScissor(g);
         // la flecha de oro arriba y abajo, y la línea del centro
@@ -294,7 +307,9 @@ final class PadGachaPage extends PadDataPage {
 
     private void drawList(GuiGraphics g, double mx, double my) {
         int x = X + leftW() + 6, w = W - leftW() - 6, top = Y + 14, bottom = Y + H;
-        PadUi.panel(g, x, top, w, bottom - top);
+        int acc = PadSkin.accent(app);
+        PadSkin.window(g, x, top, w, bottom - top, acc);
+        g.fillGradient(x + 1, top + 1, x + w - 1, top + 4, PadSkin.mix(acc, PadSkin.WHITE, 0.14F), PadSkin.darken(acc, 0.78F));
         // pestañas de carpeta
         String[][] tabs = {{"premios", "PREMIOS"}, {"historial", "HISTORIAL"}};
         int tx = x + 4;
@@ -309,7 +324,7 @@ final class PadGachaPage extends PadDataPage {
                 selLabel = t[1];
             } else {
                 if (hover) pad.hover("§tab" + t[0]);
-                PadUi.tab(g, tx, Y, tw, t[1], hover ? 1 : 0);
+                PadSkin.tab(g, tx, Y, tw, t[1], hover ? 1 : 0, acc);
             }
             String key = t[0];
             hit(tx, Y, tw, 15, () -> {
@@ -321,13 +336,13 @@ final class PadGachaPage extends PadDataPage {
             });
             tx += tw + 2;
         }
-        if (sel != null) PadUi.tab(g, sel[0], Y, sel[1], selLabel, 2);
+        if (sel != null) PadSkin.tab(g, sel[0], Y, sel[1], selLabel, 2, acc);
         List<JsonObject> rows = list(data, tab.equals("premios") ? "premios" : "historial");
-        int inner = bottom - top - 8;
+        int inner = bottom - top - 10;
         int content = rows.size() * ROW;
         listScroll = Math.max(0, Math.min(listScroll, Math.max(0, content - inner)));
-        pad.scissor(g, x + 2, top + 4, w - 4, inner);
-        int ry = top + 4 - listScroll;
+        pad.scissor(g, x + 2, top + 6, w - 4, inner);
+        int ry = top + 6 - listScroll;
         long now = System.currentTimeMillis();
         for (JsonObject p : rows) {
             if (ry + ROW > top && ry < bottom) drawPrizeRow(g, p, x + 5, ry, w - 14, now);
@@ -338,14 +353,18 @@ final class PadGachaPage extends PadDataPage {
             String msg = tab.equals("premios") ? "Sin premios." : "Aún no has girado.";
             PadUi.text(g, msg, x + (w - PadUi.font().width(msg)) / 2, top + (bottom - top) / 2 - 4, PadUi.MUTED);
         }
-        PadUi.scrollbar(g, x + w - 7, top + 5, inner - 2, inner, content, listScroll);
+        PadSkin.scrollbar(g, x + w - 7, top + 7, inner - 2, inner, content, listScroll, acc);
     }
 
     private void drawPrizeRow(GuiGraphics g, JsonObject p, int x, int y, int w, long now) {
         int col = rarityColor(str(p, "r", ""));
+        // 1.4: cada premio con la franja y el medallión de su rareza
         g.fill(x + 3, y + ROW - 1, x + w - 3, y + ROW, 0xFFC8E4F8);
-        PadUi.slot(g, x + 1, y + 2, 20, 20, col);
-        PadUi.item(g, stack(p), x + 3, y + 4, 1);
+        g.fillGradient(x, y + 3, x + 2, y + ROW - 3, PadSkin.lighten(col, 50), col);
+        PadSkin.medallion(g, x + 4, y + 2, 20, col);
+        PadUi.item(g, stack(p), x + 6, y + 4, 1);
+        x += 3;
+        w -= 3;
         int tx = x + 26;
         String right = tab.equals("premios") ? pct(dec(p, "p", 0)) : ago(now - num(p, "t", now));
         int rw = PadUi.font().width(right);

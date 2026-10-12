@@ -122,11 +122,19 @@ final class PadPassPage extends PadDataPage {
         PadUi.box(g, x, y, w, h, PadUi.NAVY);
         g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF1E6B52, 0xFF14284F);
         PadUi.texture(g, x + 1, y + 1, w - 2, h - 2);
+        // 1.4: rayas que se mueven, una luz detrás del escudo y otra a la derecha
+        float t = PadSkin.time();
+        PadSkin.stripes(g, x + 1, y + 1, w - 2, h - 2, 0.06F, t * 3);
         g.fill(x + 2, y + 1, x + w - 2, y + 2, 0xFF5FD39A);
         g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, PadUi.GOLD_LO);
         PadUi.corners(g, x, y, w, h);
         // el escudo con el nivel
         int sx = x + 8, sy = y + 6, ss = 38;
+        pad.clipPush(g, x + 1, y + 1, w - 2, h - 2);
+        PadSkin.rays(g, sx + ss / 2F, sy + ss / 2F, 48, 0.6F, t * 18);
+        PadSkin.glow(g, sx + ss / 2F, sy + ss / 2F, 30, 0x8CF0B4, 110);
+        PadSkin.glow(g, x + w * 0.62F, y + h / 2F, 60, 0x5FD39A, 40);
+        pad.clipPop(g);
         drawBadge(g, sx, sy, ss, lv);
         // título, temporada y barra de XP
         int tx = sx + ss + 9;
@@ -142,7 +150,7 @@ final class PadPassPage extends PadDataPage {
             int bx = right - bw, by = y + h - 6 - 16;
             boolean hv = !waiting && PadUi.inside(mx, my, bx, by, bw, 16);
             if (hv) pad.hover("§todo");
-            PadUi.button(g, bx, by, bw, label, PadView.GREEN, hv, !waiting);
+            PadSkin.button(g, bx, by, bw, label, PadView.GREEN, hv, !waiting, false);
             if (!waiting) hit(bx, by, bw, 16, () -> {
                 send("todo");
                 pad.sound("select", 0.75F);
@@ -188,6 +196,9 @@ final class PadPassPage extends PadDataPage {
         String next = lv >= max ? "" : "nivel " + (lv + 1);
         PadUi.text(g, xpText, barX, barY + 10, 0xFFE0ECFF);
         if (!next.isEmpty()) PadUi.text(g, next, barX + barW - PadUi.font().width(next), barY + 10, 0xFFB8C2F0);
+        int[][] sp = {{w - 20, 22}, {ss + 14, 4}, {w / 2, h - 5}};
+        for (int i = 0; i < sp.length; i++) PadSkin.sparkle(g, x + sp[i][0], y + sp[i][1], 2, PadSkin.twinkle(i * 1.7F + 0.6F) * 0.9F, 0xFFFFFF);
+        PadSkin.sheen(g, x + 1, y + 1, w - 2, h - 2, 8F, 0.12F);
     }
 
     /** El escudo del nivel: hexágono de oro con el centro verde y el número grande. */
@@ -228,7 +239,7 @@ final class PadPassPage extends PadDataPage {
     private void drawTrack(GuiGraphics g, double mx, double my, int lv, int max, float maxScroll) {
         int top = trackTop(), h = trackH();
         int x = X, w = W;
-        PadUi.panel(g, x, top, w, h);
+        PadSkin.window(g, x, top, w, h, PadSkin.accent(app));
         int tx = trackX(), tw = trackW();
         // flechas a los lados
         boolean canL = scrollTarget > 0, canR = scrollTarget < maxScroll;
@@ -381,7 +392,7 @@ final class PadPassPage extends PadDataPage {
     private void drawBottom(GuiGraphics g, double mx, double my, int lv) {
         int top = trackTop() + trackH() + 4, h = bottomH();
         int x = X, w = W;
-        PadUi.panel(g, x, top, w, h);
+        PadSkin.window(g, x, top, w, h, PadSkin.accent(app));
         int max = levels();
         int show = hoverLevel > 0 ? hoverLevel : focus > 0 ? focus : Math.max(1, Math.min(max, firstReady() > 0 ? firstReady() : lv + 1));
         JsonObject l = null;
