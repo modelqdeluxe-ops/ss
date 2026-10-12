@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.tierrasfantasticas.tfclient.skills.SkillDefs.Mech;
 import net.tierrasfantasticas.tfclient.skills.SkillRuntime.Ctx;
@@ -210,15 +212,18 @@ final class SkillTargets {
         return out;
     }
 
-    /** @TargetBlock: el bloque al que mira el jugador (hasta 32). */
+    /**
+     * @TargetBlock: el bloque al que mira el jugador (hasta 64), como en MythicMobs: la esquina del bloque (y = la del
+     * bloque sólido, uno por debajo del suelo que se pisa). Los packs lo cuentan así: «tyo=1.5» desde ahí cae al suelo.
+     */
     private static List<Tgt> targetBlock(Ctx ctx, double yOff) {
         if (ctx.caster.entity instanceof ServerPlayer p) {
             Vec3 eye = p.getEyePosition();
-            Vec3 end = eye.add(p.getViewVector(1F).scale(32));
+            Vec3 end = eye.add(p.getViewVector(1F).scale(64));
             var hit = p.level().clip(new net.minecraft.world.level.ClipContext(eye, end, net.minecraft.world.level.ClipContext.Block.COLLIDER,
                     net.minecraft.world.level.ClipContext.Fluid.NONE, p));
-            Vec3 at = hit.getLocation();
-            return List.of(Tgt.at(at.add(0, yOff, 0)));
+            BlockPos b = hit.getType() == HitResult.Type.BLOCK ? hit.getBlockPos() : BlockPos.containing(end);
+            return List.of(Tgt.at(new Vec3(b.getX(), b.getY() + yOff, b.getZ())));
         }
         return List.of(Tgt.at(ctx.caster.pos().add(ctx.caster.forward().scale(8)).add(0, yOff, 0)));
     }

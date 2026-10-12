@@ -38,8 +38,8 @@ NOOP = {'cancelevent', 'animatearmorstand', 'bodyrotation', 'brightness', 'lockm
         'enchant', 'setgravity', 'threat', 'runaitargetselector', 'runaigoalselector', 'modifyglobalscore', 'setglobalscore',
         'feed', 'playanimation', 'swing', 'remapmodel', 'glow', 'setcollidable', 'setinvulnerable',
         'setrotation', 'mount', 'mounttarget', 'dismount', 'bindhitbox', 'clearthreat', 'cullconfig', 'posearmorstand',
-        'segment', 'removehelditem', 'setnodamageticks', 'recoil', 'hide', 'showentity', 'show', 'sendtitle', 'title',
-        'dismountmodel', 'dismountall', 'directionalvelocity'}
+        'segment', 'removehelditem', 'recoil', 'hide', 'showentity', 'show', 'sendtitle', 'title',
+        'dismountmodel', 'dismountall'}
 KNOWN_TARGETS = {'self', 'caster', 's', 'boss', 'mob', 'owner', 'parent', 'summoner', 'trigger', 'target', 't',
                  'targetedtarget', 'tt', 'targetedentity', 'origin', 'o', 'source', 'selflocation', 'casterlocation', 'sl',
                  'bosslocation', 'moblocation', 'selfeyelocation', 'eyelocation', 'casterseyelocation', 'boss_eye', 'sel',
@@ -118,6 +118,8 @@ def evaluate(s):
         return None
 
 
+CALLS = {'skill', 'metaskill', 'cast', 's', 'randomskill', 'skillsequence'}  # SkillRuntime.CALLS: solo llaman a otra skill
+
 CALL_KEYS = {'s', 'skill', 'skills', '$skill', 'spell', 'delay', 'repeat', 'repeatinterval', 'repeati', 'ri', 'r_',
              'origin', 'cooldown', 'sync', 'forcesync', 'targetisorigin', 'tio', '_'}
 
@@ -189,9 +191,13 @@ class Entity:
         self.vel = np.zeros(3)
         self.effects = {}
         self.uid = id(self)
+        self.eye_h = 1.62 if kind == 'player' else 1.74  # altura de los ojos (zombi 1,74)
 
     def eye(self):
-        return self.pos + [0, 1.62, 0]
+        return self.pos + [0, self.eye_h, 0]
+
+    def forward_dir(self):
+        return direction(self.yaw, self.pitch)
 
 
 class Actor:
@@ -313,18 +319,23 @@ class Ctx:
         self.mods = {}
         self.mover = None
         self.params = {}  # skill{s=X;damage=4}: <skill.damage> dentro de X
+        self.ambient = False  # la lanzó una pasiva por tiempo: no mueve ni teletransporta al jugador
+        self.cast = 0  # de qué uso de una skill viene (SkillRuntime.Ctx.cast: la inmunidad es de cada uso)
 
     def copy(self):
         c = Ctx(self.cls, self.caster)
         c.trigger, c.origin, c.targets, c.aim, c.power = self.trigger, self.origin, self.targets, self.aim, self.power
         c.dir, c.depth, c.vars, c.mods, c.mover = self.dir, self.depth + 1, self.vars, self.mods, self.mover
         c.params = self.params
+        c.ambient = self.ambient
+        c.cast = self.cast
         return c
 
     def as_(self, who):
         c = Ctx(self.cls, who)
         c.trigger, c.origin, c.aim, c.power, c.depth, c.mods = self.caster, who.pos().copy(), self.aim, self.power, \
             self.depth + 1, self.mods
+        c.cast = self.cast
         return c
 
 
@@ -335,6 +346,7 @@ class Script:
 
 
 MELEE_REACH = 0.5  # SkillMovers.MELEE_REACH
+IMMUNITY = 4  # SkillRuntime.IMMUNITY: ticks sin otro golpe igual o menor del mismo uso de una skill
 
 
 class Sim:
@@ -377,6 +389,10 @@ class Sim:
         self.hand_items = {k.lower(): v for k, v in hand.items()}
         self.hand = min(self.hand_items, key=len) if self.hand_items else None
         self.passives = [s for s in cls['skills'] if s.get('passive') and s['passive'].get('type') == 'TIMER' and s.get('entry')]
+        self.passive_start, self.passive_cd = None, {}
+        self.applied = 0  # mecánicas que hicieron algo (SkillRuntime.applied)
+        self.skill_hits = {}  # último golpe de cada uso de skill a cada uno: (uid, uso) → (tick, daño) (SKILL_HITS)
+        self.cast_seq = 0
         # skills que el pack llama sin definir: en MythicMobs no hacen nada (no es un fallo nuestro)
         self.known_missing = {x.lower() for x in cls.get('missing', [])}
 
@@ -404,19 +420,26 @@ class Sim:
         return self.tree.get(str(name or '').strip().lower())
 
     # --- entrada (SkillRuntime.cast)
-    def cast(self, skill):
+    def cast(self, skill, ambient=False):
         meta = self.meta(skill.get('entry'))
         if meta is None:
             self.problem(f'la skill {skill["id"]} no tiene entrada')
             return False
         ctx = Ctx(self.cls, Who(entity=self.player))
+        ctx.ambient = ambient
+        self.cast_seq += 1
+        ctx.cast = self.cast_seq
         for k, v in (self.cls.get('start_vars') or {}).items():
             self.state(ctx.caster)['vars'].setdefault(k.lower(), v)
         ctx.origin = self.player.pos.copy()
         ctx.aim = self.mobs_world[0]
         ctx.vars = {}
         ctx.mods = {k.lower(): float(v) for k, v in (skill.get('mods') or {}).items() if v is not None}
-        return self.run_meta(meta, ctx)
+        before, scripts, tasks = self.applied, len(self.scripts), len(self.tasks)
+        if not self.run_meta(meta, ctx):
+            return False
+        # SkillRuntime.cast: si sus condiciones la pararon por dentro y no hizo nada ni dejó nada pendiente, no salió
+        return self.applied != before or len(self.scripts) > scripts or len(self.tasks) > tasks
 
     def run_meta(self, meta, ctx):
         """SkillRuntime.runMeta"""
@@ -578,7 +601,7 @@ class Sim:
             cds[key] = self.clock + round(line_cd * 20)
         a = m.get('a', {})
         delay = int(num(a.get('delay'), 0))
-        repeat = int(num(arg(a, '0', 'repeat'), 0))
+        repeat = int(num(arg(a, '0', 'repeat', 'r_'), 0))
         every = int(max(1, num(arg(a, '1', 'repeatinterval', 'repeati', 'ri'), 1)))
 
         def once():
@@ -651,8 +674,13 @@ class Sim:
                 if k in ctx.mods:
                     return fmt(ctx.mods[k])
                 return str((ctx.vars or {}).get(k, '0'))
-            if t.startswith('stat.'):
-                return '0'
+            if t == 'damage.modifier':  # SkillVars: el Pícaro lo escribe al revés (es <modifier.damage>)
+                return fmt(ctx.mods.get('damage', 0))
+            if t.startswith('stat.'):  # SkillVars.stat (las de MMO, 0)
+                return {'attack_damage': '7', 'damage': '7', 'max_health': '20', 'health': '20',
+                        'movement_speed': '0.1', 'attack_speed': '4', 'armor': '0'}.get(t[5:], '0')
+            if t.startswith('global.var.'):
+                return str(self.states.setdefault('global', new_state())['vars'].get(t[11:], '0'))
             if t.startswith('caster.'):
                 who, rest = ctx.caster, t[7:]
             elif t.startswith('target.'):
@@ -768,6 +796,9 @@ class Sim:
             for x in ctx.targets or []:
                 if x.at is not None:
                     return [Tgt(at=x.at + [0, y, 0])]
+            if c.entity is self.player:  # SkillTargets.targetLocation: el punto al que mira (24 bloques), en el suelo
+                at = self.look_hit(24)
+                return [Tgt(at=np.array([at[0], math.floor(at[1] + 0.01), at[2]]) + [0, y, 0])]
             return [Tgt(at=c.pos() + c.forward() * 8 + [0, y, 0])]
         if t in ('forward', 'f'):
             return [Tgt(at=self.forward(ta, ctx, y))]
@@ -785,8 +816,14 @@ class Sim:
             return self.in_radius(ctx, c.pos(), r, False, False, ta)
         if t in ('mobsinradius', 'mir'):
             return self.in_radius(ctx, c.pos(), r, False, True, ta)
-        if t in ('playersinradius', 'pir', 'playersinworld', 'world', 'pinr', 'nearestplayer', 'np'):
+        if t in ('playersinradius', 'pir', 'playersinworld', 'world', 'pinr'):
             return self.in_radius(ctx, c.pos(), r, True, False, ta)
+        if t in ('nearestplayer', 'np'):  # SkillTargets.nearest
+            near = self.in_radius(ctx, c.pos(), r, True, False, ta)
+            return sorted(near, key=lambda x: float(np.sum((x.pos() - c.pos()) ** 2)))[:1]
+        if t in ('location', 'l'):
+            co = str(arg(ta, '', 'c', 'coords', 'coordinates')).split(',')
+            return [Tgt(at=np.array([num(co[0]), num(co[1]), num(co[2])]))] if len(co) >= 3 else [Tgt(at=c.pos())]
         if t in ('ring', 'circle'):
             pts = int(max(1, min(128, num(arg(ta, '8', 'points', 'p'), 8))))
             rr = num(arg(ta, '5', 'radius', 'r'), 5)
@@ -826,12 +863,14 @@ class Sim:
         if t in ('entitiesincone', 'eic', 'livingentitiesincone'):
             rng = num(arg(ta, '5', 'range', 'r'), 5)
             ang = num(arg(ta, '90', 'angle', 'a'), 90)
-            look = direction(c.yaw(), 0)
+            use_pitch = boolean(arg(ta, 'false', 'usepitch', 'up'))
+            look = direction(c.yaw(), c.pitch() if use_pitch else 0)
             cs = math.cos(math.radians(ang / 2))
             out = []
             for x in self.in_radius(ctx, c.pos(), rng, False, False, ta):
                 to = x.pos() - c.pos()
-                to[1] = 0
+                if not use_pitch:
+                    to[1] = 0
                 n = np.linalg.norm(to)
                 if n < 0.5 or float(np.dot(to / n, look)) >= cs:
                     out.append(x)
@@ -857,8 +896,12 @@ class Sim:
                 if np.linalg.norm(p - (frm + d * k + [0, 0.9, 0])) <= rr + 0.6:
                     out.append(x)
             return out
-        if t in ('targetblock', 'tb'):
-            return [Tgt(at=np.array([c.pos()[0], 0.0, c.pos()[2]]) + c.forward() * 8 + [0, y, 0])]
+        if t in ('targetblock', 'tb'):  # SkillTargets.targetBlock: la esquina del bloque al que mira (64)
+            if c.entity is self.player:
+                h = self.look_hit(64)
+                by = -1.0 if h[1] < 1e-6 else math.floor(h[1])  # el suelo del mundo de prueba es el bloque y = -1
+                return [Tgt(at=np.array([math.floor(h[0]), by + y, math.floor(h[2])]))]
+            return [Tgt(at=c.pos() + c.forward() * 8 + [0, y, 0])]
         if t in ('variablelocation', 'varlocation', 'vl'):
             var = arg(ta, None, 'var', 'variable', 'v')
             v = self.var_scope(var, ctx, None).get(var_name(var)) if var else None
@@ -884,6 +927,15 @@ class Sim:
 
     def origin(self, ctx):
         return ctx.origin if ctx.origin is not None else ctx.caster.pos()
+
+    def look_hit(self, dist):
+        """Donde choca la mirada del jugador con el suelo del mundo de prueba (y = 0), o el final de la línea."""
+        eye, d = self.player.eye(), self.player.forward_dir()
+        if d[1] < -1e-6:
+            k = -eye[1] / d[1]
+            if k <= dist:
+                return eye + d * k
+        return eye + d * dist
 
     def target(self, ctx):
         if ctx.aim is not None and ctx.aim.alive:
@@ -956,8 +1008,14 @@ class Sim:
         if bone < 0:
             self.note(f'@modelpart: el modelo {a.me} no tiene el hueso {part} (en el pack; no sale nada, como allí)')
             return None
-        mats = B.pose(model[0], a.anim if a.anim in model[0]['anims'] else ('idle' if 'idle' in model[0]['anims'] else None),
-                      (a.age - a.anim_start) / 20 * a.anim_speed)
+        anims = model[0]['anims']
+        anim = a.anim if a.anim in anims else None
+        secs = (a.age - a.anim_start) / 20 * a.anim_speed
+        if anim is not None and anims[anim].get('loop') == 'once' and secs > anims[anim]['len'] + 0.05:
+            secs, anim = (secs - anims[anim]['len']) / max(0.01, a.anim_speed), None  # SkillModels: acabó → reposo
+        if anim is None:
+            anim = 'idle' if 'idle' in anims else None
+        mats = B.pose(model[0], anim, secs)
         w = actor_matrix(a.pos, a.yaw) @ np.array(mats[bone])
         return w[:3, 3]
 
@@ -968,8 +1026,7 @@ class Sim:
         m = m.lstrip('!')
         if m in ('or', 'and'):  # SkillConds: compuesta, cada parte con su true/false
             oks = [self.test(p, who, ctx, at) == (p.get('v', 'true') != 'false') for p in c.get('parts', [])]
-            r = any(oks) if m == 'or' else all(oks)
-            return r != neg
+            return any(oks) if m == 'or' else all(oks)  # SkillConds: una compuesta no lleva «!»
         a = c.get('a', {})
         if any('<' in str(v) for v in a.values()):
             tg = Tgt(who) if who is not None else (Tgt(at=at) if at is not None else None)
@@ -1012,7 +1069,7 @@ class Sim:
         elif m in ('onground', 'grounded'):
             r = e is None or e.pos[1] <= 0.01
         elif m in ('sprinting', 'issprinting', 'isburning', 'burning', 'onfire',
-                   'inwater', 'isinwater', 'haspotioneffect', 'haspotion', 'dead', 'isdead'):
+                   'inwater', 'isinwater', 'haspotioneffect', 'haspotion'):
             r = False
         elif m in ('targetwithin', 'targetinlineofsight', 'targetnotwithin'):
             d = num(arg(a, '16', 'distance', 'd'), 16)
@@ -1035,9 +1092,14 @@ class Sim:
             p = at if at is not None else (who.pos() if who is not None else ctx.caster.pos())
             frm = ctx.caster.pos() if m == 'distance' else self.origin(ctx)
             r = in_range(float(np.linalg.norm(np.asarray(p) - frm)), arg(a, '>0', 'distance', 'd'))
-        elif m in ('health', 'hp', 'healthpercent', 'hppercent', 'hpp'):
-            r = e is not None and in_range(e.health if m in ('health', 'hp') else e.health / 20,
-                                           arg(a, '>0', 'health', 'h', 'amount', 'a', 'percent', 'p'))
+        elif m in ('health', 'hp'):
+            r = e is not None and in_range(e.health, arg(a, '>0', 'health', 'h', 'amount', 'a'))
+        elif m in ('healthpercent', 'hppercent', 'hpp'):
+            r = e is not None and in_range(e.health / 20, arg(a, '>0', 'percent', 'p', 'health', 'h'))
+        elif m in ('isskill', 'chance'):
+            r = random.random() < num(arg(a, '1', 'chance', 'c'), 1)
+        elif m in ('dead', 'isdead'):
+            r = who is not None and not who.alive()
         elif m in ('altitude', 'height'):
             p = at if at is not None else (who.pos() if who is not None else ctx.caster.pos())
             r = in_range(float(p[1]), arg(a, '>0', 'height', 'h', 'a'))
@@ -1109,6 +1171,8 @@ class Sim:
         name = m['m']
         a = m.get('a', {})
         self.count(name)
+        if name not in CALLS:
+            self.applied += 1
         if TRACE:
             self.trace(f'  {name} {m.get("t") or ""} → {len(targets)} obj.' + (f' [{a.get("s") or a.get("type") or a.get("mob") or ""}]'
                                                                           if name in ('skill', 'summon', 'projectile', 'aura', 'signal') else ''))
@@ -1232,20 +1296,39 @@ class Sim:
                     self.model_mech({'remove': 'true'}, ctx, targets)
         elif name in ('auraremove', 'removeaura', 'removebuff'):
             n = str(arg(a, '', 'auraname', 'aura', 'name', 'n', 'buffname', 'b')).lower()
+            stacks = int(num(arg(a, '0', 'stacks', 's'), 0))
             for t in targets:
                 if t.who is not None:
                     au = self.state(t.who)['auras'].get(n)
                     if au and au['alive']:
-                        self.finish_aura(au)
+                        if 0 < stacks < au['stacks']:  # SkillAuras.remove: quita esas cargas
+                            au['stacks'] -= stacks
+                        else:
+                            self.finish_aura(au)
         elif name in ('damage', 'd', 'basedamage', 'percentdamage'):
             amount = num(arg(a, '1', 'amount', 'a', 'damage'), 1)
+            no_imm = boolean(arg(a, 'false', 'preventimmunity', 'pi'))
             for t in targets:
                 e = t.entity()
                 if e is None or not self.can_hurt(ctx, e):
                     continue
-                dmg = amount * ctx.power * t.power
+                dmg = self.immunity(e, ctx.cast, amount * ctx.power * t.power, no_imm)
+                if dmg <= 0:
+                    continue
                 e.health -= dmg
                 self.damage.append((self.clock, e.name, round(dmg, 2)))
+        elif name == 'setnodamageticks':  # SkillRuntime.setImmunity
+            ticks = int(num(arg(a, '0', 'ticks', 't', '_'), 0))
+            for t in targets:
+                e = t.entity()
+                if e is None:
+                    continue
+                if ticks <= 10:
+                    for k in [k for k in self.skill_hits if k[0] == e.uid]:
+                        del self.skill_hits[k]
+                else:
+                    last = self.skill_hits.get((e.uid, ctx.cast))
+                    self.skill_hits[(e.uid, ctx.cast)] = (self.clock - IMMUNITY + (ticks - 10), last[1] if last else 0)
         elif name in ('heal', 'healpercent', 'potion', 'potionclear', 'ignite', 'extinguish', 'setblock', 'setblocktype',
                       'message', 'msg', 'actionmessage', 'stun', 'prison', 'freeze', 'look'):
             if name == 'potion' and not arg(a, None, 'type', 't'):
@@ -1257,14 +1340,15 @@ class Sim:
         elif name in ('throw', 'pull', 'leap', 'lunge', 'jump', 'velocity', 'propel'):
             self.motion(name, a, ctx, targets)
         elif name in ('teleport', 'tp', 'teleportto', 'tpt'):
+            self.teleport(a, ctx, targets)
+        elif name == 'directionalvelocity':
+            self.directional(a, ctx, targets)
+        elif name in ('dismountmodel', 'dismountall'):  # SkillModels.dismount
             for t in targets:
-                if t.who is not None and t.who.same(ctx.caster):
-                    continue
-                if ctx.caster.actor is not None:
-                    ctx.caster.actor.pos = t.pos().copy()
-                elif ctx.caster.entity is not None:
-                    ctx.caster.entity.pos = t.pos().copy()
-                break
+                e = t.entity()
+                for act in self.actors:
+                    if e is not None and act.alive and act.rider is e:
+                        act.rider, act.follow = None, None
         elif name in ('setvariable', 'setvar', 'variableset', 'variableadd', 'varadd', 'variableunset', 'unsetvariable'):
             var = arg(a, None, 'var', 'variable', 'name', 'key', 'k')
             if var:
@@ -1423,6 +1507,19 @@ class Sim:
         c.targets = targets
         self.run_meta(meta, c)
 
+    def immunity(self, e, cast, amount, no_imm):
+        """SkillRuntime.immunity: dentro de un mismo uso de la skill, IMMUNITY ticks tras un golpe otro igual o menor no
+        hace nada y uno mayor solo la diferencia (como MythicMobs/Minecraft); preventimmunity se lo salta"""
+        key = (e.uid, cast)
+        last = None if no_imm else self.skill_hits.get(key)
+        if last is not None and self.clock - last[0] < IMMUNITY:
+            if amount <= last[1]:
+                return 0.0
+            self.skill_hits[key] = (last[0], amount)
+            return amount - last[1]
+        self.skill_hits[key] = (self.clock, amount)
+        return amount
+
     def can_hurt(self, ctx, e):
         owner = ctx.caster.player()
         if owner is not None and e is owner:
@@ -1431,43 +1528,139 @@ class Sim:
             return False
         return e.alive and e.kind != 'player'
 
+    def push(self, ctx, e, motion):
+        """SkillMotion.push: como mucho 6 por eje; lo de una pasiva por tiempo no mueve al jugador"""
+        if ctx.ambient and e.kind == 'player':
+            return
+        e.vel = np.clip(np.array(motion, float), -6.0, 6.0)
+
+    def movable(self, ctx, e):
+        """SkillMotion.movable: uno mismo, o lo que la skill puede tocar"""
+        return e is ctx.caster.entity or e is ctx.caster.player() or self.can_hurt(ctx, e)
+
+    def move_self(self, ctx, vel):
+        if ctx.caster.entity is not None:
+            self.push(ctx, ctx.caster.entity, vel)
+        elif ctx.caster.actor is not None:
+            ctx.caster.actor.pos = ctx.caster.actor.pos + vel
+
     def motion(self, name, a, ctx, targets):
+        """SkillMotion: throw, pull, leap, lunge, jump, velocity, propel"""
         if name == 'throw':
             v, vy = num(arg(a, '1', 'velocity', 'v'), 1) / 10, num(arg(a, '1', 'velocityy', 'vy'), 1) / 10
+            frm = ctx.caster.pos()
             for t in targets:
                 e = t.entity()
-                if e is None or (e is not ctx.caster.entity and not self.can_hurt(ctx, e)):
+                if e is None or not self.movable(ctx, e):
                     continue
-                away = e.pos - ctx.caster.pos()
+                away = e.pos - frm
                 away[1] = 0
                 n = np.linalg.norm(away)
                 away = away / n * v if n > 1e-6 else np.zeros(3)
-                e.vel = np.clip(np.array([away[0], vy, away[2]]), -6.0, 6.0)
-        elif name in ('leap', 'lunge', 'propel'):
+                self.push(ctx, e, [away[0], vy, away[2]])
+        elif name == 'pull':
+            v = num(arg(a, '1', 'velocity', 'v'), 1) / 10
+            to = self.origin(ctx) if boolean(arg(a, 'false', 'toorigin', 'to')) else ctx.caster.pos()
+            for t in targets:
+                e = t.entity()
+                if e is None or not self.movable(ctx, e):
+                    continue
+                d = to - e.pos
+                dist = float(np.linalg.norm(d))
+                if dist < 0.5:
+                    continue
+                mo = d / dist * (v * max(1, min(4, dist / 2)))
+                self.push(ctx, e, [mo[0], max(0.1, mo[1] + 0.15), mo[2]])
+        elif name == 'leap':  # SkillMotion.leap: la parábola de MythicMobs
+            v0 = num(arg(a, '100', 'velocity', 'v'), 100) / 10 * (1 + ctx.power * 0.1)
+            for t in targets:
+                mo = leap_velocity(ctx.caster.pos(), t.pos(), v0, random.random())
+                if mo is None:
+                    continue
+                self.move_self(ctx, mo)
+                break
+        elif name == 'lunge':  # SkillMotion.lunge: la parte horizontal de la dirección, como MythicMobs
+            v = abs(num(arg(a, '1', 'velocity', 'v', 'magnitude'), 1))
+            vy = num(arg(a, '0', 'velocityy', 'yvelocity', 'vy', 'yv'), 0)
+            for t in targets:
+                to, c = t.pos(), ctx.caster.pos()
+                if (to[0] - c[0]) ** 2 + (to[2] - c[2]) ** 2 == 0:
+                    to = to + ctx.caster.forward() * 2
+                d = to - c
+                if np.linalg.norm(d) < 1e-6:
+                    continue
+                d = d / np.linalg.norm(d)
+                mo = np.array([d[0] * v, vy, d[2] * v])
+                if np.linalg.norm(mo) > 4:
+                    mo = mo / np.linalg.norm(mo) * 4
+                self.move_self(ctx, mo)
+                break
+        elif name == 'propel' and ctx.caster.entity is not None:  # solo entidades, y se suma a lo que ya lleva
             for t in targets:
                 d = t.pos() - ctx.caster.pos()
-                if name == 'lunge':
-                    d[1] = 0
                 n = np.linalg.norm(d)
                 if n < 1e-6:
                     continue
-                if name == 'leap':
-                    vel = d / n * min(4, num(arg(a, '100', 'velocity', 'v'), 100) / 100)
-                elif name == 'lunge':
-                    vel = d / n * min(4, num(arg(a, '1', 'velocity', 'v'), 1)) + [0, num(arg(a, '0', 'velocityy', 'vy'), 0), 0]
-                else:
-                    if ctx.caster.entity is None:  # SkillMotion.propel: solo entidades, y se suma a lo que ya lleva
-                        break
-                    vel = ctx.caster.entity.vel + d / n * num(arg(a, '1', 'velocity', 'v'), 1) / 10
-                if ctx.caster.entity is not None:
-                    ctx.caster.entity.vel = np.clip(vel, -6.0, 6.0)  # SkillMotion.push: como mucho 6 por eje
-                elif ctx.caster.actor is not None:
-                    ctx.caster.actor.pos = ctx.caster.actor.pos + vel
+                self.push(ctx, ctx.caster.entity, ctx.caster.entity.vel + d / n * num(arg(a, '1', 'velocity', 'v'), 1) / 10)
                 break
         elif name == 'jump':
             for t in targets:
-                if t.entity() is not None:
-                    t.entity().vel[1] = num(arg(a, '1', 'velocity', 'v'), 1)
+                e = t.entity()
+                if e is not None:
+                    self.push(ctx, e, [e.vel[0], num(arg(a, '1', 'velocity', 'v'), 1), e.vel[2]])
+        elif name == 'velocity':
+            mode = str(arg(a, 'set', 'mode', 'm')).lower()
+            x, y, z = (num(arg(a, '0', 'velocity' + k, 'v' + k, k), 0) for k in 'xyz')
+            rel = boolean(arg(a, 'false', 'relative', 'r'))
+            for t in targets:
+                e = t.entity()
+                if e is None or not self.movable(ctx, e):
+                    continue
+                add = np.array([x, y, z], float)
+                if rel:
+                    add = direction(e.yaw, 0) * z + direction(e.yaw + 90, 0) * x + [0, y, 0]
+                now = e.vel
+                if mode == 'add':
+                    out = now + add
+                elif mode in ('multiply', 'mult'):
+                    out = now * [x, y, z]
+                elif mode == 'remove':
+                    out = np.zeros(3)
+                else:
+                    out = add
+                self.push(ctx, e, out)
+
+    def directional(self, a, ctx, targets):
+        """SkillMotion.directional"""
+        yaw = num(arg(a, None, 'yaw', 'y'), ctx.caster.yaw())
+        pitch = num(arg(a, '0', 'pitch', 'p'), 0)
+        add = direction(yaw, pitch) * num(arg(a, '1', 'velocity', 'v'), 1)
+        mode = str(arg(a, 'SET', 'mode', 'm')).upper()
+        for t in targets:
+            e = t.entity()
+            if e is None or not self.movable(ctx, e):
+                continue
+            now = e.vel
+            if mode == 'ADD':
+                out = now + add
+            elif mode in ('MINIMUM', 'MIN'):
+                out = now if float(np.dot(now, now)) >= float(np.dot(add, add)) else add
+            else:
+                out = add
+            self.push(ctx, e, out)
+
+    def teleport(self, a, ctx, targets):
+        """SkillMotion.teleport: quien lanza va al objetivo (con desvío si lo pide); una pasiva no te mueve"""
+        sh, sv = num(arg(a, '0', 'spreadh', 'sh'), 0), num(arg(a, '0', 'spreadv', 'sv'), 0)
+        for t in targets:
+            if t.who is not None and t.who.same(ctx.caster):
+                continue
+            to = t.pos() + [(random.random() * 2 - 1) * sh, random.random() * sv, (random.random() * 2 - 1) * sh]
+            if ctx.caster.actor is not None:
+                ctx.caster.actor.pos = np.array(to, float)
+            elif ctx.caster.entity is not None and not (ctx.ambient and ctx.caster.entity.kind == 'player'):
+                ctx.caster.entity.pos = np.array([to[0], max(0.0, to[1]), to[2]])  # sin meterse en el suelo
+            return
 
     def from_string(self, text, ctx):
         """SkillTargets.fromString"""
@@ -1655,11 +1848,12 @@ class Sim:
 
     def minion_tick(self, act):
         """SkillMinions.tick (en el mundo de prueba el suelo está en y = 0)"""
-        if act.target is not None and (not act.target.alive or np.linalg.norm(act.target.pos - act.pos) > 32):
+        follow = num((act.mob.get('options') or {}).get('FollowRange'), 32)
+        if act.target is not None and (not act.target.alive or np.linalg.norm(act.target.pos - act.pos) > follow):
             act.target = None
         sets_own = any(mm['m'] == 'settarget' and mm.get('t') for mm in act.mob.get('mechs', []))
         if act.target is None and not sets_own and act.age % 10 == 0:
-            cands = [e for e in self.mobs_world if e.alive and np.linalg.norm(e.pos - act.pos) <= 24]
+            cands = [e for e in self.mobs_world if e.alive and np.linalg.norm(e.pos - act.pos) <= min(24, follow)]
             act.target = min(cands, key=lambda e: np.linalg.norm(e.pos - act.pos)) if cands else None
         owner = act.owner.entity if act.owner is not None else None
         goal, stop = None, 1.8
@@ -1837,18 +2031,30 @@ class Sim:
 
     # --- proyectiles (SkillMovers)
     def projectile(self, a, ctx, targets, missile, hc=None, sc=None):
+        """SkillMovers.projectile"""
+        meteor = not missile and str(arg(a, 'NORMAL', 'type')).upper() == 'METEOR'
         for t in targets:
             p = self.mover(ctx, a, 1 if missile else 0)
             p['hc'], p['sc'] = hc or [], sc or []
             fo = boolean(arg(a, 'false', 'fromorigin', 'fo'))
             tio = boolean(arg(a, 'false', 'targetisorigin', 'tio'))
             base = t.pos() if tio else self.origin(ctx) if fo else ctx.caster.pos()
-            start0 = base + [0, num(arg(a, '1', 'startyoffset', 'syo'), 1), 0]
-            target = t.pos() + [0, num(arg(a, '1', 'targetyoffset', 'tyo'), 1), 0]
+            syo = num(arg(a, '1', 'startyoffset', 'syo'), 1)
+            sfo = num(arg(a, '1', 'startforwardoffset', 'startfoffset', 'forwardoffset', 'sfo'), 1)
+            side = num(arg(a, '0', 'sideoffset', 'soffset', 'so'), 0)
+            sso = num(arg(a, None, 'startsideoffset', 'ssoffset', 'sso'), side)
+            eso = num(arg(a, None, 'endsideoffset', 'endoffset', 'esoffset', 'eso'), side)
+            tyo = num(arg(a, '0', 'targetyoffset', 'targety', 'tyo'), 0)
             tso = num(arg(a, '0', 'targetsideoffset', 'tso'), 0)
+            cy = ctx.caster.yaw()  # sfo/sso según hacia dónde mira quien lanza (como MythicMobs)
+            start = base + [0, syo, 0] + direction(cy, 0) * sfo + direction(cy + 90, 0) * sso
+            # proyectil: a media altura de un ser (o al sitio) + tyo; misil: a los pies
+            aim = t.pos() + [0, 0 if missile else tyo + half_height(t), 0]
+            if eso:
+                aim = aim + direction(cy + 90, 0) * eso
             if tso:
-                target = target + direction(yaw_of(target - start0) + 90, 0) * tso
-            d = ctx.caster.forward() if tio else target - start0
+                aim = aim + direction(yaw_of(aim - start) + 90, 0) * tso
+            d = ctx.caster.forward() if tio else aim - start
             if np.linalg.norm(d) < 1e-6:
                 d = ctx.caster.forward()
             d = d / np.linalg.norm(d)
@@ -1861,24 +2067,32 @@ class Sim:
                     d = d2 / np.linalg.norm(d2)
             flat = np.array([d[0], 0, d[2]])
             flat = flat / np.linalg.norm(flat) if np.linalg.norm(flat) > 1e-6 else np.zeros(3)
-            cy = ctx.caster.yaw()  # sfo/sso según hacia dónde mira quien lanza (como MythicMobs)
-            p['pos'] = (start0 + direction(cy, 0) * num(arg(a, '1', 'startforwardoffset', 'sfo'), 1)
-                        + direction(cy + 90, 0) * num(arg(a, '0', 'startsideoffset', 'sso'), 0))
+            p['pos'] = start
             p['dir'] = d
-            p['step'] = num(arg(a, '5', 'velocity', 'v'), 5) / 20 * p['interval']
+            v = num(arg(a, '5', 'velocity', 'v'), 5)
+            p['step'] = v / 20 * p['interval']
             p['range'] = num(arg(a, '40', 'maxrange', 'mr'), 40)
             p['ticks'] = int(num(arg(a, '400', 'maxduration', 'md', 'duration', 'd'), 400))
             p['gravity'] = num(arg(a, '0', 'gravity', 'g'), 0) / 20
             p['hug'] = boolean(arg(a, 'false', 'hugsurface', 'hs'))
             p['hfs'] = num(arg(a, '0.5', 'heightfromsurface', 'hfs'), 0.5)
-            if p['hug']:
-                fl = np.array([d[0], 0, d[2]])
-                p['dir'] = fl / np.linalg.norm(fl) if np.linalg.norm(fl) > 1e-6 else direction(ctx.caster.yaw(), 0)
+            if meteor:  # cae desde «hfs» por encima del objetivo
+                p['pos'] = aim + [0, p['hfs'], 0]
+                p['dir'] = np.array([0.0, -1.0, 0.0])
+                p['step'] = 0.0
+                p['gravity'] = p['gravity'] if p['gravity'] > 0 else v / 20
+                p['hug'] = False
+            elif p['hug']:
+                p['dir'] = flat if np.linalg.norm(flat) > 1e-6 else direction(ctx.caster.yaw(), 0)
                 p['pos'] = np.array([p['pos'][0], p['hfs'], p['pos'][2]])
             if boolean(arg(a, 'false', 'hittargetonly', 'hto')):
                 p['only'] = t.entity()
-            if missile:
-                p['homing'] = t.entity() or ctx.aim
+            if missile:  # persigue al ser (a la altura de sus ojos, o a tyo) o va al sitio (+ tyo)
+                p['homing'] = t.entity()
+                if p['homing'] is not None:
+                    p['home_y'] = tyo if tyo else p['homing'].eye_h
+                else:
+                    p['home_at'] = t.pos() + [0, tyo, 0]
                 p['inertia'] = max(0.1, num(arg(a, '1.5', 'inertia', 'in'), 1.5))
             self.start_mover(p, a)
 
@@ -1886,7 +2100,7 @@ class Sim:
         for t in targets:
             p = self.mover(ctx, a, 2)
             p['hc'] = hc or []
-            p['pos'] = t.pos() + [0, num(arg(a, '0', 'yoffset', 'y', 'yo'), 0), 0]
+            p['pos'] = t.pos() + [0, num(arg(a, '1', 'yoffset', 'yo'), 1), 0]  # como MythicMobs: 1 por encima
             p['dir'] = ctx.caster.forward()
             p['ticks'] = int(num(arg(a, '200', 'maxduration', 'md', 'duration', 'd'), 200))
             # SkillMovers.totem: los tajos cuerpo a cuerpo de un jugador llegan medio bloque más
@@ -1952,40 +2166,79 @@ class Sim:
         return au
 
     def mover(self, ctx, a, kind):
+        """SkillMovers.common"""
         still = kind in (2, 3)
-        return {'ctx': ctx.copy(), 'kind': kind, 'interval': int(max(1, num(arg(a, '1', 'interval', 'i'), 1))),
-                'hr': num(arg(a, '1.25', 'horizontalradius', 'hitradius', 'hr'), 1.25),
-                'vr': num(arg(a, arg(a, '1.25', 'hr'), 'verticalradius', 'vr'), 1.25),
-                'hp': boolean(arg(a, 'true', 'hitplayers', 'hp')), 'hnp': boolean(arg(a, 'false', 'hitnonplayers', 'hnp')),
+        hr = num(arg(a, '1.25', 'horizontalradius', 'hradius', 'hitradius', 'hr', 'radius_h'), 1.25)
+        return {'ctx': ctx.copy(), 'kind': kind, 'interval': int(max(1, num(arg(a, '1', 'interval', 'i', 'int'), 1))),
+                'hr': hr, 'vr': num(arg(a, None, 'verticalradius', 'vradius', 'verticalhitradius', 'vhr', 'vr'), hr if kind == 3 else 1.25),
+                'hp': boolean(arg(a, 'true', 'hitplayers', 'hp')),
+                'hnp': boolean(arg(a, 'true' if kind == 1 else 'false', 'hitnonplayers', 'hnp')),
                 'se': boolean(arg(a, 'false' if still else 'true', 'stopatentity', 'se')),
                 'sb': boolean(arg(a, 'false' if still else 'true', 'stopatblock', 'sb')),
-                'charges': int(num(arg(a, '0', 'charges', 'c', 'maxcharges'), 0)), 'hits': 0, 'hit': set(),
+                'charges': int(num(arg(a, '0', 'charges', 'ch', 'c', 'maxcharges'), 0)) if still else 0, 'hits': 0, 'hit': set(),
                 'ontick': arg(a, None, 'ontick', 'ot', 'ontickskill'), 'onhit': arg(a, None, 'onhit', 'oh', 'onhitskill'),
                 'onend': arg(a, None, 'onend', 'oe', 'onendskill'), 'age': 0, 'travelled': 0.0, 'alive': True,
                 'range': 1e9, 'step': 0.0, 'bullet': None, 'hc': [], 'sc': [], 'hug': False, 'hfs': 0.5, 'only': None,
                 'ohb': arg(a, None, 'onhitblock', 'ohb', 'onhitblockskill'),
-                'immune': int(num(arg(a, '0', 'immunedelay', 'id'), 0)), 'hit_at': {},
-                'death': int(num(arg(a, '0', 'deathdelay', 'dd'), 0)), 'aura': None,
-                'byo': num(arg(a, '0', 'bulletyoffset', 'byo'), 0)}
+                # immuneDelay en milisegundos (2000): se puede volver a tocar al mismo al doble de eso
+                'rehit': int(max(1, math.ceil(num(arg(a, '2000', 'immunedelay', 'immune', 'id'), 2000) * 2 / 50))), 'hit_at': {},
+                'death': int(num(arg(a, '2', 'deathdelay', 'death', 'dd'), 2)), 'aura': None,
+                'byo': 0.0, 'bfo': num(arg(a, '0', 'bulletforwardoffset', 'bfo'), 0),
+                'homing': None, 'home_y': 0.0, 'home_at': None}
 
     def start_mover(self, p, a):
-        typ = str(arg(a, '', 'bullettype', 'bt', 'type')).upper()
+        """SkillMovers.start"""
+        typ = str(arg(a, '', 'bullettype', 'bullet', 'bt')).upper()
         mob = arg(a, None, 'mob', 'bulletmob', 'bm', 'mobtype', 'mm')
+        d = p['dir']
+        yaw = yaw_of(d) if np.linalg.norm(d) > 0 else p['ctx'].caster.yaw()
+        pitch = pitch_of(d) if np.linalg.norm(d) > 0 and p['kind'] in (0, 1) else 0
         if mob and typ in ('MOB', ''):
+            # como MythicMobs: el mob va «bulletyoffset» por debajo del proyectil (1,35 si no lo dice)
+            p['byo'] = -num(arg(a, '1.35', 'bulletyoffset', 'byoffset', 'byo'), 1.35)
             m = self.mobs.get(str(mob).lower())
             if m is None:
                 self.problem(f'falta el mob {mob}')
             else:
-                d = p['dir']
-                yaw = yaw_of(d) if np.linalg.norm(d) > 0 else p['ctx'].caster.yaw()
-                pitch = pitch_of(d) if np.linalg.norm(d) > 0 and p['kind'] in (0, 1) else 0
-                p['bullet'] = self.spawn(p['ctx'], m, p['pos'], yaw, pitch)
+                p['bullet'] = self.spawn(p['ctx'], m, self.bullet_pos(p), yaw, pitch)
+                if p['bullet'] is not None:
+                    p['bullet'].carried = True
+        elif typ in ('ME', 'MEG', 'MODELENGINE'):
+            model = arg(a, None, 'bulletmodel', 'model')
+            if model:
+                mid = model if '.' in model else self.cls['id'] + '.' + str(model).lower()
+                p['bullet'] = self.spawn_model(p['ctx'], mid, arg(a, None, 'bulletstate', 'state'),
+                                               num(arg(a, '1', 'bulletscale'), 1), self.bullet_pos(p), yaw, pitch)
                 if p['bullet'] is not None:
                     p['bullet'].carried = True
         os_ = arg(a, None, 'onstart', 'os', 'onstartskill')
         if os_:
             self.mover_run(p, os_, [Tgt(at=p['pos'])], None)
         self.movers.append(p)
+
+    def bullet_pos(self, p):
+        at = np.array(p['pos'], float) + [0, p['byo'], 0]
+        if p['bfo'] and np.linalg.norm(p['dir']) > 1e-6:
+            at = at + p['dir'] / np.linalg.norm(p['dir']) * p['bfo']
+        return at
+
+    def spawn_model(self, ctx, mid, state, scale_, at, yaw, pitch):
+        """SkillRuntime.spawnModel: un efecto que es solo un modelo de ModelEngine"""
+        if len(self.actors) >= 2000:
+            return None
+        if self.model(mid) is None:
+            self.problem(f'falta el modelo de ModelEngine {mid}')
+        act = Actor(self, None, at, yaw, pitch, ctx.caster)
+        act.me = mid
+        if scale_ > 0:
+            act.scale = scale_
+        if state:
+            act.anim, act.anim_start = state, act.age
+        elif 'spawn' in (self.model(mid) or [{'anims': {}}])[0]['anims']:
+            act.anim, act.anim_start = 'spawn', act.age
+        self.actors.append(act)
+        self.count('actor:' + mid)
+        return act
 
     def mover_run(self, p, skill, targets, trigger):
         c = p['ctx'].copy()
@@ -2021,28 +2274,34 @@ class Sim:
             self.finish_aura(au)
 
     def mover_step(self, p):
+        """SkillMovers.step"""
         p['age'] += 1
+        if p['kind'] == 3 and p['ctx'].caster.actor is not None and not p['ctx'].caster.alive():
+            self.mover_end(p)
+            return
         au = p.get('aura')
         if au is not None and not au['alive']:
             self.mover_end(p)
             return
-        for c in p['sc']:
-            r = self.test(c, p['ctx'].caster, p['ctx'], p['pos'])
-            if r == (c.get('v', 'true') not in ('false', 'cancel')):
-                self.mover_end(p)
-                return
         if p['age'] % p['interval']:
             if p['age'] >= p['ticks']:
                 self.mover_end(p)
             return
         frm = np.array(p['pos'], float)
         if p['kind'] in (0, 1):
-            h = p.get('homing')
-            if p['kind'] == 1 and h is not None and h.alive:
-                to = h.pos + [0, 0.9, 0] - p['pos']
-                if np.linalg.norm(to) > 1e-6:
-                    nd = p['dir'] * p['inertia'] + to / np.linalg.norm(to)
-                    p['dir'] = nd / np.linalg.norm(nd)
+            if p['kind'] == 1:  # misil: gira hacia el ser (si ya no está, se acaba) o hacia su sitio
+                home = p['home_at']
+                h = p['homing']
+                if h is not None:
+                    if not h.alive:
+                        self.mover_end(p)
+                        return
+                    home = h.pos + [0, p['home_y'], 0]
+                if home is not None:
+                    to = home - p['pos']
+                    if np.linalg.norm(to) > 1e-6:
+                        nd = p['dir'] * p['inertia'] + to / np.linalg.norm(to)
+                        p['dir'] = nd / np.linalg.norm(nd)
             if p.get('gravity') and not p['hug']:  # SkillMovers: la gravedad se resta a la velocidad (como MythicMobs)
                 vel = p['dir'] * p['step'] + [0, -p['gravity'] * p['interval'], 0]
                 sp = float(np.linalg.norm(vel))
@@ -2074,35 +2333,48 @@ class Sim:
             self.mover_run(p, p['ontick'], [Tgt(at=p['pos'])], None)
         if not p['alive']:
             return
-        if p['onhit'] or p['se']:
-            lo = np.minimum(frm, p['pos']) - [p['hr'], p['vr'], p['hr']]
-            hi = np.maximum(frm, p['pos']) + [p['hr'], p['vr'], p['hr']]
-            # efectos del pack que el proyectil busca (hitConditions con mythicmobtype true), como SkillMovers
-            if wants_actors(p['hc']):
-                for act in list(self.actors):
-                    if not act.alive or act.follow is not None or act is p['bullet'] or ('a', act.id) in p['hit_at']:
-                        continue
-                    if not ((lo - 0.3 <= act.pos).all() and (hi + 0.3 >= act.pos).all()):
-                        continue
-                    if not self.passes_conds(p['hc'], Tgt(Who(actor=act)), p['ctx']):
-                        continue
-                    p['hit_at'][('a', act.id)] = self.clock
-                    p['hits'] += 1
-                    self.count('impacto')
-                    if p['onhit']:
-                        self.mover_run(p, p['onhit'], [Tgt(Who(actor=act))], None)
-                    if not p['alive']:
-                        return
-                    if p['se'] or (p['charges'] and p['hits'] >= p['charges']):
-                        self.mover_end(p)
-                        return
+        self.mover_hits(p, frm)
+        if not p['alive']:
+            return
+        if p['travelled'] >= p['range'] or p['age'] >= p['ticks']:
+            self.mover_end(p)
+
+    def mover_hits(self, p, frm):
+        """SkillMovers.hits: todos los que toca a la vez van juntos a una sola vez de su onHit; con stopAtEntity se
+        para en el primero que cumpla sus stopConditions; tótems y orbitales gastan una carga por paso que tocan."""
+        if not p['onhit'] and not p['se']:
+            return
+        if p['hr'] <= 0 or p['vr'] <= 0:
+            return
+        lo = np.minimum(frm, p['pos']) - [p['hr'], p['vr'], p['hr']]
+        hi = np.maximum(frm, p['pos']) + [p['hr'], p['vr'], p['hr']]
+        hit, first, stop = [], None, False
+
+        def immune(key):
+            last = p['hit_at'].get(key)
+            return last is not None and self.clock - last < p['rehit']
+        if wants_actors(p['hc']):  # efectos del pack que el proyectil busca (hitConditions con mythicmobtype true)
+            for act in list(self.actors):
+                if not act.alive or act.carried or act.follow is not None or immune(('a', act.id)):
+                    continue
+                if not ((lo - 0.3 <= act.pos).all() and (hi + 0.3 >= act.pos).all()):
+                    continue
+                t = Tgt(Who(actor=act))
+                if not self.passes_conds(p['hc'], t, p['ctx']):
+                    continue
+                p['hit_at'][('a', act.id)] = self.clock
+                hit.append(t)
+                if p['se'] and self.stops_at(p, t):
+                    stop = True
+                    break
+        if not stop:
+            found = []
             for e in self.entities:
                 if not e.alive or e is p['ctx'].caster.entity or e is p['ctx'].caster.player():
                     continue
-                last = p['hit_at'].get(e.uid)
-                if last is not None and (p['immune'] <= 0 or self.clock - last < p['immune']):
-                    continue
                 if p['only'] is not None and e is not p['only']:
+                    continue
+                if immune(e.uid):
                     continue
                 if (e.kind == 'player' and not p['hp']) or (e.kind != 'player' and not p['hnp']):
                     continue
@@ -2112,25 +2384,38 @@ class Sim:
                     continue
                 c = e.pos + [0, 0.9, 0]
                 if (lo <= c + [0.3, 0.9, 0.3]).all() and (hi >= c - [0.3, 0.9, 0.3]).all():
-                    p['hit'].add(e.uid)
-                    p['hit_at'][e.uid] = self.clock
-                    p['hits'] += 1
-                    self.count('impacto')
-                    if p['onhit']:
-                        self.mover_run(p, p['onhit'], [Tgt(Who(entity=e))], e)
-                    if not p['alive']:
-                        return
-                    if p['se'] or (p['charges'] and p['hits'] >= p['charges']):
-                        self.mover_end(p)
-                        return
-        if p['travelled'] >= p['range'] or p['age'] >= p['ticks']:
+                    found.append(e)
+            found.sort(key=lambda e: float(np.sum((e.pos - frm) ** 2)))
+            for e in found:
+                t = Tgt(Who(entity=e))
+                p['hit'].add(e.uid)
+                p['hit_at'][e.uid] = self.clock
+                hit.append(t)
+                if first is None:
+                    first = e
+                if p['se'] and self.stops_at(p, t):
+                    stop = True
+                    break
+        if not hit:
+            return
+        p['hits'] += 1
+        self.count('impacto')
+        if p['onhit']:
+            self.mover_run(p, p['onhit'], hit, first)
+        if not p['alive']:
+            return
+        if stop or (p['charges'] and p['hits'] >= p['charges']):
             self.mover_end(p)
+
+    def stops_at(self, p, t):
+        """SkillMovers.stopsAt: stopConditions del objetivo tocado"""
+        return not p['sc'] or self.passes_conds(p['sc'], t, p['ctx'])
 
     def move_bullet(self, p):
         b = p['bullet']
         if b is None or not b.alive:
             return
-        b.pos = np.array(p['pos'], float) + [0, p.get('byo', 0), 0]
+        b.pos = self.bullet_pos(p)
         d = p['dir']
         if np.linalg.norm(d) > 1e-6:
             b.yaw = yaw_of(d)
@@ -2142,7 +2427,7 @@ class Sim:
         name = str(arg(a, 'aura', 'auraname', 'aura', 'name', 'n', 'buffname', 'b')).lower()
         dur = int(num(arg(a, '200', 'duration', 'd', 'ticks', 't', 'time'), 200))
         for t in targets:
-            if t.who is None:
+            if t.who is None or not t.who.alive():
                 continue
             st = self.state(t.who)
             au = st['auras'].get(name)
@@ -2203,11 +2488,6 @@ class Sim:
     # --- tick (SkillRuntime.tick)
     def tick(self):
         self.clock += 1
-        # Pasivas por tiempo (SkillServer.onServerTick)
-        for sk in self.passives:
-            every = max(1, round(float(sk['passive'].get('timer') or 20)))  # ticks, como MythicLib
-            if (self.clock - 1) % every == 0:  # como SkillServer: saltan ya y luego cada «timer»
-                self.cast(sk)
         due = [t for t in self.tasks if t[0] <= self.clock]
         self.tasks = [t for t in self.tasks if t[0] > self.clock]
         for _, fn in due:
@@ -2231,6 +2511,9 @@ class Sim:
                 continue
             au['age'] += 1
             au['left'] -= 1
+            if not au['on'].alive():  # SkillAuras.tick: quien la lleva ya no está
+                self.finish_aura(au)
+                continue
             if au['ontick'] and au['age'] % au['interval'] == 0:
                 self.run_meta(self.meta(au['ontick']), self.aura_ctx(au))
             if au['left'] <= 0:
@@ -2260,6 +2543,21 @@ class Sim:
             if act.follow is None and act.age > (20 * 60 * 90 if act.carried else 1200):  # SkillRuntime: MAX_AGE
                 self.remove_actor(act)
         self.actors = [a for a in self.actors if a.alive]
+        if self.clock % 200 == 0:  # SkillRuntime.tick: se olvidan los golpes viejos
+            self.skill_hits = {k: v for k, v in self.skill_hits.items() if self.clock - v[0] <= 40}
+        # Pasivas por tiempo (SkillServer.onServerTick, después del motor): a 1 s de tener la clase y luego cada
+        # «timer» ticks (como MythicLib), con su cooldown de clase; lo que lanzan no mueve al jugador (ambient)
+        if self.passives:
+            if self.passive_start is None:
+                self.passive_start = self.clock + 20
+            for sk in self.passives:
+                every = max(1, round(float(sk['passive'].get('timer') or 20)))
+                if self.clock < self.passive_start or (self.clock - self.passive_start) % every:
+                    continue
+                if self.passive_cd.get(sk['id'], -1) > self.clock:
+                    continue
+                if self.cast(sk, ambient=True) and (sk.get('cooldown') or 0) > 0:
+                    self.passive_cd[sk['id']] = self.clock + max(4, round(sk['cooldown'] * 20))
         # Física sencilla de las entidades (para ver empujes y saltos)
         for e in self.entities:
             if np.any(e.vel):
@@ -2278,6 +2576,41 @@ class Sim:
     def busy(self):
         return bool(self.scripts or self.tasks or self.movers or self.auras or
                     any(a.follow is None for a in self.actors) or self.particles)
+
+
+def leap_velocity(frm, to, velocity, rnd):
+    """SkillMotion.leapVelocity (LeapMechanic de MythicMobs)"""
+    g = 20.0
+    v = np.array(to, float) - frm
+    elevation = float(v[1])
+    distance = math.hypot(v[0], v[2])
+    if distance == 0:
+        return None
+    v2 = velocity * velocity
+    v4 = v2 * v2
+    der = g * (g * distance * distance + 2 * elevation * v2)
+    if v4 < der:
+        angle = math.atan((40.0 * elevation + v2) / (40.0 * elevation + 2.0 * v2))
+    else:
+        angle = math.atan((v2 - math.sqrt(v4 - der)) / (g * distance))
+    aa, b = velocity * math.sin(angle), -2 * g * elevation
+    hang = 0 if aa * aa + b < 0 else (aa + math.sqrt(aa * aa + b)) / g
+    d = np.array([v[0], math.tan(angle) * distance, v[2]])
+    ln = float(np.linalg.norm(d))
+    d = np.zeros(3) if ln == 0 or not math.isfinite(ln) else d / ln
+    out = d * ((velocity + 1.188 * hang * hang + (rnd - 0.8) / 2) / 20)
+    if np.linalg.norm(out) > 4:
+        out = out / np.linalg.norm(out) * 4
+    return np.nan_to_num(out)
+
+
+def half_height(t):
+    """SkillMovers.halfHeight: MythicMobs apunta a la mitad de los ojos de un ser; a un sitio, 0"""
+    if t.entity() is not None:
+        return t.entity().eye_h / 2
+    if t.who is not None and t.who.actor is not None:
+        return 0.44 if (t.who.actor.mob or {}).get('options', {}).get('Small') else 0.89
+    return 0.0
 
 
 def new_state():
@@ -2311,9 +2644,12 @@ def in_range(v, rng):
             if r.startswith(op):
                 x = float(r[len(op):])
                 return {'>=': v >= x, '<=': v <= x, '!=': v != x, '>': v > x, '<': v < x, '=': v == x}[op]
-        if 'to' in r:
+        if r.find('to') > 0:
             a, b = r.split('to', 1)
             return float(a) <= v <= float(b)
+        dash = r.find('-', 1)
+        if dash > 0:  # SkillConds.inRange: «2-5»
+            return float(r[:dash]) <= v <= float(r[dash + 1:])
         return v == float(r)
     except ValueError:
         return True

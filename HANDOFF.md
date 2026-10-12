@@ -10,6 +10,28 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.54 (12 oct)** — pedidos del dueño:
+> - **Menú**: letras con textura (`TFMenuButton.texture`: bisel de brillo arriba, sombra abajo, grano fino), un poco
+>   más arriba (`MENU_TEXT_UP` 4,6) y más juntas (`Tracked`: letra a letra, `TRACKING` 0,45 px de glifo, ancho exacto
+>   con `getSplitter().stringWidth`). Simulador al día.
+> - **Chispitas de protección**: más pequeñas (0,05/0,075), 7 por tick, ±1,6 bloques, suben ~2 bloques a 0,11–0,16/tick.
+> - **Efectos de kill** (auditoría de los 50, sin los packs originales a mano: solo lo generado): el modelo se quitaba
+>   un tick tarde y enseñaba la pose inicial (49/50) → `age >= life` como MythicMobs; armadura/objetos de mano
+>   flotando → parte oculta a escala 1e-4; mobs no humanoides siguen el torso del muñeco; fuera el humo de muerte de
+>   Minecraft a mitad del efecto (`LivingEntityPoofMixin`, evento 60; solo sale al final en espectral y jade); jugador
+>   que reaparece pronto ya no queda invisible. `build_vfx.py`: todos los alias de partículas de MM y repeat sin
+>   repeatInterval como el motor. Pendiente: rehacer con `build_vfx.py` cuando el dueño vuelva a pasar los zips.
+> - **Skills** (auditoría del motor contra MythicMobs): `?!condición` iba al revés en el juego (111 líneas, 11 clases);
+>   modelos de proyectiles/órbitas 1,35 bloques más altos (bulletyoffset); totems con `c=1` solo daban al más cercano;
+>   onHit una vez por paso con todos los objetivos; misiles daban a mobs (`hitnonplayers`); condiciones de parada sobre
+>   el objetivo; puntería, METEOR, `eso/so`, @targetblock, leap/lunge con la parábola de MM; inmunidad de 4 ticks por
+>   uso (los rayos ya no hacen miles de daño); una skill que no hace nada no gasta el enfriamiento; `<caster.damage>`
+>   ≥ 7; `<damage.modifier>`. sim.py igual que Java. Resultado: 190/215 activas hacen daño (7 que no: utilidad), audit
+>   0 fallos, check_assets 0, check_mod_items 0, sim --todas 0 problemas, leak2 estable. Texturas: 0 fallos (1.870 PNG).
+>   Pendiente: rehacer las vistas previas de la web (proyectiles a la altura nueva).
+> - **Web**: el personaje 3D ya no parpadea en el hombro/cintura/piernas al girar (z-fighting: cada parte crece un
+>   pelín según su rango, `fitDepth` ajusta near/far, `centroid` en la UV; `wardrobe.js`, `viewer.js`).
+
 > **TF Client 1.3.53 (12 oct)** — el dueño: «Mundo local pegado a Tierras, mira el espaciado vertical»; «las flechas
 > son una mierda, solo que salten partículas al acercarme al borde». Menú: el hueco vertical se mide entre lo que se
 > VE de cada fila (gemas y tréboles incluidos: `vis` en menu_main.json) y es el mismo en todas (`VIS_GAP` 30 de la
@@ -1742,7 +1764,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.53)
+## 5. El mod (TF Client 1.3.54)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
