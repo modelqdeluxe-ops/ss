@@ -72,6 +72,11 @@ public final class VfxClient {
     private static final List<Running> RUNNING = new ArrayList<>();
     /** Entidades que no se dibujan durante unos ticks (el cuerpo que sustituye el efecto de kill). */
     private static final Map<Integer, Integer> HIDDEN = new HashMap<>();
+    /**
+     * De las de arriba, las víctimas de un efecto de kill: solo se ocultan mientras siguen muertas (un jugador que
+     * reaparece enseguida tiene el mismo id y no debe quedarse invisible el resto del efecto).
+     */
+    private static final Set<Integer> HIDDEN_VICTIMS = new HashSet<>();
     private static final int MAX_RUNNING = 64;
 
     // Lo que lleva equipado el jugador y sus cooldowns (lo manda el servidor; ya no se enseña en la barra)
@@ -157,12 +162,14 @@ public final class VfxClient {
         if (mc.level == null) {
             if (!RUNNING.isEmpty()) RUNNING.clear();
             HIDDEN.clear();
+            HIDDEN_VICTIMS.clear();
             return;
         }
         if (mc.isPaused()) return;
         tickHud();
         HIDDEN.replaceAll((id, t) -> t - 1);
         HIDDEN.values().removeIf(t -> t <= 0);
+        HIDDEN_VICTIMS.retainAll(HIDDEN.keySet());
         Iterator<Running> it = RUNNING.iterator();
         while (it.hasNext()) {
             Running r = it.next();
@@ -180,13 +187,28 @@ public final class VfxClient {
         if (event.getLevel().isClientSide()) {
             RUNNING.clear();
             HIDDEN.clear();
+            HIDDEN_VICTIMS.clear();
         }
     }
 
     @SubscribeEvent
     public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event) {
         if (event.getEntity() == VfxActor.rendering) return; // es el efecto de kill dibujándola
-        if (!HIDDEN.isEmpty() && HIDDEN.containsKey(event.getEntity().getId())) event.setCanceled(true);
+        if (HIDDEN.isEmpty()) return;
+        int id = event.getEntity().getId();
+        if (!HIDDEN.containsKey(id)) return;
+        // La víctima solo mientras está muerta (si ya reapareció, es otro cuerpo con el mismo id)
+        if (HIDDEN_VICTIMS.contains(id) && !event.getEntity().isDeadOrDying()) return;
+        event.setCanceled(true);
+    }
+
+    /**
+     * La nube de humo con la que Minecraft quita a los mobs muertos (evento 60, un segundo después de morir) no sale si
+     * esa víctima está haciendo un efecto de kill: saldría en el sitio de la muerte a mitad del efecto. Si el cuerpo
+     * sigue a la vista cuando el efecto termina, la nube sale entonces, donde está (Instance.tick).
+     */
+    public static boolean hidesDeathPoof(net.minecraft.world.entity.LivingEntity entity) {
+        return !HIDDEN_VICTIMS.isEmpty() && HIDDEN_VICTIMS.contains(entity.getId()) && entity.isDeadOrDying();
     }
 
     @SubscribeEvent
@@ -304,8 +326,12 @@ public final class VfxClient {
                     repeaters.add(new Repeater(ev, rep, every, age + every, owner));
                 }
             } else if (ev.has("hide")) {
-                int id = "victim".equals(ev.get("hide").getAsString()) ? msg.victim() : msg.caster();
-                if (id >= 0) HIDDEN.merge(id, ev.has("ticks") ? ev.get("ticks").getAsInt() : 20, Math::max);
+                boolean victim = "victim".equals(ev.get("hide").getAsString());
+                int id = victim ? msg.victim() : msg.caster();
+                if (id >= 0) {
+                    HIDDEN.merge(id, ev.has("ticks") ? ev.get("ticks").getAsInt() : 20, Math::max);
+                    if (victim) HIDDEN_VICTIMS.add(id);
+                }
             } else if (ev.has("state")) {
                 String key = ev.has("inst") ? ev.get("inst").getAsString() : null;
                 for (Instance inst : instances) {
@@ -467,6 +493,8 @@ public final class VfxClient {
         Vec3 prevOrigin;
         float yaw;
         float prevYaw;
+        /** Dónde se dibujó la víctima la última vez (pies, en el mundo), o null si ya no se veía. */
+        Vec3 actorAt;
 
         Instance(Running r, VfxModel model, JsonObject ev, ClientLevel level) {
             this.model = model;
@@ -542,8 +570,12 @@ public final class VfxClient {
         void tick(Running r, ClientLevel level) {
             if (!alive) return;
             age++;
-            if (age > life) {
+            // Como remove{delay=life} de MythicMobs: el modelo se ve «life» ticks (0 … life-1). Antes seguía uno más y
+            // en ese tick la animación (una vez) ya había terminado: se veía la pose de reposo entera (el mob de pie y
+            // todas las piezas del efecto) justo antes de desaparecer.
+            if (age >= life) {
                 alive = false;
+                if (actorMode && actorAt != null) poof(level, r.actor, actorAt);
                 return;
             }
             for (JsonObject s : swaps) {
@@ -634,8 +666,9 @@ public final class VfxClient {
             if (actorMode) {
                 float yy = prevYaw + (yaw - prevYaw) * partial;
                 Matrix4f rotScale = new Matrix4f().rotate(Axis.YP.rotationDegrees(180F - yy)).scale(scale / 16F);
-                VfxActor.render(r.actor, model, pose.last().pose(), pose.last().normal(), inst, rotScale, bones, visible, yy, partial,
-                        buffers);
+                Vector3f drawn = VfxActor.render(r.actor, model, pose.last().pose(), pose.last().normal(), inst, rotScale, bones,
+                        visible, yy, partial, buffers);
+                actorAt = drawn == null ? null : cam.add(drawn.x, drawn.y, drawn.z);
             }
             Matrix4f full = new Matrix4f();
             Matrix3f normal = new Matrix3f();
@@ -720,6 +753,21 @@ public final class VfxClient {
     }
 
     // ------------------------------------------------------------------------------------------- ayudas
+
+    /**
+     * La nube de humo de Minecraft al quitar un mob muerto (LivingEntity.makePoofParticles), donde quedó el cuerpo:
+     * para los efectos que terminan con la víctima aún a la vista (un cadáver, una estatua de jade, un mob que no es
+     * humanoide), que así no desaparece de golpe.
+     */
+    private static void poof(ClientLevel level, net.minecraft.world.entity.LivingEntity actor, Vec3 at) {
+        RandomSource rnd = level.random;
+        double w = actor.getBbWidth(), h = actor.getBbHeight();
+        for (int i = 0; i < 20; i++) {
+            double dx = rnd.nextGaussian() * 0.02, dy = rnd.nextGaussian() * 0.02, dz = rnd.nextGaussian() * 0.02;
+            level.addParticle(ParticleTypes.POOF, at.x + w * (2 * rnd.nextDouble() - 1) - dx * 10,
+                    at.y + h * rnd.nextDouble() - dy * 10, at.z + w * (2 * rnd.nextDouble() - 1) - dz * 10, dx, dy, dz);
+        }
+    }
 
     /** Desplazamiento de un evento (delante, a la derecha, arriba) según el giro del lanzamiento. */
     static Vec3 offset(JsonObject ev, float yaw) {
