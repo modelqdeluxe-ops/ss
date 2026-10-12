@@ -67,30 +67,58 @@ final class SkillMotion {
         }
     }
 
-    /** leap{velocity}: quien lanza sale disparado hacia el objetivo (100 = un bloque por tick). */
+    /**
+     * leap{velocity}: quien lanza salta hacia el objetivo en parábola, con las cuentas de MythicMobs (velocity/10 bloques
+     * por segundo, gravedad 20, más fuerza cuanto más tiempo en el aire; como mucho 4 bloques por tick).
+     */
     static void leap(Mech m, Ctx ctx, List<Tgt> targets) {
-        double v = SkillRuntime.num(m.arg("100", "velocity", "v"), 100) / 100.0;
+        double v0 = SkillRuntime.num(m.arg("100", "velocity", "v"), 100) / 10.0 * (1.0 + ctx.power * 0.1);
         Entity self = ctx.caster.entity;
         for (Tgt t : targets) {
-            Vec3 d = t.pos().subtract(ctx.caster.pos());
-            if (d.lengthSqr() < 1e-6) continue;
-            Vec3 motion = d.normalize().scale(Math.min(4, v));
+            Vec3 motion = leapVelocity(ctx.caster.pos(), t.pos(), v0, ThreadLocalRandom.current().nextDouble());
+            if (motion == null) continue;
             if (self != null) push(ctx, self, motion);
             else if (ctx.caster.actor != null) moveActor(ctx.caster.actor, motion);
             break;
         }
     }
 
-    /** lunge{velocity;velocityY}: embestida hacia el objetivo. */
+    /** LeapMechanic de MythicMobs (null si el objetivo está justo encima o debajo). rnd: 0..1 (su pequeño azar). */
+    static Vec3 leapVelocity(Vec3 from, Vec3 to, double velocity, double rnd) {
+        double g = 20.0;
+        Vec3 v = to.subtract(from);
+        double elevation = v.y;
+        double distance = Math.sqrt(v.x * v.x + v.z * v.z);
+        if (distance == 0) return null;
+        double v2 = velocity * velocity, v4 = v2 * v2;
+        double der = g * (g * distance * distance + 2 * elevation * v2);
+        double angle = v4 < der ? Math.atan((40.0 * elevation + v2) / (40.0 * elevation + 2.0 * v2))
+                : Math.atan((v2 - Math.sqrt(v4 - der)) / (g * distance));
+        double a = velocity * Math.sin(angle), b = -2 * g * elevation;
+        double hang = a * a + b < 0 ? 0 : (a + Math.sqrt(a * a + b)) / g;
+        Vec3 dir = new Vec3(v.x, Math.tan(angle) * distance, v.z);
+        double len = dir.length();
+        dir = len == 0 || !Double.isFinite(len) ? Vec3.ZERO : dir.scale(1 / len);
+        double speed = velocity + 1.188 * hang * hang + (rnd - 0.8) / 2.0;
+        Vec3 out = dir.scale(speed / 20.0);
+        if (out.length() > 4.0) out = out.normalize().scale(4);
+        return new Vec3(Double.isNaN(out.x) ? 0 : out.x, Double.isNaN(out.y) ? 0 : out.y, Double.isNaN(out.z) ? 0 : out.z);
+    }
+
+    /** lunge{velocity;velocityY}: embestida hacia el objetivo (como MythicMobs: la parte horizontal de la dirección). */
     static void lunge(Mech m, Ctx ctx, List<Tgt> targets) {
-        double v = SkillRuntime.num(m.arg("1", "velocity", "v"), 1);
-        double vy = SkillRuntime.num(m.arg("0", "velocityy", "vy"), 0);
+        double v = Math.abs(SkillRuntime.num(m.arg("1", "velocity", "v", "magnitude"), 1));
+        double vy = SkillRuntime.num(m.arg("0", "velocityy", "yvelocity", "vy", "yv"), 0);
         Entity self = ctx.caster.entity;
         for (Tgt t : targets) {
-            Vec3 d = t.pos().subtract(ctx.caster.pos());
-            d = new Vec3(d.x, 0, d.z);
-            if (d.lengthSqr() < 1e-6) d = SkillRuntime.dir(ctx.caster.yaw(), 0F);
-            Vec3 motion = d.normalize().scale(Math.min(4, v)).add(0, vy, 0);
+            Vec3 to = t.pos();
+            Vec3 c = ctx.caster.pos();
+            if ((to.x - c.x) * (to.x - c.x) + (to.z - c.z) * (to.z - c.z) == 0) to = to.add(ctx.caster.forward().scale(2));
+            Vec3 d = to.subtract(c);
+            if (d.lengthSqr() < 1e-9) continue;
+            d = d.normalize();
+            Vec3 motion = new Vec3(d.x * v, vy, d.z * v);
+            if (motion.length() > 4.0) motion = motion.normalize().scale(4);
             if (self != null) push(ctx, self, motion);
             else if (ctx.caster.actor != null) moveActor(ctx.caster.actor, motion);
             break;

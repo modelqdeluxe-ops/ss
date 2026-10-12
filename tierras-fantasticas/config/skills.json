@@ -1032,7 +1032,7 @@
     {
      "id": "void_edge_attack",
      "name": "Tajo del Vacío",
-     "desc": "Tu ataque básico: una cadena de tres tajos de katana en abanico delante de ti (con el daño del arma que lleves). Con la Bendición Dimensional se convierten en cortes dimensionales.",
+     "desc": "Tu ataque básico: una cadena de tres tajos de katana en abanico delante de ti (pegan como el arma de la clase, una espada de diamante, o más si llevas un arma mejor). Con la Bendición Dimensional se convierten en cortes dimensionales.",
      "cooldown": 0.2,
      "slot": 0,
      "key": "5",

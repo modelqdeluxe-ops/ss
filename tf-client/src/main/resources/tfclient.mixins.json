@@ -27,7 +27,8 @@
     "AbstractSelectionListMixin",
     "LivingEntityRendererMixin",
     "HumanoidArmorLayerMixin",
-    "CustomHeadLayerMixin"
+    "CustomHeadLayerMixin",
+    "LivingEntityPoofMixin"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -132,7 +132,7 @@ class Instance:
         if not self.alive:
             return
         self.age += 1
-        if self.age > self.life:
+        if self.age >= self.life:  # como VfxClient (remove{delay=life}: se ve life ticks)
             self.alive = False
             return
         for s in self.ev.get('swap', []):

@@ -225,22 +225,40 @@ class Builder:
         return 'tfclient:vfx.' + out_name
 
 
+def arg(args, names, default):
+    """El primer nombre que esté (MythicMobs acepta varios alias para cada opción)."""
+    for n in names:
+        if n in args:
+            return args[n]
+    return default
+
+
 def particle_event(args, targs, t0, label):
     raw = (args.get('particle') or args.get('p') or 'reddust').lower()
     ptype = PARTICLES.get(raw, raw)
     if ptype not in VANILLA_PARTICLES:
         problems.append(f'{label}: partícula desconocida {raw}')
         return None
+    # Alias de ParticleEffect de MythicMobs: spread/offset es el valor por defecto de hs y vs
+    spread = arg(args, ('spread', 'offset'), 0)
+    n = int(B.num(arg(args, ('amount', 'a', 'count'), 10)))
+    delay = int(B.num(args.get('delay', 0)))
+    rep = int(B.num(args.get('repeat', 0)))
+    every = int(B.num(arg(args, ('repeatinterval', 'repeati'), 0)))
+    if rep > 0 and every <= 0:
+        # SkillMechanic.execute: con repeat y sin repeatInterval se lanza «repeat» veces en el acto (sin el delay)
+        n, delay, rep = n * rep, 0, 0
     ev = {
-        't': t0 + int(B.num(args.get('delay', 0))),
+        't': t0 + delay,
         'part': ptype,
-        'n': int(B.num(args.get('amount', args.get('a', 10)))),
-        'hs': B.num(args.get('hs', 0)),
-        'vs': B.num(args.get('vs', 0)),
-        'sp': B.num(args.get('speed', args.get('s', 0))),
-        'y': B.num(args.get('y', 0)) + B.num(targs.get('y', 0)),
-        'rep': int(B.num(args.get('repeat', 0))),
-        'every': max(1, int(B.num(args.get('repeatinterval', args.get('repeati', 1))))),
+        'n': n,
+        'hs': B.num(arg(args, ('hspread', 'hs', 'xspread', 'xs'), spread)),
+        'vs': B.num(arg(args, ('vspread', 'vs', 'yspread', 'ys'), spread)),
+        'sp': B.num(arg(args, ('speed', 's'), 0)),
+        'y': B.num(arg(args, ('yoffset', 'y'), 0)) + B.num(targs.get('y', 0)),
+        # repeat=N con repeatInterval=I: N+1 veces (en delay, delay+I, … delay+N·I), como el cliente
+        'rep': rep,
+        'every': max(1, every),
     }
     if ptype == 'dust':
         ev['color'] = args.get('color', args.get('c', '#ff0000'))

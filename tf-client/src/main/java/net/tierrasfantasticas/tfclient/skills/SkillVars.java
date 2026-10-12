@@ -88,6 +88,8 @@ final class SkillVars {
             if (ctx.mods.containsKey(k)) return SkillRuntime.fmt(ctx.mods.get(k));
             return orZero(ctx.vars == null ? null : ctx.vars.get(k));
         }
+        // «<damage.modifier>» (el Pícaro, al revés en el pack): es <modifier.damage>
+        if (low.equals("damage.modifier")) return SkillRuntime.fmt(ctx.mods.getOrDefault("damage", 0.0));
         if (low.startsWith("stat.")) return SkillRuntime.fmt(stat(ctx.caster.player(), low.substring(5)));
         if (low.startsWith("global.var.")) return orZero(SkillRuntime.varScope("global.x", ctx, null).get(low.substring(11)));
         // De quién: caster, target, trigger
@@ -130,11 +132,22 @@ final class SkillVars {
             case "hp" -> SkillRuntime.fmt(le == null ? 0 : le.getHealth());
             case "mhp" -> SkillRuntime.fmt(le == null ? 0 : le.getMaxHealth());
             case "php" -> SkillRuntime.fmt(le == null ? 0 : le.getHealth() / Math.max(1, le.getMaxHealth()));
-            case "damage" -> SkillRuntime.fmt(le == null ? 0 : le.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE)
-                    ? le.getAttributeValue(Attributes.ATTACK_DAMAGE) : 0);
+            case "damage" -> SkillRuntime.fmt(attackDamage(le));
             case "level" -> "1";
             default -> "0";
         };
+    }
+
+    /**
+     * El daño de ataque de alguien (&lt;caster.damage&gt;). Las clases ya no dan su arma, así que un jugador pega como
+     * mínimo con el arma de la clase (lo de una espada de diamante, 7); con una mejor en la mano, lo de esa.
+     */
+    static final double CLASS_WEAPON_DAMAGE = 7.0;
+
+    private static double attackDamage(LivingEntity le) {
+        if (le == null || !le.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE)) return 0;
+        double v = le.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        return le instanceof net.minecraft.world.entity.player.Player ? Math.max(CLASS_WEAPON_DAMAGE, v) : v;
     }
 
     private static String location(Vec3 p, String k) {
@@ -148,7 +161,7 @@ final class SkillVars {
     private static double stat(ServerPlayer p, String stat) {
         if (p == null) return 0;
         return switch (stat) {
-            case "attack_damage", "damage" -> p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            case "attack_damage", "damage" -> attackDamage(p);
             case "max_health", "health" -> p.getMaxHealth();
             case "movement_speed" -> p.getAttributeValue(Attributes.MOVEMENT_SPEED);
             case "attack_speed" -> p.getAttributeValue(Attributes.ATTACK_SPEED);

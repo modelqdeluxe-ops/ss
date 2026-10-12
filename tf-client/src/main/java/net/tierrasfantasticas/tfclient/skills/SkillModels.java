@@ -79,6 +79,14 @@ final class SkillModels {
             if (a == null) continue;
             a.me = mid;
             a.anim = null;
+            // Como el cliente (y ModelEngine): si el modelo tiene animación de aparecer, empieza con ella (para que
+            // @modelpart vea los huesos donde se ven)
+            VfxModel vm = load(mid);
+            if (vm != null && vm.anims.containsKey("spawn")) {
+                a.anim = "spawn";
+                a.animStart = a.age;
+                a.animSpeed = 1F;
+            }
             float sc = (float) SkillRuntime.num(m.arg("1", "scale", "s", "size"), 1);
             if (sc > 0 && sc != a.scale) {
                 a.scale = sc;
@@ -221,8 +229,15 @@ final class SkillModels {
         if (b < 0) return List.of(); // como ModelEngine: sin ese hueso no hay sitio
         Matrix4f[] mats = new Matrix4f[model.bones.length];
         for (int i = 0; i < mats.length; i++) mats[i] = new Matrix4f();
-        VfxModel.Anim anim = a.anim == null ? model.anims.get("idle") : model.anims.get(a.anim);
-        VfxPose.compute(model, anim, (a.age - a.animStart) / 20F * a.animSpeed, 0F, mats);
+        VfxModel.Anim anim = a.anim == null ? null : model.anims.get(a.anim);
+        float secs = (a.age - a.animStart) / 20F * a.animSpeed;
+        // Una animación de una vez que ya acabó vuelve a la de reposo (como en el cliente)
+        if (anim != null && anim.loop == 0 && secs > anim.length + 0.05F) {
+            secs = (secs - anim.length) / Math.max(0.01F, a.animSpeed);
+            anim = null;
+        }
+        if (anim == null) anim = model.anims.get("idle");
+        VfxPose.compute(model, anim, secs, 0F, mats);
         Matrix4f w = new Matrix4f().translate((float) a.pos.x, (float) a.pos.y, (float) a.pos.z)
                 .rotate(Axis.YP.rotationDegrees(180F - a.yaw)).scale(1F / 16F).mul(mats[b]);
         Vector4f p = w.transform(new Vector4f(0, 0, 0, 1));

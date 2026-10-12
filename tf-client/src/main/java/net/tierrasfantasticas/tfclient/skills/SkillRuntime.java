@@ -220,6 +220,8 @@ public final class SkillRuntime {
         Map<String, String> params = Map.of();
         /** La lanzó una pasiva por tiempo (TIMER): sus partículas van muy rebajadas (ver SkillFx). */
         boolean ambient;
+        /** De qué uso de una skill viene (cada clic, cada pasiva): la inmunidad a golpes de skill es de cada uso. */
+        long cast;
 
         Ctx(ClassDef cls, Who caster) {
             this.cls = cls;
@@ -240,6 +242,7 @@ public final class SkillRuntime {
             c.mover = mover;
             c.params = params;
             c.ambient = ambient;
+            c.cast = cast;
             return c;
         }
 
@@ -253,6 +256,7 @@ public final class SkillRuntime {
             c.power = power;
             c.depth = depth + 1;
             c.mods = mods;
+            c.cast = cast;
             return c;
         }
     }
@@ -336,6 +340,7 @@ public final class SkillRuntime {
         if (meta == null) return false;
         Ctx ctx = new Ctx(cls, Who.of(player));
         ctx.ambient = ambient;
+        ctx.cast = ++castSeq;
         if (!cls.startVars.isEmpty()) {
             Map<String, String> vars = state(ctx.caster).vars;
             cls.startVars.forEach(vars::putIfAbsent);
@@ -345,8 +350,16 @@ public final class SkillRuntime {
         ctx.aim = aimed(player, 32);
         ctx.targets = null;
         ctx.vars = new HashMap<>();
-        return runMeta(meta, ctx);
+        long before = applied;
+        int scripts = SCRIPTS.size(), tasks = TASKS.size();
+        if (!runMeta(meta, ctx)) return false;
+        // Si sus condiciones la pararon por dentro (ya lanzando otra, sin la carga que pide...) y no hizo nada ni dejó
+        // nada pendiente, no ha salido: no gasta el cooldown y el clic es un golpe normal
+        return applied != before || SCRIPTS.size() > scripts || TASKS.size() > tasks;
     }
+
+    /** Mecánicas que han hecho algo (todas menos las que solo llaman a otra skill): para saber si una skill salió. */
+    private static long applied;
 
     /** Ejecuta una skill de MythicMobs (con su cooldown y sus condiciones). false si no se lanzó. */
     static boolean runMeta(Meta meta, Ctx ctx) {
@@ -474,9 +487,10 @@ public final class SkillRuntime {
     static void exec(Mech raw, Ctx ctx) {
         Mech m = raw.dyn ? SkillVars.resolve(raw, ctx) : raw;
         if (m.chance < 1.0 && ThreadLocalRandom.current().nextDouble() >= m.chance) return;
+        // Condiciones en línea («?hasaura{...}», «?!hasaura{...}»): test ya tiene en cuenta el «!» (antes se volvía a
+        // negar aquí y todas las «?!» del juego salían al revés: el Asesino, la Bruja, el Caballero de la Muerte...)
         for (Cond c : m.c) {
-            boolean r = SkillConds.test(c, ctx.caster, ctx, null);
-            if (c.not() == r) return;
+            if (!SkillConds.test(c, ctx.caster, ctx, null)) return;
         }
         // Cooldown de la propia línea (settarget{cooldown=5}, effect:sound{cooldown=1}...): de cada quién, en segundos
         double lineCd = num(raw.a.getOrDefault("cooldown", raw.a.get("cd")), 0);
@@ -526,6 +540,7 @@ public final class SkillRuntime {
     private static final int MAX_REPEAT = 2400;
 
     static void apply(Mech m, Ctx ctx, List<Tgt> targets) {
+        if (!CALLS.contains(m.m)) applied++;
         switch (m.m) {
             case "skill", "metaskill", "cast", "s" -> callSkill(m, ctx, targets);
             case "randomskill" -> randomSkill(m, ctx, targets);
@@ -689,7 +704,7 @@ public final class SkillRuntime {
             case "dismountmodel", "dismountall" -> SkillModels.dismount(ctx, targets);
             case "setnodamageticks" -> {
                 int ticks = (int) num(m.arg("0", "ticks", "t", "_"), 0);
-                for (Tgt t : targets) if (t.living() != null) t.living().invulnerableTime = Math.max(0, ticks);
+                for (Tgt t : targets) if (t.living() != null) setImmunity(t.living(), ticks, ctx.cast);
             }
             case "directionalvelocity" -> SkillMotion.directional(m, ctx, targets);
             case "spin" -> {
@@ -722,6 +737,8 @@ public final class SkillRuntime {
             default -> warn("mecánica " + m.m);
         }
     }
+
+    private static final Set<String> CALLS = Set.of("skill", "metaskill", "cast", "s", "randomskill", "skillsequence");
 
     /** Opciones de la propia mecánica skill{} (lo demás son parámetros para la skill llamada). */
     private static final Set<String> CALL_KEYS = Set.of("s", "skill", "skills", "$skill", "spell", "delay", "repeat",
@@ -836,6 +853,22 @@ public final class SkillRuntime {
         return a;
     }
 
+    /** Un efecto que es solo un modelo de ModelEngine (la bala bulletType=ME de un proyectil): sin mob ni mecánicas. */
+    static SkillActor spawnModel(Ctx ctx, String mid, String state, float scale, Vec3 at, float yaw, float pitch) {
+        if (ACTORS.size() >= MAX_ACTORS) return null;
+        ServerLevel level = ctx.caster.level();
+        SkillActor a = new SkillActor(ctx.cls, null, level, at, yaw, pitch, ctx.caster);
+        a.me = mid;
+        if (scale > 0) a.scale = scale;
+        if (state != null && !state.isBlank()) {
+            a.anim = state;
+            a.animStart = a.age;
+        }
+        ACTORS.add(a);
+        SkillNet.near(level, at, a.spawnMessage());
+        return a;
+    }
+
     private static void equip(Mech m, Ctx ctx, List<Tgt> targets) {
         String model = m.a.get("model");
         String item = m.arg("", "item", "i");
@@ -889,23 +922,74 @@ public final class SkillRuntime {
         }
         boolean noKnock = bool(m.arg("false", "preventknockback", "pkb", "pk"));
         boolean ignoreArmor = bool(m.arg("false", "ignorearmor", "ia"));
+        boolean noImmunity = bool(m.arg("false", "preventimmunity", "pi"));
         for (Tgt t : targets) {
             LivingEntity le = t.living();
             if (le == null || !canHurt(ctx, le)) continue;
-            hurt(ctx, le, amount * ctx.power * t.power * SkillServer.damageScale(), noKnock, ignoreArmor);
+            hurt(ctx, le, amount * ctx.power * t.power * SkillServer.damageScale(), noKnock, ignoreArmor, noImmunity);
         }
     }
 
     private static void percentDamage(Mech m, Ctx ctx, List<Tgt> targets) {
         double pct = num(m.arg("0.1", "percent", "p"), 0.1);
+        boolean noImmunity = bool(m.arg("false", "preventimmunity", "pi"));
         for (Tgt t : targets) {
             LivingEntity le = t.living();
             if (le == null || !canHurt(ctx, le)) continue;
-            hurt(ctx, le, le.getMaxHealth() * pct * SkillServer.damageScale(), false, true);
+            hurt(ctx, le, le.getMaxHealth() * pct * SkillServer.damageScale(), false, true, noImmunity);
         }
     }
 
-    static void hurt(Ctx ctx, LivingEntity le, double amount, boolean noKnock, boolean ignoreArmor) {
+    /** El último golpe que recibió alguien de un uso de skill (cuándo y cuánto): la inmunidad de MythicMobs. */
+    private record SkillHit(long at, double amount) {}
+
+    private record HitKey(UUID id, long cast) {}
+
+    private static final Map<HitKey, SkillHit> SKILL_HITS = new HashMap<>();
+    private static long castSeq;
+
+    /**
+     * Ticks que alguien no recibe otro golpe igual o menor del mismo uso de una skill. Minecraft (y MythicMobs) usan 10,
+     * pero entonces los combos que los packs anuncian con varios golpes seguidos (dos tajos a 4 ticks) solo harían el
+     * primero; con 4 pegan todos y un rayo o un muro que toca cada tick sigue sin multiplicar su daño (como mucho 5
+     * golpes por segundo).
+     */
+    static final int IMMUNITY = 4;
+
+    /**
+     * Cuánto le hace de verdad un golpe de skill. Como en MythicMobs (el daño de Minecraft): durante IMMUNITY ticks tras
+     * un golpe, otro igual o menor no hace nada y uno mayor solo hace la diferencia; «preventimmunity» se lo salta (los
+     * packs lo ponen donde quieren varios golpes seguidos). Cuenta solo dentro de un mismo uso de la skill (un rayo o un
+     * muro que toca cada tick no multiplica su daño), no entre clics distintos ni con los golpes normales del jugador:
+     * hacer clic rápido no hace que la skill deje de pegar.
+     */
+    static double immunity(UUID id, long cast, double amount, boolean noImmunity) {
+        HitKey key = new HitKey(id, cast);
+        SkillHit last = noImmunity ? null : SKILL_HITS.get(key);
+        if (last != null && clock - last.at() < IMMUNITY) {
+            if (amount <= last.amount()) return 0;
+            SKILL_HITS.put(key, new SkillHit(last.at(), amount));
+            return amount - last.amount();
+        }
+        SKILL_HITS.put(key, new SkillHit(clock, amount));
+        return amount;
+    }
+
+    /** setnodamageticks{ticks}: la inmunidad de Minecraft (20 = recién golpeado; 10 o menos, ya se le puede golpear). */
+    static void setImmunity(LivingEntity le, int ticks, long cast) {
+        le.invulnerableTime = Math.max(0, ticks);
+        UUID id = le.getUUID();
+        if (ticks <= 10) {
+            SKILL_HITS.keySet().removeIf(k -> k.id().equals(id));
+        } else {
+            SkillHit last = SKILL_HITS.get(new HitKey(id, cast));
+            SKILL_HITS.put(new HitKey(id, cast), new SkillHit(clock - IMMUNITY + (ticks - 10), last == null ? 0 : last.amount()));
+        }
+    }
+
+    static void hurt(Ctx ctx, LivingEntity le, double amount, boolean noKnock, boolean ignoreArmor, boolean noImmunity) {
+        if (amount <= 0) return;
+        amount = immunity(le.getUUID(), ctx.cast, amount, noImmunity);
         if (amount <= 0) return;
         ServerPlayer owner = ctx.caster.player();
         Vec3 motion = le.getDeltaMovement();
@@ -1303,12 +1387,16 @@ public final class SkillRuntime {
         while (it.hasNext()) if (!it.next().alive) it.remove();
         moved.forEach(SkillNet::sendMoves);
         // Estados de quien ya no existe
-        if (clock % 200 == 0) STATES.values().removeIf(s -> clock - s.touched > 6000 && s.auras.isEmpty());
+        if (clock % 200 == 0) {
+            STATES.values().removeIf(s -> clock - s.touched > 6000 && s.auras.isEmpty());
+            SKILL_HITS.values().removeIf(h -> clock - h.at() > 40);
+        }
     }
 
     /** Lo que estaba en marcha se para (al parar el servidor o recargar). */
     static void clear() {
         SCRIPTS.clear();
+        SKILL_HITS.clear();
         TASKS.clear();
         for (SkillActor a : ACTORS) a.alive = false;
         ACTORS.clear();

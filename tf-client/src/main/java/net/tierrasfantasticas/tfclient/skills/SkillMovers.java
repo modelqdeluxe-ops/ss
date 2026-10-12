@@ -65,16 +65,19 @@ final class SkillMovers {
         double bulletY;
         double bulletForward;
         int deathDelay;
-        /** Cuándo tocó a cada uno (para immuneDelay: 0 = una sola vez). */
+        /** Cuándo tocó a cada uno y cada cuántos ticks puede volver a tocar al mismo (immuneDelay). */
         final Map<Object, Long> hit = new HashMap<>();
-        int immuneDelay;
+        int rehit;
         List<Cond> hitConds = List.of();
         List<Cond> stopConds = List.of();
         LivingEntity onlyTarget;
         boolean hug;
         double hugHeight;
         double climb;
+        /** Misil: el ser al que persigue (a «homeY» de sus pies) o el sitio fijo al que va. */
         LivingEntity homing;
+        double homeY;
+        Vec3 homeAt;
         double inertia;
         int age;
         double travelled;
@@ -103,6 +106,8 @@ final class SkillMovers {
     // ------------------------------------------------------------------------------------------- lanzar
 
     static void projectile(Mech m, Ctx ctx, List<Tgt> targets, boolean missile) {
+        // projectile{type=METEOR}: cae desde «hfs» bloques por encima del objetivo (la sangre del Grimorio del Vampiro)
+        boolean meteor = !missile && m.arg("NORMAL", "type").equalsIgnoreCase("METEOR");
         for (Tgt t : targets) {
             if (MOVERS.size() >= MAX) return;
             Mover p = new Mover(ctx.copy(), missile ? 1 : 0, ctx.caster.level());
@@ -111,18 +116,21 @@ final class SkillMovers {
             boolean targetIsOrigin = SkillRuntime.bool(m.arg("false", "targetisorigin", "tio"));
             Vec3 base = targetIsOrigin ? t.pos() : fromOrigin ? SkillTargets.origin(ctx) : ctx.caster.pos();
             double syo = SkillRuntime.num(m.arg("1", "startyoffset", "syo"), 1);
-            double sfo = SkillRuntime.num(m.arg("1", "startforwardoffset", "sfo"), 1);
-            double sso = SkillRuntime.num(m.arg("0", "startsideoffset", "sso"), 0);
-            double tyo = SkillRuntime.num(m.arg("1", "targetyoffset", "tyo"), 1);
+            double sfo = SkillRuntime.num(m.arg("1", "startforwardoffset", "startfoffset", "forwardoffset", "sfo"), 1);
+            double side = SkillRuntime.num(m.arg("0", "sideoffset", "soffset", "so"), 0);
+            double sso = SkillRuntime.num(m.arg(null, "startsideoffset", "ssoffset", "sso"), side);
+            double eso = SkillRuntime.num(m.arg(null, "endsideoffset", "endoffset", "esoffset", "eso"), side);
+            double tyo = SkillRuntime.num(m.arg("0", "targetyoffset", "targety", "tyo"), 0);
             double tso = SkillRuntime.num(m.arg("0", "targetsideoffset", "tso"), 0);
-            Vec3 target = targetIsOrigin ? t.pos().add(ctx.caster.forward().scale(0.01)) : t.pos();
-            Vec3 start0 = base.add(0, syo, 0);
-            Vec3 aimAt = target.add(0, tyo, 0);
-            if (tso != 0) {
-                Vec3 side = SkillRuntime.dir(SkillRuntime.yawOf(aimAt.subtract(start0)) + 90F, 0F);
-                aimAt = aimAt.add(side.scale(tso));
-            }
-            Vec3 dir = targetIsOrigin ? ctx.caster.forward() : aimAt.subtract(start0);
+            // Salida: a «syo» de los pies, «sfo» por delante y «sso» al lado según hacia dónde mira quien lanza
+            float cy = ctx.caster.yaw();
+            Vec3 start = base.add(0, syo, 0).add(SkillRuntime.dir(cy, 0F).scale(sfo)).add(SkillRuntime.dir(cy + 90F, 0F).scale(sso));
+            // Adónde apunta (como MythicMobs): un proyectil, a media altura de un ser (o al sitio) + tyo; un misil, a los
+            // pies (luego persigue a la altura de los ojos, o a tyo)
+            Vec3 aimAt = t.pos().add(0, missile ? 0 : tyo + halfHeight(t), 0);
+            if (eso != 0) aimAt = aimAt.add(SkillRuntime.dir(cy + 90F, 0F).scale(eso));
+            if (tso != 0) aimAt = aimAt.add(SkillRuntime.dir(SkillRuntime.yawOf(aimAt.subtract(start)) + 90F, 0F).scale(tso));
+            Vec3 dir = targetIsOrigin ? ctx.caster.forward() : aimAt.subtract(start);
             if (dir.lengthSqr() < 1e-6) dir = ctx.caster.forward();
             dir = dir.normalize();
             double ho = SkillRuntime.num(m.arg("0", "horizontaloffset", "ho"), 0);
@@ -136,9 +144,7 @@ final class SkillMovers {
             }
             Vec3 flat = new Vec3(dir.x, 0, dir.z);
             flat = flat.lengthSqr() < 1e-6 ? Vec3.ZERO : flat.normalize();
-            // sfo/sso según hacia dónde mira quien lanza (como MythicMobs; con un disparo en vertical también valen)
-            float cy = ctx.caster.yaw();
-            p.pos = start0.add(SkillRuntime.dir(cy, 0F).scale(sfo)).add(SkillRuntime.dir(cy + 90F, 0F).scale(sso));
+            p.pos = start;
             p.dir = dir;
             double v = SkillRuntime.num(m.arg("5", "velocity", "v"), 5);
             p.step = v / 20.0 * p.interval;
@@ -148,7 +154,14 @@ final class SkillMovers {
             p.hug = SkillRuntime.bool(m.arg("false", "hugsurface", "hs"));
             p.hugHeight = SkillRuntime.num(m.arg("0.5", "heightfromsurface", "hfs"), 0.5);
             p.climb = SkillRuntime.num(m.arg("1", "maxclimbheight", "mch"), 1);
-            if (p.hug) {
+            if (meteor) {
+                // Sale encima del objetivo y cae con la gravedad (o, sin ella, con la velocidad) hasta el suelo
+                p.pos = aimAt.add(0, p.hugHeight, 0);
+                p.dir = new Vec3(0, -1, 0);
+                p.step = 0;
+                p.gravity = (p.gravity > 0 ? p.gravity : v / 20.0);
+                p.hug = false;
+            } else if (p.hug) {
                 // Pegado al suelo: va en horizontal a «hfs» del suelo
                 p.dir = flat.lengthSqr() < 1e-6 ? SkillRuntime.dir(ctx.caster.yaw(), 0F) : flat;
                 Vec3 g = SkillMinions.ground(p.level, p.pos, p.pos.y);
@@ -156,13 +169,22 @@ final class SkillMovers {
             }
             if (SkillRuntime.bool(m.arg("false", "hittargetonly", "hto"))) p.onlyTarget = t.living();
             if (missile) {
+                // Persigue al ser (a la altura de sus ojos, o a tyo de sus pies) o va al sitio (+ tyo)
                 p.homing = t.living();
+                if (p.homing != null) p.homeY = tyo != 0 ? tyo : p.homing.getEyeHeight();
+                else p.homeAt = t.pos().add(0, tyo, 0);
                 p.inertia = Math.max(0.1, SkillRuntime.num(m.arg("1.5", "inertia", "in"), 1.5));
-                if (p.homing == null && ctx.aim instanceof LivingEntity le) p.homing = le;
             }
             p.ctx.dir = p.dir;
             start(p, m);
         }
+    }
+
+    /** Media altura de un objetivo (MythicMobs apunta los proyectiles a la mitad de los ojos de un ser); un sitio, 0. */
+    private static double halfHeight(Tgt t) {
+        if (t.entity() != null) return t.entity().getEyeHeight() / 2.0;
+        if (t.who != null && t.who.actor != null) return t.who.actor.def != null && t.who.actor.def.small ? 0.44 : 0.89;
+        return 0;
     }
 
     static void totem(Mech m, Ctx ctx, List<Tgt> targets) {
@@ -170,7 +192,8 @@ final class SkillMovers {
             if (MOVERS.size() >= MAX) return;
             Mover p = new Mover(ctx.copy(), 2, ctx.caster.level());
             common(p, m);
-            p.pos = t.pos().add(0, SkillRuntime.num(m.arg("0", "yoffset", "y", "yo"), 0), 0);
+            // como MythicMobs: un bloque por encima del sitio si no dice otra cosa
+            p.pos = t.pos().add(0, SkillRuntime.num(m.arg("1", "yoffset", "yo"), 1), 0);
             p.dir = ctx.caster.forward();
             p.step = 0;
             p.maxRange = Double.MAX_VALUE;
@@ -237,34 +260,50 @@ final class SkillMovers {
 
     private static void common(Mover p, Mech m) {
         p.interval = (int) Math.max(1, SkillRuntime.num(m.arg("1", "interval", "i", "int"), 1));
-        p.hr = SkillRuntime.num(m.arg("1.25", "horizontalradius", "hitradius", "hr", "radius_h"), 1.25);
-        p.vr = SkillRuntime.num(m.arg(String.valueOf(p.hr), "verticalradius", "vr"), p.hr);
+        p.hr = SkillRuntime.num(m.arg("1.25", "horizontalradius", "hradius", "hitradius", "hr", "radius_h"), 1.25);
+        // Como MythicMobs: el alto de la caja es 1,25 si no lo dice (en un orbital, el mismo que el ancho)
+        p.vr = SkillRuntime.num(m.arg(null, "verticalradius", "vradius", "verticalhitradius", "vhr", "vr"), p.kind == 3 ? p.hr : 1.25);
         p.hitPlayers = SkillRuntime.bool(m.arg("true", "hitplayers", "hp"));
-        p.hitNonPlayers = SkillRuntime.bool(m.arg("false", "hitnonplayers", "hnp"));
+        // Los misiles de MythicMobs tocan a los mobs si no dice otra cosa; proyectiles, tótems y orbitales, no
+        p.hitNonPlayers = SkillRuntime.bool(m.arg(p.kind == 1 ? "true" : "false", "hitnonplayers", "hnp"));
         p.stopAtEntity = SkillRuntime.bool(m.arg(p.kind == 2 || p.kind == 3 ? "false" : "true", "stopatentity", "se"));
         p.stopAtBlock = SkillRuntime.bool(m.arg(p.kind == 2 || p.kind == 3 ? "false" : "true", "stopatblock", "sb"));
-        p.charges = (int) SkillRuntime.num(m.arg("0", "charges", "c", "maxcharges"), 0);
+        // Cargas: solo tótems y orbitales (cada tick que toca a alguien gasta una; en un proyectil «c» son condiciones)
+        p.charges = p.kind >= 2 ? (int) SkillRuntime.num(m.arg("0", "charges", "ch", "c", "maxcharges"), 0) : 0;
         p.onTick = m.arg(null, "ontick", "ot", "ontickskill");
         p.onHit = m.arg(null, "onhit", "oh", "onhitskill");
         p.onEnd = m.arg(null, "onend", "oe", "onendskill");
         p.onHitBlock = m.arg(null, "onhitblock", "ohb", "onhitblockskill");
-        p.immuneDelay = (int) SkillRuntime.num(m.arg("0", "immunedelay", "id"), 0);
-        p.deathDelay = (int) SkillRuntime.num(m.arg("0", "deathdelay", "dd"), 0);
-        p.bulletY = SkillRuntime.num(m.arg("0", "bulletyoffset", "byo"), 0);
+        // immuneDelay va en milisegundos (2000 si no lo dice) y MythicMobs deja volver a tocar al mismo al doble de eso
+        double immune = SkillRuntime.num(m.arg("2000", "immunedelay", "immune", "id"), 2000);
+        p.rehit = (int) Math.max(1, Math.ceil(immune * 2 / 50.0));
+        p.deathDelay = (int) SkillRuntime.num(m.arg("2", "deathdelay", "death", "dd"), 2);
         p.bulletForward = SkillRuntime.num(m.arg("0", "bulletforwardoffset", "bfo"), 0);
         p.hitConds = m.hc;
         p.stopConds = m.sc;
     }
 
     private static void start(Mover p, Mech m) {
-        String type = m.arg("", "bullettype", "bt", "type").toUpperCase(Locale.ROOT);
+        String type = m.arg("", "bullettype", "bullet", "bt").toUpperCase(Locale.ROOT);
         String mob = m.arg(null, "mob", "bulletmob", "bm", "mobtype", "mm");
+        float yaw = p.dir.lengthSqr() > 0 ? SkillRuntime.yawOf(p.dir) : p.ctx.caster.yaw();
+        float pitch = p.dir.lengthSqr() > 0 && p.kind < 2 ? SkillRuntime.pitchOf(p.dir) : 0F;
         if (mob != null && (type.equals("MOB") || type.isEmpty())) {
+            // Bala de tipo MOB: como MythicMobs, el mob va «bulletyoffset» por DEBAJO del proyectil (1,35 si no lo dice;
+            // los packs suben sus modelos o el proyectil para compensarlo)
+            p.bulletY = -SkillRuntime.num(m.arg("1.35", "bulletyoffset", "byoffset", "byo"), 1.35);
             MobDef def = p.ctx.cls.mob(mob);
             if (def != null) {
-                float yaw = p.dir.lengthSqr() > 0 ? SkillRuntime.yawOf(p.dir) : p.ctx.caster.yaw();
-                float pitch = p.dir.lengthSqr() > 0 ? SkillRuntime.pitchOf(p.dir) : 0F;
-                p.bullet = SkillRuntime.spawn(p.ctx, def, bulletPos(p), yaw, p.kind == 2 || p.kind == 3 ? 0F : pitch);
+                p.bullet = SkillRuntime.spawn(p.ctx, def, bulletPos(p), yaw, pitch);
+                if (p.bullet != null) p.bullet.carried = true;
+            }
+        } else if (type.equals("ME") || type.equals("MEG") || type.equals("MODELENGINE")) {
+            // Bala de ModelEngine: el modelo tal cual, justo donde va el proyectil
+            String model = m.arg(null, "bulletmodel", "model");
+            if (model != null) {
+                String mid = model.contains(".") ? model : p.ctx.cls.id + "." + model.toLowerCase(Locale.ROOT);
+                float scale = (float) SkillRuntime.num(m.arg("1", "bulletscale"), 1);
+                p.bullet = SkillRuntime.spawnModel(p.ctx, mid, m.arg(null, "bulletstate", "state"), scale, bulletPos(p), yaw, pitch);
                 if (p.bullet != null) p.bullet.carried = true;
             }
         }
@@ -360,17 +399,6 @@ final class SkillMovers {
             end(p);
             return;
         }
-        if (!p.stopConds.isEmpty()) {
-            Tgt self = Tgt.of(p.ctx.caster);
-            for (Cond c : p.stopConds) {
-                boolean r = SkillConds.test(c, self.who, p.ctx, p.pos);
-                boolean want = !(c.action().equals("false") || c.action().equals("cancel"));
-                if (r == want) {
-                    end(p);
-                    return;
-                }
-            }
-        }
         if (p.age % p.interval != 0) {
             if (p.age >= p.maxTicks) end(p);
             return;
@@ -378,8 +406,17 @@ final class SkillMovers {
         Vec3 from = p.pos;
         switch (p.kind) {
             case 0, 1 -> {
-                if (p.kind == 1 && p.homing != null && p.homing.isAlive()) {
-                    Vec3 to = p.homing.getBoundingBox().getCenter().subtract(p.pos);
+                if (p.kind == 1) {
+                    // Misil: gira hacia el ser que persigue (si ya no está, se acaba, como en MythicMobs) o hacia su sitio
+                    Vec3 home = p.homeAt;
+                    if (p.homing != null) {
+                        if (!p.homing.isAlive() || p.homing.isRemoved()) {
+                            end(p);
+                            return;
+                        }
+                        home = p.homing.position().add(0, p.homeY, 0);
+                    }
+                    Vec3 to = home == null ? Vec3.ZERO : home.subtract(p.pos);
                     if (to.lengthSqr() > 1e-6) p.dir = p.dir.scale(p.inertia).add(to.normalize()).normalize();
                 }
                 if (p.gravity != 0 && !p.hug) {
@@ -448,50 +485,74 @@ final class SkillMovers {
         p.bullet.moveTo(bulletPos(p), yaw, pitch);
     }
 
+    /**
+     * Lo que toca en este paso. Como MythicMobs: todos los que toca a la vez van juntos a una sola vez de su onHit;
+     * con stopAtEntity se para en el primero que cumpla sus stopConditions; los tótems y orbitales gastan una carga por
+     * cada paso en el que tocan a alguien; al mismo no lo vuelve a tocar hasta pasado «rehit».
+     */
     private static void hits(Mover p, Vec3 from) {
         if (p.onHit == null && !p.stopAtEntity) return;
+        if (p.hr <= 0 || p.vr <= 0) return; // sin caja no toca a nadie
         AABB box = new AABB(from, p.pos).inflate(p.hr, p.vr, p.hr);
-        List<LivingEntity> found = new ArrayList<>();
         long now = SkillRuntime.clock;
-        for (LivingEntity e : p.level.getEntitiesOfClass(LivingEntity.class, box)) {
-            if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
-            if (e == p.ctx.caster.entity || e == p.ctx.caster.player()) continue;
-            if (p.onlyTarget != null && e != p.onlyTarget) continue;
-            Long last = p.hit.get(e.getUUID());
-            if (last != null && (p.immuneDelay <= 0 || now - last < p.immuneDelay)) continue;
-            if (e instanceof Player ? !p.hitPlayers : !p.hitNonPlayers) continue;
-            if (!SkillRuntime.canHurt(p.ctx, e)) continue;
-            if (!p.hitConds.isEmpty() && !SkillTargets.passes(p.hitConds, Tgt.of(Who.of(e)), p.ctx)) continue;
-            found.add(e);
-        }
-        found.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(from)));
+        List<Tgt> hit = new ArrayList<>();
+        LivingEntity first = null;
+        boolean stop = false;
         // Efectos del pack que el proyectil busca a propósito (hitConditions=[ - mythicmobtype{t=X} true ]): el
         // Nigromante tira un muñeco donde cae el disparo y otro proyectil va a por él
         if (wantsActors(p)) {
             for (SkillActor a : new ArrayList<>(SkillRuntime.ACTORS)) {
-                if (!a.alive || a.level != p.level || a.carried || a.follow != null || p.hit.containsKey(a.id)) continue;
+                if (!a.alive || a.level != p.level || a.carried || a.follow != null || immune(p, a.id, now)) continue;
                 if (!box.contains(a.pos) && !box.inflate(0.3).contains(a.pos.add(0, 0.5, 0))) continue;
-                if (!SkillTargets.passes(p.hitConds, Tgt.of(a.who), p.ctx)) continue;
+                Tgt t = Tgt.of(a.who);
+                if (!SkillTargets.passes(p.hitConds, t, p.ctx)) continue;
                 p.hit.put(a.id, now);
-                p.hits++;
-                if (p.onHit != null) run(p, p.onHit, List.of(Tgt.of(a.who)), null);
-                if (!p.alive) return;
-                if (p.stopAtEntity || (p.charges > 0 && p.hits >= p.charges)) {
-                    end(p);
-                    return;
+                hit.add(t);
+                if (p.stopAtEntity && stopsAt(p, t)) {
+                    stop = true;
+                    break;
                 }
             }
         }
-        for (LivingEntity e : found) {
-            p.hit.put(e.getUUID(), now);
-            p.hits++;
-            if (p.onHit != null) run(p, p.onHit, List.of(Tgt.of(Who.of(e))), e);
-            if (!p.alive) return;
-            if (p.stopAtEntity || (p.charges > 0 && p.hits >= p.charges)) {
-                end(p);
-                return;
+        if (!stop) {
+            List<LivingEntity> found = new ArrayList<>();
+            for (LivingEntity e : p.level.getEntitiesOfClass(LivingEntity.class, box)) {
+                if (!e.isAlive() || e.isSpectator() || e instanceof ArmorStand) continue;
+                if (e == p.ctx.caster.entity || e == p.ctx.caster.player()) continue;
+                if (p.onlyTarget != null && e != p.onlyTarget) continue;
+                if (immune(p, e.getUUID(), now)) continue;
+                if (e instanceof Player ? !p.hitPlayers : !p.hitNonPlayers) continue;
+                if (!SkillRuntime.canHurt(p.ctx, e)) continue;
+                if (!p.hitConds.isEmpty() && !SkillTargets.passes(p.hitConds, Tgt.of(Who.of(e)), p.ctx)) continue;
+                found.add(e);
+            }
+            found.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(from)));
+            for (LivingEntity e : found) {
+                Tgt t = Tgt.of(Who.of(e));
+                p.hit.put(e.getUUID(), now);
+                hit.add(t);
+                if (first == null) first = e;
+                if (p.stopAtEntity && stopsAt(p, t)) {
+                    stop = true;
+                    break;
+                }
             }
         }
+        if (hit.isEmpty()) return;
+        p.hits++;
+        if (p.onHit != null) run(p, p.onHit, hit, first);
+        if (!p.alive) return;
+        if (stop || (p.charges > 0 && p.hits >= p.charges)) end(p);
+    }
+
+    private static boolean immune(Mover p, Object key, long now) {
+        Long last = p.hit.get(key);
+        return last != null && now - last < p.rehit;
+    }
+
+    /** stopConditions: se para en ese objetivo solo si las cumple (sin condiciones, en el primero). */
+    private static boolean stopsAt(Mover p, Tgt t) {
+        return p.stopConds.isEmpty() || SkillTargets.passes(p.stopConds, t, p.ctx);
     }
 
     private static boolean wantsActors(Mover p) {

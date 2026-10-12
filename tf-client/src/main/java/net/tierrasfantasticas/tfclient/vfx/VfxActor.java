@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import org.joml.Matrix3f;
@@ -36,20 +37,25 @@ public final class VfxActor {
     /** Movimiento de cada pieza del muñeco (en el espacio del modelo de Blockbench, sin el del torso). */
     private static final Matrix4f[] MOTION = new Matrix4f[PARTS];
     private static final List<Object[]> SAVED = new ArrayList<>();
+    /** Escala de una pieza oculta (positiva e igual en los tres ejes: PoseStack.scale no divide entre cero). */
+    private static final float HIDDEN_SCALE = 1.0E-4F;
+    /** Tamaño de la pieza más grande en el último computeLimbs (1 = como en reposo). */
+    private static float limbSize;
 
     private VfxActor() {}
 
     /**
      * Dibuja el mob haciendo la animación: una vez por cada figura del muñeco y textura (la suya o la del material).
      * instance: transformación del efecto (con la cámara ya restada); bones: matrices del modelo ahora; visible: huesos
-     * que se ven. Devuelve false si no ha dibujado nada.
+     * que se ven. Devuelve dónde quedaron los pies del mob (respecto a la cámara) si se ve de un tamaño apreciable
+     * (para la nube de humo del final), o null.
      */
-    static boolean render(LivingEntity entity, VfxModel model, Matrix4f view, Matrix3f viewNormal, Matrix4f instance,
+    static Vector3f render(LivingEntity entity, VfxModel model, Matrix4f view, Matrix3f viewNormal, Matrix4f instance,
                           Matrix4f instanceRotScale, Matrix4f[] bones, boolean[] visible, float yaw, float partial,
                           MultiBufferSource buffers) {
         Minecraft mc = Minecraft.getInstance();
         // Tu propio cuerpo en primera persona: la cámara está dentro, no se dibuja
-        if (entity == mc.getCameraEntity() && mc.options.getCameraType().isFirstPerson()) return false;
+        if (entity == mc.getCameraEntity() && mc.options.getCameraType().isFirstPerson()) return null;
         Matrix4f[] rest = model.rest();
         int savedDeath = entity.deathTime, savedHurt = entity.hurtTime;
         float[] savedRot = {entity.yBodyRot, entity.yBodyRotO, entity.yHeadRot, entity.yHeadRotO};
@@ -59,28 +65,39 @@ public final class VfxActor {
         // Mirando hacia donde mira el efecto, para que sus giros y saltos vayan en la misma dirección
         entity.yBodyRot = entity.yBodyRotO = entity.yHeadRot = entity.yHeadRotO = yaw;
         EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
+        // Solo los modelos humanoides mueven cabeza, brazos y piernas como el muñeco (LivingEntityRendererMixin)
+        boolean humanoid = dispatcher.getRenderer(entity) instanceof LivingEntityRenderer<?, ?> lr
+                && lr.getModel() instanceof HumanoidModel<?>;
         int light = dispatcher.getPackedLightCoords(entity, partial);
         light = LightTexture.pack(15, LightTexture.sky(light)); // la luz del efecto (como el bloque de luz del pack)
         boolean shadows = mc.options.entityShadows().get();
         dispatcher.setRenderShadow(false);
         rendering = entity;
-        boolean drawn = false;
+        Vector3f drawn = null;
         Matrix4f instInv = new Matrix4f(instanceRotScale).invert();
         try {
             for (VfxModel.Figure fig : model.figures) {
                 int root = fig.rig()[VfxModel.RIG_ROOT];
-                Matrix4f rootNow = bones[root];
-                if (Math.abs(rootNow.determinant3x3()) < 1e-6F || !anyVisible(fig, visible)) continue; // no se ve
+                if (Math.abs(bones[root].determinant3x3()) < 1e-6F || !anyVisible(fig, visible)) continue; // no se ve
+                // El doble de material (un fantasma, un holograma) solo tiene las piezas que tiene en el pack
+                if (!computeLimbs(fig.rig(), bones, rest, visible, fig.tex()[0] != null)) continue; // todas las piezas fuera
+                // Un mob que no es humanoide (vaca, araña, aldeano...) no puede mover sus piezas como el muñeco: entero
+                // sigue al torso, también cuando encoge o desaparece (antes seguía al hueso raíz, que en muchos efectos no
+                // encoge, y la vaca se quedaba entera hasta el final y luego desaparecía de golpe)
+                int follow = root;
+                if (!humanoid && fig.rig()[VfxModel.RIG_BODY] >= 0) {
+                    follow = fig.rig()[VfxModel.RIG_BODY];
+                    if (!visible[follow] || Math.abs(bones[follow].determinant3x3()) < 1e-6F) continue;
+                }
                 // Lo que se ha movido el torso desde el reposo, en el espacio del modelo
-                Matrix4f delta = new Matrix4f(rootNow).mul(new Matrix4f(rest[root]).invert());
+                Matrix4f delta = new Matrix4f(bones[follow]).mul(new Matrix4f(rest[follow]).invert());
                 // Al espacio del mundo: el mob se dibuja como si el muñeco fuera él
-                Matrix4f m = new Matrix4f(view).mul(instance).mul(delta).mul(instInv);
+                Matrix4f world = new Matrix4f(instance).mul(delta).mul(instInv);
+                Matrix4f m = new Matrix4f(view).mul(world);
                 Matrix3f normal = new Matrix3f(viewNormal).mul(new Matrix3f(instance).mul(new Matrix3f(delta))
                         .mul(new Matrix3f(instInv)).normal());
                 float det = Math.abs(normal.determinant());
                 if (det > 1e-6F) normal.scale(1F / (float) Math.cbrt(det));
-                // El doble de material (un fantasma, un holograma) solo tiene las piezas que tiene en el pack
-                computeLimbs(fig.rig(), bones, rest, visible, fig.tex()[0] != null);
                 for (String tex : fig.tex()) {
                     PoseStack ps = new PoseStack();
                     ps.last().pose().set(m);
@@ -89,7 +106,8 @@ public final class VfxActor {
                     MultiBufferSource out = material == null ? buffers : material(buffers, material);
                     try {
                         dispatcher.render(entity, 0, 0, 0, yaw, partial, ps, out, light);
-                        drawn = true;
+                        float size = (float) Math.cbrt(Math.abs(delta.determinant3x3())) * (humanoid ? limbSize : 1F);
+                        if (size > 0.3F) drawn = world.transformPosition(new Vector3f());
                     } finally {
                         restoreParts();
                     }
@@ -119,17 +137,24 @@ public final class VfxActor {
     /**
      * Cómo se mueve cada pieza del muñeco, quitando lo que ya hace el torso (que mueve el mob entero): giro y escala
      * para la pieza de Minecraft y el movimiento entero para colocar su pivote (que no tiene por qué ser el del muñeco).
+     * Devuelve false si no queda ninguna pieza a la vista.
      */
-    private static void computeLimbs(int[] rig, Matrix4f[] bones, Matrix4f[] rest, boolean[] visible, boolean hideMissing) {
+    private static boolean computeLimbs(int[] rig, Matrix4f[] bones, Matrix4f[] rest, boolean[] visible, boolean hideMissing) {
         int root = rig[VfxModel.RIG_ROOT];
         Matrix4f deltaInv = new Matrix4f(bones[root]).mul(new Matrix4f(rest[root]).invert()).invert();
         Vector3f sc = new Vector3f(), e = new Vector3f();
+        boolean any = false;
+        limbSize = 0F;
         for (int k = 0; k < PARTS; k++) {
             int bi = rig[k + 1];
             float[] p = POSE[k];
             p[0] = 0;
             if (bi < 0) {
                 if (hideMissing) p[0] = 2;
+                else {
+                    any = true;
+                    limbSize = Math.max(limbSize, 1F);
+                }
                 continue;
             }
             Matrix4f a = new Matrix4f(deltaInv).mul(bones[bi]).mul(new Matrix4f(rest[bi]).invert());
@@ -148,7 +173,10 @@ public final class VfxActor {
             p[5] = sc.y;
             p[6] = sc.z;
             MOTION[k] = a;
+            any = true;
+            limbSize = Math.max(limbSize, (float) Math.cbrt(sc.x * sc.y * sc.z));
         }
+        return any;
     }
 
     public static boolean isRendering(LivingEntity entity) {
@@ -165,7 +193,10 @@ public final class VfxActor {
             ModelPart part = parts[k];
             save(part);
             if (p[0] == 2) {
+                // Oculta y encogida a un punto: la armadura (copia giro y escala, pero se pone visible ella sola), el
+                // objeto de la mano y lo que lleve en la cabeza se van con la pieza en lugar de quedarse flotando
                 part.visible = false;
+                part.xScale = part.yScale = part.zScale = HIDDEN_SCALE;
                 continue;
             }
             // El pivote de la pieza del mob, en Blockbench (el cuello del modelo humanoide está a 24 px del suelo)

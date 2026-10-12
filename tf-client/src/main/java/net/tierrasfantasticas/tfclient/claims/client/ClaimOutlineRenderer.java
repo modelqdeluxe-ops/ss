@@ -29,8 +29,8 @@ import org.joml.Vector3f;
  *    4 puntos (cada 2 bloques) un «nodo» más grande y más blanco. Una onda de brillo recorre las líneas. Se repone
  *    cada LINE_PERIOD ticks con motas que viven un poco más, así la línea se ve continua. De lejos se aclara la rejilla
  *    (1 bloque, y a lo lejos solo los nodos).
- *  - AVISO DE CERCA (a 4 bloques o menos de un lado): en ese trozo de pared, alrededor del jugador, saltan chispitas
- *    sueltas del color de la zona que suben un poco y se apagan; cuanto más cerca, más y más vivas.
+ *  - AVISO DE CERCA (a 4 bloques o menos de un lado): en ese trozo de pared, junto al jugador, saltan muchas chispitas
+ *    pequeñas del color de la zona, que suben rápido unos 2 bloques y se apagan; cuanto más cerca, más y más vivas.
  *
  * Se ve en los mismos casos que antes: las zonas con «Ver contorno» que manda el servidor y la vista previa al llevar
  * una piedra de protección en la mano (solo líneas, con motas de vida corta para que no dejen estela). Rendimiento:
@@ -66,11 +66,11 @@ public final class ClaimOutlineRenderer {
     // Aviso de cerca: distancia al lado para que salga, cada cuántos ticks, cuántas chispitas (con todas las partículas),
     // ancho a cada lado del jugador y alto (desde los pies)
     private static final double NEAR_RANGE = 4.0;
-    private static final int SPARK_TICKS = 2;
-    private static final int SPARKS = 4;
-    private static final double SPARK_HALF_WIDTH = 2.5;
-    private static final double SPARK_BELOW = 0.2;
-    private static final double SPARK_ABOVE = 2.2;
+    private static final int SPARK_TICKS = 1;
+    private static final int SPARKS = 7;
+    private static final double SPARK_HALF_WIDTH = 1.6;
+    private static final double SPARK_BELOW = 0.1;
+    private static final double SPARK_ABOVE = 1.6;
     private static final int MAX_NEAR_WALLS = 2;
 
     // Listas reutilizadas cada tick
@@ -328,8 +328,9 @@ public final class ClaimOutlineRenderer {
             // salta hacia arriba (y un pelín hacia fuera de la pared, hacia el jugador) y se apaga
             double out = Math.signum((alongX ? pz : px) - near[3]) * 0.01;
             boolean big = level.random.nextFloat() < 0.3f;
-            MagicDustParticle particle = MagicDustParticle.spark(level, x, v, z, alongX ? 0.0 : out, 0.035 + level.random.nextDouble() * 0.02,
-                    alongX ? out : 0.0, rgb, big, big ? 0.5f : 0.15f, alpha, big ? 0.16f : 0.11f, 10 + level.random.nextInt(6), axis, near[4], near[5]);
+            // pequeñas y rápidas: suben unos 2 bloques en lo que viven
+            MagicDustParticle particle = MagicDustParticle.spark(level, x, v, z, alongX ? 0.0 : out, 0.11 + level.random.nextDouble() * 0.05,
+                    alongX ? out : 0.0, rgb, big, big ? 0.5f : 0.15f, alpha, big ? 0.075f : 0.05f, 14 + level.random.nextInt(6), axis, near[4], near[5]);
             if (particle != null) {
                 mc.particleEngine.add(particle);
             }
