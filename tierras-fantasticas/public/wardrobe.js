@@ -2,7 +2,7 @@
 // juego (mano derecha, cabeza, espalda y armadura), y el visor de cada objeto con el botón «Equipar».
 // Las posiciones salen de las mismas transformaciones que usa Minecraft 1.20.1 (PoseStack de los RenderLayer).
 import * as THREE from '/vendor/three.module.min.js';
-import { loadTextures, buildElements, buildGenerated, toMesh, uprightAngle } from '/viewer.js';
+import { loadTextures, buildElements, buildGenerated, toMesh, uprightAngle, blockMaterial, fitDepth } from '/viewer.js';
 
 const DEG = Math.PI / 180;
 
@@ -89,17 +89,27 @@ function cubeQuads(u, v, x, y, z, dx, dy, dz, grow, mirror, texW, texH, out) {
   });
 }
 
-function partMesh(cubes, texture, matrix, texW, texH) {
+// Las partes del jugador se solapan como en Minecraft y varias caras quedan en el MISMO plano: la manga y la chaqueta
+// (y la armadura del brazo y la del pecho) comparten el frente, la espalda y el hombro en la franja donde el brazo se
+// mete en el cuerpo; el pantalón y la chaqueta en la cintura; y las dos piernas entre ellas. Con dos caras coplanarias
+// la prueba de profundidad se decide por redondeo y cambia de un fotograma a otro al girar: la textura «parpadea».
+// Cada parte crece una pizca distinta (centésimas de píxel, invisible) para que en esas franjas gane siempre la
+// misma: brazos sobre el pecho, pecho sobre las piernas y una pierna sobre la otra.
+const DEPTH_RANK = { rightLeg: 0, leftLeg: 1, body: 2, head: 3, rightArm: 3, leftArm: 3 };
+const DEPTH_STEP = 0.01;
+
+function partMesh(cubes, texture, matrix, texW, texH, rank = 0) {
   const b = { pos: [], uv: [], col: [] };
-  for (const c of cubes) cubeQuads(...c, texW, texH, b);
+  for (const c of cubes) {
+    const grown = [...c];
+    grown[8] += rank * DEPTH_STEP;
+    cubeQuads(...grown, texW, texH, b);
+  }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(b.pos, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(b.uv, 2));
   geo.setAttribute('color', new THREE.Float32BufferAttribute(b.col, 3));
-  const mesh = new THREE.Mesh(
-    geo,
-    new THREE.MeshBasicMaterial({ map: texture, vertexColors: true, alphaTest: 0.1, side: THREE.DoubleSide, transparent: false }),
-  );
+  const mesh = new THREE.Mesh(geo, blockMaterial(texture));
   mesh.matrixAutoUpdate = false;
   mesh.matrix.copy(matrix);
   return mesh;
@@ -271,6 +281,7 @@ export function createWardrobe(canvas) {
     }
     camera.position.set(0, 0, dist);
     camera.lookAt(0, 0, 0);
+    fitDepth(camera, dist, box.getBoundingSphere(new THREE.Sphere()).radius);
   };
   const loop = (time) => {
     state.raf = requestAnimationFrame(loop);
@@ -367,7 +378,7 @@ export function createWardrobe(canvas) {
     const holding = outfit.offhand && items0[outfit.offhand]?.model ? POSE_HOLDING : POSE;
     for (const [name, part] of Object.entries(parts)) {
       poses[name] = partPose(base, name, part.pivot, holding);
-      group.add(partMesh(part.cubes, state.skin.tex, poses[name].m, 64, state.skin.legacy ? 32 : 64));
+      group.add(partMesh(part.cubes, state.skin.tex, poses[name].m, 64, state.skin.legacy ? 32 : 64, DEPTH_RANK[name]));
     }
     const items = set.items;
     // Encima de la cabeza (donde Minecraft pone el nombre) y entre los pies
@@ -386,7 +397,7 @@ export function createWardrobe(canvas) {
             const g = c[0] === 32 && c[1] === 0 ? piece.grow + 0.5 : piece.grow;
             return [c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], g, c[9]];
           });
-        group.add(partMesh(cubes, loaded.tex, poses[partName].m, 64, 32));
+        group.add(partMesh(cubes, loaded.tex, poses[partName].m, 64, 32, DEPTH_RANK[partName]));
       }
     }
     // Mano derecha (ItemInHandLayer)

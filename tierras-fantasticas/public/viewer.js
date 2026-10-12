@@ -153,6 +153,32 @@ export function buildGenerated(model, textures) {
   return { [key]: b };
 }
 
+// Con antialias (MSAA) el color de los píxeles del borde de una cara se calcula en el centro del píxel aunque caiga
+// fuera del triángulo: la coordenada de textura se sale de la cara y coge el texel vecino del atlas (a menudo
+// transparente o de otra pieza). Al girar, esos bordes cambian de un fotograma a otro y la textura «chispea».
+// Con «centroid» se toma siempre un punto dentro del triángulo, así que nunca se sale de su trozo de textura.
+const centroidUv = (shader) => {
+  const fix = (chunk) => chunk.replace('varying vec2 vMapUv;', 'centroid varying vec2 vMapUv;');
+  shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', fix(THREE.ShaderChunk.uv_pars_vertex));
+  shader.fragmentShader = shader.fragmentShader.replace('#include <uv_pars_fragment>', fix(THREE.ShaderChunk.uv_pars_fragment));
+};
+
+// Material de los modelos (bloques con textura de píxeles): recorte por alfa, sin mezcla y con UV en el centroide.
+export function blockMaterial(map) {
+  const mat = new THREE.MeshBasicMaterial({ map, vertexColors: true, alphaTest: 0.1, side: THREE.DoubleSide, transparent: false });
+  mat.onBeforeCompile = centroidUv;
+  return mat;
+}
+
+// Planos de recorte ajustados al modelo (gire como gire, todo cabe entre near y far): con el near pegado a la cámara
+// casi toda la precisión del búfer de profundidad se gasta delante del modelo y las caras muy juntas se pelean entre
+// sí; ajustándolo, la profundidad sobra en todo el modelo.
+export function fitDepth(camera, dist, radius) {
+  camera.near = Math.max(0.05, (dist - radius) * 0.8);
+  camera.far = dist + radius * 1.25 + 1;
+  camera.updateProjectionMatrix();
+}
+
 export function toMesh(buckets, textures) {
   const group = new THREE.Group();
   for (const [key, b] of Object.entries(buckets)) {
@@ -161,13 +187,7 @@ export function toMesh(buckets, textures) {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(b.pos, 3));
     geo.setAttribute('uv', new THREE.Float32BufferAttribute(b.uv, 2));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(b.col, 3));
-    const mat = new THREE.MeshBasicMaterial({
-      map: textures[key].tex,
-      vertexColors: true,
-      alphaTest: 0.1,
-      side: THREE.DoubleSide,
-    });
-    group.add(new THREE.Mesh(geo, mat));
+    group.add(new THREE.Mesh(geo, blockMaterial(textures[key].tex)));
   }
   return group;
 }
@@ -324,6 +344,7 @@ function createUi() {
       const dist = (sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))) * 1.05;
       camera.position.set(0, 0, dist);
       camera.lookAt(0, 0, 0);
+      fitDepth(camera, dist, sphere.center.length() + sphere.radius);
       state.yaw = -0.5;
       state.pitch = 0.12;
       state.idleAt = 0;
