@@ -1285,8 +1285,23 @@ class Sim(Skin):
         h = 4 + 11 + self.lines_h(r, tw) + (8 if prog >= 0 else 0) + 3
         return max(self.ICON_BOX + 10 if (icon or ex.get('img')) else 26, h + 2) + self.ROW_GAP
 
+    @staticmethod
+    def switch_of(r):
+        """PadViewPage.switchOf (1.3.66): un solo botón SÍ o NO, o el par SÍ + NO, es un interruptor. Devuelve si
+        está encendido (o None si no es un interruptor)."""
+        b1, b2 = r[6], r[7]
+        if not b1 or (len(b1) > 2 and b1[2] is False):
+            return None
+        if not b2 and b1[0] in ('SÍ', 'NO'):
+            return b1[0] == 'SÍ'
+        if b1[0] == 'SÍ' and b2 and b2[0] == 'NO':
+            return b1[1] != 4
+        return None
+
     def right_w(self, r):
         badge, b1, b2 = r[5], r[6], r[7]
+        if self.switch_of(r) is not None:
+            return (self.chip_w(badge) + 6 if badge else 0) + 28 + 4
         return (self.chip_w(badge) + 6 if badge else 0) + sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
 
     def text_w(self, r, w):
@@ -1355,6 +1370,10 @@ class Sim(Skin):
             self.sk_chip(bx + 2, yy + (h - 12) // 2, badge, self.tone(badge))
             bx += self.chip_w(badge) + 6
         by = yy + (h - 16) // 2
+        on = self.switch_of(r)
+        if on is not None:
+            self.toggle(bx, yy + (h - 14) // 2, 1.0 if on else 0.0)
+            return
         for b in (b1, b2):
             if b:
                 self.sk_button(bx, by, self.bw(b[0]), b[0], b[1], b[2] if len(b) > 2 else True)

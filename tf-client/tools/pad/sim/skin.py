@@ -528,20 +528,20 @@ class Skin:
 
     def toggle(self, x, y, k, hover=False):
         """PadSkin.toggle: interruptor de 28x14 (k: 0 apagado, 1 encendido)."""
-        top, bot = mix(rgb(0xC9D5E6), rgb(0x7CEC98), k), mix(rgb(0xA8B7CC), rgb(0x22A84C), k)
+        top, bot = mix(rgb(0xFF7E8A), rgb(0x7CEC98), k), mix(rgb(0xC8283C), rgb(0x22A84C), k)  # apagado en rojo
         if hover:
             top, bot = lighten(top, 18), lighten(bot, 18)
         self.fill(x + 1, y + 14, x + 27, y + 15, (24, 38, 92, 50))
-        self.box(x, y, 28, 14, mix(rgb(0x6E80A0), rgb(0x147034), k))
+        self.box(x, y, 28, 14, mix(rgb(0x861428), rgb(0x147034), k))
         self.vgrad(x + 1, y + 1, 26, 12, bot, top)
         self.fill(x + 2, y + 1, x + 26, y + 2, (0, 0, 0, 48))
         if k > 0.5:
             self.ptext_shadow('SÍ', x + 4, y + 2, WHITE, rgb(0x0F5A26))
         else:
-            self.ptext_shadow('NO', x + 27 - 4 - self.pwidth('NO'), y + 2, WHITE, rgb(0x56637E))
+            self.ptext_shadow('NO', x + 27 - 4 - self.pwidth('NO'), y + 2, WHITE, rgb(0x7A1020))
         kx = x + 1 + round(k * 14)
         self.fill(kx + 1, y + 13, kx + 12, y + 14, (24, 38, 92, 64))
-        self.box(kx, y + 1, 13, 12, mix(rgb(0x8090B0), rgb(0x1E7C3A), k))
+        self.box(kx, y + 1, 13, 12, mix(rgb(0x9A2030), rgb(0x1E7C3A), k))
         self.vgrad(kx + 1, y + 2, 11, 10, WHITE, rgb(0xDCE6F2))
         self.fill(kx + 2, y + 2, kx + 11, y + 3, WHITE)
 
