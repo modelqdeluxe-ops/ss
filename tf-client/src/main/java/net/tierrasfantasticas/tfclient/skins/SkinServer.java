@@ -256,6 +256,11 @@ public final class SkinServer {
         return PREVIEW + hash + (slim ? "_f" : "_n");
     }
 
+    /** La skin como muñeco 3D en el pad (PadSkinModel): solo la skin, sin armadura, objetos ni cosméticos. */
+    public static String model(String hash, boolean slim) {
+        return "tfclient:skinmodel/" + hash + (slim ? "_f" : "_n");
+    }
+
     /** Manda las imágenes que el jugador aún no tiene (para dibujar las vistas previas del Armario). */
     public static void sendImages(ServerPlayer player, Collection<String> hashes) {
         Set<String> sent = SENT.computeIfAbsent(player.getUUID(), k -> new HashSet<>());

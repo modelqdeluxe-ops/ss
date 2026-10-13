@@ -11,7 +11,7 @@ import sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from sim import NAVY, ROOT, Sim, lighten, rgb  # noqa: E402
+from sim import MC, NAVY, ROOT, Sim, lighten, rgb  # noqa: E402
 from skin import accent, mix, darken as darken_t  # noqa: E402
 
 if len(sys.argv) < 2:
@@ -291,6 +291,18 @@ page('p_armario', 'ARMARIO', [('cabeza', 'CABEZA ·'), ('pecho', 'PECHO'), ('pie
          ('leather_helmet', 'Sombrero de paja', 0x9E5AE0, 'Crate verano', False, 1, {'tone': 4}),
          ('turtle_helmet', 'Casco marino', 0x9E5AE0, 'PONER', False, 1, {'tone': 4}),
      ], footer=[('QUITAR', R)])
+# SKINS (PadWardrobe.skinsView): el escaparate con tu skin en 3D (solo la skin) y tus skins, cada una en 3D
+PLAYER = os.path.join(MC, 'entity/player')
+STEVE, ALEX = (os.path.join(PLAYER, 'wide/steve.png'), False), (os.path.join(PLAYER, 'slim/alex.png'), True)
+page('p_skins', 'ARMARIO', [('skins', 'SKINS'), ('cabeza', 'CABEZA'), ('pecho', 'PECHO'), ('piernas', 'PIERNAS'), ('pies', 'PIES'),
+                            ('espalda', 'ESPALDA')], 'skins', [], [], app='armario', hover=2,
+     hero=('player_head', 'Tu skin', 0x9E5AE0, ['Llevas la skin de tu cuenta de Minecraft.',
+                                                'Pulsa una skin de abajo para verla o ponértela.'], -1, '2/16', None, None,
+           {'model': STEVE}),
+     cards=[('player_head', 'De siempre', 0x9E5AE0, 'PUESTA', True, 1, {'tone': 2, 'model': STEVE}),
+              ('player_head', 'Alex', 0x9E5AE0, 'VER', False, 1, {'tone': 1, 'model': ALEX}),
+              ('player_head', 'Zuri', 0x9E5AE0, 'VER', False, 1, {'tone': 1, 'model': (os.path.join(PLAYER, 'wide/zuri.png'), False)})],
+     footer=[('AÑADIR SKIN', G)])
 KILLS = json.load(open(os.path.join(FX, 'meta.json'), encoding='utf-8'))['kills']
 kill_ids = sorted(KILLS, key=lambda k: (KILLS[k]['order'], k))
 page('p_efectos', 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS')], '',

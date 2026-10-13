@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from skin import (GOLD_HI, Skin, WHITE, accent, darken, deep, icon_of, ink, lighten as _lighten, mix, tagline, with_a)  # noqa: E402
+from skin import (GOLD_HI, THEMES, Skin, WHITE, accent, darken, deep, icon_of, ink, lighten as _lighten, mix, tagline, with_a)  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAD = os.path.dirname(HERE)
@@ -35,10 +35,10 @@ def _mc_textures():
             for n in z.namelist():
                 if n.startswith('assets/minecraft/textures/block/') and n.endswith('.png'):
                     z.extract(n, out)
-    if not os.path.isdir(os.path.join(base, 'entity/player')) and os.path.exists(jar):
+    if not os.path.isdir(os.path.join(base, 'entity/player/slim')) and os.path.exists(jar):
         with zipfile.ZipFile(jar) as z:  # las caras de Steve y Alex para las cabezas de jugador
             for n in z.namelist():
-                if n.startswith('assets/minecraft/textures/entity/player/wide/') and n.endswith('.png'):
+                if n.startswith('assets/minecraft/textures/entity/player/') and n.endswith('.png'):
                     z.extract(n, out)
     return base
 
@@ -1053,7 +1053,13 @@ class Sim(Skin):
         bob = round(math.sin(self.T * 4.4)) if hover or sel else 0
         size = self.GAL_IMG if gallery else 32
         im = Image.open(ex['img']) if ex.get('img') else None
-        if im is not None and im.width > im.height * 1.25:
+        if ex.get('model'):
+            # PadSkinModel en la vitrina (solo la skin), recortado a ella
+            clip = self.clip
+            self.scissor(x0 + 1, yy + 1, w - 2, sh)
+            self.model_at(ex['model'], cx, yy + sh - 3 - bob, sh - 9)
+            self.clip = clip
+        elif im is not None and im.width > im.height * 1.25:
             # PadSkin.photo: un retrato ancho (oficios) como una foto, casi todo el alto de la vitrina
             a = im.width / im.height
             ph = min(sh - 5, round((w - 8) / a))
@@ -1103,7 +1109,44 @@ class Sim(Skin):
 
     def hero_h(self, r, w):
         h = 8 + 11 + self.lines_h(r, self.hero_tw(r, w)) + (10 if r[4] >= 0 else 0) + 6
+        if self._ex(r).get('model'):  # el escaparate del Armario
+            return max(58, h)
         return max(self.HERO_MIN, h)
+
+    @staticmethod
+    def skin_front(path, slim):
+        """PadSkinModel visto de frente (aproximación en 2D del muñeco 3D): solo la skin, con su capa de encima."""
+        sk = Image.open(path).convert('RGBA')
+        aw = 3 if slim else 4
+        out = Image.new('RGBA', (8 + 2 * aw, 32), (0, 0, 0, 0))
+        def part(u, v, w, h, x, y, over=False):
+            p = sk.crop((u, v, u + w, v + h))
+            if over:
+                out.alpha_composite(p, (x, y))
+            else:
+                q = p.copy()
+                q.putalpha(255)
+                out.paste(q, (x, y))
+        part(8, 8, 8, 8, aw, 0)
+        part(20, 20, 8, 12, aw, 8)
+        part(44, 20, aw, 12, 0, 8)
+        part(36, 52, aw, 12, aw + 8, 8)
+        part(4, 20, 4, 12, aw, 20)
+        part(20, 52, 4, 12, aw + 4, 20)
+        for (u, v, w, h, x, y) in ((40, 8, 8, 8, aw, 0), (20, 36, 8, 12, aw, 8), (44, 36, aw, 12, 0, 8),
+                                   (52, 52, aw, 12, aw + 8, 8), (4, 36, 4, 12, aw, 20), (4, 52, 4, 12, aw + 4, 20)):
+            part(u, v, w, h, x, y, True)
+        return out
+
+    def model_at(self, model, cx, feet, h):
+        """El muñeco con los pies en (cx, feet) y h unidades de alto."""
+        im = self.skin_front(*model)
+        k = h / 32
+        w = round(im.width * k * self.f)
+        hp = round(32 * k * self.f)
+        im = im.resize((w, hp), Image.NEAREST)
+        r = self._rect(cx, feet - h, cx, feet - h)
+        self._paste_px(im, r[0] - w // 2, r[1])
 
     def hero(self, r, x, y, w, h, acc=(52, 150, 250)):
         """PadViewPage.drawHero (1.4): la ficha grande. Banner del color de la ficha con rayas, rayos de luz que giran
@@ -1127,14 +1170,28 @@ class Sim(Skin):
         self.clip = clip
         self.fill(x + 1, y + 1, x + w - 1, y + 2, _lighten(col, 70))
         self.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, darken(col, 0.55))
-        self.sk_slot(mx, my, ms, col)
-        self.stretch('floor', mx + 8, my + ms - 7, ms - 16, 4)
-        n = r[8] if len(r) > 8 and isinstance(r[8], int) else 1
-        if ex.get('img'):
-            self.icon_at(icon, ex, mx + 3, my + 3, ms - 6)
+        extra = 0
+        if ex.get('model'):
+            # PadViewPage.drawHero: el escaparate (la skin en 3D, solo la skin) sobre una peana de luz
+            mh = h - 14
+            mw = max(ms, round(mh * 0.62))
+            mcx = mx + mw / 2
+            self.glow(mcx, y + h / 2, mh * 0.7, WHITE, 120)
+            self.stretch('floor', round(mcx - mw * 0.45), y + h - 12, round(mw * 0.9), 6)
+            clip = self.clip
+            self.scissor(x + 1, y + 1, mw + 12, h - 2)
+            self.model_at(ex['model'], mcx, y + h - 9, mh)
+            self.clip = clip
+            extra = mw - ms
         else:
-            self.icon_at(icon, ex, mx + (ms - 32) // 2, my + (ms - 32) // 2 - 1, 32, n)
-        tx, tw = x + ms + 15, self.hero_tw(r, w)
+            self.sk_slot(mx, my, ms, col)
+            self.stretch('floor', mx + 8, my + ms - 7, ms - 16, 4)
+            n = r[8] if len(r) > 8 and isinstance(r[8], int) else 1
+            if ex.get('img'):
+                self.icon_at(icon, ex, mx + 3, my + 3, ms - 6)
+            else:
+                self.icon_at(icon, ex, mx + (ms - 32) // 2, my + (ms - 32) // 2 - 1, 32, n)
+        tx, tw = x + ms + 15 + extra, self.hero_tw(r, w) - extra
         th = 11 + self.lines_h(r, tw) + (10 if prog >= 0 else 0)
         top = y + max(6, (h - th) // 2 + 1)
         shade = darken(col, 0.38)
@@ -1304,8 +1361,11 @@ class Sim(Skin):
 
     def frame(self):
         """frame.png alargado como TFPadScreen.drawFrame (filas y columnas lisas repetidas), a escala ps."""
-        import numpy as np
-        a = np.asarray(Image.open(f'{TEX}/frame.png').convert('RGBA'))
+        return self._stretched('frame')
+
+    def _stretched(self, name):
+        """Una textura del tamaño del marco, alargada como él (TFPadScreen.drawFrame(g, name))."""
+        a = np.asarray(Image.open(f'{TEX}/{name}.png').convert('RGBA'))
         e, ex = self.extra * 4, self.extra_x * 4
         a = np.concatenate([a[:STRETCH_U], np.repeat(a[STRETCH_U:STRETCH_U + 1], e, axis=0), a[STRETCH_U:STRETCH_D],
                             np.repeat(a[STRETCH_D:STRETCH_D + 1], e, axis=0), a[STRETCH_D:]], axis=0)
@@ -1319,8 +1379,27 @@ class Sim(Skin):
     def save(self, path, screen=False):
         """El marco a escala ps y el cristal encima, como en el juego. screen=True: dentro de la pantalla entera (fbw x
         fbh, con el fondo oscurecido), centrado por lo que se ve del marco, como TFPadScreen.init."""
-        frame = self.frame()
+        # como TFPadScreen.render: el fondo del cristal en todo su hueco (GLASS_*; aquí solo su color fuera de GW x GH)
+        # y el marco encima, con el cristal transparente (build_pad.frame_textures), que lo recorta con su forma
+        top = self.frame()
+        frame = Image.new('RGBA', top.size, (0, 0, 0, 0))
+        th = THEMES[int(os.environ.get('THEME', '0'))]
+        k = self.ps / 4
+        x0, y0 = round(205 * k), round(249 * k)
+        x1, y1 = round((1361 + 8 * self.extra_x) * k), round((795 + 8 * self.extra) * k)
+        c0, c1 = np.array(rgb(th[1]), float), np.array(rgb(th[2]), float)
+        t = np.linspace(0, 1, y1 - y0)[:, None, None]
+        band = np.repeat((c0 * (1 - t) + c1 * t), x1 - x0, axis=1)
+        frame.paste(Image.fromarray(np.dstack([band, np.full(band.shape[:2], 255.0)]).astype(np.uint8)), (x0, y0))
         frame.alpha_composite(self.art, (GX * self.ps, GY * self.ps))
+        frame.alpha_composite(top)
+        # los neones del color del tema (TFPadScreen.drawFrame: neon.png teñido y neon_core.png encima)
+        if th[4]:
+            neon = self._stretched('neon')
+            n = np.asarray(neon).astype(float)
+            n[..., :3] = n[..., :3] * np.array(rgb(th[4]), float) / 255
+            frame.alpha_composite(Image.fromarray(n.astype(np.uint8)))
+            frame.alpha_composite(self._stretched('neon_core'))
         if screen:
             vw, vh = VIS_R - VIS_L, VIS_B - VIS_T
             fx = (self.fbw - (vw + self.extra_x * 2) * self.ps) // 2 - VIS_L * self.ps

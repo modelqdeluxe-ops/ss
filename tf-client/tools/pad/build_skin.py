@@ -66,23 +66,8 @@ def rays():
 
 # El trozo del logo que se mete en el cristal (en píxeles de marco.png: 4 por píxel de pad). TFPadScreen lo vuelve a
 # pintar encima del fondo animado, así las luces pasan por detrás del logo.
-LOGO_X0, LOGO_Y0, LOGO_X1, LOGO_Y1 = 52 * 4, 64 * 4, 84 * 4, 90 * 4
-
-
-def logo_over():
-    """logo_over.png: ese trozo de marco.png con el cristal (azul claro) transparente: solo queda el logo."""
-    src = Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')
-    im = src.crop((LOGO_X0, LOGO_Y0, LOGO_X1, LOGO_Y1))
-    px = im.load()
-    for y in range(im.height):
-        for x in range(im.width):
-            r, g, b, a = px[x, y]
-            if abs(r - 90) <= 10 and abs(g - 210) <= 8 and b >= 246:
-                px[x, y] = (0, 0, 0, 0)
-    return im
-
-
-FILES = {'stripes.png': stripes, 'bokeh.png': bokeh, 'rays.png': rays, 'logo_over.png': logo_over}
+# (logo_over.png ya no hace falta: el marco se pinta encima del fondo del cristal, con su logo; build_pad.frame_textures)
+FILES = {'stripes.png': stripes, 'bokeh.png': bokeh, 'rays.png': rays}
 
 
 def build(out_dir=OUT_DIR):

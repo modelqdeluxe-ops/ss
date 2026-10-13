@@ -5,13 +5,14 @@ Todo va en la rejilla del marco: 1 píxel del dibujo = 4 píxeles de marco.png (
 
     python3 tools/pad/build_pad.py            # escribe src/main/resources/assets/tfclient/textures/gui/pad/
     python3 tools/pad/build_pad.py --preview  # además, vistas previas en tools/pad/preview_*.png (no van al repo)
+    python3 tools/pad/build_pad.py --marco    # solo frame.png, neon.png y neon_core.png (no toca lo demás)
 
 Qué sale:
-- frame.png (el marco), tile.png / tile_h.png (ficha de 40 y su versión al pasar el ratón),
+- frame.png (el marco con el cristal hueco) + neon.png / neon_core.png (neones para los temas), tile.png / tile_h.png (ficha de 40 y su versión al pasar el ratón),
 - icon_<app>.png (las 20 apps, 32x32),
 - font.png + font.json (fuente pixel de 4 px con tildes y signos: la usa PadFont para todos los rótulos),
 - coin, sun, moon, gear, heart, heart_off (iconos pequeños de la barra y de Comunidad),
-- 1.4: stripes, bokeh, rays y logo_over (build_skin.py) y las imágenes de los efectos en fx/ (fx_images.py, desde
+- 1.4: stripes, bokeh y rays (build_skin.py) y las imágenes de los efectos en fx/ (fx_images.py, desde
   la web). Para rehacer solo esas, sin tocar lo demás: python3 tools/pad/build_skin.py / tools/pad/fx_images.py.
 Las posiciones las repite TFPadScreen.java: si cambian aquí, cambian allí.
 """
@@ -361,125 +362,74 @@ def normalize(im, box=30):
     return out
 
 
-# El cristal de marco.png (rectángulo de luz azul) y el anillo de bisel azul oscuro que lo rodea hasta la línea negra
-# del contorno: ese bisel, con su brillo y su esquina escalonada, parecía una segunda pantalla detrás de la del pad.
-GLASS_BOX = (205, 250, 1361, 795)
+# El cristal de marco.png: el rectángulo de luz azul dentro del bisel azul oscuro (x0, y0, x1, y1; x1 e y1 fuera).
+GLASS_BOX = (205, 249, 1361, 795)
 
 
-def sin_bisel(im):
-    """Pinta el bisel del color del cristal: desde el cristal hacia fuera, por los píxeles azulados (no el logo; las
-    gemas tienen su línea negra) hasta la línea negra del contorno, como mucho 26 px. Degradado del cristal en vertical."""
+def _glassy(p):
+    return p[3] > 200 and p[2] > 235 and p[1] > 190 and p[0] < 120
+
+
+def glass_region(im):
+    """Los píxeles del cristal de marco.png (relleno desde el centro por los azules claros): su forma exacta, con las
+    esquinas escalonadas, sin el logo ni el bisel."""
     px = im.load()
     w, h = im.size
-    x0, y0, x1, y1 = GLASS_BOX
-    top, bot = px[600, y0 + 2][:3], px[600, y1 - 2][:3]
-
-    def glass(y):
-        k = min(1.0, max(0.0, (y - y0) / (y1 - y0)))
-        return tuple(round(top[i] + (bot[i] - top[i]) * k) for i in range(3)) + (255,)
-
-    def bevel(p):
-        r, g, b, a = p
-        if a < 200 or (r < 12 and g < 14 and b < 40):  # la línea negra (o nada): ahí se para
-            return False
-        return b > r + 15 and b >= g and b < 200  # azulado y no la gema brillante
-
-    seen = set()
-    stack = [(x, y) for x in range(x0, x1) for y in (y0, y1 - 1)] + [(x, y) for y in range(y0, y1) for x in (x0, x1 - 1)]
-    while stack:
-        x, y = stack.pop()
-        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-            if (nx, ny) in seen or not (0 <= nx < w and 0 <= ny < h):
-                continue
-            if x0 <= nx < x1 and y0 <= ny < y1:
-                continue
-            if max(x0 - nx, nx - (x1 - 1), y0 - ny, ny - (y1 - 1)) > 26 or not bevel(px[nx, ny]):
-                continue
-            seen.add((nx, ny))
-            stack.append((nx, ny))
-    for x, y in seen:
-        px[x, y] = glass(y)
-    # dentro del cristal, los restos del bisel en sus esquinas (no el logo, arriba a la izquierda)
-    for y in range(y0, y1):
-        for x in range(x0, x1):
-            p = px[x, y]
-            if not (x < 345 and y < 372) and not (p[2] > 235 and p[1] > 190 and p[0] < 120):
-                px[x, y] = glass(y)
-    # las rayas finas que quedaron sueltas dentro del cristal (el borde de dentro del bisel): con cristal a los dos
-    # lados (a 4 px como mucho, arriba y abajo o a izquierda y derecha) se borran
-    def glassy(p):
-        return p[2] > 235 and p[1] > 190 and p[0] < 120
-    for _ in range(2):
-        fix = []
-        for y in range(y0 - 27, y1 + 27):
-            for x in range(x0 - 27, x1 + 27):
-                if (x < 345 and y < 372) or glassy(px[x, y]):
-                    continue
-                up = any(glassy(px[x, y - d]) for d in range(1, 5))
-                dn = any(glassy(px[x, y + d]) for d in range(1, 5))
-                lf = any(glassy(px[x - d, y]) for d in range(1, 5))
-                rt = any(glassy(px[x + d, y]) for d in range(1, 5))
-                if (up and dn) or (lf and rt):
-                    fix.append((x, y))
-        for x, y in fix:
-            px[x, y] = glass(y)
-    # sueltos: los que quedaron rodeados de cristal (no la línea negra) también pasan a cristal
-    def is_glass(p):
-        return p[2] > 240 and p[1] > 195 and p[0] < 110
-    for _ in range(4):
-        fix = []
-        for y in range(y0 - 27, y1 + 27):
-            for x in range(x0 - 27, x1 + 27):
-                if x0 <= x < x1 and y0 <= y < y1:
-                    continue
-                p = px[x, y]
-                if is_glass(p) or (p[0] < 12 and p[1] < 14 and p[2] < 40):
-                    continue
-                n = sum(1 for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)) if is_glass(px[nx, ny]))
-                if n >= 3:
-                    fix.append((x, y))
-        for x, y in fix:
-            px[x, y] = glass(y)
-    return im
-
-
-def glass_masks(frame):
-    """Las máscaras del cristal para los temas del pad (Ajustes › Tema): glass_shape.png (blanco opaco justo donde está
-    el cristal, con su forma de verdad: esquinas, logo y gemas fuera) y glass_fade.png (lo mismo, con el alfa bajando
-    de 255 arriba a 0 abajo). TFPadScreen pinta la primera con el color de abajo del tema y la segunda con el de arriba:
-    el degradado del tema sin pisar nada del marco."""
-    px = frame.load()
-    w, h = frame.size
-
-    def g(p):
-        return p[2] > 235 and p[1] > 190 and p[0] < 120
-
     start = ((GLASS_BOX[0] + GLASS_BOX[2]) // 2, (GLASS_BOX[1] + GLASS_BOX[3]) // 2)
     seen = {start}
     stack = [start]
     while stack:
         x, y = stack.pop()
         for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and g(px[nx, ny]):
+            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and _glassy(px[nx, ny]):
                 seen.add((nx, ny))
                 stack.append((nx, ny))
-    top, bot = min(y for _, y in seen), max(y for _, y in seen)
-    shape = Image.new('RGBA', (w, h), (255, 255, 255, 0))
-    fade = Image.new('RGBA', (w, h), (255, 255, 255, 0))
-    sp, fp = shape.load(), fade.load()
-    for x, y in seen:
-        sp[x, y] = (255, 255, 255, 255)
-        fp[x, y] = (255, 255, 255, round(255 * (1 - (y - top) / max(1, bot - top))))
-    # neon.png: los neones y las gemas azules del marco en gris (su brillo), para teñirlos del color del tema
+    return seen
+
+
+def frame_textures(marco):
+    """frame.png: marco.png TAL CUAL (con su bisel, sus brillos y sus esquinas: el diseño del dueño) con el cristal
+    transparente. TFPadScreen pinta primero el fondo del cristal (color del tema, trama, luces) en el rectángulo
+    GLASS_BOX y luego el marco encima: el marco recorta el fondo con la forma exacta del cristal, sin franjas de otro
+    azul alrededor (la «doble pantalla») y sin tocar el dibujo del marco.
+
+    neon.png y neon_core.png: los neones y las gemas azules del marco, para teñirlos del color del tema conservando
+    su luz. neon.png lleva el brillo de cada píxel en gris (núcleo claro, halo y caras oscuras de las gemas más
+    oscuros) y un alfa que se apaga en el borde del halo; se pinta multiplicado por el color del tema. neon_core.png es
+    el núcleo encendido en blanco (alfa según lo cian que era): encima, sin teñir, para que el tubo siga brillando."""
+    frame = marco.copy()
+    fpx = frame.load()
+    for x, y in glass_region(marco):
+        fpx[x, y] = (0, 0, 0, 0)
+    w, h = marco.size
+    px = marco.load()
     neon = Image.new('RGBA', (w, h), (255, 255, 255, 0))
-    npx = neon.load()
+    core = Image.new('RGBA', (w, h), (255, 255, 255, 0))
+    npx, cpx = neon.load(), core.load()
     for y in range(h):
         for x in range(w):
-            r, gg, b, a = px[x, y]
-            if a > 200 and (x, y) not in seen and b > 150 and b > r + 60:
-                v = max(r, gg, b)
-                npx[x, y] = (v, v, v, 255)
-    return {'glass_shape.png': shape, 'glass_fade.png': fade, 'neon.png': neon}
+            r, g, b, a = px[x, y]
+            # (el logo de arriba a la izquierda, con su espada y sus banderas azules, no se tiñe)
+            if a <= 200 or b <= r + 60 or fpx[x, y][3] == 0 or (x < 400 and y < 340):
+                continue
+            al = min(1.0, max(0.0, (b - 110) / 80))
+            if al <= 0:
+                continue
+            v = min(255, round((g + b) / 2 * 255 / 254))
+            npx[x, y] = (v, v, v, round(al * 255))
+            c = min(1.0, max(0.0, (g - 170) / 80))
+            if c > 0:
+                cpx[x, y] = (255, 255, 255, round(c * 0.38 * 255))
+    return {'frame.png': frame, 'neon.png': neon, 'neon_core.png': core}
+
+
+def marco_textures():
+    """Solo las texturas del marco (python3 tools/pad/build_pad.py --marco): no borra ni rehace lo demás."""
+    for old in ('glass_shape.png', 'glass_fade.png', 'logo_over.png'):
+        if os.path.exists(os.path.join(OUT_DIR, old)):
+            os.remove(os.path.join(OUT_DIR, old))
+    for name, im in frame_textures(Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')).items():
+        im.save(os.path.join(OUT_DIR, name), optimize=True)
 
 
 def build():
@@ -500,9 +450,7 @@ def build():
     files['font.png'] = atlas
     for name, im in files.items():
         im.save(os.path.join(OUT_DIR, name))
-    frame = sin_bisel(Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA'))
-    frame.save(os.path.join(OUT_DIR, 'frame.png'), optimize=True)
-    for name, im in glass_masks(frame).items():
+    for name, im in frame_textures(Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')).items():
         im.save(os.path.join(OUT_DIR, name), optimize=True)
     # el objeto de la moneda verde, sacado de la Fantastic Coin de oro (textures/item/fantastic_coin.png)
     verde(Image.open(os.path.join(ITEM_DIR, 'fantastic_coin.png'))).save(os.path.join(ITEM_DIR, 'fantastic_coin_green.png'))
@@ -614,6 +562,9 @@ def preview_home(files, meta, page, hover=None):
 
 
 if __name__ == '__main__':
+    if '--marco' in sys.argv:
+        marco_textures()
+        sys.exit(0)
     files, meta = build()
     print(f'{len(files) + 2} archivos en {OUT_DIR}')
     if '--preview' in sys.argv:

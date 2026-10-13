@@ -51,10 +51,10 @@ def with_a(c, a):
 
 
 # PadSkin.THEME: el color y la frase de cada app (las del admin usan las de su app)
-THEMES = [('Cielo', 0x54D0FC, 0x60D5FC, 0xFFFFFF), ('Rosa', 0xFFB9DC, 0xFF8EC6, 0xFFFFFF),
-          ('Lavanda', 0xCDB9FF, 0xA88CF5, 0xFFFFFF), ('Menta', 0xA2F2D5, 0x5ED8AB, 0xFFFFFF),
-          ('Atardecer', 0xFFCC92, 0xFF9670, 0xFFFFFF), ('Oro', 0xFFE69A, 0xF4C24F, 0xFFFFFF),
-          ('Fresa', 0xFFA6B2, 0xF0647C, 0xFFFFFF), ('Noche', 0x3B4E9E, 0x1D2860, 0xA9B8FF)]
+THEMES = [('Cielo', 0x54D0FC, 0x60D5FC, 0xFFFFFF, 0), ('Rosa', 0xFFB9DC, 0xFF8EC6, 0xFFFFFF, 0xFF6EC7),
+          ('Lavanda', 0xCDB9FF, 0xA88CF5, 0xFFFFFF, 0xB58CFF), ('Menta', 0xA2F2D5, 0x5ED8AB, 0xFFFFFF, 0x3DF0B0),
+          ('Atardecer', 0xFFCC92, 0xFF9670, 0xFFFFFF, 0xFF9A3D), ('Oro', 0xFFE69A, 0xF4C24F, 0xFFFFFF, 0xFFD23D),
+          ('Fresa', 0xFFA6B2, 0xF0647C, 0xFFFFFF, 0xFF4D6D), ('Noche', 0x3B4E9E, 0x1D2860, 0xA9B8FF, 0x6F8CFF)]
 
 THEME = {
     'oficios': (0xE0892E, 'Trabaja, sube de nivel y cobra cada pago.'),
@@ -683,10 +683,7 @@ class Skin:
         if home:  # en la portada, su cielo animado (PadHomePage.ambient)
             self.home_ambient(home, t, fade)
         self.no_scissor()
-        # el logo, otra vez encima (las luces pasan por detrás)
-        logo = self.img('logo_over')
-        k = self.ps / 4
-        self._paste_px(logo.resize((round(logo.width * k), round(logo.height * k)), Image.NEAREST), 0, 0)
+        # el logo lo pone el marco, que va encima (Sim.save)
 
     def vgrad_a(self, x, y, w, h, ct, cb):
         """Degradado vertical con alfa (fillGradient con colores ARGB)."""

@@ -54,14 +54,27 @@ public final class SkinClient {
     // Lo que preguntan los mixins y el pad
     // ---------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Mientras es true, los mixins de skin no cambian nada: así se lee la skin de la cuenta del jugador (la de siempre,
+     * o la de Steve/Alex) aunque lleve otra del Armario. Solo en el hilo de dibujo.
+     */
+    public static boolean bypass;
+
+    /** La textura de una skin del Armario por su huella, o null si aún no ha llegado. */
+    public static ResourceLocation textureOf(String hash) {
+        return hash != null && LOADED.contains(hash) ? skin(hash) : null;
+    }
+
     /** La textura de la skin que lleva ese jugador, o null (la suya de siempre o aún sin cargar). */
     public static ResourceLocation texture(UUID player) {
+        if (bypass) return null;
         Active a = player == null ? null : ACTIVE.get(player);
         return a != null && LOADED.contains(a.hash) ? skin(a.hash) : null;
     }
 
     /** «slim» o «default» si lleva una skin del Armario (ya cargada); null si no. */
     public static String model(UUID player) {
+        if (bypass) return null;
         Active a = player == null ? null : ACTIVE.get(player);
         return a != null && LOADED.contains(a.hash) ? a.slim ? "slim" : "default" : null;
     }
