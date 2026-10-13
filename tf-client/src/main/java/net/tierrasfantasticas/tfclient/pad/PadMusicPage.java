@@ -110,7 +110,7 @@ final class PadMusicPage extends PadPage {
 
     /** La tarjeta del reproductor empieza donde la ventana de la lista (bajo las pestañas): las dos alineadas. */
     private int cardTop() {
-        return Y + 14;
+        return Y + PadSkin.TABS;
     }
 
     private int coverY() {
@@ -180,14 +180,15 @@ final class PadMusicPage extends PadPage {
         int x = X, y = cardTop(), w = leftW(), h = Y + H - cardTop();
         // su pestaña (oscura, como la tarjeta), a la misma altura que las de la lista
         String tabLabel = MusicPlayer.playing() ? "SONANDO" : "REPRODUCTOR";
-        int tw = PadFont.width(tabLabel) + 14;
-        // 17 de alto desde Y - 4, como las pestañas de la lista (PadSkin.tabCompact), y la letra a 4 de arriba
-        int tabTop = Y - 4;
-        PadUi.box(g, x + 4, tabTop, tw, PadSkin.TAB_H + 1, PadUi.NAVY);
-        g.fillGradient(x + 5, tabTop + 1, x + 4 + tw - 1, tabTop + PadSkin.TAB_H + 1, 0xFF323C80, CARD_TOP);
+        // del mismo tamaño que todas las pestañas (PadSkin.tabWidth: 17 de alto, el mismo margen) y a la misma altura,
+        // pero oscura como la tarjeta y unida a ella
+        int tw = PadSkin.tabWidth(List.of("REPRODUCTOR"));
+        int tabTop = Y;
+        PadUi.box(g, x + 4, tabTop, tw, PadSkin.TABS + 1, PadUi.NAVY);
+        g.fillGradient(x + 5, tabTop + 1, x + 4 + tw - 1, tabTop + PadSkin.TABS + 1, 0xFF323C80, CARD_TOP);
         g.fill(x + 6, tabTop + 1, x + 4 + tw - 2, tabTop + 3, GOLD);
         g.fill(x + 6, tabTop + 1, x + 4 + tw - 2, tabTop + 2, GOLD_LIGHT);
-        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, tabTop + 5, 0xFFE680, false);
+        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, tabTop + 4, 0xFFE680, false);
         // el reproductor: tarjeta oscura con ribete de oro (resalta la portada y los controles)
         PadUi.box(g, x, y, w, h, PadUi.NAVY);
         gradient(g, x + 1, y + 1, w - 2, h - 2, CARD_TOP, CARD_BOTTOM);
@@ -430,7 +431,7 @@ final class PadMusicPage extends PadPage {
         if (list.isEmpty()) picking = false;
         // eligiendo canciones para la playlist: se ve toda tu música, cada una con su casilla
         List<MusicLibrary.Track> tracks = picking ? MusicLibrary.tracks() : MusicLibrary.queue();
-        int top = y + 14;
+        int top = y + PadSkin.TABS;
         int bottom = Y + H - 19;
         MusicDownloader.Job job = MusicDownloader.job();
         if (job != null && !job.finished) bottom -= 24;
@@ -494,17 +495,22 @@ final class PadMusicPage extends PadPage {
      */
     private void drawListTabs(GuiGraphics g, double mx, double my, int x, int y, int w, String list) {
         List<MusicLibrary.Playlist> lists = MusicLibrary.playlists();
-        int gap = 2, plus = 18, arrow = 13;
-        int todasW = PadFont.width("TODAS") + 12;
+        // las mismas pestañas que en todas las apps: todas del mismo ancho (el de la más larga, con su margen), el mismo
+        // hueco entre ellas y la misma altura; «+» y las flechas, cuadradas de su alto
+        int gap = PadSkin.TAB_SPACE, plus = PadSkin.TAB_H + 1, arrow = PadSkin.TAB_H;
+        List<String> names = new java.util.ArrayList<>();
+        names.add("TODAS");
+        for (MusicLibrary.Playlist p : lists) names.add(tabLabel(p));
+        int tabW = Math.min(PadSkin.tabWidth(names) + X_ROOM, Math.max(PadSkin.TAB_MIN, (w - 8 - plus - gap) / 3));
         int selIdx = -1;
         for (int i = 0; i < lists.size(); i++) if (lists.get(i).id().equals(list)) selIdx = i;
         int[] widths = new int[lists.size()];
         int all = 0;
         for (int i = 0; i < lists.size(); i++) {
-            widths[i] = tabWidth(tabLabel(lists.get(i)), i == selIdx);
-            all += widths[i] + gap;
+            widths[i] = tabW;
+            all += tabW + gap;
         }
-        int stripX = x + 4 + todasW + gap;
+        int stripX = x + 4 + tabW + gap;
         int end = x + w - 4 - plus;
         boolean paged = stripX + all > end - gap;
         int stripEnd = paged ? end - gap - 2 * arrow - gap * 2 : end - gap;
@@ -528,37 +534,37 @@ final class PadMusicPage extends PadPage {
             String label = i < 0 ? "TODAS" : tabLabel(lists.get(i));
             boolean sel = id.equals(list);
             if (sel && !id.isEmpty() && id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000) label = "¿BORRAR?";
-            int tw = i < 0 ? todasW : Math.max(widths[i], PadFont.width(label) + 12 + (sel ? 9 : 0));
-            boolean hover = PadUi.inside(mx, my, tx, y - 4, tw, 17);
+            boolean hover = PadUi.inside(mx, my, tx, y, tabW, PadSkin.TAB_H);
             if (sel) {
-                chosen = new int[] {tx, tw};
+                chosen = new int[] {tx, tabW};
                 chosenLabel = label;
                 chosenId = id;
             } else {
                 if (hover) pad.hover("§lista" + id);
-                PadSkin.tabCompact(g, tx, y, tw, label, hover ? 1 : 0, PadSkin.accent("musica"));
-                hits.add(new Hit(tx, y - 4, tw, 17, () -> {
+                PadSkin.tab(g, tx, y, tabW, PadFont.fit(label, tabW - 8), hover ? 1 : 0, PadSkin.accent("musica"));
+                hits.add(new Hit(tx, y, tabW, PadSkin.TAB_H, () -> {
                     MusicLibrary.selectList(id);
                     listScroll = 0;
                     picking = false;
                     pad.sound("tab", 0.6F);
                 }));
             }
-            tx += tw + gap;
+            tx += tabW + gap;
             if (i < 0) tx = stripX;
         }
         if (chosen != null) drawChosenTab(g, mx, my, chosen[0], y, chosen[1], chosenLabel, chosenId);
         if (paged) {
             int ax = end - gap - 2 * arrow - gap;
-            arrowButton(g, mx, my, ax, y + 1, arrow, ARROW_LEFT, tabFirst > 0, () -> tabFirst = firstOfPageBefore(widths, tabFirst, stripX, stripEnd, gap));
-            arrowButton(g, mx, my, ax + arrow + gap, y + 1, arrow, ARROW_RIGHT, last < lists.size() - 1, () -> tabFirst = Math.min(lists.size() - 1, tabLast + 1));
+            arrowButton(g, mx, my, ax, y, arrow, ARROW_LEFT, tabFirst > 0, () -> tabFirst = firstOfPageBefore(widths, tabFirst, stripX, stripEnd, gap));
+            arrowButton(g, mx, my, ax + arrow + gap, y, arrow, ARROW_RIGHT, last < lists.size() - 1, () -> tabFirst = Math.min(lists.size() - 1, tabLast + 1));
         }
         // «+»: lista nueva (la cruz dibujada, centrada)
-        boolean ph = PadUi.inside(mx, my, end, y - 4, plus, 17);
+        boolean ph = PadUi.inside(mx, my, end, y, plus, PadSkin.TAB_H);
         if (ph) pad.hover("§listanueva");
-        PadSkin.tabCompact(g, end, y, plus, "", ph || newList ? 1 : 0, PadSkin.accent("musica"));
-        drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + 1 - (ph || newList ? 1 : 0) - 1, ph || newList ? 0xFF1E9E46 : 0xFF34507E);
-        hits.add(new Hit(end, y - 4, plus, 17, () -> {
+        PadSkin.tab(g, end, y, plus, "", ph || newList ? 1 : 0, PadSkin.accent("musica"));
+        drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + (PadSkin.TAB_H - PLUS.length) / 2 - (ph || newList ? 1 : 0),
+                ph || newList ? 0xFF1E9E46 : 0xFF34507E);
+        hits.add(new Hit(end, y, plus, PadSkin.TAB_H, () -> {
             newList = true;
             coverFor = null;
             focused = true;
@@ -567,18 +573,22 @@ final class PadMusicPage extends PadPage {
         }));
     }
 
+    /** Lo que se deja a la derecha de la pestaña elegida para su X de borrar. */
+    private static final int X_ROOM = 10;
+
     /** La pestaña elegida: blanca y unida a la ventana; en una playlist, el nombre y su X para borrarla. */
     private void drawChosenTab(GuiGraphics g, double mx, double my, int tx, int y, int tw, String label, String id) {
         if (id.isEmpty()) {
-            PadSkin.tabCompact(g, tx, y, tw, label, 2, PadSkin.accent("musica"));
+            PadSkin.tab(g, tx, y, tw, label, 2, PadSkin.accent("musica"));
             return;
         }
-        PadSkin.tabCompact(g, tx, y, tw, "", 2, PadSkin.accent("musica"));
-        // la pestaña va de y - 4 a y + 13 (PadSkin.tabCompact): nombre y X centrados en ella, en blanco
+        PadSkin.tab(g, tx, y, tw, "", 2, PadSkin.accent("musica"));
+        // el nombre centrado en lo que deja la X (a la derecha), en blanco y a la misma altura que en las demás
         boolean sure = label.startsWith("¿");
         int acc = PadSkin.deep(PadSkin.accent("musica"));
-        PadFont.drawShadow(g, label, tx + 6, y, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
-        int bx = tx + tw - 12, by = y - 1;
+        String shown = PadFont.fit(label, tw - X_ROOM - 10);
+        PadFont.drawShadowCentered(g, shown, tx + (tw - X_ROOM) / 2 + 1, y + 4, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
+        int bx = tx + tw - 13, by = y + 4;
         boolean xh = PadUi.inside(mx, my, bx, by, 9, 9);
         if (xh) {
             pad.hover("§borrarlista");
@@ -605,11 +615,6 @@ final class PadMusicPage extends PadPage {
     }
 
     private static final int TAB_LABEL = 58;
-
-    /** Ancho de una pestaña de playlist (como la dibuja drawListTabs; la elegida lleva su X). */
-    private static int tabWidth(String label, boolean selected) {
-        return PadFont.width(label) + 12 + (selected ? 10 : 0);
-    }
 
     /** La última pestaña que cabe empezando por first (first - 1 si ni esa cabe). */
     private static int lastFitting(int[] widths, int first, int x0, int x1, int gap) {

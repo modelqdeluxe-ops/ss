@@ -83,40 +83,31 @@ final class PadCommunityPage extends PadPage {
             mx = -1000;
             my = -1000;
         }
-        // la ventana con sus pestañas de carpeta encima (la elegida, la última: se une a ella) y + FOTO a la derecha
-        int top = Y + 14, bottom = Y + H;
+        // la ventana con sus pestañas encima (las mismas que en todas las apps: PadSkin.tabRow) y + FOTO a la derecha
+        int top = Y + PadSkin.TABS, bottom = Y + H;
         PadUi.panel(g, X, top, W, bottom - top);
-        int x = X + 4;
-        int selX = -1, selW = 0;
-        String selLabel = "";
-        for (String[] t : TABS) {
-            int w = PadFont.width(t[1]) + 14;
-            boolean sel = t[0].equals(PadCommunityClient.tab);
-            boolean hover = PadUi.inside(mx, my, x, Y - 4, w, 17);
-            if (sel) {
-                selX = x;
-                selW = w;
-                selLabel = t[1];
-            } else {
-                if (hover) pad.hover("§tab" + t[0]);
-                PadSkin.tabCompact(g, x, Y, w, t[1], hover ? 1 : 0, PadSkin.accent("comunidad"));
-            }
-            String key = t[0];
-            hit(x, Y - 4, w, 17, () -> {
+        int fw = PadUi.buttonWidth("+ FOTO");
+        java.util.List<String> labels = new java.util.ArrayList<>();
+        int sel = -1;
+        for (int i = 0; i < TABS.length; i++) {
+            labels.add(TABS[i][1]);
+            if (TABS[i][0].equals(PadCommunityClient.tab)) sel = i;
+        }
+        int[][] at = PadSkin.tabRow(g, pad, X + 4, Y, W - 8 - fw - 8, labels, sel, mx, my, PadSkin.accent("comunidad"));
+        for (int i = 0; i < TABS.length; i++) {
+            String key = TABS[i][0];
+            hit(at[i][0], Y, at[i][1], PadSkin.TAB_H, () -> {
                 if (!key.equals(PadCommunityClient.tab)) {
                     scroll = 0;
                     pad.sound("tab", 0.7F);
                     PadCommunityClient.open(key);
                 }
             });
-            x += w + 2;
         }
-        if (selX >= 0) PadSkin.tabCompact(g, selX, Y, selW, selLabel, 2, PadSkin.accent("comunidad"));
-        int fw = PadUi.buttonWidth("+ FOTO");
-        boolean fh = PadUi.inside(mx, my, X + W - fw - 4, Y - 3, fw, 16);
+        boolean fh = PadUi.inside(mx, my, X + W - fw - 4, Y, fw, 16);
         if (fh) pad.hover("§foto");
-        PadUi.button(g, X + W - fw - 4, Y - 3, fw, "+ FOTO", PadView.GOLD, fh, true);
-        hit(X + W - fw - 4, Y - 3, fw, 16, () -> pad.openApp("camara"));
+        PadUi.button(g, X + W - fw - 4, Y, fw, "+ FOTO", PadView.GOLD, fh, true);
+        hit(X + W - fw - 4, Y, fw, 16, () -> pad.openApp("camara"));
 
         List<PadCommunityNet.Post> posts = PadCommunityClient.POSTS;
         if (posts.isEmpty()) {
@@ -381,7 +372,7 @@ final class PadCommunityPage extends PadPage {
     private void drawPicker(GuiGraphics g, PadCommunityNet.Post post, double mx, double my) {
         g.pose().pushPose();
         g.pose().translate(0, 0, 150);
-        g.fill(X, Y - 4, X + W, Y + H, 0x5518265C);
+        g.fill(X, Y, X + W, Y + H, 0x5518265C);
         picker.mine(mineOf(post));
         picker.place(X, Y, W, H, pickerX + PadUi.buttonWidth("REACCIONAR") / 2);
         picker.render(g, mx, my);

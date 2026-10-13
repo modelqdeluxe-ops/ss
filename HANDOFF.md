@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **13 de octubre de 2026** (TF Client **1.3.65**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **13 de octubre de 2026** (TF Client **1.3.66**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -55,9 +55,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (13 oct 2026, TF Client 1.3.65) — lee esto primero
+### CHECKPOINT (13 oct 2026, TF Client 1.3.66) — lee esto primero
 
-**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.65**, Release ya creada:
+**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.66**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
 
@@ -81,7 +81,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
+**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.66 (piedras de protección nuevas, pestañas iguales,
+pad de administrador rehecho, interruptores) y lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
 rectangulares, paisaje fijo con un castillo y humo) y la 1.3.64 (pantalla que cubre todo el cristal, neon_halo, MP4/M4A/AAC con JAAD) y de la 1.3.63 (marco con su bisel y el fondo debajo,
 neones de los temas, paisaje, barra de estado, SKINS con `PadSkinModel`, app Guía, MP3 con JLayer) y de antes las skins
 entre jugadores (canal `tfclient:skins`, mixins de skin), el buzón de REGALOS, el asistente de kits del admin y el
@@ -91,6 +92,14 @@ diseño de la pantalla»). frame.png es marco.png TAL CUAL con el cristal hueco;
 fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Pendiente / ideas que el dueño pidió y siguen abiertas**:
+- **Actualización de CLANES** (la siguiente que quiere el dueño). Hoy `PadClans`: fundar (nombre y etiqueta), invitar,
+  roles líder/oficial/miembro, echar, ascender, salir, disolver, color de la etiqueta, fuego amigo, etiqueta junto al
+  nombre, 20 miembros. Lluvia de ideas que se le dio (1.3.66), por fases: **1** banco del clan (depositar/retirar por rol,
+  historial), chat de clan, casa del clan en Viajes, estandarte (editor de banner), descripción/lema y clanes públicos con
+  SOLICITAR, registro de actividad · **2** nivel y XP del clan (misiones, cazas y oficios de sus miembros), misiones
+  semanales de clan, ranking de clanes, mejoras pasivas compradas con el banco · **3** zonas de protección del clan,
+  alianzas y rivales, guerra de clanes programada (opt-in), cofre del clan, nombres y permisos de rol · **4** app CLANES en el
+  pad de administrador, coste de fundar, página de clanes en la web, logros. Espera a que el dueño elija.
 - «Más diseñitos bonitos en las GUIs, mejora lo que tenemos»: es continuo. Lo último: filas con icono 32 en pastilla de
   color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + monogramas TF. Ideas no hechas: teñir también las
   fichas azules de la portada con el tema, más ilustración en los vacíos, Ajustes del simulador al día.
@@ -100,12 +109,17 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Mapa rápido del TF Pad (lo que más se toca)** — `tf-client/src/main/java/net/tierrasfantasticas/tfclient/pad/`:
 - `TFPadScreen` (marco, cristal, fondo animado, temas, avisos, barras que se arrastran), `PadSkin` (todo el estilo: pestañas
-  `tab`/`tabCompact`, tarjetas, filas `tile`, campo `field`, `photo`, botones, interruptor), `PadViewPage` (pinta las apps
+  `tab`/`tabRow` — todas del mismo ancho y separación —, tarjetas, filas `tile`, campo `field`, `photo`, botones,
+  interruptor `toggle`), `PadViewPage` (pinta las apps
   del servidor: `PadView` filas/tarjetas/galería/hero; `SELF_MODEL` = el jugador en 3D), `PadHomePage` (portada),
   páginas propias: `PadMusicPage`+`music/`, `PadCommunityPage`+`PadEmoji*`, `PadGachaPage`, `PadPassPage`, `PadInfoPages`
   (Ajustes con temas), `PadSettings` (ajustes y `THEMES`).
 - Servidor (`pad/server/`): una clase por app (`PadJobs`, `PadWardrobe` = Armario+Efectos, `PadRewards` = DIARIA+REGALOS,
   `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = asistente de kits, `PadClaims`…). Skins: `skins/`.
+  Pad de administrador: `PadAdmin` (APPS, AJUSTES, TIENDA, VIAJES, GTS, COMUNIDAD, OFICIOS), `PadAdminKits`,
+  `PadAdminRewards`, `PadAdminHunts`; todas con las piezas de `PadAdminUi` (toggle, value + CAMBIAR, choice, button,
+  section, note, editor de objetos y monedas) y `PadItemPicker`. **Cada vista debe llamar `.selected(<su pestaña>)`**: el
+  cliente manda esa pestaña con cada acción (si no, la acción vuelve a la portada de la app).
 - Texturas: `tools/pad/build_pad.py --marco` (frame.png = marco.png con el cristal hueco, neon.png/neon_core.png),
   `build_skin.py` (rayas, luces, rayos y el paisaje land_far/mid/near),
   `fx_images.py`, `job_images.py <carpeta textures del pack Medieval Jobs>`. Simulador: `python3 tools/pad/sim/pages.py
@@ -116,6 +130,28 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.66 (13 oct)** — el dueño: «las texturas de las claim son exageradas, la primera y la segunda se parecen,
+> tonos grises», «énfasis en el pad de admin: bien configurado, muy fácil, muy intuitivo», «los botones de las pestañas no
+> se parecen: unos más distanciados, otros más pegados», «mejoras reales en el diseño de las apps», «lluvia de ideas de
+> clanes» (está arriba, en Pendiente).
+> - **Piedras de protección** (`tools/gen_claim_blocks.py`): piedra pulida con placa y remaches, marco de hierro (de oro en
+>   las de pago: 250, 300 y 500), cada nivel con su gema de color (rombo en los lados, redonda arriba) y su tamaño escrito
+>   («50», «100»…); 10 colores distintos (`ClaimTier` y `ClaimBlocks.colorForTier` iguales).
+> - **Pestañas**: `PadSkin.tabRow`/`tabWidth` — todas las de una fila con el mismo ancho (el de la más larga) y 3 de
+>   separación, en todas las apps (Comunidad, Música, las del servidor, las fichas oscuras); el simulador igual (`sk_tabs`).
+> - **Pad de administrador**: portada con icono propio para APPS (`icon_apps`, `iconos4.apps_admin`) y una franja abajo
+>   que explica qué configura cada app al pasar el ratón (`PadHomePage.adminHint`). APPS en tarjetas con el icono de cada
+>   app (VISIBLE/OCULTA, MOSTRAR TODAS). AJUSTES por pestañas (VIAJES, EXPLORAR, JUGADORES, ECONOMÍA, SISTEMA) con unidades
+>   (`PadConfig.Setting` tiene `group` y `unit`). TIENDA: categorías primero; cada categoría con ficha y sus objetos en
+>   tarjetas (oro = lo que paga el jugador, verde = lo que le paga la tienda); AÑADIR OBJETO con el selector y luego pide
+>   el precio de compra y el de venta; ficha del objeto con todos sus valores y QUITAR. **Arreglado**: las vistas no decían
+>   su pestaña y EDITAR te devolvía a la portada de la tienda. VIAJES con PUNTOS (ficha: nombre, icono, MOVER AQUÍ, IR,
+>   BORRAR) y WARPS. RECOMPENSAS: días y recompensas sueltas con objetos + monedas + monedas verdes (`PadAdminUi.items/coins`),
+>   cada cuánto en su página. CAZAS y OFICIOS: valores con explicación y CANCELAR. Ningún «ponte el objeto en la mano»:
+>   siempre el selector (`PadItemPicker`).
+> - **Interruptores**: en las apps del servidor, una fila con un solo botón SÍ/NO o con el par SÍ + NO (Protección) se
+>   dibuja como el interruptor animado de Ajustes (`PadViewPage.switchOf`/`drawSwitch`, `PadSkin.toggle`).
 
 > **TF Client 1.3.65 (13 oct)** — capturas del dueño: «quiero pantalla completa, quita ese pixel» (el escalón del bisel en
 > la esquina), «mira ese dibujo» (el tubo de neón con una muesca oscura arriba), «el diseño de las casitas, tienes 2
@@ -2067,7 +2103,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.65)
+## 5. El mod (TF Client 1.3.66)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

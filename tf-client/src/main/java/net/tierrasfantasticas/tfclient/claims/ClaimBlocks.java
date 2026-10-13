@@ -76,16 +76,17 @@ public final class ClaimBlocks {
         }
         String s = claimtier.id;
         return switch (s1 = claimtier.id) {
-            case "claimstone_10x10" -> ChatFormatting.WHITE;
-            case "claimstone_25x25" -> ChatFormatting.GRAY;
+            // el color de la gema de cada piedra (1.3.66), lo más parecido que hay en el chat
+            case "claimstone_10x10" -> ChatFormatting.GREEN;
+            case "claimstone_25x25" -> ChatFormatting.DARK_AQUA;
             case "claimstone_40x40" -> ChatFormatting.AQUA;
             case "claimstone_64x64" -> ChatFormatting.BLUE;
-            case "claimstone_80x80" -> ChatFormatting.GREEN;
-            case "claimstone_100x100" -> ChatFormatting.YELLOW;
-            case "claimstone_150x150" -> ChatFormatting.GOLD;
-            case "claimstone_250x250" -> ChatFormatting.LIGHT_PURPLE;
-            case "claimstone_300x300" -> ChatFormatting.LIGHT_PURPLE;
-            case "claimstone_500x500" -> ChatFormatting.DARK_PURPLE;
+            case "claimstone_80x80" -> ChatFormatting.DARK_PURPLE;
+            case "claimstone_100x100" -> ChatFormatting.LIGHT_PURPLE;
+            case "claimstone_150x150" -> ChatFormatting.RED;
+            case "claimstone_250x250" -> ChatFormatting.DARK_RED;
+            case "claimstone_300x300" -> ChatFormatting.GOLD;
+            case "claimstone_500x500" -> ChatFormatting.YELLOW;
             default -> ChatFormatting.WHITE;
         };
     }

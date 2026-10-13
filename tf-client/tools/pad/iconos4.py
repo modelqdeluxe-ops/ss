@@ -442,6 +442,42 @@ def guia():
     return centered(ic.outline(OUT))
 
 
+def apps_admin():
+    """APPS del pad de administrador (1.3.66): la rejilla de un móvil, cuatro fichas redondeadas (azul, oro y verde
+    encendidas, cada una con su brillo y su icono blanco) y la de abajo a la derecha apagada, gris y con la raya: qué
+    apps ven los jugadores. Así no se confunde con el engranaje de AJUSTES."""
+    ic = Icon()
+    ash = [(236, 240, 248), (196, 204, 220), (150, 160, 182), (112, 120, 146), (80, 86, 112)]
+
+    def tile(x0, y0, ramp):
+        m = ic.rect(x0, y0, x0 + 12, y0 + 12)
+        for c in ((x0, y0), (x0 + 12, y0), (x0, y0 + 12), (x0 + 12, y0 + 12)):
+            m.discard(c)
+        shade(ic, m, ramp)
+        for x, y in ((x0 + 2, y0 + 2), (x0 + 3, y0 + 2), (x0 + 2, y0 + 3)):
+            ic.px(x, y, ramp[0])  # el brillo de la esquina
+        return m
+
+    tile(2, 2, SKY)
+    tile(17, 2, [(255, 250, 200), (255, 226, 96), (246, 182, 40), (206, 128, 24), (150, 84, 22)])
+    tile(2, 17, EMER)
+    tile(17, 17, ash)
+    # los iconos blancos: una nota (azul), una estrella (oro) y una casa (verde)
+    for x, y in ((9, 5), (10, 5), (9, 6), (9, 7), (9, 8), (9, 9), (7, 9), (8, 9), (7, 10), (8, 10)):
+        ic.px(x, y, WHITE)
+    for x, y in ((23, 5), (22, 6), (23, 6), (24, 6), (20, 7), (21, 7), (22, 7), (23, 7), (24, 7), (25, 7), (26, 7),
+                 (22, 8), (23, 8), (24, 8), (21, 9), (22, 9), (24, 9), (25, 9), (21, 10), (25, 10)):
+        ic.px(x, y, WHITE)
+    for x, y in ((8, 20), (7, 21), (8, 21), (9, 21), (6, 22), (7, 22), (8, 22), (9, 22), (10, 22),
+                 (6, 23), (7, 23), (9, 23), (10, 23), (6, 24), (7, 24), (9, 24), (10, 24)):
+        ic.px(x, y, WHITE)
+    # la apagada: una raya en diagonal
+    for i in range(7):
+        ic.px(20 + i, 26 - i, ash[4])
+        ic.px(21 + i, 26 - i, ash[4])
+    return centered(ic.outline(OUT))
+
+
 ICONOS = {'oficios': oficios, 'pase': pase, 'gachapon': gachapon, 'viajes': viajes, 'efectos': efectos, 'misiones': misiones,
           'guia': guia}
 

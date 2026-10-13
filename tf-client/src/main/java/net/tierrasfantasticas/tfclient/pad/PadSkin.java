@@ -63,6 +63,7 @@ final class PadSkin {
         theme("camara", 0x3B9BE0, "Tus fotos para la comunidad.");
         theme("ajustes", 0x5B74A6, "Tu pad, a tu manera.");
         theme("admin", 0x5B74A6, "Configura el servidor.");
+        theme("apps", 0x4A7FD0, "Las apps que ven los jugadores.");
         theme("guia", 0x1E9E8C, "Cómo funciona cada app, paso a paso.");
     }
 
@@ -72,7 +73,8 @@ final class PadSkin {
 
     /** La app de la que se toma el tema: las del admin usan el de su app («a_tienda» → «tienda»). */
     private static String base(String app) {
-        if (app.equals("a_apps") || app.equals("a_ajustes")) return "admin";
+        if (app.equals("a_apps")) return "apps";
+        if (app.equals("a_ajustes")) return "admin";
         return app.startsWith("a_") ? app.substring(2) : app;
     }
 
@@ -587,19 +589,31 @@ final class PadSkin {
 
     /** Alto de una pestaña, aire entre las pestañas y la ventana de debajo, y lo que ocupan las dos cosas encima de ella. */
     static final int TAB_H = 17, TAB_GAP = 3, TABS = TAB_H + TAB_GAP;
-    /** Margen del texto a cada lado (se encoge a TAB_PAD_MIN si no caben), hueco entre pestañas y ancho mínimo. */
-    private static final int TAB_PAD = 9, TAB_PAD_MIN = 6, TAB_SPACE = 3, TAB_MIN = 34;
+    /**
+     * Las pestañas son iguales en TODAS las apps (1.3.66, el dueño: «unos más distanciados, otros más pegados; deben ser
+     * todos iguales de tamaño»): margen del texto a cada lado, hueco entre pestañas y ancho mínimo; y en cada fila todas
+     * miden lo mismo (lo de la etiqueta más larga).
+     */
+    static final int TAB_PAD = 9, TAB_SPACE = 3, TAB_MIN = 40;
+
+    /** El ancho de las pestañas de una fila: todas iguales, el de la etiqueta más larga con su margen. */
+    static int tabWidth(java.util.List<String> labels) {
+        int w = TAB_MIN;
+        for (String l : labels) w = Math.max(w, PadFont.width(l) + TAB_PAD * 2);
+        return w;
+    }
 
     /**
-     * Pestaña (1.4.1): una pastilla de 17 de alto con el texto centrado y aire arriba y abajo (nunca toca los bordes),
-     * separada de la ventana por TAB_GAP. La elegida (state 2), del color de la app con su contorno, lleva una flechita
-     * que baja hasta la ventana (se ve de qué es la cabecera sin pegar las letras a ella); las demás, de cristal claro,
-     * y al pasar el ratón (state 1) suben 1, se aclaran y se marcan con una línea del color de la app.
+     * Pestaña: una pastilla de 17 de alto con el texto centrado y aire arriba y abajo (nunca toca los bordes), separada
+     * de la ventana por TAB_GAP. La elegida (state 2), del color de la app con su contorno, lleva una flechita que baja
+     * hasta la ventana; las demás, de cristal claro, y al pasar el ratón (state 1) suben 1, se aclaran y se marcan con
+     * una línea del color de la app. La misma en todas las apps (las del servidor, Gachapón, Comunidad y Música).
      */
     static void tab(GuiGraphics g, int x, int y, int w, String label, int state, int acc) {
         int c = deep(acc);
         if (state == 2) {
             int edge = darken(c, 0.5F), low = darken(c, 0.78F);
+            g.fill(x + 1, y + TAB_H, x + w - 1, y + TAB_H + 1, 0x3018265C);
             PadUi.box(g, x, y, w, TAB_H, edge);
             g.fillGradient(x + 1, y + 1, x + w - 1, y + TAB_H - 1, mix(c, WHITE, 0.30F), darken(c, 0.9F));
             g.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62F));
@@ -612,7 +626,7 @@ final class PadSkin {
                 g.fill(cx - hw, y + TAB_H + i, cx + hw + 1, y + TAB_H + i + 1, edge);
                 if (hw > 0) g.fill(cx - hw + 1, y + TAB_H + i, cx + hw, y + TAB_H + i + 1, low);
             }
-            PadFont.drawShadowCentered(g, label, x + w / 2, y + 4, 0xFFFFFF, darken(c, 0.42F));
+            if (!label.isEmpty()) PadFont.drawShadowCentered(g, label, x + w / 2, y + 4, 0xFFFFFF, darken(c, 0.42F));
             return;
         }
         boolean hover = state == 1;
@@ -621,60 +635,24 @@ final class PadSkin {
         PadUi.box(g, x, yy, w, TAB_H, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
         g.fillGradient(x + 1, yy + 1, x + w - 1, yy + TAB_H - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
         g.fill(x + 1, yy + TAB_H - 2, x + w - 1, yy + TAB_H - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
-        PadFont.drawCentered(g, label, x + w / 2, yy + 4, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
-    }
-
-    /**
-     * La misma pestaña nueva en el sitio de las de carpeta (15 de alto, la ventana empieza en y + 14): Comunidad y
-     * Música. Pastilla de 14 (2 por encima) con el texto centrado y aire; la elegida, del color de la app con una muesca que baja a la
-     * ventana; las demás, de cristal claro, y con el ratón suben 1 y se marcan con el color de la app.
-     */
-    static void tabCompact(GuiGraphics g, int x, int y, int w, String label, int state, int acc) {
-        // igual que tab() (17 de alto, la letra a 4 de arriba), pero empieza 4 más arriba: queda 1 de aire hasta la
-        // ventana, que en Comunidad y Música empieza en y + 14
-        int c = deep(acc), h = TAB_H;
-        y -= 4;
-        if (state == 2) {
-            int edge = darken(c, 0.5F), low = darken(c, 0.78F);
-            PadUi.box(g, x, y, w, h, edge);
-            g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, mix(c, WHITE, 0.30F), darken(c, 0.9F));
-            g.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62F));
-            g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, low);
-            int cx = x + w / 2;
-            g.fill(cx - 1, y + h, cx + 2, y + h + 1, edge);
-            if (!label.isEmpty()) PadFont.drawShadowCentered(g, label, cx, y + 4, 0xFFFFFF, darken(c, 0.42F));
-            return;
-        }
-        boolean hover = state == 1;
-        int yy = hover ? y - 1 : y;
-        PadUi.box(g, x, yy, w, h, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
-        g.fillGradient(x + 1, yy + 1, x + w - 1, yy + h - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
-        g.fill(x + 1, yy + h - 2, x + w - 1, yy + h - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
         if (!label.isEmpty()) PadFont.drawCentered(g, label, x + w / 2, yy + 4, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
     }
 
     /**
-     * Una fila de pestañas (las de PadViewPage y el Gachapón) desde (x, y) en room de ancho: cada una con TAB_PAD de
-     * margen; si no caben, con menos margen y, si aún no, con el texto recortado. La elegida se dibuja la última.
-     * Devuelve {x, ancho} de cada una, para los clics.
+     * Una fila de pestañas desde (x, y) en room de ancho: todas del mismo ancho (tabWidth) y separadas TAB_SPACE; si no
+     * caben, todas se estrechan por igual y el texto se recorta. La elegida se dibuja la última. Devuelve {x, ancho} de
+     * cada una, para los clics.
      */
     static int[][] tabRow(GuiGraphics g, TFPadScreen pad, int x, int y, int room, java.util.List<String> labels, int selected,
                           double mx, double my, int acc) {
         int n = labels.size();
-        int pad2 = TAB_PAD * 2, total = tabsWidth(labels, pad2, Integer.MAX_VALUE);
-        if (total > room) {
-            pad2 = TAB_PAD_MIN * 2;
-            total = tabsWidth(labels, pad2, Integer.MAX_VALUE);
-        }
-        int maxLabel = total > room ? Math.max(12, (room - TAB_SPACE * (n - 1)) / Math.max(1, n) - pad2) : Integer.MAX_VALUE;
+        int w = tabWidth(labels);
+        if (n > 0 && n * w + (n - 1) * TAB_SPACE > room) w = Math.max(20, (room - (n - 1) * TAB_SPACE) / n);
         int[][] out = new int[n][];
         String[] shown = new String[n];
-        int tx = x;
         for (int i = 0; i < n; i++) {
-            shown[i] = PadFont.fit(labels.get(i), maxLabel);
-            int w = Math.max(total > room ? 0 : TAB_MIN, PadFont.width(shown[i]) + pad2);
-            out[i] = new int[] {tx, w};
-            tx += w + TAB_SPACE;
+            shown[i] = PadFont.fit(labels.get(i), w - 8);
+            out[i] = new int[] {x + i * (w + TAB_SPACE), w};
         }
         for (int i = 0; i < n; i++) {
             if (i == selected) continue;
@@ -684,12 +662,6 @@ final class PadSkin {
         }
         if (selected >= 0 && selected < n) tab(g, out[selected][0], y, out[selected][1], shown[selected], 2, acc);
         return out;
-    }
-
-    private static int tabsWidth(java.util.List<String> labels, int pad2, int maxLabel) {
-        int total = 0;
-        for (String l : labels) total += Math.max(TAB_MIN, PadFont.width(PadFont.fit(l, maxLabel)) + pad2);
-        return total + TAB_SPACE * Math.max(0, labels.size() - 1);
     }
 
     /** Botones por estilo de PadView: cara arriba, cara abajo, luz, sombra (como PadUi). */

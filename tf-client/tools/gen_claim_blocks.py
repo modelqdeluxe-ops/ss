@@ -1,15 +1,16 @@
 """Genera las texturas de las piedras de protección de TF Claims (una por tamaño de zona).
 
-El diseño es el de la imagen del dueño (piedra oscura, marco de neón con esquinas en escuadra, tornillos y las letras
-TF), redibujado pixel a pixel en 32x32 (su arte era de 30x30 celdas: se le añade un píxel de piedra alrededor) y
-simétrico. Las caras:
-  - front: el marco con las letras TF (la cara que mira a quien la pone).
-  - side:  el marco con el núcleo de la zona (un rombo de luz).
-  - top:   el marco con el anillo del centro de la zona (aquí empieza la protección, que sube hasta el cielo).
-  - bottom: el marco apagado, sin centro.
-Cada cara tiene su capa de brillo (_glow: solo las líneas de luz), que el modelo dibuja a plena luz para que se vea de
-noche. El color del neón es el del concreto que marcaba cada tamaño en Fantastic Claims (blanco, gris claro, cian,
-azul claro, lima, amarillo, naranja, rosa, magenta y morado), en versión neón.
+1.3.66 (el dueño: «las texturas son exageradas; la primera y la segunda se parecen, tonos grises»): rediseño limpio,
+pixel a pixel en 32x32. Piedra pulida y lisa (sin ruido), con su canto de luz arriba a la izquierda; una placa embutida
+con un remate de hierro (de oro en las de pago: 250, 300 y 500) y sus remaches; en el centro, del color del nivel:
+  - front: las letras TF en relieve (la cara que mira a quien la pone).
+  - side:  una gema tallada (rombo con sus caras de luz y sombra) y debajo el tamaño de la zona («64»).
+  - top:   una gema redonda tallada: aquí empieza la protección, que sube hasta el cielo.
+  - bottom: la placa sola.
+Solo brillan de noche la gema, las letras y el número (capa _glow a plena luz), no el marco: nada de rayos ni neón por
+todo el bloque. Los 10 colores van como una escala de rareza (verde → turquesa → celeste → azul → violeta → magenta →
+coral → rojo → naranja → oro) y son los mismos que el borde de la zona (ClaimTier) y el nombre del objeto
+(ClaimBlocks.colorForTier).
 
 Uso: python3 tools/gen_claim_blocks.py [--preview DIR]
 """
@@ -17,177 +18,186 @@ import os
 import random
 import sys
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "tfclient")
 TEX = os.path.join(ROOT, "textures", "block", "claims")
 N = 32
 
-# tamaño (como en ClaimTier) → color del neón
+# tamaño (como en ClaimTier) → color de la gema
 TIERS = [
-    ("10x10", (236, 246, 255)),
-    ("25x25", (172, 186, 202)),
-    ("40x40", (0, 229, 255)),
-    ("64x64", (66, 158, 255)),
-    ("80x80", (112, 255, 64)),
-    ("100x100", (255, 222, 48)),
-    ("150x150", (255, 138, 32)),
-    ("250x250", (255, 104, 192)),
-    ("300x300", (236, 64, 250)),
-    ("500x500", (152, 84, 255)),
+    ("10x10", (92, 214, 120)),
+    ("25x25", (40, 206, 192)),
+    ("40x40", (76, 178, 255)),
+    ("64x64", (86, 112, 255)),
+    ("80x80", (156, 98, 255)),
+    ("100x100", (228, 82, 216)),
+    ("150x150", (255, 104, 140)),
+    ("250x250", (240, 66, 66)),
+    ("300x300", (255, 146, 40)),
+    ("500x500", (255, 212, 70)),
 ]
+PAID = {"250x250", "300x300", "500x500"}
 
-# Piedra: la de fuera del marco (más clara) y la de dentro (más oscura y lisa), como en la imagen
-STONE_OUT = [(26, 28, 36), (33, 35, 44), (40, 42, 52), (48, 50, 60), (56, 58, 68), (66, 68, 78)]
-STONE_OUT_W = [10, 18, 22, 20, 16, 8]
-STONE_IN = [(14, 18, 26), (20, 24, 32), (26, 29, 38), (32, 35, 44), (40, 42, 52)]
-STONE_IN_W = [8, 20, 28, 26, 14]
-GROOVE = (6, 12, 20)          # el canal oscuro en el que va la línea de luz
-BOLT = [(88, 90, 102), (70, 72, 84), (52, 54, 64)]  # tornillo: luz, medio, sombra
+DARK = (16, 18, 24)
+IRON = {"hi": (214, 220, 232), "mid": (156, 164, 182), "lo": (98, 104, 122)}
+GOLD = {"hi": (255, 232, 150), "mid": (232, 178, 62), "lo": (166, 108, 30)}
 
 
 def mix(a, b, t):
     return tuple(int(round(a[i] + (b[i] - a[i]) * t)) for i in range(3))
 
 
-def shades(c):
-    """Tonos del neón: brillo (casi blanco), medio, apagado, rescoldo."""
-    return {
-        "#": mix(c, (255, 255, 255), 0.38),
-        "+": c,
-        "=": mix(c, (0, 0, 0), 0.28),
-        "~": mix(c, (8, 14, 22), 0.6),
-    }
+def gem_shades(c):
+    return {"hi": mix(c, (255, 255, 255), 0.55), "lt": mix(c, (255, 255, 255), 0.22), "md": c,
+            "dk": mix(c, (0, 0, 0), 0.28), "dd": mix(c, (0, 0, 0), 0.5)}
 
 
-def stone_layer(seed):
+def base_block(seed, trim):
+    """La piedra pulida con la placa embutida y su remate (hierro u oro)."""
     rnd = random.Random(seed)
     px = {}
     for y in range(N):
         for x in range(N):
-            inside = 6 <= x <= 25 and 6 <= y <= 25
-            pal, w = (STONE_IN, STONE_IN_W) if inside else (STONE_OUT, STONE_OUT_W)
-            px[x, y] = rnd.choices(pal, w)[0]
+            v = rnd.choice((-3, -1, 0, 0, 1, 3))
+            px[x, y] = (46 + v, 48 + v, 60 + v)
+    for i in range(N):  # cantos del bloque: luz arriba/izquierda, sombra abajo/derecha
+        px[i, 0] = px[0, i] = (72, 75, 90)
+        px[i, N - 1] = px[N - 1, i] = (24, 26, 34)
+    px[0, N - 1] = px[N - 1, 0] = (40, 42, 52)
+    for y in range(4, N - 4):  # la placa, hundida
+        for x in range(4, N - 4):
+            v = rnd.choice((-2, 0, 0, 1))
+            px[x, y] = (33 + v, 35 + v, 45 + v)
+    for i in range(4, N - 4):
+        px[i, 4] = px[4, i] = (23, 25, 33)          # sombra de dentro arriba/izquierda
+        px[i, N - 5] = px[N - 5, i] = (54, 57, 70)  # luz de dentro abajo/derecha
+    for i in range(3, N - 3):  # el remate
+        px[i, 3] = px[3, i] = trim["hi"]
+        px[i, N - 4] = px[N - 4, i] = trim["lo"]
+    px[3, N - 4] = px[N - 4, 3] = trim["mid"]
+    for cx, cy in ((3, 3), (N - 4, 3), (3, N - 4), (N - 4, N - 4)):  # remaches
+        px[cx, cy] = trim["hi"]
+    for cx, cy in ((5, 5), (N - 7, 5), (5, N - 7), (N - 7, N - 7)):
+        px[cx, cy], px[cx + 1, cy], px[cx, cy + 1], px[cx + 1, cy + 1] = trim["hi"], trim["mid"], trim["mid"], trim["lo"]
     return px
 
 
-def frame_cells():
-    """Las celdas de luz del marco (en 32x32) con su tono, y las del canal oscuro. Simétrico en las 4 esquinas."""
-    glow, groove, bolt = {}, set(), {}
-    lo, hi = 5, 26  # líneas del marco (en el 30x30 del dueño eran 4 y 25)
-
-    def line(cells):
-        n = len(cells)
-        for i, c in enumerate(cells):
-            glow[c] = "=" if i in (0, n - 1) else ("#" if i % 2 == 0 else "+")
-
-    # Lados del marco (cortados en las esquinas, donde van los tornillos y la escuadra)
-    line([(x, lo) for x in range(8, 24)])
-    line([(x, hi) for x in range(8, 24)])
-    line([(lo, y) for y in range(8, 24)])
-    line([(hi, y) for y in range(8, 24)])
-    for x in range(8, 24):
-        groove.update({(x, lo - 1), (x, lo + 1), (x, hi - 1), (x, hi + 1)})
-    for y in range(8, 24):
-        groove.update({(lo - 1, y), (lo + 1, y), (hi - 1, y), (hi + 1, y)})
-
-    # Esquina arriba-izquierda (se refleja en las otras tres)
-    corner_glow = {
-        (4, 4): "#", (5, 4): "#", (6, 4): "=",   # escuadra de fuera
-        (4, 5): "#", (4, 6): "=",
-        (7, 0): "~", (7, 1): "+", (7, 2): "#", (7, 3): "=",   # rayo hacia el borde de arriba
-        (0, 7): "~", (1, 7): "+", (2, 7): "#", (3, 7): "=",   # y hacia el de la izquierda
-    }
-    corner_groove = {(3, 3), (4, 3), (5, 3), (6, 3), (3, 4), (3, 5), (3, 6), (8, 1), (8, 2), (6, 1), (6, 2),
-                     (1, 8), (2, 8), (1, 6), (2, 6)}
-    for (x, y), t in corner_glow.items():
-        for mx, my in ((x, y), (N - 1 - x, y), (x, N - 1 - y), (N - 1 - x, N - 1 - y)):
-            glow[mx, my] = t
-    for (x, y) in corner_groove:
-        for c in ((x, y), (N - 1 - x, y), (x, N - 1 - y), (N - 1 - x, N - 1 - y)):
-            groove.add(c)
-    # Tornillos 2x2 en las cuatro esquinas, siempre con la luz arriba a la izquierda
-    for bx, by in ((5, 5), (N - 7, 5), (5, N - 7), (N - 7, N - 7)):
-        for (dx, dy), t in {(0, 0): 0, (1, 0): 1, (0, 1): 1, (1, 1): 2}.items():
-            bolt[bx + dx, by + dy] = t
-    for c in glow:
-        groove.discard(c)
-    for c in bolt:
-        groove.discard(c)
-    return glow, groove, bolt
+DIGITS = {
+    "0": ["111", "101", "101", "101", "111"], "1": ["010", "110", "010", "010", "111"],
+    "2": ["111", "001", "111", "100", "111"], "3": ["111", "001", "011", "001", "111"],
+    "4": ["101", "101", "111", "001", "001"], "5": ["111", "100", "111", "001", "111"],
+    "6": ["111", "100", "111", "101", "111"], "7": ["111", "001", "010", "010", "010"],
+    "8": ["111", "101", "111", "101", "111"], "9": ["111", "101", "111", "001", "111"],
+}
 
 
-def letters():
-    """T y F (en el 30x30 del dueño: T en x 8-13, F en x 16-21, filas 11-19); aquí +1."""
+def number(text, y, color):
+    """El número (radio de la zona) en cifras de 3x5 centradas, con su sombra."""
+    w = len(text) * 4 - 1
+    x0 = (N - w) // 2
+    cells, shadow = {}, set()
+    for i, ch in enumerate(text):
+        for r, row in enumerate(DIGITS[ch]):
+            for c, bit in enumerate(row):
+                if bit == "1":
+                    cells[x0 + i * 4 + c, y + r] = color
+    for (x, y2) in cells:
+        if (x + 1, y2 + 1) not in cells:
+            shadow.add((x + 1, y2 + 1))
+    return cells, shadow
+
+
+def letters(sh):
+    """T y F en relieve: cara del color, canto de luz arriba y sombra abajo/derecha."""
     cells = {}
+
     def rect(x0, y0, x1, y1):
         for y in range(y0, y1 + 1):
             for x in range(x0, x1 + 1):
-                cells[x, y] = "#" if (x + y) % 2 == 0 else "+"
-    rect(9, 12, 14, 13)    # T: barra
-    rect(11, 14, 12, 20)   # T: palo
-    rect(17, 12, 22, 13)   # F: barra de arriba
-    rect(17, 14, 18, 20)   # F: palo
-    rect(19, 16, 21, 17)   # F: barra del medio
+                cells[x, y] = sh["md"]
+    rect(9, 11, 14, 12)
+    rect(11, 13, 12, 20)
+    rect(17, 11, 22, 12)
+    rect(17, 13, 18, 20)
+    rect(19, 15, 21, 16)
+    for (x, y) in list(cells):
+        if (x, y - 1) not in cells:
+            cells[x, y] = sh["hi"]
+        elif (x + 1, y) not in cells or (x, y + 1) not in cells:
+            cells[x, y] = sh["dk"]
     return cells
 
 
-def core_diamond(r_out, filled_r, ring=True):
+def diamond_gem(sh, cx, cy, r):
+    """Gema en rombo tallada: cuatro caras (luz arriba a la izquierda), filo oscuro y un brillo."""
     cells = {}
-    cx = cy = 15.5
     for y in range(N):
         for x in range(N):
-            d = abs(x - cx) + abs(y - cy)
-            if ring and abs(d - r_out) < 0.6:
-                cells[x, y] = "+" if (x + y) % 2 else "#"
-            elif d <= filled_r:
-                cells[x, y] = "#" if d <= filled_r - 1.5 else "+"
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            if abs(dx) + abs(dy) <= r:
+                if abs(dx) + abs(dy) > r - 1:
+                    cells[x, y] = sh["dd"]
+                elif dx <= 0 and dy <= 0:
+                    cells[x, y] = sh["lt"]
+                elif dx > 0 and dy <= 0:
+                    cells[x, y] = sh["md"]
+                elif dx <= 0:
+                    cells[x, y] = sh["dk"]
+                else:
+                    cells[x, y] = sh["dd"]
+    hx, hy = int(cx - r / 2.5), int(cy - r / 2.5)
+    cells[hx, hy] = sh["hi"]
+    cells[hx + 1, hy] = sh["hi"]
+    cells[hx, hy + 1] = sh["hi"]
     return cells
 
 
-def outline(cells):
-    out = set()
-    for (x, y) in cells:
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
-            c = (x + dx, y + dy)
-            if c not in cells and 0 <= c[0] < N and 0 <= c[1] < N:
-                out.add(c)
-    return out
+def round_gem(sh, cx, cy, r):
+    """Gema redonda tallada (vista desde arriba): anillo oscuro, corona, mesa clara y brillo."""
+    cells = {}
+    for y in range(N):
+        for x in range(N):
+            d = ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2) ** 0.5
+            if d <= r:
+                if d > r - 1.2:
+                    cells[x, y] = sh["dd"]
+                elif d > r * 0.55:
+                    cells[x, y] = sh["dk"] if (x + 0.5 - cx) + (y + 0.5 - cy) > 0 else sh["md"]
+                else:
+                    cells[x, y] = sh["lt"] if (x + 0.5 - cx) + (y + 0.5 - cy) < 1 else sh["md"]
+    cells[int(cx - r / 2.2), int(cy - r / 2.2)] = sh["hi"]
+    cells[int(cx - r / 2.2) + 1, int(cy - r / 2.2)] = sh["hi"]
+    return cells
 
 
-def face(kind, color, seed):
-    sh = shades(color)
-    base = stone_layer(seed)
-    glow, groove, bolt = frame_cells()
-    centre = {}
+def face(kind, label, color, seed):
+    sh = gem_shades(color)
+    trim = GOLD if label in PAID else IRON
+    px = base_block(seed, trim)
+    lit = {}
     if kind == "front":
-        centre = letters()
+        lit = letters(sh)
     elif kind == "side":
-        centre = core_diamond(5, 2)
+        lit = diamond_gem(sh, 16, 13, 7.5)
+        cells, shadow = number(label.split("x")[0], 22, sh["lt"])
+        for c in shadow:
+            px[c] = DARK
+        lit.update(cells)
     elif kind == "top":
-        centre = core_diamond(7, 3, ring=True)
-        centre.update({c: "=" for c in core_diamond(4, -1, ring=True)})
-    dim = kind == "bottom"
-    for c in outline(centre):
-        base[c] = GROOVE
-    for c in groove:
-        base[c] = GROOVE
-    for c, t in bolt.items():
-        base[c] = BOLT[t]
-    glow_px = {}
-    for c, t in list(glow.items()) + list(centre.items()):
-        col = sh[t]
-        if dim:
-            col = mix(col, (10, 14, 22), 0.45)
-        base[c] = col
-        glow_px[c] = col
+        lit = round_gem(sh, 16, 16, 8.5)
+    # sombra de lo que va en relieve (abajo a la derecha)
+    for (x, y) in lit:
+        if (x + 1, y + 1) not in lit and 4 < x + 1 < N - 4 and 4 < y + 1 < N - 4 and kind != "side":
+            px[x + 1, y + 1] = DARK
+    for c, col in lit.items():
+        px[c] = col
     img = Image.new("RGBA", (N, N))
-    for (x, y), col in base.items():
+    for (x, y), col in px.items():
         img.putpixel((x, y), col + (255,))
     over = Image.new("RGBA", (N, N), (0, 0, 0, 0))
-    if not dim:
-        for (x, y), col in glow_px.items():
-            over.putpixel((x, y), col + (255,))
+    for (x, y), col in lit.items():
+        over.putpixel((x, y), col + (255,))
     return img, over
 
 
@@ -200,7 +210,7 @@ def build():
     for label, color in TIERS:
         name = f"proteccion_{label}"
         for i, kind in enumerate(FACES):
-            img, over = face(kind, color, seed=1000 + i * 17)
+            img, over = face(kind, label, color, seed=1000 + i * 17)
             img.save(os.path.join(TEX, f"{name}_{kind}.png"), optimize=True)
             if kind != "bottom":
                 over.save(os.path.join(TEX, f"{name}_{kind}_glow.png"), optimize=True)

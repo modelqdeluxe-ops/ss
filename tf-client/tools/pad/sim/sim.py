@@ -795,6 +795,47 @@ class Sim(Skin):
             self.ptext(name, tx + t // 2 - self.pwidth(name) // 2, ty + t + 2, (255, 230, 128) if hv else (255, 255, 255))
         self.no_scissor()
 
+    ADMIN_HINTS = {
+        'a_apps': 'Qué apps salen en el pad de los jugadores: pulsa una para mostrarla u ocultarla.',
+        'a_tienda': 'Categorías, objetos y precios de compra y de venta de la tienda.',
+        'a_kits': 'Crea kits paso a paso: objetos, monedas, cada cuánto y quién puede.',
+        'a_recompensas': 'El calendario diario y las recompensas sueltas (diarias, semanales...).',
+        'a_viajes': 'Los puntos de viaje (se ponen donde estás) y qué warps se ven.',
+        'a_gts': 'Lo que está a la venta entre jugadores. RETIRAR se lo devuelve a su dueño.',
+        'a_comunidad': 'Las fotos denunciadas y las recientes: bórralas o dalas por buenas.',
+        'a_oficios': 'Cuántos oficios a la vez, esperas, cada cuánto se paga y antitrampas.',
+        'a_cazas': 'Las presas que rotan cada 12 h: mob, cantidad, monedas e icono.',
+        'a_ajustes': 'Esperas de viaje, Explorar, hogares, envíos, regalos, GTS y recargar configs.'}
+
+    def admin_hint(self, app=None, name=''):
+        """PadHomePage.adminHint (1.3.66): la franja de abajo de la portada del pad de administrador."""
+        from skin import accent, mix, WHITE
+        text = self.ADMIN_HINTS.get(app, '') if app else 'Pasa el ratón por una app para ver qué configura. Todo se guarda al momento.'
+        s = self.bs
+        name_w = self.pwidth(name) + 9 if name else 0
+        w, h = 10 + name_w + self.mwidth(text) + 10, 15
+        if w > (self.UW - 12) / s:
+            return
+        x0, y0 = (self.UW - w * s) / 2, self.Y + self.H - 5 - h * s
+        g = getattr(self, 'home_grid', None)
+        acc = accent(app) if app else rgb(0xF6B628)
+        with self.big_at(x0, y0, px=self.big):
+            self.fill(1, h, w - 1, h + 1, (24, 38, 92, 0x30))
+            self.fill(1, 0, w - 1, h, (24, 38, 84, 0xC0))
+            self.fill(0, 1, 1, h - 1, (24, 38, 84, 0xC0))
+            self.fill(w - 1, 1, w, h - 1, (24, 38, 84, 0xC0))
+            self.fill(2, 1, w - 2, 2, (255, 255, 255, 0x38))
+            self.fill(3, 3, 5, h - 3, acc)
+            self.fill(3, 3, 5, 4, mix(acc, WHITE, 0.5))
+            tx = 9
+            if name:
+                self.ptext(name, tx, 2, (255, 230, 128))
+                tx += name_w - 6
+                self.fill(tx, 7, tx + 2, 9, (255, 255, 255, 0x90))
+                tx += 5
+            self.mtext(text, tx + 1, 5, (62, 62, 62))
+            self.mtext(text, tx, 4, (255, 255, 255))
+
     def _tile_scaled(self, icon, name, tx, ty, t, ts, sc):
         """Una ficha (con su nombre) dibujada en un lienzo aparte y escalada sc desde el centro de la ficha."""
         if sc <= 0.02:
@@ -1244,8 +1285,23 @@ class Sim(Skin):
         h = 4 + 11 + self.lines_h(r, tw) + (8 if prog >= 0 else 0) + 3
         return max(self.ICON_BOX + 10 if (icon or ex.get('img')) else 26, h + 2) + self.ROW_GAP
 
+    @staticmethod
+    def switch_of(r):
+        """PadViewPage.switchOf (1.3.66): un solo botón SÍ o NO, o el par SÍ + NO, es un interruptor. Devuelve si
+        está encendido (o None si no es un interruptor)."""
+        b1, b2 = r[6], r[7]
+        if not b1 or (len(b1) > 2 and b1[2] is False):
+            return None
+        if not b2 and b1[0] in ('SÍ', 'NO'):
+            return b1[0] == 'SÍ'
+        if b1[0] == 'SÍ' and b2 and b2[0] == 'NO':
+            return b1[1] != 4
+        return None
+
     def right_w(self, r):
         badge, b1, b2 = r[5], r[6], r[7]
+        if self.switch_of(r) is not None:
+            return (self.chip_w(badge) + 6 if badge else 0) + 28 + 4
         return (self.chip_w(badge) + 6 if badge else 0) + sum(self.bw(b[0]) + 4 for b in (b1, b2) if b)
 
     def text_w(self, r, w):
@@ -1314,6 +1370,10 @@ class Sim(Skin):
             self.sk_chip(bx + 2, yy + (h - 12) // 2, badge, self.tone(badge))
             bx += self.chip_w(badge) + 6
         by = yy + (h - 16) // 2
+        on = self.switch_of(r)
+        if on is not None:
+            self.toggle(bx, yy + (h - 14) // 2, 1.0 if on else 0.0)
+            return
         for b in (b1, b2):
             if b:
                 self.sk_button(bx, by, self.bw(b[0]), b[0], b[1], b[2] if len(b) > 2 else True)

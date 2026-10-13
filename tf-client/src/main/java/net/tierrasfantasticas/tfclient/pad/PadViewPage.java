@@ -85,6 +85,9 @@ final class PadViewPage extends PadPage {
 
     @Override
     void render(GuiGraphics g, double mx, double my, float partial) {
+        long nowNs = System.nanoTime();
+        frameDt = lastFrame == 0 ? 0F : Math.min(0.1F, (nowNs - lastFrame) / 1e9F);
+        lastFrame = nowNs;
         hits.clear();
         tooltip = ItemStack.EMPTY;
         int acc = PadSkin.accent(app);
@@ -302,7 +305,33 @@ final class PadViewPage extends PadPage {
         return Math.max(30, w - (hasIcon(r) ? ICON_BOX + 17 : 14) - rightWidth(r) - 6);
     }
 
+    /**
+     * Interruptor (1.3.66): una fila con un solo botón SÍ o NO (los interruptores de los pads de administrador, el fuego
+     * amigo del clan…) o con el par SÍ + NO (las preguntas de Protección) se dibuja como el de Ajustes, con la bola que
+     * corre de un lado a otro. on: lo que está puesto; action: la que lo cambia.
+     */
+    private record Switch(boolean on, String action) {}
+
+    private static final int SWITCH_W = 28, SWITCH_H = 14;
+    /** Dónde está la bola de cada interruptor (por el título de su fila), para que corra al cambiar. */
+    private final java.util.Map<String, Float> knobs = new java.util.HashMap<>();
+    private long lastFrame;
+    private float frameDt;
+
+    private static Switch switchOf(PadView.Row r) {
+        PadView.Btn a = r.button(), b = r.button2();
+        if (a == null || !a.enabled() || a.action().isEmpty()) return null;
+        boolean yes = a.label().equals("SÍ"), no = a.label().equals("NO");
+        if (b == null && (yes || no)) return new Switch(yes, a.action());
+        if (yes && b != null && b.label().equals("NO") && b.enabled()) {
+            boolean on = a.style() != PadView.GRAY;
+            return new Switch(on, on ? b.action() : a.action());
+        }
+        return null;
+    }
+
     private int buttonsWidth(PadView.Row r) {
+        if (switchOf(r) != null) return SWITCH_W + 4;
         int w = 0;
         if (r.button() != null) w += PadUi.buttonWidth(r.button().label()) + 4;
         if (r.button2() != null) w += PadUi.buttonWidth(r.button2().label()) + 4;
@@ -601,12 +630,31 @@ final class PadViewPage extends PadPage {
             bx += PadUi.chipWidth(r.badge()) + 6;
         }
         int by = yy + (h - 16) / 2;
+        Switch sw = switchOf(r);
+        if (sw != null) {
+            drawSwitch(g, r.title(), sw, bx, yy + (h - SWITCH_H) / 2, mx, my);
+            return;
+        }
         if (r.button() != null) {
             int b1 = PadUi.buttonWidth(r.button().label());
             button(g, bx, by, b1, r.button(), mx, my, false);
             bx += b1 + 4;
         }
         if (r.button2() != null) button(g, bx, by, PadUi.buttonWidth(r.button2().label()), r.button2(), mx, my, false);
+    }
+
+    /** El interruptor de una fila: la bola va hacia donde esté puesto (al cambiar, corre); pulsarlo lo cambia. */
+    private void drawSwitch(GuiGraphics g, String key, Switch sw, int x, int y, double mx, double my) {
+        float target = sw.on() ? 1F : 0F;
+        Float now = knobs.get(key);
+        float k = now == null || !PadSettings.animations ? target : now + (target - now) * Math.min(1F, frameDt * 14F);
+        if (Math.abs(k - target) < 0.01F) k = target;
+        knobs.put(key, k);
+        boolean visible = y >= listTop && y + SWITCH_H <= listBottom + 1;
+        boolean hover = visible && PadUi.inside(mx, my, x - 2, y - 2, SWITCH_W + 4, SWITCH_H + 4) && inList(my);
+        if (hover) pad.hover("§sw" + sw.action());
+        PadSkin.toggle(g, x, y, k, hover);
+        if (visible) hits.add(0, new Hit(x - 2, y - 2, SWITCH_W + 4, SWITCH_H + 4, 0, sw.action(), PadView.GREEN));
     }
 
     private void button(GuiGraphics g, int x, int y, int w, PadView.Btn b, double mx, double my, boolean footer) {
