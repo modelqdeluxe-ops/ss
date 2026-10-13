@@ -130,6 +130,8 @@
   --grid-lines:
     linear-gradient(rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px,
     linear-gradient(90deg, rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px;
+  /* Textura de las placas de la tienda: grano fino de ruido (blanco al 6 %), sobre colores opacos */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff5edb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
   color-scheme: dark;
   interpolate-size: allow-keywords;
@@ -2735,87 +2737,194 @@ body:not([data-hero]) .header::before {
   padding-bottom: 64px;
 }
 
-/* Pestañas: un mando segmentado sobre una barra lisa. Cada pestaña es un botón sólido de pizarra con el texto claro;
-   la elegida, llena del magenta de la marca con el texto blanco. Sin puntos de color ni destellos. */
+/* Barra de categorías (la «tarjeta de botones»), rehecha del todo el 13 oct. 2026: una tarjeta por sección con el
+   dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py) sobre su color VIVO: el color detrás del dibujo y su tono
+   profundo abajo, donde va el nombre (nunca mezclado con negro, que lo vuelve marrón). Contorno de su tono claro. La
+   elegida se enciende (tono claro → color), con contorno blanco, anillo de su color y su brillo. Nada translúcido.
+   Cada sección: --t (su color), --t-hi (claro), --t-lo (profundo), --t-ink (casi negro de su tono). */
 .shop-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 30px;
-  padding: 6px;
-  border-radius: var(--r-lg);
-}
-
-.shop-tabs.frame {
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
-  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9);
 }
 
 .tab {
+  --t: var(--a-400);
+  --t-hi: var(--t);
+  --t-lo: var(--t);
+  --t-ink: #07080c;
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  display: flex;
+  grid-column: span 2;
+  align-items: flex-end;
   min-width: 0;
-  height: 46px;
-  padding: 0 12px;
-  border: 1px solid var(--ui-line);
-  border-radius: var(--r);
-  background: var(--ui-2);
-  color: var(--ui-text-2);
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  transition:
-    color 0.2s,
-    background-color 0.2s,
-    border-color 0.2s;
-}
-
-.tab:hover {
-  border-color: var(--ui-line-2);
-  background: var(--ui-3);
+  min-height: 104px;
+  padding: 10px 10px 9px;
+  overflow: hidden;
+  border: 2px solid var(--t-hi);
+  border-radius: 14px;
+  background:
+    var(--grain),
+    radial-gradient(120% 110% at 82% 18%, var(--t) 0%, var(--t-lo) 52%, var(--t-ink) 100%);
   color: #fff;
+  text-align: left;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 3px 0 var(--t-ink),
+    0 14px 26px -16px #000;
+  transition:
+    transform 0.25s var(--ease),
+    border-color 0.2s,
+    box-shadow 0.25s,
+    filter 0.2s;
 }
 
-.tab:active {
-  transform: scale(0.98);
+/* En el móvil y la tablet, tres arriba y dos abajo (más anchas) */
+.tab:nth-child(n + 4) {
+  grid-column: span 3;
 }
 
+.tab[data-category='rangos'] { --t: #fcc94a; --t-hi: #fddb86; --t-lo: #b05c03; --t-ink: #4d2101; }
+.tab[data-category='cosmeticos'] { --t: #ff6fd8; --t-hi: #ff99e3; --t-lo: #c90093; --t-ink: #580040; }
+.tab[data-category='crates'] { --t: #a78bfa; --t-hi: #b59dfb; --t-lo: #3a09cd; --t-ink: #19045a; }
+.tab[data-category='vfx'] { --t: #45e9ff; --t-hi: #82f0ff; --t-lo: #009db2; --t-ink: #00454e; }
+.tab[data-category='skills'] { --t: #ff6b5b; --t-hi: #ffa298; --t-lo: #be1300; --t-ink: #530800; }
+
+/* El dibujo, arriba a la derecha y con su sombra */
+.tab-art {
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  width: 72%;
+  height: 66%;
+  object-fit: contain;
+  object-position: 100% 50%;
+  filter: drop-shadow(0 6px 8px var(--t-ink));
+  transition: transform 0.35s var(--spring);
+  pointer-events: none;
+}
+
+.tab-label {
+  position: relative;
+  max-width: 100%;
+  font: 800 10px/1.2 var(--font-display);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 0 var(--t-ink),
+    0 0 10px var(--t-ink);
+}
+
+/* El número, arriba a la izquierda en una pastilla de su tono oscuro */
 .tab .count {
+  position: absolute;
+  top: 8px;
+  left: 8px;
   display: inline-grid;
   place-items: center;
-  min-width: 22px;
+  min-width: 24px;
   height: 20px;
   padding: 0 6px;
   border-radius: 6px;
-  background: rgb(255 255 255 / 0.08);
-  font-size: 11.5px;
+  border: 1px solid var(--t-hi);
+  background: var(--t-ink);
+  color: #fff;
+  font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--ui-muted);
 }
 
 .tab .count:empty {
   display: none;
 }
 
-.tab:hover .count {
-  color: var(--ui-text-2);
+.tab:hover {
+  filter: brightness(1.08) saturate(1.05);
 }
 
+.tab:active {
+  transform: translateY(2px);
+}
+
+.tab:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* La elegida: encendida (su tono claro detrás del dibujo), contorno blanco, anillo de su color y su brillo */
 .tab[aria-selected='true'] {
-  border-color: var(--brand);
-  background: var(--brand);
-  color: #fff;
-  box-shadow: 0 3px 0 var(--brand-lip);
+  border-color: #fff;
+  background:
+    var(--grain),
+    radial-gradient(130% 120% at 82% 18%, var(--t-hi) 0%, var(--t) 36%, var(--t-lo) 76%, var(--t-ink) 112%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 0 0 3px var(--t),
+    0 4px 0 3px var(--t-ink),
+    0 18px 36px -10px var(--t);
+}
+
+.tab[aria-selected='true'] .tab-art {
+  transform: scale(1.08);
 }
 
 .tab[aria-selected='true'] .count {
-  background: rgb(0 0 0 / 0.22);
-  color: #fff;
+  border-color: #fff;
+}
+
+@media (hover: hover) {
+  .tab:hover:not([aria-selected='true']) {
+    transform: translateY(-3px);
+  }
+
+  .tab:hover:not([aria-selected='true']) .tab-art {
+    transform: scale(1.06) rotate(-2deg);
+  }
+}
+
+@media (min-width: 640px) {
+  .shop-tabs {
+    gap: 12px;
+  }
+
+  .tab {
+    min-height: 116px;
+    padding: 12px 12px 11px;
+  }
+
+  .tab-label {
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* Desde 1000 px, las cinco en una fila */
+@media (min-width: 1000px) {
+  .shop-tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .tab,
+  .tab:nth-child(n + 4) {
+    grid-column: auto;
+  }
+
+  .tab {
+    min-height: 128px;
+    padding: 14px 14px 12px;
+    border-radius: 16px;
+  }
+
+  .tab-label {
+    font-size: 13px;
+  }
+
+  .tab .count {
+    top: 10px;
+    left: 10px;
+  }
 }
 
 .shop-intro {
@@ -4243,51 +4352,114 @@ body:not([data-hero]) .header::before {
   color: var(--t1, var(--a-300));
 }
 
-/* ---------- VFX y Skills: base común (rework oct. 2026) ---------- */
+/* ---------- VFX y Skills (rework completo 13 oct. 2026) ---------- */
 
-/* Superficies lisas (--ui-*), texto claro y botones sólidos. El color propio de cada efecto o clase (--vfx, --sk) solo
-   se usa en el texto pequeño de su categoría; nada de rejillas, halos ni puntos de neón. Las vistas previas van sobre
-   un fondo liso del mismo color que el pintado en las imágenes (--sk-bg = PREVIEW_BG) y, como mucho, a su tamaño
-   natural (Skills 480 px, VFX 320 px): nítidas en cualquier pantalla. */
-.vfx-shop,
-.sk-shop {
-  --vfx: var(--tone-vfx);
-  --sk: var(--tone-skills);
-  color: var(--ui-text);
+/* Cada una es una VENTANA propia de color grafito (neutro, sin el violeta ni el azul de la web), maciza y con grano:
+   no se confunde con la nebulosa ni con el resto de la página. Dentro, el color lo ponen las cosas (--c: la categoría
+   del efecto o la clase): tarjetas de catálogo con su fondo MACIZO del color (como las rarezas de un juego), la arena
+   y los estados. Nada translúcido: las mezclas de color van siempre con un color sólido. */
+.cx-shop {
+  color: #f5f6f8;
 }
 
-.vfx-hero h2,
-.sk-hero h2 {
-  font: 800 clamp(24px, 3.6vw, 34px) / 1.15 var(--font-display);
+.cx {
+  --c: var(--a-400);
+  --cx-0: #07080b;
+  --cx-1: #0e1015;
+  --cx-2: #15181e;
+  --cx-3: #1d2028;
+  --cx-line: #242832;
+  --cx-line-2: #343a47;
+  --cx-tx-2: #b8bdc9;
+  --cx-tx-3: #858b9a;
+  position: relative;
+  border: 1px solid #262a33;
+  border-radius: 20px;
+  background:
+    var(--grain),
+    linear-gradient(180deg, #111318 0%, #0a0b0e 260px, #0a0b0e 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 0 0 1px #000,
+    0 40px 80px -40px #000;
+}
+
+/* Filo de la ventana: una barra del color de la sección arriba */
+.cx::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 24px;
+  right: 24px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--c);
+}
+
+.cx-head {
+  padding: 24px 16px 18px;
+  border-bottom: 1px solid var(--cx-line);
+}
+
+.cx-eyebrow {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--c);
+  color: #07080b;
+  font: 800 11px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cx-eyebrow svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+
+.cx-head h2 {
+  margin-top: 12px;
+  color: #fff;
+  font: 800 clamp(26px, 3.6vw, 38px) / 1.08 var(--font-display);
   letter-spacing: -0.02em;
 }
 
-.vfx-hero p,
-.sk-hero > div > p {
+.cx-head p {
   margin: 8px 0 0;
-  max-width: 640px;
-  color: var(--ui-text-2);
-  font-size: 15.5px;
+  max-width: 680px;
+  color: var(--cx-tx-2);
+  font-size: 15px;
+  line-height: 1.55;
 }
 
-/* La ficha grande (escenario + datos): una tarjeta lisa con borde visible */
-.vfx-stage.panel,
-.sk-card.panel {
-  overflow: hidden;
-  padding: 0;
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
-  box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.95);
+/* La disposición: en el móvil, la vitrina y debajo el catálogo; en el escritorio, el catálogo a la izquierda y la
+   vitrina a la derecha */
+.cx-layout {
+  display: grid;
+  grid-template-areas:
+    'show'
+    'catalog';
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding: 14px;
 }
 
-/* El escenario de la vista previa */
-.vfx-screen,
-.sk-screen {
-  position: relative;
+.cx-catalog {
+  grid-area: catalog;
   min-width: 0;
-  background: var(--sk-bg);
 }
 
+.cx-show {
+  grid-area: show;
+  min-width: 0;
+}
+
+/* Las vistas previas: a su tamaño natural o más pequeñas se ven suaves; en pantallas de alta densidad (que las
+   amplían) los píxeles quedan nítidos, como en Minecraft */
 .vfx-anim,
 .sk-anim {
   display: block;
@@ -4295,8 +4467,6 @@ body:not([data-hero]) .header::before {
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
-  /* A su tamaño o más pequeña se ve suave; en pantallas de alta densidad (que la amplían) los píxeles se quedan
-     nítidos, como en Minecraft */
   image-rendering: auto;
 }
 
@@ -4307,1052 +4477,1199 @@ body:not([data-hero]) .header::before {
   }
 }
 
-.vfx-live {
-  position: absolute;
-  z-index: 2;
-  top: 12px;
-  left: 12px;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  background: rgb(255 255 255 / 0.07);
-  color: var(--ui-text-2);
-  font-size: 11px;
+/* Catálogo: cada categoría con su barra de color, nombre y número, y una línea hasta el final */
+.cx-group + .cx-group {
+  margin-top: 26px;
+}
+
+.cx-group header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cx-group header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cx-line);
+}
+
+.cx-group h3 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: #fff;
+  font: 800 13px/1 var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cx-group h3::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+.cx-group header span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  border: 1px solid var(--c-lo);
+  background: var(--c-ink);
+  color: var(--c-hi);
+  font-size: 11.5px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cx-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* La tarjeta: el dibujo sobre su color vivo (el color en el centro y su tono profundo en los bordes, nunca mezclado
+   con negro) y, debajo, el nombre en una franja de su tono más oscuro con el filo de su color */
+.cx-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--c-lo);
+  border-radius: 10px;
+  background: var(--c-ink);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #000;
+  transition:
+    transform 0.25s var(--ease),
+    border-color 0.2s,
+    box-shadow 0.25s;
+}
+
+.cx-tile-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background:
+    var(--grain),
+    radial-gradient(85% 80% at 50% 40%, var(--c) 0%, var(--c-lo) 64%, var(--c-ink) 100%);
+}
+
+.cx-tile-art img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 6px #000);
+  transition: transform 0.35s var(--ease);
+}
+
+.cx-tile-name {
+  display: block;
+  overflow: hidden;
+  padding: 8px 9px 9px;
+  border-top: 3px solid var(--c);
+  background: var(--c-ink);
+  font: 700 12.5px/1.25 var(--font-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.cx-tile:hover {
+  border-color: var(--c);
+  box-shadow:
+    0 2px 0 #000,
+    0 14px 26px -14px var(--c);
+}
+
+.cx-tile:hover .cx-tile-art img {
+  transform: scale(1.07);
+}
+
+.cx-tile:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* La elegida: marco blanco y la franja del nombre llena de su color */
+.cx-tile.is-sel {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 16px 30px -12px var(--c);
+}
+
+.cx-tile.is-sel .cx-tile-name {
+  border-top-color: #fff;
+  background: var(--c-hi);
+  color: var(--c-ink);
+}
+
+/* Lo que ya tienes: etiqueta maciza arriba a la izquierda */
+.cx-tag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  border: 1px solid #3a404d;
+  background: #07080b;
+  color: #fff;
+  font: 800 9.5px/1 var(--font-body);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-/* Texto pequeño de la categoría (con el color del efecto o la clase, aclarado para que se lea) */
-.vfx-info .cat,
-.sk-title .cat {
-  display: block;
-  font: 800 11.5px/1.3 var(--font-body);
+.cx-tag.is-on {
+  border-color: var(--ok-2);
+  background: var(--ok-2);
+  color: #03281b;
+}
+
+.cx-tag.is-pending {
+  border-color: var(--buy);
+  background: var(--buy);
+  color: #2a1a00;
+}
+
+.cx-tag svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* La vitrina: tarjeta grande con la arena arriba y la ficha debajo */
+.cx-card {
+  overflow: hidden;
+  border: 1px solid var(--cx-line-2);
+  border-radius: 14px;
+  background: var(--cx-1);
+  box-shadow:
+    0 0 0 1px #000,
+    0 3px 0 #000,
+    0 30px 60px -30px #000;
+}
+
+/* La arena: el color de la categoría macizo, con luz donde cae la animación y un charco de luz en el suelo (las
+   animaciones son transparentes) */
+.cx-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  padding: 46px 16px 64px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    var(--grain),
+    radial-gradient(72% 64% at 50% 46%, var(--c-lo) 0%, var(--c-ink) 78%);
+}
+
+.cx-floor {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 70px;
+  z-index: -1;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c-hi), var(--c) 45%, var(--c-lo));
+  filter: blur(12px);
+}
+
+.cx-stage .vfx-anim {
+  width: min(82%, 330px);
+}
+
+.cx-cat {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--c-lo);
+  background: var(--c-ink);
+  color: #fff;
+  font: 800 10.5px/1 var(--font-body);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.vfx-info .cat {
-  color: color-mix(in srgb, var(--vfx) 65%, #fff);
+.cx-cat i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--c);
+  transform: rotate(45deg);
 }
 
-.sk-title .cat {
-  color: color-mix(in srgb, var(--sk) 65%, #fff);
-}
-
-/* Filtros por categoría (en el móvil, en una fila que se desliza) */
-.vfx-filter {
+.cx-nav {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  z-index: 1;
   display: flex;
-  gap: 8px;
-  margin: 16px calc(var(--gutter) * -1) 0;
-  padding: 0 var(--gutter) 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  border-radius: 11px;
+  border: 1px solid #2c313c;
+  background: #07080b;
+  transform: translateX(-50%);
 }
 
-.vfx-filter::-webkit-scrollbar {
-  display: none;
-}
-
-.vfx-filter .chip {
-  flex: none;
-}
-
-/* ---------- VFX: efectos de kill ---------- */
-
-#vfx-stage {
-  margin-top: 20px;
-  scroll-margin-top: calc(var(--header-h) + 12px);
-}
-
-.vfx-stage {
-  display: grid;
-}
-
-.vfx-screen {
+.cx-step {
   display: grid;
   place-items: center;
-  min-height: 340px;
-  padding: 44px 16px 16px;
-  border-bottom: 1px solid var(--ui-line);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #333947;
+  background: #1b1e26;
+  color: #fff;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
 }
 
-/* Los VFX son de píxeles (320 px): a su tamaño natural y, si la pantalla la amplía, con los píxeles nítidos */
-.vfx-anim {
-  width: 320px;
-  image-rendering: pixelated !important;
+.cx-step svg {
+  width: 16px;
+  height: 16px;
 }
 
-.vfx-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  padding: 22px;
+.cx-step:hover {
+  border-color: var(--c);
+  background: var(--c);
+  color: #07080b;
 }
 
-.vfx-info h3 {
-  margin: 8px 0 6px;
-  font: 800 clamp(26px, 3.2vw, 34px) / 1.1 var(--font-display);
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
+.cx-step:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
-.vfx-info > p {
-  margin: 0;
-  color: var(--ui-text-2);
-  font-size: 16px;
+.cx-count {
+  min-width: 70px;
+  color: var(--cx-tx-3);
+  font: 700 12px/1 var(--font-body);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
-.vfx-info > .vfx-note {
-  margin-top: 10px;
-  color: var(--ui-muted);
-  font-size: 14px;
+.cx-count b {
+  color: #fff;
+  font: 800 15px/1 var(--font-display);
 }
 
-.vfx-info .card-foot {
-  margin-top: 20px;
-  padding: 14px 14px 14px 18px;
-  border: 1px solid var(--ui-line);
-  border-radius: var(--r);
-  background: var(--ui-2);
+/* La ficha */
+.cx-body {
+  padding: 18px 16px;
+  border-top: 1px solid #000;
+  background:
+    var(--grain),
+    linear-gradient(180deg, var(--cx-2) 0%, var(--cx-1) 100%);
 }
 
-.vfx-info .price.free {
-  color: var(--get);
+.cx-kicker {
+  color: var(--c-hi, var(--c));
+  font: 800 11px/1.2 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
-.vfx-info .price.owned {
-  color: var(--ui-text);
+.cx-body h3 {
+  margin-top: 8px;
+  color: #fff;
+  font: 800 26px/1.1 var(--font-display);
+  letter-spacing: -0.01em;
 }
 
-/* Lo que llevas puesto, debajo de la ficha */
-.vfx-loadout {
+.cx-desc {
+  margin: 8px 0 0;
+  color: var(--cx-tx-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.cx-facts {
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--cx-line);
+  list-style: none;
 }
 
-.vfx-slot {
+.cx-facts li {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--cx-tx-2);
+  font-size: 13px;
+}
+
+.cx-facts svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--c);
+}
+
+/* Lo que es para ti y su botón, en una placa negra */
+.cx-deal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 11px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
+}
+
+.cx-deal-text {
+  display: grid;
+  flex: 1 1 150px;
+  gap: 3px;
+  min-width: 0;
+  padding-left: 2px;
+}
+
+.cx-deal-text b {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--get);
+  font: 800 19px/1.1 var(--font-display);
+}
+
+.cx-deal-text b svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cx-deal.is-owned b {
+  color: #fff;
+}
+
+.cx-deal.is-on b {
+  color: var(--ok-2);
+}
+
+.cx-deal-text span {
+  color: var(--cx-tx-3);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.cx-deal .btn {
+  flex: 1 1 170px;
+}
+
+/* El secundario dentro de la ventana: grafito claro, macizo */
+.cx .btn-ghost {
+  --a: #2a2f3b;
+  --b: #353b4a;
+  --lip: #050608;
+  box-shadow:
+    inset 0 0 0 1px #4a5162,
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 var(--lift) 0 var(--lip);
+}
+
+/* Los paquetes de skills antiguos, al final de VFX */
+.cx-old {
+  margin: 0 14px 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-1);
+}
+
+.cx-old header {
+  display: grid;
+  gap: 4px;
+}
+
+.cx-old h3 {
+  color: #fff;
+  font: 800 16px/1.2 var(--font-display);
+}
+
+.cx-old header span {
+  color: var(--cx-tx-3);
+  font-size: 13px;
+}
+
+.cx-old-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cx-slot {
   display: flex;
   gap: 12px;
   align-items: center;
-  min-width: 0;
-  padding: 8px 10px 8px 8px;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-0);
+  padding: 10px;
+  border-radius: 11px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-2);
 }
 
-.vfx-slot.is-on {
-  border-color: color-mix(in srgb, var(--ok-2) 55%, var(--ui-line));
+.cx-slot.is-on {
+  border-color: var(--ok-2);
 }
 
-.vfx-slot > div:not(.vfx-slot-art) {
-  flex: 1;
-  min-width: 0;
-}
-
-.vfx-slot-art {
-  display: grid;
+.cx-slot-art {
   flex: none;
-  place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   overflow: hidden;
-  border-radius: 10px;
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
-  color: var(--ui-muted);
+  border-radius: 9px;
+  background: var(--cx-0);
 }
 
-.vfx-slot-art img {
+.cx-slot-art img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-.vfx-slot span {
-  display: block;
-  color: var(--ui-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.vfx-slot.is-on span {
-  color: var(--ok-2);
-}
-
-.vfx-slot b {
-  display: block;
-  overflow: hidden;
-  font: 700 13.5px/1.3 var(--font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.vfx-slot .btn {
-  flex: none;
-}
-
-/* Paquetes de skills de antes (ya no se dan): solo los ve quien tenía alguno */
-.vfx-old {
+.cx-slot > div:nth-child(2) {
   display: grid;
-  gap: 8px;
-}
-
-.vfx-old-label {
-  margin-top: 6px;
-  color: var(--ui-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* Cada categoría de efectos: título con una barra de su color y su mosaico */
-.vfx-group {
-  margin-top: 28px;
-}
-
-.vfx-group header {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--ui-line);
-}
-
-.vfx-group header::before {
-  content: '';
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: var(--vfx);
-}
-
-.vfx-group h3 {
-  font: 800 18px/1.2 var(--font-display);
-  letter-spacing: -0.01em;
-}
-
-.vfx-group header span {
-  padding: 1px 8px;
-  border-radius: 6px;
-  background: var(--ui-2);
-  color: var(--ui-text-2);
-  font-size: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Mosaico de kills: miniatura que se anima al pasar el ratón; tocar una la pone en el escenario */
-.vfx-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.vfx-tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  gap: 2px;
   min-width: 0;
-  overflow: hidden;
-  padding: 0;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
-  color: var(--ui-text);
-  text-align: left;
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease),
-    border-color 0.2s,
-    box-shadow 0.2s;
 }
 
-.vfx-tile:hover {
-  border-color: var(--ui-line-2);
-}
-
-.vfx-tile.is-sel {
-  border-color: var(--brand);
-  box-shadow: inset 0 0 0 1px var(--brand);
-}
-
-.vfx-tile-art {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  border-bottom: 1px solid var(--ui-line);
-  background: var(--sk-bg);
-}
-
-.vfx-tile-art img {
-  width: 92%;
-  height: 92%;
-  object-fit: contain;
-}
-
-.vfx-tile-name {
-  overflow: hidden;
-  padding: 9px 10px 10px;
-  font: 700 12.5px/1.25 var(--font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.vfx-tile.is-sel .vfx-tile-name {
-  background: var(--brand);
-  color: #fff;
-}
-
-.vfx-tag {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--ok-2);
-  color: #03281b;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* ---------- Skills: las clases del TF Client ---------- */
-
-.sk-hero {
-  display: grid;
-  gap: 16px;
-}
-
-/* Tus clases: la activa y las demás que tienes, para cambiar de una a otra */
-.sk-mine {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
-}
-
-.sk-mine p {
-  margin: 0;
-  color: var(--ui-text-2);
-  font-size: 14px;
-}
-
-.sk-mine.has-classes {
-  justify-content: flex-start;
-}
-
-.sk-mine-label {
-  color: var(--ui-muted);
-  font-size: 11px;
+.cx-slot span {
+  color: var(--cx-tx-3);
+  font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.sk-mine-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
+.cx-slot.is-on span {
+  color: var(--ok-2);
 }
 
-.sk-mine-item {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  max-width: 100%;
-  min-height: 38px;
-  padding: 4px 12px 4px 4px;
-  border-radius: 10px;
-  border: 1px solid var(--ui-line-2);
-  background: var(--ui-2);
-  color: var(--ui-text);
-  font: 700 13px/1.2 var(--font-body);
-  cursor: pointer;
-  transition:
-    border-color 0.2s,
-    background-color 0.2s;
-}
-
-.sk-mine-item img {
-  width: 28px;
-  height: 28px;
-  flex: none;
-  border-radius: 7px;
-}
-
-.sk-mine-item span {
+.cx-slot b {
   overflow: hidden;
+  font: 700 14px/1.25 var(--font-display);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sk-mine-item i {
-  padding: 2px 7px;
-  border-radius: 5px;
-  background: var(--ok-2);
-  color: #03281b;
-  font: normal 900 9.5px/1.3 var(--font-body);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+/* ---------- Skills: plantel de clases y ficha de la clase ---------- */
+
+/* El plantel: retratos con el icono de la clase (pixel art, ampliado sin suavizar) sobre su color */
+.sk-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.sk-mine-item:hover {
-  background: var(--ui-3);
+.sk-tile .cx-tile-art img {
+  width: 54%;
+  height: 54%;
+  border-radius: 10px;
+  outline: 2px solid #000;
+  box-shadow:
+    0 0 0 4px var(--c-lo),
+    0 10px 18px -6px #000;
+  filter: none;
 }
 
-.sk-mine-item.is-active {
-  border-color: var(--ok-2);
+.sk-tile .cx-tile-name {
+  overflow: visible;
+  min-height: 42px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: normal;
 }
 
-/* La ficha de la clase elegida */
-#sk-detail {
-  margin-top: 20px;
-  scroll-margin-top: calc(var(--header-h) + 12px);
-}
-
-.sk-top {
+/* La ficha: cabecera con el emblema sobre el color de la clase y, debajo, qué es la clase */
+.sk-head {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0 14px;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #000;
+  background:
+    var(--grain),
+    linear-gradient(100deg, var(--c-lo) 0%, var(--c-ink) 62%, #0e1015 100%);
 }
 
-/* El escenario: la vista previa arriba (fondo liso = el pintado en la imagen) y debajo la skill con su tecla */
+.sk-emblem {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 13px;
+  border: 2px solid #fff;
+  background: #07080b;
+  box-shadow:
+    0 0 0 4px var(--c-lo),
+    0 12px 24px -10px #000;
+}
+
+.sk-emblem img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+.sk-head-text {
+  min-width: 0;
+}
+
+.sk-head-text .cx-kicker {
+  color: var(--c-hi);
+}
+
+.sk-head h3 {
+  margin-top: 6px;
+  color: #fff;
+  font: 800 clamp(22px, 2.6vw, 28px) / 1.1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.sk-group {
+  display: none;
+  flex: none;
+  gap: 7px;
+  align-items: center;
+  align-self: start;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 7px;
+  border: 1px solid var(--g);
+  background: #07080b;
+  color: #fff;
+  font: 700 12px/1 var(--font-body);
+  white-space: nowrap;
+}
+
+.sk-head-desc {
+  grid-column: 1 / -1;
+  margin: 10px 0 0;
+  color: #dfe2ea;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.sk-group i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--g);
+  transform: rotate(45deg);
+}
+
+/* La pantalla: enmarcada sobre la luz del color de la clase; por dentro, del mismo color que el fondo pintado en las
+   vistas previas (así la imagen no se nota recortada) */
+#sk-screen {
+  padding: 12px;
+  background:
+    var(--grain),
+    radial-gradient(80% 90% at 50% 40%, var(--c-lo) 0%, var(--c-ink) 80%);
+}
+
 .sk-screen {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  height: 100%;
-  border-bottom: 1px solid var(--ui-line);
+  place-items: center;
+  max-width: 520px;
+  margin-inline: auto;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid #000;
+  background: var(--sk-bg);
+  box-shadow:
+    0 0 0 2px var(--c),
+    0 18px 36px -14px #000;
 }
 
-.sk-anim {
-  width: 480px;
-  place-self: center;
+/* La vista previa entera, a todo lo que mide la pantalla (es cuadrada como la imagen) */
+.sk-screen .sk-anim {
+  width: 100%;
+  height: auto;
 }
 
 .sk-noanim {
   display: grid;
   gap: 18px;
-  place-self: center;
   justify-items: center;
   max-width: 320px;
-  padding: 72px 24px 48px;
+  padding: 24px;
   text-align: center;
 }
 
 .sk-noanim-icon {
   width: 112px;
   height: 112px;
-  border-radius: 20px;
-  border: 1px solid var(--ui-line-2);
-  background: var(--ui-1);
+  border-radius: 22px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 5px var(--c-lo);
 }
 
 .sk-noanim p {
   margin: 0;
-  color: var(--ui-text-2);
+  color: var(--cx-tx-2);
   font-size: 14px;
 }
 
-.sk-caption {
+/* La barra de skills, como la del juego */
+.sk-skills {
+  padding: 12px 16px 14px;
+  border-top: 1px solid #000;
+  background: var(--cx-0);
+}
+
+.sk-skills-head {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   align-items: center;
-  min-width: 0;
-  padding: 10px 14px 10px 10px;
-  border-top: 1px solid var(--ui-line);
-  background: var(--ui-1);
 }
 
-.sk-caption img {
-  width: 40px;
-  height: 40px;
-  flex: none;
-  border-radius: 9px;
-  border: 1px solid var(--ui-line-2);
-}
-
-.sk-caption div {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.sk-caption b {
-  overflow: hidden;
-  font: 700 14px/1.2 var(--font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sk-key {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-  color: var(--ui-text-2);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.sk-key.is-passive {
-  color: #d9c9ff;
-}
-
-/* Una tecla del teclado */
-.sk-shop kbd {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 6px;
-  border: 1px solid #6a74b8;
-  border-bottom-width: 3px;
-  background: var(--ui-3);
+.sk-skills-head h4 {
   color: #fff;
-  font: 800 11.5px/1 var(--font-display);
+  font: 800 12px/1 var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.sk-info {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  padding: 22px;
-}
-
-.sk-title {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  min-width: 0;
-}
-
-.sk-badge {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
-  border: 1px solid var(--ui-line-2);
-  background: var(--ui-0);
-}
-
-.sk-badge img {
-  width: 48px;
-  height: 48px;
-  border-radius: 9px;
-}
-
-.sk-title h3 {
-  margin-top: 4px;
-  font: 800 clamp(24px, 3vw, 34px) / 1.1 var(--font-display);
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
-}
-
-.sk-desc {
-  margin: 0;
-  color: var(--ui-text-2);
-  font-size: 16px;
-}
-
-.sk-facts {
+.sk-slots-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 10px;
+}
+
+.sk-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-2);
+}
+
+.sk-slot {
+  --slot: 50px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--slot);
+  height: var(--slot);
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid #3a404d;
+  background: #07080b;
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--ease),
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.sk-slot-art img {
+  display: block;
+  width: calc(var(--slot) - 12px);
+  height: calc(var(--slot) - 12px);
+  border-radius: 6px;
+}
+
+.sk-slot-key {
+  position: absolute;
+  top: -6px;
+  left: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 5px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #07080b;
+  font: 800 10.5px/1 var(--font-body);
+}
+
+.sk-slot.is-passive .sk-slot-key {
+  background: var(--cx-tx-3);
+}
+
+.sk-slot:hover {
+  border-color: var(--c);
+}
+
+.sk-slot:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.sk-slot.is-sel {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 2px var(--c),
+    0 8px 18px -6px var(--c);
+}
+
+.sk-slot.is-sel .sk-slot-key {
+  background: var(--c);
+}
+
+/* La skill elegida: nombre, tecla, cooldown y qué hace */
+.sk-pick {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--cx-line-2);
+  border-left: 3px solid var(--c);
+  background: var(--cx-2);
+}
+
+.sk-pick-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+}
+
+.sk-pick-top b {
+  margin-right: 2px;
+  color: #fff;
+  font: 800 15px/1.2 var(--font-display);
+}
+
+.sk-pick p {
+  margin: 5px 0 0;
+  color: var(--cx-tx-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Pastillas de datos: tecla, pasiva, cooldown */
+.cx-pill {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px 0 4px;
+  border-radius: 6px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
+  color: var(--cx-tx-2);
+  font: 700 11.5px/1 var(--font-body);
+  white-space: nowrap;
+}
+
+.cx-pill.is-passive,
+.cx-pill:has(svg) {
+  padding-left: 7px;
+}
+
+.cx-pill svg {
+  width: 13px;
+  height: 13px;
+  color: var(--c);
+}
+
+.cx-pill kbd {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #fff;
+  color: #07080b;
+  font: 800 11px/1 var(--font-body);
+}
+
+/* Datos de la clase, en la misma línea que «Skills» */
+.sk-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .sk-facts li {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--ui-line);
-  background: var(--ui-2);
-  color: var(--ui-text-2);
-  font-size: 13px;
-  font-weight: 700;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--cx-tx-2);
+  font-size: 12.5px;
 }
 
 .sk-facts b {
   color: #fff;
 }
 
-/* Comprar (con dinero o con monedas) o, si ya es tuya, usarla: una caja con dos filas */
+.sk-facts svg {
+  width: 16px;
+  height: 16px;
+  color: var(--c);
+}
+
+/* Comprar o usar la clase, al pie de la ficha */
+.sk-deal {
+  padding: 14px 16px 16px;
+  border-top: 1px solid #000;
+  background:
+    var(--grain),
+    linear-gradient(180deg, var(--cx-2) 0%, var(--cx-1) 100%);
+}
+
+.sk-deal .cx-own {
+  margin-top: 0;
+}
+
+/* Comprar: dos filas de una línea en una placa negra (dinero en ámbar, monedas en oro) */
 .sk-buy {
-  display: grid;
-  margin-top: 4px;
   overflow: hidden;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-2);
+  border-radius: 12px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
 }
 
 .sk-buy-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 4px 12px;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 14px 14px 18px;
+  padding: 8px 8px 8px 14px;
 }
 
 .sk-buy-row + .sk-buy-row {
-  border-top: 1px solid var(--ui-line);
+  border-top: 1px solid var(--cx-line);
 }
 
-.sk-buy-row .price {
-  font-size: 26px;
-  color: var(--buy);
-}
-
-.sk-buy-row .btn {
-  min-width: 210px;
-}
-
-.sk-coins {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  color: #f2d27a;
-  font: 700 20px/1 var(--font-display);
-  font-variant-numeric: tabular-nums;
-}
-
-.sk-coins small {
-  color: var(--ui-muted);
-  font: 700 12px/1 var(--font-body);
-}
-
-.sk-buy-note {
-  margin: 0;
-  padding: 12px 18px 14px;
-  border-top: 1px solid var(--ui-line);
-  background: var(--ui-1);
-  color: var(--ui-muted);
-  font-size: 13px;
-}
-
-.sk-buy-note b {
-  color: #f2d27a;
-}
-
-.sk-buy-note b.is-short {
-  color: var(--red);
-}
-
-/* Si ya es tuya: el estado (activa, tuya o comprándose) con una franja de su color a la izquierda */
-.sk-own {
-  --st: var(--brand-hover);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
-  padding: 14px 16px 14px 18px;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  border-left: 4px solid var(--st);
-  background: var(--ui-2);
-}
-
-.sk-own.is-active {
-  --st: var(--ok-2);
-}
-
-.sk-own.is-pending {
-  --st: var(--buy);
-}
-
-.sk-own > div {
-  flex: 1 1 220px;
-  min-width: 0;
-}
-
-.sk-own-title {
-  display: block;
-  color: #fff;
-  font: 700 17px/1.25 var(--font-display);
-}
-
-.sk-own p {
-  margin: 6px 0 0;
-  color: var(--ui-text-2);
-  font-size: 14px;
-}
-
-/* Las skills de la clase: tocar una la pone en el escenario */
-.sk-list-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  align-items: baseline;
-  padding: 20px 22px 0;
-  border-top: 1px solid var(--ui-line);
-}
-
-.sk-list-head h4 {
-  font: 800 17px/1.3 var(--font-display);
-}
-
-.sk-list-head span {
-  color: var(--ui-muted);
-  font-size: 13px;
-}
-
-.sk-skills {
-  display: grid;
-  gap: 10px;
-  padding: 14px 22px 22px;
-}
-
-.sk-skill {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  min-width: 0;
-  padding: 12px;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-2);
-  color: var(--ui-text);
-  text-align: left;
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease),
-    border-color 0.2s,
-    background-color 0.2s;
-}
-
-.sk-skill:hover {
-  border-color: var(--ui-line-2);
-  background: var(--ui-3);
-}
-
-.sk-skill.is-sel {
-  border-color: var(--brand);
-  box-shadow: inset 0 0 0 1px var(--brand);
-}
-
-.sk-skill-icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 11px;
-  border: 1px solid var(--ui-line-2);
-  background: var(--ui-0);
-}
-
-.sk-skill-icon img {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-}
-
-.sk-skill-text {
-  display: grid;
-  gap: 7px;
-  min-width: 0;
-}
-
-.sk-skill-text b {
-  font: 700 15px/1.25 var(--font-display);
-}
-
-.sk-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.sk-chip {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 3px 9px;
-  border-radius: 7px;
-  border: 1px solid var(--ui-line-2);
-  background: var(--ui-1);
-  color: var(--ui-text-2);
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.sk-chip.is-key {
-  padding-left: 4px;
-  color: #fff;
-}
-
-.sk-chip.is-key kbd {
-  min-width: 18px;
-  height: 18px;
-  border-bottom-width: 2px;
-  font-size: 10px;
-}
-
-.sk-chip.is-passive {
-  border-color: #6a55b8;
-  background: #2a2160;
-  color: #e4dcff;
-}
-
-.sk-skill-desc {
-  color: var(--ui-text-2);
-  font-size: 13.5px;
-  line-height: 1.45;
-}
-
-/* Todas las clases: filtro por tipo y rejilla con el icono de cada una */
-.sk-browse {
-  margin-top: 34px;
-}
-
-.sk-browse-head h3 {
-  font: 800 20px/1.2 var(--font-display);
-}
-
-.sk-filter .sk-n {
-  margin-left: 4px;
-  opacity: 0.7;
-  font-variant-numeric: tabular-nums;
-}
-
-.sk-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.sk-tile {
-  position: relative;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 10px;
-  overflow: hidden;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
-  color: var(--ui-text);
-  text-align: left;
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease),
-    border-color 0.2s,
-    background-color 0.2s;
-}
-
-.sk-tile:hover {
-  border-color: var(--ui-line-2);
-  background: var(--ui-2);
-}
-
-.sk-tile.is-sel {
-  border-color: var(--brand);
-  background: var(--ui-2);
-  box-shadow: inset 0 0 0 1px var(--brand);
-}
-
-.sk-tile-icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 10px;
-  border: 1px solid var(--ui-line-2);
-  background: var(--ui-0);
-}
-
-.sk-tile-icon img {
-  width: 36px;
-  height: 36px;
-  border-radius: 7px;
-}
-
-.sk-tile-text {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-
-.sk-tile-text b {
-  display: -webkit-box;
-  overflow: hidden;
-  font: 700 13px/1.25 var(--font-display);
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.sk-tile-text small {
-  overflow: hidden;
-  color: var(--ui-muted);
-  font-size: 11.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sk-tag {
-  justify-self: start;
-  margin-top: 2px;
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-size: 9.5px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+.sk-buy-label {
+  color: var(--cx-tx-3);
+  font: 800 10.5px/1 var(--font-body);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.sk-tag.is-active {
+.sk-buy-price {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--buy);
+  font: 800 22px/1.1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-buy-row.is-coins .sk-buy-price {
+  color: #ffd76a;
+}
+
+.sk-buy-row .btn {
+  min-width: 132px;
+  min-height: 42px;
+}
+
+.sk-buy-note {
+  margin: 8px 0 0;
+  color: var(--cx-tx-3);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.sk-buy-note b {
+  color: #fff;
+}
+
+.sk-buy-note b.is-short {
+  color: #ff8a7a;
+}
+
+/* Si la clase es tuya: placa de estado con su acción */
+.cx-own {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
+}
+
+.cx-own > div {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.cx-own b {
+  color: #fff;
+  font: 800 16px/1.2 var(--font-display);
+}
+
+.cx-own p {
+  margin: 4px 0 0;
+  color: var(--cx-tx-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.cx-own p b {
+  font: inherit;
+  font-weight: 800;
+}
+
+.cx-own-ico {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--cx-3);
+  color: #fff;
+}
+
+.cx-own-ico svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cx-own.is-on {
+  border-color: var(--ok-2);
+}
+
+.cx-own.is-on .cx-own-ico {
   background: var(--ok-2);
   color: #03281b;
 }
 
-.sk-tag.is-owned {
-  background: var(--ui-3);
-  color: var(--ui-text);
+.cx-own.is-owned .cx-own-ico {
+  background: var(--c);
+  color: #07080b;
 }
 
-.sk-tag.is-pending {
+.cx-own.is-pending .cx-own-ico {
   background: var(--buy);
-  color: var(--buy-ink);
+  color: #2a1a00;
 }
 
 /* ---------- VFX y Skills: tamaños de pantalla ---------- */
 
-@media (max-width: 639px) {
-  /* En el móvil, el icono encima del nombre: así caben enteros nombres largos como «Despertado» */
-  .sk-tile {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 12px 10px 10px 12px;
-  }
-
-  .sk-tile-text {
-    width: 100%;
-  }
-
-  .sk-tile-text b {
-    font-size: 12.5px;
+@media (max-width: 379px) {
+  .sk-slot {
+    --slot: 44px;
   }
 }
 
-@media (max-width: 479px) {
+/* En el móvil, cada forma de pago en dos líneas: qué es y el precio, y debajo el botón a todo lo ancho */
+@media (max-width: 559px) {
+  .sk-buy-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding: 12px;
+  }
+
   .sk-buy-row .btn {
-    flex: 1 1 100%;
-    min-width: 0;
+    grid-column: 1 / -1;
+    width: 100%;
   }
+}
 
-  .sk-info,
-  .sk-list-head,
-  .sk-skills,
-  .vfx-info {
-    padding-inline: 16px;
-  }
-
-  .vfx-slot {
-    flex-wrap: wrap;
+@media (min-width: 480px) {
+  .sk-group {
+    display: inline-flex;
   }
 }
 
 @media (min-width: 640px) {
-  .vfx-filter {
-    flex-wrap: wrap;
-    margin-inline: 0;
-    padding: 0;
-    overflow: visible;
+  .cx-head {
+    padding: 28px 26px 22px;
   }
 
-  .vfx-tiles {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  .cx-layout {
+    gap: 20px;
+    padding: 20px 22px 24px;
+  }
+
+  .cx-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .sk-grid {
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
   }
+
+  .cx-stage {
+    min-height: 360px;
+  }
+
+  .cx-body {
+    padding: 22px 22px 22px;
+  }
+
+  .cx-old {
+    margin: 0 22px 24px;
+  }
+
+  .cx-old-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sk-head {
+    padding: 16px 20px;
+  }
+
+  #sk-screen {
+    padding: 14px 20px;
+  }
+
+  .sk-deal {
+    padding: 14px 20px 16px;
+  }
+
+  .sk-skills {
+    padding: 16px 18px;
+  }
+
 }
 
-@media (min-width: 960px) {
-  /* El escenario a la izquierda y la ficha a la derecha */
-  .vfx-stage {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+/* Desde 900 px, la ficha en dos columnas: la pantalla (cuadrada y grande) y, a su lado, la barra de skills */
+@media (min-width: 900px) {
+  .sk-card {
+    display: grid;
+    grid-template-areas:
+      'head head'
+      'screen skills'
+      'deal deal';
+    grid-template-columns: minmax(0, 1fr) 290px;
   }
 
-  .vfx-screen {
-    min-height: 420px;
-    border-right: 1px solid var(--ui-line);
-    border-bottom: 0;
-  }
-
-  .vfx-info {
-    padding: 32px 34px;
-  }
-
-  .vfx-tiles {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .sk-hero {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-  }
-
-  .sk-hero .sk-mine {
-    max-width: 560px;
-  }
-
-  /* Escenario a la izquierda y la ficha a la derecha; las skills debajo, en dos columnas */
-  .sk-top {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  .sk-head {
+    grid-area: head;
   }
 
   #sk-screen {
     display: grid;
-    border-right: 1px solid var(--ui-line);
+    grid-area: screen;
+    align-content: center;
   }
 
   .sk-screen {
-    min-height: 580px;
-    border-bottom: 0;
-  }
-
-  .sk-info {
-    padding: 32px 34px;
+    width: 100%;
   }
 
   .sk-skills {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-area: skills;
+    border-top: 0;
+    border-left: 1px solid #000;
   }
 
-  .sk-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .sk-deal {
+    grid-area: deal;
   }
 }
 
-@media (hover: hover) and (min-width: 960px) {
-  .vfx-tile:hover,
-  .sk-tile:hover,
-  .sk-skill:hover {
+/* Desde 1024 px, VFX: el catálogo a la izquierda y la vitrina a la derecha. Skills lo hace desde 1200 px (su ficha es
+   más ancha); antes, la ficha arriba y el plantel debajo. */
+@media (min-width: 1024px) {
+  .cx-layout {
+    padding: 22px 26px 28px;
+  }
+
+  .cx-layout:not(.is-skills) {
+    grid-template-areas: 'catalog show';
+    grid-template-columns: minmax(0, 1fr) 410px;
+    gap: 26px;
+    align-items: start;
+  }
+
+  .cx-grid {
+    grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  }
+
+  .sk-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .cx-stage {
+    min-height: 340px;
+  }
+
+  .cx-old {
+    margin: 0 26px 28px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .cx-layout.is-skills {
+    grid-template-areas: 'catalog show';
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+    gap: 26px;
+    align-items: start;
+  }
+
+  .sk-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* La vitrina se queda fija al bajar por el catálogo. Si es más alta que la pantalla, app.js (cxStick) sube su «top»
+   para que quede pegada por abajo y se vea la compra */
+@media (min-width: 1024px) {
+  .cx-layout:not(.is-skills) .cx-show {
+    position: sticky;
+    top: 88px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .cx-layout.is-skills .cx-show {
+    position: sticky;
+    top: 88px;
+  }
+}
+
+@media (hover: hover) {
+  .cx-tile:hover:not(.is-sel) {
+    transform: translateY(-3px);
+  }
+
+  .sk-slot:hover:not(.is-sel) {
     transform: translateY(-2px);
   }
 }
@@ -7232,22 +7549,6 @@ body:not([data-hero]) .header::before {
     font-size: 17px;
   }
 
-  .shop-tabs .tab {
-    gap: 6px;
-    padding: 0 6px;
-    font-size: 12px;
-    letter-spacing: 0;
-    white-space: normal;
-    line-height: 1.15;
-    text-align: center;
-  }
-
-  .shop-tabs .tab .count {
-    min-width: 20px;
-    height: 18px;
-    padding: 0 5px;
-    font-size: 10.5px;
-  }
 }
 
 /* ---------- Pantallas medianas ---------- */
@@ -7330,10 +7631,6 @@ body:not([data-hero]) .header::before {
   .legal > span {
     max-width: 340px;
     text-align: right;
-  }
-
-  .shop-tabs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .crate-grid,
@@ -7562,14 +7859,6 @@ body:not([data-hero]) .header::before {
 
   .legal-section {
     padding: 32px 34px;
-  }
-
-  .shop-tabs {
-    display: flex;
-  }
-
-  .shop-tabs .tab {
-    flex: 1 1 auto;
   }
 
   .roulette {

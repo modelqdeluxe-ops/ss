@@ -323,10 +323,13 @@ def index():
 
 
 def tienda():
-    tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'),
-            ('vfx', 'VFX'), ('skills', 'Skills')]
+    # La barra de categorías: una tarjeta por sección con el dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py)
+    # sobre el color de su sección (--tone-* en styles.css); app.js le añade el contador
+    tabs = [('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'), ('vfx', 'VFX'), ('skills', 'Skills')]
     tab_html = '\n'.join(
-        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
+        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">'
+        f'<img class="tab-art" src="/img/tabs/{k}.webp" alt="" width="256" height="192" decoding="async">'
+        f'<span class="tab-label">{label}</span></button>'
         for k, label in tabs)
     return head('Tienda — Tierras Fantásticas',
                 'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, cosméticos, crates con sets completos, VFX, clases de skills y recompensas gratis. Pago seguro y entrega automática en el juego.',
@@ -348,7 +351,7 @@ def tienda():
       </div>
     </section>
     <section class="wrap shop-body">
-      <div class="tabs shop-tabs frame" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
+      <div class="tabs shop-tabs" role="tablist" aria-label="Secciones de la tienda" id="shop-tabs">
 {tab_html}
       </div>
       <div class="notice" data-payments-off hidden>{I['lock']}<span>La tienda está en mantenimiento: los pagos no están disponibles en este momento.</span></div>
