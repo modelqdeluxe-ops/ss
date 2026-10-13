@@ -2737,73 +2737,44 @@ body:not([data-hero]) .header::before {
   padding-bottom: 64px;
 }
 
-/* Barra de categorías (la «tarjeta de botones», rehecha el 13 oct. 2026 tras «siempre tiendes a hacer diseños
-   transparentes»): todo OPACO y con contraste de verdad. Una placa de acero muy oscura con grano y su filo de luz
-   arriba; encima, fichas de acero claro (bien distintas de la placa y del contenido de abajo) con el icono en un
-   cuadro MACIZO de su color (--t = --tone-*). La elegida se llena entera de su color, con el texto en tinta oscura,
-   un canto inferior (como los botones de bloque de la web) y su sombra de color. Nada de colores mezclados con
-   transparencia. */
+/* Barra de categorías (la «tarjeta de botones»), rehecha del todo el 13 oct. 2026: una tarjeta por sección con el
+   dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py) sobre un fondo MACIZO de su color (--t = --tone-*), el
+   nombre en blanco abajo y el número arriba. Nada translúcido. La elegida se enciende (su color a tope), lleva marco
+   blanco y su dibujo crece; las demás quedan en su color oscuro. */
 .shop-tabs {
-  position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 30px;
-  padding: 9px 9px 12px;
-  border-radius: 20px;
-}
-
-.shop-tabs.frame {
-  border: 1px solid #3a4584;
-  background: var(--grain), linear-gradient(180deg, #121733 0%, #080a1a 100%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.1),
-    inset 0 -2px 0 rgb(0 0 0 / 0.5),
-    0 0 0 1px #03040c,
-    0 26px 50px -24px #000;
-}
-
-.shop-tabs.frame::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 22px;
-  right: 22px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--shimmer) 0 0 / 220% 100%;
-  animation: shimmer-flow 9s linear infinite;
-  pointer-events: none;
 }
 
 .tab {
   --t: var(--a-400);
-  --t-deep: color-mix(in srgb, var(--t), #000 42%);
+  --t-0: color-mix(in srgb, var(--t) 13%, #07080c);
+  --t-1: color-mix(in srgb, var(--t) 30%, #07080c);
+  --t-2: color-mix(in srgb, var(--t) 55%, #07080c);
   position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  align-items: flex-end;
   min-width: 0;
-  min-height: 90px;
-  padding: 12px 8px 11px;
-  border: 1px solid #44509a;
-  border-radius: 14px;
-  background: var(--grain), linear-gradient(180deg, #2f3a74 0%, #222b5a 100%);
-  color: #f3f4ff;
-  font: 700 12.5px/1.15 var(--font-body);
-  text-align: center;
-  white-space: normal;
+  min-height: 104px;
+  padding: 10px 10px 9px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--t) 38%, #000);
+  border-radius: 12px;
+  background:
+    var(--grain),
+    radial-gradient(95% 90% at 80% 26%, var(--t-2) 0%, var(--t-1) 50%, var(--t-0) 100%);
+  color: #fff;
+  text-align: left;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 3px 0 #0a0d22;
+    0 2px 0 #020306,
+    0 14px 26px -16px #000;
   transition:
     transform 0.25s var(--ease),
-    color 0.2s,
     border-color 0.2s,
-    box-shadow 0.25s,
-    background-color 0.2s;
+    box-shadow 0.25s;
 }
 
 .tab[data-category='gratis'] { --t: var(--tone-gratis); }
@@ -2814,49 +2785,48 @@ body:not([data-hero]) .header::before {
 .tab[data-category='skills'] { --t: var(--tone-skills); }
 .tab[data-category='monedas'] { --t: var(--tone-monedas); }
 
-/* El icono: un cuadro macizo de su color, con luz arriba y su canto */
-.tab-ico {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  border: 1px solid var(--t-deep);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--t), #fff 28%) 0%, var(--t) 55%, color-mix(in srgb, var(--t), #000 14%) 100%);
-  color: #0b0e1f;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.55),
-    0 2px 0 var(--t-deep);
+/* El dibujo, arriba a la derecha y con su sombra */
+.tab-art {
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  width: 72%;
+  height: 66%;
+  object-fit: contain;
+  object-position: 100% 50%;
+  filter: drop-shadow(0 6px 8px #000) saturate(0.85) brightness(0.9);
   transition:
-    box-shadow 0.25s,
-    transform 0.3s var(--spring);
-}
-
-.tab-ico svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 2.1;
+    transform 0.35s var(--spring),
+    filter 0.25s;
+  pointer-events: none;
 }
 
 .tab-label {
-  min-width: 0;
+  position: relative;
+  max-width: 100%;
+  font: 800 10px/1.2 var(--font-display);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 0 #000,
+    0 0 10px #000;
 }
 
+/* El número, arriba a la izquierda en una pastilla negra */
 .tab .count {
   position: absolute;
-  top: 7px;
-  right: 7px;
+  top: 8px;
+  left: 8px;
   display: inline-grid;
   place-items: center;
-  min-width: 22px;
+  min-width: 24px;
   height: 20px;
   padding: 0 6px;
-  border-radius: 999px;
-  border: 1px solid #44509a;
-  background: #0b0e22;
-  color: #dfe3ff;
-  font-size: 10.5px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--t) 45%, #000);
+  background: #07080c;
+  color: #fff;
+  font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -2866,98 +2836,91 @@ body:not([data-hero]) .header::before {
 }
 
 .tab:hover {
-  border-color: var(--t);
-  background: var(--grain), linear-gradient(180deg, #3a4688 0%, #2a3468 100%);
-  color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.2),
-    0 3px 0 #0a0d22,
-    0 14px 26px -14px var(--t);
+  --t-1: color-mix(in srgb, var(--t) 38%, #07080c);
+  --t-2: color-mix(in srgb, var(--t) 68%, #07080c);
+  border-color: color-mix(in srgb, var(--t) 70%, #000);
 }
 
-.tab:hover .tab-ico {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.55),
-    0 2px 0 var(--t-deep),
-    0 0 18px -4px var(--t);
+.tab:hover .tab-art {
+  filter: drop-shadow(0 6px 8px #000);
 }
 
 .tab:active {
   transform: translateY(2px);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 1px 0 #0a0d22;
 }
 
 .tab:focus-visible {
   outline: 2px solid #fff;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
-/* La elegida: llena de su color, texto en tinta, canto de su color oscurecido y sombra de su color */
+/* La elegida: su color a tope, marco blanco y sombra de su color */
 .tab[aria-selected='true'] {
-  border-color: color-mix(in srgb, var(--t), #fff 40%);
-  background: var(--grain), linear-gradient(180deg, color-mix(in srgb, var(--t), #fff 22%) 0%, var(--t) 48%, color-mix(in srgb, var(--t), #000 12%) 100%);
-  color: #0b0e1f;
+  --t-0: color-mix(in srgb, var(--t) 42%, #07080c);
+  --t-1: color-mix(in srgb, var(--t) 72%, #07080c);
+  --t-2: color-mix(in srgb, var(--t), #fff 12%);
+  border-color: #fff;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.6),
-    0 4px 0 var(--t-deep),
-    0 16px 30px -12px var(--t);
+    0 0 0 2px #fff,
+    0 3px 0 2px #020306,
+    0 18px 34px -12px var(--t);
 }
 
-.tab[aria-selected='true'] .tab-ico {
-  border-color: #0b0e1f;
-  background: #0b0e1f;
-  color: var(--t);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+.tab[aria-selected='true'] .tab-art {
+  filter: drop-shadow(0 8px 10px #000);
+  transform: scale(1.08);
 }
 
 .tab[aria-selected='true'] .count {
-  border-color: #0b0e1f;
-  background: #0b0e1f;
-  color: #fff;
+  border-color: #fff;
 }
 
 @media (hover: hover) {
   .tab:hover:not([aria-selected='true']) {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
   }
 
-  .tab:hover .tab-ico {
-    transform: scale(1.06);
+  .tab:hover:not([aria-selected='true']) .tab-art {
+    transform: scale(1.06) rotate(-2deg);
   }
 }
 
-/* Desde 760 px: las seis en una fila (fichas verticales); desde 1100 px, cada una con el icono a la izquierda, el
-   nombre en una línea y el contador al final (las fichas ocupan lo que pide su nombre) */
+/* Desde 760 px, las seis en una fila */
 @media (min-width: 760px) {
   .shop-tabs {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-    grid-template-columns: none;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .tab {
+    min-height: 122px;
+    padding: 12px 12px 11px;
+  }
+
+  .tab-label {
+    font-size: 12px;
+    letter-spacing: 0.02em;
   }
 }
 
 @media (min-width: 1100px) {
   .shop-tabs {
-    display: flex;
+    gap: 12px;
   }
 
   .tab {
-    flex: 1 1 auto;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 10px;
-    min-height: 64px;
-    padding: 10px 12px 10px 11px;
-    font-size: 14px;
-    text-align: left;
-    white-space: nowrap;
+    min-height: 132px;
+    padding: 14px 14px 12px;
+    border-radius: 14px;
+  }
+
+  .tab-label {
+    font-size: 13px;
   }
 
   .tab .count {
-    position: static;
-    margin-left: auto;
+    top: 10px;
+    left: 10px;
   }
 }
 

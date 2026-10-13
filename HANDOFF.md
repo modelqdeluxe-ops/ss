@@ -9,6 +9,19 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+### EN CURSO (13 oct 2026): rework COMPLETO de verdad de la barra de categorías, VFX y Skills
+Queja del dueño tras las dos rondas de abajo: *«sigue el mismo puto diseño de hace 10 builds, no hiciste un rework
+completo»*. Las rondas anteriores solo recolorearon la misma estructura (rejilla de 6 fichas con icono; vista previa
+arriba + mosaico abajo, igual desde el 1.3.37). Plan (estructura y lenguaje nuevos, no recolorear):
+- [x] **Barra** = tarjetas con el dibujo de cada sección (`img/tabs/*.webp`, `tools/tab_art.py`) sobre su color
+  macizo; la elegida encendida con marco blanco. `pages.py` ya no usa iconos SVG en las pestañas.
+- [ ] **VFX** = «colección» dentro de una ventana grafito propia (`.cx`): filtros arriba, catálogo de tarjetas tipo
+  rareza (fondo macizo del color de la categoría, franja de color y nombre) a la izquierda y vitrina fija (sticky)
+  a la derecha con la arena, nombre, datos y la acción. En el móvil: vitrina, filtros y catálogo.
+- [ ] **Skills** = «selección de clase» en la misma ventana: plantel de retratos a la izquierda y ficha de la clase
+  a la derecha (cabecera con emblema, pantalla, barra de skills, compra en filas).
+- [ ] Capturas medidas, HANDOFF, PR, fusión, comprobación en vivo.
+
 ### Web (13 oct 2026): rediseño de la tienda — barra de categorías, VFX y Skills (hecho y publicado)
 Pedido del dueño (textual): *«Necesito un rediseño completo de la gui de skills, vfx y tarjeta de botones de tienda,
 quiero un cambio real, actualmente es tosco, feo, se confunde con el tema de la pagina y todo.»* («tarjeta de botones
