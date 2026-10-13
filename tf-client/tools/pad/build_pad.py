@@ -556,6 +556,7 @@ def build():
     for key, _ in APPS:
         files[f'icon_{key}.png'] = normalize(DRAW[key]().image())
     files['icon_admin.png'] = normalize(iconos2.admin().image())
+    files['icon_apps.png'] = normalize(iconos4.apps_admin().image())  # APPS del pad de administrador
     atlas, meta = font_atlas()
     files['font.png'] = atlas
     for name, im in files.items():

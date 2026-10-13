@@ -37,10 +37,23 @@ final class PadHomePage extends PadPage {
 
     /** Las del pad de administrador (las dibuja el servidor, solo para el staff). */
     static final List<App> ADMIN_APPS = List.of(
-            new App("a_apps", "APPS", "admin"), new App("a_tienda", "TIENDA", "tienda"), new App("a_kits", "KITS", "kits"),
+            new App("a_apps", "APPS", "apps"), new App("a_tienda", "TIENDA", "tienda"), new App("a_kits", "KITS", "kits"),
             new App("a_recompensas", "RECOMPENSAS", "recompensas"), new App("a_viajes", "VIAJES", "viajes"),
             new App("a_gts", "GTS", "gts"), new App("a_comunidad", "COMUNIDAD", "comunidad"),
             new App("a_oficios", "OFICIOS", "oficios"), new App("a_cazas", "CAZAS", "cazas"), new App("a_ajustes", "AJUSTES", "admin"));
+
+    /** Lo que configura cada app del pad de administrador: sale abajo, en su franja, al pasar el ratón (1.3.66). */
+    private static final java.util.Map<String, String> ADMIN_HINTS = java.util.Map.of(
+            "a_apps", "Qué apps salen en el pad de los jugadores: pulsa una para mostrarla u ocultarla.",
+            "a_tienda", "Categorías, objetos y precios de compra y de venta de la tienda.",
+            "a_kits", "Crea kits paso a paso: objetos, monedas, cada cuánto y quién puede.",
+            "a_recompensas", "El calendario diario y las recompensas sueltas (diarias, semanales...).",
+            "a_viajes", "Los puntos de viaje (se ponen donde estás) y qué warps se ven.",
+            "a_gts", "Lo que está a la venta entre jugadores. RETIRAR se lo devuelve a su dueño.",
+            "a_comunidad", "Las fotos denunciadas y las recientes: bórralas o dalas por buenas.",
+            "a_oficios", "Cuántos oficios a la vez, esperas, cada cuánto se paga y antitrampas.",
+            "a_cazas", "Las presas que rotan cada 12 h: mob, cantidad, monedas e icono.",
+            "a_ajustes", "Esperas de viaje, Explorar, hogares, envíos, regalos, GTS y recargar configs.");
 
     /** Ficha (textura de 40x40 + 2 de sombra) e icono (32x32, a 4 del borde). */
     private static final int TILE_TEX = 40, ICON_OFF = 4;
@@ -228,6 +241,7 @@ final class PadHomePage extends PadPage {
             if (entering) g.pose().popPose();
         }
         pad.noScissor(g);
+        if (pad.admin) adminHint(g, hoverIndex >= 0 ? apps.get(hoverIndex) : null);
         if (contentH > H) {
             int bx = SW - 5, bh = H - 4;
             g.fill(bx, Y + 2, bx + 2, Y + 2 + bh, 0x5518265C);
@@ -235,6 +249,47 @@ final class PadHomePage extends PadPage {
             int ty = Y + 2 + (bh - th) * scroll / Math.max(1, contentH - H);
             g.fill(bx, ty, bx + 2, ty + th, 0xFFF6B628);
         }
+    }
+
+    /**
+     * Pad de administrador (1.3.66): abajo, en una franja de cristal oscuro, lo que configura la app del ratón (su
+     * nombre en oro y la frase) o, si no hay ninguna, cómo se usa. Va a la escala grande, como el texto de las apps; si
+     * la rejilla llegase hasta abajo, no sale.
+     */
+    private void adminHint(GuiGraphics g, App app) {
+        String name = app == null ? "" : app.name;
+        String text = app == null ? "Pasa el ratón por una app para ver qué configura. Todo se guarda al momento."
+                : ADMIN_HINTS.getOrDefault(app.id, "");
+        if (text.isEmpty()) return;
+        float s = pad.bs;
+        int nameW = name.isEmpty() ? 0 : PadFont.width(name) + 9;
+        int w = 10 + nameW + PadUi.font().width(text) + 10, h = 15;
+        float maxW = (SW - 12) / s;
+        if (w > maxW) return;
+        float x0 = (SW - w * s) / 2F, y0 = Y + H - 5 - h * s;
+        if (grid != null && grid.top + grid.contentH - 4 - scroll > y0 - 3) return;
+        int acc = app == null ? 0xFFF6B628 : PadSkin.accent(app.id);
+        g.pose().pushPose();
+        g.pose().translate(x0, y0, 0);
+        g.pose().scale(s, s, 1);
+        // cristal oscuro con las esquinas recortadas, luz arriba y sombra abajo
+        g.fill(1, h, w - 1, h + 1, 0x3018265C);
+        g.fill(1, 0, w - 1, h, 0xC0182654);
+        g.fill(0, 1, 1, h - 1, 0xC0182654);
+        g.fill(w - 1, 1, w, h - 1, 0xC0182654);
+        g.fill(2, 1, w - 2, 2, 0x38FFFFFF);
+        // el color de la app, a la izquierda
+        g.fill(3, 3, 5, h - 3, acc);
+        g.fill(3, 3, 5, 4, PadSkin.mix(acc, PadSkin.WHITE, 0.5F));
+        int tx = 9;
+        if (!name.isEmpty()) {
+            PadFont.draw(g, name, tx, 2, 0xFFE680, true);
+            tx += nameW - 6;
+            g.fill(tx, 7, tx + 2, 9, 0x90FFFFFF);
+            tx += 5;
+        }
+        g.drawString(PadUi.font(), text, tx, 4, 0xFFFFFF, true);
+        g.pose().popPose();
     }
 
     /** El retraso de la ficha i (s) en la cascada de entrada y en la ola de brillo: por su diagonal. */

@@ -81,27 +81,33 @@ THEME = {
     'guia': (0x1E9E8C, 'Cómo funciona cada app, paso a paso.'),
     'ajustes': (0x5B74A6, 'Tu pad, a tu manera.'),
     'admin': (0x5B74A6, 'Configura el servidor.'),
+    'apps': (0x4A7FD0, 'Las apps que ven los jugadores.'),
 }
 DEFAULT = (0x3496FA, '')
 
 
+def base_of(app):
+    """PadSkin.base: las del admin usan el tema de su app (a_tienda → tienda); APPS el suyo y AJUSTES el del admin."""
+    if app == 'a_apps':
+        return 'apps'
+    if app == 'a_ajustes':
+        return 'admin'
+    return app[2:] if app.startswith('a_') else app
+
+
 def accent(app):
-    base = app[2:] if app.startswith('a_') else app
-    if app in ('a_apps', 'a_ajustes'):
-        base = 'admin'
+    base = base_of(app)
     return rgb(THEME.get(base, DEFAULT)[0])
 
 
 def tagline(app):
-    base = app[2:] if app.startswith('a_') else app
-    if app in ('a_apps', 'a_ajustes'):
-        base = 'admin'
+    base = base_of(app)
     return THEME.get(base, DEFAULT)[1]
 
 
 def icon_of(app):
-    base = app[2:] if app.startswith('a_') else app
-    if app in ('a_apps', 'a_ajustes', 'ajustes'):
+    base = base_of(app)
+    if base in ('admin', 'ajustes'):
         return 'admin'
     return 'viajes' if base == 'explorar' else base
 

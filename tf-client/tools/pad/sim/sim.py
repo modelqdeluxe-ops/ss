@@ -795,6 +795,47 @@ class Sim(Skin):
             self.ptext(name, tx + t // 2 - self.pwidth(name) // 2, ty + t + 2, (255, 230, 128) if hv else (255, 255, 255))
         self.no_scissor()
 
+    ADMIN_HINTS = {
+        'a_apps': 'Qué apps salen en el pad de los jugadores: pulsa una para mostrarla u ocultarla.',
+        'a_tienda': 'Categorías, objetos y precios de compra y de venta de la tienda.',
+        'a_kits': 'Crea kits paso a paso: objetos, monedas, cada cuánto y quién puede.',
+        'a_recompensas': 'El calendario diario y las recompensas sueltas (diarias, semanales...).',
+        'a_viajes': 'Los puntos de viaje (se ponen donde estás) y qué warps se ven.',
+        'a_gts': 'Lo que está a la venta entre jugadores. RETIRAR se lo devuelve a su dueño.',
+        'a_comunidad': 'Las fotos denunciadas y las recientes: bórralas o dalas por buenas.',
+        'a_oficios': 'Cuántos oficios a la vez, esperas, cada cuánto se paga y antitrampas.',
+        'a_cazas': 'Las presas que rotan cada 12 h: mob, cantidad, monedas e icono.',
+        'a_ajustes': 'Esperas de viaje, Explorar, hogares, envíos, regalos, GTS y recargar configs.'}
+
+    def admin_hint(self, app=None, name=''):
+        """PadHomePage.adminHint (1.3.66): la franja de abajo de la portada del pad de administrador."""
+        from skin import accent, mix, WHITE
+        text = self.ADMIN_HINTS.get(app, '') if app else 'Pasa el ratón por una app para ver qué configura. Todo se guarda al momento.'
+        s = self.bs
+        name_w = self.pwidth(name) + 9 if name else 0
+        w, h = 10 + name_w + self.mwidth(text) + 10, 15
+        if w > (self.UW - 12) / s:
+            return
+        x0, y0 = (self.UW - w * s) / 2, self.Y + self.H - 5 - h * s
+        g = getattr(self, 'home_grid', None)
+        acc = accent(app) if app else rgb(0xF6B628)
+        with self.big_at(x0, y0, px=self.big):
+            self.fill(1, h, w - 1, h + 1, (24, 38, 92, 0x30))
+            self.fill(1, 0, w - 1, h, (24, 38, 84, 0xC0))
+            self.fill(0, 1, 1, h - 1, (24, 38, 84, 0xC0))
+            self.fill(w - 1, 1, w, h - 1, (24, 38, 84, 0xC0))
+            self.fill(2, 1, w - 2, 2, (255, 255, 255, 0x38))
+            self.fill(3, 3, 5, h - 3, acc)
+            self.fill(3, 3, 5, 4, mix(acc, WHITE, 0.5))
+            tx = 9
+            if name:
+                self.ptext(name, tx, 2, (255, 230, 128))
+                tx += name_w - 6
+                self.fill(tx, 7, tx + 2, 9, (255, 255, 255, 0x90))
+                tx += 5
+            self.mtext(text, tx + 1, 5, (62, 62, 62))
+            self.mtext(text, tx, 4, (255, 255, 255))
+
     def _tile_scaled(self, icon, name, tx, ty, t, ts, sc):
         """Una ficha (con su nombre) dibujada en un lienzo aparte y escalada sc desde el centro de la ficha."""
         if sc <= 0.02:

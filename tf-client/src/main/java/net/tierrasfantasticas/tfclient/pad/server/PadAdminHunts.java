@@ -11,7 +11,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.tierrasfantasticas.tfclient.market.TFMarket;
 import net.tierrasfantasticas.tfclient.pad.PadServer;
 import net.tierrasfantasticas.tfclient.pad.PadView;
 import net.tierrasfantasticas.tfclient.pad.TFPadNet;
@@ -55,68 +54,106 @@ public final class PadAdminHunts {
         return id != null && ForgeRegistries.ENTITY_TYPES.containsKey(id);
     }
 
-    /** El campo que se está escribiendo de esa presa, o "". */
-    private static String editing(ServerPlayer p, String id) {
-        String v = PadServer.get(p, APP_ID + ".edit", "");
-        return v.startsWith(id + "|") ? v.substring(id.length() + 1) : "";
+    /** Los campos de una presa: clave, título, explicación, lo que pide el campo de abajo e icono. */
+    private record Field(String key, String title, String help, String hint, Item icon) {}
+
+    private static final List<Field> FIELDS = List.of(
+            new Field("nombre", "Nombre", "El que ven los jugadores.", "NOMBRE DE LA CAZA", Items.NAME_TAG),
+            new Field("objetivo", "Mob", "Su id (minecraft:zombie, elmod:mob), una #etiqueta, hostil o animal.",
+                    "ID DEL MOB, #ETIQUETA, HOSTIL O ANIMAL", Items.ZOMBIE_HEAD),
+            new Field("cantidad", "Cantidad de base", "Cuántos hay que cazar (sube con la temporada).", "CANTIDAD (1 A 100.000)", Items.ARROW),
+            new Field("monedas", "Monedas de base", "El premio: a lo largo de la temporada sube hasta x2,5.", "MONEDAS DE BASE", Items.GOLD_NUGGET),
+            new Field("descripcion", "Descripción", "", "DESCRIPCIÓN ({N} = LA CANTIDAD)", Items.WRITABLE_BOOK));
+
+    private static Field field(String key) {
+        for (Field f : FIELDS) if (f.key.equals(key)) return f;
+        return null;
     }
 
     static final class App implements PadServer.App {
         @Override
-        public PadView view(ServerPlayer player, String tab) {
+        public PadView view(ServerPlayer player, String rawTab) {
+            String tab = PadItemPicker.tab(player, APP_ID, rawTab);
             JsonObject o = PadMissions.readConfig();
-            if (tab.startsWith("c:")) {
-                JsonObject h = hunt(o, tab.substring(2));
-                if (h != null) return detail(player, h);
+            if (tab.startsWith("c:") || tab.startsWith("pi:")) {
+                String id = tab.substring(tab.indexOf(':') + 1);
+                JsonObject h = hunt(o, id);
+                if (h != null) {
+                    if (tab.startsWith("c:")) return detail(player, h);
+                    return PadItemPicker.builder(player, APP_ID, tab, "Icono de " + TFJson.str(h, "nombre", id) + ": pulsa el objeto que "
+                            + "saldrá en su fila.", false, TFJson.str(h, "icono", "")).footer(PadView.Btn.of("ATRÁS", "tab:c:" + id, PadView.BLUE)).build();
+                }
             }
-            PadView.Builder b = PadView.of(APP_ID)
-                    .header("Salen 4 cada 12 h y rotan por temporadas de 90 días (suben hasta x2,5). Pulsa una para cambiarla;")
-                    .header("para un mob de un mod, escribe su id abajo.");
-            for (JsonElement e : hunts(o)) {
+            JsonArray list = hunts(o);
+            PadView.Builder b = PadView.of(APP_ID).selected("")
+                    .header("Salen 4 cada 12 h y rotan por temporadas de 90 días (el premio sube hasta x2,5). Pulsa una para cambiarla; "
+                            + "para una nueva, escribe el id del mob abajo.");
+            for (JsonElement e : list) {
                 if (!e.isJsonObject()) continue;
                 JsonObject h = e.getAsJsonObject();
                 String id = TFJson.str(h, "id", "");
                 b.row(new PadView.Row(icon(h), TFJson.str(h, "nombre", id), TEXT,
                         List.of(TFJson.num(h, "cantidad", 1) + " × " + TFJson.str(h, "objetivo", "?")), -1,
-                        PadView.moneyExact(TFJson.num(h, "monedas", 0)), null, null).clickable("tab:c:" + id));
+                        PadView.moneyExact(TFJson.num(h, "monedas", 0)), PadView.Btn.of("EDITAR", "tab:c:" + id, PadView.BLUE), null)
+                        .clickable("tab:c:" + id));
             }
-            b.empty("No hay presas. Escribe el id de un mob abajo y pulsa AÑADIR.");
+            b.empty("No hay presas. Escribe el id de un mob abajo (minecraft:zombie o el de un mod) y pulsa AÑADIR.");
             b.input("nueva", "ID DEL MOB (MINECRAFT:ZOMBIE, MOD:MOB)", 64, "AÑADIR");
             return b.build();
         }
 
         private PadView detail(ServerPlayer player, JsonObject h) {
             String id = TFJson.str(h, "id", "");
-            String edit = editing(player, id);
-            PadView.Builder b = PadView.of(APP_ID).selected("c:" + id);
+            String target = "c:" + id;
+            String f = PadAdminUi.field(player, APP_ID, target);
+            long n = TFJson.num(h, "cantidad", 1), coins = TFJson.num(h, "monedas", 0);
+            String desc = TFJson.str(h, "descripcion", "");
+            PadView.Builder b = PadView.of(APP_ID).selected(target);
             b.hero(new PadView.Row(icon(h), TFJson.str(h, "nombre", id), 0xC83C3C,
-                    List.of(TFJson.str(h, "descripcion", "").replace("{n}", String.valueOf(TFJson.num(h, "cantidad", 1)))), -1,
-                    PadView.moneyExact(TFJson.num(h, "monedas", 0)), null, null));
-            b.row(field(h, "nombre", "Nombre", Items.NAME_TAG, TFJson.str(h, "nombre", ""), edit));
-            b.row(field(h, "objetivo", "Mob", Items.ZOMBIE_HEAD, TFJson.str(h, "objetivo", "") + "  (id, #etiqueta, hostil o animal)", edit));
-            b.row(field(h, "cantidad", "Cantidad de base", Items.ARROW, String.valueOf(TFJson.num(h, "cantidad", 1)), edit));
-            b.row(field(h, "monedas", "Monedas de base", Items.GOLD_NUGGET, PadView.moneyExact(TFJson.num(h, "monedas", 0)).substring(1), edit));
-            b.row(field(h, "descripcion", "Descripción", Items.WRITABLE_BOOK, TFJson.str(h, "descripcion", "") + "  ({n} = la cantidad)", edit));
-            b.row(new PadView.Row(icon(h), "Icono", TEXT, List.of("El objeto que sale en su fila."), -1, "",
-                    PadView.Btn.of("MI MANO", "icono:" + id, PadView.GRAY), null));
-            b.footer(PadView.Btn.of("ATRÁS", "tab:", PadView.BLUE));
+                    List.of(desc.isEmpty() ? n + " × " + TFJson.str(h, "objetivo", "?") : desc.replace("{n}", String.valueOf(n)),
+                            "Así la ven los jugadores (con la cantidad de base)."), -1, PadView.moneyExact(coins), null, null));
+            for (Field fd : FIELDS) {
+                String value = switch (fd.key) {
+                    case "cantidad" -> "×" + PadView.number(n);
+                    case "monedas" -> PadView.moneyExact(coins);
+                    case "descripcion" -> "";
+                    default -> TFJson.str(h, fd.key, "");
+                };
+                String help = fd.key.equals("descripcion") ? (desc.isEmpty() ? "Sin descripción." : "«" + desc + "»") + " {n} = la cantidad." : fd.help;
+                b.row(PadAdminUi.value(new ItemStack(fd.icon), fd.title, help, value, "f:" + fd.key, f.equals(fd.key)));
+            }
+            b.row(PadAdminUi.button(icon(h), "Icono", "El objeto que sale en su fila.", "", PadView.Btn.of("CAMBIAR", "tab:pi:" + id, PadView.BLUE)));
             boolean sure = PadServer.confirming(player, APP_ID + ".borrar:" + id);
-            b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "BORRAR", "borrar:" + id, PadView.RED));
-            if (!edit.isEmpty()) b.input("campo:" + id, edit.toUpperCase(Locale.ROOT), 96, "GUARDAR");
+            b.row(PadAdminUi.button(new ItemStack(Items.BARRIER), "Borrar la caza", "Deja de salir en la rotación.", "",
+                    PadView.Btn.of(sure ? "¿SEGURO?" : "BORRAR", "borrar", PadView.RED)));
+            b.footer(PadView.Btn.of("ATRÁS", "tab:", PadView.BLUE));
+            Field fd = field(f);
+            if (fd != null) {
+                b.input("v", fd.hint, 96, "GUARDAR");
+                b.footer(PadView.Btn.of("CANCELAR", "f:", PadView.GRAY));
+            }
             return b.build();
         }
 
-        private static PadView.Row field(JsonObject h, String key, String title, Item icon, String value, String edit) {
-            return new PadView.Row(new ItemStack(icon), title, TEXT, List.of(value), -1, "",
-                    PadView.Btn.of("EDITAR", "editar:" + TFJson.str(h, "id", "") + ":" + key, PadView.BLUE), null).selected(edit.equals(key));
-        }
-
         @Override
-        public String action(ServerPlayer player, String tab, String action, String text) {
-            if (action.startsWith("tab:")) return action.substring(4);
+        public String action(ServerPlayer player, String rawTab, String action, String text) {
+            String tab = PadItemPicker.tab(player, APP_ID, rawTab);
+            String id = tab.startsWith("c:") || tab.startsWith("pi:") ? tab.substring(tab.indexOf(':') + 1) : "";
+            JsonObject o = PadMissions.readConfig();
+            // el selector del icono
+            if (tab.startsWith("pi:")) {
+                ItemStack chosen = PadItemPicker.action(player, APP_ID, action, text);
+                if (chosen != null) {
+                    JsonObject h = hunt(o, id);
+                    if (chosen.isEmpty() || h == null) return null;
+                    h.addProperty("icono", String.valueOf(ForgeRegistries.ITEMS.getKey(chosen.getItem())));
+                    PadMissions.writeConfig(o);
+                    TFPadNet.notice(player, "Icono: " + chosen.getHoverName().getString() + ".");
+                    return "c:" + id;
+                }
+            }
             String[] a = action.split(":", 2);
             String arg = a.length > 1 ? a[1] : "";
-            JsonObject o = PadMissions.readConfig();
             switch (a[0]) {
                 case "nueva" -> {
                     String target = text.trim().toLowerCase(Locale.ROOT);
@@ -126,10 +163,10 @@ public final class PadAdminHunts {
                     }
                     String path = target.contains(":") ? target.substring(target.indexOf(':') + 1) : target.replace("#", "");
                     String base = "c_" + path.replaceAll("[^a-z0-9]+", "_");
-                    String id = base;
-                    for (int i = 2; hunt(o, id) != null; i++) id = base + "_" + i;
+                    String nid = base;
+                    for (int i = 2; hunt(o, nid) != null; i++) nid = base + "_" + i;
                     JsonObject h = new JsonObject();
-                    h.addProperty("id", id);
+                    h.addProperty("id", nid);
                     h.addProperty("nombre", "Caza de " + path.replace('_', ' '));
                     h.addProperty("descripcion", "Derrota {n} " + path.replace('_', ' '));
                     h.addProperty("tipo", "matar");
@@ -140,29 +177,28 @@ public final class PadAdminHunts {
                     hunts(o).add(h);
                     PadMissions.writeConfig(o);
                     TFPadNet.notice(player, "Presa añadida. Cambia su nombre, cantidad, monedas e icono.");
-                    return "c:" + id;
+                    return "c:" + nid;
                 }
-                case "editar" -> { // editar:<id>:<campo>
-                    int c = arg.lastIndexOf(':');
-                    if (c > 0) PadServer.put(player, APP_ID + ".edit", arg.substring(0, c) + "|" + arg.substring(c + 1));
-                }
-                case "campo" -> {
-                    String field = editing(player, arg);
-                    JsonObject h = hunt(o, arg);
+                case "f" -> PadAdminUi.editField(player, APP_ID, tab, arg.equals(PadAdminUi.field(player, APP_ID, tab)) ? "" : arg);
+                case "v" -> {
+                    String field = PadAdminUi.field(player, APP_ID, tab);
+                    JsonObject h = hunt(o, id);
                     if (field.isEmpty() || h == null || text.isBlank()) return null;
                     String v = text.trim();
                     switch (field) {
-                        case "cantidad", "monedas" -> {
-                            long n = v.equals("0") ? 0 : TFMarket.parsePrice(v);
-                            if (n < 0 || (field.equals("cantidad") && n < 1)) {
-                                TFPadNet.notice(player, "Escribe un número.");
-                                return null;
-                            }
-                            h.addProperty(field, field.equals("cantidad") ? Math.min(100_000, n) : n);
+                        case "cantidad" -> {
+                            long n = PadAdminUi.number(player, v, 1, 100_000);
+                            if (n < 0) return null;
+                            h.addProperty(field, n);
+                        }
+                        case "monedas" -> {
+                            long n = PadAdminUi.number(player, v, 0, 1_000_000_000L);
+                            if (n < 0) return null;
+                            h.addProperty(field, n);
                         }
                         case "objetivo" -> {
                             if (!validTarget(v.toLowerCase(Locale.ROOT))) {
-                                TFPadNet.notice(player, "No existe ese mob: «" + v + "».");
+                                TFPadNet.notice(player, "No existe ese mob: «" + v + "». Ejemplo: minecraft:zombie o elmod:mimob.");
                                 return null;
                             }
                             h.addProperty("objetivo", v.toLowerCase(Locale.ROOT));
@@ -170,24 +206,14 @@ public final class PadAdminHunts {
                         default -> h.addProperty(field, v);
                     }
                     PadMissions.writeConfig(o);
-                    PadServer.put(player, APP_ID + ".edit", null);
+                    PadAdminUi.stopEditing(player, APP_ID);
                     TFPadNet.notice(player, "Guardado.");
                 }
-                case "icono" -> {
-                    ItemStack hand = player.getMainHandItem();
-                    JsonObject h = hunt(o, arg);
-                    if (hand.isEmpty() || h == null) {
-                        TFPadNet.notice(player, "Ponte en la mano el objeto que quieres de icono.");
-                        return null;
-                    }
-                    h.addProperty("icono", String.valueOf(ForgeRegistries.ITEMS.getKey(hand.getItem())));
-                    PadMissions.writeConfig(o);
-                }
                 case "borrar" -> {
-                    if (!PadServer.confirm(player, APP_ID + ".borrar:" + arg)) return null;
+                    if (id.isEmpty() || !PadServer.confirm(player, APP_ID + ".borrar:" + id)) return null;
                     JsonArray keep = new JsonArray();
                     for (JsonElement e : hunts(o)) {
-                        if (!(e.isJsonObject() && TFJson.str(e.getAsJsonObject(), "id", "").equals(arg))) keep.add(e);
+                        if (!(e.isJsonObject() && TFJson.str(e.getAsJsonObject(), "id", "").equals(id))) keep.add(e);
                     }
                     o.add("cazas", keep);
                     PadMissions.writeConfig(o);

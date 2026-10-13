@@ -85,8 +85,8 @@ APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'),
         ('hogares', 'HOGARES'), ('kits', 'KITS'), ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'),
         ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('ranking', 'RANKING'),
         ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('web', 'WEB'), ('guia', 'GUÍA')]
-ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('recompensas', 'RECOMPENSAS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
-         ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('admin', 'AJUSTES')]
+ADMIN = [('apps', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('recompensas', 'RECOMPENSAS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
+         ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('cazas', 'CAZAS'), ('admin', 'AJUSTES')]
 
 if not ONLY or 'p_inicio' in ONLY:
     s = Sim(backdrop=False)
@@ -134,8 +134,14 @@ if not ONLY or 'p_admin' in ONLY:
     s = Sim()
     s.status('PAD ADMIN', back=False, title_color=rgb(0xFFD36A), greens=False)
     s.home(ADMIN)
+    s.admin_hint()
     s.save(OUT + 'p_admin.png')
     NAMES.append('p_admin')
+    s = Sim()
+    s.status('PAD ADMIN', back=False, title_color=rgb(0xFFD36A), greens=False)
+    s.home(ADMIN, hover='tienda')
+    s.admin_hint('a_tienda', 'TIENDA')
+    s.save(OUT + 'p_admin_tienda.png')
 
 # --- Oficios -----------------------------------------------------------------------------------------------------------
 page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], app='oficios', hover=2, gallery=[
@@ -404,13 +410,15 @@ page('p_vacio_armario', 'ARMARIO', [('cabeza', 'CABEZA'), ('pecho', 'PECHO'), ('
 
 # --- Admin -------------------------------------------------------------------------------------------------------------
 page('a_recompensas', 'RECOMPENSAS', [('cal', 'CALENDARIO'), ('otras', 'OTRAS')], 'cal',
-     ['El calendario diario: cada día se reclama el siguiente de la racha. Pulsa un día para cambiarlo.'], [
-         ('clock_00', 'Calendario', T, ['Encendido.'], -1, '', ('SÍ', G), None),
-         ('compass_00', 'Si alguien se salta un día', T, ['Vuelve al día 1.'], -1, '', ('CAMBIAR', B), None),
+     ['Cada día se reclama el siguiente de la racha. Pulsa un día.'], [
+         ('', 'El calendario', T, [], -1, '', None, None),
+         ('clock_00', 'Calendario', T, ['Sale en Recompensas: cada día se reclama el siguiente.'], -1, '', ('SÍ', G), None),
+         ('compass_00', 'Reiniciar si se salta un día', T, ['Vuelve al día 1: la racha se pierde.'], -1, '', ('SÍ', G), None),
      ], cards=[
-         ('bread', 'Día 1', 0xF6B628, '1 obj. · 25', False, 8), ('torch', 'Día 2', 0xF6B628, '1 obj. · 25', False, 16),
-         ('iron_ingot', 'Día 3', 0xF6B628, '1 obj. · 50', False, 4), ('cooked_beef', 'Día 4', 0xF6B628, '1 obj. · 50', False, 12),
-         ('golden_carrot', 'Día 5', 0xF6B628, '1 obj. · 75', False, 8),
+         ('bread', 'Día 1', 0xF6B628, '¤25', False, 8), ('torch', 'Día 2', 0xF6B628, '¤25', False, 16),
+         ('iron_ingot', 'Día 3', 0xF6B628, '¤50', False, 4), ('cooked_beef', 'Día 4', 0xF6B628, '¤50', False, 12),
+         ('golden_carrot', 'Día 5', 0xF6B628, '¤75', False, 8), ('emerald', 'Día 6', 0xF6B628, '+3 VERDES', False),
+         ('diamond', 'Día 7', 0xF6B628, '¤150', False),
      ], footer=[('AÑADIR DÍA', G), ('QUITAR EL ÚLTIMO', R)], app='a_recompensas')
 page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
      ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], app='a_kits', hover=5, cells=[
@@ -420,17 +428,95 @@ page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')],
                                      'white_wool', 'orange_wool', 'gold_block', 'iron_block', 'bricks', 'tnt', 'bookshelf',
                                      'obsidian', 'torch', 'chest', 'diamond_ore', 'diamond_block', 'crafting_table', 'furnace')
      ], input_=('BUSCAR (NOMBRE O ID)', 'BUSCAR', ''), footer=[('»', B), ('×16', GO), ('ATRÁS', B)])
-page('a_tienda_item', 'TIENDA', [], '', ['Minerales · Diamante'], [
-    ('gold_ingot', 'Precio de compra', T, ['Lo que paga el jugador por lote. 0 = no se vende.'], -1, '950', ('EDITAR', B), None, True),
-    ('emerald', 'Precio de venta', T, ['Lo que cobra el jugador. 0 = la tienda no lo compra.'], -1, '400', ('EDITAR', B), None),
-    ('chest', 'Cantidad por lote', T, ['Objetos que van en cada lote.'], -1, '1', ('EDITAR', B), None),
-], input_=('NUEVO VALOR', 'GUARDAR', '1200'), footer=[('ATRÁS', B)], app='a_tienda')
-page('a_apps', 'APPS', [], '', ['Las que apagues no salen en el pad de los jugadores.'], [
-    ('iron_pickaxe', 'Oficios', T, ['Activa'], -1, '', ('SÍ', G), None),
-    ('writable_book', 'Misiones', T, ['Activa'], -1, '', ('SÍ', G), None),
-    ('crossbow', 'Cazas', M, ['Apagada'], -1, '', ('NO', GR), None),
-    ('chest', 'Tienda', T, ['Activa'], -1, '', ('SÍ', G), None),
-], app='a_apps')
+# 1.3.66: el pad de administrador con las piezas de Kits (PadAdminUi): interruptores que dicen qué pasa, valores con su
+# unidad y CAMBIAR (que abre el campo de abajo), fichas grandes y el selector de objetos
+PADT = os.path.join(ROOT, 'src/main/resources/assets/tfclient/textures/gui/pad')
+
+
+def app_card(icon, name, color, on):
+    return (icon, name, color if on else 0x8C96AA, 'VISIBLE' if on else 'OCULTA', False,
+            {'img': os.path.join(PADT, f'icon_{icon}.png'), 'smooth': False, 'tone': 2 if on else 3})
+
+
+def toggle(icon, title, help_, on, on_t, off_t):
+    lines = ([help_] if help_ else []) + [on_t if on else off_t]
+    return (icon, title, T if on else M, lines, -1, '', ('SÍ', G) if on else ('NO', R), None)
+
+
+def value(icon, title, help_, val, editing=False, second=None):
+    return (icon, title, T, [help_] if help_ else [], -1, val, ('ESCRIBE ABAJO', GO) if editing else ('CAMBIAR', B), second, editing)
+
+
+def section(title):
+    return ('', title, T, [], -1, '', None, None)
+
+
+page('a_apps', 'APPS', [], '', ['22 de 24 visibles. Pulsa una app para mostrarla u ocultarla en el pad de todos los jugadores (al momento).'], [],
+     cards=[app_card('musica', 'Música', 0x3496FA, True), app_card('oficios', 'Oficios', 0xE0892E, True),
+            app_card('misiones', 'Misiones', 0x22A884, True), app_card('pase', 'TF Pass', 0x2EAF5C, True),
+            app_card('gachapon', 'Gachapón', 0xE0489E, False), app_card('cazas', 'Cazas', 0xC8553D, True),
+            app_card('recompensas', 'Recompensas', 0xE2466A, True), app_card('tienda', 'Tienda', 0xE6A019, True),
+            app_card('gts', 'GTS', 0x8B5CF0, False), app_card('monedero', 'Monedero', 0xD49A12, True),
+            app_card('viajes', 'Viajes', 0x1AA3C8, True), app_card('hogares', 'Hogares', 0xDB6440, True)],
+     footer=[('MOSTRAR TODAS', G)], app='a_apps', hover=2)
+AJ_TABS = [('', 'VIAJES'), ('explorar', 'EXPLORAR'), ('jugadores', 'JUGADORES'), ('economia', 'ECONOMÍA'), ('sistema', 'SISTEMA')]
+page('a_ajustes', 'AJUSTES', AJ_TABS, '', ['Las esperas y los warps de la app Viajes.'], [
+    value('clock_00', 'Espera entre viajes', 'Para volver a viajar (al spawn, a un warp o a un punto).', '30 s', True),
+    value('repeater', 'Cuenta atrás antes de viajar', 'Quieto y sin recibir daño. 0 = al momento.', '3 s'),
+    toggle('ender_pearl', 'Warps de EssentialsX en Viajes', 'Los /warp del servidor salen en la app Viajes.', True,
+           'Salen en Viajes (menos los que ocultes en VIAJES › WARPS).', ''),
+], input_=('SEGUNDOS (0 A 3.600)', 'GUARDAR', ''), footer=[('CANCELAR', GR)], app='a_ajustes')
+page('a_ajustes_economia', 'AJUSTES', AJ_TABS, 'economia', ['Envíos del Monedero y el GTS (el mercado).'], [
+    toggle('gold_nugget', 'Mandar monedas a otros', 'Desde la app Monedero, a otro jugador.', True, 'Se pueden mandar monedas desde el Monedero.', ''),
+    value('gold_ingot', 'Máximo por envío', 'Lo más que se puede mandar de una vez.', '¤1.000.000'),
+    value('emerald', 'GTS: cosas a la venta a la vez', 'Por jugador.', '10 a la vez'),
+    value('clock_00', 'GTS: días a la venta', 'Luego vuelve a su dueño (a GTS › Recoger).', '7 días'),
+], app='a_ajustes')
+page('a_tienda', 'TIENDA', [], '', ['Pulsa una categoría para ver sus objetos y precios. Para una nueva, escribe su nombre abajo y pulsa CREAR.'], [
+    section('Categorías (3)'),
+    ('diamond', 'Minerales', T, ['6 objetos · la tienda compra 4'], -1, '', ('EDITAR', B), None),
+    ('bread', 'Comida', T, ['9 objetos · la tienda compra 2'], -1, '', ('EDITAR', B), None),
+    ('oak_sapling', 'Granjas', T, ['Vacía: entra y pulsa AÑADIR OBJETO.'], -1, '', ('EDITAR', B), None),
+    section('La tienda'),
+    toggle('chest', 'Tienda abierta', '', True, 'Todos pueden comprar y vender.', ''),
+], input_=('NOMBRE DE UNA CATEGORÍA NUEVA', 'CREAR', ''), app='a_tienda')
+page('a_tienda_cat', 'TIENDA', [], '', [], [
+    section('La categoría'),
+    value('name_tag', 'Nombre', 'El que ven los jugadores en la tienda.', 'Minerales'),
+], hero=('diamond', 'Minerales', 0xE6A019, ['6 objetos · se compran 5 · la tienda compra 4',
+                                            'Oro: lo que paga el jugador. Verde: lo que le paga la tienda.'],
+         -1, '', None, None),
+     cards=[('diamond', 'Diamante', 0x40C850, '¤950', False, {'badge': '+¤400'}),
+            ('iron_ingot', 'Lingote de hierro', 0x40C850, '¤60', False, 16, {'badge': '+¤25'}),
+            ('gold_ingot', 'Lingote de oro', 0x40C850, '¤120', False, 16, {'badge': '+¤50'}),
+            ('emerald', 'Esmeralda', 0xF6B628, '¤300', False),
+            ('lapis_lazuli', 'Lapislázuli', 0x40C850, 'SOLO VENTA', False, 32, {'badge': '+¤8', 'tone': 4}),
+            ('coal', 'Carbón', 0x8C96AA, 'SIN PRECIO', False, 64, {'tone': 3})],
+     footer=[('ATRÁS', B), ('AÑADIR OBJETO', G)], app='a_tienda')
+page('a_tienda_item', 'TIENDA', [], '', [], [
+    value('gold_nugget', 'Precio de compra', 'Lo que paga el jugador. 0 = no se puede comprar.', '¤950', True, ('QUITAR', GR)),
+    value('hopper', 'Precio de venta', 'Lo que le paga la tienda. 0 = no lo compra.', '¤400', False, ('QUITAR', GR)),
+    value('diamond', 'Unidades por compra', 'Se compra y se vende de tantas en tantas.', '×1'),
+], hero=('diamond', 'Diamante', 0xE6A019, ['El jugador lo compra por 950 monedas.', 'La tienda se lo compra por 400 monedas.'], -1, '', None, None),
+     input_=('LO QUE PAGA EL JUGADOR (0 = NO SE COMPRA)', 'GUARDAR', '1200'), footer=[('ATRÁS', B), ('CANCELAR', GR)], app='a_tienda')
+page('a_viajes', 'VIAJES', [('', 'PUNTOS'), ('warps', 'WARPS')], '', ['Pulsa uno para cambiarlo. Nuevo: ve al sitio y AÑADIR AQUÍ.'], [
+    ('filled_map', 'Plaza mayor', T, ['Mundo · 120, 64, -340'], -1, '', ('EDITAR', B), ('IR', GR)),
+    ('nether_star', 'Arena PvP', T, ['Mundo · -880, 70, 512'], -1, '', ('EDITAR', B), ('IR', GR)),
+    ('diamond_pickaxe', 'Minas del norte', T, ['Mundo · 40, 12, -2210'], -1, '', ('EDITAR', B), ('IR', GR)),
+], input_=('NOMBRE DEL PUNTO (SE PONE DONDE ESTÁS)', 'AÑADIR AQUÍ', ''), app='a_viajes')
+page('a_viajes_punto', 'VIAJES', [], '', [], [
+    value('name_tag', 'Nombre', 'El que ven los jugadores.', 'Plaza mayor'),
+    ('filled_map', 'Icono', T, ['Mapa.'], -1, '', ('CAMBIAR', B), None),
+    ('compass_00', 'Posición', T, ['Lo mueve a donde estás ahora, mirando hacia donde miras.'], -1, '', ('MOVER AQUÍ', GO), None),
+    ('barrier', 'Borrar el punto', T, ['Deja de salir en Viajes.'], -1, '', ('BORRAR', R), None),
+], hero=('filled_map', 'Plaza mayor', 0x1AA3C8, ['Mundo · 120, 64, -340', 'Sale en la app Viajes de todos los jugadores.'], -1, '',
+         ('IR', B), None), footer=[('ATRÁS', B)], app='a_viajes')
+page('a_oficios', 'OFICIOS', [], '', ['Ajustes de los oficios. Lo que paga cada uno, sus misiones y niveles: en config/tfclient/oficios.json (y RECARGAR).'], [
+    section('General'),
+    toggle('iron_pickaxe', 'Oficios', '', True, 'Encendidos: se gana dinero trabajando.', ''),
+    value('book', 'Oficios a la vez', 'Cuántos puede tener cada jugador.', '2'),
+    value('clock_00', 'Espera para cambiar', 'Tras unirse a uno, para poder dejarlo o cambiarlo.', '1 h'),
+], footer=[('RECARGAR OFICIOS', GO)], app='a_oficios')
 
 # Comunidad (PadCommunityPage) con el selector de emojis (PadEmojiPicker): ver comunidad.py
 import comunidad  # noqa: E402

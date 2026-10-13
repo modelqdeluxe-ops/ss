@@ -63,6 +63,7 @@ final class PadSkin {
         theme("camara", 0x3B9BE0, "Tus fotos para la comunidad.");
         theme("ajustes", 0x5B74A6, "Tu pad, a tu manera.");
         theme("admin", 0x5B74A6, "Configura el servidor.");
+        theme("apps", 0x4A7FD0, "Las apps que ven los jugadores.");
         theme("guia", 0x1E9E8C, "Cómo funciona cada app, paso a paso.");
     }
 
@@ -72,7 +73,8 @@ final class PadSkin {
 
     /** La app de la que se toma el tema: las del admin usan el de su app («a_tienda» → «tienda»). */
     private static String base(String app) {
-        if (app.equals("a_apps") || app.equals("a_ajustes")) return "admin";
+        if (app.equals("a_apps")) return "apps";
+        if (app.equals("a_ajustes")) return "admin";
         return app.startsWith("a_") ? app.substring(2) : app;
     }
 

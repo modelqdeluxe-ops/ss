@@ -22,24 +22,28 @@ import net.tierrasfantasticas.tfclient.util.TFConfigDir;
  * (o a mano, y se recarga desde el pad de administrador). Cada ajuste tiene su clave, su tipo y sus límites aquí.
  */
 public final class PadConfig {
-    /** Un ajuste numérico o de sí/no, con su texto para el pad de administrador. */
-    public record Setting(String key, String label, String help, long min, long max, long def, boolean bool) {}
+    /**
+     * Un ajuste numérico o de sí/no, con su texto para el pad de administrador: group es la pestaña de AJUSTES donde
+     * sale (viajes, explorar, jugadores, economia) y unit cómo se lee el número (s: segundos, que se escriben como «5 min»;
+     * monedas; o la palabra que va detrás: «bloques», «días»…).
+     */
+    public record Setting(String key, String label, String help, long min, long max, long def, boolean bool, String group, String unit) {}
 
     public static final List<Setting> SETTINGS = List.of(
-            new Setting("viajes.espera", "Espera entre viajes", "Segundos que espera un jugador para volver a viajar (al spawn, a un warp o a un punto).", 0, 3600, 30, false),
-            new Setting("viajes.cuentaAtras", "Cuenta atrás antes de viajar", "Segundos quieto y sin recibir daño antes de viajar. 0 = al momento.", 0, 10, 3, false),
-            new Setting("viajes.warps", "Warps de EssentialsX en Viajes", "Los /warp del servidor salen en la app Viajes.", 0, 1, 1, true),
-            new Setting("explorar.activado", "Botón Explorar", "Lleva al jugador a un sitio seguro al azar del mundo.", 0, 1, 1, true),
-            new Setting("explorar.min", "Explorar: distancia mínima", "Bloques desde el spawn, como poco.", 100, 100000, 800, false),
-            new Setting("explorar.max", "Explorar: distancia máxima", "Bloques desde el spawn, como mucho.", 200, 200000, 6000, false),
-            new Setting("explorar.espera", "Explorar: espera", "Segundos entre una exploración y la siguiente.", 0, 86400, 300, false),
-            new Setting("hogares.sinRango", "Hogares sin rango", "Cuántos hogares puede guardar quien no tiene rango.", 0, 100, 3, false),
-            new Setting("monedero.enviar", "Mandar monedas a otros", "Desde la app Monedero, a otro jugador.", 0, 1, 1, true),
-            new Setting("monedero.maximo", "Máximo por envío", "Lo más que se puede mandar de una vez.", 1, 1_000_000_000L, 1_000_000, false),
-            new Setting("regalos.activado", "Regalos entre jugadores", "Desde la app Jugadores: regalar objetos y monedas.", 0, 1, 1, true),
-            new Setting("regalos.porDia", "Regalos al día", "Cuántos regalos puede hacer cada jugador al día.", 1, 1000, 10, false),
-            new Setting("gts.maxPublicaciones", "GTS: cosas a la venta a la vez", "Por jugador.", 1, 100, 10, false),
-            new Setting("gts.dias", "GTS: días a la venta", "Luego vuelve a su dueño (a Recoger).", 1, 60, 7, false));
+            new Setting("viajes.espera", "Espera entre viajes", "Para volver a viajar (al spawn, a un warp o a un punto).", 0, 3600, 30, false, "viajes", "s"),
+            new Setting("viajes.cuentaAtras", "Cuenta atrás antes de viajar", "Quieto y sin recibir daño. 0 = al momento.", 0, 10, 3, false, "viajes", "s"),
+            new Setting("viajes.warps", "Warps de EssentialsX en Viajes", "Los /warp del servidor salen en la app Viajes.", 0, 1, 1, true, "viajes", ""),
+            new Setting("explorar.activado", "Botón Explorar", "Lleva al jugador a un sitio seguro al azar del mundo.", 0, 1, 1, true, "explorar", ""),
+            new Setting("explorar.min", "Distancia mínima", "Desde el spawn, como poco.", 100, 100000, 800, false, "explorar", "bloques"),
+            new Setting("explorar.max", "Distancia máxima", "Desde el spawn, como mucho.", 200, 200000, 6000, false, "explorar", "bloques"),
+            new Setting("explorar.espera", "Espera entre exploraciones", "Para volver a explorar.", 0, 86400, 300, false, "explorar", "s"),
+            new Setting("hogares.sinRango", "Hogares sin rango", "Para quien no tiene rango (los rangos dan más).", 0, 100, 3, false, "jugadores", "hogares"),
+            new Setting("regalos.activado", "Regalos entre jugadores", "Desde la app Jugadores: regalar objetos y monedas.", 0, 1, 1, true, "jugadores", ""),
+            new Setting("regalos.porDia", "Regalos al día", "Cuántos puede hacer cada jugador al día.", 1, 1000, 10, false, "jugadores", "al día"),
+            new Setting("monedero.enviar", "Mandar monedas a otros", "Desde la app Monedero, a otro jugador.", 0, 1, 1, true, "economia", ""),
+            new Setting("monedero.maximo", "Máximo por envío", "Lo más que se puede mandar de una vez.", 1, 1_000_000_000L, 1_000_000, false, "economia", "monedas"),
+            new Setting("gts.maxPublicaciones", "GTS: cosas a la venta a la vez", "Por jugador.", 1, 100, 10, false, "economia", "a la vez"),
+            new Setting("gts.dias", "GTS: días a la venta", "Luego vuelve a su dueño (a GTS › Recoger).", 1, 60, 7, false, "economia", "días"));
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final Map<String, Long> VALUES = new LinkedHashMap<>();
