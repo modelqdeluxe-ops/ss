@@ -104,7 +104,8 @@ public final class PadClaims {
 
     /** Los dos botones de una pregunta: el que vale ahora, verde; el otro, gris (pulsarlo la cambia). */
     private static PadView.Btn answer(String label, boolean chosen, String action) {
-        return PadView.Btn.of(label, action, chosen ? PadView.GREEN : PadView.GRAY);
+        // la elegida, en verde si es SÍ y en rojo si es NO; la otra, gris
+        return PadView.Btn.of(label, action, !chosen ? PadView.GRAY : label.equals("NO") ? PadView.RED : PadView.GREEN);
     }
 
     private PadClaims() {}

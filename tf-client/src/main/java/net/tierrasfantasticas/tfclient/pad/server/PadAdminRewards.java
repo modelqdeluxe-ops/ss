@@ -119,7 +119,7 @@ public final class PadAdminRewards {
                         "tab:d:" + i, false);
             }
             b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Calendario", TEXT, List.of(PadRewards.calendarOn() ? "Encendido." : "Apagado: no sale en el pad."),
-                    -1, "", PadView.Btn.of(PadRewards.calendarOn() ? "SÍ" : "NO", "cal.on", PadRewards.calendarOn() ? PadView.GREEN : PadView.GRAY), null));
+                    -1, "", PadView.Btn.of(PadRewards.calendarOn() ? "SÍ" : "NO", "cal.on", PadRewards.calendarOn() ? PadView.GREEN : PadView.RED), null));
             b.row(new PadView.Row(new ItemStack(Items.COMPASS), "Si alguien se salta un día", TEXT,
                     List.of(PadRewards.resetOnMiss() ? "Vuelve al día 1." : "Sigue donde iba."), -1, "",
                     PadView.Btn.of("CAMBIAR", "cal.reset", PadView.BLUE), null));
@@ -148,7 +148,7 @@ public final class PadAdminRewards {
             b.row(new PadView.Row(new ItemStack(Items.NAME_TAG), "Nombre", TEXT, List.of(r.name()), -1, "",
                     PadView.Btn.of("EDITAR", "editar:nombre", PadView.BLUE), null).selected(edit.equals("nombre")));
             b.row(new PadView.Row(new ItemStack(Items.LEVER), "Activada", TEXT, List.of(r.on() ? "Sale en el pad." : "No sale en el pad."), -1, "",
-                    PadView.Btn.of(r.on() ? "SÍ" : "NO", "on:" + r.id(), r.on() ? PadView.GREEN : PadView.GRAY), null));
+                    PadView.Btn.of(r.on() ? "SÍ" : "NO", "on:" + r.id(), r.on() ? PadView.GREEN : PadView.RED), null));
             b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Cada cuánto", TEXT, List.of(PadRewards.typeText(r)), -1, "",
                     PadView.Btn.of("CAMBIAR", "tipo:" + r.id(), PadView.BLUE), null));
             if (r.type().equals("horas")) {

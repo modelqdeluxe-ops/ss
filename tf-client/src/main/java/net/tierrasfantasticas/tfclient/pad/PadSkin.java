@@ -830,20 +830,21 @@ final class PadSkin {
      * lado a otro (k: 0 apagado, 1 encendido; entre medias mientras se mueve).
      */
     static void toggle(GuiGraphics g, int x, int y, float k, boolean hover) {
-        int top = mix(0xFFC9D5E6, 0xFF7CEC98, k), bot = mix(0xFFA8B7CC, 0xFF22A84C, k);
+        // apagado en rojo, encendido en verde (y el color pasa de uno a otro mientras se mueve)
+        int top = mix(0xFFFF7E8A, 0xFF7CEC98, k), bot = mix(0xFFC8283C, 0xFF22A84C, k);
         if (hover) {
             top = lighten(top, 18);
             bot = lighten(bot, 18);
         }
         g.fill(x + 1, y + 14, x + 27, y + 15, 0x3218265C);
-        PadUi.box(g, x, y, 28, 14, mix(0xFF6E80A0, 0xFF147034, k));
+        PadUi.box(g, x, y, 28, 14, mix(0xFF861428, 0xFF147034, k));
         g.fillGradient(x + 1, y + 1, x + 27, y + 13, bot, top);
         g.fill(x + 2, y + 1, x + 26, y + 2, 0x30000000);
         if (k > 0.5F) PadFont.drawShadow(g, "SÍ", x + 4, y + 2, 0xFFFFFF, 0xFF0F5A26);
-        else PadFont.drawShadow(g, "NO", x + 27 - 4 - PadFont.width("NO"), y + 2, 0xFFFFFF, 0xFF56637E);
+        else PadFont.drawShadow(g, "NO", x + 27 - 4 - PadFont.width("NO"), y + 2, 0xFFFFFF, 0xFF7A1020);
         int kx = x + 1 + Math.round(k * 14);
         g.fill(kx + 1, y + 13, kx + 12, y + 14, 0x4018265C);
-        PadUi.box(g, kx, y + 1, 13, 12, mix(0xFF8090B0, 0xFF1E7C3A, k));
+        PadUi.box(g, kx, y + 1, 13, 12, mix(0xFF9A2030, 0xFF1E7C3A, k));
         g.fillGradient(kx + 1, y + 2, kx + 12, y + 12, WHITE, 0xFFDCE6F2);
         g.fill(kx + 2, y + 2, kx + 11, y + 3, WHITE);
     }

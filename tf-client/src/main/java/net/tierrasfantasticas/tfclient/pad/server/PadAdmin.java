@@ -62,7 +62,7 @@ public final class PadAdmin {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static PadView.Btn toggle(boolean on, String action) {
-        return PadView.Btn.of(on ? "SÍ" : "NO", action, on ? PadView.GREEN : PadView.GRAY);
+        return PadView.Btn.of(on ? "SÍ" : "NO", action, on ? PadView.GREEN : PadView.RED);
     }
 
     private static PadView.Btn editBtn(String field) {
