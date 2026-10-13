@@ -136,7 +136,7 @@ final class PadGachaPage extends PadDataPage {
     }
 
     private void drawMachine(GuiGraphics g, double mx, double my) {
-        int x = X, w = leftW(), top = Y + 14, bottom = Y + H;
+        int x = X, w = leftW(), top = Y + PadSkin.TABS, bottom = Y + H;
         darkCard(g, x, top, w, bottom, Y, "RULETA");
         boolean active = data.has("activo") && data.get("activo").getAsBoolean();
         // arriba: tus monedas verdes y el precio
@@ -306,37 +306,24 @@ final class PadGachaPage extends PadDataPage {
     private static final int ROW = 24;
 
     private void drawList(GuiGraphics g, double mx, double my) {
-        int x = X + leftW() + 6, w = W - leftW() - 6, top = Y + 14, bottom = Y + H;
+        int x = X + leftW() + 6, w = W - leftW() - 6, top = Y + PadSkin.TABS, bottom = Y + H;
         int acc = PadSkin.accent(app);
         PadSkin.window(g, x, top, w, bottom - top, acc);
         g.fillGradient(x + 1, top + 1, x + w - 1, top + 4, PadSkin.mix(acc, PadSkin.WHITE, 0.14F), PadSkin.darken(acc, 0.78F));
-        // pestañas de carpeta
+        // pestañas
         String[][] tabs = {{"premios", "PREMIOS"}, {"historial", "HISTORIAL"}};
-        int tx = x + 4;
-        int[] sel = null;
-        String selLabel = "";
-        for (String[] t : tabs) {
-            int tw = PadFont.width(t[1]) + 14;
-            boolean s = t[0].equals(tab);
-            boolean hover = PadUi.inside(mx, my, tx, Y, tw, 15);
-            if (s) {
-                sel = new int[] {tx, tw};
-                selLabel = t[1];
-            } else {
-                if (hover) pad.hover("§tab" + t[0]);
-                PadSkin.tab(g, tx, Y, tw, t[1], hover ? 1 : 0, acc);
-            }
-            String key = t[0];
-            hit(tx, Y, tw, 15, () -> {
+        int sel = tabs[1][0].equals(tab) ? 1 : 0;
+        int[][] at = PadSkin.tabRow(g, pad, x + 4, Y, w - 8, List.of(tabs[0][1], tabs[1][1]), sel, mx, my, acc);
+        for (int i = 0; i < tabs.length; i++) {
+            String key = tabs[i][0];
+            hit(at[i][0], Y - 1, at[i][1], PadSkin.TAB_H + 1, () -> {
                 if (!key.equals(tab)) {
                     tab = key;
                     listScroll = 0;
                     pad.sound("tab", 0.6F);
                 }
             });
-            tx += tw + 2;
         }
-        if (sel != null) PadSkin.tab(g, sel[0], Y, sel[1], selLabel, 2, acc);
         List<JsonObject> rows = list(data, tab.equals("premios") ? "premios" : "historial");
         int inner = bottom - top - 10;
         int content = rows.size() * ROW;

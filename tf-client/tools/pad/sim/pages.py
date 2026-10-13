@@ -55,10 +55,13 @@ def page(name, title, *args, app='', **kw):
     el icono y la frase de su cabecera)."""
     if ONLY and name not in ONLY:
         return
+    toast = kw.pop('toast', None)
     s = Sim()
     s.status(title)
     with Local(s):
         s.view(*args, app=app, **kw)
+    if toast:  # el aviso (TFPadScreen.drawNotice), por encima de todo
+        s.toast(*toast)
     s.save(OUT + name + '.png')
     NAMES.append(name)
 
@@ -81,19 +84,46 @@ ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('recompensa
          ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('admin', 'AJUSTES')]
 
 if not ONLY or 'p_inicio' in ONLY:
-    s = Sim()
+    s = Sim(backdrop=False)
+    s.backdrop(home=APPS)
     s.status('TF PAD', back=False, music=True)
     s.home(APPS, hover='hogares', glint='tienda')
     s.save(OUT + 'p_inicio.png')
     NAMES.append('p_inicio')
-    # el fondo animado en otros dos momentos (las luces suben y el haz cruza)
+    # el fondo animado en otros momentos (las luces suben, las nubes se cruzan y el brillo pasa por las fichas)
     for tt in (4.2, 9.6):
         s = Sim(backdrop=False)
         s.T = tt
-        s.backdrop(tt)
+        s.backdrop(tt, home=APPS)
         s.status('TF PAD', back=False, music=True)
         s.home(APPS)
         s.save(OUT + f'p_inicio_t{int(tt)}.png')
+    # las fichas entrando al abrir el pad (a los 0,25 s)
+    s = Sim(backdrop=False)
+    s.backdrop(home=APPS, fade=0.6)
+    s.status('TF PAD', back=False, music=True)
+    s.home(APPS, since=0.25)
+    s.save(OUT + 'p_inicio_entrada.png')
+
+if os.environ.get('GIF') and (not ONLY or 'p_inicio' in ONLY):
+    # GIF del fondo animado de la portada: la entrada de las fichas y luego unos segundos de cielo (GIF=segundos)
+    secs, fps = float(os.environ['GIF']), 12
+    frames = []
+    for i in range(int(secs * fps)):
+        tt = 20.0 + i / fps
+        s = Sim(backdrop=False)
+        s.T = tt
+        s.backdrop(tt, home=APPS, fade=min(1.0, i / fps / 0.4))
+        s.status('TF PAD', back=False, music=True)
+        s.home(APPS, since=i / fps)
+        im = s.frame()
+        im.alpha_composite(s.art, (s.ps * 52, s.ps * 64))
+        im = im.crop((0, 0, im.width, im.height - 60))
+        frames.append(im.resize((im.width * 9 // 20, im.height * 9 // 20), Image.LANCZOS).convert('RGB'))
+    gif = [f.quantize(255, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE) for f in frames]
+    gif[0].save(OUT + 'p_inicio_animado.gif', save_all=True, append_images=gif[1:], duration=round(1000 / fps), loop=0)
+    # y en WebP animado (colores sin recortar)
+    frames[0].save(OUT + 'p_inicio_animado.webp', save_all=True, append_images=frames[1:], duration=round(1000 / fps), loop=0, quality=90)
 
 if not ONLY or 'p_admin' in ONLY:
     s = Sim()
@@ -164,6 +194,16 @@ page('p_gts', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (2)'),
     ('trident', 'Tridente', T, ['Tuyo · quedan 2 días.'], -1, '¤40.000', ('RETIRAR', R), None, True),
     ('totem_of_undying', 'Tótem de la inmortalidad', T, ['Lo vende Notch · quedan 18 h.'], -1, '¤25.000', ('COMPRAR', GO), None),
 ], input_=('BUSCAR OBJETO O JUGADOR', 'BUSCAR', ''), app='gts', hover_row=0)
+page('p_gts_aviso', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (3)'), ('r', 'RECOGER')], 'v',
+     ['Elige qué vender y pon el precio. Estará 7 días a la venta.'], [
+         ('rabbit_hide', 'Piel de conejo', T, ['Tienes 12 · se vende de 1 en 1.'], -1, '', ('VENDER', GO), None),
+         ('diamond', 'Diamante', T, ['Tienes 3.'], -1, '', ('VENDER', GO), None),
+         ('iron_ingot', 'Lingote de hierro', T, ['Tienes 41.'], -1, '', ('VENDER', GO), None),
+     ], input_=('PRECIO EN MONEDAS', 'PUBLICAR', '34'), app='gts', tab_hover='m',
+     toast=('Publicado: 1x Piel de conejo por 34 monedas. Estará 7 días en el GTS.', 1, 1.2, 0.62))
+page('p_aviso_error', 'GTS', [('', 'MERCADO'), ('v', 'VENDER'), ('m', 'MIS VENTAS (3)'), ('r', 'RECOGER')], '', [], [
+    ('elytra', 'Élitros', T, ['Lo vende Alex · quedan 5 días.'], -1, '¤120K', ('SIN SALDO', GR, False), None),
+], app='gts', toast=('No tienes monedas suficientes.', 2, 0.12, 1.0))
 page('p_gts_item', 'GTS', [], '', [], [
     ('', 'Lo que dice el objeto', T, ['Filo V', 'Irrompible III', 'Reparación'], -1, '', None, None),
 ], hero=('diamond_sword', 'Espada de diamante', 0xF6B628, ['Lo vende Steve · quedan 3 días.', 'Tienes 12.450 monedas.'], -1,
@@ -329,7 +369,8 @@ def ajustes_page(name, values=(True, True, True, 80, False), hover=None, knob=No
             else:
                 k = knob[i] if knob and knob[i] is not None else (1.0 if values[i] else 0.0)
                 s.toggle(x + w - 38, yy + (h - 14) // 2, k, hv)
-        s.mtext(s.fitend('Tecla del pad: se cambia en Opciones > Controles.', W - 16), X + 8, Y + H - 11, rgb(0x4A6694))
+        note = s.fitend('Tecla del pad: se cambia en Opciones > Controles.', W - 40)
+        s.mtext(note, X + (W - s.mwidth(note)) // 2, Y + H - 12, rgb(0x4A6694))
     s.save(OUT + name + '.png')
     NAMES.append(name)
 
@@ -765,12 +806,17 @@ def prize_name(p):
 
 
 def dark_card(s, x, top, w, bottom, tab_y, tab):
-    tw = s.pwidth(tab) + 14
-    s.box(x + 4, tab_y, tw, 15, NAVY)
-    grad(s, x + 5, tab_y + 1, tw - 2, 15, rgb(0x323C80), rgb(0x262E66))
-    s.fill(x + 6, tab_y + 1, x + 4 + tw - 2, tab_y + 3, rgb(0xF6B628))
-    s.fill(x + 6, tab_y + 1, x + 4 + tw - 2, tab_y + 2, rgb(0xFFE58A))
-    s.ptext(tab, x + 4 + tw // 2 - s.pwidth(tab) // 2, tab_y + 4, rgb(0xFFE680), False)
+    """PadDataPage.darkCard (1.4.1): el rótulo, una pastilla oscura con filo de oro y flechita, y la tarjeta oscura."""
+    tw, tx, th = max(34, s.pwidth(tab) + 18), x + 4, s.TAB_H
+    s.box(tx, tab_y, tw, th, NAVY)
+    grad(s, tx + 1, tab_y + 1, tw - 2, th - 2, rgb(0x34408A), rgb(0x1E2558))
+    s.fill(tx + 2, tab_y + 1, tx + tw - 2, tab_y + 2, rgb(0xFFE58A))
+    s.fill(tx + 2, tab_y + 2, tx + tw - 2, tab_y + 3, (246, 182, 40, 128))
+    cx = tx + tw // 2
+    for i in range(top - tab_y - th):
+        hw = max(0, 2 - i)
+        s.fill(cx - hw, tab_y + th + i, cx + hw + 1, tab_y + th + i + 1, NAVY)
+    s.ptext(tab, cx - s.pwidth(tab) // 2, tab_y + 3, rgb(0xFFE680), rgb(0x0C1030))
     h = bottom - top
     s.box(x, top, w, h, NAVY)
     grad(s, x + 1, top + 1, w - 2, h - 2, rgb(0x262E66), rgb(0x141A3C))
@@ -778,20 +824,20 @@ def dark_card(s, x, top, w, bottom, tab_y, tab):
     for (a, b, c, d) in ((x + 2, top + 2, x + w - 2, top + 3), (x + 2, top + h - 3, x + w - 2, top + h - 2),
                          (x + 2, top + 3, x + 3, top + h - 3), (x + w - 3, top + 3, x + w - 2, top + h - 3)):
         s.fill(a, b, c, d, (246, 182, 40, 85))
-    s.fill(x + 5, top, x + 4 + tw - 1, top + 2, rgb(0x262E66))
 
 
 def price_button(s, x, y, label, price, style, enabled=True):
     n = str(price)
     w = s.pwidth(label) + 6 + 10 + s.pwidth(n) + 14
     s.sk_button(x, y, w, '', style, enabled)
-    col = (255, 255, 255) if enabled else rgb(0x8C9AC4)
+    col = s.button_text(style, enabled)
+    shade = s.button_shade(style, enabled)
     tx = x + 7
-    s.ptext(label, tx, y + 2, col)
+    s.ptext_shadow(label, tx, y + 2, col, shade)
     tx += s.pwidth(label) + 6
     s.fill(tx - 3, y + 4, tx - 2, y + 11, (255, 255, 255, 102))
     s.blit('coin_green_s', tx, y + 4)
-    s.ptext(n, tx + 10, y + 2, col)
+    s.ptext_shadow(n, tx + 10, y + 2, col, shade)
     return w
 
 
@@ -843,7 +889,7 @@ def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=192
     loc.__enter__()
     X, Y, W, H = s.X, s.Y, s.W, s.H
     lw = max(210, min(270, round(W * 0.56)))
-    x, w, top, bottom = X, lw, Y + 14, Y + H
+    x, w, top, bottom = X, lw, Y + s.TABS, Y + H
     dark_card(s, x, top, w, bottom, Y, 'RULETA')
     s.blit('coin_green', x + 8, top + 6)
     bal = f'{balance} monedas verdes'
@@ -929,15 +975,7 @@ def gacha_page(name, tab='premios', result=None, offset=None, balance=7, fbw=192
     acc = accent('gachapon')
     s.sk_window(lx, top, lw2, bottom - top, acc)
     s.vgrad(lx + 1, top + 1, lw2 - 2, 3, mix(acc, (255, 255, 255), 0.14), darken_t(acc, 0.78))
-    tx, chosen = lx + 4, None
-    for key, label in (('premios', 'PREMIOS'), ('historial', 'HISTORIAL')):
-        tw = s.pwidth(label) + 14
-        if key == tab:
-            chosen = (tx, tw, label)
-        else:
-            s.sk_tab(tx, Y, tw, label, 0, acc)
-        tx += tw + 2
-    s.sk_tab(chosen[0], Y, chosen[1], chosen[2], 2, acc)
+    s.sk_tabs(lx + 4, Y, lw2 - 8, ['PREMIOS', 'HISTORIAL'], 0 if tab == 'premios' else 1, acc)
     rows = PREMIOS if tab == 'premios' else [dict(r, t=m) for r, m in zip(result or PREMIOS[3:9], ('ahora', 'ahora', 'hace 3 min', 'hace 2 h', 'hace 1 d', 'hace 2 d'))]
     s.scissor(lx + 2, top + 6, lw2 - 4, bottom - top - 10)
     ry2 = top + 6
@@ -1151,9 +1189,10 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
             s.mtext(q, nx0 + 4, iy + 25, (255, 255, 255))
         sy2 = max(cy + ch - 16, iy + 34)
         if state == 1:
-            s.fill(nx0 + 3, sy2, nx0 + NODE - 3, sy2 + 13, rgb(0x1E9E46))
-            s.fill(nx0 + 3, sy2, nx0 + NODE - 3, sy2 + 1, rgb(0x8CF0A8))
-            s.ptext('COBRAR', nx0 + NODE // 2 - s.pwidth('COBRAR') // 2, sy2 + 1, (255, 255, 255))
+            s.vgrad(nx0 + 3, sy2, NODE - 6, 12, rgb(0x46D272), rgb(0x1A9442))
+            s.fill(nx0 + 3, sy2, nx0 + NODE - 3, sy2 + 1, rgb(0xA8F8C0))
+            s.fill(nx0 + 3, sy2 + 12, nx0 + NODE - 3, sy2 + 13, rgb(0x106A2E))
+            s.ptext_shadow('COBRAR', nx0 + NODE // 2 - s.pwidth('COBRAR') // 2, sy2 + 1, (255, 255, 255), rgb(0x0E5626))
         elif state == 2:
             for ax, ay in ((6, 0), (5, 1), (6, 1), (4, 2), (5, 2), (0, 2), (0, 3), (1, 3), (3, 3), (4, 3), (1, 4), (2, 4), (3, 4), (2, 5)):
                 s.put(nx0 + NODE // 2 - 4 + ax, sy2 + 4 + ay, rgb(0xC27A10))
@@ -1163,11 +1202,12 @@ def pass_page(name, lv=12, claimed=10, scroll_to=None, hover=None, fbw=1920, fbh
             s.fill(lx0 + 5, ly0 + 1, lx0 + 6, ly0 + 4, c); s.fill(lx0, ly0 + 3, lx0 + 7, ly0 + 8, c)
             s.fill(lx0 + 3, ly0 + 5, lx0 + 4, ly0 + 7, (255, 255, 255))
         if n == lv:
-            yw = s.pwidth('TÚ') + 6
-            yx, yy = nx0 + NODE - yw + 1, cy - 5
-            s.box(yx, yy, yw, 9, NAVY)
-            s.fill(yx + 1, yy + 1, yx + yw - 1, yy + 8, rgb(0xF6B628))
-            s.ptext('TÚ', yx + 3, yy - 1, rgb(0x5A3A00), False)
+            yw = s.pwidth('TÚ') + 8
+            yx, yy = nx0 + NODE - yw + 1, cy - 7
+            s.box(yx, yy, yw, 12, NAVY)
+            s.vgrad(yx + 1, yy + 1, yw - 2, 10, rgb(0xFFE58A), rgb(0xF6B628))
+            s.fill(yx + 1, yy + 10, yx + yw - 1, yy + 11, rgb(0xC07818))
+            s.ptext('TÚ', yx + 4, yy + 1, rgb(0x5A3A00), False)
     s.no_scissor()
     for i in range(10):
         a = int(110 * (1 - i / 10))

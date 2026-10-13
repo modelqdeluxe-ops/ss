@@ -89,8 +89,12 @@ public final class TFPadScreen extends Screen {
     private PadPage page;
     private final PadHomePage home;
     private String hovered, hoverNow;
+    /** El aviso que se ve (uno solo: el nuevo sustituye al anterior), cuándo salió, cuándo se va y cuánto se lee. */
     private String notice;
-    private long noticeUntil, noticeAt;
+    private long noticeUntil, noticeAt, noticeLife;
+    private int noticeKind;
+    /** Dónde quedó el aviso (unidades de pantalla), para cerrarlo con un clic o pararlo con el ratón encima. */
+    private float[] noticeBox;
     private final long openedAt = System.currentTimeMillis();
 
     public TFPadScreen() {
@@ -366,12 +370,37 @@ public final class TFPadScreen extends Screen {
         }, url, true));
     }
 
+    /** Lo que tarda el aviso en entrar y en irse (ms). */
+    private static final int TOAST_IN = 220, TOAST_OUT = 280;
+
+    /**
+     * Un aviso (1.4.1): una pastilla pequeña abajo en el centro del cristal, lejos de la cabecera y las pestañas. Sube
+     * y se enciende, se lee unos 2,2 s (algo más si el texto es muy largo), se apaga sola, se cierra con un clic y se
+     * queda mientras el ratón está encima. Uno a la vez: si llega otro, lo sustituye.
+     */
     void showNotice(String text) {
-        notice = text;
-        noticeAt = System.currentTimeMillis();
-        // corto: lo justo para leerlo (de 2 a 3,5 s según lo largo que sea)
-        noticeUntil = noticeAt + Math.max(2000, Math.min(3500, 1200 + text.length() * 30L));
-        sound("back", 0.6F);
+        if (text == null || text.isBlank()) return;
+        long now = System.currentTimeMillis();
+        boolean replacing = notice != null && now < noticeUntil - TOAST_OUT;
+        notice = text.strip();
+        noticeKind = noticeKind(notice);
+        // si ya había uno a la vista, el nuevo no vuelve a subir desde abajo: entra con un saltito
+        noticeAt = replacing ? now - TOAST_IN + 110 : now;
+        noticeLife = Math.min(3600, 2200 + Math.max(0, notice.length() - 50) * 28L);
+        noticeUntil = now + (replacing ? 110 : TOAST_IN) + noticeLife + TOAST_OUT;
+        sound("back", 0.5F);
+    }
+
+    /** 0 informa (azul), 1 salió bien (verde), 2 algo no se pudo (rojo): por cómo empieza el texto. */
+    private static int noticeKind(String text) {
+        String t = text.toLowerCase(Locale.ROOT);
+        String[] bad = {"error", "no ", "ese link no", "no se pudo", "no puedes", "no tienes", "no hay", "no te ", "te faltan",
+                "falta", "desactivad", "sin saldo", "no está", "no es ", "ya no"};
+        for (String b : bad) if (t.startsWith(b) || b.length() > 4 && t.contains(" " + b)) return 2;
+        String[] good = {"publicad", "comprad", "vendid", "reclamad", "cobrad", "guardad", "añadid", "enviad", "retirad", "recogid",
+                "lista «", "portada puesta", "listo", "hecho", "has ", "¡", "regalad", "borrad", "creado", "creada"};
+        for (String ok : good) if (t.startsWith(ok)) return 1;
+        return 0;
     }
 
     PadPage page() {
@@ -380,8 +409,10 @@ public final class TFPadScreen extends Screen {
 
     void setPage(PadPage p) {
         if (page != null && page != p) page.closed();
+        boolean changed = page != p;
         page = p;
         hovered = null;
+        if (changed) p.shown();
     }
 
     /** Volver (flecha de arriba, Esc o retroceso): dentro de una app, primero a su pantalla anterior; luego, a la portada. */
@@ -535,7 +566,7 @@ public final class TFPadScreen extends Screen {
         }
         if (hoverNow != null && !hoverNow.equals(hovered) && PadSettings.hoverTick) sound("hover", 0.35F);
         hovered = hoverNow;
-        drawNotice(g);
+        drawNotice(g, mx, my);
         g.pose().popPose();
         page.renderOver(g, mouseX, mouseY);
         // destello de la cámara al volver de hacer una foto
@@ -594,6 +625,8 @@ public final class TFPadScreen extends Screen {
             float tw = (float) Math.max(0, Math.sin(t * 1.7F + i * 2.17F));
             PadSkin.sparkle(g, (int) (STARS[i][0] * w), (int) (STARS[i][1] * h), i % 3 == 0 ? 2 : 1, tw * tw * tw * 0.85F, 0xFFFFFF);
         }
+        // en la portada, además, su cielo animado (por detrás del logo y de las fichas)
+        if (page == home) home.ambient(g, t);
         noScissor(g);
     }
 
@@ -739,38 +772,102 @@ public final class TFPadScreen extends Screen {
 
     private int musicX = -1000;
 
+    private static final int[] TOAST_COLOR = {0xFF4FA8FF, 0xFF3CCB6A, 0xFFF0505A};
+
     /**
-     * Aviso: una pastilla azul marino con borde de oro justo debajo de la barra de arriba (no tapa los botones de la app),
-     * del ancho del texto. Baja y se enciende al salir, y se apaga sola en 2 a 3,5 s.
+     * El aviso: pastilla azul noche translúcida (a la escala grande, como el texto de las apps) con una franja y un
+     * icono del color del aviso (i, ✓ o !), el texto en blanco (hasta 3 líneas) y abajo una línea que se acorta con el
+     * tiempo que le queda. Va abajo en el centro del cristal y por encima de todo.
      */
-    private void drawNotice(GuiGraphics g) {
+    private void drawNotice(GuiGraphics g, double mx, double my) {
+        noticeBox = null;
         if (notice == null) return;
         long now = System.currentTimeMillis();
-        if (now > noticeUntil) {
+        if (now >= noticeUntil) {
             notice = null;
             return;
         }
-        float in = Math.min(1F, (now - noticeAt) / 140F), out = Math.min(1F, (noticeUntil - now) / 260F);
-        float a = Math.min(in, out);
-        int maxW = Math.min(unitsW - 40, 300);
-        List<FormattedCharSequence> lines = font.split(Component.literal(notice), maxW - 16);
+        boolean anim = PadSettings.animations;
+        float in = anim ? easeOut(Math.min(1F, (now - noticeAt) / (float) TOAST_IN)) : 1F;
+        float out = anim ? Math.min(1F, (noticeUntil - now) / (float) TOAST_OUT) : 1F;
+        float a = Math.min(Math.min(1F, (now - noticeAt) / (TOAST_IN * 0.6F)), out);
+        if (!anim) a = 1F;
+        if (a < 0.03F) return;
+        float k = bs;
+        int vw = (int) (unitsW / k), vh = (int) (unitsH / k);
+        List<FormattedCharSequence> lines = font.split(Component.literal(notice), Math.min(vw - 70, 250));
+        if (lines.size() > 3) lines = lines.subList(0, 3);
         int textW = 0;
         for (FormattedCharSequence line : lines) textW = Math.max(textW, font.width(line));
-        int w = textW + 16, h = lines.size() * 10 + 7, x = (unitsW - w) / 2;
-        int y = bar + 3 - Math.round((1 - in) * 6);
-        int alpha = Math.round(a * 255) << 24;
-        if (alpha >>> 24 < 8) return;
+        int w = textW + 34, h = Math.max(22, lines.size() * 10 + 12);
+        int x = (vw - w) / 2;
+        float y = vh - 9 - h + (1 - in) * 12 + (1 - out) * 5;
+        // con el ratón encima no se va (y se ilumina un poco); un clic lo cierra
+        boolean hover = PadUi.inside(mx / k, my / k, x, Math.round(y), w, h);
+        if (hover && now > noticeAt + TOAST_IN) noticeUntil = Math.max(noticeUntil, now + 600 + TOAST_OUT);
+        noticeBox = new float[] {x * k, y * k, w * k, h * k};
+        int acc = TOAST_COLOR[noticeKind];
         g.pose().pushPose();
-        g.pose().translate(0, 0, 300);
-        PadUi.box(g, x, y, w, h, (alpha & 0xFF000000) | 0xB8741A);
-        PadUi.box(g, x + 1, y + 1, w - 2, h - 2, (alpha & 0xFF000000) | (NAVY & 0xFFFFFF));
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, (Math.round(a * 0x66) << 24) | 0xFFE9A8);
-        int ty = y + 4;
-        for (FormattedCharSequence line : lines) {
-            g.drawString(font, line, x + (w - font.width(line)) / 2, ty, (alpha & 0xFF000000) | 0xFFE9A8, false);
-            ty += 10;
+        g.pose().translate(0, 0, 400);
+        g.pose().scale(k, k, 1);
+        g.pose().translate(0, y, 0);
+        int A = Math.round(a * 255);
+        // sombra, borde y cuerpo
+        g.fill(x + 2, h, x + w - 2, h + 1, PadSkin.alpha(NAVY, Math.round(A * 0.38F)));
+        g.fill(x + 4, h + 1, x + w - 4, h + 2, PadSkin.alpha(NAVY, Math.round(A * 0.16F)));
+        PadUi.box(g, x, 0, w, h, PadSkin.alpha(0x0A1030, Math.round(A * 0.94F)));
+        g.fillGradient(x + 1, 1, x + w - 1, h - 1, PadSkin.alpha(hover ? 0x34488E : 0x2B3D80, Math.round(A * 0.95F)),
+                PadSkin.alpha(0x172256, Math.round(A * 0.95F)));
+        g.fill(x + 2, 1, x + w - 2, 2, PadSkin.alpha(0xFFFFFF, Math.round(A * 0.22F)));
+        // la franja y el icono del color del aviso
+        g.fillGradient(x + 1, 2, x + 3, h - 2, PadSkin.alpha(PadSkin.lighten(acc, 50), A), PadSkin.alpha(acc, A));
+        int cx = x + 13, cy = h / 2;
+        PadSkin.glow(g, cx + 0.5F, cy + 0.5F, 11, acc & 0xFFFFFF, Math.round(A * 0.55F));
+        PadSkin.disc(g, cx + 0.5F, cy + 0.5F, 6F, PadSkin.alpha(PadSkin.darken(acc, 0.62F), A));
+        PadSkin.disc(g, cx + 0.5F, cy + 0.5F, 5F, PadSkin.alpha(acc, A));
+        noticeGlyph(g, cx, cy, PadSkin.alpha(0xFFFFFF, A));
+        // el texto
+        int tc = PadSkin.alpha(0xF4F7FF, A), sh = PadSkin.alpha(0x0A1030, Math.round(A * 0.7F));
+        int ty = (h - lines.size() * 10) / 2 + 1;
+        if (A >= 8) {
+            for (FormattedCharSequence line : lines) {
+                g.drawString(font, line, x + 24, ty + 1, sh, false);
+                g.drawString(font, line, x + 23, ty, tc, false);
+                ty += 10;
+            }
         }
+        // lo que le queda: una línea que se acorta
+        float left = Math.max(0F, Math.min(1F, (noticeUntil - TOAST_OUT - now) / (float) noticeLife));
+        int lw = Math.round((w - 8) * left);
+        if (lw > 0) g.fill(x + 4, h - 2, x + 4 + lw, h - 1, PadSkin.alpha(acc, Math.round(A * 0.7F)));
         g.pose().popPose();
+    }
+
+    /** El dibujo blanco dentro del círculo del aviso (7x7 centrado en cx, cy): i, ✓ o !. */
+    private void noticeGlyph(GuiGraphics g, int cx, int cy, int c) {
+        int x = cx - 3, y = cy - 3;
+        switch (noticeKind) {
+            case 1 -> {
+                int[][] px = {{0, 3}, {1, 4}, {2, 5}, {3, 4}, {4, 3}, {5, 2}, {6, 1}, {1, 3}, {2, 4}, {3, 3}, {4, 2}, {5, 1}};
+                for (int[] p : px) g.fill(x + p[0], y + p[1], x + p[0] + 1, y + p[1] + 1, c);
+            }
+            case 2 -> {
+                g.fill(x + 3, y, x + 4, y + 4, c);
+                g.fill(x + 3, y + 5, x + 4, y + 6, c);
+            }
+            default -> {
+                g.fill(x + 3, y, x + 4, y + 1, c);
+                g.fill(x + 3, y + 2, x + 4, y + 6, c);
+                g.fill(x + 2, y + 2, x + 3, y + 3, c);
+                g.fill(x + 2, y + 6, x + 5, y + 7, c);
+            }
+        }
+    }
+
+    private static float easeOut(float x) {
+        x = Math.max(0, Math.min(1, x));
+        float k = 1 - x;
+        return 1 - k * k * k;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -780,6 +877,12 @@ public final class TFPadScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         double mx = ax(mouseX), my = ay(mouseY);
+        // un clic en el aviso lo cierra (y no pasa a lo de debajo)
+        if (noticeBox != null && mx >= noticeBox[0] && my >= noticeBox[1] && mx < noticeBox[0] + noticeBox[2] && my < noticeBox[1] + noticeBox[3]) {
+            noticeUntil = Math.min(noticeUntil, System.currentTimeMillis() + TOAST_OUT);
+            noticeBox = null;
+            return true;
+        }
         if (button == 0) {
             if (page != home && PadUi.inside(mx, my, backX(), backY(), big(12), big(12))) {
                 back();

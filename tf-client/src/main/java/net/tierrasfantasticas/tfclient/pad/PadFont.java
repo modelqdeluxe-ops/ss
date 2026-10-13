@@ -66,14 +66,35 @@ final class PadFont {
 
     /** Dibuja el texto; y es la parte de arriba de la celda (la letra empieza 2 más abajo). */
     static void draw(GuiGraphics g, String s, int x, int y, int rgb, boolean outline) {
+        draw(g, s, x, y, rgb, outline ? NAVY : -1);
+    }
+
+    /** Con el contorno de otro color (RGB sin alfa; negativo: sin contorno): las pestañas elegidas, del color de su app. */
+    static void draw(GuiGraphics g, String s, int x, int y, int rgb, int outline) {
         load();
         String text = upper(s);
-        if (outline) {
-            tint(NAVY);
+        if (outline >= 0) {
+            tint(outline & 0xFFFFFF);
             for (int[] d : new int[][] {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {1, 1}, {-1, 2}, {0, 2}, {1, 2}, {0, 1}}) {
                 glyphs(g, text, x + d[0], y + d[1]);
             }
         }
+        tint(rgb);
+        glyphs(g, text, x, y);
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+    }
+
+    /** Con una sombra de color 1 abajo (más ligera que el contorno): el texto de los botones y las pestañas elegidas. */
+    static void drawShadowCentered(GuiGraphics g, String s, int cx, int y, int rgb, int shadow) {
+        drawShadow(g, s, cx - width(s) / 2, y, rgb, shadow);
+    }
+
+    static void drawShadow(GuiGraphics g, String s, int x, int y, int rgb, int shadow) {
+        load();
+        String text = upper(s);
+        tint(shadow & 0xFFFFFF);
+        glyphs(g, text, x, y + 1);
+        glyphs(g, text, x + 1, y + 1);
         tint(rgb);
         glyphs(g, text, x, y);
         RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -95,6 +116,10 @@ final class PadFont {
     }
 
     static void drawCentered(GuiGraphics g, String s, int cx, int y, int rgb, boolean outline) {
+        draw(g, s, cx - width(s) / 2, y, rgb, outline);
+    }
+
+    static void drawCentered(GuiGraphics g, String s, int cx, int y, int rgb, int outline) {
         draw(g, s, cx - width(s) / 2, y, rgb, outline);
     }
 

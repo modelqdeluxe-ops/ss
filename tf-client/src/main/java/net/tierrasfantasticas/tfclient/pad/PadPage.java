@@ -69,5 +69,8 @@ abstract class PadPage {
 
     void tick() {}
 
+    /** La página pasa a verse (al abrir el pad o al volver a ella): para sus animaciones de entrada. */
+    void shown() {}
+
     void closed() {}
 }

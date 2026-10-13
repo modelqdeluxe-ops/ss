@@ -5,6 +5,7 @@ import os
 import sys
 import unicodedata
 
+import numpy as np
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -163,10 +164,37 @@ class Sim(Skin):
         f = self.f
         return (int(round(ox + x0 * f)), int(round(oy + y0 * f)), int(round(ox + x1 * f)), int(round(oy + y1 * f)))
 
+    # PadSkin.ITEM_ICONS (1.4.1): iconos que son el objeto de Minecraft de verdad (al doble y con contorno azul noche)
+    ITEM_ICONS = {'oficios': 'diamond_pickaxe'}
+
     def img(self, name):
         if name not in self.tex:
-            self.tex[name] = Image.open(f'{TEX}/{name}.png').convert('RGBA')
+            item = self.ITEM_ICONS.get(name[5:]) if name.startswith('icon_') else None
+            self.tex[name] = self.item_icon(item) if item else Image.open(f'{TEX}/{name}.png').convert('RGBA')
         return self.tex[name]
+
+    def icon32(self, name, x, y):
+        """PadSkin.icon32: el icono de 32 con la esquina en (x, y); si es un objeto, con una luz suave detrás."""
+        if name in self.ITEM_ICONS:
+            self.glow(x + 16, y + 16, 17, WHITE, 90)
+        self.blit('icon_' + name, x, y)
+
+    @staticmethod
+    def item_icon(item, outline=True):
+        """PadSkin.icon32 con un objeto: la textura de 16 al doble (32x32) y, debajo, la misma teñida de azul noche
+        (multiplicada, como setColor) un píxel hacia cada lado: el contorno."""
+        tex = Image.open(f'{MC}/item/{item}.png').convert('RGBA').resize((32, 32), Image.NEAREST)
+        if not outline:
+            return tex
+        a = np.asarray(tex, float)
+        sh = a.copy()
+        sh[..., :3] *= np.array(NAVY, float) / 255
+        shadow = Image.fromarray(sh.round().astype(np.uint8), 'RGBA')
+        out = Image.new('RGBA', (34, 34), (0, 0, 0, 0))
+        for dx, dy in ((0, 1), (2, 1), (1, 0), (1, 2)):
+            out.alpha_composite(shadow, (dx, dy))
+        out.alpha_composite(tex, (1, 1))
+        return out.crop((1, 1, 33, 33))
 
     def _paste_px(self, im, rx, ry):
         """Pega una imagen ya en píxeles reales, respetando el recorte."""
@@ -438,10 +466,11 @@ class Sim(Skin):
             cx += w + 1
         st = set(pts)
         if outline:
+            oc = outline if isinstance(outline, tuple) else NAVY  # PadFont.draw(…, outline): contorno de otro color
             for px, py in pts:
                 for dx, dy in ((-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (1, 1), (-1, 2), (0, 2), (1, 2), (0, 1)):
                     if (px + dx, py + dy) not in st:
-                        self.put(px + dx, py + dy, NAVY)
+                        self.put(px + dx, py + dy, oc)
         for p in pts:
             self.put(p[0], p[1], color)
 
@@ -647,10 +676,10 @@ class Sim(Skin):
                 self.fill(x - 1, y1 - h - 1, x + self.bigu(2) + 1, y1 + 1, NAVY)
                 self.fill(x, y1 - h, x + self.bigu(2), y1, rgb(0x7CF0B0))
 
-    def home(self, apps, hover=None, glint=None):
-        """PadHomePage (1.3.38): rejilla simétrica. Fichas iguales a la escala grande (o a una escala entera menor si
-        así no caben las filas), el mismo hueco a lo ancho y a lo alto, filas repartidas (23 → 8+8+7), centrada en el
-        cristal y la última fila incompleta centrada. Nombres a escala normal; la del ratón, elevada con su sombra."""
+    def home_layout(self, apps):
+        """PadHomePage.layout (1.3.38): rejilla simétrica. Fichas iguales a la escala grande (o a una escala entera
+        menor si así no caben las filas), el mismo hueco a lo ancho y a lo alto, filas repartidas (23 → 8+8+7),
+        centrada en el cristal. Devuelve (ts, tile, cols, x0, top, pitchX, pitchY, gap, contentH)."""
         Y, H, SW = self.Y, self.H, self.UW
         LABEL_H, MIN_GAP = 11, 4
         n = len(apps)
@@ -677,28 +706,108 @@ class Sim(Skin):
             top = Y + (H - content_h) // 2 if fits else Y + 2
             while self.logo_right(top) + 2 > x0 and top + content_h < Y + H:
                 top += 1
-            grid = (ts, t, cols, x0, top, t + gap_x, cell_h + gap_y)
+            grid = (ts, t, cols, x0, top, t + gap_x, cell_h + gap_y, gap_x, content_h + 4)
             if fits:
                 break
-        ts, t, cols, x0, top, px, py = grid
-        self.home_grid = grid
+        return grid
+
+    @staticmethod
+    def _wave(i, cols):
+        return (i % cols) * 0.07 + (i // cols) * 0.11
+
+    # PadHomePage.CLOUDS y MOTES
+    CLOUDS = [(0.20, 230, 62, 3.2, 0.10, 0.20), (0.58, 260, 70, 2.4, 0.55, 0.17), (0.88, 210, 56, 3.8, 0.30, 0.19),
+              (0.38, 330, 92, -5.5, 0.80, 0.14), (0.74, 300, 84, -6.5, 0.15, 0.13)]
+    MOTES = [(0.05, 9, 6, 0.1, 1), (0.13, 13, 4, 0.7, 0), (0.21, 8, 7, 0.4, 2), (0.29, 11, 5, 0.9, 0), (0.36, 7, 6, 0.2, 1),
+             (0.44, 12, 4, 0.6, 0), (0.52, 9, 8, 0.3, 2), (0.60, 14, 5, 0.8, 0), (0.67, 8, 6, 0.5, 1), (0.75, 11, 7, 0.05, 0),
+             (0.83, 10, 4, 0.65, 2), (0.90, 13, 6, 0.35, 0), (0.96, 8, 5, 0.85, 1), (0.10, 10, 5, 0.55, 0), (0.48, 15, 6, 0.15, 0),
+             (0.71, 9, 7, 0.95, 0)]
+
+    def home_ambient(self, apps, t, fade=1.0):
+        """PadHomePage.ambient (1.4.1): rayos de sol desde arriba, la luz que respira detrás de la rejilla, nubes en dos
+        capas (lejos a la derecha, cerca a la izquierda) y motas de luz que suben. Va dentro del fondo, antes del logo."""
+        w, h = self.UW, self.UH
+        self.rays(w / 2, -h * 0.18, h * 1.25, 0.10 * fade, t * 2.2)
+        ts, tile, cols, x0, top, px, py, gap, content_h = self.home_layout(apps)
+        gw, gh = cols * tile + (cols - 1) * gap, content_h
+        pulse = 0.5 + 0.5 * math.sin(t * 1.25)
+        cy = top + gh / 2
+        self.tex_alpha('bokeh', w / 2 - gw * 0.68, cy - gh * 0.78, gw * 1.36, gh * 1.56, (0.22 + 0.12 * pulse) * fade, rgb(0xDDF4FF))
+        for (cyf, cw, ch, v, ph, a) in self.CLOUDS:
+            span = w + cw
+            x = ((ph * span + v * t) % span) - cw
+            y = cyf * h - ch / 2 + 3 * math.sin(t * 0.35 + ph * 6)
+            self.tex_alpha('bokeh', x, y, cw, ch, a * fade)
+            self.tex_alpha('bokeh', x + cw * 0.28, y - ch * 0.22, cw * 0.5, ch * 0.8, a * 0.8 * fade)
+        for i, (mx, v, amp, ph, sz) in enumerate(self.MOTES):
+            span = h + 20
+            y = h + 10 - ((ph * span + v * t) % span)
+            x = mx * w + amp * math.sin(t * 0.9 + i * 1.7)
+            life = max(0, min(1, (h + 10 - y) / 40)) * max(0, min(1, y / 50))
+            a = life * (0.45 + 0.55 * max(0.0, math.sin(t * 2.1 + i * 0.9 * 2.39)) ** 2) * fade
+            if sz:
+                self.sparkle(round(x), round(y), int(sz), a * 0.9, rgb(0xFFF6D8))
+            else:
+                self.put(round(x), round(y), (255, 255, 255, round(200 * a)))
+
+    def home(self, apps, hover=None, glint=None, since=10.0, hover_t=0.3):
+        """PadHomePage (1.4.1): la rejilla, con las fichas entrando en cascada (since: segundos desde que se vio la
+        portada), el brillo que las cruza en ola cada 9 s y la del ratón elevada con su halo."""
+        Y, H, SW = self.Y, self.H, self.UW
+        n = len(apps)
+        ts, t, cols, x0, top, px, py, gap, content_h = self.home_layout(apps)
+        self.home_grid = (ts, t, cols, x0, top, px, py)
         self.scissor(2, Y, SW - 4, H)
         for i, (icon, name) in enumerate(apps):
             row, col = divmod(i, cols)
             in_row = min(cols, n - row * cols)
             tx = x0 + (cols - in_row) * px // 2 + col * px
             ty = top + row * py
+            wv = self._wave(i, cols)
+            k_in = max(0.0, min(1.0, (since - 0.06 - wv * 0.55) / 0.34))
+            if k_in <= 0:
+                continue
             hv = icon == hover
             lift = -round(ts * 2) if hv else 0
+            if k_in < 1:  # la entrada: crece con rebote desde su centro (en el sim, se dibuja aparte y se escala)
+                c1, kk = 1.5, k_in - 1
+                sc = 1 + (c1 + 1) * kk ** 3 + c1 * kk ** 2
+                self._tile_scaled(icon, name, tx, ty + (1 - k_in) * 6 * ts, t, ts, sc)
+                continue
             if hv:  # 1.4: halo dorado detrás de la ficha del ratón
                 self.glow(tx + t / 2, ty + lift + t / 2, t * 0.95, (255, 230, 140), 150)
             if lift:
                 self.fill(tx + round(3 * ts), ty + t, tx + t - round(3 * ts), ty + t + max(1, round(ts)), (24, 38, 92, 0x55))
             with self.big_at(tx, ty + lift, px=ts * self.cs):
                 self.blit('tile_h' if hv else 'tile', 0, 0)
-                self.blit('icon_' + icon, 4, 4)
+                self.icon32(icon, 4, 4)
+            face = round(4 * ts)
+            k = (hover_t % 2.4) / 0.7 if hv else ((self.T - wv + 90) % 9) / 0.8
+            if 0 <= k < 1:
+                self.sheen_at(tx + face, ty + lift + face, t - 2 * face, t - 2 * face, k, 0.32 if hv else 0.22)
             self.ptext(name, tx + t // 2 - self.pwidth(name) // 2, ty + t + 2, (255, 230, 128) if hv else (255, 255, 255))
         self.no_scissor()
+
+    def _tile_scaled(self, icon, name, tx, ty, t, ts, sc):
+        """Una ficha (con su nombre) dibujada en un lienzo aparte y escalada sc desde el centro de la ficha."""
+        if sc <= 0.02:
+            return
+        f = self.f
+        cw, chh = int((t + 60) * f), int((t + 14) * f)
+        sub = Sim.__new__(Sim)
+        sub.__dict__.update(self.__dict__)
+        sub.art = Image.new('RGBA', (cw, chh), (0, 0, 0, 0))
+        sub.o, sub.clip = (0, 0), None
+        ox = 30
+        with sub.big_at(ox, 0, px=ts * self.cs):
+            sub.blit('tile', 0, 0)
+            sub.icon32(icon, 4, 4)
+        sub.ptext(name, ox + t // 2 - self.pwidth(name) // 2, t + 2, (255, 255, 255))
+        im = sub.art.resize((max(1, round(cw * sc)), max(1, round(chh * sc))), Image.NEAREST)
+        # el centro de la ficha queda en su sitio
+        cx, cy = (tx + t / 2), (ty + t / 2)
+        rx, ry = self._rect(cx, cy, cx, cy)[:2]
+        self._paste_px(im, round(rx - (ox + t / 2) * f * sc), round(ry - (t / 2) * f * sc))
 
     def fitend(self, s, w):
         if self.mwidth(s) <= w:
@@ -755,7 +864,7 @@ class Sim(Skin):
         return t[-1] if t and isinstance(t[-1], dict) else {}
 
     def view(self, tabs, sel, header, rows, footer=None, input_=None, empty='', cells=None, cards=None, hover=None, hero=None,
-             app='', gallery=None, hover_row=None, waiting=False):
+             app='', gallery=None, hover_row=None, waiting=False, tab_hover=None):
         """PadViewPage.render (1.4): pestañas de carpeta encima (la elegida, del color de la app, se une a la cabecera);
         dentro, la cabecera de la app (su color, su icono y el texto del servidor o su frase), la ficha grande, la lista
         (casillas, tarjetas o galería y filas) y abajo la barra de acciones."""
@@ -763,7 +872,7 @@ class Sim(Skin):
         acc = accent(app)
         mode = 'gallery' if gallery is not None else 'cards' if cards is not None else 'cells'
         cells = gallery if gallery is not None else cards if cards is not None else (cells or [])
-        top = Y + (14 if tabs else 0)
+        top = Y + (self.TABS if tabs else 0)
         self.sk_window(X, top, W, Y + H - top, acc)
         y = top + 1
         show_banner = bool(header) or not hero
@@ -782,24 +891,9 @@ class Sim(Skin):
             self.vgrad(X + 1, y, W - 2, 4, mix(acc, WHITE, 0.14), darken(acc, 0.78))
             y += 4
         if tabs:
-            gap, pad = 2, 14
-            total = sum(self.pwidth(l) + pad for _, l in tabs) + gap * (len(tabs) - 1)
-            room = W - 8
-            if total > room:
-                pad = 8
-                total = sum(self.pwidth(l) + pad for _, l in tabs) + gap * (len(tabs) - 1)
-            maxl = max(12, (room - gap * (len(tabs) - 1)) // len(tabs) - pad) if total > room else 10 ** 6
-            x, chosen = X + 4, None
-            for key, label in tabs:
-                label = self.pfit(label, maxl)
-                w = self.pwidth(label) + pad
-                if key == sel:
-                    chosen = (x, w, label)
-                else:
-                    self.sk_tab(x, Y, w, label, 0, acc)
-                x += w + gap
-            if chosen:
-                self.sk_tab(chosen[0], Y, chosen[1], chosen[2], 2, acc)
+            keys = [k for k, _ in tabs]
+            self.sk_tabs(X + 4, Y, W - 8, [l for _, l in tabs], keys.index(sel) if sel in keys else -1, acc,
+                         keys.index(tab_hover) if tab_hover in keys else -1)
         if waiting:
             self.spinner_w(X + W - 10, top + 3)
         y += 3
@@ -1131,6 +1225,53 @@ class Sim(Skin):
             if b:
                 self.sk_button(bx, by, self.bw(b[0]), b[0], b[1], b[2] if len(b) > 2 else True)
                 bx += self.bw(b[0]) + 4
+
+    TOAST_COLOR = [(0x4F, 0xA8, 0xFF), (0x3C, 0xCB, 0x6A), (0xF0, 0x50, 0x5A)]
+
+    def toast(self, text, kind=1, since=1.0, left=0.7, hover=False):
+        """TFPadScreen.drawNotice (1.4.1): el aviso abajo en el centro, a la escala grande. since: segundos desde que
+        salió (entra en 0,22 s); left: lo que le queda (la línea de abajo)."""
+        k_in = min(1.0, since / 0.22)
+        k_in = 1 - (1 - k_in) ** 3
+        a = min(1.0, since / (0.22 * 0.6))
+        A = round(a * 255)
+        bs = self.bs
+        with self.big_at(0, 0):
+            vw, vh = int(self.UW / bs), int(self.UH / bs)
+            lines = self.split(text, min(vw - 70, 250))[:3]
+            tw = max(self.mwidth(l) for l in lines)
+            w, h = tw + 34, max(22, len(lines) * 10 + 12)
+            x = (vw - w) // 2
+            y = round(vh - 9 - h + (1 - k_in) * 12)
+            acc = self.TOAST_COLOR[kind]
+            self.fill(x + 2, y + h, x + w - 2, y + h + 1, (24, 38, 92, round(A * 0.38)))
+            self.fill(x + 4, y + h + 1, x + w - 4, y + h + 2, (24, 38, 92, round(A * 0.16)))
+            self.box(x, y, w, h, (10, 16, 48, round(A * 0.94)))
+            self.vgrad_a(x + 1, y + 1, w - 2, h - 2, (0x34, 0x48, 0x8E, round(A * 0.95)) if hover else (0x2B, 0x3D, 0x80, round(A * 0.95)),
+                         (0x17, 0x22, 0x56, round(A * 0.95)))
+            self.fill(x + 2, y + 1, x + w - 2, y + 2, (255, 255, 255, round(A * 0.22)))
+            self.vgrad(x + 1, y + 2, 2, h - 4, _lighten(acc, 50), acc)
+            cx, cy = x + 13, y + h // 2
+            self.glow(cx + 0.5, cy + 0.5, 11, acc, round(A * 0.55))
+            self.disc(cx + 0.5, cy + 0.5, 6, darken(acc, 0.62) + (A,))
+            self.disc(cx + 0.5, cy + 0.5, 5, tuple(acc) + (A,))
+            gx, gy = cx - 3, cy - 3
+            if kind == 1:
+                pts = [(0, 3), (1, 4), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (1, 3), (2, 4), (3, 3), (4, 2), (5, 1)]
+            elif kind == 2:
+                pts = [(3, 0), (3, 1), (3, 2), (3, 3), (3, 5)]
+            else:
+                pts = [(3, 0), (3, 2), (3, 3), (3, 4), (3, 5), (2, 2), (2, 6), (3, 6), (4, 6)]
+            for px, py in pts:
+                self.put(gx + px, gy + py, (255, 255, 255, A))
+            ty = y + (h - len(lines) * 10) // 2 + 1
+            for l in lines:
+                self.mtext(l, x + 24, ty + 1, (10, 16, 48, round(A * 0.7)))
+                self.mtext(l, x + 23, ty, (244, 247, 255))
+                ty += 10
+            lw = round((w - 8) * left)
+            if lw > 0:
+                self.fill(x + 4, y + h - 2, x + 4 + lw, y + h - 1, tuple(acc) + (round(A * 0.7),))
 
     def frame(self):
         """frame.png alargado como TFPadScreen.drawFrame (filas y columnas lisas repetidas), a escala ps."""

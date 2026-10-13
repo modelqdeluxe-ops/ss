@@ -10,8 +10,8 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Una app que dibuja el servidor (PadView), con el diseño 1.4 (PadSkin), en una sola ventana: pestañas de carpeta
- * encima (siempre caben: si no, se estrechan; la elegida, del color de la app, se une a la cabecera); dentro, la
+ * Una app que dibuja el servidor (PadView), con el diseño 1.4 (PadSkin), en una sola ventana: pestañas encima, con
+ * aire (siempre caben: si no, se estrechan; la elegida, del color de la app, con su flechita hacia la cabecera); dentro, la
  * cabecera de la app (su color, su icono y el texto del servidor o, si no manda nada, su frase), la ficha grande
  * (hero), la lista (casillas, tarjetas, galería de imágenes y filas) con su barra de desplazamiento y, abajo, la barra
  * de acciones (botones y campo para escribir). Cada botón, fila o casilla manda su acción al servidor, que contesta con
@@ -99,7 +99,7 @@ final class PadViewPage extends PadPage {
         }
         float t = PadSkin.time();
         boolean tabs = !view.tabs().isEmpty();
-        int top = Y + (tabs ? 14 : 0);
+        int top = Y + (tabs ? PadSkin.TABS : 0);
         PadSkin.window(g, X, top, W, Y + H - top, acc);
         int y = top + 1;
         // la cabecera de la app: lo que manda el servidor (o su frase) junto a su icono, del color de la app. En una
@@ -223,41 +223,19 @@ final class PadViewPage extends PadPage {
     }
 
     /**
-     * Pestañas de carpeta encima de la ventana (si no caben con su margen, se estrechan y, si aún no, se recorta el
-     * texto). La elegida se dibuja la última: baja, del color de la app, y se une a la cabecera.
+     * Las pestañas encima de la ventana (PadSkin.tabRow: si no caben con su margen, se estrechan y, si aún no, se
+     * recorta el texto). La elegida, del color de la app, con su flechita hacia la cabecera.
      */
     private void drawTabs(GuiGraphics g, int y, double mx, double my, int acc) {
         List<PadView.Tab> tabs = view.tabs();
-        int gap = 2, pad = 14, room = W - 8;
-        int total = 0;
-        for (PadView.Tab t : tabs) total += PadFont.width(t.label()) + pad;
-        total += gap * (tabs.size() - 1);
-        if (total > room) {
-            pad = 8;
-            total = 0;
-            for (PadView.Tab t : tabs) total += PadFont.width(t.label()) + pad;
-            total += gap * (tabs.size() - 1);
+        List<String> labels = new ArrayList<>();
+        int sel = -1;
+        for (int i = 0; i < tabs.size(); i++) {
+            labels.add(tabs.get(i).label());
+            if (tabs.get(i).key().equals(view.tab())) sel = i;
         }
-        int maxLabel = total > room ? Math.max(12, (room - gap * (tabs.size() - 1)) / tabs.size() - pad) : Integer.MAX_VALUE;
-        int x = X + 4;
-        int[] chosen = null;
-        String chosenLabel = "";
-        for (PadView.Tab t : tabs) {
-            String label = PadFont.fit(t.label(), maxLabel);
-            int w = PadFont.width(label) + pad;
-            boolean sel = t.key().equals(view.tab());
-            boolean hover = PadUi.inside(mx, my, x, y, w, 15);
-            if (sel) {
-                chosen = new int[] {x, w};
-                chosenLabel = label;
-            } else {
-                if (hover) pad().hover("§tab" + t.key());
-                PadSkin.tab(g, x, y, w, label, hover ? 1 : 0, acc);
-            }
-            hits.add(new Hit(x, y, w, 15, 1, t.key(), 0));
-            x += w + gap;
-        }
-        if (chosen != null) PadSkin.tab(g, chosen[0], y, chosen[1], chosenLabel, 2, acc);
+        int[][] at = PadSkin.tabRow(g, pad, X + 4, y, W - 8, labels, sel, mx, my, acc);
+        for (int i = 0; i < at.length; i++) hits.add(new Hit(at[i][0], y - 1, at[i][1], PadSkin.TAB_H + 1, 1, tabs.get(i).key(), 0));
     }
 
     /**
@@ -285,10 +263,6 @@ final class PadViewPage extends PadPage {
         int cols = Math.max(1, innerW / CELL_W);
         int used = Math.max(1, Math.min(cols, n));
         return new int[] {cols, CELL_W, CELL_H, X + 5 + (innerW - used * CELL_W) / 2};
-    }
-
-    private TFPadScreen pad() {
-        return pad;
     }
 
     private static boolean hasIcon(PadView.Row r) {
