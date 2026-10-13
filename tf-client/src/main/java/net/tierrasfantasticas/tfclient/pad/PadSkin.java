@@ -710,7 +710,7 @@ final class PadSkin {
         if (content <= visible || h <= 4) return;
         PadUi.box(g, x, y, 4, h, 0xFFD6E4F2);
         g.fill(x + 1, y + 1, x + 3, y + h - 1, 0xFFE8F0F8);
-        int th = Math.max(12, h * visible / content);
+        int th = Math.max(10, h * visible / content);
         int ty = y + (h - th) * scroll / Math.max(1, content - visible);
         PadUi.box(g, x, ty, 4, th, darken(acc, 0.7F));
         g.fillGradient(x + 1, ty + 1, x + 3, ty + th - 1, mix(acc, WHITE, 0.45F), acc);

@@ -142,6 +142,7 @@ final class PadCommunityPage extends PadPage {
         }
         pad.noScissor(g);
         PadUi.scrollbar(g, X + W - 7, top + 5, visible - 2, visible, contentH, scroll);
+        PadUi.grabbable(X + W - 7, top + 5, visible - 2, visible, contentH, () -> scroll, v -> scroll = v);
         // cerca del final, la página siguiente
         if (scroll + visible > contentH - ch * 2) PadCommunityClient.more();
         if (pickerFor != null) {
@@ -467,7 +468,7 @@ final class PadCommunityPage extends PadPage {
             dragging = true;
         }
         if (pickerFor != null) picker.drag(dy);
-        else scroll -= (int) Math.round(dy);
+        else scroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
         return true;
     }
 

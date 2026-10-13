@@ -162,6 +162,7 @@ final class PadEmojiPicker {
         }
         pad.noScissor(g);
         PadUi.scrollbar(g, x + w - PAD - 4, gridY + 1, gridH - 2, gridH, contentH, scroll);
+        PadUi.grabbable(x + w - PAD - 4, gridY + 1, gridH - 2, gridH, contentH, () -> scroll, v -> scroll = v);
         footer(g, px);
     }
 
@@ -274,7 +275,7 @@ final class PadEmojiPicker {
     /** Arrastrar la rejilla (en unidades). */
     void drag(double dy) {
         dragging = true;
-        scroll -= (int) Math.round(dy);
+        scroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
         clamp();
     }
 

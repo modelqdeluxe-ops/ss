@@ -458,6 +458,7 @@ final class PadMusicPage extends PadPage {
             else drawEmptyList(g, x, rowsTop, w, bottom - rowsTop);
         }
         PadUi.scrollbar(g, x + w - 7, rowsTop + 1, inner - 2, inner, content, listScroll);
+        PadUi.grabbable(x + w - 7, rowsTop + 1, inner - 2, inner, content, () -> listScroll, v -> listScroll = v);
         if (job != null && !job.finished) drawJob(g, job, x, bottom + 3, w);
         drawInput(g, mx, my, x, Y + H - 16, w, list);
     }
@@ -1043,7 +1044,7 @@ final class PadMusicPage extends PadPage {
             return true;
         }
         if (mx >= listX()) {
-            listScroll -= (int) Math.round(dy);
+            listScroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
             return true;
         }
         return false;

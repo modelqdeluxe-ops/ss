@@ -341,6 +341,7 @@ final class PadGachaPage extends PadDataPage {
             PadUi.text(g, msg, x + (w - PadUi.font().width(msg)) / 2, top + (bottom - top) / 2 - 4, PadUi.MUTED);
         }
         PadSkin.scrollbar(g, x + w - 7, top + 7, inner - 2, inner, content, listScroll, acc);
+        PadUi.grabbable(x + w - 7, top + 7, inner - 2, inner, content, () -> listScroll, v -> listScroll = v);
     }
 
     private void drawPrizeRow(GuiGraphics g, JsonObject p, int x, int y, int w, long now) {
@@ -378,7 +379,7 @@ final class PadGachaPage extends PadDataPage {
     @Override
     boolean drag(double mx, double my, double dy) {
         if (mx < X + leftW()) return false;
-        listScroll -= (int) Math.round(dy);
+        listScroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
         return true;
     }
 
