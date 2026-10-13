@@ -10,6 +10,18 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.57 (13 oct)** — pedidos del dueño tras probar la 1.3.56:
+> - **Monedas en kits/recompensas/premios**: `PadKits.give` ya no da Fantastic Coin ni monedas verdes como objeto:
+>   las suma al saldo (`TFEconomy.give` / `PadGreen.add`); en la vista del kit salen como «+N».
+> - **Barras de desplazamiento**: el asa se agarra y sigue al ratón, clic en el carril salta ahí (`PadUi.grabbable` +
+>   `PadUi.BARS`, lo maneja `TFPadScreen`); arrastrar sobre la lista ahora va en el mismo sentido que la barra.
+> - **Entrada de las apps** al abrir el pad ~40 % más rápida (`PadHomePage.entrance`).
+> - **Oficios**: el muñeco de cada oficio del pack Medieval Jobs (`tools/pad/job_images.py <carpeta textures del
+>   pack>` → `textures/gui/pad/jobs/<fondo>.png`, 39x39) en las tarjetas y la cabecera (`PadJobs.portrait`).
+> - **Pestañas nuevas también en Comunidad y Música** (`PadSkin.tabCompact`, en el sitio de las de carpeta).
+> - Pendiente (pedido del dueño): skins en el Armario (importar/exportar/guardar), auditoría y rehacer el pad de
+>   administrador (creador de kits), «pantallas duplicadas» (falta saber cuáles), más diseño en las apps.
+
 > **TF Client 1.3.56 (13 oct)** — el dueño probó la 1.3.55 («me encanta el nuevo diseño de las apps y fondos») y pidió:
 > - **Avisos del pad** (`TFPadScreen.showNotice`): pastilla pequeña abajo en el centro (no tapa cabecera ni pestañas),
 >   color por tipo (verde ✓ éxito, rojo ! error, azul i el resto, por cómo empieza el texto), entra en 0,22 s, dura
@@ -1822,7 +1834,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.56)
+## 5. El mod (TF Client 1.3.57)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

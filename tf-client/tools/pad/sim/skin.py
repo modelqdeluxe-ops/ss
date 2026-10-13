@@ -292,6 +292,31 @@ class Skin:
     TAB_H, TAB_GAP, TAB_PAD, TAB_PAD_MIN, TAB_SPACE, TAB_MIN = 17, 3, 9, 6, 3, 34
     TABS = TAB_H + TAB_GAP
 
+    def sk_tab_compact(self, x, y, w, label, state, acc):
+        """PadSkin.tabCompact: la pestaña nueva en el sitio de las de carpeta (Comunidad y Música): pastilla de 14."""
+        c = deep(acc)
+        h = 14
+        y -= 2
+        if state == 2:
+            edge, low = darken(c, 0.5), darken(c, 0.78)
+            self.box(x, y, w, h, edge)
+            self.vgrad(x + 1, y + 1, w - 2, h - 2, mix(c, WHITE, 0.30), darken(c, 0.9))
+            self.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62))
+            cx = x + w // 2
+            self.fill(cx - 2, y + h, cx + 3, y + h + 1, edge)
+            self.fill(cx - 1, y + h + 1, cx + 2, y + h + 2, edge)
+            self.fill(cx - 1, y + h - 1, cx + 2, y + h, low)
+            if label:
+                self.ptext_shadow(label, cx - self.pwidth(label) // 2, y + 3, WHITE, darken(c, 0.42))
+            return
+        hover = state == 1
+        yy = y - 1 if hover else y
+        self.box(x, yy, w, h, mix(c, INK, 0.25) if hover else rgb(0x7F9CC8))
+        self.vgrad(x + 1, yy + 1, w - 2, h - 2, WHITE, mix(rgb(0xE4EEF9), tint(c, 0.35), 0.55) if hover else rgb(0xD3E3F4))
+        self.fill(x + 1, yy + h - 2, x + w - 1, yy + h - 1, mix(c, WHITE, 0.25) if hover else rgb(0xBACFE6))
+        if label:
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 3, ink(c) if hover else rgb(0x3A5888), False)
+
     def sk_tab(self, x, y, w, label, state, acc):
         """PadSkin.tab (1.4.1): pastilla de 17 con el texto centrado y aire; la elegida, del color de la app con su
         flechita hacia la ventana; las demás de cristal claro (al pasar el ratón suben 1 y se marcan con su color)."""

@@ -559,6 +559,7 @@ public final class TFPadScreen extends Screen {
             g.pose().scale(bs, bs, 1);
         }
         try {
+            PadUi.BARS.clear();
             page.render(g, lx(mx), ly(my), partialTick);
         } finally {
             if (in) g.pose().popPose();
@@ -900,6 +901,8 @@ public final class TFPadScreen extends Screen {
         }
         boolean in = enter();
         try {
+            // el asa (o el carril) de una barra de desplazamiento: se agarra y sigue al ratón
+            if (button == 0 && grabBar(lx(mx), ly(my))) return true;
             if (page.click(lx(mx), ly(my), button)) return true;
         } finally {
             exit(in);
@@ -907,8 +910,31 @@ public final class TFPadScreen extends Screen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    /** La barra agarrada y a qué altura del asa se cogió. */
+    private PadUi.Bar grabbed;
+    private double grabOffset;
+
+    private boolean grabBar(double x, double y) {
+        for (int i = PadUi.BARS.size() - 1; i >= 0; i--) {
+            PadUi.Bar b = PadUi.BARS.get(i);
+            if (x < b.x() - 3 || x >= b.x() + 8 || y < b.y() || y >= b.y() + b.h()) continue;
+            int ty = b.thumbY(), th = b.thumbH();
+            if (y >= ty && y < ty + th) {
+                grabOffset = y - ty;
+            } else {
+                // clic en el carril: el asa salta ahí (centrada en el ratón) y ya se puede arrastrar
+                grabOffset = th / 2.0;
+                b.moveThumbTo(y - grabOffset);
+            }
+            grabbed = b;
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        grabbed = null;
         boolean in = enter();
         try {
             page.release(lx(ax(mouseX)), ly(ay(mouseY)), button);
@@ -922,6 +948,10 @@ public final class TFPadScreen extends Screen {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
         boolean in = enter();
         try {
+            if (grabbed != null) {
+                grabbed.moveThumbTo(ly(ay(mouseY)) - grabOffset);
+                return true;
+            }
             if (page.drag(lx(ax(mouseX)), ly(ay(mouseY)), dy * gs / cs / (in ? bs : 1F))) return true;
         } finally {
             exit(in);

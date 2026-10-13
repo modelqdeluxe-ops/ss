@@ -99,7 +99,7 @@ final class PadCommunityPage extends PadPage {
                 selLabel = t[1];
             } else {
                 if (hover) pad.hover("§tab" + t[0]);
-                PadUi.tab(g, x, Y, w, t[1], hover ? 1 : 0);
+                PadSkin.tabCompact(g, x, Y, w, t[1], hover ? 1 : 0, PadSkin.accent("comunidad"));
             }
             String key = t[0];
             hit(x, Y, w, 15, () -> {
@@ -111,7 +111,7 @@ final class PadCommunityPage extends PadPage {
             });
             x += w + 2;
         }
-        if (selX >= 0) PadUi.tab(g, selX, Y, selW, selLabel, 2);
+        if (selX >= 0) PadSkin.tabCompact(g, selX, Y, selW, selLabel, 2, PadSkin.accent("comunidad"));
         int fw = PadUi.buttonWidth("+ FOTO");
         boolean fh = PadUi.inside(mx, my, X + W - fw - 4, Y - 3, fw, 16);
         if (fh) pad.hover("§foto");
@@ -142,6 +142,7 @@ final class PadCommunityPage extends PadPage {
         }
         pad.noScissor(g);
         PadUi.scrollbar(g, X + W - 7, top + 5, visible - 2, visible, contentH, scroll);
+        PadUi.grabbable(X + W - 7, top + 5, visible - 2, visible, contentH, () -> scroll, v -> scroll = v);
         // cerca del final, la página siguiente
         if (scroll + visible > contentH - ch * 2) PadCommunityClient.more();
         if (pickerFor != null) {
@@ -467,7 +468,7 @@ final class PadCommunityPage extends PadPage {
             dragging = true;
         }
         if (pickerFor != null) picker.drag(dy);
-        else scroll -= (int) Math.round(dy);
+        else scroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
         return true;
     }
 

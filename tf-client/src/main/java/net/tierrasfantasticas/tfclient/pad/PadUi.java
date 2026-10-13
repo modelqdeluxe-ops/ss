@@ -356,6 +356,32 @@ final class PadUi {
         g.fill(cx, y + 4, cx + 1, y + 5, GOLD_HI);
     }
 
+    /** Una barra de desplazamiento dibujada en este fotograma, para poder agarrar el asa con el ratón. */
+    record Bar(int x, int y, int h, int visible, int content, java.util.function.IntSupplier get, java.util.function.IntConsumer set) {
+        int thumbH() {
+            return Math.max(10, h * visible / content);
+        }
+
+        int thumbY() {
+            return y + (h - thumbH()) * get.getAsInt() / Math.max(1, content - visible);
+        }
+
+        /** La posición del asa (arriba del asa en y) pasada a desplazamiento, dentro de los límites. */
+        void moveThumbTo(double top) {
+            int room = Math.max(1, h - thumbH());
+            int v = (int) Math.round((top - y) * (content - visible) / room);
+            set.accept(Math.max(0, Math.min(content - visible, v)));
+        }
+    }
+
+    /** Las barras del fotograma actual (TFPadScreen las vacía antes de dibujar la página). */
+    static final List<Bar> BARS = new java.util.ArrayList<>();
+
+    /** Apunta una barra para que su asa se pueda arrastrar (llamar justo después de dibujarla). */
+    static void grabbable(int x, int y, int h, int visible, int content, java.util.function.IntSupplier get, java.util.function.IntConsumer set) {
+        if (content > visible && h > 4) BARS.add(new Bar(x, y, h, visible, content, get, set));
+    }
+
     /** Barra de desplazamiento de 4: carril redondeado y asa de oro. */
     static void scrollbar(GuiGraphics g, int x, int y, int h, int visible, int content, int scroll) {
         if (content <= visible || h <= 4) return;

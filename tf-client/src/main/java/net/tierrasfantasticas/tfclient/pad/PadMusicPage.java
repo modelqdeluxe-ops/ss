@@ -458,6 +458,7 @@ final class PadMusicPage extends PadPage {
             else drawEmptyList(g, x, rowsTop, w, bottom - rowsTop);
         }
         PadUi.scrollbar(g, x + w - 7, rowsTop + 1, inner - 2, inner, content, listScroll);
+        PadUi.grabbable(x + w - 7, rowsTop + 1, inner - 2, inner, content, () -> listScroll, v -> listScroll = v);
         if (job != null && !job.finished) drawJob(g, job, x, bottom + 3, w);
         drawInput(g, mx, my, x, Y + H - 16, w, list);
     }
@@ -532,7 +533,7 @@ final class PadMusicPage extends PadPage {
                 chosenId = id;
             } else {
                 if (hover) pad.hover("§lista" + id);
-                PadUi.tab(g, tx, y, tw, label, hover ? 1 : 0);
+                PadSkin.tabCompact(g, tx, y, tw, label, hover ? 1 : 0, PadSkin.accent("musica"));
                 hits.add(new Hit(tx, y, tw, 15, () -> {
                     MusicLibrary.selectList(id);
                     listScroll = 0;
@@ -552,7 +553,7 @@ final class PadMusicPage extends PadPage {
         // «+»: lista nueva (la cruz dibujada, centrada)
         boolean ph = PadUi.inside(mx, my, end, y, plus, 15);
         if (ph) pad.hover("§listanueva");
-        PadUi.tab(g, end, y, plus, "", ph || newList ? 1 : 0);
+        PadSkin.tabCompact(g, end, y, plus, "", ph || newList ? 1 : 0, PadSkin.accent("musica"));
         drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + 5, ph || newList ? 0xFF1E9E46 : 0xFF34507E);
         hits.add(new Hit(end, y, plus, 15, () -> {
             newList = true;
@@ -566,10 +567,10 @@ final class PadMusicPage extends PadPage {
     /** La pestaña elegida: blanca y unida a la ventana; en una playlist, el nombre y su X para borrarla. */
     private void drawChosenTab(GuiGraphics g, double mx, double my, int tx, int y, int tw, String label, String id) {
         if (id.isEmpty()) {
-            PadUi.tab(g, tx, y, tw, label, 2);
+            PadSkin.tabCompact(g, tx, y, tw, label, 2, PadSkin.accent("musica"));
             return;
         }
-        PadUi.tab(g, tx, y, tw, "", 2);
+        PadSkin.tabCompact(g, tx, y, tw, "", 2, PadSkin.accent("musica"));
         boolean sure = label.startsWith("¿");
         PadFont.draw(g, label, tx + 6, y + 4, sure ? 0xC8323C : 0x18265C, false);
         int bx = tx + tw - 12, by = y + 3;
@@ -1043,7 +1044,7 @@ final class PadMusicPage extends PadPage {
             return true;
         }
         if (mx >= listX()) {
-            listScroll -= (int) Math.round(dy);
+            listScroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
             return true;
         }
         return false;

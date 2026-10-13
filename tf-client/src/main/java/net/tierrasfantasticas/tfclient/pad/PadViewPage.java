@@ -168,6 +168,7 @@ final class PadViewPage extends PadPage {
                 PadSkin.emptyState(g, pad, X + W / 2, (listTop + listBottom) / 2, W - 40, view.empty(), acc, icon, listBottom - listTop);
             }
             PadSkin.scrollbar(g, X + W - 8, listTop + 1, visible - 2, visible, contentH, scroll, acc);
+            PadUi.grabbable(X + W - 8, listTop + 1, visible - 2, visible, contentH, () -> scroll, v -> scroll = v);
         } else {
             contentH = 0;
             scroll = 0;
@@ -664,7 +665,7 @@ final class PadViewPage extends PadPage {
     @Override
     boolean drag(double mx, double my, double dy) {
         if (!inList(my)) return false;
-        scroll -= (int) Math.round(dy);
+        scroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
         return true;
     }
 

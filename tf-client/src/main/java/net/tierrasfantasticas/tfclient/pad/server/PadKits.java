@@ -99,7 +99,14 @@ public final class PadKits {
             return;
         }
         for (ItemStack s : items) {
-            b.card(s.copy(), s.getHoverName().getString(), 0x3496FA, "", "", false);
+            // las monedas que van como objeto se ven como saldo (se acreditan, no se dan)
+            if (s.is(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get())) {
+                b.card(s.copyWithCount(1), "+" + TFEconomy.format(s.getCount()), 0xF6B628, "", "", false);
+            } else if (s.is(net.tierrasfantasticas.tfclient.items.TFItems.GREEN_COIN.get())) {
+                b.card(s.copyWithCount(1), "+" + s.getCount() + (s.getCount() == 1 ? " moneda verde" : " monedas verdes"), 0x40C850, "", "", false);
+            } else {
+                b.card(s.copy(), s.getHoverName().getString(), 0x3496FA, "", "", false);
+            }
         }
         if (coins > 0) b.card(coin, TFEconomy.format(coins), 0xF6B628, "", "", false);
     }
@@ -181,8 +188,22 @@ public final class PadKits {
         }
     }
 
-    /** Da el objeto en montones normales; lo que no cabe cae a sus pies. */
+    /**
+     * Da el objeto en montones normales; lo que no cabe cae a sus pies. Las Fantastic Coin (oro) y las monedas verdes
+     * no se dan como objeto: se suman directamente al saldo del jugador (kits, recompensas y premios pasan por aquí).
+     */
     static void give(ServerPlayer player, ItemStack stack) {
+        if (stack.isEmpty()) return;
+        if (stack.is(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get())) {
+            if (TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), stack.getCount())) {
+                TFPadNet.sendState(player);
+                return;
+            }
+            // si la economía falla, mejor el objeto que nada
+        } else if (stack.is(net.tierrasfantasticas.tfclient.items.TFItems.GREEN_COIN.get())) {
+            PadGreen.add(player, stack.getCount());
+            return;
+        }
         while (stack.getCount() > stack.getMaxStackSize()) giveOne(player, stack.split(stack.getMaxStackSize()));
         giveOne(player, stack);
     }

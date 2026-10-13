@@ -246,7 +246,7 @@ final class PadHomePage extends PadPage {
     /** 0 a 1: cuánto ha entrado la ficha i (1 sin animaciones). */
     private float entrance(int i, long now) {
         if (!PadSettings.animations) return 1F;
-        return Math.max(0F, Math.min(1F, ((now - shownAt) / 1000F - 0.06F - wave(i) * 0.55F) / 0.34F));
+        return Math.max(0F, Math.min(1F, ((now - shownAt) / 1000F - 0.03F - wave(i) * 0.33F) / 0.22F));
     }
 
     /** Sale de 0, se pasa un poco de 1 y vuelve (el rebote de las fichas al entrar). */
@@ -438,7 +438,7 @@ final class PadHomePage extends PadPage {
 
     @Override
     boolean drag(double mx, double my, double dy) {
-        scroll -= (int) Math.round(dy);
+        scroll += (int) Math.round(dy); // arrastrar hacia abajo baja la lista (como la barra)
         return true;
     }
 
