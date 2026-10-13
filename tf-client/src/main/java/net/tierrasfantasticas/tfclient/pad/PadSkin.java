@@ -355,6 +355,36 @@ final class PadSkin {
         return image(g, pad, id, x + size / 2F, y + size / 2F, size, size);
     }
 
+    /** Ancho / alto de una imagen del pad (0 si no existe). */
+    static float aspect(String id) {
+        ResourceLocation loc = id == null || id.isEmpty() ? null : ResourceLocation.tryParse(id);
+        if (loc == null) return 0F;
+        int[] sz = TFPadScreen.size(loc);
+        return sz[0] == 0 || sz[1] == 0 ? 0F : sz[0] / (float) sz[1];
+    }
+
+    /** ¿Es una imagen ancha (un retrato, como los de los oficios) que se enseña como una foto? */
+    static boolean wide(String id) {
+        return aspect(id) > 1.25F;
+    }
+
+    /**
+     * Una imagen ancha como una foto: de h de alto (y su ancho), centrada en cx, con marco azul noche y un brillo arriba;
+     * en pixel art con el vecino más cercano aunque no sea a escala entera (así llena el sitio). Devuelve su ancho.
+     */
+    static int photo(GuiGraphics g, String id, float cx, int y, int h) {
+        ResourceLocation loc = ResourceLocation.tryParse(id);
+        float a = aspect(id);
+        if (loc == null || a <= 0F) return 0;
+        int w = Math.round(h * a);
+        int x = Math.round(cx - w / 2F);
+        g.fill(x - 1, y + h + 1, x + w + 1, y + h + 2, 0x3018265C);
+        PadUi.box(g, x - 1, y - 1, w + 2, h + 2, PadUi.INK);
+        texture(g, loc, x, y, w, h, 1F, 0xFFFFFF, false);
+        g.fill(x, y, x + w, y + 1, 0x50FFFFFF);
+        return w + 2;
+    }
+
     /**
      * Lo mismo, centrada en (cx, cy) y cabiendo en maxW x maxH sin deformarse (los retratos de los oficios son más anchos
      * que altos: 64x39). Pixel art a un número entero de píxeles reales por píxel; si no cabe ni a 1, suavizada.
@@ -568,7 +598,7 @@ final class PadSkin {
                 g.fill(cx - hw, y + TAB_H + i, cx + hw + 1, y + TAB_H + i + 1, edge);
                 if (hw > 0) g.fill(cx - hw + 1, y + TAB_H + i, cx + hw, y + TAB_H + i + 1, low);
             }
-            PadFont.drawShadowCentered(g, label, x + w / 2, y + 3, 0xFFFFFF, darken(c, 0.42F));
+            PadFont.drawShadowCentered(g, label, x + w / 2, y + 4, 0xFFFFFF, darken(c, 0.42F));
             return;
         }
         boolean hover = state == 1;
@@ -577,7 +607,7 @@ final class PadSkin {
         PadUi.box(g, x, yy, w, TAB_H, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
         g.fillGradient(x + 1, yy + 1, x + w - 1, yy + TAB_H - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
         g.fill(x + 1, yy + TAB_H - 2, x + w - 1, yy + TAB_H - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
-        PadFont.drawCentered(g, label, x + w / 2, yy + 3, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
+        PadFont.drawCentered(g, label, x + w / 2, yy + 4, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
     }
 
     /**

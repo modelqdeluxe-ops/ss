@@ -1009,6 +1009,17 @@ class Sim(Skin):
             label = self.pfit(label, cw - 4)
             self.ptext(label, x + cw // 2 - self.pwidth(label) // 2, yy + 20, on_dark(color), False)
 
+    def photo(self, path, cx, y, h):
+        """PadSkin.photo: imagen ancha de h de alto, marco azul noche, brillo arriba, vecino más cercano."""
+        im = Image.open(path).convert('RGBA')
+        w = round(h * im.width / im.height)
+        x = round(cx - w / 2)
+        self.fill(x - 1, y + h + 1, x + w + 1, y + h + 2, (24, 38, 92, 48))
+        self.box(x - 1, y - 1, w + 2, h + 2, INK)
+        self.tex_alpha(im, x, y, w, h, 1.0, smooth=False)
+        self.fill(x, y, x + w, y + 1, (255, 255, 255, 80))
+        return w + 2
+
     def card(self, c, x, y, cw, ch, hover=False, acc=(52, 150, 250), gallery=False):
         """PadViewPage.drawCard (1.4): tarjeta con vitrina del color de la tarjeta (rayas, luz, franja de color abajo),
         el objeto o la imagen grande, el nombre en negrita y su etiqueta; la marcada, con borde de oro, rayos que giran
@@ -1041,7 +1052,13 @@ class Sim(Skin):
         self.fill(x0 + 2, yy + 1, x0 + w - 2, yy + 2, (255, 255, 255, 150))
         bob = round(math.sin(self.T * 4.4)) if hover or sel else 0
         size = self.GAL_IMG if gallery else 32
-        if ex.get('img'):
+        im = Image.open(ex['img']) if ex.get('img') else None
+        if im is not None and im.width > im.height * 1.25:
+            # PadSkin.photo: un retrato ancho (oficios) como una foto, casi todo el alto de la vitrina
+            a = im.width / im.height
+            ph = min(sh - 5, round((w - 8) / a))
+            self.photo(ex['img'], cx, yy + 1 + (sh - ph) // 2 + bob, ph)
+        elif ex.get('img'):
             self.icon_at(icon, ex, cx - size // 2, yy + 1 + (sh - size) // 2 + bob, size, max_w=w - 10)
         else:
             self.icon_at(icon, ex, cx - 16, yy + 4 + bob + (sh - 40) // 2, 32, n)

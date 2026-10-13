@@ -340,7 +340,7 @@ class Skin:
                 self.fill(cx - hw, y + H + i, cx + hw + 1, y + H + i + 1, edge)
                 if hw > 0:
                     self.fill(cx - hw + 1, y + H + i, cx + hw, y + H + i + 1, low)
-            self.ptext_shadow(label, x + w // 2 - self.pwidth(label) // 2, y + 3, WHITE, darken(c, 0.42))
+            self.ptext_shadow(label, x + w // 2 - self.pwidth(label) // 2, y + 4, WHITE, darken(c, 0.42))
             return
         hover = state == 1
         yy = y - 1 if hover else y
@@ -348,7 +348,7 @@ class Skin:
         self.box(x, yy, w, H, mix(c, INK, 0.25) if hover else rgb(0x7F9CC8))
         self.vgrad(x + 1, yy + 1, w - 2, H - 2, WHITE, mix(rgb(0xE4EEF9), tint(c, 0.35), 0.55) if hover else rgb(0xD3E3F4))
         self.fill(x + 1, yy + H - 2, x + w - 1, yy + H - 1, mix(c, WHITE, 0.25) if hover else rgb(0xBACFE6))
-        self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 3, ink(c) if hover else rgb(0x3A5888), False)
+        self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 4, ink(c) if hover else rgb(0x3A5888), False)
 
     def ptext_shadow(self, s, x, y, color, shadow):
         """PadFont.drawShadowCentered: sombra 1 abajo (y abajo a la derecha) y el texto encima."""

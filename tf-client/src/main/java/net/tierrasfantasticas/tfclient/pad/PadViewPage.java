@@ -372,7 +372,10 @@ final class PadViewPage extends PadPage {
         g.fill(x0 + 2, yy + 1, x0 + w - 2, yy + 2, 0x96FFFFFF);
         int bob = lift || c.selected() ? Math.round((float) Math.sin(t * 4.4F)) : 0;
         int size = gallery ? GAL_IMG : 32;
-        boolean drawn = c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
+        boolean photo = c.hasImage() && PadSkin.wide(c.image());
+        int photoH = photo ? Math.min(sh - 5, Math.round((w - 8) / PadSkin.aspect(c.image()))) : 0;
+        boolean drawn = photo ? PadSkin.photo(g, c.image(), cx, yy + 1 + (sh - photoH) / 2 + bob, photoH) > 0
+                : c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
         if (!drawn && !c.icon().isEmpty()) bigItem(g, c.icon(), cx - 16, yy + 4 + bob + (sh - 40) / 2);
         if (hover && !c.icon().isEmpty() && !drawn) tooltip = c.icon();
         if (lift) PadSkin.sheen(g, x0 + 1, yy + 1, w - 2, sh, 1.6F, 0.3F);
@@ -447,14 +450,26 @@ final class PadViewPage extends PadPage {
         pad.clipPop(g);
         g.fill(x + 1, y + 1, x + w - 1, y + 2, PadSkin.lighten(color, 70));
         g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, PadSkin.darken(color, 0.55F));
-        PadSkin.medallion(g, sx, sy, ms, color);
-        PadUi.stretch(g, "floor", sx + 8, sy + ms - 7, ms - 16, 4);
-        boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), sx + 3, sy + 3, ms - 6);
+        boolean photo = r.hasImage() && PadSkin.wide(r.image());
+        int extra = 0;
+        boolean drawn;
+        if (photo) {
+            // un retrato (oficios): en grande, como una foto, en vez de dentro del medallón
+            int ph = Math.min(h - 8, 46);
+            int pw = Math.round(ph * PadSkin.aspect(r.image()));
+            PadSkin.photo(g, r.image(), sx + pw / 2F, y + (h - ph) / 2, ph);
+            extra = pw - ms;
+            drawn = true;
+        } else {
+            PadSkin.medallion(g, sx, sy, ms, color);
+            PadUi.stretch(g, "floor", sx + 8, sy + ms - 7, ms - 16, 4);
+            drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), sx + 3, sy + 3, ms - 6);
+        }
         if (!drawn && !r.icon().isEmpty()) {
             bigItem(g, r.icon(), sx + (ms - 32) / 2, sy + (ms - 32) / 2 - 1);
             if (PadUi.inside(mx, my, sx, sy, ms, ms)) tooltip = r.icon();
         }
-        int tx = x + ms + 15, textW = heroTextWidth(r, w);
+        int tx = x + ms + 15 + extra, textW = heroTextWidth(r, w) - extra;
         int textH = 11 + linesHeight(r, textW) + (r.progress() >= 0 ? 10 : 0);
         int top = y + Math.max(6, (h - textH) / 2 + 1);
         int shade = PadSkin.darken(color, 0.38F), soft = PadSkin.mix(PadSkin.WHITE, color, 0.10F);

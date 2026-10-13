@@ -614,7 +614,6 @@ public final class TFPadScreen extends Screen {
         int w = unitsW, h = unitsH;
         glassBase(g);
         scissor(g, 0, 0, w, h);
-        PadSkin.vgrad(g, 0, h * 2 / 3F, w, h, 0x00144696, 0x16144696);
         float k = (t % 13F) / 4.5F;
         if (PadSettings.animations && k < 1) PadSkin.beam(g, -120 + k * (w + 240), 70, w, h, 0.16F);
         ResourceLocation bokeh = tex("bokeh");
@@ -653,6 +652,9 @@ public final class TFPadScreen extends Screen {
         int fbH = Minecraft.getInstance().getWindow().getHeight();
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
+        // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
+        // debajo quedaba más clara y parecía otra pantalla detrás
+        PadSkin.vgrad(g, -mL, unitsH * 2 / 3F, unitsW + mR, unitsH + mB, 0x00144696, 0x16144696);
         g.flush();
         RenderSystem.disableScissor();
     }

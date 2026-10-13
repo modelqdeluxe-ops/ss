@@ -554,7 +554,7 @@ final class PadMusicPage extends PadPage {
         boolean ph = PadUi.inside(mx, my, end, y, plus, 15);
         if (ph) pad.hover("§listanueva");
         PadSkin.tabCompact(g, end, y, plus, "", ph || newList ? 1 : 0, PadSkin.accent("musica"));
-        drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + 5, ph || newList ? 0xFF1E9E46 : 0xFF34507E);
+        drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + 1 - (ph || newList ? 1 : 0), ph || newList ? 0xFF1E9E46 : 0xFF34507E);
         hits.add(new Hit(end, y, plus, 15, () -> {
             newList = true;
             coverFor = null;
@@ -571,15 +571,17 @@ final class PadMusicPage extends PadPage {
             return;
         }
         PadSkin.tabCompact(g, tx, y, tw, "", 2, PadSkin.accent("musica"));
+        // la pestaña nueva va de y - 2 a y + 12 (PadSkin.tabCompact): nombre y X centrados en ella, en blanco
         boolean sure = label.startsWith("¿");
-        PadFont.draw(g, label, tx + 6, y + 4, sure ? 0xC8323C : 0x18265C, false);
-        int bx = tx + tw - 12, by = y + 3;
+        int acc = PadSkin.deep(PadSkin.accent("musica"));
+        PadFont.drawShadow(g, label, tx + 6, y + 1, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
+        int bx = tx + tw - 12, by = y;
         boolean xh = PadUi.inside(mx, my, bx, by, 9, 9);
         if (xh) {
             pad.hover("§borrarlista");
             PadUi.box(g, bx, by, 9, 9, 0xFFE83446);
         }
-        drawGlyph(g, CROSS_SMALL, bx + 2, by + 2, xh ? 0xFFFFFFFF : 0xFFC8323C);
+        drawGlyph(g, CROSS_SMALL, bx + 2, by + 2, xh ? 0xFFFFFFFF : 0xFFFFD0D6);
         hits.add(0, new Hit(bx - 1, by - 1, 11, 11, () -> {
             if (id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000) {
                 MusicLibrary.deleteList(id);
