@@ -361,6 +361,88 @@ def normalize(im, box=30):
     return out
 
 
+# El cristal de marco.png (rectángulo de luz azul) y el anillo de bisel azul oscuro que lo rodea hasta la línea negra
+# del contorno: ese bisel, con su brillo y su esquina escalonada, parecía una segunda pantalla detrás de la del pad.
+GLASS_BOX = (205, 250, 1361, 795)
+
+
+def sin_bisel(im):
+    """Pinta el bisel del color del cristal: desde el cristal hacia fuera, por los píxeles azulados (no el logo; las
+    gemas tienen su línea negra) hasta la línea negra del contorno, como mucho 26 px. Degradado del cristal en vertical."""
+    px = im.load()
+    w, h = im.size
+    x0, y0, x1, y1 = GLASS_BOX
+    top, bot = px[600, y0 + 2][:3], px[600, y1 - 2][:3]
+
+    def glass(y):
+        k = min(1.0, max(0.0, (y - y0) / (y1 - y0)))
+        return tuple(round(top[i] + (bot[i] - top[i]) * k) for i in range(3)) + (255,)
+
+    def bevel(p):
+        r, g, b, a = p
+        if a < 200 or (r < 12 and g < 14 and b < 40):  # la línea negra (o nada): ahí se para
+            return False
+        return b > r + 15 and b >= g and b < 200  # azulado y no la gema brillante
+
+    seen = set()
+    stack = [(x, y) for x in range(x0, x1) for y in (y0, y1 - 1)] + [(x, y) for y in range(y0, y1) for x in (x0, x1 - 1)]
+    while stack:
+        x, y = stack.pop()
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if (nx, ny) in seen or not (0 <= nx < w and 0 <= ny < h):
+                continue
+            if x0 <= nx < x1 and y0 <= ny < y1:
+                continue
+            if max(x0 - nx, nx - (x1 - 1), y0 - ny, ny - (y1 - 1)) > 26 or not bevel(px[nx, ny]):
+                continue
+            seen.add((nx, ny))
+            stack.append((nx, ny))
+    for x, y in seen:
+        px[x, y] = glass(y)
+    # dentro del cristal, los restos del bisel en sus esquinas (no el logo, arriba a la izquierda)
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            p = px[x, y]
+            if not (x < 345 and y < 372) and not (p[2] > 235 and p[1] > 190 and p[0] < 120):
+                px[x, y] = glass(y)
+    # las rayas finas que quedaron sueltas dentro del cristal (el borde de dentro del bisel): con cristal a los dos
+    # lados (a 4 px como mucho, arriba y abajo o a izquierda y derecha) se borran
+    def glassy(p):
+        return p[2] > 235 and p[1] > 190 and p[0] < 120
+    for _ in range(2):
+        fix = []
+        for y in range(y0 - 27, y1 + 27):
+            for x in range(x0 - 27, x1 + 27):
+                if (x < 345 and y < 372) or glassy(px[x, y]):
+                    continue
+                up = any(glassy(px[x, y - d]) for d in range(1, 5))
+                dn = any(glassy(px[x, y + d]) for d in range(1, 5))
+                lf = any(glassy(px[x - d, y]) for d in range(1, 5))
+                rt = any(glassy(px[x + d, y]) for d in range(1, 5))
+                if (up and dn) or (lf and rt):
+                    fix.append((x, y))
+        for x, y in fix:
+            px[x, y] = glass(y)
+    # sueltos: los que quedaron rodeados de cristal (no la línea negra) también pasan a cristal
+    def is_glass(p):
+        return p[2] > 240 and p[1] > 195 and p[0] < 110
+    for _ in range(4):
+        fix = []
+        for y in range(y0 - 27, y1 + 27):
+            for x in range(x0 - 27, x1 + 27):
+                if x0 <= x < x1 and y0 <= y < y1:
+                    continue
+                p = px[x, y]
+                if is_glass(p) or (p[0] < 12 and p[1] < 14 and p[2] < 40):
+                    continue
+                n = sum(1 for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)) if is_glass(px[nx, ny]))
+                if n >= 3:
+                    fix.append((x, y))
+        for x, y in fix:
+            px[x, y] = glass(y)
+    return im
+
+
 def build():
     if os.path.isdir(OUT_DIR):
         shutil.rmtree(OUT_DIR)
@@ -379,7 +461,7 @@ def build():
     files['font.png'] = atlas
     for name, im in files.items():
         im.save(os.path.join(OUT_DIR, name))
-    shutil.copyfile(os.path.join(HERE, 'marco.png'), os.path.join(OUT_DIR, 'frame.png'))
+    sin_bisel(Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')).save(os.path.join(OUT_DIR, 'frame.png'), optimize=True)
     # el objeto de la moneda verde, sacado de la Fantastic Coin de oro (textures/item/fantastic_coin.png)
     verde(Image.open(os.path.join(ITEM_DIR, 'fantastic_coin.png'))).save(os.path.join(ITEM_DIR, 'fantastic_coin_green.png'))
     with open(os.path.join(OUT_DIR, 'font.json'), 'w', encoding='utf-8') as f:

@@ -612,8 +612,7 @@ public final class TFPadScreen extends Screen {
     private void drawBackdrop(GuiGraphics g) {
         float t = PadSkin.time();
         int w = unitsW, h = unitsH;
-        glassBase(g);
-        scissor(g, 0, 0, w, h);
+        glassBase(g); // deja el recorte en todo el cristal (no en GX/GY/GW/GH: si no, se veía un rectángulo dentro)
         float k = (t % 13F) / 4.5F;
         if (PadSettings.animations && k < 1) PadSkin.beam(g, -120 + k * (w + 240), 70, w, h, 0.16F);
         ResourceLocation bokeh = tex("bokeh");
@@ -634,7 +633,7 @@ public final class TFPadScreen extends Screen {
     }
 
     /** El hueco del cristal en frame.png (píxeles de la imagen, sin alargar): algo más grande que GX/GY/GW/GH. */
-    private static final int GLASS_L = 205, GLASS_T = 250, GLASS_R = 1361, GLASS_B = 795;
+    private static final int GLASS_L = 187, GLASS_T = 238, GLASS_R = 1379, GLASS_B = 817; // hasta la línea negra (build_pad.sin_bisel)
 
     /**
      * La base del cristal (su trama) en TODO el hueco del cristal del marco, recortada a píxeles reales: el cristal de
@@ -655,8 +654,7 @@ public final class TFPadScreen extends Screen {
         // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
         // debajo quedaba más clara y parecía otra pantalla detrás
         PadSkin.vgrad(g, -mL, unitsH * 2 / 3F, unitsW + mR, unitsH + mB, 0x00144696, 0x16144696);
-        g.flush();
-        RenderSystem.disableScissor();
+        // el recorte se queda puesto: el resto del fondo (luces, haz, nubes) también llega hasta el borde de verdad
     }
 
     /**
