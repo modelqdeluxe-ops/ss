@@ -624,6 +624,8 @@ public final class TFPadScreen extends Screen {
         }
         // en la portada, además, su cielo animado (por detrás del logo y de las fichas)
         if (page == home) home.ambient(g, t);
+        // el paisaje, delante del cielo (las nubes y las luces pasan por detrás de las montañas)
+        landscape(g, t);
         noScissor(g);
     }
 
@@ -660,6 +662,35 @@ public final class TFPadScreen extends Screen {
      * color del tema en degradado (el de Cielo es el azul de marco.png), los monogramas, la trama y una sombra suave
      * abajo. Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
      */
+    /** Lo que el hueco del cristal sobresale de GX/GY/GW/GH a la izquierda, a la derecha y abajo (unidades). */
+    private int glassL, glassR, glassB;
+
+    /** Las capas del paisaje: textura, cuánto se desliza (unidades por segundo) y su alfa. */
+    private static final String[] LAND = {"land_far", "land_mid", "land_near"};
+    private static final float[] LAND_SPEED = {1.2F, 2.6F, 4.2F}, LAND_ALPHA = {0.72F, 0.86F, 0.95F};
+
+    /**
+     * El paisaje de abajo del cristal (1.3.63; tools/pad/build_skin.py land_*): montañas con nieve, colinas con robles
+     * y abetos y delante el castillo de Tierras Fantásticas con unas casitas. Tres capas en mosaico del color del tema
+     * (más claras las lejanas, como con bruma) que se deslizan a distinta velocidad; quietas sin animaciones. Nítidas:
+     * cada píxel de la textura son big píxeles reales, como los iconos.
+     */
+    private void landscape(GuiGraphics g, float t) {
+        int b = 0xFF000000 | PadSettings.theme().bottom();
+        int lum = ((b >> 16 & 255) * 3 + (b >> 8 & 255) * 6 + (b & 255)) / 10;
+        boolean dark = lum < 110;
+        int[] col = {PadSkin.mix(b, 0xFFFFFFFF, dark ? 0.2F : 0.5F), PadSkin.mix(b, dark ? 0xFF0A1028 : 0xFF18265C, 0.3F),
+                PadSkin.mix(b, dark ? 0xFF060A1A : 0xFF18265C, 0.5F)};
+        float k = big / (float) cs, w = 256 * k, h = 44 * k;
+        float bottom = unitsH + glassB;
+        for (int i = 0; i < LAND.length; i++) {
+            ResourceLocation tex = tex(LAND[i]);
+            float off = PadSettings.animations ? (t * LAND_SPEED[i]) % w : 0F;
+            float x = Math.round((-glassL - off - i * 61) * cs) / (float) cs; // a píxel real: nítido al moverse
+            for (; x < unitsW + glassR; x += w) PadSkin.texture(g, tex, x, bottom - h, w, h, LAND_ALPHA[i], col[i] & 0xFFFFFF, false);
+        }
+    }
+
     private void glassBase(GuiGraphics g) {
         int lift = liftReal();
         int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
@@ -667,6 +698,9 @@ public final class TFPadScreen extends Screen {
         int top = gy + lift;
         int mL = Math.max(0, (gx - x0 + cs - 1) / cs), mT = Math.max(0, (top - y0 + cs - 1) / cs);
         int mR = Math.max(0, (x1 - gx - unitsW * cs + cs - 1) / cs), mB = Math.max(0, (y1 - top - unitsH * cs + cs - 1) / cs);
+        glassL = mL;
+        glassR = mR;
+        glassB = mB;
         g.flush();
         int fbH = Minecraft.getInstance().getWindow().getHeight();
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
@@ -738,6 +772,14 @@ public final class TFPadScreen extends Screen {
     private void drawStatus(GuiGraphics g, double mx, double my) {
         Minecraft mc = Minecraft.getInstance();
         int bx = backX(), by = backY(), bsz = big(12);
+        // la barra de estado (1.3.63): cristal escarchado de lado a lado, con su brillo arriba y una línea abajo (la hora,
+        // las monedas y el título se leen mejor sobre cualquier fondo y tema)
+        int sx0 = bx - 4, sx1 = unitsW - 3, sy0 = 2, sy1 = bar - 1;
+        g.fillGradient(sx0 + 1, sy0, sx1 - 1, sy1, 0x42FFFFFF, 0x1AFFFFFF);
+        g.fill(sx0, sy0 + 1, sx0 + 1, sy1 - 1, 0x30FFFFFF);
+        g.fill(sx1 - 1, sy0 + 1, sx1, sy1 - 1, 0x30FFFFFF);
+        g.fill(sx0 + 2, sy0, sx1 - 2, sy0 + 1, 0x70FFFFFF);
+        g.fill(sx0 + 2, sy1, sx1 - 2, sy1 + 1, 0x2A18265C);
         if (page != home) {
             boolean hover = PadUi.inside(mx, my, bx, by, bsz, bsz);
             if (hover) hover("§back");

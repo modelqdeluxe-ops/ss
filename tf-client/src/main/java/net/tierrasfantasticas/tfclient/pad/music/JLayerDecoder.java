@@ -132,7 +132,7 @@ final class JLayerDecoder implements AudioDecoder {
         }
     }
 
-    /** ¿Es un MP3 MPEG-1 (lo lee JavaMP3)? Mira la cabecera del primer frame, tras la etiqueta ID3. */
+    /** ¿Es un MP3 MPEG-1 (su duración se mide con Mp3Frames)? Mira la cabecera del primer frame, tras la etiqueta ID3. */
     static boolean isMpeg1(Path file) {
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file), 1 << 16)) {
             byte[] head = new byte[10];

@@ -683,6 +683,20 @@ class Skin:
             self.sparkle(int(sx * W), int(sy * H), 2 if i % 3 == 0 else 1, tw * 0.85)
         if home:  # en la portada, su cielo animado (PadHomePage.ambient)
             self.home_ambient(home, t, fade)
+        # el paisaje (TFPadScreen.landscape), delante del cielo: tres capas del color del tema que se deslizan
+        b = rgb(th[2])
+        lum = (b[0] * 3 + b[1] * 6 + b[2]) / 10
+        dark = lum < 110
+        cols = [mix(b, WHITE, 0.2 if dark else 0.5), mix(b, (10, 16, 40) if dark else (24, 38, 92), 0.3),
+                mix(b, (6, 10, 26) if dark else (24, 38, 92), 0.5)]
+        kk = self.big / self.cs
+        lw_, lh_ = 256 * kk, 44 * kk
+        for i, (name, sp, al) in enumerate((('land_far', 1.2, 0.72), ('land_mid', 2.6, 0.86), ('land_near', 4.2, 0.95))):
+            off = (t * sp) % lw_
+            x = round((-off - i * 61) * self.cs) / self.cs
+            while x < W:
+                self.tex_alpha(name, x, H - lh_, lw_, lh_, al, cols[i], smooth=False)
+                x += lw_
         self.no_scissor()
         # el logo lo pone el marco, que va encima (Sim.save)
 

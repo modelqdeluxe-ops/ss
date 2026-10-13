@@ -639,6 +639,13 @@ class Sim(Skin):
         """TFPadScreen.drawStatus (1.3.25): todo a la escala grande."""
         bsz = self.bigu(12)
         bx, by = self.logo_right(0) + 4, (self.bar - bsz) // 2
+        # la barra de estado de cristal escarchado (1.3.63)
+        sx0, sx1, sy0, sy1 = bx - 4, self.UW - 3, 2, self.bar - 1
+        self.vgrad_a(sx0 + 1, sy0, sx1 - sx0 - 2, sy1 - sy0, (255, 255, 255, 0x42), (255, 255, 255, 0x1A))
+        self.fill(sx0, sy0 + 1, sx0 + 1, sy1 - 1, (255, 255, 255, 0x30))
+        self.fill(sx1 - 1, sy0 + 1, sx1, sy1 - 1, (255, 255, 255, 0x30))
+        self.fill(sx0 + 2, sy0, sx1 - 2, sy0 + 1, (255, 255, 255, 0x70))
+        self.fill(sx0 + 2, sy1, sx1 - 2, sy1 + 1, (24, 38, 92, 0x2A))
         if back:
             with self.big_at(bx, by):
                 self.box(0, 0, 12, 12, INK)
