@@ -71,6 +71,11 @@ def fx(kind, id_):
     return {'img': os.path.join(FX, f'{kind}_{id_}.png'), 'smooth': kind == 'kill'}
 
 
+def job(bg):
+    """El retrato de un oficio (PadJobs.portrait: textures/gui/pad/jobs/<fondo>.png, tools/pad/job_images.py)."""
+    return {'img': os.path.join(FX, '..', 'jobs', bg + '.png'), 'smooth': False}
+
+
 def skill_icon(cls, skill):
     return {'img': os.path.join(SKILLS, cls, skill + '.png'), 'smooth': False}
 
@@ -134,14 +139,14 @@ if not ONLY or 'p_admin' in ONLY:
 
 # --- Oficios -----------------------------------------------------------------------------------------------------------
 page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], app='oficios', hover=2, cards=[
-    ('wheat', 'Granjero', 0x6FB43C, 'Nivel 3', False, 1, {'prog': 0.5}),
-    ('iron_pickaxe', 'Minero', 0x8C9BB4, 'Nivel 12', True, 1, {'prog': 0.28, 'badge': '+2'}),
-    ('iron_axe', 'Leñador', 0xA0703C, 'Nivel 5', False, 1, {'prog': 0.8}),
-    ('iron_shovel', 'Excavador', 0xC8A064, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3}),
-    ('fishing_rod', 'Pescador', 0x3C8CD2, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3}),
-    ('bow', 'Cazador', 0xC83C3C, 'Nivel 1', False, 1, {'prog': 0.1}),
-    ('brewing_stand', 'Alquimista', 0x9A5CF0, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3}),
-    ('anvil', 'Herrero', 0x707880, 'Nivel máximo', False, 1, {'prog': 1, 'tone': 1}),
+    ('wheat', 'Granjero', 0x6FB43C, 'Nivel 3', False, 1, {'prog': 0.5, **job('farmer')}),
+    ('iron_pickaxe', 'Minero', 0x8C9BB4, 'Nivel 12', True, 1, {'prog': 0.28, 'badge': '+2', **job('miner')}),
+    ('iron_axe', 'Leñador', 0xA0703C, 'Nivel 5', False, 1, {'prog': 0.8, **job('wood_cutter')}),
+    ('iron_shovel', 'Excavador', 0xC8A064, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3, **job('digger')}),
+    ('fishing_rod', 'Pescador', 0x3C8CD2, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3, **job('fisherman')}),
+    ('bow', 'Cazador', 0xC83C3C, 'Nivel 1', False, 1, {'prog': 0.1, **job('hunter')}),
+    ('brewing_stand', 'Alquimista', 0x9A5CF0, 'Sin empezar', False, 1, {'prog': 0, 'tone': 3, **job('alchemist')}),
+    ('anvil', 'Herrero', 0x707880, 'Nivel máximo', False, 1, {'prog': 1, 'tone': 1, **job('blacksmith')}),
 ])
 page('p_oficio', 'OFICIOS', [('m', 'MISIONES (1)'), ('a', 'CÓMO SE GANA'), ('r', 'PREMIOS')], 'm', [], [
     ('coal', 'Carbón para la forja', T, ['Saca 32 menas de carbón: 32/32 · cada día'], 1.0, '+¤120', ('COBRAR', G), None, True),

@@ -31,6 +31,11 @@ public final class PadJobs {
 
     private PadJobs() {}
 
+    /** El retrato del oficio en el pad: textures/gui/pad/jobs/&lt;fondo&gt;.png (farmer, miner, wood_cutter...). */
+    static String portrait(TFJobsConfig.Job job) {
+        return PadView.padImage("jobs/" + job.background());
+    }
+
     public static String tab(String jobId) {
         return "o:" + jobId + ":m";
     }
@@ -120,8 +125,9 @@ public final class PadJobs {
                 tone = max ? PadView.TONE_GOLD : PadView.TONE_BLUE;
             }
             int ready = on && jp != null ? claimable(player, job, jp) : 0;
-            b.card(new ItemStack(TFJobsMenu.icon(job)), job.name(), job.color(), level, tone, progress, ready > 0 ? "+" + ready : "",
-                    "ver:" + job.id(), on);
+            // el muñeco del oficio (tools/pad/job_images.py); si no hay, el objeto de su icono
+            b.cell(new PadView.Cell(new ItemStack(TFJobsMenu.icon(job)), job.name(), job.color(), "ver:" + job.id(), on, level,
+                    progress, ready > 0 ? "+" + ready : "", tone).image(portrait(job)));
         }
         if (TFJobsConfig.jobs.isEmpty()) b.empty("Sin oficios.");
         return b.build();
@@ -150,7 +156,7 @@ public final class PadJobs {
                 + (max ? " · máximo." : " · " + (int) jp.xp + "/" + TFJobsConfig.xpFor(jp.level) + " xp.") + (active ? "" : " No es tu oficio."));
         float progress = max ? 1 : (float) Math.max(0, Math.min(1, jp.xp / TFJobsConfig.xpFor(jp.level)));
         b.hero(new PadView.Row(new ItemStack(TFJobsMenu.icon(job)), job.name() + (active ? " · tu oficio" : ""), job.color(), about,
-                progress, "", null, null));
+                progress, "", null, null).image(portrait(job)));
         switch (section) {
             case "a" -> actions(b, job, jp);
             case "r" -> rewards(b, jp);
