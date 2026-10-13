@@ -9,51 +9,44 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-### Web (13 oct 2026): rediseño de la tienda — barra de categorías, VFX y Skills (hecho y publicado)
-Pedido del dueño (textual): *«Necesito un rediseño completo de la gui de skills, vfx y tarjeta de botones de tienda,
-quiero un cambio real, actualmente es tosco, feo, se confunde con el tema de la pagina y todo.»* («tarjeta de botones
-de la tienda» = la barra de pestañas de categorías; ya la llamó así el 7 oct.) Solo web: `tools/pages.py` (genera
-`public/tienda.html`), `tools/icons.py`, `public/app.js`, `public/styles.css`.
-- **Idea común**: una «consola» propia que no se mezcla con la nebulosa violeta: placas **opacas de acero oscuro**
-  (tokens `--hud-0…3`, `--hud-line`, `--hud-line-2` en `.vfx-shop, .sk-shop`) con filo claro arriba, y el **color de
-  cada cosa** (`--t` pestaña, `--vfx` categoría del efecto, `--sk` clase) en luces, marcas y estados. Nada de tonos
-  violeta de la página en las superficies.
-- **Barra de categorías** (`.shop-tabs` = el «dock»): placa de acero con el destello de la marca (`--shimmer`) como
-  filo de arriba; cada pestaña es una ficha con su icono SVG (gift, crown, shirt, chest, flame, zap) en una pastilla de
-  su color (`--tone-*`) y el contador; la elegida se llena de su color, icono en sólido y barra de luz debajo.
-  Móvil 3x2 fichas verticales; 760 px seis en fila; desde 1100 px icono + nombre en una línea + contador.
-- **VFX** (`renderVfx`, `vfxStage`, `vfxAction`, `vfxKillTile`, `vfxList`): **arena** teñida del color de la
-  categoría (las animaciones son transparentes) con charco de luz, esquinas de visor (`.fx-hud`), «Vista previa» con
-  punto rojo y **flechas anterior/siguiente con contador** (`data-vfx-step`, recorre lo filtrado); ficha con
-  rombo+categoría, nombre grande, dos líneas «cómo sale» con icono y **la acción en su placa** (Gratis/Es tuyo/
-  Equipado + botón grande); «Tu efecto de kill» con botón VER; contador «N efectos tuyos». Filtros = pastillas
-  `.fx-chip` con punto de color y número; mosaico con la miniatura sobre la luz de su color, rombo en lo elegido y
-  etiquetas «✓ Equipado» / «Tuyo». OJO: las animaciones acaban con ~1,6 s vacías antes de repetirse (así son los WebP);
-  si una captura sale con la arena vacía, es eso.
-- **Skills** (`skScreen`, `skBuy`, `skSlot`, `skPickCard`, `skDetail`, `skTile`): la vista previa en una **pantalla
-  enmarcada** (fondo `--sk-bg` = el pintado en las imágenes) sobre la luz del color de la clase; emblema grande,
-  datos en pastillas con icono (teclas, pasivas, clic/arco y el tipo con su color); **dos formas de comprar separadas**
-  (`.sk-opt`: «Con dinero» ámbar / «Con monedas»); si es tuya, placa de estado (`.sk-own`). Debajo, la **barra de
-  skills como la del juego** (`.sk-slots`: casillas 64 px —48 en el móvil— con la tecla 5–0 arriba a la izquierda;
-  las pasivas aparte con «PASIVA») y la ficha de la elegida (`#sk-pick`). Rejilla de clases con la franja y el icono
-  de su color; filtro con el color de cada tipo (`groups[].color`).
-- Arreglo: el texto de VFX usa `vfxData.me` (no `me.user`, que carga más tarde) para saber si hay sesión.
-- Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión) y capturas de escritorio y móvil;
-  `npm test` 53/53.
-- **2.ª ronda (mismo día)**, queja del dueño: *«siempre tiendes a hacer diseños transparentes… se confunde con el resto
-  de contenido… no quiero ver en vista previa las skills ni kills que tengo… color, contraste y textura profesional en
-  todo»*. **Regla: nada translúcido en la tienda** (nada de `color-mix(… transparent)` en placas; las mezclas van con
-  un color sólido) y cada placa más clara que la página, medido con PIL:
-  - **Barra de categorías** opaca: placa `#121733→#080a1a`; fichas de acero `#2f3a74→#222b5a` con borde `#44509a`,
-    labio inferior y textura `--grain` (ruido SVG en `:root`); icono en pastilla maciza de su color con el dibujo
-    oscuro; la elegida rellena de su color con texto oscuro y el icono al revés (fondo oscuro, dibujo de color).
-  - **Miniaturas** de VFX y Skills = placas de acero macizas (`#161d42`/`#1f2753`, borde `#3a4584`, labio inferior,
-    `--grain`); en VFX la elegida lleva la barra del nombre rellena de su color. Arenas en `#0c1129` con textura.
-    Filtros `.fx-chip` macizos; etiquetas Equipado/Tuyo sólidas.
-  - **Lo tuyo fuera de las vistas previas**: VFX empieza en el primer efecto que no tienes y Skills en la primera clase
-    que no tienes (`skDefault`); quitados el recuadro «Tus clases», «Tu efecto de kill» y el contador de efectos tuyos.
-    Lo tuyo se sigue viendo por las etiquetas del mosaico y, al tocarlo, se equipa/quita igual. Los paquetes de skills
-    antiguos van en una sección aparte al final de VFX (`vfxOldPacks`, `.vfx-old`), solo si tienes alguno.
+### Web (13 oct 2026): tienda — barra de categorías, VFX y Skills REHECHOS DE CERO (hecho y publicado)
+Historia, para no repetirla: el dueño pidió «un rediseño completo de la gui de skills, vfx y tarjeta de botones de
+tienda, quiero un cambio real» («tarjeta de botones» = la barra de categorías). Las dos primeras rondas (PR #94 y #95)
+solo recolorearon la MISMA estructura (rejilla de 6 fichas con icono; vista previa arriba + mosaico abajo, igual desde
+el 1.3.37) y el dueño respondió: *«siempre tiendes a hacer diseños transparentes… se confunde con el resto»* y luego
+*«sigue el mismo puto diseño de hace 10 builds, no hiciste un rework completo»*. **Lección: cuando pida un rework,
+cambia la estructura y el lenguaje visual, no los colores.** Reglas que siguen valiendo: **nada translúcido** (las
+mezclas `color-mix` van con un color sólido, nunca con `transparent`), contraste medido con PIL, textura `--grain`
+(ruido SVG en `:root`), y **lo que ya tienes no sale solo en la vista previa** (se ve marcado en su tarjeta).
+
+Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/tab_art.py`, `public/app.js`,
+`public/styles.css`):
+- **Barra de categorías** (`.shop-tabs`): una **tarjeta con el dibujo** de cada sección (`img/tabs/<cat>.webp`, los
+  genera `python3 tools/tab_art.py` desde imágenes que ya usa la web: diamantes, escudo real, alas, crate Luminite
+  recortada, kill K.O. y un abanico de tres iconos de clases) sobre un fondo **macizo de su color** (`--tone-*`), con
+  el nombre en blanco abajo y el número arriba. La elegida se enciende (su color a tope), marco blanco y dibujo más
+  grande. Móvil y tablet 3×2; desde 1000 px las seis en fila.
+- **VFX y Skills = una ventana propia color grafito** (`.cx`, neutra: ni violeta ni azul de la web) con su filo de
+  color arriba, cabecera (etiqueta, título, texto) y dentro `.cx-layout`: **filtros arriba, catálogo a la izquierda y
+  vitrina a la derecha** (desde 1024 px); en el móvil: vitrina, filtros y catálogo. La vitrina es `sticky`; `cxStick()`
+  (app.js) le pone el `top` para que, si es más alta que la pantalla, quede pegada por abajo y se vea la compra.
+  `cxReveal()` sube a la vitrina al elegir algo en el móvil.
+  - **Catálogo** = tarjetas tipo «rareza» (`.cx-tile`): el dibujo sobre el **color macizo** de su categoría/clase, franja
+    de color y nombre en negro; la elegida con marco blanco y la franja llena de su color. Etiquetas macizas
+    «✓ Equipado»/«Tuyo» (VFX) y «✓ Activa»/«Tuya»/«En cola» (Skills). Filtros `.cx-chip` macizos (el pulsado, lleno).
+  - **VFX** (`renderVfx`, `vfxShow`, `vfxTile`, `vfxAction`): arena con el color de la categoría macizo y charco de luz,
+    etiqueta de categoría, flechas con contador (`data-vfx-step`); ficha con nombre, descripción, cómo sale y la acción
+    en una placa negra (`.cx-deal`: Gratis / Es tuyo / Equipado + botón). Al pasar el ratón, la miniatura se anima.
+    Paquetes de skills antiguos al final (`vfxOldPacks`, `.cx-old`), solo si tienes alguno. OJO: las animaciones acaban
+    con ~1,6 s vacías antes de repetirse (así son los WebP); si una captura sale con la arena vacía, es eso.
+  - **Skills** (`renderSkills`, `skDetail`, `skScreen`, `skSlot`, `skPickCard`, `skBuy`, `skTile`): plantel de
+    retratos (icono de la clase ampliado sobre su color) y ficha: cabecera con emblema, rol, nombre, tipo y descripción;
+    pantalla enmarcada en el color de la clase (por dentro `--sk-bg`, el fondo pintado en las vistas previas); barra de
+    skills como la del juego (tecla 5–0 en la esquina; pasivas aparte con «P») con datos (con tecla, pasivas, clic/arco)
+    y la skill elegida (`#sk-pick`); abajo la compra en dos filas (`.sk-buy`: con dinero ámbar / con monedas) o la placa
+    de estado (`.cx-own`: activa, tuya, en cola).
+- Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
+  VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
 ### CHECKPOINT (13 oct 2026, TF Client 1.3.65) — lee esto primero
 

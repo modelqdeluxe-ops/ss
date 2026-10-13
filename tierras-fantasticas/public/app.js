@@ -579,9 +579,14 @@
     $('#crate-empty').hidden = shown > 0;
   }
 
-  // --- VFX: efectos de kill. Por ahora gratis: se obtienen y se equipan con la cuenta y el servidor los pone solo; en
-  // el juego salen solos al derrotar a alguien. Los paquetes de skills ya no se dan (ahora están las clases de Skills):
-  // quien tenía uno lo ve en «Lo que llevas» y lo puede seguir equipando o quitando. ---
+  // --- VFX y Skills (rework completo 13 oct. 2026): cada una es una ventana propia de color grafito (.cx), que no se
+  // mezcla con la nebulosa de la web. Dentro, arriba los filtros; a la izquierda el catálogo (tarjetas con el fondo
+  // MACIZO del color de su categoría o clase, como las rarezas de un juego) y a la derecha la vitrina con lo elegido,
+  // que se queda fija al bajar (en el móvil va primero). Lo que ya tienes no sale solo en la vitrina: se ve marcado en
+  // su tarjeta. ---
+
+  // VFX: efectos de kill. Por ahora gratis: se obtienen y se equipan con la cuenta y el servidor los pone solo; en el
+  // juego salen solos al derrotar a alguien. Los paquetes de skills ya no se dan: quien tenía uno lo ve al final.
   let vfxData = null;
   let vfxCat = 'todos';
   async function loadVfx() {
@@ -593,6 +598,7 @@
   }
 
   const seconds = (n) => `${String(n).replace('.', ',')} s`;
+  const pad2 = (n) => String(n).padStart(2, '0');
 
   // Iconos pequeños de VFX y Skills (trazo, como los del resto de la web)
   const svgI = (d, w = 1.9) =>
@@ -603,7 +609,6 @@
     sword: svgI('<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/>'),
     spark: svgI('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>'),
     check: svgI('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 2.6),
-    gift: svgI('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'),
     star: svgI('<path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.3l6-.7z"/>'),
     key: svgI('<rect x="3" y="7" width="18" height="11" rx="2.5"/><path d="M7 11h.01M11 11h.01M15 11h.01M8 14.5h8"/>'),
     clock: svgI('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
@@ -611,7 +616,35 @@
     bow: svgI('<path d="M5 3c7 3 10 7 16 16M5 3c0 7 4 11 14 16M3 21 21 3"/>'),
   };
 
-  // VFX (rediseño 13 oct.): la lista en el orden en que se ve (categorías y, dentro, sus efectos), según el filtro
+  // La cabecera de la ventana: etiqueta de la sección, título y qué es
+  const cxHead = (icon, label, title, text) => `<header class="cx-head">
+      <span class="cx-eyebrow">${icon}${label}</span>
+      <h2>${title}</h2>
+      <p>${text}</p>
+    </header>`;
+
+  // Un filtro: punto de su color, nombre y cuántos hay
+  const cxChip = (attr, id, name, n, color, on) =>
+    `<button type="button" class="cx-chip" style="--c:${color}" ${attr}="${escapeHtml(id)}" aria-pressed="${on}"><i aria-hidden="true"></i>${escapeHtml(name)}<span>${n}</span></button>`;
+
+  // Al elegir algo en el móvil (la vitrina va arriba), se sube a verla si ha quedado fuera de la pantalla
+  function cxReveal(el) {
+    cxStick();
+    if (matchMedia('(min-width: 1024px)').matches) return;
+    const r = el?.getBoundingClientRect();
+    if (r && (r.top < 0 || r.top > innerHeight * 0.75)) el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // En el escritorio la vitrina es «sticky» (styles.css): bajo la cabecera de la web si cabe en la pantalla y, si es
+  // más alta, pegada por abajo (así siempre se ven la acción y la compra)
+  function cxStick() {
+    const el = $('.cx-show');
+    if (!el) return;
+    el.style.top = `${Math.min(88, innerHeight - el.offsetHeight - 12)}px`;
+  }
+  addEventListener('resize', () => cxStick(), { passive: true });
+
+  // La lista en el orden en que se ve (categorías y, dentro, sus efectos), según el filtro
   const vfxList = () =>
     (vfxData.cats || []).filter((c) => vfxCat === 'todos' || c.id === vfxCat).flatMap((c) => vfxData.kills.filter((k) => k.cat === c.id));
 
@@ -622,42 +655,41 @@
     return mine[kind] === id ? 'on' : 'owned';
   }
 
-  // La acción grande de la ficha: qué es para ti y el botón que toca
+  // Lo que es para ti y el botón que toca
   function vfxAction(k) {
     const st = vfxState('kill', k.id);
     const attrs = `data-vfx-kind="kill" data-vfx-id="${escapeHtml(k.id)}"`;
-    const [icon, title, sub, btn] = {
-      free: [IC.gift, 'Gratis', vfxData?.me ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
-      owned: [IC.star, 'Es tuyo', 'Equípalo y sale solo en el juego.', `<button class="btn btn-primary" type="button" data-vfx-equip ${attrs}>Equipar</button>`],
-      on: [IC.check, 'Equipado', 'Ya sale en el juego al derrotar a alguien.', `<button class="btn btn-ghost" type="button" data-vfx-remove ${attrs}>Quitar</button>`],
+    const [title, sub, btn] = {
+      free: ['Gratis', vfxData?.me ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
+      owned: [`${IC.star}Es tuyo`, 'Equípalo y sale solo en el juego.', `<button class="btn btn-primary" type="button" data-vfx-equip ${attrs}>Equipar</button>`],
+      on: [`${IC.check}Equipado`, 'Ya sale en el juego al derrotar a alguien.', `<button class="btn btn-ghost" type="button" data-vfx-remove ${attrs}>Quitar</button>`],
     }[st];
-    return `<div class="fx-action is-${st}">
-        <span class="fx-action-ico">${icon}</span>
-        <div class="fx-action-text"><b>${title}</b><span>${sub}</span></div>
+    return `<div class="cx-deal is-${st}">
+        <div class="cx-deal-text"><b>${title}</b><span>${sub}</span></div>
         ${btn}
       </div>`;
   }
 
-  // Lo seleccionado en el escenario: el id de la kill
+  // Lo seleccionado en la vitrina: el id de la kill
   let vfxSel = null;
   const vfxCatOf = (k) => (vfxData.cats || []).find((c) => c.id === k.cat);
   const vfxColor = (c) => (HEX.test(c || '') ? c : '#45e9ff');
   const vfxNameOf = (kind, id) => (kind === 'kill' ? vfxData.kills : vfxData.me?.packs || []).find((x) => x.id === id)?.name || '';
 
-  // Los paquetes de skills de antes (ya no se dan): quien tenía alguno los ve al final de VFX, fuera de la vista
-  // previa, y los puede seguir equipando o quitando
+  // Los paquetes de skills de antes (ya no se dan): quien tenía alguno los ve al final, y los puede seguir equipando o
+  // quitando
   function vfxOldPacks() {
     const mine = vfxData.me;
     const packs = mine?.packs || [];
     if (!packs.length) return '';
-    return `<section class="vfx-old">
+    return `<section class="cx-old">
         <header><h3>Tus paquetes de skills de antes</h3><span>Ya no se dan; aquí los equipas o los quitas.</span></header>
-        <div class="vfx-old-list">${packs
+        <div class="cx-old-list">${packs
           .map((p) => {
             const on = mine.pack === p.id;
             const attrs = `data-vfx-kind="pack" data-vfx-id="${escapeHtml(p.id)}"`;
-            return `<div class="vfx-slot${on ? ' is-on' : ''}">
-              <div class="vfx-slot-art">${img(p.image, '')}</div>
+            return `<div class="cx-slot${on ? ' is-on' : ''}">
+              <div class="cx-slot-art">${img(p.image, '')}</div>
               <div><span>${on ? 'Equipado' : 'Tuyo'}</span><b>${escapeHtml(p.name)}</b></div>
               ${
                 on
@@ -670,55 +702,49 @@
       </section>`;
   }
 
-  // El escenario: la arena con la animación de lo elegido (teñida del color de su categoría), las flechas para pasar
-  // de uno a otro y la ficha con la acción
-  function vfxStage() {
+  // La vitrina: la arena con la animación (sobre el color de su categoría), las flechas para pasar de uno a otro y la
+  // ficha con la acción
+  function vfxShow() {
     const list = vfxList();
     const k = vfxData.kills.find((x) => x.id === vfxSel) || list[0] || vfxData.kills[0];
     const cat = vfxCatOf(k);
     const idx = list.indexOf(k);
     const nav =
       list.length > 1 && idx >= 0
-        ? `<div class="fx-nav">
-            <button type="button" class="fx-step" data-vfx-step="-1" aria-label="Efecto anterior">${IC.prev}</button>
-            <span class="fx-count"><b>${String(idx + 1).padStart(2, '0')}</b> / ${String(list.length).padStart(2, '0')}</span>
-            <button type="button" class="fx-step" data-vfx-step="1" aria-label="Efecto siguiente">${IC.next}</button>
+        ? `<div class="cx-nav">
+            <button type="button" class="cx-step" data-vfx-step="-1" aria-label="Efecto anterior">${IC.prev}</button>
+            <span class="cx-count"><b>${pad2(idx + 1)}</b> / ${pad2(list.length)}</span>
+            <button type="button" class="cx-step" data-vfx-step="1" aria-label="Efecto siguiente">${IC.next}</button>
           </div>`
         : '';
-    return `
-      <div class="vfx-stage" style="--vfx:${vfxColor(cat?.color)}">
-        <div class="fx-arena">
-          <div class="fx-hud" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          <span class="fx-live" aria-hidden="true"><i></i>Vista previa</span>
-          <div class="fx-show">
-            <span class="fx-floor" aria-hidden="true"></span>
-            <img class="vfx-anim" src="${asset(k.preview || k.image)}" alt="Vista previa de ${escapeHtml(k.name)}" width="320" height="320" decoding="async">
-          </div>
+    return `<article class="cx-card" style="--c:${vfxColor(cat?.color)}" aria-labelledby="vfx-name">
+        <div class="cx-stage">
+          <span class="cx-cat"><i></i>${escapeHtml(cat?.name || 'Efecto de kill')}</span>
+          <span class="cx-floor" aria-hidden="true"></span>
+          <img class="vfx-anim" src="${asset(k.preview || k.image)}" alt="Vista previa de ${escapeHtml(k.name)}" width="320" height="320" decoding="async">
           ${nav}
         </div>
-        <div class="vfx-info">
-          <span class="fx-kicker"><i></i>Efecto de kill${cat ? ` · ${escapeHtml(cat.name)}` : ''}</span>
-          <h3>${escapeHtml(k.name)}</h3>
-          <p class="fx-desc">${escapeHtml(k.desc)}</p>
-          <ul class="fx-how">
+        <div class="cx-body">
+          <span class="cx-kicker">Efecto de kill</span>
+          <h3 id="vfx-name">${escapeHtml(k.name)}</h3>
+          <p class="cx-desc">${escapeHtml(k.desc)}</p>
+          <ul class="cx-facts">
             <li>${IC.sword}<span>Sale al derrotar a un jugador o a cualquier mob.</span></li>
             <li>${IC.spark}<span>La propia víctima hace la animación.</span></li>
           </ul>
           ${vfxAction(k)}
         </div>
-      </div>`;
+      </article>`;
   }
 
-  function vfxKillTile(k) {
-    const sel = (vfxSel || vfxList()[0]?.id) === k.id;
-    const on = vfxData.me?.kill === k.id;
-    const owned = !on && vfxState('kill', k.id) === 'owned';
-    return `<button type="button" class="vfx-tile${sel ? ' is-sel' : ''}${on ? ' is-on' : ''}" data-vfx-pick="${escapeHtml(k.id)}"
+  function vfxTile(k, color) {
+    const sel = vfxSel === k.id;
+    const st = vfxState('kill', k.id);
+    const tag = st === 'on' ? `<span class="cx-tag is-on">${IC.check}Equipado</span>` : st === 'owned' ? '<span class="cx-tag">Tuyo</span>' : '';
+    return `<button type="button" class="cx-tile${sel ? ' is-sel' : ''}" style="--c:${color}" data-vfx-pick="${escapeHtml(k.id)}"
         data-anim="${escapeHtml(asset(k.preview || k.image))}" aria-pressed="${sel}">
-        <span class="vfx-tile-art">${img(k.image, '')}</span>
-        <span class="vfx-tile-name">${escapeHtml(k.name)}</span>${
-          on ? `<span class="vfx-tag is-on">${IC.check}Equipado</span>` : owned ? '<span class="vfx-tag">Tuyo</span>' : ''
-        }
+        <span class="cx-tile-art">${img(k.image, '')}</span>
+        <span class="cx-tile-name">${escapeHtml(k.name)}</span>${tag}
       </button>`;
   }
 
@@ -727,54 +753,54 @@
       box.innerHTML = '<p class="loading">No se pudieron cargar los efectos. Recarga la página.</p>';
       return;
     }
-    box.classList.add('vfx-shop');
+    box.classList.add('cx-shop');
     const cats = vfxData.cats || [];
     const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
-    // Si lo elegido no está en el filtro, a la arena va el primero que se ve y que no tengas (lo tuyo no sale solo en la
-    // vista previa: se ve marcado en el mosaico)
+    // Si lo elegido no está en el filtro, a la vitrina va el primero que se ve y que no tengas
     if (!vfxList().some((k) => k.id === vfxSel)) {
       const list = vfxList();
       vfxSel = (list.find((k) => vfxState('kill', k.id) === 'free') || list[0])?.id || null;
     }
-    const chip = (c, n) =>
-      `<button type="button" class="fx-chip" style="--vfx:${c.id === 'todos' ? 'var(--a-400)' : vfxColor(c.color)}" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}"><i aria-hidden="true"></i>${escapeHtml(c.name)}<span>${n}</span></button>`;
-    box.innerHTML = `
-      <div class="vfx-hero">
-        <div>
-          <span class="fx-eyebrow">${IC.spark}VFX</span>
-          <h2>Efectos de kill</h2>
-          <p>${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.</p>
+    const chips = [
+      cxChip('data-vfx-cat', 'todos', 'Todos', vfxData.kills.length, 'var(--tone-vfx)', vfxCat === 'todos'),
+      ...cats.map((c) => cxChip('data-vfx-cat', c.id, c.name, vfxData.kills.filter((k) => k.cat === c.id).length, vfxColor(c.color), vfxCat === c.id)),
+    ];
+    box.innerHTML = `<section class="cx" style="--c:var(--tone-vfx)">
+        ${cxHead(IC.spark, 'VFX', 'Efectos de kill', `${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.`)}
+        <div class="cx-layout">
+          <div class="cx-filter" role="group" aria-label="Categorías">${chips.join('')}</div>
+          <div class="cx-catalog">${shown
+            .map((c) => {
+              const list = vfxData.kills.filter((k) => k.cat === c.id);
+              if (!list.length) return '';
+              const color = vfxColor(c.color);
+              return `<section class="cx-group" style="--c:${color}">
+                <header><h3>${escapeHtml(c.name)}</h3><span>${list.length}</span></header>
+                <div class="cx-grid">${list.map((k) => vfxTile(k, color)).join('')}</div>
+              </section>`;
+            })
+            .join('')}</div>
+          <aside class="cx-show" id="vfx-stage" aria-label="Vista previa">${vfxShow()}</aside>
         </div>
-      </div>
-      <div id="vfx-stage">${vfxStage()}</div>
-      <div class="fx-filter" role="group" aria-label="Categorías">${[chip({ id: 'todos', name: 'Todos' }, vfxData.kills.length), ...cats.map((c) => chip(c, vfxData.kills.filter((k) => k.cat === c.id).length))].join('')}</div>
-      ${shown
-        .map((c) => {
-          const list = vfxData.kills.filter((k) => k.cat === c.id);
-          if (!list.length) return '';
-          return `<section class="vfx-group" style="--vfx:${vfxColor(c.color)}">
-          <header><h3>${escapeHtml(c.name)}</h3><span>${list.length}</span></header>
-          <div class="vfx-tiles">${list.map(vfxKillTile).join('')}</div>
-        </section>`;
-        })
-        .join('')}
-      ${vfxOldPacks()}`;
+        ${vfxOldPacks()}
+      </section>`;
+    cxStick();
   }
 
   // Al pasar el ratón por una kill se anima su miniatura (solo en pantallas con ratón)
   document.addEventListener('pointerover', (e) => {
-    const t = e.target.closest?.('.vfx-tile[data-anim]');
+    const t = e.target.closest?.('.cx-tile[data-anim]');
     if (!t || e.pointerType === 'touch') return;
-    const im = t.querySelector('.vfx-tile-art img');
+    const im = t.querySelector('.cx-tile-art img');
     if (im && !im.dataset.still) {
       im.dataset.still = im.src;
       im.src = t.dataset.anim;
     }
   });
   document.addEventListener('pointerout', (e) => {
-    const t = e.target.closest?.('.vfx-tile[data-anim]');
+    const t = e.target.closest?.('.cx-tile[data-anim]');
     if (!t || t.contains(e.relatedTarget)) return;
-    const im = t.querySelector('.vfx-tile-art img');
+    const im = t.querySelector('.cx-tile-art img');
     if (im?.dataset.still) {
       im.src = im.dataset.still;
       delete im.dataset.still;
@@ -790,16 +816,15 @@
         const i = list.findIndex((k) => k.id === vfxSel);
         vfxSel = list[(Math.max(i, 0) + Number(step.dataset.vfxStep) + list.length) % list.length].id;
       } else vfxSel = pick.dataset.vfxPick;
-      $('#vfx-stage').innerHTML = vfxStage();
-      $$('.vfx-tile[data-vfx-pick]').forEach((b) => {
+      $('#vfx-stage').innerHTML = vfxShow();
+      $$('.cx-tile[data-vfx-pick]').forEach((b) => {
         const sel = b.dataset.vfxPick === vfxSel;
         b.classList.toggle('is-sel', sel);
         b.setAttribute('aria-pressed', String(sel));
       });
-      if (step) $(`.fx-step[data-vfx-step="${step.dataset.vfxStep}"]`)?.focus();
-      // En el móvil el escenario queda arriba: se sube para verlo
-      const stage = $('#vfx-stage');
-      if (pick && stage.getBoundingClientRect().top < 0) stage.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+      if (step) $(`.cx-step[data-vfx-step="${step.dataset.vfxStep}"]`)?.focus();
+      if (pick) cxReveal($('#vfx-stage'));
+      else cxStick();
       return;
     }
     const vt = e.target.closest('[data-vfx-cat]');
@@ -827,7 +852,11 @@
         const name = vfxNameOf(kind, id);
         vfxData.me = data.me;
         toast('vfxRemove' in btn.dataset ? `Quitaste ${name}` : `${name} equipado: en el juego se activa solo`);
-        if (currentCategory === 'vfx') renderVfx($('#products'));
+        if (currentCategory === 'vfx') {
+          const y = scrollY;
+          renderVfx($('#products'));
+          scrollTo(0, y);
+        }
         return;
       }
       toast(data.error || 'No se pudo guardar el cambio.');
@@ -843,7 +872,7 @@
   // servidor pone sola. Solo dan skills (ni armas ni armadura). ---
   let skData = null;
   let skGroup = 'todas';
-  // Lo que se ve en la ficha: la clase y la skill del escenario
+  // Lo que se ve en la ficha: la clase y la skill de la pantalla
   let skSel = null;
   async function loadSkills() {
     try {
@@ -878,7 +907,7 @@
     return true;
   }
 
-  // La vista previa empieza por una clase que no tengas (Glacia si puede): lo tuyo se ve marcado en la lista
+  // La ficha empieza por una clase que no tengas (Glacia si puede): lo tuyo se ve marcado en el plantel
   function skDefault() {
     const notMine = (c) => c && skState(c) === 'none';
     const c = [skClass('glacia'), ...skData.classes].find(notMine) || skData.classes[0];
@@ -888,50 +917,42 @@
   // Etiqueta de la clase: activa, tuya o comprándose con monedas
   function skTag(c) {
     const st = skState(c);
-    if (st === 'active') return '<span class="sk-tag is-active">Activa</span>';
-    if (st === 'owned') return '<span class="sk-tag is-owned">Tuya</span>';
-    if (st === 'pending') return '<span class="sk-tag is-pending">En cola</span>';
+    if (st === 'active') return `<span class="cx-tag is-on">${IC.check}Activa</span>`;
+    if (st === 'owned') return '<span class="cx-tag">Tuya</span>';
+    if (st === 'pending') return '<span class="cx-tag is-pending">En cola</span>';
     return '';
   }
 
   const skIcon = (src, cls = '') =>
     src ? `<img src="${asset(src)}" alt="" loading="lazy" decoding="async" class="pixel-img ${cls}" width="64" height="64">` : '';
 
-  // El escenario (rediseño 13 oct.): la pantalla con la vista previa animada de la skill elegida, enmarcada sobre la
-  // luz del color de la clase. Las vistas previas traen su fondo pintado (tools/skills.py → PREVIEW_BG), así que la
-  // pantalla es de ese mismo color y el marco va alrededor.
   function skKey(sk) {
     return sk.passive
-      ? `<span class="sk-chip is-passive">${IC.star}Pasiva · ${escapeHtml(skPassiveText(sk))}</span>`
-      : `<span class="sk-chip is-key"><kbd>${escapeHtml(sk.key || '·')}</kbd>Tecla</span>`;
+      ? `<span class="cx-pill is-passive">${IC.star}Pasiva · ${escapeHtml(skPassiveText(sk))}</span>`
+      : `<span class="cx-pill"><kbd>${escapeHtml(sk.key || '·')}</kbd>Tecla</span>`;
   }
 
+  // La pantalla con la vista previa animada de la skill elegida. Las vistas previas traen su fondo pintado
+  // (tools/skills.py → PREVIEW_BG): la pantalla es de ese mismo color, así la imagen no se nota recortada.
   function skScreen(c, sk) {
     const art = sk.preview
       ? `<img class="sk-anim" src="${asset(sk.preview)}" alt="Vista previa de ${escapeHtml(sk.name)}" width="480" height="480" decoding="async">`
       : `<div class="sk-noanim">${skIcon(sk.icon, 'sk-noanim-icon')}<p>Esta skill no tiene animación propia: ${
           sk.passive ? 'funciona sola mientras llevas la clase' : 'mejora tus otras skills o tus golpes'
         }.</p></div>`;
-    return `<div class="sk-stage">
-        <div class="sk-screen${sk.preview ? '' : ' is-still'}">
-          <div class="fx-hud" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          <span class="fx-live" aria-hidden="true"><i></i>Vista previa</span>
-          ${art}
-        </div>
-        <div class="sk-caption">${skIcon(sk.icon)}<div><b>${escapeHtml(sk.name)}</b>${skKey(sk)}</div></div>
-      </div>`;
+    return `<div class="sk-screen${sk.preview ? '' : ' is-still'}">${art}</div>`;
   }
 
-  // Comprar, usar o quitar: según lo que tenga el jugador. Sin la clase, dos opciones separadas (dinero y monedas)
+  // Comprar, usar o quitar: según lo que tenga el jugador. Sin la clase, dos filas: con dinero y con monedas
   function skBuy(c) {
     const st = skState(c);
     const product = products.find((p) => p.skillClass === c.id);
     const mine = skData.me;
     const activeCls = mine?.active ? skClass(mine.active) : null;
     const own = (cls, icon, title, text, btn = '') =>
-      `<div class="sk-own ${cls}"><span class="sk-own-ico">${icon}</span><div><b class="sk-own-title">${title}</b><p>${text}</p></div>${btn}</div>`;
+      `<div class="cx-own ${cls}"><span class="cx-own-ico">${icon}</span><div><b>${title}</b><p>${text}</p></div>${btn}</div>`;
     if (st === 'active') {
-      return own('is-active', IC.check, 'Tu clase activa', 'La llevas en el servidor: elige una skill con las teclas 5 a 0 y úsala con el clic izquierdo.',
+      return own('is-on', IC.check, 'Tu clase activa', 'La llevas en el servidor: elige una skill con las teclas 5 a 0 y úsala con el clic izquierdo.',
         '<button class="btn btn-ghost btn-sm" type="button" data-sk-active="">Quitar clase</button>');
     }
     if (st === 'owned') {
@@ -944,15 +965,15 @@
     }
     const coins = Number.isFinite(mine?.coins) ? mine.coins : null;
     const short = coins !== null && coins < c.coinPrice;
-    return `<div class="sk-offer">
-        <div class="sk-opt is-money">
-          <span class="sk-opt-label">Con dinero</span>
-          <span class="price">${formatPrice(c.price)}</span>
+    return `<div class="sk-buy">
+        <div class="sk-buy-row is-money">
+          <span class="sk-buy-label">Con dinero</span>
+          <span class="sk-buy-price">${formatPrice(c.price)}</span>
           <button class="btn btn-buy" type="button" ${product ? buyAttrs(product) : 'disabled'}>Comprar</button>
         </div>
-        <div class="sk-opt is-coins">
-          <span class="sk-opt-label">Con monedas</span>
-          <span class="sk-coins"><img src="/img/coin.png" alt="" width="22" height="22" class="coin-img">${fmtCoins(c.coinPrice)}</span>
+        <div class="sk-buy-row is-coins">
+          <span class="sk-buy-label">Con monedas</span>
+          <span class="sk-buy-price"><img src="/img/coin.png" alt="" width="22" height="22" class="coin-img">${fmtCoins(c.coinPrice)}</span>
           <button class="btn btn-ghost" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar con monedas</button>
         </div>
       </div>
@@ -966,67 +987,61 @@
     const sel = skSel?.skill === s.id;
     return `<button type="button" class="sk-slot${s.passive ? ' is-passive' : ''}${sel ? ' is-sel' : ''}" data-sk-skill="${escapeHtml(s.id)}" aria-pressed="${sel}" title="${escapeHtml(s.name)}">
         <span class="sk-slot-art">${skIcon(s.icon)}</span>
-        <span class="sk-slot-key">${s.passive ? 'Pasiva' : escapeHtml(s.key || '·')}</span>
+        <span class="sk-slot-key">${s.passive ? 'P' : escapeHtml(s.key || '·')}</span>
       </button>`;
   }
 
-  // La skill elegida en la barra: icono, nombre, tecla o pasiva, cooldown y qué hace
+  // La skill elegida en la barra: nombre, tecla o pasiva, cooldown y qué hace
   function skPickCard(c, sk) {
-    return `<div class="sk-pick-card">
-        <span class="sk-pick-icon">${skIcon(sk.icon)}</span>
-        <div class="sk-pick-text">
-          <b>${escapeHtml(sk.name)}</b>
-          <span class="sk-chips">${skKey(sk)}${sk.cooldown > 0 ? `<span class="sk-chip">${IC.clock}Cooldown ${seconds(sk.cooldown)}</span>` : ''}</span>
-          <p>${escapeHtml(sk.desc)}</p>
-        </div>
+    return `<div class="sk-pick">
+        <div class="sk-pick-top"><b>${escapeHtml(sk.name)}</b>${skKey(sk)}${sk.cooldown > 0 ? `<span class="cx-pill">${IC.clock}${seconds(sk.cooldown)}</span>` : ''}</div>
+        <p>${escapeHtml(sk.desc)}</p>
       </div>`;
   }
 
-  // La ficha de la clase elegida: escenario, datos, compra y su barra de skills
+  // La ficha de la clase elegida: cabecera con su emblema y qué es, pantalla, barra de skills y compra
   function skDetail() {
     const c = skClass(skSel?.cls) || skData.classes[0];
     const sk = c.skills.find((s) => s.id === skSel?.skill) || skFirstShown(c);
     const actives = c.skills.filter((s) => !s.passive);
     const passives = c.skills.filter((s) => s.passive);
     const group = (skData.groups || []).find((g) => g.id === c.group);
-    return `
-      <article class="sk-card" style="--sk:${skColor(c.color)}" aria-labelledby="sk-name">
-        <div class="sk-top">
-          <div id="sk-screen">${skScreen(c, sk)}</div>
-          <div class="sk-info">
-            <div class="sk-title">
-              <span class="sk-badge">${skIcon(c.icon)}</span>
-              <div><span class="cat"><i></i>${escapeHtml(c.role)}</span><h3 id="sk-name">${escapeHtml(c.name)}</h3></div>
-            </div>
-            <p class="sk-desc">${escapeHtml(c.desc)}</p>
+    return `<article class="cx-card sk-card" style="--c:${skColor(c.color)}" aria-labelledby="sk-name">
+        <div class="sk-head">
+          <span class="sk-emblem">${skIcon(c.icon)}</span>
+          <div class="sk-head-text">
+            <span class="cx-kicker">${escapeHtml(c.role)}</span>
+            <h3 id="sk-name">${escapeHtml(c.name)}</h3>
+          </div>
+          ${group ? `<span class="sk-group" style="--g:${skColor(group.color)}"><i></i>${escapeHtml(group.name)}</span>` : ''}
+          <p class="sk-head-desc">${escapeHtml(c.desc)}</p>
+        </div>
+        <div id="sk-screen">${skScreen(c, sk)}</div>
+        <div class="sk-skills">
+          <div class="sk-skills-head">
+            <h4>Skills</h4>
             <ul class="sk-facts">
-              <li>${IC.key}<span><b>${actives.length}</b> ${actives.length === 1 ? 'skill' : 'skills'} con tecla</span></li>
+              <li>${IC.key}<span><b>${actives.length}</b> con tecla</span></li>
               ${passives.length ? `<li>${IC.star}<span><b>${passives.length}</b> ${passives.length === 1 ? 'pasiva' : 'pasivas'}</span></li>` : ''}
               <li>${c.bow ? `${IC.bow}<span>Sale al disparar tu arco</span>` : `${IC.mouse}<span>Se usa con clic izquierdo</span>`}</li>
-              ${group ? `<li class="sk-fact-group" style="--g:${skColor(group.color)}"><i></i><span>${escapeHtml(group.name)}</span></li>` : ''}
             </ul>
-            ${skBuy(c)}
           </div>
-        </div>
-        <div class="sk-bar">
-          <div class="sk-bar-head">
-            <h4>Barra de skills</h4>
-            <span>Toca una para verla. En el juego, cada una va en su tecla del 5 al 0: la que eliges se queda puesta y cada clic izquierdo la usa.</span>
-          </div>
-          <div class="sk-bar-row">
+          <div class="sk-slots-row">
             <div class="sk-slots" role="group" aria-label="Skills de ${escapeHtml(c.name)}">${actives.map(skSlot).join('')}</div>
             ${passives.length ? `<div class="sk-slots is-passive" role="group" aria-label="Pasivas">${passives.map(skSlot).join('')}</div>` : ''}
           </div>
           <div id="sk-pick">${skPickCard(c, sk)}</div>
         </div>
+        <div class="sk-deal">${skBuy(c)}</div>
       </article>`;
   }
 
+  // Un retrato del plantel: el icono de la clase sobre su color y el nombre debajo
   function skTile(c) {
     const sel = skSel?.cls === c.id;
-    return `<button type="button" class="sk-tile${sel ? ' is-sel' : ''}" style="--sk:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}" aria-pressed="${sel}">
-        <span class="sk-tile-icon">${skIcon(c.icon)}</span>
-        <span class="sk-tile-text"><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.role)}</small></span>${skTag(c)}
+    return `<button type="button" class="cx-tile sk-tile${sel ? ' is-sel' : ''}" style="--c:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}" aria-pressed="${sel}" title="${escapeHtml(c.role)}">
+        <span class="cx-tile-art">${skIcon(c.icon)}</span>
+        <span class="cx-tile-name">${escapeHtml(c.name)}</span>${skTag(c)}
       </button>`;
   }
 
@@ -1040,49 +1055,38 @@
       box.innerHTML = '<p class="loading">No se pudieron cargar las clases. Recarga la página.</p>';
       return;
     }
-    box.classList.add('sk-shop');
+    box.classList.add('cx-shop');
     if (!skClass(skSel?.cls)) skDefault();
     const groups = [
-      { id: 'todas', name: 'Todas', n: skData.classes.length, color: '' },
-      ...(skData.groups || []).map((g) => ({ ...g, n: skData.classes.filter((c) => c.group === g.id).length })),
+      cxChip('data-sk-group', 'todas', 'Todas', skData.classes.length, 'var(--tone-skills)', skGroup === 'todas'),
+      ...(skData.groups || []).map((g) =>
+        cxChip('data-sk-group', g.id, g.name, skData.classes.filter((c) => c.group === g.id).length, skColor(g.color), skGroup === g.id),
+      ),
     ];
-    box.innerHTML = `
-      <div class="sk-hero">
-        <div>
-          <span class="fx-eyebrow" style="--t:var(--tone-skills)">${IC.key}Skills</span>
-          <h2>Clases de skills</h2>
-          <p>${skData.classes.length} clases con sus skills (solo skills: sin armas ni objetos). Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí o en el TF Pad. En el juego eliges la skill con las teclas 5 a 0 y la usas con el clic izquierdo.</p>
+    box.innerHTML = `<section class="cx" style="--c:var(--tone-skills)">
+        ${cxHead(IC.key, 'Skills', 'Clases de skills', `${skData.classes.length} clases con sus skills (solo skills: sin armas ni objetos). Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí o en el TF Pad. En el juego eliges la skill con las teclas 5 a 0 y la usas con el clic izquierdo.`)}
+        <div class="cx-layout is-skills">
+          <div class="cx-filter" role="group" aria-label="Tipo de clase">${groups.join('')}</div>
+          <div class="cx-catalog"><div class="cx-grid sk-grid" id="sk-grid">${skGrid()}</div></div>
+          <aside class="cx-show" id="sk-detail" aria-label="Clase elegida">${skDetail()}</aside>
         </div>
-      </div>
-      <div id="sk-detail">${skDetail()}</div>
-      <div class="sk-browse">
-        <div class="sk-browse-head"><h3>Todas las clases</h3></div>
-        <div class="fx-filter" role="group" aria-label="Tipo de clase">${groups
-          .map(
-            (g) =>
-              `<button type="button" class="fx-chip" style="--vfx:${g.color ? skColor(g.color) : 'var(--tone-skills)'}" data-sk-group="${escapeHtml(g.id)}" aria-pressed="${g.id === skGroup}"><i aria-hidden="true"></i>${escapeHtml(g.name)}<span>${g.n}</span></button>`,
-          )
-          .join('')}</div>
-        <div class="sk-grid" id="sk-grid">${skGrid()}</div>
-      </div>`;
+      </section>`;
+    cxStick();
   }
 
-  // Vuelve a pintar la sección conservando dónde está el jugador en la página
+  // Vuelve a pintar la sección
   function skRefresh() {
     if (currentCategory === 'skills') renderSkills($('#products'));
   }
 
-  function skShowDetail(scroll) {
+  function skShowDetail(reveal) {
     $('#sk-detail').innerHTML = skDetail();
-    $$('[data-sk-pick]').forEach((b) => {
-      const sel = b.dataset.skPick === skSel.cls && b.classList.contains('sk-tile');
+    $$('.sk-tile[data-sk-pick]').forEach((b) => {
+      const sel = b.dataset.skPick === skSel.cls;
       b.classList.toggle('is-sel', sel);
-      if (b.classList.contains('sk-tile')) b.setAttribute('aria-pressed', String(sel));
+      b.setAttribute('aria-pressed', String(sel));
     });
-    if (scroll) {
-      const d = $('#sk-detail');
-      if (d.getBoundingClientRect().top < 0 || d.getBoundingClientRect().top > innerHeight * 0.6) d.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
-    }
+    if (reveal) cxReveal($('#sk-detail'));
   }
 
   document.addEventListener('click', async (e) => {
@@ -1103,12 +1107,13 @@
       skSel.skill = sk.id;
       $('#sk-screen').innerHTML = skScreen(c, sk);
       $('#sk-pick').innerHTML = skPickCard(c, sk);
+      cxStick();
       $$('[data-sk-skill]').forEach((b) => {
         const sel = b === row;
         b.classList.toggle('is-sel', sel);
         b.setAttribute('aria-pressed', String(sel));
       });
-      // En el móvil el escenario queda arriba: se sube para verlo
+      // En el móvil la pantalla queda arriba: se sube para verla
       const screen = $('#sk-screen');
       if (screen.getBoundingClientRect().bottom < 80) screen.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
       return;
