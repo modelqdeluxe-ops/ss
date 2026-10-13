@@ -66,7 +66,7 @@ THEME = {
     'clanes': (0xD43A50, 'Tu clan, sus miembros y aliados.'),
     'jugadores': (0x2E9BE6, 'Quién está conectado ahora.'),
     'ranking': (0xE3A52A, 'Los mejores del servidor.'),
-    'armario': (0x9E5AE0, 'Cambia tu aspecto (solo estético).'),
+    'armario': (0x9E5AE0, 'Tus skins y tus sets, a tu estilo.'),
     'efectos': (0xE0489E, 'Efectos al matar y clases de skills.'),
     'rango': (0xD9A21E, 'Tu rango y sus ventajas.'),
     'gachapon': (0xE0489E, 'Gira y gana premios.'),

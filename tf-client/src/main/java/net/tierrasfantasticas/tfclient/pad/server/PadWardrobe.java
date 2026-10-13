@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.tierrasfantasticas.tfclient.skins.SkinServer;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -158,18 +159,19 @@ public final class PadWardrobe {
     private static final class Wardrobe implements PadServer.App {
         @Override
         public PadView view(ServerPlayer player, String tab) {
+            if (tab.isEmpty() || tab.startsWith("skins")) return skinsView(player, tab.isEmpty() ? "skins" : tab);
             int slot = 0;
             for (int i = 0; i < TFWardrobe.SLOTS.length; i++) if (TFWardrobe.SLOTS[i].equals(tab)) slot = i;
             String key = TFWardrobe.SLOTS[slot];
             PadServer.put(player, "armario.tab", key);
-            PadView.Builder b = PadView.of("armario");
+            PadView.Builder b = tabs(player, key);
             String[] worn = TFWardrobe.worn(player.getUUID());
-            for (int i = 0; i < LABELS.length; i++) b.tab(TFWardrobe.SLOTS[i], worn[i].isEmpty() ? LABELS[i] : LABELS[i] + " ·");
-            b.selected(key);
             TFBridge.padWant(player.getUUID());
             List<Piece> owned = OWNED.get(player.getUUID());
             if (owned == null) {
-                return b.empty(TFBridge.connected() ? "Cargando…" : "Armario no disponible.").build();
+                // sin la web conectada no hay lista de piezas: el Armario sigue (las skins no dependen de ella)
+                if (TFBridge.connected()) return b.empty("Cargando…").build();
+                owned = List.of();
             }
             // 1.4: cada pieza es una tarjeta (pulsarla la pone; la puesta, marcada, se quita con QUITAR abajo)
             int n = 0;
@@ -183,14 +185,152 @@ public final class PadWardrobe {
                 b.card(stack(p.set, p.id), name, WARDROBE_COLOR, on ? "PUESTO" : p.from.isEmpty() ? "PONER" : p.from,
                         on ? PadView.TONE_GREEN : PadView.TONE_BLUE, -1, "", on ? "" : "poner:" + slot + ":" + p.key(), on);
             }
-            b.header(wornName.isEmpty() ? "Solo estético: pulsa una pieza para ponértela." : "Llevas " + wornName + ". Solo estético.");
+            b.header(wornName.isEmpty() ? "Pulsa una pieza para ponértela." : "Llevas " + wornName + ".");
             if (!wornName.isEmpty()) b.footer(PadView.Btn.of("QUITAR", "quitar:" + slot, PadView.RED));
             if (n == 0) b.empty("No tienes nada para " + LABELS[slot].toLowerCase() + ". Los sets de los rangos y de las crates de la tienda web aparecen aquí.");
             return b.build();
         }
 
+        /** Las pestañas: SKINS primero y luego las piezas (con un punto si llevas algo en ella). */
+        private static PadView.Builder tabs(ServerPlayer player, String selected) {
+            PadView.Builder b = PadView.of("armario").tab("skins", "SKINS");
+            String[] worn = TFWardrobe.worn(player.getUUID());
+            for (int i = 0; i < LABELS.length; i++) b.tab(TFWardrobe.SLOTS[i], worn[i].isEmpty() ? LABELS[i] : LABELS[i] + " ·");
+            return b.selected(selected.startsWith("skins") ? "skins" : selected);
+        }
+
+        /** SKINS: tu colección («skins»), una skin («skins:ver:id») o añadir una («skins:nueva»). */
+        private static PadView skinsView(ServerPlayer player, String tab) {
+            PadServer.put(player, "armario.tab", tab);
+            PadView.Builder b = tabs(player, "skins");
+            java.util.UUID uuid = player.getUUID();
+            if (!SkinServer.hasClient(player)) {
+                return b.empty("Para usar skins necesitas TF Client actualizado.").build();
+            }
+            List<SkinServer.Skin> mine = SkinServer.skins(uuid);
+            if (tab.equals("skins:nueva")) return newSkinView(player, b, mine.size());
+            if (tab.startsWith("skins:ver:")) {
+                SkinServer.Skin sk = SkinServer.skin(uuid, tab.substring(10));
+                if (sk != null) return skinView(player, b, sk);
+            }
+            String worn = SkinServer.worn(uuid);
+            SkinServer.sendImages(player, mine.stream().map(SkinServer.Skin::hash).toList());
+            SkinServer.Skin wearing = worn.isEmpty() ? null : SkinServer.skin(uuid, worn);
+            b.header(wearing == null ? "Llevas tu skin de siempre. Pulsa una para ponértela." : "Llevas «" + wearing.name() + "».");
+            b.card(new ItemStack(Items.PLAYER_HEAD), "Mi skin", WARDROBE_COLOR, wearing == null ? "PUESTA" : "VOLVER A ELLA",
+                    wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE, -1, "", wearing == null ? "" : "skin:original", wearing == null);
+            for (SkinServer.Skin sk : mine) {
+                boolean on = sk.id().equals(worn);
+                b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR, "ver:skins:ver:" + sk.id(), on,
+                        on ? "PUESTA" : "VER", -1, "", on ? PadView.TONE_GREEN : PadView.TONE_BLUE).image(SkinServer.preview(sk.hash(), sk.slim())));
+            }
+            b.footer(PadView.Btn.of("AÑADIR SKIN", "ver:skins:nueva", PadView.GREEN));
+            if (mine.isEmpty()) b.header("Aún no tienes skins guardadas: pulsa AÑADIR SKIN.");
+            return b.build();
+        }
+
+        /** Una skin: grande, y ponérsela, brazos, exportarla, renombrarla o borrarla. */
+        private static PadView skinView(ServerPlayer player, PadView.Builder b, SkinServer.Skin sk) {
+            SkinServer.sendImages(player, List.of(sk.hash()));
+            boolean on = sk.id().equals(SkinServer.worn(player.getUUID()));
+            String from = sk.from().startsWith("jugador:") ? "De " + sk.from().substring(8) + "." : "Importada de tu ordenador.";
+            b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR,
+                    List.of(from, "Brazos " + (sk.slim() ? "finos (Alex)." : "normales (Steve).") + (on ? " La llevas puesta." : "")),
+                    -1, "", null, null).image(SkinServer.preview(sk.hash(), sk.slim())));
+            String id = sk.id();
+            if (on) b.footer(PadView.Btn.of("QUITÁRMELA", "skin:original", PadView.RED));
+            else b.footer(PadView.Btn.of("PONÉRMELA", "skin:poner:" + id, PadView.GREEN));
+            b.footer(PadView.Btn.of(sk.slim() ? "BRAZOS NORMALES" : "BRAZOS FINOS", "skin:brazos:" + id, PadView.BLUE));
+            b.footer(PadView.Btn.of("EXPORTAR", "skin:exportar:" + id, PadView.BLUE));
+            boolean sure = ("borrar:" + id).equals(PadServer.get(player, "armario.confirm", ""));
+            b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "BORRAR", "skin:borrar:" + id, PadView.RED));
+            b.footer(PadView.Btn.of("VOLVER", "ver:skins", PadView.GOLD));
+            b.input("skin:renombrar:" + id, "NUEVO NOMBRE PARA ESTA SKIN", 24, "RENOMBRAR");
+            return b.build();
+        }
+
+        /** Añadir una skin: de la carpeta del ordenador (lista) o de un jugador de Minecraft por su nombre. */
+        private static PadView newSkinView(ServerPlayer player, PadView.Builder b, int have) {
+            java.util.UUID uuid = player.getUUID();
+            b.header("Guarda hasta " + SkinServer.MAX_SKINS + " skins (tienes " + have + "). Pon tus PNG en la carpeta skins o trae la de un jugador.");
+            List<net.tierrasfantasticas.tfclient.skins.SkinNet.Local> locals = SkinServer.locals(uuid);
+            if (locals == null || locals.isEmpty()) {
+                b.row(new PadView.Row(new ItemStack(Items.CHEST), "Tu carpeta de skins está vacía", WARDROBE_COLOR,
+                        List.of("Pulsa ABRIR CARPETA, copia ahí tus skins (.png de 64x64)", "y luego ACTUALIZAR."), -1, "", null, null));
+            } else {
+                for (int i = 0; i < locals.size(); i++) {
+                    var l = locals.get(i);
+                    b.row(new PadView.Row(new ItemStack(Items.PAPER), l.name(), WARDROBE_COLOR,
+                            List.of(l.slim() ? "Brazos finos." : "Brazos normales."), -1, "",
+                            PadView.Btn.of("IMPORTAR", "skin:local:" + i, PadView.GREEN), null));
+                }
+            }
+            int bad = SkinServer.localBad(uuid);
+            if (bad > 0) b.header(bad + (bad == 1 ? " archivo no es" : " archivos no son") + " una skin válida (deben ser PNG de 64x64 o 64x32).");
+            String busy = SkinServer.fetching(uuid);
+            if (busy != null) b.header("Trayendo la skin de " + busy + "…");
+            b.footer(PadView.Btn.of("ABRIR CARPETA", "skin:carpeta", PadView.BLUE));
+            b.footer(PadView.Btn.of("ACTUALIZAR", "skin:buscar", PadView.BLUE));
+            b.footer(PadView.Btn.of("VOLVER", "ver:skins", PadView.GOLD));
+            b.input("skin:traer", "NOMBRE DE UN JUGADOR DE MINECRAFT", 16, "TRAER SU SKIN");
+            return b.build();
+        }
+
+        /** Las acciones de SKINS. Devuelve la pestaña a la que ir (null: la misma). */
+        private static String skinAction(ServerPlayer player, String tab, String action, String text) {
+            String[] a = action.split(":", 3);
+            String id = a.length > 2 ? a[2] : "";
+            String msg = null;
+            if (!a[1].equals("borrar")) PadServer.put(player, "armario.confirm", "");
+            switch (a[1]) {
+                case "original" -> {
+                    SkinServer.wear(player, "");
+                    msg = "Vuelves a llevar tu skin.";
+                }
+                case "poner" -> msg = SkinServer.wear(player, id) ? "Te pusiste «" + nameOf(player, id) + "»." : "No se pudo poner esa skin.";
+                case "brazos" -> {
+                    SkinServer.Skin sk = SkinServer.skin(player.getUUID(), id);
+                    if (sk != null) SkinServer.setSlim(player, id, !sk.slim());
+                }
+                case "exportar" -> msg = SkinServer.export(player, id);
+                case "renombrar" -> msg = text == null || text.isBlank() ? "Escribe el nombre nuevo." : SkinServer.rename(player, id, text);
+                case "borrar" -> {
+                    if (!("borrar:" + id).equals(PadServer.get(player, "armario.confirm", ""))) {
+                        PadServer.put(player, "armario.confirm", "borrar:" + id);
+                        return null;
+                    }
+                    PadServer.put(player, "armario.confirm", "");
+                    String name = nameOf(player, id);
+                    if (SkinServer.delete(player, id)) {
+                        TFPadNet.notice(player, "Borraste «" + name + "».");
+                        return "skins";
+                    }
+                }
+                case "carpeta" -> SkinServer.openFolder(player);
+                case "buscar" -> SkinServer.scan(player);
+                case "local" -> msg = SkinServer.importLocal(player, parse(id));
+                case "traer" -> msg = SkinServer.importPlayer(player, text == null ? "" : text);
+                default -> {
+                    return null;
+                }
+            }
+            if (msg != null) TFPadNet.notice(player, msg);
+            return null;
+        }
+
+        private static String nameOf(ServerPlayer player, String id) {
+            SkinServer.Skin sk = SkinServer.skin(player.getUUID(), id);
+            return sk == null ? id : sk.name();
+        }
+
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
+            if (action.startsWith("ver:")) {
+                String to = action.substring(4);
+                if (to.equals("skins:nueva")) SkinServer.scan(player);
+                return to;
+            }
+            if (action.startsWith("skin:")) return skinAction(player, tab, action, text);
             String[] a = action.split(":");
             int slot = a.length > 1 ? parse(a[1]) : -1;
             if (slot < 0 || slot >= TFWardrobe.SLOTS.length) return null;

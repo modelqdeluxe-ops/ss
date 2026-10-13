@@ -28,7 +28,9 @@
     "LivingEntityRendererMixin",
     "HumanoidArmorLayerMixin",
     "CustomHeadLayerMixin",
-    "LivingEntityPoofMixin"
+    "LivingEntityPoofMixin",
+    "AbstractClientPlayerSkinMixin",
+    "PlayerInfoSkinMixin"
   ],
   "injectors": {
     "defaultRequire": 0

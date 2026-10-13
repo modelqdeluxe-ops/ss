@@ -123,6 +123,9 @@ public final class TFPadScreen extends Screen {
 
     /** Tamaño en píxeles de cualquier textura ({0, 0} si no existe); se mira una vez y se recuerda. */
     static int[] size(ResourceLocation loc) {
+        // las vistas previas de las skins del Armario son texturas en memoria (no recursos) y no se recuerdan aquí
+        int[] skin = net.tierrasfantasticas.tfclient.skins.SkinClient.previewSize(loc);
+        if (skin != null) return skin;
         return SIZES.computeIfAbsent(loc.toString(), n -> {
             Optional<Resource> res = Minecraft.getInstance().getResourceManager().getResource(loc);
             if (res.isEmpty()) return new int[] {0, 0};

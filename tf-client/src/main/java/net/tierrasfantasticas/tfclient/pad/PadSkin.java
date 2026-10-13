@@ -55,7 +55,7 @@ final class PadSkin {
         theme("clanes", 0xD43A50, "Tu clan, sus miembros y aliados.");
         theme("jugadores", 0x2E9BE6, "Quién está conectado ahora.");
         theme("ranking", 0xE3A52A, "Los mejores del servidor.");
-        theme("armario", 0x9E5AE0, "Cambia tu aspecto (solo estético).");
+        theme("armario", 0x9E5AE0, "Tus skins y tus sets, a tu estilo.");
         theme("efectos", 0xE0489E, "Efectos al matar y clases de skills.");
         theme("rango", 0xD9A21E, "Tu rango y sus ventajas.");
         theme("gachapon", 0xE0489E, "Gira y gana premios.");
