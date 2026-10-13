@@ -352,22 +352,26 @@ final class PadSkin {
      * Devuelve false si la textura no existe (entonces se dibuja el objeto).
      */
     static boolean image(GuiGraphics g, TFPadScreen pad, String id, int x, int y, int size) {
+        return image(g, pad, id, x + size / 2F, y + size / 2F, size, size);
+    }
+
+    /**
+     * Lo mismo, centrada en (cx, cy) y cabiendo en maxW x maxH sin deformarse (los retratos de los oficios son más anchos
+     * que altos: 64x39). Pixel art a un número entero de píxeles reales por píxel; si no cabe ni a 1, suavizada.
+     */
+    static boolean image(GuiGraphics g, TFPadScreen pad, String id, float cx, float cy, int maxW, int maxH) {
         ResourceLocation loc = id == null || id.isEmpty() ? null : ResourceLocation.tryParse(id);
         if (loc == null) return false;
         int[] sz = TFPadScreen.size(loc);
         if (sz[0] == 0) return false;
+        int iw = sz[0], ih = Math.max(1, sz[1]);
+        float fit = Math.min(maxW / (float) iw, maxH / (float) ih);
         int upx = Math.max(1, pad.unitPx());
-        if (sz[0] > 64) {
-            texture(g, loc, x, y, size, size, 1F, 0xFFFFFF, true);
-            return true;
-        }
-        int n = size * upx / sz[0];
-        if (n < 1) {
-            texture(g, loc, x, y, size, size, 1F, 0xFFFFFF, true);
-            return true;
-        }
-        float s = sz[0] * n / (float) upx;
-        texture(g, loc, x + (size - s) / 2, y + (size - s) / 2, s, s, 1F, 0xFFFFFF, false);
+        int n = (int) Math.floor(fit * upx);
+        boolean smooth = Math.max(iw, ih) > 64 || n < 1;
+        float k = smooth ? fit : n / (float) upx;
+        float w = iw * k, h = ih * k;
+        texture(g, loc, cx - w / 2, cy - h / 2, w, h, 1F, 0xFFFFFF, smooth);
         return true;
     }
 
@@ -448,6 +452,53 @@ final class PadSkin {
         g.fill(x + 2, y + 1, x + w - 2, y + 2, WHITE);
         g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, mix(0xFFC6DAEE, acc, 0.15F));
         if (w >= 16 && h >= 16) PadUi.corners(g, x, y, w, h);
+    }
+
+    /**
+     * Campo de texto (1.4.2): marco del color de la app, cristal blanco con sombra interior arriba, un lápiz en su
+     * pastilla a la izquierda, la pista en el tono de la app y el cursor de su color que parpadea.
+     */
+    static void field(GuiGraphics g, int x, int y, int w, String text, String hint, int acc) {
+        int c = deep(acc);
+        g.fill(x + 1, y + 16, x + w - 1, y + 17, 0x2418265C);
+        PadUi.box(g, x, y, w, 16, mix(c, PadUi.INK, 0.35F));
+        g.fillGradient(x + 1, y + 1, x + w - 1, y + 15, mix(0xFFE9F1FA, PadUi.tint(c, 0.25F), 0.4F), WHITE);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, mix(0xFFC9D8EA, c, 0.18F));
+        // el lápiz, en su pastilla del color de la app
+        int px = x + 2, py = y + 2;
+        g.fillGradient(px, py, px + 12, py + 12, mix(c, WHITE, 0.35F), c);
+        g.fill(px + 12, py, px + 13, py + 12, mix(c, PadUi.INK, 0.3F));
+        for (int i = 0; i < 6; i++) g.fill(px + 3 + i, py + 8 - i, px + 5 + i, py + 9 - i, WHITE);
+        g.fill(px + 3, py + 9, px + 4, py + 10, mix(c, WHITE, 0.8F));
+        int tx = x + 18, tw = w - 22;
+        String shown = text.isEmpty() ? PadUi.fitEnd(hint, tw) : PadUi.fitStart(text, tw);
+        PadUi.text(g, shown, tx, y + 4, text.isEmpty() ? mix(0xFF96AACC, c, 0.25F) : PadUi.TEXT);
+        if ((System.currentTimeMillis() / 500) % 2 == 0) {
+            int cx = tx + (text.isEmpty() ? 0 : PadUi.font().width(shown));
+            g.fill(cx, y + 3, cx + 1, y + 13, c);
+        }
+    }
+
+    /**
+     * Debajo de una lista corta, en vez de un hueco blanco: el icono de la app grande y muy suave, con su luz y unos
+     * destellos que parpadean (k: lo que queda de alto, para no dibujarlo si no hay sitio).
+     */
+    static void listFooterArt(GuiGraphics g, TFPadScreen pad, int cx, int cy, int room, int acc, String icon) {
+        if (room < 46) return;
+        float t = time();
+        int s = Math.min(56, room - 12);
+        glow(g, cx, cy, s * 1.2F, acc & 0xFFFFFF, 46);
+        g.pose().pushPose();
+        float bob = PadSettings.animations ? (float) Math.sin(t * 1.6F) * 1.5F : 0F;
+        g.pose().translate(cx - s / 2F, cy - s / 2F + bob, 0);
+        g.pose().scale(s / 32F, s / 32F, 1);
+        icon32(g, pad, icon, 0.16F);
+        g.pose().popPose();
+        for (int i = 0; i < 4; i++) {
+            float tw = PadSettings.animations ? (float) Math.max(0, Math.sin(t * 1.9F + i * 1.7F)) : 0.5F;
+            int sx = cx + (int) ((i % 2 == 0 ? -1 : 1) * (s * 0.55F + i * 4)), sy = cy + (i < 2 ? -s / 4 : s / 5);
+            sparkle(g, sx, sy, i % 2 + 1, tw * tw * 0.7F, mix(acc, WHITE, 0.5F) & 0xFFFFFF);
+        }
     }
 
     /** Alto de la cabecera de una app con n líneas de texto. */
@@ -602,7 +653,7 @@ final class PadSkin {
             {0xFFFFD650, 0xFFE8961A, 0xFFFFF2B0, 0xFFA05E0E},   // oro
             {0xFFFF6274, 0xFFC82038, 0xFFFFB4BC, 0xFF861428},   // rojo
             {0xFF68E886, 0xFF22A84C, 0xFFC4FFD0, 0xFF147034},   // verde
-            {0xFF4A5884, 0xFF36426C, 0xFF6E7CA8, 0xFF252E50},   // desactivado
+            {0xFFE6EDF6, 0xFFC7D3E3, 0xFFF7FAFD, 0xFFAEBCD0},   // desactivado: cristal claro (no parece roto)
             {0xFF97A3BF, 0xFF66728F, 0xFFC9D0E2, 0xFF434D69},   // gris
     };
 
@@ -649,12 +700,12 @@ final class PadSkin {
     static int buttonShade(int style, boolean enabled) {
         if (enabled && style == PadView.GOLD) return 0xFFFFF0B0; // en el de oro, letra oscura con luz debajo (grabada)
         int[] c = BTN[!enabled ? 4 : style == PadView.GRAY ? 5 : Math.max(0, Math.min(3, style))];
-        return enabled ? darken(c[3], 0.78F) : 0xFF1C2240;
+        return enabled ? darken(c[3], 0.78F) : 0xFFF7FAFD;
     }
 
     /** El color del texto de un botón (RGB): blanco; en el de oro, marrón oscuro (el blanco no se lee sobre el oro). */
     static int buttonText(int style, boolean enabled) {
-        return !enabled ? 0x8C9AC4 : style == PadView.GOLD ? 0x5A3304 : 0xFFFFFF;
+        return !enabled ? 0x8696B4 : style == PadView.GOLD ? 0x5A3304 : 0xFFFFFF;
     }
 
     /**

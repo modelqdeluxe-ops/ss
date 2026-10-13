@@ -228,10 +228,15 @@ class Skin:
         im = self.item_icon(item, outline=False) if item else self.img('icon_' + name)
         self.tex_alpha(im, x, y, size, size, alpha, smooth=False)
 
-    def image(self, path, x, y, size, smooth=True):
-        """Imagen de una fila o tarjeta (PadView: image): la del efecto (suavizada) o el icono de una clase o skill."""
+    def image(self, path, x, y, size, smooth=True, max_w=None):
+        """Imagen de una fila o tarjeta (PadView: image), sin deformar (PadSkin.image): cabe en max_w x size centrada en
+        el cuadrado (x, y, size); los retratos de los oficios (64x39) salen más anchos que altos."""
         im = Image.open(path).convert('RGBA')
-        self.tex_alpha(im, x, y, size, size, 1.0, smooth=smooth)
+        mw = max_w or size
+        fit = min(mw / im.width, size / im.height)
+        w, h = im.width * fit, im.height * fit
+        cx, cy = x + size / 2, y + size / 2
+        self.tex_alpha(im, cx - w / 2, cy - h / 2, w, h, 1.0, smooth=smooth)
 
     def stext(self, s, x, y, color, shadow):
         """Texto con sombra de color (PadSkin.shadowText)."""
@@ -380,7 +385,7 @@ class Skin:
 
     BTN2 = [(0x5AB4FF, 0x2C74E4, 0xB4E0FF, 0x1A4AA8), (0xFFD650, 0xE8961A, 0xFFF2B0, 0xA05E0E),
             (0xFF6274, 0xC82038, 0xFFB4BC, 0x861428), (0x68E886, 0x22A84C, 0xC4FFD0, 0x147034),
-            (0x4A5884, 0x36426C, 0x6E7CA8, 0x252E50), (0x97A3BF, 0x66728F, 0xC9D0E2, 0x434D69)]
+            (0xE6EDF6, 0xC7D3E3, 0xF7FAFD, 0xAEBCD0), (0x97A3BF, 0x66728F, 0xC9D0E2, 0x434D69)]
 
     def sk_button(self, x, y, w, label, style, enabled=True, hover=False):
         """PadSkin.button: caramelo de 16 de alto. Mitad de arriba más clara (brillo), sombra abajo; al pasar el ratón
@@ -419,7 +424,7 @@ class Skin:
     @staticmethod
     def button_text(style, enabled=True):
         """PadSkin.buttonText: blanco; en el de oro, marrón oscuro."""
-        return rgb(0x8C9AC4) if not enabled else rgb(0x5A3304) if style == 1 else (255, 255, 255)
+        return rgb(0x8696B4) if not enabled else rgb(0x5A3304) if style == 1 else (255, 255, 255)
 
     def sk_chip(self, x, y, text, style, h=12):
         """PadUi.chip (1.4): etiqueta con brillo arriba y una sombra debajo."""
@@ -554,6 +559,41 @@ class Skin:
         self.vgrad(kx + 1, y + 1, 7, 12, WHITE, mix(acc, WHITE, 0.7))
         self.fill(kx + 3, y + 4, kx + 4, y + 10, mix(acc, WHITE, 0.3))
         self.fill(kx + 5, y + 4, kx + 6, y + 10, mix(acc, WHITE, 0.3))
+
+    def sk_field(self, x, y, w, text, hint, acc):
+        """PadSkin.field (1.4.2): marco del color de la app, cristal con sombra arriba, lápiz en su pastilla."""
+        c = deep(acc)
+        self.fill(x + 1, y + 16, x + w - 1, y + 17, (24, 38, 92, 36))
+        self.box(x, y, w, 16, mix(c, INK, 0.35))
+        self.vgrad(x + 1, y + 1, w - 2, 14, mix(rgb(0xE9F1FA), tint(c, 0.25), 0.4), WHITE)
+        self.fill(x + 1, y + 1, x + w - 1, y + 2, mix(rgb(0xC9D8EA), c, 0.18))
+        px, py = x + 2, y + 2
+        self.vgrad(px, py, 12, 12, mix(c, WHITE, 0.35), c)
+        self.fill(px + 12, py, px + 13, py + 12, mix(c, INK, 0.3))
+        for i in range(6):
+            self.fill(px + 3 + i, py + 8 - i, px + 5 + i, py + 9 - i, WHITE)
+        self.fill(px + 3, py + 9, px + 4, py + 10, mix(c, WHITE, 0.8))
+        tx, tw = x + 18, w - 22
+        shown = self.fitend(hint, tw) if not text else text
+        self.mtext(shown, tx, y + 4, mix(rgb(0x96AACC), c, 0.25) if not text else rgb(0x18265C))
+        cx = tx + (0 if not text else self.mwidth(shown))
+        self.fill(cx, y + 3, cx + 1, y + 13, c)
+
+    def sk_list_footer(self, cx, cy, room, acc, icon):
+        """PadSkin.listFooterArt: bajo una lista corta, el icono de la app grande y suave con su luz y destellos."""
+        if room < 46 or not icon:
+            return
+        s = min(56, room - 12)
+        self.glow(cx, cy, s * 1.2, acc, 46)
+        try:
+            self.tex_alpha('icon_' + icon, cx - s / 2, cy - s / 2, s, s, 0.16, smooth=False)
+        except Exception:
+            pass
+        for i in range(4):
+            tw = max(0.0, math.sin(self.T * 1.9 + i * 1.7))
+            sx = cx + int((-1 if i % 2 == 0 else 1) * (s * 0.55 + i * 4))
+            sy = cy + (-s // 4 if i < 2 else s // 5)
+            self.sparkle(sx, sy, i % 2 + 1, tw * tw * 0.7, mix(acc, WHITE, 0.5))
 
     def sk_empty(self, cx, mid, w, text, acc, icon, room):
         """PadSkin.emptyState: el icono de la app flotando en su luz, con destellos, y el texto debajo."""

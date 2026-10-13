@@ -1,6 +1,6 @@
 """Retratos de los oficios para el pad (Oficios): el muñeco de cada oficio recortado de los paneles del pack
 «Medieval Jobs» (ItemsAdder: resourcepack/assets/medival_jobs/textures/<oficio>.png, 256x256; el muñeco está en la
-ventana de arriba). Sale un cuadro de 39x39 con su fondo por oficio en textures/gui/pad/jobs/<oficio>.png (el nombre
+ventana de arriba). Sale un retrato de 64x39 con su fondo por oficio en textures/gui/pad/jobs/<oficio>.png (el nombre
 es el «fondo» del oficio en la config: farmer, miner, wood_cutter...). El pack no se sube al repo: solo lo generado.
 
     python3 tools/pad/job_images.py <carpeta textures del pack>
@@ -14,7 +14,7 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src'
                    'tfclient', 'textures', 'gui', 'pad', 'jobs')
 JOBS = ['farmer', 'miner', 'wood_cutter', 'digger', 'fisherman', 'hunter', 'alchemist', 'blacksmith', 'enchanter',
         'builder']
-BOX = (108, 52, 147, 91)  # el muñeco, centrado en la ventana (sin el marco ni la cinta del nombre)
+BOX = (96, 52, 160, 91)  # el muñeco con sus manos y su herramienta, sin el marco ni la cinta del nombre
 
 
 def main():

@@ -10,6 +10,15 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.60 (13 oct)** — repaso de diseño de las apps (punto 5 del dueño) y retratos de oficios:
+> - Oficios: retratos de 64x39 (`job_images.py`, BOX 96–160): se ven las manos y la herramienta. `PadSkin.image`
+>   ya no deforma: cabe en maxW x maxH sin perder proporción (las tarjetas dejan que la imagen use su ancho).
+> - Filas (`PadViewPage.drawRow`): lavado del color de la fila que se apaga a la derecha, luz detrás del medallón, brillo
+>   al pasar el ratón y flechita «›» en las que se puede entrar (sin botones). Campo de texto nuevo (`PadSkin.field`:
+>   marco del color de la app, lápiz, cursor de su color). Botones desactivados en cristal claro (antes azul noche:
+>   parecían rotos). Bajo una lista corta, el icono de la app grande y suave con destellos (`PadSkin.listFooterArt`).
+>   Simulador al día.
+
 > **TF Client 1.3.59 (13 oct)**: «pantalla doble» del pad: el cristal de frame.png es algo más grande que GX/GY/GW/GH
 >   (en la imagen: x 205–1360, y 250–794; la pantalla cubría 208–1359 × 256–783) y su azul asomaba debajo de la
 >   pantalla, sobre todo abajo (11 px de imagen). `TFPadScreen.glassBase` pinta la trama del cristal en todo ese hueco
@@ -1855,7 +1864,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.59)
+## 5. El mod (TF Client 1.3.60)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
