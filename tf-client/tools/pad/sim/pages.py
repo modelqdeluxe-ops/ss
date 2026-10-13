@@ -657,13 +657,13 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
         if i + 1 == sel_list:
             chosen = (tx, w, label, i >= 0)
         else:
-            s.tab(tx, Y, w, label, 0)
+            s.sk_tab_compact(tx, Y, w, label, 0, accent('musica'))
         tx = strip_x if i < 0 else tx + w + gap
     if chosen:
         if not chosen[3]:
-            s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+            s.sk_tab_compact(chosen[0], Y, chosen[1], chosen[2], 2, accent('musica'))
         else:
-            s.tab(chosen[0], Y, chosen[1], '', 2)
+            s.sk_tab_compact(chosen[0], Y, chosen[1], '', 2, accent('musica'))
             s.ptext(chosen[2], chosen[0] + 6, Y + 4, NAVY, False)
             glyph_at(s, CROSS, chosen[0] + chosen[1] - 12 + 2, Y + 3 + 2, rgb(0xC8323C))
 
@@ -675,7 +675,7 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
         ax = end - gap - 2 * arrow - gap
         arrow_btn(ax, Y + 1, ARROW_LEFT, tab_first > 0)
         arrow_btn(ax + arrow + gap, Y + 1, ARROW_RIGHT, last < len(names) - 1)
-    s.tab(end, Y, plus, '', 0)
+    s.sk_tab_compact(end, Y, plus, '', 0, accent('musica'))
     glyph_at(s, PLUS8, end + (plus - 8) // 2, Y + 5, rgb(0x34507E))
     rows_top = top + 4
     if sel_list > 0:  # cabecera de la playlist: cuántas lleva y ELEGIR CANCIONES / LISTO

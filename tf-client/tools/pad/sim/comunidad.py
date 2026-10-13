@@ -5,6 +5,7 @@ pestañas, rejilla y pie) con las mismas medidas que el Java, y los emojis sacad
 (textures/gui/emoji, los hace tools/pad/make_emojis.py). Si cambias posiciones en esas clases, cámbialas aquí también.
 pages.py lo llama para la hoja de todas las apps.
 """
+from skin import accent  # noqa: E402
 import json
 import os
 import sys
@@ -447,10 +448,10 @@ def comunidad(out, names, picker=None, hover=None, fbw=1920, fbh=1080, mouse=Non
         if key == 'recientes':
             chosen = (x, w, label)
         else:
-            s.tab(x, Y, w, label, 0)
+            s.sk_tab_compact(x, Y, w, label, 0, accent('comunidad'))
         hits.append((x, Y, w, 15))
         x += w + 2
-    s.tab(chosen[0], Y, chosen[1], chosen[2], 2)
+    s.sk_tab_compact(chosen[0], Y, chosen[1], chosen[2], 2, accent('comunidad'))
     fw = s.bw('+ FOTO')
     s.button(X + W - fw - 4, Y - 3, fw, '+ FOTO', 1)
     pw = max(128, min(256, (W - 20) // 2)) // 16 * 16

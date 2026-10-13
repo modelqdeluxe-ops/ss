@@ -99,7 +99,7 @@ final class PadCommunityPage extends PadPage {
                 selLabel = t[1];
             } else {
                 if (hover) pad.hover("§tab" + t[0]);
-                PadUi.tab(g, x, Y, w, t[1], hover ? 1 : 0);
+                PadSkin.tabCompact(g, x, Y, w, t[1], hover ? 1 : 0, PadSkin.accent("comunidad"));
             }
             String key = t[0];
             hit(x, Y, w, 15, () -> {
@@ -111,7 +111,7 @@ final class PadCommunityPage extends PadPage {
             });
             x += w + 2;
         }
-        if (selX >= 0) PadUi.tab(g, selX, Y, selW, selLabel, 2);
+        if (selX >= 0) PadSkin.tabCompact(g, selX, Y, selW, selLabel, 2, PadSkin.accent("comunidad"));
         int fw = PadUi.buttonWidth("+ FOTO");
         boolean fh = PadUi.inside(mx, my, X + W - fw - 4, Y - 3, fw, 16);
         if (fh) pad.hover("§foto");
