@@ -12,7 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
  * inglés: «fuego», «risa», «joy»...), pestañas con el emoji de cada categoría (Frecuentes, Animados, Sonrisas,
  * Personas, Naturaleza, Comida, Actividades, Viajes, Objetos, Símbolos y Banderas: clic = salta a ella; la elegida
  * sigue a lo que se ve), la rejilla con todas una debajo de otra (rueda o arrastrar) y abajo el emoji bajo el ratón en
- * grande con su :atajo: y su nombre. Los que ya pusiste salen en oro. Clic = elegir (con Mayús se queda abierto).
+ * grande (sin nombres). El que ya pusiste sale en oro. Clic = elegir.
  * Todo en unidades de la página (a escala).
  */
 final class PadEmojiPicker {
@@ -179,7 +179,7 @@ final class PadEmojiPicker {
         g.fill(lx, ly + 1, lx + 1, ly + 5, c);
         g.fill(lx + 5, ly + 1, lx + 6, ly + 5, c);
         for (int i = 0; i < 3; i++) g.fill(lx + 5 + i, ly + 5 + i, lx + 7 + i, ly + 6 + i, c);
-        String shown = query.isEmpty() ? PadUi.fitEnd("Buscar: fuego, risa, corazón, :joy:...", fw - 24) : PadUi.fitStart(query, fw - 24);
+        String shown = query.isEmpty() ? PadUi.fitEnd("Buscar: fuego, risa, corazón...", fw - 24) : PadUi.fitStart(query, fw - 24);
         PadUi.text(g, shown, fx + 5, fy + 4, query.isEmpty() ? 0xFF96AACC : PadUi.TEXT);
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = fx + 5 + (query.isEmpty() ? 0 : PadUi.font().width(shown));
@@ -221,23 +221,19 @@ final class PadEmojiPicker {
         }
     }
 
-    /** Abajo: el emoji bajo el ratón en grande, su :atajo: y su nombre (o la pestaña, o cuántos hay). */
+    /** Abajo: el emoji bajo el ratón en grande, sin nombre (o la pestaña, o una pista para buscar). */
     private void footer(GuiGraphics g, int px) {
         int fy = y + h - FOOT;
         g.fill(x + 2, fy, x + w - 2, fy + 1, 0xFFD6E6F6);
         g.fill(x + 2, fy + 1, x + w - 2, y + h - 2, 0xFFEFF6FD);
         int tx = x + PAD + 22, tw = w - PAD * 2 - 24;
         if (hovered != null) {
+            // solo el emoji, en grande (sin nombre ni atajo)
             PadEmojiDraw.draw(g, hovered, x + PAD + 1, fy + 3, 18, px);
-            g.drawString(PadUi.font(), PadUi.bold(PadUi.fitEnd(hovered.code(), tw - 8)), tx, fy + 3, PadUi.TEXT, false);
-            String sub = hovered.esCode().isEmpty() || hovered.esCode().equals(hovered.id()) ? hovered.es()
-                    : ":" + hovered.esCode() + ": · " + hovered.es();
-            PadUi.text(g, PadUi.fitEnd(sub, tw), tx, fy + 13, PadUi.MUTED);
         } else if (hoveredTab != null) {
             g.drawString(PadUi.font(), PadUi.bold(hoveredTab), x + PAD + 2, fy + 8, PadUi.TEXT, false);
         } else {
-            int total = PadEmojis.all().size();
-            PadUi.text(g, PadUi.fitEnd(PadUi.THOUSANDS.format(total) + " emojis · escribe para buscar", w - PAD * 2 - 4),
+            PadUi.text(g, PadUi.fitEnd("Elige un emoji o escribe para buscar", w - PAD * 2 - 4),
                     x + PAD + 2, fy + 8, PadUi.MUTED);
         }
     }
@@ -267,11 +263,6 @@ final class PadEmojiPicker {
             return true;
         }
         return inside(mx, my);
-    }
-
-    /** ¿Seguir abierto tras elegir? (Mayús, como en Discord). */
-    static boolean keepOpen() {
-        return Screen.hasShiftDown();
     }
 
     boolean scroll(double delta) {

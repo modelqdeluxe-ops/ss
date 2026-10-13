@@ -113,10 +113,16 @@ final class PadCommunityClient {
                 POSTS.set(i, new PadCommunityNet.Post(p.id(), p.author(), p.name(), p.caption(), p.time(),
                         Math.max(0, p.likes() + (p.liked() ? -1 : 1)), !p.liked(), p.mine(), p.canDelete(), p.reactions()));
             } else if (action.startsWith("react:")) {
-                // al momento, como en el servidor: tu reacción con ese emoji se pone o se quita (las demás no cambian)
+                // al momento, como en el servidor: una reacción por jugador; el mismo emoji la quita, otro la cambia
                 String emoji = PadEmojis.canonical(action.substring(6));
                 if (emoji == null) break;
                 List<PadCommunityNet.Reaction> r = new ArrayList<>(p.reactions());
+                for (int k = r.size() - 1; k >= 0; k--) {
+                    PadCommunityNet.Reaction old = r.get(k);
+                    if (!old.mine() || old.emoji().equals(emoji)) continue;
+                    if (old.count() <= 1) r.remove(k);
+                    else r.set(k, new PadCommunityNet.Reaction(old.emoji(), old.count() - 1, false));
+                }
                 int at = -1;
                 for (int k = 0; k < r.size(); k++) if (r.get(k).emoji().equals(emoji)) at = k;
                 if (at >= 0) {

@@ -293,7 +293,7 @@ class Picker:
         s.fill(lx + 5, ly + 1, lx + 6, ly + 5, c)
         for i in range(3):
             s.fill(lx + 5 + i, ly + 5 + i, lx + 7 + i, ly + 6 + i, c)
-        shown = s.fitend('Buscar: fuego, risa, corazón, :joy:...', fw - 24) if not self.query else self.query
+        shown = s.fitend('Buscar: fuego, risa, corazón...', fw - 24) if not self.query else self.query
         s.mtext(shown, fx + 5, fy + 4, rgb(0x96AACC) if not self.query else TEXT)
         cx = fx + 5 + (0 if not self.query else s.mwidth(shown))
         s.fill(cx, fy + 3, cx + 1, fy + 13, TEXT)
@@ -355,17 +355,12 @@ class Picker:
         fy = y + h - FOOT
         s.fill(x + 2, fy, x + w - 2, fy + 1, rgb(0xD6E6F6))
         s.fill(x + 2, fy + 1, x + w - 2, y + h - 2, rgb(0xEFF6FD))
-        tx2, tw2 = x + PPAD + 22, w - PPAD * 2 - 24
         if hovered:
-            edraw(s, hovered, x + PPAD + 1, fy + 3, 18)
-            s.btext(s.fitend(':' + hovered['id'] + ':', tw2 - 8), tx2, fy + 3, TEXT)
-            es = hovered['es']
-            sub = es if not hovered.get('s') or hovered['s'] == hovered['id'] else ':' + hovered['s'] + ': · ' + es
-            s.mtext(s.fitend(sub, tw2), tx2, fy + 13, MUTED)
+            edraw(s, hovered, x + PPAD + 1, fy + 3, 18)  # solo el emoji, sin nombre ni atajo
         elif hov_tab:
             s.btext(hov_tab, x + PPAD + 2, fy + 8, TEXT)
         else:
-            s.mtext(s.fitend(f'{len(EMOJIS):,}'.replace(',', '.') + ' emojis · escribe para buscar', w - PPAD * 2 - 4),
+            s.mtext(s.fitend('Elige un emoji o escribe para buscar', w - PPAD * 2 - 4),
                     x + PPAD + 2, fy + 8, MUTED)
 
 
@@ -464,7 +459,7 @@ def comunidad(out, names, picker=None, hover=None, fbw=1920, fbh=1080, mouse=Non
     s.scissor(X + 2, top + 4, W - 4, bottom - top - 8)
     cy = top + 5
     anchor = None
-    tip = None
+
     for i, (name, ago, cap, likes, liked, reacts, mine) in enumerate(POSTS):
         x, y, w, h = X + 5, cy, W - 16, ch - 4
         s.ucard(x, y, w, h, 2 if mine else 0)
@@ -502,7 +497,7 @@ def comunidad(out, names, picker=None, hover=None, fbw=1920, fbh=1080, mouse=Non
             edraw(s, BY_ID[eid], ex + 2, cyy + 2, CHIP_EMOJI)
             s.mtext(str(n), ex + CHIP_EMOJI + 4, cyy + 3, GOLD_TEXT if mk else TEXT)
             if hv:
-                tip = (':' + eid + ':', ex + bw // 2, cyy)
+                pass
         if cap:
             chips_top = ey + 1 - (rows - 1) * CHIP_ROW
             maxl = max(1, min((ph - 60) // 10, (chips_top - 2 - cap_top) // 10))
@@ -517,13 +512,6 @@ def comunidad(out, names, picker=None, hover=None, fbw=1920, fbh=1080, mouse=Non
         s.button(x + w - 6 - bw, ly - 1, bw, blabel, R if mine else B)
         cy += ch
     s.no_scissor()
-    if tip:
-        t_, tx, ty = tip
-        tw = s.mwidth(t_) + 8
-        x0, y0 = max(X + 2, min(tx - tw // 2, X + W - tw - 2)), ty - 14
-        s.box(x0, y0, tw, 12, INK)
-        s.fill(x0 + 1, y0 + 1, x0 + tw - 1, y0 + 11, rgb(0x2A3A70))
-        s.mtext(t_, x0 + 4, y0 + 2, (255, 255, 255))
     if picker is not None:
         hits = []
         s.fill(X, Y - 4, X + W, Y + H, (24, 38, 92, 85))
