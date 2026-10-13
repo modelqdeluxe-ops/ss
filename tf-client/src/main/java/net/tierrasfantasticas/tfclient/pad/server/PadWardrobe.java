@@ -216,19 +216,23 @@ public final class PadWardrobe {
             String worn = SkinServer.worn(uuid);
             SkinServer.sendImages(player, mine.stream().map(SkinServer.Skin::hash).toList());
             SkinServer.Skin wearing = worn.isEmpty() ? null : SkinServer.skin(uuid, worn);
-            b.header(wearing == null ? "Llevas tu skin de siempre. Pulsa una para ponértela." : "Llevas «" + wearing.name() + "».");
-            // la puesta se ve con tu modelo de verdad en 3D (PadView.SELF_MODEL); las demás, de frente y enteras
+            // arriba, el escaparate: tu modelo 3D en grande con la skin que llevas; abajo, tus skins en tarjetas grandes
+            List<String> lines = new ArrayList<>();
+            lines.add(wearing == null ? "Llevas tu skin de siempre." : "Llevas «" + wearing.name() + "».");
+            lines.add(mine.isEmpty() ? "Añade skins: de tu ordenador o de cualquier jugador." : "Pulsa una skin de abajo para verla o ponértela.");
+            b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), wearing == null ? "Mi skin" : wearing.name(), WARDROBE_COLOR, lines, -1,
+                    mine.size() + "/" + SkinServer.MAX_SKINS, wearing == null ? null : PadView.Btn.of("QUITÁRMELA", "skin:original", PadView.RED), null)
+                    .image(PadView.SELF_MODEL));
+            b.gallery();
             b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), "Mi skin", WARDROBE_COLOR, wearing == null ? "" : "skin:original",
-                    wearing == null, wearing == null ? "PUESTA" : "VOLVER A ELLA", -1, "", wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE)
-                    .image(wearing == null ? PadView.SELF_MODEL : ""));
+                    wearing == null, wearing == null ? "PUESTA" : "PONER", -1, "", wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE));
             for (SkinServer.Skin sk : mine) {
                 boolean on = sk.id().equals(worn);
                 b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR, "ver:skins:ver:" + sk.id(), on,
                         on ? "PUESTA" : "VER", -1, "", on ? PadView.TONE_GREEN : PadView.TONE_BLUE)
-                        .image(on ? PadView.SELF_MODEL : SkinServer.preview(sk.hash(), sk.slim())));
+                        .image(SkinServer.preview(sk.hash(), sk.slim())));
             }
             b.footer(PadView.Btn.of("AÑADIR SKIN", "ver:skins:nueva", PadView.GREEN));
-            if (mine.isEmpty()) b.header("Aún no tienes skins guardadas: pulsa AÑADIR SKIN.");
             return b.build();
         }
 
