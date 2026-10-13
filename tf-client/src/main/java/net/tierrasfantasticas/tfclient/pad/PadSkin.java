@@ -629,18 +629,19 @@ final class PadSkin {
      * ventana; las demás, de cristal claro, y con el ratón suben 1 y se marcan con el color de la app.
      */
     static void tabCompact(GuiGraphics g, int x, int y, int w, String label, int state, int acc) {
-        int c = deep(acc), h = 14;
-        y -= 2; // 2 más arriba: deja 2 de aire hasta la ventana (que empieza en y + 14)
+        // igual que tab() (17 de alto, la letra a 4 de arriba), pero empieza 4 más arriba: queda 1 de aire hasta la
+        // ventana, que en Comunidad y Música empieza en y + 14
+        int c = deep(acc), h = TAB_H;
+        y -= 4;
         if (state == 2) {
             int edge = darken(c, 0.5F), low = darken(c, 0.78F);
             PadUi.box(g, x, y, w, h, edge);
             g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, mix(c, WHITE, 0.30F), darken(c, 0.9F));
             g.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62F));
+            g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, low);
             int cx = x + w / 2;
-            g.fill(cx - 2, y + h, cx + 3, y + h + 1, edge);
-            g.fill(cx - 1, y + h + 1, cx + 2, y + h + 2, edge);
-            g.fill(cx - 1, y + h - 1, cx + 2, y + h, low);
-            if (!label.isEmpty()) PadFont.drawShadowCentered(g, label, cx, y + 3, 0xFFFFFF, darken(c, 0.42F));
+            g.fill(cx - 1, y + h, cx + 2, y + h + 1, edge);
+            if (!label.isEmpty()) PadFont.drawShadowCentered(g, label, cx, y + 4, 0xFFFFFF, darken(c, 0.42F));
             return;
         }
         boolean hover = state == 1;
@@ -648,7 +649,7 @@ final class PadSkin {
         PadUi.box(g, x, yy, w, h, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
         g.fillGradient(x + 1, yy + 1, x + w - 1, yy + h - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
         g.fill(x + 1, yy + h - 2, x + w - 1, yy + h - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
-        if (!label.isEmpty()) PadFont.drawCentered(g, label, x + w / 2, yy + 3, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
+        if (!label.isEmpty()) PadFont.drawCentered(g, label, x + w / 2, yy + 4, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
     }
 
     /**

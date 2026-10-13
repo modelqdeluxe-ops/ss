@@ -232,6 +232,83 @@ public final class MusicLibrary {
     }
 
     // ---------------------------------------------------------------------------------------------------------------
+    // Canciones metidas a mano en la carpeta
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static final java.util.concurrent.atomic.AtomicBoolean SCANNING = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * Busca en .minecraft/tfclient/musica (y sus subcarpetas) las canciones que el jugador metió a mano (cualquier MP3,
+     * OGG o WAV, se llamen como se llamen) y las añade a la biblioteca con su título, artista, portada y duración (de
+     * sus etiquetas; sin título, el nombre del archivo). En su propio hilo; se llama al abrir Música.
+     */
+    public static void scanFolder() {
+        if (SCANNING.getAndSet(true)) return;
+        Thread t = new Thread(() -> {
+            try {
+                scanNow();
+            } catch (Exception e) {
+                TFClient.LOGGER.warn("Música: no se pudo mirar la carpeta", e);
+            } finally {
+                SCANNING.set(false);
+            }
+        }, "TF Música: carpeta");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static void scanNow() throws IOException {
+        load();
+        Path dir = dir();
+        if (!Files.isDirectory(dir)) {
+            Files.createDirectories(dir);
+            return;
+        }
+        java.util.Set<String> known = new java.util.HashSet<>();
+        synchronized (MusicLibrary.class) {
+            for (Track t : TRACKS) known.add(t.file());
+        }
+        List<Path> found;
+        try (java.util.stream.Stream<Path> s = Files.walk(dir, 4)) {
+            found = s.filter(Files::isRegularFile).sorted().toList();
+        }
+        int added = 0;
+        for (Path p : found) {
+            String rel = dir.relativize(p).toString().replace('\\', '/');
+            String low = p.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
+            if (known.contains(rel) || rel.startsWith("altavoz/") || low.startsWith(".") || low.endsWith(".part")
+                    || low.endsWith(".png") || low.endsWith(".jpg") || low.endsWith(".json") || low.endsWith(".audio")) continue;
+            try {
+                AudioDecoder.Kind kind = AudioDecoder.AudioFormatSniffer.sniff(p);
+                if (kind == AudioDecoder.Kind.UNKNOWN) continue;
+                try (AudioDecoder d = AudioDecoder.open(p, 0)) {
+                    if (d.next() == null) continue;
+                }
+                long duration = switch (kind) {
+                    case MP3 -> JLayerDecoder.isMpeg1(p) ? Mp3Frames.scan(p, -1).durationMs() : JLayerDecoder.durationMs(p);
+                    case OGG -> OggDecoder.durationMs(p);
+                    default -> MusicDownloader.wavDuration(p);
+                };
+                MusicTags.Tags tags = MusicTags.read(p);
+                String id = Long.toString(System.currentTimeMillis(), 36)
+                        + Integer.toString(java.util.concurrent.ThreadLocalRandom.current().nextInt(36 * 36 * 36), 36);
+                boolean cover = tags.cover() != null && MusicDownloader.saveCover(tags.cover(), dir.resolve(id + ".png"));
+                String name = p.getFileName().toString();
+                int dot = name.lastIndexOf('.');
+                if (dot > 0) name = name.substring(0, dot);
+                name = name.replace('_', ' ').trim();
+                String title = !tags.title().isBlank() ? tags.title() : name;
+                add(new Track(id, title, tags.artist(), rel, cover, duration, "", System.currentTimeMillis()));
+                known.add(rel);
+                added++;
+            } catch (Exception e) {
+                TFClient.LOGGER.warn("Música: {} no se pudo leer: {}", rel, e.getMessage());
+            }
+        }
+        if (added > 0) TFClient.LOGGER.info("Música: {} canción(es) nuevas de la carpeta", added);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
     // Portadas
     // ---------------------------------------------------------------------------------------------------------------
 

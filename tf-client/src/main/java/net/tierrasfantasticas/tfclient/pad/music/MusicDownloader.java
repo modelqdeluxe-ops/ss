@@ -171,9 +171,8 @@ public final class MusicDownloader {
                 throw new IOException("Eso no es una canción: tiene que ser un MP3, OGG o WAV.");
             long duration = 0;
             if (kind == AudioDecoder.Kind.MP3) {
-                Mp3Frames.Scan scan = Mp3Frames.scan(part, -1);
-                if (!scan.mpeg1()) throw new IOException("Este MP3 es de baja calidad (MPEG-2): conviértelo a 128 kbps o más.");
-                duration = scan.durationMs();
+                // cualquier MP3: los MPEG-2/2.5 los lee JLayer (ver AudioDecoder.open)
+                duration = JLayerDecoder.isMpeg1(part) ? Mp3Frames.scan(part, -1).durationMs() : JLayerDecoder.durationMs(part);
             } else if (kind == AudioDecoder.Kind.WAV) {
                 duration = wavDuration(part);
             }
@@ -339,7 +338,7 @@ public final class MusicDownloader {
         return name.length() > 60 ? name.substring(0, 60) : name;
     }
 
-    private static long wavDuration(Path file) {
+    static long wavDuration(Path file) {
         try (WavDecoder d = new WavDecoder(file, 0)) {
             long frames = 0;
             byte[] b;

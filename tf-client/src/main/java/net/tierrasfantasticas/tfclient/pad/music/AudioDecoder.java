@@ -20,7 +20,8 @@ public interface AudioDecoder extends Closeable {
     /** Abre el archivo según su formato y empieza en el milisegundo startMs (0 = desde el principio). */
     static AudioDecoder open(Path file, long startMs) throws IOException {
         return switch (AudioFormatSniffer.sniff(file)) {
-            case MP3 -> new Mp3Decoder(file, startMs);
+            // MPEG-1 con JavaMP3 (salto exacto); MPEG-2/2.5 (22/24/16 kHz, pocos kbps) con JLayer
+            case MP3 -> JLayerDecoder.isMpeg1(file) ? new Mp3Decoder(file, startMs) : new JLayerDecoder(file, startMs);
             case OGG -> new OggDecoder(file, startMs);
             case WAV -> new WavDecoder(file, startMs);
             default -> throw new IOException("Formato de audio no soportado: " + file.getFileName());

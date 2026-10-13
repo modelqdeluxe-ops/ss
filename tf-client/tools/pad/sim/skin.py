@@ -1,3 +1,4 @@
+import os
 """El diseño 1.4 de las apps del pad (PadSkin.java y PadViewPage.java), para el simulador: mismas medidas, colores y
 animaciones (dibujadas en el instante T). Sim hereda de Skin; aquí solo se usan sus métodos de dibujo básicos (fill,
 vgrad, box, mtext, ptext, img, paste…), así que este archivo no importa sim.py."""
@@ -50,6 +51,11 @@ def with_a(c, a):
 
 
 # PadSkin.THEME: el color y la frase de cada app (las del admin usan las de su app)
+THEMES = [('Cielo', 0x54D0FC, 0x60D5FC, 0xFFFFFF), ('Rosa', 0xFFB9DC, 0xFF8EC6, 0xFFFFFF),
+          ('Lavanda', 0xCDB9FF, 0xA88CF5, 0xFFFFFF), ('Menta', 0xA2F2D5, 0x5ED8AB, 0xFFFFFF),
+          ('Atardecer', 0xFFCC92, 0xFF9670, 0xFFFFFF), ('Oro', 0xFFE69A, 0xF4C24F, 0xFFFFFF),
+          ('Fresa', 0xFFA6B2, 0xF0647C, 0xFFFFFF), ('Noche', 0x3B4E9E, 0x1D2860, 0xA9B8FF)]
+
 THEME = {
     'oficios': (0xE0892E, 'Trabaja, sube de nivel y cobra cada pago.'),
     'misiones': (0x22A884, 'Retos diarios y semanales con premio.'),
@@ -298,21 +304,20 @@ class Skin:
     TABS = TAB_H + TAB_GAP
 
     def sk_tab_compact(self, x, y, w, label, state, acc):
-        """PadSkin.tabCompact: la pestaña nueva en el sitio de las de carpeta (Comunidad y Música): pastilla de 14."""
+        """PadSkin.tabCompact: igual que la pestaña normal (17, letra a 4 de arriba) pero desde y - 4 (Comunidad, Música)."""
         c = deep(acc)
-        h = 14
-        y -= 2
+        h = self.TAB_H
+        y -= 4
         if state == 2:
             edge, low = darken(c, 0.5), darken(c, 0.78)
             self.box(x, y, w, h, edge)
             self.vgrad(x + 1, y + 1, w - 2, h - 2, mix(c, WHITE, 0.30), darken(c, 0.9))
             self.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62))
+            self.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, low)
             cx = x + w // 2
-            self.fill(cx - 2, y + h, cx + 3, y + h + 1, edge)
-            self.fill(cx - 1, y + h + 1, cx + 2, y + h + 2, edge)
-            self.fill(cx - 1, y + h - 1, cx + 2, y + h, low)
+            self.fill(cx - 1, y + h, cx + 2, y + h + 1, edge)
             if label:
-                self.ptext_shadow(label, cx - self.pwidth(label) // 2, y + 3, WHITE, darken(c, 0.42))
+                self.ptext_shadow(label, cx - self.pwidth(label) // 2, y + 4, WHITE, darken(c, 0.42))
             return
         hover = state == 1
         yy = y - 1 if hover else y
@@ -320,7 +325,7 @@ class Skin:
         self.vgrad(x + 1, yy + 1, w - 2, h - 2, WHITE, mix(rgb(0xE4EEF9), tint(c, 0.35), 0.55) if hover else rgb(0xD3E3F4))
         self.fill(x + 1, yy + h - 2, x + w - 1, yy + h - 1, mix(c, WHITE, 0.25) if hover else rgb(0xBACFE6))
         if label:
-            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 3, ink(c) if hover else rgb(0x3A5888), False)
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 4, ink(c) if hover else rgb(0x3A5888), False)
 
     def sk_tab(self, x, y, w, label, state, acc):
         """PadSkin.tab (1.4.1): pastilla de 17 con el texto centrado y aire; la elegida, del color de la app con su
@@ -646,6 +651,21 @@ class Skin:
         t = self.T if t is None else t
         W, H = self.UW, self.UH
         self.scissor(0, 0, W, H)
+        # el tema (PadSettings.THEMES; THEME=n en el entorno) y los monogramas TF (TFPadScreen.monograms)
+        th = THEMES[int(os.environ.get('THEME', '0'))]
+        self.vgrad(0, 0, W, H, rgb(th[1]), rgb(th[2]))
+        sx, sy = 46, 30
+        ox, oy = (t * 3) % sx, (t * 2) % (sy * 2)
+        row = -2
+        while row * sy + oy < H + sy:
+            y = row * sy + oy
+            shift = 0 if row % 2 == 0 else sx / 2
+            x = -sx + ox + shift
+            while x < W + sx:
+                self.mtext('TF', round(x) + 1, round(y) + 1, (0, 0, 0, 12))
+                self.mtext('TF', round(x), round(y), rgb(th[3]) + (28,))
+                x += sx
+            row += 1
         # el rombo tallado, muy suave, y una sombra leve abajo: el cristal gana relieve sin perder su azul
         self.texture(0, 0, W, H)
         self.vgrad_a(0, H * 2 // 3, W, H - H * 2 // 3, (20, 70, 150, 0), (20, 70, 150, 22))

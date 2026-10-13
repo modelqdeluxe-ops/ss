@@ -92,7 +92,7 @@ final class PadCommunityPage extends PadPage {
         for (String[] t : TABS) {
             int w = PadFont.width(t[1]) + 14;
             boolean sel = t[0].equals(PadCommunityClient.tab);
-            boolean hover = PadUi.inside(mx, my, x, Y, w, 15);
+            boolean hover = PadUi.inside(mx, my, x, Y - 4, w, 17);
             if (sel) {
                 selX = x;
                 selW = w;
@@ -102,7 +102,7 @@ final class PadCommunityPage extends PadPage {
                 PadSkin.tabCompact(g, x, Y, w, t[1], hover ? 1 : 0, PadSkin.accent("comunidad"));
             }
             String key = t[0];
-            hit(x, Y, w, 15, () -> {
+            hit(x, Y - 4, w, 17, () -> {
                 if (!key.equals(PadCommunityClient.tab)) {
                     scroll = 0;
                     pad.sound("tab", 0.7F);

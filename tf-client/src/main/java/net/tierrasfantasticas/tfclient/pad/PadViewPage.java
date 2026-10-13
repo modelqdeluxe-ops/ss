@@ -432,6 +432,7 @@ final class PadViewPage extends PadPage {
 
     private int heroHeight(PadView.Row r, int w) {
         int h = 8 + 11 + linesHeight(r, heroTextWidth(r, w)) + (r.progress() >= 0 ? 10 : 0) + 6;
+        if (PadView.SELF_MODEL.equals(r.image())) return Math.max(96, h); // el escaparate del Armario: tu modelo en grande
         return Math.max(HERO_MIN, h);
     }
 
@@ -458,7 +459,16 @@ final class PadViewPage extends PadPage {
         boolean photo = r.hasImage() && PadSkin.wide(r.image());
         int extra = 0;
         boolean drawn;
-        if (photo) {
+        if (PadView.SELF_MODEL.equals(r.image())) {
+            // el escaparate del Armario: tu modelo 3D en grande sobre una peana de luz, con la skin que llevas
+            int mh = h - 14, mw = Math.round(mh * 0.62F);
+            float mcx = sx + mw / 2F;
+            PadSkin.glow(g, mcx, y + h / 2F, mh * 0.75F, 0xFFFFFF, 120);
+            PadUi.stretch(g, "floor", Math.round(mcx - mw * 0.55F), y + h - 11, Math.round(mw * 1.1F), 6);
+            selfModel(g, Math.round(mcx), y + h - 8, mh, mx, my);
+            extra = mw - ms;
+            drawn = true;
+        } else if (photo) {
             // un retrato (oficios): en grande, como una foto, en vez de dentro del medallón
             int ph = Math.min(h - 8, 46);
             int pw = Math.round(ph * PadSkin.aspect(r.image()));
