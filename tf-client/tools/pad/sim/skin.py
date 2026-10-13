@@ -690,13 +690,23 @@ class Skin:
         cols = [mix(b, WHITE, 0.2 if dark else 0.5), mix(b, (10, 16, 40) if dark else (24, 38, 92), 0.3),
                 mix(b, (6, 10, 26) if dark else (24, 38, 92), 0.5)]
         kk = self.big / self.cs
-        lw_, lh_ = 256 * kk, 44 * kk
-        for i, (name, sp, al) in enumerate((('land_far', 1.2, 0.72), ('land_mid', 2.6, 0.86), ('land_near', 4.2, 0.95))):
-            off = (t * sp) % lw_
-            x = round((-off - i * 61) * self.cs) / self.cs
-            while x < W:
-                self.tex_alpha(name, x, H - lh_, lw_, lh_, al, cols[i], smooth=False)
-                x += lw_
+        lw_, lh_ = 480 * kk, 56 * kk
+        lx = round((W - lw_) / 2 * self.cs) / self.cs
+        ltop = H - lh_
+        for i, (name, al) in enumerate((('land_far', 0.72), ('land_mid', 0.86), ('land_near', 0.95))):
+            self.tex_alpha(name, lx, ltop, lw_, lh_, al, cols[i], smooth=False)
+        smoke = mix(b, WHITE, 0.35 if dark else 0.75)
+        for c, (cx_, cy_) in enumerate(((79, 31), (209, 30))):
+            for i in range(4):
+                p_ = ((t + i + c * 0.7) % 4.0) / 4.0
+                sx_ = lx + (cx_ + 2.5 * p_ * p_ + math.sin(p_ * 6 + c) * 0.6) * kk
+                sy_ = ltop + (cy_ - 1 - 14 * p_) * kk
+                r_ = (1 + 1.6 * p_) * kk
+                a_ = round(150 * (1 - p_) * min(1, p_ * 6))
+                if a_ <= 0:
+                    continue
+                s_ = max(kk, round(r_ * 2 / kk) * kk / 2)
+                self.fill(sx_ - s_, sy_ - s_, sx_ + s_, sy_ + s_, tuple(smoke) + (a_,))
         self.no_scissor()
         # el logo lo pone el marco, que va encima (Sim.save)
 

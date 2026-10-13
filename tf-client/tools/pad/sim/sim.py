@@ -1392,7 +1392,7 @@ class Sim(Skin):
         frame = Image.new('RGBA', top.size, (0, 0, 0, 0))
         th = THEMES[int(os.environ.get('THEME', '0'))]
         k = self.ps / 4
-        x0, y0 = round(205 * k), round(249 * k)
+        x0, y0 = round(205 * k), round(250 * k)
         x1, y1 = round((1361 + 8 * self.extra_x) * k), round((795 + 8 * self.extra) * k)
         c0, c1 = np.array(rgb(th[1]), float), np.array(rgb(th[2]), float)
         t = np.linspace(0, 1, y1 - y0)[:, None, None]
