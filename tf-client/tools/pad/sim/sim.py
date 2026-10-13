@@ -854,7 +854,7 @@ class Sim(Skin):
 
     # PadViewPage (1.4): medidas
     CELL_W, CELL_H, CARD_MIN, CARD_MAX, CARD_H, CARD_BAR, ICON_BOX, ROW_GAP, HERO_MIN, HERO_SLOT, SHOW, DOCK = (
-        30, 32, 76, 116, 78, 8, 26, 4, 52, 40, 40, 22)
+        30, 32, 76, 116, 78, 8, 36, 4, 52, 40, 40, 22)
     # tarjetas grandes (galería: las imágenes de los efectos)
     GAL_MIN, GAL_MAX, GAL_H, GAL_SHOW, GAL_IMG = 88, 124, 100, 60, 50
 
@@ -1229,12 +1229,12 @@ class Sim(Skin):
             ib = self.ICON_BOX
             iy = yy + (h - ib) // 2
             self.glow(x + 7 + ib / 2, iy + ib / 2, ib * 1.05, tnt, 150 if hover else 105)
-            self.sk_slot(x + 7, iy, ib, None if plain else tcol)
+            self.sk_tile(x + 7, iy, ib, tnt, hover)
             bob = round(math.sin(self.T * 4.4)) if hover else 0
             if ex.get('img'):
                 self.icon_at(icon, ex, x + 9, iy + 2 + bob, ib - 4)
             else:
-                self.icon_at(icon, ex, x + 7 + (ib - 16) // 2, iy + (ib - 16) // 2 + bob, 16)
+                self.icon_at(icon, ex, x + 7 + (ib - 32) // 2, iy + (ib - 32) // 2 + bob, 32)
             tx = x + ib + 14
         tw = self.text_w(r, w)
         th = 11 + self.lines_h(r, tw) + (8 if prog >= 0 else 0)

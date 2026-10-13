@@ -560,6 +560,18 @@ class Skin:
         self.fill(kx + 3, y + 4, kx + 4, y + 10, mix(acc, WHITE, 0.3))
         self.fill(kx + 5, y + 4, kx + 6, y + 10, mix(acc, WHITE, 0.3))
 
+    def sk_tile(self, x, y, s, color, hover=False):
+        """PadSkin.tile: la pastilla del icono de una fila, del color de la fila, con las esquinas recortadas."""
+        c = deep(color)
+        edge = darken(c, 0.62)
+        self.fill(x + 1, y + s, x + s - 1, y + s + 1, (24, 38, 92, 48))
+        self.fill(x + 1, y, x + s - 1, y + s, edge)
+        self.fill(x, y + 1, x + s, y + s - 1, edge)
+        self.vgrad(x + 1, y + 1, s - 2, s - 2, mix(c, WHITE, 0.7 if hover else 0.62), mix(c, WHITE, 0.28 if hover else 0.18))
+        self.fill(x + 2, y + 1, x + s - 2, y + 2, (255, 255, 255, 170))
+        self.fill(x + 1, y + s - 3, x + s - 1, y + s - 1, tuple(darken(c, 0.8)) + (90,))
+        self.glow(x + s / 2, y + s / 2, s * 0.5, WHITE, 200 if hover else 160)
+
     def sk_field(self, x, y, w, text, hint, acc):
         """PadSkin.field (1.4.2): marco del color de la app, cristal con sombra arriba, lápiz en su pastilla."""
         c = deep(acc)

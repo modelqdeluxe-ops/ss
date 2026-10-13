@@ -781,6 +781,22 @@ final class PadSkin {
     }
 
     /** El hueco de un icono, del color de su fila (color != 0) o azul hielo, con una luz detrás. */
+    /**
+     * La pastilla del icono de una fila (1.4.3): degradado del color de la fila (claro arriba, más vivo abajo), borde
+     * oscuro de ese color con las esquinas recortadas, brillo arriba y una luz blanca detrás del objeto.
+     */
+    static void tile(GuiGraphics g, int x, int y, int s, int color, boolean hover) {
+        int c = deep(color);
+        int edge = darken(c, 0.62F);
+        g.fill(x + 1, y + s, x + s - 1, y + s + 1, 0x3018265C);
+        g.fill(x + 1, y, x + s - 1, y + s, edge);
+        g.fill(x, y + 1, x + s, y + s - 1, edge);
+        g.fillGradient(x + 1, y + 1, x + s - 1, y + s - 1, mix(c, WHITE, hover ? 0.7F : 0.62F), mix(c, WHITE, hover ? 0.28F : 0.18F));
+        g.fill(x + 2, y + 1, x + s - 2, y + 2, alpha(0xFFFFFF, 170));
+        g.fill(x + 1, y + s - 3, x + s - 1, y + s - 1, alpha(darken(c, 0.8F) & 0xFFFFFF, 90));
+        glow(g, x + s / 2F, y + s / 2F, s * 0.5F, 0xFFFFFF, hover ? 200 : 160);
+    }
+
     static void medallion(GuiGraphics g, int x, int y, int s, int color) {
         int edge = color != 0 ? PadUi.tint(color, 0.62F) : 0xFF9DBCE0;
         int top = color != 0 ? PadUi.tint(color, 0.10F) : 0xFFF4F9FE, bot = color != 0 ? PadUi.tint(color, 0.30F) : 0xFFD6E6F6;

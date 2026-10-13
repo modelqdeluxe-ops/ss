@@ -35,7 +35,7 @@ final class PadViewPage extends PadPage {
     /** Alto de la barra de acciones de abajo. */
     private static final int DOCK_H = 22;
     /** Icono de las filas: el objeto dentro de su medallón. */
-    private static final int ICON_BOX = 26;
+    private static final int ICON_BOX = 36; // el icono de las filas va al doble (32) en su pastilla de color
     /** Hueco entre filas (cada fila es su propia tarjeta). */
     private static final int ROW_GAP = 4;
     /** Lo que tarda la lista en entrar al cambiar de pestaña (ms) y lo que se ve hundido un botón al pulsarlo. */
@@ -565,11 +565,11 @@ final class PadViewPage extends PadPage {
         if (icon) {
             int iy = yy + (h - ICON_BOX) / 2;
             PadSkin.glow(g, x + 7 + ICON_BOX / 2F, iy + ICON_BOX / 2F, ICON_BOX * 1.05F, tint & 0xFFFFFF, hover ? 150 : 105);
-            PadSkin.medallion(g, x + 7, iy, ICON_BOX, plain ? 0 : titleColor);
+            PadSkin.tile(g, x + 7, iy, ICON_BOX, tint, hover);
             int bob = hover ? Math.round((float) Math.sin(t * 4.4F)) : 0;
             boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), x + 9, iy + 2 + bob, ICON_BOX - 4);
             if (!drawn && !r.icon().isEmpty()) {
-                PadUi.item(g, r.icon(), x + 7 + (ICON_BOX - 16) / 2, iy + (ICON_BOX - 16) / 2 + bob, 1);
+                bigItem(g, r.icon(), x + 7 + (ICON_BOX - 32) / 2, iy + (ICON_BOX - 32) / 2 + bob);
                 if (PadUi.inside(mx, my, x + 7, iy, ICON_BOX, ICON_BOX) && inList(my)) tooltip = r.icon();
             }
             tx = x + ICON_BOX + 14;
