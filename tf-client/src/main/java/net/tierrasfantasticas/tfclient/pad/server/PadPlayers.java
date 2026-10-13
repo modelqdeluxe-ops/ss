@@ -256,7 +256,10 @@ public final class PadPlayers {
         return true;
     }
 
-    /** Entrega el regalo (objeto o monedas). Si no está conectado, se guarda y le llega al entrar. */
+    /**
+     * Manda el regalo (objeto o monedas) al buzón de quien lo recibe: lo recoge en el pad, Recompensas › REGALOS (esté
+     * conectado o no). Si está conectado, se le avisa por el chat.
+     */
     private static void deliver(ServerPlayer from, UUID to, ItemStack item, long coins) {
         JsonObject me = GIFTS.player(from.getUUID());
         if (!today().equals(JsonStore.str(me, "dia"))) {
@@ -266,26 +269,83 @@ public final class PadPlayers {
         me.addProperty("enviados", JsonStore.num(me, "enviados") + 1);
         String fromName = from.getGameProfile().getName();
         String what = coins > 0 ? TFEconomy.format(coins) : TFMarket.describe(item);
-        ServerPlayer target = from.getServer().getPlayerList().getPlayer(to);
-        if (coins > 0 && target == null) {
-            // las monedas se pueden pagar aunque no esté (la economía lo hace con su nombre)
-            TFEconomy.give(from.getServer(), to, PadStats.nameOf(to), coins);
-            pending(to).add(note(fromName, what));
-        } else if (coins > 0) {
-            TFEconomy.give(from.getServer(), to, target.getGameProfile().getName(), coins);
-            receive(target, fromName, what);
-        } else if (target != null) {
-            giveItem(target, item);
-            receive(target, fromName, what);
-        } else {
-            JsonObject g = note(fromName, what);
-            g.addProperty("objeto", item.save(new CompoundTag()).toString());
-            pending(to).add(g);
-        }
+        JsonObject g = note(fromName, what);
+        if (coins > 0) g.addProperty("monedas", coins);
+        else g.addProperty("objeto", item.save(new CompoundTag()).toString());
+        g.addProperty("fecha", System.currentTimeMillis());
+        mailbox(to).add(g);
         GIFTS.changed();
+        ServerPlayer target = from.getServer().getPlayerList().getPlayer(to);
+        if (target != null) receive(target, fromName, what);
         from.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.4F, 1.8F);
-        TFPadNet.notice(from, "Regalaste " + what + " a " + (target != null ? target.getGameProfile().getName() : PadStats.nameOf(to))
-                + (target == null ? ". Le llegará al entrar." : "."));
+        TFPadNet.notice(from, "Regalaste " + what + " a " + (target != null ? target.getGameProfile().getName() : PadStats.nameOf(to)) + ".");
+    }
+
+    /** Un regalo en el buzón: quién, qué (texto), el objeto (o vacío) y las monedas (0 si es un objeto). */
+    public record Gift(String from, String what, ItemStack item, long coins, long at) {}
+
+    private static JsonArray mailbox(UUID uuid) {
+        JsonObject p = GIFTS.player(uuid);
+        if (!p.has("buzon") || !p.get("buzon").isJsonArray()) p.add("buzon", new JsonArray());
+        return p.getAsJsonArray("buzon");
+    }
+
+    /** Los regalos que esperan en el buzón del jugador, del más nuevo al más viejo. */
+    public static List<Gift> gifts(UUID uuid) {
+        JsonObject p = GIFTS.playerIfAny(uuid);
+        List<Gift> out = new ArrayList<>();
+        if (p == null || !p.has("buzon") || !p.get("buzon").isJsonArray()) return out;
+        for (JsonElement e : p.getAsJsonArray("buzon")) {
+            JsonObject g = e.getAsJsonObject();
+            ItemStack stack = ItemStack.EMPTY;
+            if (g.has("objeto")) {
+                try {
+                    stack = ItemStack.of(TagParser.parseTag(g.get("objeto").getAsString()));
+                } catch (Exception ex) {
+                    stack = ItemStack.EMPTY;
+                }
+            }
+            out.add(0, new Gift(JsonStore.str(g, "de"), JsonStore.str(g, "que"), stack, JsonStore.num(g, "monedas"), JsonStore.num(g, "fecha")));
+        }
+        return out;
+    }
+
+    /** Recoge el regalo i (en el orden de {@link #gifts}, del más nuevo) o todos (i &lt; 0). Devuelve cuántos. */
+    public static int claimGifts(ServerPlayer player, int i) {
+        JsonArray box = mailbox(player.getUUID());
+        int n = box.size(), taken = 0;
+        JsonArray keep = new JsonArray();
+        for (int k = 0; k < n; k++) {
+            int shown = n - 1 - k; // gifts() les da la vuelta
+            JsonObject g = box.get(k).getAsJsonObject();
+            if (i >= 0 && shown != i) {
+                keep.add(g);
+                continue;
+            }
+            long coins = JsonStore.num(g, "monedas");
+            if (coins > 0) {
+                if (!TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), coins)) {
+                    keep.add(g);
+                    continue;
+                }
+            } else if (g.has("objeto")) {
+                try {
+                    ItemStack stack = ItemStack.of(TagParser.parseTag(g.get("objeto").getAsString()));
+                    if (!stack.isEmpty()) PadKits.give(player, stack);
+                } catch (Exception ex) {
+                    TFClient.LOGGER.error("TF Pad: un regalo para {} no se pudo leer: {}", player.getGameProfile().getName(), ex.getMessage());
+                }
+            }
+            taken++;
+        }
+        GIFTS.player(player.getUUID()).add("buzon", keep);
+        GIFTS.changed();
+        if (taken > 0) {
+            player.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.MASTER, 0.8F, 1.1F);
+            player.containerMenu.broadcastChanges();
+            TFPadNet.sendState(player);
+        }
+        return taken;
     }
 
     private static JsonObject note(String from, String what) {
@@ -311,32 +371,28 @@ public final class PadPlayers {
     private static void receive(ServerPlayer player, String from, String what) {
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.5F, 1.6F);
         // solo el chat (el aviso del pad salía además encima de la barra con el pad cerrado)
-        TFChat.send(player, "Regalo", ChatFormatting.YELLOW, TFChat.hl(from), " te regaló ", TFChat.money(what), ".");
+        TFChat.send(player, "Regalo", ChatFormatting.YELLOW, TFChat.hl(from), " te regaló ", TFChat.money(what),
+                ". Recógelo en el pad: Recompensas › Regalos.");
         TFPadNet.sendState(player);
     }
 
-    /** Al entrar: los regalos que llegaron mientras no estaba. */
+    /** Al entrar: lo que quedó pendiente con el sistema de antes pasa al buzón, y se avisa si hay regalos. */
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || PadServer.server() == null) return;
         JsonObject p = GIFTS.playerIfAny(player.getUUID());
-        if (p == null || !p.has("pendientes")) return;
-        JsonArray list = p.getAsJsonArray("pendientes");
-        p.remove("pendientes");
-        GIFTS.changed();
-        for (JsonElement e : list) {
-            JsonObject g = e.getAsJsonObject();
-            String from = JsonStore.str(g, "de"), what = JsonStore.str(g, "que");
-            if (g.has("objeto")) {
-                try {
-                    ItemStack stack = ItemStack.of(TagParser.parseTag(g.get("objeto").getAsString()));
-                    if (!stack.isEmpty()) giveItem(player, stack);
-                } catch (Exception ex) {
-                    TFClient.LOGGER.error("TF Pad: un regalo para {} no se pudo leer: {}", player.getGameProfile().getName(), ex.getMessage());
-                    continue;
-                }
+        if (p == null) return;
+        if (p.has("pendientes") && p.get("pendientes").isJsonArray()) {
+            JsonArray box = mailbox(player.getUUID());
+            for (JsonElement e : p.getAsJsonArray("pendientes")) {
+                JsonObject g = e.getAsJsonObject();
+                if (g.has("objeto")) box.add(g); // las monedas de antes ya se pagaron al mandarlas
             }
-            receive(player, from, what);
+            p.remove("pendientes");
+            GIFTS.changed();
         }
+        int n = gifts(player.getUUID()).size();
+        if (n > 0) TFChat.send(player, "Regalo", ChatFormatting.YELLOW, "Tienes " + n + (n == 1 ? " regalo" : " regalos")
+                + " esperando en el pad: Recompensas › Regalos.");
     }
 }
