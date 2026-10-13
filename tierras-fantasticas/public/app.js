@@ -594,17 +594,48 @@
 
   const seconds = (n) => `${String(n).replace('.', ',')} s`;
 
-  function vfxFoot(kind, id) {
+  // Iconos pequeños de VFX y Skills (trazo, como los del resto de la web)
+  const svgI = (d, w = 1.9) =>
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const IC = {
+    prev: svgI('<path d="M15 5l-7 7 7 7"/>', 2.2),
+    next: svgI('<path d="M9 5l7 7-7 7"/>', 2.2),
+    sword: svgI('<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/>'),
+    spark: svgI('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>'),
+    check: svgI('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 2.6),
+    gift: svgI('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'),
+    star: svgI('<path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.3l6-.7z"/>'),
+    key: svgI('<rect x="3" y="7" width="18" height="11" rx="2.5"/><path d="M7 11h.01M11 11h.01M15 11h.01M8 14.5h8"/>'),
+    clock: svgI('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+    mouse: svgI('<rect x="6.5" y="3" width="11" height="18" rx="5.5"/><path d="M12 3v6.5M6.5 9.5h5.5"/>'),
+    bow: svgI('<path d="M5 3c7 3 10 7 16 16M5 3c0 7 4 11 14 16M3 21 21 3"/>'),
+  };
+
+  // VFX (rediseño 13 oct.): la lista en el orden en que se ve (categorías y, dentro, sus efectos), según el filtro
+  const vfxList = () =>
+    (vfxData.cats || []).filter((c) => vfxCat === 'todos' || c.id === vfxCat).flatMap((c) => vfxData.kills.filter((k) => k.cat === c.id));
+
+  // Estado de un efecto para el jugador: sin obtener, suyo o equipado
+  function vfxState(kind, id) {
     const mine = vfxData?.me;
-    const key = `${kind}:${id}`;
-    const attrs = `data-vfx-kind="${kind}" data-vfx-id="${escapeHtml(id)}"`;
-    if (!mine || !mine.owned.includes(key)) {
-      return `<span class="price free">Gratis</span><button class="btn btn-claim btn-sm" type="button" data-vfx-claim ${attrs}>Obtener</button>`;
-    }
-    if (mine[kind] === id) {
-      return `<span class="price owned">Equipado</span><button class="btn btn-ghost btn-sm" type="button" data-vfx-remove ${attrs}>Quitar</button>`;
-    }
-    return `<span class="price owned">Tuyo</span><button class="btn btn-primary btn-sm" type="button" data-vfx-equip ${attrs}>Equipar</button>`;
+    if (!mine || !mine.owned.includes(`${kind}:${id}`)) return 'free';
+    return mine[kind] === id ? 'on' : 'owned';
+  }
+
+  // La acción grande de la ficha: qué es para ti y el botón que toca
+  function vfxAction(k) {
+    const st = vfxState('kill', k.id);
+    const attrs = `data-vfx-kind="kill" data-vfx-id="${escapeHtml(k.id)}"`;
+    const [icon, title, sub, btn] = {
+      free: [IC.gift, 'Gratis', me.user ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
+      owned: [IC.star, 'Es tuyo', 'Equípalo y sale solo en el juego.', `<button class="btn btn-primary" type="button" data-vfx-equip ${attrs}>Equipar</button>`],
+      on: [IC.check, 'Equipado', 'Ya sale en el juego al derrotar a alguien.', `<button class="btn btn-ghost" type="button" data-vfx-remove ${attrs}>Quitar</button>`],
+    }[st];
+    return `<div class="fx-action is-${st}">
+        <span class="fx-action-ico">${icon}</span>
+        <div class="fx-action-text"><b>${title}</b><span>${sub}</span></div>
+        ${btn}
+      </div>`;
   }
 
   // Lo seleccionado en el escenario: el id de la kill
@@ -617,9 +648,10 @@
   function vfxLoadout() {
     const mine = vfxData.me;
     const kill = mine?.kill ? vfxData.kills.find((x) => x.id === mine.kill) : null;
-    const slot = `<div class="vfx-slot${kill ? ' is-on' : ''}">
-        <div class="vfx-slot-art">${kill ? img(kill.image, '') : '<span aria-hidden="true">—</span>'}</div>
-        <div><span>Tu efecto de kill</span><b>${kill ? escapeHtml(kill.name) : 'Ninguno'}</b></div>
+    const slot = `<div class="vfx-slot${kill ? ' is-on' : ''}"${kill ? ` style="--vfx:${vfxColor(vfxCatOf(kill)?.color)}"` : ''}>
+        <div class="vfx-slot-art">${kill ? img(kill.image, '') : IC.sword}</div>
+        <div><span>Tu efecto de kill</span><b>${kill ? escapeHtml(kill.name) : 'Ninguno equipado'}</b></div>
+        ${kill && kill.id !== vfxSel ? `<button type="button" class="btn btn-ghost btn-sm" data-vfx-pick="${escapeHtml(kill.id)}">Ver</button>` : ''}
       </div>`;
     const packs = mine?.packs || [];
     const old = packs.length
@@ -642,34 +674,56 @@
     return `<div class="vfx-loadout">${slot}${old}</div>`;
   }
 
-  // El escenario: la animación de lo elegido, con su ficha y el botón
+  // El escenario: la arena con la animación de lo elegido (teñida del color de su categoría), las flechas para pasar
+  // de uno a otro y la ficha con la acción
   function vfxStage() {
-    const k = vfxData.kills.find((x) => x.id === vfxSel) || vfxData.kills[0];
+    const list = vfxList();
+    const k = vfxData.kills.find((x) => x.id === vfxSel) || list[0] || vfxData.kills[0];
     const cat = vfxCatOf(k);
+    const idx = list.indexOf(k);
+    const nav =
+      list.length > 1 && idx >= 0
+        ? `<div class="fx-nav">
+            <button type="button" class="fx-step" data-vfx-step="-1" aria-label="Efecto anterior">${IC.prev}</button>
+            <span class="fx-count"><b>${String(idx + 1).padStart(2, '0')}</b> / ${String(list.length).padStart(2, '0')}</span>
+            <button type="button" class="fx-step" data-vfx-step="1" aria-label="Efecto siguiente">${IC.next}</button>
+          </div>`
+        : '';
     return `
-      <div class="vfx-stage panel" style="--vfx:${vfxColor(cat?.color)}">
-        <div class="vfx-screen">
-          <img class="vfx-anim" src="${asset(k.preview || k.image)}" alt="Vista previa de ${escapeHtml(k.name)}" width="320" height="320" decoding="async">
-          <span class="vfx-live" aria-hidden="true">Vista previa</span>
+      <div class="vfx-stage" style="--vfx:${vfxColor(cat?.color)}">
+        <div class="fx-arena">
+          <div class="fx-hud" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <span class="fx-live" aria-hidden="true"><i></i>Vista previa</span>
+          <div class="fx-show">
+            <span class="fx-floor" aria-hidden="true"></span>
+            <img class="vfx-anim" src="${asset(k.preview || k.image)}" alt="Vista previa de ${escapeHtml(k.name)}" width="320" height="320" decoding="async">
+          </div>
+          ${nav}
         </div>
         <div class="vfx-info">
-          <span class="cat">Efecto de kill${cat ? ` · ${escapeHtml(cat.name)}` : ''}</span>
+          <span class="fx-kicker"><i></i>Efecto de kill${cat ? ` · ${escapeHtml(cat.name)}` : ''}</span>
           <h3>${escapeHtml(k.name)}</h3>
-          <p>${escapeHtml(k.desc)}</p>
-          <p class="vfx-note">Sale al derrotar a un jugador o a cualquier mob: la propia víctima hace la animación.</p>
-          <div class="card-foot">${vfxFoot('kill', k.id)}</div>
+          <p class="fx-desc">${escapeHtml(k.desc)}</p>
+          <ul class="fx-how">
+            <li>${IC.sword}<span>Sale al derrotar a un jugador o a cualquier mob.</span></li>
+            <li>${IC.spark}<span>La propia víctima hace la animación.</span></li>
+          </ul>
+          ${vfxAction(k)}
           ${vfxLoadout()}
         </div>
       </div>`;
   }
 
   function vfxKillTile(k) {
-    const sel = (vfxSel || vfxData.kills[0].id) === k.id;
+    const sel = (vfxSel || vfxList()[0]?.id) === k.id;
     const on = vfxData.me?.kill === k.id;
+    const owned = !on && vfxState('kill', k.id) === 'owned';
     return `<button type="button" class="vfx-tile${sel ? ' is-sel' : ''}${on ? ' is-on' : ''}" data-vfx-pick="${escapeHtml(k.id)}"
         data-anim="${escapeHtml(asset(k.preview || k.image))}" aria-pressed="${sel}">
         <span class="vfx-tile-art">${img(k.image, '')}</span>
-        <span class="vfx-tile-name">${escapeHtml(k.name)}</span>${on ? '<span class="vfx-tag">Equipado</span>' : ''}
+        <span class="vfx-tile-name">${escapeHtml(k.name)}</span>${
+          on ? `<span class="vfx-tag is-on">${IC.check}Equipado</span>` : owned ? '<span class="vfx-tag">Tuyo</span>' : ''
+        }
       </button>`;
   }
 
@@ -681,15 +735,22 @@
     box.classList.add('vfx-shop');
     const cats = vfxData.cats || [];
     const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
+    // Si lo elegido no está en el filtro, al escenario va el primero que se ve
+    if (!vfxList().some((k) => k.id === vfxSel)) vfxSel = vfxList()[0]?.id || null;
+    const owned = (vfxData.me?.owned || []).filter((o) => o.startsWith('kill:')).length;
+    const chip = (c, n) =>
+      `<button type="button" class="fx-chip" style="--vfx:${c.id === 'todos' ? 'var(--a-400)' : vfxColor(c.color)}" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}"><i aria-hidden="true"></i>${escapeHtml(c.name)}<span>${n}</span></button>`;
     box.innerHTML = `
       <div class="vfx-hero">
-        <h2>Efectos de kill</h2>
-        <p>${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.</p>
+        <div>
+          <span class="fx-eyebrow">${IC.spark}VFX</span>
+          <h2>Efectos de kill</h2>
+          <p>${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.</p>
+        </div>
+        ${me.user ? `<div class="fx-mine"><b>${owned}</b><span>${owned === 1 ? 'efecto tuyo' : 'efectos tuyos'}</span></div>` : ''}
       </div>
       <div id="vfx-stage">${vfxStage()}</div>
-      <div class="vfx-filter" role="group" aria-label="Categorías">${[{ id: 'todos', name: 'Todos' }, ...cats]
-        .map((c) => `<button type="button" class="chip" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}">${escapeHtml(c.name)}</button>`)
-        .join('')}</div>
+      <div class="fx-filter" role="group" aria-label="Categorías">${[chip({ id: 'todos', name: 'Todos' }, vfxData.kills.length), ...cats.map((c) => chip(c, vfxData.kills.filter((k) => k.cat === c.id).length))].join('')}</div>
       ${shown
         .map((c) => {
           const list = vfxData.kills.filter((k) => k.cat === c.id);
@@ -724,17 +785,23 @@
 
   document.addEventListener('click', async (e) => {
     const pick = e.target.closest('[data-vfx-pick]');
-    if (pick) {
-      vfxSel = pick.dataset.vfxPick;
+    const step = e.target.closest('[data-vfx-step]');
+    if (pick || step) {
+      if (step) {
+        const list = vfxList();
+        const i = list.findIndex((k) => k.id === vfxSel);
+        vfxSel = list[(Math.max(i, 0) + Number(step.dataset.vfxStep) + list.length) % list.length].id;
+      } else vfxSel = pick.dataset.vfxPick;
       $('#vfx-stage').innerHTML = vfxStage();
-      $$('[data-vfx-pick]').forEach((b) => {
-        const sel = b === pick;
+      $$('.vfx-tile[data-vfx-pick]').forEach((b) => {
+        const sel = b.dataset.vfxPick === vfxSel;
         b.classList.toggle('is-sel', sel);
         b.setAttribute('aria-pressed', String(sel));
       });
+      if (step) $(`.fx-step[data-vfx-step="${step.dataset.vfxStep}"]`)?.focus();
       // En el móvil el escenario queda arriba: se sube para verlo
       const stage = $('#vfx-stage');
-      if (stage.getBoundingClientRect().top < 0) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (pick && stage.getBoundingClientRect().top < 0) stage.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
       return;
     }
     const vt = e.target.closest('[data-vfx-cat]');

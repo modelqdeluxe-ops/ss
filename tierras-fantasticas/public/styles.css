@@ -4500,79 +4500,417 @@ body:not([data-hero]) .header::before {
   flex: none;
 }
 
-/* ---------- VFX: efectos de kill ---------- */
+/* ---------- VFX: efectos de kill (rediseño 13 oct. 2026) ---------- */
+
+/* Una consola propia que no se mezcla con la nebulosa: placas opacas de acero oscuro (--hud-*) con su filo claro, y el
+   color de la categoría del efecto (--vfx) en la arena, el filtro y las marcas. La arena es transparente en las
+   animaciones (tools/vfx_preview.py), así que se tiñe entera del color del efecto. */
+.vfx-shop,
+.sk-shop {
+  --hud-0: #060915;
+  --hud-1: #0d1226;
+  --hud-2: #141a36;
+  --hud-3: #1b2346;
+  --hud-line: #29315f;
+  --hud-line-2: #3b4686;
+}
+
+.vfx-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.fx-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 5px 11px 5px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--t, var(--tone-vfx)) 42%, transparent);
+  background: color-mix(in srgb, var(--t, var(--tone-vfx)) 11%, #0b0f24);
+  color: var(--t, var(--tone-vfx));
+  font: 800 11px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fx-eyebrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.fx-mine {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--hud-line);
+  background: linear-gradient(180deg, var(--hud-2), var(--hud-1));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.fx-mine b {
+  font: 800 24px/1 var(--font-display);
+  color: var(--tone-vfx);
+}
+
+.fx-mine span {
+  color: var(--ui-text-2);
+  font-size: 13.5px;
+  font-weight: 700;
+}
 
 #vfx-stage {
-  margin-top: 20px;
+  margin-top: 22px;
   scroll-margin-top: calc(var(--header-h) + 12px);
 }
 
+/* La ficha grande: arena + datos, en una placa con filo claro y un halo muy suave del color del efecto */
 .vfx-stage {
   display: grid;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid var(--hud-line);
+  background: linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 0 0 1px rgb(3 4 14 / 0.7),
+    0 30px 60px -30px #000,
+    0 0 80px -46px var(--vfx);
 }
 
-.vfx-screen {
+/* La arena: luz del color del efecto donde cae la animación y un charco de luz en el suelo; esquinas de visor */
+.fx-arena {
+  position: relative;
   display: grid;
   place-items: center;
-  min-height: 340px;
-  padding: 44px 16px 16px;
-  border-bottom: 1px solid var(--ui-line);
+  min-height: 360px;
+  padding: 52px 16px 70px;
+  border-bottom: 1px solid var(--hud-line);
+  background:
+    radial-gradient(55% 50% at 50% 52%, color-mix(in srgb, var(--vfx) 24%, transparent), transparent 72%),
+    radial-gradient(90% 60% at 50% 115%, color-mix(in srgb, var(--vfx) 20%, transparent), transparent 70%),
+    var(--hud-0);
+  isolation: isolate;
 }
 
-/* Los VFX son de píxeles (320 px): a su tamaño natural y, si la pantalla la amplía, con los píxeles nítidos */
-.vfx-anim {
+.fx-hud {
+  position: absolute;
+  inset: 14px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.fx-hud i {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid color-mix(in srgb, var(--vfx) 70%, #fff);
+  opacity: 0.75;
+}
+
+.fx-hud i:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 7px;
+}
+
+.fx-hud i:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 7px;
+}
+
+.fx-hud i:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-left-radius: 7px;
+}
+
+.fx-hud i:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 7px;
+}
+
+.fx-live {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  left: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: rgb(3 5 14 / 0.6);
+  color: #e6e9ff;
+  font: 800 10.5px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fx-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff4d6d;
+  box-shadow: 0 0 8px #ff4d6d;
+  animation: fx-rec 1.6s ease-in-out infinite;
+}
+
+@keyframes fx-rec {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.fx-show {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+
+.fx-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: min(300px, 80%);
+  height: 18%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--vfx) 50%, transparent), transparent);
+}
+
+.fx-show .vfx-anim {
+  position: relative;
   width: 320px;
+  max-width: 100%;
+  height: auto;
   image-rendering: pixelated !important;
 }
 
+/* Anterior / siguiente con el número de efecto */
+.fx-nav {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: rgb(4 6 16 / 0.78);
+}
+
+.fx-step {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--hud-line-2);
+  background: var(--hud-2);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s var(--ease);
+}
+
+.fx-step:hover {
+  border-color: var(--vfx);
+  background: color-mix(in srgb, var(--vfx) 26%, var(--hud-2));
+}
+
+.fx-step:active {
+  transform: scale(0.92);
+}
+
+.fx-step svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fx-count {
+  min-width: 64px;
+  color: var(--ui-muted);
+  font: 700 12px/1 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.fx-count b {
+  color: #fff;
+  font: 800 14px/1 var(--font-display);
+}
+
+/* La ficha */
 .vfx-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   min-width: 0;
-  padding: 22px;
+  padding: 24px 22px 22px;
+}
+
+.fx-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: color-mix(in srgb, var(--vfx) 70%, #fff);
+  font: 800 11.5px/1.3 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fx-kicker i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--vfx);
+  box-shadow: 0 0 10px var(--vfx);
+  transform: rotate(45deg);
 }
 
 .vfx-info h3 {
-  margin: 8px 0 6px;
-  font: 800 clamp(26px, 3.2vw, 34px) / 1.1 var(--font-display);
+  margin: 10px 0 8px;
+  font: 800 clamp(28px, 3.4vw, 38px) / 1.05 var(--font-display);
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 
-.vfx-info > p {
+.fx-desc {
   margin: 0;
   color: var(--ui-text-2);
   font-size: 16px;
+  line-height: 1.5;
 }
 
-.vfx-info > .vfx-note {
-  margin-top: 10px;
+.fx-how {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fx-how li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
   color: var(--ui-muted);
   font-size: 14px;
 }
 
-.vfx-info .card-foot {
-  margin-top: 20px;
-  padding: 14px 14px 14px 18px;
-  border: 1px solid var(--ui-line);
-  border-radius: var(--r);
-  background: var(--ui-2);
+.fx-how svg {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--vfx) 30%, transparent);
+  background: color-mix(in srgb, var(--vfx) 11%, var(--hud-1));
+  color: color-mix(in srgb, var(--vfx) 75%, #fff);
 }
 
-.vfx-info .price.free {
+/* La acción: qué es para ti y su botón, en su propia placa */
+.fx-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+  margin-top: 22px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--hud-line-2);
+  background: linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+}
+
+.fx-action-ico {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in srgb, var(--get) 45%, transparent);
+  background: color-mix(in srgb, var(--get) 18%, transparent);
   color: var(--get);
 }
 
-.vfx-info .price.owned {
-  color: var(--ui-text);
+.fx-action-ico svg {
+  width: 22px;
+  height: 22px;
+}
+
+.fx-action.is-owned .fx-action-ico {
+  border-color: color-mix(in srgb, var(--a-400) 45%, transparent);
+  background: color-mix(in srgb, var(--a-400) 16%, transparent);
+  color: var(--a-300);
+}
+
+.fx-action.is-on .fx-action-ico {
+  border-color: transparent;
+  background: var(--ok-2);
+  color: #03281b;
+}
+
+.fx-action-text {
+  display: grid;
+  flex: 1 1 170px;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fx-action-text b {
+  font: 800 19px/1.1 var(--font-display);
+}
+
+.fx-action.is-free b {
+  color: var(--get);
+}
+
+.fx-action.is-on b {
+  color: var(--ok-2);
+}
+
+.fx-action-text span {
+  color: var(--ui-muted);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.fx-action .btn {
+  flex: 1 1 100%;
+  min-height: 48px;
 }
 
 /* Lo que llevas puesto, debajo de la ficha */
 .vfx-loadout {
   display: grid;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .vfx-slot {
@@ -4581,13 +4919,15 @@ body:not([data-hero]) .header::before {
   align-items: center;
   min-width: 0;
   padding: 8px 10px 8px 8px;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-0);
+  border-radius: 14px;
+  border: 1px dashed var(--hud-line-2);
+  background: var(--hud-0);
 }
 
 .vfx-slot.is-on {
-  border-color: color-mix(in srgb, var(--ok-2) 55%, var(--ui-line));
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--vfx, var(--ok-2)) 55%, var(--hud-line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--vfx, var(--ok-2)) 12%, var(--hud-0)), var(--hud-0) 70%);
 }
 
 .vfx-slot > div:not(.vfx-slot-art) {
@@ -4599,12 +4939,12 @@ body:not([data-hero]) .header::before {
   display: grid;
   flex: none;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   overflow: hidden;
-  border-radius: 10px;
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
+  border-radius: 11px;
+  border: 1px solid var(--hud-line);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--vfx, #8a93c8) 22%, transparent), transparent), var(--hud-1);
   color: var(--ui-muted);
 }
 
@@ -4614,12 +4954,17 @@ body:not([data-hero]) .header::before {
   object-fit: contain;
 }
 
+.vfx-slot-art svg {
+  width: 20px;
+  height: 20px;
+}
+
 .vfx-slot span {
   display: block;
   color: var(--ui-muted);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -4630,7 +4975,7 @@ body:not([data-hero]) .header::before {
 .vfx-slot b {
   display: block;
   overflow: hidden;
-  font: 700 13.5px/1.3 var(--font-display);
+  font: 700 14px/1.3 var(--font-display);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4652,25 +4997,103 @@ body:not([data-hero]) .header::before {
   font-weight: 700;
 }
 
-/* Cada categoría de efectos: título con una barra de su color y su mosaico */
+/* Filtro por categoría: pastillas con el punto de su color y su número (en el móvil, en una fila que se desliza) */
+.fx-filter {
+  display: flex;
+  gap: 8px;
+  margin: 28px calc(var(--gutter) * -1) 0;
+  padding: 0 var(--gutter) 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.fx-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.fx-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 7px 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--hud-line);
+  background: linear-gradient(180deg, var(--hud-2), var(--hud-1));
+  color: var(--ui-text-2);
+  font: 700 13px/1 var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.25s;
+}
+
+.fx-chip i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vfx);
+  box-shadow: 0 0 8px var(--vfx);
+}
+
+.fx-chip span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.32);
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.fx-chip:hover {
+  border-color: color-mix(in srgb, var(--vfx) 55%, var(--hud-line));
+  color: #fff;
+}
+
+.fx-chip[aria-pressed='true'] {
+  border-color: var(--vfx);
+  background: color-mix(in srgb, var(--vfx) 20%, var(--hud-1));
+  color: #fff;
+  box-shadow: 0 8px 20px -12px var(--vfx);
+}
+
+.fx-chip[aria-pressed='true'] span {
+  background: var(--vfx);
+  color: #0a0d1c;
+}
+
+/* Cada categoría: rombo de su color, nombre y número; debajo, su mosaico */
 .vfx-group {
-  margin-top: 28px;
+  margin-top: 30px;
 }
 
 .vfx-group header {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--ui-line);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hud-line);
 }
 
 .vfx-group header::before {
   content: '';
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
   background: var(--vfx);
+  box-shadow: 0 0 12px var(--vfx);
+  transform: rotate(45deg);
 }
 
 .vfx-group h3 {
@@ -4679,21 +5102,21 @@ body:not([data-hero]) .header::before {
 }
 
 .vfx-group header span {
-  padding: 1px 8px;
-  border-radius: 6px;
-  background: var(--ui-2);
-  color: var(--ui-text-2);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vfx) 15%, var(--hud-1));
+  color: color-mix(in srgb, var(--vfx) 70%, #fff);
   font-size: 12px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-/* Mosaico de kills: miniatura que se anima al pasar el ratón; tocar una la pone en el escenario */
+/* Mosaico de kills: la miniatura sobre la luz de su color; se anima al pasar el ratón y tocar una la lleva a la arena */
 .vfx-tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .vfx-tile {
@@ -4703,66 +5126,174 @@ body:not([data-hero]) .header::before {
   min-width: 0;
   overflow: hidden;
   padding: 0;
-  border-radius: var(--r);
-  border: 1px solid var(--ui-line);
-  background: var(--ui-1);
+  border-radius: 16px;
+  border: 1px solid var(--hud-line);
+  background: var(--hud-1);
   color: var(--ui-text);
   text-align: left;
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
   transition:
-    transform 0.25s var(--ease),
+    transform 0.3s var(--ease),
     border-color 0.2s,
-    box-shadow 0.2s;
-}
-
-.vfx-tile:hover {
-  border-color: var(--ui-line-2);
-}
-
-.vfx-tile.is-sel {
-  border-color: var(--brand);
-  box-shadow: inset 0 0 0 1px var(--brand);
+    box-shadow 0.25s;
 }
 
 .vfx-tile-art {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  border-bottom: 1px solid var(--ui-line);
-  background: var(--sk-bg);
+  background:
+    radial-gradient(62% 58% at 50% 58%, color-mix(in srgb, var(--vfx) 26%, transparent), transparent 76%),
+    var(--hud-0);
 }
 
 .vfx-tile-art img {
-  width: 92%;
-  height: 92%;
+  width: 86%;
+  height: 86%;
   object-fit: contain;
+  transition: transform 0.35s var(--ease);
 }
 
 .vfx-tile-name {
+  display: block;
   overflow: hidden;
-  padding: 9px 10px 10px;
+  padding: 10px 12px 11px;
+  border-top: 1px solid var(--hud-line);
   font: 700 12.5px/1.25 var(--font-display);
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.vfx-tile:hover {
+  border-color: color-mix(in srgb, var(--vfx) 60%, var(--hud-line));
+  box-shadow: 0 16px 30px -18px color-mix(in srgb, var(--vfx) 85%, transparent);
+}
+
+.vfx-tile:hover .vfx-tile-art img {
+  transform: scale(1.06);
+}
+
+.vfx-tile:focus-visible {
+  outline: 2px solid var(--vfx);
+  outline-offset: 2px;
+}
+
+.vfx-tile.is-sel {
+  border-color: var(--vfx);
+  box-shadow:
+    0 0 0 1px var(--vfx),
+    0 16px 34px -16px var(--vfx);
 }
 
 .vfx-tile.is-sel .vfx-tile-name {
-  background: var(--brand);
+  border-top-color: color-mix(in srgb, var(--vfx) 55%, var(--hud-line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--vfx) 34%, var(--hud-2)), var(--hud-2));
   color: #fff;
+}
+
+/* Lo elegido lleva el rombo de su color arriba a la izquierda */
+.vfx-tile.is-sel::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--vfx);
+  box-shadow: 0 0 10px var(--vfx);
+  transform: rotate(45deg);
 }
 
 .vfx-tag {
   position: absolute;
   top: 8px;
   right: 8px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--ok-2);
-  color: #03281b;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(3 5 14 / 0.7);
+  color: var(--ui-text);
   font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.vfx-tag.is-on {
+  border-color: transparent;
+  background: var(--ok-2);
+  color: #03281b;
+}
+
+.vfx-tag svg {
+  width: 11px;
+  height: 11px;
+}
+
+@media (max-width: 479px) {
+  .fx-arena {
+    min-height: 300px;
+    padding: 50px 10px 68px;
+  }
+
+  .vfx-info {
+    padding-inline: 16px;
+  }
+
+  .vfx-slot {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 640px) {
+  .fx-filter {
+    flex-wrap: wrap;
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .vfx-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .fx-action .btn {
+    flex: none;
+    min-width: 168px;
+  }
+}
+
+@media (min-width: 960px) {
+  /* La arena a la izquierda y la ficha a la derecha */
+  .vfx-stage {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+
+  .fx-arena {
+    min-height: 470px;
+    border-right: 1px solid var(--hud-line);
+    border-bottom: 0;
+  }
+
+  .vfx-info {
+    padding: 36px 36px 32px;
+  }
+
+  .vfx-tiles {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (hover: hover) and (min-width: 960px) {
+  .vfx-tile:hover {
+    transform: translateY(-3px);
+  }
 }
 
 /* ---------- Skills: las clases del TF Client ---------- */
@@ -5407,13 +5938,8 @@ body:not([data-hero]) .header::before {
 
   .sk-info,
   .sk-list-head,
-  .sk-skills,
-  .vfx-info {
+  .sk-skills {
     padding-inline: 16px;
-  }
-
-  .vfx-slot {
-    flex-wrap: wrap;
   }
 }
 
@@ -5425,35 +5951,12 @@ body:not([data-hero]) .header::before {
     overflow: visible;
   }
 
-  .vfx-tiles {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-
   .sk-grid {
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   }
 }
 
 @media (min-width: 960px) {
-  /* El escenario a la izquierda y la ficha a la derecha */
-  .vfx-stage {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  }
-
-  .vfx-screen {
-    min-height: 420px;
-    border-right: 1px solid var(--ui-line);
-    border-bottom: 0;
-  }
-
-  .vfx-info {
-    padding: 32px 34px;
-  }
-
-  .vfx-tiles {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
   .sk-hero {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
@@ -5492,7 +5995,6 @@ body:not([data-hero]) .header::before {
 }
 
 @media (hover: hover) and (min-width: 960px) {
-  .vfx-tile:hover,
   .sk-tile:hover,
   .sk-skill:hover {
     transform: translateY(-2px);
