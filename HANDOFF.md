@@ -15,6 +15,22 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
 
+> **TF Client 1.3.62 (13 oct)**:
+> - **«Doble pantalla» (la de verdad)**: era el diseño de marco.png: un anillo de bisel azul oscuro de 15–20 px alrededor
+>   del cristal (con su brillo y la esquina escalonada) que parecía una segunda pantalla detrás. `build_pad.sin_bisel`
+>   lo pinta del color del cristal (flood fill desde el cristal por los píxeles azulados hasta la línea negra; no toca el
+>   logo ni las gemas) al generar frame.png. El fondo animado se recorta en el borde real (`glassBase` deja el recorte).
+> - **Temas del pad** (Ajustes › Tema del pad, `PadSettings.THEMES`): Cielo, Rosa, Lavanda, Menta, Atardecer, Oro, Fresa,
+>   Noche. El cristal con su forma exacta (`glass_shape.png` del color de abajo + `glass_fade.png` del de arriba) y los
+>   neones/gemas del marco teñidos (`neon.png`), de `build_pad.glass_masks`. Papel de monogramas «TF» suaves que se
+>   deslizan (`TFPadScreen.monograms`). Se guarda en pad-cliente.properties (`tema`).
+> - Pestañas de Comunidad/Música y etiquetas oscuras (SONANDO, RULETA) del mismo alto (17) y letra a la misma altura.
+> - Armario › SKINS: escaparate con tu modelo 3D grande (cabecera de 96 con `PadView.SELF_MODEL`) y tarjetas de galería.
+> - Música: **cualquier MP3** (MPEG-1 con JavaMP3; MPEG-2/2.5 con JLayer 1.0.1, `javazoom.jl.decoder`, LGPL 2.1, copiado sin
+>   cambios + `resources/javazoom/jl/decoder/*.ser` y la licencia; `JLayerDecoder`, con la duración de frame corregida para
+>   MPEG-2.5) y las canciones metidas a mano en `.minecraft/tfclient/musica` (y subcarpetas) se añaden solas al abrir
+>   Música (`MusicLibrary.scanFolder`: título/artista/portada de sus etiquetas o el nombre del archivo).
+
 > **TF Client 1.3.61 (13 oct)** — 10 quejas del dueño tras probar la 1.3.60 (primera versión publicada como Release):
 > 1. «Doble pantalla»: la sombra suave de abajo del cristal se cortaba en GY+GH y la franja de cristal del marco de
 >    debajo quedaba más clara; ahora la sombra llega al borde real (`TFPadScreen.glassBase`).
@@ -1886,7 +1902,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.61)
+## 5. El mod (TF Client 1.3.62)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

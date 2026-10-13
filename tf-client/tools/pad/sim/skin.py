@@ -1,3 +1,4 @@
+import os
 """El diseño 1.4 de las apps del pad (PadSkin.java y PadViewPage.java), para el simulador: mismas medidas, colores y
 animaciones (dibujadas en el instante T). Sim hereda de Skin; aquí solo se usan sus métodos de dibujo básicos (fill,
 vgrad, box, mtext, ptext, img, paste…), así que este archivo no importa sim.py."""
@@ -50,6 +51,11 @@ def with_a(c, a):
 
 
 # PadSkin.THEME: el color y la frase de cada app (las del admin usan las de su app)
+THEMES = [('Cielo', 0x54D0FC, 0x60D5FC, 0xFFFFFF), ('Rosa', 0xFFB9DC, 0xFF8EC6, 0xFFFFFF),
+          ('Lavanda', 0xCDB9FF, 0xA88CF5, 0xFFFFFF), ('Menta', 0xA2F2D5, 0x5ED8AB, 0xFFFFFF),
+          ('Atardecer', 0xFFCC92, 0xFF9670, 0xFFFFFF), ('Oro', 0xFFE69A, 0xF4C24F, 0xFFFFFF),
+          ('Fresa', 0xFFA6B2, 0xF0647C, 0xFFFFFF), ('Noche', 0x3B4E9E, 0x1D2860, 0xA9B8FF)]
+
 THEME = {
     'oficios': (0xE0892E, 'Trabaja, sube de nivel y cobra cada pago.'),
     'misiones': (0x22A884, 'Retos diarios y semanales con premio.'),
@@ -645,6 +651,21 @@ class Skin:
         t = self.T if t is None else t
         W, H = self.UW, self.UH
         self.scissor(0, 0, W, H)
+        # el tema (PadSettings.THEMES; THEME=n en el entorno) y los monogramas TF (TFPadScreen.monograms)
+        th = THEMES[int(os.environ.get('THEME', '0'))]
+        self.vgrad(0, 0, W, H, rgb(th[1]), rgb(th[2]))
+        sx, sy = 46, 30
+        ox, oy = (t * 3) % sx, (t * 2) % (sy * 2)
+        row = -2
+        while row * sy + oy < H + sy:
+            y = row * sy + oy
+            shift = 0 if row % 2 == 0 else sx / 2
+            x = -sx + ox + shift
+            while x < W + sx:
+                self.mtext('TF', round(x) + 1, round(y) + 1, (0, 0, 0, 12))
+                self.mtext('TF', round(x), round(y), rgb(th[3]) + (28,))
+                x += sx
+            row += 1
         # el rombo tallado, muy suave, y una sombra leve abajo: el cristal gana relieve sin perder su azul
         self.texture(0, 0, W, H)
         self.vgrad_a(0, H * 2 // 3, W, H - H * 2 // 3, (20, 70, 150, 0), (20, 70, 150, 22))

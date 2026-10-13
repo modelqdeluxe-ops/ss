@@ -640,6 +640,28 @@ public final class TFPadScreen extends Screen {
      * frame.png asoma 1 a 3 píxeles de pad más allá de GX/GY/GW/GH y, sin esto, se veía su azul debajo, como una
      * segunda pantalla detrás (sobre todo abajo).
      */
+    /**
+     * El papel del cristal: monogramas «TF» pequeños y muy suaves en filas alternas que se deslizan despacio en
+     * diagonal (quietos sin animaciones). Van debajo de todo: se ven entre las apps y alrededor de las ventanas.
+     */
+    private void monograms(GuiGraphics g, int x0, int y0, int x1, int y1, int rgb) {
+        int sx = 46, sy = 30;
+        float t = PadSettings.animations ? PadSkin.time() : 0F;
+        float ox = (t * 3F) % sx, oy = (t * 2F) % (sy * 2);
+        int col = 0x1C000000 | rgb, shade = 0x0C000000;
+        for (int row = -2; row * sy + oy < y1 + sy; row++) {
+            float y = y0 + row * sy + oy;
+            float shift = (row & 1) == 0 ? 0 : sx / 2F;
+            for (float x = x0 - sx + ox + shift; x < x1 + sx; x += sx) {
+                g.pose().pushPose();
+                g.pose().translate(x, y, 0);
+                g.drawString(font, "TF", 1, 1, shade, false);
+                g.drawString(font, "TF", 0, 0, col, false);
+                g.pose().popPose();
+            }
+        }
+    }
+
     private void glassBase(GuiGraphics g) {
         int lift = liftReal();
         int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
@@ -650,6 +672,8 @@ public final class TFPadScreen extends Screen {
         g.flush();
         int fbH = Minecraft.getInstance().getWindow().getHeight();
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
+        // los monogramas TF del color del tema (el color del cristal lo pone drawFrame con sus máscaras)
+        monograms(g, -mL, -mT, unitsW + mR, unitsH + mB, PadSettings.theme().deco());
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
         // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
         // debajo quedaba más clara y parecía otra pantalla detrás
@@ -662,7 +686,27 @@ public final class TFPadScreen extends Screen {
      * cada lado de la gema de arriba: se parte en 3x3 trozos y las filas/columnas lisas de entre medias se estiran.
      */
     private void drawFrame(GuiGraphics g) {
-        ResourceLocation t = tex("frame");
+        drawFrame(g, "frame");
+        // el tema (Ajustes › Tema): el cristal con su forma exacta (glass_shape) del color de abajo y, encima, la misma
+        // forma desvaneciéndose hacia abajo (glass_fade) del color de arriba: su degradado sin pisar nada del marco
+        PadSettings.Theme th = PadSettings.theme();
+        if (PadSettings.theme != 0) {
+            RenderSystem.enableBlend();
+            g.setColor((th.bottom() >> 16 & 255) / 255F, (th.bottom() >> 8 & 255) / 255F, (th.bottom() & 255) / 255F, 1F);
+            drawFrame(g, "glass_shape");
+            g.setColor((th.top() >> 16 & 255) / 255F, (th.top() >> 8 & 255) / 255F, (th.top() & 255) / 255F, 1F);
+            drawFrame(g, "glass_fade");
+            if (th.neon() != 0) { // los neones y las gemas azules del marco, del color del tema (neon.png: su brillo en gris)
+                g.setColor((th.neon() >> 16 & 255) / 255F, (th.neon() >> 8 & 255) / 255F, (th.neon() & 255) / 255F, 1F);
+                drawFrame(g, "neon");
+            }
+            g.setColor(1F, 1F, 1F, 1F);
+        }
+    }
+
+    /** Una textura del tamaño del marco (1568x1003), alargada como él. */
+    private void drawFrame(GuiGraphics g, String name) {
+        ResourceLocation t = tex(name);
         int e = extra * 4, ex = extraX * 4, iw = 1568, ih = 1003;
         // columnas: [0, L) tal cual · L repetida ex veces · [L, R) tal cual · R repetida ex veces · [R, iw) tal cual
         int[][] cols = {{0, STRETCH_L, 0}, {STRETCH_L, 1, ex}, {STRETCH_L, STRETCH_R - STRETCH_L, 0}, {STRETCH_R, 1, ex},

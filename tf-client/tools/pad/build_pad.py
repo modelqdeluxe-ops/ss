@@ -443,6 +443,45 @@ def sin_bisel(im):
     return im
 
 
+def glass_masks(frame):
+    """Las máscaras del cristal para los temas del pad (Ajustes › Tema): glass_shape.png (blanco opaco justo donde está
+    el cristal, con su forma de verdad: esquinas, logo y gemas fuera) y glass_fade.png (lo mismo, con el alfa bajando
+    de 255 arriba a 0 abajo). TFPadScreen pinta la primera con el color de abajo del tema y la segunda con el de arriba:
+    el degradado del tema sin pisar nada del marco."""
+    px = frame.load()
+    w, h = frame.size
+
+    def g(p):
+        return p[2] > 235 and p[1] > 190 and p[0] < 120
+
+    start = ((GLASS_BOX[0] + GLASS_BOX[2]) // 2, (GLASS_BOX[1] + GLASS_BOX[3]) // 2)
+    seen = {start}
+    stack = [start]
+    while stack:
+        x, y = stack.pop()
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and g(px[nx, ny]):
+                seen.add((nx, ny))
+                stack.append((nx, ny))
+    top, bot = min(y for _, y in seen), max(y for _, y in seen)
+    shape = Image.new('RGBA', (w, h), (255, 255, 255, 0))
+    fade = Image.new('RGBA', (w, h), (255, 255, 255, 0))
+    sp, fp = shape.load(), fade.load()
+    for x, y in seen:
+        sp[x, y] = (255, 255, 255, 255)
+        fp[x, y] = (255, 255, 255, round(255 * (1 - (y - top) / max(1, bot - top))))
+    # neon.png: los neones y las gemas azules del marco en gris (su brillo), para teñirlos del color del tema
+    neon = Image.new('RGBA', (w, h), (255, 255, 255, 0))
+    npx = neon.load()
+    for y in range(h):
+        for x in range(w):
+            r, gg, b, a = px[x, y]
+            if a > 200 and (x, y) not in seen and b > 150 and b > r + 60:
+                v = max(r, gg, b)
+                npx[x, y] = (v, v, v, 255)
+    return {'glass_shape.png': shape, 'glass_fade.png': fade, 'neon.png': neon}
+
+
 def build():
     if os.path.isdir(OUT_DIR):
         shutil.rmtree(OUT_DIR)
@@ -461,7 +500,10 @@ def build():
     files['font.png'] = atlas
     for name, im in files.items():
         im.save(os.path.join(OUT_DIR, name))
-    sin_bisel(Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA')).save(os.path.join(OUT_DIR, 'frame.png'), optimize=True)
+    frame = sin_bisel(Image.open(os.path.join(HERE, 'marco.png')).convert('RGBA'))
+    frame.save(os.path.join(OUT_DIR, 'frame.png'), optimize=True)
+    for name, im in glass_masks(frame).items():
+        im.save(os.path.join(OUT_DIR, name), optimize=True)
     # el objeto de la moneda verde, sacado de la Fantastic Coin de oro (textures/item/fantastic_coin.png)
     verde(Image.open(os.path.join(ITEM_DIR, 'fantastic_coin.png'))).save(os.path.join(ITEM_DIR, 'fantastic_coin_green.png'))
     with open(os.path.join(OUT_DIR, 'font.json'), 'w', encoding='utf-8') as f:
