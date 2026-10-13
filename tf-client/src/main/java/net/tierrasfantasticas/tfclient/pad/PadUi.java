@@ -290,7 +290,8 @@ final class PadUi {
     }
 
     static int buttonWidth(String label) {
-        return Math.max(36, PadFont.width(label) + 14 + (isBack(label) ? 8 : 0));
+        // los de un signo (− + « ») estrechos, para que quepan dos junto a un valor
+        return Math.max(label.length() == 1 ? 20 : 36, PadFont.width(label) + 14 + (isBack(label) ? 8 : 0));
     }
 
     /** Los botones de volver llevan una flecha delante. */

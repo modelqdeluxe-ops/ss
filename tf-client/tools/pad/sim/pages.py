@@ -420,6 +420,20 @@ page('a_recompensas', 'RECOMPENSAS', [('cal', 'CALENDARIO'), ('otras', 'OTRAS')]
          ('golden_carrot', 'Día 5', 0xF6B628, '¤75', False, 8), ('emerald', 'Día 6', 0xF6B628, '+3 VERDES', False),
          ('diamond', 'Día 7', 0xF6B628, '¤150', False),
      ], footer=[('AÑADIR DÍA', G), ('QUITAR EL ÚLTIMO', R)], app='a_recompensas')
+# 1.3.67: el kit en UNA pantalla (PadAdminKits.sheet): se crea con tu inventario y todo se cambia ahí mismo
+page('a_kit', 'KITS', [], '', [], [
+    ('chest', '6 objetos', T, ['Pulsa uno arriba para cambiarlo o quitarlo.'], -1, '', ('MI INVENTARIO', GO), ('ELEGIR', G)),
+    ('gold_nugget', 'Monedas', T, ['Al monedero; pulsa la fila para escribirlas.'], -1, '+¤250', ('-', B), ('+', B)),
+    ('emerald', 'Monedas verdes', T, ['Del Gachapón; pulsa la fila para escribirlas.'], -1, 'Ninguna', ('-', B), ('+', B)),
+    ('clock_00', 'Cada cuánto', T, ['Pulsa la fila para escribir otras horas.'], -1, 'Cada día', ('«', B), ('»', B)),
+    ('golden_helmet', 'Quién puede', T, ['Un rango y los de encima.'], -1, 'Todos los jugadores', ('«', B), ('»', B)),
+    ('gold_nugget', 'Precio', T, ['Al reclamarlo; pulsa la fila para escribirlo.'], -1, 'Gratis', ('-', B), ('+', B)),
+    ('name_tag', 'Nombre', T, [], -1, 'Kit inicial', ('CAMBIAR', B), None),
+], compact=True, hero=('iron_sword', 'Kit inicial', 0xF6B628, ['Cada día · 6 objetos · +250 monedas · Todos los jugadores · gratis'], -1, 'BORRADOR',
+         ('PUBLICAR', G), None),
+     cells=[(n, '', T, False, c) for n, c in (('iron_sword', 1), ('iron_pickaxe', 1), ('bread', 16), ('torch', 32), ('oak_log', 64),
+                                             ('leather_chestplate', 1))],
+     footer=[('ATRÁS', B), ('PROBAR', GO), ('COPIAR', GR), ('BORRAR', R)], app='a_kits')
 page('a_selector', 'KITS', [('i', 'TU INVENTARIO'), ('t', 'TODOS LOS OBJETOS')], 't',
      ['Añadir a Kit inicial (de 16 en 16). 1.312 objetos · página 1 de 14.'], [], app='a_kits', hover=5, cells=[
          (n, '', T, False) for n in ('stone', 'granite', 'diorite', 'andesite', 'grass_block', 'dirt', 'cobblestone', 'oak_planks',

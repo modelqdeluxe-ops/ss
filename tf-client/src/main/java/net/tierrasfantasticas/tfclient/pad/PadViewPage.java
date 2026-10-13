@@ -38,6 +38,20 @@ final class PadViewPage extends PadPage {
     private static final int ICON_BOX = 36; // el icono de las filas va al doble (32) en su pastilla de color
     /** Hueco entre filas (cada fila es su propia tarjeta). */
     private static final int ROW_GAP = 4;
+    /** Filas compactas (PadView.COMPACT): el icono a 16 en una pastilla de 22 y menos aire. */
+    private static final int ICON_C = 22, ROW_GAP_C = 3;
+
+    private boolean compact() {
+        return view != null && view.compact();
+    }
+
+    private int iconBox() {
+        return compact() ? ICON_C : ICON_BOX;
+    }
+
+    private int rowGap() {
+        return compact() ? ROW_GAP_C : ROW_GAP;
+    }
     /** Lo que tarda la lista en entrar al cambiar de pestaña (ms) y lo que se ve hundido un botón al pulsarlo. */
     private static final int ENTER_MS = 220, PRESS_MS = 160;
 
@@ -136,7 +150,7 @@ final class PadViewPage extends PadPage {
         int visible = listBottom - listTop;
         if (list) {
             int innerX = X + 5, innerW = W - 15;
-            int style = view.cellStyle();
+            int style = view.style();
             int[] grid = grid(innerW);
             int cols = grid[0], cw = grid[1], ch = grid[2], gx = grid[3];
             int gridRows = (view.cells().size() + cols - 1) / cols;
@@ -252,8 +266,8 @@ final class PadViewPage extends PadPage {
      */
     private int[] grid(int innerW) {
         int n = view.cells().size();
-        if (view.cellStyle() != PadView.SMALL) {
-            boolean gallery = view.cellStyle() == PadView.GALLERY;
+        if (view.style() != PadView.SMALL) {
+            boolean gallery = view.style() == PadView.GALLERY;
             int min = gallery ? GAL_MIN : CARD_MIN, max = gallery ? GAL_MAX : CARD_MAX;
             int cols = Math.max(1, innerW / min);
             int cw;
@@ -282,10 +296,11 @@ final class PadViewPage extends PadPage {
         if (textOnly) {
             int n = 0;
             for (String line : r.lines()) n += Math.max(1, PadUi.lines(line, w - 18));
-            return 8 + (r.title().isEmpty() ? 0 : 12) + n * 10 + ROW_PAD + ROW_GAP;
+            return 8 + (r.title().isEmpty() ? 0 : 12) + n * 10 + ROW_PAD + rowGap();
         }
         int textW = textWidth(r, w);
-        int h = 4 + 11 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0) + ROW_PAD;
+        int h = 4 + 11 + (compact() ? r.lines().size() * 10 : linesHeight(r, textW)) + (r.progress() >= 0 ? 8 : 0) + ROW_PAD;
+        if (compact()) return Math.max(hasIcon(r) ? ICON_C + 6 : 22, h) + ROW_GAP_C;
         return Math.max(hasIcon(r) ? ICON_BOX + 10 : 26, h + 2) + ROW_GAP;
     }
 
@@ -302,7 +317,7 @@ final class PadViewPage extends PadPage {
     }
 
     private int textWidth(PadView.Row r, int w) {
-        return Math.max(30, w - (hasIcon(r) ? ICON_BOX + 17 : 14) - rightWidth(r) - 6);
+        return Math.max(30, w - (hasIcon(r) ? iconBox() + (compact() ? 13 : 17) : 14) - rightWidth(r) - 6);
     }
 
     /**
@@ -562,7 +577,7 @@ final class PadViewPage extends PadPage {
      */
     private void drawRow(GuiGraphics g, PadView.Row r, int x, int y, int w, int h, double mx, double my, int acc, float t) {
         boolean clickable = !r.click().isEmpty();
-        h -= ROW_GAP; // cada fila es su propia tarjeta, con aire debajo
+        h -= rowGap(); // cada fila es su propia tarjeta, con aire debajo
         boolean hover = clickable && PadUi.inside(mx, my, x, y, w, h) && inList(my);
         boolean icon = hasIcon(r);
         boolean textOnly = !icon && r.button() == null && r.button2() == null;
@@ -598,7 +613,17 @@ final class PadViewPage extends PadPage {
             if (a > 0) g.fill(x + 4 + i * 4, yy + 1, x + 8 + i * 4, yy + h - 1, PadSkin.alpha(tint & 0xFFFFFF, a));
         }
         if (hover) PadSkin.sheen(g, x + 1, yy + 1, w - 2, h - 2, 1.4F, 0.25F);
-        if (icon) {
+        if (icon && compact()) {
+            // compacta: el objeto a su tamaño en una pastilla de 22
+            int iy = yy + (h - ICON_C) / 2;
+            PadSkin.tile(g, x + 6, iy, ICON_C, tint, hover);
+            boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), x + 8, iy + 2, ICON_C - 4);
+            if (!drawn && !r.icon().isEmpty()) {
+                PadUi.item(g, r.icon(), x + 6 + (ICON_C - 16) / 2, iy + (ICON_C - 16) / 2, 1);
+                if (PadUi.inside(mx, my, x + 6, iy, ICON_C, ICON_C) && inList(my)) tooltip = r.icon();
+            }
+            tx = x + ICON_C + 11;
+        } else if (icon) {
             int iy = yy + (h - ICON_BOX) / 2;
             PadSkin.glow(g, x + 7 + ICON_BOX / 2F, iy + ICON_BOX / 2F, ICON_BOX * 1.05F, tint & 0xFFFFFF, hover ? 150 : 105);
             PadSkin.tile(g, x + 7, iy, ICON_BOX, tint, hover);
@@ -611,11 +636,12 @@ final class PadViewPage extends PadPage {
             tx = x + ICON_BOX + 14;
         }
         int textW = textWidth(r, w);
-        int textH = 11 + linesHeight(r, textW) + (r.progress() >= 0 ? 8 : 0);
+        int textH = 11 + (compact() ? r.lines().size() * 10 : linesHeight(r, textW)) + (r.progress() >= 0 ? 8 : 0);
         int top = icon ? yy + Math.max(5, (h - textH) / 2 + 1) : yy + 5;
         PadUi.title(g, r.title(), tx, top, textW, PadSkin.ink(titleColor));
         int ly = top + 11;
-        for (String line : r.lines()) ly += Math.max(1, PadUi.wrapEllipsis(g, line, tx, ly, textW, PadUi.MUTED, 2)) * 10;
+        int maxLines = compact() ? 1 : 2; // compactas: cada línea en una sola, con «...»
+        for (String line : r.lines()) ly += Math.max(1, PadUi.wrapEllipsis(g, line, tx, ly, textW, PadUi.MUTED, maxLines)) * 10;
         if (r.progress() >= 0) PadSkin.progress(g, tx, ly + 1, Math.min(textW, 140), r.progress());
         int bx = x + w - rightWidth(r) - 2;
         if (clickable && r.button() == null && r.button2() == null && r.badge().isEmpty()) {

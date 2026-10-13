@@ -108,7 +108,7 @@ public final class PadAdminHunts {
             String f = PadAdminUi.field(player, APP_ID, target);
             long n = TFJson.num(h, "cantidad", 1), coins = TFJson.num(h, "monedas", 0);
             String desc = TFJson.str(h, "descripcion", "");
-            PadView.Builder b = PadView.of(APP_ID).selected(target);
+            PadView.Builder b = PadView.of(APP_ID).selected(target).compact();
             b.hero(new PadView.Row(icon(h), TFJson.str(h, "nombre", id), 0xC83C3C,
                     List.of(desc.isEmpty() ? n + " × " + TFJson.str(h, "objetivo", "?") : desc.replace("{n}", String.valueOf(n)),
                             "Así la ven los jugadores (con la cantidad de base)."), -1, PadView.moneyExact(coins), null, null));
