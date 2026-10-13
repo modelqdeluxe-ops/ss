@@ -233,8 +233,8 @@ final class PadAdminUi {
                     PadView.Btn.of("LISTO", "c.sel:-1", PadView.GRAY)).selected(true));
         } else if (add1 != null) {
             b.row(new PadView.Row(new ItemStack(Items.CHEST), items.isEmpty() ? "Sin objetos" : items.size() + (items.size() == 1 ? " objeto" : " objetos"),
-                    TEXT, List.of(items.isEmpty() ? "MI INVENTARIO mete todo lo que llevas; ELEGIR, uno a uno (también de mods)."
-                    : "Pulsa uno de arriba para cambiar cuántos trae o quitarlo."), -1, "", add1, add2));
+                    TEXT, List.of(items.isEmpty() ? "MI INVENTARIO: todo lo que llevas. ELEGIR: uno a uno."
+                    : "Pulsa uno arriba para cambiarlo o quitarlo."), -1, "", add1, add2));
         } else if (!items.isEmpty()) {
             boolean sure = PadServer.confirming(p, app + ".vaciar:" + target);
             b.row(new PadView.Row(new ItemStack(Items.CHEST), items.size() + (items.size() == 1 ? " objeto" : " objetos"), TEXT,
@@ -252,10 +252,10 @@ final class PadAdminUi {
      */
     static void coins(PadView.Builder b, ServerPlayer p, String app, String target, long coins, long greens) {
         String f = field(p, app, target);
-        b.row(stepper(PadKits.coinIcon(false), "Monedas", "Van directas al monedero. Pulsa la fila para escribir otra cantidad.",
+        b.row(stepper(PadKits.coinIcon(false), "Monedas", "Al monedero; pulsa la fila para escribirlas.",
                 coins > 0 ? "+" + PadView.moneyExact(coins) : "Ninguna", "c.step:monedas:-", "c.step:monedas:+", "c.f:monedas",
                 f.equals("monedas")));
-        b.row(stepper(PadKits.coinIcon(true), "Monedas verdes", "Las del Gachapón, a su saldo de monedas verdes.",
+        b.row(stepper(PadKits.coinIcon(true), "Monedas verdes", "Del Gachapón; pulsa la fila para escribirlas.",
                 greens > 0 ? "+" + PadView.number(greens) : "Ninguna", "c.step:verdes:-", "c.step:verdes:+", "c.f:verdes", f.equals("verdes")));
     }
 

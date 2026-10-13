@@ -159,12 +159,12 @@ final class PadAdminKits {
             PadAdminUi.coins(b, p, APP_ID, target(k), k.coins(), k.greens());
             boolean customFreq = k.type().equals("horas") && FREQS.stream().noneMatch(x -> x.type.equals("horas") && x.seconds == k.cooldownSeconds());
             b.row(new PadView.Row(new ItemStack(Items.CLOCK), "Cada cuánto", PadAdminUi.TEXT,
-                    List.of(customFreq ? "Elegido a mano. Pulsa la fila para escribir las horas." : "Pulsa la fila para escribir otras horas."), -1,
+                    List.of(customFreq ? "Elegido a mano; pulsa la fila para cambiarlo." : "Pulsa la fila para escribir otras horas."), -1,
                     PadKits.typeText(k), PadView.Btn.of("«", "freq:-", PadView.BLUE), PadView.Btn.of("»", "freq:+", PadView.BLUE))
                     .clickable("f:horas").selected(f.equals("horas")));
             b.row(PadAdminUi.cycle(new ItemStack(Items.GOLDEN_HELMET), "Quién puede", "Un rango y los de encima.", PadKits.rankText(k.rank()),
                     "rango:-", "rango:+"));
-            b.row(PadAdminUi.stepper(PadKits.coinIcon(false), "Precio", "Lo que paga el jugador al reclamarlo. Pulsa la fila para escribirlo.",
+            b.row(PadAdminUi.stepper(PadKits.coinIcon(false), "Precio", "Al reclamarlo; pulsa la fila para escribirlo.",
                     k.price() > 0 ? PadView.moneyExact(k.price()) : "Gratis", "precio:-", "precio:+", "f:precio", f.equals("precio")));
             b.row(PadAdminUi.value(new ItemStack(Items.NAME_TAG), "Nombre", "", k.name(), "f:nombre", f.equals("nombre")));
             b.row(PadAdminUi.value(new ItemStack(Items.WRITABLE_BOOK), "Descripción", k.desc().isEmpty() ? "Opcional: una frase." : "", k.desc().isEmpty()
