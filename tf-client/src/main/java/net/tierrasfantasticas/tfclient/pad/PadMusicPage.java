@@ -180,11 +180,13 @@ final class PadMusicPage extends PadPage {
         // su pestaña (oscura, como la tarjeta), a la misma altura que las de la lista
         String tabLabel = MusicPlayer.playing() ? "SONANDO" : "REPRODUCTOR";
         int tw = PadFont.width(tabLabel) + 14;
-        PadUi.box(g, x + 4, Y, tw, 15, PadUi.NAVY);
-        g.fillGradient(x + 5, Y + 1, x + 4 + tw - 1, Y + 16, 0xFF323C80, CARD_TOP);
-        g.fill(x + 6, Y + 1, x + 4 + tw - 2, Y + 3, GOLD);
-        g.fill(x + 6, Y + 1, x + 4 + tw - 2, Y + 2, GOLD_LIGHT);
-        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, Y + 4, 0xFFE680, false);
+        // 17 de alto desde Y - 4, como las pestañas de la lista (PadSkin.tabCompact), y la letra a 4 de arriba
+        int tabTop = Y - 4;
+        PadUi.box(g, x + 4, tabTop, tw, PadSkin.TAB_H + 1, PadUi.NAVY);
+        g.fillGradient(x + 5, tabTop + 1, x + 4 + tw - 1, tabTop + PadSkin.TAB_H + 1, 0xFF323C80, CARD_TOP);
+        g.fill(x + 6, tabTop + 1, x + 4 + tw - 2, tabTop + 3, GOLD);
+        g.fill(x + 6, tabTop + 1, x + 4 + tw - 2, tabTop + 2, GOLD_LIGHT);
+        PadFont.drawCentered(g, tabLabel, x + 4 + tw / 2, tabTop + 5, 0xFFE680, false);
         // el reproductor: tarjeta oscura con ribete de oro (resalta la portada y los controles)
         PadUi.box(g, x, y, w, h, PadUi.NAVY);
         gradient(g, x + 1, y + 1, w - 2, h - 2, CARD_TOP, CARD_BOTTOM);
@@ -526,7 +528,7 @@ final class PadMusicPage extends PadPage {
             boolean sel = id.equals(list);
             if (sel && !id.isEmpty() && id.equals(confirmList) && System.currentTimeMillis() - confirmListAt < 3000) label = "¿BORRAR?";
             int tw = i < 0 ? todasW : Math.max(widths[i], PadFont.width(label) + 12 + (sel ? 9 : 0));
-            boolean hover = PadUi.inside(mx, my, tx, y, tw, 15);
+            boolean hover = PadUi.inside(mx, my, tx, y - 4, tw, 17);
             if (sel) {
                 chosen = new int[] {tx, tw};
                 chosenLabel = label;
@@ -534,7 +536,7 @@ final class PadMusicPage extends PadPage {
             } else {
                 if (hover) pad.hover("§lista" + id);
                 PadSkin.tabCompact(g, tx, y, tw, label, hover ? 1 : 0, PadSkin.accent("musica"));
-                hits.add(new Hit(tx, y, tw, 15, () -> {
+                hits.add(new Hit(tx, y - 4, tw, 17, () -> {
                     MusicLibrary.selectList(id);
                     listScroll = 0;
                     picking = false;
@@ -551,11 +553,11 @@ final class PadMusicPage extends PadPage {
             arrowButton(g, mx, my, ax + arrow + gap, y + 1, arrow, ARROW_RIGHT, last < lists.size() - 1, () -> tabFirst = Math.min(lists.size() - 1, tabLast + 1));
         }
         // «+»: lista nueva (la cruz dibujada, centrada)
-        boolean ph = PadUi.inside(mx, my, end, y, plus, 15);
+        boolean ph = PadUi.inside(mx, my, end, y - 4, plus, 17);
         if (ph) pad.hover("§listanueva");
         PadSkin.tabCompact(g, end, y, plus, "", ph || newList ? 1 : 0, PadSkin.accent("musica"));
-        drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + 1 - (ph || newList ? 1 : 0), ph || newList ? 0xFF1E9E46 : 0xFF34507E);
-        hits.add(new Hit(end, y, plus, 15, () -> {
+        drawGlyph(g, PLUS, end + (plus - PLUS[0].length) / 2, y + 1 - (ph || newList ? 1 : 0) - 1, ph || newList ? 0xFF1E9E46 : 0xFF34507E);
+        hits.add(new Hit(end, y - 4, plus, 17, () -> {
             newList = true;
             coverFor = null;
             focused = true;
@@ -571,11 +573,11 @@ final class PadMusicPage extends PadPage {
             return;
         }
         PadSkin.tabCompact(g, tx, y, tw, "", 2, PadSkin.accent("musica"));
-        // la pestaña nueva va de y - 2 a y + 12 (PadSkin.tabCompact): nombre y X centrados en ella, en blanco
+        // la pestaña va de y - 4 a y + 13 (PadSkin.tabCompact): nombre y X centrados en ella, en blanco
         boolean sure = label.startsWith("¿");
         int acc = PadSkin.deep(PadSkin.accent("musica"));
-        PadFont.drawShadow(g, label, tx + 6, y + 1, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
-        int bx = tx + tw - 12, by = y;
+        PadFont.drawShadow(g, label, tx + 6, y, sure ? 0xFFD0D6 : 0xFFFFFF, PadSkin.darken(acc, 0.42F));
+        int bx = tx + tw - 12, by = y - 1;
         boolean xh = PadUi.inside(mx, my, bx, by, 9, 9);
         if (xh) {
             pad.hover("§borrarlista");

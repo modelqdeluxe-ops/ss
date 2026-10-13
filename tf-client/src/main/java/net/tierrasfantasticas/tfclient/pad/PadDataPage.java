@@ -203,7 +203,7 @@ abstract class PadDataPage extends PadPage {
             int hw = Math.max(0, 2 - i);
             g.fill(cx - hw, tabY + th + i, cx + hw + 1, tabY + th + i + 1, PadUi.NAVY);
         }
-        PadFont.drawCentered(g, tab, cx, tabY + 3, 0xFFE680, 0x0C1030);
+        PadFont.drawCentered(g, tab, cx, tabY + 4, 0xFFE680, 0x0C1030);
         int h = bottom - top;
         PadUi.box(g, x, top, w, h, PadUi.NAVY);
         g.fillGradient(x + 1, top + 1, x + w - 1, top + h - 1, 0xFF262E66, 0xFF141A3C);
