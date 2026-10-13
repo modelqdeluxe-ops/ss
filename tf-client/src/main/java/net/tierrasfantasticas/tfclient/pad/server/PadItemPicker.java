@@ -84,7 +84,7 @@ final class PadItemPicker {
                 b.cell(new ItemStack(it), "", 0x18265C, "pk.add:" + id, marked.equals(id));
             }
             b.empty("Nada con ese nombre. Prueba con el id en inglés (diamond, iron_sword…).");
-            b.input("pk.q", q.isEmpty() ? "BUSCAR (NOMBRE O ID, EN INGLÉS)" : "BUSCAR: " + q.toUpperCase(Locale.ROOT), 40, "BUSCAR");
+            b.input("pk.q", q.isEmpty() ? "BUSCAR OBJETO" : "BUSCAR: " + q.toUpperCase(Locale.ROOT), 40, "BUSCAR");
             if (page > 0) b.footer(PadView.Btn.of("«", "pk.prev", PadView.BLUE));
             if (page < pages - 1) b.footer(PadView.Btn.of("»", "pk.next", PadView.BLUE));
             if (amounts) b.footer(PadView.Btn.of("×" + n, "pk.n", PadView.GOLD));

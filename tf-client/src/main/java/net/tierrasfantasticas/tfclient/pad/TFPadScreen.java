@@ -389,7 +389,7 @@ public final class TFPadScreen extends Screen {
         noticeKind = noticeKind(notice);
         // si ya había uno a la vista, el nuevo no vuelve a subir desde abajo: entra con un saltito
         noticeAt = replacing ? now - TOAST_IN + 110 : now;
-        noticeLife = Math.min(3600, 2200 + Math.max(0, notice.length() - 50) * 28L);
+        noticeLife = Math.min(2600, 1500 + Math.max(0, notice.length() - 40) * 20L);
         noticeUntil = now + (replacing ? 110 : TOAST_IN) + noticeLife + TOAST_OUT;
         sound("back", 0.5F);
     }
@@ -614,7 +614,6 @@ public final class TFPadScreen extends Screen {
         int w = unitsW, h = unitsH;
         glassBase(g);
         scissor(g, 0, 0, w, h);
-        PadSkin.vgrad(g, 0, h * 2 / 3F, w, h, 0x00144696, 0x16144696);
         float k = (t % 13F) / 4.5F;
         if (PadSettings.animations && k < 1) PadSkin.beam(g, -120 + k * (w + 240), 70, w, h, 0.16F);
         ResourceLocation bokeh = tex("bokeh");
@@ -653,6 +652,9 @@ public final class TFPadScreen extends Screen {
         int fbH = Minecraft.getInstance().getWindow().getHeight();
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
+        // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
+        // debajo quedaba más clara y parecía otra pantalla detrás
+        PadSkin.vgrad(g, -mL, unitsH * 2 / 3F, unitsW + mR, unitsH + mB, 0x00144696, 0x16144696);
         g.flush();
         RenderSystem.disableScissor();
     }
@@ -820,18 +822,18 @@ public final class TFPadScreen extends Screen {
         float a = Math.min(Math.min(1F, (now - noticeAt) / (TOAST_IN * 0.6F)), out);
         if (!anim) a = 1F;
         if (a < 0.03F) return;
-        float k = bs;
+        // pequeño: a la escala normal del pad (no la grande), dos líneas como mucho
+        float k = 1F;
         int vw = (int) (unitsW / k), vh = (int) (unitsH / k);
-        List<FormattedCharSequence> lines = font.split(Component.literal(notice), Math.min(vw - 70, 250));
-        if (lines.size() > 3) lines = lines.subList(0, 3);
+        List<FormattedCharSequence> lines = font.split(Component.literal(notice), Math.min(vw - 60, 210));
+        if (lines.size() > 2) lines = lines.subList(0, 2);
         int textW = 0;
         for (FormattedCharSequence line : lines) textW = Math.max(textW, font.width(line));
-        int w = textW + 34, h = Math.max(22, lines.size() * 10 + 12);
+        int w = textW + 28, h = Math.max(16, lines.size() * 10 + 6);
         int x = (vw - w) / 2;
-        float y = vh - 9 - h + (1 - in) * 12 + (1 - out) * 5;
-        // con el ratón encima no se va (y se ilumina un poco); un clic lo cierra
+        float y = vh - 6 - h + (1 - in) * 10 + (1 - out) * 4;
+        // un clic lo cierra (con el ratón encima se ilumina un poco, pero no se queda)
         boolean hover = PadUi.inside(mx / k, my / k, x, Math.round(y), w, h);
-        if (hover && now > noticeAt + TOAST_IN) noticeUntil = Math.max(noticeUntil, now + 600 + TOAST_OUT);
         noticeBox = new float[] {x * k, y * k, w * k, h * k};
         int acc = TOAST_COLOR[noticeKind];
         g.pose().pushPose();
@@ -848,18 +850,18 @@ public final class TFPadScreen extends Screen {
         g.fill(x + 2, 1, x + w - 2, 2, PadSkin.alpha(0xFFFFFF, Math.round(A * 0.22F)));
         // la franja y el icono del color del aviso
         g.fillGradient(x + 1, 2, x + 3, h - 2, PadSkin.alpha(PadSkin.lighten(acc, 50), A), PadSkin.alpha(acc, A));
-        int cx = x + 13, cy = h / 2;
-        PadSkin.glow(g, cx + 0.5F, cy + 0.5F, 11, acc & 0xFFFFFF, Math.round(A * 0.55F));
-        PadSkin.disc(g, cx + 0.5F, cy + 0.5F, 6F, PadSkin.alpha(PadSkin.darken(acc, 0.62F), A));
-        PadSkin.disc(g, cx + 0.5F, cy + 0.5F, 5F, PadSkin.alpha(acc, A));
+        int cx = x + 11, cy = h / 2;
+        PadSkin.glow(g, cx + 0.5F, cy + 0.5F, 9, acc & 0xFFFFFF, Math.round(A * 0.5F));
+        PadSkin.disc(g, cx + 0.5F, cy + 0.5F, 5.5F, PadSkin.alpha(PadSkin.darken(acc, 0.62F), A));
+        PadSkin.disc(g, cx + 0.5F, cy + 0.5F, 4.5F, PadSkin.alpha(acc, A));
         noticeGlyph(g, cx, cy, PadSkin.alpha(0xFFFFFF, A));
         // el texto
         int tc = PadSkin.alpha(0xF4F7FF, A), sh = PadSkin.alpha(0x0A1030, Math.round(A * 0.7F));
         int ty = (h - lines.size() * 10) / 2 + 1;
         if (A >= 8) {
             for (FormattedCharSequence line : lines) {
-                g.drawString(font, line, x + 24, ty + 1, sh, false);
-                g.drawString(font, line, x + 23, ty, tc, false);
+                g.drawString(font, line, x + 21, ty + 1, sh, false);
+                g.drawString(font, line, x + 20, ty, tc, false);
                 ty += 10;
             }
         }

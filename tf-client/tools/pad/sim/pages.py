@@ -138,7 +138,7 @@ if not ONLY or 'p_admin' in ONLY:
     NAMES.append('p_admin')
 
 # --- Oficios -----------------------------------------------------------------------------------------------------------
-page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], app='oficios', hover=2, cards=[
+page('p_oficios', 'OFICIOS', [], '', ['Trabajas de Minero · cobras 42 monedas en el próximo pago.'], [], app='oficios', hover=2, gallery=[
     ('wheat', 'Granjero', 0x6FB43C, 'Nivel 3', False, 1, {'prog': 0.5, **job('farmer')}),
     ('iron_pickaxe', 'Minero', 0x8C9BB4, 'Nivel 12', True, 1, {'prog': 0.28, 'badge': '+2', **job('miner')}),
     ('iron_axe', 'Leñador', 0xA0703C, 'Nivel 5', False, 1, {'prog': 0.8, **job('wood_cutter')}),

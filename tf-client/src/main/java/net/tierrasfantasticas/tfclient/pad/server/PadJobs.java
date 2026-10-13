@@ -100,7 +100,7 @@ public final class PadJobs {
     // ---------------------------------------------------------------------------------------------------------------
 
     private static PadView list(ServerPlayer player, PlayerJobs p) {
-        PadView.Builder b = PadView.of("oficios");
+        PadView.Builder b = PadView.of("oficios").gallery(); // tarjetas grandes: el muñeco de cada oficio se ve bien
         if (!TFJobsConfig.enabled) return b.empty("Oficios desactivados.").build();
         Job active = p.active.isEmpty() ? null : TFJobsConfig.job(p.active.get(0));
         if (active != null) {

@@ -355,6 +355,36 @@ final class PadSkin {
         return image(g, pad, id, x + size / 2F, y + size / 2F, size, size);
     }
 
+    /** Ancho / alto de una imagen del pad (0 si no existe). */
+    static float aspect(String id) {
+        ResourceLocation loc = id == null || id.isEmpty() ? null : ResourceLocation.tryParse(id);
+        if (loc == null) return 0F;
+        int[] sz = TFPadScreen.size(loc);
+        return sz[0] == 0 || sz[1] == 0 ? 0F : sz[0] / (float) sz[1];
+    }
+
+    /** ¿Es una imagen ancha (un retrato, como los de los oficios) que se enseña como una foto? */
+    static boolean wide(String id) {
+        return aspect(id) > 1.25F;
+    }
+
+    /**
+     * Una imagen ancha como una foto: de h de alto (y su ancho), centrada en cx, con marco azul noche y un brillo arriba;
+     * en pixel art con el vecino más cercano aunque no sea a escala entera (así llena el sitio). Devuelve su ancho.
+     */
+    static int photo(GuiGraphics g, String id, float cx, int y, int h) {
+        ResourceLocation loc = ResourceLocation.tryParse(id);
+        float a = aspect(id);
+        if (loc == null || a <= 0F) return 0;
+        int w = Math.round(h * a);
+        int x = Math.round(cx - w / 2F);
+        g.fill(x - 1, y + h + 1, x + w + 1, y + h + 2, 0x3018265C);
+        PadUi.box(g, x - 1, y - 1, w + 2, h + 2, PadUi.INK);
+        texture(g, loc, x, y, w, h, 1F, 0xFFFFFF, false);
+        g.fill(x, y, x + w, y + 1, 0x50FFFFFF);
+        return w + 2;
+    }
+
     /**
      * Lo mismo, centrada en (cx, cy) y cabiendo en maxW x maxH sin deformarse (los retratos de los oficios son más anchos
      * que altos: 64x39). Pixel art a un número entero de píxeles reales por píxel; si no cabe ni a 1, suavizada.
@@ -471,8 +501,21 @@ final class PadSkin {
         for (int i = 0; i < 6; i++) g.fill(px + 3 + i, py + 8 - i, px + 5 + i, py + 9 - i, WHITE);
         g.fill(px + 3, py + 9, px + 4, py + 10, mix(c, WHITE, 0.8F));
         int tx = x + 18, tw = w - 22;
-        String shown = text.isEmpty() ? PadUi.fitEnd(hint, tw) : PadUi.fitStart(text, tw);
-        PadUi.text(g, shown, tx, y + 4, text.isEmpty() ? mix(0xFF96AACC, c, 0.25F) : PadUi.TEXT);
+        if (text.isEmpty()) {
+            // la pista nunca se corta: si no cabe, se escribe más pequeña (hasta 6/10) y solo entonces se recorta
+            int hw = PadUi.font().width(hint);
+            float k = hw <= tw ? 1F : Math.max(0.6F, tw / (float) hw);
+            String h = k < 1F && hw * k > tw ? PadUi.fitEnd(hint, Math.round(tw / k)) : hint;
+            g.pose().pushPose();
+            g.pose().translate(tx, y + 8 - 4 * k, 0);
+            g.pose().scale(k, k, 1);
+            PadUi.text(g, h, 0, 0, mix(0xFF96AACC, c, 0.25F));
+            g.pose().popPose();
+            if ((System.currentTimeMillis() / 500) % 2 == 0) g.fill(tx, y + 3, tx + 1, y + 13, c);
+            return;
+        }
+        String shown = PadUi.fitStart(text, tw);
+        PadUi.text(g, shown, tx, y + 4, PadUi.TEXT);
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = tx + (text.isEmpty() ? 0 : PadUi.font().width(shown));
             g.fill(cx, y + 3, cx + 1, y + 13, c);
@@ -568,7 +611,7 @@ final class PadSkin {
                 g.fill(cx - hw, y + TAB_H + i, cx + hw + 1, y + TAB_H + i + 1, edge);
                 if (hw > 0) g.fill(cx - hw + 1, y + TAB_H + i, cx + hw, y + TAB_H + i + 1, low);
             }
-            PadFont.drawShadowCentered(g, label, x + w / 2, y + 3, 0xFFFFFF, darken(c, 0.42F));
+            PadFont.drawShadowCentered(g, label, x + w / 2, y + 4, 0xFFFFFF, darken(c, 0.42F));
             return;
         }
         boolean hover = state == 1;
@@ -577,7 +620,7 @@ final class PadSkin {
         PadUi.box(g, x, yy, w, TAB_H, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
         g.fillGradient(x + 1, yy + 1, x + w - 1, yy + TAB_H - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
         g.fill(x + 1, yy + TAB_H - 2, x + w - 1, yy + TAB_H - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
-        PadFont.drawCentered(g, label, x + w / 2, yy + 3, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
+        PadFont.drawCentered(g, label, x + w / 2, yy + 4, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
     }
 
     /**
@@ -738,6 +781,22 @@ final class PadSkin {
     }
 
     /** El hueco de un icono, del color de su fila (color != 0) o azul hielo, con una luz detrás. */
+    /**
+     * La pastilla del icono de una fila (1.4.3): degradado del color de la fila (claro arriba, más vivo abajo), borde
+     * oscuro de ese color con las esquinas recortadas, brillo arriba y una luz blanca detrás del objeto.
+     */
+    static void tile(GuiGraphics g, int x, int y, int s, int color, boolean hover) {
+        int c = deep(color);
+        int edge = darken(c, 0.62F);
+        g.fill(x + 1, y + s, x + s - 1, y + s + 1, 0x3018265C);
+        g.fill(x + 1, y, x + s - 1, y + s, edge);
+        g.fill(x, y + 1, x + s, y + s - 1, edge);
+        g.fillGradient(x + 1, y + 1, x + s - 1, y + s - 1, mix(c, WHITE, hover ? 0.7F : 0.62F), mix(c, WHITE, hover ? 0.28F : 0.18F));
+        g.fill(x + 2, y + 1, x + s - 2, y + 2, alpha(0xFFFFFF, 170));
+        g.fill(x + 1, y + s - 3, x + s - 1, y + s - 1, alpha(darken(c, 0.8F) & 0xFFFFFF, 90));
+        glow(g, x + s / 2F, y + s / 2F, s * 0.5F, 0xFFFFFF, hover ? 200 : 160);
+    }
+
     static void medallion(GuiGraphics g, int x, int y, int s, int color) {
         int edge = color != 0 ? PadUi.tint(color, 0.62F) : 0xFF9DBCE0;
         int top = color != 0 ? PadUi.tint(color, 0.10F) : 0xFFF4F9FE, bot = color != 0 ? PadUi.tint(color, 0.30F) : 0xFFD6E6F6;
@@ -800,20 +859,21 @@ final class PadSkin {
      * lado a otro (k: 0 apagado, 1 encendido; entre medias mientras se mueve).
      */
     static void toggle(GuiGraphics g, int x, int y, float k, boolean hover) {
-        int top = mix(0xFFC9D5E6, 0xFF7CEC98, k), bot = mix(0xFFA8B7CC, 0xFF22A84C, k);
+        // apagado en rojo, encendido en verde (y el color pasa de uno a otro mientras se mueve)
+        int top = mix(0xFFFF7E8A, 0xFF7CEC98, k), bot = mix(0xFFC8283C, 0xFF22A84C, k);
         if (hover) {
             top = lighten(top, 18);
             bot = lighten(bot, 18);
         }
         g.fill(x + 1, y + 14, x + 27, y + 15, 0x3218265C);
-        PadUi.box(g, x, y, 28, 14, mix(0xFF6E80A0, 0xFF147034, k));
+        PadUi.box(g, x, y, 28, 14, mix(0xFF861428, 0xFF147034, k));
         g.fillGradient(x + 1, y + 1, x + 27, y + 13, bot, top);
         g.fill(x + 2, y + 1, x + 26, y + 2, 0x30000000);
         if (k > 0.5F) PadFont.drawShadow(g, "SÍ", x + 4, y + 2, 0xFFFFFF, 0xFF0F5A26);
-        else PadFont.drawShadow(g, "NO", x + 27 - 4 - PadFont.width("NO"), y + 2, 0xFFFFFF, 0xFF56637E);
+        else PadFont.drawShadow(g, "NO", x + 27 - 4 - PadFont.width("NO"), y + 2, 0xFFFFFF, 0xFF7A1020);
         int kx = x + 1 + Math.round(k * 14);
         g.fill(kx + 1, y + 13, kx + 12, y + 14, 0x4018265C);
-        PadUi.box(g, kx, y + 1, 13, 12, mix(0xFF8090B0, 0xFF1E7C3A, k));
+        PadUi.box(g, kx, y + 1, 13, 12, mix(0xFF9A2030, 0xFF1E7C3A, k));
         g.fillGradient(kx + 1, y + 2, kx + 12, y + 12, WHITE, 0xFFDCE6F2);
         g.fill(kx + 2, y + 2, kx + 11, y + 3, WHITE);
     }

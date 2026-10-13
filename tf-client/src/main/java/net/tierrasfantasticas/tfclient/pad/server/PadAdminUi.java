@@ -43,7 +43,7 @@ final class PadAdminUi {
         if (!help.isEmpty()) lines.add(help);
         lines.add(on ? onText : offText);
         return new PadView.Row(icon, title, on ? TEXT : MUTED, lines, -1, "",
-                PadView.Btn.of(on ? "SÍ" : "NO", action, on ? PadView.GREEN : PadView.GRAY), null).clickable(action);
+                PadView.Btn.of(on ? "SÍ" : "NO", action, on ? PadView.GREEN : PadView.RED), null).clickable(action);
     }
 
     /** Un valor: lo que vale en su etiqueta y CAMBIAR (abre el campo de abajo). editing: la fila sale marcada. */

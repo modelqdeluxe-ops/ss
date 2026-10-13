@@ -35,7 +35,7 @@ final class PadViewPage extends PadPage {
     /** Alto de la barra de acciones de abajo. */
     private static final int DOCK_H = 22;
     /** Icono de las filas: el objeto dentro de su medallón. */
-    private static final int ICON_BOX = 26;
+    private static final int ICON_BOX = 36; // el icono de las filas va al doble (32) en su pastilla de color
     /** Hueco entre filas (cada fila es su propia tarjeta). */
     private static final int ROW_GAP = 4;
     /** Lo que tarda la lista en entrar al cambiar de pestaña (ms) y lo que se ve hundido un botón al pulsarlo. */
@@ -372,7 +372,15 @@ final class PadViewPage extends PadPage {
         g.fill(x0 + 2, yy + 1, x0 + w - 2, yy + 2, 0x96FFFFFF);
         int bob = lift || c.selected() ? Math.round((float) Math.sin(t * 4.4F)) : 0;
         int size = gallery ? GAL_IMG : 32;
-        boolean drawn = c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
+        if (PadView.SELF_MODEL.equals(c.image())) {
+            // tu modelo de verdad, entero y en 3D, con la skin que llevas (mira hacia el ratón)
+            selfModel(g, cx, yy + sh - 2, sh - 6, mx, my);
+        }
+        boolean photo = c.hasImage() && PadSkin.wide(c.image());
+        int photoH = photo ? Math.min(sh - 5, Math.round((w - 8) / PadSkin.aspect(c.image()))) : 0;
+        boolean drawn = PadView.SELF_MODEL.equals(c.image()) || photo ? PadView.SELF_MODEL.equals(c.image())
+                || PadSkin.photo(g, c.image(), cx, yy + 1 + (sh - photoH) / 2 + bob, photoH) > 0
+                : c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
         if (!drawn && !c.icon().isEmpty()) bigItem(g, c.icon(), cx - 16, yy + 4 + bob + (sh - 40) / 2);
         if (hover && !c.icon().isEmpty() && !drawn) tooltip = c.icon();
         if (lift) PadSkin.sheen(g, x0 + 1, yy + 1, w - 2, sh, 1.6F, 0.3F);
@@ -447,14 +455,26 @@ final class PadViewPage extends PadPage {
         pad.clipPop(g);
         g.fill(x + 1, y + 1, x + w - 1, y + 2, PadSkin.lighten(color, 70));
         g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, PadSkin.darken(color, 0.55F));
-        PadSkin.medallion(g, sx, sy, ms, color);
-        PadUi.stretch(g, "floor", sx + 8, sy + ms - 7, ms - 16, 4);
-        boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), sx + 3, sy + 3, ms - 6);
+        boolean photo = r.hasImage() && PadSkin.wide(r.image());
+        int extra = 0;
+        boolean drawn;
+        if (photo) {
+            // un retrato (oficios): en grande, como una foto, en vez de dentro del medallón
+            int ph = Math.min(h - 8, 46);
+            int pw = Math.round(ph * PadSkin.aspect(r.image()));
+            PadSkin.photo(g, r.image(), sx + pw / 2F, y + (h - ph) / 2, ph);
+            extra = pw - ms;
+            drawn = true;
+        } else {
+            PadSkin.medallion(g, sx, sy, ms, color);
+            PadUi.stretch(g, "floor", sx + 8, sy + ms - 7, ms - 16, 4);
+            drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), sx + 3, sy + 3, ms - 6);
+        }
         if (!drawn && !r.icon().isEmpty()) {
             bigItem(g, r.icon(), sx + (ms - 32) / 2, sy + (ms - 32) / 2 - 1);
             if (PadUi.inside(mx, my, sx, sy, ms, ms)) tooltip = r.icon();
         }
-        int tx = x + ms + 15, textW = heroTextWidth(r, w);
+        int tx = x + ms + 15 + extra, textW = heroTextWidth(r, w) - extra;
         int textH = 11 + linesHeight(r, textW) + (r.progress() >= 0 ? 10 : 0);
         int top = y + Math.max(6, (h - textH) / 2 + 1);
         int shade = PadSkin.darken(color, 0.38F), soft = PadSkin.mix(PadSkin.WHITE, color, 0.10F);
@@ -495,6 +515,15 @@ final class PadViewPage extends PadPage {
      * derecha la etiqueta (precio, premio, estado) y los botones. Sin icono ni botones, una nota de texto; con solo
      * título, un título de sección.
      */
+    /** El jugador en 3D con los pies en (cx, feetY) y h de alto (como en el inventario: gira hacia el ratón). */
+    private static void selfModel(GuiGraphics g, int cx, int feetY, int h, double mx, double my) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        int scale = Math.max(6, Math.round(h / 1.9F));
+        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx, feetY, scale,
+                (float) (cx - mx), (float) (feetY - h * 0.8F - my), player);
+    }
+
     private void drawRow(GuiGraphics g, PadView.Row r, int x, int y, int w, int h, double mx, double my, int acc, float t) {
         boolean clickable = !r.click().isEmpty();
         h -= ROW_GAP; // cada fila es su propia tarjeta, con aire debajo
@@ -536,11 +565,11 @@ final class PadViewPage extends PadPage {
         if (icon) {
             int iy = yy + (h - ICON_BOX) / 2;
             PadSkin.glow(g, x + 7 + ICON_BOX / 2F, iy + ICON_BOX / 2F, ICON_BOX * 1.05F, tint & 0xFFFFFF, hover ? 150 : 105);
-            PadSkin.medallion(g, x + 7, iy, ICON_BOX, plain ? 0 : titleColor);
+            PadSkin.tile(g, x + 7, iy, ICON_BOX, tint, hover);
             int bob = hover ? Math.round((float) Math.sin(t * 4.4F)) : 0;
             boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), x + 9, iy + 2 + bob, ICON_BOX - 4);
             if (!drawn && !r.icon().isEmpty()) {
-                PadUi.item(g, r.icon(), x + 7 + (ICON_BOX - 16) / 2, iy + (ICON_BOX - 16) / 2 + bob, 1);
+                bigItem(g, r.icon(), x + 7 + (ICON_BOX - 32) / 2, iy + (ICON_BOX - 32) / 2 + bob);
                 if (PadUi.inside(mx, my, x + 7, iy, ICON_BOX, ICON_BOX) && inList(my)) tooltip = r.icon();
             }
             tx = x + ICON_BOX + 14;

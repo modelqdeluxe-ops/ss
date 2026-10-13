@@ -15,6 +15,23 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
 
+> **TF Client 1.3.61 (13 oct)** — 10 quejas del dueño tras probar la 1.3.60 (primera versión publicada como Release):
+> 1. «Doble pantalla»: la sombra suave de abajo del cristal se cortaba en GY+GH y la franja de cristal del marco de
+>    debajo quedaba más clara; ahora la sombra llega al borde real (`TFPadScreen.glassBase`).
+> 2/5. Pestañas: la elegida de Música (playlist con ×) se dibujaba con la geometría vieja; letra de las pestañas grandes
+>    centrada (y + 4).
+> 3. Oficios en tarjetas de galería (`PadJobs`: `.gallery()`) y retratos anchos como foto (`PadSkin.photo`/`wide`); en la
+>    cabecera del oficio también en grande.
+> 4. NO elegido en rojo (`PadClaims.answer`, botones SÍ/NO del admin) e interruptores apagados en rojo (`PadSkin.toggle`).
+> 6. Skin puesta: el modelo 3D real del jugador (`PadView.SELF_MODEL`, `PadViewPage.selfModel` con
+>    `InventoryScreen.renderEntityInInventoryFollowsMouse`); vale premium y no premium (dibuja al jugador como lo ve el juego).
+> 7. Pistas de los campos: se encogen hasta caber en vez de «…» (`PadSkin.field`); pistas largas acortadas.
+> 8. Aviso flotante: escala normal (no la grande), 2 líneas, 1,5–2,6 s, ya no se para con el ratón encima.
+> 9. Recompensas: fuera OTRAS (el kit diario adoptado solo); pestaña REGALOS = buzón (`PadPlayers.gifts/claimGifts`,
+>    `regalos.json` jugador.buzon): los regalos de Jugadores ya no van directos al inventario, se recogen ahí (RECOGER /
+>    RECOGER TODO); lo «pendiente» de antes pasa al buzón al entrar.
+> 10. Filas: icono al doble (32) en pastilla del color de la fila (`PadSkin.tile`, ICON_BOX 36). Simulador al día.
+
 > **TF Client 1.3.60 (13 oct)** — repaso de diseño de las apps (punto 5 del dueño) y retratos de oficios:
 > - Oficios: retratos de 64x39 (`job_images.py`, BOX 96–160): se ven las manos y la herramienta. `PadSkin.image`
 >   ya no deforma: cabe en maxW x maxH sin perder proporción (las tarjetas dejan que la imagen use su ancho).
@@ -1869,7 +1886,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.60)
+## 5. El mod (TF Client 1.3.61)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

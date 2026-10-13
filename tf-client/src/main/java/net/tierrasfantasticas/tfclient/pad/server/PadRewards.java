@@ -158,12 +158,26 @@ public final class PadRewards {
                     // pestaña rara: la entrada
                 }
             }
-            boolean showOthers = tab.equals("otras") ? !others.isEmpty() : !cal && !others.isEmpty();
+            // DIARIA (el calendario) y REGALOS (lo que te mandan otros jugadores desde Jugadores)
+            List<PadPlayers.Gift> gifts = PadPlayers.gifts(player.getUUID());
+            boolean showGifts = tab.equals("regalos") || !cal;
             PadView.Builder b = PadView.of("recompensas").empty("No hay recompensas ahora. Vuelve pronto.");
-            if (cal && !others.isEmpty()) {
-                b.tab("diaria", "DIARIA").tab("otras", "OTRAS (" + others.size() + ")").selected(showOthers ? "otras" : "diaria");
+            if (cal) b.tab("diaria", "DIARIA");
+            b.tab("regalos", gifts.isEmpty() ? "REGALOS" : "REGALOS (" + gifts.size() + ")").selected(showGifts ? "regalos" : "diaria");
+            if (showGifts) {
+                b.header(gifts.isEmpty() ? "Aquí llegan los regalos que te mandan otros jugadores."
+                        : gifts.size() + (gifts.size() == 1 ? " regalo esperándote." : " regalos esperándote."));
+                for (int i = 0; i < gifts.size(); i++) {
+                    PadPlayers.Gift g = gifts.get(i);
+                    ItemStack icon = g.coins() > 0 ? PadKits.coinIcon(false) : g.item().isEmpty() ? new ItemStack(net.minecraft.world.item.Items.CHEST) : g.item().copy();
+                    b.row(new PadView.Row(icon, "De " + g.from(), 0xE0489E, List.of(g.what() + " · " + PadKits.time(Math.max(1, (System.currentTimeMillis() - g.at()) / 1000)) + " atrás."),
+                            -1, "", PadView.Btn.of("RECOGER", "regalo:" + i, PadView.GREEN), null));
+                }
+                if (gifts.size() > 1) b.footer(PadView.Btn.of("RECOGER TODO", "regalo:todo", PadView.GREEN));
+                b.empty("Aún no tienes regalos. Cuando alguien te regale algo desde la app Jugadores, llegará aquí.");
+                return b.build();
             }
-            if (!showOthers && cal) {
+            if (cal) {
                 int idx = dayIndex(player);
                 boolean done = claimedToday(player);
                 b.header(done ? "Ya tienes la de hoy. La siguiente, en " + PadKits.time(untilTomorrow()) + "."
@@ -223,6 +237,20 @@ public final class PadRewards {
         @Override
         public String action(ServerPlayer player, String tab, String action, String text) {
             if (action.startsWith("tab:")) return action.substring(4);
+            if (action.startsWith("regalo:")) {
+                String w = action.substring(7);
+                int i = -1;
+                if (!w.equals("todo")) {
+                    try {
+                        i = Integer.parseInt(w);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                }
+                int n = PadPlayers.claimGifts(player, i);
+                if (n > 0) TFPadNet.notice(player, n == 1 ? "Regalo recogido." : n + " regalos recogidos.");
+                return "regalos";
+            }
             if (action.equals("dia")) {
                 if (!calendarOn || DAYS.isEmpty() || claimedToday(player)) return null;
                 int idx = dayIndex(player);
