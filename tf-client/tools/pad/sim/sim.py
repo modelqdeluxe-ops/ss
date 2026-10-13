@@ -980,10 +980,10 @@ class Sim(Skin):
     def pill(self, x, y, text, style, h):
         return self.chip(x, y, text, {3: 'green', 4: 'gray'}.get(style, 'gold'), h)
 
-    def icon_at(self, icon, ex, x, y, size, n=1):
+    def icon_at(self, icon, ex, x, y, size, n=1, max_w=None):
         """El icono de una fila, tarjeta o ficha: la imagen (PadView image) si la hay; si no, el objeto (a 1x o 2x)."""
         if ex.get('img'):
-            self.image(ex['img'], x, y, size, ex.get('smooth', True))
+            self.image(ex['img'], x, y, size, ex.get('smooth', True), max_w)
         elif icon:
             k = 2 if size >= 32 else 1
             off = (size - 16 * k) // 2
@@ -1039,7 +1039,7 @@ class Sim(Skin):
         bob = round(math.sin(self.T * 4.4)) if hover or sel else 0
         size = self.GAL_IMG if gallery else 32
         if ex.get('img'):
-            self.icon_at(icon, ex, cx - size // 2, yy + 1 + (sh - size) // 2 + bob, size)
+            self.icon_at(icon, ex, cx - size // 2, yy + 1 + (sh - size) // 2 + bob, size, max_w=w - 10)
         else:
             self.icon_at(icon, ex, cx - 16, yy + 4 + bob + (sh - 40) // 2, 32, n)
         if hover:

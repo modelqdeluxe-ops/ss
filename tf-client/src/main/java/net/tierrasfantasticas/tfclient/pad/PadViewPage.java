@@ -368,7 +368,7 @@ final class PadViewPage extends PadPage {
         g.fill(x0 + 2, yy + 1, x0 + w - 2, yy + 2, 0x96FFFFFF);
         int bob = lift || c.selected() ? Math.round((float) Math.sin(t * 4.4F)) : 0;
         int size = gallery ? GAL_IMG : 32;
-        boolean drawn = c.hasImage() && PadSkin.image(g, pad, c.image(), cx - size / 2, yy + 1 + (sh - size) / 2 + bob, size);
+        boolean drawn = c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
         if (!drawn && !c.icon().isEmpty()) bigItem(g, c.icon(), cx - 16, yy + 4 + bob + (sh - 40) / 2);
         if (hover && !c.icon().isEmpty() && !drawn) tooltip = c.icon();
         if (lift) PadSkin.sheen(g, x0 + 1, yy + 1, w - 2, sh, 1.6F, 0.3F);

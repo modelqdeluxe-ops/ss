@@ -228,10 +228,15 @@ class Skin:
         im = self.item_icon(item, outline=False) if item else self.img('icon_' + name)
         self.tex_alpha(im, x, y, size, size, alpha, smooth=False)
 
-    def image(self, path, x, y, size, smooth=True):
-        """Imagen de una fila o tarjeta (PadView: image): la del efecto (suavizada) o el icono de una clase o skill."""
+    def image(self, path, x, y, size, smooth=True, max_w=None):
+        """Imagen de una fila o tarjeta (PadView: image), sin deformar (PadSkin.image): cabe en max_w x size centrada en
+        el cuadrado (x, y, size); los retratos de los oficios (64x39) salen más anchos que altos."""
         im = Image.open(path).convert('RGBA')
-        self.tex_alpha(im, x, y, size, size, 1.0, smooth=smooth)
+        mw = max_w or size
+        fit = min(mw / im.width, size / im.height)
+        w, h = im.width * fit, im.height * fit
+        cx, cy = x + size / 2, y + size / 2
+        self.tex_alpha(im, cx - w / 2, cy - h / 2, w, h, 1.0, smooth=smooth)
 
     def stext(self, s, x, y, color, shadow):
         """Texto con sombra de color (PadSkin.shadowText)."""

@@ -352,22 +352,26 @@ final class PadSkin {
      * Devuelve false si la textura no existe (entonces se dibuja el objeto).
      */
     static boolean image(GuiGraphics g, TFPadScreen pad, String id, int x, int y, int size) {
+        return image(g, pad, id, x + size / 2F, y + size / 2F, size, size);
+    }
+
+    /**
+     * Lo mismo, centrada en (cx, cy) y cabiendo en maxW x maxH sin deformarse (los retratos de los oficios son más anchos
+     * que altos: 64x39). Pixel art a un número entero de píxeles reales por píxel; si no cabe ni a 1, suavizada.
+     */
+    static boolean image(GuiGraphics g, TFPadScreen pad, String id, float cx, float cy, int maxW, int maxH) {
         ResourceLocation loc = id == null || id.isEmpty() ? null : ResourceLocation.tryParse(id);
         if (loc == null) return false;
         int[] sz = TFPadScreen.size(loc);
         if (sz[0] == 0) return false;
+        int iw = sz[0], ih = Math.max(1, sz[1]);
+        float fit = Math.min(maxW / (float) iw, maxH / (float) ih);
         int upx = Math.max(1, pad.unitPx());
-        if (sz[0] > 64) {
-            texture(g, loc, x, y, size, size, 1F, 0xFFFFFF, true);
-            return true;
-        }
-        int n = size * upx / sz[0];
-        if (n < 1) {
-            texture(g, loc, x, y, size, size, 1F, 0xFFFFFF, true);
-            return true;
-        }
-        float s = sz[0] * n / (float) upx;
-        texture(g, loc, x + (size - s) / 2, y + (size - s) / 2, s, s, 1F, 0xFFFFFF, false);
+        int n = (int) Math.floor(fit * upx);
+        boolean smooth = Math.max(iw, ih) > 64 || n < 1;
+        float k = smooth ? fit : n / (float) upx;
+        float w = iw * k, h = ih * k;
+        texture(g, loc, cx - w / 2, cy - h / 2, w, h, 1F, 0xFFFFFF, smooth);
         return true;
     }
 
