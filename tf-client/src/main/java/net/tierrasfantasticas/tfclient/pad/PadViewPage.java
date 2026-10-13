@@ -372,14 +372,17 @@ final class PadViewPage extends PadPage {
         g.fill(x0 + 2, yy + 1, x0 + w - 2, yy + 2, 0x96FFFFFF);
         int bob = lift || c.selected() ? Math.round((float) Math.sin(t * 4.4F)) : 0;
         int size = gallery ? GAL_IMG : 32;
-        if (PadView.SELF_MODEL.equals(c.image())) {
-            // tu modelo de verdad, entero y en 3D, con la skin que llevas (mira hacia el ratón)
-            selfModel(g, cx, yy + sh - 2, sh - 6, mx, my);
+        boolean model = PadSkinModel.is(c.image());
+        boolean modelDrawn = false;
+        if (model) {
+            // una skin: el muñeco 3D con SOLO la skin (sin armadura ni cosméticos), dentro de la vitrina y mirando al ratón
+            pad.clipPush(g, x0 + 1, yy + 1, w - 2, sh);
+            modelDrawn = PadSkinModel.draw(g, c.image(), cx, yy + sh - 3 - bob, sh - 9, mx, my);
+            pad.clipPop(g);
         }
-        boolean photo = c.hasImage() && PadSkin.wide(c.image());
+        boolean photo = !model && c.hasImage() && PadSkin.wide(c.image());
         int photoH = photo ? Math.min(sh - 5, Math.round((w - 8) / PadSkin.aspect(c.image()))) : 0;
-        boolean drawn = PadView.SELF_MODEL.equals(c.image()) || photo ? PadView.SELF_MODEL.equals(c.image())
-                || PadSkin.photo(g, c.image(), cx, yy + 1 + (sh - photoH) / 2 + bob, photoH) > 0
+        boolean drawn = model ? modelDrawn : photo ? PadSkin.photo(g, c.image(), cx, yy + 1 + (sh - photoH) / 2 + bob, photoH) > 0
                 : c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
         if (!drawn && !c.icon().isEmpty()) bigItem(g, c.icon(), cx - 16, yy + 4 + bob + (sh - 40) / 2);
         if (hover && !c.icon().isEmpty() && !drawn) tooltip = c.icon();
@@ -432,7 +435,7 @@ final class PadViewPage extends PadPage {
 
     private int heroHeight(PadView.Row r, int w) {
         int h = 8 + 11 + linesHeight(r, heroTextWidth(r, w)) + (r.progress() >= 0 ? 10 : 0) + 6;
-        if (PadView.SELF_MODEL.equals(r.image())) return Math.max(96, h); // el escaparate del Armario: tu modelo en grande
+        if (PadSkinModel.is(r.image())) return Math.max(58, h); // el escaparate del Armario: la skin en grande (y caben las tarjetas)
         return Math.max(HERO_MIN, h);
     }
 
@@ -459,15 +462,18 @@ final class PadViewPage extends PadPage {
         boolean photo = r.hasImage() && PadSkin.wide(r.image());
         int extra = 0;
         boolean drawn;
-        if (PadView.SELF_MODEL.equals(r.image())) {
-            // el escaparate del Armario: tu modelo 3D en grande sobre una peana de luz, con la skin que llevas
-            int mh = h - 14, mw = Math.round(mh * 0.62F);
+        if (PadSkinModel.is(r.image())) {
+            // el escaparate del Armario: la skin en 3D (solo la skin) sobre una peana de luz, en su propio hueco
+            int mh = h - 14, mw = Math.max(ms, Math.round(mh * 0.62F));
             float mcx = sx + mw / 2F;
-            PadSkin.glow(g, mcx, y + h / 2F, mh * 0.75F, 0xFFFFFF, 120);
-            PadUi.stretch(g, "floor", Math.round(mcx - mw * 0.55F), y + h - 11, Math.round(mw * 1.1F), 6);
-            selfModel(g, Math.round(mcx), y + h - 8, mh, mx, my);
-            extra = mw - ms;
+            PadSkin.glow(g, mcx, y + h / 2F, mh * 0.7F, 0xFFFFFF, 120);
+            PadUi.stretch(g, "floor", Math.round(mcx - mw * 0.45F), y + h - 12, Math.round(mw * 0.9F), 6);
+            pad.clipPush(g, x + 1, y + 1, mw + 12, h - 2);
+            drawn = PadSkinModel.draw(g, r.image(), mcx, y + h - 9, mh, mx, my);
+            pad.clipPop(g);
+            if (!drawn) bigItem(g, r.icon(), Math.round(mcx) - 16, y + (h - 32) / 2);
             drawn = true;
+            extra = mw - ms;
         } else if (photo) {
             // un retrato (oficios): en grande, como una foto, en vez de dentro del medallón
             int ph = Math.min(h - 8, 46);
@@ -525,15 +531,6 @@ final class PadViewPage extends PadPage {
      * derecha la etiqueta (precio, premio, estado) y los botones. Sin icono ni botones, una nota de texto; con solo
      * título, un título de sección.
      */
-    /** El jugador en 3D con los pies en (cx, feetY) y h de alto (como en el inventario: gira hacia el ratón). */
-    private static void selfModel(GuiGraphics g, int cx, int feetY, int h, double mx, double my) {
-        var player = Minecraft.getInstance().player;
-        if (player == null) return;
-        int scale = Math.max(6, Math.round(h / 1.9F));
-        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx, feetY, scale,
-                (float) (cx - mx), (float) (feetY - h * 0.8F - my), player);
-    }
-
     private void drawRow(GuiGraphics g, PadView.Row r, int x, int y, int w, int h, double mx, double my, int acc, float t) {
         boolean clickable = !r.click().isEmpty();
         h -= ROW_GAP; // cada fila es su propia tarjeta, con aire debajo

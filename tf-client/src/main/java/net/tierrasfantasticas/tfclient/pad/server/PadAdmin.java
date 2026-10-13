@@ -132,7 +132,7 @@ public final class PadAdmin {
             new AppInfo("comunidad", "Comunidad", Items.PAINTING), new AppInfo("camara", "Cámara", Items.SPYGLASS),
             new AppInfo("ranking", "Ranking", Items.GOLD_BLOCK), new AppInfo("armario", "Armario", Items.LEATHER_CHESTPLATE),
             new AppInfo("efectos", "Efectos", Items.BLAZE_POWDER), new AppInfo("rango", "Mi rango", Items.NETHER_STAR),
-            new AppInfo("web", "Web", Items.COMPASS));
+            new AppInfo("web", "Web", Items.COMPASS), new AppInfo("guia", "Guía", Items.BOOK));
 
     private static final class Apps implements PadServer.App {
         @Override

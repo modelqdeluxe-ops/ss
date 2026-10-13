@@ -216,21 +216,23 @@ public final class PadWardrobe {
             String worn = SkinServer.worn(uuid);
             SkinServer.sendImages(player, mine.stream().map(SkinServer.Skin::hash).toList());
             SkinServer.Skin wearing = worn.isEmpty() ? null : SkinServer.skin(uuid, worn);
-            // arriba, el escaparate: tu modelo 3D en grande con la skin que llevas; abajo, tus skins en tarjetas grandes
+            // arriba, el escaparate: la skin que llevas en 3D (solo la skin: sin armadura, objetos ni cosméticos);
+            // abajo, tu skin de siempre y las tuyas, cada una en 3D en su tarjeta
             List<String> lines = new ArrayList<>();
-            lines.add(wearing == null ? "Llevas tu skin de siempre." : "Llevas «" + wearing.name() + "».");
-            lines.add(mine.isEmpty() ? "Añade skins: de tu ordenador o de cualquier jugador." : "Pulsa una skin de abajo para verla o ponértela.");
-            b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), wearing == null ? "Mi skin" : wearing.name(), WARDROBE_COLOR, lines, -1,
+            lines.add(wearing == null ? "Llevas la skin de tu cuenta de Minecraft." : "Llevas «" + wearing.name() + "».");
+            lines.add(mine.isEmpty() ? "Añade skins de tu ordenador o de cualquier jugador con AÑADIR SKIN."
+                    : "Pulsa una skin de abajo para verla o ponértela.");
+            b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), wearing == null ? "Tu skin" : wearing.name(), WARDROBE_COLOR, lines, -1,
                     mine.size() + "/" + SkinServer.MAX_SKINS, wearing == null ? null : PadView.Btn.of("QUITÁRMELA", "skin:original", PadView.RED), null)
                     .image(PadView.SELF_MODEL));
-            b.gallery();
-            b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), "Mi skin", WARDROBE_COLOR, wearing == null ? "" : "skin:original",
-                    wearing == null, wearing == null ? "PUESTA" : "PONER", -1, "", wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE));
+            b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), "De siempre", WARDROBE_COLOR, wearing == null ? "" : "skin:original",
+                    wearing == null, wearing == null ? "PUESTA" : "PONER", -1, "", wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE)
+                    .image("tfclient:skinmodel/own"));
             for (SkinServer.Skin sk : mine) {
                 boolean on = sk.id().equals(worn);
                 b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR, "ver:skins:ver:" + sk.id(), on,
                         on ? "PUESTA" : "VER", -1, "", on ? PadView.TONE_GREEN : PadView.TONE_BLUE)
-                        .image(SkinServer.preview(sk.hash(), sk.slim())));
+                        .image(SkinServer.model(sk.hash(), sk.slim())));
             }
             b.footer(PadView.Btn.of("AÑADIR SKIN", "ver:skins:nueva", PadView.GREEN));
             return b.build();
@@ -243,7 +245,7 @@ public final class PadWardrobe {
             String from = sk.from().startsWith("jugador:") ? "De " + sk.from().substring(8) + "." : "Importada de tu ordenador.";
             b.hero(new PadView.Row(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR,
                     List.of(from, "Brazos " + (sk.slim() ? "finos (Alex)." : "normales (Steve).") + (on ? " La llevas puesta." : "")),
-                    -1, "", null, null).image(SkinServer.preview(sk.hash(), sk.slim())));
+                    -1, "", null, null).image(SkinServer.model(sk.hash(), sk.slim())));
             String id = sk.id();
             if (on) b.footer(PadView.Btn.of("QUITÁRMELA", "skin:original", PadView.RED));
             else b.footer(PadView.Btn.of("PONÉRMELA", "skin:poner:" + id, PadView.GREEN));

@@ -66,7 +66,7 @@ public final class TFPadScreen extends Screen {
     /** Alto de la barra de arriba con escala grande 1 (ver {@link #bar}). */
     static final int BAR = 18;
     /** Apps con página propia en el cliente; las demás las dibuja el servidor. */
-    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web", "gachapon", "pase");
+    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web", "gachapon", "pase", "guia");
     private static final Map<String, int[]> SIZES = new HashMap<>();
 
     /** Escala de la interfaz de Minecraft, píxeles reales por píxel de pad y por unidad de pantalla. */
@@ -450,6 +450,7 @@ public final class TFPadScreen extends Screen {
             case "camara" -> setPage(new PadCameraPage(this));
             case "ajustes" -> setPage(new PadInfoPages.Ajustes(this));
             case "musica" -> setPage(new PadMusicPage(this));
+            case "guia" -> setPage(new PadGuidePage(this));
             case "gachapon", "pase" -> { // páginas propias con los datos del servidor
                 setPage(id.equals("pase") ? new PadPassPage(this) : new PadGachaPage(this));
                 TFPadClient.openServerApp(id, tab);
@@ -531,23 +532,20 @@ public final class TFPadScreen extends Screen {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         int lift = liftReal();
-        // el marco, a escala entera
-        g.pose().pushPose();
-        g.pose().translate(fx / gs, (fy + lift) / gs, 0);
-        g.pose().scale((float) (ps / 4.0 / gs), (float) (ps / 4.0 / gs), 1);
-        drawFrame(g);
-        g.pose().popPose();
-        // el fondo del cristal (luces que suben, un haz que lo cruza, destellos) y, encima, otra vez el logo
+        // primero el fondo del cristal (su color, la trama, luces que suben, un haz que lo cruza, destellos) en todo el
+        // hueco del cristal del marco...
         g.pose().pushPose();
         g.pose().translate(gx / gs, (gy + lift) / gs, 0);
         g.pose().scale((float) (cs / gs), (float) (cs / gs), 1);
         drawBackdrop(g);
         g.pose().popPose();
+        // ...y encima el marco, a escala entera: frame.png es marco.png tal cual (bisel, brillos, logo) con el cristal
+        // transparente, así que recorta el fondo con la forma exacta del cristal (tools/pad/build_pad.frame_textures)
         g.pose().pushPose();
         g.pose().translate(fx / gs, (fy + lift) / gs, 0);
         g.pose().scale((float) (ps / 4.0 / gs), (float) (ps / 4.0 / gs), 1);
         RenderSystem.enableBlend();
-        g.blit(tex("logo_over"), LOGO_X, LOGO_Y, 0, 0, 128, 104, 128, 104);
+        drawFrame(g);
         g.pose().popPose();
         // el cristal: barra y página
         g.pose().pushPose();
@@ -585,9 +583,6 @@ public final class TFPadScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
-    /** Dónde va logo_over.png (el trozo del logo que pisa el cristal) en píxeles de frame.png (tools/pad/build_skin.py). */
-    private static final int LOGO_X = 52 * 4, LOGO_Y = 64 * 4;
-
     /**
      * Luces del fondo: x, y (0 a 1 del cristal), radio (unidades), velocidad de subida (unidades/s), vaivén (amplitud
      * y periodo en s), alfa; y su color. Las mismas que tools/pad/sim/skin.py (BOKEH).
@@ -607,7 +602,7 @@ public final class TFPadScreen extends Screen {
     /**
      * El fondo del cristal (1.4), sin quitarle su azul: el rombo tallado muy suave, una sombra leve abajo, luces
      * desenfocadas que suben despacio meciéndose, un haz de luz en diagonal que lo cruza cada 13 s y destellos que
-     * parpadean. Con las animaciones apagadas (Ajustes), todo quieto. Luego se vuelve a pintar el logo encima.
+     * parpadean. Con las animaciones apagadas (Ajustes), todo quieto. Luego va el marco encima (con su logo).
      */
     private void drawBackdrop(GuiGraphics g) {
         float t = PadSkin.time();
@@ -629,17 +624,17 @@ public final class TFPadScreen extends Screen {
         }
         // en la portada, además, su cielo animado (por detrás del logo y de las fichas)
         if (page == home) home.ambient(g, t);
+        // el paisaje, delante del cielo (las nubes y las luces pasan por detrás de las montañas)
+        landscape(g, t);
         noScissor(g);
     }
 
-    /** El hueco del cristal en frame.png (píxeles de la imagen, sin alargar): algo más grande que GX/GY/GW/GH. */
-    private static final int GLASS_L = 187, GLASS_T = 238, GLASS_R = 1379, GLASS_B = 817; // hasta la línea negra (build_pad.sin_bisel)
-
     /**
-     * La base del cristal (su trama) en TODO el hueco del cristal del marco, recortada a píxeles reales: el cristal de
-     * frame.png asoma 1 a 3 píxeles de pad más allá de GX/GY/GW/GH y, sin esto, se veía su azul debajo, como una
-     * segunda pantalla detrás (sobre todo abajo).
+     * El hueco del cristal en frame.png (píxeles de la imagen, sin alargar; build_pad.GLASS_BOX): algo más grande que
+     * GX/GY/GW/GH. Fuera de él (y en sus esquinas escalonadas) el marco es opaco.
      */
+    private static final int GLASS_L = 205, GLASS_T = 249, GLASS_R = 1361, GLASS_B = 795;
+
     /**
      * El papel del cristal: monogramas «TF» pequeños y muy suaves en filas alternas que se deslizan despacio en
      * diagonal (quietos sin animaciones). Van debajo de todo: se ven entre las apps y alrededor de las ventanas.
@@ -662,6 +657,40 @@ public final class TFPadScreen extends Screen {
         }
     }
 
+    /**
+     * La base del cristal en TODO su hueco (recortada a píxeles reales; el marco, que va encima, le da la forma): el
+     * color del tema en degradado (el de Cielo es el azul de marco.png), los monogramas, la trama y una sombra suave
+     * abajo. Como el fondo llega hasta el bisel, no queda ninguna franja de otro azul alrededor.
+     */
+    /** Lo que el hueco del cristal sobresale de GX/GY/GW/GH a la izquierda, a la derecha y abajo (unidades). */
+    private int glassL, glassR, glassB;
+
+    /** Las capas del paisaje: textura, cuánto se desliza (unidades por segundo) y su alfa. */
+    private static final String[] LAND = {"land_far", "land_mid", "land_near"};
+    private static final float[] LAND_SPEED = {1.2F, 2.6F, 4.2F}, LAND_ALPHA = {0.72F, 0.86F, 0.95F};
+
+    /**
+     * El paisaje de abajo del cristal (1.3.63; tools/pad/build_skin.py land_*): montañas con nieve, colinas con robles
+     * y abetos y delante el castillo de Tierras Fantásticas con unas casitas. Tres capas en mosaico del color del tema
+     * (más claras las lejanas, como con bruma) que se deslizan a distinta velocidad; quietas sin animaciones. Nítidas:
+     * cada píxel de la textura son big píxeles reales, como los iconos.
+     */
+    private void landscape(GuiGraphics g, float t) {
+        int b = 0xFF000000 | PadSettings.theme().bottom();
+        int lum = ((b >> 16 & 255) * 3 + (b >> 8 & 255) * 6 + (b & 255)) / 10;
+        boolean dark = lum < 110;
+        int[] col = {PadSkin.mix(b, 0xFFFFFFFF, dark ? 0.2F : 0.5F), PadSkin.mix(b, dark ? 0xFF0A1028 : 0xFF18265C, 0.3F),
+                PadSkin.mix(b, dark ? 0xFF060A1A : 0xFF18265C, 0.5F)};
+        float k = big / (float) cs, w = 256 * k, h = 44 * k;
+        float bottom = unitsH + glassB;
+        for (int i = 0; i < LAND.length; i++) {
+            ResourceLocation tex = tex(LAND[i]);
+            float off = PadSettings.animations ? (t * LAND_SPEED[i]) % w : 0F;
+            float x = Math.round((-glassL - off - i * 61) * cs) / (float) cs; // a píxel real: nítido al moverse
+            for (; x < unitsW + glassR; x += w) PadSkin.texture(g, tex, x, bottom - h, w, h, LAND_ALPHA[i], col[i] & 0xFFFFFF, false);
+        }
+    }
+
     private void glassBase(GuiGraphics g) {
         int lift = liftReal();
         int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
@@ -669,10 +698,14 @@ public final class TFPadScreen extends Screen {
         int top = gy + lift;
         int mL = Math.max(0, (gx - x0 + cs - 1) / cs), mT = Math.max(0, (top - y0 + cs - 1) / cs);
         int mR = Math.max(0, (x1 - gx - unitsW * cs + cs - 1) / cs), mB = Math.max(0, (y1 - top - unitsH * cs + cs - 1) / cs);
+        glassL = mL;
+        glassR = mR;
+        glassB = mB;
         g.flush();
         int fbH = Minecraft.getInstance().getWindow().getHeight();
         RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
-        // los monogramas TF del color del tema (el color del cristal lo pone drawFrame con sus máscaras)
+        PadSettings.Theme th = PadSettings.theme();
+        g.fillGradient(-mL, -mT, unitsW + mR, unitsH + mB, 0xFF000000 | th.top(), 0xFF000000 | th.bottom());
         monograms(g, -mL, -mT, unitsW + mR, unitsH + mB, PadSettings.theme().deco());
         PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
         // la sombra suave de abajo llega hasta el borde de verdad del cristal: si se cortaba en GY + GH, la franja de
@@ -687,20 +720,15 @@ public final class TFPadScreen extends Screen {
      */
     private void drawFrame(GuiGraphics g) {
         drawFrame(g, "frame");
-        // el tema (Ajustes › Tema): el cristal con su forma exacta (glass_shape) del color de abajo y, encima, la misma
-        // forma desvaneciéndose hacia abajo (glass_fade) del color de arriba: su degradado sin pisar nada del marco
+        // los neones y las gemas azules del marco, del color del tema (Ajustes › Tema): neon.png lleva su brillo en gris
+        // (núcleo, halo y caras de las gemas) y se tiñe; encima, neon_core.png sin teñir enciende el núcleo del tubo
         PadSettings.Theme th = PadSettings.theme();
-        if (PadSettings.theme != 0) {
+        if (th.neon() != 0) {
             RenderSystem.enableBlend();
-            g.setColor((th.bottom() >> 16 & 255) / 255F, (th.bottom() >> 8 & 255) / 255F, (th.bottom() & 255) / 255F, 1F);
-            drawFrame(g, "glass_shape");
-            g.setColor((th.top() >> 16 & 255) / 255F, (th.top() >> 8 & 255) / 255F, (th.top() & 255) / 255F, 1F);
-            drawFrame(g, "glass_fade");
-            if (th.neon() != 0) { // los neones y las gemas azules del marco, del color del tema (neon.png: su brillo en gris)
-                g.setColor((th.neon() >> 16 & 255) / 255F, (th.neon() >> 8 & 255) / 255F, (th.neon() & 255) / 255F, 1F);
-                drawFrame(g, "neon");
-            }
+            g.setColor((th.neon() >> 16 & 255) / 255F, (th.neon() >> 8 & 255) / 255F, (th.neon() & 255) / 255F, 1F);
+            drawFrame(g, "neon");
             g.setColor(1F, 1F, 1F, 1F);
+            drawFrame(g, "neon_core");
         }
     }
 
@@ -744,6 +772,14 @@ public final class TFPadScreen extends Screen {
     private void drawStatus(GuiGraphics g, double mx, double my) {
         Minecraft mc = Minecraft.getInstance();
         int bx = backX(), by = backY(), bsz = big(12);
+        // la barra de estado (1.3.63): cristal escarchado de lado a lado, con su brillo arriba y una línea abajo (la hora,
+        // las monedas y el título se leen mejor sobre cualquier fondo y tema)
+        int sx0 = bx - 4, sx1 = unitsW - 3, sy0 = 2, sy1 = bar - 1;
+        g.fillGradient(sx0 + 1, sy0, sx1 - 1, sy1, 0x42FFFFFF, 0x1AFFFFFF);
+        g.fill(sx0, sy0 + 1, sx0 + 1, sy1 - 1, 0x30FFFFFF);
+        g.fill(sx1 - 1, sy0 + 1, sx1, sy1 - 1, 0x30FFFFFF);
+        g.fill(sx0 + 2, sy0, sx1 - 2, sy0 + 1, 0x70FFFFFF);
+        g.fill(sx0 + 2, sy1, sx1 - 2, sy1 + 1, 0x2A18265C);
         if (page != home) {
             boolean hover = PadUi.inside(mx, my, bx, by, bsz, bsz);
             if (hover) hover("§back");

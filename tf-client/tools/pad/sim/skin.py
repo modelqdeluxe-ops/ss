@@ -51,10 +51,10 @@ def with_a(c, a):
 
 
 # PadSkin.THEME: el color y la frase de cada app (las del admin usan las de su app)
-THEMES = [('Cielo', 0x54D0FC, 0x60D5FC, 0xFFFFFF), ('Rosa', 0xFFB9DC, 0xFF8EC6, 0xFFFFFF),
-          ('Lavanda', 0xCDB9FF, 0xA88CF5, 0xFFFFFF), ('Menta', 0xA2F2D5, 0x5ED8AB, 0xFFFFFF),
-          ('Atardecer', 0xFFCC92, 0xFF9670, 0xFFFFFF), ('Oro', 0xFFE69A, 0xF4C24F, 0xFFFFFF),
-          ('Fresa', 0xFFA6B2, 0xF0647C, 0xFFFFFF), ('Noche', 0x3B4E9E, 0x1D2860, 0xA9B8FF)]
+THEMES = [('Cielo', 0x54D0FC, 0x60D5FC, 0xFFFFFF, 0), ('Rosa', 0xFFB9DC, 0xFF8EC6, 0xFFFFFF, 0xFF6EC7),
+          ('Lavanda', 0xCDB9FF, 0xA88CF5, 0xFFFFFF, 0xB58CFF), ('Menta', 0xA2F2D5, 0x5ED8AB, 0xFFFFFF, 0x3DF0B0),
+          ('Atardecer', 0xFFCC92, 0xFF9670, 0xFFFFFF, 0xFF9A3D), ('Oro', 0xFFE69A, 0xF4C24F, 0xFFFFFF, 0xFFD23D),
+          ('Fresa', 0xFFA6B2, 0xF0647C, 0xFFFFFF, 0xFF4D6D), ('Noche', 0x3B4E9E, 0x1D2860, 0xA9B8FF, 0x6F8CFF)]
 
 THEME = {
     'oficios': (0xE0892E, 'Trabaja, sube de nivel y cobra cada pago.'),
@@ -78,6 +78,7 @@ THEME = {
     'gachapon': (0xE0489E, 'Gira y gana premios.'),
     'pase': (0x2EAF5C, 'Sube de nivel y cobra premios.'),
     'camara': (0x3B9BE0, 'Tus fotos para la comunidad.'),
+    'guia': (0x1E9E8C, 'Cómo funciona cada app, paso a paso.'),
     'ajustes': (0x5B74A6, 'Tu pad, a tu manera.'),
     'admin': (0x5B74A6, 'Configura el servidor.'),
 }
@@ -682,11 +683,22 @@ class Skin:
             self.sparkle(int(sx * W), int(sy * H), 2 if i % 3 == 0 else 1, tw * 0.85)
         if home:  # en la portada, su cielo animado (PadHomePage.ambient)
             self.home_ambient(home, t, fade)
+        # el paisaje (TFPadScreen.landscape), delante del cielo: tres capas del color del tema que se deslizan
+        b = rgb(th[2])
+        lum = (b[0] * 3 + b[1] * 6 + b[2]) / 10
+        dark = lum < 110
+        cols = [mix(b, WHITE, 0.2 if dark else 0.5), mix(b, (10, 16, 40) if dark else (24, 38, 92), 0.3),
+                mix(b, (6, 10, 26) if dark else (24, 38, 92), 0.5)]
+        kk = self.big / self.cs
+        lw_, lh_ = 256 * kk, 44 * kk
+        for i, (name, sp, al) in enumerate((('land_far', 1.2, 0.72), ('land_mid', 2.6, 0.86), ('land_near', 4.2, 0.95))):
+            off = (t * sp) % lw_
+            x = round((-off - i * 61) * self.cs) / self.cs
+            while x < W:
+                self.tex_alpha(name, x, H - lh_, lw_, lh_, al, cols[i], smooth=False)
+                x += lw_
         self.no_scissor()
-        # el logo, otra vez encima (las luces pasan por detrás)
-        logo = self.img('logo_over')
-        k = self.ps / 4
-        self._paste_px(logo.resize((round(logo.width * k), round(logo.height * k)), Image.NEAREST), 0, 0)
+        # el logo lo pone el marco, que va encima (Sim.save)
 
     def vgrad_a(self, x, y, w, h, ct, cb):
         """Degradado vertical con alfa (fillGradient con colores ARGB)."""

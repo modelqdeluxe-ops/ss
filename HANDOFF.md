@@ -1,7 +1,7 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **13 de octubre de 2026** (TF Client **1.3.62**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
-`claude/admiring-pascal-q0szox` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
+Última actualización: **13 de octubre de 2026** (TF Client **1.3.63**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+`claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
@@ -9,9 +9,9 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-### CHECKPOINT (13 oct 2026, TF Client 1.3.62) — lee esto primero
+### CHECKPOINT (13 oct 2026, TF Client 1.3.63) — lee esto primero
 
-**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.62** (PR #89), Release ya creada:
+**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.63**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
 
@@ -31,19 +31,24 @@ apunta la entrega aquí arriba (bloque «TF Client 1.3.x»); commit, push a la r
 `mcp__github__create_pull_request` / `merge_pull_request`); espera el CI de `main`
 (`curl -s https://api.github.com/repos/modelqdeluxe-ops/ss/actions/runs?head_sha=<sha>`) y comprueba que el enlace fijo baja
 la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). Luego
-`git fetch origin main && git checkout -B claude/admiring-pascal-q0szox origin/main && git push --force-with-lease`.
+`git fetch origin main && git checkout -B <tu rama> origin/main && git push --force-with-lease`.
+Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
+Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (lo hecho en 1.3.57–1.3.62 solo se vio en el simulador o compilando)**: que la «doble
-pantalla» desapareció de verdad (bisel quitado de frame.png), los 8 temas (máscaras glass_shape/glass_fade/neon), el
-escaparate 3D del Armario (`InventoryScreen.renderEntityInInventoryFollowsMouse` dentro del pad), las skins entre
-jugadores (canal `tfclient:skins`, mixins de skin), el buzón de REGALOS, el asistente de kits del admin, la música con
-MP3 MPEG-2/2.5 y el escaneo de la carpeta. Si el dueño manda capturas de algo de esto, empieza por ahí.
+**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.63 (marco con su bisel y el fondo debajo,
+neones de los temas, paisaje, barra de estado, SKINS con `PadSkinModel`, app Guía, MP3 con JLayer) y de antes las skins
+entre jugadores (canal `tfclient:skins`, mixins de skin), el buzón de REGALOS, el asistente de kits del admin y el
+escaneo de la carpeta de música. Si el dueño manda capturas de algo de esto, empieza por ahí.
+**NO vuelvas a tocar el bisel del marco** (1.3.62 lo «borró» a brochazos con `sin_bisel` y el dueño se enfadó: «mató el
+diseño de la pantalla»). frame.png es marco.png TAL CUAL con el cristal hueco; la «doble pantalla» se arregla porque el
+fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 
 **Pendiente / ideas que el dueño pidió y siguen abiertas**:
 - «Más diseñitos bonitos en las GUIs, mejora lo que tenemos»: es continuo. Lo último: filas con icono 32 en pastilla de
   color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + monogramas TF. Ideas no hechas: teñir también las
   fichas azules de la portada con el tema, más ilustración en los vacíos, Ajustes del simulador al día.
-- Música: FLAC/M4A no se leen (solo MP3/OGG/WAV).
+- Música: FLAC/M4A no se leen (solo MP3/OGG/WAV). El MP3 empieza con ~50 ms de silencio (retardo del codificador y el
+  frame Xing/Info): se podría recortar con la etiqueta LAME.
 - Adelgazar el jar (55 MB: texturas de GUI 13,6 MB y sonidos de skills 12,7 MB se pueden comprimir) — ofrecido, sin respuesta.
 
 **Mapa rápido del TF Pad (lo que más se toca)** — `tf-client/src/main/java/net/tierrasfantasticas/tfclient/pad/`:
@@ -54,15 +59,45 @@ MP3 MPEG-2/2.5 y el escaneo de la carpeta. Si el dueño manda capturas de algo d
   (Ajustes con temas), `PadSettings` (ajustes y `THEMES`).
 - Servidor (`pad/server/`): una clase por app (`PadJobs`, `PadWardrobe` = Armario+Efectos, `PadRewards` = DIARIA+REGALOS,
   `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = asistente de kits, `PadClaims`…). Skins: `skins/`.
-- Texturas: `tools/pad/build_pad.py` (genera frame.png quitando el bisel y las máscaras de tema), `build_skin.py`,
+- Texturas: `tools/pad/build_pad.py --marco` (frame.png = marco.png con el cristal hueco, neon.png/neon_core.png),
+  `build_skin.py` (rayas, luces, rayos y el paisaje land_far/mid/near),
   `fx_images.py`, `job_images.py <carpeta textures del pack Medieval Jobs>`. Simulador: `python3 tools/pad/sim/pages.py
-  <carpeta>` (`PAGES=p_x,p_y`, `THEME=n`); su capa del cristal solo cubre GW×GH (el anillo del marco no lo pinta).
+  <carpeta>` (`PAGES=p_x,p_y`, `THEME=n`; también `p_skins` y `p_guia*`). Pinta como el juego: fondo debajo, marco encima.
 
 
 > **REGLA NUEVA (13 oct, pedido del dueño): el jar se publica como Release de GitHub, no en `descargas/`.** Subir
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.63 (13 oct)** — el dueño probó la 1.3.62: «la otra IA jodió la pantalla, mató el diseño, los colores
+> mal pintados», «la pantalla de skins una reverenda mierda: una cabeza sin skin, vista previa rota que se sale; solo
+> quiero ver mi skin, no lo que traigo puesto», «retoques reales a las GUIs y al fondo, todo menos los iconos», «que el
+> reproductor lea bien canciones de más de 300 kb(ps), calidad de sonido», «no está claro cómo meter links: haz una app
+> Guía con todas las instrucciones; con ella la interfaz queda simétrica».
+> - **Marco**: frame.png vuelve a ser marco.png **tal cual** (bisel, brillos, esquinas escalonadas) con el cristal
+>   transparente (`build_pad.frame_textures`, `--marco`). `TFPadScreen.render` pinta primero el fondo del cristal en todo
+>   su hueco (`GLASS_L/T/R/B` = 205, 249, 1361, 795: hasta el bisel; color del tema en degradado en `glassBase`) y luego
+>   el marco encima, que lo recorta con su forma exacta: sin franja de otro azul (la «doble pantalla») y sin estropear el
+>   dibujo. Fuera `sin_bisel`, glass_shape/glass_fade y logo_over (el logo ya va en el marco, encima).
+> - **Neones de los temas**: antes un color plano (neon.png = máximo del canal × color). Ahora neon.png lleva el brillo
+>   ((g+b)/2: núcleo, halo y caras de las gemas) con alfa que se apaga en el halo, teñido; encima neon_core.png en blanco
+>   (el núcleo encendido). El logo (x<400, y<340 de la imagen) no se tiñe.
+> - **SKINS** (Armario): `PadSkinModel` dibuja SOLO la skin en 3D (`PlayerModel` horneado de `ModelLayers.PLAYER(_SLIM)`,
+>   sin capas: nada de armadura, objetos, alas, capa ni cosméticos), mirando al ratón y respirando, recortado a su caja.
+>   Imágenes: `PadView.SELF_MODEL` (lo que llevas), `tfclient:skinmodel/own` (la de tu cuenta: `SkinClient.bypass` deja
+>   leer la de `PlayerInfo` sin la del Armario) y `tfclient:skinmodel/<huella>_f|_n` (`SkinServer.model`). Escaparate de
+>   58 de alto + tarjetas normales (caben sin desplazar a 1080p); «Mi skin» → «De siempre» con la skin real.
+> - **Música**: medido contra ffmpeg (`Dump` + SNR): JavaMP3 distorsionaba los MP3 de 128 kbps (14,5 dB, picos +50 %) y
+>   se apartaba en los de 320 (41,8 dB). Ahora **todos** los MP3 van con JLayer (52,9 dB en 320/128/VBR/48 kHz/MPEG-2: la
+>   misma señal, 0,02 dB más bajo), ~110× tiempo real. Al saltar a mitad se decodifican y tiran los 2 frames de antes
+>   (reserva de bits: sin chasquido). Fuera `pad/music/mp3/` (JavaMP3), `Mp3Decoder` y su licencia. Límite: 80 MB.
+> - **App Guía** (`PadGuidePage`, icono `iconos4.guia`: libro abierto con «?» y marcapáginas): Primeros pasos, las 23
+>   apps y Ajustes; cada tema con secciones, pasos numerados, puntos y CONSEJO, y ABRIR para ir a la app. El texto está
+>   en el Java (si cambia una app, cambia su tema). 24 apps: 8 + 8 + 8. El staff la puede apagar (APPS del admin).
+> - **Fondo**: paisaje de pixel art abajo del cristal (`TFPadScreen.landscape`, `build_skin.land_*`: montañas con nieve,
+>   colinas con robles y abetos, el castillo y casitas), tres capas del color del tema que se deslizan (paralaje),
+>   delante de las nubes. **Barra de estado** de cristal escarchado detrás del título, la hora y las monedas.
 
 > **TF Client 1.3.62 (13 oct)**:
 > - **«Doble pantalla» (la de verdad)**: era el diseño de marco.png: un anillo de bisel azul oscuro de 15–20 px alrededor
@@ -929,8 +964,8 @@ Hecho:
     METADATA_BLOCK_PICTURE); la portada se guarda a 256x256 PNG (sin Graphics2D). Botón PORTADA: imagen desde un link.
   - Biblioteca (`MusicLibrary`): `.minecraft/tfclient/musica/` (`<id>.mp3|ogg|wav`, `<id>.png`, `biblioteca.json` con
     la lista y volumen/aleatorio/repetir). Borrar con confirmación.
-  - Decodificadores (`AudioDecoder`): MP3 con **JavaMP3** (MIT, copiado en `pad/music/mp3/`, con un arreglo para saltar
-    a mitad de canción; licencia también en `META-INF/licenses/`), salto exacto con `Mp3Frames` (recorre cabeceras);
+  - Decodificadores (`AudioDecoder`): MP3 con **JLayer** (desde la 1.3.63; JavaMP3 distorsionaba), duración con
+    `Mp3Frames` (recorre cabeceras);
     OGG con stb_vorbis (el de Minecraft); WAV 8/16/24/32 bits y float.
   - Sonido (`MusicStream`/`MusicSound`/`MusicPlayer`): es un sonido del juego (Forge `SoundInstance.getStream`),
     categoría principal, sin posición; play/pausa (para al momento), anterior/siguiente, salto arrastrando la barra,
@@ -1951,7 +1986,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.62)
+## 5. El mod (TF Client 1.3.63)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

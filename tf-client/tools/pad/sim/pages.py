@@ -11,7 +11,7 @@ import sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from sim import NAVY, ROOT, Sim, lighten, rgb  # noqa: E402
+from sim import MC, NAVY, ROOT, Sim, lighten, rgb  # noqa: E402
 from skin import accent, mix, darken as darken_t  # noqa: E402
 
 if len(sys.argv) < 2:
@@ -84,7 +84,7 @@ APPS = [('musica', 'MÚSICA'), ('oficios', 'OFICIOS'), ('misiones', 'MISIONES'),
         ('recompensas', 'RECOMPENSAS'), ('tienda', 'TIENDA'), ('gts', 'GTS'), ('monedero', 'MONEDERO'), ('viajes', 'VIAJES'),
         ('hogares', 'HOGARES'), ('kits', 'KITS'), ('protecciones', 'PROTECCIÓN'), ('clanes', 'CLANES'),
         ('jugadores', 'JUGADORES'), ('comunidad', 'COMUNIDAD'), ('camara', 'CÁMARA'), ('ranking', 'RANKING'),
-        ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('web', 'WEB')]
+        ('armario', 'ARMARIO'), ('efectos', 'EFECTOS'), ('rango', 'MI RANGO'), ('web', 'WEB'), ('guia', 'GUÍA')]
 ADMIN = [('admin', 'APPS'), ('tienda', 'TIENDA'), ('kits', 'KITS'), ('recompensas', 'RECOMPENSAS'), ('viajes', 'VIAJES'), ('gts', 'GTS'),
          ('comunidad', 'COMUNIDAD'), ('oficios', 'OFICIOS'), ('admin', 'AJUSTES')]
 
@@ -291,6 +291,18 @@ page('p_armario', 'ARMARIO', [('cabeza', 'CABEZA ·'), ('pecho', 'PECHO'), ('pie
          ('leather_helmet', 'Sombrero de paja', 0x9E5AE0, 'Crate verano', False, 1, {'tone': 4}),
          ('turtle_helmet', 'Casco marino', 0x9E5AE0, 'PONER', False, 1, {'tone': 4}),
      ], footer=[('QUITAR', R)])
+# SKINS (PadWardrobe.skinsView): el escaparate con tu skin en 3D (solo la skin) y tus skins, cada una en 3D
+PLAYER = os.path.join(MC, 'entity/player')
+STEVE, ALEX = (os.path.join(PLAYER, 'wide/steve.png'), False), (os.path.join(PLAYER, 'slim/alex.png'), True)
+page('p_skins', 'ARMARIO', [('skins', 'SKINS'), ('cabeza', 'CABEZA'), ('pecho', 'PECHO'), ('piernas', 'PIERNAS'), ('pies', 'PIES'),
+                            ('espalda', 'ESPALDA')], 'skins', [], [], app='armario', hover=2,
+     hero=('player_head', 'Tu skin', 0x9E5AE0, ['Llevas la skin de tu cuenta de Minecraft.',
+                                                'Pulsa una skin de abajo para verla o ponértela.'], -1, '2/16', None, None,
+           {'model': STEVE}),
+     cards=[('player_head', 'De siempre', 0x9E5AE0, 'PUESTA', True, 1, {'tone': 2, 'model': STEVE}),
+              ('player_head', 'Alex', 0x9E5AE0, 'VER', False, 1, {'tone': 1, 'model': ALEX}),
+              ('player_head', 'Zuri', 0x9E5AE0, 'VER', False, 1, {'tone': 1, 'model': (os.path.join(PLAYER, 'wide/zuri.png'), False)})],
+     footer=[('AÑADIR SKIN', G)])
 KILLS = json.load(open(os.path.join(FX, 'meta.json'), encoding='utf-8'))['kills']
 kill_ids = sorted(KILLS, key=lambda k: (KILLS[k]['order'], k))
 page('p_efectos', 'EFECTOS', [('', 'AL MATAR'), ('skills', 'SKILLS')], '',
@@ -1278,3 +1290,128 @@ for i, im in enumerate(ims):
 sheet = sheet.resize((sheet.width // 2, sheet.height // 2), Image.LANCZOS)
 sheet.save(OUT + 'hoja_apps.png')
 print('ok', len(NAMES))
+
+
+# --- Guía (PadGuidePage): el texto se lee del propio Java -----------------------------------------------------------
+def guide_topics():
+    import re
+    src = open(os.path.join(ROOT, 'src/main/java/net/tierrasfantasticas/tfclient/pad/PadGuidePage.java'), encoding='utf-8').read()
+    body = src[src.index('    static {'):]
+    out = []
+    for m in re.finditer(r'topic\("([^"]*)", "([^"]*)", "([^"]*)",(.*?)\);\n\n', body + '\n\n', re.S):
+        blocks = [(k, t) for k, t in re.findall(r'\b(h|p|s|b|tip)\("((?:[^"\\]|\\.)*)"\)', m.group(4))]
+        out.append((m.group(1), m.group(2), m.group(3), blocks))
+    return out
+
+
+def guide_page(name, sel, text_scroll=0, hover=None):
+    if ONLY and name not in ONLY:
+        return
+    topics = guide_topics()
+    s = Sim()
+    s.status('GUÍA')
+    with Local(s):
+        X, Y, W, H = s.X, s.Y, s.W, s.H
+        acc = accent('guia')
+        s.sk_window(X, Y, W, H, acc)
+        bh = s.banner_h([1])
+        s.sk_banner(X + 1, Y + 1, W - 2, bh, acc, 'guia', [tagline('guia')])
+        top, bottom = Y + bh + 5, Y + H - 5
+        ROW = 18
+        lw = max(104, min(126, W // 4))
+        lx, ly, lh = X + 5, top, bottom - top
+        s.box(lx - 1, ly - 1, lw + 2, lh + 2, mix((198, 218, 238), acc, 0.2))
+        s.fill(lx, ly, lx + lw, ly + lh, rgb(0xF3F8FD))
+        clip = s.clip
+        s.scissor(lx, ly, lw, lh)
+        for i, (app, nm, icon, _) in enumerate(topics):
+            y = ly + i * ROW
+            tc = accent(app or 'guia')
+            if i == sel:
+                s.vgrad(lx, y, lw, ROW, mix(tc, WHITE, 0.25), darken_t(tc, 0.85))
+                s.fill(lx, y, lx + lw, y + 1, lighten(tc, 70))
+                s.fill(lx, y + ROW - 1, lx + lw, y + ROW, darken_t(tc, 0.6))
+            else:
+                if hover == i:
+                    s.fill(lx, y, lx + lw, y + ROW, tint(tc, 0.22))
+                s.fill(lx + 3, y + ROW - 1, lx + lw - 3, y + ROW, (24, 38, 92, 20))
+            s.fill(lx, y + 1, lx + 2, y + ROW - 1, WHITE if i == sel else tc)
+            s.icon_crisp(icon, lx + 13, y + ROW / 2, 14)
+            if i == sel:
+                s.btext(nm, lx + 24, y + 6, darken_t(tc, 0.45))
+                s.btext(nm, lx + 23, y + 5, WHITE)
+            else:
+                s.mtext(nm, lx + 23, y + 5, TEXT)
+        s.clip = clip
+        s.sk_scrollbar(lx + lw + 2, ly, lh, lh, len(topics) * ROW, 0, acc)
+        app, nm, icon, blocks = topics[sel]
+        tc = accent(app or 'guia')
+        cx = lx + lw + 10
+        cw = X + W - 6 - cx
+        s.sk_slot(cx, top, 28, deep_t(tc))
+        s.icon_crisp(icon, cx + 14, top + 14, 24)
+        right = cx + cw
+        if app:
+            label = 'ABRIR ' + nm.upper()
+            if s.bw(label) > cw // 2:
+                label = 'ABRIR'
+            bw = s.bw(label)
+            s.sk_button(right - bw, top + 6, bw, label, 3)
+            right -= bw + 6
+        s.btext(nm, cx + 35, top + 6, (24, 38, 92, 32))
+        s.btext(nm, cx + 34, top + 5, darken_t(tc, 0.7))
+        summ = next((t for k, t in blocks if k == 'p'), '')
+        s.mtext(s.fitend(summ, right - cx - 34), cx + 34, top + 17, MUTED)
+        s.fill(cx, top + 31, cx + cw, top + 32, tint(tc, 0.5))
+        s.fill(cx, top + 32, cx + cw, top + 33, WHITE)
+        tx, ty, tw = cx, top + 35, cw - 7
+        th = bottom - ty
+        s.scissor(tx, ty, tw + 1, th)
+        y = ty - text_scroll
+        step, first = 0, True
+        content = 0
+        for k, t in blocks:
+            t = t.replace('\\"', '"')
+            if k == 'h':
+                h = (0 if first else 6) + 14
+                s.sk_section(tx, y + (0 if first else 6) + 2, tw, t, tc)
+                step = 0
+            elif k == 'p':
+                h = s.nlines(t, tw) * 10 + 5
+                s.wrap(t, tx, y + 1, tw, TEXT)
+            elif k == 's':
+                step += 1
+                h = max(13, s.nlines(t, tw - 16) * 10 + 3)
+                s.disc(tx + 6, y + 5.5, 6, darken_t(tc, 0.62))
+                s.disc(tx + 6, y + 5.5, 5, tc)
+                s.mtext(str(step), tx + 6 - s.mwidth(str(step)) // 2 + 1, y + 2, WHITE)
+                s.wrap(t, tx + 16, y + 1, tw - 16, TEXT)
+            elif k == 'b':
+                h = s.nlines(t, tw - 11) * 10 + 2
+                s.diamond(tx + 4, y + 4)
+                s.wrap(t, tx + 11, y, tw - 11, TEXT)
+            else:
+                h = 16 + s.nlines(t, tw - 12) * 10 + 9
+                bh2 = h - 5
+                s.box(tx, y + 1, tw, bh2, tint(tc, 0.55))
+                s.vgrad(tx + 1, y + 2, tw - 2, bh2 - 2, tint(tc, 0.16), tint(tc, 0.28))
+                s.fill(tx + 1, y + 2, tx + 3, y + bh2, tc)
+                s.btext('CONSEJO', tx + 8, y + 5, darken_t(tc, 0.62))
+                s.wrap(t, tx + 8, y + 16, tw - 12, TEXT)
+            y += h
+            content += h
+            first = False
+        s.clip = clip
+        if text_scroll < content + 4 - th:
+            s.vgrad_a(tx, ty + th - 10, tw, 10, (244, 249, 254, 0), (244, 249, 254, 230))
+        s.sk_scrollbar(tx + tw + 3, ty, th, th, content + 4, text_scroll, tc)
+    s.save(OUT + name + '.png')
+    NAMES.append(name)
+
+
+from skin import deep as deep_t, tint, tagline, WHITE  # noqa: E402,F811
+from sim import TEXT, MUTED  # noqa: E402
+guide_page('p_guia', 0)
+guide_page('p_guia_musica', 1, hover=4)
+guide_page('p_guia_musica2', 1, text_scroll=170)
+guide_page('p_guia_armario', 20)

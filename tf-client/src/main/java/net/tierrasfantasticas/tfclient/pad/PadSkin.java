@@ -63,6 +63,7 @@ final class PadSkin {
         theme("camara", 0x3B9BE0, "Tus fotos para la comunidad.");
         theme("ajustes", 0x5B74A6, "Tu pad, a tu manera.");
         theme("admin", 0x5B74A6, "Configura el servidor.");
+        theme("guia", 0x1E9E8C, "Cómo funciona cada app, paso a paso.");
     }
 
     private static void theme(String app, int color, String tagline) {
