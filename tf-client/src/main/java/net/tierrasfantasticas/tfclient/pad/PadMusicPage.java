@@ -60,6 +60,7 @@ final class PadMusicPage extends PadPage {
 
     PadMusicPage(TFPadScreen pad) {
         super(pad, "musica");
+        MusicLibrary.scanFolder(); // las canciones metidas a mano en la carpeta (cualquier MP3, OGG o WAV)
     }
 
     @Override
