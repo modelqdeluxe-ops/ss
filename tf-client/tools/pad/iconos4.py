@@ -407,7 +407,43 @@ def misiones():
     return centered(ic.outline(OUT))
 
 
-ICONOS = {'oficios': oficios, 'pase': pase, 'gachapon': gachapon, 'viajes': viajes, 'efectos': efectos, 'misiones': misiones}
+def guia():
+    """Guía (1.3.63): libro abierto con tapas azules, la hoja izquierda con sus renglones, un «?» grande azul en la
+    derecha y la cinta roja del marcapáginas colgando por abajo."""
+    ic = Icon()
+    cover = ic.poly([(2, 10), (15, 12), (17, 12), (30, 10), (30, 26), (17, 28), (15, 28), (2, 26)])
+    shade(ic, cover, SKY)
+    left = ic.poly([(4, 7), (15.5, 9.5), (15.5, 26), (4, 24)])
+    right = ic.poly([(16.5, 9.5), (28, 7), (28, 24), (16.5, 26)])
+    shade(ic, left, PAPER)
+    shade(ic, right, PAPER)
+    for y in range(9, 27):  # el lomo: el pliegue de las hojas
+        ic.px(15, y, PAPER[3])
+        ic.px(16, y, PAPER[4])
+    for i, y0 in enumerate((12, 15, 18, 21)):  # renglones (siguen la curva de la hoja)
+        for x in range(6, 14 - (4 if i == 3 else 0)):
+            ic.px(x, y0 + (x - 4) // 6, PAPER[3])
+    q = ['.#####.',
+         '##...##',
+         '.....##',
+         '....##.',
+         '...##..',
+         '...##..',
+         '.......',
+         '...##..',
+         '...##..']
+    for j, row in enumerate(q):
+        for i, ch in enumerate(row):
+            if ch == '#':
+                ic.px(18 + i, 10 + j, SKY[2] if j == 0 or (j == 1 and i < 2) else SKY[4])
+    ribbon = ic.poly([(11, 24), (14, 24.5), (14, 30.5), (12.5, 29), (11, 30.5)])
+    for x, y in ribbon:
+        ic.px(x, y, REDB[2] if x < 13 else REDB[3])
+    return centered(ic.outline(OUT))
+
+
+ICONOS = {'oficios': oficios, 'pase': pase, 'gachapon': gachapon, 'viajes': viajes, 'efectos': efectos, 'misiones': misiones,
+          'guia': guia}
 
 if __name__ == '__main__':
     from PIL import Image

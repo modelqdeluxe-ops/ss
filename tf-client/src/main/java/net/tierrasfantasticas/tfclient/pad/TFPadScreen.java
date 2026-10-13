@@ -66,7 +66,7 @@ public final class TFPadScreen extends Screen {
     /** Alto de la barra de arriba con escala grande 1 (ver {@link #bar}). */
     static final int BAR = 18;
     /** Apps con página propia en el cliente; las demás las dibuja el servidor. */
-    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web", "gachapon", "pase");
+    static final Set<String> CLIENT_APPS = Set.of("comunidad", "camara", "ajustes", "musica", "web", "gachapon", "pase", "guia");
     private static final Map<String, int[]> SIZES = new HashMap<>();
 
     /** Escala de la interfaz de Minecraft, píxeles reales por píxel de pad y por unidad de pantalla. */
@@ -450,6 +450,7 @@ public final class TFPadScreen extends Screen {
             case "camara" -> setPage(new PadCameraPage(this));
             case "ajustes" -> setPage(new PadInfoPages.Ajustes(this));
             case "musica" -> setPage(new PadMusicPage(this));
+            case "guia" -> setPage(new PadGuidePage(this));
             case "gachapon", "pase" -> { // páginas propias con los datos del servidor
                 setPage(id.equals("pase") ? new PadPassPage(this) : new PadGachaPage(this));
                 TFPadClient.openServerApp(id, tab);

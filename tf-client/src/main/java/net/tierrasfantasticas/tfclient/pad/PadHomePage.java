@@ -33,7 +33,7 @@ final class PadHomePage extends PadPage {
             new App("protecciones", "PROTECCIÓN"), new App("clanes", "CLANES"), new App("jugadores", "JUGADORES"),
             new App("comunidad", "COMUNIDAD"), new App("camara", "CÁMARA"), new App("ranking", "RANKING"),
             new App("armario", "ARMARIO"), new App("efectos", "EFECTOS"), new App("rango", "MI RANGO"),
-            new App("web", "WEB"));
+            new App("web", "WEB"), new App("guia", "GUÍA"));
 
     /** Las del pad de administrador (las dibuja el servidor, solo para el staff). */
     static final List<App> ADMIN_APPS = List.of(

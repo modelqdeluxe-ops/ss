@@ -78,6 +78,7 @@ THEME = {
     'gachapon': (0xE0489E, 'Gira y gana premios.'),
     'pase': (0x2EAF5C, 'Sube de nivel y cobra premios.'),
     'camara': (0x3B9BE0, 'Tus fotos para la comunidad.'),
+    'guia': (0x1E9E8C, 'Cómo funciona cada app, paso a paso.'),
     'ajustes': (0x5B74A6, 'Tu pad, a tu manera.'),
     'admin': (0x5B74A6, 'Configura el servidor.'),
 }
