@@ -49,3 +49,18 @@ jobs:
           git config user.email "41898281+github-actions[bot]@users.noreply.github.com"
           git add . && git commit -q -m "TF Client ${GITHUB_SHA::7}"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/tf-client/jar
+      # La descarga del mod: una Release por versión (v<mod_version>) con el jar con su nombre y una copia
+      # «tfclient.jar», para que https://github.com/<repo>/releases/latest/download/tfclient.jar sea siempre la
+      # última. Solo en main y solo si esa versión aún no tiene Release (subir mod_version = publicar).
+      - name: Publicar la Release de la versión
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ver=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          jar=$(ls build/libs/tfclient-*-"$ver".jar | head -n1)
+          if gh release view "v$ver" >/dev/null 2>&1; then echo "La Release v$ver ya existe"; exit 0; fi
+          cp "$jar" /tmp/tfclient.jar
+          gh release create "v$ver" "$jar" /tmp/tfclient.jar --latest \
+            --title "TF Client $ver" \
+            --notes "Descarga: tfclient-1.20.1-$ver.jar (o tfclient.jar, la misma). Enlace fijo a la última: https://github.com/${{ github.repository }}/releases/latest/download/tfclient.jar"
