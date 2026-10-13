@@ -130,6 +130,8 @@
   --grid-lines:
     linear-gradient(rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px,
     linear-gradient(90deg, rgb(var(--line-rgb) / 0.045) 1px, transparent 1px) 0 0 / 44px 44px;
+  /* Textura de las placas de la tienda: grano fino de ruido (blanco al 6 %), sobre colores opacos */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff5edb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
   color-scheme: dark;
   interpolate-size: allow-keywords;
@@ -2735,27 +2737,30 @@ body:not([data-hero]) .header::before {
   padding-bottom: 64px;
 }
 
-/* Barra de categorías (el «dock», rediseño 13 oct. 2026): una placa opaca de acero oscuro con su filo de luz arriba,
-   para que nunca se confunda con la nebulosa del fondo. Cada categoría es una ficha con su icono en el color de su
-   sección (--t = --tone-*): en reposo, el icono en una pastilla de su color; al pasar el ratón la ficha sube y su
-   filo se enciende; la elegida se llena de su color, con el icono en sólido y una barra de luz debajo. */
+/* Barra de categorías (la «tarjeta de botones», rehecha el 13 oct. 2026 tras «siempre tiendes a hacer diseños
+   transparentes»): todo OPACO y con contraste de verdad. Una placa de acero muy oscura con grano y su filo de luz
+   arriba; encima, fichas de acero claro (bien distintas de la placa y del contenido de abajo) con el icono en un
+   cuadro MACIZO de su color (--t = --tone-*). La elegida se llena entera de su color, con el texto en tinta oscura,
+   un canto inferior (como los botones de bloque de la web) y su sombra de color. Nada de colores mezclados con
+   transparencia. */
 .shop-tabs {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 30px;
-  padding: 8px;
+  padding: 9px 9px 12px;
   border-radius: 20px;
 }
 
 .shop-tabs.frame {
-  border: 1px solid #2c3568;
-  background: linear-gradient(180deg, #131a3a 0%, #0b0f24 100%);
+  border: 1px solid #3a4584;
+  background: var(--grain), linear-gradient(180deg, #121733 0%, #080a1a 100%);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 0 0 1px rgb(3 4 14 / 0.7),
-    0 26px 50px -26px #000;
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    inset 0 -2px 0 rgb(0 0 0 / 0.5),
+    0 0 0 1px #03040c,
+    0 26px 50px -24px #000;
 }
 
 .shop-tabs.frame::before {
@@ -2773,6 +2778,7 @@ body:not([data-hero]) .header::before {
 
 .tab {
   --t: var(--a-400);
+  --t-deep: color-mix(in srgb, var(--t), #000 42%);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2780,16 +2786,18 @@ body:not([data-hero]) .header::before {
   justify-content: center;
   gap: 8px;
   min-width: 0;
-  min-height: 88px;
+  min-height: 90px;
   padding: 12px 8px 11px;
-  border: 1px solid #242c58;
+  border: 1px solid #44509a;
   border-radius: 14px;
-  background: linear-gradient(180deg, #171e42 0%, #10152f 100%);
-  color: #c4c9e8;
+  background: var(--grain), linear-gradient(180deg, #2f3a74 0%, #222b5a 100%);
+  color: #f3f4ff;
   font: 700 12.5px/1.15 var(--font-body);
   text-align: center;
   white-space: normal;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 3px 0 #0a0d22;
   transition:
     transform 0.25s var(--ease),
     color 0.2s,
@@ -2806,6 +2814,7 @@ body:not([data-hero]) .header::before {
 .tab[data-category='skills'] { --t: var(--tone-skills); }
 .tab[data-category='monedas'] { --t: var(--tone-monedas); }
 
+/* El icono: un cuadro macizo de su color, con luz arriba y su canto */
 .tab-ico {
   display: grid;
   flex: none;
@@ -2813,12 +2822,13 @@ body:not([data-hero]) .header::before {
   width: 38px;
   height: 38px;
   border-radius: 11px;
-  border: 1px solid color-mix(in srgb, var(--t) 38%, transparent);
-  background: color-mix(in srgb, var(--t) 13%, transparent);
-  color: var(--t);
+  border: 1px solid var(--t-deep);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--t), #fff 28%) 0%, var(--t) 55%, color-mix(in srgb, var(--t), #000 14%) 100%);
+  color: #0b0e1f;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 2px 0 var(--t-deep);
   transition:
-    background-color 0.2s,
-    color 0.2s,
     box-shadow 0.25s,
     transform 0.3s var(--spring);
 }
@@ -2826,6 +2836,7 @@ body:not([data-hero]) .header::before {
 .tab-ico svg {
   width: 20px;
   height: 20px;
+  stroke-width: 2.1;
 }
 
 .tab-label {
@@ -2839,16 +2850,15 @@ body:not([data-hero]) .header::before {
   display: inline-grid;
   place-items: center;
   min-width: 22px;
-  height: 19px;
+  height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  background: rgb(0 0 0 / 0.32);
-  color: #9da3cc;
+  border: 1px solid #44509a;
+  background: #0b0e22;
+  color: #dfe3ff;
   font-size: 10.5px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  transition: color 0.2s, background-color 0.2s;
 }
 
 .tab .count:empty {
@@ -2856,74 +2866,65 @@ body:not([data-hero]) .header::before {
 }
 
 .tab:hover {
-  border-color: color-mix(in srgb, var(--t) 55%, #242c58);
-  background: linear-gradient(180deg, #1c2449 0%, #131937 100%);
+  border-color: var(--t);
+  background: var(--grain), linear-gradient(180deg, #3a4688 0%, #2a3468 100%);
   color: #fff;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 12px 26px -16px color-mix(in srgb, var(--t) 80%, transparent);
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 3px 0 #0a0d22,
+    0 14px 26px -14px var(--t);
 }
 
 .tab:hover .tab-ico {
-  background: color-mix(in srgb, var(--t) 24%, transparent);
-  box-shadow: 0 0 18px -6px var(--t);
-}
-
-.tab:hover .count {
-  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 2px 0 var(--t-deep),
+    0 0 18px -4px var(--t);
 }
 
 .tab:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 1px 0 #0a0d22;
 }
 
 .tab:focus-visible {
-  outline: 2px solid var(--t);
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
+/* La elegida: llena de su color, texto en tinta, canto de su color oscurecido y sombra de su color */
 .tab[aria-selected='true'] {
-  border-color: var(--t);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--t) 30%, #141a3a) 0%, color-mix(in srgb, var(--t) 9%, #0e1230) 100%);
-  color: #fff;
+  border-color: color-mix(in srgb, var(--t), #fff 40%);
+  background: var(--grain), linear-gradient(180deg, color-mix(in srgb, var(--t), #fff 22%) 0%, var(--t) 48%, color-mix(in srgb, var(--t), #000 12%) 100%);
+  color: #0b0e1f;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.14),
-    0 0 0 1px color-mix(in srgb, var(--t) 35%, transparent),
-    0 14px 30px -14px color-mix(in srgb, var(--t) 85%, transparent);
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    0 4px 0 var(--t-deep),
+    0 16px 30px -12px var(--t);
 }
 
 .tab[aria-selected='true'] .tab-ico {
-  border-color: transparent;
-  background: var(--t);
-  color: #0a0d1c;
-  box-shadow: 0 6px 16px -6px var(--t);
+  border-color: #0b0e1f;
+  background: #0b0e1f;
+  color: var(--t);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
 }
 
 .tab[aria-selected='true'] .count {
-  border-color: transparent;
-  background: var(--t);
-  color: #0a0d1c;
-}
-
-.tab[aria-selected='true']::after {
-  content: '';
-  position: absolute;
-  left: 26%;
-  right: 26%;
-  bottom: -1px;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--t);
-  box-shadow: 0 0 14px var(--t);
+  border-color: #0b0e1f;
+  background: #0b0e1f;
+  color: #fff;
 }
 
 @media (hover: hover) {
-  .tab:hover {
+  .tab:hover:not([aria-selected='true']) {
     transform: translateY(-2px);
   }
 
   .tab:hover .tab-ico {
-    transform: scale(1.08);
+    transform: scale(1.06);
   }
 }
 
@@ -2947,9 +2948,9 @@ body:not([data-hero]) .header::before {
     flex-direction: row;
     justify-content: flex-start;
     gap: 10px;
-    min-height: 62px;
+    min-height: 64px;
     padding: 10px 12px 10px 11px;
-    font-size: 13.5px;
+    font-size: 14px;
     text-align: left;
     white-space: nowrap;
   }
@@ -4435,12 +4436,12 @@ body:not([data-hero]) .header::before {
    animaciones (tools/vfx_preview.py), así que se tiñe entera del color del efecto. */
 .vfx-shop,
 .sk-shop {
-  --hud-0: #060915;
-  --hud-1: #0d1226;
-  --hud-2: #141a36;
-  --hud-3: #1b2346;
-  --hud-line: #29315f;
-  --hud-line-2: #3b4686;
+  --hud-0: #070a18;
+  --hud-1: #10152f;
+  --hud-2: #182043;
+  --hud-3: #222b57;
+  --hud-line: #303b74;
+  --hud-line-2: #46529c;
 }
 
 .vfx-hero {
@@ -4458,8 +4459,8 @@ body:not([data-hero]) .header::before {
   margin-bottom: 12px;
   padding: 5px 11px 5px 8px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--t, var(--tone-vfx)) 42%, transparent);
-  background: color-mix(in srgb, var(--t, var(--tone-vfx)) 11%, #0b0f24);
+  border: 1px solid color-mix(in srgb, var(--t, var(--tone-vfx)) 50%, #0b0f24);
+  background: color-mix(in srgb, var(--t, var(--tone-vfx)) 14%, #0b0f24);
   color: var(--t, var(--tone-vfx));
   font: 800 11px/1 var(--font-body);
   letter-spacing: 0.14em;
@@ -4469,28 +4470,6 @@ body:not([data-hero]) .header::before {
 .fx-eyebrow svg {
   width: 14px;
   height: 14px;
-}
-
-.fx-mine {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 12px 18px;
-  border-radius: 16px;
-  border: 1px solid var(--hud-line);
-  background: linear-gradient(180deg, var(--hud-2), var(--hud-1));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
-}
-
-.fx-mine b {
-  font: 800 24px/1 var(--font-display);
-  color: var(--tone-vfx);
-}
-
-.fx-mine span {
-  color: var(--ui-text-2);
-  font-size: 13.5px;
-  font-weight: 700;
 }
 
 #vfx-stage {
@@ -4504,7 +4483,7 @@ body:not([data-hero]) .header::before {
   overflow: hidden;
   border-radius: 22px;
   border: 1px solid var(--hud-line);
-  background: linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
+  background: var(--grain), linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.07),
     0 0 0 1px rgb(3 4 14 / 0.7),
@@ -4523,7 +4502,8 @@ body:not([data-hero]) .header::before {
   background:
     radial-gradient(55% 50% at 50% 52%, color-mix(in srgb, var(--vfx) 24%, transparent), transparent 72%),
     radial-gradient(90% 60% at 50% 115%, color-mix(in srgb, var(--vfx) 20%, transparent), transparent 70%),
-    var(--hud-0);
+    var(--grain),
+    #0c1129;
   isolation: isolate;
 }
 
@@ -4756,8 +4736,8 @@ body:not([data-hero]) .header::before {
   height: 30px;
   padding: 6px;
   border-radius: 9px;
-  border: 1px solid color-mix(in srgb, var(--vfx) 30%, transparent);
-  background: color-mix(in srgb, var(--vfx) 11%, var(--hud-1));
+  border: 1px solid color-mix(in srgb, var(--vfx) 45%, var(--hud-1));
+  background: color-mix(in srgb, var(--vfx) 14%, var(--hud-1));
   color: color-mix(in srgb, var(--vfx) 75%, #fff);
 }
 
@@ -4771,7 +4751,7 @@ body:not([data-hero]) .header::before {
   padding: 14px;
   border-radius: 16px;
   border: 1px solid var(--hud-line-2);
-  background: linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
+  background: var(--grain), linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
 }
 
@@ -4782,8 +4762,8 @@ body:not([data-hero]) .header::before {
   width: 46px;
   height: 46px;
   border-radius: 13px;
-  border: 1px solid color-mix(in srgb, var(--get) 45%, transparent);
-  background: color-mix(in srgb, var(--get) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--get) 55%, var(--hud-1));
+  background: color-mix(in srgb, var(--get) 20%, var(--hud-1));
   color: var(--get);
 }
 
@@ -4793,8 +4773,8 @@ body:not([data-hero]) .header::before {
 }
 
 .fx-action.is-owned .fx-action-ico {
-  border-color: color-mix(in srgb, var(--a-400) 45%, transparent);
-  background: color-mix(in srgb, var(--a-400) 16%, transparent);
+  border-color: color-mix(in srgb, var(--a-400) 55%, var(--hud-1));
+  background: color-mix(in srgb, var(--a-400) 20%, var(--hud-1));
   color: var(--a-300);
 }
 
@@ -4832,13 +4812,6 @@ body:not([data-hero]) .header::before {
 .fx-action .btn {
   flex: 1 1 100%;
   min-height: 48px;
-}
-
-/* Lo que llevas puesto, debajo de la ficha */
-.vfx-loadout {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
 }
 
 .vfx-slot {
@@ -4912,17 +4885,37 @@ body:not([data-hero]) .header::before {
   flex: none;
 }
 
-/* Paquetes de skills de antes (ya no se dan): solo los ve quien tenía alguno */
+/* Paquetes de skills de antes (ya no se dan): solo los ve quien tenía alguno, en su sección al final de VFX */
 .vfx-old {
-  display: grid;
-  gap: 8px;
+  margin-top: 36px;
 }
 
-.vfx-old-label {
-  margin-top: 6px;
+.vfx-old header {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hud-line);
+}
+
+.vfx-old h3 {
+  font: 800 18px/1.2 var(--font-display);
+}
+
+.vfx-old header span {
   color: var(--ui-muted);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+}
+
+.vfx-old-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (min-width: 760px) {
+  .vfx-old-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Filtro por categoría: pastillas con el punto de su color y su número (en el móvil, en una fila que se desliza) */
@@ -4947,26 +4940,28 @@ body:not([data-hero]) .header::before {
   height: 40px;
   padding: 0 7px 0 13px;
   border-radius: 999px;
-  border: 1px solid var(--hud-line);
-  background: linear-gradient(180deg, var(--hud-2), var(--hud-1));
-  color: var(--ui-text-2);
+  border: 1px solid #44509a;
+  background: var(--grain), linear-gradient(180deg, #2f3a74 0%, #232c5c 100%);
+  color: #f1f3ff;
   font: 700 13px/1 var(--font-body);
   white-space: nowrap;
   cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 2px 0 #0a0d22;
   transition:
-    color 0.2s,
+    transform 0.2s var(--ease),
     border-color 0.2s,
-    background-color 0.2s,
     box-shadow 0.25s;
 }
 
 .fx-chip i {
   flex: none;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--vfx), #000 35%);
   background: var(--vfx);
-  box-shadow: 0 0 8px var(--vfx);
 }
 
 .fx-chip span {
@@ -4976,28 +4971,43 @@ body:not([data-hero]) .header::before {
   height: 24px;
   padding: 0 7px;
   border-radius: 999px;
-  background: rgb(0 0 0 / 0.32);
-  color: var(--ui-muted);
+  background: #0b0e22;
+  color: #dfe3ff;
   font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .fx-chip:hover {
-  border-color: color-mix(in srgb, var(--vfx) 55%, var(--hud-line));
-  color: #fff;
+  border-color: var(--vfx);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 2px 0 #0a0d22,
+    0 10px 22px -12px var(--vfx);
+}
+
+.fx-chip:active {
+  transform: translateY(1px);
 }
 
 .fx-chip[aria-pressed='true'] {
-  border-color: var(--vfx);
-  background: color-mix(in srgb, var(--vfx) 20%, var(--hud-1));
-  color: #fff;
-  box-shadow: 0 8px 20px -12px var(--vfx);
+  border-color: color-mix(in srgb, var(--vfx), #fff 40%);
+  background: var(--grain), linear-gradient(180deg, color-mix(in srgb, var(--vfx), #fff 22%) 0%, var(--vfx) 50%, color-mix(in srgb, var(--vfx), #000 12%) 100%);
+  color: #0b0e1f;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 3px 0 color-mix(in srgb, var(--vfx), #000 45%),
+    0 12px 24px -12px var(--vfx);
+}
+
+.fx-chip[aria-pressed='true'] i {
+  border-color: #0b0e1f;
+  background: #0b0e1f;
 }
 
 .fx-chip[aria-pressed='true'] span {
-  background: var(--vfx);
-  color: #0a0d1c;
+  background: #0b0e1f;
+  color: #fff;
 }
 
 /* Cada categoría: rombo de su color, nombre y número; debajo, su mosaico */
@@ -5055,25 +5065,29 @@ body:not([data-hero]) .header::before {
   overflow: hidden;
   padding: 0;
   border-radius: 16px;
-  border: 1px solid var(--hud-line);
-  background: var(--hud-1);
-  color: var(--ui-text);
+  border: 1px solid #3a4584;
+  background: #1a2149;
+  color: #f3f4ff;
   text-align: left;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 3px 0 #05071a;
   transition:
     transform 0.3s var(--ease),
     border-color 0.2s,
     box-shadow 0.25s;
 }
 
+/* Placa maciza (no el fondo de la página) con la luz del color del efecto */
 .vfx-tile-art {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
   background:
-    radial-gradient(62% 58% at 50% 58%, color-mix(in srgb, var(--vfx) 26%, transparent), transparent 76%),
-    var(--hud-0);
+    var(--grain),
+    radial-gradient(62% 58% at 50% 58%, color-mix(in srgb, var(--vfx) 34%, #161d42), #161d42 76%),
+    #161d42;
 }
 
 .vfx-tile-art img {
@@ -5087,7 +5101,8 @@ body:not([data-hero]) .header::before {
   display: block;
   overflow: hidden;
   padding: 10px 12px 11px;
-  border-top: 1px solid var(--hud-line);
+  border-top: 1px solid #3a4584;
+  background: linear-gradient(180deg, #2a3368 0%, #222a58 100%);
   font: 700 12.5px/1.25 var(--font-display);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5095,8 +5110,11 @@ body:not([data-hero]) .header::before {
 }
 
 .vfx-tile:hover {
-  border-color: color-mix(in srgb, var(--vfx) 60%, var(--hud-line));
-  box-shadow: 0 16px 30px -18px color-mix(in srgb, var(--vfx) 85%, transparent);
+  border-color: color-mix(in srgb, var(--vfx) 70%, #3a4584);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 3px 0 #05071a,
+    0 16px 30px -18px var(--vfx);
 }
 
 .vfx-tile:hover .vfx-tile-art img {
@@ -5108,17 +5126,19 @@ body:not([data-hero]) .header::before {
   outline-offset: 2px;
 }
 
+/* Lo elegido: borde y barra del nombre rellenos de su color, con texto oscuro (como la pestaña activa) */
 .vfx-tile.is-sel {
   border-color: var(--vfx);
   box-shadow:
     0 0 0 1px var(--vfx),
+    0 3px 0 color-mix(in srgb, var(--vfx), #000 42%),
     0 16px 34px -16px var(--vfx);
 }
 
 .vfx-tile.is-sel .vfx-tile-name {
-  border-top-color: color-mix(in srgb, var(--vfx) 55%, var(--hud-line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--vfx) 34%, var(--hud-2)), var(--hud-2));
-  color: #fff;
+  border-top-color: var(--vfx);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--vfx), #fff 18%) 0%, var(--vfx) 100%);
+  color: #0b0e1f;
 }
 
 /* Lo elegido lleva el rombo de su color arriba a la izquierda */
@@ -5144,9 +5164,9 @@ body:not([data-hero]) .header::before {
   align-items: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  background: rgb(3 5 14 / 0.7);
-  color: var(--ui-text);
+  border: 1px solid #46529c;
+  background: #0b0e22;
+  color: #f3f4ff;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.05em;
@@ -5154,7 +5174,7 @@ body:not([data-hero]) .header::before {
 }
 
 .vfx-tag.is-on {
-  border-color: transparent;
+  border-color: var(--ok-2);
   background: var(--ok-2);
   color: #03281b;
 }
@@ -5233,95 +5253,6 @@ body:not([data-hero]) .header::before {
   gap: 16px;
 }
 
-/* Tus clases: la activa y las demás que tienes, para cambiar de una a otra */
-.sk-mine {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: 16px;
-  border: 1px solid var(--hud-line);
-  background: linear-gradient(180deg, var(--hud-2), var(--hud-1));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
-}
-
-.sk-mine p {
-  margin: 0;
-  color: var(--ui-text-2);
-  font-size: 14px;
-}
-
-.sk-mine.has-classes {
-  justify-content: flex-start;
-}
-
-.sk-mine-label {
-  color: var(--ui-muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sk-mine-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
-}
-
-.sk-mine-item {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  max-width: 100%;
-  min-height: 40px;
-  padding: 4px 12px 4px 4px;
-  border-radius: 12px;
-  border: 1px solid var(--hud-line-2);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--sk) 16%, var(--hud-2)), var(--hud-2));
-  color: var(--ui-text);
-  font: 700 13px/1.2 var(--font-body);
-  cursor: pointer;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.25s;
-}
-
-.sk-mine-item img {
-  width: 30px;
-  height: 30px;
-  flex: none;
-  border-radius: 8px;
-}
-
-.sk-mine-item span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sk-mine-item i {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--ok-2);
-  color: #03281b;
-  font: normal 900 9.5px/1.3 var(--font-body);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.sk-mine-item:hover {
-  border-color: var(--sk);
-  box-shadow: 0 8px 20px -12px var(--sk);
-}
-
-.sk-mine-item.is-active {
-  border-color: var(--ok-2);
-}
-
 /* La ficha de la clase elegida */
 #sk-detail {
   margin-top: 22px;
@@ -5332,7 +5263,7 @@ body:not([data-hero]) .header::before {
   overflow: hidden;
   border-radius: 22px;
   border: 1px solid var(--hud-line);
-  background: linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
+  background: var(--grain), linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.07),
     0 0 0 1px rgb(3 4 14 / 0.7),
@@ -5360,7 +5291,8 @@ body:not([data-hero]) .header::before {
   background:
     radial-gradient(70% 58% at 50% 44%, color-mix(in srgb, var(--sk) 28%, transparent), transparent 74%),
     radial-gradient(90% 50% at 50% 110%, color-mix(in srgb, var(--sk) 16%, transparent), transparent 70%),
-    var(--hud-0);
+    var(--grain),
+    #0c1129;
 }
 
 .sk-screen {
@@ -5598,7 +5530,7 @@ body:not([data-hero]) .header::before {
   padding: 14px 14px 14px 16px;
   border-radius: 16px;
   border: 1px solid var(--hud-line-2);
-  background: linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
+  background: var(--grain), linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
 }
 
@@ -5668,7 +5600,7 @@ body:not([data-hero]) .header::before {
   padding: 14px;
   border-radius: 16px;
   border: 1px solid var(--hud-line-2);
-  background: linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
+  background: var(--grain), linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
 }
 
@@ -5679,8 +5611,8 @@ body:not([data-hero]) .header::before {
   width: 46px;
   height: 46px;
   border-radius: 13px;
-  border: 1px solid color-mix(in srgb, var(--a-400) 45%, transparent);
-  background: color-mix(in srgb, var(--a-400) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--a-400) 55%, var(--hud-1));
+  background: color-mix(in srgb, var(--a-400) 20%, var(--hud-1));
   color: var(--a-300);
 }
 
@@ -5700,8 +5632,8 @@ body:not([data-hero]) .header::before {
 }
 
 .sk-own.is-pending .sk-own-ico {
-  border-color: color-mix(in srgb, var(--buy) 45%, transparent);
-  background: color-mix(in srgb, var(--buy) 16%, transparent);
+  border-color: color-mix(in srgb, var(--buy) 55%, var(--hud-1));
+  background: color-mix(in srgb, var(--buy) 20%, var(--hud-1));
   color: var(--buy);
 }
 
@@ -5969,12 +5901,16 @@ body:not([data-hero]) .header::before {
   padding: 10px 12px 10px 13px;
   overflow: hidden;
   border-radius: 14px;
-  border: 1px solid var(--hud-line);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--sk) 12%, var(--hud-1)), var(--hud-1) 62%);
-  color: var(--ui-text);
+  border: 1px solid #3a4584;
+  background:
+    var(--grain),
+    linear-gradient(90deg, color-mix(in srgb, var(--sk) 16%, #1f2753), #1f2753 62%, #1a2149 100%);
+  color: #f3f4ff;
   text-align: left;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 3px 0 #05071a;
   transition:
     transform 0.3s var(--ease),
     border-color 0.2s,
@@ -6001,10 +5937,10 @@ body:not([data-hero]) .header::before {
   width: 50px;
   height: 50px;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--sk) 45%, var(--hud-line));
+  border: 1px solid color-mix(in srgb, var(--sk) 55%, #3a4584);
   background:
-    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--sk) 30%, transparent), transparent 75%),
-    var(--hud-0);
+    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--sk) 34%, #0d1230), #0d1230 75%),
+    #0d1230;
 }
 
 .sk-tile-icon img {
@@ -6029,15 +5965,18 @@ body:not([data-hero]) .header::before {
 
 .sk-tile-text small {
   overflow: hidden;
-  color: var(--ui-muted);
+  color: #aab2dd;
   font-size: 11.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sk-tile:hover {
-  border-color: color-mix(in srgb, var(--sk) 60%, var(--hud-line));
-  box-shadow: 0 14px 28px -18px color-mix(in srgb, var(--sk) 85%, transparent);
+  border-color: color-mix(in srgb, var(--sk) 70%, #3a4584);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 3px 0 #05071a,
+    0 14px 28px -18px var(--sk);
 }
 
 .sk-tile:focus-visible {
@@ -6047,9 +5986,12 @@ body:not([data-hero]) .header::before {
 
 .sk-tile.is-sel {
   border-color: var(--sk);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--sk) 26%, var(--hud-2)), var(--hud-2) 70%);
+  background:
+    var(--grain),
+    linear-gradient(90deg, color-mix(in srgb, var(--sk) 34%, #262f63), #262f63 72%);
   box-shadow:
     0 0 0 1px var(--sk),
+    0 3px 0 color-mix(in srgb, var(--sk), #000 42%),
     0 14px 30px -16px var(--sk);
 }
 
@@ -6145,15 +6087,6 @@ body:not([data-hero]) .header::before {
 }
 
 @media (min-width: 960px) {
-  .sk-hero {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-  }
-
-  .sk-hero .sk-mine {
-    max-width: 560px;
-  }
-
   /* El escenario a la izquierda y la ficha a la derecha; la barra de skills debajo, a todo lo ancho */
   .sk-top {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
