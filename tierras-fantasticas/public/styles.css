@@ -2885,21 +2885,34 @@ body:not([data-hero]) .header::before {
   }
 }
 
-/* Desde 760 px, las seis en una fila */
-@media (min-width: 760px) {
+/* En tablet, tres por fila más grandes; desde 1000 px, las seis en una fila */
+@media (min-width: 640px) {
   .shop-tabs {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 10px;
   }
 
   .tab {
-    min-height: 122px;
+    min-height: 112px;
     padding: 12px 12px 11px;
   }
 
   .tab-label {
     font-size: 12px;
     letter-spacing: 0.02em;
+  }
+}
+
+@media (min-width: 1000px) {
+  .shop-tabs {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .tab {
+    min-height: 122px;
+  }
+
+  .tab-label {
+    font-size: 11.5px;
   }
 }
 
@@ -4349,28 +4362,115 @@ body:not([data-hero]) .header::before {
   color: var(--t1, var(--a-300));
 }
 
-/* ---------- VFX y Skills: base común ---------- */
+/* ---------- VFX y Skills (rework completo 13 oct. 2026) ---------- */
 
-.vfx-shop,
-.sk-shop {
-  --vfx: var(--tone-vfx);
-  --sk: var(--tone-skills);
-  color: var(--ui-text);
+/* Cada una es una VENTANA propia de color grafito (neutro, sin el violeta ni el azul de la web), maciza y con grano:
+   no se confunde con la nebulosa ni con el resto de la página. Dentro, el color lo ponen las cosas (--c: la categoría
+   del efecto o la clase): tarjetas de catálogo con su fondo MACIZO del color (como las rarezas de un juego), la arena
+   y los estados. Nada translúcido: las mezclas de color van siempre con un color sólido. */
+.cx-shop {
+  color: #f5f6f8;
 }
 
-.vfx-hero h2,
-.sk-hero h2 {
-  font: 800 clamp(26px, 3.8vw, 38px) / 1.1 var(--font-display);
+.cx {
+  --c: var(--a-400);
+  --cx-0: #07080b;
+  --cx-1: #0e1015;
+  --cx-2: #15181e;
+  --cx-3: #1d2028;
+  --cx-line: #242832;
+  --cx-line-2: #343a47;
+  --cx-tx-2: #b8bdc9;
+  --cx-tx-3: #858b9a;
+  position: relative;
+  border: 1px solid #262a33;
+  border-radius: 20px;
+  background:
+    var(--grain),
+    linear-gradient(180deg, #111318 0%, #0a0b0e 260px, #0a0b0e 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 0 0 1px #000,
+    0 40px 80px -40px #000;
+}
+
+/* Filo de la ventana: una barra del color de la sección arriba */
+.cx::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 24px;
+  right: 24px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--c);
+}
+
+.cx-head {
+  padding: 24px 16px 18px;
+  border-bottom: 1px solid var(--cx-line);
+}
+
+.cx-eyebrow {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--c);
+  color: #07080b;
+  font: 800 11px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cx-eyebrow svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+
+.cx-head h2 {
+  margin-top: 12px;
+  color: #fff;
+  font: 800 clamp(26px, 3.6vw, 38px) / 1.08 var(--font-display);
   letter-spacing: -0.02em;
 }
 
-.vfx-hero p,
-.sk-hero > div > p {
-  margin: 10px 0 0;
-  max-width: 660px;
-  color: var(--ui-text-2);
-  font-size: 15.5px;
+.cx-head p {
+  margin: 8px 0 0;
+  max-width: 680px;
+  color: var(--cx-tx-2);
+  font-size: 15px;
   line-height: 1.55;
+}
+
+/* La disposición: en el móvil, la vitrina, los filtros y el catálogo uno debajo de otro; desde 1024 px, los filtros
+   arriba, el catálogo a la izquierda y la vitrina a la derecha */
+.cx-layout {
+  display: grid;
+  grid-template-areas:
+    'show'
+    'filter'
+    'catalog';
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding: 14px;
+}
+
+.cx-filter {
+  grid-area: filter;
+}
+
+.cx-catalog {
+  grid-area: catalog;
+  min-width: 0;
+}
+
+.cx-show {
+  grid-area: show;
+  min-width: 0;
 }
 
 /* Las vistas previas: a su tamaño natural o más pequeñas se ven suaves; en pantallas de alta densidad (que las
@@ -4392,899 +4492,727 @@ body:not([data-hero]) .header::before {
   }
 }
 
-/* ---------- VFX: efectos de kill (rediseño 13 oct. 2026) ---------- */
-
-/* Una consola propia que no se mezcla con la nebulosa: placas opacas de acero oscuro (--hud-*) con su filo claro, y el
-   color de la categoría del efecto (--vfx) en la arena, el filtro y las marcas. La arena es transparente en las
-   animaciones (tools/vfx_preview.py), así que se tiñe entera del color del efecto. */
-.vfx-shop,
-.sk-shop {
-  --hud-0: #070a18;
-  --hud-1: #10152f;
-  --hud-2: #182043;
-  --hud-3: #222b57;
-  --hud-line: #303b74;
-  --hud-line-2: #46529c;
-}
-
-.vfx-hero {
+/* Filtros: pastillas macizas de grafito con el punto de su color; la elegida, llena de su color */
+.cx-filter {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px 24px;
-}
-
-.fx-eyebrow {
-  display: inline-flex;
-  align-items: center;
   gap: 6px;
-  margin-bottom: 12px;
-  padding: 5px 11px 5px 8px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--t, var(--tone-vfx)) 50%, #0b0f24);
-  background: color-mix(in srgb, var(--t, var(--tone-vfx)) 14%, #0b0f24);
-  color: var(--t, var(--tone-vfx));
-  font: 800 11px/1 var(--font-body);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.fx-eyebrow svg {
-  width: 14px;
-  height: 14px;
-}
-
-#vfx-stage {
-  margin-top: 22px;
-  scroll-margin-top: calc(var(--header-h) + 12px);
-}
-
-/* La ficha grande: arena + datos, en una placa con filo claro y un halo muy suave del color del efecto */
-.vfx-stage {
-  display: grid;
-  overflow: hidden;
-  border-radius: 22px;
-  border: 1px solid var(--hud-line);
-  background: var(--grain), linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 0 0 1px rgb(3 4 14 / 0.7),
-    0 30px 60px -30px #000,
-    0 0 80px -46px var(--vfx);
-}
-
-/* La arena: luz del color del efecto donde cae la animación y un charco de luz en el suelo; esquinas de visor */
-.fx-arena {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 360px;
-  padding: 52px 16px 70px;
-  border-bottom: 1px solid var(--hud-line);
-  background:
-    radial-gradient(55% 50% at 50% 52%, color-mix(in srgb, var(--vfx) 24%, transparent), transparent 72%),
-    radial-gradient(90% 60% at 50% 115%, color-mix(in srgb, var(--vfx) 20%, transparent), transparent 70%),
-    var(--grain),
-    #0c1129;
-  isolation: isolate;
-}
-
-.fx-hud {
-  position: absolute;
-  inset: 14px;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.fx-hud i {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 2px solid color-mix(in srgb, var(--vfx) 70%, #fff);
-  opacity: 0.75;
-}
-
-.fx-hud i:nth-child(1) {
-  top: 0;
-  left: 0;
-  border-right: 0;
-  border-bottom: 0;
-  border-top-left-radius: 7px;
-}
-
-.fx-hud i:nth-child(2) {
-  top: 0;
-  right: 0;
-  border-left: 0;
-  border-bottom: 0;
-  border-top-right-radius: 7px;
-}
-
-.fx-hud i:nth-child(3) {
-  bottom: 0;
-  left: 0;
-  border-right: 0;
-  border-top: 0;
-  border-bottom-left-radius: 7px;
-}
-
-.fx-hud i:nth-child(4) {
-  bottom: 0;
-  right: 0;
-  border-left: 0;
-  border-top: 0;
-  border-bottom-right-radius: 7px;
-}
-
-.fx-live {
-  position: absolute;
-  z-index: 2;
-  top: 24px;
-  left: 26px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 11px 6px 9px;
-  border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.1);
-  background: rgb(3 5 14 / 0.6);
-  color: #e6e9ff;
-  font: 800 10.5px/1 var(--font-body);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.fx-live i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ff4d6d;
-  box-shadow: 0 0 8px #ff4d6d;
-  animation: fx-rec 1.6s ease-in-out infinite;
-}
-
-@keyframes fx-rec {
-  50% {
-    opacity: 0.3;
-  }
-}
-
-.fx-show {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 100%;
-}
-
-.fx-floor {
-  position: absolute;
-  left: 50%;
-  bottom: 4%;
-  width: min(300px, 80%);
-  height: 18%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--vfx) 50%, transparent), transparent);
-}
-
-.fx-show .vfx-anim {
-  position: relative;
-  width: 320px;
-  max-width: 100%;
-  height: auto;
-  image-rendering: pixelated !important;
-}
-
-/* Anterior / siguiente con el número de efecto */
-.fx-nav {
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.1);
-  background: rgb(4 6 16 / 0.78);
-}
-
-.fx-step {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--hud-line-2);
-  background: var(--hud-2);
-  color: #fff;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    transform 0.2s var(--ease);
-}
-
-.fx-step:hover {
-  border-color: var(--vfx);
-  background: color-mix(in srgb, var(--vfx) 26%, var(--hud-2));
-}
-
-.fx-step:active {
-  transform: scale(0.92);
-}
-
-.fx-step svg {
-  width: 16px;
-  height: 16px;
-}
-
-.fx-count {
-  min-width: 64px;
-  color: var(--ui-muted);
-  font: 700 12px/1 var(--font-body);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-
-.fx-count b {
-  color: #fff;
-  font: 800 14px/1 var(--font-display);
-}
-
-/* La ficha */
-.vfx-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 24px 22px 22px;
-}
-
-.fx-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  color: color-mix(in srgb, var(--vfx) 70%, #fff);
-  font: 800 11.5px/1.3 var(--font-body);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.fx-kicker i {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--vfx);
-  box-shadow: 0 0 10px var(--vfx);
-  transform: rotate(45deg);
-}
-
-.vfx-info h3 {
-  margin: 10px 0 8px;
-  font: 800 clamp(28px, 3.4vw, 38px) / 1.05 var(--font-display);
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
-}
-
-.fx-desc {
-  margin: 0;
-  color: var(--ui-text-2);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.fx-how {
-  display: grid;
-  gap: 8px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.fx-how li {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  color: var(--ui-muted);
-  font-size: 14px;
-}
-
-.fx-how svg {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  padding: 6px;
-  border-radius: 9px;
-  border: 1px solid color-mix(in srgb, var(--vfx) 45%, var(--hud-1));
-  background: color-mix(in srgb, var(--vfx) 14%, var(--hud-1));
-  color: color-mix(in srgb, var(--vfx) 75%, #fff);
-}
-
-/* La acción: qué es para ti y su botón, en su propia placa */
-.fx-action {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 14px;
-  margin-top: 22px;
-  padding: 14px;
-  border-radius: 16px;
-  border: 1px solid var(--hud-line-2);
-  background: var(--grain), linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
-}
-
-.fx-action-ico {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-  border: 1px solid color-mix(in srgb, var(--get) 55%, var(--hud-1));
-  background: color-mix(in srgb, var(--get) 20%, var(--hud-1));
-  color: var(--get);
-}
-
-.fx-action-ico svg {
-  width: 22px;
-  height: 22px;
-}
-
-.fx-action.is-owned .fx-action-ico {
-  border-color: color-mix(in srgb, var(--a-400) 55%, var(--hud-1));
-  background: color-mix(in srgb, var(--a-400) 20%, var(--hud-1));
-  color: var(--a-300);
-}
-
-.fx-action.is-on .fx-action-ico {
-  border-color: transparent;
-  background: var(--ok-2);
-  color: #03281b;
-}
-
-.fx-action-text {
-  display: grid;
-  flex: 1 1 170px;
-  gap: 4px;
-  min-width: 0;
-}
-
-.fx-action-text b {
-  font: 800 19px/1.1 var(--font-display);
-}
-
-.fx-action.is-free b {
-  color: var(--get);
-}
-
-.fx-action.is-on b {
-  color: var(--ok-2);
-}
-
-.fx-action-text span {
-  color: var(--ui-muted);
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-.fx-action .btn {
-  flex: 1 1 100%;
-  min-height: 48px;
-}
-
-.vfx-slot {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-width: 0;
-  padding: 8px 10px 8px 8px;
-  border-radius: 14px;
-  border: 1px dashed var(--hud-line-2);
-  background: var(--hud-0);
-}
-
-.vfx-slot.is-on {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--vfx, var(--ok-2)) 55%, var(--hud-line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--vfx, var(--ok-2)) 12%, var(--hud-0)), var(--hud-0) 70%);
-}
-
-.vfx-slot > div:not(.vfx-slot-art) {
-  flex: 1;
-  min-width: 0;
-}
-
-.vfx-slot-art {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  overflow: hidden;
-  border-radius: 11px;
-  border: 1px solid var(--hud-line);
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--vfx, #8a93c8) 22%, transparent), transparent), var(--hud-1);
-  color: var(--ui-muted);
-}
-
-.vfx-slot-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.vfx-slot-art svg {
-  width: 20px;
-  height: 20px;
-}
-
-.vfx-slot span {
-  display: block;
-  color: var(--ui-muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.vfx-slot.is-on span {
-  color: var(--ok-2);
-}
-
-.vfx-slot b {
-  display: block;
-  overflow: hidden;
-  font: 700 14px/1.3 var(--font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.vfx-slot .btn {
-  flex: none;
-}
-
-/* Paquetes de skills de antes (ya no se dan): solo los ve quien tenía alguno, en su sección al final de VFX */
-.vfx-old {
-  margin-top: 36px;
-}
-
-.vfx-old header {
-  display: grid;
-  gap: 4px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--hud-line);
-}
-
-.vfx-old h3 {
-  font: 800 18px/1.2 var(--font-display);
-}
-
-.vfx-old header span {
-  color: var(--ui-muted);
-  font-size: 13px;
-}
-
-.vfx-old-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-@media (min-width: 760px) {
-  .vfx-old-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Filtro por categoría: pastillas con el punto de su color y su número (en el móvil, en una fila que se desliza) */
-.fx-filter {
-  display: flex;
-  gap: 8px;
-  margin: 28px calc(var(--gutter) * -1) 0;
-  padding: 0 var(--gutter) 4px;
+  margin-inline: -14px;
+  padding: 2px 14px 4px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.fx-filter::-webkit-scrollbar {
+.cx-filter::-webkit-scrollbar {
   display: none;
 }
 
-.fx-chip {
+.cx-chip {
   display: inline-flex;
   flex: none;
-  align-items: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 7px 0 13px;
-  border-radius: 999px;
-  border: 1px solid #44509a;
-  background: var(--grain), linear-gradient(180deg, #2f3a74 0%, #232c5c 100%);
-  color: #f1f3ff;
+  align-items: center;
+  height: 38px;
+  padding: 0 7px 0 12px;
+  border: 1px solid var(--cx-line-2);
+  border-radius: 9px;
+  background: var(--cx-2);
+  color: #e8eaf0;
   font: 700 13px/1 var(--font-body);
   white-space: nowrap;
-  cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.14),
-    0 2px 0 #0a0d22;
+  box-shadow: 0 2px 0 #000;
   transition:
-    transform 0.2s var(--ease),
+    background-color 0.2s,
     border-color 0.2s,
-    box-shadow 0.25s;
+    color 0.2s,
+    transform 0.2s var(--ease);
 }
 
-.fx-chip i {
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--vfx), #000 35%);
-  background: var(--vfx);
-}
-
-.fx-chip span {
-  display: inline-grid;
-  place-items: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: #0b0e22;
-  color: #dfe3ff;
-  font-size: 11px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.fx-chip:hover {
-  border-color: var(--vfx);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.18),
-    0 2px 0 #0a0d22,
-    0 10px 22px -12px var(--vfx);
-}
-
-.fx-chip:active {
-  transform: translateY(1px);
-}
-
-.fx-chip[aria-pressed='true'] {
-  border-color: color-mix(in srgb, var(--vfx), #fff 40%);
-  background: var(--grain), linear-gradient(180deg, color-mix(in srgb, var(--vfx), #fff 22%) 0%, var(--vfx) 50%, color-mix(in srgb, var(--vfx), #000 12%) 100%);
-  color: #0b0e1f;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.55),
-    0 3px 0 color-mix(in srgb, var(--vfx), #000 45%),
-    0 12px 24px -12px var(--vfx);
-}
-
-.fx-chip[aria-pressed='true'] i {
-  border-color: #0b0e1f;
-  background: #0b0e1f;
-}
-
-.fx-chip[aria-pressed='true'] span {
-  background: #0b0e1f;
-  color: #fff;
-}
-
-/* Cada categoría: rombo de su color, nombre y número; debajo, su mosaico */
-.vfx-group {
-  margin-top: 30px;
-}
-
-.vfx-group header {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--hud-line);
-}
-
-.vfx-group header::before {
-  content: '';
-  flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: var(--vfx);
-  box-shadow: 0 0 12px var(--vfx);
+.cx-chip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--c);
   transform: rotate(45deg);
 }
 
-.vfx-group h3 {
-  font: 800 18px/1.2 var(--font-display);
-  letter-spacing: -0.01em;
-}
-
-.vfx-group header span {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--vfx) 15%, var(--hud-1));
-  color: color-mix(in srgb, var(--vfx) 70%, #fff);
-  font-size: 12px;
+.cx-chip span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--cx-0);
+  color: var(--cx-tx-2);
+  font-size: 11.5px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-/* Mosaico de kills: la miniatura sobre la luz de su color; se anima al pasar el ratón y tocar una la lleva a la arena */
-.vfx-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+.cx-chip:hover {
+  border-color: var(--c);
+  background: var(--cx-3);
 }
 
-.vfx-tile {
+.cx-chip:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.cx-chip[aria-pressed='true'] {
+  border-color: var(--c);
+  background: var(--c);
+  color: #07080b;
+}
+
+.cx-chip[aria-pressed='true'] i {
+  background: #07080b;
+}
+
+.cx-chip[aria-pressed='true'] span {
+  background: #07080b;
+  color: #fff;
+}
+
+/* Catálogo: cada categoría con su barra de color, nombre y número, y una línea hasta el final */
+.cx-group + .cx-group {
+  margin-top: 26px;
+}
+
+.cx-group header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cx-group header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cx-line);
+}
+
+.cx-group h3 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: #fff;
+  font: 800 13px/1 var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cx-group h3::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+.cx-group header span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-2);
+  color: var(--c);
+  font-size: 11.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cx-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* La tarjeta: el dibujo sobre su color macizo (luz en el centro, oscuro en los bordes) y, debajo, el nombre en una
+   franja negra con el filo de su color */
+.cx-tile {
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow: hidden;
   padding: 0;
-  border-radius: 16px;
-  border: 1px solid #3a4584;
-  background: #1a2149;
-  color: #f3f4ff;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--c) 36%, #000);
+  border-radius: 10px;
+  background: #0b0c10;
+  color: #fff;
   text-align: left;
   cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 3px 0 #05071a;
+  box-shadow: 0 2px 0 #000;
   transition:
-    transform 0.3s var(--ease),
+    transform 0.25s var(--ease),
     border-color 0.2s,
     box-shadow 0.25s;
 }
 
-/* Placa maciza (no el fondo de la página) con la luz del color del efecto */
-.vfx-tile-art {
+.cx-tile-art {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
   background:
     var(--grain),
-    radial-gradient(62% 58% at 50% 58%, color-mix(in srgb, var(--vfx) 34%, #161d42), #161d42 76%),
-    #161d42;
+    radial-gradient(78% 72% at 50% 42%, color-mix(in srgb, var(--c) 64%, #07080b) 0%, color-mix(in srgb, var(--c) 32%, #07080b) 60%, color-mix(in srgb, var(--c) 18%, #07080b) 100%);
 }
 
-.vfx-tile-art img {
-  width: 86%;
-  height: 86%;
+.cx-tile-art img {
+  width: 84%;
+  height: 84%;
   object-fit: contain;
+  filter: drop-shadow(0 6px 6px #000);
   transition: transform 0.35s var(--ease);
 }
 
-.vfx-tile-name {
+.cx-tile-name {
   display: block;
   overflow: hidden;
-  padding: 10px 12px 11px;
-  border-top: 1px solid #3a4584;
-  background: linear-gradient(180deg, #2a3368 0%, #222a58 100%);
-  font: 700 12.5px/1.25 var(--font-display);
+  padding: 8px 9px 9px;
+  border-top: 3px solid var(--c);
+  background: #0b0c10;
+  font: 700 12.5px/1.25 var(--font-body);
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
-.vfx-tile:hover {
-  border-color: color-mix(in srgb, var(--vfx) 70%, #3a4584);
+.cx-tile:hover {
+  border-color: var(--c);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 3px 0 #05071a,
-    0 16px 30px -18px var(--vfx);
+    0 2px 0 #000,
+    0 14px 26px -14px var(--c);
 }
 
-.vfx-tile:hover .vfx-tile-art img {
-  transform: scale(1.06);
+.cx-tile:hover .cx-tile-art img {
+  transform: scale(1.07);
 }
 
-.vfx-tile:focus-visible {
-  outline: 2px solid var(--vfx);
+.cx-tile:focus-visible {
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
-/* Lo elegido: borde y barra del nombre rellenos de su color, con texto oscuro (como la pestaña activa) */
-.vfx-tile.is-sel {
-  border-color: var(--vfx);
+/* La elegida: marco blanco y la franja del nombre llena de su color */
+.cx-tile.is-sel {
+  border-color: #fff;
   box-shadow:
-    0 0 0 1px var(--vfx),
-    0 3px 0 color-mix(in srgb, var(--vfx), #000 42%),
-    0 16px 34px -16px var(--vfx);
+    0 0 0 2px #fff,
+    0 16px 30px -12px var(--c);
 }
 
-.vfx-tile.is-sel .vfx-tile-name {
-  border-top-color: var(--vfx);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--vfx), #fff 18%) 0%, var(--vfx) 100%);
-  color: #0b0e1f;
+.cx-tile.is-sel .cx-tile-name {
+  border-top-color: #fff;
+  background: var(--c);
+  color: #07080b;
 }
 
-/* Lo elegido lleva el rombo de su color arriba a la izquierda */
-.vfx-tile.is-sel::before {
-  content: '';
+/* Lo que ya tienes: etiqueta maciza arriba a la izquierda */
+.cx-tag {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  background: var(--vfx);
-  box-shadow: 0 0 10px var(--vfx);
-  transform: rotate(45deg);
-}
-
-.vfx-tag {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  left: 6px;
   display: inline-flex;
-  gap: 4px;
+  gap: 3px;
   align-items: center;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid #46529c;
-  background: #0b0e22;
-  color: #f3f4ff;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.05em;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  border: 1px solid #3a404d;
+  background: #07080b;
+  color: #fff;
+  font: 800 9.5px/1 var(--font-body);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.vfx-tag.is-on {
+.cx-tag.is-on {
   border-color: var(--ok-2);
   background: var(--ok-2);
   color: #03281b;
 }
 
-.vfx-tag svg {
+.cx-tag.is-pending {
+  border-color: var(--buy);
+  background: var(--buy);
+  color: #2a1a00;
+}
+
+.cx-tag svg {
   width: 11px;
   height: 11px;
 }
 
-@media (max-width: 479px) {
-  .fx-arena {
-    min-height: 300px;
-    padding: 50px 10px 68px;
-  }
-
-  .vfx-info {
-    padding-inline: 16px;
-  }
-
-  .vfx-slot {
-    flex-wrap: wrap;
-  }
-}
-
-@media (min-width: 640px) {
-  .fx-filter {
-    flex-wrap: wrap;
-    margin-inline: 0;
-    padding: 0;
-    overflow: visible;
-  }
-
-  .vfx-tiles {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-
-  .fx-action .btn {
-    flex: none;
-    min-width: 168px;
-  }
-}
-
-@media (min-width: 960px) {
-  /* La arena a la izquierda y la ficha a la derecha */
-  .vfx-stage {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  }
-
-  .fx-arena {
-    min-height: 470px;
-    border-right: 1px solid var(--hud-line);
-    border-bottom: 0;
-  }
-
-  .vfx-info {
-    padding: 36px 36px 32px;
-  }
-
-  .vfx-tiles {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-@media (hover: hover) and (min-width: 960px) {
-  .vfx-tile:hover {
-    transform: translateY(-3px);
-  }
-}
-
-/* ---------- Skills: las clases del TF Client (rediseño 13 oct. 2026) ---------- */
-
-/* La misma consola que VFX (--hud-*), con el color de cada clase (--sk): pantalla enmarcada sobre la luz de su color,
-   cabecera con su emblema, dos opciones de compra separadas y la barra de skills como la del juego (teclas 5 a 0). */
-.sk-hero {
-  display: grid;
-  gap: 16px;
-}
-
-/* La ficha de la clase elegida */
-#sk-detail {
-  margin-top: 22px;
-  scroll-margin-top: calc(var(--header-h) + 12px);
-}
-
-.sk-card {
+/* La vitrina: tarjeta grande con la arena arriba y la ficha debajo */
+.cx-card {
   overflow: hidden;
-  border-radius: 22px;
-  border: 1px solid var(--hud-line);
-  background: var(--grain), linear-gradient(180deg, var(--hud-2) 0%, var(--hud-1) 100%);
+  border: 1px solid var(--cx-line-2);
+  border-radius: 14px;
+  background: var(--cx-1);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 0 0 1px rgb(3 4 14 / 0.7),
-    0 30px 60px -30px #000,
-    0 0 80px -46px var(--sk);
+    0 0 0 1px #000,
+    0 3px 0 #000,
+    0 30px 60px -30px #000;
 }
 
-.sk-top {
-  display: grid;
-}
-
-#sk-screen {
-  display: grid;
-  min-width: 0;
-}
-
-/* El escenario: la luz del color de la clase y, encima, la pantalla (del color pintado en las imágenes) con su marco */
-.sk-stage {
-  display: grid;
-  gap: 14px;
-  align-content: center;
-  justify-items: center;
-  padding: 22px 16px 18px;
-  border-bottom: 1px solid var(--hud-line);
-  background:
-    radial-gradient(70% 58% at 50% 44%, color-mix(in srgb, var(--sk) 28%, transparent), transparent 74%),
-    radial-gradient(90% 50% at 50% 110%, color-mix(in srgb, var(--sk) 16%, transparent), transparent 70%),
-    var(--grain),
-    #0c1129;
-}
-
-.sk-screen {
+/* La arena: el color de la categoría macizo, con luz donde cae la animación y un charco de luz en el suelo (las
+   animaciones son transparentes) */
+.cx-stage {
   position: relative;
   display: grid;
   place-items: center;
-  width: min(480px, 100%);
+  min-height: 300px;
+  padding: 46px 16px 64px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    var(--grain),
+    radial-gradient(68% 60% at 50% 46%, color-mix(in srgb, var(--c) 56%, #06070a) 0%, color-mix(in srgb, var(--c) 27%, #06070a) 58%, color-mix(in srgb, var(--c) 12%, #06070a) 100%);
+}
+
+.cx-floor {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 70px;
+  z-index: -1;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--c), #fff 25%), color-mix(in srgb, var(--c) 45%, #06070a) 60%, color-mix(in srgb, var(--c) 27%, #06070a));
+  filter: blur(10px);
+}
+
+.cx-stage .vfx-anim {
+  width: min(82%, 330px);
+}
+
+.cx-cat {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, #000);
+  background: #07080b;
+  color: #fff;
+  font: 800 10.5px/1 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cx-cat i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--c);
+  transform: rotate(45deg);
+}
+
+.cx-nav {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  border-radius: 11px;
+  border: 1px solid #2c313c;
+  background: #07080b;
+  transform: translateX(-50%);
+}
+
+.cx-step {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #333947;
+  background: #1b1e26;
+  color: #fff;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.cx-step svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cx-step:hover {
+  border-color: var(--c);
+  background: var(--c);
+  color: #07080b;
+}
+
+.cx-step:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.cx-count {
+  min-width: 70px;
+  color: var(--cx-tx-3);
+  font: 700 12px/1 var(--font-body);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cx-count b {
+  color: #fff;
+  font: 800 15px/1 var(--font-display);
+}
+
+/* La ficha */
+.cx-body {
+  padding: 18px 16px;
+  border-top: 1px solid #000;
+  background:
+    var(--grain),
+    linear-gradient(180deg, var(--cx-2) 0%, var(--cx-1) 100%);
+}
+
+.cx-kicker {
+  color: var(--c);
+  font: 800 11px/1.2 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cx-body h3 {
+  margin-top: 8px;
+  color: #fff;
+  font: 800 26px/1.1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.cx-desc {
+  margin: 8px 0 0;
+  color: var(--cx-tx-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.cx-facts {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--cx-line);
+  list-style: none;
+}
+
+.cx-facts li {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--cx-tx-2);
+  font-size: 13px;
+}
+
+.cx-facts svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--c);
+}
+
+/* Lo que es para ti y su botón, en una placa negra */
+.cx-deal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 11px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
+}
+
+.cx-deal-text {
+  display: grid;
+  flex: 1 1 150px;
+  gap: 3px;
+  min-width: 0;
+  padding-left: 2px;
+}
+
+.cx-deal-text b {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--get);
+  font: 800 19px/1.1 var(--font-display);
+}
+
+.cx-deal-text b svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cx-deal.is-owned b {
+  color: #fff;
+}
+
+.cx-deal.is-on b {
+  color: var(--ok-2);
+}
+
+.cx-deal-text span {
+  color: var(--cx-tx-3);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.cx-deal .btn {
+  flex: 1 1 170px;
+}
+
+/* El secundario dentro de la ventana: grafito claro, macizo */
+.cx .btn-ghost {
+  --a: #2a2f3b;
+  --b: #353b4a;
+  --lip: #050608;
+  box-shadow:
+    inset 0 0 0 1px #4a5162,
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 var(--lift) 0 var(--lip);
+}
+
+/* Los paquetes de skills antiguos, al final de VFX */
+.cx-old {
+  margin: 0 14px 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-1);
+}
+
+.cx-old header {
+  display: grid;
+  gap: 4px;
+}
+
+.cx-old h3 {
+  color: #fff;
+  font: 800 16px/1.2 var(--font-display);
+}
+
+.cx-old header span {
+  color: var(--cx-tx-3);
+  font-size: 13px;
+}
+
+.cx-old-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cx-slot {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 11px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-2);
+}
+
+.cx-slot.is-on {
+  border-color: var(--ok-2);
+}
+
+.cx-slot-art {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--cx-0);
+}
+
+.cx-slot-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cx-slot > div:nth-child(2) {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cx-slot span {
+  color: var(--cx-tx-3);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cx-slot.is-on span {
+  color: var(--ok-2);
+}
+
+.cx-slot b {
+  overflow: hidden;
+  font: 700 14px/1.25 var(--font-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Skills: plantel de clases y ficha de la clase ---------- */
+
+/* El plantel: retratos con el icono de la clase (pixel art, ampliado sin suavizar) sobre su color */
+.sk-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sk-tile .cx-tile-art img {
+  width: 54%;
+  height: 54%;
+  border-radius: 10px;
+  outline: 2px solid #000;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--c) 40%, #000),
+    0 10px 18px -6px #000;
+  filter: none;
+}
+
+.sk-tile .cx-tile-name {
+  overflow: visible;
+  min-height: 42px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+/* La ficha: cabecera con el emblema sobre el color de la clase y, debajo, qué es la clase */
+.sk-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0 14px;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #000;
+  background:
+    var(--grain),
+    linear-gradient(100deg, color-mix(in srgb, var(--c) 42%, #07080b) 0%, color-mix(in srgb, var(--c) 18%, #0e1015) 55%, #0e1015 100%);
+}
+
+.sk-emblem {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 13px;
+  border: 2px solid #fff;
+  background: #07080b;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--c) 50%, #000),
+    0 12px 24px -10px #000;
+}
+
+.sk-emblem img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+.sk-head-text {
+  min-width: 0;
+}
+
+.sk-head-text .cx-kicker {
+  color: color-mix(in srgb, var(--c), #fff 35%);
+}
+
+.sk-head h3 {
+  margin-top: 6px;
+  color: #fff;
+  font: 800 clamp(22px, 2.6vw, 28px) / 1.1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.sk-group {
+  display: none;
+  flex: none;
+  gap: 7px;
+  align-items: center;
+  align-self: start;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 7px;
+  border: 1px solid var(--g);
+  background: #07080b;
+  color: #fff;
+  font: 700 12px/1 var(--font-body);
+  white-space: nowrap;
+}
+
+.sk-head-desc {
+  grid-column: 1 / -1;
+  margin: 10px 0 0;
+  color: #dfe2ea;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.sk-group i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--g);
+  transform: rotate(45deg);
+}
+
+/* La pantalla: enmarcada sobre la luz del color de la clase; por dentro, del mismo color que el fondo pintado en las
+   vistas previas (así la imagen no se nota recortada) */
+#sk-screen {
+  padding: 12px;
+  background:
+    var(--grain),
+    radial-gradient(80% 90% at 50% 40%, color-mix(in srgb, var(--c) 46%, #06070a) 0%, color-mix(in srgb, var(--c) 20%, #06070a) 70%, color-mix(in srgb, var(--c) 12%, #06070a) 100%);
+}
+
+.sk-screen {
+  display: grid;
+  place-items: center;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--sk) 50%, var(--hud-line));
+  border-radius: 10px;
+  border: 1px solid #000;
   background: var(--sk-bg);
   box-shadow:
-    0 0 0 4px rgb(0 0 0 / 0.38),
-    0 0 46px -12px color-mix(in srgb, var(--sk) 75%, transparent);
+    0 0 0 2px color-mix(in srgb, var(--c) 55%, #000),
+    0 18px 36px -14px #000;
 }
 
-.sk-screen .fx-hud {
-  --vfx: var(--sk);
-  inset: 10px;
-}
-
-.sk-screen .fx-live {
-  top: 18px;
-  left: 20px;
-}
-
-.sk-anim {
+.sk-screen .sk-anim {
   width: 100%;
+  height: 100%;
 }
 
 .sk-noanim {
@@ -5300,804 +5228,505 @@ body:not([data-hero]) .header::before {
   width: 112px;
   height: 112px;
   border-radius: 22px;
-  border: 1px solid color-mix(in srgb, var(--sk) 45%, var(--hud-line));
-  background: var(--hud-1);
-  box-shadow: 0 0 40px -12px var(--sk);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 45%, #000);
 }
 
 .sk-noanim p {
   margin: 0;
-  color: var(--ui-text-2);
+  color: var(--cx-tx-2);
   font-size: 14px;
 }
 
-/* Debajo de la pantalla: la skill que se ve, con su tecla */
-.sk-caption {
+/* La barra de skills, como la del juego */
+.sk-skills {
+  padding: 12px 16px 14px;
+  border-top: 1px solid #000;
+  background: var(--cx-0);
+}
+
+.sk-skills-head {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   align-items: center;
-  width: min(480px, 100%);
-  min-width: 0;
-  padding: 9px 12px 9px 9px;
-  border-radius: 14px;
-  border: 1px solid var(--hud-line);
-  background: rgb(4 6 16 / 0.72);
 }
 
-.sk-caption img {
-  width: 42px;
-  height: 42px;
-  flex: none;
-  border-radius: 9px;
-  border: 1px solid var(--hud-line-2);
-}
-
-.sk-caption div {
-  display: grid;
-  gap: 5px;
-  justify-items: start;
-  min-width: 0;
-}
-
-.sk-caption b {
-  max-width: 100%;
-  overflow: hidden;
-  font: 700 15px/1.2 var(--font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Una tecla del teclado */
-.sk-shop kbd {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 6px;
-  border: 1px solid #6a74b8;
-  border-bottom-width: 3px;
-  background: var(--hud-3);
+.sk-skills-head h4 {
   color: #fff;
-  font: 800 11.5px/1 var(--font-display);
-}
-
-/* La ficha: emblema, nombre, datos y compra */
-.sk-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 24px 22px 22px;
-}
-
-.sk-title {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  min-width: 0;
-}
-
-.sk-badge {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--sk) 60%, var(--hud-line));
-  background:
-    radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--sk) 42%, transparent), transparent 72%),
-    var(--hud-0);
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--sk) 12%, transparent),
-    0 14px 30px -14px var(--sk);
-}
-
-.sk-badge img {
-  width: 54px;
-  height: 54px;
-  border-radius: 11px;
-}
-
-.sk-title > div {
-  min-width: 0;
-}
-
-.sk-title .cat {
-  display: inline-flex;
-  gap: 9px;
-  align-items: center;
-  color: color-mix(in srgb, var(--sk) 70%, #fff);
-  font: 800 11.5px/1.3 var(--font-body);
-  letter-spacing: 0.12em;
+  font: 800 12px/1 var(--font-display);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.sk-title .cat i {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--sk);
-  box-shadow: 0 0 10px var(--sk);
-  transform: rotate(45deg);
-}
-
-.sk-title h3 {
-  margin-top: 6px;
-  font: 800 clamp(28px, 3.4vw, 38px) / 1.05 var(--font-display);
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
-}
-
-.sk-desc {
-  margin: 16px 0 0;
-  color: var(--ui-text-2);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.sk-facts {
+.sk-slots-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 16px 0 0;
+  margin-top: 10px;
+}
+
+.sk-slots {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-2);
+}
+
+.sk-slot {
+  --slot: 50px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--slot);
+  height: var(--slot);
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid #3a404d;
+  background: #07080b;
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--ease),
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.sk-slot-art img {
+  display: block;
+  width: calc(var(--slot) - 12px);
+  height: calc(var(--slot) - 12px);
+  border-radius: 6px;
+}
+
+.sk-slot-key {
+  position: absolute;
+  top: -6px;
+  left: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 5px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #07080b;
+  font: 800 10.5px/1 var(--font-body);
+}
+
+.sk-slot.is-passive .sk-slot-key {
+  background: var(--cx-tx-3);
+}
+
+.sk-slot:hover {
+  border-color: var(--c);
+}
+
+.sk-slot:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.sk-slot.is-sel {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 2px var(--c),
+    0 8px 18px -6px var(--c);
+}
+
+.sk-slot.is-sel .sk-slot-key {
+  background: var(--c);
+}
+
+/* La skill elegida: nombre, tecla, cooldown y qué hace */
+.sk-pick {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--cx-line-2);
+  border-left: 3px solid var(--c);
+  background: var(--cx-2);
+}
+
+.sk-pick-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+}
+
+.sk-pick-top b {
+  margin-right: 2px;
+  color: #fff;
+  font: 800 15px/1.2 var(--font-display);
+}
+
+.sk-pick p {
+  margin: 5px 0 0;
+  color: var(--cx-tx-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Pastillas de datos: tecla, pasiva, cooldown */
+.cx-pill {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px 0 4px;
+  border-radius: 6px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
+  color: var(--cx-tx-2);
+  font: 700 11.5px/1 var(--font-body);
+  white-space: nowrap;
+}
+
+.cx-pill.is-passive,
+.cx-pill:has(svg) {
+  padding-left: 7px;
+}
+
+.cx-pill svg {
+  width: 13px;
+  height: 13px;
+  color: var(--c);
+}
+
+.cx-pill kbd {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #fff;
+  color: #07080b;
+  font: 800 11px/1 var(--font-body);
+}
+
+/* Datos de la clase, en la misma línea que «Skills» */
+.sk-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .sk-facts li {
-  display: inline-flex;
-  gap: 7px;
+  display: flex;
+  gap: 6px;
   align-items: center;
-  padding: 6px 12px 6px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--hud-line);
-  background: var(--hud-1);
-  color: var(--ui-text-2);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.sk-facts svg {
-  width: 16px;
-  height: 16px;
-  flex: none;
-  color: color-mix(in srgb, var(--sk) 75%, #fff);
+  color: var(--cx-tx-2);
+  font-size: 12.5px;
 }
 
 .sk-facts b {
   color: #fff;
 }
 
-.sk-fact-group i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--g);
-  box-shadow: 0 0 8px var(--g);
+.sk-facts svg {
+  width: 16px;
+  height: 16px;
+  color: var(--c);
 }
 
-/* Las dos formas de comprar, cada una en su placa: dinero (ámbar) y monedas del servidor */
-.sk-offer {
-  display: grid;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.sk-opt {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 6px 14px;
-  align-items: center;
-  padding: 14px 14px 14px 16px;
-  border-radius: 16px;
-  border: 1px solid var(--hud-line-2);
-  background: var(--grain), linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
-}
-
-.sk-opt.is-money {
-  border-color: color-mix(in srgb, var(--buy) 45%, var(--hud-line-2));
+/* Comprar o usar la clase, al pie de la ficha */
+.sk-deal {
+  padding: 14px 16px 16px;
+  border-top: 1px solid #000;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--buy) 10%, transparent), transparent 60%),
-    linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
+    var(--grain),
+    linear-gradient(180deg, var(--cx-2) 0%, var(--cx-1) 100%);
 }
 
-.sk-opt-label {
-  color: var(--ui-muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+.sk-deal .cx-own {
+  margin-top: 0;
+}
+
+/* Comprar: dos filas de una línea en una placa negra (dinero en ámbar, monedas en oro) */
+.sk-buy {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
+}
+
+.sk-buy-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 8px 8px 8px 14px;
+}
+
+.sk-buy-row + .sk-buy-row {
+  border-top: 1px solid var(--cx-line);
+}
+
+.sk-buy-label {
+  color: var(--cx-tx-3);
+  font: 800 10.5px/1 var(--font-body);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.sk-opt .price {
-  grid-column: 1;
-  font-size: 27px;
-}
-
-.sk-coins {
+.sk-buy-price {
   display: inline-flex;
-  grid-column: 1;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  color: #ffe08a;
-  font: 800 24px/1 var(--font-display);
+  color: var(--buy);
+  font: 800 22px/1.1 var(--font-display);
   font-variant-numeric: tabular-nums;
 }
 
-.sk-coins img {
-  width: 24px;
-  height: 24px;
+.sk-buy-row.is-coins .sk-buy-price {
+  color: #ffd76a;
 }
 
-.sk-opt .btn {
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  min-height: 48px;
+.sk-buy-row .btn {
+  min-width: 132px;
+  min-height: 42px;
 }
 
 .sk-buy-note {
-  margin: 10px 2px 0;
-  color: var(--ui-muted);
+  margin: 8px 0 0;
+  color: var(--cx-tx-3);
   font-size: 12.5px;
   line-height: 1.45;
 }
 
 .sk-buy-note b {
-  color: var(--ui-text);
+  color: #fff;
 }
 
 .sk-buy-note b.is-short {
-  color: var(--red);
+  color: #ff8a7a;
 }
 
-/* Si ya es tuya: su estado y su botón, en una placa */
-.sk-own {
+/* Si la clase es tuya: placa de estado con su acción */
+.cx-own {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 14px;
+  gap: 12px;
   align-items: center;
-  margin-top: 22px;
-  padding: 14px;
-  border-radius: 16px;
-  border: 1px solid var(--hud-line-2);
-  background: var(--grain), linear-gradient(180deg, var(--hud-3) 0%, var(--hud-2) 100%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cx-line-2);
+  background: var(--cx-0);
 }
 
-.sk-own-ico {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-  border: 1px solid color-mix(in srgb, var(--a-400) 55%, var(--hud-1));
-  background: color-mix(in srgb, var(--a-400) 20%, var(--hud-1));
-  color: var(--a-300);
-}
-
-.sk-own-ico svg {
-  width: 22px;
-  height: 22px;
-}
-
-.sk-own.is-active {
-  border-color: color-mix(in srgb, var(--ok-2) 55%, var(--hud-line-2));
-}
-
-.sk-own.is-active .sk-own-ico {
-  border-color: transparent;
-  background: var(--ok-2);
-  color: #03281b;
-}
-
-.sk-own.is-pending .sk-own-ico {
-  border-color: color-mix(in srgb, var(--buy) 55%, var(--hud-1));
-  background: color-mix(in srgb, var(--buy) 20%, var(--hud-1));
-  color: var(--buy);
-}
-
-.sk-own > div {
+.cx-own > div {
   flex: 1 1 200px;
   min-width: 0;
 }
 
-.sk-own-title {
-  display: block;
-  font: 800 18px/1.15 var(--font-display);
+.cx-own b {
+  color: #fff;
+  font: 800 16px/1.2 var(--font-display);
 }
 
-.sk-own.is-active .sk-own-title {
-  color: var(--ok-2);
-}
-
-.sk-own p {
+.cx-own p {
   margin: 4px 0 0;
-  color: var(--ui-muted);
-  font-size: 13.5px;
-  line-height: 1.45;
-}
-
-.sk-own .btn {
-  flex: 1 1 100%;
-}
-
-/* La barra de skills: casillas como las del juego (tecla arriba a la izquierda) y, aparte, las pasivas */
-.sk-bar {
-  --slot: 64px;
-  padding: 20px 22px 22px;
-  border-top: 1px solid var(--hud-line);
-  background: linear-gradient(180deg, var(--hud-1) 0%, var(--hud-0) 100%);
-}
-
-.sk-bar-head {
-  display: grid;
-  gap: 4px;
-}
-
-.sk-bar-head h4 {
-  font: 800 17px/1.2 var(--font-display);
-}
-
-.sk-bar-head span {
-  color: var(--ui-muted);
+  color: var(--cx-tx-2);
   font-size: 13px;
   line-height: 1.45;
 }
 
-.sk-bar-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 14px;
+.cx-own p b {
+  font: inherit;
+  font-weight: 800;
 }
 
-.sk-slots {
-  display: flex;
-  gap: 6px;
-  padding: 6px;
-  border-radius: 14px;
-  border: 1px solid #232a52;
-  background: #05070f;
-  box-shadow: inset 0 2px 10px rgb(0 0 0 / 0.65);
-}
-
-.sk-slots.is-passive {
-  border-color: #3b2f72;
-}
-
-.sk-slot {
-  position: relative;
+.cx-own-ico {
   display: grid;
   flex: none;
   place-items: center;
-  width: var(--slot);
-  height: var(--slot);
-  padding: 0;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  border: 2px solid #2a3264;
-  background: linear-gradient(180deg, #161c3a 0%, #0d1228 100%);
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease),
-    border-color 0.2s,
-    box-shadow 0.25s;
-}
-
-.sk-slot.is-passive {
-  border-color: #4a3b8e;
-}
-
-.sk-slot-art img {
-  display: block;
-  width: calc(var(--slot) - 20px);
-  height: calc(var(--slot) - 20px);
-  border-radius: 7px;
-}
-
-.sk-slot-key {
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  color: #fff;
-  font: 800 12px/1 var(--font-display);
-  text-shadow:
-    0 1px 0 #000,
-    0 0 4px #000;
-}
-
-.sk-slot.is-passive .sk-slot-key {
-  top: auto;
-  bottom: -1px;
-  left: 50%;
-  padding: 2px 6px;
-  transform: translate(-50%, 50%);
-  border-radius: 999px;
-  background: #4a3b8e;
-  font: 900 8.5px/1 var(--font-body);
-  letter-spacing: 0.06em;
-  text-shadow: none;
-  text-transform: uppercase;
-}
-
-.sk-slot:hover {
-  border-color: color-mix(in srgb, var(--sk) 65%, #2a3264);
-}
-
-.sk-slot:focus-visible {
-  outline: 2px solid var(--sk);
-  outline-offset: 2px;
-}
-
-.sk-slot.is-sel {
-  border-color: var(--sk);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sk) 32%, #161c3a) 0%, #0d1228 100%);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--sk) 35%, transparent),
-    0 0 22px -4px var(--sk);
-  transform: translateY(-3px);
-}
-
-/* La skill elegida en la barra */
-#sk-pick {
-  margin-top: 14px;
-}
-
-.sk-pick-card {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 14px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--sk) 40%, var(--hud-line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--sk) 11%, var(--hud-2)), var(--hud-2) 65%);
-}
-
-.sk-pick-icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border-radius: 13px;
-  border: 1px solid var(--hud-line-2);
-  background: var(--hud-0);
-}
-
-.sk-pick-icon img {
-  width: 46px;
-  height: 46px;
-  border-radius: 9px;
-}
-
-.sk-pick-text {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-}
-
-.sk-pick-text b {
-  font: 700 17px/1.2 var(--font-display);
-}
-
-.sk-pick-text p {
-  margin: 0;
-  color: var(--ui-text-2);
-  font-size: 14.5px;
-  line-height: 1.5;
-}
-
-.sk-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.sk-chip {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 3px 10px 3px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--hud-line-2);
-  background: var(--hud-1);
-  color: var(--ui-text-2);
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.sk-chip svg {
-  width: 13px;
-  height: 13px;
-  flex: none;
-}
-
-.sk-chip.is-key {
-  padding-left: 4px;
+  background: var(--cx-3);
   color: #fff;
 }
 
-.sk-chip.is-key kbd {
-  min-width: 18px;
-  height: 18px;
-  border-bottom-width: 2px;
-  font-size: 10px;
+.cx-own-ico svg {
+  width: 20px;
+  height: 20px;
 }
 
-.sk-chip.is-passive {
-  border-color: #6a55b8;
-  background: #2a2160;
-  color: #e4dcff;
+.cx-own.is-on {
+  border-color: var(--ok-2);
 }
 
-/* Todas las clases: filtro por tipo (pastillas con el color del tipo) y la rejilla con el color de cada clase */
-.sk-browse {
-  margin-top: 40px;
-}
-
-.sk-browse-head h3 {
-  font: 800 22px/1.2 var(--font-display);
-  letter-spacing: -0.01em;
-}
-
-.sk-browse .fx-filter {
-  margin-top: 14px;
-}
-
-.sk-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.sk-tile {
-  position: relative;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-width: 0;
-  padding: 10px 12px 10px 13px;
-  overflow: hidden;
-  border-radius: 14px;
-  border: 1px solid #3a4584;
-  background:
-    var(--grain),
-    linear-gradient(90deg, color-mix(in srgb, var(--sk) 16%, #1f2753), #1f2753 62%, #1a2149 100%);
-  color: #f3f4ff;
-  text-align: left;
-  cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 3px 0 #05071a;
-  transition:
-    transform 0.3s var(--ease),
-    border-color 0.2s,
-    box-shadow 0.25s;
-}
-
-/* La franja de su color a la izquierda */
-.sk-tile::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 0;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--sk);
-  box-shadow: 0 0 10px var(--sk);
-}
-
-.sk-tile-icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--sk) 55%, #3a4584);
-  background:
-    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--sk) 34%, #0d1230), #0d1230 75%),
-    #0d1230;
-}
-
-.sk-tile-icon img {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-}
-
-.sk-tile-text {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-
-.sk-tile-text b {
-  display: -webkit-box;
-  overflow: hidden;
-  font: 700 13.5px/1.25 var(--font-display);
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.sk-tile-text small {
-  overflow: hidden;
-  color: #aab2dd;
-  font-size: 11.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sk-tile:hover {
-  border-color: color-mix(in srgb, var(--sk) 70%, #3a4584);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 3px 0 #05071a,
-    0 14px 28px -18px var(--sk);
-}
-
-.sk-tile:focus-visible {
-  outline: 2px solid var(--sk);
-  outline-offset: 2px;
-}
-
-.sk-tile.is-sel {
-  border-color: var(--sk);
-  background:
-    var(--grain),
-    linear-gradient(90deg, color-mix(in srgb, var(--sk) 34%, #262f63), #262f63 72%);
-  box-shadow:
-    0 0 0 1px var(--sk),
-    0 3px 0 color-mix(in srgb, var(--sk), #000 42%),
-    0 14px 30px -16px var(--sk);
-}
-
-.sk-tag {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.sk-tag.is-active {
+.cx-own.is-on .cx-own-ico {
   background: var(--ok-2);
   color: #03281b;
 }
 
-.sk-tag.is-owned {
-  background: var(--hud-3);
-  color: var(--ui-text);
+.cx-own.is-owned .cx-own-ico {
+  background: var(--c);
+  color: #07080b;
 }
 
-.sk-tag.is-pending {
+.cx-own.is-pending .cx-own-ico {
   background: var(--buy);
-  color: var(--buy-ink);
+  color: #2a1a00;
 }
 
 /* ---------- VFX y Skills: tamaños de pantalla ---------- */
 
-@media (max-width: 639px) {
-  /* En el móvil, el icono encima del nombre: así caben enteros nombres largos como «Despertado» */
-  .sk-tile {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 9px;
-    padding: 12px 10px 11px 13px;
-  }
-
-  .sk-tile-text {
-    width: 100%;
-  }
-
-  .sk-tile-text b {
-    font-size: 12.5px;
+@media (max-width: 379px) {
+  .sk-slot {
+    --slot: 44px;
   }
 }
 
-@media (max-width: 479px) {
-  .sk-info,
-  .sk-bar {
-    padding-inline: 16px;
+/* En el móvil, cada forma de pago en dos líneas: qué es y el precio, y debajo el botón a todo lo ancho */
+@media (max-width: 559px) {
+  .sk-buy-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding: 12px;
   }
 
-  /* Seis casillas en fila caben en 360 px */
-  .sk-bar {
-    --slot: 48px;
-  }
-
-  .sk-slots {
-    gap: 4px;
-    padding: 5px;
-  }
-
-  .sk-slot-key {
-    top: 2px;
-    left: 4px;
-    font-size: 10.5px;
-  }
-
-  .sk-opt {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .sk-opt .btn {
-    grid-row: auto;
-    grid-column: 1;
+  .sk-buy-row .btn {
+    grid-column: 1 / -1;
     width: 100%;
-    margin-top: 6px;
+  }
+}
+
+@media (min-width: 480px) {
+  .sk-group {
+    display: inline-flex;
   }
 }
 
 @media (min-width: 640px) {
-  .sk-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  .cx-head {
+    padding: 28px 26px 22px;
   }
 
-  .sk-own .btn {
-    flex: none;
+  .cx-layout {
+    gap: 20px;
+    padding: 20px 22px 24px;
+  }
+
+  .cx-filter {
+    flex-wrap: wrap;
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .cx-grid,
+  .sk-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .cx-stage {
+    min-height: 360px;
+  }
+
+  .cx-body {
+    padding: 22px 22px 22px;
+  }
+
+  .cx-old {
+    margin: 0 22px 24px;
+  }
+
+  .cx-old-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sk-head {
+    padding: 16px 20px;
+  }
+
+  #sk-screen {
+    padding: 14px 20px;
+  }
+
+  .sk-deal {
+    padding: 14px 20px 16px;
+  }
+
+  .sk-skills {
+    padding: 14px 20px 16px;
+  }
+
+  .sk-screen {
+    aspect-ratio: 16 / 10;
+  }
+
+  .sk-screen .sk-anim {
+    width: auto;
   }
 }
 
-@media (min-width: 960px) {
-  /* El escenario a la izquierda y la ficha a la derecha; la barra de skills debajo, a todo lo ancho */
-  .sk-top {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+/* Desde 1024 px: filtros arriba, catálogo a la izquierda y la vitrina a la derecha */
+@media (min-width: 1024px) {
+  .cx-layout {
+    grid-template-areas:
+      'filter filter'
+      'catalog show';
+    grid-template-columns: minmax(0, 1fr) 410px;
+    gap: 20px 26px;
+    align-items: start;
+    padding: 22px 26px 28px;
   }
 
-  .sk-stage {
-    padding: 28px 26px 22px;
-    border-right: 1px solid var(--hud-line);
-    border-bottom: 0;
+  .cx-layout.is-skills {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
   }
 
-  .sk-info {
-    padding: 34px 36px 32px;
-  }
-
-  .sk-bar {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 16px 28px;
-    align-items: center;
-    padding: 24px 28px 26px;
-  }
-
-  .sk-bar-head {
-    grid-column: 1 / -1;
-  }
-
-  .sk-bar-row {
-    margin-top: 0;
-  }
-
-  #sk-pick {
-    margin-top: 0;
+  .cx-grid {
+    grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
   }
 
   .sk-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-}
 
-@media (hover: hover) {
-  .sk-slot:hover:not(.is-sel) {
-    transform: translateY(-2px);
+  .cx-stage {
+    min-height: 340px;
+  }
+
+  .sk-screen {
+    aspect-ratio: 2.2 / 1;
+  }
+
+  .cx-old {
+    margin: 0 26px 28px;
   }
 }
 
-@media (hover: hover) and (min-width: 960px) {
-  .sk-tile:hover {
+/* La vitrina se queda fija al bajar por el catálogo. Si es más alta que la pantalla, app.js (cxStick) sube su «top»
+   para que quede pegada por abajo y se vea la compra */
+@media (min-width: 1024px) {
+  .cx-show {
+    position: sticky;
+    top: 88px;
+  }
+}
+
+@media (hover: hover) {
+  .cx-tile:hover:not(.is-sel) {
+    transform: translateY(-3px);
+  }
+
+  .cx-chip:hover:not([aria-pressed='true']) {
+    transform: translateY(-1px);
+  }
+
+  .sk-slot:hover:not(.is-sel) {
     transform: translateY(-2px);
   }
 }
