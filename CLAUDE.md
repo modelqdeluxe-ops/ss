@@ -11,7 +11,9 @@
   y fusiona en `main`. El workflow `.github/workflows/tf-client.yml` compila el jar y crea solo la Release
   `v<mod_version>` con `tfclient-1.20.1-<versión>.jar` y una copia `tfclient.jar`.
 - Enlace fijo para el dueño y los jugadores (siempre la última versión):
-  **https://github.com/modelqdeluxe-ops/ss/releases/latest/download/tfclient.jar**
+  **https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar**
   De una versión concreta: `https://github.com/modelqdeluxe-ops/ss/releases/download/v<versión>/tfclient-1.20.1-<versión>.jar`.
+- No marques las Releases de TF Client como «latest»: el repo tiene otras (StickerYa) y su enlace de la última
+  dejaría de funcionar. El workflow ya lo hace bien.
 - Tras fusionar, comprueba que la Release existe (el CI tarda unos minutos) antes de dar el enlace: si falla el CI,
   arréglalo; no vuelvas a subir el jar al repo como atajo.

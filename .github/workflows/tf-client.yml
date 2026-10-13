@@ -38,20 +38,12 @@ jobs:
         with:
           name: tfclient-jar
           path: tf-client/build/libs/*.jar
-      # Copia del .jar en una referencia oculta del repo (no es una rama) para poder bajarlo con git.
-      - name: Publicar el .jar en refs/tf-client/jar
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: |
-          mkdir -p /tmp/tfjar && cp build/libs/*.jar /tmp/tfjar/
-          cd /tmp/tfjar
-          git init -q
-          git config user.name "github-actions[bot]"
-          git config user.email "41898281+github-actions[bot]@users.noreply.github.com"
-          git add . && git commit -q -m "TF Client ${GITHUB_SHA::7}"
-          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/tf-client/jar
-      # La descarga del mod: una Release por versión (v<mod_version>) con el jar con su nombre y una copia
-      # «tfclient.jar», para que https://github.com/<repo>/releases/latest/download/tfclient.jar sea siempre la
-      # última. Solo en main y solo si esa versión aún no tiene Release (subir mod_version = publicar).
+      # La descarga del mod (sin jars en el repo):
+      #  - una Release por versión, v<mod_version>, con el jar (no se marca como «latest»: el repo tiene otras
+      #    Releases, como StickerYa, y su enlace de la última no se toca);
+      #  - la Release fija «tfclient», cuyo tfclient.jar se reemplaza en cada versión: el enlace que no cambia nunca
+      #    es https://github.com/<repo>/releases/download/tfclient/tfclient.jar
+      # Solo en main y solo si esa versión aún no tiene Release (subir mod_version = publicar).
       - name: Publicar la Release de la versión
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
@@ -60,7 +52,12 @@ jobs:
           ver=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
           jar=$(ls build/libs/tfclient-*-"$ver".jar | head -n1)
           if gh release view "v$ver" >/dev/null 2>&1; then echo "La Release v$ver ya existe"; exit 0; fi
+          gh release create "v$ver" "$jar" --latest=false --title "TF Client $ver" \
+            --notes "TF Client $ver. Enlace fijo a la última versión: https://github.com/${{ github.repository }}/releases/download/tfclient/tfclient.jar"
           cp "$jar" /tmp/tfclient.jar
-          gh release create "v$ver" "$jar" /tmp/tfclient.jar --latest \
-            --title "TF Client $ver" \
-            --notes "Descarga: tfclient-1.20.1-$ver.jar (o tfclient.jar, la misma). Enlace fijo a la última: https://github.com/${{ github.repository }}/releases/latest/download/tfclient.jar"
+          if ! gh release view tfclient >/dev/null 2>&1; then
+            gh release create tfclient --latest=false --title "TF Client (última versión)" \
+              --notes "Siempre la última versión de TF Client: descarga tfclient.jar."
+          fi
+          gh release upload tfclient /tmp/tfclient.jar --clobber
+          gh release edit tfclient --title "TF Client (última versión: $ver)" --latest=false
