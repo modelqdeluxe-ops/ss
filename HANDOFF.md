@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **13 de octubre de 2026** (TF Client **1.3.64**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **13 de octubre de 2026** (TF Client **1.3.65**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -9,9 +9,9 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-### CHECKPOINT (13 oct 2026, TF Client 1.3.64) — lee esto primero
+### CHECKPOINT (13 oct 2026, TF Client 1.3.65) — lee esto primero
 
-**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.64**, Release ya creada:
+**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.65**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
 
@@ -35,8 +35,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.64 (pantalla que cubre todo el cristal, neones
-nítidos con neon_halo, MP4/M4A/AAC con JAAD) y de la 1.3.63 (marco con su bisel y el fondo debajo,
+**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.65 (pantalla rectangular sin escalones, tubos
+rectangulares, paisaje fijo con un castillo y humo) y la 1.3.64 (pantalla que cubre todo el cristal, neon_halo, MP4/M4A/AAC con JAAD) y de la 1.3.63 (marco con su bisel y el fondo debajo,
 neones de los temas, paisaje, barra de estado, SKINS con `PadSkinModel`, app Guía, MP3 con JLayer) y de antes las skins
 entre jugadores (canal `tfclient:skins`, mixins de skin), el buzón de REGALOS, el asistente de kits del admin y el
 escaneo de la carpeta de música. Si el dueño manda capturas de algo de esto, empieza por ahí.
@@ -70,6 +70,20 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.65 (13 oct)** — capturas del dueño: «quiero pantalla completa, quita ese pixel» (el escalón del bisel en
+> la esquina), «mira ese dibujo» (el tubo de neón con una muesca oscura arriba), «el diseño de las casitas, tienes 2
+> castillos repetidos».
+> - **Pantalla rectangular**: el cristal de marco.png tiene tres esquinas escalonadas (8x12 px de bisel hacia dentro) y un
+>   saliente de 1 px arriba a la derecha. `build_pad.full_screen` deja el hueco como rectángulo completo (`SCREEN_BOX` =
+>   205, 250, 1361, 795; el logo arriba a la izquierda se queda) y prolonga el borde del bisel recto, con la esquina a
+>   inglete. `TFPadScreen.GLASS_T` = 250.
+> - **Tubos de neón**: cada uno es ahora un rectángulo perfecto y uniforme (la caja de su núcleo) con una franja de luz en
+>   el centro (neon_core); el dibujo original tenía sombras y muescas que, teñidas, parecían manchas.
+> - **Paisaje**: una panorámica de 480x56 (más ancha que el cristal más ancho), **quieta y centrada**: un solo castillo
+>   (torres con tejado en punta, homenaje con bandera, rosetón y puerta) y dos casitas nuevas (tejado de tejas con alero,
+>   chimenea que asoma, puerta con marco y pomo, ventanas encendidas con cruz). El humo de las chimeneas lo anima el pad
+>   (`TFPadScreen.CHIMNEYS` = las de `build_skin.CHIMNEYS`: si cambias las casitas, cópialas).
 
 > **TF Client 1.3.64 (13 oct)** — el dueño probó la 1.3.63 (capturas): «parece que hay 2 pantallas una sobre otra»,
 > «la línea, el efecto se sale: quiero una línea perfectamente dibujada», «que el reproductor reproduzca MP4, mayor calidad».
@@ -2007,7 +2021,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.64)
+## 5. El mod (TF Client 1.3.65)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

@@ -364,6 +364,60 @@ def normalize(im, box=30):
 
 # El cristal de marco.png: el rectángulo de luz azul dentro del bisel azul oscuro (x0, y0, x1, y1; x1 e y1 fuera).
 GLASS_BOX = (205, 249, 1361, 795)
+# 1.3.64: la pantalla, rectángulo completo (el dueño: «quiero pantalla completa, quita ese pixel»): el cristal de
+# marco.png tiene tres esquinas escalonadas (8x12 px del bisel metidos hacia dentro) y un saliente de 1 px arriba a la
+# derecha; en frame.png se quitan y el borde del bisel sigue recto. El logo (arriba a la izquierda) se queda encima.
+SCREEN_BOX = (205, 250, 1361, 795)
+LOGO_ZONE = (345, 381)  # x < 345 e y < 381: el logo y su trozo de bisel
+
+
+def full_screen(frame, glass):
+    """El hueco de la pantalla como rectángulo completo (SCREEN_BOX): fuera los escalones de las esquinas (se vuelven
+    transparentes) y el borde del bisel se prolonga recto donde estaban (copiando la fila o columna de al lado)."""
+    px = frame.load()
+    x0, y0, x1, y1 = SCREEN_BOX
+    # arriba: la fila y0-1 tiene un trozo de cristal (saliente de 1 px): ahí sigue la línea del bisel de su izquierda
+    for x in range(x0, x1):
+        if (x, y0 - 1) in glass:
+            src = next(xx for xx in range(x, x0 - 1, -1) if (xx, y0 - 1) not in glass)
+            px[x, y0 - 1] = px[src, y0 - 1]
+    band = 7
+    # los escalones: (x de los bloques, y de los bloques, de qué lado está el borde vertical, y el horizontal)
+    notches = []
+    for (cx, cy) in ((x0, y1 - 1), (x1 - 1, y1 - 1), (x1 - 1, y0)):
+        xs = range(x0, x0 + 16) if cx == x0 else range(x1 - 16, x1)
+        ys = range(y1 - 16, y1) if cy == y1 - 1 else range(y0, y0 + 16)
+        block = [(x, y) for x in xs for y in ys if (x, y) not in glass and px[x, y][3] > 0]
+        if block:
+            notches.append((block, cx, cy))
+    for block, cx, cy in notches:
+        bx0, bx1 = min(p[0] for p in block), max(p[0] for p in block)
+        by0, by1 = min(p[1] for p in block), max(p[1] for p in block)
+        # el borde vertical (a la izquierda o a la derecha del rectángulo), en las filas del escalón: como la fila de
+        # al lado que ya era recta
+        ref_y = by0 - 1 if cy == y1 - 1 else by1 + 1
+        sx = range(x0 - band, x0) if cx == x0 else range(x1, x1 + band)
+        for y in range(by0, by1 + 1):
+            for x in sx:
+                px[x, y] = px[x, ref_y]
+        # el borde horizontal (abajo o arriba), en las columnas del escalón: como la columna de al lado
+        ref_x = bx1 + 1 if cx == x0 else bx0 - 1
+        sy = range(y1, y1 + band) if cy == y1 - 1 else range(y0 - band, y0)
+        for x in range(bx0, bx1 + 1):
+            for y in sy:
+                px[x, y] = px[ref_x, y]
+        # la esquina, a inglete (en diagonal) entre los dos bordes, como un marco de verdad
+        corner_x = range(x0 - band, x0) if cx == x0 else range(x1, x1 + band)
+        corner_y = range(y1, y1 + band) if cy == y1 - 1 else range(y0 - band, y0)
+        edge_x = x0 if cx == x0 else x1 - 1          # columna del borde horizontal más cercana
+        edge_y = y1 - 1 if cy == y1 - 1 else y0      # fila del borde vertical más cercana
+        snap = {(x, y): (px[edge_x, y], px[x, edge_y]) for x in corner_x for y in corner_y}
+        for (x, y), (horiz, vert) in snap.items():
+            dx, dy = abs(x - edge_x), abs(y - edge_y)
+            px[x, y] = horiz if dy >= dx else vert
+        for x, y in block:
+            px[x, y] = (0, 0, 0, 0)
+    return frame
 
 
 def _glassy(p):
@@ -388,8 +442,8 @@ def glass_region(im):
 
 
 def _neon_tubes(marco):
-    """Los 8 tubos de neón del marco (sus núcleos encendidos: cian claro) y la zona de alrededor de cada tubo (su
-    halo azul, hasta 34 px). Se reconocen como manchas de núcleo largas y finas (las gemas son cuadradas)."""
+    """Los 8 tubos de neón del marco: el rectángulo de cada uno (la caja de su núcleo encendido, cian claro: una mancha
+    larga y fina; las gemas son cuadradas) y la zona de alrededor (su halo azul, hasta 34 px). Devuelve (rects, near)."""
     import numpy as np
     from collections import deque
     arr = np.asarray(marco).astype(int)
@@ -397,8 +451,8 @@ def _neon_tubes(marco):
     r, g, b, a = arr[..., 0], arr[..., 1], arr[..., 2], arr[..., 3]
     core = (a > 200) & (b > r + 60) & (g >= 170) & (b >= 200)
     lab = np.zeros((h, w), int)
-    tubes = np.zeros((h, w), bool)
     near = np.zeros((h, w), bool)
+    rects = []
     n = 0
     for y in range(h):
         for x in range(w):
@@ -407,21 +461,20 @@ def _neon_tubes(marco):
             n += 1
             q = deque([(x, y)])
             lab[y, x] = n
-            pts = [(x, y)]
+            xs, ys = [x], [y]
             while q:
                 cx, cy = q.popleft()
                 for nx, ny in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
                     if 0 <= nx < w and 0 <= ny < h and core[ny, nx] and not lab[ny, nx]:
                         lab[ny, nx] = n
                         q.append((nx, ny))
-                        pts.append((nx, ny))
-            xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+                        xs.append(nx)
+                        ys.append(ny)
             bw, bh = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
-            if max(bw, bh) > 100 and max(bw, bh) >= 4 * min(bw, bh) and len(pts) < 100000:  # un tubo (no el cristal)
-                for px_, py_ in pts:
-                    tubes[py_, px_] = True
+            if max(bw, bh) > 100 and max(bw, bh) >= 4 * min(bw, bh) and len(xs) < 100000:  # un tubo (no el cristal)
+                rects.append((min(xs), min(ys), max(xs) + 1, max(ys) + 1))
                 near[max(0, min(ys) - 34):max(ys) + 35, max(0, min(xs) - 34):max(xs) + 35] = True
-    return tubes, near
+    return rects, near
 
 
 def frame_textures(marco):
@@ -437,28 +490,37 @@ def frame_textures(marco):
     - neon_core.png: el centro encendido de tubos y gemas en blanco, encima sin teñir, para que sigan brillando."""
     frame = marco.copy()
     fpx = frame.load()
-    for x, y in glass_region(marco):
+    glass = glass_region(marco)
+    for x, y in glass:
         fpx[x, y] = (0, 0, 0, 0)
+    full_screen(frame, glass)
     w, h = marco.size
     px = marco.load()
-    tubes, near = _neon_tubes(marco)
+    rects, near = _neon_tubes(marco)
     neon = Image.new('RGBA', (w, h), (255, 255, 255, 0))
     core = Image.new('RGBA', (w, h), (255, 255, 255, 0))
     halo = Image.new('RGBA', (w, h), (0, 0, 0, 0))
     npx, cpx, hpx = neon.load(), core.load(), halo.load()
+    # cada tubo, un rectángulo perfecto y uniforme (el dibujo original tenía sombras y muescas que al teñir parecían
+    # manchas): todo del color del tema y una franja de luz en el centro, a lo largo
+    in_tube = set()
+    for x0, y0, x1, y1 in rects:
+        horiz = x1 - x0 > y1 - y0
+        half = ((y1 - y0) if horiz else (x1 - x0)) / 2
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                in_tube.add((x, y))
+                npx[x, y] = (255, 255, 255, 255)
+                t = abs(((y - y0) if horiz else (x - x0)) + 0.5 - half) / half
+                cpx[x, y] = (255, 255, 255, round(0.5 * 255 * max(0.0, 1 - t) ** 1.5))
     for y in range(h):
         for x in range(w):
             r, g, b, a = px[x, y]
             # (el logo de arriba a la izquierda, con su espada y sus banderas azules, no se toca)
-            if a <= 200 or b <= r + 60 or fpx[x, y][3] == 0 or (x < 400 and y < 340):
+            if a <= 200 or b <= r + 60 or fpx[x, y][3] == 0 or (x < 400 and y < 340) or (x, y) in in_tube:
                 continue
             c = min(1.0, max(0.0, (g - 170) / 80))
-            if tubes[y, x]:
-                v = round(255 * min(1.0, max(0.88, (g + b) / 2 / 254)))
-                npx[x, y] = (v, v, v, 255)
-                if c > 0:
-                    cpx[x, y] = (255, 255, 255, round(c * 0.38 * 255))
-            elif near[y, x]:
+            if near[y, x]:
                 hpx[x, y] = (round(b * 0.12), round(b * 0.18), round(b * 0.42), 255)
             else:  # las gemas
                 al = min(1.0, max(0.0, (b - 110) / 80))
