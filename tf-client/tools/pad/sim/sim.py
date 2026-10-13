@@ -52,7 +52,7 @@ def rgb(c):
     return ((c >> 16) & 255, (c >> 8) & 255, c & 255)
 
 
-GX, GY, GW, GH = 52, 64, 288, 132
+GX, GY, GW, GH = 51, 62, 290, 137  # TFPadScreen (1.3.64: cubre todo el cristal)
 BAR = 18
 # TFPadScreen.STRETCH_U/D y MAX_EXTRA: filas de frame.png que se repiten para hacer el pad más alto
 STRETCH_U, STRETCH_D, MAX_EXTRA = 430, 596, 48
@@ -1402,6 +1402,7 @@ class Sim(Skin):
         frame.alpha_composite(top)
         # los neones del color del tema (TFPadScreen.drawFrame: neon.png teñido y neon_core.png encima)
         if th[4]:
+            frame.alpha_composite(self._stretched('neon_halo'))
             neon = self._stretched('neon')
             n = np.asarray(neon).astype(float)
             n[..., :3] = n[..., :3] * np.array(rgb(th[4]), float) / 255

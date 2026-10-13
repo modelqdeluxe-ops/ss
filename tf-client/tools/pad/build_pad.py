@@ -5,7 +5,7 @@ Todo va en la rejilla del marco: 1 píxel del dibujo = 4 píxeles de marco.png (
 
     python3 tools/pad/build_pad.py            # escribe src/main/resources/assets/tfclient/textures/gui/pad/
     python3 tools/pad/build_pad.py --preview  # además, vistas previas en tools/pad/preview_*.png (no van al repo)
-    python3 tools/pad/build_pad.py --marco    # solo frame.png, neon.png y neon_core.png (no toca lo demás)
+    python3 tools/pad/build_pad.py --marco    # solo frame.png y neon*.png (no toca lo demás)
 
 Qué sale:
 - frame.png (el marco con el cristal hueco) + neon.png / neon_core.png (neones para los temas), tile.png / tile_h.png (ficha de 40 y su versión al pasar el ratón),
@@ -387,40 +387,88 @@ def glass_region(im):
     return seen
 
 
+def _neon_tubes(marco):
+    """Los 8 tubos de neón del marco (sus núcleos encendidos: cian claro) y la zona de alrededor de cada tubo (su
+    halo azul, hasta 34 px). Se reconocen como manchas de núcleo largas y finas (las gemas son cuadradas)."""
+    import numpy as np
+    from collections import deque
+    arr = np.asarray(marco).astype(int)
+    h, w = arr.shape[:2]
+    r, g, b, a = arr[..., 0], arr[..., 1], arr[..., 2], arr[..., 3]
+    core = (a > 200) & (b > r + 60) & (g >= 170) & (b >= 200)
+    lab = np.zeros((h, w), int)
+    tubes = np.zeros((h, w), bool)
+    near = np.zeros((h, w), bool)
+    n = 0
+    for y in range(h):
+        for x in range(w):
+            if not core[y, x] or lab[y, x]:
+                continue
+            n += 1
+            q = deque([(x, y)])
+            lab[y, x] = n
+            pts = [(x, y)]
+            while q:
+                cx, cy = q.popleft()
+                for nx, ny in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                    if 0 <= nx < w and 0 <= ny < h and core[ny, nx] and not lab[ny, nx]:
+                        lab[ny, nx] = n
+                        q.append((nx, ny))
+                        pts.append((nx, ny))
+            xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+            bw, bh = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
+            if max(bw, bh) > 100 and max(bw, bh) >= 4 * min(bw, bh) and len(pts) < 100000:  # un tubo (no el cristal)
+                for px_, py_ in pts:
+                    tubes[py_, px_] = True
+                near[max(0, min(ys) - 34):max(ys) + 35, max(0, min(xs) - 34):max(xs) + 35] = True
+    return tubes, near
+
+
 def frame_textures(marco):
     """frame.png: marco.png TAL CUAL (con su bisel, sus brillos y sus esquinas: el diseño del dueño) con el cristal
     transparente. TFPadScreen pinta primero el fondo del cristal (color del tema, trama, luces) en el rectángulo
     GLASS_BOX y luego el marco encima: el marco recorta el fondo con la forma exacta del cristal, sin franjas de otro
     azul alrededor (la «doble pantalla») y sin tocar el dibujo del marco.
 
-    neon.png y neon_core.png: los neones y las gemas azules del marco, para teñirlos del color del tema conservando
-    su luz. neon.png lleva el brillo de cada píxel en gris (núcleo claro, halo y caras oscuras de las gemas más
-    oscuros) y un alfa que se apaga en el borde del halo; se pinta multiplicado por el color del tema. neon_core.png es
-    el núcleo encendido en blanco (alfa según lo cian que era): encima, sin teñir, para que el tubo siga brillando."""
+    Para los temas (1.3.64: «quiero una línea perfectamente dibujada, no así salida a los lados»):
+    - neon_halo.png: el halo azul de alrededor de cada tubo pasado al azul marino del canal (sin teñir). Teñido del
+      color del tema parecía una mancha que se salía de la línea.
+    - neon.png: los tubos (su núcleo, opaco: la línea nítida) y las gemas azules en gris (su brillo), para teñirlos.
+    - neon_core.png: el centro encendido de tubos y gemas en blanco, encima sin teñir, para que sigan brillando."""
     frame = marco.copy()
     fpx = frame.load()
     for x, y in glass_region(marco):
         fpx[x, y] = (0, 0, 0, 0)
     w, h = marco.size
     px = marco.load()
+    tubes, near = _neon_tubes(marco)
     neon = Image.new('RGBA', (w, h), (255, 255, 255, 0))
     core = Image.new('RGBA', (w, h), (255, 255, 255, 0))
-    npx, cpx = neon.load(), core.load()
+    halo = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    npx, cpx, hpx = neon.load(), core.load(), halo.load()
     for y in range(h):
         for x in range(w):
             r, g, b, a = px[x, y]
-            # (el logo de arriba a la izquierda, con su espada y sus banderas azules, no se tiñe)
+            # (el logo de arriba a la izquierda, con su espada y sus banderas azules, no se toca)
             if a <= 200 or b <= r + 60 or fpx[x, y][3] == 0 or (x < 400 and y < 340):
                 continue
-            al = min(1.0, max(0.0, (b - 110) / 80))
-            if al <= 0:
-                continue
-            v = min(255, round((g + b) / 2 * 255 / 254))
-            npx[x, y] = (v, v, v, round(al * 255))
             c = min(1.0, max(0.0, (g - 170) / 80))
-            if c > 0:
-                cpx[x, y] = (255, 255, 255, round(c * 0.38 * 255))
-    return {'frame.png': frame, 'neon.png': neon, 'neon_core.png': core}
+            if tubes[y, x]:
+                v = round(255 * min(1.0, max(0.88, (g + b) / 2 / 254)))
+                npx[x, y] = (v, v, v, 255)
+                if c > 0:
+                    cpx[x, y] = (255, 255, 255, round(c * 0.38 * 255))
+            elif near[y, x]:
+                hpx[x, y] = (round(b * 0.12), round(b * 0.18), round(b * 0.42), 255)
+            else:  # las gemas
+                al = min(1.0, max(0.0, (b - 110) / 80))
+                if al <= 0:
+                    continue
+                v = min(255, round((g + b) / 2 * 255 / 254))
+                npx[x, y] = (v, v, v, round(al * 255))
+                if c > 0:
+                    cpx[x, y] = (255, 255, 255, round(c * 0.38 * 255))
+    return {'frame.png': frame, 'neon.png': neon, 'neon_core.png': core, 'neon_halo.png': halo}
 
 
 def marco_textures():

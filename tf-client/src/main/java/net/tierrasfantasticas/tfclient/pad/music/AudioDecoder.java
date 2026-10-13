@@ -23,6 +23,8 @@ public interface AudioDecoder extends Closeable {
             // todos los MP3 (MPEG-1, 2 y 2.5, de 8 a 320 kbps, CBR o VBR) con JLayer: suena igual que el original (JavaMP3,
             // el de antes, distorsionaba los de 128 kbps y se apartaba en los de 320)
             case MP3 -> new JLayerDecoder(file, startMs);
+            case MP4 -> new AacDecoder(file, startMs); // MP4 / M4A (AAC), también con vídeo o fragmentado
+            case AAC -> new AdtsDecoder(file, startMs); // .aac suelto (ADTS)
             case OGG -> new OggDecoder(file, startMs);
             case WAV -> new WavDecoder(file, startMs);
             default -> throw new IOException("Formato de audio no soportado: " + file.getFileName());
@@ -31,7 +33,18 @@ public interface AudioDecoder extends Closeable {
 
     /** Los formatos que se reconocen por sus primeros bytes. */
     enum Kind {
-        MP3, OGG, WAV, UNKNOWN
+        MP3, MP4, AAC, OGG, WAV, UNKNOWN;
+
+        /** La extensión con la que se guarda en la biblioteca. */
+        public String ext() {
+            return switch (this) {
+                case MP3 -> ".mp3";
+                case MP4 -> ".m4a";
+                case AAC -> ".aac";
+                case OGG -> ".ogg";
+                default -> ".wav";
+            };
+        }
     }
 
     final class AudioFormatSniffer {
@@ -45,8 +58,17 @@ public interface AudioDecoder extends Closeable {
             }
         }
 
-        /** MP3 (con etiqueta ID3 o un frame directamente), OGG («OggS») o WAV («RIFF....WAVE»). */
+        /**
+         * MP4/M4A (una caja ftyp, moov, mdat, free o wide al principio), AAC suelto (cabecera ADTS: 0xFFF y capa 0),
+         * MP3 (con etiqueta ID3 o un frame directamente), OGG («OggS») o WAV («RIFF....WAVE»).
+         */
         public static Kind sniff(byte[] head, int n) {
+            if (n >= 8) {
+                String box = new String(head, 4, 4, java.nio.charset.StandardCharsets.ISO_8859_1);
+                if (box.equals("ftyp") || box.equals("moov") || box.equals("mdat") || box.equals("free") || box.equals("wide"))
+                    return Kind.MP4;
+            }
+            if (n >= 2 && (head[0] & 0xFF) == 0xFF && (head[1] & 0xF6) == 0xF0) return Kind.AAC;
             if (n >= 3 && head[0] == 'I' && head[1] == 'D' && head[2] == '3') return Kind.MP3;
             if (n >= 2 && (head[0] & 0xFF) == 0xFF && (head[1] & 0xE0) == 0xE0) return Kind.MP3;
             if (n >= 4 && head[0] == 'O' && head[1] == 'g' && head[2] == 'g' && head[3] == 'S') return Kind.OGG;

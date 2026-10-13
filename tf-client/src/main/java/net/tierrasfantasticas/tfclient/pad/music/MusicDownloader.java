@@ -23,11 +23,12 @@ import net.tierrasfantasticas.tfclient.TFClient;
 /**
  * Baja una canción de un link directo y la mete en la biblioteca. Acepta links de compartir de Google Drive (los
  * convierte solo; el archivo tiene que estar como «Cualquier persona con el enlace»), Dropbox, GitHub y cualquier
- * link directo a un MP3, OGG o WAV. También baja portadas (PNG o JPG) para una canción. Una descarga a la vez, en su
+ * link directo a un MP3, MP4/M4A, AAC, OGG o WAV. También baja portadas (PNG o JPG) para una canción. Una descarga a la vez, en su
  * propio hilo; la app lee {@link #job()} para pintar el progreso.
  */
 public final class MusicDownloader {
-    public static final long MAX_AUDIO = 80L << 20, MAX_IMAGE = 8L << 20;
+    /** Hasta 250 MB por canción (un MP4 con vídeo pesa mucho; del vídeo solo se oye el audio). */
+    public static final long MAX_AUDIO = 250L << 20, MAX_IMAGE = 8L << 20;
 
     /** Lo que se está bajando. Lo escribe el hilo de la descarga y lo lee la app. */
     public static final class Job {
@@ -168,13 +169,17 @@ public final class MusicDownloader {
             j.status = "Comprobando…";
             AudioDecoder.Kind kind = AudioDecoder.AudioFormatSniffer.sniff(part);
             if (kind == AudioDecoder.Kind.UNKNOWN)
-                throw new IOException("Eso no es una canción: tiene que ser un MP3, OGG o WAV.");
+                throw new IOException("Eso no es una canción: tiene que ser MP3, MP4, M4A, AAC, OGG o WAV.");
             long duration = 0;
             if (kind == AudioDecoder.Kind.MP3) {
                 // cualquier MP3: los MPEG-2/2.5 los lee JLayer (ver AudioDecoder.open)
                 duration = JLayerDecoder.isMpeg1(part) ? Mp3Frames.scan(part, -1).durationMs() : JLayerDecoder.durationMs(part);
             } else if (kind == AudioDecoder.Kind.WAV) {
                 duration = wavDuration(part);
+            } else if (kind == AudioDecoder.Kind.MP4) {
+                duration = AacDecoder.durationMs(part);
+            } else if (kind == AudioDecoder.Kind.AAC) {
+                duration = AdtsDecoder.durationMs(part);
             }
             // que se pueda reproducir de verdad: unos cuantos trozos
             try (AudioDecoder d = AudioDecoder.open(part, 0)) {
@@ -183,7 +188,7 @@ public final class MusicDownloader {
             }
             j.status = "Leyendo portada…";
             MusicTags.Tags tags = MusicTags.read(part);
-            String ext = kind == AudioDecoder.Kind.MP3 ? ".mp3" : kind == AudioDecoder.Kind.OGG ? ".ogg" : ".wav";
+            String ext = kind.ext();
             boolean cover = tags.cover() != null && saveCover(tags.cover(), dir.resolve(id + ".png"));
             String title = !tags.title().isBlank() ? tags.title() : name;
             Files.move(part, dir.resolve(id + ext), StandardCopyOption.REPLACE_EXISTING);
@@ -333,7 +338,7 @@ public final class MusicDownloader {
             String path = url.replaceAll("[?#].*$", "");
             name = URLDecoder.decode(path.substring(path.lastIndexOf('/') + 1), StandardCharsets.UTF_8);
         }
-        name = name.replaceAll("\\.(?i)(mp3|ogg|oga|wav)$", "").replace('_', ' ').trim();
+        name = name.replaceAll("\\.(?i)(mp3|mp4|m4a|aac|ogg|oga|wav)$", "").replace('_', ' ').trim();
         if (name.isEmpty() || name.equalsIgnoreCase("download") || name.equalsIgnoreCase("uc")) name = "Canción";
         return name.length() > 60 ? name.substring(0, 60) : name;
     }

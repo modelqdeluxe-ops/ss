@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **13 de octubre de 2026** (TF Client **1.3.63**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **13 de octubre de 2026** (TF Client **1.3.64**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -9,9 +9,9 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-### CHECKPOINT (13 oct 2026, TF Client 1.3.63) — lee esto primero
+### CHECKPOINT (13 oct 2026, TF Client 1.3.64) — lee esto primero
 
-**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.63**, Release ya creada:
+**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.64**, Release ya creada:
 https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
 (Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
 
@@ -35,7 +35,8 @@ la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). L
 Sin caché de Gradle (contenedor nuevo), `--offline` falla: la primera vez `./gradlew compileJava` sin `--offline` (si Maven
 Central da 429, reintentar a los pocos segundos).
 
-**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.63 (marco con su bisel y el fondo debajo,
+**Sin verificar en el juego (solo simulador o compilando)**: lo de la 1.3.64 (pantalla que cubre todo el cristal, neones
+nítidos con neon_halo, MP4/M4A/AAC con JAAD) y de la 1.3.63 (marco con su bisel y el fondo debajo,
 neones de los temas, paisaje, barra de estado, SKINS con `PadSkinModel`, app Guía, MP3 con JLayer) y de antes las skins
 entre jugadores (canal `tfclient:skins`, mixins de skin), el buzón de REGALOS, el asistente de kits del admin y el
 escaneo de la carpeta de música. Si el dueño manda capturas de algo de esto, empieza por ahí.
@@ -47,7 +48,7 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 - «Más diseñitos bonitos en las GUIs, mejora lo que tenemos»: es continuo. Lo último: filas con icono 32 en pastilla de
   color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + monogramas TF. Ideas no hechas: teñir también las
   fichas azules de la portada con el tema, más ilustración en los vacíos, Ajustes del simulador al día.
-- Música: FLAC/M4A no se leen (solo MP3/OGG/WAV). El MP3 empieza con ~50 ms de silencio (retardo del codificador y el
+- Música: FLAC no se lee (MP3, MP4/M4A, AAC, OGG y WAV sí). El MP3 empieza con ~50 ms de silencio (retardo del codificador y el
   frame Xing/Info): se podría recortar con la etiqueta LAME.
 - Adelgazar el jar (55 MB: texturas de GUI 13,6 MB y sonidos de skills 12,7 MB se pueden comprimir) — ofrecido, sin respuesta.
 
@@ -69,6 +70,26 @@ fondo del cristal va DEBAJO del marco y llega hasta el bisel.
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
 > `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar
 > (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
+> **TF Client 1.3.64 (13 oct)** — el dueño probó la 1.3.63 (capturas): «parece que hay 2 pantallas una sobre otra»,
+> «la línea, el efecto se sale: quiero una línea perfectamente dibujada», «que el reproductor reproduzca MP4, mayor calidad».
+> - **Doble pantalla**: abajo y a los lados del cristal quedaba una franja lisa del color del cristal (95,212,252 en su
+>   captura): lo de encima del color base (trama, sombra, paisaje) acababa en el rectángulo viejo de la pantalla, que era
+>   1–3 px de pad más pequeño que el cristal de marco.png. Ahora `TFPadScreen.GX/GY/GW/GH` = **51, 62, 290, 137**: cubre
+>   TODO el cristal (51,25–340,25 × 62,25–198,75) y lo que sobra lo tapa el marco, que va encima. Simulador igual.
+> - **Neones de los temas**: el halo azul de alrededor de cada tubo, teñido, parecía una mancha que se salía. Ahora
+>   `build_pad.frame_textures` separa los 8 tubos (`_neon_tubes`: manchas de núcleo largas y finas) de su halo:
+>   neon_halo.png (el halo en el azul marino del canal, sin teñir), neon.png (el tubo opaco, nítido, y las gemas) y
+>   neon_core.png. `TFPadScreen.drawFrame` pinta halo → tubo teñido → núcleo.
+> - **MP4 / M4A / AAC**: JAAD (`net.sourceforge.jaad.aac` y `.adts`, dominio público, copiado de DV8FromTheWorld/JAADec;
+>   arreglo en `ICStream.iq`: valores de 8191 se salían de la tabla y reventaba con MP4 de ffmpeg) decodifica el AAC
+>   (LC y HE). El contenedor lo lee **`Mp4Audio`** (propio: el de JAAD leía bytes dos veces con RandomAccessFile y no sabe
+>   de MP4 fragmentado): pista de audio aunque haya vídeo, moov al final, fragmentado (moof/tfhd/tfdt/trun), lista de
+>   edición (recorta el retardo del codificador como ffmpeg), etiquetas de iTunes (©nam, ©ART, covr). `AacDecoder` (MP4,
+>   salta a mitad decodificando y tirando el frame anterior; 5.1 → estéreo) y `AdtsDecoder` (.aac suelto). Medido
+>   contra ffmpeg: **90,5 dB** en M4A 256/128 kbps, 48 kHz, MP4 con vídeo, fragmentado y ADTS, 0 muestras de desfase y
+>   mismo largo; salto a 3000 ms exacto; 6 min a 256 kbps en 3,8 s. `AudioDecoder.Kind` MP4/AAC (sniff: ftyp/moov/mdat/
+>   free/wide; ADTS = 0xFFF con capa 0, antes que MP3) y `Kind.ext()`. Límite de descarga: 250 MB. Guía al día.
 
 > **TF Client 1.3.63 (13 oct)** — el dueño probó la 1.3.62: «la otra IA jodió la pantalla, mató el diseño, los colores
 > mal pintados», «la pantalla de skins una reverenda mierda: una cabeza sin skin, vista previa rota que se sale; solo
@@ -959,13 +980,13 @@ Hecho:
 - **Música** (`pad/PadMusicPage` + `pad/music/`), solo cliente:
   - Descarga (`MusicDownloader`): convierte links de compartir de Google Drive (→ `drive.usercontent.google.com/download
     ?id=…&export=download&confirm=t`, y sigue el botón de «descargar de todos modos»), Dropbox (`dl=1`) y GitHub (raw);
-    sigue redirecciones; máximo 80 MB; comprueba que sea MP3/OGG/WAV de verdad y que se pueda reproducir.
+    sigue redirecciones; máximo 250 MB; comprueba que sea MP3/MP4/AAC/OGG/WAV de verdad y que se pueda reproducir.
   - Etiquetas y portada (`MusicTags`): ID3 v2.2–2.4 + v1 (título, artista, APIC) y comentarios Vorbis (con
     METADATA_BLOCK_PICTURE); la portada se guarda a 256x256 PNG (sin Graphics2D). Botón PORTADA: imagen desde un link.
   - Biblioteca (`MusicLibrary`): `.minecraft/tfclient/musica/` (`<id>.mp3|ogg|wav`, `<id>.png`, `biblioteca.json` con
     la lista y volumen/aleatorio/repetir). Borrar con confirmación.
   - Decodificadores (`AudioDecoder`): MP3 con **JLayer** (desde la 1.3.63; JavaMP3 distorsionaba), duración con
-    `Mp3Frames` (recorre cabeceras);
+    `Mp3Frames` (recorre cabeceras); MP4/M4A con `Mp4Audio` + JAAD (`AacDecoder`), .aac con `AdtsDecoder` (1.3.64);
     OGG con stb_vorbis (el de Minecraft); WAV 8/16/24/32 bits y float.
   - Sonido (`MusicStream`/`MusicSound`/`MusicPlayer`): es un sonido del juego (Forge `SoundInstance.getStream`),
     categoría principal, sin posición; play/pausa (para al momento), anterior/siguiente, salto arrastrando la barra,
@@ -1986,7 +2007,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.63)
+## 5. El mod (TF Client 1.3.64)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

@@ -22,7 +22,7 @@ import net.tierrasfantasticas.tfclient.pad.music.MusicPlayer;
  *       con la rueda sobre ellas) y «+» (crear una). TODAS es toda tu música para verla y oírla (clic: suena; la X la
  *       borra con confirmación). En una playlist, todo se añade ahí: el link que pegues abajo se baja y entra en ella, y
  *       «ELEGIR CANCIONES» abre tu música para marcar las que quieres dentro; el − saca una canción de la lista (no la borra).
- *       Abajo, la descarga en curso con su barra y el campo para pegar el link directo de una canción (MP3, OGG o WAV;
+ *       Abajo, la descarga en curso con su barra y el campo para pegar el link directo de una canción (MP3, MP4, M4A, AAC, OGG o WAV;
  *       los links de compartir de Google Drive y Dropbox se convierten solos).</li>
  *   <li>El botón del altavoz (al final de los controles): los de cerca oyen tu música (ver MusicSpeaker).</li>
  * </ul>
@@ -60,7 +60,7 @@ final class PadMusicPage extends PadPage {
 
     PadMusicPage(TFPadScreen pad) {
         super(pad, "musica");
-        MusicLibrary.scanFolder(); // las canciones metidas a mano en la carpeta (cualquier MP3, OGG o WAV)
+        MusicLibrary.scanFolder(); // las canciones metidas a mano en la carpeta (MP3, MP4/M4A, AAC, OGG o WAV)
     }
 
     @Override
@@ -787,7 +787,7 @@ final class PadMusicPage extends PadPage {
         g.pose().scale(s, s, 1);
         pad.blit(g, "icon_musica", 0, 0);
         g.pose().popPose();
-        String[] lines = {"Pega abajo el link directo de una canción", "(MP3, OGG o WAV) y pulsa AÑADIR.",
+        String[] lines = {"Pega abajo el link directo de una canción", "(MP3, MP4, OGG…) y pulsa AÑADIR.",
                 "Google Drive: «Cualquier persona con el enlace»."};
         int ly = cy + 10;
         for (int i = 0; i < lines.length; i++) {

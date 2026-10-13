@@ -39,8 +39,13 @@ import net.tierrasfantasticas.tfclient.TFClient;
 public final class TFPadScreen extends Screen {
     static final int W = 392;
     static final int H = 251;
-    /** El cristal del marco, en píxeles de pad (el logo TF se mete por arriba a la izquierda). */
-    static final int GX = 52, GY = 64, GW = 288, GH = 132;
+    /**
+     * La pantalla, en píxeles de pad (el logo TF se mete por arriba a la izquierda). Desde la 1.3.64 cubre TODO el
+     * cristal de marco.png (x 51,25 a 340,25 e y 62,25 a 198,75: build_pad.GLASS_BOX / 4) y un poco más: lo que sobra
+     * lo tapa el marco, que va encima. Antes era algo más pequeña (52, 64, 288, 132) y lo que se recortaba a ella dejaba
+     * una franja lisa del cristal abajo y a los lados (la «doble pantalla»).
+     */
+    static final int GX = 51, GY = 62, GW = 290, GH = 137;
     /**
      * Para hacer el pad más alto sin deformarlo (más aire entre las filas de apps), se repite una fila lisa de arriba y
      * otra de abajo de frame.png (filas de la imagen: 4 por píxel de pad), por encima y por debajo de los adornos de
@@ -720,11 +725,13 @@ public final class TFPadScreen extends Screen {
      */
     private void drawFrame(GuiGraphics g) {
         drawFrame(g, "frame");
-        // los neones y las gemas azules del marco, del color del tema (Ajustes › Tema): neon.png lleva su brillo en gris
-        // (núcleo, halo y caras de las gemas) y se tiñe; encima, neon_core.png sin teñir enciende el núcleo del tubo
+        // los neones y las gemas azules del marco, del color del tema (Ajustes › Tema): neon_halo.png apaga el halo azul
+        // de los tubos (sin teñir); neon.png (los tubos, nítidos, y las gemas, en gris) se tiñe; encima, neon_core.png
+        // sin teñir enciende el centro (tools/pad/build_pad.frame_textures)
         PadSettings.Theme th = PadSettings.theme();
         if (th.neon() != 0) {
             RenderSystem.enableBlend();
+            drawFrame(g, "neon_halo"); // el halo azul de los tubos, en el azul marino del canal: la línea queda limpia
             g.setColor((th.neon() >> 16 & 255) / 255F, (th.neon() >> 8 & 255) / 255F, (th.neon() & 255) / 255F, 1F);
             drawFrame(g, "neon");
             g.setColor(1F, 1F, 1F, 1F);

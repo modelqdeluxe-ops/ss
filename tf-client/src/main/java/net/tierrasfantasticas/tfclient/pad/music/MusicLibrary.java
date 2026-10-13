@@ -23,7 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.tierrasfantasticas.tfclient.TFClient;
 
 /**
- * La música del jugador, en su ordenador: .minecraft/tfclient/musica/ con cada canción (&lt;id&gt;.mp3/.ogg/.wav), su
+ * La música del jugador, en su ordenador: .minecraft/tfclient/musica/ con cada canción (&lt;id&gt;.mp3/.m4a/.ogg/…), su
  * portada (&lt;id&gt;.png, 256x256) y biblioteca.json (la lista, en orden, las playlists y los ajustes del reproductor:
  * volumen, aleatorio, repetir, la lista que suena, el altavoz y si se oyen los altavoces de otros). Las canciones están
  * en el ordenador del jugador; con el altavoz encendido, los de cerca las bajan del mismo link (ver MusicSpeaker).
@@ -239,7 +239,7 @@ public final class MusicLibrary {
 
     /**
      * Busca en .minecraft/tfclient/musica (y sus subcarpetas) las canciones que el jugador metió a mano (cualquier MP3,
-     * OGG o WAV, se llamen como se llamen) y las añade a la biblioteca con su título, artista, portada y duración (de
+     * MP4/M4A, AAC, OGG o WAV, se llamen como se llamen) y las añade a la biblioteca con su título, artista, portada y duración (de
      * sus etiquetas; sin título, el nombre del archivo). En su propio hilo; se llama al abrir Música.
      */
     public static void scanFolder() {
@@ -287,6 +287,8 @@ public final class MusicLibrary {
                 long duration = switch (kind) {
                     case MP3 -> JLayerDecoder.isMpeg1(p) ? Mp3Frames.scan(p, -1).durationMs() : JLayerDecoder.durationMs(p);
                     case OGG -> OggDecoder.durationMs(p);
+                    case MP4 -> AacDecoder.durationMs(p);
+                    case AAC -> AdtsDecoder.durationMs(p);
                     default -> MusicDownloader.wavDuration(p);
                 };
                 MusicTags.Tags tags = MusicTags.read(p);

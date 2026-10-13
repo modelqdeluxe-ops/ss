@@ -13,7 +13,7 @@ import java.util.Locale;
 
 /**
  * Título, artista y portada que trae la canción: etiquetas ID3 (v2.2, v2.3, v2.4 y la v1 del final) en los MP3 y
- * comentarios Vorbis (TITLE, ARTIST, METADATA_BLOCK_PICTURE) en los OGG. Lo que falte queda vacío / null.
+ * comentarios Vorbis (TITLE, ARTIST, METADATA_BLOCK_PICTURE) en los OGG y las de iTunes en los MP4/M4A. Lo que falte queda vacío / null.
  */
 public final class MusicTags {
     /** cover: los bytes de la imagen tal cual (JPEG o PNG) o null. */
@@ -30,11 +30,18 @@ public final class MusicTags {
             return switch (AudioDecoder.AudioFormatSniffer.sniff(file)) {
                 case MP3 -> id3(file);
                 case OGG -> vorbis(file);
+                case MP4 -> mp4(file);
                 default -> Tags.NONE;
             };
         } catch (Exception e) {
             return Tags.NONE;
         }
+    }
+
+    /** MP4/M4A: las etiquetas de iTunes (©nam, ©ART, covr) que lee Mp4Audio. */
+    private static Tags mp4(Path file) throws IOException {
+        Mp4Audio m = Mp4Audio.read(file);
+        return new Tags(m.title, m.artist, m.cover);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
