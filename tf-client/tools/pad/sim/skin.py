@@ -301,7 +301,7 @@ class Skin:
             self.sparkle(x + sx, y + sy, 2, self.twinkle(i * 1.7 + 0.4) * 0.9)
         self.sheen(x, y, w, h - 1, period=6.0, alpha=0.18)
 
-    TAB_H, TAB_GAP, TAB_PAD, TAB_PAD_MIN, TAB_SPACE, TAB_MIN = 17, 3, 9, 6, 3, 34
+    TAB_H, TAB_GAP, TAB_PAD, TAB_SPACE, TAB_MIN = 17, 3, 9, 3, 40  # PadSkin (1.3.66: iguales en todas las apps)
     TABS = TAB_H + TAB_GAP
 
     def sk_tab_compact(self, x, y, w, label, state, acc):
@@ -346,7 +346,8 @@ class Skin:
                 self.fill(cx - hw, y + H + i, cx + hw + 1, y + H + i + 1, edge)
                 if hw > 0:
                     self.fill(cx - hw + 1, y + H + i, cx + hw, y + H + i + 1, low)
-            self.ptext_shadow(label, x + w // 2 - self.pwidth(label) // 2, y + 4, WHITE, darken(c, 0.42))
+            if label:
+                self.ptext_shadow(label, x + w // 2 - self.pwidth(label) // 2, y + 4, WHITE, darken(c, 0.42))
             return
         hover = state == 1
         yy = y - 1 if hover else y
@@ -354,7 +355,8 @@ class Skin:
         self.box(x, yy, w, H, mix(c, INK, 0.25) if hover else rgb(0x7F9CC8))
         self.vgrad(x + 1, yy + 1, w - 2, H - 2, WHITE, mix(rgb(0xE4EEF9), tint(c, 0.35), 0.55) if hover else rgb(0xD3E3F4))
         self.fill(x + 1, yy + H - 2, x + w - 1, yy + H - 1, mix(c, WHITE, 0.25) if hover else rgb(0xBACFE6))
-        self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 4, ink(c) if hover else rgb(0x3A5888), False)
+        if label:
+            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 4, ink(c) if hover else rgb(0x3A5888), False)
 
     def ptext_shadow(self, s, x, y, color, shadow):
         """PadFont.drawShadowCentered: sombra 1 abajo (y abajo a la derecha) y el texto encima."""
@@ -362,26 +364,19 @@ class Skin:
         self.ptext(s, x + 1, y + 1, shadow, False)
         self.ptext(s, x, y, color, False)
 
-    def sk_tabs(self, x, y, room, labels, sel, acc, hover=-1):
-        """PadSkin.tabRow: las pestañas en fila (con menos margen y luego recortadas si no caben); la elegida, la
-        última. Devuelve [(x, ancho)]."""
-        n = len(labels)
+    def tab_w(self, labels):
+        """PadSkin.tabWidth: el ancho de todas las pestañas de una fila (la etiqueta más larga con su margen)."""
+        return max([self.TAB_MIN] + [self.pwidth(l) + self.TAB_PAD * 2 for l in labels])
 
-        def total_w(p2):
-            return sum(max(self.TAB_MIN, self.pwidth(l) + p2) for l in labels) + self.TAB_SPACE * max(0, n - 1)
-        p2 = self.TAB_PAD * 2
-        total = total_w(p2)
-        if total > room:
-            p2 = self.TAB_PAD_MIN * 2
-            total = total_w(p2)
-        maxl = max(12, (room - self.TAB_SPACE * (n - 1)) // max(1, n) - p2) if total > room else 10 ** 6
-        out, shown, tx = [], [], x
-        for l in labels:
-            l = self.pfit(l, maxl)
-            w = max(0 if total > room else self.TAB_MIN, self.pwidth(l) + p2)
-            out.append((tx, w))
-            shown.append(l)
-            tx += w + self.TAB_SPACE
+    def sk_tabs(self, x, y, room, labels, sel, acc, hover=-1):
+        """PadSkin.tabRow: todas del mismo ancho y con el mismo hueco; si no caben, se estrechan todas por igual. La
+        elegida, la última. Devuelve [(x, ancho)]."""
+        n = len(labels)
+        w = self.tab_w(labels)
+        if n and n * w + (n - 1) * self.TAB_SPACE > room:
+            w = max(20, (room - (n - 1) * self.TAB_SPACE) // n)
+        out = [(x + i * (w + self.TAB_SPACE), w) for i in range(n)]
+        shown = [self.pfit(l, w - 8) for l in labels]
         for i in range(n):
             if i != sel:
                 self.sk_tab(out[i][0], y, out[i][1], shown[i], 1 if i == hover else 0, acc)

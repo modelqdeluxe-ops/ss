@@ -440,20 +440,13 @@ def comunidad(out, names, picker=None, hover=None, fbw=1920, fbh=1080, mouse=Non
     loc.__enter__()
     X, Y, W, H = s.X, s.Y, s.W, s.H
     hits = []
-    top, bottom = Y + 14, Y + H
+    top, bottom = Y + s.TABS, Y + H
     s.panel(X, top, W, bottom - top)
-    x, chosen = X + 4, None
-    for key, label in (('recientes', 'RECIENTES'), ('populares', 'POPULARES'), ('mias', 'MÍAS')):
-        w = s.pwidth(label) + 14
-        if key == 'recientes':
-            chosen = (x, w, label)
-        else:
-            s.sk_tab_compact(x, Y, w, label, 0, accent('comunidad'))
-        hits.append((x, Y, w, 15))
-        x += w + 2
-    s.sk_tab_compact(chosen[0], Y, chosen[1], chosen[2], 2, accent('comunidad'))
     fw = s.bw('+ FOTO')
-    s.button(X + W - fw - 4, Y - 3, fw, '+ FOTO', 1)
+    at = s.sk_tabs(X + 4, Y, W - 8 - fw - 8, ['RECIENTES', 'POPULARES', 'MÍAS'], 0, accent('comunidad'))
+    for (tx, tw) in at:
+        hits.append((tx, Y, tw, s.TAB_H))
+    s.button(X + W - fw - 4, Y, fw, '+ FOTO', 1)
     pw = max(128, min(256, (W - 20) // 2)) // 16 * 16
     ph = pw * 9 // 16
     ch = ph + 14
@@ -515,7 +508,7 @@ def comunidad(out, names, picker=None, hover=None, fbw=1920, fbh=1080, mouse=Non
     s.no_scissor()
     if picker is not None:
         hits = []
-        s.fill(X, Y - 4, X + W, Y + H, (24, 38, 92, 85))
+        s.fill(X, Y, X + W, Y + H, (24, 38, 92, 85))
         picker.mine = {e for e, n, m in POSTS[0][5] if m}
         picker.place(X, Y, W, H, anchor)
         mx, my = mouse if mouse else (-1000, -1000)

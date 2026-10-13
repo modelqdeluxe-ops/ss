@@ -193,7 +193,7 @@ abstract class PadDataPage extends PadPage {
      * del texto. La tarjeta empieza en top (tabY + PadSkin.TABS).
      */
     static void darkCard(GuiGraphics g, int x, int top, int w, int bottom, int tabY, String tab) {
-        int tw = Math.max(34, PadFont.width(tab) + 18), tx = x + 4, th = PadSkin.TAB_H;
+        int tw = PadSkin.tabWidth(java.util.List.of(tab)), tx = x + 4, th = PadSkin.TAB_H; // como todas las pestañas
         PadUi.box(g, tx, tabY, tw, th, PadUi.NAVY);
         g.fillGradient(tx + 1, tabY + 1, tx + tw - 1, tabY + th - 1, 0xFF34408A, 0xFF1E2558);
         g.fill(tx + 2, tabY + 1, tx + tw - 2, tabY + 2, PadUi.GOLD_HI);

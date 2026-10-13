@@ -12,7 +12,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sim import MC, NAVY, ROOT, Sim, lighten, rgb  # noqa: E402
-from skin import accent, mix, darken as darken_t  # noqa: E402
+from skin import accent, mix, darken as darken_t, deep as deep_t, WHITE  # noqa: E402
 
 if len(sys.argv) < 2:
     sys.exit('Uso: python3 tools/pad/sim/pages.py <carpeta de salida>')
@@ -511,13 +511,13 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
     leftW = max(140, min(240, round(W * 0.44)))
     barH = max(3, s.bigu(3))
     below = 4 + s.bigu(9) + 2 + 13 + barH + 3 + 10 + s.bigu(22) + 4
-    ct = Y + 14  # 1.3.38: la tarjeta empieza a la altura de la ventana de la lista, con su pestaña encima
+    ct = Y + s.TABS  # la tarjeta empieza a la altura de la ventana de la lista, con su pestaña encima
     c = max(32, min(round((leftW - 16 - s.bigu(16)) / 1.3), Y + H - (ct + 8) - below))
     cx, cy = X + 8, ct + 8
     tl = 'SONANDO' if playing else 'REPRODUCTOR'
-    tw = s.pwidth(tl) + 14
-    s.box(X + 4, Y, tw, 15, NAVY)
-    grad(s, X + 5, Y + 1, tw - 2, 15, rgb(0x323C80), rgb(0x262E66))
+    tw = s.tab_w(['REPRODUCTOR'])
+    s.box(X + 4, Y, tw, s.TABS + 1, NAVY)
+    grad(s, X + 5, Y + 1, tw - 2, s.TABS, rgb(0x323C80), rgb(0x262E66))
     s.fill(X + 6, Y + 1, X + 4 + tw - 2, Y + 3, rgb(0xF6B628))
     s.fill(X + 6, Y + 1, X + 4 + tw - 2, Y + 2, rgb(0xFFEC96))
     s.ptext(tl, X + 4 + tw // 2 - s.pwidth(tl) // 2, Y + 4, rgb(0xFFE680), False)
@@ -640,16 +640,16 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
     glyph_draw(s, BROADCAST, x + small // 2, cym, GREENC if playing else LAV)
     # lista
     lx, lw = X + leftW + 6, W - leftW - 6
-    top = Y + 14
+    top = Y + s.TABS
     bottom = Y + H - 19 - (24 if job else 0)
     s.panel(lx, top, lw, bottom - top)
-    # pestañas (PadMusicPage.drawListTabs): TODAS, las que quepan, y a la derecha ‹ › (si no caben) y +
+    # pestañas (PadMusicPage.drawListTabs): todas del mismo ancho (PadSkin.tabWidth), TODAS, las que quepan, ‹ › y +
     INK = (24, 38, 92)
-    gap, plus, arrow = 2, 18, 13
-    todas_w = s.pwidth('TODAS') + 12
+    gap, plus, arrow = s.TAB_SPACE, s.TAB_H + 1, s.TAB_H
     names = [s.pfit(n.upper(), 58) for n in lists]
-    widths = [s.pwidth(n) + 12 + (10 if i + 1 == sel_list else 0) for i, n in enumerate(names)]
-    strip_x = lx + 4 + todas_w + gap
+    tab_w = min(s.tab_w(['TODAS'] + names) + 10, max(s.TAB_MIN, (lw - 8 - plus - gap) // 3))
+    widths = [tab_w for _ in names]
+    strip_x = lx + 4 + tab_w + gap
     end = lx + lw - 4 - plus
     paged = strip_x + sum(w + gap for w in widths) > end - gap
     strip_end = end - gap - 2 * arrow - gap * 2 if paged else end - gap
@@ -665,30 +665,30 @@ def music_page(name, tracks, playing=None, job=None, empty=False, hover_row=-1, 
         if i >= 0 and (i < tab_first or i > last):
             continue
         label = 'TODAS' if i < 0 else names[i]
-        w = todas_w if i < 0 else widths[i]
         if i + 1 == sel_list:
-            chosen = (tx, w, label, i >= 0)
+            chosen = (tx, tab_w, label, i >= 0)
         else:
-            s.sk_tab_compact(tx, Y, w, label, 0, accent('musica'))
-        tx = strip_x if i < 0 else tx + w + gap
+            s.sk_tab(tx, Y, tab_w, s.pfit(label, tab_w - 8), 0, accent('musica'))
+        tx = strip_x if i < 0 else tx + tab_w + gap
     if chosen:
         if not chosen[3]:
-            s.sk_tab_compact(chosen[0], Y, chosen[1], chosen[2], 2, accent('musica'))
+            s.sk_tab(chosen[0], Y, chosen[1], chosen[2], 2, accent('musica'))
         else:
-            s.sk_tab_compact(chosen[0], Y, chosen[1], '', 2, accent('musica'))
-            s.ptext(chosen[2], chosen[0] + 6, Y + 4, NAVY, False)
-            glyph_at(s, CROSS, chosen[0] + chosen[1] - 12 + 2, Y + 3 + 2, rgb(0xC8323C))
+            s.sk_tab(chosen[0], Y, chosen[1], '', 2, accent('musica'))
+            lab = s.pfit(chosen[2], chosen[1] - 20)
+            s.ptext_shadow(lab, chosen[0] + (chosen[1] - 10) // 2 + 1 - s.pwidth(lab) // 2, Y + 4, WHITE, darken_t(deep_t(accent('musica')), 0.42))
+            glyph_at(s, CROSS, chosen[0] + chosen[1] - 13 + 2, Y + 4 + 2, rgb(0xFFD0D6))
 
     def arrow_btn(ax, ay, g, enabled):
-        s.box(ax, ay, 13, 13, rgb(0x6A88B8) if enabled else rgb(0xB4C6DE))
-        grad(s, ax + 1, ay + 1, 11, 11, rgb(0xE8F2FC), rgb(0xC8DCF0))
-        glyph_at(s, g, ax + (13 - len(g[0])) // 2, ay + (13 - len(g)) // 2, rgb(0x34507E) if enabled else rgb(0xA4B6D0))
+        s.box(ax, ay, arrow, arrow, rgb(0x6A88B8) if enabled else rgb(0xB4C6DE))
+        grad(s, ax + 1, ay + 1, arrow - 2, arrow - 2, rgb(0xE8F2FC), rgb(0xC8DCF0))
+        glyph_at(s, g, ax + (arrow - len(g[0])) // 2, ay + (arrow - len(g)) // 2, rgb(0x34507E) if enabled else rgb(0xA4B6D0))
     if paged:
         ax = end - gap - 2 * arrow - gap
-        arrow_btn(ax, Y + 1, ARROW_LEFT, tab_first > 0)
-        arrow_btn(ax + arrow + gap, Y + 1, ARROW_RIGHT, last < len(names) - 1)
-    s.sk_tab_compact(end, Y, plus, '', 0, accent('musica'))
-    glyph_at(s, PLUS8, end + (plus - 8) // 2, Y + 5, rgb(0x34507E))
+        arrow_btn(ax, Y, ARROW_LEFT, tab_first > 0)
+        arrow_btn(ax + arrow + gap, Y, ARROW_RIGHT, last < len(names) - 1)
+    s.sk_tab(end, Y, plus, '', 0, accent('musica'))
+    glyph_at(s, PLUS8, end + (plus - 8) // 2, Y + (s.TAB_H - 8) // 2, rgb(0x34507E))
     rows_top = top + 4
     if sel_list > 0:  # cabecera de la playlist: cuántas lleva y ELEGIR CANCIONES / LISTO
         label = 'LISTO' if picking else 'ELEGIR CANCIONES'
@@ -824,7 +824,7 @@ def prize_name(p):
 
 def dark_card(s, x, top, w, bottom, tab_y, tab):
     """PadDataPage.darkCard (1.4.1): el rótulo, una pastilla oscura con filo de oro y flechita, y la tarjeta oscura."""
-    tw, tx, th = max(34, s.pwidth(tab) + 18), x + 4, s.TAB_H
+    tw, tx, th = s.tab_w([tab]), x + 4, s.TAB_H
     s.box(tx, tab_y, tw, th, NAVY)
     grad(s, tx + 1, tab_y + 1, tw - 2, th - 2, rgb(0x34408A), rgb(0x1E2558))
     s.fill(tx + 2, tab_y + 1, tx + tw - 2, tab_y + 2, rgb(0xFFE58A))
