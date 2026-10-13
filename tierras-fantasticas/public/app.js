@@ -588,7 +588,6 @@
   // VFX: efectos de kill. Por ahora gratis: se obtienen y se equipan con la cuenta y el servidor los pone solo; en el
   // juego salen solos al derrotar a alguien. Los paquetes de skills ya no se dan: quien tenía uno lo ve al final.
   let vfxData = null;
-  let vfxCat = 'todos';
   async function loadVfx() {
     try {
       vfxData = await (await fetch('/api/vfx')).json();
@@ -623,14 +622,32 @@
       <p>${text}</p>
     </header>`;
 
-  // Un filtro: punto de su color, nombre y cuántos hay
-  const cxChip = (attr, id, name, n, color, on) =>
-    `<button type="button" class="cx-chip" style="--c:${color}" ${attr}="${escapeHtml(id)}" aria-pressed="${on}"><i aria-hidden="true"></i>${escapeHtml(name)}<span>${n}</span></button>`;
+  // Los tonos de un color para fondos vivos: claro, el color, profundo y casi negro, sin mezclarlo con negro (eso lo
+  // vuelve marrón o verde oliva). Van como variables en el style de cada tarjeta (--c, --c-hi, --c-lo, --c-ink).
+  function toneVars(hex) {
+    const n = Number.parseInt(hex.slice(1), 16);
+    const [r, g, b] = [(n >> 16) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    const d = max - min;
+    let h = 0;
+    let sat = 0;
+    if (d) {
+      sat = d / (1 - Math.abs(2 * l - 1));
+      h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      h = (h * 60 + 360) % 360;
+    }
+    // Los amarillos, al oscurecerlos, tiran a verde oliva: sus sombras se giran hacia el naranja (como al pintar)
+    const warm = h >= 30 && h <= 80;
+    const hsl = (L, shift = 0) => `hsl(${Math.round(h + shift)} ${Math.round(Math.min(1, sat) * 100)}% ${Math.round(L * 100)}%)`;
+    return `--c:${hex};--c-hi:${hsl(Math.min(0.8, l + 0.12))};--c-lo:${hsl(l * 0.55, warm ? -12 : 0)};--c-ink:${hsl(l * 0.24, warm ? -18 : 0)}`;
+  }
 
   // Al elegir algo en el móvil (la vitrina va arriba), se sube a verla si ha quedado fuera de la pantalla
   function cxReveal(el) {
     cxStick();
-    if (matchMedia('(min-width: 1024px)').matches) return;
+    if (el && getComputedStyle(el).position === 'sticky') return;
     const r = el?.getBoundingClientRect();
     if (r && (r.top < 0 || r.top > innerHeight * 0.75)) el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
   }
@@ -639,14 +656,12 @@
   // más alta, pegada por abajo (así siempre se ven la acción y la compra)
   function cxStick() {
     const el = $('.cx-show');
-    if (!el) return;
-    el.style.top = `${Math.min(88, innerHeight - el.offsetHeight - 12)}px`;
+    if (el) el.style.top = `${Math.min(88, innerHeight - el.offsetHeight - 12)}px`;
   }
   addEventListener('resize', () => cxStick(), { passive: true });
 
-  // La lista en el orden en que se ve (categorías y, dentro, sus efectos), según el filtro
-  const vfxList = () =>
-    (vfxData.cats || []).filter((c) => vfxCat === 'todos' || c.id === vfxCat).flatMap((c) => vfxData.kills.filter((k) => k.cat === c.id));
+  // La lista en el orden en que se ve (categorías y, dentro, sus efectos)
+  const vfxList = () => (vfxData.cats || []).flatMap((c) => vfxData.kills.filter((k) => k.cat === c.id));
 
   // Estado de un efecto para el jugador: sin obtener, suyo o equipado
   function vfxState(kind, id) {
@@ -717,7 +732,7 @@
             <button type="button" class="cx-step" data-vfx-step="1" aria-label="Efecto siguiente">${IC.next}</button>
           </div>`
         : '';
-    return `<article class="cx-card" style="--c:${vfxColor(cat?.color)}" aria-labelledby="vfx-name">
+    return `<article class="cx-card" style="${toneVars(vfxColor(cat?.color))}" aria-labelledby="vfx-name">
         <div class="cx-stage">
           <span class="cx-cat"><i></i>${escapeHtml(cat?.name || 'Efecto de kill')}</span>
           <span class="cx-floor" aria-hidden="true"></span>
@@ -737,11 +752,11 @@
       </article>`;
   }
 
-  function vfxTile(k, color) {
+  function vfxTile(k, tone) {
     const sel = vfxSel === k.id;
     const st = vfxState('kill', k.id);
     const tag = st === 'on' ? `<span class="cx-tag is-on">${IC.check}Equipado</span>` : st === 'owned' ? '<span class="cx-tag">Tuyo</span>' : '';
-    return `<button type="button" class="cx-tile${sel ? ' is-sel' : ''}" style="--c:${color}" data-vfx-pick="${escapeHtml(k.id)}"
+    return `<button type="button" class="cx-tile${sel ? ' is-sel' : ''}" style="${tone}" data-vfx-pick="${escapeHtml(k.id)}"
         data-anim="${escapeHtml(asset(k.preview || k.image))}" aria-pressed="${sel}">
         <span class="cx-tile-art">${img(k.image, '')}</span>
         <span class="cx-tile-name">${escapeHtml(k.name)}</span>${tag}
@@ -755,28 +770,22 @@
     }
     box.classList.add('cx-shop');
     const cats = vfxData.cats || [];
-    const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
-    // Si lo elegido no está en el filtro, a la vitrina va el primero que se ve y que no tengas
-    if (!vfxList().some((k) => k.id === vfxSel)) {
+    // A la vitrina va el primero que no tengas (lo tuyo no sale solo en la vista previa: se ve marcado en el catálogo)
+    if (!vfxData.kills.some((k) => k.id === vfxSel)) {
       const list = vfxList();
       vfxSel = (list.find((k) => vfxState('kill', k.id) === 'free') || list[0])?.id || null;
     }
-    const chips = [
-      cxChip('data-vfx-cat', 'todos', 'Todos', vfxData.kills.length, 'var(--tone-vfx)', vfxCat === 'todos'),
-      ...cats.map((c) => cxChip('data-vfx-cat', c.id, c.name, vfxData.kills.filter((k) => k.cat === c.id).length, vfxColor(c.color), vfxCat === c.id)),
-    ];
     box.innerHTML = `<section class="cx" style="--c:var(--tone-vfx)">
         ${cxHead(IC.spark, 'VFX', 'Efectos de kill', `${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.`)}
         <div class="cx-layout">
-          <div class="cx-filter" role="group" aria-label="Categorías">${chips.join('')}</div>
-          <div class="cx-catalog">${shown
+          <div class="cx-catalog">${cats
             .map((c) => {
               const list = vfxData.kills.filter((k) => k.cat === c.id);
               if (!list.length) return '';
-              const color = vfxColor(c.color);
-              return `<section class="cx-group" style="--c:${color}">
+              const tone = toneVars(vfxColor(c.color));
+              return `<section class="cx-group" style="${tone}">
                 <header><h3>${escapeHtml(c.name)}</h3><span>${list.length}</span></header>
-                <div class="cx-grid">${list.map((k) => vfxTile(k, color)).join('')}</div>
+                <div class="cx-grid">${list.map((k) => vfxTile(k, tone)).join('')}</div>
               </section>`;
             })
             .join('')}</div>
@@ -827,12 +836,6 @@
       else cxStick();
       return;
     }
-    const vt = e.target.closest('[data-vfx-cat]');
-    if (vt) {
-      vfxCat = vt.dataset.vfxCat;
-      if (currentCategory === 'vfx') renderVfx($('#products'));
-      return;
-    }
     const btn = e.target.closest('[data-vfx-claim], [data-vfx-equip], [data-vfx-remove]');
     if (!btn) return;
     if (!me.user) {
@@ -871,7 +874,6 @@
   // monedas del servidor; las compradas son del jugador para siempre y lleva UNA activa a la vez, que se elige aquí y el
   // servidor pone sola. Solo dan skills (ni armas ni armadura). ---
   let skData = null;
-  let skGroup = 'todas';
   // Lo que se ve en la ficha: la clase y la skill de la pantalla
   let skSel = null;
   async function loadSkills() {
@@ -1006,7 +1008,7 @@
     const actives = c.skills.filter((s) => !s.passive);
     const passives = c.skills.filter((s) => s.passive);
     const group = (skData.groups || []).find((g) => g.id === c.group);
-    return `<article class="cx-card sk-card" style="--c:${skColor(c.color)}" aria-labelledby="sk-name">
+    return `<article class="cx-card sk-card" style="${toneVars(skColor(c.color))}" aria-labelledby="sk-name">
         <div class="sk-head">
           <span class="sk-emblem">${skIcon(c.icon)}</span>
           <div class="sk-head-text">
@@ -1039,16 +1041,12 @@
   // Un retrato del plantel: el icono de la clase sobre su color y el nombre debajo
   function skTile(c) {
     const sel = skSel?.cls === c.id;
-    return `<button type="button" class="cx-tile sk-tile${sel ? ' is-sel' : ''}" style="--c:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}" aria-pressed="${sel}" title="${escapeHtml(c.role)}">
+    return `<button type="button" class="cx-tile sk-tile${sel ? ' is-sel' : ''}" style="${toneVars(skColor(c.color))}" data-sk-pick="${escapeHtml(c.id)}" aria-pressed="${sel}" title="${escapeHtml(c.role)}">
         <span class="cx-tile-art">${skIcon(c.icon)}</span>
         <span class="cx-tile-name">${escapeHtml(c.name)}</span>${skTag(c)}
       </button>`;
   }
 
-  function skGrid() {
-    const list = skData.classes.filter((c) => skGroup === 'todas' || c.group === skGroup);
-    return list.map(skTile).join('');
-  }
 
   function renderSkills(box) {
     if (!skData?.classes?.length) {
@@ -1057,17 +1055,10 @@
     }
     box.classList.add('cx-shop');
     if (!skClass(skSel?.cls)) skDefault();
-    const groups = [
-      cxChip('data-sk-group', 'todas', 'Todas', skData.classes.length, 'var(--tone-skills)', skGroup === 'todas'),
-      ...(skData.groups || []).map((g) =>
-        cxChip('data-sk-group', g.id, g.name, skData.classes.filter((c) => c.group === g.id).length, skColor(g.color), skGroup === g.id),
-      ),
-    ];
     box.innerHTML = `<section class="cx" style="--c:var(--tone-skills)">
         ${cxHead(IC.key, 'Skills', 'Clases de skills', `${skData.classes.length} clases con sus skills (solo skills: sin armas ni objetos). Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí o en el TF Pad. En el juego eliges la skill con las teclas 5 a 0 y la usas con el clic izquierdo.`)}
         <div class="cx-layout is-skills">
-          <div class="cx-filter" role="group" aria-label="Tipo de clase">${groups.join('')}</div>
-          <div class="cx-catalog"><div class="cx-grid sk-grid" id="sk-grid">${skGrid()}</div></div>
+          <div class="cx-catalog"><div class="cx-grid sk-grid">${skData.classes.map(skTile).join('')}</div></div>
           <aside class="cx-show" id="sk-detail" aria-label="Clase elegida">${skDetail()}</aside>
         </div>
       </section>`;
@@ -1116,13 +1107,6 @@
       // En el móvil la pantalla queda arriba: se sube para verla
       const screen = $('#sk-screen');
       if (screen.getBoundingClientRect().bottom < 80) screen.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
-      return;
-    }
-    const grp = e.target.closest('[data-sk-group]');
-    if (grp) {
-      skGroup = grp.dataset.skGroup;
-      $$('[data-sk-group]').forEach((b) => b.setAttribute('aria-pressed', String(b === grp)));
-      $('#sk-grid').innerHTML = skGrid();
       return;
     }
     const btn = e.target.closest('[data-sk-coins], [data-sk-active]');

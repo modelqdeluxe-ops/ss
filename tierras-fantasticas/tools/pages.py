@@ -325,8 +325,7 @@ def index():
 def tienda():
     # La barra de categorías: una tarjeta por sección con el dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py)
     # sobre el color de su sección (--tone-* en styles.css); app.js le añade el contador
-    tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'),
-            ('vfx', 'VFX'), ('skills', 'Skills')]
+    tabs = [('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'), ('vfx', 'VFX'), ('skills', 'Skills')]
     tab_html = '\n'.join(
         f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">'
         f'<img class="tab-art" src="/img/tabs/{k}.webp" alt="" width="256" height="192" decoding="async">'
