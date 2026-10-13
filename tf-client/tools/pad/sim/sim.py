@@ -538,7 +538,7 @@ class Sim(Skin):
     # PadUi.BTN: cara arriba, cara abajo, luz, sombra
     BTN = [(0x5AB4FF, 0x2C74E4, 0xB4E0FF, 0x1A4AA8), (0xFFD650, 0xE8961A, 0xFFF2B0, 0xA05E0E),
            (0xFF6274, 0xC82038, 0xFFB4BC, 0x861428), (0x68E886, 0x22A84C, 0xC4FFD0, 0x147034),
-           (0x4A5884, 0x36426C, 0x6E7CA8, 0x252E50), (0x97A3BF, 0x66728F, 0xC9D0E2, 0x434D69)]
+           (0xE6EDF6, 0xC7D3E3, 0xF7FAFD, 0xAEBCD0), (0x97A3BF, 0x66728F, 0xC9D0E2, 0x434D69)]
 
     @staticmethod
     def is_back(label):
@@ -944,6 +944,9 @@ class Sim(Skin):
                 h = self.row_h(r, iw)
                 self.row(r, ix, ry, iw, h, acc, hover_row == i)
                 ry += h
+            left = bot - (ry + 4)
+            if rows and left > 0:
+                self.sk_list_footer(X + W // 2, ry + 4 + left // 2, left, acc, icon_of(app))
             self.no_scissor()
             if not rows and not cells:
                 self.sk_empty(X + W // 2, (y + bot) // 2, W - 40, empty, acc, icon_of(app), bot - y)
@@ -962,7 +965,7 @@ class Sim(Skin):
                 bw = self.bw(label)
                 right = X + W - 5 - total
                 fw = right - (X + 5) - bw - 4
-                self.field(X + 5, fy, fw, typed, hint)
+                self.sk_field(X + 5, fy, fw, typed, hint, acc)
                 self.sk_button(right - bw, fy, bw, label, 3, bool(typed))
 
     def spinner_w(self, cx, y):
@@ -1197,9 +1200,18 @@ class Sim(Skin):
                 ty += max(1, self.wrap(l, x + 9, ty, w - 16, MUTED)) * 10
             return
         tx = x + 10
+        tnt = acc if plain else tcol
+        n = min(24, (w - 8) // 4)
+        for i in range(n):
+            a = round(58 * (1 - i / n) * (1 - i / n))
+            if a > 0:
+                self.fill(x + 4 + i * 4, yy + 1, x + 8 + i * 4, yy + h - 1, tuple(tnt[:3]) + (a,))
+        if hover:
+            self.sheen(x + 1, yy + 1, w - 2, h - 2, 1.4, 0.25)
         if has_icon:
             ib = self.ICON_BOX
             iy = yy + (h - ib) // 2
+            self.glow(x + 7 + ib / 2, iy + ib / 2, ib * 1.05, tnt, 150 if hover else 105)
             self.sk_slot(x + 7, iy, ib, None if plain else tcol)
             bob = round(math.sin(self.T * 4.4)) if hover else 0
             if ex.get('img'):

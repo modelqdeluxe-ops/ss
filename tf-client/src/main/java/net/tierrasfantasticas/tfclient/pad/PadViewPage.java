@@ -163,6 +163,9 @@ final class PadViewPage extends PadPage {
                 if (ry + h > listTop && ry < listBottom) drawRow(g, r, innerX, ry, innerW, h, mx, my, acc, t);
                 ry += h;
             }
+            // una lista corta: abajo, el icono de la app grande y suave (no un hueco blanco)
+            int left = listBottom - (ry + 4);
+            if (!view.rows().isEmpty() && left > 0) PadSkin.listFooterArt(g, pad, X + W / 2, ry + 4 + left / 2, left, acc, icon);
             pad.noScissor(g);
             if (view.rows().isEmpty() && view.cells().isEmpty()) {
                 PadSkin.emptyState(g, pad, X + W / 2, (listTop + listBottom) / 2, W - 40, view.empty(), acc, icon, listBottom - listTop);
@@ -190,7 +193,7 @@ final class PadViewPage extends PadPage {
                 int bw = PadUi.buttonWidth(in.button());
                 int right = X + W - 5 - footerW;
                 int fw = Math.max(40, right - (X + 5) - bw - 4);
-                PadUi.field(g, X + 5, fy, fw, input, in.hint());
+                PadSkin.field(g, X + 5, fy, fw, input, in.hint(), acc);
                 PadView.Btn send = new PadView.Btn(in.button(), "§input", PadView.GREEN, !input.isBlank());
                 button(g, right - bw, fy, bw, send, mx, my, true);
             }
@@ -291,6 +294,7 @@ final class PadViewPage extends PadPage {
 
     /** Lo que ocupa a la derecha de una fila: su etiqueta y sus botones. */
     private int rightWidth(PadView.Row r) {
+        if (!r.click().isEmpty() && r.button() == null && r.button2() == null && r.badge().isEmpty()) return 12; // la flechita
         return (r.badge().isEmpty() ? 0 : PadUi.chipWidth(r.badge()) + 6) + buttonsWidth(r);
     }
 
@@ -522,8 +526,16 @@ final class PadViewPage extends PadPage {
             return;
         }
         int tx = x + 10;
+        int tint = plain ? acc : titleColor;
+        // un lavado suave del color de la fila que se apaga hacia la derecha (franjas verticales de 4)
+        for (int i = 0, n = Math.min(24, (w - 8) / 4); i < n; i++) {
+            int a = Math.round(58 * (1 - i / (float) n) * (1 - i / (float) n));
+            if (a > 0) g.fill(x + 4 + i * 4, yy + 1, x + 8 + i * 4, yy + h - 1, PadSkin.alpha(tint & 0xFFFFFF, a));
+        }
+        if (hover) PadSkin.sheen(g, x + 1, yy + 1, w - 2, h - 2, 1.4F, 0.25F);
         if (icon) {
             int iy = yy + (h - ICON_BOX) / 2;
+            PadSkin.glow(g, x + 7 + ICON_BOX / 2F, iy + ICON_BOX / 2F, ICON_BOX * 1.05F, tint & 0xFFFFFF, hover ? 150 : 105);
             PadSkin.medallion(g, x + 7, iy, ICON_BOX, plain ? 0 : titleColor);
             int bob = hover ? Math.round((float) Math.sin(t * 4.4F)) : 0;
             boolean drawn = r.hasImage() && PadSkin.image(g, pad, r.image(), x + 9, iy + 2 + bob, ICON_BOX - 4);
@@ -541,6 +553,13 @@ final class PadViewPage extends PadPage {
         for (String line : r.lines()) ly += Math.max(1, PadUi.wrapEllipsis(g, line, tx, ly, textW, PadUi.MUTED, 2)) * 10;
         if (r.progress() >= 0) PadSkin.progress(g, tx, ly + 1, Math.min(textW, 140), r.progress());
         int bx = x + w - rightWidth(r) - 2;
+        if (clickable && r.button() == null && r.button2() == null && r.badge().isEmpty()) {
+            // se puede entrar: una flechita del color de la fila (se mueve un poco al pasar el ratón)
+            int ax = x + w - 11 + (hover ? 2 : 0), ay = yy + h / 2;
+            int ac = hover ? PadSkin.darken(tint, 0.8F) : PadSkin.mix(tint, PadSkin.WHITE, 0.35F);
+            for (int i = 0; i < 4; i++) g.fill(ax + i, ay - 3 + i, ax + i + 2, ay - 2 + i, ac);
+            for (int i = 0; i < 3; i++) g.fill(ax + 2 - i, ay + 1 + i, ax + 4 - i, ay + 2 + i, ac);
+        }
         if (!r.badge().isEmpty()) {
             PadUi.chip(g, bx + 2, yy + (h - 12) / 2, r.badge(), PadUi.tone(r.badge(), true, 0), 12);
             bx += PadUi.chipWidth(r.badge()) + 6;
