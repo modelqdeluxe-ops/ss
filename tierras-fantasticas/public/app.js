@@ -644,18 +644,15 @@
   const vfxColor = (c) => (HEX.test(c || '') ? c : '#45e9ff');
   const vfxNameOf = (kind, id) => (kind === 'kill' ? vfxData.kills : vfxData.me?.packs || []).find((x) => x.id === id)?.name || '';
 
-  // Lo que llevas puesto: el efecto de kill y, si tenías alguno, los paquetes de skills de antes
-  function vfxLoadout() {
+  // Los paquetes de skills de antes (ya no se dan): quien tenía alguno los ve al final de VFX, fuera de la vista
+  // previa, y los puede seguir equipando o quitando
+  function vfxOldPacks() {
     const mine = vfxData.me;
-    const kill = mine?.kill ? vfxData.kills.find((x) => x.id === mine.kill) : null;
-    const slot = `<div class="vfx-slot${kill ? ' is-on' : ''}"${kill ? ` style="--vfx:${vfxColor(vfxCatOf(kill)?.color)}"` : ''}>
-        <div class="vfx-slot-art">${kill ? img(kill.image, '') : IC.sword}</div>
-        <div><span>Tu efecto de kill</span><b>${kill ? escapeHtml(kill.name) : 'Ninguno equipado'}</b></div>
-        ${kill && kill.id !== vfxSel ? `<button type="button" class="btn btn-ghost btn-sm" data-vfx-pick="${escapeHtml(kill.id)}">Ver</button>` : ''}
-      </div>`;
     const packs = mine?.packs || [];
-    const old = packs.length
-      ? `<div class="vfx-old"><span class="vfx-old-label">Paquetes de skills que ya tenías</span>${packs
+    if (!packs.length) return '';
+    return `<section class="vfx-old">
+        <header><h3>Tus paquetes de skills de antes</h3><span>Ya no se dan; aquí los equipas o los quitas.</span></header>
+        <div class="vfx-old-list">${packs
           .map((p) => {
             const on = mine.pack === p.id;
             const attrs = `data-vfx-kind="pack" data-vfx-id="${escapeHtml(p.id)}"`;
@@ -669,9 +666,8 @@
               }
             </div>`;
           })
-          .join('')}</div>`
-      : '';
-    return `<div class="vfx-loadout">${slot}${old}</div>`;
+          .join('')}</div>
+      </section>`;
   }
 
   // El escenario: la arena con la animación de lo elegido (teñida del color de su categoría), las flechas para pasar
@@ -709,7 +705,6 @@
             <li>${IC.spark}<span>La propia víctima hace la animación.</span></li>
           </ul>
           ${vfxAction(k)}
-          ${vfxLoadout()}
         </div>
       </div>`;
   }
@@ -735,9 +730,12 @@
     box.classList.add('vfx-shop');
     const cats = vfxData.cats || [];
     const shown = cats.filter((c) => vfxCat === 'todos' || c.id === vfxCat);
-    // Si lo elegido no está en el filtro, al escenario va el primero que se ve
-    if (!vfxList().some((k) => k.id === vfxSel)) vfxSel = vfxList()[0]?.id || null;
-    const owned = (vfxData.me?.owned || []).filter((o) => o.startsWith('kill:')).length;
+    // Si lo elegido no está en el filtro, a la arena va el primero que se ve y que no tengas (lo tuyo no sale solo en la
+    // vista previa: se ve marcado en el mosaico)
+    if (!vfxList().some((k) => k.id === vfxSel)) {
+      const list = vfxList();
+      vfxSel = (list.find((k) => vfxState('kill', k.id) === 'free') || list[0])?.id || null;
+    }
     const chip = (c, n) =>
       `<button type="button" class="fx-chip" style="--vfx:${c.id === 'todos' ? 'var(--a-400)' : vfxColor(c.color)}" data-vfx-cat="${escapeHtml(c.id)}" aria-pressed="${c.id === vfxCat}"><i aria-hidden="true"></i>${escapeHtml(c.name)}<span>${n}</span></button>`;
     box.innerHTML = `
@@ -747,7 +745,6 @@
           <h2>Efectos de kill</h2>
           <p>${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.</p>
         </div>
-        ${vfxData.me ? `<div class="fx-mine"><b>${owned}</b><span>${owned === 1 ? 'efecto tuyo' : 'efectos tuyos'}</span></div>` : ''}
       </div>
       <div id="vfx-stage">${vfxStage()}</div>
       <div class="fx-filter" role="group" aria-label="Categorías">${[chip({ id: 'todos', name: 'Todos' }, vfxData.kills.length), ...cats.map((c) => chip(c, vfxData.kills.filter((k) => k.cat === c.id).length))].join('')}</div>
@@ -760,7 +757,8 @@
           <div class="vfx-tiles">${list.map(vfxKillTile).join('')}</div>
         </section>`;
         })
-        .join('')}`;
+        .join('')}
+      ${vfxOldPacks()}`;
   }
 
   // Al pasar el ratón por una kill se anima su miniatura (solo en pantallas con ratón)
@@ -880,10 +878,11 @@
     return true;
   }
 
+  // La vista previa empieza por una clase que no tengas (Glacia si puede): lo tuyo se ve marcado en la lista
   function skDefault() {
-    const mine = skData.me;
-    const id = mine?.active || mine?.owned?.[0] || (skClass('glacia') ? 'glacia' : skData.classes[0].id);
-    skPick(id);
+    const notMine = (c) => c && skState(c) === 'none';
+    const c = [skClass('glacia'), ...skData.classes].find(notMine) || skData.classes[0];
+    skPick(c.id);
   }
 
   // Etiqueta de la clase: activa, tuya o comprándose con monedas
@@ -1036,26 +1035,6 @@
     return list.map(skTile).join('');
   }
 
-  // Lo que tiene el jugador: su clase activa y las demás que son suyas (para cambiar rápido)
-  function skMine() {
-    const mine = skData.me;
-    if (!mine) {
-      return `<div class="sk-mine"><p>Entra con tu cuenta para ver tus clases y elegir la que llevas.</p>
-        <a class="btn btn-ghost btn-sm" href="/cuenta?return=${encodeURIComponent('/tienda#skills')}">Entrar</a></div>`;
-    }
-    const owned = mine.owned.map(skClass).filter(Boolean);
-    if (!owned.length) return '<div class="sk-mine"><p>Todavía no tienes ninguna clase. Elige una abajo y pruébala en la vista previa.</p></div>';
-    return `<div class="sk-mine has-classes">
-        <span class="sk-mine-label">Tus clases</span>
-        <div class="sk-mine-list">${owned
-          .map(
-            (c) => `<button type="button" class="sk-mine-item${mine.active === c.id ? ' is-active' : ''}" style="--sk:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}">
-              ${skIcon(c.icon)}<span>${escapeHtml(c.name)}</span>${mine.active === c.id ? '<i>Activa</i>' : ''}</button>`,
-          )
-          .join('')}</div>
-      </div>`;
-  }
-
   function renderSkills(box) {
     if (!skData?.classes?.length) {
       box.innerHTML = '<p class="loading">No se pudieron cargar las clases. Recarga la página.</p>';
@@ -1074,7 +1053,6 @@
           <h2>Clases de skills</h2>
           <p>${skData.classes.length} clases con sus skills (solo skills: sin armas ni objetos). Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí o en el TF Pad. En el juego eliges la skill con las teclas 5 a 0 y la usas con el clic izquierdo.</p>
         </div>
-        ${skMine()}
       </div>
       <div id="sk-detail">${skDetail()}</div>
       <div class="sk-browse">

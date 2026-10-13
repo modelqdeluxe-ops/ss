@@ -40,6 +40,20 @@ de la tienda» = la barra de pestañas de categorías; ya la llamó así el 7 oc
 - Arreglo: el texto de VFX usa `vfxData.me` (no `me.user`, que carga más tarde) para saber si hay sesión.
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión) y capturas de escritorio y móvil;
   `npm test` 53/53.
+- **2.ª ronda (mismo día)**, queja del dueño: *«siempre tiendes a hacer diseños transparentes… se confunde con el resto
+  de contenido… no quiero ver en vista previa las skills ni kills que tengo… color, contraste y textura profesional en
+  todo»*. **Regla: nada translúcido en la tienda** (nada de `color-mix(… transparent)` en placas; las mezclas van con
+  un color sólido) y cada placa más clara que la página, medido con PIL:
+  - **Barra de categorías** opaca: placa `#121733→#080a1a`; fichas de acero `#2f3a74→#222b5a` con borde `#44509a`,
+    labio inferior y textura `--grain` (ruido SVG en `:root`); icono en pastilla maciza de su color con el dibujo
+    oscuro; la elegida rellena de su color con texto oscuro y el icono al revés (fondo oscuro, dibujo de color).
+  - **Miniaturas** de VFX y Skills = placas de acero macizas (`#161d42`/`#1f2753`, borde `#3a4584`, labio inferior,
+    `--grain`); en VFX la elegida lleva la barra del nombre rellena de su color. Arenas en `#0c1129` con textura.
+    Filtros `.fx-chip` macizos; etiquetas Equipado/Tuyo sólidas.
+  - **Lo tuyo fuera de las vistas previas**: VFX empieza en el primer efecto que no tienes y Skills en la primera clase
+    que no tienes (`skDefault`); quitados el recuadro «Tus clases», «Tu efecto de kill» y el contador de efectos tuyos.
+    Lo tuyo se sigue viendo por las etiquetas del mosaico y, al tocarlo, se equipa/quita igual. Los paquetes de skills
+    antiguos van en una sección aparte al final de VFX (`vfxOldPacks`, `.vfx-old`), solo si tienes alguno.
 
 ### CHECKPOINT (13 oct 2026, TF Client 1.3.65) — lee esto primero
 
