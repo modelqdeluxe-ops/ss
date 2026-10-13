@@ -1,11 +1,12 @@
 """Genera las texturas de las piedras de protección de TF Claims (una por tamaño de zona).
 
 1.3.67 (el dueño: «la textura de las claims es una mierda exagerada otra vez: hazlas simplistas, sin números ni figuras
-geométricas»): un bloque sencillo, a 16x16 como los del juego. Un marco de piedra pulida (de oro en las de pago: 250, 300
-y 500) y dentro un panel liso del color del nivel, hundido, con su luz arriba. Igual en los cuatro lados y arriba; abajo,
-solo la piedra. De noche se ve el panel (capa _glow a plena luz). Los 10 colores (verde → turquesa → celeste → azul →
-violeta → magenta → coral → rojo → naranja → oro) son los del borde de la zona (ClaimTier) y del nombre del objeto
-(ClaimBlocks.colorForTier).
+geométricas» y luego «tampoco las hagas tan mierda, ponle TF siempre, con un contorno bonito»): un bloque sencillo de
+32x32. Un marco de piedra pulida (de oro en las de pago: 250, 300 y 500) y dentro un panel hundido del color del nivel,
+con su luz arriba, y en el centro las letras TF gruesas, blancas, con su contorno oscuro del mismo color. Igual en los
+cuatro lados y arriba; abajo, solo la piedra. De noche se ven el panel y las letras (capa _glow a plena luz). Los 10
+colores (verde → turquesa → celeste → azul → violeta → magenta → coral → rojo → naranja → oro) son los del borde de la
+zona (ClaimTier) y del nombre del objeto (ClaimBlocks.colorForTier).
 
 Uso: python3 tools/gen_claim_blocks.py [--preview DIR]
 """
@@ -17,7 +18,7 @@ from PIL import Image, ImageDraw
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "tfclient")
 TEX = os.path.join(ROOT, "textures", "block", "claims")
-N = 16
+N = 32
 
 # tamaño (como en ClaimTier) → color del panel
 TIERS = [
@@ -34,9 +35,13 @@ TIERS = [
 ]
 PAID = {"250x250", "300x300", "500x500"}
 
-# el marco: piedra pulida gris o, en las de pago, oro viejo (base, luz del canto, sombra del canto)
+# el marco: piedra pulida gris o, en las de pago, oro viejo (base, canto de luz y de sombra, y el borde del hueco)
 STONE = {"base": (126, 128, 136), "hi": (158, 160, 168), "lo": (86, 88, 96), "in_lo": (92, 94, 102), "in_hi": (162, 164, 172)}
 GOLD = {"base": (196, 152, 70), "hi": (236, 198, 112), "lo": (128, 90, 34), "in_lo": (120, 84, 32), "in_hi": (240, 206, 124)}
+
+# las letras TF (6 de ancho cada una, 2 de hueco, 10 de alto)
+GLYPH_T = ["######", "######", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##..", "..##.."]
+GLYPH_F = ["######", "######", "##....", "##....", "#####.", "#####.", "##....", "##....", "##....", "##...."]
 
 
 def mix(a, b, t):
@@ -44,7 +49,7 @@ def mix(a, b, t):
 
 
 def frame(seed, m):
-    """La piedra (o el oro) del marco: un grano muy suave y el canto con luz arriba/izquierda y sombra abajo/derecha."""
+    """La piedra (o el oro) del marco: un grano muy suave y el canto (2 px) con luz arriba/izquierda y sombra abajo/derecha."""
     rnd = random.Random(seed)
     px = {}
     for y in range(N):
@@ -52,26 +57,51 @@ def frame(seed, m):
             v = rnd.choice((-4, -2, 0, 0, 0, 2, 3))
             px[x, y] = tuple(max(0, min(255, c + v)) for c in m["base"])
     for i in range(N):
-        px[i, 0] = px[0, i] = m["hi"]
-        px[i, N - 1] = px[N - 1, i] = m["lo"]
+        for j in range(2):
+            px[i, j] = px[j, i] = m["hi"]
+            px[i, N - 1 - j] = px[N - 1 - j, i] = m["lo"]
     return px
 
 
+def letters():
+    """Las celdas de TF, centradas."""
+    w = len(GLYPH_T[0]) + 2 + len(GLYPH_F[0])
+    ox, oy = (N - w) // 2, (N - len(GLYPH_T)) // 2
+    cells = set()
+    for r in range(len(GLYPH_T)):
+        for c, ch in enumerate(GLYPH_T[r]):
+            if ch == "#":
+                cells.add((ox + c, oy + r))
+        for c, ch in enumerate(GLYPH_F[r]):
+            if ch == "#":
+                cells.add((ox + len(GLYPH_T[0]) + 2 + c, oy + r))
+    return cells
+
+
 def face(kind, label, color, seed):
-    """Una cara: el marco y, menos abajo, el panel del color (hundido: sombra arriba/izquierda, luz abajo/derecha)."""
+    """Una cara: el marco y, menos abajo, el panel del color (hundido) con TF y su contorno."""
     m = GOLD if label in PAID else STONE
     px = frame(seed, m)
     lit = {}
     if kind != "bottom":
-        for y in range(3, N - 3):
-            for x in range(3, N - 3):
-                t = (y - 3) / (N - 7)
-                lit[x, y] = mix(mix(color, (255, 255, 255), 0.25), mix(color, (0, 0, 0), 0.18), t)
-        for x in range(4, N - 4):
-            lit[x, 3] = mix(color, (255, 255, 255), 0.5)  # la luz de arriba del panel
-        for i in range(2, N - 2):
-            px[i, 2] = px[2, i] = m["in_lo"]
-            px[i, N - 3] = px[N - 3, i] = m["in_hi"]
+        p0, p1 = 6, N - 6
+        for y in range(p0, p1):
+            for x in range(p0, p1):
+                t = (y - p0) / (p1 - p0 - 1)
+                lit[x, y] = mix(mix(color, (255, 255, 255), 0.22), mix(color, (0, 0, 0), 0.22), t)
+        for x in range(p0 + 1, p1 - 1):
+            lit[x, p0] = mix(color, (255, 255, 255), 0.5)  # la luz de arriba del panel
+        for i in range(4, N - 4):
+            for j in range(2):  # el hueco del panel: sombra arriba/izquierda, luz abajo/derecha
+                px[i, 4 + j] = px[4 + j, i] = m["in_lo"]
+                px[i, N - 5 - j] = px[N - 5 - j, i] = m["in_hi"]
+        cells = letters()
+        outline = {(x + dx, y + dy) for x, y in cells for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - cells
+        for c in outline:
+            lit[c] = mix(color, (0, 0, 0), 0.62)
+        face_c, top_c, low_c = mix(color, (255, 255, 255), 0.85), (255, 255, 255), mix(color, (255, 255, 255), 0.55)
+        for x, y in cells:
+            lit[x, y] = top_c if (x, y - 1) not in cells else low_c if (x, y + 1) not in cells else face_c
     px.update(lit)
     img = Image.new("RGBA", (N, N))
     for (x, y), col in px.items():
