@@ -1025,7 +1025,7 @@
    "color": "#9b6bff",
    "bow": false,
    "icon": "img/skills/filo_vacio/void_edge_dimension_benediction.png",
-   "showcase": "void_edge_attack",
+   "showcase": "void_edge_dimension_cut",
    "price": 599,
    "coinPrice": 1,
    "skills": [
@@ -1091,7 +1091,7 @@
    "color": "#7fd3ff",
    "bow": false,
    "icon": "img/skills/glacia/frost_bolt.png",
-   "showcase": "ice_spike",
+   "showcase": "ice_wall",
    "price": 599,
    "coinPrice": 1,
    "skills": [
@@ -2323,7 +2323,7 @@
    "color": "#ff4a1a",
    "bow": false,
    "icon": "img/skills/piromante/pyro_combo.png",
-   "showcase": "volcanic_spear",
+   "showcase": "hellfire_overblast",
    "price": 599,
    "coinPrice": 1,
    "skills": [
@@ -2408,7 +2408,7 @@
    "color": "#ff6b4a",
    "bow": false,
    "icon": "img/skills/pistolero_despertado/piercing_combo.png",
-   "showcase": "hellflare_burst",
+   "showcase": "skyfall_barrage",
    "price": 599,
    "coinPrice": 1,
    "skills": [
@@ -2944,7 +2944,7 @@
    "color": "#d6224a",
    "bow": false,
    "icon": "img/skills/vampiro/bloodmoon_combo.png",
-   "showcase": "vampiric_surge",
+   "showcase": "bloodbending",
    "price": 599,
    "coinPrice": 1,
    "skills": [
