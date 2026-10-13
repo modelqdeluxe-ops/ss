@@ -29,6 +29,9 @@ public record PadView(String app, List<Tab> tabs, String tab, List<String> heade
      * «tfclient:textures/gui/pad/fx/kill_fuego_infernal.png». image puede ser cualquier ResourceLocation de una textura
      * (los iconos de las skills: «tfclient:textures/gui/skills/…»); si el cliente no la tiene, dibuja el objeto.
      */
+    /** Imagen especial: el propio jugador en 3D, con la skin que lleva (la vista previa de la skin puesta del Armario). */
+    public static final String SELF_MODEL = "tfclient:self_model";
+
     public static String padImage(String name) {
         return "tfclient:textures/gui/pad/" + name + ".png";
     }

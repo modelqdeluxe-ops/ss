@@ -217,12 +217,15 @@ public final class PadWardrobe {
             SkinServer.sendImages(player, mine.stream().map(SkinServer.Skin::hash).toList());
             SkinServer.Skin wearing = worn.isEmpty() ? null : SkinServer.skin(uuid, worn);
             b.header(wearing == null ? "Llevas tu skin de siempre. Pulsa una para ponértela." : "Llevas «" + wearing.name() + "».");
-            b.card(new ItemStack(Items.PLAYER_HEAD), "Mi skin", WARDROBE_COLOR, wearing == null ? "PUESTA" : "VOLVER A ELLA",
-                    wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE, -1, "", wearing == null ? "" : "skin:original", wearing == null);
+            // la puesta se ve con tu modelo de verdad en 3D (PadView.SELF_MODEL); las demás, de frente y enteras
+            b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), "Mi skin", WARDROBE_COLOR, wearing == null ? "" : "skin:original",
+                    wearing == null, wearing == null ? "PUESTA" : "VOLVER A ELLA", -1, "", wearing == null ? PadView.TONE_GREEN : PadView.TONE_BLUE)
+                    .image(wearing == null ? PadView.SELF_MODEL : ""));
             for (SkinServer.Skin sk : mine) {
                 boolean on = sk.id().equals(worn);
                 b.cell(new PadView.Cell(new ItemStack(Items.PLAYER_HEAD), sk.name(), WARDROBE_COLOR, "ver:skins:ver:" + sk.id(), on,
-                        on ? "PUESTA" : "VER", -1, "", on ? PadView.TONE_GREEN : PadView.TONE_BLUE).image(SkinServer.preview(sk.hash(), sk.slim())));
+                        on ? "PUESTA" : "VER", -1, "", on ? PadView.TONE_GREEN : PadView.TONE_BLUE)
+                        .image(on ? PadView.SELF_MODEL : SkinServer.preview(sk.hash(), sk.slim())));
             }
             b.footer(PadView.Btn.of("AÑADIR SKIN", "ver:skins:nueva", PadView.GREEN));
             if (mine.isEmpty()) b.header("Aún no tienes skins guardadas: pulsa AÑADIR SKIN.");
@@ -245,7 +248,7 @@ public final class PadWardrobe {
             boolean sure = ("borrar:" + id).equals(PadServer.get(player, "armario.confirm", ""));
             b.footer(PadView.Btn.of(sure ? "¿SEGURO?" : "BORRAR", "skin:borrar:" + id, PadView.RED));
             b.footer(PadView.Btn.of("VOLVER", "ver:skins", PadView.GOLD));
-            b.input("skin:renombrar:" + id, "NUEVO NOMBRE PARA ESTA SKIN", 24, "RENOMBRAR");
+            b.input("skin:renombrar:" + id, "NUEVO NOMBRE", 24, "RENOMBRAR");
             return b.build();
         }
 
@@ -272,7 +275,7 @@ public final class PadWardrobe {
             b.footer(PadView.Btn.of("ABRIR CARPETA", "skin:carpeta", PadView.BLUE));
             b.footer(PadView.Btn.of("ACTUALIZAR", "skin:buscar", PadView.BLUE));
             b.footer(PadView.Btn.of("VOLVER", "ver:skins", PadView.GOLD));
-            b.input("skin:traer", "NOMBRE DE UN JUGADOR DE MINECRAFT", 16, "TRAER SU SKIN");
+            b.input("skin:traer", "NOMBRE DEL JUGADOR", 16, "TRAER SU SKIN");
             return b.build();
         }
 

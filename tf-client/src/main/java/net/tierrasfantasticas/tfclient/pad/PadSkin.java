@@ -501,8 +501,21 @@ final class PadSkin {
         for (int i = 0; i < 6; i++) g.fill(px + 3 + i, py + 8 - i, px + 5 + i, py + 9 - i, WHITE);
         g.fill(px + 3, py + 9, px + 4, py + 10, mix(c, WHITE, 0.8F));
         int tx = x + 18, tw = w - 22;
-        String shown = text.isEmpty() ? PadUi.fitEnd(hint, tw) : PadUi.fitStart(text, tw);
-        PadUi.text(g, shown, tx, y + 4, text.isEmpty() ? mix(0xFF96AACC, c, 0.25F) : PadUi.TEXT);
+        if (text.isEmpty()) {
+            // la pista nunca se corta: si no cabe, se escribe más pequeña (hasta 6/10) y solo entonces se recorta
+            int hw = PadUi.font().width(hint);
+            float k = hw <= tw ? 1F : Math.max(0.6F, tw / (float) hw);
+            String h = k < 1F && hw * k > tw ? PadUi.fitEnd(hint, Math.round(tw / k)) : hint;
+            g.pose().pushPose();
+            g.pose().translate(tx, y + 8 - 4 * k, 0);
+            g.pose().scale(k, k, 1);
+            PadUi.text(g, h, 0, 0, mix(0xFF96AACC, c, 0.25F));
+            g.pose().popPose();
+            if ((System.currentTimeMillis() / 500) % 2 == 0) g.fill(tx, y + 3, tx + 1, y + 13, c);
+            return;
+        }
+        String shown = PadUi.fitStart(text, tw);
+        PadUi.text(g, shown, tx, y + 4, PadUi.TEXT);
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             int cx = tx + (text.isEmpty() ? 0 : PadUi.font().width(shown));
             g.fill(cx, y + 3, cx + 1, y + 13, c);

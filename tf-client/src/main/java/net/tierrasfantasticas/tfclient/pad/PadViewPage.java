@@ -372,9 +372,14 @@ final class PadViewPage extends PadPage {
         g.fill(x0 + 2, yy + 1, x0 + w - 2, yy + 2, 0x96FFFFFF);
         int bob = lift || c.selected() ? Math.round((float) Math.sin(t * 4.4F)) : 0;
         int size = gallery ? GAL_IMG : 32;
+        if (PadView.SELF_MODEL.equals(c.image())) {
+            // tu modelo de verdad, entero y en 3D, con la skin que llevas (mira hacia el ratón)
+            selfModel(g, cx, yy + sh - 2, sh - 6, mx, my);
+        }
         boolean photo = c.hasImage() && PadSkin.wide(c.image());
         int photoH = photo ? Math.min(sh - 5, Math.round((w - 8) / PadSkin.aspect(c.image()))) : 0;
-        boolean drawn = photo ? PadSkin.photo(g, c.image(), cx, yy + 1 + (sh - photoH) / 2 + bob, photoH) > 0
+        boolean drawn = PadView.SELF_MODEL.equals(c.image()) || photo ? PadView.SELF_MODEL.equals(c.image())
+                || PadSkin.photo(g, c.image(), cx, yy + 1 + (sh - photoH) / 2 + bob, photoH) > 0
                 : c.hasImage() && PadSkin.image(g, pad, c.image(), cx, yy + 1 + sh / 2F + bob, w - 10, size);
         if (!drawn && !c.icon().isEmpty()) bigItem(g, c.icon(), cx - 16, yy + 4 + bob + (sh - 40) / 2);
         if (hover && !c.icon().isEmpty() && !drawn) tooltip = c.icon();
@@ -510,6 +515,15 @@ final class PadViewPage extends PadPage {
      * derecha la etiqueta (precio, premio, estado) y los botones. Sin icono ni botones, una nota de texto; con solo
      * título, un título de sección.
      */
+    /** El jugador en 3D con los pies en (cx, feetY) y h de alto (como en el inventario: gira hacia el ratón). */
+    private static void selfModel(GuiGraphics g, int cx, int feetY, int h, double mx, double my) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        int scale = Math.max(6, Math.round(h / 1.9F));
+        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, cx, feetY, scale,
+                (float) (cx - mx), (float) (feetY - h * 0.8F - my), player);
+    }
+
     private void drawRow(GuiGraphics g, PadView.Row r, int x, int y, int w, int h, double mx, double my, int acc, float t) {
         boolean clickable = !r.click().isEmpty();
         h -= ROW_GAP; // cada fila es su propia tarjeta, con aire debajo
