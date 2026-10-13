@@ -1,6 +1,10 @@
 # Reglas del repo (léelas siempre)
 
-- Lee `HANDOFF.md` entero antes de tocar nada: ahí están el estado del proyecto y las reglas del dueño.
+- Lee `HANDOFF.md` antes de tocar nada; empieza por su **CHECKPOINT** (sección 0): estado, reglas del dueño, cómo
+  publicar, qué falta por verificar y el mapa del TF Pad.
+- **No uses subagentes** (Agent / Workflow): el dueño lo prohibió. Hazlo tú directamente.
+- Cuando el dueño mande capturas, **mídelas** (recorta, amplía, colores con PIL) antes de decir que algo está arreglado.
+- Responde al dueño en español.
 
 ## Publicar TF Client (el mod) — SIEMPRE como Release de GitHub
 

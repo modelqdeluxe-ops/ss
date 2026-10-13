@@ -1,14 +1,63 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **11 de octubre de 2026**. Repo `modelqdeluxe-ops/ss`. Rama de trabajo de **Skills** (sin
-fusionar todavía): `claude/admiring-pascal-q0szox` (antes `claude/amazing-wozniak-gtw9ll`, mismo historial); lo
-publicado está en `main`. Este documento es para que otra IA (o persona) pueda seguir exactamente donde se
-quedó el trabajo: qué es el proyecto, qué reglas puso el dueño, **qué estábamos haciendo ahora mismo**, cómo
-funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
+Última actualización: **13 de octubre de 2026** (TF Client **1.3.62**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+`claude/admiring-pascal-q0szox` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
+es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
+estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ---
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
+
+### CHECKPOINT (13 oct 2026, TF Client 1.3.62) — lee esto primero
+
+**Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.62** (PR #89), Release ya creada:
+https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar (enlace fijo, siempre la última). La web
+(Cloudflare) se despliega sola desde `main`. No hay trabajo a medias ni worktrees de agentes pendientes.
+
+**Cómo trabaja el dueño contigo (reglas que ha repetido; incúmplelas y se enfada con razón)**:
+- Escribe en español; responde en español, claro y sin rodeos. Quiere **cambios reales**, no retoques, y calidad de
+  producto público. Prueba en el juego y manda capturas: **míralas píxel a píxel** (recórtalas, amplíalas, mide colores con
+  PIL) antes de decir que algo está arreglado. Dos veces se dio por arreglada la «doble pantalla» sin auditarla bien.
+- **NO uses subagentes** (Agent/Workflow): el dueño lo prohibió expresamente (se gastaron sus tokens). Hazlo tú, directo.
+- Publica siempre en `main` sin pedir permiso (rama → PR → squash-merge). Nunca abras el juego ni un servidor. Secretos solo
+  en Cloudflare. Nunca subas los packs comprados (zips de MythicMobs/ItemsAdder…): solo lo generado a partir de ellos.
+- **Jars: solo como Release** (ver `CLAUDE.md`). No subas jars a `descargas/`. Las Releases de TF Client NO van marcadas
+  «latest» (el repo tiene otras: StickerYa, Rumentis, mercado).
+
+**Cómo publicar una versión** (5 min): sube `mod_version` en `tf-client/gradle.properties` y `VERSION` en
+`tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java`; `cd tf-client && ./gradlew build --offline -q`;
+apunta la entrega aquí arriba (bloque «TF Client 1.3.x»); commit, push a la rama, PR y squash-merge (herramientas
+`mcp__github__create_pull_request` / `merge_pull_request`); espera el CI de `main`
+(`curl -s https://api.github.com/repos/modelqdeluxe-ops/ss/actions/runs?head_sha=<sha>`) y comprueba que el enlace fijo baja
+la versión nueva (`unzip -p tfclient.jar META-INF/mods.toml | grep version`). Luego
+`git fetch origin main && git checkout -B claude/admiring-pascal-q0szox origin/main && git push --force-with-lease`.
+
+**Sin verificar en el juego (lo hecho en 1.3.57–1.3.62 solo se vio en el simulador o compilando)**: que la «doble
+pantalla» desapareció de verdad (bisel quitado de frame.png), los 8 temas (máscaras glass_shape/glass_fade/neon), el
+escaparate 3D del Armario (`InventoryScreen.renderEntityInInventoryFollowsMouse` dentro del pad), las skins entre
+jugadores (canal `tfclient:skins`, mixins de skin), el buzón de REGALOS, el asistente de kits del admin, la música con
+MP3 MPEG-2/2.5 y el escaneo de la carpeta. Si el dueño manda capturas de algo de esto, empieza por ahí.
+
+**Pendiente / ideas que el dueño pidió y siguen abiertas**:
+- «Más diseñitos bonitos en las GUIs, mejora lo que tenemos»: es continuo. Lo último: filas con icono 32 en pastilla de
+  color (`PadSkin.tile`), campos con lápiz (`PadSkin.field`), temas + monogramas TF. Ideas no hechas: teñir también las
+  fichas azules de la portada con el tema, más ilustración en los vacíos, Ajustes del simulador al día.
+- Música: FLAC/M4A no se leen (solo MP3/OGG/WAV).
+- Adelgazar el jar (55 MB: texturas de GUI 13,6 MB y sonidos de skills 12,7 MB se pueden comprimir) — ofrecido, sin respuesta.
+
+**Mapa rápido del TF Pad (lo que más se toca)** — `tf-client/src/main/java/net/tierrasfantasticas/tfclient/pad/`:
+- `TFPadScreen` (marco, cristal, fondo animado, temas, avisos, barras que se arrastran), `PadSkin` (todo el estilo: pestañas
+  `tab`/`tabCompact`, tarjetas, filas `tile`, campo `field`, `photo`, botones, interruptor), `PadViewPage` (pinta las apps
+  del servidor: `PadView` filas/tarjetas/galería/hero; `SELF_MODEL` = el jugador en 3D), `PadHomePage` (portada),
+  páginas propias: `PadMusicPage`+`music/`, `PadCommunityPage`+`PadEmoji*`, `PadGachaPage`, `PadPassPage`, `PadInfoPages`
+  (Ajustes con temas), `PadSettings` (ajustes y `THEMES`).
+- Servidor (`pad/server/`): una clase por app (`PadJobs`, `PadWardrobe` = Armario+Efectos, `PadRewards` = DIARIA+REGALOS,
+  `PadPlayers` = regalos/buzón, `PadKits`, `PadAdminKits` = asistente de kits, `PadClaims`…). Skins: `skins/`.
+- Texturas: `tools/pad/build_pad.py` (genera frame.png quitando el bisel y las máscaras de tema), `build_skin.py`,
+  `fx_images.py`, `job_images.py <carpeta textures del pack Medieval Jobs>`. Simulador: `python3 tools/pad/sim/pages.py
+  <carpeta>` (`PAGES=p_x,p_y`, `THEME=n`); su capa del cristal solo cubre GW×GH (el anillo del marco no lo pinta).
+
 
 > **REGLA NUEVA (13 oct, pedido del dueño): el jar se publica como Release de GitHub, no en `descargas/`.** Subir
 > `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
