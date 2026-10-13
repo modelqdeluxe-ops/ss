@@ -612,8 +612,8 @@ public final class TFPadScreen extends Screen {
     private void drawBackdrop(GuiGraphics g) {
         float t = PadSkin.time();
         int w = unitsW, h = unitsH;
+        glassBase(g);
         scissor(g, 0, 0, w, h);
-        PadUi.texture(g, 0, 0, w, h);
         PadSkin.vgrad(g, 0, h * 2 / 3F, w, h, 0x00144696, 0x16144696);
         float k = (t % 13F) / 4.5F;
         if (PadSettings.animations && k < 1) PadSkin.beam(g, -120 + k * (w + 240), 70, w, h, 0.16F);
@@ -632,6 +632,29 @@ public final class TFPadScreen extends Screen {
         // en la portada, además, su cielo animado (por detrás del logo y de las fichas)
         if (page == home) home.ambient(g, t);
         noScissor(g);
+    }
+
+    /** El hueco del cristal en frame.png (píxeles de la imagen, sin alargar): algo más grande que GX/GY/GW/GH. */
+    private static final int GLASS_L = 205, GLASS_T = 250, GLASS_R = 1361, GLASS_B = 795;
+
+    /**
+     * La base del cristal (su trama) en TODO el hueco del cristal del marco, recortada a píxeles reales: el cristal de
+     * frame.png asoma 1 a 3 píxeles de pad más allá de GX/GY/GW/GH y, sin esto, se veía su azul debajo, como una
+     * segunda pantalla detrás (sobre todo abajo).
+     */
+    private void glassBase(GuiGraphics g) {
+        int lift = liftReal();
+        int x0 = fx + GLASS_L * ps / 4, y0 = fy + lift + GLASS_T * ps / 4;
+        int x1 = fx + (GLASS_R + 8 * extraX) * ps / 4, y1 = fy + lift + (GLASS_B + 8 * extra) * ps / 4;
+        int top = gy + lift;
+        int mL = Math.max(0, (gx - x0 + cs - 1) / cs), mT = Math.max(0, (top - y0 + cs - 1) / cs);
+        int mR = Math.max(0, (x1 - gx - unitsW * cs + cs - 1) / cs), mB = Math.max(0, (y1 - top - unitsH * cs + cs - 1) / cs);
+        g.flush();
+        int fbH = Minecraft.getInstance().getWindow().getHeight();
+        RenderSystem.enableScissor(x0, fbH - y1, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
+        PadUi.texture(g, -mL, -mT, unitsW + mL + mR, unitsH + mT + mB);
+        g.flush();
+        RenderSystem.disableScissor();
     }
 
     /**

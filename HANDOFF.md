@@ -10,6 +10,12 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.59 (13 oct)**: «pantalla doble» del pad: el cristal de frame.png es algo más grande que GX/GY/GW/GH
+>   (en la imagen: x 205–1360, y 250–794; la pantalla cubría 208–1359 × 256–783) y su azul asomaba debajo de la
+>   pantalla, sobre todo abajo (11 px de imagen). `TFPadScreen.glassBase` pinta la trama del cristal en todo ese hueco
+>   (GLASS_L/T/R/B, contando lo que se alarga el marco), recortado a píxeles reales. El simulador no lo refleja (su capa
+>   del cristal mide justo GW×GH).
+
 > **TF Client 1.3.58 (13 oct)**:
 > - **Armario con skins** (pestaña SKINS, la primera): colección por jugador (máx. 16) en
 >   `<mundo>/tfclient/skins/<uuid>/` (skins.json + `<huella>.png`, 64x64, ≤16 KB, normalizada: `SkinImages`). Importar
@@ -23,7 +29,7 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 >   verdes como números → cada cuánto → quién/precio → revisar y publicar; borrador si se deja a medias; ficha con
 >   CAMBIAR, COPIAR, BORRAR, PROBAR). Las monedas como objeto (oro y verdes) nunca se dan: `TFCoins.credit` las suma al
 >   monedero en kits, recompensas, premios y tienda. Textos de ajustes (`PadConfig`) en lenguaje claro.
-> - Pendiente: «pantallas duplicadas» (falta que el dueño diga cuáles), más diseño en las apps.
+> - Pendiente: más diseño en las apps.
 
 > **TF Client 1.3.57 (13 oct)** — pedidos del dueño tras probar la 1.3.56:
 > - **Monedas en kits/recompensas/premios**: `PadKits.give` ya no da Fantastic Coin ni monedas verdes como objeto:
@@ -1849,7 +1855,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.58)
+## 5. El mod (TF Client 1.3.59)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta
