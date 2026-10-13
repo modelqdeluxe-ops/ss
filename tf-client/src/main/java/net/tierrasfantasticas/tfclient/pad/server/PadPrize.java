@@ -51,8 +51,19 @@ public record PadPrize(String type, long amount, String id, String nbt, String c
                 }
                 default -> throw new IllegalArgumentException("tipo desconocido: " + type);
             }
-            return new PadPrize(type, amount, id, nbt, cmd.startsWith("/") ? cmd.substring(1) : cmd, TFJson.str(o, "nombre", ""),
+            PadPrize prize = new PadPrize(type, amount, id, nbt, cmd.startsWith("/") ? cmd.substring(1) : cmd, TFJson.str(o, "nombre", ""),
                     TFJson.str(o, "icono", ""));
+            // una moneda puesta como objeto (tfclient:fantastic_coin o la verde): se ingresa en el monedero, no se da
+            if (type.equals("objeto")) {
+                ItemStack s = prize.stack();
+                net.tierrasfantasticas.tfclient.economy.TFCoins.Kind k = net.tierrasfantasticas.tfclient.economy.TFCoins.kind(s);
+                if (k != net.tierrasfantasticas.tfclient.economy.TFCoins.Kind.NONE) {
+                    long n = nbt.isEmpty() ? amount : s.getCount();
+                    return new PadPrize(k == net.tierrasfantasticas.tfclient.economy.TFCoins.Kind.GOLD ? "monedas" : "verdes", Math.max(1, n),
+                            "", "", "", TFJson.str(o, "nombre", ""), TFJson.str(o, "icono", ""));
+                }
+            }
+            return prize;
         } catch (Exception ex) {
             TFClient.LOGGER.warn("TF Pad: {}: un premio no se pudo leer ({})", where, ex.getMessage());
             return null;

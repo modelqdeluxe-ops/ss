@@ -284,8 +284,12 @@ public final class TFCoinShop {
         return 1;
     }
 
-    /** Da el objeto (en montones normales) y tira al suelo lo que no quepa. */
+    /**
+     * Da el objeto (en montones normales) y tira al suelo lo que no quepa. Las monedas (de oro o verdes) no se dan como
+     * objeto: se ingresan en el monedero ({@link net.tierrasfantasticas.tfclient.economy.TFCoins}).
+     */
     public static void give(ServerPlayer player, ItemStack template) {
+        if (net.tierrasfantasticas.tfclient.economy.TFCoins.credit(player, template)) return;
         int left = template.getCount();
         while (left > 0) {
             ItemStack stack = template.copy();
