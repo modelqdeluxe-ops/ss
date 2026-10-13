@@ -10,6 +10,21 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.58 (13 oct)**:
+> - **Armario con skins** (pestaña SKINS, la primera): colección por jugador (máx. 16) en
+>   `<mundo>/tfclient/skins/<uuid>/` (skins.json + `<huella>.png`, 64x64, ≤16 KB, normalizada: `SkinImages`). Importar
+>   de `.minecraft/tfclient/skins/` (ABRIR CARPETA / ACTUALIZAR / IMPORTAR) o de un jugador de Minecraft por su nombre
+>   (`SkinMojang`, en el servidor); exportar a `.minecraft/tfclient/skins/exportadas/`; brazos finos/normales,
+>   renombrar, borrar (con confirmación). La puesta la ven todos los que tienen el mod: canal `tfclient:skins`
+>   (`SkinNet`: Active/Want/Png/Scan/LocalList/UploadAsk/Upload/Export), mixins `AbstractClientPlayerSkinMixin` y
+>   `PlayerInfoSkinMixin`. Pantallas en `PadWardrobe` (`skinsView`, pestañas «skins», «skins:ver:<id>», «skins:nueva»).
+>   Ya no sale «Armario no disponible» sin la web conectada ni «solo estético».
+> - **Pad de administrador, KITS**: asistente paso a paso (`PadAdminKits`: nombre → icono → objetos → monedas y monedas
+>   verdes como números → cada cuánto → quién/precio → revisar y publicar; borrador si se deja a medias; ficha con
+>   CAMBIAR, COPIAR, BORRAR, PROBAR). Las monedas como objeto (oro y verdes) nunca se dan: `TFCoins.credit` las suma al
+>   monedero en kits, recompensas, premios y tienda. Textos de ajustes (`PadConfig`) en lenguaje claro.
+> - Pendiente: «pantallas duplicadas» (falta que el dueño diga cuáles), más diseño en las apps.
+
 > **TF Client 1.3.57 (13 oct)** — pedidos del dueño tras probar la 1.3.56:
 > - **Monedas en kits/recompensas/premios**: `PadKits.give` ya no da Fantastic Coin ni monedas verdes como objeto:
 >   las suma al saldo (`TFEconomy.give` / `PadGreen.add`); en la vista del kit salen como «+N».
@@ -1834,7 +1849,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.57)
+## 5. El mod (TF Client 1.3.58)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

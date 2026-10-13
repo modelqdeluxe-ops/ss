@@ -27,6 +27,8 @@ import net.tierrasfantasticas.tfclient.pad.PadView;
 final class PadItemPicker {
     private static final int PAGE = 96;
     private static final int[] AMOUNTS = {1, 4, 8, 16, 32, 64};
+    /** Lo más que puede traer una entrada de un kit o una recompensa (se da en montones normales). */
+    static final int MAX_AMOUNT = 6400;
     private static List<Item> all;
 
     private PadItemPicker() {}
@@ -45,42 +47,49 @@ final class PadItemPicker {
         return PadServer.get(p, app + ".pk." + k, def);
     }
 
+    /** Lo que no se ofrece de tu inventario: el propio pad de administrador. */
+    static boolean hidden(ItemStack s) {
+        return s.isEmpty() || s.getItem() instanceof net.tierrasfantasticas.tfclient.pad.AdminPadItem;
+    }
+
     /**
-     * La vista del selector. title: a qué se añade («Kit inicial»). Los botones de abajo: ANTERIOR / SIGUIENTE (en
-     * TODOS), CANTIDAD y LISTO (vuelve a la ficha, con la acción done).
+     * El selector, sin sus botones de volver: pestañas TU INVENTARIO / TODOS LOS OBJETOS, una línea de cabecera (what:
+     * «Paso 2 de 7 · Pulsa el objeto que hará de icono»), la rejilla y, en TODOS, el buscador y las páginas (« »). amounts:
+     * si se elige de cuántos en cuántos se añaden los de TODOS (botón ×N; no para elegir un icono). marked: el id del
+     * objeto que sale marcado (el icono actual), o "". Quien lo llama añade sus botones (como mucho 4 en total).
      */
-    static PadView view(ServerPlayer p, String app, String tab, String title, String done) {
+    static PadView.Builder builder(ServerPlayer p, String app, String tab, String what, boolean amounts, String marked) {
         String src = key(p, app, "src", "inv");
-        int n = Integer.parseInt(key(p, app, "n", "1"));
+        int n = amounts ? Integer.parseInt(key(p, app, "n", "1")) : 1;
         PadView.Builder b = PadView.of(app).tab(tab + "|inv", "TU INVENTARIO").tab(tab + "|todos", "TODOS LOS OBJETOS")
                 .selected(tab + "|" + src);
         if (src.equals("inv")) {
-            b.header("Añadir a " + title + ": pulsa un objeto (va tal cual, con su cantidad y encantamientos).");
+            b.header(what);
             List<ItemStack> inv = p.getInventory().items;
             for (int i = 0; i < inv.size(); i++) {
                 ItemStack s = inv.get(i);
-                if (!s.isEmpty()) b.cell(s.copy(), "", 0x18265C, "pk.add:#" + i, false);
+                if (!hidden(s)) b.cell(s.copy(), "", 0x18265C, "pk.add:#" + i, marked.equals(String.valueOf(ForgeRegistries.ITEMS.getKey(s.getItem()))));
             }
-            b.empty("Tu inventario está vacío. Mira en TODOS LOS OBJETOS.");
+            b.empty("Tu inventario está vacío. Mira en TODOS LOS OBJETOS (arriba).");
         } else {
             String q = key(p, app, "q", "");
             List<Item> found = search(q);
             int pages = Math.max(1, (found.size() + PAGE - 1) / PAGE);
             int page = Math.max(0, Math.min(pages - 1, Integer.parseInt(key(p, app, "page", "0"))));
-            b.header("Añadir a " + title + " (de " + n + " en " + n + "). " + found.size() + " objetos"
-                    + (q.isEmpty() ? "" : " con «" + q + "»") + " · página " + (page + 1) + " de " + pages + ".");
+            b.header(what + (amounts ? " Se añaden de " + n + " en " + n + "." : "") + " Página " + (page + 1) + " de " + pages
+                    + (q.isEmpty() ? "" : " · «" + q + "»") + ".");
             for (int i = page * PAGE; i < Math.min(found.size(), (page + 1) * PAGE); i++) {
                 Item it = found.get(i);
-                b.cell(new ItemStack(it), "", 0x18265C, "pk.add:" + ForgeRegistries.ITEMS.getKey(it), false);
+                String id = String.valueOf(ForgeRegistries.ITEMS.getKey(it));
+                b.cell(new ItemStack(it), "", 0x18265C, "pk.add:" + id, marked.equals(id));
             }
-            b.empty("Nada con ese nombre.");
-            b.input("pk.q", q.isEmpty() ? "BUSCAR (NOMBRE O ID)" : "BUSCAR: " + q.toUpperCase(Locale.ROOT), 40, "BUSCAR");
+            b.empty("Nada con ese nombre. Prueba con el id en inglés (diamond, iron_sword…).");
+            b.input("pk.q", q.isEmpty() ? "BUSCAR (NOMBRE O ID, EN INGLÉS)" : "BUSCAR: " + q.toUpperCase(Locale.ROOT), 40, "BUSCAR");
             if (page > 0) b.footer(PadView.Btn.of("«", "pk.prev", PadView.BLUE));
             if (page < pages - 1) b.footer(PadView.Btn.of("»", "pk.next", PadView.BLUE));
-            b.footer(PadView.Btn.of("×" + n, "pk.n", PadView.GOLD));
+            if (amounts) b.footer(PadView.Btn.of("×" + n, "pk.n", PadView.GOLD));
         }
-        b.footer(PadView.Btn.of("ATRÁS", done, PadView.BLUE));
-        return b.build();
+        return b;
     }
 
     private static List<Item> search(String q) {
@@ -106,7 +115,7 @@ final class PadItemPicker {
                 try {
                     int slot = Integer.parseInt(what.substring(1));
                     ItemStack s = p.getInventory().items.get(slot);
-                    return s.isEmpty() ? ItemStack.EMPTY : s.copy();
+                    return hidden(s) ? ItemStack.EMPTY : s.copy();
                 } catch (RuntimeException e) {
                     return ItemStack.EMPTY;
                 }
@@ -147,10 +156,16 @@ final class PadItemPicker {
         return tab.substring(0, bar);
     }
 
-    /** El objeto como entrada de «objetos» en kits.json / recompensas.json (con todo su NBT). */
+    /**
+     * El objeto como entrada de «objetos» en kits.json / recompensas.json (con todo su NBT). El NBT guarda la cantidad en
+     * un byte (hasta 127): si es más, va también en «cantidad».
+     */
     static JsonObject json(ItemStack s) {
         JsonObject o = new JsonObject();
-        o.addProperty("nbt", s.save(new CompoundTag()).toString());
+        ItemStack c = s.copy();
+        c.setCount(Math.max(1, Math.min(64, s.getCount())));
+        o.addProperty("nbt", c.save(new CompoundTag()).toString());
+        if (s.getCount() > 64) o.addProperty("cantidad", s.getCount());
         return o;
     }
 
@@ -158,7 +173,10 @@ final class PadItemPicker {
     static ItemStack stack(JsonElement e) {
         try {
             if (e.isJsonObject() && e.getAsJsonObject().has("nbt")) {
-                return ItemStack.of(TagParser.parseTag(e.getAsJsonObject().get("nbt").getAsString()));
+                ItemStack s = ItemStack.of(TagParser.parseTag(e.getAsJsonObject().get("nbt").getAsString()));
+                long n = net.tierrasfantasticas.tfclient.util.TFJson.num(e.getAsJsonObject(), "cantidad", 0);
+                if (!s.isEmpty() && n > 0) s.setCount((int) Math.min(MAX_AMOUNT, n));
+                return s;
             }
             String[] parts = e.getAsString().trim().split("\\s+");
             Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(parts[0]));
@@ -175,6 +193,23 @@ final class PadItemPicker {
         if (a != null) for (JsonElement e : a) {
             ItemStack s = stack(e);
             if (!s.isEmpty()) out.add(s);
+        }
+        return out;
+    }
+
+    /**
+     * Saca las monedas (de oro y verdes) de una lista «objetos»: las quita del array y devuelve {oro, verdes}. Los kits y
+     * recompensas de antes las llevaban como objeto (y se daban como objeto); ahora van en «monedas» y «verdes».
+     */
+    static long[] takeCoins(JsonArray a) {
+        long[] out = {0, 0};
+        if (a == null) return out;
+        for (int i = a.size() - 1; i >= 0; i--) {
+            ItemStack s = stack(a.get(i));
+            net.tierrasfantasticas.tfclient.economy.TFCoins.Kind k = net.tierrasfantasticas.tfclient.economy.TFCoins.kind(s);
+            if (k == net.tierrasfantasticas.tfclient.economy.TFCoins.Kind.NONE) continue;
+            out[k == net.tierrasfantasticas.tfclient.economy.TFCoins.Kind.GOLD ? 0 : 1] += s.getCount();
+            a.remove(i);
         }
         return out;
     }

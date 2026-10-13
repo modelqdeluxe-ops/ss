@@ -86,11 +86,13 @@ public final class PadAdminRewards {
             List<PadRewards.Day> days = PadRewards.days();
             if (tab.startsWith("pd:")) {
                 int i = dayOf(tab, 3);
-                if (i >= 0 && i < days.size()) return PadItemPicker.view(player, APP_ID, tab, "Día " + (i + 1), "tab:d:" + i);
+                if (i >= 0 && i < days.size()) return PadItemPicker.builder(player, APP_ID, tab, "Añadir a " + "Día " + (i + 1) + ": pulsa un objeto (va tal cual, con su cantidad).", true, "")
+                        .footer(PadView.Btn.of("ATRÁS", "tab:d:" + i, PadView.BLUE)).build();
             }
             if (tab.startsWith("pr:")) {
                 PadRewards.Reward r = PadRewards.reward(tab.substring(3));
-                if (r != null) return PadItemPicker.view(player, APP_ID, tab, r.name(), "tab:r:" + r.id());
+                if (r != null) return PadItemPicker.builder(player, APP_ID, tab, "Añadir a " + r.name() + ": pulsa un objeto (va tal cual, con su cantidad).", true, "")
+                        .footer(PadView.Btn.of("ATRÁS", "tab:r:" + r.id(), PadView.BLUE)).build();
             }
             if (tab.startsWith("d:")) {
                 int i = dayOf(tab, 2);

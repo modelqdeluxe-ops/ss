@@ -76,8 +76,8 @@ public final class TFItems {
             BY_SET.put(set.id(), list);
         }
         for (String icon : JOB_ICONS) ITEMS.register("job_" + icon, () -> new Item(new Item.Properties().stacksTo(1)));
-        COIN = ITEMS.register("fantastic_coin", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
-        GREEN_COIN = ITEMS.register("fantastic_coin_green", () -> new Item(new Item.Properties().rarity(Rarity.RARE)));
+        COIN = ITEMS.register("fantastic_coin", () -> new net.tierrasfantasticas.tfclient.economy.TFCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), false));
+        GREEN_COIN = ITEMS.register("fantastic_coin_green", () -> new net.tierrasfantasticas.tfclient.economy.TFCoinItem(new Item.Properties().rarity(Rarity.RARE), true));
         ADMIN_PAD = ITEMS.register("pad_admin", net.tierrasfantasticas.tfclient.pad.AdminPadItem::new);
         ITEMS.register(modBus);
         TABS.register(modBus);

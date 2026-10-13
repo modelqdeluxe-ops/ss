@@ -38,17 +38,20 @@ import net.tierrasfantasticas.tfclient.util.TFJson;
 public final class PadRewards {
     public static final List<String> TYPES = List.of("diaria", "semanal", "horas", "unica");
 
-    record Day(long coins, List<ItemStack> items) {
+    /** Un día del calendario: monedas, monedas verdes (las dos van al monedero) y objetos. */
+    record Day(long coins, long greens, List<ItemStack> items) {
         ItemStack icon() {
-            return items.isEmpty() ? new ItemStack(net.tierrasfantasticas.tfclient.items.TFItems.COIN.get()) : items.get(0).copy();
+            if (!items.isEmpty()) return items.get(0).copy();
+            return PadKits.coinIcon(coins <= 0 && greens > 0);
         }
     }
 
-    record Reward(String id, String name, String icon, String type, long hours, long coins, List<ItemStack> items, boolean on) {
+    record Reward(String id, String name, String icon, String type, long hours, long coins, long greens, List<ItemStack> items, boolean on) {
         ItemStack iconStack() {
             Item i = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(icon));
             if (i != null && i != Items.AIR) return new ItemStack(i);
-            return items.isEmpty() ? new ItemStack(Items.CHEST_MINECART) : items.get(0).copy();
+            if (!items.isEmpty()) return items.get(0).copy();
+            return coins > 0 || greens > 0 ? PadKits.coinIcon(coins <= 0) : new ItemStack(Items.CHEST_MINECART);
         }
     }
 
@@ -172,7 +175,7 @@ public final class PadRewards {
                     boolean today = i == idx;
                     boolean past = i < idx || (today && done);
                     String sub = today ? (done ? "Reclamada" : "¡Hoy!") : past ? "Reclamada" : i == idx + 1 ? "Mañana" : "";
-                    String coins = d.coins > 0 ? PadShop.price(d.coins) : "";
+                    String coins = d.coins > 0 ? PadShop.price(d.coins) : d.greens > 0 ? "+" + d.greens + " verdes" : "";
                     b.card(d.icon(), "Día " + (i + 1) + (coins.isEmpty() ? "" : " · " + coins), past ? 0xAABAD2 : today ? 0x40C850 : 0xF6B628,
                             sub, past ? PadView.TONE_GRAY : today ? PadView.TONE_GREEN : 0, -1, "", today && !done ? "dia" : "tab:dia:" + i,
                             today && !done);
@@ -198,7 +201,7 @@ public final class PadRewards {
             PadView.Builder b = PadView.of("recompensas").selected("dia:" + i);
             b.hero(new PadView.Row(d.icon(), "Día " + (i + 1) + " del calendario", 0xF6B628, List.of("Lo que trae ese día de la racha."), -1,
                     "", null, null));
-            PadKits.contents(b, d.items, d.coins);
+            PadKits.contents(b, d.items, d.coins, d.greens);
             b.empty("Este día no trae nada.");
             b.footer(PadView.Btn.of("ATRÁS", "tab:", PadView.BLUE));
             return b.build();
@@ -209,7 +212,8 @@ public final class PadRewards {
             PadView.Builder b = PadView.of("recompensas").selected("ver:" + r.id);
             b.hero(new PadView.Row(r.iconStack(), r.name, left == 0 ? 0x40C850 : 0xF6B628, List.of(typeText(r) + " · "
                     + (left == 0 ? "lista para reclamar." : left < 0 ? "ya la reclamaste." : "vuelve en " + PadKits.time(left) + ".")), -1, "", null, null));
-            PadKits.contents(b, r.items, r.coins);
+            PadKits.contents(b, r.items, r.coins, r.greens);
+            b.empty("No trae nada.");
             b.footer(PadView.Btn.of("ATRÁS", "tab:otras", PadView.BLUE));
             b.footer(left == 0 ? PadView.Btn.of("RECLAMAR", "reclamar:" + r.id, PadView.GREEN)
                     : PadView.Btn.off(left < 0 ? "RECLAMADA" : "EN " + PadKits.time(left).toUpperCase()));
@@ -223,7 +227,7 @@ public final class PadRewards {
                 if (!calendarOn || DAYS.isEmpty() || claimedToday(player)) return null;
                 int idx = dayIndex(player);
                 Day d = DAYS.get(idx);
-                if (!pay(player, d.coins)) return null;
+                if (!pay(player, d.coins, d.greens)) return null;
                 JsonObject o = STORE_IMPL.player(player.getUUID());
                 o.addProperty("racha", idx);
                 o.addProperty("ultimoDia", today());
@@ -231,33 +235,41 @@ public final class PadRewards {
                 STORE_IMPL.changed();
                 for (ItemStack s : d.items) PadKits.give(player, s.copy());
                 player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.6F, 1.3F);
-                TFPadNet.notice(player, "¡Día " + (idx + 1) + " reclamado! Vuelve mañana a por el día " + (idx + 2 > DAYS.size() ? 1 : idx + 2) + ".");
+                String extra = PadKits.coinsText(d.coins, d.greens);
+                TFPadNet.notice(player, "¡Día " + (idx + 1) + " reclamado!" + (extra.isEmpty() ? "" : " " + extra + " en tu monedero.")
+                        + " Vuelve mañana a por el día " + (idx + 2 > DAYS.size() ? 1 : idx + 2) + ".");
                 return null;
             }
             if (action.startsWith("reclamar:")) {
                 Reward r = reward(action.substring(9));
                 if (r == null || !r.on || left(player, r) != 0) return null;
-                if (!pay(player, r.coins)) return null;
+                if (!pay(player, r.coins, r.greens)) return null;
                 STORE_IMPL.player(player.getUUID()).addProperty("r:" + r.id, System.currentTimeMillis());
                 STORE_IMPL.changed();
                 for (ItemStack s : r.items) PadKits.give(player, s.copy());
                 player.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.MASTER, 0.8F, 0.9F);
-                TFPadNet.notice(player, "Reclamaste " + r.name + ".");
+                String extra = PadKits.coinsText(r.coins, r.greens);
+                TFPadNet.notice(player, "Reclamaste " + r.name + (extra.isEmpty() ? "." : ": " + extra + " en tu monedero."));
                 return "otras";
             }
             return null;
         }
     }
 
-    /** Primero las monedas: si la economía no puede pagar, no se reclama. */
-    private static boolean pay(ServerPlayer player, long coins) {
-        if (coins <= 0) return true;
-        if (TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), coins)) {
+    /**
+     * Primero las monedas, directas al monedero (las de oro en la economía del servidor, las verdes en su saldo): si la
+     * economía no puede pagar, no se reclama.
+     */
+    private static boolean pay(ServerPlayer player, long coins, long greens) {
+        if (coins > 0) {
+            if (!TFEconomy.give(player.getServer(), player.getUUID(), player.getGameProfile().getName(), coins)) {
+                TFPadNet.notice(player, "Error al dar las monedas. Inténtalo en un rato.");
+                return false;
+            }
             TFPadNet.sendState(player);
-            return true;
         }
-        TFPadNet.notice(player, "Error al dar las monedas. Inténtalo en un rato.");
-        return false;
+        if (greens > 0) PadGreen.add(player, greens);
+        return true;
     }
 
     static List<Reward> active() {
@@ -293,6 +305,19 @@ public final class PadRewards {
         }
         DAYS.clear();
         REWARDS.clear();
+        // las monedas puestas como objeto (antes se daban como objeto): pasan a «monedas» y «verdes», una sola vez
+        boolean moved = false;
+        if (o.has("calendario") && o.get("calendario").isJsonObject() && o.getAsJsonObject("calendario").has("dias")
+                && o.getAsJsonObject("calendario").get("dias").isJsonArray()) {
+            for (JsonElement e : o.getAsJsonObject("calendario").getAsJsonArray("dias")) if (e.isJsonObject()) moved |= PadKits.moveCoins(e.getAsJsonObject());
+        }
+        if (o.has("recompensas") && o.get("recompensas").isJsonArray()) {
+            for (JsonElement e : o.getAsJsonArray("recompensas")) if (e.isJsonObject()) moved |= PadKits.moveCoins(e.getAsJsonObject());
+        }
+        if (moved) {
+            TFJson.write(file, o);
+            TFClient.LOGGER.info("TF Pad: las monedas que había como objeto en las recompensas pasan al monedero");
+        }
         JsonObject cal = o.has("calendario") && o.get("calendario").isJsonObject() ? o.getAsJsonObject("calendario") : new JsonObject();
         calendarOn = TFJson.bool(cal, "activado", true);
         resetOnMiss = TFJson.bool(cal, "reiniciarSiFalta", true);
@@ -300,7 +325,7 @@ public final class PadRewards {
             for (JsonElement e : cal.getAsJsonArray("dias")) {
                 if (!e.isJsonObject()) continue;
                 JsonObject d = e.getAsJsonObject();
-                DAYS.add(new Day(Math.max(0, TFJson.num(d, "monedas", 0)),
+                DAYS.add(new Day(Math.max(0, TFJson.num(d, "monedas", 0)), Math.max(0, TFJson.num(d, "verdes", 0)),
                         PadItemPicker.stacks(d.has("objetos") && d.get("objetos").isJsonArray() ? d.getAsJsonArray("objetos") : null)));
             }
         }
@@ -314,6 +339,7 @@ public final class PadRewards {
                     if (!TYPES.contains(type)) type = "diaria";
                     REWARDS.add(new Reward(id, TFJson.str(r, "nombre", "Recompensa"), TFJson.str(r, "icono", ""), type,
                             Math.max(1, Math.min(24L * 3650, TFJson.num(r, "horas", 24))), Math.max(0, TFJson.num(r, "monedas", 0)),
+                            Math.max(0, TFJson.num(r, "verdes", 0)),
                             PadItemPicker.stacks(r.has("objetos") && r.get("objetos").isJsonArray() ? r.getAsJsonArray("objetos") : null),
                             TFJson.bool(r, "activada", true)));
                 } catch (Exception ex) {
@@ -382,6 +408,7 @@ public final class PadRewards {
             r.addProperty("tipo", "diaria");
             r.addProperty("horas", 24);
             r.addProperty("monedas", TFJson.num(k, "monedas", 0));
+            r.addProperty("verdes", TFJson.num(k, "verdes", 0));
             r.addProperty("activada", true);
             r.add("objetos", k.has("objetos") && k.get("objetos").isJsonArray() ? k.getAsJsonArray("objetos") : new JsonArray());
             list.add(r);
