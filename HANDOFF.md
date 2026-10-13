@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **13 de octubre de 2026** (TF Client **1.3.65**). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **13 de octubre de 2026** (TF Client **1.3.65**; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/brave-ptolemy-0hz7x5` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -9,20 +9,37 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
-### EN CURSO (13 oct 2026): rediseño de la tienda web — barra de categorías, VFX y Skills
+### Web (13 oct 2026): rediseño de la tienda — barra de categorías, VFX y Skills (hecho y publicado)
 Pedido del dueño (textual): *«Necesito un rediseño completo de la gui de skills, vfx y tarjeta de botones de tienda,
 quiero un cambio real, actualmente es tosco, feo, se confunde con el tema de la pagina y todo.»* («tarjeta de botones
-de la tienda» = la barra de pestañas de categorías; ya la llamó así en la entrega del 7 oct, mediodía.)
-Plan (solo web: `tierras-fantasticas/public/{tienda.html,app.js,styles.css}`; se publica sola al fusionar en `main`):
-1. [ ] Barra de categorías → «dock» propio: placa opaca de acero oscuro (no se mezcla con la nebulosa), cada
-   categoría una ficha con icono SVG en su color (`--tone-*`), nombre y contador; la elegida se llena de su color.
-2. [ ] VFX → escenario «arena» teñido del color de la categoría (las animaciones son transparentes), esquinas de HUD,
-   flechas anterior/siguiente con contador, ficha con acción grande y lo que llevas; filtros con punto de color y
-   número; mosaico con fondo de su color, marca de elegido y de equipado.
-3. [ ] Skills → ficha de clase: pantalla enmarcada (las vistas previas traen fondo #0c1020 pintado), cabecera con
-   icono grande, dos opciones de compra separadas (dinero / monedas), **barra de skills como la del juego** (teclas
-   5–0 + pasivas) con el detalle de la elegida; rejilla de clases con su color.
-4. [ ] Capturas escritorio y móvil (`tools/preview.mjs` + Playwright), `npm test`, PR, merge, capturas en vivo.
+de la tienda» = la barra de pestañas de categorías; ya la llamó así el 7 oct.) Solo web: `tools/pages.py` (genera
+`public/tienda.html`), `tools/icons.py`, `public/app.js`, `public/styles.css`.
+- **Idea común**: una «consola» propia que no se mezcla con la nebulosa violeta: placas **opacas de acero oscuro**
+  (tokens `--hud-0…3`, `--hud-line`, `--hud-line-2` en `.vfx-shop, .sk-shop`) con filo claro arriba, y el **color de
+  cada cosa** (`--t` pestaña, `--vfx` categoría del efecto, `--sk` clase) en luces, marcas y estados. Nada de tonos
+  violeta de la página en las superficies.
+- **Barra de categorías** (`.shop-tabs` = el «dock»): placa de acero con el destello de la marca (`--shimmer`) como
+  filo de arriba; cada pestaña es una ficha con su icono SVG (gift, crown, shirt, chest, flame, zap) en una pastilla de
+  su color (`--tone-*`) y el contador; la elegida se llena de su color, icono en sólido y barra de luz debajo.
+  Móvil 3x2 fichas verticales; 760 px seis en fila; desde 1100 px icono + nombre en una línea + contador.
+- **VFX** (`renderVfx`, `vfxStage`, `vfxAction`, `vfxKillTile`, `vfxList`): **arena** teñida del color de la
+  categoría (las animaciones son transparentes) con charco de luz, esquinas de visor (`.fx-hud`), «Vista previa» con
+  punto rojo y **flechas anterior/siguiente con contador** (`data-vfx-step`, recorre lo filtrado); ficha con
+  rombo+categoría, nombre grande, dos líneas «cómo sale» con icono y **la acción en su placa** (Gratis/Es tuyo/
+  Equipado + botón grande); «Tu efecto de kill» con botón VER; contador «N efectos tuyos». Filtros = pastillas
+  `.fx-chip` con punto de color y número; mosaico con la miniatura sobre la luz de su color, rombo en lo elegido y
+  etiquetas «✓ Equipado» / «Tuyo». OJO: las animaciones acaban con ~1,6 s vacías antes de repetirse (así son los WebP);
+  si una captura sale con la arena vacía, es eso.
+- **Skills** (`skScreen`, `skBuy`, `skSlot`, `skPickCard`, `skDetail`, `skTile`): la vista previa en una **pantalla
+  enmarcada** (fondo `--sk-bg` = el pintado en las imágenes) sobre la luz del color de la clase; emblema grande,
+  datos en pastillas con icono (teclas, pasivas, clic/arco y el tipo con su color); **dos formas de comprar separadas**
+  (`.sk-opt`: «Con dinero» ámbar / «Con monedas»); si es tuya, placa de estado (`.sk-own`). Debajo, la **barra de
+  skills como la del juego** (`.sk-slots`: casillas 64 px —48 en el móvil— con la tecla 5–0 arriba a la izquierda;
+  las pasivas aparte con «PASIVA») y la ficha de la elegida (`#sk-pick`). Rejilla de clases con la franja y el icono
+  de su color; filtro con el color de cada tipo (`groups[].color`).
+- Arreglo: el texto de VFX usa `vfxData.me` (no `me.user`, que carga más tarde) para saber si hay sesión.
+- Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión) y capturas de escritorio y móvil;
+  `npm test` 53/53.
 
 ### CHECKPOINT (13 oct 2026, TF Client 1.3.65) — lee esto primero
 

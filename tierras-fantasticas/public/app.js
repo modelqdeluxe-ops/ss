@@ -627,7 +627,7 @@
     const st = vfxState('kill', k.id);
     const attrs = `data-vfx-kind="kill" data-vfx-id="${escapeHtml(k.id)}"`;
     const [icon, title, sub, btn] = {
-      free: [IC.gift, 'Gratis', me.user ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
+      free: [IC.gift, 'Gratis', vfxData?.me ? 'Obtenlo y queda en tu cuenta para siempre.' : 'Entra con tu cuenta para obtenerlo.', `<button class="btn btn-claim" type="button" data-vfx-claim ${attrs}>Obtener gratis</button>`],
       owned: [IC.star, 'Es tuyo', 'Equípalo y sale solo en el juego.', `<button class="btn btn-primary" type="button" data-vfx-equip ${attrs}>Equipar</button>`],
       on: [IC.check, 'Equipado', 'Ya sale en el juego al derrotar a alguien.', `<button class="btn btn-ghost" type="button" data-vfx-remove ${attrs}>Quitar</button>`],
     }[st];
@@ -747,7 +747,7 @@
           <h2>Efectos de kill</h2>
           <p>${vfxData.kills.length} efectos, todos gratis. Obtén el que quieras con tu cuenta y en el juego sale solo al derrotar a alguien.</p>
         </div>
-        ${me.user ? `<div class="fx-mine"><b>${owned}</b><span>${owned === 1 ? 'efecto tuyo' : 'efectos tuyos'}</span></div>` : ''}
+        ${vfxData.me ? `<div class="fx-mine"><b>${owned}</b><span>${owned === 1 ? 'efecto tuyo' : 'efectos tuyos'}</span></div>` : ''}
       </div>
       <div id="vfx-stage">${vfxStage()}</div>
       <div class="fx-filter" role="group" aria-label="Categorías">${[chip({ id: 'todos', name: 'Todos' }, vfxData.kills.length), ...cats.map((c) => chip(c, vfxData.kills.filter((k) => k.cat === c.id).length))].join('')}</div>
@@ -898,109 +898,128 @@
   const skIcon = (src, cls = '') =>
     src ? `<img src="${asset(src)}" alt="" loading="lazy" decoding="async" class="pixel-img ${cls}" width="64" height="64">` : '';
 
-  // El escenario: la vista previa animada de la skill elegida (o su icono si es una mejora que no se ve)
+  // El escenario (rediseño 13 oct.): la pantalla con la vista previa animada de la skill elegida, enmarcada sobre la
+  // luz del color de la clase. Las vistas previas traen su fondo pintado (tools/skills.py → PREVIEW_BG), así que la
+  // pantalla es de ese mismo color y el marco va alrededor.
+  function skKey(sk) {
+    return sk.passive
+      ? `<span class="sk-chip is-passive">${IC.star}Pasiva · ${escapeHtml(skPassiveText(sk))}</span>`
+      : `<span class="sk-chip is-key"><kbd>${escapeHtml(sk.key || '·')}</kbd>Tecla</span>`;
+  }
+
   function skScreen(c, sk) {
-    const key = sk.passive
-      ? `<span class="sk-key is-passive">${escapeHtml(skPassiveText(sk))}</span>`
-      : `<span class="sk-key"><kbd>${escapeHtml(sk.key || '·')}</kbd>Tecla</span>`;
     const art = sk.preview
       ? `<img class="sk-anim" src="${asset(sk.preview)}" alt="Vista previa de ${escapeHtml(sk.name)}" width="480" height="480" decoding="async">`
       : `<div class="sk-noanim">${skIcon(sk.icon, 'sk-noanim-icon')}<p>Esta skill no tiene animación propia: ${
           sk.passive ? 'funciona sola mientras llevas la clase' : 'mejora tus otras skills o tus golpes'
         }.</p></div>`;
-    return `<div class="sk-screen${sk.preview ? '' : ' is-still'}">
-        ${art}
-        <span class="vfx-live" aria-hidden="true">Vista previa</span>
-        <div class="sk-caption">${skIcon(sk.icon)}<div><b>${escapeHtml(sk.name)}</b>${key}</div></div>
+    return `<div class="sk-stage">
+        <div class="sk-screen${sk.preview ? '' : ' is-still'}">
+          <div class="fx-hud" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <span class="fx-live" aria-hidden="true"><i></i>Vista previa</span>
+          ${art}
+        </div>
+        <div class="sk-caption">${skIcon(sk.icon)}<div><b>${escapeHtml(sk.name)}</b>${skKey(sk)}</div></div>
       </div>`;
   }
 
-  // Comprar, usar o quitar: según lo que tenga el jugador
+  // Comprar, usar o quitar: según lo que tenga el jugador. Sin la clase, dos opciones separadas (dinero y monedas)
   function skBuy(c) {
     const st = skState(c);
     const product = products.find((p) => p.skillClass === c.id);
     const mine = skData.me;
     const activeCls = mine?.active ? skClass(mine.active) : null;
+    const own = (cls, icon, title, text, btn = '') =>
+      `<div class="sk-own ${cls}"><span class="sk-own-ico">${icon}</span><div><b class="sk-own-title">${title}</b><p>${text}</p></div>${btn}</div>`;
     if (st === 'active') {
-      return `<div class="sk-own is-active">
-          <div><b class="sk-own-title">Tu clase activa</b><p>La llevas en el servidor: elige una skill con las teclas 5 a 0 y úsala con el clic izquierdo.</p></div>
-          <button class="btn btn-ghost btn-sm" type="button" data-sk-active="">Quitar clase</button>
-        </div>`;
+      return own('is-active', IC.check, 'Tu clase activa', 'La llevas en el servidor: elige una skill con las teclas 5 a 0 y úsala con el clic izquierdo.',
+        '<button class="btn btn-ghost btn-sm" type="button" data-sk-active="">Quitar clase</button>');
     }
     if (st === 'owned') {
-      return `<div class="sk-own">
-          <div><b class="sk-own-title">Es tuya</b><p>${
-            activeCls ? `Ahora llevas <b>${escapeHtml(activeCls.name)}</b>. Al cambiar, el servidor te pone esta en unos segundos.` : 'Actívala y el servidor te la pone en unos segundos.'
-          }</p></div>
-          <button class="btn btn-primary btn-sm" type="button" data-sk-active="${escapeHtml(c.id)}">Usar esta clase</button>
-        </div>`;
+      return own('is-owned', IC.star, 'Es tuya',
+        activeCls ? `Ahora llevas <b>${escapeHtml(activeCls.name)}</b>. Al cambiar, el servidor te pone esta en unos segundos.` : 'Actívala y el servidor te la pone en unos segundos.',
+        `<button class="btn btn-primary btn-sm" type="button" data-sk-active="${escapeHtml(c.id)}">Usar esta clase</button>`);
     }
     if (st === 'pending') {
-      return `<div class="sk-own is-pending">
-          <div><b class="sk-own-title">Comprando con monedas</b><p>Se cobra en el juego en cuanto entres al servidor; después es tuya y pasa a ser tu clase activa.</p></div>
-        </div>`;
+      return own('is-pending', IC.clock, 'Comprando con monedas', 'Se cobra en el juego en cuanto entres al servidor; después es tuya y pasa a ser tu clase activa.');
     }
     const coins = Number.isFinite(mine?.coins) ? mine.coins : null;
     const short = coins !== null && coins < c.coinPrice;
-    return `<div class="sk-buy">
-        <div class="sk-buy-row">
+    return `<div class="sk-offer">
+        <div class="sk-opt is-money">
+          <span class="sk-opt-label">Con dinero</span>
           <span class="price">${formatPrice(c.price)}</span>
           <button class="btn btn-buy" type="button" ${product ? buyAttrs(product) : 'disabled'}>Comprar</button>
         </div>
-        <div class="sk-buy-row">
-          <span class="sk-coins"><img src="/img/coin.png" alt="" width="20" height="20" class="coin-img">${fmtCoins(c.coinPrice)}<small>monedas</small></span>
+        <div class="sk-opt is-coins">
+          <span class="sk-opt-label">Con monedas</span>
+          <span class="sk-coins"><img src="/img/coin.png" alt="" width="22" height="22" class="coin-img">${fmtCoins(c.coinPrice)}</span>
           <button class="btn btn-ghost" type="button" data-sk-coins="${escapeHtml(c.id)}">Comprar con monedas</button>
         </div>
-        <p class="sk-buy-note">Con monedas se cobra en el juego cuando estés conectado; si no tienes bastantes, no se cobra nada.${
-          coins !== null ? ` Tienes <b class="${short ? 'is-short' : ''}">${fmtCoins(coins)} monedas</b>.` : ''
-        }</p>
-      </div>`;
+      </div>
+      <p class="sk-buy-note">Con monedas se cobra en el juego cuando estés conectado; si no tienes bastantes, no se cobra nada.${
+        coins !== null ? ` Tienes <b class="${short ? 'is-short' : ''}">${fmtCoins(coins)} monedas</b>.` : ''
+      }</p>`;
   }
 
-  function skSkillRow(c, s) {
+  // La barra de skills, como la del juego: una casilla por tecla (5 a 0) y, aparte, las pasivas
+  function skSlot(s) {
     const sel = skSel?.skill === s.id;
-    const chips = [
-      s.passive
-        ? `<span class="sk-chip is-passive">Pasiva · ${escapeHtml(skPassiveText(s))}</span>`
-        : `<span class="sk-chip is-key"><kbd>${escapeHtml(s.key || '·')}</kbd>Tecla</span>`,
-      s.cooldown > 0 ? `<span class="sk-chip">Cooldown ${seconds(s.cooldown)}</span>` : '',
-    ].join('');
-    return `<button type="button" class="sk-skill${sel ? ' is-sel' : ''}" data-sk-skill="${escapeHtml(s.id)}" aria-pressed="${sel}">
-        <span class="sk-skill-icon">${skIcon(s.icon)}</span>
-        <span class="sk-skill-text">
-          <b>${escapeHtml(s.name)}</b>
-          <span class="sk-chips">${chips}</span>
-          <span class="sk-skill-desc">${escapeHtml(s.desc)}</span>
-        </span>
+    return `<button type="button" class="sk-slot${s.passive ? ' is-passive' : ''}${sel ? ' is-sel' : ''}" data-sk-skill="${escapeHtml(s.id)}" aria-pressed="${sel}" title="${escapeHtml(s.name)}">
+        <span class="sk-slot-art">${skIcon(s.icon)}</span>
+        <span class="sk-slot-key">${s.passive ? 'Pasiva' : escapeHtml(s.key || '·')}</span>
       </button>`;
   }
 
-  // La ficha de la clase elegida: escenario, datos, compra y sus skills
+  // La skill elegida en la barra: icono, nombre, tecla o pasiva, cooldown y qué hace
+  function skPickCard(c, sk) {
+    return `<div class="sk-pick-card">
+        <span class="sk-pick-icon">${skIcon(sk.icon)}</span>
+        <div class="sk-pick-text">
+          <b>${escapeHtml(sk.name)}</b>
+          <span class="sk-chips">${skKey(sk)}${sk.cooldown > 0 ? `<span class="sk-chip">${IC.clock}Cooldown ${seconds(sk.cooldown)}</span>` : ''}</span>
+          <p>${escapeHtml(sk.desc)}</p>
+        </div>
+      </div>`;
+  }
+
+  // La ficha de la clase elegida: escenario, datos, compra y su barra de skills
   function skDetail() {
     const c = skClass(skSel?.cls) || skData.classes[0];
     const sk = c.skills.find((s) => s.id === skSel?.skill) || skFirstShown(c);
-    const actives = c.skills.filter((s) => !s.passive).length;
-    const passives = c.skills.length - actives;
+    const actives = c.skills.filter((s) => !s.passive);
+    const passives = c.skills.filter((s) => s.passive);
+    const group = (skData.groups || []).find((g) => g.id === c.group);
     return `
-      <article class="sk-card panel" style="--sk:${skColor(c.color)}" aria-labelledby="sk-name">
+      <article class="sk-card" style="--sk:${skColor(c.color)}" aria-labelledby="sk-name">
         <div class="sk-top">
           <div id="sk-screen">${skScreen(c, sk)}</div>
           <div class="sk-info">
             <div class="sk-title">
               <span class="sk-badge">${skIcon(c.icon)}</span>
-              <div><span class="cat">${escapeHtml(c.role)}</span><h3 id="sk-name">${escapeHtml(c.name)}</h3></div>
+              <div><span class="cat"><i></i>${escapeHtml(c.role)}</span><h3 id="sk-name">${escapeHtml(c.name)}</h3></div>
             </div>
             <p class="sk-desc">${escapeHtml(c.desc)}</p>
             <ul class="sk-facts">
-              <li><b>${actives}</b> ${actives === 1 ? 'skill' : 'skills'} con tecla</li>
-              ${passives ? `<li><b>${passives}</b> ${passives === 1 ? 'pasiva' : 'pasivas'}</li>` : ''}
-              <li>${c.bow ? 'Con tu arco: la skill sale al disparar' : 'Elige con 5–0 y usa con clic izquierdo'}</li>
+              <li>${IC.key}<span><b>${actives.length}</b> ${actives.length === 1 ? 'skill' : 'skills'} con tecla</span></li>
+              ${passives.length ? `<li>${IC.star}<span><b>${passives.length}</b> ${passives.length === 1 ? 'pasiva' : 'pasivas'}</span></li>` : ''}
+              <li>${c.bow ? `${IC.bow}<span>Sale al disparar tu arco</span>` : `${IC.mouse}<span>Se usa con clic izquierdo</span>`}</li>
+              ${group ? `<li class="sk-fact-group" style="--g:${skColor(group.color)}"><i></i><span>${escapeHtml(group.name)}</span></li>` : ''}
             </ul>
             ${skBuy(c)}
           </div>
         </div>
-        <div class="sk-list-head"><h4>Skills de ${escapeHtml(c.name)}</h4><span>Toca una para verla. En el juego, cada skill va en una tecla del 5 al 0 (en este orden); la que eliges se queda puesta y cada clic la usa hasta que elijas otra.</span></div>
-        <div class="sk-skills">${c.skills.map((s) => skSkillRow(c, s)).join('')}</div>
+        <div class="sk-bar">
+          <div class="sk-bar-head">
+            <h4>Barra de skills</h4>
+            <span>Toca una para verla. En el juego, cada una va en su tecla del 5 al 0: la que eliges se queda puesta y cada clic izquierdo la usa.</span>
+          </div>
+          <div class="sk-bar-row">
+            <div class="sk-slots" role="group" aria-label="Skills de ${escapeHtml(c.name)}">${actives.map(skSlot).join('')}</div>
+            ${passives.length ? `<div class="sk-slots is-passive" role="group" aria-label="Pasivas">${passives.map(skSlot).join('')}</div>` : ''}
+          </div>
+          <div id="sk-pick">${skPickCard(c, sk)}</div>
+        </div>
       </article>`;
   }
 
@@ -1008,7 +1027,7 @@
     const sel = skSel?.cls === c.id;
     return `<button type="button" class="sk-tile${sel ? ' is-sel' : ''}" style="--sk:${skColor(c.color)}" data-sk-pick="${escapeHtml(c.id)}" aria-pressed="${sel}">
         <span class="sk-tile-icon">${skIcon(c.icon)}</span>
-        <span class="sk-tile-text"><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.role)}</small>${skTag(c)}</span>
+        <span class="sk-tile-text"><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.role)}</small></span>${skTag(c)}
       </button>`;
   }
 
@@ -1044,10 +1063,14 @@
     }
     box.classList.add('sk-shop');
     if (!skClass(skSel?.cls)) skDefault();
-    const groups = [{ id: 'todas', name: 'Todas', n: skData.classes.length }, ...(skData.groups || []).map((g) => ({ ...g, n: skData.classes.filter((c) => c.group === g.id).length }))];
+    const groups = [
+      { id: 'todas', name: 'Todas', n: skData.classes.length, color: '' },
+      ...(skData.groups || []).map((g) => ({ ...g, n: skData.classes.filter((c) => c.group === g.id).length })),
+    ];
     box.innerHTML = `
       <div class="sk-hero">
         <div>
+          <span class="fx-eyebrow" style="--t:var(--tone-skills)">${IC.key}Skills</span>
           <h2>Clases de skills</h2>
           <p>${skData.classes.length} clases con sus skills (solo skills: sin armas ni objetos). Las que compras son tuyas para siempre; llevas una a la vez y la cambias aquí o en el TF Pad. En el juego eliges la skill con las teclas 5 a 0 y la usas con el clic izquierdo.</p>
         </div>
@@ -1056,10 +1079,10 @@
       <div id="sk-detail">${skDetail()}</div>
       <div class="sk-browse">
         <div class="sk-browse-head"><h3>Todas las clases</h3></div>
-        <div class="vfx-filter sk-filter" role="group" aria-label="Tipo de clase">${groups
+        <div class="fx-filter" role="group" aria-label="Tipo de clase">${groups
           .map(
             (g) =>
-              `<button type="button" class="chip" data-sk-group="${escapeHtml(g.id)}" aria-pressed="${g.id === skGroup}">${escapeHtml(g.name)} <span class="sk-n">${g.n}</span></button>`,
+              `<button type="button" class="fx-chip" style="--vfx:${g.color ? skColor(g.color) : 'var(--tone-skills)'}" data-sk-group="${escapeHtml(g.id)}" aria-pressed="${g.id === skGroup}"><i aria-hidden="true"></i>${escapeHtml(g.name)}<span>${g.n}</span></button>`,
           )
           .join('')}</div>
         <div class="sk-grid" id="sk-grid">${skGrid()}</div>
@@ -1101,6 +1124,7 @@
       if (!sk) return;
       skSel.skill = sk.id;
       $('#sk-screen').innerHTML = skScreen(c, sk);
+      $('#sk-pick').innerHTML = skPickCard(c, sk);
       $$('[data-sk-skill]').forEach((b) => {
         const sel = b === row;
         b.classList.toggle('is-sel', sel);
