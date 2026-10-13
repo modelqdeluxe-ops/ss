@@ -90,7 +90,9 @@ final class PadInfoPages {
                 }
             }
             first = false;
-            PadUi.text(g, PadUi.fitEnd("Tecla del pad: se cambia en Opciones › Controles.", W - 16), X + 8, Y + H - 11, PadUi.MUTED);
+            // la nota de abajo, centrada (lejos de las esquinas de oro de la ventana)
+            String note = PadUi.fitEnd("Tecla del pad: se cambia en Opciones › Controles.", W - 40);
+            PadUi.text(g, note, X + (W - PadUi.font().width(note)) / 2, Y + H - 12, PadUi.MUTED);
         }
 
         /** El volumen según dónde está el ratón en el deslizador (de 5 en 5). */

@@ -11,7 +11,11 @@ import net.tierrasfantasticas.tfclient.pad.music.MusicPlayer;
  * con la rueda o arrastrando si no cabe, como en un móvil. Las fichas van a la escala grande del pad ({@link TFPadScreen#bs}) y los nombres a la
  * escala normal, para que haya aire entre ellas. Al pasar el ratón, la ficha se eleva y su icono da un salto con
  * aplastado y estirado (como en los juegos de rol); algunas tienen su gesto: el pico golpea, la ballesta retrocede,
- * el estandarte y la percha se mecen, la cámara hace clic y Música late con la canción. Sin partículas ni destellos.
+ * el estandarte y la percha se mecen, la cámara hace clic y Música late con la canción.
+ * 1.4.1: al verla, las fichas entran en cascada con un rebote; cada 9 s un brillo las cruza en ola; y el cristal tiene
+ * su cielo animado ({@link #ambient}: nubes en dos capas, rayos de sol, una luz que respira detrás de la rejilla y motas
+ * de luz que suben). Oficios es el pico de diamante del juego de verdad ({@link PadSkin#icon32}). Todo quieto si en
+ * Ajustes se apagan las animaciones.
  * Las apps que el staff apaga no salen; con el pad de administrador, la portada tiene las apps de configurar.
  */
 final class PadHomePage extends PadPage {
@@ -47,9 +51,16 @@ final class PadHomePage extends PadPage {
     private int contentH;
     private String hovered;
     private long hoverStart;
+    /** Cuándo se vio la portada por última vez (al abrir el pad o al volver de una app): las fichas entran en cascada. */
+    private long shownAt = System.currentTimeMillis();
 
     PadHomePage(TFPadScreen pad) {
         super(pad, "home");
+    }
+
+    @Override
+    void shown() {
+        shownAt = System.currentTimeMillis();
     }
 
     @Override
@@ -174,11 +185,23 @@ final class PadHomePage extends PadPage {
         if (hoverNow != null) pad.hover(hoverNow);
 
         pad.scissor(g, 2, Y, SW - 4, H);
+        float time = PadSkin.time();
         for (int i = 0; i < apps.size(); i++) {
             App app = apps.get(i);
             int[] p = at(i, apps.size());
             int tx = p[0], ty = p[1] - scroll;
             if (ty + cellH() < Y || ty > Y + H) continue;
+            // la entrada: cada ficha aparece creciendo con un rebote, en cascada en diagonal desde arriba a la izquierda
+            float in = entrance(i, now);
+            if (in <= 0) continue;
+            boolean entering = in < 1;
+            if (entering) {
+                float k = backOut(in);
+                g.pose().pushPose();
+                g.pose().translate(tx + t / 2F, ty + t / 2F + (1 - in) * 6 * ts, 0);
+                g.pose().scale(k, k, 1);
+                g.pose().translate(-(tx + t / 2F), -(ty + t / 2F), 0);
+            }
             boolean hover = i == hoverIndex;
             float ht = hover ? (now - hoverStart) / 1000F : -1F;
             boolean playing = app.id.equals("musica") && MusicPlayer.playing();
@@ -195,7 +218,14 @@ final class PadHomePage extends PadPage {
             g.pose().popPose();
             float anim = !PadSettings.animations ? -1F : hover ? ht : playing ? (now % 100000) / 1000F : -1F;
             drawIcon(g, app.icon, tx, ty + lift, anim, hover, ts);
+            // cada 9 s un brillo cruza las fichas una tras otra, como una ola (y la del ratón, cada poco)
+            if (PadSettings.animations && !entering) {
+                int face = Math.round(4 * ts), fw = t - 2 * face;
+                float k = hover ? ((now - hoverStart) / 1000F % 2.4F) / 0.7F : (time - wave(i) + 90F) % 9F / 0.8F;
+                PadSkin.sheenAt(g, tx + face, ty + lift + face, fw, fw, k, hover ? 0.32F : 0.22F);
+            }
             PadFont.drawCentered(g, app.name, tx + t / 2, ty + t + 2, hover ? 0xFFE680 : 0xFFFFFF, true);
+            if (entering) g.pose().popPose();
         }
         pad.noScissor(g);
         if (contentH > H) {
@@ -204,6 +234,83 @@ final class PadHomePage extends PadPage {
             int th = Math.max(10, bh * H / contentH);
             int ty = Y + 2 + (bh - th) * scroll / Math.max(1, contentH - H);
             g.fill(bx, ty, bx + 2, ty + th, 0xFFF6B628);
+        }
+    }
+
+    /** El retraso de la ficha i (s) en la cascada de entrada y en la ola de brillo: por su diagonal. */
+    private float wave(int i) {
+        if (grid == null) return 0;
+        return (i % grid.cols) * 0.07F + (i / grid.cols) * 0.11F;
+    }
+
+    /** 0 a 1: cuánto ha entrado la ficha i (1 sin animaciones). */
+    private float entrance(int i, long now) {
+        if (!PadSettings.animations) return 1F;
+        return Math.max(0F, Math.min(1F, ((now - shownAt) / 1000F - 0.06F - wave(i) * 0.55F) / 0.34F));
+    }
+
+    /** Sale de 0, se pasa un poco de 1 y vuelve (el rebote de las fichas al entrar). */
+    private static float backOut(float x) {
+        float c1 = 1.5F, c3 = c1 + 1, k = x - 1;
+        return 1 + c3 * k * k * k + c1 * k * k;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // El cielo animado de la portada (lo pinta TFPadScreen.drawBackdrop, por detrás del logo y de las fichas)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Nubes: y (0 a 1 del cristal), ancho, alto, velocidad (unidades/s; negativa, hacia la izquierda), fase, alfa. */
+    private static final float[][] CLOUDS = {
+            {0.20F, 230, 62, 3.2F, 0.10F, 0.20F}, {0.58F, 260, 70, 2.4F, 0.55F, 0.17F}, {0.88F, 210, 56, 3.8F, 0.30F, 0.19F},
+            {0.38F, 330, 92, -5.5F, 0.80F, 0.14F}, {0.74F, 300, 84, -6.5F, 0.15F, 0.13F}};
+    /** Motas que suben: x (0 a 1), velocidad (unidades/s), vaivén (amplitud), fase, tamaño del destello (0: un punto). */
+    private static final float[][] MOTES = {
+            {0.05F, 9, 6, 0.1F, 1}, {0.13F, 13, 4, 0.7F, 0}, {0.21F, 8, 7, 0.4F, 2}, {0.29F, 11, 5, 0.9F, 0}, {0.36F, 7, 6, 0.2F, 1},
+            {0.44F, 12, 4, 0.6F, 0}, {0.52F, 9, 8, 0.3F, 2}, {0.60F, 14, 5, 0.8F, 0}, {0.67F, 8, 6, 0.5F, 1}, {0.75F, 11, 7, 0.05F, 0},
+            {0.83F, 10, 4, 0.65F, 2}, {0.90F, 13, 6, 0.35F, 0}, {0.96F, 8, 5, 0.85F, 1}, {0.10F, 10, 5, 0.55F, 0}, {0.48F, 15, 6, 0.15F, 0},
+            {0.71F, 9, 7, 0.95F, 0}};
+
+    /**
+     * El cielo de la portada (1.4.1), sin quitarle su azul: dos capas de nubes suaves que se cruzan despacio (las de
+     * lejos a la derecha, las de cerca a la izquierda y más deprisa: profundidad), rayos de sol que giran muy despacio
+     * desde arriba, una luz detrás de la rejilla que respira y motas de luz que suben meciéndose. Con las animaciones
+     * apagadas, quieto. Al volver de una app aparece en 0,4 s.
+     */
+    void ambient(GuiGraphics g, float t) {
+        int w = SW, h = SH;
+        float fade = PadSettings.animations ? Math.min(1F, (System.currentTimeMillis() - shownAt) / 400F) : 1F;
+        net.minecraft.resources.ResourceLocation soft = TFPadScreen.tex("bokeh");
+        // rayos de sol desde arriba en el centro
+        PadSkin.rays(g, w / 2F, -h * 0.18F, h * 1.25F, 0.10F * fade, t * 2.2F);
+        // la luz que respira detrás de la rejilla
+        if (grid == null) grid = layout(apps().size());
+        float gw = grid.cols * grid.tile + (grid.cols - 1) * grid.gap, gh = grid.contentH;
+        float pulse = 0.5F + 0.5F * (float) Math.sin(t * 1.25F);
+        float cy = grid.top + gh / 2F - scroll;
+        PadSkin.texture(g, soft, w / 2F - gw * 0.68F, cy - gh * 0.78F, gw * 1.36F, gh * 1.56F, (0.22F + 0.12F * pulse) * fade, 0xDDF4FF, true);
+        // nubes: lejos (a la derecha) y cerca (a la izquierda)
+        for (float[] c : CLOUDS) {
+            float span = w + c[1];
+            float x = (((c[4] * span + c[3] * t) % span) + span) % span - c[1];
+            float y = c[0] * h - c[2] / 2 + 3 * (float) Math.sin(t * 0.35F + c[4] * 6);
+            PadSkin.texture(g, soft, x, y, c[1], c[2], c[5] * fade, 0xFFFFFF, true);
+            PadSkin.texture(g, soft, x + c[1] * 0.28F, y - c[2] * 0.22F, c[1] * 0.5F, c[2] * 0.8F, c[5] * 0.8F * fade, 0xFFFFFF, true);
+        }
+        // motas de luz que suben
+        for (int i = 0; i < MOTES.length; i++) {
+            float[] m = MOTES[i];
+            float span = h + 20;
+            float y = h + 10 - ((m[3] * span + m[1] * t) % span);
+            float x = m[0] * w + m[2] * (float) Math.sin(t * 0.9F + i * 1.7F);
+            // se encienden al subir y se apagan cerca de arriba
+            float life = Math.max(0F, Math.min(1F, (h + 10 - y) / 40F)) * Math.max(0F, Math.min(1F, y / 50F));
+            float a = life * (0.45F + 0.55F * PadSkin.twinkle(i * 0.9F)) * fade;
+            if (m[4] > 0) {
+                PadSkin.sparkle(g, Math.round(x), Math.round(y), (int) m[4], a * 0.9F, 0xFFF6D8);
+            } else {
+                PadSkin.rect(g, Math.round(x), Math.round(y), Math.round(x) + 1, Math.round(y) + 1, PadSkin.alpha(0xFFFFFF, Math.round(200 * a)));
+                g.flush();
+            }
         }
     }
 
@@ -221,7 +328,7 @@ final class PadHomePage extends PadPage {
         g.pose().translate(x + ICON_OFF * bs, y + ICON_OFF * bs, 0);
         g.pose().scale(bs, bs, 1);
         if (t >= 0) animate(g, icon, t, hover);
-        pad.blit(g, "icon_" + icon, 0, 0);
+        PadSkin.icon32(g, pad, icon, 1F);
         g.pose().popPose();
     }
 

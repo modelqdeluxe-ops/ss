@@ -349,9 +349,11 @@ final class PadPassPage extends PadDataPage {
         if (sy < iy + 34) sy = iy + 34;
         if (state == 1) {
             boolean bh = !waiting && PadUi.inside(mx, my, x + 3, sy, NODE_W - 6, 13) && inTrack;
-            g.fill(x + 3, sy, x + NODE_W - 3, sy + 13, bh ? 0xFF22A84C : 0xFF1E9E46);
-            g.fill(x + 3, sy, x + NODE_W - 3, sy + 1, 0xFF8CF0A8);
-            PadFont.drawCentered(g, "COBRAR", x + NODE_W / 2, sy + 1, 0xFFFFFF, true);
+            // 1.4.1: de caramelo como los botones, con el texto con sombra (sin contorno: no se pega a los bordes)
+            g.fillGradient(x + 3, sy, x + NODE_W - 3, sy + 12, bh ? 0xFF5CE48A : 0xFF46D272, bh ? 0xFF22A84C : 0xFF1A9442);
+            g.fill(x + 3, sy, x + NODE_W - 3, sy + 1, 0xFFA8F8C0);
+            g.fill(x + 3, sy + 12, x + NODE_W - 3, sy + 13, 0xFF106A2E);
+            PadFont.drawShadowCentered(g, "COBRAR", x + NODE_W / 2, sy + 1, 0xFFFFFF, 0xFF0E5626);
             if (!waiting && inTrack) hit(x + 3, sy, NODE_W - 6, 13, () -> claim(n));
         } else if (state == 2) {
             check(g, x + NODE_W / 2 - 4, sy + 4, 0xFFC27A10);
@@ -364,13 +366,15 @@ final class PadPassPage extends PadDataPage {
             g.fill(x + 1, cy + 1, x + NODE_W - 1, cy + ch - 1, 0x22B4C6DC);
         }
         if (you) { // «TÚ»: etiqueta de oro encima de la tarjeta, sobre el raíl
-            int yw = PadFont.width("TÚ") + 6;
-            int yx = x + NODE_W - yw + 1, yy = cy - 5;
+            // 12 de alto: la tilde de la Ú cabe dentro (antes se salía por arriba)
+            int yw = PadFont.width("TÚ") + 8;
+            int yx = x + NODE_W - yw + 1, yy = cy - 7;
             g.pose().pushPose();
             g.pose().translate(0, 0, 220);
-            PadUi.box(g, yx, yy, yw, 9, PadUi.NAVY);
-            g.fill(yx + 1, yy + 1, yx + yw - 1, yy + 8, PadUi.GOLD);
-            PadFont.draw(g, "TÚ", yx + 3, yy - 1, 0x5A3A00, false);
+            PadUi.box(g, yx, yy, yw, 12, PadUi.NAVY);
+            g.fillGradient(yx + 1, yy + 1, yx + yw - 1, yy + 11, PadUi.GOLD_HI, PadUi.GOLD);
+            g.fill(yx + 1, yy + 10, yx + yw - 1, yy + 11, PadUi.GOLD_LO);
+            PadFont.draw(g, "TÚ", yx + 4, yy + 1, 0x5A3A00, false);
             g.pose().popPose();
         }
         if (hv && state == 1 && !waiting) hit(x, cy, NODE_W, ch, () -> claim(n));

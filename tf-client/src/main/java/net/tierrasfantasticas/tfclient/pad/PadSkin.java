@@ -9,12 +9,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
 
 /**
  * El diseño de las apps del pad (1.4), sobre las piezas de PadUi (que siguen igual para Música y Comunidad). Cada app
  * tiene su color y su frase (THEME): su cabecera (banner) con el icono en su medallón, rayas que se mueven, una luz y el
- * icono grande de marca de agua; la pestaña elegida de su color unida a la cabecera; tarjetas con vitrina, franja de
+ * icono grande de marca de agua; pestañas en pastilla (la elegida, de su color con una flechita hacia la cabecera);
+ * tarjetas con vitrina, franja de
  * color, rayos de luz que giran detrás de lo elegido y un brillo que las cruza; botones de caramelo que suben al pasar
  * el ratón y se hunden al pulsarlos; barras con un reflejo que corre; y estados vacíos con el icono flotando en su luz.
  * <p>
@@ -281,8 +284,55 @@ final class PadSkin {
     }
 
     /**
-     * Un icono de app (icon_&lt;nombre&gt;, 32x32) nítido: al mayor número entero de píxeles reales por píxel que quepa
-     * en size unidades, centrado en (cx, cy).
+     * Iconos que son el objeto de Minecraft de verdad, no un dibujo nuestro (1.4.1): el pico de Oficios es el pico de
+     * diamante del juego, al doble (16 → 32) y nítido, con el mismo contorno azul noche que los demás iconos.
+     */
+    private static final Map<String, ItemStack> ITEM_ICONS = new HashMap<>();
+
+    private static ItemStack itemIcon(String name) {
+        if (!name.equals("oficios")) return null;
+        return ITEM_ICONS.computeIfAbsent(name, n -> new ItemStack(Items.DIAMOND_PICKAXE));
+    }
+
+    /**
+     * El icono de una app en un cuadrado de 32x32 con la esquina en (0, 0) de la pose actual: icon_&lt;nombre&gt;.png o,
+     * si es un objeto (ITEM_ICONS), el objeto al doble con su contorno. alpha &lt; 1: transparente y sin contorno (la
+     * marca de agua de la cabecera).
+     */
+    static void icon32(GuiGraphics g, TFPadScreen pad, String name, float alpha) {
+        ItemStack stack = itemIcon(name);
+        if (stack == null) {
+            if (alpha >= 1F) pad.blit(g, "icon_" + name, 0, 0);
+            else texture(g, TFPadScreen.tex("icon_" + name), 0, 0, 32, 32, alpha, 0xFFFFFF, false);
+            return;
+        }
+        if (alpha >= 1F) glow(g, 16, 16, 17, 0xFFFFFF, 90); // una luz suave detrás: el objeto se despega del fondo
+        g.flush();
+        g.pose().pushPose();
+        g.pose().scale(2, 2, 1);
+        if (alpha >= 1F) {
+            // el contorno: el objeto teñido de azul noche, medio píxel de objeto (1 del icono) hacia cada lado
+            g.setColor(0x18 / 255F, 0x26 / 255F, 0x5C / 255F, 1F);
+            float[][] d = {{-0.5F, 0}, {0.5F, 0}, {0, -0.5F}, {0, 0.5F}};
+            for (float[] o : d) {
+                g.pose().pushPose();
+                g.pose().translate(o[0], o[1], 0);
+                g.renderItem(stack, 0, 0);
+                g.pose().popPose();
+            }
+        }
+        g.setColor(1, 1, 1, alpha);
+        g.renderItem(stack, 0, 0);
+        g.setColor(1, 1, 1, 1);
+        g.pose().popPose();
+        // el objeto se pinta «por delante» (z 150): se borra su profundidad para que lo que venga después lo tape
+        g.flush();
+        RenderSystem.clear(256, Minecraft.ON_OSX);
+    }
+
+    /**
+     * Un icono de app (32x32) nítido: al mayor número entero de píxeles reales por píxel que quepa en size unidades,
+     * centrado en (cx, cy).
      */
     static void iconCrisp(GuiGraphics g, TFPadScreen pad, String name, float cx, float cy, int size) {
         int upx = Math.max(1, pad.unitPx());
@@ -291,7 +341,7 @@ final class PadSkin {
         g.pose().pushPose();
         g.pose().translate(cx - 16 * k, cy - 16 * k, 0);
         g.pose().scale(k, k, 1);
-        pad.blit(g, "icon_" + name, 0, 0);
+        icon32(g, pad, name, 1F);
         g.pose().popPose();
     }
 
@@ -345,8 +395,12 @@ final class PadSkin {
      */
     static void sheen(GuiGraphics g, int x, int y, int w, int h, float period, float alpha) {
         if (!PadSettings.animations) return;
-        float k = (time() % period) / 0.9F;
-        if (k >= 1) return;
+        sheenAt(g, x, y, w, h, (time() % period) / 0.9F, alpha);
+    }
+
+    /** El brillo en el punto k de su paso (0 entra por la izquierda, 1 ya salió por la derecha). */
+    static void sheenAt(GuiGraphics g, int x, int y, int w, int h, float k, float alpha) {
+        if (k < 0 || k >= 1) return;
         float pos = -h - 12 + k * (w + h + 24);
         int c1 = alpha(0xFFFFFF, Math.round(255 * alpha)), c2 = alpha(0xFFFFFF, Math.round(255 * alpha * 0.8F));
         for (int j = 0; j < h; j++) {
@@ -412,7 +466,11 @@ final class PadSkin {
         // el icono en grande de marca de agua a la derecha, recortado por la cabecera
         pad.clipPush(g, x, y, w, h);
         int wm = 44;
-        texture(g, TFPadScreen.tex("icon_" + icon), x + w - wm - 10, y + h / 2F - wm / 2F + 3, wm, wm, 0.22F, 0xFFFFFF, false);
+        g.pose().pushPose();
+        g.pose().translate(x + w - wm - 10, y + h / 2F - wm / 2F + 3, 0);
+        g.pose().scale(wm / 32F, wm / 32F, 1);
+        icon32(g, pad, icon, 0.22F);
+        g.pose().popPose();
         pad.clipPop(g);
         g.fill(x, y, x + w, y + 1, lighten(acc, 70));
         g.fill(x, y + h - 1, x + w, y + h, darken(acc, 0.55F));
@@ -432,19 +490,82 @@ final class PadSkin {
         sheen(g, x, y, w, h - 1, 6F, 0.18F);
     }
 
-    /** Pestaña de carpeta: la elegida (state 2), del color de la app, baja y se une a la cabecera; las demás, de cristal. */
+    /** Alto de una pestaña, aire entre las pestañas y la ventana de debajo, y lo que ocupan las dos cosas encima de ella. */
+    static final int TAB_H = 17, TAB_GAP = 3, TABS = TAB_H + TAB_GAP;
+    /** Margen del texto a cada lado (se encoge a TAB_PAD_MIN si no caben), hueco entre pestañas y ancho mínimo. */
+    private static final int TAB_PAD = 9, TAB_PAD_MIN = 6, TAB_SPACE = 3, TAB_MIN = 34;
+
+    /**
+     * Pestaña (1.4.1): una pastilla de 17 de alto con el texto centrado y aire arriba y abajo (nunca toca los bordes),
+     * separada de la ventana por TAB_GAP. La elegida (state 2), del color de la app con su contorno, lleva una flechita
+     * que baja hasta la ventana (se ve de qué es la cabecera sin pegar las letras a ella); las demás, de cristal claro,
+     * y al pasar el ratón (state 1) suben 1, se aclaran y se marcan con una línea del color de la app.
+     */
     static void tab(GuiGraphics g, int x, int y, int w, String label, int state, int acc) {
+        int c = deep(acc);
         if (state == 2) {
-            PadUi.box(g, x, y, w, 15, PadUi.INK);
-            g.fillGradient(x + 1, y + 1, x + w - 1, y + 16, mix(acc, WHITE, 0.32F), mix(acc, WHITE, 0.14F));
-            g.fill(x + 2, y + 1, x + w - 2, y + 2, lighten(acc, 90));
-            PadFont.drawCentered(g, label, x + w / 2, y + 4, 0xFFFFFF, true);
-        } else {
-            PadUi.box(g, x, y + 2, w, 13, 0xFF6A88B8);
-            g.fillGradient(x + 1, y + 3, x + w - 1, y + 14, state == 1 ? 0xFFF4FAFF : 0xFFE6F1FC, state == 1 ? 0xFFD4E6F8 : 0xFFC6DAEF);
-            g.fill(x + 2, y + 3, x + w - 2, y + 4, WHITE);
-            PadFont.drawCentered(g, label, x + w / 2, y + 5, 0x34507E, false);
+            int edge = darken(c, 0.5F), low = darken(c, 0.78F);
+            PadUi.box(g, x, y, w, TAB_H, edge);
+            g.fillGradient(x + 1, y + 1, x + w - 1, y + TAB_H - 1, mix(c, WHITE, 0.30F), darken(c, 0.9F));
+            g.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62F));
+            g.fill(x + 1, y + TAB_H - 2, x + w - 1, y + TAB_H - 1, low);
+            // la flechita: abre el borde de abajo y baja en punta hasta la ventana
+            int cx = x + w / 2;
+            g.fill(cx - 1, y + TAB_H - 1, cx + 2, y + TAB_H, low);
+            for (int i = 0; i < TAB_GAP; i++) {
+                int hw = 2 - i;
+                g.fill(cx - hw, y + TAB_H + i, cx + hw + 1, y + TAB_H + i + 1, edge);
+                if (hw > 0) g.fill(cx - hw + 1, y + TAB_H + i, cx + hw, y + TAB_H + i + 1, low);
+            }
+            PadFont.drawShadowCentered(g, label, x + w / 2, y + 3, 0xFFFFFF, darken(c, 0.42F));
+            return;
         }
+        boolean hover = state == 1;
+        int yy = hover ? y - 1 : y;
+        g.fill(x + 1, y + TAB_H, x + w - 1, y + TAB_H + 1, hover ? 0x3C18265C : 0x2418265C);
+        PadUi.box(g, x, yy, w, TAB_H, hover ? mix(c, PadUi.INK, 0.25F) : 0xFF7F9CC8);
+        g.fillGradient(x + 1, yy + 1, x + w - 1, yy + TAB_H - 1, WHITE, hover ? mix(0xFFE4EEF9, PadUi.tint(c, 0.35F), 0.55F) : 0xFFD3E3F4);
+        g.fill(x + 1, yy + TAB_H - 2, x + w - 1, yy + TAB_H - 1, hover ? mix(c, WHITE, 0.25F) : 0xFFBACFE6);
+        PadFont.drawCentered(g, label, x + w / 2, yy + 3, hover ? ink(c) & 0xFFFFFF : 0x3A5888, false);
+    }
+
+    /**
+     * Una fila de pestañas (las de PadViewPage y el Gachapón) desde (x, y) en room de ancho: cada una con TAB_PAD de
+     * margen; si no caben, con menos margen y, si aún no, con el texto recortado. La elegida se dibuja la última.
+     * Devuelve {x, ancho} de cada una, para los clics.
+     */
+    static int[][] tabRow(GuiGraphics g, TFPadScreen pad, int x, int y, int room, java.util.List<String> labels, int selected,
+                          double mx, double my, int acc) {
+        int n = labels.size();
+        int pad2 = TAB_PAD * 2, total = tabsWidth(labels, pad2, Integer.MAX_VALUE);
+        if (total > room) {
+            pad2 = TAB_PAD_MIN * 2;
+            total = tabsWidth(labels, pad2, Integer.MAX_VALUE);
+        }
+        int maxLabel = total > room ? Math.max(12, (room - TAB_SPACE * (n - 1)) / Math.max(1, n) - pad2) : Integer.MAX_VALUE;
+        int[][] out = new int[n][];
+        String[] shown = new String[n];
+        int tx = x;
+        for (int i = 0; i < n; i++) {
+            shown[i] = PadFont.fit(labels.get(i), maxLabel);
+            int w = Math.max(total > room ? 0 : TAB_MIN, PadFont.width(shown[i]) + pad2);
+            out[i] = new int[] {tx, w};
+            tx += w + TAB_SPACE;
+        }
+        for (int i = 0; i < n; i++) {
+            if (i == selected) continue;
+            boolean hover = PadUi.inside(mx, my, out[i][0], y, out[i][1], TAB_H);
+            if (hover) pad.hover("§tab" + i + labels.get(i));
+            tab(g, out[i][0], y, out[i][1], shown[i], hover ? 1 : 0, acc);
+        }
+        if (selected >= 0 && selected < n) tab(g, out[selected][0], y, out[selected][1], shown[selected], 2, acc);
+        return out;
+    }
+
+    private static int tabsWidth(java.util.List<String> labels, int pad2, int maxLabel) {
+        int total = 0;
+        for (String l : labels) total += Math.max(TAB_MIN, PadFont.width(PadFont.fit(l, maxLabel)) + pad2);
+        return total + TAB_SPACE * Math.max(0, labels.size() - 1);
     }
 
     /** Botones por estilo de PadView: cara arriba, cara abajo, luz, sombra (como PadUi). */
@@ -479,15 +600,33 @@ final class PadSkin {
         g.fillGradient(x + 1, yy + 8, x + w - 1, yy + 13 - sink, mix(top, bot, 0.55F), bot);
         g.fill(x + 2, yy + 1, x + w - 2, yy + 2, c[2]);
         g.fill(x + 1, yy + 13 - sink, x + w - 1, yy + 15 - sink, c[3]);
-        int text = enabled ? 0xFFFFFF : 0x8C9AC4;
+        int text = buttonText(style, enabled), shade = buttonShade(style, enabled);
         if (PadUi.isBack(label)) {
             int ax = x + 6, ay = yy + 7;
-            for (int i = 0; i < 4; i++) g.fill(ax + i, ay - i, ax + i + 1, ay + i + 1, 0xFF000000 | text);
-            g.fill(ax + 1, ay, ax + 7, ay + 1, 0xFF000000 | text);
-            PadFont.drawCentered(g, label, x + w / 2 + 4, yy + 2, text, true);
+            for (int k = 1; k >= 0; k--) { // la flecha, con su sombra como el texto
+                int col = k == 1 ? shade : 0xFF000000 | text;
+                for (int i = 0; i < 4; i++) g.fill(ax + i, ay - i + k, ax + i + 1, ay + i + 1 + k, col);
+                g.fill(ax + 1, ay + k, ax + 7, ay + 1 + k, col);
+            }
+            PadFont.drawShadowCentered(g, label, x + w / 2 + 4, yy + 2, text, shade);
         } else if (!label.isEmpty()) {
-            PadFont.drawCentered(g, label, x + w / 2, yy + 2, text, true);
+            PadFont.drawShadowCentered(g, label, x + w / 2, yy + 2, text, shade);
         }
+    }
+
+    /**
+     * La sombra del texto de un botón (1.4.1: sombra de su color en vez del contorno azul noche, que se comía la cara
+     * del botón y pegaba las tildes al borde).
+     */
+    static int buttonShade(int style, boolean enabled) {
+        if (enabled && style == PadView.GOLD) return 0xFFFFF0B0; // en el de oro, letra oscura con luz debajo (grabada)
+        int[] c = BTN[!enabled ? 4 : style == PadView.GRAY ? 5 : Math.max(0, Math.min(3, style))];
+        return enabled ? darken(c[3], 0.78F) : 0xFF1C2240;
+    }
+
+    /** El color del texto de un botón (RGB): blanco; en el de oro, marrón oscuro (el blanco no se lee sobre el oro). */
+    static int buttonText(int style, boolean enabled) {
+        return !enabled ? 0x8C9AC4 : style == PadView.GOLD ? 0x5A3304 : 0xFFFFFF;
     }
 
     /**
@@ -591,8 +730,8 @@ final class PadSkin {
         PadUi.box(g, x, y, 28, 14, mix(0xFF6E80A0, 0xFF147034, k));
         g.fillGradient(x + 1, y + 1, x + 27, y + 13, bot, top);
         g.fill(x + 2, y + 1, x + 26, y + 2, 0x30000000);
-        if (k > 0.5F) PadFont.draw(g, "SÍ", x + 4, y + 2, 0xFFFFFF, true);
-        else PadFont.draw(g, "NO", x + 27 - 3 - PadFont.width("NO"), y + 2, 0xFFFFFF, true);
+        if (k > 0.5F) PadFont.drawShadow(g, "SÍ", x + 4, y + 2, 0xFFFFFF, 0xFF0F5A26);
+        else PadFont.drawShadow(g, "NO", x + 27 - 4 - PadFont.width("NO"), y + 2, 0xFFFFFF, 0xFF56637E);
         int kx = x + 1 + Math.round(k * 14);
         g.fill(kx + 1, y + 13, kx + 12, y + 14, 0x4018265C);
         PadUi.box(g, kx, y + 1, 13, 12, mix(0xFF8090B0, 0xFF1E7C3A, k));

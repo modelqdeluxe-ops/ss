@@ -197,9 +197,11 @@ class Skin:
 
     def sheen(self, x, y, w, h, period=5.0, alpha=0.35):
         """El brillo que cruza en diagonal (PadSkin.sheen): dos bandas, una ancha y otra fina, cada period segundos."""
-        sweep = 0.9
-        k = (self.T % period) / sweep
-        if k >= 1:
+        self.sheen_at(x, y, w, h, (self.T % period) / 0.9, alpha)
+
+    def sheen_at(self, x, y, w, h, k, alpha):
+        """PadSkin.sheenAt: el brillo en el punto k de su paso."""
+        if k < 0 or k >= 1:
             return
         pos = -h - 12 + k * (w + h + 24)
         for j in range(h):
@@ -215,12 +217,16 @@ class Skin:
         upx = self.f
         n = max(1, int(size * upx // 32))
         k = n / upx
+        if name in getattr(self, 'ITEM_ICONS', {}):  # PadSkin.icon32 con un objeto: su luz detrás
+            self.glow(cx, cy, 17 * k, WHITE, 90)
         im = self.img('icon_' + name).resize((32 * n, 32 * n), Image.NEAREST)
         r = self._rect(cx - 16 * k, cy - 16 * k, cx, cy)
         self._paste_px(im, r[0], r[1])
 
     def icon_alpha(self, name, x, y, size, alpha):
-        self.tex_alpha(self.img('icon_' + name), x, y, size, size, alpha, smooth=False)
+        item = getattr(self, 'ITEM_ICONS', {}).get(name)
+        im = self.item_icon(item, outline=False) if item else self.img('icon_' + name)
+        self.tex_alpha(im, x, y, size, size, alpha, smooth=False)
 
     def image(self, path, x, y, size, smooth=True):
         """Imagen de una fila o tarjeta (PadView: image): la del efecto (suavizada) o el icono de una clase o skill."""
@@ -283,19 +289,69 @@ class Skin:
             self.sparkle(x + sx, y + sy, 2, self.twinkle(i * 1.7 + 0.4) * 0.9)
         self.sheen(x, y, w, h - 1, period=6.0, alpha=0.18)
 
+    TAB_H, TAB_GAP, TAB_PAD, TAB_PAD_MIN, TAB_SPACE, TAB_MIN = 17, 3, 9, 6, 3, 34
+    TABS = TAB_H + TAB_GAP
+
     def sk_tab(self, x, y, w, label, state, acc):
-        """PadSkin.tab: la elegida, del color de la app, se une a la cabecera; las demás, de cristal claro."""
+        """PadSkin.tab (1.4.1): pastilla de 17 con el texto centrado y aire; la elegida, del color de la app con su
+        flechita hacia la ventana; las demás de cristal claro (al pasar el ratón suben 1 y se marcan con su color)."""
+        c = deep(acc)
+        H = self.TAB_H
         if state == 2:
-            self.box(x, y, w, 15, INK)
-            self.vgrad(x + 1, y + 1, w - 2, 15, mix(acc, WHITE, 0.32), mix(acc, WHITE, 0.14))
-            self.fill(x + 2, y + 1, x + w - 2, y + 2, lighten(acc, 90))
-            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 4, WHITE, True)
-        else:
-            top, bot = (rgb(0xF4FAFF), rgb(0xD4E6F8)) if state == 1 else (rgb(0xE6F1FC), rgb(0xC6DAEF))
-            self.box(x, y + 2, w, 13, rgb(0x6A88B8))
-            self.vgrad(x + 1, y + 3, w - 2, 11, top, bot)
-            self.fill(x + 2, y + 3, x + w - 2, y + 4, WHITE)
-            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, y + 5, rgb(0x34507E), False)
+            edge, low = darken(c, 0.5), darken(c, 0.78)
+            self.box(x, y, w, H, edge)
+            self.vgrad(x + 1, y + 1, w - 2, H - 2, mix(c, WHITE, 0.30), darken(c, 0.9))
+            self.fill(x + 2, y + 1, x + w - 2, y + 2, mix(c, WHITE, 0.62))
+            self.fill(x + 1, y + H - 2, x + w - 1, y + H - 1, low)
+            cx = x + w // 2
+            self.fill(cx - 1, y + H - 1, cx + 2, y + H, low)
+            for i in range(self.TAB_GAP):
+                hw = 2 - i
+                self.fill(cx - hw, y + H + i, cx + hw + 1, y + H + i + 1, edge)
+                if hw > 0:
+                    self.fill(cx - hw + 1, y + H + i, cx + hw, y + H + i + 1, low)
+            self.ptext_shadow(label, x + w // 2 - self.pwidth(label) // 2, y + 3, WHITE, darken(c, 0.42))
+            return
+        hover = state == 1
+        yy = y - 1 if hover else y
+        self.fill(x + 1, y + H, x + w - 1, y + H + 1, (24, 38, 92, 0x3C if hover else 0x24))
+        self.box(x, yy, w, H, mix(c, INK, 0.25) if hover else rgb(0x7F9CC8))
+        self.vgrad(x + 1, yy + 1, w - 2, H - 2, WHITE, mix(rgb(0xE4EEF9), tint(c, 0.35), 0.55) if hover else rgb(0xD3E3F4))
+        self.fill(x + 1, yy + H - 2, x + w - 1, yy + H - 1, mix(c, WHITE, 0.25) if hover else rgb(0xBACFE6))
+        self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 3, ink(c) if hover else rgb(0x3A5888), False)
+
+    def ptext_shadow(self, s, x, y, color, shadow):
+        """PadFont.drawShadowCentered: sombra 1 abajo (y abajo a la derecha) y el texto encima."""
+        self.ptext(s, x, y + 1, shadow, False)
+        self.ptext(s, x + 1, y + 1, shadow, False)
+        self.ptext(s, x, y, color, False)
+
+    def sk_tabs(self, x, y, room, labels, sel, acc, hover=-1):
+        """PadSkin.tabRow: las pestañas en fila (con menos margen y luego recortadas si no caben); la elegida, la
+        última. Devuelve [(x, ancho)]."""
+        n = len(labels)
+
+        def total_w(p2):
+            return sum(max(self.TAB_MIN, self.pwidth(l) + p2) for l in labels) + self.TAB_SPACE * max(0, n - 1)
+        p2 = self.TAB_PAD * 2
+        total = total_w(p2)
+        if total > room:
+            p2 = self.TAB_PAD_MIN * 2
+            total = total_w(p2)
+        maxl = max(12, (room - self.TAB_SPACE * (n - 1)) // max(1, n) - p2) if total > room else 10 ** 6
+        out, shown, tx = [], [], x
+        for l in labels:
+            l = self.pfit(l, maxl)
+            w = max(0 if total > room else self.TAB_MIN, self.pwidth(l) + p2)
+            out.append((tx, w))
+            shown.append(l)
+            tx += w + self.TAB_SPACE
+        for i in range(n):
+            if i != sel:
+                self.sk_tab(out[i][0], y, out[i][1], shown[i], 1 if i == hover else 0, acc)
+        if 0 <= sel < n:
+            self.sk_tab(out[sel][0], y, out[sel][1], shown[sel], 2, acc)
+        return out
 
     BTN2 = [(0x5AB4FF, 0x2C74E4, 0xB4E0FF, 0x1A4AA8), (0xFFD650, 0xE8961A, 0xFFF2B0, 0xA05E0E),
             (0xFF6274, 0xC82038, 0xFFB4BC, 0x861428), (0x68E886, 0x22A84C, 0xC4FFD0, 0x147034),
@@ -316,15 +372,29 @@ class Skin:
         self.vgrad(x + 1, yy + 8, w - 2, 5, mix(top, bot, 0.55), bot)
         self.fill(x + 2, yy + 1, x + w - 2, yy + 2, hi)
         self.fill(x + 1, yy + 13, x + w - 1, yy + 15, lo)
-        col = (255, 255, 255) if enabled else rgb(0x8C9AC4)
+        col = self.button_text(style, enabled)
+        shade = self.button_shade(style, enabled)
         if self.is_back(label):
             ax, ay = x + 6, yy + 7
-            for i in range(4):
-                self.fill(ax + i, ay - i, ax + i + 1, ay + i + 1, col)
-            self.fill(ax + 1, ay, ax + 7, ay + 1, col)
-            self.ptext(label, x + w // 2 + 4 - self.pwidth(label) // 2, yy + 2, col)
-        else:
-            self.ptext(label, x + w // 2 - self.pwidth(label) // 2, yy + 2, col)
+            for k, cc in ((1, shade), (0, col)):
+                for i in range(4):
+                    self.fill(ax + i, ay - i + k, ax + i + 1, ay + i + 1 + k, cc)
+                self.fill(ax + 1, ay + k, ax + 7, ay + 1 + k, cc)
+            self.ptext_shadow(label, x + w // 2 + 4 - self.pwidth(label) // 2, yy + 2, col, shade)
+        elif label:
+            self.ptext_shadow(label, x + w // 2 - self.pwidth(label) // 2, yy + 2, col, shade)
+
+    def button_shade(self, style, enabled=True):
+        """PadSkin.buttonShade (1.4.1): la sombra del texto, del color oscuro del botón."""
+        if enabled and style == 1:  # oro: letra oscura con luz debajo
+            return rgb(0xFFF0B0)
+        c = self.BTN2[4 if not enabled else 5 if style == 4 else min(style, 3)]
+        return darken(rgb(c[3]), 0.78) if enabled else rgb(0x1C2240)
+
+    @staticmethod
+    def button_text(style, enabled=True):
+        """PadSkin.buttonText: blanco; en el de oro, marrón oscuro."""
+        return rgb(0x8C9AC4) if not enabled else rgb(0x5A3304) if style == 1 else (255, 255, 255)
 
     def sk_chip(self, x, y, text, style, h=12):
         """PadUi.chip (1.4): etiqueta con brillo arriba y una sombra debajo."""
@@ -429,9 +499,9 @@ class Skin:
         self.vgrad(x + 1, y + 1, 26, 12, bot, top)
         self.fill(x + 2, y + 1, x + 26, y + 2, (0, 0, 0, 48))
         if k > 0.5:
-            self.ptext('SÍ', x + 4, y + 2, WHITE)
+            self.ptext_shadow('SÍ', x + 4, y + 2, WHITE, rgb(0x0F5A26))
         else:
-            self.ptext('NO', x + 27 - 3 - self.pwidth('NO'), y + 2, WHITE)
+            self.ptext_shadow('NO', x + 27 - 4 - self.pwidth('NO'), y + 2, WHITE, rgb(0x56637E))
         kx = x + 1 + round(k * 14)
         self.fill(kx + 1, y + 13, kx + 12, y + 14, (24, 38, 92, 64))
         self.box(kx, y + 1, 13, 12, mix(rgb(0x8090B0), rgb(0x1E7C3A), k))
@@ -492,7 +562,7 @@ class Skin:
     STARS = [(0.12, 0.62), (0.27, 0.18), (0.33, 0.82), (0.48, 0.40), (0.58, 0.88), (0.66, 0.22), (0.74, 0.58),
              (0.86, 0.30), (0.92, 0.66), (0.18, 0.92), (0.55, 0.62), (0.81, 0.90), (0.40, 0.12), (0.70, 0.78)]
 
-    def backdrop(self, t=None):
+    def backdrop(self, t=None, home=None, fade=1.0):
         """El fondo del cristal (1.4): sin quitar su azul, encima van luces suaves desenfocadas que suben despacio
         meciéndose, un haz de luz en diagonal que lo cruza de vez en cuando, destellos que parpadean y el rombo tallado
         muy suave. Se recorta para no pisar el logo (arriba a la izquierda). Sin animaciones (Ajustes), quieto."""
@@ -513,6 +583,8 @@ class Skin:
         for i, (sx, sy) in enumerate(self.STARS):
             tw = max(0.0, math.sin(t * 1.7 + i * 2.17)) ** 3
             self.sparkle(int(sx * W), int(sy * H), 2 if i % 3 == 0 else 1, tw * 0.85)
+        if home:  # en la portada, su cielo animado (PadHomePage.ambient)
+            self.home_ambient(home, t, fade)
         self.no_scissor()
         # el logo, otra vez encima (las luces pasan por detrás)
         logo = self.img('logo_over')

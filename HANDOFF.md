@@ -10,6 +10,22 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **TF Client 1.3.56 (13 oct)** — el dueño probó la 1.3.55 («me encanta el nuevo diseño de las apps y fondos») y pidió:
+> - **Avisos del pad** (`TFPadScreen.showNotice`): pastilla pequeña abajo en el centro (no tapa cabecera ni pestañas),
+>   color por tipo (verde ✓ éxito, rojo ! error, azul i el resto, por cómo empieza el texto), entra en 0,22 s, dura
+>   2,2 s (hasta 3,6 s si es muy largo), clic = cerrar, con el ratón encima se queda; uno solo a la vez.
+> - **Pestañas** (`PadSkin.tab`/`tabRow`, todas las apps del servidor y Gachapón): pastillas de 17 de alto con margen,
+>   texto centrado, hueco de 3 sobre la ventana; la elegida en el color de la app con flechita hacia la cabecera.
+>   Comunidad y Música siguen con `PadUi.tab`.
+> - **Icono de Oficios**: el pico de diamante de verdad (`Items.DIAMOND_PICKAXE` a 2×, `PadSkin.icon32`).
+> - **Inicio del pad animado** (`PadHomePage.ambient`): nubes en dos capas, rayos de sol, brillo que late detrás de la
+>   rejilla y motas que suben; los iconos entran uno tras otro con rebote (`PadPage.shown()`) y un brillo los cruza
+>   cada 9 s. Todo quieto con animaciones apagadas. Repaso: botones con sombra en vez de contorno, texto marrón en
+>   los dorados, insignia «TÚ» del Pass más alta, notas de Ajustes centradas.
+> - **Comunidad**: una reacción por jugador y foto (otro emoji la cambia, el mismo la quita; lo valida el servidor);
+>   el selector y las reacciones ya no enseñan nombres ni atajos.
+> - **Web**: 228 vistas previas de skills rehechas (39 clases) con `tools/skills.py --vistas`.
+
 > **TF Client 1.3.55 (12 oct)** — pedidos del dueño:
 > - **Chispitas de protección**: «muy grandes y muy rápidas» → 0,022 (grandes 0,032), salen a 0,042–0,06/tick y frenan
 >   (`friction` 0,96 en `MagicDustParticle.spark`), viven 28–38 ticks con entrada 4 y salida 10: flotan ~1 bloque.
@@ -1806,7 +1822,7 @@ Detalles paso a paso en `tierras-fantasticas/README.md`, sección «3. Discord»
   monedas al ejecutar `tf web ruleta girar {player} N` / `tf web tienda comprar {player} <id>` y, si no tiene
   bastantes, devuelve el error y la web lo enseña.
 
-## 5. El mod (TF Client 1.3.55)
+## 5. El mod (TF Client 1.3.56)
 
 - Compilar: `cd tf-client && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew build --no-daemon -q -Porg.gradle.java.installations.paths=$JAVA_HOME`
   → `build/libs/tfclient-1.20.1-1.3.10.jar` (va en `mods/` del juego **y** del servidor, misma versión). Si el contenedor solo tiene Java 21 (pasó en octubre de 2026), basta

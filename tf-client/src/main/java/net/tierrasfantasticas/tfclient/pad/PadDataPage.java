@@ -187,14 +187,23 @@ abstract class PadDataPage extends PadPage {
         }
     }
 
-    /** Tarjeta oscura con ribete de oro (como la del reproductor de Música), con su pestaña oscura encima. */
+    /**
+     * Tarjeta oscura con ribete de oro (como la del reproductor de Música) y, encima, su rótulo: una pastilla oscura
+     * de PadSkin.TAB_H con filo de oro y la flechita hacia la tarjeta (como las pestañas elegidas), con aire alrededor
+     * del texto. La tarjeta empieza en top (tabY + PadSkin.TABS).
+     */
     static void darkCard(GuiGraphics g, int x, int top, int w, int bottom, int tabY, String tab) {
-        int tw = PadFont.width(tab) + 14;
-        PadUi.box(g, x + 4, tabY, tw, 15, PadUi.NAVY);
-        g.fillGradient(x + 5, tabY + 1, x + 4 + tw - 1, tabY + 16, 0xFF323C80, 0xFF262E66);
-        g.fill(x + 6, tabY + 1, x + 4 + tw - 2, tabY + 3, PadUi.GOLD);
-        g.fill(x + 6, tabY + 1, x + 4 + tw - 2, tabY + 2, PadUi.GOLD_HI);
-        PadFont.drawCentered(g, tab, x + 4 + tw / 2, tabY + 4, 0xFFE680, false);
+        int tw = Math.max(34, PadFont.width(tab) + 18), tx = x + 4, th = PadSkin.TAB_H;
+        PadUi.box(g, tx, tabY, tw, th, PadUi.NAVY);
+        g.fillGradient(tx + 1, tabY + 1, tx + tw - 1, tabY + th - 1, 0xFF34408A, 0xFF1E2558);
+        g.fill(tx + 2, tabY + 1, tx + tw - 2, tabY + 2, PadUi.GOLD_HI);
+        g.fill(tx + 2, tabY + 2, tx + tw - 2, tabY + 3, 0x80F6B628);
+        int cx = tx + tw / 2;
+        for (int i = 0; i < top - tabY - th; i++) {
+            int hw = Math.max(0, 2 - i);
+            g.fill(cx - hw, tabY + th + i, cx + hw + 1, tabY + th + i + 1, PadUi.NAVY);
+        }
+        PadFont.drawCentered(g, tab, cx, tabY + 3, 0xFFE680, 0x0C1030);
         int h = bottom - top;
         PadUi.box(g, x, top, w, h, PadUi.NAVY);
         g.fillGradient(x + 1, top + 1, x + w - 1, top + h - 1, 0xFF262E66, 0xFF141A3C);
@@ -204,7 +213,6 @@ abstract class PadDataPage extends PadPage {
         g.fill(x + 2, top + h - 3, x + w - 2, top + h - 2, gold);
         g.fill(x + 2, top + 3, x + 3, top + h - 3, gold);
         g.fill(x + w - 3, top + 3, x + w - 2, top + h - 3, gold);
-        g.fill(x + 5, top, x + 4 + tw - 1, top + 2, 0xFF262E66); // la pestaña se une a la tarjeta
     }
 
     /** Botón con el precio en monedas verdes a la derecha del texto: [GIRAR · ● 5]. Devuelve su ancho. */
@@ -216,12 +224,12 @@ abstract class PadDataPage extends PadPage {
         if (hover) pad.hover(id);
         PadSkin.button(g, x, y, w, "", style, hover, enabled, false);
         int yy = y - (hover ? 1 : 0); // el botón sube al pasar el ratón: el texto, con él
-        int tx = x + 7;
-        PadFont.draw(g, label, tx, yy + 2, enabled ? 0xFFFFFF : 0x8C9AC4, true);
+        int tx = x + 7, shade = PadSkin.buttonShade(style, enabled), text = PadSkin.buttonText(style, enabled);
+        PadFont.drawShadow(g, label, tx, yy + 2, text, shade);
         tx += PadFont.width(label) + 6;
         g.fill(tx - 3, yy + 4, tx - 2, yy + 11, enabled ? 0x66FFFFFF : 0x338C9AC4);
         pad.blit(g, "coin_green_s", tx, yy + 4);
-        PadFont.draw(g, n, tx + 10, yy + 2, enabled ? 0xFFFFFF : 0x8C9AC4, true);
+        PadFont.drawShadow(g, n, tx + 10, yy + 2, text, shade);
         if (enabled) hit(x, y, w, 16, action);
         return w;
     }
