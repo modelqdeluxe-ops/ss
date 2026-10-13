@@ -323,11 +323,14 @@ def index():
 
 
 def tienda():
-    tabs = [('gratis', 'Recompensas gratis'), ('rangos', 'Rangos'), ('cosmeticos', 'Cosméticos'), ('crates', 'Crates'),
-            ('vfx', 'VFX'), ('skills', 'Skills')]
+    # La barra de categorías (el «dock»): cada pestaña con su icono en el color de su sección (--tone-* en styles.css);
+    # app.js le añade el contador
+    tabs = [('gratis', 'Recompensas gratis', 'gift'), ('rangos', 'Rangos', 'crown'), ('cosmeticos', 'Cosméticos', 'shirt'),
+            ('crates', 'Crates', 'chest'), ('vfx', 'VFX', 'flame'), ('skills', 'Skills', 'zap')]
     tab_html = '\n'.join(
-        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">{label}</button>'
-        for k, label in tabs)
+        f'          <button class="tab" type="button" role="tab" data-category="{k}" aria-selected="false">'
+        f'<span class="tab-ico">{I[icon]}</span><span class="tab-label">{label}</span></button>'
+        for k, label, icon in tabs)
     return head('Tienda — Tierras Fantásticas',
                 'Tienda de Tierras Fantásticas, servidor independiente de Minecraft: rangos, cosméticos, crates con sets completos, VFX, clases de skills y recompensas gratis. Pago seguro y entrega automática en el juego.',
                 'tienda') + header('tienda') + f'''
