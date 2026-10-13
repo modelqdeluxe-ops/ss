@@ -10,6 +10,11 @@ funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+> **REGLA NUEVA (13 oct, pedido del dueño): el jar se publica como Release de GitHub, no en `descargas/`.** Subir
+> `mod_version` (y `TFClient.VERSION`) y fusionar en `main` basta: `.github/workflows/tf-client.yml` crea la Release
+> `v<versión>` con el jar y `tfclient.jar`. Enlace fijo: https://github.com/modelqdeluxe-ops/ss/releases/latest/download/tfclient.jar
+> (más rápido que el `raw` del repo, que GitHub limita para archivos grandes). Ver `CLAUDE.md`.
+
 > **TF Client 1.3.60 (13 oct)** — repaso de diseño de las apps (punto 5 del dueño) y retratos de oficios:
 > - Oficios: retratos de 64x39 (`job_images.py`, BOX 96–160): se ven las manos y la herramienta. `PadSkin.image`
 >   ya no deforma: cabe en maxW x maxH sin perder proporción (las tarjetas dejan que la imagen use su ancho).
