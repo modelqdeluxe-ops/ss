@@ -9,6 +9,21 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 
 ## 0. Lo que estábamos haciendo AHORA MISMO (empieza por aquí)
 
+### EN CURSO (13 oct 2026): rediseño de la tienda web — barra de categorías, VFX y Skills
+Pedido del dueño (textual): *«Necesito un rediseño completo de la gui de skills, vfx y tarjeta de botones de tienda,
+quiero un cambio real, actualmente es tosco, feo, se confunde con el tema de la pagina y todo.»* («tarjeta de botones
+de la tienda» = la barra de pestañas de categorías; ya la llamó así en la entrega del 7 oct, mediodía.)
+Plan (solo web: `tierras-fantasticas/public/{tienda.html,app.js,styles.css}`; se publica sola al fusionar en `main`):
+1. [ ] Barra de categorías → «dock» propio: placa opaca de acero oscuro (no se mezcla con la nebulosa), cada
+   categoría una ficha con icono SVG en su color (`--tone-*`), nombre y contador; la elegida se llena de su color.
+2. [ ] VFX → escenario «arena» teñido del color de la categoría (las animaciones son transparentes), esquinas de HUD,
+   flechas anterior/siguiente con contador, ficha con acción grande y lo que llevas; filtros con punto de color y
+   número; mosaico con fondo de su color, marca de elegido y de equipado.
+3. [ ] Skills → ficha de clase: pantalla enmarcada (las vistas previas traen fondo #0c1020 pintado), cabecera con
+   icono grande, dos opciones de compra separadas (dinero / monedas), **barra de skills como la del juego** (teclas
+   5–0 + pasivas) con el detalle de la elegida; rejilla de clases con su color.
+4. [ ] Capturas escritorio y móvil (`tools/preview.mjs` + Playwright), `npm test`, PR, merge, capturas en vivo.
+
 ### CHECKPOINT (13 oct 2026, TF Client 1.3.65) — lee esto primero
 
 **Estado**: todo lo hecho está fusionado en `main` y publicado. Última versión **1.3.65**, Release ya creada:
