@@ -21,19 +21,25 @@ mezclas `color-mix` van con un color sólido, nunca con `transparent`), contrast
 
 Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/tab_art.py`, `public/app.js`,
 `public/styles.css`):
-- **Barra de categorías** (`.shop-tabs`): una **tarjeta con el dibujo** de cada sección (`img/tabs/<cat>.webp`, los
-  genera `python3 tools/tab_art.py` desde imágenes que ya usa la web: diamantes, escudo real, alas, crate Luminite
-  recortada, kill K.O. y un abanico de tres iconos de clases) sobre un fondo **macizo de su color** (`--tone-*`), con
-  el nombre en blanco abajo y el número arriba. La elegida se enciende (su color a tope), marco blanco y dibujo más
-  grande. Móvil y tablet 3×2; desde 1000 px las seis en fila.
+- **Barra de categorías** (`.shop-tabs`): **cinco** tarjetas (Rangos, Cosméticos, Crates, VFX, Skills; el dueño
+  quitó «Recompensas gratis»: sus productos siguen en `products.json` pero ya no tienen pestaña y `#gratis` lleva a
+  Crates). Cada una con **el dibujo** de la sección (`img/tabs/<cat>.webp`, los genera `python3 tools/tab_art.py`:
+  escudo real, alas, crate Luminite recortada, kill K.O. y un abanico de tres iconos de clases) sobre su **color vivo**
+  (`--t`, `--t-hi`, `--t-lo`, `--t-ink` por pestaña en styles.css), **contorno** de su tono claro y el nombre abajo.
+  La elegida se enciende (tono claro → color), contorno blanco, anillo de su color. Móvil y tablet 3 + 2; desde
+  1000 px las cinco en fila.
+- **Colores vivos, nunca marrones**: `toneVars(hex)` (app.js) saca de cada color su tono claro, profundo y casi negro
+  (`--c-hi`, `--c-lo`, `--c-ink`) **sin mezclarlo con negro** (eso daba marrón/verde oliva); en los amarillos las
+  sombras giran hacia el naranja. Lo usan las tarjetas del catálogo, la arena de VFX, la cabecera y el marco de Skills.
 - **VFX y Skills = una ventana propia color grafito** (`.cx`, neutra: ni violeta ni azul de la web) con su filo de
-  color arriba, cabecera (etiqueta, título, texto) y dentro `.cx-layout`: **filtros arriba, catálogo a la izquierda y
-  vitrina a la derecha** (desde 1024 px); en el móvil: vitrina, filtros y catálogo. La vitrina es `sticky`; `cxStick()`
-  (app.js) le pone el `top` para que, si es más alta que la pantalla, quede pegada por abajo y se vea la compra.
-  `cxReveal()` sube a la vitrina al elegir algo en el móvil.
-  - **Catálogo** = tarjetas tipo «rareza» (`.cx-tile`): el dibujo sobre el **color macizo** de su categoría/clase, franja
-    de color y nombre en negro; la elegida con marco blanco y la franja llena de su color. Etiquetas macizas
-    «✓ Equipado»/«Tuyo» (VFX) y «✓ Activa»/«Tuya»/«En cola» (Skills). Filtros `.cx-chip` macizos (el pulsado, lleno).
+  color arriba, cabecera (etiqueta, título, texto) y dentro `.cx-layout`: **catálogo a la izquierda y vitrina a la
+  derecha** (VFX desde 1024 px, Skills desde 1200 px); antes, la vitrina arriba y el catálogo debajo. **Sin filtros**
+  (el dueño no los quiere: ni en VFX ni en Skills). La vitrina es `sticky`; `cxStick()` (app.js) le pone el `top` para
+  que, si es más alta que la pantalla, quede pegada por abajo y se vea la compra. `cxReveal()` sube a la vitrina al
+  elegir algo cuando no es sticky.
+  - **Catálogo** = tarjetas tipo «rareza» (`.cx-tile`): el dibujo sobre el **color vivo** de su categoría/clase, franja
+    de color y nombre sobre su tono oscuro; la elegida con marco blanco y la franja en su tono claro. Etiquetas macizas
+    «✓ Equipado»/«Tuyo» (VFX) y «✓ Activa»/«Tuya»/«En cola» (Skills).
   - **VFX** (`renderVfx`, `vfxShow`, `vfxTile`, `vfxAction`): arena con el color de la categoría macizo y charco de luz,
     etiqueta de categoría, flechas con contador (`data-vfx-step`); ficha con nombre, descripción, cómo sale y la acción
     en una placa negra (`.cx-deal`: Gratis / Es tuyo / Equipado + botón). Al pasar el ratón, la miniatura se anima.
@@ -41,10 +47,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
     con ~1,6 s vacías antes de repetirse (así son los WebP); si una captura sale con la arena vacía, es eso.
   - **Skills** (`renderSkills`, `skDetail`, `skScreen`, `skSlot`, `skPickCard`, `skBuy`, `skTile`): plantel de
     retratos (icono de la clase ampliado sobre su color) y ficha: cabecera con emblema, rol, nombre, tipo y descripción;
-    pantalla enmarcada en el color de la clase (por dentro `--sk-bg`, el fondo pintado en las vistas previas); barra de
-    skills como la del juego (tecla 5–0 en la esquina; pasivas aparte con «P») con datos (con tecla, pasivas, clic/arco)
-    y la skill elegida (`#sk-pick`); abajo la compra en dos filas (`.sk-buy`: con dinero ámbar / con monedas) o la placa
-    de estado (`.cx-own`: activa, tuya, en cola).
+    **pantalla CUADRADA** (como las vistas previas, 480×480: así se ve entera, con el jugador; hasta 520 px) enmarcada
+    en el color de la clase (por dentro `--sk-bg`, el fondo pintado en las imágenes). OJO: una pantalla apaisada
+    recortaba la imagen y no se veía el muñeco (queja del dueño). Desde 900 px, a su lado, la barra de skills como la
+    del juego (tecla 5–0 en la esquina; pasivas aparte con «P») con datos y la skill elegida (`#sk-pick`); abajo la
+    compra en dos filas (`.sk-buy`: con dinero ámbar / con monedas) o la placa de estado (`.cx-own`).
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 

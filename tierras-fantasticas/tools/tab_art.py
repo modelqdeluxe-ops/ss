@@ -16,7 +16,6 @@ W, H = 256, 192
 
 # categoría: (imagen, pixel art, recorte en fracciones (izq, arriba, der, abajo) o None)
 ART = {
-    'gratis': ('img/gifts/diamantes.webp', False, None),
     'rangos': ('img/ranks/royal.png', True, None),
     'cosmeticos': ('img/items/springcos/wings.webp', False, None),
     # La crate entera es muy ancha: solo el cofre y las armas del centro

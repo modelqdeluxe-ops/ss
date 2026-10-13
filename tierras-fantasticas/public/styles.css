@@ -2738,52 +2738,58 @@ body:not([data-hero]) .header::before {
 }
 
 /* Barra de categorías (la «tarjeta de botones»), rehecha del todo el 13 oct. 2026: una tarjeta por sección con el
-   dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py) sobre un fondo MACIZO de su color (--t = --tone-*), el
-   nombre en blanco abajo y el número arriba. Nada translúcido. La elegida se enciende (su color a tope), lleva marco
-   blanco y su dibujo crece; las demás quedan en su color oscuro. */
+   dibujo de lo que hay dentro (img/tabs/, tools/tab_art.py) sobre su color VIVO: el color detrás del dibujo y su tono
+   profundo abajo, donde va el nombre (nunca mezclado con negro, que lo vuelve marrón). Contorno de su tono claro. La
+   elegida se enciende (tono claro → color), con contorno blanco, anillo de su color y su brillo. Nada translúcido.
+   Cada sección: --t (su color), --t-hi (claro), --t-lo (profundo), --t-ink (casi negro de su tono). */
 .shop-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   margin-top: 30px;
 }
 
 .tab {
   --t: var(--a-400);
-  --t-0: color-mix(in srgb, var(--t) 13%, #07080c);
-  --t-1: color-mix(in srgb, var(--t) 30%, #07080c);
-  --t-2: color-mix(in srgb, var(--t) 55%, #07080c);
+  --t-hi: var(--t);
+  --t-lo: var(--t);
+  --t-ink: #07080c;
   position: relative;
   display: flex;
+  grid-column: span 2;
   align-items: flex-end;
   min-width: 0;
   min-height: 104px;
   padding: 10px 10px 9px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--t) 38%, #000);
-  border-radius: 12px;
+  border: 2px solid var(--t-hi);
+  border-radius: 14px;
   background:
     var(--grain),
-    radial-gradient(95% 90% at 80% 26%, var(--t-2) 0%, var(--t-1) 50%, var(--t-0) 100%);
+    radial-gradient(120% 110% at 82% 18%, var(--t) 0%, var(--t-lo) 52%, var(--t-ink) 100%);
   color: #fff;
   text-align: left;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 2px 0 #020306,
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 3px 0 var(--t-ink),
     0 14px 26px -16px #000;
   transition:
     transform 0.25s var(--ease),
     border-color 0.2s,
-    box-shadow 0.25s;
+    box-shadow 0.25s,
+    filter 0.2s;
 }
 
-.tab[data-category='gratis'] { --t: var(--tone-gratis); }
-.tab[data-category='rangos'] { --t: var(--tone-rangos); }
-.tab[data-category='cosmeticos'] { --t: var(--tone-cosmeticos); }
-.tab[data-category='crates'] { --t: var(--tone-crates); }
-.tab[data-category='vfx'] { --t: var(--tone-vfx); }
-.tab[data-category='skills'] { --t: var(--tone-skills); }
-.tab[data-category='monedas'] { --t: var(--tone-monedas); }
+/* En el móvil y la tablet, tres arriba y dos abajo (más anchas) */
+.tab:nth-child(n + 4) {
+  grid-column: span 3;
+}
+
+.tab[data-category='rangos'] { --t: #fcc94a; --t-hi: #fddb86; --t-lo: #b05c03; --t-ink: #4d2101; }
+.tab[data-category='cosmeticos'] { --t: #ff6fd8; --t-hi: #ff99e3; --t-lo: #c90093; --t-ink: #580040; }
+.tab[data-category='crates'] { --t: #a78bfa; --t-hi: #b59dfb; --t-lo: #3a09cd; --t-ink: #19045a; }
+.tab[data-category='vfx'] { --t: #45e9ff; --t-hi: #82f0ff; --t-lo: #009db2; --t-ink: #00454e; }
+.tab[data-category='skills'] { --t: #ff6b5b; --t-hi: #ffa298; --t-lo: #be1300; --t-ink: #530800; }
 
 /* El dibujo, arriba a la derecha y con su sombra */
 .tab-art {
@@ -2794,10 +2800,8 @@ body:not([data-hero]) .header::before {
   height: 66%;
   object-fit: contain;
   object-position: 100% 50%;
-  filter: drop-shadow(0 6px 8px #000) saturate(0.85) brightness(0.9);
-  transition:
-    transform 0.35s var(--spring),
-    filter 0.25s;
+  filter: drop-shadow(0 6px 8px var(--t-ink));
+  transition: transform 0.35s var(--spring);
   pointer-events: none;
 }
 
@@ -2808,11 +2812,11 @@ body:not([data-hero]) .header::before {
   letter-spacing: 0;
   text-transform: uppercase;
   text-shadow:
-    0 1px 0 #000,
-    0 0 10px #000;
+    0 1px 0 var(--t-ink),
+    0 0 10px var(--t-ink);
 }
 
-/* El número, arriba a la izquierda en una pastilla negra */
+/* El número, arriba a la izquierda en una pastilla de su tono oscuro */
 .tab .count {
   position: absolute;
   top: 8px;
@@ -2823,8 +2827,8 @@ body:not([data-hero]) .header::before {
   height: 20px;
   padding: 0 6px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--t) 45%, #000);
-  background: #07080c;
+  border: 1px solid var(--t-hi);
+  background: var(--t-ink);
   color: #fff;
   font-size: 11px;
   font-weight: 800;
@@ -2836,13 +2840,7 @@ body:not([data-hero]) .header::before {
 }
 
 .tab:hover {
-  --t-1: color-mix(in srgb, var(--t) 38%, #07080c);
-  --t-2: color-mix(in srgb, var(--t) 68%, #07080c);
-  border-color: color-mix(in srgb, var(--t) 70%, #000);
-}
-
-.tab:hover .tab-art {
-  filter: drop-shadow(0 6px 8px #000);
+  filter: brightness(1.08) saturate(1.05);
 }
 
 .tab:active {
@@ -2854,20 +2852,20 @@ body:not([data-hero]) .header::before {
   outline-offset: 3px;
 }
 
-/* La elegida: su color a tope, marco blanco y sombra de su color */
+/* La elegida: encendida (su tono claro detrás del dibujo), contorno blanco, anillo de su color y su brillo */
 .tab[aria-selected='true'] {
-  --t-0: color-mix(in srgb, var(--t) 42%, #07080c);
-  --t-1: color-mix(in srgb, var(--t) 72%, #07080c);
-  --t-2: color-mix(in srgb, var(--t), #fff 12%);
   border-color: #fff;
+  background:
+    var(--grain),
+    radial-gradient(130% 120% at 82% 18%, var(--t-hi) 0%, var(--t) 36%, var(--t-lo) 76%, var(--t-ink) 112%);
   box-shadow:
-    0 0 0 2px #fff,
-    0 3px 0 2px #020306,
-    0 18px 34px -12px var(--t);
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 0 0 3px var(--t),
+    0 4px 0 3px var(--t-ink),
+    0 18px 36px -10px var(--t);
 }
 
 .tab[aria-selected='true'] .tab-art {
-  filter: drop-shadow(0 8px 10px #000);
   transform: scale(1.08);
 }
 
@@ -2885,14 +2883,13 @@ body:not([data-hero]) .header::before {
   }
 }
 
-/* En tablet, tres por fila más grandes; desde 1000 px, las seis en una fila */
 @media (min-width: 640px) {
   .shop-tabs {
-    gap: 10px;
+    gap: 12px;
   }
 
   .tab {
-    min-height: 112px;
+    min-height: 116px;
     padding: 12px 12px 11px;
   }
 
@@ -2902,29 +2899,22 @@ body:not([data-hero]) .header::before {
   }
 }
 
+/* Desde 1000 px, las cinco en una fila */
 @media (min-width: 1000px) {
   .shop-tabs {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .tab,
+  .tab:nth-child(n + 4) {
+    grid-column: auto;
   }
 
   .tab {
-    min-height: 122px;
-  }
-
-  .tab-label {
-    font-size: 11.5px;
-  }
-}
-
-@media (min-width: 1100px) {
-  .shop-tabs {
-    gap: 12px;
-  }
-
-  .tab {
-    min-height: 132px;
+    min-height: 128px;
     padding: 14px 14px 12px;
-    border-radius: 14px;
+    border-radius: 16px;
   }
 
   .tab-label {
@@ -4446,21 +4436,16 @@ body:not([data-hero]) .header::before {
   line-height: 1.55;
 }
 
-/* La disposición: en el móvil, la vitrina, los filtros y el catálogo uno debajo de otro; desde 1024 px, los filtros
-   arriba, el catálogo a la izquierda y la vitrina a la derecha */
+/* La disposición: en el móvil, la vitrina y debajo el catálogo; en el escritorio, el catálogo a la izquierda y la
+   vitrina a la derecha */
 .cx-layout {
   display: grid;
   grid-template-areas:
     'show'
-    'filter'
     'catalog';
   grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   padding: 14px;
-}
-
-.cx-filter {
-  grid-area: filter;
 }
 
 .cx-catalog {
@@ -4490,88 +4475,6 @@ body:not([data-hero]) .header::before {
   .sk-anim {
     image-rendering: pixelated;
   }
-}
-
-/* Filtros: pastillas macizas de grafito con el punto de su color; la elegida, llena de su color */
-.cx-filter {
-  display: flex;
-  gap: 6px;
-  margin-inline: -14px;
-  padding: 2px 14px 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.cx-filter::-webkit-scrollbar {
-  display: none;
-}
-
-.cx-chip {
-  display: inline-flex;
-  flex: none;
-  gap: 8px;
-  align-items: center;
-  height: 38px;
-  padding: 0 7px 0 12px;
-  border: 1px solid var(--cx-line-2);
-  border-radius: 9px;
-  background: var(--cx-2);
-  color: #e8eaf0;
-  font: 700 13px/1 var(--font-body);
-  white-space: nowrap;
-  box-shadow: 0 2px 0 #000;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s,
-    transform 0.2s var(--ease);
-}
-
-.cx-chip i {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--c);
-  transform: rotate(45deg);
-}
-
-.cx-chip span {
-  display: inline-grid;
-  place-items: center;
-  min-width: 26px;
-  height: 24px;
-  padding: 0 6px;
-  border-radius: 6px;
-  background: var(--cx-0);
-  color: var(--cx-tx-2);
-  font-size: 11.5px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.cx-chip:hover {
-  border-color: var(--c);
-  background: var(--cx-3);
-}
-
-.cx-chip:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-.cx-chip[aria-pressed='true'] {
-  border-color: var(--c);
-  background: var(--c);
-  color: #07080b;
-}
-
-.cx-chip[aria-pressed='true'] i {
-  background: #07080b;
-}
-
-.cx-chip[aria-pressed='true'] span {
-  background: #07080b;
-  color: #fff;
 }
 
 /* Catálogo: cada categoría con su barra de color, nombre y número, y una línea hasta el final */
@@ -4618,9 +4521,9 @@ body:not([data-hero]) .header::before {
   height: 22px;
   padding: 0 7px;
   border-radius: 6px;
-  border: 1px solid var(--cx-line-2);
-  background: var(--cx-2);
-  color: var(--c);
+  border: 1px solid var(--c-lo);
+  background: var(--c-ink);
+  color: var(--c-hi);
   font-size: 11.5px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -4632,8 +4535,8 @@ body:not([data-hero]) .header::before {
   gap: 8px;
 }
 
-/* La tarjeta: el dibujo sobre su color macizo (luz en el centro, oscuro en los bordes) y, debajo, el nombre en una
-   franja negra con el filo de su color */
+/* La tarjeta: el dibujo sobre su color vivo (el color en el centro y su tono profundo en los bordes, nunca mezclado
+   con negro) y, debajo, el nombre en una franja de su tono más oscuro con el filo de su color */
 .cx-tile {
   position: relative;
   display: flex;
@@ -4641,9 +4544,9 @@ body:not([data-hero]) .header::before {
   min-width: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--c) 36%, #000);
+  border: 1px solid var(--c-lo);
   border-radius: 10px;
-  background: #0b0c10;
+  background: var(--c-ink);
   color: #fff;
   text-align: left;
   cursor: pointer;
@@ -4660,7 +4563,7 @@ body:not([data-hero]) .header::before {
   aspect-ratio: 1;
   background:
     var(--grain),
-    radial-gradient(78% 72% at 50% 42%, color-mix(in srgb, var(--c) 64%, #07080b) 0%, color-mix(in srgb, var(--c) 32%, #07080b) 60%, color-mix(in srgb, var(--c) 18%, #07080b) 100%);
+    radial-gradient(85% 80% at 50% 40%, var(--c) 0%, var(--c-lo) 64%, var(--c-ink) 100%);
 }
 
 .cx-tile-art img {
@@ -4676,7 +4579,7 @@ body:not([data-hero]) .header::before {
   overflow: hidden;
   padding: 8px 9px 9px;
   border-top: 3px solid var(--c);
-  background: #0b0c10;
+  background: var(--c-ink);
   font: 700 12.5px/1.25 var(--font-body);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4711,8 +4614,8 @@ body:not([data-hero]) .header::before {
 
 .cx-tile.is-sel .cx-tile-name {
   border-top-color: #fff;
-  background: var(--c);
-  color: #07080b;
+  background: var(--c-hi);
+  color: var(--c-ink);
 }
 
 /* Lo que ya tienes: etiqueta maciza arriba a la izquierda */
@@ -4775,7 +4678,7 @@ body:not([data-hero]) .header::before {
   isolation: isolate;
   background:
     var(--grain),
-    radial-gradient(68% 60% at 50% 46%, color-mix(in srgb, var(--c) 56%, #06070a) 0%, color-mix(in srgb, var(--c) 27%, #06070a) 58%, color-mix(in srgb, var(--c) 12%, #06070a) 100%);
+    radial-gradient(72% 64% at 50% 46%, var(--c-lo) 0%, var(--c-ink) 78%);
 }
 
 .cx-floor {
@@ -4786,8 +4689,8 @@ body:not([data-hero]) .header::before {
   z-index: -1;
   height: 40px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--c), #fff 25%), color-mix(in srgb, var(--c) 45%, #06070a) 60%, color-mix(in srgb, var(--c) 27%, #06070a));
-  filter: blur(10px);
+  background: radial-gradient(closest-side, var(--c-hi), var(--c) 45%, var(--c-lo));
+  filter: blur(12px);
 }
 
 .cx-stage .vfx-anim {
@@ -4805,8 +4708,8 @@ body:not([data-hero]) .header::before {
   height: 26px;
   padding: 0 10px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--c) 55%, #000);
-  background: #07080b;
+  border: 1px solid var(--c-lo);
+  background: var(--c-ink);
   color: #fff;
   font: 800 10.5px/1 var(--font-body);
   letter-spacing: 0.12em;
@@ -4890,7 +4793,7 @@ body:not([data-hero]) .header::before {
 }
 
 .cx-kicker {
-  color: var(--c);
+  color: var(--c-hi, var(--c));
   font: 800 11px/1.2 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -5095,7 +4998,7 @@ body:not([data-hero]) .header::before {
   border-radius: 10px;
   outline: 2px solid #000;
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--c) 40%, #000),
+    0 0 0 4px var(--c-lo),
     0 10px 18px -6px #000;
   filter: none;
 }
@@ -5118,7 +5021,7 @@ body:not([data-hero]) .header::before {
   border-bottom: 1px solid #000;
   background:
     var(--grain),
-    linear-gradient(100deg, color-mix(in srgb, var(--c) 42%, #07080b) 0%, color-mix(in srgb, var(--c) 18%, #0e1015) 55%, #0e1015 100%);
+    linear-gradient(100deg, var(--c-lo) 0%, var(--c-ink) 62%, #0e1015 100%);
 }
 
 .sk-emblem {
@@ -5131,7 +5034,7 @@ body:not([data-hero]) .header::before {
   border: 2px solid #fff;
   background: #07080b;
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--c) 50%, #000),
+    0 0 0 4px var(--c-lo),
     0 12px 24px -10px #000;
 }
 
@@ -5146,7 +5049,7 @@ body:not([data-hero]) .header::before {
 }
 
 .sk-head-text .cx-kicker {
-  color: color-mix(in srgb, var(--c), #fff 35%);
+  color: var(--c-hi);
 }
 
 .sk-head h3 {
@@ -5194,25 +5097,28 @@ body:not([data-hero]) .header::before {
   padding: 12px;
   background:
     var(--grain),
-    radial-gradient(80% 90% at 50% 40%, color-mix(in srgb, var(--c) 46%, #06070a) 0%, color-mix(in srgb, var(--c) 20%, #06070a) 70%, color-mix(in srgb, var(--c) 12%, #06070a) 100%);
+    radial-gradient(80% 90% at 50% 40%, var(--c-lo) 0%, var(--c-ink) 80%);
 }
 
 .sk-screen {
   display: grid;
   place-items: center;
+  max-width: 520px;
+  margin-inline: auto;
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 10px;
   border: 1px solid #000;
   background: var(--sk-bg);
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--c) 55%, #000),
+    0 0 0 2px var(--c),
     0 18px 36px -14px #000;
 }
 
+/* La vista previa entera, a todo lo que mide la pantalla (es cuadrada como la imagen) */
 .sk-screen .sk-anim {
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .sk-noanim {
@@ -5229,7 +5135,7 @@ body:not([data-hero]) .header::before {
   height: 112px;
   border-radius: 22px;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 45%, #000);
+  box-shadow: 0 0 0 5px var(--c-lo);
 }
 
 .sk-noanim p {
@@ -5268,6 +5174,7 @@ body:not([data-hero]) .header::before {
 
 .sk-slots {
   display: flex;
+  flex-wrap: wrap;
   gap: 5px;
   padding: 5px;
   border-radius: 12px;
@@ -5617,16 +5524,13 @@ body:not([data-hero]) .header::before {
     padding: 20px 22px 24px;
   }
 
-  .cx-filter {
-    flex-wrap: wrap;
-    margin-inline: 0;
-    padding: 0;
-    overflow: visible;
+  .cx-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
   }
 
-  .cx-grid,
   .sk-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
   }
 
@@ -5659,32 +5563,59 @@ body:not([data-hero]) .header::before {
   }
 
   .sk-skills {
-    padding: 14px 20px 16px;
+    padding: 16px 18px;
+  }
+
+}
+
+/* Desde 900 px, la ficha en dos columnas: la pantalla (cuadrada y grande) y, a su lado, la barra de skills */
+@media (min-width: 900px) {
+  .sk-card {
+    display: grid;
+    grid-template-areas:
+      'head head'
+      'screen skills'
+      'deal deal';
+    grid-template-columns: minmax(0, 1fr) 290px;
+  }
+
+  .sk-head {
+    grid-area: head;
+  }
+
+  #sk-screen {
+    display: grid;
+    grid-area: screen;
+    align-content: center;
   }
 
   .sk-screen {
-    aspect-ratio: 16 / 10;
+    width: 100%;
   }
 
-  .sk-screen .sk-anim {
-    width: auto;
+  .sk-skills {
+    grid-area: skills;
+    border-top: 0;
+    border-left: 1px solid #000;
+  }
+
+  .sk-deal {
+    grid-area: deal;
   }
 }
 
-/* Desde 1024 px: filtros arriba, catálogo a la izquierda y la vitrina a la derecha */
+/* Desde 1024 px, VFX: el catálogo a la izquierda y la vitrina a la derecha. Skills lo hace desde 1200 px (su ficha es
+   más ancha); antes, la ficha arriba y el plantel debajo. */
 @media (min-width: 1024px) {
   .cx-layout {
-    grid-template-areas:
-      'filter filter'
-      'catalog show';
-    grid-template-columns: minmax(0, 1fr) 410px;
-    gap: 20px 26px;
-    align-items: start;
     padding: 22px 26px 28px;
   }
 
-  .cx-layout.is-skills {
-    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+  .cx-layout:not(.is-skills) {
+    grid-template-areas: 'catalog show';
+    grid-template-columns: minmax(0, 1fr) 410px;
+    gap: 26px;
+    align-items: start;
   }
 
   .cx-grid {
@@ -5692,15 +5623,11 @@ body:not([data-hero]) .header::before {
   }
 
   .sk-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .cx-stage {
     min-height: 340px;
-  }
-
-  .sk-screen {
-    aspect-ratio: 2.2 / 1;
   }
 
   .cx-old {
@@ -5708,10 +5635,30 @@ body:not([data-hero]) .header::before {
   }
 }
 
+@media (min-width: 1200px) {
+  .cx-layout.is-skills {
+    grid-template-areas: 'catalog show';
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+    gap: 26px;
+    align-items: start;
+  }
+
+  .sk-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 /* La vitrina se queda fija al bajar por el catálogo. Si es más alta que la pantalla, app.js (cxStick) sube su «top»
    para que quede pegada por abajo y se vea la compra */
 @media (min-width: 1024px) {
-  .cx-show {
+  .cx-layout:not(.is-skills) .cx-show {
+    position: sticky;
+    top: 88px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .cx-layout.is-skills .cx-show {
     position: sticky;
     top: 88px;
   }
@@ -5720,10 +5667,6 @@ body:not([data-hero]) .header::before {
 @media (hover: hover) {
   .cx-tile:hover:not(.is-sel) {
     transform: translateY(-3px);
-  }
-
-  .cx-chip:hover:not([aria-pressed='true']) {
-    transform: translateY(-1px);
   }
 
   .sk-slot:hover:not(.is-sel) {
