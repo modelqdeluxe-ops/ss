@@ -39,7 +39,7 @@ jobs:
           name: tfclient-jar
           path: tf-client/build/libs/*.jar
       # La descarga del mod (sin jars en el repo):
-      #  - una Release por versión, v<mod_version>, con el jar (no se marca como «latest»: el repo tiene otras
+      #  - una Release por versión, tfclient-v<mod_version>, con el jar (no se marca como «latest»: el repo tiene otras
       #    Releases, como StickerYa, y su enlace de la última no se toca);
       #  - la Release fija «tfclient», cuyo tfclient.jar se reemplaza en cada versión: el enlace que no cambia nunca
       #    es https://github.com/<repo>/releases/download/tfclient/tfclient.jar
@@ -51,8 +51,10 @@ jobs:
         run: |
           ver=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
           jar=$(ls build/libs/tfclient-*-"$ver".jar | head -n1)
-          if gh release view "v$ver" >/dev/null 2>&1; then echo "La Release v$ver ya existe"; exit 0; fi
-          gh release create "v$ver" "$jar" --latest=false --title "TF Client $ver" \
+          # el tag NO empieza por «v<número>»: el workflow de Rumentis (otra rama) borra todas las Releases ^v[0-9]
+          tag="tfclient-v$ver"
+          if gh release view "$tag" >/dev/null 2>&1; then echo "La Release $tag ya existe"; exit 0; fi
+          gh release create "$tag" "$jar" --latest=false --title "TF Client $ver" \
             --notes "TF Client $ver. Enlace fijo a la última versión: https://github.com/${{ github.repository }}/releases/download/tfclient/tfclient.jar"
           cp "$jar" /tmp/tfclient.jar
           if ! gh release view tfclient >/dev/null 2>&1; then

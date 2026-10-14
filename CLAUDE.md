@@ -13,10 +13,12 @@
 - Para publicar una versión: sube `mod_version` en `tf-client/gradle.properties` **y** `VERSION` en
   `tf-client/src/main/java/net/tierrasfantasticas/tfclient/TFClient.java` (iguales), apunta la entrega en `HANDOFF.md`
   y fusiona en `main`. El workflow `.github/workflows/tf-client.yml` compila el jar y crea solo la Release
-  `v<mod_version>` con `tfclient-1.20.1-<versión>.jar` y una copia `tfclient.jar`.
+  `tfclient-v<mod_version>` con `tfclient-1.20.1-<versión>.jar` y una copia `tfclient.jar` (el tag no empieza por
+  `v<número>`: el workflow de Rumentis borra esas Releases).
 - Enlace fijo para el dueño y los jugadores (siempre la última versión):
   **https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient/tfclient.jar**
-  De una versión concreta: `https://github.com/modelqdeluxe-ops/ss/releases/download/v<versión>/tfclient-1.20.1-<versión>.jar`.
+  De una versión concreta: `https://github.com/modelqdeluxe-ops/ss/releases/download/tfclient-v<versión>/tfclient-1.20.1-<versión>.jar`
+  (desde la 1.3.68; las `v1.3.x` de antes las borró Rumentis).
 - No marques las Releases de TF Client como «latest»: el repo tiene otras (StickerYa) y su enlace de la última
   dejaría de funcionar. El workflow ya lo hace bien.
 - Tras fusionar, comprueba que la Release existe (el CI tarda unos minutos) antes de dar el enlace: si falla el CI,
